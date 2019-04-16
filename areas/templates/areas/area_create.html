@@ -1,0 +1,311 @@
+<!-- areas/area_create.html -->
+{% extends "main/base.html" %}
+{% load leaflet_tags %}
+{% load fontawesome %}
+{% load static %}
+{% load dataset_extras %}
+{% block title %}<title>WHG::Create/Update Area</title>{% endblock %}
+{% block extra_head %}
+  {% leaflet_js %}
+  {% leaflet_css %}
+  <script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>
+  <script src="{% static 'js/leaflet-draw/Leaflet.draw.js' %}"></script>
+  <script src="{% static 'js/leaflet-draw/Leaflet.Draw.Event.js' %}"></script>
+  <link rel="stylesheet" href="{% static 'js/leaflet-draw/leaflet.draw.css' %}"/>
+
+  <script src="{% static 'js/leaflet-draw/Toolbar.js' %}"></script>
+  <script src="{% static 'js/leaflet-draw/Tooltip.js' %}"></script>
+
+  <script src="{% static 'js/leaflet-draw/ext/GeometryUtil.js' %}"></script>
+  <script src="{% static 'js/leaflet-draw/ext/LatLngUtil.js' %}"></script>
+  <script src="{% static 'js/leaflet-draw/ext/LineUtil.Intersect.js' %}"></script>
+  <script src="{% static 'js/leaflet-draw/ext/Polygon.Intersect.js' %}"></script>
+  <script src="{% static 'js/leaflet-draw/ext/Polyline.Intersect.js' %}"></script>
+  <script src="{% static 'js/leaflet-draw/ext/TouchEvents.js' %}"></script>
+
+  <script src="{% static 'js/leaflet-draw/draw/DrawToolbar.js' %}"></script>
+  <script src="{% static 'js/leaflet-draw/draw/handler/Draw.Feature.js' %}"></script>
+  <script src="{% static 'js/leaflet-draw/draw/handler/Draw.SimpleShape.js' %}"></script>
+  <script src="{% static 'js/leaflet-draw/draw/handler/Draw.Polyline.js' %}"></script>
+  <script src="{% static 'js/leaflet-draw/draw/handler/Draw.Marker.js' %}"></script>
+  <script src="{% static 'js/leaflet-draw/draw/handler/Draw.Circle.js' %}"></script>
+  <script src="{% static 'js/leaflet-draw/draw/handler/Draw.CircleMarker.js' %}"></script>
+  <script src="{% static 'js/leaflet-draw/draw/handler/Draw.Polygon.js' %}"></script>
+  <script src="{% static 'js/leaflet-draw/draw/handler/Draw.Rectangle.js' %}"></script>
+
+  <script src="{% static 'js/leaflet-draw/edit/EditToolbar.js' %}"></script>
+  <script src="{% static 'js/leaflet-draw/edit/handler/EditToolbar.Edit.js' %}"></script>
+  <script src="{% static 'js/leaflet-draw/edit/handler/EditToolbar.Delete.js' %}"></script>
+
+  <script src="{% static 'js/leaflet-draw/Control.Draw.js' %}"></script>
+
+  <script src="{% static 'js/leaflet-draw/edit/handler/Edit.Poly.js' %}"></script>
+  <script src="{% static 'js/leaflet-draw/edit/handler/Edit.SimpleShape.js' %}"></script>
+  <script src="{% static 'js/leaflet-draw/edit/handler/Edit.Rectangle.js' %}"></script>
+  <script src="{% static 'js/leaflet-draw/edit/handler/Edit.Marker.js' %}"></script>
+  <script src="{% static 'js/leaflet-draw/edit/handler/Edit.CircleMarker.js' %}"></script>
+  <script src="{% static 'js/leaflet-draw/edit/handler/Edit.Circle.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h4 class="mt-3">
+    {% if action == 'update' %}
+    Update Study Area
+    <a href="{% url 'areas:area-delete' object.id %}" class="float-right"
+      title="Delete dataset" rel="tooltip" style="margin-top:-2px;">
+      {% fontawesome_icon 'trash' color='#336699' %}</a>
+    {% else %}Create Study Area{% endif %}
+      <span class="small">{% fontawesome_icon 'question-circle' color='#336699' %}</span>
+  </h4>
+  <div class="d-flex">
+    <div class="form-box mt-2 col-sm-4">
+    <form id="ds_form" method="POST" action="#" enctype="multipart/form-data">
+      {% csrf_token %}
+      <input type="hidden" name="owner" value='{{ user.id }}'></input>
+      {% if action == 'update' %}
+        <input type="hidden" name="type" value='{{ form.type.value }}'></input>
+      {% else %}
+        <input type="hidden" name="type" value='ccodes'></input>
+      {% endif %}
+      <p>Title<br/>{{ form.title }}</p>
+      <p><span class="top">Description</span><br/>{{ form.description }}</p>
+      <hr/>
+      <div id="area_options">
+        <ul id="area_tabs_ul" class="nav nav-tabs">
+          <li class="nav-item">
+            <a class="nav-link active" role="tab" data-toggle="tab" href="#areas_codes">Countries</a></li>
+          <li class="nav-item">
+            <a class="nav-link" role="tab" data-toggle="tab" href="#areas_load">Load GeoJSON</a></li>
+          <li class="nav-item">
+            <a class="nav-link" role="tab" data-toggle="tab" href="#areas_draw">Draw</a></li>
+        </ul>
+        <div class="tab-content">
+          <div id="areas_codes" class="tab-pane fade show active">
+            <p id="p_ccodes">Country codes<br/>{{ form.ccodes }}
+              <span class="float-right ml-1">
+                <a href="javascript:{ map_clear() }">clear</a></span>
+              <span class="float-right">
+                <a href="javascript:{ map_render() }">preview |</a></span>
+            </p>
+            <p>Buffer (optional, km)<br/>
+              <input type="text" id="buffer_km" name="buffer_km" value=""/></p>
+          </div>
+          <div id="areas_load" class="tab-pane fade in">
+            <p id="p_load">
+              <span class="float-right ml-1">
+                <a href="javascript:{ map_clear() }">clear</a></span>
+              <span class="float-right">
+                <a href="javascript:{ map_render() }">preview |</a></span>
+            </p>
+            </div>
+          <div id="areas_draw" class="tab-pane fade in">
+            <i class="text-danger">not yet available</i>
+            <p>Use map controls to draw/edit bounding box or polygon</p></div>
+        </div>
+        <p class="mt-2">GeoJSON<br/>{{ form.geojson }}</p>
+      </div> <!-- area_options -->
+      <p id="referrer"></p>
+      <input class="btn-sm btn-primary mt-2" type="submit" value="Save" />
+      <span title="back"><a href="{% url 'dashboard' %}">Cancel</a></span>
+    </form>
+    </div>
+    <div id="map_container" class="col-sm-8">
+      {% leaflet_map "map_area" callback="map_init" %}
+    </div>
+  </div> <!-- d-flex -->
+</div> <!-- container -->
+<script type="text/javascript">
+  $(function(){
+    $( ".textarea" ).each(function(index) {
+      if ( ["None","null"].includes( $(this).val() ) ) {
+        $(this).val('')
+      }
+    });
+    $("#id_geojson").attr("placeholder","generated from country codes")
+    // $("#type_input").val('')
+  
+    // came from recon, insert a "referrer" POST value
+    <!--if(document.referrer.indexOf('recon') !== -1){-->
+      <!--$("#referrer").html('<input id="ref_input" type="hidden" name="referrer" value="'+document.referrer+'"/>')-->
+    // <input id="ref_input" type="hidden" name="referrer" value=""/>
+      <!--document.getElementById("ref_input").value = document.referrer;-->
+  })
+
+  $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+    var target = $(e.target).attr("href") // activated tab
+    map_clear() // switch create modes? clear the deck
+    // feed area type to hidden input
+    $("input[name='type']").val(target)
+    // console.log('tab id:',target);
+    active = $("ul#area_tabs_ul a.active").attr("href")
+    // TODO: refactor this eventually or face retribution
+    if (target == '#areas_codes') {
+      $("#id_geojson").attr("placeholder","generated from country codes")
+      if ($(".leaflet-draw-toolbar").length > 0) {
+          // console.log('remove drawControl')
+          $(".leaflet-draw").remove()
+      }
+    } else if (target == '#areas_load'){
+      $("#id_geojson").attr("placeholder","paste valid GeoJSON feature here")
+      if ($(".leaflet-draw-toolbar").length > 0) {
+          // console.log('remove drawControl')
+          $(".leaflet-draw").remove()
+      }
+      // alert('not available yet')
+    } else if (target == '#areas_draw') {
+      $("#id_geojson").attr("placeholder","generated from drawn shapes")
+      if ($(".leaflet-draw").length == 0) {
+        drawnItems = L.featureGroup().addTo(mappy)
+        var drawControl = new L.Control.Draw({
+          draw: {
+             marker: false,
+             polyline: false,
+             circle: false,
+             circlemarker: false,
+         },
+          edit: {
+             featureGroup: drawnItems
+          }
+        });
+        mappy.addControl(drawControl);
+        // alert('not available yet')
+      }
+    }
+  });
+  // expose leaflet map for events, call it 'mappy'
+window.addEventListener('map:init', function (e) {
+  window.mappy = e.detail.map
+  var attrib_mb = 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
+          '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+          'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+    attrib_awmc = 'Tiles and Data &copy; 2013 <a href="http://www.awmc.unc.edu" target="_blank">AWMC</a>',
+    token_mb = 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw',
+    token_kg = 'pk.eyJ1Ijoia2dlb2dyYXBoZXIiLCJhIjoiUmVralBPcyJ9.mJegAI1R6KR21x_CVVTlqw',
+    token_awmc = 'pk.eyJ1Ijoia2dlb2dyYXBoZXIiLCJhIjoiY2prcmgwc2cwMjRuZzNsdGhzZmVuMDRqbCJ9.MeLsyeOqwhTRdvt_Hgo7kg',
+    token_whg = '',
+    mbtiles_url = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={token}';
+    mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}';
+    
+  var awmc = L.tileLayer(mbtiles_url, {id:'isawnyu.map-knmctlkh', token:token_awmc, attribution:attrib_awmc}),
+    grayscale = L.tileLayer(mbstyle_url, {id:'kgeographer/cjstfpenh6o1e1fldz95w8m6p', token:token_kg, attribution:attrib_mb}),
+    satellite  = L.tileLayer(mbtiles_url, {id:'mapbox.satellite', token:token_mb, attribution:attrib_mb});
+
+  var baseLayers = {
+    "AWMC Terrain": awmc,
+    "Spine Data": grayscale,
+    "Satellite": satellite
+  };
+  L.control.layers(baseLayers).addTo(mappy);
+  baseLayers['AWMC Terrain'].addTo(mappy)
+}, false);
+
+
+  function zoomTo(id) {
+    mappy.setView(idToFeature[id]._latlng, mappy.getZoom() +2 )
+  }
+
+  function cleanJson(text) {
+    z=text.replace(/'/g,'\\"')
+    y=z.replace(/point/,'Point')
+    return JSON.parse(JSON.parse(y))
+  }
+
+  function map_render() {
+    // console.log('in map_render()')
+    ccodes = $("input#id_ccodes").val()
+    window.geoj = $("textarea#id_geojson")
+    window.geom = {"type":"FeatureCollection","features":[]}
+    window.buffer = $("input#buffer_km").val()
+    // console.clear()
+
+    var country_url = "/media/data/countries_simplified.json"
+    // clear geoJSON
+    if (Object.keys(mappy._layers).length > 2 ) {
+      cc_layer.clearLayers()
+      hull_layer.clearLayers()
+    }
+    if (ccodes != '') {
+      // TODO: test csv format
+      ccode_arr = ccodes.toUpperCase().split(",")
+      // console.log(ccode_arr)
+      fetch(country_url)
+        .then(function(resp) {
+          return resp.json();
+        })
+        .then(function(data) {
+          // console.log('fetched data', data)
+          window.cc_layer = L.geoJson(data, {
+            filter: function(feature, layer) {
+              return ccode_arr.includes(feature.properties.iso) ;
+            },
+            onEachFeature: function onEachFeature(feature, layer) {
+              // console.log('feature:', JSON.stringify(feature))
+              geom['features'].push(feature)
+              var props = feature.properties;
+              var content = `<p>${props.iso}</p><p>${props.gnlabel}</p>`;
+              layer.bindPopup(content);
+          }}).addTo(mappy);
+        })
+        .then(function(){
+          hull = turf.buffer(turf.convex(geom),buffer,{units:'kilometers'})
+          // hull_mp = turf.multiPolygon(hull.geometry.coordinates)
+          // geoj.val(JSON.stringify(hull_mp.geometry))
+          geoj.val(JSON.stringify(hull.geometry))
+          hull_layer = L.geoJSON(hull, {
+            style: function (feature) {
+              return {color: '#ff8c00'}; }
+          }).addTo(mappy);
+          mappy.fitBounds(hull_layer.getBounds())
+        })
+    } else {
+      // alert('Need some comma-delimited 2-letter country codes')
+    }
+  }
+  // initialize, render map w/settings.LEAFLET_CONFIG
+  function map_init (map, options) {
+    // console.log('mappy',mappy)
+    window.geoj = $("textarea#id_geom.textarea")
+    if (geoj.val() != ''){
+      // $("#p_geom").show()
+      map_render()
+    }
+    // console.log('in map_init(), geoj.val()',geoj.val())
+    // drawnItems = L.featureGroup()
+    // var osmUrl = 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+    // var osm = L.tileLayer(osmUrl, { maxZoom: 18, attribution: 'osm' })
+    // L.control.layers(
+    //   {'osm': osm.addTo(map)},
+    //   {'drawlayer': drawnItems},
+    //   { position: 'topleft', collapsed: false }
+    // ).addTo(map);
+
+    // // TODO: save edits
+    // map.on(L.Draw.Event.CREATED, function (event) {
+    //     window.drawnlayer = event.layer;
+    //     geoj.val(JSON.stringify(drawnlayer.toGeoJSON().geometry))
+    //     drawnItems.addLayer(drawnlayer);
+    //     $("#p_geom").show()
+    // });
+  } // end map_init
+
+  function map_clear() {
+    if(typeof cc_layer != "undefined"){cc_layer.remove()}
+    if(typeof hull_layer != "undefined"){hull_layer.remove()}
+    $("input#id_ccodes").val(null)
+    $("textarea#id_geojson").val(null)
+    $("#buffer_km").val(null)
+  }
+</script>
+{% endblock %}
+
+<!-- // window.gelems = $('script').filter(function() {
+//   return this.id.match(/[0-9]/) && this.text != '"null"';
+// });
+
+// for (i=0;i<gelems.length;i++){
+//   let t_geom = cleanJson(gelems[i].text)
+//   // let t_geom = JSON.parse(JSON.parse(gelems[i].text))
+//   t_geom['properties'] = {"id": gelems[i].id, "dataset": "tgn"}
+//   geom['features'].push(t_geom)
+// } -->

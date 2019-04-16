@@ -1,0 +1,433 @@
+<!-- places/place_detail.html -->
+{% extends "main/base.html" %}
+{% load fontawesome %}
+{% load static %}
+{% load dataset_extras %}
+{% load leaflet_tags %}
+
+{% block title %}<title>Place::{{ place.title }}</title>{% endblock %}
+{% block extra_head %}
+  {% leaflet_js %}
+  {% leaflet_css %}
+    <script src="{% static 'js/aliases.js' %}"></script>
+    <script src="{% static 'js/leaflet.ajax.min.js' %}"></script>
+{% endblock %}
+{% block content %}
+<div class="container">
+  <div id="place_title">
+    <h4>{{ place.title }} 
+      <span class="small">{% if ccodes|length > 0 %} ({% for c in ccodes %}{{ c }} {% endfor %}){% endif %}</span>
+      <span class="smaller float-right"> <i>whg:{{ whg_id }}</i>
+        {% if place.dataset in spine %}<a href="" rel="tooltip" title="WHG spine record">
+          <img src="{% static 'images/whg_logo_38h.png' %}" height="25px" class="textsub ml-2"/></a>
+        {% endif %}
+      </span>
+    </h4>
+  </div>
+  <div id="place_tabset">
+    <ul class="nav nav-tabs" id="myTab">
+      <li class="nav-item">
+        <a class="nav-link active" data-toggle="tab" href="#place_core" selected>Attestations</a>
+      </li>
+      <!--<li class="nav-item">-->
+        <!--<a class="nav-link" data-toggle="tab" href="#place_discussion">Discussion</a>-->
+      <!--</li>-->
+    </ul>
+    <div id="place_content" class="tab-content">
+      <div id="place_core" class="tab-pane fade show active" >
+        <div class="row pt-1">
+          <div id="place_home_l" class="col-sm-5">
+            <div class="col-content small mt-1"><p>{ auto-generated description } <i>future</i></p></div>
+            {% for rec in payload %}
+            <div class="col-content small mt-1">
+              <div class="attest-header">
+                <b>{{ rec.title }}</b> (<a href="/api/places/{{ rec.place_id }}/" target="_blank">pid:{{ rec.place_id }}</a>)
+                <span class="float-right">
+                  dataset: <a href="#" rel="tooltip" title="{ full title }" class="ttip">{{rec.dataset.label}}</a>
+                </span>
+              </div>
+              <div class="attest-element">Variants: 
+                {% for name in rec.names %}<i>{{name.toponym}}</i>
+                {% if "http" in name.citation.id %}
+                  (<a href="{{ name.citation.id }}" rel="tooltip"
+                  title="{{name.citation.label}}" target="_blank">src</a>)
+                {% endif %}
+                {% if not forloop.last %}; {% endif %}
+                {% endfor %}
+              </div>
+              <div class="attest-element">Types: {% for type in rec.types %}<i>{{type.label}}/{{type.src_label}}</i>
+                {% if not forloop.last %}; {% endif %}{% endfor %}</div>
+              <!-- put geoms into script -->
+              {% if rec.geoms|length > 0 %}
+                {% for g in rec.geoms %}
+                  {{ g|json_script:rec.place_id }}
+                {% endfor %}
+              {% endif %}
+              <div class="attest-element">Links: 
+              {% for link in rec.links %}
+                <a href="#" class="remote-link"><i>{{link.identifier}}</a> ({{link.type}})</i>
+                {% if not forloop.last %}; {% endif %}{% endfor %}</div>
+              {% if rec.descriptions %}
+              <div class="attest-element abbrev">
+              <div>Descriptions: {% for desc in rec.descriptions %}<i>{{desc.value}}</i>
+                {% if not forloop.last %}; {% endif %}{% endfor %}</div>
+              </div>
+              {% endif %}
+              {% if rec.whens %}
+              <div class="attest-element">Temporal: {% for when in rec.whens %}{{when|truncatechars:130}}{% endfor %}</div>
+              {% endif %}              
+            </div>
+            {% endfor %} <!-- rec in payload-->
+            <div id="place_traces" class="col-content small mt-1">
+              <p class="mb-0 allcap-heading">RELATED</p>
+              <!-- auto-generate this-->
+              <ul>
+                <li>{ some relation }</li>
+                <li>{ another relation }</li>
+              </ul>
+            </div>
+          </div> <!-- place_home_l-->
+          <div id="place_home_r" class="col-sm-7">
+            <div id="place_temporal" class="col-content small">
+              <p class="mb-0 allcap-heading">TEMPORAL ATTESTATIONS</p>
+              <p> { summing temporal visualization } <i>future</i></p>
+            </div>
+            <div id="place_map" class="col-content small">
+                <p class="mb-0 allcap-heading">GEOGRAPHY
+                    <span class="float-right">
+                      nearby places <input id="fetch-context" type="checkbox"/> 
+                      <!--| zoom <a href="javascript:getClose()">-->
+                      <!--{% fontawesome_icon 'search-plus' color='#336699' %}</a>-->
+                </p>
+                <div id="map">{% leaflet_map "map" callback="map_init" %}</div>
+            </div>
+            <div id="place_traces" class="col-content small mt-1">
+            <!--{'target': {'id': 'http://www.worldcat.org/oclc/833253277', 'type': ['Journey', 'Text'], 'title': 'Xuanzang : a Buddhist pilgrim on the Silk Road'}, 'body': {'id': 'http://whgazetteer.org/api/places/12376709', 'when': [{'end': '0630', 'start': '0630'}], 'title': 'Aksu', 'whg_id': 12376709, 'relation': 'waypoint'}}-->
+              <p class="mb-0 allcap-heading">TRACES</p>
+              {% if traces|length > 0 %}
+                <ul>
+                {% for t in traces %}
+                  <li><b>{{ t.body.relation }}</b> {{ t.target.type }}
+                    ; <a href="{{t.target.id}}" target="_blank">{{ t.target.title }}</a>
+                    {% if t.body.when %}; <i>when</i>: 
+                      {% for ts in t.body.when %}
+                        {% if ts.earliest %}
+                          c.{{ ts.earliest }}{%if ts.latest != ts.earliest %} - c.{{ ts.latest }}{%endif%}
+                        {% else %}
+                          {{ ts.start }}{%if ts.end != ts.start %}-{{ ts.end }}{%endif%}
+                        {% endif %}
+                      {% endfor %}
+                    {% endif %}
+                    {% if t.bodycount > 1 %}
+                    <a href="" data-ctr={{ forloop.counter0 }} data-id={{t.trace_id}} class="trace-geo ml-1">{% fontawesome_icon 'globe' color='#336699' %}</a>
+                    {% endif %}
+                    {% if t.target.depiction %}
+                    <a data-toggle="tooltip" title="<img class='trace-img' src='{{ t.target.depiction }}'/>" class="ml-1">{% fontawesome_icon 'image' color='#336699' %}</a>                      
+                    {% endif %}
+                  </li>
+                  <!--{ t }}-->
+                {% endfor %}
+                </ul>
+              {% else %}
+                <ul>
+                  <li>{ some event trace }</li>
+                  <li>{ some person trace }</li>
+                  <li>{ some work trace }</li>
+                </ul>
+              {% endif %}
+            </div>
+          </div> <!-- place_home_r -->
+        </div> <!-- row -->          
+      </div> <!-- place_core -->
+      <div id="place_discussion" class="tab-pane fade">
+        <div class="container pt-2">
+          <h5>Discussion</h5>
+        </div>
+      </div> <!-- place_discussion -->
+    </div> <!-- place_content -->
+  </div> <!-- place_tabset -->
+</div> <!-- top container -->
+
+<script type="text/javascript">
+  $(function() {
+    var trace_count = 0
+    $("[rel='tooltip']").tooltip();
+    $('a[data-toggle="tooltip"]').tooltip({
+      animated: 'fade',
+      placement: 'bottom',
+      html: true
+    });
+    $(".remote-link").on('click', function(event){
+      event.preventDefault()
+      str=$(this).text()
+      var re = /(dbp|gn|tgn):(.*?)$/;
+      auth=str.match(re)[1]
+      id=str.match(re)[2]
+      window.location.href = base_urls[auth]+id
+      console.log(str, auth,id)
+    })
+    $('input#fetch-context').prop('checked',false)
+    $('input#fetch-context').click(function(){
+      if($(this).is(':checked')) {
+        fetchContext(boundsPolygon(mappy.getBounds()))
+      } else {
+        nearby.removeFrom(mappy)
+      }
+    })
+    $(".trace-geo").click(function(e){
+      e.preventDefault()
+      fetchTraceGeom($(this).data('id'),$(this).data('ctr'))
+      <!--console.log('get trace geom for:',$(this).data('id'),$(this).data('ctr'))-->
+    })
+  })
+  function filly(counter) {
+    if (counter == 0)
+      return "blue"
+    else if (counter == 1)
+      return "orange"
+    else if (counter == 2)
+      return "purple"
+    else if (counter == 3)
+      return "greenyellow"
+    else 
+      return "yellow"
+  }
+  function fetchTraceGeom(trace_id,counter) {
+    console.log('fetchTraceGeom():',trace_id)
+    $.get("/search/trace",{idx: 'traces01', search: trace_id, doc_type: 'trace'},
+      function(data){
+        console.log(data.features.length,'mappable geoms in this trace')
+        mappy.createPane('tracePane');
+        mappy.getPane('tracePane').style.zIndex = 200;
+        nearby = L.geoJSON(data, {
+          pane: 'tracePane',
+          pointToLayer: function (feature, latlng) {
+            identifier = feature.properties.whg_id
+            <!--console.log(feature,identifier)-->
+            marker = L.circleMarker(latlng,
+              {
+                radius: 5, fillOpacity: 0.8, opacity: 1, weight: 1,
+                color: "#fff", fillColor: filly(counter)
+              }
+            ).bindPopup('whg:'+identifier+'<br/><b>'+
+              '<a href="/places/'+identifier+'/portal">'+feature.properties.title+"</b></a>");
+            idToFeature[identifier] = marker
+            return marker
+          }
+        }).addTo(mappy);
+    });
+  }
+    
+  // for ES query
+  function fetchContext(bbox){
+    <!--console.log('bbox:',bbox);-->
+    context={"type":"FeatureCollection","features":[]}
+    $.get("/search/features",{idx: 'whg', search: bbox, doc_type: 'place'},
+      function(data){
+        console.log(data['hits'].length,'hits for context query')
+        for(i in data['hits']){
+          geoms=data['hits'][i]['geoms']
+          for(j in geoms) {
+            context["features"].push(
+              { "type":"Feature","properties":{"id":geoms[j]['ds']+':'+geoms[j]['id']},
+                "geometry":geoms[j]
+              }
+            )
+          }
+        }
+        // TODO: fix panes z-index
+        mappy.createPane('contextPane');
+        mappy.getPane('contextPane').style.zIndex = 100;
+        nearby = L.geoJSON(context, {
+          pane: 'contextPane',
+          pointToLayer: function (feature, latlng) {
+            identifier = feature.geometry.ds+':'+feature.geometry.id
+            marker = L.circleMarker(latlng,
+              {
+                radius: 5, fillOpacity: 0.6, opacity: 1, weight: 1,
+                color: "#fff", fillColor: fill(feature.geometry.ds)
+              }
+            ).bindPopup(identifier);
+         
+            idToFeature[feature.properties.id] = marker
+            return marker
+          }
+        }).addTo(mappy);
+    });
+  }
+
+  function boundsPolygon(bounds){
+    ne=bounds._northEast
+    sw=bounds._southWest
+
+    var latlngs=[[ne['lat'],ne['lng']], [sw['lat'],ne['lng']],
+      [sw['lat'],sw['lng']],[ne['lat'],sw['lng']]]
+    var geom = {"type": "Polygon", 
+      "coordinates": [[
+        [ne['lng'],ne['lat']],[ne['lng'],sw['lat']],[sw['lng'],sw['lat']],
+        [sw['lng'],ne['lat']],[ne['lng'],ne['lat']]
+      ]]
+    }
+    // display bbox
+    <!--feature={"type":"Feature","properties":{"id":"fooid"},"geometry":geom}-->
+    <!--var polygon = L.polygon(latlngs, {color: 'red'}).addTo(mappy)-->
+    console.log(JSON.stringify(geom["coordinates"]))
+    return JSON.stringify(geom["coordinates"])
+  }
+  
+  window.addEventListener('map:init', function (e) {
+    window.mappy = e.detail.map
+    var attrib_mb = 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
+            '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+            'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+      attrib_awmc = 'Tiles and Data &copy; 2013 <a href="http://www.awmc.unc.edu" target="_blank">AWMC</a>',
+      token_mb = 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw',
+      token_kg = 'pk.eyJ1Ijoia2dlb2dyYXBoZXIiLCJhIjoiUmVralBPcyJ9.mJegAI1R6KR21x_CVVTlqw',
+      token_awmc = 'pk.eyJ1Ijoia2dlb2dyYXBoZXIiLCJhIjoiY2prcmgwc2cwMjRuZzNsdGhzZmVuMDRqbCJ9.MeLsyeOqwhTRdvt_Hgo7kg',
+      token_whg = '',
+      mbtiles_url = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={token}';
+      mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}';
+      
+    var awmc = L.tileLayer(mbtiles_url, {id:'isawnyu.map-knmctlkh', token:token_awmc, attribution:attrib_awmc}),
+      grayscale = L.tileLayer(mbstyle_url, {id:'kgeographer/cjstfpenh6o1e1fldz95w8m6p', token:token_kg, attribution:attrib_mb}),
+      satellite  = L.tileLayer(mbtiles_url, {id:'mapbox.satellite', token:token_mb, attribution:attrib_mb});
+      osm  = L.tileLayer(mbtiles_url, {id:'mapbox.light', token:token_mb, attribution:attrib_mb});
+
+
+    var watershedStyle = {
+      "fillColor": "#993333",
+      "color": "#fff",
+      "weight": 1,
+      "opacity": 0.7,
+      "fillOpacity": 0.1
+    };
+    
+    window.setRegionColor = function(d) {
+      return d == 'AA' ? '#5F9EA0' :
+        d == 'AN' ? '#7FFF00' :
+        d == 'PA' ? '#DC143C' :
+        d == 'NA' ? '#FF7F50' :
+        d == 'OC' ? '#483D8B' :
+        d == 'AT' ? '#FF8C00' :
+        d == 'IM' ? '#FF1493' :
+        d == 'NT' ? '#FF00FF' : '#66CDAA'
+    }
+
+    function ecoregionStyle(feature) {
+      <!--console.log(feature.properties.src_id.substring(0,2))-->
+      return {
+        fillColor: setRegionColor(feature.properties.src_id.substring(0,2)),
+        <!--fillColor: "green",-->
+        color: "#fff",
+        weight: 1,
+        opacity: 0.7,
+        fillOpacity: 0.3
+      };
+    }
+    var riverStyle = {
+      "color": "#336699",
+      "weight": 1
+    };
+    var popupOptions = {}
+    
+    window.rivers = new L.GeoJSON.AJAX("/datasets/ne_rivers/places",
+      {style:riverStyle,
+        onEachFeature: function (feature, layer) {
+          popupOptions = {maxWidth: 200};
+            layer.bindPopup(feature.properties.name+" ("+feature.properties.src_id+")", popupOptions);
+          }
+      });
+    window.watersheds = new L.GeoJSON.AJAX("/datasets/wri_watersheds/places",
+      { style:watershedStyle,
+        onEachFeature: function (feature, layer) {
+          popupOptions = {maxWidth: 200};
+            layer.bindPopup(feature.properties.name+" ("+feature.properties.src_id+")", popupOptions);
+        }
+      })
+    window.ecoregions = new L.GeoJSON.AJAX("/datasets/tnc_ecoregions/places",
+      { style:ecoregionStyle,
+        onEachFeature: function (feature, layer) {
+          <!--console.log('feature',feature)-->
+          popupOptions = {maxWidth: 200};
+            layer.bindPopup(feature.properties.name+" ("+feature.properties.src_id+")", popupOptions);
+        }
+      })
+    rivers.addTo(mappy)
+
+    var baseLayers = {
+      "AWMC Terrain": awmc,
+      "OSM": osm,
+      "Spine Data": grayscale,
+      "Satellite": satellite
+    };
+    var dataLayers = {
+      "Rivers": rivers,
+      "Watersheds": watersheds,
+      "Ecoregions": ecoregions
+    }
+    L.control.layers(baseLayers,dataLayers).addTo(mappy);
+    baseLayers['AWMC Terrain'].addTo(mappy)
+  }, false);
+
+  function getClose() {
+    mappy.setZoom(mappy.getZoom()+2)
+    <!--mappy.fitBounds(features.getBounds().pad(3))-->
+  }
+  function fill(foo) {
+    if (foo == 'tgn')
+      return "#ff7800"
+    else if (foo == 'whg')
+      return "#ff3300"
+    else
+      return "#7AFF7A"
+  }
+  function renderMap(geom){
+    <!--clear out the previous if any-->
+    if(typeof(features)!=='undefined'){
+      mappy.removeLayer(features)
+    }
+    idToFeature = {}  // for feature lookup
+    mappy.createPane('mainPane');
+    mappy.getPane('mainPane').style.zIndex = 400;
+    features = L.geoJSON(geom, {
+      pane: 'mainPane',
+      pointToLayer: function (feature, latlng) {
+        <!--console.log(feature)-->
+        identifier = 'whg:'+feature.properties.id
+        marker = L.circleMarker(latlng,
+          {
+            radius: 8, fillOpacity: 0.8, opacity: 1, weight: 1,
+            color: "#000", fillColor: fill(feature.properties.dataset)
+          }
+        ).bindPopup(identifier);
+     
+        idToFeature[feature.properties.id] = marker
+        return marker
+      }
+    }).addTo(mappy);
+    
+    // TODO: better zoomto choices
+    center=features.getBounds().getCenter()
+    mappy.setView(center, 5)
+  }
+
+  // initialize, render map w/settings.LEAFLET_CONFIG
+  function map_init (map, options) {
+    <!--console.log('in map_init()')-->
+    geom = {"type":"FeatureCollecton","features":[]}
+    // gather geom script from html body
+    window.gelems = $('script').filter(function() {
+      return this.id.match(/[0-9]/) && this.text != '"null"';
+    });
+
+    // 
+    for (i=0;i<gelems.length;i++){
+      <!--let t_geom = cleanJson(gelems[i].text)-->
+      let g = JSON.parse(gelems[i].text)
+      g['properties'] = {"id": gelems[i].id}
+      geom['features'].push(g)
+    }
+    renderMap(geom)
+  } // end map_init
+</script>
+{% endblock %}

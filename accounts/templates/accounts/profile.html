@@ -1,0 +1,16 @@
+{% extends 'main/base.html' %}
+
+{% block content %}
+
+<div class="container">
+  <div class="d-flex justify-content-center mt-3">
+    <div>
+    {% if error %}
+      <p style="color:red">{{ error }}</p>
+    {% endif %}
+
+    <h2>User Profile (<span class="text-danger">{{ user.username }}</span>)</h2>
+  </div>
+  </div>
+</div>
+{% endblock %}

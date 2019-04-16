@@ -1,0 +1,233 @@
+<!-- datasets/ds_grid.html -->
+{% extends "main/base.html" %}
+{% load fontawesome %}
+{% load static %}
+{% load leaflet_tags %}
+{% load dataset_extras %}
+
+
+{% block title %}<title>Dataset {{ ds.id }}</title>{% endblock %}
+{% block extra_head %}
+  {% leaflet_js %}
+  {% leaflet_css %}
+{% endblock %}
+{% block content %}
+<!-- incoming: ds, place_list -->
+<!-- TODO: convert this to proper django form & call it task_create -->
+<div class="container">
+  <form action="{% url 'datasets:ds_recon' ds.id %}" method="POST">
+  {% csrf_token %}
+  <h4 class="my-3"> {% fontawesome_icon 'link' %} Initiate Reconciliation: <i>{{ ds.name }}
+    <span class="text-muted small">(<a href="{% url 'datasets:dataset-detail' id=ds.pk %}">{{ ds.label }}</a>)</span></i></h4>
+  <hr/>
+  <div class="row">
+    <div id="recon_form" class="col-md-6">
+      <div class="row">
+        <div class="col-sm-6">
+        <input type="hidden" name="ds" value="{{ ds.id }}">
+        {% if user.is_superuser %}
+        <div class="form-check text-danger">
+          <label class="form-check-label" for="auth1">
+            <input type="radio" disabled class="form-check-input" id="auth1"
+              name="recon" value="whg">WHG Spine (whg)
+          </label>
+        </div>
+        <hr/>
+        {% endif %}
+        <p class="font-weight-bold">Authority name source</p>
+        <div class="form-check">
+          <label class="form-check-label" for="auth2">
+            <input type="radio" class="form-check-input" id="auth2"
+              name="recon" value="tgn" checked>Getty TGN (tgn)
+          </label>
+        </div>
+        <div class="form-check">
+          <label class="form-check-label text-muted" for="auth3">
+            <input type="radio" class="form-check-input" id="auth3"
+              name="recon" value="dbp" disabled>DBpedia (dbp)
+              <span class="ml-2 text-success"></span>
+          </label>
+        </div>
+        <div class="form-check">
+          <label class="form-check-label text-muted" for="auth4">
+            <input type="radio" class="form-check-input" id="auth4"
+              name="recon" value="wd" disabled>Wikidata (wd)
+              <span class="ml-2 text-success d-none"> </span>
+          </label>
+        </div>
+        <div class="form-check">
+          <label class="form-check-label text-muted" for="auth4">
+            <input type="radio" class="form-check-input" id="auth4"
+              name="recon" value="gn" disabled>GeoNames (gn)
+              <span class="ml-2 text-success d-none"></span>
+          </label>
+        </div>
+        </div>
+        <!--<div class="col-sm-4 ghostbox">-->
+          <!--<p class="small mb-0">When validating matches returned by this task, augment records with:</p>-->
+          <!--<div class="form-check">-->
+            <!--<input type="hidden" name="aug_names" value="off" />-->
+            <!--<label class="form-check-label small" for="aug1">-->
+              <!--<input type="checkbox" class="form-check-input" id="aug1"-->
+                <!--name="aug_names" checked>Name variants-->
+            <!--</label>-->
+          <!--</div>-->
+          <!--<div class="form-check">-->
+            <!--<input type="hidden" name="aug_notes" value="off" />-->
+            <!--<label class="form-check-label small" for="aug1">-->
+              <!--<input type="checkbox" class="form-check-input" id="aug1"-->
+                <!--name="aug_notes" checked>Notes-->
+            <!--</label>-->
+          <!--</div>-->
+          <!--<div class="form-check">-->
+            <!--<input type="hidden" name="aug_geom" value="off" />-->
+            <!--<label class="form-check-label small" for="aug2">-->
+              <!--<input type="checkbox" class="form-check-input" id="aug2"-->
+                <!--name="aug_geom">Point geometry-->
+            <!--</label>-->
+          <!--</div>-->
+        <!--</div>-->
+      </div> <!-- row -->
+    </div>
+    <div id="recon_result" class="col-md-6 ghostbox p-tight">
+      {% if context.response %}
+      <p class="text-warning">{ TODO: progress bar }</p>
+      <p><b>Authority</b>: {{ context.authority }}</p>
+      <p><b>Task ID</b>: {{ context.task_id }}</p>
+      <p class="mb-3"><b>Result summary</b>:
+        {{ context.result }}    </p>
+      <a href="{% url 'datasets:dataset-detail' id=ds.pk %}">
+        <input class="btn btn-sm btn-outline-primary" type="text" value="Return to Dataset"/></a>
+      <a href="{% url 'datasets:review' pk=ds.pk tid=context.task_id passnum='pass1' %}">
+      <!--<a href="{# url 'datasets:review' pk=ds.pk tid=context.task_id %}">-->
+        <input class="btn btn-sm btn-outline-primary" type="text" value="Review Hits"/></a>
+      {% else %}
+        <p>Reconciliation results will show here...</p>
+      {% endif %}
+    </div> <!-- recon_result -->
+  </div> <!-- row -->
+  <!-- <hr/> -->
+  <div class="row mt-3">
+    <div id="geo_constraint" class="col-md-6">
+      <div class="mb-2">
+        <p class="font-weight-bold">Geographic constraint</p>
+        <p>
+          <select id="select_region" name="region" class="custom-select-sm" style="width:auto;">
+            <option value="0">Select pre-defined region</option>
+            <option disabled>___________</option>
+          {% for r in context.region_list %}
+            <option value="{{ r.id }}">{{ r.title }}</option>
+          {% endfor %}
+\        </select><span class="ml-2"><b>or...</b></span></p>
+        <p>
+          <select id="select_userarea" name="userarea" class="custom-select-sm" style="width:auto;">
+          <option value="0" selected="selected">Select user-defined study area</option>
+          <option disabled>___________</option>
+          {% for a in context.area_list %}
+              <option value="{{ a.id }}">{{ a.title }}</option>
+          {% endfor %}
+          <option value="create">{ new }</option>
+        </select>
+        <span class="ml-2 small">
+          <a href="{% url 'areas:area-create' %}?next={% url 'datasets:ds_recon' ds.id %}">create one</a>
+        </span></p>
+        <p><input type="text" disabled name="search_region" value="" placeholder="Search region data"/></p>
+      </div>
+      {% if request.method == 'GET' %}
+        <button type="submit" class="btn btn-primary">Start</button>
+        <span title="back"><a href="javascript:history.back()">Cancel</a></span>
+      {% endif %}
+    </div>
+    <div id="map" class="col-md-6 ghostbox">
+      {% leaflet_map "map" callback="map_init" %}
+    </div>
+  </div>
+  </form>
+</div> <!-- container -->
+
+<script type="text/javascript">    
+  $(function(){})
+
+  window.addEventListener('map:init', function (e) {
+    window.mappy = e.detail.map
+    var attrib_mb = 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
+            '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+            'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+      attrib_awmc = 'Tiles and Data &copy; 2013 <a href="http://www.awmc.unc.edu" target="_blank">AWMC</a>',
+      token_mb = 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw',
+      token_kg = 'pk.eyJ1Ijoia2dlb2dyYXBoZXIiLCJhIjoiUmVralBPcyJ9.mJegAI1R6KR21x_CVVTlqw',
+      token_awmc = 'pk.eyJ1Ijoia2dlb2dyYXBoZXIiLCJhIjoiY2prcmgwc2cwMjRuZzNsdGhzZmVuMDRqbCJ9.MeLsyeOqwhTRdvt_Hgo7kg',
+      token_whg = '',
+      mbtiles_url = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={token}';
+      mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}';
+      
+    var awmc = L.tileLayer(mbtiles_url, {id:'isawnyu.map-knmctlkh', token:token_awmc, attribution:attrib_awmc}),
+      grayscale = L.tileLayer(mbstyle_url, {id:'kgeographer/cjstfpenh6o1e1fldz95w8m6p', token:token_kg, attribution:attrib_mb}),
+      satellite  = L.tileLayer(mbtiles_url, {id:'mapbox.satellite', token:token_mb, attribution:attrib_mb});
+
+    var baseLayers = {
+      "AWMC Terrain": awmc,
+      "Spine Data": grayscale,
+      "Satellite": satellite
+    };
+    L.control.layers(baseLayers).addTo(mappy);
+    baseLayers['AWMC Terrain'].addTo(mappy)
+  }, false);
+  
+  function renderMap(geom){
+    <!--clear out the previous if any-->
+    if(typeof(features)!=='undefined'){
+      mappy.removeLayer(features)
+    }
+    function fill(dataset) {
+       if (dataset == 'tgn')
+         return "#ff7800"
+       else if (dataset == 'dbp')
+         return "#98E2FA"
+       else
+         return "#7AFF7A"
+     }
+    idToFeature = {}  // for feature lookup
+    features = L.geoJSON(geom, {
+      // TODO: style polygons
+    }).addTo(mappy);
+    mappy.fitBounds(features.getBounds())
+  }
+      
+  function render_area(aid) {
+    $.ajax({
+        url: '/api/areas/'+aid
+      }).done(function(data){
+        console.log('got geometry',data.geojson)
+        geom = {"type":"FeatureCollecton","features":[]}
+        geom['features'].push(data.geojson)
+        renderMap(geom)
+    })
+  }
+
+  // initialize, render map w/settings.LEAFLET_CONFIG
+  function map_init (map, options) {
+    if(typeof(features)!=='undefined'){
+      mappy.removeLayer(features)
+      mappy.setView([35.0, 13.0], 2)
+    }
+  } // end map_init
+  
+  // clear dropdown choice if other is used & render geometry
+  $( "#select_region" ).change(function() {
+    $( "#select_userarea option[value=0]" ).prop('selected',true)
+    render_area( $(this).val(), 'region')
+    <!--console.log('select_region this',$(this).val())-->
+  });
+  
+  $( "#select_userarea" ).change(function() {
+    $( "#select_region option[value=0]" ).prop('selected',true)
+    render_area( $(this).val(), 'area')
+    <!--console.log('select_userarea this',$(this).val())-->
+    if ($( "#select_userarea option[value='create']" ).prop('selected') == true) {
+      location.href="{% url 'areas:area-create' %}?next={% url 'datasets:ds_recon' ds.id %}"
+    }
+  });
+
+</script>
+{% endblock %}

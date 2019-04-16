@@ -1,0 +1,192 @@
+<!-- datasets/home.html -->
+{% extends "main/base.html" %}
+{% load leaflet_tags %}
+{% load fontawesome %}
+{% load static %}
+
+{% block title %}<title>WHGazetteer</title>{% endblock %}
+{% block extra_head %}
+  {% leaflet_js %}
+  {% leaflet_css %}
+  <script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>
+  <link rel="stylesheet" href="//cdn.datatables.net/1.10.16/css/dataTables.bootstrap4.min.css">
+{% endblock %}
+
+{% block content %}
+{% load static %}
+<!-- <script src='mapbox-gl.js'></script>
+<link href='mapbox-gl.css' rel='stylesheet' /> -->
+<!--<script src='https://api.mapbox.com/mapbox-gl-js/v0.44.2/mapbox-gl.js'></script>-->
+<!--<link href='https://api.mapbox.com/mapbox-gl-js/v0.44.2/mapbox-gl.css' rel='stylesheet' />-->
+
+<div class="container">
+  <div class="justify-content-center mt-3">
+    <div id="home_map">
+      {% leaflet_map "map_home" callback="map_init" %}
+      <div id="home_search" class="justify-content-center">
+        <form id="search_form" class="mt-1" onsubmit="return false;" autocomplete="off" >
+          <div class="form-group d-flex justify-content-center"> 
+            <div id="search_type" class="mx-auto btn-group" data-toggle="buttons">
+              <!--<span style="display:block; border: 1px dashed #e0e0e0;">-->
+                <!--<span style="vertical-align:middle;">Search</span>-->
+                <h5 class="pt-1">Search</h5>
+                <label class="btn btn-default" rel="Enter place name">
+                    <input type="radio" id="r_place" name="class" value="place" checked>
+                    Places</label>
+                <label class="btn btn-default" rel="Enter term or name" >
+                    <input type="radio" id="r_trace" name="class" value="trace"> Traces
+                    <span class="ml-1"><a href="" title="historical entities having spatial-temporal 'footprints'" rel="tooltip">
+                      {% fontawesome_icon 'question-circle' color='#336699' %}</a></span>
+                </label>
+              <!--</span>-->
+            </div>
+            <!--<span class="float-right pt-2" style="margin-top:-14px;"><a href="{# url 'search_adv' #}">Advanced</a></span>-->
+          </div>
+          <div class="form-group d-flex justify-content-center">
+            <div class="input-group">
+              <input type="text" class="form-control input-sm w-50" id="searchbox" name="q" 
+                placeholder="Enter place name" aria-label="Search term" aria-describedby="search-type">
+            </div>
+          </div>
+          <div class="nameautosuggest"><!-- suggestions inserted here--></div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+  window.addEventListener('map:init', function (e) {
+    window.mappy = e.detail.map
+    var attrib_mb = 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
+            '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+            'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+      attrib_awmc = 'Tiles and Data &copy; 2013 <a href="http://www.awmc.unc.edu" target="_blank">AWMC</a>',
+      token_mb = 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw',
+      token_kg = 'pk.eyJ1Ijoia2dlb2dyYXBoZXIiLCJhIjoiUmVralBPcyJ9.mJegAI1R6KR21x_CVVTlqw',
+      token_awmc = 'pk.eyJ1Ijoia2dlb2dyYXBoZXIiLCJhIjoiY2prcmgwc2cwMjRuZzNsdGhzZmVuMDRqbCJ9.MeLsyeOqwhTRdvt_Hgo7kg',
+      token_whg = '',
+      mbtiles_url = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={token}';
+      mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}';
+      
+    var awmc = L.tileLayer(mbtiles_url, {id:'isawnyu.map-knmctlkh', token:token_awmc, attribution:attrib_awmc}),
+      grayscale = L.tileLayer(mbstyle_url, {id:'kgeographer/cjstfpenh6o1e1fldz95w8m6p', token:token_kg, attribution:attrib_mb}),
+      satellite  = L.tileLayer(mbtiles_url, {id:'mapbox.satellite', token:token_mb, attribution:attrib_mb});
+
+    var baseLayers = {
+      "AWMC Terrain": awmc,
+      "Spine Data": grayscale,
+      "Satellite": satellite
+    };
+    mappy.zoomControl.setPosition('topright')
+    L.control.layers(baseLayers).addTo(mappy);
+    baseLayers["Spine Data"].addTo(mappy)
+  }, false);
+
+  function map_init (home_map, options) {
+    <!--console.log(options)-->
+    mappy.setView([38, 10], 2.4)
+    <!--mappy.zoomControl.setPosition('topright')-->
+    <!--new L.Control.Zoom({ position: 'topleft' }).addTo(map);-->
+    // empty features[]
+    geom = {"type":"FeatureCollecton","features":[]}
+
+  } // end map_init
+
+
+  var titles = {}
+  var searchoption = null;
+  var doctype = $("input[name='class']:checked").val();
+  
+  // queries at each character
+  // TODO: wait for 3rd character?
+  $("#searchbox").on('input', function(){
+    doctype = $("input[name='class']:checked").val();
+    if (doctype == 'place'){
+      autosuggest($(this).val());
+    } else {
+      alert('sorry! trace search is not enabled yet, resetting')
+      $('#searchbox').val('')
+      $("#r_place").prop("checked", true);
+    }
+  });
+  
+  function autosuggest(value){
+    <!--$.get("/search/names",{idx: 'whg_flat', search: value, doc_type: doctype},-->
+    $.get("/search/names",{idx: 'whg', search: value, doc_type: doctype},
+      function(data){
+        showSuggestions(data);
+      });
+    }
+   
+  $('.nameautosuggest').on('click', '.suggestion', function(){
+    pid=$(this).attr('ref')
+
+    // clear the dropdown
+    $(".nameautosuggest").html('')
+    
+    // go
+    location.href = 'places/'+pid+'/portal'
+  });
+
+  function sugLister(sug) {
+    <!--console.log(sug)-->
+    variants = sug['variants'].length > 0 ? '<i class="text-secondary">'+sug['variants']+'</i>' : ''
+    <!--item = ('<li ref="'+sug['pid']+-->
+    item = ('<li ref="'+sug['whg_id']+
+            '" children="'+sug['children']+
+            '" class="suggestion" ">'+
+            <!--'<b>'+sug['name']+'</b> ('+sug['type']+')'+ sug['ccodes']+-->
+            '<b>'+sug['name']+'</b> ('+sug['ccodes']+') '+ sug['type']+
+            <!--'<span class="float-right small">'+'('+sug['dataset']+':'+sug['whg_id']+')</span><br/>'+-->
+            '<span class="float-right small">'+'(whg:'+sug['whg_id']+')</span><br/>'+
+            variants.substring(0,100)+'</li>');
+    return item
+  }
+  function renderFeatures(geom){
+    idToFeature = {} // for feature lookup
+    features = L.geoJSON(geom, {
+      pointToLayer: function (feature, latlng) {
+        matchid = feature.properties.dataset+':'+feature.properties.id
+        marker = L.circleMarker(latlng,
+          {
+            radius: 8, fillOpacity: 0.8, opacity: 1, weight: 1,
+            color: "#000", fillColor: fill(feature.properties.dataset)
+          }
+        ).bindPopup(feature.properties.dataset+':'+feature.properties.id);
+
+        idToFeature[matchid] = marker
+        return marker
+      }
+    }).addTo(mappy);    
+  }
+  //creates suggestion dropdown
+  function showSuggestions(data){
+    var div = '';
+    data.forEach(function(sug){
+      // load suggestion div
+      div += sugLister(sug)
+      <!--if (sug['geom'].length > 0) {-->
+        <!--for (i in sug['geom']){-->
+          <!--console.log("sug['geom'][i]",sug['geom'][i])-->
+        <!--}-->
+      <!--}-->
+
+    });
+    $('.nameautosuggest').html(div);
+  }
+ 
+  $("[rel='tooltip']").tooltip();
+  $('label.btn').click(function(){
+    $('#searchbox').attr("placeholder",this.getAttribute("rel"));
+  })
+</script>
+{% endblock %}
+
+  <!--mapboxgl.accessToken = 'pk.eyJ1Ijoia2dlb2dyYXBoZXIiLCJhIjoiUmVralBPcyJ9.mJegAI1R6KR21x_CVVTlqw';-->
+  <!-- mapboxgl.accessToken = {{ mapbox_access_token }}; -->
+  <!--var map = new mapboxgl.Map({-->
+    <!--container: 'map_home',-->
+<!--style: 'mapbox://styles/kgeographer/cjni3c0lj5l3r2spa4niiuef5'-->
+<!--// style: 'mapbox://styles/mapbox/streets-v10'-->
+<!--});-->

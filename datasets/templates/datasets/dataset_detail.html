@@ -1,0 +1,134 @@
+{% extends "main/base.html" %}
+
+{% block content %}
+{% load static %}
+{% load fontawesome %}
+{% load mathfilters %}
+{% load dataset_extras %}
+
+<div class="container ds-detail mt-3">
+  <!-- on click toggle .hidden, .form-value; make submit button visible -->
+  <form id="ds_form" method="POST" action="#" enctype="multipart/form-data">
+  {% csrf_token %}
+    <input type="hidden" name="id" value='{{ form.id }}'></input>
+    <div id="progress_bar" class="mb-2 pl-2">
+      <div class="prog">1</div><span class="mx-2 small">Upload file(s)</span>
+      <div class="prog">2</div><span class="mx-2 small">Insert to db</span>
+      <div class="prog">3</div><span class="mx-2 small">Reconciliation</span>
+      <div class="prog prog-active">4</div><span class="mx-2 small">Review hits</span>
+      <div class="prog">5</div><span class="mx-2 small">Submit to WHG</span>
+      <div class="prog">6</div><span class="mx-2 small">Review WHG matches</span>
+      <!--<span class="float-right">{# fontawesome_icon 'question-circle' color='#336699' %}</span>-->
+    </div>
+    <h4>Dataset Detail:
+      <span class="edit small"><a href="#">{% fontawesome_icon 'edit' color='#336699' %}</a></span>
+      <span class="form-value text-danger"> {{ object.name }}</span>
+      <a href="{% url 'datasets:dataset-delete' object.id %}" class="float-right"
+        title="Delete dataset" rel="tooltip" style="margin-top:-2px;">
+        {% fontawesome_icon 'trash' color='#336699' %}</a>
+      {% if status == "in_database" %}
+      <a href="{% url 'datasets:drf_table' label=object.label f='all' %}" title="View/edit table" rel="tooltip"
+      class="float-right mr-2">{% fontawesome_icon 'table' color='#336699' %}</a>
+      {% endif %}
+      {% if status == "format_ok" %}
+        <a href=
+          {% if object.format == "delimited" %} "{% url 'datasets:ds_insert_csv' pk=object.id %}"
+          {% elif object.format == "lpf" %} "{% url 'datasets:ds_insert_lpf' pk=object.id %}"{% endif %}
+          title="Insert to db" rel="tooltip"
+          class="small float-right mr-2">{% fontawesome_icon 'database' color='#336699' %}</a>
+      {% endif %}
+      <span class="hidden">{{ form.name }}</span>
+    </h4>
+    <hr/>
+    <div class="row">
+      <div id="ds_details" class="col-sm-6">
+        <p class="hidden editing"><b>Description</b>: {{ form.description }}</p>
+        <p class="form-value editing"><b>Description</b>: {{ object.description }}</p>
+        <p><b>ID (slug/#)</b>: {{ object.label }}/{{ object.id }}
+        <p><b>File</b>: {{ object.file }}</p>
+        <p><b>Date</b>: {{ object.upload_date|date:"d-M-Y, H:i (e)" }}</p>
+        <p><b>Total rows</b>: {{ object.numrows }}</p>
+        <p><b>Data type</b>: {{ object.datatype }}</p>
+        <p><b>URI base</b>: {{ object.uri_base }}</p>
+        <p><b>Format</b>: {{ object.format }} ({{ object.delimiter }})</p>
+        {% if object.format == "delimited" %}
+          <p><b>Sources file</b>:</p>
+        {% endif %}
+        {% if object.mapbox_id %}
+          <p class="form-value"><b>MapBox ID</b>: {{ object.mapbox_id }}</p>
+          <p class="hidden editing"><b>MapBox ID</b>: {{ form.mapbox_id }}</p>
+        {% endif %}
+        <p><b>Status</b>: {{ object.status }}</p>
+        <p><b>Columns</b>: <br/>{{ object.header }}</p>
+        <hr/>
+        <h5 class="text-secondary">Counts (initial, added)</h5>
+        <p><b>Names</b>:
+          {{ num_names }}, <span class="text-white bg-danger">&nbsp;{{ names_added }}&nbsp;</span></p>
+        <p><b>Links</b>:
+          {{ num_links }}, <span class="text-white bg-danger">&nbsp;{{ links_added }}&nbsp;</span></p>
+        <p><b>Geometries</b>: {{ num_geoms }}, <span class="text-white bg-danger">&nbsp;{{ geoms_added }}&nbsp;</span></p>
+        <p><b>Descriptions</b>: {{ num_descriptions }}, <span class="text-white bg-danger">&nbsp;{{ descriptions_added }}&nbsp;</span></p>
+        <input class="btn btn-primary hidden" type="submit" value="Save" />
+      </div>
+      <div id="ds_recon" class="col-sm-6 pt-2 ghostbox">
+        <h5 class="text-secondary">Reconciliation Tasks <span>
+          <a href="{% url 'datasets:ds_recon' object.id %}" class="ml-5">
+            {% fontawesome_icon 'plus-square' color='#336699' %}
+          </a></span>
+        </h5>
+        {% for t in tasks %}
+        <div class="task-box">
+          <!-- TODO: display bounds used if any -->
+          <!--{ t.task_kwargs|parsejson:"bounds" }}-->
+          <p><b>Task</b>: {{ t.task_name }} <span class="small">
+            ({{ t.date_done|date:"d-M-Y, H:i (e)" }}; elapsed: {{ t.result|get:"elapsed"|safe }})</span></p>
+          <p><b>ID</b>: {{ t.task_id }}</p>
+             <!-- TODO: confirm, select which to delete -->
+          </p>
+          {{ t.result.hits }}
+          <p><b>Result</b>: {{ t.result|get:"got_hits"|safe }} records (of
+              {{ t.result|get:"count"|safe }} submitted) got total of <b>{{ t.result|get:"total"|safe }}</b> hits</p>
+          <ul>
+            <li><i>Pass 1</i>: {{ t.result|get:"pass1" }} 
+              {% if t.result|get:"pass1" > 0 %}
+              <a href="{% url 'datasets:review' pk=object.id tid=t.task_id passnum='pass1' %}">
+               <i>review</i></a>{% endif %}</li>
+            <li><i>Pass 2</i>: {{ t.result|get:"pass2" }}
+              {% if t.result|get:"pass2" > 0 %}
+                <a href="{% url 'datasets:review' pk=object.id tid=t.task_id passnum='pass2' %}">
+               <i>review</i></a>{% endif %}</li>
+            <li><i>Pass 3</i>: {{ t.result|get:"pass3" }}
+              {% if t.result|get:"pass3" > 0 %}
+                <a href="{% url 'datasets:review' pk=object.id tid=t.task_id passnum='pass3' %}">
+               <i>review</i></a>{% endif %}</li>
+          </ul>
+          {% if user.is_superuser %}
+          <p class="small">
+             <a class="confirm-del-matches" href="{% url 'datasets:task-delete' tid=t.task_id scope='matches'%}">
+              Clear matches</a>&nbsp;|&nbsp;
+             <a class="confirm-del-all" href="{% url 'datasets:task-delete' tid=t.task_id scope='task' %}">
+               Delete task & hits, clear matches {% fontawesome_icon 'trash' color='#336699' %}</a>
+          </p>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </form>
+</div>
+<script type="text/javascript">
+  $("[rel='tooltip']").tooltip();
+  $(".edit").click(function() {
+    $(".hidden").toggle()
+    $(".form-value").addClass("hidden")
+    // $(".btn").toggleClass('hidden btn')
+    console.log ('clicked')
+  })
+  $(".confirm-del-matches").click(function(){
+    return confirm('DANGER! Clears all matches confirmed in Review step');
+  })
+  $(".confirm-del-all").click(function(){
+    return confirm('DANGER! Destroys task, its hits, and clears matches confirmed in Review step');
+  })
+</script>
+{% endblock %}

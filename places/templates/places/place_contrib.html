@@ -1,0 +1,42 @@
+<!-- places/place_detail.html -->
+{% extends "main/base.html" %}
+{% load fontawesome %}
+{% load static %}
+{% load dataset_extras %}
+{% load leaflet_tags %}
+
+{% block title %}<title>Place::{{ place.title }}</title>{% endblock %}
+{% block extra_head %}
+  {% leaflet_js %}
+  {% leaflet_css %}
+{% endblock %}
+{% block content %}
+<div class="container">
+  <div id="place_title">
+    <h4>{{ place.title }}
+      <span class="small">[{{ place.dataset }}:{{ place.id }}]
+        {% if place.dataset in spine %}<a href="" rel="tooltip" title="WHG spine record">
+          <img src="{% static 'images/whg_logo_38h.png' %}" height="25px" class="textsub ml-2"/></a>
+        {% endif %}
+      </span>
+      <!-- <span class="float-right">
+        <a href="" rel="tooltip" title="Suggest annotation">
+        {# fontawesome_icon 'edit' color='#336699' #}</a></span> -->
+    </h4>
+  </div>
+</div> <!-- top container -->
+<script type="text/javascript">
+  $("[rel='tooltip']").tooltip();
+  // initialize, render map w/settings.LEAFLET_CONFIG
+  function map_init (map, options) {
+    console.log('in map_init()')
+  } // end map_init
+  function getPlace(pid){
+    $.ajax({
+      url: "/api/places/"+pid,
+      }).done(function( data ) {
+        $("#grid_detail").html(parsePlace(data))
+      });
+  }
+</script>
+{% endblock %}

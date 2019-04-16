@@ -1,0 +1,217 @@
+<!-- datasets/review.html -->
+{% extends "main/base.html" %}
+{% load leaflet_tags %}
+{% load fontawesome %}
+{% block title %}<title>Dataset {{ ds.label }}</title>{% endblock %}
+{% block extra_head %}
+  {% leaflet_js %}
+  {% leaflet_css %}
+{% endblock %}
+{% block content %}
+{% load static %}
+{% load dataset_extras %}
+<div class="container">
+  <!-- incoming: ds, hit_list -->
+  <h4 class="mb-3 mt-3">Reconciliation Review 
+    <span class="small">( <a href="{% url 'datasets:dataset-detail' id=ds_id %}"> 
+      {{ ds_label }}</a> -> {{ authority }} ) 
+      <select id="select_pass" name="pass" class="custom-select-sm mr-2" style="width:auto;">
+        <option value="pass1">PASS 1&nbsp;</option>
+        <option value="pass2">PASS 2&nbsp;</option>
+        <option value="pass3">PASS 3&nbsp;</option>
+      </select>
+    </span>
+    <span class="half float-right">
+      task id: {{ task_id }}
+    </span></h4>
+  {% if nohits %}
+  <div><p>No unreviewed <span id="passnum_dynamic">boo</span> hits for this reconciliation task!</p></div>
+  {% else %}
+  <div class="pagination d-flex justify-content-center">
+    <span class="step-links">
+        {% if records.has_previous %}
+            <a href="?page=1">&laquo; first</a>&nbsp;&nbsp;
+            <a href="?page={{ records.previous_page_number }}">previous</a>
+        {% endif %}
+        <span class="current">
+            Record {{ records.number }} of {{ records.paginator.num_pages }}
+        </span>
+        {% if records.has_next %}
+            <a href="?page={{ records.next_page_number }}">next</a>&nbsp;&nbsp;
+            <a href="?page={{ records.paginator.num_pages }}">last &raquo;</a>
+        {% endif %}
+    </span>
+  </div>
+  {% for record in records %} <!-- there is only one; if last, do nothing -->
+    {% if records.has_next %}
+    <form id="form_related" method="POST" action="" >
+      {% else %}
+    <form id="form_related" method="POST" action="" >
+    {% endif %}
+    {% csrf_token %}
+    {{ formset.management_form }}
+    <div class="container">
+      <div class="row mt-2">
+        <div id="review_record" class="col-sm-4 pl-0">
+          <div class="bg-secondary font-weight-bold pl-2 text-light">{{ dataset_label }}</div>
+          <div id="place_record" class="mb-2">
+            <div>
+              <input type="hidden" name="place_id" value="{{ record.id }}" />
+              <span><h4 class="text-danger">{{ record.title }} </h4></span>
+              <span class="float-right">
+                <button type="submit" class="btn btn-secondary float-right">Save</button>
+              </span>
+            </div>
+            {% for g in record.geoms.all %}
+              {{ g.json|safe|json_script:record.id }}
+            {% endfor %}
+            <p><strong>Source id</strong>: {{ record.src_id }}</p>
+            <p><strong>WHG id</strong>: {{ record.id }} </p>
+            <p><strong>Name variants</strong>:
+              {% for name in record.names.all %}
+               {{ name.json.toponym }};
+              {% endfor %}</p>
+            <p><strong>Modern countries</strong>: {{ record.ccodes }} </p>
+            <p><strong>Relations</strong>: 
+              {% for rel in record.related.all %}
+                {{ rel.json.label }} ({{ rel.json.relation_type }}); 
+              {% endfor %}</p>
+            <p><strong>Place type(s)</strong>:
+              {% for type in record.types.all %}
+                {{ type.json.label }} ({{ type.json.src_label }}); 
+              {% endfor %}</p>
+            <!-- TODO: full place record -->
+          </div>
+          <div id="map">
+            {% leaflet_map "map" callback="map_init" %}
+          </div>
+        </div>
+<!--['whg_id', 'place_id', 'src_id', 'title', 'dataset', 'variants', 'types', 'ccodes', 'parents', 'descriptions', 'geoms', 'timespans', 'links']-->
+        <div id="review_list" class="col-sm-8 pr-0">
+            {% for form in formset %}
+              <!--{ form.json.value }}-->
+              {{ form }}
+            {% endfor %}
+          </div>
+      </div> <!-- .row -->
+    </div> <!-- container flex -->
+    </form>
+  {% endfor %} <!-- record in records -->
+  {% endif %}
+</div> <!-- .container -->
+<script type="text/javascript">
+    $(function(){
+      // set pass dropdown as next set with any reviewed=False rows
+      $( "#select_pass" ).val("{{ passnum }}")
+      // defaults to string 'None' - no idea why
+      $('.textarea').html('')
+      z=window.location.href
+      $('#passnum_dynamic').html('<b>'+z.slice(-5)+'</b>')
+    })
+    // expose leaflet map for events, call it 'mappy'
+    window.addEventListener('map:init', function (e) {
+      window.mappy = e.detail.map
+    }, false);
+
+    $( "#select_pass" ).change(function() {
+      z=window.location.href
+      baseurl=z.substring(0,[z.length -5])
+      window.location.href = baseurl + $(this).val()
+    });
+
+    $('.noteicon').on('click', function(){
+      $(this).parents(".matchbar").find(".notefield").toggle()
+      // console.log('clicked',$(this).parents(".matchbar").find(".notefield"))
+    })
+
+    $('.noteicon').hover(function(){
+      console.log('hovering')
+    })
+
+    $( ".geolink" ).hover(function() {
+        let id = 'tgn:'+$(this)[0].id.toString()
+        feat = idToFeature[id]
+        feat.setStyle(
+          {radius: 10, fillColor: 'red'}
+        )
+      },
+      function() {
+        let id = 'tgn:'+$(this)[0].id.toString()
+        feat = idToFeature[id]
+        feat.setStyle(
+          {radius: 8, fillColor: '#ff7800'}
+        )
+      }
+    );
+
+    // closer look
+    function zoomTo(id) {
+      mappy.setView(idToFeature[id]._latlng, mappy.getZoom() +2 )
+    }
+
+    function cleanJson(text) {
+      z=text.replace(/'/g,'\\"')
+      y=z.replace(/point/,'Point')
+      return JSON.parse(JSON.parse(y))
+    }
+
+    // initialize, render map
+    function map_init (map, options) {
+      // console.log('in map_init()')
+      window.geom = {"type":"FeatureCollecton","features":[]}
+
+      window.gelems = $('script').filter(function() {
+        return this.id.match(/[0-9]/) && this.text != '"null"';
+      });
+
+      // TODO: location returned in TGN hit needs cleaning
+      for (i=0;i<gelems.length;i++){
+        let t_geom = cleanJson(gelems[i].text)
+        // let t_geom = JSON.parse(JSON.parse(gelems[i].text))
+        t_geom['properties'] = {"id": gelems[i].id, "dataset": "tgn"}
+        geom['features'].push(t_geom)
+      }
+
+      function fill(dataset) {
+        if (dataset == 'tgn')
+          return "#ff7800"
+        else if (dataset == 'dbp')
+          return "#98E2FA"
+        else
+          return "#7AFF7A"
+      }
+
+      if (geom['features'].length > 0) {
+        // console.log('geom: ',geom)
+        idToFeature = {} // for feature lookup
+        features = L.geoJSON(geom, {
+          pointToLayer: function (feature, latlng) {
+            matchid = feature.properties.dataset+':'+feature.properties.id
+            marker = L.circleMarker(latlng,
+              {
+                radius: 8, fillOpacity: 0.8, opacity: 1, weight: 1,
+                color: "#000", fillColor: fill(feature.properties.dataset)
+              }
+            ).bindPopup(feature.properties.dataset+':'+feature.properties.id);
+
+            idToFeature[matchid] = marker
+            return marker
+          }
+        }).addTo(map);
+
+        mappy.fitBounds(features.getBounds())
+        <!--if (geom['features'].length > 1) {-->
+          <!--mappy.fitBounds(features.getBounds())-->
+        <!--} else {-->
+          <!--latlng = L.latLng(-->
+            <!--geom['features'][0].coordinates[1],-->
+            <!--geom['features'][0].coordinates[0])-->
+          <!--map.setView(latlng, 4)-->
+        <!--}-->
+
+      } else {
+        console.log('no geometries, no feature')
+      }
+    } // end map_init
+  </script>
+{% endblock %}

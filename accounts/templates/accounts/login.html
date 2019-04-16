@@ -1,0 +1,28 @@
+{% extends 'main/base.html' %}
+
+{% block title %}<title>WHG::Login</title>{% endblock %}
+
+{% block content %}
+{% load static %}
+
+  <div class="container">
+    <div class="d-flex justify-content-center mt-3">
+      <div>
+        <h2>Login</h2>
+        <form method="post" action="{% url 'login' %}">
+          {% csrf_token %}
+          Username:<br/>
+          <input type="text" name="username" />
+          <br/>
+          Password:<br/>
+          <input type="password" name="password" />
+          <br/><br/>
+          <input class="btn btn-primary" type="submit" value="Login" />
+        </form>
+        {% if error %}
+          <p style="color:red">{{ error }}</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+{% endblock %}

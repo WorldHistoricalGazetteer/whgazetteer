@@ -1,0 +1,21 @@
+{% extends "main/base.html" %}
+{% block title %}<title>WHG::UsingAPI</title>{% endblock %}
+
+{% block content %}
+{% load static %}
+
+<div class="container">
+  <div class="d-flex justify-content-center mt-3">
+    <h3>Using the API</h3>
+  </div>
+  <div class="px-5">
+    <p>The WHG API offers a number of endpoints, listed below with examples. Yada yada lorem ipsum...</p>
+    <h5>Endpoints</h5>
+    <ul>
+      <li><p>http://whgazetteer.org/places/{nnnnnn}</p></li>
+      <p>yada yada</p>
+      <li><p>http://whgazetteer.org/places/{dataset}/{nnnnnn}</p></li>
+    </ul>
+  </div>
+</div>
+{% endblock %}

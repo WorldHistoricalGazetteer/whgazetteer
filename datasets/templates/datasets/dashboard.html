@@ -1,0 +1,103 @@
+<!-- datasets/home.html -->
+{% extends "main/base.html" %}
+{% block title %}<title>WHG::Dashboard</title>{% endblock %}
+
+{% block content %}
+  {% load static %}
+  {% load fontawesome %}
+  {% load mathfilters %}
+  {% load dataset_extras %}
+
+  <div class="container">
+    <div id="dataset_list" class="mt-3">
+      <!--{# if messages %}-->
+      <!--<p>{# for message in messages %}{ message }}{# endfor %}</p>-->
+      <!--{# endif %}-->
+      <h4 class="mt-3">Datasets
+        {{ referrer }}
+        <a href="{% url 'datasets:dataset-create' %}" class="ml-5">{% fontawesome_icon 'plus-square' color='#336699' %}</a>
+      </h4>
+      <div class="list-box">
+        <table class="table table-striped">
+          <thead class="small">
+            <th></th>
+            <th>id</th>
+            <th>name</th>
+            <th>label</th>
+            <th>uploaded</th>
+            <th>format</th>
+            <th># rows</th>
+            <th>status</th>
+            <th>owner</th>
+          </thead>
+          <tbody>
+            {% for d in dataset_list %}
+              <tr class="place-row">
+                <td>
+                  {% if d.status == "format_ok" %}
+                  <a href=
+                  {% if d.format == "delimited" %}"{% url 'datasets:ds_insert_csv' d.id %}"
+                  {% elif d.format == "lpf" %}"{% url 'datasets:ds_insert_lpf' d.id %}"{% endif %}
+                   title="Insert to db" rel="tooltip"
+                  class="">{% fontawesome_icon 'database' color='#336699' %}</a>
+                  {% elif d.status in viewable %}
+                  <a href="{% url 'datasets:drf_table' label=d.label f='all' %}" title="View/edit table" rel="tooltip"
+                  class="">{% fontawesome_icon 'table' color='#336699' %}</a>&nbsp;
+                  <a href="{% url 'datasets:dataset-detail' d.id %}" title="Dataset details" rel="tooltip"
+                  class="">{% fontawesome_icon 'cog' color='#336699' %}</a>
+                  {% endif %}
+                </td>
+                <td>{{ d.id }}</td>
+                <td>{{ d.name }}</td>
+                <td>{{ d.label }}</td>
+                <td class="small">{{ d.upload_date|date:"d-M-Y, H:i (e)" }}</td>
+                <td>{{ d.format }}</td>
+                <td><span class="float-right mr-2">{{ d.numrows }}</span></td>
+                <td>{{ d.status }}</td>
+                <td>{{ d.owner }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="row">
+      <div id="area_list" class="col-sm-6 mt-3">
+        <h4 class="mt-3">Study Areas
+          <a href="{% url 'areas:area-create' %}" class="ml-5">
+            {% fontawesome_icon 'plus-square' color='#336699' %}</a></h4>
+        <div class="list-box">
+          <table class="table table-striped">
+            <thead class="small">
+                <th>id</th>
+                <th>title</th>
+                <th>type</th>
+                <th>ccodes</th>
+            </thead>
+            <tbody>
+              {% for a in area_list %}
+                <tr class="place-row">
+                  <td>{{ a.id }}</td>
+                  <td><a href="{% url 'areas:area-update' a.id %}">{{ a.title }}</a></td>
+                  <td>{{ a.type }}</td>
+                  <td>{{ a.ccodes }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div id="collection_list" class="col-sm-6 mt-3">
+        <h4 class="mt-3">Collections
+          <a href="{# url 'areas:area-create' #}" class="ml-5">
+            {% fontawesome_icon 'plus-square' color='#336699' %}</a></h4>
+        <div class="list-box"><p>User collections of place and trace records (<i>future</i>)</p></div>
+      </div>
+  </div>
+  <script>
+    $("[rel='tooltip']").tooltip();
+    $(function(){
+        <!--alert('{{ msg }}')-->
+    })
+  </script>
+{% endblock %}

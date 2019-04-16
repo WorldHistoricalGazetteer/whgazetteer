@@ -1,0 +1,66 @@
+<!-- datasets/home.html -->
+{% extends "main/base.html" %}
+{% load leaflet_tags %}
+{% load fontawesome %}
+{% load static %}
+
+{% block title %}<title>WHG::Maps</title>{% endblock %}
+{% block extra_head %}
+  {% leaflet_js %}
+  {% leaflet_css %}
+  <script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>
+  <link rel="stylesheet" href="//cdn.datatables.net/1.10.16/css/dataTables.bootstrap4.min.css">
+{% endblock %}
+
+{% block content %}
+{% load static %}
+<!-- <script src='mapbox-gl.js'></script>
+<link href='mapbox-gl.css' rel='stylesheet' /> -->
+<!--<script src='https://api.mapbox.com/mapbox-gl-js/v0.44.2/mapbox-gl.js'></script>-->
+<!--<link href='https://api.mapbox.com/mapbox-gl-js/v0.44.2/mapbox-gl.css' rel='stylesheet' />-->
+
+<div class="container">
+  <div class="justify-content-center mt-3">
+    <h3>Dataset Maps
+      <span class="float-right">
+        <div class="dropdown">
+          <button class="btn btn-sm btn-warning dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Select dataset</button>
+          <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+            <a class="dropdown-item" href="#">selections</a>
+            <a class="dropdown-item" href="#">coming</a>
+            <a class="dropdown-item" href="#">soon</a>
+          </div>
+        </div>
+      </span>
+    </h3>
+    <div id="map">{% leaflet_map "map_app" callback="map_init" %}</div>
+    <!--<div id='map_home' class="map-mapbox"></div>-->
+
+  </div>
+</div>
+<script type="text/javascript">
+  window.addEventListener('map:init', function (e) {
+    window.mappy = e.detail.map
+  }, false);
+
+  function map_init (map_app, options) {
+    mappy.setView([35.0, 80.0], 3)
+    <!--if(typeof(features)!=='undefined'){-->
+      <!--mappy.removeLayer(features)-->
+      <!--mappy.setView([35.0, 80.0], 3)-->
+    <!--}-->
+    // console.log('in map_init()')
+    geom = {"type":"FeatureCollecton","features":[]}
+    
+  } // end map_init
+
+ <!--mapboxgl.accessToken = 'pk.eyJ1Ijoia2dlb2dyYXBoZXIiLCJhIjoiUmVralBPcyJ9.mJegAI1R6KR21x_CVVTlqw';-->
+ // mapboxgl.accessToken = {{ mapbox_access_token }};
+ <!--var map = new mapboxgl.Map({-->
+  <!--container: 'map_home',-->
+  <!--style: 'mapbox://styles/kgeographer/cjni3c0lj5l3r2spa4niiuef5'-->
+  <!--// style: 'mapbox://styles/mapbox/streets-v10'-->
+ <!--});-->
+</script>
+{% endblock %}
+

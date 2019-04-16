@@ -1,0 +1,80 @@
+<!-- datasets/dataset_create.html -->
+{% extends "main/base.html" %}
+{% block title %}<title>WHG::Create/Update</title>{% endblock %}
+
+{% block content %}
+{% load static %}
+
+  <div class="container">
+    <h4 class="mt-3">
+      {% if action == 'update' %}Update{% else %}Upload{% endif %} dataset</h4>
+    <div class="d-flex">
+      <form id="ds_form" method="POST" action="#" enctype="multipart/form-data">
+        {% csrf_token %}
+      <div class="form-box mt-2">
+        <!-- status, format, delimiter, numrows, header  -->
+        <input type="hidden" name="owner" value='{{ user.id }}'></input>
+        {% if action == 'update' %}
+          <input type="hidden" name="status" value='{{ form.status.value }}'></input>
+          <input type="hidden" name="header" value='{{ form.header.value }}'></input>
+        {% elif action == 'create' %}
+          <input type="hidden" name="status" value=''></input>
+          <input type="hidden" name="delimiter" value=''></input>
+          <input type="hidden" name="numrows" value=-1></input>
+          <input type="hidden" name="header" value=[]></input>
+        {% endif %}
+        <p>Name {{ form.name }}</p>
+        <p>Unique label {{ form.label }}
+          <span class="text-danger small"><i>12 char max, no spaces</i></span>
+        </p>
+        {% if errors %}<p>{{ errors }}</p>{% endif %}
+        <p><span class="top">Description</span> {{ form.description }}</p>
+        <p>Data type {{ form.datatype }}</p>
+        <p>Format {{ form.format }}
+          <span class="text-danger small"><i>delimiters: tab, semicolon or pipe ('|')</i></span>
+        </p>
+        <p>URI base {{ form.uri_base }}</p>
+        {% if user.id == 1 %}<p>Spine? {{ form.spine }}</p>{% endif %}
+        {% if form.mapbox_id != null %}
+          <p>MapBox ID {{ form.mapbox_id }}</p>
+        {% endif %}
+        {% if action == 'update' %}
+          <p>Current file <span class="text-danger" >{{ form.file.value }}</span></p>
+          <p>Status <span class="text-danger" >{{ form.status.value }}</span></p>
+        {% else %}
+          <p>
+            <input class="text-danger" type="file" name="file"
+              value='{{ form.file }}'></input>
+          </p>
+        {% endif %}
+        <br/>
+        <!-- upload button only if it's not yet ok -->
+        {% if status != 'format_ok' %}
+        <input class="btn btn-primary" type="submit" value="Upload" />
+        <span title="back"><a href="{% url 'dashboard' %}">Cancel</a></span>
+        {% endif %}
+      </div>
+      {% if action == 'update' %}
+      <!-- there are validation results-->
+      <input type="hidden" name="file" value='{{ form.file }}'></input>
+      <div class="form-box mt-3 ml-3" id="ds_errors">
+        <h5>Validation Results</h5>
+        {% if form.status.value != '' %}
+          <p><b>numrows</b>: {{ form.numrows.value }}</p>
+          <p><b>format</b>: {{ form.format.value }}</p>
+          <p><b>delimiter</b>: {{ form.delimiter.value }}</p>
+          <p><b>columns</b>: {{ form.header.value }}</p>
+          <!-- <p>columns: {{ form.columns.value|make_list }}</p> -->
+          {% if form.status.value == 'format_ok' %}
+          <p>Not yet inserted, so button back to dashboard</p>
+              <a href="{% url 'dashboard' %}">
+                <input class="btn btn-primary" type="text" value="Dashboard"/></a>
+          {% endif %}
+        {% endif %}
+      </div>
+      {% endif %}
+      </form>
+    </div> <!-- d-flex -->
+  </div>
+
+{% endblock %}

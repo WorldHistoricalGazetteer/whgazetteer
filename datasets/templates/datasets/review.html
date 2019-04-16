@@ -1,0 +1,360 @@
+<!-- datasets/review.html -->
+{% extends "main/base.html" %}
+{% load leaflet_tags %}
+{% load fontawesome %}
+{% load static %}
+{% load dataset_extras %}
+{% block title %}<title>Dataset {{ ds.label }}</title>{% endblock %}
+{% block extra_head %}
+  {% leaflet_js %}
+  {% leaflet_css %}
+  <script src="{% static 'js/aliases.js' %}"></script>
+  <link rel="stylesheet" href="{% static 'assets/css/bootstrap.css' %}">
+{% endblock %}
+{% block content %}
+<div class="container">
+  <!-- incoming: ds, hit_list -->
+  <h4 class="mb-2 mt-3">Reconciliation Review 
+    <span class="small">( <a href="{% url 'datasets:dataset-detail' id=ds_id %}"> 
+      {{ ds_label }}</a> -> {{ authority }} ) 
+      <select id="select_pass" name="pass" class="custom-select-sm mr-2" style="width:auto;">
+        <option value="pass1">PASS 1&nbsp;</option>
+        <option value="pass2">PASS 2&nbsp;</option>
+        <option value="pass3">PASS 3&nbsp;</option>
+      </select>
+    </span>
+    <span class="half float-right">
+      task id: {{ task_id }}
+    </span></h4>
+  {% if nohits %}
+  <div><p>No unreviewed <span id="passnum_dynamic">boo</span> hits for this reconciliation task!</p></div>
+  {% else %}
+  <div class="pagination d-flex justify-content-center">
+    <span class="step-links">
+        {% if records.has_previous %}
+            <a href="?page=1">&laquo; first</a>&nbsp;&nbsp;
+            <a href="?page={{ records.previous_page_number }}">previous</a>
+        {% endif %}
+        <span class="current">
+            Record {{ records.number }} of {{ records.paginator.num_pages }}
+        </span>
+        {% if records.has_next %}
+            <a href="?page={{ records.next_page_number }}">next</a>&nbsp;&nbsp;
+            <a href="?page={{ records.paginator.num_pages }}">last &raquo;</a>
+        {% endif %}
+    </span>
+  </div>
+  {% for record in records %} <!-- there is only one; if last, do nothing -->
+    <form id="form_related" method="POST" action="" >
+    {% csrf_token %}
+    {{ formset.management_form }}
+    <div class="container">
+      <div class="row mt-2">
+        <div id="review_record" class="col-sm-4 pl-0">
+          <div class="bg-secondary font-weight-bold pl-2 text-light">{{ dataset_label }}</div>
+          <div id="place_record" class="mb-2">
+            <div>
+              <input type="hidden" name="place_id" value="{{ record.id }}" />
+              <span>
+                <h4 class="text-danger">{{ record.title }}
+                  <span class="float-right">
+                  <button type="button" data-id="{{ record.id }}" class="create-comment btn"
+                    data-src='record'> {% fontawesome_icon 'edit' color='#336699' %}</button>
+                  </span>
+                </h4>
+              </span>
+              <span class="float-right">
+                <button type="submit" class="btn btn-secondary float-right">Save</button>
+              </span>
+            </div>
+            {% for g in record.geoms.all %}
+              {{ g.json|safe|json_script:record.id }}
+            {% endfor %}
+            <p><strong>WHG record id</strong>: {{ record.id }} </p>
+            <p><strong>Source id</strong>: {{ record.src_id }}</p>
+            <p><strong>Name variants</strong>:
+              {% for name in record.names.all %}
+               {{ name.json.toponym }};
+              {% endfor %}</p>
+            {% if countries %}
+            <p><strong>Modern countries</strong>:
+              {% for c in countries %}
+                {{ c }};
+              {% endfor %}</p>
+            {% endif %}
+            {% if record.relations %}
+            <p><strong>Relations</strong>: 
+              {% for rel in record.related.all %}
+                {{ rel.json.label }} ({{ rel.json.relation_type }}); 
+              {% endfor %}</p>
+            {% endif %}
+            <p><strong>Place type(s)</strong>:
+              {% for type in record.types.all %}
+                {{ type.json.label }} ({{ type.json.src_label }}); 
+              {% endfor %}</p>
+            {% if record.links %}
+            <p><strong>Links</strong>: 
+              {% for link in record.links.all %}
+                <a href="#" class="remote-link">{{ link.json.identifier }}</a>; 
+              {% endfor %}</p>
+            {% endif %}
+          </div>
+          <div id="map">
+            {% leaflet_map "map" callback="map_init" %}
+          </div>
+        </div>
+        <!--available: ['whg_id', 'place_id', 'src_id', 'title', 'dataset', 'variants', 'types', 
+        'ccodes', 'parents', 'descriptions', 'geoms', 'timespans', 'links']-->
+        <div id="review_list" class="col-sm-8 pr-0">
+            {% for form in formset %}
+              <input type="hidden" name="id" value='{{ form.id.value }}'></input>
+              <input type="hidden" name="authrecord_id" value='{{ form.authrecord_id.value }}'></input>
+              <input type="hidden" name="score" value='{{ form.score.value }}'></input>
+              <input type="hidden" name="query_pass" value='{{ form.query_pass.value }}'></input>
+              {% for hidden in form.hidden_fields %}
+                {{ hidden }}
+              {% endfor %}
+              <div class="pl-2 pr-2 mb-0 matchbar">
+                <div class="custom-control custom-radio match_radio">
+                  <span class="ml-2">
+                  {% if form.json.value|get:"geoms" != Null %}
+                    <!--{ form.json.value|get:"location"|safe|json_script:form.authrecord_id.value }}-->
+                    <a class="geolink" id="{{ form.json.value|get:"place_id" }}" 
+                      href="javascript:{ zoomTo('tgn:'+{{ form.authrecord_id.value }}) }">
+                      {% fontawesome_icon 'globe' color='#000099' %}</a>
+                  {% endif %}
+                  </span>
+                  <span class="inline">{{ form.match }}</span>
+                  <span class="float-right mr-2">
+                  <button type="button" data-id="{{ form.json.value|get:"place_id" }}" 
+                    class="create-comment btn btn-sm">
+                  {% fontawesome_icon 'edit' color='#336699' %}</button></span>
+                </div>
+              </div>
+              {{ form.non_field_errors }}
+              <div class="auth-match bg-light pl-2 mt-0 mb-2">
+                <!-- pull geometries to js -->
+                {% for g in form.json.value|get:"geoms" %}
+                  {{ g|safe|json_script:g.id}}
+                {% endfor %}
+                <p><strong>Title/Preferred</strong>: {{ form.json.value|get:"title" }}</p>
+                
+                {% if authority == 'whg' %}
+                <p><strong>WHG record id</strong>: {{ form.json.value|get:"place_id" }}</p> 
+                <p><strong>Source (id)</strong>: {{ form.json.value|get:"dataset" }} ({{ form.json.value|get:"src_id" }})</p>
+                {% else %}
+                <p><strong>{{ authority|upper }} ID</strong>: {{ form.authrecord_id.value }}
+                </p>                
+                {% endif %}
+                
+                <p><strong>Variants</strong>:
+                  {% for n in form.json.value|get:"variants" %}
+                    {{ n|add:"; " }}
+                  {% endfor %}
+                </p>
+                
+                <p class="mt-2"><strong>Types</strong>:
+                {% if authority == 'whg' %}
+                  {% for t in form.json.value|get:"types" %}
+                    {{ t|add:"; " }}
+                  {% endfor %}</p>
+                {% else %}
+                  {{ form.json.value|get:"types"}}
+                {% endif %}
+                
+                {% if form.json.value|get:"parents"|length > 0 %} 
+                <p><strong>Parents</strong>: {{ form.json.value|get:"parents" }}</p>{% endif %}
+
+                {% if form.json.value|get:"ccodes"|length > 0 %} 
+                <p><strong>Countries</strong>: {{ form.json.value|get:"ccodes" }}</p>{% endif %}
+
+                {% if form.json.value|get:"links"|length > 0 %} 
+                <p><strong>Links</strong>: 
+                {% for link in form.json.value|get:"links" %}
+                     <a href="#" class="remote-link">{{ link }}</a>; 
+                  {% endfor %}
+                </p>{% endif %}
+                
+                {% if form.json.value|get:"minmax"|length > 0 %} 
+                  <p><strong>Temporal attestations extent</strong>: 
+                  {{ form.json.value|get:"minmax" }}</p>
+                {% endif %}
+                                  
+                {% if form.json.value|get:"descriptions"|length > 0 %} 
+                  <p class="mb-0"><strong>Descriptions</strong>:</p> 
+                  <div class="attest-element abbrev">
+                  {% for d in form.json.value|get:"descriptions" %}
+                      <p>{{ d }}</p>{% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+      </div> <!-- .row -->
+    </div> <!-- container flex -->
+    </form>
+  {% endfor %} <!-- record in records -->
+  {% endif %}
+  <div class="modal fade" tabindex="-1" role="dialog" id="modal">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+    </div>
+  </div>
+</div>
+</div> <!-- .container -->
+<script type="text/javascript">
+    var ds = "{{ ds_label }}"+':'
+    $(function(){
+      // set pass dropdown as next set with any reviewed=False rows
+      $( "#select_pass" ).val("{{ passnum }}")
+      // defaults to string 'None' - no idea why
+      $('.textarea').html('')
+      z=window.location.href
+      $('#passnum_dynamic').html('<b>'+z.slice(-5)+'</b>')
+      $(".remote-link").on('click', function(event){
+        event.preventDefault()
+        str=$(this).text()
+        var re = /(dbp|gn|tgn):(.*?)$/;
+        auth=str.match(re)[1]
+        id=str.match(re)[2]
+        window.location.href = base_urls[auth]+id
+        console.log(str, auth,id)
+      })
+
+      
+      $(".create-comment").each(function () {
+        var recpk = $(this).data('id');
+        uribase="/comment/"+recpk
+        next='?next='+"{% url 'datasets:review' pk=ds_id tid=task_id passnum=passnum %}"
+        console.log('formURL',uribase+next)
+        $(this).modalForm({formURL: uribase+next});
+      });      
+    })
+        
+    // expose leaflet map for events, call it 'mappy'
+  window.addEventListener('map:init', function (e) {
+    window.mappy = e.detail.map
+    var attrib_mb = 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
+            '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+            'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+      attrib_awmc = 'Tiles and Data &copy; 2013 <a href="http://www.awmc.unc.edu" target="_blank">AWMC</a>',
+      token_mb = 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw',
+      token_kg = 'pk.eyJ1Ijoia2dlb2dyYXBoZXIiLCJhIjoiUmVralBPcyJ9.mJegAI1R6KR21x_CVVTlqw',
+      token_awmc = 'pk.eyJ1Ijoia2dlb2dyYXBoZXIiLCJhIjoiY2prcmgwc2cwMjRuZzNsdGhzZmVuMDRqbCJ9.MeLsyeOqwhTRdvt_Hgo7kg',
+      token_whg = '',
+      mbtiles_url = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={token}';
+      mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}';
+      
+    var awmc = L.tileLayer(mbtiles_url, {id:'isawnyu.map-knmctlkh', token:token_awmc, attribution:attrib_awmc}),
+      spine = L.tileLayer(mbstyle_url, {id:'kgeographer/cjstfpenh6o1e1fldz95w8m6p', token:token_kg, attribution:attrib_mb}),
+      satellite  = L.tileLayer(mbtiles_url, {id:'mapbox.satellite', token:token_mb, attribution:attrib_mb});
+      osm  = L.tileLayer(mbtiles_url, {id:'mapbox.light', token:token_mb, attribution:attrib_mb});
+
+    var baseLayers = {
+      "AWMC Terrain": awmc,
+      "OSM": osm,
+      "Spine Data": spine,
+      "Satellite": satellite
+    };
+    L.control.layers(baseLayers).addTo(mappy);
+    baseLayers['OSM'].addTo(mappy)
+  }, false);
+
+  $( "#select_pass" ).change(function() {
+    z=window.location.href
+    baseurl=z.substring(0,[z.length -5])
+    window.location.href = baseurl + $(this).val()
+  });
+
+  $('.noteicon').on('click', function(){
+    $(this).parents(".matchbar").find(".notefield").toggle()
+  })
+
+  $('.noteicon').hover(function(){
+    console.log('hovering')
+  })
+
+  $( ".geolink" ).hover(function() {
+      let id = $(this)[0].id
+      console.log('id:',id)
+      feat = idToFeature[id]
+      feat.setStyle(
+        {radius: 10, fillColor: 'yellow'}
+      )
+    },
+    function() {
+      let id = $(this)[0].id
+      feat = idToFeature[id]
+      feat.setStyle(
+        {radius: 8, fillColor: '#ff7800'}
+      )
+    }
+  );
+
+  // closer look
+  function zoomTo(id) {
+    mappy.setView(idToFeature[id]._latlng, mappy.getZoom() +2 )
+  }
+
+  cleanJson = function(text) {
+    z=text.replace(/'/g,'\\"')
+    y=z.replace(/point/,'Point')
+    return JSON.parse(JSON.parse(y))
+  }
+
+  // initialize, render map
+  // authority geom "geoms": [{"type": "point", "coordinates": [-72.8667, -13.6167]}]
+  function map_init (map, options) {
+    // console.log('in map_init()')
+    window.geom = {"type":"FeatureCollecton","features":[]}
+
+    window.gelems = $('script').filter(function() {
+      <!--return this.id.match(/[0-9]/) && this.text != '"null"';-->
+      return this.id !='' && this.text != '"null"';
+    });
+
+    for (i=0;i<gelems.length;i++){
+      let t_geom = cleanJson(gelems[i].text)
+      var ds = "{{ ds_label }}"
+      t_geom['properties'] = {"id": gelems[i].id, "ds": t_geom.ds!=null?t_geom.ds:ds }
+      geom['features'].push(t_geom)
+    }
+
+    function fill(auth) {
+      if (auth == 'tgn'){
+        return "#ff7800"}
+      else if (auth == 'whg'){
+        return "orange"}
+      else {
+        return "red"}
+    }
+
+    if (geom['features'].length > 0) {
+      // console.log('geom: ',geom)
+      idToFeature = {} // for feature lookup
+      features = L.geoJSON(geom, {
+        pointToLayer: function (feature, latlng) {
+          <!--matchid = feature.properties.ds+':'+feature.properties.id-->
+          matchid = feature.properties.id
+          marker = L.circleMarker(latlng,
+            {
+              radius: 8, fillOpacity: 0.6, opacity: 1, weight: 1,
+              color: "#333", fillColor: fill(
+              ['tgn','dbp','gn','wd','black'].includes(feature.properties.ds)?feature.properties.ds:"{{ authority }}"
+              )
+            }
+          ).bindPopup(feature.properties.ds+':'+feature.properties.id);
+
+          idToFeature[matchid] = marker
+          return marker
+        }
+      }).addTo(map);
+
+      mappy.setView(features.getBounds().getCenter(),6)
+    } else {
+      console.log('no geometries, no feature')
+    }
+  } // end map_init
+</script>
+<script src="{% static 'js/jquery.bootstrap.modal.forms.min.js' %}"></script>
+{% endblock %}

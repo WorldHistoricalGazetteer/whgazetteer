@@ -1,0 +1,20 @@
+_dumps/
+_notes/
+_older/
+_scratch/
+media/
+
+nohup.out
+dump.rdb
+
+*.wp*
+
+### Django ###
+*.log
+*.pot
+*.pyc
+__pycache__/
+whg/__pycache__/
+local_settings.py
+db.sqlite3
+/static

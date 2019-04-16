@@ -1,0 +1,100 @@
+{% extends "main/base.html" %}
+{% block title %}<title>WHG::Home</title>{% endblock %}
+
+{% block content %}
+{% load static %}
+{% load fontawesome %}
+
+<div class="container">
+  <div class="d-flex justify-content-center pt-2">
+    <img src="{% static 'images/whg_logo_notext_400w.png'%}"  height="200" onclick="javascript:console.log('boo')"/>
+  </div>
+  <div class="d-flex justify-content-center">
+    <!--<form class="mt-3 w-50" action="{# url 'searchy' #}">-->
+    <form id="search_form" class="mt-3 w-50" onsubmit="return false;" autocomplete="off" >
+    <div class="form-group mb-0">
+      <div class="input-group">
+        <input type="text" class="form-control input-sm" id="searchbox" name="q" 
+          placeholder="Enter place name" aria-label="Search term" aria-describedby="search-type">
+        <!--<div class="input-group-append">-->
+          <!--<button class="btn btn-secondary" type="submit" id="search_button">Search</button>-->
+        <!--</div>-->
+      </div>
+    </div>
+    <div class="nameautosuggest"><!-- suggestions inserted here--></div>
+    <div class="form-group">
+    <!-- <div class="form-group d-flex justify-content-center"> -->
+      <!--<div class="mx-auto btn-group" style="margin-left:185px !important;" data-toggle="buttons">-->
+        <!--<span style="display:block; border: 1px dashed #e0e0e0;">-->
+          <!--<label class="btn btn-default mb-0" rel="Enter place name">-->
+              <!--<input type="radio" name="class" value="place" checked>-->
+              <!--Place</label>-->
+          <!--<label class="btn btn-default mb-1" rel="Enter term or name" >-->
+              <!--<input type="radio" name="class" value="trace"> Trace-->
+              <!--<span class="ml-1"><a href="" title="historical entities having spatial-temporal 'footprints'" rel="tooltip">-->
+                <!--{# fontawesome_icon 'question-circle' color='#336699' #}</a></span>-->
+          <!--</label>-->
+        <!--</span>-->
+      <!--</div>-->
+      <span class="float-right pt-2" style="margin-top:-14px;"><a href="{% url 'search_adv' %}">Advanced</a></span>
+    </div>
+    </form>
+  </div>
+</div>
+<script type="text/javascript">
+  var titles = {}
+  var searchoption = null;
+  var doctype = $("input[name='class']:checked").val();
+  
+  // queries at each character
+    $("#searchbox").on('input', function(){
+    autosuggest($(this).val());
+   });
+  
+  function autosuggest(value){
+    $.get("/search/names",{idx: 'whg_flat', search: value, doc_type: doctype},
+      function(data){
+        showSuggestions(data);
+      });
+   }
+   
+  $('.nameautosuggest').on('click', '.suggestion', function(){
+    // console.log('$(this) on click',$(this))
+    pid=$(this).attr('ref')
+
+    // clear the dropdown
+    $(".nameautosuggest").html('')
+    
+    // go
+    location.href = 'places/'+pid+'/portal'
+  });
+
+  function sugLister(sug) {
+    // console.log(sug)
+    variants = sug['variants'].length > 0 ? '<i class="text-secondary">'+sug['variants']+'</i>' : ''
+    item = ('<li ref="'+sug['pid']+
+            '" children="'+sug['children']+
+            '" class="suggestion" ">'+
+            <!--'<b>'+sug['name']+'</b> ('+sug['type']+')'+ sug['ccodes']+-->
+            '<b>'+sug['name']+'</b> ('+sug['ccodes']+') '+ sug['type']+
+            '<span class="float-right small">'+'('+sug['dataset']+':'+sug['pid']+')</span><br/>'+
+            variants+'</li>');
+    return item
+  }
+
+  //creates suggestion dropdown
+  function showSuggestions(data){
+    var div = '';
+    data.forEach(function(sug){
+      div += sugLister(sug)
+    });
+    $('.nameautosuggest').html(div);
+  }
+ 
+  $("[rel='tooltip']").tooltip();
+  $('label.btn').click(function(){
+    $('#searchbox').attr("placeholder",this.getAttribute("rel"));
+  })
+</script>
+{% endblock %}
+
