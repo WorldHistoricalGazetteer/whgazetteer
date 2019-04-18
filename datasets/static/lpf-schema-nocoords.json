@@ -273,8 +273,7 @@
             "type": "object",
             "title": "The Items Schema",
             "required": [
-              "type",
-              "coordinates"
+              "type"
             ],
             "properties": {
               "type": {
@@ -282,16 +281,6 @@
                 "type": "string",
                 "title": "The Type Schema",
                 "pattern": "^(.*)$"
-              },
-              "coordinates": {
-                "$id": "#/properties/geometry/properties/geometries/items/properties/coordinates",
-                "type": "array",
-                "title": "The Coordinates Schema",
-                "items": {
-                  "$id": "#/properties/geometry/properties/geometries/items/properties/coordinates/items",
-                  "type": "number",
-                  "title": "The Items Schema"
-                }
               },
               "when": {
                 "$id": "#/properties/names/items/properties/when",

@@ -87,6 +87,7 @@ def contextSearch(idx,doctype,q):
   res = es.search(index=idx, doc_type=doctype, body=q, size=300)
   hits = res['hits']['hits']
   # TODO: refactor this bit
+  print('hits',hits)
   if len(hits) > 0:
     for hit in hits:
       count_hits +=1

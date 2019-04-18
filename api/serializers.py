@@ -50,8 +50,8 @@ class PlaceWhenSerializer(serializers.ModelSerializer):
 
 class PlaceRelatedSerializer(serializers.ModelSerializer):
     # json: relation_type, relation_to, label, when, citation, certainty
-    relation_type = serializers.ReadOnlyField(source='json.relation_type')
-    relation_to = serializers.ReadOnlyField(source='json.relation_to')
+    relation_type = serializers.ReadOnlyField(source='json.relationType')
+    relation_to = serializers.ReadOnlyField(source='json.relationTo')
     label = serializers.ReadOnlyField(source='json.label')
     when = serializers.ReadOnlyField(source='json.when')
     citation = serializers.ReadOnlyField(source='json.citation')

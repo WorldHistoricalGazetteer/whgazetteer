@@ -9,8 +9,7 @@ COMMENT_TAGS = [
 
 FORMATS = [
     ('delimited', 'Delimited'),
-    ('lpf', 'Linked Places (GeoJSON-LDT)'),
-    ('direct', 'Inserted to db directly'),
+    ('lpf', 'Linked Places json')
 ]
 
 DATATYPES = [

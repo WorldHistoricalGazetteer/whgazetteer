@@ -6,7 +6,8 @@ from jsonschema import validate, Draft7Validator, draft7_format_checker
 
 def validate_lpf(infile, username):
   #print('tasks.read_lpf() username', username)
-  schema = json.loads(codecs.open('datasets/static/lpf-schema.json', 'r', 'utf8').read())
+  #schema = json.loads(codecs.open('datasets/static/lpf-schema.json', 'r', 'utf8').read())
+  schema = json.loads(codecs.open('datasets/static/lpf-schema-nocoords.json', 'r', 'utf8').read())
   fout = codecs.open('validate-lpf-result.txt', 'w', 'utf8')
   #print()
   result = {"errors":[],"format":"lpf"}
@@ -101,8 +102,9 @@ def validate_csv(infile, username):
   return result
 
 class HitRecord(object):
-  def __init__(self, whg_id, place_id, dataset, src_id, title):
-    self.whg_id = whg_id
+  #def __init__(self, whg_id, place_id, dataset, src_id, title):
+  def __init__(self, place_id, dataset, src_id, title):
+    #self.whg_id = whg_id
     self.place_id = place_id
     self.src_id = src_id
     self.title = title

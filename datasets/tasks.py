@@ -76,8 +76,9 @@ def maxID(es):
 def normalize(h,auth):
   if auth == 'whg':
     try:
-      rec = HitRecord(h['whg_id'], h['place_id'], h['dataset'], h['src_id'], h['title'])
-    
+      #rec = HitRecord(h['whg_id'], h['place_id'], h['dataset'], h['src_id'], h['title'])
+      rec = HitRecord(h['place_id'], h['dataset'], h['src_id'], h['title'])
+      print('rec',rec)
       # add elements if non-empty in index record
       rec.variants = [n['toponym'] for n in h['names']] # always >=1 names
       rec.types = [t['label']+' ('+t['src_label']  +')' if 'src_label' in t.keys() else '' \

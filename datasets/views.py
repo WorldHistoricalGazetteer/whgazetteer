@@ -345,10 +345,9 @@ def ds_insert_lpf(request, pk):
       # start Place record & save to get id
       # Place: src_id, title, ccodes, dataset
       newpl = Place(
-        # Indias required extracting id from uri
-        #src_id=feat['@id'][-8:], #TODO: add src_id to properties in LP format
-        #src_id=feat['@id'], 
-        src_id=re.search("gazetteer:(\d{1,12})$",feat['@id']).group(1),
+        # TODO: add src_id to properties in LP format?
+        src_id=feat['@id'] if 'http' not in feat['@id'] and len(feat['@id']) < 25 \
+          else re.search("(\/|=)(?:.(?!\/|=))+$",feat['@id']).group(0)[1:],
         dataset=ds,
         title=feat['properties']['title'],
         ccodes=feat['properties']['ccodes'] if 'ccodes' in feat['properties'].keys() else []

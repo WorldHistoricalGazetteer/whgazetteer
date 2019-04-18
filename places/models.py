@@ -15,7 +15,7 @@ import json
 class Place(models.Model):
     # let id be auto-maintained, as Django decrees/prefers
     title = models.CharField(max_length=255)
-    src_id = models.CharField(max_length=24)
+    src_id = models.CharField(max_length=2044)
     dataset = models.ForeignKey('datasets.Dataset', db_column='dataset',
         to_field='label', related_name='places', on_delete=models.CASCADE)
     ccodes = ArrayField(models.CharField(max_length=2))

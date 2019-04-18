@@ -115,15 +115,17 @@
       
     var awmc = L.tileLayer(mbtiles_url, {id:'isawnyu.map-knmctlkh', token:token_awmc, attribution:attrib_awmc}),
       grayscale = L.tileLayer(mbstyle_url, {id:'kgeographer/cjstfpenh6o1e1fldz95w8m6p', token:token_kg, attribution:attrib_mb}),
-      satellite  = L.tileLayer(mbtiles_url, {id:'mapbox.satellite', token:token_mb, attribution:attrib_mb});
+      satellite  = L.tileLayer(mbtiles_url, {id:'mapbox.satellite', token:token_mb, attribution:attrib_mb}),
+      osm  = L.tileLayer(mbtiles_url, {id:'mapbox.light', token:token_mb, attribution:attrib_mb});
 
     var baseLayers = {
       "AWMC Terrain": awmc,
+      "OSM": osm,
       "Spine Data": grayscale,
       "Satellite": satellite
     };
     L.control.layers(baseLayers).addTo(mappy);
-    baseLayers['AWMC Terrain'].addTo(mappy)
+    baseLayers['OSM'].addTo(mappy)
   }, false);
   
   function url_it(str) {
@@ -160,7 +162,7 @@
     idToFeature = {}  // for feature lookup
     features = L.geoJSON(geom, {
     // TODO: for some reason non-points are parsed and rendered here
-      style: {fillOpacity: 0.1, opacity: 1, weight: 1,
+      style: {fillOpacity: 0.4, opacity: 1, weight: 1,
              color: "#000", fillColor:"#f6a2b3"
            },
       pointToLayer: function (feature, latlng) {
@@ -204,7 +206,7 @@
     html+='</p><p><b>Types</b>: '
     typeids = ''
     for (t in data.types) {
-      typeids+=data.types[t].source_label +': (<i>'+data.types[t].label+'/'+data.types[t].identifier +'); '
+      typeids+=data.types[t].source_label +': (<i>'+data.types[t].label+'/'+data.types[t].identifier +'</i>); '
     }
     html += typeids.replace(/(; $)/g, "") +'</p>'
 
@@ -260,12 +262,28 @@
 
     // RELATED
     if (data.related.length > 0) {
-      if (data.related[0].relation_type == 'gvp:broaderPartitive'){
-        html+='<p><b>Parent</b>: '+ data.related[0].label +'</p>'
+      html_parent='<p class="mb-0"><b>Parent(s)</b>: <br/>'; html_related='<p class="mb-0"><b>Related</b>: <br/>'
+      console.log('length P, R '+ html_parent.length,html_related.length)
+      for (r in data.related){
+        rel = data.related[r]
+        <!--console.log('rel',rel)-->
+        if (rel.relation_type == 'gvp:broaderPartitive'){
+          html_parent += '<p class="small h1em">'+rel.label+ ', '+rel.when.start.in+'-'+rel.when.end.in+'</p>'
+        } 
+        else {
+          html_related += '<p class="small h1em">'+rel.label+ ', '+rel.when.start.in+'-'+rel.when.end.in+'</p>'
+        }
       }
-      else {
-        html+='<p><b>Related</b>: '+ data.related[0].label +'</p>'
-      }
+      html+=html_parent.length > 39?html_parent:''
+      html+=html_related.length > 37?html_related:''
+      
+      <!--console.log(data.related[0])-->
+      <!--if (data.related[0].relation_type == 'gvp:broaderPartitive'){-->
+        <!--html+='<p><b>Parent(s)</b>: '+ data.related +'</p>'-->
+      <!--}-->
+      <!--else {-->
+        <!--html+='<p><b>Related</b>: '+ data.related +'</p>'-->
+      <!--}-->
     }
 
     html += '</div>'
