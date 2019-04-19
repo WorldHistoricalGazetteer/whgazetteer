@@ -1,10 +1,3 @@
-#def makeRanges(doc):
-  #for anno in doc:
-    #for body in anno['body']:
-      ##print(len(body['when']))
-      #for ts in body['when']:
-        #print('start',arr_start,'end',arr_end)
-
 import sys
 def index_traces(trdata):
   print('data is:',type(trdata))
@@ -24,10 +17,11 @@ def index_traces(trdata):
   print(str(count)+' records indexed')
 
 def init():
-  global es, idx, rows
-  idx = 'traces01'
-  file = 'traces_examples_whg.json'
+  global es, idx, rows, trdata
+  idx = 'traces'
+  file = 'examples_whg.json'
   import os, codecs, time, datetime, json,sys
+  mappings = codecs.open('static/mappings_traces.json', 'r', 'utf8').read()
   os.chdir('/Users/karlg/Documents/Repos/linked-traces-format/')
 
   from elasticsearch import Elasticsearch
@@ -36,8 +30,6 @@ def init():
   # read from file 
   infile = codecs.open(file, 'r', 'utf8')
   trdata = json.loads(infile.read())
-
-  mappings = codecs.open('mappings_traces_whg.json', 'r', 'utf8').read()
 
   # zap existing if exists, re-create
   try:
@@ -53,3 +45,11 @@ def init():
   index_traces(trdata)
 
 init()
+
+#def makeRanges(doc):
+  #for anno in doc:
+    #for body in anno['body']:
+      ##print(len(body['when']))
+      #for ts in body['when']:
+        #print('start',arr_start,'end',arr_end)
+

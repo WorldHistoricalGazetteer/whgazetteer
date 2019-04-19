@@ -24,58 +24,84 @@ def makeGeom(pid,geom):
   return geomset
 
 # make stuff available in autocomplete dropdown
-def suggestionItem(s):
+def suggestionItem(s,doctype):
   #print('sug geom',s['geometries'])
   print('sug', s)
-  item = { "name":s['title'],
-           "type":s['types'][0]['label'],
-             "whg_id":s['whg_id'],
-             "pid":s['place_id'],
-             "variants":[n for n in s['suggest']['input'] if n != s['title']],
-             "dataset":s['dataset'],
-             "ccodes":s['ccodes'],
-             "geom": makeGeom(s['place_id'],s['geoms'])
-             }
+  if doctype == 'place':
+    item = { 
+      "name":s['title'],
+      "type":s['types'][0]['label'],
+      "whg_id":s['whg_id'],
+      "pid":s['place_id'],
+      "variants":[n for n in s['suggest']['input'] if n != s['title']],
+      "dataset":s['dataset'],
+      "ccodes":s['ccodes'],
+      "geom": makeGeom(s['place_id'],s['geoms'])
+    }
+  else:
+    item = {
+      "id":s['target']['id'],
+      "type":s['target']['type'],
+      "title":s['target']['title']
+    }
   return item
 
-def nameSuggest(idx,doctype,q_initial):
+def suggester(doctype,q):
   # return only parents; children will be retrieved in portal page
-  # TODO: return child IDs, geometries?
+  print('suggester',doctype,q)
   es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
   suggestions = []
-  res = es.search(index=idx, doc_type=doctype, body=q_initial)
-  hits = res['suggest']['suggest'][0]['options']
-
-  if len(hits) > 0:
-    for h in hits:
-      hit_id = h['_id']
-      if 'parent' not in h['_source']['relation'].keys():
-        # it's a parent, add to suggestions[]
+  if doctype=='place':
+    print('suggester/place q:',q)
+    res = es.search(index='whg',doc_type='place',body=q)
+    hits = res['suggest']['suggest'][0]['options']
+    if len(hits) > 0:
+      for h in hits:
+        hit_id = h['_id']
+        if 'parent' not in h['_source']['relation'].keys():
+          # it's a parent, add to suggestions[]
+          suggestions.append(h['_source'])
+  elif doctype == 'trace':
+    print('suggester/trace q:',q)
+    res = es.search(index='traces',doc_type='trace',body=q)
+    hits = res['hits']['hits']
+    if len(hits) > 0:
+      for h in hits:
         suggestions.append(h['_source'])
-
   return suggestions
 
-class NameSuggestView(View):
-  """ Returns place name suggestions """
+class SuggestView(View):
+  """ Returns place or trace suggestions """
   @staticmethod
   def get(request):
-    print('in NameSuggestView',request.GET)
+    print('in SuggestView',request.GET)
     """
         args in request.GET:
             [string] idx: index to be queried
             [string] search: chars to be queried for the suggest field search
             [string] doc_type: context needed to filter suggestion searches
         """
-    idx = request.GET.get('idx')
+    #idx = request.GET.get('idx')
     text = request.GET.get('search')
     doctype = request.GET.get('doc_type')
-    q_initial = { 
-      "suggest":{"suggest":{"prefix":text,"completion":{"field":"suggest"}}}
-    }
-    suggestions = nameSuggest(idx, doctype, q_initial)
-    suggestions = [ suggestionItem(s) for s in suggestions]
-    return JsonResponse(suggestions, safe=False)  
-
+    if doctype == 'place':
+      q = { "suggest":{"suggest":{"prefix":text,"completion":{"field":"suggest"}}} }  
+    else: 
+      #q = { "query": {"bool": {"must": [{"match":{"target.title": text }}]}} }
+      q = {
+        "query": {
+          "match": {
+            "target.title": {
+              "query": text, 
+              "operator": "and"
+            }
+          }
+        }
+      }
+    suggestions = suggester(doctype, q )
+    suggestions = [ suggestionItem(s,doctype) for s in suggestions]
+    return JsonResponse(suggestions, safe=False)
+  
 ## ***
 ##    get features in current map viewport
 ## ***

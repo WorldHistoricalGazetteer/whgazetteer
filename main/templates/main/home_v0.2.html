@@ -102,23 +102,16 @@
   // TODO: wait for 3rd character?
   $("#searchbox").on('input', function(){
     doctype = $("input[name='class']:checked").val();
-    if (doctype == 'place'){
-      autosuggest($(this).val());
-    } else {
-      alert('sorry! trace search is not enabled yet, resetting')
-      $('#searchbox').val('')
-      $("#r_place").prop("checked", true);
-    }
-  });
-  
-  function autosuggest(value){
-    <!--$.get("/search/names",{idx: 'whg_flat', search: value, doc_type: doctype},-->
-    $.get("/search/names",{idx: 'whg', search: value, doc_type: doctype},
+    $.get("/search/suggest",{
+        search: $(this).val(), 
+        doc_type: doctype
+      }, 
       function(data){
-        showSuggestions(data);
+        // render to html
+        showSuggestions(data,doctype);
       });
-    }
-   
+  })
+  
   $('.nameautosuggest').on('click', '.suggestion', function(){
     pid=$(this).attr('ref')
 
@@ -129,18 +122,19 @@
     location.href = 'places/'+pid+'/portal'
   });
 
-  function sugLister(sug) {
+  function sugLister(sug,doctype) {
     <!--console.log(sug)-->
-    variants = sug['variants'].length > 0 ? '<i class="text-secondary">'+sug['variants']+'</i>' : ''
-    <!--item = ('<li ref="'+sug['pid']+-->
-    item = ('<li ref="'+sug['whg_id']+
-            '" children="'+sug['children']+
-            '" class="suggestion" ">'+
-            <!--'<b>'+sug['name']+'</b> ('+sug['type']+')'+ sug['ccodes']+-->
-            '<b>'+sug['name']+'</b> ('+sug['ccodes']+') '+ sug['type']+
-            <!--'<span class="float-right small">'+'('+sug['dataset']+':'+sug['whg_id']+')</span><br/>'+-->
-            '<span class="float-right small">'+'(whg:'+sug['whg_id']+')</span><br/>'+
-            variants.substring(0,100)+'</li>');
+    if (doctype=='place') {
+      variants = sug['variants'].length > 0 ? '<i class="text-secondary">'+sug['variants']+'</i>' : ''
+      item = ('<li ref="'+sug['whg_id']+
+              '" children="'+sug['children']+
+              '" class="suggestion" ">'+
+              '<b>'+sug['name']+'</b> ('+sug['ccodes']+') '+ sug['type']+
+              '<span class="float-right small">'+'(whg:'+sug['whg_id']+')</span><br/>'+
+              variants.substring(0,100)+'</li>')  
+    } else {
+      item = '<li ref="'+sug['id']+'">'+sug['title']+' ('+sug['type']+')</li>';
+    }
     return item
   }
   function renderFeatures(geom){
@@ -161,17 +155,12 @@
     }).addTo(mappy);    
   }
   //creates suggestion dropdown
-  function showSuggestions(data){
+  function showSuggestions(data,doctype){
+    console.log('showSuggestions',data)
     var div = '';
     data.forEach(function(sug){
       // load suggestion div
-      div += sugLister(sug)
-      <!--if (sug['geom'].length > 0) {-->
-        <!--for (i in sug['geom']){-->
-          <!--console.log("sug['geom'][i]",sug['geom'][i])-->
-        <!--}-->
-      <!--}-->
-
+      div += sugLister(sug,doctype)
     });
     $('.nameautosuggest').html(div);
   }

@@ -1,0 +1,70 @@
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "autocomplete": {
+          "tokenizer": "autocomplete",
+          "filter": [
+            "lowercase"
+          ]
+        },
+        "autocomplete_search": {
+          "tokenizer": "lowercase"
+        }
+      },
+      "tokenizer": {
+        "autocomplete": {
+          "type": "edge_ngram",
+          "min_gram": 2,
+          "max_gram": 10,
+          "token_chars": [
+            "letter"
+          ]
+        }
+      }
+    }
+  },
+  "mappings": {
+    "trace": {
+      "properties": {
+        "id": {"type": "keyword"},
+        "type":{"type": "keyword"},
+        "created":{"type": "date"},
+        "creator":{
+          "properties":{
+            "id":{"type": "keyword"},
+            "name":{"type": "text"},
+            "homepage":{"type": "keyword"}
+          }
+        },
+        "motivation":{"type": "keyword"},
+        "body":{
+          "properties":{
+            "id":{"type": "keyword"},
+            "title":{"type": "text"},
+            "relation":{"type": "keyword"},
+            "minmax":{"type": "date_range"},
+            "when":{
+              "properties":{
+                "start": {"type":"integer"},
+                "end": {"type":"integer"}
+              }}
+          }
+        },
+        "target":{
+          "properties":{
+            "id":{"type": "keyword"},
+            "type":{"type": "keyword"},
+            "title":{
+              "type": "text",
+              "analyzer": "autocomplete",
+              "search_analyzer": "autocomplete_search"
+            },
+            "depiction":{"type": "keyword"}
+          }
+        },
+        "suggest": {"type": "completion"}
+      }
+    }
+  }
+}
