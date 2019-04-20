@@ -128,19 +128,6 @@ def normalize(h,auth):
       print("normalize(tgn) error:", h['tgnid'], sys.exc_info())
   return rec.toJSON()
 
-#
-#def maxID(es):
-  #q={"query": {"bool": {"must" : {"match_all" : {}} }},
-       #"sort": [{"whg_id": {"order": "desc"}}],
-       #"size": 1  
-       #}
-  #try:
-    #res = es.search(index='whg', body=q)
-    #maxy = int(res['hits']['hits'][0]['_id'])
-  #except:
-    #maxy = 12345677
-  #return maxy
-
 # user-supplied spatial bounds
 def get_bounds_filter(bounds,idx):
   #print('bounds',bounds)
@@ -405,7 +392,8 @@ def es_lookup_whg(qobj, *args, **kwargs):
   #idx='whg_flat'
   idx='whg'
   bounds = kwargs['bounds']
-  ds = kwargs['dataset']
+  ds = kwargs['dataset'] 
+  #ds='black'
   place = kwargs['place']
   #bounds = {'type': ['region'], 'id': ['87']}
   #bounds = {'type': ['userarea'], 'id': ['0']}
@@ -586,9 +574,7 @@ def align_whg(pk, *args, **kwargs):
   #for place in ds.places.all()[:50]:
   for place in ds.places.all():
     #place=ds.places.first()
-    #place=get_object_or_404(Place,id=81741) # Baalbek (lb)
-    #place=get_object_or_404(Place,id=84778) # Baalbek/Heliopolis (lb)
-    #place=get_object_or_404(Place,id=84777) # Heliopolis (eg)
+    #place=get_object_or_404(Place,id=81104) # Agrigentum
     count +=1
     qobj = {"place_id":place.id, "src_id":place.src_id, "title":place.title}
     links=[]; ccodes=[]; types=[]; variants=[]; parents=[]; geoms=[]; 
@@ -660,7 +646,7 @@ def align_whg(pk, *args, **kwargs):
           errors_black.write(str({"pid":place.id, "title":place.title})+'\n')
         print('created parent:',result_obj['place_id'],result_obj['title'])
       #nohits.append(result_obj['missed'])
-    else:
+    elif result_obj['hit_count'] > 0:
       # create hit record for review process
       count_hit +=1
       count_errors = 0
@@ -668,7 +654,9 @@ def align_whg(pk, *args, **kwargs):
       #print("hit['_source']: ",result_obj['hits'][0]['_source'])
       for hit in result_obj['hits']:
         if hit['pass'] == 'pass1':
-          count_p1+=1 
+          count_p1+=1
+          # one-time black repair 20190420
+          # if ds='black' and place has a 'whg*' match link, make it child of that id
         elif hit['pass'] == 'pass2': 
           count_p2+=1
         elif hit['pass'] == 'pass3': 
