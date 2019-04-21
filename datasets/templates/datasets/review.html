@@ -68,13 +68,13 @@
               </span>
             </div>
             {% for g in record.geoms.all %}
-              {{ g.json|safe|json_script:record.id }}
+              {{ g.jsonb|safe|json_script:record.id }}
             {% endfor %}
             <p><strong>WHG record id</strong>: {{ record.id }} </p>
             <p><strong>Source id</strong>: {{ record.src_id }}</p>
             <p><strong>Name variants</strong>:
               {% for name in record.names.all %}
-               {{ name.json.toponym }};
+               {{ name.jsonb.toponym }};
               {% endfor %}</p>
             {% if countries %}
             <p><strong>Modern countries</strong>:
@@ -85,17 +85,17 @@
             {% if record.relations %}
             <p><strong>Relations</strong>: 
               {% for rel in record.related.all %}
-                {{ rel.json.label }} ({{ rel.json.relation_type }}); 
+                {{ rel.jsonb.label }} ({{ rel.jsonb.relation_type }}); 
               {% endfor %}</p>
             {% endif %}
             <p><strong>Place type(s)</strong>:
               {% for type in record.types.all %}
-                {{ type.json.label }} ({{ type.json.src_label }}); 
+                {{ type.jsonb.label }} ({{ type.jsonb.src_label }}); 
               {% endfor %}</p>
             {% if record.links %}
             <p><strong>Links</strong>: 
               {% for link in record.links.all %}
-                <a href="#" class="remote-link">{{ link.json.identifier }}</a>; 
+                <a href="#" class="remote-link">{{ link.jsonb.identifier }}</a>; 
               {% endfor %}</p>
             {% endif %}
           </div>

@@ -56,20 +56,20 @@ class PlacePortalView(DetailView):
         "purl":ds.uri_base+str(place.id) if 'whgaz' in ds.uri_base else ds.uri_base+place.src_id,
         "title":place.title,
         "ccodes":place.ccodes, 
-        "names":[name.json for name in place.names.all()], 
-        "types":[type.json for type in place.types.all()], 
-        "links":[link.json for link in place.links.all()], 
-        "geoms":[geom.json for geom in place.geoms.all()],
-        "whens":[when.json for when in place.whens.all()], 
-        "related":[rel.json for rel in place.related.all()], 
-        "descriptions":[descr.json for descr in place.descriptions.all()], 
-        "depictions":[depict.json for depict in place.depictions.all()]
+        "names":[name.jsonb for name in place.names.all()], 
+        "types":[type.jsonb for type in place.types.all()], 
+        "links":[link.jsonb for link in place.links.all()], 
+        "geoms":[geom.jsonb for geom in place.geoms.all()],
+        "whens":[when.jsonb for when in place.whens.all()], 
+        "related":[rel.jsonb for rel in place.related.all()], 
+        "descriptions":[descr.jsonb for descr in place.descriptions.all()], 
+        "depictions":[depict.jsonb for depict in place.depictions.all()]
       }
       context['payload'].append(record)
       
     # get traces
     qt = {"query": {"bool": {"must": [{"match":{"body.whg_id": id_ }}]}}}
-    trace_hits = es.search(index='traces01', doc_type='trace', body=qt)['hits']['hits']
+    trace_hits = es.search(index='traces', doc_type='trace', body=qt)['hits']['hits']
     # TODO: parse, process
     for h in trace_hits:
       #print('trace hit h',h)

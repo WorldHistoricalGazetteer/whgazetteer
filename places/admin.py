@@ -13,19 +13,19 @@ class SourceAdmin(admin.ModelAdmin):
 admin.site.register(Source,SourceAdmin)
 
 class PlaceLinkAdmin(admin.ModelAdmin):
-    list_display = ('place_id', 'json')
+    list_display = ('place_id', 'jsonb')
 admin.site.register(PlaceLink,PlaceLinkAdmin)
 
 class PlaceNameAdmin(admin.ModelAdmin):
-    list_display = ('place_id','json')
+    list_display = ('place_id','jsonb')
 admin.site.register(PlaceName,PlaceNameAdmin)
 
 class PlaceTypeAdmin(admin.ModelAdmin):
-    list_display = ('place_id','json')
+    list_display = ('place_id','jsonb')
 admin.site.register(PlaceType,PlaceTypeAdmin)
 
 class PlaceGeomAdmin(admin.ModelAdmin):
-    list_display = ('place_id','json')
+    list_display = ('place_id','jsonb')
 admin.site.register(PlaceGeom,PlaceGeomAdmin)
 
 admin.site.register(PlaceWhen)

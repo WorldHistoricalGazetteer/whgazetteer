@@ -89,13 +89,13 @@ def parsePlace(place,attr):
     arr = []
     for obj in qs:
         if attr == 'geoms':
-            g = obj.json
+            g = obj.jsonb
             geom={"location":{"type":g['type'],"coordinates":g['coordinates']}}
             if 'citation' in g.keys(): geom["citation"] = g['citation']
             if 'geowkt' in g.keys(): geom["geowkt"] = g['geowkt']
             arr.append(geom)
         else:
-            arr.append(obj.json)
+            arr.append(obj.jsonb)
     return arr
 
 def jsonDefault(value):

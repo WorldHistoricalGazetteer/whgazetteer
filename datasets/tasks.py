@@ -78,7 +78,7 @@ def normalize(h,auth):
     try:
       #rec = HitRecord(h['whg_id'], h['place_id'], h['dataset'], h['src_id'], h['title'])
       rec = HitRecord(h['place_id'], h['dataset'], h['src_id'], h['title'])
-      print('rec',rec)
+      #print('rec',rec)
       # add elements if non-empty in index record
       rec.variants = [n['toponym'] for n in h['names']] # always >=1 names
       rec.types = [t['label']+' ('+t['src_label']  +')' if 'src_label' in t.keys() else '' \
@@ -547,13 +547,15 @@ def es_lookup_whg(qobj, *args, **kwargs):
 @task(name="align_whg")
 def align_whg(pk, *args, **kwargs):
   ds = get_object_or_404(Dataset, id=pk)
-  # get last identifier (whg_id & _id)
+  # get last identifier (used for whg_id & _id)
   whg_id=maxID(es)
+  
+  # DANGER: this zaps whg index, creates new one
   if ds.id==1:
     errors_black = codecs.open('err_black-whg.txt', mode='w', encoding='utf8')
     esInit('whg')
   
-  # dummies for testing
+  #dummies for testing
   #bounds = {'type': ['userarea'], 'id': ['0']}
   #bounds = {'type': ['region'], 'id': ['76']}
   bounds = kwargs['bounds']
@@ -571,9 +573,12 @@ def align_whg(pk, *args, **kwargs):
   if 'black' && no hits on pass1, index immediately
   else, write all hits to db 
   """
-  #for place in ds.places.all()[:50]:
-  for place in ds.places.all():
-    #place=ds.places.first()
+  #one-time filter for black atlas children
+  #black_dupes = [h.place_id_id for h in Hit.objects.distinct('place_id_id').filter(task_id='a102377e-4645-4c2d-a932-b530994da2ba')]
+  #qs = ds.places.all().filter(id__in=black_dupes)
+  qs=ds.places.all()
+  for place in qs:
+    #place=get_object_or_404(Place,id=81034) # Acragas
     #place=get_object_or_404(Place,id=81104) # Agrigentum
     count +=1
     qobj = {"place_id":place.id, "src_id":place.src_id, "title":place.title}
@@ -581,7 +586,7 @@ def align_whg(pk, *args, **kwargs):
 
     ## links
     for l in place.links.all():
-      links.append(l.json['identifier'])
+      links.append(l.jsonb['identifier'])
     qobj['links'] = links
 
     ## ccodes (2-letter iso codes)
@@ -592,8 +597,8 @@ def align_whg(pk, *args, **kwargs):
     ## types (Getty AAT identifiers)
     ## account for 'null' in 97 black records
     for t in place.types.all():
-      if t.json['identifier'] != None:
-        types.append(t.json['identifier'])
+      if t.jsonb['identifier'] != None:
+        types.append(t.jsonb['identifier'])
       else:
         # inhabited place, cultural group, site
         types.extend(['aat:300008347','aat:300387171','aat:300000809'])
@@ -606,14 +611,14 @@ def align_whg(pk, *args, **kwargs):
 
     ## parents
     for rel in place.related.all():
-      if rel.json['relation_type'] == 'gvp:broaderPartitive':
-        parents.append(rel.json['label'])
+      if rel.jsonb['relation_type'] == 'gvp:broaderPartitive':
+        parents.append(rel.jsonb['label'])
     qobj['parents'] = parents
 
     ## geoms
     if len(place.geoms.all()) > 0:
       # any geoms at all...
-      g_list =[g.json for g in place.geoms.all()]
+      g_list =[g.jsonb for g in place.geoms.all()]
       # make everything a simple polygon hull for spatial filter purposes
       qobj['geom'] = hully(g_list)
 
@@ -643,24 +648,89 @@ def align_whg(pk, *args, **kwargs):
         except:
           print('failed indexing '+str(place.id), parent_obj)
           print(sys.exc_info[0])
-          errors_black.write(str({"pid":place.id, "title":place.title})+'\n')
+          #errors_black.write(str({"pid":place.id, "title":place.title})+'\n')
         print('created parent:',result_obj['place_id'],result_obj['title'])
       #nohits.append(result_obj['missed'])
     elif result_obj['hit_count'] > 0:
       # create hit record for review process
       count_hit +=1
-      count_errors = 0
+      [count_kids,count_errors] = [0,0]
       total_hits += result_obj['hit_count']
       #print("hit['_source']: ",result_obj['hits'][0]['_source'])
       for hit in result_obj['hits']:
-        if hit['pass'] == 'pass1':
-          count_p1+=1
-          # one-time black repair 20190420
-          # if ds='black' and place has a 'whg*' match link, make it child of that id
-        elif hit['pass'] == 'pass2': 
-          count_p2+=1
-        elif hit['pass'] == 'pass3': 
-          count_p3+=1
+        parentid=hit['_source']['place_id']
+        #print('hit parentid:',parentid)
+        #if hit['pass'] == 'pass1':
+          #count_p1+=1
+          ## one-time black repair 20190420
+          ## if ds='black' and place has a 'whg*' match link, make it child of that id
+          ## got a whg match in place_link?
+          #if ds.label == 'black':
+            #print('it is black')
+            #qs_links=get_object_or_404(Place,id=place.id).links.filter(black_parent__isnull=False)
+            #if len(qs_links)>0:
+              #print('match type:',qs_links[0].jsonb['type'])
+              
+              ## leave 'related' and unlinked out of it
+              #if 'Match' in qs_links[0].jsonb['type']:
+                
+                ## get _id (whg_id) of parent
+                #parentid=qs_links[0].black_parent
+                #q_parent={"query": {"bool": {"must": [{"match":{"place_id": parentid}}]}}}
+                #res = es.search(index='whg', body=q_parent)
+                #parent_whgid = res['hits']['hits'][0]['_id'] #; print(parent_whgid)
+                
+                ## gather names, make an index doc
+                #match_names = [p.toponym for p in place.names.all()]
+                #child_obj = makeDoc(place,'none')
+                #child_obj['relation']={"name":"child","parent":parent_whgid}
+                
+                ## index it
+                #try:
+                  #res = es.index(index='whg',doc_type='place',id=place.id,
+                                 #routing=1,body=json.dumps(child_obj))
+                  #count_kids +=1                
+                  #print('added '+str(place.id) + ' as child of '+ str(parentid))
+                #except:
+                  #print('failed indexing '+str(place.id), child_obj)
+                  #sys.exit(sys.exc_info())
+                #q_update = { "script": {
+                    #"source": "ctx._source.suggest.input.addAll(params.names); ctx._source.children.add(params.id)",
+                    #"lang": "painless",
+                    #"params":{"names": match_names, "id": str(place.id)}
+                  #},
+                  #"query": {"match":{"_id": parent_whgid}}}
+                #try:
+                  #es.update_by_query(index='whg', doc_type='place', body=q_update)
+                #except:
+                  #print('failed updating '+str(parentid)+' from child '+str(place.id))
+                  #print(count_kids-1)
+                  #sys.exit(sys.exc_info())
+              #else:
+                ## it's 'related' or not linked at all...make it a parent
+                #whg_id+=1
+                #place=get_object_or_404(Place,id=result_obj['place_id'])
+                #print('new whg_id',whg_id)
+                #parent_obj = makeDoc(place,'none')
+                #parent_obj['relation']={"name":"parent"}
+                #parent_obj['whg_id']=whg_id
+                
+                ## add its names to its suggest field
+                #for n in parent_obj['names']:
+                  #parent_obj['suggest']['input'].append(n['toponym']) 
+                  
+                ##index it with fresh whg_id
+                #try:
+                  #res = es.index(index='whg', doc_type='place', id=str(whg_id), body=json.dumps(parent_obj))
+                  #count_seeds +=1
+                #except:
+                  #print('failed indexing '+str(place.id), parent_obj)
+                  #print(sys.exc_info[0])
+
+        #elif hit['pass'] == 'pass2': 
+          #count_p2+=1
+        #elif hit['pass'] == 'pass3': 
+          #count_p3+=1
         hit_parade["hits"].append(hit)
         loc = hit['_source']['geoms'] if 'geoms' in hit['_source'].keys() else None
         try:
@@ -696,7 +766,7 @@ def align_whg(pk, *args, **kwargs):
     'elapsed': elapsed(end-start)
     #'skipped': count_errors
   }
-  if ds.label == 'black': errors_black.close()
+  #if ds.label == 'black': errors_black.close()
   print("hit_parade['summary']",hit_parade['summary'])
   return hit_parade['summary']
 
