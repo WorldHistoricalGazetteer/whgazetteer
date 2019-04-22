@@ -194,7 +194,7 @@
   }
   function fetchTraceGeom(trace_id,counter) {
     console.log('fetchTraceGeom():',trace_id)
-    $.get("/search/trace",{idx: 'traces01', search: trace_id, doc_type: 'trace'},
+    $.get("/search/tracegeom",{idx: 'traces', search: trace_id, doc_type: 'trace'},
       function(data){
         console.log(data.features.length,'mappable geoms in this trace')
         mappy.createPane('tracePane');

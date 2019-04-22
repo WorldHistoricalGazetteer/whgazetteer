@@ -97,7 +97,18 @@
   var titles = {}
   var searchoption = null;
   var doctype = $("input[name='class']:checked").val();
-  
+
+  //creates suggestion dropdown
+  function showSuggestions(data,doctype){
+    console.log('showSuggestions',data)
+    var div = '';
+    data.forEach(function(sug){
+      // load suggestion div
+      div += sugLister(sug,doctype)
+    });
+    $('.nameautosuggest').html(div);
+  }
+   
   // queries at each character
   // TODO: wait for 3rd character?
   $("#searchbox").on('input', function(){
@@ -112,14 +123,28 @@
       });
   })
   
-  $('.nameautosuggest').on('click', '.suggestion', function(){
+  $('.nameautosuggest').on('click', '.suggest-place', function(){
     pid=$(this).attr('ref')
-
     // clear the dropdown
     $(".nameautosuggest").html('')
-    
     // go
     location.href = 'places/'+pid+'/portal'
+  });
+  
+  $('.nameautosuggest').on('click', '.suggest-trace', function(){
+    idx_id=$(this).attr('ref')
+    // clear the dropdown
+    <!--$(".nameautosuggest").html('')-->
+
+    $.get("/search/suggest",{
+        search: $(this).val(), 
+        doc_type: 'trace'
+      }, 
+      function(data){
+        // render to html
+        showSuggestions(data,doctype);
+      });
+    console.log('clicked card',idx_id)
   });
 
   function sugLister(sug,doctype) {
@@ -128,12 +153,16 @@
       variants = sug['variants'].length > 0 ? '<i class="text-secondary">'+sug['variants']+'</i>' : ''
       item = ('<li ref="'+sug['whg_id']+
               '" children="'+sug['children']+
-              '" class="suggestion" ">'+
+              '" class="suggest-place" ">'+
               '<b>'+sug['name']+'</b> ('+sug['ccodes']+') '+ sug['type']+
               '<span class="float-right small">'+'(whg:'+sug['whg_id']+')</span><br/>'+
               variants.substring(0,100)+'</li>')  
     } else {
-      item = '<li ref="'+sug['id']+'">'+sug['title']+' ('+sug['type']+')</li>';
+      item = '<li ref='+sug['_id']+' class="suggest-trace">'+
+              sug['title']+' ('+sug['type']+')'+
+              '<span class="float-right">'+
+              '<a href="'+sug['id']+'">{% fontawesome_icon 'external-link' color='#336699' %}</a>'+
+              '</span></li>';
     }
     return item
   }
@@ -154,17 +183,7 @@
       }
     }).addTo(mappy);    
   }
-  //creates suggestion dropdown
-  function showSuggestions(data,doctype){
-    console.log('showSuggestions',data)
-    var div = '';
-    data.forEach(function(sug){
-      // load suggestion div
-      div += sugLister(sug,doctype)
-    });
-    $('.nameautosuggest').html(div);
-  }
- 
+
   $("[rel='tooltip']").tooltip();
   $('label.btn').click(function(){
     $('#searchbox').attr("placeholder",this.getAttribute("rel"));

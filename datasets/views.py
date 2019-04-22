@@ -315,7 +315,7 @@ def ds_list(request, label):
   for p in qs.all():
     feat={"type":"Feature",
           "properties":{"src_id":p.src_id,"name":p.title},
-              "geometry":p.geoms.first().json}
+              "geometry":p.geoms.first().jsonb}
     geoms.append(feat)
   return JsonResponse(geoms,safe=False)
 

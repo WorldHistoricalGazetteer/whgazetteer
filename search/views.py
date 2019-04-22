@@ -40,9 +40,11 @@ def suggestionItem(s,doctype):
     }
   else:
     item = {
-      "id":s['target']['id'],
-      "type":s['target']['type'],
-      "title":s['target']['title']
+      "_id":s['_id'],
+      "id":s['hit']['target']['id'],
+      "type":s['hit']['target']['type'],
+      "title":s['hit']['target']['title'],
+      "depiction":s['hit']['target']['depiction'] if 'depiction' in s['hit']['target'].keys() else ''
     }
   return item
 
@@ -62,12 +64,13 @@ def suggester(doctype,q):
           # it's a parent, add to suggestions[]
           suggestions.append(h['_source'])
   elif doctype == 'trace':
-    print('suggester/trace q:',q)
+    #print('suggester/trace q:',q)
     res = es.search(index='traces',doc_type='trace',body=q)
+    print('trace result',res)
     hits = res['hits']['hits']
     if len(hits) > 0:
       for h in hits:
-        suggestions.append(h['_source'])
+        suggestions.append({"_id":h['_id'],"hit":h['_source']})
   return suggestions
 
 class SuggestView(View):

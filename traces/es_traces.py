@@ -42,7 +42,7 @@ def init():
   except Exception as ex:
     print(ex)
 
-  index_traces(trdata)
+  #index_traces(trdata)
 
 init()
 

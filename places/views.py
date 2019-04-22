@@ -10,7 +10,7 @@ from .models import *
 from datasets.models import Dataset
 
 class PlacePortalView(DetailView):
-  # TODO: get conflated record data from ES index
+  # 
   template_name = 'places/place_portal.html'
 
   def get_object(self):
