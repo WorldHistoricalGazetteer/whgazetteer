@@ -387,13 +387,9 @@ def align_tgn(pk, *args, **kwargs):
 # queries > result_obj
 def es_lookup_whg(qobj, *args, **kwargs):
   global whg_id
-  #whg_id=maxID(es)
-  #print('new record, maxID is',whg_id)
-  #idx='whg_flat'
   idx='whg'
   bounds = kwargs['bounds']
   ds = kwargs['dataset'] 
-  #ds='black'
   place = kwargs['place']
   #bounds = {'type': ['region'], 'id': ['87']}
   #bounds = {'type': ['userarea'], 'id': ['0']}
@@ -557,7 +553,6 @@ def align_whg(pk, *args, **kwargs):
   
   #dummies for testing
   #bounds = {'type': ['userarea'], 'id': ['0']}
-  #bounds = {'type': ['region'], 'id': ['76']}
   bounds = kwargs['bounds']
 
   # TODO: system for region creation
@@ -574,8 +569,6 @@ def align_whg(pk, *args, **kwargs):
   else, write all hits to db 
   """
   #one-time filter for black atlas children
-  #black_dupes = [h.place_id_id for h in Hit.objects.distinct('place_id_id').filter(task_id='a102377e-4645-4c2d-a932-b530994da2ba')]
-  #qs = ds.places.all().filter(id__in=black_dupes)
   qs=ds.places.all()
   for place in qs:
     #place=get_object_or_404(Place,id=81034) # Acragas

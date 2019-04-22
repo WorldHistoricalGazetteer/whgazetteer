@@ -19,9 +19,9 @@ class DatasetSerializer(serializers.HyperlinkedModelSerializer):
 
 class PlaceDepictionSerializer(serializers.ModelSerializer):
     # json: @id, title, license
-    identifier = serializers.ReadOnlyField(source='json.@id')
-    title = serializers.ReadOnlyField(source='json.title')
-    license = serializers.ReadOnlyField(source='json.license')
+    identifier = serializers.ReadOnlyField(source='jsonb.@id')
+    title = serializers.ReadOnlyField(source='jsonb.title')
+    license = serializers.ReadOnlyField(source='jsonb.license')
 
     class Meta:
         model = PlaceDepiction
@@ -29,9 +29,9 @@ class PlaceDepictionSerializer(serializers.ModelSerializer):
 
 class PlaceDescriptionSerializer(serializers.ModelSerializer):
     # json: @id, value, lang
-    identifier = serializers.ReadOnlyField(source='json.id')
-    value = serializers.ReadOnlyField(source='json.value')
-    lang = serializers.ReadOnlyField(source='json.lang')
+    identifier = serializers.ReadOnlyField(source='jsonb.id')
+    value = serializers.ReadOnlyField(source='jsonb.value')
+    lang = serializers.ReadOnlyField(source='jsonb.lang')
 
     class Meta:
         model = PlaceDescription
@@ -39,10 +39,10 @@ class PlaceDescriptionSerializer(serializers.ModelSerializer):
 
 class PlaceWhenSerializer(serializers.ModelSerializer):
     # json: timespans, periods, label, duration
-    timespans = serializers.ReadOnlyField(source='json.timespans')
-    periods = serializers.ReadOnlyField(source='json.periods')
-    label = serializers.ReadOnlyField(source='json.label')
-    duration = serializers.ReadOnlyField(source='json.duration')
+    timespans = serializers.ReadOnlyField(source='jsonb.timespans')
+    periods = serializers.ReadOnlyField(source='jsonb.periods')
+    label = serializers.ReadOnlyField(source='jsonb.label')
+    duration = serializers.ReadOnlyField(source='jsonb.duration')
 
     class Meta:
         model = PlaceWhen
@@ -50,12 +50,12 @@ class PlaceWhenSerializer(serializers.ModelSerializer):
 
 class PlaceRelatedSerializer(serializers.ModelSerializer):
     # json: relation_type, relation_to, label, when, citation, certainty
-    relation_type = serializers.ReadOnlyField(source='json.relationType')
-    relation_to = serializers.ReadOnlyField(source='json.relationTo')
-    label = serializers.ReadOnlyField(source='json.label')
-    when = serializers.ReadOnlyField(source='json.when')
-    citation = serializers.ReadOnlyField(source='json.citation')
-    certainty = serializers.ReadOnlyField(source='json.certainty')
+    relation_type = serializers.ReadOnlyField(source='jsonb.relationType')
+    relation_to = serializers.ReadOnlyField(source='jsonb.relationTo')
+    label = serializers.ReadOnlyField(source='jsonb.label')
+    when = serializers.ReadOnlyField(source='jsonb.when')
+    citation = serializers.ReadOnlyField(source='jsonb.citation')
+    certainty = serializers.ReadOnlyField(source='jsonb.certainty')
 
     class Meta:
         model = PlaceRelated
@@ -64,8 +64,8 @@ class PlaceRelatedSerializer(serializers.ModelSerializer):
 
 class PlaceLinkSerializer(serializers.ModelSerializer):
     # json: type, identifier
-    type = serializers.ReadOnlyField(source='json.type')
-    identifier = serializers.ReadOnlyField(source='json.identifier')
+    type = serializers.ReadOnlyField(source='jsonb.type')
+    identifier = serializers.ReadOnlyField(source='jsonb.identifier')
 
     class Meta:
         model = PlaceLink
@@ -73,11 +73,11 @@ class PlaceLinkSerializer(serializers.ModelSerializer):
 
 class PlaceGeomSerializer(serializers.ModelSerializer):
     # json: type, geowkt, coordinates, when{}
-    type = serializers.ReadOnlyField(source='json.type')
-    geowkt = serializers.ReadOnlyField(source='json.geowkt')
-    coordinates = serializers.ReadOnlyField(source='json.coordinates')
-    citation = serializers.ReadOnlyField(source='json.citation')
-    when = serializers.ReadOnlyField(source='json.when')
+    type = serializers.ReadOnlyField(source='jsonb.type')
+    geowkt = serializers.ReadOnlyField(source='jsonb.geowkt')
+    coordinates = serializers.ReadOnlyField(source='jsonb.coordinates')
+    citation = serializers.ReadOnlyField(source='jsonb.citation')
+    when = serializers.ReadOnlyField(source='jsonb.when')
 
     class Meta:
         model = PlaceGeom
@@ -85,10 +85,10 @@ class PlaceGeomSerializer(serializers.ModelSerializer):
 
 class PlaceTypeSerializer(serializers.ModelSerializer):
     # json: identifier, label, source_label, when{}
-    identifier = serializers.ReadOnlyField(source='json.identifier')
-    label = serializers.ReadOnlyField(source='json.label')
-    source_label = serializers.ReadOnlyField(source='json.sourceLabel')
-    when = serializers.ReadOnlyField(source='json.when')
+    identifier = serializers.ReadOnlyField(source='jsonb.identifier')
+    label = serializers.ReadOnlyField(source='jsonb.label')
+    source_label = serializers.ReadOnlyField(source='jsonb.sourceLabel')
+    when = serializers.ReadOnlyField(source='jsonb.when')
 
     class Meta:
         model = PlaceType
@@ -96,8 +96,8 @@ class PlaceTypeSerializer(serializers.ModelSerializer):
 
 class PlaceNameSerializer(serializers.ModelSerializer):
     # json: toponym, citation{}
-    toponym = serializers.ReadOnlyField(source='json.toponym')
-    citation = serializers.ReadOnlyField(source='json.citation')
+    toponym = serializers.ReadOnlyField(source='jsonb.toponym')
+    citation = serializers.ReadOnlyField(source='jsonb.citation')
 
     class Meta:
         model = PlaceName
