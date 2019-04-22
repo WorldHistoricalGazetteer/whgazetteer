@@ -43,6 +43,7 @@ jobtastic==2.0.0
 jsonfield==2.0.2
 jsonschema==3.0.1
 kombu==4.2.1
+libmagic==1.0
 Markdown==3.0.1
 munch==2.3.2
 numpy==1.15.2
@@ -51,6 +52,7 @@ parso==0.3.1
 pexpect==4.6.0
 pickleshare==0.7.5
 Pillow==5.0.0
+pout==0.7.9
 pprint==0.1
 promise==2.2.1
 prompt-toolkit==2.0.7
@@ -62,6 +64,7 @@ Pygments==2.3.1
 pyrsistent==0.14.11
 python-crontab==2.3.5
 python-dateutil==2.7.3
+python-magic==0.4.15
 pytz==2018.5
 PyYAML==4.2b1
 redis==2.10.6
@@ -72,6 +75,6 @@ six==1.11.0
 topojson==1.0.1+2.g581c6b4
 tornado==5.1.1
 traitlets==4.3.2
-urllib3==1.23
+urllib3==1.24.2
 vine==1.1.4
 wcwidth==0.1.7

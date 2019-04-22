@@ -547,9 +547,9 @@ def align_whg(pk, *args, **kwargs):
   whg_id=maxID(es)
   
   # DANGER: this zaps whg index, creates new one
-  if ds.id==1:
-    errors_black = codecs.open('err_black-whg.txt', mode='w', encoding='utf8')
-    esInit('whg')
+  #if ds.id==1:
+    #errors_black = codecs.open('err_black-whg.txt', mode='w', encoding='utf8')
+    #esInit('whg')
   
   #dummies for testing
   #bounds = {'type': ['userarea'], 'id': ['0']}
