@@ -82,7 +82,7 @@
     };
     mappy.zoomControl.setPosition('topright')
     L.control.layers(baseLayers).addTo(mappy);
-    baseLayers["AWMC Terrain"].addTo(mappy)
+    baseLayers["OSM"].addTo(mappy)
   }, false);
 
   function map_init (home_map, options) {
@@ -99,7 +99,48 @@
   var titles = {}
   var searchoption = null;
   var doctype = $("input[name='class']:checked").val();
+  
+  function filly(counter) {
+    if (counter == 0)
+      return "blue"
+    else if (counter == 1)
+      return "orange"
+    else if (counter == 2)
+      return "purple"
+    else if (counter == 3)
+      return "greenyellow"
+    else 
+      return "yellow"
+  }
 
+  function fetchTraceGeom(trace_id,counter) {
+    console.log('fetchTraceGeom():',trace_id)
+    if(typeof(traces) !== "undefined") {traces.clearLayers();}
+    $.get("/search/tracegeom",{idx: 'traces', search: trace_id, doc_type: 'trace'},
+      function(data){
+        console.log(data.features.length,'mappable geoms in this trace')
+        idToFeature = {}
+        mappy.createPane('tracePane');
+        mappy.getPane('tracePane').style.zIndex = 200;
+        traces = L.geoJSON(data, {
+          pane: 'tracePane',
+          pointToLayer: function (feature, latlng) {
+            identifier = feature.properties.whg_id
+            <!--console.log(feature,identifier)-->
+            marker = L.circleMarker(latlng,
+              {
+                radius: 5, fillOpacity: 0.8, opacity: 1, weight: 1,
+                color: "#fff", fillColor: filly(counter)
+              }
+            ).bindPopup('whg:'+identifier+'<br/><b>'+
+              '<a href="/places/'+identifier+'/portal">'+feature.properties.title+"</b></a>");
+            idToFeature[identifier] = marker
+            return marker
+          }
+        }).addTo(mappy);
+        mappy.fitBounds(traces.getBounds());
+    });
+  }
   //creates suggestion dropdown
   function showSuggestions(data,doctype){
     <!--console.log('showSuggestions',data)-->
@@ -112,6 +153,7 @@
     $(".trace-geo").on('click', function(e){
       <!--e.preventDefault()-->
       <!--fetchTraceGeom($(this).data('id'),$(this).data('ctr'))-->
+      fetchTraceGeom($(this).data('id'),0)
       console.log('get trace geom for:',$(this).data('id'))
     })
   }

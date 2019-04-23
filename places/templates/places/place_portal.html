@@ -199,7 +199,7 @@
         console.log(data.features.length,'mappable geoms in this trace')
         mappy.createPane('tracePane');
         mappy.getPane('tracePane').style.zIndex = 200;
-        nearby = L.geoJSON(data, {
+        traces = L.geoJSON(data, {
           pane: 'tracePane',
           pointToLayer: function (feature, latlng) {
             identifier = feature.properties.whg_id
