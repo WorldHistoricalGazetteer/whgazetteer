@@ -119,13 +119,15 @@
     $.get("/search/tracegeom",{idx: 'traces', search: trace_id, doc_type: 'trace'},
       function(data){
         console.log(data.features.length,'mappable geoms in this trace')
+        var count_features = 0
         idToFeature = {}
         mappy.createPane('tracePane');
         mappy.getPane('tracePane').style.zIndex = 200;
         traces = L.geoJSON(data, {
           pane: 'tracePane',
           pointToLayer: function (feature, latlng) {
-            identifier = feature.properties.whg_id
+            count_features +=1;
+            identifier = feature.properties.whg_id;
             <!--console.log(feature,identifier)-->
             marker = L.circleMarker(latlng,
               {
@@ -138,7 +140,13 @@
             return marker
           }
         }).addTo(mappy);
-        mappy.fitBounds(traces.getBounds());
+        bounds = traces.getBounds()
+        if (bounds.getSouthWest().equals(bounds.getNorthEast())) {
+          // single point
+          mappy.setView(bounds.getCenter(),5)
+        } else {
+          mappy.fitBounds(bounds)
+        }        
     });
   }
   //creates suggestion dropdown
