@@ -89,8 +89,7 @@ class SuggestView(View):
     doctype = request.GET.get('doc_type')
     if doctype == 'place':
       q = { "suggest":{"suggest":{"prefix":text,"completion":{"field":"suggest"}}} }  
-    else: 
-      #q = { "query": {"bool": {"must": [{"match":{"target.title": text }}]}} }
+    elif doctype == 'trace': 
       q = {
         "query": {
           "match": {
@@ -176,6 +175,29 @@ class FeatureContextView(View):
     features = contextSearch(idx, doctype, q_context_all)
     return JsonResponse(features, safe=False)
 
+
+# not implemented (yet?)
+class TraceFullView(View):
+  """ Returns full trace record """
+  @staticmethod
+  def get(request):
+    print('TraceFullView GET:',request.GET)
+    """
+    args in request.GET:
+        [string] idx: index to be queried
+        [string] search: whg_id
+        [string] doc_type: 'trace' in this case
+    """
+    idx = request.GET.get('idx')
+    trace_id = request.GET.get('search')
+    doctype = request.GET.get('doc_type')
+    q_trace = {"query": {"bool": {"must": [{"match":{"_id": trace_id}}]}}}
+    bodies = contextSearch(idx, doctype, q_trace)['hits'][0]
+    bodyids = [b['whg_id'] for b in bodies if b['whg_id']]
+    q_geom={"query": {"bool": {"must": [{"terms":{"_id": bodyids}}]}}}
+    geoms = traceGeoSearch(idx,doctype,q_geom)
+    return JsonResponse(geoms, safe=False)      
+
 class TraceGeomView(View):
   """ Returns places in a trace body """
   @staticmethod
@@ -185,7 +207,7 @@ class TraceGeomView(View):
     args in request.GET:
         [string] idx: index to be queried
         [string] search: whg_id
-        [string] doc_type: 'tracw' in this case
+        [string] doc_type: 'trace' in this case
     """
     idx = request.GET.get('idx')
     trace_id = request.GET.get('search')

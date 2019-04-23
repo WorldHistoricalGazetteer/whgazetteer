@@ -31,10 +31,10 @@
                 <!--<span style="vertical-align:middle;">Search</span>-->
                 <h5 class="pt-1">Search</h5>
                 <label class="btn btn-default" rel="Enter place name">
-                    <input type="radio" id="r_place" name="class" value="place" checked>
+                    <input type="radio" id="r_place" name="class" value="place">
                     Places</label>
                 <label class="btn btn-default" rel="Enter term or name" >
-                    <input type="radio" id="r_trace" name="class" value="trace"> Traces
+                    <input type="radio" id="r_trace" name="class" value="trace" checked> Traces
                     <span class="ml-1"><a href="" title="historical entities having spatial-temporal 'footprints'" rel="tooltip">
                       {% fontawesome_icon 'question-circle' color='#336699' %}</a></span>
                 </label>
@@ -100,7 +100,7 @@
 
   //creates suggestion dropdown
   function showSuggestions(data,doctype){
-    console.log('showSuggestions',data)
+    <!--console.log('showSuggestions',data)-->
     var div = '';
     data.forEach(function(sug){
       // load suggestion div
@@ -109,6 +109,7 @@
     $('.nameautosuggest').html(div);
   }
    
+  $("")
   // queries at each character
   // TODO: wait for 3rd character?
   $("#searchbox").on('input', function(){
@@ -136,14 +137,14 @@
     // clear the dropdown
     <!--$(".nameautosuggest").html('')-->
 
-    $.get("/search/suggest",{
-        search: $(this).val(), 
-        doc_type: 'trace'
-      }, 
-      function(data){
-        // render to html
-        showSuggestions(data,doctype);
-      });
+    <!--$.get("/search/suggest",{-->
+        <!--search: $(this).val(), -->
+        <!--doc_type: 'trace'-->
+      <!--}, -->
+      <!--function(data){-->
+        <!--// render to html-->
+        <!--showSuggestions(data,doctype);-->
+      <!--});-->
     console.log('clicked card',idx_id)
   });
 
@@ -158,11 +159,16 @@
               '<span class="float-right small">'+'(whg:'+sug['whg_id']+')</span><br/>'+
               variants.substring(0,100)+'</li>')  
     } else {
-      item = '<li ref='+sug['_id']+' class="suggest-trace">'+
-              sug['title']+' ('+sug['type']+')'+
-              '<span class="float-right">'+
-              '<a href="'+sug['id']+'">{% fontawesome_icon 'external-link' color='#336699' %}</a>'+
-              '</span></li>';
+      item =  ('<div class="container trace"><div class="row" ref='+sug['_id']+'>'+
+              '<div class="col-sm-9 small">'+sug['title']+' ('+sug['type']+')</div>'+
+              '<div class="col-sm-3"><span class="float-right"><a class="mr-2" href="'+sug['id']+'">{% fontawesome_icon 'external-link' color='#336699' %}</a>'+
+              '<a href="'+sug['id']+'">{% fontawesome_icon 'globe' color='#336699' %}</a></span></div>'+
+              '</div></div>')
+      <!--item = '<li ref='+sug['_id']+' class="suggest-trace">'+-->
+              <!--sug['title']+' ('+sug['type']+')'+-->
+              <!--'<span class="float-right">'+-->
+              <!--'<a href="'+sug['id']+'">{% fontawesome_icon 'external-link' color='#336699' %}</a>'+-->
+              <!--'</span></li>';-->
     }
     return item
   }
@@ -186,6 +192,8 @@
 
   $("[rel='tooltip']").tooltip();
   $('label.btn').click(function(){
+    $(".nameautosuggest").html('')
+    $('#searchbox').val('')
     $('#searchbox').attr("placeholder",this.getAttribute("rel"));
   })
 </script>

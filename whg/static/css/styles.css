@@ -69,7 +69,7 @@ input[type="text"] {
   /*border: 1px solid  #80bfff;*/
   z-index: 600;
 }
-.nameautosuggest li {
+.nameautosuggest li, .trace div {
   list-style-type: none;
   margin-top: 5px;
   background-color: #f2f2f2;
