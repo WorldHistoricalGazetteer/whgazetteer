@@ -72,15 +72,17 @@
     var awmc = L.tileLayer(mbtiles_url, {id:'isawnyu.map-knmctlkh', token:token_awmc, attribution:attrib_awmc}),
       grayscale = L.tileLayer(mbstyle_url, {id:'kgeographer/cjstfpenh6o1e1fldz95w8m6p', token:token_kg, attribution:attrib_mb}),
       satellite  = L.tileLayer(mbtiles_url, {id:'mapbox.satellite', token:token_mb, attribution:attrib_mb});
+      osm  = L.tileLayer(mbtiles_url, {id:'mapbox.light', token:token_mb, attribution:attrib_mb});
 
     var baseLayers = {
       "AWMC Terrain": awmc,
+      "OSM": osm,      
       "Spine Data": grayscale,
       "Satellite": satellite
     };
     mappy.zoomControl.setPosition('topright')
     L.control.layers(baseLayers).addTo(mappy);
-    baseLayers["Spine Data"].addTo(mappy)
+    baseLayers["AWMC Terrain"].addTo(mappy)
   }, false);
 
   function map_init (home_map, options) {
@@ -107,6 +109,11 @@
       div += sugLister(sug,doctype)
     });
     $('.nameautosuggest').html(div);
+    $(".trace-geo").on('click', function(e){
+      <!--e.preventDefault()-->
+      <!--fetchTraceGeom($(this).data('id'),$(this).data('ctr'))-->
+      console.log('get trace geom for:',$(this).data('id'))
+    })
   }
    
   $("")
@@ -161,17 +168,15 @@
     } else {
       item =  ('<div class="container trace"><div class="row" ref='+sug['_id']+'>'+
               '<div class="col-sm-9 small">'+sug['title']+' ('+sug['type']+')</div>'+
-              '<div class="col-sm-3"><span class="float-right"><a class="mr-2" href="'+sug['id']+'">{% fontawesome_icon 'external-link' color='#336699' %}</a>'+
-              '<a href="'+sug['id']+'">{% fontawesome_icon 'globe' color='#336699' %}</a></span></div>'+
+              '<div class="col-sm-3"><span class="float-right">'+
+              '<a class="mr-2" target = "_blank" href="'+sug['id']+'">{% fontawesome_icon 'external-link' color='#336699' %}</a>'+
+              '<a class="trace-geo" data-id='+sug['_id']+'>{% fontawesome_icon 'globe' color='#336699' %}</a></span></div>'+
               '</div></div>')
-      <!--item = '<li ref='+sug['_id']+' class="suggest-trace">'+-->
-              <!--sug['title']+' ('+sug['type']+')'+-->
-              <!--'<span class="float-right">'+-->
-              <!--'<a href="'+sug['id']+'">{% fontawesome_icon 'external-link' color='#336699' %}</a>'+-->
-              <!--'</span></li>';-->
     }
     return item
   }
+  
+  
   function renderFeatures(geom){
     idToFeature = {} // for feature lookup
     features = L.geoJSON(geom, {
