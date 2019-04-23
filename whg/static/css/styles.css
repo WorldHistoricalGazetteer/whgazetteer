@@ -69,7 +69,7 @@ input[type="text"] {
   /*border: 1px solid  #80bfff;*/
   z-index: 600;
 }
-.nameautosuggest li, .trace div {
+.nameautosuggest li, .trace-item {
   list-style-type: none;
   margin-top: 5px;
   background-color: #f2f2f2;
@@ -77,8 +77,13 @@ input[type="text"] {
   font-size: small;
   cursor: pointer;
   min-height: 30px;
-  
 }
+
+.nameautosuggest li:hover, .trace-item:hover  {
+  background-color: #f9ebeb;
+}
+
+.active-card {background-color: #f9ebeb !important;}
 
 .col-content { 
   background-color: white; padding:4px;

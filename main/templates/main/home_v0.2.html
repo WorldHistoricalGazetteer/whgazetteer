@@ -40,7 +40,6 @@
                 </label>
               <!--</span>-->
             </div>
-            <!--<span class="float-right pt-2" style="margin-top:-14px;"><a href="{# url 'search_adv' #}">Advanced</a></span>-->
           </div>
           <div class="form-group d-flex justify-content-center">
             <div class="input-group">
@@ -114,11 +113,11 @@
   }
 
   function fetchTraceGeom(trace_id,counter) {
-    console.log('fetchTraceGeom():',trace_id)
+    <!--console.log('fetchTraceGeom():',trace_id)-->
     if(typeof(traces) !== "undefined") {traces.clearLayers();}
     $.get("/search/tracegeom",{idx: 'traces', search: trace_id, doc_type: 'trace'},
       function(data){
-        console.log(data.features.length,'mappable geoms in this trace')
+        <!--console.log(data.features.length,'mappable geoms in this trace')-->
         var count_features = 0
         idToFeature = {}
         mappy.createPane('tracePane');
@@ -150,23 +149,6 @@
     });
   }
   //creates suggestion dropdown
-  function showSuggestions(data,doctype){
-    <!--console.log('showSuggestions',data)-->
-    var div = '';
-    data.forEach(function(sug){
-      // load suggestion div
-      div += sugLister(sug,doctype)
-    });
-    $('.nameautosuggest').html(div);
-    $(".trace-geo").on('click', function(e){
-      <!--e.preventDefault()-->
-      <!--fetchTraceGeom($(this).data('id'),$(this).data('ctr'))-->
-      fetchTraceGeom($(this).data('id'),0)
-      console.log('get trace geom for:',$(this).data('id'))
-    })
-  }
-   
-  $("")
   // queries at each character
   // TODO: wait for 3rd character?
   $("#searchbox").on('input', function(){
@@ -189,21 +171,25 @@
     location.href = 'places/'+pid+'/portal'
   });
   
-  $('.nameautosuggest').on('click', '.suggest-trace', function(){
-    idx_id=$(this).attr('ref')
-    // clear the dropdown
-    <!--$(".nameautosuggest").html('')-->
 
-    <!--$.get("/search/suggest",{-->
-        <!--search: $(this).val(), -->
-        <!--doc_type: 'trace'-->
-      <!--}, -->
-      <!--function(data){-->
-        <!--// render to html-->
-        <!--showSuggestions(data,doctype);-->
-      <!--});-->
-    console.log('clicked card',idx_id)
-  });
+  function showSuggestions(data,doctype){
+    <!--console.log('showSuggestions',data)-->
+    var div = '';
+    data.forEach(function(sug){
+      // load suggestion div
+      div += sugLister(sug,doctype)
+    });
+    $('.nameautosuggest').html(div);
+    
+    $(".trace-item").on('click', function(e){
+      $(".trace-item").removeClass('active-card')
+      <!--e.preventDefault()-->
+      window.card= $(this)
+      $(this).toggleClass("active-card")
+      fetchTraceGeom($(this).data('id'),0)
+      console.log('get trace geom for:',$(this).data('id'))
+    })
+  }
 
   function sugLister(sug,doctype) {
     <!--console.log(sug)-->
@@ -216,16 +202,16 @@
               '<span class="float-right small">'+'(whg:'+sug['whg_id']+')</span><br/>'+
               variants.substring(0,100)+'</li>')  
     } else {
-      item =  ('<div class="container trace"><div class="row" ref='+sug['_id']+'>'+
-              '<div class="col-sm-9 small">'+sug['title']+' ('+sug['type']+')</div>'+
+      item =  ('<div class="container"><div class="row trace-item" data-id='+sug['_id']+'>'+
+              '<div class="col-sm-9">'+sug['title']+' ('+sug['type']+')</div>'+
               '<div class="col-sm-3"><span class="float-right">'+
-              '<a class="mr-2" target = "_blank" href="'+sug['id']+'">{% fontawesome_icon 'external-link' color='#336699' %}</a>'+
-              '<a class="trace-geo" data-id='+sug['_id']+'>{% fontawesome_icon 'globe' color='#336699' %}</a></span></div>'+
+              '<a class="mr-2" target="_blank" href="'+sug['id']+'">{% fontawesome_icon 'external-link' color='#336699' %}</a>'+
+              '</span></div>'+
               '</div></div>')
     }
     return item
   }
-  
+  <!--<a class="trace-geo" data-id='+sug['_id']+'>{% fontawesome_icon 'globe' color='#336699' %}</a>-->
   
   function renderFeatures(geom){
     idToFeature = {} // for feature lookup
@@ -253,11 +239,3 @@
   })
 </script>
 {% endblock %}
-
-  <!--mapboxgl.accessToken = 'pk.eyJ1Ijoia2dlb2dyYXBoZXIiLCJhIjoiUmVralBPcyJ9.mJegAI1R6KR21x_CVVTlqw';-->
-  <!-- mapboxgl.accessToken = {{ mapbox_access_token }}; -->
-  <!--var map = new mapboxgl.Map({-->
-    <!--container: 'map_home',-->
-<!--style: 'mapbox://styles/kgeographer/cjni3c0lj5l3r2spa4niiuef5'-->
-<!--// style: 'mapbox://styles/mapbox/streets-v10'-->
-<!--});-->
