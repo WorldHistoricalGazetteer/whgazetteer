@@ -165,6 +165,14 @@
               }
             ).bindPopup('whg:'+identifier+'<br/><b>'+
               '<a href="/places/'+identifier+'/portal">'+feature.properties.title+"</b></a>");
+            
+            <!--marker.on('mouseover', function (e) {-->
+                <!--this.openPopup();-->
+            <!--});-->
+            <!--marker.on('mouseout', function (e) {-->
+                <!--this.closePopup();-->
+            <!--});-->
+            
             idToFeature[identifier] = marker
             return marker
           }
