@@ -44,7 +44,8 @@ def suggestionItem(s,doctype):
       "id":s['hit']['target']['id'],
       "type":s['hit']['target']['type'],
       "title":s['hit']['target']['title'],
-      "depiction":s['hit']['target']['depiction'] if 'depiction' in s['hit']['target'].keys() else ''
+      "depiction":s['hit']['target']['depiction'] if 'depiction' in s['hit']['target'].keys() else '',
+      "bodies":s['hit']['body']
     }
   return item
 
@@ -66,7 +67,7 @@ def suggester(doctype,q):
   elif doctype == 'trace':
     #print('suggester/trace q:',q)
     res = es.search(index='traces',doc_type='trace',body=q)
-    print('trace result',res)
+    #print('trace result',res)
     hits = res['hits']['hits']
     if len(hits) > 0:
       for h in hits:
@@ -108,14 +109,14 @@ class SuggestView(View):
 ##    get features in current map viewport
 ## ***
 def contextSearch(idx,doctype,q):
-  print('context query',q)
+  #print('context query',q)
   es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
   count_hits=0
   result_obj = {"hits":[]}
   res = es.search(index=idx, doc_type=doctype, body=q, size=300)
   hits = res['hits']['hits']
   # TODO: refactor this bit
-  print('hits',hits)
+  #print('hits',hits)
   if len(hits) > 0:
     for hit in hits:
       count_hits +=1
@@ -125,6 +126,8 @@ def contextSearch(idx,doctype,q):
         result_obj["hits"].append(hit["_source"]['body'])
   result_obj["count"] = count_hits
   return result_obj
+
+
 def traceGeoSearch(idx,doctype,q):
   es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
   #try:
@@ -139,7 +142,11 @@ def traceGeoSearch(idx,doctype,q):
       collection['features'].append(
         {"type":"Feature",
          "geometry":h['_source']['geoms'][0]['location'],
-         "properties":{"title":h['_source']['title'],"whg_id":h['_source']['whg_id']}}
+         "properties":{
+           "title":h['_source']['title']
+           ,"whg_id":h['_source']['whg_id']
+         }
+        }
       )
   print(str(len(collection['features']))+' features')  
   return collection
@@ -177,26 +184,26 @@ class FeatureContextView(View):
 
 
 # not implemented (yet?)
-class TraceFullView(View):
-  """ Returns full trace record """
-  @staticmethod
-  def get(request):
-    print('TraceFullView GET:',request.GET)
-    """
-    args in request.GET:
-        [string] idx: index to be queried
-        [string] search: whg_id
-        [string] doc_type: 'trace' in this case
-    """
-    idx = request.GET.get('idx')
-    trace_id = request.GET.get('search')
-    doctype = request.GET.get('doc_type')
-    q_trace = {"query": {"bool": {"must": [{"match":{"_id": trace_id}}]}}}
-    bodies = contextSearch(idx, doctype, q_trace)['hits'][0]
-    bodyids = [b['whg_id'] for b in bodies if b['whg_id']]
-    q_geom={"query": {"bool": {"must": [{"terms":{"_id": bodyids}}]}}}
-    geoms = traceGeoSearch(idx,doctype,q_geom)
-    return JsonResponse(geoms, safe=False)      
+#class TraceFullView(View):
+  #""" Returns full trace record """
+  #@staticmethod
+  #def get(request):
+    #print('TraceFullView GET:',request.GET)
+    #"""
+    #args in request.GET:
+        #[string] idx: index to be queried
+        #[string] search: whg_id
+        #[string] doc_type: 'trace' in this case
+    #"""
+    #idx = request.GET.get('idx')
+    #trace_id = request.GET.get('search')
+    #doctype = request.GET.get('doc_type')
+    #q_trace = {"query": {"bool": {"must": [{"match":{"_id": trace_id}}]}}}
+    #bodies = contextSearch(idx, doctype, q_trace)['hits'][0]
+    #bodyids = [b['whg_id'] for b in bodies if b['whg_id']]
+    #q_geom={"query": {"bool": {"must": [{"terms":{"_id": bodyids}}]}}}
+    #geoms = traceGeoSearch(idx,doctype,q_geom)
+    #return JsonResponse(geoms, safe=False)      
 
 class TraceGeomView(View):
   """ Returns places in a trace body """
@@ -214,9 +221,11 @@ class TraceGeomView(View):
     doctype = request.GET.get('doc_type')
     q_trace = {"query": {"bool": {"must": [{"match":{"_id": trace_id}}]}}}
     bodies = contextSearch(idx, doctype, q_trace)['hits'][0]
+    print('bodies from TraceGeomView->contextSearch',bodies)
     bodyids = [b['whg_id'] for b in bodies if b['whg_id']]
     q_geom={"query": {"bool": {"must": [{"terms":{"_id": bodyids}}]}}}
     geoms = traceGeoSearch(idx,doctype,q_geom)
+    #geoms['bodies'] = bodies
     return JsonResponse(geoms, safe=False)      
 
 def home(request):

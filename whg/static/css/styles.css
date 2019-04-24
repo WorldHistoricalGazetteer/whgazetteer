@@ -33,6 +33,16 @@ label {vertical-align:top;}
 .btn-default:focus, .btn-default.focus {
     box-shadow:none;
 }
+#trace_detail { 
+  display:none; 
+  max-height:300px;
+  overflow:scroll;
+}
+#trace_detail ul {
+  list-style-type: none;
+  margin: 0;
+  padding-left: .5rem;
+}
 
 input[type="text"] {
    height: 1.5rem;
@@ -74,7 +84,7 @@ input[type="text"] {
   /*border: 1px solid  #80bfff;*/
   z-index: 600;
 }
-.nameautosuggest li, .trace-item {
+.suggest-place, .trace-item {
   list-style-type: none;
   margin-top: 5px;
   background-color: #f2f2f2;
