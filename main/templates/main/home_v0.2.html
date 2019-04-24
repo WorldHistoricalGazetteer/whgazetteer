@@ -78,7 +78,12 @@
 <script type="text/javascript">
   $(function(){
     $("#options").hide();
+    var idToFeature = {} // for feature lookup
+    var titles = {}
+    var searchoption = null;
+    var doctype = $("input[name='class']:checked").val();
   })
+  $("#search_options.li")
   $("#options_link").on("click", function(e){
     e.preventDefault()
     $("#options").toggle()
@@ -144,9 +149,7 @@
   } // end map_init
 
 
-  var titles = {}
-  var searchoption = null;
-  var doctype = $("input[name='class']:checked").val();
+  
   
   function filly(counter) {
     if (counter == 0)
@@ -240,7 +243,17 @@
       div += sugLister(sug,doctype)
     });
     $('.nameautosuggest').html(div);
+
+    // highlight map marker from list
+    $("li.body-place").on('click',function(e){
+      // reset all markers to default
+      traces.setStyle({"fillColor":"blue","radius":5})
+      whgid = $(this).attr('data-id')
+      idToFeature[whgid].setStyle({"fillColor":"#ff3333","radius":10})
+      mappy.panTo(idToFeature[whgid]._latlng)
+    })
     
+    // open a modal for external page
     $('.ext').on('click', function(e) {
       e.preventDefault();
       var url = $(this).attr('href');
@@ -248,8 +261,8 @@
       $(".modal-body").html('<iframe width="100%" height="100%" frameborder="0" scrolling="yes" '+
         'allowtransparency="true" src="'+url+'"></iframe>');
     });
-    <!--<a id="ext" href="http://wikipedia.com" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#ext_site">Launch Modal</a>-->
 
+    // fetch geometry for a trace record
     $(".trace-item").on('click', function(e){
       $(".trace-item").removeClass('active-card')
       $(".trace-item").next().css( "display", "none" )
@@ -258,20 +271,23 @@
       $(this).toggleClass("active-card")
       $(this).next().css( "display", "block" )
       fetchTraceGeom($(this).data('id'),0)
-      <!--console.log('get trace geom for:',$(this).data('id'))-->
     })
   }
 
   function placeList(bods) {
     html='<ul class="small">'
     for (b in bods){
-      html+='<li>'+bods[b]['title']+' ('+bods[b]['relation']+')</li>'
+      if(bods[b]['whg_id'] !=null){
+        <!--console.log(bods[b])-->
+        html+='<li class="body-place" data-id="'+bods[b]['whg_id']+'">'+bods[b]['title']+' ('+bods[b]['relation']+') <i>'+
+        bods[b]['when'][0]['start']+'>'+bods[b]['when'][0]['end']+'</i></li>'
+      }
     }
     html += '</ul>'
     return html
   }
   function sugLister(sug,doctype) {
-    console.log(sug)
+    <!--console.log(sug)-->
     if (doctype=='place') {
       variants = sug['variants'].length > 0 ? '<i class="text-secondary">'+sug['variants']+'</i>' : ''
       item = ('<li ref="'+sug['whg_id']+
@@ -298,7 +314,6 @@
   }
 
   function renderFeatures(geom){
-    idToFeature = {} // for feature lookup
     features = L.geoJSON(geom, {
       pointToLayer: function (feature, latlng) {
         matchid = feature.properties.dataset+':'+feature.properties.id

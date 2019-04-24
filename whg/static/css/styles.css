@@ -43,7 +43,7 @@ label {vertical-align:top;}
   margin: 0;
   padding-left: .5rem;
 }
-
+#trace_detail li:hover { cursor:pointer;}
 input[type="text"] {
    height: 1.5rem;
    font-size: .8rem;
