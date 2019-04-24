@@ -31,10 +31,10 @@
                 <!--<span style="vertical-align:middle;">Search</span>-->
                 <h5 class="pt-1">Search</h5>
                 <label class="btn btn-default" rel="Enter place name">
-                    <input type="radio" id="r_place" name="class" value="place" checked>
+                    <input type="radio" id="r_place" name="class" value="place">
                     Places</label>
                 <label class="btn btn-default" rel="Enter term or name" >
-                    <input type="radio" id="r_trace" name="class" value="trace"> Traces
+                    <input type="radio" id="r_trace" name="class" value="trace" checked> Traces
                     <span class="ml-1"><a href="" title="historical entities having spatial-temporal 'footprints'" rel="tooltip">
                       {% fontawesome_icon 'question-circle' color='#336699' %}</a></span>
                 </label>
@@ -47,14 +47,44 @@
                 placeholder="Enter place name" aria-label="Search term" aria-describedby="search-type">
             </div>
           </div>
-          <div class="nameautosuggest"><!-- suggestions inserted here--></div>
+          <div class="nameautosuggest"></div>
         </form>
-      </div>
+      </div> <!-- home_search -->
+
     </div>
   </div>
 </div>
 
+<div id="ext_site" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <!--<button type="button" class="close" data-dismiss="modal">&times;</button>-->
+      </div>
+      <div id="ext_content" class="modal-body">foo</div>
+    </div>
+  </div>
+</div> <!-- ext_site -->
+      
+
 <script type="text/javascript">
+  function stopVideo() {
+    var $frame = $('iframe');
+  
+    // saves the current iframe source
+    var pagesrc = $frame.attr('src');
+  
+    // sets the source to nothing, stopping the video
+    $frame.attr('src', '');
+  
+    // sets it back to the correct link so that it reloads immediately on the next window open
+    $frame.attr('src', pagesrc);
+  }
+  
+  $('#ext_site').on('hidden.bs.modal', function(e) {
+    stopVideo();
+  })
   window.addEventListener('map:init', function (e) {
     window.mappy = e.detail.map
     var attrib_mb = 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
@@ -181,6 +211,15 @@
     });
     $('.nameautosuggest').html(div);
     
+    $('.ext').on('click', function(e) {
+      e.preventDefault();
+      var url = $(this).attr('href');
+      console.log('url',url)
+      $(".modal-body").html('<iframe width="100%" height="100%" frameborder="0" scrolling="yes" '+
+        'allowtransparency="true" src="'+url+'"></iframe>');
+    });
+    <!--<a id="ext" href="http://wikipedia.com" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#ext_site">Launch Modal</a>-->
+
     $(".trace-item").on('click', function(e){
       $(".trace-item").removeClass('active-card')
       $(".trace-item").next().css( "display", "none" )
@@ -193,6 +232,7 @@
     })
   }
 
+
   function sugLister(sug,doctype) {
     <!--console.log(sug)-->
     if (doctype=='place') {
@@ -203,11 +243,12 @@
               '<b>'+sug['name']+'</b> ('+sug['ccodes']+') '+ sug['type']+
               '<span class="float-right small">'+'(whg:'+sug['whg_id']+')</span><br/>'+
               variants.substring(0,100)+'</li>')  
-    } else {
+    } else 
+    {
       item =  ('<div class="container"><div class="row trace-item" data-id='+sug['_id']+'>'+
               '<div class="col-sm-9">'+sug['title']+' ('+sug['type']+')</div>'+
               '<div class="col-sm-3"><span class="float-right">'+
-              '<a class="mr-2" target="_blank" href="'+sug['id']+
+              '<a class="mr-2 ext" data-toggle="modal" data-target="#ext_site" href="'+sug['id']+
               '">{% fontawesome_icon 'external-link' color='#336699' %}</a>'+
               '</span></div>'+
               '</div>')
@@ -215,12 +256,10 @@
         item += '<div class="trace-detail"><img class="trace-img" src="'+sug['depiction']+'"/></div>'
       }
       item += '</div>'
-
     }
     return item
   }
-  <!--<a class="trace-geo" data-id='+sug['_id']+'>{% fontawesome_icon 'globe' color='#336699' %}</a>-->
-  
+
   function renderFeatures(geom){
     idToFeature = {} // for feature lookup
     features = L.geoJSON(geom, {

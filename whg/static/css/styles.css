@@ -4,6 +4,9 @@ html, body {
   height: 100%;
 }
 
+.modal-dialog { position: relative; height: 0; overflow: hidden; max-width: 90%; min-height: 100%; } 
+.modal-content { height: 90%; overflow-y:scroll;}
+
 /**
   general use
 **/
