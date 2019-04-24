@@ -147,6 +147,7 @@
     return link;
   }
   function renderMap(geom){
+    geomtype = geom['features'][0]['type']
     <!--clear out the previous if any-->
     if(typeof(features)!=='undefined'){
       mappy.removeLayer(features)
@@ -156,15 +157,23 @@
          return "#ff7800"
        else if (dataset == 'dbp')
          return "#98E2FA"
+       else if (dataset == 'ne_rivers')
+         return "#333399"
        else
          return "#7AFF7A"
      }
+    function styler(type) {
+      if (type == 'MultiLineString')
+        return {opacity: 1, weight: 2, color: "#0000ff"}
+      else
+        return {fillOpacity: 0.4, opacity: 1, weight: 1, color: "#000", fillColor:"#f6a2b3"}
+    }
     idToFeature = {}  // for feature lookup
     features = L.geoJSON(geom, {
-    // TODO: for some reason non-points are parsed and rendered here
-      style: {fillOpacity: 0.4, opacity: 1, weight: 1,
-             color: "#000", fillColor:"#f6a2b3"
-           },
+    // TODO: get this right
+      style: styler(geomtype),
+      <!--style: {fillOpacity: 0.4, opacity: 1, weight: 1,-->
+             <!--color: "#000", fillColor:"#f6a2b3"},-->
       pointToLayer: function (feature, latlng) {
          matchid = feature.properties.dataset+':'+feature.properties.id
          marker = L.circleMarker(latlng,

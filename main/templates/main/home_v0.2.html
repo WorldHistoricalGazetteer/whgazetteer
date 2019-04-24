@@ -14,10 +14,6 @@
 
 {% block content %}
 {% load static %}
-<!-- <script src='mapbox-gl.js'></script>
-<link href='mapbox-gl.css' rel='stylesheet' /> -->
-<!--<script src='https://api.mapbox.com/mapbox-gl-js/v0.44.2/mapbox-gl.js'></script>-->
-<!--<link href='https://api.mapbox.com/mapbox-gl-js/v0.44.2/mapbox-gl.css' rel='stylesheet' />-->
 
 <div class="container">
   <div class="justify-content-center mt-3">
@@ -27,27 +23,38 @@
         <form id="search_form" class="mt-1" onsubmit="return false;" autocomplete="off" >
           <div class="form-group d-flex justify-content-center"> 
             <div id="search_type" class="mx-auto btn-group" data-toggle="buttons">
-              <!--<span style="display:block; border: 1px dashed #e0e0e0;">-->
-                <!--<span style="vertical-align:middle;">Search</span>-->
-                <h5 class="pt-1">Search</h5>
-                <label class="btn btn-default" rel="Enter place name">
-                    <input type="radio" id="r_place" name="class" value="place">
-                    Places</label>
-                <label class="btn btn-default" rel="Enter term or name" >
-                    <input type="radio" id="r_trace" name="class" value="trace" checked> Traces
-                    <span class="ml-1"><a href="" title="historical entities having spatial-temporal 'footprints'" rel="tooltip">
-                      {% fontawesome_icon 'question-circle' color='#336699' %}</a></span>
-                </label>
-              <!--</span>-->
+              <h5 class="pt-1">Search</h5>
+              <label class="btn btn-default" rel="Enter place name">
+                  <input type="radio" id="r_place" name="class" value="place" checked>
+                  Places</label>
+              <label class="btn btn-default" rel="Enter term or name" >
+                  <input type="radio" id="r_trace" name="class" value="trace"> Traces
+                  <span class="ml-1"><a href="" title="historical entities having spatial-temporal 'footprints'" rel="tooltip">
+                    {% fontawesome_icon 'question-circle' color='#336699' %}</a></span>
+              </label>
             </div>
           </div>
-          <div class="form-group d-flex justify-content-center">
+          <div id="search_input" class="form-group d-flex justify-content-center">
             <div class="input-group">
-              <input type="text" class="form-control input-sm w-50" id="searchbox" name="q" 
-                placeholder="Enter place name" aria-label="Search term" aria-describedby="search-type">
+              <input type="text" class="form-control w-50" id="searchbox" name="q" 
+                placeholder="Enter place name" aria-label="Search term" aria-describedby="search-type" />
             </div>
           </div>
-          <div class="nameautosuggest"></div>
+          <span id="options_link" class="ml-3 small"><a href="">Options</a></span>
+          <div id="options" class="small">
+            <div class="dropdown">
+              <button class="btn btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" 
+                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Display dataset
+              </button>
+              <div class="dropdown-menu small" aria-labelledby="dropdownMenuButton">
+                <a class="dropdown-item" href="#">selections</a>
+                <a class="dropdown-item" href="#">coming</a>
+                <a class="dropdown-item" href="#">soon</a>
+              </div>
+            </div>
+          </div>
+          <div class="nameautosuggest mt-1"></div>
         </form>
       </div> <!-- home_search -->
 
@@ -69,6 +76,18 @@
       
 
 <script type="text/javascript">
+  $(function(){
+    $("#options").hide();
+  })
+  $("#options_link").on("click", function(e){
+    e.preventDefault()
+    $("#options").toggle()
+    $("#options_link").toggle()
+  })
+  $('input[type=radio][name=class]').change(function() {
+    $("#options_link").show()
+    $("#options").hide()
+  });
   function stopVideo() {
     var $frame = $('iframe');
   
@@ -190,6 +209,8 @@
   // queries at each character
   // TODO: wait for 3rd character?
   $("#searchbox").on('input', function(){
+    if($("#searchbox").val() =="") {$("#options_link").show()} else{$("#options_link").hide()}
+    $("#options").hide()
     doctype = $("input[name='class']:checked").val();
     $.get("/search/suggest",{
         search: $(this).val(), 
@@ -239,7 +260,6 @@
       console.log('get trace geom for:',$(this).data('id'))
     })
   }
-
 
   function sugLister(sug,doctype) {
     <!--console.log(sug)-->

@@ -26,7 +26,9 @@ label {vertical-align:top;}
 /**
   home, search
 **/
-
+#options { padding:2px; display:none;}
+#searchbox { height: auto;}
+#search_input { margin-bottom: .3rem;}
 .btn-default:not(:disabled):not(.disabled):active:focus,
 .btn-default:focus, .btn-default.focus {
     box-shadow:none;
