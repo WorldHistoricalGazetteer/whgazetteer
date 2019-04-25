@@ -213,7 +213,11 @@
   // queries at each character
   // TODO: wait for 3rd character?
   $("#searchbox").on('input', function(){
-    if($("#searchbox").val() =="") {$("#options_link").show()} else{$("#options_link").hide()}
+    if($("#searchbox").val() =="") {
+      $("#options_link").show()
+    } else {
+      $("#options_link").hide()
+    }
     $("#options").hide()
     doctype = $("input[name='class']:checked").val();
     $.get("/search/suggest",{
@@ -242,6 +246,7 @@
       // load suggestion div
       div += sugLister(sug,doctype)
     });
+    $('.nameautosuggest').show()
     $('.nameautosuggest').html(div);
 
     // highlight map marker from list

@@ -115,6 +115,7 @@
     </div>
   </div> <!-- d-flex -->
 </div> <!-- container -->
+
 <script type="text/javascript">
   $(function(){
     $( ".textarea" ).each(function(index) {
@@ -123,13 +124,6 @@
       }
     });
     $("#id_geojson").attr("placeholder","generated from country codes")
-    // $("#type_input").val('')
-  
-    // came from recon, insert a "referrer" POST value
-    <!--if(document.referrer.indexOf('recon') !== -1){-->
-      <!--$("#referrer").html('<input id="ref_input" type="hidden" name="referrer" value="'+document.referrer+'"/>')-->
-    // <input id="ref_input" type="hidden" name="referrer" value=""/>
-      <!--document.getElementById("ref_input").value = document.referrer;-->
   })
 
   $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {

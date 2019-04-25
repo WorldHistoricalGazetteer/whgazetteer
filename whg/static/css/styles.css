@@ -75,7 +75,7 @@ input[type="text"] {
 }
 
 .nameautosuggest {
-  /*padding: 5px;*/
+  display: none;
   margin-top: -12px;
   margin-bottom: 6px;
   padding: 5px;
