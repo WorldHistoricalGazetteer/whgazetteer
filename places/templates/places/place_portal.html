@@ -9,8 +9,8 @@
 {% block extra_head %}
   {% leaflet_js %}
   {% leaflet_css %}
-    <script src="{% static 'js/aliases.js' %}"></script>
-    <script src="{% static 'js/leaflet.ajax.min.js' %}"></script>
+  <script src="{% static 'js/aliases.js' %}"></script>
+  <script src="{% static 'js/leaflet.ajax.min.js' %}"></script>
 {% endblock %}
 {% block content %}
 <div class="container">
@@ -177,7 +177,6 @@
     $(".trace-geo").click(function(e){
       e.preventDefault()
       fetchTraceGeom($(this).data('id'),$(this).data('ctr'))
-      <!--console.log('get trace geom for:',$(this).data('id'),$(this).data('ctr'))-->
     })
   })
   function filly(counter) {

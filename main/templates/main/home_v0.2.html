@@ -10,6 +10,7 @@
   {% leaflet_css %}
   <script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>
   <link rel="stylesheet" href="//cdn.datatables.net/1.10.16/css/dataTables.bootstrap4.min.css">
+  <script src="{% static 'js/leaflet.ajax.min.js' %}"></script>
 {% endblock %}
 
 {% block content %}
@@ -109,6 +110,8 @@
   $('#ext_site').on('hidden.bs.modal', function(e) {
     stopVideo();
   })
+  
+  // initiates map
   window.addEventListener('map:init', function (e) {
     window.mappy = e.detail.map
     var attrib_mb = 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
@@ -127,15 +130,34 @@
       satellite  = L.tileLayer(mbtiles_url, {id:'mapbox.satellite', token:token_mb, attribution:attrib_mb});
       osm  = L.tileLayer(mbtiles_url, {id:'mapbox.light', token:token_mb, attribution:attrib_mb});
 
+    var countryStyle = {
+      "color": "#eee",
+      "weight": 1,
+      "opacity": 0.5,
+      "fillOpacity": 0
+    };
+
+    var countries = new L.GeoJSON.AJAX("/media/data/countries_simplified.json",
+      {style:countryStyle,
+        onEachFeature: function (feature, layer) {
+          popupOptions = {maxWidth: 200};
+            layer.bindPopup(feature.properties.gnlabel, popupOptions);
+          }
+    });
+
     var baseLayers = {
       "AWMC Terrain": awmc,
       "OSM": osm,      
       "Spine Data": grayscale,
       "Satellite": satellite
     };
+    var dataLayers = {
+      "Countries": countries
+    }
     mappy.zoomControl.setPosition('topright')
-    L.control.layers(baseLayers).addTo(mappy);
+    L.control.layers(baseLayers,dataLayers).addTo(mappy);
     baseLayers["AWMC Terrain"].addTo(mappy)
+    dataLayers["Countries"].addTo(mappy)
   }, false);
 
   function map_init (home_map, options) {
@@ -209,7 +231,7 @@
         }
     });
   }
-  //creates suggestion dropdown
+  // creates suggestion dropdown
   // queries at each character
   // TODO: wait for 3rd character?
   $("#searchbox").on('input', function(){
@@ -220,6 +242,7 @@
     }
     $("#options").hide()
     doctype = $("input[name='class']:checked").val();
+    console.log(doctype)
     $.get("/search/suggest",{
         search: $(this).val(), 
         doc_type: doctype
@@ -267,6 +290,12 @@
         'allowtransparency="true" src="'+url+'"></iframe>');
     });
 
+    // fetch geometry for a place record
+    $(".flash-geom").hover(function(){
+      <!--e.preventDefault()-->
+      console.log('getting geom for ',$(this).data('id'))
+    })
+    
     // fetch geometry for a trace record
     $(".trace-item").on('click', function(e){
       $(".trace-item").removeClass('active-card')
@@ -284,8 +313,9 @@
     for (b in bods){
       if(bods[b]['whg_id'] !=null){
         <!--console.log(bods[b])-->
-        html+='<li class="body-place" data-id="'+bods[b]['whg_id']+'">'+bods[b]['title']+' ('+bods[b]['relation']+') <i>'+
-        bods[b]['when'][0]['start']+'>'+bods[b]['when'][0]['end']+'</i></li>'
+        html+='<li class="body-place" data-id="'+bods[b]['whg_id']+'">'+bods[b]['title']+' ('+bods[b]['relation']+')'
+        html+='when' in bods[b] ? ' <i>'+bods[b]['when'][0]['start']+'>'+bods[b]['when'][0]['end']+'</i>' : ''
+        html+='</li>'
       }
     }
     html += '</ul>'
@@ -299,10 +329,10 @@
               '" children="'+sug['children']+
               '" class="suggest-place" ">'+
               '<b>'+sug['name']+'</b> ('+sug['ccodes']+') '+ sug['type']+
-              '<span class="float-right small">'+'(whg:'+sug['whg_id']+')</span><br/>'+
+              '<span class="float-right small flash-geom" data-id='+sug['whg_id']+'>'+'(whg:'+sug['whg_id']+')'+
+              '</span><br/>'+
               variants.substring(0,100)+'</li>')  
-    } else 
-    {
+    } else if (doctype=='trace') {
       item =  ('<div class="container"><div class="row trace-item" data-id='+sug['_id']+'>'+
               '<div class="col-sm-9">'+sug['title']+' ('+sug['type']+')</div>'+
               '<div class="col-sm-3"><span class="float-right">'+
