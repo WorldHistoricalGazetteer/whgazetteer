@@ -350,7 +350,7 @@
       variants = sug['variants'].length > 0 ? '<i class="text-secondary">'+sug['variants']+'</i>' : ''
       item =  ('<div class="container"><div class="row">'+
               '<div class="col-sm-11 place-item" data-id='+sug['whg_id']+'>'+'<b>'+sug['name']+
-              '</b> ('+sug['ccodes']+') '+ sug['type']+'<span class="float-right"><i>'+sug['whg_id']+'</i></span>'+
+              '</b> ('+sug['ccodes']+') '+ sug['type']+'<span class="float-right small">[<i>'+sug['whg_id']+'</i>]</span>'+
               '<br/>'+variants.substring(0,100)+'</div><div class="col-sm-1 p-1">')
       if (sug['geom'].length > 0) {
         item += '<span class="float-right flash-geom"'+
@@ -359,15 +359,6 @@
       }
       item += '</div></div></div>' // col-sm-1, row, container
     } else if (doctype=='trace') {
-    
-      <!--item =  ('<div class="container"><div class="row trace-item" data-id='+sug['_id']+'>'+-->
-              <!--'<div class="col-sm-9">'+sug['title']+' ('+sug['type']+')</div>'+-->
-              <!--'<div class="col-sm-3"><span class="float-right">'+-->
-              <!--'<a class="mr-2 ext" data-toggle="modal" data-target="#ext_site" href="'+sug['id']+-->
-              <!--'">{# fontawesome_icon 'external-link' color='#336699' #}</a>'+-->
-              <!--'</span></div></div><div id="trace_detail">'+placeList(sug['bodies'])-->
-              <!--)-->
-
       item =  ('<div class="container"><div class="row trace-item" data-id='+sug['_id']+'>'+
               '<div class="col-sm-9">'+sug['title']+' ('+sug['type']+')</div>'+
               '<div class="col-sm-3"><span class="float-right">'+
@@ -376,8 +367,6 @@
               '</span></div>'
               +'</div><div id="trace_detail">'+placeList(sug['bodies'])
               )
-
-
       if(sug['depiction'] !== ""){
         item += '<img class="trace-img" src="'+sug['depiction']+'"/>'
       }
