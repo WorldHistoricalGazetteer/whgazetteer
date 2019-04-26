@@ -169,9 +169,6 @@
     geom = {"type":"FeatureCollecton","features":[]}
 
   } // end map_init
-
-
-  
   
   function filly(counter) {
     if (counter == 0)
@@ -242,7 +239,7 @@
     }
     $("#options").hide()
     doctype = $("input[name='class']:checked").val();
-    console.log(doctype)
+    <!--console.log(doctype)-->
     $.get("/search/suggest",{
         search: $(this).val(), 
         doc_type: doctype
@@ -253,17 +250,16 @@
       });
   })
   
-  $('.nameautosuggest').on('click', '.suggest-place', function(){
-    pid=$(this).attr('ref')
+  $('.nameautosuggest').on('click', '.place-item', function(){
+    whgid=$(this).data('id')
     // clear the dropdown
     $(".nameautosuggest").html('')
     // go
-    location.href = 'places/'+pid+'/portal'
+    location.href = 'places/'+whgid+'/portal'
   });
   
 
   function showSuggestions(data,doctype){
-    <!--console.log('showSuggestions',data)-->
     var div = '';
     data.forEach(function(sug){
       // load suggestion div
@@ -277,6 +273,7 @@
       // reset all markers to default
       traces.setStyle({"fillColor":"blue","radius":5})
       whgid = $(this).attr('data-id')
+      console.log(whgid,'from body-place click')
       idToFeature[whgid].setStyle({"fillColor":"#ff3333","radius":10})
       mappy.panTo(idToFeature[whgid]._latlng)
     })
@@ -291,9 +288,35 @@
     });
 
     // fetch geometry for a place record
-    $(".flash-geom").hover(function(){
-      <!--e.preventDefault()-->
-      console.log('getting geom for ',$(this).data('id'))
+    <!--$(".flash-geom").on('hover', function(e){-->
+    $(".flash-geom").click(function(e){
+      e.preventDefault()
+      var features = $(this).data('geom')
+      data = {"type":"FeatureCollection","features":features}
+      console.log('id for',$(this).data('id'))
+      console.log('features for',$(this).data('geom'))
+      var count_features = 0
+      idToFeature = {}
+      mappy.createPane('placePane');
+      mappy.getPane('placePane').style.zIndex = 200;
+      places = L.geoJSON(data, {
+        pane: 'placePane',
+        pointToLayer: function (feature, latlng) {
+          count_features +=1;
+          identifier = feature.properties.place_id;
+          marker = L.circleMarker(latlng,
+            {
+              radius: 8, fillOpacity: 0.8, opacity: 1, weight: 1,
+              color: "#fff", fillColor: "red"
+            }
+          ).bindPopup('<a href="/places/'+identifier+'/portal">'+feature.properties.title+"</b></a>");
+                      
+          idToFeature[identifier] = marker
+          return marker
+        }
+      }).addTo(mappy);
+      bounds = places.getBounds()
+      mappy.setView(bounds.getCenter(),5)          
     })
     
     // fetch geometry for a trace record
@@ -325,44 +348,42 @@
     <!--console.log(sug)-->
     if (doctype=='place') {
       variants = sug['variants'].length > 0 ? '<i class="text-secondary">'+sug['variants']+'</i>' : ''
-      item = ('<li ref="'+sug['whg_id']+
-              '" children="'+sug['children']+
-              '" class="suggest-place" ">'+
-              '<b>'+sug['name']+'</b> ('+sug['ccodes']+') '+ sug['type']+
-              '<span class="float-right small flash-geom" data-id='+sug['whg_id']+'>'+'(whg:'+sug['whg_id']+')'+
-              '</span><br/>'+
-              variants.substring(0,100)+'</li>')  
+      item =  ('<div class="container"><div class="row">'+
+              '<div class="col-sm-11 place-item" data-id='+sug['whg_id']+'>'+'<b>'+sug['name']+
+              '</b> ('+sug['ccodes']+') '+ sug['type']+'<span class="float-right"><i>'+sug['whg_id']+'</i></span>'+
+              '<br/>'+variants.substring(0,100)+'</div><div class="col-sm-1 p-1">')
+      if (sug['geom'].length > 0) {
+        item += '<span class="float-right flash-geom"'+
+                ' data-id="'+sug['whg_id']+'" data-geom='+JSON.stringify(sug['geom'])+'>'+
+                '<a class="mr-2" href="">{% fontawesome_icon 'globe' color='#336699' %}</a></span>'
+      }
+      item += '</div></div></div>' // col-sm-1, row, container
     } else if (doctype=='trace') {
+    
+      <!--item =  ('<div class="container"><div class="row trace-item" data-id='+sug['_id']+'>'+-->
+              <!--'<div class="col-sm-9">'+sug['title']+' ('+sug['type']+')</div>'+-->
+              <!--'<div class="col-sm-3"><span class="float-right">'+-->
+              <!--'<a class="mr-2 ext" data-toggle="modal" data-target="#ext_site" href="'+sug['id']+-->
+              <!--'">{# fontawesome_icon 'external-link' color='#336699' #}</a>'+-->
+              <!--'</span></div></div><div id="trace_detail">'+placeList(sug['bodies'])-->
+              <!--)-->
+
       item =  ('<div class="container"><div class="row trace-item" data-id='+sug['_id']+'>'+
               '<div class="col-sm-9">'+sug['title']+' ('+sug['type']+')</div>'+
               '<div class="col-sm-3"><span class="float-right">'+
-              '<a class="mr-2 ext" data-toggle="modal" data-target="#ext_site" href="'+sug['id']+
-              '">{% fontawesome_icon 'external-link' color='#336699' %}</a>'+
-              '</span></div></div><div id="trace_detail">'+placeList(sug['bodies'])
+                '<a class="mr-2 ext" data-toggle="modal" data-target="#ext_site" href="'+sug['id']+
+                '">{% fontawesome_icon 'external-link' color='#336699' %}</a>'+
+              '</span></div>'
+              +'</div><div id="trace_detail">'+placeList(sug['bodies'])
               )
+
+
       if(sug['depiction'] !== ""){
         item += '<img class="trace-img" src="'+sug['depiction']+'"/>'
       }
       item += '</div></div>' // trace_detail, container
     }
     return item
-  }
-
-  function renderFeatures(geom){
-    features = L.geoJSON(geom, {
-      pointToLayer: function (feature, latlng) {
-        matchid = feature.properties.dataset+':'+feature.properties.id
-        marker = L.circleMarker(latlng,
-          {
-            radius: 8, fillOpacity: 0.8, opacity: 1, weight: 1,
-            color: "#000", fillColor: fill(feature.properties.dataset)
-          }
-        ).bindPopup(feature.properties.dataset+':'+feature.properties.id);
-
-        idToFeature[matchid] = marker
-        return marker
-      }
-    }).addTo(mappy);    
   }
 
   $("[rel='tooltip']").tooltip();
@@ -373,3 +394,19 @@
   })
 </script>
 {% endblock %}
+  <!--function renderFeatures(geom){-->
+    <!--features = L.geoJSON(geom, {-->
+      <!--pointToLayer: function (feature, latlng) {-->
+        <!--matchid = feature.properties.dataset+':'+feature.properties.id-->
+        <!--marker = L.circleMarker(latlng,-->
+          <!--{-->
+            <!--radius: 8, fillOpacity: 0.8, opacity: 1, weight: 1,-->
+            <!--color: "#000", fillColor: fill(feature.properties.dataset)-->
+          <!--}-->
+        <!--).bindPopup(feature.properties.dataset+':'+feature.properties.id);-->
+
+        <!--idToFeature[matchid] = marker-->
+        <!--return marker-->
+      <!--}-->
+    <!--}).addTo(mappy);    -->
+  <!--}-->

@@ -10,6 +10,5 @@ urlpatterns = [
     url(r'^suggest?$', SuggestView.as_view(), name='suggest'),
     url(r'^features?$', FeatureContextView.as_view(), name='feature_context'),
     url(r'^tracegeom?$', TraceGeomView.as_view(), name='trace_geom'),
-    #url(r'^tracefull?$', TraceFullView.as_view(), name='trace_full'),
     url(r'^advanced$', advanced, name="search_adv"),
 ]

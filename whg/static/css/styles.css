@@ -84,7 +84,7 @@ input[type="text"] {
   /*border: 1px solid  #80bfff;*/
   z-index: 600;
 }
-.suggest-place, .trace-item {
+.place-item, .trace-item {
   list-style-type: none;
   margin-top: 5px;
   background-color: #f2f2f2;
@@ -95,6 +95,11 @@ input[type="text"] {
   box-shadow: 1px 1px lightgrey;
 }
 
+.flash-geom {
+  font-size: 1.2rem;
+  margin-top:6px;
+  cursor: pointer;
+}
 .nameautosuggest li:hover, .trace-item:hover  {
   background-color: #f9ebeb;
 }

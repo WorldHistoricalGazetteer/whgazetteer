@@ -128,7 +128,7 @@ def contextSearch(idx,doctype,q):
   return result_obj
 
 
-def traceGeoSearch(idx,doctype,q):
+def getGeomCollection(idx,doctype,q):
   es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
   #try:
   res = es.search(index='whg', doc_type='place', body=q, size=300)
@@ -224,53 +224,10 @@ class TraceGeomView(View):
     print('bodies from TraceGeomView->contextSearch',bodies)
     bodyids = [b['whg_id'] for b in bodies if b['whg_id']]
     q_geom={"query": {"bool": {"must": [{"terms":{"_id": bodyids}}]}}}
-    geoms = traceGeoSearch(idx,doctype,q_geom)
-    #geoms['bodies'] = bodies
+    geoms = getGeomCollection(idx,doctype,q_geom)
+    geoms['bodies'] = bodies
     return JsonResponse(geoms, safe=False)      
 
-class PlaceGeomView(View):
-  """ Returns geometry for whg_id and its children """
-  @staticmethod
-  def get(request):
-    print('PlaceGeomView GET:',request.GET)
-    """
-    args in request.GET:
-        [string] idx: index to be queried
-        [string] search: whg_id
-        [string] doc_type: 'place' in this case
-    """
-    idx = request.GET.get('idx')
-    whg_id = request.GET.get('search')
-    doctype = request.GET.get('doc_type')
-    
-    # get the parent
-    q_parent = {"query": {"bool": {"must": [{"match":{"_id": whg_id}}]}}}
-    parent = es.search(index=idx, doc_type=doctype, body=q_parent)['hits'][0]
-    print('parent from PlaceGeomView->contextSearch',parent)
-
-    # get its place.id and seed array
-    pid = parent['_source']['place_id']
-    ids = [pid]
-
-    # get child record ids from index
-    q = {"query": {"parent_id": {"type": "child","id":id_}}}
-    children = es.search(index='whg', doc_type='place', body=q)['hits']
-    for hit in children['hits']:
-      ids.append(int(hit['_id']))
-    
-    # get place_geom data for all ids
-    geoms = []
-    qs=Place.objects.filter(id__in=ids)
-    #print("id_,ids, qs",id_,ids,qs)
-    for place in qs:
-      for geom in place.geoms.all():
-        geoms.append(geom.jsonb)
-  
-    bodyids = [b['whg_id'] for b in bodies if b['whg_id']]
-    q_geom={"query": {"bool": {"must": [{"terms":{"_id": bodyids}}]}}}
-    geoms = traceGeoSearch(idx,doctype,q_geom)
-    #geoms['bodies'] = bodies
-    return JsonResponse(geoms, safe=False)      
 
 def home(request):
   return render(request, 'search/home.html')
