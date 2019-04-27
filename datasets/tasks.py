@@ -108,7 +108,9 @@ def normalize(h,auth):
     # whg_id, place_id, dataset, src_id, title
     # h['location'] = {'type': 'point', 'coordinates': [105.041, 26.398]}
     try:
-      rec = HitRecord(-1, -1, 'tgn', h['tgnid'], h['title'])
+      #rec = HitRecord(-1, -1, 'tgn', h['tgnid'], h['title'])
+      rec = HitRecord(-1, 'tgn', h['tgnid'], h['title'])
+      print('normalize rec - tgn',rec)
       rec.variants = [n['toponym'] for n in h['names']] # always >=1 names
       rec.types = [t['placetype']+' ('+t['id']  +')' for t in h['types'] ] if len(h['types']) > 0 else []
       rec.ccodes = []
@@ -309,7 +311,7 @@ def align_tgn(pk, *args, **kwargs):
 
     # types (Getty AAT identifiers)
     for t in place.types.all():
-      types.append(t.json['identifier'])
+      types.append(t.jsonb['identifier'])
     qobj['placetypes'] = types
 
     # names
@@ -320,13 +322,13 @@ def align_tgn(pk, *args, **kwargs):
     # parents
     # TODO: other relations
     for rel in place.related.all():
-      if rel.json['relation_type'] == 'gvp:broaderPartitive':
-        parents.append(rel.json['label'])
+      if rel.jsonb['relationType'] == 'gvp:broaderPartitive':
+        parents.append(rel.jsonb['label'])
     qobj['parents'] = parents
 
     # align_whg geoms
     if len(place.geoms.all()) > 0:
-      g_list =[g.json for g in place.geoms.all()]
+      g_list =[g.jsonb for g in place.geoms.all()]
       # make everything a simple polygon hull for spatial filter
       qobj['geom'] = hully(g_list)
           

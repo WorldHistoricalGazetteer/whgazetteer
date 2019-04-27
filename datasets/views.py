@@ -26,6 +26,7 @@ def link_uri(auth,id):
   uri = baseuri + str(id)
   return uri
 
+# TOD: strategy for this
 # create place_name, place_geom, place_description records as req.
 def augmenter(placeid, auth, tid, hitjson):
   place = get_object_or_404(Place, id=placeid)
@@ -143,8 +144,10 @@ def review(request, pk, tid, passnum): # dataset pk, celery recon task_id
     try:
       if formset.is_valid():
         hits = formset.cleaned_data
-        print('formset keys',formset.data.keys())
+        print('hits[0]',hits[0])
+        #print('formset keys',formset.data.keys())
         for x in range(len(hits)):
+          #print('hit',hits[x])
           hit = hits[x]['id']
           if hits[x]['match'] != 'none':
             # create link 
@@ -152,12 +155,10 @@ def review(request, pk, tid, passnum): # dataset pk, celery recon task_id
               place_id = place,
               task_id = tid,
               # dataset = ds,
-              json = {
+              jsonb = {
                 "type":hits[x]['match'],
-                "identifier":link_uri(
-                  task.task_name, hits[x]['authrecord_id'] if hits[x]['authority'] != 'whg' \
-                    else hits[x]['json']['place_id']
-                )
+                "identifier":link_uri(task.task_name,hits[x]['authrecord_id'] if hits[x]['authority'] != 'whg' \
+                    else hits[x]['json']['place_id'])
               },
               #review_note =  hits[x]['review_note'],
             )
@@ -166,20 +167,20 @@ def review(request, pk, tid, passnum): # dataset pk, celery recon task_id
             ds.total_links = ds.total_links +1
             ds.save()
             
-            # 
+            # TODO: augment strategy; (? links for all, geoms if checked ?)
             # augment only for [tgn,dbp,gn,wd]
-            if hits[x]['authority'] != 'whg':
-              augmenter(placeid, task.task_name, tid, hits[x]['json'])
-            else:
-              # if hit is close or exact, index as child
-              if hits[x]['match'] in ['exact_match','close_match']:
-                print('index '+str(placeid)+' as child of '+str(hits[x]['json']['place_id']))
-              elif hits[x]['match'] == 'related':
-                print('declared related - do what?')
+            #if hits[x]['authority'] != 'whg':
+              #augmenter(placeid, task.task_name, tid, hits[x]['json'])
+            #else:
+              ## if hit is close or exact, index as child
+              #if hits[x]['match'] in ['exact_match','close_match']:
+                #print('index '+str(placeid)+' as child of '+str(hits[x]['json']['place_id']))
+              #elif hits[x]['match'] == 'related':
+                #print('declared related - do what?')
   
-            print('place_id',placeid,
-                  'authrecord_id',hits[x]['authrecord_id'],
-                  'hit.id',hit.id, type(hit.id))
+            #print('place_id',placeid,
+                  #'authrecord_id',hits[x]['authrecord_id'],
+                  #'hit.id',hit.id, type(hit.id))
             
           elif hits[x]['match'] == 'none':
             # make it a new parent unless it's been flagged
@@ -367,7 +368,7 @@ def ds_insert_lpf(request, pk):
             task_id='initial'
           ))
         
-      # PlaceType: place_id,src_id,task_id,json:{identifier,label,src_label}
+      # PlaceType: place_id,src_id,task_id,jsonb:{identifier,label,src_label}
       if 'types' in feat.keys():
         for t in feat['types']:
           #print('from feat[types]:',t)
@@ -377,39 +378,39 @@ def ds_insert_lpf(request, pk):
             jsonb=t
           ))    
         
-      # PlaceWhen: place_id,src_id,task_id,minmax,json:{timespans[],periods[],label,duration}
+      # PlaceWhen: place_id,src_id,task_id,minmax,jsonb:{timespans[],periods[],label,duration}
       if 'whens' in feat.keys():
         for w in feat['whens']:
           objs['PlaceWhens'].append(PlaceWhen(
             place_id=newpl,src_id=newpl.src_id,jsonb=w))    
         
-      # PlaceGeom: place_id,src_id,task_id,json:{type,coordinates[],when{},geo_wkt,src}
+      # PlaceGeom: place_id,src_id,task_id,jsonb:{type,coordinates[],when{},geo_wkt,src}
       if 'geometry' in feat.keys():
         for g in feat['geometry']['geometries']:
           #print('from feat[geometry]:',g)
           objs['PlaceGeoms'].append(PlaceGeom(
             place_id=newpl,src_id=newpl.src_id,jsonb=g))    
         
-      # PlaceLink: place_id,src_id,task_id,json:{type,identifier}
+      # PlaceLink: place_id,src_id,task_id,jsonb:{type,identifier}
       if 'links' in feat.keys():
         for l in feat['links']:
           if len(feat['links'])>0: countlinked +=1
           objs['PlaceLinks'].append(PlaceLink(
             place_id=newpl,src_id=newpl.src_id,jsonb=l,task_id='initial'))    
         
-      # PlaceRelated: place_id,src_id,task_id,json{relationType,relationTo,label,when{}}
+      # PlaceRelated: place_id,src_id,task_id,jsonb{relationType,relationTo,label,when{}}
       if 'relations' in feat.keys():
         for r in feat['relations']:
           objs['PlaceRelated'].append(PlaceRelated(
             place_id=newpl,src_id=newpl.src_id,jsonb=r))    
         
-      # PlaceDescription: place_id,src_id,task_id,json:{@id,value,lang}
+      # PlaceDescription: place_id,src_id,task_id,jsonb{@id,value,lang}
       if 'descriptions' in feat.keys():
         for des in feat['descriptions']:
           objs['PlaceDescriptions'].append(PlaceDescription(
             place_id=newpl,src_id=newpl.src_id,jsonb=des))    
         
-      # PlaceDepiction: place_id,src_id,task_id,json{@id,title,license}
+      # PlaceDepiction: place_id,src_id,task_id,jsonb{@id,title,license}
       if 'depictions' in feat.keys():
         for dep in feat['depictions']:
           objs['PlaceDepictions'].append(PlaceDepiction(
@@ -525,7 +526,7 @@ def ds_insert_csv(request, pk):
     objs['PlaceName'].append(PlaceName(place_id=newpl,src_id = src_id,
           toponym = name,
           # TODO get citation label through name_src FK; here?
-          json={"toponym": name, "citation": {"id":name_src,"label":""}}
+          jsonb={"toponym": name, "citation": {"id":name_src,"label":""}}
     ))
 
     # variants if any
@@ -533,7 +534,7 @@ def ds_insert_csv(request, pk):
       for v in variants:
         objs['PlaceName'].append(PlaceName(place_id=newpl,src_id = src_id,
           toponym = v,
-          json={"toponym": v, "citation": {"id":name_src,"label":""}}
+          jsonb={"toponym": v, "citation": {"id":name_src,"label":""}}
         ))
 
     # PlaceTypes()
@@ -542,7 +543,7 @@ def ds_insert_csv(request, pk):
       for t in aat_types:
         objs['PlaceType'].append(
           PlaceType(place_id=newpl,src_id = src_id,
-            json={"identifier":"aat:"+t, "src_label":src_type, 
+            jsonb={"identifier":"aat:"+t, "src_label":src_type, 
                           "label":aat_lookup(int(t))}
         ))
 
@@ -550,7 +551,7 @@ def ds_insert_csv(request, pk):
     # TODO: test geometry type or force geojson
     if 'lon' in header and (coords[0] != 0 and coords[1] != 0):
       objs['PlaceGeom'].append(PlaceGeom(place_id=newpl,src_id = src_id,
-        json={"type": "Point", "coordinates": coords,
+        jsonb={"type": "Point", "coordinates": coords,
                     "geowkt": 'POINT('+str(coords[0])+' '+str(coords[1])+')'}
       ))
     elif 'geowkt' in header:
@@ -564,7 +565,7 @@ def ds_insert_csv(request, pk):
       for m in close_matches:
         countlinks += 1
         objs['PlaceLink'].append(PlaceLink(place_id=newpl,src_id = src_id,
-          json={"type":"closeMatch", "identifier":m}
+          jsonb={"type":"closeMatch", "identifier":m}
         ))
 
     # PlaceLink() - exact
@@ -573,13 +574,13 @@ def ds_insert_csv(request, pk):
       for m in exact_matches:
         countlinks += 1
         objs['PlaceLink'].append(PlaceLink(place_id=newpl,src_id = src_id,
-          json={"type":"exactMatch", "identifier":m}
+          jsonb={"type":"exactMatch", "identifier":m}
         ))
 
     # PlaceRelated()
     if 'parent' in header and parent !='':
       objs['PlaceRelated'].append(PlaceRelated(place_id=newpl,src_id = src_id,
-        json={"relation_type": "gvp:broaderPartitive",
+        jsonb={"relation_type": "gvp:broaderPartitive",
               "relation_to": "",
               "label": parent}
       ))
@@ -588,7 +589,7 @@ def ds_insert_csv(request, pk):
     # timespans[{start{}, end{}}], periods[{name,id}], label, duration
     if 'min' in header:
       objs['PlaceWhen'].append(PlaceWhen(place_id=newpl,src_id = src_id,
-        json={
+        jsonb={
                 "timespans": [{"start":{"earliest":minmax[0]}, "end":{"latest":minmax[1]}}]
               }
       ))

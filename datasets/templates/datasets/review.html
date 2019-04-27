@@ -82,10 +82,10 @@
                 {{ c }};
               {% endfor %}</p>
             {% endif %}
-            {% if record.relations %}
+            {% if record.related %}
             <p><strong>Relations</strong>: 
               {% for rel in record.related.all %}
-                {{ rel.jsonb.label }} ({{ rel.jsonb.relation_type }}); 
+                {{ rel.jsonb.label }}; <!--({ rel.jsonb.relationType }); -->
               {% endfor %}</p>
             {% endif %}
             <p><strong>Place type(s)</strong>:
@@ -226,7 +226,7 @@
         var recpk = $(this).data('id');
         uribase="/comment/"+recpk
         next='?next='+"{% url 'datasets:review' pk=ds_id tid=task_id passnum=passnum %}"
-        console.log('formURL',uribase+next)
+        <!--console.log('formURL',uribase+next)-->
         $(this).modalForm({formURL: uribase+next});
       });      
     })
