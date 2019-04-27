@@ -639,7 +639,8 @@ class DashboardView(ListView):
     # TODO: make .team() a method on User
     me = self.request.user
     if me.username == 'whgadmin':
-      return Dataset.objects.all().order_by('id')
+      #return Dataset.objects.all().order_by('id')
+      return Dataset.objects.all().filter(id__gt=7).order_by('id')
     else:
       return Dataset.objects.filter(owner__in=myteam(me)).order_by('id')
 

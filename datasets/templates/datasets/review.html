@@ -119,7 +119,8 @@
                   <span class="ml-2">
                   {% if form.json.value|get:"geoms" != Null %}
                     <!--{ form.json.value|get:"location"|safe|json_script:form.authrecord_id.value }}-->
-                    <a class="geolink" id="{{ form.json.value|get:"place_id" }}" 
+                    <!--<a class="geolink" id="{ form.json.value|get:"place_id" }" -->
+                    <a class="geolink" id="{{ form.authrecord_id.value }}" 
                       href="javascript:{ zoomTo('tgn:'+{{ form.authrecord_id.value }}) }">
                       {% fontawesome_icon 'globe' color='#000099' %}</a>
                   {% endif %}
@@ -275,6 +276,7 @@
   })
 
   $( ".geolink" ).hover(function() {
+      console.log($(this))
       let id = $(this)[0].id
       console.log('id:',id)
       feat = idToFeature[id]
@@ -315,15 +317,15 @@
 
     for (i=0;i<gelems.length;i++){
       let t_geom = cleanJson(gelems[i].text)
-      var ds = "{{ ds_label }}"
+      <!--var ds = "{ ds_label }"-->
       t_geom['properties'] = {"id": gelems[i].id, "ds": t_geom.ds!=null?t_geom.ds:ds }
       geom['features'].push(t_geom)
     }
 
-    function fill(auth) {
-      if (auth == 'tgn'){
+    function fill(ds) {
+      if (ds == 'tgn'){
         return "#ff7800"}
-      else if (auth == 'whg'){
+      else if (ds == 'whg'){
         return "orange"}
       else {
         return "red"}
@@ -339,9 +341,7 @@
           marker = L.circleMarker(latlng,
             {
               radius: 8, fillOpacity: 0.6, opacity: 1, weight: 1,
-              color: "#333", fillColor: fill(
-              ['tgn','dbp','gn','wd','black'].includes(feature.properties.ds)?feature.properties.ds:"{{ authority }}"
-              )
+              color: "#333", fillColor: fill(feature.properties.ds)
             }
           ).bindPopup(feature.properties.ds+':'+feature.properties.id);
 
