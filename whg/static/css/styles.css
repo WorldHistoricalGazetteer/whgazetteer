@@ -322,6 +322,8 @@ span.edit-row {
   height:calc(100vh - 180px);
   overflow:scroll;
 }
+#map { position:absolute; top:120px; bottom:0; width:80%; height:80%;}
+/*#map { position:relative; top:0; bottom:0; width:90%; }*/
 #map_area, #map_home, #map_view {
   height: 100%;
   /* position:absolute;top:0;left:0; */

@@ -1,11 +1,10 @@
 <!-- datasets/home.html -->
 {% extends "main/base.html" %}
 {% block title %}<title>WHG::Maps</title>{% endblock %}
-
+{% block extra_head %}
+{% endblock %}
 {% block content %}
 {% load static %}
-<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.53.0/mapbox-gl.js'></script>
-<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.53.0/mapbox-gl.css' rel='stylesheet' />
   <div class="container">
     <div id="mapview_container" class="justify-content-center mt-3">
       {{ mboxid|escape }}
@@ -23,7 +22,8 @@
           </div>
         </span>
       </h3>
-      <div id='map' class="map-mapbox"></div>
+      <!--<div id='map' class="map-mapbox"></div>-->
+      <div id='map'></div>
       <script>
       $(function(){
         window.mboxid = $('script').filter(function() {
@@ -33,7 +33,7 @@
       mapboxgl.accessToken = 'pk.eyJ1Ijoia2dlb2dyYXBoZXIiLCJhIjoiUmVralBPcyJ9.mJegAI1R6KR21x_CVVTlqw';
       const map = new mapboxgl.Map({
         container: 'map',
-        style: 'mapbox://styles/kgeographer/cjstfpenh6o1e1fldz95w8m6p',
+        style: 'mapbox://styles/mapbox/light-v8',
         center: [-4, 35],
         zoom: 2
       });
@@ -42,31 +42,31 @@
   </div>
 {% endblock %}
 
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset='utf-8' />
-  <title>Display a map</title>
-  <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
-  <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.53.0/mapbox-gl.js'></script>
-  <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.53.0/mapbox-gl.css' rel='stylesheet' />
-  <style>
-    body { margin:0; padding:0; }
-    #map { position:absolute; top:0; bottom:0; width:100%; }
-  </style>
-</head>
-<body>
+<!--<!DOCTYPE html>-->
+<!--<html>-->
+<!--<head>-->
+  <!--<meta charset='utf-8' />-->
+  <!--<title>Display a map</title>-->
+  <!--<meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />-->
+  <!--<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.54.0/mapbox-gl.js'></script>-->
+  <!--<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.54.0/mapbox-gl.css' rel='stylesheet' />-->
+  <!--<style>-->
+    <!--body { margin:0; padding:0; }-->
+    <!--#map { position:absolute; top:0; bottom:0; width:100%; }-->
+  <!--</style>-->
+<!--</head>-->
+<!--<body>-->
 
-<div id='map'></div>
-<script>
-mapboxgl.accessToken = 'pk.eyJ1Ijoia2dlb2dyYXBoZXIiLCJhIjoiUmVralBPcyJ9.mJegAI1R6KR21x_CVVTlqw';
-const map = new mapboxgl.Map({
-  container: 'map',
-  style: 'mapbox://styles/kgeographer/cjstfpenh6o1e1fldz95w8m6p',
-  center: [-71.020000, 42.362400],
-  zoom: 10.0
-});
-</script>
+<!--<div id='map'></div>-->
+<!--<script>-->
+<!--mapboxgl.accessToken = 'pk.eyJ1Ijoia2dlb2dyYXBoZXIiLCJhIjoiUmVralBPcyJ9.mJegAI1R6KR21x_CVVTlqw';-->
+<!--const map = new mapboxgl.Map({-->
+  <!--container: 'map',-->
+  <!--style: 'mapbox://styles/kgeographer/cjstfpenh6o1e1fldz95w8m6p',-->
+  <!--center: [-71.020000, 42.362400],-->
+  <!--zoom: 10.0-->
+<!--});-->
+<!--</script>-->
 
 </body>
 </html>

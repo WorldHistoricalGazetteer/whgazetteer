@@ -6,61 +6,142 @@
 
 {% block title %}<title>WHG::Maps</title>{% endblock %}
 {% block extra_head %}
-  {% leaflet_js %}
-  {% leaflet_css %}
   <script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>
   <link rel="stylesheet" href="//cdn.datatables.net/1.10.16/css/dataTables.bootstrap4.min.css">
+  <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.54.0/mapbox-gl.js'></script>
+  <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.54.0/mapbox-gl.css' rel='stylesheet' />
 {% endblock %}
 
 {% block content %}
-{% load static %}
-<!-- <script src='mapbox-gl.js'></script>
-<link href='mapbox-gl.css' rel='stylesheet' /> -->
-<!--<script src='https://api.mapbox.com/mapbox-gl-js/v0.44.2/mapbox-gl.js'></script>-->
-<!--<link href='https://api.mapbox.com/mapbox-gl-js/v0.44.2/mapbox-gl.css' rel='stylesheet' />-->
-
 <div class="container">
   <div class="justify-content-center mt-3">
     <h3>Dataset Maps
       <span class="float-right">
-        <div class="dropdown">
+        <div class="dropdown small">
           <button class="btn btn-sm btn-warning dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Select dataset</button>
-          <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-            <a class="dropdown-item" href="#">selections</a>
-            <a class="dropdown-item" href="#">coming</a>
-            <a class="dropdown-item" href="#">soon</a>
+          <div id="ds_select" class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+            <a class="dropdown-item" data-id="lugares_13k" href="">HGIS de las Indias</a>
+            <a class="dropdown-item" data-id="topostext"href="">ToposText (Ancient Greece)</a>
           </div>
         </div>
       </span>
     </h3>
-    <div id="map">{% leaflet_map "map_app" callback="map_init" %}</div>
+    <div id="map"></div>
     <!--<div id='map_home' class="map-mapbox"></div>-->
 
   </div>
 </div>
 <script type="text/javascript">
-  window.addEventListener('map:init', function (e) {
-    window.mappy = e.detail.map
-  }, false);
+$(function(){
+  var num=0
+  $("#ds_select a").click(function(e){
+    e.preventDefault()
+    num +=1
+    id=$(this).data('id')
+    addHeatLayer(id+"-heat","heatmap",id,9,num)
+    console.log(id+"-heat","heatmap",id,9,num)
+  })
+  window.mboxid = $('script').filter(function() {
+    return this.text == 'foo';
+  });
+  })
+  mapboxgl.accessToken = 'pk.eyJ1Ijoia2dlb2dyYXBoZXIiLCJhIjoiUmVralBPcyJ9.mJegAI1R6KR21x_CVVTlqw';
 
-  function map_init (map_app, options) {
-    mappy.setView([35.0, 80.0], 3)
-    <!--if(typeof(features)!=='undefined'){-->
-      <!--mappy.removeLayer(features)-->
-      <!--mappy.setView([35.0, 80.0], 3)-->
-    <!--}-->
-    // console.log('in map_init()')
-    geom = {"type":"FeatureCollecton","features":[]}
-    
-  } // end map_init
+  const map = new mapboxgl.Map({
+    container: 'map',
+    <!--style: 'mapbox://styles/mapbox/light-v8',-->
+    style: 'mapbox://styles/kgeographer/cjstfpenh6o1e1fldz95w8m6p',
+    center: [14.75, 22],
+    zoom: 1.5
+  });
+  const ramps = {
+    // green
+    0:['rgba(237,248,251,0)','rgb(204,236,230)','rgb(153,216,201)','rgb(102,194,164)','rgb(44,162,95)','rgb(0,109,44)'],
+    // blue
+    1:['rgba(239,243,255,0)','rgb(198,219,239)','rgb(158,202,225)','rgb(107,174,214)','rgb(49,130,189)','rgb(8,81,156)'],
+    // brownish
+    2:['rgba(255,255,212,0)','rgb(254,227,145)','rgb(254,196,79)','rgb(254,153,41)','rgb(217,95,14)','rgb(153,52,4)'],
+    // purple
+    3:['rgba(242,240,247,0)','rgb(218,218,235)','rgb(188,189,220)','rgb(158,154,200)','rgb(117,107,177)','rgb(84,39,143)'],
+    // red
+    4:['rgba(254,229,217,0)','rgb(252,187,161)','rgb(252,146,114)','rgb(251,106,74)','rgb(222,45,38)','rgb(165,15,21)'],
+    // original
+    5:["rgba(33,102,172,0)","rgb(103,169,207)","rgb(209,229,240)","rgb(253,219,199)","rgb(239,138,98)","rgb(178,24,43)"]
+  }
 
- <!--mapboxgl.accessToken = 'pk.eyJ1Ijoia2dlb2dyYXBoZXIiLCJhIjoiUmVralBPcyJ9.mJegAI1R6KR21x_CVVTlqw';-->
- // mapboxgl.accessToken = {{ mapbox_access_token }};
- <!--var map = new mapboxgl.Map({-->
-  <!--container: 'map_home',-->
-  <!--style: 'mapbox://styles/kgeographer/cjni3c0lj5l3r2spa4niiuef5'-->
-  <!--// style: 'mapbox://styles/mapbox/streets-v10'-->
- <!--});-->
+  function heatPainter(num) {
+    paint = {
+    // Increase the heatmap weight based on frequency and property magnitude
+    "heatmap-weight": [
+      "interpolate",
+      ["linear"],
+      ["get", "mag"],
+      0, 0,
+      6, 1
+    ],
+    // Increase the heatmap color weight weight by zoom level
+    // heatmap-intensity is a multiplier on top of heatmap-weight
+    "heatmap-intensity": [
+      "interpolate",
+      ["linear"],
+      ["zoom"],
+      0, 1,
+      9, 3
+    ],
+    "heatmap-color": [
+      "interpolate",
+      ["linear"],
+      ["heatmap-density"],
+      0, ramps[num][0],
+      0.2, ramps[num][1],
+      0.4, ramps[num][2],
+      0.6, ramps[num][3],
+      0.8, ramps[num][4],
+      1, ramps[num][5]
+    ],
+    // Adjust the heatmap radius by zoom level
+    "heatmap-radius": [
+      "interpolate",
+      ["linear"],
+      ["zoom"],
+      0, 2,
+      9, 20
+    ],
+    // Transition from heatmap to circle layer by zoom level
+    "heatmap-opacity": [
+      "interpolate",
+      ["linear"],
+      ["zoom"],
+      7, 1,
+      9, 0
+    ]}
+    return paint
+  }
+  
+  function addHeatLayer(id,type,source,maxzoom,num){
+    map.addLayer({
+      "id": id,
+      "type": type,
+      "source": source,
+      "maxzoom": maxzoom,
+      "paint": heatPainter(num)
+    })
+  }
+  map.on('load', function() {
+    // Add a geojson point source.
+    // Heatmap layers also work with a vector tile source.
+    map.addSource('lugares_13k', {
+      "type": "geojson",
+      "data": "../media/user_whgadmin/lugares_13k_sWlt6Fz.jsonld"
+    });
+  
+    map.addSource('topostext', {
+      "type": "geojson",
+      "data": "../media/user_whgadmin/topostext.jsonld"
+    });
+  
+  })  
 </script>
+<!--addHeatLayer("topostext-heat","heatmap","topostext",9,0)-->
 {% endblock %}
 
