@@ -18,44 +18,49 @@
     <h3>Dataset Maps
       <span class="float-right">
         <div class="dropdown small">
+          <span class="mr-2"><a id="zoom_extents" href="">{% fontawesome_icon 'expand' color='#336699' %}</a></span>
           <button class="btn btn-sm btn-warning dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Select dataset</button>
           <div id="ds_select" class="dropdown-menu" aria-labelledby="dropdownMenuButton">
             <a class="dropdown-item small" data-id="lugares_13k" href="">HGIS de las Indias</a>
             <a class="dropdown-item small" data-id="topostext"href="">ToposText (Ancient Greece)</a>
+            <a class="dropdown-item small" data-id="al-turayya"href="">al-Turayya (early Islam)</a>
           </div>
         </div>
       </span>
     </h3>
-    <div id="map"></div>
-    <!--<div id='map_home' class="map-mapbox"></div>-->
+    <div id="map_maps"></div>
 
   </div>
 </div>
 <script type="text/javascript">
+  const extents = {
+    "topostext": {"center":[23.15, 38.9],"zoom":6.5},
+    "lugares_13k": {"center":[-73.57,-1.83],"zoom":2},
+    "al-turayya": {"center":[34.18,31.1],"zoom":3.12}
+  }
 
-const zoomto = {
-  "topostext": {"center":[23.15, 38.9],"zoom":6.5},
-  "lugares_13k": {"center":[-73.57,-1.83],"zoom":2}
-}
-
-$(function(){
-  var num=0
-  $("#ds_select a").click(function(e){
-    e.preventDefault()
-    num +=1
-    id=$(this).data('id')
-    addHeatLayer(id+"-heat","heatmap",id,9,num)
-    map.flyTo(zoomto[id])
+  $(function(){
+    var num=0
+    $("#ds_select a").click(function(e){
+      e.preventDefault()
+      $("#zoom_extents").show()
+      num +=1
+      id=$(this).data('id')
+      addHeatLayer(id+"-heat","heatmap",id,9,num)
+      map.flyTo(extents[id])
+    })
+    window.mboxid = $('script').filter(function() {
+      return this.text == 'foo';
+    });
   })
-  window.mboxid = $('script').filter(function() {
-    return this.text == 'foo';
-  });
+  
+  $("#zoom_extents").click(function(e){
+    e.preventDefault()
+    map.flyTo({"center":[6.55, 19.68],"zoom":1.5})
   })
   mapboxgl.accessToken = 'pk.eyJ1Ijoia2dlb2dyYXBoZXIiLCJhIjoiUmVralBPcyJ9.mJegAI1R6KR21x_CVVTlqw';
-
   const map = new mapboxgl.Map({
-    container: 'map',
-    <!--style: 'mapbox://styles/mapbox/light-v8',-->
+    container: 'map_maps',
     style: 'mapbox://styles/kgeographer/cjstfpenh6o1e1fldz95w8m6p',
     center: [6.55, 19.68],
     zoom: 1.5
@@ -125,13 +130,15 @@ $(function(){
   }
   
   function addHeatLayer(id,type,source,maxzoom,num){
-    map.addLayer({
-      "id": id,
-      "type": type,
-      "source": source,
-      "maxzoom": maxzoom,
-      "paint": heatPainter(num)
-    })
+    if (!map.getLayer(id)){
+      map.addLayer({
+        "id": id,
+        "type": type,
+        "source": source,
+        "maxzoom": maxzoom,
+        "paint": heatPainter(num)
+      })    
+    }
   }
   map.on('load', function() {
     // Add a geojson point source.
@@ -144,6 +151,11 @@ $(function(){
     map.addSource('topostext', {
       "type": "geojson",
       "data": "../media/user_whgadmin/topostext.jsonld"
+    });
+  
+    map.addSource('al-turayya', {
+      "type": "geojson",
+      "data": "../media/data/al-turayya.geojson"
     });
   
   })  

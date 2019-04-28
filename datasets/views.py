@@ -463,7 +463,7 @@ def ds_insert_csv(request, pk):
 
   # CSV * = req; ^ = desired
   # lists are ';' delimited, no brackets
-  # id*, title*, name_src*, type^, variants[], parent^, ccodes[]^, lon^, lat^,
+  # id*, title*, name_src*, types[]^, variants[], parent^, ccodes[]^, lon^, lat^,min,max,
   # geom_src, close_match[]^, exact_match[]^, description, depiction
 
   # TODO: what if simultaneous inserts?

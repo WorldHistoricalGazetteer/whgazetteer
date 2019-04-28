@@ -49,12 +49,11 @@ input[type="text"] {
    font-size: .8rem;
    /*line-height: rem;*/
 }
+
 #map_home.leaflet-container { height: calc(100vh - 90px);}
-#home_map {
-  position:relative;
-}
+#home_map {  position:relative; }
 #mapview_container { position: relative; height:calc(100vh - 90px);}
-/*#map { position:absolute; top:0; bottom:0; width:100%; }*/
+
 #home_search {
   z-index:500; 
   position:absolute; 
@@ -144,7 +143,7 @@ input[type="text"] {
   maps
 **/
 #map_app.leaflet-container { height: 550px;}
-
+#zoom_extents { display:none; font-size: 1.2rem;}
 
 /**
   review
@@ -322,8 +321,8 @@ span.edit-row {
   height:calc(100vh - 180px);
   overflow:scroll;
 }
-#map { position:absolute; top:120px; bottom:0; width:81%; height:80%;}
-/*#map { position:relative; top:0; bottom:0; width:90%; }*/
+#map_maps { position:absolute; top:120px; bottom:0; width:81%; height:80%;}
+
 #map_area, #map_home, #map_view {
   height: 100%;
   /* position:absolute;top:0;left:0; */
