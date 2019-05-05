@@ -652,7 +652,7 @@ class DashboardView(ListView):
 
     types_ok=['ccodes','copied','drawn']
     # list areas
-    userareas = Area.objects.all().filter(type__in=types_ok).order_by('-created')
+    userareas = Area.objects.all().filter(type__in=types_ok).order_by('created')
     context['area_list'] = userareas if me.username == 'whgadmin' else userareas.filter(owner=self.request.user)
 
     # list team tasks

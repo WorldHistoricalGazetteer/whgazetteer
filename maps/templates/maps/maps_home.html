@@ -21,9 +21,11 @@
           <span class="mr-2"><a id="zoom_extents" href="">{% fontawesome_icon 'expand' color='#336699' %}</a></span>
           <button class="btn btn-sm btn-warning dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Select dataset</button>
           <div id="ds_select" class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-            <a class="dropdown-item small" data-id="lugares_13k" href="">HGIS de las Indias</a>
-            <a class="dropdown-item small" data-id="topostext"href="">ToposText (Ancient Greece)</a>
+            <a class="dropdown-item small" data-id="lugares_13k" href="">HGIS de las Indias (1701-1808)</a>
+            <a class="dropdown-item small" data-id="topostext"href="">ToposText (Neolithic-2c CE)</a>
             <a class="dropdown-item small" data-id="al-turayya"href="">al-Turayya (early Islam)</a>
+            <a class="dropdown-item small" data-id="chgis"href="">China Historical GIS (221 BCE-1911 CE)</a>
+            <a class="dropdown-item small" data-id="owtrad"href="">Old World Trade (4,000 BCE-c.1820 CE)</a>
           </div>
         </div>
       </span>
@@ -34,13 +36,15 @@
 </div>
 <script type="text/javascript">
   const extents = {
-    "topostext": {"center":[23.15, 38.9],"zoom":6.5},
-    "lugares_13k": {"center":[-73.57,-1.83],"zoom":2},
-    "al-turayya": {"center":[34.18,31.1],"zoom":3.12}
+    "topostext": {"center":[23.15, 38.9],"zoom":6.5}
+    ,"lugares_13k": {"center":[-73.57,-1.83],"zoom":2}
+    ,"al-turayya": {"center":[34.18,31.1],"zoom":3.12}
+    ,"chgis": {"center":[113.4672,31.2638],"zoom":3.8}
+    ,"owtrad": {"center":[60.3,37.51],"zoom":2.3}
   }
 
   $(function(){
-    var num=0
+    var num=-1
     $("#ds_select a").click(function(e){
       e.preventDefault()
       $("#zoom_extents").show()
@@ -156,6 +160,16 @@
     map.addSource('al-turayya', {
       "type": "geojson",
       "data": "../media/data/al-turayya.geojson"
+    });
+  
+    map.addSource('chgis', {
+      "type": "geojson",
+      "data": "../media/data/chgis.geojson"
+    });
+  
+    map.addSource('owtrad', {
+      "type": "geojson",
+      "data": "../media/data/owtrad.geojson"
     });
   
   })  

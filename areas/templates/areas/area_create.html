@@ -213,7 +213,7 @@ window.addEventListener('map:init', function (e) {
     window.buffer = $("input#buffer_km").val()
     // console.clear()
 
-    var country_url = "/media/data/countries_simplified.json"
+    var country_url = "/media/data/countries_simplified_fr.json"
     // clear geoJSON
     if (Object.keys(mappy._layers).length > 2 ) {
       cc_layer.clearLayers()
@@ -293,13 +293,3 @@ window.addEventListener('map:init', function (e) {
 </script>
 {% endblock %}
 
-<!-- // window.gelems = $('script').filter(function() {
-//   return this.id.match(/[0-9]/) && this.text != '"null"';
-// });
-
-// for (i=0;i<gelems.length;i++){
-//   let t_geom = cleanJson(gelems[i].text)
-//   // let t_geom = JSON.parse(JSON.parse(gelems[i].text))
-//   t_geom['properties'] = {"id": gelems[i].id, "dataset": "tgn"}
-//   geom['features'].push(t_geom)
-// } -->

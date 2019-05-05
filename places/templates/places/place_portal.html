@@ -195,7 +195,7 @@
     console.log('fetchTraceGeom():',trace_id)
     $.get("/search/tracegeom",{idx: 'traces', search: trace_id, doc_type: 'trace'},
       function(data){
-        console.log(data.features.length,'mappable geoms in this trace')
+        <!--console.log(data.features.length,'mappable geoms in this trace')-->
         mappy.createPane('tracePane');
         mappy.getPane('tracePane').style.zIndex = 200;
         traces = L.geoJSON(data, {
@@ -223,12 +223,18 @@
     context={"type":"FeatureCollection","features":[]}
     $.get("/search/features",{idx: 'whg', search: bbox, doc_type: 'place'},
       function(data){
-        console.log(data['hits'].length,'hits for context query')
+        console.log(data['hits'][0])
+        <!--console.log(data['hits'].length,'hits for context query')-->
         for(i in data['hits']){
+          title = data['hits'][i]['title']
           geoms=data['hits'][i]['geoms']
           for(j in geoms) {
             context["features"].push(
-              { "type":"Feature","properties":{"id":geoms[j]['ds']+':'+geoms[j]['id']},
+              { "type":"Feature",
+                "properties":{
+                  "id":geoms[j]['ds']+':'+geoms[j]['id'],
+                  "title":title
+                },
                 "geometry":geoms[j]
               }
             )
@@ -240,13 +246,14 @@
         nearby = L.geoJSON(context, {
           pane: 'contextPane',
           pointToLayer: function (feature, latlng) {
+            <!--console.log(feature)-->
             identifier = feature.geometry.ds+':'+feature.geometry.id
             marker = L.circleMarker(latlng,
               {
                 radius: 5, fillOpacity: 0.6, opacity: 1, weight: 1,
                 color: "#fff", fillColor: fill(feature.geometry.ds)
               }
-            ).bindPopup(identifier);
+            ).bindPopup(feature.properties.title);
          
             idToFeature[feature.properties.id] = marker
             return marker
@@ -270,7 +277,7 @@
     // display bbox
     <!--feature={"type":"Feature","properties":{"id":"fooid"},"geometry":geom}-->
     <!--var polygon = L.polygon(latlngs, {color: 'red'}).addTo(mappy)-->
-    console.log(JSON.stringify(geom["coordinates"]))
+    <!--console.log(JSON.stringify(geom["coordinates"]))-->
     return JSON.stringify(geom["coordinates"])
   }
   
