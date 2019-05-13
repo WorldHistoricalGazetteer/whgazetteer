@@ -25,6 +25,12 @@ class PlacePortalView(DetailView):
   def get_success_url(self):
     id_ = self.kwargs.get("id")
     return '/places/'+str(id_)+'/detail'
+  
+  def minmax(timespans):
+    starts = sorted([t['start']['in'] for t in timespans])
+    ends = sorted([t['end']['in'] for t in timespans])
+    #minmax = {'start':min(starts), 'end':max(ends)}    
+    minmax = [min(starts), max(ends)]
 
   def get_context_data(self, *args, **kwargs):
     context = super(PlacePortalView, self).get_context_data(*args, **kwargs)
@@ -44,9 +50,9 @@ class PlacePortalView(DetailView):
       ids.append(int(hit['_id']))
 
     # database records for parent + children into 'payload'
-    qs=Place.objects.filter(id__in=ids)
+    qs=Place.objects.filter(id__in=ids).order_by('-whens__minmax')
     #print("id_,ids, qs",id_,ids,qs)
-    for place in qs:        
+    for place in qs:
       ds = get_object_or_404(Dataset,id=place.dataset.id)
       record = {
         "whg_id":id_,
@@ -57,7 +63,7 @@ class PlacePortalView(DetailView):
         "title":place.title,
         "ccodes":place.ccodes, 
         "names":[name.jsonb for name in place.names.all()], 
-        "types":[type.jsonb for type in place.types.all()], 
+        "types":[t.jsonb for t in place.types.all()], 
         "links":[link.jsonb for link in place.links.all()], 
         "geoms":[geom.jsonb for geom in place.geoms.all()],
         "whens":[when.jsonb for when in place.whens.all()], 
