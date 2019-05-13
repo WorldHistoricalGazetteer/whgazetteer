@@ -13,7 +13,7 @@ from areas.models import Area
 from datasets.es_utils import makeDoc, esInit
 from datasets.models import Dataset, Hit
 from datasets.regions import regions as region_hash
-#from datasets.static.hashes.parents import ccodes
+from datasets.static.hashes.parents import ccodes
 from datasets.utils import *
 from places.models import Place
 ##
@@ -55,6 +55,7 @@ def parseWhen(when):
   return timespan
 def ccDecode(codes):
   countries=[]
+  #print('codes in ccDecode',codes)
   for c in codes:
     countries.append(ccodes[0][c]['gnlabel'])
   return countries
@@ -75,33 +76,29 @@ def maxID(es):
 # normalize hits json from any authority
 def normalize(h,auth):
   if auth == 'whg':
-    try:
-      #rec = HitRecord(h['whg_id'], h['place_id'], h['dataset'], h['src_id'], h['title'])
-      rec = HitRecord(h['place_id'], h['dataset'], h['src_id'], h['title'])
-      #print('rec',rec)
-      # add elements if non-empty in index record
-      rec.variants = [n['toponym'] for n in h['names']] # always >=1 names
-      rec.types = [t['label']+' ('+t['src_label']  +')' if 'src_label' in t.keys() else '' \
-                  for t in h['types']] if len(h['types']) > 0 else []
-      rec.ccodes = ccDecode(h['ccodes']) if len(h['ccodes']) > 0 else []
-      rec.parents = ['partOf: '+r.label+' ('+parseWhen(r['when']['timespans'])+')' for r in h['relations']] \
-                  if 'relations' in h.keys() and len(h['relations']) > 0 else []
-      rec.descriptions = h['descriptions'] if len(h['descriptions']) > 0 else []
-      rec.geoms = [{
-        "type":h['geoms'][0]['location']['type'], 
-        "coordinates":h['geoms'][0]['location']['coordinates'],
-        "id":h['place_id'], \
-        "ds":"whg"}] \
-        if len(h['geoms'])>0 else []
-      #rec.geoms = [g['location'] for g in h['geoms']] \
-                  #if len(h['geoms']) > 0 else []
-      rec.minmax = dict(sorted(h['minmax'].items(),reverse=True)) if len(h['minmax']) > 0 else []
-      #rec.whens = [parseWhen(t) for t in h['timespans']] \
-                  #if len(h['timespans']) > 0 else []
-      rec.links = [l['type']+': '+l['identifier'] for l in h['links']] \
-                  if len(h['links']) > 0 else []
-    except:
-      print("normalize(whg) error:", h['place_id'], sys.exc_info())    
+    #try:
+    rec = HitRecord(h['place_id'], h['dataset'], h['src_id'], h['title'])
+    rec.whg_id = h['whg_id'] if 'whg_id' in h.keys() else h['relation']['parent']
+    #print('rec',rec)
+    # add elements if non-empty in index record
+    rec.variants = [n['toponym'] for n in h['names']] # always >=1 names
+    rec.types = [t['label']+' ('+t['src_label']  +')' if t['label']!=None else t['src_label'] \
+                for t in h['types']] if len(h['types']) > 0 else []
+    rec.ccodes = ccDecode(h['ccodes']) if 'ccodes' in h.keys() else []
+    rec.parents = ['partOf: '+r.label+' ('+parseWhen(r['when']['timespans'])+')' for r in h['relations']] \
+                if 'relations' in h.keys() and len(h['relations']) > 0 else []
+    rec.descriptions = h['descriptions'] if len(h['descriptions']) > 0 else []
+    rec.geoms = [{
+      "type":h['geoms'][0]['location']['type'], 
+      "coordinates":h['geoms'][0]['location']['coordinates'],
+      }] if len(h['geoms'])>0 else []
+    rec.minmax = dict(sorted(h['minmax'].items(),reverse=True)) if len(h['minmax']) > 0 else []
+    #rec.whens = [parseWhen(t) for t in h['timespans']] \
+                #if len(h['timespans']) > 0 else []
+    rec.links = [l['type']+': '+l['identifier'] for l in h['links']] \
+                if len(h['links']) > 0 else []
+    #except:
+      #print("normalize(whg) error:", h['place_id'], sys.exc_info()[0])    
   
   elif auth == 'wd':
     try:
@@ -367,9 +364,6 @@ def writeHit(b,passnum,ds,pid,srcid,title):
         b['place']['value']+'\t'+ \
         tgnid+gnid+viafid+bnfid+locid
   print(hit + '\n')
-#fout4.write('\n')
-
-
 
 # queries > result_obj
 def es_lookup_tgn(qobj, *args, **kwargs):

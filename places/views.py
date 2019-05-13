@@ -80,8 +80,8 @@ class PlacePortalView(DetailView):
         'bodycount':len(h['_source']['body'])
       })
     
-    print('context payload',str(context['payload']))
-    print('context traces',str(context['traces']))
+    #print('context payload',str(context['payload']))
+    #print('context traces',str(context['traces']))
     return context
 
 class PlaceContribView(DetailView):
@@ -112,5 +112,5 @@ class PlaceContribView(DetailView):
     context['depictions'] = place.depictions.all()
 
     context['spine'] = spinedata
-    print('place context',str(context))
+    #print('place context',str(context))
     return context

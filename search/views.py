@@ -118,9 +118,11 @@ def contextSearch(idx,doctype,q):
   # TODO: refactor this bit
   #print('hits',hits)
   if len(hits) > 0:
+    print('hit0 _source: ',hits[0]["_source"])
     for hit in hits:
       count_hits +=1
       if idx=="whg":
+        #print('hit _source: ',hit["_source"])
         result_obj["hits"].append(normalize(hit["_source"],'whg'))
       else:
         result_obj["hits"].append(hit["_source"]['body'])

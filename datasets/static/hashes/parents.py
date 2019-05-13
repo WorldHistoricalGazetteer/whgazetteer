@@ -250,7 +250,8 @@ ccodes = {
 "TH":	{"wdid": "Q869", "tgnid": 1000142, "gnlabel": "Thailand", "tgnlabel": "Prathet Thai", "geonameid": 1605651},
 "SC":	{"wdid": "Q1042", "tgnid": 1000190, "gnlabel": "Seychelles", "tgnlabel": "Sesel", "geonameid": 241170},
 "TL":	{"wdid": "Q574", "tgnid": 7003703, "gnlabel": "East Timor", "tgnlabel": "Timor-Leste", "geonameid": 1966436},
-"TO":	{"wdid": "Q678", "tgnid": 7000529, "gnlabel": "Tonga", "tgnlabel": "Tonga", "geonameid": 4032283}
+"TO":	{"wdid": "Q678", "tgnid": 7000529, "gnlabel": "Tonga", "tgnlabel": "Tonga", "geonameid": 4032283},
+"YU":	{"wdid": "Q83286", "tgnid": 1000102, "gnlabel": "Yugoslavia", "tgnlabel": "Serbia and Montenegro", "geonameid":7500737 }
 },
 
 regions={

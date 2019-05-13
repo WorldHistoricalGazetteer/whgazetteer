@@ -223,16 +223,18 @@
     context={"type":"FeatureCollection","features":[]}
     $.get("/search/features",{idx: 'whg', search: bbox, doc_type: 'place'},
       function(data){
-        console.log(data['hits'][0])
+        console.log('a hit:',data['hits'][0])
+        console.log('a geom in a hit:',data['hits'][0].geoms[0])
         <!--console.log(data['hits'].length,'hits for context query')-->
         for(i in data['hits']){
           title = data['hits'][i]['title']
+          whg_id = data['hits'][i]['whg_id']
           geoms=data['hits'][i]['geoms']
           for(j in geoms) {
             context["features"].push(
               { "type":"Feature",
                 "properties":{
-                  "id":geoms[j]['ds']+':'+geoms[j]['id'],
+                  "id":whg_id,
                   "title":title
                 },
                 "geometry":geoms[j]
@@ -240,20 +242,20 @@
             )
           }
         }
+        <!--console.log('a feature',context['features'][0])-->
         // TODO: fix panes z-index
         mappy.createPane('contextPane');
         mappy.getPane('contextPane').style.zIndex = 100;
         nearby = L.geoJSON(context, {
           pane: 'contextPane',
           pointToLayer: function (feature, latlng) {
-            <!--console.log(feature)-->
-            identifier = feature.geometry.ds+':'+feature.geometry.id
+            console.log(feature)
             marker = L.circleMarker(latlng,
               {
                 radius: 5, fillOpacity: 0.6, opacity: 1, weight: 1,
                 color: "#fff", fillColor: fill(feature.geometry.ds)
               }
-            ).bindPopup(feature.properties.title);
+            ).bindPopup('<a href="/places/'+feature.properties.id+'/portal">'+feature.properties.title+'</a>');
          
             idToFeature[feature.properties.id] = marker
             return marker
@@ -336,21 +338,21 @@
     };
     var popupOptions = {}
     
-    window.rivers = new L.GeoJSON.AJAX("/datasets/ne_rivers/places",
+    rivers = new L.GeoJSON.AJAX("/datasets/ne_rivers/places",
       {style:riverStyle,
         onEachFeature: function (feature, layer) {
           popupOptions = {maxWidth: 200};
             layer.bindPopup(feature.properties.name+" ("+feature.properties.src_id+")", popupOptions);
           }
       });
-    window.watersheds = new L.GeoJSON.AJAX("/datasets/wri_watersheds/places",
+    watersheds = new L.GeoJSON.AJAX("/datasets/wri_watersheds/places",
       { style:watershedStyle,
         onEachFeature: function (feature, layer) {
           popupOptions = {maxWidth: 200};
             layer.bindPopup(feature.properties.name+" ("+feature.properties.src_id+")", popupOptions);
         }
       })
-    window.ecoregions = new L.GeoJSON.AJAX("/datasets/tnc_ecoregions/places",
+    ecoregions = new L.GeoJSON.AJAX("/datasets/tnc_ecoregions/places",
       { style:ecoregionStyle,
         onEachFeature: function (feature, layer) {
           <!--console.log('feature',feature)-->
