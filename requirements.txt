@@ -77,7 +77,6 @@ Shapely==1.6.4.post2
 simplejson==3.16.0
 six==1.11.0
 SPARQLWrapper==1.8.4
-topojson==1.0.1+2.g581c6b4
 tornado==5.1.1
 traitlets==4.3.2
 urllib3==1.24.2

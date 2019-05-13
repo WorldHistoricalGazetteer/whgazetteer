@@ -41,20 +41,11 @@
                 placeholder="Enter place name" aria-label="Search term" aria-describedby="search-type" />
             </div>
           </div>
-          <span id="options_link" class="ml-3 small"><a href="">Options</a></span>
-          <div id="options" class="small">
-            <div class="dropdown">
-              <button class="btn btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" 
-                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                Display dataset
-              </button>
-              <div class="dropdown-menu small" aria-labelledby="dropdownMenuButton">
-                <a class="dropdown-item" href="#">selections</a>
-                <a class="dropdown-item" href="#">coming</a>
-                <a class="dropdown-item" href="#">soon</a>
-              </div>
-            </div>
-          </div>
+          <!--<span id="options_link" class="ml-3 small"><a href="">Options</a></span>-->
+          <!--<div id="options" class="small">-->
+            <!--<div class="dropdown"><p>advanced search soon...</p>-->
+            <!--</div>-->
+          <!--</div>-->
           <div class="nameautosuggest mt-1"></div>
         </form>
       </div> <!-- home_search -->
@@ -131,7 +122,7 @@
       osm  = L.tileLayer(mbtiles_url, {id:'mapbox.light', token:token_mb, attribution:attrib_mb});
 
     var countryStyle = {
-      "color": "#eee",
+      "color": "#ddd",
       "weight": 1,
       "opacity": 0.5,
       "fillOpacity": 0
@@ -262,6 +253,8 @@
   function showSuggestions(data,doctype){
     var div = '';
     data.forEach(function(sug){
+      <!--console.log('suggestion',sug)-->
+      sug.geom.forEach(function(g){g['properties']['title']=sug.name})
       // load suggestion div
       div += sugLister(sug,doctype)
     });
@@ -293,8 +286,9 @@
       e.preventDefault()
       var features = $(this).data('geom')
       data = {"type":"FeatureCollection","features":features}
-      console.log('id for',$(this).data('id'))
-      console.log('features for',$(this).data('geom'))
+      console.log(data)
+      <!--console.log('id for',$(this).data('id'))-->
+      <!--console.log('features for',$(this).data('geom'))-->
       var count_features = 0
       idToFeature = {}
       mappy.createPane('placePane');
@@ -303,13 +297,13 @@
         pane: 'placePane',
         pointToLayer: function (feature, latlng) {
           count_features +=1;
-          identifier = feature.properties.place_id;
+          identifier = feature.properties.pid;
           marker = L.circleMarker(latlng,
             {
               radius: 8, fillOpacity: 0.8, opacity: 1, weight: 1,
               color: "#fff", fillColor: "red"
             }
-          ).bindPopup('<a href="/places/'+identifier+'/portal">'+feature.properties.title+"</b></a>");
+          ).bindPopup(feature.properties.title+' (whg id:'+identifier+')');
                       
           idToFeature[identifier] = marker
           return marker
@@ -383,19 +377,3 @@
   })
 </script>
 {% endblock %}
-  <!--function renderFeatures(geom){-->
-    <!--features = L.geoJSON(geom, {-->
-      <!--pointToLayer: function (feature, latlng) {-->
-        <!--matchid = feature.properties.dataset+':'+feature.properties.id-->
-        <!--marker = L.circleMarker(latlng,-->
-          <!--{-->
-            <!--radius: 8, fillOpacity: 0.8, opacity: 1, weight: 1,-->
-            <!--color: "#000", fillColor: fill(feature.properties.dataset)-->
-          <!--}-->
-        <!--).bindPopup(feature.properties.dataset+':'+feature.properties.id);-->
-
-        <!--idToFeature[matchid] = marker-->
-        <!--return marker-->
-      <!--}-->
-    <!--}).addTo(mappy);    -->
-  <!--}-->

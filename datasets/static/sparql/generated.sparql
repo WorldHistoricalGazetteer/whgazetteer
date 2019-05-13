@@ -1,0 +1,27 @@
+SELECT distinct ?place ?location ?placeLabel ?countryLabel ?tgnid ?gnid ?nameLabel 
+    (group_concat(distinct ?parentName; SEPARATOR=", ") as ?parentNames)
+    WHERE {
+    SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
+    ?place rdfs:label ?placeLabel ; (wdt:P31/wdt:P279*) ?placeType .
+    OPTIONAL {?place wdt:P131 ?parent .} 
+    OPTIONAL {?parent wdt:P1448 ?parentName .}
+    OPTIONAL {?place wdt:P1448 ?name .}
+    OPTIONAL {?place wdt:P17 ?country .}
+    # external IDs
+    OPTIONAL {?place wdt:P1667 ?tgnid .}
+    OPTIONAL {?place wdt:P1566 ?gnid .}
+    OPTIONAL {?place wdt:P214 ?viafid .}
+    OPTIONAL {?place wdt:P268 ?bnfid .}
+    OPTIONAL {?place wdt:P244 ?locid .}
+    
+    FILTER (STR(?placeLabel) in ("Paris")) .
+    FILTER (STR(?country) in (wd:Q142)) .
+  
+    SERVICE wikibase:box {
+      ?place wdt:P625 ?location .
+        bd:serviceParam wikibase:cornerWest "POINT(1.3508 47.8567)"^^geo:wktLiteral .
+        bd:serviceParam wikibase:cornerEast "POINT(3.3508 49.8567)"^^geo:wktLiteral .
+    }
+FILTER (?placeType in (wd:Q486972)) . } 
+GROUP BY ?place ?location ?placeLabel ?countryLabel ?tgnid ?gnid ?nameLabel
+ORDER BY ?placeLabel

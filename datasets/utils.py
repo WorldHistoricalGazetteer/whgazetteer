@@ -170,8 +170,7 @@ def elapsed(delta):
   return '{:02}:{:02}'.format(int(minutes), int(seconds))
 
 def bestParent(qobj, flag=False):
-  # TODO: region only applicable for black, right?
-  #global parent_hash
+  # applicable for tgn only 
   best = []
   # merge parent country/ies & parents
   if len(qobj['countries']) > 0:
@@ -183,6 +182,21 @@ def bestParent(qobj, flag=False):
   if len(best) == 0:
     best = ['World']
   return best
+
+# wikidata Qs from ccodes
+# TODO: consolidate hashes
+def getQ(arr,what):
+  qids=[]
+  if what == 'ccodes':
+    from datasets.static.hashes.parents import ccodes
+    for c in arr:
+      qids.append('wd:'+ccodes[0][c]['wdid'])
+  elif what == 'types':
+    from datasets.static.hashes.aat_q import qnums
+    for t in arr:
+      for q in qnums[t]:
+        qids.append('wd:'+q)    
+  return qids
 
 def roundy(x, direct="up", base=10):
   import math

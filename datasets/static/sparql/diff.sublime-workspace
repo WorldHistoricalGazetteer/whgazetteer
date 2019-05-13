@@ -1,0 +1,820 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"st",
+				"style\tTag"
+			],
+			[
+				"margin",
+				"margin-bottom"
+			],
+			[
+				"font-st",
+				"font-style"
+			],
+			[
+				"font",
+				"font-variant"
+			],
+			[
+				"text-a",
+				"text-align"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "/Users/karlg/Documents/Repos/_whgdata/data/elastic/mappings/mappings_whg.json",
+			"settings":
+			{
+				"buffer_size": 2492,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/Users/karlg/Documents/Repos/_whgdata/data/elastic/mappings/es_mappings_tgn.json",
+			"settings":
+			{
+				"buffer_size": 1707,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/Users/karlg/Documents/Repos/_whgazetteer/traces/static/mappings_traces.json",
+			"settings":
+			{
+				"buffer_size": 1682,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "sample_base.sparql",
+			"settings":
+			{
+				"buffer_size": 1186,
+				"encoding": "UTF-8",
+				"line_ending": "Unix",
+				"name": "SELECT distinct ?place ?location ?placeLabel ?coun"
+			}
+		},
+		{
+			"file": "generated.sparql",
+			"settings":
+			{
+				"buffer_size": 1187,
+				"line_ending": "Unix"
+			}
+		}
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 119.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"subl",
+				"Sublimerge: Show Changes Between Current and Remote..."
+			],
+			[
+				"diff",
+				"Set Syntax: Diff"
+			]
+		],
+		"width": 444.0
+	},
+	"console":
+	{
+		"height": 126.0,
+		"history":
+		[
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/Users/karlg/Documents/Repos/_whgazetteer/datasets/static/sparql"
+	],
+	"file_history":
+	[
+		"/Users/karlg/Documents/Repos/_whgazetteer/datasets/static/sparql/generated.sparql",
+		"/Users/karlg/Documents/Repos/_whgazetteer/datasets/static/hashes/aat_q.py",
+		"/Users/karlg/Downloads/query-1.tsv",
+		"/Users/karlg/Downloads/\"CX\":\t{\"wdid\": \"Q31063\", \"tgnid\": -1, \"gnlabel\": \"",
+		"/Users/karlg/Downloads/query.tsv",
+		"/Users/karlg/Documents/Repos/linked-traces-format/es-mappings_traces_whg.json",
+		"/Users/karlg/Documents/Repos/_whgdata/data/elastic/mappings/mappings_traces.json",
+		"/Users/karlg/Documents/Repos/_whgazetteer/datasets/static/lpf-schema-nocoords.json",
+		"/Users/karlg/Documents/Repos/_whgdata/data/_source/Indias/_working-201903/ispartof_essential.tsv",
+		"/Users/karlg/Documents/Repos/_whgdata/for_upload/lugares_13k.jsonld",
+		"/Users/karlg/Documents/Repos/_whgdata/for_upload/lugares_50.jsonld",
+		"/Users/karlg/Documents/Repos/_whgdata/for_upload/lugares_20.jsonld",
+		"/Users/karlg/Documents/Repos/_whgdata/data/_source/Indias/_working-201903/lugares_13k.jsonl",
+		"/Users/karlg/Documents/Repos/_whg/datasets/static/lpf-schema-jsonl.json",
+		"/Users/karlg/Documents/Repos/_whg/datasets/static/lpf_schema.json",
+		"/Users/karlg/Documents/Repos/_whgdata/data/elastic/queries/es_queries_20190407.txt",
+		"/Users/karlg/Documents/Repos/_whgdata/data/elastic/queries/es_queries_20190306.txt",
+		"/Users/karlg/Documents/Repos/_whgdata/data/elastic/queries/es_queries_20190312.txt",
+		"/Users/karlg/Documents/Repos/_whg/_notes/normalizing-hits.txt",
+		"/Users/karlg/Documents/Repos/_whgdata/data/elastic/tgn/es-test-nonulllocs.jsonl",
+		"/Users/karlg/Documents/Repos/_whgdata/data/elastic/tgn/tgn_20190314.jsonl",
+		"/Users/karlg/Documents/Repos/_whgdata/data/elastic/tgn/es-test.jsonl",
+		"/Users/karlg/Documents/Repos/_whgdata/data/elastic/mappings/es_mappings_tgn.json",
+		"/Users/karlg/Documents/Repos/_whgdata/data/elastic/tgn/es-test_20180616.jsonl",
+		"/Users/karlg/Documents/Repos/_whgdata/data/black/export_201901/place_geom.tsv",
+		"/Users/karlg/Documents/Repos/_whgdata/sql/20190110_insert-black.sql",
+		"/Users/karlg/Documents/Repos/_whgdata/for_upload/ne_mountains_217.tsv",
+		"/Users/karlg/Documents/Repos/_whgdata/for_upload/alcedo_200.tsv",
+		"/Users/karlg/Documents/Pers/health/AncestryDNA.txt",
+		"/Users/karlg/Documents/Repos/_whgdata/for_upload/ne_rivers_1074.tsv",
+		"/Users/karlg/Documents/Repos/_whgdata/pyin/spine-black-20190204.jsonl",
+		"/Users/karlg/Documents/Repos/_whgdata/pyin/dplace_for-align.json",
+		"/Users/karlg/Documents/Repos/_whgdata/for_upload/wri_lakes_1491.tsv",
+		"/Users/karlg/Documents/Repos/_whgdata/data/elastic/mappings/mappings_geo2.json",
+		"/Users/karlg/Documents/Repos/_whgdata/data/mapbox/black_7618.geojson",
+		"/Users/karlg/Documents/Repos/_whgdata/data/mapbox/dplace_1988.geojson",
+		"/Users/karlg/Documents/Repos/_whgdata/data/_source/Indias/out/indias_13k_slim.json",
+		"/Users/karlg/Documents/Repos/alcedo/es/gimena/clean/geograficohistorico01-05_clean01b.txt",
+		"/Users/karlg/Documents/Repos/_whgdata/data/_source/Indias/fuentes/alcedo.txt",
+		"/Users/karlg/Documents/Repos/alcedo/es/gimena/Corpus/alcedo-vol1-duke.txt",
+		"/Users/karlg/Downloads/x6d6yltee96g5t_nodes.csv",
+		"/Users/karlg/Downloads/x6d6yltee96g5t.json",
+		"/Users/karlg/Downloads/x6d6yltee96g5t.jsonld",
+		"/Users/karlg/Documents/Repos/_whgdata/data/_source/Indias/lugares_for_whg.csv",
+		"/Users/karlg/Documents/Geodata/GBHGIS/gb1900raw 2/Dataset_06Feb2017_GB1900_Raw_Gazetteer_Data_Dump.csv",
+		"/Users/karlg/Documents/Geodata/GBHGIS/gb1900raw/README_06Feb2017_GB1900_Raw_Gazetteer_Data_Dump.txt",
+		"/Users/karlg/Documents/Repos/_whgdata/data/elastic/es_queries_20190207.txt",
+		"/Users/karlg/Documents/Repos/_whgdata/data/elastic/mappings_conflate.json",
+		"/Users/karlg/Documents/Repos/_whgdata/sql/20190217_rivers-pass1.sql",
+		"/Users/karlg/Documents/Repos/_whgdata/docs/portal_payload.txt",
+		"/Users/karlg/Documents/Repos/_whgdata/sql/20190111_dplace-prep.sql",
+		"/Users/karlg/Documents/Repos/_whgdata/data/D-Place/export_201903/places.tsv",
+		"/Users/karlg/Documents/Repos/_whgdata/data/D-Place/export_201903/place_name.tsv",
+		"/Users/karlg/Documents/_WHG/docs/port-madness.txt",
+		"/Users/karlg/Documents/Repos/_whgdata/data/_source/Alcedo/Nidia/edges-only.csv",
+		"/Users/karlg/Documents/Talks/Time in Space Pisa 2019/Grossner_TimeInPlace_submitted.txt",
+		"/Users/karlg/Documents/Repos/_whgdata/for_upload/alcedo_18042.tsv",
+		"/Users/karlg/Documents/Repos/_whgdata/sql/20181117_alcedo-ar.sql",
+		"/Users/karlg/Documents/Repos/_whgdata/for_upload/epirus_3232.tsv",
+		"/Users/karlg/Documents/Repos/_whgdata/data/_source/Alcedo/Nidia/nodes.csv",
+		"/Users/karlg/Documents/Repos/_whgdata/data/_source/Alcedo/Nidia/edges.csv",
+		"/Users/karlg/Documents/Repos/_whgdata/for_upload/indias_13k.tsv",
+		"/Users/karlg/Documents/Repos/_whgdata/data/_source/Alcedo/Nidia/edges.tsv",
+		"/Users/karlg/Documents/Repos/_whgdata/data/_source/Alcedo/Nidia/nodes.tsv",
+		"/Users/karlg/Documents/_WHG/public content/HistoricalMapathon.txt",
+		"/Users/karlg/Documents/Repos/_whgdata/data/_source/Alcedo/Nidia/alcedo-whg-1-district-ok.csv",
+		"/Users/karlg/Documents/Repos copy/alcedo/es/gimena/clean/geograficohistorico01-05.txt",
+		"/Users/karlg/Documents/_WHG/docs/WHG Exemplar Data.txt",
+		"/Users/karlg/Downloads/places",
+		"/usr/local/etc/elasticsearch/elasticsearch.yml",
+		"/Users/karlg/Downloads/x6d6yltee96g5t_edges.csv",
+		"/Users/karlg/Downloads/x6d6yltee96g5t.csv",
+		"/Users/karlg/Downloads/New file.geojson",
+		"/Users/karlg/Documents/tiles/metadata.json",
+		"/private/var/folders/f4/x09rdl7n3lg7r7gwt1n3wjsr0000gn/T/fz3temp-3/views.py",
+		"/Users/karlg/Documents/Repos/_whgdata/data/black/export_201901/place_when.tsv",
+		"/Users/karlg/Documents/Repos/_whgdata/data/black/timespans.tsv",
+		"/Users/karlg/Documents/Repos/_whgdata/data/D-Place/export_201901/place_name.tsv",
+		"/Users/karlg/Documents/Repos/_whgdata/data/D-Place/export_201901/places.tsv",
+		"/Users/karlg/Documents/Repos/_whgdata/sql/20180627_place-name.sql",
+		"/Users/karlg/Documents/Repos/_whgdata/data/_source/Datasets.txt",
+		"/Users/karlg/Documents/Repos/_whgdata/data/elastic/es_mappings_whg.json",
+		"/Users/karlg/Documents/Repos/_whgdata/data/_source/Alcedo/ftp/fromthepage_subjects_export_pg21_first_four_entries_cleaned.csv",
+		"/Users/karlg/Documents/Repos/_whgdata/data/_source/Voyages/AfricanNamesDatabase.csv",
+		"/Users/karlg/Documents/Research/Historical Spatial Thinking/elton material/anno_example.csv",
+		"/Users/karlg/Documents/Research/Historical Spatial Thinking/elton material/anno_example.jsonld",
+		"/Users/karlg/Downloads/g2p5bicvwilcij.jsonld",
+		"/Users/karlg/Documents/Research/Place/UCSB-specialist.txt",
+		"/Users/karlg/Documents/Repos/_whgdata/sql/20180129_tgn-sources.sql",
+		"/Users/karlg/Documents/Repos/_whgdata/sql/20180306_sources.sql",
+		"/Users/karlg/Documents/Repos/_whgdata/for_upload/tnc_ecoregions_814.tsv",
+		"/Users/karlg/Documents/Repos/_whgdata/for_upload/wri_watersheds_226.tsv",
+		"/Users/karlg/Documents/Repos/_whgdata/data/elastic/es_mappings_tgn.json",
+		"/Users/karlg/Documents/Repos/_whgdata/sql/20190110_black-transfer.sql",
+		"/Users/karlg/Documents/Repos/_whgdata/sql/20180307_placetypes-redux.sql",
+		"/Users/karlg/Documents/Repos/_whgdata/sql/20180702_place-type.sql",
+		"/Users/karlg/Documents/Repos/_whgdata/sql/20190109_black-lpf.sql",
+		"/Users/karlg/Documents/Repos/_whgdata/sql/20180307_placetypes-align.sql",
+		"/Users/karlg/Documents/Repos/_whgdata/sql/20180912_es-spine.sql",
+		"/Users/karlg/Documents/Repos/_whgdata/sql/20180929_new-black-for-align.sql",
+		"/Users/karlg/Documents/Repos/_whgdata/sql/20190121_black-matches-in.sql",
+		"/Users/karlg/Documents/Repos/_whgdata/py/contrib/pipeline.txt",
+		"/private/var/folders/f4/x09rdl7n3lg7r7gwt1n3wjsr0000gn/T/fz3temp-2/views.py",
+		"/Users/karlg/Documents/Repos/_whgdata/data/black/export_201901/links_matches.tsv",
+		"/Users/karlg/Documents/Repos/_whgdata/data/black/export_201901/black_places_orig.tsv",
+		"/Users/karlg/Documents/Repos/_whgdata/data/black/export_201901/related_matches.tsv",
+		"/Users/karlg/Documents/Repos/_whg/_dumps/related_20190120.csv",
+		"/Users/karlg/Documents/Repos/_whgdata/data/black/export_201901/places.tsv",
+		"/Users/karlg/Documents/Repos/_whgdata/pyin/spine-black.jsonl",
+		"/Users/karlg/Documents/_WHG/docs/design/stories-to-tasks.txt",
+		"/Users/karlg/Documents/Talks/Linked Pasts 2018 Mainz/grossner_lp4_people-notes.txt",
+		"/Users/karlg/Documents/_WHG/docs/models/@prefix cnt: <http:::www.w3.org:2011:content#> .",
+		"/Users/karlg/Documents/Repos/linked-places/data/example_anno.json",
+		"/Users/karlg/Documents/_WHG/meeting notes/trace-data_notes.txt",
+		"/Users/karlg/Documents/_WHG/docs/design/Scenarios Dec 2018.txt",
+		"/private/var/folders/f4/x09rdl7n3lg7r7gwt1n3wjsr0000gn/T/fz3temp-2/review.whgazetteer.org",
+		"/Users/karlg/Documents/Geodata/DEM/Ontario_LT50180302010140GNC01/L5018030_03020100520_VER.txt",
+		"/Users/karlg/Documents/Pers/music/Bojangles.txt",
+		"/Users/karlg/Documents/Repos/_whgdata/data/_source/Alcedo/Werner/HGIS-indias-lugares-Instancias_alcedo.csv",
+		"/Users/karlg/Documents/Repos/_whgdata/data/_source/Indias/hgis-indias-lugares-Instancias.csv",
+		"/Users/karlg/Documents/Repos/_whgdata/data/_source/Indias/Dec_2018_enhancements/HGIS-indias-lugares-Instancias_alcedo.csv",
+		"/Users/karlg/Documents/Repos/_whgdata/data/_source/Indias/lugares-instancias.tsv",
+		"/Users/karlg/Documents/Repos/_whgdata/data/countries_simplified.json",
+		"/Users/karlg/Documents/Repos/_whgdata/data/countries.json",
+		"/Users/karlg/Documents/Repos/orbis/v2/orbis2012/lib/ext-3.4.0/examples/pivotgrid/countries.json",
+		"/Users/karlg/Documents/Geodata/Natural Earth misc/NE1_50M_SR/NE1_50M_SR.tfw",
+		"/Users/karlg/Documents/_WHG/meeting notes/Seshat discussion 18 Dec 2018.txt",
+		"/Users/karlg/Documents/Repos/_whgdata/data/_source/Seshat/seshat-20180402.ttl"
+	],
+	"find":
+	{
+		"height": 33.0
+	},
+	"find_in_files":
+	{
+		"height": 115.0,
+		"where_history":
+		[
+			""
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"\\\\n",
+			"]",
+			"(\\d)$",
+			"\\t$",
+			",Q",
+			"\\t\"",
+			"]",
+			"Q",
+			"\\t\\t",
+			"^(\\d{9})\\t",
+			"^\\d{9}",
+			"\\\\n",
+			"null",
+			"}$",
+			"http://www.wikidata.org/entity/",
+			"\\\\n",
+			"\\t",
+			"analyzer",
+			"}$",
+			"\\\\\"",
+			"null",
+			"\"when\": null",
+			"\"<\"\">\"",
+			"\\\\\"",
+			"}$",
+			"null",
+			"\"when\": null",
+			"null",
+			"\"when\": null",
+			"\"when\": \"\"",
+			"}$",
+			"San Andres de Bilitz",
+			"object",
+			"}$",
+			"null",
+			"periods",
+			"}$",
+			"1708",
+			"-1",
+			"(\"start\"|\"end\"): (\\d{1,4})",
+			"null",
+			"}$",
+			"\"toponym\": null",
+			"san marcial",
+			"(\"start\"|\"end\"): (\\d{1,4})",
+			"(\"start\"|\"end\"): (-\\d{1,4})",
+			"\"in\":(\\d{3,4})",
+			":(\\d{3,4})",
+			":(-\\d{3,4})",
+			"-1",
+			"\"end\":{\"in\":-1}, ",
+			"{\"end\":{\"in\":-1}, ",
+			"(\"start\"|\"end\"): (-\\d{1,4})",
+			"(\"start\"|\"end\"): (\\d{3,4})",
+			"(\"start\"|\"end\")",
+			"(\"start\":|\"end\":)",
+			"1708",
+			"}$",
+			"\\\\\"",
+			"\"@id\"",
+			"\\\\\"",
+			"\"type\" : \"point\"",
+			"\"location\"",
+			", \"location\" : {\"type\" : \"point\", \"coordinates\" : [null,null]}",
+			"null",
+			"\"label\": null",
+			"'",
+			"\"types\" : null",
+			"\"names\" : null",
+			"\"types\" : null",
+			"tanganyika",
+			"'",
+			"        \"names\": {\n          \"properties\": {\n            \"lang\": {\"type\": \"keyword\"},\n            \"toponym\": {\"type\": \"text\"}\n            }\n        }",
+			"'",
+			"29.179996212505102, -5.909189051422869",
+			"'",
+			"relations",
+			"anal",
+			"'",
+			"keyword",
+			"300008376",
+			"\\t",
+			"90890766-eea4-4e3a-ab5e-0e46971b59b0",
+			"foo",
+			"{\"type\":\"Feature\"",
+			"ccodes",
+			"danube",
+			"amazon",
+			"]",
+			"[",
+			"{\"end\":",
+			", \"start\": (.*?)}",
+			", \"start\": (.*)}",
+			", \"start\": (.*?)}",
+			", \"start\":",
+			"{\"end\":",
+			"suggest",
+			"relation",
+			"parent",
+			"place_id",
+			"placeid",
+			"place_id",
+			",",
+			"{,",
+			"-99",
+			"calusa",
+			"\\n",
+			" ",
+			"'",
+			"nested",
+			"bring",
+			"Ahuacazalca",
+			"\\n",
+			"event",
+			"E7",
+			"  C",
+			" G7 ",
+			" F ",
+			" C ",
+			"\\trivers;streams",
+			"\\trivers\\t",
+			",",
+			"f$",
+			"\\N",
+			"'",
+			"\\n",
+			"\\[\\[\\[",
+			"[[["
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": true,
+		"replace_history":
+		[
+			"\\n",
+			"],",
+			"\\1\"]",
+			"\"]",
+			",\"Q",
+			"\",",
+			"\"]",
+			"\"Q",
+			"]",
+			"\\1:[",
+			"\\n",
+			"\"\"",
+			"},",
+			"",
+			"\\n",
+			"  ",
+			"},",
+			"'",
+			"\"\"",
+			"\"when\": {}",
+			"\"\"",
+			"'",
+			"},",
+			"\"\"",
+			"\"when\": {}",
+			"\"\"",
+			"\"when\": {}",
+			"},",
+			"\"\"",
+			"},",
+			"\"\"",
+			"\\1:{\"in\":\"\\2\"}",
+			"\\1:{\"in\":\\2}",
+			"\"\"",
+			"},",
+			"\\1:{\"in\":\\2}",
+			"\"in\":\"\\1\"",
+			"\"in\":(\"\\1\")",
+			":(\"\\1\")",
+			"\"-9999\"",
+			"",
+			"\\1:{\"in\":\\2}",
+			"\\1:{\"in\":\\3}",
+			"},",
+			"'",
+			"\"type\" : \"Point\"",
+			"",
+			"\"label\": \"\"",
+			"\"",
+			"\"types\" : []",
+			"\"names\" : []",
+			"\"",
+			",",
+			"]'",
+			"'[",
+			"{\"end\":{\"in\":",
+			"}, \"start\": {\"in\":\\1}}",
+			"}, \"start\": {\"in\":\\1}",
+			"}, \"start\": {\"in\":",
+			"{\"end\":{\"in\":",
+			"\\n",
+			"{",
+			"",
+			" ",
+			"A7",
+			"  D",
+			" E7 ",
+			" G ",
+			" D ",
+			"\\t300008707;300008699",
+			"\\trivers;streams\\t",
+			"\\t",
+			"",
+			"f",
+			"\"",
+			", ",
+			"\\n[[[",
+			"",
+			".js' %}\">",
+			"src=\"{% static 'js/leaflet-draw/",
+			"-indias",
+			"\"",
+			"",
+			"\\1",
+			"\\t",
+			"','",
+			",\\n",
+			";",
+			"\\t",
+			"",
+			",\\n",
+			";",
+			"\\n",
+			"\",\"",
+			"",
+			";",
+			"|",
+			"; ",
+			"\\n{\"term\"",
+			"\\n",
+			"",
+			"<\\/p>\\n",
+			"</p>",
+			"\\n",
+			"},",
+			"",
+			"\\t",
+			", ",
+			"\\n",
+			"Pueblo"
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"folders":
+	[
+		{
+			"path": "/Users/karlg/Documents/Repos/_whgazetteer/datasets/static/sparql"
+		}
+	],
+	"groups":
+	[
+		{
+			"selected": 4,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "/Users/karlg/Documents/Repos/_whgdata/data/elastic/mappings/mappings_whg.json",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2492,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								52,
+								52
+							]
+						],
+						"settings":
+						{
+							"origPos":
+							[
+								0.0,
+								0.0
+							],
+							"syncScroll": false,
+							"syntax": "Packages/JavaScript/JSON.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "/Users/karlg/Documents/Repos/_whgdata/data/elastic/mappings/es_mappings_tgn.json",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1707,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								29,
+								29
+							]
+						],
+						"settings":
+						{
+							"origPos":
+							[
+								0.0,
+								0.0
+							],
+							"syncScroll": false,
+							"syntax": "Packages/JavaScript/JSON.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "/Users/karlg/Documents/Repos/_whgazetteer/traces/static/mappings_traces.json",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1682,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								548,
+								548
+							]
+						],
+						"settings":
+						{
+							"WordCount":
+							{
+								"changes": -1,
+								"modified": true,
+								"selection": true,
+								"status": -1,
+								"syntax": "json"
+							},
+							"origPos":
+							[
+								0.0,
+								0.0
+							],
+							"syncScroll": false,
+							"syntax": "Packages/JavaScript/JSON.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "sample_base.sparql",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1186,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"WordCount":
+							{
+								"changes": 0,
+								"count": 59,
+								"modified": false,
+								"selection": false,
+								"status": -1,
+								"syntax": "plain text"
+							},
+							"auto_name": "SELECT distinct ?place ?location ?placeLabel ?coun",
+							"origPos":
+							[
+								0.0,
+								0.0
+							],
+							"syncScroll": false,
+							"syntax": "Packages/Text/Plain text.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "generated.sparql",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1187,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								168,
+								168
+							]
+						],
+						"settings":
+						{
+							"WordCount":
+							{
+								"changes": 0,
+								"count": 59,
+								"modified": false,
+								"selection": false,
+								"status": -1,
+								"syntax": "plain text"
+							},
+							"origPos":
+							[
+								0.0,
+								0.0
+							],
+							"syncScroll": false,
+							"syntax": "Packages/Text/Plain text.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 33.0
+	},
+	"input":
+	{
+		"height": 0.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.find_results":
+	{
+		"height": 112.0
+	},
+	"pinned_build_system": "",
+	"project": "",
+	"replace":
+	{
+		"height": 82.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": false,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 203.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}
