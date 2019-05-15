@@ -53,13 +53,6 @@ def parseWhen(when):
   print('when to parse',when)
   timespan = 'parse me now'
   return timespan
-def ccDecode(codes):
-  countries=[]
-  #print('codes in ccDecode',codes)
-  for c in codes:
-    countries.append(ccodes[0][c]['gnlabel'])
-  return countries
-
 def maxID(es):
   q={"query": {"bool": {"must" : {"match_all" : {}} }},
        "sort": [{"whg_id": {"order": "desc"}}],
@@ -72,6 +65,13 @@ def maxID(es):
   except:
       maxy = 12345677
   return maxy 
+
+def ccDecode(codes):
+  countries=[]
+  #print('codes in ccDecode',codes)
+  for c in codes:
+    countries.append(ccodes[0][c]['gnlabel'])
+  return countries
 
 # normalize hits json from any authority
 def normalize(h,auth):
@@ -167,8 +167,39 @@ def get_bounds_filter(bounds,idx):
 
 
 # wikidata
+def writeHit(b,passnum,ds,pid,srcid,title):
+  # gather any links
+  authkeys=['tgnid','gnid','viafid','locid']
+  linklist = list(set(list(b.keys())).intersection(authkeys))
+  linkobj = {}
+  for l in linklist:
+    linkobj[l[:-2]] = b[l]['value']
+  b['links'] = linkobj
+  from datasets.models import Hit
+  new = Hit(
+    authority = 'wd',
+    authrecord_id = b['place']['value'][31:],
+    dataset = ds,
+    place_id = get_object_or_404(Place, id=pid),
+    #task_id = 'wd_20190515',
+    task_id = align_wd.request.id,
+    query_pass = passnum,
+    # consistent, for review display
+    json = normalize(b,'wd'),
+    src_id = srcid,
+    #score = hit['_score'],
+    geom = parse_wkt(b['location']['value']),
+    reviewed = False,
+  )
+  new.save()          
+  hit = str(pid)+'\t'+ \
+        title+'\t'+ \
+        b['placeLabel']['value']+'\t'+ \
+        b['place']['value']+'\t'
+  print(hit + '\n')
+
 # TODO: uncomment after tested
-#@task(name="align_wd")
+@task(name="align_wd")
 def align_wd(pk, *args, **kwargs):
   ds = get_object_or_404(Dataset, id=pk)
   #bounds = kwargs['bounds']
@@ -185,9 +216,7 @@ def align_wd(pk, *args, **kwargs):
   start = time.time()
   timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M"); print(timestamp)
 
-  hit_parade = {"summary": {}, "hits": []}
-  [nohits,tgn_es_errors,features] = [[],[],[]]
-  [count, count_hit, count_nohit, total_hits, count_p1, count_p2, count_p3] = [0,0,0,0,0,0,0]
+  hit_parade = {"summary": {}}
   outdir='/Users/karlg/Documents/Repos/_whgdata/pyout/align_wd/'
   
   # missed, skipped
@@ -195,13 +224,13 @@ def align_wd(pk, *args, **kwargs):
   fout2 = codecs.open(outdir+ds.label+'/es-missed_'+timestamp+'.txt', 'w', 'utf8')
   fout3 = codecs.open(outdir+ds.label+'/es-skipped_'+timestamp+'.txt', 'w', 'utf8')
   
-  count_hits = 0
-  count_misses = 0
-  count_skipped = 0
-  
   def toWKT(coords):
     wkt = 'POINT('+str(coords[0])+' '+str(coords[1])+')'
     return wkt
+  
+  [count,count_skipped] = [0,0]
+  global count_hit, count_nohit, total_hits, count_p1, count_p2
+  [count_hit, count_nohit, total_hits, count_p1, count_p2] = [0,0,0,0,0]
   
   for place in ds.places.all()[:20]:    # to json
     #place=get_object_or_404(Place, id=88106) # Paris
@@ -296,7 +325,8 @@ def align_wd(pk, *args, **kwargs):
       ORDER BY ?placeLabel'''% (countries)
 
     def runQuery():
-      global count_hits, count_redir, count_misses
+      global count_hit, count_nohit, total_hits, count_p1, count_p2
+      [count_hit, count_nohit, total_hits, count_p1, count_p2] = [0,0,0,0,0]
       # set query
       sparql.setQuery(qbase)
       sparql.setReturnFormat(JSON)
@@ -311,65 +341,54 @@ def align_wd(pk, *args, **kwargs):
         sparql.setReturnFormat(JSON) 
         bindings = sparql.query().convert()["results"]["bindings"]
         if len(bindings) == 0:
-          # no hits, call it "missed"
-          count_misses +=1
-          fout2.write(str(place_id)+'\n')
+          count_nohit +=1 # tried 2 passes, nothing
+          fout2.write(str(place_id)+' ('+title+'), pass2 \n')
         else:
+          count_hit+=1 # got at least 1
           for b in bindings:
+            total_hits+=1 # add each to total
+            count_p2+=1 # it's pass2
             # write a hit, tagged 'pass2'
+            fout1.write('pass2:'+str(b)+'\n')   
             writeHit(b,'pass2',ds,place_id,src_id,title)
       if len(bindings) > 0:
-        count_hits +=1 # 
+        count_hit +=1 # got at least 1
         for b in bindings:
+          total_hits+=1 # add each to total
+          count_p1+=1 # it's pass1
           writeHit(b,'pass1',ds,place_id,src_id,title)
-          fout1.write('hit binding:'+str(b))   
+          fout1.write('pass1:'+str(b)+'\n')   
           print('hit binding:',b)   
-    try:
-      runQuery()
-    except:
-      count_skipped +=1
-      fout3.write(str(place_id) + '\t' + title + '\t' + str(sys.exc_info()[0]) + '\n')
-      continue
+    #try:
+    runQuery()
+    #except:
+      #count_skipped +=1
+      #fout3.write(str(place_id) + '\t' + title + '\t' + str(sys.exc_info()[0]) + '\n')
+      #continue
   
-  print(count_hits,' hits; ', count_misses, 'misses', count_skipped, 'skipped')
+  print(str(count)+' rows; >=1 hit:'+str(count_hit)+'; '+str(total_hits)+' in total; ', str(count_nohit) + \
+        ' misses; '+str(count_skipped)+' skipped')
   fout1.close()
   fout2.close()
   fout3.close()
   
   end = time.time()
   print('elapsed time in minutes:',int((end - start)/60))
+  #   [count, count_hit, count_nohit, total_hits, count_p1, count_p2] = [0,0,0,0,0,0]
+  hit_parade['summary'] = {
+      'count':count,
+      'got_hits':count_hit,
+      'total': total_hits, 
+      'pass1': count_p1, 
+      'pass2': count_p2, 
+      'pass3': 'n/a', 
+      'no_hits': {'count': count_nohit },
+      'elapsed': int((end - start)/60)
+    }
+  print("summary returned",hit_parade['summary'])
+  return hit_parade['summary']
   
-def writeHit(b,passnum,ds,pid,srcid,title):
-  # gather any links
-  authkeys=['tgnid','gnid','viafid','locid']
-  linklist = list(set(list(b.keys())).intersection(authkeys))
-  linkobj = {}
-  for l in linklist:
-    linkobj[l[:-2]] = b[l]['value']
-  b['links'] = linkobj
-  from datasets.models import Hit
-  new = Hit(
-    authority = 'wd',
-    authrecord_id = b['place']['value'][31:],
-    dataset = ds,
-    place_id = get_object_or_404(Place, id=pid),
-    task_id = 'wd testing',
-    #task_id = align_wd.request.id,
-    query_pass = passnum,
-    # consistent, for review display
-    json = normalize(b,'wd'),
-    src_id = srcid,
-    #score = hit['_score'],
-    geom = parse_wkt(b['location']['value']),
-    reviewed = False,
-  )
-  new.save()          
-  hit = str(pid)+'\t'+ \
-        title+'\t'+ \
-        b['placeLabel']['value']+'\t'+ \
-        b['place']['value']+'\t'
-  print(hit + '\n')
-
+  
 # queries > result_obj
 def es_lookup_tgn(qobj, *args, **kwargs):
   #print('qobj',qobj)

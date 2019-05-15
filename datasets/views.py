@@ -18,7 +18,7 @@ from places.models import *
 from datasets.forms import DatasetModelForm, HitModelForm, DatasetDetailModelForm
 from datasets.models import Dataset, Hit
 from datasets.static.hashes.parents import ccodes
-from datasets.tasks import align_tgn, align_whg
+from datasets.tasks import align_tgn, align_whg, align_wd
 from datasets.utils import *
 
 def link_uri(auth,id):
@@ -241,7 +241,7 @@ def ds_recon(request, pk):
           "id": [region if region !="0" else userarea]
     }
     print('bounds',bounds)
-    # run celery/redis tasks e.g. align_tgn, align_whg
+    # run celery/redis tasks e.g. align_tgn, align_whg, align_wd
     result = func.delay(
       ds.id,
           ds=ds.id,
@@ -754,12 +754,13 @@ class DatasetDetailView(UpdateView):
     return super().form_valid(form)
 
   def get_object(self):
-    print('kwargs:',self.kwargs)
+    #print('kwargs:',self.kwargs)
     id_ = self.kwargs.get("id")
     return get_object_or_404(Dataset, id=id_)
 
   def get_context_data(self, *args, **kwargs):
     context = super(DatasetDetailView, self).get_context_data(*args, **kwargs)
+    print('get_context_data() kwargs:',self.kwargs)
     id_ = self.kwargs.get("id")
     ds = get_object_or_404(Dataset, id=id_)
     bounds = self.kwargs.get("bounds")
@@ -797,6 +798,7 @@ class DatasetDetailView(UpdateView):
     context['descriptions_added'] = PlaceDescription.objects.filter(
       place_id_id__in = placeset, task_id__contains = '-').count()
 
+    print('context',context)
     return context
 
 

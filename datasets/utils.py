@@ -149,7 +149,7 @@ def hully(g_list):
 def parse_wkt(g):
   from shapely.geometry import mapping
   gw = wkt.loads(g)
-  feature = sgeo.mapping(gw)
+  feature = mapping(gw)
   print('wkt, feature',g, feature)
   return feature
 
