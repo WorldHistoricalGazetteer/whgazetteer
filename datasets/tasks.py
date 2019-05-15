@@ -17,7 +17,7 @@ from datasets.static.hashes.parents import ccodes
 from datasets.utils import *
 from places.models import Place
 ##
-import shapely.geometry as sgeo
+#import shapely.geometry as sgeo
 from geopy import distance
 from elasticsearch import Elasticsearch
 es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
@@ -115,7 +115,7 @@ def normalize(h,auth):
       rec.geoms = [loc] if loc != None else []
       rec.minmax = []
       # ["closeMatch: dplace:B243", "closeMatch: dbp:Kiowa"]
-      rec.links = ['closeMatch: '+l['identifier'] for l in h['links']] \
+      rec.links = ['closeMatch: '+l+':'+h['links'][l] for l in h['links']] \
                   if len(h['links']) > 0 else []
     except:
       print("normalize(wd) error:", h['place']['value'][31:], sys.exc_info())    
@@ -188,10 +188,10 @@ def align_wd(pk, *args, **kwargs):
   hit_parade = {"summary": {}, "hits": []}
   [nohits,tgn_es_errors,features] = [[],[],[]]
   [count, count_hit, count_nohit, total_hits, count_p1, count_p2, count_p3] = [0,0,0,0,0,0,0]
-  start = datetime.datetime.now()
   outdir='/Users/karlg/Documents/Repos/_whgdata/pyout/align_wd/'
   
   # missed, skipped
+  fout1 = codecs.open(outdir+ds.label+'/es-hits_'+timestamp+'.txt', 'w', 'utf8')
   fout2 = codecs.open(outdir+ds.label+'/es-missed_'+timestamp+'.txt', 'w', 'utf8')
   fout3 = codecs.open(outdir+ds.label+'/es-skipped_'+timestamp+'.txt', 'w', 'utf8')
   
@@ -203,9 +203,9 @@ def align_wd(pk, *args, **kwargs):
     wkt = 'POINT('+str(coords[0])+' '+str(coords[1])+')'
     return wkt
   
-  for place in ds.places.all()[:3]:    # to json
+  for place in ds.places.all()[:20]:    # to json
     #place=get_object_or_404(Place, id=88106) # Paris
-    #place=get_object_or_404(Place, id=81074) # Aegean Sea (mult. ccodes)
+    #place=get_object_or_404(Place, id=167007) # 
     count +=1
     place_id = place.id
     src_id = place.src_id
@@ -240,34 +240,35 @@ def align_wd(pk, *args, **kwargs):
       g_list =[g.jsonb for g in place.geoms.all()]
       # make everything a simple polygon hull for spatial filter
       qobj['geom'] = hully(g_list)
-    
+
     # wikidata sparql needs this form for lists
-    variants = ', '.join(['"'+n+'"' for n in qobj['variants']])
+    variants = ' '.join(['"'+n+'"@en' for n in qobj['variants']])
     countries = ', '.join([c for c in getQ(qobj['countries'],'ccodes')])
     types = ', '.join([c for c in getQ(qobj['placetypes'],'types')])
     
     # TODO admin parent P131, retrieve wiki article name, country P17, ??
-    q='''SELECT distinct ?place ?location ?placeLabel ?countryLabel ?tgnid ?gnid ?nameLabel 
-        (group_concat(distinct ?parentName; SEPARATOR=", ") as ?parentNames)
+    q='''SELECT ?place ?placeLabel ?location ?countryLabel ?tgnid ?gnid ?viafid ?locid
+        (group_concat(distinct ?parentLabel; SEPARATOR=", ") as ?parents)
         WHERE {
-        SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
-        ?place rdfs:label ?placeLabel ; (wdt:P31/wdt:P279*) ?placeType .
+        VALUES ?plabel { %s } .
+        ?place rdfs:label ?plabel ; (wdt:P31/wdt:P279*) ?placeType .
 
-        OPTIONAL {?place wdt:P131 ?parent .} 
-        OPTIONAL {?parent wdt:P1448 ?parentName .}
-        OPTIONAL {?place wdt:P1448 ?name .}
         OPTIONAL {?place wdt:P17 ?country .}
+        OPTIONAL {?place wdt:P131 ?parent .}
+        OPTIONAL {?place wdt:P1448 ?name .}
 
-        # external IDs
         OPTIONAL {?place wdt:P1667 ?tgnid .}
         OPTIONAL {?place wdt:P1566 ?gnid .}
         OPTIONAL {?place wdt:P214 ?viafid .}
-        OPTIONAL {?place wdt:P268 ?bnfid .}
         OPTIONAL {?place wdt:P244 ?locid .}
-        
-        FILTER (STR(?placeLabel) in (%s)) .
-        FILTER (?country in (%s)) .
-      '''% (variants, countries)
+
+        SERVICE wikibase:label { 
+          bd:serviceParam wikibase:language "en".
+          ?place rdfs:label ?placeLabel .
+          ?parent rdfs:label ?parentLabel . 
+          ?country rdfs:label ?countryLabel . 
+        }
+      '''% (variants)
       
     if 'geom' in qobj.keys():
       loc=shape(geojson.loads(json.dumps(qobj['geom'])))
@@ -282,15 +283,18 @@ def align_wd(pk, *args, **kwargs):
       
     # qbase is pass1: names, types, geometry, countries
     qbase = q+'''
-    FILTER (?placeType in (%s)) . } 
-    GROUP BY ?place ?location ?placeLabel ?countryLabel ?tgnid ?gnid ?nameLabel
-    ORDER BY ?placeLabel'''% (types)
+      FILTER (?country in (%s)) .
+      FILTER (?placeType in (%s)) . }
+      GROUP BY ?place ?placeLabel ?location ?countryLabel ?tgnid ?gnid ?viafid ?locid
+      ORDER BY ?placeLabel
+    '''% (countries, types)
     
     # qbare is pass2, omitting type filter
-    qbare = q+'''} 
-    GROUP BY ?place ?location ?placeLabel ?countryLabel ?tgnid ?gnid ?nameLabel
-    ORDER BY ?placeLabel'''
-    
+    qbare = q+'''
+      FILTER (?country in (%s)) . }
+      GROUP BY ?place ?placeLabel ?location ?countryLabel ?tgnid ?gnid ?viafid ?locid
+      ORDER BY ?placeLabel'''% (countries)
+
     def runQuery():
       global count_hits, count_redir, count_misses
       # set query
@@ -313,12 +317,13 @@ def align_wd(pk, *args, **kwargs):
         else:
           for b in bindings:
             # write a hit, tagged 'pass2'
-            writeHit(b,'pass2',ds.label,place_id,src_id,title)
+            writeHit(b,'pass2',ds,place_id,src_id,title)
       if len(bindings) > 0:
         count_hits +=1 # 
         for b in bindings:
-          writeHit(b,'pass1',ds.label,place_id,src_id,title)
-          #print(b)   
+          writeHit(b,'pass1',ds,place_id,src_id,title)
+          fout1.write('hit binding:'+str(b))   
+          print('hit binding:',b)   
     try:
       runQuery()
     except:
@@ -326,7 +331,8 @@ def align_wd(pk, *args, **kwargs):
       fout3.write(str(place_id) + '\t' + title + '\t' + str(sys.exc_info()[0]) + '\n')
       continue
   
-  print(count_hits,' hits; ',count_multi, 'multi; ', count_misses, 'misses', count_skipped, 'skipped')
+  print(count_hits,' hits; ', count_misses, 'misses', count_skipped, 'skipped')
+  fout1.close()
   fout2.close()
   fout3.close()
   
@@ -335,7 +341,7 @@ def align_wd(pk, *args, **kwargs):
   
 def writeHit(b,passnum,ds,pid,srcid,title):
   # gather any links
-  authkeys=['tgnid','gnid','viafid','bnfid','locid']
+  authkeys=['tgnid','gnid','viafid','locid']
   linklist = list(set(list(b.keys())).intersection(authkeys))
   linkobj = {}
   for l in linklist:
@@ -361,8 +367,7 @@ def writeHit(b,passnum,ds,pid,srcid,title):
   hit = str(pid)+'\t'+ \
         title+'\t'+ \
         b['placeLabel']['value']+'\t'+ \
-        b['place']['value']+'\t'+ \
-        tgnid+gnid+viafid+bnfid+locid
+        b['place']['value']+'\t'
   print(hit + '\n')
 
 # queries > result_obj
@@ -501,8 +506,8 @@ def align_tgn(pk, *args, **kwargs):
   start = datetime.datetime.now()
 
   # build query object
-  #for place in ds.places.all()[:50]:
-  for place in ds.places.all():
+  for place in ds.places.all()[:1]:
+  #for place in ds.places.all():
     #place=get_object_or_404(Place,id=131735) # Caledonian Canal (ne)
     #place=get_object_or_404(Place,id=131648) # Atengo river (ne)
     #place=get_object_or_404(Place,id=81655) # Atlas Mountains
@@ -530,17 +535,18 @@ def align_tgn(pk, *args, **kwargs):
 
     # parents
     # TODO: other relations
-    for rel in place.related.all():
-      if rel.jsonb['relationType'] == 'gvp:broaderPartitive':
-        parents.append(rel.jsonb['label'])
-    qobj['parents'] = parents
+    if len(place.related.all()) > 0:
+      for rel in place.related.all():
+        if rel.jsonb['relationType'] == 'gvp:broaderPartitive':
+          parents.append(rel.jsonb['label'])
+      qobj['parents'] = parents
 
     # align_whg geoms
     if len(place.geoms.all()) > 0:
       g_list =[g.jsonb for g in place.geoms.all()]
       # make everything a simple polygon hull for spatial filter
       qobj['geom'] = hully(g_list)
-          
+
     ## run pass1-pass3 ES queries
     try:
       result_obj = es_lookup_tgn(qobj, bounds=bounds)

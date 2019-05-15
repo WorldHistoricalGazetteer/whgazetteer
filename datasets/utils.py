@@ -147,8 +147,9 @@ def hully(g_list):
   return json.loads(hull.geojson)
 
 def parse_wkt(g):
+  from shapely.geometry import mapping
   gw = wkt.loads(g)
-  feature = mapping(gw)
+  feature = sgeo.mapping(gw)
   print('wkt, feature',g, feature)
   return feature
 
@@ -194,8 +195,11 @@ def getQ(arr,what):
   elif what == 'types':
     from datasets.static.hashes.aat_q import qnums
     for t in arr:
-      for q in qnums[t]:
-        qids.append('wd:'+q)    
+      if t in qnums:
+        for q in qnums[t]:
+          qids.append('wd:'+q)
+      else:
+        qids.append('wd:Q486972')
   return qids
 
 def roundy(x, direct="up", base=10):

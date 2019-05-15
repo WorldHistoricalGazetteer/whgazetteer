@@ -580,8 +580,8 @@ def ds_insert_csv(request, pk):
     # PlaceRelated()
     if 'parent' in header and parent !='':
       objs['PlaceRelated'].append(PlaceRelated(place_id=newpl,src_id = src_id,
-        jsonb={"relation_type": "gvp:broaderPartitive",
-              "relation_to": "",
+        jsonb={"relationType": "gvp:broaderPartitive",
+              "relationTo": "",
               "label": parent}
       ))
 
