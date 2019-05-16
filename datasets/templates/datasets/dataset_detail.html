@@ -106,7 +106,7 @@
           <p class="small">
              <a class="confirm-del-matches" href="{% url 'datasets:task-delete' tid=t.task_id scope='matches'%}">
               Clear matches</a>&nbsp;|&nbsp;
-             <a class="confirm-del-all" href="{% url 'datasets:task-delete' tid=t.task_id scope='task' %}">
+             <a class="confirm-del-all" data-id={{t.task_id}} href="{% url 'datasets:task-delete' tid=t.task_id scope='task' %}">
                Delete task & hits, clear matches {% fontawesome_icon 'trash' color='#336699' %}</a>
           </p>
           {% endif %}
@@ -128,7 +128,8 @@
     return confirm('DANGER! Clears all matches confirmed in Review step');
   })
   $(".confirm-del-all").click(function(){
-    return confirm('DANGER! Destroys task, its hits, and clears matches confirmed in Review step');
+    id=$(this).data('id')
+    return confirm('DANGER! Destroys task, its hits, and clears matches confirmed in Review step...'+id);
   })
 </script>
 {% endblock %}

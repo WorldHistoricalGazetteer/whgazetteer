@@ -232,7 +232,7 @@ def align_wd(pk, *args, **kwargs):
   global count_hit, count_nohit, total_hits, count_p1, count_p2
   [count_hit, count_nohit, total_hits, count_p1, count_p2] = [0,0,0,0,0]
   
-  for place in ds.places.all()[:20]:    # to json
+  for place in ds.places.all()[:200]:    # to json
     #place=get_object_or_404(Place, id=88106) # Paris
     #place=get_object_or_404(Place, id=167007) # 
     count +=1
@@ -326,7 +326,6 @@ def align_wd(pk, *args, **kwargs):
 
     def runQuery():
       global count_hit, count_nohit, total_hits, count_p1, count_p2
-      [count_hit, count_nohit, total_hits, count_p1, count_p2] = [0,0,0,0,0]
       # set query
       sparql.setQuery(qbase)
       sparql.setReturnFormat(JSON)
@@ -335,8 +334,16 @@ def align_wd(pk, *args, **kwargs):
       bindings = sparql.query().convert()["results"]["bindings"]
   
       # test, output results
-      if len(bindings) == 0:
-        # no hits, make pass2 with qbare
+      if len(bindings) > 0:
+        count_hit +=1 # got at least 1
+        for b in bindings:
+          total_hits+=1 # add each to total
+          count_p1+=1 # it's pass1
+          writeHit(b,'pass1',ds,place_id,src_id,title)
+          fout1.write('pass1:'+str(b)+'\n')   
+          print('hit binding:',b)   
+      elif len(bindings) == 0:
+        # no hits, pass2 drops type with qbare
         sparql.setQuery(qbare)
         sparql.setReturnFormat(JSON) 
         bindings = sparql.query().convert()["results"]["bindings"]
@@ -351,14 +358,6 @@ def align_wd(pk, *args, **kwargs):
             # write a hit, tagged 'pass2'
             fout1.write('pass2:'+str(b)+'\n')   
             writeHit(b,'pass2',ds,place_id,src_id,title)
-      if len(bindings) > 0:
-        count_hit +=1 # got at least 1
-        for b in bindings:
-          total_hits+=1 # add each to total
-          count_p1+=1 # it's pass1
-          writeHit(b,'pass1',ds,place_id,src_id,title)
-          fout1.write('pass1:'+str(b)+'\n')   
-          print('hit binding:',b)   
     #try:
     runQuery()
     #except:
