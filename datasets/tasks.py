@@ -102,17 +102,20 @@ def normalize(h,auth):
   
   elif auth == 'wd':
     try:
-      if h['location'] != None:
-        loc = parse_wkt(h['location']['value'])
+      #if 'locations' in h.keys():
+      locs=[]
+      for l in h['locations']['value'].split(', '):
+        loc = parse_wkt(l)
         loc["id"]=h['place']['value'][31:]
         loc['ds']='wd'
+        locs.append(loc)
       #  place_id, dataset, src_id, title
       rec = HitRecord(-1, 'wd', h['place']['value'][31:], h['placeLabel']['value'])
       rec.variants = []
-      rec.types = []
+      rec.types = h['types']['value'] if 'types' in h.keys() else []
       rec.ccodes = [h['countryLabel']['value']]
-      #rec.parents =
-      rec.geoms = [loc] if loc != None else []
+      rec.parents =h['parents']['value'] if 'parents' in h.keys() else []
+      rec.geoms = locs if len(locs)>0 else []
       rec.minmax = []
       # ["closeMatch: dplace:B243", "closeMatch: dbp:Kiowa"]
       rec.links = ['closeMatch: '+l+':'+h['links'][l] for l in h['links']] \
@@ -166,7 +169,7 @@ def get_bounds_filter(bounds,idx):
   return filter
 
 
-# wikidata
+# wikidata: b,'pass1',ds,place_id,src_id,title
 def writeHit(b,passnum,ds,pid,srcid,title):
   # gather any links
   authkeys=['tgnid','gnid','viafid','locid']
@@ -181,14 +184,14 @@ def writeHit(b,passnum,ds,pid,srcid,title):
     authrecord_id = b['place']['value'][31:],
     dataset = ds,
     place_id = get_object_or_404(Place, id=pid),
-    #task_id = 'wd_20190515',
+    #task_id = 'wd_20190517',
     task_id = align_wd.request.id,
     query_pass = passnum,
     # consistent, for review display
     json = normalize(b,'wd'),
     src_id = srcid,
     #score = hit['_score'],
-    geom = parse_wkt(b['location']['value']),
+    geom = parse_wkt(b['locations']['value']) if 'locations' in b.keys() else [],
     reviewed = False,
   )
   new.save()          
@@ -196,7 +199,7 @@ def writeHit(b,passnum,ds,pid,srcid,title):
         title+'\t'+ \
         b['placeLabel']['value']+'\t'+ \
         b['place']['value']+'\t'
-  print(hit + '\n')
+  print('wrote hit: '+hit + '\n')
 
 # TODO: uncomment after tested
 @task(name="align_wd")
@@ -232,9 +235,10 @@ def align_wd(pk, *args, **kwargs):
   global count_hit, count_nohit, total_hits, count_p1, count_p2
   [count_hit, count_nohit, total_hits, count_p1, count_p2] = [0,0,0,0,0]
   
-  for place in ds.places.all()[:200]:    # to json
-    #place=get_object_or_404(Place, id=88106) # Paris
-    #place=get_object_or_404(Place, id=167007) # 
+  for place in ds.places.all()[:20]:    # to json
+    #place=get_object_or_404(Place, id=166947) # Santo Domingo
+    #place=get_object_or_404(Place, id=89872) # 
+    #place=get_object_or_404(Place, id=81182) # Alabama R
     count +=1
     place_id = place.id
     src_id = place.src_id
@@ -249,7 +253,7 @@ def align_wd(pk, *args, **kwargs):
 
     # types (Getty AAT identifiers)
     for t in place.types.all():
-      types.append(int(t.jsonb['identifier'][4:]))
+      types.append(int(t.jsonb['identifier'][4:]) if t.jsonb['identifier'] !=None else '')
     qobj['placetypes'] = types
 
     # names
@@ -271,32 +275,44 @@ def align_wd(pk, *args, **kwargs):
       qobj['geom'] = hully(g_list)
 
     # wikidata sparql needs this form for lists
-    variants = ' '.join(['"'+n+'"@en' for n in qobj['variants']])
+    variants = ' '.join(['"'+n+'"' for n in qobj['variants']])
     countries = ', '.join([c for c in getQ(qobj['countries'],'ccodes')])
     types = ', '.join([c for c in getQ(qobj['placetypes'],'types')])
     
     # TODO admin parent P131, retrieve wiki article name, country P17, ??
-    q='''SELECT ?place ?placeLabel ?location ?countryLabel ?tgnid ?gnid ?viafid ?locid
+    q='''SELECT ?place ?placeLabel ?countryLabel ?tgnid ?gnid ?viafid ?locid
         (group_concat(distinct ?parentLabel; SEPARATOR=", ") as ?parents)
+        (group_concat(distinct ?placeTypeLabel; SEPARATOR=", ") as ?types)
+        (group_concat(distinct ?location; SEPARATOR=", ") as ?locations)
         WHERE {
-        VALUES ?plabel { %s } .
-        ?place rdfs:label ?plabel ; (wdt:P31/wdt:P279*) ?placeType .
+          VALUES ?plabel { %s } .
+          SERVICE wikibase:mwapi {
+            bd:serviceParam wikibase:api "EntitySearch" .
+            bd:serviceParam wikibase:endpoint "www.wikidata.org" .
+            bd:serviceParam mwapi:search ?plabel .
+            bd:serviceParam mwapi:language "en" .
+            ?place wikibase:apiOutputItem mwapi:item .
+            ?num wikibase:apiOrdinal true .
+          }
 
-        OPTIONAL {?place wdt:P17 ?country .}
-        OPTIONAL {?place wdt:P131 ?parent .}
-        OPTIONAL {?place wdt:P1448 ?name .}
-
-        OPTIONAL {?place wdt:P1667 ?tgnid .}
-        OPTIONAL {?place wdt:P1566 ?gnid .}
-        OPTIONAL {?place wdt:P214 ?viafid .}
-        OPTIONAL {?place wdt:P244 ?locid .}
-
-        SERVICE wikibase:label { 
-          bd:serviceParam wikibase:language "en".
-          ?place rdfs:label ?placeLabel .
-          ?parent rdfs:label ?parentLabel . 
-          ?country rdfs:label ?countryLabel . 
-        }
+          ?place (wdt:P279|wdt:P31) ?placeType .
+  
+          OPTIONAL {?place wdt:P17 ?country .}
+          OPTIONAL {?place wdt:P131 ?parent .}
+          OPTIONAL {?place wdt:P1448 ?name .}
+  
+          OPTIONAL {?place wdt:P1667 ?tgnid .}
+          OPTIONAL {?place wdt:P1566 ?gnid .}
+          OPTIONAL {?place wdt:P214 ?viafid .}
+          OPTIONAL {?place wdt:P244 ?locid .}
+  
+          SERVICE wikibase:label { 
+            bd:serviceParam wikibase:language "en".
+            ?place rdfs:label ?placeLabel .
+            ?parent rdfs:label ?parentLabel . 
+            ?country rdfs:label ?countryLabel .
+            ?placeType rdfs:label ?placeTypeLabel .
+          }
       '''% (variants)
       
     if 'geom' in qobj.keys():
@@ -304,60 +320,70 @@ def align_wd(pk, *args, **kwargs):
       loc_sw='POINT('+str(loc.bounds[0])+' '+str(loc.bounds[1])+')'
       loc_ne='POINT('+str(loc.bounds[2])+' '+str(loc.bounds[3])+')'
       q+='''
-        SERVICE wikibase:box {
-          ?place wdt:P625 ?location .
-            bd:serviceParam wikibase:cornerWest "%s"^^geo:wktLiteral .
-            bd:serviceParam wikibase:cornerEast "%s"^^geo:wktLiteral .
-        }'''% (loc_sw, loc_ne)
-      
+          SERVICE wikibase:box {
+            ?place wdt:P625 ?location .
+              bd:serviceParam wikibase:cornerWest "%s"^^geo:wktLiteral .
+              bd:serviceParam wikibase:cornerEast "%s"^^geo:wktLiteral .
+          }
+        '''% (loc_sw, loc_ne)
+    else:
+      q+='''
+        ?place wdt:P625 ?location .
+      '''
+
+    if countries != '':
+      q+='FILTER (?country in (%s)) .'% (countries)
     # qbase is pass1: names, types, geometry, countries
     qbase = q+'''
-      FILTER (?country in (%s)) .
       FILTER (?placeType in (%s)) . }
-      GROUP BY ?place ?placeLabel ?location ?countryLabel ?tgnid ?gnid ?viafid ?locid
-      ORDER BY ?placeLabel
-    '''% (countries, types)
+      GROUP BY ?place ?placeLabel ?countryLabel ?tgnid ?gnid ?viafid ?locid
+      ORDER BY ASC(?num) LIMIT 5
+    '''% (types)
     
     # qbare is pass2, omitting type filter
-    qbare = q+'''
-      FILTER (?country in (%s)) . }
-      GROUP BY ?place ?placeLabel ?location ?countryLabel ?tgnid ?gnid ?viafid ?locid
-      ORDER BY ?placeLabel'''% (countries)
+    qbare = q+''' }
+      GROUP BY ?place ?placeLabel ?countryLabel ?tgnid ?gnid ?viafid ?locid
+      ORDER BY ASC(?num) LIMIT 5'''
 
     def runQuery():
       global count_hit, count_nohit, total_hits, count_p1, count_p2
-      # set query
       sparql.setQuery(qbase)
       sparql.setReturnFormat(JSON)
   
-      # run pass1 (qbase)
+      # pass1 (qbase)
       bindings = sparql.query().convert()["results"]["bindings"]
   
       # test, output results
       if len(bindings) > 0:
+        print(str(len(bindings))+' bindings for pass1: '+str(place_id),qbase)
         count_hit +=1 # got at least 1
         for b in bindings:
-          total_hits+=1 # add each to total
-          count_p1+=1 # it's pass1
-          writeHit(b,'pass1',ds,place_id,src_id,title)
-          fout1.write('pass1:'+str(b)+'\n')   
-          print('hit binding:',b)   
+          if b['locations']['value'] != '':
+            total_hits+=1 # add to total
+            count_p1+=1 # it's pass1
+            writeHit(b,'pass1',ds,place_id,src_id,title)
+            fout1.write('pass1:'+str(b)+'\n')   
+            print('pass1 hit binding:',b)   
       elif len(bindings) == 0:
-        # no hits, pass2 drops type with qbare
+        # no hits, pass2(qbare) drops type
         sparql.setQuery(qbare)
-        sparql.setReturnFormat(JSON) 
+        sparql.setReturnFormat(JSON)
+        # pass2 (qbare)
         bindings = sparql.query().convert()["results"]["bindings"]
         if len(bindings) == 0:
           count_nohit +=1 # tried 2 passes, nothing
           fout2.write(str(place_id)+' ('+title+'), pass2 \n')
         else:
           count_hit+=1 # got at least 1
+          print(str(len(bindings))+' bindings, pass2: '+str(place_id),qbare)
           for b in bindings:
-            total_hits+=1 # add each to total
-            count_p2+=1 # it's pass2
-            # write a hit, tagged 'pass2'
-            fout1.write('pass2:'+str(b)+'\n')   
-            writeHit(b,'pass2',ds,place_id,src_id,title)
+            # could be anything, see if it has a location
+            if b['locations']['value'] != '':
+              total_hits+=1 # add to total
+              count_p2+=1 # it's pass2
+              writeHit(b,'pass2',ds,place_id,src_id,title)
+              fout1.write('pass2:'+str(b)+'\n')   
+              print('pass1 hit binding:',b)
     #try:
     runQuery()
     #except:

@@ -136,10 +136,9 @@
               <div class="auth-match bg-light pl-2 mt-0 mb-2">
                 <!-- pull geometries to js -->
                 {% for g in form.json.value|get:"geoms" %}
-                  {{ g|safe|json_script:g.id}}
+                  {{ g|safe|json_script:g.id }}
                 {% endfor %}
                 <p><strong>Title/Preferred</strong>: {{ form.json.value|get:"title" }}</p>
-                
                 {% if authority == 'whg' %}
                 <p><strong>WHG record id</strong>: {{ form.json.value|get:"place_id" }}</p> 
                 <p><strong>Source (id)</strong>: {{ form.json.value|get:"dataset" }} ({{ form.json.value|get:"src_id" }})</p>
