@@ -216,7 +216,7 @@
       $(".remote-link").on('click', function(event){
         event.preventDefault()
         str=$(this).text()
-        var re = /(dbp|gn|tgn):(.*?)$/;
+        var re = /(dbp|gn|tgn|wd|wwf|dplace):(.*?)$/;
         auth=str.match(re)[1]
         id=str.match(re)[2]
         window.location.href = base_urls[auth]+id
@@ -281,15 +281,16 @@
       let id = $(this)[0].id
       console.log('id:',id)
       feat = idToFeature[id]
+      ogcolor = feat.options.fillColor
       feat.setStyle(
-        {radius: 10, fillColor: 'yellow'}
+        {radius: 10, fillColor: 'yellow', color: 'red'}
       )
     },
     function() {
       let id = $(this)[0].id
       feat = idToFeature[id]
       feat.setStyle(
-        {radius: 8, fillColor: '#ff7800'}
+        {radius: 8, fillColor: ogcolor, color: '#333' }
       )
     }
   );
@@ -324,12 +325,10 @@
     }
 
     function fill(ds) {
-      if (ds == 'tgn'){
+      if (ds in ['tgn','wd','whg']){
         return "#ff7800"}
-      else if (ds == 'whg'){
-        return "orange"}
       else {
-        return "red"}
+        return "green"}
     }
 
     if (geom['features'].length > 0) {
@@ -341,7 +340,7 @@
           matchid = feature.properties.id
           marker = L.circleMarker(latlng,
             {
-              radius: 8, fillOpacity: 0.6, opacity: 1, weight: 1,
+              radius: 8, fillOpacity: 0.4, opacity: 1, weight: 1,
               color: "#333", fillColor: fill(feature.properties.ds)
             }
           ).bindPopup(feature.properties.ds+':'+feature.properties.id);

@@ -235,7 +235,7 @@ def align_wd(pk, *args, **kwargs):
   global count_hit, count_nohit, total_hits, count_p1, count_p2
   [count_hit, count_nohit, total_hits, count_p1, count_p2] = [0,0,0,0,0]
   
-  for place in ds.places.all()[:20]:    # to json
+  for place in ds.places.all(): 
     #place=get_object_or_404(Place, id=166947) # Santo Domingo
     #place=get_object_or_404(Place, id=89872) # 
     #place=get_object_or_404(Place, id=81182) # Alabama R
@@ -384,12 +384,12 @@ def align_wd(pk, *args, **kwargs):
               writeHit(b,'pass2',ds,place_id,src_id,title)
               fout1.write('pass2:'+str(b)+'\n')   
               print('pass1 hit binding:',b)
-    #try:
-    runQuery()
-    #except:
-      #count_skipped +=1
-      #fout3.write(str(place_id) + '\t' + title + '\t' + str(sys.exc_info()[0]) + '\n')
-      #continue
+    try:
+      runQuery()
+    except:
+      count_skipped +=1
+      fout3.write(str(place_id) + '\t' + title + '\t' + str(sys.exc_info()[0]) + '\n')
+      continue
   
   print(str(count)+' rows; >=1 hit:'+str(count_hit)+'; '+str(total_hits)+' in total; ', str(count_nohit) + \
         ' misses; '+str(count_skipped)+' skipped')

@@ -772,8 +772,7 @@ class DatasetDetailView(UpdateView):
     # initial (non-task)
     context['num_links'] = PlaceLink.objects.filter(
       place_id_id__in = placeset, task_id = None).count()
-    context['num_names'] = PlaceName.objects.filter(
-      place_id_id__in = placeset, task_id = None).count()
+    context['num_names'] = PlaceName.objects.filter(place_id_id__in = placeset, task_id = None).count()
     context['num_geoms'] = PlaceGeom.objects.filter(
       place_id_id__in = placeset, task_id = None).count()
     context['num_descriptions'] = PlaceDescription.objects.filter(
