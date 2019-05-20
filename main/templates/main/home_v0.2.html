@@ -254,7 +254,10 @@
     var div = '';
     data.forEach(function(sug){
       <!--console.log('suggestion',sug)-->
-      sug.geom.forEach(function(g){g['properties']['title']=sug.name})
+      <!--supply name for popup, places only-->
+      if(!!sug.geom) {
+        sug.geom.forEach(function(g){g['properties']['title']=sug.name})
+      }
       // load suggestion div
       div += sugLister(sug,doctype)
     });

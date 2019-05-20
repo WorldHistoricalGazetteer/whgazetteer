@@ -235,7 +235,7 @@ def align_wd(pk, *args, **kwargs):
   global count_hit, count_nohit, total_hits, count_p1, count_p2
   [count_hit, count_nohit, total_hits, count_p1, count_p2] = [0,0,0,0,0]
   
-  for place in ds.places.all(): 
+  for place in ds.places.all().order_by('id'):
     #place=get_object_or_404(Place, id=166947) # Santo Domingo
     #place=get_object_or_404(Place, id=89872) # 
     #place=get_object_or_404(Place, id=81182) # Alabama R
@@ -362,7 +362,7 @@ def align_wd(pk, *args, **kwargs):
             total_hits+=1 # add to total
             count_p1+=1 # it's pass1
             writeHit(b,'pass1',ds,place_id,src_id,title)
-            fout1.write('pass1:'+str(b)+'\n')   
+            fout1.write(str(place_id)+'\tpass1:'+' '+str(b)+'\n')   
             print('pass1 hit binding:',b)   
       elif len(bindings) == 0:
         # no hits, pass2(qbare) drops type
@@ -382,7 +382,7 @@ def align_wd(pk, *args, **kwargs):
               total_hits+=1 # add to total
               count_p2+=1 # it's pass2
               writeHit(b,'pass2',ds,place_id,src_id,title)
-              fout1.write('pass2:'+str(b)+'\n')   
+              fout1.write(str(place_id)+'\tpass2:'+' '+str(b)+'\n')   
               print('pass1 hit binding:',b)
     try:
       runQuery()
