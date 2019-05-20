@@ -160,7 +160,7 @@
     $(".remote-link").on('click', function(event){
       event.preventDefault()
       str=$(this).text()
-      var re = /(dbp|gn|tgn):(.*?)$/;
+      var re = /(dbp|gn|tgn|wd):(.*?)$/;
       auth=str.match(re)[1]
       id=str.match(re)[2]
       window.location.href = base_urls[auth]+id

@@ -95,9 +95,13 @@
                 {{ type.jsonb.label }} ({{ type.jsonb.src_label }}); 
               {% endfor %}</p>
             {% if record.links %}
-            <p><strong>Links</strong>: 
+              <!--<a class="mr-2 ext" data-toggle="modal" data-target="#ext_site" href="'+sug['id']+-->
+                <!--'">{# fontawesome_icon 'external-link' color='#336699' #}</a>'-->
+            <p><strong>Links (external)</strong>: 
               {% for link in record.links.all %}
-                <a href="#" class="remote-link">{{ link.jsonb.identifier }}</a>; 
+                <a class="mr-2 ext" data-toggle="modal" data-target="#ext_site" href="'+sug['id']+
+                '">{{ link.jsonb.identifier }} {% fontawesome_icon 'external-link' color='#336699' %}</a>'
+                <!--<a href="#" class="remote-link">{{ link.jsonb.identifier }}</a>; -->
               {% endfor %}</p>
             {% endif %}
           </div>
@@ -173,7 +177,9 @@
                 {% if form.json.value|get:"links"|length > 0 %} 
                 <p><strong>Links</strong>: 
                 {% for link in form.json.value|get:"links" %}
-                     <a href="#" class="remote-link">{{ link }}</a>; 
+                     <!--<a href="#" class="remote-link">{{ link }}</a>; -->
+                  <a class="mr-2 ext" data-toggle="modal" data-target="#ext_site" href="'+sug['id']+
+                '">{{ link }} {% fontawesome_icon 'external-link' color='#336699' %}</a>
                   {% endfor %}
                 </p>{% endif %}
                 
@@ -195,6 +201,18 @@
       </div> <!-- .row -->
     </div> <!-- container flex -->
     </form>
+    <div id="ext_site" class="modal fade" role="dialog">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span></button>
+          </div>
+          <div id="ext_content" class="modal-body">foo</div>
+        </div>
+      </div>
+    </div> <!-- ext_site -->
+
   {% endfor %} <!-- record in records -->
   {% endif %}
   <div class="modal fade" tabindex="-1" role="dialog" id="modal">
@@ -205,6 +223,28 @@
 </div>
 </div> <!-- .container -->
 <script type="text/javascript">
+    $('.ext').on('click', function(e) {
+      e.preventDefault();
+      <!--var url = $(this).attr('href');-->      
+      str=$(this).text()
+      var re = /(dbp|gn|tgn|wd):(.*?)$/;
+      url=base_urls[str.match(re)[1]]+str.match(re)[2]
+      console.log('url',url)
+      <!--auth=str.match(re)[1]-->
+      <!--id=str.match(re)[2]-->
+      <!--window.location.href = base_urls[auth]+id-->
+      $(".modal-body").html('<iframe width="100%" height="100%" frameborder="0" scrolling="yes" '+
+        'allowtransparency="true" src="'+url+'"></iframe>');
+    });
+    <!--$(".remote-link").on('click', function(event){-->
+      <!--event.preventDefault()-->
+      <!--str=$(this).text()-->
+      <!--var re = /(dbp|gn|tgn):(.*?)$/;-->
+      <!--auth=str.match(re)[1]-->
+      <!--id=str.match(re)[2]-->
+      <!--window.location.href = base_urls[auth]+id-->
+      <!--console.log(str, auth,id)-->
+    <!--})-->
     var ds = "{{ ds_label }}"+':'
     $(function(){
       // set pass dropdown as next set with any reviewed=False rows
@@ -232,7 +272,7 @@
         $(this).modalForm({formURL: uribase+next});
       });      
     })
-        
+            
     // expose leaflet map for events, call it 'mappy'
   window.addEventListener('map:init', function (e) {
     window.mappy = e.detail.map

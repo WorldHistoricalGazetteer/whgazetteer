@@ -175,11 +175,11 @@
   }
 
   function fetchTraceGeom(trace_id,counter) {
-    console.log('fetchTraceGeom():',trace_id)
+    <!--console.log('fetchTraceGeom():',trace_id)-->
     if(typeof(traces) !== "undefined") {traces.clearLayers();}
     $.get("/search/tracegeom",{idx: 'traces', search: trace_id, doc_type: 'trace'},
       function(data){
-        console.log(data.features.length, ' mappable geoms in this trace')
+        <!--console.log(data.features.length, ' mappable geoms in this trace')-->
         <!--console.log('bodies in this trace',data.bodies)-->
         var count_features = 0
         idToFeature = {}
@@ -253,7 +253,7 @@
   function showSuggestions(data,doctype){
     var div = '';
     data.forEach(function(sug){
-      <!--console.log('suggestion',sug)-->
+      console.log('suggestion',sug)
       <!--supply name for popup, places only-->
       if(!!sug.geom) {
         sug.geom.forEach(function(g){g['properties']['title']=sug.name})
