@@ -44,7 +44,7 @@
       <div id="ds_details" class="col-sm-6">
         <p class="hidden editing"><b>Description</b>: {{ form.description }}</p>
         <p class="form-value editing"><b>Description</b>: {{ object.description }}</p>
-        <p><b>ID (slug/#)</b>: {{ object.label }}/{{ object.id }}
+        <p><b>ID (label/#)</b>: {{ object.label }}/{{ object.id }}
         <p><b>File</b>: {{ object.file }}</p>
         <p><b>Date</b>: {{ object.upload_date|date:"d-M-Y, H:i (e)" }}</p>
         <p><b>Total rows</b>: {{ object.numrows }}</p>
@@ -59,7 +59,7 @@
           <p class="hidden editing"><b>MapBox ID</b>: {{ form.mapbox_id }}</p>
         {% endif %}
         <p><b>Status</b>: {{ object.status }}</p>
-        <p><b>Columns</b>: <br/>{{ object.header }}</p>
+        <p><b>Columns</b>: {{ object.header }}</p>
         <hr/>
         <h5 class="text-secondary">Counts (initial, added)</h5>
         <p><b>Names</b>:

@@ -118,6 +118,7 @@ def review(request, pk, tid, passnum): # dataset pk, celery recon task_id
   # convert ccodes to names
   countries = []
   for r in records[0].ccodes:
+  #for r in place.ccodes:
     countries.append(ccodes[0][r]['gnlabel']+' ('+ccodes[0][r]['tgnlabel']+')')
 
   context = {
@@ -144,43 +145,45 @@ def review(request, pk, tid, passnum): # dataset pk, celery recon task_id
     try:
       if formset.is_valid():
         hits = formset.cleaned_data
-        print('hits[0]',hits[0])
+        #print('hits[0]',hits[0])
         #print('formset keys',formset.data.keys())
         for x in range(len(hits)):
-          #print('hit',hits[x])
+          print('hit',hits[x])
           hit = hits[x]['id']
           if hits[x]['match'] != 'none':
-            # create link 
+            # create link for matched record
             link = PlaceLink.objects.create(
               place_id = place,
               task_id = tid,
+              src_id = place.src_id,
               # dataset = ds,
               jsonb = {
                 "type":hits[x]['match'],
                 "identifier":link_uri(task.task_name,hits[x]['authrecord_id'] if hits[x]['authority'] != 'whg' \
                     else hits[x]['json']['place_id'])
-              },
-              #review_note =  hits[x]['review_note'],
+              }
             )
             # update <ds>.numlinked, <ds>.total_links
             ds.numlinked = ds.numlinked +1
             ds.total_links = ds.total_links +1
             ds.save()
             
-            # TODO: augment strategy; (? links for all, geoms if checked ?)
-            # augment only for [tgn,dbp,gn,wd]
-            #if hits[x]['authority'] != 'whg':
-              #augmenter(placeid, task.task_name, tid, hits[x]['json'])
-            #else:
-              ## if hit is close or exact, index as child
-              #if hits[x]['match'] in ['exact_match','close_match']:
-                #print('index '+str(placeid)+' as child of '+str(hits[x]['json']['place_id']))
-              #elif hits[x]['match'] == 'related':
-                #print('declared related - do what?')
-  
-            #print('place_id',placeid,
-                  #'authrecord_id',hits[x]['authrecord_id'],
-                  #'hit.id',hit.id, type(hit.id))
+            # add wikidata concordances
+            # TODO: check not duplicate
+            for l in hits[x]['json']['links']:
+              link = PlaceLink.objects.create(
+                place_id = place,
+                task_id = tid,
+                src_id = place.src_id,
+                jsonb = {
+                  "type": re.search("^(.*?):", l).group(1),
+                  "identifier": re.search("\: (.*?)$", l).group(1)
+                }
+              )
+              # update totals
+              ds.numlinked = ds.numlinked +1
+              ds.total_links = ds.total_links +1
+              ds.save()        
             
           elif hits[x]['match'] == 'none':
             # make it a new parent unless it's been flagged

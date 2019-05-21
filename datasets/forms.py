@@ -4,9 +4,14 @@ from django import forms
 from django.db import models
 from .models import Dataset, Hit
 
+#MATCHTYPES = [
+  #('exact_match','exactMatch'),
+  #('close_match','closeMatch'),
+  #('related','related'),
+  #('none','no match'),]
 MATCHTYPES = [
-  ('exact_match','exactMatch'),
-  ('close_match','closeMatch'),
+  ('exactMatch','exactMatch'),
+  ('closeMatch','closeMatch'),
   ('related','related'),
   ('none','no match'),]
 

@@ -237,7 +237,7 @@ def align_wd(pk, *args, **kwargs):
   
   for place in ds.places.all().order_by('id'):
     #place=get_object_or_404(Place, id=166947) # Santo Domingo
-    #place=get_object_or_404(Place, id=89872) # 
+    #place=get_object_or_404(Place, id=81007) # Abu Simbel
     #place=get_object_or_404(Place, id=81182) # Alabama R
     count +=1
     place_id = place.id

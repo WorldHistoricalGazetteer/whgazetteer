@@ -8,6 +8,7 @@
 {% block extra_head %}
   {% leaflet_js %}
   {% leaflet_css %}
+  <script src="{% static 'js/aliases.js' %}"></script>
   <script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>
   <link rel="stylesheet" href="//cdn.datatables.net/1.10.16/css/dataTables.bootstrap4.min.css">
 {% endblock %}
@@ -35,7 +36,7 @@
         <div id="map">
             {% leaflet_map "map" callback="map_init" %}
         </div>
-        <div id="drftable_fields">
+        <div id="drftable_fields" class="small">
           <p class="text-center mt-5">
             <img src="{# static 'images/ajax-loader.gif' #}" />
           </p>
@@ -55,7 +56,17 @@
     </div>
   </div>
 </div>
-
+<div id="ext_site" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span></button>
+      </div>
+      <div id="ext_content" class="modal-body">foo</div>
+    </div>
+  </div>
+</div> <!-- ext_site -->
 <script src="//cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
 <script src="//cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
 <script  type="text/javascript">
@@ -95,10 +106,9 @@
     table.on( 'draw', function () {
       setRowEvents();
     } );
+    
   })  
-</script>
 
-<script type="text/javascript">
   // expose leaflet map for events, call it 'mappy'
   window.addEventListener('map:init', function (e) {
     window.mappy = e.detail.map
@@ -141,10 +151,18 @@
       else if(str.startsWith('gn')) {uri = str.replace('gn:','http://www.geonames.org/')}
       else if(str.startsWith('wwf:')) {uri = str.replace('wwf:','https://www.worldwildlife.org/ecoregions/')}
       else if(str.startsWith('wd:')) {uri = str.replace('wd:','https://www.wikidata.org/wiki/')}
-      link = '<span class="small mr-2"><a href="'+ uri +'" target="_blank">['+
+      link = '<span class="small mr-2"><a href="'+ uri +'" class="ext" target="_blank">['+
         str+']</a></span>'
     }
+    <!--<a class="mr-2 ext" data-toggle="modal" data-target="#ext_site" href="'+sug['id']+-->
+                <!--'">{ link }} {# fontawesome_icon 'external-link' color='#336699' #}</a>-->
     return link;
+  }
+  function url_modal(identifier) {
+    <!-- e.g. 'wd:Q123456' -->
+    link = '<a href="" class="mr-2 ext" data-toggle="modal" data-target="#ext_site">'+identifier+
+      ' {% fontawesome_icon 'external-link' color='#336699' %}</a>'
+    return link
   }
   function renderMap(geom){
     geomtype = geom['features'][0]['type']
@@ -205,6 +223,7 @@
   // TODO: better parsing here
   function parsePlace(data) {
     window.data = data
+
     // NAME VARIANTS
     html='<p><b>Variants</b>: '
     for (n in data.names) {
@@ -215,10 +234,10 @@
     html+='</p><p><b>Types</b>: '
     typeids = ''
     for (t in data.types) {
-      typeids+=data.types[t].source_label +': (<i>'+data.types[t].label+'/'+data.types[t].identifier +'</i>); '
+      typeids+=data.types[t].sourceLabel?data.types[t].sourceLabel:'' +
+        ' (<i>'+data.types[t].label+'/'+data.types[t].identifier +'</i>); '
     }
     html += typeids.replace(/(; $)/g, "") +'</p>'
-
 
     // GEOMS
     if (data.geoms.length > 0){
@@ -234,33 +253,33 @@
       map_init()
     }
 
+    // CCODES
+    if (data.ccodes.length > 0) {
+      html+='<p><b>Countries</b>: '+ data.ccodes +'</p>'
+    }
     // LINKS
     html += '<p class="mb-0"><b>Linked records</b>: </p>'
     close_count = exact_count = related_count = 0
     html_exact = html_close = html_related = ''
     if (data.links.length > 0) {
+      console.log('data.links',data.links)
       for (l in data.links) {
         if (data.links[l].type == 'exactMatch') {
           exact_count += 1
-          html_exact+=url_it(data.links[l].identifier)
+          html_exact+=url_modal(data.links[l].identifier)
         }
         else if (data.links[l].type == 'closeMatch') {
           close_count += 1
-          html_close+=url_it(data.links[l].identifier)
+          html_close+=url_modal(data.links[l].identifier)
         }
         else if (data.links[l].type == 'related') {
-          html_related+=url_it(data.links[l].identifier)
+          html_related+=url_modal(data.links[l].identifier)
         }
       }
-      if (exact_count > 0) html += html_exact
-      if (close_count > 0) html += html_close
-      if (related_count > 0) html += html_related
+      if (exact_count > 0) html += '<i>exactMatch</i>: ['+html_exact+']'
+      if (close_count > 0) html += '<i>closeMatch</i>: ['+html_close+']'
+      if (related_count > 0) html += '<i>related</i>: ['+html_related+']'
     } else { html += "<i class='small'>no links established yet</i>" }
-
-    // CCODES
-    if (data.ccodes.length > 0) {
-      html+='<p><b>Countries</b>: '+ data.ccodes +'</p>'
-    }
 
     // DESCRIPTIONS
     // TODO: link description to identifier URI if present
@@ -285,14 +304,6 @@
       }
       html+=html_parent.length > 39?html_parent:''
       html+=html_related.length > 37?html_related:''
-      
-      <!--console.log(data.related[0])-->
-      <!--if (data.related[0].relation_type == 'gvp:broaderPartitive'){-->
-        <!--html+='<p><b>Parent(s)</b>: '+ data.related +'</p>'-->
-      <!--}-->
-      <!--else {-->
-        <!--html+='<p><b>Related</b>: '+ data.related +'</p>'-->
-      <!--}-->
     }
 
     html += '</div>'
@@ -305,8 +316,17 @@
       }).done(function( data ) {
         $("#drftable_title").html('<h5 class="text-danger mb-4"><b>'+data['title']+'</b></h5>')
         $("#drftable_fields").html(parsePlace(data))
+        $('.ext').on('click', function(e) {
+        e.preventDefault();
+          str=$(this).text()
+          var re = /(dbp|gn|tgn|wd):(.*?)$/;
+          url=base_urls[str.match(re)[1]]+str.match(re)[2]
+          console.log('url',url)
+          $(".modal-body").html('<iframe width="100%" height="100%" frameborder="0" scrolling="yes" '+
+            'allowtransparency="true" src="'+url+'"></iframe>');
+        });
       });
-  }    
+  }
   // initialize, render map
   function map_init (map, options) {
     if(typeof(features)!=='undefined'){
