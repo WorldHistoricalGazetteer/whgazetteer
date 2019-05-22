@@ -15,13 +15,12 @@ SELECT distinct ?place ?location ?placeLabel ?countryLabel ?tgnid ?gnid ?nameLab
     OPTIONAL {?place wdt:P244 ?locid .}
     
     FILTER (STR(?placeLabel) in ("Paris")) .
-    FILTER (STR(?country) in (wd:Q142)) .
+    FILTER (?country in (wd:Q142)) .
   
     SERVICE wikibase:box {
       ?place wdt:P625 ?location .
         bd:serviceParam wikibase:cornerWest "POINT(1.3508 47.8567)"^^geo:wktLiteral .
         bd:serviceParam wikibase:cornerEast "POINT(3.3508 49.8567)"^^geo:wktLiteral .
-    }
-FILTER (?placeType in (wd:Q486972)) . } 
+    }} 
 GROUP BY ?place ?location ?placeLabel ?countryLabel ?tgnid ?gnid ?nameLabel
 ORDER BY ?placeLabel

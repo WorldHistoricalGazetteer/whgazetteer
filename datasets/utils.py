@@ -1,20 +1,20 @@
-import codecs, datetime, sys, csv
+import codecs, datetime, sys, csv, os
 import simplejson as json
 from shapely import wkt
 from datasets.static.hashes import aat, parents
 from jsonschema import validate, Draft7Validator, draft7_format_checker
 
-def validate_lpf(infile, username):
-  #print('tasks.read_lpf() username', username)
-  #schema = json.loads(codecs.open('datasets/static/lpf-schema.json', 'r', 'utf8').read())
-  schema = json.loads(codecs.open('datasets/static/lpf-schema-nocoords.json', 'r', 'utf8').read())
+def validate_lpf(infile,form):
+  # form 'collection' or 'lines'
+  schema = json.loads(codecs.open('datasets/static/lpf-schema-20190522.json', 'r', 'utf8').read())
   fout = codecs.open('validate-lpf-result.txt', 'w', 'utf8')
   #print()
-  result = {"errors":[],"format":"lpf"}
+  #infile=codecs.open('datasets/static/lugares_10.jsonld','r','utf-8')
+  result = {"format":"lpf_"+form,"errors":[]}
   [countrows,count_ok] = [0,0]
   
   jdata = json.loads(infile.read())
-  # TODO: sniff Collection or json lines
+  # TODO: handle json-lines
   if ['type', '@context', 'features'] != list(jdata.keys()) \
      or jdata['type'] != 'FeatureCollection' \
      or len(jdata['features']) == 0:
@@ -35,27 +35,13 @@ def validate_lpf(infile, username):
         print('some kinda error',err)
         result["errors"].append({"feat":countrows-1,'error':err[1].args[0]})
 
-  # TODO: json lines format
-  #for row in infile:
-    #countrows +=1
-    #print(json.loads(row).keys())
-    #try:
-      #validate(
-        #instance=json.loads(row),
-        #schema=schema,
-        #format_checker=draft7_format_checker
-      #)
-      #count_ok +=1
-    #except:
-      #err = sys.exc_info()
-      #print('some kinda error',err)
-      #result["errors"].append({"row":countrows,'error':err[1].args[0]})
-
   fout.write(json.dumps(result["errors"]))
+  fout.close()
   result['count'] = countrows
   return result
 
-def validate_csv(infile, username):
+#def validate_csv(infile, username):
+def validate_csv(infile):
   # TODO: Pandas?
   # some WKT is big
   csv.field_size_limit(100000000)

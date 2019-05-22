@@ -93,18 +93,20 @@
                       "type": "object",
                       "title": "Names->Items->When->Timespans->Items->End",
                       "properties": {
-                        "in": {"type": "string"}
-                      },
-                      "required": ["in"]
+                        "in": {"type": "string"},
+                        "earliest": {"type": "string"},
+                        "latest": {"type": "string"}
+                      }
                     },
                     "start": {
                       "$id": "#/properties/names/items/properties/when/properties/timespans/items/properties/start",
                       "type": "object",
                       "title": "Names->Items->When->Timespans->Items->Start",
                       "properties": {
-                        "in": {"type": "string"}
-                      },
-                      "required": ["in"]
+                        "in": {"type": "string"},
+                        "earliest": {"type": "string"},
+                        "latest": {"type": "string"}
+                      }
                     }
                   }
                 }
@@ -135,24 +137,30 @@
             "examples": ["San Miguel"],
             "pattern": "^(.*)$"
           },
-          "citation": {
-            "$id": "#/properties/names/items/properties/citation",
-            "type": "object",
-            "title": "Names->Items->Citation",
+          "citations":{
+            "$id": "#/properties/names/items/properties/citations",
+            "type": "array",
+            "title": "Names->Items->Citations",
             "required": [],
-            "properties": {
-              "@id": {
-                "$id": "#/properties/names/items/properties/citation/properties/@id",
-                "type": "string",
-                "title": "Names->Items->Citation->@id",
-                "examples": ["http://foofah.org"]
-              },
-              "label": {
-                "$id": "#/properties/names/items/properties/citation/properties/label",
-                "type": "string",
-                "title": "Names->Items->Citation->Label",
-                "examples": ["Blow, J. (1708)"],
-                "pattern": "^(.*)$"
+            "items": {
+              "$id": "#/properties/names/items/properties/citations/items",
+              "type": "object",
+              "title": "Names->Items->Citations->Items",
+              "required": [],
+              "properties": {
+                "@id": {
+                  "$id": "#/properties/names/items/properties/citation/properties/@id",
+                  "type": "string",
+                  "title": "Names->Items->Citation->@id",
+                  "examples": ["http://foofah.org"]
+                },
+                "label": {
+                  "$id": "#/properties/names/items/properties/citation/properties/label",
+                  "type": "string",
+                  "title": "Names->Items->Citation->Label",
+                  "examples": ["Blow, J. (1708)"],
+                  "pattern": "^(.*)$"
+                }
               }
             }
           }
@@ -166,12 +174,12 @@
       "items": {
         "$id": "#/properties/types/items",
         "type": "object",
-        "title": "The Items Schema",
+        "title": "Types->Items",
         "properties": {
           "label": {
             "$id": "#/properties/types/items/properties/label",
             "type": "string",
-            "title": "The Label Schema",
+            "title": "Types->Items->Label",
             "default": "",
             "examples": ["village"],
             "pattern": "^(.*)$"
@@ -179,7 +187,7 @@
           "identifier": {
             "$id": "#/properties/types/items/properties/identifier",
             "type": "string",
-            "title": "The Identifier Schema",
+            "title": "Types->Items->Identifier",
             "default": "",
             "examples": ["aat:300008372"],
             "pattern": "^(.*)$"
@@ -187,52 +195,54 @@
           "sourceLabel": {
             "$id": "#/properties/types/items/properties/sourceLabel",
             "type": "string",
-            "title": "The Sourcelabel Schema",
+            "title": "Types->Items->Sourcelabel",
             "default": "",
             "examples": ["Pueblo"],
             "pattern": "^(.*)$"
           },
           "when": {
-            "$id": "#/properties/names/items/properties/when",
+            "$id": "#/properties/types/items/properties/when",
             "type": "object",
-            "title": "The Name When Schema",
+            "title": "Types->Items->When",
             "properties": {
               "timespans": {
-                "$id": "#/properties/names/items/properties/when/properties/timespans",
+                "$id": "#/properties/types/items/properties/when/properties/timespans",
                 "type": "array",
-                "title": "The Timespans Schema",
+                "title": "Types->Items->When->Timespans",
                 "items": {
-                  "$id": "#/properties/names/items/properties/when/properties/timespans/items",
+                  "$id": "#/properties/types/items/properties/when/properties/timespans/items",
                   "type": "object",
-                  "title": "The Items Schema",
+                  "title": "Types->Items->When->Timespans->Items",
                   "required": ["start"],
                   "properties": {
                     "end": {
-                      "$id": "#/properties/names/items/properties/when/properties/timespans/items/properties/end",
+                      "$id": "#/properties/types/items/properties/when/properties/timespans/items/properties/end",
                       "type": "object",
-                      "title": "The End Schema",
+                      "title": "Types->Items->When->Timespans->Items->End",
                       "properties": {
-                        "in": {"type": "string"}
-                      },
-                      "required": ["in"]
+                        "in": {"type": "string"},
+                        "earliest": {"type": "string"},
+                        "latest": {"type": "string"}
+                      }
                     },
                     "start": {
-                      "$id": "#/properties/names/items/properties/when/properties/timespans/items/properties/start",
+                      "$id": "#/properties/types/items/properties/when/properties/timespans/items/properties/start",
                       "type": "object",
-                      "title": "The Start Schema",
+                      "title": "Types->Items->When->Timespans->Items->Start",
                       "properties": {
-                        "in": {"type": "string"}
-                      },
-                      "required": ["in"]
+                        "in": {"type": "string"},
+                        "earliest": {"type": "string"},
+                        "latest": {"type": "string"}
+                      }
                     }
                   }
                 }
               },
               "periods": {
-                "$id": "#/properties/names/items/properties/when/properties/periods",
+                "$id": "#/properties/types/items/properties/when/properties/periods",
                 "type": "array",
                 "items": {
-                  "$id": "#/properties/names/properties/periods/items",
+                  "$id": "#/properties/types/properties/periods/items",
                   "type": "object",
                   "title": "The Periods Schema",
                   "properties": {
@@ -262,8 +272,7 @@
           "$id": "#/properties/geometry/properties/type",
           "type": "string",
           "enum": ["GeometryCollection"],
-          "title": "Geometry->Type",
-          "pattern": "^(.*)$"
+          "title": "Geometry->Type"
         },
         "geometries": {
           "$id": "#/properties/geometry/properties/geometries",
@@ -280,52 +289,53 @@
               "type": {
                 "$id": "#/properties/geometry/properties/geometries/items/properties/type",
                 "type": "string",
-                "title": "Geometry->Type",
-                "pattern": "^(.*)$"
-              },
+                "title": "Geometries->Items->Type",
+                "enum": ["Point","MultiPoint","LineString","MultiLineString","Polygon","MultiPolygon"]              },
               "when": {
-                "$id": "#/properties/names/items/properties/when",
+                "$id": "#/properties/geometries/items/properties/when",
                 "type": "object",
-                "title": "Geometry->When",
+                "title": "Geometries->Items->When",
                 "properties": {
                   "timespans": {
                     "$id": "#/properties/names/items/properties/when/properties/timespans",
                     "type": "array",
-                    "title": "Geometry->When->Timespans",
+                    "title": "Geometries->Items->When->Timespans",
                     "items": {
                       "$id": "#/properties/names/items/properties/when/properties/timespans/items",
                       "type": "object",
-                      "title": "Geometry->When->Timespans->Items",
+                      "title": "Geometries->Items->When->Timespans->Items",
                       "required": ["start"],
                       "properties": {
                         "end": {
-                          "$id": "#/properties/names/items/properties/when/properties/timespans/items/properties/end",
+                          "$id": "#/properties/geometries/items/properties/when/properties/timespans/items/properties/end",
                           "type": "object",
-                          "title": "Geometry->When->Timespans->Items->End",
+                          "title": "Geometries->Items->When->Timespans->Items->End",
                           "properties": {
-                            "in": {"type": "string"}
-                          },
-                          "required": ["in"]
+                            "in": {"type": "string"},
+                            "earliest": {"type": "string"},
+                            "latest": {"type": "string"}
+                          }
                         },
                         "start": {
-                          "$id": "#/properties/names/items/properties/when/properties/timespans/items/properties/start",
+                          "$id": "#/properties/geometries/items/properties/when/properties/timespans/items/properties/start",
                           "type": "object",
-                          "title": "Geometry->When->Timespans->Items->Start",
+                          "title": "Geometries->Items->When->Timespans->Items->Start",
                           "properties": {
-                            "in": {"type": "string"}
-                          },
-                          "required": ["in"]
+                            "in": {"type": "string"},
+                            "earliest": {"type": "string"},
+                            "latest": {"type": "string"}
+                          }
                         }
                       }
                     }
                   },
                   "periods": {
-                    "$id": "#/properties/names/items/properties/when/properties/periods",
+                    "$id": "#/properties/geometries/items/properties/when/properties/periods",
                     "type": "array",
                     "items": {
                       "$id": "#/properties/names/properties/periods/items",
                       "type": "object",
-                      "title": "Geometry->When->Periods",
+                      "title": "Geometries->Items->When->Periods",
                       "properties": {
                         "name": {"type": "string"},
                         "uri": {"type": "string"}
@@ -340,7 +350,7 @@
               "geowkt": {
                 "$id": "#/properties/geometry/properties/geometries/items/properties/geowkt",
                 "type": "string",
-                "title": "The Geowkt Schema",
+                "title": "Geometries->Items->Geowkt",
                 "pattern": "^(.*)$"
               }
             }
@@ -374,35 +384,37 @@
           "when": {
             "$id": "#/properties/relations/items/properties/when",
             "type": "object",
-            "title": "The Relations When Schema",
+            "title": "Relations->When",
             "properties": {
               "timespans": {
                 "$id": "#/properties/relations/items/properties/when/properties/timespans",
                 "type": "array",
-                "title": "The Timespans Schema",
+                "title": "Relations->When->Timespans",
                 "items": {
                   "$id": "#/properties/relations/items/properties/when/properties/timespans/items",
                   "type": "object",
-                  "title": "The Items Schema",
+                  "title": "Relations->When->Timespans->Items",
                   "required": ["start"],
                   "properties": {
                     "end": {
                       "$id": "#/properties/relations/items/properties/when/properties/timespans/items/properties/end",
                       "type": "object",
-                      "title": "The End Schema",
+                      "title": "Relations->When->Timespans->Items->End Schema",
                       "properties": {
-                        "in": {"type": "string"}
-                      },
-                      "required": ["in"]
+                        "in": {"type": "string"},
+                        "earliest": {"type": "string"},
+                        "latest": {"type": "string"}
+                      }
                     },
                     "start": {
                       "$id": "#/properties/relations/items/properties/when/properties/timespans/items/properties/start",
                       "type": "object",
-                      "title": "The Start Schema",
+                      "title": "Relations->When->Timespans->Items->Start",
                       "properties": {
-                        "in": {"type": "string"}
-                      },
-                      "required": ["in"]
+                        "in": {"type": "string"},
+                        "earliest": {"type": "string"},
+                        "latest": {"type": "string"}
+                      }
                     }
                   }
                 }
@@ -413,7 +425,7 @@
                 "items": {
                   "$id": "#/properties/relations/properties/periods/items",
                   "type": "object",
-                  "title": "The Periods Schema",
+                  "title": "Relations->When->Periods",
                   "properties": {
                     "name": {"type": "string"},
                     "uri": {"type": "string"}
@@ -427,6 +439,80 @@
           }
         }
       }
+    },
+    "descriptions": {
+      "$id": "#/properties/descriptions",
+      "type": "array",
+      "title": "The Descriptions Schema",
+      "items": {
+        "$id": "#/properties/descriptions/items",
+        "type": "object",
+        "title": "Descriptions->Items",
+        "required": ["value","lang"],
+        "properties": {
+          "@id": {
+            "$id": "#/properties/descriptions/items/properties/@id",
+            "type": "string",
+            "title": "Descriptions->Items->@id",
+            "examples": [
+              "https://en.wikipedia.org/wiki/Abingdon-on-Thames"
+            ],
+            "pattern": "^(.*)$"
+          },
+          "value": {
+            "$id": "#/properties/descriptions/items/properties/value",
+            "type": "string",
+            "title": "Descriptions->Items->Value",
+            "examples": ["...a historic market town and civil parish..."],
+            "pattern": "^(.*)$"
+          },
+          "lang": {
+            "$id": "#/properties/depictions/items/properties/lang",
+            "type": "string",
+            "title": "Descriptions->Items->Lang",
+            "examples": ["fr"],
+            "pattern": "^(.*)$"
+          }
+        }
+      } 
+    },
+    "depictions": {
+      "$id": "#/properties/depictions",
+      "type": "array",
+      "title": "The Depictions Schema",
+      "items": {
+        "$id": "#/properties/depictions/items",
+        "type": "object",
+        "title": "Depictions->Items",
+        "required": ["@id","title","license"],
+        "properties": {
+          "@id": {
+            "$id": "#/properties/depictions/items/properties/@id",
+            "type": "string",
+            "title": "Depictions->Items->@id",
+            "examples": [
+              "https://commons.wikimedia.org/wiki/File:ThamesAtAbingdon.jpg"
+            ],
+            "pattern": "^(.*)$"
+          },
+          "title": {
+            "$id": "#/properties/depictions/items/properties/title",
+            "type": "string",
+            "title": "Depictions->Items->Title",
+            "default": "",
+            "examples": ["The River Thames at Abingdon, Oxfordshire"],
+            "pattern": "^(.*)$"
+          },
+          "license": {
+            "$id": "#/properties/depictions/items/properties/license",
+            "type": "string",
+            "title": "Depictions->Items->License",
+            "default": "",
+            "examples": ["cc:by-sa/3.0/"],
+            "pattern": "^(.*)$"
+          }
+        }
+      } 
     }
   }
 }

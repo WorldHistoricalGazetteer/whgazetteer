@@ -688,7 +688,6 @@ class DatasetCreateView(CreateView):
     if form.is_valid():
       print('form is valid')
       format = form.cleaned_data['format']
-      #print('cleaned_data: before ->', form.cleaned_data)
 
       # open & write tempf to a temp location;
       # call it tempfn for reference
@@ -705,9 +704,11 @@ class DatasetCreateView(CreateView):
       print('fin from DatasetCreateView()',fin)
       # send for format validation
       if format == 'delimited':
-        result = validate_csv(fin,form.cleaned_data['owner'])
+        #result = validate_csv(fin,form.cleaned_data['owner'])
+        result = validate_csv(fin)
       elif format == 'lpf':
-        result = validate_lpf(fin,form.cleaned_data['owner'])
+        #result = validate_lpf(fin,form.cleaned_data['owner'])
+        result = validate_lpf(fin,'coll')
       # print('cleaned_data',form.cleaned_data)
       fin.close()
 

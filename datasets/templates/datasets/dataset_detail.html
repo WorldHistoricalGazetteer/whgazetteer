@@ -33,7 +33,7 @@
       {% if status == "format_ok" %}
         <a href=
           {% if object.format == "delimited" %} "{% url 'datasets:ds_insert_csv' pk=object.id %}"
-          {% elif object.format == "lpf" %} "{% url 'datasets:ds_insert_lpf' pk=object.id %}"{% endif %}
+          {% elif "lpf" in object.format %} "{% url 'datasets:ds_insert_lpf' pk=object.id %}"{% endif %}
           title="Insert to db" rel="tooltip"
           class="small float-right mr-2">{% fontawesome_icon 'database' color='#336699' %}</a>
       {% endif %}
