@@ -1,0 +1,333 @@
+{
+  "type": "FeatureCollection",
+  "@context": "http://linkedpasts.org/assets/linkedplaces-context-v1.3.jsonld",
+  "features": [
+    {
+      "@id": "https://dev.chartes.psl.eu/dico-topo/placenames/DT02-01486",
+      "type": "Feature",
+      "properties": {
+        "ccode": "FR",
+        "title": "Clacy"
+      },
+      "names": [
+        {
+          "lang": null,
+          "citation": {
+            "@id": null,
+            "label": "cart. de l’abb. de Saint-Martin de Laon, f° 172, bibl. de Laon"
+          },
+          "toponym": "<dfn>Claciacum</dfn>",
+          "when": {
+            "timespans": [
+              {
+                "start": {
+                  "in": "1122"
+                }
+              },
+              {
+                "end": {
+                  "in": null
+                }
+              }
+            ]
+          }
+        },
+        {
+          "lang": null,
+          "citation": {
+            "@id": null,
+            "label": "cart. de l’abb. de Saint-Martin de Laon, f° 175"
+          },
+          "toponym": "<dfn>Claci</dfn>",
+          "when": {
+            "timespans": [
+              {
+                "start": {
+                  "in": "1161"
+                }
+              },
+              {
+                "end": {
+                  "in": null
+                }
+              }
+            ]
+          }
+        },
+        {
+          "lang": null,
+          "citation": {
+            "@id": null,
+            "label": "gr. cart. de l’év. de Laon, ch. 80"
+          },
+          "toponym": "<dfn>Claceium</dfn>",
+          "when": {
+            "timespans": [
+              {
+                "start": {
+                  "in": "1222"
+                }
+              },
+              {
+                "end": {
+                  "in": null
+                }
+              }
+            ]
+          }
+        },
+        {
+          "lang": null,
+          "citation": {
+            "@id": null,
+            "label": "inv. de Vauclerc, Bibl. imp."
+          },
+          "toponym": "<dfn>Claceyum</dfn>",
+          "when": {
+            "timespans": [
+              {
+                "start": {
+                  "in": "xiiie siècle"
+                }
+              },
+              {
+                "end": {
+                  "in": null
+                }
+              }
+            ]
+          }
+        },
+        {
+          "lang": null,
+          "citation": {
+            "@id": null,
+            "label": "cueilleret de l’Hôtel-Dieu de Laon, B 63"
+          },
+          "toponym": "<dfn>Clacci</dfn>",
+          "when": {
+            "timespans": [
+              {
+                "start": {
+                  "in": "1326"
+                }
+              },
+              {
+                "end": {
+                  "in": null
+                }
+              }
+            ]
+          }
+        },
+        {
+          "lang": null,
+          "citation": {
+            "@id": null,
+            "label": "arch. de l’Emp. Tr. des chartes, reg. 64, n° 740"
+          },
+          "toponym": "<dfn>Clacy-sous-Laon</dfn>",
+          "when": {
+            "timespans": [
+              {
+                "start": {
+                  "in": "1327"
+                }
+              },
+              {
+                "end": {
+                  "in": null
+                }
+              }
+            ]
+          }
+        },
+        {
+          "lang": null,
+          "citation": {
+            "@id": null,
+            "label": "ch. de l’abb. de Saint-Vincent de Laon"
+          },
+          "toponym": "<dfn>Clachy</dfn>",
+          "when": {
+            "timespans": [
+              {
+                "start": {
+                  "in": "1447"
+                }
+              },
+              {
+                "end": {
+                  "in": null
+                }
+              }
+            ]
+          }
+        },
+        {
+          "lang": null,
+          "citation": {
+            "@id": null,
+            "label": "comptes de l’Hôtel-Dieu de Laon, E 25"
+          },
+          "toponym": "<dfn>Classy</dfn>",
+          "when": {
+            "timespans": [
+              {
+                "start": {
+                  "in": "1493"
+                }
+              },
+              {
+                "end": {
+                  "in": null
+                }
+              }
+            ]
+          }
+        },
+        {
+          "lang": null,
+          "citation": {
+            "@id": null,
+            "label": "acquits, arch. de la ville de Laon"
+          },
+          "toponym": "<dfn>Clascy, Classy-et-Thiéret</dfn>",
+          "when": {
+            "timespans": [
+              {
+                "start": {
+                  "in": "1568"
+                }
+              },
+              {
+                "end": {
+                  "in": null
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "types": [],
+      "geometry": {
+        "type": "GeometryCollection",
+        "geometries": [
+          {
+            "coordinates": [
+              3.5654677192982454,
+              49.55239526315789
+            ],
+            "src": "http://id.insee.fr/geo/commune/02196",
+            "geo_wkt": "POINT(3.5654677192982454 49.55239526315789)",
+            "type": "Point",
+            "when": {
+              "timespans": [
+                {
+                  "start": {
+                    "in": 2011
+                  }
+                },
+                {
+                  "end": {
+                    "in": 2011
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "when": {
+        "timespans": [
+          {
+            "start": {
+              "in": "1122"
+            }
+          },
+          {
+            "end": {
+              "in": null
+            }
+          }
+        ]
+      },
+      "links": [
+        {
+          "type": "exactMatch",
+          "identifer": "http://id.insee.fr/geo/commune/02196"
+        },
+        {
+          "type": "exactMatch",
+          "identifer": "http://geonames.org/6424819"
+        },
+        {
+          "type": "exactMatch",
+          "identifer": "https://data.bnf.fr/ark:/12148/cb15243384f"
+        },
+        {
+          "type": "exactMatch",
+          "identifer": "https://www.wikidata.org/wiki/Q847885"
+        },
+        {
+          "type": "exactMatch",
+          "identifer": "https://fr.wikipedia.org/wiki/Clacy-et-Thierret"
+        },
+        {
+          "type": "exactMatch",
+          "identifer": "https://viaf.org/viaf/308197611"
+        }
+      ],
+      "relations": [
+        {
+          "relationType": "gvp:broaderPartitive",
+          "label": "région de Hauts-de-France",
+          "relationTo": "http://id.insee.fr/geo/region/32",
+          "when": {
+            "timespans": []
+          }
+        },
+        {
+          "relationType": "gvp:broaderPartitive",
+          "label": "département de l'Aisne",
+          "relationTo": "http://id.insee.fr/geo/departement/02",
+          "when": {
+            "timespans": []
+          }
+        },
+        {
+          "relationType": "gvp:tgn3000_related_to",
+          "label": "Aulnois",
+          "relationTo": "https://dev.chartes.psl.eu/dico-topo/api/1.0/placenames/DT02-00197",
+          "when": {
+            "timespans": []
+          }
+        },
+        {
+          "relationType": "gvp:tgn3000_related_to",
+          "label": "Boisencourt",
+          "relationTo": "https://dev.chartes.psl.eu/dico-topo/api/1.0/placenames/DT02-00629",
+          "when": {
+            "timespans": []
+          }
+        },
+        {
+          "relationType": "gvp:tgn3000_related_to",
+          "label": "Fonberlieu",
+          "relationTo": "https://dev.chartes.psl.eu/dico-topo/api/1.0/placenames/DT02-02267",
+          "when": {
+            "timespans": []
+          }
+        }
+      ],
+      "descriptions": [
+        {
+          "@id": "https://dev.chartes.psl.eu/dico-topo/placenames/DT02-01486",
+          "lang": "fr",
+          "value": "canton de Laon."
+        }
+      ],
+      "depictions": []
+    }
+  ]
+}

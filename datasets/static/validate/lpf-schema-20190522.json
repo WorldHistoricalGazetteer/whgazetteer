@@ -3,7 +3,8 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "http://example.com/root.json",
   "type": "object",
-  "title": "The Root Schema",
+  "title": "The Linked Place Schema",
+  "additionalProperties": false,
   "required": [
     "type",
     "@id",
@@ -36,7 +37,7 @@
         "title": {
           "$id": "#/properties/properties/properties/title",
           "type": "string",
-          "title": "The Title Schema",
+          "title": "Properties->Title",
           "default": "",
           "examples": ["San Miguel"],
           "pattern": "^(.*)$"
@@ -44,11 +45,11 @@
         "ccodes": {
           "$id": "#/properties/properties/properties/ccodes",
           "type": "array",
-          "title": "The ccodes Schema",
+          "title": "Properties->Ccodes",
           "items": {
             "$id": "#/properties/properties/properties/ccodes/items",
             "type": "string",
-            "title": "The Items Schema",
+            "title": "Properties->Ccodes->Items",
             "default": "",
             "examples": ["CR"],
             "pattern": "^(.*)$"
@@ -64,11 +65,12 @@
         "$id": "#/properties/names/items",
         "type": "object",
         "title": "Names->Items",
-        "required": ["lang","toponym"],
+        "required": ["toponym"],
+        "additionalProperties": false,
         "properties": {
           "lang": {
             "$id": "#/properties/names/items/properties/lang",
-            "type": "string",
+            "type": ["string","null"],
             "title": "Names->Items->Lang",
             "examples": ["es"],
             "pattern": "^(.*)$"
@@ -86,14 +88,14 @@
                   "$id": "#/properties/names/items/properties/when/properties/timespans/items",
                   "type": "object",
                   "title": "Names->Items->When->Timespans->Items",
-                  "required": ["start"],
+                  "required":["start"],
                   "properties": {
                     "end": {
                       "$id": "#/properties/names/items/properties/when/properties/timespans/items/properties/end",
                       "type": "object",
                       "title": "Names->Items->When->Timespans->Items->End",
                       "properties": {
-                        "in": {"type": "string"},
+                        "in": {"type": ["string","null"]},
                         "earliest": {"type": "string"},
                         "latest": {"type": "string"}
                       }
@@ -141,16 +143,14 @@
             "$id": "#/properties/names/items/properties/citations",
             "type": "array",
             "title": "Names->Items->Citations",
-            "required": [],
             "items": {
               "$id": "#/properties/names/items/properties/citations/items",
               "type": "object",
               "title": "Names->Items->Citations->Items",
-              "required": [],
               "properties": {
                 "@id": {
                   "$id": "#/properties/names/items/properties/citation/properties/@id",
-                  "type": "string",
+                  "type": ["string","null"],
                   "title": "Names->Items->Citation->@id",
                   "examples": ["http://foofah.org"]
                 },
@@ -213,14 +213,14 @@
                   "$id": "#/properties/types/items/properties/when/properties/timespans/items",
                   "type": "object",
                   "title": "Types->Items->When->Timespans->Items",
-                  "required": ["start"],
+                  "required":["start"],
                   "properties": {
                     "end": {
                       "$id": "#/properties/types/items/properties/when/properties/timespans/items/properties/end",
                       "type": "object",
                       "title": "Types->Items->When->Timespans->Items->End",
                       "properties": {
-                        "in": {"type": "string"},
+                        "in": {"type": ["string","null"]},
                         "earliest": {"type": "string"},
                         "latest": {"type": "string"}
                       }
@@ -244,7 +244,7 @@
                 "items": {
                   "$id": "#/properties/types/properties/periods/items",
                   "type": "object",
-                  "title": "The Periods Schema",
+                  "title": "Types->When->Periods",
                   "properties": {
                     "name": {"type": "string"},
                     "uri": {"type": "string"}
@@ -295,7 +295,7 @@
                 "$id": "#/properties/geometries/items/properties/when",
                 "type": "object",
                 "title": "Geometries->Items->When",
-                "properties": {
+                    "properties": {
                   "timespans": {
                     "$id": "#/properties/names/items/properties/when/properties/timespans",
                     "type": "array",
@@ -304,14 +304,14 @@
                       "$id": "#/properties/names/items/properties/when/properties/timespans/items",
                       "type": "object",
                       "title": "Geometries->Items->When->Timespans->Items",
-                      "required": ["start"],
+                      "required":["start"],
                       "properties": {
                         "end": {
                           "$id": "#/properties/geometries/items/properties/when/properties/timespans/items/properties/end",
                           "type": "object",
                           "title": "Geometries->Items->When->Timespans->Items->End",
                           "properties": {
-                            "in": {"type": "string"},
+                            "in": {"type": ["string","null"]},
                             "earliest": {"type": "string"},
                             "latest": {"type": "string"}
                           }
@@ -352,6 +352,11 @@
                 "type": "string",
                 "title": "Geometries->Items->Geowkt",
                 "pattern": "^(.*)$"
+              },
+              "source": {"type":"string"},
+              "certainty": {
+                "type": "string",
+                "enum": ["certain","less certain","uncertain"]
               }
             }
           }
@@ -365,7 +370,7 @@
       "items": {
         "$id": "#/properties/relations/items",
         "type": "object",
-        "title": "The Relations Items Schema",
+        "title": "Relations->Items",
         "required": ["relationType","relationTo","label"],
         "properties": {
           "relationType": {
@@ -394,14 +399,14 @@
                   "$id": "#/properties/relations/items/properties/when/properties/timespans/items",
                   "type": "object",
                   "title": "Relations->When->Timespans->Items",
-                  "required": ["start"],
+                  "required":["start"],
                   "properties": {
                     "end": {
                       "$id": "#/properties/relations/items/properties/when/properties/timespans/items/properties/end",
                       "type": "object",
-                      "title": "Relations->When->Timespans->Items->End Schema",
+                      "title": "Relations->When->Timespans->Items->End",
                       "properties": {
-                        "in": {"type": "string"},
+                        "in": {"type": ["string","null"]},
                         "earliest": {"type": "string"},
                         "latest": {"type": "string"}
                       }
@@ -436,8 +441,88 @@
               "label": {"type": "string"},
               "duration": {"type": "string"}
             }
+          },
+          "certainty": {
+            "type": "string",
+            "enum": ["certain","less certain","uncertain"]
           }
         }
+      }
+    },
+    "links": {
+      "$id": "#/properties/links",
+      "type": "array",
+      "title": "The Links Schema",
+      "items": {
+        "$id": "#/properties/links/items",
+        "type": "object",
+        "title": "Links->Items",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["closeMatch","exactMatch","primaryTopicOf","subjectOf","seeAlso"]
+          },
+          "identifier": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "when": {
+      "$id": "#/properties/when",
+      "type": "object",
+      "title": "The When Schema",
+      "properties": {
+        "timespans": {
+          "$id": "#/properties/when/timespans",
+          "type": "array",
+          "title": "When->Timespans",
+          "items": {
+            "$id": "#/properties/when/timespans/items",
+            "type": "object",
+            "title": "When->Timespans->Items",
+            "required":["start"],
+            "properties": {
+              "end": {
+                "$id": "#/properties/when/timespans/items/properties/end",
+                "type": "object",
+                "title": "When->Timespans->Items->End",
+                "properties": {
+                  "in": {"type": ["string","null"]},
+                  "earliest": {"type": "string"},
+                  "latest": {"type": "string"}
+                }
+              },
+              "start": {
+                "$id": "#/properties/when/timespans/items/properties/start",
+                "type": "object",
+                "title": "When->Timespans->Items->Start",
+                "properties": {
+                  "in": {"type": "string"},
+                  "earliest": {"type": "string"},
+                  "latest": {"type": "string"}
+                }
+              }
+            }
+          }
+        },
+        "periods": {
+          "$id": "#/properties/when/properties/periods",
+          "title": "When->Periods",
+          "type": "array",
+          "items": {
+            "$id": "#/properties/when/properties/periods/items",
+            "type": "object",
+            "title": "When->Periods->Items",
+            "properties": {
+              "name": {"type": "string"},
+              "uri": {"type": "string"}
+            },
+            "required": ["name"]
+          }
+        },
+        "label": {"type": "string"},
+        "duration": {"type": "string"}
       }
     },
     "descriptions": {
@@ -468,7 +553,7 @@
           },
           "lang": {
             "$id": "#/properties/depictions/items/properties/lang",
-            "type": "string",
+            "type": ["string","null"],
             "title": "Descriptions->Items->Lang",
             "examples": ["fr"],
             "pattern": "^(.*)$"
