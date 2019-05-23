@@ -5,8 +5,8 @@ from datasets.static.hashes import aat, parents
 from jsonschema import validate, Draft7Validator, draft7_format_checker
 
 def validate_lpf(infile,form):
-  # form 'collection' or 'lines'
-  schema = json.loads(codecs.open('datasets/static/validate/lpf-schema-20190522.json', 'r', 'utf8').read())
+  # form 'coll' or 'lines'
+  schema = json.loads(codecs.open('datasets/static/validate/lpf-schema.json', 'r', 'utf8').read())
   fout = codecs.open('validate-lpf-result.txt', 'w', 'utf8')
   #print()
   #infile=codecs.open('datasets/static/validate/lugares_10_citations.jsonld','r','utf-8')
