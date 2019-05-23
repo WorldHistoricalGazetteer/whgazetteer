@@ -3,6 +3,8 @@
     "dbp": "http://dbpedia.org/resource/",
     "gn": "http://www.geonames.org/",
     "wd": "https://www.wikidata.org/wiki/",
+    "loc": "http://id.loc.gov/authorities/subjects/",
+    "viaf": "http://viaf.org/viaf/",
     "wwf": "https://www.worldwildlife.org/ecoregions/",
     "whg": "/api/places/",
     "dplace": "http://dplace.org/societies/",

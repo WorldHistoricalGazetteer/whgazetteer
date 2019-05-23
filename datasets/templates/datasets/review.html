@@ -203,44 +203,51 @@
     </div>
   </div>
 </div>
-<div id="ext_site" class="modal fade" role="dialog">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span></button>
-      </div>
-      <div id="ext_content" class="modal-body">foo</div>
-    </div>
-  </div>
-</div> <!-- ext_site -->
+<!--<div id="ext_site" class="modal fade" role="dialog">-->
+  <!--<div class="modal-dialog">-->
+    <!--<div class="modal-content">-->
+      <!--<div class="modal-header">-->
+        <!--<button type="button" class="close" data-dismiss="modal" aria-label="Close">-->
+          <!--<span aria-hidden="true">&times;</span></button>-->
+      <!--</div>-->
+      <!--<div id="ext_content" class="modal-body">foo</div>-->
+    <!--</div>-->
+  <!--</div>-->
+<!--</div> <!-- ext_site -->-->
 <script type="text/javascript">
   $('.ext').on('click', function(e) {
     e.preventDefault();
     str=$(this).text()
-    var re = /(dbp|gn|tgn|wd):(.*?)$/;
+    console.log('str',str)
+    var re = /(dbp|gn|tgn|wd|loc|viaf):(.*?)$/;
     url=base_urls[str.match(re)[1]]+str.match(re)[2]
     console.log('url',url)
-    $(".modal-body").html('<iframe width="100%" height="100%" frameborder="0" scrolling="yes" '+
-      'allowtransparency="true" src="'+url+'"></iframe>');
+    window.open(url,'_blank')
+    <!--if(['loc','viaf'].indexOf(str.match(re)[1])>=0){-->
+      <!--window.location.href = url-->
+      <!--<!--window.open(url,'_blank');-->-->
+    <!--} else {-->
+      <!--$(".modal-body").html('<iframe width="100%" height="100%" frameborder="0" scrolling="yes" '+-->
+        <!--'allowtransparency="true" src="'+url+'"></iframe>');-->
+    <!--}-->
   });
-    var ds = "{{ ds_label }}"+':'
-    $(function(){
-      // set pass dropdown as next set with any reviewed=False rows
-      $( "#select_pass" ).val("{{ passnum }}")
-      // defaults to string 'None' - no idea why
-      $('.textarea').html('')
-      z=window.location.href
-      $('#passnum_dynamic').html('<b>'+z.slice(-5)+'</b>')
-      
-      $(".create-comment").each(function () {
-        var recpk = $(this).data('id');
-        uribase="/comment/"+recpk
-        next='?next='+"{% url 'datasets:review' pk=ds_id tid=task_id passnum=passnum %}"
-        <!--console.log('formURL',uribase+next)-->
-        $(this).modalForm({formURL: uribase+next});
-      });      
-    })
+  var ds = "{{ ds_label }}"+':'
+  $(function(){
+    // set pass dropdown as next set with any reviewed=False rows
+    $( "#select_pass" ).val("{{ passnum }}")
+    // defaults to string 'None' - no idea why
+    $('.textarea').html('')
+    z=window.location.href
+    $('#passnum_dynamic').html('<b>'+z.slice(-5)+'</b>')
+    
+    $(".create-comment").each(function () {
+      var recpk = $(this).data('id');
+      uribase="/comment/"+recpk
+      next='?next='+"{% url 'datasets:review' pk=ds_id tid=task_id passnum=passnum %}"
+      <!--console.log('formURL',uribase+next)-->
+      $(this).modalForm({formURL: uribase+next});
+    });      
+  })
             
     // expose leaflet map for events, call it 'mappy'
   window.addEventListener('map:init', function (e) {
@@ -334,8 +341,9 @@
     }
 
     function fill(ds) {
-      if (ds in ['tgn','wd','whg']){
-        return "#ff7800"}
+      <!--console.log('ds',ds)-->
+      if (['tgn','wd','whg'].indexOf(ds)>=0){
+        return "orange"}
       else {
         return "green"}
     }
