@@ -38,13 +38,13 @@
         <div class="form-check">
           <label class="form-check-label" for="auth2">
             <input type="radio" class="form-check-input" id="auth2"
-              name="recon" value="tgn" checked>Getty TGN (tgn)
+              name="recon" value="tgn">Getty TGN (tgn)
           </label>
         </div>
         <div class="form-check">
           <label class="form-check-label" for="auth4">
             <input type="radio" class="form-check-input" id="auth4"
-              name="recon" value="wd" >Wikidata (wd)
+              name="recon" value="wd" checked >Wikidata (wd)
               <span class="ml-2 text-success d-none"> </span>
           </label>
         </div>
@@ -63,30 +63,6 @@
           </label>
         </div>
         </div>
-        <!--<div class="col-sm-4 ghostbox">-->
-          <!--<p class="small mb-0">When validating matches returned by this task, augment records with:</p>-->
-          <!--<div class="form-check">-->
-            <!--<input type="hidden" name="aug_names" value="off" />-->
-            <!--<label class="form-check-label small" for="aug1">-->
-              <!--<input type="checkbox" class="form-check-input" id="aug1"-->
-                <!--name="aug_names" checked>Name variants-->
-            <!--</label>-->
-          <!--</div>-->
-          <!--<div class="form-check">-->
-            <!--<input type="hidden" name="aug_notes" value="off" />-->
-            <!--<label class="form-check-label small" for="aug1">-->
-              <!--<input type="checkbox" class="form-check-input" id="aug1"-->
-                <!--name="aug_notes" checked>Notes-->
-            <!--</label>-->
-          <!--</div>-->
-          <!--<div class="form-check">-->
-            <!--<input type="hidden" name="aug_geom" value="off" />-->
-            <!--<label class="form-check-label small" for="aug2">-->
-              <!--<input type="checkbox" class="form-check-input" id="aug2"-->
-                <!--name="aug_geom">Point geometry-->
-            <!--</label>-->
-          <!--</div>-->
-        <!--</div>-->
       </div> <!-- row -->
     </div>
     <div id="recon_result" class="col-md-6 ghostbox p-tight">
@@ -108,7 +84,7 @@
   </div> <!-- row -->
   <!-- <hr/> -->
   <div class="row mt-3">
-    <div id="geo_constraint" class="col-md-6">
+    <div id="geo_constraint" class="col-md-6 hidden">
       <div class="mb-2">
         <p class="font-weight-bold">Geographic constraint</p>
         <p>
@@ -146,7 +122,14 @@
 </div> <!-- container -->
 
 <script type="text/javascript">    
-  $(function(){})
+  $(function(){
+    $('input[name=recon]').change(function(){
+      var value = $( 'input[name=recon]:checked' ).val();
+      if(value=='tgn'){$("#geo_constraint").show() } else {$("#geo_constraint").hide()}
+      console.log(value);
+    });
+     <!--$("#geo_constraint").show()-->
+  })
 
   window.addEventListener('map:init', function (e) {
     window.mappy = e.detail.map
@@ -231,3 +214,27 @@
 
 </script>
 {% endblock %}
+        <!--<div class="col-sm-4 ghostbox">-->
+          <!--<p class="small mb-0">When validating matches returned by this task, augment records with:</p>-->
+          <!--<div class="form-check">-->
+            <!--<input type="hidden" name="aug_names" value="off" />-->
+            <!--<label class="form-check-label small" for="aug1">-->
+              <!--<input type="checkbox" class="form-check-input" id="aug1"-->
+                <!--name="aug_names" checked>Name variants-->
+            <!--</label>-->
+          <!--</div>-->
+          <!--<div class="form-check">-->
+            <!--<input type="hidden" name="aug_notes" value="off" />-->
+            <!--<label class="form-check-label small" for="aug1">-->
+              <!--<input type="checkbox" class="form-check-input" id="aug1"-->
+                <!--name="aug_notes" checked>Notes-->
+            <!--</label>-->
+          <!--</div>-->
+          <!--<div class="form-check">-->
+            <!--<input type="hidden" name="aug_geom" value="off" />-->
+            <!--<label class="form-check-label small" for="aug2">-->
+              <!--<input type="checkbox" class="form-check-input" id="aug2"-->
+                <!--name="aug_geom">Point geometry-->
+            <!--</label>-->
+          <!--</div>-->
+        <!--</div>-->

@@ -73,6 +73,11 @@ def ccDecode(codes):
     countries.append(ccodes[0][c]['gnlabel'])
   return countries
 
+def parseDateTime(string):
+  year = re.search("(\d{4})-",string).group(1) + ' BCE' if string[0] == '-' else ''; print(year.lstrip('0'))
+  return year.lstrip('0')
+
+  
 # normalize hits json from any authority
 def normalize(h,auth):
   if auth == 'whg':
@@ -120,6 +125,8 @@ def normalize(h,auth):
       # ["closeMatch: dplace:B243", "closeMatch: dbp:Kiowa"]
       rec.links = ['closeMatch: '+l+':'+h['links'][l] for l in h['links']] \
                   if len(h['links']) > 0 else []
+      rec.inception = parseDateTime(h['inception']['value']) if 'inception' in h.keys() else ''
+      # {'datatype': 'http://www.w3.org/2001/XMLSchema#dateTime', 'type': 'literal', 'value': '1858-11-22T00:00:00Z'}
     except:
       print("normalize(wd) error:", h['place']['value'][31:], sys.exc_info())    
   elif auth == 'tgn':
@@ -237,8 +244,8 @@ def align_wd(pk, *args, **kwargs):
   
   for place in ds.places.all().order_by('id'):
     #place=get_object_or_404(Place, id=166947) # Santo Domingo
-    #place=get_object_or_404(Place, id=81007) # Abu Simbel
-    #place=get_object_or_404(Place, id=81182) # Alabama R
+    #place=get_object_or_404(Place, id=83495) # Denver
+    #place=get_object_or_404(Place, id=88106) # Paris
     count +=1
     place_id = place.id
     src_id = place.src_id
@@ -280,7 +287,7 @@ def align_wd(pk, *args, **kwargs):
     types = ', '.join([c for c in getQ(qobj['placetypes'],'types')])
     
     # TODO admin parent P131, retrieve wiki article name, country P17, ??
-    q='''SELECT ?place ?placeLabel ?countryLabel ?tgnid ?gnid ?viafid ?locid
+    q='''SELECT ?place ?placeLabel ?countryLabel ?inception ?tgnid ?gnid ?viafid ?locid
         (group_concat(distinct ?parentLabel; SEPARATOR=", ") as ?parents)
         (group_concat(distinct ?placeTypeLabel; SEPARATOR=", ") as ?types)
         (group_concat(distinct ?location; SEPARATOR=", ") as ?locations)
@@ -299,7 +306,7 @@ def align_wd(pk, *args, **kwargs):
   
           OPTIONAL {?place wdt:P17 ?country .}
           OPTIONAL {?place wdt:P131 ?parent .}
-          OPTIONAL {?place wdt:P1448 ?name .}
+          OPTIONAL {?place wdt:P571 ?inception .}
   
           OPTIONAL {?place wdt:P1667 ?tgnid .}
           OPTIONAL {?place wdt:P1566 ?gnid .}
@@ -336,13 +343,13 @@ def align_wd(pk, *args, **kwargs):
     # qbase is pass1: names, types, geometry, countries
     qbase = q+'''
       FILTER (?placeType in (%s)) . }
-      GROUP BY ?place ?placeLabel ?countryLabel ?tgnid ?gnid ?viafid ?locid
+      GROUP BY ?place ?placeLabel ?countryLabel ?inception ?tgnid ?gnid ?viafid ?locid
       ORDER BY ASC(?num) LIMIT 5
     '''% (types)
     
     # qbare is pass2, omitting type filter
     qbare = q+''' }
-      GROUP BY ?place ?placeLabel ?countryLabel ?tgnid ?gnid ?viafid ?locid
+      GROUP BY ?place ?placeLabel ?countryLabel ?inception ?tgnid ?gnid ?viafid ?locid
       ORDER BY ASC(?num) LIMIT 5'''
 
     def runQuery():
