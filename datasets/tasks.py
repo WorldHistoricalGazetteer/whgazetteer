@@ -243,7 +243,7 @@ def align_wd(pk, *args, **kwargs):
   [count_hit, count_nohit, total_hits, count_p1, count_p2] = [0,0,0,0,0]
   
   for place in ds.places.all().order_by('id'):
-    #place=get_object_or_404(Place, id=166947) # Santo Domingo
+    #place=get_object_or_404(Place, id=176861) # Abancay
     #place=get_object_or_404(Place, id=83495) # Denver
     #place=get_object_or_404(Place, id=88106) # Paris
     count +=1

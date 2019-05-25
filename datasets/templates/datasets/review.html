@@ -140,7 +140,7 @@
                 {% for g in form.json.value|get:"geoms" %}
                   {{ g|safe|json_script:g.id }}
                 {% endfor %}
-                <p><strong>Title/Preferred</strong>: {{ form.json.value|get:"title" }}</p>
+                <p><strong>Title/Preferred</strong>: <span class="text-danger h6">{{ form.json.value|get:"title" }}</p>
                 {% if authority == 'whg' %}
                 <p><strong>WHG record id</strong>: {{ form.json.value|get:"place_id" }}</p> 
                 <p><strong>Source (id)</strong>: {{ form.json.value|get:"dataset" }} ({{ form.json.value|get:"src_id" }})</p>
@@ -280,7 +280,7 @@
 
   $( "#select_pass" ).change(function() {
     z=window.location.href
-    baseurl=z.substring(0,[z.length -5])
+    baseurl=z.substring(0,z.lastIndexOf('/')+1)
     window.location.href = baseurl + $(this).val()
   });
 

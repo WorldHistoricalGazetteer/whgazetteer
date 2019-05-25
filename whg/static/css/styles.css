@@ -22,6 +22,7 @@ label {vertical-align:top;}
 .texttop {vertical-align: text-top !important;}
 .textsub {vertical-align: sub !important;}
 .smaller {font-size: small;} /*smaller than bootstrap's*/
+
 .bottom {position: absolute; bottom:0;}
 /**
   home, search
