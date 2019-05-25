@@ -63,6 +63,14 @@
           </label>
         </div>
         </div>
+        {% if request.method == 'GET' %}
+        <div class="col-sm-6">
+          <div class="bottom">
+          <button type="submit" class="btn btn-primary">Start</button>
+          <span title="back"><a href="javascript:history.back()">Cancel</a></span>
+          </div>
+        </div>
+        {% endif %}
       </div> <!-- row -->
     </div>
     <div id="recon_result" class="col-md-6 ghostbox p-tight">
@@ -80,11 +88,14 @@
       {% else %}
         <p>Reconciliation results will show here...</p>
       {% endif %}
+      <div id="map" class="ghostbox geo-constraint hidden">
+        {% leaflet_map "map" callback="map_init" %}
+      </div>
     </div> <!-- recon_result -->
   </div> <!-- row -->
   <!-- <hr/> -->
   <div class="row mt-3">
-    <div id="geo_constraint" class="col-md-6 hidden">
+    <div class="col-md-6 hidden geo-constraint">
       <div class="mb-2">
         <p class="font-weight-bold">Geographic constraint</p>
         <p>
@@ -94,7 +105,7 @@
           {% for r in context.region_list %}
             <option value="{{ r.id }}">{{ r.title }}</option>
           {% endfor %}
-\        </select><span class="ml-2"><b>or...</b></span></p>
+          </select><span class="ml-2"><b>or...</b></span></p>
         <p>
           <select id="select_userarea" name="userarea" class="custom-select-sm" style="width:auto;">
           <option value="0" selected="selected">Select user-defined study area</option>
@@ -109,13 +120,6 @@
         </span></p>
         <p><input type="text" disabled name="search_region" value="" placeholder="Search region data"/></p>
       </div>
-      {% if request.method == 'GET' %}
-        <button type="submit" class="btn btn-primary">Start</button>
-        <span title="back"><a href="javascript:history.back()">Cancel</a></span>
-      {% endif %}
-    </div>
-    <div id="map" class="col-md-6 ghostbox">
-      {% leaflet_map "map" callback="map_init" %}
     </div>
   </div>
   </form>
@@ -125,7 +129,7 @@
   $(function(){
     $('input[name=recon]').change(function(){
       var value = $( 'input[name=recon]:checked' ).val();
-      if(value=='tgn'){$("#geo_constraint").show() } else {$("#geo_constraint").hide()}
+      if(value=='tgn'){$(".geo-constraint").show() } else {$(".geo-constraint").hide()}
       console.log(value);
     });
      <!--$("#geo_constraint").show()-->

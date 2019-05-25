@@ -1,0 +1,10 @@
+  blackself
+  mappy1
+* master
+  moredata
+  reconplus
+  reconwd
+  searchtraces
+  tracedisplay
+  validate
+  wdreview
