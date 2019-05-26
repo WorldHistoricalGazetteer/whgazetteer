@@ -258,17 +258,18 @@
       html+='<p><b>Countries</b>: '+ data.ccodes +'</p>'
     }
     // LINKS
+    // TODO: normalize on closeMatch, exactMatch
     html += '<p class="mb-0"><b>Linked records</b>: </p>'
     close_count = exact_count = related_count = 0
     html_exact = html_close = html_related = ''
     if (data.links.length > 0) {
       console.log('data.links',data.links)
       for (l in data.links) {
-        if (data.links[l].type == 'exactMatch') {
+        if (data.links[l].type.substring(0,5) == 'exact') {
           exact_count += 1
           html_exact+=url_modal(data.links[l].identifier)
         }
-        else if (data.links[l].type == 'closeMatch') {
+        else if (data.links[l].substring(0,5) == 'close') {
           close_count += 1
           html_close+=url_modal(data.links[l].identifier)
         }

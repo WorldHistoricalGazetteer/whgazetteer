@@ -74,7 +74,9 @@ def ccDecode(codes):
   return countries
 
 def parseDateTime(string):
-  year = re.search("(\d{4})-",string).group(1) + ' BCE' if string[0] == '-' else ''; print(year.lstrip('0'))
+  year = re.search("(\d{4})-",string).group(1)
+  if string[0] == '-':
+    year = year + ' BCE' 
   return year.lstrip('0')
 
   
@@ -107,13 +109,14 @@ def normalize(h,auth):
   
   elif auth == 'wd':
     try:
-      #if 'locations' in h.keys():
+      #
       locs=[]
-      for l in h['locations']['value'].split(', '):
-        loc = parse_wkt(l)
-        loc["id"]=h['place']['value'][31:]
-        loc['ds']='wd'
-        locs.append(loc)
+      if 'locations' in h.keys():
+        for l in h['locations']['value'].split(', '):
+          loc = parse_wkt(l)
+          loc["id"]=h['place']['value'][31:]
+          loc['ds']='wd'
+          locs.append(loc)
       #  place_id, dataset, src_id, title
       rec = HitRecord(-1, 'wd', h['place']['value'][31:], h['placeLabel']['value'])
       rec.variants = []
@@ -122,7 +125,6 @@ def normalize(h,auth):
       rec.parents =h['parents']['value'] if 'parents' in h.keys() else []
       rec.geoms = locs if len(locs)>0 else []
       rec.minmax = []
-      # ["closeMatch: dplace:B243", "closeMatch: dbp:Kiowa"]
       rec.links = ['closeMatch: '+l+':'+h['links'][l] for l in h['links']] \
                   if len(h['links']) > 0 else []
       rec.inception = parseDateTime(h['inception']['value']) if 'inception' in h.keys() else ''
@@ -194,7 +196,7 @@ def writeHit(b,passnum,ds,pid,srcid,title):
     #task_id = 'wd_20190517',
     task_id = align_wd.request.id,
     query_pass = passnum,
-    # consistent, for review display
+    # consistent json for review display
     json = normalize(b,'wd'),
     src_id = srcid,
     #score = hit['_score'],
@@ -364,10 +366,10 @@ def align_wd(pk, *args, **kwargs):
       if len(bindings) > 0:
         print(str(len(bindings))+' bindings for pass1: '+str(place_id),qbase)
         count_hit +=1 # got at least 1
+        count_p1+=1 # it's pass1
         for b in bindings:
           if b['locations']['value'] != '':
             total_hits+=1 # add to total
-            count_p1+=1 # it's pass1
             writeHit(b,'pass1',ds,place_id,src_id,title)
             fout1.write(str(place_id)+'\tpass1:'+' '+str(b)+'\n')   
             print('pass1 hit binding:',b)   
@@ -382,12 +384,12 @@ def align_wd(pk, *args, **kwargs):
           fout2.write(str(place_id)+' ('+title+'), pass2 \n')
         else:
           count_hit+=1 # got at least 1
+          count_p2+=1 # it's pass2
           print(str(len(bindings))+' bindings, pass2: '+str(place_id),qbare)
           for b in bindings:
             # could be anything, see if it has a location
             if b['locations']['value'] != '':
               total_hits+=1 # add to total
-              count_p2+=1 # it's pass2
               writeHit(b,'pass2',ds,place_id,src_id,title)
               fout1.write(str(place_id)+'\tpass2:'+' '+str(b)+'\n')   
               print('pass1 hit binding:',b)
@@ -422,6 +424,7 @@ def align_wd(pk, *args, **kwargs):
   
   
 # queries > result_obj
+# TODO: count 'got hit' per pass not hit per pass
 def es_lookup_tgn(qobj, *args, **kwargs):
   #print('qobj',qobj)
   bounds = kwargs['bounds']

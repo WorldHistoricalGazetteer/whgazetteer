@@ -1,13 +1,32 @@
 # various search.views
 from django.http import JsonResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import View
 import simplejson as json, sys
 from areas.models import Area
 from datasets.tasks import normalize
-
+from datasets.models import Dataset, Hit
 from elasticsearch import Elasticsearch
 
+class UpdateCountsView(View):
+  """ Returns counts of unreviewed hist per pass """
+  @staticmethod
+  def get(request):
+    print('UpdateCountsView GET:',request.GET)
+    """
+    args in request.GET:
+        [integer] ds_id: dataset id
+    """
+    ds = get_object_or_404(Dataset, id=request.GET.get('ds_id'))
+    updates = {}
+    for tid in [t.task_id for t in ds.tasks.all()]:
+      updates[tid] = {
+        'pass1':Hit.objects.all().filter(task_id=tid,query_pass='pass1',reviewed=False).count(),
+        'pass2':Hit.objects.all().filter(task_id=tid,query_pass='pass2',reviewed=False).count(),
+        'pass3':Hit.objects.all().filter(task_id=tid,query_pass='pass3',reviewed=False).count()
+      }    
+    return JsonResponse(updates, safe=False)
+  
 def fetchArea(request):
   aid = request.GET.get('pk')
   area = Area.objects.filter(id=aid)

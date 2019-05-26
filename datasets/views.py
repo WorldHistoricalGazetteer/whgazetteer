@@ -767,12 +767,16 @@ class DatasetDetailView(UpdateView):
     print('get_context_data() kwargs:',self.kwargs)
     id_ = self.kwargs.get("id")
     ds = get_object_or_404(Dataset, id=id_)
+    context['updates'] = {}
+    # fumbling to include to-be-reviewed count updates here
+    #task_ids=[t.task_id for t in ds.tasks.all()]
+    #for tid in task_ids:
+      #context['updates'][tid] = Hit.objects.all().filter(task_id=tid,reviewed=False).count()
     bounds = self.kwargs.get("bounds")
     # print('ds',ds.label)
     context['status'] = ds.status
     placeset = Place.objects.filter(dataset=ds.label)
     context['tasks'] = TaskResult.objects.all().filter(task_args = [id_],status='SUCCESS')
-    # context['tasks'] = TaskResult.objects.all().filter(task_args = [id_])
     # initial (non-task)
     context['num_links'] = PlaceLink.objects.filter(
       place_id_id__in = placeset, task_id = None).count()

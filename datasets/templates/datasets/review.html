@@ -120,8 +120,6 @@
                 <div class="custom-control custom-radio match_radio">
                   <span class="ml-2">
                   {% if form.json.value|get:"geoms" != Null %}
-                    <!--{ form.json.value|get:"location"|safe|json_script:form.authrecord_id.value }}-->
-                    <!--<a class="geolink" id="{ form.json.value|get:"place_id" }" -->
                     <a class="geolink" id="{{ form.authrecord_id.value }}" 
                       href="javascript:{ zoomTo('tgn:'+{{ form.authrecord_id.value }}) }">
                       {% fontawesome_icon 'globe' color='#000099' %}</a>
@@ -140,6 +138,7 @@
                 {% for g in form.json.value|get:"geoms" %}
                   {{ g|safe|json_script:g.id }}
                 {% endfor %}
+                <!--{ form.json.value }}-->
                 <p><strong>Title/Preferred</strong>: <span class="text-danger h6">{{ form.json.value|get:"title" }}</p>
                 {% if authority == 'whg' %}
                 <p><strong>WHG record id</strong>: {{ form.json.value|get:"place_id" }}</p> 
