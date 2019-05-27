@@ -187,28 +187,29 @@ def writeHit(b,passnum,ds,pid,srcid,title):
   for l in linklist:
     linkobj[l[:-2]] = b[l]['value']
   b['links'] = linkobj
-  from datasets.models import Hit
-  new = Hit(
-    authority = 'wd',
-    authrecord_id = b['place']['value'][31:],
-    dataset = ds,
-    place_id = get_object_or_404(Place, id=pid),
-    #task_id = 'wd_20190517',
-    task_id = align_wd.request.id,
-    query_pass = passnum,
-    # consistent json for review display
-    json = normalize(b,'wd'),
-    src_id = srcid,
-    #score = hit['_score'],
-    geom = parse_wkt(b['locations']['value']) if 'locations' in b.keys() else [],
-    reviewed = False,
-  )
-  new.save()          
-  hit = str(pid)+'\t'+ \
-        title+'\t'+ \
-        b['placeLabel']['value']+'\t'+ \
-        b['place']['value']+'\t'
-  print('wrote hit: '+hit + '\n')
+  if b['placeLabel']['value'] != b['place']['value'][31:]:
+    from datasets.models import Hit
+    new = Hit(
+      authority = 'wd',
+      authrecord_id = b['place']['value'][31:],
+      dataset = ds,
+      place_id = get_object_or_404(Place, id=pid),
+      #task_id = 'wd_20190517',
+      task_id = align_wd.request.id,
+      query_pass = passnum,
+      # consistent json for review display
+      json = normalize(b,'wd'),
+      src_id = srcid,
+      #score = hit['_score'],
+      geom = parse_wkt(b['locations']['value']) if 'locations' in b.keys() else [],
+      reviewed = False,
+    )
+    new.save()          
+    hit = str(pid)+'\t'+ \
+          title+'\t'+ \
+          b['placeLabel']['value']+'\t'+ \
+          b['place']['value']+'\t'
+    print('wrote hit: '+hit + '\n')
 
 # TODO: uncomment after tested
 @task(name="align_wd")

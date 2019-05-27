@@ -4,7 +4,7 @@
 {% load fontawesome %}
 {% load static %}
 
-{% block title %}<title>Dataset {{ ds.id }}</title>{% endblock %}
+{% block title %}<title>Browse dataset: {{ ds.label }}</title>{% endblock %}
 {% block extra_head %}
   {% leaflet_js %}
   {% leaflet_css %}
@@ -16,7 +16,7 @@
 <!-- incoming: ds, place_list -->
 <div class="container">
   <h4 class="mt-3">{{ ds.name }} 
-    <span class="small text-muted">[#{{ ds.label }}]
+    <span class="small text-muted">("{{ ds.label }}")
       <a href="{% url 'datasets:dataset-detail' ds.id %}" title="Dataset details" rel="tooltip"
         class="">{% fontawesome_icon 'cog' color='#336699' %}</a>
     </span>
@@ -80,12 +80,28 @@
           $(this).removeClass( "rowhover" );
         }
       )
-    $( "tr.odd, tr.even" ).click(
-      function() {
+    <!--$( "tr.odd, tr.even" ).click(function() {-->
+    $("#placetable tr").click(function() {
+        t=$(this)
         pid=$(this)[0].cells[0].textContent
+        var selected = $(this).hasClass("highlight-row");
+        $("#placetable tr").removeClass("highlight-row");
+        if(!selected)
+          $(this).removeClass( "rowhover" );
+          $(this).addClass("highlight-row");
         getPlace(pid)
       }
     ) 
+    
+    <!--$("#placetable tr").click(function() {-->
+      <!--console.log('clicked a row',$(this))-->
+      var selected = $(this).hasClass("highlight-row");
+      $("#placetable tr").removeClass("highlight-row");
+      if(!selected)
+        $(this).removeClass( "rowhover" );
+        $(this).addClass("highlight-row");
+    <!--});-->
+    
     row = $("#drftable_list table tbody")[0].rows[0]
     pid = parseInt(row.cells[0].textContent)
     // display first row detail
@@ -160,7 +176,7 @@
   }
   function url_modal(identifier) {
     <!-- e.g. 'wd:Q123456' -->
-    link = '<a href="" class="mr-2 ext" data-toggle="modal" data-target="#ext_site">'+identifier+
+    link = ' <a href="" class="ext" data-toggle="modal" data-target="#ext_site">'+identifier+
       ' {% fontawesome_icon 'external-link' color='#336699' %}</a>'
     return link
   }
@@ -269,7 +285,7 @@
           exact_count += 1
           html_exact+=url_modal(data.links[l].identifier)
         }
-        else if (data.links[l].substring(0,5) == 'close') {
+        else if (data.links[l].type.substring(0,5) == 'close') {
           close_count += 1
           html_close+=url_modal(data.links[l].identifier)
         }
@@ -277,15 +293,15 @@
           html_related+=url_modal(data.links[l].identifier)
         }
       }
-      if (exact_count > 0) html += '<i>exactMatch</i>: ['+html_exact+']'
-      if (close_count > 0) html += '<i>closeMatch</i>: ['+html_close+']'
-      if (related_count > 0) html += '<i>related</i>: ['+html_related+']'
+      if (exact_count > 0) html += '<i>exactMatch</i>: ['+html_exact+' ]'
+      if (close_count > 0) html += '<i>closeMatch</i>: ['+html_close+' ]'
+      if (related_count > 0) html += '<i>related</i>: ['+html_related+' ]'
     } else { html += "<i class='small'>no links established yet</i>" }
 
     // DESCRIPTIONS
     // TODO: link description to identifier URI if present
     if (data.descriptions.length > 0) {
-      html+='<p><b>Description</b>: '+ data.descriptions[0]['value']+'</p>'
+      html+='<p><b>Description</b>: '+ data.descriptions[0]['value'].substring(0,300)+' ... </p>'
         <!--'<br/><span class="small red-bold">('+data.descriptions[0]['identifier']+')</span>-->
     }
 

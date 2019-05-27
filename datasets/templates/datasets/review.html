@@ -4,7 +4,7 @@
 {% load fontawesome %}
 {% load static %}
 {% load dataset_extras %}
-{% block title %}<title>Dataset {{ ds.label }}</title>{% endblock %}
+{% block title %}<title>Review hits::{{ ds_label }}>{{authority}}</title>{% endblock %}
 {% block extra_head %}
   {% leaflet_js %}
   {% leaflet_css %}
@@ -14,9 +14,9 @@
 {% block content %}
 <div class="container">
   <!-- incoming: ds, hit_list -->
-  <h4 class="mb-2 mt-3">Reconciliation Review 
-    <span class="small">( <a href="{% url 'datasets:dataset-detail' id=ds_id %}"> 
-      {{ ds_label }}</a> -> {{ authority }} ) 
+  <h4 class="mb-2 mt-3">Reconciliation Review: 
+    <span class="small"> <a href="{% url 'datasets:dataset-detail' id=ds_id %}"> 
+      {{ ds_label }}</a> > {{ authority }}
       <select id="select_pass" name="pass" class="custom-select-sm mr-2" style="width:auto;">
         <option value="pass1">PASS 1&nbsp;</option>
         <option value="pass2">PASS 2&nbsp;</option>
@@ -146,12 +146,14 @@
                 {% else %}
                 <p><strong>{{ authority|upper }} ID</strong>: {{ form.authrecord_id.value }}
                 </p>                
-                {% endif %}             
+                {% endif %}
+                
+                {% if form.json.value|get:"variants"|length > 0 %} 
                 <p><strong>Variants</strong>:
                   {% for n in form.json.value|get:"variants" %}
                     {{ n|add:"; " }}
                   {% endfor %}
-                </p>
+                </p>{% endif %}
                 
                 <p class="mt-2"><strong>Types</strong>:
                 {% if authority == 'whg' %}

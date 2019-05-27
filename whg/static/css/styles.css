@@ -213,9 +213,6 @@ input[type="text"] {
   border-bottom: #eeeee0 1px solid;
 }
 
-.even, .odd {
-  cursor:pointer;
-}
 .rowhover { 
   background-color: black !important;
   color: white;
@@ -349,4 +346,7 @@ span.edit-row {
 #drftable_list {
   padding-right: 0 !important;
 }
+.odd, .even { line-height:.5rem; cursor:pointer;}
+.highlight-row {background-color: #ffff66 !important;}
 #drftable_fields p { margin-bottom: .5rem;} 
+#placetable_info, #placetable_paginate { font-size: smaller;}

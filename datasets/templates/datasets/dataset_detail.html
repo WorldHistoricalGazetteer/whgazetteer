@@ -80,43 +80,56 @@
         <div class="task-box">
           <!-- TODO: display bounds used if any -->
           <!--{ t.task_kwargs|parsejson:"bounds" }}-->
-          <p><b>Task</b>: {{ t.task_name }} <span class="small">
-            ({{ t.date_done|date:"d-M-Y, H:i (e)" }}; elapsed: {{ t.result|get:"elapsed"|safe }})</span></p>
-          <p><b>ID</b>: {{ t.task_id }}</p>
-             <!-- TODO: confirm, select which to delete -->
-          </p>
-          {{ t.result.hits }}
-          <p><b>Result</b>: {{ t.result|get:"got_hits"|safe }} records (of
-              {{ t.result|get:"count"|safe }} submitted) got total of <b>{{ t.result|get:"total"|safe }}</b> hits</p>
-              <p id="latest"></p>
-          <ul>
-            <li><i>Pass 1</i>: {{ t.result|get:"pass1" }}
-              {% if t.result|get:"pass1" > 0 %}
-              ; <i>remaining</i>: <span class="strong" id='{{t.task_id}}_1'>nn</span> 
-              <a href="{% url 'datasets:review' pk=object.id tid=t.task_id passnum='pass1' %}">
-               review</i></a>{% endif %}</li>
-            <li><i>Pass 2</i>: {{ t.result|get:"pass2" }}
-              {% if t.result|get:"pass2" > 0 %}
-              ; <i>remaining</i>: <span class="strong" id='{{t.task_id}}_2'>nn</span> 
-              <a href="{% url 'datasets:review' pk=object.id tid=t.task_id passnum='pass2' %}">
-               review</i></a>{% endif %}</li>
-            {% if t.task_name != 'align_wd' %}
-              <li><i>Pass 3</i>: {{ t.result|get:"pass3" }}
-              {% if t.result|get:"pass3" > 0 %}
-              ; <i>remaining</i>: <span class="strong" id='{{t.task_id}}_3'>nn</span> 
-              <a href="{% url 'datasets:review' pk=object.id tid=t.task_id passnum='pass3' %}">
-               review</i></a>{% endif %}</li>
-            {% endif %}
-          </ul>
-          {% if user.is_superuser %}
-          <p class="small">
-             <a class="confirm-del-matches" href="{% url 'datasets:task-delete' tid=t.task_id scope='matches'%}">
-              Clear matches</a>&nbsp;|&nbsp;
-             <a class="confirm-del-all" data-id={{t.task_id}} href="{% url 'datasets:task-delete' tid=t.task_id scope='task' %}">
-               Delete task & hits, clear matches {% fontawesome_icon 'trash' color='#336699' %}</a>
-          </p>
-          {% endif %}
-        </div>
+          <div class="row">
+            <div class="col-sm-9">
+              <p><b>Task</b>: {{ t.task_name }} <span class="small">
+                ({{ t.date_done|date:"d-M-Y, H:i (e)" }}; elapsed: {{ t.result|get:"elapsed"|safe }})</span></p>
+              <p><b>ID</b>: {{ t.task_id }}</p>
+                 <!-- TODO: confirm, select which to delete -->
+              </p>
+              {{ t.result.hits }}
+              <p><b>Result</b>: {{ t.result|get:"got_hits"|safe }} records (of
+                  {{ t.result|get:"count"|safe }}) got total of <b>{{ t.result|get:"total"|safe }}</b> hits</p>
+                  <p id="latest"></p>
+              <ul>
+                <li><i>Pass 1</i>: {{ t.result|get:"pass1" }}
+                  {% if t.result|get:"pass1" > 0 %}
+                  ; <i>remaining</i>: <span class="strong" id='{{t.task_id}}_1'>nn</span> 
+                  <a href="{% url 'datasets:review' pk=object.id tid=t.task_id passnum='pass1' %}">
+                   review</i></a>{% endif %}</li>
+                <li><i>Pass 2</i>: {{ t.result|get:"pass2" }}
+                  {% if t.result|get:"pass2" > 0 %}
+                  ; <i>remaining</i>: <span class="strong" id='{{t.task_id}}_2'>nn</span> 
+                  <a href="{% url 'datasets:review' pk=object.id tid=t.task_id passnum='pass2' %}">
+                   review</i></a>{% endif %}</li>
+                {% if t.task_name != 'align_wd' %}
+                  <li><i>Pass 3</i>: {{ t.result|get:"pass3" }}
+                  {% if t.result|get:"pass3" > 0 %}
+                  ; <i>remaining</i>: <span class="strong" id='{{t.task_id}}_3'>nn</span> 
+                  <a href="{% url 'datasets:review' pk=object.id tid=t.task_id passnum='pass3' %}">
+                   review</i></a>{% endif %}</li>
+                {% endif %}
+              </ul>
+              {% if user.is_superuser %}
+                <p class="small">
+                   <a class="confirm-del-matches" href="{% url 'datasets:task-delete' tid=t.task_id scope='matches'%}">
+                    Clear matches</a>&nbsp;|&nbsp;
+                   <a class="confirm-del-all" data-id={{t.task_id}} href="{% url 'datasets:task-delete' tid=t.task_id scope='task' %}">
+                     Delete task & hits, clear matches {% fontawesome_icon 'trash' color='#336699' %}</a>
+                </p>
+              {% endif %}
+            </div>
+            <div class="col-sm-3">
+              {% if t.task_name == 'align_wd' %}
+                <img src="{% static 'images/Wikidata-logo-en.svg'%}" width="80"/>
+              {% elif t.task_name == 'align_tgn' %}
+                <img src="{% static 'images/getty80.png'%}" />
+              {% elif t.task_name == 'align_whg' %}
+                <img src="{% static 'images/whg_logo.svg'%}" width="80"/>
+              {% endif %}
+            </div>
+          </div> <!-- row -->
+        </div> <!-- task-box -->
         {% endfor %}
       </div>
     </div>
