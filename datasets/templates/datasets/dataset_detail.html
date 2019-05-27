@@ -88,20 +88,24 @@
           {{ t.result.hits }}
           <p><b>Result</b>: {{ t.result|get:"got_hits"|safe }} records (of
               {{ t.result|get:"count"|safe }} submitted) got total of <b>{{ t.result|get:"total"|safe }}</b> hits</p>
+              <p id="latest"></p>
           <ul>
-            <li><i>Pass 1</i>: {{ t.result|get:"pass1" }}; <i>remaining</i>: <span id="pass1_now"></span>
+            <li><i>Pass 1</i>: {{ t.result|get:"pass1" }}
               {% if t.result|get:"pass1" > 0 %}
+              ; <i>remaining</i>: <span class="strong" id='{{t.task_id}}_1'>nn</span> 
               <a href="{% url 'datasets:review' pk=object.id tid=t.task_id passnum='pass1' %}">
-               <i>review</i></a>{% endif %}</li>
-            <li><i>Pass 2</i>: {{ t.result|get:"pass2" }}; <i>remaining</i>: <span id="pass2_now"></span>
+               review</i></a>{% endif %}</li>
+            <li><i>Pass 2</i>: {{ t.result|get:"pass2" }}
               {% if t.result|get:"pass2" > 0 %}
-                <a href="{% url 'datasets:review' pk=object.id tid=t.task_id passnum='pass2' %}">
-               <i>review</i></a>{% endif %}</li>
+              ; <i>remaining</i>: <span class="strong" id='{{t.task_id}}_2'>nn</span> 
+              <a href="{% url 'datasets:review' pk=object.id tid=t.task_id passnum='pass2' %}">
+               review</i></a>{% endif %}</li>
             {% if t.task_name != 'align_wd' %}
-              <li><i>Pass 3</i>: {{ t.result|get:"pass3" }}; <i>remaining</i>: <span id="pass3_now"></span>
+              <li><i>Pass 3</i>: {{ t.result|get:"pass3" }}
               {% if t.result|get:"pass3" > 0 %}
-                <a href="{% url 'datasets:review' pk=object.id tid=t.task_id passnum='pass3' %}">
-               <i>review</i></a>{% endif %}</li>
+              ; <i>remaining</i>: <span class="strong" id='{{t.task_id}}_3'>nn</span> 
+              <a href="{% url 'datasets:review' pk=object.id tid=t.task_id passnum='pass3' %}">
+               review</i></a>{% endif %}</li>
             {% endif %}
           </ul>
           {% if user.is_superuser %}
@@ -122,11 +126,21 @@
   $(function(){
     console.log('dataset id: {{ object.id }}')
     updateTotals('{{ object.id }}')  
-    })
+  })
   function updateTotals(dsid){
     $.get("/search/updatecounts",{ds_id: dsid},
       function(data){
-        console.log(data)
+        updates=data
+        for(u in updates){
+          html1='';html2='';html3='';
+          console.log(updates[u])
+          html1+=updates[u]['pass1']
+          html2+=updates[u]['pass2']
+          html3+=updates[u]['pass3']
+          $("#"+u+'_1').html(html1)
+          $("#"+u+'_2').html(html2)
+          $("#"+u+'_3').html(html3)
+        }
       }
     )
   }

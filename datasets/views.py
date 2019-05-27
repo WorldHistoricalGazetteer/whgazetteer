@@ -144,6 +144,7 @@ def review(request, pk, tid, passnum): # dataset pk, celery recon task_id
   else:
     try:
       if formset.is_valid():
+        # get the task
         hits = formset.cleaned_data
         #print('hits[0]',hits[0])
         #print('formset keys',formset.data.keys())
@@ -183,7 +184,8 @@ def review(request, pk, tid, passnum): # dataset pk, celery recon task_id
               # update totals
               ds.numlinked = ds.numlinked +1
               ds.total_links = ds.total_links +1
-              ds.save()        
+              ds.save() 
+            # set task result
             
           elif hits[x]['match'] == 'none':
             # make it a new parent unless it's been flagged
@@ -196,6 +198,7 @@ def review(request, pk, tid, passnum): # dataset pk, celery recon task_id
           matchee = get_object_or_404(Hit, id=hit.id)
           matchee.reviewed = True
           matchee.save()
+          # 
         return redirect('/datasets/'+str(pk)+'/review/'+tid+'/'+passnum+'?page='+str(int(page)))
       # return redirect('/datasets/'+str(pk)+'/review/'+tid+'?page='+str(int(page)+1))
       else:
@@ -235,10 +238,6 @@ def ds_recon(request, pk):
     # TODO: let this vary per authority?
     region = request.POST['region'] # pre-defined UN regions
     userarea = request.POST['userarea'] # from ccodes, loaded, or drawn
-    # bool options ignore for now
-    #aug_names = request.POST['aug_names'] #
-    #aug_notes = request.POST['aug_notes'] #
-    #aug_geom = request.POST['aug_geom'] #
     bounds={
       "type":["region" if region !="0" else "userarea"],
           "id": [region if region !="0" else userarea]
@@ -262,13 +261,7 @@ def ds_recon(request, pk):
     context['authority'] = request.POST['recon']
     context['region'] = request.POST['region']
     context['userarea'] = request.POST['userarea']
-    #context['aug_names'] = request.POST['aug_names']
-    #context['aug_notes'] = request.POST['aug_notes']
-    #context['aug_geom'] = request.POST['aug_geom']
-    # context['ccodes'] = request.POST['ccodes']
-    # context['hits'] = '?? not wired yet'
     context['result'] = result.get()
-    #context['summary'] = result.get().summary
     pprint(locals())
     ds.status = 'recon (wip)'
     ds.save()

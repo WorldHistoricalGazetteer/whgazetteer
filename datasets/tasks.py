@@ -560,8 +560,8 @@ def align_tgn(pk, *args, **kwargs):
   start = datetime.datetime.now()
 
   # build query object
-  for place in ds.places.all()[:1]:
-  #for place in ds.places.all():
+  #for place in ds.places.all()[:1]:
+  for place in ds.places.all():
     #place=get_object_or_404(Place,id=131735) # Caledonian Canal (ne)
     #place=get_object_or_404(Place,id=131648) # Atengo river (ne)
     #place=get_object_or_404(Place,id=81655) # Atlas Mountains
@@ -649,6 +649,9 @@ def align_tgn(pk, *args, **kwargs):
       'pass1': count_p1, 
       'pass2': count_p2, 
       'pass3': count_p3,
+      'pass1remains': -1,
+      'pass2remains': -1,
+      'pass3remains': -1,
       'no_hits': {'count': count_nohit },
       'elapsed': elapsed(end-start)
     }

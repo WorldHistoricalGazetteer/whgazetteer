@@ -11,6 +11,7 @@ html, body {
   general use
 **/
 label {vertical-align:top;}
+.strong { font-weight: bold;}
 .no-bullet { list-style: none;}
 .tooltip { z-index: 600;}
 .v-mid {vertical-align: super;}

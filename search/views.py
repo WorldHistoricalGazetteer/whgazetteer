@@ -7,7 +7,7 @@ from areas.models import Area
 from datasets.tasks import normalize
 from datasets.models import Dataset, Hit
 from elasticsearch import Elasticsearch
-
+from django.db.models import Count
 class UpdateCountsView(View):
   """ Returns counts of unreviewed hist per pass """
   @staticmethod
@@ -21,12 +21,12 @@ class UpdateCountsView(View):
     updates = {}
     for tid in [t.task_id for t in ds.tasks.all()]:
       updates[tid] = {
-        'pass1':Hit.objects.all().filter(task_id=tid,query_pass='pass1',reviewed=False).count(),
-        'pass2':Hit.objects.all().filter(task_id=tid,query_pass='pass2',reviewed=False).count(),
-        'pass3':Hit.objects.all().filter(task_id=tid,query_pass='pass3',reviewed=False).count()
+        'pass1':len(Hit.objects.raw('select distinct on (place_id_id) place_id_id, id from hits where task_id = %s and query_pass=%s and reviewed=false',[tid,'pass1'])),
+        'pass2':len(Hit.objects.raw('select distinct on (place_id_id) place_id_id, id from hits where task_id = %s and query_pass=%s and reviewed=false',[tid,'pass2'])),
+        'pass3':len(Hit.objects.raw('select distinct on (place_id_id) place_id_id, id from hits where task_id = %s and query_pass=%s and reviewed=false',[tid,'pass3']))
       }    
     return JsonResponse(updates, safe=False)
-  
+    
 def fetchArea(request):
   aid = request.GET.get('pk')
   area = Area.objects.filter(id=aid)
