@@ -213,10 +213,6 @@ input[type="text"] {
   border-bottom: #eeeee0 1px solid;
 }
 
-.rowhover { 
-  background-color: black !important;
-  color: white;
-}
 .p-tight p {
   margin-bottom: .6rem;
 }
@@ -348,5 +344,9 @@ span.edit-row {
 }
 .odd, .even { line-height:.5rem; cursor:pointer;}
 .highlight-row {background-color: #ffff66 !important;}
+.rowhover { 
+  background-color: #ffff66 !important;
+  /*color: white;*/
+}
 #drftable_fields p { margin-bottom: .5rem;} 
 #placetable_info, #placetable_paginate { font-size: smaller;}
