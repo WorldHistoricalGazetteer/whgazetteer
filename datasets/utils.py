@@ -10,7 +10,7 @@ def validate_lpf(infile,form):
   fout = codecs.open('validate-lpf-result.txt', 'w', 'utf8')
   #print()
   #infile=codecs.open('datasets/static/validate/lugares_10_citations.jsonld','r','utf-8')
-  infile=codecs.open('datasets/static/validate/Clacy-after.json','r','utf-8')
+  #infile=codecs.open('datasets/static/validate/Clacy-after.json','r','utf-8')
   result = {"format":"lpf_"+form,"errors":[]}
   [countrows,count_ok] = [0,0]
   
