@@ -25,6 +25,12 @@ label {vertical-align:top;}
 .smaller {font-size: small;} /*smaller than bootstrap's*/
 
 .bottom {position: absolute; bottom:0;}
+
+/**
+  dashboard
+**/
+i.fa-eye { margin-bottom: -5px;}
+
 /**
   home, search
 **/

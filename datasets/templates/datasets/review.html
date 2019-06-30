@@ -356,7 +356,7 @@
       idToFeature = {} // for feature lookup
       features = L.geoJSON(geom, {
         pointToLayer: function (feature, latlng) {
-          console.log(feature.properties)
+          <!--console.log(feature.properties)-->
           matchid = feature.properties.id
           marker = L.circleMarker(latlng,
             {

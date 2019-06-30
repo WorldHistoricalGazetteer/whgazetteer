@@ -20,7 +20,7 @@
       <div class="list-box">
         <table class="table table-striped">
           <thead class="small">
-            <th></th>
+            <th class="eye">{% fontawesome_icon 'eye' %}</th>
             <th>id</th>
             <th>name</th>
             <th>label</th>
@@ -43,12 +43,13 @@
                   {% elif d.status in viewable %}
                   <a href="{% url 'datasets:drf_table' label=d.label f='all' %}" title="View/edit table" rel="tooltip"
                   class="">{% fontawesome_icon 'table' color='#336699' %}</a>&nbsp;
-                  <a href="{% url 'datasets:dataset-detail' d.id %}" title="Dataset details" rel="tooltip"
-                  class="">{% fontawesome_icon 'cog' color='#336699' %}</a>
+                  <!--<a href="{# url 'datasets:dataset-detail' d.id %}" title="Dataset details" rel="tooltip"-->
+                  <!--class="">{# fontawesome_icon 'cog' color='#336699' %}</a>-->
                   {% endif %}
                 </td>
                 <td>{{ d.id }}</td>
-                <td>{{ d.name }}</td>
+                <td><a href="{% url 'datasets:dataset-detail' d.id %}" title="Dataset details" rel="tooltip"
+                  class="">{{ d.name }}</a></td>
                 <td>{{ d.label }}</td>
                 <td class="small">{{ d.upload_date|date:"d-M-Y, H:i (e)" }}</td>
                 <td>{{ d.format }}</td>

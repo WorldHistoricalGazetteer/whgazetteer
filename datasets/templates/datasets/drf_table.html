@@ -21,12 +21,12 @@
         class="">{% fontawesome_icon 'cog' color='#336699' %}</a>
     </span>
     <span class="half float-right">
-    {% if filter != 'nogeom' %}
-      <a href="{% url 'datasets:drf_table' label=ds.label f='nogeom' %}" 
-      title="Filter: no geometry" rel="tooltip">{% fontawesome_icon 'filter' color='#336699' %}</a>
-    {% else %}
-      <a href="{% url 'datasets:drf_table' label=ds.label f='all' %}">Clear filter</a>
-    {% endif %}
+    <!--{# if filter != 'nogeom' %}-->
+      <!--<a href="{# url 'datasets:drf_table' label=ds.label f='nogeom' %}" -->
+      <!--title="Filter: no geometry" rel="tooltip">{# fontawesome_icon 'filter' color='#336699' %}</a>-->
+    <!--{# else %}-->
+      <!--<a href="{# url 'datasets:drf_table' label=ds.label f='all' %}">Clear filter</a>-->
+    <!--{# endif %}-->
   </span>
   </h4>
   <div class="container mt-3">
@@ -250,8 +250,9 @@
     html+='</p><p><b>Types</b>: '
     typeids = ''
     for (t in data.types) {
-      typeids+=data.types[t].sourceLabel?data.types[t].sourceLabel:'' +
-        ' (<i>'+data.types[t].label+'/'+data.types[t].identifier +'</i>); '
+      typeids+=data.types[t].source_label?data.types[t].source_label +
+        ' (<i>'+data.types[t].label+'/'+data.types[t].identifier +'</i>); ':
+        '(<i>'+data.types[t].label+'/'+data.types[t].identifier +'</i>); '
     }
     html += typeids.replace(/(; $)/g, "") +'</p>'
 
@@ -308,7 +309,7 @@
     // RELATED
     if (data.related.length > 0) {
       html_parent='<p class="mb-0"><b>Parent(s)</b>: <br/>'; html_related='<p class="mb-0"><b>Related</b>: <br/>'
-      console.log('length P, R '+ html_parent.length,html_related.length)
+      <!--console.log('length P, R '+ html_parent.length,html_related.length)-->
       for (r in data.related){
         rel = data.related[r]
         <!--console.log('rel',rel)-->

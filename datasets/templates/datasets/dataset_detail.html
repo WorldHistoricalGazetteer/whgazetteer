@@ -15,21 +15,21 @@
       <div class="prog">1</div><span class="mx-2 small">Upload file(s)</span>
       <div class="prog">2</div><span class="mx-2 small">Insert to db</span>
       <div class="prog">3</div><span class="mx-2 small">Reconciliation</span>
-      <div class="prog prog-active">4</div><span class="mx-2 small">Review hits</span>
+      <div class="prog">4</div><span class="mx-2 small">Review hits</span>
       <div class="prog">5</div><span class="mx-2 small">Submit to WHG</span>
       <div class="prog">6</div><span class="mx-2 small">Review WHG matches</span>
       <!--<span class="float-right">{# fontawesome_icon 'question-circle' color='#336699' %}</span>-->
     </div>
     <h4>Dataset Detail:
-      <span class="edit small"><a href="#">{% fontawesome_icon 'edit' color='#336699' %}</a></span>
       <span class="form-value text-danger"> {{ object.name }}</span>
+      <span class="edit small"><a href="#">{% fontawesome_icon 'edit' color='#336699' %}</a></span>
       <a href="{% url 'datasets:dataset-delete' object.id %}" class="float-right"
         title="Delete dataset" rel="tooltip" style="margin-top:-2px;">
         {% fontawesome_icon 'trash' color='#336699' %}</a>
-      {% if status == "in_database" %}
+      <!--{# if status__in=("in_database","recon (wip)")|make_list %}-->
       <a href="{% url 'datasets:drf_table' label=object.label f='all' %}" title="View/edit table" rel="tooltip"
       class="float-right mr-2">{% fontawesome_icon 'table' color='#336699' %}</a>
-      {% endif %}
+      <!--{# endif %}-->
       {% if status == "format_ok" %}
         <a href=
           {% if object.format == "delimited" %} "{% url 'datasets:ds_insert_csv' pk=object.id %}"
