@@ -51,7 +51,10 @@ i.fa-eye { margin-bottom: -5px;}
   margin: 0;
   padding-left: .5rem;
 }
+/*.body-place li {border-bottom: 1px dashed #999 !important;}*/
 #trace_detail li:hover { cursor:pointer;}
+#trace_detail li {border-bottom: 1px dotted #ccc !important;}
+
 input[type="text"] {
    height: 1.5rem;
    font-size: .8rem;
@@ -110,6 +113,7 @@ input[type="text"] {
 .nameautosuggest li:hover, .trace-item:hover  {
   background-color: #f9ebeb;
 }
+
 
 .active-card {background-color: #f9ebeb !important;}
 .trace-detail { display:none; margin-left: -14px; margin-top:2px;}

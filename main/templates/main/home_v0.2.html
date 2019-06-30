@@ -328,13 +328,23 @@
     })
   }
 
+  function parseWhen(when){
+    html=''
+    for (w in when){
+      s = 'start' in when[w]?'start: '+when[w]['start']:'earliest: '+when[w]['earliest']
+      e = 'end' in when[w]?'end: '+when[w]['end']:'latest: '+when[w]['latest']
+      html += s +", " +e
+      html+=w==when.length-1?'':'; '
+    }
+    return html
+  }
   function placeList(bods) {
     html='<ul class="small">'
     for (b in bods){
       if(bods[b]['whg_id'] !=null){
-        <!--console.log(bods[b])-->
-        html+='<li class="body-place" data-id="'+bods[b]['whg_id']+'">'+bods[b]['title']+' ('+bods[b]['relation']+')'
-        html+='when' in bods[b] ? ' <i>'+bods[b]['when'][0]['start']+'>'+bods[b]['when'][0]['end']+'</i>' : ''
+        console.log(bods[b])
+        html+='<li class="body-place" data-id="'+bods[b]['whg_id']+'">'+bods[b]['title']+' ('+bods[b]['relation']+')<br/>'
+        html+='when' in bods[b] ? '<span class="mt-0"><i>'+parseWhen(bods[b]['when'])+'</i></span>' : ''
         html+='</li>'
       }
     }

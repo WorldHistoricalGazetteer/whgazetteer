@@ -92,7 +92,7 @@
             {% endif %}
             <p><strong>Place type(s)</strong>:
               {% for type in record.types.all %}
-                {{ type.jsonb.label }} ({{ type.jsonb.src_label }}); 
+                {{ type.jsonb.sourceLabel }} ({{ type.jsonb.label }}); 
               {% endfor %}</p>
             {% if record.links %}
             <p><strong>Links</strong>: 

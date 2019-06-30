@@ -248,7 +248,7 @@ def align_wd(pk, *args, **kwargs):
   for place in ds.places.all().order_by('id'):
     #place=get_object_or_404(Place, id=176861) # Abancay
     #place=get_object_or_404(Place, id=83495) # Denver
-    #place=get_object_or_404(Place, id=88106) # Paris
+    place=get_object_or_404(Place, id=179689) # Eusebio Ayala
     count +=1
     place_id = place.id
     src_id = place.src_id
@@ -270,6 +270,7 @@ def align_wd(pk, *args, **kwargs):
     for name in place.names.all():
       variants.append(name.toponym)
     qobj['variants'] = variants
+    qobj['variants'].append(title)
 
     # parents
     # TODO: other relations
