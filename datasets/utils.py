@@ -49,7 +49,6 @@ def validate_csv(infile):
   result = {'format':'delimited','errors':[]}
   # required fields
   # TODO: req. fields not null or blank
-  # required = ['id', 'title', 'name_src', 'ccodes', 'lon', 'lat']
   required = ['id', 'title', 'name_src']
 
   # learn delimiter [',',';']

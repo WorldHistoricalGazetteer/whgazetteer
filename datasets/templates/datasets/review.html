@@ -214,7 +214,7 @@
       <!--<div id="ext_content" class="modal-body">foo</div>-->
     <!--</div>-->
   <!--</div>-->
-<!--</div> <!-- ext_site -->-->
+<!--</div> <!-- ext_site -->
 <script type="text/javascript">
   $('.ext').on('click', function(e) {
     e.preventDefault();
@@ -336,8 +336,10 @@
 
     for (i=0;i<gelems.length;i++){
       let t_geom = cleanJson(gelems[i].text)
-      <!--var ds = "{ ds_label }"-->
-      t_geom['properties'] = {"id": gelems[i].id, "ds": t_geom.ds!=null?t_geom.ds:ds }
+      <!--console.log('t_geom',t_geom)-->
+      if ('citation' in t_geom){
+        t_geom['properties'] = {"id":t_geom['citation']['id'] }
+      } else t_geom['properties'] = {"id": t_geom.id,"ds": t_geom.ds!=null?t_geom.ds:ds}
       geom['features'].push(t_geom)
     }
 
@@ -350,18 +352,18 @@
     }
 
     if (geom['features'].length > 0) {
-      // console.log('geom: ',geom)
+      <!--console.log('geom: ',geom)-->
       idToFeature = {} // for feature lookup
       features = L.geoJSON(geom, {
         pointToLayer: function (feature, latlng) {
-          <!--matchid = feature.properties.ds+':'+feature.properties.id-->
+          console.log(feature.properties)
           matchid = feature.properties.id
           marker = L.circleMarker(latlng,
             {
               radius: 8, fillOpacity: 0.4, opacity: 1, weight: 1,
               color: "#333", fillColor: fill(feature.properties.ds)
             }
-          ).bindPopup(feature.properties.ds+':'+feature.properties.id);
+          ).bindPopup(feature.properties.id);
 
           idToFeature[matchid] = marker
           return marker

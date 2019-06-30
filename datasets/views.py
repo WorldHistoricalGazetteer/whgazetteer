@@ -149,9 +149,26 @@ def review(request, pk, tid, passnum): # dataset pk, celery recon task_id
         #print('hits[0]',hits[0])
         #print('formset keys',formset.data.keys())
         for x in range(len(hits)):
-          print('hit',hits[x])
           hit = hits[x]['id']
           if hits[x]['match'] != 'none':
+            print('hit:',hits[x])
+            # if dataset is black, create place_geom
+            # TODO: put this in parameter
+            if pk == 1:
+              geom = PlaceGeom.objects.create(
+                place_id = place,
+                task_id = tid,
+                src_id = place.src_id,
+                # {"type": "Point", "geowkt": "POINT(20.58 -19.83)", "citation": {"id": "dplace:SCCS", "label": "Standard cross-cultural sample"}, "coordinates": [20.58, -19.83]}
+                jsonb = {
+                  "type":hits[x]['json']['geoms'][0]['type'],
+                  "citation":{"id":"wd:"+hits[x]['authrecord_id'],"label":"Wikidata"},
+                  "coordinates":hits[x]['json']['geoms'][0]['coordinates']
+                }
+              )
+            ds.save()
+            # 'json': {'geoms': [{'ds': 'wd', 'id': 'Q6655437', 'type': 'Point', 'coordinates': [31.625555555, 22.336944444]}
+            # 'src_id': 'Q134140', 'dataset': 'wd'
             # create link for matched record
             link = PlaceLink.objects.create(
               place_id = place,
