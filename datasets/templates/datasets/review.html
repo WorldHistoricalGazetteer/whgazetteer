@@ -336,7 +336,7 @@
 
     for (i=0;i<gelems.length;i++){
       let t_geom = cleanJson(gelems[i].text)
-      <!--console.log('t_geom',t_geom)-->
+      console.log('t_geom',t_geom)
       if ('citation' in t_geom){
         t_geom['properties'] = {"id":t_geom['citation']['id'] }
       } else t_geom['properties'] = {"id": t_geom.id,"ds": t_geom.ds!=null?t_geom.ds:ds}
