@@ -4,18 +4,18 @@ from shapely import wkt
 from datasets.static.hashes import aat, parents
 from jsonschema import validate, Draft7Validator, draft7_format_checker
 
-def validate_lpf(infile,form):
-  # form 'coll' or 'lines'
+def validate_lpf(infile,format):
+  # format ['coll' (FeatureCollection) | 'lines' (json-lines)]
+  # TODO: handle json-lines
   schema = json.loads(codecs.open('datasets/static/validate/lpf-schema.json', 'r', 'utf8').read())
   fout = codecs.open('validate-lpf-result.txt', 'w', 'utf8')
   #print()
   #infile=codecs.open('datasets/static/validate/lugares_10_citations.jsonld','r','utf-8')
   #infile=codecs.open('datasets/static/validate/Clacy-after.json','r','utf-8')
-  result = {"format":"lpf_"+form,"errors":[]}
+  result = {"format":"lpf_"+format,"errors":[]}
   [countrows,count_ok] = [0,0]
   
   jdata = json.loads(infile.read())
-  # TODO: handle json-lines
   if ['type', '@context', 'features'] != list(jdata.keys()) \
      or jdata['type'] != 'FeatureCollection' \
      or len(jdata['features']) == 0:

@@ -429,7 +429,7 @@ def ds_insert_lpf(request, pk):
           objs['PlaceDepictions'].append(PlaceDepiction(
             place_id=newpl,src_id=newpl.src_id,jsonb=dep))    
         
-      print("objs['PlaceNames']",objs['PlaceNames'])
+      #print("objs['PlaceNames']",objs['PlaceNames'])
       PlaceName.objects.bulk_create(objs['PlaceNames'])
       PlaceType.objects.bulk_create(objs['PlaceTypes'])
       PlaceWhen.objects.bulk_create(objs['PlaceWhens'])
@@ -446,7 +446,7 @@ def ds_insert_lpf(request, pk):
       ds.status = 'in_database'
       ds.save()
       
-    print('record:', ds.__dict__)
+    #print('record:', ds.__dict__)
     ds.file.close()   
     
   print(str(countrows)+' processed')
@@ -711,13 +711,13 @@ class DatasetCreateView(CreateView):
         os.close(tempf)
       # open the temp file
       fin = codecs.open(tempfn, 'r', 'utf8')
-      print('fin from DatasetCreateView()',fin)
+      #print('fin from DatasetCreateView()',fin)
       # send for format validation
       if format == 'delimited':
-        #result = validate_csv(fin,form.cleaned_data['owner'])
         result = validate_csv(fin)
       elif format == 'lpf':
-        #result = validate_lpf(fin,form.cleaned_data['owner'])
+        # coll = FeatureCollection
+        # TODO: alternate json-lines
         result = validate_lpf(fin,'coll')
       # print('cleaned_data',form.cleaned_data)
       fin.close()
@@ -785,6 +785,7 @@ class DatasetDetailView(UpdateView):
     bounds = self.kwargs.get("bounds")
     # print('ds',ds.label)
     context['status'] = ds.status
+    context['format'] = ds.format
     placeset = Place.objects.filter(dataset=ds.label)
     context['tasks'] = TaskResult.objects.all().filter(task_args = [id_],status='SUCCESS')
     # initial (non-task)
@@ -815,7 +816,15 @@ class DatasetDetailView(UpdateView):
     context['descriptions_added'] = PlaceDescription.objects.filter(
       place_id_id__in = placeset, task_id__contains = '-').count()
 
-    print('context',context)
+    # insert to db immediately if format okay
+    if context['status'] == 'format_ok':
+      print('format_ok, inserting dataset '+str(id_))
+      if context['format'] == 'delimited':
+        ds_insert_csv(self.request, id_)
+      else:
+        ds_insert_lpf(self.request,id_)
+
+    print('context from DatasetDetailView',context)
     return context
 
 

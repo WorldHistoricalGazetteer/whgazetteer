@@ -30,18 +30,18 @@
       <a href="{% url 'datasets:drf_table' label=object.label f='all' %}" title="View/edit table" rel="tooltip"
       class="float-right mr-2">{% fontawesome_icon 'table' color='#336699' %}</a>
       <!--{# endif %}-->
-      {% if status == "format_ok" %}
-        <a href=
-          {% if object.format == "delimited" %} "{% url 'datasets:ds_insert_csv' pk=object.id %}"
-          {% elif "lpf" in object.format %} "{% url 'datasets:ds_insert_lpf' pk=object.id %}"{% endif %}
-          title="Insert to db" rel="tooltip"
-          class="small float-right mr-2">{% fontawesome_icon 'database' color='#336699' %}</a>
-      {% endif %}
+      <!--{# if status == "format_ok" %}-->
+        <!--<a href=-->
+          <!--{# if object.format == "delimited" %} "{# url 'datasets:ds_insert_csv' pk=object.id %}"-->
+          <!--{# elif "lpf" in object.format %} "{# url 'datasets:ds_insert_lpf' pk=object.id %}"{# endif %}-->
+          <!--title="Insert to db" rel="tooltip"-->
+          <!--class="small float-right mr-2">{# fontawesome_icon 'database' color='#336699' %}</a>-->
+      <!--{# endif %}-->
       <span class="hidden">{{ form.name }}</span>
     </h4>
     <hr/>
     <div class="row">
-      <div id="ds_details" class="col-sm-6">
+      <div id="ds_details" class="col-sm-6 small">
         <p class="hidden editing"><b>Description</b>: {{ form.description }}</p>
         <p class="form-value editing"><b>Description</b>: {{ object.description }}</p>
         <p><b>ID (label/#)</b>: {{ object.label }}/{{ object.id }}

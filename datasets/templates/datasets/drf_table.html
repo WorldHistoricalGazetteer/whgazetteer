@@ -312,9 +312,11 @@
       <!--console.log('length P, R '+ html_parent.length,html_related.length)-->
       for (r in data.related){
         rel = data.related[r]
-        <!--console.log('rel',rel)-->
+        console.log('rel',rel)
         if (rel.relation_type == 'gvp:broaderPartitive'){
-          html_parent += '<p class="small h1em">'+rel.label+ ', '+rel.when.start.in+'-'+rel.when.end.in+'</p>'
+          html_parent += '<p class="small h1em">'+rel.label
+          html_parent += 'when' in rel ? ', '+rel.when.start.in+'-'+rel.when.end.in : ''
+          html_parent += '</p>'
         } 
         else {
           html_related += '<p class="small h1em">'+rel.label+ ', '+rel.when.start.in+'-'+rel.when.end.in+'</p>'
