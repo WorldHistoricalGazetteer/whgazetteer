@@ -4,13 +4,15 @@
 
 <div class="container">
   <div class="d-flex justify-content-center mt-3">
-    <div>
-    {% if error %}
-      <p style="color:red">{{ error }}</p>
-    {% endif %}
-
-    <h2>User Profile (<span class="text-danger">{{ user.username }}</span>)</h2>
+    <h3>User Profile</h3>
   </div>
+  <div class="px-5">
+    <p>Username: {{ user.username }}</p>
+    <p>Name: {{ user.first_name }} {{ user.last_name }}</p>
+    <p>Email: {{ user.email }}</p>
+    <p>Affiliation: </p>
   </div>
 </div>
 {% endblock %}
+
+        

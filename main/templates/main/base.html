@@ -56,10 +56,13 @@
               </div>
             </li>
 
-            <li class="nav-item">
-              <a class="nav-link link-bold" href="{% url 'dashboard' %}">
-                {{ request.user }}'s dashboard</a>
-            </li>
+			<li class="nav-item dropdown">
+			  <a class="nav-link dropdown-toggle" href="#" id="aboutDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><b>{{ request.user }}</b></a>
+              <div class="dropdown-menu" aria-labelledby="urlencodeDropdown">
+                <a class="dropdown-item" href="{% url 'dashboard' %}">Dashboard</a>
+                <a class="dropdown-item" href="{% url 'profile' %}">Profile</a>
+              </div>
+			</li>
 
             <!-- <li class="nav-item dropdown mr-5">
               <a class="nav-link dropdown-toggle red-bold" href="#" id="aboutDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
