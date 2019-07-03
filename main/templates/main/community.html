@@ -2,11 +2,33 @@
 {% block title %}<title>WHG::Community</title>{% endblock %}
 
 {% block content %}
+{% load fontawesome %}
 {% load static %}
 
   <div class="container">
     <div class="d-flex justify-content-center mt-3">
-      <h3>WHG Community</h3>
+      <h3>Communities</h3>
     </div>
+    <div class="px-5">
+    <p>World-Historical Gazetteer (WHG) belongs to a growing community of project teams and individuals working to link data about the past, principally by linking data about historical places. We seek in turn to encourage communities of interest for particular regions, periods, and themes to establish specialized "domains" within WHG, linking data from their own data partners. This approach has worked so effectively for scholars of the Ancient Mediterranean and the Pleiades and Pelagios projects, it should stand as best practice.</b>
+    <p>Our first such domain is <b>LatAm</b>, which has been seeded by 14,150 records from Werner Stangl's <a href="https://www.hgis-indias.net/" target = "_blank"><i>HGIS de las Indias</i></a> project. These include 13,258 <i>lugares</i> and 892 <i>territorios</i> covering Hispanic America from 1701-1808.
+    
+    <h5>Contributors</h5>
+    <div class="small">
+      <p>Active</p>
+      <ul>
+        <li><p><b>HGIS de las Indias</b> {% fontawesome_icon 'external-link' color='#336699' %}</p></li>
+      </ul>
+      <p>Pending</p>
+      <ul>
+        <li><p><b>Early Modern Places</b> (EMPlaces) {% fontawesome_icon 'external-link' color='#336699' %}, part of Cultures of Knowledge at Oxford</p></li>
+        <li><p><b>Digging into Early Colonial Mexico</b> {% fontawesome_icon 'external-link' color='#336699' %}, </p></li>
+        <li><p><b>Pleiades</b> {% fontawesome_icon 'external-link' color='#336699' %}, a community-built gazetteer and graph of ancient places</p></li>
+        <li><p><b>China Historical GIS</b> {% fontawesome_icon 'external-link' color='#336699' %}</p></li>
+        <li><p><b>al-Thurayya Gazetteer</b> {% fontawesome_icon 'external-link' color='#336699' %}</p></li>
+        <li><p>and many more...</p></li>
+      </ul>
+    </div>
+  </div>
   </div>
 {% endblock %}

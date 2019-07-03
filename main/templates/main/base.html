@@ -59,20 +59,10 @@
 			<li class="nav-item dropdown">
 			  <a class="nav-link dropdown-toggle" href="#" id="aboutDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><b>{{ request.user }}</b></a>
               <div class="dropdown-menu" aria-labelledby="urlencodeDropdown">
-                <a class="dropdown-item" href="{% url 'dashboard' %}">Dashboard</a>
+                <a class="dropdown-item" href="{% url 'dashboard' %}">Data Dashboard</a>
                 <a class="dropdown-item" href="{% url 'profile' %}">Profile</a>
               </div>
 			</li>
-
-            <!-- <li class="nav-item dropdown mr-5">
-              <a class="nav-link dropdown-toggle red-bold" href="#" id="aboutDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                {{ user.username }}
-              </a>
-              <div class="dropdown-menu" aria-labelledby="aboutDropdown">
-                <a class="dropdown-item" href="/datasets/dashboard">Dashboard</a>
-                <a class="dropdown-item" href="/accounts/profile">Profile</a>
-              </div>
-            </li> -->
 
             <li class="nav-item">
               <a class="nav-link `ml-5" href="javascript:{document.getElementById('logout').submit()}">Logout</a>
