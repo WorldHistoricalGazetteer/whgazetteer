@@ -314,6 +314,12 @@ span.edit-row {
 }
 
 /**
+  Auth: Profile, etc
+**/
+.profile p {}
+
+
+/**
   element IDs
 **/
 .create-comment {

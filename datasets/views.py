@@ -443,7 +443,7 @@ def ds_insert_lpf(request, pk):
       ds.numrows = countrows
       ds.numlinked = countlinked
       ds.total_links = len(objs['PlaceLinks'])
-      ds.status = 'in_database'
+      ds.status = 'uploaded'
       ds.save()
       
     #print('record:', ds.__dict__)
@@ -625,13 +625,13 @@ def ds_insert_csv(request, pk):
   PlaceLink.objects.bulk_create(objs['PlaceLink'])
   PlaceRelated.objects.bulk_create(objs['PlaceRelated'])
 
-  context['status'] = 'in_database'
+  context['status'] = 'uploaded'
   print('rows,linked,links:',countrows,countlinked,countlinks)
   dataset.numrows = countrows
   dataset.numlinked = countlinked
   dataset.total_links = countlinks
   dataset.header = header
-  dataset.status = 'in_database'
+  dataset.status = 'uploaded'
   dataset.save()
   print('record:', dataset.__dict__)
   print('context from ds_insert_csv():',context)
@@ -680,9 +680,8 @@ class DashboardView(ListView):
           teamtasks.append(t.task_id)
       context['review_list'] = TaskResult.objects.filter(task_id__in=teamtasks).order_by('-date_done')
 
-    # status >= 'in_database'
-    context['viewable'] = ['in_database','recon (wip)','recon (compl)','submitted','indexed']
-
+    # status >= 'uploaded'
+    context['viewable'] = ['uploaded','reconciling','review_hits','reviewd','review_whg','indexed']
     # TODO: user place collections
     #print('DashboardView context:', context)
     return context

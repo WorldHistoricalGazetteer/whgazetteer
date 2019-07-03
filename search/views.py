@@ -8,6 +8,7 @@ from datasets.tasks import normalize
 from datasets.models import Dataset, Hit
 from elasticsearch import Elasticsearch
 from django.db.models import Count
+
 class UpdateCountsView(View):
   """ Returns counts of unreviewed hist per pass """
   @staticmethod

@@ -1,9 +1,12 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.contrib import auth
 
 def profile(request):
-    return render(request, 'accounts/profile.html')
+    context={}
+    context['groups'] = request.user.groups.values_list('name',flat=True)
+    print('request from profile',request.META.keys())
+    return render(request, 'accounts/profile.html', context=context)
 
 def register(request):
     if request.method == 'POST':

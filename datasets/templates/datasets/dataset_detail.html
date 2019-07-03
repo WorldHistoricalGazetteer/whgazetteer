@@ -12,12 +12,12 @@
   {% csrf_token %}
     <input type="hidden" name="id" value='{{ form.id }}'></input>
     <div id="progress_bar" class="mb-2 pl-2">
-      <div class="prog">1</div><span class="mx-2 small">Upload file(s)</span>
-      <div class="prog">2</div><span class="mx-2 small">Insert to db</span>
-      <div class="prog">3</div><span class="mx-2 small">Reconciliation</span>
-      <div class="prog">4</div><span class="mx-2 small">Review hits</span>
-      <div class="prog">5</div><span class="mx-2 small">Submit to WHG</span>
-      <div class="prog">6</div><span class="mx-2 small">Review WHG matches</span>
+      <div class="prog" ref=1 >1</div><span class="mx-2 small">Uploaded</span>
+      <div class="prog" ref=2 >2</div><span class="mx-2 small">Reconciliation</span>
+      <div class="prog" ref=3 >3</div><span class="mx-2 small">Reviewing hits</span>
+      <div class="prog" ref=4 >4</div><span class="mx-2 small">Submit to WHG</span>
+      <div class="prog" ref=5 >5</div><span class="mx-2 small">Reviewing WHG matches</span>
+      <div class="prog" ref=6 >6</div><span class="mx-2 small">Indexed</span>
       <!--<span class="float-right">{# fontawesome_icon 'question-circle' color='#336699' %}</span>-->
     </div>
     <h4>Dataset Detail:
@@ -138,7 +138,9 @@
 <script type="text/javascript">
   $(function(){
     console.log('dataset id: {{ object.id }}')
-    updateTotals('{{ object.id }}')  
+    updateTotals('{{ object.id }}')
+    steps={"uploaded":1,"reconciling":2,"review_hits":3,"reviewed":4,"review_whg":5,"indexed":6}
+    $("[ref="+steps['{{ object.status }}']+"]").addClass('prog-active')
   })
   function updateTotals(dsid){
     $.get("/search/updatecounts",{ds_id: dsid},

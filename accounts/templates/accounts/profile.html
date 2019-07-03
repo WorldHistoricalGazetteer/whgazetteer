@@ -6,11 +6,12 @@
   <div class="d-flex justify-content-center mt-3">
     <h3>User Profile</h3>
   </div>
-  <div class="px-5">
-    <p>Username: {{ user.username }}</p>
-    <p>Name: {{ user.first_name }} {{ user.last_name }}</p>
-    <p>Email: {{ user.email }}</p>
-    <p>Affiliation: </p>
+  <div class="px-5 profile">
+    <p><b>Username</b>: {{ user.username }}</p>
+    <p><b>Name</b>: {{ user.first_name }} {{ user.last_name }}</p>
+    <p><b>Email</b>: {{ user.email }}</p>
+    <p><b>Affiliation</b>: </p>
+    <p><b>Groups</b>: {% for g in groups %}{{g}}{%if not forloop.last%}; {%endif%}{% endfor %}</p>
   </div>
 </div>
 {% endblock %}
