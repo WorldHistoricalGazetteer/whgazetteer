@@ -1,5 +1,5 @@
-# es_black.py; incorporate initial black indexing
-# 24 Mar 2019
+# es_black.py; initial black indexing
+# 24 Mar 2019; re-run 4 Jul 2019
 
 from __future__ import absolute_import, unicode_literals
 import sys, os, re, json, codecs, datetime, time, csv, random
