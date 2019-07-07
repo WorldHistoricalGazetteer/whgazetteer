@@ -1,5 +1,5 @@
-# es_black.py; initial black indexing
-# 24 Mar 2019; re-run 4 Jul 2019
+# es_black.py; initial black indexing; 24 Mar 2019
+# re-run 04 Jul 2019
 
 from __future__ import absolute_import, unicode_literals
 import sys, os, re, json, codecs, datetime, time, csv, random
@@ -25,13 +25,15 @@ def indexDataset():
   import codecs
   dataset = input('dataset: ')
   qs = Place.objects.all().filter(dataset_id=dataset)
-  f_err_multi = codecs.open('../_notes/err_multiparent_'+dataset+'.txt', mode='w', encoding='utf8')
-  f_err_geom = codecs.open('../_notes/err_geom_'+dataset+'.txt', mode='w', encoding='utf8')
+  f_err_multi = codecs.open('_notes/err_multiparent_'+dataset+'.txt', mode='w', encoding='utf8')
+  f_err_geom = codecs.open('_notes/err_geom_'+dataset+'.txt', mode='w', encoding='utf8')
+  f_err_version = codecs.open('_notes/err_version_'+dataset+'.txt', mode='w', encoding='utf8')
   count = 0
   multiparents=[]
   errors=[]
   # get last whg_id
   whg_id = maxID(es); print('max whg_id:',whg_id)  
+  #whg_id = 0
 
   [count_seeds,count_kids,i] = [0,0,0]
   for place in qs:
@@ -95,21 +97,24 @@ def indexDataset():
         try:
           es.update_by_query(index=idx,doc_type='place',body=q_update)
         except:
+          f_err_version.write('failed updating '+place.title+'('+str(pid)+') from child '+str(place.id))
           print('failed updating '+place.title+'('+str(pid)+') from child '+str(place.id))
           print(count_kids-1)
-          sys.exit(sys.exc_info())
+          pass
+          #sys.exit(sys.exc_info())
 
   print(multiparents)                    
   print(errors)                    
   print(str(count_seeds)+' fresh records added, '+str(count_kids)+' child records added')
   f_err_geom.close()
   f_err_multi.close()
+  f_err_version.close()
 
 
 def init():
   global es, idx, rows
   dataset = input('dataset: ')
-  idx = 'whg_flat' 
+  idx = 'whg' 
 
   from elasticsearch import Elasticsearch
   es = Elasticsearch([{'host': 'localhost', 'port': 9200}])

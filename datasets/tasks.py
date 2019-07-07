@@ -661,7 +661,8 @@ def align_tgn(pk, *args, **kwargs):
   print("summary returned",hit_parade['summary'])
   return hit_parade['summary']
 
-# queries > result_obj
+
+# 
 def es_lookup_whg(qobj, *args, **kwargs):
   global whg_id
   idx='whg'
@@ -817,18 +818,13 @@ def es_lookup_whg(qobj, *args, **kwargs):
   return result_obj
 
 
-# accessioning and/or queueing hits to whg
+# accessioning and/or queueing hits to whg, POST-Black
 @task(name="align_whg")
 def align_whg(pk, *args, **kwargs):
   ds = get_object_or_404(Dataset, id=pk)
   # get last identifier (used for whg_id & _id)
   whg_id=maxID(es)
-  
-  # DANGER: this zaps whg index, creates new one
-  #if ds.id==1:
-    #errors_black = codecs.open('err_black-whg.txt', mode='w', encoding='utf8')
-    #esInit('whg')
-  
+    
   #dummies for testing
   #bounds = {'type': ['userarea'], 'id': ['0']}
   bounds = kwargs['bounds']
@@ -841,15 +837,14 @@ def align_whg(pk, *args, **kwargs):
   start = datetime.datetime.now()
 
   """
-  build qobj query object
-  result_obj = es_lookup_whg(qobj)
+  build query object, qobj
+  then result_obj = es_lookup_whg(qobj)
   if 'black' && no hits on pass1, index immediately
   else, write all hits to db 
   """
   qs=ds.places.all()
   for place in qs:
-    #place=get_object_or_404(Place,id=81034) # Acragas
-    #place=get_object_or_404(Place,id=81104) # Agrigentum
+    #place=get_object_or_404(Place,id=132660) # Wabash
     count +=1
     qobj = {"place_id":place.id, "src_id":place.src_id, "title":place.title}
     links=[]; ccodes=[]; types=[]; variants=[]; parents=[]; geoms=[]; 
@@ -898,9 +893,219 @@ def align_whg(pk, *args, **kwargs):
 
     if result_obj['hit_count'] == 0:
       count_nohit +=1
-      # no hits, create parent record immediately      
+      # no hits on any pass, create parent record now
+      whg_id+=1
+      place=get_object_or_404(Place,id=result_obj['place_id'])
+      print('new whg_id',whg_id)
+      parent_obj = makeDoc(place,'none')
+      parent_obj['relation']={"name":"parent"}
+      parent_obj['whg_id']=whg_id
+      # add its own names to the suggest field
+      for n in parent_obj['names']:
+        parent_obj['suggest']['input'].append(n['toponym']) 
+      #index it
+      try:
+        res = es.index(index='whg', doc_type='place', id=str(whg_id), body=json.dumps(parent_obj))
+        count_seeds +=1
+      except:
+        print('failed indexing '+str(place.id), parent_obj)
+        print(sys.exc_info[0])
+        #errors_black.write(str({"pid":place.id, "title":place.title})+'\n')
+      print('created parent:',result_obj['place_id'],result_obj['title'])
+      #nohits.append(result_obj['missed'])
+    elif result_obj['hit_count'] > 0:
+      count_hit +=1
+      [count_kids,count_errors] = [0,0]
+      total_hits += result_obj['hit_count']
+      #print("hit['_source']: ",result_obj['hits'][0]['_source'])
+      ## (can't be a child of more than one index record)
+      for hit in result_obj['hits']:
+        parentid=hit['_source']['place_id']
+        ## if pass1, index place as child of first pass1 hit          
+        if hit['pass'] == 'pass1':
+          count_p1+=1
+          ## get _id of parent
+          q_parent={"query": {"bool": {"must": [{"match":{"place_id": parentid}}]}}}
+          res = es.search(index='whg', body=q_parent)
+          parent_whgid = res['hits']['hits'][0]['_id'] #; print(parent_whgid)
+          
+          ## gather names, make an index doc
+          match_names = [p.toponym for p in place.names.all()]
+          child_obj = makeDoc(place,'none')
+          child_obj['relation']={"name":"child","parent":parent_whgid}
+          
+          ## index it
+          try:
+            res = es.index(index='whg',doc_type='place',id=place.id,
+                           routing=1,body=json.dumps(child_obj))
+            count_kids +=1                
+            print('added '+str(place.id) + ' as child of '+ str(parentid))
+          except:
+            print('failed indexing '+str(place.id), child_obj)
+            sys.exit(sys.exc_info())
+          q_update = { "script": {
+              "source": "ctx._source.suggest.input.addAll(params.names); ctx._source.children.add(params.id)",
+              "lang": "painless",
+              "params":{"names": match_names, "id": str(place.id)}
+            },
+            "query": {"match":{"_id": parent_whgid}}}
+          try:
+            es.update_by_query(index='whg', doc_type='place', body=q_update, conflicts='proceed')
+          except:
+            print('failed updating '+str(parent_whgid)+' ('+parentid+') from child '+str(place.id))
+            print(count_kids-1)
+            sys.exit(sys.exc_info())
+
+        elif hit['pass'] in ['pass2','pass3']:
+          ## increment counters & write a hit record for review
+          # TODO: refactor
+          if hit['pass'] == 'pass2': 
+            count_p2+=1
+          if hit['pass'] == 'pass3': 
+            count_p3+=1          
+          hit_parade["hits"].append(hit)
+          loc = hit['_source']['geoms'] if 'geoms' in hit['_source'].keys() else None
+          # creates hit record for review process
+          try:
+            new = Hit(
+              authority = 'whg',
+              authrecord_id = hit['_id'],
+              dataset = ds,
+              place_id = get_object_or_404(Place, id=qobj['place_id']),
+              task_id = align_whg.request.id,
+              #task_id = 'abcxyzxyz',
+              query_pass = hit['pass'],
+              # consistent json for review display
+              json = normalize(hit['_source'],'whg'),
+              src_id = qobj['src_id'],
+              score = hit['_score'],
+              geom = loc,
+              reviewed = False,
+            )
+            new.save()
+          except:
+            count_errors +=1
+            print("hit _source, error:",hit, sys.exc_info())
+          
+          # TODO: logic for review of WHG needs to go in review.py
+          #whg_id+=1
+          #place=get_object_or_404(Place,id=result_obj['place_id'])
+          #print('new whg_id',whg_id)
+          #parent_obj = makeDoc(place,'none')
+          #parent_obj['relation']={"name":"parent"}
+          #parent_obj['whg_id']=whg_id
+          
+          ## add its names to its suggest field
+          #for n in parent_obj['names']:
+            #parent_obj['suggest']['input'].append(n['toponym']) 
+            
+          ##index it with fresh whg_id
+          #try:
+            #res = es.index(index='whg', doc_type='place', id=str(whg_id), body=json.dumps(parent_obj))
+            #count_seeds +=1
+          #except:
+            #print('failed indexing '+str(place.id), parent_obj)
+            #print(sys.exc_info[0])
+
+  end = datetime.datetime.now()
+  # ds.status = 'recon_whg'
+  hit_parade['summary'] = {
+    'count':count,
+    'got_hits':count_hit,
+    'total': total_hits, 
+    'pass1': count_p1, 
+    'pass2': count_p2, 
+    'pass3': count_p3,
+    'no_hits': {'count': count_nohit },
+    'elapsed': elapsed(end-start)
+    #'skipped': count_errors
+  }
+  #if ds.label == 'black': errors_black.close()
+  print("hit_parade['summary']",hit_parade['summary'])
+  return hit_parade['summary']
+
+# generating new whg index with black, finding children
+@task(name="align_whg_boogered")
+def align_whg_boogered(pk, *args, **kwargs):
+  ds = get_object_or_404(Dataset, id=pk)
+  
+  # DANGER: this zaps whg index, creates new one
+  if ds.id==1:
+    errors_black = codecs.open('err_black-whg.txt', mode='w', encoding='utf8')
+    esInit('whg')
+
+  # get last identifier (used for whg_id & _id)
+  whg_id=maxID(es)
+
+  bounds = kwargs['bounds']
+  #bounds = {'type': ['userarea'], 'id': ['0']}
+
+  # TODO: system for region creation
+  hit_parade = {"summary": {}, "hits": []}
+  [nohits, errors] = [[],[]] # 
+  [count, count_hit, count_nohit, total_hits, count_p1, count_p2, count_p3, count_errors, count_seeds,count_failed] = [0,0,0,0,0,0,0,0,0,0]
+
+  start = datetime.datetime.now()
+
+  """
+  build qobj query object
+  result_obj = es_lookup_whg(qobj)
+  if 'black' && no hits on pass1, index immediately
+  else, write all hits to db 
+  """
+  qs=ds.places.all()
+  for place in qs:
+    #place=get_object_or_404(Place,id=88322) # Pisa (city)
+    count +=1
+    qobj = {"place_id":place.id, "src_id":place.src_id, "title":place.title}
+    links=[]; ccodes=[]; types=[]; variants=[]; parents=[]; geoms=[]; 
+
+    ## links
+    for l in place.links.all():
+      links.append(l.jsonb['identifier'])
+    qobj['links'] = links
+
+    ## ccodes (2-letter iso codes)
+    for c in place.ccodes:
+      ccodes.append(c)
+    qobj['countries'] = list(set(place.ccodes))
+
+    ## types (Getty AAT identifiers)
+    ## account for 'null' in 97 black records
+    for t in place.types.all():
+      if t.jsonb['identifier'] != None:
+        types.append(t.jsonb['identifier'])
+      else:
+        # inhabited place, cultural group, site
+        types.extend(['aat:300008347','aat:300387171','aat:300000809'])
+    qobj['placetypes'] = types
+
+    ## names
+    for name in place.names.all():
+      variants.append(name.toponym)
+    qobj['variants'] = variants
+
+    ## parents
+    for rel in place.related.all():
+      if rel.jsonb['relation_type'] == 'gvp:broaderPartitive':
+        parents.append(rel.jsonb['label'])
+    qobj['parents'] = parents
+
+    ## geoms
+    if len(place.geoms.all()) > 0:
+      # any geoms at all...
+      g_list =[g.jsonb for g in place.geoms.all()]
+      # make everything a simple polygon hull for spatial filter purposes
+      qobj['geom'] = hully(g_list)
+
+    #
+    ## run pass1-pass3 ES queries
+    result_obj = es_lookup_whg(qobj, bounds=bounds, dataset=ds.label, place=place)
+
+    if result_obj['hit_count'] == 0:
+      count_nohit +=1
       # for now, only if 'black'
-      # TODO
+      # no hits, create parent record immediately      
       if ds.label == 'black':
         whg_id+=1
         place=get_object_or_404(Place,id=result_obj['place_id'])
@@ -918,11 +1123,11 @@ def align_whg(pk, *args, **kwargs):
         except:
           print('failed indexing '+str(place.id), parent_obj)
           print(sys.exc_info[0])
-          #errors_black.write(str({"pid":place.id, "title":place.title})+'\n')
+          errors_black.write(str({"pid":place.id, "title":place.title})+'\n')
         print('created parent:',result_obj['place_id'],result_obj['title'])
       #nohits.append(result_obj['missed'])
     elif result_obj['hit_count'] > 0:
-      # create hit record for review process
+      # hit(s) in index OF a black record, FOR a black record
       count_hit +=1
       [count_kids,count_errors] = [0,0]
       total_hits += result_obj['hit_count']
@@ -930,78 +1135,84 @@ def align_whg(pk, *args, **kwargs):
       for hit in result_obj['hits']:
         parentid=hit['_source']['place_id']
         #one-time filter for black atlas children        
-        #print('hit parentid:',parentid)
-        #if hit['pass'] == 'pass1':
-          #count_p1+=1
-          ## one-time black repair 20190420
-          ## if ds='black' and place has a 'whg*' match link, make it child of that id
-          ## got a whg match in place_link?
-          #if ds.label == 'black':
-            #print('it is black')
-            #qs_links=get_object_or_404(Place,id=place.id).links.filter(black_parent__isnull=False)
-            #if len(qs_links)>0:
-              #print('match type:',qs_links[0].jsonb['type'])
+        print('hit parentid:',parentid)
+        if hit['pass'] == 'pass1':
+          count_p1+=1
+          # one-time black repair 20190420
+          # if ds='black' and place has a 'whg*' match link, make it child of that id
+          # got a whg match in place_link?
+          if ds.label == 'black':
+            print('it is black')
+            qs_links=get_object_or_404(Place,id=place.id).links.filter(black_parent__isnull=False)
+            #qs_links=get_object_or_404(Place,id=place.id).links.all()
+            if len(qs_links)>0:
+              print('match type:',qs_links[0].jsonb['type'])
               
-              ## leave 'related' and unlinked out of it
-              #if 'Match' in qs_links[0].jsonb['type']:
+              # leave 'related' and unlinked out of it
+              if 'Match' in qs_links[0].jsonb['type']:
                 
-                ## get _id (whg_id) of parent
-                #parentid=qs_links[0].black_parent
-                #q_parent={"query": {"bool": {"must": [{"match":{"place_id": parentid}}]}}}
-                #res = es.search(index='whg', body=q_parent)
-                #parent_whgid = res['hits']['hits'][0]['_id'] #; print(parent_whgid)
+                # get _id (whg_id) of parent
+                parentid=qs_links[0].black_parent
+                q_parent={"query": {"bool": {"must": [{"match":{"place_id": parentid}}]}}}
+                res = es.search(index='whg', body=q_parent)
+                parent_whgid = res['hits']['hits'][0]['_id'] #; print(parent_whgid)
                 
-                ## gather names, make an index doc
-                #match_names = [p.toponym for p in place.names.all()]
-                #child_obj = makeDoc(place,'none')
-                #child_obj['relation']={"name":"child","parent":parent_whgid}
+                # gather names, make an index doc
+                match_names = [p.toponym for p in place.names.all()]
+                child_obj = makeDoc(place,'none')
+                child_obj['relation']={"name":"child","parent":parent_whgid}
                 
-                ## index it
-                #try:
-                  #res = es.index(index='whg',doc_type='place',id=place.id,
-                                 #routing=1,body=json.dumps(child_obj))
-                  #count_kids +=1                
-                  #print('added '+str(place.id) + ' as child of '+ str(parentid))
-                #except:
-                  #print('failed indexing '+str(place.id), child_obj)
-                  #sys.exit(sys.exc_info())
-                #q_update = { "script": {
-                    #"source": "ctx._source.suggest.input.addAll(params.names); ctx._source.children.add(params.id)",
-                    #"lang": "painless",
+                # index it
+                whg_id+=1
+                try:
+                  res = es.index(index='whg',doc_type='place',id=whg_id,
+                  #res = es.index(index='whg',doc_type='place',
+                                 routing=1,body=json.dumps(child_obj))
+                  count_kids +=1                
+                  print('added '+str(place.id) + ' as child of '+ str(parentid))
+                except:
+                  print('failed indexing '+str(place.id), child_obj)
+                  sys.exit(sys.exc_info())
+                q_update = { "script": {
+                    "source": "ctx._source.suggest.input.addAll(params.names); ctx._source.children.add(params.id)",
+                    "lang": "painless",
                     #"params":{"names": match_names, "id": str(place.id)}
-                  #},
-                  #"query": {"match":{"_id": parent_whgid}}}
-                #try:
-                  #es.update_by_query(index='whg', doc_type='place', body=q_update)
-                #except:
-                  #print('failed updating '+str(parentid)+' from child '+str(place.id))
-                  #print(count_kids-1)
+                    "params":{"names": match_names, "id": whg_id}
+                  },
+                  "query": {"match":{"_id": parent_whgid}}}
+                try:
+                  es.update_by_query(index='whg', doc_type='place', body=q_update)
+                except:
+                  print('failed updating '+str(parentid)+' from child '+str(place.id))
+                  print(count_kids-1)
+                  count_failed +=1
+                  pass
                   #sys.exit(sys.exc_info())
-              #else:
-                ## it's 'related' or not linked at all...make it a parent
-                #whg_id+=1
-                #place=get_object_or_404(Place,id=result_obj['place_id'])
-                #print('new whg_id',whg_id)
-                #parent_obj = makeDoc(place,'none')
-                #parent_obj['relation']={"name":"parent"}
-                #parent_obj['whg_id']=whg_id
+              else:
+                # it's 'related' or not linked at all...make it a parent
+                whg_id+=1
+                place=get_object_or_404(Place,id=result_obj['place_id'])
+                print('new whg_id',whg_id)
+                parent_obj = makeDoc(place,'none')
+                parent_obj['relation']={"name":"parent"}
+                parent_obj['whg_id']=whg_id
                 
-                ## add its names to its suggest field
-                #for n in parent_obj['names']:
-                  #parent_obj['suggest']['input'].append(n['toponym']) 
+                # add its names to its suggest field
+                for n in parent_obj['names']:
+                  parent_obj['suggest']['input'].append(n['toponym']) 
                   
-                ##index it with fresh whg_id
-                #try:
-                  #res = es.index(index='whg', doc_type='place', id=str(whg_id), body=json.dumps(parent_obj))
-                  #count_seeds +=1
-                #except:
-                  #print('failed indexing '+str(place.id), parent_obj)
-                  #print(sys.exc_info[0])
+                #index it with fresh whg_id
+                try:
+                  res = es.index(index='whg', doc_type='place', id=str(whg_id), body=json.dumps(parent_obj))
+                  count_seeds +=1
+                except:
+                  print('failed indexing '+str(place.id), parent_obj)
+                  print(sys.exc_info[0])
 
-        #elif hit['pass'] == 'pass2': 
-          #count_p2+=1
-        #elif hit['pass'] == 'pass3': 
-          #count_p3+=1
+        elif hit['pass'] == 'pass2': 
+          count_p2+=1
+        elif hit['pass'] == 'pass3': 
+          count_p3+=1
         hit_parade["hits"].append(hit)
         loc = hit['_source']['geoms'] if 'geoms' in hit['_source'].keys() else None
         try:
@@ -1034,32 +1245,12 @@ def align_whg(pk, *args, **kwargs):
     'pass2': count_p2, 
     'pass3': count_p3,
     'no_hits': {'count': count_nohit },
-    'elapsed': elapsed(end-start)
+    'elapsed': elapsed(end-start),
+    'failed update':count_failed
     #'skipped': count_errors
   }
   #if ds.label == 'black': errors_black.close()
   print("hit_parade['summary']",hit_parade['summary'])
-  return hit_parade['summary']
+  #return hit_parade['summary']
 
-#q_around='''SELECT distinct ?place ?location ?distance ?placeLabel ?tgnid ?viafid ?locid ?bnfid ?gnid WHERE {
-        #SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
-        #SERVICE wikibase:around { 
-          #?place wdt:P625 ?location . 
-          #bd:serviceParam wikibase:center "%s"^^geo:wktLiteral .
-          #bd:serviceParam wikibase:radius "500" . 
-          #bd:serviceParam wikibase:distance ?distance .
-        #} 
 
-        #?place rdfs:label ?placeLabel ;
-            #(wdt:P31/wdt:P279*) ?placeType .
-
-        #FILTER (?placeType = wd:Q486972 || ?placeType = wd:Q839954) .
-        #FILTER (STR(?placeLabel) in (%s)) .
-
-        ## external IDs
-        #OPTIONAL {?place wdt:P1667 ?tgnid .}
-        #OPTIONAL {?place wdt:P1566 ?gnid .}
-        #OPTIONAL {?place wdt:P214 ?viafid .}
-        #OPTIONAL {?place wdt:P268 ?bnfid .}
-        #OPTIONAL {?place wdt:P244 ?locid .}
-    #} ORDER BY ?placeLabel'''% (loc_wkt, variants)       

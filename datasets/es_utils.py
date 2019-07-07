@@ -23,10 +23,14 @@ def esInit(idx):
 def maxID(es):
     q={"query": {"bool": {"must" : {"match_all" : {}} }},
        "sort": [{"whg_id": {"order": "desc"}}],
+       #"sort": [{"_id": {"order": "desc"}}],
        "size": 1  
        }
     res = es.search(index='whg', body=q)
-    maxy = int(res['hits']['hits'][0]['_id'])
+    if len(res['hits']['hits']) > 0:
+        maxy = int(res['hits']['hits'][0]['_id'])
+    else:
+        maxy = 10000000
     return maxy
 
 def uriMaker(place):
@@ -158,7 +162,7 @@ def queryObject(place):
     
     # types (Getty AAT identifiers)
     for t in place.types.all():
-        types.append(t.json['identifier'])
+        types.append(t.jsonb['identifier'])
     qobj['types'] = types
     
     # names
@@ -169,20 +173,20 @@ def queryObject(place):
     # parents
     for rel in place.related.all():
         if rel.json['relation_type'] == 'gvp:broaderPartitive':
-            parents.append(rel.json['label'])
+            parents.append(rel.jsonb['label'])
     qobj['parents'] = parents
     
     # links
     if len(place.links.all()) > 0:
         for l in place.links.all():
-            links.append(l.json['identifier'])
+            links.append(l.jsonb['identifier'])
         qobj['links'] = links
     
     # geoms
     if len(place.geoms.all()) > 0:
-        geom = place.geoms.all()[0].json
+        geom = place.geoms.all()[0].jsonb
         if geom['type'] in ('Point','MultiPolygon'):
-            qobj['geom'] = place.geoms.first().json
+            qobj['geom'] = place.geoms.first().jsonb
         elif geom['type'] == 'MultiLineString':
             qobj['geom'] = hully(geom)
     

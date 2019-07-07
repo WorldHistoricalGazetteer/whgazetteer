@@ -280,7 +280,7 @@ def ds_recon(request, pk):
     context['userarea'] = request.POST['userarea']
     context['result'] = result.get()
     pprint(locals())
-    ds.status = 'recon (wip)'
+    ds.status = 'reconciling'
     ds.save()
     return render(request, 'datasets/ds_recon.html', {'ds':ds, 'context': context})
 

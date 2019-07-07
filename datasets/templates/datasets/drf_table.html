@@ -291,6 +291,7 @@
           html_close+=url_modal(data.links[l].identifier)
         }
         else if (data.links[l].type == 'related') {
+          related_count +=1
           html_related+=url_modal(data.links[l].identifier)
         }
       }
