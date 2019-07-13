@@ -832,7 +832,7 @@ def align_whg(pk, *args, **kwargs):
   # TODO: system for region creation
   hit_parade = {"summary": {}, "hits": []}
   [nohits, errors] = [[],[]] # 
-  [count, count_hit, count_nohit, total_hits, count_p1, count_p2, count_p3, count_errors, count_seeds] = [0,0,0,0,0,0,0,0,0]
+  [count, count_hit, count_nohit, total_hits, count_p1, count_p2, count_p3, count_errors, count_seeds, count_fail] = [0,0,0,0,0,0,0,0,0,0]
 
   start = datetime.datetime.now()
 
@@ -876,7 +876,7 @@ def align_whg(pk, *args, **kwargs):
 
     ## parents
     for rel in place.related.all():
-      if rel.jsonb['relation_type'] == 'gvp:broaderPartitive':
+      if rel.jsonb['relationType'] == 'gvp:broaderPartitive':
         parents.append(rel.jsonb['label'])
     qobj['parents'] = parents
 
@@ -908,8 +908,10 @@ def align_whg(pk, *args, **kwargs):
         res = es.index(index='whg', doc_type='place', id=str(whg_id), body=json.dumps(parent_obj))
         count_seeds +=1
       except:
-        print('failed indexing '+str(place.id), parent_obj)
-        print(sys.exc_info[0])
+        #print('failed indexing '+str(place.id), parent_obj)
+        print('failed indexing (as parent)'+str(place.id))
+        pass
+        #print(sys.exc_info[0])
         #errors_black.write(str({"pid":place.id, "title":place.title})+'\n')
       print('created parent:',result_obj['place_id'],result_obj['title'])
       #nohits.append(result_obj['missed'])
@@ -935,26 +937,45 @@ def align_whg(pk, *args, **kwargs):
           child_obj['relation']={"name":"child","parent":parent_whgid}
           
           ## index it
+          #try:
+            #res = es.index(index='whg',doc_type='place',id=place.id,
+                           #routing=1,body=json.dumps(child_obj))
+            #count_kids +=1                
+            #print('added '+str(place.id) + ' as child of '+ str(parentid))
+          #except:
+            #print('failed indexing '+str(parent_whgid)+' ('+str(place.id)+')', child_obj)
+            #sys.exit(sys.exc_info())
+          #q_update = { "script": {
+              #"source": "ctx._source.suggest.input.addAll(params.names); ctx._source.children.add(params.id)",
+              #"lang": "painless",
+              #"params":{"names": match_names, "id": str(place.id)}
+            #},
+            #"query": {"match":{"_id": parent_whgid}}}
+          #try:
+            #es.update_by_query(index='whg', doc_type='place', body=q_update, conflicts='proceed')
+          #except:
+            #print('failed updating '+str(parent_whgid)+' ('+parentid+') from child '+str(place.id))
+            #print(count_kids-1)
+            #sys.exit(sys.exc_info())
+
+          # all or nothing; pass if error
           try:
             res = es.index(index='whg',doc_type='place',id=place.id,
                            routing=1,body=json.dumps(child_obj))
             count_kids +=1                
             print('added '+str(place.id) + ' as child of '+ str(parentid))
-          except:
-            print('failed indexing '+str(place.id), child_obj)
-            sys.exit(sys.exc_info())
-          q_update = { "script": {
-              "source": "ctx._source.suggest.input.addAll(params.names); ctx._source.children.add(params.id)",
-              "lang": "painless",
-              "params":{"names": match_names, "id": str(place.id)}
-            },
-            "query": {"match":{"_id": parent_whgid}}}
-          try:
+            q_update = { "script": {
+                "source": "ctx._source.suggest.input.addAll(params.names); ctx._source.children.add(params.id)",
+                "lang": "painless",
+                "params":{"names": match_names, "id": str(place.id)}
+              },
+              "query": {"match":{"_id": parent_whgid}}}
             es.update_by_query(index='whg', doc_type='place', body=q_update, conflicts='proceed')
           except:
-            print('failed updating '+str(parent_whgid)+' ('+parentid+') from child '+str(place.id))
-            print(count_kids-1)
-            sys.exit(sys.exc_info())
+            print('failed indexing (as child)'+str(parent_whgid)+' ('+str(place.id)+')', child_obj)
+            count_fail += 1
+            pass
+            #sys.exit(sys.exc_info())
 
         elif hit['pass'] in ['pass2','pass3']:
           ## increment counters & write a hit record for review
@@ -1017,8 +1038,8 @@ def align_whg(pk, *args, **kwargs):
     'pass2': count_p2, 
     'pass3': count_p3,
     'no_hits': {'count': count_nohit },
-    'elapsed': elapsed(end-start)
-    #'skipped': count_errors
+    'elapsed': elapsed(end-start),
+    'skipped': count_fail
   }
   #if ds.label == 'black': errors_black.close()
   print("hit_parade['summary']",hit_parade['summary'])

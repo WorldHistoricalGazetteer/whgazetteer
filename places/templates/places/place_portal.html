@@ -68,10 +68,20 @@
                 <!--<a href="#" class="remote-link"><i>{link.identifier}}</a> ({link.type}})</i>-->
                 <a href="" class="mr-2 ext" data-toggle="modal" data-target="#ext_site">{{ link.identifier }} {% fontawesome_icon 'external-link' color='#336699' %}</a> ({{link.type}})
                 {% if not forloop.last %}; {% endif %}{% endfor %}</div>
+              {% if rec.related|length > 0 %}
+                <div id="place_related" class="attest-element abbrev">
+                  Related:
+                    Within {% for rel in rec.related %}
+                    {{ rel.label }} ({{rel.when.start.in}}-{{rel.when.end.in}})
+                    {% if not forloop.last %}; {% endif %}
+                    {% endfor %}
+                  </ul>
+                </div>
+              {% endif %}
               {% if rec.descriptions %}
               <div class="attest-element abbrev">
-              <div>Descriptions: {% for desc in rec.descriptions %}<i>{{desc.value}}</i>
-                {% if not forloop.last %}; {% endif %}{% endfor %}</div>
+                <div>Descriptions: {% for desc in rec.descriptions %}<i>{{desc.value}}</i>
+                  {% if not forloop.last %}; {% endif %}{% endfor %}</div>
               </div>
               {% endif %}
               {% if rec.whens %}
@@ -79,14 +89,6 @@
               {% endif %}              
             </div>
             {% endfor %} <!-- rec in payload-->
-            <div id="place_related" class="col-content small mt-1">
-              <p class="mb-0 allcap-heading">RELATED</p>
-              <!-- auto-generate this-->
-              <ul>
-                <li>{ some relation }</li>
-                <li>{ another relation }</li>
-              </ul>
-            </div>
           </div> <!-- place_home_l-->
           <div id="place_home_r" class="col-sm-7">
             <div id="place_temporal" class="col-content small">
