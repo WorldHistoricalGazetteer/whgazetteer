@@ -37,7 +37,7 @@
       <div id="place_core" class="tab-pane fade show active" >
         <div class="row pt-1">
           <div id="place_home_l" class="col-sm-5">
-            <div class="col-content small mt-1"><p>{ auto-generated description } <i>future</i></p></div>
+            <div class="col-content small mt-1"><p>{{ place.title }} is a { place type }, { on the {...} } (<i>possible, future</i>)</p></div>
             {% for rec in payload %}
             <div class="col-content small mt-1">
               <div class="attest-header">
@@ -60,7 +60,8 @@
               <!-- put geoms into script -->
               {% if rec.geoms|length > 0 %}
                 {% for g in rec.geoms %}
-                  {{ g|json_script:rec.place_id }}
+                  <!--{ g|json_script:rec.place_id }-->
+                  {{ g|json_script:g.citation.id }}
                 {% endfor %}
               {% endif %}
               <div class="attest-element">Links: 
@@ -421,7 +422,8 @@
       pane: 'mainPane',
       pointToLayer: function (feature, latlng) {
         <!--console.log(feature)-->
-        identifier = 'whg:'+feature.properties.id
+        <!--identifier = 'whg:'+feature.properties.id-->
+        identifier = feature.properties.id
         marker = L.circleMarker(latlng,
           {
             radius: 8, fillOpacity: 0.8, opacity: 1, weight: 1,

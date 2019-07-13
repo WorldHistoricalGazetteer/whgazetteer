@@ -685,6 +685,9 @@ def es_lookup_whg(qobj, *args, **kwargs):
        "must": [
           {"terms": {"links.identifier": qobj['links'] }}
         ],
+       "must_not": [
+          {"terms": {"links.type": ['related'] }}
+        ],
         "should": [
           {"terms": {"names.toponym": qobj['variants']}}
         ]
@@ -902,7 +905,10 @@ def align_whg(pk, *args, **kwargs):
       parent_obj['whg_id']=whg_id
       # add its own names to the suggest field
       for n in parent_obj['names']:
-        parent_obj['suggest']['input'].append(n['toponym']) 
+        parent_obj['suggest']['input'].append(n['toponym'])
+      # add its title
+      if place.title not in parent_obj['suggest']['input']:
+        parent_obj['suggest']['input'].append(place.title)
       #index it
       try:
         res = es.index(index='whg', doc_type='place', id=str(whg_id), body=json.dumps(parent_obj))

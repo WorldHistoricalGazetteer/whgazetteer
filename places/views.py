@@ -63,7 +63,7 @@ class PlacePortalView(DetailView):
         "ccodes":place.ccodes, 
         "names":[name.jsonb for name in place.names.all()], 
         "types":[t.jsonb for t in place.types.all()], 
-        "links":[link.jsonb for link in place.links.all()], 
+        "links":[link.jsonb for link in place.links.distinct('jsonb')], 
         "geoms":[geom.jsonb for geom in place.geoms.all()],
         "whens":[when.jsonb for when in place.whens.all()], 
         "related":[rel.jsonb for rel in place.related.all()], 
