@@ -15,7 +15,15 @@ def register(request):
                 User.objects.get(username=request.POST['username'])
                 return render(request, 'accounts/register.html', {'error': 'User name is already taken'})
             except User.DoesNotExist:
-                user = User.objects.create_user(request.POST['username'], password=request.POST['password1'])
+                print('request.POST',request.POST)
+                user = User.objects.create_user(
+                    request.POST['username'], 
+                    password=request.POST['password1'],
+                    email=request.POST['email'],
+                    first_name=request.POST['first_name'],
+                    last_name=request.POST['last_name']
+                )
+                user.profile.affiliation=request.POST['affiliation']
                 auth.login(request, user)
                 return redirect('home')
         else:

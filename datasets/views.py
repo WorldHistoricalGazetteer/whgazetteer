@@ -651,10 +651,13 @@ class DashboardView(ListView):
   def get_queryset(self):
     # TODO: make .team() a method on User
     me = self.request.user
-    if me.username == 'whgadmin':
+    if me.username in ['whgadmin','karlg']:
+      print('in get_queryset() if',me)
       return Dataset.objects.all().order_by('id')
       #return Dataset.objects.all().filter(id__gt=7).order_by('id')
     else:
+      print('in get_queryset() else')
+      print('myteam(me)',myteam(me))
       return Dataset.objects.filter(owner__in=myteam(me)).order_by('id')
 
 
@@ -662,26 +665,27 @@ class DashboardView(ListView):
     teamtasks=[]
     me = self.request.user
     context = super(DashboardView, self).get_context_data(*args, **kwargs)
+    print('in get_context',me)
 
     types_ok=['ccodes','copied','drawn']
     # list areas
     userareas = Area.objects.all().filter(type__in=types_ok).order_by('created')
     context['area_list'] = userareas if me.username == 'whgadmin' else userareas.filter(owner=self.request.user)
 
-    # list team tasks
-    if me.username == 'whgadmin':
-      context['review_list'] = TaskResult.objects.filter(status='SUCCESS').order_by('-date_done')
-    else:
-      for t in TaskResult.objects.filter(status='SUCCESS'):
-        tj=json.loads(t.task_kwargs.replace("\'", "\""))
-        u=get_object_or_404(User,id=tj['owner'])
-        print('args,task owner',tj,u)
-        if u in myteam(me):
-          teamtasks.append(t.task_id)
-      context['review_list'] = TaskResult.objects.filter(task_id__in=teamtasks).order_by('-date_done')
+    # list team tasks WHY?????
+    #if me.username == 'whgadmin':
+      #context['review_list'] = TaskResult.objects.filter(status='SUCCESS').order_by('-date_done')
+    #else:
+      #for t in TaskResult.objects.filter(status='SUCCESS'):
+        #tj=json.loads(t.task_kwargs.replace("\'", "\""))
+        #u=get_object_or_404(User,id=tj['owner'])
+        #print('get_context else...args,task owner',tj,u)
+        #if u in myteam(me):
+          #teamtasks.append(t.task_id)
+      #context['review_list'] = TaskResult.objects.filter(task_id__in=teamtasks).order_by('-date_done')
 
     # status >= 'uploaded'
-    context['viewable'] = ['uploaded','reconciling','review_hits','reviewd','review_whg','indexed']
+    context['viewable'] = ['uploaded','reconciling','review_hits','reviewed','review_whg','indexed']
     # TODO: user place collections
     #print('DashboardView context:', context)
     return context

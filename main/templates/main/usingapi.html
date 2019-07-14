@@ -9,12 +9,14 @@
     <h3>Using the API</h3>
   </div>
   <div class="px-5">
-    <p>The WHG API offers a number of endpoints, listed below with examples. Yada yada lorem ipsum...</p>
-    <h5>Endpoints</h5>
+    <p>The external API development is at a very early stage. There will be several place and dataset endpoints with numerous filtering and search options: 1) to the relational database for accessing records from contributed datasets, 2) to the "union index" that gathers all place attestations (and related trace annotations) for a given place, and 3) to a listing of contributed datasets.</p>
+    <p><i>Note that contributed records will have "permanent" URIs within the WHG system, making WHG a publisher of linked data for smaller projects unable to stand up per-record landing pages.</i></p>
+    <p>The following are a few native Django REST API Framework screens available so far</p>
     <ul>
-      <li><p>http://whgazetteer.org/places/{nnnnnn}</p></li>
-      <p>yada yada</p>
-      <li><p>http://whgazetteer.org/places/{dataset}/{nnnnnn}</p></li>
+      <li><p>A contributed place: <a href="/api/places/81078/" target="_blank">http://whgazetteer.org/api/places/81078</a></p></li>
+      <li><p>A "union" record for a place: <i>not yet</i></p></li>
+      <li><p>List of datasets: <a href="/api/datasets/" target="_blank">http://whgazetteer.org/datasets/</a></p></li>
+      <li><p>A single dataset: <a href="/api/datasets/9" target="_blank">http://whgazetteer.org/datasets/9</p></li>
     </ul>
   </div>
 </div>

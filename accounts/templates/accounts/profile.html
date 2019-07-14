@@ -10,8 +10,8 @@
     <p><b>Username</b>: {{ user.username }}</p>
     <p><b>Name</b>: {{ user.first_name }} {{ user.last_name }}</p>
     <p><b>Email</b>: {{ user.email }}</p>
-    <p><b>Affiliation</b>: </p>
-    <p><b>Groups</b>: {% for g in groups %}{{g}}{%if not forloop.last%}; {%endif%}{% endfor %}</p>
+    <p><b>Affiliation</b>: {{ user.profile.affiliation }}</p>
+    <p><b>Groups</b>: {% for g in groups %}{{g}}{% if not forloop.last %}; {% endif %}{% endfor %}</p>
   </div>
 </div>
 {% endblock %}

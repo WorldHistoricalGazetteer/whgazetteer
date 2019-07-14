@@ -12,34 +12,38 @@
     <h4>The Steps</h4>
     {% if user.is_authenticated %}
     <div id="tldr" class="float-right"><p class="mb-1">Okay, ready <br/>to <a href="#">begin!</a></div>{% endif %}
-    <p>Easy peasy, you only have to...</p>
+    <p>The contribution pipeline consists of the following four steps:</p>
     <ol>
-      <li><b>Prepare data file(s)</b>. Make a transformation of your data from whatever format you keep it in to one of the Linked Places format "flavors" (details below)</li>
-      <li><b>Upload data file(s)</b>. Your uploaded file(s) are checked for valid format. If valid, immediately proceed to Step 3.</li>
-      <li><b>Insert to WHG database</b>. Your data is maintained in a set of read-only tables [<a href="#">model documentation</a>], which are the basis for subsequent steps. Screens for (a) managing the contribution and (b) viewing the tabular data and map (if applicable) are now available.</li>
-      <li><b>Reconciliation (modern authorities)</b>. The automated step of finding matches between your place records and records in modern name authority resources (Getty TGN, DBpedia, Geonames, and Wikidata) with our reconciliation tool.</li>
-      <li><b>Review reconciliation results</b>. Potential matches returned by Step 4 must be reviewed manually. Our review tool queues them up for you and your team to decide whether a hit is a close match, exact match, or otherwise related. Each positive response augments your dataset by adding a record in the <i>place_link</i> table. You can also choose to augment your record with geometries from matches, were they exist, generating a new <i>place_geom</i> record.</li>
-      <li><b>Reconciliation (WHGazetteer)</b>. Now it's time to see whether the places your records reference already exist in WHGazetteer. Steps 4 and 5 are essentially repeated, this time against our union index.</li>
-      <li><b>Review reconciliation results</b>. If a contributor's record shares a modern authority link with a record in our index, it is considered to be a match, and automatically becomes a "child" attestation within that index record. The  potential matches suggested on the basis of semantics (e.g. shared name, type, containing polity) are reviewed as in Step 5.</li>
-      <li><b>Submit for accessioning</b>. Your contribution is now ready. Clicking "submit" will flag it for a final check by the WHGazetteer team. If it all looks okay, we'll add your data -- a combination of child records and new 'parent' records -- to the union index, and your data will appear in the graphical interface and in API queries. Woo hoo!</li>
+      <li><b>Prepare data file(s)</b>. Make a transformation of your data from whatever format you keep it in to one of the Linked Places (LP) format "flavors" (details below)</li>
+      <li><b>Upload data file(s)</b>. Your uploaded file(s) are checked for valid format. If valid, they are immediately inserted into WHG database. Your data is now maintained in a set of <i>read-only</i> tables [<a href="#">model documentation</a>], which are the basis for subsequent steps. Screens for managing the contribution and viewing it are now available</li>
+      <li><b>Reconciliation against modern authorities</b>. It is essential that you find as many matches as possible between your records and modern gazetteer data resources prior to accessioning to WHG. Our reconciliation services can aid this process considerably in a two-part process:
+        <ul><li><b>Initiate a reconciliation task</b> to find potential matches. At this time, Getty TGN and Wikidata are available. GeoNames and DBpedia will be added in the near future.</li>
+        <li><b>Review the resulting "hits"</b>. Potential matches must be reviewed manually [1]. Our review tool queues them up for you and your team to decide whether a hit is a close match, exact match, or otherwise related. Each positive response augments your dataset by adding a record in the <i>place_link</i> table. You can also choose to augment your record with geometries from validated matches, where they exist, generating a new <i>place_geom</i> record.</li>
+        </li></ul>
+      <li><b>Accessioning</b> (i.e. reconciliation against WHG). Now it's time to see whether the places your records reference already exist in our index.
+        <ul><li><b>Initiate the reconciliation task</b>. For the time being, WHG staff will perform this step after review of your potential contribution. NB: If a contributor's record shares a modern authority link with a record in our index, it is considered to be a match, and automatically becomes a "child" attestation within that WHG index record.</li>
+        <li><b>Review potential matches</b>. The remaining hits, based on matches with some combination of names, place types, modern country, and geometry, must be reviewed as in step 3 above. When you assert a close or exact match between your record and one in the WHG index, your record is identified as a "child" record of the "parent" <i>in the index only</i>. If there is no match in the WHG index, your record becomes a new "parent," again, <i>in the index only</i></li>
+        </ul>
+      </li>
     </ol>
   </div>
   <div class="px-5">
     <h4>Contribution Format(s)</h4>
-    <p>Two data formats that can be used for WHGazetteer contributions: (a) Linked Places format: JSON-LD and GeoJSON-T compatible, allowing for detailed sourcing of names and geometries, and temporal scoping of names, geometries, place types, and relations; and (b) an abbreviated CSV form appropriate for simpler records.</p>
+    <p>Two data formats can be used for contributions to WHG: (a) Linked Places format: JSON-LD and GeoJSON-T compatible, allowing for detailed sourcing of names and geometries, and temporal scoping of names, geometries, place types, and relations; and (b) an abbreviated TSV form appropriate for simpler records.</p>
     <div>
-      <h5>Linked Places format [<a href="#">details</a>]</h5>
-      <p>Hands main sheet man-of-war black spot fire ship jolly boat lugsail Jack Tar hardtack spirits. Spyglass line plunder scourge of the seven seas cutlass chase guns brigantine yo-ho-ho spirits poop deck. Blow the man down gangway dead men tell no tales capstan bring a spring upon her cable yardarm topgallant brig Blimey Privateer. </p>
+      <h5>Linked Places format [<a href="https://github.com/LinkedPasts/linked-places" target="_blank">details</a>]</h5>
+      <p>Linked Places (LP) format is JSON-LD, a valid RDF syntax. It is also valid GeoJSON, which has been augmented with temporal support (GeoJSON-T). Version 1 of LP format is specified on <a href="https://github.com/LinkedPasts/linked-places" target = "_blank">this GitHub page</a>, and examples are provided.</p>
     </div>
     <div>
-      <h5>CSV template [<a href="#">details</a>]</h5>
-      <p>Your bones don't break, mine do. That's clear. Your cells react to bacteria and viruses differently than mine. You don't get sick, I do. That's also clear. But for some reason, you and I react the exact same way to water. We swallow it too fast, we choke. We get some in our lungs, we drown. However unreal it may seem, we are connected, you and I. We're on the same curve, just on opposite ends.</p>
+      <h5>TSV template [<a href="https://github.com/LinkedPasts/linked-places/blob/master/tsv.md" target="_blank">details</a>]</h5>
+      <p>Not every dataset requires the expressiveness of LP format, so WHG will accept contributions in TSV format that follow <a href="https://github.com/LinkedPasts/linked-places/blob/master/tsv.md" target="_blank">these specifications</a>.</p>
+      
     </div>
   </div>
 {% if user.is_authenticated %}
-  <div class="px-5">
-    <p><button type="button" class="btn btn-primary">Begin </button></p>
-  </div>
+  <!--<div class="px-5">-->
+    <!--<p><button type="button" class="btn btn-primary">Begin </button></p>-->
+  <!--</div>-->
 </div>
 {% endif %}
 {% endblock %}
