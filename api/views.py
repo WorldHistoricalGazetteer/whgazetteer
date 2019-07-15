@@ -36,16 +36,16 @@ class PlaceViewSet(viewsets.ModelViewSet):
             #qs = qs.filter(title__icontains=query)
         return qs
 
-    def get_permissions(self):
-        """
-        Instantiates and returns the list of permissions that this view requires.
-        """
-        if self.action in ['list','retrieve']:
-            print(self.action)
-            permission_classes = [permissions.AllowAny]
-        else:
-            permission_classes = [permissions.IsAdminUser]
-        return [permission() for permission in permission_classes]
+    #def get_permissions(self):
+        #"""
+        #Instantiates and returns the list of permissions that this view requires.
+        #"""
+        #if self.action in ['list','retrieve']:
+            #print(self.action)
+            #permission_classes = [permissions.AllowAny]
+        #else:
+            #permission_classes = [permissions.IsAdminUser]
+        #return [permission() for permission in permission_classes]
 
 class DatasetViewSet(viewsets.ModelViewSet):
     # print('in DatasetViewSet()')

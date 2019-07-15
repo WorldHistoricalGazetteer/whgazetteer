@@ -36,6 +36,9 @@
         <!--<p>URI base { form.uri_base }</p>-->
         <p>URI base {{ form.uri_base }}</p>
         {% if user.id == 1 %}<p>Spine? {{ form.spine }}</p>{% endif %}
+        {% if form.mapbox_id != null %}
+          <p>MapBox ID {{ form.mapbox_id }}</p>
+        {% endif %}
         {% if action == 'update' %}
           <p>Current file <span class="text-danger" >{{ form.file.value }}</span></p>
           <p>Status <span class="text-danger" >{{ form.status.value }}</span></p>
