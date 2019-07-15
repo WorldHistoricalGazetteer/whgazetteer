@@ -14,7 +14,7 @@ FORMATS = [
 
 DATATYPES = [
     ('place', 'Places'),
-    ('anno', 'Annotations'),
+    ('anno', 'Traces'),
     ('source', 'Sources')
 ]
 

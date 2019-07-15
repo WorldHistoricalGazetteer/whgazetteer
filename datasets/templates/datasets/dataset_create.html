@@ -31,13 +31,11 @@
         <p><span class="top">Description</span> {{ form.description }}</p>
         <p>Data type {{ form.datatype }}</p>
         <p>Format {{ form.format }}
-          <span class="text-danger small"><i>delimiters: tab, semicolon or pipe ('|')</i></span>
+          <!--<span class="text-danger small"><i>delimiters: tab, semicolon or pipe ('|')</i></span>-->
         </p>
+        <!--<p>URI base { form.uri_base }</p>-->
         <p>URI base {{ form.uri_base }}</p>
         {% if user.id == 1 %}<p>Spine? {{ form.spine }}</p>{% endif %}
-        {% if form.mapbox_id != null %}
-          <p>MapBox ID {{ form.mapbox_id }}</p>
-        {% endif %}
         {% if action == 'update' %}
           <p>Current file <span class="text-danger" >{{ form.file.value }}</span></p>
           <p>Status <span class="text-danger" >{{ form.status.value }}</span></p>
@@ -76,5 +74,10 @@
       </form>
     </div> <!-- d-flex -->
   </div>
-
+  <script type="text/javascript">
+    $(function(){
+      $('#id_datatype option[value="anno"]').prop('disabled',true)
+      $('#id_datatype option[value="source"]').prop('disabled',true)
+    })
+  </script>
 {% endblock %}

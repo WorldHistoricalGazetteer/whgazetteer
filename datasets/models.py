@@ -32,7 +32,7 @@ class Dataset(models.Model):
     name = models.CharField(max_length=255, null=False)
     description = models.CharField(max_length=2044, null=False)
     file = models.FileField(upload_to=user_directory_path)
-    uri_base = models.URLField(blank=True, null=True)
+    uri_base = models.URLField(blank=True, null=True, default='http://whgazetteer/api/places/')
     format = models.CharField(max_length=12, null=False,choices=FORMATS,
         default='lpf')
     datatype = models.CharField(max_length=12, null=False,choices=DATATYPES,

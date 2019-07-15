@@ -59,8 +59,8 @@ class DatasetModelForm(forms.ModelForm):
       'description': forms.Textarea(attrs={
             'rows':2,'cols': 60,'class':'textarea',
               'placeholder':'brief description'}),
-          'format': forms.Select(),
-            'datatype': forms.Select()
+      'format': forms.Select(),
+      'datatype': forms.Select(),
     }
     initial = {'format': 'delimited', 'datatype': 'places'}
 

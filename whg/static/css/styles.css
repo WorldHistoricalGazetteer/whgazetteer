@@ -244,6 +244,7 @@ input[type="text"] {
 .noteicon {margin-left: 4px;}
 .noteicon:hover {cursor: pointer;}
 
+#id_uri_base{width: 300px;}
 
 .list-box {
   border: 1px solid #ccc;
