@@ -522,7 +522,6 @@ def ds_insert_csv(request, pk):
     depiction = r[header.index('depiction')] \
       if 'depiction' in header else []
 
-    #print('types (src_, aat_)',src_type,aat_types)
     # build and save Place object
     newpl = Place(
       # placeid = nextpid,
@@ -533,8 +532,8 @@ def ds_insert_csv(request, pk):
     )
     newpl.save()
     countrows += 1
+    
     # build associated objects and add to arrays
-
     # PlaceName()
     objs['PlaceName'].append(PlaceName(place_id=newpl,src_id = src_id,
           toponym = name,
@@ -699,9 +698,10 @@ class DatasetCreateView(CreateView):
   def form_valid(self, form):
     context={}
     if form.is_valid():
-      print('form is valid')
+      u=self.request.user
+      print('form is valid',u)
       format = form.cleaned_data['format']
-
+      label = form.cleaned_data['name'][:16]+'_'+u.first_name[:1]+u.last_name[:1]
       # open & write tempf to a temp location;
       # call it tempfn for reference
       tempf, tempfn = tempfile.mkstemp()
@@ -714,7 +714,6 @@ class DatasetCreateView(CreateView):
         os.close(tempf)
       # open the temp file
       fin = codecs.open(tempfn, 'r', 'utf8')
-      #print('fin from DatasetCreateView()',fin)
       # send for format validation
       if format == 'delimited':
         result = validate_csv(fin)

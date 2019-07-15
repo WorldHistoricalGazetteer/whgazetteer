@@ -53,7 +53,7 @@ class DatasetDetailModelForm(forms.ModelForm):
 class DatasetModelForm(forms.ModelForm):
   class Meta:
     model = Dataset
-    fields = ('id','label','name','description','file','format','datatype',
+    fields = ('id','name','description','file','format','datatype',
               'delimiter','status','owner','header','numrows','spine','uri_base')
     widgets = {
       'description': forms.Textarea(attrs={
@@ -65,7 +65,8 @@ class DatasetModelForm(forms.ModelForm):
     initial = {'format': 'delimited', 'datatype': 'places'}
 
   def unique_label(self, *args, **kwargs):
-    label = self.cleaned_content['label']
+    #label = self.cleaned_content['label']
+    label = self.cleaned_content['name'][:16]+'_'+user.first_name[:1]+user.last_name[:1]
     # TODO: test uniqueness somehow
 
   def __init__(self, *args, **kwargs):
