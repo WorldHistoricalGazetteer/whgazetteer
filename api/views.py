@@ -36,6 +36,17 @@ class PlaceViewSet(viewsets.ModelViewSet):
             #qs = qs.filter(title__icontains=query)
         return qs
 
+    def get_permissions(self):
+        """
+        Instantiates and returns the list of permissions that this view requires.
+        """
+        if self.action in ['list','retrieve']:
+            print(self.action)
+            permission_classes = [permissions.AllowAny]
+        else:
+            permission_classes = [permissions.IsAdminUser]
+        return [permission() for permission in permission_classes]
+
 class DatasetViewSet(viewsets.ModelViewSet):
     # print('in DatasetViewSet()')
     queryset = Dataset.objects.all().order_by('label')
@@ -61,6 +72,17 @@ class AreaViewSet(viewsets.ModelViewSet):
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all().order_by('-date_joined')
     serializer_class = UserSerializer
+
+    def get_permissions(self):
+        """
+        Instantiates and returns the list of permissions that this view requires.
+        """
+        if self.action in ['list','retrieve']:
+            print(self.action)
+            permission_classes = [permissions.AllowAny]
+        else:
+            permission_classes = [permissions.IsAdminUser]
+        return [permission() for permission in permission_classes]
 
 
 class GroupViewSet(viewsets.ModelViewSet):
