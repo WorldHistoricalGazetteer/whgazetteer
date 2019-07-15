@@ -7,6 +7,7 @@ from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.text import slugify
 
 from django_celery_results.models import TaskResult
 from main.choices import *
@@ -27,7 +28,6 @@ def user_directory_path(instance, filename):
 class Dataset(models.Model):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL,
         related_name='datasets', on_delete=models.CASCADE)
-    # owner = models.ForeignKey(User, related_name='datasets', on_delete=models.CASCADE)
     label = models.CharField(max_length=20, null=False, unique="True")
     name = models.CharField(max_length=255, null=False)
     description = models.CharField(max_length=2044, null=False)
@@ -50,13 +50,12 @@ class Dataset(models.Model):
     numlinked = models.IntegerField(null=True, blank=True)
     total_links = models.IntegerField(null=True, blank=True)
 
+        
     def __str__(self):
         return self.label
         # return '%d: %s' % (self.id, self.label)
 
     def get_absolute_url(self):
-        # return f"/datasets/{self.id}"
-        # return reverse('datasets:ds_edit', kwargs={'pk': self.id})
         return reverse('datasets:dataset-detail', kwargs={'id': self.id})
     
     @property
