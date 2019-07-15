@@ -38,13 +38,13 @@
         <div class="form-check">
           <label class="form-check-label" for="auth2">
             <input type="radio" class="form-check-input" id="auth2"
-              name="recon" value="tgn">Getty TGN (tgn)
+              name="recon" value="tgn" checked>Getty TGN (tgn)
           </label>
         </div>
         <div class="form-check">
           <label class="form-check-label" for="auth4">
             <input type="radio" class="form-check-input" id="auth4"
-              name="recon" value="wd" checked >Wikidata (wd)
+              name="recon" value="wd" >Wikidata (wd)
               <span class="ml-2 text-success d-none"> </span>
           </label>
         </div>
@@ -88,14 +88,16 @@
       {% else %}
         <p>Reconciliation results will show here...</p>
       {% endif %}
-      <div id="map" class="ghostbox geo-constraint hidden">
+      <!--<div id="map" class="ghostbox geo-constraint hidden">-->
+      <div id="map" class="ghostbox geo-constraint">
         {% leaflet_map "map" callback="map_init" %}
       </div>
     </div> <!-- recon_result -->
   </div> <!-- row -->
   <!-- <hr/> -->
   <div class="row mt-3">
-    <div class="col-md-6 hidden geo-constraint">
+    <!--<div class="col-md-6 hidden geo-constraint">-->
+    <div class="col-md-6 geo-constraint">
       <div class="mb-2">
         <p class="font-weight-bold">Geographic constraint</p>
         <p>
@@ -129,7 +131,7 @@
   $(function(){
     $('input[name=recon]').change(function(){
       var value = $( 'input[name=recon]:checked' ).val();
-      if(value=='tgn'){$(".geo-constraint").show() } else {$(".geo-constraint").hide()}
+      if(value=='wd'){$(".geo-constraint").hide() } else {$(".geo-constraint").show()}
       console.log(value);
     });
      <!--$("#geo_constraint").show()-->

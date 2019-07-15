@@ -41,7 +41,7 @@ def validate_lpf(infile,format):
   result['count'] = countrows
   return result
 
-#def validate_csv(infile, username):
+
 def validate_csv(infile):
   # TODO: Pandas?
   # some WKT is big
