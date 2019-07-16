@@ -71,7 +71,7 @@ class PlacePortalView(DetailView):
         "depictions":[depict.jsonb for depict in place.depictions.all()]
       }
       context['payload'].append(record)
-      
+    print('payload',context['payload'])
     # get traces
     qt = {"query": {"bool": {"must": [{"match":{"body.whg_id": id_ }}]}}}
     trace_hits = es.search(index='traces', doc_type='trace', body=qt)['hits']['hits']

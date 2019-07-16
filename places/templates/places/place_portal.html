@@ -60,8 +60,8 @@
               <!-- put geoms into script -->
               {% if rec.geoms|length > 0 %}
                 {% for g in rec.geoms %}
-                  <!--{ g|json_script:rec.place_id }-->
-                  {{ g|json_script:g.citation.id }}
+                  {{ g|json_script:rec.place_id }}
+                  <!--{ g|json_script:g.citation.id }-->
                 {% endfor %}
               {% endif %}
               <div class="attest-element">Links: 

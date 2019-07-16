@@ -233,9 +233,10 @@ def align_wd(pk, *args, **kwargs):
   outdir='/Users/karlg/Documents/Repos/_whgdata/pyout/align_wd/'
   
   # missed, skipped
-  fout1 = codecs.open(outdir+ds.label+'/es-hits_'+timestamp+'.txt', 'w', 'utf8')
-  fout2 = codecs.open(outdir+ds.label+'/es-missed_'+timestamp+'.txt', 'w', 'utf8')
-  fout3 = codecs.open(outdir+ds.label+'/es-skipped_'+timestamp+'.txt', 'w', 'utf8')
+  # can't know in advance
+  fout1 = codecs.open(outdir+'/es-hits_'+str(ds.id)+'_'+timestamp+'.txt', 'w', 'utf8')
+  fout2 = codecs.open(outdir+'/es-missed_'+str(ds.id)+'_'+timestamp+'.txt', 'w', 'utf8')
+  fout3 = codecs.open(outdir+'/es-skipped_'+str(ds.id)+'_'+timestamp+'.txt', 'w', 'utf8')
   
   def toWKT(coords):
     wkt = 'POINT('+str(coords[0])+' '+str(coords[1])+')'

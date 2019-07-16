@@ -8,7 +8,14 @@
 {% block extra_head %}
   {% leaflet_js %}
   {% leaflet_css %}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-3-typeahead/4.0.2/bootstrap3-typeahead.min.js" integrity="sha256-LOnFraxKlOhESwdU/dX+K0GArwymUDups0czPWLEg4E=" crossorigin="anonymous"></script>
   <script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>
+  
+  <script src="{% static 'js/tags/bootstrap-tagsinput.js' %}"></script>
+  <script src="{% static 'js/tags/bloodhound.js' %}"></script>
+  <link rel="stylesheet" href="{% static 'js/tags/bootstrap-tagsinput.css' %}"/>
+  <link rel="stylesheet" href="{% static 'js/tags/bootstrap-tagsinput-typeahead.css' %}"/>
+  
   <script src="{% static 'js/leaflet-draw/Leaflet.draw.js' %}"></script>
   <script src="{% static 'js/leaflet-draw/Leaflet.Draw.Event.js' %}"></script>
   <link rel="stylesheet" href="{% static 'js/leaflet-draw/leaflet.draw.css' %}"/>
@@ -82,17 +89,18 @@
         </ul>
         <div class="tab-content">
           <div id="areas_codes" class="tab-pane fade show active">
-            <p id="p_ccodes">Country codes<br/>{{ form.ccodes }}
+            <p id="p_ccodes">Country codes &nbsp;<a href="https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes" target="_blank">{% fontawesome_icon 'external-link' color='#336699' %}</a><br/>{{ form.ccodes }}
               <span class="float-right ml-1">
                 <a href="javascript:{ map_clear() }">clear</a></span>
               <span class="float-right">
                 <a href="javascript:{ map_render() }">preview |</a></span>
             </p>
+            <!--<p><input type="text" class="ccodes"></p>-->
             <p>Buffer (optional, km)<br/>
               <input type="text" id="buffer_km" name="buffer_km" value=""/></p>
           </div>
           <div id="areas_load" class="tab-pane fade in">
-            <p id="p_load">
+            <p id="p_load"><i class="text-danger">not yet available</i>
               <span class="float-right ml-1">
                 <a href="javascript:{ map_clear() }">clear</a></span>
               <span class="float-right">
@@ -117,6 +125,30 @@
 </div> <!-- container -->
 
 <script type="text/javascript">
+  var cities = new Bloodhound({
+    datumTokenizer: Bloodhound.tokenizers.obj.whitespace('text'),
+    queryTokenizer: Bloodhound.tokenizers.whitespace,
+    <!--prefetch: '/media/data/countries_simplified_fr.json'-->
+    prefetch: '/media/data/cities.json'
+  });
+  cities.initialize();
+  
+  var elt = $('.ccodes');
+  elt.tagsinput({
+    itemValue: 'value',
+    itemText: 'text',
+    typeaheadjs: {
+      name: 'cities',
+      displayKey: 'text',
+      source: cities.ttAdapter()
+    }
+  });
+  <!--elt.tagsinput('add', { "value": 1 , "text": "Amsterdam"   , "continent": "Europe"    });-->
+  <!--elt.tagsinput('add', { "value": 4 , "text": "Washington"  , "continent": "America"   });-->
+  <!--elt.tagsinput('add', { "value": 7 , "text": "Sydney"      , "continent": "Australia" });-->
+  <!--elt.tagsinput('add', { "value": 10, "text": "Beijing"     , "continent": "Asia"      });-->
+  <!--elt.tagsinput('add', { "value": 13, "text": "Cairo"       , "continent": "Africa"    });-->
+
   $(function(){
     $( ".textarea" ).each(function(index) {
       if ( ["None","null"].includes( $(this).val() ) ) {
