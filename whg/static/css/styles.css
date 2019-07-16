@@ -23,7 +23,7 @@ label {vertical-align:top;}
 .texttop {vertical-align: text-top !important;}
 .textsub {vertical-align: sub !important;}
 .smaller {font-size: small;} /*smaller than bootstrap's*/
-
+.notebox {background-color:#eee;box-shadow: 2px 2px #999; border:1px dashed #333; padding:6px;}
 .bottom {position: absolute; bottom:0;}
 
 /**
