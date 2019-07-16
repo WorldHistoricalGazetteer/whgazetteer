@@ -597,6 +597,8 @@ def align_tgn(pk, *args, **kwargs):
         if rel.jsonb['relationType'] == 'gvp:broaderPartitive':
           parents.append(rel.jsonb['label'])
       qobj['parents'] = parents
+    else:
+      qobj['parents'] = []
 
     # align_whg geoms
     if len(place.geoms.all()) > 0:
@@ -608,7 +610,7 @@ def align_tgn(pk, *args, **kwargs):
     try:
       result_obj = es_lookup_tgn(qobj, bounds=bounds)
     except:
-      print('es_lookup_tgn failed:',sys.exc_info())
+      print('es_lookup_tgn failed on ',place.id, sys.exc_info())
       
     if result_obj['hit_count'] == 0:
       count_nohit +=1
