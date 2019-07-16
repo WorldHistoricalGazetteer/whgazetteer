@@ -86,7 +86,8 @@
               </div>
               {% endif %}
               {% if rec.whens %}
-              <div class="attest-element">Temporal: {% for when in rec.whens %}{{when|truncatechars:130}}{% endfor %}</div>
+              <!--<div class="attest-element">Temporal: {# for when in rec.whens %}{when|truncatechars:130}}{# endfor %}</div>-->
+              <div class="attest-element">Temporal: {% for when in rec.whens %}{{when}}{% endfor %}</div>
               {% endif %}              
             </div>
             {% endfor %} <!-- rec in payload-->
@@ -94,7 +95,7 @@
           <div id="place_home_r" class="col-sm-7">
             <div id="place_temporal" class="col-content small">
               <p class="mb-0 allcap-heading">TEMPORAL ATTESTATIONS</p>
-              <p> { summing temporal visualization } <i>future</i></p>
+              <p> <img src="{% static 'images/spark01.png'%}" height=auto width=275 alt=""/> { summing temporal visualization } <i>future</i></p>
             </div>
             <div id="place_map" class="col-content small">
                 <p class="mb-0 allcap-heading">GEOGRAPHY
