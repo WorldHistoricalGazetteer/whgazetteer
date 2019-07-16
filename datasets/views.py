@@ -571,7 +571,7 @@ def ds_insert_csv(request, pk):
       ))
     elif 'geowkt' in header:
       objs['PlaceGeom'].append(PlaceGeom(place_id=newpl,src_id = src_id,
-        json=parse_wkt(r[header.index('geowkt')])
+        jsonb=parse_wkt(r[header.index('geowkt')])
       ))            
 
     # PlaceLink() - close
