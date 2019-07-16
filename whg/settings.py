@@ -64,6 +64,8 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'whg.urls'
 
+PUBLIC_GROUP_ID = 'review'
+
 TIME_ZONE = 'America/New_York'
 
 CELERY_BROKER_URL = 'redis://localhost:6379'
