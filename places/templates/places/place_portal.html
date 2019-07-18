@@ -67,7 +67,7 @@
               <div class="attest-element">Links: 
               {% for link in rec.links %}
                 <!--<a href="#" class="remote-link"><i>{link.identifier}}</a> ({link.type}})</i>-->
-                <a href="" class="mr-2 ext" data-toggle="modal" data-target="#ext_site">{{ link.identifier }} {% fontawesome_icon 'external-link' color='#336699' %}</a> ({{link.type}})
+                <a href="" class="mr-2 ext" data-toggle="modal" data-target="#ext_site">{{ link.identifier }} {% fontawesome_icon 'external-link' color='#336699' %}</a>({{link.type}})
                 {% if not forloop.last %}; {% endif %}{% endfor %}</div>
               {% if rec.related|length > 0 %}
                 <div id="place_related" class="attest-element abbrev">

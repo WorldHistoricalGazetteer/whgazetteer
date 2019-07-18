@@ -323,7 +323,16 @@
       html+='<p><b>Description</b>: '+ data.descriptions[0]['value'].substring(0,300)+' ... </p>'
         <!--'<br/><span class="small red-bold">('+data.descriptions[0]['identifier']+')</span>-->
     }
-
+      
+    function minmax(timespans){
+      starts=[]; ends=[]
+      for (t in timespans){
+        starts.push('in' in timespans[t]['start'] ?  timespans[t]['start']['in'] : timespans[t]['start']['earliest'])
+        ends.push('in' in timespans[t]['end'] ?  timespans[t]['end']['in'] : timespans[t]['end']['earliest'])
+      } 
+      minmax=[Math.min((starts)),Math.max((ends))]
+      return minmax
+    }
     // RELATED
     if (data.related.length > 0) {
       html_parent='<p class="mb-0"><b>Parent(s)</b>: <br/>'; html_related='<p class="mb-0"><b>Related</b>: <br/>'
@@ -333,7 +342,10 @@
         console.log('rel',rel)
         if (rel.relation_type == 'gvp:broaderPartitive'){
           html_parent += '<p class="small h1em">'+rel.label
-          html_parent += 'when' in rel ? ', '+rel.when.start.in+'-'+rel.when.end.in : ''
+          html_parent += 'when' in rel && !('timespans' in rel.when) ? 
+            ', '+rel.when.start.in+'-'+rel.when.end.in : 'when' in rel && ('timespans' in rel.when) ? ', ('+
+              minmax(rel.when.timespans)+')' : ''
+          <!--html_parent += 'when' in rel and !(timespans in rel.when) ? ', '+rel.when.start.in+'-'+rel.when.end.in : ''-->
           html_parent += '</p>'
         } 
         else {
