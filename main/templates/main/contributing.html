@@ -11,7 +11,7 @@
   <div id="contrib_content" class="px-5">
     <h4>The Steps</h4>
     {% if user.is_authenticated %}
-    <div id="tldr" class="float-right"><p class="mb-1">Okay, ready <br/>to <a href="#">begin!</a></div>{% endif %}
+    <div id="tldr" class="float-right"><p class="mb-1">Okay, ready <br/>to <a href="{% url 'datasets:dataset-create' %}">begin!</a></div>{% endif %}
     <p>The contribution pipeline consists of the following four steps:</p>
     <ol>
       <li><b>Prepare data file(s)</b>. Make a transformation of your data from whatever format you keep it in to one of the Linked Places (LP) format "flavors" (details below)</li>

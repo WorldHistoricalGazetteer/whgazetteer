@@ -343,8 +343,8 @@
         if (rel.relation_type == 'gvp:broaderPartitive'){
           html_parent += '<p class="small h1em">'+rel.label
           html_parent += 'when' in rel && !('timespans' in rel.when) ? 
-            ', '+rel.when.start.in+'-'+rel.when.end.in : 'when' in rel && ('timespans' in rel.when) ? ', ('+
-              minmax(rel.when.timespans)+')' : ''
+            ', '+rel.when.start.in+'-'+rel.when.end.in : 'when' in rel && ('timespans' in rel.when) ? ', '+
+              minmax(rel.when.timespans) : ''
           <!--html_parent += 'when' in rel and !(timespans in rel.when) ? ', '+rel.when.start.in+'-'+rel.when.end.in : ''-->
           html_parent += '</p>'
         } 

@@ -1,0 +1,377 @@
+{
+  "type": "FeatureCollection",
+  "@context": "https://raw.githubusercontent.com/LinkedPasts/linked-places/master/linkedplaces-context-v1.3.jsonld",
+   "features": [
+    {"@id": "https://topostext.org/place/349241IKau",
+      "type": "Feature",
+      "properties":{
+        "title": "Kaudos (Gavdos)",
+        "ccodes": ["GR"]},
+      "geometry": {
+        "type": "GeometryCollection",
+        "geometries": [
+            { "type": "Point",
+              "coordinates": [24.11, 34.851]
+        }]},
+      "when": {
+        "timespans": [ { "start": {"in": "-750"}, "end": {"in": "0640"}}],
+         "label": "Greco-Roman civilization, 750 BCE - 640 CE"},
+      "names": [
+          {"toponym":"Caudos", "lang":"en",
+           "citations": [{
+            "@id": "https://topostext.org/work/145#2.114", 
+            "label": "Mela 2.114",
+            "when": {"timespans":[{"start":{"in":"43"}}]}}]},
+          {"toponym":"Clauda", "lang":"en",
+           "citations": [{
+            "@id": "https://topostext.org/work/146#27.13", 
+            "label": "Act. Ap. 27.13",
+             "when": {"timespans":[{"start":{"in":"62"}}]}}]},
+          {"toponym":"Gaudos", "lang":"en",
+           "citations": [{
+            "@id": "https://topostext.org/work/148#4.20.3", 
+            "label": "Plin. H.N. 4.20.3",
+             "when": {"timespans":[{"start":{"in":"77"}}]}}]},
+          {"toponym":"Kaudos", "lang":"en",
+           "citations": [{
+            "@id": "https://topostext.org/work/240#ka.1130", 
+            "label": "Suid. ka.1130",
+             "when": {"timespans":[{"start":{"in":"500"}}]}}]},
+          {"toponym":"Klaudia", "lang":"en",
+           "citations": [{
+            "@id": "https://topostext.org/work/217#322", 
+            "label": "Stad. M.M. 322",
+             "when": {"timespans":[{"start":{"in":"200"}}]}}]},
+          {"toponym":"Klaudos", "lang":"en",
+           "citations": [{
+            "@id": "https://topostext.org/work/209#3.15.11", 
+            "label": "Ptol. Geog. 3.15.11",
+             "when": {"timespans":[{"start":{"in":"160"}}]}}]},
+          {"toponym":"Καῦδος", "lang":"grc"}],
+      "types": [
+        {
+          "identifier": "aat:300417385",
+          "label": "polities",
+          "sourceLabel": "polity"
+        }
+      ],
+      "links": [
+        {"type": "closeMatch", "identifier": "http://pleiades.stoa.org/places/589858"},
+        {"type": "closeMatch", "identifier": "http://dare.ht.lu.se/places/41496"}
+      ],
+      "descriptions": [
+        {"@id": "https://topostext.org/place/349241IKau",
+        "value": "Classical to Hellenistic settlement on Gavdos island off Crete",
+        "lang": "en"
+        }
+      ]},
+    {"@id": "https://topostext.org/place/349248ULas",
+      "type": "Feature",
+      "properties":{
+        "title": "Lasaia (Crete)",
+        "ccodes": ["GR"]},
+      "geometry": {
+        "type": "GeometryCollection",
+        "geometries": [
+            { "type": "Point",
+              "coordinates": [24.8258, 34.9412]
+        }]},
+      "when": {
+        "timespans": [ { "start": {"in": "-750"}, "end": {"in": "0640"}}],
+         "label": "Greco-Roman civilization, 750 BCE - 640 CE"},
+      "names": [
+          {"toponym":"Lasea", "lang":"en",
+           "citations": [{
+            "@id": "https://topostext.org/work/146#27.1", 
+            "label": "Act. Ap. 27.1",
+         "when": {"timespans":[{"start":{"in":"62"}}]}}]},
+          {"toponym":"Lasos", "lang":"en",
+           "citations": [{
+            "@id": "https://topostext.org/work/148#4.20.2", 
+            "label": "Plin. H.N. 4.20.2",
+             "when": {"timespans":[{"start":{"in":"77"}}]}}]},
+          {"toponym":"Lassoia", "lang":"en",
+           "citations": [{
+            "@id": "https://topostext.org/work/127#19", 
+            "label": "Delphic Theorodochoi, BCH 45 1 19",
+             "when": {"timespans":[{"start":{"in":"-230"}}]}}]},
+          {"toponym":"Lisia", "lang":"en",
+           "citations": [{
+            "@id": "https://topostext.org/work/236#GR11", 
+            "label": "Tab. Peut. GR11",
+             "when": {"timespans":[{"start":{"in":"1200"}}]}}]},
+          {"toponym":"Lissen", "lang":"en",
+           "citations": [{
+            "@id": "https://topostext.org/work/144#10.4.14", 
+            "label": "Str. 10.4.14",
+             "when": {"timespans":[{"start":{"in":"24"}}]}}]},
+          {"toponym":"Λασαία", "lang":"grc"}],
+      "types": [
+        {
+          "identifier": "aat:300417385",
+          "label": "polities",
+          "sourceLabel": "polity"
+        }
+      ],
+      "relations": [
+        { "relationType": "gvp:broaderPartitive",
+          "relationTo": "https://topostext.org/places/352252IKre",
+          "label": "in Crete (GR)"}],
+      "links": [
+        {"type": "closeMatch", "identifier": "http://pleiades.stoa.org/places/589897"},
+        {"type": "closeMatch", "identifier": "http://dare.ht.lu.se/places/23383"}
+      ],
+      "descriptions": [
+        {"@id": "https://topostext.org/place/349248ULas",
+        "value": "Hellenistic to Late Antique settlement opposite Trafos island in Irakleio Crete",
+        "lang": "en"
+        }
+      ]},
+    {"@id": "https://topostext.org/place/349249IOxe",
+      "type": "Feature",
+      "properties":{
+        "title": "Oxeia (Crete)",
+        "ccodes": ["GR"]},
+      "geometry": {
+        "type": "GeometryCollection",
+        "geometries": [
+            { "type": "Point",
+              "coordinates": [24.9295, 34.9294]
+        }]},
+      "when": {
+        "timespans": [ { "start": {"in": "-750"}, "end": {"in": "0640"}}],
+         "label": "Greco-Roman civilization, 750 BCE - 640 CE"},
+      "names": [
+          {"toponym":"Oxeia", "lang":"en",
+           "citations": [{
+            "@id": "https://topostext.org/work/217#318", 
+            "label": "Stad. M.M. 318",
+         "when": {"timespans":[{"start":{"in":"200"}}]}}]},
+          {"toponym":"Οξεία", "lang":"grc"}],
+      "types": [
+        {
+          "identifier": "aat:300008791",
+          "label": "islands",
+          "sourceLabel": "island"
+        }
+      ],
+      "relations": [
+        { "relationType": "gvp:broaderPartitive",
+          "relationTo": "https://topostext.org/places/352252IKre",
+          "label": "in Crete (GR)"}],
+      "links": [
+        {"type": "closeMatch", "identifier": "http://pleiades.stoa.org/places/589964"},
+        {"type": "closeMatch", "identifier": "http://dare.ht.lu.se/places/41472"}
+      ],
+      "descriptions": [
+        {"@id": "https://topostext.org/place/349249IOxe",
+        "value": "island, off Lentas, Crete Greece",
+        "lang": "en"
+        }
+      ]},
+    {"@id": "https://topostext.org/place/349249PLeb",
+      "type": "Feature",
+      "properties":{
+        "title": "Leben (Crete)",
+        "ccodes": ["GR"]},
+      "geometry": {
+        "type": "GeometryCollection",
+        "geometries": [
+            { "type": "Point",
+              "coordinates": [24.924, 34.932]
+        }]},
+      "when": {
+        "timespans": [ { "start": {"in": "-750"}, "end": {"in": "0640"}}],
+         "label": "Greco-Roman civilization, 750 BCE - 640 CE"},
+      "names": [
+          {"toponym":"Leben", "lang":"en",
+           "citations": [{
+            "@id": "https://topostext.org/work/127#19", 
+            "label": "Delphic Theorodochoi, BCH 45 1 19",
+         "when": {"timespans":[{"start":{"in":"-230"}}]}}]},
+          {"toponym":"Lebena", "lang":"en",
+           "citations": [{
+            "@id": "https://topostext.org/work/148#4.20.2", 
+            "label": "Plin. H.N. 4.20.2",
+             "when": {"timespans":[{"start":{"in":"77"}}]}}]},
+          {"toponym":"Lebenas", "lang":"en",
+           "citations": [{
+            "@id": "https://topostext.org/work/217#322", 
+            "label": "Stad. M.M. 322",
+             "when": {"timespans":[{"start":{"in":"200"}}]}}]},
+          {"toponym":"Lebene", "lang":"en",
+           "citations": [{
+            "@id": "https://topostext.org/work/213#2.26.9", 
+            "label": "Paus. 2.26.9",
+             "when": {"timespans":[{"start":{"in":"174"}}]}}]},
+          {"toponym":"Ledena", "lang":"en",
+           "citations": [{
+            "@id": "https://topostext.org/work/236#GR11", 
+            "label": "Tab. Peut. GR11",
+             "when": {"timespans":[{"start":{"in":"1200"}}]}}]},
+          {"ethnonym":"Lebenians", "lang":"en",
+           "citations": [{
+            "@id": "https://topostext.org/work/144#10.4.12", 
+            "label": "Str. 10.4.12",
+             "when": {"timespans":[{"start":{"in":"24"}}]}}]},
+          {"toponym":"Λεβήν", "lang":"grc"}
+        ],
+      "types": [
+        {
+          "identifier": "aat:300417385",
+          "label": "polities",
+          "sourceLabel": "polity"
+        }
+      ],
+      "relations": [
+        { "relationType": "gvp:broaderPartitive",
+          "relationTo": "https://topostext.org/places/352252IKre",
+          "label": "in Crete (GR)"}],
+      "links": [
+        {"type": "closeMatch", "identifier": "http://pleiades.stoa.org/places/589901"},
+        {"type": "closeMatch", "identifier": "http://dare.ht.lu.se/places/23384"}
+      ],
+      "descriptions": [
+        {"@id": "https://topostext.org/place/349249PLeb",
+        "value": "Hellenistic to Late Antique polis at Lentas in Irakleio Crete",
+        "lang": "en"
+        }
+      ]},
+    {"@id": "https://topostext.org/place/349261ULeu",
+      "type": "Feature",
+      "properties":{
+        "title": "Leuke (Crete)",
+        "ccodes": ["GR"]},
+      "geometry": {
+        "type": "GeometryCollection",
+        "geometries": [
+            { "type": "Point",
+              "coordinates": [26.1312, 34.941]
+        }]},
+      "when": {
+        "timespans": [ { "start": {"in": "-750"}, "end": {"in": "0640"}}],
+         "label": "Greco-Roman civilization, 750 BCE - 640 CE"},
+      "names": [
+          {"toponym":"Leuce", "lang":"en",
+           "citations": [{
+            "@id": "https://topostext.org/work/148#4.20.3", 
+            "label": "Plin. H.N. 4.20.3",
+         "when": {"timespans":[{"start":{"in":"77"}}]}}]},
+          {"toponym":"Λεύκη", "lang":"grc"}],
+      "types": [
+        {
+          "identifier": "aat:300008791",
+          "label": "islands",
+          "sourceLabel": "island"
+        }
+      ],
+      "relations": [
+        { "relationType": "gvp:broaderPartitive",
+          "relationTo": "https://topostext.org/places/352252IKre",
+          "label": "in Crete (GR)"}],
+      "links": [
+        {"type": "closeMatch", "identifier": "http://pleiades.stoa.org/places/589909"},
+        {"type": "closeMatch", "identifier": "http://dare.ht.lu.se/places/24880"}
+      ],
+      "descriptions": [
+        {"@id": "https://topostext.org/place/349261ULeu",
+        "value": "Hellenistic to Late Antique island and settlement with Roman baths, theatre, south of Lasithi Crete",
+        "lang": "en"
+        }
+      ]},
+    {"@id": "https://topostext.org/place/350246ILet",
+      "type": "Feature",
+      "properties":{
+        "title": "Letoa (Crete)",
+        "ccodes": ["GR"]},
+      "geometry": {
+        "type": "GeometryCollection",
+        "geometries": [
+            { "type": "Point",
+              "coordinates": [24.5891, 35.0068]
+        }]},
+      "when": {
+        "timespans": [ { "start": {"in": "-750"}, "end": {"in": "0640"}}],
+         "label": "Greco-Roman civilization, 750 BCE - 640 CE"},
+      "names": [
+          {"toponym":"Letoa", "lang":"en",
+           "citations": [{
+            "@id": "https://topostext.org/work/209#3.13.9", 
+            "label": "Ptol. Geog. 3.13.9",
+         "when": {"timespans":[{"start":{"in":"160"}}]}}]},
+          {"toponym":"Λητῴα", "lang":"grc"}],
+      "types": [
+        {
+          "identifier": "aat:300008791",
+          "label": "islands",
+          "sourceLabel": "island"
+        }
+      ],
+      "relations": [
+        { "relationType": "gvp:broaderPartitive",
+          "relationTo": "https://topostext.org/places/352252IKre",
+          "label": "in Crete (GR)"}],
+      "links": [
+        {"type": "closeMatch", "identifier": "http://pleiades.stoa.org/places/589906"},
+        {"type": "closeMatch", "identifier": "http://dare.ht.lu.se/places/41474"}
+      ],
+      "descriptions": [
+        {"@id": "https://topostext.org/place/350246ILet",
+        "value": "island, the modern Paximadia, Crete Greece",
+        "lang": "en"
+        }
+      ]},
+    {"@id": "https://topostext.org/place/350248UMat",
+      "type": "Feature",
+      "properties":{
+        "title": "Matala (Crete)",
+        "ccodes": ["GR"]},
+      "geometry": {
+        "type": "GeometryCollection",
+        "geometries": [
+            { "type": "Point",
+              "coordinates": [24.7492, 34.9917]
+        }]},
+      "when": {
+        "timespans": [ { "start": {"in": "-750"}, "end": {"in": "0640"}}],
+         "label": "Greco-Roman civilization, 750 BCE - 640 CE"},
+      "names": [
+          {"toponym":"Matala", "lang":"en",
+           "citations": [{
+            "@id": "https://topostext.org/work/127#19", 
+            "label": "Delphic Theorodochoi, BCH 45 1 19",
+         "when": {"timespans":[{"start":{"in":"-230"}}]}}]},
+          {"toponym":"Matalia", "lang":"en",
+           "citations": [{
+            "@id": "https://topostext.org/work/209#3.15.4", 
+            "label": "Ptol. Geog. 3.15.4",
+             "when": {"timespans":[{"start":{"in":"160"}}]}}]},
+          {"toponym":"Matalum", "lang":"en",
+           "citations": [{
+            "@id": "https://topostext.org/work/144#10.4.11", 
+            "label": "Str. 10.4.11",
+             "when": {"timespans":[{"start":{"in":"24"}}]}}]},
+          {"toponym":"Μάταλα", "lang":"grc"}],
+      "types": [
+        {
+          "identifier": "aat:300417385",
+          "label": "polities",
+          "sourceLabel": "polity"
+        }
+      ],
+      "relations": [
+        { "relationType": "gvp:broaderPartitive",
+          "relationTo": "https://topostext.org/places/352252IKre",
+          "label": "in Crete (GR)"}],
+      "links": [
+        {"type": "closeMatch", "identifier": "http://pleiades.stoa.org/places/589925"},
+        {"type": "closeMatch", "identifier": "http://dare.ht.lu.se/places/28814"}
+      ],
+      "descriptions": [
+        {"@id": "https://topostext.org/place/350248UMat",
+        "value": "Hellenistic and later settlement, a port of Phaistos, with rock-cut Roman graves, modern Matala, Irakleio Crete",
+        "lang": "en"
+        }
+      ]}
+   ]
+ }

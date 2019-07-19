@@ -58,7 +58,7 @@ class DatasetModelForm(forms.ModelForm):
       'format': forms.Select(),
       'datatype': forms.Select(),
     }
-    initial = {'format': 'delimited', 'datatype': 'places'}
+    initial = {'format': 'delimited', 'datatype': 'places', 'uri_base': 'http://whgazetteer.org/api/places/'}
 
   def unique_label(self, *args, **kwargs):
     label = self.cleaned_content['name'][:16]+'_'+user.first_name[:1]+user.last_name[:1]

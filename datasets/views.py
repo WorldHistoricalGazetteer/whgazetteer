@@ -507,8 +507,6 @@ def ds_insert_csv(request, pk):
     ccodes = r[header.index('ccodes')].split(';') \
       if 'ccodes' in header else []
     print(ccodes)
-    if len(max(ccodes,key=len))>2:
-      print('got a big one:', src_id)
     coords = [
       float(r[header.index('lon')]),
           float(r[header.index('lat')]) ] if 'lon' in header else []
