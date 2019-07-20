@@ -230,7 +230,8 @@ def align_wd(pk, *args, **kwargs):
   timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M"); print(timestamp)
 
   hit_parade = {"summary": {}}
-  outdir='/Users/karlg/Documents/Repos/_whgdata/pyout/align_wd/'
+  #outdir='/Users/karlg/Documents/Repos/_whgdata/pyout/align_wd/'
+  outdir='.'
   
   # missed, skipped
   # can't know in advance
