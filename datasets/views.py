@@ -479,6 +479,12 @@ def ds_insert_csv(request, pk):
   # id*, title*, name_src*, types[]^, variants[], parent^, ccodes[]^, lon^, lat^,min,max,
   # geom_src, close_match[]^, exact_match[]^, description, depiction
 
+  def makeCoords(lonstr,latstr):
+    lon = float(lonstr) if lonstr != '' else ''
+    lat = float(latstr) if latstr != '' else ''
+    coords = [] if (lonstr == ''  or latstr == '') else [lon,lat]
+    return coords
+    
   # TODO: what if simultaneous inserts?
   countrows=0
   countlinked = 0
@@ -507,9 +513,13 @@ def ds_insert_csv(request, pk):
     ccodes = r[header.index('ccodes')].split(';') \
       if 'ccodes' in header else []
     print(ccodes)
-    coords = [
-      float(r[header.index('lon')]),
-          float(r[header.index('lat')]) ] if 'lon' in header else []
+    if 'lon' in header and 'lat' in header:
+      coords = makeCoords(r[header.index('lon')],r[header.index('lat')])  
+    else:
+      coords = []
+    #coords = [
+      #float(r[header.index('lon')]),
+          #float(r[header.index('lat')]) ] if 'lon' in header else []
     close_matches = r[header.index('close_matches')].split(';') \
       if 'close_matches' in header else []
     exact_matches = r[header.index('exact_matches')].split(';') \
@@ -562,7 +572,8 @@ def ds_insert_csv(request, pk):
 
     # PlaceGeom()
     # TODO: test geometry type or force geojson
-    if 'lon' in header and (coords[0] != 0 and coords[1] != 0):
+    #if 'lon' in header and (coords[0] != 0 and coords[1] != 0):
+    if len(coords) > 0:
       objs['PlaceGeom'].append(PlaceGeom(place_id=newpl,src_id = src_id,
         jsonb={"type": "Point", "coordinates": coords,
                     "geowkt": 'POINT('+str(coords[0])+' '+str(coords[1])+')'}

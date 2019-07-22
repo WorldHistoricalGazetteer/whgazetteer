@@ -1,5 +1,5 @@
 id	title	name_src	variants	type	aat_types	ccodes	lon	lat	min	max
-1	Κωνσταντινούπολη (Kōnstantinoupolē)	ali-pasha	Πόλη;Βασιλεύουoa;Constantinopoli	settlement	300008347	GR;AL;TR;MK;BG;IT;AT;RU;RO	28.94966	41.01384	1780	1820
+1	Κωνσταντινούπολη (Kōnstantinoupolē)	ali-pasha	Πόλη;Βασιλεύουoa;Constantinopoli	settlement	300008347	GR;AL;TR;MK;BG;IT;AT;RU;RO					1780	1820
 2	Πρέβεζα (Prebeza)	ali-pasha	Prevesa	settlement	300008347	GR;AL;TR;MK;BG;IT;AT;RU;RO	20.7505	38.95617	1780	1820
 3	Άργυρόκαστρο (Argyrokastro)	ali-pasha	Κάστρο;Άργυρούκαστρο;Ραγυρούκαστρο	province	300000774	GR;AL;TR;MK;BG;IT;AT;RU;RO	20.13889	40.07583	1780	1820
 4	Γαλλίαγαλλικός (Galliagallikos)	ali-pasha	Φράντζα;Φράνφα;Φραγκιά;Φαργκιά;Φιράντζα;Francia	settlement	300008347	GR;AL;TR;MK;BG;IT;AT;RU;RO	2	47	1780	1820
