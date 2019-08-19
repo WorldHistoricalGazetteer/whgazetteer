@@ -111,6 +111,7 @@ def review(request, pk, tid, passnum): # dataset pk, celery recon task_id
 
   placeid = records[0].id
   place = get_object_or_404(Place, id=placeid)
+  print(placeid)
 
   # recon task hits
   raw_hits = Hit.objects.all().filter(place_id=placeid, task_id=tid).order_by('query_pass','-score')
@@ -508,6 +509,7 @@ def ds_insert_csv(request, pk):
     src_type = r[header.index('type')] if 'type' in header else 'not specified'
     aat_types = r[header.index('aat_types')].split(';') \
       if 'aat_types' in header else ''
+    # TODO: allow multiple parents
     parent = r[header.index('parent')] if 'parent' in header else ''
     #standardize on ';' for name and ccode arrays in tab-delimited files
     ccodes = r[header.index('ccodes')].split(';') \
