@@ -66,8 +66,14 @@
               {% endif %}
               <div class="attest-element">Links: 
               {% for link in rec.links %}
-                <a href="" class="mr-2 ext" data-toggle="modal" data-target="#ext_site">{{ link.identifier }} {% fontawesome_icon 'external-link' color='#336699' %}</a>({{link.type}})
-                {% if not forloop.last %}; {% endif %}{% endfor %}</div>
+                {% if link.identifier|slice:"0:3" not in 'loc,via' %}
+                  <a href="" class="mr-2 ext" data-toggle="modal" data-target="#ext_site">{{ link.identifier }} {% fontawesome_icon 'external-link' color='#336699' %}</a>({{link.type}})
+                  {% if not forloop.last %}; {% endif %}
+                {% else %}
+                  <a href="" class="mr-2 ext">{{ link.identifier }} {% fontawesome_icon 'external-link' color='#336699' %}</a>({{link.type}})
+                {% endif %}
+              {% endfor %}
+              </div>
               {% if rec.related|length > 0 %}
                 <!--<div id="place_related" class="attest-element abbrev">-->
                 <div id="place_related" class="attest-element">
@@ -168,11 +174,15 @@
   $('.ext').on('click', function(e) {
     e.preventDefault();
     str=$(this).text()
-    var re = /(dbp|gn|tgn|wd):(.*?)$/;
+    var re = /(dbp|gn|tgn|wd|loc|viaf):(.*?)$/;
     url=base_urls[str.match(re)[1]]+str.match(re)[2]
-    console.log('url',url)
-    $(".modal-body").html('<iframe width="100%" height="100%" frameborder="0" scrolling="yes" '+
-      'allowtransparency="true" src="'+url+'"></iframe>');
+    console.log(str.match(re)[1], '; url',url)
+    if(['dbp','gn','tgn','wd'].indexOf(str.match(re)[1]) >= 0 ){
+      $(".modal-body").html('<iframe width="100%" height="100%" frameborder="0" scrolling="yes" '+
+        'allowtransparency="true" src="'+url+'"></iframe>');    
+    } else {
+      window.open(url,'_blank')
+    }
   });
 
   $(function() {
