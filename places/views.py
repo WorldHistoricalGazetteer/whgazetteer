@@ -11,6 +11,7 @@ from datasets.models import Dataset
 
 class PlacePortalView(DetailView):
   template_name = 'places/place_portal.html'
+  #template_name = 'places/place_portal_acc.html'
 
   def get_object(self):
     id_ = self.kwargs.get("id")
@@ -63,7 +64,8 @@ class PlacePortalView(DetailView):
         "ccodes":place.ccodes, 
         "names":[name.jsonb for name in place.names.all()], 
         "types":[t.jsonb for t in place.types.all()], 
-        "links":[link.jsonb for link in place.links.distinct('jsonb')], 
+        #"links":[link.jsonb for link in place.links.distinct('jsonb')], 
+        "links":[link.jsonb for link in place.links.distinct('jsonb') if not link.jsonb['identifier'].startswith('whg')], 
         "geoms":[geom.jsonb for geom in place.geoms.all()],
         "whens":[when.jsonb for when in place.whens.all()], 
         "related":[rel.jsonb for rel in place.related.all()], 
