@@ -38,60 +38,38 @@
         <div class="row pt-1">
           <div id="place_home_l" class="col-sm-5">
             <div class="col-content small mt-1"><p>{{ place.title }} is a { place type }, { on the {...} } (<i>possible, future</i>)</p></div>
+            <div id="accordion">
             {% for rec in payload %}
-            <div class="col-content small mt-1">
-              <div class="attest-header">
+              <p class="attest-header">
                 <b>{{ rec.title }}</b> (<a href="/api/places/{{ rec.place_id }}/" target="_blank">pid:{{ rec.place_id }}</a>)
                 <span class="float-right">
-                  dataset: <a href="#" rel="tooltip" title="{ full title }" class="ttip">{{rec.dataset.label}}</a>
+                    dataset: <a href="#" rel="tooltip" title="{ full title }" class="ttip">{{rec.dataset.label}}</a>
                 </span>
-              </div>
+              </p>
+              <div>
               <div class="attest-element">Variants: 
                 {% for name in rec.names %}<i>{{name.toponym}}</i>
                 {% if "http" in name.citation.id %}
-                  (<a href="{{ name.citation.id }}" rel="tooltip"
-                  title="{{name.citation.label}}" target="_blank">src</a>)
+                    (<a href="{{ name.citation.id }}" rel="tooltip"
+                       title="{{name.citation.label}}" target="_blank">src</a>)
                 {% endif %}
                 {% if not forloop.last %}; {% endif %}
                 {% endfor %}
               </div>
-              <div class="attest-element">Types: {% for type in rec.types %}<i>{{type.label}}/{{type.src_label}}</i>
-                {% if not forloop.last %}; {% endif %}{% endfor %}</div>
+              <div class="attest-element">Types: 
+                {% for type in rec.types %}<i>{{type.label}}/{{type.src_label}}</i>
+                {% if not forloop.last %}; {% endif %}{% endfor %}
+              </div>
               <!-- put geoms into script -->
               {% if rec.geoms|length > 0 %}
-                {% for g in rec.geoms %}
-                  {{ g|json_script:rec.place_id }}
-                  <!--{ g|json_script:g.citation.id }-->
-                {% endfor %}
+                  {% for g in rec.geoms %}
+                      {{ g|json_script:rec.place_id }}
+                      <!--{ g|json_script:g.citation.id }-->
+                  {% endfor %}
               {% endif %}
-              <div class="attest-element">Links: 
-              {% for link in rec.links %}
-                <a href="" class="mr-2 ext" data-toggle="modal" data-target="#ext_site">{{ link.identifier }} {% fontawesome_icon 'external-link' color='#336699' %}</a>({{link.type}})
-                {% if not forloop.last %}; {% endif %}{% endfor %}</div>
-              {% if rec.related|length > 0 %}
-                <!--<div id="place_related" class="attest-element abbrev">-->
-                <div id="place_related" class="attest-element">
-                  Related:
-                    Within {% for rel in rec.related %}
-                    {{ rel.label }} ({{rel.when.start.in}}-{{rel.when.end.in}})
-                    {% if not forloop.last %}; {% endif %}
-                    {% endfor %}
-                  </ul>
-                </div>
-              {% endif %}
-              {% if rec.descriptions %}
-              <div class="attest-element">
-              <!--<div class="attest-element abbrev">-->
-                <div>Descriptions: {% for desc in rec.descriptions %}<i>{{desc.value}}</i>
-                  {% if not forloop.last %}; {% endif %}{% endfor %}</div>
               </div>
-              {% endif %}
-              {% if rec.whens %}
-              <!--<div class="attest-element">Temporal: {# for when in rec.whens %}{when|truncatechars:130}}{# endfor %}</div>-->
-              <div class="attest-element">Temporal: {% for when in rec.whens %}{{when}}{% endfor %}</div>
-              {% endif %}              
-            </div>
             {% endfor %} <!-- rec in payload-->
+            </div> <!-- accordion -->
           </div> <!-- place_home_l-->
           <div id="place_home_r" class="col-sm-7">
             <div id="place_temporal" class="col-content small">
@@ -176,6 +154,7 @@
   });
 
   $(function() {
+    $( "#accordion" ).accordion();
     var trace_count = 0
     $("[rel='tooltip']").tooltip();
     $('a[data-toggle="tooltip"]').tooltip({
@@ -183,6 +162,15 @@
       placement: 'bottom',
       html: true
     });
+    $(".remote-link").on('click', function(event){
+      event.preventDefault()
+      str=$(this).text()
+      var re = /(dbp|gn|tgn|wd):(.*?)$/;
+      auth=str.match(re)[1]
+      id=str.match(re)[2]
+      window.location.href = base_urls[auth]+id
+      console.log(str, auth,id)
+    })
     $('input#fetch-context').prop('checked',false)
     $('input#fetch-context').click(function(){
       if($(this).is(':checked')) {
@@ -314,6 +302,7 @@
     grayscale = L.tileLayer(mbstyle_url, {id:'kgeographer/cjstfpenh6o1e1fldz95w8m6p', token:token_kg, attribution:attrib_mb}),
     satellite  = L.tileLayer(mbtiles_url, {id:'mapbox.satellite', token:token_mb, attribution:attrib_mb});
     osm  = L.tileLayer(mbtiles_url, {id:'mapbox.light', token:token_mb, attribution:attrib_mb});
+
 
     var watershedStyle = {
       "fillColor": "#993333",
