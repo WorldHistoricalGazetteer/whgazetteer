@@ -15,7 +15,7 @@
 {% block content %}
 <div class="container">
   <div id="place_title">
-    <h4>{{ place.title }} 
+    <h4>{{ title }} 
       <span class="small">{% if ccodes|length > 0 %} ({% for c in ccodes %}{{ c }} {% endfor %}){% endif %}</span>
       <span class="smaller float-right"> <i>whg:{{ whg_id }}</i>
         {% if place.dataset in spine %}<a href="" rel="tooltip" title="WHG spine record">
@@ -29,15 +29,13 @@
       <li class="nav-item">
         <a class="nav-link active" data-toggle="tab" href="#place_core" selected>Attestations</a>
       </li>
-      <!--<li class="nav-item">-->
-        <!--<a class="nav-link" data-toggle="tab" href="#place_discussion">Discussion</a>-->
-      <!--</li>-->
     </ul>
     <div id="place_content" class="tab-content">
       <div id="place_core" class="tab-pane fade show active" >
         <div class="row pt-1">
-          <div id="place_home_l" class="col-sm-5">
-            <div class="col-content small mt-1"><p>{{ place.title }} is a { place type }, { on the {...} } (<i>possible, future</i>)</p></div>
+          <div id="place_home_l" class="col-sm-6">
+            <div class="col-content small mt-1">
+              <p>{{ title }} is a { place type }, { on the {...} }</p></div>
             {% for rec in payload %}
             <div class="col-content small mt-1">
               <div class="attest-header">
@@ -92,6 +90,7 @@
                   {% if not forloop.last %}; {% endif %}{% endfor %}</div>
               </div>
               {% endif %}
+              Time object: {{ rec.extents }}
               {% if rec.whens %}
               <!--<div class="attest-element">Temporal: {# for when in rec.whens %}{when|truncatechars:130}}{# endfor %}</div>-->
               <div class="attest-element">Temporal: {% for when in rec.whens %}{{when}}{% endfor %}</div>
@@ -99,7 +98,7 @@
             </div>
             {% endfor %} <!-- rec in payload-->
           </div> <!-- place_home_l-->
-          <div id="place_home_r" class="col-sm-7">
+          <div id="place_home_r" class="col-sm-6">
             <div id="place_temporal" class="col-content small">
               <p class="mb-0 allcap-heading">TEMPORAL ATTESTATIONS</p>
               <p> <img src="{% static 'images/spark01.png'%}" height=auto width=275 alt=""/> { summing temporal visualization } <i>future</i></p>
