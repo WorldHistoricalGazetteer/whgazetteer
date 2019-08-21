@@ -13,6 +13,13 @@ class PlacePortalView(DetailView):
   template_name = 'places/place_portal.html'
   #template_name = 'places/place_portal_acc.html'
 
+  # //
+  # given index id returned by typeahead/suggest, get its db record (a parent);
+  # build array of place_ids (parent + children);
+  # iterate those to build payload;
+  # create addl context values from set
+  # //
+
   def get_object(self):
     id_ = self.kwargs.get("id")
     print('args',self.args,'kwargs:',self.kwargs)
@@ -26,13 +33,40 @@ class PlacePortalView(DetailView):
     id_ = self.kwargs.get("id")
     return '/places/'+str(id_)+'/detail'
   
-  def minmax(timespans):
-    starts = sorted([t['start']['in'] for t in timespans])
-    ends = sorted([t['end']['in'] for t in timespans])
-    #minmax = {'start':min(starts), 'end':max(ends)}    
-    minmax = [min(starts), max(ends)]
+  
+  def mm(attrib):
+    # names, geoms, types, relations, whens
+    extent=[]
+    for a in attrib:
+      mm=[]
+      if 'when' in a:
+        starts = sorted([t['start']['in'] or t['start']['earliest'] for t in a['when']['timespans']])
+        ends = sorted([t['end']['in'] for t in a['when']['timespans']])
+        mm = [min(starts), max(ends)]
+      elif 'timespans' in a:
+        starts = sorted([t['start']['in'] for t in a['timespans']])
+        ends = sorted([t['end']['in'] for t in a['timespans']])
+        mm = [min(starts), max(ends)]        
+      if len(mm)>0: extent.append(mm)
+    return extent    
 
   def get_context_data(self, *args, **kwargs):
+    def mm(attrib):
+      # names, geoms, types, relations, whens
+      extent=[]
+      for a in attrib:
+        mm=[]
+        if 'when' in a:
+          starts = sorted([t['start']['in'] for t in a['when']['timespans']])
+          ends = sorted([t['end']['in'] for t in a['when']['timespans']])
+          mm = [min(starts), max(ends)]
+        elif 'timespans' in a:
+          starts = sorted([t['start']['in'] for t in a['timespans']])
+          ends = sorted([t['end']['in'] for t in a['timespans']])
+          mm = [min(starts), max(ends)]        
+        if len(mm)>0: extent.append(mm)
+      return extent    
+
     context = super(PlacePortalView, self).get_context_data(*args, **kwargs)
     es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
     id_ = self.kwargs.get("id")
@@ -51,9 +85,23 @@ class PlacePortalView(DetailView):
 
     # database records for parent + children into 'payload'
     qs=Place.objects.filter(id__in=ids).order_by('-whens__minmax')
-    #print("id_,ids, qs",id_,ids,qs)
+    context['title'] = qs.first().title
+    extents = []
     for place in qs:
       ds = get_object_or_404(Dataset,id=place.dataset.id)
+      
+      # isolate temporal scoping where exists; build summing object
+      whens = [when.jsonb for when in place.whens.all()]     
+      names = [name.jsonb for name in place.names.all()]
+      geoms = [geom.jsonb for geom in place.geoms.all()]
+      types = [t.jsonb for t in place.types.all()]
+      related = [rel.jsonb for rel in place.related.all()]
+      # data object for summing temporality of all attestations for a place
+      # TODO: leaving relations out b/c when for lugares is ill-formed
+      # cf. 20190416_lugares-lpf.sql, line 63
+      #extents += mm(names),mm(geoms),mm(types),mm(related),mm(whens)
+      extents += mm(names),mm(geoms),mm(types),mm(whens)
+      
       record = {
         "whg_id":id_,
         "dataset":{"id":ds.id,"label":ds.label},
@@ -62,18 +110,20 @@ class PlacePortalView(DetailView):
         "purl":ds.uri_base+str(place.id) if 'whgaz' in ds.uri_base else ds.uri_base+place.src_id,
         "title":place.title,
         "ccodes":place.ccodes, 
-        "names":[name.jsonb for name in place.names.all()], 
-        "types":[t.jsonb for t in place.types.all()], 
-        #"links":[link.jsonb for link in place.links.distinct('jsonb')], 
+        "whens":whens, 
+        "names":names, 
+        "geoms":geoms,
+        "types":types, 
+        "related":related, 
         "links":[link.jsonb for link in place.links.distinct('jsonb') if not link.jsonb['identifier'].startswith('whg')], 
-        "geoms":[geom.jsonb for geom in place.geoms.all()],
-        "whens":[when.jsonb for when in place.whens.all()], 
-        "related":[rel.jsonb for rel in place.related.all()], 
         "descriptions":[descr.jsonb for descr in place.descriptions.all()], 
-        "depictions":[depict.jsonb for depict in place.depictions.all()]
+        "depictions":[depict.jsonb for depict in place.depictions.all()],
+        "extents":extents
       }
       context['payload'].append(record)
+    #TODO: compute global minmax for payload
     print('payload',context['payload'])
+    
     # get traces
     qt = {"query": {"bool": {"must": [{"match":{"body.whg_id": id_ }}]}}}
     trace_hits = es.search(index='traces', doc_type='trace', body=qt)['hits']['hits']
