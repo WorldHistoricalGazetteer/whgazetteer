@@ -3,6 +3,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 from django.views.generic import DetailView
 from django.utils.safestring import SafeString
+from datetime import datetime
 from elasticsearch import Elasticsearch
 import simplejson as json
 
@@ -34,38 +35,25 @@ class PlacePortalView(DetailView):
     return '/places/'+str(id_)+'/detail'
   
   
-  def mm(attrib):
-    # names, geoms, types, relations, whens
-    extent=[]
-    for a in attrib:
-      mm=[]
-      if 'when' in a:
-        starts = sorted([t['start']['in'] or t['start']['earliest'] for t in a['when']['timespans']])
-        ends = sorted([t['end']['in'] for t in a['when']['timespans']])
-        mm = [min(starts), max(ends)]
-      elif 'timespans' in a:
-        starts = sorted([t['start']['in'] for t in a['timespans']])
-        ends = sorted([t['end']['in'] for t in a['timespans']])
-        mm = [min(starts), max(ends)]        
-      if len(mm)>0: extent.append(mm)
-    return extent    
-
   def get_context_data(self, *args, **kwargs):
     def mm(attrib):
       # names, geoms, types, relations, whens
       extent=[]
       for a in attrib:
-        mm=[]
+        minmax=[]
         if 'when' in a:
+          #starts = sorted([t['start']['in'] for t in a['when']['timespans']])
           starts = sorted([t['start']['in'] for t in a['when']['timespans']])
-          ends = sorted([t['end']['in'] for t in a['when']['timespans']])
-          mm = [min(starts), max(ends)]
+          # TODO: this could throw error if >1 timespan
+          ends = sorted([t['end']['in'] for t in a['when']['timespans']]) \
+            if 'end' in a['when']['timespans'][0] else [datetime.now().year]
+          minmax = [int(min(starts)), int(max(ends))]
         elif 'timespans' in a:
           starts = sorted([t['start']['in'] for t in a['timespans']])
           ends = sorted([t['end']['in'] for t in a['timespans']])
-          mm = [min(starts), max(ends)]        
-        if len(mm)>0: extent.append(mm)
-      return extent    
+          minmax = [int(min(starts)), int(max(ends))]        
+        if len(minmax)>0: extent.append(minmax)
+      return extent
 
     context = super(PlacePortalView, self).get_context_data(*args, **kwargs)
     es = Elasticsearch([{'host': 'localhost', 'port': 9200}])

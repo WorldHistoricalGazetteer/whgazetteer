@@ -45,16 +45,21 @@
                 </span>
               </div>
               <div class="attest-element">Variants: 
-                {% for name in rec.names %}<i>{{name.toponym}}</i>
-                {% if "http" in name.citation.id %}
-                  (<a href="{{ name.citation.id }}" rel="tooltip"
-                  title="{{name.citation.label}}" target="_blank">src</a>)
-                {% endif %}
-                {% if not forloop.last %}; {% endif %}
+                {% for name in rec.names %}<b>{{name.toponym}}</b> 
+                  {% if name.when %}</i>({% for t in name.when.timespans %}{{ t.start.in }}-{{ t.end.in }}{%endfor%})
+                  {% endif %}</i>
+                  {% if "http" in name.citation.id %}
+                    (<a href="{{ name.citation.id }}" rel="tooltip"
+                    title="{{name.citation.label}}" target="_blank">src</a>)
+                  {% endif %}
+                  {% if not forloop.last %}| {% endif %}
                 {% endfor %}
               </div>
-              <div class="attest-element">Types: {% for type in rec.types %}<i>{{type.label}}/{{type.src_label}}</i>
-                {% if not forloop.last %}; {% endif %}{% endfor %}</div>
+              <div class="attest-element">Types: 
+                {% for type in rec.types %}<i>{{type.src_label}}</i>
+                {% if not forloop.last %}| {% endif %}{% endfor %}
+                <!--{type.label}}/-->
+              </div>
               <!-- put geoms into script -->
               {% if rec.geoms|length > 0 %}
                 {% for g in rec.geoms %}
@@ -78,7 +83,7 @@
                   Related:
                     Within {% for rel in rec.related %}
                     {{ rel.label }} ({{rel.when.start.in}}-{{rel.when.end.in}})
-                    {% if not forloop.last %}; {% endif %}
+                    {% if not forloop.last %}| {% endif %}
                     {% endfor %}
                   </ul>
                 </div>
@@ -90,11 +95,17 @@
                   {% if not forloop.last %}; {% endif %}{% endfor %}</div>
               </div>
               {% endif %}
-              Time object: {{ rec.extents }}
               {% if rec.whens %}
-              <!--<div class="attest-element">Temporal: {# for when in rec.whens %}{when|truncatechars:130}}{# endfor %}</div>-->
-              <div class="attest-element">Temporal: {% for when in rec.whens %}{{when}}{% endfor %}</div>
-              {% endif %}              
+                <!--<div class="attest-element">Temporal: {# for when in rec.whens %}{when|truncatechars:130}}{# endfor %}</div>-->
+                <div class="attest-element">Temporal: 
+                  {% for when in rec.whens %}
+                    {% for t in when.timespans %}
+                      {{t.start.in}}/{{t.end.in}}
+                      {% if not forloop.last %}| {% endif %}
+                    {% endfor %}
+                  {% endfor %}</div>
+              {% endif %}
+              All t [names,geoms,types,whens]: {{ rec.extents }}
             </div>
             {% endfor %} <!-- rec in payload-->
           </div> <!-- place_home_l-->
