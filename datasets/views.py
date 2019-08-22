@@ -568,7 +568,7 @@ def ds_insert_csv(request, pk):
       for t in aat_types:
         objs['PlaceType'].append(
           PlaceType(place_id=newpl,src_id = src_id,
-            jsonb={"identifier":"aat:"+t, "src_label":src_type, 
+            jsonb={"identifier":"aat:"+t, "sourceLabel":src_type, 
                           "label":aat_lookup(int(t))}
         ))
 
