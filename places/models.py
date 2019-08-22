@@ -75,7 +75,8 @@ class PlaceType(models.Model):
     src_id = models.CharField(max_length=24,default='') # contributor's identifier
 
     def __str__(self):
-        return self.jsonb['src_label'] #(self.json.src_label)
+        #return self.jsonb['src_label']
+        return self.jsonb['sourceLabel']
 
     class Meta:
         managed = True
