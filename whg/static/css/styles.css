@@ -56,8 +56,8 @@ i.fa-eye { margin-bottom: -5px;}
 #trace_detail li {border-bottom: 1px dotted #ccc !important;}
 
 input[type="text"] {
-   height: 1.5rem;
-   font-size: .8rem;
+   /*height: 1.5rem;*/
+   /*font-size: .8rem;*/
    /*line-height: rem;*/
 }
 
@@ -79,30 +79,51 @@ input[type="text"] {
 #search_type {
   height: 1.5rem;
   z-index:500;
+  margin-bottom: .5rem !important;
 }
 #search_type label {
   font-size:.9rem;
 }
-
+#resultlist {
+  padding-top: 0;
+  border: 1px solid #ddd;
+  border-top: #fff;
+}
 .nameautosuggest {
   display: none;
-  margin-top: -12px;
+  margin-top: -18px;
   margin-bottom: 6px;
-  padding: 5px;
+  padding-top: 3px;
+  border: 1px solid #ddd;
+  border-top: #fff;
+  /*padding: 5px;*/
   /*background-color: lightsteelblue;*/
   background-color: white;
   /*border: 1px solid  #80bfff;*/
   z-index: 600;
 }
+/*.place-item, .trace-item {*/
+  /*list-style-type: none;*/
+  /*margin-top: 5px;*/
+  /*background-color: #f2f2f2;*/
+  /*padding-left: 5px;*/
+  /*font-size: small;*/
+  /*cursor: pointer;*/
+  /*min-height: 30px;*/
+  /*box-shadow: 1px 1px lightgrey;*/
+/*}*/
+
+/*new style*/
 .place-item, .trace-item {
   list-style-type: none;
   margin-top: 5px;
-  background-color: #f2f2f2;
+  border-bottom: 1px solid #ddd;
+  /*background-color: #f2f2f2;*/
   padding-left: 5px;
   font-size: small;
   cursor: pointer;
   min-height: 30px;
-  box-shadow: 1px 1px lightgrey;
+  /*box-shadow: 1px 1px lightgrey;*/
 }
 
 .flash-geom {
