@@ -84,6 +84,9 @@ input[type="text"] {
 #search_type label {
   font-size:.9rem;
 }
+#search_button:hover {
+  cursor: pointer;
+}
 #resultlist {
   padding-top: 0;
   border: 1px solid #ddd;
@@ -94,47 +97,34 @@ input[type="text"] {
   margin-top: -18px;
   margin-bottom: 6px;
   padding-top: 3px;
-  border: 1px solid #ddd;
-  border-top: #fff;
+  border-left: 1px solid #ddd;
+  border-right: 1px solid #ddd;
   /*padding: 5px;*/
   /*background-color: lightsteelblue;*/
   background-color: white;
   /*border: 1px solid  #80bfff;*/
   z-index: 600;
 }
-/*.place-item, .trace-item {*/
-  /*list-style-type: none;*/
-  /*margin-top: 5px;*/
-  /*background-color: #f2f2f2;*/
-  /*padding-left: 5px;*/
-  /*font-size: small;*/
-  /*cursor: pointer;*/
-  /*min-height: 30px;*/
-  /*box-shadow: 1px 1px lightgrey;*/
-/*}*/
 
 /*new style*/
 .place-item, .trace-item {
   list-style-type: none;
   margin-top: 5px;
   border-bottom: 1px solid #ddd;
-  /*background-color: #f2f2f2;*/
   padding-left: 5px;
   font-size: small;
   cursor: pointer;
   min-height: 30px;
-  /*box-shadow: 1px 1px lightgrey;*/
 }
 
+.row:hover {
+  background-color: #eee;
+}
 .flash-geom {
   font-size: 1.2rem;
   margin-top:6px;
   cursor: pointer;
 }
-.nameautosuggest li:hover, .trace-item:hover  {
-  background-color: #f9ebeb;
-}
-
 
 .active-card {background-color: #f9ebeb !important;}
 .trace-detail { display:none; margin-left: -14px; margin-top:2px;}
