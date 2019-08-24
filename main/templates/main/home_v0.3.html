@@ -38,7 +38,7 @@
             <div class="input-group mb-3">
               <input id="searchbox" type="text" class="form-control" placeholder="Enter place name" aria-label="Place name" aria-describedby="basic-addon2">
               <div class="input-group-append">
-                <span class="input-group-text" id="basic-addon2">
+                <span class="input-group-text" id="search_button">
                   {% fontawesome_icon 'search' color='#333' %}</span>
               </div>
             </div>
@@ -246,7 +246,26 @@
         showSuggestions(data,doctype);
       });
   })
-  
+  // catch Enter key press, trigger button
+  $("#searchbox").on('keyup', function(e){
+    if (e.keyCode === 13) {
+      $("#search_button").click()
+    }
+  })
+  // perform search, not autocomplete
+  $("#search_button").on('click', function(){
+    window.doctype = $("input[name='class']:checked").val();
+    console.log('button clicked; this: '+$("#searchbox")[0].value+'; type: '+doctype)
+    $.get("/search/search",{
+       search: $("#searchbox")[0].value, 
+       doc_type: doctype
+     }, 
+     function(data){
+       // render to html
+       console.log('data?',data)
+       showSuggestions(data,doctype);
+     });
+  })
   $('.nameautosuggest').on('click', '.place-item', function(){
     whgid=$(this).data('id')
     // clear the dropdown
