@@ -25,11 +25,11 @@
           <div id="searchinput">
             <div id="search_type" class="form-group d-flex justify-content-center"> 
               <div class="form-check form-check-inline">
-                <input class="form-check-input" type="radio" name="class" id="r_place" value="place" rel="Enter place name" checked="checked">
+                <input class="form-check-input hover" type="radio" name="class" id="r_place" value="place" rel="Enter place name" checked="checked">
                 <label class="form-check-label" for="r_place">Places</label>
               </div>
               <div class="form-check form-check-inline">
-                <input class="form-check-input" type="radio" name="class" id="r_trace" value="trace" rel="Enter term or name">
+                <input class="form-check-input hover" type="radio" name="class" id="r_trace" value="trace" rel="Enter term or name">
                 <label class="form-check-label" for="r_trace">Traces
                     <span class="ml-1"><a href="" title="historical entities having spatial-temporal 'footprints'" rel="tooltip">{% fontawesome_icon 'question-circle' color='#336699' %}</a></span>                
                 </label>
@@ -45,7 +45,7 @@
           </div>
           <div id="searchfilters" class="hidden">searchfilters</div>
         </div>
-        <div class="nameautosuggest"></div>
+        <div class="autosuggest"></div>
         <div id="result_list"></div>
       </div>
     </div>
@@ -73,12 +73,7 @@
     var searchoption = null;
     var doctype = $("input[name='class']:checked").val();
   })
-  <!--$('label.btn').click(function(){-->
-    <!--$(".nameautosuggest").html('')-->
-    <!--$('#searchbox').val('')-->
-    <!--$('#searchbox').attr("placeholder",this.getAttribute("rel"));-->
-  <!--})-->
-  $("#search_options.li")
+  // future advanced options
   $("#options_link").on("click", function(e){
     e.preventDefault()
     $("#options").toggle()
@@ -87,26 +82,27 @@
   $('input[type=radio][name=class]').change(function() {
     $("#options_link").show()
     $("#options").hide()
-    $(".nameautosuggest").html('')
+    $(".autosuggest").html('')
     $('#searchbox').val('')
     $('#searchbox').attr("placeholder",this.getAttribute("rel"));
   });
-  function stopVideo() {
-    var $frame = $('iframe');
+  // TODO: abandon?
+  <!--function stopVideo() {-->
+    <!--var $frame = $('iframe');-->
   
-    // saves the current iframe source
-    var pagesrc = $frame.attr('src');
+    <!--// saves the current iframe source-->
+    <!--var pagesrc = $frame.attr('src');-->
   
-    // sets the source to nothing, stopping the video
-    $frame.attr('src', '');
+    <!--// sets the source to nothing, stopping the video-->
+    <!--$frame.attr('src', '');-->
   
-    // sets it back to the correct link so that it reloads immediately on the next window open
-    $frame.attr('src', pagesrc);
-  }
+    <!--// sets it back to the correct link so that it reloads immediately on the next window open-->
+    <!--$frame.attr('src', pagesrc);-->
+  <!--}-->
   
-  $('#ext_site').on('hidden.bs.modal', function(e) {
-    stopVideo();
-  })
+  <!--$('#ext_site').on('hidden.bs.modal', function(e) {-->
+    <!--stopVideo();-->
+  <!--})-->
   
   // initiates map
   window.addEventListener('map:init', function (e) {
@@ -225,8 +221,8 @@
         }
     });
   }
-  // creates suggestion dropdown
-  // queries at each character
+  // create suggestion dropdown
+  // query at each character
   // TODO: wait for 3rd character?
   $("#searchbox").on('input', function(){
     if($("#searchbox").val() =="") {
@@ -236,10 +232,11 @@
     }
     $("#options").hide()
     window.doctype = $("input[name='class']:checked").val();
-    <!--console.log(doctype)-->
-    $.get("/search/suggest",{
-        search: $(this).val(), 
-        doc_type: doctype
+    <!--$.get("/search/suggest",{-->
+    $.get("/search/search",{
+        qstr: $(this).val(), 
+        doc_type: doctype,
+        scope: 'suggest'
       }, 
       function(data){
         // render to html
@@ -257,8 +254,9 @@
     window.doctype = $("input[name='class']:checked").val();
     console.log('button clicked; this: '+$("#searchbox")[0].value+'; type: '+doctype)
     $.get("/search/search",{
-       search: $("#searchbox")[0].value, 
-       doc_type: doctype
+       qstr: $("#searchbox")[0].value, 
+       doc_type: doctype,
+       scope: 'search'
      }, 
      function(data){
        // render to html
@@ -266,10 +264,11 @@
        showSuggestions(data,doctype);
      });
   })
-  $('.nameautosuggest').on('click', '.place-item', function(){
+  // load place portal page
+  $('.autosuggest').on('click', '.place-item', function(){
     whgid=$(this).data('id')
     // clear the dropdown
-    $(".nameautosuggest").html('')
+    $(".autosuggest").html('')
     // go
     location.href = 'places/'+whgid+'/portal'
   });
@@ -286,8 +285,8 @@
       // load suggestion div
       div += sugLister(sug,doctype)
     });
-    $('.nameautosuggest').show()
-    $('.nameautosuggest').html(div);
+    $('.autosuggest').show()
+    $('.autosuggest').html(div);
 
     // highlight map marker from list
     $("li.body-place").on('click',function(e){
@@ -367,7 +366,7 @@
     html='<ul class="small">'
     for (b in bods){
       if(bods[b]['whg_id'] !=null){
-        console.log(bods[b])
+        <!--console.log(bods[b])-->
         html+='<li class="body-place" data-id="'+bods[b]['whg_id']+'">'+bods[b]['title']+' ('+bods[b]['relation']+')<br/>'
         html+='when' in bods[b] ? '<span class="mt-0"><i>'+parseWhen(bods[b]['when'])+'</i></span>' : ''
         html+='</li>'
@@ -380,7 +379,7 @@
     <!--console.log(sug)-->
     if (doctype=='place') {
       variants = sug['variants'].length > 0 ? '<i class="text-secondary">'+sug['variants']+'</i>' : ''
-      item =  ('<div class="container"><div class="row">'+
+      item =  ('<div class="container"><div class="row sug_row">'+
               '<div class="col-sm-12 place-item" data-id='+sug['whg_id']+'>'+'<b>'+sug['name']+
               '</b> ('+sug['ccodes']+') '+ sug['type']+'<span class="float-right small">[<i>'+sug['whg_id']+'</i>]</span>'+
               '<br/>'+variants.substring(0,100)+'</div>'
@@ -393,7 +392,7 @@
       <!--}-->
       item += '</div></div>' // col-sm-1, row, container
     } else if (doctype=='trace') {
-      item =  ('<div class="container"><div class="row trace-item" data-id='+sug['_id']+'>'+
+      item =  ('<div class="container"><div class="row sug_row trace-item" data-id='+sug['_id']+'>'+
               '<div class="col-sm-9">'+sug['title']+' ('+sug['type']+')</div>'+
               '<div class="col-sm-3"><span class="float-right">'+
                 '<a class="mr-2 ext" data-toggle="modal" data-target="#ext_site" href="'+sug['id']+
@@ -411,7 +410,7 @@
 
   $("[rel='tooltip']").tooltip();
   $('label.btn').click(function(){
-    $(".nameautosuggest").html('')
+    $(".autosuggest").html('')
     $('#searchbox').val('')
     $('#searchbox').attr("placeholder",this.getAttribute("rel"));
   })

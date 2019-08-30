@@ -44,21 +44,30 @@ def makeGeom(pid,geom):
   return geomset
 
 # make stuff available in autocomplete dropdown
-def suggestionItem(s,doctype):
+def suggestionItem(s,doctype,scope):
   #print('sug geom',s['geometries'])
-  print('sug', s)
   if doctype == 'place':
-    item = { 
-      "name":s['title'],
-      "type":s['types'][0]['label'],
-      "whg_id":s['whg_id'],
-      "pid":s['place_id'],
-      "variants":[n for n in s['suggest']['input'] if n != s['title']],
-      "dataset":s['dataset'],
-      "ccodes":s['ccodes'],
-      "geom": makeGeom(s['place_id'],s['geoms'])
-    }
-  else:
+    if scope == 'suggest':
+      item = { 
+        "name":s['title'],
+        "type":s['types'][0]['label'],
+        "whg_id":s['whg_id'],
+        "pid":s['place_id'],
+        "variants":[n for n in s['suggest']['input'] if n != s['title']],
+        "dataset":s['dataset'],
+        "ccodes":s['ccodes'],
+        #"geom": makeGeom(s['place_id'],s['geoms'])
+      }
+      print('place sug item', item)
+    else:
+      h = s['hit']
+      item = {
+        "name": h['title'],
+        "variants":[n for n in h['suggest']['input'] if n != h['title']],
+        "descriptions": [d['value'] for d in h['descriptions']]
+      }
+      print('place search item:',item)
+  elif doctype == 'trace':
     item = {
       "_id":s['_id'],
       "id":s['hit']['target']['id'],
@@ -67,80 +76,68 @@ def suggestionItem(s,doctype):
       "depiction":s['hit']['target']['depiction'] if 'depiction' in s['hit']['target'].keys() else '',
       "bodies":s['hit']['body']
     }
+    print('trace search item:',item)
   return item
 
-def suggester(doctype,q,scope='sug'):
-  # return only parents; children will be retrieved in portal page
-  print('suggester',doctype,q)
+def suggester(doctype,q,scope):
+  # returns only parents; children retrieved in place portal
+  #print('suggester',doctype,q)
   es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
   suggestions = []
+  
   if doctype=='place':
     print('suggester/place q:',q)
     res = es.search(index='whg',doc_type='place',body=q)
-    if scope == 'sug':
-      hits = res['suggest']['suggest'][0]['options']    
-      if len(hits) > 0:
-        for h in hits:
-          hit_id = h['_id']
-          if 'parent' not in h['_source']['relation'].keys():
+    if scope == 'suggest':
+      sugs = res['suggest']['suggest'][0]['options']
+      #print('suggester()/place sugs',sugs)
+      if len(sugs) > 0:
+        for s in sugs:
+          hit_id = s['_id']
+          if 'parent' not in s['_source']['relation'].keys():
             # it's a parent, add to suggestions[]
-            suggestions.append(h['_source'])
+            suggestions.append(s['_source'])
     elif scope == 'search':
       hits = res['hits']['hits']
-      print('hits',hits)
+      #print('suggester()/place hits',hits)
       if len(hits) > 0:
         for h in hits:
           suggestions.append({"_id":h['_id'],"hit":h['_source']})
     
   elif doctype == 'trace':
-    #print('suggester/trace q:',q)
+    print('suggester()/trace q:',q)
     res = es.search(index='traces',doc_type='trace',body=q)
-    #print('trace result',res)
     hits = res['hits']['hits']
+    #print('suggester()/trace hits',hits)
     if len(hits) > 0:
       for h in hits:
         suggestions.append({"_id":h['_id'],"hit":h['_source']})
   return suggestions
 
 
-""" Returns place or trace search results """
+""" Returns place:search/suggest or trace:search """
 class SearchView(View):
   @staticmethod
   def get(request):
     print('in SearchView',request.GET)
     """
-        args in request.GET:
-            [string] idx: index to be queried
-            [string] search: string to be queried for the search
-            [string] doc_type: place or trace
-        """
-    text = request.GET.get('search')
+      args in request.GET:
+          [string] qstr: query string
+          [string] doc_type: place or trace
+          [string] scope: suggest or search
+    """
+    qstr = request.GET.get('qstr')
     doctype = request.GET.get('doc_type')
+    scope = request.GET.get('scope')
     if doctype == 'place':
-      q = {
-        "query": {
-          "match": {
-            "descriptions.value": {
-              "query": text, 
-              "operator": "and"
-            }
-          }
-        }
-      }      
-      #q = { "suggest":{"suggest":{"prefix":text,"completion":{"field":"suggest"}}} }  
+      if scope == 'suggest':
+        q = { "suggest":{"suggest":{"prefix":qstr,"completion":{"field":"suggest"}}} }  
+      else:
+        q = { "query": {"match": {"descriptions.value": {"query": qstr, "operator": "and"}}} }      
     elif doctype == 'trace': 
-      q = {
-        "query": {
-          "match": {
-            "target.title": {
-              "query": text, 
-              "operator": "and"
-            }
-          }
-        }
-      }
-    suggestions = suggester(doctype, q, 'search')
-    suggestions = [ suggestionItem(s,doctype) for s in suggestions]
+      q = { "query": {"match": {"target.title": {"query": qstr,"operator": "and"}}} }
+    suggestions = suggester(doctype, q, scope)
+    suggestions = [ suggestionItem(s, doctype, scope) for s in suggestions]
     return JsonResponse(suggestions, safe=False)
   
 """ Returns place or trace suggestions """
@@ -149,28 +146,17 @@ class SuggestView(View):
   def get(request):
     print('in SuggestView',request.GET)
     """
-        args in request.GET:
-            [string] idx: index to be queried
-            [string] search: chars to be queried for the suggest field search
-            [string] doc_type: context needed to filter suggestion searches
-        """
-    #idx = request.GET.get('idx')
-    text = request.GET.get('search')
+      args in request.GET:
+          [string] qstr: chars to be queried for the suggest field search
+          [string] doc_type: context needed to filter suggestion searches
+    """
+    qstr = request.GET.get('qstr')
     doctype = request.GET.get('doc_type')
     if doctype == 'place':
-      q = { "suggest":{"suggest":{"prefix":text,"completion":{"field":"suggest"}}} }  
+      q = { "suggest":{"suggest":{"prefix":qstr,"completion":{"field":"suggest"}}} }  
     elif doctype == 'trace': 
-      q = {
-        "query": {
-          "match": {
-            "target.title": {
-              "query": text, 
-              "operator": "and"
-            }
-          }
-        }
-      }
-    suggestions = suggester(doctype, q )
+      q = { "query": {"match": {"target.title": {"query": qstr,"operator": "and"}}} }
+    suggestions = suggester(doctype, q, "suggest" )
     suggestions = [ suggestionItem(s,doctype) for s in suggestions]
     return JsonResponse(suggestions, safe=False)
   
