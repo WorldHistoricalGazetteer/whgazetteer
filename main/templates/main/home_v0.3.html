@@ -46,7 +46,8 @@
           <div id="searchfilters" class="hidden">searchfilters</div>
         </div>
         <div class="autosuggest"></div>
-        <div id="result_list"></div>
+        <!-- separate div for full search results -->
+        <div id="result_list" class="hidden"></div>
       </div>
     </div>
   </div>
@@ -251,17 +252,18 @@
   })
   // perform search, not autocomplete
   $("#search_button").on('click', function(){
+    scope = 'search'
     window.doctype = $("input[name='class']:checked").val();
     console.log('button clicked; this: '+$("#searchbox")[0].value+'; type: '+doctype)
     $.get("/search/search",{
        qstr: $("#searchbox")[0].value, 
        doc_type: doctype,
-       scope: 'search'
+       scope: scope
      }, 
      function(data){
        // render to html
        console.log('data?',data)
-       showSuggestions(data,doctype);
+       showSuggestions(data,doctype,scope);
      });
   })
   // load place portal page
@@ -274,7 +276,7 @@
   });
   
 
-  function showSuggestions(data,doctype){
+  function showSuggestions(data,doctype,scope='suggest'){
     var div = '';
     data.forEach(function(sug){
       <!--console.log('suggestion',sug)-->
@@ -285,8 +287,13 @@
       // load suggestion div
       div += sugLister(sug,doctype)
     });
-    $('.autosuggest').show()
-    $('.autosuggest').html(div);
+    if(scope == 'suggest'){
+      $('.autosuggest').show()
+      $('.autosuggest').html(div);
+    } else {
+      $('#result_list').show()
+      $('#result_list').html(div);    
+    }
 
     // highlight map marker from list
     $("li.body-place").on('click',function(e){
