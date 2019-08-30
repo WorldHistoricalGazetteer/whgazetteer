@@ -25,7 +25,7 @@ label {vertical-align:top;}
 .smaller {font-size: small;} /*smaller than bootstrap's*/
 .notebox {background-color:#eee;box-shadow: 2px 2px #999; border:1px dashed #333; padding:6px;}
 .bottom {position: absolute; bottom:0;}
-
+.hover {cursor:pointer;}
 /**
   dashboard
 **/
@@ -92,7 +92,7 @@ input[type="text"] {
   border: 1px solid #ddd;
   border-top: #fff;
 }
-.nameautosuggest {
+.autosuggest {
   display: none;
   margin-top: -18px;
   margin-bottom: 6px;
@@ -117,7 +117,7 @@ input[type="text"] {
   min-height: 30px;
 }
 
-.row:hover {
+.sug_row:hover {
   background-color: #eee;
 }
 .flash-geom {
@@ -293,6 +293,7 @@ input[type="text"] {
   box-shadow: 3px 3px #eee;
   font-size: .8rem;
 }
+
 .form-check-input {
   margin-top: .2rem;
 }
