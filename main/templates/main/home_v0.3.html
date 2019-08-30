@@ -20,35 +20,35 @@
   <div class="justify-content-center mt-3">
     <div id="home_map">
       {% leaflet_map "map_home" callback="map_init" %}
-      <div id="home_search">
-        <div id="searchpanel">
-          <div id="searchinput">
-            <div id="search_type" class="form-group d-flex justify-content-center"> 
-              <div class="form-check form-check-inline">
-                <input class="form-check-input hover" type="radio" name="class" id="r_place" value="place" rel="Enter place name" checked="checked">
-                <label class="form-check-label" for="r_place">Places</label>
-              </div>
-              <div class="form-check form-check-inline">
-                <input class="form-check-input hover" type="radio" name="class" id="r_trace" value="trace" rel="Enter term or name">
-                <label class="form-check-label" for="r_trace">Traces
-                    <span class="ml-1"><a href="" title="historical entities having spatial-temporal 'footprints'" rel="tooltip">{% fontawesome_icon 'question-circle' color='#336699' %}</a></span>                
-                </label>
-              </div>
-            </div>          
-            <div class="input-group mb-3">
-              <input id="searchbox" type="text" class="form-control" placeholder="Enter place name" aria-label="Place name" aria-describedby="basic-addon2">
-              <div class="input-group-append">
-                <span class="input-group-text" id="search_button">
-                  {% fontawesome_icon 'search' color='#333' %}</span>
-              </div>
+    </div> <!-- map -->
+    <div id="home_search">
+      <div id="search_panel">
+        <div id="search_input">
+          <div id="search_type" class="form-group d-flex justify-content-center"> 
+            <div class="form-check form-check-inline">
+              <input class="form-check-input hover" type="radio" name="class" id="r_place" value="place" rel="Enter place name" checked="checked">
+              <label class="form-check-label" for="r_place">Places</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input hover" type="radio" name="class" id="r_trace" value="trace" rel="Enter term or name">
+              <label class="form-check-label" for="r_trace">Traces
+                  <span class="ml-1"><a href="" title="historical entities having spatial-temporal 'footprints'" rel="tooltip">{% fontawesome_icon 'question-circle' color='#336699' %}</a></span>                
+              </label>
+            </div>
+          </div>          
+          <div class="input-group input-group-sm mb-3">
+            <input id="searchbox" type="text" class="form-control" placeholder="Enter place name" aria-label="Place name" aria-describedby="basic-addon2">
+            <div class="input-group-append">
+              <span class="input-group-text search-button fa fa-search">
+                {# fontawesome_icon 'search' color='#999' #}</span>
             </div>
           </div>
-          <div id="searchfilters" class="hidden">searchfilters</div>
         </div>
+        <div id="search_filters" class="hidden">searchfilters</div>
         <div class="autosuggest"></div>
-        <!-- separate div for full search results -->
-        <div id="result_list" class="hidden"></div>
       </div>
+      <!-- separate div for full search results -->
+      <div id="result_list" class="hidden"></div>
     </div>
   </div>
 </div>
@@ -73,6 +73,7 @@
     var titles = {}
     var searchoption = null;
     var doctype = $("input[name='class']:checked").val();
+    clearit()
   })
   // future advanced options
   $("#options_link").on("click", function(e){
@@ -87,24 +88,6 @@
     $('#searchbox').val('')
     $('#searchbox').attr("placeholder",this.getAttribute("rel"));
   });
-  // TODO: abandon?
-  <!--function stopVideo() {-->
-    <!--var $frame = $('iframe');-->
-  
-    <!--// saves the current iframe source-->
-    <!--var pagesrc = $frame.attr('src');-->
-  
-    <!--// sets the source to nothing, stopping the video-->
-    <!--$frame.attr('src', '');-->
-  
-    <!--// sets it back to the correct link so that it reloads immediately on the next window open-->
-    <!--$frame.attr('src', pagesrc);-->
-  <!--}-->
-  
-  <!--$('#ext_site').on('hidden.bs.modal', function(e) {-->
-    <!--stopVideo();-->
-  <!--})-->
-  
   // initiates map
   window.addEventListener('map:init', function (e) {
     window.mappy = e.detail.map
@@ -247,24 +230,35 @@
   // catch Enter key press, trigger button
   $("#searchbox").on('keyup', function(e){
     if (e.keyCode === 13) {
-      $("#search_button").click()
+      $(".search-button").click()
     }
   })
+  clearit = function(){
+    $("#searchbox").val('')
+    $("#result_list").html('')
+    $("#result_list").hide()
+  }
   // perform search, not autocomplete
-  $("#search_button").on('click', function(){
+  $(".input-group-text").on('click', function(){
     scope = 'search'
     window.doctype = $("input[name='class']:checked").val();
-    console.log('button clicked; this: '+$("#searchbox")[0].value+'; type: '+doctype)
-    $.get("/search/search",{
-       qstr: $("#searchbox")[0].value, 
-       doc_type: doctype,
-       scope: scope
-     }, 
+    if ($(".input-group-text").hasClass('fa-times')) {
+      clearit()
+    } else {
+      $.get("/search/search",{
+        qstr: $("#searchbox")[0].value, 
+        doc_type: doctype,
+        scope: scope
+      }, 
      function(data){
        // render to html
        console.log('data?',data)
        showSuggestions(data,doctype,scope);
      });
+    }
+    $(".input-group-text").toggleClass('fa-search fa-times')
+    <!--console.log('button clicked; this: '+$("#searchbox")[0].value+'; type: '+doctype)-->
+    $('.autosuggest').hide()
   })
   // load place portal page
   $('.autosuggest').on('click', '.place-item', function(){
@@ -292,7 +286,7 @@
       $('.autosuggest').html(div);
     } else {
       $('#result_list').show()
-      $('#result_list').html(div);    
+      $('#result_list').html('<p class="half allcap-heading mb-0 pl-1">SEARCH RESULTS</p>'+div);    
     }
 
     // highlight map marker from list
@@ -423,3 +417,22 @@
   })
 </script>
 {% endblock %}
+
+
+  <!--function stopVideo() {-->
+    <!--var $frame = $('iframe');-->
+  
+    <!--// saves the current iframe source-->
+    <!--var pagesrc = $frame.attr('src');-->
+  
+    <!--// sets the source to nothing, stopping the video-->
+    <!--$frame.attr('src', '');-->
+  
+    <!--// sets it back to the correct link so that it reloads immediately on the next window open-->
+    <!--$frame.attr('src', pagesrc);-->
+  <!--}-->
+  
+  <!--$('#ext_site').on('hidden.bs.modal', function(e) {-->
+    <!--stopVideo();-->
+  <!--})-->
+  
