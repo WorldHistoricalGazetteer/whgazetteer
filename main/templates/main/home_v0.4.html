@@ -380,18 +380,7 @@
     <!--console.log(sug)-->
     if (doctype=='place') {
       variants = sug['variants'].length > 0 ? '<i class="text-secondary">'+sug['variants']+'</i>' : ''
-      item =  ('<div class="container"><div class="row sug_row">'+
-              '<div class="col-sm-12 place-item" data-id='+sug['whg_id']+'>'+'<b>'+sug['name']+
-              '</b> ('+sug['ccodes']+') '+ sug['type']+'<span class="float-right small">[<i>'+sug['whg_id']+'</i>]</span>'+
-              '<br/>'+variants.substring(0,100)+'</div>'
-              <!--<div class="col-sm-1 p-1">'-->
-              )
-      <!--if (sug['geom'].length > 0) {-->
-        <!--item += '<span class="float-right flash-geom"'+-->
-                <!--' data-id="'+sug['whg_id']+'" data-geom='+JSON.stringify(sug['geom'])+'>'+-->
-                <!--'<a class="mr-2" href="">{# fontawesome_icon 'globe' color='#336699' %}</a></span>'-->
-      <!--}-->
-      item += '</div></div>' <!--col-sm-1, row, container-->
+      item = '<div class="sug_row"><b>'+sug['name']+'</b>; '+variants+'</div>'
     } else if (doctype=='trace') {
       item =  ('<div class="container"><div class="row sug_row trace-item" data-id='+sug['_id']+'>'+
               '<div class="col-sm-9">'+sug['title']+' ('+sug['type']+')</div>'+

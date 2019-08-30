@@ -121,7 +121,7 @@ input[type="text"] {
 }
 
 /*new style*/
-.place-item, .trace-item {
+.place-item, .trace-item, .sug_row {
   list-style-type: none;
   margin-top: 5px;
   border-bottom: 1px solid #ddd;
@@ -131,7 +131,9 @@ input[type="text"] {
   min-height: 30px;
 }
 
-.sug_row { background-color: #fff;}
+.sug_row { 
+  background-color: #fff;
+}
 .sug_row:hover {
   background-color: #eee;
 }
