@@ -121,7 +121,7 @@ input[type="text"] {
 }
 
 /*new style*/
-.place-item, .trace-item, .sug_row {
+.place-item, .trace-item, .sug_row, .search_row{
   list-style-type: none;
   margin-top: 5px;
   border-bottom: 1px solid #ddd;
@@ -131,6 +131,7 @@ input[type="text"] {
   min-height: 30px;
 }
 
+em { color: #993333;}
 .sug_row { 
   background-color: #fff;
 }
