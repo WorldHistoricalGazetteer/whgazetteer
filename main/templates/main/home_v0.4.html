@@ -268,15 +268,27 @@
   
   function showResults(data,doctype,scope='suggest'){
     var results_div = '';
+    geoms=[]
+    
     data.forEach(function(sug){
       <!--console.log('suggestion',sug)-->
       <!--supply name for popup, places only-->
       if(!!sug.geom) {
-        sug.geom.forEach(function(g){g['properties']['title']=sug.name})
+        <!--console.log(sug.geom)-->
+        sug.geom.forEach(function(g){
+          g['properties']['title']=sug.name
+          geoms.push(g)
+        })
       }
       // build results div
       results_div += sugLister(sug,doctype,scope)
     });
+    if(scope=='search') {
+      console.log(geoms)
+      renderPlaces(geoms)
+    }
+    
+    
     
     // div has either suggestions or hits
     // put them in relevant div
@@ -309,9 +321,10 @@
 
     // fetch geometry for a place record
     <!--$(".flash-geom").on('hover', function(e){-->
-    $(".flash-geom").click(function(e){
-      e.preventDefault()
-      var features = $(this).data('geom')
+    <!--$(".flash-geom").click(function(e){-->
+    renderPlaces = function(features) {
+      <!--e.preventDefault()-->
+      <!--var features = $(this).data('geom')-->
       data = {"type":"FeatureCollection","features":features}
       console.log(data)
       <!--console.log('id for',$(this).data('id'))-->
@@ -338,7 +351,7 @@
       }).addTo(mappy);
       bounds = places.getBounds()
       mappy.setView(bounds.getCenter(),5)          
-    })
+    }
     
     // fetch geometry for a trace record
     $(".trace-item").on('click', function(e){
@@ -390,10 +403,14 @@
   function sugLister(sug,doctype,scope) {
     <!--console.log(sug)-->
     if (doctype=='place') {
-      variants = sug['variants'].length > 0 ? '<i class="text-secondary"> ('+sug['variants']+'); </i>' : ''
+      variants = sug['variants'].length > 0 ? '<br/><i class="text-secondary"> var: '+sug['variants']+'; </i>' : ''
       if (scope=='search'){
-        snippet = sug['snippet'].length > 0 ? sug['snippet'] : ''
-        item = '<div class="search_row place-item" data-id="'+sug['whg_id']+'"><b>'+sug['name']+'</b>'+variants+' ['+sug['ccodes']+']'+'<br/>'+snippet+'</div>'
+        snippet = sug['snippet'].length > 0 ? sug['snippet']+'...' : ''
+        ccodes = sug['ccodes'].length > 0 ? ' ['+sug['ccodes']+']' : ''
+        types = ' ('+sug['types']+')'
+        item = '<div class="search_row place-item" data-id="'+sug['whg_id']+'"><b>'+
+          sug['name']+'</b>'+types+ccodes+variants+
+          '<br/>'+snippet+'</div>'
       } else {
         item = '<div class="sug_row sug-item">'+sug['name']+' '+variants+'</div>'
       }

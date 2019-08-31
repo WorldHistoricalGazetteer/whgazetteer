@@ -61,18 +61,20 @@ def suggestionItem(s,doctype,scope):
       print('place sug item', item)
     else:
       h = s['hit']
+      print('place search "s":',s)
       print('place search hit:',h)
       item = {
         "whg_id": h['whg_id'],
         "name": h['title'],
         "variants":[n for n in h['suggest']['input'] if n != h['title']],
         "ccodes": h['ccodes'],
+        "types": [t['label'] for t in h['types'] ],
         "snippet": s['snippet']['descriptions.value'][0] if s['snippet'] != '' else []
+        ,"geom": makeGeom(h['place_id'],h['geoms'])
       }
       #if 'snippet' in s:
         #print('snippet',s['snippet'])
         #item["snippet"] = s['snippet']['descriptions.value'][0]
-      print('place search "s":',s)
   elif doctype == 'trace':
     item = {
       "_id":s['_id'],
@@ -143,8 +145,8 @@ class SearchView(View):
         q = { "size": 200,
               "query": {"bool": {
               "must": [
-                {"exists": {"field": "whg_id"}}
-                ,{"match": {"title": qstr}}
+                {"exists": {"field": "whg_id"}},
+                {"match": {"title": qstr}}
                 #,{"match": {"descriptions.value": qstr}}
               ]
               ,"should":[
