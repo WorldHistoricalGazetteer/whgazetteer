@@ -61,6 +61,7 @@ def suggestionItem(s,doctype,scope):
       print('place sug item', item)
     else:
       h = s['hit']
+      print('place search hit:',h)
       item = {
         "whg_id": h['whg_id'],
         "name": h['title'],
@@ -68,7 +69,6 @@ def suggestionItem(s,doctype,scope):
         "ccodes": h['ccodes'],
         "snippet": s['snippet']['descriptions.value'][0]
       }
-      print('place search hit:',h)
       print('place search item:',item)
   elif doctype == 'trace':
     item = {
@@ -136,10 +136,13 @@ class SearchView(View):
       if scope == 'suggest':
         q = { "suggest":{"suggest":{"prefix":qstr,"completion":{"field":"suggest"}}} }  
       else:
-        q = { 
-          "query": {"match": {"descriptions.value": {"query": qstr, "operator": "and"}}},
-          "highlight": {"fields" : {"descriptions.value" : {}}}
-        }      
+        q = {"query": {"bool": {"must": [
+                {"match": {"descriptions.value": qstr}},
+                {"exists": {"field": "whg_id"}}
+              ]
+            }},
+            "highlight": {"fields" : {"descriptions.value" : {}}}
+        }     
     elif doctype == 'trace': 
       q = { "query": {"match": {"target.title": {"query": qstr,"operator": "and"}}} }
     suggestions = suggester(doctype, q, scope)
