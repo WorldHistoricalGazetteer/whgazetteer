@@ -210,6 +210,7 @@
   // TODO: wait for 3rd character?
   $("#searchbox").on('input', function(){
     if($("#searchbox").val() =="") {
+      clearit()
       $("#options_link").show()
     } else {
       $("#options_link").hide()
@@ -279,7 +280,7 @@
         sug.geom.forEach(function(g){g['properties']['title']=sug.name})
       }
       // load suggestion div
-      div += sugLister(sug,doctype)
+      div += sugLister(sug,doctype,scope)
     });
     if(scope == 'suggest'){
       $('.autosuggest').show()
@@ -376,11 +377,16 @@
     html += '</ul>'
     return html
   }
-  function sugLister(sug,doctype) {
+  function sugLister(sug,doctype,scope) {
     <!--console.log(sug)-->
     if (doctype=='place') {
       variants = sug['variants'].length > 0 ? '<i class="text-secondary">'+sug['variants']+'</i>' : ''
-      item = '<div class="sug_row"><b>'+sug['name']+'</b>; '+variants+'</div>'
+      if (scope=='search'){
+        snippet = sug['snippet'].length > 0 ? sug['snippet'] : ''
+        item = '<div class="sug_row"><b>'+sug['name']+'</b>; '+variants+'<br/>'+snippet+'</div>'
+      } else {
+        item = '<div class="sug_row"><b>'+sug['name']+'</b>; '+variants+'</div>'
+      }
     } else if (doctype=='trace') {
       item =  ('<div class="container"><div class="row sug_row trace-item" data-id='+sug['_id']+'>'+
               '<div class="col-sm-9">'+sug['title']+' ('+sug['type']+')</div>'+
