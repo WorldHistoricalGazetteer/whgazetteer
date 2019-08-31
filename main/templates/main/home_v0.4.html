@@ -205,19 +205,27 @@
         }
     });
   }
+
+  // clear any results
+  clearit = function(){
+    $("#searchbox").val('')
+    $("#result_list").html('')
+    $("#result_list").hide()
+  }  
   // create suggestion dropdown
   // query at each character
-  // TODO: wait for 3rd character?
   $("#searchbox").on('input', function(){
     if($("#searchbox").val() =="") {
       clearit()
+      $(".input-group-text").toggleClass('fa-search fa-times')
       $("#options_link").show()
     } else {
       $("#options_link").hide()
     }
     $("#options").hide()
     window.doctype = $("input[name='class']:checked").val();
-    <!--$.get("/search/suggest",{-->
+    
+    // suggest and search both use SearchView()
     $.get("/search/search",{
         qstr: $(this).val(), 
         doc_type: doctype,
@@ -225,7 +233,7 @@
       }, 
       function(data){
         // render to html
-        showSuggestions(data,doctype);
+        showResults(data,doctype);
       });
   })
   // catch Enter key press, trigger button
@@ -234,12 +242,9 @@
       $(".search-button").click()
     }
   })
-  clearit = function(){
-    $("#searchbox").val('')
-    $("#result_list").html('')
-    $("#result_list").hide()
-  }
+
   // perform search, not autocomplete
+  // suggest and search both use SearchView()
   $(".input-group-text").on('click', function(){
     scope = 'search'
     window.doctype = $("input[name='class']:checked").val();
@@ -253,7 +258,7 @@
       }, 
      function(data){
        // render to html
-       showSuggestions(data,doctype,scope);
+       showResults(data,doctype,scope);
      });
     }
     $(".input-group-text").toggleClass('fa-search fa-times')
@@ -261,34 +266,26 @@
     $('.autosuggest').hide()
   })
   
-  function showSuggestions(data,doctype,scope='suggest'){
-    var div = '';
+  function showResults(data,doctype,scope='suggest'){
+    var results_div = '';
     data.forEach(function(sug){
       <!--console.log('suggestion',sug)-->
       <!--supply name for popup, places only-->
       if(!!sug.geom) {
         sug.geom.forEach(function(g){g['properties']['title']=sug.name})
       }
-      // load suggestion div
-      div += sugLister(sug,doctype,scope)
-        // load place portal page
+      // build results div
+      results_div += sugLister(sug,doctype,scope)
     });
     
-    $('div.place-item').on('click', function(e){
-      <!--whgid=$(this).data('id')-->
-      console.log('clicked .place-item',$(this))
-      // clear the dropdown
-      $(".autosuggest").html('')
-      // go
-      location.href = 'places/'+whgid+'/portal'
-    });
-
+    // div has either suggestions or hits
+    // put them in relevant div
     if(scope == 'suggest'){
       $('.autosuggest').show()
-      $('.autosuggest').html(div);
+      $('.autosuggest').html(results_div);
     } else {
       $('#result_list').show()
-      $('#result_list').html('<p class="half allcap-heading mb-0 pl-1">SEARCH RESULTS</p>'+div);    
+      $('#result_list').html('<p class="half allcap-heading mb-0 pl-1">SEARCH RESULTS</p>'+results_div);    
     }
 
     // highlight map marker from list
@@ -425,22 +422,3 @@
   })
 </script>
 {% endblock %}
-
-
-  <!--function stopVideo() {-->
-    <!--var $frame = $('iframe');-->
-  
-    <!--// saves the current iframe source-->
-    <!--var pagesrc = $frame.attr('src');-->
-  
-    <!--// sets the source to nothing, stopping the video-->
-    <!--$frame.attr('src', '');-->
-  
-    <!--// sets it back to the correct link so that it reloads immediately on the next window open-->
-    <!--$frame.attr('src', pagesrc);-->
-  <!--}-->
-  
-  <!--$('#ext_site').on('hidden.bs.modal', function(e) {-->
-    <!--stopVideo();-->
-  <!--})-->
-  

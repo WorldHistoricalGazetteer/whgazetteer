@@ -67,9 +67,12 @@ def suggestionItem(s,doctype,scope):
         "name": h['title'],
         "variants":[n for n in h['suggest']['input'] if n != h['title']],
         "ccodes": h['ccodes'],
-        "snippet": s['snippet']['descriptions.value'][0]
+        "snippet": s['snippet']['descriptions.value'][0] if s['snippet'] != '' else []
       }
-      print('place search item:',item)
+      #if 'snippet' in s:
+        #print('snippet',s['snippet'])
+        #item["snippet"] = s['snippet']['descriptions.value'][0]
+      print('place search "s":',s)
   elif doctype == 'trace':
     item = {
       "_id":s['_id'],
@@ -105,7 +108,8 @@ def suggester(doctype,q,scope):
       #print('suggester()/place hits',hits)
       if len(hits) > 0:
         for h in hits:
-          suggestions.append({"_id":h['_id'],"hit":h['_source'],"snippet":h['highlight']})
+          snippet = h['highlight'] if 'highlight' in h else ''
+          suggestions.append({"_id":h['_id'],"hit":h['_source'],"snippet":snippet})
     
   elif doctype == 'trace':
     print('suggester()/trace q:',q)
@@ -135,14 +139,20 @@ class SearchView(View):
     if doctype == 'place':
       if scope == 'suggest':
         q = { "suggest":{"suggest":{"prefix":qstr,"completion":{"field":"suggest"}}} }  
-      else:
-        q = {"query": {"bool": {"must": [
-                {"match": {"descriptions.value": qstr}},
+      elif scope == 'search':
+        q = { "size": 200,
+              "query": {"bool": {
+              "must": [
                 {"exists": {"field": "whg_id"}}
+                ,{"match": {"title": qstr}}
+                #,{"match": {"descriptions.value": qstr}}
+              ]
+              ,"should":[
+                {"match": {"descriptions.value": qstr}}
               ]
             }},
             "highlight": {"fields" : {"descriptions.value" : {}}}
-        }     
+          }
     elif doctype == 'trace': 
       q = { "query": {"match": {"target.title": {"query": qstr,"operator": "and"}}} }
     suggestions = suggester(doctype, q, scope)
