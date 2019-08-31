@@ -73,7 +73,7 @@
     var titles = {}
     var searchoption = null;
     var doctype = $("input[name='class']:checked").val();
-    clearit()
+    clearit()        
   })
   // future advanced options
   $("#options_link").on("click", function(e){
@@ -253,7 +253,6 @@
       }, 
      function(data){
        // render to html
-       console.log('data?',data)
        showSuggestions(data,doctype,scope);
      });
     }
@@ -261,16 +260,7 @@
     <!--console.log('button clicked; this: '+$("#searchbox")[0].value+'; type: '+doctype)-->
     $('.autosuggest').hide()
   })
-  // load place portal page
-  $('.autosuggest').on('click', '.place-item', function(){
-    whgid=$(this).data('id')
-    // clear the dropdown
-    $(".autosuggest").html('')
-    // go
-    location.href = 'places/'+whgid+'/portal'
-  });
   
-
   function showSuggestions(data,doctype,scope='suggest'){
     var div = '';
     data.forEach(function(sug){
@@ -281,7 +271,18 @@
       }
       // load suggestion div
       div += sugLister(sug,doctype,scope)
+        // load place portal page
     });
+    
+    $('div.place-item').on('click', function(e){
+      <!--whgid=$(this).data('id')-->
+      console.log('clicked .place-item',$(this))
+      // clear the dropdown
+      $(".autosuggest").html('')
+      // go
+      location.href = 'places/'+whgid+'/portal'
+    });
+
     if(scope == 'suggest'){
       $('.autosuggest').show()
       $('.autosuggest').html(div);
@@ -353,6 +354,18 @@
       fetchTraceGeom($(this).data('id'),0)
     })
   }
+
+  // load place portal page
+  $("#result_list").on('click', '.place-item', function(e){
+    whgid=$(this).data('id')
+    console.log('clicked .place-item',$(this))
+    // clear the dropdown
+    $(".autosuggest").html('')
+    // go
+    location.href = 'places/'+whgid+'/portal'
+  });
+        
+
   // TODO: this doesn't reach into when.timespans; Indias data malformed
   function parseWhen(when){
     html=''
@@ -380,12 +393,12 @@
   function sugLister(sug,doctype,scope) {
     <!--console.log(sug)-->
     if (doctype=='place') {
-      variants = sug['variants'].length > 0 ? '<i class="text-secondary">'+sug['variants']+'</i>' : ''
+      variants = sug['variants'].length > 0 ? '<i class="text-secondary"> ('+sug['variants']+'); </i>' : ''
       if (scope=='search'){
         snippet = sug['snippet'].length > 0 ? sug['snippet'] : ''
-        item = '<div class="sug_row"><b>'+sug['name']+'</b>; '+variants+'<br/>'+snippet+'</div>'
+        item = '<div class="search_row place-item" data-id="'+sug['whg_id']+'"><b>'+sug['name']+'</b>'+variants+' ['+sug['ccodes']+']'+'<br/>'+snippet+'</div>'
       } else {
-        item = '<div class="sug_row"><b>'+sug['name']+'</b>; '+variants+'</div>'
+        item = '<div class="sug_row sug-item">'+sug['name']+' '+variants+'</div>'
       }
     } else if (doctype=='trace') {
       item =  ('<div class="container"><div class="row sug_row trace-item" data-id='+sug['_id']+'>'+

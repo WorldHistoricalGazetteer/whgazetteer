@@ -62,11 +62,14 @@ def suggestionItem(s,doctype,scope):
     else:
       h = s['hit']
       item = {
+        "whg_id": h['whg_id'],
         "name": h['title'],
         "variants":[n for n in h['suggest']['input'] if n != h['title']],
+        "ccodes": h['ccodes'],
         "snippet": s['snippet']['descriptions.value'][0]
       }
       print('place search hit:',h)
+      print('place search item:',item)
   elif doctype == 'trace':
     item = {
       "_id":s['_id'],
