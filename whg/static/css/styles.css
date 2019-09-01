@@ -10,6 +10,14 @@ html, body {
 /**
   general use
 **/
+.foofah {background-color:#fff;}
+.tt-selectable { background-color: yellow;}
+#remote .tt-dropdown-menu {
+  background-color:#fff;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
 label {vertical-align:top;}
 .strong { font-weight: bold;}
 .no-bullet { list-style: none;}
@@ -22,7 +30,8 @@ label {vertical-align:top;}
 .hidden {display:none;}
 .texttop {vertical-align: text-top !important;}
 .textsub {vertical-align: sub !important;}
-.smaller {font-size: small;} /*smaller than bootstrap's*/
+.smaller {font-size: small;} /* smaller than bootstrap */
+.larger {font-size: larger;}
 .notebox {background-color:#eee;box-shadow: 2px 2px #999; border:1px dashed #333; padding:6px;}
 .bottom {position: absolute; bottom:0;}
 .hover {cursor:pointer;}

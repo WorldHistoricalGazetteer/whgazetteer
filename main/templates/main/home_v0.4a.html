@@ -11,6 +11,7 @@
   <script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>
   <link rel="stylesheet" href="//cdn.datatables.net/1.10.16/css/dataTables.bootstrap4.min.css">
   <script src="{% static 'js/leaflet.ajax.min.js' %}"></script>
+  <script src="{% static 'js/typeahead.bundle.js' %}"></script>
 {% endblock %}
 
 {% block content %}
@@ -23,7 +24,7 @@
     </div> <!-- map -->
     <div id="home_search">
       <div id="search_panel">
-        <!--<div id="search_input">-->
+        <div id="search_input">
           <div id="search_type" class="form-group d-flex justify-content-center"> 
             <div class="form-check form-check-inline">
               <input class="form-check-input hover" type="radio" name="class" id="r_place" value="place" rel="Enter place name" checked="checked">
@@ -36,14 +37,17 @@
               </label>
             </div>
           </div>          
-          <div class="input-group input-group-sm mb-3">
-            <input id="search_input" type="text" class="form-control" placeholder="Enter place name" 
-              aria-label="Place name" aria-describedby="basic-addon2">
-            <div class="input-group-append">
-              <span class="input-group-text search-button fa fa-search"></span>
-            </div>
+          <!--<div class="input-group input-group-sm mb-3">-->
+            <!--<input id="searchbox" type="text" class="form-control" placeholder="Enter place name" aria-label="Place name" aria-describedby="basic-addon2">-->
+            <!--<div class="input-group-append">-->
+              <!--<span class="input-group-text search-button fa fa-search">-->
+                <!--{# fontawesome_icon 'search' color='#999' #}</span>-->
+            <!--</div>-->
+          <!--</div>-->
+          <div id="remote">
+            <input class="typeahead" type="text" placeholder="enter place name">
           </div>
-        <!--</div>-->
+        </div>
         <div id="search_filters" class="hidden">searchfilters</div>
         <div class="autosuggest"></div>
       </div>
@@ -67,6 +71,43 @@
       
 
 <script type="text/javascript">
+  var bestPlaces = new Bloodhound({
+    datumTokenizer: Bloodhound.tokenizers.obj.whitespace('value'),
+    queryTokenizer: Bloodhound.tokenizers.whitespace,
+    <!-- prefetch: '../data/films/post_1960.json', -->
+    remote: {
+      url: '/search/search?qstr=%QUERY&doc_type=place&scope=suggest',
+      wildcard: '%QUERY'
+    }
+  });
+    <!--$.get("/search/search",{-->
+        <!--qstr: $(this).val(), -->
+        <!--doc_type: doctype,-->
+        <!--scope: 'suggest'-->
+      <!--}, -->
+      <!--function(data){-->
+        <!--// render to html-->
+        <!--showResults(data,doctype);-->
+      <!--});-->
+  <!--})-->
+  $('#remote .typeahead').typeahead({
+        hint: true,
+        highlight: true,
+        minLength: 2,
+    }, {
+    name: 'places',
+    display: function(item) {        // display: 'name' will also work
+        <!--return item.name;-->
+        return item.name
+    },
+    source: bestPlaces,
+    limit: 5,
+    templates: {
+        suggestion: function(item) {
+            return '<div class="foofah">'+ item.name +'</div>';
+        }
+    }
+  });
   $(function(){
     $("#options").hide();
     var idToFeature = {} // for feature lookup
@@ -85,8 +126,8 @@
     $("#options_link").show()
     $("#options").hide()
     $(".autosuggest").html('')
-    $('#search_input').val('')
-    $('#search_input').attr("placeholder",this.getAttribute("rel"));
+    $('#searchbox').val('')
+    $('#searchbox').attr("placeholder",this.getAttribute("rel"));
   });
   // initiates map
   window.addEventListener('map:init', function (e) {
@@ -208,14 +249,14 @@
 
   // clear any results
   clearit = function(){
-    $("#search_input").val('')
+    $("#searchbox").val('')
     $("#result_list").html('')
     $("#result_list").hide()
   }  
   // create suggestion dropdown
   // query at each character
-  $("#search_input").on('input', function(){
-    if($("#search_input").val() =="") {
+  $("#searchbox").on('input', function(){
+    if($("#searchbox").val() =="") {
       clearit()
       $(".input-group-text").toggleClass('fa-search fa-times')
       $("#options_link").show()
@@ -237,7 +278,7 @@
       });
   })
   // catch Enter key press, trigger button
-  $("#search_input").on('keyup', function(e){
+  $("#searchbox").on('keyup', function(e){
     if (e.keyCode === 13) {
       $(".search-button").click()
     }
@@ -252,7 +293,7 @@
       clearit()
     } else {
       $.get("/search/search",{
-        qstr: $("#search_input")[0].value, 
+        qstr: $("#searchbox")[0].value, 
         doc_type: doctype,
         scope: scope
       }, 
@@ -262,7 +303,7 @@
      });
     }
     $(".input-group-text").toggleClass('fa-search fa-times')
-    <!--console.log('button clicked; this: '+$("#search_input")[0].value+'; type: '+doctype)-->
+    <!--console.log('button clicked; this: '+$("#searchbox")[0].value+'; type: '+doctype)-->
     $('.autosuggest').hide()
   })
   
@@ -434,8 +475,8 @@
   $("[rel='tooltip']").tooltip();
   $('label.btn').click(function(){
     $(".autosuggest").html('')
-    $('#search_input').val('')
-    $('#search_input').attr("placeholder",this.getAttribute("rel"));
+    $('#searchbox').val('')
+    $('#searchbox').attr("placeholder",this.getAttribute("rel"));
   })
 </script>
 {% endblock %}
