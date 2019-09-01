@@ -17,6 +17,7 @@ urlpatterns = [
     #url(r'^$', TemplateView.as_view(template_name="main/home_v0.2.html"), name="home"),
     #url(r'^$', TemplateView.as_view(template_name="main/home_v0.3.html"), name="home"),
     url(r'^$', TemplateView.as_view(template_name="main/home_v0.4.html"), name="home"),
+    #url(r'^$', TemplateView.as_view(template_name="main/home_v0.4a.html"), name="home"),
 
     # apps
     path('search/', include('search.urls')),
@@ -30,6 +31,7 @@ urlpatterns = [
     path('dashboard/', DashboardView.as_view(), name='dashboard'),
 
     # static content
+    url(r'^tutorials/$', TemplateView.as_view(template_name="main/tutorials.html"), name="tutorials"),
     url(r'^contributing/$', TemplateView.as_view(template_name="main/contributing.html"), name="contributing"),
     url(r'^usingapi/$', TemplateView.as_view(template_name="main/usingapi.html"), name="usingapi"),
     url(r'^community/$', TemplateView.as_view(template_name="main/community.html"), name="community"),

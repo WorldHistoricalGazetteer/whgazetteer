@@ -35,51 +35,36 @@
 
         <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
           <div class="navbar-nav ml-auto pt-2">
-            {% if user.is_authenticated %}
             <li class="nav-item">
               <a class="nav-link" href="{% url 'maps_home' %}">Maps</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'usingapi' %}">API</a>
+              <a class="nav-link" href="{% url 'tutorials' %}">Tutorials</a>
             </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'contributing' %}">Contributing</a>
+			<li class="nav-item">
+              <a class="nav-link" href="{% url 'about' %}">About WHG</a>
             </li>
-            <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" href="#" id="aboutDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                About WHG
-              </a>
-              <div class="dropdown-menu" aria-labelledby="aboutDropdown">
-                <a class="dropdown-item" href="{% url 'about' %}">Introduction</a>
-                <a class="dropdown-item" href="{% url 'community' %}">Communities</a>
-                <div class="dropdown-divider"></div>
-                <a class="dropdown-item" href="{% url 'credits' %}">Credits</a>
-              </div>
-            </li>
-
-			<li class="nav-item dropdown">
-			  <a class="nav-link dropdown-toggle" href="#" id="aboutDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><b>{{ request.user }}</b></a>
-              <div class="dropdown-menu" aria-labelledby="urlencodeDropdown">
-                <a class="dropdown-item" href="{% url 'dashboard' %}">Data Dashboard</a>
-                <a class="dropdown-item" href="{% url 'profile' %}">Profile</a>
-              </div>
+			
+			{% if user.is_authenticated %}
+			  <li class="nav-item">
+				<a class="nav-link" href="{% url 'dashboard' %}">Data Dashboard</a>
+			  </li>
+  
+			  <li class="nav-item larger">
+				<a class="nav-link" href="{% url 'profile' %}">{% fontawesome_icon 'user-circle' color='#336699' %}</a>
+			  </li>
+			<li class="nav-item">
+			  <a class="nav-link `ml-5" href="javascript:{document.getElementById('logout').submit()}">Logout</a>
+			  <form id="logout" method="post" action="{% url 'logout' %}">
+				{% csrf_token %}</form>
 			</li>
-
-            <li class="nav-item">
-              <a class="nav-link `ml-5" href="javascript:{document.getElementById('logout').submit()}">Logout</a>
-              <form id="logout" method="post" action="{% url 'logout' %}">
-                {% csrf_token %}</form>
-            </li>
             {% else %}
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'about' %}">About</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link ml-5" href="{% url 'register' %}">Register</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'login' %}">Login</a>
-            </li>
+			  <li class="nav-item">
+				<a class="nav-link ml-5" href="{% url 'register' %}">Register</a>
+			  </li>
+			  <li class="nav-item">
+				<a class="nav-link" href="{% url 'login' %}">Login</a>
+			  </li>
             {% endif %}
           </div>
         </div>
