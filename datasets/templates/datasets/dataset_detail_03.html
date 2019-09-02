@@ -9,6 +9,7 @@
 <div class="container ds-detail mt-3">
   <!-- on click toggle .hidden, .form-value; make submit button visible -->
   <form id="ds_form" method="POST" action="#" enctype="multipart/form-data">
+  
   {% csrf_token %}
     <input type="hidden" name="id" value='{{ form.id }}'></input>
     <h4>Dataset Portal
@@ -21,6 +22,20 @@
       class="float-right mr-2">{% fontawesome_icon 'table' color='#336699' %}</a>
     </h4>
     <hr/>
+    <ul class="nav nav-tabs">
+      <li class="nav-item">
+        <a class="nav-link active" href="#">Active</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#">Link</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#">Link</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
+      </li>
+    </ul>
     <div class="row">
       <div id="ds_details" class="col-sm-6 small">
         <p><b>Name</b>: 
@@ -33,18 +48,13 @@
           <span class="hidden editing-description">{{ form.description }}</span>
           &nbsp;<span class="edit-description small"><a href="#">{% fontawesome_icon 'edit' color='#336699' %}</a></span>
         </p>
-        <!--<p class="form-value editing"><b>Description</b>: {{ object.description }}</p>-->
-        <!--<p class="hidden editing"><b>Description</b>: {{ form.description }}</p>-->
-        <p><b>ID (label/#)</b>: {{ object.label }}/{{ object.id }}
+        <p><b>ID (label/#)</b>: {{ object.label }}/{{ object.id }}</p>
         <p><b>File</b>: {{ object.file }}</p>
         <p><b>Date</b>: {{ object.upload_date|date:"d-M-Y, H:i (e)" }}</p>
         <p><b>Total rows</b>: {{ object.numrows }}</p>
         <p><b>Data type</b>: {{ object.datatype }}</p>
         <p><b>URI base</b>: {{ object.uri_base }}</p>
         <p><b>Format</b>: {{ object.format }} ({{ object.delimiter }})</p>
-        <!--{# if object.format == "delimited" %}-->
-          <!--<p><b>Sources file</b>:</p>-->
-        <!--{# endif %}-->
         {% if object.mapbox_id %}
           <p class="form-value"><b>MapBox ID</b>: {{ object.mapbox_id }}</p>
           <p class="hidden editing"><b>MapBox ID</b>: {{ form.mapbox_id }}</p>
@@ -103,10 +113,14 @@
               </ul>
               {% if user.is_superuser %}
                 <p class="small">
-                   <a class="confirm-del-matches" href="{% url 'datasets:task-delete' tid=t.task_id scope='matches'%}">
+                  <a class="confirm-del-matches" 
+                    href="{% url 'datasets:task-delete' tid=t.task_id scope='matches'%}">
                     Clear matches</a>&nbsp;|&nbsp;
-                   <a class="confirm-del-all" data-id={{t.task_id}} href="{% url 'datasets:task-delete' tid=t.task_id scope='task' %}">
-                     Delete task & hits, clear matches {% fontawesome_icon 'trash' color='#336699' %}</a>
+                  </a>
+                  <a class="confirm-del-all" data-id={{t.task_id}} 
+                    href="{% url 'datasets:task-delete' tid=t.task_id scope='task' %}">
+                    Delete task & hits, clear matches {% fontawesome_icon 'trash' color='#336699' %}
+                  </a>
                 </p>
               {% endif %}
             </div>
@@ -122,10 +136,13 @@
           </div> <!-- row -->
         </div> <!-- task-box -->
         {% endfor %}
-      </div>
-    </div>
+      </div> <!-- ds_recon -->
+    </div> <!-- row -->
+  
   </form>
 </div>
+
+
 <script type="text/javascript">
   $(function(){
     console.log('dataset id: {{ object.id }}')
