@@ -30,9 +30,12 @@ urlpatterns = [
     # list places (for table)
     path('<str:label>/datatable/<str:f>', views.drf_table, name='drf_table'),
 
+    # browse/map dataset; replacing drf_table
+    path('<str:label>/browse/<str:f>', views.dataset_browse, name='dataset_browse'),
+
     # list places in a dataset
     #path('<str:label>/places/<str:format>', views.ds_list, name='ds_list'),
-    path('<str:label>/places/', views.ds_list, name='ds_list'),
+    #path('<str:label>/places/', views.ds_list, name='ds_list'),
 
     # delete TaskResult & associated hits
     path('task-delete/<str:tid>/<str:scope>', views.task_delete, name="task-delete"),
