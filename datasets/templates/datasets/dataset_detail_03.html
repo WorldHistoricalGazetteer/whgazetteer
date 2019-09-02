@@ -7,9 +7,21 @@
 {% load dataset_extras %}
 
 <div class="container ds-detail mt-3">
+  <ul class="nav nav-tabs">
+    <li class="nav-item">
+      <a class="nav-link active" href="#tab1" data-toggle="tab" role="tab">Dataset Details</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="#tab2" data-toggle="tab" role="tab">Browse Data</a>
+    </li>
+    <!--<li class="nav-item">-->
+      <!--<a class="nav-link" href="#tab3" data-toggle="tab" role="tab">Link</a>-->
+    <!--</li>-->
+  </ul>
   <!-- on click toggle .hidden, .form-value; make submit button visible -->
+  <div class="tab-content">
+  <div id="tab1" class="tab-pane fade show active" role="tabpanel">
   <form id="ds_form" method="POST" action="#" enctype="multipart/form-data">
-  
   {% csrf_token %}
     <input type="hidden" name="id" value='{{ form.id }}'></input>
     <h4>Dataset Portal
@@ -22,20 +34,6 @@
       class="float-right mr-2">{% fontawesome_icon 'table' color='#336699' %}</a>
     </h4>
     <hr/>
-    <ul class="nav nav-tabs">
-      <li class="nav-item">
-        <a class="nav-link active" href="#">Active</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="#">Link</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="#">Link</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
-      </li>
-    </ul>
     <div class="row">
       <div id="ds_details" class="col-sm-6 small">
         <p><b>Name</b>: 
@@ -138,10 +136,12 @@
         {% endfor %}
       </div> <!-- ds_recon -->
     </div> <!-- row -->
-  
   </form>
+  </div> <!-- tab1 -->
+  <div id="tab2" class="tab-pane fade" role="tabpanel"><p>all the browse code goes here???</p></div>
+  <!--<div id="tab3" class="tab-pane fade" role="tabpanel"><p>tab3</p></div>-->
+  </div> <!-- tab-content-->
 </div>
-
 
 <script type="text/javascript">
   $(function(){
