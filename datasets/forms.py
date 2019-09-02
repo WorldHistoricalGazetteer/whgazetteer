@@ -39,7 +39,7 @@ class DatasetDetailModelForm(forms.ModelForm):
     fields = ('id','name','description','mapbox_id')
     widgets = {
       'description': forms.Textarea(attrs={
-            'rows':1,'cols': 60,'class':'textarea','placeholder':'brief description'}),
+            'rows':1,'cols': 40,'class':'textarea','placeholder':'brief description'}),
     }
 
   def __init__(self, *args, **kwargs):

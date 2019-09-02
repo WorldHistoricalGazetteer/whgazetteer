@@ -767,7 +767,8 @@ class DatasetCreateView(CreateView):
 # detail
 class DatasetDetailView(UpdateView):
   form_class = DatasetDetailModelForm
-  template_name = 'datasets/dataset_detail.html'
+  #template_name = 'datasets/dataset_detail.html'
+  template_name = 'datasets/dataset_detail_02.html'
 
   def get_success_url(self):
     id_ = self.kwargs.get("id")
