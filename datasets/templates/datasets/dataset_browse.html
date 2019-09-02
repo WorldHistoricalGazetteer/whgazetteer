@@ -1,0 +1,412 @@
+<!-- datasets/ds_grid.html -->
+{% extends "main/base.html" %}
+{% load leaflet_tags %}
+{% load fontawesome %}
+{% load static %}
+
+{% block title %}<title>Browse dataset: {{ ds.label }}</title>{% endblock %}
+{% block extra_head %}
+  {% leaflet_js %}
+  {% leaflet_css %}
+  <script src="{% static 'js/aliases.js' %}"></script>
+  <script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>
+  <link rel="stylesheet" href="//cdn.datatables.net/1.10.16/css/dataTables.bootstrap4.min.css">
+{% endblock %}
+{% block content %}
+<!-- incoming: ds, place_list -->
+<div class="container">
+  <h4 class="mt-3">{{ ds.name }} 
+    <span class="small text-muted">("{{ ds.label }}")
+      <a href="{% url 'datasets:dataset-detail' ds.id %}" title="Dataset details" rel="tooltip"
+        class="">{% fontawesome_icon 'cog' color='#336699' %}</a>
+    </span>
+    <span class="half float-right">
+    <!--{# if filter != 'nogeom' %}-->
+      <!--<a href="{# url 'datasets:drf_table' label=ds.label f='nogeom' %}" -->
+      <!--title="Filter: no geometry" rel="tooltip">{# fontawesome_icon 'filter' color='#336699' %}</a>-->
+    <!--{# else %}-->
+      <!--<a href="{# url 'datasets:drf_table' label=ds.label f='all' %}">Clear filter</a>-->
+    <!--{# endif %}-->
+  </span>
+  </h4>
+  <div class="container mt-3">
+    <div class="row">
+      <div id="drftable_detail" class="col-sm-7 pl-0">
+        <div id="drftable_title"></div>
+        <div id="map">
+            {% leaflet_map "map" callback="map_init" %}
+        </div>
+        <!-- row detail in 2 columns by getPlace() -->
+        <div id="row_detail" class="row">
+          <div id="detail_left" class="small col-sm-6">
+            <p class="text-center mt-5">
+              <img src="{# static 'images/ajax-loader.gif' #}" />
+            </p>
+          </div>
+          <div id="detail_right" class="small col-sm-6">
+            <p>right side</p>
+          </div>
+        </div>
+      </div>
+      <div id="drftable_list" class="col-sm-5">
+        <table id="placetable" class="table table-striped table-bordered" style="width:100%">
+          <thead>
+            <tr>
+              <th>pid</th>
+              <th>title</th>
+              <th>ccodes</th>
+            </tr>
+          </thead>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="ext_site" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span></button>
+      </div>
+      <div id="ext_content" class="modal-body">foo</div>
+    </div>
+  </div>
+</div> <!-- ext_site -->
+<script src="//cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+<script src="//cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+<script  type="text/javascript">
+  $("[rel='tooltip']").tooltip();
+  
+  function setRowEvents(){
+    $( "tr.odd, tr.even" ).hover(
+        function() {
+          $(this).addClass( "rowhover" );
+        }, function() {
+          $(this).removeClass( "rowhover" );
+        }
+      )
+    <!--$( "tr.odd, tr.even" ).click(function() {-->
+    $("#placetable tr").click(function() {
+        t=$(this)
+        pid=$(this)[0].cells[0].textContent
+        var selected = $(this).hasClass("highlight-row");
+        $("#placetable tr").removeClass("highlight-row");
+        if(!selected)
+          $(this).removeClass( "rowhover" );
+          $(this).addClass("highlight-row");
+        getPlace(pid)
+      }
+    ) 
+    
+    <!--$("#placetable tr").click(function() {-->
+      <!--console.log('clicked a row',$(this))-->
+      var selected = $(this).hasClass("highlight-row");
+      $("#placetable tr").removeClass("highlight-row");
+      if(!selected)
+        $(this).removeClass( "rowhover" );
+        $(this).addClass("highlight-row");
+    <!--});-->
+    
+    row = $("#drftable_list table tbody")[0].rows[0]
+    pid = parseInt(row.cells[0].textContent)
+    // display first row detail
+    getPlace(pid)
+  }
+  
+  $(function() {
+    window.table = $('#placetable').DataTable({
+      "serverSide": true,
+      "ajax": "/api/places/?format=datatables&ds={{ ds.label }}&f={{ filter }}",
+      "columns": [
+          {"data": "id", "searchable": false},
+          {"data": "title"},
+          {"data": "ccodes"},
+      ],
+      "order": [[ 1, 'asc' ]]
+    })
+    table.on( 'draw', function () {
+      setRowEvents();
+    } );
+    
+  })  
+
+  // expose leaflet map for events, call it 'mappy'
+  window.addEventListener('map:init', function (e) {
+    window.mappy = e.detail.map
+    var attrib_mb = 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
+            '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+            'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+      attrib_awmc = 'Tiles and Data &copy; 2013 <a href="http://www.awmc.unc.edu" target="_blank">AWMC</a>',
+      token_mb = 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw',
+      token_kg = 'pk.eyJ1Ijoia2dlb2dyYXBoZXIiLCJhIjoiUmVralBPcyJ9.mJegAI1R6KR21x_CVVTlqw',
+      token_awmc = 'pk.eyJ1Ijoia2dlb2dyYXBoZXIiLCJhIjoiY2prcmgwc2cwMjRuZzNsdGhzZmVuMDRqbCJ9.MeLsyeOqwhTRdvt_Hgo7kg',
+      token_whg = '',
+      mbtiles_url = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={token}';
+      mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}';
+      
+    var awmc = L.tileLayer(mbtiles_url, {id:'isawnyu.map-knmctlkh', token:token_awmc, attribution:attrib_awmc}),
+      grayscale = L.tileLayer(mbstyle_url, {id:'kgeographer/cjstfpenh6o1e1fldz95w8m6p', token:token_kg, attribution:attrib_mb}),
+      satellite  = L.tileLayer(mbtiles_url, {id:'mapbox.satellite', token:token_mb, attribution:attrib_mb}),
+      osm  = L.tileLayer(mbtiles_url, {id:'mapbox.light', token:token_mb, attribution:attrib_mb});
+
+    var baseLayers = {
+      "AWMC Terrain": awmc,
+      "OSM": osm,
+      "Spine Data": grayscale,
+      "Satellite": satellite
+    };
+    L.control.layers(baseLayers).addTo(mappy);
+    baseLayers['OSM'].addTo(mappy)
+  }, false);
+  
+  function url_it(str) {
+    // resolves source alias; returns url where appropriate
+    <!--console.log('url_it() str',str)-->
+    uri = ''
+    if(str.startsWith('black') || str.startsWith('dplace')) {
+      // TODO: applicable for links?
+      link = str
+    } else {
+      if (str.startsWith('tgn')) {uri = str.replace('tgn:','http://vocab.getty.edu/page/tgn/')} 
+      else if(str.startsWith('dbp')) {uri = str.replace('dbp:','http://dbpedia.org/resource/')}
+      else if(str.startsWith('gn')) {uri = str.replace('gn:','http://www.geonames.org/')}
+      else if(str.startsWith('wwf:')) {uri = str.replace('wwf:','https://www.worldwildlife.org/ecoregions/')}
+      else if(str.startsWith('wd:')) {uri = str.replace('wd:','https://www.wikidata.org/wiki/')}
+      link = '<span class="small mr-2"><a href="'+ uri +'" class="ext" target="_blank">['+
+        str+']</a></span>'
+    }
+    <!--<a class="mr-2 ext" data-toggle="modal" data-target="#ext_site" href="'+sug['id']+-->
+                <!--'">{ link }} {# fontawesome_icon 'external-link' color='#336699' #}</a>-->
+    return link;
+  }
+  function url_modal(identifier) {
+    <!-- e.g. 'wd:Q123456' -->
+    link = ' <a href="" class="ext" data-toggle="modal" data-target="#ext_site">'+identifier+
+      ' {% fontawesome_icon 'external-link' color='#336699' %}</a>'
+    return link
+  }
+  function renderMap(geom){
+    geomtype = geom['features'][0]['type']
+    <!--clear out the previous if any-->
+    if(typeof(features)!=='undefined'){
+      mappy.removeLayer(features)
+    }
+    function fill(dataset) {
+       if (dataset == 'tgn')
+         return "#ff7800"
+       else if (dataset == 'dbp')
+         return "#98E2FA"
+       else if (dataset == 'ne_rivers')
+         return "#333399"
+       else
+         return "#7AFF7A"
+     }
+    function styler(type) {
+      if (type == 'MultiLineString')
+        return {opacity: 1, weight: 2, color: "#0000ff"}
+      else
+        return {fillOpacity: 0.4, opacity: 1, weight: 1, color: "#000", fillColor:"#f6a2b3"}
+    }
+    idToFeature = {}  // for feature lookup
+    features = L.geoJSON(geom, {
+    // TODO: get this right
+      style: styler(geomtype),
+      <!--style: {fillOpacity: 0.4, opacity: 1, weight: 1,-->
+             <!--color: "#000", fillColor:"#f6a2b3"},-->
+      pointToLayer: function (feature, latlng) {
+         matchid = feature.properties.dataset+':'+feature.properties.id
+         marker = L.circleMarker(latlng,
+           {
+             radius: 8, fillOpacity: 0.8, opacity: 1, weight: 1,
+             color: "#000", fillColor: fill(feature.properties.dataset)
+           }
+         ).bindPopup(feature.properties.dataset+':'+feature.properties.id);
+      
+         idToFeature[matchid] = marker
+         return marker
+       }
+    }).addTo(mappy);
+    
+    if (geom['features'].length > 1 && geom['features'][0].type == 'Point') {
+      mappy.fitBounds(features.getBounds().pad(1))
+    } else {
+      feat0 = geom['features'][0]
+      if (feat0.type == 'Point') {
+        latlng = L.latLng(
+          feat0.coordinates[1],
+          feat0.coordinates[0])
+        mappy.setView(latlng, 4)
+      } else if (['MultiLineString','MultiPolygon'].includes(feat0.type)) {
+        mappy.fitBounds(features.getBounds())
+      }
+    }
+  }
+  // TODO: better parsing here
+  function parsePlace(data,side) {
+    window.data = data
+    function minmax(timespans){
+      starts=[]; ends=[]
+      for (t in timespans){
+        starts.push('in' in timespans[t]['start'] ?  timespans[t]['start']['in'] : timespans[t]['start']['earliest'])
+        ends.push('in' in timespans[t]['end'] ?  timespans[t]['end']['in'] : timespans[t]['end']['earliest'])
+      } 
+      minmax=[Math.min((starts)),Math.max((ends))]
+      return minmax
+    }
+
+
+    function onlyUnique(array) { 
+      const map = new Map();
+      const result = [];
+      for (const item of array) {
+        if(!map.has(item.identifier)){
+            map.set(item.identifier, true);
+            result.push({
+                identifier: item.identifier,
+                type: item.type
+            });
+        }
+      }
+      return(result)
+    }
+    
+    //
+    // TITLE 
+    left='<p><b>Title</b>: <span id="row_title" class="larger text-danger">'+data.title+'</span>'
+    //
+    // NAME VARIANTS
+    left+='<p><b>Variants</b>: '
+    for (n in data.names) {
+      left+= '<p>'+data.names[n].toponym !=''?data.names[n].toponym+'; ': ''
+    }
+    //
+    // TYPES
+    left+='</p><p><b>Types</b>: '
+    typeids = ''
+    for (t in data.types) {
+      typeids+=data.types[t].source_label?data.types[t].source_label +
+        ' (<i>'+data.types[t].label+'/'+data.types[t].identifier +'</i>); ':
+        '(<i>'+data.types[t].label+'/'+data.types[t].identifier +'</i>); '
+    }
+    left += typeids.replace(/(; $)/g, "") +'</p>'
+    //
+    // GEOMS
+    if (data.geoms.length > 0){
+      geom = {"type":"FeatureCollecton","features":[]}
+      for (g in data.geoms){
+        <!--console.log('g',data.geoms[g])-->
+        data.geoms[g]['properties'] = {"id": data.id, "dataset": data.dataset}
+        geom.features.push(data.geoms[g])
+      }
+      renderMap(geom)
+    } else {
+      //reset mappy
+      map_init()
+    }   
+    //
+    // LINKS
+    // TODO: normalize on closeMatch, exactMatch
+    left += '<p class="mb-0"><b>Linked records</b>: </p>'
+    close_count = exact_count = related_count = 0
+    html_exact = html_close = html_related = ''
+    if (data.links.length > 0) {
+      window.links=data.links
+      links_arr = onlyUnique(data.links)
+      console.log('distinct data.links',links_arr)
+      for (l in links_arr) {
+        if (links_arr[l].type.substring(0,5) == 'exact') {
+          exact_count += 1
+          html_exact+=url_modal(links_arr[l].identifier)
+        }
+        else if (links_arr[l].type.substring(0,5) == 'close') {
+          close_count += 1
+          html_close+=url_modal(links_arr[l].identifier)
+        }
+        else if (links_arr[l].type == 'related') {
+          related_count +=1
+          html_related+=url_modal(links_arr[l].identifier)
+        }
+      }
+      if (exact_count > 0) left += '<i>exactMatch</i>: ['+html_exact+' ]'
+      if (close_count > 0) left += ' <i>closeMatch</i>: ['+html_close+' ]'
+      if (related_count > 0) left += ' <i>related</i>: ['+html_related+' ]'
+    } else { left += "<i class='small'>no links established yet</i>" }
+
+    //
+    // RELATED
+    right=''
+    if (data.related.length > 0) {
+      right_parent='<p class="mb-0"><b>Parent(s)</b>: '; 
+      right_related='<p class="mb-0"><b>Related</b>: ';
+      for (r in data.related){
+        rel = data.related[r]
+        <!--console.log('rel',rel)-->
+        if (rel.relation_type == 'gvp:broaderPartitive'){
+          right_parent += '<span class="small h1em">'+rel.label
+          right_parent += 'when' in rel && !('timespans' in rel.when) ? 
+            ', '+rel.when.start.in+'-'+rel.when.end.in : 'when' in rel && ('timespans' in rel.when) ? ', '+
+              minmax(rel.when.timespans) : ''
+          <!--html_parent += 'when' in rel and !(timespans in rel.when) ? ', '+rel.when.start.in+'-'+rel.when.end.in : ''-->
+          right_parent += '</span>; '
+        } 
+        else {
+          right_related += '<p class="small h1em">'+rel.label+ ', '+rel.when.start.in+'-'+rel.when.end.in+'</p>'
+        }
+      }
+      right+=right_parent.length > 39?right_parent:''
+      right+=right_related.length > 37?right_related:''
+    }
+    //
+    // DESCRIPTIONS
+    // TODO: link description to identifier URI if present
+    if (data.descriptions.length > 0) {
+      right+='<p><b>Description</b>: '+ data.descriptions[0]['value'].substring(0,300)+' ... </p>'
+        <!--'<br/><span class="small red-bold">('+data.descriptions[0]['identifier']+')</span>-->
+    }
+    
+    left += '</div>'
+    right += '</div>'
+    return side=='left'?left:right
+  }
+
+  function getPlace(pid){
+    $.ajax({
+      url: "/api/places/"+pid,
+      }).done(function( data ) {
+        <!--$("#row_title").html('<b>'+data['title']+'</b>')-->
+        <!--$("#drftable_fields").html(parsePlace(data))-->
+        $("#detail_left").html(parsePlace(data,'left'))
+        $("#detail_right").html(parsePlace(data,'right'))
+        $('.ext').on('click', function(e) {
+        e.preventDefault();
+          str=$(this).text()
+          var re = /(dbp|gn|tgn|wd):(.*?)$/;
+          url=base_urls[str.match(re)[1]]+str.match(re)[2]
+          console.log('url',url)
+          $(".modal-body").html('<iframe width="100%" height="100%" frameborder="0" scrolling="yes" '+
+            'allowtransparency="true" src="'+url+'"></iframe>');
+        });
+      });
+  }
+  // initialize, render map
+  function map_init (map, options) {
+    if(typeof(features)!=='undefined'){
+      mappy.removeLayer(features)
+      mappy.setView([35.0, 13.0], 1)
+    }
+    $('.edit-row').on('click', function(){
+      alert('open a modal with full record')
+    })
+    // console.log('in map_init()')
+    geom = {"type":"FeatureCollecton","features":[]}
+    
+  } // end map_init
+  
+  function zoomTo(id) {
+    mappy.setView(idToFeature[id]._latlng, mappy.getZoom() +2 )
+  }
+
+</script>
+{% endblock %}
+

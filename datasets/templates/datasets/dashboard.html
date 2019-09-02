@@ -41,7 +41,7 @@
                    title="Insert to db" rel="tooltip"
                   class="">{% fontawesome_icon 'database' color='#336699' %}</a>
                   {% elif d.status in viewable %}
-                  <a href="{% url 'datasets:drf_table' label=d.label f='all' %}" title="View/edit table" rel="tooltip"
+                  <a href="{% url 'datasets:dataset_browse' label=d.label f='all' %}" title="View/edit table" rel="tooltip"
                   class="">{% fontawesome_icon 'table' color='#336699' %}</a>&nbsp;
                   <!--<a href="{# url 'datasets:dataset-detail' d.id %}" title="Dataset details" rel="tooltip"-->
                   <!--class="">{# fontawesome_icon 'cog' color='#336699' %}</a>-->

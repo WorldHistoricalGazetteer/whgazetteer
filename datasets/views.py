@@ -322,6 +322,13 @@ def drf_table(request, label, f):
   filt = f
   return render(request, 'datasets/drf_table.html', {'ds':ds,'filter':filt})
 
+# replacing drf_table
+def dataset_browse(request, label, f):
+  # need only for title; calls API w/javascript for data
+  ds = get_object_or_404(Dataset, label=label)
+  filt = f
+  return render(request, 'datasets/dataset_browse.html', {'ds':ds,'filter':filt})
+
 def ds_list(request, label):
   # fetch places in specified dataset
   print('in ds_list() for',label)
