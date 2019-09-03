@@ -79,12 +79,29 @@
 <script  type="text/javascript">
   $("[rel='tooltip']").tooltip();
   
+  defaultStyle = {radius: 1, fillOpacity: 0.8, opacity: 1, stroke: false, fillColor:"#993333"}
+  focusStyle = {radius:12,fillColor:"#ff0000",fillOpacity:0.5,stroke:true,weight:1,color:"#000000"}
+  
+  function focusFeature(feat){
+    feat.setStyle(focusStyle)
+    console.log('feat',feat)
+    mappy.setView(feat._latlng, 3);
+  }
   function setRowEvents(){
     $( "tr.odd, tr.even" ).hover(
         function() {
+          pid=$(this)[0].cells[0].textContent
+          feat = idToFeature[pid]
           $(this).addClass( "rowhover" );
+          feat.setStyle(focusStyle)
+          // highlight feature
         }, function() {
+          pid=$(this)[0].cells[0].textContent
+          feat = idToFeature[pid]
           $(this).removeClass( "rowhover" );
+          feat.setStyle(defaultStyle) 
+          mappy.setView([35.0, 13.0], 1)
+          // unhighlight feature
         }
       )
     <!--$( "tr.odd, tr.even" ).click(function() {-->
@@ -96,6 +113,9 @@
         if(!selected)
           $(this).removeClass( "rowhover" );
           $(this).addClass("highlight-row");
+        // highlight fillColor:bright red, opacity .7, color:red , zoomTo, level 3
+        feat = idToFeature[pid]
+        focusFeature(feat)
         getPlace(pid)
       }
     ) 
@@ -117,6 +137,7 @@
   }
   
   $(function() {
+    window.dslabel = "{{ ds.label }}"
     window.table = $('#placetable').DataTable({
       "serverSide": true,
       "ajax": "/api/places/?format=datatables&ds={{ ds.label }}&f={{ filter }}",
@@ -134,9 +155,12 @@
     $.get("/api/geoms", {ds: "{{ ds.label }}", f: "{{ filter }}" },
       function(data){
         geom = {"type":"FeatureCollecton","features":[]}
+        <!--$.each(data.results, function( index, record ) {-->
+          <!--console.log(index,record)-->
+        <!--})-->
         geom['features'] = data.results
-        renderMap(geom)
-        console.log(geom)
+        renderMap(geom,dslabel)
+        console.log('data',data)
       })   
   })  
 
@@ -195,42 +219,44 @@
       ' {% fontawesome_icon 'external-link' color='#336699' %}</a>'
     return link
   }
-  function renderMap(geom){
+  function renderMap(geom,dslabel){
     geomtype = geom['features'][0]['type']
     <!--clear out the previous if any-->
     if(typeof(features)!=='undefined'){
       mappy.removeLayer(features)
     }
-    function fill(dataset) {
-       if (dataset == 'tgn')
-         return "#ff7800"
-       else if (dataset == 'dbp')
-         return "#98E2FA"
-       else if (dataset == 'ne_rivers')
-         return "#333399"
-       else
-         return "#7AFF7A"
-     }
+    <!--function fill(dataset) {-->
+       <!--if (dataset == 'tgn')-->
+         <!--return "#ff7800"-->
+       <!--else if (dataset == 'dbp')-->
+         <!--return "#98E2FA"-->
+       <!--else if (dataset == 'ne_rivers')-->
+         <!--return "#333399"-->
+       <!--else-->
+         <!--return "#993333"-->
+     <!--}-->
+     
+    // blue if rivers
+    // TODO: style should depend on #features, zoom level
     function styler(type) {
       if (type == 'MultiLineString')
-        return {opacity: 1, weight: 2, color: "#0000ff"}
+        return {opacity: 1, weight: 1, color: "#336699"}
       else
-        return {fillOpacity: 0.4, opacity: 1, weight: 1, color: "#000", fillColor:"#f6a2b3"}
+        return {radius: 1, fillOpacity: 0.8, opacity: 1, stroke: false, fillColor:"#993333"}
     }
     idToFeature = {}  // for feature lookup
     features = L.geoJSON(geom, {
     // TODO: get this right
       style: styler(geomtype),
-      <!--style: {fillOpacity: 0.4, opacity: 1, weight: 1,-->
-             <!--color: "#000", fillColor:"#f6a2b3"},-->
       pointToLayer: function (feature, latlng) {
-         matchid = feature.properties.dataset+':'+feature.properties.id
+         matchid = feature.place_id_id
          marker = L.circleMarker(latlng,
            {
-             radius: 8, fillOpacity: 0.8, opacity: 1, weight: 1,
-             color: "#000", fillColor: fill(feature.properties.dataset)
+             <!--radius: 2, fillOpacity: 1, stroke: false,-->
+             <!--<!--fillColor: fill(dataset)-->-->
+             <!--fillColor: "#98E2FA"-->
            }
-         ).bindPopup(feature.properties.dataset+':'+feature.properties.id);
+         ).bindPopup(matchid);
       
          idToFeature[matchid] = marker
          return marker
