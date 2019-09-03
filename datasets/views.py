@@ -327,7 +327,8 @@ def dataset_browse(request, label, f):
   # need only for title; calls API w/javascript for data
   ds = get_object_or_404(Dataset, label=label)
   filt = f
-  return render(request, 'datasets/dataset_browse.html', {'ds':ds,'filter':filt})
+  #return render(request, 'datasets/dataset_browse.html', {'ds':ds,'filter':filt})
+  return render(request, 'datasets/dataset_browse_02.html', {'ds':ds,'filter':filt})
 
 def ds_list(request, label):
   # fetch places in specified dataset
