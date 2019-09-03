@@ -131,10 +131,10 @@
     table.on( 'draw', function () {
       setRowEvents();
     });
-    <!--$.get("/api/places", {format:"datatables",ds: {{ ds.label }}, f: {{ filter }} },-->
-      <!--function(data){-->
-      <!--}-->
-    <!--})      -->
+    $.get("/api/geoms", {ds: "{{ ds.label }}", f: "{{ filter }}" },
+      function(data){
+        console.log(data)
+      })   
   })  
 
   // expose leaflet map for events, call it 'mappy'
@@ -298,18 +298,19 @@
     left += typeids.replace(/(; $)/g, "") +'</p>'
     //
     // GEOMS
-    if (data.geoms.length > 0){
-      geom = {"type":"FeatureCollecton","features":[]}
-      for (g in data.geoms){
-        <!--console.log('g',data.geoms[g])-->
-        data.geoms[g]['properties'] = {"id": data.id, "dataset": data.dataset}
-        geom.features.push(data.geoms[g])
-      }
-      renderMap(geom)
-    } else {
-      //reset mappy
-      map_init()
-    }   
+    // rendering all geoms now
+    <!--if (data.geoms.length > 0){-->
+      <!--geom = {"type":"FeatureCollecton","features":[]}-->
+      <!--for (g in data.geoms){-->
+        <!--<!--console.log('g',data.geoms[g])-->-->
+        <!--data.geoms[g]['properties'] = {"id": data.id, "dataset": data.dataset}-->
+        <!--geom.features.push(data.geoms[g])-->
+      <!--}-->
+      <!--renderMap(geom)-->
+    <!--} else {-->
+      <!--//reset mappy-->
+      <!--map_init()-->
+    <!--}   -->
     //
     // LINKS
     // TODO: normalize on closeMatch, exactMatch

@@ -1,19 +1,33 @@
 # api.views
 from django.contrib.auth.models import User, Group
 from django.db.models import Count
+from django.shortcuts import get_object_or_404
 from rest_framework import generics
 from rest_framework import permissions
 from rest_framework import viewsets
 
 from .serializers import UserSerializer, GroupSerializer, DatasetSerializer, \
-    PlaceSerializer, PlaceDRFSerializer, AreaSerializer
+    PlaceSerializer, PlaceDRFSerializer, PlaceGeomSerializer, AreaSerializer
 
 
 from accounts.permissions import IsOwnerOrReadOnly, IsOwner
 from datasets.models import Dataset
 from areas.models import Area
-from places.models import Place
+from places.models import Place, PlaceGeom
 
+class GeomViewSet(viewsets.ModelViewSet):
+    queryset = PlaceGeom.objects.all()
+    serializer_class = PlaceGeomSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    
+    def get_queryset(self):
+        dslabel = self.request.GET.get('ds')
+        #ds = get_object_or_404(Dataset,label=dslabel)
+        dsPlaceIds = Place.objects.values('id').filter(dataset = dslabel)
+        qs = PlaceGeom.objects.filter(place_id_id__in=dsPlaceIds)
+        
+        return qs
+    
 class PlaceViewSet(viewsets.ModelViewSet):
     queryset = Place.objects.all().order_by('title')
     serializer_class = PlaceSerializer
@@ -23,6 +37,7 @@ class PlaceViewSet(viewsets.ModelViewSet):
         qs = Place.objects.annotate(num_g=Count('geoms'))
         query = self.request.GET.get('q')
         ds = self.request.GET.get('ds')
+        print('GET.get from PlaceViewSet()',self.request.GET)
         f = self.request.GET.get('f')
         for key, value in self.request.GET.items():
             print(key, value)

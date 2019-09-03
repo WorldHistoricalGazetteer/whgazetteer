@@ -9,6 +9,7 @@ router = routers.DefaultRouter()
 
 router.register(r'datasets', views.DatasetViewSet)
 router.register(r'places', views.PlaceViewSet)
+router.register(r'geoms', views.GeomViewSet)
 router.register(r'areas', views.AreaViewSet)
 router.register(r'users', views.UserViewSet)
 router.register(r'groups', views.GroupViewSet)
