@@ -133,7 +133,10 @@
     });
     $.get("/api/geoms", {ds: "{{ ds.label }}", f: "{{ filter }}" },
       function(data){
-        console.log(data)
+        geom = {"type":"FeatureCollecton","features":[]}
+        geom['features'] = data.results
+        renderMap(geom)
+        console.log(geom)
       })   
   })  
 
