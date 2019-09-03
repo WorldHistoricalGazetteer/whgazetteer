@@ -25,13 +25,13 @@ class GeomViewSet(viewsets.ModelViewSet):
         #ds = get_object_or_404(Dataset,label=dslabel)
         dsPlaceIds = Place.objects.values('id').filter(dataset = dslabel)
         qs = PlaceGeom.objects.filter(place_id_id__in=dsPlaceIds)
-        
+        #print('qs count',qs.count())
         return qs
     
 class PlaceViewSet(viewsets.ModelViewSet):
     queryset = Place.objects.all().order_by('title')
     serializer_class = PlaceSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly)
 
     def get_queryset(self):
         qs = Place.objects.annotate(num_g=Count('geoms'))

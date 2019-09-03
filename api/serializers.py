@@ -73,8 +73,6 @@ class PlaceLinkSerializer(serializers.ModelSerializer):
 
 class PlaceGeomSerializer(serializers.ModelSerializer):
     # json: type, geowkt, coordinates, when{}
-    #pid = serializers.ReadOnlyField(source='place_id_id')
-    #src_id = serializers.ReadOnlyField(source='src_id')
     type = serializers.ReadOnlyField(source='jsonb.type')
     geowkt = serializers.ReadOnlyField(source='jsonb.geowkt')
     coordinates = serializers.ReadOnlyField(source='jsonb.coordinates')
