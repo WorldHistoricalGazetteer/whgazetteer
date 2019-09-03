@@ -85,7 +85,7 @@
   function focusFeature(feat){
     feat.setStyle(focusStyle)
     console.log('feat',feat)
-    mappy.setView(feat._latlng, 3);
+    <!--mappy.setView(feat._latlng, 3);-->
   }
   function setRowEvents(){
     $( "tr.odd, tr.even" ).hover(
@@ -100,7 +100,7 @@
           feat = idToFeature[pid]
           $(this).removeClass( "rowhover" );
           feat.setStyle(defaultStyle) 
-          mappy.setView([35.0, 13.0], 1)
+          <!--mappy.setView([35.0, 13.0], 1)-->
           // unhighlight feature
         }
       )
@@ -349,7 +349,7 @@
     if (data.links.length > 0) {
       window.links=data.links
       links_arr = onlyUnique(data.links)
-      console.log('distinct data.links',links_arr)
+      <!--console.log('distinct data.links',links_arr)-->
       for (l in links_arr) {
         if (links_arr[l].type.substring(0,5) == 'exact') {
           exact_count += 1
