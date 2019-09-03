@@ -73,6 +73,8 @@ class PlaceLinkSerializer(serializers.ModelSerializer):
 
 class PlaceGeomSerializer(serializers.ModelSerializer):
     # json: type, geowkt, coordinates, when{}
+    #pid = serializers.ReadOnlyField(source='place_id_id')
+    #src_id = serializers.ReadOnlyField(source='src_id')
     type = serializers.ReadOnlyField(source='jsonb.type')
     geowkt = serializers.ReadOnlyField(source='jsonb.geowkt')
     coordinates = serializers.ReadOnlyField(source='jsonb.coordinates')
@@ -81,7 +83,8 @@ class PlaceGeomSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PlaceGeom
-        fields = ('type', 'geowkt', 'coordinates', 'geom_src', 'citation', 'when')
+        #fields = ('type', 'geowkt', 'coordinates', 'geom_src', 'citation', 'when')
+        fields = ('place_id_id','src_id','type', 'geowkt', 'coordinates', 'geom_src', 'citation', 'when')
 
 class PlaceTypeSerializer(serializers.ModelSerializer):
     # json: identifier, label, source_label, when{}
