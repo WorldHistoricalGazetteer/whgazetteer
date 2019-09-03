@@ -53,6 +53,7 @@
           <thead>
             <tr>
               <th>pid</th>
+              <th>src_id</th>
               <th>title</th>
               <th>ccodes</th>
             </tr>
@@ -121,6 +122,7 @@
       "ajax": "/api/places/?format=datatables&ds={{ ds.label }}&f={{ filter }}",
       "columns": [
           {"data": "id", "searchable": false},
+          {"data": "src_id", "searchable": false},
           {"data": "title"},
           {"data": "ccodes"},
       ],
@@ -128,8 +130,11 @@
     })
     table.on( 'draw', function () {
       setRowEvents();
-    } );
-    
+    });
+    <!--$.get("/api/places", {format:"datatables",ds: {{ ds.label }}, f: {{ filter }} },-->
+      <!--function(data){-->
+      <!--}-->
+    <!--})      -->
   })  
 
   // expose leaflet map for events, call it 'mappy'

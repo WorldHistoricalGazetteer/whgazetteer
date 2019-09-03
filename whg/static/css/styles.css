@@ -220,6 +220,7 @@ em { color: #993333;}
 
 #drftable_list {
   padding-right: 0 !important;
+  font-size: .8rem;
 }
 .odd, .even { line-height:.5rem; cursor:pointer;}
 .highlight-row {background-color: #ffff66 !important;}
@@ -228,6 +229,7 @@ em { color: #993333;}
   /*color: white;*/
 }
 #drftable_fields p { margin-bottom: .5rem;} 
+#placetable td {line-height:normal;}
 #placetable_info, #placetable_paginate { font-size: smaller;}
 
 
