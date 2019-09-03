@@ -210,7 +210,7 @@ em { color: #993333;}
   dataset browse
 **/
 #detail_left {
-  border-right: 1px dashed #666;
+  border-right: 1px dashed #999;
 }
 #row_detail { margin-top:3px;}
 #row_detail p {

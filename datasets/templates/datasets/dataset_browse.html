@@ -111,6 +111,7 @@
     row = $("#drftable_list table tbody")[0].rows[0]
     pid = parseInt(row.cells[0].textContent)
     // display first row detail
+    $("#placetable tbody").find('tr').eq(0).addClass('highlight-row')
     getPlace(pid)
   }
   
