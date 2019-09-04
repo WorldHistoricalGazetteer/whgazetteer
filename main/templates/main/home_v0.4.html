@@ -274,7 +274,10 @@
       <!--$(".search-button").click()-->
     }
   })
-
+  $("#search_input").on('click','.tt-selectable', function(e) {
+    console.log('clicked suggestion',$(this))
+    searchPlaces()
+  })
   // perform search, not autocomplete
   // suggest and search both use SearchView()
   <!--$(".search-button").on('click', function(){-->
