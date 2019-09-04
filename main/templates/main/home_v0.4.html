@@ -120,6 +120,7 @@
   // initiates map
   window.addEventListener('map:init', function (e) {
     window.mappy = e.detail.map
+    mappy.setMaxBounds(null)
     var attrib_mb = 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
             '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
             'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
@@ -308,7 +309,7 @@
       mappy.setView([35.0, 13.0], 1)
     }
     data = {"type":"FeatureCollection","features":geoms}
-    console.log(data)
+    <!--console.log(data)-->
     var count_features = 0
     idToFeature = {}
     mappy.createPane('placePane');
@@ -330,7 +331,8 @@
       }
     }).addTo(mappy);
     bounds = features.getBounds()
-    mappy.setView(bounds.getCenter(),5)          
+    <!--mappy.setView(bounds.getCenter(),5)          -->
+    mappy.fitBounds(bounds)          
   }
   
   function showResults(data,doctype,scope='suggest'){
@@ -351,7 +353,7 @@
       results_div += sugLister(sug,doctype,scope)
     });
     if(scope=='search') {
-      console.log(geoms)
+      <!--console.log(geoms)-->
       renderPlaces(geoms)
     }
      
@@ -384,34 +386,6 @@
         'allowtransparency="true" src="'+url+'"></iframe>');
     });
 
-    // fetch geometries for search results
-    <!--renderPlaces = function(features) {-->
-      <!--data = {"type":"FeatureCollection","features":features}-->
-      <!--console.log(data)-->
-      <!--var count_features = 0-->
-      <!--idToFeature = {}-->
-      <!--mappy.createPane('placePane');-->
-      <!--mappy.getPane('placePane').style.zIndex = 200;-->
-      <!--places = L.geoJSON(data, {-->
-        <!--pane: 'placePane',-->
-        <!--pointToLayer: function (feature, latlng) {-->
-          <!--count_features +=1;-->
-          <!--identifier = feature.properties.pid;-->
-          <!--marker = L.circleMarker(latlng,-->
-            <!--{-->
-              <!--radius: 8, fillOpacity: 0.8, opacity: 1, weight: 1,-->
-              <!--color: "#fff", fillColor: "red"-->
-            <!--}-->
-          <!--).bindPopup(feature.properties.title+' (whg id:'+identifier+')');-->
-                      
-          <!--idToFeature[identifier] = marker-->
-          <!--return marker-->
-        <!--}-->
-      <!--}).addTo(mappy);-->
-      <!--bounds = places.getBounds()-->
-      <!--mappy.setView(bounds.getCenter(),5)          -->
-    <!--}-->
-    
     // fetch geometry for a trace record
     $(".trace-item").on('click', function(e){
       $(".trace-item").removeClass('active-card')
