@@ -35,9 +35,10 @@
 }
 
 .tt-suggestion {
-    padding: 3px 20px;
+    padding: 3px 6px;
     font-size: .8rem;
     line-height: 24px;
+    border-bottom: 1px solid #ddd;
 }
 
 .tt-suggestion.tt-cursor { /* UPDATE: newer versions use .tt-suggestion.tt-cursor */

@@ -92,7 +92,15 @@
         name: 'suggester',
         source: suggester,
         display: 'name',
-        limit: 10 
+        limit: 10,
+        templates: {
+          empty: [
+            '<div class="empty-message">','no results...','</div>'].join('\n'),
+          suggestion: function (data) {
+            return data.variants.length>0 ? '<p class="tight-p">' + data.name + '<br/><i class="tight-p">' + data.variants + '<i></p>': 
+            '<p class="tight-p">' + data.name + '</p>'
+          }
+        }
     });
   })
   //
@@ -294,14 +302,18 @@
   }
   //
   // fetch geometries for search results
-  renderPlaces = function(features) {
-    data = {"type":"FeatureCollection","features":features}
+  renderPlaces = function(geoms) {
+    if(typeof(features)!=='undefined'){
+      mappy.removeLayer(features)
+      mappy.setView([35.0, 13.0], 1)
+    }
+    data = {"type":"FeatureCollection","features":geoms}
     console.log(data)
     var count_features = 0
     idToFeature = {}
     mappy.createPane('placePane');
     mappy.getPane('placePane').style.zIndex = 200;
-    places = L.geoJSON(data, {
+    features = L.geoJSON(data, {
       pane: 'placePane',
       pointToLayer: function (feature, latlng) {
         count_features +=1;
@@ -317,7 +329,7 @@
         return marker
       }
     }).addTo(mappy);
-    bounds = places.getBounds()
+    bounds = features.getBounds()
     mappy.setView(bounds.getCenter(),5)          
   }
   
@@ -342,9 +354,7 @@
       console.log(geoms)
       renderPlaces(geoms)
     }
-    
-    
-    
+     
     // div has either suggestions or hits
     // put them in relevant div
     if(scope == 'suggest'){
@@ -375,32 +385,32 @@
     });
 
     // fetch geometries for search results
-    renderPlaces = function(features) {
-      data = {"type":"FeatureCollection","features":features}
-      console.log(data)
-      var count_features = 0
-      idToFeature = {}
-      mappy.createPane('placePane');
-      mappy.getPane('placePane').style.zIndex = 200;
-      places = L.geoJSON(data, {
-        pane: 'placePane',
-        pointToLayer: function (feature, latlng) {
-          count_features +=1;
-          identifier = feature.properties.pid;
-          marker = L.circleMarker(latlng,
-            {
-              radius: 8, fillOpacity: 0.8, opacity: 1, weight: 1,
-              color: "#fff", fillColor: "red"
-            }
-          ).bindPopup(feature.properties.title+' (whg id:'+identifier+')');
+    <!--renderPlaces = function(features) {-->
+      <!--data = {"type":"FeatureCollection","features":features}-->
+      <!--console.log(data)-->
+      <!--var count_features = 0-->
+      <!--idToFeature = {}-->
+      <!--mappy.createPane('placePane');-->
+      <!--mappy.getPane('placePane').style.zIndex = 200;-->
+      <!--places = L.geoJSON(data, {-->
+        <!--pane: 'placePane',-->
+        <!--pointToLayer: function (feature, latlng) {-->
+          <!--count_features +=1;-->
+          <!--identifier = feature.properties.pid;-->
+          <!--marker = L.circleMarker(latlng,-->
+            <!--{-->
+              <!--radius: 8, fillOpacity: 0.8, opacity: 1, weight: 1,-->
+              <!--color: "#fff", fillColor: "red"-->
+            <!--}-->
+          <!--).bindPopup(feature.properties.title+' (whg id:'+identifier+')');-->
                       
-          idToFeature[identifier] = marker
-          return marker
-        }
-      }).addTo(mappy);
-      bounds = places.getBounds()
-      mappy.setView(bounds.getCenter(),5)          
-    }
+          <!--idToFeature[identifier] = marker-->
+          <!--return marker-->
+        <!--}-->
+      <!--}).addTo(mappy);-->
+      <!--bounds = places.getBounds()-->
+      <!--mappy.setView(bounds.getCenter(),5)          -->
+    <!--}-->
     
     // fetch geometry for a trace record
     $(".trace-item").on('click', function(e){
