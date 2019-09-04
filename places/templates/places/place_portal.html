@@ -35,7 +35,8 @@
         <div class="row pt-1">
           <div id="place_home_l" class="col-sm-6">
             <div class="col-content small mt-1">
-              <p>{{ title }} is a { place type }, { on the {...} }</p></div>
+              <p>{{ title }} is a { place type }, { on the {...} }</p>
+            </div>
             {% for rec in payload %}
             <div class="col-content small mt-1">
               <div class="attest-header">
@@ -115,7 +116,7 @@
               <p> <img src="{% static 'images/spark01.png'%}" height=auto width=275 alt=""/> { summing temporal visualization } <i>future</i></p>
             </div>
             <div id="place_map" class="col-content small">
-                <p class="mb-0 allcap-heading">GEOGRAPHY
+                <p class="mb-0 allcap-heading">GEOGRAPHY <span class="nogeo text-danger"></span>
                     <span class="float-right">
                       nearby places <input id="fetch-context" type="checkbox"/> 
                       <!--| zoom <a href="javascript:getClose()">-->
@@ -424,9 +425,10 @@
   }
   function renderMap(geom){
     <!--clear out the previous if any-->
-    if(typeof(features)!=='undefined'){
+    if(typeof(features) != 'undefined'){
       mappy.removeLayer(features)
     }
+    console.log('renderMap(geom)',geom)
     idToFeature = {}  // for feature lookup
     mappy.createPane('mainPane');
     mappy.getPane('mainPane').style.zIndex = 400;
@@ -451,8 +453,12 @@
     }).addTo(mappy);
     
     // TODO: better zoomto choices
-    center=features.getBounds().getCenter()
-    mappy.setView(center, 5)
+    if (geom['features'].length > 0){
+      center=features.getBounds().getCenter()
+      mappy.setView(center, 5)    
+    } else {
+      $(".nogeo").html('no geometry yet!')
+    }
   }
 
   // initialize, render map w/settings.LEAFLET_CONFIG
