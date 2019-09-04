@@ -35,7 +35,7 @@ urlpatterns = [
 
     # list places in a dataset
     #path('<str:label>/places/<str:format>', views.ds_list, name='ds_list'),
-    #path('<str:label>/places/', views.ds_list, name='ds_list'),
+    path('<str:label>/places/', views.ds_list, name='ds_list'),
 
     # delete TaskResult & associated hits
     path('task-delete/<str:tid>/<str:scope>', views.task_delete, name="task-delete"),
