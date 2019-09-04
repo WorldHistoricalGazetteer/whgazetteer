@@ -10,13 +10,6 @@ html, body {
 /**
   general use
 **/
-.foofah {background-color:#fff;}
-.tt-selectable { background-color: yellow;}
-#remote .tt-dropdown-menu {
-  background-color:#fff;
-  max-height: 150px;
-  overflow-y: auto;
-}
 
 label {vertical-align:top;}
 .strong { font-weight: bold;}
@@ -90,7 +83,10 @@ input[type="text"] {
 }
 #options { padding:2px; display:none;}
 #searchbox { height: auto;}
-#search_input { margin-bottom: .3rem;}
+#search_input { 
+  margin: auto;
+  /*margin-bottom: .3rem;*/
+}
 #result_list {
   padding: 5px;
   background-color: #fff;
