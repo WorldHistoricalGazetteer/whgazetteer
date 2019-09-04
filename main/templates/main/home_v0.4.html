@@ -242,30 +242,7 @@
     $("#result_list").html('')
     $("#result_list").hide()
   }  
-  // create suggestion dropdown
-  // query at each character
-  <!--$("#search_input").on('input', function(){-->
-    <!--if($("#search_input").val() =="") {-->
-      <!--clearit()-->
-      <!--$(".input-group-text").toggleClass('fa-search fa-times')-->
-      <!--$("#options_link").show()-->
-    <!--} else {-->
-      <!--$("#options_link").hide()-->
-    <!--}-->
-    <!--$("#options").hide()-->
-    <!--window.doctype = $("input[name='class']:checked").val();-->
-    
-    <!--// suggest and search both use SearchView()-->
-    <!--$.get("/search/search",{-->
-        <!--qstr: $(this).val(), -->
-        <!--doc_type: doctype,-->
-        <!--scope: 'suggest'-->
-      <!--}, -->
-      <!--function(data){-->
-        <!--// render to html-->
-        <!--showResults(data,doctype);-->
-      <!--});-->
-  <!--})-->
+  //
   // catch Enter key press, trigger button
   <!--$("#search_input").on('keyup', function(e){-->
   $(".typeahead").on('keyup', function(e){
@@ -278,30 +255,19 @@
     console.log('clicked suggestion',$(this))
     searchPlaces()
   })
+  //
   // perform search, not autocomplete
-  // suggest and search both use SearchView()
-  <!--$(".search-button").on('click', function(){-->
   searchPlaces = function (){
     scope = 'search'
     window.doctype = $("input[name='class']:checked").val();
-    <!--if ($(".input-group-text").hasClass('fa-times')) -->
-    <!--{-->
-      <!--clearit()-->
-    <!--} else {-->
-      $.get("/search/search",{
-        <!--qstr: $("#search_input")[0].value, -->
+    $.get("/search/search",{
         qstr: $(".tt-input")[0].value, 
         doc_type: doctype,
         scope: scope
-      }, 
-     function(data){
-       // render to html
-       showResults(data,doctype,scope);
-     });
-    <!--}-->
-    <!--$(".input-group-text").toggleClass('fa-search fa-times')-->
-    <!--console.log('button clicked; this: '+$("#search_input")[0].value+'; type: '+doctype)-->
-    <!--$('.autosuggest').hide()-->
+      }, function(data){
+        // render to html
+        showResults(data,doctype,scope);
+    });
     $('.tt-menu').hide()
   }
   //
@@ -324,7 +290,7 @@
         identifier = feature.properties.pid;
         marker = L.circleMarker(latlng,
           {
-            radius: 8, fillOpacity: 0.8, opacity: 1, weight: 1,
+            radius: 8, fillOpacity: 0.7, opacity: 1, weight: 1,
             color: "#fff", fillColor: "red"
           }
         ).bindPopup(feature.properties.title+' (whg id:'+identifier+')');
@@ -334,8 +300,11 @@
       }
     }).addTo(mappy);
     bounds = features.getBounds()
-    <!--mappy.setView(bounds.getCenter(),5)          -->
-    mappy.fitBounds(bounds)          
+    <!--mappy.setView(bounds.getCenter(),5) -->
+    if(geoms.length > 0 ){
+      <!--mappy.fitBounds(bounds)  -->
+      mappy.setView(bounds.getCenter(),3)
+    }
   }
   
   function showResults(data,doctype,scope='suggest'){
@@ -355,6 +324,7 @@
       // build results div
       results_div += sugLister(sug,doctype,scope)
     });
+    
     if(scope=='search') {
       <!--console.log(geoms)-->
       renderPlaces(geoms)
@@ -365,9 +335,10 @@
     if(scope == 'suggest'){
       $('.autosuggest').show()
       $('.autosuggest').html(results_div);
-    } else {
+    } else if(scope == 'search') {
       $('#result_list').show()
-      $('#result_list').html('<p class="half allcap-heading mb-0 pl-1">SEARCH RESULTS</p>'+results_div);    
+      $('#result_list').html(
+        '<p class="half allcap-heading mb-0 pl-1">SEARCH RESULTS</p>'+results_div);    
     }
 
     // highlight map marker from list
@@ -437,15 +408,16 @@
     return html
   }
   function sugLister(sug,doctype,scope) {
-    <!--console.log(sug)-->
+    console.log(sug)
     if (doctype=='place') {
       variants = sug['variants'].length > 0 ? '<br/><i class="text-secondary"> var: '+sug['variants']+'; </i>' : ''
       if (scope=='search'){
         snippet = sug['snippet'].length > 0 ? sug['snippet']+'...' : ''
         ccodes = sug['ccodes'].length > 0 ? ' ['+sug['ccodes']+']' : ''
         types = ' ('+sug['types']+')'
+        geo = sug['geom'].length > 0 ? ' {% fontawesome_icon 'globe' color='#666' %}' : ''
         item = '<div class="search_row place-item" data-id="'+sug['whg_id']+'"><b>'+
-          sug['name']+'</b>'+types+ccodes+variants+
+          sug['name']+'</b>'+types+ccodes+geo+variants+
           '<br/>'+snippet+'</div>'
       } else {
         item = '<div class="sug_row sug-item">'+sug['name']+' '+variants+'</div>'
