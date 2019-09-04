@@ -131,6 +131,7 @@ LEAFLET_CONFIG = {
     'MIN_ZOOM': 1,
     'MAX_ZOOM': 14,
     'RESET_VIEW': False,
+    #'MAX_BOUNDS_VISCOSITY': 0,
     'ATTRIBUTION_PREFIX': 
     "Tiles &copy; <a href='http://mapbox.com/' target='_blank'>MapBox</a> | "+
     "<a href='http://creativecommons.org/licenses/by-nc/3.0/deed.en_US' target='_blank'> CC-BY-NC 3.0</a>"
