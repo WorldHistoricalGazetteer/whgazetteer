@@ -84,7 +84,7 @@ def suggestionItem(s,doctype,scope):
       "depiction":s['hit']['target']['depiction'] if 'depiction' in s['hit']['target'].keys() else '',
       "bodies":s['hit']['body']
     }
-    print('trace search item:',item)
+    #print('trace search item:',item)
   return item
 
 def suggester(doctype,q,scope):
@@ -160,6 +160,7 @@ class SearchView(View):
     suggestions = suggester(doctype, q, scope)
     #print('raw suggestions',suggestions)
     suggestions = [ suggestionItem(s, doctype, scope) for s in suggestions]
+    print('suggestions',suggestions)
     return JsonResponse(suggestions, safe=False)
   
 """ Returns place or trace suggestions """

@@ -49,7 +49,7 @@
             <!--</div>-->
           </div>
         <div id="search_filters" class="hidden">searchfilters</div>
-        <div class="autosuggest"></div>
+        <!--<div class="autosuggest"></div>-->
       </div>
       <!-- separate div for full search results -->
       <div id="result_list" class="hidden"></div>
@@ -78,42 +78,60 @@
     var searchoption = null;
     var doctype = $("input[name='class']:checked").val();
     clearit()
+    
+    var suggest_t = new Bloodhound({
+        datumTokenizer: Bloodhound.tokenizers.whitespace,
+        queryTokenizer: Bloodhound.tokenizers.whitespace,
+        remote: {
+          url: '/search/search?qstr=%QUERY&doc_type=trace&scope=suggest',
+          wildcard: '%QUERY'
+        }
+    });
     // 
     var suggester = new Bloodhound({
         datumTokenizer: Bloodhound.tokenizers.whitespace,
         queryTokenizer: Bloodhound.tokenizers.whitespace,
         remote: {
-          url: '/search/search?qstr=%QUERY&doc_type=place&scope=suggest',
+          <!--url: '/search/search?qstr=%QUERY&doc_type=place&scope=suggest',-->
+          url: '/search/search?qstr=%QUERY&doc_type=trace&scope=suggest',
           wildcard: '%QUERY'
         }
     });
     
+    <!--$('.typeahead').typeahead(null, {-->
     $('.typeahead').typeahead(null, {
         name: 'suggester',
         source: suggester,
+        <!--source: $("input[name='class']:checked").val() == 'place'?suggester:suggest_t,-->
         display: 'name',
         limit: 10,
         templates: {
           empty: [
-            '<div class="empty-message">','no results...','</div>'].join('\n'),
+            '<div class="small ml-2">','no results...','</div>'].join('\n'),
           suggestion: function (data) {
-            return data.variants.length>0 ? '<p class="tight-p">' + data.name + '<br/><i class="tight-p">' + data.variants + '<i></p>': 
-            '<p class="tight-p">' + data.name + '</p>'
+            doctype = $("input[name='class']:checked").val()
+            <!--return '<p>'+data.name+'<p>'-->
+            if(doctype == 'place'){
+              return data.variants.length>0 ? '<p class="tight-p">' + data.name + '<br/><i class="tight-p">' + data.variants + '<i></p>' : '<p class="tight-p">' + data.name + '</p>'
+            } else {
+              console.log(data)
+              return '<p>'+data.title+'</p>'
+            }
           }
         }
     });
   })
   //
   // future advanced options
-  $("#options_link").on("click", function(e){
-    e.preventDefault()
-    $("#options").toggle()
-    $("#options_link").toggle()
-  })
+  <!--$("#options_link").on("click", function(e){-->
+    <!--e.preventDefault()-->
+    <!--$("#options").toggle()-->
+    <!--$("#options_link").toggle()-->
+  <!--})-->
   $('input[type=radio][name=class]').change(function() {
-    $("#options_link").show()
-    $("#options").hide()
-    $(".autosuggest").html('')
+    <!--$("#options_link").show()-->
+    <!--$("#options").hide()-->
+    <!--$(".autosuggest").html('')-->
     $('#search_input').val('')
     $('#search_input').attr("placeholder",this.getAttribute("rel"));
   });
@@ -303,19 +321,18 @@
     <!--mappy.setView(bounds.getCenter(),5) -->
     if(geoms.length > 0 ){
       <!--mappy.fitBounds(bounds)  -->
-      mappy.setView(bounds.getCenter(),3)
+      mappy.setView(bounds.getCenter(),)
     }
   }
   
   function showResults(data,doctype,scope='suggest'){
+    console.log('showResults doctype,scope:',doctype,scope)
     var results_div = '';
     geoms=[]
     
     data.forEach(function(sug){
-      <!--console.log('suggestion',sug)-->
       <!--supply name for popup, places only-->
       if(!!sug.geom) {
-        <!--console.log(sug.geom)-->
         sug.geom.forEach(function(g){
           g['properties']['title']=sug.name
           geoms.push(g)
@@ -332,14 +349,16 @@
      
     // div has either suggestions or hits
     // put them in relevant div
-    if(scope == 'suggest'){
-      $('.autosuggest').show()
-      $('.autosuggest').html(results_div);
-    } else if(scope == 'search') {
-      $('#result_list').show()
-      $('#result_list').html(
-        '<p class="half allcap-heading mb-0 pl-1">SEARCH RESULTS</p>'+results_div);    
-    }
+    <!--if(scope == 'suggest'){ null-->
+      <!--<!--$('.autosuggest').show()-->-->
+      <!--<!--$('.autosuggest').html(results_div);-->-->
+    <!--} else if(scope == 'search') {-->
+    $('#result_list').show()
+    $('#result_list').html(
+      '<p class="half allcap-heading mb-0 pl-1">SEARCH RESULTS</p>'
+      +results_div
+    );    
+    <!--}-->
 
     // highlight map marker from list
     $("li.body-place").on('click',function(e){
