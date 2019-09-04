@@ -10,7 +10,10 @@
   {% leaflet_css %}
   <script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>
   <link rel="stylesheet" href="//cdn.datatables.net/1.10.16/css/dataTables.bootstrap4.min.css">
+  <!--<link rel="stylesheet" href="{# static 'css/autocomplete.css' %}">-->
+  <link rel="stylesheet" href="{% static 'css/typeahead.css' %}">
   <script src="{% static 'js/leaflet.ajax.min.js' %}"></script>
+  <script src="{% static 'js/typeahead.bundle.js' %}"></script>
 {% endblock %}
 
 {% block content %}
@@ -37,13 +40,14 @@
             </div>
           </div>          
           <div class="input-group input-group-sm mb-3">
-            <input id="search_input" type="text" class="form-control" placeholder="Enter place name" 
-              aria-label="Place name" aria-describedby="basic-addon2">
-            <div class="input-group-append">
-              <span class="input-group-text search-button fa fa-search"></span>
+            <div id="search_input">
+              <input class="typeahead" type="text" placeholder="Enter place name">
             </div>
+            <!--<input id="search_input" type="text" class="form-control" placeholder="Enter place name">-->
+            <!--<div class="input-group-append">-->
+              <!--<span class="input-group-text search-button fa fa-search"></span>-->
+            <!--</div>-->
           </div>
-        <!--</div>-->
         <div id="search_filters" class="hidden">searchfilters</div>
         <div class="autosuggest"></div>
       </div>
@@ -73,8 +77,25 @@
     var titles = {}
     var searchoption = null;
     var doctype = $("input[name='class']:checked").val();
-    clearit()        
+    clearit()
+    // 
+    var suggester = new Bloodhound({
+        datumTokenizer: Bloodhound.tokenizers.whitespace,
+        queryTokenizer: Bloodhound.tokenizers.whitespace,
+        remote: {
+          url: '/search/search?qstr=%QUERY&doc_type=place&scope=suggest',
+          wildcard: '%QUERY'
+        }
+    });
+    
+    $('.typeahead').typeahead(null, {
+        name: 'suggester',
+        source: suggester,
+        display: 'name',
+        limit: 10 
+    });
   })
+  //
   // future advanced options
   $("#options_link").on("click", function(e){
     e.preventDefault()
@@ -214,45 +235,50 @@
   }  
   // create suggestion dropdown
   // query at each character
-  $("#search_input").on('input', function(){
-    if($("#search_input").val() =="") {
-      clearit()
-      $(".input-group-text").toggleClass('fa-search fa-times')
-      $("#options_link").show()
-    } else {
-      $("#options_link").hide()
-    }
-    $("#options").hide()
-    window.doctype = $("input[name='class']:checked").val();
+  <!--$("#search_input").on('input', function(){-->
+    <!--if($("#search_input").val() =="") {-->
+      <!--clearit()-->
+      <!--$(".input-group-text").toggleClass('fa-search fa-times')-->
+      <!--$("#options_link").show()-->
+    <!--} else {-->
+      <!--$("#options_link").hide()-->
+    <!--}-->
+    <!--$("#options").hide()-->
+    <!--window.doctype = $("input[name='class']:checked").val();-->
     
-    // suggest and search both use SearchView()
-    $.get("/search/search",{
-        qstr: $(this).val(), 
-        doc_type: doctype,
-        scope: 'suggest'
-      }, 
-      function(data){
-        // render to html
-        showResults(data,doctype);
-      });
-  })
+    <!--// suggest and search both use SearchView()-->
+    <!--$.get("/search/search",{-->
+        <!--qstr: $(this).val(), -->
+        <!--doc_type: doctype,-->
+        <!--scope: 'suggest'-->
+      <!--}, -->
+      <!--function(data){-->
+        <!--// render to html-->
+        <!--showResults(data,doctype);-->
+      <!--});-->
+  <!--})-->
   // catch Enter key press, trigger button
-  $("#search_input").on('keyup', function(e){
+  <!--$("#search_input").on('keyup', function(e){-->
+  $(".typeahead").on('keyup', function(e){
     if (e.keyCode === 13) {
-      $(".search-button").click()
+      searchPlaces()
+      <!--$(".search-button").click()-->
     }
   })
 
   // perform search, not autocomplete
   // suggest and search both use SearchView()
-  $(".input-group-text").on('click', function(){
+  <!--$(".search-button").on('click', function(){-->
+  searchPlaces = function (){
     scope = 'search'
     window.doctype = $("input[name='class']:checked").val();
-    if ($(".input-group-text").hasClass('fa-times')) {
-      clearit()
-    } else {
+    <!--if ($(".input-group-text").hasClass('fa-times')) -->
+    <!--{-->
+      <!--clearit()-->
+    <!--} else {-->
       $.get("/search/search",{
-        qstr: $("#search_input")[0].value, 
+        <!--qstr: $("#search_input")[0].value, -->
+        qstr: $(".tt-input")[0].value, 
         doc_type: doctype,
         scope: scope
       }, 
@@ -260,11 +286,40 @@
        // render to html
        showResults(data,doctype,scope);
      });
-    }
-    $(".input-group-text").toggleClass('fa-search fa-times')
+    <!--}-->
+    <!--$(".input-group-text").toggleClass('fa-search fa-times')-->
     <!--console.log('button clicked; this: '+$("#search_input")[0].value+'; type: '+doctype)-->
-    $('.autosuggest').hide()
-  })
+    <!--$('.autosuggest').hide()-->
+    $('.tt-menu').hide()
+  }
+  //
+  // fetch geometries for search results
+  renderPlaces = function(features) {
+    data = {"type":"FeatureCollection","features":features}
+    console.log(data)
+    var count_features = 0
+    idToFeature = {}
+    mappy.createPane('placePane');
+    mappy.getPane('placePane').style.zIndex = 200;
+    places = L.geoJSON(data, {
+      pane: 'placePane',
+      pointToLayer: function (feature, latlng) {
+        count_features +=1;
+        identifier = feature.properties.pid;
+        marker = L.circleMarker(latlng,
+          {
+            radius: 8, fillOpacity: 0.8, opacity: 1, weight: 1,
+            color: "#fff", fillColor: "red"
+          }
+        ).bindPopup(feature.properties.title+' (whg id:'+identifier+')');
+                    
+        idToFeature[identifier] = marker
+        return marker
+      }
+    }).addTo(mappy);
+    bounds = places.getBounds()
+    mappy.setView(bounds.getCenter(),5)          
+  }
   
   function showResults(data,doctype,scope='suggest'){
     var results_div = '';
@@ -319,16 +374,10 @@
         'allowtransparency="true" src="'+url+'"></iframe>');
     });
 
-    // fetch geometry for a place record
-    <!--$(".flash-geom").on('hover', function(e){-->
-    <!--$(".flash-geom").click(function(e){-->
+    // fetch geometries for search results
     renderPlaces = function(features) {
-      <!--e.preventDefault()-->
-      <!--var features = $(this).data('geom')-->
       data = {"type":"FeatureCollection","features":features}
       console.log(data)
-      <!--console.log('id for',$(this).data('id'))-->
-      <!--console.log('features for',$(this).data('geom'))-->
       var count_features = 0
       idToFeature = {}
       mappy.createPane('placePane');
