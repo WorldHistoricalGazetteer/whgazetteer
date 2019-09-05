@@ -92,7 +92,7 @@ input[type="text"] {
   padding: 5px;
   background-color: #fff;
   margin-top:8px;
-  max-height: 95%;
+  height: 70vh;
   overflow-y:scroll;
   box-shadow: 2px 2px #999;
 }

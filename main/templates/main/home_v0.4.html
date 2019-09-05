@@ -202,7 +202,7 @@
       return "yellow"
   }
 
-  function fetchTraceGeom(trace_id,counter) {
+  function fetchTraceGeom(trace_id,counter,title) {
     <!--console.log('fetchTraceGeom():',trace_id)-->
     if(typeof(traces) !== "undefined") {traces.clearLayers();}
     $.get("/search/tracegeom",{idx: 'traces', search: trace_id, doc_type: 'trace'},
@@ -210,7 +210,7 @@
         <!--console.log(data.features.length, ' mappable geoms in this trace')-->
         console.log(data)
         console.log('bodies in this trace',data.bodies)
-        showResults(data.bodies,'trace','suggest')
+        showResults(data.bodies,'trace','suggest',title)
         var count_features = 0
         idToFeature = {}
         mappy.createPane('tracePane');
@@ -272,8 +272,8 @@
       console.log('clicked place suggestion',$(this))
       searchPlaces()    
     } else if(doctype == 'trace') {
-      <!--console.clear()-->
-      fetchTraceGeom($(this).attr('rel'),0)
+      console.log('title?',$(this))
+      fetchTraceGeom($(this).attr('rel'),0,$(this).text())
       // data,doctype,scope
       <!--showResults()-->
     }
@@ -330,7 +330,7 @@
     }
   }
   
-  function showResults(data,doctype,scope='suggest'){
+  function showResults(data,doctype,scope='suggest',title){
     console.log('showResults(data,doctype,scope):',data,doctype,scope)
     var results_div = '';
     geoms=[]
@@ -359,8 +359,10 @@
       <!--<!--$('.autosuggest').html(results_div);-->-->
     <!--} else if(scope == 'search') {-->
     $('#result_list').show()
-    $('#result_list').html(
-      '<p class="half allcap-heading mb-0 pl-1">SEARCH RESULTS</p>'
+    titleMarkup = doctype=='trace'?'<p class="pl-1 mb-1 small strong">'+title+'</p>':''
+    $('#result_list').html(titleMarkup+
+      "<p class='half allcap-heading mb-0 pl-1'>"+(doctype=='place'?'SEARCH RESULTS ('+data.length+')':
+      'PLACES  ('+data.length+')')+'</p>'
       +results_div
     );    
     <!--}-->
@@ -447,22 +449,27 @@
         item = '<div class="sug_row sug-item">'+sug['name']+' '+variants+'</div>'
       }
     } else if (doctype=='trace') {
-      item =  ('<div class="container"><div class="row sug_row trace-item" data-id='+sug['_id']+'>'+
-              '<div class="col-sm-9">'+sug['title']+' ('+sug['type']+')</div>'+
-              '<div class="col-sm-3"><span class="float-right">'+
-                '<a class="mr-2 ext" data-toggle="modal" data-target="#ext_site" href="'+sug['id']+
-                '">{% fontawesome_icon 'external-link' color='#336699' %}</a>'+
-              '</span></div>'
-              +'</div><div id="trace_detail">'+placeList(sug['bodies'])
-              )
-      if(sug['depiction'] !== ""){
-        item += '<img class="trace-img" src="'+sug['depiction']+'"/>'
+      // sug is a trace body (place) here 
+      <!--console.log(sug)-->
+      item =  ('<div class="container"><div class="row sug_row trace-item" data-id='+sug['whg_id']+'>'+
+              '<div class="col-sm-9 pl-0"><a href="" data-id="'+sug['whg_id']+'">'+
+              sug['title']+'</a> ('+sug['relation']+')')
+      if ("when" in sug) {
+        item += '<br/><span class="mt-0"><i>'+parseWhen(sug['when'])+'</i></span>'
       }
-      item += '</div></div>' // trace_detail, container
+      item += '</div><div class="col-sm-3"></div>'
+      if("depiction" in sug){
+        item += '<div class="trace_detail"><img class="trace-img" src="'+sug['depiction']+'"/></div>'
+      }
+      item += '</div></div>' // trace-item, container
     }
     return item
   }
-
+<!--<span class="float-right">'+-->
+                <!--'<a class="mr-2 ext" data-toggle="modal" data-target="#ext_site" href="'+sug['id']+-->
+                <!--'">{% fontawesome_icon 'external-link' color='#336699' %}</a>'+-->
+              <!--'</span>-->
+              
   $("[rel='tooltip']").tooltip();
   $('label.btn').click(function(){
     $(".autosuggest").html('')
