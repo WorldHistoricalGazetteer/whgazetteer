@@ -109,7 +109,8 @@
               return data.variants.length>0 ? '<p class="tight-p">' + data.name + '<br/><i class="tight-p">' + data.variants + '<i></p>' : '<p class="tight-p">' + data.name + '</p>'
             } else {
               console.log(data)
-              return '<p>'+data.title+'</p>'
+              
+              return '<p rel="'+data._id+'">'+data.title+'('+data._id+')</p>'
             }
           }
         }
@@ -126,7 +127,6 @@
     <!--$("#options_link").show()-->
     <!--$("#options").hide()-->
     <!--$(".autosuggest").html('')-->
-    window.doctype = $("input[name='class']:checked").val()
     $('#input_box').val('')
     $('#input_box').attr("placeholder",this.getAttribute("rel"));
   });
@@ -265,8 +265,14 @@
     }
   })
   $("#search_input").on('click','.tt-selectable', function(e) {
-    console.log('clicked suggestion',$(this))
-    searchPlaces()
+    if(doctype == 'place') {
+      console.log('clicked place suggestion',$(this))
+      searchPlaces()    
+    } else if(doctype == 'trace') {
+      console.clear()
+      console.log('clicked trace suggestion',$(this).attr('rel'))
+      fetchTraceGeom($(this).attr('rel'),0)
+    }
   })
   //
   // perform search, not autocomplete
