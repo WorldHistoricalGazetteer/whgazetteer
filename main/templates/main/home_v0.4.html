@@ -207,8 +207,6 @@
     if(typeof(traces) !== "undefined") {traces.clearLayers();}
     $.get("/search/tracegeom",{idx: 'traces', search: trace_id, doc_type: 'trace'},
       function(data){
-        <!--console.log(data.features.length, ' mappable geoms in this trace')-->
-        console.log(data)
         console.log('bodies in this trace',data.bodies)
         showResults(data.bodies,'trace','suggest',title)
         var count_features = 0
@@ -272,10 +270,8 @@
       console.log('clicked place suggestion',$(this))
       searchPlaces()    
     } else if(doctype == 'trace') {
-      console.log('title?',$(this))
+      console.log('title:',$(this).text())
       fetchTraceGeom($(this).attr('rel'),0,$(this).text())
-      // data,doctype,scope
-      <!--showResults()-->
     }
   })
   //
@@ -352,12 +348,6 @@
       renderPlaces(geoms)
     }
      
-    // div has either suggestions or hits
-    // put them in relevant div
-    <!--if(scope == 'suggest'){ null-->
-      <!--<!--$('.autosuggest').show()-->-->
-      <!--<!--$('.autosuggest').html(results_div);-->-->
-    <!--} else if(scope == 'search') {-->
     $('#result_list').show()
     titleMarkup = doctype=='trace'?'<p class="pl-1 mb-1 small strong">'+title+'</p>':''
     $('#result_list').html(titleMarkup+
@@ -365,8 +355,10 @@
       'PLACES  ('+data.length+')')+'</p>'
       +results_div
     );    
-    <!--}-->
 
+    // empty the typeahead suggestions
+    $(".tt-dataset").html('')
+    
     // highlight map marker from list
     $("li.body-place").on('click',function(e){
       // reset all markers to default
