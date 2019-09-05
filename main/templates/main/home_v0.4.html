@@ -29,11 +29,11 @@
         <!--<div id="search_input">-->
           <div id="search_type" class="form-group d-flex justify-content-center"> 
             <div class="form-check form-check-inline">
-              <input class="form-check-input hover" type="radio" name="class" id="r_place" value="place" rel="Enter place name" checked="checked">
+              <input class="form-check-input hover" type="radio" name="class" id="r_place" value="place" rel="Enter place name" >
               <label class="form-check-label" for="r_place">Places</label>
             </div>
             <div class="form-check form-check-inline">
-              <input class="form-check-input hover" type="radio" name="class" id="r_trace" value="trace" rel="Enter term or name">
+              <input class="form-check-input hover" type="radio" name="class" id="r_trace" value="trace" rel="Enter term or name" checked="checked">
               <label class="form-check-label" for="r_trace">Traces
                   <span class="ml-1"><a href="" title="historical entities having spatial-temporal 'footprints'" rel="tooltip">{% fontawesome_icon 'question-circle' color='#336699' %}</a></span>                
               </label>
@@ -94,7 +94,7 @@
          } 
         }
     });
-    $('.typeahead').typeahead({minLength: 2}, {
+    $('.typeahead').typeahead({minLength: 2,highlight:true}, {
         name: 'suggester',
         source: suggester,
         display: 'name',
@@ -108,9 +108,8 @@
             if(doctype == 'place'){
               return data.variants.length>0 ? '<p class="tight-p">' + data.name + '<br/><i class="tight-p">' + data.variants + '<i></p>' : '<p class="tight-p">' + data.name + '</p>'
             } else {
-              console.log(data)
-              
-              return '<p rel="'+data._id+'">'+data.title+'('+data._id+')</p>'
+              <!--console.log(data)-->
+              return '<p rel="'+data._id+'">'+data.title+'</p>'
             }
           }
         }
@@ -209,7 +208,9 @@
     $.get("/search/tracegeom",{idx: 'traces', search: trace_id, doc_type: 'trace'},
       function(data){
         <!--console.log(data.features.length, ' mappable geoms in this trace')-->
-        <!--console.log('bodies in this trace',data.bodies)-->
+        console.log(data)
+        console.log('bodies in this trace',data.bodies)
+        showResults(data.bodies,'trace','suggest')
         var count_features = 0
         idToFeature = {}
         mappy.createPane('tracePane');
@@ -259,7 +260,9 @@
   // catch Enter key press, trigger button
   <!--$("#search_input").on('keyup', function(e){-->
   $(".typeahead").on('keyup', function(e){
-    if (e.keyCode === 13) {
+    <!--doctype = $("input[name='class']:checked").val()-->
+    if (e.keyCode === 13 && doctype == 'place') {
+      console.log('enter on input box, doctype',doctype)
       searchPlaces()
       <!--$(".search-button").click()-->
     }
@@ -269,9 +272,10 @@
       console.log('clicked place suggestion',$(this))
       searchPlaces()    
     } else if(doctype == 'trace') {
-      console.clear()
-      console.log('clicked trace suggestion',$(this).attr('rel'))
+      <!--console.clear()-->
       fetchTraceGeom($(this).attr('rel'),0)
+      // data,doctype,scope
+      <!--showResults()-->
     }
   })
   //
@@ -327,7 +331,7 @@
   }
   
   function showResults(data,doctype,scope='suggest'){
-    console.log('showResults doctype,scope:',doctype,scope)
+    console.log('showResults(data,doctype,scope):',data,doctype,scope)
     var results_div = '';
     geoms=[]
     
@@ -428,7 +432,7 @@
     return html
   }
   function sugLister(sug,doctype,scope) {
-    console.log(sug)
+    <!--console.log(sug)-->
     if (doctype=='place') {
       variants = sug['variants'].length > 0 ? '<br/><i class="text-secondary"> var: '+sug['variants']+'; </i>' : ''
       if (scope=='search'){
