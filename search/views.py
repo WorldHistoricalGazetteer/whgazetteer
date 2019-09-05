@@ -157,10 +157,11 @@ class SearchView(View):
           }
     elif doctype == 'trace': 
       q = { "query": {"match": {"target.title": {"query": qstr,"operator": "and"}}} }
+      #print('trace query:',q)      
     suggestions = suggester(doctype, q, scope)
     #print('raw suggestions',suggestions)
     suggestions = [ suggestionItem(s, doctype, scope) for s in suggestions]
-    print('suggestions',suggestions)
+    print('SUGGESTIONS:',suggestions)
     return JsonResponse(suggestions, safe=False)
   
 """ Returns place or trace suggestions """
