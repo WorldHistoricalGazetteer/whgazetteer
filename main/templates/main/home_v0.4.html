@@ -41,7 +41,7 @@
           </div>          
           <div class="input-group input-group-sm mb-3">
             <div id="search_input">
-              <input class="typeahead" type="text" placeholder="Enter place name">
+              <input id="input_box" class="typeahead" type="text" placeholder="Enter place name">
             </div>
             <!--<input id="search_input" type="text" class="form-control" placeholder="Enter place name">-->
             <!--<div class="input-group-append">-->
@@ -76,33 +76,27 @@
     var idToFeature = {} // for feature lookup
     var titles = {}
     var searchoption = null;
-    var doctype = $("input[name='class']:checked").val();
     clearit()
-    
-    var suggest_t = new Bloodhound({
-        datumTokenizer: Bloodhound.tokenizers.whitespace,
-        queryTokenizer: Bloodhound.tokenizers.whitespace,
-        remote: {
-          url: '/search/search?qstr=%QUERY&doc_type=trace&scope=suggest',
-          wildcard: '%QUERY'
-        }
-    });
-    // 
+    //
+    // data type choice determines index searched
     var suggester = new Bloodhound({
         datumTokenizer: Bloodhound.tokenizers.whitespace,
         queryTokenizer: Bloodhound.tokenizers.whitespace,
         remote: {
-          <!--url: '/search/search?qstr=%QUERY&doc_type=place&scope=suggest',-->
-          url: '/search/search?qstr=%QUERY&doc_type=trace&scope=suggest',
-          wildcard: '%QUERY'
+          wildcard: '%QUERY',
+          url: 'foofah',
+          prepare: function (query, settings) {
+           var doctype = $("input[name='class']:checked").val();
+           settings.url = '/search/search?doc_type='+doctype+'&scope=suggest&'+$.param({
+                qstr: query
+            });
+           return settings;
+         } 
         }
     });
-    
-    <!--$('.typeahead').typeahead(null, {-->
-    $('.typeahead').typeahead(null, {
+    $('.typeahead').typeahead({minLength: 2}, {
         name: 'suggester',
         source: suggester,
-        <!--source: $("input[name='class']:checked").val() == 'place'?suggester:suggest_t,-->
         display: 'name',
         limit: 10,
         templates: {
@@ -110,7 +104,7 @@
             '<div class="small ml-2">','no results...','</div>'].join('\n'),
           suggestion: function (data) {
             doctype = $("input[name='class']:checked").val()
-            <!--return '<p>'+data.name+'<p>'-->
+            console.log('doctype:',doctype)
             if(doctype == 'place'){
               return data.variants.length>0 ? '<p class="tight-p">' + data.name + '<br/><i class="tight-p">' + data.variants + '<i></p>' : '<p class="tight-p">' + data.name + '</p>'
             } else {
@@ -132,8 +126,9 @@
     <!--$("#options_link").show()-->
     <!--$("#options").hide()-->
     <!--$(".autosuggest").html('')-->
-    $('#search_input').val('')
-    $('#search_input').attr("placeholder",this.getAttribute("rel"));
+    window.doctype = $("input[name='class']:checked").val()
+    $('#input_box').val('')
+    $('#input_box').attr("placeholder",this.getAttribute("rel"));
   });
   // initiates map
   window.addEventListener('map:init', function (e) {
