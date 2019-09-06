@@ -113,6 +113,11 @@
             }
           }
         }
+    }).on('typeahead:selected', function (obj, datum) {
+      console.log(datum)
+      if(doctype=='trace'){
+        fetchTraceGeom(datum._id,0,datum.title)
+      }
     });
   })
   //
@@ -256,15 +261,18 @@
   }  
   //
   // catch Enter key press, trigger button
-  <!--$("#search_input").on('keyup', function(e){-->
   $(".typeahead").on('keyup', function(e){
-    <!--doctype = $("input[name='class']:checked").val()-->
     if (e.keyCode === 13 && doctype == 'place') {
-      console.log('enter on input box, doctype',doctype)
       searchPlaces()
-      <!--$(".search-button").click()-->
-    }
+    } 
+    <!--else if (e.keyCode === 13 && doctype == 'trace') {-->
+      <!--console.log('cursor element',$(".tt-cursor"))-->
+      <!--// returns nothing-->
+      <!--// need to get 'rel' property of the <p> with this class-->
+    <!--}-->
   })
+
+
   $("#search_input").on('click','.tt-selectable', function(e) {
     if(doctype == 'place') {
       console.log('clicked place suggestion',$(this))
@@ -378,15 +386,11 @@
         'allowtransparency="true" src="'+url+'"></iframe>');
     });
 
-    // fetch geometry for a trace record
-    $(".trace-item").on('click', function(e){
-      $(".trace-item").removeClass('active-card')
-      $(".trace-item").next().css( "display", "none" )
-      <!--e.preventDefault()-->
-      window.card= $(this)
-      $(this).toggleClass("active-card")
-      $(this).next().css( "display", "block" )
-      fetchTraceGeom($(this).data('id'),0)
+    $(".tt-suggestion.tt-cursor").focus(function(e){
+      console.log($(this))
+    })
+    $(".trace-item").hover(function(e){
+      console.log($(this).attr('data-id'))
     })
   }
 
