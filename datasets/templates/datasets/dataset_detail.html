@@ -11,29 +11,30 @@
   <form id="ds_form" method="POST" action="#" enctype="multipart/form-data">
   {% csrf_token %}
     <input type="hidden" name="id" value='{{ form.id }}'></input>
-    <!--<div id="progress_bar" class="mb-2 pl-2">-->
-      <!--<div class="prog" ref=1 >1</div><span class="mx-2 small">Uploaded</span>-->
-      <!--<div class="prog" ref=2 >2</div><span class="mx-2 small">Reconciliation</span>-->
-      <!--<div class="prog" ref=3 >3</div><span class="mx-2 small">Reviewing hits</span>-->
-      <!--<div class="prog" ref=4 >4</div><span class="mx-2 small">Submit to WHG</span>-->
-      <!--<div class="prog" ref=5 >5</div><span class="mx-2 small">Reviewing WHG matches</span>-->
-      <!--<div class="prog" ref=6 >6</div><span class="mx-2 small">Indexed</span>-->
-    <!--</div>-->
-    <h4>Dataset Detail:
-      <span class="form-value text-danger"> {{ object.name }}</span>
-      <span class="edit small"><a href="#">{% fontawesome_icon 'edit' color='#336699' %}</a></span>
+    <h4>Dataset Portal
+      <span class="form-value text-danger"></span>
+      <!--<span class="edit small"><a href="#">{# fontawesome_icon 'edit' color='#336699' %}</a></span>-->
       <a href="{% url 'datasets:dataset-delete' object.id %}" class="float-right"
         title="Delete dataset" rel="tooltip" style="margin-top:-2px;">
         {% fontawesome_icon 'trash' color='#336699' %}</a>
       <a href="{% url 'datasets:dataset_browse' label=object.label f='all' %}" title="View/edit table" rel="tooltip"
       class="float-right mr-2">{% fontawesome_icon 'table' color='#336699' %}</a>
-      <span class="hidden">{{ form.name }}</span>
     </h4>
     <hr/>
     <div class="row">
       <div id="ds_details" class="col-sm-6 small">
-        <p class="hidden editing"><b>Description</b>: {{ form.description }}</p>
-        <p class="form-value editing"><b>Description</b>: {{ object.description }}</p>
+        <p><b>Name</b>: 
+          <span class="form-name bigger strong text-danger">{{ object.name }}</span>
+          <span class="hidden editing-name">{{ form.name }}</span>
+          &nbsp;<span class="edit-name small"><a href="#">{% fontawesome_icon 'edit' color='#336699' %}</a></span>
+        </p>
+        <p><b>Description</b>: 
+          <span class="form-description">{{ object.description }}</span>
+          <span class="hidden editing-description">{{ form.description }}</span>
+          &nbsp;<span class="edit-description small"><a href="#">{% fontawesome_icon 'edit' color='#336699' %}</a></span>
+        </p>
+        <!--<p class="form-value editing"><b>Description</b>: {{ object.description }}</p>-->
+        <!--<p class="hidden editing"><b>Description</b>: {{ form.description }}</p>-->
         <p><b>ID (label/#)</b>: {{ object.label }}/{{ object.id }}
         <p><b>File</b>: {{ object.file }}</p>
         <p><b>Date</b>: {{ object.upload_date|date:"d-M-Y, H:i (e)" }}</p>
@@ -50,6 +51,7 @@
         {% endif %}
         <p><b>Status</b>: {{ object.status }}</p>
         <p><b>Columns</b>: {{ object.header }}</p>
+        <input class="btn btn-primary hidden" type="submit" value="Save" />
         <hr/>
         <h5 class="text-secondary">Counts (initial, added)</h5>
         <p><b>Names</b>:
@@ -58,7 +60,6 @@
           {{ num_links }}, <span class="text-white bg-danger">&nbsp;{{ links_added }}&nbsp;</span></p>
         <p><b>Geometries</b>: {{ num_geoms }}, <span class="text-white bg-danger">&nbsp;{{ geoms_added }}&nbsp;</span></p>
         <p><b>Descriptions</b>: {{ num_descriptions }}, <span class="text-white bg-danger">&nbsp;{{ descriptions_added }}&nbsp;</span></p>
-        <input class="btn btn-primary hidden" type="submit" value="Save" />
       </div>
       <div id="ds_recon" class="col-sm-6 pt-2 ghostbox">
         <h5 class="text-secondary">Reconciliation Tasks <span>
@@ -150,12 +151,20 @@
     )
   }
   $("[rel='tooltip']").tooltip();
-  $(".edit").click(function() {
-    $(".hidden").toggle()
-    $(".form-value").addClass("hidden")
-    // $(".btn").toggleClass('hidden btn')
-    console.log ('clicked')
+
+  $(".edit-name").click(function() {
+    <!--$(".hidden").toggle()-->
+    $(".editing-name").toggleClass("hidden")
+    $(".form-name").toggleClass("hidden")
+    $(".btn").toggleClass("hidden")
   })
+  $(".edit-description").click(function() {
+    <!--$(".hidden").toggle()-->
+    $(".editing-description").toggleClass("hidden")
+    $(".form-description").toggleClass("hidden")
+    $(".btn").toggleClass("hidden")
+  })
+
   $(".confirm-del-matches").click(function(){
     return confirm('DANGER! Clears all matches confirmed in Review step');
   })

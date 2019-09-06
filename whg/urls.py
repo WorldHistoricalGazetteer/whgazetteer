@@ -22,18 +22,23 @@ urlpatterns = [
     path('datasets/', include('datasets.urls')),
     path('areas/', include('areas.urls')),
     path('places/', include('places.urls')),
+    path('tutorials/', include('main.urls')),
+    
     # contributor record; conflated index record via places.urls
     path('contrib/<int:id>/detail', PlaceContribView.as_view(), name='place-detail'),
 
     path('dashboard/', DashboardView.as_view(), name='dashboard'),
 
     # static content
-    url(r'^tutorials/$', TemplateView.as_view(template_name="main/tutorials.html"), name="tutorials"),
+    #url(r'^tutorials/$', TemplateView.as_view(template_name="main/tutorials.html"), name="tutorials"),
     url(r'^contributing/$', TemplateView.as_view(template_name="main/contributing.html"), name="contributing"),
     url(r'^usingapi/$', TemplateView.as_view(template_name="main/usingapi.html"), name="usingapi"),
     url(r'^community/$', TemplateView.as_view(template_name="main/community.html"), name="community"),
     url(r'^about/$', TemplateView.as_view(template_name="main/about.html"), name="about"),
     url(r'^credits/$', TemplateView.as_view(template_name="main/credits.html"), name="credits"),
+    
+    # tutorials
+    #url(r'^tutorials/<str:tute>$', TemplateView.as_view(template_name="main/tutorials/beta.html"), name="beta"),
 
 
     url(r'^heatmap/$', TemplateView.as_view(template_name="main/mb-heatmap.html"), name="heatmap"),

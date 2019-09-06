@@ -39,11 +39,22 @@
               <a class="nav-link" href="{% url 'maps_home' %}">Maps</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'tutorials' %}">Tutorials</a>
+              <a class="nav-link" href="{% url 'main:tutorials' %}">Tutorials</a>
             </li>
-			<li class="nav-item">
-              <a class="nav-link" href="{% url 'about' %}">About WHG</a>
-            </li>
+			<li class="nav-item dropdown">
+			  <a class="nav-link dropdown-toggle" href="#" id="aboutDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+				About WHG
+			  </a>
+			  <div class="dropdown-menu" aria-labelledby="aboutDropdown">
+				<a class="dropdown-item" href="{% url 'about' %}">Introduction</a>
+				<a class="dropdown-item" href="{% url 'community' %}">Communities</a>
+				<div class="dropdown-divider"></div>
+				<a class="dropdown-item" href="{% url 'credits' %}">Credits</a>
+			  </div>
+			</li>
+			<!--<li class="nav-item">-->
+              <!--<a class="nav-link" href="{% url 'about' %}">About WHG</a>-->
+            <!--</li>-->
 			
 			{% if user.is_authenticated %}
 			  <li class="nav-item">
