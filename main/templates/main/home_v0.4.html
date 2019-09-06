@@ -29,11 +29,11 @@
         <!--<div id="search_input">-->
           <div id="search_type" class="form-group d-flex justify-content-center"> 
             <div class="form-check form-check-inline">
-              <input class="form-check-input hover" type="radio" name="class" id="r_place" value="place" rel="Enter place name" >
+              <input class="form-check-input hover" type="radio" name="class" id="r_place" value="place" rel="Enter place name"  checked="checked">
               <label class="form-check-label" for="r_place">Places</label>
             </div>
             <div class="form-check form-check-inline">
-              <input class="form-check-input hover" type="radio" name="class" id="r_trace" value="trace" rel="Enter term or name" checked="checked">
+              <input class="form-check-input hover" type="radio" name="class" id="r_trace" value="trace" rel="Enter term or name">
               <label class="form-check-label" for="r_trace">Traces
                   <span class="ml-1"><a href="" title="historical entities having spatial-temporal 'footprints'" rel="tooltip">{% fontawesome_icon 'question-circle' color='#336699' %}</a></span>                
               </label>
@@ -114,7 +114,7 @@
           }
         }
     }).on('typeahead:selected', function (obj, datum) {
-      console.log(datum)
+      <!--console.log(datum)-->
       if(doctype=='trace'){
         fetchTraceGeom(datum._id,0,datum.title)
       }
@@ -212,7 +212,7 @@
     if(typeof(traces) !== "undefined") {traces.clearLayers();}
     $.get("/search/tracegeom",{idx: 'traces', search: trace_id, doc_type: 'trace'},
       function(data){
-        console.log('bodies in this trace',data.bodies)
+        <!--console.log('bodies in this trace',data.bodies)-->
         showResults(data.bodies,'trace','suggest',title)
         var count_features = 0
         idToFeature = {}
@@ -260,18 +260,13 @@
     $("#result_list").hide()
   }  
   //
-  // catch Enter key press, trigger button
+  // catch Enter key press for places, trigger button
+  // traces are handled in core typeahead function
   $(".typeahead").on('keyup', function(e){
     if (e.keyCode === 13 && doctype == 'place') {
       searchPlaces()
     } 
-    <!--else if (e.keyCode === 13 && doctype == 'trace') {-->
-      <!--console.log('cursor element',$(".tt-cursor"))-->
-      <!--// returns nothing-->
-      <!--// need to get 'rel' property of the <p> with this class-->
-    <!--}-->
   })
-
 
   $("#search_input").on('click','.tt-selectable', function(e) {
     if(doctype == 'place') {
@@ -297,6 +292,16 @@
     });
     $('.tt-menu').hide()
   }
+
+  styles = {
+    'place_default': {
+      radius: 7, fillOpacity: 0.6, opacity: 1, weight: 1,
+      color: "#fff", fillColor: "red"
+    },
+    'place_highlight': {
+      radius:10,fillOpacity:1,fillColor:"yellow",color:"#000"
+    }
+  }
   //
   // fetch geometries for search results
   renderPlaces = function(geoms) {
@@ -314,14 +319,11 @@
       pane: 'placePane',
       pointToLayer: function (feature, latlng) {
         count_features +=1;
-        identifier = feature.properties.pid;
-        marker = L.circleMarker(latlng,
-          {
-            radius: 8, fillOpacity: 0.7, opacity: 1, weight: 1,
-            color: "#fff", fillColor: "red"
-          }
+        <!--identifier = feature.properties.pid;-->
+        identifier = feature.properties.whgid;
+        marker = L.circleMarker(latlng, styles.place_default
         ).bindPopup(feature.properties.title+' (whg id:'+identifier+')');
-                    
+        // add to array for selection
         idToFeature[identifier] = marker
         return marker
       }
@@ -335,7 +337,7 @@
   }
   
   function showResults(data,doctype,scope='suggest',title){
-    console.log('showResults(data,doctype,scope):',data,doctype,scope)
+    console.log('showResults(data,doctype,scope):',data)
     var results_div = '';
     geoms=[]
     
@@ -344,6 +346,7 @@
       if(!!sug.geom) {
         sug.geom.forEach(function(g){
           g['properties']['title']=sug.name
+          g['properties']['whgid']=sug.whg_id
           geoms.push(g)
         })
       }
@@ -368,15 +371,28 @@
     $(".tt-dataset").html('')
     
     // highlight map marker from list
-    $("li.body-place").on('click',function(e){
+    <!--$("li.body-place").on('click',function(e){-->
+    $(".trace-item").on('click',function(e){
       // reset all markers to default
       traces.setStyle({"fillColor":"blue","radius":5})
       whgid = $(this).attr('data-id')
       console.log(whgid,'from body-place click')
-      idToFeature[whgid].setStyle({"fillColor":"#ff3333","radius":10})
-      mappy.panTo(idToFeature[whgid]._latlng)
+      if(whgid in idToFeature) {
+        idToFeature[whgid].setStyle({"fillColor":"#ff3333","radius":10})
+        mappy.panTo(idToFeature[whgid]._latlng)
+      } else {
+        h = $(this).html()
+        h += '...<b>no geometry yet</b>'
+        $(this).html(h)
+      }
     })
     
+    $(".search-row").on('click',function(e){
+      features.setStyle(styles.place_default)
+      whgid = $(this).attr('data-id')
+      idToFeature[whgid].setStyle(styles.place_highlight)
+      mappy.panTo(idToFeature[whgid]._latlng)
+    })
     // open a modal for external page
     $('.ext').on('click', function(e) {
       e.preventDefault();
@@ -385,22 +401,24 @@
       $(".modal-body").html('<iframe width="100%" height="100%" frameborder="0" scrolling="yes" '+
         'allowtransparency="true" src="'+url+'"></iframe>');
     });
-
-    $(".tt-suggestion.tt-cursor").focus(function(e){
-      console.log($(this))
-    })
-    $(".trace-item").hover(function(e){
-      console.log($(this).attr('data-id'))
-    })
   }
-
+  
   // load place portal page
-  $("#result_list").on('click', '.place-item', function(e){
+  <!--$("#result_list").on('click', '.place-item', function(e){-->
+    <!--whgid=$(this).data('id')-->
+    <!--console.log('clicked .xxxxx-item',$(this))-->
+    <!--feat=idToFeature[whgid].setStyle(styles.place_highlight)-->
+    <!--<!--location.href = 'places/'+whgid+'/portal'-->-->
+  <!--});-->
+        
+  $("#result_list").on('click', '.trace-link', function(e){
     whgid=$(this).data('id')
-    console.log('clicked .place-item',$(this))
-    // clear the dropdown
-    $(".autosuggest").html('')
-    // go
+    console.log('clicked .xxxxx-item',$(this))
+    location.href = 'places/'+whgid+'/portal'
+  });
+  $("#result_list").on('click', '.place-link', function(e){
+    whgid=$(this).data('id')
+    console.log('clicked .xxxxx-item',$(this))
     location.href = 'places/'+whgid+'/portal'
   });
         
@@ -438,8 +456,9 @@
         ccodes = sug['ccodes'].length > 0 ? ' ['+sug['ccodes']+']' : ''
         types = ' ('+sug['types']+')'
         geo = sug['geom'].length > 0 ? ' {% fontawesome_icon 'globe' color='#666' %}' : ''
-        item = '<div class="search_row place-item" data-id="'+sug['whg_id']+'"><b>'+
-          sug['name']+'</b>'+types+ccodes+geo+variants+
+        item = '<div class="search-row place-item" data-id="'+sug['whg_id']+
+          '"><a class="place-link" href="#" data-id="'+sug['whg_id']+'"><b>'+
+          sug['name']+'</b></a>'+types+ccodes+geo+variants+
           '<br/>'+snippet+'</div>'
       } else {
         item = '<div class="sug_row sug-item">'+sug['name']+' '+variants+'</div>'
@@ -448,7 +467,7 @@
       // sug is a trace body (place) here 
       <!--console.log(sug)-->
       item =  ('<div class="container"><div class="row sug_row trace-item" data-id='+sug['whg_id']+'>'+
-              '<div class="col-sm-9 pl-0"><a href="" data-id="'+sug['whg_id']+'">'+
+              '<div class="col-sm-9 pl-0"><a href="#" class="trace-link" data-id="'+sug['whg_id']+'">'+
               sug['title']+'</a> ('+sug['relation']+')')
       if ("when" in sug) {
         item += '<br/><span class="mt-0"><i>'+parseWhen(sug['when'])+'</i></span>'

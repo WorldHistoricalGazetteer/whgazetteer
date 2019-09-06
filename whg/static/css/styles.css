@@ -127,7 +127,7 @@ input[type="text"] {
 }
 
 /*new style*/
-.place-item, .trace-item, .sug_row, .search_row{
+.place-item, .trace-item, .sug_row, .search-row{
   list-style-type: none;
   margin-top: 5px;
   border-bottom: 1px solid #ddd;
