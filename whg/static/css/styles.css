@@ -377,6 +377,12 @@ span.edit-row {
   cursor: pointer;
 }
 
+
+/**
+  Main: tutorials
+**/
+.bg-light { background-color: #fff !important; }
+
 /**
   Auth: Profile, etc
 **/

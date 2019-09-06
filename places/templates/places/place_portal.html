@@ -187,7 +187,7 @@
     str=$(this).text()
     var re = /(dbp|gn|tgn|wd|loc|viaf):(.*?)$/;
     url=base_urls[str.match(re)[1]]+str.match(re)[2]
-    console.log(str.match(re)[1], '; url',url)
+    <!--console.log(str.match(re)[1], '; url',url)-->
     if(['dbp','gn','tgn','wd'].indexOf(str.match(re)[1]) >= 0 ){
       $(".modal-body").html('<iframe width="100%" height="100%" frameborder="0" scrolling="yes" '+
         'allowtransparency="true" src="'+url+'"></iframe>');    
@@ -230,7 +230,7 @@
       return "yellow"
   }
   function fetchTraceGeom(trace_id,counter) {
-    console.log('fetchTraceGeom():',trace_id)
+    <!--console.log('fetchTraceGeom():',trace_id)-->
     $.get("/search/tracegeom",{idx: 'traces', search: trace_id, doc_type: 'trace'},
       function(data){
         <!--console.log(data.features.length,'mappable geoms in this trace')-->
@@ -260,8 +260,8 @@
     context={"type":"FeatureCollection","features":[]}
     $.get("/search/features",{idx: 'whg', search: bbox, doc_type: 'place'},
       function(data){
-        console.log('a hit:',data['hits'][0])
-        console.log('a geom in a hit:',data['hits'][0].geoms[0])
+        <!--console.log('a hit:',data['hits'][0])-->
+        <!--console.log('a geom in a hit:',data['hits'][0].geoms[0])-->
         for(i in data['hits']){
           title = data['hits'][i]['title']
           whg_id = data['hits'][i]['whg_id']
@@ -428,14 +428,14 @@
     if(typeof(features) != 'undefined'){
       mappy.removeLayer(features)
     }
-    console.log('renderMap(geom)',geom)
+    <!--console.log('renderMap(geom)',geom)-->
     idToFeature = {}  // for feature lookup
     mappy.createPane('mainPane');
     mappy.getPane('mainPane').style.zIndex = 400;
     features = L.geoJSON(geom, {
       pane: 'mainPane',
       pointToLayer: function (feature, latlng) {
-        console.log(feature)
+        <!--console.log(feature)-->
         <!--identifier = 'whg:'+feature.properties.id-->
         identifier = feature.properties.id
         marker = L.circleMarker(latlng,
