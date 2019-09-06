@@ -403,14 +403,8 @@
     });
   }
   
-  // load place portal page
-  <!--$("#result_list").on('click', '.place-item', function(e){-->
-    <!--whgid=$(this).data('id')-->
-    <!--console.log('clicked .xxxxx-item',$(this))-->
-    <!--feat=idToFeature[whgid].setStyle(styles.place_highlight)-->
-    <!--<!--location.href = 'places/'+whgid+'/portal'-->-->
-  <!--});-->
-        
+  // load place portal page from results_list item title links       
+  // TODO: links are nested so click produces 2 events
   $("#result_list").on('click', '.trace-link', function(e){
     whgid=$(this).data('id')
     console.log('clicked .xxxxx-item',$(this))
