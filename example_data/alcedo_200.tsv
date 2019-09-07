@@ -1,4 +1,4 @@
-id	title	name_src	type	aat_types	parent	close_match
+id	title	title_source	types	aat_types	parent_name	matches
 00005	Abbots	alcedo	rio	300008707		
 00006	Abacachis	alcedo	pueblo	300008375	País de las Amazonas	
 00007	Abacoa	alcedo				
