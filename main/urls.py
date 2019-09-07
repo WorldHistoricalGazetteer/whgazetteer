@@ -13,6 +13,6 @@ app_name='main'
 urlpatterns = [
 
     path(r'', TemplateView.as_view(template_name="main/tutorials.html"), name="tutorials"),
-    path('beta/', TemplateView.as_view(template_name="main/beta.html"), name="tute-beta"),
+    path('beta/', TemplateView.as_view(template_name="tutorials/beta.html"), name="tute-beta"),
 
 ] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)

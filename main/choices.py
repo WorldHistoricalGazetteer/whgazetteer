@@ -8,14 +8,14 @@ COMMENT_TAGS = [
 ]
 
 FORMATS = [
-    ('delimited', 'Delimited'),
+    ('delimited', 'LP-TSV'),
     ('lpf', 'Linked Places json')
 ]
 
 DATATYPES = [
     ('place', 'Places'),
     ('anno', 'Traces'),
-    ('source', 'Sources')
+    #('source', 'Sources')
 ]
 
 STATUS = [

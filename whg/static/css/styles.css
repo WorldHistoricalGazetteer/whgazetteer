@@ -382,6 +382,7 @@ span.edit-row {
   Main: tutorials
 **/
 .bg-light { background-color: #fff !important; }
+.tute-section h4 { background-color: antiquewhite;}
 
 /**
   Auth: Profile, etc

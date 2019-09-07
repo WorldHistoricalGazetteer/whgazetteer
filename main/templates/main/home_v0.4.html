@@ -10,7 +10,6 @@
   {% leaflet_css %}
   <script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>
   <link rel="stylesheet" href="//cdn.datatables.net/1.10.16/css/dataTables.bootstrap4.min.css">
-  <!--<link rel="stylesheet" href="{# static 'css/autocomplete.css' %}">-->
   <link rel="stylesheet" href="{% static 'css/typeahead.css' %}">
   <script src="{% static 'js/leaflet.ajax.min.js' %}"></script>
   <script src="{% static 'js/typeahead.bundle.js' %}"></script>
@@ -26,7 +25,6 @@
     </div> <!-- map -->
     <div id="home_search">
       <div id="search_panel">
-        <!--<div id="search_input">-->
           <div id="search_type" class="form-group d-flex justify-content-center"> 
             <div class="form-check form-check-inline">
               <input class="form-check-input hover" type="radio" name="class" id="r_place" value="place" rel="Enter place name"  checked="checked">
@@ -43,13 +41,8 @@
             <div id="search_input">
               <input id="input_box" class="typeahead" type="text" placeholder="Enter place name">
             </div>
-            <!--<input id="search_input" type="text" class="form-control" placeholder="Enter place name">-->
-            <!--<div class="input-group-append">-->
-              <!--<span class="input-group-text search-button fa fa-search"></span>-->
-            <!--</div>-->
           </div>
         <div id="search_filters" class="hidden">searchfilters</div>
-        <!--<div class="autosuggest"></div>-->
       </div>
       <!-- separate div for full search results -->
       <div id="result_list" class="hidden"></div>
