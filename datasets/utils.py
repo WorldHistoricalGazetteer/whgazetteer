@@ -46,14 +46,17 @@ def validate_csv(infile):
   # some WKT is big
   csv.field_size_limit(100000000)
   result = {'format':'delimited','errors':[]}
+  
+  # allowed fields
+  allowed = set(['id','title','title_source','title_uri','ccodes','matches','variants','types','aat_types',
+                'parent_name','parent_id','lon','lat','geowkt','geo_source','geo_id','start','end'])
   # required fields
-  # TODO: req. fields not null or blank
-  required = ['id', 'title', 'name_src']
+  required = set(['id', 'title', 'title_source'])
 
   # learn delimiter [',',';']
   # TODO: falling back to tab if it fails; need more stable approach
   try:
-    dialect = csv.Sniffer().sniff(infile.read(16000),['\t',';','|'])
+    dialect = csv.Sniffer().sniff(infile.read(16000),['\t','|'])
     result['delimiter'] = 'tab' if dialect.delimiter == '\t' else dialect.delimiter
   except:
     dialect = '\t'
@@ -62,23 +65,30 @@ def validate_csv(infile):
   reader = csv.reader(infile, dialect)
   result['count'] = sum(1 for row in reader)
 
-  # get & test header (not field contents yet)
+  # get header
   infile.seek(0)
-  header = next(reader, None) #.split(dialect.delimiter)
+  header = next(reader, None) # ordered
   result['columns'] = header
+  headerset = set(header) # set for comparison
 
-  # TODO: specify which is missing
-  if not len(set(header) & set(required)) == 3:
-    result['errors'].append({'req':'missing a required column (id,name,name_src)'})
-    return result
-  if ('min' in header and 'max' not in header) \
-     or ('max' in header and 'min' not in header):
-    result['errors'].append({'req':'if a min, must have a max, & vice versa'})
-    return result
-  if ('lon' in header and 'lat' not in header) \
-     or ('lat' in header and 'lon' not in header):
+  # are there any quotes? we don't like quotes
+  
+  
+  # are req columns present?
+  if not required <= headerset:
+    result['errors'].append({'req':'required column(s) missing: '+str(list(required-headerset))})
+  
+  # are all column names valid (allowed)?
+  if not headerset <= allowed:
+    result['errors'].append({'req':'invalid column name(s): '+str(list(headerset-allowed))})
+
+  # are multiple value fields semicolon-delimited?
+  
+  
+  # lon and lat must be a pair and decimal degrees
+  if ('lon' in headerset and 'lat' not in headerset) \
+     or ('lat' in headerset and 'lon' not in headerset):
     result['errors'].append({'req':'if a lon, must be a lat - and vice versa'})
-    return result
 
   if len(result['errors']) == 0:
     print('validate_csv(): no errors')

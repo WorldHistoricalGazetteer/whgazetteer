@@ -507,18 +507,18 @@ def ds_insert_csv(request, pk):
     title = r[header.index('title')]
     # for PlaceName insertion, strip anything in parens
     name = re.sub(' \(.*?\)', '', title)
-    name_src = r[header.index('name_src')]
+    name_src = r[header.index('title_source')]
     if 'variants' in header:
       v = r[header.index('variants')].split(';') 
       variants = v if '' not in v else []
     else:
       variants = []
     # encouraged for reconciliation
-    src_type = r[header.index('type')] if 'type' in header else 'not specified'
+    src_type = r[header.index('types')] if 'types' in header else 'not specified'
     aat_types = r[header.index('aat_types')].split(';') \
       if 'aat_types' in header else ''
     # TODO: allow multiple parents
-    parent = r[header.index('parent')] if 'parent' in header else ''
+    parent = r[header.index('parent_name')] if 'parent_name' in header else ''
     #standardize on ';' for name and ccode arrays in tab-delimited files
     ccodes = r[header.index('ccodes')].split(';') \
       if 'ccodes' in header else []
@@ -762,7 +762,10 @@ class DatasetCreateView(CreateView):
       obj.header = result['columns'] if "columns" in result.keys() else []
       obj.save()
       
-      return super().form_valid(form)
+      # for time being, return to create page, dont insert data
+      return self.render_to_response(self.get_context_data(form=form,context=context))
+      #return super().form_valid(form)
+
     else:
       context['status'] = 'format_error'
       context['errors'] = result
