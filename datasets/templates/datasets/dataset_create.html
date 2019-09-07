@@ -8,10 +8,17 @@
 
   <div class="container">
     <h4 class="mt-3">
-      {% if action == 'update' %}Update{% else %}Upload{% endif %} dataset</h4>
+      {% if context.action == 'update' %}Update{% elif context.action == 'review'%}Review{% else %}Upload{% endif %} dataset</h4>
+    {% if context.status == 'format_ok' %} 
+      <div>
+        <p>{{ context.header }}<p>
+      </div> 
+    {% endif %}
+    {{ context }}
     <div class="d-flex">
       <form id="ds_form" method="POST" action="#" enctype="multipart/form-data">
         {% csrf_token %}
+        
       <div class="form-box mt-2">
         <!-- status, format, delimiter, numrows, header  -->
         <input type="hidden" name="owner" value='{{ user.id }}'></input>

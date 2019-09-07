@@ -12,13 +12,11 @@
   {% csrf_token %}
     <input type="hidden" name="id" value='{{ form.id }}'></input>
     <h4>Dataset Portal
-      <span class="form-value text-danger"></span>
-      <!--<span class="edit small"><a href="#">{# fontawesome_icon 'edit' color='#336699' %}</a></span>-->
-      <a href="{% url 'datasets:dataset-delete' object.id %}" class="float-right"
-        title="Delete dataset" rel="tooltip" style="margin-top:-2px;">
-        {% fontawesome_icon 'trash' color='#336699' %}</a>
-      <a href="{% url 'datasets:dataset_browse' label=object.label f='all' %}" title="View/edit table" rel="tooltip"
-      class="float-right mr-2">{% fontawesome_icon 'table' color='#336699' %}</a>
+      <span class="float-right small">
+      <span class="small">Browse data</span> <a href="{% url 'datasets:dataset_browse' label=object.label f='all' %}" title="View/edit table" rel="tooltip"
+      class="mr-2">{% fontawesome_icon 'table' color='#336699' %}</a>
+      <span class="small">Delete dataset</span> <a href="{% url 'datasets:dataset-delete' object.id %}" class="" title="Delete dataset" rel="tooltip">{% fontawesome_icon 'trash' color='#ff0000' %}</a>
+      </span>
     </h4>
     <hr/>
     <div class="row">
