@@ -53,6 +53,7 @@
           <thead>
             <tr>
               <th>pid</th>
+              <th>src_id</th>
               <th>title</th>
               <th>ccodes</th>
             </tr>
@@ -78,12 +79,29 @@
 <script  type="text/javascript">
   $("[rel='tooltip']").tooltip();
   
+  defaultStyle = {radius: 1, fillOpacity: 0.8, opacity: 1, stroke: false, fillColor:"#993333"}
+  focusStyle = {radius:12,fillColor:"#ff0000",fillOpacity:0.5,stroke:true,weight:1,color:"#000000"}
+  
+  function focusFeature(feat){
+    feat.setStyle(focusStyle)
+    console.log('feat',feat)
+    <!--mappy.setView(feat._latlng, 3);-->
+  }
   function setRowEvents(){
     $( "tr.odd, tr.even" ).hover(
         function() {
+          pid=$(this)[0].cells[0].textContent
+          feat = idToFeature[pid]
           $(this).addClass( "rowhover" );
+          feat.setStyle(focusStyle)
+          // highlight feature
         }, function() {
+          pid=$(this)[0].cells[0].textContent
+          feat = idToFeature[pid]
           $(this).removeClass( "rowhover" );
+          feat.setStyle(defaultStyle) 
+          <!--mappy.setView([35.0, 13.0], 1)-->
+          // unhighlight feature
         }
       )
     <!--$( "tr.odd, tr.even" ).click(function() {-->
@@ -95,6 +113,9 @@
         if(!selected)
           $(this).removeClass( "rowhover" );
           $(this).addClass("highlight-row");
+        // highlight fillColor:bright red, opacity .7, color:red , zoomTo, level 3
+        feat = idToFeature[pid]
+        focusFeature(feat)
         getPlace(pid)
       }
     ) 
@@ -116,11 +137,13 @@
   }
   
   $(function() {
+    window.dslabel = "{{ ds.label }}"
     window.table = $('#placetable').DataTable({
       "serverSide": true,
       "ajax": "/api/places/?format=datatables&ds={{ ds.label }}&f={{ filter }}",
       "columns": [
           {"data": "id", "searchable": false},
+          {"data": "src_id", "searchable": false},
           {"data": "title"},
           {"data": "ccodes"},
       ],
@@ -128,13 +151,23 @@
     })
     table.on( 'draw', function () {
       setRowEvents();
-    } );
-    
+    });
+    $.get("/api/geoms", {ds: "{{ ds.label }}", f: "{{ filter }}" },
+      function(data){
+        geom = {"type":"FeatureCollecton","features":[]}
+        <!--$.each(data.results, function( index, record ) {-->
+          <!--console.log(index,record)-->
+        <!--})-->
+        geom['features'] = data.results
+        renderMap(geom,dslabel)
+        console.log('data',data)
+      })   
   })  
 
   // expose leaflet map for events, call it 'mappy'
   window.addEventListener('map:init', function (e) {
     window.mappy = e.detail.map
+    mappy.setMaxBounds(null)
     var attrib_mb = 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
             '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
             'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
@@ -187,47 +220,41 @@
       ' {% fontawesome_icon 'external-link' color='#336699' %}</a>'
     return link
   }
-  function renderMap(geom){
+  function renderMap(geom,dslabel){
     geomtype = geom['features'][0]['type']
     <!--clear out the previous if any-->
     if(typeof(features)!=='undefined'){
       mappy.removeLayer(features)
     }
-    function fill(dataset) {
-       if (dataset == 'tgn')
-         return "#ff7800"
-       else if (dataset == 'dbp')
-         return "#98E2FA"
-       else if (dataset == 'ne_rivers')
-         return "#333399"
-       else
-         return "#7AFF7A"
-     }
+    // blue if rivers
+    // TODO: style should depend on #features, zoom level
     function styler(type) {
       if (type == 'MultiLineString')
-        return {opacity: 1, weight: 2, color: "#0000ff"}
+        return {opacity: 1, weight: 1, color: "#336699"}
+      else if (type == 'Point')
+        return {radius: 1, fillOpacity: 0.8, opacity: 1, stroke: false, fillColor:"#993333"}
       else
-        return {fillOpacity: 0.4, opacity: 1, weight: 1, color: "#000", fillColor:"#f6a2b3"}
+        return {fillOpacity: 0.4, opacity: 1, color: "#fff", weight: 1, fillColor:"#993333"}
     }
     idToFeature = {}  // for feature lookup
     features = L.geoJSON(geom, {
-    // TODO: get this right
+    // TODO: 
       style: styler(geomtype),
-      <!--style: {fillOpacity: 0.4, opacity: 1, weight: 1,-->
-             <!--color: "#000", fillColor:"#f6a2b3"},-->
       pointToLayer: function (feature, latlng) {
-         matchid = feature.properties.dataset+':'+feature.properties.id
-         marker = L.circleMarker(latlng,
-           {
-             radius: 8, fillOpacity: 0.8, opacity: 1, weight: 1,
-             color: "#000", fillColor: fill(feature.properties.dataset)
-           }
-         ).bindPopup(feature.properties.dataset+':'+feature.properties.id);
+         matchid = feature.place_id_id
+         marker = L.circleMarker(latlng).bindPopup(matchid);
       
          idToFeature[matchid] = marker
          return marker
        }
     }).addTo(mappy);
+
+    mappy.on('zoomend', function() {
+        var currentZoom = mappy.getZoom();
+        var myRadius = currentZoom*(1/2); //or whatever ratio you prefer
+        var myWeight = currentZoom*(1/5); //or whatever ratio you prefer
+        features.setStyle({radius: myRadius, weight: myWeight});
+    });
     
     if (geom['features'].length > 1 && geom['features'][0].type == 'Point') {
       mappy.fitBounds(features.getBounds().pad(1))
@@ -293,18 +320,19 @@
     left += typeids.replace(/(; $)/g, "") +'</p>'
     //
     // GEOMS
-    if (data.geoms.length > 0){
-      geom = {"type":"FeatureCollecton","features":[]}
-      for (g in data.geoms){
-        <!--console.log('g',data.geoms[g])-->
-        data.geoms[g]['properties'] = {"id": data.id, "dataset": data.dataset}
-        geom.features.push(data.geoms[g])
-      }
-      renderMap(geom)
-    } else {
-      //reset mappy
-      map_init()
-    }   
+    // rendering all geoms now
+    <!--if (data.geoms.length > 0){-->
+      <!--geom = {"type":"FeatureCollecton","features":[]}-->
+      <!--for (g in data.geoms){-->
+        <!--<!--console.log('g',data.geoms[g])-->-->
+        <!--data.geoms[g]['properties'] = {"id": data.id, "dataset": data.dataset}-->
+        <!--geom.features.push(data.geoms[g])-->
+      <!--}-->
+      <!--renderMap(geom)-->
+    <!--} else {-->
+      <!--//reset mappy-->
+      <!--map_init()-->
+    <!--}   -->
     //
     // LINKS
     // TODO: normalize on closeMatch, exactMatch
@@ -314,7 +342,7 @@
     if (data.links.length > 0) {
       window.links=data.links
       links_arr = onlyUnique(data.links)
-      console.log('distinct data.links',links_arr)
+      <!--console.log('distinct data.links',links_arr)-->
       for (l in links_arr) {
         if (links_arr[l].type.substring(0,5) == 'exact') {
           exact_count += 1
