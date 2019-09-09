@@ -43,7 +43,7 @@ def validate_lpf(infile,format):
 
 def validate_csv(infile):
   #infile=codecs.open('example_data/alcedo_200errors.tsv','r','utf-8')
-  infile=codecs.open('example_data/epirus_60errors.tsv','r','utf-8')
+  #infile=codecs.open('example_data/epirus_60errors.tsv','r','utf-8')
   # TODO: Pandas?
   # some WKT is big
   csv.field_size_limit(100000000)
