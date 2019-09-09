@@ -44,7 +44,6 @@ def validate_lpf(infile,format):
 def validate_csv(infile):
   #infile=codecs.open('example_data/alcedo_200errors.tsv','r','utf-8')
   #infile=codecs.open('example_data/epirus_60errors.tsv','r','utf-8')
-  # TODO: Pandas?
   # some WKT is big
   csv.field_size_limit(100000000)
   result = {'format':'delimited','errors':[]}
@@ -56,17 +55,12 @@ def validate_csv(infile):
   required = set(['id', 'title', 'title_source'])
 
   # learn delimiter ['\t','|']
-  # TODO: falling back to tab if it fails; need more stable approach
   try:
     dialect = csv.Sniffer().sniff(infile.read(16000),['\t','|'])
     result['delimiter'] = 'tab' if dialect.delimiter == '\t' else dialect.delimiter
   except:
     result['errors'] = "delimiter"
     print("can't tell delimiter")
-    # break out immediately
-    #return result
-    #dialect = '\t'
-    #result['delimiter'] = 'tab'
 
   reader = csv.reader(infile, dialect)
   infile.seek(0)
@@ -98,7 +92,6 @@ def validate_csv(infile):
     empties=['' for n in [row[header.index('lat')],row[header.index('lon')]] if n=='']
     if len(empties) ==1: # missing an x or y
       latlon_errors.append(str(i+2))
-      #print('line',i,'missing either a lat or lon')
       
     # multiple value fields semicolon-delimited
     multis = set(['ccodes', 'variants', 'types', 'aat_types', 'matches'])
