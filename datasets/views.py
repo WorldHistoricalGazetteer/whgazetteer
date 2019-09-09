@@ -762,9 +762,9 @@ class DatasetCreateView(CreateView):
       obj.header = result['columns'] if "columns" in result.keys() else []
       obj.save()
       
-      # for time being, return to create page, dont insert data
-      return self.render_to_response(self.get_context_data(form=form,context=context))
-      #return super().form_valid(form)
+      # inserts data, goes to detail page
+      # return self.render_to_response(self.get_context_data(form=form,context=context))
+      return super().form_valid(form)
 
     else:
       context['status'] = 'format_error'
