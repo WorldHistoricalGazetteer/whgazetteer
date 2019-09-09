@@ -11,7 +11,7 @@ def validate_lpf(infile,format):
   fout = codecs.open('validate-lpf-result.txt', 'w', 'utf8')
   #print()
   #infile=codecs.open('datasets/static/validate/lugares_10_citations.jsonld','r','utf-8')
-  #infile=codecs.open('datasets/static/validate/Clacy-after.json','r','utf-8')
+  #infile=codecs.open('example_data/alcedo_200errors.tsv','r','utf-8')
   result = {"format":"lpf_"+format,"errors":[]}
   [countrows,count_ok] = [0,0]
   
@@ -42,6 +42,8 @@ def validate_lpf(infile,format):
   return result
 
 def validate_csv(infile):
+  #infile=codecs.open('example_data/alcedo_200errors.tsv','r','utf-8')
+  infile=codecs.open('example_data/epirus_60errors.tsv','r','utf-8')
   # TODO: Pandas?
   # some WKT is big
   csv.field_size_limit(100000000)
@@ -53,26 +55,29 @@ def validate_csv(infile):
   # required fields
   required = set(['id', 'title', 'title_source'])
 
-  # learn delimiter [',',';']
+  # learn delimiter ['\t','|']
   # TODO: falling back to tab if it fails; need more stable approach
   try:
     dialect = csv.Sniffer().sniff(infile.read(16000),['\t','|'])
     result['delimiter'] = 'tab' if dialect.delimiter == '\t' else dialect.delimiter
   except:
-    dialect = '\t'
-    result['delimiter'] = 'tab'
+    result['errors'] = "delimiter"
+    print("can't tell delimiter")
+    # break out immediately
+    #return result
+    #dialect = '\t'
+    #result['delimiter'] = 'tab'
 
   reader = csv.reader(infile, dialect)
+  infile.seek(0)
   result['count'] = sum(1 for row in reader)
 
   # get header
   infile.seek(0)
   header = next(reader, None) # ordered
+  first = next(reader, None)
   result['columns'] = header
   headerset = set(header) # set for comparison
-
-  # are there any quotes? we don't like quotes
-  
   
   # are req columns present?
   if not required <= headerset:
@@ -82,14 +87,37 @@ def validate_csv(infile):
   if not headerset <= allowed:
     result['errors'].append({'req':'invalid column name(s): '+str(list(headerset-allowed))})
 
-  # are multiple value fields semicolon-delimited?
+  # row by row
+  infile.seek(0)
+  next(reader) # skip header row
+  latlon_errors = []
+  delim_errors = []
+  for i,row in enumerate(reader):
+    
+    # lon and lat must be a pair and decimal degrees
+    empties=['' for n in [row[header.index('lat')],row[header.index('lon')]] if n=='']
+    if len(empties) ==1: # missing an x or y
+      latlon_errors.append(str(i+2))
+      #print('line',i,'missing either a lat or lon')
+      
+    # multiple value fields semicolon-delimited
+    multis = set(['ccodes', 'variants', 'types', 'aat_types', 'matches'])
+    # which multi-val fields are present?
+    multis = list(multis & headerset)
+    for field in multis:
+      val = row[header.index(field)]
+      if len(val.split(',')) > 1 or len(val.split(', ')) > 1 or \
+         len(val.split('|')) > 1 or len(val.split('| ')) > 1:
+        # comma or pipe delimited, no-no!
+        delim_errors.append([i,field])
+    
+  if len(latlon_errors) > 0:
+    result['errors'].append({"latlon":"Row(s) missing lat OR lon: "+', '.join(latlon_errors)})
+  if len(delim_errors) > 0:
+    error_fields = []
+    for field in delim_errors:
+      result['errors'].append( {"delim":"Invalid delimiter for field "+field[1]+' in row '+str(field[0]+2)} )
   
-  
-  # lon and lat must be a pair and decimal degrees
-  if ('lon' in headerset and 'lat' not in headerset) \
-     or ('lat' in headerset and 'lon' not in headerset):
-    result['errors'].append({'req':'if a lon, must be a lat - and vice versa'})
-
   if len(result['errors']) == 0:
     print('validate_csv(): no errors')
   else:

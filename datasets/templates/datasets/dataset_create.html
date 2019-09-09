@@ -5,63 +5,96 @@
 {% block content %}
 {% load static %}
 {% load fontawesome %}
+{% load dataset_extras %}
 
   <div class="container">
     <h4 class="mt-3">
-      {% if context.action == 'update' %}Update{% elif context.action == 'review'%}Review{% else %}Upload{% endif %} dataset</h4>
-    {% if context.status == 'format_ok' %} 
-      <div>
-        <p>{{ context.header }}<p>
-      </div> 
-    {% endif %}
-    {{ context }}
-    <div class="d-flex">
+      {% if context.action == 'update' %}Update
+      {% elif context.action == 'review'%}Review
+      {% else %}Upload
+      {% endif %} dataset</h4>
+    <!--<div class="d-flex">-->
       <form id="ds_form" method="POST" action="#" enctype="multipart/form-data">
         {% csrf_token %}
-        
-      <div class="form-box mt-2">
-        <!-- status, format, delimiter, numrows, header  -->
-        <input type="hidden" name="owner" value='{{ user.id }}'></input>
-        {% if action == 'update' %}
-          <input type="hidden" name="status" value='{{ form.status.value }}'></input>
-          <input type="hidden" name="header" value='{{ form.header.value }}'></input>
-        {% elif action == 'create' %}
-          <input type="hidden" name="status" value=''></input>
-          <input type="hidden" name="delimiter" value=''></input>
-          <input type="hidden" name="numrows" value=-1></input>
-          <input type="hidden" name="header" value=[]></input>
-        {% endif %}
-        <p>Name {{ form.name }}</p>
-        <p>Unique label {{ form.label }}
-          <span class="text-danger small"><i>20 char max, no spaces</i></span>
-        </p>
-        {% if errors %}<p>{{ errors }}</p>{% endif %}
-        <p><span class="top">Description</span> {{ form.description }}</p>
-        <p>Data type {{ form.datatype }}</p>
-        <p>Format {{ form.format }}
-           <a href="" title="{help:formats}" rel="tooltip">{% fontawesome_icon 'question-circle' color='#336699' %}</a>
-        </p>
-        <p>URI base {{ form.uri_base }}</p>
-        {% if user.id == 1 %}<p>Spine? {{ form.spine }}</p>{% endif %}
-        {% if form.mapbox_id != null %}
-          <p>MapBox ID {{ form.mapbox_id }}</p>
-        {% endif %}
-        {% if action == 'update' %}
-          <p>Current file <span class="text-danger" >{{ form.file.value }}</span></p>
-          <p>Status <span class="text-danger" >{{ form.status.value }}</span></p>
-        {% else %}
-          <p>
-            <input class="text-danger" type="file" name="file"
-              value='{{ form.file }}'></input>
+      <div class="row mx-1" id="content_create">
+        <div class="form-box mt-2 col-sm-5" id="create_form">
+          <!-- status, format, delimiter, numrows, header  -->
+          <input type="hidden" name="owner" value='{{ user.id }}'></input>
+          {% if action == 'update' %}
+            <input type="hidden" name="status" value='{{ form.status.value }}'></input>
+            <input type="hidden" name="header" value='{{ form.header.value }}'></input>
+          {% elif action == 'create' %}
+            <input type="hidden" name="status" value=''></input>
+            <input type="hidden" name="delimiter" value=''></input>
+            <input type="hidden" name="numrows" value=-1></input>
+            <input type="hidden" name="header" value=[]></input>
+          {% endif %}
+          <p>Name {{ form.name }}</p>
+          <p>Unique label {{ form.label }}
+            <span class="text-danger small"><i>20 char max, no spaces</i></span>
           </p>
-        {% endif %}
-        <br/>
-        <!-- upload button only if it's not yet ok -->
-        {% if status != 'format_ok' %}
-        <input class="btn btn-primary" type="submit" value="Upload" />
-        <span title="back"><a href="{% url 'dashboard' %}">Cancel</a></span>
-        {% endif %}
-      </div>
+          {% if errors %}<p>{{ errors }}</p>{% endif %}
+          <p><span class="top">Description</span> {{ form.description }}</p>
+          <p>Data type {{ form.datatype }}</p>
+          <p>Format {{ form.format }}
+             <a href="" title="{help:formats}" rel="tooltip">{% fontawesome_icon 'question-circle' color='#336699' %}</a>
+          </p>
+          <p>URI base {{ form.uri_base }}</p>
+          {% if user.id == 1 %}<p>Spine? {{ form.spine }}</p>{% endif %}
+          {% if form.mapbox_id != null %}
+            <p>MapBox ID {{ form.mapbox_id }}</p>
+          {% endif %}
+          {% if action == 'update' %}
+            <p>Current file <span class="text-danger" >{{ form.file.value }}</span></p>
+            <p>Status <span class="text-danger" >{{ form.status.value }}</span></p>
+          {% else %}
+            <p>
+              <input class="text-danger" type="file" name="file"
+                value='{{ form.file }}'></input>
+            </p>
+          {% endif %}
+          <br/>
+          <!-- upload button only if it's not yet ok -->
+          {% if status != 'format_ok' %}
+          <input class="btn btn-primary" type="submit" value="Upload" />
+          <span title="back"><a href="{% url 'dashboard' %}">Cancel</a></span>
+          {% endif %}
+        </div>
+        <div class="mt-2 col-sm-7" id="create_review">
+          {% if context.action == 'review' %}
+              <h5>{% fontawesome_icon 'exclamation-circle' color="#993333" %} This file has one or more problems:</h5>
+              <!--{ context }}-->
+              {% if context.errors.errors == 'delimiter' %}
+                <p class="my-0 strong">Couldn't determine delimiter. Columns in header and all rows must be delimited with either a tab or a pipe character (|). Please correct and upload again.</p>           
+              {% else %}
+                <ul>
+                {% for e in context.errors.errors %}
+                  {% if 'latlon' in e %}
+                    <li class="">{{ e.latlon }}</li>
+                  {% endif %}              
+                  {% if 'delim' in e %}
+                    <li class="">{{ e.delim }}</li>
+                  {% endif %}              
+                  {% if 'req' in e %}
+                    <li class="">{{ e.req }}</li>
+                  {% endif %}
+                {% endfor %}
+                </ul>
+                <p>After making corrections, try reloading the file</p><hr/>
+              {% endif %}
+              {% if context.errors.errors|haskey:'req' %}
+                <div class="ml-4">
+                  <i class="my-0">Your columns</i>
+                  <p>{{ context.errors.columns }}</p>
+                  <i class="my-0">Allowed column names</i>
+                  <p>['id', 'title', 'title_source', 'title_uri', 'ccodes', 'matches', 'variants', 'types', 'aat_types', 
+                      'parent_name', 'parent_id', 'lon', 'lat', 'geowkt', 'geo_source', 'geo_id', 'start', 'end']</p>
+                  <!--<p>After making corrections, try reloading the file</p><hr/>-->
+                </div>
+              {% endif %}
+          {% endif %}
+        </div>
+      </div> <!-- row#content_create -->
       {% if action == 'update' %}
       <!-- there are validation results-->
       <input type="hidden" name="file" value='{{ form.file }}'></input>
@@ -82,7 +115,7 @@
       </div>
       {% endif %}
       </form>
-    </div> <!-- d-flex -->
+    <!--</div> -->
   </div>
   <script type="text/javascript">
     $(function(){

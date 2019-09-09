@@ -5,6 +5,14 @@ import json
 register = template.Library()
 
 @register.filter
+def haskey(objlist, arg):
+    """True if any obj in objlist has key arg"""
+    return any(arg in x for x in objlist)
+
+def cut(value, arg):
+    """Removes all values of arg from the given string"""
+    return value.replace(arg, '')
+
 @stringfilter
 def trimbrackets(value):
     """trims [ and ] from string, returns integer"""

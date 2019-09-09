@@ -1,14 +1,14 @@
-id	title	title_source	variants	types	aat_types	ccodes	lon	lat	min	max
-1	Κωνσταντινούπολη (Kōnstantinoupolē)	ali-pasha	Πόλη;Βασιλεύουoa;Constantinopoli	settlement	300008347	GR;AL;TR;MK;BG;IT;AT;RU;RO			1780	1820
-2	Πρέβεζα (Prebeza)	ali-pasha	Prevesa	settlement	300008347	GR;AL;TR;MK;BG;IT;AT;RU;RO	20.7505	38.95617	1780	1820
-3	Άργυρόκαστρο (Argyrokastro)	ali-pasha	Κάστρο;Άργυρούκαστρο;Ραγυρούκαστρο	province	300000774	GR;AL;TR;MK;BG;IT;AT;RU;RO	20.13889	40.07583	1780	1820
+id	title	title_src	variants	types	aat_types	ccodes	lon	lat	start	end
+1	Κωνσταντινούπολη (Kōnstantinoupolē)	ali-pasha	Πόλη;Βασιλεύουoa;Constantinopoli	settlement	300008347	GR,AL,TR			1780	1820
+2	Πρέβεζα (Prebeza)	ali-pasha	Prevesa	settlement	300008347	GR;AL;TR;MK;BG;IT;AT;RU;RO	20.7505		1780	1820
+3	Άργυρόκαστρο (Argyrokastro)	ali-pasha	Κάστρο,Άργυρούκαστρο,Ραγυρούκαστρο	province	300000774	GR;AL;TR;MK;BG;IT;AT;RU;RO	20.13889	40.07583	1780	1820
 4	Γαλλίαγαλλικός (Galliagallikos)	ali-pasha	Φράντζα;Φράνφα;Φραγκιά;Φαργκιά;Φιράντζα;Francia	settlement	300008347	GR;AL;TR;MK;BG;IT;AT;RU;RO	2	47	1780	1820
 5	Λάρισα (Larisa)	ali-pasha	Λάρσα;Λάρσι;Γενί Σερή;Γενί Σεχέρ;Γενισεχερί;Γενισεγήρ	province	300000774	GR;AL;TR;MK;BG;IT;AT;RU;RO	22.41761	39.63689	1780	1820
 6	Μπεράτι (Mperati)	ali-pasha	Περάτι;Βεράτι	province	300000774	GR;AL;TR;MK;BG;IT;AT;RU;RO	19.95	40.7	1780	1820
 7	Τρίκαλα (Trikala)	ali-pasha	Τρίκαλο;Τίρχαλα	province	300000774	GR;AL;TR;MK;BG;IT;AT;RU;RO	21.766667	39.55	1780	1820
-8	Τύρναβος (Tyrnabos)	ali-pasha	Τίρναβος;Τούρναβος	province	300000774	GR;AL;TR;MK;BG;IT;AT;RU;RO	22.283333	39.733333	1780	1820
+8	Τύρναβος (Tyrnabos)	ali-pasha	Τίρναβος|Τούρναβος	province	300000774	GR;AL;TR;MK;BG;IT;AT;RU;RO	22.283333	39.733333	1780	1820
 9	Άγγλία-άγγλικός (Anglia-anglikos)	ali-pasha	Έγκλετέρα;Ίγγλιτέρα;Έγγλιτέρα	settlement	300008347	GR;AL;TR;MK;BG;IT;AT;RU;RO	-0.70312	52.16045	1780	1820
-10	Σούλι (Souli)	ali-pasha		province	300000774	GR;AL;TR;MK;BG;IT;AT;RU;RO	20.633333	39.366667	1780	1820
+10	Σούλι (Souli)	ali-pasha		province	300000774	GR;AL;TR;MK;BG;IT;AT;RU;RO		39.366667	1780	1820
 11	Ρωσία (Rōsia)	ali-pasha	Ρουσία;Μόσχοβος;Russia	settlement	300008347	GR;AL;TR;MK;BG;IT;AT;RU;RO	90	60	1780	1820
 12	Κέρκυρακερκυραϊκός (Kerkyrakerkyraikos)	ali-pasha	Κορφοί;Corfou ;Corfu	settlement	300008347	GR;AL;TR;MK;BG;IT;AT;RU;RO	19.91975	39.62069	1780	1820
 13	Ἄρτα (Arta)	ali-pasha		province	300000774	GR;AL;TR;MK;BG;IT;AT;RU;RO	20.98561	39.16014	1780	1820
