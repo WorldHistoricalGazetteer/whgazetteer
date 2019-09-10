@@ -1,5 +1,5 @@
 {% extends "main/base.html" %}
-{% block title %}<title>WHG::About</title>{% endblock %}
+{% block title %}<title>WHG::Beta v0.1 Guide</title>{% endblock %}
 
 {% block content %}
 {% load static %}
@@ -8,26 +8,42 @@
     <div class="d-flex justify-content-center mt-3">
       <h3>Guide to WHG Beta v0.1</h3>
     </div>
-    <div id="contrib_content" class="px-5">
-      <p class="px-5 lead">Welcome to our first public beta release. The Version 1 launch is planned for Spring 2020 and in the meantime we will be making a series of beta releases to give early adopters and contributors an early view of the capabilities of this platform and a chance to experiment. <br/>Notes about future improvements and missing functionality appear <mark>highlighted like this</mark>.</p>
-      <div class="tute-section px-5">
+    <div id="contrib_content" class="mx-5">
+      <p class="px-5 lead">Welcome to our first public beta release. The Version 1 launch is planned for Spring 2020 and in the meantime we will be making a series of beta releases to give early adopters and contributors an early view of the capabilities of this platform and a chance to experiment. Notes about future improvements and missing functionality appear <mark>highlighted like this</mark>.</p>
+      <div id="beta#Home" class="tute-section">
         <h4 class="p-1">Home Page</h4>
         <div class="p-1">
           <h5>Register/Login/Profile</h5>
-          <p>Registration and login are required to be able to upload datasets, use our reconciliation service to find matches in modern placename authorities, <a href="#" target="_blank">Getty Thesaurus of Geographic Names (TGN)</a> and <a href="#" target="_blank">Wikidata</a> at this point), and ultimately to contribute your data to our index. <mark>These functions are rudimentary now and will be upgraded soon</mark>.</p>
-          <h5>Search for Places and Traces</h5>
+          <p>Registration and login are required to be able to upload datasets, use our reconciliation service to find matches in modern placename authorities, <a href="#" target="_blank">Getty Thesaurus of Geographic Names (TGN)</a> and <a href="#" target="_blank">Wikidata</a> at this point), and ultimately to contribute your data to our index. <mark>These functions are rudimentary now and will be upgraded soon</mark>. Once logged in, top-level menu options for "My Places" and user profile appear.</p>
+          <h5 name="search">Search for Places and Traces</h5>
           <h6>Places</h6>
-          <p>foo</p>
+          <p>Search runs against a union index of all contributed place records. Autosuggest presents possibilities after typing a few characters. Selecting one by clicking it or pressing the {Enter} key performs a search, presents a list of results, and maps those which have geometry (not all do). Clicking a result item will highlight it on the map, providing further context. Clicking the place name takes you to its "place portal" page. The index record can include any number of attestation "cards" drawn from multiple contributed datasets.</p>
           <h6>Traces</h6>
-          <p>fah</p>
+          <p>Search for Trace data runs against a separate index. At this time there are only a few example trace records. <mark>A Linked Traces annotation format (LT-Anno) is in active development</mark>. Try typing 'buddhist' to see a couple of examples. Selecting an auto-suggestion will perform the search and the places in the trace record are mapped. As with places, clicking a result item highlights the place on the map, and clicking its name takes you to its place portal page. <mark>We would love to hear suggestions for how trace data can be integrated into the WHG interface.</mark></p>
+          <h5>Map layer selector</h5>
+          <p>A few alternative base maps are available via the layer icon in the upper right corner.</p>
         </div>
       </div>
-      <div class="tute-section">
-        <h3></h3>
+      <div id="beta#MyData" class="tute-section" name="MyData">
+        <h4 class="p-1">My Data</h4>
+        <p>The My Data page presents three lists of user-generated items: Datasets, Study Areas, and Collections (<mark>future</mark>). In each case clicking a plus icon starts the process of creating and managing the items.</p>
+        <h5>Datasets</h5>
+        <p>Registered users can create place datasets by uploading files in one of two formats: the expressive, GeoJSON-LD based Linked Places format ("LP"), or the simpler LP-TSV format. Factors for making the choice are detailed in the <a href="{% url 'main:tute-choosing' %}">Choosing an upload data format" tutorial</a>.</p>
+        <h5>Study Areas</h5>
+        <p></p>
+        <h5>Collections</h5>
+        <p><mark>Not yet available; to be implemented by v1 launch. Users will be able to add place and trace records to personal collections, which can be mapped, edited, and optionally, shared.</mark></p>
+      </div>
+      <div id="" class="tute-section" name="maps">
+        <h4 class="p-1">Maps</h4>
         <p></p>
       </div>
-      <div class="tute-section">
-        <h3></h3>
+      <div anchor="" class="tute-section" name="about">
+        <h4 class="p-1">About</h4>
+        <p></p>
+      </div>
+      <div id="" class="tute-section">
+        <h4 class="p-1">Tutorials</h4>
         <p></p>
       </div>
     </div>
