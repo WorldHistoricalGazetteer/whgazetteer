@@ -264,9 +264,9 @@ def ds_recon(request, pk):
     # run celery/redis tasks e.g. align_tgn, align_whg, align_wd
     result = func.delay(
       ds.id,
-          ds=ds.id,
-            dslabel=ds.label,
-            owner=ds.owner.id,
+      ds=ds.id,
+        dslabel=ds.label,
+        owner=ds.owner.id,
         bounds=bounds
           #aug_names=aug_names,
           #aug_notes=aug_notes,

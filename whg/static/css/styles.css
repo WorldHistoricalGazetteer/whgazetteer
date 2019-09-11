@@ -14,7 +14,8 @@ html, body {
 label {vertical-align:top;}
 .strong { font-weight: bold;}
 .no-bullet { list-style: none;}
-.tooltip { z-index: 600;}
+/*.tooltip { z-index: 600; color:"#993333"; border-bottom: 1px solid #ff0000;}*/
+.tooltip { z-index: 600; }
 .v-mid {vertical-align: super;}
 .top { vertical-align: top;}
 .half { font-size: .6em; font-style: italic; margin-top:.6em;}
@@ -406,6 +407,14 @@ span.edit-row {
 **/
 .bg-light { background-color: #fff !important; }
 .tute-section h4 { background-color: antiquewhite;}
+/*#contrib_content h6 { font-style:italic; color: #993333; }*/
+.card-header {
+  background-color: antiquewhite;
+  margin: 0;
+  padding: 0;
+}
+.card-header h4 { margin:0;}
+.accordion .btn-link { color: #336699;}
 
 /**
   Auth: Profile, etc

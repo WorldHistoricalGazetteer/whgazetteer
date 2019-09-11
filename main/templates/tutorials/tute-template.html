@@ -1,0 +1,78 @@
+{% extends "main/base.html" %}
+{% block title %}<title>WHG::Architecture</title>{% endblock %}
+
+{% block content %}
+{% load static %}
+
+<div class="container">
+  <div class="d-flex justify-content-center mt-3">
+    <h3>{ A WHG Tutorial }</h3>
+  </div>
+  <p class="lead px-2">This tutorial, yada yada...the following sections:</p>
+  <div class="accordion" id="accordionExample">
+    <div class="card">
+      <div class="card-header" id="headingOne">
+        <h2 class="mb-0">
+          <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#Home" aria-expanded="true" aria-controls="collapseOne">
+            <h4>Home page</h4>
+          </button>
+        </h2>
+      </div>
+      <div id="Home" class="collapse show" aria-labelledby="headingOne" 
+          data-parent="#accordionExample">
+        <div class="card-body"> 
+          <div class="p-1">
+            <h5>Heading (h5)</h5>
+            <p>embedded links to open a tab:
+            <a class="accopen" href="#MyData">the My Data page</a>
+            <a class="accopen" href="#DatasetPortal">the Dataset Portal page</a>
+            <p>yada yada</p>
+            <p><mark>marked text for coming soon comments, etc.</mark></p>
+            <h5 name="search">Heading</h5>
+            <h6>Subheading (h6)</h6>
+            <p>sub section</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <a name="MyData"></a>
+      <div class="card-header" id="headingTwo">
+        <h2 class="mb-0">
+          <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#MyData" aria-expanded="false" aria-controls="collapseTwo">
+            <h4>My Data page</h4>
+          </button>
+        </h2>
+      </div>
+      <div id="MyData" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionExample">
+        <div class="card-body">My Data page content
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header" id="headingThree">
+        <h2 class="mb-0">
+          <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#DatasetPortal" aria-expanded="false" aria-controls="collapseThree">
+            <h4>Dataset Portal page</h4>
+          </button>
+        </h2>
+      </div>
+      <div id="DatasetPortal" class="collapse" aria-labelledby="headingThree" data-parent="#accordionExample">
+        <div class="card-body">
+          Dataset Portal content
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+  $(".accopen").click(function(e){
+    e.preventDefault()
+    console.log($(this).attr('href'))
+    $($(this).attr('href')).collapse('toggle');
+    // window.location = "#";
+  })
+  // 
+</script>
+{% endblock %}
