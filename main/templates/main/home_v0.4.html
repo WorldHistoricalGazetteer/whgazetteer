@@ -97,7 +97,7 @@
             '<div class="small ml-2">','no results...','</div>'].join('\n'),
           suggestion: function (data) {
             doctype = $("input[name='class']:checked").val()
-            console.log('doctype:',doctype)
+            <!--console.log('doctype:',doctype)-->
             if(doctype == 'place'){
               return data.variants.length>0 ? '<p class="tight-p">' + data.name + '<br/><i class="tight-p">' + data.variants + '<i></p>' : '<p class="tight-p">' + data.name + '</p>'
             } else {
@@ -126,6 +126,7 @@
     <!--$(".autosuggest").html('')-->
     $('#input_box').val('')
     $('#input_box').attr("placeholder",this.getAttribute("rel"));
+    $("#result_list").hide()
   });
   // initiates map
   window.addEventListener('map:init', function (e) {
@@ -201,8 +202,9 @@
   }
 
   function fetchTraceGeom(trace_id,counter,title) {
-    <!--console.log('fetchTraceGeom():',trace_id)-->
+    console.log('fetchTraceGeom():',trace_id)
     if(typeof(traces) !== "undefined") {traces.clearLayers();}
+    if(typeof(features) !== "undefined") {features.clearLayers();}
     $.get("/search/tracegeom",{idx: 'traces', search: trace_id, doc_type: 'trace'},
       function(data){
         <!--console.log('bodies in this trace',data.bodies)-->
@@ -299,9 +301,11 @@
   // fetch geometries for search results
   renderPlaces = function(geoms) {
     if(typeof(features)!=='undefined'){
-      mappy.removeLayer(features)
-      mappy.setView([35.0, 13.0], 1)
-    }
+      <!--mappy.removeLayer(features)-->
+      features.clearLayers()
+      <!--mappy.setView([35.0, 13.0], 1)-->
+    }    
+    if(typeof(traces)!=='undefined'){ traces.clearLayers() }
     data = {"type":"FeatureCollection","features":geoms}
     <!--console.log(data)-->
     var count_features = 0
@@ -324,8 +328,8 @@
     bounds = features.getBounds()
     <!--mappy.setView(bounds.getCenter(),5) -->
     if(geoms.length > 0 ){
-      <!--mappy.fitBounds(bounds)  -->
-      mappy.setView(bounds.getCenter(),)
+      mappy.fitBounds(bounds)  
+      <!--mappy.setView(bounds.getCenter(),)-->
     }
   }
   
