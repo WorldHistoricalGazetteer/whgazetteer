@@ -117,10 +117,8 @@
             </div>
             <div id="place_map" class="col-content small">
                 <p class="mb-0 allcap-heading">GEOGRAPHY <span class="nogeo text-danger"></span>
-                    <span class="float-right">
-                      nearby places <input id="fetch-context" type="checkbox"/> 
-                      <!--| zoom <a href="javascript:getClose()">-->
-                      <!--{% fontawesome_icon 'search-plus' color='#336699' %}</a>-->
+                    <span class="float-right">nearby places <input id="fetch-context" type="checkbox"/></span>
+                      <!--{# fontawesome_icon 'search-plus'#} -->
                 </p>
                 <div id="map">{% leaflet_map "map" callback="map_init" %}</div>
             </div>
