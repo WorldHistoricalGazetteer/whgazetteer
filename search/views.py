@@ -197,7 +197,7 @@ def contextSearch(idx,doctype,q):
   # TODO: refactor this bit
   #print('hits',hits)
   if len(hits) > 0:
-    print('hit0 _source: ',hits[0]["_source"])
+    #print('hit0 _source: ',hits[0]["_source"])
     for hit in hits:
       count_hits +=1
       if idx=="whg":
@@ -207,30 +207,6 @@ def contextSearch(idx,doctype,q):
         result_obj["hits"].append(hit["_source"]['body'])
   result_obj["count"] = count_hits
   return result_obj
-
-
-def getGeomCollection(idx,doctype,q):
-  es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
-  #try:
-  res = es.search(index='whg', doc_type='place', body=q, size=300)
-  #except:
-    #print(sys.exc_info()[0])
-  hits = res['hits']['hits']
-  #geoms=[]
-  collection={"type":"FeatureCollection","features":[]}
-  for h in hits:
-    if len(h['_source']['geoms'])>0:
-      collection['features'].append(
-        {"type":"Feature",
-         "geometry":h['_source']['geoms'][0]['location'],
-         "properties":{
-           "title":h['_source']['title']
-           ,"whg_id":h['_source']['whg_id']
-         }
-        }
-      )
-  print(str(len(collection['features']))+' features')  
-  return collection
 
 class FeatureContextView(View):
   """ Returns places in a bounding box """
@@ -263,28 +239,28 @@ class FeatureContextView(View):
     features = contextSearch(idx, doctype, q_context_all)
     return JsonResponse(features, safe=False)
 
-
-# not implemented (yet?)
-#class TraceFullView(View):
-  #""" Returns full trace record """
-  #@staticmethod
-  #def get(request):
-    #print('TraceFullView GET:',request.GET)
-    #"""
-    #args in request.GET:
-        #[string] idx: index to be queried
-        #[string] search: whg_id
-        #[string] doc_type: 'trace' in this case
-    #"""
-    #idx = request.GET.get('idx')
-    #trace_id = request.GET.get('search')
-    #doctype = request.GET.get('doc_type')
-    #q_trace = {"query": {"bool": {"must": [{"match":{"_id": trace_id}}]}}}
-    #bodies = contextSearch(idx, doctype, q_trace)['hits'][0]
-    #bodyids = [b['whg_id'] for b in bodies if b['whg_id']]
-    #q_geom={"query": {"bool": {"must": [{"terms":{"_id": bodyids}}]}}}
-    #geoms = traceGeoSearch(idx,doctype,q_geom)
-    #return JsonResponse(geoms, safe=False)      
+def getGeomCollection(idx,doctype,q):
+  es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+  #try:
+  res = es.search(index='whg', doc_type='place', body=q, size=300)
+  #except:
+    #print(sys.exc_info()[0])
+  hits = res['hits']['hits']
+  #geoms=[]
+  collection={"type":"FeatureCollection","features":[]}
+  for h in hits:
+    if len(h['_source']['geoms'])>0:
+      collection['features'].append(
+        {"type":"Feature",
+         "geometry":h['_source']['geoms'][0]['location'],
+         "properties":{
+           "title":h['_source']['title']
+           ,"whg_id":h['_source']['whg_id']
+         }
+        }
+      )
+  print(str(len(collection['features']))+' features')  
+  return collection
 
 class TraceGeomView(View):
   """ Returns places in a trace body """

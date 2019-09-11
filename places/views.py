@@ -110,7 +110,7 @@ class PlacePortalView(DetailView):
       }
       context['payload'].append(record)
     #TODO: compute global minmax for payload
-    print('payload',context['payload'])
+    #print('payload',context['payload'])
     
     # get traces
     qt = {"query": {"bool": {"must": [{"match":{"body.whg_id": id_ }}]}}}

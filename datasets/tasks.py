@@ -89,7 +89,9 @@ def normalize(h,auth):
     #print('rec',rec)
     # add elements if non-empty in index record
     rec.variants = [n['toponym'] for n in h['names']] # always >=1 names
-    rec.types = [t['label']+' ('+t['src_label']  +')' if t['label']!=None else t['src_label'] \
+    # TODO: grungy hack b/c index has both src_label and sourceLabel
+    key = 'src_label' if 'src_label' in h['types'][0] else 'sourceLabel'      
+    rec.types = [t['label']+' ('+t[key]  +')' if t['label']!=None else t[key] \
                 for t in h['types']] if len(h['types']) > 0 else []
     rec.ccodes = ccDecode(h['ccodes']) if 'ccodes' in h.keys() else []
     rec.parents = ['partOf: '+r.label+' ('+parseWhen(r['when']['timespans'])+')' for r in h['relations']] \
