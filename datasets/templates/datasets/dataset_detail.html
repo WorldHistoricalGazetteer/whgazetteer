@@ -81,20 +81,20 @@
                   {{ t.result|get:"count"|safe }}) got total of <b>{{ t.result|get:"total"|safe }}</b> hits</p>
                   <p id="latest"></p>
               <ul>
-                <li><i>Pass 1</i>: {{ t.result|get:"pass1" }}
+                <li><i>Pass 1</i>
                   {% if t.result|get:"pass1" > 0 %}
-                  ; <i>remaining</i>: <span class="strong" id='{{t.task_id}}_1'>nn</span> 
+                  <i>remaining</i>: <span class="strong" id='{{t.task_id}}_1'>nn</span> 
                   <a href="{% url 'datasets:review' pk=object.id tid=t.task_id passnum='pass1' %}">
                    review</i></a>{% endif %}</li>
-                <li><i>Pass 2</i>: {{ t.result|get:"pass2" }}
+                <li><i>Pass 2</i>
                   {% if t.result|get:"pass2" > 0 %}
-                  ; <i>remaining</i>: <span class="strong" id='{{t.task_id}}_2'>nn</span> 
+                  <i>remaining</i>: <span class="strong" id='{{t.task_id}}_2'>nn</span> 
                   <a href="{% url 'datasets:review' pk=object.id tid=t.task_id passnum='pass2' %}">
                    review</i></a>{% endif %}</li>
                 {% if t.task_name != 'align_wd' %}
-                  <li><i>Pass 3</i>: {{ t.result|get:"pass3" }}
+                  <li><i>Pass 3</i>
                   {% if t.result|get:"pass3" > 0 %}
-                  ; <i>remaining</i>: <span class="strong" id='{{t.task_id}}_3'>nn</span> 
+                  <i>remaining</i>: <span class="strong" id='{{t.task_id}}_3'>nn</span> 
                   <a href="{% url 'datasets:review' pk=object.id tid=t.task_id passnum='pass3' %}">
                    review</i></a>{% endif %}</li>
                 {% endif %}

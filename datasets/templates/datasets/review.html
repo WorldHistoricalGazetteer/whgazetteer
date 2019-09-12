@@ -249,10 +249,11 @@
       next='?next='+"{% url 'datasets:review' pk=ds_id tid=task_id passnum=passnum %}"
       $(this).modalForm({formURL: uribase+next});
     });
+    
     $("[rel='tooltip']").tooltip();
   })
             
-    // expose leaflet map for events, call it 'mappy'
+  // expose leaflet map for events, call it 'mappy'
   window.addEventListener('map:init', function (e) {
     window.mappy = e.detail.map
     var attrib_mb = 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
@@ -281,6 +282,8 @@
     baseLayers['OSM'].addTo(mappy)
   }, false);
 
+
+  //
   $( "#select_pass" ).change(function() {
     z=window.location.href
     baseurl=z.substring(0,z.lastIndexOf('/')+1)
@@ -372,7 +375,8 @@
         }
       }).addTo(map);
 
-      mappy.setView(features.getBounds().getCenter(),6)
+      <!--mappy.setView(features.getBounds().getCenter(),6)-->
+      mappy.fitBounds(features.getBounds())
     } else {
       console.log('no geometries, no feature')
     }
