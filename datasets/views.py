@@ -26,66 +26,15 @@ def link_uri(auth,id):
   uri = baseuri + str(id)
   return uri
 
-# TOD: strategy for this
-# create place_name, place_geom, place_description records as req.
-def augmenter(placeid, auth, tid, hitjson):
-  place = get_object_or_404(Place, id=placeid)
-  task = get_object_or_404(TaskResult, task_id=tid)
-  kwargs=json.loads(task.task_kwargs.replace("\'", "\""))
-  print('augmenter params:',type(place), auth, hitjson)
-  if auth == 'align_tgn':
-    source = get_object_or_404(Source, src_id="getty_tgn")
-    # don't add place_geom record unless flagged in task
-    if 'location' in hitjson.keys() and kwargs['aug_geom'] == 'on':
-      geojson=hitjson['location']
-      # add geowkt and citation{id,label}
-      geojson['geowkt']='POINT('+str(geojson['coordinates'][0])+' '+str(geojson['coordinates'][0])+')'
-      geojson['citation']={
-        "id": "tgn:"+hitjson['tgnid'],
-              "label":"Getty TGN"
-      }
-      geom = PlaceGeom.objects.create(
-        json = geojson,
-              # json = hitjson['location'],
-                geom_src = source,
-                place_id = place,
-          task_id = tid
-      )
-    # TODO: bulk_create??
-    if len(hitjson['names']) > 0:
-      for name in hitjson['names']:
-        # toponym,lang,citation,when
-        place_name = PlaceName.objects.create(
-          toponym = name['name'] + ('' if name['lang'] == None else '@'+name['lang']) ,
-                  json = {
-                      "toponym": name['name'] + ('' if name['lang'] == None else '@'+name['lang']),
-                      "citation": {"id": "tgn:"+hitjson['tgnid'], "label": "Getty TGN"}
-                },
-                    place_id = place,
-                    task_id = tid
-        )
-    if hitjson['note'] != None:
-      # @id,value,lang
-      descrip = PlaceDescription.objects.create(
-        json = {
-                "@id": 'tgn:'+hitjson['tgnid'],
-                  "value": hitjson['note'],
-                    "lang": "en"
-              },
-              place_id = place,
-                task_id = tid
-      )
-  else:
-    return
-
 # * 
-# present reconciliation hits for review, execute augmenter() for valid ones
+# present reconciliation hits for review
+# write place_link & place_geom (if aug_geom == 'on') records if matched
 def review(request, pk, tid, passnum): # dataset pk, celery recon task_id
-  print('review() request:', request)
+  print('review() request', request)
   ds = get_object_or_404(Dataset, id=pk)
   task = get_object_or_404(TaskResult, task_id=tid)
-  # TODO: also filter by reviewed, per authority
-
+  kwargs=json.loads(task.task_kwargs.replace("'",'"'))
+  print('task_kwargs as json',kwargs)
   # filter place records by passnum for those with unreviewed hits on this task
   cnt_pass = Hit.objects.values('place_id').filter(task_id=tid, reviewed=False, query_pass=passnum).count()
   pass_int = int(passnum[4])
@@ -147,15 +96,12 @@ def review(request, pk, tid, passnum): # dataset pk, celery recon task_id
       if formset.is_valid():
         # get the task
         hits = formset.cleaned_data
-        #print('hits[0]',hits[0])
-        #print('formset keys',formset.data.keys())
         for x in range(len(hits)):
           hit = hits[x]['id']
           if hits[x]['match'] != 'none':
             print('hit:',hits[x])
-            # if dataset is black, create place_geom
-            # TODO: put this in parameter
-            if pk == 1:
+            # if 'accept geometries' was checked in 'Initiate Reconciliation'
+            if kwargs['aug_geom'] == 'on':
               geom = PlaceGeom.objects.create(
                 place_id = place,
                 task_id = tid,
@@ -237,7 +183,7 @@ def ds_recon(request, pk):
   ds = get_object_or_404(Dataset, id=pk)
   # TODO: handle multipolygons from "#area_load" and "#area_draw"
   me = request.user
-  print('me',me,me.id)
+  #print('me',me,me.id)
   context = {"dataset": ds.name}
 
   types_ok=['ccodes','copied','drawn']
@@ -251,26 +197,26 @@ def ds_recon(request, pk):
   if request.method == 'GET':
     print('request:',request)
   elif request.method == 'POST' and request.POST:
+    print('request.POST:',request.POST)
     # what task?
     func = eval('align_'+request.POST['recon'])
     # TODO: let this vary per authority?
     region = request.POST['region'] # pre-defined UN regions
     userarea = request.POST['userarea'] # from ccodes, loaded, or drawn
+    aug_geom = request.POST['geom'] if 'geom' in request.POST else '' # on == write geom if matched
     bounds={
       "type":["region" if region !="0" else "userarea"],
           "id": [region if region !="0" else userarea]
     }
-    print('bounds',bounds)
+    #print('bounds',bounds)
     # run celery/redis tasks e.g. align_tgn, align_whg, align_wd
     result = func.delay(
       ds.id,
       ds=ds.id,
         dslabel=ds.label,
         owner=ds.owner.id,
-        bounds=bounds
-          #aug_names=aug_names,
-          #aug_notes=aug_notes,
-          #aug_geom=aug_geom
+        bounds=bounds,
+        aug_geom=aug_geom
     )
 
     context['task_id'] = result.id
@@ -279,6 +225,7 @@ def ds_recon(request, pk):
     context['authority'] = request.POST['recon']
     context['region'] = request.POST['region']
     context['userarea'] = request.POST['userarea']
+    context['geom'] = aug_geom
     context['result'] = result.get()
     pprint(locals())
     ds.status = 'reconciling'

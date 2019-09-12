@@ -558,9 +558,10 @@ def es_lookup_tgn(qobj, *args, **kwargs):
 def align_tgn(pk, *args, **kwargs):
   ds = get_object_or_404(Dataset, id=pk)
   bounds = kwargs['bounds']
+  print('kwargs from align_tgn() task',kwargs)
   #bounds = {'type': ['userarea'], 'id': ['65']} # Alcedo 
   #bounds = {'type': ['region'], 'id': ['76']}  # C. America
-  print('bounds:',bounds,type(bounds))
+  #print('bounds:',bounds,type(bounds))
   hit_parade = {"summary": {}, "hits": []}
   [nohits,tgn_es_errors,features] = [[],[],[]]
   [count, count_hit, count_nohit, total_hits, count_p1, count_p2, count_p3] = [0,0,0,0,0,0,0]
