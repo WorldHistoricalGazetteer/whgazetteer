@@ -39,7 +39,6 @@ urlpatterns = [
     url(r'^heatmap/$', TemplateView.as_view(template_name="main/mb-heatmap.html"), name="heatmap"),
     
     path('comment/<int:rec_id>', views.CommentCreateView.as_view(), name='comment-create'),
-    #path('comment/', views.CommentCreateView.as_view(), name='comment-create'),
 
     # backend stuff
     path('api/', include('api.urls')),

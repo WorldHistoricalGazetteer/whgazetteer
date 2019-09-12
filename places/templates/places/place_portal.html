@@ -172,6 +172,7 @@
     </div> <!-- place_content -->
   </div> <!-- place_tabset -->
 </div> <!-- top container -->
+
 <div id="ext_site" class="modal fade" role="dialog">
   <div class="modal-dialog modal-ext">
     <div class="modal-content">
@@ -183,25 +184,17 @@
     </div>
   </div>
 </div> <!-- ext_site -->
-<div id="comment_modal" class="modal fade" tabindex="-1" role="dialog">
+
+<div id="modal" class="modal fade" tabindex="-1" role="dialog" >
   <div class="modal-dialog modal-form" role="document">
-    <div class="modal-content"><div id="comment_content" class="modal-body">foo</div></div>
+  <div class="modal-form-content"></div>
 </div>
 
 <script type="text/javascript">
-  <!--$(".create-comment").on('click',function (e) {-->
-    <!--<!--e.preventDefault();-->-->
-    <!--var recpk = $(this).data('id');-->
-    <!--uribase="/comment/"+recpk-->
-    <!--$(this).modalForm({formURL: uribase});-->
-    <!--console.log('need comment for pid',recpk,uribase)-->
-  <!--});-->
-    $('.ext').on('click', function(e) {
-    e.preventDefault();
+  $('.ext').on('click', function(e) {
     str=$(this).text()
     var re = /(dbp|gn|tgn|wd|loc|viaf):(.*?)$/;
     url=base_urls[str.match(re)[1]]+str.match(re)[2]
-    <!--console.log(str.match(re)[1], '; url',url)-->
     if(['dbp','gn','tgn','wd'].indexOf(str.match(re)[1]) >= 0 ){
       $(".modal-body").html('<iframe width="100%" height="100%" frameborder="0" scrolling="yes" '+
         'allowtransparency="true" src="'+url+'"></iframe>');    
@@ -214,10 +207,12 @@
     $(".create-comment").each(function () {
       var recpk = $(this).data('id');
       uribase="/comment/"+recpk
-      next='?next='+"{# url 'places:place-portal' id=12397954 #}"
-      console.log('uribase',uribase)
-      $(this).modalForm({formURL: uribase});
-    });  
+      $(this).modalForm({
+        formURL: uribase, 
+        modalContent: '.modal-form-content'}
+      );
+    });
+    
     var trace_count = 0
     $("[rel='tooltip']").tooltip();
     $('a[data-toggle="tooltip"]').tooltip({
