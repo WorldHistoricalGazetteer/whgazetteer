@@ -9,7 +9,6 @@
   {% leaflet_js %}
   {% leaflet_css %}
   <script src="{% static 'js/aliases.js' %}"></script>
-  <link rel="stylesheet" href="{% static 'assets/css/bootstrap.css' %}">
 {% endblock %}
 {% block content %}
 <div class="container">
@@ -60,8 +59,8 @@
               <span>
                 <h4 class="text-danger">{{ record.title }}
                   <span class="float-right">
-                  <button type="button" data-id="{{ record.id }}" class="create-comment btn"
-                    data-src='record'> {% fontawesome_icon 'edit' color='#336699' %}</button>
+                    <button type="button" data-id="{{ record.id }}" class="create-comment btn"
+                      data-src='record'> {% fontawesome_icon 'edit' color='#336699' %}</button>
                   </span>
                 </h4>
               </span>
@@ -72,7 +71,7 @@
             {% for g in record.geoms.all %}
               {{ g.jsonb|safe|json_script:record.id }}
             {% endfor %}
-            <p><strong>WHG record id</strong>: {{ record.id }} </p>
+            <p><strong>WHG place id</strong>: {{ record.id }} </p>
             <p><strong>Source id</strong>: {{ record.src_id }}</p>
             <p><strong>Name variants</strong>:
               {% for name in record.names.all %}
@@ -117,19 +116,24 @@
                 {{ hidden }}
               {% endfor %}
               <div class="pl-2 pr-2 mb-1 matchbar">
-                <div class="custom-control custom-radio match_radio">
-                  <span class="ml-2">
+                <div class="match_radio custom-control custom-radio">
+                  <span class="mr-2 globeflash" style="background-color:#f8b109;">
                   {% if form.json.value|get:"geoms" != Null %}
-                    <a class="geolink" id="{{ form.authrecord_id.value }}" 
-                      href="javascript:{ zoomTo('tgn:'+{{ form.authrecord_id.value }}) }">
-                      {% fontawesome_icon 'globe' color='#000099' %}</a>
+                    <a class="geolink" rel="tooltip" id="{{ form.authrecord_id.value }}" 
+                      href="javascript:{ zoomTo('tgn:'+{{ form.authrecord_id.value }}) }" title="Flash map marker">
+                      {% fontawesome_icon 'globe' color='#000' %}</a>
                   {% endif %}
                   </span>
                   <span class="inline">{{ form.match }}</span>
                   <span class="float-right mr-2">
-                  <button type="button" data-id="{{ form.json.value|get:"place_id" }}" 
-                    class="create-comment btn btn-sm">
-                  {% fontawesome_icon 'edit' color='#336699' %}</button></span>
+                  {% fontawesome_icon 'question-circle' color='#993333' %}
+                  {% if authority == 'whg' %}
+                    <button type="button" 
+                      data-id="{{ form.json.value|get:"place_id" }}" 
+                      class="create-comment btn btn-sm" style="background-color:oldlace;">
+                    {% fontawesome_icon 'edit' color='#336699' %}</button>
+                  {% endif %}
+                  </span>
                 </div>
               </div>
               {{ form.non_field_errors }}
@@ -141,11 +145,10 @@
                 <!--{ form.json.value }}-->
                 <p><strong>Title/Preferred</strong>: <span class="text-danger h6">{{ form.json.value|get:"title" }}</p>
                 {% if authority == 'whg' %}
-                <p><strong>WHG record id</strong>: {{ form.json.value|get:"place_id" }}</p> 
-                <p><strong>Source (id)</strong>: {{ form.json.value|get:"dataset" }} ({{ form.json.value|get:"src_id" }})</p>
+                  <p><strong>WHG record id</strong>: {{ form.json.value|get:"place_id" }}</p> 
+                  <p><strong>Source (id)</strong>: {{ form.json.value|get:"dataset" }} ({{ form.json.value|get:"src_id" }})</p>
                 {% else %}
-                <p><strong>{{ authority|upper }} ID</strong>: {{ form.authrecord_id.value }}
-                </p>                
+                  <p><strong>{{ authority|upper }} ID</strong>: {{ form.authrecord_id.value }}</p>                
                 {% endif %}
                 
                 {% if form.json.value|get:"variants"|length > 0 %} 
@@ -200,8 +203,7 @@
   {% endif %}
   <div class="modal fade" tabindex="-1" role="dialog" id="modal">
   <div class="modal-dialog" role="document">
-    <div class="modal-content">
-    </div>
+    <div class="modal-content"></div>
   </div>
 </div>
 <!--<div id="ext_site" class="modal fade" role="dialog">-->
@@ -245,9 +247,9 @@
       var recpk = $(this).data('id');
       uribase="/comment/"+recpk
       next='?next='+"{% url 'datasets:review' pk=ds_id tid=task_id passnum=passnum %}"
-      <!--console.log('formURL',uribase+next)-->
       $(this).modalForm({formURL: uribase+next});
-    });      
+    });
+    $("[rel='tooltip']").tooltip();
   })
             
     // expose leaflet map for events, call it 'mappy'
@@ -294,9 +296,9 @@
   })
 
   $( ".geolink" ).hover(function() {
-      console.log($(this))
+      <!--console.log($(this))-->
       let id = $(this)[0].id
-      console.log('id:',id)
+      <!--console.log('id:',id)-->
       feat = idToFeature[id]
       ogcolor = feat.options.fillColor
       feat.setStyle(
@@ -336,7 +338,7 @@
 
     for (i=0;i<gelems.length;i++){
       let t_geom = cleanJson(gelems[i].text)
-      console.log('t_geom',t_geom)
+      <!--console.log('t_geom',t_geom)-->
       if ('citation' in t_geom){
         t_geom['properties'] = {"id":t_geom['citation']['id'] }
       } else t_geom['properties'] = {"id": t_geom.id,"ds": t_geom.ds!=null?t_geom.ds:ds}
