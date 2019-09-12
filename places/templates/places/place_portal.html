@@ -11,6 +11,7 @@
   {% leaflet_css %}
   <script src="{% static 'js/aliases.js' %}"></script>
   <script src="{% static 'js/leaflet.ajax.min.js' %}"></script>
+  <script src="{% static 'js/jquery.bootstrap.modal.forms.min.js' %}"></script>
 {% endblock %}
 {% block content %}
 <div class="container">
@@ -41,9 +42,9 @@
             <div class="col-content small mt-1">
               <div class="attest-header">
                 <b>{{ rec.title }}</b> (<a href="/api/places/{{rec.place_id}}/" target="_blank">pid:{{rec.place_id}}</a>)
-                 <button type="button" 
-                      data-id="{{ rec.place_id }}" class="create-comment btn btn-sm" style="background-color:antiquewhite;">
-                    {% fontawesome_icon 'edit' color='#336699' %}</button>
+
+                 <button type="button" data-id="{{ rec.place_id }}" class="create-comment btn btn-sm" style="background-color:antiquewhite;">{% fontawesome_icon 'edit' color='#336699' %}</button>
+
                 <span class="float-right">
                   dataset: <a href="/datasets/{{rec.dataset.id}}/detail" rel="tooltip" title="{{rec.dataset.name}}" class="ttip">{{rec.dataset.label}}</a>
                 </span>
@@ -172,7 +173,7 @@
   </div> <!-- place_tabset -->
 </div> <!-- top container -->
 <div id="ext_site" class="modal fade" role="dialog">
-  <div class="modal-dialog">
+  <div class="modal-dialog modal-ext">
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -183,25 +184,19 @@
   </div>
 </div> <!-- ext_site -->
 <div id="comment_modal" class="modal fade" tabindex="-1" role="dialog">
-  <div class="modal-dialog" role="document">
+  <div class="modal-dialog modal-form" role="document">
     <div class="modal-content"><div id="comment_content" class="modal-body">foo</div></div>
 </div>
 
 <script type="text/javascript">
-  $(".create-comment").on('click',function (e) {
-    e.preventDefault();
-    var recpk = $(this).data('id');
-    uribase="/comment/"+recpk
-    <!--$(this).modalForm({formURL: uribase});-->
-    $("#comment_content").modalForm({formURL: uribase});
-    console.log('need comment for pid',recpk,uribase)
-  });
-  <!--$(".create-comment").each(function () {-->
+  <!--$(".create-comment").on('click',function (e) {-->
+    <!--<!--e.preventDefault();-->-->
     <!--var recpk = $(this).data('id');-->
     <!--uribase="/comment/"+recpk-->
     <!--$(this).modalForm({formURL: uribase});-->
+    <!--console.log('need comment for pid',recpk,uribase)-->
   <!--});-->
-  $('.ext').on('click', function(e) {
+    $('.ext').on('click', function(e) {
     e.preventDefault();
     str=$(this).text()
     var re = /(dbp|gn|tgn|wd|loc|viaf):(.*?)$/;
@@ -216,6 +211,13 @@
   });
 
   $(function() {
+    $(".create-comment").each(function () {
+      var recpk = $(this).data('id');
+      uribase="/comment/"+recpk
+      next='?next='+"{# url 'places:place-portal' id=12397954 #}"
+      console.log('uribase',uribase)
+      $(this).modalForm({formURL: uribase});
+    });  
     var trace_count = 0
     $("[rel='tooltip']").tooltip();
     $('a[data-toggle="tooltip"]').tooltip({

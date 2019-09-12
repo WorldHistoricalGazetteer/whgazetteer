@@ -202,7 +202,7 @@
   {% endfor %} <!-- record in records -->
   {% endif %}
   <div class="modal fade" tabindex="-1" role="dialog" id="modal">
-  <div class="modal-dialog" role="document">
+  <div class="modal-dialog modal-form" role="document">
     <div class="modal-content"></div>
   </div>
 </div>
@@ -222,18 +222,11 @@
     e.preventDefault();
     str=$(this).text()
     console.log('str',str)
-    var re = /(dbp|gn|tgn|wd|loc|viaf):(.*?)$/;
-    url=base_urls[str.match(re)[1]]+str.match(re)[2]
-    console.log('url',url)
+    var re = /(http|dbp|gn|tgn|wd|loc|viaf):(.*?)$/;
+    url=str.match(re)[1]=='http' ? str : base_urls[str.match(re)[1]]+str.match(re)[2]
     window.open(url,'_blank')
-    <!--if(['loc','viaf'].indexOf(str.match(re)[1])>=0){-->
-      <!--window.location.href = url-->
-      <!--<!--window.open(url,'_blank');-->-->
-    <!--} else {-->
-      <!--$(".modal-body").html('<iframe width="100%" height="100%" frameborder="0" scrolling="yes" '+-->
-        <!--'allowtransparency="true" src="'+url+'"></iframe>');-->
-    <!--}-->
   });
+
   var ds = "{{ ds_label }}"+':'
   $(function(){
     // set pass dropdown as next set with any reviewed=False rows
