@@ -94,12 +94,12 @@
         <span title="back"><a href="javascript:history.back()">Cancel</a></span>
         <span class="ml-3 small ">
           <input id="accept_geom" name="geom" type="checkbox" checked="checked"/> accept geometries in matches
-          </span>
+          {% fontawesome_icon 'question-circle' color="#993333"%} </span>
       </div>
       {% endif %}
       <!--</div> <!-- row -->
     </div>
-    <div id="recon_result" class="col-md-6 p-tight pb-2">
+    <div id="recon_result" class="col-md-6 p-tight py-2 dashedbox">
       {% if context.response %}
       <p class="text-warning">{ TODO: progress bar }</p>
       <p><b>Authority</b>: {{ context.authority }}</p>
@@ -112,7 +112,7 @@
       <!--<a href="{# url 'datasets:review' pk=ds.pk tid=context.task_id %}">-->
         <input class="btn btn-sm btn-outline-primary" type="text" value="Review Hits"/></a>
       {% else %}
-        <p>Reconciliation results will show here...</p>
+        <p>Results summary will show here...</p>
       {% endif %}
       {% if request.method == 'GET' %}
       <div id="map" class="mt-2">
