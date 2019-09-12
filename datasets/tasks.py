@@ -559,8 +559,6 @@ def align_tgn(pk, *args, **kwargs):
   ds = get_object_or_404(Dataset, id=pk)
   bounds = kwargs['bounds']
   print('kwargs from align_tgn() task',kwargs)
-  #bounds = {'type': ['userarea'], 'id': ['65']} # Alcedo 
-  #bounds = {'type': ['region'], 'id': ['76']}  # C. America
   #print('bounds:',bounds,type(bounds))
   hit_parade = {"summary": {}, "hits": []}
   [nohits,tgn_es_errors,features] = [[],[],[]]
@@ -618,7 +616,8 @@ def align_tgn(pk, *args, **kwargs):
     else:
       count_hit +=1
       total_hits += len(result_obj['hits'])
-      print("hit[0]: ",result_obj['hits'][0]['_source'])      
+      #print("hit[0]: ",result_obj['hits'][0]['_source'])  
+      print('hits from align_tgn',result_obj['hits'])
       for hit in result_obj['hits']:
         if hit['pass'] == 'pass1': 
           count_p1+=1 
