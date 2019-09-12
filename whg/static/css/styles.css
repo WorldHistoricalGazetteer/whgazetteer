@@ -27,6 +27,7 @@ label {vertical-align:top;}
 .smaller {font-size: small;} /* smaller than bootstrap */
 .larger {font-size: larger;}
 .notebox {background-color:#eee;box-shadow: 2px 2px #999; border:1px dashed #333; padding:6px;}
+.dashedbox {border:1px dashed #999; border-radius:8px; }
 .bottom {}
 .hover {cursor:pointer;}
 .fa-search, .fa-times {color:#999; }
@@ -210,9 +211,7 @@ em { color: #993333;}
 #select_region option, #select_userarea option{
   margin-right:6px;
 }
-#recon_result {
-  border: 1px dashed #666;
-}
+
 
 /**
   review
