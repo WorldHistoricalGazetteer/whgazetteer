@@ -7,7 +7,6 @@ from bootstrap_modal_forms.forms import BSModalForm
 
 class CommentModalForm(BSModalForm):
     
-    #place_id = forms.CharField(widget=forms.TextInput, label='WHG record id')    
     class Meta:
         model = Comment
         # fields: user, place_id, tag, note, created
@@ -19,7 +18,7 @@ class CommentModalForm(BSModalForm):
             'place_id': forms.TextInput(),
             'tag': forms.RadioSelect(choices=COMMENT_TAGS,attrs={'class':'no-bullet'}),
             'note': forms.Textarea(attrs={
-                'rows':1,'cols': 30,'class':'textarea'})
+                'rows':2,'cols': 40,'class':'textarea'})
         }
         
     def __init__(self, *args, **kwargs):

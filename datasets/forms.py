@@ -5,8 +5,8 @@ from django.db import models
 from .models import Dataset, Hit
 
 MATCHTYPES = [
-  ('exactMatch','exactMatch'),
   ('closeMatch','closeMatch'),
+  ('exactMatch','exactMatch'),
   ('related','related'),
   ('none','no match'),]
 

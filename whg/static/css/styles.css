@@ -4,7 +4,7 @@ html, body {
   height: 100%;
 }
 
-.modal-dialog { position: relative; height: 0; overflow: hidden; max-width: 90%; min-height: 100%; } 
+.modal-dialog { position: relative; height: 0; overflow: hidden; max-width: fit-content; min-height: 100%; } 
 .modal-content { height: 90%; overflow-y:scroll;}
 
 /**
@@ -222,6 +222,8 @@ em { color: #993333;}
   color: firebrick;
 }
 .auth-match p {font-size: small; margin-bottom: .4rem;}
+.globeflash {padding-top:.2rem; padding-bottom:.2rem;}
+}
 
 /**
   dataset create
@@ -316,14 +318,14 @@ em { color: #993333;}
   margin-bottom: .6rem;
 }
 .pagination {
-  background-color: oldlace;
+  background-color: #eee;
 }
 
 #tgn_match p {
   margin-bottom: .6rem;
   font-size: small;
 }
-.match_radio {background-color: #e0e0e0; padding-left:0; max-height:24px}
+.match_radio {background-color: oldlace; padding-left:0; max-height:24px}
 /*.match_radio li {display:inline; margin-left:5px;}*/
 .match_radio li {display:inline; margin-right:4px;}
 /*.match_radio ul {list-style-type: none; float: right;}*/
