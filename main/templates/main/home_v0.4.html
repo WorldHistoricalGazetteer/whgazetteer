@@ -301,13 +301,11 @@
   // fetch geometries for search results
   renderPlaces = function(geoms) {
     if(typeof(features)!=='undefined'){
-      <!--mappy.removeLayer(features)-->
       features.clearLayers()
-      <!--mappy.setView([35.0, 13.0], 1)-->
-    }    
+    }
     if(typeof(traces)!=='undefined'){ traces.clearLayers() }
     data = {"type":"FeatureCollection","features":geoms}
-    <!--console.log(data)-->
+    console.log('data prior to render',data)
     var count_features = 0
     idToFeature = {}
     mappy.createPane('placePane');
@@ -316,13 +314,16 @@
       pane: 'placePane',
       pointToLayer: function (feature, latlng) {
         count_features +=1;
-        <!--identifier = feature.properties.pid;-->
         identifier = feature.properties.whgid;
-        marker = L.circleMarker(latlng, styles.place_default
-        ).bindPopup(feature.properties.title+' (whg id:'+identifier+')');
-        // add to array for selection
-        idToFeature[identifier] = marker
-        return marker
+        <!--console.log(feature)-->
+        <!--console.log('identifier',identifier)-->
+        if(feature.type=='Point'){
+          marker = L.circleMarker(latlng, styles.place_default
+          ).bindPopup(feature.properties.title+' (whg id:'+identifier+')');
+          // add to array for selection
+          idToFeature[identifier] = marker
+          return marker
+        }
       }
     }).addTo(mappy);
     bounds = features.getBounds()
