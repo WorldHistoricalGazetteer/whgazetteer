@@ -176,9 +176,18 @@ em { color: #993333;}
 /**
   place portal
 **/
+#place_content { height: calc(100vh - 120px)}
 .trace-img {height: 250px;}
+#place_home_l {
+  height: calc(100vh - 200px);
+  overflow: scroll;
+}
 #place_home_l tr, th {
   line-height: .2rem;
+}
+#place_traces {
+  max-height: 120px;
+  overflow:scroll;
 }
 .truncate {
   max-height: 125px;
