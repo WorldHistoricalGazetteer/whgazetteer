@@ -173,46 +173,59 @@
   </div> <!-- place_tabset -->
 </div> <!-- top container -->
 
-<div id="ext_site" class="modal fade" role="dialog">
-  <div class="modal-dialog modal-ext">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span></button>
-      </div>
-      <div id="ext_content" class="modal-body">foo</div>
-    </div>
-  </div>
-</div> <!-- ext_site -->
+<!--<div id="ext_site" class="modal fade" role="dialog">-->
+  <!--<div class="modal-dialog modal-ext">-->
+    <!--<div class="modal-content">-->
+      <!--<div class="modal-header">-->
+        <!--<button type="button" class="close" data-dismiss="modal" aria-label="Close">-->
+          <!--<span aria-hidden="true">&times;</span></button>-->
+      <!--</div>-->
+      <!--<div class="modal-body-ext">foo</div>-->
+    <!--</div>-->
+  <!--</div>-->
+<!--</div> -->
+
 
 <div id="modal" class="modal fade" tabindex="-1" role="dialog" >
-  <div class="modal-dialog modal-form" role="document">
-  <div class="modal-form-content"></div>
+  <div class="modal-dialog" role="document">
+  <!--<div class="modal-form-content"></div>-->
+  <div class="modal-content"></div>
 </div>
 
 <script type="text/javascript">
+  <!--$('.ext').on('click', function(e) {-->
+    <!--str=$(this).text()-->
+    <!--var re = /(dbp|gn|tgn|wd|loc|viaf):(.*?)$/;-->
+    <!--url=base_urls[str.match(re)[1]]+str.match(re)[2]-->
+    <!--if(['dbp','gn','tgn','wd'].indexOf(str.match(re)[1]) >= 0 ){-->
+      <!--$(".modal-body-ext").html('<iframe width="100%" height="100%" frameborder="0" scrolling="yes" '+-->
+        <!--'allowtransparency="true" src="'+url+'"></iframe>');    -->
+    <!--} else {-->
+      <!--window.open(url,'_blank')-->
+    <!--}-->
+  <!--});-->
   $('.ext').on('click', function(e) {
+    e.preventDefault();
     str=$(this).text()
-    var re = /(dbp|gn|tgn|wd|loc|viaf):(.*?)$/;
-    url=base_urls[str.match(re)[1]]+str.match(re)[2]
-    if(['dbp','gn','tgn','wd'].indexOf(str.match(re)[1]) >= 0 ){
-      $(".modal-body").html('<iframe width="100%" height="100%" frameborder="0" scrolling="yes" '+
-        'allowtransparency="true" src="'+url+'"></iframe>');    
-    } else {
-      window.open(url,'_blank')
-    }
+    console.log('str',str)
+    var re = /(http|dbp|gn|tgn|wd|loc|viaf):(.*?)$/;
+    url=str.match(re)[1]=='http' ? str : base_urls[str.match(re)[1]]+str.match(re)[2]
+    window.open(url,'_blank')
   });
-
   $(function() {
+    <!--$(".create-comment").modalForm({-->
+      <!--formURL: "/comment/"+$('.create-comment').data('id')-->
+        <!--<!--+"?next="+"{# url 'place-portal' pk=$('.create-comment').data('id') #}"-->-->
+      <!--<!--,modalContent: '.modal-form-content'-->-->
+      <!--<!--,modalForm: '.modal-form-content form'-->-->
+    <!--});-->
     $(".create-comment").each(function () {
-      var recpk = $(this).data('id');
+      var recpk = $('.create-comment').data('id');
       uribase="/comment/"+recpk
-      $(this).modalForm({
-        formURL: uribase, 
-        modalContent: '.modal-form-content'}
-      );
+      next='?next='+"{% url 'places:place-portal' id=whg_id %}"
+      $(this).modalForm({formURL: uribase+next});
     });
-    
+
     var trace_count = 0
     $("[rel='tooltip']").tooltip();
     $('a[data-toggle="tooltip"]').tooltip({
