@@ -122,7 +122,7 @@ class PlaceSerializer(serializers.HyperlinkedModelSerializer):
             'related','whens', 'descriptions', 'depictions'
             )
 
-# for drf_table.html queries
+# for dataset_recon.html queries
 class PlaceDRFSerializer(serializers.ModelSerializer):
     class Meta:
         model = Place

@@ -40,6 +40,7 @@ urlpatterns = [
     
     path('comment/<int:rec_id>', views.CommentCreateView.as_view(), name='comment-create'),
 
+
     # backend stuff
     path('api/', include('api.urls')),
     path('accounts/', include('accounts.urls')),

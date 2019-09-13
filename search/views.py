@@ -58,11 +58,11 @@ def suggestionItem(s,doctype,scope):
         "ccodes":s['ccodes'],
         #"geom": makeGeom(s['place_id'],s['geoms'])
       }
-      print('place sug item', item)
+      #print('place sug item', item)
     else:
       h = s['hit']
-      print('place search "s":',s)
-      print('place search hit:',h)
+      #print('place search "s":',s)
+      #print('place search hit:',h)
       item = {
         "whg_id": h['whg_id'],
         "name": h['title'],
@@ -114,7 +114,7 @@ def suggester(doctype,q,scope):
           suggestions.append({"_id":h['_id'],"hit":h['_source'],"snippet":snippet})
     
   elif doctype == 'trace':
-    print('suggester()/trace q:',q)
+    #print('suggester()/trace q:',q)
     res = es.search(index='traces',doc_type='trace',body=q)
     hits = res['hits']['hits']
     #print('suggester()/trace hits',hits)
@@ -259,14 +259,14 @@ def getGeomCollection(idx,doctype,q):
          }
         }
       )
-  print(str(len(collection['features']))+' features')  
+  #print(str(len(collection['features']))+' features')  
   return collection
 
 class TraceGeomView(View):
   """ Returns places in a trace body """
   @staticmethod
   def get(request):
-    print('TraceGeomView GET:',request.GET)
+    #print('TraceGeomView GET:',request.GET)
     """
     args in request.GET:
         [string] idx: index to be queried
@@ -278,7 +278,7 @@ class TraceGeomView(View):
     doctype = request.GET.get('doc_type')
     q_trace = {"query": {"bool": {"must": [{"match":{"_id": trace_id}}]}}}
     bodies = contextSearch(idx, doctype, q_trace)['hits'][0]
-    print('bodies from TraceGeomView->contextSearch',bodies)
+    #print('bodies from TraceGeomView->contextSearch',bodies)
     bodyids = [b['whg_id'] for b in bodies if b['whg_id']]
     q_geom={"query": {"bool": {"must": [{"terms":{"_id": bodyids}}]}}}
     geoms = getGeomCollection(idx,doctype,q_geom)

@@ -179,7 +179,7 @@ def review(request, pk, tid, passnum): # dataset pk, celery recon task_id
 
 # *
 # initiate, monitor align_tgn Celery task
-def ds_recon(request, pk):
+def dataset_recon(request, pk):
   ds = get_object_or_404(Dataset, id=pk)
   # TODO: handle multipolygons from "#area_load" and "#area_draw"
   me = request.user
@@ -198,8 +198,10 @@ def ds_recon(request, pk):
     print('request:',request)
   elif request.method == 'POST' and request.POST:
     print('request.POST:',request.POST)
+    # TODO: has this dataset/authority been done before?
+    auth = request.POST['recon']
     # what task?
-    func = eval('align_'+request.POST['recon'])
+    func = eval('align_'+auth)
     # TODO: let this vary per authority?
     region = request.POST['region'] # pre-defined UN regions
     userarea = request.POST['userarea'] # from ccodes, loaded, or drawn
@@ -230,10 +232,10 @@ def ds_recon(request, pk):
     pprint(locals())
     ds.status = 'reconciling'
     ds.save()
-    return render(request, 'datasets/ds_recon.html', {'ds':ds, 'context': context})
+    return render(request, 'datasets/dataset_recon.html', {'ds':ds, 'context': context})
 
   print('context recon GET',context)
-  return render(request, 'datasets/ds_recon.html', {'ds':ds, 'context': context})
+  return render(request, 'datasets/dataset_recon.html', {'ds':ds, 'context': context})
 
 def task_delete(request,tid,scope="foo"):
   hits = Hit.objects.all().filter(task_id=tid)
@@ -1033,7 +1035,7 @@ def ds_insert_csv(request, pk):
   infile.close()
   # dataset.file.close()
 
-  #return render(request, 'datasets/ds_recon.html', {'ds':ds, 'context': context})
+  #return render(request, 'datasets/dataset_recon.html', {'ds':ds, 'context': context})
   #return render(request, '/datasets/dashboard.html', {'context': context})
   return redirect('/dashboard', context=context)
 
