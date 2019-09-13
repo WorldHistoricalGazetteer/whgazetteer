@@ -6,8 +6,14 @@ html, body {
 
 .modal-dialog { position: relative; overflow: hidden; max-width: 90%; height: 90%; max-height: 90%; } 
 .modal-form { position: relative; overflow: hidden; max-width: fit-content !important; max-height: 100%; } 
-.modal-form-content { height: 90%; overflow-y:scroll; background-color:#fff;}
-.modal-content { height: 90%; overflow-y:scroll; background-color:#fff;}
+.modal-ext-content { height: 90%; overflow-y:scroll; background-color:#fff;}
+/*.modal-form-content { */
+.modal-content { 
+  height: 90%; overflow-y:scroll; 
+  background-color:#fff; 
+  max-width: fit-content !important; 
+  margin:auto;
+}
 
 /**
   general use
