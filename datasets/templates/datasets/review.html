@@ -101,7 +101,7 @@
             {% endif %}
           </div>
           <div id="map">
-            {% leaflet_map "map" callback="map_init" %}
+            {% leaflet_map "map_review" callback="map_init" %}
           </div>
         </div>
         <!--available: ['whg_id', 'place_id', 'src_id', 'title', 'dataset', 'variants', 'types', 
@@ -126,7 +126,8 @@
                   </span>
                   <span class="inline">{{ form.match }}</span>
                   <span class="float-right mr-2">
-                  {% fontawesome_icon 'question-circle' color='#993333' %}
+                  <span id="help_matches" data-id="matches">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
+                  
                   {% if authority == 'whg' %}
                     <button type="button" 
                       data-id="{{ form.json.value|get:"place_id" }}" 
@@ -205,6 +206,7 @@
   <div class="modal-dialog modal-form" role="document">
     <div class="modal-content"></div>
   </div>
+  <div class="selector py-3"><div id="helpme" class="my-3"><div></div>
 </div>
 <!--<div id="ext_site" class="modal fade" role="dialog">-->
   <!--<div class="modal-dialog">-->
@@ -218,6 +220,27 @@
   <!--</div>-->
 <!--</div> <!-- ext_site -->
 <script type="text/javascript">
+  $("#help_matches").click(function(){
+    $('.selector').dialog('open');
+  })
+  $(".selector").dialog({
+    resizable: false,
+    autoOpen: false,
+    height: 600,
+    width: 700,
+    title: "Matches",
+    modal: true,
+    buttons: {
+      'Close': function() {
+        $(this).dialog('close');
+      }
+    },
+    open: function(event, ui) {
+      <!--$('#helpme').load('/media/help/matches.html');-->
+      $('.selector').load('/media/help/matches.html');
+    }
+   });
+   
   $('.ext').on('click', function(e) {
     e.preventDefault();
     str=$(this).text()

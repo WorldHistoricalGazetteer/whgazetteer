@@ -21,13 +21,13 @@ urlpatterns = [
     path('<int:pk>/insert_lpf/', views.ds_insert_lpf, name="ds_insert_lpf"),
 
     # initiate reconciliation
-    path('<int:pk>/recon/', views.ds_recon, name="ds_recon"), # form submit
+    path('<int:pk>/recon/', views.dataset_recon, name="dataset_recon"), # form submit
 
     # review, validate hits
     path('<int:pk>/review/<str:tid>/<str:passnum>', views.review, name="review"),
 
     # list places (for table)
-    path('<str:label>/datatable/<str:f>', views.drf_table, name='drf_table'),
+    #path('<str:label>/datatable/<str:f>', views.drf_table, name='drf_table'),
 
     # browse/map dataset; replacing drf_table
     path('<str:label>/browse/<str:f>', views.dataset_browse, name='dataset_browse'),

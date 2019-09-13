@@ -15,7 +15,7 @@
 <!-- incoming: ds, place_list -->
 <!-- TODO: convert this to proper django form & call it task_create -->
 <div class="container">
-  <form action="{% url 'datasets:ds_recon' ds.id %}" method="POST">
+  <form action="{% url 'datasets:dataset_recon' ds.id %}" method="POST">
   {% csrf_token %}
   <h4 class="my-3"> {% fontawesome_icon 'link' %} Initiate Reconciliation: <i>{{ ds.name }}
     <span class="text-muted small">(<a href="{% url 'datasets:dataset-detail' id=ds.pk %}">{{ ds.label }}</a>)</span></i></h4>
@@ -83,7 +83,7 @@
               <option value="create">{ new }</option>
             </select>
           <span class="ml-2 small">
-            <a href="{% url 'areas:area-create' %}?next={% url 'datasets:ds_recon' ds.id %}">create user area</a>
+            <a href="{% url 'areas:area-create' %}?next={% url 'datasets:dataset_recon' ds.id %}">create user area</a>
           </span></p>
           <p><input type="text" disabled id="search_region" name="search_region" value="" placeholder="Search region data (future)"/></p>
         </div>
@@ -183,7 +183,7 @@
     $.ajax({
         url: '/api/areas/'+aid
       }).done(function(data){
-        console.log('got geometry',data.geojson)
+        <!--console.log('got geometry',data.geojson)-->
         geom = {"type":"FeatureCollecton","features":[]}
         geom['features'].push(data.geojson)
         renderMap(geom)
@@ -201,42 +201,16 @@
   // clear dropdown choice if other is used & render geometry
   $( "#select_region" ).change(function() {
     $( "#select_userarea option[value=0]" ).prop('selected',true)
-    render_area( $(this).val(), 'region')
-    <!--console.log('select_region this',$(this).val())-->
+    if ($(this).val() == 0) { features.clearLayers() } else{ render_area( $(this).val(), 'region') }
   });
   
   $( "#select_userarea" ).change(function() {
     $( "#select_region option[value=0]" ).prop('selected',true)
-    render_area( $(this).val(), 'area')
-    <!--console.log('select_userarea this',$(this).val())-->
+    if ($(this).val() == 0) { features.clearLayers() } else{ render_area( $(this).val(), 'area') }
     if ($( "#select_userarea option[value='create']" ).prop('selected') == true) {
-      location.href="{% url 'areas:area-create' %}?next={% url 'datasets:ds_recon' ds.id %}"
+      location.href="{% url 'areas:area-create' %}?next={% url 'datasets:dataset_recon' ds.id %}"
     }
   });
 
 </script>
 {% endblock %}
-        <!--<div class="col-sm-4 ghostbox">-->
-          <!--<p class="small mb-0">When validating matches returned by this task, augment records with:</p>-->
-          <!--<div class="form-check">-->
-            <!--<input type="hidden" name="aug_names" value="off" />-->
-            <!--<label class="form-check-label small" for="aug1">-->
-              <!--<input type="checkbox" class="form-check-input" id="aug1"-->
-                <!--name="aug_names" checked>Name variants-->
-            <!--</label>-->
-          <!--</div>-->
-          <!--<div class="form-check">-->
-            <!--<input type="hidden" name="aug_notes" value="off" />-->
-            <!--<label class="form-check-label small" for="aug1">-->
-              <!--<input type="checkbox" class="form-check-input" id="aug1"-->
-                <!--name="aug_notes" checked>Notes-->
-            <!--</label>-->
-          <!--</div>-->
-          <!--<div class="form-check">-->
-            <!--<input type="hidden" name="aug_geom" value="off" />-->
-            <!--<label class="form-check-label small" for="aug2">-->
-              <!--<input type="checkbox" class="form-check-input" id="aug2"-->
-                <!--name="aug_geom">Point geometry-->
-            <!--</label>-->
-          <!--</div>-->
-        <!--</div>-->

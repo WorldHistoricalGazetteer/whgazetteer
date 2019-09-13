@@ -62,7 +62,7 @@
       <div id="ds_recon" class="col-sm-6 pt-2 dashedbox">
         <h5 class="text-secondary">Reconciliation Tasks 
           <span class="small">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
-          <span class="float-right"><a href="{% url 'datasets:ds_recon' object.id %}" class="ml-5">
+          <span class="float-right"><a href="{% url 'datasets:dataset_recon' object.id %}" class="ml-5">
             {% fontawesome_icon 'plus-square' color='#336699' %}</a></span>
         </h5>
         {% for t in tasks %}

@@ -4,6 +4,9 @@ html, body {
   height: 100%;
 }
 
+/**
+  modals
+**/
 .modal-dialog { position: relative; overflow: hidden; max-width: 90%; height: 90%; max-height: 90%; } 
 .modal-form { position: relative; overflow: hidden; max-width: fit-content !important; max-height: 100%; } 
 .modal-ext-content { height: 90%; overflow-y:scroll; background-color:#fff;}
@@ -13,6 +16,15 @@ html, body {
   background-color:#fff; 
   max-width: fit-content !important; 
   margin:auto;
+}
+
+/**
+  dialogs
+**/
+/*.selector {  margin: auto; background-color: #fff;}*/
+#helpme {
+  padding:12px;
+  height:fit-content;
 }
 
 /**
@@ -241,6 +253,8 @@ em { color: #993333;}
 .auth-match p {font-size: small; margin-bottom: .4rem;}
 .globeflash {padding-top:.2rem; padding-bottom:.2rem;}
 }
+#map_review {z-index:0 !important;}
+.ui-dialog {z-index:1001 !important}
 
 /**
   dataset create
