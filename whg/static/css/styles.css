@@ -26,7 +26,10 @@ html, body {
   padding:12px;
   height:fit-content;
 }
-
+.ui-widget-content a {
+  color: #336699;
+  text-decoration:underline;
+}
 /**
   general use
 **/
@@ -47,7 +50,7 @@ label {vertical-align:top;}
 .smaller {font-size: small;} /* smaller than bootstrap */
 .larger {font-size: larger;}
 .notebox {background-color:#eee;box-shadow: 2px 2px #999; border:1px dashed #333; padding:6px;}
-.dashedbox {border:1px dashed #999; border-radius:8px; }
+.dashedbox {border:1px dashed #ccc; border-radius:8px; }
 .bottom {}
 .hover {cursor:pointer;}
 .fa-search, .fa-times {color:#999; }

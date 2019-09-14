@@ -33,7 +33,7 @@
         </p>
         <!--<p class="form-value editing"><b>Description</b>: {{ object.description }}</p>-->
         <!--<p class="hidden editing"><b>Description</b>: {{ form.description }}</p>-->
-        <p><b>ID (label/#)</b>: {{ object.label }}/{{ object.id }}
+        <p><b>IDs</b> (label/number): <span class="text-danger">{{ object.label }}</span>/<span class="text-danger">{{ object.id }}</span>
         <p><b>File</b>: {{ object.file }}</p>
         <p><b>Date</b>: {{ object.upload_date|date:"d-M-Y, H:i (e)" }}</p>
         <p><b>Total rows</b>: {{ object.numrows }}</p>
@@ -102,7 +102,7 @@
                    <a class="confirm-del-matches" href="{% url 'datasets:task-delete' tid=t.task_id scope='matches'%}">
                     Clear matches</a>&nbsp;|&nbsp;
                    <a class="confirm-del-all" data-id={{t.task_id}} href="{% url 'datasets:task-delete' tid=t.task_id scope='task' %}">
-                     Delete task & hits, clear matches {% fontawesome_icon 'trash' color='#336699' %}</a>
+                     Delete task & hits, clear matches {% fontawesome_icon 'trash' color='#ff0000' %}</a>
                 </p>
               <!--{# endif %}-->
             </div>
@@ -130,6 +130,7 @@
     steps={"uploaded":1,"reconciling":2,"review_hits":3,"reviewed":4,"review_whg":5,"indexed":6}
     $("[ref="+steps['{{ object.status }}']+"]").addClass('prog-active')
     
+  
   $(".help-matches").click(function(){
     page=$(this).data('id')
     $('.selector').dialog('open');
@@ -156,7 +157,7 @@
         updates=data
         for(u in updates){
           html1='';html2='';html3='';
-          console.log(updates[u])
+          <!--console.log(updates[u])-->
           html1+=updates[u]['pass1']
           html2+=updates[u]['pass2']
           html3+=updates[u]['pass3']
