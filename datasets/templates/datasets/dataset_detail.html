@@ -51,13 +51,11 @@
         <p><b>Columns</b>: {{ object.header }}</p>
         <input class="btn btn-primary hidden" type="submit" value="Save" />
         <hr/>
-        <h5 class="text-secondary">Counts (initial, added)</h5>
-        <p><b>Names</b>:
-          {{ num_names }}, <span class="text-white bg-danger">&nbsp;{{ names_added }}&nbsp;</span></p>
+        <h5 class="text-secondary">Counts <small>( initial, <span class="bg-danger text-white small">&nbsp;added </span>&nbsp;)</small></h5>
+        <p><b>Names</b>: {{ num_names }}</p>
         <p><b>Links</b>:
           {{ num_links }}, <span class="text-white bg-danger">&nbsp;{{ links_added }}&nbsp;</span></p>
         <p><b>Geometries</b>: {{ num_geoms }}, <span class="text-white bg-danger">&nbsp;{{ geoms_added }}&nbsp;</span></p>
-        <p><b>Descriptions</b>: {{ num_descriptions }}, <span class="text-white bg-danger">&nbsp;{{ descriptions_added }}&nbsp;</span></p>
       </div>
       <div id="ds_recon" class="col-sm-6 pt-2 dashedbox">
         <h5 class="text-secondary">Reconciliation Tasks 
