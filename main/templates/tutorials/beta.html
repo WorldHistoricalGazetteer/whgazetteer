@@ -7,10 +7,10 @@
 
   <div class="container">
     <div class="d-flex justify-content-center mt-3">
-      <h3>Guide to WHG Beta v0.1</h3>
+      <h3>WHG Beta Release: A tour</h3>
     </div>
     <div id="contrib_content" class="mx-5">
-      <p class="lead">Welcome to our first public beta release. The Version 1 launch is planned for Spring 2020 and in the meantime we will be making a series of beta releases to give early adopters and contributors an early view of the capabilities of this platform and a chance to experiment. Notes about future improvements and missing functionality appear <mark>highlighted like this</mark>.</p>
+      <p class="lead">Welcome to our first public beta release. The Version 1 launch is planned for Spring 2020 and in the meantime we will be making a series of beta releases to give early adopters and contributors an early view of the capabilities of this platform and a chance to experiment. Notes about future improvements work-in-progress appear <mark>highlighted like this</mark>.</p>
       <div id="beta#Home" class="tute-section">
         <h4 class="p-1">Home page</h4>
         <div class="p-1">
@@ -26,7 +26,8 @@
           <p>A few alternative base maps are available via the layer icon in the upper right corner.</p>
         </div>
       </div>
-      <div id="beta#MyData" class="tute-section" name="MyData">
+      <div id="" class="tute-section">
+        <a name="my-data"></a>
         <h4 class="p-1">My Data page</h4>
         <p>The My Data page presents three lists of user-generated items: Datasets, Study Areas, and Collections (<mark>future</mark>). Upon registering, these are empty. In each case, clicking a plus icon ({% fontawesome_icon 'plus-square' color='#336699' %}) starts the process of creating and managing the items.</p>
         <h5>Datasets</h5>
@@ -53,12 +54,14 @@
         <p>After a dataset has been uploaded and, using our reconciliation services, augmented with as many links (matches) to modern authorities as possible (see below), it can be considered for accessioning. In that step, each record is compared with the WHG index to see if the referenced place already has one or more attestations from another dataset. If it does, it is marked as a "child" record of the first attestation we received. If it does not, it is considered a new "parent." <b>Accessioning relies on Place records having as many associated "place_link" records as can be obtained.</b>
           <mark>At this stage, all accessioning is performed internally by the WHG project team.</mark></p>
       </div>
-      <div id="" class="tute-section" name="dataset-browse">
+      <div id="" class="tute-section">
+        <a name="dataset-browse"></a>
         <h4 class="p-1">Dataset Browse page</h4>
         <p>This page presents a paged, sortable, and searchable table display of all records in a dataset, and a map of those records which have geometry. Hovering over a table row highlights the place in the map, and clicking the row updates the record contents displayed underneath the map. <mark>Note that for large datasets it may take several second to load geometry; longer for linestring and polygon data than for points.</mark></p>
         <p><mark>Future features for this page: (a) download dataset as Linked Places GeoJSON for mapping in other software; (b) make the map full-screen w/clickable markers; (c) download a PDF of the current viewport; and ??? (ideas welcome).</mark></p>
       </div>
-      <div id="" class="tute-section" name="reconciliation">
+      <div id="" class="tute-section">
+        <a name="reconciliation"></a>
         <h4 class="p-1">Initiate Reconciliation page</h4>
         <p>Reconciliation is the process of identifying matches of your Place records to existing records in online place name authorities. So far, reconciliation to Getty TGN and Wikidata are offered. <mark>DBpedia and GeoNames will likely be added before v1 launch</mark>. The purpose is to augment a dataset with associated "place_link" records, and optionally, geometry ("place_geom" records) derived from the authority. It is therefore possible to upload a dataset having no geometry, and use this reconciliation service to make it mappable, at least in part.</p>
         <p class="strong">NOTE: Making your dataset as rich with links to authorities as possible is a crucial step in making it ultimately a solid contribution to the WHG index.</p>
@@ -71,7 +74,8 @@
         <h5>Study Areas</h5>
         <p>Many toponyms appear repeatedly in multiple locations, referring to different places, often far apart. To aid the reconciliation process for Getty TGN, users can define a Study Area that will constrain the search for matches to particular areas. Therefore, when TGN is selected as the authority, interface options appear allowing users to define a Study Area and use it for that reconciliation task. <mark>Options to draw study areas on a map or choose them from region features existing in the WHG index are not yet operational. For the time being, you must enter a series of 2-letter country codes, which will generate a hull shape.</p>
       </div>
-      <div id="" class="tute-section" name="review">
+      <div id="" class="tute-section">
+        <a name="review"></a>
         <h4 class="p-1">Reconciliation Review page</h4>
         <p>Prospective matches to external authorities are <b>never</b> automatically added to the WHG database; i.e. "place_link" records are created only by the Reconciliation Review step performed by the dataset creator or authorized members of their team.</p>
         <p>This page presents those dataset records that have one or more prospective matches ("hits') on the left of the screen, with a list of those hits on the right. A small map displays geometry for the record with a green marker, and that of all hits with orange markers. Hovering over the globe symbol ({% fontawesome_icon 'globe' color='#336699' %}) in a hit item highlights its position in the map.</p>
@@ -83,16 +87,18 @@
           <li><i>exactMatch</i>: "...a high degree of confidence that two concepts can be used interchangeably across a wide range of information retrieval applications."</li></ul>
         <p>Furthermore, <i>closeMatch</i> is a super-property of <i>exactMatch</i>; that is, every <i>exactMatch</i> is also a <i>closeMatch</i>. Clear? Oh well. Practically speaking, for WHG both of these will serve as a linking "glue." Specifically, when we generate our union index, records that share one or more common links (closeMatch OR exactMatch) will be joined/linked, and returned together in response to queries. For example, records for Abyssinia and Ethiopia share two links, to a DBPedia record and a TGN record. Therefore, the appear together when searching for either Abyssinia or Ethiopia.</p>
       </div>
-      <div id="" class="tute-section" name="maps">
+      <div id="" class="tute-section">
+        <a name="maps"></a>
         <h4 class="p-1">Maps page</h4>
         <p>The heat maps presently appearing here are only serving to indicate the spatial extent of some datasets either already in WHG (HGIS de las Indias) or in the queue to enter soon. <mark>In time we will provide mapping that summarize WHG index contents in some way. Ideas (and coding help) are welcome!</mark></p>
       </div>
-      <div anchor="" class="tute-section" name="about">
+      <div class="tute-section">
         <a name="about"></a>
         <h4 class="p-1">About pages</h4>
         <p>Self-explanatory, to be completed in due time...</p>
       </div>
       <div id="" class="tute-section">
+        <a name="titorials"></a>
         <h4 class="p-1">Tutorials</h4>
         <p>Self-explanatory, to be completed in due time...</p>
       </div>

@@ -4,9 +4,26 @@
 {% block content %}
 {% load static %}
 
-  <div class="container">
-    <div class="d-flex justify-content-center mt-3">
-      <h3>Project Credits</h3>
-    </div>
+<div class="container">
+  <div class="d-flex justify-content-center mt-3">
+    <h3>Project Credits</h3>
   </div>
+  <div class="px-5">
+    <h4>Funding</h4>
+    <p><img src="{% static 'images/neh_logo_horizontal_rgb.jpg'%}" align="right">
+    The World-Historical Gazetteer project has been made possible by a 3-year Preservation Access grant from the US National Endowment for the Humanities (2017-2020, <a href="https://securegrants.neh.gov/publicquery/main.aspx?f=1&amp;gn=PW-253719-17" target="_blank">PW‑253719‑17</a>). It is also supported by in-kind contributions from the <a href="https://www.worldhistory.pitt.edu/>" target="_blank">University of Pittsburgh World History Center</a>.</p>
+    <h4>Project Team</h4>
+    <p><a href="http://www.history.pitt.edu/people/ruth-mostern" target="_blank" rel="noopener"><strong>Ruth Mostern</strong></a>, Principal Investigator and Director of World History Center</p>
+    
+    <p><a href="http://kgeographer.org" target="_blank" rel="noopener"><strong>Karl Grossner</strong></a>, Technical Director</p>
+    
+    <p><a href="https://susangrunewald.com" target="_blank" rel="noopener"><strong>Susan Grunewald</strong></a>, Postdoctoral Fellow</p>
+
+    <p><a href="http://rmhorne.org/" target="_blank" rel="noopener"><strong>Ryan Horne</strong></a>, Associate, former Postdoctoral Fellow</p>
+    
+    <p><a href="http://www.manning.pitt.edu/" target="_blank" rel="noopener"><strong>Patrick Manning</strong></a>, Project Consultant</p>
+    
+    <p><strong>David Ruvolo</strong>, Project Manager</p>
+  </div>
+</div>
 {% endblock %}

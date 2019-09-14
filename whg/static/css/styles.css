@@ -446,7 +446,7 @@ span.edit-row {
   Main: tutorials
 **/
 .bg-light { background-color: #fff !important; }
-.tute-section h4 { background-color: antiquewhite;}
+.tute-section h4 { background-color: #eee;}
 /*#contrib_content h6 { font-style:italic; color: #993333; }*/
 .card-header {
   background-color: antiquewhite;
