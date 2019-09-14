@@ -288,15 +288,6 @@
     $('.tt-menu').hide()
   }
 
-  styles = {
-    'place_default': {
-      radius: 7, fillOpacity: 0.6, opacity: 1, weight: 1,
-      color: "#fff", fillColor: "red"
-    },
-    'place_highlight': {
-      radius:10,fillOpacity:1,fillColor:"yellow",color:"#000"
-    }
-  }
   //
   // fetch geometries for search results
   renderPlaces = function(geoms) {
@@ -310,22 +301,50 @@
     idToFeature = {}
     mappy.createPane('placePane');
     mappy.getPane('placePane').style.zIndex = 200;
+    stuff=L.layerGroup()
     features = L.geoJSON(data, {
-      pane: 'placePane',
+      <!--style: function (feature) {-->
+        <!--return {color: "#330033"};-->
+      <!--},-->
       pointToLayer: function (feature, latlng) {
         count_features +=1;
         identifier = feature.properties.whgid;
         <!--console.log(feature)-->
         <!--console.log('identifier',identifier)-->
         if(feature.type=='Point'){
-          marker = L.circleMarker(latlng, styles.place_default
+          marker = L.circleMarker(latlng, styles.marker_default
           ).bindPopup(feature.properties.title+' (whg id:'+identifier+')');
           // add to array for selection
           idToFeature[identifier] = marker
           return marker
         }
+      },
+      onEachFeature: function(feature,layer) {
+        f=feature; l=layer;
+        <!--console.log('f',f,'l',l)-->
+        identifier = feature.properties.whgid;
+        if(feature.type != 'Point'){
+          layer.setStyle(styles.default)
+          idToFeature[identifier] = layer
+        }
       }
     }).addTo(mappy);
+    <!--features = L.geoJSON(data, {-->
+      <!--pane: 'placePane',-->
+      <!--pointToLayer: function (feature, latlng) {-->
+        <!--count_features +=1;-->
+        <!--identifier = feature.properties.whgid;-->
+        <!--console.log(feature)-->
+        <!--<!--console.log('identifier',identifier)-->-->
+        <!--if(feature.type=='Point'){-->
+          <!--marker = L.circleMarker(latlng, styles.place_default-->
+          <!--).bindPopup(feature.properties.title+' (whg id:'+identifier+')');-->
+          <!--// add to array for selection-->
+          <!--idToFeature[identifier] = marker-->
+          <!--return marker-->
+        <!--}-->
+      <!--}-->
+    <!--}).addTo(mappy);-->
     bounds = features.getBounds()
     <!--mappy.setView(bounds.getCenter(),5) -->
     if(geoms.length > 0 ){
@@ -386,9 +405,14 @@
     })
     
     $(".search-row").on('click',function(e){
-      features.setStyle(styles.place_default)
+      <!--features.setStyle(styles.marker_default)-->
+      for (i in idToFeature){
+        type = idToFeature[i].feature.geometry.type
+        idToFeature[i].setStyle(type=='Point'?styles.marker_default:styles.default)
+      }
       whgid = $(this).attr('data-id')
-      idToFeature[whgid].setStyle(styles.place_highlight)
+      f = idToFeature[whgid]
+      idToFeature[whgid].setStyle(f.feature.geometry.type=='Point'?styles.marker_highlight:styles.default_highlight)
       mappy.panTo(idToFeature[whgid]._latlng)
     })
     // open a modal for external page
@@ -399,6 +423,26 @@
       $(".modal-body").html('<iframe width="100%" height="100%" frameborder="0" scrolling="yes" '+
         'allowtransparency="true" src="'+url+'"></iframe>');
     });
+  }
+  styles = {
+    'marker_default': {
+      fillColor: "#ff0000",
+      color:"#666",
+      weight:1,
+      fillOpacity:0.5,
+      opacity:0.5},
+    'marker_highlight': {
+      radius:10,fillOpacity:1,fillColor:"yellow",color:"#000"
+    },
+    'default':{
+      fillColor: "#ff0000",
+      color:"#fff",
+      weight:1,
+      fillOpacity:0.1,
+      opacity:0.5},
+    'default_highlight':{
+      fillOpacity:1,fillColor:"yellow",color:"#000"
+    }
   }
   
   // load place portal page from results_list item title links       
