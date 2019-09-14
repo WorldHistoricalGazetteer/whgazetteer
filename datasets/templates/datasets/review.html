@@ -117,7 +117,7 @@
               {% endfor %}
               <div class="pl-2 pr-2 mb-1 matchbar">
                 <div class="match_radio custom-control custom-radio">
-                  <span class="mr-2 globeflash" style="background-color:#f8b109;">
+                  <span class="mr-2 globeflash">
                   {% if form.json.value|get:"geoms" != Null %}
                     <a class="geolink" rel="tooltip" id="{{ form.authrecord_id.value }}" 
                       href="javascript:{ zoomTo('tgn:'+{{ form.authrecord_id.value }}) }" title="Flash map marker">
@@ -126,8 +126,7 @@
                   </span>
                   <span class="inline">{{ form.match }}</span>
                   <span class="float-right mr-2">
-                  <span id="help_matches" data-id="matches">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
-                  
+                  <span class="help-matches" data-id="Matches">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
                   {% if authority == 'whg' %}
                     <button type="button" 
                       data-id="{{ form.json.value|get:"place_id" }}" 
@@ -220,7 +219,8 @@
   <!--</div>-->
 <!--</div> <!-- ext_site -->
 <script type="text/javascript">
-  $("#help_matches").click(function(){
+  $(".help-matches").click(function(){
+    page=$(this).data('id')
     $('.selector').dialog('open');
   })
   $(".selector").dialog({
@@ -228,7 +228,7 @@
     autoOpen: false,
     height: 600,
     width: 700,
-    title: "Matches",
+    title: "WHG Help::",
     modal: true,
     buttons: {
       'Close': function() {
@@ -236,9 +236,10 @@
       }
     },
     open: function(event, ui) {
-      <!--$('#helpme').load('/media/help/matches.html');-->
-      $('.selector').load('/media/help/matches.html');
-    }
+      $('.selector').load('/media/help/'+page+'.html');
+    },
+    show: {effect: "fade",duration: 400 },
+    hide: {effect: "fade",duration: 400 }
    });
    
   $('.ext').on('click', function(e) {

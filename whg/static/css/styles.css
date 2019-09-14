@@ -251,10 +251,31 @@ em { color: #993333;}
   color: firebrick;
 }
 .auth-match p {font-size: small; margin-bottom: .4rem;}
-.globeflash {padding-top:.2rem; padding-bottom:.2rem;}
+.globeflash {
+  padding-top:3px; padding-bottom:3px; padding-right:3px; 
+  background-color:gold;
 }
+.help-matches:hover { cursor:pointer;}
 #map_review {z-index:0 !important;}
 .ui-dialog {z-index:1001 !important}
+.ui-dialog-titlebar-close {display:none;}
+
+#tgn_match p {
+  margin-bottom: .6rem;
+  font-size: small;
+}
+.match_radio {background-color: oldlace; padding-left:0; max-height:24px}
+/*.match_radio li {display:inline; margin-left:5px;}*/
+.match_radio li {display:inline; margin-right:4px;}
+/*.match_radio ul {list-style-type: none; float: right;}*/
+.match_radio ul {list-style-type: none; padding-left:3px;}
+.matchbar {  background-color: gold;}
+.notefield {  height:100;  display: none;}
+.noteicon {margin-left: 4px;}
+.noteicon:hover {cursor: pointer;}
+.inline {display:inline-block;}
+.inline ul {margin-bottom:0;}
+
 
 /**
   dataset create
@@ -331,9 +352,6 @@ em { color: #993333;}
   background-color: #f2f2f2;
 }
 
-.inline {display:inline-block;}
-.inline ul {margin-bottom:0;}
-
 .ds-detail p { margin-bottom: .3rem;}
 
 .tab-pane {
@@ -352,19 +370,6 @@ em { color: #993333;}
   background-color: #eee;
 }
 
-#tgn_match p {
-  margin-bottom: .6rem;
-  font-size: small;
-}
-.match_radio {background-color: oldlace; padding-left:0; max-height:24px}
-/*.match_radio li {display:inline; margin-left:5px;}*/
-.match_radio li {display:inline; margin-right:4px;}
-/*.match_radio ul {list-style-type: none; float: right;}*/
-.match_radio ul {list-style-type: none; padding-left:3px;}
-.matchbar {  background-color: #f8b109;}
-.notefield {  height:100;  display: none;}
-.noteicon {margin-left: 4px;}
-.noteicon:hover {cursor: pointer;}
 
 #id_uri_base{width: 300px;}
 
