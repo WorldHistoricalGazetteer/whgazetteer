@@ -1,7 +1,7 @@
 .tt-query, /* UPDATE: newer versions use tt-input instead of tt-query */
 .tt-input, 
 .tt-hint {
-    width: 300px;
+    width: 250px;
     height: 24px;
     padding: 4px 6px;
     font-size: .8rem;
@@ -23,7 +23,7 @@
 }
 
 .tt-menu { /* UPDATE: newer versions use tt-menu instead of tt-dropdown-menu */
-    width: 300px;
+    width: 250px;
     /*margin-top: 12px;*/
     padding: 8px 0;
     background-color: #fff;
