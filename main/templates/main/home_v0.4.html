@@ -303,14 +303,9 @@
     mappy.getPane('placePane').style.zIndex = 200;
     stuff=L.layerGroup()
     features = L.geoJSON(data, {
-      <!--style: function (feature) {-->
-        <!--return {color: "#330033"};-->
-      <!--},-->
       pointToLayer: function (feature, latlng) {
         count_features +=1;
         identifier = feature.properties.whgid;
-        <!--console.log(feature)-->
-        <!--console.log('identifier',identifier)-->
         if(feature.type=='Point'){
           marker = L.circleMarker(latlng, styles.marker_default
           ).bindPopup(feature.properties.title+' (whg id:'+identifier+')');
@@ -321,7 +316,6 @@
       },
       onEachFeature: function(feature,layer) {
         f=feature; l=layer;
-        <!--console.log('f',f,'l',l)-->
         identifier = feature.properties.whgid;
         if(feature.type != 'Point'){
           layer.setStyle(styles.default)
@@ -329,22 +323,6 @@
         }
       }
     }).addTo(mappy);
-    <!--features = L.geoJSON(data, {-->
-      <!--pane: 'placePane',-->
-      <!--pointToLayer: function (feature, latlng) {-->
-        <!--count_features +=1;-->
-        <!--identifier = feature.properties.whgid;-->
-        <!--console.log(feature)-->
-        <!--<!--console.log('identifier',identifier)-->-->
-        <!--if(feature.type=='Point'){-->
-          <!--marker = L.circleMarker(latlng, styles.place_default-->
-          <!--).bindPopup(feature.properties.title+' (whg id:'+identifier+')');-->
-          <!--// add to array for selection-->
-          <!--idToFeature[identifier] = marker-->
-          <!--return marker-->
-        <!--}-->
-      <!--}-->
-    <!--}).addTo(mappy);-->
     bounds = features.getBounds()
     <!--mappy.setView(bounds.getCenter(),5) -->
     if(geoms.length > 0 ){
