@@ -9,13 +9,36 @@
       <h3>Choosing an Upload Data Format: Linked Places (LP) or LP-TSV?</h3>
     </div>
     <div id="contrib_content" class="mx-3">
-      <p class="px-5 lead">Two formats, which to use?</p><p>Notes about future improvements and missing functionality appear <mark>highlighted like this</mark>.</p>
+      <p class="px-5 lead">World-Historical Gazetteer supports uploads of both Linked Places format (v1.1; <a href="https://github.com/LinkedPasts/linked-places" target="_blank">specification</a>) and a derivative, LP&#8209;TSV, useful for relatively simple data (v0.2; <a href="https://github.com/LinkedPasts/linked-places/blob/master/tsv_0.2.md" target="_blank">specification</a>). Their specifications provide details of each, and should be consulted in designing transformations. The following should help in deciding which is appropriate for your dataset. The WHG team is not able to transform your data, but can help guide you in this essential step.</p>
+      
+      <!--<p>Notes about future improvements and missing functionality appear <mark>highlighted like this</mark>.</p>-->
       <div id="choosing#Intro" class="tute-section">
-        <h4 class="p-1">Intro</h4>
+        <h4 class="p-1">Linked Places (LP) format</h4>
         <div class="p-1">
-          <h5>sub-heading</h5>
-          <p>paragraph</p>
+          <p>Linked Places format is being developed as an interconnection standard for place data contributions to the WHG and Pelagios projects, but it will hopefully see wider use over time. It is both valid <b>JSON-LD</b>, a syntax of RDF, and valid <b>GeoJSON</b>. It also incorporates temporal extensions to GeoJSON proposed in <b>GeoJSON-T</b>.</p>
+          
+          <p class="mx-3">"<b>JSON-LD</b> is a lightweight Linked Data format. It is easy for humans to read and write. It is based on the already successful JSON format and provides a way to help JSON data interoperate at Web-scale." -- from JSON-LD <a href="https://json-ld.org/" target="_blank">web site</a> (<a href="https://w3c.github.io/json-ld-syntax/" target="_blank">v1.1 draft specification</a>)<p>
+          <p class="mx-3">"<b>GeoJSON</b> is a format for encoding a variety of geographic data structures." -- from GeoJSON <a href="https://geojson.org/" target="_blank">web site</a> (<a href="https://tools.ietf.org/html/rfc7946" target="_blank"> RFC 7946 specification</a>)
+          </p>
+          <p class="mx-3"><b>GeoJSON-T</b> adds time to GeoJSON, expressed in "when" elements that can be added at the Feature level, in geometries of a GeometryCollection, in properties, or in the non-standard <i>foreign elements</i> allowed by the GeoJSON specification. It is a work-in-progress (<a href="https://github.com/kgeographer/geojson-t" target="_blank">GitHub</a>).
+          </p>
+          <p>Apart from its JSON-LD structure, the distinctive features of Linked Places format include:</p>
+          <ul>
+            <li>It permits temporal scoping of an entire place record and/or of individual name variants, geometries, place types, and place relations, expressed as timespans or as named periods.</li>
+            <li>It permits any number of sourced names, geometries, and relations.</li>
+            <li>As the <a href="https://github.com/LinkedPasts/linked-places" target="_blank">specification</a> outlines, almost all elements are optional.</li>
+          </ul>
         </div>
+        <h4 class="p-1">LP-TSV format</h4>
+        <div class="p-1">
+          <p>LP-TSV is a tab-delimited text file format developed by WHG to support users and contributors whose data is relatively simple. That is, while it may include a timespan for an entire record, it does permit temporally scoping its individual components as Linked Places does.</p>
+          <p>The distinctive features of LP-TSV include:</p>
+          <ul>
+            <li>It requires one sourced "title" toponym.</li>
+            <li>It permits any number of name variants, ccodes, types, and matches (links) but only as semicolon-delimited lists of strings within those columns.</li>
+            <li>It permits one geometry, which can be a longitude/latitude pair or a WKT (Well-Known Text) expression.</li>
+            <li>With respect to relations, it permits only a single "parent_name"/"parent_id" combination.</li>
+          </ul>          
       </div>
     </div>
   </div>
