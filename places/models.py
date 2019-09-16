@@ -57,7 +57,7 @@ class PlaceName(models.Model):
     name_src = models.ForeignKey(Source, null=True, on_delete=models.SET_NULL)
     jsonb = JSONField(blank=True, null=True)
 
-    src_id = models.CharField(max_length=24,default='') # contributor's identifier
+    src_id = models.CharField(max_length=100,default='') # contributor's identifier
 
     def __str__(self):
         return self.toponym
@@ -72,7 +72,7 @@ class PlaceType(models.Model):
         default=-1, on_delete=models.CASCADE)
     jsonb = JSONField(blank=True, null=True)
 
-    src_id = models.CharField(max_length=24,default='') # contributor's identifier
+    src_id = models.CharField(max_length=100,default='') # contributor's identifier
 
     def __str__(self):
         #return self.jsonb['src_label']
@@ -90,7 +90,7 @@ class PlaceGeom(models.Model):
         to_field='src_id', on_delete=models.SET_NULL)
     jsonb = JSONField(blank=True, null=True)
 
-    src_id = models.CharField(max_length=24,default='') # contributor's identifier
+    src_id = models.CharField(max_length=100,default='') # contributor's identifier
 
     class Meta:
         managed = True
@@ -104,7 +104,7 @@ class PlaceLink(models.Model):
     jsonb = JSONField(blank=True, null=True)
     black_parent = models.IntegerField(blank=True, null=True)
 
-    src_id = models.CharField(max_length=24,default='') # contributor's identifier
+    src_id = models.CharField(max_length=100,default='') # contributor's identifier
 
     class Meta:
         managed = True
@@ -116,7 +116,7 @@ class PlaceWhen(models.Model):
     jsonb = JSONField(blank=True, null=True)
     # timespans[{start{}, end{}}], periods[{name,id}], label, duration
 
-    src_id = models.CharField(max_length=24,default='') # contributor's identifier
+    src_id = models.CharField(max_length=100,default='') # contributor's identifier
     minmax = ArrayField(models.IntegerField(blank=True,null=True))
 
     class Meta:
@@ -129,7 +129,7 @@ class PlaceRelated(models.Model):
     jsonb = JSONField(blank=True, null=True)
     # relation_type, relation_to, label, when{}, citation{label,id}, certainty
 
-    src_id = models.CharField(max_length=24,default='') # contributor's identifier
+    src_id = models.CharField(max_length=100,default='') # contributor's identifier
 
     class Meta:
         managed = True
@@ -142,7 +142,7 @@ class PlaceDescription(models.Model):
     jsonb = JSONField(blank=True, null=True)
     # id, value, lang
 
-    src_id = models.CharField(max_length=24,default='') # contributor's identifier
+    src_id = models.CharField(max_length=100,default='') # contributor's identifier
 
     class Meta:
         managed = True
@@ -154,9 +154,8 @@ class PlaceDepiction(models.Model):
     jsonb = JSONField(blank=True, null=True)
     # id, title, license
 
-    src_id = models.CharField(max_length=24,default='') # contributor's identifier
+    src_id = models.CharField(max_length=100,default='') # contributor's identifier
 
     class Meta:
         managed = True
         db_table = 'place_depiction'
-        
