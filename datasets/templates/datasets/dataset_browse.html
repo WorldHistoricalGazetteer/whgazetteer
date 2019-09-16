@@ -9,7 +9,10 @@
   {% leaflet_js %}
   {% leaflet_css %}
   <script src="{% static 'js/aliases.js' %}"></script>
+  <script src="{% static 'js/easyprint.js' %}"></script>
+  <script src="{% static 'js/spin.umd.js' %}"></script>
   <script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>
+  <link rel="stylesheet" href="{% static 'css/spin.css' %}"/>
   <link rel="stylesheet" href="//cdn.datatables.net/1.10.16/css/dataTables.bootstrap4.min.css">
 {% endblock %}
 {% block content %}
@@ -21,12 +24,6 @@
         class="">{% fontawesome_icon 'cog' color='#336699' %}</a>
     </span>
     <span class="half float-right">
-    <!--{# if filter != 'nogeom' %}-->
-      <!--<a href="{# url 'datasets:dataset_recon' label=ds.label f='nogeom' %}" -->
-      <!--title="Filter: no geometry" rel="tooltip">{# fontawesome_icon 'filter' color='#336699' %}</a>-->
-    <!--{# else %}-->
-      <!--<a href="{# url 'datasets:dataset_recon' label=ds.label f='all' %}">Clear filter</a>-->
-    <!--{# endif %}-->
   </span>
   </h4>
   <div class="container mt-3">
@@ -35,12 +32,13 @@
         <div id="drftable_title"></div>
         <div id="map">
             {% leaflet_map "map" callback="map_init" %}
+            <div class="spinner-border text-danger"></div>
         </div>
         <!-- row detail in 2 columns by getPlace() -->
         <div id="row_detail" class="row">
           <div id="detail_left" class="small col-sm-6">
             <p class="text-center mt-5">
-              <img src="{# static 'images/ajax-loader.gif' #}" />
+              <!--<img src="{# static 'images/ajax-loader.gif' #}" />-->
             </p>
           </div>
           <div id="detail_right" class="small col-sm-6">
@@ -137,6 +135,9 @@
   }
   
   $(function() {
+    window.spinner = new Spin.Spinner().spin();
+    $("#map").append(spinner.el);
+    
     window.dslabel = "{{ ds.label }}"
     window.table = $('#placetable').DataTable({
       "serverSide": true,
@@ -161,8 +162,10 @@
         geom['features'] = data.results
         renderMap(geom,dslabel)
         console.log('data',data)
-      })   
+      })
+    
   })  
+
 
   // expose leaflet map for events, call it 'mappy'
   window.addEventListener('map:init', function (e) {
@@ -192,6 +195,19 @@
     };
     L.control.layers(baseLayers).addTo(mappy);
     baseLayers['OSM'].addTo(mappy)
+    
+    var printer = L.easyPrint({
+      tileLayer: osm,
+      sizeModes: ['Current'],
+      filename: 'myMap',
+      exportOnly: true,
+      hideControlContainer: true
+    }).addTo(mappy);
+
+    function manualPrint () {
+        printer.printMap('CurrentSize', 'MyManualPrint')
+    }
+
   }, false);
   
   function url_it(str) {
@@ -247,7 +263,7 @@
          idToFeature[matchid] = marker
          return marker
        }
-    }).addTo(mappy);
+    }).addTo(mappy).then(spinner.stop());
 
     mappy.on('zoomend', function() {
         var currentZoom = mappy.getZoom();
@@ -319,20 +335,6 @@
     }
     left += typeids.replace(/(; $)/g, "") +'</p>'
     //
-    // GEOMS
-    // rendering all geoms now
-    <!--if (data.geoms.length > 0){-->
-      <!--geom = {"type":"FeatureCollecton","features":[]}-->
-      <!--for (g in data.geoms){-->
-        <!--<!--console.log('g',data.geoms[g])-->-->
-        <!--data.geoms[g]['properties'] = {"id": data.id, "dataset": data.dataset}-->
-        <!--geom.features.push(data.geoms[g])-->
-      <!--}-->
-      <!--renderMap(geom)-->
-    <!--} else {-->
-      <!--//reset mappy-->
-      <!--map_init()-->
-    <!--}   -->
     //
     // LINKS
     // TODO: normalize on closeMatch, exactMatch
