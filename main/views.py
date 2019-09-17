@@ -1,11 +1,34 @@
 # main.views
 
+from django.core.mail import send_mail, BadHeaderError
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
-from .forms import CommentModalForm
+
 from main.models import Comment
 from places.models import Place
 from bootstrap_modal_forms.generic import BSModalCreateView
+
+from .forms import CommentModalForm, FeedbackForm
+
+def feedbackView(request):
+    if request.method == 'GET':
+        form = FeedbackForm()
+    else:
+        form = FeedbackForm(request.POST)
+        if form.is_valid():
+            subject = form.cleaned_data['subject']
+            from_email = form.cleaned_data['from_email']
+            message = form.cleaned_data['message']
+            try:
+                send_mail(subject, message, from_email, ['whgazetteer@gmail.com'])
+            except BadHeaderError:
+                return HttpResponse('Invalid header found.')
+            return redirect('success')
+    return render(request, "main/feedback.html", {'form': form})
+
+def feedbackSuccessView(request):
+    return HttpResponse('Thank you for your feedback!')
 
 class CommentCreateView(BSModalCreateView):
     template_name = 'main/create_comment.html'

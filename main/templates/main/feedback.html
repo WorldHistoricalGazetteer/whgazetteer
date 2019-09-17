@@ -1,0 +1,22 @@
+{% extends "main/base.html" %}
+{% block title %}<title>WHG::UsingAPI</title>{% endblock %}
+
+{% block content %}
+{% load static %}
+
+<div class="container">
+    <h3>We welcome your feedback!</h3>
+  <!--<div class="d-flex justify-content-center mt-3">-->
+  <div class="d-flex mt-3">
+    <div>
+      <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div class="form-actions">
+          <button type="submit">Send</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
