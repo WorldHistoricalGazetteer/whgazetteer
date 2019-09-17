@@ -189,6 +189,7 @@ def elapsed(delta):
 def bestParent(qobj, flag=False):
   # applicable for tgn only 
   best = []
+  print('qobj in bestParent',qobj)
   # merge parent country/ies & parents
   if len(qobj['countries']) > 0:
     for c in qobj['countries']:

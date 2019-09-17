@@ -49,8 +49,19 @@ class PlacePortalView(DetailView):
             if 'end' in a['when']['timespans'][0] else [datetime.now().year]
           minmax = [int(min(starts)), int(max(ends))]
         elif 'timespans' in a:
-          starts = sorted([t['start']['in'] for t in a['timespans']])
-          ends = sorted([t['end']['in'] for t in a['timespans']])
+          print('place portal context a in attrib',a)
+          starts = sorted(
+            #[t['start']['in'] for t in a['timespans']]
+            [(t['start']['in'] if 'in' in t['start'] else t['start']['earliest']) for t in a['timespans']]
+            #[t['start']['in'] for t in a['timespans']] if 'in' in t['start'] \
+            #else [t['start']['earliest'] for t in a['timespans']]
+          )
+          ends = sorted(
+            #[t['end']['in'] for t in a['timespans']]
+            [(t['end']['in'] if 'in' in t['end'] else t['end']['latest']) for t in a['timespans']]
+            #[t['end']['in'] for t in a['timespans']] if 'in' in t['end'] \
+            #else [t['end']['latest'] for t in a['timespans']]
+          )
           minmax = [int(min(starts)), int(max(ends))]        
         if len(minmax)>0: extent.append(minmax)
       return extent
