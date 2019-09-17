@@ -17,5 +17,6 @@ urlpatterns = [
     path('choosing/', TemplateView.as_view(template_name="tutorials/choosing.html"), name="tute-choosing"),
     path('architecture/', TemplateView.as_view(template_name="tutorials/architecture.html"), name="tute-architecture"),
     path('template/', TemplateView.as_view(template_name="tutorials/tute-template.html"), name="tute-template"),
+    
 
 ] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)

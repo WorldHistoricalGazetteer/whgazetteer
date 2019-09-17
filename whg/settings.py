@@ -140,6 +140,13 @@ LEAFLET_CONFIG = {
 # mapbox://styles/kgeographer/cjstfpenh6o1e1fldz95w8m6p
 # pk.eyJ1Ijoia2dlb2dyYXBoZXIiLCJhIjoiUmVralBPcyJ9.mJegAI1R6KR21x_CVVTlqw
 
+#EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+#EMAIL_USE_TLS = True
+#EMAIL_HOST = 'smtp.gmail.com'
+#EMAIL_PORT = 587
+#EMAIL_HOST_USER = ''
+#EMAIL_HOST_PASSWORD = ''
+
 
 # Database
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
@@ -154,7 +161,7 @@ DATABASES = {
         'PASSWORD':'',
         'HOST':'localhost',
         'PORT':'5432',
-    },
+    }
 }
 
 # not implemented
@@ -205,6 +212,6 @@ STATICFILES_DIRS = [
 ]
 
 try:
-    from local_settings import *
+    from .local_settings import *
 except ImportError:
     pass
