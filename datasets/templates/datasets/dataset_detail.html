@@ -15,8 +15,9 @@
       <span class="float-right small">
       <span class="small">Browse data</span> <a href="{% url 'datasets:dataset_browse' label=object.label f='all' %}" title="View/edit table" rel="tooltip"
       class="mr-2">{% fontawesome_icon 'table' color='#336699' %}</a>
+      {% if object.owner.id == user.id %}
       <span class="small">Delete dataset</span> <a href="{% url 'datasets:dataset-delete' object.id %}" class="" title="Delete dataset" rel="tooltip">{% fontawesome_icon 'trash' color='#ff0000' %}</a>
-      </span>
+      </span>{% endif %}
     </h4>
     <hr/>
     <div class="row">
@@ -60,9 +61,11 @@
       <div id="ds_recon" class="col-sm-6 pt-2 dashedbox">
         <h5 class="text-secondary">Reconciliation Tasks 
           <span class="small help-matches" data-id="Reconciliation">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
+          {% if object.owner.id == user.id %}
           <span class="float-right"><a href="{% url 'datasets:dataset_recon' object.id %}" class="ml-5">
-            {% fontawesome_icon 'plus-square' color='#336699' %}</a></span>
+            {% fontawesome_icon 'plus-square' color='#336699' %}</a></span>{% endif %}
         </h5>
+        {% if object.owner.id == user.id %}
         {% for t in tasks %}
         <div class="task-box">
           <!-- TODO: display bounds used if any -->
@@ -118,6 +121,7 @@
           </div> <!-- row -->
         </div> <!-- task-box -->
         {% endfor %}
+        {% endif %}
       </div>
     </div>
   </form>

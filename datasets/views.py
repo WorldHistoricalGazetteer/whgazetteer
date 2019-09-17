@@ -1,6 +1,7 @@
 # datasets.views
 from django.contrib import messages
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
+from django.db.models import Q
 from django.forms import formset_factory, modelformset_factory
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect, render_to_response
@@ -462,6 +463,7 @@ def ds_insert_tsv(request, pk):
       if 'types' in header else []
     aat_types = [x.strip() for x in r[header.index('aat_types')].split(';')] \
       if 'aat_types' in header else []
+    print('types, aat_types',types, aat_types)
     ccodes = [x.strip() for x in r[header.index('ccodes')].split(';')] \
       if 'ccodes' in header else []
     parent_name = r[header.index('parent_name')] if 'parent_name' in header else ''
@@ -511,14 +513,8 @@ def ds_insert_tsv(request, pk):
 
     # PlaceType()
     if len(types) > 0:
-      for t in types:
-        r1 = re.search('/(.*)',t)
-        if r1 != None:
-          aatnum = 'aat:'+str(r1.group(1))
-          srclabel = re.search('(.*)/',t).group(1)
-        else:
-          aatnum = ''
-          srclabel = re.search('^(.*)',t).group(1)
+      for i,t in enumerate(types):
+        aatnum=aat_types[i] if len(types) == len(aat_types) else ''
         objs['PlaceType'].append(
           PlaceType(
             place_id=newpl,
@@ -637,7 +633,9 @@ class DashboardView(ListView):
     else:
       print('in get_queryset() else')
       print('myteam(me)',myteam(me))
-      return Dataset.objects.filter(owner__in=myteam(me)).order_by('id')
+      #return Dataset.objects.filter(owner__in=myteam(me)).order_by('id')
+      #return Dataset.objects.filter( Q(owner__in=myteam(me)) | Q(spine="True")).order_by('-id')
+      return Dataset.objects.filter( Q(owner__in=myteam(me)) | Q(id__lt=3)).order_by('-id')
 
 
   def get_context_data(self, *args, **kwargs):
@@ -839,203 +837,3 @@ class DatasetDeleteView(DeleteView):
   def get_success_url(self):
     return reverse('dashboard')
 
-# insert LP-csv file to database
-# TODO: require, handle sources
-def ds_insert_csv(request, pk):
-  # retrieve just-added file, insert to db
-  import os, csv, codecs,json
-  dataset = get_object_or_404(Dataset, id=pk)
-  context = {'status': 'inserting'} #??
-
-  infile = dataset.file.open(mode="r")
-  print('ds_insert_csv(); request.GET; infile',request.GET,infile)
-  # should already know delimiter
-  dialect = csv.Sniffer().sniff(infile.read(16000),['\t',';','|'])
-  reader = csv.reader(infile, dialect)
-  infile.seek(0)
-  header = next(reader, None)
-  print('header', header)
-
-  objs = {"PlaceName":[], "PlaceType":[], "PlaceGeom":[], "PlaceWhen":[],
-          "PlaceLink":[], "PlaceRelated":[], "PlaceDescription":[],
-            "PlaceDepiction":[]}
-
-  # CSV * = req; ^ = desired
-  # lists are ';' delimited, no brackets
-  # id*, title*, name_src*, types[]^, variants[], parent^, ccodes[]^, lon^, lat^,min,max,
-  # geom_src, close_match[]^, exact_match[]^, description, depiction
-
-  def makeCoords(lonstr,latstr):
-    lon = float(lonstr) if lonstr != '' else ''
-    lat = float(latstr) if latstr != '' else ''
-    coords = [] if (lonstr == ''  or latstr == '') else [lon,lat]
-    return coords
-
-  # TODO: what if simultaneous inserts?
-  countrows=0
-  countlinked = 0
-  countlinks = 0
-  for r in reader:
-  #for i, r in zip(range(100), reader):
-    # TODO: should columns be required even if blank?
-    # required
-    #print('r',r)
-    src_id = r[header.index('id')]
-    title = r[header.index('title')]
-    # for PlaceName insertion, strip anything in parens
-    name = re.sub(' \(.*?\)', '', title)
-    name_src = r[header.index('title_source')]
-    if 'variants' in header:
-      v = r[header.index('variants')].split(';')
-      variants = v if '' not in v else []
-    else:
-      variants = []
-    # encouraged for reconciliation
-    src_type = r[header.index('types')] if 'types' in header else 'not specified'
-    aat_types = r[header.index('aat_types')].split(';') \
-      if 'aat_types' in header else ''
-    # TODO: allow multiple parents
-    parent = r[header.index('parent_name')] if 'parent_name' in header else ''
-    #standardize on ';' for name and ccode arrays in tab-delimited files
-    ccodes = r[header.index('ccodes')].split(';') \
-      if 'ccodes' in header else []
-    print(ccodes)
-    if 'lon' in header and 'lat' in header:
-      coords = makeCoords(r[header.index('lon')],r[header.index('lat')])
-    else:
-      coords = []
-    #coords = [
-      #float(r[header.index('lon')]),
-          #float(r[header.index('lat')]) ] if 'lon' in header else []
-    close_matches = r[header.index('close_matches')].split(';') \
-      if 'close_matches' in header else []
-    exact_matches = r[header.index('exact_matches')].split(';') \
-      if 'exact_matches' in header else []
-    # nice to have
-    minmax = [
-      r[header.index('min')],
-          r[header.index('max')] ] if 'min' in header else []
-    description = r[header.index('description')] \
-      if 'description' in header else []
-    depiction = r[header.index('depiction')] \
-      if 'depiction' in header else []
-
-    # build and save Place object
-    newpl = Place(
-      # placeid = nextpid,
-      src_id = src_id,
-      dataset = dataset,
-      title = title,
-      ccodes = ccodes
-    )
-    newpl.save()
-    countrows += 1
-
-    # build associated objects and add to arrays
-    # PlaceName()
-    objs['PlaceName'].append(PlaceName(place_id=newpl,src_id = src_id,
-          toponym = name,
-          # TODO get citation label through name_src FK; here?
-          jsonb={"toponym": name, "citation": {"id":name_src,"label":""}}
-    ))
-
-    # variants if any
-    if len(variants) > 0:
-      for v in variants:
-        objs['PlaceName'].append(PlaceName(place_id=newpl,src_id = src_id,
-          toponym = v,
-          jsonb={"toponym": v, "citation": {"id":name_src,"label":""}}
-        ))
-
-    # PlaceTypes()
-    if len(aat_types) > 0 and aat_types[0] !='':
-      print('aat_types',aat_types)
-      for t in aat_types:
-        objs['PlaceType'].append(
-          PlaceType(place_id=newpl,src_id = src_id,
-            jsonb={"identifier":"aat:"+t, "sourceLabel":src_type,
-                          "label":aat_lookup(int(t))}
-        ))
-
-    # PlaceGeom()
-    # TODO: test geometry type or force geojson
-    #if 'lon' in header and (coords[0] != 0 and coords[1] != 0):
-    if len(coords) > 0:
-      objs['PlaceGeom'].append(PlaceGeom(place_id=newpl,src_id = src_id,
-        jsonb={"type": "Point", "coordinates": coords,
-                    "geowkt": 'POINT('+str(coords[0])+' '+str(coords[1])+')'}
-      ))
-    elif 'geowkt' in header:
-      objs['PlaceGeom'].append(PlaceGeom(place_id=newpl,src_id = src_id,
-        jsonb=parse_wkt(r[header.index('geowkt')])
-      ))
-
-    # PlaceLink() - close
-    if len(list(filter(None,close_matches))) > 0:
-      countlinked += 1
-      for m in close_matches:
-        countlinks += 1
-        objs['PlaceLink'].append(PlaceLink(place_id=newpl,src_id = src_id,
-          jsonb={"type":"closeMatch", "identifier":m}
-        ))
-
-    # PlaceLink() - exact
-    if len(list(filter(None,exact_matches))) > 0:
-      countlinked += 1
-      for m in exact_matches:
-        countlinks += 1
-        objs['PlaceLink'].append(PlaceLink(place_id=newpl,src_id = src_id,
-          jsonb={"type":"exactMatch", "identifier":m}
-        ))
-
-    # PlaceRelated()
-    if 'parent' in header and parent !='':
-      objs['PlaceRelated'].append(PlaceRelated(place_id=newpl,src_id = src_id,
-        jsonb={"relationType": "gvp:broaderPartitive",
-              "relationTo": "",
-              "label": parent}
-      ))
-
-    # PlaceWhen()
-    # timespans[{start{}, end{}}], periods[{name,id}], label, duration
-    if 'min' in header:
-      objs['PlaceWhen'].append(PlaceWhen(place_id=newpl,src_id = src_id,
-        jsonb={
-                "timespans": [{"start":{"earliest":minmax[0]}, "end":{"latest":minmax[1]}}]
-              }
-      ))
-
-    #
-    # # PlaceDescription()
-    # objs['PlaceDescription'].append(PlaceDescription())
-    #
-    # # PlaceDepiction()
-    # objs['PlaceDepiction'].append(PlaceDepiction())
-
-    # print('new place:', newpl)
-
-  # bulk_create(Class, batchsize=n) for each
-  print("objs['PlaceName']",objs['PlaceName'])
-  PlaceName.objects.bulk_create(objs['PlaceName'])
-  PlaceType.objects.bulk_create(objs['PlaceType'])
-  PlaceGeom.objects.bulk_create(objs['PlaceGeom'])
-  PlaceWhen.objects.bulk_create(objs['PlaceWhen'])
-  PlaceLink.objects.bulk_create(objs['PlaceLink'])
-  PlaceRelated.objects.bulk_create(objs['PlaceRelated'])
-
-  context['status'] = 'uploaded'
-  print('rows,linked,links:',countrows,countlinked,countlinks)
-  dataset.numrows = countrows
-  dataset.numlinked = countlinked
-  dataset.total_links = countlinks
-  dataset.header = header
-  dataset.status = 'uploaded'
-  dataset.save()
-  print('record:', dataset.__dict__)
-  print('context from ds_insert_csv():',context)
-  infile.close()
-  # dataset.file.close()
-
-  #return render(request, 'datasets/dataset_recon.html', {'ds':ds, 'context': context})
-  #return render(request, '/datasets/dashboard.html', {'context': context})
-  return redirect('/dashboard', context=context)

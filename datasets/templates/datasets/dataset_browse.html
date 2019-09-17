@@ -264,7 +264,7 @@
          return marker
        }
     }).addTo(mappy).then(spinner.stop());
-
+    
     mappy.on('zoomend', function() {
         var currentZoom = mappy.getZoom();
         var myRadius = currentZoom*(1/2); //or whatever ratio you prefer
@@ -273,7 +273,8 @@
     });
     
     if (geom['features'].length > 1 && geom['features'][0].type == 'Point') {
-      mappy.fitBounds(features.getBounds().pad(1))
+      <!--mappy.fitBounds(features.getBounds().pad(1))-->
+      mappy.fitBounds(features.getBounds())
     } else {
       feat0 = geom['features'][0]
       if (feat0.type == 'Point') {
@@ -329,7 +330,7 @@
     left+='</p><p><b>Types</b>: '
     typeids = ''
     for (t in data.types) {
-      typeids+=data.types[t].source_label?data.types[t].source_label +
+      typeids+=data.types[t].sourceLabel?data.types[t].sourceLabel +
         ' (<i>'+data.types[t].label+'/'+data.types[t].identifier +'</i>); ':
         '(<i>'+data.types[t].label+'/'+data.types[t].identifier +'</i>); '
     }

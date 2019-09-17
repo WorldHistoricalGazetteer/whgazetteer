@@ -47,8 +47,10 @@
                 </td>
                 <td>{{ d.id }}</td>
                 <td><a href="{% url 'datasets:dataset-detail' d.id %}" title="Dataset details" rel="tooltip"
-                  class="">{{ d.name }}</a></td>
-                <td>{{ d.label }}</td>
+                  >{{ d.name }}</a></td>
+                <td>{% if d.spine == True %}
+                      <span class="spinerow"> {{ d.label }} (core)</span>
+                    {% else %}{{ d.label }}{% endif %}</td>
                 <td class="small">{{ d.upload_date|date:"d-M-Y, H:i (e)" }}</td>
                 <td>{{ d.format }}</td>
                 <td><span class="float-right mr-2">{{ d.numrows }}</span></td>

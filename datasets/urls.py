@@ -15,10 +15,10 @@ urlpatterns = [
     path('<int:id>/detail', views.DatasetDetailView.as_view(), name='dataset-detail'),
 
     # insert validated delimited (csv for short) file data to db
-    path('<int:pk>/insert_csv/', views.ds_insert_csv, name="ds_insert_csv"),
+    #path('<int:pk>/insert_csv/', views.ds_insert_csv, name="ds_insert_csv"),
 
     # insert validated lpf file data to db
-    path('<int:pk>/insert_lpf/', views.ds_insert_lpf, name="ds_insert_lpf"),
+    #path('<int:pk>/insert_lpf/', views.ds_insert_lpf, name="ds_insert_lpf"),
 
     # initiate reconciliation
     path('<int:pk>/recon/', views.dataset_recon, name="dataset_recon"), # form submit

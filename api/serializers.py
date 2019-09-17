@@ -88,12 +88,12 @@ class PlaceTypeSerializer(serializers.ModelSerializer):
     # json: identifier, label, source_label, when{}
     identifier = serializers.ReadOnlyField(source='jsonb.identifier')
     label = serializers.ReadOnlyField(source='jsonb.label')
-    source_label = serializers.ReadOnlyField(source='jsonb.sourceLabel')
+    sourceLabel = serializers.ReadOnlyField(source='jsonb.sourceLabel')
     when = serializers.ReadOnlyField(source='jsonb.when')
 
     class Meta:
         model = PlaceType
-        fields = ('label', 'source_label', 'when', 'identifier')
+        fields = ('label', 'sourceLabel', 'when', 'identifier')
 
 class PlaceNameSerializer(serializers.ModelSerializer):
     # json: toponym, citation{}
