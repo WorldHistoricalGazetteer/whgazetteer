@@ -20,7 +20,7 @@
   <h4 class="my-3"> {% fontawesome_icon 'link' %} Initiate Reconciliation: <i>{{ ds.name }}
     <span class="text-muted small">(<a href="{% url 'datasets:dataset-detail' id=ds.pk %}">{{ ds.label }}</a>)</span></i></h4>
   <hr/>
-  {% if object.owner.id != user.id %}
+  {% if ds.owner.id != user.id %}
   <div><p class="pl-3 text-danger"><b>Sorry, because you are not the dataset owner, initiating reconciliation tasks for it is not possible.</b></p></div>
   {% else %}
   <div class="row"> <!-- page-wide -->

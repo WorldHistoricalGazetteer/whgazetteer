@@ -484,7 +484,7 @@ span.edit-row {
 }
 #grid_detail, #place_record p {
   font-size: small;
-  margin-bottom:.5rem;
+  margin-bottom:0;
 }
 #area_options {
   background-color: ghostwhite;
