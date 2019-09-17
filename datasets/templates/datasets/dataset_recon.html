@@ -95,7 +95,7 @@
         <hr/>
         <button type="submit" class="btn btn-primary">Start</button>
         <span title="back"><a href="javascript:history.back()">Cancel</a></span>
-        <span class="ml-3 small ">
+        <span id="q_accept" class="ml-3 small">
           <input id="accept_geom" name="geom" type="checkbox" checked="checked"/> accept geometries in matches
           {% fontawesome_icon 'question-circle' color="#993333"%} </span>
       </div>
@@ -132,6 +132,11 @@
     $('input[name=recon]').change(function(){
       var value = $( 'input[name=recon]:checked' ).val();
       if(value=='wd'){$("#geo-constraint").hide() } else {$("#geo-constraint").show()}
+      if(value=='whg'){
+        <!-- hide span and de-select box-->
+        $("#q_accept").hide() 
+        $("#accept_geom").prop('checked', false)
+      }
       console.log(value);
     });
      <!--$("#geo_constraint").show()-->

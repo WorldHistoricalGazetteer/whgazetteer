@@ -726,11 +726,11 @@ def es_lookup_whg(qobj, *args, **kwargs):
     "bool": {
       "must": [
         {"terms": {"names.toponym":qobj['variants']}}
-        ],
-      "should":[
-        {"terms": {"parents":bestParent(qobj)}}                
-        ],
-      "filter": [get_bounds_filter(bounds,'whg')] if bounds['id'] != ['0'] else []
+        ]
+      #,"should":[
+        #{"terms": {"parents":bestParent(qobj)}}                
+        #]
+      ,"filter": [get_bounds_filter(bounds,'whg')] if bounds['id'] != ['0'] else []
     }
   }}
 
