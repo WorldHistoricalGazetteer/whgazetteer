@@ -32,8 +32,6 @@
           <span class="hidden editing-description">{{ form.description }}</span>
           &nbsp;<span class="edit-description small"><a href="#">{% fontawesome_icon 'edit' color='#336699' %}</a></span>
         </p>
-        <!--<p class="form-value editing"><b>Description</b>: {{ object.description }}</p>-->
-        <!--<p class="hidden editing"><b>Description</b>: {{ form.description }}</p>-->
         <p><b>IDs</b> (label/number): <span class="text-danger">{{ object.label }}</span>/<span class="text-danger">{{ object.id }}</span>
         <p><b>File</b>: {{ object.file }}</p>
         <p><b>Date</b>: {{ object.upload_date|date:"d-M-Y, H:i (e)" }}</p>
@@ -41,9 +39,6 @@
         <p><b>Data type</b>: {{ object.datatype }}</p>
         <p><b>URI base</b>: {{ object.uri_base }}</p>
         <p><b>Format</b>: {{ object.format }} ({{ object.delimiter }})</p>
-        <!--{# if object.format == "delimited" %}-->
-          <!--<p><b>Sources file</b>:</p>-->
-        <!--{# endif %}-->
         {% if object.mapbox_id %}
           <p class="form-value"><b>MapBox ID</b>: {{ object.mapbox_id }}</p>
           <p class="hidden editing"><b>MapBox ID</b>: {{ form.mapbox_id }}</p>
@@ -60,7 +55,7 @@
       </div>
       <div id="ds_recon" class="col-sm-6 pt-2 dashedbox">
         <h5 class="text-secondary">Reconciliation Tasks 
-          <span class="small help-matches" data-id="Reconciliation">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
+          <span class="small help-matches" data-id="reconciliation">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
           {% if object.owner.id == user.id %}
           <span class="float-right"><a href="{% url 'datasets:dataset_recon' object.id %}" class="ml-5">
             {% fontawesome_icon 'plus-square' color='#336699' %}</a></span>{% endif %}
@@ -149,7 +144,6 @@
     buttons: { 'Close': function() {$(this).dialog('close');} },
     open: function(event, ui) {
       $('#helpme').load('/media/help/'+page+'.html');
-      <!--$('.selector').find("span.ui-dialog-title").append("<span class='title'>" + page + "</span>");-->
     },
     show: {effect: "fade",duration: 400 },
     hide: {effect: "fade",duration: 400 }
