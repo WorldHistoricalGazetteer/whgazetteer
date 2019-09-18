@@ -87,11 +87,11 @@ def validate_csv(infile):
   latlon_errors = []
   delim_errors = []
   for i,row in enumerate(reader):
-    
-    # lon and lat must be a pair and decimal degrees
-    empties=['' for n in [row[header.index('lat')],row[header.index('lon')]] if n=='']
-    if len(empties) ==1: # missing an x or y
-      latlon_errors.append(str(i+2))
+    if any(item in header for item in ['lon','lat']):
+      # lon and lat must be a pair and decimal degrees
+      empties=['' for n in [row[header.index('lat')],row[header.index('lon')]] if n=='']
+      if len(empties) ==1: # missing an x or y
+        latlon_errors.append(str(i+2))
       
     # multiple value fields semicolon-delimited
     multis = set(['ccodes', 'variants', 'types', 'aat_types', 'matches'])

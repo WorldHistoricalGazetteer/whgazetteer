@@ -1,4 +1,4 @@
-## Example data files (2019-07-21)
+## Example data files (2019-09-18)
 
 ### [HGIS de las Indias](https://www.hgis-indias.net/) 
 
@@ -16,7 +16,7 @@
 
 **epirus_60.tsv**: Ottoman era Greek places from Ali Pasha papers
 
-v**topostext\_07.jsonld**: ToposText (Greece)
+**topostext\_07.jsonld**: ToposText (Greece)
 
 **ne_mountains\_60.tsv**: Natural Earth mountains
 

@@ -237,6 +237,7 @@
     return link
   }
   function renderMap(geom,dslabel){
+    if (geom.features.length==0) {spinner.stop()}
     geomtype = geom['features'][0]['type']
     <!--clear out the previous if any-->
     if(typeof(features)!=='undefined'){

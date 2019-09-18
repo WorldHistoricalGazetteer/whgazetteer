@@ -49,7 +49,7 @@
                 <td><a href="{% url 'datasets:dataset-detail' d.id %}" title="Dataset details" rel="tooltip"
                   >{{ d.name }}</a></td>
                 <td>{% if d.spine == True %}
-                      <span class="spinerow"> {{ d.label }} (core)</span>
+                      {{ d.label }} <span class="spinerow"> (core)</span>
                     {% else %}{{ d.label }}{% endif %}</td>
                 <td class="small">{{ d.upload_date|date:"d-M-Y, H:i (e)" }}</td>
                 <td>{{ d.format }}</td>
