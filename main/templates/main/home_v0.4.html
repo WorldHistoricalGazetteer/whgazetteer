@@ -4,7 +4,7 @@
 {% load fontawesome %}
 {% load static %}
 
-{% block title %}<title>WHG (dev 0.4)</title>{% endblock %}
+{% block title %}<title>WHG (beta 0.2)</title>{% endblock %}
 {% block extra_head %}
   {% leaflet_js %}
   {% leaflet_css %}
@@ -19,7 +19,7 @@
 {% load static %}
 
 <div class="container">
-  <div class="justify-content-center mt-3">
+  <div class="justify-content-center mt-2">
     <div id="home_map">
       {% leaflet_map "map_home" callback="map_init" %}
     </div> <!-- map -->
