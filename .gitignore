@@ -8,6 +8,7 @@ datasets/static/_older/
 nohup.out
 dump.rdb
 
+es-*.*
 *.wp*
 
 ### Django ###
