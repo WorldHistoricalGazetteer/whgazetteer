@@ -65,6 +65,12 @@ i.fa-eye { margin-bottom: -5px;}
 /**
   home, search
 **/
+/*.navbar-brand {padding:0; }*/
+#beta_badge {
+  font-size: 1rem;
+  margin: 6px 0 0 30px;
+}
+#beta_links { margin: 6px 0 0 8px;}
 
 .btn-default:not(:disabled):not(.disabled):active:focus,
 .btn-default:focus, .btn-default.focus {

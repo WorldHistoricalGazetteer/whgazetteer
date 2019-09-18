@@ -5,15 +5,16 @@
 {% load static %}
 
 <div class="container">
-    <h3>We welcome your feedback!</h3>
+    
   <!--<div class="d-flex justify-content-center mt-3">-->
-  <div class="d-flex mt-3">
+  <div class="d-flex mt-3 ml-5">
     <div>
+    <h3 class="mb-3">We welcome your feedback!</h3>
       <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
         <div class="form-actions">
-          <button type="submit">Send</button>
+          <button class="submit-btn btn btn-primary" type="submit">Send</button>
         </div>
       </form>
     </div>

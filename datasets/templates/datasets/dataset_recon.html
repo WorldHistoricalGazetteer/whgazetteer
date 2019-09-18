@@ -97,7 +97,8 @@
         <span title="back"><a href="javascript:history.back()">Cancel</a></span>
         <span id="q_accept" class="ml-3 small">
           <input id="accept_geom" name="geom" type="checkbox" checked="checked"/> accept geometries in matches
-          {% fontawesome_icon 'question-circle' color="#993333"%} </span>
+      <span class="small help-matches" data-id="accept-geometry">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
+        </span>
       </div>
       {% endif %}
       <!--</div> <!-- row -->
@@ -126,6 +127,7 @@
   </div> <!-- row -->
   {% endif %}
   </form>
+  <div class="selector py-3"><div id="helpme"><div></div>
 </div> <!-- container -->
 <script type="text/javascript">    
   $(function(){
@@ -139,7 +141,24 @@
       }
       console.log(value);
     });
-     <!--$("#geo_constraint").show()-->
+    $(".help-matches").click(function(){
+      page=$(this).data('id')
+      $('.selector').dialog('open');
+    })
+    $(".selector").dialog({
+      resizable: false,
+      autoOpen: false,
+      height: 600,
+      width: 700,
+      title: "WHG Help",
+      modal: true,
+      buttons: { 'Close': function() {$(this).dialog('close');} },
+      open: function(event, ui) {
+        $('#helpme').load('/media/help/'+page+'.html');
+      },
+      show: {effect: "fade",duration: 400 },
+      hide: {effect: "fade",duration: 400 }
+    });
   })
 
   window.addEventListener('map:init', function (e) {
