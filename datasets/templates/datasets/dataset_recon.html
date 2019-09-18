@@ -10,6 +10,8 @@
 {% block extra_head %}
   {% leaflet_js %}
   {% leaflet_css %}
+  <script src="{% static 'js/spin.umd.js' %}"></script>
+  <link rel="stylesheet" href="{% static 'css/spin.css' %}"/>
 {% endblock %}
 {% block content %}
 <!-- incoming: ds, place_list -->
@@ -46,8 +48,7 @@
         <div class="form-check">
           <label class="form-check-label" for="auth4">
             <input type="radio" class="form-check-input" id="auth4"
-              name="recon" value="wd" >Wikidata (wd)
-              <!--<span class="ml-2 text-success d-none"> </span>-->
+              name="recon" value="wd" >Wikidata (wd)<span class="ml-2 text-danger"><i>1+ seconds per record</i></span>
           </label>
         </div>
         <div class="form-check">
@@ -97,7 +98,7 @@
         <span title="back"><a href="javascript:history.back()">Cancel</a></span>
         <span id="q_accept" class="ml-3 small">
           <input id="accept_geom" name="geom" type="checkbox" checked="checked"/> accept geometries in matches
-      <span class="small help-matches" data-id="accept-geometry">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
+      <span class="help-matches" data-id="accept-geometry">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
         </span>
       </div>
       {% endif %}
@@ -129,7 +130,12 @@
   </form>
   <div class="selector py-3"><div id="helpme"><div></div>
 </div> <!-- container -->
-<script type="text/javascript">    
+<script type="text/javascript">
+  $(".btn").click(function(){
+    window.spinner = new Spin.Spinner().spin();
+    $("#recon_form").append(spinner.el);  
+  })
+    
   $(function(){
     $('input[name=recon]').change(function(){
       var value = $( 'input[name=recon]:checked' ).val();
