@@ -26,13 +26,13 @@ parents = json.loads(fincc.read())
 fincc.close()
 
 # OUT: hits
-fout1 = codecs.open('pyout/align_wd/'+dataset+'/es-hits_'+timestamp+'.txt', 'w', 'utf8')
-fout1.write('placeid\tqname\twd_label\twd_uri\tgnid\ttgnid\tdistance\n')
+#fout1 = codecs.open('pyout/align_wd/'+dataset+'/es-hits_'+timestamp+'.txt', 'w', 'utf8')
+#fout1.write('placeid\tqname\twd_label\twd_uri\tgnid\ttgnid\tdistance\n')
 
 # misses, skipped
-fout2 = codecs.open('pyout/align_wd/'+dataset+'/es-missed_'+timestamp+'.txt', 'w', 'utf8')
-fout3 = codecs.open('pyout/align_wd/'+dataset+'/es-skipped_'+timestamp+'.txt', 'w', 'utf8')
-fout4 = codecs.open('pyout/align_wd/'+dataset+'/es-multi_'+timestamp+'.txt', 'w', 'utf8')
+#fout2 = codecs.open('pyout/align_wd/'+dataset+'/es-missed_'+timestamp+'.txt', 'w', 'utf8')
+#fout3 = codecs.open('pyout/align_wd/'+dataset+'/es-skipped_'+timestamp+'.txt', 'w', 'utf8')
+#fout4 = codecs.open('pyout/align_wd/'+dataset+'/es-multi_'+timestamp+'.txt', 'w', 'utf8')
 
 count_hits = 0
 count_multi = 0
@@ -139,10 +139,10 @@ for x in range(0,10):
         continue
     
 print(count_hits,' hits; ',count_multi, 'multi; ', count_misses, 'misses', count_skipped, 'skipped')
-fout1.close()
-fout2.close()
-fout3.close()
-fout4.close()
+#fout1.close()
+#fout2.close()
+#fout3.close()
+#fout4.close()
 
 end = time.time()
 print('elapsed time in minutes:',int((end - start)/60))

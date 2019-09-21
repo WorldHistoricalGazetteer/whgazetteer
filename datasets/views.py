@@ -70,7 +70,10 @@ def review(request, pk, tid, passnum): # dataset pk, celery recon task_id
   countries = []
   for r in records[0].ccodes:
   #for r in place.ccodes:
-    countries.append(ccodes[0][r]['gnlabel']+' ('+ccodes[0][r]['tgnlabel']+')')
+    try:
+      countries.append(ccodes[0][r]['gnlabel']+' ('+ccodes[0][r]['tgnlabel']+')')
+    except:
+      pass
 
   context = {
     'ds_id':pk, 'ds_label': ds.label, 'task_id': tid,
