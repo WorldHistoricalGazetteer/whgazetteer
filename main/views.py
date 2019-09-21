@@ -19,9 +19,10 @@ def feedbackView(request):
         if form.is_valid():
             subject = form.cleaned_data['subject']
             from_email = form.cleaned_data['from_email']
-            message = form.cleaned_data['message']
+            message = from_email+' says: \n'+form.cleaned_data['message']
             try:
-                send_mail(subject, message, from_email, ['whgazetteer@gmail.com'])
+                #send_mail(subject, message, from_email, ['whgazetteer@gmail.com'])
+                send_mail(subject, message, from_email, ['whg@pitt.edu', "karl.geog@gmail.com"])
             except BadHeaderError:
                 return HttpResponse('Invalid header found.')
             return redirect('success')

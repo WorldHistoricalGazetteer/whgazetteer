@@ -224,7 +224,6 @@ def align_wd(pk, *args, **kwargs):
   from datasets.align_utils import classy, roundy, fixName
   from shapely.geometry import shape
   
-  #endpoint = "http://dbpedia.org/sparql"
   endpoint = "https://query.wikidata.org/sparql"
   sparql = SPARQLWrapper(endpoint)
   
@@ -237,9 +236,9 @@ def align_wd(pk, *args, **kwargs):
   
   # missed, skipped
   # can't know in advance
-  fout1 = codecs.open(outdir+'/es-hits_'+str(ds.id)+'_'+timestamp+'.txt', 'w', 'utf8')
-  fout2 = codecs.open(outdir+'/es-missed_'+str(ds.id)+'_'+timestamp+'.txt', 'w', 'utf8')
-  fout3 = codecs.open(outdir+'/es-skipped_'+str(ds.id)+'_'+timestamp+'.txt', 'w', 'utf8')
+  #fout1 = codecs.open(outdir+'/es-hits_'+str(ds.id)+'_'+timestamp+'.txt', 'w', 'utf8')
+  #fout2 = codecs.open(outdir+'/es-missed_'+str(ds.id)+'_'+timestamp+'.txt', 'w', 'utf8')
+  #fout3 = codecs.open(outdir+'/es-skipped_'+str(ds.id)+'_'+timestamp+'.txt', 'w', 'utf8')
   
   def toWKT(coords):
     wkt = 'POINT('+str(coords[0])+' '+str(coords[1])+')'
@@ -250,9 +249,10 @@ def align_wd(pk, *args, **kwargs):
   [count_hit, count_nohit, total_hits, count_p1, count_p2] = [0,0,0,0,0]
   
   #for place in ds.places.filter(flag=True):
-  #for place in ds.places.all().order_by('id'):
-  for place in ds.places.all().order_by('id').filter(id__lt=224265):
-    place=get_object_or_404(Place, id=224266) # 
+  for place in ds.places.all().order_by('id'): #.filter(id__lt=224285):
+    #place=get_object_or_404(Place, id=176861) # Abancay
+    #place=get_object_or_404(Place, id=83495) # Denver
+    #place=get_object_or_404(Place, id=224258) # Qant
     count +=1
     place_id = place.id
     src_id = place.src_id
@@ -263,11 +263,14 @@ def align_wd(pk, *args, **kwargs):
     # ccodes (2-letter iso codes)
     for c in place.ccodes:
       ccodes.append(c)
-    qobj['countries'] = place.ccodes
+    qobj['countries'] = ccodes
 
     # types (Getty AAT identifiers)
     for t in place.types.all():
-      types.append(int(t.jsonb['identifier'][4:]) if t.jsonb['identifier'] !=None else '')
+      try:
+        types.append(int(t.jsonb['identifier']) if (t.jsonb['identifier'] not in ['',None]) else '')
+      except:
+        print('except on types',t.jsonb['identifier'],qobj,sys.exc_info()[0])
     qobj['placetypes'] = types
 
     # names
@@ -290,9 +293,18 @@ def align_wd(pk, *args, **kwargs):
       qobj['geom'] = hully(g_list)
 
     # wikidata sparql needs this form for lists
-    variants = ' '.join(['"'+n+'"' for n in qobj['variants']])
-    countries = ', '.join([c for c in getQ(qobj['countries'],'ccodes')])
-    types = ', '.join([c for c in getQ(qobj['placetypes'],'types')])
+    variants = ' '.join(['"'+n+'"' for n in list(set(qobj['variants']))])
+    print('variants',variants)
+    
+    try:
+      countries = ', '.join([c for c in getQ(qobj['countries'],'ccodes')]) if qobj['countries'][0] !="" else ""
+    except:
+      print('except on countries',qobj,sys.exc_info()[0])
+      
+    try:
+      types = ', '.join([c for c in getQ(qobj['placetypes'],'types')])
+    except:
+      print('except in types',qobj['placetypes'])
     
     # TODO admin parent P131, retrieve wiki article name, country P17, ??
     q='''SELECT ?place ?placeLabel ?countryLabel ?inception ?tgnid ?gnid ?viafid ?locid
@@ -366,11 +378,8 @@ def align_wd(pk, *args, **kwargs):
       sparql.setReturnFormat(JSON)
   
       # pass1 (qbase)
-      try:
-        bindings = sparql.query().convert()["results"]["bindings"]
-      except:
-        print(sys.exc_info())
-        
+      bindings = sparql.query().convert()["results"]["bindings"]
+  
       # test, output results
       if len(bindings) > 0:
         print(str(len(bindings))+' bindings for pass1: '+str(place_id),qbase)
@@ -380,7 +389,7 @@ def align_wd(pk, *args, **kwargs):
           if b['locations']['value'] != '':
             total_hits+=1 # add to total
             writeHit(b,'pass1',ds,place_id,src_id,title)
-            fout1.write(str(place_id)+'\tpass1:'+' '+str(b)+'\n')   
+            #fout1.write(str(place_id)+'\tpass1:'+' '+str(b)+'\n')   
             print('pass1 hit binding:',b)   
       elif len(bindings) == 0:
         # no hits, pass2(qbare) drops type
@@ -390,7 +399,7 @@ def align_wd(pk, *args, **kwargs):
         bindings = sparql.query().convert()["results"]["bindings"]
         if len(bindings) == 0:
           count_nohit +=1 # tried 2 passes, nothing
-          fout2.write(str(place_id)+' ('+title+'), pass2 \n')
+          #fout2.write(str(place_id)+' ('+title+'), pass2 \n')
         else:
           count_hit+=1 # got at least 1
           count_p2+=1 # it's pass2
@@ -400,20 +409,20 @@ def align_wd(pk, *args, **kwargs):
             if b['locations']['value'] != '':
               total_hits+=1 # add to total
               writeHit(b,'pass2',ds,place_id,src_id,title)
-              fout1.write(str(place_id)+'\tpass2:'+' '+str(b)+'\n')   
-              print('pass1 hit binding:',b)
+              #fout1.write(str(place_id)+'\tpass2:'+' '+str(b)+'\n')   
+              print('pass2 hit binding:',b)
     try:
       runQuery()
     except:
       count_skipped +=1
-      fout3.write(str(place_id) + '\t' + title + '\t' + str(sys.exc_info()[0]) + '\n')
+      #fout3.write(str(place_id) + '\t' + title + '\t' + str(sys.exc_info()[0]) + '\n')
       continue
   
   print(str(count)+' rows; >=1 hit:'+str(count_hit)+'; '+str(total_hits)+' in total; ', str(count_nohit) + \
         ' misses; '+str(count_skipped)+' skipped')
-  fout1.close()
-  fout2.close()
-  fout3.close()
+  #fout1.close()
+  #fout2.close()
+  #fout3.close()
   
   end = time.time()
   print('elapsed time in minutes:',int((end - start)/60))
