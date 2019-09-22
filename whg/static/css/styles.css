@@ -49,7 +49,7 @@ label {vertical-align:top;}
 .textsub {vertical-align: sub !important;}
 .smaller {font-size: small;} /* smaller than bootstrap */
 .larger {font-size: larger;}
-.notebox {background-color:#eee;box-shadow: 2px 2px #999; border:1px dashed #333; padding:6px;}
+.notebox {background-color:#eee;box-shadow: 2px 2px #eee; border:1px dashed #ccc; padding:6px;}
 .dashedbox {border:1px dashed #ccc; border-radius:8px; }
 .bottom {}
 .hover {cursor:pointer;}
