@@ -267,7 +267,10 @@ def align_wd(pk, *args, **kwargs):
 
     # types (Getty AAT identifiers)
     for t in place.types.all():
-      types.append(int(t.jsonb['identifier'][4:]) if t.jsonb['identifier'] !=None else '')
+      try:
+        types.append(int(t.jsonb['identifier'][4:]) if t.jsonb['identifier'] !=None else '')
+      except:
+        print('int error in types',t.jsonb['identifier'])
     qobj['placetypes'] = types
 
     # names
@@ -406,7 +409,7 @@ def align_wd(pk, *args, **kwargs):
       runQuery()
     except:
       count_skipped +=1
-      fout3.write(str(place_id) + '\t' + title + '\t' + str(sys.exc_info()[0]) + '\n')
+      #fout3.write(str(place_id) + '\t' + title + '\t' + str(sys.exc_info()[0]) + '\n')
       continue
   
   print(str(count)+' rows; >=1 hit:'+str(count_hit)+'; '+str(total_hits)+' in total; ', str(count_nohit) + \

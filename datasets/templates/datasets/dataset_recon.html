@@ -137,6 +137,12 @@
   })
     
   $(function(){
+    if("{{ context.response }}" == "PENDING"){
+      auth="{{ context.authority }}"
+      console.log("{{ context.response }}",auth)
+      $("input[name=recon][value="+auth).prop("checked",true)
+      <!--$( 'input[name=recon]:checked' ).val("{{ context.authority }}")-->
+    }
     $('input[name=recon]').change(function(){
       var value = $( 'input[name=recon]:checked' ).val();
       if(value=='wd'){$("#geo-constraint").hide() } else {$("#geo-constraint").show()}
