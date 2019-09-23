@@ -6,7 +6,8 @@ from datasets.models import Dataset
 from areas.models import Area
 from places.models import *
 
-class DatasetSerializer(serializers.HyperlinkedModelSerializer):
+#class DatasetSerializer(serializers.HyperlinkedModelSerializer):
+class DatasetSerializer(serializers.ModelSerializer):
     # don't list all places in a dataset API record
     # places = serializers.PrimaryKeyRelatedField(many=True, queryset=Place.objects.all())
     owner = serializers.ReadOnlyField(source='owner.username')
@@ -15,7 +16,7 @@ class DatasetSerializer(serializers.HyperlinkedModelSerializer):
         model = Dataset
         fields = ('id', 'url', 'owner', 'label', 'name', 'numrows', 'description','format',
             'datatype', 'delimiter', 'status', 'upload_date',
-            'accepted_date', 'mapbox_id','uri_base')
+            'accepted_date', 'mapbox_id','uri_base','spine')
 
 class PlaceDepictionSerializer(serializers.ModelSerializer):
     # json: @id, title, license

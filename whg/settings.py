@@ -32,7 +32,7 @@ INSTALLED_APPS = [
     'django.contrib.gis',
 
     'bootstrap_modal_forms',
-    'django_celery_beat',
+    #'django_celery_beat',
     'django_celery_results',
     'django_extensions',
     'djgeojson',

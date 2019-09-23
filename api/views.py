@@ -64,7 +64,8 @@ class PlaceViewSet(viewsets.ModelViewSet):
 
 class DatasetViewSet(viewsets.ModelViewSet):
     # print('in DatasetViewSet()')
-    queryset = Dataset.objects.all().order_by('label')
+    #queryset = Dataset.objects.all().order_by('label')
+    queryset = Dataset.objects.all().filter(spine=True).order_by('label')
     # TODO: public list only accepted datasets
     # queryset = Dataset.objects.exclude(accepted_date__isnull=True).order_by('label')
     serializer_class = DatasetSerializer
