@@ -517,7 +517,7 @@ def ds_insert_tsv(request, pk):
     # PlaceType()
     if len(types) > 0:
       for i,t in enumerate(types):
-        aatnum=aat_types[i] if len(types) == len(aat_types) else ''
+        aatnum=aat_types[i] if len(aat_types) >= len(types) else ''
         objs['PlaceType'].append(
           PlaceType(
             place_id=newpl,
