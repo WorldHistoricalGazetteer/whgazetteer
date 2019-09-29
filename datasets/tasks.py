@@ -584,8 +584,9 @@ def align_tgn(pk, *args, **kwargs):
     qobj['countries'] = place.ccodes
 
     # types (Getty AAT identifiers)
+    # tgn_shape index has 'aat:' prefix
     for t in place.types.all():
-      types.append(t.jsonb['identifier'])
+      types.append('aat:'+t.jsonb['identifier'])
     qobj['placetypes'] = types
 
     # names
