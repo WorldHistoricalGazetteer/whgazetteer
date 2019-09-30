@@ -202,7 +202,7 @@ def bestParent(qobj, flag=False):
   return best
 
 # wikidata Qs from ccodes
-# TODO: consolidate hashes
+#TODO: consolidate hashes
 def getQ(arr,what):
   qids=[]
   if what == 'ccodes':

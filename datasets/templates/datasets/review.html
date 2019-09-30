@@ -73,7 +73,7 @@
             {% endfor %}
             <p><strong>WHG place id</strong>: {{ record.id }} </p>
             <p><strong>Source id</strong>: {{ record.src_id }}</p>
-            <p><strong>Name variants</strong>:
+            <p class="scroll100"><strong>Name variants</strong>:
               {% for name in record.names.all %}
                {{ name.jsonb.toponym }};
               {% endfor %}</p>
