@@ -226,6 +226,7 @@ def align_wd(pk, *args, **kwargs):
   
   #endpoint = "http://dbpedia.org/sparql"
   endpoint = "https://query.wikidata.org/sparql"
+  #endpoint = "https://query.wikidata.org/sparqly"
   sparql = SPARQLWrapper(endpoint)
   
   start = time.time()
@@ -268,7 +269,8 @@ def align_wd(pk, *args, **kwargs):
     # types (Getty AAT identifiers)
     for t in place.types.all():
       try:
-        types.append(int(t.jsonb['identifier'][4:]) if t.jsonb['identifier'] !=None else '')
+        #types.append(int(t.jsonb['identifier'][4:]) if t.jsonb['identifier'] !=None else '')
+        types.append(int(t.jsonb['identifier']) if t.jsonb['identifier'] !=None else '')
       except:
         print('int error in types',t.jsonb['identifier'])
     qobj['placetypes'] = types
@@ -295,7 +297,8 @@ def align_wd(pk, *args, **kwargs):
     # wikidata sparql needs this form for lists
     variants = ' '.join(['"'+n+'"' for n in qobj['variants']])
     countries = ', '.join([c for c in getQ(qobj['countries'],'ccodes')])
-    types = ', '.join([c for c in getQ(qobj['placetypes'],'types')])
+    #types = ', '.join([c for c in getQ(qobj['placetypes'],'types')])
+    placetype = getQ([qobj['placetypes'][0]],'types')[0]
     
     # TODO admin parent P131, retrieve wiki article name, country P17, ??
     q='''SELECT ?place ?placeLabel ?countryLabel ?inception ?tgnid ?gnid ?viafid ?locid
@@ -311,9 +314,7 @@ def align_wd(pk, *args, **kwargs):
             bd:serviceParam mwapi:language "en" .
             ?place wikibase:apiOutputItem mwapi:item .
             ?num wikibase:apiOrdinal true .
-          }
-
-          ?place (wdt:P279|wdt:P31) ?placeType .
+          }         
   
           OPTIONAL {?place wdt:P17 ?country .}
           OPTIONAL {?place wdt:P131 ?parent .}
@@ -348,32 +349,43 @@ def align_wd(pk, *args, **kwargs):
       q+='''
         ?place wdt:P625 ?location .
       '''
-
+    qtype = q+'''
+      ?placeType (a | wdt:P279*) %s. # Sub-type of first type
+      ?place wdt:P31 ?placeType.    
+    '''%(placetype)
+    
     if countries != '':
-      q+='FILTER (?country in (%s)) .'% (countries)
+      q+='FILTER (?country in (%s)) . }'% (countries)
+      qtype+='FILTER (?country in (%s)) . }'% (countries)
+      
     # qbase is pass1: names, types, geometry, countries
-    qbase = q+'''
-      FILTER (?placeType in (%s)) . }
+    qbase = qtype+'''
       GROUP BY ?place ?placeLabel ?countryLabel ?inception ?tgnid ?gnid ?viafid ?locid
       ORDER BY ASC(?num) LIMIT 5
-    '''% (types)
-    
+    '''
+
     # qbare is pass2, omitting type filter
-    qbare = q+''' }
+    qbare = q+'''
       GROUP BY ?place ?placeLabel ?countryLabel ?inception ?tgnid ?gnid ?viafid ?locid
-      ORDER BY ASC(?num) LIMIT 5'''
+      ORDER BY ASC(?num) LIMIT 10'''
 
     def runQuery():
       global count_hit, count_nohit, total_hits, count_p1, count_p2
       sparql.setQuery(qbase)
       sparql.setReturnFormat(JSON)
       sparql.addCustomHttpHeader('User-Agent','WHGazetteer/0.2 (http://dev.whgazetteer.org; karl@kgeographer.org)')
+      #sparql.addCustomHttpHeader('Retry-After','')
   
       # pass1 (qbase)
       try:
         bindings = sparql.query().convert()["results"]["bindings"]
-      except:
-        print(sys.exc_info())
+      except ConnectionError as exc:
+      #except:
+        print('429',sys.exc_info())
+        if exc.status_code == 429:
+          self.retry(exc=exc, countdown=61)
+      #except:
+        #print(sys.exc_info())
         
       # test, output results
       if len(bindings) > 0:
@@ -392,7 +404,14 @@ def align_wd(pk, *args, **kwargs):
         sparql.setReturnFormat(JSON)
         sparql.addCustomHttpHeader('User-Agent','WHGazetteer/0.2 (http://dev.whgazetteer.org; karl@kgeographer.org)')
         # pass2 (qbare)
-        bindings = sparql.query().convert()["results"]["bindings"]
+        try:
+          bindings = sparql.query().convert()["results"]["bindings"]
+        except ConnectionError as exc:
+        #except:
+          print(sys.exc_info())
+          if exc.status_code == 429:
+            self.retry(exc=exc, countdown=61)
+        #bindings = sparql.query().convert()["results"]["bindings"]
         if len(bindings) == 0:
           count_nohit +=1 # tried 2 passes, nothing
           #fout2.write(str(place_id)+' ('+title+'), pass2 \n')

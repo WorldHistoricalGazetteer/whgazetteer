@@ -55,6 +55,7 @@ label {vertical-align:top;}
 .hover {cursor:pointer;}
 .fa-search, .fa-times {color:#999; }
 .tight-p { margin-top:0; margin-bottom:0;}
+.scroll100 {display:block; overflow:scroll; max-height:120px;}
 
 /**
   dashboard
