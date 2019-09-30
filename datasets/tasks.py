@@ -252,7 +252,7 @@ def align_wd(pk, *args, **kwargs):
   #for place in ds.places.filter(flag=True):
   #for place in ds.places.all().order_by('id'):
   for place in ds.places.all().order_by('id'): #.filter(id__lt=224265):
-    #place=get_object_or_404(Place, id=224266) # 
+    #place=get_object_or_404(Place, id=228584) # Kampala
     count +=1
     place_id = place.id
     src_id = place.src_id
@@ -367,6 +367,7 @@ def align_wd(pk, *args, **kwargs):
       global count_hit, count_nohit, total_hits, count_p1, count_p2
       sparql.setQuery(qbase)
       sparql.setReturnFormat(JSON)
+      sparql.addCustomHttpHeader('User-Agent','WHGazetteer/0.2 (http://dev.whgazetteer.org; karl@kgeographer.org)')
   
       # pass1 (qbase)
       try:
@@ -389,6 +390,7 @@ def align_wd(pk, *args, **kwargs):
         # no hits, pass2(qbare) drops type
         sparql.setQuery(qbare)
         sparql.setReturnFormat(JSON)
+        sparql.addCustomHttpHeader('User-Agent','WHGazetteer/0.2 (http://dev.whgazetteer.org; karl@kgeographer.org)')
         # pass2 (qbare)
         bindings = sparql.query().convert()["results"]["bindings"]
         if len(bindings) == 0:
