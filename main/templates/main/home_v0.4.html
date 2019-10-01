@@ -87,19 +87,21 @@
          } 
         }
     });
-    $('.typeahead').typeahead({minLength: 2,highlight:true}, {
+    $('.typeahead').typeahead({minLength:2,highlight:true}, {
         name: 'suggester',
         source: suggester,
         display: 'name',
         limit: 10,
         templates: {
-          empty: [
-            '<div class="small ml-2">','no results...','</div>'].join('\n'),
+          empty: ['<div class="small ml-2">','no results...','</div>'].join('\n'),
           suggestion: function (data) {
+            console.log(data.variants)
             doctype = $("input[name='class']:checked").val()
-            <!--console.log('doctype:',doctype)-->
             if(doctype == 'place'){
-              return data.variants.length>0 ? '<p class="tight-p">' + data.name + '<br/><i class="tight-p">' + data.variants + '<i></p>' : '<p class="tight-p">' + data.name + '</p>'
+              return data.variants.length>0 ? 
+                '<p class="tight-p">' + data.name + '<br/><i class="tight-p">' + 
+                  data.variants.slice(0,6).reverse() + '<i></p>' : 
+                '<p class="tight-p">' + data.name + '</p>'
             } else {
               <!--console.log(data)-->
               return '<p rel="'+data._id+'">'+data.title+'</p>'
@@ -464,7 +466,8 @@
   function sugLister(sug,doctype,scope) {
     <!--console.log(sug)-->
     if (doctype=='place') {
-      variants = sug['variants'].length > 0 ? '<br/><i class="text-secondary"> var: '+sug['variants']+'; </i>' : ''
+      variants = sug['variants'].length > 0 ? '<br/><i class="text-secondary"> var: '+
+        sug['variants'].slice(0,8).reverse()+'; </i>' : ''
       if (scope=='search'){
         snippet = sug['snippet'].length > 0 ? sug['snippet']+'...' : ''
         ccodes = sug['ccodes'].length > 0 ? ' ['+sug['ccodes']+']' : ''
