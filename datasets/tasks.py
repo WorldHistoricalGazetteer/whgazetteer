@@ -960,49 +960,34 @@ def align_whg(pk, *args, **kwargs):
       #print("hit['_source']: ",result_obj['hits'][0]['_source'])
       ## (can't be a child of more than one index record)
       for hit in result_obj['hits']:
-        parentid=hit['_source']['place_id']
-        # if pass1, is relation.name parent or child?
-        # if a child    
+        hit_pid=hit['_source']['place_id']
         if hit['pass'] == 'pass1':
+          # link in common; is relation.name parent or child?
+          # if hit is a child, get _id of its parent; this will be a sibling 
+          # if hit is a parent, get its _id, this will be a child
           count_p1+=1
-          ## get _id of parent
-          q_parent={"query": {"bool": {"must": [{"match":{"place_id": parentid}}]}}}
-          res = es.search(index='whg', body=q_parent)
-          parent_whgid = res['hits']['hits'][0]['_id'] #; print(parent_whgid)
+          ## get _id of hit
+          q_hit_pid={"query": {"bool": {"must": [{"match":{"place_id": hit_pid}}]}}}
+          res = es.search(index='whg', body=q_hit_pid)
+          
+          # is relation.name child or parent? get correct new parent _id
+          if res['hits']['hits'][0]['_source']['relation']['name'] == 'child':
+            parent_whgid = res['hits']['hits'][0]['_source']['relation']['parent']
+          else:
+            parent_whgid = res['hits']['hits'][0]['_id'] #; print(parent_whgid)
           
           ## gather names, make an index doc
           match_names = [p.toponym for p in place.names.all()]
           child_obj = makeDoc(place,'none')
           child_obj['relation']={"name":"child","parent":parent_whgid}
           
-          ## index it
-          #try:
-            #res = es.index(index='whg',doc_type='place',id=place.id,
-                           #routing=1,body=json.dumps(child_obj))
-            #count_kids +=1                
-            #print('added '+str(place.id) + ' as child of '+ str(parentid))
-          #except:
-            #print('failed indexing '+str(parent_whgid)+' ('+str(place.id)+')', child_obj)
-            #sys.exit(sys.exc_info())
-          #q_update = { "script": {
-              #"source": "ctx._source.suggest.input.addAll(params.names); ctx._source.children.add(params.id)",
-              #"lang": "painless",
-              #"params":{"names": match_names, "id": str(place.id)}
-            #},
-            #"query": {"match":{"_id": parent_whgid}}}
-          #try:
-            #es.update_by_query(index='whg', doc_type='place', body=q_update, conflicts='proceed')
-          #except:
-            #print('failed updating '+str(parent_whgid)+' ('+parentid+') from child '+str(place.id))
-            #print(count_kids-1)
-            #sys.exit(sys.exc_info())
-
           # all or nothing; pass if error
           try:
             res = es.index(index='whg',doc_type='place',id=place.id,
                            routing=1,body=json.dumps(child_obj))
             count_kids +=1                
-            print('added '+str(place.id) + ' as child of '+ str(parentid))
+            print('added '+str(place.id) + ' as child of '+ str(hit_pid))
+            # add variants from this record to the parent's suggest.input[] field
             q_update = { "script": {
                 "source": "ctx._source.suggest.input.addAll(params.names); ctx._source.children.add(params.id)",
                 "lang": "painless",
@@ -1085,4 +1070,26 @@ def align_whg(pk, *args, **kwargs):
   #if ds.label == 'black': errors_black.close()
   print("hit_parade['summary']",hit_parade['summary'])
   return hit_parade['summary']
+
+## index it
+#try:
+  #res = es.index(index='whg',doc_type='place',id=place.id,
+                 #routing=1,body=json.dumps(child_obj))
+  #count_kids +=1                
+  #print('added '+str(place.id) + ' as child of '+ str(hit_pid))
+#except:
+  #print('failed indexing '+str(parent_whgid)+' ('+str(place.id)+')', child_obj)
+  #sys.exit(sys.exc_info())
+#q_update = { "script": {
+    #"source": "ctx._source.suggest.input.addAll(params.names); ctx._source.children.add(params.id)",
+    #"lang": "painless",
+    #"params":{"names": match_names, "id": str(place.id)}
+  #},
+  #"query": {"match":{"_id": parent_whgid}}}
+#try:
+  #es.update_by_query(index='whg', doc_type='place', body=q_update, conflicts='proceed')
+#except:
+  #print('failed updating '+str(parent_whgid)+' ('+hit_pid+') from child '+str(place.id))
+  #print(count_kids-1)
+  #sys.exit(sys.exc_info())
 
