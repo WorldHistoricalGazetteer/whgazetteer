@@ -147,7 +147,8 @@ def normalize(h,auth):
       rec.parents = ' > '.join(h['parents']) if len(h['parents']) > 0 else []
       rec.descriptions = [h['note']] if h['note'] != None else []
       rec.geoms = [{
-        "type":h['location']['type'], 
+        #"type":h['location']['type'], 
+        "type":"Point",
         "coordinates":h['location']['coordinates'],
         "id":h['tgnid'], \
         "ds":"tgn"}] \
@@ -653,8 +654,11 @@ def align_tgn(pk, *args, **kwargs):
         elif hit['pass'] == 'pass3': 
           count_p3+=1
         hit_parade["hits"].append(hit)
-        # print('creating hit:',hit)
-        loc = hit['_source']['location'] if 'location' in hit['_source'].keys() else None
+        # correct lower case 'point' in tgn index
+        # TODO: reindex properly
+        if 'location' in hit['_source'].keys():
+          loc = hit['_source']['location'] 
+          loc['type'] = "Point"
         new = Hit(
           authority = 'tgn',
           authrecord_id = hit['_id'],

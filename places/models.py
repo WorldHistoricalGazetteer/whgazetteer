@@ -26,6 +26,10 @@ class Place(models.Model):
         # return str(self.id)
         return '%s:%d' % (self.dataset, self.id)
 
+    @property
+    def geom_count(self):
+        return self.geoms.count()
+    
     class Meta:
         managed = True
         db_table = 'places'
