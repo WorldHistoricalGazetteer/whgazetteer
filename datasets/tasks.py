@@ -716,13 +716,13 @@ def es_lookup_whg(qobj, *args, **kwargs):
      "bool": {
        "must": [
           {"terms": {"links.identifier": qobj['links'] }}
-        ],
-       "must_not": [
-          {"terms": {"links.type": ['related'] }}
-        ],
-        "should": [
-          {"terms": {"names.toponym": qobj['variants']}}
         ]
+       ,"must_not": [
+          {"terms": {"links.type": ['related'] }}
+        ]
+        #,"should": [
+          #{"terms": {"names.toponym": qobj['variants']}}
+        #]
      }
   }}
   
@@ -961,7 +961,8 @@ def align_whg(pk, *args, **kwargs):
       ## (can't be a child of more than one index record)
       for hit in result_obj['hits']:
         parentid=hit['_source']['place_id']
-        ## if pass1, index place as child of first pass1 hit          
+        # if pass1, is relation.name parent or child?
+        # if a child    
         if hit['pass'] == 'pass1':
           count_p1+=1
           ## get _id of parent
@@ -1072,6 +1073,8 @@ def align_whg(pk, *args, **kwargs):
     'count':count,
     'got_hits':count_hit,
     'total': total_hits, 
+    'seeds': count_seeds,
+    'kids': count_kids,
     'pass1': count_p1, 
     'pass2': count_p2, 
     'pass3': count_p3,

@@ -49,8 +49,8 @@
                   dataset: <a href="/datasets/{{rec.dataset.id}}/detail" rel="tooltip" title="{{rec.dataset.name}}" class="ttip">{{rec.dataset.label}}</a>
                 </span>
               </div>
-              <div class="attest-element">Variants: 
-                {% for name in rec.names %}<b>{{name.toponym}}</b> 
+              <div class="attest-element scroll60">Variants: 
+                {% for name in rec.names %}{{name.toponym}} 
                   {% if name.when %}</i>({% for t in name.when.timespans %}{{ t.start.in }}-{{ t.end.in }}
                     {% if not forloop.last %}| {% endif %}{%endfor%})
                   {% endif %}</i>
