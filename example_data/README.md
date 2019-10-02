@@ -1,4 +1,4 @@
-## Example data files (2019-09-18)
+## Example data files (2019-10-02)
 
 ### [HGIS de las Indias](https://www.hgis-indias.net/) 
 
@@ -16,9 +16,11 @@
 
 **epirus_60.tsv**: Ottoman era Greek places from Ali Pasha papers
 
+**gn50.tsv**: 50 large population cities from GeoNames
+
 **topostext\_07.jsonld**: ToposText (Greece)
 
 **ne_mountains\_60.tsv**: Natural Earth mountains
 
-**alcedo_200.tsv**: "Alcedo Gazetteer" Diccionario geográfico-histórico de las Indias Occidentales (1789). No geometry; tough to reconcile.
+**alcedo_200.tsv**: "Alcedo Gazetteer" Diccionario geográfico-histórico de las Indias Occidentales (1789). **NO GEOMETRY**; tough to reconcile.
 
