@@ -86,7 +86,6 @@ def normalize(h,auth):
     #try:
     rec = HitRecord(h['place_id'], h['dataset'], h['src_id'], h['title'])
     rec.whg_id = h['whg_id'] if 'whg_id' in h.keys() else h['relation']['parent']
-    #print('rec',rec)
     # add elements if non-empty in index record
     rec.variants = [n['toponym'] for n in h['names']] # always >=1 names
     # TODO: grungy hack b/c index has both src_label and sourceLabel
@@ -98,11 +97,6 @@ def normalize(h,auth):
                 if 'relations' in h.keys() and len(h['relations']) > 0 else []
     rec.descriptions = h['descriptions'] if len(h['descriptions']) > 0 else []
     
-    #rec.geoms = [{
-      #"type":h['geoms'][0]['location']['type'], 
-      #"coordinates":h['geoms'][0]['location']['coordinates'],
-      #}] if len(h['geoms'])>0 else []
-    
     rec.geoms = [{
       "type":h['geoms'][0]['location']['type'],
       "coordinates":h['geoms'][0]['location']['coordinates'],
@@ -111,12 +105,11 @@ def normalize(h,auth):
       if len(h['geoms'])>0 else []   
     
     rec.minmax = dict(sorted(h['minmax'].items(),reverse=True)) if len(h['minmax']) > 0 else []
+    # TODO: deal with whens
     #rec.whens = [parseWhen(t) for t in h['timespans']] \
                 #if len(h['timespans']) > 0 else []
     rec.links = [l['type']+': '+l['identifier'] for l in h['links']] \
                 if len(h['links']) > 0 else []
-    #except:
-      #print("normalize(whg) error:", h['place_id'], sys.exc_info()[0])    
   
   elif auth == 'wd':
     try:
@@ -223,7 +216,7 @@ def writeHit(b,passnum,ds,pid,srcid,title):
           b['place']['value']+'\t'
     print('wrote hit: '+hit + '\n')
 
-# TODO: 
+# 
 @task(name="align_wd")
 def align_wd(pk, *args, **kwargs):
   ds = get_object_or_404(Dataset, id=pk)
@@ -710,7 +703,7 @@ def es_lookup_whg(qobj, *args, **kwargs):
   #bounds = {'type': ['userarea'], 'id': ['0']}
   hit_count, err_count = [0,0]
 
-  # empty result object
+  # create empty result object
   result_obj = {
     'place_id': qobj['place_id'], 'title': qobj['title'], 
       'hits':[], 'missed':-1, 'total_hits':-1
@@ -874,7 +867,7 @@ def align_whg(pk, *args, **kwargs):
   # TODO: system for region creation
   hit_parade = {"summary": {}, "hits": []}
   [nohits, errors] = [[],[]] # 
-  [count, count_hit, count_nohit, total_hits, count_p1, count_p2, count_p3, count_errors, count_seeds, count_kids, count_fail] = [0,0,0,0,0,0,0,0,0,0,0]
+  [count,count_hit,count_nohit,total_hits,count_p1,count_p2,count_p3,count_errors,count_seeds,count_kids,count_fail] = [0,0,0,0,0,0,0,0,0,0,0]
 
   start = datetime.datetime.now()
 
@@ -973,7 +966,7 @@ def align_whg(pk, *args, **kwargs):
           # if hit is a child, get _id of its parent; this will be a sibling 
           # if hit is a parent, get its _id, this will be a child
           count_p1+=1
-          ## get _id of hit
+          # get _id of hit
           q_hit_pid={"query": {"bool": {"must": [{"match":{"place_id": hit_pid}}]}}}
           res = es.search(index=idx, body=q_hit_pid)
           
