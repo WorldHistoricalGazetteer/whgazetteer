@@ -19,7 +19,7 @@ from places.models import *
 from datasets.forms import DatasetModelForm, HitModelForm, DatasetDetailModelForm
 from datasets.models import Dataset, Hit
 from datasets.static.hashes.parents import ccodes
-from datasets.tasks import align_tgn, align_whg, align_wd
+from datasets.tasks import align_tgn, align_whg, align_wd, maxID
 from datasets.utils import *
 from es.es_utils import makeDoc
 
@@ -39,6 +39,28 @@ def indexMatch(pid, hit_pid=None):
   
   if hit_pid == None:
     print('making '+str(pid)+' a parent')
+    # TODO:
+    whg_id=maxID(es,idx) +1
+    place=get_object_or_404(Place,id=pid)
+    print('new whg_id',whg_id)
+    parent_obj = makeDoc(place,'none')
+    parent_obj['relation']={"name":"parent"}
+    parent_obj['whg_id']=whg_id
+    # add its own names to the suggest field
+    for n in parent_obj['names']:
+      parent_obj['suggest']['input'].append(n['toponym'])
+    # add its title
+    if place.title not in parent_obj['suggest']['input']:
+      parent_obj['suggest']['input'].append(place.title)
+    #index it
+    try:
+      res = es.index(index=idx, doc_type='place', id=str(whg_id), body=json.dumps(parent_obj))
+      #count_seeds +=1
+    except:
+      #print('failed indexing '+str(place.id), parent_obj)
+      print('failed indexing (as parent)'+str(pid))
+      pass
+    print('created parent:',pid,place.title)    
   else:
     # get _id of hit
     q_hit_pid={"query": {"bool": {"must": [{"match":{"place_id": hit_pid}}]}}}
