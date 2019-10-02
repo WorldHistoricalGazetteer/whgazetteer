@@ -1,37 +1,65 @@
-# es_utils.py 7 Feb 2019; rev 5 Mar 2019
+# es_utils.py 7 Feb 2019; rev 5 Mar 2019; 02 Oct 2019
 # misc supporting eleasticsearch tasks (es.py)
 
+def confirm(prompt=None, resp=False):
+    """prompts for yes or no response from the user. Returns True for yes and
+    False for no.
+    """
+    if prompt is None:
+        prompt = 'Confirm'
+
+    if resp:
+        prompt = '%s [%s]|%s: ' % (prompt, 'y', 'n')
+    else:
+        prompt = '%s [%s]|%s: ' % (prompt, 'n', 'y')
+        
+    while True:
+        ans = input(prompt)
+        if not ans:
+            return resp
+        if ans not in ['y', 'Y', 'n', 'N']:
+            print('please enter y or n.')
+            continue
+        if ans == 'y' or ans == 'Y':
+            return True
+        if ans == 'n' or ans == 'N':
+            return False
+        
+idx='whg02'
 def esInit(idx):
     import os, codecs, time, datetime
-    os.chdir('/Users/karlg/Documents/Repos/_whgdata')
+    os.chdir('/Users/karlg/Documents/Repos/_whgazetteer')
 
     from elasticsearch import Elasticsearch
     es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
-    mappings = codecs.open('data/elastic/mappings/mappings_whg.json', 'r', 'utf8').read()
+    mappings = codecs.open('es/mappings_whg.json', 'r', 'utf8').read()
 
     # zap existing if exists, re-create
-    try:
-        es.indices.delete(idx)
-    except Exception as ex:
-        print(ex)
-    try:
-        es.indices.create(index=idx, ignore=400, body=mappings)
-        print ('index "'+idx+'" created')
-    except Exception as ex:
-        print(ex)
-        
-def maxID(es):
-    q={"query": {"bool": {"must" : {"match_all" : {}} }},
-       "sort": [{"whg_id": {"order": "desc"}}],
-       #"sort": [{"_id": {"order": "desc"}}],
-       "size": 1  
-       }
-    res = es.search(index='whg', body=q)
-    if len(res['hits']['hits']) > 0:
-        maxy = int(res['hits']['hits'][0]['_id'])
+    if confirm(prompt='Zap index '+idx+'?', resp=False):
+        try:
+            es.indices.delete(idx)
+        except Exception as ex:
+            print(ex)
+        try:
+            es.indices.create(index=idx, ignore=400, body=mappings)
+            print ('index "'+idx+'" created')
+        except Exception as ex:
+            print(ex)
     else:
-        maxy = 10000000
-    return maxy
+        print('oh, okay')
+        
+        
+#def maxID(es,idx):
+    #q={"query": {"bool": {"must" : {"match_all" : {}} }},
+       #"sort": [{"whg_id": {"order": "desc"}}],
+       #"size": 1  
+       #}
+    #res = es.search(index=idx, body=q)
+    #if len(res['hits']['hits']) > 0:
+        #maxy = int(res['hits']['hits'][0]['_id'])
+    #else:
+        #maxy = 10000000
+    #return maxy
 
 def uriMaker(place):
     from django.shortcuts import get_object_or_404

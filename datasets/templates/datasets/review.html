@@ -355,7 +355,7 @@
       <!--return this.id.match(/[0-9]/) && this.text != '"null"';-->
       return this.id !='' && this.text != '"null"';
     });
-
+    console.log(gelems)
     for (i=0;i<gelems.length;i++){
       let t_geom = cleanJson(gelems[i].text)
       <!--console.log('t_geom',t_geom)-->
