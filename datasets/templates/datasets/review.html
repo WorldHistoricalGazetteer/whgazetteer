@@ -13,9 +13,9 @@
 {% block content %}
 <div class="container">
   <!-- incoming: ds, hit_list -->
-  <h4 class="mb-2 mt-3">Reconciliation Review: 
+  <h4 class="mb-2 mt-3">{% if authority == 'whg' %}Accessioning{%else%}Reconciliation{%endif%} Review: 
     <span class="small"> <a href="{% url 'datasets:dataset-detail' id=ds_id %}"> 
-      {{ ds_label }}</a> > {{ authority }}
+      {{ ds_label }}</a> {%if authority != 'whg' %}> {{ authority }}{%endif%}
       <select id="select_pass" name="pass" class="custom-select-sm mr-2" style="width:auto;">
         <option value="pass1">PASS 1&nbsp;</option>
         <option value="pass2">PASS 2&nbsp;</option>
@@ -26,7 +26,8 @@
     </span>
     <span class="half float-right">
       task id: {{ task_id }}
-    </span></h4>
+    </span>
+  </h4>
   {% if nohits %}
   <div><p>No unreviewed <span id="passnum_dynamic">boo</span> hits for this reconciliation task!</p></div>
   {% else %}
@@ -145,7 +146,7 @@
                 <!--{ form.json.value }}-->
                 <p><strong>Title/Preferred</strong>: <span class="text-danger h6">{{ form.json.value|get:"title" }}</p>
                 {% if authority == 'whg' %}
-                  <p><strong>WHG record id</strong>: {{ form.json.value|get:"place_id" }}</p> 
+                  <p><strong>WHG place id</strong>: {{ form.json.value|get:"place_id" }}</p> 
                   <p><strong>Source (id)</strong>: {{ form.json.value|get:"dataset" }} ({{ form.json.value|get:"src_id" }})</p>
                 {% else %}
                   <p><strong>{{ authority|upper }} ID</strong>: {{ form.authrecord_id.value }}</p>                

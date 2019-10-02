@@ -21,15 +21,59 @@ from datasets.models import Dataset, Hit
 from datasets.static.hashes.parents import ccodes
 from datasets.tasks import align_tgn, align_whg, align_wd
 from datasets.utils import *
+from es.es_utils import makeDoc
 
 def link_uri(auth,id):
   baseuri = AUTHORITY_BASEURI[auth]
   uri = baseuri + str(id)
   return uri
 
-# *
-# present reconciliation hits for review
-# write place_link & place_geom (if aug_geom == 'on') records if matched
+
+# present reconciliation (and accessioning!) hits for review
+# for reconciliation: write place_link & place_geom (if aug_geom == 'on') records if matched
+# for accessioning: if close or exact -> if match is parent -> make child else if match is child -> make sibling
+def indexMatch(pid,hit_pid):
+  from elasticsearch import Elasticsearch
+  es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+  idx='whg02'
+  # get _id of hit
+  q_hit_pid={"query": {"bool": {"must": [{"match":{"place_id": hit_pid}}]}}}
+  res = es.search(index=idx, body=q_hit_pid)
+  
+  # if hit is a child, get _id of its parent; this will be a sibling 
+  # if hit is a parent, get its _id, this will be a child
+  if res['hits']['hits'][0]['_source']['relation']['name'] == 'child':
+    parent_whgid = res['hits']['hits'][0]['_source']['relation']['parent']
+  else:
+    parent_whgid = res['hits']['hits'][0]['_id'] #; print(parent_whgid)
+  
+  # get db record of place, mine its names, make an index doc
+  place=get_object_or_404(Place,id=pid)
+  match_names = [p.toponym for p in place.names.all()]
+  child_obj = makeDoc(place,'none')
+  child_obj['relation']={"name":"child","parent":parent_whgid}
+  
+  # all or nothing; pass if error
+  try:
+    res = es.index(index=idx,doc_type='place',id=place.id,
+                   routing=1,body=json.dumps(child_obj))
+    #count_kids +=1                
+    print('added '+str(place.id) + ' as child of '+ str(hit_pid))
+    # add variants from this record to the parent's suggest.input[] field
+    q_update = { "script": {
+        "source": "ctx._source.suggest.input.addAll(params.names); ctx._source.children.add(params.id)",
+        "lang": "painless",
+        "params":{"names": match_names, "id": str(place.id)}
+      },
+      "query": {"match":{"_id": parent_whgid}}}
+    es.update_by_query(index=idx, doc_type='place', body=q_update, conflicts='proceed')
+    print('indexed '+str(pid)+' as child of '+str(parent_whgid), child_obj)
+  except:
+    print('failed indexing '+str(pid)+' as child of '+str(parent_whgid), child_obj)
+    #count_fail += 1
+    pass
+    #sys.exit(sys.exc_info())
+  
 def review(request, pk, tid, passnum): # dataset pk, celery recon task_id
   print('review() request', request)
   ds = get_object_or_404(Dataset, id=pk)
@@ -53,7 +97,6 @@ def review(request, pk, tid, passnum): # dataset pk, celery recon task_id
     return render(request, 'datasets/review.html', context=context)
     # no unreviewed hits
 
-  # record_list = Place.objects.order_by('title').filter(dataset=ds)
   paginator = Paginator(record_list, 1)
   page = 1 if not request.GET.get('page') else request.GET.get('page')
   records = paginator.get_page(page)
@@ -103,61 +146,68 @@ def review(request, pk, tid, passnum): # dataset pk, celery recon task_id
         for x in range(len(hits)):
           hit = hits[x]['id']
           if hits[x]['match'] != 'none':
-            print('hit:',hits[x])
-            # if 'accept geometries' was checked in 'Initiate Reconciliation'
-            if kwargs['aug_geom'] == 'on':
-              geom = PlaceGeom.objects.create(
-                place_id = place,
-                task_id = tid,
-                src_id = place.src_id,
-                # {"type": "Point", "geowkt": "POINT(20.58 -19.83)", "citation": {"id": "dplace:SCCS", "label": "Standard cross-cultural sample"}, "coordinates": [20.58, -19.83]}
-                jsonb = {
-                  "type":hits[x]['json']['geoms'][0]['type'],
-                  "citation":{"id":"wd:"+hits[x]['authrecord_id'],"label":"Wikidata"},
-                  "coordinates":hits[x]['json']['geoms'][0]['coordinates']
-                }
-              )
-            ds.save()
-            # 'json': {'geoms': [{'ds': 'wd', 'id': 'Q6655437', 'type': 'Point', 'coordinates': [31.625555555, 22.336944444]}
-            # 'src_id': 'Q134140', 'dataset': 'wd'
-            # create link for matched record
-            link = PlaceLink.objects.create(
-              place_id = place,
-              task_id = tid,
-              src_id = place.src_id,
-              # dataset = ds,
-              jsonb = {
-                "type":hits[x]['match'],
-                "identifier":link_uri(task.task_name,hits[x]['authrecord_id'] if hits[x]['authority'] != 'whg' \
-                    else hits[x]['json']['place_id'])
-              }
-            )
-            # update <ds>.numlinked, <ds>.total_links
-            ds.numlinked = ds.numlinked +1
-            ds.total_links = ds.total_links +1
-            ds.save()
-
-            # add wikidata concordances
-            # TODO: check not duplicate
-            for l in hits[x]['json']['links']:
+            if task.task_name != 'align_whg':
+              # creating augmenting records
+              print('hit:',hits[x])
+              # if 'accept geometries' was checked in 'Initiate Reconciliation'
+              if kwargs['aug_geom'] == 'on':
+                geom = PlaceGeom.objects.create(
+                  place_id = place,
+                  task_id = tid,
+                  src_id = place.src_id,
+                  # {"type": "Point", "geowkt": "POINT(20.58 -19.83)", "citation": {"id": "dplace:SCCS", "label": "Standard cross-cultural sample"}, "coordinates": [20.58, -19.83]}
+                  jsonb = {
+                    "type":hits[x]['json']['geoms'][0]['type'],
+                    "citation":{"id":"wd:"+hits[x]['authrecord_id'],"label":"Wikidata"},
+                    "coordinates":hits[x]['json']['geoms'][0]['coordinates']
+                  }
+                )
+              ds.save()
+              # 'json': {'geoms': [{'ds': 'wd', 'id': 'Q6655437', 'type': 'Point', 'coordinates': [31.625555555, 22.336944444]}
+              # 'src_id': 'Q134140', 'dataset': 'wd'
+              # create link for matched record
               link = PlaceLink.objects.create(
                 place_id = place,
                 task_id = tid,
                 src_id = place.src_id,
+                # dataset = ds,
                 jsonb = {
-                  "type": re.search("^(.*?):", l).group(1),
-                  "identifier": re.search("\: (.*?)$", l).group(1)
+                  "type":hits[x]['match'],
+                  "identifier":link_uri(task.task_name,hits[x]['authrecord_id'] if hits[x]['authority'] != 'whg' \
+                      else hits[x]['json']['place_id'])
                 }
               )
-              # update totals
+              # update <ds>.numlinked, <ds>.total_links
               ds.numlinked = ds.numlinked +1
               ds.total_links = ds.total_links +1
               ds.save()
-            # set task result
-
-          elif hits[x]['match'] == 'none':
+  
+              # add wikidata concordances
+              # TODO: check not duplicate
+              for l in hits[x]['json']['links']:
+                link = PlaceLink.objects.create(
+                  place_id = place,
+                  task_id = tid,
+                  src_id = place.src_id,
+                  jsonb = {
+                    "type": re.search("^(.*?):", l).group(1),
+                    "identifier": re.search("\: (.*?)$", l).group(1)
+                  }
+                )
+                # update totals
+                ds.numlinked = ds.numlinked +1
+                ds.total_links = ds.total_links +1
+                ds.save()
+              # set task result
+            elif task.task_name == 'align_whg':
+              # 
+              print('see if match for '+str(placeid)+' ('+str(hits[x]['json']['place_id'])+
+                    ') is parent or child in index')
+              indexMatch(placeid, hits[x]['json']['place_id'])
+              
+          elif hits[x]['match'] == 'none' and task.task_name == 'align_whg':
             # make it a new parent unless it's been flagged
-            print('index '+str(placeid)+' as a new parent')
+            print('need to index '+str(placeid)+' as a new parent')
             #if 'form-0-flag' in formset.data.keys():
               #print('flag is on, write to a file')
 
