@@ -32,47 +32,51 @@ def link_uri(auth,id):
 # present reconciliation (and accessioning!) hits for review
 # for reconciliation: write place_link & place_geom (if aug_geom == 'on') records if matched
 # for accessioning: if close or exact -> if match is parent -> make child else if match is child -> make sibling
-def indexMatch(pid,hit_pid):
+def indexMatch(pid, hit_pid=None):
   from elasticsearch import Elasticsearch
   es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
   idx='whg02'
-  # get _id of hit
-  q_hit_pid={"query": {"bool": {"must": [{"match":{"place_id": hit_pid}}]}}}
-  res = es.search(index=idx, body=q_hit_pid)
   
-  # if hit is a child, get _id of its parent; this will be a sibling 
-  # if hit is a parent, get its _id, this will be a child
-  if res['hits']['hits'][0]['_source']['relation']['name'] == 'child':
-    parent_whgid = res['hits']['hits'][0]['_source']['relation']['parent']
+  if hit_pid == None:
+    print('making '+str(pid)+' a parent')
   else:
-    parent_whgid = res['hits']['hits'][0]['_id'] #; print(parent_whgid)
-  
-  # get db record of place, mine its names, make an index doc
-  place=get_object_or_404(Place,id=pid)
-  match_names = [p.toponym for p in place.names.all()]
-  child_obj = makeDoc(place,'none')
-  child_obj['relation']={"name":"child","parent":parent_whgid}
-  
-  # all or nothing; pass if error
-  try:
-    res = es.index(index=idx,doc_type='place',id=place.id,
-                   routing=1,body=json.dumps(child_obj))
-    #count_kids +=1                
-    print('added '+str(place.id) + ' as child of '+ str(hit_pid))
-    # add variants from this record to the parent's suggest.input[] field
-    q_update = { "script": {
-        "source": "ctx._source.suggest.input.addAll(params.names); ctx._source.children.add(params.id)",
-        "lang": "painless",
-        "params":{"names": match_names, "id": str(place.id)}
-      },
-      "query": {"match":{"_id": parent_whgid}}}
-    es.update_by_query(index=idx, doc_type='place', body=q_update, conflicts='proceed')
-    print('indexed '+str(pid)+' as child of '+str(parent_whgid), child_obj)
-  except:
-    print('failed indexing '+str(pid)+' as child of '+str(parent_whgid), child_obj)
-    #count_fail += 1
-    pass
-    #sys.exit(sys.exc_info())
+    # get _id of hit
+    q_hit_pid={"query": {"bool": {"must": [{"match":{"place_id": hit_pid}}]}}}
+    res = es.search(index=idx, body=q_hit_pid)
+    
+    # if hit is a child, get _id of its parent; this will be a sibling 
+    # if hit is a parent, get its _id, this will be a child
+    if res['hits']['hits'][0]['_source']['relation']['name'] == 'child':
+      parent_whgid = res['hits']['hits'][0]['_source']['relation']['parent']
+    else:
+      parent_whgid = res['hits']['hits'][0]['_id'] #; print(parent_whgid)
+    
+    # get db record of place, mine its names, make an index doc
+    place=get_object_or_404(Place,id=pid)
+    match_names = [p.toponym for p in place.names.all()]
+    child_obj = makeDoc(place,'none')
+    child_obj['relation']={"name":"child","parent":parent_whgid}
+    
+    # all or nothing; pass if error
+    try:
+      res = es.index(index=idx,doc_type='place',id=place.id,
+                     routing=1,body=json.dumps(child_obj))
+      #count_kids +=1                
+      print('added '+str(place.id) + ' as child of '+ str(hit_pid))
+      # add variants from this record to the parent's suggest.input[] field
+      q_update = { "script": {
+          "source": "ctx._source.suggest.input.addAll(params.names); ctx._source.children.add(params.id)",
+          "lang": "painless",
+          "params":{"names": match_names, "id": str(place.id)}
+        },
+        "query": {"match":{"_id": parent_whgid}}}
+      es.update_by_query(index=idx, doc_type='place', body=q_update, conflicts='proceed')
+      print('indexed '+str(pid)+' as child of '+str(parent_whgid), child_obj)
+    except:
+      print('failed indexing '+str(pid)+' as child of '+str(parent_whgid), child_obj)
+      #count_fail += 1
+      pass
+      #sys.exit(sys.exc_info())
   
 def review(request, pk, tid, passnum): # dataset pk, celery recon task_id
   print('review() request', request)
@@ -134,7 +138,7 @@ def review(request, pk, tid, passnum): # dataset pk, celery recon task_id
   formset = HitFormset(request.POST or None, queryset=raw_hits)
   context['formset'] = formset
   #print('context:',context)
-  print('formset data:',formset.data)
+  #print('formset data:',formset.data)
   method = request.method
   if method == 'GET':
     print('a GET, just rendering next')
@@ -143,9 +147,12 @@ def review(request, pk, tid, passnum): # dataset pk, celery recon task_id
       if formset.is_valid():
         # get the task
         hits = formset.cleaned_data
+        matches = 0
         for x in range(len(hits)):
           hit = hits[x]['id']
-          if hits[x]['match'] != 'none':
+          #print('hits[x][match]',hits[x]['match'])
+          if hits[x]['match'] not in ['none','related']:
+            matches += 1
             if task.task_name != 'align_whg':
               # creating augmenting records
               print('hit:',hits[x])
@@ -205,18 +212,16 @@ def review(request, pk, tid, passnum): # dataset pk, celery recon task_id
                     ') is parent or child in index')
               indexMatch(placeid, hits[x]['json']['place_id'])
               
-          elif hits[x]['match'] == 'none' and task.task_name == 'align_whg':
-            # make it a new parent unless it's been flagged
-            print('need to index '+str(placeid)+' as a new parent')
-            #if 'form-0-flag' in formset.data.keys():
-              #print('flag is on, write to a file')
-
           # TODO:
           # set reviewed=True
           matchee = get_object_or_404(Hit, id=hit.id)
           matchee.reviewed = True
           matchee.save()
           #
+        if matches == 0:
+          # none are matches, make this place a parent
+          indexMatch(placeid)
+          
         return redirect('/datasets/'+str(pk)+'/review/'+tid+'/'+passnum+'?page='+str(int(page)))
       # return redirect('/datasets/'+str(pk)+'/review/'+tid+'?page='+str(int(page)+1))
       else:
