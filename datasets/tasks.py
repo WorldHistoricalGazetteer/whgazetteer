@@ -10,9 +10,9 @@ import sys, os, re, json, codecs, datetime, time, csv, random
 from copy import deepcopy
 from pprint import pprint
 from areas.models import Area
-from datasets.es_utils import makeDoc, esInit
+from es.es_utils import makeDoc
 from datasets.models import Dataset, Hit
-from datasets.regions import regions as region_hash
+from datasets.static.regions import regions as region_hash
 from datasets.static.hashes.parents import ccodes
 from datasets.utils import *
 from places.models import Place
@@ -53,13 +53,13 @@ def parseWhen(when):
   print('when to parse',when)
   timespan = 'parse me now'
   return timespan
-def maxID(es):
+def maxID(es,idx):
   q={"query": {"bool": {"must" : {"match_all" : {}} }},
        "sort": [{"whg_id": {"order": "desc"}}],
        "size": 1  
        }
   try:
-    res = es.search(index='whg', body=q)
+    res = es.search(index=idx, body=q)
     #maxy = int(res['hits']['hits'][0]['_id'])
     maxy = int(res['hits']['hits'][0]['_source']['whg_id'])
   except:
@@ -97,10 +97,19 @@ def normalize(h,auth):
     rec.parents = ['partOf: '+r.label+' ('+parseWhen(r['when']['timespans'])+')' for r in h['relations']] \
                 if 'relations' in h.keys() and len(h['relations']) > 0 else []
     rec.descriptions = h['descriptions'] if len(h['descriptions']) > 0 else []
+    
+    #rec.geoms = [{
+      #"type":h['geoms'][0]['location']['type'], 
+      #"coordinates":h['geoms'][0]['location']['coordinates'],
+      #}] if len(h['geoms'])>0 else []
+    
     rec.geoms = [{
-      "type":h['geoms'][0]['location']['type'], 
+      "type":h['geoms'][0]['location']['type'],
       "coordinates":h['geoms'][0]['location']['coordinates'],
-      }] if len(h['geoms'])>0 else []
+      "id":h['place_id'], \
+      "ds":"whg"}] \
+      if len(h['geoms'])>0 else []   
+    
     rec.minmax = dict(sorted(h['minmax'].items(),reverse=True)) if len(h['minmax']) > 0 else []
     #rec.whens = [parseWhen(t) for t in h['timespans']] \
                 #if len(h['timespans']) > 0 else []
@@ -214,7 +223,7 @@ def writeHit(b,passnum,ds,pid,srcid,title):
           b['place']['value']+'\t'
     print('wrote hit: '+hit + '\n')
 
-# TODO: uncomment after tested
+# TODO: 
 @task(name="align_wd")
 def align_wd(pk, *args, **kwargs):
   ds = get_object_or_404(Dataset, id=pk)
@@ -227,7 +236,6 @@ def align_wd(pk, *args, **kwargs):
   
   #endpoint = "http://dbpedia.org/sparql"
   endpoint = "https://query.wikidata.org/sparql"
-  #endpoint = "https://query.wikidata.org/sparqly"
   sparql = SPARQLWrapper(endpoint)
   
   start = time.time()
@@ -252,7 +260,6 @@ def align_wd(pk, *args, **kwargs):
   [count_hit, count_nohit, total_hits, count_p1, count_p2] = [0,0,0,0,0]
   
   #for place in ds.places.filter(flag=True):
-  #for place in ds.places.all().order_by('id'):
   for place in ds.places.all().order_by('id'): #.filter(id__lt=224265):
     #place=get_object_or_404(Place, id=228584) # Kampala
     count +=1
@@ -270,7 +277,6 @@ def align_wd(pk, *args, **kwargs):
     # types (Getty AAT identifiers)
     for t in place.types.all():
       try:
-        #types.append(int(t.jsonb['identifier'][4:]) if t.jsonb['identifier'] !=None else '')
         types.append(int(t.jsonb['identifier']) if t.jsonb['identifier'] !=None else '')
       except:
         print('int error in types',t.jsonb['identifier'])
@@ -298,7 +304,6 @@ def align_wd(pk, *args, **kwargs):
     # wikidata sparql needs this form for lists
     variants = ' '.join(['"'+n+'"' for n in qobj['variants']])
     countries = ', '.join([c for c in getQ(qobj['countries'],'ccodes')])
-    #types = ', '.join([c for c in getQ(qobj['placetypes'],'types')])
     placetype = getQ([qobj['placetypes'][0]],'types')[0]
     
     # TODO admin parent P131, retrieve wiki article name, country P17, ??
@@ -457,7 +462,7 @@ def align_wd(pk, *args, **kwargs):
   return hit_parade['summary']
   
   
-# queries > result_obj
+# queries -> result_obj
 # TODO: count 'got hit' per pass not hit per pass
 def es_lookup_tgn(qobj, *args, **kwargs):
   #print('qobj',qobj)
@@ -697,7 +702,7 @@ def align_tgn(pk, *args, **kwargs):
 # 
 def es_lookup_whg(qobj, *args, **kwargs):
   global whg_id
-  idx='whg'
+  idx = kwargs['index']
   bounds = kwargs['bounds']
   ds = kwargs['dataset'] 
   place = kwargs['place']
@@ -711,7 +716,7 @@ def es_lookup_whg(qobj, *args, **kwargs):
       'hits':[], 'missed':-1, 'total_hits':-1
   }  
 
-  # initial for pass1
+  # initial for pass1: common link?
   qlinks = {"query": { 
      "bool": {
        "must": [
@@ -857,8 +862,10 @@ def es_lookup_whg(qobj, *args, **kwargs):
 @task(name="align_whg")
 def align_whg(pk, *args, **kwargs):
   ds = get_object_or_404(Dataset, id=pk)
+  # set index
+  idx='whg02' # 'whg'
   # get last identifier (used for whg_id & _id)
-  whg_id=maxID(es)
+  whg_id=maxID(es,idx)
     
   #dummies for testing
   #bounds = {'type': ['userarea'], 'id': ['0']}
@@ -867,7 +874,7 @@ def align_whg(pk, *args, **kwargs):
   # TODO: system for region creation
   hit_parade = {"summary": {}, "hits": []}
   [nohits, errors] = [[],[]] # 
-  [count, count_hit, count_nohit, total_hits, count_p1, count_p2, count_p3, count_errors, count_seeds, count_fail] = [0,0,0,0,0,0,0,0,0,0]
+  [count, count_hit, count_nohit, total_hits, count_p1, count_p2, count_p3, count_errors, count_seeds, count_kids, count_fail] = [0,0,0,0,0,0,0,0,0,0,0]
 
   start = datetime.datetime.now()
 
@@ -924,7 +931,7 @@ def align_whg(pk, *args, **kwargs):
 
     #
     ## run 3 ES query passes
-    result_obj = es_lookup_whg(qobj, bounds=bounds, dataset=ds.label, place=place)
+    result_obj = es_lookup_whg(qobj, index=idx, bounds=bounds, dataset=ds.label, place=place)
 
     if result_obj['hit_count'] == 0:
       count_nohit +=1
@@ -943,7 +950,7 @@ def align_whg(pk, *args, **kwargs):
         parent_obj['suggest']['input'].append(place.title)
       #index it
       try:
-        res = es.index(index='whg', doc_type='place', id=str(whg_id), body=json.dumps(parent_obj))
+        res = es.index(index=idx, doc_type='place', id=str(whg_id), body=json.dumps(parent_obj))
         count_seeds +=1
       except:
         #print('failed indexing '+str(place.id), parent_obj)
@@ -968,7 +975,7 @@ def align_whg(pk, *args, **kwargs):
           count_p1+=1
           ## get _id of hit
           q_hit_pid={"query": {"bool": {"must": [{"match":{"place_id": hit_pid}}]}}}
-          res = es.search(index='whg', body=q_hit_pid)
+          res = es.search(index=idx, body=q_hit_pid)
           
           # is relation.name child or parent? get correct new parent _id
           if res['hits']['hits'][0]['_source']['relation']['name'] == 'child':
@@ -983,7 +990,7 @@ def align_whg(pk, *args, **kwargs):
           
           # all or nothing; pass if error
           try:
-            res = es.index(index='whg',doc_type='place',id=place.id,
+            res = es.index(index=idx,doc_type='place',id=place.id,
                            routing=1,body=json.dumps(child_obj))
             count_kids +=1                
             print('added '+str(place.id) + ' as child of '+ str(hit_pid))
@@ -994,7 +1001,7 @@ def align_whg(pk, *args, **kwargs):
                 "params":{"names": match_names, "id": str(place.id)}
               },
               "query": {"match":{"_id": parent_whgid}}}
-            es.update_by_query(index='whg', doc_type='place', body=q_update, conflicts='proceed')
+            es.update_by_query(index=idx, doc_type='place', body=q_update, conflicts='proceed')
           except:
             print('failed indexing (as child)'+str(parent_whgid)+' ('+str(place.id)+')', child_obj)
             count_fail += 1
