@@ -81,7 +81,8 @@
           prepare: function (query, settings) {
            var doctype = $("input[name='class']:checked").val();
            settings.url = '/search/search?doc_type='+doctype+'&scope=suggest&'+$.param({
-                qstr: query
+                qstr: query,
+                idx: 'whg02'
             });
            return settings;
          } 
@@ -282,7 +283,8 @@
     $.get("/search/search",{
         qstr: $(".tt-input")[0].value, 
         doc_type: doctype,
-        scope: scope
+        scope: scope,
+        idx: 'whg02'
       }, function(data){
         // render to html
         showResults(data,doctype,scope);
