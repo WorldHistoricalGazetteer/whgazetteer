@@ -502,8 +502,11 @@ def ds_insert_tsv(request, pk):
   infile = dataset.file.open(mode="r")
   print('ds_insert_csv(); request.GET; infile',request.GET,infile)
   # should already know delimiter
-  dialect = csv.Sniffer().sniff(infile.read(16000),['\t',';','|'])
-  reader = csv.reader(infile, dialect)
+  try:
+    dialect = csv.Sniffer().sniff(infile.read(16000),['\t',';','|'])
+    reader = csv.reader(infile, dialect)
+  except:
+    reader = csv.reader(infile, delimiter='\t')
   infile.seek(0)
   header = next(reader, None)
   print('header', header)
@@ -615,7 +618,7 @@ def ds_insert_tsv(request, pk):
           jsonb={"type": "Point", "coordinates": coords,
                       "geowkt": 'POINT('+str(coords[0])+' '+str(coords[1])+')'}
       ))
-    elif 'geowkt' in header:
+    elif 'geowkt' in header and r[header.index('geowkt')] not in ['',None]: # some rows no geom
       objs['PlaceGeom'].append(
         PlaceGeom(
           place_id=newpl,
@@ -775,7 +778,7 @@ class DatasetCreateView(CreateView):
     fin = codecs.open(tempfn, 'r', 'utf8')
     # send for format validation
     if format == 'delimited':
-      result = validate_csv(fin)
+      result = validate_tsv(fin)
     elif format == 'lpf':
       # coll = FeatureCollection
       # TODO: alternate json-lines
