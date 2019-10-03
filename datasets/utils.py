@@ -41,9 +41,9 @@ def validate_lpf(infile,format):
   result['count'] = countrows
   return result
 
-def validate_csv(infile):
-  #infile=codecs.open('example_data/alcedo_200errors.tsv','r','utf-8')
-  #infile=codecs.open('example_data/epirus_60errors.tsv','r','utf-8')
+def validate_tsv(infile):
+  infile=codecs.open('example_data/alcedo_200.tsv','r','utf-8')
+  #infile=codecs.open('example_data/ne_countries.tsv','r','utf-8')
   # some WKT is big
   csv.field_size_limit(100000000)
   result = {'format':'delimited','errors':[]}
@@ -58,11 +58,12 @@ def validate_csv(infile):
   try:
     dialect = csv.Sniffer().sniff(infile.read(16000),['\t','|'])
     result['delimiter'] = 'tab' if dialect.delimiter == '\t' else dialect.delimiter
+    reader = csv.reader(infile, dialect)
   except:
     result['errors'] = "delimiter"
+    reader = csv.reader(infile, delimiter='\t')
     print("can't tell delimiter")
 
-  reader = csv.reader(infile, dialect)
   infile.seek(0)
   result['count'] = sum(1 for row in reader)
 
@@ -112,9 +113,9 @@ def validate_csv(infile):
       result['errors'].append( {"delim":"Invalid delimiter for field "+field[1]+' in row '+str(field[0]+2)} )
   
   if len(result['errors']) == 0:
-    print('validate_csv(): no errors')
+    print('validate_tsv(): no errors')
   else:
-    print('validate_csv() got errors')
+    print('validate_tsv() got errors')
   return result
 
 class HitRecord(object):
@@ -163,10 +164,11 @@ def hully(g_list):
   return json.loads(hull.geojson)
 
 def parse_wkt(g):
+  print('wkt',g)
   from shapely.geometry import mapping
   gw = wkt.loads(g)
   feature = mapping(gw)
-  print('wkt, feature',g, feature)
+  #print('wkt, feature',g, feature)
   return feature
 
 def myteam(me):
