@@ -94,7 +94,7 @@ def suggester(doctype,q,scope,idx):
   suggestions = []
   
   if doctype=='place':
-    print('suggester/place q:',q)
+    #print('suggester/place q:',q)
     res = es.search(index=idx, doc_type='place', body=q)
     if scope == 'suggest':
       sugs = res['suggest']['suggest'][0]['options']
@@ -168,24 +168,24 @@ class SearchView(View):
   
 """ Returns place or trace suggestions """
 # abandoned??
-class SuggestView(View):
-  @staticmethod
-  def get(request):
-    print('in SuggestView',request.GET)
-    """
-      args in request.GET:
-          [string] qstr: chars to be queried for the suggest field search
-          [string] doc_type: context needed to filter suggestion searches
-    """
-    qstr = request.GET.get('qstr')
-    doctype = request.GET.get('doc_type')
-    if doctype == 'place':
-      q = { "suggest":{"suggest":{"prefix":qstr,"completion":{"field":"suggest"}}} }  
-    elif doctype == 'trace': 
-      q = { "query": {"match": {"target.title": {"query": qstr,"operator": "and"}}} }
-    suggestions = suggester(doctype, q, "suggest" )
-    suggestions = [ suggestionItem(s,doctype) for s in suggestions]
-    return JsonResponse(suggestions, safe=False)
+#class SuggestView(View):
+  #@staticmethod
+  #def get(request):
+    #print('in SuggestView',request.GET)
+    #"""
+      #args in request.GET:
+          #[string] qstr: chars to be queried for the suggest field search
+          #[string] doc_type: context needed to filter suggestion searches
+    #"""
+    #qstr = request.GET.get('qstr')
+    #doctype = request.GET.get('doc_type')
+    #if doctype == 'place':
+      #q = { "suggest":{"suggest":{"prefix":qstr,"completion":{"field":"suggest"}}} }  
+    #elif doctype == 'trace': 
+      #q = { "query": {"match": {"target.title": {"query": qstr,"operator": "and"}}} }
+    #suggestions = suggester(doctype, q, "suggest" )
+    #suggestions = [ suggestionItem(s,doctype) for s in suggestions]
+    #return JsonResponse(suggestions, safe=False)
   
 ## ***
 ##    get features in current map viewport
