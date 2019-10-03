@@ -36,7 +36,7 @@
                 <td>
                   {% if d.status == "format_ok" %}
                   <a href=
-                  {% if d.format == "delimited" %}"{% url 'datasets:ds_insert_csv' d.id %}"
+                  {% if d.format == "delimited" %}"{% url 'datasets:ds_insert_tsv' d.id %}"
                   {% elif "lpf" in d.format %}"{% url 'datasets:ds_insert_lpf' d.id %}"{% endif %}
                    title="Insert to db" rel="tooltip"
                   class="">{% fontawesome_icon 'database' color='#336699' %}</a>

@@ -879,7 +879,7 @@ def align_whg(pk, *args, **kwargs):
   """
   qs=ds.places.all()
   for place in qs:
-    #place=get_object_or_404(Place,id=132660) # Wabash
+    #place=get_object_or_404(Place,id=229515) # 
     count +=1
     qobj = {"place_id":place.id, "src_id":place.src_id, "title":place.title}
     links=[]; ccodes=[]; types=[]; variants=[]; parents=[]; geoms=[]; 
@@ -931,6 +931,7 @@ def align_whg(pk, *args, **kwargs):
       # no hits on any pass, create parent record now
       whg_id+=1
       place=get_object_or_404(Place,id=result_obj['place_id'])
+      #place=get_object_or_404(Place,id=229529)
       print('new whg_id',whg_id)
       parent_obj = makeDoc(place,'none')
       parent_obj['relation']={"name":"parent"}
@@ -945,14 +946,11 @@ def align_whg(pk, *args, **kwargs):
       try:
         res = es.index(index=idx, doc_type='place', id=str(whg_id), body=json.dumps(parent_obj))
         count_seeds +=1
+        print('created parent:',result_obj['place_id'],result_obj['title'])
       except:
-        #print('failed indexing '+str(place.id), parent_obj)
-        print('failed indexing (as parent)'+str(place.id))
+        print('failed indexing '+str(place.id)+' as parent')
         pass
         #print(sys.exc_info[0])
-        #errors_black.write(str({"pid":place.id, "title":place.title})+'\n')
-      print('created parent:',result_obj['place_id'],result_obj['title'])
-      #nohits.append(result_obj['missed'])
     elif result_obj['hit_count'] > 0:
       count_hit +=1
       [count_kids,count_errors] = [0,0]
@@ -996,7 +994,7 @@ def align_whg(pk, *args, **kwargs):
               "query": {"match":{"_id": parent_whgid}}}
             es.update_by_query(index=idx, doc_type='place', body=q_update, conflicts='proceed')
           except:
-            print('failed indexing (as child)'+str(parent_whgid)+' ('+str(place.id)+')', child_obj)
+            print('failed indexing '+str(place.id)+' as child of '+str(parent_whgid), child_obj)
             count_fail += 1
             pass
             #sys.exit(sys.exc_info())
