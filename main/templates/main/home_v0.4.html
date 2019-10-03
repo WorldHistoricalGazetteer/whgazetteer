@@ -99,7 +99,7 @@
         templates: {
           empty: ['<div class="small ml-2">','no results...','</div>'].join('\n'),
           suggestion: function (data) {
-            console.log('variants',data.variants)
+            <!--console.log('variants',data.variants)-->
             doctype = $("input[name='class']:checked").val()
             if(doctype == 'place'){
               return data.variants.length>0 ? 
@@ -333,9 +333,11 @@
     bounds = features.getBounds()
     <!--mappy.setView(bounds.getCenter(),5) -->
     if(geoms.length > 0 ){
-      mappy.fitBounds(bounds)  
+      mappy.fitBounds(bounds)
+      if(mappy.getZoom() > 5){ mappy.setZoom(5)}
       <!--mappy.setView(bounds.getCenter(),)-->
     }
+    
   }
   
   function showResults(data,doctype,scope='suggest',title){
