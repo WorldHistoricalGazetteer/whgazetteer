@@ -87,15 +87,15 @@ def suggestionItem(s,doctype,scope):
     #print('trace search item:',item)
   return item
 
-def suggester(doctype,q,scope):
-  # returns only parents; children retrieved in place portal
+def suggester(doctype,q,scope,idx):
+  # returns only parents; children retrieved into place portal
   #print('suggester',doctype,q)
   es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
   suggestions = []
   
   if doctype=='place':
     print('suggester/place q:',q)
-    res = es.search(index='whg',doc_type='place',body=q)
+    res = es.search(index=idx, doc_type='place', body=q)
     if scope == 'suggest':
       sugs = res['suggest']['suggest'][0]['options']
       #print('suggester()/place sugs',sugs)
@@ -134,10 +134,12 @@ class SearchView(View):
           [string] qstr: query string
           [string] doc_type: place or trace
           [string] scope: suggest or search
+          [string] idx: index to be queried
     """
     qstr = request.GET.get('qstr')
     doctype = request.GET.get('doc_type')
     scope = request.GET.get('scope')
+    idx = request.GET.get('idx')
     if doctype == 'place':
       if scope == 'suggest':
         q = { "suggest":{"suggest":{"prefix":qstr,"completion":{"field":"suggest"}}} }  
@@ -158,13 +160,14 @@ class SearchView(View):
     elif doctype == 'trace': 
       q = { "query": {"match": {"target.title": {"query": qstr,"operator": "and"}}} }
       #print('trace query:',q)      
-    suggestions = suggester(doctype, q, scope)
+    suggestions = suggester(doctype, q, scope, idx)
     #print('raw suggestions',suggestions)
     suggestions = [ suggestionItem(s, doctype, scope) for s in suggestions]
     print('SUGGESTIONS:',suggestions)
     return JsonResponse(suggestions, safe=False)
   
 """ Returns place or trace suggestions """
+# abandoned??
 class SuggestView(View):
   @staticmethod
   def get(request):
