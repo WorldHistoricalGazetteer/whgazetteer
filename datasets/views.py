@@ -500,7 +500,7 @@ def ds_insert_tsv(request, pk):
   context = {'status': 'inserting'} #??
 
   infile = dataset.file.open(mode="r")
-  print('ds_insert_csv(); request.GET; infile',request.GET,infile)
+  print('ds_insert_tsv(); request.GET; infile',request.GET,infile)
   # should already know delimiter
   try:
     dialect = csv.Sniffer().sniff(infile.read(16000),['\t',';','|'])
@@ -553,8 +553,10 @@ def ds_insert_tsv(request, pk):
     parent_id = r[header.index('parent_id')] if 'parent_id' in header else ''
     coords = makeCoords(r[header.index('lon')],r[header.index('lat')]) \
       if 'lon' in header and 'lat' in header else []
+    #matches = [x.strip() for x in r[header.index('matches')].split(';')] \
+      #if 'matches' in header else []
     matches = [x.strip() for x in r[header.index('matches')].split(';')] \
-      if 'matches' in header else []
+      if 'matches' in header and r[header.index('matches')] != '' else []
     start = r[header.index('start')] if 'start' in header else ''
     end = r[header.index('end')] if 'end' in header else ''
     # not sure this will get used
@@ -693,7 +695,7 @@ def ds_insert_tsv(request, pk):
   dataset.status = 'uploaded'
   dataset.save()
   print('record:', dataset.__dict__)
-  print('context from ds_insert_csv():',context)
+  print('context from ds_insert_tsv():',context)
   infile.close()
   # dataset.file.close()
 
@@ -900,7 +902,6 @@ class DatasetDetailView(UpdateView):
     if context['status'] == 'format_ok':
       print('format_ok, inserting dataset '+str(id_))
       if context['format'] == 'delimited':
-        #ds_insert_csv(self.request, id_)
         ds_insert_tsv(self.request, id_)
       else:
         ds_insert_lpf(self.request,id_)
