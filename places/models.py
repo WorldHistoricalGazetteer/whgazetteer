@@ -1,13 +1,13 @@
 # place.models
+from django.contrib.auth.models import User
 from django.contrib.postgres.fields import JSONField, ArrayField
 from django.db import models
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
-from django.contrib.auth.models import User
-#from datasets.models import Dataset
-
+from datasets.static.hashes.parents import ccodes as cc
 from main.choices import *
 
 import json
@@ -27,9 +27,13 @@ class Place(models.Model):
         return '%s:%d' % (self.dataset, self.id)
 
     @property
+    def countries(self):
+        return [cc[0][x]['gnlabel'] for x in self.ccodes]
+
+    @property
     def geom_count(self):
         return self.geoms.count()
-    
+        
     class Meta:
         managed = True
         db_table = 'places'
