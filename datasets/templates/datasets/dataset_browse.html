@@ -414,6 +414,12 @@
       right+='<p><b>Description</b>: '+ data.descriptions[0]['value'].substring(0,300)+' ... </p>'
         <!--'<br/><span class="small red-bold">('+data.descriptions[0]['identifier']+')</span>-->
     }
+    //
+    // CCODES
+    //
+    if (data.ccodes.length > 0) {
+      right+='<p><b>Modern country bounds</b>: '+ data.countries+'</p>'
+    }
     
     left += '</div>'
     right += '</div>'
@@ -424,6 +430,7 @@
     $.ajax({
       url: "/api/places/"+pid,
       }).done(function( data ) {
+        console.log('data',data)
         <!--$("#row_title").html('<b>'+data['title']+'</b>')-->
         <!--$("#drftable_fields").html(parsePlace(data))-->
         $("#detail_left").html(parsePlace(data,'left'))

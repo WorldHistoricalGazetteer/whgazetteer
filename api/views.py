@@ -7,7 +7,7 @@ from rest_framework import permissions
 from rest_framework import viewsets
 
 from .serializers import UserSerializer, GroupSerializer, DatasetSerializer, \
-    PlaceSerializer, PlaceDRFSerializer, PlaceGeomSerializer, AreaSerializer
+    PlaceSerializer, PlaceGeomSerializer, AreaSerializer #, PlaceDRFSerializer
 
 
 from accounts.permissions import IsOwnerOrReadOnly, IsOwner

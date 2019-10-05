@@ -119,15 +119,15 @@ class PlaceSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Place
         fields = ('url','id', 'title', 'src_id', 'dataset','ccodes',
-            'names','types','geoms','links',
-            'related','whens', 'descriptions', 'depictions','geom_count'
-            )
+            'names','types','geoms','links','related',
+            'whens', 'descriptions', 'depictions','geom_count','countries'
+        )
 
 # for dataset_recon.html queries
-class PlaceDRFSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Place
-        fields = ('id','src_id','title','ccodes')
+#class PlaceDRFSerializer(serializers.ModelSerializer):
+    #class Meta:
+        #model = Place
+        #fields = ('id','src_id','title','ccodes')
 
 class AreaSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
