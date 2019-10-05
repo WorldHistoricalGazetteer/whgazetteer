@@ -22,7 +22,7 @@
     <span class="small text-muted">("{{ ds.label }}")
       <a href="{% url 'datasets:dataset-detail' ds.id %}" title="Dataset details" rel="tooltip"
         class="">{% fontawesome_icon 'cog' color='#336699' %}</a>
-    </span>
+    </span><span class="toomany small text-danger ml-3"></span>
     <span id="feature_count" class="half float-right"></span>
   </h4>
   <div class="container mt-3">
@@ -217,7 +217,13 @@
           <!--console.log(index,record)-->
         <!--})-->
         geom['features'] = data.results
-        renderMap(geom,dslabel)
+        if(geom.features.length < 15000) {
+          renderMap(geom,dslabel)
+        } else {
+          spinner.stop()
+          $(".toomany").html('too many features to map ('+geom.features.length+'), sorry!')
+        }
+        
       })    
   }, false);
   
@@ -249,6 +255,7 @@
   }
   function renderMap(geom,dslabel){
     if (geom.features.length==0) {spinner.stop()}
+    
     geomtype = geom['features'][0]['type']
     <!--clear out the previous if any-->
     if(typeof(features)!=='undefined'){
