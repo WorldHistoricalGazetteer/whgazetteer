@@ -30,7 +30,7 @@
   </h4>
   {% if nohits %}
   <div>
-    <p>No unreviewed <span id="passnum_dynamic">boo</span> hits for this reconciliation task!</p>
+    <p>No unreviewed hits for this reconciliation task!</p>
     <p><a href="{% url 'datasets:dataset-detail' id=ds_id %}">Return to dataset detail page</a></p>
   </div>
   {% else %}
@@ -291,7 +291,8 @@
     var awmc = L.tileLayer(mbtiles_url, {id:'isawnyu.map-knmctlkh', token:token_awmc, attribution:attrib_awmc}),
       spine = L.tileLayer(mbstyle_url, {id:'kgeographer/cjstfpenh6o1e1fldz95w8m6p', token:token_kg, attribution:attrib_mb}),
       satellite  = L.tileLayer(mbtiles_url, {id:'mapbox.satellite', token:token_mb, attribution:attrib_mb});
-      osm  = L.tileLayer(mbtiles_url, {id:'mapbox.light', token:token_mb, attribution:attrib_mb});
+      <!--osm  = L.tileLayer(mbtiles_url, {id:'mapbox.light', token:token_mb, attribution:attrib_mb});-->
+      osm  = L.tileLayer(mbtiles_url, {id:'mapbox.light', token:token_mb});
 
     var baseLayers = {
       "AWMC Terrain": awmc,
@@ -398,6 +399,7 @@
 
       <!--mappy.setView(features.getBounds().getCenter(),6)-->
       mappy.fitBounds(features.getBounds())
+      mappy.setZoom(mappy.getZoom()-1)
     } else {
       console.log('no geometries, no feature')
     }
