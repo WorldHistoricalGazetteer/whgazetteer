@@ -254,7 +254,7 @@ def align_wd(pk, *args, **kwargs):
   
   #for place in ds.places.filter(flag=True):
   for place in ds.places.all().order_by('id'): #.filter(id__lt=224265):
-    #place=get_object_or_404(Place, id=228584) # Kampala
+    #place=get_object_or_404(Place, id=128648) # Kampala
     count +=1
     place_id = place.id
     src_id = place.src_id
@@ -270,7 +270,9 @@ def align_wd(pk, *args, **kwargs):
     # types (Getty AAT identifiers)
     for t in place.types.all():
       try:
-        types.append(int(t.jsonb['identifier']) if t.jsonb['identifier'] !=None else '')
+        id = t.jsonb['identifier']
+        if id !=None:
+          types.append(int(id[4:]) if id.startswith('aat:') else '')      
       except:
         print('int error in types',t.jsonb['identifier'])
     qobj['placetypes'] = types

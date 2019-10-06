@@ -81,8 +81,8 @@
   focusStyle = {radius:12,fillColor:"#ff0000",fillOpacity:0.5,stroke:true,weight:1,color:"#000000"}
   
   function focusFeature(feat){
+    <!--console.log('feat',feat)-->
     feat.setStyle(focusStyle)
-    console.log('feat',feat)
     <!--mappy.setView(feat._latlng, 3);-->
   }
   function setRowEvents(){
@@ -276,13 +276,23 @@
     // TODO: 
       style: styler(geomtype),
       pointToLayer: function (feature, latlng) {
-         matchid = feature.place_id_id
-         <!--console.log('matchid',matchid)-->
-         marker = L.circleMarker(latlng).bindPopup('pid: '+matchid);
-      
-         idToFeature[matchid] = marker
-         return marker
-       }
+        console.log('feature in renderMap()',feature)
+        matchid = feature.place_id_id
+        <!--console.log('matchid',matchid)-->
+        marker = L.circleMarker(latlng).bindPopup('pid: '+matchid);
+     
+        idToFeature[matchid] = marker
+        return marker
+      }
+      ,onEachFeature: function(feature,layer) {
+        f=feature; l=layer;
+        console.log('f,l',feature,layer)
+        identifier = feature.place_id_id;
+        if(feature.type != 'Point'){
+          <!--layer.setStyle(styles.default)-->
+          idToFeature[identifier] = layer
+        }
+      }
     <!--}).addTo(mappy).then(spinner.stop());-->
     }).addTo(mappy);
     <!--}).addTo(mappy)-->
@@ -354,7 +364,7 @@
     left+='</p><p><b>Types</b>: '
     typeids = ''
     for (t in data.types) {
-      console.log('type:',t)
+      <!--console.log('type:',t)-->
       typeids+=data.types[t].sourceLabel?data.types[t].sourceLabel +
         ' (<i>'+data.types[t].label+'/'+data.types[t].identifier +'</i>); ':
         '(<i>'+data.types[t].label+'/'+data.types[t].identifier +'</i>); '

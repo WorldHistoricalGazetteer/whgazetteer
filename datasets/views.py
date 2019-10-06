@@ -546,7 +546,7 @@ def ds_insert_tsv(request, pk):
       if 'types' in header else []
     aat_types = [x.strip() for x in r[header.index('aat_types')].split(';')] \
       if 'aat_types' in header else []
-    print('types, aat_types',types, aat_types)
+    #print('types, aat_types',types, aat_types)
     ccodes = [x.strip() for x in r[header.index('ccodes')].split(';')] \
       if 'ccodes' in header else []
     parent_name = r[header.index('parent_name')] if 'parent_name' in header else ''
