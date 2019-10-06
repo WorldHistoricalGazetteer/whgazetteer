@@ -29,7 +29,10 @@
     </span>
   </h4>
   {% if nohits %}
-  <div><p>No unreviewed <span id="passnum_dynamic">boo</span> hits for this reconciliation task!</p></div>
+  <div>
+    <p>No unreviewed <span id="passnum_dynamic">boo</span> hits for this reconciliation task!</p>
+    <p><a href="{% url 'datasets:dataset-detail' id=ds_id %}">Return to dataset detail page</a></p>
+  </div>
   {% else %}
   <div class="pagination d-flex justify-content-center">
     <span class="step-links">
@@ -259,7 +262,7 @@
     // defaults to string 'None' - no idea why
     $('.textarea').html('')
     z=window.location.href
-    $('#passnum_dynamic').html('<b>'+z.slice(-5)+'</b>')
+    $('#passnum_dynamic').html('<b>'+z.slice(-6)+'</b>')
     
     $(".create-comment").each(function () {
       var recpk = $(this).data('id');
