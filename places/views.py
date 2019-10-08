@@ -74,6 +74,8 @@ class PlacePortalView(DetailView):
     context['whg_id'] = id_
     context['payload'] = [] # parent and children if any
     context['traces'] = [] # 
+    # place portal headers gray for records from these
+    context['core'] = ['gn500','gnmore','ne_countries','ne_rivers982','ne_mountains','wri_lakes','tgn2000']
 
     ids = [pid]
     # get child record ids from index
