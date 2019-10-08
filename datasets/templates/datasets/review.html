@@ -126,9 +126,9 @@
                     <a class="geolink" rel="tooltip" id="{{ form.authrecord_id.value }}" 
                       href="javascript:{ zoomTo('tgn:'+{{ form.authrecord_id.value }}) }" title="Flash map marker">
                       {% fontawesome_icon 'globe' color='#000' %}</a>
-                  {% endif %}
                   </span>
                   <span class="inline">{{ form.match }}</span>
+                  {% endif %}
                   <span class="float-right mr-2">
                   <span class="help-matches" data-id="matches">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
                   {% if authority == 'whg' %}

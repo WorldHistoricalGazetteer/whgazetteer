@@ -5,10 +5,10 @@ from datasets.models import Dataset, Hit
 import re, sys
 
 
-tid='00dee205-7d2f-4b15-b067-7efc61a063ff'
-dslabel = 'gnmore'
-#tid='d6ad4289-cae6-476d-873c-a81fed4d6315'
-#dslabel = 'black'
+#tid='00dee205-7d2f-4b15-b067-7efc61a063ff'
+#dslabel = 'gnmore'
+tid='d6ad4289-cae6-476d-873c-a81fed4d6315'
+dslabel = 'black'
 
 # get unreviewed hits
 hitplaces = Hit.objects.values('place_id').filter(
@@ -17,7 +17,8 @@ hitplaces = Hit.objects.values('place_id').filter(
 ds=get_object_or_404(Dataset, label=dslabel)
 qs = Place.objects.all().filter(id__in=hitplaces).order_by('title')
 count, count_matched, count_links = [0,0,0]
-
+#count_tgn = 0
+#tgn_arr=[]
 for p in qs:
     count +=1
     #p = get_object_or_404(Place, id= 2487488)
@@ -33,6 +34,12 @@ for p in qs:
             pass
             #print('quit on place ',pid,h.json)
             #sys.exit()
+        #for m in hitmatches:
+            #if m.startswith('tgn'):
+                #tgn_arr.append(pid)
+                #count_tgn +=1
+#print(str(count_tgn)+' tgn links')
+#print(str(len(set(tgn_arr)))+' records with any tgn match in hits')
         shared = len(set(hitmatches) & set(plinks)) > 0 #and 'wd:'+h.authrecord_id not in plinks # t/f
         noQ = 'wd:'+h.authrecord_id not in plinks
         # if they share a link, write a place_link record for the authrecord_id 
