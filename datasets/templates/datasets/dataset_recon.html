@@ -145,7 +145,7 @@
     }
     $('input[name=recon]').change(function(){
       var value = $( 'input[name=recon]:checked' ).val();
-      if(value=='wd'){$("#geo-constraint").hide() } else {$("#geo-constraint").show()}
+      if(['wd','whg'].indexOf(value)>-1){$("#geo-constraint").hide(600) } else {$("#geo-constraint").show(600)}
       if(value=='whg'){
         <!-- hide span and de-select box-->
         $("#q_accept").hide() 

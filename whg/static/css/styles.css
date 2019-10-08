@@ -222,6 +222,7 @@ em { color: #993333;}
 
 .bg-white { background-color: white; }
 .attest-header { background-color: antiquewhite; padding: 0 2px;}
+.core-header { background-color: #eee; padding: 0 2px;}
 .allcap-heading {color: #993330;}
 .child-record {background-color:white; padding:3px;}
 .child-record p {margin-bottom:.3rem;}

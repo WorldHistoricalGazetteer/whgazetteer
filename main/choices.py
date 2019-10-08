@@ -8,8 +8,8 @@ COMMENT_TAGS = [
 ]
 
 FORMATS = [
-    ('delimited', 'LP-TSV'),
-    ('lpf', 'Linked Places json')
+    ('lpf', 'Linked Places json'),
+    ('delimited', 'LP-TSV')
 ]
 
 DATATYPES = [
@@ -24,7 +24,7 @@ STATUS = [
     ('in_database', 'Inserted to database'),
     ('uploaded', 'File uploaded'),
     ('ready', 'Ready for submittal'),
-    ('accepted', 'Accepted'),
+    ('accessioned', 'Accessioned'),
 ]
 
 AUTHORITIES = [
