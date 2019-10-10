@@ -399,7 +399,9 @@
       }
       whgid = $(this).attr('data-id')
       f = idToFeature[whgid]
-      idToFeature[whgid].setStyle(f.feature.geometry.type=='Point'?styles.marker_highlight:styles.default_highlight)
+      // raise z-index
+      f.bringToFront()
+      f.setStyle(f.feature.geometry.type=='Point'?styles.marker_highlight:styles.default_highlight)
       mappy.panTo(idToFeature[whgid]._latlng)
     })
     // open a modal for external page
@@ -483,7 +485,8 @@
         item = '<div class="search-row place-item" data-id="'+sug['whg_id']+
           '"><a class="place-link" href="#" data-id="'+sug['whg_id']+'"><b>'+
           sug['name']+'</b></a>'+types+ccodes+geo+variants+
-          '<br/>'+snippet+'</div>'
+          <!--'<br/>'+snippet+'</div>'-->
+          '<br/>'+sug['whg_id']+'</div>'
       } else {
         item = '<div class="sug_row sug-item">'+sug['name']+' '+variants+'</div>'
       }

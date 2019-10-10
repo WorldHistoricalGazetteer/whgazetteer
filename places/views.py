@@ -51,16 +51,10 @@ class PlacePortalView(DetailView):
         elif 'timespans' in a:
           print('place portal context a in attrib',a)
           starts = sorted(
-            #[t['start']['in'] for t in a['timespans']]
             [(t['start']['in'] if 'in' in t['start'] else t['start']['earliest']) for t in a['timespans']]
-            #[t['start']['in'] for t in a['timespans']] if 'in' in t['start'] \
-            #else [t['start']['earliest'] for t in a['timespans']]
           )
           ends = sorted(
-            #[t['end']['in'] for t in a['timespans']]
             [(t['end']['in'] if 'in' in t['end'] else t['end']['latest']) for t in a['timespans']]
-            #[t['end']['in'] for t in a['timespans']] if 'in' in t['end'] \
-            #else [t['end']['latest'] for t in a['timespans']]
           )
           minmax = [int(min(starts)), int(max(ends))]        
         if len(minmax)>0: extent.append(minmax)
@@ -75,12 +69,12 @@ class PlacePortalView(DetailView):
     context['payload'] = [] # parent and children if any
     context['traces'] = [] # 
     # place portal headers gray for records from these
-    context['core'] = ['gn500','gnmore','ne_countries','ne_rivers982','ne_mountains','wri_lakes','tgn2000']
+    context['core'] = ['gn500','gnmore','ne_countries','ne_rivers982','ne_mountains','wri_lakes','tgn_filtered_01']
 
     ids = [pid]
     # get child record ids from index
     q = {"query": {"parent_id": {"type": "child","id":id_}}}
-    children = es.search(index='whg', doc_type='place', body=q)['hits']
+    children = es.search(index='whg02', doc_type='place', body=q)['hits']
     for hit in children['hits']:
       ids.append(int(hit['_id']))
 
