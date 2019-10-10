@@ -221,7 +221,7 @@
           renderMap(geom,dslabel)
         } else {
           spinner.stop()
-          $(".toomany").html('too many features to map ('+geom.features.length+'), sorry!')
+          $(".toomany").html('too many features to map (> '+geom.features.length+'), sorry!')
         }
         
       })    

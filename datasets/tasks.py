@@ -1032,26 +1032,6 @@ def align_whg(pk, *args, **kwargs):
             count_errors +=1
             print("hit _source, error:",hit, sys.exc_info())
           
-          # TODO: logic for review of WHG needs to go in review.py
-          #whg_id+=1
-          #place=get_object_or_404(Place,id=result_obj['place_id'])
-          #print('new whg_id',whg_id)
-          #parent_obj = makeDoc(place,'none')
-          #parent_obj['relation']={"name":"parent"}
-          #parent_obj['whg_id']=whg_id
-          
-          ## add its names to its suggest field
-          #for n in parent_obj['names']:
-            #parent_obj['suggest']['input'].append(n['toponym']) 
-            
-          ##index it with fresh whg_id
-          #try:
-            #res = es.index(index='whg', doc_type='place', id=str(whg_id), body=json.dumps(parent_obj))
-            #count_seeds +=1
-          #except:
-            #print('failed indexing '+str(place.id), parent_obj)
-            #print(sys.exc_info[0])
-
   end = datetime.datetime.now()
   # ds.status = 'recon_whg'
   hit_parade['summary'] = {
@@ -1070,26 +1050,4 @@ def align_whg(pk, *args, **kwargs):
   #if ds.label == 'black': errors_black.close()
   print("hit_parade['summary']",hit_parade['summary'])
   return hit_parade['summary']
-
-## index it
-#try:
-  #res = es.index(index='whg',doc_type='place',id=place.id,
-                 #routing=1,body=json.dumps(child_obj))
-  #count_kids +=1                
-  #print('added '+str(place.id) + ' as child of '+ str(hit_pid))
-#except:
-  #print('failed indexing '+str(parent_whgid)+' ('+str(place.id)+')', child_obj)
-  #sys.exit(sys.exc_info())
-#q_update = { "script": {
-    #"source": "ctx._source.suggest.input.addAll(params.names); ctx._source.children.add(params.id)",
-    #"lang": "painless",
-    #"params":{"names": match_names, "id": str(place.id)}
-  #},
-  #"query": {"match":{"_id": parent_whgid}}}
-#try:
-  #es.update_by_query(index='whg', doc_type='place', body=q_update, conflicts='proceed')
-#except:
-  #print('failed updating '+str(parent_whgid)+' ('+hit_pid+') from child '+str(place.id))
-  #print(count_kids-1)
-  #sys.exit(sys.exc_info())
 

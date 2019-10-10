@@ -12,6 +12,7 @@ from django_celery_results.models import TaskResult
 
 import codecs, tempfile, os, re, ipdb, sys
 import simplejson as json
+from itertools import islice
 from pprint import pprint
 from areas.models import Area
 from main.choices import AUTHORITY_BASEURI
@@ -23,12 +24,34 @@ from datasets.tasks import align_tgn, align_whg, align_wd, maxID
 from datasets.utils import *
 from es.es_utils import makeDoc
 
+"""
+functions to batch large database inserts, e.g. TGN
+"""
+
+#   PlaceName.objects.bulk_create(objs['PlaceName'])
+#def create_data(model, data):
+  #bulk_create(model, generator())
+  
+#def bulk_create(model, generator, batch_size=10000):
+  #"""
+  #Uses islice to call bulk_create on batches of
+  #Model objects from a generator.
+  #"""
+  #while True:
+    #items = list(islice(generator, batch_size))
+    #if not items:
+      #break
+    #model.objects.bulk_create(items)
+
+#def generator(data):
+  #for row in data:
+    #yield MyModel(field1=data['field1'])
+""" end """
+
 def link_uri(auth,id):
   baseuri = AUTHORITY_BASEURI[auth]
   uri = baseuri + str(id)
   return uri
-
-
 # present reconciliation (and accessioning!) hits for review
 # for reconciliation: write place_link & place_geom (if aug_geom == 'on') records if matched
 # for accessioning: if close or exact -> if match is parent -> make child else if match is child -> make sibling
@@ -500,6 +523,7 @@ def ds_insert_tsv(request, pk):
   dataset = get_object_or_404(Dataset, id=pk)
   context = {'status': 'inserting'} #??
 
+  #infile=codecs.open('example_data/tgn2000.tsv','r','utf-8')
   infile = dataset.file.open(mode="r")
   print('ds_insert_tsv(); request.GET; infile',request.GET,infile)
   # should already know delimiter
@@ -533,7 +557,7 @@ def ds_insert_tsv(request, pk):
   countlinked = 0
   countlinks = 0
   for r in reader:
-  #for i, r in zip(range(100), reader):
+  #for i, r in zip(range(10000), reader):
     src_id = r[header.index('id')]
     # print('src_id from tsv_insert',src_id)
     title = r[header.index('title')]
@@ -677,15 +701,31 @@ def ds_insert_tsv(request, pk):
           }
         ))
 
-  # bulk_create(Class, batchsize=n) for each
-  # print("objs['PlaceName']",objs['PlaceName'])
-  PlaceName.objects.bulk_create(objs['PlaceName'])
-  PlaceType.objects.bulk_create(objs['PlaceType'])
-  PlaceGeom.objects.bulk_create(objs['PlaceGeom'])
-  PlaceLink.objects.bulk_create(objs['PlaceLink'])
-  PlaceRelated.objects.bulk_create(objs['PlaceRelated'])
-  PlaceWhen.objects.bulk_create(objs['PlaceWhen'])
-  PlaceDescription.objects.bulk_create(objs['PlaceDescription'])
+  print('COUNTS:')
+  print('PlaceName:',len(objs['PlaceName']))
+  print('PlaceType:',len(objs['PlaceType']))
+  print('PlaceGeom:',len(objs['PlaceGeom']))
+  print('PlaceLink:',len(objs['PlaceLink']))
+  print('PlaceRelated:',len(objs['PlaceRelated']))
+  print('PlaceWhen:',len(objs['PlaceWhen']))
+  print('PlaceDescription:',len(objs['PlaceDescription']))
+  print('max places.id', )
+
+  # bulk_create(Class, batch_size=n) for each
+  PlaceName.objects.bulk_create(objs['PlaceName'],batch_size=10000)
+  print('names done')
+  PlaceType.objects.bulk_create(objs['PlaceType'],batch_size=10000)
+  print('types done')
+  PlaceGeom.objects.bulk_create(objs['PlaceGeom'],batch_size=10000)
+  print('geoms done')
+  PlaceLink.objects.bulk_create(objs['PlaceLink'],batch_size=10000)
+  print('links done')
+  PlaceRelated.objects.bulk_create(objs['PlaceRelated'],batch_size=10000)
+  print('related done')
+  PlaceWhen.objects.bulk_create(objs['PlaceWhen'],batch_size=10000)
+  print('whens done')
+  PlaceDescription.objects.bulk_create(objs['PlaceDescription'],batch_size=10000)
+  print('descriptions done')
 
   context['status'] = 'uploaded'
   print('rows,linked,links:',countrows,countlinked,countlinks)
@@ -714,7 +754,7 @@ class DashboardView(ListView):
     me = self.request.user
     if me.username in ['whgadmin','karlg']:
       print('in get_queryset() if',me)
-      return Dataset.objects.all().order_by('-spine','id')
+      return Dataset.objects.all().order_by('-spine','-id')
       #return Dataset.objects.all().filter(id__gt=7).order_by('id')
     else:
       print('in get_queryset() else')
