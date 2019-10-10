@@ -245,7 +245,7 @@ class FeatureContextView(View):
 def getGeomCollection(idx,doctype,q):
   es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
   #try:
-  res = es.search(index='whg', doc_type='place', body=q, size=300)
+  res = es.search(index='whg02', doc_type='place', body=q, size=300)
   #except:
     #print(sys.exc_info()[0])
   hits = res['hits']['hits']
