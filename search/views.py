@@ -65,6 +65,7 @@ def suggestionItem(s,doctype,scope):
       #print('place search hit:',h)
       item = {
         "whg_id": h['whg_id'],
+        "linkcount":s['linkcount'],
         "name": h['title'],
         "variants":[n for n in h['suggest']['input'] if n != h['title']],
         "ccodes": h['ccodes'],
@@ -72,9 +73,6 @@ def suggestionItem(s,doctype,scope):
         "snippet": s['snippet']['descriptions.value'][0] if s['snippet'] != '' else []
         ,"geom": makeGeom(h['place_id'],h['geoms'])
       }
-      #if 'snippet' in s:
-        #print('snippet',s['snippet'])
-        #item["snippet"] = s['snippet']['descriptions.value'][0]
   elif doctype == 'trace':
     item = {
       "_id":s['_id'],
@@ -84,7 +82,7 @@ def suggestionItem(s,doctype,scope):
       "depiction":s['hit']['target']['depiction'] if 'depiction' in s['hit']['target'].keys() else '',
       "bodies":s['hit']['body']
     }
-    #print('trace search item:',item)
+  #print('place search item:',item)
   return item
 
 def suggester(doctype,q,scope,idx):
@@ -101,18 +99,25 @@ def suggester(doctype,q,scope,idx):
       #print('suggester()/place sugs',sugs)
       if len(sugs) > 0:
         for s in sugs:
-          hit_id = s['_id']
           if 'parent' not in s['_source']['relation'].keys():
             # it's a parent, add to suggestions[]
             suggestions.append(s['_source'])
+      return suggestions      
     elif scope == 'search':
       hits = res['hits']['hits']
       #print('suggester()/place hits',hits)
       if len(hits) > 0:
         for h in hits:
           snippet = h['highlight'] if 'highlight' in h else ''
-          suggestions.append({"_id":h['_id'],"hit":h['_source'],"snippet":snippet})
-    
+          suggestions.append(
+            {"_id":h['_id'],
+             "linkcount":len(h['_source']['links']),
+             "hit":h['_source'],
+             "snippet":snippet}
+          )
+      sortedsugs = sorted(suggestions, key=lambda x: x['linkcount'], reverse=True)
+      #print('SUGGESTIONS from suggester()',type(suggestions), sortedsugs)
+      return sortedsugs
   elif doctype == 'trace':
     #print('suggester()/trace q:',q)
     res = es.search(index='traces',doc_type='trace',body=q)
@@ -121,8 +126,7 @@ def suggester(doctype,q,scope,idx):
     if len(hits) > 0:
       for h in hits:
         suggestions.append({"_id":h['_id'],"hit":h['_source']})
-  return suggestions
-
+    return suggestions 
 
 """ Returns place:search/suggest or trace:search """
 class SearchView(View):
@@ -142,7 +146,7 @@ class SearchView(View):
     idx = request.GET.get('idx')
     if doctype == 'place':
       if scope == 'suggest':
-        q = { "suggest":{"suggest":{"prefix":qstr,"completion":{"field":"suggest"}}} }  
+        q = { "suggest":{"suggest":{"prefix":qstr,"completion":{"field":"suggest"}} } } 
       elif scope == 'search':
         q = { "size": 200,
               "query": {"bool": {
@@ -159,11 +163,10 @@ class SearchView(View):
           }
     elif doctype == 'trace': 
       q = { "query": {"match": {"target.title": {"query": qstr,"operator": "and"}}} }
-      #print('trace query:',q)      
+      #print('trace query:',q)
+      
     suggestions = suggester(doctype, q, scope, idx)
-    #print('raw suggestions',suggestions)
     suggestions = [ suggestionItem(s, doctype, scope) for s in suggestions]
-    print('SUGGESTIONS:',suggestions)
     return JsonResponse(suggestions, safe=False)
   
 """ Returns place or trace suggestions """
