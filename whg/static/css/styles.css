@@ -67,6 +67,14 @@ i.fa-eye { margin-bottom: -5px;}
 /**
   home, search
 **/
+
+.input-loading {    
+    background-color: #ffffff;
+    background-image: url("http://loadinggif.com/images/image-selection/3.gif");
+    background-size: 22px 22px;
+    background-position:right center;
+    background-repeat: no-repeat;
+}
 /*.navbar-brand {padding:0; }*/
 #beta_badge {
   font-size: 1rem;

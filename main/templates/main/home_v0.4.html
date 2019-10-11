@@ -40,6 +40,7 @@
           <div class="input-group input-group-sm mb-3">
             <div id="search_input">
               <input id="input_box" class="typeahead" type="text" placeholder="Enter place name">
+              <!--<span class="typeahead-spinner">spinner here</span>-->
             </div>
           </div>
         <div id="search_filters" class="hidden">searchfilters</div>
@@ -112,12 +113,19 @@
             }
           }
         }
-    }).on('typeahead:selected', function (obj, datum) {
+    })
+    .on('typeahead:selected', function (obj, datum) {
       <!--console.log(datum)-->
       if(doctype=='trace'){
         fetchTraceGeom(datum._id,0,datum.title)
       }
-    });
+    })
+    .on('typeahead:asyncrequest', function() {
+        $('.typeahead').addClass('input-loading');
+    })
+    .on('typeahead:asynccancel typeahead:asyncreceive', function() {
+        $('.typeahead').removeClass('input-loading');
+    });;
   })
   //
   // future advanced options
