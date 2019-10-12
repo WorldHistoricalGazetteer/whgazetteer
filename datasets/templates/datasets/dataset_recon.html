@@ -22,9 +22,7 @@
   <h4 class="my-3"> {% fontawesome_icon 'link' %} Initiate Reconciliation: <i>{{ ds.name }}
     <span class="text-muted small">(<a href="{% url 'datasets:dataset-detail' id=ds.pk %}">{{ ds.label }}</a>)</span></i></h4>
   <hr/>
-  {% if ds.owner.id != user.id %}
-  <div><p class="pl-3 text-danger"><b>Sorry, because you are not the dataset owner, initiating reconciliation tasks for it is not possible.</b></p></div>
-  {% else %}
+  {% if ds.owner.id == user.id or user.is_superuser %}
   <div class="row"> <!-- page-wide -->
     <div id="recon_form" class="col-md-6">
       <div id="recon_form">
@@ -33,7 +31,7 @@
         <div class="form-check text-danger">
           <label class="form-check-label" for="auth1">
             <input type="radio" class="form-check-input" id="auth1"
-              name="recon" value="whg">WHG Spine (whg)
+              name="recon" value="whg">WHG Index (whg)
           </label>
         </div>
         <hr/>
@@ -126,6 +124,8 @@
       {% endif %}
     </div> <!-- recon_result -->
   </div> <!-- row -->
+  {% else %}
+  <div><p class="pl-3 text-danger"><b>Sorry, because you are not the dataset owner, initiating reconciliation tasks for it is not possible.</b></p></div>
   {% endif %}
   </form>
   <div class="selector py-3"><div id="helpme"><div></div>
@@ -145,7 +145,13 @@
     }
     $('input[name=recon]').change(function(){
       var value = $( 'input[name=recon]:checked' ).val();
-      if(['wd','whg'].indexOf(value)>-1){$("#geo-constraint").hide(600) } else {$("#geo-constraint").show(600)}
+      if(['wd','whg'].indexOf(value) > -1){
+        $("#geo-constraint").hide(600) 
+        $("#map").hide()
+      } else {
+        $("#geo-constraint").show(600)
+        $("#map").show()
+      }
       if(value=='whg'){
         <!-- hide span and de-select box-->
         $("#q_accept").hide() 

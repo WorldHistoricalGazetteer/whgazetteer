@@ -67,7 +67,14 @@ i.fa-eye { margin-bottom: -5px;}
 /**
   home, search
 **/
-
+.list-inline { padding-left: 4px;}
+#filters {
+  background-color: #fff;
+  font-size: small;
+  padding: 5px 0 5px 8px;
+  margin-top:8px;
+  box-shadow: 2px 2px #999;
+}
 .input-loading {    
     background-color: #ffffff;
     background-image: url("http://loadinggif.com/images/image-selection/3.gif");

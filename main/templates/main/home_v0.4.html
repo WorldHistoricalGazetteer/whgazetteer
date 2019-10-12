@@ -40,12 +40,15 @@
           <div class="input-group input-group-sm mb-3">
             <div id="search_input">
               <input id="input_box" class="typeahead" type="text" placeholder="Enter place name">
-              <!--<span class="typeahead-spinner">spinner here</span>-->
             </div>
           </div>
-        <div id="search_filters" class="hidden">searchfilters</div>
+        <!--<div id="search_filters" class="hidden">searchfilters</div>-->
       </div>
       <!-- separate div for full search results -->
+      <div id="filters" class="hidden">
+        <p class='half allcap-heading mb-0 pl-1'>PLACE TYPES</p>
+        <ul class="list-inline"></ul>
+      </div>
       <div id="result_list" class="hidden"></div>
     </div>
   </div>
@@ -62,11 +65,11 @@
     </div>
   </div>
 </div> <!-- ext_site -->
-      
+
 
 <script type="text/javascript">
   $(function(){
-    $("#options").hide();
+    $("#filters").hide();
     var idToFeature = {} // for feature lookup
     var titles = {}
     var searchoption = null;
@@ -90,7 +93,8 @@
         }
     });
     function hh(element) {
-      return element.includes($("#input_box").val());
+      el=element.toLowerCase()
+      return el.includes($("#input_box").val().toLowerCase());
     }
     $('.typeahead').typeahead({minLength:2,highlight:true}, {
         name: 'suggester',
@@ -100,12 +104,12 @@
         templates: {
           empty: ['<div class="small ml-2">','no results...','</div>'].join('\n'),
           suggestion: function (data) {
-            <!--console.log('variants',data)-->
             doctype = $("input[name='class']:checked").val()
             if(doctype == 'place'){
+              console.log('variants',data.variants)
               return data.variants.length>0 ? 
-                '<p class="tight-p">' + data.name + '<br/><i class="tight-p">' + 
-                  data.variants.filter(hh) + '<i></p>' : 
+                '<p class="tight-p tt-suggestion">' + data.name + '<br/><i class="tight-p">' + 
+                  data.variants.filter(hh).join(', ') + '<i></p>' : 
                 '<p class="tight-p">' + data.name + '</p>'
             } else {
               <!--console.log(data)-->
@@ -129,15 +133,12 @@
   })
   //
   // future advanced options
-  <!--$("#options_link").on("click", function(e){-->
-    <!--e.preventDefault()-->
-    <!--$("#options").toggle()-->
-    <!--$("#options_link").toggle()-->
-  <!--})-->
   $('input[type=radio][name=class]').change(function() {
     $('#input_box').val('')
     $('#input_box').attr("placeholder",this.getAttribute("rel"));
-    $("#result_list").hide()
+    clearit()
+    <!--$("#result_list").hide()-->
+    <!--$("#filters").hide()-->
     <!--$("#options_link").show()-->
     <!--$("#options").hide()-->
     <!--$(".autosuggest").html('')-->
@@ -221,7 +222,7 @@
     if(typeof(features) !== "undefined") {features.clearLayers();}
     $.get("/search/tracegeom",{idx: 'traces', search: trace_id, doc_type: 'trace'},
       function(data){
-        <!--console.log('bodies in this trace',data.bodies)-->
+        console.log('bodies in this trace',data.bodies)
         showResults(data.bodies,'trace','suggest',title)
         var count_features = 0
         idToFeature = {}
@@ -262,23 +263,25 @@
     });
   }
 
-  // clear any results
+  // clear results, type filter
   clearit = function(){
     $("#search_input").val('')
     $("#result_list").html('')
     $("#result_list").hide()
-    if(typeof(traces) !== "undefined") {traces.clearLayers();}
-    if(typeof(features) !== "undefined") {features.clearLayers();}
+    $("#filters").hide()
+    $(".list-inline").html('')
+    <!--if(typeof(traces) !== "undefined") {traces.clearLayers();}-->
+    <!--if(typeof(features) !== "undefined") {features.clearLayers();}-->
   }  
-  //
+  /*
   // catch Enter key press for places, trigger button
   // traces are handled in core typeahead function
+  */
   $(".typeahead").on('keyup', function(e){
-    console.log($("#input_box").val())
-    if ($("#input_box").val() == ''){
-      clearit()
-      map_init()
-    }
+    <!--console.log($("#input_box").val())-->
+    <!--if ($("#input_box").val() == ''){-->
+      <!--map_init()-->
+    <!--}-->
     if (e.keyCode === 13 && doctype == 'place') {
       searchPlaces()
     } 
@@ -289,15 +292,18 @@
       console.log('clicked place suggestion',$(this))
       searchPlaces()    
     } else if(doctype == 'trace') {
-      console.log('title:',$(this).text())
+      console.log('fetchTraceGeom() params:',$(this).attr('rel'),0,$(this).text())
       fetchTraceGeom($(this).attr('rel'),0,$(this).text())
     }
   })
-  //
-  // perform search, not autocomplete
+  /*
+    perform search, not autocomplete
+  */
   searchPlaces = function (){
     scope = 'search'
     window.doctype = $("input[name='class']:checked").val();
+    // clear filters
+    $(".list-inline").html('')
     $.get("/search/search",{
         qstr: $(".tt-input")[0].value, 
         doc_type: doctype,
@@ -310,15 +316,16 @@
     $('.tt-menu').hide()
   }
 
-  //
-  // fetch geometries for search results
+  /*
+    fetch geometries for search results
+  */
   renderPlaces = function(geoms) {
     if(typeof(features)!=='undefined'){
       features.clearLayers()
     }
     if(typeof(traces)!=='undefined'){ traces.clearLayers() }
     data = {"type":"FeatureCollection","features":geoms}
-    console.log('data prior to render',data)
+    console.log('geodata prior to render',data)
     var count_features = 0
     idToFeature = {}
     mappy.createPane('placePane');
@@ -355,12 +362,24 @@
     
   }
   
+  /* 
+    *** showResults() ***
+    doctype ['place' | 'trace' ]
+    scope: ['suggest' | 'search']
+    
+    From searchPlaces() <- click typeahead item (.tt-selectable)
+    Builds results_div, renders to #result_list; builds geoms[], runs renderPlaces(geoms)
+    
+  */
   function showResults(data,doctype,scope='suggest',title){
-    <!--console.log('showResults(data,doctype,scope):',data)-->
+    <!--console.log('showResults(data,doctype,scope):',data[0])-->
     var results_div = '';
     geoms=[]
-    
+    var types=[], typesArr = []
     data.forEach(function(sug){
+      console.log(sug.types)
+      typesArr=typesArr.concat(sug.types)
+      <!--console.log(typesArr)-->
       <!--supply name for popup, places only-->
       if(!!sug.geom) {
         sug.geom.forEach(function(g){
@@ -373,6 +392,15 @@
       results_div += sugLister(sug,doctype,scope)
     });
     
+    types = Array.from(new Set(typesArr));
+    types.forEach(function(type){
+      $("#filters ul").append('<li class="list-inline-item">'+type+' (x)</li>')
+    })
+    <!--$("#filters").html(types)-->
+    <!--types = new Set(typesArr)-->
+    console.log('types Set',types)
+    
+    
     if(scope=='search') {
       <!--console.log(geoms)-->
       renderPlaces(geoms)
@@ -381,7 +409,9 @@
     $('#result_list').show()
     titleMarkup = doctype=='trace'?'<p class="pl-1 mb-1 small strong">'+title+'</p>':''
     $('#result_list').html(titleMarkup+
-      "<p class='half allcap-heading mb-0 pl-1'>"+(doctype=='place'?'SEARCH RESULTS ('+data.length+')':
+      "<p class='half allcap-heading mb-0 pl-1'>"+(doctype=='place'?'SEARCH RESULTS ('+data.length+
+      ')<span class="float-right filters-link">'+
+      '<a href="#">filters {% fontawesome_icon 'filter' %}</a></span>':
       'PLACES  ('+data.length+')')+'</p>'
       +results_div
     );    
@@ -389,6 +419,9 @@
     // empty the typeahead suggestions
     $(".tt-dataset").html('')
     
+    /* 
+      set events on new elements 
+    */
     // highlight map marker from list
     <!--$("li.body-place").on('click',function(e){-->
     $(".trace-item").on('click',function(e){
@@ -427,7 +460,14 @@
       $(".modal-body").html('<iframe width="100%" height="100%" frameborder="0" scrolling="yes" '+
         'allowtransparency="true" src="'+url+'"></iframe>');
     });
+    $(".filters-link").on("click", function(e){
+      e.preventDefault()
+      $("#filters").toggle(300)
+      <!--$("#filters_link").toggle(500)-->
+    })
   }
+  /* end showResults() */
+  
   styles = {
     'marker_default': {
       fillColor: "#ff0000",

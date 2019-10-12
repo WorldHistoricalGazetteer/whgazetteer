@@ -166,6 +166,7 @@ class SearchView(View):
       #print('trace query:',q)
       
     suggestions = suggester(doctype, q, scope, idx)
+    print('a raw suggestion:',suggestions[0])
     suggestions = [ suggestionItem(s, doctype, scope) for s in suggestions]
     return JsonResponse(suggestions, safe=False)
   
@@ -210,8 +211,11 @@ def contextSearch(idx,doctype,q):
         #print('hit _source: ',hit["_source"])
         result_obj["hits"].append(normalize(hit["_source"],'whg'))
       else:
+        # this is traces
         result_obj["hits"].append(hit["_source"]['body'])
   result_obj["count"] = count_hits
+  # returns 'bodies' for TraceGeomView()
+  # {id, title, relation, when, whg_id}
   return result_obj
 
 class FeatureContextView(View):
@@ -246,12 +250,14 @@ class FeatureContextView(View):
     return JsonResponse(features, safe=False)
 
 def getGeomCollection(idx,doctype,q):
+  # TODO: q includes list of place_ids from trace records
   es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
   #try:
   res = es.search(index='whg02', doc_type='place', body=q, size=300)
   #except:
     #print(sys.exc_info()[0])
   hits = res['hits']['hits']
+  print('hits from getGeomCollection()',hits)
   #geoms=[]
   collection={"type":"FeatureCollection","features":[]}
   for h in hits:
@@ -283,9 +289,12 @@ class TraceGeomView(View):
     trace_id = request.GET.get('search')
     doctype = request.GET.get('doc_type')
     q_trace = {"query": {"bool": {"must": [{"match":{"_id": trace_id}}]}}}
+    
     bodies = contextSearch(idx, doctype, q_trace)['hits'][0]
-    #print('bodies from TraceGeomView->contextSearch',bodies)
+    print('a body from TraceGeomView->contextSearch',bodies[0])
+    
     bodyids = [b['whg_id'] for b in bodies if b['whg_id']]
+    #bodyids = [b['place_id'] for b in bodies if b['place_id']]
     q_geom={"query": {"bool": {"must": [{"terms":{"_id": bodyids}}]}}}
     geoms = getGeomCollection(idx,doctype,q_geom)
     geoms['bodies'] = bodies
