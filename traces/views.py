@@ -27,7 +27,7 @@ class TraceDetailView(DetailView):
         return '/traces/'+str(id_)+'/detail'
 
     def get_context_data(self, *args, **kwargs):
-        context = super(PlacePortalView, self).get_context_data(*args, **kwargs)
+        context = super(TraceDetailView, self).get_context_data(*args, **kwargs)
         es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
         id_ = self.kwargs.get("id")
         pid = self.kwargs.get("pid")

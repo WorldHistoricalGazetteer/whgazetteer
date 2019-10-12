@@ -64,3 +64,17 @@ AREATYPES = {
     ('drawn','User drawn'),
     ('predefined','World Regions'),
 }
+
+TRACETYPES = [
+    ('person','Person'),
+    ('dataset','Dataset'),
+    ('event','Event'),
+    ('journey','Journey'),
+    ('work','Work')
+]
+
+TRACERELATIONS = [
+    ('subject','Subject'),
+    ('waypoint','Waypoint'),
+    ('','')
+]
