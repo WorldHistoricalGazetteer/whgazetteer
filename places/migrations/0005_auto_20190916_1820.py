@@ -49,5 +49,5 @@ class Migration(migrations.Migration):
             model_name='placewhen',
             name='src_id',
             field=models.CharField(default='', max_length=100),
-        ),
+        )
     ]

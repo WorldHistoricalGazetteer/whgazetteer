@@ -119,7 +119,8 @@
         }
     })
     .on('typeahead:selected', function (obj, datum) {
-      <!--console.log(datum)-->
+      // fetchTraceGeom() -> [views.TraceGeomView() <- views.getGeomCollection()] -> showResults() -> sugLister
+      console.log('trace typeahead clicked: datum',datum)
       if(doctype=='trace'){
         fetchTraceGeom(datum._id,0,datum.title)
       }
@@ -217,13 +218,15 @@
   }
 
   function fetchTraceGeom(trace_id,counter,title) {
-    console.log('fetchTraceGeom():',trace_id)
+    <!-- get trace GeoJSON (includes features[] and bodies[] ) -->
     if(typeof(traces) !== "undefined") {traces.clearLayers();}
     if(typeof(features) !== "undefined") {features.clearLayers();}
     $.get("/search/tracegeom",{idx: 'traces', search: trace_id, doc_type: 'trace'},
       function(data){
-        console.log('bodies in this trace',data.bodies)
-        showResults(data.bodies,'trace','suggest',title)
+        <!--console.log('bodies in this trace',data.bodies)-->
+        console.log('this trace.data',data)
+        <!--showResults(data.bodies,'trace','suggest',title)-->
+        showResults(data,'trace','suggest',title)
         var count_features = 0
         idToFeature = {}
         mappy.createPane('tracePane');
@@ -232,7 +235,7 @@
           pane: 'tracePane',
           pointToLayer: function (feature, latlng) {
             count_features +=1;
-            identifier = feature.properties.whg_id;
+            identifier = feature.properties.id;
             <!--console.log(feature,identifier)-->
             marker = L.circleMarker(latlng,
               {
@@ -291,10 +294,11 @@
     if(doctype == 'place') {
       console.log('clicked place suggestion',$(this))
       searchPlaces()    
-    } else if(doctype == 'trace') {
-      console.log('fetchTraceGeom() params:',$(this).attr('rel'),0,$(this).text())
-      fetchTraceGeom($(this).attr('rel'),0,$(this).text())
-    }
+    } 
+    <!--else if(doctype == 'trace') {-->
+      <!--console.log('fetchTraceGeom() params:',$(this).attr('rel'),0,$(this).text())-->
+      <!--<!--fetchTraceGeom($(this).attr('rel'),0,$(this).text())-->-->
+    <!--}-->
   })
   /*
     perform search, not autocomplete
@@ -310,6 +314,7 @@
         scope: scope,
         idx: 'whg02'
       }, function(data){
+        console.log('searchPlaces() data', data)
         // render to html
         showResults(data,doctype,scope);
     });
@@ -372,39 +377,42 @@
     
   */
   function showResults(data,doctype,scope='suggest',title){
-    <!--console.log('showResults(data,doctype,scope):',data[0])-->
+    <!--console.log('showResults(data,doctype,scope):',data)-->
     var results_div = '';
     geoms=[]
     var types=[], typesArr = []
-    data.forEach(function(sug){
-      console.log(sug.types)
-      typesArr=typesArr.concat(sug.types)
-      <!--console.log(typesArr)-->
-      <!--supply name for popup, places only-->
-      if(!!sug.geom) {
-        sug.geom.forEach(function(g){
-          g['properties']['title']=sug.name
-          g['properties']['whgid']=sug.whg_id
-          geoms.push(g)
+    if (doctype == 'place'){
+      data.forEach(function(sug){  
+        console.log(sug.types)
+        typesArr=typesArr.concat(sug.types)      
+        if(!!sug.geom) {
+          sug.geom.forEach(function(g){
+            g['properties']['title']=sug.name
+            g['properties']['whgid'] = (doctype=='place')?sug.whg_id:sug.place_id
+            geoms.push(g)
+          })
+        }
+        types = Array.from(new Set(typesArr));
+        types.forEach(function(type){
+          $("#filters ul").append('<li class="list-inline-item">'+type+' (x)</li>')
         })
-      }
-      // build results div
-      results_div += sugLister(sug,doctype,scope)
-    });
-    
-    types = Array.from(new Set(typesArr));
-    types.forEach(function(type){
-      $("#filters ul").append('<li class="list-inline-item">'+type+' (x)</li>')
-    })
-    <!--$("#filters").html(types)-->
-    <!--types = new Set(typesArr)-->
-    console.log('types Set',types)
-    
-    
-    if(scope=='search') {
-      <!--console.log(geoms)-->
-      renderPlaces(geoms)
-    }
+        if(scope=='search') {
+          renderPlaces(geoms)
+        }
+        console.log('types Set',types)
+        results_div += sugLister(sug, doctype, scope)   
+      } ) 
+    } else {
+        data['bodies'].forEach(function(bod){ 
+          console.log('trace sug bod', bod)
+          results_div += sugLister(bod, doctype, scope)
+        })
+        data['features'].forEach(function(feat){ 
+          console.log('trace sug feat', feat)
+        })
+        
+        <!--results_div += sugLister(sug, doctype, scope)   -->
+    };
      
     $('#result_list').show()
     titleMarkup = doctype=='trace'?'<p class="pl-1 mb-1 small strong">'+title+'</p>':''
@@ -412,7 +420,7 @@
       "<p class='half allcap-heading mb-0 pl-1'>"+(doctype=='place'?'SEARCH RESULTS ('+data.length+
       ')<span class="float-right filters-link">'+
       '<a href="#">filters {% fontawesome_icon 'filter' %}</a></span>':
-      'PLACES  ('+data.length+')')+'</p>'
+      'PLACE ANNOTATIONS IN TRACE  ('+data.length+')')+'</p>'
       +results_div
     );    
 
@@ -468,6 +476,41 @@
   }
   /* end showResults() */
   
+  function sugLister(sug,doctype,scope) {
+    <!--console.log(sug)-->
+    if (doctype=='place') {
+      variants = sug['variants'].length > 0 ? '<br/><i class="text-secondary"> var: '+
+        sug['variants'].slice(0,8).reverse()+'; </i>' : ''
+      if (scope=='search'){
+        snippet = sug['snippet'].length > 0 ? sug['snippet']+'...' : ''
+        ccodes = sug['ccodes'].length > 0 ? ' ['+sug['ccodes']+']' : ''
+        types = ' ('+sug['types']+')'
+        geo = sug['geom'].length > 0 ? ' {% fontawesome_icon 'globe' color='#666' %}' : ''
+        item = '<div class="search-row place-item" data-id="'+sug['whg_id']+
+          '"><a class="place-link" href="#" data-id="'+sug['whg_id']+'"><b>'+
+          sug['name']+'</b></a>'+types+ccodes+geo+variants+
+          <!--'<br/>'+snippet+'</div>'-->
+          '<br/>'+sug['whg_id']+'</div>'
+      } else {
+        item = '<div class="sug_row sug-item">'+sug['name']+' '+variants+'</div>'
+      }
+    } else if (doctype=='trace') {
+      // sug is a trace body (place) here 
+      console.log('sug item (trace)',sug)
+      item =  ('<div class="container"><div class="row sug_row trace-item" data-id='+sug['whg_id']+'>'+
+              '<div class="col-sm-9 pl-0"><a href="#" class="trace-link" data-id="'+sug['whg_id']+'">'+
+              sug['title']+'</a> ('+sug['relation']+')')
+      if ("when" in sug) {
+        item += '<br/><span class="mt-0"><i>'+parseWhen(sug['when'])+'</i></span>'
+      }
+      item += '</div><div class="col-sm-3"></div>'
+      if("depiction" in sug){
+        item += '<div class="trace_detail"><img class="trace-img" src="'+sug['depiction']+'"/></div>'
+      }
+      item += '</div></div>' // trace-item, container
+    }
+    return item
+  }  
   styles = {
     'marker_default': {
       fillColor: "#ff0000",
@@ -514,54 +557,7 @@
     }
     return html
   }
-  function placeList(bods) {
-    html='<ul class="small">'
-    for (b in bods){
-      if(bods[b]['whg_id'] !=null){
-        <!--console.log(bods[b])-->
-        html+='<li class="body-place" data-id="'+bods[b]['whg_id']+'">'+bods[b]['title']+' ('+bods[b]['relation']+')<br/>'
-        html+='when' in bods[b] ? '<span class="mt-0"><i>'+parseWhen(bods[b]['when'])+'</i></span>' : ''
-        html+='</li>'
-      }
-    }
-    html += '</ul>'
-    return html
-  }
-  function sugLister(sug,doctype,scope) {
-    <!--console.log(sug)-->
-    if (doctype=='place') {
-      variants = sug['variants'].length > 0 ? '<br/><i class="text-secondary"> var: '+
-        sug['variants'].slice(0,8).reverse()+'; </i>' : ''
-      if (scope=='search'){
-        snippet = sug['snippet'].length > 0 ? sug['snippet']+'...' : ''
-        ccodes = sug['ccodes'].length > 0 ? ' ['+sug['ccodes']+']' : ''
-        types = ' ('+sug['types']+')'
-        geo = sug['geom'].length > 0 ? ' {% fontawesome_icon 'globe' color='#666' %}' : ''
-        item = '<div class="search-row place-item" data-id="'+sug['whg_id']+
-          '"><a class="place-link" href="#" data-id="'+sug['whg_id']+'"><b>'+
-          sug['name']+'</b></a>'+types+ccodes+geo+variants+
-          <!--'<br/>'+snippet+'</div>'-->
-          '<br/>'+sug['whg_id']+'</div>'
-      } else {
-        item = '<div class="sug_row sug-item">'+sug['name']+' '+variants+'</div>'
-      }
-    } else if (doctype=='trace') {
-      // sug is a trace body (place) here 
-      <!--console.log(sug)-->
-      item =  ('<div class="container"><div class="row sug_row trace-item" data-id='+sug['whg_id']+'>'+
-              '<div class="col-sm-9 pl-0"><a href="#" class="trace-link" data-id="'+sug['whg_id']+'">'+
-              sug['title']+'</a> ('+sug['relation']+')')
-      if ("when" in sug) {
-        item += '<br/><span class="mt-0"><i>'+parseWhen(sug['when'])+'</i></span>'
-      }
-      item += '</div><div class="col-sm-3"></div>'
-      if("depiction" in sug){
-        item += '<div class="trace_detail"><img class="trace-img" src="'+sug['depiction']+'"/></div>'
-      }
-      item += '</div></div>' // trace-item, container
-    }
-    return item
-  }
+
 <!--<span class="float-right">'+-->
                 <!--'<a class="mr-2 ext" data-toggle="modal" data-target="#ext_site" href="'+sug['id']+-->
                 <!--'">{% fontawesome_icon 'external-link' color='#336699' %}</a>'+-->
