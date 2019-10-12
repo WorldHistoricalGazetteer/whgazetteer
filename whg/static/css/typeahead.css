@@ -39,6 +39,7 @@
     font-size: .8rem;
     line-height: 24px;
     border-bottom: 1px solid #ddd;
+    cursor: pointer;
 }
 
 .tt-suggestion.tt-cursor { 

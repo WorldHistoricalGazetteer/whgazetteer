@@ -754,7 +754,7 @@ class DashboardView(ListView):
     me = self.request.user
     if me.username in ['whgadmin','karlg']:
       print('in get_queryset() if',me)
-      return Dataset.objects.all().order_by('-spine','-id')
+      return Dataset.objects.all().order_by('status','-spine','-id')
       #return Dataset.objects.all().filter(id__gt=7).order_by('id')
     else:
       print('in get_queryset() else')
