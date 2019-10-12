@@ -1,16 +1,16 @@
 # datasets.models
 from django.conf import settings
-from django.contrib.auth.models import User
+#from django.contrib.auth.models import User
 from django.contrib.postgres.fields import JSONField, ArrayField
 from django.db import models
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from django.urls import reverse
-from django.utils import timezone
-from django.utils.text import slugify
+#from django.utils import timezone
+#from django.utils.text import slugify
 
-from django_celery_results.models import TaskResult
-from main.choices import *
+#from django_celery_results.models import TaskResult
+from main.choices import AUTHORITIES, FORMATS, DATATYPES, STATUS
 from places.models import Place
 
 def user_directory_path(instance, filename):

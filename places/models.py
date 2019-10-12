@@ -2,15 +2,15 @@
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import JSONField, ArrayField
 from django.db import models
-from django.db.models.signals import pre_delete
-from django.dispatch import receiver
-from django.shortcuts import get_object_or_404
-from django.utils import timezone
+#from django.db.models.signals import pre_delete
+#from django.dispatch import receiver
+#from django.shortcuts import get_object_or_404
+#from django.utils import timezone
 
 from datasets.static.hashes.parents import ccodes as cc
 from main.choices import *
 
-import json
+#import json
 
 class Place(models.Model):
     # let id be auto-maintained, as Django decrees/prefers
