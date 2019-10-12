@@ -39,6 +39,10 @@ class TraceTarget(models.Model):
     title = models.CharField(max_length=255)
     types = ArrayField(models.CharField(max_length=30,choices=TRACETYPES), null=True, blank=True)
     description = models.TextField()
+
+    class Meta:
+        managed = True
+        db_table = 'trace_target'
     
 # FK trace_id >> Trace
 class TraceBody(models.Model):    
@@ -49,3 +53,8 @@ class TraceBody(models.Model):
     title = models.CharField(max_length=255)
     when = JSONField(blank=True, null=True)
     relation = models.CharField(max_length=20, choices=TRACERELATIONS)
+    
+    class Meta:
+        managed = True
+        db_table = 'trace_body'
+    

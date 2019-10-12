@@ -250,24 +250,25 @@ class FeatureContextView(View):
     return JsonResponse(features, safe=False)
 
 def getGeomCollection(idx,doctype,q):
-  # TODO: q includes list of place_ids from trace records
+  # q includes list of place_ids from trace records
   es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
   #try:
   res = es.search(index='whg02', doc_type='place', body=q, size=300)
   #except:
     #print(sys.exc_info()[0])
   hits = res['hits']['hits']
-  print('hits from getGeomCollection()',hits)
+  print(len(hits),'hits from getGeomCollection()')
   #geoms=[]
   collection={"type":"FeatureCollection","features":[]}
   for h in hits:
     if len(h['_source']['geoms'])>0:
+      print('hit _source from getGeomCollection',h['_source'])
       collection['features'].append(
         {"type":"Feature",
          "geometry":h['_source']['geoms'][0]['location'],
          "properties":{
            "title":h['_source']['title']
-           ,"whg_id":h['_source']['whg_id']
+           ,"id":h['_source']['place_id'] if h['_source']['relation']['name'] == 'parent' else h['_id']
          }
         }
       )
@@ -293,10 +294,13 @@ class TraceGeomView(View):
     bodies = contextSearch(idx, doctype, q_trace)['hits'][0]
     print('a body from TraceGeomView->contextSearch',bodies[0])
     
-    bodyids = [b['whg_id'] for b in bodies if b['whg_id']]
-    #bodyids = [b['place_id'] for b in bodies if b['place_id']]
-    q_geom={"query": {"bool": {"must": [{"terms":{"_id": bodyids}}]}}}
+    #bodyids = [b['whg_id'] for b in bodies if b['whg_id']]
+    bodyids = [b['place_id'] for b in bodies if b['place_id']]
+    print('len(bodyids)',len(bodyids))
+    #q_geom={"query": {"bool": {"must": [{"terms":{"_id": bodyids}}]}}}
+    q_geom={"query": {"bool": {"must": [{"terms":{"place_id": bodyids}}]}}}
     geoms = getGeomCollection(idx,doctype,q_geom)
+    print('len(geoms["features"])',len(geoms['features']))
     geoms['bodies'] = bodies
     return JsonResponse(geoms, safe=False)      
 

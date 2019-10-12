@@ -36,13 +36,6 @@ AUTHORITIES = [
     ('whg','WHG'),
 ]
 
-#AUTHORITY_BASEURI = {
-    #'align_tgn':'http://vocab.getty.edu/page/tgn/',
-    #'align_dbp':'http://dbpedia.org/page/',
-    #'align_gn':'http://www.geonames.org/',
-    #'align_wd':'https://www.wikidata.org/wiki/',
-    #'align_whg':'whg:'
-#}
 AUTHORITY_BASEURI = {
     'align_tgn':'tgn:',
     'align_dbp':'dbp:',
@@ -76,5 +69,11 @@ TRACETYPES = [
 TRACERELATIONS = [
     ('subject','Subject'),
     ('waypoint','Waypoint'),
-    ('','')
+    ('birthplace','Birth place'),
+    ('deathplace','Death place'),
+    ('resided','Resided'),
+    ('taught','Taught'),
+    ('enlightened','Enlightened'),
+    ('findspot','Findspot'),
+    ('ruled','Ruled')
 ]
