@@ -28,6 +28,27 @@ class UpdateCountsView(View):
       }    
     return JsonResponse(updates, safe=False)
     
+class LookupView(View):
+  @staticmethod
+  def get(request):
+    print('in LookupView, GET =',request.GET)
+    """
+      args in request.GET:
+        [string] idx: latest name for whg index
+        [string] place_id: from a trace body
+    """
+    es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+    idx = request.GET.get('idx')
+    pid = request.GET.get('place_id')
+    q={"query": {"bool": {"must": [{"match":{"place_id": pid }}]}}}
+    res = es.search(index=idx, doc_type='place', body=q)
+    hit = res['hits']['hits'][0]
+    print('hit[_id] from search/lookup',hit['_id'])
+    #print('LookupView pid',pid)
+    print({"whg_id":hit['_id']})
+    return JsonResponse({"whg_id":hit['_id']}, safe=False)
+    #return {"whg_id":hit['_id']}
+  
 def fetchArea(request):
   aid = request.GET.get('pk')
   area = Area.objects.filter(id=aid)
@@ -74,6 +95,7 @@ def suggestionItem(s,doctype,scope):
         ,"geom": makeGeom(h['place_id'],h['geoms'])
       }
   elif doctype == 'trace':
+    # now with place_id, not whg_id (aka _id; they're transient)
     item = {
       "_id":s['_id'],
       "id":s['hit']['target']['id'],
@@ -119,7 +141,7 @@ def suggester(doctype,q,scope,idx):
       #print('SUGGESTIONS from suggester()',type(suggestions), sortedsugs)
       return sortedsugs
   elif doctype == 'trace':
-    #print('suggester()/trace q:',q)
+    print('suggester()/trace q:',q)
     res = es.search(index='traces',doc_type='trace',body=q)
     hits = res['hits']['hits']
     #print('suggester()/trace hits',hits)
@@ -166,30 +188,11 @@ class SearchView(View):
       #print('trace query:',q)
       
     suggestions = suggester(doctype, q, scope, idx)
-    print('a raw suggestion:',suggestions[0])
+    #print('a raw suggestion (new style):',suggestions[1])
     suggestions = [ suggestionItem(s, doctype, scope) for s in suggestions]
     return JsonResponse(suggestions, safe=False)
   
 """ Returns place or trace suggestions """
-# abandoned??
-#class SuggestView(View):
-  #@staticmethod
-  #def get(request):
-    #print('in SuggestView',request.GET)
-    #"""
-      #args in request.GET:
-          #[string] qstr: chars to be queried for the suggest field search
-          #[string] doc_type: context needed to filter suggestion searches
-    #"""
-    #qstr = request.GET.get('qstr')
-    #doctype = request.GET.get('doc_type')
-    #if doctype == 'place':
-      #q = { "suggest":{"suggest":{"prefix":qstr,"completion":{"field":"suggest"}}} }  
-    #elif doctype == 'trace': 
-      #q = { "query": {"match": {"target.title": {"query": qstr,"operator": "and"}}} }
-    #suggestions = suggester(doctype, q, "suggest" )
-    #suggestions = [ suggestionItem(s,doctype) for s in suggestions]
-    #return JsonResponse(suggestions, safe=False)
   
 ## ***
 ##    get features in current map viewport
@@ -250,7 +253,7 @@ class FeatureContextView(View):
     return JsonResponse(features, safe=False)
 
 def getGeomCollection(idx,doctype,q):
-  # q includes list of place_ids from trace records
+  # q includes list of place_ids from a trace record
   es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
   #try:
   res = es.search(index='whg02', doc_type='place', body=q, size=300)
@@ -262,13 +265,14 @@ def getGeomCollection(idx,doctype,q):
   collection={"type":"FeatureCollection","features":[]}
   for h in hits:
     if len(h['_source']['geoms'])>0:
-      print('hit _source from getGeomCollection',h['_source'])
+      #print('hit _source from getGeomCollection',h['_source'])
       collection['features'].append(
         {"type":"Feature",
          "geometry":h['_source']['geoms'][0]['location'],
          "properties":{
            "title":h['_source']['title']
-           ,"id":h['_source']['place_id'] if h['_source']['relation']['name'] == 'parent' else h['_id']
+           ,"place_id":h['_source']['place_id']
+           ,"whg_id":h['_id']
          }
         }
       )
