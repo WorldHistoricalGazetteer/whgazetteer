@@ -71,6 +71,7 @@
   $(function(){
     $("#filters").hide();
     var idToFeature = {} // for feature lookup
+    var itf_new = []
     var titles = {}
     var searchoption = null;
     clearit()
@@ -226,16 +227,17 @@
         <!--console.log('bodies in this trace',data.bodies)-->
         console.log('this trace.data',data)
         <!--showResults(data.bodies,'trace','suggest',title)-->
-        showResults(data,'trace','suggest',title)
+        <!--showResults(data,'trace','suggest',title)-->
         var count_features = 0
-        idToFeature = {}
+        window.idToFeature = {}
+        window.itf_new = []
         mappy.createPane('tracePane');
         mappy.getPane('tracePane').style.zIndex = 200;
         traces = L.geoJSON(data, {
           pane: 'tracePane',
           pointToLayer: function (feature, latlng) {
             count_features +=1;
-            identifier = feature.properties.id;
+            identifier = feature.properties.whg_id;
             <!--console.log(feature,identifier)-->
             marker = L.circleMarker(latlng,
               {
@@ -251,11 +253,13 @@
             <!--marker.on('mouseout', function (e) {-->
                 <!--this.closePopup();-->
             <!--});-->
-            
+            console.log('marker feature?',marker[0])
             idToFeature[identifier] = marker
+            itf_new.push({"id":identifier,"feature":marker})
             return marker
           }
         }).addTo(mappy);
+
         bounds = traces.getBounds()
         if (bounds.getSouthWest().equals(bounds.getNorthEast())) {
           // single point
@@ -263,6 +267,8 @@
         } else {
           mappy.fitBounds(bounds)
         }
+        
+        showResults(data,'trace','suggest',title)
     });
   }
 
@@ -377,7 +383,7 @@
     
   */
   function showResults(data,doctype,scope='suggest',title){
-    <!--console.log('showResults(data,doctype,scope):',data)-->
+    console.log('showResults(doctype,scope):',doctype,scope)
     var results_div = '';
     geoms=[]
     var types=[], typesArr = []
@@ -402,16 +408,20 @@
         console.log('types Set',types)
         results_div += sugLister(sug, doctype, scope)   
       } ) 
-    } else {
-        data['bodies'].forEach(function(bod){ 
-          console.log('trace sug bod', bod)
-          results_div += sugLister(bod, doctype, scope)
-        })
-        data['features'].forEach(function(feat){ 
-          console.log('trace sug feat', feat)
-        })
+    } else if (doctype == 'trace') {
+      // data has features and bodies
+      console.log('a body',data['bodies'][0])
+      console.log('a feature',data['features'][0])
+      data['bodies'].forEach(function(bod){ 
+        // add a whg_id to bodies
         
-        <!--results_div += sugLister(sug, doctype, scope)   -->
+        results_div += sugLister(bod, doctype, scope)
+      })
+      data['features'].forEach(function(feat){ 
+        <!--console.log('trace sug feat', feat)-->
+      })
+      
+      <!--results_div += sugLister(sug, doctype, scope)   -->
     };
      
     $('#result_list').show()
@@ -476,6 +486,47 @@
   }
   /* end showResults() */
   
+  function idGet(){
+    var myvar
+    $.get("/search/lookup",{
+      idx: 'whg02',
+      place_id: pid
+    }, function(data){
+      myvar = data['whg-id']
+      console.log('myvar',myvar)
+    });
+    return myvar;
+  }
+  function idCallback(pid){
+    var myvar = null
+    function callback(response) {
+      myvar = response;
+      console.log('myvar',myvar)
+    }
+    $.ajax({
+      url: "/search/lookup",
+      data: {idx: 'whg02', place_id: pid},
+      success: function(data){
+        callback(data['whg_id'])
+      }
+    });
+    return myvar;
+  };
+  function idAjax(pid){
+    <!--var myvar = null-->
+    return $.ajax({
+      'async': 'false',
+      'url': "/search/lookup",
+      'data': {idx: 'whg02', place_id: pid},
+      'datatype': 'html',
+      'success': function(response){
+        Data=response;
+        <!--console.log(response)-->
+        <!--console.log('success myvar',myvar)-->
+      }
+    });
+  };
+
   function sugLister(sug,doctype,scope) {
     <!--console.log(sug)-->
     if (doctype=='place') {
@@ -495,10 +546,22 @@
         item = '<div class="sug_row sug-item">'+sug['name']+' '+variants+'</div>'
       }
     } else if (doctype=='trace') {
-      // sug is a trace body (place) here 
-      console.log('sug item (trace)',sug)
-      item =  ('<div class="container"><div class="row sug_row trace-item" data-id='+sug['whg_id']+'>'+
-              '<div class="col-sm-9 pl-0"><a href="#" class="trace-link" data-id="'+sug['whg_id']+'">'+
+      let pid = sug['place_id'] != null ? sug['place_id'] : ""
+      <!-- make object array from idToFeature{}-->
+      if(pid in idToFeature){
+        whgid=idToFeature[pid].feature.properties['whg_id']
+        <!--console.log(whgid,idToFeature[pid].feature.properties['title'])-->
+      <!--console.log('ids',idToFeature[pid].feature.properties['place_id'],idToFeature[pid].feature.properties['whg_id'])-->
+        <!--whgid=idToFeature[pid].feature.properties['whg_id']-->
+      } else {
+        foo=itf_new.filter(function(f){return f.feature.feature.properties['place_id']==pid})
+        whgid = foo.length>0 ? foo[0].id : 'no foo'
+        console.log(foo.length>0?'woe'+foo[0].id:'no foo, mofo')
+        <!--whgid = itf_new[pid]-->
+        <!--whgid = "grrr"-->
+      }
+      item =  ('<div class="container"><div class="row sug_row trace-item" data-id='+whgid+'>'+
+              '<div class="col-sm-9 pl-0"><a href="#" class="trace-link" data-id="'+whgid+'">'+
               sug['title']+'</a> ('+sug['relation']+')')
       if ("when" in sug) {
         item += '<br/><span class="mt-0"><i>'+parseWhen(sug['when'])+'</i></span>'

@@ -15,7 +15,7 @@ class PlacePortalView(DetailView):
   #template_name = 'places/place_portal_acc.html'
 
   # //
-  # given index id returned by typeahead/suggest, get its db record (a parent);
+  # given index id (whg_id) returned by typeahead/suggest, get its db record (a parent);
   # build array of place_ids (parent + children);
   # iterate those to build payload;
   # create addl context values from set
@@ -26,6 +26,7 @@ class PlacePortalView(DetailView):
     print('args',self.args,'kwargs:',self.kwargs)
     es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
     q = {"query":{"bool": {"must": [{"match":{"_id": id_}}]}}}
+    #q = {"query":{"bool": {"must": [{"match":{"place_id": id_}}]}}}
     pid=es.search(index='whg02', doc_type='place', body=q)['hits']['hits'][0]['_source']['place_id']
     self.kwargs['pid'] = pid
     return get_object_or_404(Place, id=pid)
@@ -36,6 +37,7 @@ class PlacePortalView(DetailView):
   
   
   def get_context_data(self, *args, **kwargs):
+    print('get_context_data kwargs',self.kwargs)
     def mm(attrib):
       # names, geoms, types, relations, whens
       extent=[]
