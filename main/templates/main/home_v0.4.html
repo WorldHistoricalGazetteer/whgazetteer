@@ -467,8 +467,7 @@
       whgid = $(this).data('id')
       f = idToFeature[whgid]
       // raise z-index
-      f.bringToFront()
-      f.setStyle(f.feature.geometry.type=='Point'?styles.marker_highlight:styles.line_highlight)
+      f.bringToFront().setStyle(f.feature.geometry.type=='Point'?styles.marker_highlight:styles.line_highlight)
       // get a centroid
       center = f.feature.geometry.type=='Point' ? f._latlng : f.getCenter(f._latlngs)
       mappy.panTo(center)

@@ -88,14 +88,15 @@ class PlacePortalView(DetailView):
       # isolate temporal scoping where exists; build summing object
       whens = [when.jsonb for when in place.whens.all()]     
       names = [name.jsonb for name in place.names.all()]
+      print('names in PlacePortalView',names)
       geoms = [geom.jsonb for geom in place.geoms.all()]
       types = [t.jsonb for t in place.types.all()]
       related = [rel.jsonb for rel in place.related.all()]
       # data object for summing temporality of all attestations for a place
       # TODO: leaving relations out b/c when for lugares is ill-formed
       # cf. 20190416_lugares-lpf.sql, line 63
-      #extents += mm(names),mm(geoms),mm(types),mm(related),mm(whens)
-      extents += mm(names),mm(geoms),mm(types),mm(whens)
+      extents += mm(names),mm(geoms),mm(types),mm(whens),mm(related)
+      #extents += mm(names),mm(geoms),mm(types),mm(whens)
       
       record = {
         "whg_id":id_,
