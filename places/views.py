@@ -1,18 +1,16 @@
-from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
-from django.shortcuts import render, get_object_or_404, redirect
-from django.urls import reverse
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import DetailView
-from django.utils.safestring import SafeString
+
 from datetime import datetime
 from elasticsearch import Elasticsearch
 import simplejson as json
 
-from .models import *
+from places.models import Place
 from datasets.models import Dataset
 
 class PlacePortalView(DetailView):
   template_name = 'places/place_portal.html'
-  #template_name = 'places/place_portal_acc.html'
 
   # //
   # given index id (whg_id) returned by typeahead/suggest, get its db record (a parent);
@@ -121,21 +119,22 @@ class PlacePortalView(DetailView):
     #TODO: compute global minmax for payload
     #print('payload',context['payload'])
     
-    # get traces
-    qt = {"query": {"bool": {"must": [{"match":{"body.whg_id": id_ }}]}}}
+    # GET TRACES; e.g. whg_id(id_) = 13040977 for Khotan (a child); pid = 6135435
+    # but traces have place_id; we have child ids already
+    print('ids',ids)
+    qt = {"query": {"bool": {"must": [  {"terms":{"body.place_id": ids }}]}}}
+    #qt = {"query": {"bool": {"must": [{"match":{"body.whg_id": id_ }}]}}}
     trace_hits = es.search(index='traces', doc_type='trace', body=qt)['hits']['hits']
     # TODO: parse, process
     for h in trace_hits:
-      #print('trace hit h',h)
+      print('trace hit h',h)
       context['traces'].append({
         'trace_id':h['_id'],
         'target':h['_source']['target'],
-        'body':next((x for x in h['_source']['body'] if x['whg_id'] == id_), None),
+        'body':next((x for x in h['_source']['body'] if x['place_id'] == id_), None),
         'bodycount':len(h['_source']['body'])
       })
     
-    #print('context payload',str(context['payload']))
-    #print('context traces',str(context['traces']))
     return context
 
 
