@@ -132,14 +132,16 @@ def suggester(doctype,q,scope,idx):
         for h in hits:
           snippet = h['highlight'] if 'highlight' in h else ''
           suggestions.append(
-            {"_id":h['_id'],
+            {"_id": h['_id'],
              "linkcount":len(h['_source']['links']),
-             "hit":h['_source'],
-             "snippet":snippet}
+             "hit": h['_source'],
+             "snippet":snippet
+            }
           )
       sortedsugs = sorted(suggestions, key=lambda x: x['linkcount'], reverse=True)
       #print('SUGGESTIONS from suggester()',type(suggestions), sortedsugs)
       return sortedsugs
+    
   elif doctype == 'trace':
     print('suggester()/trace q:',q)
     res = es.search(index='traces',doc_type='trace',body=q)
