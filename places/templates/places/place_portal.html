@@ -132,7 +132,7 @@
             </div>
             <div id="place_map" class="col-content small">
                 <p class="mb-0 allcap-heading">GEOGRAPHY <span class="nogeo text-danger"></span>
-                    <span class="float-right">nearby places <input id="fetch-context" type="checkbox"/></span>
+                    <span class="float-right">nearby places (300 max) <input id="fetch-context" type="checkbox"/></span>
                       <!--{# fontawesome_icon 'search-plus'#} -->
                 </p>
                 <div id="map">{% leaflet_map "map" callback="map_init" %}</div>
@@ -314,6 +314,7 @@
           title = data['hits'][i]['title']
           whg_id = data['hits'][i]['whg_id']
           geoms=data['hits'][i]['geoms']
+          <!--console.log(geoms)-->
           for(j in geoms) {
             context["features"].push(
               { "type":"Feature",

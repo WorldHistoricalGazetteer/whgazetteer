@@ -82,9 +82,10 @@ def parseDateTime(string):
   
 # normalize hits json from any authority
 def normalize(h,auth):
-  if auth == 'whg':
-    #try:
+  if auth.startswith('whg'):
     rec = HitRecord(h['place_id'], h['dataset'], h['src_id'], h['title'])
+    print('normalize this: hit',h)
+    print('normalize this: HitRecord',rec)
     rec.whg_id = h['whg_id'] if 'whg_id' in h.keys() else h['relation']['parent']
     # add elements if non-empty in index record
     rec.variants = [n['toponym'] for n in h['names']] # always >=1 names
@@ -92,7 +93,7 @@ def normalize(h,auth):
     key = 'src_label' if 'src_label' in h['types'][0] else 'sourceLabel'      
     rec.types = [t['label']+' ('+t[key]  +')' if t['label']!=None else t[key] \
                 for t in h['types']] if len(h['types']) > 0 else []
-    rec.ccodes = ccDecode(h['ccodes']) if 'ccodes' in h.keys() else []
+    rec.ccodes = ccDecode(h['ccodes']) if ('ccodes' in h.keys() and len(h['ccodes'][0]) > 0) else []
     rec.parents = ['partOf: '+r.label+' ('+parseWhen(r['when']['timespans'])+')' for r in h['relations']] \
                 if 'relations' in h.keys() and len(h['relations']) > 0 else []
     rec.descriptions = h['descriptions'] if len(h['descriptions']) > 0 else []
