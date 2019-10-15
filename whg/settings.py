@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'rest_framework_datatables',
 
     'accounts.apps.AccountsConfig',
+    'api.apps.ApiConfig',
     'areas.apps.AreasConfig',
     'datasets.apps.DatasetsConfig',
     'main.apps.MainConfig',

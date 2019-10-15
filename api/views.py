@@ -1,7 +1,7 @@
 # api.views
 from django.contrib.auth.models import User, Group
 from django.db.models import Count
-from django.shortcuts import get_object_or_404
+from django.shortcuts import render, get_object_or_404
 from rest_framework import generics
 from rest_framework import permissions
 from rest_framework import viewsets
@@ -14,6 +14,10 @@ from accounts.permissions import IsOwnerOrReadOnly, IsOwner
 from datasets.models import Dataset
 from areas.models import Area
 from places.models import Place, PlaceGeom
+
+def union(request):
+    print('in api/union() view for index records')
+    return render(request, 'api/union-dummy.html')
 
 class GeomViewSet(viewsets.ModelViewSet):
     queryset = PlaceGeom.objects.all()
