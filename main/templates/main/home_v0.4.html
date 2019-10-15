@@ -404,7 +404,7 @@
       }) 
       types = Array.from(new Set(typesArr));
       types.forEach(function(type){
-        $("#filters ul").append('<li class="list-inline-item"><a href="#">'+type+'</a></li>')
+        $("#filters ul").append('<li class="list-inline-item" data-type='+type+'><a href="#">'+type+'</a></li>')
       })
       if(scope=='search') {
         renderPlaces(geoms)
@@ -418,9 +418,9 @@
         
         results_div += sugLister(bod, doctype, scope)
       })
-      data['features'].forEach(function(feat){ 
+      <!--data['features'].forEach(function(feat){ -->
         <!--console.log('trace sug feat', feat)-->
-      })
+      <!--})-->
       
       <!--results_div += sugLister(sug, doctype, scope)   -->
     };
@@ -441,8 +441,15 @@
     /* 
       set events on new elements 
     */
-    // highlight map marker from list
-    <!--$("li.body-place").on('click',function(e){-->
+    // filter results list
+    $(".list-inline-item").on('click',function(e){
+      placetype=$(this).data('type')
+      console.log('filtering for these:',placetype,$(this))
+      filtered=$("#result_list div").filter(function(i){
+        return "inhabited places".indexOf($(this).data('types')) > -1
+      }); 
+      console.log(filtered.length, placetype);
+    })
     $(".trace-item").on('click',function(e){
       // reset all markers to default
       traces.setStyle({"fillColor":"blue","radius":5})
@@ -458,6 +465,7 @@
       }
     })
     
+    // highlight map marker from list
     $(".search-row").on('click',function(e){
       // set all layers to default style
       for (i in idToFeature){
@@ -539,7 +547,7 @@
         ccodes = sug['ccodes'].length > 0 ? ' ['+sug['ccodes']+']' : ''
         types = ' ('+sug['types']+')'
         geo = sug['geom'].length > 0 ? ' {% fontawesome_icon 'globe' color='#666' %}' : ''
-        item = '<div class="search-row place-item" data-id="'+sug['whg_id']+
+        item = '<div class="search-row place-item" data-id="'+sug['whg_id']+'" data-types="'+sug['types']+
           '"><a class="place-link" href="#" data-id="'+sug['whg_id']+'"><b>'+
           sug['name']+'</b></a>'+types+ccodes+geo+variants+
           <!--'<br/>'+snippet+'</div>'-->

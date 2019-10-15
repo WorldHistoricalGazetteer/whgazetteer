@@ -1,7 +1,10 @@
 # api.views
 from django.contrib.auth.models import User, Group
 from django.db.models import Count
+from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404
+from django.views.generic import View
+from elasticsearch import Elasticsearch
 from rest_framework import generics
 from rest_framework import permissions
 from rest_framework import viewsets
@@ -9,16 +12,35 @@ from rest_framework import viewsets
 from .serializers import UserSerializer, GroupSerializer, DatasetSerializer, \
     PlaceSerializer, PlaceGeomSerializer, AreaSerializer #, PlaceDRFSerializer
 
-
 from accounts.permissions import IsOwnerOrReadOnly, IsOwner
 from datasets.models import Dataset
 from areas.models import Area
 from places.models import Place, PlaceGeom
 
-def union(request):
-    print('in api/union() view for index records')
-    return render(request, 'api/union-dummy.html')
-
+#def union(request):
+    #print('in api/union() view for index records')
+    #return render(request, 'api/union-dummy.html')
+class indexAPIView(View):
+    @staticmethod
+    def get(request):
+        print('in indexAPIView, GET =',request.GET)
+        """
+      args in request.GET:
+        [string] idx: latest name for whg index
+        [string] _id: same as whg_id in index
+    """
+        es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+        idx = request.GET.get('idx')
+        _id = request.GET.get('_id')
+        q={"query": {"bool": {"must": [{"match":{"_id": _id }}]}}}
+        res = es.search(index=idx, doc_type='place', body=q)
+        # single hit (it's a unique id after all)
+        hit = res['hits']['hits'][0]
+        print('hit[_id] from indexAPIView()',hit['_id'])
+        #print('indexAPIView _id',_id)
+        print('indexAPIView hit',hit)
+        return JsonResponse(hit, safe=True)
+        
 class GeomViewSet(viewsets.ModelViewSet):
     queryset = PlaceGeom.objects.all()
     serializer_class = PlaceGeomSerializer
