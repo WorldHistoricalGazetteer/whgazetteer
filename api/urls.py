@@ -1,6 +1,7 @@
 # api.urls
 
 from django.conf.urls import url, include
+from django.urls import path
 from rest_framework import routers
 from . import views
 
@@ -19,5 +20,6 @@ router.register(r'groups', views.GroupViewSet)
 urlpatterns = [
     url(r'^', include(router.urls)),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    url(r'^union$', views.union, name="union_index")
+    url(r'^union/', views.indexAPIView.as_view(), name='union_api'),
+    #path('union', views.indexAPIView.as_view(), name='union_api'),
 ]
