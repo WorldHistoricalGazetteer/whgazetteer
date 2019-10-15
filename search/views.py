@@ -212,7 +212,7 @@ def contextSearch(idx,doctype,q):
     #print('hit0 _source: ',hits[0]["_source"])
     for hit in hits:
       count_hits +=1
-      if idx=="whg":
+      if idx.startswith("whg"):
         #print('hit _source: ',hit["_source"])
         result_obj["hits"].append(normalize(hit["_source"],'whg'))
       else:
@@ -237,6 +237,7 @@ class FeatureContextView(View):
     idx = request.GET.get('idx')
     bbox = request.GET.get('search')
     doctype = request.GET.get('doc_type')
+    print('context request',idx,doctype)
     q_context_all = {"query": { 
       "bool": {
         "must": [{"match_all":{}}],
