@@ -402,9 +402,11 @@
         <!--console.log('types Set',types)-->
         results_div += sugLister(sug, doctype, scope)   
       }) 
+      <!--console.log('typesArr',typesArr)-->
       types = Array.from(new Set(typesArr));
+      <!--console.log('types',types)-->
       types.forEach(function(type){
-        $("#filters ul").append('<li class="list-inline-item" data-type='+type+'><a href="#">'+type+'</a></li>')
+        $("#filters ul").append('<li class="list-inline-item" data-type="'+type+'"><a href="#">'+type+'</a></li>')
       })
       if(scope=='search') {
         renderPlaces(geoms)
@@ -441,15 +443,23 @@
     /* 
       set events on new elements 
     */
-    // filter results list
+    // filter results list (old school JS)
     $(".list-inline-item").on('click',function(e){
-      placetype=$(this).data('type')
-      console.log('filtering for these:',placetype,$(this))
-      filtered=$("#result_list div").filter(function(i){
-        return "inhabited places".indexOf($(this).data('types')) > -1
-      }); 
-      console.log(filtered.length, placetype);
+      <!--$("#result_list div").remove()-->
+      filter=$(this).data('type')
+      result_div = document.getElementById("result_list")
+      results = result_div.getElementsByTagName("div")
+      for (i = 0; i < results.length; i++) {
+        types = results[i].getAttribute('data-types')
+        <!--console.log('results[i]',results[i])-->
+        if (types.indexOf(filter) > -1){
+          results[i].style.display = "";
+        } else {
+          results[i].style.display = "none";
+        }
+      }
     })
+    
     $(".trace-item").on('click',function(e){
       // reset all markers to default
       traces.setStyle({"fillColor":"blue","radius":5})
