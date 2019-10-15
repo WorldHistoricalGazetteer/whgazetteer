@@ -229,7 +229,7 @@
   $('.flash-geo').mouseover(function(e){
     e.preventDefault()
     feature = idToFeature[$(this).data('id')]
-    feature.bringToFront().setStyle({fillColor:"yellow",fillOpacity: 0.8})
+    feature.bringToFront().setStyle({fillColor:"red",fillOpacity: 1})
     window.fopt = feature.options
   })
   $('.flash-geo').mouseleave(function(e){
