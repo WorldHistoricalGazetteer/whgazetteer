@@ -46,7 +46,9 @@
       </div>
       <!-- separate div for full search results -->
       <div id="filters" class="hidden">
-        <p class='half allcap-heading mb-0 pl-1'>PLACE TYPES (select to limit)</p>
+        <p class='half allcap-heading mb-0 pl-1'>PLACE TYPES (select to limit)
+          <span class="float-right clear-filter hidden mr-2"><a href="#">restore all</a></span>
+        </p>
         <ul class="list-inline"></ul>
       </div>
       <div id="result_list" class="hidden"></div>
@@ -68,6 +70,7 @@
 
 
 <script type="text/javascript">
+  var filterLayers = null
   $(function(){
     $("#filters").hide();
     var idToFeature = {} // for feature lookup
@@ -413,11 +416,8 @@
       }
     } else if (doctype == 'trace') {
       // data has features and bodies
-      <!--console.log('a body',data['bodies'][0])-->
-      <!--console.log('a feature',data['features'][0])-->
       data['bodies'].forEach(function(bod){ 
-        // add a whg_id to bodies
-        
+        // add a whg_id to bodies        
         results_div += sugLister(bod, doctype, scope)
       })
       <!--data['features'].forEach(function(feat){ -->
@@ -445,21 +445,42 @@
     */
     // filter results list (old school JS)
     $(".list-inline-item").on('click',function(e){
+      $(".clear-filter").show()
+      if(filterLayers != null){filterLayers.addTo(mappy)}
+      $(".list-inline-item").removeClass('strong')
       <!--$("#result_list div").remove()-->
+      $(this).addClass('strong')
       filter=$(this).data('type')
       result_div = document.getElementById("result_list")
       results = result_div.getElementsByTagName("div")
+      _ids=[]
       for (i = 0; i < results.length; i++) {
         types = results[i].getAttribute('data-types')
+        _id = results[i].getAttribute('data-id')
         <!--console.log('results[i]',results[i])-->
         if (types.indexOf(filter) > -1){
           results[i].style.display = "";
         } else {
           results[i].style.display = "none";
+          _ids.push(_id)
         }
       }
+      // filter map too
+      <!--console.log('filter these from map',_ids)-->
+      hide_these = $.map(_ids,function(i){
+        return idToFeature[i]
+      })
+      window.filterLayers = L.layerGroup(hide_these)
+      for(l in hide_these){hide_these[l].removeFrom(mappy)}
+      
+      <!--mappy.removeLayer(filterThese)-->
+      <!--console.log('feats bgone',hide_these)-->
     })
-    
+    $(".clear-filter").on('click',function(e){
+      filterLayers.addTo(mappy)
+      $(".list-inline-item").removeClass('strong')
+      $(".clear-filter").hide()
+    })
     $(".trace-item").on('click',function(e){
       // reset all markers to default
       traces.setStyle({"fillColor":"blue","radius":5})
