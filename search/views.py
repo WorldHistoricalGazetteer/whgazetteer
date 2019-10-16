@@ -177,7 +177,9 @@ class SearchView(View):
               "query": {"bool": {
               "must": [
                 {"exists": {"field": "whg_id"}},
-                {"match": {"title": qstr}}
+                #{"terms": {"suggest.input": [qstr]}}
+                #{"match": {"title": qstr}}
+                {"multi_match": {"query": qstr, "fields": ["title","names.toponym"]}}
                 #,{"match": {"descriptions.value": qstr}}
               ]
               ,"should":[

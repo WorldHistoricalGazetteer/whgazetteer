@@ -278,8 +278,9 @@
     $("#filters").hide()
     $(".list-inline").html('')
     <!--features.clearLayers()-->
-    if(typeof(traces) !== "undefined") {traces.clearLayers();}
-    if(typeof(features) !== "undefined") {features.clearLayers();}
+    if(typeof(traces) !== "undefined") {traces.clearLayers(); mappy.setView([38, 10], 2.4)}
+    if(typeof(features) !== "undefined") {features.clearLayers(); mappy.setView([38, 10], 2.4)}
+    
   }  
   /*
   // catch Enter key press for places, trigger button
@@ -533,7 +534,8 @@
     <!--console.log(sug)-->
     if (doctype=='place') {
       variants = sug['variants'].length > 0 ? '<br/><i class="text-secondary"> var: '+
-        sug['variants'].slice(0,8).reverse()+'; </i>' : ''
+        sug['variants'].slice(0,8).sort()+'; </i>' : ''
+      console.log(sug['variants'])
       if (scope=='search'){
         snippet = sug['snippet'].length > 0 ? sug['snippet']+'...' : ''
         ccodes = sug['ccodes'].length > 0 ? ' ['+sug['ccodes']+']' : ''
@@ -552,15 +554,10 @@
       <!-- make object array from idToFeature{}-->
       if(pid in idToFeature){
         whgid=idToFeature[pid].feature.properties['whg_id']
-        <!--console.log(whgid,idToFeature[pid].feature.properties['title'])-->
-      <!--console.log('ids',idToFeature[pid].feature.properties['place_id'],idToFeature[pid].feature.properties['whg_id'])-->
-        <!--whgid=idToFeature[pid].feature.properties['whg_id']-->
       } else {
         foo=itf_new.filter(function(f){return f.feature.feature.properties['place_id']==pid})
         whgid = foo.length>0 ? foo[0].id : 'no foo'
-        console.log(foo.length>0?'woe'+foo[0].id:'no foo, mofo')
-        <!--whgid = itf_new[pid]-->
-        <!--whgid = "grrr"-->
+        <!--console.log(foo.length>0?'woe'+foo[0].id:'no foo, mofo')-->
       }
       item =  ('<div class="container"><div class="row sug_row trace-item" data-id='+whgid+'>'+
               '<div class="col-sm-9 pl-0"><a href="#" class="trace-link" data-id="'+whgid+'">'+
@@ -612,8 +609,6 @@
       'datatype': 'html',
       'success': function(response){
         Data=response;
-        <!--console.log(response)-->
-        <!--console.log('success myvar',myvar)-->
       }
     });
   };
@@ -658,7 +653,6 @@
     location.href = 'places/'+whgid+'/portal'
   });
         
-
   // TODO: this doesn't reach into when.timespans; Indias data malformed
   function parseWhen(when){
     html=''
@@ -671,11 +665,6 @@
     return html
   }
 
-<!--<span class="float-right">'+-->
-                <!--'<a class="mr-2 ext" data-toggle="modal" data-target="#ext_site" href="'+sug['id']+-->
-                <!--'">{% fontawesome_icon 'external-link' color='#336699' %}</a>'+-->
-              <!--'</span>-->
-              
   $("[rel='tooltip']").tooltip();
   $('label.btn').click(function(){
     $(".autosuggest").html('')
