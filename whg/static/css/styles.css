@@ -68,12 +68,23 @@ i.fa-eye { margin-bottom: -5px;}
   home, search
 **/
 .list-inline { padding-left: 4px;}
+.active-filter {font-weight:bold; color:#993333;}
 #filters {
   background-color: #fff;
   font-size: small;
   padding: 5px 0 5px 8px;
   margin-top:8px;
   box-shadow: 2px 2px #999;
+}
+#input_box {
+  width: 250px;
+  height: 24px;
+  padding: 4px 6px;
+  font-size: .8rem;
+  line-height: 24px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  outline: none;
 }
 .input-loading {    
     background-color: #ffffff;
