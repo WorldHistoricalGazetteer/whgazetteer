@@ -39,8 +39,8 @@
           </div>          
           <div class="input-group input-group-sm mb-3">
             <div id="search_input">
-              <!--<input id="input_box" class="typeahead" type="text" placeholder="Enter place name">-->
-              <input id="input_box" type="text" placeholder="Enter place name">
+              <input id="input_box" type="text" style="font-size:.8rem;"placeholder="Enter place name">
+              <input id="input_box_traces" class="typeahead hidden" type="text" placeholder="Enter term or name">
             </div>
           </div>
         <!--<div id="search_filters" class="hidden">searchfilters</div>-->
@@ -93,7 +93,7 @@
            var doctype = $("input[name='class']:checked").val();
            settings.url = '/search/search?doc_type='+doctype+'&scope=suggest&'+$.param({
                 qstr: query,
-                idx: doctype == 'place' ? 'whg02' : 'traces'
+                idx: doctype == 'place' ? 'whg02' : 'trace'
             });
            return settings;
          } 
@@ -142,6 +142,14 @@
   //
   // dynamic search box placeholder
   $('input[type=radio][name=class]').change(function() {
+    console.log('changed class',$(this).val())
+    if ($(this).val() == 'place'){
+      $("#input_box").show()
+      $("#input_box_traces").hide()
+    } else {
+      $("#input_box").hide()
+      $("#input_box_traces").show()    
+    }
     $('#input_box').val('')
     $('#input_box').attr("placeholder",this.getAttribute("rel"));
     clearit()
@@ -272,6 +280,7 @@
 
   // clear results, type filter
   clearit = function(){
+    console.log('clearit() called')
     $("#search_input").val('')
     $("#result_list").html('')
     $("#result_list").hide()
@@ -293,7 +302,20 @@
       clearit()
     }
     doctype = $("input[name='class']:checked").val()
-    if (e.keyCode === 13 && doctype == 'place') {
+    <!--if (e.keyCode === 13 && doctype == 'place') {-->
+    if (e.keyCode === 13) {
+      console.log('enter on input_box')
+      searchPlaces()
+    } 
+  })
+  // hack: typeahead disabled for place
+  // only valid if doctype has been changed
+  $(".typeahead").on('keyup', function(e){
+    <!--if($('#input_box').val().length < 3) {-->
+      <!--clearit()-->
+    <!--}-->
+    doctype = $("input[name='class']:checked").val()
+    if (e.keyCode === 13) {
       searchPlaces()
     } 
   })
@@ -310,8 +332,12 @@
     perform search, not autocomplete
   */
   searchPlaces = function (){
-    scope = 'search'
     window.doctype = $("input[name='class']:checked").val();
+    
+    // hack disabled typeahead
+    scope = doctype =='place' ? 'search' : 'suggest'
+    // end hack
+    index = doctype =='place' ? 'whg02' : 'traces'    
     // clear filters
     $(".list-inline").html('')
     $.get("/search/search",{
@@ -320,7 +346,7 @@
         qstr: $('#input_box').val(), 
         doc_type: doctype,
         scope: scope,
-        idx: 'whg02'
+        idx: index
       }, function(data){
         // render to html
         showResults(data,doctype,scope);
@@ -535,7 +561,7 @@
     if (doctype=='place') {
       variants = sug['variants'].length > 0 ? '<br/><i class="text-secondary"> var: '+
         sug['variants'].slice(0,8).sort()+'; </i>' : ''
-      console.log(sug['variants'])
+      <!--console.log(sug['variants'])-->
       if (scope=='search'){
         snippet = sug['snippet'].length > 0 ? sug['snippet']+'...' : ''
         ccodes = sug['ccodes'].length > 0 ? ' ['+sug['ccodes']+']' : ''
