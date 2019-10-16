@@ -110,7 +110,7 @@ def suggestionItem(s,doctype,scope):
 def suggester(doctype,q,scope,idx):
   # returns only parents; children retrieved into place portal
   #print('suggester',doctype,q)
-  es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+  es = Elasticsearch([{'host': 'localhost', 'port': 9200, 'timeout':30, 'max_retries':10, 'retry_on_timeout':True}])
   suggestions = []
   
   if doctype=='place':
@@ -170,7 +170,8 @@ class SearchView(View):
     idx = request.GET.get('idx')
     if doctype == 'place':
       if scope == 'suggest':
-        q = { "suggest":{"suggest":{"prefix":qstr,"completion":{"field":"suggest"}} } } 
+        q = { "suggest":{"suggest":{"prefix":qstr,"completion":{"field":"suggest"}} } }
+        print('suggest query:',q)
       elif scope == 'search':
         q = { "size": 200,
               "query": {"bool": {
@@ -184,10 +185,11 @@ class SearchView(View):
               ]
             }},
             "highlight": {"fields" : {"descriptions.value" : {}}}
-          }
-    elif doctype == 'trace': 
+        }
+        print('search query:',q)
+    elif doctype == 'trace':
       q = { "query": {"match": {"target.title": {"query": qstr,"operator": "and"}}} }
-      #print('trace query:',q)
+      print('trace query:',q)
       
     suggestions = suggester(doctype, q, scope, idx)
     #print('a raw suggestion (new style):',suggestions[1])

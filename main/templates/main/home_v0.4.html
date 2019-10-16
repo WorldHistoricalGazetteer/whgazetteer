@@ -90,7 +90,7 @@
            var doctype = $("input[name='class']:checked").val();
            settings.url = '/search/search?doc_type='+doctype+'&scope=suggest&'+$.param({
                 qstr: query,
-                idx: 'whg02'
+                idx: doctype == 'place' ? 'whg02' : 'traces'
             });
            return settings;
          } 
