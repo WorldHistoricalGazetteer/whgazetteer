@@ -33,14 +33,14 @@
             <div class="form-check form-check-inline">
               <input class="form-check-input hover" type="radio" name="class" id="r_trace" value="trace" rel="Enter term or name">
               <label class="form-check-label" for="r_trace">Traces
-                  <span class="ml-1"><a href="" title="historical entities having spatial-temporal 'footprints'" rel="tooltip">{% fontawesome_icon 'question-circle' color='#336699' %}</a></span>                
+                  <span class="ml-1"><a href="#" onClick='return false;' title="historical entities having spatial-temporal 'footprints'" rel="tooltip">{% fontawesome_icon 'question-circle' color='#336699' %}</a></span>                
               </label>
             </div>
           </div>          
           <div class="input-group input-group-sm mb-3">
             <div id="search_input">
               <input id="input_box" type="text" style="font-size:.8rem;"placeholder="Enter place name">
-              <input id="input_box_traces" class="typeahead hidden" type="text" placeholder="Data sparse, try 'bud' for now">
+              <input id="input_box_traces" class="typeahead hidden" type="text" placeholder="Traces">
             </div>
           </div>
         <!--<div id="search_filters" class="hidden">searchfilters</div>-->
@@ -385,7 +385,7 @@
       types = Array.from(new Set(typesArr));
       <!--console.log('types',types)-->
       types.forEach(function(type){
-        $("#filters ul").append('<li class="list-inline-item" data-type="'+type+'"><a href="#">'+type+'</a></li>')
+        $("#filters ul").append('<li class="filter list-inline-item" data-type="'+type+'"><a href="#">'+type+'</a></li>')
       })
       if(scope=='search') {
         renderPlaces(geoms)
@@ -416,38 +416,43 @@
     */
     //
     // filter results list (old school JS)
-    $(".list-inline-item").on('click',function(e){
+    $(".filter").on('click',function(e){
       $(".clear-filter").show()
       if(filterLayers != null){filterLayers.addTo(mappy)}
-      $(".list-inline-item").removeClass('strong')
-      <!--$("#result_list div").remove()-->
+      $(".filter").removeClass('active-filter')
       $(this).addClass('active-filter')
       filter=$(this).data('type')
       result_div = document.getElementById("result_list")
       results = result_div.getElementsByTagName("div")
-      _ids=[]
+      hide_ids=[]; show_ids = []
       for (i = 0; i < results.length; i++) {
         types = results[i].getAttribute('data-types')
         _id = results[i].getAttribute('data-id')
         <!--console.log('results[i]',results[i])-->
         if (types.indexOf(filter) > -1){
           results[i].style.display = "";
+          show_ids.push(_id)
         } else {
           results[i].style.display = "none";
-          _ids.push(_id)
+          hide_ids.push(_id)
         }
       }
       // filter map too
       <!--console.log('filter these from map',_ids)-->
-      hide_these = $.map(_ids,function(i){
+      hide_these = $.map(hide_ids,function(i){
+        return idToFeature[i]
+      })
+      show_these = $.map(show_ids,function(i){
         return idToFeature[i]
       })
       window.filterLayers = L.layerGroup(hide_these)
-      for(l in hide_these){hide_these[l].removeFrom(mappy)}      
+      window.showLayers = L.featureGroup(show_these)
+      for(l in hide_these){hide_these[l].removeFrom(mappy)}
+      mappy.fitBounds(showLayers.getBounds())
     })
     $(".clear-filter").on('click',function(e){
       filterLayers.addTo(mappy)
-      $(".list-inline-item").removeClass('active-filter')
+      $(".filter").removeClass('active-filter')
       $(".clear-filter").hide()
     })
     $(".hide-filter").on('click',function(e){
