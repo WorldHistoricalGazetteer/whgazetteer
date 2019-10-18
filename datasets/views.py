@@ -260,7 +260,9 @@ def review(request, pk, tid, passnum): # dataset pk, celery recon task_id
               print('see if match for '+str(placeid)+' ('+str(hits[x]['json']['place_id'])+
                     ') is parent or child in index')
               indexMatch(placeid, hits[x]['json']['place_id'])
-              
+          elif hits[x]['match'] == 'none' and ds.label in ['gn500','gnmore','tgn_filtered_01']:
+            indexMatch(placeid)
+            print('made record for:',placeid)
           # flag as reviewed
           matchee = get_object_or_404(Hit, id=hit.id)
           matchee.reviewed = True
@@ -353,13 +355,13 @@ def task_delete(request,tid,scope="foo"):
     h.save()
   placelinks = PlaceLink.objects.all().filter(task_id=tid)
   placegeoms = PlaceGeom.objects.all().filter(task_id=tid)
-  placenames = PlaceName.objects.all().filter(task_id=tid)
-  placedescriptions = PlaceDescription.objects.all().filter(task_id=tid)
+  #placenames = PlaceName.objects.all().filter(task_id=tid)
+  #placedescriptions = PlaceDescription.objects.all().filter(task_id=tid)
 
   placelinks.delete()
   placegeoms.delete()
-  placenames.delete()
-  placedescriptions.delete()
+  #placenames.delete()
+  #placedescriptions.delete()
 
   # zap task record & its hits
   if scope == 'task':

@@ -123,8 +123,11 @@
                 <div class="match_radio custom-control custom-radio">
                   <span class="mr-2 globeflash">
                   {% if form.json.value|get:"geoms" != Null %}
-                    <a class="geolink" rel="tooltip" id="{{ form.authrecord_id.value }}" 
-                      href="javascript:{ zoomTo('tgn:'+{{ form.authrecord_id.value }}) }" title="Flash map marker">
+                    <a class="geolink" rel="tooltip" 
+                      {% if ds_label == 'tgn_filtered_01' %}
+                        id="{{ form.json.value|get:"place_id" }}" 
+                      {% else %}"{{ form.authrecord_id.value }}"{% endif %}
+                      href="javascript:{ zoomTo(+{{ form.authrecord_id.value }} ) }" title="Flash map marker">
                       {% fontawesome_icon 'globe' color='#000' %}</a>
                   </span>
                   <span class="inline">{{ form.match }}</span>
@@ -323,7 +326,7 @@
   $( ".geolink" ).hover(function() {
       <!--console.log($(this))-->
       let id = $(this)[0].id
-      <!--console.log('id:',id)-->
+      console.log('id:',id)
       feat = idToFeature[id]
       ogcolor = feat.options.fillColor
       feat.setStyle(
