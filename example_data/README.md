@@ -16,7 +16,7 @@
 
 **epirus_60.tsv**: Ottoman era Greek places from Ali Pasha papers
 
-**gn50.tsv**: 50 large population cities from GeoNames
+**gncities50.tsv**: 50 large cities from GeoNames
 
 **topostext\_07.jsonld**: ToposText (Greece)
 
