@@ -271,7 +271,7 @@
           // single point
           mappy.setView(bounds.getCenter(),5)
         } else {
-          mappy.fitBounds(bounds)
+          mappy.fitBounds(bounds,{padding: [200, 0]})
         }
         
         showResults(data,'trace','suggest',title)
@@ -280,7 +280,7 @@
 
   // clear results, type filter
   clearit = function(){
-    console.log('clearit() called')
+    <!--console.log('clearit() called')-->
     $("#search_input").val('')
     $("#result_list").html('')
     $("#result_list").hide()
@@ -448,7 +448,11 @@
       window.filterLayers = L.layerGroup(hide_these)
       window.showLayers = L.featureGroup(show_these)
       for(l in hide_these){hide_these[l].removeFrom(mappy)}
-      mappy.fitBounds(showLayers.getBounds())
+      mappy.fitBounds(showLayers.getBounds(), {padding: [200, 0]})
+      if(showLayers.getLayers().length ==1){
+        mappy.setZoom(5)
+      }
+      
     })
     $(".clear-filter").on('click',function(e){
       filterLayers.addTo(mappy)
