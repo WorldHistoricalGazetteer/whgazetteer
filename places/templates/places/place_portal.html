@@ -158,7 +158,7 @@
                     <a href="" data-ctr={{ forloop.counter0 }} data-id={{t.trace_id}} class="trace-geo ml-1">{% fontawesome_icon 'globe' color='#336699' %}</a>
                     {% endif %}
                     {% if t.target.depiction %}
-                    <a data-toggle="tooltip" title="<img class='trace-img' src='{{ t.target.depiction }}'/>" class="ml-1">{% fontawesome_icon 'image' color='#336699' %}</a>                      
+                    <a href="#" data-toggle="tooltip" data-html="true" data-trigger="click" data-container="#place_traces"data-boundary="viewport" title="<img class='trace-img' src='{{ t.target.depiction }}'/>" class="ml-1 tip" data-placement="auto" style="z-index:10000 !important;">{% fontawesome_icon 'image' color='#336699' %}</a>                      
                     {% endif %}
                   </li>
                   <!--{ t }}-->
@@ -216,6 +216,7 @@
       <!--window.open(url,'_blank')-->
     <!--}-->
   <!--});-->
+  
   $('.ext').on('click', function(e) {
     e.preventDefault();
     str=$(this).text()

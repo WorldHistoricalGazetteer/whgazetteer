@@ -57,8 +57,8 @@
         <h5 class="text-secondary">Reconciliation Tasks 
           <span class="small help-matches" data-id="reconciliation">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
           {% if object.owner.id == user.id or user.is_superuser %}
-          <span class="float-right"><a href="{% url 'datasets:dataset_recon' object.id %}" class="ml-5">
-            {% fontawesome_icon 'plus-square' color='#336699' %}</a></span>{% endif %}
+          <span class="float-right half"><a href="{% url 'datasets:dataset_recon' object.id %}" class="ml-5">
+            add task {% fontawesome_icon 'plus-square' color='#336699' %}</a></span>{% endif %}
         </h5>
         {% if object.owner.id == user.id or user.is_superuser %}
         {% for t in tasks %}

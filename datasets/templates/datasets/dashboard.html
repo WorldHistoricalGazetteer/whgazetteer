@@ -14,8 +14,10 @@
       <!--<p>{# for message in messages %}{ message }}{# endfor %}</p>-->
       <!--{# endif %}-->
       <h4 class="mt-3">Datasets
-        {{ referrer }}
-        <a href="{% url 'datasets:dataset-create' %}" class="ml-5">{% fontawesome_icon 'plus-square' color='#336699' %}</a>
+        {{ referrer }}<span class="half">
+        <a href="{% url 'datasets:dataset-create' %}" class="ml-5">
+          {% fontawesome_icon 'plus-square' color='#336699' %} create new
+        </a></span>
       </h4>
       <div class="list-box">
         <table class="table table-striped">
