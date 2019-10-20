@@ -261,6 +261,7 @@ em { color: #993333;}
 **/
 #map_app.leaflet-container { height: 550px;}
 #zoom_extents { display:none; font-size: 1.2rem;}
+.leaflet-bottom.leaflet-right {z-index:500;}
 
 /**
   recon

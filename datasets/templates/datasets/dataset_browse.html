@@ -20,14 +20,14 @@
 <div class="container">
   <h4 class="mt-3">{{ ds.name }}
     <span class="small text-muted">("{{ ds.label }}")
-      <a href="{% url 'datasets:dataset-detail' ds.id %}" title="Dataset details" rel="tooltip"
-        class="">{% fontawesome_icon 'cog' color='#336699' %}</a>
+      <a href="{% url 'datasets:dataset-detail' ds.id %}" title="Dataset portal" rel="tooltip"
+        class="small">{% fontawesome_icon 'cog' color='#336699' %} dataset portal</a>
     </span><span class="toomany small text-danger ml-3"></span>
     <span id="feature_count" class="half float-right"></span>
   </h4>
   <div class="container mt-3">
     <div class="row">
-      <div id="drftable_detail" class="col-sm-7 pl-0">
+      <div id="drftable_detail" class="col-sm-6 pl-0">
         <div id="drftable_title"></div>
         <div id="map">
             {% leaflet_map "map" callback="map_init" %}
@@ -155,17 +155,6 @@
     table.on( 'draw', function () {
       setRowEvents();
     });
-    <!--$.get("/api/geoms", {ds: "{{ ds.label }}", f: "{{ filter }}" },-->
-      <!--function(data){-->
-        <!--console.log('data, label',data,dslabel)-->
-        <!--$("#feature_count").html(data.count+' geometries so far')-->
-        <!--geom = {"type":"FeatureCollection","features":[]}-->
-        <!--<!--$.each(data.results, function( index, record ) {-->-->
-          <!--<!--console.log(index,record)-->-->
-        <!--<!--})-->-->
-        <!--geom['features'] = data.results-->
-        <!--renderMap(geom,dslabel)-->
-      <!--})    -->
   })  
 
   // expose leaflet map for events, call it 'mappy'
@@ -435,7 +424,8 @@
     // CCODES
     //
     if (data.ccodes.length > 0) {
-      right+='<p><b>Modern country bounds</b>: '+ data.countries+'</p>'
+      console.log(data.countries)
+      right+='<p><b>Modern country bounds</b>: '+ data.countries.join(', ')+'</p>'
     }
     
     left += '</div>'
