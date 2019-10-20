@@ -85,7 +85,7 @@ def suggestionItem(s,doctype,scope):
       #print('place search "s":',s)
       #print('place search hit:',h)
       item = {
-        "whg_id": h['whg_id'],
+        "whg_id": h['whg_id'] if 'whg_id' in h else '',
         "linkcount":s['linkcount'],
         "name": h['title'],
         "variants":[n for n in h['suggest']['input'] if n != h['title']],
@@ -177,10 +177,11 @@ class SearchView(View):
               "query": {"bool": {
               "must": [
                 {"exists": {"field": "whg_id"}},
-                #{"terms": {"suggest.input": [qstr]}}
-                #{"match": {"title": qstr}}
-                {"multi_match": {"query": qstr, "fields": ["title","names.toponym"]}}
-                #,{"match": {"descriptions.value": qstr}}
+                {"multi_match": {
+                  "query": qstr, 
+                  "fields": ["title","names.toponym"],
+                  "type": "phrase"
+                }}
               ]
               ,"should":[
                 {"match": {"descriptions.value": qstr}}
