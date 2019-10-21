@@ -4,6 +4,7 @@ html, body {
   height: 100%;
 }
 
+
 /**
   modals
 **/
@@ -230,7 +231,7 @@ em { color: #993333;}
 .trace-img {height: 250px;}
 #place_home_l {
   height: calc(100vh - 200px);
-  overflow: scroll;
+  overflow-y: auto;
 }
 #place_home_l tr, th {
   line-height: .2rem;

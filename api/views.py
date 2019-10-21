@@ -37,6 +37,11 @@ class indexAPIView(View):
         # single hit (it's a unique id after all)
         hit = res['hits']['hits'][0]
         print('hit[_id] from indexAPIView()',hit['_id'])
+        # now get traces
+        # does hit have children?
+        
+        #qt={"query": {"bool": {"must": [{"match":{"_id": _id }}]}}}
+        #res_t = es.search(index="traces", doc_type='trace', body=q)
         #print('indexAPIView _id',_id)
         print('indexAPIView hit',hit)
         return JsonResponse(hit, safe=True)
