@@ -218,24 +218,26 @@ def review(request, pk, tid, passnum): # dataset pk, celery recon task_id
                 )
               ds.save()
 
-              # create link for matched record
-              #link = PlaceLink.objects.create(
-                #place_id = place,
-                #task_id = tid,
-                #src_id = place.src_id,
-                #jsonb = {
-                  #"type":hits[x]['match'],
-                  #"identifier":link_uri(task.task_name,hits[x]['authrecord_id'] if hits[x]['authority'] != 'whg' \
-                      #else hits[x]['json']['place_id'])
-                #}
-              #)
+              # create place_link for matched authority record
+              print('place_link for', task.task_name,hits[x]['authrecord_id'])
+              link = PlaceLink.objects.create(
+                place_id = place,
+                task_id = tid,
+                src_id = place.src_id,
+                jsonb = {
+                  "type":hits[x]['match'],
+                  "identifier":link_uri(task.task_name,hits[x]['authrecord_id'] if hits[x]['authority'] != 'whg' \
+                      else hits[x]['json']['place_id'])
+                }
+              )
+              print('place_link', link)
               
-              ## update <ds>.numlinked, <ds>.total_links
-              #ds.numlinked = ds.numlinked +1
-              #ds.total_links = ds.total_links +1
-              #ds.save()
+              # update <ds>.numlinked, <ds>.total_links
+              ds.numlinked = ds.numlinked +1
+              ds.total_links = ds.total_links +1
+              ds.save()
   
-              # 
+              # grab links in the case of wikidata
               # TODO: check not duplicate
               if 'links' in hits[x]['json']:
                 for l in hits[x]['json']['links']:
