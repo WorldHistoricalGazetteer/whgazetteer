@@ -526,6 +526,7 @@ def ds_insert_tsv(request, pk):
   context = {'status': 'inserting'} #??
 
   #infile=codecs.open('example_data/tgn2000.tsv','r','utf-8')
+  #infile=codecs.open('example_data/tgn2000.tsv','r','utf-8')
   infile = dataset.file.open(mode="r")
   print('ds_insert_tsv(); request.GET; infile',request.GET,infile)
   # should already know delimiter
@@ -561,11 +562,12 @@ def ds_insert_tsv(request, pk):
   for r in reader:
   #for i, r in zip(range(10000), reader):
     src_id = r[header.index('id')]
-    # print('src_id from tsv_insert',src_id)
-    title = r[header.index('title')]
+    #print('src_id from tsv_insert',src_id)
+    title = r[header.index('title')].replace("' ","'")
     # for PlaceName insertion, strip anything in parens
-    title = re.sub(' \(.*?\)', '', title)
+    title = re.sub('\(.*?\)', '', title)
     title_source = r[header.index('title_source')]
+    print('src_id, title, title_source from tsv_insert',src_id,title,title_source)
     title_uri = r[header.index('title_uri')] if 'title_uri' in header else ''
     variants = [x.strip() for x in r[header.index('variants')].split(';')] \
       if 'variants' in header else []
