@@ -111,9 +111,16 @@
         {{ context.result }}    </p>
       <a href="{% url 'datasets:dataset-detail' id=ds.pk %}">
         <input class="btn btn-sm btn-outline-primary" type="text" value="Return to Dataset"/></a>
+      <!-- TODO: refactor this; direct to first non-zero pass -->
+      {% if context.result.pass1 > 0 %}
       <a href="{% url 'datasets:review' pk=ds.pk tid=context.task_id passnum='pass1' %}">
-      <!--<a href="{# url 'datasets:review' pk=ds.pk tid=context.task_id %}">-->
-        <input class="btn btn-sm btn-outline-primary" type="text" value="Review Hits"/></a>
+      {% elif context.result.pass2 > 0 %}
+      <a href="{% url 'datasets:review' pk=ds.pk tid=context.task_id passnum='pass2' %}">
+      {% else %}
+      <a href="{% url 'datasets:review' pk=ds.pk tid=context.task_id passnum='pass3' %}">
+      {% endif %}
+        <input class="btn btn-sm btn-outline-primary" type="text" value="Review Hits"/>
+      </a>
       {% else %}
         <p>Results summary will show here...</p>
       {% endif %}

@@ -628,8 +628,10 @@ def ds_insert_tsv(request, pk):
         ))
 
     # PlaceType()
+    # TODO: parse t
     if len(types) > 0:
       for i,t in enumerate(types):
+        # i always 0 in tsv
         aatnum=aat_types[i] if len(aat_types) >= len(types) else ''
         objs['PlaceType'].append(
           PlaceType(
@@ -698,12 +700,14 @@ def ds_insert_tsv(request, pk):
 
     #
     # PlaceDescription()
+    # @id, value, lang
     if description != '':
       objs['PlaceDescription'].append(
         PlaceDescription(
           place_id=newpl,
           src_id = src_id,
           jsonb={
+            "@id": "", "value":description, "lang":""
           }
         ))
 

@@ -533,7 +533,7 @@ def es_lookup_tgn(qobj, *args, **kwargs):
   # /\/\/\/\/\/
   # pass1: must[name]; should[type,parent]; filter[bounds,geom]
   # /\/\/\/\/\/
-  print('q1',q1)
+  #print('q1',q1)
   try:
     res1 = es.search(index="tgn_shape", body = q1)
     hits1 = res1['hits']['hits']
@@ -549,7 +549,7 @@ def es_lookup_tgn(qobj, *args, **kwargs):
     # pass2: revert to qbase{} (drops geom)
     # /\/\/\/\/\/  
     q2 = qbase
-    print('q2 (base)',q2)
+    #print('q2 (base)',q2)
     try:
       res2 = es.search(index="tgn_shape", body = q2)
       hits2 = res2['hits']['hits']
@@ -565,7 +565,7 @@ def es_lookup_tgn(qobj, *args, **kwargs):
       # pass3: revert to qbare{} (drops placetype)
       # /\/\/\/\/\/  
       q3 = qbare
-      print('q3 (bare)',q3)
+      #print('q3 (bare)',q3)
       try:
         res3 = es.search(index="tgn_shape", body = q3)
         hits3 = res3['hits']['hits']
