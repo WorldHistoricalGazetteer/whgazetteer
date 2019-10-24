@@ -86,6 +86,7 @@ def suggestionItem(s,doctype,scope):
       #print('place search hit:',h)
       item = {
         "whg_id": h['whg_id'] if 'whg_id' in h else '',
+        "pid":h['place_id'],
         "linkcount":s['linkcount'],
         "name": h['title'],
         "variants":[n for n in h['suggest']['input'] if n != h['title']],
@@ -199,7 +200,7 @@ class SearchView(View):
     suggestions = [ suggestionItem(s, doctype, scope) for s in suggestions]
     return JsonResponse(suggestions, safe=False)
   
-""" Returns place or trace suggestions """
+"""  """
   
 ## ***
 ##    get features in current map viewport

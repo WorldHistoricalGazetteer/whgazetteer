@@ -9,7 +9,7 @@ from rest_framework import generics
 from rest_framework import permissions
 from rest_framework import viewsets
 
-from .serializers import UserSerializer, GroupSerializer, DatasetSerializer, \
+from api.serializers import UserSerializer, GroupSerializer, DatasetSerializer, \
     PlaceSerializer, PlaceGeomSerializer, AreaSerializer #, PlaceDRFSerializer
 
 from accounts.permissions import IsOwnerOrReadOnly, IsOwner
