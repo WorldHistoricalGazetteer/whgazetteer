@@ -414,7 +414,9 @@
     // DESCRIPTIONS
     // TODO: link description to identifier URI if present
     if (data.descriptions.length > 0) {
-      right+='<p><b>Description</b>: '+ data.descriptions[0]['value'].substring(0,300)+' ... </p>'
+      val = data.descriptions[0]['value'].substring(0,300)
+      right+='<p><b>Description</b>: '+(val.startsWith('http')?'<a href="'+val+'" target="_blank">Link</a>':val)
+        +' ... </p>'
         <!--'<br/><span class="small red-bold">('+data.descriptions[0]['identifier']+')</span>-->
     }
     //
