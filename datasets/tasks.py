@@ -143,7 +143,7 @@ def normalize(h,auth):
     try:
       #rec = HitRecord(-1, -1, 'tgn', h['tgnid'], h['title'])
       rec = HitRecord(-1, 'tgn', h['tgnid'], h['title'])
-      print('normalize rec - tgn',rec)
+      print('normalize rec, tgn',rec)
       rec.variants = [n['toponym'] for n in h['names']] # always >=1 names
       rec.types = [t['placetype']+' ('+t['id']  +')' for t in h['types'] ] if len(h['types']) > 0 else []
       rec.ccodes = []
@@ -160,6 +160,7 @@ def normalize(h,auth):
       rec.minmax = []
       #rec.whens =[]
       rec.links = []
+      print(rec)
     except:
       print("normalize(tgn) error:", h['tgnid'], sys.exc_info())
   return rec.toJSON()

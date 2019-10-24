@@ -356,8 +356,10 @@
 
   /* 
     *** showResults() ***
+    data: 
     doctype ['place' | 'trace' ]
     scope: ['suggest' | 'search']
+    title:
     
     Builds results_div, renders to #result_list; builds geoms[], runs renderPlaces(geoms)
     
@@ -579,8 +581,8 @@
         item = '<div class="search-row place-item" data-id="'+sug['whg_id']+'" data-types="'+sug['types']+
           '"><a class="place-link" href="#" data-id="'+sug['whg_id']+'"><b>'+
           sug['name']+'</b></a>'+types+ccodes+geo+variants+
-          <!--'<br/>'+snippet+'</div>'-->
-          '<br/>'+sug['whg_id']+'</div>'
+          <!--'<br/>'+sug['whg_id']+'</div>'-->
+          '<br/>'+sug['pid']+'</div>'
       } else {
         item = '<div class="sug_row sug-item">'+sug['name']+' '+variants+'</div>'
       }

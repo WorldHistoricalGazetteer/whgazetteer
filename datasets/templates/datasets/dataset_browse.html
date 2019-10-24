@@ -239,6 +239,7 @@
     return link
   }
   function renderMap(geom,dslabel){
+    console.log('geom',geom)
     if (geom.features.length==0) {spinner.stop()}
     
     geomtype = geom['features'][0]['type']
@@ -261,7 +262,7 @@
     // TODO: 
       style: styler(geomtype),
       pointToLayer: function (feature, latlng) {
-        console.log('feature in renderMap()',feature)
+        <!--console.log('feature in renderMap()',feature)-->
         matchid = feature.place_id_id
         <!--console.log('matchid',matchid)-->
         marker = L.circleMarker(latlng).bindPopup('pid: '+matchid);
@@ -271,7 +272,7 @@
       }
       ,onEachFeature: function(feature,layer) {
         f=feature; l=layer;
-        console.log('f,l',feature,layer)
+        <!--console.log('f,l',feature,layer)-->
         identifier = feature.place_id_id;
         if(feature.type != 'Point'){
           <!--layer.setStyle(styles.default)-->
@@ -419,8 +420,9 @@
     //
     // CCODES
     //
-    if (data.ccodes.length > 0) {
-      console.log(data.countries)
+    <!--if (data.ccodes.length > 0) {-->
+    if (!!data.countries) {
+      <!--console.log('data.countries',data.countries)-->
       right+='<p><b>Modern country bounds</b>: '+ data.countries.join(', ')+'</p>'
     }
     

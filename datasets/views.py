@@ -374,11 +374,11 @@ def task_delete(request,tid,scope="foo"):
 
 
 # better table for viewing datasets
-def drf_table(request, label, f):
-  # need only for title; calls API w/javascript for data
-  ds = get_object_or_404(Dataset, label=label)
-  filt = f
-  return render(request, 'datasets/drf_table.html', {'ds':ds,'filter':filt})
+#def drf_table(request, label, f):
+  ## need only for title; calls API w/javascript for data
+  #ds = get_object_or_404(Dataset, label=label)
+  #filt = f
+  #return render(request, 'datasets/drf_table.html', {'ds':ds,'filter':filt})
 
 # replacing drf_table
 def dataset_browse(request, label, f):

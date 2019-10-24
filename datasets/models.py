@@ -82,7 +82,7 @@ class Hit(models.Model):
     authority = models.CharField(max_length=12, choices=AUTHORITIES )
     dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE)
     query_pass = models.CharField(max_length=12, choices=AUTHORITIES )
-    src_id = models.CharField(max_length=50)
+    src_id = models.CharField(max_length=2044)
     score = models.FloatField()
     reviewed = models.BooleanField(default=False)
     flag = models.BooleanField(default=False)
