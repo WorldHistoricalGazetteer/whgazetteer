@@ -173,7 +173,8 @@ def review(request, pk, tid, passnum): # dataset pk, celery recon task_id
     'ds_id':pk, 'ds_label': ds.label, 'task_id': tid,
       'hit_list':raw_hits, 'authority': task.task_name[6:],
         'records': records, 'countries': countries, 'passnum': passnum,
-        'page': page if request.method == 'GET' else str(int(page)-1)
+        'page': page if request.method == 'GET' else str(int(page)-1),
+        'aug_geom':json.loads(task.task_kwargs.replace("'",'"'))['aug_geom']
   }
 
   # Hit model fields = ['task_id','authority','dataset','place_id',
@@ -839,7 +840,7 @@ class DatasetCreateView(CreateView):
     # print('cleaned_data',form.cleaned_data)
     fin.close()
 
-    print('got past validation, still in DatasetCreateView')
+    print('data valid, still in DatasetCreateView')
     # insert to db & advance to dataset_detail if validated
     # otherwise present form again with errors
     if len(result['errors']) == 0:
@@ -852,7 +853,10 @@ class DatasetCreateView(CreateView):
       obj.delimiter = result['delimiter'] if "delimiter" in result.keys() else "n/a"
       obj.numrows = result['count']
       obj.header = result['columns'] if "columns" in result.keys() else []
-      obj.save()
+      try:
+        obj.save()
+      except:
+        sys.exit(sys.exc_info())
 
       # inserts data, goes to detail page
       # return self.render_to_response(self.get_context_data(form=form,context=context))

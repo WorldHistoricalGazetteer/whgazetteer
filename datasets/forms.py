@@ -2,7 +2,7 @@
 
 from django import forms
 from django.db import models
-from .models import Dataset, Hit
+from datasets.models import Dataset, Hit
 
 MATCHTYPES = [
   ('closeMatch','closeMatch'),
@@ -61,12 +61,20 @@ class DatasetModelForm(forms.ModelForm):
     #initial = {'format': 'delimited', 'datatype': 'places', 'uri_base': 'http://whgazetteer.org/api/places/'}
     initial = {'datatype': 'places', 'uri_base': 'fubar'}
 
-  def unique_label(self, *args, **kwargs):
-    label = self.cleaned_content['name'][:16]+'_'+user.first_name[:1]+user.last_name[:1]
-    return label
+  #def unique_label(self, *args, **kwargs):
+    #label = self.cleaned_content['name'][:16]+'_'+user.first_name[:1]+user.last_name[:1]
+    #return label
     # TODO: test uniqueness somehow
 
   def __init__(self, *args, **kwargs):
     self.format = 'delimited'
     self.datatype = 'place'
     super(DatasetModelForm, self).__init__(*args, **kwargs)
+
+  def clean_label(self): 
+    label = self.cleaned_data['label']
+    print(label)
+    labels = Dataset.objects.values_list('label', flat=True)
+    if label in labels:
+      raise forms.ValidationError("Dataset label must be unique")
+    return label

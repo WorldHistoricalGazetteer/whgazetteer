@@ -25,7 +25,7 @@
       </select>
     </span>
     <span class="half float-right">
-      task id: {{ task_id }}
+      task id: {{ task_id }} (+links{% if aug_geom == 'on' %}+geom{% endif %})
     </span>
   </h4>
   {% if nohits %}
@@ -34,6 +34,9 @@
     <p><a href="{% url 'datasets:dataset-detail' id=ds_id %}">Return to dataset detail page</a></p>
   </div>
   {% else %}
+    <form id="form_related" method="POST" action="" >
+    {% csrf_token %}
+    {{ formset.management_form }}
   <div class="pagination d-flex justify-content-center">
     <span class="step-links">
         {% if records.has_previous %}
@@ -48,11 +51,12 @@
             <a href="?page={{ records.paginator.num_pages }}">last &raquo;</a>
         {% endif %}
     </span>
+    <span class="float-right ml-5"><button type="submit" class="button-sm ">Save</button>
   </div>
   {% for record in records %} <!-- there is only one; if last, do nothing -->
-    <form id="form_related" method="POST" action="" >
-    {% csrf_token %}
-    {{ formset.management_form }}
+
+
+
     <div class="container">
       <div class="row mt-2">
         <div id="review_record" class="col-sm-4 pl-0">
@@ -68,9 +72,9 @@
                   </span>
                 </h4>
               </span>
-              <span class="float-right">
-                <button type="submit" class="btn btn-secondary float-right">Save</button>
-              </span>
+              <!--<span class="float-right">-->
+                <!--<button type="submit" class="btn btn-secondary float-right">Save</button>-->
+              <!--</span>-->
             </div>
             {% for g in record.geoms.all %}
               {{ g.jsonb|safe|json_script:record.id }}
@@ -132,7 +136,7 @@
                   </span>
                   <span class="inline">{{ form.match }}</span>
                   {% endif %}
-                  <span class="float-right mr-2">
+                  <!--<span class="float-right mr-2"><button type="submit" class="button-sm mr-2">Save</button>-->
                   <span class="help-matches" data-id="matches">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
                   {% if authority == 'whg' %}
                     <button type="button" 
@@ -260,6 +264,7 @@
 
   var ds = "{{ ds_label }}"+':'
   $(function(){
+    console.log('aug:',"{{ aug_geom }}")
     // set pass dropdown as next set with any reviewed=False rows
     $( "#select_pass" ).val("{{ passnum }}")
     // defaults to string 'None' - no idea why

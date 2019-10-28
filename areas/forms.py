@@ -17,7 +17,8 @@ class AreaModelForm(forms.ModelForm):
                 'rows':2,'cols': 40,'class':'textarea'
             }),
             'ccodes': forms.TextInput(attrs={
-                'placeholder':'2-letter codes, e.g. br,ar'
+                'placeholder':'2-letter codes, e.g. br,ar',
+                'size': 30
             }),
             'geojson': forms.Textarea(attrs={
                 'rows':2,'cols': 40,'class':'textarea',
