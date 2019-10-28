@@ -15,7 +15,6 @@ urlpatterns = [
     path(r'', TemplateView.as_view(template_name="main/tutorials.html"), name="tutorials"),
     path('beta/', TemplateView.as_view(template_name="tutorials/beta.html"), name="tute-beta"),
     path('choosing/', TemplateView.as_view(template_name="tutorials/choosing.html"), name="tute-choosing"),
-    path('architecture/', TemplateView.as_view(template_name="tutorials/architecture.html"), name="tute-architecture"),
     path('template/', TemplateView.as_view(template_name="tutorials/tute-template.html"), name="tute-template"),
     
 
