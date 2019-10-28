@@ -16,6 +16,20 @@
     <!--<div class="d-flex">-->
       <form id="ds_form" method="POST" action="#" enctype="multipart/form-data">
         {% csrf_token %}
+        {% if form.errors %}
+          {% for field in form %}
+              {% for error in field.errors %}
+                  <div class="alert alert-danger">
+                      <strong>{{ error|escape }}</strong>
+                  </div>
+              {% endfor %}
+          {% endfor %}
+          {% for error in form.non_field_errors %}
+              <div class="alert alert-danger">
+                  <strong>{{ error|escape }}</strong>
+              </div>
+          {% endfor %}
+        {% endif %}
       <div class="row mx-1" id="content_create">
         <div class="form-box mt-2 col-sm-5" id="create_form">
           <!-- status, format, delimiter, numrows, header  -->
@@ -37,7 +51,7 @@
           <p><span class="top">Description</span> {{ form.description }}</p>
           <p>Data type {{ form.datatype }}</p>
           <p>Format {{ form.format }}
-             <a href="" title="{help:formats}" rel="tooltip">{% fontawesome_icon 'question-circle' color='#336699' %}</a>
+<!--<a href="" title="{help:formats}" rel="tooltip">{ fontawesome_icon 'question-circle' color='#336699' %}</a>-->
           </p>
           <p>URI base {{ form.uri_base }}</p>
           {% if user.id == 1 %}<p>Spine? {{ form.spine }}</p>{% endif %}
@@ -93,7 +107,13 @@
                 </div>
               {% endif %}
           {% else %}
-            <div><p class="mb-0"><b>Sample data</b></p><p>During this beta phase, some sample datasets are available from our GitHub repository. Download <a href="https://github.com/kgeographer/whgazetteer/raw/master/example_data/beta_data.zip" download>this zip file</a>, check the README.md file, and you can experiment with loading them from your local computer and reconciling them against TGN and/or Wikidata</div>
+            <div><p class="mb-0"><b>Sample data</b></p><p>During this beta phase, some sample datasets are available from our GitHub repository. Download <a href="https://github.com/kgeographer/whgazetteer/raw/master/example_data/beta_data.zip" download>this zip file</a>, check its README.txt file, and you can experiment with loading them from your local computer and reconciling them against TGN and/or Wikidata
+            <p class="mb-0"><b>Data formats</b></p>
+            <p>For place data there are two accepted formats, Linked Places (expressive, JSON-LD and GeoJSON compatible), and the simpler LP-TSV, a tab-delimited format for relatively simpler records. <a href="/tutorials/choosing">More information on making the choice</a>. <br/><span class="text-danger"><b>NOTE</b>: Encoding for all uploaded files must be unicode</span></p>
+            <p><i>Trace data uploads are a work-in-progress at this time.</i></p>
+            <p class="mb-0"><b>URI base</b></p>
+            <p>If you have a permanent landing page for each of your records, supply the base URI in this field. Otherwise, leave as is, and a permanent URI within the whgazetteer domain will be generated based on your unique IDs.</p>
+            </div>
           {% endif %}
         </div>
       </div> <!-- row#content_create -->
