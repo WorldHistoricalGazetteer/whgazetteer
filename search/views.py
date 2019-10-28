@@ -174,13 +174,14 @@ class SearchView(View):
         q = { "suggest":{"suggest":{"prefix":qstr,"completion":{"field":"suggest"}} } }
         print('suggest query:',q)
       elif scope == 'search':
-        q = { "size": 200,
+        q = { "size": 100,
               "query": {"bool": {
               "must": [
                 {"exists": {"field": "whg_id"}},
+                #{"match": {"variants": qstr}}
                 {"multi_match": {
                   "query": qstr, 
-                  "fields": ["title","names.toponym"],
+                  "fields": ["title","names.toponym","searchy"],
                   "type": "phrase"
                 }}
               ]
