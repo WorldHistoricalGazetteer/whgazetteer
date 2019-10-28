@@ -4,7 +4,7 @@ html, body {
   height: 100%;
 }
 
-
+.navbar .container {border-bottom: 1px solid #eee;}
 /**
   modals
 **/
