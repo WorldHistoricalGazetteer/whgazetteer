@@ -16,12 +16,12 @@
         <div class="p-1">
           <h5>Register/Login/Profile</h5>
           <p>Registration and login are required to be able to upload datasets, use our reconciliation service to find matches in modern placename authorities, <a href="#" target="_blank">Getty Thesaurus of Geographic Names (TGN)</a> and <a href="#" target="_blank">Wikidata</a> at this point), and ultimately to contribute your data to our index. Once logged in, top-level menu options for "My Places" and user profile appear.</p>
-          <p><mark>These functions are rudimentary now and will be upgraded soon. Features will include creation of project teams, with members having authority to act upon the designated datasets.</mark></p>
+          <p><mark>These functions are rudimentary now and will be upgraded soon. Features will include sharing dataset access with other registered users granting authority to review reconciliation results, etc.</mark></p>
           <h5 name="search">Search for Places and Traces</h5>
           <h6>Places</h6>
-          <p>Search runs against a union index of all contributed place records. Autosuggest presents possibilities after typing a few characters. Selecting one by clicking it or pressing the {Enter} key performs a search, presents a list of results, and maps those which have geometry (not all do). Clicking a result item will highlight it on the map, providing further context. Clicking the place name takes you to its "place portal" page. The index record can include any number of attestation "cards" drawn from multiple contributed datasets.</p>
+          <p>Place search runs against a union index of ~1.8m core records and all contributed datasets. <span class="strikethrough">Autosuggest presents possibilities after typing a few characters.</span> <mark>For performance reasons, autosuggest has been temporarily disabled for places.</mark> Typing a name then pressing the {Enter} key performs a search, presents a list of results, and maps those which have geometry (not all do). Clicking a result item will highlight it on the map, providing further context. Clicking the place name takes you to its "place portal" page. The index record displayed can include any number of attestation "cards" drawn from multiple contributed datasets.</p>
           <h6>Traces</h6>
-          <p>Search for Trace data runs against a separate index. At this time there are only a few example trace records. <mark>A Linked Traces annotation format (LT-Anno) is in active development</mark>. Try typing 'buddhist' to see a couple of examples. Selecting an auto-suggestion will perform the search and the places in the trace record are mapped. As with places, clicking a result item highlights the place on the map, and clicking its name takes you to its place portal page. <mark>We welcome suggestions for how trace data can be better integrated into the WHG interface.</mark></p>
+          <p>Search for Trace data runs against a separate index. At this time there are only a few example trace records. <mark>A Linked Traces annotation format (LT-Anno) is in active development</mark>. Try typing 'buddhist' to see a couple of examples. Selecting an auto-suggestion will perform the search and the places in the trace record are mapped. As with places, clicking a result item highlights the place on the map, and clicking its name takes you to its place portal page.<mark>We welcome suggestions for how trace data can be better integrated into the WHG interface.</mark></p>
           <h5>Map layer selector</h5>
           <p>A few alternative base maps are available via the layer icon in the upper right corner.</p>
         </div>
@@ -29,7 +29,7 @@
       <div id="" class="tute-section">
         <a name="my-data"></a>
         <h4 class="p-1">My Data page</h4>
-        <p>The My Data page presents three lists of user-generated items: Datasets, Study Areas, and Collections (<mark>future</mark>). Upon registering, only two read-only "core" datasets are listed, which can be viewed but not acted upon. In each case, clicking a plus icon ({% fontawesome_icon 'plus-square' color='#336699' %}) starts the process of creating and managing the items.</p>
+        <p>The My Data page presents three lists of user-generated items: Datasets, Study Areas, and Collections (<mark>future</mark>). Upon registering, only two read-only "core" datasets are listed, which can be viewed but not acted upon. In each case, clicking a plus icon ({% fontawesome_icon 'plus-square' color='#336699' %}) starts the process of creating and managing datasets.</p>
         <h5>Datasets</h5>
         <ul>
         <li><h6>Place data</h6>
