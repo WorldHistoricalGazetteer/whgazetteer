@@ -369,34 +369,38 @@
     var results_div = '';
     geoms=[]
     var types=[], typesArr = []
+    console.log(data.length)
     if (doctype == 'place'){
-      data.forEach(function(sug){  
-        <!--console.log(sug.types)-->
-        typesArr=typesArr.concat(sug.types)      
-        if(!!sug.geom) {
-          sug.geom.forEach(function(g){
-            g['properties']['title']=sug.name
-            g['properties']['whgid'] = (doctype=='place')?sug.whg_id:sug.place_id
-            geoms.push(g)
-          })
-        }
-        <!--console.log('types Set',types)-->
-        results_div += sugLister(sug, doctype, scope)   
-      }) 
-      <!--console.log('typesArr',typesArr)-->
-      types = Array.from(new Set(typesArr));
-      <!--console.log('types',types)-->
-      types.forEach(function(type){
-        $("#filters ul").append('<li class="filter list-inline-item" data-type="'+type+'"><a href="#">'+type+'</a></li>')
-      })
-      if(scope=='search') {
-        renderPlaces(geoms)
+      if(data.length ==0) {
+        results_div += '<p class="small ml-2">No results. If you typed all lower case, try camel case. This is a temporary bug</p>'
+      } else {
+        data.forEach(function(sug){  
+          typesArr=typesArr.concat(sug.types)      
+          if(!!sug.geom) {
+            sug.geom.forEach(function(g){
+              g['properties']['title']=sug.name
+              g['properties']['whgid'] = (doctype=='place')?sug.whg_id:sug.place_id
+              geoms.push(g)
+            })
+          }
+          <!--console.log('types Set',types)-->
+          results_div += sugLister(sug, doctype, scope)   
+        }) 
+        <!--console.log('typesArr',typesArr)-->
+        types = Array.from(new Set(typesArr));
+        <!--console.log('types',types)-->
+        types.forEach(function(type){
+          $("#filters ul").append('<li class="filter list-inline-item" data-type="'+type+'"><a href="#">'+type+'</a></li>')
+        })
+        if(scope=='search') {
+          renderPlaces(geoms)
+        }      
       }
     } else if (doctype == 'trace') {
       // data has features and bodies
-      data['bodies'].forEach(function(bod){ 
+        data['bodies'].forEach(function(bod){ 
         // add a whg_id to bodies        
-        results_div += sugLister(bod, doctype, scope)
+          results_div += sugLister(bod, doctype, scope)
       })
     };
      
@@ -580,9 +584,10 @@
         geo = sug['geom'].length > 0 ? ' {% fontawesome_icon 'globe' color='#666' %}' : ''
         item = '<div class="search-row place-item" data-id="'+sug['whg_id']+'" data-types="'+sug['types']+
           '"><a class="place-link" href="#" data-id="'+sug['whg_id']+'"><b>'+
-          sug['name']+'</b></a>'+types+ccodes+geo+variants+
-          <!--'<br/>'+sug['whg_id']+'</div>'-->
-          '<br/>'+sug['pid']+'</div>'
+          sug['name']+'</b></a>'+types+ccodes+geo+variants
+          <!--+'<br/>'+sug['whg_id']+'</div>'-->
+          <!--+'<br/>'+sug['pid']-->
+          +'</div>'
       } else {
         item = '<div class="sug_row sug-item">'+sug['name']+' '+variants+'</div>'
       }

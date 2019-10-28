@@ -12,6 +12,7 @@
           }
         },
         "children": {"type": "keyword"},
+        "variants": {"type": "text"},
         "title": {"type": "text"},
         "suggest": {  
           "type": "completion",
