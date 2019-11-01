@@ -53,7 +53,7 @@ pandas==0.23.4
 parso==0.3.1
 pexpect==4.6.0
 pickleshare==0.7.5
-Pillow==5.0.0
+Pillow==6.2.0
 pout==0.7.9
 pprint==0.1
 promise==2.2.1
