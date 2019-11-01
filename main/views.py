@@ -29,8 +29,9 @@ def feedbackView(request):
     return render(request, "main/feedback.html", {'form': form})
 
 def feedbackSuccessView(request):
+    return render_to_response('home', message='Feedback sent, thanks!')
     #return HttpResponse('Thank you for your feedback!')
-    return redirect('/')
+    #return redirect('/')
 
 class CommentCreateView(BSModalCreateView):
     template_name = 'main/create_comment.html'
