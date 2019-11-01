@@ -36,6 +36,7 @@ urlpatterns = [
     url(r'^about/$', TemplateView.as_view(template_name="main/about.html"), name="about"),
     url(r'^credits/$', TemplateView.as_view(template_name="main/credits.html"), name="credits"),
     url(r'^system/$', TemplateView.as_view(template_name="main/system.html"), name="system"),
+    url(r'^licensing/$', TemplateView.as_view(template_name="main/licensing.html"), name="licensing"),
     
     url(r'^heatmap/$', TemplateView.as_view(template_name="main/mb-heatmap.html"), name="heatmap"),
     
