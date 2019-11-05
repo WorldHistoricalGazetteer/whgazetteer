@@ -18,7 +18,7 @@ urlpatterns = [
     path('<int:pk>/insert_tsv/', views.ds_insert_tsv, name="ds_insert_tsv"),
 
     # insert validated lpf file data to db
-    #path('<int:pk>/insert_lpf/', views.ds_insert_lpf, name="ds_insert_lpf"),
+    path('<int:pk>/insert_lpf/', views.ds_insert_lpf, name="ds_insert_lpf"),
 
     # initiate reconciliation
     path('<int:pk>/recon/', views.dataset_recon, name="dataset_recon"), # form submit

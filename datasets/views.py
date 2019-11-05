@@ -770,9 +770,8 @@ class DashboardView(ListView):
     else:
       print('in get_queryset() else')
       print('myteam(me)',myteam(me))
-      #return Dataset.objects.filter(owner__in=myteam(me)).order_by('id')
       #return Dataset.objects.filter( Q(owner__in=myteam(me)) | Q(spine="True")).order_by('-id')
-      return Dataset.objects.filter( Q(owner__in=myteam(me)) | Q(id__lt=3)).order_by('-id')
+      return Dataset.objects.filter( Q(owner=me) | Q(id__lt=3)).order_by('-id')
 
 
   def get_context_data(self, *args, **kwargs):
