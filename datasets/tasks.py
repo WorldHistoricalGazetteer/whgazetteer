@@ -635,10 +635,12 @@ def align_tgn(pk, *args, **kwargs):
       qobj['geom'] = hully(g_list)
 
     ## run pass1-pass3 ES queries
-    try:
-      result_obj = es_lookup_tgn(qobj, bounds=bounds)
-    except:
-      print('es_lookup_tgn failed on ',place.id, sys.exc_info())
+    # don't trap here - it masks errors in es_lookup_tgn()
+    #try:
+    print('qobj in align_tgn()',qobj)
+    result_obj = es_lookup_tgn(qobj, bounds=bounds)
+    #except:
+      #print('es_lookup_tgn failed on ',place.id, sys.exc_info())
       
     if result_obj['hit_count'] == 0:
       count_nohit +=1
