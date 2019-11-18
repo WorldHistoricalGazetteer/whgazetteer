@@ -38,6 +38,7 @@
     {% csrf_token %}
     {{ formset.management_form }}
   <div class="pagination d-flex justify-content-center">
+    <span class="mr-5"><button type="submit" class="button-sm ">Save</button>
     <span class="step-links">
         {% if records.has_previous %}
             <a href="?page=1">&laquo; first</a>&nbsp;&nbsp;
@@ -51,7 +52,6 @@
             <a href="?page={{ records.paginator.num_pages }}">last &raquo;</a>
         {% endif %}
     </span>
-    <span class="float-right ml-5"><button type="submit" class="button-sm ">Save</button>
   </div>
   {% for record in records %} <!-- there is only one; if last, do nothing -->
 
