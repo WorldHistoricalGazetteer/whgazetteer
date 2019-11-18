@@ -19,7 +19,8 @@ def index_traces(trdata):
 def init():
   global es, idx, rows, trdata
   idx = 'traces'
-  file = 'examples_whg.json'
+  #file = 'examples_whg.json'
+  file = 'G271_out.json'
   import os, codecs, time, datetime, json,sys
   mappings = codecs.open('static/mappings_traces.json', 'r', 'utf8').read()
   os.chdir('/Users/karlg/Documents/Repos/linked-traces-format/')

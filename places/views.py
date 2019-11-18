@@ -131,8 +131,9 @@ class PlacePortalView(DetailView):
       print('trace hit h',h)
       context['traces'].append({
         'trace_id':h['_id'],
-        'target':h['_source']['target'],
-        'body':next((x for x in h['_source']['body'] if x['place_id'] == id_), None),
+        'target':h['_source']['target'][0] if type(h['_source']['target']) == list else h['_source']['target'],
+        #'body':next((x for x in h['_source']['body'] if x['place_id'] == id_), None),
+        'body':next((x for x in h['_source']['body'] if x['place_id'] ), None),
         'bodycount':len(h['_source']['body'])
       })
     
