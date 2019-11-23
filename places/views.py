@@ -49,7 +49,7 @@ class PlacePortalView(DetailView):
             if 'end' in a['when']['timespans'][0] else [datetime.now().year]
           minmax = [int(min(starts)), int(max(ends))]
         elif 'timespans' in a:
-          print('place portal context a in attrib',a)
+          #print('place portal context a in attrib',a)
           starts = sorted(
             [(t['start']['in'] if 'in' in t['start'] else t['start']['earliest']) for t in a['timespans']]
           )
@@ -88,7 +88,7 @@ class PlacePortalView(DetailView):
       # isolate temporal scoping where exists; build summing object
       whens = [when.jsonb for when in place.whens.all()]     
       names = [name.jsonb for name in place.names.all()]
-      print('names in PlacePortalView',names)
+      #print('names in PlacePortalView',names)
       geoms = [geom.jsonb for geom in place.geoms.all()]
       types = [t.jsonb for t in place.types.all()]
       related = [rel.jsonb for rel in place.related.all()]

@@ -427,7 +427,7 @@
     };
     var popupOptions = {}
     
-    rivers = new L.GeoJSON.AJAX("/datasets/ne_rivers/places",
+    rivers = new L.GeoJSON.AJAX("/datasets/ne_rivers982/places",
       {style:riverStyle,
         onEachFeature: function (feature, layer) {
           popupOptions = {maxWidth: 200};
@@ -454,7 +454,7 @@
     var baseLayers = {
       "AWMC Terrain": awmc,
       "OSM": osm,
-      "Spine Data": grayscale,
+      <!--"Spine Data": grayscale,-->
       "Satellite": satellite
     };
     var dataLayers = {
