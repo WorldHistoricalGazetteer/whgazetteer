@@ -38,7 +38,7 @@ urlpatterns = [
     url(r'^system/$', TemplateView.as_view(template_name="main/system.html"), name="system"),
     url(r'^licensing/$', TemplateView.as_view(template_name="main/licensing.html"), name="licensing"),
     
-    url(r'^heatmap/$', TemplateView.as_view(template_name="main/mb-heatmap.html"), name="heatmap"),
+    #url(r'^heatmap/$', TemplateView.as_view(template_name="main/mb-heatmap.html"), name="heatmap"),
     
     path('comment/<int:rec_id>', views.CommentCreateView.as_view(), name='comment-create'),
 
