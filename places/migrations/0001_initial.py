@@ -35,7 +35,7 @@ class Migration(migrations.Migration):
             name='PlaceDepiction',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('json', django.contrib.postgres.fields.jsonb.JSONField(blank=True, null=True)),
+                ('jsonb', django.contrib.postgres.fields.jsonb.JSONField(blank=True, null=True)),
                 ('src_id', models.CharField(default='', max_length=24)),
                 ('place_id', models.ForeignKey(default=-1, on_delete=django.db.models.deletion.CASCADE, related_name='depictions', to='places.Place')),
             ],
@@ -49,7 +49,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('task_id', models.CharField(blank=True, max_length=100, null=True)),
-                ('json', django.contrib.postgres.fields.jsonb.JSONField(blank=True, null=True)),
+                ('jsonb', django.contrib.postgres.fields.jsonb.JSONField(blank=True, null=True)),
                 ('src_id', models.CharField(default='', max_length=24)),
                 ('place_id', models.ForeignKey(default=-1, on_delete=django.db.models.deletion.CASCADE, related_name='descriptions', to='places.Place')),
             ],
@@ -63,7 +63,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('task_id', models.CharField(blank=True, max_length=100, null=True)),
-                ('json', django.contrib.postgres.fields.jsonb.JSONField(blank=True, null=True)),
+                ('jsonb', django.contrib.postgres.fields.jsonb.JSONField(blank=True, null=True)),
                 ('src_id', models.CharField(default='', max_length=24)),
             ],
             options={
@@ -77,7 +77,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('task_id', models.CharField(blank=True, max_length=100, null=True)),
                 ('review_note', models.CharField(blank=True, max_length=2044, null=True)),
-                ('json', django.contrib.postgres.fields.jsonb.JSONField(blank=True, null=True)),
+                ('jsonb', django.contrib.postgres.fields.jsonb.JSONField(blank=True, null=True)),
                 ('src_id', models.CharField(default='', max_length=24)),
                 ('place_id', models.ForeignKey(default=-1, on_delete=django.db.models.deletion.CASCADE, related_name='links', to='places.Place')),
             ],
@@ -92,7 +92,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('task_id', models.CharField(blank=True, max_length=100, null=True)),
                 ('toponym', models.CharField(max_length=200)),
-                ('json', django.contrib.postgres.fields.jsonb.JSONField(blank=True, null=True)),
+                ('jsonb', django.contrib.postgres.fields.jsonb.JSONField(blank=True, null=True)),
                 ('src_id', models.CharField(default='', max_length=24)),
             ],
             options={
@@ -104,7 +104,7 @@ class Migration(migrations.Migration):
             name='PlaceRelated',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('json', django.contrib.postgres.fields.jsonb.JSONField(blank=True, null=True)),
+                ('jsonb', django.contrib.postgres.fields.jsonb.JSONField(blank=True, null=True)),
                 ('src_id', models.CharField(default='', max_length=24)),
                 ('place_id', models.ForeignKey(default=-1, on_delete=django.db.models.deletion.CASCADE, related_name='related', to='places.Place')),
             ],
@@ -117,7 +117,7 @@ class Migration(migrations.Migration):
             name='PlaceType',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('json', django.contrib.postgres.fields.jsonb.JSONField(blank=True, null=True)),
+                ('jsonb', django.contrib.postgres.fields.jsonb.JSONField(blank=True, null=True)),
                 ('src_id', models.CharField(default='', max_length=24)),
                 ('place_id', models.ForeignKey(default=-1, on_delete=django.db.models.deletion.CASCADE, related_name='types', to='places.Place')),
             ],
@@ -130,7 +130,7 @@ class Migration(migrations.Migration):
             name='PlaceWhen',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('json', django.contrib.postgres.fields.jsonb.JSONField(blank=True, null=True)),
+                ('jsonb', django.contrib.postgres.fields.jsonb.JSONField(blank=True, null=True)),
                 ('src_id', models.CharField(default='', max_length=24)),
                 ('minmax', django.contrib.postgres.fields.ArrayField(base_field=models.IntegerField(blank=True, null=True), size=None)),
                 ('place_id', models.ForeignKey(default=-1, on_delete=django.db.models.deletion.CASCADE, related_name='whens', to='places.Place')),
