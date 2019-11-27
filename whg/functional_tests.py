@@ -9,14 +9,12 @@ class NewVisitorTest(unittest.TestCase):
     def tearDown(self):  
         self.browser.quit()
 
-    def test_can_start_a_list_and_retrieve_it_later(self):  
-        # Edith has heard about a cool new online to-do app. She goes
-        # to check out its homepage
+    def homepage_loads(self):  
+        # homepage loads
         self.browser.get('http://localhost:8000')
 
-        # She notices the page title and header mention to-do lists
-        self.assertIn('foo', self.browser.title)  
-        #self.fail('Finish the test!')  
+        # title keyword
+        self.assertIn('WHG', self.browser.title)  
 
         # more basic stuff
        
