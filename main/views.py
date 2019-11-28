@@ -10,6 +10,35 @@ from places.models import Place
 from bootstrap_modal_forms.generic import BSModalCreateView
 
 from .forms import CommentModalForm, FeedbackForm
+from elasticsearch import Elasticsearch
+es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+import requests
+
+def statusView(request):
+    context = {"status_site":"??","status_database":"??","status_index":"??"}
+    
+    #site
+    # TODO: requests timeout on nginx/gunicorn setup
+    #site_status = requests.get("http://dev.whgazetteer.org").status_code
+    #context["status_site"] = "up" if site_status == 200 else "down"
+    
+    # database
+    try:
+        place=get_object_or_404(Place,id=81011)
+        context["status_database"] = "up" if place.title == 'Abydos' else 'error'
+    except:
+        context["status_database"] = "down"
+        
+    # whg02 index
+    try:
+        q={"query": {"bool": {"must": [{"match":{"place_id": "81011"}}]}}}
+        res1 = es.search(index="whg02", body = q)
+        context["status_index"] = "up" if (res1['hits']['total'] == 1 and \
+            res1['hits']['hits'][0]['_source']['title'] == 'Abydos') else "error"
+    except:
+        context["status_index"] = "down"
+        
+    return render(request, "main/status.html", {"context":context})
 
 def feedbackView(request):
     if request.method == 'GET':
