@@ -65,8 +65,6 @@ def validate_tsv(infile):
     print("can't tell delimiter")
 
   infile.seek(0)
-  result['count'] = sum(1 for row in reader)
-
   # get header
   infile.seek(0)
   header = next(reader, None) # ordered
@@ -85,9 +83,11 @@ def validate_tsv(infile):
   # row by row
   infile.seek(0)
   next(reader) # skip header row
+  count = 0
   latlon_errors = []
   delim_errors = []
   for i,row in enumerate(reader):
+    count += 1
     if any(item in header for item in ['lon','lat']):
       # lon and lat must be a pair and decimal degrees
       empties=['' for n in [row[header.index('lat')],row[header.index('lon')]] if n=='']
@@ -108,14 +108,14 @@ def validate_tsv(infile):
   if len(latlon_errors) > 0:
     result['errors'].append({"latlon":"Row(s) missing lat OR lon: "+', '.join(latlon_errors)})
   if len(delim_errors) > 0:
-    error_fields = []
     for field in delim_errors:
       result['errors'].append( {"delim":"Invalid delimiter for field "+field[1]+' in row '+str(field[0]+2)} )
-  
+  result['count'] = count
   if len(result['errors']) == 0:
     print('validate_tsv(): no errors')
   else:
     print('validate_tsv() got errors')
+  print('validate_tsv result',result)
   return result
 
 class HitRecord(object):

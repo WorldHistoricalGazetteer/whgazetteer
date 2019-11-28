@@ -800,8 +800,8 @@ class DashboardView(ListView):
 class DatasetCreateView(CreateView):
   form_class = DatasetModelForm
   template_name = 'datasets/dataset_create.html'
-  queryset = Dataset.objects.all()
-  #success_url = reverse('datasets:dataset-create')
+
+  #success_url = reverse('datasets:dataset-detail')
   def form_valid(self, form):
     context={}
     #if form.is_valid():
@@ -826,7 +826,7 @@ class DatasetCreateView(CreateView):
       result = validate_tsv(fin)
     elif format == 'lpf':
       # coll = FeatureCollection
-      # TODO: alternate json-lines
+      # TODO: json-lines alternative 
       result = validate_lpf(fin,'coll')
     # print('cleaned_data',form.cleaned_data)
     fin.close()
@@ -850,8 +850,9 @@ class DatasetCreateView(CreateView):
         sys.exit(sys.exc_info())
 
       # inserts data, goes to detail page
-      # return self.render_to_response(self.get_context_data(form=form,context=context))
+      #return self.render_to_response(self.get_context_data(form=form,context=context))
       return super().form_valid(form)
+      #return redirect('/datasets/'+str(obj.id)+'/detail')
 
     else:
       context['status'] = 'format_error'
@@ -914,6 +915,7 @@ class DatasetDetailView(UpdateView):
     # print('ds',ds.label)
     context['status'] = ds.status
     context['format'] = ds.format
+    context['numrows'] = ds.numrows
     placeset = Place.objects.filter(dataset=ds.label)
     context['tasks'] = TaskResult.objects.all().filter(task_args = [id_],status='SUCCESS')
     # initial (non-task)
