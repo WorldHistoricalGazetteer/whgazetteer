@@ -38,13 +38,11 @@ urlpatterns = [
     url(r'^system/$', TemplateView.as_view(template_name="main/system.html"), name="system"),
     url(r'^licensing/$', TemplateView.as_view(template_name="main/licensing.html"), name="licensing"),
     
-    #url(r'^heatmap/$', TemplateView.as_view(template_name="main/mb-heatmap.html"), name="heatmap"),
-    
     path('comment/<int:rec_id>', views.CommentCreateView.as_view(), name='comment-create'),
-
     path('feedback/', views.feedbackView, name='feedback'),
     path('success/', views.feedbackSuccessView, name='success'),    
-
+    path('status/', views.statusView, name='status'),
+    
     # backend stuff
     path('api/', include('api.urls')),
     path('accounts/', include('accounts.urls')),
