@@ -1,0 +1,54 @@
+{
+ "name": "testing",
+ "resources": [
+  {
+   "name": "",
+   "path": "",
+   "schema": {
+    "fields": [
+     {"name": "id",
+      "type": "string",
+      "unique": true,
+      "description": "contributor's permanent identifier",
+      "constraints": {
+      "required": true
+      }
+     },
+     {"name": "title",
+      "type": "string",
+      "description": "A single 'preferred' place name; acts as title for the record",
+      "constraints": {
+       "required": true
+      }
+     },
+     {"name": "title_source",
+      "type": "string",
+      "description": "Label or short citation for source of the title toponym"
+      },
+     {"name": "ccodes",
+      "type": "string",
+      "description": "One or more ISO Alpha-2 country codes, delimited with ';'",
+      "constraints": {
+       "pattern": "([a-z,A-Z]{2};?)+" 
+      }
+     },
+     {"name": "geo_id",
+      "type": "string",
+      "format": "uri",
+      "description": "URI identifier for the source of the geometry"
+      },
+     {"name": "lat",
+      "type": "number",
+      "description": "Latitude, in decimal degrees"
+     },
+     {"name": "lon",
+      "type": "number",
+      "description": "Longitude, in decimal degrees"
+     }
+    ],
+    "primaryKey": "id",
+    "missingValues": ["", "null"]
+   }
+  }
+ ]
+}

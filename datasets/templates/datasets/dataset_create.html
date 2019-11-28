@@ -13,8 +13,7 @@
       {% elif context.action == 'review'%}Review
       {% else %}Create
       {% endif %} dataset</h4>
-    <!--<div class="d-flex">-->
-      <form id="ds_form" method="POST" action="#" enctype="multipart/form-data">
+      <form id="ds_form" method="POST" enctype="multipart/form-data">
         {% csrf_token %}
         {% if form.errors %}
           {% for field in form %}

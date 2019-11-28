@@ -124,6 +124,8 @@
 </div>
 <script type="text/javascript">
   $(function(){
+    // TODO: reload should NOT be necessary
+    <!--location.reload();-->
     console.log('dataset id: {{ object.id }}')
     updateTotals('{{ object.id }}')
     steps={"uploaded":1,"reconciling":2,"review_hits":3,"reviewed":4,"review_whg":5,"indexed":6}

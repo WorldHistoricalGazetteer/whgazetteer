@@ -1,0 +1,136 @@
+id	title	title_source	ccodes	geo_id	lat	lon
+1.0	Suvarnabhumi	Broek				
+2.0	Karpuradvipa	Broek				
+3.0	Poli	Broek	MY			
+4.0	Brunei Bay	Broek	BN			
+5.0	Puradvipa	Broek	ID			
+6.0	Tandjungnegara	Broek	ID			
+7.0	Tanjungpura	Broek	ID			
+8.0	Kapuas	Broek	ID			
+9.0	Katingan	Broek	ID			
+10.0	Sampit	Broek	ID	http://sws.geonames.org/1628884	-2.5315	112.9496
+11.0	Kuta Lingga	Broek	MY			
+12.0	Kuta Waringin	Broek	ID			
+13.0	Sambas	Broek	ID	http://sws.geonames.org/1628979	1.33333	109.25
+14.0	Wawai	Broek	ID			
+15.0	Lawai	Broek	ID			
+16.0	Kadangdangan	Broek	ID			
+17.0	Landa	Broek	ID	http://sws.geonames.org/7568598	-9.5923	120.2233
+18.0	Samedang	Broek				
+19.0	Tirem	Broek	ID	null		
+20.0	Sedu	Broek	ID			
+21.0	Burune	Broek	ID			
+22.0	Kalka	Broek	ID			
+23.0	Saludung	Broek	ID			
+24.0	Solot	Broek	ID			
+25.0	Pasir	Broek	ID	http://sws.geonames.org/8750909	2.13994	100.80747
+26.0	Baritu	Broek	ID			
+27.0	Sawaku	Broek	ID			
+28.0	Tabalung	Broek	ID			
+29.0	Tunjung Kute	Broek	ID			
+30.0	Malano	Broek	ID			
+31.0	Tandjungpuri	Broek	ID			
+32.0	Sulu islands	Broek	PH			
+33.0	Tidung	Broek	ID			
+34.0	Tiroon	Broek	ID			
+35.0	Maloedo	Broek	MY			
+36.0	Serudong	Broek	ID			
+37.0	Sebatik Island	Broek	ID;MY			
+38.0	Matan	Broek	ID			
+39.0	Sadong	Broek	ID			
+40.0	Sedua	Broek	ID			
+41.0	Sarawak	Broek	ID	http://sws.geonames.org/1733038	2.5	113.5
+42.0	Langgouw	Broek	ID			
+43.0	Siduk	Broek	ID			
+44.0	Borneo	Broek	ID			
+45.0	Peniraman	Broek	ID			
+46.0	Rio Succadano	Broek	ID			
+47.0	A gramde isla de Maquacer	Broek				
+48.0	Burney	Broek	BN			
+49.0	Borney	Broek	BN			
+50.0	Brunei	Broek	BN	http://sws.geonames.org/1820814	4.5	114.66667
+51.0	Tanjung	Broek	ID	http://sws.geonames.org/7036666	-7.1146	112.3866
+52.0	Balambangan	Broek	MY			
+53.0	Moluccas	Broek	ID	http://sws.geonames.org/1636627	-3.23846	130.14527
+54.0	C tanhumbagubaa	Broek	MY			
+55.0	Lloucam	Broek				
+56.0	Lloutam	Broek				
+57.0	Lochac	Broek				
+58.0	Lo Kuok	Broek				
+59.0	Laue	Broek	ID			
+60.0	Pamgun	Broek	ID			
+61.0	Pamgan	Broek	ID			
+62.0	Pulu Laut	Broek	ID			
+63.0	Pamuca	Broek	ID			
+64.0	Tanhumpura	Broek	ID			
+65.0	Tamnjompura	Broek	ID			
+66.0	Quedomdoan	Broek				
+67.0	Samper	Broek	ID			
+68.0	Cate	Broek	ID			
+69.0	Kendavangan	Broek				
+70.0	Kutei	Broek	ID			
+71.0	Pamukan	Broek	ID			
+72.0	Tanjompura	Broek	ID			
+73.0	Maquater	Broek				
+74.0	Java Minor	Broek	ID			
+75.0	San Pedro	Broek	MY			
+76.0	Chinabalo	Broek	MY			
+77.0	Mt. S. Paulo	Broek	MY			
+78.0	S. Pedro	Broek	MY			
+79.0	Chinabolo	Broek	MY			
+80.0	Kinabalu	Broek	MY	http://sws.geonames.org/1733432	5.9749	116.0724
+81.0	Monte de Adas	Broek	MY			
+82.0	Porto de borneo	Broek	BN			
+83.0	Chinabatanga	Broek	MY			
+84.0	Kinabatangan	Broek	MY			
+85.0	Chinabalu	Broek	MY			
+86.0	Pertam	Broek	MY			
+87.0	Pertan	Broek	MY			
+88.0	Tanara	Broek	MY			
+89.0	Lanaca	Broek	MY			
+90.0	Lanara	Broek	MY			
+91.0	Tanaram	Broek	MY			
+92.0	Tabaran	Broek	MY			
+93.0	Bisaia	Broek	MY			
+94.0	Bacaia	Broek	MY			
+95.0	Ombaro	Broek	MY			
+96.0	Tamiambara	Broek	MY			
+97.0	Tanganbarahon	Broek	MY			
+98.0	Rajang delta	Broek	MY			
+99.0	Tanjung Sirik	Broek	MY			
+100.0	Tasacire	Broek	MY			
+101.0	Carena	Broek	MY			
+102.0	Santubong	Broek	MY			
+103.0	Tajorato	Broek	MY			
+104.0	Tatomrato	Broek	MY			
+105.0	Tatonrato	Broek	MY			
+106.0	Tanjung Datu	Broek	MY			
+107.0	Tamaratos	Broek	MY			
+108.0	Tangaranto	Broek	MY			
+109.0	Tanjung Ratus	Broek	MY			
+110.0	Lamocata	Broek	ID			
+111.0	Ye de la mocatam	Broek	ID			
+112.0	Lane	Broek	ID			
+113.0	Lano	Broek	ID			
+114.0	Taiapura	Broek	ID			
+115.0	Lave	Broek	ID			
+116.0	Java Major	Broek				
+117.0	Lao	Broek	ID			
+118.0	Sukadana	Broek	ID	http://sws.geonames.org/7582364	-8.2273	115.5413
+119.0	Teyen	Broek	ID			
+120.0	River of Lauwe	Broek	ID			
+121.0	Tajan	Broek	ID	http://sws.geonames.org/8401699	-6.8977	113.7907
+122.0	Lauwe	Broek	ID			
+123.0	Kapuas river	Broek	ID			
+124.0	Pulu	Broek	ID			
+125.0	Maja	Broek	ID	http://sws.geonames.org/1636825	-6.6559	106.3636
+126.0	Mendawak	Broek	ID			
+127.0	Simpang	Broek	ID	http://sws.geonames.org/7857748	-74.737	107.6688
+128.0	Labai	Broek	ID			
+129.0	Lawa	Broek	ID			
+130.0	Kapuas ketjil	Broek	ID			
+131.0	Pontianak	Broek	ID	http://sws.geonames.org/1630789	-0.03194	109.325
+132.0	Landak river	Broek	ID			
+133.0	Succadana	Broek	ID			
+134.0	Landak	Broek	ID			
+135.0	Sanggau	Broek	ID	http://sws.geonames.org/1628802	0.13333	110.6
