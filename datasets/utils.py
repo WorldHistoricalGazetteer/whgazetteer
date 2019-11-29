@@ -9,9 +9,8 @@ pp = pprint.PrettyPrinter(indent=1)
 def validate_lpf(infile,format):
   # format ['coll' (FeatureCollection) | 'lines' (json-lines)]
   # TODO: handle json-lines
-  schema = json.loads(codecs.open('datasets/static/validate/lpf-schema.json', 'r', 'utf8').read())
-  fout = codecs.open('validate-lpf-result.txt', 'w', 'utf8')
-  #print()
+  schema = json.loads(codecs.open('datasets/static/validate/schema_lpf.json','r','utf8').read())
+  fout = codecs.open('validate-lpf-result.txt','w','utf8')
   #infile=codecs.open('datasets/static/validate/lugares_10_citations.jsonld','r','utf-8')
   #infile=codecs.open('example_data/alcedo_200errors.tsv','r','utf-8')
   result = {"format":"lpf_"+format,"errors":[]}
@@ -50,21 +49,18 @@ def goodtable(tempfn,filename,user):
   newfn = tempfn+'.tsv'
   os.rename(tempfn,newfn)
   #print('tempfn,filename,user,dir',tempfn,filename,user,os.getcwd())
-  package = json.loads(codecs.open('datasets/static/validate/datapackage.json', 'r', 'utf8').read())
-  schema_lptsv=package['resources'][0]['schema']
-  #data=codecs.open(tempfn+'.tsv',"r",encoding="utf8").readlines()
-  report = gvalidate(newfn,schema=schema_lptsv)
+  schema_lptsv = json.loads(codecs.open('datasets/static/validate/schema_tsv.json', 'r', 'utf8').read())
+  report = gvalidate(newfn,schema=schema_lptsv,order_fields=True)
   pp.pprint(report)  
-  print('error count',report['error-count'])
+  #print('error count',report['error-count'])
   result['count'] = report['tables'][0]['row-count']
   result['columns'] = report['tables'][0]['headers']
   for e in report['tables'][0]['errors']:
-    result["errors"].append(e)
+    if e['code'] not in ["blank-header","missing-header"]:
+      result["errors"].append(e)
   return result
   
 def validate_tsv(infile):
-  #infile=codecs.open('example_data/alcedo_200.tsv','r','utf-8')
-  #infile=codecs.open('example_data/ne_countries.tsv','r','utf-8')
   print('infile in validate_tsv',infile)
   # some WKT is big
   csv.field_size_limit(100000000)
