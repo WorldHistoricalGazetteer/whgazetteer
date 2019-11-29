@@ -803,7 +803,7 @@ class DatasetCreateView(CreateView):
 
   #success_url = reverse('datasets:dataset-detail')
   def form_valid(self, form):
-    context={}
+    context={"format":""}
     #if form.is_valid():
     user=self.request.user
     print('form is valid; request',user,self.request.FILES['file'].name)
@@ -825,10 +825,11 @@ class DatasetCreateView(CreateView):
     fin = codecs.open(tempfn, 'r', 'utf8')
     # send for format validation
     if format == 'delimited':
-      #result = validate_tsv(fin)
+      context["format"] = "delimited"
       result = goodtable(tempfn,filename,user.username)
       print('goodtable() result',result)
     elif format == 'lpf':
+      context["format"] = "lpf"
       # coll = FeatureCollection
       # TODO: json-lines alternative 
       result = validate_lpf(fin,'coll')

@@ -24,7 +24,7 @@
       "title": "The @id Schema",
       "default": "",
       "examples": [
-        "https://foofah.com"
+        "https://foofah.com","place_12345"
       ],
       "pattern": "^(.*)$"
     },
@@ -37,7 +37,7 @@
         "title": {
           "$id": "#/properties/properties/properties/title",
           "type": "string",
-          "title": "Properties->Title",
+          "title": "Properties->title",
           "default": "",
           "examples": ["San Miguel"],
           "pattern": "^(.*)$"
@@ -45,13 +45,13 @@
         "ccodes": {
           "$id": "#/properties/properties/properties/ccodes",
           "type": "array",
-          "title": "Properties->Ccodes",
+          "title": "Properties->ccodes",
           "items": {
             "$id": "#/properties/properties/properties/ccodes/items",
             "type": "string",
-            "title": "Properties->Ccodes->Items",
+            "title": "Properties->ccodes->Items",
             "default": "",
-            "examples": ["CR"],
+            "examples": ["CR","cr"],
             "pattern": "^(.*)$"
           }
         }

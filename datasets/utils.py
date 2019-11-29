@@ -6,13 +6,16 @@ from datasets.static.hashes import aat, parents
 from jsonschema import Draft7Validator, draft7_format_checker, validate
 pp = pprint.PrettyPrinter(indent=1)
 
+# use jsonschema to validate Linked Places json-ld
+# format ['coll' (FeatureCollection) | 'lines' (json-lines)]
 def validate_lpf(infile,format):
-  # format ['coll' (FeatureCollection) | 'lines' (json-lines)]
   # TODO: handle json-lines
   schema = json.loads(codecs.open('datasets/static/validate/schema_lpf.json','r','utf8').read())
   fout = codecs.open('validate-lpf-result.txt','w','utf8')
-  #infile=codecs.open('datasets/static/validate/lugares_10_citations.jsonld','r','utf-8')
-  #infile=codecs.open('example_data/alcedo_200errors.tsv','r','utf-8')
+  #infile=codecs.open('tests/whg/lugares_10_citations.jsonld','r','utf-8')
+  #infile=codecs.open('tests/whg/lugares_10_citations_errors.jsonld','r','utf-8')
+  #infile=codecs.open('tests/whg/alcedo_200errors.tsv','r','utf-8')
+  #format = 'coll'
   result = {"format":"lpf_"+format,"errors":[]}
   [countrows,count_ok] = [0,0]
   
@@ -35,7 +38,7 @@ def validate_lpf(infile,format):
       except:
         err = sys.exc_info()
         print('some kinda error',err)
-        result["errors"].append({"feat":countrows-1,'error':err[1].args[0]})
+        result["errors"].append({"feat":countrows,'error':err[1].args[0]})
 
   fout.write(json.dumps(result["errors"]))
   fout.close()
@@ -58,82 +61,6 @@ def goodtable(tempfn,filename,user):
   for e in report['tables'][0]['errors']:
     if e['code'] not in ["blank-header","missing-header"]:
       result["errors"].append(e)
-  return result
-  
-def validate_tsv(infile):
-  print('infile in validate_tsv',infile)
-  # some WKT is big
-  csv.field_size_limit(100000000)
-  result = {'format':'delimited','errors':[]}
-  
-  # allowed fields
-  allowed = set(['id','title','title_source','title_uri','ccodes','matches','variants','types','aat_types',
-                'parent_name','parent_id','lon','lat','geowkt','geo_source','geo_id','start','end'])
-  # required fields
-  required = set(['id', 'title', 'title_source'])
-
-  # learn delimiter ['\t','|']
-  try:
-    dialect = csv.Sniffer().sniff(infile.read(16000),['\t','|'])
-    result['delimiter'] = 'tab' if dialect.delimiter == '\t' else dialect.delimiter
-    reader = csv.reader(infile, dialect)
-  except:
-    result['errors'] = "delimiter"
-    reader = csv.reader(infile, delimiter='\t')
-    print("can't tell delimiter")
-
-  infile.seek(0)
-  # get header
-  infile.seek(0)
-  header = next(reader, None) # ordered
-  first = next(reader, None)
-  result['columns'] = header
-  headerset = set(header) # set for comparison
-  
-  # are req columns present?
-  if not required <= headerset:
-    result['errors'].append({'req':'required column(s) missing: '+str(list(required-headerset))})
-  
-  # are all column names valid (allowed)?
-  if not headerset <= allowed:
-    result['errors'].append({'req':'invalid column name(s): '+str(list(headerset-allowed))})
-
-  # row by row
-  infile.seek(0)
-  next(reader) # skip header row
-  count = 0
-  latlon_errors = []
-  delim_errors = []
-  for i,row in enumerate(reader):
-    count += 1
-    if any(item in header for item in ['lon','lat']):
-      # lon and lat must be a pair and decimal degrees
-      empties=['' for n in [row[header.index('lat')],row[header.index('lon')]] if n=='']
-      if len(empties) ==1: # missing an x or y
-        latlon_errors.append(str(i+2))
-      
-    # multiple value fields semicolon-delimited
-    multis = set(['ccodes', 'variants', 'types', 'aat_types', 'matches'])
-    # which multi-val fields are present?
-    multis = list(multis & headerset)
-    for field in multis:
-      val = row[header.index(field)]
-      if len(val.split(',')) > 1 or len(val.split(', ')) > 1 or \
-         len(val.split('|')) > 1 or len(val.split('| ')) > 1:
-        # comma or pipe delimited, no-no!
-        delim_errors.append([i,field])
-    
-  if len(latlon_errors) > 0:
-    result['errors'].append({"latlon":"Row(s) missing lat OR lon: "+', '.join(latlon_errors)})
-  if len(delim_errors) > 0:
-    for field in delim_errors:
-      result['errors'].append( {"delim":"Invalid delimiter for field "+field[1]+' in row '+str(field[0]+2)} )
-  result['count'] = count
-  if len(result['errors']) == 0:
-    print('validate_tsv(): no errors')
-  else:
-    print('validate_tsv() got errors')
-  print('validate_tsv result',result)
   return result
 
 class HitRecord(object):
