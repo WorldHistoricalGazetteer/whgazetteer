@@ -1,8 +1,10 @@
-import codecs, datetime, sys, csv, os
+import codecs, datetime, sys, csv, os, pprint
 import simplejson as json
+from goodtables import validate as gvalidate
 from shapely import wkt
 from datasets.static.hashes import aat, parents
-from jsonschema import validate, Draft7Validator, draft7_format_checker
+from jsonschema import Draft7Validator, draft7_format_checker, validate
+pp = pprint.PrettyPrinter(indent=1)
 
 def validate_lpf(infile,format):
   # format ['coll' (FeatureCollection) | 'lines' (json-lines)]
@@ -41,9 +43,29 @@ def validate_lpf(infile,format):
   result['count'] = countrows
   return result
 
+
+def goodtable(tempfn,filename,user):
+  #user='whgadmin'
+  result = {"errors":[], "format": "delimited", }
+  newfn = tempfn+'.tsv'
+  os.rename(tempfn,newfn)
+  #print('tempfn,filename,user,dir',tempfn,filename,user,os.getcwd())
+  package = json.loads(codecs.open('datasets/static/validate/datapackage.json', 'r', 'utf8').read())
+  schema_lptsv=package['resources'][0]['schema']
+  #data=codecs.open(tempfn+'.tsv',"r",encoding="utf8").readlines()
+  report = gvalidate(newfn,schema=schema_lptsv)
+  pp.pprint(report)  
+  print('error count',report['error-count'])
+  result['count'] = report['tables'][0]['row-count']
+  result['columns'] = report['tables'][0]['headers']
+  for e in report['tables'][0]['errors']:
+    result["errors"].append(e)
+  return result
+  
 def validate_tsv(infile):
-  infile=codecs.open('example_data/alcedo_200.tsv','r','utf-8')
+  #infile=codecs.open('example_data/alcedo_200.tsv','r','utf-8')
   #infile=codecs.open('example_data/ne_countries.tsv','r','utf-8')
+  print('infile in validate_tsv',infile)
   # some WKT is big
   csv.field_size_limit(100000000)
   result = {'format':'delimited','errors':[]}
