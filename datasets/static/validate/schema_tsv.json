@@ -35,7 +35,6 @@
   },
   {"name": "matches",
     "type": "string",
-    "format": "uri",
     "description": "One or more URIs for close/exact matches in place name authority resources",
     "constraints": {
      "pattern": "(https?:\\/\\/.*\\..*;?)+" 
@@ -123,5 +122,5 @@
   }
 ],
   "primaryKey": "id",
-  "missingValues": ["", "null","Null"]
+  "missingValues": [""," ","null","Null"]
 }
