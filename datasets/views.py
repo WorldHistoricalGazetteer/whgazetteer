@@ -805,13 +805,15 @@ class DatasetCreateView(CreateView):
   def form_valid(self, form):
     context={}
     #if form.is_valid():
-    u=self.request.user
-    print('form is valid',u)
+    user=self.request.user
+    print('form is valid; request',user,self.request.FILES['file'].name)
     format = form.cleaned_data['format']
-    label = form.cleaned_data['name'][:16]+'_'+u.first_name[:1]+u.last_name[:1]
+    label = form.cleaned_data['name'][:16]+'_'+user.first_name[:1]+user.last_name[:1]
     # open & write tempf to a temp location;
     # call it tempfn for reference
+    filename = self.request.FILES['file'].name
     tempf, tempfn = tempfile.mkstemp()
+    print('tempf, tempfn',tempf, tempfn)
     try:
       for chunk in form.cleaned_data['file'].chunks():
         os.write(tempf, chunk)
@@ -823,7 +825,9 @@ class DatasetCreateView(CreateView):
     fin = codecs.open(tempfn, 'r', 'utf8')
     # send for format validation
     if format == 'delimited':
-      result = validate_tsv(fin)
+      #result = validate_tsv(fin)
+      result = goodtable(tempfn,filename,user.username)
+      print('goodtable() result',result)
     elif format == 'lpf':
       # coll = FeatureCollection
       # TODO: json-lines alternative 
@@ -856,7 +860,7 @@ class DatasetCreateView(CreateView):
 
     else:
       context['status'] = 'format_error'
-      context['errors'] = result
+      context['errors'] = result['errors']
       context['action'] = 'review'
       result['columns'] if "columns" in result.keys() else []
       print('result:', result)

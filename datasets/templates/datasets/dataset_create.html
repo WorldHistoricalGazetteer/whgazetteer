@@ -76,26 +76,30 @@
         <div class="mt-2 col-sm-7" id="create_review">
           {% if context.action == 'review' %}
               <h5>{% fontawesome_icon 'exclamation-circle' color="#993333" %} This file has one or more problems:</h5>
-              <!--{ context }}-->
-              {% if context.errors.errors == 'delimiter' %}
-                <p class="my-0 strong">Couldn't determine delimiter. Columns in header and all rows must be delimited with either a tab or a pipe character (|). Please correct and upload again.</p>           
-              {% else %}
-                <ul>
-                {% for e in context.errors.errors %}
-                  {% if 'latlon' in e %}
-                    <li class="">{{ e.latlon }}</li>
-                  {% endif %}              
-                  {% if 'delim' in e %}
-                    <li class="">{{ e.delim }}</li>
-                  {% endif %}              
-                  {% if 'req' in e %}
-                    <li class="">{{ e.req }}</li>
-                  {% endif %}
-                {% endfor %}
+              <ul>
+              {% for e in context.errors %}
+                <li>{{ e.message }}</li>
+              {% endfor %}
+              </ul>
+              <!--{ if context.errors.errors == 'delimiter' %}-->
+                <!--<p class="my-0 strong">Couldn't determine delimiter. Columns in header and all rows must be delimited with either a tab or a pipe character (|). Please correct and upload again.</p>           -->
+              <!--{ else %}-->
+                <!--<ul>-->
+                <!--{ for e in context.errors.errors %}-->
+                  <!--{ if 'latlon' in e %}-->
+                    <!--<li class="">{ e.latlon }}</li>-->
+                  <!--{ endif %}              -->
+                  <!--{ if 'delim' in e %}-->
+                    <!--<li class="">{ e.delim }}</li>-->
+                  <!--{ endif %}              -->
+                  <!--{ if 'req' in e %}-->
+                    <!--<li class="">{ e.req }}</li>-->
+                  <!--{ endif %}-->
+                <!--{ endfor %}-->
                 </ul>
                 <p>After making corrections, try reloading the file</p><hr/>
-              {% endif %}
-              {% if context.errors.errors|haskey:'req' %}
+              <!--{ endif %}-->
+              {% if context.errors|haskey:'req' %}
                 <div class="ml-4">
                   <i class="my-0">Your columns</i>
                   <p>{{ context.errors.columns }}</p>
