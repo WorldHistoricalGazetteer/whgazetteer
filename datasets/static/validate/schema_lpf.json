@@ -65,7 +65,10 @@
         "$id": "#/properties/names/items",
         "type": "object",
         "title": "Names->Items",
-        "required": ["toponym"],
+        "oneOf": [
+          {"required": ["toponym"]},
+          {"required": ["ethnonym"]}
+        ],
         "additionalProperties": false,
         "properties": {
           "lang": {
@@ -137,6 +140,13 @@
             "type": "string",
             "title": "Names->Items->Toponym",
             "examples": ["San Miguel"],
+            "pattern": "^(.*)$"
+          },
+          "ethnonym": {
+            "$id": "#/properties/names/items/properties/ethnonym",
+            "type": "string",
+            "title": "Names->Items->Ethnonym",
+            "examples": ["Lebenians"],
             "pattern": "^(.*)$"
           },
           "citations":{
