@@ -78,7 +78,11 @@
               <h5>{% fontawesome_icon 'exclamation-circle' color="#993333" %} This file has one or more problems:</h5>
               <ul>
               {% for e in context.errors %}
-                <li>{{ e.message }}</li>
+                <li>{% if e.format == 'delimited' %}
+                      {{ e.message }}
+                    {% else %}
+                      <b>row #{{ e.feat }}</b>: {{ e.error }}
+                    {% endif %}</li>
               {% endfor %}
               </ul>
               <!--{ if context.errors.errors == 'delimiter' %}-->
