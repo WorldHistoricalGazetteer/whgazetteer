@@ -1,4 +1,4 @@
-import codecs, datetime, sys, csv, os, pprint
+import codecs, datetime, sys, csv, os, pprint, chardet
 import simplejson as json
 from goodtables import validate as gvalidate
 from shapely import wkt
@@ -14,7 +14,7 @@ def validate_lpf(infile,format):
   fout = codecs.open('validate-lpf-result.txt','w','utf8')
   #infile=codecs.open('tests/whg/lugares_10_citations.jsonld','r','utf-8')
   #infile=codecs.open('tests/whg/lugares_10_citations_errors.jsonld','r','utf-8')
-  #infile=codecs.open('tests/whg/alcedo_200errors.tsv','r','utf-8')
+  #infile=open('tests/whg/alcedo_200errors.tsv')
   #format = 'coll'
   result = {"format":"lpf_"+format,"errors":[]}
   [countrows,count_ok] = [0,0]
@@ -45,22 +45,29 @@ def validate_lpf(infile,format):
   result['count'] = countrows
   return result
 
-
+# validate LP-TSV file
 def goodtable(tempfn,filename,user):
   #user='whgadmin'
-  result = {"errors":[], "format": "delimited", }
+  result = {"errors":[],"format":"delimited"}
+  # TODO: detect encoding
+  #enc = chardet.detect(open(tempfn,'rb').read())
+  #print('encoding is',enc)
+  #if enc['encoding'] != 'utf-8':
+    #result['errors'].append({'message':'File is not utf-8 encoded'})
+    #return result
   newfn = tempfn+'.tsv'
   os.rename(tempfn,newfn)
   #print('tempfn,filename,user,dir',tempfn,filename,user,os.getcwd())
   schema_lptsv = json.loads(codecs.open('datasets/static/validate/schema_tsv.json', 'r', 'utf8').read())
   report = gvalidate(newfn,schema=schema_lptsv,order_fields=True)
-  pp.pprint(report)  
+  #pp.pprint(report)  
   #print('error count',report['error-count'])
   result['count'] = report['tables'][0]['row-count']
   result['columns'] = report['tables'][0]['headers']
   for e in report['tables'][0]['errors']:
     if e['code'] not in ["blank-header","missing-header"]:
       result["errors"].append(e)
+  print('result',result)
   return result
 
 class HitRecord(object):

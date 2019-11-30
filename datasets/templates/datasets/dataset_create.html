@@ -78,31 +78,14 @@
               <h5>{% fontawesome_icon 'exclamation-circle' color="#993333" %} This file has one or more problems:</h5>
               <ul>
               {% for e in context.errors %}
-                <li>{% if e.format == 'delimited' %}
+                <li>{% if context.format == 'delimited' %}
                       {{ e.message }}
                     {% else %}
                       <b>row #{{ e.feat }}</b>: {{ e.error }}
                     {% endif %}</li>
               {% endfor %}
               </ul>
-              <!--{ if context.errors.errors == 'delimiter' %}-->
-                <!--<p class="my-0 strong">Couldn't determine delimiter. Columns in header and all rows must be delimited with either a tab or a pipe character (|). Please correct and upload again.</p>           -->
-              <!--{ else %}-->
-                <!--<ul>-->
-                <!--{ for e in context.errors.errors %}-->
-                  <!--{ if 'latlon' in e %}-->
-                    <!--<li class="">{ e.latlon }}</li>-->
-                  <!--{ endif %}              -->
-                  <!--{ if 'delim' in e %}-->
-                    <!--<li class="">{ e.delim }}</li>-->
-                  <!--{ endif %}              -->
-                  <!--{ if 'req' in e %}-->
-                    <!--<li class="">{ e.req }}</li>-->
-                  <!--{ endif %}-->
-                <!--{ endfor %}-->
-                </ul>
-                <p>After making corrections, try reloading the file</p><hr/>
-              <!--{ endif %}-->
+              <p>After making corrections, try reloading the file</p><hr/>
               {% if context.errors|haskey:'req' %}
                 <div class="ml-4">
                   <i class="my-0">Your columns</i>
