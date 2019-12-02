@@ -13,6 +13,8 @@
   <link rel="stylesheet" href="{% static 'css/typeahead.css' %}">
   <script src="{% static 'js/leaflet.ajax.min.js' %}"></script>
   <script src="{% static 'js/typeahead.bundle.js' %}"></script>
+  <script src="{% static 'js/spin.umd.js' %}"></script>
+  <link rel="stylesheet" href="{% static 'css/spin.css' %}"/>
 {% endblock %}
 
 {% block content %}
@@ -692,6 +694,8 @@
   $("#result_list").on('click', '.place-link', function(e){
     whgid=$(this).data('id')
     console.log('clicked .xxxxx-item',$(this))
+    window.spinner = new Spin.Spinner().spin();
+    $("#map_home").append(spinner.el);
     location.href = 'places/'+whgid+'/portal'
   });
         

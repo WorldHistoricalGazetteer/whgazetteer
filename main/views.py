@@ -6,6 +6,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 
 from main.models import Comment
+from datasets.tasks import testAdd
 from places.models import Place
 from bootstrap_modal_forms.generic import BSModalCreateView
 
@@ -37,6 +38,13 @@ def statusView(request):
             res1['hits']['hits'][0]['_source']['title'] == 'Abydos') else "error"
     except:
         context["status_index"] = "down"
+        
+    # celery recon task
+    try:
+        result = testAdd.delay(8, 8)
+        context["status_tasks"] = "up" if result.get() == 16 else 'error'
+    except:
+        context["status_tasks"] = "down"
         
     return render(request, "main/status.html", {"context":context})
 

@@ -221,7 +221,7 @@
       <!--window.open(url,'_blank')-->
     <!--}-->
   <!--});-->
-  
+
   $('.ext').on('click', function(e) {
     e.preventDefault();
     str=$(this).text()
@@ -244,6 +244,9 @@
     feature.setStyle({fillColor:"#7AFF7A"})
   })
   $(function() {
+    <!--window.spinner = new Spin.Spinner().spin();-->
+    <!--$("#map").append(spinner.el); -->
+    
     $(".create-comment").each(function () {
       var recpk = $(this).data('id');
       uribase="/comment/"+recpk
