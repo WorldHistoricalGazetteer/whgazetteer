@@ -10,6 +10,7 @@ from django.views.generic import (
   CreateView, ListView, UpdateView, DeleteView, DetailView )
 from django_celery_results.models import TaskResult
 
+from celery import current_app as celapp
 import codecs, tempfile, os, re, ipdb, sys
 import simplejson as json
 from itertools import islice
@@ -24,34 +25,15 @@ from datasets.tasks import align_tgn, align_whg, align_wd, maxID
 from datasets.utils import *
 from es.es_utils import makeDoc
 
-"""
-functions to batch large database inserts, e.g. TGN
-"""
-
-#   PlaceName.objects.bulk_create(objs['PlaceName'])
-#def create_data(model, data):
-  #bulk_create(model, generator())
-  
-#def bulk_create(model, generator, batch_size=10000):
-  #"""
-  #Uses islice to call bulk_create on batches of
-  #Model objects from a generator.
-  #"""
-  #while True:
-    #items = list(islice(generator, batch_size))
-    #if not items:
-      #break
-    #model.objects.bulk_create(items)
-
-#def generator(data):
-  #for row in data:
-    #yield MyModel(field1=data['field1'])
-""" end """
+def celeryUp():
+  response = celapp.control.ping(timeout=1.0)
+  return len(response)>0
 
 def link_uri(auth,id):
   baseuri = AUTHORITY_BASEURI[auth]
   uri = baseuri + str(id)
   return uri
+
 # present reconciliation (and accessioning!) hits for review
 # for reconciliation: write place_link & place_geom (if aug_geom == 'on') records if matched
 # for accessioning: if close or exact -> if match is parent -> make child else if match is child -> make sibling
@@ -287,8 +269,8 @@ def review(request, pk, tid, passnum): # dataset pk, celery recon task_id
   return render(request, 'datasets/review.html', context=context)
 
 
-# *
-# initiate, monitor align_tgn Celery task
+# 
+# initiate, monitor Celery tasks
 def dataset_recon(request, pk):
   ds = get_object_or_404(Dataset, id=pk)
   # TODO: handle multipolygons from "#area_load" and "#area_draw"
@@ -321,15 +303,25 @@ def dataset_recon(request, pk):
           "id": [region if region !="0" else userarea]
     }
     #print('bounds',bounds)
-    # run celery/redis tasks e.g. align_tgn, align_whg, align_wd
-    result = func.delay(
-      ds.id,
-      ds=ds.id,
-        dslabel=ds.label,
-        owner=ds.owner.id,
-        bounds=bounds,
-        aug_geom=aug_geom
-    )
+    
+    if not celeryUp():
+      print('Celery is down :^(')
+      context['response'] = 'snap!'
+      context['result'] = "Sorry! The reconciliation task manager is down; working now to get it running"
+      return render(request, 'datasets/dataset_recon.html', {'ds':ds, 'context': context})
+      
+      # run celery/redis tasks e.g. align_tgn, align_whg, align_wd
+    try:      
+      result = func.delay(
+        ds.id,
+        ds=ds.id,
+          dslabel=ds.label,
+          owner=ds.owner.id,
+          bounds=bounds,
+          aug_geom=aug_geom
+      )
+    except:
+      print(sys.exc_info())
 
     context['task_id'] = result.id
     context['response'] = result.state
@@ -339,7 +331,7 @@ def dataset_recon(request, pk):
     context['userarea'] = request.POST['userarea']
     context['geom'] = aug_geom
     context['result'] = result.get()
-    pprint(locals())
+    #print(locals())
     ds.status = 'reconciling'
     ds.save()
     return render(request, 'datasets/dataset_recon.html', {'ds':ds, 'context': context})
@@ -373,25 +365,14 @@ def task_delete(request,tid,scope="foo"):
 
   return redirect('/datasets/'+ds+'/detail')
 
-# replacing drf_table
+# 
 def dataset_browse(request, label, f):
   # need only for title; calls API w/javascript for data
   ds = get_object_or_404(Dataset, label=label)
   filt = f
   return render(request, 'datasets/dataset_browse.html', {'ds':ds,'filter':filt})
 
-def ds_list(request, label):
-  # fetch places in specified dataset
-  print('in ds_list() for',label)
-  qs = Place.objects.all().filter(dataset=label)
-  geoms=[]
-  for p in qs.all():
-    feat={"type":"Feature",
-          "properties":{"src_id":p.src_id,"name":p.title},
-              "geometry":p.geoms.first().jsonb}
-    geoms.append(feat)
-  return JsonResponse(geoms,safe=False)
-
+#
 # insert lpf into database
 def ds_insert_lpf(request, pk):
   import os,codecs,json
@@ -747,6 +728,7 @@ def ds_insert_tsv(request, pk):
   return redirect('/dashboard', context=context)
 
 
+#
 # list user datasets, area, place collections
 class DashboardView(ListView):
   context_object_name = 'dataset_list'
@@ -796,12 +778,12 @@ class DashboardView(ListView):
     return context
 
 
-# upload file, verify format
+#
+# upload file, validate format
 class DatasetCreateView(CreateView):
   form_class = DatasetModelForm
   template_name = 'datasets/dataset_create.html'
 
-  #success_url = reverse('datasets:dataset-detail')
   def form_valid(self, form):
     context={"format":""}
     #if form.is_valid():
@@ -866,15 +848,6 @@ class DatasetCreateView(CreateView):
       result['columns'] if "columns" in result.keys() else []
       print('result:', result)
       return self.render_to_response(self.get_context_data(form=form,context=context))
-    #else:
-      #print('form not valid', form.errors)
-      #context['errors'] = form.errors
-    #context['status'] = 'format_ok'
-    #context['action'] = 'review'
-    #print('context from Create',context)
-    #return super().form_valid(form)
-    # dataset is valid and record created; not imported
-
 
   def get_context_data(self, *args, **kwargs):
     context = super(DatasetCreateView, self).get_context_data(*args, **kwargs)
@@ -882,7 +855,8 @@ class DatasetCreateView(CreateView):
     return context
 
 
-# detail
+# 
+# dataset detail in "portal"
 class DatasetDetailView(UpdateView):
   form_class = DatasetDetailModelForm
   template_name = 'datasets/dataset_detail.html'
@@ -963,6 +937,7 @@ class DatasetDetailView(UpdateView):
     return context
 
 
+# 
 # confirm ok on delete
 class DatasetDeleteView(DeleteView):
   template_name = 'datasets/dataset_delete.html'
@@ -974,3 +949,38 @@ class DatasetDeleteView(DeleteView):
   def get_success_url(self):
     return reverse('dashboard')
 
+# fetch places in specified dataset 
+def ds_list(request, label):
+  print('in ds_list() for',label)
+  qs = Place.objects.all().filter(dataset=label)
+  geoms=[]
+  for p in qs.all():
+    feat={"type":"Feature",
+          "properties":{"src_id":p.src_id,"name":p.title},
+              "geometry":p.geoms.first().jsonb}
+    geoms.append(feat)
+  return JsonResponse(geoms,safe=False)
+
+"""
+functions to batch large database inserts, e.g. TGN
+"""
+
+#   PlaceName.objects.bulk_create(objs['PlaceName'])
+#def create_data(model, data):
+  #bulk_create(model, generator())
+  
+#def bulk_create(model, generator, batch_size=10000):
+  #"""
+  #Uses islice to call bulk_create on batches of
+  #Model objects from a generator.
+  #"""
+  #while True:
+    #items = list(islice(generator, batch_size))
+    #if not items:
+      #break
+    #model.objects.bulk_create(items)
+
+#def generator(data):
+  #for row in data:
+    #yield MyModel(field1=data['field1'])
+""" end """

@@ -23,6 +23,12 @@ from elasticsearch import Elasticsearch
 es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 ##
 
+# test task for uptimerobot
+@task(name="testAdd")
+def testAdd(n1,n2):
+  sum = n1+n2
+  return sum
+
 def types(hit):
   type_array = []
   for t in hit["_source"]['types']:
@@ -383,12 +389,9 @@ def align_wd(pk, *args, **kwargs):
       try:
         bindings = sparql.query().convert()["results"]["bindings"]
       except ConnectionError as exc:
-      #except:
         print('429',sys.exc_info())
         if exc.status_code == 429:
           self.retry(exc=exc, countdown=61)
-      #except:
-        #print(sys.exc_info())
         
       # test, output results
       if len(bindings) > 0:
@@ -429,18 +432,15 @@ def align_wd(pk, *args, **kwargs):
               writeHit(b,'pass2',ds,place_id,src_id,title)
               #fout1.write(str(place_id)+'\tpass2:'+' '+str(b)+'\n')   
               print('pass2 hit binding:',b)
+    # any exception, go on to the next
     try:
       runQuery()
     except:
       count_skipped +=1
-      #fout3.write(str(place_id) + '\t' + title + '\t' + str(sys.exc_info()[0]) + '\n')
       continue
   
   print(str(count)+' rows; >=1 hit:'+str(count_hit)+'; '+str(total_hits)+' in total; ', str(count_nohit) + \
         ' misses; '+str(count_skipped)+' skipped')
-  #fout1.close()
-  #fout2.close()
-  #fout3.close()
   
   end = time.time()
   print('elapsed time in minutes:',int((end - start)/60))

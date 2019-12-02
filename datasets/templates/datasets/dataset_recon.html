@@ -103,26 +103,27 @@
       <!--</div> <!-- row -->
     </div>
     <div id="recon_result" class="col-md-6 p-tight py-2 dashedbox">
-      {% if context.response %}
-      <p class="text-warning">{ TODO: progress bar }</p>
-      <p><b>Authority</b>: {{ context.authority }}</p>
-      <p><b>Task ID</b>: {{ context.task_id }}</p>
-      <p class="mb-3"><b>Result summary</b>:
-        {{ context.result }}    </p>
-      <a href="{% url 'datasets:dataset-detail' id=ds.pk %}">
-        <input class="btn btn-sm btn-outline-primary" type="text" value="Return to Dataset"/></a>
-      <!-- TODO: refactor this; direct to first non-zero pass -->
-      {% if context.result.pass1 > 0 %}
-      <a href="{% url 'datasets:review' pk=ds.pk tid=context.task_id passnum='pass1' %}">
-      {% elif context.result.pass2 > 0 %}
-      <a href="{% url 'datasets:review' pk=ds.pk tid=context.task_id passnum='pass2' %}">
-      {% else %}
-      <a href="{% url 'datasets:review' pk=ds.pk tid=context.task_id passnum='pass3' %}">
-      {% endif %}
-        <input class="btn btn-sm btn-outline-primary" type="text" value="Review Hits"/>
-      </a>
-      {% else %}
-        <p>Results summary will show here...</p>
+      {% if context.response and context.response != 'snap!' %}
+        <p class="text-warning">{ TODO: progress bar }</p>
+        <p><b>Authority</b>: {{ context.authority }}</p>
+        <p><b>Task ID</b>: {{ context.task_id }}</p>
+        <p class="mb-3"><b>Result summary</b>:
+          {{ context.result }}    </p>
+        <a href="{% url 'datasets:dataset-detail' id=ds.pk %}">
+          <input class="btn btn-sm btn-outline-primary" type="text" value="Return to Dataset"/></a>
+        <!-- TODO: refactor this; direct to first non-zero pass -->
+        {% if context.result.pass1 > 0 %}
+          <a href="{% url 'datasets:review' pk=ds.pk tid=context.task_id passnum='pass1' %}">
+        {% elif context.result.pass2 > 0 %}
+          <a href="{% url 'datasets:review' pk=ds.pk tid=context.task_id passnum='pass2' %}">
+        {% else %}
+          <a href="{% url 'datasets:review' pk=ds.pk tid=context.task_id passnum='pass3' %}">
+        {% endif %}
+        input class="btn btn-sm btn-outline-primary" type="text" value="Review Hits"/>
+        </a>
+      {% elif context.response == 'snap!' %}
+        <p>{{ context.result }}</p>
+        <p><a href="javascript:history.back()">Return to dataset portal</a></p>
       {% endif %}
       {% if request.method == 'GET' %}
       <div id="map" class="mt-2">
