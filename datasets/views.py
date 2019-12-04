@@ -344,24 +344,17 @@ def task_delete(request,tid,scope="foo"):
   tr = get_object_or_404(TaskResult, task_id=tid)
   ds = tr.task_args[1:-1]
 
-  # in any case, reviewed=false for hits; clear match records
-  for h in hits:
-    h.reviewed = False
-    h.save()
   placelinks = PlaceLink.objects.all().filter(task_id=tid)
   placegeoms = PlaceGeom.objects.all().filter(task_id=tid)
-  #placenames = PlaceName.objects.all().filter(task_id=tid)
-  #placedescriptions = PlaceDescription.objects.all().filter(task_id=tid)
-
-  placelinks.delete()
-  placegeoms.delete()
-  #placenames.delete()
-  #placedescriptions.delete()
 
   # zap task record & its hits
   if scope == 'task':
     tr.delete()
     hits.delete()
+    placelinks.delete()
+    placegeoms.delete()
+  elif scope == 'geoms':
+    placegeoms.delete()    
 
   return redirect('/datasets/'+ds+'/detail')
 

@@ -97,10 +97,10 @@
               </ul>
               <!--{# if user.is_superuser %}-->
                 <p class="small">
-                   <a class="confirm-del-matches" href="{% url 'datasets:task-delete' tid=t.task_id scope='matches'%}">
-                    Clear matches</a>&nbsp;|&nbsp;
                    <a class="confirm-del-all" data-id={{t.task_id}} href="{% url 'datasets:task-delete' tid=t.task_id scope='task' %}">
-                     Delete task & hits, clear matches {% fontawesome_icon 'trash' color='#ff0000' %}</a>
+                     Delete task & hits, clear matches {% fontawesome_icon 'trash' color='#ff0000' %}</a><br/>
+                   <a class="confirm-del-geoms" href="{% url 'datasets:task-delete' tid=t.task_id scope='geoms'%}">
+                    Delete geometries added so far</a>
                 </p>
               <!--{# endif %}-->
             </div>
@@ -183,8 +183,8 @@
     $(".btn").toggleClass("hidden")
   })
 
-  $(".confirm-del-matches").click(function(){
-    return confirm('DANGER! Clears all matches confirmed in Review step');
+  $(".confirm-del-geoms").click(function(){
+    return confirm('DANGER! Deletes all place_geom records created so far in Review step');
   })
   $(".confirm-del-all").click(function(){
     id=$(this).data('id')
