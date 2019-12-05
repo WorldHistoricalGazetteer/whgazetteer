@@ -1,27 +1,28 @@
 # datasets.views
 from django.contrib import messages
-from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
+from django.contrib.auth.decorators import user_passes_test
+from django.core.paginator import Paginator #,EmptyPage, PageNotAnInteger
 from django.db.models import Q
-from django.forms import formset_factory, modelformset_factory
-from django.http import HttpResponseRedirect, JsonResponse
-from django.shortcuts import render, get_object_or_404, redirect, render_to_response
+from django.forms import modelformset_factory
+# from django.http import JsonResponse
+from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 from django.views.generic import (
-  CreateView, ListView, UpdateView, DeleteView, DetailView )
+  CreateView, ListView, UpdateView, DeleteView)
 from django_celery_results.models import TaskResult
 
 from celery import current_app as celapp
-import codecs, tempfile, os, re, ipdb, sys
+import codecs, tempfile, os, re, sys #ipdb,
 import simplejson as json
-from itertools import islice
-from pprint import pprint
+#from itertools import islice
+#from pprint import pprint
 from areas.models import Area
 from main.choices import AUTHORITY_BASEURI
 from places.models import *
 from datasets.forms import DatasetModelForm, HitModelForm, DatasetDetailModelForm
 from datasets.models import Dataset, Hit
 from datasets.static.hashes.parents import ccodes
-from datasets.tasks import align_tgn, align_whg, align_wd, maxID
+from datasets.tasks import maxID
 from datasets.utils import *
 from es.es_utils import makeDoc
 
@@ -106,6 +107,13 @@ def indexMatch(pid, hit_pid=None):
       pass
       #sys.exit(sys.exc_info())
   
+
+def isOwner(user):
+  task = get_object_or_404(TaskResult, task_id=tid)
+  kwargs=json.loads(task.task_kwargs.replace("'",'"'))  
+  return kwargs['owner'] == user.id
+
+#@user_passes_test(isOwner)
 def review(request, pk, tid, passnum): # dataset pk, celery recon task_id
   #print('review() request', request)
   ds = get_object_or_404(Dataset, id=pk)
@@ -368,16 +376,12 @@ def dataset_browse(request, label, f):
 #
 # insert lpf into database
 def ds_insert_lpf(request, pk):
-  import os,codecs,json
+  import json #,os,codecs
   ds = get_object_or_404(Dataset, id=pk)
   [countrows,countlinked]= [0,0]
   infile = ds.file.open(mode="r")
-  #objs = {"PlaceNames":[], "PlaceTypes":[], "PlaceGeoms":[], "PlaceWhens":[],
-          #"PlaceLinks":[], "PlaceRelated":[], "PlaceDescriptions":[],
-            #"PlaceDepictions":[]}
   with ds.file:
     jdata = json.loads(ds.file.read())
-    #ds.file.open('rU')
     #print('jdata from insert',jdata)
     for feat in jdata['features']:
       print('feat properties:',feat['properties'])
@@ -733,16 +737,15 @@ class DashboardView(ListView):
     if me.username in ['whgadmin','karlg']:
       print('in get_queryset() if',me)
       return Dataset.objects.all().order_by('status','-spine','-id')
-      #return Dataset.objects.all().filter(id__gt=7).order_by('id')
     else:
       print('in get_queryset() else')
-      print('myteam(me)',myteam(me))
+      #print('myteam(me)',myteam(me))
       #return Dataset.objects.filter( Q(owner__in=myteam(me)) | Q(spine="True")).order_by('-id')
+      # returns owned datasets (rw) + black and dplace (ro)
       return Dataset.objects.filter( Q(owner=me) | Q(id__lt=3)).order_by('-id')
 
 
   def get_context_data(self, *args, **kwargs):
-    teamtasks=[]
     me = self.request.user
     context = super(DashboardView, self).get_context_data(*args, **kwargs)
     print('in get_context',me)
@@ -943,16 +946,17 @@ class DatasetDeleteView(DeleteView):
     return reverse('dashboard')
 
 # fetch places in specified dataset 
-def ds_list(request, label):
-  print('in ds_list() for',label)
-  qs = Place.objects.all().filter(dataset=label)
-  geoms=[]
-  for p in qs.all():
-    feat={"type":"Feature",
-          "properties":{"src_id":p.src_id,"name":p.title},
-              "geometry":p.geoms.first().jsonb}
-    geoms.append(feat)
-  return JsonResponse(geoms,safe=False)
+# TODO: obsolete?
+#def ds_list(request, label):
+  #print('in ds_list() for',label)
+  #qs = Place.objects.all().filter(dataset=label)
+  #geoms=[]
+  #for p in qs.all():
+    #feat={"type":"Feature",
+          #"properties":{"src_id":p.src_id,"name":p.title},
+              #"geometry":p.geoms.first().jsonb}
+    #geoms.append(feat)
+  #return JsonResponse(geoms,safe=False)
 
 """
 functions to batch large database inserts, e.g. TGN

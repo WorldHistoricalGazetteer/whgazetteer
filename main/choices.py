@@ -77,3 +77,8 @@ TRACERELATIONS = [
     ('findspot','Findspot'),
     ('ruled','Ruled')
 ]
+
+USERTYPES = [
+    ('individual', 'Individual'),
+    ('group', 'Group or project team')
+]
