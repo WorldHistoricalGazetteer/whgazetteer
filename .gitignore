@@ -5,6 +5,8 @@ _scratch/
 media/
 datasets/static/_older/
 
+.DS_Store
+
 nohup.out
 dump.rdb
 
