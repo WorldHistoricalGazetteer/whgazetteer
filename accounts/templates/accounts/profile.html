@@ -1,19 +1,25 @@
 {% extends 'main/base.html' %}
-
+{% load fontawesome %}
 {% block content %}
 
 <div class="container">
   <div class="d-flex justify-content-center mt-3">
-    <h3>User Profile</h3>
+    <h3>User Profile 
+    <!--<small> <a href="{ url 'register' %}" class="" title="Edit profile">{ fontawesome_icon 'edit' color='#336699' %}</a></small>-->
+    </h3>
   </div>
   <div class="px-5 profile">
-    <p><b>Username</b>: {{ user.username }}</p>
-    <p><b>Name</b>: {{ user.first_name }} {{ user.last_name }}</p>
+    <p><b>Login name</b>: {{ user.username }}</p>
+    <p><b>Name</b>: 
+      {% if user.profile.user_type == 'individual' %}{{ user.first_name }} {{ user.last_name }}
+      {% else %} {{ user.name }} {% endif %}
+    </p>
     <p><b>Email</b>: {{ user.email }}</p>
     <p><b>Affiliation</b>: {{ user.profile.affiliation }}</p>
+    <p><b>Web page</b>: {{ user.profile.web_page }}</p>
+    {% if groups|length > 0 %}
     <p><b>Groups</b>: {% for g in groups %}{{g}}{% if not forloop.last %}; {% endif %}{% endfor %}</p>
+    {% endif %}
   </div>
 </div>
 {% endblock %}
-
-        

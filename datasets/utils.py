@@ -123,6 +123,7 @@ def parse_wkt(g):
   #print('wkt, feature',g, feature)
   return feature
 
+# TODO: not truly implemented; cf. datasets.views.DashboardView
 def myteam(me):
   myteam=[]
   for g in me.groups.all():
