@@ -523,10 +523,9 @@
     
   */
   renderPlaces = function(geoms) {
-    if(typeof(features)!=='undefined'){
-      features.clearLayers()
-    }
+    if(typeof(features)!=='undefined'){ features.clearLayers() }
     if(typeof(traces)!=='undefined'){ traces.clearLayers() }
+    
     data = {"type":"FeatureCollection","features":geoms}
     <!--console.log('geodata prior to render',data)-->
     var count_features = 0
@@ -540,7 +539,8 @@
         identifier = feature.properties.whgid;
         if(feature.type=='Point'){
           marker = L.circleMarker(latlng, styles.marker_default
-          ).bindPopup(feature.properties.title+' (whg id:'+identifier+')');
+          )
+          <!--.bindPopup(feature.properties.title+' (whg id:<a href="/places/'+identifier+'/portal">+identifier+</a>)');-->
           // add to array for selection
           idToFeature[identifier] = marker
           return marker
@@ -553,7 +553,21 @@
           layer.setStyle(['LineString','MultiLineString'].indexOf(feature.type)>-1 ? styles.line_default:styles.pgon_default)
           idToFeature[identifier] = layer
         }
-        layer.bindPopup(feature.properties.title+' (whg id:'+identifier+')')
+        layer.bindPopup(feature.properties.title+' (whg id:<a href="/places/'+identifier+'/portal">'+identifier+'</a>)');
+        layer.on('click',function(e){
+          scroll = 20
+          ele = $("#result_list")
+          $(".search-row").css('background-color','#fff')
+          <!--divtop = $('#result_list').offset().top-->
+          fid = this.feature.geometry.properties.whgid
+          foo=$("div.place-item").find('[data-id="'+fid+'"]').closest('.search-row')
+          foo.css('background-color','#f4f4d7')
+          <!--footop = foo.offset().top-->
+          <!--console.log('id, footop',fid, footop)-->
+          <!--document.getElementById('result_list').scrollTop = footop -20-->
+          foo[0].scrollIntoView({behavior:'smooth'})
+          <!--ele.scrollTop(ele.scrollTop() + scroll);-->
+        })
       }
     }).addTo(mappy);
     bounds = features.getBounds()
@@ -587,8 +601,6 @@
         item = '<div class="search-row place-item" data-id="'+sug['whg_id']+'" data-types="'+sug['types']+
           '"><a class="place-link" href="#" data-id="'+sug['whg_id']+'"><b>'+
           sug['name']+'</b></a>'+types+ccodes+geo+variants
-          <!--+'<br/>'+sug['whg_id']+'</div>'-->
-          <!--+'<br/>'+sug['pid']-->
           +'</div>'
       } else {
         item = '<div class="sug_row sug-item">'+sug['name']+' '+variants+'</div>'
