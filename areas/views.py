@@ -43,7 +43,7 @@ class AreaCreateView(CreateView):
     def form_valid(self, form):
         context={}
         if form.is_valid():
-            print('form is valid')
+            print('form is valid, cleaned_data',form.cleaned_data)
         else:
             print('form not valid', form.errors)
             context['errors'] = form.errors
@@ -81,7 +81,7 @@ class AreaDetailView(UpdateView):
         return get_object_or_404(Area, id=id_)
 
     def get_context_data(self, *args, **kwargs):
-        context = super(DatasetDetailView, self).get_context_data(*args, **kwargs)
+        context = super(AreaDetailView, self).get_context_data(*args, **kwargs)
         id_ = self.kwargs.get("id")
 
         return context
