@@ -562,11 +562,9 @@
           fid = this.feature.geometry.properties.whgid
           foo=$("div.place-item").find('[data-id="'+fid+'"]').closest('.search-row')
           foo.css('background-color','#f4f4d7')
-          <!--footop = foo.offset().top-->
-          <!--console.log('id, footop',fid, footop)-->
-          <!--document.getElementById('result_list').scrollTop = footop -20-->
-          foo[0].scrollIntoView({behavior:'smooth'})
-          <!--ele.scrollTop(ele.scrollTop() + scroll);-->
+          <!--foo[0].scrollIntoView({behavior:'smooth'})-->
+          foo[0].scrollIntoView()
+          ele.scrollTop(ele.scrollTop() - scroll);
         })
       }
     }).addTo(mappy);
