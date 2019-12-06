@@ -71,9 +71,10 @@
       {% csrf_token %}
       <input type="hidden" name="owner" value='{{ user.id }}'></input>
       {% if action == 'update' %}
-        <input type="hidden" name="type" value='{{ form.type.value }}'></input>
+        <input type="hidden" name="type" value='{{ form.type.value }}' />
       {% else %}
-        <input type="hidden" name="type" value='ccodes'></input>
+        <!--Type<br/>{ form.type }}-->
+        <input type="hidden" name="type" value='ccodes' />
       {% endif %}
       <p>Title<br/>{{ form.title }}</p>
       <p><span class="top">Description</span><br/>{{ form.description }}</p>
@@ -81,11 +82,11 @@
       <div id="area_options">
         <ul id="area_tabs_ul" class="nav nav-tabs">
           <li class="nav-item">
-            <a class="nav-link active" role="tab" data-toggle="tab" href="#areas_codes">Countries</a></li>
+            <a class="nav-link active" role="tab" data-toggle="tab" ref="ccodes" href="#areas_codes">Countries</a></li>
           <li class="nav-item">
-            <a class="nav-link" role="tab" data-toggle="tab" href="#areas_load">Load GeoJSON</a></li>
+            <a class="nav-link" role="tab" data-toggle="tab" ref="copied" href="#areas_load">Load GeoJSON</a></li>
           <li class="nav-item">
-            <a class="nav-link" role="tab" data-toggle="tab" href="#areas_draw">Draw</a></li>
+            <a class="nav-link" role="tab" data-toggle="tab" ref="drawn" href="#areas_draw">Draw</a></li>
         </ul>
         <div class="tab-content">
           <div id="areas_codes" class="tab-pane fade show active">
@@ -156,14 +157,15 @@
       }
     });
     $("#id_geojson").attr("placeholder","generated from country codes")
-    $('a[href="#areas_draw"]').tab('show');
+    <!--$('a[href="#areas_draw"]').tab('show');-->
   })
 
   $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
     var target = $(e.target).attr("href") // activated tab
+    var area_type = $(e.target).attr("ref") // activated tab
     map_clear() // switch create modes? clear the deck
     // feed area type to hidden input
-    $("input[name='type']").val(target)
+    $("input[name='type']").val(area_type)
     // console.log('tab id:',target);
     active = $("ul#area_tabs_ul a.active").attr("href")
     // TODO: refactor this eventually or face retribution
@@ -311,20 +313,22 @@
     <!--).addTo(mappy);-->
     <!--layerGroup.addOverlay({'drawlayer': drawnItems})-->
     
-    // // TODO: save edits
+   
     mappy.on(L.Draw.Event.CREATED, function (event) {
       window.drawnlayer = event.layer;
       $("textarea#id_geojson").val(JSON.stringify(drawnlayer.toGeoJSON().geometry))
       drawnItems.addLayer(drawnlayer);
       $("#p_geom").show()
     });
-  } // end map_init
+  } 
 
   function map_clear() {
     if(typeof cc_layer != "undefined"){cc_layer.remove()}
     if(typeof hull_layer != "undefined"){hull_layer.remove()}
     $("input#id_ccodes").val(null)
-    $("textarea#id_geojson").val(null)
+    if('{{ action }}' == "create"){
+      $("textarea#id_geojson").val(null)
+    }
     $("#buffer_km").val(null)
   }
 </script>
