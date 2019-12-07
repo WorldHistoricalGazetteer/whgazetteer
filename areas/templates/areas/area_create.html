@@ -107,7 +107,6 @@
             <!--</p>-->
           <!--</div>-->
           <div id="areas_draw" class="tab-pane fade in">
-            <i class="text-danger">not yet available</i>
             <p>Use map controls to draw/edit bounding box or polygon</p></div>
         </div>
         <p class="mt-2">GeoJSON<br/>{{ form.geojson }}</p>
@@ -243,8 +242,13 @@
    // initialize, render map w/settings.LEAFLET_CONFIG
   function map_init (map, options) {
     if('{{ action }}' == 'update' && '{{ form.type.value }}' == 'drawn'){
-      // activate draw tab
+    <!--if('{{ action }}' == 'update' ){-->
+      // TODO: is this user-friendly?
+      // always activate draw tab
+      <!--if ('{{ form.type.value }}' == 'drawn'){-->
       $('a[href="#areas_draw"]').tab('show');
+      $('a[href="#areas_codes"]').addClass('disabled').css("cursor","default")
+      <!--}-->
       // load existing data for editing
       <!--editItems = L.featureGroup()-->
       lgeojson = L.geoJson(JSON.parse($("textarea#id_geojson").val()), {
@@ -252,26 +256,31 @@
           drawnItems.addLayer(layer);
         }
       }).addTo(mappy)
+      mappy.fitBounds(lgeojson.getBounds())
       <!--console.log('geom on init',lgeojson)-->
-    }
-    drawControls(drawnItems)
-    <!--drawnItems.addTo(mappy)-->
-    mappy.on(L.Draw.Event.CREATED, function (event) {
-      window.drawnlayer = event.layer;
-      console.log('drawnlayer',drawnlayer)
-      drawnItems.addLayer(drawnlayer);
-      drawnItems.addTo(mappy)
-      $("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON()))
-    });
-    mappy.on(L.Draw.Event.EDITED, function (event) {
-      $("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON()))
-      console.log('you changed it')
-    });
-    mappy.on(L.Draw.Event.DELETED, function (event) {
-      $("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON()))
+
+      drawControls(drawnItems)
       <!--drawnItems.addTo(mappy)-->
-      console.log('you deleted something')
-    });
+      mappy.on(L.Draw.Event.CREATED, function (event) {
+        window.drawnlayer = event.layer;
+        console.log('drawnlayer',drawnlayer)
+        drawnItems.addLayer(drawnlayer);
+        drawnItems.addTo(mappy)
+        $("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON()))
+      });
+      mappy.on(L.Draw.Event.EDITED, function (event) {
+        $("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON()))
+        console.log('you changed it')
+      });
+      mappy.on(L.Draw.Event.DELETED, function (event) {
+        $("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON()))
+        <!--drawnItems.addTo(mappy)-->
+        console.log('you deleted something')
+      });
+    } else if('{{ action }}' == 'update' && '{{ form.type.value }}' == 'ccodes') {
+      $('a[href="#areas_draw"]').addClass('disabled').css("cursor","default")
+      map_render()
+    }
   }  
   function map_render() {
     console.log('in map_render()')
