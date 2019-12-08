@@ -15,16 +15,7 @@
 {% endblock %}
 {% block content %}
 <div class="container">
-  <div id="place_title">
-    <h4>{{ title }} 
-      <!--<span class="small">{ if ccodes|length > 0 %} ({ for c in ccodes %}{{ c }} { endfor %}){ endif %}</span>-->
-      <!--<span class="smaller float-right"> <i>whg:{ whg_id }}</i>-->
-        <!--{ if place.dataset in spine %}<a href="" rel="tooltip" title="WHG spine record">-->
-          <!--<img src="{ static 'images/whg_logo_38h.png' %}" height="25px" class="textsub ml-2"/></a>-->
-        <!--{ endif %}-->
-      <!--</span>-->
-    </h4>
-  </div>
+  <div id="place_title"><h4>{{ title }}</h4></div>
   <div id="place_tabset">
     <ul class="nav nav-tabs" id="myTab">
       <li class="nav-item">
@@ -35,9 +26,9 @@
       <div id="place_core" class="tab-pane fade show active" >
         <div class="row pt-1">
           <div id="place_home_l" class="col-sm-6">
-            <div class="col-content small mt-1">
-              <p>{{ title }} is a { place type }, { on the {...} }</p>
-            </div>
+            <!--<div class="col-content small mt-1">-->
+              <!--<p>{ title }} is a { place type }, { on the {...} }</p>-->
+            <!--</div>-->
             {% for rec in payload %}
             <div class="col-content small mt-1">
               <!-- 'core' array of dataset labels is context from view; color-code core -->
@@ -46,11 +37,11 @@
                  <button type="button" data-id="{{ rec.place_id }}" class="create-comment btn btn-sm ml-2" style="background-color:antiquewhite;">{% fontawesome_icon 'edit' color='#336699' %}</button>
                   {% if rec.geoms|length > 0 %}
                     <span class="ml-2">
-                    <a href="#" class="flash-geo ttip" data-id="{{ rec.place_id }}">flash geometry</a> {% fontawesome_icon 'map-marker' %}</span>
+                    <a href="#" class="flash-geo ttip" data-id="{{ rec.place_id }}">highlight</a> {% fontawesome_icon 'map-marker' %}</span>
                   {% endif %}
                 <span class="float-right">
                   dataset: {% if rec.dataset.label != 'tgn_filtered_01' %}
-                    <a href="/datasets/{{rec.dataset.id}}/detail" rel="tooltip" title="{{rec.dataset.name}}" >{{rec.dataset.label}}</a>
+                    <a href="/datasets/{{rec.dataset.id}}/detail" class="ttip" rel="tooltip" title="{{rec.dataset.name}}" >{{rec.dataset.label}}</a>
                   {% else %}
                     <a href="#" rel="tooltip" class="ttip" title="{{rec.dataset.name}}" >{{rec.dataset.label}}</a>
                   {% endif %}
@@ -116,17 +107,21 @@
                   {% if not forloop.last %}; {% endif %}{% endfor %}</div>
               </div>
               {% endif %}
-              {% if rec.whens %}
-                <!--<div class="attest-element">Temporal: {# for when in rec.whens %}{when|truncatechars:130}}{# endfor %}</div>-->
-                <div class="attest-element">Temporal: 
-                  {% for when in rec.whens %}
-                    {% for t in when.timespans %}
-                      {{t.start.in}}/{{t.end.in}}
-                      {% if not forloop.last %}| {% endif %}
-                    {% endfor %}
-                  {% endfor %}</div>
+              {% if rec.whens|length > 0 %}
+                <div class="attest-element">Temporal:
+                  <!-- aggregate into telems javascript object-->
+                  {% for w in rec.whens %}
+                    {{ w|json_script:rec.place_id }}
+                  {% endfor %}
+                  {{ rec.whens }}
+                  <!--{ for when in rec.whens %}-->
+                    <!--{ for t in when.timespans %}-->
+                      <!--{t.start.in}}/{t.end.in}}-->
+                      <!--{ if not forloop.last %}| { endif %}-->
+                    <!--{ endfor %}-->
+                  <!--{ endfor %}-->
+                </div>
               {% endif %}
-              <!--All t [names,geoms,types,whens]: { rec.extents }}-->
             </div>
             {% endfor %} <!-- rec in payload-->
           </div> <!-- place_home_l-->
@@ -210,18 +205,6 @@
 </div>
 
 <script type="text/javascript">
-  <!--$('.ext').on('click', function(e) {-->
-    <!--str=$(this).text()-->
-    <!--var re = /(dbp|gn|tgn|wd|loc|viaf):(.*?)$/;-->
-    <!--url=base_urls[str.match(re)[1]]+str.match(re)[2]-->
-    <!--if(['dbp','gn','tgn','wd'].indexOf(str.match(re)[1]) >= 0 ){-->
-      <!--$(".modal-body-ext").html('<iframe width="100%" height="100%" frameborder="0" scrolling="yes" '+-->
-        <!--'allowtransparency="true" src="'+url+'"></iframe>');    -->
-    <!--} else {-->
-      <!--window.open(url,'_blank')-->
-    <!--}-->
-  <!--});-->
-
   $('.ext').on('click', function(e) {
     e.preventDefault();
     str=$(this).text()
@@ -244,8 +227,17 @@
     feature.setStyle({fillColor:"#7AFF7A"})
   })
   $(function() {
-    <!--window.spinner = new Spin.Spinner().spin();-->
-    <!--$("#map").append(spinner.el); -->
+    // looks like: { 81011:[{"start":{},"end":{}}, ...], ... }
+    window.telems = $('script').filter(function() {
+      return this.id.match(/[0-9]/) && this.text != '"null"' && this.text.includes('timespans');
+    });
+    intervals = parseTelems(telems)[1]
+    time_object = parseTelems(telems)[0]
+    var min = Math.min.apply(null, intervals.map(function(row){ return Math.min.apply(Math, row); }));
+    var max = Math.max.apply(null, intervals.map(function(row){ return Math.max.apply(Math, row); }));
+    minmax=[min,max]
+    console.log('min/max',minmax)
+    // feed to tvis_summary()
     
     $(".create-comment").each(function () {
       var recpk = $(this).data('id');
@@ -253,7 +245,7 @@
       next='?next='+"{% url 'places:place-portal' id=whg_id %}"
       $(this).modalForm({formURL: uribase+next});
     });
-
+    
     var trace_count = 0
     $("[rel='tooltip']").tooltip();
     $('a[data-toggle="tooltip"]').tooltip({
@@ -274,6 +266,22 @@
       fetchTraceGeom($(this).data('id'),$(this).data('ctr'))
     })
   })
+  
+  function parseTelems(telems){
+    let ts_obj = {}
+    let ts_arr = []
+    for (i=0;i<telems.length;i++){
+      id=telems[i].id
+      ts = JSON.parse(telems[i].text).timespans
+      ts_obj[id] = ts
+      for (var j=0; j < ts.length; j++) {
+        <!--console.log('ts',ts[j])-->
+        ts_arr.push( ts[j] );
+      }
+    }
+    intervals=ts_arr.map(ts => [ ts.start.in, ts.end.in ])
+    return [ts_obj,intervals]  <!--console.log(ts_arr)-->
+  }
   function filly(counter) {
     if (counter == 0)
       return "blue"
@@ -541,3 +549,15 @@
 </script>
 <script src="{% static 'js/jquery.bootstrap.modal.forms.min.js' %}"></script>
 {% endblock %}
+
+  <!--$('.ext').on('click', function(e) {-->
+    <!--str=$(this).text()-->
+    <!--var re = /(dbp|gn|tgn|wd|loc|viaf):(.*?)$/;-->
+    <!--url=base_urls[str.match(re)[1]]+str.match(re)[2]-->
+    <!--if(['dbp','gn','tgn','wd'].indexOf(str.match(re)[1]) >= 0 ){-->
+      <!--$(".modal-body-ext").html('<iframe width="100%" height="100%" frameborder="0" scrolling="yes" '+-->
+        <!--'allowtransparency="true" src="'+url+'"></iframe>');    -->
+    <!--} else {-->
+      <!--window.open(url,'_blank')-->
+    <!--}-->
+  <!--});-->

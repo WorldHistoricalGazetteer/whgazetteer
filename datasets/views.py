@@ -1,10 +1,10 @@
 # datasets.views
 from django.contrib import messages
-from django.contrib.auth.decorators import user_passes_test
+#from django.contrib.auth.decorators import user_passes_test
 from django.core.paginator import Paginator #,EmptyPage, PageNotAnInteger
 from django.db.models import Q
 from django.forms import modelformset_factory
-# from django.http import JsonResponse
+from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 from django.views.generic import (
@@ -946,17 +946,16 @@ class DatasetDeleteView(DeleteView):
     return reverse('dashboard')
 
 # fetch places in specified dataset 
-# TODO: obsolete?
-#def ds_list(request, label):
-  #print('in ds_list() for',label)
-  #qs = Place.objects.all().filter(dataset=label)
-  #geoms=[]
-  #for p in qs.all():
-    #feat={"type":"Feature",
-          #"properties":{"src_id":p.src_id,"name":p.title},
-              #"geometry":p.geoms.first().jsonb}
-    #geoms.append(feat)
-  #return JsonResponse(geoms,safe=False)
+def ds_list(request, label):
+  print('in ds_list() for',label)
+  qs = Place.objects.all().filter(dataset=label)
+  geoms=[]
+  for p in qs.all():
+    feat={"type":"Feature",
+          "properties":{"src_id":p.src_id,"name":p.title},
+              "geometry":p.geoms.first().jsonb}
+    geoms.append(feat)
+  return JsonResponse(geoms,safe=False)
 
 """
 functions to batch large database inserts, e.g. TGN
