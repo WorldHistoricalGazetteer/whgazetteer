@@ -5,6 +5,11 @@ import json
 register = template.Library()
 
 @register.filter
+def addstr(arg1, arg2):
+    """concatenate arg1 & arg2"""
+    return str(arg1) + str(arg2)
+
+@register.filter
 def haskey(objlist, arg):
     """True if any obj in objlist has key arg"""
     return any(arg in x for x in objlist)
