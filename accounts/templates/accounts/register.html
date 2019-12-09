@@ -5,9 +5,7 @@
 <div class="container">
   <div class="d-flex justify-content-center mt-3">
     <div>
-    {% if error %}
-      <p style="color:red">{{ error }}</p>
-    {% endif %}
+    {% if error %} <p style="color:red">{{ error }}</p> {% endif %}
 
     <h2>Register</h2>
     <form method="post" action="{% url 'register' %}">

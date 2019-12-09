@@ -3,23 +3,24 @@
 {% block content %}
 
 <div class="container">
+  <form id="profile_form" method="POST" action="#" enctype="multipart/form-data">
+  {% csrf_token %}
   <div class="d-flex justify-content-center mt-3">
-    <h3>User Profile 
-    <!--<small> <a href="{ url 'register' %}" class="" title="Edit profile">{ fontawesome_icon 'edit' color='#336699' %}</a></small>-->
-    </h3>
+    <h3>{{ user.username }} account settings</h3>
   </div>
   <div class="px-5 profile">
-    <p><b>Login name</b>: {{ user.username }}</p>
+    <p><b>Username</b>: {{ object.username }}</p>
     <p><b>Name</b>: 
-      {% if user.profile.user_type == 'individual' %}{{ user.first_name }} {{ user.last_name }}
+      {% if user.profile.user_type == 'individual' %}{{ form.first_name }} {{ form.last_name }}
       {% else %} {{ user.name }} {% endif %}
     </p>
-    <p><b>Email</b>: {{ user.email }}</p>
+    <p><b>Email</b>: {{ form.email }}</p>
     <p><b>Affiliation</b>: {{ user.profile.affiliation }}</p>
     <p><b>Web page</b>: {{ user.profile.web_page }}</p>
     {% if groups|length > 0 %}
     <p><b>Groups</b>: {% for g in groups %}{{g}}{% if not forloop.last %}; {% endif %}{% endfor %}</p>
     {% endif %}
   </div>
+  </form>
 </div>
 {% endblock %}

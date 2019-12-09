@@ -1,12 +1,46 @@
-from django.shortcuts import render, redirect
 from django.contrib.auth.models import User, Group
 from django.contrib import auth
+from django.shortcuts import render, redirect, get_object_or_404
+from django.views.generic import UpdateView
 
-def profile(request):
-    context={}
-    context['groups'] = request.user.groups.values_list('name',flat=True)
-    print('request from profile',request.META.keys())
-    return render(request, 'accounts/profile.html', context=context)
+from accounts.forms import UserProfileModelForm
+
+#def profile(request):
+class UserProfileView(UpdateView):
+    form_class = UserProfileModelForm
+    template_name = 'accounts/profile.html'
+
+    #print('request from profile',request.META.keys())
+    
+    def get_success_url(self):
+        id_ = self.kwargs.get("id")
+        return '/accounts/profile'
+    
+    def form_valid(self, form):
+        context={}
+        if form.is_valid():
+            print('form is valid')
+            print('cleaned_data: before ->', form.cleaned_data)
+        else:
+            print('form not valid', form.errors)
+            context['errors'] = form.errors
+        return super().form_valid(form)
+    
+    def get_object(self):
+        me = self.request.user
+        #print('args, kwargs:',self.args, self.kwargs)
+        id_ = me.id
+        return get_object_or_404(User, id=id_)
+    
+    def get_context_data(self, *args, **kwargs):
+        id_ = self.request.user.id
+        u = get_object_or_404(User, id=id_)
+        context = super(UserProfileView, self).get_context_data(*args, **kwargs)
+        context['groups'] = u.groups.values_list('name',flat=True)
+        return context
+        
+    
+    #return render(request, 'accounts/profile.html', context=context)
 
 def register(request):
     if request.method == 'POST':
