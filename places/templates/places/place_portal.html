@@ -142,7 +142,7 @@
             </div>
             <div id="place_traces" class="col-content small mt-1">
             <!--{'target': {'id': 'http://www.worldcat.org/oclc/833253277', 'type': ['Journey', 'Text'], 'title': 'Xuanzang : a Buddhist pilgrim on the Silk Road'}, 'body': {'id': 'http://whgazetteer.org/api/places/12376709', 'when': [{'end': '0630', 'start': '0630'}], 'title': 'Aksu', 'whg_id': 12376709, 'relation': 'waypoint'}}-->
-              <p class="mb-0 allcap-heading">TRACES</p>
+              <p class="mb-0 allcap-heading">TRACES<span> (related persons, events, works)</span></p>
               {% if traces|length > 0 %}
                 <ul>
                 {% for t in traces %}
@@ -168,12 +168,13 @@
                 {% endfor %}
                 </ul>
               {% else %}
-                <ul>
-                  <li>{ e.g. an event trace }</li>
-                  <li>{ e.g. a person trace }</li>
-                  <li>{ e.g. a works trace (texts, datasets, artworks, etc.) }</li>
-                  <li>{ e.g. an object trace (artefacts, etc.) }</li>
-                </ul>
+                <i>None yet</i>
+                <!--<ul>-->
+                  <!--<li>{ e.g. an event trace }</li>-->
+                  <!--<li>{ e.g. a person trace }</li>-->
+                  <!--<li>{ e.g. a works trace (texts, datasets, artworks, etc.) }</li>-->
+                  <!--<li>{ e.g. an object trace (artefacts, etc.) }</li>-->
+                <!--</ul>-->
               {% endif %}
             </div>
           </div> <!-- place_home_r -->
