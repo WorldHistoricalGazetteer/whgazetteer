@@ -282,27 +282,27 @@
       width = 500, height = 30,  padding_h = 20,  padding_w = 30;
       
     // set the ranges
-    window.xScale = d3.scaleBand()
-    <!--window.xScale = d3.scaleLinear()-->
+    <!--window.xScale = d3.scaleBand()-->
+    window.xScale = d3.scaleLinear()
       .range([0, width])
-      .padding(0.05);
-      <!--.padding(0.35);-->
+      <!--.padding(0.05);-->
     window.yScale = d3.scaleLinear()
       .range([height, 0]);
-      
+  
+    <!--xScale.domain(data.map(function(d) { return d.bin; }));-->
+    xScale.domain(minmax);
+    yScale.domain([0, d3.max(data, function(d) { return d.count; })]);
+    
     window.svg_hist = d3.select("#histogram_sum").append("svg")
       .attr("width", width+padding_w)
       .attr("height", height+padding_h)
       <!--.attr("id", "tsvg_"+dataset)-->
     .append("g")
       .attr("transform","translate(" + margin.left + "," + margin.top + ")")
-  
-    xScale.domain(data.map(function(d) { return d.bin; }));
-    yScale.domain([0, d3.max(data, function(d) { return d.count; })]);
-  
+
     window.axisB = d3.axisBottom(xScale)
-      .tickValues(labels.filter(function(d,i){return !(i%20)}));
-      <!--.tickValues(labels.slice(0,labels.length-1).filter(function(d,i){return !(i%20)}))-->
+      .tickValues(labels.filter(function(d,i){return !(i%20)}))
+      .tickFormat(d3.format("d"));
 
     var axisL = d3.axisLeft(yScale)
   
@@ -311,7 +311,8 @@
     .enter().append("rect")
       .attr("class", "bar")
       .attr("x", function(d) { return xScale(d.bin); })
-      .attr("width", xScale.bandwidth())
+      <!--.attr("width", function(d) { return xScale(d.x1) - xScale(d.x0) -1 ; })-->
+      .attr("width", 2)
       .attr("y", function(d) { return yScale(d.count); })
       .attr("height", function(d) { return height - yScale(d.count); });
   
