@@ -226,6 +226,49 @@
     feature = idToFeature[$(this).data('id')]
     feature.setStyle({fillColor:"#7AFF7A"})
   })
+  function range(start, stop, step) {
+    var a = [start], b = start;
+    while (b < stop) {
+        a.push(b += step || 1);
+    }
+    return a;
+  }
+  function parseTelems(telems){
+    let ts_obj = {}
+    let ts_arr = []
+    for (i=0;i<telems.length;i++){
+      id=telems[i].id
+      ts = JSON.parse(telems[i].text).timespans
+      ts_obj[id] = ts
+      for (var j=0; j < ts.length; j++) {
+        <!--console.log('ts',ts[j])-->
+        ts_arr.push( ts[j] );
+      }
+    }
+    intervals=ts_arr.map(ts => [ ts.start.in, ts.end.in ])
+    return [ts_obj,intervals]  <!--console.log(ts_arr)-->
+  }
+  function intersects(a,b){
+    min = (a[0] < b[0] ? a : b)
+    max = (min == a ? b : a)
+    return !(min[1] < max[1])
+  }
+  function histogram(intervals,minmax){
+    <!--step = Math.round((minmax[1]-minmax[0])/200)-->
+    step = Number(((minmax[1]-minmax[0])/199).toPrecision(4))
+    bins = range(minmax[0],minmax[1],step)
+    hist_array = Array.apply(null, Array(bins.length)).map(Number.prototype.valueOf,0);
+    for (b=0; b<bins.length; b++){
+    <!--for (b in bins.slice(0,20)){-->
+      bin = Array(bins[b],bins[b+1])
+      for (i in intervals){
+        <!--console.log('bin, intervals[i]',bin,intervals[i],intersects(bin,intervals[i]))-->
+        if (intersects(bin,intervals[i])){
+          hist_array[b] +=1
+        }
+      }
+    }
+  }
   $(function() {
     // looks like: { 81011:[{"start":{},"end":{}}, ...], ... }
     window.telems = $('script').filter(function() {
@@ -236,7 +279,7 @@
     var min = Math.min.apply(null, intervals.map(function(row){ return Math.min.apply(Math, row); }));
     var max = Math.max.apply(null, intervals.map(function(row){ return Math.max.apply(Math, row); }));
     minmax=[min,max]
-    console.log('min/max',minmax)
+    <!--console.log('min/max',minmax)-->
     // feed to tvis_summary()
     
     $(".create-comment").each(function () {
@@ -267,21 +310,7 @@
     })
   })
   
-  function parseTelems(telems){
-    let ts_obj = {}
-    let ts_arr = []
-    for (i=0;i<telems.length;i++){
-      id=telems[i].id
-      ts = JSON.parse(telems[i].text).timespans
-      ts_obj[id] = ts
-      for (var j=0; j < ts.length; j++) {
-        <!--console.log('ts',ts[j])-->
-        ts_arr.push( ts[j] );
-      }
-    }
-    intervals=ts_arr.map(ts => [ ts.start.in, ts.end.in ])
-    return [ts_obj,intervals]  <!--console.log(ts_arr)-->
-  }
+
   function filly(counter) {
     if (counter == 0)
       return "blue"
