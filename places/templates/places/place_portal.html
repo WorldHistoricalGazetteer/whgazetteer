@@ -12,6 +12,8 @@
   <script src="{% static 'js/aliases.js' %}"></script>
   <script src="{% static 'js/leaflet.ajax.min.js' %}"></script>
   <script src="{% static 'js/jquery.bootstrap.modal.forms.min.js' %}"></script>
+  <!--TODO: load local, only what's needed-->
+  <script src = "https://d3js.org/d3.v4.min.js"></script>
 {% endblock %}
 {% block content %}
 <div class="container">
@@ -113,7 +115,7 @@
                   {% for w in rec.whens %}
                     {{ w|json_script:rec.place_id }}
                   {% endfor %}
-                  {{ rec.whens }}
+                  <!--{ rec.whens }}-->
                   <!--{ for when in rec.whens %}-->
                     <!--{ for t in when.timespans %}-->
                       <!--{t.start.in}}/{t.end.in}}-->
@@ -128,7 +130,8 @@
           <div id="place_home_r" class="col-sm-6">
             <div id="place_temporal" class="col-content small">
               <p class="mb-0 allcap-heading">TEMPORAL ATTESTATIONS</p>
-              <p> <img src="{% static 'images/spark01.png'%}" height=auto width=275 alt=""/> { summing temporal visualization } <i>future</i></p>
+              <div id="histogram_sum"></div>
+              <!--<p> <img src="{ static 'images/spark01.png'%}" height=auto width=275 alt=""/> { summing temporal visualization } <i>future</i></p>-->
             </div>
             <div id="place_map" class="col-content small">
                 <p class="mb-0 allcap-heading">GEOGRAPHY <span class="nogeo text-danger"></span>
@@ -253,21 +256,73 @@
     max = (min == a ? b : a)
     return !(min[1] < max[1])
   }
-  function histogram(intervals,minmax){
-    <!--step = Math.round((minmax[1]-minmax[0])/200)-->
-    step = Number(((minmax[1]-minmax[0])/199).toPrecision(4))
+  function histogram_data(intervals,minmax){
+    <!--step = Number(((minmax[1]-minmax[0])/200).toPrecision(4))-->
+    step = Number(((minmax[1]-minmax[0])/200))
     bins = range(minmax[0],minmax[1],step)
     hist_array = Array.apply(null, Array(bins.length)).map(Number.prototype.valueOf,0);
+    labels=bins.map(function(d){return Math.round(d)})
     for (b=0; b<bins.length; b++){
-    <!--for (b in bins.slice(0,20)){-->
       bin = Array(bins[b],bins[b+1])
       for (i in intervals){
-        <!--console.log('bin, intervals[i]',bin,intervals[i],intersects(bin,intervals[i]))-->
         if (intersects(bin,intervals[i])){
           hist_array[b] +=1
         }
       }
     }
+    <!--data=hist_array.map(function(d,i){return {"bin":i,"count":d}})-->
+    data=hist_array.map(function(d,i){return {"bin":labels[i],"count":d}})
+    // now visualize it
+    <!--console.log(data)-->
+    histogram(data,labels)
+  }
+  function histogram(data,labels){
+    data=data.slice(0,199)
+    var margin = {top: 0, right: 10, bottom: 0, left: 10},
+      width = 500, height = 30,  padding_h = 20,  padding_w = 30;
+      
+    // set the ranges
+    window.xScale = d3.scaleBand()
+    <!--window.xScale = d3.scaleLinear()-->
+      .range([0, width])
+      .padding(0.05);
+      <!--.padding(0.35);-->
+    window.yScale = d3.scaleLinear()
+      .range([height, 0]);
+      
+    window.svg_hist = d3.select("#histogram_sum").append("svg")
+      .attr("width", width+padding_w)
+      .attr("height", height+padding_h)
+      <!--.attr("id", "tsvg_"+dataset)-->
+    .append("g")
+      .attr("transform","translate(" + margin.left + "," + margin.top + ")")
+  
+    xScale.domain(data.map(function(d) { return d.bin; }));
+    yScale.domain([0, d3.max(data, function(d) { return d.count; })]);
+  
+    window.axisB = d3.axisBottom(xScale)
+      .tickValues(labels.filter(function(d,i){return !(i%20)}));
+      <!--.tickValues(labels.slice(0,labels.length-1).filter(function(d,i){return !(i%20)}))-->
+
+    var axisL = d3.axisLeft(yScale)
+  
+    svg_hist.selectAll(".bar")
+      .data(data)
+    .enter().append("rect")
+      .attr("class", "bar")
+      .attr("x", function(d) { return xScale(d.bin); })
+      .attr("width", xScale.bandwidth())
+      .attr("y", function(d) { return yScale(d.count); })
+      .attr("height", function(d) { return height - yScale(d.count); });
+  
+    var xAxis = svg_hist.append("g")
+      .attr("id","xaxis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(axisB)
+  
+    <!--var yAxis = svg_hist.append("g")-->
+      <!--.attr("id","yaxis")-->
+      <!--.call(axisL);-->
   }
   $(function() {
     // looks like: { 81011:[{"start":{},"end":{}}, ...], ... }
@@ -281,6 +336,7 @@
     minmax=[min,max]
     <!--console.log('min/max',minmax)-->
     // feed to tvis_summary()
+    histogram_data(intervals,minmax)
     
     $(".create-comment").each(function () {
       var recpk = $(this).data('id');
