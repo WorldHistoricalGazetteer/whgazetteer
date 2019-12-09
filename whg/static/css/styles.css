@@ -557,3 +557,8 @@ span.edit-row {
 .nav.nav-tabs > li.disabled a {
  color: #eee !important; cursor: default !important;
 }
+
+/**
+  Histograms
+**/
+.bar { fill: #ddd; }
