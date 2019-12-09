@@ -116,12 +116,12 @@
                     {{ w|json_script:rec.place_id }}
                   {% endfor %}
                   <!--{ rec.whens }}-->
-                  <!--{ for when in rec.whens %}-->
-                    <!--{ for t in when.timespans %}-->
-                      <!--{t.start.in}}/{t.end.in}}-->
-                      <!--{ if not forloop.last %}| { endif %}-->
-                    <!--{ endfor %}-->
-                  <!--{ endfor %}-->
+                  {% for when in rec.whens %}
+                    {% for t in when.timespans %}
+                      {{t.start.in}}/{{t.end.in}}
+                      {% if not forloop.last %}| {% endif %}
+                    {% endfor %}
+                  {% endfor %}
                 </div>
               {% endif %}
             </div>
@@ -277,6 +277,8 @@
     histogram(data,labels)
   }
   function histogram(data,labels){
+    // exit if no data 
+    if (data[0].bin == "Infinity"){ $("#histogram_sum").html('<i>None yet</i>'); return; }
     data=data.slice(0,199)
     var margin = {top: 0, right: 10, bottom: 0, left: 10},
       width = 500, height = 30,  padding_h = 20,  padding_w = 30;
