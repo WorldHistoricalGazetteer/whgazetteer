@@ -219,7 +219,7 @@
     var min = Math.min.apply(null, intervals.map(function(row){ return Math.min.apply(Math, row); }));
     var max = Math.max.apply(null, intervals.map(function(row){ return Math.max.apply(Math, row); }));
     minmax=[min,max]
-    
+   
     // distribute intervals to attestation cards
     for (let key in time_object) {
       to_sorted = time_object[key].sort(function(a, b) {
@@ -232,6 +232,7 @@
       selector = "#card_"+key+" .attesttime"
       $(selector).html(intervals_text.join(', '))
     }
+
     <!--console.log('min/max',minmax)-->
     // feed to tvis_summary()
     histogram_data(intervals,minmax)
