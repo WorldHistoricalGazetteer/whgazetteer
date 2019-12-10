@@ -32,7 +32,7 @@
               <!--<p>{ title }} is a { place type }, { on the {...} }</p>-->
             <!--</div>-->
             {% for rec in payload %}
-            <div class="col-content small mt-1">
+            <div id="card_{{ rec.place_id }}" class="col-content small mt-1">
               <!-- 'core' array of dataset labels is context from view; color-code core -->
               {% if core|haskey:rec.dataset.label %}<div class="core-header">{% else %}<div class="attest-header">{% endif %}
                 <b>{{ rec.title }}</b> 
@@ -110,7 +110,7 @@
               </div>
               {% endif %}
               {% if rec.whens|length > 0 %}
-                <div class="attest-element">Temporal:
+                <div class="attest-element attesttime">Temporal:
                   <!-- aggregate into telems javascript object-->
                   {% for w in rec.whens %}
                     {{ w|json_script:rec.place_id }}
@@ -213,13 +213,25 @@
     // looks like: { 81011:[{"start":{},"end":{}}, ...], ... }
     window.telems = $('script').filter(function() {
       return this.id.match(/[0-9]/) && this.text != '"null"' && this.text.includes('timespans');
-      <!--return this.id.match(/[0-9]/) && this.text != '"null"' && !(Object.keys(JSON.parse(this.text)).includes('coordinates'));-->
     });
     time_object = parseTelems(telems)[0]
     intervals = parseTelems(telems)[1]
     var min = Math.min.apply(null, intervals.map(function(row){ return Math.min.apply(Math, row); }));
     var max = Math.max.apply(null, intervals.map(function(row){ return Math.max.apply(Math, row); }));
     minmax=[min,max]
+    
+    // distribute intervals to attestation cards
+    for (let key in time_object) {
+      to_sorted = time_object[key].sort(function(a, b) {
+          return parseFloat(a.start.in) - parseFloat(b.start.in);
+      });
+      <!--intervals = time_object[key].map(ts => [ ts.start.in, ts.end.in ])-->
+      <!--intervals_text = time_object[key].map(ts => ts.start.in+'/'+ts.end.in)-->
+      intervals_text = to_sorted.map(ts => ts.start.in+'/'+ts.end.in)
+      <!--console.log(key, intervals.join(', '));-->
+      selector = "#card_"+key+" .attesttime"
+      $(selector).html(intervals_text.join(', '))
+    }
     <!--console.log('min/max',minmax)-->
     // feed to tvis_summary()
     histogram_data(intervals,minmax)
@@ -252,15 +264,6 @@
     })
   })
   
-  $('.ext').on('click', function(e) {
-    e.preventDefault();
-    str=$(this).text()
-    console.log('str',str)
-    var re = /(http|dbp|gn|tgn|wd|loc|viaf):(.*?)$/;
-    url=str.match(re)[1]=='http' ? str : base_urls[str.match(re)[1]]+str.match(re)[2]
-    window.open(url,'_blank')
-  });
-  
   function range(start, stop, step) {
     var a = [start], b = start;
     while (b < stop) {
@@ -289,6 +292,7 @@
           pushy(obj.when.timespans)
         }
       } else if (Object.keys(obj).includes('timespans')){
+        ts_obj[id] = obj.timespans
         pushy(obj.timespans)
       }
     }
@@ -649,6 +653,14 @@
     feature.setStyle({fillColor:"#7AFF7A"})
   })
   
+  $('.ext').on('click', function(e) {
+    e.preventDefault();
+    str=$(this).text()
+    console.log('str',str)
+    var re = /(http|dbp|gn|tgn|wd|loc|viaf):(.*?)$/;
+    url=str.match(re)[1]=='http' ? str : base_urls[str.match(re)[1]]+str.match(re)[2]
+    window.open(url,'_blank')
+  });
 </script>
 <script src="{% static 'js/jquery.bootstrap.modal.forms.min.js' %}"></script>
 {% endblock %}
