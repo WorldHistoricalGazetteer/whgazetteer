@@ -29,35 +29,36 @@
     </span>
   </h4>
   {% if nohits %}
-  <div>
-    <p>No unreviewed hits for this reconciliation task!</p>
-    <p><a href="{% url 'datasets:dataset-detail' id=ds_id %}">Return to dataset detail page</a></p>
-  </div>
+    <div>
+      <p>No unreviewed hits for this reconciliation task!</p>
+      <p><a href="{% url 'datasets:dataset-detail' id=ds_id %}">Return to dataset detail page</a></p>
+    </div>
   {% else %}
     <form id="form_related" method="POST" action="" >
     {% csrf_token %}
     {{ formset.management_form }}
-  <div class="pagination d-flex justify-content-center">
-    <span class="mr-5"><button type="submit" class="button-sm ">Save</button>
-    <span class="step-links">
-        {% if records.has_previous %}
-            <a href="?page=1">&laquo; first</a>&nbsp;&nbsp;
-            <a href="?page={{ records.previous_page_number }}">previous</a>
-        {% endif %}
-        <span class="current">
-            Record {{ records.number }} of {{ records.paginator.num_pages }}
-        </span>
-        {% if records.has_next %}
-            <a href="?page={{ records.next_page_number }}">next</a>&nbsp;&nbsp;
-            <a href="?page={{ records.paginator.num_pages }}">last &raquo;</a>
-        {% endif %}
-    </span>
-  </div>
-  {% for record in records %} <!-- there is only one; if last, do nothing -->
-
-
-
+    {% for record in records %} <!-- there is only one; if last, do nothing -->
     <div class="container">
+      <!--<div class="pagination d-flex justify-content-center">-->
+      <div class="pagination row justify-content-center">
+        <div class="col-sm-4"></div>
+        <div class="col-sm-8">
+        <span><button type="submit" class="button-sm ">Save</button>
+        <span class="step-links">
+            {% if records.has_previous %}
+                <a href="?page=1">&laquo; first</a>&nbsp;&nbsp;
+                <a href="?page={{ records.previous_page_number }}">previous</a>
+            {% endif %}
+            <span class="current">
+                Record {{ records.number }} of {{ records.paginator.num_pages }}
+            </span>
+            {% if records.has_next %}
+                <a href="?page={{ records.next_page_number }}">next</a>&nbsp;&nbsp;
+                <a href="?page={{ records.paginator.num_pages }}">last &raquo;</a>
+            {% endif %}
+        </span>
+        </div>
+      </div>
       <div class="row mt-2">
         <div id="review_record" class="col-sm-4 pl-0">
           <div class="bg-secondary font-weight-bold pl-2 text-light">{{ dataset_label }}</div>
