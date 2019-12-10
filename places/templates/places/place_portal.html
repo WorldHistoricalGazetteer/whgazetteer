@@ -209,6 +209,49 @@
 </div>
 
 <script type="text/javascript">
+  $(function() {
+    // looks like: { 81011:[{"start":{},"end":{}}, ...], ... }
+    window.telems = $('script').filter(function() {
+      return this.id.match(/[0-9]/) && this.text != '"null"' && this.text.includes('timespans');
+      <!--return this.id.match(/[0-9]/) && this.text != '"null"' && !(Object.keys(JSON.parse(this.text)).includes('coordinates'));-->
+    });
+    time_object = parseTelems(telems)[0]
+    intervals = parseTelems(telems)[1]
+    var min = Math.min.apply(null, intervals.map(function(row){ return Math.min.apply(Math, row); }));
+    var max = Math.max.apply(null, intervals.map(function(row){ return Math.max.apply(Math, row); }));
+    minmax=[min,max]
+    <!--console.log('min/max',minmax)-->
+    // feed to tvis_summary()
+    histogram_data(intervals,minmax)
+    
+    $(".create-comment").each(function () {
+      var recpk = $(this).data('id');
+      uribase="/comment/"+recpk
+      next='?next='+"{% url 'places:place-portal' id=whg_id %}"
+      $(this).modalForm({formURL: uribase+next});
+    });
+    
+    var trace_count = 0
+    $("[rel='tooltip']").tooltip();
+    $('a[data-toggle="tooltip"]').tooltip({
+      animated: 'fade',
+      placement: 'bottom',
+      html: true
+    });
+    $('input#fetch-context').prop('checked',false)
+    $('input#fetch-context').click(function(){
+      if($(this).is(':checked')) {
+        fetchContext(boundsPolygon(mappy.getBounds()))
+      } else {
+        nearby.removeFrom(mappy)
+      }
+    })
+    $(".trace-geo").click(function(e){
+      e.preventDefault()
+      fetchTraceGeom($(this).data('id'),$(this).data('ctr'))
+    })
+  })
+  
   $('.ext').on('click', function(e) {
     e.preventDefault();
     str=$(this).text()
@@ -218,18 +261,6 @@
     window.open(url,'_blank')
   });
   
-  var fopt = null;
-  $('.flash-geo').mouseover(function(e){
-    e.preventDefault()
-    feature = idToFeature[$(this).data('id')]
-    feature.bringToFront().setStyle({fillColor:"red",fillOpacity: 1})
-    window.fopt = feature.options
-  })
-  $('.flash-geo').mouseleave(function(e){
-    e.preventDefault()
-    feature = idToFeature[$(this).data('id')]
-    feature.setStyle({fillColor:"#7AFF7A"})
-  })
   function range(start, stop, step) {
     var a = [start], b = start;
     while (b < stop) {
@@ -240,13 +271,25 @@
   function parseTelems(telems){
     let ts_obj = {}
     let ts_arr = []
-    for (i=0;i<telems.length;i++){
-      id=telems[i].id
-      ts = JSON.parse(telems[i].text).timespans
-      ts_obj[id] = ts
+    function pushy(ts){
       for (var j=0; j < ts.length; j++) {
         <!--console.log('ts',ts[j])-->
         ts_arr.push( ts[j] );
+      }
+    }
+    // TODO: test if its a when or a geometry/name/relation/type with a when
+    for (i=0;i<telems.length;i++){
+      id=telems[i].id
+      obj = JSON.parse(telems[i].text)
+      <!--console.log('a telem',id,obj)-->
+      // when obj keys include 'timespan', geom keys incl 'coordinates',
+      if (Object.keys(obj).includes('when')) {
+        if (Object.keys(obj['when']).includes('timespans')) {
+          ts_obj[id] = obj.when.timespans
+          pushy(obj.when.timespans)
+        }
+      } else if (Object.keys(obj).includes('timespans')){
+        pushy(obj.timespans)
       }
     }
     intervals=ts_arr.map(ts => [ ts.start.in, ts.end.in ])
@@ -328,48 +371,6 @@
       <!--.attr("id","yaxis")-->
       <!--.call(axisL);-->
   }
-  $(function() {
-    // looks like: { 81011:[{"start":{},"end":{}}, ...], ... }
-    window.telems = $('script').filter(function() {
-      return this.id.match(/[0-9]/) && this.text != '"null"' && this.text.includes('timespans');
-    });
-    intervals = parseTelems(telems)[1]
-    time_object = parseTelems(telems)[0]
-    var min = Math.min.apply(null, intervals.map(function(row){ return Math.min.apply(Math, row); }));
-    var max = Math.max.apply(null, intervals.map(function(row){ return Math.max.apply(Math, row); }));
-    minmax=[min,max]
-    <!--console.log('min/max',minmax)-->
-    // feed to tvis_summary()
-    histogram_data(intervals,minmax)
-    
-    $(".create-comment").each(function () {
-      var recpk = $(this).data('id');
-      uribase="/comment/"+recpk
-      next='?next='+"{% url 'places:place-portal' id=whg_id %}"
-      $(this).modalForm({formURL: uribase+next});
-    });
-    
-    var trace_count = 0
-    $("[rel='tooltip']").tooltip();
-    $('a[data-toggle="tooltip"]').tooltip({
-      animated: 'fade',
-      placement: 'bottom',
-      html: true
-    });
-    $('input#fetch-context').prop('checked',false)
-    $('input#fetch-context').click(function(){
-      if($(this).is(':checked')) {
-        fetchContext(boundsPolygon(mappy.getBounds()))
-      } else {
-        nearby.removeFrom(mappy)
-      }
-    })
-    $(".trace-geo").click(function(e){
-      e.preventDefault()
-      fetchTraceGeom($(this).data('id'),$(this).data('ctr'))
-    })
-  })
-  
 
   function filly(counter) {
     if (counter == 0)
@@ -634,6 +635,19 @@
     }
     renderMap(geom)
   } // end map_init
+  
+  var fopt = null;
+  $('.flash-geo').mouseover(function(e){
+    e.preventDefault()
+    feature = idToFeature[$(this).data('id')]
+    feature.bringToFront().setStyle({fillColor:"red",fillOpacity: 1})
+    window.fopt = feature.options
+  })
+  $('.flash-geo').mouseleave(function(e){
+    e.preventDefault()
+    feature = idToFeature[$(this).data('id')]
+    feature.setStyle({fillColor:"#7AFF7A"})
+  })
   
 </script>
 <script src="{% static 'js/jquery.bootstrap.modal.forms.min.js' %}"></script>
