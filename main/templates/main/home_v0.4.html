@@ -589,7 +589,7 @@
     <!--console.log(sug)-->
     if (doctype=='place') {
       variants = sug['variants'].length > 0 ? '<br/><i class="text-secondary"> var: '+
-        sug['variants'].slice(0,8).sort()+'; </i>' : ''
+        sug['variants'].sort().slice(0,8).join('; ')+'; </i> ...' : ''
       <!--console.log(sug['variants'])-->
       if (scope=='search'){
         snippet = sug['snippet'].length > 0 ? sug['snippet']+'...' : ''
