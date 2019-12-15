@@ -22,7 +22,7 @@ from places.models import *
 from datasets.forms import DatasetModelForm, HitModelForm, DatasetDetailModelForm
 from datasets.models import Dataset, Hit
 from datasets.static.hashes.parents import ccodes
-from datasets.tasks import maxID
+from datasets.tasks import align_tgn, align_whg, align_wd, maxID
 from datasets.utils import *
 from es.es_utils import makeDoc
 
