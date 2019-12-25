@@ -66,7 +66,8 @@ class PlaceViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         #qs = Place.objects.annotate(num_g=Count('geoms'))
-        qs = Place.objects.order_by('geom_count')
+        #qs = Place.objects.order_by('geom_count')
+        qs = Place.objects.all()
         query = self.request.GET.get('q')
         ds = self.request.GET.get('ds')
         print('GET.get from PlaceViewSet()',self.request.GET)

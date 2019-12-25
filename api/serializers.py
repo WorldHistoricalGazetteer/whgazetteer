@@ -120,7 +120,8 @@ class PlaceSerializer(serializers.HyperlinkedModelSerializer):
         model = Place
         fields = ('url','id', 'title', 'src_id', 'dataset','ccodes',
             'names','types','geoms','links','related',
-            'whens', 'descriptions', 'depictions','geom_count','countries'
+            'whens', 'descriptions', 'depictions',
+            #'geom_count','countries'
         )
 
 # for dataset_recon.html queries
