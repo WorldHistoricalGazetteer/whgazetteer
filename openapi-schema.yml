@@ -1,0 +1,2608 @@
+openapi: 3.0.2
+info:
+  title: ''
+  version: ''
+paths:
+  /api/datasets/:
+    get:
+      operationId: listDatasets
+      description: ''
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                  previous:
+                    type: string
+                    nullable: true
+                  results:
+                    type: array
+                    items:
+                      properties:
+                        id:
+                          type: integer
+                          readOnly: true
+                        url:
+                          type: string
+                          readOnly: true
+                        owner:
+                          type: string
+                          readOnly: true
+                        label:
+                          type: string
+                          maxLength: 20
+                        name:
+                          type: string
+                          maxLength: 255
+                        numrows:
+                          type: integer
+                          maximum: 2147483647
+                          minimum: -2147483648
+                          nullable: true
+                        description:
+                          type: string
+                          maxLength: 2044
+                        format:
+                          enum:
+                          - lpf
+                          - delimited
+                        datatype:
+                          enum:
+                          - place
+                          - anno
+                        delimiter:
+                          type: string
+                          nullable: true
+                          maxLength: 5
+                        status:
+                          enum:
+                          - format_error
+                          - format_ok
+                          - in_database
+                          - uploaded
+                          - ready
+                          - accessioned
+                          nullable: true
+                        upload_date:
+                          type: string
+                          format: date-time
+                          readOnly: true
+                        accepted_date:
+                          type: string
+                          format: date-time
+                          nullable: true
+                        uri_base:
+                          type: string
+                          format: uri
+                          nullable: true
+                          maxLength: 200
+                          pattern: "^(?:[a-z0-9\\.\\-\\+]*)://(?:[^\\s:@/]+(?::[^\\\
+                            s:@/]*)?@)?(?:(?:25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)(?:\\\
+                            .(?:25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3}|\\[[0-9a-f:\\\
+                            .]+\\]|([a-z\xA1-\uFFFF0-9](?:[a-z\xA1-\uFFFF0-9-]{0,61}[a-z\xA1\
+                            -\uFFFF0-9])?(?:\\.(?!-)[a-z\xA1-\uFFFF0-9-]{1,63}(?<!-))*\\\
+                            .(?!-)(?:[a-z\xA1-\uFFFF-]{2,63}|xn--[a-z0-9]{1,59})(?<!-)\\\
+                            .?|localhost))(?::\\d{2,5})?(?:[/?#][^\\s]*)?\\Z"
+                      required:
+                      - label
+                      - name
+                      - description
+          description: ''
+    post:
+      operationId: createDataset
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema: &id001
+              properties:
+                label:
+                  type: string
+                  maxLength: 20
+                name:
+                  type: string
+                  maxLength: 255
+                numrows:
+                  type: integer
+                  maximum: 2147483647
+                  minimum: -2147483648
+                  nullable: true
+                description:
+                  type: string
+                  maxLength: 2044
+                format:
+                  enum:
+                  - lpf
+                  - delimited
+                datatype:
+                  enum:
+                  - place
+                  - anno
+                delimiter:
+                  type: string
+                  nullable: true
+                  maxLength: 5
+                status:
+                  enum:
+                  - format_error
+                  - format_ok
+                  - in_database
+                  - uploaded
+                  - ready
+                  - accessioned
+                  nullable: true
+                accepted_date:
+                  type: string
+                  format: date-time
+                  nullable: true
+                uri_base:
+                  type: string
+                  format: uri
+                  nullable: true
+                  maxLength: 200
+                  pattern: "^(?:[a-z0-9\\.\\-\\+]*)://(?:[^\\s:@/]+(?::[^\\s:@/]*)?@)?(?:(?:25[0-5]|2[0-4]\\\
+                    d|[0-1]?\\d?\\d)(?:\\.(?:25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3}|\\\
+                    [[0-9a-f:\\.]+\\]|([a-z\xA1-\uFFFF0-9](?:[a-z\xA1-\uFFFF0-9-]{0,61}[a-z\xA1\
+                    -\uFFFF0-9])?(?:\\.(?!-)[a-z\xA1-\uFFFF0-9-]{1,63}(?<!-))*\\.(?!-)(?:[a-z\xA1\
+                    -\uFFFF-]{2,63}|xn--[a-z0-9]{1,59})(?<!-)\\.?|localhost))(?::\\\
+                    d{2,5})?(?:[/?#][^\\s]*)?\\Z"
+              required:
+              - label
+              - name
+              - description
+          application/x-www-form-urlencoded:
+            schema: *id001
+          multipart/form-data:
+            schema: *id001
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  id:
+                    type: integer
+                    readOnly: true
+                  url:
+                    type: string
+                    readOnly: true
+                  owner:
+                    type: string
+                    readOnly: true
+                  label:
+                    type: string
+                    maxLength: 20
+                  name:
+                    type: string
+                    maxLength: 255
+                  numrows:
+                    type: integer
+                    maximum: 2147483647
+                    minimum: -2147483648
+                    nullable: true
+                  description:
+                    type: string
+                    maxLength: 2044
+                  format:
+                    enum:
+                    - lpf
+                    - delimited
+                  datatype:
+                    enum:
+                    - place
+                    - anno
+                  delimiter:
+                    type: string
+                    nullable: true
+                    maxLength: 5
+                  status:
+                    enum:
+                    - format_error
+                    - format_ok
+                    - in_database
+                    - uploaded
+                    - ready
+                    - accessioned
+                    nullable: true
+                  upload_date:
+                    type: string
+                    format: date-time
+                    readOnly: true
+                  accepted_date:
+                    type: string
+                    format: date-time
+                    nullable: true
+                  uri_base:
+                    type: string
+                    format: uri
+                    nullable: true
+                    maxLength: 200
+                    pattern: "^(?:[a-z0-9\\.\\-\\+]*)://(?:[^\\s:@/]+(?::[^\\s:@/]*)?@)?(?:(?:25[0-5]|2[0-4]\\\
+                      d|[0-1]?\\d?\\d)(?:\\.(?:25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3}|\\\
+                      [[0-9a-f:\\.]+\\]|([a-z\xA1-\uFFFF0-9](?:[a-z\xA1-\uFFFF0-9-]{0,61}[a-z\xA1\
+                      -\uFFFF0-9])?(?:\\.(?!-)[a-z\xA1-\uFFFF0-9-]{1,63}(?<!-))*\\\
+                      .(?!-)(?:[a-z\xA1-\uFFFF-]{2,63}|xn--[a-z0-9]{1,59})(?<!-)\\\
+                      .?|localhost))(?::\\d{2,5})?(?:[/?#][^\\s]*)?\\Z"
+                required:
+                - label
+                - name
+                - description
+          description: ''
+  /api/datasets/{id}/:
+    get:
+      operationId: retrieveDataset
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this dataset.
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  id:
+                    type: integer
+                    readOnly: true
+                  url:
+                    type: string
+                    readOnly: true
+                  owner:
+                    type: string
+                    readOnly: true
+                  label:
+                    type: string
+                    maxLength: 20
+                  name:
+                    type: string
+                    maxLength: 255
+                  numrows:
+                    type: integer
+                    maximum: 2147483647
+                    minimum: -2147483648
+                    nullable: true
+                  description:
+                    type: string
+                    maxLength: 2044
+                  format:
+                    enum:
+                    - lpf
+                    - delimited
+                  datatype:
+                    enum:
+                    - place
+                    - anno
+                  delimiter:
+                    type: string
+                    nullable: true
+                    maxLength: 5
+                  status:
+                    enum:
+                    - format_error
+                    - format_ok
+                    - in_database
+                    - uploaded
+                    - ready
+                    - accessioned
+                    nullable: true
+                  upload_date:
+                    type: string
+                    format: date-time
+                    readOnly: true
+                  accepted_date:
+                    type: string
+                    format: date-time
+                    nullable: true
+                  uri_base:
+                    type: string
+                    format: uri
+                    nullable: true
+                    maxLength: 200
+                    pattern: "^(?:[a-z0-9\\.\\-\\+]*)://(?:[^\\s:@/]+(?::[^\\s:@/]*)?@)?(?:(?:25[0-5]|2[0-4]\\\
+                      d|[0-1]?\\d?\\d)(?:\\.(?:25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3}|\\\
+                      [[0-9a-f:\\.]+\\]|([a-z\xA1-\uFFFF0-9](?:[a-z\xA1-\uFFFF0-9-]{0,61}[a-z\xA1\
+                      -\uFFFF0-9])?(?:\\.(?!-)[a-z\xA1-\uFFFF0-9-]{1,63}(?<!-))*\\\
+                      .(?!-)(?:[a-z\xA1-\uFFFF-]{2,63}|xn--[a-z0-9]{1,59})(?<!-)\\\
+                      .?|localhost))(?::\\d{2,5})?(?:[/?#][^\\s]*)?\\Z"
+                required:
+                - label
+                - name
+                - description
+          description: ''
+    put:
+      operationId: updateDataset
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this dataset.
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema: &id002
+              properties:
+                label:
+                  type: string
+                  maxLength: 20
+                name:
+                  type: string
+                  maxLength: 255
+                numrows:
+                  type: integer
+                  maximum: 2147483647
+                  minimum: -2147483648
+                  nullable: true
+                description:
+                  type: string
+                  maxLength: 2044
+                format:
+                  enum:
+                  - lpf
+                  - delimited
+                datatype:
+                  enum:
+                  - place
+                  - anno
+                delimiter:
+                  type: string
+                  nullable: true
+                  maxLength: 5
+                status:
+                  enum:
+                  - format_error
+                  - format_ok
+                  - in_database
+                  - uploaded
+                  - ready
+                  - accessioned
+                  nullable: true
+                accepted_date:
+                  type: string
+                  format: date-time
+                  nullable: true
+                uri_base:
+                  type: string
+                  format: uri
+                  nullable: true
+                  maxLength: 200
+                  pattern: "^(?:[a-z0-9\\.\\-\\+]*)://(?:[^\\s:@/]+(?::[^\\s:@/]*)?@)?(?:(?:25[0-5]|2[0-4]\\\
+                    d|[0-1]?\\d?\\d)(?:\\.(?:25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3}|\\\
+                    [[0-9a-f:\\.]+\\]|([a-z\xA1-\uFFFF0-9](?:[a-z\xA1-\uFFFF0-9-]{0,61}[a-z\xA1\
+                    -\uFFFF0-9])?(?:\\.(?!-)[a-z\xA1-\uFFFF0-9-]{1,63}(?<!-))*\\.(?!-)(?:[a-z\xA1\
+                    -\uFFFF-]{2,63}|xn--[a-z0-9]{1,59})(?<!-)\\.?|localhost))(?::\\\
+                    d{2,5})?(?:[/?#][^\\s]*)?\\Z"
+              required:
+              - label
+              - name
+              - description
+          application/x-www-form-urlencoded:
+            schema: *id002
+          multipart/form-data:
+            schema: *id002
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  id:
+                    type: integer
+                    readOnly: true
+                  url:
+                    type: string
+                    readOnly: true
+                  owner:
+                    type: string
+                    readOnly: true
+                  label:
+                    type: string
+                    maxLength: 20
+                  name:
+                    type: string
+                    maxLength: 255
+                  numrows:
+                    type: integer
+                    maximum: 2147483647
+                    minimum: -2147483648
+                    nullable: true
+                  description:
+                    type: string
+                    maxLength: 2044
+                  format:
+                    enum:
+                    - lpf
+                    - delimited
+                  datatype:
+                    enum:
+                    - place
+                    - anno
+                  delimiter:
+                    type: string
+                    nullable: true
+                    maxLength: 5
+                  status:
+                    enum:
+                    - format_error
+                    - format_ok
+                    - in_database
+                    - uploaded
+                    - ready
+                    - accessioned
+                    nullable: true
+                  upload_date:
+                    type: string
+                    format: date-time
+                    readOnly: true
+                  accepted_date:
+                    type: string
+                    format: date-time
+                    nullable: true
+                  uri_base:
+                    type: string
+                    format: uri
+                    nullable: true
+                    maxLength: 200
+                    pattern: "^(?:[a-z0-9\\.\\-\\+]*)://(?:[^\\s:@/]+(?::[^\\s:@/]*)?@)?(?:(?:25[0-5]|2[0-4]\\\
+                      d|[0-1]?\\d?\\d)(?:\\.(?:25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3}|\\\
+                      [[0-9a-f:\\.]+\\]|([a-z\xA1-\uFFFF0-9](?:[a-z\xA1-\uFFFF0-9-]{0,61}[a-z\xA1\
+                      -\uFFFF0-9])?(?:\\.(?!-)[a-z\xA1-\uFFFF0-9-]{1,63}(?<!-))*\\\
+                      .(?!-)(?:[a-z\xA1-\uFFFF-]{2,63}|xn--[a-z0-9]{1,59})(?<!-)\\\
+                      .?|localhost))(?::\\d{2,5})?(?:[/?#][^\\s]*)?\\Z"
+                required:
+                - label
+                - name
+                - description
+          description: ''
+    patch:
+      operationId: partial_updateDataset
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this dataset.
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema: &id003
+              properties:
+                label:
+                  type: string
+                  maxLength: 20
+                name:
+                  type: string
+                  maxLength: 255
+                numrows:
+                  type: integer
+                  maximum: 2147483647
+                  minimum: -2147483648
+                  nullable: true
+                description:
+                  type: string
+                  maxLength: 2044
+                format:
+                  enum:
+                  - lpf
+                  - delimited
+                datatype:
+                  enum:
+                  - place
+                  - anno
+                delimiter:
+                  type: string
+                  nullable: true
+                  maxLength: 5
+                status:
+                  enum:
+                  - format_error
+                  - format_ok
+                  - in_database
+                  - uploaded
+                  - ready
+                  - accessioned
+                  nullable: true
+                accepted_date:
+                  type: string
+                  format: date-time
+                  nullable: true
+                uri_base:
+                  type: string
+                  format: uri
+                  nullable: true
+                  maxLength: 200
+                  pattern: "^(?:[a-z0-9\\.\\-\\+]*)://(?:[^\\s:@/]+(?::[^\\s:@/]*)?@)?(?:(?:25[0-5]|2[0-4]\\\
+                    d|[0-1]?\\d?\\d)(?:\\.(?:25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3}|\\\
+                    [[0-9a-f:\\.]+\\]|([a-z\xA1-\uFFFF0-9](?:[a-z\xA1-\uFFFF0-9-]{0,61}[a-z\xA1\
+                    -\uFFFF0-9])?(?:\\.(?!-)[a-z\xA1-\uFFFF0-9-]{1,63}(?<!-))*\\.(?!-)(?:[a-z\xA1\
+                    -\uFFFF-]{2,63}|xn--[a-z0-9]{1,59})(?<!-)\\.?|localhost))(?::\\\
+                    d{2,5})?(?:[/?#][^\\s]*)?\\Z"
+          application/x-www-form-urlencoded:
+            schema: *id003
+          multipart/form-data:
+            schema: *id003
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  id:
+                    type: integer
+                    readOnly: true
+                  url:
+                    type: string
+                    readOnly: true
+                  owner:
+                    type: string
+                    readOnly: true
+                  label:
+                    type: string
+                    maxLength: 20
+                  name:
+                    type: string
+                    maxLength: 255
+                  numrows:
+                    type: integer
+                    maximum: 2147483647
+                    minimum: -2147483648
+                    nullable: true
+                  description:
+                    type: string
+                    maxLength: 2044
+                  format:
+                    enum:
+                    - lpf
+                    - delimited
+                  datatype:
+                    enum:
+                    - place
+                    - anno
+                  delimiter:
+                    type: string
+                    nullable: true
+                    maxLength: 5
+                  status:
+                    enum:
+                    - format_error
+                    - format_ok
+                    - in_database
+                    - uploaded
+                    - ready
+                    - accessioned
+                    nullable: true
+                  upload_date:
+                    type: string
+                    format: date-time
+                    readOnly: true
+                  accepted_date:
+                    type: string
+                    format: date-time
+                    nullable: true
+                  uri_base:
+                    type: string
+                    format: uri
+                    nullable: true
+                    maxLength: 200
+                    pattern: "^(?:[a-z0-9\\.\\-\\+]*)://(?:[^\\s:@/]+(?::[^\\s:@/]*)?@)?(?:(?:25[0-5]|2[0-4]\\\
+                      d|[0-1]?\\d?\\d)(?:\\.(?:25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3}|\\\
+                      [[0-9a-f:\\.]+\\]|([a-z\xA1-\uFFFF0-9](?:[a-z\xA1-\uFFFF0-9-]{0,61}[a-z\xA1\
+                      -\uFFFF0-9])?(?:\\.(?!-)[a-z\xA1-\uFFFF0-9-]{1,63}(?<!-))*\\\
+                      .(?!-)(?:[a-z\xA1-\uFFFF-]{2,63}|xn--[a-z0-9]{1,59})(?<!-)\\\
+                      .?|localhost))(?::\\d{2,5})?(?:[/?#][^\\s]*)?\\Z"
+                required:
+                - label
+                - name
+                - description
+          description: ''
+    delete:
+      operationId: destroyDataset
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this dataset.
+        schema:
+          type: string
+      responses:
+        '204':
+          description: ''
+  /api/places/:
+    get:
+      operationId: listPlaces
+      description: ''
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                  previous:
+                    type: string
+                    nullable: true
+                  results:
+                    type: array
+                    items:
+                      properties:
+                        url:
+                          type: string
+                          readOnly: true
+                        id:
+                          type: integer
+                          readOnly: true
+                        title:
+                          type: string
+                          maxLength: 255
+                        src_id:
+                          type: string
+                          maxLength: 2044
+                        dataset:
+                          type: string
+                          readOnly: true
+                        ccodes:
+                          type: array
+                          items:
+                            type: string
+                        names:
+                          type: array
+                          items:
+                            properties:
+                              toponym:
+                                type: string
+                                readOnly: true
+                              citation:
+                                type: string
+                                readOnly: true
+                          readOnly: true
+                        types:
+                          type: array
+                          items:
+                            properties:
+                              label:
+                                type: string
+                                readOnly: true
+                              sourceLabel:
+                                type: string
+                                readOnly: true
+                              when:
+                                type: string
+                                readOnly: true
+                              identifier:
+                                type: string
+                                readOnly: true
+                          readOnly: true
+                        geoms:
+                          type: array
+                          items:
+                            properties:
+                              place_id_id:
+                                type: string
+                                readOnly: true
+                              src_id:
+                                type: string
+                                maxLength: 100
+                              type:
+                                type: string
+                                readOnly: true
+                              geowkt:
+                                type: string
+                                readOnly: true
+                              coordinates:
+                                type: string
+                                readOnly: true
+                              geom_src:
+                                type: string
+                                nullable: true
+                              citation:
+                                type: string
+                                readOnly: true
+                              when:
+                                type: string
+                                readOnly: true
+                          readOnly: true
+                        links:
+                          type: array
+                          items:
+                            properties:
+                              type:
+                                type: string
+                                readOnly: true
+                              identifier:
+                                type: string
+                                readOnly: true
+                          readOnly: true
+                        related:
+                          type: array
+                          items:
+                            properties:
+                              relation_type:
+                                type: string
+                                readOnly: true
+                              relation_to:
+                                type: string
+                                readOnly: true
+                              label:
+                                type: string
+                                readOnly: true
+                              when:
+                                type: string
+                                readOnly: true
+                              citation:
+                                type: string
+                                readOnly: true
+                              certainty:
+                                type: string
+                                readOnly: true
+                          readOnly: true
+                        whens:
+                          type: array
+                          items:
+                            properties:
+                              timespans:
+                                type: string
+                                readOnly: true
+                              periods:
+                                type: string
+                                readOnly: true
+                              label:
+                                type: string
+                                readOnly: true
+                              duration:
+                                type: string
+                                readOnly: true
+                          readOnly: true
+                        descriptions:
+                          type: array
+                          items:
+                            properties:
+                              identifier:
+                                type: string
+                                readOnly: true
+                              value:
+                                type: string
+                                readOnly: true
+                              lang:
+                                type: string
+                                readOnly: true
+                          readOnly: true
+                        depictions:
+                          type: array
+                          items:
+                            properties:
+                              identifier:
+                                type: string
+                                readOnly: true
+                              title:
+                                type: string
+                                readOnly: true
+                              license:
+                                type: string
+                                readOnly: true
+                          readOnly: true
+                      required:
+                      - title
+                      - src_id
+                      - ccodes
+          description: ''
+    post:
+      operationId: createPlace
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema: &id004
+              properties:
+                title:
+                  type: string
+                  maxLength: 255
+                src_id:
+                  type: string
+                  maxLength: 2044
+                ccodes:
+                  type: array
+                  items:
+                    type: string
+              required:
+              - title
+              - src_id
+              - ccodes
+          application/x-www-form-urlencoded:
+            schema: *id004
+          multipart/form-data:
+            schema: *id004
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  url:
+                    type: string
+                    readOnly: true
+                  id:
+                    type: integer
+                    readOnly: true
+                  title:
+                    type: string
+                    maxLength: 255
+                  src_id:
+                    type: string
+                    maxLength: 2044
+                  dataset:
+                    type: string
+                    readOnly: true
+                  ccodes:
+                    type: array
+                    items:
+                      type: string
+                  names:
+                    type: array
+                    items:
+                      properties:
+                        toponym:
+                          type: string
+                          readOnly: true
+                        citation:
+                          type: string
+                          readOnly: true
+                    readOnly: true
+                  types:
+                    type: array
+                    items:
+                      properties:
+                        label:
+                          type: string
+                          readOnly: true
+                        sourceLabel:
+                          type: string
+                          readOnly: true
+                        when:
+                          type: string
+                          readOnly: true
+                        identifier:
+                          type: string
+                          readOnly: true
+                    readOnly: true
+                  geoms:
+                    type: array
+                    items:
+                      properties:
+                        place_id_id:
+                          type: string
+                          readOnly: true
+                        src_id:
+                          type: string
+                          maxLength: 100
+                        type:
+                          type: string
+                          readOnly: true
+                        geowkt:
+                          type: string
+                          readOnly: true
+                        coordinates:
+                          type: string
+                          readOnly: true
+                        geom_src:
+                          type: string
+                          nullable: true
+                        citation:
+                          type: string
+                          readOnly: true
+                        when:
+                          type: string
+                          readOnly: true
+                    readOnly: true
+                  links:
+                    type: array
+                    items:
+                      properties:
+                        type:
+                          type: string
+                          readOnly: true
+                        identifier:
+                          type: string
+                          readOnly: true
+                    readOnly: true
+                  related:
+                    type: array
+                    items:
+                      properties:
+                        relation_type:
+                          type: string
+                          readOnly: true
+                        relation_to:
+                          type: string
+                          readOnly: true
+                        label:
+                          type: string
+                          readOnly: true
+                        when:
+                          type: string
+                          readOnly: true
+                        citation:
+                          type: string
+                          readOnly: true
+                        certainty:
+                          type: string
+                          readOnly: true
+                    readOnly: true
+                  whens:
+                    type: array
+                    items:
+                      properties:
+                        timespans:
+                          type: string
+                          readOnly: true
+                        periods:
+                          type: string
+                          readOnly: true
+                        label:
+                          type: string
+                          readOnly: true
+                        duration:
+                          type: string
+                          readOnly: true
+                    readOnly: true
+                  descriptions:
+                    type: array
+                    items:
+                      properties:
+                        identifier:
+                          type: string
+                          readOnly: true
+                        value:
+                          type: string
+                          readOnly: true
+                        lang:
+                          type: string
+                          readOnly: true
+                    readOnly: true
+                  depictions:
+                    type: array
+                    items:
+                      properties:
+                        identifier:
+                          type: string
+                          readOnly: true
+                        title:
+                          type: string
+                          readOnly: true
+                        license:
+                          type: string
+                          readOnly: true
+                    readOnly: true
+                required:
+                - title
+                - src_id
+                - ccodes
+          description: ''
+  /api/places/{id}/:
+    get:
+      operationId: retrievePlace
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this place.
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  url:
+                    type: string
+                    readOnly: true
+                  id:
+                    type: integer
+                    readOnly: true
+                  title:
+                    type: string
+                    maxLength: 255
+                  src_id:
+                    type: string
+                    maxLength: 2044
+                  dataset:
+                    type: string
+                    readOnly: true
+                  ccodes:
+                    type: array
+                    items:
+                      type: string
+                  names:
+                    type: array
+                    items:
+                      properties:
+                        toponym:
+                          type: string
+                          readOnly: true
+                        citation:
+                          type: string
+                          readOnly: true
+                    readOnly: true
+                  types:
+                    type: array
+                    items:
+                      properties:
+                        label:
+                          type: string
+                          readOnly: true
+                        sourceLabel:
+                          type: string
+                          readOnly: true
+                        when:
+                          type: string
+                          readOnly: true
+                        identifier:
+                          type: string
+                          readOnly: true
+                    readOnly: true
+                  geoms:
+                    type: array
+                    items:
+                      properties:
+                        place_id_id:
+                          type: string
+                          readOnly: true
+                        src_id:
+                          type: string
+                          maxLength: 100
+                        type:
+                          type: string
+                          readOnly: true
+                        geowkt:
+                          type: string
+                          readOnly: true
+                        coordinates:
+                          type: string
+                          readOnly: true
+                        geom_src:
+                          type: string
+                          nullable: true
+                        citation:
+                          type: string
+                          readOnly: true
+                        when:
+                          type: string
+                          readOnly: true
+                    readOnly: true
+                  links:
+                    type: array
+                    items:
+                      properties:
+                        type:
+                          type: string
+                          readOnly: true
+                        identifier:
+                          type: string
+                          readOnly: true
+                    readOnly: true
+                  related:
+                    type: array
+                    items:
+                      properties:
+                        relation_type:
+                          type: string
+                          readOnly: true
+                        relation_to:
+                          type: string
+                          readOnly: true
+                        label:
+                          type: string
+                          readOnly: true
+                        when:
+                          type: string
+                          readOnly: true
+                        citation:
+                          type: string
+                          readOnly: true
+                        certainty:
+                          type: string
+                          readOnly: true
+                    readOnly: true
+                  whens:
+                    type: array
+                    items:
+                      properties:
+                        timespans:
+                          type: string
+                          readOnly: true
+                        periods:
+                          type: string
+                          readOnly: true
+                        label:
+                          type: string
+                          readOnly: true
+                        duration:
+                          type: string
+                          readOnly: true
+                    readOnly: true
+                  descriptions:
+                    type: array
+                    items:
+                      properties:
+                        identifier:
+                          type: string
+                          readOnly: true
+                        value:
+                          type: string
+                          readOnly: true
+                        lang:
+                          type: string
+                          readOnly: true
+                    readOnly: true
+                  depictions:
+                    type: array
+                    items:
+                      properties:
+                        identifier:
+                          type: string
+                          readOnly: true
+                        title:
+                          type: string
+                          readOnly: true
+                        license:
+                          type: string
+                          readOnly: true
+                    readOnly: true
+                required:
+                - title
+                - src_id
+                - ccodes
+          description: ''
+    put:
+      operationId: updatePlace
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this place.
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema: &id005
+              properties:
+                title:
+                  type: string
+                  maxLength: 255
+                src_id:
+                  type: string
+                  maxLength: 2044
+                ccodes:
+                  type: array
+                  items:
+                    type: string
+              required:
+              - title
+              - src_id
+              - ccodes
+          application/x-www-form-urlencoded:
+            schema: *id005
+          multipart/form-data:
+            schema: *id005
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  url:
+                    type: string
+                    readOnly: true
+                  id:
+                    type: integer
+                    readOnly: true
+                  title:
+                    type: string
+                    maxLength: 255
+                  src_id:
+                    type: string
+                    maxLength: 2044
+                  dataset:
+                    type: string
+                    readOnly: true
+                  ccodes:
+                    type: array
+                    items:
+                      type: string
+                  names:
+                    type: array
+                    items:
+                      properties:
+                        toponym:
+                          type: string
+                          readOnly: true
+                        citation:
+                          type: string
+                          readOnly: true
+                    readOnly: true
+                  types:
+                    type: array
+                    items:
+                      properties:
+                        label:
+                          type: string
+                          readOnly: true
+                        sourceLabel:
+                          type: string
+                          readOnly: true
+                        when:
+                          type: string
+                          readOnly: true
+                        identifier:
+                          type: string
+                          readOnly: true
+                    readOnly: true
+                  geoms:
+                    type: array
+                    items:
+                      properties:
+                        place_id_id:
+                          type: string
+                          readOnly: true
+                        src_id:
+                          type: string
+                          maxLength: 100
+                        type:
+                          type: string
+                          readOnly: true
+                        geowkt:
+                          type: string
+                          readOnly: true
+                        coordinates:
+                          type: string
+                          readOnly: true
+                        geom_src:
+                          type: string
+                          nullable: true
+                        citation:
+                          type: string
+                          readOnly: true
+                        when:
+                          type: string
+                          readOnly: true
+                    readOnly: true
+                  links:
+                    type: array
+                    items:
+                      properties:
+                        type:
+                          type: string
+                          readOnly: true
+                        identifier:
+                          type: string
+                          readOnly: true
+                    readOnly: true
+                  related:
+                    type: array
+                    items:
+                      properties:
+                        relation_type:
+                          type: string
+                          readOnly: true
+                        relation_to:
+                          type: string
+                          readOnly: true
+                        label:
+                          type: string
+                          readOnly: true
+                        when:
+                          type: string
+                          readOnly: true
+                        citation:
+                          type: string
+                          readOnly: true
+                        certainty:
+                          type: string
+                          readOnly: true
+                    readOnly: true
+                  whens:
+                    type: array
+                    items:
+                      properties:
+                        timespans:
+                          type: string
+                          readOnly: true
+                        periods:
+                          type: string
+                          readOnly: true
+                        label:
+                          type: string
+                          readOnly: true
+                        duration:
+                          type: string
+                          readOnly: true
+                    readOnly: true
+                  descriptions:
+                    type: array
+                    items:
+                      properties:
+                        identifier:
+                          type: string
+                          readOnly: true
+                        value:
+                          type: string
+                          readOnly: true
+                        lang:
+                          type: string
+                          readOnly: true
+                    readOnly: true
+                  depictions:
+                    type: array
+                    items:
+                      properties:
+                        identifier:
+                          type: string
+                          readOnly: true
+                        title:
+                          type: string
+                          readOnly: true
+                        license:
+                          type: string
+                          readOnly: true
+                    readOnly: true
+                required:
+                - title
+                - src_id
+                - ccodes
+          description: ''
+    patch:
+      operationId: partial_updatePlace
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this place.
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema: &id006
+              properties:
+                title:
+                  type: string
+                  maxLength: 255
+                src_id:
+                  type: string
+                  maxLength: 2044
+                ccodes:
+                  type: array
+                  items:
+                    type: string
+          application/x-www-form-urlencoded:
+            schema: *id006
+          multipart/form-data:
+            schema: *id006
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  url:
+                    type: string
+                    readOnly: true
+                  id:
+                    type: integer
+                    readOnly: true
+                  title:
+                    type: string
+                    maxLength: 255
+                  src_id:
+                    type: string
+                    maxLength: 2044
+                  dataset:
+                    type: string
+                    readOnly: true
+                  ccodes:
+                    type: array
+                    items:
+                      type: string
+                  names:
+                    type: array
+                    items:
+                      properties:
+                        toponym:
+                          type: string
+                          readOnly: true
+                        citation:
+                          type: string
+                          readOnly: true
+                    readOnly: true
+                  types:
+                    type: array
+                    items:
+                      properties:
+                        label:
+                          type: string
+                          readOnly: true
+                        sourceLabel:
+                          type: string
+                          readOnly: true
+                        when:
+                          type: string
+                          readOnly: true
+                        identifier:
+                          type: string
+                          readOnly: true
+                    readOnly: true
+                  geoms:
+                    type: array
+                    items:
+                      properties:
+                        place_id_id:
+                          type: string
+                          readOnly: true
+                        src_id:
+                          type: string
+                          maxLength: 100
+                        type:
+                          type: string
+                          readOnly: true
+                        geowkt:
+                          type: string
+                          readOnly: true
+                        coordinates:
+                          type: string
+                          readOnly: true
+                        geom_src:
+                          type: string
+                          nullable: true
+                        citation:
+                          type: string
+                          readOnly: true
+                        when:
+                          type: string
+                          readOnly: true
+                    readOnly: true
+                  links:
+                    type: array
+                    items:
+                      properties:
+                        type:
+                          type: string
+                          readOnly: true
+                        identifier:
+                          type: string
+                          readOnly: true
+                    readOnly: true
+                  related:
+                    type: array
+                    items:
+                      properties:
+                        relation_type:
+                          type: string
+                          readOnly: true
+                        relation_to:
+                          type: string
+                          readOnly: true
+                        label:
+                          type: string
+                          readOnly: true
+                        when:
+                          type: string
+                          readOnly: true
+                        citation:
+                          type: string
+                          readOnly: true
+                        certainty:
+                          type: string
+                          readOnly: true
+                    readOnly: true
+                  whens:
+                    type: array
+                    items:
+                      properties:
+                        timespans:
+                          type: string
+                          readOnly: true
+                        periods:
+                          type: string
+                          readOnly: true
+                        label:
+                          type: string
+                          readOnly: true
+                        duration:
+                          type: string
+                          readOnly: true
+                    readOnly: true
+                  descriptions:
+                    type: array
+                    items:
+                      properties:
+                        identifier:
+                          type: string
+                          readOnly: true
+                        value:
+                          type: string
+                          readOnly: true
+                        lang:
+                          type: string
+                          readOnly: true
+                    readOnly: true
+                  depictions:
+                    type: array
+                    items:
+                      properties:
+                        identifier:
+                          type: string
+                          readOnly: true
+                        title:
+                          type: string
+                          readOnly: true
+                        license:
+                          type: string
+                          readOnly: true
+                    readOnly: true
+                required:
+                - title
+                - src_id
+                - ccodes
+          description: ''
+    delete:
+      operationId: destroyPlace
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this place.
+        schema:
+          type: string
+      responses:
+        '204':
+          description: ''
+  /api/geoms/:
+    get:
+      operationId: listPlaceGeoms
+      description: ''
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                  previous:
+                    type: string
+                    nullable: true
+                  results:
+                    type: array
+                    items:
+                      properties:
+                        place_id_id:
+                          type: string
+                          readOnly: true
+                        src_id:
+                          type: string
+                          maxLength: 100
+                        type:
+                          type: string
+                          readOnly: true
+                        geowkt:
+                          type: string
+                          readOnly: true
+                        coordinates:
+                          type: string
+                          readOnly: true
+                        geom_src:
+                          type: string
+                          nullable: true
+                        citation:
+                          type: string
+                          readOnly: true
+                        when:
+                          type: string
+                          readOnly: true
+          description: ''
+    post:
+      operationId: createPlaceGeom
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema: &id007
+              properties:
+                src_id:
+                  type: string
+                  maxLength: 100
+                geom_src:
+                  type: string
+                  nullable: true
+          application/x-www-form-urlencoded:
+            schema: *id007
+          multipart/form-data:
+            schema: *id007
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  place_id_id:
+                    type: string
+                    readOnly: true
+                  src_id:
+                    type: string
+                    maxLength: 100
+                  type:
+                    type: string
+                    readOnly: true
+                  geowkt:
+                    type: string
+                    readOnly: true
+                  coordinates:
+                    type: string
+                    readOnly: true
+                  geom_src:
+                    type: string
+                    nullable: true
+                  citation:
+                    type: string
+                    readOnly: true
+                  when:
+                    type: string
+                    readOnly: true
+          description: ''
+  /api/geoms/{id}/:
+    get:
+      operationId: retrievePlaceGeom
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this place geom.
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  place_id_id:
+                    type: string
+                    readOnly: true
+                  src_id:
+                    type: string
+                    maxLength: 100
+                  type:
+                    type: string
+                    readOnly: true
+                  geowkt:
+                    type: string
+                    readOnly: true
+                  coordinates:
+                    type: string
+                    readOnly: true
+                  geom_src:
+                    type: string
+                    nullable: true
+                  citation:
+                    type: string
+                    readOnly: true
+                  when:
+                    type: string
+                    readOnly: true
+          description: ''
+    put:
+      operationId: updatePlaceGeom
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this place geom.
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema: &id008
+              properties:
+                src_id:
+                  type: string
+                  maxLength: 100
+                geom_src:
+                  type: string
+                  nullable: true
+          application/x-www-form-urlencoded:
+            schema: *id008
+          multipart/form-data:
+            schema: *id008
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  place_id_id:
+                    type: string
+                    readOnly: true
+                  src_id:
+                    type: string
+                    maxLength: 100
+                  type:
+                    type: string
+                    readOnly: true
+                  geowkt:
+                    type: string
+                    readOnly: true
+                  coordinates:
+                    type: string
+                    readOnly: true
+                  geom_src:
+                    type: string
+                    nullable: true
+                  citation:
+                    type: string
+                    readOnly: true
+                  when:
+                    type: string
+                    readOnly: true
+          description: ''
+    patch:
+      operationId: partial_updatePlaceGeom
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this place geom.
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema: &id009
+              properties:
+                src_id:
+                  type: string
+                  maxLength: 100
+                geom_src:
+                  type: string
+                  nullable: true
+          application/x-www-form-urlencoded:
+            schema: *id009
+          multipart/form-data:
+            schema: *id009
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  place_id_id:
+                    type: string
+                    readOnly: true
+                  src_id:
+                    type: string
+                    maxLength: 100
+                  type:
+                    type: string
+                    readOnly: true
+                  geowkt:
+                    type: string
+                    readOnly: true
+                  coordinates:
+                    type: string
+                    readOnly: true
+                  geom_src:
+                    type: string
+                    nullable: true
+                  citation:
+                    type: string
+                    readOnly: true
+                  when:
+                    type: string
+                    readOnly: true
+          description: ''
+    delete:
+      operationId: destroyPlaceGeom
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this place geom.
+        schema:
+          type: string
+      responses:
+        '204':
+          description: ''
+  /api/areas/:
+    get:
+      operationId: listAreas
+      description: ''
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                  previous:
+                    type: string
+                    nullable: true
+                  results:
+                    type: array
+                    items:
+                      properties:
+                        title:
+                          type: string
+                          maxLength: 255
+                        type:
+                          type: string
+                          maxLength: 20
+                        geojson:
+                          type: object
+                          nullable: true
+                      required:
+                      - title
+                      - type
+          description: ''
+    post:
+      operationId: createArea
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema: &id010
+              properties:
+                title:
+                  type: string
+                  maxLength: 255
+                type:
+                  type: string
+                  maxLength: 20
+                geojson:
+                  type: object
+                  nullable: true
+              required:
+              - title
+              - type
+          application/x-www-form-urlencoded:
+            schema: *id010
+          multipart/form-data:
+            schema: *id010
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  title:
+                    type: string
+                    maxLength: 255
+                  type:
+                    type: string
+                    maxLength: 20
+                  geojson:
+                    type: object
+                    nullable: true
+                required:
+                - title
+                - type
+          description: ''
+  /api/areas/{id}/:
+    get:
+      operationId: retrieveArea
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this area.
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  title:
+                    type: string
+                    maxLength: 255
+                  type:
+                    type: string
+                    maxLength: 20
+                  geojson:
+                    type: object
+                    nullable: true
+                required:
+                - title
+                - type
+          description: ''
+    put:
+      operationId: updateArea
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this area.
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema: &id011
+              properties:
+                title:
+                  type: string
+                  maxLength: 255
+                type:
+                  type: string
+                  maxLength: 20
+                geojson:
+                  type: object
+                  nullable: true
+              required:
+              - title
+              - type
+          application/x-www-form-urlencoded:
+            schema: *id011
+          multipart/form-data:
+            schema: *id011
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  title:
+                    type: string
+                    maxLength: 255
+                  type:
+                    type: string
+                    maxLength: 20
+                  geojson:
+                    type: object
+                    nullable: true
+                required:
+                - title
+                - type
+          description: ''
+    patch:
+      operationId: partial_updateArea
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this area.
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema: &id012
+              properties:
+                title:
+                  type: string
+                  maxLength: 255
+                type:
+                  type: string
+                  maxLength: 20
+                geojson:
+                  type: object
+                  nullable: true
+          application/x-www-form-urlencoded:
+            schema: *id012
+          multipart/form-data:
+            schema: *id012
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  title:
+                    type: string
+                    maxLength: 255
+                  type:
+                    type: string
+                    maxLength: 20
+                  geojson:
+                    type: object
+                    nullable: true
+                required:
+                - title
+                - type
+          description: ''
+    delete:
+      operationId: destroyArea
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this area.
+        schema:
+          type: string
+      responses:
+        '204':
+          description: ''
+  /api/users/:
+    get:
+      operationId: listUsers
+      description: ''
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                  previous:
+                    type: string
+                    nullable: true
+                  results:
+                    type: array
+                    items:
+                      properties:
+                        url:
+                          type: string
+                          readOnly: true
+                        username:
+                          type: string
+                          description: Required. 150 characters or fewer. Letters,
+                            digits and @/./+/-/_ only.
+                          pattern: ^[\w.@+-]+$
+                          maxLength: 150
+                        email:
+                          type: string
+                          format: email
+                          maxLength: 254
+                        groups:
+                          type: array
+                          items:
+                            type: integer
+                          description: The groups this user belongs to. A user will
+                            get all permissions granted to each of their groups.
+                        datasets:
+                          type: array
+                          items:
+                            type: string
+                          readOnly: true
+                      required:
+                      - username
+          description: ''
+    post:
+      operationId: createUser
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema: &id013
+              properties:
+                username:
+                  type: string
+                  description: Required. 150 characters or fewer. Letters, digits
+                    and @/./+/-/_ only.
+                  pattern: ^[\w.@+-]+$
+                  maxLength: 150
+                email:
+                  type: string
+                  format: email
+                  maxLength: 254
+                groups:
+                  type: array
+                  items:
+                    type: integer
+                  description: The groups this user belongs to. A user will get all
+                    permissions granted to each of their groups.
+              required:
+              - username
+          application/x-www-form-urlencoded:
+            schema: *id013
+          multipart/form-data:
+            schema: *id013
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  url:
+                    type: string
+                    readOnly: true
+                  username:
+                    type: string
+                    description: Required. 150 characters or fewer. Letters, digits
+                      and @/./+/-/_ only.
+                    pattern: ^[\w.@+-]+$
+                    maxLength: 150
+                  email:
+                    type: string
+                    format: email
+                    maxLength: 254
+                  groups:
+                    type: array
+                    items:
+                      type: integer
+                    description: The groups this user belongs to. A user will get
+                      all permissions granted to each of their groups.
+                  datasets:
+                    type: array
+                    items:
+                      type: string
+                    readOnly: true
+                required:
+                - username
+          description: ''
+  /api/users/{id}/:
+    get:
+      operationId: retrieveUser
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this user.
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  url:
+                    type: string
+                    readOnly: true
+                  username:
+                    type: string
+                    description: Required. 150 characters or fewer. Letters, digits
+                      and @/./+/-/_ only.
+                    pattern: ^[\w.@+-]+$
+                    maxLength: 150
+                  email:
+                    type: string
+                    format: email
+                    maxLength: 254
+                  groups:
+                    type: array
+                    items:
+                      type: integer
+                    description: The groups this user belongs to. A user will get
+                      all permissions granted to each of their groups.
+                  datasets:
+                    type: array
+                    items:
+                      type: string
+                    readOnly: true
+                required:
+                - username
+          description: ''
+    put:
+      operationId: updateUser
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this user.
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema: &id014
+              properties:
+                username:
+                  type: string
+                  description: Required. 150 characters or fewer. Letters, digits
+                    and @/./+/-/_ only.
+                  pattern: ^[\w.@+-]+$
+                  maxLength: 150
+                email:
+                  type: string
+                  format: email
+                  maxLength: 254
+                groups:
+                  type: array
+                  items:
+                    type: integer
+                  description: The groups this user belongs to. A user will get all
+                    permissions granted to each of their groups.
+              required:
+              - username
+          application/x-www-form-urlencoded:
+            schema: *id014
+          multipart/form-data:
+            schema: *id014
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  url:
+                    type: string
+                    readOnly: true
+                  username:
+                    type: string
+                    description: Required. 150 characters or fewer. Letters, digits
+                      and @/./+/-/_ only.
+                    pattern: ^[\w.@+-]+$
+                    maxLength: 150
+                  email:
+                    type: string
+                    format: email
+                    maxLength: 254
+                  groups:
+                    type: array
+                    items:
+                      type: integer
+                    description: The groups this user belongs to. A user will get
+                      all permissions granted to each of their groups.
+                  datasets:
+                    type: array
+                    items:
+                      type: string
+                    readOnly: true
+                required:
+                - username
+          description: ''
+    patch:
+      operationId: partial_updateUser
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this user.
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema: &id015
+              properties:
+                username:
+                  type: string
+                  description: Required. 150 characters or fewer. Letters, digits
+                    and @/./+/-/_ only.
+                  pattern: ^[\w.@+-]+$
+                  maxLength: 150
+                email:
+                  type: string
+                  format: email
+                  maxLength: 254
+                groups:
+                  type: array
+                  items:
+                    type: integer
+                  description: The groups this user belongs to. A user will get all
+                    permissions granted to each of their groups.
+          application/x-www-form-urlencoded:
+            schema: *id015
+          multipart/form-data:
+            schema: *id015
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  url:
+                    type: string
+                    readOnly: true
+                  username:
+                    type: string
+                    description: Required. 150 characters or fewer. Letters, digits
+                      and @/./+/-/_ only.
+                    pattern: ^[\w.@+-]+$
+                    maxLength: 150
+                  email:
+                    type: string
+                    format: email
+                    maxLength: 254
+                  groups:
+                    type: array
+                    items:
+                      type: integer
+                    description: The groups this user belongs to. A user will get
+                      all permissions granted to each of their groups.
+                  datasets:
+                    type: array
+                    items:
+                      type: string
+                    readOnly: true
+                required:
+                - username
+          description: ''
+    delete:
+      operationId: destroyUser
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this user.
+        schema:
+          type: string
+      responses:
+        '204':
+          description: ''
+  /api/groups/:
+    get:
+      operationId: listGroups
+      description: ''
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                  previous:
+                    type: string
+                    nullable: true
+                  results:
+                    type: array
+                    items:
+                      properties:
+                        url:
+                          type: string
+                          readOnly: true
+                        name:
+                          type: string
+                          maxLength: 150
+                      required:
+                      - name
+          description: ''
+    post:
+      operationId: createGroup
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema: &id016
+              properties:
+                name:
+                  type: string
+                  maxLength: 150
+              required:
+              - name
+          application/x-www-form-urlencoded:
+            schema: *id016
+          multipart/form-data:
+            schema: *id016
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  url:
+                    type: string
+                    readOnly: true
+                  name:
+                    type: string
+                    maxLength: 150
+                required:
+                - name
+          description: ''
+  /api/groups/{id}/:
+    get:
+      operationId: retrieveGroup
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this group.
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  url:
+                    type: string
+                    readOnly: true
+                  name:
+                    type: string
+                    maxLength: 150
+                required:
+                - name
+          description: ''
+    put:
+      operationId: updateGroup
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this group.
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema: &id017
+              properties:
+                name:
+                  type: string
+                  maxLength: 150
+              required:
+              - name
+          application/x-www-form-urlencoded:
+            schema: *id017
+          multipart/form-data:
+            schema: *id017
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  url:
+                    type: string
+                    readOnly: true
+                  name:
+                    type: string
+                    maxLength: 150
+                required:
+                - name
+          description: ''
+    patch:
+      operationId: partial_updateGroup
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this group.
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema: &id018
+              properties:
+                name:
+                  type: string
+                  maxLength: 150
+          application/x-www-form-urlencoded:
+            schema: *id018
+          multipart/form-data:
+            schema: *id018
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  url:
+                    type: string
+                    readOnly: true
+                  name:
+                    type: string
+                    maxLength: 150
+                required:
+                - name
+          description: ''
+    delete:
+      operationId: destroyGroup
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A unique integer value identifying this group.
+        schema:
+          type: string
+      responses:
+        '204':
+          description: ''
