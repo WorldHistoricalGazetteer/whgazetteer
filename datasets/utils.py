@@ -10,12 +10,12 @@ pp = pprint.PrettyPrinter(indent=1)
 # format ['coll' (FeatureCollection) | 'lines' (json-lines)]
 def validate_lpf(infile,format):
   # TODO: handle json-lines
-  schema = json.loads(codecs.open('datasets/static/validate/schema_lpf.json','r','utf8').read())
+  # TODO: create v1.1 schema; phase out v1.0
+  schema = json.loads(codecs.open('datasets/static/validate/schema_lpf_v1.0.json','r','utf8').read())
   fout = codecs.open('validate-lpf-result.txt','w','utf8')
   #infile=codecs.open('tests/whg/lugares_10_citations.jsonld','r','utf-8')
   #infile=codecs.open('tests/whg/lugares_10_citations_errors.jsonld','r','utf-8')
   #infile=open('tests/whg/alcedo_200errors.tsv')
-  #format = 'coll'
   result = {"format":"lpf_"+format,"errors":[]}
   [countrows,count_ok] = [0,0]
   
