@@ -408,7 +408,7 @@ def ds_insert_lpf(request, pk):
       # PlaceName: place_id,src_id,toponym,task_id,jsonb:{toponym, lang,citation,when{}}
       # TODO: adjust for 'ethnic', 'demonym'
       for n in feat['names']:
-        print('from feat[names]:',n)
+        #print('from feat[names]:',n)
         if 'toponym' in n.keys():
           objs['PlaceNames'].append(PlaceName(
             place_id=newpl,
@@ -896,7 +896,8 @@ class DatasetDetailView(UpdateView):
     # initial (non-task)
     context['num_links'] = PlaceLink.objects.filter(
       place_id_id__in = placeset, task_id = None).count()
-    context['num_names'] = PlaceName.objects.filter(place_id_id__in = placeset, task_id = None).count()
+    #context['num_names'] = PlaceName.objects.filter(place_id_id__in = placeset, task_id = None).count()
+    context['num_names'] = PlaceName.objects.filter(place_id_id__in = placeset).count()
     context['num_geoms'] = PlaceGeom.objects.filter(
       place_id_id__in = placeset, task_id = None).count()
     context['num_descriptions'] = PlaceDescription.objects.filter(

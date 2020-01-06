@@ -8,7 +8,7 @@ COMMENT_TAGS = [
 ]
 
 FORMATS = [
-    ('lpf', 'Linked Places json'),
+    ('lpf', 'Linked Places v1.0'),
     ('delimited', 'LP-TSV')
 ]
 
