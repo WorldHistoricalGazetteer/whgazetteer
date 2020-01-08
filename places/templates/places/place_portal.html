@@ -59,8 +59,7 @@
                   <i>{{name.toponym}}</i>
                   {% if name.when %}
                     {{ name|json_script:rec.place_id }}
-                    {{ name.when.timespans }}
-                    ({% for t in name.when.timespans %}
+                    ({% for t in name.when.timespans|sortts %}
                       {{ t.start.in }}-{{ t.end.in }}
                     {% if not forloop.last %}| {% endif %}
                     {%endfor%})

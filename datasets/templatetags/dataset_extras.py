@@ -45,3 +45,8 @@ def parse(obj,key):
     """returns value for given key or sub-key"""
     # obj = json.loads(value.replace("'",'"'))
     # return obj[key]
+
+@register.filter
+def sortts(objlist):
+    foo = sorted(objlist, key=lambda x: x['start']['in'])
+    return foo
