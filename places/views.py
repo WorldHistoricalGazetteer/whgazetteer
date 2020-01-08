@@ -114,11 +114,12 @@ class PlacePortalView(DetailView):
         "links":[link.jsonb for link in place.links.distinct('jsonb') if not link.jsonb['identifier'].startswith('whg')], 
         "descriptions":[descr.jsonb for descr in place.descriptions.all()], 
         "depictions":[depict.jsonb for depict in place.depictions.all()],
-        "extents":extents
+        "extents":extents # array of [min,max] per attribute
       }
       context['payload'].append(record)
     #TODO: compute global minmax for payload
     #print('payload',context['payload'])
+    print('names',record['names'])
     
     # GET TRACES; e.g. whg_id(id_) = 13040977 for Khotan (a child); pid = 6135435
     # but traces have place_id; we have child ids already
@@ -138,7 +139,6 @@ class PlacePortalView(DetailView):
       })
     
     return context
-
 
 class PlaceFullView(PlacePortalView):
   def render_to_response(self, context, **response_kwargs):
