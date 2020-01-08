@@ -39,5 +39,8 @@ urlpatterns = [
 
     # delete TaskResult & associated hits
     path('task-delete/<str:tid>/<str:scope>', views.task_delete, name="task-delete"),
-
+    
+    # undo last save in review
+    path('match-undo/<int:ds>/<str:tid>/<int:pid>', views.match_undo, name="match-undo"),
+    
 ] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
