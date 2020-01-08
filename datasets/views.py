@@ -967,10 +967,7 @@ def match_undo(request, ds, tid, pid):
   geom_matches.delete()
   link_matches.delete()
   # match task_id, place_id_id in hits; set reviewed = false
-  relevant_hits = Hit.objects.all().filter(task_id=tid, place_id_id=pid)
-  for h in relevant_hits:
-    h.reviewed = False
-  #get_object_or_404(Place,id=pid)
+  Hit.objects.filter(task_id=tid, place_id_id=pid).update(reviewed=False)
   return redirect('/datasets/'+str(ds)+'/review/'+tid+'/pass1')
  # /datasets/1/review/d6ad4289-cae6-476d-873c-a81fed4d6315/pass1
  

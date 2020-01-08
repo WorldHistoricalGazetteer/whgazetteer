@@ -42,7 +42,7 @@
       <!--<div class="pagination d-flex justify-content-center">-->
       <div class="pagination row justify-content-center">
         <div class="col-sm-4">
-          <span><a class="small" href="{% url 'datasets:match-undo' ds=ds_id tid=task_id pid=record.id %}">
+          <span id="undo"><a class="small" href="{% url 'datasets:match-undo' ds=ds_id tid=task_id pid=record.id %}">
               Undo last save {% fontawesome_icon 'undo' color='#336699' %}</a></div>
         <div class="col-sm-8">
         <span><button type="submit" id="btn_save" class="button-sm">Save</button>
@@ -235,13 +235,11 @@
 <script type="text/javascript">
   // capture pid for place just reviewed
   $("#btn_save").click(function(){
+    current_place = $('input[name=place_id]').val()
     sessionStorage.setItem('reviewBegun',true)
-    sessionStorage.setItem('lastPlace', $('input[name=place_id]').val())
+    // TODO: 
+    sessionStorage.setItem('lastPlace', current_place != sessionStorage.lastPlace ? current_place : 'n/a')
     console.log('just reviewed pid #',$('input[name=place_id]').val())
-  })
-  $("#btn_undo").click(function(){
-    console.log('restoring',sessionStorage.lastPlace)
-    
   })
   $(".help-matches").click(function(){
     page=$(this).data('id')
@@ -277,7 +275,7 @@
 
   var ds = "{{ ds_label }}"+':'
   $(function(){
-    if(!sessionStorage.reviewBegun){$("#btn_undo").hide()}
+    if(!sessionStorage.reviewBegun || sessionStorage.lastPlace=='n/a'){$("#undo").hide()}
     // set pass dropdown as next set with any reviewed=False rows
     $( "#select_pass" ).val("{{ passnum }}")
     // defaults to string 'None' - no idea why
