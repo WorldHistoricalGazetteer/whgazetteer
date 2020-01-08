@@ -57,12 +57,14 @@
               <div class="attest-element scroll60">Variants: 
                 {% for name in rec.names|dictsort:"toponym" %}
                   <i>{{name.toponym}}</i>
-                  {% if name.when %}({% for t in name.when.timespans %}{{ t.start.in }}-{{ t.end.in }}
-                    {% if not forloop.last %}| {% endif %}{%endfor%}){% endif %}
-                  <!--{ if "http" in name.citation.id %}-->
-                    <!--(<a href="{ name.citation.id }}" rel="tooltip"-->
-                    <!--title="{name.citation.label}}" target="_blank">src</a>)-->
-                  <!--{ endif %}-->
+                  {% if name.when %}
+                    {{ name|json_script:rec.place_id }}
+                    {{ name.when.timespans }}
+                    ({% for t in name.when.timespans %}
+                      {{ t.start.in }}-{{ t.end.in }}
+                    {% if not forloop.last %}| {% endif %}
+                    {%endfor%})
+                  {% endif %}
                   {% if not forloop.last %}; {% endif %}
                 {% endfor %}
               </div>
@@ -131,7 +133,6 @@
             <div id="place_temporal" class="col-content small">
               <p class="mb-0 allcap-heading">TEMPORAL ATTESTATIONS</p>
               <div id="histogram_sum"></div>
-              <!--<p> <img src="{ static 'images/spark01.png'%}" height=auto width=275 alt=""/> { summing temporal visualization } <i>future</i></p>-->
             </div>
             <div id="place_map" class="col-content small">
                 <p class="mb-0 allcap-heading">GEOGRAPHY <span class="nogeo text-danger"></span>
@@ -210,7 +211,7 @@
 
 <script type="text/javascript">
   $(function() {
-    // looks like: { 81011:[{"start":{},"end":{}}, ...], ... }
+    // telems looks like: { 81011:[{"start":{},"end":{}}, ...], ... }
     window.telems = $('script').filter(function() {
       return this.id.match(/[0-9]/) && this.text != '"null"' && this.text.includes('timespans');
     });
@@ -628,7 +629,7 @@
     geom = {"type":"FeatureCollecton","features":[]}
     // gather geom script from html body
     window.gelems = $('script').filter(function() {
-      return this.id.match(/[0-9]/) && this.text != '"null"';
+      return this.id.match(/[0-9]/) && this.text != '"null"' && this.text.includes('coordinates');
     });
 
     // 
