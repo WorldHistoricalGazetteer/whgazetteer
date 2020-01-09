@@ -960,7 +960,7 @@ def ds_list(request, label):
 
 def match_undo(request, ds, tid, pid):
   print('in match_undo() ds, task, pid:',ds,tid,pid)
-  ds=1;tid='d6ad4289-cae6-476d-873c-a81fed4d6315';pid=81474
+  #ds=1;tid='d6ad4289-cae6-476d-873c-a81fed4d6315';pid=81474
   # 81474, 81445 (2), 81417, 81420, 81436, 81442, 81469
   geom_matches = PlaceGeom.objects.all().filter(task_id=tid, place_id_id=pid)
   link_matches = PlaceLink.objects.all().filter(task_id=tid, place_id_id=pid)

@@ -46,7 +46,7 @@ label {vertical-align:top;}
 .half { font-size: .6em; font-style: italic; margin-top:.6em;}
 .h2em { height: 2em; }
 .h1em { height: 1em; }
-.hidden {display:none;}
+.hidden {display:none !important;}
 .texttop {vertical-align: text-top !important;}
 .textsub {vertical-align: sub !important;}
 .smaller {font-size: small;} /* smaller than bootstrap */
