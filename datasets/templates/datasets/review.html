@@ -39,10 +39,8 @@
     {{ formset.management_form }}
     {% for record in records %} <!-- there is only one; if last, do nothing -->
     <div class="container">
-      <!--<div class="pagination d-flex justify-content-center">-->
       <div class="pagination row justify-content-center">
-        <div class="col-sm-4">
-          <!--<a id="undo" class="small hidden" href="{ url 'datasets:match-undo' ds=ds_id tid=task_id pid=record.id %}">-->
+        <div class="col-sm-4 pl-1">
           <a id="undo" class="small hidden" href="" data-url="{% url 'datasets:match-undo' ds=ds_id tid=task_id pid=999 %}">
               Undo last save {% fontawesome_icon 'undo' color='#336699' %}</a></div>
         <div class="col-sm-8">
@@ -251,7 +249,7 @@
     e.preventDefault();
     str=$(this).text()
     console.log('str',str)
-    var re = /(http|dbp|gn|tgn|wd|loc|viaf):(.*?)$/;
+    var re = /(http|dbp|gn|tgn|wd|loc|viaf|whg):(.*?)$/;
     url=str.match(re)[1]=='http' ? str : base_urls[str.match(re)[1]]+str.match(re)[2]
     window.open(url,'_blank')
   });
