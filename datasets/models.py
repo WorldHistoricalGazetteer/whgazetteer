@@ -2,6 +2,7 @@
 from django.conf import settings
 #from django.contrib.auth.models import User
 from django.contrib.postgres.fields import JSONField, ArrayField
+from django.contrib.auth.models import User
 from django.db import models
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
@@ -10,21 +11,13 @@ from django.urls import reverse
 #from django.utils.text import slugify
 
 #from django_celery_results.models import TaskResult
-from main.choices import AUTHORITIES, FORMATS, DATATYPES, STATUS
+from main.choices import AUTHORITIES, FORMATS, DATATYPES, STATUS, TEAMROLES
 from places.models import Place
 
 def user_directory_path(instance, filename):
     # upload to MEDIA_ROOT/user_<username>/<filename>
     return 'user_{0}/{1}'.format(instance.owner.username, filename)
 
-# TODO: operations on entire table
-# class DatasetQueryset(models.Queryset):
-#     pass
-# class DatasetManager(models.Manager):
-#     pass
-
-# TODO: multiple files per dataset w/File model and formset
-# TODO: linking delimited dataset with sources dataset
 class Dataset(models.Model):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL,
         related_name='datasets', on_delete=models.CASCADE)
@@ -67,13 +60,29 @@ class Dataset(models.Model):
         managed = True
         db_table = 'datasets'
 
-@receiver(pre_delete, sender=Dataset)
-def remove_file(**kwargs):
-    instance = kwargs.get('instance')
-    instance.file.delete(save=False)
 
-# raw hits from reconciliation
-# [{'place_id', 'task_id', 'authority', 'dataset', 'authrecord_id', 'id'}]
+class DatasetUser(models.Model):
+    dataset_id = models.ForeignKey(Dataset,
+        default=-1, on_delete=models.CASCADE)
+    user_id = models.ForeignKey(User,
+        default=-1, on_delete=models.CASCADE)
+    role = models.CharField(max_length=20, null=False, choices=TEAMROLES)
+
+    #def __str__(self):
+        #return self.toponym
+
+    class Meta:
+        managed = True
+        db_table = 'dataset_user'
+
+# TODO: operations on entire table
+# class DatasetQueryset(models.Queryset):
+#     pass
+# class DatasetManager(models.Manager):
+#     pass
+
+# TODO: multiple files per dataset w/File model and formset
+# TODO: linking delimited dataset with sources dataset
 class Hit(models.Model):
     place_id = models.ForeignKey(Place, on_delete=models.CASCADE)
     # FK to celery_results_task_result.task_id; TODO: written yet?
@@ -101,3 +110,11 @@ class Hit(models.Model):
     class Meta:
         managed = True
         db_table = 'hits'
+
+@receiver(pre_delete, sender=Dataset)
+def remove_file(**kwargs):
+    instance = kwargs.get('instance')
+    instance.file.delete(save=False)
+
+# raw hits from reconciliation
+# [{'place_id', 'task_id', 'authority', 'dataset', 'authrecord_id', 'id'}]
