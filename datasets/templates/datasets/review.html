@@ -41,7 +41,7 @@
     <div class="container">
       <div class="pagination row justify-content-center">
         <div class="col-sm-4 pl-1">
-          <a id="undo" class="small hidden" href="" data-url="{% url 'datasets:match-undo' ds=ds_id tid=task_id pid=999 %}">
+          <a id="undo" class="small hidden-imp" href="" data-url="{% url 'datasets:match-undo' ds=ds_id tid=task_id pid=999 %}">
               Undo last save {% fontawesome_icon 'undo' color='#336699' %}</a></div>
         <div class="col-sm-8">
         <span><button type="submit" id="btn_save" class="button-sm">Save</button>
@@ -274,7 +274,7 @@
     console.log('current place:', $('input[name=place_id]').val())
     // show undo link if there is a lastPlace & it's not the current place
     if((sessionStorage.lastPlace && sessionStorage.lastPlace != current_place)){
-      $("#undo").removeClass('hidden')}
+      $("#undo").removeClass('hidden-imp')}
     // set pass dropdown as next set with any reviewed=False rows
     $( "#select_pass" ).val("{{ passnum }}")
     // defaults to string 'None' - no idea why
