@@ -60,7 +60,7 @@
           <span class="float-right half"><a href="{% url 'datasets:dataset_recon' object.id %}" class="ml-5">
             add task {% fontawesome_icon 'plus-square' color='#336699' %}</a></span>{% endif %}
         </h5>
-        {% if object.owner.id == user.id or user.is_superuser %}
+        {% if object.owner.id == user.id or user.is_superuser or user in users %}
         {% for t in tasks %}
         <div class="task-box">
           <!-- TODO: display bounds used if any -->

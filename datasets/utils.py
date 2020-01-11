@@ -2,6 +2,7 @@ import codecs, datetime, sys, csv, os, pprint, chardet
 import simplejson as json
 from goodtables import validate as gvalidate
 from shapely import wkt
+from datasets.models import DatasetUser
 from datasets.static.hashes import aat, parents
 from jsonschema import Draft7Validator, draft7_format_checker, validate
 pp = pprint.PrettyPrinter(indent=1)
@@ -130,7 +131,10 @@ def myteam(me):
     for u in g.user_set.all():
       myteam.append(u)
   return myteam
-
+def myprojects(me):
+  return DatasetUser.objects.filter(user_id_id=me.id).values_list('dataset_id_id')
+  
+  
 def parsejson(value,key):
   """returns value for given key"""
   print('parsejson() value',value)

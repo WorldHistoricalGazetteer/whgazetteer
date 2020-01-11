@@ -7,6 +7,7 @@ from django.db import models
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from django.urls import reverse
+from django.shortcuts import get_object_or_404
 #from django.utils import timezone
 #from django.utils.text import slugify
 
@@ -56,15 +57,29 @@ class Dataset(models.Model):
         from django_celery_results.models import TaskResult
         return TaskResult.objects.all().filter(task_args = '['+str(self.id)+']')
 
+    #from django.shortcuts import get_object_or_404
+    #from django.contrib.auth.models import User
+    #from datasets.models import *
+    
+    #u=get_object_or_404(User,id=4)
+    #ds=get_object_or_404(Dataset,id=104)
+    #uids=DatasetUser.objects.filter(dataset_id_id = ds.id).values_list('user_id_id')
+    #users = User.objects.filter(id__in=uids)
+    
+    @property
+    def dsusers(self):
+        uids=DatasetUser.objects.filter(dataset_id_id = self.id).values_list('user_id_id')
+        return User.objects.filter(id__in=uids)
+        
     class Meta:
         managed = True
         db_table = 'datasets'
 
 
 class DatasetUser(models.Model):
-    dataset_id = models.ForeignKey(Dataset,
+    dataset_id = models.ForeignKey(Dataset, related_name='users',
         default=-1, on_delete=models.CASCADE)
-    user_id = models.ForeignKey(User,
+    user_id = models.ForeignKey(User, related_name='users',
         default=-1, on_delete=models.CASCADE)
     role = models.CharField(max_length=20, null=False, choices=TEAMROLES)
 

@@ -738,11 +738,8 @@ class DashboardView(ListView):
       print('in get_queryset() if',me)
       return Dataset.objects.all().order_by('status','-spine','-id')
     else:
-      print('in get_queryset() else')
-      #print('myteam(me)',myteam(me))
-      #return Dataset.objects.filter( Q(owner__in=myteam(me)) | Q(spine="True")).order_by('-id')
-      # returns owned datasets (rw) + black and dplace (ro)
-      return Dataset.objects.filter( Q(owner=me) | Q(id__lt=3)).order_by('-id')
+      # returns permitted datasets (rw) + black and dplace (ro)
+      return Dataset.objects.filter( Q(id__in=myprojects(me)) | Q(owner=me) | Q(id__lt=3)).order_by('-id')
 
 
   def get_context_data(self, *args, **kwargs):
@@ -755,19 +752,6 @@ class DashboardView(ListView):
     userareas = Area.objects.all().filter(type__in=types_ok).order_by('created')
     context['area_list'] = userareas if me.username == 'whgadmin' else userareas.filter(owner=self.request.user)
 
-    # list team tasks WHY?????
-    #if me.username == 'whgadmin':
-      #context['review_list'] = TaskResult.objects.filter(status='SUCCESS').order_by('-date_done')
-    #else:
-      #for t in TaskResult.objects.filter(status='SUCCESS'):
-        #tj=json.loads(t.task_kwargs.replace("\'", "\""))
-        #u=get_object_or_404(User,id=tj['owner'])
-        #print('get_context else...args,task owner',tj,u)
-        #if u in myteam(me):
-          #teamtasks.append(t.task_id)
-      #context['review_list'] = TaskResult.objects.filter(task_id__in=teamtasks).order_by('-date_done')
-
-    # status >= 'uploaded'
     context['viewable'] = ['uploaded','reconciling','review_hits','reviewed','review_whg','indexed']
     # TODO: user place collections
     #print('DashboardView context:', context)
@@ -891,6 +875,7 @@ class DatasetDetailView(UpdateView):
     context['status'] = ds.status
     context['format'] = ds.format
     context['numrows'] = ds.numrows
+    context['users'] = ds.dsusers
     placeset = Place.objects.filter(dataset=ds.label)
     context['tasks'] = TaskResult.objects.all().filter(task_args = [id_],status='SUCCESS')
     # initial (non-task)
