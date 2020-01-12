@@ -374,7 +374,7 @@
     console.log(data.length)
     if (doctype == 'place'){
       if(data.length ==0) {
-        results_div += '<p class="small ml-2">No results. If you typed all lower case, try camel case. This is a temporary bug</p>'
+        results_div += '<p class="small ml-2">No results, sorry.</p>'
       } else {
         data.forEach(function(sug){  
           typesArr=typesArr.concat(sug.types)      
