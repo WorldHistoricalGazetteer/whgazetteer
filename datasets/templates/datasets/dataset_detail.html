@@ -73,12 +73,16 @@
             </div>
             <ul id="collabs_list">
               {% for c in collab %}<li>{{ c.user }} ({{ c.role }})
-              <span class="float-right small mr-1">
+              {% if object.owner.id == user.id or user.is_superuser %}
+              <span class="float-right mr-2">
                 <a href="{% url 'datasets:collab-delete' uid=c.id dsid=object.id %}">
-                <i>remove</i> {%fontawesome_icon 'times-circle' color='#336699'%}</a>
-              </span>
+                {%fontawesome_icon 'times-circle' color='#336699'%}</a>
+              </span>{% endif %}
               </li>{% endfor %}
             </ul>
+            {% if messages %}{% for message in messages %}
+              <i style="display:block;" class="text-danger ml-4 mb-2">{{ message }}</i>
+            {%endfor%}{% endif %}            
           </div>
         </div>
         </form>
