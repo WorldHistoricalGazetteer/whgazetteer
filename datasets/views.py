@@ -876,6 +876,7 @@ class DatasetDetailView(UpdateView):
     context['format'] = ds.format
     context['numrows'] = ds.numrows
     context['users'] = ds.dsusers
+    context['collab'] = ds.collab
     placeset = Place.objects.filter(dataset=ds.label)
     context['tasks'] = TaskResult.objects.all().filter(task_args = [id_],status='SUCCESS')
     # initial (non-task)

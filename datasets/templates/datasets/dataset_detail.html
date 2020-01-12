@@ -62,7 +62,7 @@
               <i>add</i> {% fontawesome_icon 'plus-square' color='#336699' %}</a></span>
             </div>
             <ul>
-              {% for u in users %}<li>{{ u }}</li>{% endfor %}
+              {% for c in collab %}<li>{{ c.user }} ({{ c.role }})</li>{% endfor %}
             </ul>
           </div>
         </div>
