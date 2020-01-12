@@ -74,7 +74,7 @@ class Dataset(models.Model):
         #collabs.append((u.username,r))
     
     @property
-    def dsusers(self):
+    def collab(self):
         uids=DatasetUser.objects.filter(dataset_id_id = self.id).values_list('user_id_id')
         dus=DatasetUser.objects.filter(dataset_id_id = self.id)
         collabs=[]
@@ -83,6 +83,10 @@ class Dataset(models.Model):
             r = du.role
             collabs.append({'user':u.username,'role':r})
         return collabs
+    
+    @property
+    def dsusers(self):
+        return DatasetUser.objects.filter(dataset_id_id = self.id).values_list('user_id_id')
         
     class Meta:
         managed = True
