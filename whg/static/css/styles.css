@@ -442,12 +442,23 @@ em { color: #993333;}
   /* border-radius: 16px; */
   box-shadow: 3px 3px #eee;
 }
+.sharing-box {
+  border: 1px solid #ccc;
+  background-color: #fff;
+  padding: 0;
+  /* border-radius: 16px; */
+  box-shadow: 3px 3px #eee;
+}
+.sharing-header { 
+  display:block; 
+  background-color: #eee; 
+  padding-left: 4px;
+  border-bottom: 1px solid #ccc;
+}
 .task-box {
   border: 1px solid #ccc;
-  min-height: 100px;
   background-color: #fff;
-  padding:12px;
-  /* border-radius: 16px; */
+  padding:12px 12px 0 12px;
   box-shadow: 3px 3px #eee;
 }
 .task-box p, .task-box li {font-size: small; margin-bottom:.3rem;}

@@ -65,11 +65,24 @@ class Dataset(models.Model):
     #ds=get_object_or_404(Dataset,id=104)
     #uids=DatasetUser.objects.filter(dataset_id_id = ds.id).values_list('user_id_id')
     #users = User.objects.filter(id__in=uids)
+    ##uids=DatasetUser.objects.filter(dataset_id_id = ds.id)
+    #dus=DatasetUser.objects.filter(dataset_id_id = ds.id)
+    #collabs=[]
+    #for du in dus:
+        #u = get_object_or_404(User, id=du.user_id_id)
+        #r = du.role
+        #collabs.append((u.username,r))
     
     @property
     def dsusers(self):
         uids=DatasetUser.objects.filter(dataset_id_id = self.id).values_list('user_id_id')
-        return User.objects.filter(id__in=uids)
+        dus=DatasetUser.objects.filter(dataset_id_id = self.id)
+        collabs=[]
+        for du in dus:
+            u = get_object_or_404(User, id=du.user_id_id)
+            r = du.role
+            collabs.append({'user':u.username,'role':r})
+        return collabs
         
     class Meta:
         managed = True
