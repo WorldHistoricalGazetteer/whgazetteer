@@ -443,18 +443,24 @@ em { color: #993333;}
   box-shadow: 3px 3px #eee;
 }
 .sharing-box {
-  border: 1px solid #ccc;
+  border: 1px solid #D6D7D9;
   background-color: #fff;
   padding: 0;
-  /* border-radius: 16px; */
   box-shadow: 3px 3px #eee;
 }
 .sharing-header { 
   display:block; 
-  background-color: #eee; 
+  background-color: #ECF0F1; 
   padding-left: 4px;
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid #D6D7D9;
 }
+.sharing-input { width:40%; }
+.sharing-input input { 
+  padding: 2px 10px;
+  font-size:smaller;
+  height: fit-content;
+}
+.sharing-input button {padding: 2px 6px; font-size:smaller; background-color:#666; color:#fff;}
 .task-box {
   border: 1px solid #ccc;
   background-color: #fff;

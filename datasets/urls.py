@@ -40,6 +40,12 @@ urlpatterns = [
     # delete TaskResult & associated hits
     path('task-delete/<str:tid>/<str:scope>', views.task_delete, name="task-delete"),
     
+    # add DatasetUser collaborator
+    path('collab-add/<int:dsid>', views.collab_add, name="collab-add"),
+    
+    # delete DatasetUser collaborator
+    path('collab-delete/<int:uid>/<int:dsid>', views.collab_delete, name="collab-delete"),
+    
     # undo last save in review
     path('match-undo/<int:ds>/<str:tid>/<int:pid>', views.match_undo, name="match-undo"),
     

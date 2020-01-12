@@ -365,8 +365,22 @@ def task_delete(request,tid,scope="foo"):
     placegeoms.delete()    
 
   return redirect('/datasets/'+ds+'/detail')
+# remove collaborator from dataset
+def collab_delete(request,uid,dsid):
+  get_object_or_404(DatasetUser,user_id_id=uid,dataset_id_id=dsid).delete()
+  return redirect('/datasets/'+str(dsid)+'/detail')
 
-# 
+#print('collab_add():',request.POST['username'],dsid)
+#uid=get_object_or_404(User,username=u).id
+#DatasetUser.objects.create(user_id_id=uid, dataset_id_id=dsid, role=role)
+
+# add collaborator to dataset
+def collab_add(request,dsid,role='member'):
+  uid=get_object_or_404(User,username=request.POST['username']).id
+  print('collab_add():',request.POST['username'],dsid,uid)
+  DatasetUser.objects.create(user_id_id=uid, dataset_id_id=dsid, role=role)
+  return redirect('/datasets/'+str(dsid)+'/detail')
+#
 def dataset_browse(request, label, f):
   # need only for title; calls API w/javascript for data
   ds = get_object_or_404(Dataset, label=label)

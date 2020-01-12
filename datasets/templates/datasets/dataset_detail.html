@@ -8,8 +8,6 @@
 
 <div class="container ds-detail mt-3">
   <!-- on click toggle .hidden, .form-value; make submit button visible -->
-  <form id="ds_form" method="POST" action="#" enctype="multipart/form-data">
-  {% csrf_token %}
     <input type="hidden" name="id" value='{{ form.id }}'></input>
     <h4>Dataset Portal
       <span class="float-right small">
@@ -21,6 +19,8 @@
     </h4>
     <hr/>
     <div class="row">
+      <form id="ds_form" method="POST" action="#" enctype="multipart/form-data">
+      {% csrf_token %}
       <div id="ds_details" class="col-sm-6 small">
         <p><b>Name</b>: 
           <span class="form-name bigger strong text-danger">{{ object.name }}</span>
@@ -53,19 +53,35 @@
           {{ num_links }}, <span class="text-white bg-danger">&nbsp;{{ links_added }}&nbsp;</span></p>
         <p><b>Geometries</b>: {{ num_geoms }}, <span class="text-white bg-danger">&nbsp;{{ geoms_added }}&nbsp;</span></p>
       </div>
+      </form>
       <div id="ds_recon" class="col-sm-6 pt-2 dashedbox">
+        <form id="sharing_form" method="POST" action="{% url 'datasets:collab-add' dsid=object.id %}" enctype="multipart/form-data">
+        {% csrf_token %}
         <div id="sharing">
           <h5 class="text-secondary">Sharing</h5>
-          <div class="sharing-box mb-1">
+          <div class="sharing-box mb-3">
             <div class="sharing-header">Collaborators
-              <span class="float-right small mr-2"><a href="{% url 'datasets:dataset_recon' object.id %}" class="ml-5">
-              <i>add</i> {% fontawesome_icon 'plus-square' color='#336699' %}</a></span>
+              {% if object.owner.id == user.id or user.is_superuser %}
+              <!--<span class="float-right small mr-2">-->
+              <span class="sharing-input float-right input-group">
+                <input type="text" class="form-control input-sm" name="username" placeholder="Enter username">
+                <div class="input-group-append">
+                  <button class="btn btn-sm btn-outline-secondary" type="submit">Add</button>
+                </div>
+              </span>
+              {% endif %}
             </div>
-            <ul>
-              {% for c in collab %}<li>{{ c.user }} ({{ c.role }})</li>{% endfor %}
+            <ul id="collabs_list">
+              {% for c in collab %}<li>{{ c.user }} ({{ c.role }})
+              <span class="float-right small mr-1">
+                <a href="{% url 'datasets:collab-delete' uid=c.id dsid=object.id %}">
+                <i>remove</i> {%fontawesome_icon 'times-circle' color='#336699'%}</a>
+              </span>
+              </li>{% endfor %}
             </ul>
           </div>
         </div>
+        </form>
         <h5 class="text-secondary">Reconciliation Tasks 
           <span class="small help-matches" data-id="reconciliation">
             {% fontawesome_icon 'question-circle' color='#993333' %}</span>
@@ -88,33 +104,36 @@
               {{ t.result.hits }}
               <p><b>Result</b>: {{ t.result|get:"got_hits"|safe }} records (of
                   {{ t.result|get:"count"|safe }}) got total of <b>{{ t.result|get:"total"|safe }}</b> hits</p>
-                  <p id="latest"></p>
+              <p id="latest"></p>
               <ul>
                 <li><i>Pass 1</i>
                   {% if t.result|get:"pass1" > 0 %}
                   <i>remaining</i>: <span class="strong" id='{{t.task_id}}_1'>nn</span> 
                   <a href="{% url 'datasets:review' pk=object.id tid=t.task_id passnum='pass1' %}">
-                   review</i></a>{% endif %}</li>
+                   review</i></a>{% endif %}
+                </li>
                 <li><i>Pass 2</i>
                   {% if t.result|get:"pass2" > 0 %}
                   <i>remaining</i>: <span class="strong" id='{{t.task_id}}_2'>nn</span> 
                   <a href="{% url 'datasets:review' pk=object.id tid=t.task_id passnum='pass2' %}">
-                   review</i></a>{% endif %}</li>
+                   review</i></a>{% endif %}
+                </li>
                 {% if t.task_name != 'align_wd' %}
-                  <li><i>Pass 3</i>
-                  {% if t.result|get:"pass3" > 0 %}
-                  <i>remaining</i>: <span class="strong" id='{{t.task_id}}_3'>nn</span> 
-                  <a href="{% url 'datasets:review' pk=object.id tid=t.task_id passnum='pass3' %}">
-                   review</i></a>{% endif %}</li>
+                <li><i>Pass 3</i>
+                {% if t.result|get:"pass3" > 0 %}
+                <i>remaining</i>: <span class="strong" id='{{t.task_id}}_3'>nn</span> 
+                <a href="{% url 'datasets:review' pk=object.id tid=t.task_id passnum='pass3' %}">
+                 review</i></a>{% endif %}
+                </li>
                 {% endif %}
               </ul>
               <!--{# if user.is_superuser %}-->
-                <p class="small">
-                   <a class="confirm-del-all" data-id={{t.task_id}} href="{% url 'datasets:task-delete' tid=t.task_id scope='task' %}">
-                     Delete task & hits, clear matches {% fontawesome_icon 'trash' color='#ff0000' %}</a><br/>
+              <p class="small">
+                 <a class="confirm-del-all" data-id={{t.task_id}} href="{% url 'datasets:task-delete' tid=t.task_id scope='task' %}">
+                   Delete task & hits, clear matches {% fontawesome_icon 'trash' color='#ff0000' %}</a><br/>
                    <a class="confirm-del-geoms" href="{% url 'datasets:task-delete' tid=t.task_id scope='geoms'%}">
-                    Delete geometries added so far</a>
-                </p>
+                  Delete geometries added so far</a>
+              </p>
               <!--{# endif %}-->
             </div>
             <div class="col-sm-3">
@@ -132,19 +151,20 @@
         {% endif %}
       </div>
     </div>
-  </form>
   <div class="selector py-3"><div id="helpme"><div></div>
 </div>
 <script type="text/javascript">
   $(function(){
     // TODO: reload should NOT be necessary
     <!--location.reload();-->
-    console.log('dataset id: {{ object.id }}')
+    <!--console.log('dataset id: {{ object.id }}')-->
     updateTotals('{{ object.id }}')
     steps={"uploaded":1,"reconciling":2,"review_hits":3,"reviewed":4,"review_whg":5,"indexed":6}
     $("[ref="+steps['{{ object.status }}']+"]").addClass('prog-active')
-    
-  
+
+    $("#collabs_list a").click(function(){
+      console.log($(this).data('uid'))
+    })   
     $(".help-matches").click(function(){
       page=$(this).data('id')
       $('.selector').dialog('open');
