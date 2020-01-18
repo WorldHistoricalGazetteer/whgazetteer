@@ -86,23 +86,6 @@
     <!--mappy.setView(feat._latlng, 3);-->
   }
   function setRowEvents(){
-    <!--$( "tr.odd, tr.even" ).hover(-->
-        <!--function() {-->
-          <!--pid=$(this)[0].cells[0].textContent-->
-          <!--feat = idToFeature[pid]-->
-          <!--$(this).addClass( "rowhover" );-->
-          <!--feat.setStyle(focusStyle)-->
-          <!--// highlight feature-->
-        <!--}, function() {-->
-          <!--pid=$(this)[0].cells[0].textContent-->
-          <!--feat = idToFeature[pid]-->
-          <!--$(this).removeClass( "rowhover" );-->
-          <!--feat.setStyle(defaultStyle) -->
-          <!--<!--mappy.setView([35.0, 13.0], 1)-->-->
-          <!--// unhighlight feature-->
-        <!--}-->
-      <!--)-->
-    <!--$( "tr.odd, tr.even" ).click(function() {-->
     $("#placetable tr").click(function() {
         t=$(this)
         pid=$(this)[0].cells[0].textContent
@@ -145,8 +128,6 @@
           {"data": "ccodes"},
           <!--{"data": "geom_count","sortable": false},-->
       ],
-      <!--"order": [[ 0, 'asc' ]]-->
-      <!--"order": [[ 4, 'desc' ]]-->
     })
     table.on( 'draw', function () {
       setRowEvents();
