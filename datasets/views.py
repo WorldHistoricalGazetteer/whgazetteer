@@ -368,11 +368,7 @@ def task_delete(request,tid,scope="foo"):
 # remove collaborator from dataset
 def collab_delete(request,uid,dsid):
   get_object_or_404(DatasetUser,user_id_id=uid,dataset_id_id=dsid).delete()
-  return redirect('/datasets/'+str(dsid)+'/detail')
-
-#print('collab_add():',request.POST['username'],dsid)
-#uid=get_object_or_404(User,username=u).id
-#DatasetUser.objects.create(user_id_id=uid, dataset_id_id=dsid, role=role)
+  return redirect('/datasets/'+str(dsid)+'/detail#sharing')
 
 # add collaborator to dataset
 def collab_add(request,dsid,role='member'):
@@ -381,10 +377,10 @@ def collab_add(request,dsid,role='member'):
   except:
     # TODO: raise error to screen
     messages.add_message(request, messages.INFO, "Please check username, we don't have '" + request.POST['username']+"'")    
-    return redirect('/datasets/'+str(dsid)+'/detail')
+    return redirect('/datasets/'+str(dsid)+'/detail#sharing')
   print('collab_add():',request.POST['username'],dsid,uid)
   DatasetUser.objects.create(user_id_id=uid, dataset_id_id=dsid, role=role)
-  return redirect('/datasets/'+str(dsid)+'/detail')
+  return redirect('/datasets/'+str(dsid)+'/detail#sharing')
 #
 def dataset_browse(request, label, f):
   # need only for title; calls API w/javascript for data

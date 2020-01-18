@@ -101,10 +101,10 @@
           <div class="row">
             <div class="col-sm-9">
               <p><b>Task</b>: {{ t.task_name }} <span class="small">
-                ({{ t.date_done|date:"d-M-Y, H:i (e)" }}; elapsed: {{ t.result|get:"elapsed"|safe }})</span></p>
+                ({{ t.date_done|date:"d-M-Y, H:i (e)" }}; elapsed: {{ t.result|get:"elapsed"|safe }})</span>
+              </p>
               <p><b>ID</b>: {{ t.task_id }}</p>
                  <!-- TODO: confirm, select which to delete -->
-              </p>
               {{ t.result.hits }}
               <p><b>Result</b>: {{ t.result|get:"got_hits"|safe }} records (of
                   {{ t.result|get:"count"|safe }}) got total of <b>{{ t.result|get:"total"|safe }}</b> hits</p>
@@ -124,10 +124,10 @@
                 </li>
                 {% if t.task_name != 'align_wd' %}
                 <li><i>Pass 3</i>
-                {% if t.result|get:"pass3" > 0 %}
-                <i>remaining</i>: <span class="strong" id='{{t.task_id}}_3'>nn</span> 
-                <a href="{% url 'datasets:review' pk=object.id tid=t.task_id passnum='pass3' %}">
-                 review</i></a>{% endif %}
+                  {% if t.result|get:"pass3" > 0 %}
+                  <i>remaining</i>: <span class="strong" id='{{t.task_id}}_3'>nn</span> 
+                  <a href="{% url 'datasets:review' pk=object.id tid=t.task_id passnum='pass3' %}">
+                   review</i></a>{% endif %}
                 </li>
                 {% endif %}
               </ul>
