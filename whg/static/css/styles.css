@@ -345,10 +345,14 @@ em { color: #993333;}
 #create_review {
   /*background-color: yellow;*/
 }
+
 /**
-  dataset summary
+  dataset tabs
 **/
 #ds_details p { margin-bottom: .2rem;}
+.ds-title {padding-top: 7px;}
+#ds_tasks { max-height: 80vh; overflow-y:scroll; overflow-x: hidden;
+}
 
 /**
   dataset browse
