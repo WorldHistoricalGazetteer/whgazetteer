@@ -416,7 +416,7 @@ em { color: #993333;}
 .ds-detail p { margin-bottom: .3rem;}
 
 .tab-pane {
-  padding: 3px;
+  padding: 3px 16px;
   background-color: white;
   /* min-height: 128px; */
   border-left: #eeeee0 1px solid;
