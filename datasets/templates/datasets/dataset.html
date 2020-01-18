@@ -31,6 +31,7 @@
     <div class="tab-pane active" id="summary" role="tabpanel" aria-labelledby="summary-tab">
       <form id="ds_form" method="POST" action="#" enctype="multipart/form-data">
       {% csrf_token %}
+      <div class="row">
       <div id="ds_details" class="col-sm-6 small">
         <p><b>Name</b>: 
           <span class="form-name bigger strong text-danger">{{ object.name }}</span>
@@ -42,7 +43,9 @@
           <span class="hidden editing-description">{{ form.description }}</span>
           &nbsp;<span class="edit-description small"><a href="#">{% fontawesome_icon 'edit' color='#336699' %}</a></span>
         </p>
-        <p><b>IDs</b> (label/number): <span class="text-danger">{{ object.label }}</span>/<span class="text-danger">{{ object.id }}</span>
+        <p><b>IDs</b> (label/number): 
+          <span class="text-danger">{{ object.label }}</span>/<span class="text-danger">{{ object.id }}</span>
+        </p>
         <p><b>File</b>: {{ object.file }}</p>
         <p><b>Date</b>: {{ object.upload_date|date:"d-M-Y, H:i (e)" }}</p>
         <p><b>Total rows</b>: {{ object.numrows }}</p>
@@ -63,6 +66,76 @@
           {{ num_links }}, <span class="text-white bg-danger">&nbsp;{{ links_added }}&nbsp;</span></p>
         <p><b>Geometries</b>: {{ num_geoms }}, <span class="text-white bg-danger">&nbsp;{{ geoms_added }}&nbsp;</span></p>
       </div>
+      <div id="ds_tasks" class="col-sm-6 small">
+        <h5 class="text-secondary">Reconciliation Tasks 
+          <span class="small help-matches" data-id="reconciliation">
+            {% fontawesome_icon 'question-circle' color='#993333' %}</span>
+          {% if object.owner.id == user.id or user.is_superuser %}
+          <span class="float-right half"><a href="{% url 'datasets:dataset_recon' object.id %}" class="ml-5">
+            add task {% fontawesome_icon 'plus-square' color='#336699' %}</a></span>{% endif %}
+        </h5>
+        {% if object.owner.id == user.id or user.is_superuser or user in users %}
+        {% for t in tasks %}
+        <div class="task-box">
+          <!-- TODO: display bounds used if any -->
+          <!--{ t.task_kwargs|parsejson:"bounds" }}-->
+          <div class="row">
+            <div class="col-sm-9">
+              <p><b>Task</b>: {{ t.task_name }} <span class="small">
+                ({{ t.date_done|date:"d-M-Y, H:i (e)" }}; elapsed: {{ t.result|get:"elapsed"|safe }})</span>
+              </p>
+              <p><b>ID</b>: {{ t.task_id }}</p>
+                 <!-- TODO: confirm, select which to delete -->
+              {{ t.result.hits }}
+              <p><b>Result</b>: {{ t.result|get:"got_hits"|safe }} records (of
+                  {{ t.result|get:"count"|safe }}) got total of <b>{{ t.result|get:"total"|safe }}</b> hits</p>
+              <p id="latest"></p>
+              <ul>
+                <li><i>Pass 1</i>
+                  {% if t.result|get:"pass1" > 0 %}
+                  <i>remaining</i>: <span class="strong" id='{{t.task_id}}_1'>nn</span> 
+                  <a href="{% url 'datasets:review' pk=object.id tid=t.task_id passnum='pass1' %}">
+                   review</i></a>{% endif %}
+                </li>
+                <li><i>Pass 2</i>
+                  {% if t.result|get:"pass2" > 0 %}
+                  <i>remaining</i>: <span class="strong" id='{{t.task_id}}_2'>nn</span> 
+                  <a href="{% url 'datasets:review' pk=object.id tid=t.task_id passnum='pass2' %}">
+                   review</i></a>{% endif %}
+                </li>
+                {% if t.task_name != 'align_wd' %}
+                <li><i>Pass 3</i>
+                  {% if t.result|get:"pass3" > 0 %}
+                  <i>remaining</i>: <span class="strong" id='{{t.task_id}}_3'>nn</span> 
+                  <a href="{% url 'datasets:review' pk=object.id tid=t.task_id passnum='pass3' %}">
+                   review</i></a>{% endif %}
+                </li>
+                {% endif %}
+              </ul>
+              <!--{# if user.is_superuser %}-->
+              <p class="small">
+                 <a class="confirm-del-all" data-id={{t.task_id}} href="{% url 'datasets:task-delete' tid=t.task_id scope='task' %}">
+                   Delete task & hits, clear matches {% fontawesome_icon 'trash' color='#ff0000' %}</a><br/>
+                   <a class="confirm-del-geoms" href="{% url 'datasets:task-delete' tid=t.task_id scope='geoms'%}">
+                  Delete geometries added so far</a>
+              </p>
+              <!--{# endif %}-->
+            </div>
+            <div class="col-sm-3">
+              {% if t.task_name == 'align_wd' %}
+                <img src="{% static 'images/Wikidata-logo-en.svg'%}" width="80"/>
+              {% elif t.task_name == 'align_tgn' %}
+                <img src="{% static 'images/getty80.png'%}" />
+              {% elif t.task_name == 'align_whg' %}
+                <img src="{% static 'images/whg_accessioning.svg'%}" width="80"/>
+              {% endif %}
+            </div>
+          </div> <!-- row -->
+        </div> <!-- task-box -->
+        {% endfor %}
+        {% endif %}
+      </div>
+      </div> <!-- row -->
       </form>
     </div>
     <div class="tab-pane" id="browse" role="tabpanel" aria-labelledby="browse-tab">
@@ -105,7 +178,7 @@
 
 <script type="text/javascript">
   $(function(){
-     $("html,body").scrollTop(0);
+    <!--$("html,body").scrollTop(0);-->
     // Javascript to enable link to tab
     var url = document.location.toString();
     if (url.match('#')) {
@@ -118,10 +191,8 @@
         window.location.hash = e.target.hash;
       } else {
         window.location.hash = '';
-        console.log('clicked summary tab')
+        <!--console.log('clicked summary tab')-->
       }
-      console.log('window.location.hash',window.location.hash)
-      console.log('e.target.hash',e.target.hash)
     })
     
     // TODO: reload should NOT be necessary
