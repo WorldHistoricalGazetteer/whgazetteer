@@ -8,7 +8,7 @@
 
 <div class="container ds-detail mt-3">
   <!-- on click toggle .hidden, .form-value; make submit button visible -->
-    <input type="hidden" name="id" value='{{ form.id }}'></input>
+    <!--<input type="hidden" name="id" value='{{ form.id }}'></input>-->
     <h4>Dataset Portal
       <span class="float-right small">
       <span class="small">Browse data</span> <a href="{% url 'datasets:dataset_browse' label=object.label f='all' %}" title="View/edit table" rel="tooltip"

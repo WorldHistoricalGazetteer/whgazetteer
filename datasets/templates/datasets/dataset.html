@@ -1,0 +1,196 @@
+{% extends "main/base.html" %}
+
+{% load static %}
+{% load fontawesome %}
+{% load mathfilters %}
+{% load dataset_extras %}
+{% block extra_head %}
+    <!--<script src="{ static 'js/dataset_summary.js' %}"></script>-->
+{% endblock %}
+
+{% block content %}
+<!--<div class="container ds-detail mt-3">-->
+<div class="container mt-3">
+  <!-- Nav tabs -->
+  <ul class="nav nav-tabs" id="dataset_tabs" role="tablist">
+    <li class="nav-item">
+      <a class="nav-link active" id="summary-tab" data-toggle="tab" href="#summary" role="tab" aria-controls="home" aria-selected="true"><b>{{ object.name }}</b> dataset</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" id="browse-tab" data-toggle="tab" href="#browse" role="tab" aria-controls="profile" aria-selected="false">Browse data</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" id="sharing-tab" data-toggle="tab" href="#sharing" role="tab" aria-controls="messages" aria-selected="false">Sharing</a>
+    </li>
+    <li class="nav-item hidden">
+      <a class="nav-link" id="reconciliation-tab" data-toggle="tab" href="#reconciliation" role="tab" aria-controls="profile" aria-selected="false">Reconciliation task</a>
+    </li>
+  </ul>
+  <!-- Tab panes -->
+  <div class="tab-content">
+    <div class="tab-pane active" id="summary" role="tabpanel" aria-labelledby="summary-tab">
+      <form id="ds_form" method="POST" action="#" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div id="ds_details" class="col-sm-6 small">
+        <p><b>Name</b>: 
+          <span class="form-name bigger strong text-danger">{{ object.name }}</span>
+          <span class="hidden editing-name">{{ form.name }}</span>
+          &nbsp;<span class="edit-name small"><a href="#">{% fontawesome_icon 'edit' color='#336699' %}</a></span>
+        </p>
+        <p><b>Description</b>: 
+          <span class="form-description">{{ object.description }}</span>
+          <span class="hidden editing-description">{{ form.description }}</span>
+          &nbsp;<span class="edit-description small"><a href="#">{% fontawesome_icon 'edit' color='#336699' %}</a></span>
+        </p>
+        <p><b>IDs</b> (label/number): <span class="text-danger">{{ object.label }}</span>/<span class="text-danger">{{ object.id }}</span>
+        <p><b>File</b>: {{ object.file }}</p>
+        <p><b>Date</b>: {{ object.upload_date|date:"d-M-Y, H:i (e)" }}</p>
+        <p><b>Total rows</b>: {{ object.numrows }}</p>
+        <p><b>Data type</b>: {{ object.datatype }}</p>
+        <p><b>URI base</b>: {{ object.uri_base }}</p>
+        <p><b>Format</b>: {{ object.format }} ({{ object.delimiter }})</p>
+        {% if object.mapbox_id %}
+          <p class="form-value"><b>MapBox ID</b>: {{ object.mapbox_id }}</p>
+          <p class="hidden editing"><b>MapBox ID</b>: {{ form.mapbox_id }}</p>
+        {% endif %}
+        <p><b>Status</b>: {{ object.status }}</p>
+        <p><b>Columns</b>: {{ object.header }}</p>
+        <input class="btn btn-primary hidden" type="submit" value="Save" />
+        <hr/>
+        <h5 class="text-secondary">Counts <small>( initial, <span class="bg-danger text-white small">&nbsp;added </span>&nbsp;)</small></h5>
+        <p><b>Names</b>: {{ num_names }}</p>
+        <p><b>Links</b>:
+          {{ num_links }}, <span class="text-white bg-danger">&nbsp;{{ links_added }}&nbsp;</span></p>
+        <p><b>Geometries</b>: {{ num_geoms }}, <span class="text-white bg-danger">&nbsp;{{ geoms_added }}&nbsp;</span></p>
+      </div>
+      </form>
+    </div>
+    <div class="tab-pane" id="browse" role="tabpanel" aria-labelledby="browse-tab">
+      <h5>Browse</h5>
+    </div>
+    <div class="tab-pane" id="sharing" role="tabpanel" aria-labelledby="settings-tab">
+      <form id="sharing_form" method="POST" action="{% url 'datasets:collab-add' dsid=object.id %}" enctype="multipart/form-data">
+      {% csrf_token %}
+      <h5 class="text-secondary">Sharing</h5>
+      <div class="sharing-box mb-3">
+        <div class="sharing-header">Collaborators
+          {% if object.owner.id == user.id or user.is_superuser %}
+          <!--<span class="float-right small mr-2">-->
+          <span class="sharing-input float-right input-group">
+            <input type="text" class="form-control input-sm" name="username" placeholder="Enter username">
+            <div class="input-group-append">
+              <button class="btn btn-sm btn-outline-secondary" type="submit">Add</button>
+            </div>
+          </span>
+          {% endif %}
+        </div>
+        <ul id="collabs_list">
+          {% for c in collab %}<li>{{ c.user }} ({{ c.role }})
+          {% if object.owner.id == user.id or user.is_superuser %}
+          <span class="float-right mr-2">
+            <a href="{% url 'datasets:collab-delete' uid=c.id dsid=object.id %}">
+            {%fontawesome_icon 'times-circle' color='#336699'%}</a>
+          </span>{% endif %}
+          </li>{% endfor %}
+        </ul>
+        {% if messages %}{% for message in messages %}
+          <i style="display:block;" class="text-danger ml-4 mb-2">{{ message }}</i>
+        {%endfor%}{% endif %}            
+      </div>
+      </form>
+    </div>
+    <div class="tab-pane" id="reconciliation" role="tabpanel" aria-labelledby="profile-tab"><h5>Reconciliation</h5></div>
+  </div>
+</div>
+
+<script type="text/javascript">
+  $(function(){
+     $("html,body").scrollTop(0);
+    // Javascript to enable link to tab
+    var url = document.location.toString();
+    if (url.match('#')) {
+      tab = url.split('#')[1]
+      $('.nav-tabs a[href="#' + tab+ '"]').tab('show');
+    } 
+    // Change hash for page-reload
+    $('.nav-tabs a').on('shown.bs.tab', function (e) {
+      if(!(e.target.hash=="#summary")){
+        window.location.hash = e.target.hash;
+      } else {
+        window.location.hash = '';
+        console.log('clicked summary tab')
+      }
+      console.log('window.location.hash',window.location.hash)
+      console.log('e.target.hash',e.target.hash)
+    })
+    
+    // TODO: reload should NOT be necessary
+    <!--location.reload();-->
+    console.log('dataset id: {{ object.id }}')
+    updateTotals('{{ object.id }}')
+    steps={"uploaded":1,"reconciling":2,"review_hits":3,"reviewed":4,"review_whg":5,"indexed":6}
+    $("[ref="+steps['{{ object.status }}']+"]").addClass('prog-active')
+
+    $("#collabs_list a").click(function(){
+      console.log($(this).data('uid'))
+    })   
+    $(".help-matches").click(function(){
+      page=$(this).data('id')
+      $('.selector').dialog('open');
+    })
+    $(".selector").dialog({
+      resizable: false,
+      autoOpen: false,
+      height: 600,
+      width: 700,
+      title: "WHG Help",
+      modal: true,
+      buttons: { 'Close': function() {$(this).dialog('close');} },
+      open: function(event, ui) {
+        $('#helpme').load('/media/help/'+page+'.html');
+      },
+      show: {effect: "fade",duration: 400 },
+      hide: {effect: "fade",duration: 400 }
+    });
+  })
+  function updateTotals(dsid){
+    $.get("/search/updatecounts",{ds_id: dsid},
+      function(data){
+        updates=data
+        for(u in updates){
+          html1='';html2='';html3='';
+          <!--console.log(updates[u])-->
+          html1+=updates[u]['pass1']
+          html2+=updates[u]['pass2']
+          html3+=updates[u]['pass3']
+          $("#"+u+'_1').html(html1)
+          $("#"+u+'_2').html(html2)
+          $("#"+u+'_3').html(html3)
+        }
+      }
+    )
+  }
+  $("[rel='tooltip']").tooltip();
+
+  $(".edit-name").click(function() {
+    <!--$(".hidden").toggle()-->
+    $(".editing-name").toggleClass("hidden")
+    $(".form-name").toggleClass("hidden")
+    $(".btn").toggleClass("hidden")
+  })
+  $(".edit-description").click(function() {
+    <!--$(".hidden").toggle()-->
+    $(".editing-description").toggleClass("hidden")
+    $(".form-description").toggleClass("hidden")
+    $(".btn").toggleClass("hidden")
+  })
+
+  $(".confirm-del-geoms").click(function(){
+    return confirm('DANGER! Deletes all place_geom records created so far in Review step');
+  })
+  $(".confirm-del-all").click(function(){
+    id=$(this).data('id')
+    return confirm('DANGER! Destroys task, its hits, and clears matches confirmed in Review step...'+id);
+  })
+</script>
+{% endblock %}
