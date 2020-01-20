@@ -70,7 +70,7 @@ class PlaceViewSet(viewsets.ModelViewSet):
         qs = Place.objects.all()
         query = self.request.GET.get('q')
         ds = self.request.GET.get('ds')
-        print('GET.get from PlaceViewSet()',self.request.GET)
+        #print('GET.get from PlaceViewSet()',self.request.GET)
         #f = self.request.GET.get('f')
         for key, value in self.request.GET.items():
             print('foo',key, value)

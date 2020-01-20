@@ -19,63 +19,100 @@
 <div id="dataset_content" class="container mt-1 px-1">
   <!-- Title + nav tabs -->
   <ul class="nav nav-tabs" id="dataset_tabs" role="tablist">
-    <span class="ds-title ml-1 mr-3">{{ object.name }}</span>
+    <span class="ds-title ml-1 mr-3">{{ ds.name }}</span>
     <li class="nav-item">
-      <a class="nav-link active" id="summary-tab" data-toggle="tab" href="#summary" role="tab" aria-controls="home" aria-selected="true">Metadata</a>
+      <a class="nav-link active" id="summary-tab" data-toggle="tab" href="#summary" role="tab" aria-controls="summary" aria-selected="true">Metadata</a>
     </li>
     <li class="nav-item">
-      <a class="nav-link" id="browse-tab" data-toggle="tab" href="#browse" role="tab" aria-controls="profile" aria-selected="false">Browse</a>
+      <a class="nav-link" id="browse-tab" data-toggle="tab" href="#browse" role="tab" aria-controls="browse" aria-selected="false">Browse</a>
     </li>
     <li class="nav-item">
-      <a class="nav-link" id="reconciliation-tab" data-toggle="tab" href="#reconciliation" role="tab" aria-controls="profile" aria-selected="false">Reconciliation</a>
+      <a class="nav-link" id="reconciliation-tab" data-toggle="tab" href="#reconciliation" role="tab" aria-controls="reconciliation" aria-selected="false">Reconciliation</a>
     </li>
     <li id="addtask_li" class="nav-item hidden">
-      <a class="nav-link" id="addtask-tab" data-toggle="tab" href="#addtask" role="tab" aria-controls="profile" aria-selected="false">Add reconciliation task</a>
+      <a class="nav-link" id="addtask-tab" data-toggle="tab" href="#addtask" role="tab" aria-controls="addtask" aria-selected="false">Add reconciliation task</a>
     </li>
     <li class="nav-item">
-      <a class="nav-link" id="sharing-tab" data-toggle="tab" href="#sharing" role="tab" aria-controls="messages" aria-selected="false">Sharing</a>
+      <a class="nav-link" id="sharing-tab" data-toggle="tab" href="#sharing" role="tab" aria-controls="sharing" aria-selected="false">Sharing</a>
     </li>
   </ul>
   <!-- Tab panes -->
   <div class="tab-content">
-    <div class="tab-pane active" id="summary" role="tabpanel" aria-labelledby="summary-tab">
+    <div id="summary" class="tab-pane active" role="tabpanel" aria-labelledby="summary-tab">
       <form id="ds_form" method="POST" action="#" enctype="multipart/form-data">
       {% csrf_token %}
       <div class="row">
-      <div id="ds_details" class="col-sm-7 small">
-        <p><b>Name</b>: 
-          <span class="form-name bigger strong text-danger">{{ object.name }}</span>
-          <span class="hidden editing-name">{{ form.name }}</span>
-          &nbsp;<span class="edit-name small"><a href="#">{% fontawesome_icon 'edit' color='#336699' %}</a></span>
-        </p>
-        <p><b>Description</b>: 
-          <span class="form-description">{{ object.description }}</span>
+      <div id="ds_details" class="col-sm-8 small">
+        <table id="ds_metadata">
+          <tr>
+            <td><b>Title</b></td>
+            <td><span class="form-name bigger strong text-danger">{{ ds.name }}</span>
+              <span class="hidden editing-name">{{ form.name }}</span>&nbsp;
+              <span class="edit-name small"><a href="#">{% fontawesome_icon 'edit' color='#336699' %}</a></span>
+            </td>
+          </tr>
+          <tr>
+            <td style="vertical-align:top;"><b>Description</b></td>
+            <td><span class="form-description">{{ ds.description }}</span>
           <span class="hidden editing-description">{{ form.description }}</span>
           &nbsp;<span class="edit-description small"><a href="#">{% fontawesome_icon 'edit' color='#336699' %}</a></span>
-        </p>
-        <p><b>IDs</b> (label/number): 
-          <span class="text-danger">{{ object.label }}</span>/<span class="text-danger">{{ object.id }}</span>
-        </p>
-        <p><b>File</b>: {{ object.file }}</p>
-        <p><b>Date</b>: {{ object.upload_date|date:"d-M-Y, H:i (e)" }}</p>
-        <p><b>Total rows</b>: {{ object.numrows }}</p>
-        <p><b>Data type</b>: {{ object.datatype }}</p>
-        <p><b>URI base</b>: {{ object.uri_base }}</p>
-        <p><b>Format</b>: {{ object.format }} ({{ object.delimiter }})</p>
-        {% if object.mapbox_id %}
-          <p class="form-value"><b>MapBox ID</b>: {{ object.mapbox_id }}</p>
-          <p class="hidden editing"><b>MapBox ID</b>: {{ form.mapbox_id }}</p>
-        {% endif %}
-        <p><b>Status</b>: {{ object.status }}</p>
-        <p><b>Columns</b>: {{ object.header }}</p>
+            </td>
+          </tr>
+          <tr>
+            <td><b>ID / label</b></td>
+            <td>{{ ds.id }} / {{ ds.label }}
+            </td>
+          </tr>
+          <tr>
+            <td><b>File</b></td>
+            <td>{{ ds.file }}</td>
+          </tr>
+          <tr>
+            <td><b>Uploaded</b></td>
+            <td>{{ ds.upload_date|date:"d-M-Y, H:i (e)" }}</td>
+          </tr>
+          <tr>
+            <td><b>Data type</b></td>
+            <td>{{ ds.datatype }}</td>
+          </tr>
+          <tr>
+            <td><b>URI base</b></td>
+            <td>{{ ds.uri_base }}</td>
+          </tr>
+          <tr>
+            <td><b>Format</b></td>
+            <td>{{ ds.format }} {% if ds.format == 'delimited' %}({{ ds.delimiter }}){%endif%}</td>
+          </tr>
+          {% if ds.format == 'delimited' %}
+          <tr>
+            <td><b>Columns</b></td>
+            <td>{{ ds.header }}</td>
+          </tr>
+          {% endif %}
+          {% if ds.mapbox_id %}
+          <tr>
+            <td><b>MapBox ID</b></td>
+            <td><p class="form-value"><b>MapBox ID</b>: {{ ds.mapbox_id }}</p>
+                <p class="hidden editing"><b>MapBox ID</b>: {{ form.mapbox_id }}</p></td>
+          </tr>
+          {% endif %}
+        </table>
         <input class="btn btn-primary hidden" type="submit" value="Save" />
       </div>
-      <div id="ds_stats" class="col-sm-5 small">
-        <h5 class="text-secondary">Counts <small>( initial, <span class="bg-danger text-white small">&nbsp;added </span>&nbsp;)</small></h5>
-        <p><b>Names</b>: {{ num_names }}</p>
-        <p><b>Links</b>:
-          {{ num_links }}, <span class="text-white bg-danger">&nbsp;{{ links_added }}&nbsp;</span></p>
-        <p><b>Geometries</b>: {{ num_geoms }}, <span class="text-white bg-danger">&nbsp;{{ geoms_added }}&nbsp;</span>        
+      <div id="ds_stats" class="col-sm-4 small">
+        <!--<h6 class="text-secondary">Statistics <small>( initial, <span class="bg-danger text-white small">&nbsp;added </span>&nbsp;)</small></h6>-->
+        <table style="width:100%">
+          <tr><td class="pb-4"><b>Status</b></td><td class="pb-4">{{ ds.status }}</td><td class="pb-4"></td></tr>
+          <tr><th></th><th>count</th><th>added</th></tr>
+          <tr><td><b>Rows</b></td><td>{{ ds.numrows }}</td><td></td></tr>
+          <tr><td><b>Names</b></td><td>{{ num_names }}</td><td></td></tr>
+          <tr>
+            <td><b>Links</b></td><td>{{ num_links }}</td>
+            <td><span class="text-white bg-danger">&nbsp;{{ links_added }}&nbsp;</span></td></tr>
+          <tr>
+            <td><b>Geometries</b></td><td>{{ num_geoms }}</td>
+            <td><span class="text-white bg-danger">&nbsp;{{ geoms_added }}&nbsp;</span></td></tr>
+        </table>
       </div>
       </div> <!-- row -->
       </form>
@@ -90,11 +127,8 @@
               </div>
               <!-- row detail in 2 columns, populated with getPlace() -->
               <div id="row_detail" class="row">
-                <div id="detail_left" class="small col-sm-6">
-                </div>
-                <div id="detail_right" class="small col-sm-6">
-                  <p>right side</p>
-                </div>
+                <div id="detail_left" class="small col-sm-6">left side</div>
+                <div id="detail_right" class="small col-sm-6">right side</div>
               </div>
             </div> <!-- drftable_detail -->
             <div id="drftable_list" class="col-sm-6">
@@ -123,30 +157,37 @@
         </div>
       </div> <!-- ext_site -->
     </div> <!-- browse -->
-    <div class="tab-pane" id="reconciliation" role="tabpanel" aria-labelledby="reconciliation-tab">
+    <div id="reconciliation" class="tab-pane" role="tabpanel" aria-labelledby="reconciliation-tab">
       <div id="ds_tasks" class="small">
         <h6 class="">Reconciliation Tasks 
           <span class="small help-matches" data-id="reconciliation">
             {% fontawesome_icon 'question-circle' color='#993333' %}</span>
-          {% if object.owner.id == user.id or user.is_superuser %}
-            <span class="float-right half"><a id="addtask_link" href="#" >Add</a>
-            <a href="{% url 'datasets:dataset_recon' object.id %}" class="ml-5">
-            add task {% fontawesome_icon 'plus-square' color='#336699' %}</a>
-          </span>{% endif %}
+          {% if ds.owner.id == user.id or user.is_superuser %}
+          <span class="float-right small">
+            <a id="addtask_link" href="#" >Add new task {% fontawesome_icon 'plus-square' color='#336699' %}</a>
+            <!--<a href="{ url 'datasets:dataset_recon' ds.id %}" class="ml-5"> </a>-->
+          </span>
+          {% endif %}
         </h6>
-        {% if object.owner.id == user.id or user.is_superuser or user in users %}
+        {% if ds.owner.id == user.id or user.is_superuser or user in users %}
         {% for t in tasks %}
         <div class="task-box">
           <!-- TODO: display bounds used if any -->
           <!--{ t.task_kwargs|parsejson:"bounds" }}-->
           <div class="row">
-            <div class="col-sm-9">
+            <div class="col-sm-5">
               <p><b>Task</b>: {{ t.task_name }} <span class="small">
                 ({{ t.date_done|date:"d-M-Y, H:i (e)" }}; elapsed: {{ t.result|get:"elapsed"|safe }})</span>
               </p>
               <p><b>ID</b>: {{ t.task_id }}</p>
-                 <!-- TODO: confirm, select which to delete -->
-              {{ t.result.hits }}
+              <p class="small">
+                 <a class="confirm-del-all" data-id={{t.task_id}} href="{% url 'datasets:task-delete' tid=t.task_id scope='task' %}">
+                   Delete task & hits, clear matches {% fontawesome_icon 'trash' color='#ff0000' %}</a><br/>
+                   <a class="confirm-del-geoms" href="{% url 'datasets:task-delete' tid=t.task_id scope='geoms'%}">
+                  Delete geometries added so far</a>
+              </p>
+            </div>
+            <div class="col-sm-5">
               <p><b>Result</b>: {{ t.result|get:"got_hits"|safe }} records (of
                   {{ t.result|get:"count"|safe }}) got total of <b>{{ t.result|get:"total"|safe }}</b> hits</p>
               <p id="latest"></p>
@@ -154,34 +195,26 @@
                 <li><i>Pass 1</i>
                   {% if t.result|get:"pass1" > 0 %}
                   <i>remaining</i>: <span class="strong" id='{{t.task_id}}_1'>nn</span> 
-                  <a href="{% url 'datasets:review' pk=object.id tid=t.task_id passnum='pass1' %}">
+                  <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass1' %}">
                    review</i></a>{% endif %}
                 </li>
                 <li><i>Pass 2</i>
                   {% if t.result|get:"pass2" > 0 %}
                   <i>remaining</i>: <span class="strong" id='{{t.task_id}}_2'>nn</span> 
-                  <a href="{% url 'datasets:review' pk=object.id tid=t.task_id passnum='pass2' %}">
+                  <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass2' %}">
                    review</i></a>{% endif %}
                 </li>
                 {% if t.task_name != 'align_wd' %}
                 <li><i>Pass 3</i>
                   {% if t.result|get:"pass3" > 0 %}
                   <i>remaining</i>: <span class="strong" id='{{t.task_id}}_3'>nn</span> 
-                  <a href="{% url 'datasets:review' pk=object.id tid=t.task_id passnum='pass3' %}">
+                  <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass3' %}">
                    review</i></a>{% endif %}
                 </li>
                 {% endif %}
-              </ul>
-              <!--{# if user.is_superuser %}-->
-              <p class="small">
-                 <a class="confirm-del-all" data-id={{t.task_id}} href="{% url 'datasets:task-delete' tid=t.task_id scope='task' %}">
-                   Delete task & hits, clear matches {% fontawesome_icon 'trash' color='#ff0000' %}</a><br/>
-                   <a class="confirm-del-geoms" href="{% url 'datasets:task-delete' tid=t.task_id scope='geoms'%}">
-                  Delete geometries added so far</a>
-              </p>
-              <!--{# endif %}-->
+              </ul>            
             </div>
-            <div class="col-sm-3">
+            <div class="col-sm-2">
               {% if t.task_name == 'align_wd' %}
                 <img src="{% static 'images/Wikidata-logo-en.svg'%}" width="80"/>
               {% elif t.task_name == 'align_tgn' %}
@@ -196,13 +229,14 @@
         {% endif %}
       </div>
     </div>
-    <div class="tab-pane" id="sharing" role="tabpanel" aria-labelledby="sharing-tab">
-      <form id="sharing_form" method="POST" action="{% url 'datasets:collab-add' dsid=object.id %}" enctype="multipart/form-data">
+    <div id="sharing" class="tab-pane" role="tabpanel" aria-labelledby="sharing-tab">
+      object: {{ object }}
+      <form id="sharing_form" method="POST" action="{% url 'datasets:collab-add' dsid=ds.id %}" enctype="multipart/form-data">
       {% csrf_token %}
       <h5 class="text-secondary">Sharing</h5>
       <div class="sharing-box mb-3">
         <div class="sharing-header">Collaborators
-          {% if object.owner.id == user.id or user.is_superuser %}
+          {% if ds.owner.id == user.id or user.is_superuser %}
           <!--<span class="float-right small mr-2">-->
           <span class="sharing-input float-right input-group">
             <input type="text" class="form-control input-sm" name="username" placeholder="Enter username">
@@ -214,9 +248,9 @@
         </div>
         <ul id="collabs_list">
           {% for c in collab %}<li>{{ c.user }} ({{ c.role }})
-          {% if object.owner.id == user.id or user.is_superuser %}
+          {% if ds.owner.id == user.id or user.is_superuser %}
           <span class="float-right mr-2">
-            <a href="{% url 'datasets:collab-delete' uid=c.id dsid=object.id %}">
+            <a href="{% url 'datasets:collab-delete' uid=c.id dsid=ds.id %}">
             {%fontawesome_icon 'times-circle' color='#336699'%}</a>
           </span>{% endif %}
           </li>{% endfor %}
@@ -227,142 +261,153 @@
       </div>
       </form>
     </div>
-    <div class="tab-pane" id="addtask" role="tabpanel" aria-labelledby="addtask-tab">
-
-  <form action="{% url 'datasets:dataset_recon' object.id %}" method="POST">
-  {% csrf_token %}
-  {% if object.owner.id == user.id or user.is_superuser %}
-  <div class="row"> <!-- page-wide -->
-    <div id="recon_form" class="col-md-6">
-      <div id="recon_form">
-        <input type="hidden" name="ds" value="{{ object.id }}">
-        {% if user.is_superuser %}
-        <div class="form-check text-danger">
-          <label class="form-check-label" for="auth1">
-            <input type="radio" class="form-check-input" id="auth1"
-              name="recon" value="whg">WHG Index (whg)
-          </label>
-        </div>
-        <hr/>
-        {% endif %}
-        <p class="font-weight-bold">Authority name source</p>
-        <div class="form-check">
-          <label class="form-check-label" for="auth2">
-            <input type="radio" class="form-check-input" id="auth2"
-              name="recon" value="tgn" checked>Getty TGN (tgn)
-          </label>
-        </div>
-        <div class="form-check">
-          <label class="form-check-label" for="auth4">
-            <input type="radio" class="form-check-input" id="auth4"
-              name="recon" value="wd" >Wikidata (wd)<span class="ml-2 text-danger"><i>1+ seconds per record</i></span>
-          </label>
-        </div>
-        <div class="form-check">
-          <label class="form-check-label text-muted" for="auth3">
-            <input type="radio" class="form-check-input" id="auth3"
-              name="recon" value="dbp" disabled>DBpedia (dbp)
-          </label>
-        </div>
-        <div class="form-check">
-          <label class="form-check-label text-muted" for="auth5">
-            <input type="radio" class="form-check-input" id="auth5"
-              name="recon" value="gn" disabled>GeoNames (gn)
-          </label>
-        </div>
-      </div>
-      {% if request.method == 'GET' %}
-      <div id="geo-constraint" class="mt-2">
-        <hr/>
-        <div class="mb-2">
-          <p class="font-weight-bold">Geographic constraint</p>
-          <p>
-            <select id="select_region" name="region" class="custom-select-sm" style="width:auto;">
-              <option value="0">Select pre-defined region</option>
-              <option disabled>___________</option>
-              {% for r in context.region_list %}
-                <option value="{{ r.id }}">{{ r.title }}</option>
-              {% endfor %}
-            </select><span class="ml-2"><b>or...</b></span></p>
-          <p>
-            <select id="select_userarea" name="userarea" class="custom-select-sm" style="width:auto;">
-              <option value="0" selected="selected">Select user-defined study area</option>
-              <option disabled>___________</option>
-              {% for a in context.area_list %}
-                  <option value="{{ a.id }}">{{ a.title }}</option>
-              {% endfor %}
-              <option value="create">{ new }</option>
-            </select>
-          <span class="ml-2 small">
-            <a href="{% url 'areas:area-create' %}?next={% url 'datasets:dataset_recon' object.id %}">create user area</a>
-          </span></p>
-          <p><input type="text" disabled id="search_region" name="search_region" value="" placeholder="Search region data (future)"/></p>
-        </div>
-      </div>
-      <div class="bottom">
-        <hr/>
-        <button type="submit" class="btn btn-primary">Start</button>
-        <span title="back"><a href="javascript:history.back()">Cancel</a></span>
-        <span id="q_accept" class="ml-3 small">
-          <input id="accept_geom" name="geom" type="checkbox" checked="checked"/> accept geometries in matches
-      <span class="help-matches" data-id="accept-geometry">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
-        </span>
-      </div>
+    <div id="addtask" class="tab-pane" role="tabpanel" aria-labelledby="addtask-tab">
+      <form action="{% url 'datasets:dataset_recon' ds.id %}" method="POST">
+      {% csrf_token %}
+      {% if ds.owner.id == user.id or user.is_superuser %}
+      <div class="row"> <!-- page-wide -->
+        <div id="recon_form" class="col-md-6">
+          <input type="hidden" name="ds" value="{{ ds.id }}">
+          {% if user.is_superuser %}
+          <div class="form-check text-danger">
+            <label class="form-check-label" for="auth1">
+              <input type="radio" class="form-check-input" id="auth1"
+                name="recon" value="whg">WHG Index (whg)
+            </label>
+          </div>
+          <hr/>
+          {% endif %}
+          <p class="font-weight-bold">Authority name source</p>
+          <div class="form-check">
+            <label class="form-check-label" for="auth2">
+              <input type="radio" class="form-check-input" id="auth2"
+                name="recon" value="tgn" checked>Getty TGN (tgn)
+            </label>
+          </div>
+          <div class="form-check">
+            <label class="form-check-label" for="auth4">
+              <input type="radio" class="form-check-input" id="auth4"
+                name="recon" value="wd" >Wikidata (wd)<span class="ml-2 text-danger"><i>1+ seconds per record</i></span>
+            </label>
+          </div>
+          <div class="form-check">
+            <label class="form-check-label text-muted" for="auth3">
+              <input type="radio" class="form-check-input" id="auth3"
+                name="recon" value="dbp" disabled>DBpedia (dbp)
+            </label>
+          </div>
+          <div class="form-check">
+            <label class="form-check-label text-muted" for="auth5">
+              <input type="radio" class="form-check-input" id="auth5"
+                name="recon" value="gn" disabled>GeoNames (gn)
+            </label>
+          </div>
+          {% if request.method == 'GET' %}
+          <div id="geo-constraint" class="mt-2">
+            <hr/>
+            <div class="mb-2">
+              <p class="font-weight-bold">Geographic constraint</p>
+              <p>
+                <select id="select_region" name="region" class="custom-select-sm" style="width:auto;">
+                  <option value="0">Select pre-defined region</option>
+                  <option disabled>___________</option>
+                  {% for r in context.region_list %}
+                    <option value="{{ r.id }}">{{ r.title }}</option>
+                  {% endfor %}
+                </select><span class="ml-2"><b>or...</b></span></p>
+              <p>
+                <select id="select_userarea" name="userarea" class="custom-select-sm" style="width:auto;">
+                  <option value="0" selected="selected">Select user-defined study area</option>
+                  <option disabled>___________</option>
+                  {% for a in context.area_list %}
+                      <option value="{{ a.id }}">{{ a.title }}</option>
+                  {% endfor %}
+                  <option value="create">{ new }</option>
+                </select>
+              <span class="ml-2 small">
+                <a href="{% url 'areas:area-create' %}?next={% url 'datasets:dataset_recon' ds.id %}">create user area</a>
+              </span></p>
+              <p><input type="text" disabled id="search_region" name="search_region" value="" placeholder="Search region data (future)"/></p>
+            </div>
+          </div>
+          <div class="bottom">
+            <hr/>
+            <button type="submit" class="btn btn-primary">Start</button>
+            <span title="back"><a href="javascript:history.back()">Cancel</a></span>
+            <span id="q_accept" class="ml-3 small">
+              <input id="accept_geom" name="geom" type="checkbox" checked="checked"/> accept geometries in matches
+          <span class="help-matches" data-id="accept-geometry">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
+            </span>
+          </div>
+          {% endif %}
+        </div> <!-- recon_form -->
+        <div id="recon_result" class="col-md-6 p-tight py-2 dashedbox">
+          {% if context.response and context.response != 'snap!' %}
+            <div>
+            <p class="text-warning">{ TODO: progress bar }</p>
+            <p><b>Authority</b>: {{ context.authority }}</p>
+            <p><b>Task ID</b>: {{ context.task_id }}</p>
+            <p class="mb-3"><b>Result summary</b>:
+              {{ context.result }}    </p>
+            <a href="{% url 'datasets:dataset-detail' id=ds.pk %}">
+              <input class="btn btn-sm btn-outline-primary" type="text" value="Return to Dataset"/></a>
+            <!-- TODO: refactor this; direct to first non-zero pass -->
+            {% if context.result.pass1 > 0 %}
+              <a href="{% url 'datasets:review' pk=ds.pk tid=context.task_id passnum='pass1' %}">
+            {% elif context.result.pass2 > 0 %}
+              <a href="{% url 'datasets:review' pk=ds.pk tid=context.task_id passnum='pass2' %}">
+            {% else %}
+              <a href="{% url 'datasets:review' pk=ds.pk tid=context.task_id passnum='pass3' %}">
+            {% endif %}
+            <input class="btn btn-sm btn-outline-primary" type="text" value="Review Hits"/>
+            </a></div>
+          {% elif context.response == 'snap!' %}
+            <div><p>{{ context.result }}</p>
+            <p><a href="javascript:history.back()">Return to dataset portal</a></p></div>
+          {% endif %}
+          {% if request.method == 'GET' %}
+          <div id="mapdiv_recon" class="mt-2">
+            {% leaflet_map "map_recon" callback="map_init2" %}
+          </div>
+          {% endif %}
+        </div> <!-- recon_result -->
+      </div> <!-- row -->
+      {% else %}
+      <div><p class="pl-3 text-danger"><b>Sorry, as you are not the dataset owner, initiating reconciliation tasks for it is not possible.</b></p></div>
       {% endif %}
-    </div>
-    <div id="recon_result" class="col-md-6 p-tight py-2 dashedbox">
-      {% if context.response and context.response != 'snap!' %}
-        <div>
-        <p class="text-warning">{ TODO: progress bar }</p>
-        <p><b>Authority</b>: {{ context.authority }}</p>
-        <p><b>Task ID</b>: {{ context.task_id }}</p>
-        <p class="mb-3"><b>Result summary</b>:
-          {{ context.result }}    </p>
-        <a href="{% url 'datasets:dataset-detail' id=object.pk %}">
-          <input class="btn btn-sm btn-outline-primary" type="text" value="Return to Dataset"/></a>
-        <!-- TODO: refactor this; direct to first non-zero pass -->
-        {% if context.result.pass1 > 0 %}
-          <a href="{% url 'datasets:review' pk=object.pk tid=context.task_id passnum='pass1' %}">
-        {% elif context.result.pass2 > 0 %}
-          <a href="{% url 'datasets:review' pk=object.pk tid=context.task_id passnum='pass2' %}">
-        {% else %}
-          <a href="{% url 'datasets:review' pk=object.pk tid=context.task_id passnum='pass3' %}">
-        {% endif %}
-        <input class="btn btn-sm btn-outline-primary" type="text" value="Review Hits"/>
-        </a></div>
-      {% elif context.response == 'snap!' %}
-        <div><p>{{ context.result }}</p>
-        <p><a href="javascript:history.back()">Return to dataset portal</a></p></div>
-      {% endif %}
-      {% if request.method == 'GET' %}
-      <div id="mapdiv_recon" class="mt-2">
-        {% leaflet_map "map_recon" callback="map_init2" %}
-      </div>
-      {% endif %}
-    </div> <!-- recon_result -->
-  </div> <!-- row -->
-  {% else %}
-  <div><p class="pl-3 text-danger"><b>Sorry, because you are not the dataset owner, initiating reconciliation tasks for it is not possible.</b></p></div>
-  {% endif %}
-  </form>
-  <div class="selector py-3"><div id="helpme"><div></div>
-    
-    </div>
-  </div>
+      </form>
+        <div class="selector py-3"><div id="helpme"></div></div>
+      </div> <!-- .row -->
+    </div> <!-- #addtask -->
+  </div> <!-- .tab-content -->
 </div>
+
 <!--
 js for Summary, Reconciliation
 -->
 <script type="text/javascript">
   $(function(){
+    // manage url
+    var url = document.location.toString();
+    console.log('url, context on load',url,"{{context}}".length)
+    if (url.match('#')) {
+      tab = url.split('#')[1]
+      $('.nav-tabs a[href="#' + tab+ '"]').tab('show');
+    } else if ("{{context}}".length > 0){
+      taburl = location.protocol+'//'+location.host+'/datasets/'+'{{ds.id}}'+'/detail#reconciliation'
+      $('.nav-tabs a[href="#reconciliation"]').tab('show');
+      location.href=taburl
+    }
+    
     // start Browse onload js
     window.spinner = new Spin.Spinner().spin();
     $("#map").append(spinner.el);
     
-    window.dslabel = "{{ object.label }}"
+    window.dslabel = "{{ ds.label }}"
     window.table = $('#placetable').DataTable({
       "serverSide": true,
-      "ajax": "/api/places/?format=datatables&ds={{ object.label }}&f={{ filter }}",
+      "ajax": "/api/places/?format=datatables&ds={{ ds.label }}&f={{ filter }}",
+      "ajax": "/api/places/?format=datatables&ds={{ ds.label }}&f={{ filter }}",
       "columns": [
           {"data": "id", "searchable": false},
           {"data": "src_id", "searchable": false},
@@ -376,30 +421,28 @@ js for Summary, Reconciliation
     });
     // end Browse onload js
     
-    $("#addtask_link").click(function(){
-      console.log('open a modal form or unhide tab')
+    $("#addtask_link").click(function(e){
+      <!--console.log('unhide tab',window.location.hash)-->
+      e.preventDefault()
+      window.location.hash = "#addtask"
       $("#addtask_li").removeClass('hidden')
+      <!--$(".nav-tabs").tabs({ active: "#addtask" });-->
       $('.nav-tabs a[href="#addtask"]').tab('show');
       mappyr.invalidateSize()
-    })  
+    })
     <!--$("html,body").scrollTop(0);-->
-    // Javascript to enable link to tab
-    var url = document.location.toString();
-    if (url.match('#')) {
-      tab = url.split('#')[1]
-      $('.nav-tabs a[href="#' + tab+ '"]').tab('show');
-    } 
     // Change hash for page-reload
     $('.nav-tabs a').on('shown.bs.tab', function (e) {
       <!--console.log('e.target.hash',e.target.hash)-->
-      if(!(e.target.hash=="#summary")){
-        window.location.hash = e.target.hash;
-      } else {
-        window.location.hash = '';
-        <!--console.log('clicked summary tab')-->
-      }
+      window.location.hash = e.target.hash;
+      <!--if(!(e.target.hash=="#summary")){-->
+        <!--window.location.hash = e.target.hash;-->
+      <!--} else {-->
+        <!--window.location.hash = '';-->
+        <!--<!--console.log('clicked summary tab')-->-->
+      <!--}-->
       if(e.target.hash=="#reconciliation"){
-        updateTotals('{{ object.id }}')
+        updateTotals('{{ ds.id }}')
       }
       if(e.target.hash=="#browse"){
         mappy.invalidateSize();
@@ -409,9 +452,9 @@ js for Summary, Reconciliation
     // TODO: reload should NOT be necessary
     <!--location.reload();-->
     <!--console.log('dataset id: {{ object.id }}')-->
-    updateTotals('{{ object.id }}')
+    updateTotals('{{ ds.id }}')
     steps={"uploaded":1,"reconciling":2,"review_hits":3,"reviewed":4,"review_whg":5,"indexed":6}
-    $("[ref="+steps['{{ object.status }}']+"]").addClass('prog-active')
+    $("[ref="+steps['{{ ds.status }}']+"]").addClass('prog-active')
 
     $("#collabs_list a").click(function(){
       <!--console.log($(this).data('uid'))-->
@@ -528,31 +571,10 @@ js for Browse
     $("#placetable tbody").find('tr').eq(0).addClass('highlight-row')
     getPlace(pid)
   }
-  
-  $(function() {
-    <!--window.spinner = new Spin.Spinner().spin();-->
-    <!--$("#map").append(spinner.el);-->
-    
-    <!--window.dslabel = "{{ object.label }}"-->
-    <!--window.table = $('#placetable').DataTable({-->
-      <!--"serverSide": true,-->
-      <!--"ajax": "/api/places/?format=datatables&ds={{ object.label }}&f={{ filter }}",-->
-      <!--"columns": [-->
-          <!--{"data": "id", "searchable": false},-->
-          <!--{"data": "src_id", "searchable": false},-->
-          <!--{"data": "title"},-->
-          <!--{"data": "ccodes"},-->
-          <!--<!--{"data": "geom_count","sortable": false},-->-->
-      <!--],-->
-    <!--})-->
-    <!--table.on( 'draw', function () {-->
-      <!--setRowEvents();-->
-    <!--});-->
-  })  
 
   // expose leaflet map for events, call it 'mappy'
   addEventListener('map:init', function (e) {
-    console.log('e.detail',e.detail.id)
+    <!--console.log('e.detail',e.detail.id)-->
     
     var attrib_mb = 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
             '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
@@ -573,7 +595,7 @@ js for Browse
     var baseLayers = {
       "AWMC Terrain": awmc,
       "OSM": osm,
-      "Spine Data": grayscale,
+      <!--"Spine Data": grayscale,-->
       "Satellite": satellite
     };
 
@@ -592,7 +614,7 @@ js for Browse
         hideControlContainer: true
       }).addTo(mappy)
       
-      $.get("/api/geoms", {ds: "{{ object.label }}", f: "{{ filter }}" },
+      $.get("/api/geoms", {ds: "{{ ds.label }}", f: "{{ filter }}" },
         function(data){
           <!--console.log('data, label',data,dslabel)-->
           $("#feature_count").html(data.count+' geometries for {{ ds.numrows }} records')
@@ -646,49 +668,52 @@ js for Browse
     return link
   }
   function renderMap(geom,dslabel){
-    console.log('geom in renderMap',geom)
-    if (geom.features.length==0) {spinner.stop()}
-    
-    geomtype = geom['features'][0]['type']
-    <!--clear out the previous if any-->
-    if(typeof(features)!=='undefined'){
-      mappy.removeLayer(features)
-    }
-    // blue if rivers
-    // TODO: style should depend on #features, zoom level
-    function styler(type) {
-      if (type == 'MultiLineString')
-        return {opacity: 1, weight: 1, color: "#336699"}
-      else if (type == 'Point')
-        return {radius: 2, fillOpacity: 0.8, opacity: 1, stroke: false, fillColor:"#ff0000"}
-      else
-        return {fillOpacity: 0.4, opacity: 1, color: "#fff", weight: 1, fillColor:"#993333"}
-    }
-    idToFeature = {}  // for feature lookup
-    features = L.geoJSON(geom, {
-    // TODO: 
-      style: styler(geomtype),
-      pointToLayer: function (feature, latlng) {
-        <!--console.log('feature in renderMap()',feature)-->
-        matchid = feature.place_id_id
-        <!--console.log('matchid',matchid)-->
-        marker = L.circleMarker(latlng).bindPopup('pid: '+matchid);
-     
-        idToFeature[matchid] = marker
-        return marker
+    <!--console.log('geom in renderMap',geom)-->
+    if (geom.features.length==0) {
+      <!--console.log(geom.features)-->
+      spinner.stop()
+    } else {
+      geomtype = geom.features[0]['type']
+      <!--clear out the previous if any-->
+      if(typeof(features)!=='undefined'){
+        mappy.removeLayer(features)
       }
-      ,onEachFeature: function(feature,layer) {
-        f=feature; l=layer;
-        <!--console.log('f,l',feature,layer)-->
-        identifier = feature.place_id_id;
-        if(feature.type != 'Point'){
-          <!--layer.setStyle(styles.default)-->
-          idToFeature[identifier] = layer
+      // blue if rivers
+      // TODO: style should depend on #features, zoom level
+      function styler(type) {
+        if (type == 'MultiLineString')
+          return {opacity: 1, weight: 1, color: "#336699"}
+        else if (type == 'Point')
+          return {radius: 2, fillOpacity: 0.8, opacity: 1, stroke: false, fillColor:"#ff0000"}
+        else
+          return {fillOpacity: 0.4, opacity: 1, color: "#fff", weight: 1, fillColor:"#993333"}
+      }
+      idToFeature = {}  // for feature lookup
+      features = L.geoJSON(geom, {
+      // TODO: 
+        style: styler(geomtype),
+        pointToLayer: function (feature, latlng) {
+          <!--console.log('feature in renderMap()',feature)-->
+          matchid = feature.place_id_id
+          <!--console.log('matchid',matchid)-->
+          marker = L.circleMarker(latlng).bindPopup('pid: '+matchid);
+       
+          idToFeature[matchid] = marker
+          return marker
         }
-      }
-    <!--}).addTo(mappy).then(spinner.stop());-->
-    }).addTo(mappy);
-    <!--}).addTo(mappy)-->
+        ,onEachFeature: function(feature,layer) {
+          f=feature; l=layer;
+          <!--console.log('f,l',feature,layer)-->
+          identifier = feature.place_id_id;
+          if(feature.type != 'Point'){
+            <!--layer.setStyle(styles.default)-->
+            idToFeature[identifier] = layer
+          }
+        }
+      <!--}).addTo(mappy).then(spinner.stop());-->
+      }).addTo(mappy);
+      <!--}).addTo(mappy)-->    
+    }
     
     mappy.on('zoomend', function() {
         var currentZoom = mappy.getZoom();
@@ -701,7 +726,7 @@ js for Browse
     if (geom['features'].length > 1 && geom['features'][0].type == 'Point') {
       <!--mappy.fitBounds(features.getBounds().pad(1))-->
       mappy.fitBounds(features.getBounds())
-    } else {
+    } else if (geom['features'].length > 0){
       feat0 = geom['features'][0]
       if (feat0.type == 'Point') {
         latlng = L.latLng(
