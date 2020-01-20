@@ -295,9 +295,9 @@ def dataset_recon(request, pk):
   context['region_list'] = predefined
 
   if request.method == 'GET':
-    print('request:',request)
+    print('recon request.GET:',request.GET)
   elif request.method == 'POST' and request.POST:
-    print('request.POST:',request.POST)
+    print('recon request.POST:',request.POST)
     # TODO: has this dataset/authority been done before?
     auth = request.POST['recon']
     # what task?
@@ -316,7 +316,7 @@ def dataset_recon(request, pk):
       print('Celery is down :^(')
       context['response'] = 'snap!'
       context['result'] = "Sorry! The reconciliation task manager is down; working now to get it running"
-      return render(request, 'datasets/dataset_recon.html', {'ds':ds, 'context': context})
+      return render(request, 'datasets/dataset.html', {'ds':ds, 'context': context})
       
       # run celery/redis tasks e.g. align_tgn, align_whg, align_wd
     try:      
@@ -331,6 +331,7 @@ def dataset_recon(request, pk):
     except:
       print(sys.exc_info())
 
+    context['hash'] = "#reconciliation"
     context['task_id'] = result.id
     context['response'] = result.state
     context['dataset id'] = ds.label
@@ -342,10 +343,10 @@ def dataset_recon(request, pk):
     #print(locals())
     ds.status = 'reconciling'
     ds.save()
-    return render(request, 'datasets/dataset_recon.html', {'ds':ds, 'context': context})
+    return render(request, 'datasets/dataset.html', {'ds':ds, 'context': context})
 
-  print('context recon GET',context)
-  return render(request, 'datasets/dataset_recon.html', {'ds':ds, 'context': context})
+  print('context',context)
+  return render(request, 'datasets/dataset.html', {'ds':ds, 'context': context})
 
 def task_delete(request,tid,scope="foo"):
   hits = Hit.objects.all().filter(task_id=tid)
@@ -364,7 +365,7 @@ def task_delete(request,tid,scope="foo"):
   elif scope == 'geoms':
     placegeoms.delete()    
 
-  return redirect('/datasets/'+ds+'/detail')
+  return redirect('/datasets/'+ds+'/detail#reconciliation')
 # remove collaborator from dataset
 def collab_delete(request,uid,dsid):
   get_object_or_404(DatasetUser,user_id_id=uid,dataset_id_id=dsid).delete()
@@ -889,6 +890,7 @@ class DatasetDetailView(UpdateView):
       #context['updates'][tid] = Hit.objects.all().filter(task_id=tid,reviewed=False).count()
     bounds = self.kwargs.get("bounds")
     # print('ds',ds.label)
+    context['ds'] = ds
     context['status'] = ds.status
     context['format'] = ds.format
     context['numrows'] = ds.numrows

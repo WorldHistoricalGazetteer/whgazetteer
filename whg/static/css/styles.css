@@ -201,10 +201,7 @@ input[type="text"] {
   padding-top: 3px;
   border-left: 1px solid #ddd;
   border-right: 1px solid #ddd;
-  /*padding: 5px;*/
-  /*background-color: lightsteelblue;*/
   background-color: white;
-  /*border: 1px solid  #80bfff;*/
   z-index: 600;
 }
 
@@ -350,10 +347,23 @@ em { color: #993333;}
   dataset tabs
 **/
 #ds_details p { margin-bottom: .2rem;}
-.ds-title {padding-top: 7px; font-weight:700; font-size: larger; color: #993333;}
-#ds_tasks { max-height: 80vh; overflow-y:scroll; overflow-x: hidden;
-}
+.ds-title { padding-top: 7px; font-weight:700; font-size: larger; color: grey;}
+#ds_tasks { max-height: 80vh; overflow-y:scroll; overflow-x: hidden; }
+#ds_stats {
+  height: fit-content;
+  border-top: #ddd 1px solid;
+  border-left: #ddd 1px solid;
+  border-right: #999 2px solid;
+  border-bottom: #999 2px solid;
+  padding: 10px;
+  background-color: #fff;
+  margin-top:8px;
+  /*overflow-y:scroll;*/
+  box-shadow: 1px 1px #eee;}
+#ds_stats th { font-weight:400; font-style: italic; }
 #browse { width:100% !important; height:auto !important; }
+#ds_form .row {padding-right:4px;}
+#ds_metadata { width:100%; border-collapse: separate; border-spacing: 1em .4em;}
 
 /**
   dataset browse
