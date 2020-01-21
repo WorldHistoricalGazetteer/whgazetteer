@@ -276,6 +276,7 @@
       <form action="{% url 'datasets:ds_recon' ds.id %}" method="POST">
       {% csrf_token %}
       {% if ds.owner.id == user.id or user.is_superuser %}
+      <!--from context: { area_list }}-->
       <div class="row"> <!-- page-wide -->
         <div id="recon_form" class="col-md-6">
           <input type="hidden" name="ds" value="{{ ds.id }}">
@@ -322,7 +323,7 @@
                 <select id="select_region" name="region" class="custom-select-sm" style="width:auto;">
                   <option value="0">Select pre-defined region</option>
                   <option disabled>___________</option>
-                  {% for r in context.region_list %}
+                  {% for r in region_list %}
                     <option value="{{ r.id }}">{{ r.title }}</option>
                   {% endfor %}
                 </select><span class="ml-2"><b>or...</b></span></p>
@@ -330,7 +331,7 @@
                 <select id="select_userarea" name="userarea" class="custom-select-sm" style="width:auto;">
                   <option value="0" selected="selected">Select user-defined study area</option>
                   <option disabled>___________</option>
-                  {% for a in context.area_list %}
+                  {% for a in area_list %}
                       <option value="{{ a.id }}">{{ a.title }}</option>
                   {% endfor %}
                   <option value="create">{ new }</option>
@@ -338,7 +339,7 @@
               <span class="ml-2 small">
                 <a href="{% url 'areas:area-create' %}?next={% url 'datasets:ds_recon' ds.id %}">create user area</a>
               </span></p>
-              <p><input type="text" disabled id="search_region" name="search_region" value="" placeholder="Search region data (future)"/></p>
+              <!--<p><input type="text" disabled id="search_region" name="search_region" value="" placeholder="Search region data (future)"/></p>-->
             </div>
           </div>
           <div class="bottom">
@@ -532,12 +533,33 @@ js for Summary, Reconciliation
   })
 </script>
 <!--
-js for Add task
+js for Add Task
 -->
 <script type="text/javascript">
-  function map_recon_init(){
-    console.log('map_recon_init()')
+  function render_area(aid) {
+    $.ajax({
+        url: '/api/areas/'+aid
+      }).done(function(data){
+        console.log('render_area()',data)
+        geom = {"type":"FeatureCollecton","features":[]}
+        geom['features'].push(data.geojson)
+        // geom,dslabel,screen
+        renderMap(geom,'area')
+    })
   }
+  // clear dropdown choice if other is used & render geometry
+  $( "#select_region" ).change(function() {
+    $( "#select_userarea option[value=0]" ).prop('selected',true)
+    if ($(this).val() == 0) { features.clearLayers() } else{ render_area( $(this).val(), 'region') }
+  });
+  
+  $( "#select_userarea" ).change(function() {
+    $( "#select_region option[value=0]" ).prop('selected',true)
+    if ($(this).val() == 0) { features.clearLayers() } else{ render_area( $(this).val(), 'area') }
+    if ($( "#select_userarea option[value='create']" ).prop('selected') == true) {
+      location.href="{% url 'areas:area-create' %}?next={% url 'datasets:ds_recon' ds.id %}"
+    }
+  });
 </script>
 <!--
 js for Browse
@@ -633,7 +655,7 @@ js for Browse
           geom = {"type":"FeatureCollection","features":[]}
           geom['features'] = data.results
           if(geom.features.length < 15000) {
-            renderMap(geom,dslabel)
+            renderMap(geom,'browse')
           } else {
             spinner.stop()
             $(".toomany").html('too many features to map (> '+geom.features.length+'), sorry!')
@@ -679,8 +701,10 @@ js for Browse
       ' {% fontawesome_icon 'external-link' color='#336699' %}</a>'
     return link
   }
-  function renderMap(geom,dslabel){
-    <!--console.log('geom in renderMap',geom)-->
+  <!--function renderMap(geom,dslabel,screen){-->
+  function renderMap(geom,screen){
+    console.log('dslabel, geom in renderMap()',screen,geom)
+    mappo = screen == 'browse' ? mappy : mappyr
     if (geom.features.length==0) {
       <!--console.log(geom.features)-->
       spinner.stop()
@@ -688,7 +712,7 @@ js for Browse
       geomtype = geom.features[0]['type']
       <!--clear out the previous if any-->
       if(typeof(features)!=='undefined'){
-        mappy.removeLayer(features)
+        mappo.removeLayer(features)
       }
       // blue if rivers
       // TODO: style should depend on #features, zoom level
@@ -722,9 +746,7 @@ js for Browse
             idToFeature[identifier] = layer
           }
         }
-      <!--}).addTo(mappy).then(spinner.stop());-->
-      }).addTo(mappy);
-      <!--}).addTo(mappy)-->    
+      }).addTo(mappo);
     }
     
     mappy.on('zoomend', function() {
