@@ -177,7 +177,6 @@
           {% if ds.owner.id == user.id or user.is_superuser %}
           <span class="float-right small">
             <a id="addtask_link" href="#" >Add new task {% fontawesome_icon 'plus-square' color='#336699' %}</a>
-            <!--<a href="{ url 'datasets:dataset_recon' ds.id %}" class="ml-5"> </a>-->
           </span>
           {% endif %}
         </h6>
@@ -274,7 +273,7 @@
       </form>
     </div>
     <div id="addtask" class="tab-pane" role="tabpanel" aria-labelledby="addtask-tab">
-      <form action="{% url 'datasets:dataset_recon' ds.id %}" method="POST">
+      <form action="{% url 'datasets:ds_recon' ds.id %}" method="POST">
       {% csrf_token %}
       {% if ds.owner.id == user.id or user.is_superuser %}
       <div class="row"> <!-- page-wide -->
@@ -337,7 +336,7 @@
                   <option value="create">{ new }</option>
                 </select>
               <span class="ml-2 small">
-                <a href="{% url 'areas:area-create' %}?next={% url 'datasets:dataset_recon' ds.id %}">create user area</a>
+                <a href="{% url 'areas:area-create' %}?next={% url 'datasets:ds_recon' ds.id %}">create user area</a>
               </span></p>
               <p><input type="text" disabled id="search_region" name="search_region" value="" placeholder="Search region data (future)"/></p>
             </div>
