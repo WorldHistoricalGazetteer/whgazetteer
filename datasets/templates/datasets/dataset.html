@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="{% static 'css/spin.css' %}"/>
   <link rel="stylesheet" href="//cdn.datatables.net/1.10.16/css/dataTables.bootstrap4.min.css">
 {% endblock %}
-
+{% block title %}<title>Dataset::{{ ds.label }}</title>{% endblock %}
 {% block content %}
 <div id="dataset_content" class="container mt-1 px-1">
   <!-- Title + nav tabs -->
@@ -83,6 +83,10 @@
             <td><b>Format</b></td>
             <td>{{ ds.format }} {% if ds.format == 'delimited' %}({{ ds.delimiter }}){%endif%}</td>
           </tr>
+          <tr>
+            <td><b>License</b></td>
+            <td><a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">CC BY 4.0</a></td>
+          </tr>
           {% if ds.format == 'delimited' %}
           <tr>
             <td><b>Columns</b></td>
@@ -99,20 +103,28 @@
         </table>
         <input class="btn btn-primary hidden" type="submit" value="Save" />
       </div>
-      <div id="ds_stats" class="col-sm-4 small">
+      <div class="col-sm-4 small">
         <!--<h6 class="text-secondary">Statistics <small>( initial, <span class="bg-danger text-white small">&nbsp;added </span>&nbsp;)</small></h6>-->
-        <table style="width:100%">
-          <tr><td class="pb-4"><b>Status</b></td><td class="pb-4">{{ ds.status }}</td><td class="pb-4"></td></tr>
-          <tr><th></th><th>count</th><th>added</th></tr>
-          <tr><td><b>Rows</b></td><td>{{ ds.numrows }}</td><td></td></tr>
-          <tr><td><b>Names</b></td><td>{{ num_names }}</td><td></td></tr>
-          <tr>
-            <td><b>Links</b></td><td>{{ num_links }}</td>
-            <td><span class="text-white bg-danger">&nbsp;{{ links_added }}&nbsp;</span></td></tr>
-          <tr>
-            <td><b>Geometries</b></td><td>{{ num_geoms }}</td>
-            <td><span class="text-white bg-danger">&nbsp;{{ geoms_added }}&nbsp;</span></td></tr>
-        </table>
+        <div id="ds_stats">
+          <table style="width:100%">
+            <tr><td class="pb-3"><b>Status</b></td><td class="pb-3">{{ ds.status }}</td><td class="pb-3"></td></tr>
+            <tr><th></th><th class="pb-1 text-secondary">count</th><th class="pb-1 text-secondary">added</th></tr>
+            <tr><td><b>Rows</b></td><td>{{ ds.numrows }}</td><td class="text-secondary">n/a</td></tr>
+            <tr><td><b>Names</b></td><td>{{ num_names }}</td><td class="text-secondary">n/a</td></tr>
+            <tr>
+              <td><b>Links</b></td><td>{{ num_links }}</td>
+              <td><span class="text-white bg-danger">&nbsp;{{ links_added }}&nbsp;</span></td></tr>
+            <tr>
+              <td><b>Geometries</b></td><td>{{ num_geoms }}</td>
+              <td><span class="text-white bg-danger">&nbsp;{{ geoms_added }}&nbsp;</span></td></tr>
+          </table>
+        </div>
+        <div id="ds_access" class="pt-0 px-0">
+          <p style="display:block; background-color:#eee; margin:0; padding-left:10px; font-weight:700;">Access</p>
+          <p style="display:block; margin:0; padding-left:10px;">Metadata edits, dataset updates, and initiation of reconciliation tasks may only be performed by the dataset contributor ("owner" in WHG). Collaborators added by the owner under the "Sharing" tab can view the dataset and perform review of reconciliation tasks.</p>
+        </div>
+        <div id="update_button"><a href="#">Update dataset</a> <span class="help-matches" data-id="updates">
+            {% fontawesome_icon 'question-circle' color='#993333' %}</span></div>
       </div>
       </div> <!-- row -->
       </form>
@@ -171,7 +183,7 @@
         </h6>
         {% if ds.owner.id == user.id or user.is_superuser or user in users %}
         {% for t in tasks %}
-        <div class="task-box">
+        <div class="task-box mb-2">
           <!-- TODO: display bounds used if any -->
           <!--{ t.task_kwargs|parsejson:"bounds" }}-->
           <div class="row">
@@ -230,11 +242,10 @@
       </div>
     </div>
     <div id="sharing" class="tab-pane" role="tabpanel" aria-labelledby="sharing-tab">
-      object: {{ object }}
       <form id="sharing_form" method="POST" action="{% url 'datasets:collab-add' dsid=ds.id %}" enctype="multipart/form-data">
       {% csrf_token %}
-      <h5 class="text-secondary">Sharing</h5>
-      <div class="sharing-box mb-3">
+      <div></div>
+      <div class="sharing-box my-3 w-50">
         <div class="sharing-header">Collaborators
           {% if ds.owner.id == user.id or user.is_superuser %}
           <!--<span class="float-right small mr-2">-->
@@ -246,6 +257,7 @@
           </span>
           {% endif %}
         </div>
+        <p class="p-block px-2">Collaborators are assigned per dataset. They can view its contents and metadata, and  perform review of reconciliation task results.</p>
         <ul id="collabs_list">
           {% for c in collab %}<li>{{ c.user }} ({{ c.role }})
           {% if ds.owner.id == user.id or user.is_superuser %}
@@ -333,7 +345,7 @@
           <div class="bottom">
             <hr/>
             <button type="submit" class="btn btn-primary">Start</button>
-            <span title="back"><a href="javascript:history.back()">Cancel</a></span>
+            <span title="back"><a id="cancel_taskadd" href="#">Cancel</a></span>
             <span id="q_accept" class="ml-3 small">
               <input id="accept_geom" name="geom" type="checkbox" checked="checked"/> accept geometries in matches
           <span class="help-matches" data-id="accept-geometry">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
@@ -421,12 +433,19 @@ js for Summary, Reconciliation
     });
     // end Browse onload js
     
+    $("#update_button a").click(function(e){
+      e.preventDefault();
+      alert('Dataset updates are not yet available; coming soon.')
+    })
+    $("#cancel_taskadd").click(function(e){
+      e.preventDefault();
+      $('#addtask_li').addClass('hidden')
+      $('.nav-tabs a[href="#reconciliation"]').tab('show');
+    })
     $("#addtask_link").click(function(e){
-      <!--console.log('unhide tab',window.location.hash)-->
       e.preventDefault()
       window.location.hash = "#addtask"
       $("#addtask_li").removeClass('hidden')
-      <!--$(".nav-tabs").tabs({ active: "#addtask" });-->
       $('.nav-tabs a[href="#addtask"]').tab('show');
       mappyr.invalidateSize()
     })
@@ -435,22 +454,16 @@ js for Summary, Reconciliation
     $('.nav-tabs a').on('shown.bs.tab', function (e) {
       <!--console.log('e.target.hash',e.target.hash)-->
       window.location.hash = e.target.hash;
-      <!--if(!(e.target.hash=="#summary")){-->
-        <!--window.location.hash = e.target.hash;-->
-      <!--} else {-->
-        <!--window.location.hash = '';-->
-        <!--<!--console.log('clicked summary tab')-->-->
-      <!--}-->
       if(e.target.hash=="#reconciliation"){
         updateTotals('{{ ds.id }}')
       }
       if(e.target.hash=="#browse"){
         mappy.invalidateSize();
+        $("html,body").scrollTop(0)
       }
     })
     
     // TODO: reload should NOT be necessary
-    <!--location.reload();-->
     <!--console.log('dataset id: {{ object.id }}')-->
     updateTotals('{{ ds.id }}')
     steps={"uploaded":1,"reconciling":2,"review_hits":3,"reviewed":4,"review_whg":5,"indexed":6}
