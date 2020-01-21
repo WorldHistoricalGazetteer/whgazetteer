@@ -81,7 +81,7 @@ label {vertical-align:top;}
 /**
   dashboard
 **/
-i.fa-eye { margin-bottom: -5px;}
+i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
 .spinerow {background-color:#ffffcc;}
 
 /**
@@ -540,9 +540,11 @@ em { color: #993333;}
 
 tr.place-row, tr.dataset-row {
   cursor: pointer;
-  line-height: .75rem;
+  line-height: 1.3rem;
   font-size: .9em;
 }
+
+.place-row td { padding: .4rem !important;}
 
 span.edit-row {
   cursor: pointer;
