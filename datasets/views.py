@@ -279,7 +279,7 @@ def review(request, pk, tid, passnum): # dataset pk, celery recon task_id
 
 # 
 # initiate, monitor Celery tasks
-def dataset_recon(request, pk):
+def ds_recon(request, pk):
   ds = get_object_or_404(Dataset, id=pk)
   # TODO: handle multipolygons from "#area_load" and "#area_draw"
   me = request.user

@@ -124,7 +124,7 @@ class PlaceSerializer(serializers.HyperlinkedModelSerializer):
             #'geom_count','countries'
         )
 
-# for dataset_recon.html queries
+# for ds_recon.html queries
 #class PlaceDRFSerializer(serializers.ModelSerializer):
     #class Meta:
         #model = Place

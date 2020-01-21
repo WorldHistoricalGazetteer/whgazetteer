@@ -22,7 +22,7 @@ urlpatterns = [
     path('<int:pk>/insert_lpf/', views.ds_insert_lpf, name="ds_insert_lpf"),
 
     # initiate reconciliation
-    path('<int:pk>/recon/', views.dataset_recon, name="dataset_recon"), # form submit
+    path('<int:pk>/recon/', views.ds_recon, name="ds_recon"), # form submit
 
     # review, validate hits
     path('<int:pk>/review/<str:tid>/<str:passnum>', views.review, name="review"),
