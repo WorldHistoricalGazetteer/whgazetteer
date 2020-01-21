@@ -13,7 +13,7 @@
 {% block content %}
 <div class="container">
   <!-- incoming: ds, hit_list -->
-  <h4 class="mb-2 mt-3">{% if authority == 'whg' %}Accessioning{%else%}Reconciliation{%endif%} Review: 
+  <h5 class="mb-2 mt-3">{% if authority == 'whg' %}Accessioning{%else%}Reconciliation{%endif%} Review: 
     <span class="small"> <a href="{% url 'datasets:dataset-detail' id=ds_id %}"> 
       {{ ds_label }}</a> {%if authority != 'whg' %}> {{ authority }}{%endif%}
       <select id="select_pass" name="pass" class="custom-select-sm mr-2" style="width:auto;">
@@ -27,7 +27,7 @@
     <span class="half float-right">
       task id: {{ task_id }} (+links{% if aug_geom == 'on' %}+geom{% endif %})
     </span>
-  </h4>
+  </h5>
   {% if nohits %}
     <div>
       <p>No unreviewed hits for this reconciliation task!</p>

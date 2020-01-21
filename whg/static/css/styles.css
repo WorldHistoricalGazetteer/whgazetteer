@@ -58,6 +58,7 @@ label {vertical-align:top;}
 .bottom {}
 .hover {cursor:pointer;}
 .fa-search, .fa-times {color:#999; }
+.p-block { display:block; }
 .tight-p { margin-top:0; margin-bottom:0;}
 .scroll100 {display:block; overflow-y:scroll; max-height:120px;}
 .scroll60 {display:block; overflow-y:scroll; max-height:60px;}
@@ -349,7 +350,7 @@ em { color: #993333;}
 #ds_details p { margin-bottom: .2rem;}
 .ds-title { padding-top: 7px; font-weight:700; font-size: larger; color: grey;}
 #ds_tasks { max-height: 80vh; overflow-y:scroll; overflow-x: hidden; }
-#ds_stats {
+#ds_stats, #ds_access {
   height: fit-content;
   border-top: #ddd 1px solid;
   border-left: #ddd 1px solid;
@@ -364,6 +365,12 @@ em { color: #993333;}
 #browse { width:100% !important; height:auto !important; }
 #ds_form .row {padding-right:4px;}
 #ds_metadata { width:100%; border-collapse: separate; border-spacing: 1em .4em;}
+#update_button { 
+  text-align: center;
+  border: 1px solid #ddd;
+  margin-top: 6px;
+  background-color: aliceblue;
+}
 
 /**
   dataset browse
@@ -466,7 +473,7 @@ em { color: #993333;}
   border: 1px solid #D6D7D9;
   background-color: #fff;
   padding: 0;
-  box-shadow: 3px 3px #eee;
+  box-shadow: 1px 1px #eee;
 }
 .sharing-header { 
   display:block; 
