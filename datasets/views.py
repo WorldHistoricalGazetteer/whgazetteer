@@ -1,5 +1,6 @@
 # datasets.views
 from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
 #from django.contrib.auth.decorators import user_passes_test
 from django.core.paginator import Paginator #,EmptyPage, PageNotAnInteger
 from django.db.models import Q
@@ -853,7 +854,7 @@ class DatasetCreateView(CreateView):
 
 # 
 # dataset detail in "portal"
-class DatasetDetailView(UpdateView):
+class DatasetDetailView(LoginRequiredMixin,UpdateView):
   form_class = DatasetDetailModelForm
   #template_name = 'datasets/dataset_detail.html'
   # refactor with tabs
@@ -880,9 +881,23 @@ class DatasetDetailView(UpdateView):
 
   def get_context_data(self, *args, **kwargs):
     context = super(DatasetDetailView, self).get_context_data(*args, **kwargs)
+    print('DatasetDetailView get_context_data() args:',self.args)
     print('DatasetDetailView get_context_data() kwargs:',self.kwargs)
     id_ = self.kwargs.get("id")
     ds = get_object_or_404(Dataset, id=id_)
+
+    # load areas for dropdowns
+    me = self.request.user
+    #print('me',me,me.id)
+    types_ok=['ccodes','copied','drawn']
+    
+    userareas = Area.objects.all().filter(type__in=types_ok).order_by('-created')
+    context['area_list'] = userareas if me.username == 'whgadmin' else userareas.filter(owner=me)
+  
+    predefined = Area.objects.all().filter(type='predefined').order_by('-created')
+    context['region_list'] = predefined
+  
+    
     context['updates'] = {}
     # fumbling to include to-be-reviewed count updates here
     #task_ids=[t.task_id for t in ds.tasks.all()]
