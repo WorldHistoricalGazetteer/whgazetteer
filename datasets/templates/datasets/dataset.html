@@ -129,7 +129,7 @@
       </div> <!-- row -->
       </form>
     </div>
-    <div id="browse" class="tab-pane" role="tabpanel" aria-labelledby="browse-tab">
+    <div id="browse" class="tab-pane fade" role="tabpanel" aria-labelledby="browse-tab">
         <div class="container mt-3">
           <div class="row">
             <div id="drftable_detail" class="col-sm-6 pl-0">
@@ -169,7 +169,7 @@
         </div>
       </div> <!-- ext_site -->
     </div> <!-- browse -->
-    <div id="reconciliation" class="tab-pane" role="tabpanel" aria-labelledby="reconciliation-tab">
+    <div id="reconciliation" class="tab-pane fade" role="tabpanel" aria-labelledby="reconciliation-tab">
       <div id="ds_tasks" class="small">
         <h6 class="">Reconciliation Tasks 
           <span class="small help-matches" data-id="reconciliation">
@@ -240,7 +240,7 @@
         {% endif %}
       </div>
     </div>
-    <div id="sharing" class="tab-pane" role="tabpanel" aria-labelledby="sharing-tab">
+    <div id="sharing" class="tab-pane fade" role="tabpanel" aria-labelledby="sharing-tab">
       <form id="sharing_form" method="POST" action="{% url 'datasets:collab-add' dsid=ds.id %}" enctype="multipart/form-data">
       {% csrf_token %}
       <div></div>
@@ -540,7 +540,7 @@ js for Add Task
     $.ajax({
         url: '/api/areas/'+aid
       }).done(function(data){
-        console.log('render_area()',data)
+        <!--console.log('render_area()',data)-->
         geom = {"type":"FeatureCollecton","features":[]}
         geom['features'].push(data.geojson)
         // geom,dslabel,screen
@@ -703,7 +703,7 @@ js for Browse
   }
   <!--function renderMap(geom,dslabel,screen){-->
   function renderMap(geom,screen){
-    console.log('dslabel, geom in renderMap()',screen,geom)
+    <!--console.log('dslabel, geom in renderMap()',screen,geom)-->
     mappo = screen == 'browse' ? mappy : mappyr
     if (geom.features.length==0) {
       <!--console.log(geom.features)-->
