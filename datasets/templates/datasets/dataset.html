@@ -38,7 +38,7 @@
   </ul>
   <!-- Tab panes -->
   <div class="tab-content">
-    <div id="summary" class="tab-pane active" role="tabpanel" aria-labelledby="summary-tab">
+    <div id="summary" class="tab-pane fade show active" role="tabpanel" aria-labelledby="summary-tab">
       <form id="ds_form" method="POST" action="#" enctype="multipart/form-data">
       {% csrf_token %}
       <div class="row">
@@ -459,6 +459,10 @@ js for Summary, Reconciliation
       }
       if(e.target.hash=="#browse"){
         mappy.invalidateSize();
+        $("html,body").scrollTop(0)
+      }
+      if(e.target.hash=="#addtask"){
+        mappyr.invalidateSize();
         $("html,body").scrollTop(0)
       }
     })
