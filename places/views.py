@@ -100,7 +100,7 @@ class PlacePortalView(DetailView):
       
       record = {
         "whg_id":id_,
-        "dataset":{"id":ds.id,"label":ds.label,"name":ds.name},
+        "dataset":{"id":ds.id,"label":ds.label,"name":ds.title},
         "place_id":place.id,
         "src_id":place.src_id, 
         "purl":ds.uri_base+str(place.id) if 'whgaz' in ds.uri_base else ds.uri_base+place.src_id,

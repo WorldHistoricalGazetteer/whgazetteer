@@ -47,7 +47,7 @@
                 </td>
                 <td>{{ d.id }}</td>
                 <td><a href="{% url 'datasets:dataset-detail' d.id %}" title="Dataset details" rel="tooltip"
-                  >{{ d.name }}</a></td>
+                  >{{ d.title }}</a></td>
                 <td>{% if d.spine == True %}
                       {{ d.label }} <span class="spinerow"> (core)</span>
                     {% else %}{{ d.label }}{% endif %}</td>

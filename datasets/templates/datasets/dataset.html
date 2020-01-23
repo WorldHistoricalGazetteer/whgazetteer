@@ -19,7 +19,7 @@
 <div id="dataset_content" class="container mt-1 px-1">
   <!-- Title + nav tabs -->
   <ul class="nav nav-tabs" id="dataset_tabs" role="tablist">
-    <span class="ds-title ml-1 mr-3">{{ ds.name }}</span>
+    <span class="ds-title ml-1 mr-3">{{ ds.title }}</span>
     <li class="nav-item">
       <a class="nav-link active" id="summary-tab" data-toggle="tab" href="#summary" role="tab" aria-controls="summary" aria-selected="true">Metadata</a>
     </li>
@@ -52,9 +52,9 @@
           </tr>
             <td><b>Title</b></td>
               <td>
-              <!--<span class="form-name bigger strong text-danger">{ ds.name }}</span>-->
+              <!--<span class="form-name bigger strong text-danger">{ ds.title }}</span>-->
               <!--<span class="hidden editing-name">{ form.name }}</span>&nbsp;-->
-              <span class="editing-name">{{ form.name }}</span>&nbsp;
+              <span class="editing-name">{{ form.title }}</span>&nbsp;
               <!--<span class="edit-name small"><a href="#">{ fontawesome_icon 'edit' color='#336699' %}</a></span>-->
             </td>
           </tr>
@@ -78,38 +78,39 @@
           <table id="file_metadata" class="ds-table table-striped">
             <tr>
               <td><b>Rev.</b></td>
-              <td>1</td>
+              <td>{{ current_file.rev }}</td>
             </tr>
             <tr>
               <td><b>File</b></td>
-              <td>{{ ds.file }}</td>
-              <td class="hidden">{{ form.file }}</td>
+              <td>{{ current_file.file }}</td>
+              <!--<td class="hidden">{{ form.file }}</td>-->
+              <!--<td>{ form.file }}</td>-->
             </tr>
             <tr>
               <td><b>Uploaded</b></td>
-              <td>{{ ds.upload_date|date:"d-M-Y, H:i (e)" }}</td>
+              <td>{{ current_file.upload_date|date:"d-M-Y, H:i (e)" }}</td>
             </tr>
             <tr>
               <td><b>Data type</b></td>
-              <td>{{ ds.datatype }}</td>
+              <td>{{ current_file.datatype }}</td>
             </tr>
             <tr>
               <td><b>URI base</b></td>
-              <td>{{ ds.uri_base }}</td>
+              <td>{{ current_file.uri_base }}</td>
               <td class="hidden">{{ form.uri_base }}</td>
             </tr>
             <tr>
               <td><b>Format</b></td>
-              <td>{{ ds.format }} {% if ds.format == 'delimited' %}({{ ds.delimiter }}){%endif%}</td>
+              <td>{{ current_file.format }} {% if ds.format == 'delimited' %}({{ ds.delimiter }}){%endif%}</td>
             </tr>
             <tr>
               <td><b>License</b></td>
               <td><a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">CC BY 4.0</a></td>
             </tr>
-            {% if ds.format == 'delimited' %}
+            {% if current_file.format == 'delimited' %}
             <tr>
               <td><b>Columns</b></td>
-              <td>{{ ds.header }}</td>
+              <td>{{ current_file.header }}</td>
             </tr>
             {% endif %}
             {% if ds.mapbox_id %}
@@ -121,7 +122,8 @@
             {% endif %}
           </table>
           </div> <!-- div_file -->
-        <input class="btn btn-primary hidden" type="submit" value="Save" />
+        <!--<input class="btn btn-primary hidden" type="submit" value="Save" />-->
+        <input class="btn btn-primary btn-sm" type="submit" value="Save" />
       </div>
       <div class="col-sm-4 small">
         <!--<h6 class="text-secondary">Statistics <small>( initial, <span class="bg-danger text-white small">&nbsp;added </span>&nbsp;)</small></h6>-->

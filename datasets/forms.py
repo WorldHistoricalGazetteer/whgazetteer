@@ -2,7 +2,8 @@
 
 from django import forms
 from django.db import models
-from datasets.models import Dataset, Hit
+from django.forms import ClearableFileInput
+from datasets.models import Dataset, Hit, DatasetFile
 
 MATCHTYPES = [
   ('closeMatch','closeMatch'),
@@ -33,10 +34,20 @@ class HitModelForm(forms.ModelForm):
     for key in self.fields:
       self.fields[key].required = False     
 
+
+class DatasetFileModelForm(forms.ModelForm):
+  class Meta:
+    model = DatasetFile
+    fields = ['file','rev','uri_base','format','dataset_id','delimiter',
+              'status','accepted_date','header','numrows']
+    widgets = { 'file': ClearableFileInput(attrs={'multiple': True}) }    
+  
+
 class DatasetDetailModelForm(forms.ModelForm):
+  files = DatasetFileModelForm
   class Meta:
     model = Dataset
-    fields = ('id','name','description','file','uri_base','mapbox_id')
+    fields = ('id','title','description','file','uri_base','mapbox_id')
     widgets = {
       'description': forms.Textarea(attrs={
         'rows':2,'cols': 60,'class':'textarea','placeholder':'brief description'}),
@@ -49,7 +60,7 @@ class DatasetModelForm(forms.ModelForm):
   # trying to generate a unique label  
   class Meta:
     model = Dataset
-    fields = ('id','name','label','description','file','format','datatype',
+    fields = ('id','title','label','description','file','format','datatype',
               'delimiter','status','owner','header','numrows','spine','uri_base')
     widgets = {
       'description': forms.Textarea(attrs={

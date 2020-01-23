@@ -23,7 +23,7 @@ class Dataset(models.Model):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL,
         related_name='datasets', on_delete=models.CASCADE)
     label = models.CharField(max_length=20, null=False, unique="True")
-    name = models.CharField(max_length=255, null=False)
+    title = models.CharField(max_length=255, null=False)
     description = models.CharField(max_length=2044, null=False)
     file = models.FileField(upload_to=user_directory_path)
     uri_base = models.URLField(blank=True, null=True, default="http://whgazetteer.org/api/places/")
@@ -80,6 +80,7 @@ class Dataset(models.Model):
 class DatasetFile(models.Model):
     dataset_id = models.ForeignKey(Dataset, related_name='files',
         default=-1, on_delete=models.CASCADE)
+    rev = models.IntegerField(null=True, blank=True)
     file = models.FileField(upload_to=user_directory_path)
     uri_base = models.URLField(blank=True, null=True, default="http://whgazetteer.org/api/places/")
     format = models.CharField(max_length=12, null=False,choices=FORMATS,
@@ -95,6 +96,13 @@ class DatasetFile(models.Model):
     header = ArrayField(models.CharField(max_length=30), null=True, blank=True)
     numrows = models.IntegerField(null=True, blank=True)
     
+    #def __str__(self):
+        #return 'file_'+str(self.rev)
+
+    class Meta:
+        managed = True
+        db_table = 'dataset_file'
+        
 class DatasetUser(models.Model):
     dataset_id = models.ForeignKey(Dataset, related_name='users',
         default=-1, on_delete=models.CASCADE)

@@ -21,7 +21,7 @@ from areas.models import Area
 from main.choices import AUTHORITY_BASEURI
 from places.models import *
 from datasets.forms import DatasetModelForm, HitModelForm, DatasetDetailModelForm
-from datasets.models import Dataset, Hit
+from datasets.models import Dataset, Hit, DatasetFile
 from datasets.static.hashes.parents import ccodes
 from datasets.tasks import align_tgn, align_whg, align_wd, maxID
 from datasets.utils import *
@@ -285,7 +285,7 @@ def ds_recon(request, pk):
   # TODO: handle multipolygons from "#area_load" and "#area_draw"
   me = request.user
   #print('me',me,me.id)
-  context = {"dataset": ds.name}
+  context = {"dataset": ds.title}
 
   types_ok=['ccodes','copied','drawn']
   userareas = Area.objects.all().filter(type__in=types_ok).order_by('-created')
@@ -860,6 +860,7 @@ class DatasetCreateView(CreateView):
 # dataset detail in "portal"
 class DatasetDetailView(LoginRequiredMixin,UpdateView):
   form_class = DatasetDetailModelForm
+  
   #template_name = 'datasets/dataset_detail.html'
   # refactor with tabs
   template_name = 'datasets/dataset.html'
@@ -910,6 +911,8 @@ class DatasetDetailView(LoginRequiredMixin,UpdateView):
     # print('ds',ds.label)
     context['ds'] = ds
     context['status'] = ds.status
+    # latest file
+    context['current_file'] = ds.files.all().order_by('-upload_date')[0]
     context['format'] = ds.format
     context['numrows'] = ds.numrows
     context['users'] = ds.dsusers
