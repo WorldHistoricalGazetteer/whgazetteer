@@ -43,64 +43,84 @@
       {% csrf_token %}
       <div class="row">
       <div id="ds_details" class="col-sm-8 small">
-        <table id="ds_metadata">
+        <table class="ds-table">
           <tr>
-            <td><b>Title</b></td>
-            <td><span class="form-name bigger strong text-danger">{{ ds.name }}</span>
-              <span class="hidden editing-name">{{ form.name }}</span>&nbsp;
-              <span class="edit-name small"><a href="#">{% fontawesome_icon 'edit' color='#336699' %}</a></span>
-            </td>
-          </tr>
-          <tr>
-            <td style="vertical-align:top;"><b>Description</b></td>
-            <td><span class="form-description">{{ ds.description }}</span>
-          <span class="hidden editing-description">{{ form.description }}</span>
-          &nbsp;<span class="edit-description small"><a href="#">{% fontawesome_icon 'edit' color='#336699' %}</a></span>
-            </td>
-          </tr>
           <tr>
             <td><b>ID / label</b></td>
             <td>{{ ds.id }} / {{ ds.label }}
             </td>
           </tr>
-          <tr>
-            <td><b>File</b></td>
-            <td>{{ ds.file }}</td>
+            <td><b>Title</b></td>
+              <td>
+              <!--<span class="form-name bigger strong text-danger">{ ds.name }}</span>-->
+              <!--<span class="hidden editing-name">{ form.name }}</span>&nbsp;-->
+              <span class="editing-name">{{ form.name }}</span>&nbsp;
+              <!--<span class="edit-name small"><a href="#">{ fontawesome_icon 'edit' color='#336699' %}</a></span>-->
+            </td>
           </tr>
           <tr>
-            <td><b>Uploaded</b></td>
-            <td>{{ ds.upload_date|date:"d-M-Y, H:i (e)" }}</td>
+            <td style="vertical-align:top;"><b>Description</b></td>
+            <td>
+              <!--<span class="form-description">{ ds.description }}</span>-->
+              <!--<span class="hidden editing-description">{ form.description }}</span>&nbsp;-->
+              <span class="editing-description">{{ form.description }}</span>&nbsp;
+              <!--<span class="edit-description small"><a href="#">{ fontawesome_icon 'edit' color='#336699' %}</a></span>-->
+            </td>
           </tr>
-          <tr>
-            <td><b>Data type</b></td>
-            <td>{{ ds.datatype }}</td>
-          </tr>
-          <tr>
-            <td><b>URI base</b></td>
-            <td>{{ ds.uri_base }}</td>
-          </tr>
-          <tr>
-            <td><b>Format</b></td>
-            <td>{{ ds.format }} {% if ds.format == 'delimited' %}({{ ds.delimiter }}){%endif%}</td>
-          </tr>
-          <tr>
-            <td><b>License</b></td>
-            <td><a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">CC BY 4.0</a></td>
-          </tr>
-          {% if ds.format == 'delimited' %}
-          <tr>
-            <td><b>Columns</b></td>
-            <td>{{ ds.header }}</td>
-          </tr>
-          {% endif %}
-          {% if ds.mapbox_id %}
-          <tr>
-            <td><b>MapBox ID</b></td>
-            <td><p class="form-value"><b>MapBox ID</b>: {{ ds.mapbox_id }}</p>
-                <p class="hidden editing"><b>MapBox ID</b>: {{ form.mapbox_id }}</p></td>
-          </tr>
-          {% endif %}
         </table>
+        <p> <i>Data file</i><span class="float-right mr-2">
+            <a href="{% url 'datasets:dataset-update' pk=ds.id %}">update</a>
+            <span class="help-matches" data-id="updates">
+            {% fontawesome_icon 'question-circle' color='#993333' %}</span>
+          </span>
+        </p>
+        <div id="div_file">
+          <table id="file_metadata" class="ds-table table-striped">
+            <tr>
+              <td><b>Rev.</b></td>
+              <td>1</td>
+            </tr>
+            <tr>
+              <td><b>File</b></td>
+              <td>{{ ds.file }}</td>
+              <td class="hidden">{{ form.file }}</td>
+            </tr>
+            <tr>
+              <td><b>Uploaded</b></td>
+              <td>{{ ds.upload_date|date:"d-M-Y, H:i (e)" }}</td>
+            </tr>
+            <tr>
+              <td><b>Data type</b></td>
+              <td>{{ ds.datatype }}</td>
+            </tr>
+            <tr>
+              <td><b>URI base</b></td>
+              <td>{{ ds.uri_base }}</td>
+              <td class="hidden">{{ form.uri_base }}</td>
+            </tr>
+            <tr>
+              <td><b>Format</b></td>
+              <td>{{ ds.format }} {% if ds.format == 'delimited' %}({{ ds.delimiter }}){%endif%}</td>
+            </tr>
+            <tr>
+              <td><b>License</b></td>
+              <td><a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">CC BY 4.0</a></td>
+            </tr>
+            {% if ds.format == 'delimited' %}
+            <tr>
+              <td><b>Columns</b></td>
+              <td>{{ ds.header }}</td>
+            </tr>
+            {% endif %}
+            {% if ds.mapbox_id %}
+            <tr>
+              <td><b>MapBox ID</b></td>
+              <td><p class="form-value"><b>MapBox ID</b>: {{ ds.mapbox_id }}</p>
+                  <p class="hidden editing"><b>MapBox ID</b>: {{ form.mapbox_id }}</p></td>
+            </tr>
+            {% endif %}
+          </table>
+          </div> <!-- div_file -->
         <input class="btn btn-primary hidden" type="submit" value="Save" />
       </div>
       <div class="col-sm-4 small">
@@ -123,8 +143,6 @@
           <p style="display:block; background-color:#eee; margin:0; padding-left:10px; font-weight:700;">Access</p>
           <p style="display:block; margin:0; padding-left:10px;">Metadata edits, dataset updates, and initiation of reconciliation tasks may only be performed by the dataset contributor ("owner" in WHG). Collaborators added by the owner under the "Sharing" tab can view the dataset and perform review of reconciliation tasks.</p>
         </div>
-        <div id="update_button"><a href="#">Update dataset</a> <span class="help-matches" data-id="updates">
-            {% fontawesome_icon 'question-circle' color='#993333' %}</span></div>
       </div>
       </div> <!-- row -->
       </form>
@@ -433,10 +451,10 @@ js for Summary, Reconciliation
     });
     // end Browse onload js
     
-    $("#update_button a").click(function(e){
-      e.preventDefault();
-      alert('Dataset updates are not yet available; coming soon.')
-    })
+    <!--$("#update_button a").click(function(e){-->
+      <!--e.preventDefault();-->
+      <!--console.log('updating dataset',"{ ds.label }}")-->
+    <!--})-->
     $("#cancel_taskadd").click(function(e){
       e.preventDefault();
       $('#addtask_li').addClass('hidden')
@@ -933,15 +951,10 @@ js for Browse
       alert('open a modal with full record')
     })
     // console.log('in map_init()')
-    geom = {"type":"FeatureCollecton","features":[]}
+    geom = {"type":"FeatureCollection","features":[]}
     
   } // end map_init
-  function map_init2 (map, options) {
-    <!--console.log('in map_init_recon()')-->
-    <!--geom_recon = {"type":"FeatureCollecton","features":[]}-->
-    
-  } // end
-  
+  function map_init2 (map, options) {}
   function zoomTo(id) {
     mappy.setView(idToFeature[id]._latlng, mappy.getZoom() +2 )
   }

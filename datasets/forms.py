@@ -36,10 +36,10 @@ class HitModelForm(forms.ModelForm):
 class DatasetDetailModelForm(forms.ModelForm):
   class Meta:
     model = Dataset
-    fields = ('id','name','description','mapbox_id')
+    fields = ('id','name','description','file','uri_base','mapbox_id')
     widgets = {
       'description': forms.Textarea(attrs={
-            'rows':1,'cols': 40,'class':'textarea','placeholder':'brief description'}),
+        'rows':2,'cols': 60,'class':'textarea','placeholder':'brief description'}),
     }
 
   def __init__(self, *args, **kwargs):

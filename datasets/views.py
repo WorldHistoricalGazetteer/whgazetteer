@@ -389,7 +389,11 @@ def dataset_browse(request, label, f):
   ds = get_object_or_404(Dataset, label=label)
   filt = f
   return render(request, 'datasets/dataset_browse.html', {'ds':ds,'filter':filt})
-
+#
+def ds_update(request, pk):
+  ds = get_object_or_404(Dataset, id=pk)
+  print('gonna update ds #', pk, ds.label)
+  return render(request, 'datasets/dataset.html', {'ds':ds})
 #
 # insert lpf into database
 def ds_insert_lpf(request, pk):
@@ -841,7 +845,7 @@ class DatasetCreateView(CreateView):
     else:
       context['status'] = 'format_error'
       context['errors'] = result['errors']
-      context['action'] = 'review'
+      context['action'] = ''
       result['columns'] if "columns" in result.keys() else []
       print('result:', result)
       return self.render_to_response(self.get_context_data(form=form,context=context))
@@ -897,7 +901,6 @@ class DatasetDetailView(LoginRequiredMixin,UpdateView):
     predefined = Area.objects.all().filter(type='predefined').order_by('-created')
     context['region_list'] = predefined
   
-    
     context['updates'] = {}
     # fumbling to include to-be-reviewed count updates here
     #task_ids=[t.task_id for t in ds.tasks.all()]

@@ -9,7 +9,8 @@ from . import views
 app_name='datasets'
 urlpatterns = [
     path('create/', views.DatasetCreateView.as_view(), name='dataset-create'),
-    path('update/(?P<class>\d+)', views.DatasetCreateView.as_view(), name='dataset-update'),
+    
+    path('<int:pk>/update', views.ds_update, name='dataset-update'),
     
     path('<int:id>/delete', views.DatasetDeleteView.as_view(), name='dataset-delete'),
 

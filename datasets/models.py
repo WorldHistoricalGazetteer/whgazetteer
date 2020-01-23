@@ -56,22 +56,6 @@ class Dataset(models.Model):
     def tasks(self):
         from django_celery_results.models import TaskResult
         return TaskResult.objects.all().filter(task_args = '['+str(self.id)+']')
-
-    #from django.shortcuts import get_object_or_404
-    #from django.contrib.auth.models import User
-    #from datasets.models import *
-    
-    #u=get_object_or_404(User,id=4)
-    #ds=get_object_or_404(Dataset,id=104)
-    #uids=DatasetUser.objects.filter(dataset_id_id = ds.id).values_list('user_id_id')
-    #users = User.objects.filter(id__in=uids)
-    ##uids=DatasetUser.objects.filter(dataset_id_id = ds.id)
-    #dus=DatasetUser.objects.filter(dataset_id_id = ds.id)
-    #collabs=[]
-    #for du in dus:
-        #u = get_object_or_404(User, id=du.user_id_id)
-        #r = du.role
-        #collabs.append((u.username,r))
     
     @property
     def collab(self):
@@ -93,7 +77,24 @@ class Dataset(models.Model):
         managed = True
         db_table = 'datasets'
 
-
+class DatasetFile(models.Model):
+    dataset_id = models.ForeignKey(Dataset, related_name='files',
+        default=-1, on_delete=models.CASCADE)
+    file = models.FileField(upload_to=user_directory_path)
+    uri_base = models.URLField(blank=True, null=True, default="http://whgazetteer.org/api/places/")
+    format = models.CharField(max_length=12, null=False,choices=FORMATS,
+        default='lpf')
+    datatype = models.CharField(max_length=12, null=False,choices=DATATYPES,
+        default='place')
+    delimiter = models.CharField(max_length=5, blank=True, null=True)
+    status = models.CharField(max_length=12, null=True, blank=True, choices=STATUS)
+    upload_date = models.DateTimeField(null=True, auto_now_add=True)
+    accepted_date = models.DateTimeField(null=True)    
+    
+    # backfilled
+    header = ArrayField(models.CharField(max_length=30), null=True, blank=True)
+    numrows = models.IntegerField(null=True, blank=True)
+    
 class DatasetUser(models.Model):
     dataset_id = models.ForeignKey(Dataset, related_name='users',
         default=-1, on_delete=models.CASCADE)
