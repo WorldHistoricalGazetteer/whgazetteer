@@ -34,7 +34,7 @@ class Dataset(models.Model):
     delimiter = models.CharField(max_length=5, blank=True, null=True)
     status = models.CharField(max_length=12, null=True, blank=True, choices=STATUS)
     upload_date = models.DateTimeField(null=True, auto_now_add=True)
-    accepted_date = models.DateTimeField(null=True)
+    accepted_date = models.DateTimeField(null=True, blank=True)
     spine = models.BooleanField(default=False)    
     mapbox_id = models.CharField(max_length=200, null=True, blank=True)
 

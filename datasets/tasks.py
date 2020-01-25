@@ -586,6 +586,7 @@ def es_lookup_tgn(qobj, *args, **kwargs):
 @task(name="align_tgn")
 def align_tgn(pk, *args, **kwargs):
   ds = get_object_or_404(Dataset, id=pk)
+  print('ds',ds.__dict__)
   bounds = kwargs['bounds']
   print('kwargs from align_tgn() task',kwargs)
   #print('bounds:',bounds,type(bounds))

@@ -43,13 +43,13 @@
       {% csrf_token %}
       <div class="row">
       <div id="ds_details" class="col-sm-8 small">
+        status: {{ status }}
         <table class="ds-table">
           <tr>
-          <tr>
             <td><b>ID / label</b></td>
-            <td>{{ ds.id }} / {{ ds.label }}
-            </td>
+            <td>{{ ds.id }} / {{ ds.label }}</td>
           </tr>
+          <tr>
             <td><b>Title</b></td>
               <td>
               <!--<span class="form-name bigger strong text-danger">{ ds.title }}</span>-->
@@ -68,7 +68,7 @@
             </td>
           </tr>
         </table>
-        <p> <i>Data file</i><span class="float-right mr-2">
+        <p> <i>Current data file</i><span class="float-right mr-2">
             <a href="{% url 'datasets:dataset-update' pk=ds.id %}">update</a>
             <span class="help-matches" data-id="updates">
             {% fontawesome_icon 'question-circle' color='#993333' %}</span>
@@ -83,7 +83,7 @@
             <tr>
               <td><b>File</b></td>
               <td>{{ current_file.file }}</td>
-              <!--<td class="hidden">{{ form.file }}</td>-->
+              <!--<td class="hidden">{ form.file }}</td>-->
               <!--<td>{ form.file }}</td>-->
             </tr>
             <tr>
@@ -122,8 +122,8 @@
             {% endif %}
           </table>
           </div> <!-- div_file -->
-        <!--<input class="btn btn-primary hidden" type="submit" value="Save" />-->
-        <input class="btn btn-primary btn-sm" type="submit" value="Save" />
+        <input class="btn btn-primary hidden" type="submit" value="Save" />
+        <!--<input class="btn btn-primary btn-sm" type="submit" value="Save" />-->
       </div>
       <div class="col-sm-4 small">
         <!--<h6 class="text-secondary">Statistics <small>( initial, <span class="bg-danger text-white small">&nbsp;added </span>&nbsp;)</small></h6>-->

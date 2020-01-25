@@ -20,13 +20,36 @@ import simplejson as json
 from areas.models import Area
 from main.choices import AUTHORITY_BASEURI
 from places.models import *
-from datasets.forms import DatasetModelForm, HitModelForm, DatasetDetailModelForm
+from datasets.forms import DatasetModelForm, HitModelForm, DatasetDetailModelForm, DatasetFileModelForm
 from datasets.models import Dataset, Hit, DatasetFile
 from datasets.static.hashes.parents import ccodes
 from datasets.tasks import align_tgn, align_whg, align_wd, maxID
 from datasets.utils import *
+from shapeshifter.views import MultiModelFormView
+from shapeshifter.mixins import MultiSuccessMessageMixin
 from es.es_utils import makeDoc
 
+def pretty_request(request):
+  headers = ''
+  for header, value in request.META.items():
+    if not header.startswith('HTTP'):
+      continue
+    header = '-'.join([h.capitalize() for h in header[5:].lower().split('_')])
+    headers += '{}: {}\n'.format(header, value)
+
+  return (
+      '{method} HTTP/1.1\n'
+        'Content-Length: {content_length}\n'
+        'Content-Type: {content_type}\n'
+        '{headers}\n\n'
+        '{body}'
+        ).format(
+      method=request.method,
+        content_length=request.META['CONTENT_LENGTH'],
+        content_type=request.META['CONTENT_TYPE'],
+        headers=headers,
+        body=request.body,
+    )
 def celeryUp():
   response = celapp.control.ping(timeout=1.0)
   return len(response)>0
@@ -331,7 +354,7 @@ def ds_recon(request, pk):
       )
     except:
       print(sys.exc_info())
-
+      
     context['hash'] = "#reconciliation"
     context['task_id'] = result.id
     context['response'] = result.state
@@ -791,7 +814,7 @@ class DatasetCreateView(CreateView):
     user=self.request.user
     print('form is valid; request',user,self.request.FILES['file'].name)
     format = form.cleaned_data['format']
-    label = form.cleaned_data['name'][:16]+'_'+user.first_name[:1]+user.last_name[:1]
+    #label = form.cleaned_data['title'][:16]+'_'+user.first_name[:1]+user.last_name[:1]
     # open & write tempf to a temp location;
     # call it tempfn for reference
     filename = self.request.FILES['file'].name
@@ -855,14 +878,101 @@ class DatasetCreateView(CreateView):
     #context['action'] = 'create'
     return context
 
+#
+# upload file, validate format
+class DatasetCreateView2(LoginRequiredMixin, CreateView):
+  form_class = DatasetDetailModelForm
+  template_name = 'datasets/dataset_create2.html'
+  success_message = 'dataset created'
 
+  
+  #def forms_valid(self):
+    #print('in forms_valid')
+    #forms = self.get_forms()
+    #ds_form = forms['datasetdetailmodelform']
+    #file_form = forms['datasetfilemodelform']
+  
+    #print('ds_form',ds_form.cleaned_data)
+    #print('file_form',file_form.cleaned_data)
+    #return super().forms_valid()  
+
+  def form_invalid(self,form):
+    print(form.errors.as_data())
+      
+  def form_valid(self, form):
+    print(form.cleaned_data)
+    #context={"format":""}
+    #user=self.request.user
+    #print('form is valid; request',user,self.request.FILES['file'].name)
+    #format = form.cleaned_data['format']
+    ##label = form.cleaned_data['title'][:16]+'_'+user.first_name[:1]+user.last_name[:1]
+    ## open & write tempf to a temp location;
+    ## call it tempfn for reference
+    #filename = self.request.FILES['file'].name
+    #tempf, tempfn = tempfile.mkstemp()
+    #print('tempf, tempfn',tempf, tempfn)
+    #try:
+      #for chunk in form.cleaned_data['file'].chunks():
+        #os.write(tempf, chunk)
+    #except:
+      #raise Exception("Problem with the input file %s" % request.FILES['file'])
+    #finally:
+      #os.close(tempf)
+    ## open the temp file
+    #fin = codecs.open(tempfn, 'r', 'utf8')
+    ## send for format validation
+    #if format == 'delimited':
+      #context["format"] = "delimited"
+      #result = goodtable(tempfn,filename,user.username)
+      #print('goodtable() result',result)
+    #elif format == 'lpf':
+      #context["format"] = "lpf"
+      ## coll = FeatureCollection
+      ## TODO: json-lines alternative 
+      #result = validate_lpf(fin,'coll')
+    ## print('cleaned_data',form.cleaned_data)
+    #fin.close()
+
+    #print('data valid, still in DatasetCreateView')
+    ## insert to db & advance to dataset_detail if validated
+    ## otherwise present form again with errors
+    #if len(result['errors']) == 0:
+      #context['status'] = 'format_ok'
+      #print('cleaned_data:after ->',form.cleaned_data)
+      ##print('columns, type', result['columns'], type(result['columns']))
+      #obj = form.save(commit=False)
+      #obj.status = 'format_ok'
+      #obj.format = result['format']
+      #obj.delimiter = result['delimiter'] if "delimiter" in result.keys() else "n/a"
+      #obj.numrows = result['count']
+      #obj.header = result['columns'] if "columns" in result.keys() else []
+      #try:
+        #obj.save()
+      #except:
+        #sys.exit(sys.exc_info())
+
+      ## inserts data, goes to detail page
+      ##return self.render_to_response(self.get_context_data(form=form,context=context))
+      #return super().form_valid(form)
+      ##return redirect('/datasets/'+str(obj.id)+'/detail')
+
+    #else:
+      #context['status'] = 'format_error'
+      #context['errors'] = result['errors']
+      #context['action'] = ''
+      #result['columns'] if "columns" in result.keys() else []
+      #print('result:', result)
+      #return self.render_to_response(self.get_context_data(form=form,context=context))
+
+  def get_context_data(self, *args, **kwargs):
+    context = super(DatasetCreateView2, self).get_context_data(*args, **kwargs)
+    #context['action'] = 'create'
+    return context
 # 
-# dataset detail in "portal"
-class DatasetDetailView(LoginRequiredMixin,UpdateView):
+# dataset summary for "dataset portal" v2
+class DatasetUpdateView(LoginRequiredMixin,UpdateView):
   form_class = DatasetDetailModelForm
   
-  #template_name = 'datasets/dataset_detail.html'
-  # refactor with tabs
   template_name = 'datasets/dataset.html'
 
   def get_success_url(self):
@@ -884,6 +994,14 @@ class DatasetDetailView(LoginRequiredMixin,UpdateView):
     id_ = self.kwargs.get("id")
     return get_object_or_404(Dataset, id=id_)
 
+  def get_context_data(self, **kwargs):
+    context = super(MyView, self).get_context_data(**kwargs)
+    if 'form' not in context:
+      context['form'] = self.form_class(initial={'some_field': context['model'].some_field})
+    if 'form2' not in context:
+      context['form2'] = self.second_form_class(initial={'another_field': context['model'].another_field})
+    return context
+  
   def get_context_data(self, *args, **kwargs):
     context = super(DatasetDetailView, self).get_context_data(*args, **kwargs)
     print('DatasetDetailView get_context_data() args:',self.args)
@@ -956,9 +1074,104 @@ class DatasetDetailView(LoginRequiredMixin,UpdateView):
       else:
         ds_insert_lpf(self.request,id_)
 
-    print('context from DatasetDetailView',context)
+    print('context from DatasetUpdateView',context)
     return context
 
+# 
+# dataset summary for "dataset portal" v1
+class DatasetDetailView(LoginRequiredMixin,UpdateView):
+  form_class = DatasetDetailModelForm
+  
+  template_name = 'datasets/dataset.html'
+
+  def get_success_url(self):
+    id_ = self.kwargs.get("id")
+    return '/datasets/'+str(id_)+'/detail'
+
+  def form_valid(self, form):
+    context={}
+    if form.is_valid():
+      print('form is valid')
+      print('cleaned_data: before ->', form.cleaned_data)
+    else:
+      print('form not valid', form.errors)
+      context['errors'] = form.errors
+    return super().form_valid(form)
+
+  def get_object(self):
+    #print('kwargs:',self.kwargs)
+    id_ = self.kwargs.get("id")
+    return get_object_or_404(Dataset, id=id_)
+  
+  def get_context_data(self, *args, **kwargs):
+    context = super(DatasetDetailView, self).get_context_data(*args, **kwargs)
+    print('DatasetDetailView get_context_data() args:',self.args)
+    print('DatasetDetailView get_context_data() kwargs:',self.kwargs)
+    id_ = self.kwargs.get("id")
+    ds = get_object_or_404(Dataset, id=id_)
+
+    # load areas for dropdowns
+    me = self.request.user
+    #print('me',me,me.id)
+    types_ok=['ccodes','copied','drawn']
+    
+    userareas = Area.objects.all().filter(type__in=types_ok).order_by('-created')
+    context['area_list'] = userareas if me.username == 'whgadmin' else userareas.filter(owner=me)
+  
+    predefined = Area.objects.all().filter(type='predefined').order_by('-created')
+    context['region_list'] = predefined
+  
+    context['updates'] = {}
+    bounds = self.kwargs.get("bounds")
+    # print('ds',ds.label)
+    context['ds'] = ds
+    context['status'] = ds.status
+    # latest file
+    context['current_file'] = ds.files.all().order_by('-upload_date')[0]
+    context['format'] = ds.format
+    context['numrows'] = ds.numrows
+    context['users'] = ds.dsusers
+    context['collab'] = ds.collab
+    placeset = Place.objects.filter(dataset=ds.label)
+    context['tasks'] = TaskResult.objects.all().filter(task_args = [id_],status='SUCCESS')
+    # initial (non-task)
+    context['num_links'] = PlaceLink.objects.filter(
+      place_id_id__in = placeset, task_id = None).count()
+    context['num_names'] = PlaceName.objects.filter(place_id_id__in = placeset).count()
+    context['num_geoms'] = PlaceGeom.objects.filter(
+      place_id_id__in = placeset, task_id = None).count()
+    context['num_descriptions'] = PlaceDescription.objects.filter(
+      place_id_id__in = placeset, task_id = None).count()
+    # others
+    context['num_types'] = PlaceType.objects.filter(
+      place_id_id__in = placeset).count()
+    context['num_when'] = PlaceWhen.objects.filter(
+      place_id_id__in = placeset).count()
+    context['num_related'] = PlaceRelated.objects.filter(
+      place_id_id__in = placeset).count()
+    context['num_depictions'] = PlaceDepiction.objects.filter(
+      place_id_id__in = placeset).count()
+
+    # augmentations (has task_id)
+    context['links_added'] = PlaceLink.objects.filter(
+      place_id_id__in = placeset, task_id__contains = '-').count()
+    context['names_added'] = PlaceName.objects.filter(
+      place_id_id__in = placeset, task_id__contains = '-').count()
+    context['geoms_added'] = PlaceGeom.objects.filter(
+      place_id_id__in = placeset, task_id__contains = '-').count()
+    context['descriptions_added'] = PlaceDescription.objects.filter(
+      place_id_id__in = placeset, task_id__contains = '-').count()
+
+    # insert to db immediately if format okay
+    #if context['status'] == 'format_ok':
+      #print('format_ok, inserting dataset '+str(id_))
+      #if context['format'] == 'delimited':
+        #ds_insert_tsv(self.request, id_)
+      #else:
+        #ds_insert_lpf(self.request,id_)
+
+    print('context from DatasetDetailView',context)
+    return context
 
 # 
 # confirm ok on delete

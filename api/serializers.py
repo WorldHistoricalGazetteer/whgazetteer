@@ -14,7 +14,7 @@ class DatasetSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Dataset
-        fields = ('id', 'url', 'owner', 'label', 'name', 'numrows', 'description','format',
+        fields = ('id', 'url', 'owner', 'label', 'title', 'numrows', 'description','format',
             'datatype', 'delimiter', 'status', 'upload_date',
             'accepted_date', 'uri_base')
 

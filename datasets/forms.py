@@ -4,6 +4,7 @@ from django import forms
 from django.db import models
 from django.forms import ClearableFileInput
 from datasets.models import Dataset, Hit, DatasetFile
+from main.choices import FORMATS, DATATYPES, STATUS
 
 MATCHTYPES = [
   ('closeMatch','closeMatch'),
@@ -40,21 +41,37 @@ class DatasetFileModelForm(forms.ModelForm):
     model = DatasetFile
     fields = ['file','rev','uri_base','format','dataset_id','delimiter',
               'status','accepted_date','header','numrows']
-    widgets = { 'file': ClearableFileInput(attrs={'multiple': True}) }    
+    widgets = { 'file': ClearableFileInput() }    
   
 
 class DatasetDetailModelForm(forms.ModelForm):
-  files = DatasetFileModelForm
+  
   class Meta:
     model = Dataset
-    fields = ('id','title','description','file','uri_base','mapbox_id')
+    # file fields = ('file','rev','uri_base','format','dataset_id','delimiter',
+    #   'status','accepted_date','header','numrows')
+    fields = ('id','label','title','description','datatype')
     widgets = {
       'description': forms.Textarea(attrs={
-        'rows':2,'cols': 60,'class':'textarea','placeholder':'brief description'}),
+        'rows':2,'cols': 40,'class':'textarea','placeholder':'brief description'}),
     }
-
+  
+  # fields for creating new DatasetFile record from form
+  file = forms.FileField()
+  rev = forms.IntegerField()
+  uri_base = forms.URLField()
+  format = forms.ChoiceField(choices=FORMATS)
+  delimiter = forms.CharField()
+  status = forms.ChoiceField(choices=STATUS)
+  accepted_date = forms.DateTimeField()
+  header = forms.CharField()
+  numrows = forms.IntegerField()
+  
   def __init__(self, *args, **kwargs):
     super(DatasetDetailModelForm, self).__init__(*args, **kwargs)
+    for field in self.fields.values():
+      field.error_messages = {'required':'The field {fieldname} is required'.format(
+                  fieldname=field.label)}    
 
 class DatasetModelForm(forms.ModelForm):
   # trying to generate a unique label  

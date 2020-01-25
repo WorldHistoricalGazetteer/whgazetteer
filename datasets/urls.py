@@ -8,7 +8,8 @@ from . import views
 # dataset actions
 app_name='datasets'
 urlpatterns = [
-    path('create/', views.DatasetCreateView.as_view(), name='dataset-create'),
+    #path('create/', views.DatasetCreateView.as_view(), name='dataset-create'),
+    path('create/', views.DatasetCreateView2.as_view(), name='dataset-create'),
     
     path('<int:pk>/update', views.ds_update, name='dataset-update'),
     
@@ -16,6 +17,9 @@ urlpatterns = [
 
     # also handles update for name, description fields
     path('<int:id>/detail', views.DatasetDetailView.as_view(), name='dataset-detail'),
+
+    # also handles update for name, description fields
+    path('<int:id>/update', views.DatasetUpdateView.as_view(), name='dataset-update'),
 
     # insert validated delimited (csv for short) file data to db
     path('<int:pk>/insert_tsv/', views.ds_insert_tsv, name="ds_insert_tsv"),
