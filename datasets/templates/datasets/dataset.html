@@ -43,10 +43,10 @@
       {% csrf_token %}
       <div class="row">
       <div id="ds_details" class="col-sm-8 small">
-      status {{ status }}
+      status {{ status }} 
       {% if object.owner.id == user.id or user.is_superuser %}
-        <span class="small">Delete dataset</span> <a href="{% url 'datasets:dataset-delete' ds.id %}" class="" title="Delete dataset" rel="tooltip">{% fontawesome_icon 'trash' color='#ff0000' %}</a>
-        </span>
+        <span class="float-right">
+          Delete dataset <a href="{% url 'datasets:dataset-delete' ds.id %}" class="" title="Delete dataset" rel="tooltip">{% fontawesome_icon 'trash' color='#ff0000' %}</a></span>
       {% endif %}
         <table class="ds-table">
           <tr>
@@ -54,24 +54,25 @@
             <td>{{ ds.id }} / {{ ds.label }}</td>
           </tr>
           <tr>
-            <td><b>Title</b></td>
-              <td>
-              <!--<span class="form-name bigger strong text-danger">{ ds.title }}</span>-->
-              <!--<span class="hidden editing-name">{ form.name }}</span>&nbsp;-->
-              <span class="editing-name">{{ form.title }}</span>
-              <!--<span class="edit-name small"><a href="#">{ fontawesome_icon 'edit' color='#336699' %}</a></span>-->
+            <td><b>Title</b> 
+              <a href="#" class="edit-title">{% fontawesome_icon 'edit' color='#336699' %}</a>
+            </td>
+            <td>
+              <span class="form-title bigger strong text-danger">{{ form.title.value }}</span>
+              <span class="hidden editing-title">{{ form.title }}</span>&nbsp;
             </td>
           </tr>
           <tr>
-            <td style="vertical-align:top;"><b>Description</b></td>
+            <td style="vertical-align:top;"><b>Description</b> 
+              <a href="#" class="edit-description">{% fontawesome_icon 'edit' color='#336699' %}</a>
+            </td>
             <td>
-              <!--<span class="form-description">{ ds.description }}</span>-->
-              <!--<span class="hidden editing-description">{ form.description }}</span>&nbsp;-->
-              <span class="editing-description">{{ form.description }}</span>&nbsp;
-              <!--<span class="edit-description small"><a href="#">{ fontawesome_icon 'edit' color='#336699' %}</a></span>-->
+              <span class="form-description">{{ form.description.value }}</span>
+              <span class="hidden editing-description">{{ form.description }}</span>
             </td>
           </tr>
         </table>
+        <input class="btn btn-primary btn-sm hidden" type="submit" value="Save" />
         <p> <i>Current data file</i><span class="float-right mr-2">
             <a href="{% url 'datasets:dataset-update' pk=ds.id %}">update</a>
             <span class="help-matches" data-id="updates">
@@ -101,7 +102,7 @@
             <tr>
               <td><b>URI base</b></td>
               <td>{{ current_file.uri_base }}</td>
-              <td class="hidden">{{ form.uri_base }}</td>
+              <td class="hidden">{{ current_file.uri_base }}</td>
             </tr>
             <tr>
               <td><b>Format</b></td>
@@ -121,13 +122,11 @@
             <tr>
               <td><b>MapBox ID</b></td>
               <td><p class="form-value"><b>MapBox ID</b>: {{ ds.mapbox_id }}</p>
-                  <p class="hidden editing"><b>MapBox ID</b>: {{ form.mapbox_id }}</p></td>
+                  <p class="hidden editing"><b>MapBox ID</b>: {{ current_file.mapbox_id }}</p></td>
             </tr>
             {% endif %}
           </table>
           </div> <!-- div_file -->
-        <input class="btn btn-primary hidden" type="submit" value="Save" />
-        <!--<input class="btn btn-primary btn-sm" type="submit" value="Save" />-->
       </div>
       <div class="col-sm-4 small">
         <!--<h6 class="text-secondary">Statistics <small>( initial, <span class="bg-danger text-white small">&nbsp;added </span>&nbsp;)</small></h6>-->
@@ -539,10 +538,10 @@ js for Summary, Reconciliation
   }
   $("[rel='tooltip']").tooltip();
 
-  $(".edit-name").click(function() {
+  $(".edit-title").click(function() {
     <!--$(".hidden").toggle()-->
-    $(".editing-name").toggleClass("hidden")
-    $(".form-name").toggleClass("hidden")
+    $(".editing-title").toggleClass("hidden")
+    $(".form-title").toggleClass("hidden")
     $(".btn").toggleClass("hidden")
   })
   $(".edit-description").click(function() {
