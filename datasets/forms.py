@@ -57,14 +57,14 @@ class DatasetDetailModelForm(forms.ModelForm):
   
   # fields for creating new DatasetFile record from form
   #file = forms.FileField()
-  rev = forms.IntegerField()
-  uri_base = forms.URLField()
-  format = forms.ChoiceField(choices=FORMATS)
-  delimiter = forms.CharField()
-  status = forms.ChoiceField(choices=STATUS)
-  accepted_date = forms.DateTimeField()
-  header = forms.CharField()
-  numrows = forms.IntegerField()
+  #rev = forms.IntegerField()
+  #uri_base = forms.URLField()
+  #format = forms.ChoiceField(choices=FORMATS)
+  #delimiter = forms.CharField()
+  #status = forms.ChoiceField(choices=STATUS)
+  #accepted_date = forms.DateTimeField()
+  #header = forms.CharField()
+  #numrows = forms.IntegerField()
   
   def __init__(self, *args, **kwargs):
     super(DatasetDetailModelForm, self).__init__(*args, **kwargs)
