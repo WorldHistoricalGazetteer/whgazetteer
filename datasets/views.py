@@ -20,13 +20,11 @@ import simplejson as json
 from areas.models import Area
 from main.choices import AUTHORITY_BASEURI
 from places.models import *
-from datasets.forms import DatasetModelForm, HitModelForm, DatasetDetailModelForm, DatasetFileModelForm
+from datasets.forms import DatasetModelForm, HitModelForm, DatasetDetailModelForm
 from datasets.models import Dataset, Hit, DatasetFile
 from datasets.static.hashes.parents import ccodes
 from datasets.tasks import align_tgn, align_whg, align_wd, maxID
 from datasets.utils import *
-from shapeshifter.views import MultiModelFormView
-from shapeshifter.mixins import MultiSuccessMessageMixin
 from es.es_utils import makeDoc
 
 def pretty_request(request):
@@ -420,12 +418,14 @@ def ds_update(request, pk):
 #
 # insert lpf into database
 def ds_insert_lpf(request, pk):
-  import json #,os,codecs
+  import json
   ds = get_object_or_404(Dataset, id=pk)
+  # insert data from initial file upload
+  dsfile = DatasetFile.objects.filter(dataset_id_id=pk).order_by('-upload_date')[0].file
   [countrows,countlinked]= [0,0]
-  infile = ds.file.open(mode="r")
-  with ds.file:
-    jdata = json.loads(ds.file.read())
+  infile = dsfile.open(mode="r")
+  with dsfile:
+    jdata = json.loads(dsfile.read())
     #print('jdata from insert',jdata)
     for feat in jdata['features']:
       print('feat properties:',feat['properties'])
@@ -538,13 +538,11 @@ def ds_insert_lpf(request, pk):
 # insert LP-TSV file to database
 def ds_insert_tsv(request, pk):
   # retrieve just-added file, insert to db
-  import os, csv, codecs,json
-  dataset = get_object_or_404(Dataset, id=pk)
-  context = {'status': 'inserting'} #??
+  import os, csv
+  ds = get_object_or_404(Dataset, id=pk)
+  dsfile = DatasetFile.objects.filter(dataset_id_id=pk).order_by('-upload_date')[0]  
 
-  #infile=codecs.open('example_data/tgn2000.tsv','r','utf-8')
-  #infile=codecs.open('example_data/tgn2000.tsv','r','utf-8')
-  infile = dataset.file.open(mode="r")
+  infile = dsfile.open(mode="r")
   print('ds_insert_tsv(); request.GET; infile',request.GET,infile)
   # should already know delimiter
   try:
@@ -614,7 +612,7 @@ def ds_insert_tsv(request, pk):
     # id now available as newpl
     newpl = Place(
       src_id = src_id,
-      dataset = dataset,
+      dataset = ds,
       title = title,
       ccodes = ccodes
     )
@@ -754,20 +752,19 @@ def ds_insert_tsv(request, pk):
 
   context['status'] = 'uploaded'
   print('rows,linked,links:',countrows,countlinked,countlinks)
-  dataset.numrows = countrows
-  dataset.numlinked = countlinked
-  dataset.total_links = countlinks
-  dataset.header = header
-  dataset.status = 'uploaded'
-  dataset.save()
-  print('record:', dataset.__dict__)
+  ds.numrows = countrows
+  ds.numlinked = countlinked
+  ds.total_links = countlinks
+  ds.header = header
+  ds.status = 'uploaded'
+  ds.save()
+  print('record:', ds.__dict__)
   print('context from ds_insert_tsv():',context)
   infile.close()
-  # dataset.file.close()
+  # ds.file.close()
 
   #return render(request, '/datasets/dashboard.html', {'context': context})
   return redirect('/dashboard', context=context)
-
 
 #
 # list user datasets, area, place collections
@@ -803,67 +800,86 @@ class DashboardView(ListView):
 
 
 #
+#
 # upload file, validate format
-class DatasetCreateView(CreateView):
-  form_class = DatasetModelForm
-  template_name = 'datasets/dataset_create.html'
+class DatasetCreateView2(LoginRequiredMixin, CreateView):
+  form_class = DatasetDetailModelForm
+  template_name = 'datasets/dataset_create2.html'
+  success_message = 'dataset created'
 
+  def form_invalid(self,form):
+    print(form.errors.as_data())
+      
   def form_valid(self, form):
+    data=form.cleaned_data
     context={"format":""}
-    #if form.is_valid():
     user=self.request.user
     print('form is valid; request',user,self.request.FILES['file'].name)
-    format = form.cleaned_data['format']
-    #label = form.cleaned_data['title'][:16]+'_'+user.first_name[:1]+user.last_name[:1]
+    #TODO: generate a slug label?
+    #label = data['title'][:16]+'_'+user.first_name[:1]+user.last_name[:1]
+    
     # open & write tempf to a temp location;
     # call it tempfn for reference
     filename = self.request.FILES['file'].name
     tempf, tempfn = tempfile.mkstemp()
     print('tempf, tempfn',tempf, tempfn)
     try:
-      for chunk in form.cleaned_data['file'].chunks():
+      for chunk in data['file'].chunks():
         os.write(tempf, chunk)
     except:
       raise Exception("Problem with the input file %s" % request.FILES['file'])
     finally:
       os.close(tempf)
+      
     # open the temp file
     fin = codecs.open(tempfn, 'r', 'utf8')
+    
     # send for format validation
-    if format == 'delimited':
+    if data['format'] == 'delimited':
       context["format"] = "delimited"
       result = goodtable(tempfn,filename,user.username)
-      print('goodtable() result',result)
-    elif format == 'lpf':
+    elif data['format'] == 'lpf':
       context["format"] = "lpf"
       # coll = FeatureCollection
       # TODO: json-lines alternative 
       result = validate_lpf(fin,'coll')
-    # print('cleaned_data',form.cleaned_data)
+    print('validation result:',context["format"],result)
     fin.close()
 
     print('data valid, still in DatasetCreateView')
+    
     # insert to db & advance to dataset_detail if validated
     # otherwise present form again with errors
     if len(result['errors']) == 0:
       context['status'] = 'format_ok'
       print('cleaned_data:after ->',form.cleaned_data)
-      #print('columns, type', result['columns'], type(result['columns']))
-      obj = form.save(commit=False)
-      obj.status = 'format_ok'
-      obj.format = result['format']
-      obj.delimiter = result['delimiter'] if "delimiter" in result.keys() else "n/a"
-      obj.numrows = result['count']
-      obj.header = result['columns'] if "columns" in result.keys() else []
+      print('result',result)
+      
+      # new Dataset record ('owner','id','label','title','description','datatype')
+      dsobj = form.save(commit=False)
+      dsobj.status = 'format_ok'
       try:
-        obj.save()
+        dsobj.save()
       except:
         sys.exit(sys.exc_info())
-
-      # inserts data, goes to detail page
+      
+      # initial DatasetFile record
+      DatasetFile.objects.create(
+        dataset_id = dsobj,
+        file = 'user_'+user.username+'/'+filename,
+        rev = 1,
+        uri_base = data['uri_base'],
+        format = result['format'],
+        delimiter = result['delimiter'] if "delimiter" in result.keys() else "n/a",
+        status = 'format_ok',
+        accepted_date = None,
+        header = result['columns'] if "columns" in result.keys() else [],
+        numrows = result['count']
+      )
+      
       #return self.render_to_response(self.get_context_data(form=form,context=context))
-      return super().form_valid(form)
-      #return redirect('/datasets/'+str(obj.id)+'/detail')
+      #return super().form_valid(form)
+      return redirect('/datasets/'+str(dsobj.id)+'/detail')
 
     else:
       context['status'] = 'format_error'
@@ -874,102 +890,12 @@ class DatasetCreateView(CreateView):
       return self.render_to_response(self.get_context_data(form=form,context=context))
 
   def get_context_data(self, *args, **kwargs):
-    context = super(DatasetCreateView, self).get_context_data(*args, **kwargs)
-    #context['action'] = 'create'
-    return context
-
-#
-# upload file, validate format
-class DatasetCreateView2(LoginRequiredMixin, CreateView):
-  form_class = DatasetDetailModelForm
-  template_name = 'datasets/dataset_create2.html'
-  success_message = 'dataset created'
-
-  
-  #def forms_valid(self):
-    #print('in forms_valid')
-    #forms = self.get_forms()
-    #ds_form = forms['datasetdetailmodelform']
-    #file_form = forms['datasetfilemodelform']
-  
-    #print('ds_form',ds_form.cleaned_data)
-    #print('file_form',file_form.cleaned_data)
-    #return super().forms_valid()  
-
-  def form_invalid(self,form):
-    print(form.errors.as_data())
-      
-  def form_valid(self, form):
-    print(form.cleaned_data)
-    #context={"format":""}
-    #user=self.request.user
-    #print('form is valid; request',user,self.request.FILES['file'].name)
-    #format = form.cleaned_data['format']
-    ##label = form.cleaned_data['title'][:16]+'_'+user.first_name[:1]+user.last_name[:1]
-    ## open & write tempf to a temp location;
-    ## call it tempfn for reference
-    #filename = self.request.FILES['file'].name
-    #tempf, tempfn = tempfile.mkstemp()
-    #print('tempf, tempfn',tempf, tempfn)
-    #try:
-      #for chunk in form.cleaned_data['file'].chunks():
-        #os.write(tempf, chunk)
-    #except:
-      #raise Exception("Problem with the input file %s" % request.FILES['file'])
-    #finally:
-      #os.close(tempf)
-    ## open the temp file
-    #fin = codecs.open(tempfn, 'r', 'utf8')
-    ## send for format validation
-    #if format == 'delimited':
-      #context["format"] = "delimited"
-      #result = goodtable(tempfn,filename,user.username)
-      #print('goodtable() result',result)
-    #elif format == 'lpf':
-      #context["format"] = "lpf"
-      ## coll = FeatureCollection
-      ## TODO: json-lines alternative 
-      #result = validate_lpf(fin,'coll')
-    ## print('cleaned_data',form.cleaned_data)
-    #fin.close()
-
-    #print('data valid, still in DatasetCreateView')
-    ## insert to db & advance to dataset_detail if validated
-    ## otherwise present form again with errors
-    #if len(result['errors']) == 0:
-      #context['status'] = 'format_ok'
-      #print('cleaned_data:after ->',form.cleaned_data)
-      ##print('columns, type', result['columns'], type(result['columns']))
-      #obj = form.save(commit=False)
-      #obj.status = 'format_ok'
-      #obj.format = result['format']
-      #obj.delimiter = result['delimiter'] if "delimiter" in result.keys() else "n/a"
-      #obj.numrows = result['count']
-      #obj.header = result['columns'] if "columns" in result.keys() else []
-      #try:
-        #obj.save()
-      #except:
-        #sys.exit(sys.exc_info())
-
-      ## inserts data, goes to detail page
-      ##return self.render_to_response(self.get_context_data(form=form,context=context))
-      #return super().form_valid(form)
-      ##return redirect('/datasets/'+str(obj.id)+'/detail')
-
-    #else:
-      #context['status'] = 'format_error'
-      #context['errors'] = result['errors']
-      #context['action'] = ''
-      #result['columns'] if "columns" in result.keys() else []
-      #print('result:', result)
-      #return self.render_to_response(self.get_context_data(form=form,context=context))
-
-  def get_context_data(self, *args, **kwargs):
     context = super(DatasetCreateView2, self).get_context_data(*args, **kwargs)
     #context['action'] = 'create'
     return context
 # 
 # dataset summary for "dataset portal" v2
+
 class DatasetUpdateView(LoginRequiredMixin,UpdateView):
   form_class = DatasetDetailModelForm
   
@@ -1067,6 +993,7 @@ class DatasetUpdateView(LoginRequiredMixin,UpdateView):
       place_id_id__in = placeset, task_id__contains = '-').count()
 
     # insert to db immediately if format okay
+    # TODO: if it's an update, execute new ds_update_**() function
     if context['status'] == 'format_ok':
       print('format_ok, inserting dataset '+str(id_))
       if context['format'] == 'delimited':
@@ -1210,6 +1137,83 @@ def match_undo(request, ds, tid, pid):
   return redirect('/datasets/'+str(ds)+'/review/'+tid+'/pass1')
  # /datasets/1/review/d6ad4289-cae6-476d-873c-a81fed4d6315/pass1
  
+ 
+ # upload file, validate format
+ #class DatasetCreateView(CreateView):
+   #form_class = DatasetModelForm
+   #template_name = 'datasets/dataset_create.html'
+ 
+   #def form_valid(self, form):
+     #context={"format":""}
+     ##if form.is_valid():
+     #user=self.request.user
+     #print('form is valid; request',user,self.request.FILES['file'].name)
+     #format = form.cleaned_data['format']
+     ##label = form.cleaned_data['title'][:16]+'_'+user.first_name[:1]+user.last_name[:1]
+     ## open & write tempf to a temp location;
+     ## call it tempfn for reference
+     #filename = self.request.FILES['file'].name
+     #tempf, tempfn = tempfile.mkstemp()
+     #print('tempf, tempfn',tempf, tempfn)
+     #try:
+       #for chunk in form.cleaned_data['file'].chunks():
+         #os.write(tempf, chunk)
+     #except:
+       #raise Exception("Problem with the input file %s" % request.FILES['file'])
+     #finally:
+       #os.close(tempf)
+     ## open the temp file
+     #fin = codecs.open(tempfn, 'r', 'utf8')
+     ## send for format validation
+     #if format == 'delimited':
+       #context["format"] = "delimited"
+       #result = goodtable(tempfn,filename,user.username)
+       #print('goodtable() result',result)
+     #elif format == 'lpf':
+       #context["format"] = "lpf"
+       ## coll = FeatureCollection
+       ## TODO: json-lines alternative 
+       #result = validate_lpf(fin,'coll')
+     ## print('cleaned_data',form.cleaned_data)
+     #fin.close()
+ 
+     #print('data valid, still in DatasetCreateView')
+     ## insert to db & advance to dataset_detail if validated
+     ## otherwise present form again with errors
+     #if len(result['errors']) == 0:
+       #context['status'] = 'format_ok'
+       #print('cleaned_data:after ->',form.cleaned_data)
+       ##print('columns, type', result['columns'], type(result['columns']))
+       #obj = form.save(commit=False)
+       #obj.status = 'format_ok'
+       #obj.format = result['format']
+       #obj.delimiter = result['delimiter'] if "delimiter" in result.keys() else "n/a"
+       #obj.numrows = result['count']
+       #obj.header = result['columns'] if "columns" in result.keys() else []
+       #try:
+         #obj.save()
+       #except:
+         #sys.exit(sys.exc_info())
+ 
+       ## inserts data, goes to detail page
+       ##return self.render_to_response(self.get_context_data(form=form,context=context))
+       #return super().form_valid(form)
+       ##return redirect('/datasets/'+str(obj.id)+'/detail')
+ 
+     #else:
+       #context['status'] = 'format_error'
+       #context['errors'] = result['errors']
+       #context['action'] = ''
+       #result['columns'] if "columns" in result.keys() else []
+       #print('result:', result)
+       #return self.render_to_response(self.get_context_data(form=form,context=context))
+ 
+   #def get_context_data(self, *args, **kwargs):
+     #context = super(DatasetCreateView, self).get_context_data(*args, **kwargs)
+     ##context['action'] = 'create'
+     #return context
+
+
 """
 functions to batch large database inserts, e.g. TGN
 """

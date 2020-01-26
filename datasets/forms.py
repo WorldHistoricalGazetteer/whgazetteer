@@ -36,21 +36,20 @@ class HitModelForm(forms.ModelForm):
       self.fields[key].required = False     
 
 
-class DatasetFileModelForm(forms.ModelForm):
-  class Meta:
-    model = DatasetFile
-    fields = ['file','rev','uri_base','format','dataset_id','delimiter',
-              'status','accepted_date','header','numrows']
-    widgets = { 'file': ClearableFileInput() }    
+#class DatasetFileModelForm(forms.ModelForm):
+  #class Meta:
+    #model = DatasetFile
+    #fields = ['file','rev','uri_base','format','dataset_id','delimiter',
+              #'status','accepted_date','header','numrows']
+    #widgets = { 'file': ClearableFileInput() }    
   
 
 class DatasetDetailModelForm(forms.ModelForm):
-  
   class Meta:
     model = Dataset
     # file fields = ('file','rev','uri_base','format','dataset_id','delimiter',
     #   'status','accepted_date','header','numrows')
-    fields = ('id','label','title','description','datatype')
+    fields = ('owner','id','label','title','description','datatype')
     widgets = {
       'description': forms.Textarea(attrs={
         'rows':2,'cols': 40,'class':'textarea','placeholder':'brief description'}),
@@ -74,7 +73,6 @@ class DatasetDetailModelForm(forms.ModelForm):
                   fieldname=field.label)}    
 
 class DatasetModelForm(forms.ModelForm):
-  # trying to generate a unique label  
   class Meta:
     model = Dataset
     fields = ('id','title','label','description','file','format','datatype',
