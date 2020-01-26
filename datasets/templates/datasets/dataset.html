@@ -43,9 +43,11 @@
       {% csrf_token %}
       <div class="row">
       <div id="ds_details" class="col-sm-8 small">
-        {% if object.owner.id == user.id or user.is_superuser %}
-      <span class="small">Delete dataset</span> <a href="{% url 'datasets:dataset-delete' object.id %}" class="" title="Delete dataset" rel="tooltip">{% fontawesome_icon 'trash' color='#ff0000' %}</a>
-      </span>{% endif %}
+      status {{ status }}
+      {% if object.owner.id == user.id or user.is_superuser %}
+        <span class="small">Delete dataset</span> <a href="{% url 'datasets:dataset-delete' ds.id %}" class="" title="Delete dataset" rel="tooltip">{% fontawesome_icon 'trash' color='#ff0000' %}</a>
+        </span>
+      {% endif %}
         <table class="ds-table">
           <tr>
             <td><b>ID / label</b></td>
@@ -56,7 +58,7 @@
               <td>
               <!--<span class="form-name bigger strong text-danger">{ ds.title }}</span>-->
               <!--<span class="hidden editing-name">{ form.name }}</span>&nbsp;-->
-              <span class="editing-name">{{ form.title }}</span>&nbsp;
+              <span class="editing-name">{{ form.title }}</span>
               <!--<span class="edit-name small"><a href="#">{ fontawesome_icon 'edit' color='#336699' %}</a></span>-->
             </td>
           </tr>

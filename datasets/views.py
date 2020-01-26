@@ -879,6 +879,7 @@ class DatasetCreateView2(LoginRequiredMixin, CreateView):
       
       #return self.render_to_response(self.get_context_data(form=form,context=context))
       #return super().form_valid(form)
+      #return redirect('/datasets/'+str(dsobj.id)+'/update')
       return redirect('/datasets/'+str(dsobj.id)+'/detail')
 
     else:
@@ -895,7 +896,6 @@ class DatasetCreateView2(LoginRequiredMixin, CreateView):
     return context
 # 
 # dataset summary for "dataset portal" v2
-
 class DatasetUpdateView(LoginRequiredMixin,UpdateView):
   form_class = DatasetDetailModelForm
   
@@ -919,14 +919,6 @@ class DatasetUpdateView(LoginRequiredMixin,UpdateView):
     #print('kwargs:',self.kwargs)
     id_ = self.kwargs.get("id")
     return get_object_or_404(Dataset, id=id_)
-
-  def get_context_data(self, **kwargs):
-    context = super(MyView, self).get_context_data(**kwargs)
-    if 'form' not in context:
-      context['form'] = self.form_class(initial={'some_field': context['model'].some_field})
-    if 'form2' not in context:
-      context['form2'] = self.second_form_class(initial={'another_field': context['model'].another_field})
-    return context
   
   def get_context_data(self, *args, **kwargs):
     context = super(DatasetDetailView, self).get_context_data(*args, **kwargs)
@@ -994,7 +986,8 @@ class DatasetUpdateView(LoginRequiredMixin,UpdateView):
 
     # insert to db immediately if format okay
     # TODO: if it's an update, execute new ds_update_**() function
-    if context['status'] == 'format_ok':
+    #if context['status'] == 'format_ok':
+    if context['status'] == 'uploaded':
       print('format_ok, inserting dataset '+str(id_))
       if context['format'] == 'delimited':
         ds_insert_tsv(self.request, id_)
@@ -1090,12 +1083,12 @@ class DatasetDetailView(LoginRequiredMixin,UpdateView):
       place_id_id__in = placeset, task_id__contains = '-').count()
 
     # insert to db immediately if format okay
-    #if context['status'] == 'format_ok':
-      #print('format_ok, inserting dataset '+str(id_))
-      #if context['format'] == 'delimited':
-        #ds_insert_tsv(self.request, id_)
-      #else:
-        #ds_insert_lpf(self.request,id_)
+    if context['status'] == 'format_ok':
+      print('format_ok, inserting dataset '+str(id_))
+      if context['format'] == 'delimited':
+        ds_insert_tsv(self.request, id_)
+      else:
+        ds_insert_lpf(self.request,id_)
 
     print('context from DatasetDetailView',context)
     return context
