@@ -17,7 +17,8 @@ def validate_lpf(infile,format):
   #infile=codecs.open('tests/whg/lugares_10_citations.jsonld','r','utf-8')
   #infile=codecs.open('tests/whg/lugares_10_citations_errors.jsonld','r','utf-8')
   #infile=open('tests/whg/alcedo_200errors.tsv')
-  result = {"format":"lpf_"+format,"errors":[]}
+  #result = {"format":"lpf_"+format,"errors":[]}
+  result = {"format":"lpf","errors":[]}
   [countrows,count_ok] = [0,0]
   
   jdata = json.loads(infile.read())

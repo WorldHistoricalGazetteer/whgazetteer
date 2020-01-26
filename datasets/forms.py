@@ -56,7 +56,7 @@ class DatasetDetailModelForm(forms.ModelForm):
     }
   
   # fields for creating new DatasetFile record from form
-  file = forms.FileField()
+  #file = forms.FileField()
   rev = forms.IntegerField()
   uri_base = forms.URLField()
   format = forms.ChoiceField(choices=FORMATS)
@@ -68,6 +68,34 @@ class DatasetDetailModelForm(forms.ModelForm):
   
   def __init__(self, *args, **kwargs):
     super(DatasetDetailModelForm, self).__init__(*args, **kwargs)
+    for field in self.fields.values():
+      field.error_messages = {'required':'The field {fieldname} is required'.format(
+                  fieldname=field.label)}    
+
+class DatasetCreateModelForm(forms.ModelForm):
+  class Meta:
+    model = Dataset
+    # file fields = ('file','rev','uri_base','format','dataset_id','delimiter',
+    #   'status','accepted_date','header','numrows')
+    fields = ('owner','id','label','title','description','datatype')
+    widgets = {
+      'description': forms.Textarea(attrs={
+        'rows':2,'cols': 40,'class':'textarea','placeholder':'brief description'}),
+    }
+  
+  # fields for creating new DatasetFile record from form
+  file = forms.FileField()
+  rev = forms.IntegerField()
+  uri_base = forms.URLField()
+  format = forms.ChoiceField(choices=FORMATS)
+  delimiter = forms.CharField()
+  status = forms.ChoiceField(choices=STATUS)
+  accepted_date = forms.DateTimeField()
+  header = forms.CharField()
+  numrows = forms.IntegerField()
+  
+  def __init__(self, *args, **kwargs):
+    super(DatasetCreateModelForm, self).__init__(*args, **kwargs)
     for field in self.fields.values():
       field.error_messages = {'required':'The field {fieldname} is required'.format(
                   fieldname=field.label)}    

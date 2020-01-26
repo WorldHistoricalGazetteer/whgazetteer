@@ -20,7 +20,7 @@ import simplejson as json
 from areas.models import Area
 from main.choices import AUTHORITY_BASEURI
 from places.models import *
-from datasets.forms import DatasetModelForm, HitModelForm, DatasetDetailModelForm
+from datasets.forms import DatasetModelForm, HitModelForm, DatasetDetailModelForm, DatasetCreateModelForm
 from datasets.models import Dataset, Hit, DatasetFile
 from datasets.static.hashes.parents import ccodes
 from datasets.tasks import align_tgn, align_whg, align_wd, maxID
@@ -803,7 +803,7 @@ class DashboardView(ListView):
 #
 # upload file, validate format
 class DatasetCreateView2(LoginRequiredMixin, CreateView):
-  form_class = DatasetDetailModelForm
+  form_class = DatasetCreateModelForm
   template_name = 'datasets/dataset_create2.html'
   success_message = 'dataset created'
 
@@ -1009,15 +1009,20 @@ class DatasetDetailView(LoginRequiredMixin,UpdateView):
     return '/datasets/'+str(id_)+'/detail'
 
   def form_valid(self, form):
-    context={}
-    if form.is_valid():
-      print('form is valid')
-      print('cleaned_data: before ->', form.cleaned_data)
-    else:
-      print('form not valid', form.errors)
-      context['errors'] = form.errors
+    print('DatasetDetailView form_valid() data->', form.cleaned_data)
+    ds = get_object_or_404(Dataset,pk=self.kwargs.get("id"))
+    ds.title = form.cleaned_data['title']
+    ds.desription = form.cleaned_data['description']
+    ds.save()
     return super().form_valid(form)
-
+  
+  def form_invalid(self,form):
+    context = {}
+    print('form not valid', form.errors)
+    print('fucking cleaned_date', form.cleaned_data)
+    context['errors'] = form.errors
+    return super().form_invalid(form)
+    
   def get_object(self):
     #print('kwargs:',self.kwargs)
     id_ = self.kwargs.get("id")

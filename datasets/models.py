@@ -90,7 +90,7 @@ class DatasetFile(models.Model):
     delimiter = models.CharField(max_length=5, blank=True, null=True)
     status = models.CharField(max_length=12, null=True, blank=True, choices=STATUS)
     upload_date = models.DateTimeField(null=True, auto_now_add=True)
-    accepted_date = models.DateTimeField(null=True)    
+    accepted_date = models.DateTimeField(null=True, blank=True)    
     
     # backfilled
     header = ArrayField(models.CharField(max_length=30), null=True, blank=True)
