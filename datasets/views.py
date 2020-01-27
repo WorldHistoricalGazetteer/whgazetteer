@@ -422,6 +422,7 @@ def ds_insert_lpf(request, pk):
   ds = get_object_or_404(Dataset, id=pk)
   # insert data from initial file upload
   dsfile = DatasetFile.objects.filter(dataset_id_id=pk).order_by('-upload_date')[0].file
+  uribase = DatasetFile.objects.filter(dataset_id_id=pk).order_by('-upload_date')[0].uri_base
   [countrows,countlinked]= [0,0]
   infile = dsfile.open(mode="r")
   with dsfile:
@@ -441,8 +442,9 @@ def ds_insert_lpf(request, pk):
       # Place: src_id, title, ccodes, dataset
       newpl = Place(
         # TODO: add src_id to properties in LP format?
-        src_id=feat['@id'] if 'http' not in feat['@id'] and len(feat['@id']) < 25 \
-          else re.search("(\/|=)(?:.(?!\/|=))+$",feat['@id']).group(0)[1:],
+        #src_id=feat['@id'] if 'http' not in feat['@id'] and len(feat['@id']) < 25 \
+          #else re.search("(\/|=)(?:.(?!\/|=))+$",feat['@id']).group(0)[1:],
+        src_id=feat['@id'] if uribase == None else feat['@id'].replace(uribase,''),
         dataset=ds,
         title=feat['properties']['title'],
         ccodes=feat['properties']['ccodes'] if 'ccodes' in feat['properties'].keys() else []
@@ -540,7 +542,7 @@ def ds_insert_tsv(request, pk):
   # retrieve just-added file, insert to db
   import os, csv
   ds = get_object_or_404(Dataset, id=pk)
-  dsfile = DatasetFile.objects.filter(dataset_id_id=pk).order_by('-upload_date')[0]  
+  dsfile = DatasetFile.objects.filter(dataset_id_id=pk).order_by('-upload_date')[0].file
 
   infile = dsfile.open(mode="r")
   print('ds_insert_tsv(); request.GET; infile',request.GET,infile)
@@ -750,7 +752,7 @@ def ds_insert_tsv(request, pk):
   PlaceDescription.objects.bulk_create(objs['PlaceDescription'],batch_size=10000)
   print('descriptions done')
 
-  context['status'] = 'uploaded'
+  context = {'status':'uploaded'}
   print('rows,linked,links:',countrows,countlinked,countlinks)
   ds.numrows = countrows
   ds.numlinked = countlinked
@@ -822,7 +824,7 @@ class DatasetCreateView2(LoginRequiredMixin, CreateView):
     # call it tempfn for reference
     filename = self.request.FILES['file'].name
     tempf, tempfn = tempfile.mkstemp()
-    print('tempf, tempfn',tempf, tempfn)
+    print('filename, tempfn',filename, tempfn)
     try:
       for chunk in data['file'].chunks():
         os.write(tempf, chunk)
@@ -837,7 +839,7 @@ class DatasetCreateView2(LoginRequiredMixin, CreateView):
     # send for format validation
     if data['format'] == 'delimited':
       context["format"] = "delimited"
-      result = goodtable(tempfn,filename,user.username)
+      result = goodtable(tempfn,filename)
     elif data['format'] == 'lpf':
       context["format"] = "lpf"
       # coll = FeatureCollection
@@ -1034,6 +1036,7 @@ class DatasetDetailView(LoginRequiredMixin,UpdateView):
     print('DatasetDetailView get_context_data() kwargs:',self.kwargs)
     id_ = self.kwargs.get("id")
     ds = get_object_or_404(Dataset, id=id_)
+    file = DatasetFile.objects.filter(dataset_id_id = ds.id).order_by('-upload_date')[0]
 
     # load areas for dropdowns
     me = self.request.user
@@ -1052,9 +1055,9 @@ class DatasetDetailView(LoginRequiredMixin,UpdateView):
     context['ds'] = ds
     context['status'] = ds.status
     # latest file
-    context['current_file'] = ds.files.all().order_by('-upload_date')[0]
-    context['format'] = ds.format
-    context['numrows'] = ds.numrows
+    context['current_file'] = file
+    context['format'] = file.format
+    context['numrows'] = file.numrows
     context['users'] = ds.dsusers
     context['collab'] = ds.collab
     placeset = Place.objects.filter(dataset=ds.label)
@@ -1087,6 +1090,8 @@ class DatasetDetailView(LoginRequiredMixin,UpdateView):
     context['descriptions_added'] = PlaceDescription.objects.filter(
       place_id_id__in = placeset, task_id__contains = '-').count()
 
+    print('context from DatasetDetailView',context)
+
     # insert to db immediately if format okay
     if context['status'] == 'format_ok':
       print('format_ok, inserting dataset '+str(id_))
@@ -1095,7 +1100,6 @@ class DatasetDetailView(LoginRequiredMixin,UpdateView):
       else:
         ds_insert_lpf(self.request,id_)
 
-    print('context from DatasetDetailView',context)
     return context
 
 # 
@@ -1136,102 +1140,3 @@ def match_undo(request, ds, tid, pid):
  # /datasets/1/review/d6ad4289-cae6-476d-873c-a81fed4d6315/pass1
  
  
- # upload file, validate format
- #class DatasetCreateView(CreateView):
-   #form_class = DatasetModelForm
-   #template_name = 'datasets/dataset_create.html'
- 
-   #def form_valid(self, form):
-     #context={"format":""}
-     ##if form.is_valid():
-     #user=self.request.user
-     #print('form is valid; request',user,self.request.FILES['file'].name)
-     #format = form.cleaned_data['format']
-     ##label = form.cleaned_data['title'][:16]+'_'+user.first_name[:1]+user.last_name[:1]
-     ## open & write tempf to a temp location;
-     ## call it tempfn for reference
-     #filename = self.request.FILES['file'].name
-     #tempf, tempfn = tempfile.mkstemp()
-     #print('tempf, tempfn',tempf, tempfn)
-     #try:
-       #for chunk in form.cleaned_data['file'].chunks():
-         #os.write(tempf, chunk)
-     #except:
-       #raise Exception("Problem with the input file %s" % request.FILES['file'])
-     #finally:
-       #os.close(tempf)
-     ## open the temp file
-     #fin = codecs.open(tempfn, 'r', 'utf8')
-     ## send for format validation
-     #if format == 'delimited':
-       #context["format"] = "delimited"
-       #result = goodtable(tempfn,filename,user.username)
-       #print('goodtable() result',result)
-     #elif format == 'lpf':
-       #context["format"] = "lpf"
-       ## coll = FeatureCollection
-       ## TODO: json-lines alternative 
-       #result = validate_lpf(fin,'coll')
-     ## print('cleaned_data',form.cleaned_data)
-     #fin.close()
- 
-     #print('data valid, still in DatasetCreateView')
-     ## insert to db & advance to dataset_detail if validated
-     ## otherwise present form again with errors
-     #if len(result['errors']) == 0:
-       #context['status'] = 'format_ok'
-       #print('cleaned_data:after ->',form.cleaned_data)
-       ##print('columns, type', result['columns'], type(result['columns']))
-       #obj = form.save(commit=False)
-       #obj.status = 'format_ok'
-       #obj.format = result['format']
-       #obj.delimiter = result['delimiter'] if "delimiter" in result.keys() else "n/a"
-       #obj.numrows = result['count']
-       #obj.header = result['columns'] if "columns" in result.keys() else []
-       #try:
-         #obj.save()
-       #except:
-         #sys.exit(sys.exc_info())
- 
-       ## inserts data, goes to detail page
-       ##return self.render_to_response(self.get_context_data(form=form,context=context))
-       #return super().form_valid(form)
-       ##return redirect('/datasets/'+str(obj.id)+'/detail')
- 
-     #else:
-       #context['status'] = 'format_error'
-       #context['errors'] = result['errors']
-       #context['action'] = ''
-       #result['columns'] if "columns" in result.keys() else []
-       #print('result:', result)
-       #return self.render_to_response(self.get_context_data(form=form,context=context))
- 
-   #def get_context_data(self, *args, **kwargs):
-     #context = super(DatasetCreateView, self).get_context_data(*args, **kwargs)
-     ##context['action'] = 'create'
-     #return context
-
-
-"""
-functions to batch large database inserts, e.g. TGN
-"""
-
-#   PlaceName.objects.bulk_create(objs['PlaceName'])
-#def create_data(model, data):
-  #bulk_create(model, generator())
-  
-#def bulk_create(model, generator, batch_size=10000):
-  #"""
-  #Uses islice to call bulk_create on batches of
-  #Model objects from a generator.
-  #"""
-  #while True:
-    #items = list(islice(generator, batch_size))
-    #if not items:
-      #break
-    #model.objects.bulk_create(items)
-
-#def generator(data):
-  #for row in data:
-    #yield MyModel(field1=data['field1'])
-""" end """

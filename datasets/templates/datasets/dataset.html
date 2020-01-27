@@ -43,7 +43,6 @@
       {% csrf_token %}
       <div class="row">
       <div id="ds_details" class="col-sm-8 small">
-      status {{ status }} 
       {% if object.owner.id == user.id or user.is_superuser %}
         <span class="float-right">
           Delete dataset <a href="{% url 'datasets:dataset-delete' ds.id %}" class="" title="Delete dataset" rel="tooltip">{% fontawesome_icon 'trash' color='#ff0000' %}</a></span>
@@ -70,6 +69,10 @@
               <span class="form-description">{{ form.description.value }}</span>
               <span class="hidden editing-description">{{ form.description }}</span>
             </td>
+          </tr>
+          <tr>
+            <td><b>Status</b></td>
+            <td>{{ status }}</td>
           </tr>
         </table>
         <input class="btn btn-primary btn-sm hidden" type="submit" value="Save" />

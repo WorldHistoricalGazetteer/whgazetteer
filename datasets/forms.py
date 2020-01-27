@@ -54,18 +54,7 @@ class DatasetDetailModelForm(forms.ModelForm):
       'description': forms.Textarea(attrs={
         'rows':2,'cols': 40,'class':'textarea','placeholder':'brief description'}),
     }
-  
-  # fields for creating new DatasetFile record from form
-  #file = forms.FileField()
-  #rev = forms.IntegerField()
-  #uri_base = forms.URLField()
-  #format = forms.ChoiceField(choices=FORMATS)
-  #delimiter = forms.CharField()
-  #status = forms.ChoiceField(choices=STATUS)
-  #accepted_date = forms.DateTimeField()
-  #header = forms.CharField()
-  #numrows = forms.IntegerField()
-  
+    
   def __init__(self, *args, **kwargs):
     super(DatasetDetailModelForm, self).__init__(*args, **kwargs)
     for field in self.fields.values():
@@ -86,14 +75,14 @@ class DatasetCreateModelForm(forms.ModelForm):
   # fields for creating new DatasetFile record from form
   file = forms.FileField()
   rev = forms.IntegerField()
-  uri_base = forms.URLField()
+  uri_base = forms.URLField(widget=forms.URLInput(attrs={'placeholder':'Leave blank unless record IDs are URIs'}))
   format = forms.ChoiceField(choices=FORMATS)
   delimiter = forms.CharField()
   status = forms.ChoiceField(choices=STATUS)
   accepted_date = forms.DateTimeField()
   header = forms.CharField()
   numrows = forms.IntegerField()
-  
+
   def __init__(self, *args, **kwargs):
     super(DatasetCreateModelForm, self).__init__(*args, **kwargs)
     for field in self.fields.values():

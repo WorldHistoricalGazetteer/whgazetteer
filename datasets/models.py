@@ -25,6 +25,17 @@ class Dataset(models.Model):
     label = models.CharField(max_length=20, null=False, unique="True")
     title = models.CharField(max_length=255, null=False)
     description = models.CharField(max_length=2044, null=False)
+    spine = models.BooleanField(default=False)    
+    mapbox_id = models.CharField(max_length=200, null=True, blank=True)
+
+    # TODO: these are updated in both Dataset & DatasetFile
+    status = models.CharField(max_length=12, null=True, blank=True, choices=STATUS)
+    numrows = models.IntegerField(null=True, blank=True)
+    # back-filled
+    numlinked = models.IntegerField(null=True, blank=True)
+    total_links = models.IntegerField(null=True, blank=True)
+    
+    # fields below are zombies; supplanted by DatasetFile model
     file = models.FileField(upload_to=user_directory_path)
     uri_base = models.URLField(blank=True, null=True, default="http://whgazetteer.org/api/places/")
     format = models.CharField(max_length=12, null=False,choices=FORMATS,
@@ -32,17 +43,9 @@ class Dataset(models.Model):
     datatype = models.CharField(max_length=12, null=False,choices=DATATYPES,
         default='place')
     delimiter = models.CharField(max_length=5, blank=True, null=True)
-    status = models.CharField(max_length=12, null=True, blank=True, choices=STATUS)
     upload_date = models.DateTimeField(null=True, auto_now_add=True)
     accepted_date = models.DateTimeField(null=True, blank=True)
-    spine = models.BooleanField(default=False)    
-    mapbox_id = models.CharField(max_length=200, null=True, blank=True)
-
-    # backfilled
     header = ArrayField(models.CharField(max_length=30), null=True, blank=True)
-    numrows = models.IntegerField(null=True, blank=True)
-    numlinked = models.IntegerField(null=True, blank=True)
-    total_links = models.IntegerField(null=True, blank=True)
 
         
     def __str__(self):

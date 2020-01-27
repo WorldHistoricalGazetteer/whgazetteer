@@ -12,7 +12,8 @@ pp = pprint.PrettyPrinter(indent=1)
 def validate_lpf(infile,format):
   # TODO: handle json-lines
   # TODO: create v1.1 schema; phase out v1.0
-  schema = json.loads(codecs.open('datasets/static/validate/schema_lpf_v1.0.json','r','utf8').read())
+  wd = '/Users/karlg/Documents/Repos/_whgazetteer/'
+  schema = json.loads(codecs.open(wd+'datasets/static/validate/schema_lpf_v1.0.json','r','utf8').read())
   fout = codecs.open('validate-lpf-result.txt','w','utf8')
   #infile=codecs.open('tests/whg/lugares_10_citations.jsonld','r','utf-8')
   #infile=codecs.open('tests/whg/lugares_10_citations_errors.jsonld','r','utf-8')
@@ -29,7 +30,7 @@ def validate_lpf(infile,format):
   else:
     for feat in jdata['features']:
       countrows +=1
-      print(feat['properties']['title'])
+      #print(feat['properties']['title'])
       try:
         validate(
           instance=feat,
@@ -48,7 +49,7 @@ def validate_lpf(infile,format):
   return result
 
 # validate LP-TSV file
-def goodtable(tempfn,filename,user):
+def goodtable(tempfn,filename):
   #user='whgadmin'
   result = {"errors":[],"format":"delimited"}
   # TODO: detect encoding
