@@ -77,7 +77,8 @@
         </table>
         <input class="btn btn-primary btn-sm hidden" type="submit" value="Save" />
         <p> <i>Current data file</i><span class="float-right mr-2">
-            <a href="{% url 'datasets:dataset-update' pk=ds.id %}">update</a>
+            <!--<a href="{ url 'datasets:dataset-update' pk=ds.id %}">update</a>-->
+            <a href="#updater" data-toggle="modal">update</a>
             <span class="help-matches" data-id="updates">
             {% fontawesome_icon 'question-circle' color='#993333' %}</span>
           </span>
@@ -91,8 +92,6 @@
             <tr>
               <td><b>File</b></td>
               <td>{{ current_file.file }}</td>
-              <!--<td class="hidden">{ form.file }}</td>-->
-              <!--<td>{ form.file }}</td>-->
             </tr>
             <tr>
               <td><b>Uploaded</b></td>
@@ -144,7 +143,6 @@
         <input type="hidden" name="numrows" value="{{ current_file.numrows }}">
       </div>
       <div class="col-sm-4 small">
-        <!--<h6 class="text-secondary">Statistics <small>( initial, <span class="bg-danger text-white small">&nbsp;added </span>&nbsp;)</small></h6>-->
         <div id="ds_stats">
           <table style="width:100%">
             <tr><td class="pb-3"><b>Status</b></td><td class="pb-3">{{ ds.status }}</td><td class="pb-3"></td></tr>
@@ -166,6 +164,26 @@
       </div>
       </div> <!-- row -->
       </form>
+      <!--<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">Launch demo modal</button>-->
+      <div class="modal fade" id="updater" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel">Updating dataset {{ds.id}} ({{ds.label}})</h5>
+              <button type="button" class="close" data-dismiss="modal">&times;</span>
+              </button>
+            </div>
+            <div id="update_results" class="modal-body" style="width:70vw;">
+              <p>oh FFS</p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+              <!--<button type="button" class="btn btn-primary" action="{ url 'datasets:dataset-update' pk=ds.id %}">Continue</button>-->
+              <button type="button" id="update_start" class="btn btn-primary" action=""}>Continue</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     <div id="browse" class="tab-pane fade" role="tabpanel" aria-labelledby="browse-tab">
         <div class="container mt-3">
@@ -426,6 +444,7 @@
       <div><p class="pl-3 text-danger"><b>Sorry, as you are not the dataset owner, initiating reconciliation tasks for it is not possible.</b></p></div>
       {% endif %}
       </form>
+        <!--<div class="selector py-3"><div id="updater"></div></div>-->
         <div class="selector py-3"><div id="helpme"></div></div>
       </div> <!-- .row -->
     </div> <!-- #addtask -->
@@ -439,7 +458,7 @@ js for Summary, Reconciliation
   $(function(){
     // manage url
     var url = document.location.toString();
-    console.log('url, context on load',url,"{{context}}".length)
+    <!--console.log('url, context on load',url,"{{context}}".length)-->
     if (url.match('#')) {
       tab = url.split('#')[1]
       $('.nav-tabs a[href="#' + tab+ '"]').tab('show');
@@ -448,7 +467,13 @@ js for Summary, Reconciliation
       $('.nav-tabs a[href="#reconciliation"]').tab('show');
       location.href=taburl
     }
-    
+    // TODO: just a stub; need to get file for comparison first
+    $("#update_start").click(function(){
+      $.get("/datasets/ds_update",{id: '{{ds.id}}'},function(data){
+        console.log(data)
+      })
+    })
+        
     // start Browse onload js
     window.spinner = new Spin.Spinner().spin();
     $("#map").append(spinner.el);
@@ -471,10 +496,6 @@ js for Summary, Reconciliation
     });
     // end Browse onload js
     
-    <!--$("#update_button a").click(function(e){-->
-      <!--e.preventDefault();-->
-      <!--console.log('updating dataset',"{ ds.label }}")-->
-    <!--})-->
     $("#cancel_taskadd").click(function(e){
       e.preventDefault();
       $('#addtask_li').addClass('hidden')
@@ -487,7 +508,7 @@ js for Summary, Reconciliation
       $('.nav-tabs a[href="#addtask"]').tab('show');
       mappyr.invalidateSize()
     })
-    <!--$("html,body").scrollTop(0);-->
+
     // Change hash for page-reload
     $('.nav-tabs a').on('shown.bs.tab', function (e) {
       <!--console.log('e.target.hash',e.target.hash)-->
@@ -506,7 +527,6 @@ js for Summary, Reconciliation
     })
     
     // TODO: reload should NOT be necessary
-    <!--console.log('dataset id: {{ object.id }}')-->
     updateTotals('{{ ds.id }}')
     steps={"uploaded":1,"reconciling":2,"review_hits":3,"reviewed":4,"review_whg":5,"indexed":6}
     $("[ref="+steps['{{ ds.status }}']+"]").addClass('prog-active')
@@ -521,13 +541,13 @@ js for Summary, Reconciliation
     $(".selector").dialog({
       resizable: false,
       autoOpen: false,
-      height: 600,
+      height: 500,
       width: 700,
       title: "WHG Help",
       modal: true,
-      buttons: { 'Close': function() {$(this).dialog('close');} },
+      buttons: { 'Close': function() {console.log('close dialog'); $(this).dialog('close');} },
       open: function(event, ui) {
-        $('#helpme').load('/media/help/'+page+'.html');
+        $('#helpme').load('/media/help/'+page+'.html')
       },
       show: {effect: "fade",duration: 400 },
       hide: {effect: "fade",duration: 400 }

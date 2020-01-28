@@ -18,7 +18,7 @@ urlpatterns = [
     path('<int:id>/detail', views.DatasetDetailView.as_view(), name='dataset-detail'),
 
     # also handles update for name, description fields
-    path('<int:id>/update', views.DatasetUpdateView.as_view(), name='dataset-update'),
+    #path('<int:id>/update', views.DatasetUpdateView.as_view(), name='dataset-update'),
 
     # insert validated delimited (csv for short) file data to db
     path('<int:pk>/insert_tsv/', views.ds_insert_tsv, name="ds_insert_tsv"),

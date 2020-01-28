@@ -413,8 +413,12 @@ def dataset_browse(request, label, f):
 #
 def ds_update(request, pk):
   ds = get_object_or_404(Dataset, id=pk)
+  # latest file
+  file = DatasetFile.objects.filter(dataset_id_id=pk).order_by('-upload_date')[0].file
   print('gonna update ds #', pk, ds.label)
-  return render(request, 'datasets/dataset.html', {'ds':ds})
+  result={"id": pk, "filename":file}
+  return JsonResponse(result,safe=False)
+  #return render(request, 'datasets/dataset.html', {'ds':ds})
 #
 # insert lpf into database
 def ds_insert_lpf(request, pk):
@@ -898,106 +902,106 @@ class DatasetCreateView2(LoginRequiredMixin, CreateView):
     return context
 # 
 # dataset summary for "dataset portal" v2
-class DatasetUpdateView(LoginRequiredMixin,UpdateView):
-  form_class = DatasetDetailModelForm
+#class DatasetUpdateView(LoginRequiredMixin,UpdateView):
+  #form_class = DatasetDetailModelForm
   
-  template_name = 'datasets/dataset.html'
+  #template_name = 'datasets/dataset.html'
 
-  def get_success_url(self):
-    id_ = self.kwargs.get("id")
-    return '/datasets/'+str(id_)+'/detail'
+  #def get_success_url(self):
+    #id_ = self.kwargs.get("id")
+    #return '/datasets/'+str(id_)+'/detail'
 
-  def form_valid(self, form):
-    context={}
-    if form.is_valid():
-      print('form is valid')
-      print('cleaned_data: before ->', form.cleaned_data)
-    else:
-      print('form not valid', form.errors)
-      context['errors'] = form.errors
-    return super().form_valid(form)
+  #def form_valid(self, form):
+    #context={}
+    #if form.is_valid():
+      #print('form is valid')
+      #print('cleaned_data: before ->', form.cleaned_data)
+    #else:
+      #print('form not valid', form.errors)
+      #context['errors'] = form.errors
+    #return super().form_valid(form)
 
-  def get_object(self):
-    #print('kwargs:',self.kwargs)
-    id_ = self.kwargs.get("id")
-    return get_object_or_404(Dataset, id=id_)
+  #def get_object(self):
+    ##print('kwargs:',self.kwargs)
+    #id_ = self.kwargs.get("id")
+    #return get_object_or_404(Dataset, id=id_)
   
-  def get_context_data(self, *args, **kwargs):
-    context = super(DatasetDetailView, self).get_context_data(*args, **kwargs)
-    print('DatasetDetailView get_context_data() args:',self.args)
-    print('DatasetDetailView get_context_data() kwargs:',self.kwargs)
-    id_ = self.kwargs.get("id")
-    ds = get_object_or_404(Dataset, id=id_)
+  #def get_context_data(self, *args, **kwargs):
+    #context = super(DatasetDetailView, self).get_context_data(*args, **kwargs)
+    #print('DatasetDetailView get_context_data() args:',self.args)
+    #print('DatasetDetailView get_context_data() kwargs:',self.kwargs)
+    #id_ = self.kwargs.get("id")
+    #ds = get_object_or_404(Dataset, id=id_)
 
-    # load areas for dropdowns
-    me = self.request.user
-    #print('me',me,me.id)
-    types_ok=['ccodes','copied','drawn']
+    ## load areas for dropdowns
+    #me = self.request.user
+    ##print('me',me,me.id)
+    #types_ok=['ccodes','copied','drawn']
     
-    userareas = Area.objects.all().filter(type__in=types_ok).order_by('-created')
-    context['area_list'] = userareas if me.username == 'whgadmin' else userareas.filter(owner=me)
+    #userareas = Area.objects.all().filter(type__in=types_ok).order_by('-created')
+    #context['area_list'] = userareas if me.username == 'whgadmin' else userareas.filter(owner=me)
   
-    predefined = Area.objects.all().filter(type='predefined').order_by('-created')
-    context['region_list'] = predefined
+    #predefined = Area.objects.all().filter(type='predefined').order_by('-created')
+    #context['region_list'] = predefined
   
-    context['updates'] = {}
-    # fumbling to include to-be-reviewed count updates here
-    #task_ids=[t.task_id for t in ds.tasks.all()]
-    #for tid in task_ids:
-      #context['updates'][tid] = Hit.objects.all().filter(task_id=tid,reviewed=False).count()
-    bounds = self.kwargs.get("bounds")
-    # print('ds',ds.label)
-    context['ds'] = ds
-    context['status'] = ds.status
-    # latest file
-    context['current_file'] = ds.files.all().order_by('-upload_date')[0]
-    context['format'] = ds.format
-    context['numrows'] = ds.numrows
-    context['users'] = ds.dsusers
-    context['collab'] = ds.collab
-    placeset = Place.objects.filter(dataset=ds.label)
-    context['tasks'] = TaskResult.objects.all().filter(task_args = [id_],status='SUCCESS')
-    # initial (non-task)
-    context['num_links'] = PlaceLink.objects.filter(
-      place_id_id__in = placeset, task_id = None).count()
-    #context['num_names'] = PlaceName.objects.filter(place_id_id__in = placeset, task_id = None).count()
-    context['num_names'] = PlaceName.objects.filter(place_id_id__in = placeset).count()
-    context['num_geoms'] = PlaceGeom.objects.filter(
-      place_id_id__in = placeset, task_id = None).count()
-    context['num_descriptions'] = PlaceDescription.objects.filter(
-      place_id_id__in = placeset, task_id = None).count()
-    # others
-    context['num_types'] = PlaceType.objects.filter(
-      place_id_id__in = placeset).count()
-    context['num_when'] = PlaceWhen.objects.filter(
-      place_id_id__in = placeset).count()
-    context['num_related'] = PlaceRelated.objects.filter(
-      place_id_id__in = placeset).count()
-    context['num_depictions'] = PlaceDepiction.objects.filter(
-      place_id_id__in = placeset).count()
+    #context['updates'] = {}
+    ## fumbling to include to-be-reviewed count updates here
+    ##task_ids=[t.task_id for t in ds.tasks.all()]
+    ##for tid in task_ids:
+      ##context['updates'][tid] = Hit.objects.all().filter(task_id=tid,reviewed=False).count()
+    #bounds = self.kwargs.get("bounds")
+    ## print('ds',ds.label)
+    #context['ds'] = ds
+    #context['status'] = ds.status
+    ## latest file
+    #context['current_file'] = ds.files.all().order_by('-upload_date')[0]
+    #context['format'] = ds.format
+    #context['numrows'] = ds.numrows
+    #context['users'] = ds.dsusers
+    #context['collab'] = ds.collab
+    #placeset = Place.objects.filter(dataset=ds.label)
+    #context['tasks'] = TaskResult.objects.all().filter(task_args = [id_],status='SUCCESS')
+    ## initial (non-task)
+    #context['num_links'] = PlaceLink.objects.filter(
+      #place_id_id__in = placeset, task_id = None).count()
+    ##context['num_names'] = PlaceName.objects.filter(place_id_id__in = placeset, task_id = None).count()
+    #context['num_names'] = PlaceName.objects.filter(place_id_id__in = placeset).count()
+    #context['num_geoms'] = PlaceGeom.objects.filter(
+      #place_id_id__in = placeset, task_id = None).count()
+    #context['num_descriptions'] = PlaceDescription.objects.filter(
+      #place_id_id__in = placeset, task_id = None).count()
+    ## others
+    #context['num_types'] = PlaceType.objects.filter(
+      #place_id_id__in = placeset).count()
+    #context['num_when'] = PlaceWhen.objects.filter(
+      #place_id_id__in = placeset).count()
+    #context['num_related'] = PlaceRelated.objects.filter(
+      #place_id_id__in = placeset).count()
+    #context['num_depictions'] = PlaceDepiction.objects.filter(
+      #place_id_id__in = placeset).count()
 
-    # augmentations (has task_id)
-    context['links_added'] = PlaceLink.objects.filter(
-      place_id_id__in = placeset, task_id__contains = '-').count()
-    context['names_added'] = PlaceName.objects.filter(
-      place_id_id__in = placeset, task_id__contains = '-').count()
-    context['geoms_added'] = PlaceGeom.objects.filter(
-      place_id_id__in = placeset, task_id__contains = '-').count()
-    context['descriptions_added'] = PlaceDescription.objects.filter(
-      place_id_id__in = placeset, task_id__contains = '-').count()
+    ## augmentations (has task_id)
+    #context['links_added'] = PlaceLink.objects.filter(
+      #place_id_id__in = placeset, task_id__contains = '-').count()
+    #context['names_added'] = PlaceName.objects.filter(
+      #place_id_id__in = placeset, task_id__contains = '-').count()
+    #context['geoms_added'] = PlaceGeom.objects.filter(
+      #place_id_id__in = placeset, task_id__contains = '-').count()
+    #context['descriptions_added'] = PlaceDescription.objects.filter(
+      #place_id_id__in = placeset, task_id__contains = '-').count()
 
-    # insert to db immediately if format okay
-    # TODO: if it's an update, execute new ds_update_**() function
-    #if context['status'] == 'format_ok':
-    if context['status'] == 'uploaded':
-      print('format_ok, inserting dataset '+str(id_))
-      if context['format'] == 'delimited':
-        ds_insert_tsv(self.request, id_)
-      else:
-        ds_insert_lpf(self.request,id_)
+    ## insert to db immediately if format okay
+    ## TODO: if it's an update, execute new ds_update_**() function
+    ##if context['status'] == 'format_ok':
+    #if context['status'] == 'uploaded':
+      #print('format_ok, inserting dataset '+str(id_))
+      #if context['format'] == 'delimited':
+        #ds_insert_tsv(self.request, id_)
+      #else:
+        #ds_insert_lpf(self.request,id_)
 
-    print('context from DatasetUpdateView',context)
-    return context
+    #print('context from DatasetUpdateView',context)
+    #return context
 
 # 
 # dataset summary for "dataset portal" v1
