@@ -1013,7 +1013,7 @@ class DatasetFileUpdateView(LoginRequiredMixin,View):
     ds = get_object_or_404(Dataset, id=request.GET.get('ds_id'))
     file = DatasetFile.objects.filter(dataset_id_id=ds.id).order_by('-upload_date')[0].file.name
     print('file',file)
-    result={"id": "ds.id", "filename": file}
+    result={"id": ds.id, "filename": file}
     return JsonResponse(result,safe=False)
     
 # dataset summary for "dataset portal" v1

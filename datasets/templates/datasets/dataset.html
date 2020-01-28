@@ -470,7 +470,8 @@ js for Summary, Reconciliation
     // TODO: just a stub; need to get file for comparison first
     $("#update_start").click(function(){
       $.get("/search/analyzethis", {ds_id: '{{ds.id}}'}, function(data){
-      <!--$.get("{ url 'datasets:dataset-update' id=ds.id %}",function(data){-->
+        html=data['id']+data['filename']
+        $("#update_results p").text(html)
         console.log(data)
       })
     })
