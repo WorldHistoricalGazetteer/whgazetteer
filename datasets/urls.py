@@ -8,9 +8,10 @@ from . import views
 # dataset actions
 app_name='datasets'
 urlpatterns = [
-    path('create/', views.DatasetCreateView2.as_view(), name='dataset-create'),
+    path('create/', views.DatasetCreateView.as_view(), name='dataset-create'),
     
-    path('<int:pk>/update', views.ds_update, name='dataset-update'),
+    path('<int:id>/update', views.DatasetFileUpdateView.as_view(), name='dataset-update'),
+    #url(r'^search?$', SearchView.as_view(), name='dataset-update'),
     
     path('<int:id>/delete', views.DatasetDeleteView.as_view(), name='dataset-delete'),
 

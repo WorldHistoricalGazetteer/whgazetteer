@@ -4,6 +4,7 @@ from django.conf.urls import url
 
 from search.views import (
     advanced, SearchView, FeatureContextView, TraceGeomView, UpdateCountsView, LookupView)
+from datasets.views import DatasetFileUpdateView
 
 urlpatterns = [
     url(r'^search?$', SearchView.as_view(), name='search'),
@@ -12,4 +13,5 @@ urlpatterns = [
     url(r'^tracegeom?$', TraceGeomView.as_view(), name='trace_geom'),
     url(r'^updatecounts?$', UpdateCountsView.as_view(), name='update_counts'),
     url(r'^advanced$', advanced, name="search_adv"),
+    url(r'^analyzethis?$', DatasetFileUpdateView.as_view(), name="analyzethis"),
 ]

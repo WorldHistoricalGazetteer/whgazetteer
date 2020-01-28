@@ -9,7 +9,7 @@ from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 from django.views.generic import (
-  CreateView, ListView, UpdateView, DeleteView)
+  CreateView, ListView, UpdateView, DeleteView, View)
 from django_celery_results.models import TaskResult
 
 from celery import current_app as celapp
@@ -808,7 +808,7 @@ class DashboardView(ListView):
 #
 #
 # upload file, validate format
-class DatasetCreateView2(LoginRequiredMixin, CreateView):
+class DatasetCreateView(LoginRequiredMixin, CreateView):
   form_class = DatasetCreateModelForm
   template_name = 'datasets/dataset_create2.html'
   success_message = 'dataset created'
@@ -883,9 +883,6 @@ class DatasetCreateView2(LoginRequiredMixin, CreateView):
         numrows = result['count']
       )
       
-      #return self.render_to_response(self.get_context_data(form=form,context=context))
-      #return super().form_valid(form)
-      #return redirect('/datasets/'+str(dsobj.id)+'/update')
       return redirect('/datasets/'+str(dsobj.id)+'/detail')
 
     else:
@@ -897,7 +894,7 @@ class DatasetCreateView2(LoginRequiredMixin, CreateView):
       return self.render_to_response(self.get_context_data(form=form,context=context))
 
   def get_context_data(self, *args, **kwargs):
-    context = super(DatasetCreateView2, self).get_context_data(*args, **kwargs)
+    context = super(DatasetCreateView, self).get_context_data(*args, **kwargs)
     #context['action'] = 'create'
     return context
 # 
@@ -1003,7 +1000,22 @@ class DatasetCreateView2(LoginRequiredMixin, CreateView):
     #print('context from DatasetUpdateView',context)
     #return context
 
-# 
+#
+# initiates DatasetFile update
+class DatasetFileUpdateView(LoginRequiredMixin,View):
+  @staticmethod
+  def get(request):
+    print('DatasetFileUpdateView GET:',request.GET)
+    """
+    args in request.GET:
+        [integer] ds_id: dataset id
+    """
+    ds = get_object_or_404(Dataset, id=request.GET.get('ds_id'))
+    file = DatasetFile.objects.filter(dataset_id_id=ds.id).order_by('-upload_date')[0].file.name
+    print('file',file)
+    result={"id": "ds.id", "filename": file}
+    return JsonResponse(result,safe=False)
+    
 # dataset summary for "dataset portal" v1
 class DatasetDetailView(LoginRequiredMixin,UpdateView):
   form_class = DatasetDetailModelForm
