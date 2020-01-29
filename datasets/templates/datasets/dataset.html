@@ -78,7 +78,7 @@
         <input class="btn btn-primary btn-sm hidden" type="submit" value="Save" />
         <p> <i>Current data file</i><span class="float-right mr-2">
             <!--<a href="{ url 'datasets:dataset-update' pk=ds.id %}">update</a>-->
-            <a href="#updater" data-toggle="modal">update</a>
+            <a href="#update_modal" data-toggle="modal">update</a>
             <span class="help-matches" data-id="updates">
             {% fontawesome_icon 'question-circle' color='#993333' %}</span>
           </span>
@@ -165,7 +165,7 @@
       </div> <!-- row -->
       </form>
       <!--<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">Launch demo modal</button>-->
-      <div class="modal fade" id="updater" tabindex="-1" role="dialog">
+      <div class="modal fade" id="update_modal" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
           <div class="modal-content">
             <div class="modal-header">
@@ -173,13 +173,28 @@
               <button type="button" class="close" data-dismiss="modal">&times;</span>
               </button>
             </div>
-            <div id="update_results" class="modal-body" style="width:70vw;">
-              <p>oh FFS</p>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-              <!--<button type="button" class="btn btn-primary" action="{ url 'datasets:dataset-update' pk=ds.id %}">Continue</button>-->
-              <button type="button" id="update_start" class="btn btn-primary" action=""}>Continue</button>
+            <div id="update_body" class="modal-body" style="width:70vw;">
+              <div class="row">
+                <div id="update_info" class="col-sm-6">
+                  <p>The "update dataset" function performs the following steps:</p>
+                  <ul>
+                      <li id="update_1">Validate new file</li>
+                      <li id="update_2">Compare with current</li>
+                      <li id="update_3">Perform update</li>
+                  </ul>
+                </div>
+                <div id="update_form" class="col-sm-5" style="background-color:aliceblue; border:1px solid #ccc; height:fit-content;">
+                  <p>DatasetFile form</p>
+                </div>
+              </div> <!-- row -->
+              <div id="results" style="border:1px solid #ccc; height:fit-content; background-color:aliceblue; padding:12px;">
+                <p id="results_text" style="display:block;">results here (initially hidden)</p>
+                <button type="button" id="update_start" class="btn btn-sm btn-primary" action="#"}>Begin update</button>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" id="update_analyze" class="btn btn-primary" action="#"}>Continue</button>
+              </div>
             </div>
           </div>
         </div>
@@ -455,6 +470,10 @@
 js for Summary, Reconciliation
 -->
 <script type="text/javascript">
+  function startUpdaterSpinner(){
+    window.spinner_updater = new Spin.Spinner().spin();
+    $("#results_text").append(spinner_updater.el);   
+  }
   $(function(){
     // manage url
     var url = document.location.toString();
@@ -468,15 +487,21 @@ js for Summary, Reconciliation
       location.href=taburl
     }
     // TODO: just a stub; need to get file for comparison first
-    $("#update_start").click(function(){
+    $("#update_analyze").click(function(){
+      startUpdaterSpinner()
       $.get("/search/analyzethis", {ds_id: '{{ds.id}}'}, function(data){
-        html=data['id']+data['filename']
-        $("#update_results p").text(html)
+        html = 'ran DatasetFileUpdateView() <br/>'
+        html+='<b>Current file</b>: '+data['last_filename']
+        $("#update_analyze").addClass('hidden')
+        $("#results_text").html(html)
         console.log(data)
       })
     })
-        
-    // start Browse onload js
+    $("#update_start").click(function(){
+      console.log('update initiated')
+    })
+    
+    // Browse onload
     window.spinner = new Spin.Spinner().spin();
     $("#map").append(spinner.el);
     
