@@ -340,7 +340,7 @@ def ds_recon(request, pk):
       context['result'] = "Sorry! The reconciliation task manager is down; working now to get it running"
       return render(request, 'datasets/dataset.html', {'ds':ds, 'context': context})
       
-      # run celery/redis tasks e.g. align_tgn, align_whg, align_wd
+    # run celery/redis tasks e.g. align_tgn, align_wd, align_whg
     try:      
       result = func.delay(
         ds.id,

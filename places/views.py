@@ -104,6 +104,7 @@ class PlacePortalView(DetailView):
         "place_id":place.id,
         "src_id":place.src_id, 
         "purl":ds.uri_base+str(place.id) if 'whgaz' in ds.uri_base else ds.uri_base+place.src_id,
+        #"purl":ds.uri_base+str(place.id) if ds.uri_base != None else "http"+place.src_id,
         "title":place.title,
         "ccodes":place.ccodes, 
         "whens":whens, 
