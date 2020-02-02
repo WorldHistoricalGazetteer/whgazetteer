@@ -1019,14 +1019,22 @@ class DatasetDetailView(LoginRequiredMixin,UpdateView):
     return '/datasets/'+str(id_)+'/detail'
 
   def form_valid(self, form):
+    print('DatasetDetailView kwargs',self.kwargs)
     print('DatasetDetailView form_valid() data->', form.cleaned_data)
-    ds = get_object_or_404(Dataset,pk=self.kwargs.get("id"))
-    ds.title = form.cleaned_data['title']
-    ds.description = form.cleaned_data['description']
-    ds.save()
+    if form.cleaned_data["file"] == None:
+      # no file, updating dataset only
+      ds = get_object_or_404(Dataset,pk=self.kwargs.get("id"))
+      ds.title = form.cleaned_data['title']
+      ds.description = form.cleaned_data['description']
+      ds.save()
+    else:
+      # a file has been uploaded; need to validate, analyze, & return results
+      print('file '+form.cleaned_data["file"].name+' has been uploaded; need: validation, analysis, return results')
+      
     return super().form_valid(form)
   
   def form_invalid(self,form):
+    print('kwargs',self.kwargs)
     context = {}
     print('form not valid', form.errors)
     print('cleaned_data', form.cleaned_data)
