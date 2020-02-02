@@ -74,7 +74,9 @@ class DatasetDetailModelForm(forms.ModelForm):
     
   file = forms.FileField(required=False)
   uri_base = forms.URLField(
-    widget=forms.URLInput(attrs={'placeholder':'Leave blank unless changed'}),
+    widget=forms.URLInput(
+      attrs={'placeholder':'Leave blank unless changed','size': 26}
+    ),
     required=False
   )
   format = forms.ChoiceField(choices=FORMATS,initial="delimited")

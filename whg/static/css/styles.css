@@ -37,6 +37,7 @@ html, body {
 **/
 
 label {vertical-align:top;}
+.border-red { border:2px dotted red;}
 .strong { font-weight: bold;}
 .strikethrough {text-decoration: line-through;}
 .no-bullet { list-style: none;}
@@ -352,6 +353,7 @@ em { color: #993333;}
 .ds-title { padding-top: 7px; font-weight:700; font-size: larger; color: grey;}
 #ds_details p { margin: .5rem 0 .2rem 0;}
 #ds_details td:nth-child(1) {width:20%;}
+#ds_details td:nth-child(3) {width:30%;}
 #dsfile_new td {width:20%;}
 #ds_tasks { max-height: 80vh; overflow-y:scroll; overflow-x: hidden; }
 #ds_stats, #ds_access {
@@ -465,7 +467,7 @@ em { color: #993333;}
 }
 
 
-#id_uri_base{width: 300px;}
+/*#id_uri_base{width: 300px;}*/
 
 .list-box {
   border: 1px solid #ccc;
