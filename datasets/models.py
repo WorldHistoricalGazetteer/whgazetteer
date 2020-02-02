@@ -36,7 +36,7 @@ class Dataset(models.Model):
     total_links = models.IntegerField(null=True, blank=True)
     
     # fields below are zombies; supplanted by DatasetFile model
-    file = models.FileField(upload_to=user_directory_path)
+    #file = models.FileField(upload_to=user_directory_path)
     uri_base = models.URLField(blank=True, null=True, default="http://whgazetteer.org/api/places/")
     format = models.CharField(max_length=12, null=False,choices=FORMATS,
         default='lpf')

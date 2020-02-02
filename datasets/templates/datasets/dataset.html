@@ -47,6 +47,7 @@
         <span class="float-right">
           Delete dataset <a href="{% url 'datasets:dataset-delete' ds.id %}" class="" title="Delete dataset" rel="tooltip">{% fontawesome_icon 'trash' color='#ff0000' %}</a></span>
       {% endif %}
+        status: {{ status }}
         <table class="ds-table">
           <tr>
             <td><b>ID / label</b></td>
@@ -77,7 +78,6 @@
         </table>
         <input class="btn btn-primary btn-sm hidden" type="submit" value="Save" />
         <p> <i>Current data file</i><span class="float-right mr-2">
-            <!--<a href="{ url 'datasets:dataset-update' pk=ds.id %}">update</a>-->
             <a href="#update_modal" data-toggle="modal">update</a>
             <span class="help-matches" data-id="updates">
             {% fontawesome_icon 'question-circle' color='#993333' %}</span>
@@ -92,6 +92,7 @@
             <tr>
               <td><b>File</b></td>
               <td>{{ current_file.file }}</td>
+              <!--<td>{ form.file }}</td>-->
             </tr>
             <tr>
               <td><b>Uploaded</b></td>
@@ -167,14 +168,14 @@
       <!--<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">Launch demo modal</button>-->
       <div class="modal fade" id="update_modal" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
-          <div class="modal-content">
+          <div class="modal-content" style="width:70vw;">
             <div class="modal-header">
               <h5 class="modal-title" id="exampleModalLabel">Updating dataset {{ds.id}} ({{ds.label}})</h5>
               <button type="button" class="close" data-dismiss="modal">&times;</span>
               </button>
             </div>
-            <div id="update_body" class="modal-body" style="width:70vw;">
-              <div class="row">
+            <div id="update_body" class="container modal-body">
+              <div class="row" style="margin-right:0;">
                 <div id="update_info" class="col-sm-6">
                   <p>The "update dataset" function performs the following steps:</p>
                   <ul>
@@ -183,9 +184,38 @@
                       <li id="update_3">Perform update</li>
                   </ul>
                 </div>
-                <div id="update_form" class="col-sm-5" style="background-color:aliceblue; border:1px solid #ccc; height:fit-content;">
-                  <p>DatasetFile form</p>
-                </div>
+                <div id="update_form" class="col-sm-6" style="background-color:aliceblue; border:1px solid #ccc; height:fit-content; padding:.5rem 1rem; margin-bottom:8px; font-size:.8rem">
+                <form method="POST" action="{% url 'datasets:dataset-addfile' %}" enctype="multipart/form-data">
+                <!--<form method="POST" action="{ url 'datasets:dataset-update' ds.id %}" enctype="multipart/form-data">-->
+                {% csrf_token %}
+                  <input type="hidden" name="ds_id" value="{{ ds.id }}" />
+                  <table id="dsfile_new" class="ds-table table-striped">
+                    <tr>
+                      <td><b>File</b></td>
+                      <td>
+                        <span class="">{{ form.file }} ({{ current_file.file }})</span>                        
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="width:15%; vertical-align:top;"><b>URI base</b></td>
+                      <td>{{ form.uri_base }}
+                        <!--<input type="text" name="uri_base" size="30" placeholder="Leave blank unless changed"> -->
+                        <i>({{ current_file.uri_base }})</i>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><b>Format</b></td>
+                      <td>{{ form.format }}
+                        <!--<select name="format">-->
+                          <!--<option value="delimited">LP-TSV</option>-->
+                          <!--<option value="lpf">Linked Places v1.1</option>-->
+                        <!--</select>-->
+                      </td>
+                    </tr>
+                  </table>
+                  <input class="btn btn-primary btn-sm" type="submit" value="Upload" />
+                </form>
+                </div> <!-- update_form -->
               </div> <!-- row -->
               <div id="results" style="border:1px solid #ccc; height:fit-content; background-color:aliceblue; padding:12px;">
                 <p id="results_text" style="display:block;">results here (initially hidden)</p>
@@ -193,7 +223,7 @@
               </div>
               <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                <button type="button" id="update_analyze" class="btn btn-primary" action="#"}>Continue</button>
+                <!--<button type="button" id="update_analyze" class="btn btn-primary" action="#"}>Continue</button>-->
               </div>
             </div>
           </div>
@@ -475,6 +505,10 @@ js for Summary, Reconciliation
     $("#results_text").append(spinner_updater.el);   
   }
   $(function(){
+    if(location.search.includes('newfile')){
+      $("#update_modal").modal('show')
+      history.pushState({}, null, 'detail');
+    }
     // manage url
     var url = document.location.toString();
     <!--console.log('url, context on load',url,"{{context}}".length)-->

@@ -352,6 +352,7 @@ em { color: #993333;}
 .ds-title { padding-top: 7px; font-weight:700; font-size: larger; color: grey;}
 #ds_details p { margin: .5rem 0 .2rem 0;}
 #ds_details td:nth-child(1) {width:20%;}
+#dsfile_new td {width:20%;}
 #ds_tasks { max-height: 80vh; overflow-y:scroll; overflow-x: hidden; }
 #ds_stats, #ds_access {
   height: fit-content;

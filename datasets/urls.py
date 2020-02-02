@@ -10,16 +10,14 @@ app_name='datasets'
 urlpatterns = [
     path('create/', views.DatasetCreateView.as_view(), name='dataset-create'),
     
-    path('<int:id>/update', views.DatasetFileUpdateView.as_view(), name='dataset-update'),
-    #url(r'^search?$', SearchView.as_view(), name='dataset-update'),
+    #path('<int:id>/update', views.DatasetFileUpdateView.as_view(), name='dataset-update'),
+
+    path('addfile/', views.DatasetFileUpdateView.as_view(), name='dataset-addfile'),
     
     path('<int:id>/delete', views.DatasetDeleteView.as_view(), name='dataset-delete'),
 
     # also handles update for name, description fields
     path('<int:id>/detail', views.DatasetDetailView.as_view(), name='dataset-detail'),
-
-    # also handles update for name, description fields
-    #path('<int:id>/update', views.DatasetUpdateView.as_view(), name='dataset-update'),
 
     # insert validated delimited (csv for short) file data to db
     path('<int:pk>/insert_tsv/', views.ds_insert_tsv, name="ds_insert_tsv"),

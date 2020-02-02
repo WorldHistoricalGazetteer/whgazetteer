@@ -44,6 +44,23 @@ class HitModelForm(forms.ModelForm):
     #widgets = { 'file': ClearableFileInput() }    
   
 
+class DatasetFileModelForm(forms.ModelForm):
+  class Meta:
+    model = DatasetFile
+    # file fields = ('file','rev','uri_base','format','dataset_id','delimiter',
+    #   'status','accepted_date','header','numrows')
+    fields = ('dataset_id','file','rev','uri_base','format','delimiter','status','datatype','accepted_date','header','numrows')
+    
+  #file = forms.FileField()
+  #uri_base = forms.URLField(widget=forms.URLInput(attrs={'placeholder':'Leave blank unless changed'}))
+  #format = forms.ChoiceField(choices=FORMATS)
+    
+  def __init__(self, *args, **kwargs):
+    super(DatasetFileModelForm, self).__init__(*args, **kwargs)
+    for field in self.fields.values():
+      field.error_messages = {'required':'The field {fieldname} is required'.format(
+                  fieldname=field.label)}    
+
 class DatasetDetailModelForm(forms.ModelForm):
   class Meta:
     model = Dataset
@@ -55,10 +72,17 @@ class DatasetDetailModelForm(forms.ModelForm):
         'rows':2,'cols': 40,'class':'textarea','placeholder':'brief description'}),
     }
     
+  file = forms.FileField(required=False)
+  uri_base = forms.URLField(
+    widget=forms.URLInput(attrs={'placeholder':'Leave blank unless changed'}),
+    required=False
+  )
+  format = forms.ChoiceField(choices=FORMATS,initial="delimited")
+    
   def __init__(self, *args, **kwargs):
     super(DatasetDetailModelForm, self).__init__(*args, **kwargs)
     for field in self.fields.values():
-      field.error_messages = {'required':'The field {fieldname} is required'.format(
+      field.error_messages = {'required':'The field fubar {fieldname} is required'.format(
                   fieldname=field.label)}    
 
 class DatasetCreateModelForm(forms.ModelForm):
@@ -92,7 +116,7 @@ class DatasetCreateModelForm(forms.ModelForm):
 class DatasetModelForm(forms.ModelForm):
   class Meta:
     model = Dataset
-    fields = ('id','title','label','description','file','format','datatype',
+    fields = ('id','title','label','description','format','datatype',
               'delimiter','status','owner','header','numrows','spine','uri_base')
     widgets = {
       'description': forms.Textarea(attrs={

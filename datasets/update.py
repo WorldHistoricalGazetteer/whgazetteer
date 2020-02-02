@@ -5,15 +5,23 @@ from places.models import *
 from datasets.models import Dataset, Hit, DatasetFile
 from datasets.utils import validate_lpf, goodtable
 
-dsid=525 # 'never' lugares_60_1.jsonld
+dsid=461 # 'places_p169b' current file: user_A_User/P169_out_YnA0XAl.tsv
 ds = get_object_or_404(Dataset,pk=dsid)
 oldids = list(Place.objects.filter(dataset=ds.label).values_list('src_id',flat=True))
-uribase = DatasetFile.objects.filter(dataset_id_id=dsid).order_by('-upload_date')[0].uri_base
 
-datadir='/Users/karlg/Documents/Repos/_whgazetteer/example_data/'
+# FILES (new has been validated [0], current became [1])
+cur_fileobj = DatasetFile.objects.filter(dataset_id_id=dsid).order_by('-upload_date')[1]
+cur_filename = cur_fileobj.file.name
+cur_uribase = cur_fileobj.uri_base
+
+new_fileobj = DatasetFile.objects.filter(dataset_id_id=dsid).order_by('-upload_date')[0]
+new_filename = new_fileobj.file.name
+new_uribase = new_fileobj.uri_base
+
+datadir='/Users/karlg/Documents/Repos/_whgazetteer/media/'
 # jsonld FeatureCollection
 # validate new
-fnn = datadir+'lugares_60_1_rev2.jsonld'
+fn = datadir+cur_filename
 fin_n = codecs.open(fnn, 'r', 'utf8')
 result_n = validate_lpf(fin_n,'coll')
 # re-open !?
