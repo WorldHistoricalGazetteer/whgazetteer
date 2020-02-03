@@ -156,10 +156,13 @@ class Hit(models.Model):
         managed = True
         db_table = 'hits'
 
+
 @receiver(pre_delete, sender=Dataset)
 def remove_file(**kwargs):
-    instance = kwargs.get('instance')
-    instance.file.delete(save=False)
+    print('remove_file()',kwargs)
+    ds_instance = kwargs.get('instance')
+    files = DatasetFile.objects.filter(dataset_id_id=ds_instance.id)
+    files.delete()
 
 # raw hits from reconciliation
 # [{'place_id', 'task_id', 'authority', 'dataset', 'authrecord_id', 'id'}]

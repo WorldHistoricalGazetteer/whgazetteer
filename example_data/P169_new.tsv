@@ -1,8 +1,2 @@
-id	title	title_source	types	aat_types	variants	lon	lat	start	end	parent_id
-bdr:G1716	altered-title Menpa Dratsang@en	BDRC	monastery (bdr:PT0040)	300263741	angla saigang si@zh-latn-pinyin-x-ndia;angla saikang si@zh-latn-pinyin-x-ndia;昂拉赛岗寺@zh-hans;new variant@bo-x-ewts	102.02	35.82185	1341	1341	bdr:G162
-bdr:G109	Drepung Gomang Dratsang@en	BDRC	monastery (bdr:PT0040)	300263741	sgo mang grwa tshang ('bras spungs)@bo-x-ewts	102.02	35.82185	1341	1341	bdr:G108
-bdr:G162	Labrang Tashikyil@en	BDRC	monastery (bdr:PT0037)	300263741	dga' ldan bshad sgrub dar rgyas bkra shis g.yas su 'khyil ba'i gling@bo-x-ewts;bkra shis 'khyil/@bo-x-ewts;bla brang bkra shis 'khyil/@bo-x-ewts;lapuleng si@zh-latn-pinyin-x-ndia	102.48126	35.18975	1709	1709	bdr:G2396
-bdr:G3090	sgo mang dgon/@bo-x-ewts	BDRC	monastery (bdr:PT0037)	300263741	格莫寺@zh-hans;rnga ba sgo mang dgon/@bo-x-ewts;sgo mang dgon (bshad sgrub 'phel rgyas gling)@bo-x-ewts;Ge mo si@zh-latn-pinyin-x-ndia	101.60638	33.00094	1791	1791	bdr:G2331
-bdr:G160	Kumbum Jampaling@en	BDRC	monastery (bdr:PT0037)	300263741	sku 'bum byams pa gling@bo-x-ewts;衮本贤巴林@zh-hans;ta-er si@zh-latn-pinyin-x-ndia;byams pa gling@bo-x-ewts;gunben xianbalin@zh-latn-pinyin-x-ndia;塔儿寺@zh-hans	101.56	36.48198	1560	1560	bdr:G2350
-bdr:G8LS12072	new name@en	BDRC	monastery (bdr:PT0040)	300263741	e waM chos 'khor gling@bo-x-ewts	101.56	36.48198	1560	1560	bdr:G162
-bdr:G161	Jakhyung Tekchen Yontan Dargyeling@en	BDRC	monastery (bdr:PT0037)	300263741	a mdo bya khyung dgon/@bo-x-ewts;夏群寺/ 夏冲寺/ 沙冲寺@zh-hans;xiaqong si@zh-latn-pinyin-x-ndia;xiaqun si/xiachong si/shachong si@zh-latn-pinyin-x-ndia;theg chen yon tan dar rgyas gling@bo-x-ewts;Jakhyung@en-x-mixed;bya khyung theg chen yon tan dar rgyas gling@bo-x-ewts	101.88	36.14439	1349	1599	bdr:G1PD96109
+id	title	title_source	types	aat_types	variants	lon	lat	start	end
+bdr:G1716	altered-title Menpa Dratsang@en	BDRC	monastery (bdr:PT0040)	300263741	angla saigang si@zh-latn-pinyin-x-ndia;angla saikang si@zh-latn-pinyin-x-ndia;昂拉赛岗寺@zh-hans;new variant@bo-x-ewts	102.02	35.82185	1341	1341

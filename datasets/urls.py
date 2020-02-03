@@ -12,7 +12,7 @@ urlpatterns = [
     
     #path('<int:id>/update', views.DatasetFileUpdateView.as_view(), name='dataset-update'),
 
-    path('addfile/', views.DatasetFileUpdateView.as_view(), name='dataset-addfile'),
+    #path('addfile/', views.DatasetFileUpdateView.as_view(), name='dataset-addfile'),
     
     path('<int:id>/delete', views.DatasetDeleteView.as_view(), name='dataset-delete'),
 

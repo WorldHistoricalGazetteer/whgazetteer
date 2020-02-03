@@ -50,8 +50,10 @@ def validate_lpf(infile,format):
 
 # validate LP-TSV file
 def goodtable(tempfn,filename):
-  #user='whgadmin'
   result = {"errors":[],"format":"delimited"}
+  print('goodtable(tempfn,filename)',tempfn,filename)
+  print('goodtable(tempfn,filename) types',type(tempfn),type(filename))
+  print('empty result',result)
   # TODO: detect encoding
   #enc = chardet.detect(open(tempfn,'rb').read())
   #print('encoding is',enc)
@@ -63,7 +65,7 @@ def goodtable(tempfn,filename):
   #print('tempfn,filename,user,dir',tempfn,filename,user,os.getcwd())
   schema_lptsv = json.loads(codecs.open('datasets/static/validate/schema_tsv.json', 'r', 'utf8').read())
   report = gvalidate(newfn,schema=schema_lptsv,order_fields=True)
-  #pp.pprint(report)  
+  pp.pprint(report)  
   #print('error count',report['error-count'])
   result['count'] = report['tables'][0]['row-count']
   result['columns'] = report['tables'][0]['headers']
