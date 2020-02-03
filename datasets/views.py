@@ -2,6 +2,7 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 #from django.contrib.auth.decorators import user_passes_test
+from django.core.files import File
 from django.core.paginator import Paginator #,EmptyPage, PageNotAnInteger
 from django.db.models import Q
 from django.forms import modelformset_factory
@@ -15,6 +16,7 @@ from django_celery_results.models import TaskResult
 from celery import current_app as celapp
 import codecs, tempfile, os, re, sys #ipdb,
 import simplejson as json
+from pathlib import Path
 #from itertools import islice
 #from pprint import pprint
 from areas.models import Area
@@ -588,7 +590,7 @@ def ds_insert_tsv(request, pk):
     # for PlaceName insertion, strip anything in parens
     title = re.sub('\(.*?\)', '', title)
     title_source = r[header.index('title_source')]
-    print('src_id, title, title_source from tsv_insert',src_id,title,title_source)
+    #print('src_id, title, title_source from tsv_insert',src_id,title,title_source)
     title_uri = r[header.index('title_uri')] if 'title_uri' in header else ''
     variants = [x.strip() for x in r[header.index('variants')].split(';')] \
       if 'variants' in header else []
@@ -756,13 +758,13 @@ def ds_insert_tsv(request, pk):
   PlaceDescription.objects.bulk_create(objs['PlaceDescription'],batch_size=10000)
   print('descriptions done')
 
-  context = {'status':'uploaded'}
+  context = {'status':'inserted'}
   print('rows,linked,links:',countrows,countlinked,countlinks)
   ds.numrows = countrows
   ds.numlinked = countlinked
   ds.total_links = countlinks
   ds.header = header
-  ds.status = 'uploaded'
+  ds.status = 'inserted'
   ds.save()
   print('record:', ds.__dict__)
   print('context from ds_insert_tsv():',context)
@@ -820,17 +822,19 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
     data=form.cleaned_data
     context={"format":""}
     user=self.request.user
-    print('form is valid; request',user,self.request.FILES['file'].name)
+    file=self.request.FILES['file']
+    filename = file.name
+    print('form is valid; request',user,filename)
     #TODO: generate a slug label?
     #label = data['title'][:16]+'_'+user.first_name[:1]+user.last_name[:1]
     
     # open & write tempf to a temp location;
     # call it tempfn for reference
-    filename = self.request.FILES['file'].name
     tempf, tempfn = tempfile.mkstemp()
-    print('tempfn, filename in DatasetCreateView()',tempfn, filename)
+    print('tempfn, filename, file in DatasetCreateView()',tempfn, filename, data['file'])
     try:
       for chunk in data['file'].chunks():
+        #print('chunk',chunk)
         os.write(tempf, chunk)
     except:
       raise Exception("Problem with the input file %s" % request.FILES['file'])
@@ -843,7 +847,7 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
     # send for format validation
     if data['format'] == 'delimited':
       context["format"] = "delimited"
-      result = goodtable(tempfn,filename)
+      result = goodtable(tempfn)
     elif data['format'] == 'lpf':
       context["format"] = "lpf"
       # coll = FeatureCollection
@@ -868,7 +872,24 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
         dsobj.save()
       except:
         sys.exit(sys.exc_info())
-      
+
+      # write the file
+      file_exists = Path('media/user_'+user.username+'/'+filename).exists()
+      print('filename at write, exists?',filename,file_exists)
+      if not file_exists:
+        filepath = 'media/user_'+user.username+'/'+filename
+      else:
+        filename=filename[:-4]+'_'+tempfn[-7:]+filename[-4:]
+        filepath = 'media/user_'+user.username+'/'+filename
+
+      fout = codecs.open(filepath,'w','utf8')
+      try:
+        for chunk in file.chunks():
+          print('chunk',chunk, type(chunk))
+          fout.write(chunk.decode("utf-8"))
+      except:
+        sys.exit(sys.exc_info())
+        
       # initial DatasetFile record
       DatasetFile.objects.create(
         dataset_id = dsobj,
@@ -898,95 +919,6 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
     #context['action'] = 'create'
     return context
 
-#
-class DatasetFileCreateView(LoginRequiredMixin, CreateView):
-  form_class = DatasetFileModelForm
-  
-  def form_invalid(self,form):
-    print(form.errors.as_data())
-    
-  def form_valid(self,form):
-    context = {}
-    data=form.cleaned_data
-    user=self.request.user
-    print('form is valid, cleaned_data before', data)
-    
-    filename = self.request.FILES['file'].name
-    tempf, tempfn = tempfile.mkstemp()
-    print('filename, tempfn type in ',filename, tempfn)
-    try:
-      for chunk in data['file'].chunks():
-        os.write(tempf, chunk)
-    except:
-      raise Exception("Problem with the input file %s" % request.FILES['file'])
-    finally:
-      os.close(tempf)
-      
-    # open the temp file
-    fin = codecs.open(tempfn, 'r', 'utf8')
-    
-    # send for format validation
-    if data['format'] == 'delimited':
-      context['format'] = 'delimited'
-      result = goodtable(tempfn,filename)
-    elif data['format'] == 'lpf':
-      # TODO: json-lines alternative 
-      context['format'] = 'lpf'
-      result = validate_lpf(fin,'coll')
-    print('validation result:',result)
-    fin.close()
-
-    print('data valid, still in DatasetFileCreateView')
-  
-    if len(result['errors']) == 0:
-      context['status'] = 'newfile_ok'
-      print('cleaned_data:after ->',form.cleaned_data)
-      print('result',result)
-      
-      # new DatasetFile record ('owner','id','label','title','description','datatype')
-      dsfile = form.save(commit=False)
-      dsfile.status = 'format_ok'
-      try:
-        dsfile.save()
-      except:
-        sys.exit(sys.exc_info())
-      
-      return redirect('/datasets/'+str(dsfile.id)+'/detail')
-    
-    else:
-      context['status'] = 'format_error'
-      context['errors'] = result['errors']
-      context['action'] = ''
-      result['columns'] if "columns" in result.keys() else []
-      print('result:', result)
-      return self.render_to_response(self.get_context_data(form=form,context=context))
-    
-  def get_context_data(self, *args, **kwargs):
-    context = super(DatasetFileCreateView, self).get_context_data(*args, **kwargs)
-    context={'format': 'delimited' if self.data['format'] == 'delimited' else 'lpf'}
-    return context
-  
-  #@staticmethod
-  #def post(request):
-    #print('DatasetFileAddView POST:',request.POST)
-    #print('DatasetFileAddView FILES:',request.FILES)
-    #"""
-    #args in request.POST:
-        #[integer] ds_id: dataset id
-        #[file] file: uploaded file 
-        #[char] format: delimited or lpf
-        #[char] uri_base: defaults to None
-    #"""
-    #ds = get_object_or_404(Dataset, id=request.POST.get('ds_id'))
-    #cur_file = DatasetFile.objects.filter(dataset_id_id=ds.id).order_by('-upload_date')[0].file
-    #cur_filename = cur_file.name
-    #print('last file for ds',ds,cur_filename)
-    #result={"ds_id": ds.id, "cur_filename": cur_filename, "new_filename": request.FILES['file'].name}
-    #print('result',result)
-    ##return JsonResponse(result,safe=False)
-    #return redirect('/datasets/'+str(ds.id)+'/detail?status=newfile')
-    
-
 
 # dataset summary for "dataset portal" v1
 # initiates DataFile update also
@@ -1000,14 +932,16 @@ class DatasetDetailView(LoginRequiredMixin,UpdateView):
 
   def form_valid(self, form):
     data=form.cleaned_data
-    dsid = self.kwargs.get('id')
+    ds = get_object_or_404(Dataset,pk=self.kwargs.get("id"))
+    dsid = ds.id
+    user = self.request.user
+    filerev = DatasetFile.objects.filter(dataset_id_id=dsid).order_by('-rev')[0].rev
     print('DatasetDetailView kwargs',self.kwargs)
     print('DatasetDetailView form_valid() data->', data)
     if form.cleaned_data["file"] == None:
       # no file, updating dataset only
-      ds = get_object_or_404(Dataset,pk=self.kwargs.get("id"))
       ds.title = data['title']
-      ds.description = fdata['description']
+      ds.description = data['description']
       ds.save()
     else:
       # a file has been uploaded; need to validate, analyze, & return results
@@ -1046,19 +980,19 @@ class DatasetDetailView(LoginRequiredMixin,UpdateView):
         print('result',result)
         print('now analyze differences...')
         
-        # initial DatasetFile record
-        #DatasetFile.objects.create(
-          #dataset_id = dsid,
-          #file = 'user_'+owner+'/'+filename,
-          #rev = 1,
-          #uri_base = data['uri_base'],
-          #format = result['format'],
-          #delimiter = result['delimiter'] if "delimiter" in result.keys() else "n/a",
-          #status = 'format_ok',
-          #accepted_date = None,
-          #header = result['columns'] if "columns" in result.keys() else [],
-          #numrows = result['count']
-        #)
+        # make DatasetFile record
+        DatasetFile.objects.create(
+          dataset_id = ds,
+          file = 'user_'+user.username+'/'+filename,
+          rev = filerev+1,
+          uri_base = data['uri_base'],
+          format = result['format'],
+          delimiter = result['delimiter'] if "delimiter" in result.keys() else "n/a",
+          status = 'format_ok',
+          accepted_date = None,
+          header = result['columns'] if "columns" in result.keys() else [],
+          numrows = result['count']
+        )
       else:
         print('validation errors',result['errors'])
         
