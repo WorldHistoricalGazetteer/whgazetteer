@@ -935,10 +935,11 @@ class DatasetDetailView(LoginRequiredMixin,UpdateView):
     ds = get_object_or_404(Dataset,pk=self.kwargs.get("id"))
     dsid = ds.id
     user = self.request.user
+    file=data['file']
     filerev = DatasetFile.objects.filter(dataset_id_id=dsid).order_by('-rev')[0].rev
     print('DatasetDetailView kwargs',self.kwargs)
     print('DatasetDetailView form_valid() data->', data)
-    if form.cleaned_data["file"] == None:
+    if data["file"] == None:
       # no file, updating dataset only
       ds.title = data['title']
       ds.description = data['description']
@@ -948,14 +949,14 @@ class DatasetDetailView(LoginRequiredMixin,UpdateView):
       print('file '+data["file"].name+' has been uploaded; need: validation, analysis, return results')
       context={}
       owner=data['owner'].username
-      filename = data['file'].name
+      filename = file.name
       tempf, tempfn = tempfile.mkstemp()
       print('tempfn, filename in DatasetDetailView()',tempfn, filename)
       try:
-        for chunk in data['file'].chunks():
+        for chunk in file.chunks():
           os.write(tempf, chunk)
       except:
-        raise Exception("Problem with the input file %s" % data['file'])
+        raise Exception("Problem with the input file %s" % file)
       finally:
         os.close(tempf)
         
@@ -965,7 +966,7 @@ class DatasetDetailView(LoginRequiredMixin,UpdateView):
       # send for format validation
       if data['format'] == 'delimited':
         context['format'] = 'delimited'
-        result = goodtable(tempfn,filename)
+        result = goodtable(tempfn)
       elif data['format'] == 'lpf':
         # TODO: json-lines alternative 
         context['format'] = 'lpf'
@@ -979,11 +980,29 @@ class DatasetDetailView(LoginRequiredMixin,UpdateView):
         context['status'] = 'newfile_ok'
         print('result',result)
         print('now analyze differences...')
+
+        # get proper name
+        file_exists = Path('media/user_'+user.username+'/'+filename).exists()
+        print('filename at write, exists?',filename,file_exists)
+        if not file_exists:
+          filepath = 'media/user_'+user.username+'/'+filename
+        else:
+          filename=filename[:-4]+'_'+tempfn[-7:]+filename[-4:]
+          filepath = 'media/user_'+user.username+'/'+filename
+  
+        print("filepath to open/write",filepath)
+        fout = codecs.open(filepath,'w','utf8')
+        try:
+          for chunk in file.chunks():
+            print('chunk',chunk, type(chunk))
+            fout.write(chunk.decode("utf-8"))
+        except:
+          sys.exit(sys.exc_info())
         
-        # make DatasetFile record
+        # add DatasetFile record
         DatasetFile.objects.create(
           dataset_id = ds,
-          file = 'user_'+user.username+'/'+filename,
+          file = filename,
           rev = filerev+1,
           uri_base = data['uri_base'],
           format = result['format'],
