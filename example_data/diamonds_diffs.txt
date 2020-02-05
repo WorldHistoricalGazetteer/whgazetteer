@@ -1,0 +1,6 @@
+# changes in ds 'diamonds' diamonds135_rev2.tsv
+
+- title of first row
+- new row, id = "2.1"
+- deleted rows, ids '5.0' and '6.0'
+- added start and end columns

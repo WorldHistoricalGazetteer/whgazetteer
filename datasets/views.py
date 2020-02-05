@@ -1002,7 +1002,7 @@ class DatasetDetailView(LoginRequiredMixin,UpdateView):
         # add DatasetFile record
         DatasetFile.objects.create(
           dataset_id = ds,
-          file = filename,
+          file = 'user_'+user.username+'/'+filename,
           rev = filerev+1,
           uri_base = data['uri_base'],
           format = result['format'],
@@ -1012,6 +1012,18 @@ class DatasetDetailView(LoginRequiredMixin,UpdateView):
           header = result['columns'] if "columns" in result.keys() else [],
           numrows = result['count']
         )
+        
+        # now analyze differences
+        #file_a = DatasetFile.objects.filter(dataset_id_id=ds.id).order_by('-rev')[1]
+        #file_b = DatasetFile.objects.filter(dataset_id_id=ds.id).order_by('-rev')[0]
+        #adf = pd.read_csv('media/'+file_a.file.name,delimiter='\t')
+        #bdf = pd.read_csv('media/'+file_b.file.name,delimiter='\t')
+        #ids_a = adf['id'].tolist()
+        #ids_b = bdf['id'].tolist()
+        #astats={"count":len(ids_a)}
+        #bstats={"count":len(ids_b)}
+        
+        
       else:
         print('validation errors',result['errors'])
         

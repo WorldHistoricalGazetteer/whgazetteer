@@ -99,7 +99,7 @@
     "description": "URI identifier for source of the geometry"
   },
   {"name": "start",
-    "type": "integer",
+    "type": "string",
     "description": "Earliest relevant date or date range (YYYY[-MM-DD/YYYY-MM-DD]); '-' prefix for BCE",
     "constraints": {
       "required": true,
@@ -107,7 +107,7 @@
     }
   },
   {"name": "end",
-    "type": "integer",
+    "type": "string",
     "description": "Latest relevant date/date range per 'start'",
     "constraints": {
       "pattern": "(-?\\d{4}(-\\d{2})?(-\\d{2})?)(\/(-?\\d{4}(-\\d{2})?(-\\d{2})?))?"
