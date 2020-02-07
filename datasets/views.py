@@ -414,15 +414,17 @@ def dataset_browse(request, label, f):
   return render(request, 'datasets/dataset_browse.html', {'ds':ds,'filter':filt})
 #
 def ds_update(request):
-  print('requst.GET',request.GET)
-  dsid=request.GET['dsid']
-  ds = get_object_or_404(Dataset, id=dsid)
-  # latest file
-  file = DatasetFile.objects.filter(dataset_id_id=dsid).order_by('-upload_date')[0].file
-  print('updating ds #'+dsid+' ('+ds.label+') with', file.name)
-  result={"id": dsid, "filename":file.name}
-  return JsonResponse(result,safe=False)
-  #return render(request, 'datasets/dataset.html', {'ds':ds})
+  if request.method == 'POST':
+    print('request.POST',request.POST)
+    print('request.FILES',request.FILES)
+    dsid=request.POST['dsid']
+    ds = get_object_or_404(Dataset, id=dsid)
+    # latest file
+    file = DatasetFile.objects.filter(dataset_id_id=dsid).order_by('-upload_date')[0].file
+    print('updating ds #'+dsid+' ('+ds.label+') with', file.name)
+    result={"id": dsid, "filename":file.name}
+    return JsonResponse(result,safe=False)
+    #return render(request, 'datasets/dataset.html', {'ds':ds})
 #
 # insert lpf into database
 def ds_insert_lpf(request, pk):

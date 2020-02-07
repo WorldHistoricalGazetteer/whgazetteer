@@ -464,9 +464,10 @@
         </div>
         <div class="modal-body">
           <div>
-            <form action="#">{% csrf_token %}
-            <input type="file" name="newfile"></input>
-            <button id="btn_upload" type="button" data-dsid= {{ ds.id}} class="btn btn-primary btn-sm">Upload</button>
+            <form id="newfileform" method="POST" action="#" enctype="multipart/form-data">
+            {% csrf_token %}
+              <input type="file" id="newfile">
+              <button id="btn_upload" type="submit" class="btn btn-primary btn-sm">Upload</button>
             </form>
           </div>
           <div id="results_text" class="compare-results mb-2">spinner, results</div>
@@ -489,18 +490,46 @@ js for Summary, Reconciliation
     window.spinner_updater = new Spin.Spinner().spin();
     $("#results_text").append(spinner_updater.el);   
   }
-  $("#btn_upload").click(function(e){
+  $(document).on('submit', '#newfileform', function(e){
     e.preventDefault()
-    $.get("/datasets/update", {dsid: '{{ds.id}}'}, function(data){
-      html = 'ran ds_update() <br/>'
-      html+='Updating current file: <b>'+data['filename']+'</b>'
-      $("#btn_upload").addClass('hidden')
-      $("#btn_update").removeClass('hidden')
-      $("#results_text").html(html)
-      console.log(data)
+    <!--var fileName = $('#newfile')[0].files[0].name;-->
+    <!--var realSize = sizeConverter(fileSize);-->
+    var formData = new FormData();
+    formData.append('file', $('#newfile')[0].files[0]);
+    formData.append('dsid', '{{ ds.id }}');
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+    
+    <!--console.log(fileName,fileSize)-->
+    $.ajax({
+      type: 'POST',
+      enctype: 'multipart/form-data',
+      url: '/datasets/update/',
+      processData: false,
+      contentType: false,
+      cache: false,
+      data: formData,
+      success:function(data){
+        html = 'ran ds_update() <br/>'
+        html+='Updating current file: <b>'+data['filename']+'</b>'
+        $("#btn_upload").addClass('hidden')
+        $("#btn_update").removeClass('hidden')
+        $("#results_text").html(html)
+        console.log(data)        
+      }
     })
-    console.log('send file input for ds',$(this).data('dsid'))
   })
+  
+  <!--$("#btn_upload").click(function(e){-->
+    <!--$.post("/datasets/update/", {dsid: '{{ds.id}}'}, function(data){-->
+      <!--html = 'ran ds_update() <br/>'-->
+      <!--html+='Updating current file: <b>'+data['filename']+'</b>'-->
+      <!--$("#btn_upload").addClass('hidden')-->
+      <!--$("#btn_update").removeClass('hidden')-->
+      <!--$("#results_text").html(html)-->
+      <!--console.log(data)-->
+    <!--})-->
+    <!--console.log('send file input for ds',$(this).data('dsid'))-->
+  <!--})-->
   // toggle file form for update
   $("#a_update").click(function(){
     // flip display
