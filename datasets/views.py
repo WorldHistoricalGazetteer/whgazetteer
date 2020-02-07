@@ -425,17 +425,18 @@ def ds_update(request, pk):
 # insert lpf into database
 def ds_insert_lpf(request, pk):
   import json
+  [countrows,countlinked]= [0,0]
   ds = get_object_or_404(Dataset, id=pk)
   # insert data from initial file upload
-  dsfile = DatasetFile.objects.filter(dataset_id_id=pk).order_by('-upload_date')[0].file
+  dsf = DatasetFile.objects.filter(dataset_id_id=pk).order_by('-upload_date')[0]
   uribase = DatasetFile.objects.filter(dataset_id_id=pk).order_by('-upload_date')[0].uri_base
-  [countrows,countlinked]= [0,0]
-  infile = dsfile.open(mode="r")
-  with dsfile:
-    jdata = json.loads(dsfile.read())
-    #print('jdata from insert',jdata)
+
+  infile = dsf.file.open(mode="r")
+  print('ds_insert_lpf(); request.GET; infile',request.GET,infile)  
+  with infile:
+    jdata = json.loads(infile.read())
     for feat in jdata['features']:
-      print('feat properties:',feat['properties'])
+      #print('feat properties:',feat['properties'])
       objs = {"PlaceNames":[], "PlaceTypes":[], "PlaceGeoms":[], "PlaceWhens":[],
               "PlaceLinks":[], "PlaceRelated":[], "PlaceDescriptions":[],
                 "PlaceDepictions":[]}
@@ -528,19 +529,23 @@ def ds_insert_lpf(request, pk):
       PlaceDescription.objects.bulk_create(objs['PlaceDescriptions'])
       PlaceDepiction.objects.bulk_create(objs['PlaceDepictions'])
 
+      #context = {'status':'inserted'}
       # write some summary attributes
-      ds.numrows = countrows
+      dsf.numrows = countrows
+      #dsf.status = 'uploaded'
+      dsf.save()
+
+      #dsf.status = 'uploaded'
       ds.numlinked = countlinked
       ds.total_links = len(objs['PlaceLinks'])
-      ds.status = 'uploaded'
       ds.save()
 
     #print('record:', ds.__dict__)
-    ds.file.close()
+    infile.close()
 
-  print(str(countrows)+' processed')
+  print(str(countrows)+' inserted')
   messages.add_message(request, messages.INFO, 'inserted lpf for '+str(countrows)+' places')
-  return redirect('/dashboard')
+  return redirect('/dashboard', context=context)
 
 #
 # insert LP-TSV file to database
@@ -548,9 +553,9 @@ def ds_insert_tsv(request, pk):
   # retrieve just-added file, insert to db
   import os, csv
   ds = get_object_or_404(Dataset, id=pk)
-  dsfile = DatasetFile.objects.filter(dataset_id_id=pk).order_by('-upload_date')[0].file
+  dsf = DatasetFile.objects.filter(dataset_id_id=pk).order_by('-upload_date')[0]
 
-  infile = dsfile.open(mode="r")
+  infile = dsf.file.open(mode="r")
   print('ds_insert_tsv(); request.GET; infile',request.GET,infile)
   # should already know delimiter
   try:
@@ -758,18 +763,19 @@ def ds_insert_tsv(request, pk):
   PlaceDescription.objects.bulk_create(objs['PlaceDescription'],batch_size=10000)
   print('descriptions done')
 
-  context = {'status':'inserted'}
+  #context = {'status':'inserted'}
   print('rows,linked,links:',countrows,countlinked,countlinks)
-  ds.numrows = countrows
+  dsf.numrows = countrows
+  dsf.header = header
+  #dsf.status = 'inserted'
+  dsf.save()
+
+  #ds.status = 'inserted'
   ds.numlinked = countlinked
   ds.total_links = countlinks
-  ds.header = header
-  ds.status = 'inserted'
   ds.save()
-  print('record:', ds.__dict__)
-  print('context from ds_insert_tsv():',context)
+  print('ds record:', ds.__dict__)
   infile.close()
-  # ds.file.close()
 
   #return render(request, '/datasets/dashboard.html', {'context': context})
   return redirect('/dashboard', context=context)
@@ -801,7 +807,7 @@ class DashboardView(ListView):
     userareas = Area.objects.all().filter(type__in=types_ok).order_by('created')
     context['area_list'] = userareas if me.username == 'whgadmin' else userareas.filter(owner=self.request.user)
 
-    context['viewable'] = ['uploaded','reconciling','review_hits','reviewed','review_whg','indexed']
+    context['viewable'] = ['uploaded','inserted','reconciling','review_hits','reviewed','review_whg','indexed']
     # TODO: user place collections
     #print('DashboardView context:', context)
     return context
@@ -885,7 +891,7 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
       fout = codecs.open(filepath,'w','utf8')
       try:
         for chunk in file.chunks():
-          print('chunk',chunk, type(chunk))
+          #print('chunk',chunk, type(chunk))
           fout.write(chunk.decode("utf-8"))
       except:
         sys.exit(sys.exc_info())
@@ -978,10 +984,9 @@ class DatasetDetailView(LoginRequiredMixin,UpdateView):
     
       if len(result['errors']) == 0:
         context['status'] = 'newfile_ok'
-        print('result',result)
-        print('now analyze differences...')
+        print('validation result',result)
 
-        # get proper name
+        # create file name
         file_exists = Path('media/user_'+user.username+'/'+filename).exists()
         print('filename at write, exists?',filename,file_exists)
         if not file_exists:
@@ -994,11 +999,14 @@ class DatasetDetailView(LoginRequiredMixin,UpdateView):
         fout = codecs.open(filepath,'w','utf8')
         try:
           for chunk in file.chunks():
-            print('chunk',chunk, type(chunk))
+            #print('chunk',chunk, type(chunk))
             fout.write(chunk.decode("utf-8"))
         except:
           sys.exit(sys.exc_info())
+        finally:
+          fout.close()
         
+        ds.status = 'updating'
         # add DatasetFile record
         DatasetFile.objects.create(
           dataset_id = ds,
@@ -1007,12 +1015,14 @@ class DatasetDetailView(LoginRequiredMixin,UpdateView):
           uri_base = data['uri_base'],
           format = result['format'],
           delimiter = result['delimiter'] if "delimiter" in result.keys() else "n/a",
-          status = 'format_ok',
+          status = 'updating',
           accepted_date = None,
           header = result['columns'] if "columns" in result.keys() else [],
           numrows = result['count']
         )
         
+        comparison=compare(ds.id)
+        print('comparison',comparison)
         # now analyze differences
         #file_a = DatasetFile.objects.filter(dataset_id_id=ds.id).order_by('-rev')[1]
         #file_b = DatasetFile.objects.filter(dataset_id_id=ds.id).order_by('-rev')[0]
@@ -1022,6 +1032,7 @@ class DatasetDetailView(LoginRequiredMixin,UpdateView):
         #ids_b = bdf['id'].tolist()
         #astats={"count":len(ids_a)}
         #bstats={"count":len(ids_b)}
+        return redirect('/datasets/'+ds+'/detail')
         
         
       else:
@@ -1050,23 +1061,33 @@ class DatasetDetailView(LoginRequiredMixin,UpdateView):
     id_ = self.kwargs.get("id")
     ds = get_object_or_404(Dataset, id=id_)
     file = DatasetFile.objects.filter(dataset_id_id = ds.id).order_by('-upload_date')[0]
+    
+    # from DatasetCreateView()
+    # insert to db immediately if file.status == format_ok 
+    if file.status == 'format_ok':
+      print('format_ok , inserting dataset '+str(id_))
+      if file.format == 'delimited':
+        ds_insert_tsv(self.request, id_)
+      else:
+        ds_insert_lpf(self.request,id_)
+      ds.status = 'uploaded'
 
     # load areas for dropdowns
     me = self.request.user
-    #print('me',me,me.id)
-    types_ok=['ccodes','copied','drawn']
+    area_types=['ccodes','copied','drawn']
     
-    userareas = Area.objects.all().filter(type__in=types_ok).order_by('-created')
+    userareas = Area.objects.all().filter(type__in=area_types).order_by('-created')
     context['area_list'] = userareas if me.username == 'whgadmin' else userareas.filter(owner=me)
   
     predefined = Area.objects.all().filter(type='predefined').order_by('-created')
     context['region_list'] = predefined
   
+    #context['comparison'] = comparison
+    
     context['updates'] = {}
     bounds = self.kwargs.get("bounds")
     # print('ds',ds.label)
     context['ds'] = ds
-    context['status'] = ds.status
     # latest file
     context['current_file'] = file
     context['format'] = file.format
@@ -1104,14 +1125,6 @@ class DatasetDetailView(LoginRequiredMixin,UpdateView):
       place_id_id__in = placeset, task_id__contains = '-').count()
 
     print('context from DatasetDetailView',context)
-
-    # insert to db immediately if format okay
-    if context['status'] == 'format_ok':
-      print('format_ok, inserting dataset '+str(id_))
-      if context['format'] == 'delimited':
-        ds_insert_tsv(self.request, id_)
-      else:
-        ds_insert_lpf(self.request,id_)
 
     return context
 

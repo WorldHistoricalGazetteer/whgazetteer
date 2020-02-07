@@ -47,7 +47,6 @@
         <span class="float-right">
           Delete dataset <a href="{% url 'datasets:dataset-delete' ds.id %}" class="" title="Delete dataset" rel="tooltip">{% fontawesome_icon 'trash' color='#ff0000' %}</a></span>
       {% endif %}
-        status: {{ status }}
         <table class="ds-table">
           <tr>
             <td><b>ID / label</b></td>
@@ -72,8 +71,8 @@
             </td>
           </tr>
           <tr>
-            <td><b>Status</b></td>
-            <td>{{ status }}</td>
+            <td><b>Dataset status</b></td>
+            <td>{{ ds.status }}</td>
           </tr>
         </table>
         <input class="btn btn-primary btn-sm hidden btn-ds" type="submit" value="Save" />
@@ -98,6 +97,10 @@
                 <span class="display-field">{{ current_file.file }}</span>
                 <span class="update-field hidden">{{ form.file }}</span>
               </td>
+            </tr>
+            <tr>
+              <td><b>File status</b></td>
+              <td>{{ current_file.status }}</td>
             </tr>
             <tr>
               <td><b>Uploaded</b></td>
@@ -157,24 +160,29 @@
         <input type="hidden" name="numrows" value="{{ current_file.numrows }}">
       </div>
       <div class="col-sm-4 small">
-        <div id="ds_stats">
-          <table style="width:100%">
-            <tr><td class="pb-3"><b>Status</b></td><td class="pb-3">{{ ds.status }}</td><td class="pb-3"></td></tr>
-            <tr><th></th><th class="pb-1 text-secondary">count</th><th class="pb-1 text-secondary">added</th></tr>
-            <tr><td><b>Rows</b></td><td>{{ ds.numrows }}</td><td class="text-secondary">n/a</td></tr>
-            <tr><td><b>Names</b></td><td>{{ num_names }}</td><td class="text-secondary">n/a</td></tr>
-            <tr>
-              <td><b>Links</b></td><td>{{ num_links }}</td>
-              <td><span class="text-white bg-danger">&nbsp;{{ links_added }}&nbsp;</span></td></tr>
-            <tr>
-              <td><b>Geometries</b></td><td>{{ num_geoms }}</td>
-              <td><span class="text-white bg-danger">&nbsp;{{ geoms_added }}&nbsp;</span></td></tr>
-          </table>
+        <div id="ds_updating" class="hidden">
+          <span id="comparison">comparison summary</span>
         </div>
-        <div id="ds_access" class="pt-0 px-0">
-          <p style="display:block; background-color:#eee; margin:0; padding-left:10px; font-weight:700;">Access</p>
-          <p style="display:block; margin:0; padding-left:10px;">Metadata edits, dataset updates, and initiation of reconciliation tasks may only be performed by the dataset contributor ("owner" in WHG). Collaborators added by the owner under the "Sharing" tab can view the dataset and perform review of reconciliation tasks.</p>
-        </div>
+        <div id="ds_info">
+          <div id="ds_stats">
+            <table style="width:100%">
+              <tr><td class="pb-3"><b>Status</b></td><td class="pb-3">{{ ds.status }}</td><td class="pb-3"></td></tr>
+              <tr><th></th><th class="pb-1 text-secondary">count</th><th class="pb-1 text-secondary">added</th></tr>
+              <tr><td><b>Rows</b></td><td>{{ ds.numrows }}</td><td class="text-secondary">n/a</td></tr>
+              <tr><td><b>Names</b></td><td>{{ num_names }}</td><td class="text-secondary">n/a</td></tr>
+              <tr>
+                <td><b>Links</b></td><td>{{ num_links }}</td>
+                <td><span class="text-white bg-danger">&nbsp;{{ links_added }}&nbsp;</span></td></tr>
+              <tr>
+                <td><b>Geometries</b></td><td>{{ num_geoms }}</td>
+                <td><span class="text-white bg-danger">&nbsp;{{ geoms_added }}&nbsp;</span></td></tr>
+            </table>
+          </div>
+          <div id="ds_access" class="pt-0 px-0">
+            <p style="display:block; background-color:#eee; margin:0; padding-left:10px; font-weight:700;">Access</p>
+            <p style="display:block; margin:0; padding-left:10px;">Metadata edits, dataset updates, and initiation of reconciliation tasks may only be performed by the dataset contributor ("owner" in WHG). Collaborators added by the owner under the "Sharing" tab can view the dataset and perform review of reconciliation tasks.</p>
+          </div>
+        </div> <!-- ds_info -->
       </div>
       </div> <!-- row -->
       </form>
@@ -481,6 +489,14 @@ js for Summary, Reconciliation
       $("#update_modal").modal('show')
       history.pushState({}, null, 'detail');
     }
+    if('{{ status }}' == 'updating'){
+      console.log('{{ status }}','{{ context }}')
+      $("#ds_info").addClass('hidden')
+      $("#ds_updating").removeClass('hidden')
+      $("#div_file").toggleClass('border-red')
+      $(".update-msg").removeClass('hidden')
+    }
+    
     // manage url
     var url = document.location.toString();
     <!--console.log('url, context on load',url,"{{context}}".length)-->

@@ -1,12 +1,57 @@
+from django.shortcuts import get_object_or_404
+
+from pathlib import Path
 import codecs, datetime, sys, csv, os, pprint, chardet
 import simplejson as json
 from goodtables import validate as gvalidate
 from shapely import wkt
-from datasets.models import DatasetUser
+from datasets.models import DatasetFile, DatasetUser
 from datasets.static.hashes import aat, parents
 from jsonschema import Draft7Validator, draft7_format_checker, validate
 pp = pprint.PrettyPrinter(indent=1)
+import pandas as pd
 
+# compare two dataset files
+def compare(dsid):
+  # get last two uploaded DatasetFile instances for this dataset
+  # a is the current data, b is newly uploaded
+  #file_a = DatasetFile.objects.filter(dataset_id_id=dsid).order_by('-rev')[1]
+  # TODO: for testing, a is always the initial
+  file_a = get_object_or_404(DatasetFile,dataset_id_id=dsid,rev=1)
+  file_b = DatasetFile.objects.filter(dataset_id_id=dsid).order_by('-rev')[0]
+  fn_a = file_a.file.name
+  fn_b = file_b.file.name
+  print('dsid; files to compare():',dsid,fn_a,fn_b)
+  print('files exist?',Path('media/'+fn_a).exists(),Path('media/'+fn_b).exists())
+  adf = pd.read_csv('media/'+fn_a,delimiter='\t')
+  #print('adf',adf)
+  bdf = pd.read_csv('/Users/karlg/Documents/Repos/_whgazetteer/media/'+fn_b,delimiter='\t')
+  #try:
+    #bdf = pd.read_csv('media/'+fn_b,delimiter='\t')
+  #except:
+    #sys.exit(sys.exc_info())
+  ids_a = adf['id'].tolist()
+  ids_b = bdf['id'].tolist()
+  resobj={"count_new":len(ids_b),'count_diff':len(ids_b)-len(ids_a)}
+  # new or removed columns?
+  col_del = list(set(adf.columns)-set(bdf.columns))
+  col_add = list(set(bdf.columns)-set(adf.columns))
+  resobj['col_add']=col_add
+  resobj['col_del']=col_del
+  resobj['rows_add']=list(set(ids_b)-set(ids_a))
+  resobj['rows_del']=list(set(ids_a)-set(ids_b))
+  # build a little blurb
+  text='The revised dataset has '+str(resobj['count_new'])+' records, a difference of '+str(resobj['count_diff'])+". Columns "
+  text += 'to add: '+str(resobj['col_add']) + '. 'if len(resobj['col_add']) > 0 else \
+    'to remove: '+ str(resobj['col_del'])+'. ' if len(resobj['col_del']) > 0 \
+              else "remain the same. "
+  text += 'Records to be added: '+str(resobj['rows_add'])+'. ' if len(resobj['rows_add'])>0 else ''
+  text += 'Records to be removed: '+str(resobj['rows_del'])+'. ' if len(resobj['rows_del'])>0 else ''
+  text += 'All records with an ID matching one in the existing dataset will be replaced.'  
+  resobj['text'] = text
+  
+  return resobj
+  
 # use jsonschema to validate Linked Places json-ld
 # format ['coll' (FeatureCollection) | 'lines' (json-lines)]
 def validate_lpf(infile,format):
@@ -71,7 +116,7 @@ def goodtable(tempfn):
   for e in report['tables'][0]['errors']:
     if e['code'] not in ["blank-header","missing-header"]:
       result["errors"].append(e)
-  print('result',result)
+  #print('result',result)
   return result
 
 class HitRecord(object):
