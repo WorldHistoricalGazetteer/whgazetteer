@@ -79,6 +79,7 @@
         <p> <i>Current data file</i> 
             <span class="update-msg text-danger italic strong hidden">:: updating</span>
             <span class="float-right mr-2">
+            <a href="#" id="a_update_modal" data-dsid = {{ ds.id }} data-toggle="modal" data-target="#updateModal">modal</a>&nbsp;&nbsp;
             <!--<a href="#update_modal" data-toggle="modal">update</a>-->
             <a href="#" data-alt="cancel" id="a_update">update</a>
             <span class="help-matches" data-id="updates">
@@ -452,6 +453,32 @@
       </div> <!-- .row -->
     </div> <!-- #addtask -->
   </div> <!-- .tab-content -->
+  <div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="updateModalLabel">Update data file for {{ ds.label }}</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div>
+            <form action="#">{% csrf_token %}
+            <input type="file" name="newfile"></input>
+            <button id="btn_upload" type="button" data-dsid= {{ ds.id}} class="btn btn-primary btn-sm">Upload</button>
+            </form>
+          </div>
+          <div id="results_text" class="compare-results mb-2">spinner, results</div>
+          <button id="btn_update" type="button" data-dsid={{ds.id}} class="btn btn-primary btn-sm hidden">
+            Proceed</button>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!--
@@ -462,6 +489,18 @@ js for Summary, Reconciliation
     window.spinner_updater = new Spin.Spinner().spin();
     $("#results_text").append(spinner_updater.el);   
   }
+  $("#btn_upload").click(function(e){
+    e.preventDefault()
+    $.get("/datasets/update", {dsid: '{{ds.id}}'}, function(data){
+      html = 'ran ds_update() <br/>'
+      html+='Updating current file: <b>'+data['filename']+'</b>'
+      $("#btn_upload").addClass('hidden')
+      $("#btn_update").removeClass('hidden')
+      $("#results_text").html(html)
+      console.log(data)
+    })
+    console.log('send file input for ds',$(this).data('dsid'))
+  })
   // toggle file form for update
   $("#a_update").click(function(){
     // flip display
@@ -485,10 +524,8 @@ js for Summary, Reconciliation
     $(".btn-ds").toggleClass("hidden")
   })  
   $(function(){
-    if(location.search.includes('newfile')){
-      $("#update_modal").modal('show')
-      history.pushState({}, null, 'detail');
-    }
+  
+    
     if('{{ status }}' == 'updating'){
       console.log('{{ status }}','{{ context }}')
       $("#ds_info").addClass('hidden')

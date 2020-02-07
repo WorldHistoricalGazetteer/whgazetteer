@@ -356,7 +356,7 @@ em { color: #993333;}
 #ds_details td:nth-child(3) {width:30%;}
 #dsfile_new td {width:20%;}
 #ds_tasks { max-height: 80vh; overflow-y:scroll; overflow-x: hidden; }
-#ds_stats, #ds_access {
+#ds_stats, #ds_access, #results_text {
   height: fit-content;
   border-top: #ddd 1px solid;
   border-left: #ddd 1px solid;
@@ -370,6 +370,7 @@ em { color: #993333;}
 #ds_stats th { font-weight:400; font-style: italic; }
 #browse { width:100% !important; height:auto !important; }
 #ds_form .row {padding-right:4px;}
+#results_text {}
 #update_button { 
   text-align: center;
   border: 1px solid #ddd;

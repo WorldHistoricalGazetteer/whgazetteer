@@ -413,12 +413,14 @@ def dataset_browse(request, label, f):
   filt = f
   return render(request, 'datasets/dataset_browse.html', {'ds':ds,'filter':filt})
 #
-def ds_update(request, pk):
-  ds = get_object_or_404(Dataset, id=pk)
+def ds_update(request):
+  print('requst.GET',request.GET)
+  dsid=request.GET['dsid']
+  ds = get_object_or_404(Dataset, id=dsid)
   # latest file
-  file = DatasetFile.objects.filter(dataset_id_id=pk).order_by('-upload_date')[0].file
-  print('gonna update ds #', pk, ds.label)
-  result={"id": pk, "filename":file}
+  file = DatasetFile.objects.filter(dataset_id_id=dsid).order_by('-upload_date')[0].file
+  print('updating ds #'+dsid+' ('+ds.label+') with', file.name)
+  result={"id": dsid, "filename":file.name}
   return JsonResponse(result,safe=False)
   #return render(request, 'datasets/dataset.html', {'ds':ds})
 #
@@ -1021,8 +1023,8 @@ class DatasetDetailView(LoginRequiredMixin,UpdateView):
           numrows = result['count']
         )
         
-        comparison=compare(ds.id)
-        print('comparison',comparison)
+        #comparison=compare(ds.id)
+        #print('comparison',comparison)
         # now analyze differences
         #file_a = DatasetFile.objects.filter(dataset_id_id=ds.id).order_by('-rev')[1]
         #file_b = DatasetFile.objects.filter(dataset_id_id=ds.id).order_by('-rev')[0]
