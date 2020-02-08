@@ -418,12 +418,43 @@ def ds_update(request):
     print('request.POST',request.POST)
     print('request.FILES',request.FILES)
     dsid=request.POST['dsid']
+    format=request.POST['format']
     ds = get_object_or_404(Dataset, id=dsid)
-    # latest file
-    file = DatasetFile.objects.filter(dataset_id_id=dsid).order_by('-upload_date')[0].file
-    print('updating ds #'+dsid+' ('+ds.label+') with', file.name)
-    result={"id": dsid, "filename":file.name}
-    return JsonResponse(result,safe=False)
+    # current file
+    file_cur = DatasetFile.objects.filter(dataset_id_id=dsid).order_by('-upload_date')[0].file
+    # new file 
+    file_new=request.FILES['file']
+    tempf, tempfn = tempfile.mkstemp()
+    print('tempfn, filename_cur, filename_new in ds_update()',tempfn, file_cur.name, file_new.name)    
+
+    try:
+      for chunk in file_new.chunks():
+        #print('chunk',chunk)
+        os.write(tempf, chunk)
+    except:
+      raise Exception("Problem with the input file %s" % request.FILES['file'])
+    finally:
+      os.close(tempf)
+      
+    # open the temp file 
+    fin = codecs.open(tempfn, 'r', 'utf8')
+    # send for format validation
+    if format == 'delimited':
+      #context["format"] = "delimited"
+      vresult = goodtable(tempfn)
+    elif format == 'lpf':
+      #context["format"] = "lpf"
+      vresult = validate_lpf(fin,'coll')
+    print('format, result:',format,vresult)
+    fin.close()
+    
+    comparison={
+      "id": dsid, 
+      "filename_current":file_cur.name, 
+      "filename_new": file_new.name,
+      "validation_result": vresult
+    }
+    return JsonResponse(comparison,safe=False)
     #return render(request, 'datasets/dataset.html', {'ds':ds})
 #
 # insert lpf into database

@@ -497,6 +497,7 @@ js for Summary, Reconciliation
     var formData = new FormData();
     formData.append('file', $('#newfile')[0].files[0]);
     formData.append('dsid', '{{ ds.id }}');
+    formData.append('format', '{{ current_file.format }}')
     formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
     
     <!--console.log(fileName,fileSize)-->
@@ -510,7 +511,9 @@ js for Summary, Reconciliation
       data: formData,
       success:function(data){
         html = 'ran ds_update() <br/>'
-        html+='Updating current file: <b>'+data['filename']+'</b>'
+        html += 'Updating current file: <br/>'+data['filename_current']+' with <br/>'
+        html += data['filename_current']+'<br/>'
+        html += 'validation: ' + JSON.stringify(data['validation_result'])
         $("#btn_upload").addClass('hidden')
         $("#btn_update").removeClass('hidden')
         $("#results_text").html(html)
