@@ -490,10 +490,31 @@ js for Summary, Reconciliation
     window.spinner_updater = new Spin.Spinner().spin();
     $("#results_text").append(spinner_updater.el);   
   }
+  $("#btn_update").on('click', function(){
+    var formData = new FormData();
+    formData.append('tempfn', comparedata['tempfn']);
+    formData.append('dsid', '{{ ds.id }}');
+    formData.append('format', '{{ current_file.format }}')
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+    
+    $.ajax({
+      type: 'POST',
+      enctype: 'multipart/form-data',
+      url: '/datasets/update/',
+      processData: false,
+      contentType: false,
+      cache: false,
+      data: formData,
+      success:function(data){
+        html = '<hr/>ran ds_update() <br/>'
+        html += 'result: <br/>'+JSON.stringify(data)
+        $("#results_text").html($("#results_text").html()+html)
+      }
+    })
+  })
+  
   $(document).on('submit', '#newfileform', function(e){
     e.preventDefault()
-    <!--var fileName = $('#newfile')[0].files[0].name;-->
-    <!--var realSize = sizeConverter(fileSize);-->
     var formData = new FormData();
     formData.append('file', $('#newfile')[0].files[0]);
     formData.append('dsid', '{{ ds.id }}');
@@ -504,19 +525,21 @@ js for Summary, Reconciliation
     $.ajax({
       type: 'POST',
       enctype: 'multipart/form-data',
-      url: '/datasets/update/',
+      url: '/datasets/compare/',
       processData: false,
       contentType: false,
       cache: false,
       data: formData,
       success:function(data){
-        html = 'ran ds_update() <br/>'
-        html += 'Updating current file: <br/>'+data['filename_current']+' with <br/>'
-        html += data['filename_current']+'<br/>'
-        html += 'validation: ' + JSON.stringify(data['validation_result'])
+        html = 'ran ds_compare() <br/>'
+        html += '<b>Current file</b>: <br/><i>'+data['filename_current']+'</i><br/>'
+        html += '<b>New file</b>: <br/><i>'+data['filename_new']+'</i><br/>'
+        html += '<b>Validation</b>: <br/><i>' + JSON.stringify(data['validation_result'])+'</i>'
         $("#btn_upload").addClass('hidden')
+        $("#newfile").addClass('hidden')
         $("#btn_update").removeClass('hidden')
         $("#results_text").html(html)
+        comparedata=data
         console.log(data)        
       }
     })

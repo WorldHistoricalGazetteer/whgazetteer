@@ -413,7 +413,25 @@ def dataset_browse(request, label, f):
   filt = f
   return render(request, 'datasets/dataset_browse.html', {'ds':ds,'filter':filt})
 #
+# perform update on database and index 
 def ds_update(request):
+  if request.method == 'POST':
+    print('request.POST',request.POST)
+    dsid=request.POST['dsid']
+    file_format=request.POST['format']
+    tempfn=request.POST['tempfn']
+    ds = get_object_or_404(Dataset, id=dsid)
+    file_cur = DatasetFile.objects.filter(dataset_id_id=dsid).order_by('-upload_date')[0].file
+    
+    fin = codecs.open(tempfn, 'r', 'utf8')
+    raw = json.loads(fin.read())['features'][0]['@id'] if file_format == 'lpf' else fin.readlines()[0]
+    result = {"status": "getting there...","snippet":raw}
+    return JsonResponse(result,safe=False)
+  
+#
+# initial validation and comparison of dataset update files
+# ajax call from modal returns json result object
+def ds_compare(request):
   if request.method == 'POST':
     print('request.POST',request.POST)
     print('request.FILES',request.FILES)
@@ -452,8 +470,10 @@ def ds_update(request):
       "id": dsid, 
       "filename_current":file_cur.name, 
       "filename_new": file_new.name,
-      "validation_result": vresult
+      "validation_result": vresult,
+      "tempfn": tempfn
     }
+    
     return JsonResponse(comparison,safe=False)
     #return render(request, 'datasets/dataset.html', {'ds':ds})
 #

@@ -10,7 +10,7 @@ app_name='datasets'
 urlpatterns = [
     path('create/', views.DatasetCreateView.as_view(), name='dataset-create'),
     
-    #path('<int:id>/update', views.DatasetFileUpdateView.as_view(), name='dataset-update'),
+    path('compare/', views.ds_compare, name='dataset-compare'),
     path('update/', views.ds_update, name='dataset-update'),
 
     #path('addfile/', views.DatasetFileUpdateView.as_view(), name='dataset-addfile'),
