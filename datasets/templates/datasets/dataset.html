@@ -475,7 +475,7 @@
             Proceed</button>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
         </div>
       </div>
     </div>
@@ -534,7 +534,8 @@ js for Summary, Reconciliation
         html = 'ran ds_compare() <br/>'
         html += '<b>Current file</b>: <br/><i>'+data['filename_current']+'</i><br/>'
         html += '<b>New file</b>: <br/><i>'+data['filename_new']+'</i><br/>'
-        html += '<b>Validation</b>: <br/><i>' + JSON.stringify(data['validation_result'])+'</i>'
+        html += '<b>Validation</b>: <br/><i>' + JSON.stringify(data['validation_result'])+'</i><hr/>'
+        html += '<b>Compare</b>: <br/><i>' + JSON.stringify(data['compare_result'])+'</i>'
         $("#btn_upload").addClass('hidden')
         $("#newfile").addClass('hidden')
         $("#btn_update").removeClass('hidden')

@@ -16,6 +16,7 @@ from django_celery_results.models import TaskResult
 from celery import current_app as celapp
 import codecs, tempfile, os, re, sys #ipdb,
 import simplejson as json
+import pandas as pd
 from pathlib import Path
 #from itertools import islice
 #from pprint import pprint
@@ -465,7 +466,7 @@ def ds_compare(request):
       vresult = validate_lpf(fin,'coll')
     print('format, result:',format,vresult)
     fin.close()
-    
+
     comparison={
       "id": dsid, 
       "filename_current":file_cur.name, 
@@ -473,6 +474,29 @@ def ds_compare(request):
       "validation_result": vresult,
       "tempfn": tempfn
     }
+    
+    fn_a = file_cur.name
+    fn_b = tempfn+'.tsv'
+    if format == 'delimited':
+      adf = pd.read_csv('media/'+fn_a, delimiter='\t')
+      #bdf = pd.read_csv('media/'+fn_b,delimiter='\t')
+      bdf = pd.read_csv(fn_b, delimiter='\t')
+      ids_a = adf['id'].tolist()
+      ids_b = bdf['id'].tolist()
+      # new or removed columns?
+      cols_del = list(set(adf.columns)-set(bdf.columns))
+      cols_add = list(set(bdf.columns)-set(adf.columns))
+      
+      comparison['compare_result'] = {
+        "count_new":len(ids_b),
+        'count_diff':len(ids_b)-len(ids_a),
+        'cols_del': cols_del,
+        'cols_add': cols_add,
+        'rows_add': list(set(ids_b)-set(ids_a)),
+        'rows_del': list(set(ids_a)-set(ids_b))}
+    elif format == 'lpf':
+      print('need to compare lpf files:',fn_a,fn_b)
+      comparison['compare_result'] = "lpf...hold your horses"
     
     return JsonResponse(comparison,safe=False)
     #return render(request, 'datasets/dataset.html', {'ds':ds})
@@ -818,7 +842,7 @@ def ds_insert_tsv(request, pk):
   PlaceDescription.objects.bulk_create(objs['PlaceDescription'],batch_size=10000)
   print('descriptions done')
 
-  #context = {'status':'inserted'}
+  context = {'status':'uploaded'}
   print('rows,linked,links:',countrows,countlinked,countlinks)
   dsf.numrows = countrows
   dsf.header = header
@@ -1126,6 +1150,7 @@ class DatasetDetailView(LoginRequiredMixin,UpdateView):
       else:
         ds_insert_lpf(self.request,id_)
       ds.status = 'uploaded'
+      file.status = 'uploaded'
 
     # load areas for dropdowns
     me = self.request.user
