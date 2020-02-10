@@ -91,6 +91,7 @@ def validate_lpf(infile,format):
   fout.write(json.dumps(result["errors"]))
   fout.close()
   result['count'] = countrows
+  print('validate_lpf() result',result)
   return result
 
 # validate LP-TSV file
@@ -116,7 +117,7 @@ def goodtable(tempfn):
   for e in report['tables'][0]['errors']:
     if e['code'] not in ["blank-header","missing-header"]:
       result["errors"].append(e)
-  #print('result',result)
+  print('goodtable() result',result)
   return result
 
 class HitRecord(object):

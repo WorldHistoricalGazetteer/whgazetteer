@@ -419,14 +419,16 @@ def ds_update(request):
   if request.method == 'POST':
     print('request.POST',request.POST)
     dsid=request.POST['dsid']
-    file_format=request.POST['format']
-    tempfn=request.POST['tempfn']
     ds = get_object_or_404(Dataset, id=dsid)
+    compare_data = json.loads(request.POST['compare_data'])
+    compare_result = compare_data['compare_result']
+    file_format=request.POST['format']
+    file_new=compare_data['tempfn']+('.tsv' if file_format == 'delimited' else '.jsonld')
     file_cur = DatasetFile.objects.filter(dataset_id_id=dsid).order_by('-upload_date')[0].file
     
-    fin = codecs.open(tempfn, 'r', 'utf8')
+    fin = codecs.open(file_new, 'r', 'utf8')
     raw = json.loads(fin.read())['features'][0]['@id'] if file_format == 'lpf' else fin.readlines()[0]
-    result = {"status": "getting there...","snippet":raw}
+    result = {"status": "getting there...","snippet":raw,"todo":str(compare_result)}
     return JsonResponse(result,safe=False)
   
 #
@@ -496,7 +498,7 @@ def ds_compare(request):
         'rows_del': list(set(ids_a)-set(ids_b))}
     elif format == 'lpf':
       print('need to compare lpf files:',fn_a,fn_b)
-      comparison['compare_result'] = "lpf...hold your horses"
+      comparison['compare_result'] = "it's lpf...tougher row to hoe"
     
     return JsonResponse(comparison,safe=False)
     #return render(request, 'datasets/dataset.html', {'ds':ds})
@@ -610,11 +612,12 @@ def ds_insert_lpf(request, pk):
 
       #context = {'status':'inserted'}
       # write some summary attributes
+      dsf.status = 'uploaded'
       dsf.numrows = countrows
-      #dsf.status = 'uploaded'
       dsf.save()
 
-      #dsf.status = 'uploaded'
+      ds.status = 'uploaded'
+      ds.numrows = countrows
       ds.numlinked = countlinked
       ds.total_links = len(objs['PlaceLinks'])
       ds.save()
@@ -844,12 +847,13 @@ def ds_insert_tsv(request, pk):
 
   context = {'status':'uploaded'}
   print('rows,linked,links:',countrows,countlinked,countlinks)
+  dsf.status = 'uploaded'
   dsf.numrows = countrows
   dsf.header = header
-  #dsf.status = 'inserted'
   dsf.save()
 
-  #ds.status = 'inserted'
+  ds.status = 'uploaded'
+  ds.numrows = countrows
   ds.numlinked = countlinked
   ds.total_links = countlinks
   ds.save()
@@ -943,12 +947,11 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
 
     print('data valid, still in DatasetCreateView')
     
-    # insert to db & advance to dataset_detail if validated
+    # create Dataset instance & advance to dataset_detail if validated
     # otherwise present form again with errors
     if len(result['errors']) == 0:
       context['status'] = 'format_ok'
-      print('cleaned_data:after ->',form.cleaned_data)
-      print('result',result)
+      print('cleaned_data',form.cleaned_data)
       
       # new Dataset record ('owner','id','label','title','description','datatype')
       dsobj = form.save(commit=False)
@@ -1135,7 +1138,6 @@ class DatasetDetailView(LoginRequiredMixin,UpdateView):
   
   def get_context_data(self, *args, **kwargs):
     context = super(DatasetDetailView, self).get_context_data(*args, **kwargs)
-    print('DatasetDetailView get_context_data() args:',self.args)
     print('DatasetDetailView get_context_data() kwargs:',self.kwargs)
     id_ = self.kwargs.get("id")
     ds = get_object_or_404(Dataset, id=id_)
@@ -1151,6 +1153,8 @@ class DatasetDetailView(LoginRequiredMixin,UpdateView):
         ds_insert_lpf(self.request,id_)
       ds.status = 'uploaded'
       file.status = 'uploaded'
+      ds.save()
+      file.save()
 
     # load areas for dropdowns
     me = self.request.user

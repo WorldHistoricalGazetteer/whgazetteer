@@ -79,9 +79,7 @@
         <p> <i>Current data file</i> 
             <span class="update-msg text-danger italic strong hidden">:: updating</span>
             <span class="float-right mr-2">
-            <a href="#" id="a_update_modal" data-dsid = {{ ds.id }} data-toggle="modal" data-target="#updateModal">modal</a>&nbsp;&nbsp;
-            <!--<a href="#update_modal" data-toggle="modal">update</a>-->
-            <a href="#" data-alt="cancel" id="a_update">update</a>
+            <a href="#" id="a_update_modal" data-dsid = {{ ds.id }} data-toggle="modal" data-target="#updateModal">update</a>
             <span class="help-matches" data-id="updates">
             {% fontawesome_icon 'question-circle' color='#993333' %}</span>
           </span>
@@ -491,11 +489,12 @@ js for Summary, Reconciliation
     $("#results_text").append(spinner_updater.el);   
   }
   $("#btn_update").on('click', function(){
+    console.log('compare_data',compare_data)
     var formData = new FormData();
-    formData.append('tempfn', comparedata['tempfn']);
     formData.append('dsid', '{{ ds.id }}');
-    formData.append('format', '{{ current_file.format }}')
+    formData.append('format', '{{ current_file.format }}');
     formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+    formData.append('compare_data',JSON.stringify(compare_data))
     
     $.ajax({
       type: 'POST',
@@ -540,23 +539,11 @@ js for Summary, Reconciliation
         $("#newfile").addClass('hidden')
         $("#btn_update").removeClass('hidden')
         $("#results_text").html(html)
-        comparedata=data
-        console.log(data)        
+        compare_data=data
       }
     })
   })
   
-  <!--$("#btn_upload").click(function(e){-->
-    <!--$.post("/datasets/update/", {dsid: '{{ds.id}}'}, function(data){-->
-      <!--html = 'ran ds_update() <br/>'-->
-      <!--html+='Updating current file: <b>'+data['filename']+'</b>'-->
-      <!--$("#btn_upload").addClass('hidden')-->
-      <!--$("#btn_update").removeClass('hidden')-->
-      <!--$("#results_text").html(html)-->
-      <!--console.log(data)-->
-    <!--})-->
-    <!--console.log('send file input for ds',$(this).data('dsid'))-->
-  <!--})-->
   // toggle file form for update
   $("#a_update").click(function(){
     // flip display
