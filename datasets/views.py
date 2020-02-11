@@ -423,7 +423,7 @@ def ds_update(request):
     compare_data = json.loads(request.POST['compare_data'])
     compare_result = compare_data['compare_result']
     file_format=request.POST['format']
-    file_new=compare_data['tempfn']+('.tsv' if file_format == 'delimited' else '.jsonld')
+    file_new=compare_data['tempfn']+('.tsv' if file_format == 'delimited' else '')
     file_cur = DatasetFile.objects.filter(dataset_id_id=dsid).order_by('-upload_date')[0].file
     
     fin = codecs.open(file_new, 'r', 'utf8')
