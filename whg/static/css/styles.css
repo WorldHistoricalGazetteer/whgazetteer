@@ -16,7 +16,8 @@ html, body {
 .modal-content { 
   height: 90%; overflow-y:scroll; 
   background-color:#fff; 
-  max-width: fit-content !important; 
+  /*max-width: fit-content !important; */
+  max-width: 75%  ; 
   margin:auto;
 }
 
@@ -350,6 +351,7 @@ em { color: #993333;}
 /*.ds-table { width:100%; border-collapse: separate; border-spacing: 1em .4em;}*/
 .ds-table { width:100%; border-spacing: 1em .4em;}
 .ds-title { padding-top: 7px; font-weight:700; font-size: larger; color: grey;}
+/*.compare-results {max-width:300px;}*/
 #ds_details p { margin: .5rem 0 .2rem 0;}
 #ds_details td:nth-child(1) {width:20%;}
 #ds_details td:nth-child(3) {width:30%;}
@@ -369,7 +371,6 @@ em { color: #993333;}
 #ds_stats th { font-weight:400; font-style: italic; }
 #browse { width:100% !important; height:auto !important; }
 #ds_form .row {padding-right:4px;}
-#results_text {}
 #update_button { 
   text-align: center;
   border: 1px solid #ddd;
