@@ -511,7 +511,17 @@ js for Summary, Reconciliation
       }
     })
   })
-  
+  function compare_text(data) {
+    html = 'This update will:<br/><ul>'
+    html += '<li>Replace <b>'+data['count_replace']+'</b> rows having same IDs</li>'
+    html += data['cols_add'].length >0?'<li>Add columns: <b>'+data['cols_add']+'</b></li>':''
+    html += data['cols_del'].length >0?'<li>Remove columns: <b>'+data['cols_del']+'</b></li>':''
+    html += data['rows_add'].length >0?'<li>Add rows: <b>'+data['rows_add']+'</b></li>':''
+    html += data['rows_del'].length >0?'<li>Remove rows: <b>'+data['rows_del']+'</b></li>':''
+    html += '</ul>'
+    return html  
+  }
+
   $(document).on('submit', '#newfileform', function(e){
     e.preventDefault()
     var formData = new FormData();
@@ -530,11 +540,11 @@ js for Summary, Reconciliation
       cache: false,
       data: formData,
       success:function(data){
-        html = 'ran ds_compare() <br/>'
-        html += '<b>Current file</b>: <br/><i>'+data['filename_current']+'</i><br/>'
+        html = '<b>Current file</b>: <br/><i>'+data['filename_current']+'</i><br/>'
         html += '<b>New file</b>: <br/><i>'+data['filename_new']+'</i><br/>'
-        html += '<b>Validation</b>: <br/><i>' + JSON.stringify(data['validation_result'])+'</i><hr/>'
-        html += '<b>Compare</b>: <br/><i>' + JSON.stringify(data['compare_result'])+'</i>'
+        html += '<b>Validation result</b>: <br/><i>' + 
+          (data['validation_result']['errors'].length <1?'format valid':data['validation_result']['errors'])+'</i><hr/>'
+        html += compare_text(data['compare_result'])
         $("#btn_upload").addClass('hidden')
         $("#newfile").addClass('hidden')
         $("#btn_update").removeClass('hidden')

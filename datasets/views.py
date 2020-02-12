@@ -492,10 +492,12 @@ def ds_compare(request):
       comparison['compare_result'] = {
         "count_new":len(ids_b),
         'count_diff':len(ids_b)-len(ids_a),
+        'count_replace': len(set.intersection(set(ids_b),set(ids_a))),
         'cols_del': cols_del,
         'cols_add': cols_add,
-        'rows_add': list(set(ids_b)-set(ids_a)),
-        'rows_del': list(set(ids_a)-set(ids_b))}
+        'rows_add': [str(x) for x in (set(ids_b)-set(ids_a))],
+        'rows_del': [str(x) for x in (set(ids_a)-set(ids_b))]        
+      }
     elif format == 'lpf':
       print('need to compare lpf files:',fn_a,fn_b)
       comparison['compare_result'] = "it's lpf...tougher row to hoe"
