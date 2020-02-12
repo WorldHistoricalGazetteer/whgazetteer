@@ -66,7 +66,7 @@ class DatasetDetailModelForm(forms.ModelForm):
     model = Dataset
     # file fields = ('file','rev','uri_base','format','dataset_id','delimiter',
     #   'status','accepted_date','header','numrows')
-    fields = ('owner','id','label','title','description','datatype')
+    fields = ('owner','id','label','title','description','datatype','numlinked')
     widgets = {
       'description': forms.Textarea(attrs={
         'rows':2,'cols': 40,'class':'textarea','placeholder':'brief description'}),
@@ -119,7 +119,7 @@ class DatasetModelForm(forms.ModelForm):
   class Meta:
     model = Dataset
     fields = ('id','title','label','description','format','datatype',
-              'delimiter','status','owner','header','numrows','spine','uri_base')
+              'delimiter','status','owner','header','numrows','numlinked','spine','uri_base')
     widgets = {
       'description': forms.Textarea(attrs={
             'rows':2,'cols': 40,'class':'textarea',
@@ -128,7 +128,7 @@ class DatasetModelForm(forms.ModelForm):
       'datatype': forms.Select(),
     }
     #initial = {'format': 'delimited', 'datatype': 'places', 'uri_base': 'http://whgazetteer.org/api/places/'}
-    initial = {'datatype': 'places', 'uri_base': 'fubar'}
+    initial = {'datatype': 'places', 'uri_base': 'fubar', 'numlinked':0}
 
   #def unique_label(self, *args, **kwargs):
     #label = self.cleaned_content['name'][:16]+'_'+user.first_name[:1]+user.last_name[:1]

@@ -249,9 +249,9 @@ def review(request, pk, tid, passnum): # dataset pk, celery recon task_id
               print('place_link', link)
               
               # update <ds>.numlinked, <ds>.total_links
-              ds.numlinked = ds.numlinked +1
-              ds.total_links = ds.total_links +1
-              ds.save()
+              #ds.numlinked = ds.numlinked +1
+              #ds.total_links = ds.total_links +1
+              #ds.save()
   
               # grab links in the case of wikidata
               # TODO: check not duplicate
@@ -417,7 +417,7 @@ def dataset_browse(request, label, f):
 # perform update on database and index 
 def ds_update(request):
   if request.method == 'POST':
-    print('request.POST',request.POST)
+    print('ds_update() request.POST',request.POST)
     dsid=request.POST['dsid']
     ds = get_object_or_404(Dataset, id=dsid)
     compare_data = json.loads(request.POST['compare_data'])
@@ -428,7 +428,9 @@ def ds_update(request):
     
     fin = codecs.open(file_new, 'r', 'utf8')
     raw = json.loads(fin.read())['features'][0]['@id'] if file_format == 'lpf' else fin.readlines()[0]
-    result = {"status": "getting there...","snippet":raw,"todo":str(compare_result)}
+    
+    
+    result = {"status": "getting there...","file_new":file_new,"todo":str(compare_result)}
     return JsonResponse(result,safe=False)
   
 #
@@ -629,7 +631,7 @@ def ds_insert_lpf(request, pk):
 
   print(str(countrows)+' inserted')
   messages.add_message(request, messages.INFO, 'inserted lpf for '+str(countrows)+' places')
-  return redirect('/dashboard', context=context)
+  return redirect('/dashboard')
 
 #
 # insert LP-TSV file to database
@@ -672,7 +674,6 @@ def ds_insert_tsv(request, pk):
   countlinked = 0
   countlinks = 0
   for r in reader:
-  #for i, r in zip(range(10000), reader):
     src_id = r[header.index('id')]
     #print('src_id from tsv_insert',src_id)
     title = r[header.index('title')].replace("' ","'")
@@ -847,23 +848,27 @@ def ds_insert_tsv(request, pk):
   PlaceDescription.objects.bulk_create(objs['PlaceDescription'],batch_size=10000)
   print('descriptions done')
 
-  context = {'status':'uploaded'}
-  print('rows,linked,links:',countrows,countlinked,countlinks)
-  dsf.status = 'uploaded'
-  dsf.numrows = countrows
-  dsf.header = header
-  dsf.save()
+  infile.close()
 
-  ds.status = 'uploaded'
+  print('ds record pre-update:', ds.__dict__)
+
+  print('rows,linked,links:',countrows,countlinked,countlinks)
+  #ds.status = 'uploaded'
   ds.numrows = countrows
   ds.numlinked = countlinked
   ds.total_links = countlinks
   ds.save()
-  print('ds record:', ds.__dict__)
-  infile.close()
+  
+  print('ds record post-update:', ds.__dict__)
+
+  #dsf.status = 'uploaded'
+  #dsf.numrows = countrows
+  #dsf.header = header
+  #dsf.save()
+
 
   #return render(request, '/datasets/dashboard.html', {'context': context})
-  return redirect('/dashboard', context=context)
+  #return redirect('/dashboard', context=context)
 
 #
 # list user datasets, area, place collections
@@ -1020,7 +1025,9 @@ class DatasetDetailView(LoginRequiredMixin,UpdateView):
     id_ = self.kwargs.get("id")
     return '/datasets/'+str(id_)+'/detail'
 
+  # only if submitted
   def form_valid(self, form):
+    print('in form_valid()')
     data=form.cleaned_data
     ds = get_object_or_404(Dataset,pk=self.kwargs.get("id"))
     dsid = ds.id
@@ -1151,6 +1158,7 @@ class DatasetDetailView(LoginRequiredMixin,UpdateView):
       print('format_ok , inserting dataset '+str(id_))
       if file.format == 'delimited':
         ds_insert_tsv(self.request, id_)
+        print('numlinked immed. after insert',ds.numlinked)
       else:
         ds_insert_lpf(self.request,id_)
       ds.status = 'uploaded'

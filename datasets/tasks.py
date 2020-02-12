@@ -147,29 +147,31 @@ def normalize(h,auth):
     # h=hit['_source']; ['tgnid', 'title', 'names', 'suggest', 'types', 'parents', 'note', 'location']
     # whg_id, place_id, dataset, src_id, title
     # h['location'] = {'type': 'point', 'coordinates': [105.041, 26.398]}
-    try:
+    #try:
       #rec = HitRecord(-1, -1, 'tgn', h['tgnid'], h['title'])
-      rec = HitRecord(-1, 'tgn', h['tgnid'], h['title'])
-      print('normalize rec, tgn',rec)
-      rec.variants = [n['toponym'] for n in h['names']] # always >=1 names
-      rec.types = [t['placetype']+' ('+t['id']  +')' for t in h['types'] ] if len(h['types']) > 0 else []
-      rec.ccodes = []
-      rec.parents = ' > '.join(h['parents']) if len(h['parents']) > 0 else []
-      rec.descriptions = [h['note']] if h['note'] != None else []
+    print('hit (h) in normalize()',h)
+    rec = HitRecord(-1, 'tgn', h['tgnid'], h['title'])
+    print('normalize rec, tgn',rec)
+    rec.variants = [n['toponym'] for n in h['names']] # always >=1 names
+    rec.types = [t['placetype']+' ('+t['id']  +')' for t in h['types'] ] if len(h['types']) > 0 else []
+    rec.ccodes = []
+    rec.parents = ' > '.join(h['parents']) if len(h['parents']) > 0 else []
+    rec.descriptions = [h['note']] if h['note'] != None else []
+    if 'location' in h.keys():
       rec.geoms = [{
-        #"type":h['location']['type'], 
         "type":"Point",
         "coordinates":h['location']['coordinates'],
         "id":h['tgnid'], \
-        "ds":"tgn"}] \
-        if h['location'] != None else []
-      #rec.geoms = [h['location']] if h['location'] != None else []
-      rec.minmax = []
-      #rec.whens =[]
-      rec.links = []
-      print(rec)
-    except:
-      print("normalize(tgn) error:", h['tgnid'], sys.exc_info())
+        "ds":"tgn"}]
+    else: 
+      rec.geoms=[]
+    #rec.geoms = [h['location']] if h['location'] != None else []
+    rec.minmax = []
+    #rec.whens =[]
+    rec.links = []
+    print(rec)
+    #except:
+      #print("normalize(tgn) error:", h['tgnid'], sys.exc_info())
   return rec.toJSON()
 
 # user-supplied spatial bounds
@@ -665,6 +667,8 @@ def align_tgn(pk, *args, **kwargs):
         if 'location' in hit['_source'].keys():
           loc = hit['_source']['location'] 
           loc['type'] = "Point"
+        else:
+          loc={}
         new = Hit(
           authority = 'tgn',
           authrecord_id = hit['_id'],

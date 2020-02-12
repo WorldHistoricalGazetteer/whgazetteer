@@ -1,6 +1,7 @@
 amqp==2.5.2
 appdirs==1.4.3
 appnope==0.1.0
+asgiref==3.2.3
 attrs==19.1.0
 Babel==2.6.0
 backcall==0.1.0
@@ -19,7 +20,7 @@ click-plugins==1.0.4
 cligj==0.5.0
 datapackage==1.10.0
 decorator==4.3.0
-Django==2.2.4
+Django==2.2.10
 django-bootstrap-breadcrumbs==0.9.1
 django-bootstrap-modal-forms==1.4.1
 django-celery-beat==1.3.0
@@ -32,6 +33,7 @@ django-fontawesome==1.0
 django-geojson==2.11.0
 django-leaflet==0.24.0
 django-mathfilters==0.4.0
+django-shapeshifter==18.9.23
 django-templated-mail==1.1.1
 django-timezone-field==3.0
 django-webpack-loader==0.6.0

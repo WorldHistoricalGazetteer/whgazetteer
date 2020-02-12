@@ -541,7 +541,7 @@ js for Summary, Reconciliation
       data: formData,
       success:function(data){
         html = '<b>Current file</b>: <br/><i>'+data['filename_current']+'</i><br/>'
-        html += '<b>New file</b>: <br/><i>'+data['filename_new']+'</i><br/>'
+        html += '<b>New file</b>: <br/><i>'+data['tempfn']+'</i><br/>'
         html += '<b>Validation result</b>: <br/><i>' + 
           (data['validation_result']['errors'].length <1?'format valid':data['validation_result']['errors'])+'</i><hr/>'
         html += compare_text(data['compare_result'])

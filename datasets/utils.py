@@ -110,7 +110,7 @@ def goodtable(tempfn):
   print('tempfn,newfn',tempfn,newfn)
   schema_lptsv = json.loads(codecs.open('datasets/static/validate/schema_tsv.json', 'r', 'utf8').read())
   report = gvalidate(newfn,schema=schema_lptsv,order_fields=True)
-  #pp.pprint('report',report)  
+  pp.pprint(report)  
   #print('error count',report['error-count'])
   result['count'] = report['tables'][0]['row-count']
   result['columns'] = report['tables'][0]['headers']
