@@ -512,12 +512,12 @@ js for Summary, Reconciliation
     })
   })
   function compare_text(data) {
-    html = 'This update will:<br/><ul>'
+    html = 'This update will:<br/><ul style="padding:0;list-style: inside;">'
     html += '<li>Replace <b>'+data['count_replace']+'</b> rows having same IDs</li>'
     html += data['cols_add'].length >0?'<li>Add columns: <b>'+data['cols_add']+'</b></li>':''
     html += data['cols_del'].length >0?'<li>Remove columns: <b>'+data['cols_del']+'</b></li>':''
-    html += data['rows_add'].length >0?'<li>Add rows: <b>'+data['rows_add']+'</b></li>':''
-    html += data['rows_del'].length >0?'<li>Remove rows: <b>'+data['rows_del']+'</b></li>':''
+    html += data['rows_add'].length >0?'<li>Add rows w/id: <b>'+data['rows_add'].join(', ')+'</b></li>':''
+    html += data['rows_del'].length >0?'<li>Remove rows w/id: <b>'+data['rows_del'].join(', ')+'</b></li>':''
     html += '</ul>'
     return html  
   }
