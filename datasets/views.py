@@ -431,13 +431,10 @@ def ds_update(request):
     dsfobj_cur = DatasetFile.objects.filter(dataset_id_id=dsid).order_by('-upload_date')[0]
     #file_cur = dsfobj_cur.file
     rev_cur = dsfobj_cur.rev
-    
-    fin = codecs.open(tempfn, 'r', 'utf8')
-    raw = fin.read()
-    # simply copy tempfn to media/{user} folder
-    copyfile(tempfn,filepath)
-    
-    # user says go, create new DatasetFile instance
+        
+    # user said go...copy tempfn to media/{user} folder
+    copyfile(tempfn,filepath)    
+    # and create new DatasetFile instance
     DatasetFile.objects.create(
       dataset_id = ds,
       file = filepath,
@@ -449,6 +446,16 @@ def ds_update(request):
       header = compare_result['header_new'],
       numrows = compare_result['count_new']
     )
+    # (re-)open new file
+    #fin = codecs.open(filepath, 'r', 'utf8')
+    # data frame if delimited
+    if file_format == 'delimited':
+      adf = pd.read_csv(compare_data['filename_current'], delimiter='\t')
+      bdf = pd.read_csv(filepath, delimiter='\t')
+      print('reopened old file, # lines:',len(adf))
+      print('reopened new file, # lines:',len(bdf))
+      # 
+    
     
     result = {"status": "file obj created ("+str(rev_cur+1)+')',"tempfn":tempfn
               ,"new name": compare_data['filename_new'],"format":file_format,"todo":str(compare_result)
@@ -513,8 +520,8 @@ def ds_compare(request):
     fn_a = file_cur.name
     fn_b = tempfn+'.tsv'
     if format == 'delimited':
-      adf = pd.read_csv('media/'+fn_a, delimiter='\t')
-      #bdf = pd.read_csv('media/'+fn_b,delimiter='\t')
+      #adf = pd.read_csv('media/'+fn_a, delimiter='\t')
+      adf = pd.read_csv(fn_a, delimiter='\t')
       bdf = pd.read_csv(fn_b, delimiter='\t')
       ids_a = adf['id'].tolist()
       ids_b = bdf['id'].tolist()
