@@ -423,16 +423,23 @@ def ds_update(request):
     compare_data = json.loads(request.POST['compare_data'])
     compare_result = compare_data['compare_result']
     file_format=request.POST['format']
-    file_new=compare_data['tempfn']+('.tsv' if file_format == 'delimited' else '')
+    file_new = compare_data['tempfn']+('.tsv' if file_format == 'delimited' else '')
     file_cur = DatasetFile.objects.filter(dataset_id_id=dsid).order_by('-upload_date')[0].file
     
     fin = codecs.open(file_new, 'r', 'utf8')
     raw = json.loads(fin.read())['features'][0]['@id'] if file_format == 'lpf' else fin.readlines()[0]
     
     
-    result = {"status": "getting there...","file_new":file_new,"todo":str(compare_result)}
+    result = {"status": "getting there...","file_new":file_new,"format":file_format,"todo":str(compare_result)}
     return JsonResponse(result,safe=False)
-  
+
+# algo
+# for row in compare_result['rows_del']: strip_place(row) 
+# if file_format == 'delimited': 
+#   for row in raw: 
+
+#{'count_new': 134, 'count_diff': -1, 'count_replace': 133, 'cols_del': [], 'cols_add': ['end', 'start'], 'rows_add': ['2.1'], 'rows_del': ['5.0', '6.0']}"}
+
 #
 # initial validation and comparison of dataset update files
 # ajax call from modal returns json result object
@@ -475,6 +482,7 @@ def ds_compare(request):
       "id": dsid, 
       "filename_current":file_cur.name, 
       "filename_new": file_new.name,
+      "format": format,
       "validation_result": vresult,
       "tempfn": tempfn
     }
@@ -1158,6 +1166,7 @@ class DatasetDetailView(LoginRequiredMixin,UpdateView):
       print('format_ok , inserting dataset '+str(id_))
       if file.format == 'delimited':
         ds_insert_tsv(self.request, id_)
+        #ds_insert_tsv(self.request, ds.id)
         print('numlinked immed. after insert',ds.numlinked)
       else:
         ds_insert_lpf(self.request,id_)

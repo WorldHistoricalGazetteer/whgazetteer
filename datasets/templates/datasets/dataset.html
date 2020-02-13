@@ -468,7 +468,7 @@
               <button id="btn_upload" type="submit" class="btn btn-primary btn-sm">Upload</button>
             </form>
           </div>
-          <div id="results_text" class="compare-results mb-2"><p>The new data file will be validated for format (LP or LP-TSV) then compared to the existing dataset. Results will be displayed for review prior to proceeding.</p></div>
+          <div id="results_text" class="compare-results mb-2 small"><p>The new data file will be validated for format (LP or LP-TSV) then compared to the existing dataset. Results will be displayed for review prior to proceeding.</p></div>
           <button id="btn_update" type="button" data-dsid={{ds.id}} class="btn btn-primary btn-sm hidden">
             Proceed</button>
         </div>        
@@ -513,11 +513,11 @@ js for Summary, Reconciliation
   })
   function compare_text(data) {
     html = 'This update will:<br/><ul style="padding:0;list-style: inside;">'
-    html += '<li>Replace <b>'+data['count_replace']+'</b> rows having same IDs</li>'
-    html += data['cols_add'].length >0?'<li>Add columns: <b>'+data['cols_add']+'</b></li>':''
-    html += data['cols_del'].length >0?'<li>Remove columns: <b>'+data['cols_del']+'</b></li>':''
-    html += data['rows_add'].length >0?'<li>Add rows w/id: <b>'+data['rows_add'].join(', ')+'</b></li>':''
-    html += data['rows_del'].length >0?'<li>Remove rows w/id: <b>'+data['rows_del'].join(', ')+'</b></li>':''
+    html += '<li>Replace <b>'+data['count_replace']+'</b> records having same IDs <br><span class="small ml-4"><i>(NOTE: Links and geometries added during reconciliation will be retained)</i></span></li>'
+    html += data['rows_add'].length >0?'<li>Add records (<b>'+data['rows_add'].join(', ')+'</b>)</li>':''
+    html += data['rows_del'].length >0?'<li>Remove records (<b>'+data['rows_del'].join(', ')+'</b>)</li>':''
+    html += data['cols_add'].length >0?'<li>Add columns (<b>'+data['cols_add']+'</b>)</li>':''
+    html += data['cols_del'].length >0?'<li>Remove columns (<b>'+data['cols_del']+'</b>)</li>':''
     html += '</ul>'
     return html  
   }
