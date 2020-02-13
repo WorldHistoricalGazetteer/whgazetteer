@@ -34,10 +34,10 @@ class Dataset(models.Model):
     # back-filled
     numlinked = models.IntegerField(null=True, blank=True)
     total_links = models.IntegerField(null=True, blank=True)
+    uri_base = models.URLField(blank=True, null=True, default="http://whgazetteer.org/api/places/")
     
     # fields below are zombies; supplanted by DatasetFile model
     #file = models.FileField(upload_to=user_directory_path)
-    uri_base = models.URLField(blank=True, null=True, default="http://whgazetteer.org/api/places/")
     format = models.CharField(max_length=12, null=False,choices=FORMATS,
         default='lpf')
     datatype = models.CharField(max_length=12, null=False,choices=DATATYPES,

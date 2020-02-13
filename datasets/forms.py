@@ -49,7 +49,7 @@ class DatasetFileModelForm(forms.ModelForm):
     model = DatasetFile
     # file fields = ('file','rev','uri_base','format','dataset_id','delimiter',
     #   'status','accepted_date','header','numrows')
-    fields = ('dataset_id','file','rev','uri_base','format','delimiter','status','datatype','accepted_date','header','numrows')
+    fields = ('dataset_id','file','rev','format','delimiter','status','datatype','accepted_date','header','numrows')
     
   #file = forms.FileField()
   #uri_base = forms.URLField(widget=forms.URLInput(attrs={'placeholder':'Leave blank unless changed'}))
@@ -66,7 +66,7 @@ class DatasetDetailModelForm(forms.ModelForm):
     model = Dataset
     # file fields = ('file','rev','uri_base','format','dataset_id','delimiter',
     #   'status','accepted_date','header','numrows')
-    fields = ('owner','id','label','title','description','datatype','numlinked')
+    fields = ('owner','id','label','title','uri_base','description','datatype','numlinked')
     widgets = {
       'description': forms.Textarea(attrs={
         'rows':2,'cols': 40,'class':'textarea','placeholder':'brief description'}),
@@ -75,7 +75,7 @@ class DatasetDetailModelForm(forms.ModelForm):
   file = forms.FileField(required=False)
   uri_base = forms.URLField(
     widget=forms.URLInput(
-      attrs={'placeholder':'Leave blank unless changed','size': 26}
+      attrs={'placeholder':'Leave blank unless changed','size': 40}
     ),
     required=False
   )

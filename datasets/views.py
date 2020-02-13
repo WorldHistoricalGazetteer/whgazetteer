@@ -18,6 +18,7 @@ import codecs, tempfile, os, re, sys #ipdb,
 import simplejson as json
 import pandas as pd
 from pathlib import Path
+from shutil import copyfile
 #from itertools import islice
 #from pprint import pprint
 from areas.models import Area
@@ -417,23 +418,45 @@ def dataset_browse(request, label, f):
 # perform update on database and index 
 def ds_update(request):
   if request.method == 'POST':
-    print('ds_update() request.POST',request.POST)
+    user=request.user
+    print('user, ds_update() request.POST',user, request.POST)
     dsid=request.POST['dsid']
     ds = get_object_or_404(Dataset, id=dsid)
     compare_data = json.loads(request.POST['compare_data'])
     compare_result = compare_data['compare_result']
     file_format=request.POST['format']
-    file_new = compare_data['tempfn']+('.tsv' if file_format == 'delimited' else '')
-    file_cur = DatasetFile.objects.filter(dataset_id_id=dsid).order_by('-upload_date')[0].file
+    tempfn = compare_data['tempfn']+('.tsv' if file_format == 'delimited' else '')
+    newfn = compare_data['filename_new']
+    filepath = 'media/user_'+user.username+'/'+newfn[:-4]+'_'+compare_data['tempfn'][-7:]+'.tsv'
+    dsfobj_cur = DatasetFile.objects.filter(dataset_id_id=dsid).order_by('-upload_date')[0]
+    #file_cur = dsfobj_cur.file
+    rev_cur = dsfobj_cur.rev
     
-    fin = codecs.open(file_new, 'r', 'utf8')
-    raw = json.loads(fin.read())['features'][0]['@id'] if file_format == 'lpf' else fin.readlines()[0]
+    fin = codecs.open(tempfn, 'r', 'utf8')
+    raw = fin.read()
+    # simply copy tempfn to media/{user} folder
+    copyfile(tempfn,filepath)
     
+    # user says go, create new DatasetFile instance
+    DatasetFile.objects.create(
+      dataset_id = ds,
+      file = filepath,
+      rev = rev_cur + 1,
+      format = file_format,
+      #delimiter = result['delimiter'] if "delimiter" in result.keys() else "n/a",
+      status = 'updating',
+      upload_date = datetime.date.today(),
+      header = compare_result['header_new'],
+      numrows = compare_result['count_new']
+    )
     
-    result = {"status": "getting there...","file_new":file_new,"format":file_format,"todo":str(compare_result)}
+    result = {"status": "file obj created ("+str(rev_cur+1)+')',"tempfn":tempfn
+              ,"new name": compare_data['filename_new'],"format":file_format,"todo":str(compare_result)
+              }
     return JsonResponse(result,safe=False)
 
 # algo
+# write file_new as new DatasetFile instance 
 # for row in compare_result['rows_del']: strip_place(row) 
 # if file_format == 'delimited': 
 #   for row in raw: 
@@ -475,7 +498,7 @@ def ds_compare(request):
     elif format == 'lpf':
       #context["format"] = "lpf"
       vresult = validate_lpf(fin,'coll')
-    print('format, result:',format,vresult)
+    print('format, vresult:',format,vresult)
     fin.close()
 
     comparison={
@@ -505,6 +528,7 @@ def ds_compare(request):
         'count_replace': len(set.intersection(set(ids_b),set(ids_a))),
         'cols_del': cols_del,
         'cols_add': cols_add,
+        'header_new': vresult['columns'],
         'rows_add': [str(x) for x in (set(ids_b)-set(ids_a))],
         'rows_del': [str(x) for x in (set(ids_a)-set(ids_b))]        
       }
@@ -1045,9 +1069,11 @@ class DatasetDetailView(LoginRequiredMixin,UpdateView):
     print('DatasetDetailView kwargs',self.kwargs)
     print('DatasetDetailView form_valid() data->', data)
     if data["file"] == None:
+      print('data["file"] == None')
       # no file, updating dataset only
       ds.title = data['title']
       ds.description = data['description']
+      ds.uri_base = data['uri_base']
       ds.save()
     else:
       # a file has been uploaded; need to validate, analyze, & return results
