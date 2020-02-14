@@ -47,8 +47,12 @@
               <td><span class="editing-description">{{ form.description }}</span>
               </td>
             </tr>
+            <tr>
+              <td><b>URI base</b></td>
+              <td>{{ form.uri_base }}</td>
+            </tr>
           </table>
-          <hr/>          
+          <hr/><p class="my-0"><i>initial file</i></p>
           <table id="file_metadata" class="ds-table table-striped">
             <tr>
               <td><b>File</b></td>
@@ -60,12 +64,8 @@
               <!--<td>{ file_form.upload_date|date:"d-M-Y, H:i (e)" }}</td>-->
             <!--</tr>-->
             <tr>
-              <td><b>URI base</b></td>
-              <td>{{ form.uri_base }}</td>
-            </tr>
-            <tr>
               <td><b>Format</b></td>
-              <td>{{ form.format }}<a href="" title="{help:formats}" rel="tooltip">{% fontawesome_icon 'question-circle' color='#336699' %}</a></td>
+              <td>{{ form.format }}<a href="" title="{help:formats}" rel="tooltip"> {% fontawesome_icon 'question-circle' color='#336699' %}</a></td>
             </tr>
             <tr>
               <td><b>License</b></td>

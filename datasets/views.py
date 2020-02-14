@@ -367,7 +367,7 @@ def ds_recon(request, pk):
     context['geom'] = aug_geom
     context['result'] = result.get()
     #print(locals())
-    ds.status = 'reconciling'
+    ds.ds_status = 'reconciling'
     ds.save()
     return render(request, 'datasets/dataset.html', {'ds':ds, 'context': context})
 
@@ -441,7 +441,7 @@ def ds_update(request):
       rev = rev_cur + 1,
       format = file_format,
       #delimiter = result['delimiter'] if "delimiter" in result.keys() else "n/a",
-      status = 'updating',
+      df_status = 'updating',
       upload_date = datetime.date.today(),
       header = compare_result['header_new'],
       numrows = compare_result['count_new']
@@ -454,8 +454,16 @@ def ds_update(request):
       bdf = pd.read_csv(filepath, delimiter='\t')
       print('reopened old file, # lines:',len(adf))
       print('reopened new file, # lines:',len(bdf))
+      ids_a = adf['id'].tolist()
+      ids_b = bdf['id'].tolist()      
       # 
-    
+      replace_these = set.intersection(set(ids_b),set(ids_a))
+      counter=0
+      for index, row in bdf.iterrows():
+        if row['id'] in replace_these:
+          p = get_object_or_404(Place,src_id=str(row['id']),dataset=ds.label)
+          counter=counter+1
+          print(str(row['id']), counter,p.names.all())
     
     result = {"status": "file obj created ("+str(rev_cur+1)+')',"tempfn":tempfn
               ,"new name": compare_data['filename_new'],"format":file_format,"todo":str(compare_result)
@@ -464,6 +472,10 @@ def ds_update(request):
 
 # algo
 # write file_new as new DatasetFile instance 
+# if format == 'delimited':
+#   read current and new files as dataframes adf and bdf >> replace_these[]
+#   for row in bdf: if row['id'] in replace_these: 
+#     get relevant place and replace its values AAAAARRRGGGGHHH!!!
 # for row in compare_result['rows_del']: strip_place(row) 
 # if file_format == 'delimited': 
 #   for row in raw: 
@@ -510,17 +522,16 @@ def ds_compare(request):
 
     comparison={
       "id": dsid, 
-      "filename_current":file_cur.name, 
+      "filename_current": 'media/'+file_cur.name, 
       "filename_new": file_new.name,
       "format": format,
       "validation_result": vresult,
       "tempfn": tempfn
     }
     
-    fn_a = file_cur.name
+    fn_a = 'media/'+file_cur.name
     fn_b = tempfn+'.tsv'
     if format == 'delimited':
-      #adf = pd.read_csv('media/'+fn_a, delimiter='\t')
       adf = pd.read_csv(fn_a, delimiter='\t')
       bdf = pd.read_csv(fn_b, delimiter='\t')
       ids_a = adf['id'].tolist()
@@ -655,11 +666,11 @@ def ds_insert_lpf(request, pk):
 
       #context = {'status':'inserted'}
       # write some summary attributes
-      dsf.status = 'uploaded'
+      dsf.df_status = 'uploaded'
       dsf.numrows = countrows
       dsf.save()
 
-      ds.status = 'uploaded'
+      ds.ds_status = 'uploaded'
       ds.numrows = countrows
       ds.numlinked = countlinked
       ds.total_links = len(objs['PlaceLinks'])
@@ -920,7 +931,7 @@ class DashboardView(ListView):
     me = self.request.user
     if me.username in ['whgadmin','karlg']:
       print('in get_queryset() if',me)
-      return Dataset.objects.all().order_by('status','-spine','-id')
+      return Dataset.objects.all().order_by('ds_status','-core','-id')
     else:
       # returns permitted datasets (rw) + black and dplace (ro)
       return Dataset.objects.filter( Q(id__in=myprojects(me)) | Q(owner=me) | Q(id__lt=3)).order_by('-id')
@@ -942,9 +953,10 @@ class DashboardView(ListView):
     return context
 
 
+# initial create
+# upload file, validate format, create DatasetFile instance,
+# redirect to dataset.html for db insert if context['format_ok']
 #
-#
-# upload file, validate format
 class DatasetCreateView(LoginRequiredMixin, CreateView):
   form_class = DatasetCreateModelForm
   template_name = 'datasets/dataset_create.html'
@@ -991,40 +1003,39 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
     print('validation result:',context["format"],result)
     fin.close()
 
-    print('data valid, still in DatasetCreateView')
+    print('validation complete, still in DatasetCreateView')
     
-    # create Dataset instance & advance to dataset_detail if validated
+    # create Dataset & DatasetFile instances & advance to dataset_detail if validated
     # otherwise present form again with errors
     if len(result['errors']) == 0:
       context['status'] = 'format_ok'
       print('cleaned_data',form.cleaned_data)
       
-      # new Dataset record ('owner','id','label','title','description','datatype')
+      # new Dataset record ('owner','id','label','title','uri_base', 'description')
       dsobj = form.save(commit=False)
-      dsobj.status = 'format_ok'
+      dsobj.ds_status = 'format_ok'
       try:
         dsobj.save()
       except:
         sys.exit(sys.exc_info())
 
-      # write the file
+      # build path, and rename file if already exists in user area
       file_exists = Path('media/user_'+user.username+'/'+filename).exists()
-      print('filename at write, exists?',filename,file_exists)
       if not file_exists:
         filepath = 'media/user_'+user.username+'/'+filename
       else:
         filename=filename[:-4]+'_'+tempfn[-7:]+filename[-4:]
         filepath = 'media/user_'+user.username+'/'+filename
 
+      # write the file
       fout = codecs.open(filepath,'w','utf8')
       try:
         for chunk in file.chunks():
-          #print('chunk',chunk, type(chunk))
           fout.write(chunk.decode("utf-8"))
       except:
         sys.exit(sys.exc_info())
         
-      # initial DatasetFile record
+      # create initial DatasetFile record
       DatasetFile.objects.create(
         dataset_id = dsobj,
         file = 'user_'+user.username+'/'+filename,
@@ -1032,16 +1043,17 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
         uri_base = data['uri_base'],
         format = result['format'],
         delimiter = result['delimiter'] if "delimiter" in result.keys() else "n/a",
-        status = 'format_ok',
+        df_status = 'format_ok',
         accepted_date = None,
         header = result['columns'] if "columns" in result.keys() else [],
         numrows = result['count']
       )
       
+      # data will be written on load of detail w/dsobj.status = 'format_ok'
       return redirect('/datasets/'+str(dsobj.id)+'/detail')
 
     else:
-      context['status'] = 'format_error'
+      context['ds_status'] = 'format_error'
       context['errors'] = result['errors']
       context['action'] = ''
       result['columns'] if "columns" in result.keys() else []
@@ -1138,7 +1150,7 @@ class DatasetDetailView(LoginRequiredMixin,UpdateView):
         finally:
           fout.close()
         
-        ds.status = 'updating'
+        ds.ds_status = 'updating'
         # add DatasetFile record
         DatasetFile.objects.create(
           dataset_id = ds,
@@ -1147,7 +1159,7 @@ class DatasetDetailView(LoginRequiredMixin,UpdateView):
           uri_base = data['uri_base'],
           format = result['format'],
           delimiter = result['delimiter'] if "delimiter" in result.keys() else "n/a",
-          status = 'updating',
+          df_status = 'updating',
           accepted_date = None,
           header = result['columns'] if "columns" in result.keys() else [],
           numrows = result['count']
@@ -1194,8 +1206,8 @@ class DatasetDetailView(LoginRequiredMixin,UpdateView):
     file = DatasetFile.objects.filter(dataset_id_id = ds.id).order_by('-upload_date')[0]
     
     # from DatasetCreateView()
-    # insert to db immediately if file.status == format_ok 
-    if file.status == 'format_ok':
+    # insert to db immediately if file.df_status == format_ok 
+    if file.df_status == 'format_ok':
       print('format_ok , inserting dataset '+str(id_))
       if file.format == 'delimited':
         ds_insert_tsv(self.request, id_)
@@ -1203,8 +1215,8 @@ class DatasetDetailView(LoginRequiredMixin,UpdateView):
         print('numlinked immed. after insert',ds.numlinked)
       else:
         ds_insert_lpf(self.request,id_)
-      ds.status = 'uploaded'
-      file.status = 'uploaded'
+      ds.ds_status = 'uploaded'
+      file.df_status = 'uploaded'
       ds.save()
       file.save()
 

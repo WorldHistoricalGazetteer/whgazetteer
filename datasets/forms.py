@@ -47,9 +47,8 @@ class HitModelForm(forms.ModelForm):
 class DatasetFileModelForm(forms.ModelForm):
   class Meta:
     model = DatasetFile
-    # file fields = ('file','rev','uri_base','format','dataset_id','delimiter',
-    #   'status','accepted_date','header','numrows')
-    fields = ('dataset_id','file','rev','format','delimiter','status','datatype','accepted_date','header','numrows')
+    fields = ('dataset_id','file','rev','format','delimiter',
+              'df_status','datatype','header','numrows')
     
   #file = forms.FileField()
   #uri_base = forms.URLField(widget=forms.URLInput(attrs={'placeholder':'Leave blank unless changed'}))
@@ -92,22 +91,24 @@ class DatasetCreateModelForm(forms.ModelForm):
     model = Dataset
     # file fields = ('file','rev','uri_base','format','dataset_id','delimiter',
     #   'status','accepted_date','header','numrows')
-    fields = ('owner','id','label','title','description','datatype','format')
+    fields = ('owner','id','title','label','datatype','description') #,'uri_base'
     widgets = {
       'description': forms.Textarea(attrs={
-        'rows':2,'cols': 40,'class':'textarea','placeholder':'brief description'}),
+        'rows':2,'cols': 35,'class':'textarea','placeholder':'brief description'}),
+      'uri_base': forms.URLInput(attrs={
+        'placeholder':'Leave blank unless record IDs are URIs','size':35})
     }
   
-  # fields for creating new DatasetFile record from form
+  # fields used to create new DatasetFile record from form
+  #uri_base = forms.URLField(widget=forms.URLInput(attrs={'placeholder':'Leave blank unless record IDs are URIs'}))
   file = forms.FileField()
   rev = forms.IntegerField()
-  uri_base = forms.URLField(widget=forms.URLInput(attrs={'placeholder':'Leave blank unless record IDs are URIs'}))
   format = forms.ChoiceField(choices=FORMATS)
   delimiter = forms.CharField()
-  status = forms.ChoiceField(choices=STATUS)
-  accepted_date = forms.DateTimeField()
   header = forms.CharField()
+  df_status = forms.ChoiceField(choices=STATUS)
   numrows = forms.IntegerField()
+  upload_date = forms.DateTimeField()
 
   def __init__(self, *args, **kwargs):
     super(DatasetCreateModelForm, self).__init__(*args, **kwargs)
@@ -115,35 +116,35 @@ class DatasetCreateModelForm(forms.ModelForm):
       field.error_messages = {'required':'The field {fieldname} is required'.format(
                   fieldname=field.label)}    
 
-class DatasetModelForm(forms.ModelForm):
-  class Meta:
-    model = Dataset
-    fields = ('id','title','label','description','format','datatype',
-              'delimiter','status','owner','header','numrows','numlinked','spine','uri_base')
-    widgets = {
-      'description': forms.Textarea(attrs={
-            'rows':2,'cols': 40,'class':'textarea',
-              'placeholder':'brief description'}),
-      'format': forms.Select(),
-      'datatype': forms.Select(),
-    }
-    #initial = {'format': 'delimited', 'datatype': 'places', 'uri_base': 'http://whgazetteer.org/api/places/'}
-    initial = {'datatype': 'places', 'uri_base': 'fubar', 'numlinked':0}
+#class DatasetModelForm(forms.ModelForm):
+  #class Meta:
+    #model = Dataset
+    #fields = ('id','title','label','description','format','datatype',
+              #'delimiter','ds_status','owner','header','numrows','numlinked','spine','uri_base')
+    #widgets = {
+      #'description': forms.Textarea(attrs={
+            #'rows':2,'cols': 40,'class':'textarea',
+              #'placeholder':'brief description'}),
+      #'format': forms.Select(),
+      #'datatype': forms.Select(),
+    #}
+    ##initial = {'format': 'delimited', 'datatype': 'places', 'uri_base': 'http://whgazetteer.org/api/places/'}
+    #initial = {'datatype': 'places', 'uri_base': 'fubar', 'numlinked':0}
 
-  #def unique_label(self, *args, **kwargs):
-    #label = self.cleaned_content['name'][:16]+'_'+user.first_name[:1]+user.last_name[:1]
+  ##def unique_label(self, *args, **kwargs):
+    ##label = self.cleaned_content['name'][:16]+'_'+user.first_name[:1]+user.last_name[:1]
+    ##return label
+    ## TODO: test uniqueness somehow
+
+  #def __init__(self, *args, **kwargs):
+    #self.format = 'delimited'
+    #self.datatype = 'place'
+    #super(DatasetModelForm, self).__init__(*args, **kwargs)
+
+  #def clean_label(self): 
+    #label = self.cleaned_data['label']
+    #print(label)
+    #labels = Dataset.objects.values_list('label', flat=True)
+    #if label in labels:
+      #raise forms.ValidationError("Dataset label must be unique")
     #return label
-    # TODO: test uniqueness somehow
-
-  def __init__(self, *args, **kwargs):
-    self.format = 'delimited'
-    self.datatype = 'place'
-    super(DatasetModelForm, self).__init__(*args, **kwargs)
-
-  def clean_label(self): 
-    label = self.cleaned_data['label']
-    print(label)
-    labels = Dataset.objects.values_list('label', flat=True)
-    if label in labels:
-      raise forms.ValidationError("Dataset label must be unique")
-    return label

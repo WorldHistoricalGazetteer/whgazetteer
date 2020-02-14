@@ -1,6 +1,5 @@
 # datasets.models
 from django.conf import settings
-#from django.contrib.auth.models import User
 from django.contrib.postgres.fields import JSONField, ArrayField
 from django.contrib.auth.models import User
 from django.db import models
@@ -8,10 +7,7 @@ from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from django.urls import reverse
 from django.shortcuts import get_object_or_404
-#from django.utils import timezone
-#from django.utils.text import slugify
 
-#from django_celery_results.models import TaskResult
 from main.choices import AUTHORITIES, FORMATS, DATATYPES, STATUS, TEAMROLES
 from places.models import Place
 
@@ -25,27 +21,30 @@ class Dataset(models.Model):
     label = models.CharField(max_length=20, null=False, unique="True")
     title = models.CharField(max_length=255, null=False)
     description = models.CharField(max_length=2044, null=False)
-    spine = models.BooleanField(default=False)    
-    mapbox_id = models.CharField(max_length=200, null=True, blank=True)
+    core = models.BooleanField(default=False)    
+    ds_status = models.CharField(max_length=12, null=True, blank=True, choices=STATUS)
+    create_date = models.DateTimeField(null=True, auto_now_add=True)
 
-    # TODO: these are updated in both Dataset & DatasetFile
-    status = models.CharField(max_length=12, null=True, blank=True, choices=STATUS)
+    # TODO: these are updated in both Dataset & DatasetFile  (??)
+    datatype = models.CharField(max_length=12, null=False,choices=DATATYPES,
+        default='place')
     numrows = models.IntegerField(null=True, blank=True)
-    # back-filled
+    
+    # these are back-filled
     numlinked = models.IntegerField(null=True, blank=True)
     total_links = models.IntegerField(null=True, blank=True)
-    uri_base = models.URLField(blank=True, null=True, default="http://whgazetteer.org/api/places/")
     
     # fields below are zombies; supplanted by DatasetFile model
     #file = models.FileField(upload_to=user_directory_path)
-    format = models.CharField(max_length=12, null=False,choices=FORMATS,
-        default='lpf')
-    datatype = models.CharField(max_length=12, null=False,choices=DATATYPES,
-        default='place')
-    delimiter = models.CharField(max_length=5, blank=True, null=True)
-    upload_date = models.DateTimeField(null=True, auto_now_add=True)
-    accepted_date = models.DateTimeField(null=True, blank=True)
-    header = ArrayField(models.CharField(max_length=30), null=True, blank=True)
+    #uri_base = models.URLField(blank=True, null=True, default="http://whgazetteer.org/api/places/")
+    #format = models.CharField(max_length=12, null=False,choices=FORMATS,
+        #default='lpf')
+    #delimiter = models.CharField(max_length=5, blank=True, null=True)
+    #accepted_date = models.DateTimeField(null=True, blank=True)
+    #header = ArrayField(models.CharField(max_length=30), null=True, blank=True)
+    
+    # abandon
+    #mapbox_id = models.CharField(max_length=200, null=True, blank=True)
 
         
     def __str__(self):
@@ -85,19 +84,18 @@ class DatasetFile(models.Model):
         default=-1, on_delete=models.CASCADE)
     rev = models.IntegerField(null=True, blank=True)
     file = models.FileField(upload_to=user_directory_path)
-    uri_base = models.URLField(blank=True, null=True, default="http://whgazetteer.org/api/places/")
-    format = models.CharField(max_length=12, null=False,choices=FORMATS,
-        default='lpf')
+    format = models.CharField(max_length=12, null=False,
+        choices=FORMATS, default='lpf')
     datatype = models.CharField(max_length=12, null=False,choices=DATATYPES,
         default='place')
     delimiter = models.CharField(max_length=5, blank=True, null=True)
-    status = models.CharField(max_length=12, null=True, blank=True, choices=STATUS)
+    df_status = models.CharField(max_length=12, null=True, blank=True, choices=STATUS)
     upload_date = models.DateTimeField(null=True, auto_now_add=True)
-    accepted_date = models.DateTimeField(null=True, blank=True)    
-    
-    # backfilled
     header = ArrayField(models.CharField(max_length=30), null=True, blank=True)
     numrows = models.IntegerField(null=True, blank=True)
+
+    #accepted_date = models.DateTimeField(null=True, blank=True)    
+    #uri_base = models.URLField(blank=True, null=True, default="http://whgazetteer.org/api/places/")
     
     #def __str__(self):
         #return 'file_'+str(self.rev)

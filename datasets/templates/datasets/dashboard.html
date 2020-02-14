@@ -24,8 +24,8 @@
             <th>id</th>
             <th>name</th>
             <th>label</th>
-            <th>uploaded</th>
-            <th>format</th>
+            <th>created (utc)</th>
+            <th>type</th>
             <th># rows</th>
             <th>status</th>
             <th>owner</th>
@@ -34,13 +34,13 @@
             {% for d in dataset_list %}
               <tr class="place-row">
                 <td>
-                  {% if d.status == "format_ok" %}
+                  {% if d.ds_status == "format_ok" %}
                   <a href=
                   {% if d.format == "delimited" %}"{% url 'datasets:ds_insert_tsv' d.id %}"
                   {% elif "lpf" in d.format %}"{% url 'datasets:ds_insert_lpf' d.id %}"{% endif %}
                    title="Insert to db" rel="tooltip"
                   class="">{% fontawesome_icon 'database' color='#336699' %}</a>
-                  {% elif d.status in viewable %}
+                  {% elif d.ds_status in viewable %}
                   <a href="{% url 'datasets:dataset_browse' label=d.label f='all' %}" title="Browse dataset table & map" rel="tooltip"
                   class="">{% fontawesome_icon 'table' color='#336699' %}</a>&nbsp;
                   {% endif %}
@@ -48,13 +48,14 @@
                 <td>{{ d.id }}</td>
                 <td><a href="{% url 'datasets:dataset-detail' d.id %}" title="Dataset details" rel="tooltip"
                   >{{ d.title }}</a></td>
-                <td>{% if d.spine == True %}
-                      {{ d.label }} <span class="spinerow"> (core)</span>
+                <td>{% if d.core == True %}
+                      {{ d.label }} <span class="corerow"> (core)</span>
                     {% else %}{{ d.label }}{% endif %}</td>
-                <td class="small">{{ d.upload_date|date:"d-M-Y, H:i (e)" }}</td>
-                <td>{{ d.format }}</td>
+                <!--<td class="small">{ d.create_date|date:"d-M-Y, H:i (e)" }}</td>-->
+                <td class="small">{{ d.create_date|date:"d M Y, H:i" }}</td>
+                <td>{{ d.datatype }}</td>
                 <td><span class="float-right mr-2">{{ d.numrows }}</span></td>
-                <td>{{ d.status }}</td>
+                <td>{{ d.ds_status }}</td>
                 <td>{{ d.owner }}</td>
               </tr>
             {% endfor %}
