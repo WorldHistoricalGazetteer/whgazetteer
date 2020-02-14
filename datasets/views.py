@@ -418,39 +418,47 @@ def dataset_browse(request, label, f):
 # perform update on database and index 
 def ds_update(request):
   if request.method == 'POST':
-    user=request.user
-    print('user, ds_update() request.POST',user, request.POST)
     dsid=request.POST['dsid']
     ds = get_object_or_404(Dataset, id=dsid)
+    file_format=request.POST['format']
+    #user=request.user
+
+    # compare_data {'compare_result':{}}
     compare_data = json.loads(request.POST['compare_data'])
     compare_result = compare_data['compare_result']
-    file_format=request.POST['format']
-    tempfn = compare_data['tempfn']+('.tsv' if file_format == 'delimited' else '')
-    newfn = compare_data['filename_new']
-    filepath = 'media/user_'+user.username+'/'+newfn[:-4]+'_'+compare_data['tempfn'][-7:]+'.tsv'
+    print('compare_data from ds_compare', compare_data)
+    # tempfn has .tsv or .jsonld extension from validation step
+    tempfn = compare_data['tempfn']
+    filename_new = compare_data['filename_new']
     dsfobj_cur = DatasetFile.objects.filter(dataset_id_id=dsid).order_by('-upload_date')[0]
-    #file_cur = dsfobj_cur.file
     rev_cur = dsfobj_cur.rev
+
+    # rename file if already exists in user area
+    file_exists = Path('media/'+filename_new).exists()
+    if file_exists:
+      filename_new=filename_new[:-4]+'_'+tempfn[-11:-4]+filename_new[-4:]
         
     # user said go...copy tempfn to media/{user} folder
+    filepath = 'media/'+filename_new
     copyfile(tempfn,filepath)    
+    
     # and create new DatasetFile instance
     DatasetFile.objects.create(
       dataset_id = ds,
-      file = filepath,
+      file = filename_new,
       rev = rev_cur + 1,
       format = file_format,
+      # TODO: accept csv, track delimiter
       #delimiter = result['delimiter'] if "delimiter" in result.keys() else "n/a",
       df_status = 'updating',
       upload_date = datetime.date.today(),
       header = compare_result['header_new'],
       numrows = compare_result['count_new']
     )
-    # (re-)open new file
-    #fin = codecs.open(filepath, 'r', 'utf8')
-    # data frame if delimited
+    
+    # (re-)open files as panda dataframes
     if file_format == 'delimited':
-      adf = pd.read_csv(compare_data['filename_current'], delimiter='\t')
+      adf = pd.read_csv('media/'+compare_data['filename_cur'], delimiter='\t')
       bdf = pd.read_csv(filepath, delimiter='\t')
       print('reopened old file, # lines:',len(adf))
       print('reopened new file, # lines:',len(bdf))
@@ -459,16 +467,16 @@ def ds_update(request):
       # 
       replace_these = set.intersection(set(ids_b),set(ids_a))
       counter=0
-      for index, row in bdf.iterrows():
-        if row['id'] in replace_these:
-          p = get_object_or_404(Place,src_id=str(row['id']),dataset=ds.label)
-          counter=counter+1
-          print(str(row['id']), counter,p.names.all())
+      #for index, row in bdf.iterrows():
+        #if row['id'] in replace_these:
+          #p = get_object_or_404(Place,src_id=str(row['id']),dataset=ds.label)
+          #counter=counter+1
+          #print(str(row['id']), counter,p.names.all())
     
-    result = {"status": "file obj created ("+str(rev_cur+1)+')',"tempfn":tempfn
-              ,"new name": compare_data['filename_new'],"format":file_format,"todo":str(compare_result)
-              }
-    return JsonResponse(result,safe=False)
+      result = {"status": "file obj created ("+str(rev_cur+1)+')',"tempfn":tempfn
+                ,"new name": compare_data['filename_new'],"format":file_format,"replacing":str(replace_these)
+                }
+      return JsonResponse(result,safe=False)
 
 # algo
 # write file_new as new DatasetFile instance 
@@ -490,47 +498,55 @@ def ds_compare(request):
     print('request.POST',request.POST)
     print('request.FILES',request.FILES)
     dsid=request.POST['dsid']
+    user=request.user.username
     format=request.POST['format']
     ds = get_object_or_404(Dataset, id=dsid)
+    # wrangling names...grrrr...
     # current file
     file_cur = DatasetFile.objects.filter(dataset_id_id=dsid).order_by('-upload_date')[0].file
-    # new file 
+    filename_cur = file_cur.name
+    # new file
     file_new=request.FILES['file']
     tempf, tempfn = tempfile.mkstemp()
-    print('tempfn, filename_cur, filename_new in ds_update()',tempfn, file_cur.name, file_new.name)    
-
+    # write new file as temporary
     try:
       for chunk in file_new.chunks():
-        #print('chunk',chunk)
         os.write(tempf, chunk)
     except:
       raise Exception("Problem with the input file %s" % request.FILES['file'])
     finally:
       os.close(tempf)
-      
-    # open the temp file 
-    fin = codecs.open(tempfn, 'r', 'utf8')
-    # send for format validation
+    
+    print('tempfn,filename_cur,file_new.name',tempfn,filename_cur,file_new.name)
+    # open the temp file & send for format validation
+    #fin = codecs.open(tempfn, 'r', 'utf8')
     if format == 'delimited':
       #context["format"] = "delimited"
       vresult = goodtable(tempfn)
     elif format == 'lpf':
-      #context["format"] = "lpf"
-      vresult = validate_lpf(fin,'coll')
+      # TODO: feed tempfn only, like delimited, and rename
+      vresult = validate_lpf(tempfn,'coll')
     print('format, vresult:',format,vresult)
-    fin.close()
+    #fin.close()
 
+    # give new file a path
+    filename_new = 'user_'+user+'/'+file_new.name
+    # temp files were renamed in validation    
+    tempfn_new = tempfn+'.tsv' if format == 'delimited' else tempfn+'.jsonld'
+    
+    # begin report
     comparison={
       "id": dsid, 
-      "filename_current": 'media/'+file_cur.name, 
-      "filename_new": file_new.name,
+      "filename_cur": filename_cur, 
+      "filename_new": filename_new,
       "format": format,
       "validation_result": vresult,
-      "tempfn": tempfn
+      "tempfn": tempfn_new
     }
     
-    fn_a = 'media/'+file_cur.name
-    fn_b = tempfn+'.tsv'
+    # perform comparison
+    fn_a = 'media/'+filename_cur
+    fn_b = tempfn_new
     if format == 'delimited':
       adf = pd.read_csv(fn_a, delimiter='\t')
       bdf = pd.read_csv(fn_b, delimiter='\t')

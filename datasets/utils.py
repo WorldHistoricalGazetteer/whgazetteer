@@ -54,16 +54,17 @@ def compare(dsid):
   
 # use jsonschema to validate Linked Places json-ld
 # format ['coll' (FeatureCollection) | 'lines' (json-lines)]
-def validate_lpf(infile,format):
+#def validate_lpf(infile,format):
+def validate_lpf(tempfn,format):
   # TODO: handle json-lines
   # TODO: create v1.1 schema; phase out v1.0
   wd = '/Users/karlg/Documents/Repos/_whgazetteer/'
   schema = json.loads(codecs.open(wd+'datasets/static/validate/schema_lpf_v1.0.json','r','utf8').read())
+  # rename tempfn
+  newfn = tempfn+'.jsonld'
+  os.rename(tempfn,newfn)
+  infile = codecs.open(tempfn, 'r', 'utf8')
   fout = codecs.open('validate-lpf-result.txt','w','utf8')
-  #infile=codecs.open('tests/whg/lugares_10_citations.jsonld','r','utf-8')
-  #infile=codecs.open('tests/whg/lugares_10_citations_errors.jsonld','r','utf-8')
-  #infile=open('tests/whg/alcedo_200errors.tsv')
-  #result = {"format":"lpf_"+format,"errors":[]}
   result = {"format":"lpf","errors":[]}
   [countrows,count_ok] = [0,0]
   
@@ -97,8 +98,6 @@ def validate_lpf(infile,format):
 # validate LP-TSV file
 def goodtable(tempfn):
   result = {"errors":[],"format":"delimited"}
-  print('goodtable(tempfn), type',tempfn, type(tempfn))
-  #print('empty result',result)
   # TODO: detect encoding
   #enc = chardet.detect(open(tempfn,'rb').read())
   #print('encoding is',enc)

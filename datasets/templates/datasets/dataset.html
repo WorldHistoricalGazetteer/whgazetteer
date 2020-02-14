@@ -471,12 +471,14 @@
               <button id="btn_upload" type="submit" class="btn btn-primary btn-sm">Upload</button>
             </form>
           </div>
-          <div id="results_text" class="compare-results mb-2 small"><p>The new data file will be validated for format (LP or LP-TSV) then compared to the existing dataset. Results will be displayed for review prior to proceeding.</p></div>
-          <button id="btn_update" type="button" data-dsid={{ds.id}} class="btn btn-primary btn-sm hidden">
-            Proceed</button>
+          <div id="results_text" class="compare-results mb-2 small">
+            <p>Uploaded data will be compared with existing data, and results reported here.</p> <p>You will be prompted to proceed or cancel this operation at that point.</p>
+          </div>
         </div>        
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          <button id="btn_update" type="button" data-dsid={{ds.id}} class="btn btn-primary btn-sm hidden">
+            Proceed</button>
+          <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Cancel</button>
         </div>
       </div>
     </div>
@@ -491,6 +493,7 @@ js for Summary, Reconciliation
     window.spinner_updater = new Spin.Spinner().spin();
     $("#results_text").append(spinner_updater.el);   
   }
+  // performs ds_update()
   $("#btn_update").on('click', function(){
     console.log('compare_data',compare_data)
     var formData = new FormData();
@@ -511,13 +514,14 @@ js for Summary, Reconciliation
         html = '<hr/>ran ds_update() <br/>'
         html += 'result: <br/>'+JSON.stringify(data)
         $("#results_text").html($("#results_text").html()+html)
-        location.reload()
       }
     })
   })
+  
+  // prettify comparison results
   function compare_text(data) {
-    html = 'This update will:<br/><ul style="padding:0;list-style: inside;">'
-    html += '<li>Replace <b>'+data['count_replace']+'</b> records having same IDs <br><span class="small ml-4"><i>(NOTE: Links and geometries added during reconciliation will be retained)</i></span></li>'
+    html = 'This update would:<br/><ul style="padding:0;list-style: inside;">'
+    html += '<li>Replace <b>'+data['count_replace']+'</b> records having same IDs <br><span class="small ml-4"><i>(NOTE: Links and geometries previously added during reconciliation will be retained)</i></span></li>'
     html += data['rows_add'].length >0?'<li>Add records (<b>'+data['rows_add'].join(', ')+'</b>)</li>':''
     html += data['rows_del'].length >0?'<li>Remove records (<b>'+data['rows_del'].join(', ')+'</b>)</li>':''
     html += data['cols_add'].length >0?'<li>Add columns (<b>'+data['cols_add']+'</b>)</li>':''
@@ -526,7 +530,8 @@ js for Summary, Reconciliation
     return html  
   }
 
-  // TODO: new file fields, 
+  // submit new file for comparison
+  // prepares compare_data{} object, passed to ds_update if/when 'proceed' is clicked
   $(document).on('submit', '#newfileform', function(e){
     e.preventDefault()
     var formData = new FormData();
@@ -545,9 +550,9 @@ js for Summary, Reconciliation
       cache: false,
       data: formData,
       success:function(data){
-        html = '<b>Current file</b>: <br/><i>'+data['filename_current']+'</i><br/>'
+        html = '<b>Current file</b>: <br/><i>'+data['filename_cur']+'</i><br/>'
+        html += '<b>New file</b>: <br/><i>'+data['filename_new']+'</i><br/>'
         html += '<b>New temp file</b>: <br/><i>'+data['tempfn']+'</i><br/>'
-        html += '<b>New file name</b>: <br/><i>'+data['filename_new']+'</i><br/>'
         html += '<b>Validation result</b>: <br/><i>' + 
           (data['validation_result']['errors'].length <1?'format valid':data['validation_result']['errors'])+'</i><hr/>'
         html += compare_text(data['compare_result'])
@@ -589,9 +594,11 @@ js for Summary, Reconciliation
     $(".form-uri_base").toggleClass("hidden")
     $(".btn-ds").toggleClass("hidden")
   })  
+  <!--$(".modal-footer button").click(function(){-->
+    <!--location.reload()-->
+  <!--})-->
   $(function(){
   
-    
     if('{{ status }}' == 'updating'){
       console.log('{{ status }}','{{ context }}')
       $("#ds_info").addClass('hidden')
@@ -612,19 +619,19 @@ js for Summary, Reconciliation
       location.href=taburl
     }
     // TODO: just a stub; need to get file for comparison first
-    $("#update_analyze").click(function(){
-      startUpdaterSpinner()
-      $.get("/search/analyzethis", {ds_id: '{{ds.id}}'}, function(data){
-        html = 'ran DatasetFileUpdateView() <br/>'
-        html+='<b>Current file</b>: '+data['last_filename']
-        $("#update_analyze").addClass('hidden')
-        $("#results_text").html(html)
-        console.log(data)
-      })
-    })
-    $("#update_start").click(function(){
-      console.log('update initiated')
-    })
+    <!--$("#update_analyze").click(function(){-->
+      <!--startUpdaterSpinner()-->
+      <!--$.get("/search/analyzethis", {ds_id: '{{ds.id}}'}, function(data){-->
+        <!--html = 'ran DatasetFileUpdateView() <br/>'-->
+        <!--html+='<b>Current file</b>: '+data['last_filename']-->
+        <!--$("#update_analyze").addClass('hidden')-->
+        <!--$("#results_text").html(html)-->
+        <!--console.log(data)-->
+      <!--})-->
+    <!--})-->
+    <!--$("#update_start").click(function(){-->
+      <!--console.log('update initiated')-->
+    <!--})-->
     <!--$("input[placeholder]").each(function () {-->
         <!--$(this).attr('size', $(this).attr('placeholder').length);-->
     <!--});-->
@@ -654,6 +661,7 @@ js for Summary, Reconciliation
       e.preventDefault();
       $('#addtask_li').addClass('hidden')
       $('.nav-tabs a[href="#reconciliation"]').tab('show');
+      location.reload()
     })
     $("#addtask_link").click(function(e){
       e.preventDefault()
