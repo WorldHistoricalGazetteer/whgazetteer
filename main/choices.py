@@ -32,7 +32,7 @@ AUTHORITIES = [
     ('dbp','DBpedia'),
     ('gn','Geonames'),
     ('wd','Wikidata'),
-    ('spine','WHG Spine'),
+    ('core','WHG Spine'),
     ('whg','WHG'),
 ]
 

@@ -414,6 +414,174 @@ def dataset_browse(request, label, f):
   ds = get_object_or_404(Dataset, label=label)
   filt = f
   return render(request, 'datasets/dataset_browse.html', {'ds':ds,'filter':filt})
+# pobj = place object; row is a pandas dict
+def add_rels_tsv(pobj, row):
+  header = row.keys()
+  print('row keys add_rels()',row)
+  src_id = row['id']
+  title = row['title']
+  ccodes = [x.strip() for x in row['ccodes'].split(';')] \
+    if 'ccodes' in header else []
+  # for PlaceName insertion, strip anything in parens
+  title = re.sub('\(.*?\)', '', title)
+  title_source = row['title_source']
+  title_uri = row['title_uri'] if 'title_uri' in header else ''
+  variants = [x.strip() for x in row['variants'].split(';')] \
+    if 'variants' in header else []
+  types = [x.strip() for x in row['types'].split(';')] \
+    if 'types' in header else []
+  aat_types = [x.strip() for x in row['aat_types'].split(';')] \
+    if 'aat_types' in header else []
+  parent_name = row['parent_name'] if 'parent_name' in header else ''
+  parent_id = row['parent_id'] if 'parent_id' in header else ''
+  coords = makeCoords(row['lon'],row['lat']) \
+    if 'lon' in header and 'lat' in header else []
+  #matches = [x.strip() for x in row['matches')].split(';')] \
+    #if 'matches' in header else []
+  matches = [x.strip() for x in row['matches'].split(';')] \
+    if 'matches' in header and row['matches'] != '' else []
+  start = row['start'] if 'start' in header else ''
+  end = row['end'] if 'end' in header else ''
+  # not sure this will get used
+  minmax = [start,end]
+  description = row['description'] \
+    if 'description' in header else ''
+
+  # build associated objects and add to arrays
+  objs = {"PlaceName":[], "PlaceType":[], "PlaceGeom":[], "PlaceWhen":[],
+          "PlaceLink":[], "PlaceRelated":[], "PlaceDescription":[],
+            "PlaceDepiction":[]}
+
+  # title as a PlaceName
+  objs['PlaceName'].append(
+    PlaceName(
+      place_id=newpl,
+      src_id = src_id,
+      toponym = title,
+      jsonb={"toponym": title, "citation": {"id":title_uri,"label":title_source}}
+  ))
+
+  # add variants if any
+  if len(variants) > 0:
+    for v in variants:
+      objs['PlaceName'].append(
+        PlaceName(
+          place_id=newpl,
+          src_id = src_id,
+          toponym = v,
+          jsonb={"toponym": v, "citation": {"id":"","label":title_source}}
+      ))
+
+  # PlaceType()
+  # TODO: parse t
+  if len(types) > 0:
+    for i,t in enumerate(types):
+      # i always 0 in tsv
+      aatnum=aat_types[i] if len(aat_types) >= len(types) else ''
+      objs['PlaceType'].append(
+        PlaceType(
+          place_id=newpl,
+          src_id = src_id,
+          jsonb={ "identifier":aatnum,
+                  "sourceLabel":t,
+                  "label":aat_lookup(int(aatnum)) if aatnum !='' else ''
+                }
+      ))
+
+  # PlaceGeom()
+  # TODO: test geometry type or force geojson
+  if len(coords) > 0:
+    objs['PlaceGeom'].append(
+      PlaceGeom(
+        place_id=newpl,
+        src_id = src_id,
+        jsonb={"type": "Point", "coordinates": coords,
+                    "geowkt": 'POINT('+str(coords[0])+' '+str(coords[1])+')'}
+    ))
+  elif 'geowkt' in header and r[header.index('geowkt')] not in ['',None]: # some rows no geom
+    objs['PlaceGeom'].append(
+      PlaceGeom(
+        place_id=newpl,
+        src_id = src_id,
+        # make GeoJSON using shapely
+        jsonb=parse_wkt(r[header.index('geowkt')])
+    ))
+
+  # PlaceLink() - all are closeMatch
+  if len(matches) > 0:
+    countlinked += 1
+    for m in matches:
+      countlinks += 1
+      objs['PlaceLink'].append(
+        PlaceLink(
+          place_id=newpl,
+          src_id = src_id,
+          jsonb={"type":"closeMatch", "identifier":m}
+      ))
+
+  # PlaceRelated()
+  if parent_name != '':
+    objs['PlaceRelated'].append(
+      PlaceRelated(
+        place_id=newpl,
+        src_id=src_id,
+        jsonb={
+          "relationType": "gvp:broaderPartitive",
+          "relationTo": parent_id,
+          "label": parent_name}
+    ))
+
+  # PlaceWhen()
+  # timespans[{start{}, end{}}], periods[{name,id}], label, duration
+  if start != '':
+    objs['PlaceWhen'].append(
+      PlaceWhen(
+        place_id=newpl,
+        src_id = src_id,
+        jsonb={
+              "timespans": [{"start":{"earliest":minmax[0]}, "end":{"latest":minmax[1]}}]
+            }
+    ))
+
+  #
+  # PlaceDescription()
+  # @id, value, lang
+  if description != '':
+    objs['PlaceDescription'].append(
+      PlaceDescription(
+        place_id=newpl,
+        src_id = src_id,
+        jsonb={
+          "@id": "", "value":description, "lang":""
+        }
+      ))
+
+    print('COUNTS:')
+    print('PlaceName:',len(objs['PlaceName']))
+    print('PlaceType:',len(objs['PlaceType']))
+    print('PlaceGeom:',len(objs['PlaceGeom']))
+    print('PlaceLink:',len(objs['PlaceLink']))
+    print('PlaceRelated:',len(objs['PlaceRelated']))
+    print('PlaceWhen:',len(objs['PlaceWhen']))
+    print('PlaceDescription:',len(objs['PlaceDescription']))
+    print('max places.id', )
+    
+    # bulk_create(Class, batch_size=n) for each
+    PlaceName.objects.bulk_create(objs['PlaceName'],batch_size=10000)
+    print('names done')
+    PlaceType.objects.bulk_create(objs['PlaceType'],batch_size=10000)
+    print('types done')
+    PlaceGeom.objects.bulk_create(objs['PlaceGeom'],batch_size=10000)
+    print('geoms done')
+    PlaceLink.objects.bulk_create(objs['PlaceLink'],batch_size=10000)
+    print('links done')
+    PlaceRelated.objects.bulk_create(objs['PlaceRelated'],batch_size=10000)
+    print('related done')
+    PlaceWhen.objects.bulk_create(objs['PlaceWhen'],batch_size=10000)
+    print('whens done')
+    PlaceDescription.objects.bulk_create(objs['PlaceDescription'],batch_size=10000)
+    print('descriptions done')
+      
 #
 # perform update on database and index 
 def ds_update(request):
@@ -429,10 +597,12 @@ def ds_update(request):
     print('compare_data from ds_compare', compare_data)
 
     # tempfn has .tsv or .jsonld extension from validation step
+    #tempfn = '/var/folders/f4/x09rdl7n3lg7r7gwt1n3wjsr0000gn/T/tmpsuncpnjl.tsv'
     tempfn = compare_data['tempfn']
     filename_new = compare_data['filename_new']
     dsfobj_cur = DatasetFile.objects.filter(dataset_id_id=dsid).order_by('-upload_date')[0]
     rev_cur = dsfobj_cur.rev
+    rows_del = compare_result['rows_del']
 
     # rename file if already exists in user area
     file_exists = Path('media/'+filename_new).exists()
@@ -460,7 +630,7 @@ def ds_update(request):
     # (re-)open files as panda dataframes
     if file_format == 'delimited':
       adf = pd.read_csv('media/'+compare_data['filename_cur'], delimiter='\t')
-      bdf = pd.read_csv(filepath, delimiter='\t',dtype={'id':'str'})
+      bdf = pd.read_csv(filepath, delimiter='\t',dtype={'id':'str','ccodes':'str'})
       print('reopened old file, # lines:',len(adf))
       print('reopened new file, # lines:',len(bdf))
       ids_a = adf['id'].tolist()
@@ -469,44 +639,62 @@ def ds_update(request):
       replace_these = set.intersection(set(ids_b),set(ids_a))
       counter=0
       
-      # gather instances (to delete)
+      # CURRENT
+      # current places
       places = Place.objects.filter(dataset=ds.label)
-      p_names = PlaceName.objects.filter(place_id_id__in=places)
-      p_types = PlaceType.objects.filter(place_id_id__in=places)
-      p_when = PlaceWhen.objects.filter(place_id_id__in=places)
-      p_description = PlaceDescription.objects.filter(place_id_id__in=places)
-      p_depiction = PlaceDepiction.objects.filter(place_id_id__in=places)
-
-      # don't touch these
-      p_geoms = PlaceGeom.objects.filter(place_id_id__in=places)
-      p_links = PlaceLink.objects.filter(place_id_id__in=places)
       
-      #row = next(bdf.iterrows())[1]
-      ##for index, row in bdf.iterrows():
-        #if id in replace_these:
-          #p = get_object_or_404(Place,src_id=str(row['id']),dataset=ds.label)
-          
-          ##counter=counter+1
-          ##print(str(row['id']), counter,p.names.all())
+      # delete places with ids missing in new data (CASCADE includes links & geoms)
+      places.filter(src_id__in=rows_del).delete()
+      
+      # delete related instances for the rest (except links and geoms)
+      PlaceName.objects.filter(place_id_id__in=places).delete()
+      PlaceType.objects.filter(place_id_id__in=places).delete()
+      PlaceWhen.objects.filter(place_id_id__in=places).delete()
+      PlaceDescription.objects.filter(place_id_id__in=places).delete()
+      PlaceDepiction.objects.filter(place_id_id__in=places).delete()
+      
+      count_updated, count_new = [0,0]
+      # update remaining place instances w/data from new file
+      place_fields = {'id', 'title', 'ccodes'}
+      for index, row in bdf.iterrows():
+        # make 3 dicts: all; for Places; for PlaceXxxxs
+        #rd=bdf.loc[20].to_dict()
+        rd = row.to_dict()
+        rdp = {key:rd[key] for key in place_fields}
+        rdrels = {key:rd[key] for key in rd.keys() - place_fields}
+        # look for corresponding current place
+        #p = places.filter(src_id='1.0').first()
+        p = places.filter(src_id=rdp['id']).first()
+        if p != None:
+          # place exists, update it
+          count_updated +=1
+          p.title = rdp['title']
+          p.ccodes = rdp['ccodes'].replace(' ','').split(';') # semicolon delimited, w or w/o space
+          p.save()
+          print('updated '+str(p.id)+', add related from '+str(rdrels))
+          pobj = p
+        else:
+          # entirely new place + related records
+          count_new +=1
+          newpl = Place.objects.create(
+            src_id = rdp['id'],
+            title = re.sub('\(.*?\)', '', rdp['title']),
+            ccodes = rdp['ccodes'].replace(' ','').split(';'),
+            dataset = ds
+          )
+          newpl.save()
+          pobj = newpl
+          print('new place, related:', newpl, rdrels)
+        
+        # pobj is either an old & updated place or entirely new
+        add_rels_tsv(pobj,rd)
     
-      result = {"status": "file obj created ("+str(rev_cur+1)+')',"tempfn":tempfn
-                ,"new name": compare_data['filename_new'],"format":file_format,"replacing":str(replace_these)
+      result = {"status": "updated", "#updated":count_updated , "#new":count_new
+                ,"newfile": filepath, "format":file_format
                 }
       return JsonResponse(result,safe=False)
 
-# algo
-# write file_new as new DatasetFile instance 
-# if format == 'delimited':
-#   read current and new files as dataframes adf and bdf >> replace_these[]
-#   for row in bdf: if row['id'] in replace_these: 
-#     get relevant place and replace its values AAAAARRRGGGGHHH!!!
-# for row in compare_result['rows_del']: strip_place(row) 
-# if file_format == 'delimited': 
-#   for row in raw: 
 
-#{'count_new': 134, 'count_diff': -1, 'count_replace': 133, 'cols_del': [], 'cols_add': ['end', 'start'], 'rows_add': ['2.1'], 'rows_del': ['5.0', '6.0']}"}
-
-#
 # initial validation and comparison of dataset update files
 # ajax call from modal returns json result object
 def ds_compare(request):
@@ -743,13 +931,13 @@ def ds_insert_tsv(request, pk):
   # lists within fields are ';' delimited, no brackets
   # id*, title*, title_source*, title_uri^, ccodes[]^, matches[]^, variants[]^, types[]^, aat_types[]^,
   # parent_name, parent_id, lon, lat, geowkt, geo_source, geo_id, start, end
-
-  def makeCoords(lonstr,latstr):
-    lon = float(lonstr) if lonstr != '' else ''
-    lat = float(latstr) if latstr != '' else ''
-    coords = [] if (lonstr == ''  or latstr == '') else [lon,lat]
-    return coords
-
+  
+  # moved to utils
+  #def makeCoords(lonstr,latstr):
+    #lon = float(lonstr) if lonstr != '' else ''
+    #lat = float(latstr) if latstr != '' else ''
+    #coords = [] if (lonstr == ''  or latstr == '') else [lon,lat]
+    #return coords
   #
   # TODO: what if simultaneous inserts?
   countrows=0

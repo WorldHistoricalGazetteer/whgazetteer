@@ -137,6 +137,7 @@ class HitRecord(object):
     import json
     return json.loads(json.dumps(self.__dict__,indent=2))
 
+
 def aat_lookup(id):
   try:
     label = aat.types[id]['term_full']
@@ -188,7 +189,11 @@ def parsejson(value,key):
   print('parsejson() value',value)
   obj = json.loads(value.replace("'",'"'))
   return obj[key]
-
+def makeCoords(lonstr,latstr):
+  lon = float(lonstr) if lonstr != '' else ''
+  lat = float(latstr) if latstr != '' else ''
+  coords = [] if (lonstr == ''  or latstr == '') else [lon,lat]
+  return coords
 def elapsed(delta):
   minutes, seconds = divmod(delta.seconds, 60)
   return '{:02}:{:02}'.format(int(minutes), int(seconds))

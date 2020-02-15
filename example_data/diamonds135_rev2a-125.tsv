@@ -1,0 +1,126 @@
+id	title	title_source	ccodes	geo_id	start	end	lat	lon
+1.0	A changed title	Broek			1700/1750	1800		
+2.0	Karpuradvipa	Broek			1700	1800		
+2.1	A new record	source1234			1700	1800		
+3.0	Poli	Broek	MY		1700	1800		
+4.0	Brunei Bay	Broek	BN		1700	1800		
+7.0	Tanjungpura	Broek	ID		1700	1800		
+8.0	Kapuas	Broek	ID		1700	1800		
+9.0	Katingan	Broek	ID		1700	1800		
+10.0	Sampit	Broek	ID	http://sws.geonames.org/1628884	1700	1800	-2.5315	112.9496
+11.0	Kuta Lingga	Broek	MY		1700	1800		
+12.0	Kuta Waringin	Broek	ID		1700	1800		
+13.0	Sambas	Broek	ID	http://sws.geonames.org/1628979	1700	1800	1.33333	109.25
+14.0	Wawai	Broek	ID		1700	1800		
+15.0	Lawai	Broek	ID		1700	1800		
+16.0	Kadangdangan	Broek	ID		1700	1800		
+17.0	Landa	Broek	ID	http://sws.geonames.org/7568598	1700	1800	-9.5923	120.2233
+18.0	Samedang	Broek			1700	1800		
+19.0	Tirem	Broek	ID		1700	1800		
+24.0	Solot	Broek	ID		1700	1800		
+25.0	Pasir	Broek	ID	http://sws.geonames.org/8750909	1700	1800	2.13994	100.80747
+26.0	Baritu	Broek	ID		1700	1800		
+27.0	Sawaku	Broek	ID		1700	1800		
+28.0	Tabalung	Broek	ID		1700	1800		
+29.0	Tunjung Kute	Broek	ID		1700	1800		
+35.0	Maloedo	Broek	MY		1700	1800		
+36.0	Serudong	Broek	ID		1700	1800		
+37.0	Sebatik Island	Broek	ID;MY		1700	1800		
+38.0	Matan	Broek	ID		1700	1800		
+39.0	Sadong	Broek	ID		1700	1800		
+40.0	Sedua	Broek	ID		1700	1800		
+41.0	Sarawak	Broek	ID	http://sws.geonames.org/1733038	1700	1800	2.5	113.5
+42.0	Langgouw	Broek	ID		1700	1800		
+43.0	Siduk	Broek	ID		1700	1800		
+44.0	Borneo	Broek	ID		1700	1800		
+45.0	Peniraman	Broek	ID		1700	1800		
+46.0	Rio Succadano	Broek	ID		1700	1800		
+47.0	A gramde isla de Maquacer	Broek			1700	1800		
+48.0	Burney	Broek	BN		1700	1800		
+49.0	Borney	Broek	BN		1700	1800		
+50.0	Brunei	Broek	BN	http://sws.geonames.org/1820814	1700	1800	4.5	114.66667
+51.0	Tanjung	Broek	ID	http://sws.geonames.org/7036666	1700	1800	-7.1146	112.3866
+52.0	Balambangan	Broek	MY		1700	1800		
+53.0	Moluccas	Broek	ID	http://sws.geonames.org/1636627	1700	1800	-3.23846	130.14527
+54.0	C tanhumbagubaa	Broek	MY		1700	1800		
+55.0	Lloucam	Broek			1700	1800		
+56.0	Lloutam	Broek			1700	1800		
+57.0	Lochac	Broek			1700	1800		
+58.0	Lo Kuok	Broek			1700	1800		
+59.0	Laue	Broek	ID		1700	1800		
+60.0	Pamgun	Broek	ID		1700	1800		
+61.0	Pamgan	Broek	ID		1700	1800		
+62.0	Pulu Laut	Broek	ID		1700	1800		
+63.0	Pamuca	Broek	ID		1700	1800		
+64.0	Tanhumpura	Broek	ID		1700	1800		
+65.0	Tamnjompura	Broek	ID		1700	1800		
+66.0	Quedomdoan	Broek			1700	1800		
+67.0	Samper	Broek	ID		1700	1800		
+68.0	Cate	Broek	ID		1700	1800		
+69.0	Kendavangan	Broek			1700	1800		
+70.0	Kutei	Broek	ID		1700	1800		
+71.0	Pamukan	Broek	ID		1700	1800		
+72.0	Tanjompura	Broek	ID		1700	1800		
+73.0	Maquater	Broek			1700	1800		
+74.0	Java Minor	Broek	ID		1700	1800		
+75.0	San Pedro	Broek	MY		1700	1800		
+76.0	Chinabalo	Broek	MY		1700	1800		
+77.0	Mt. S. Paulo	Broek	MY		1700	1800		
+78.0	S. Pedro	Broek	MY		1700	1800		
+79.0	Chinabolo	Broek	MY		1700	1800		
+80.0	Kinabalu	Broek	MY	http://sws.geonames.org/1733432	1700	1800	5.9749	116.0724
+81.0	Monte de Adas	Broek	MY		1700	1800		
+82.0	Porto de borneo	Broek	BN		1700	1800		
+83.0	Chinabatanga	Broek	MY		1700	1800		
+84.0	Kinabatangan	Broek	MY		1700	1800		
+85.0	Chinabalu	Broek	MY		1700	1800		
+86.0	Pertam	Broek	MY		1700	1800		
+87.0	Pertan	Broek	MY		1700	1800		
+88.0	Tanara	Broek	MY		1700	1800		
+89.0	Lanaca	Broek	MY		1700	1800		
+90.0	Lanara	Broek	MY		1700	1800		
+91.0	Tanaram	Broek	MY		1700	1800		
+92.0	Tabaran	Broek	MY		1700	1800		
+93.0	Bisaia	Broek	MY		1700	1800		
+94.0	Bacaia	Broek	MY		1700	1800		
+95.0	Ombaro	Broek	MY		1700	1800		
+96.0	Tamiambara	Broek	MY		1700	1800		
+97.0	Tanganbarahon	Broek	MY		1700	1800		
+98.0	Rajang delta	Broek	MY		1700	1800		
+99.0	Tanjung Sirik	Broek	MY		1700	1800		
+100.0	Tasacire	Broek	MY		1700	1800		
+101.0	Carena	Broek	MY		1700	1800		
+102.0	Santubong	Broek	MY		1700	1800		
+103.0	Tajorato	Broek	MY		1700	1800		
+104.0	Tatomrato	Broek	MY		1700	1800		
+105.0	Tatonrato	Broek	MY		1700	1800		
+106.0	Tanjung Datu	Broek	MY		1700	1800		
+107.0	Tamaratos	Broek	MY		1700	1800		
+108.0	Tangaranto	Broek	MY		1700	1800		
+109.0	Tanjung Ratus	Broek	MY		1700	1800		
+110.0	Lamocata	Broek	ID		1700	1800		
+111.0	Ye de la mocatam	Broek	ID		1700	1800		
+112.0	Lane	Broek	ID		1700	1800		
+113.0	Lano	Broek	ID		1700	1800		
+114.0	Taiapura	Broek	ID		1700	1800		
+115.0	Lave	Broek	ID		1700	1800		
+116.0	Java Major	Broek			1700	1800		
+117.0	Lao	Broek	ID		1700	1800		
+118.0	Sukadana	Broek	ID	http://sws.geonames.org/7582364	1700	1800	-8.2273	115.5413
+119.0	Teyen	Broek	ID		1700	1800		
+120.0	River of Lauwe	Broek	ID		1700	1800		
+121.0	Tajan	Broek	ID	http://sws.geonames.org/8401699	1700	1800	-6.8977	113.7907
+122.0	Lauwe	Broek	ID		1700	1800		
+123.0	Kapuas river	Broek	ID		1700	1800		
+124.0	Pulu	Broek	ID		1700	1800		
+125.0	Maja	Broek	ID	http://sws.geonames.org/1636825	1700	1800	-6.6559	106.3636
+126.0	Mendawak	Broek	ID		1700	1800		
+127.0	Simpang	Broek	ID	http://sws.geonames.org/7857748	1700	1800	-74.737	107.6688
+128.0	Labai	Broek	ID		1700	1800		
+129.0	Lawa	Broek	ID		1700	1800		
+130.0	Kapuas ketjil	Broek	ID		1700	1800		
+131.0	Pontianak	Broek	ID	http://sws.geonames.org/1630789	1700	1800	-0.03194	109.325
+132.0	Landak river	Broek	ID		1700	1800		
+133.0	Succadana	Broek	ID		1700	1800		
+134.0	Landak	Broek	ID		1700	1800		
+135.0	Sanggau	Broek	ID	http://sws.geonames.org/1628802	1700	1800	0.13333	110.6
