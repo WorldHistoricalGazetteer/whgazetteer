@@ -427,6 +427,7 @@ def ds_update(request):
     compare_data = json.loads(request.POST['compare_data'])
     compare_result = compare_data['compare_result']
     print('compare_data from ds_compare', compare_data)
+
     # tempfn has .tsv or .jsonld extension from validation step
     tempfn = compare_data['tempfn']
     filename_new = compare_data['filename_new']
@@ -459,7 +460,7 @@ def ds_update(request):
     # (re-)open files as panda dataframes
     if file_format == 'delimited':
       adf = pd.read_csv('media/'+compare_data['filename_cur'], delimiter='\t')
-      bdf = pd.read_csv(filepath, delimiter='\t')
+      bdf = pd.read_csv(filepath, delimiter='\t',dtype={'id':'str'})
       print('reopened old file, # lines:',len(adf))
       print('reopened new file, # lines:',len(bdf))
       ids_a = adf['id'].tolist()
@@ -467,11 +468,26 @@ def ds_update(request):
       # 
       replace_these = set.intersection(set(ids_b),set(ids_a))
       counter=0
-      #for index, row in bdf.iterrows():
-        #if row['id'] in replace_these:
+      
+      # gather instances (to delete)
+      places = Place.objects.filter(dataset=ds.label)
+      p_names = PlaceName.objects.filter(place_id_id__in=places)
+      p_types = PlaceType.objects.filter(place_id_id__in=places)
+      p_when = PlaceWhen.objects.filter(place_id_id__in=places)
+      p_description = PlaceDescription.objects.filter(place_id_id__in=places)
+      p_depiction = PlaceDepiction.objects.filter(place_id_id__in=places)
+
+      # don't touch these
+      p_geoms = PlaceGeom.objects.filter(place_id_id__in=places)
+      p_links = PlaceLink.objects.filter(place_id_id__in=places)
+      
+      #row = next(bdf.iterrows())[1]
+      ##for index, row in bdf.iterrows():
+        #if id in replace_these:
           #p = get_object_or_404(Place,src_id=str(row['id']),dataset=ds.label)
-          #counter=counter+1
-          #print(str(row['id']), counter,p.names.all())
+          
+          ##counter=counter+1
+          ##print(str(row['id']), counter,p.names.all())
     
       result = {"status": "file obj created ("+str(rev_cur+1)+')',"tempfn":tempfn
                 ,"new name": compare_data['filename_new'],"format":file_format,"replacing":str(replace_these)

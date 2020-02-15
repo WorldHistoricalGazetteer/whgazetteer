@@ -24,6 +24,7 @@ class Dataset(models.Model):
     core = models.BooleanField(default=False)    
     ds_status = models.CharField(max_length=12, null=True, blank=True, choices=STATUS)
     create_date = models.DateTimeField(null=True, auto_now_add=True)
+    uri_base = models.URLField(blank=True, null=True, default="http://whgazetteer.org/api/places/")
 
     # TODO: these are updated in both Dataset & DatasetFile  (??)
     datatype = models.CharField(max_length=12, null=False,choices=DATATYPES,
@@ -36,7 +37,6 @@ class Dataset(models.Model):
     
     # fields below are zombies; supplanted by DatasetFile model
     #file = models.FileField(upload_to=user_directory_path)
-    #uri_base = models.URLField(blank=True, null=True, default="http://whgazetteer.org/api/places/")
     #format = models.CharField(max_length=12, null=False,choices=FORMATS,
         #default='lpf')
     #delimiter = models.CharField(max_length=5, blank=True, null=True)
