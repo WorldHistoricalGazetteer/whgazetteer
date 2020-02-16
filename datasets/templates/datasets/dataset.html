@@ -96,7 +96,7 @@
         <div id="div_file">
           <table id="file_metadata" class="ds-table table-striped">
             <tr>
-              <td><b>Rev.</b></td>
+              <td><b>Revision</b></td>
               <td>{{ current_file.rev }}</td>
             </tr>
             <tr>
@@ -458,17 +458,22 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="updateModalLabel">Update data file for {{ ds.label }}</h5>
+          <h5 class="modal-title" id="updateModalLabel">
+            Update <span class="text-danger">{{ ds.label }}</span> dataset <small>(<i>{{ current_file.format }} file only</i>)</small>
+          </h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
         <div class="modal-body">
-          <div>
+          <div class="form-group">
             <form id="newfileform" method="POST" action="#" enctype="multipart/form-data">
             {% csrf_token %}
-              <input type="file" id="newfile">
-              <button id="btn_upload" type="submit" class="btn btn-primary btn-sm">Upload</button>
+              <p><input type="file" id="newfile"></p>
+              <p>Preserve existing links <input type="checkbox" id="preserve_links" checked>; 
+                  geometries <input type="checkbox" id="preserve_geoms" checked>
+              </p>
+              <button id="btn_upload" type="submit" class="btn btn-primary btn-sm hidden">Upload</button>
             </form>
           </div>
           <div id="results_text" class="compare-results mb-2 small">
@@ -476,9 +481,12 @@
           </div>
         </div>        
         <div class="modal-footer">
-          <button id="btn_update" type="button" data-dsid={{ds.id}} class="btn btn-primary btn-sm hidden">
-            Proceed</button>
-          <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Cancel</button>
+          <div id="buttons_pre">
+            <button id="btn_cancel" type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Cancel</button>
+            <button id="btn_update" type="button" data-dsid={{ds.id}} class="btn btn-primary btn-sm hidden">
+              Proceed</button>
+          </div>
+          <button id="btn_done" type="button" class="btn btn-secondary btn-sm hidden" data-dismiss="modal">Done</button>
         </div>
       </div>
     </div>
@@ -489,6 +497,14 @@
 js for Summary, Reconciliation
 -->
 <script type="text/javascript">
+  // show upload button after file selected
+  $("#newfile").on("change", function() {
+    $("#btn_upload").removeClass('hidden')
+  });
+  
+  $("#btn_done").on('click', function(){ location.reload(); })
+  $("#btn_cancel").on('click', function(){ location.reload(); })
+  
   function startUpdaterSpinner(){
     window.spinner_updater = new Spin.Spinner().spin();
     $("#results_text").append(spinner_updater.el);   
@@ -511,8 +527,10 @@ js for Summary, Reconciliation
       cache: false,
       data: formData,
       success:function(data){
-        html = '<hr/>ran ds_update() <br/>'
-        html += 'result: <br/>'+JSON.stringify(data)
+        $("#buttons_pre").addClass('hidden')
+        $("#btn_done").removeClass('hidden')
+        html = '<hr/><h6>update complete!</h6>'
+        html += 'results forthcoming...'
         $("#results_text").html($("#results_text").html()+html)
       }
     })
@@ -520,12 +538,17 @@ js for Summary, Reconciliation
   
   // prettify comparison results
   function compare_text(data) {
+    console.log('comparison data returned',data)
+    stats = data['compare_result']
+    keepg = data['keepg']; keepl = data['keepl'];
+    keepers_note='Keep existing: geometry? <b>'+keepg+'</b>; links? <b>'+keepl+'</b>';
     html = 'This update would:<br/><ul style="padding:0;list-style: inside;">'
-    html += '<li>Replace <b>'+data['count_replace']+'</b> records having same IDs <br><span class="small ml-4"><i>(NOTE: Links and geometries previously added during reconciliation will be retained)</i></span></li>'
-    html += data['rows_add'].length >0?'<li>Add records (<b>'+data['rows_add'].join(', ')+'</b>)</li>':''
-    html += data['rows_del'].length >0?'<li>Remove records (<b>'+data['rows_del'].join(', ')+'</b>)</li>':''
-    html += data['cols_add'].length >0?'<li>Add columns (<b>'+data['cols_add']+'</b>)</li>':''
-    html += data['cols_del'].length >0?'<li>Remove columns (<b>'+data['cols_del']+'</b>)</li>':''
+    html += '<li>Replace <b>'+stats['count_replace']+
+      '</b> records having same IDs <br><span class="ml-4">'+'<i>('+keepers_note+')</i></span></li>'
+    html += stats['rows_add'].length >0?'<li>Add records (<b>'+stats['rows_add'].join(', ')+'</b>)</li>':''
+    html += stats['rows_del'].length >0?'<li>Remove records (<b>'+stats['rows_del'].join(', ')+'</b>)</li>':''
+    html += stats['cols_add'].length >0?'<li>Add columns (<b>'+stats['cols_add']+'</b>)</li>':''
+    html += stats['cols_del'].length >0?'<li>Remove columns (<b>'+stats['cols_del']+'</b>)</li>':''
     html += '</ul>'
     return html  
   }
@@ -537,7 +560,9 @@ js for Summary, Reconciliation
     var formData = new FormData();
     formData.append('file', $('#newfile')[0].files[0]);
     formData.append('dsid', '{{ ds.id }}');
-    formData.append('format', '{{ current_file.format }}')
+    formData.append('format', '{{ current_file.format }}');
+    formData.append('preserve_links', $('#preserve_links')[0].checked);
+    formData.append('preserve_geoms', $('#preserve_geoms')[0].checked);
     formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
     
     <!--console.log(fileName,fileSize)-->
@@ -555,9 +580,9 @@ js for Summary, Reconciliation
         html += '<b>New temp file</b>: <br/><i>'+data['tempfn']+'</i><br/>'
         html += '<b>Validation result</b>: <br/><i>' + 
           (data['validation_result']['errors'].length <1?'format valid':data['validation_result']['errors'])+'</i><hr/>'
-        html += compare_text(data['compare_result'])
-        $("#btn_upload").addClass('hidden')
-        $("#newfile").addClass('hidden')
+        <!--html += compare_text(data['compare_result'])-->
+        html += compare_text(data)
+        $("#newfileform").addClass('hidden')
         $("#btn_update").removeClass('hidden')
         $("#results_text").html(html)
         compare_data=data

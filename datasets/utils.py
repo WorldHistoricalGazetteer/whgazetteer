@@ -109,7 +109,7 @@ def goodtable(tempfn):
   print('tempfn,newfn',tempfn,newfn)
   schema_lptsv = json.loads(codecs.open('datasets/static/validate/schema_tsv.json', 'r', 'utf8').read())
   report = gvalidate(newfn,schema=schema_lptsv,order_fields=True)
-  pp.pprint(report)  
+  #pp.pprint(report)  
   #print('error count',report['error-count'])
   result['count'] = report['tables'][0]['row-count']
   result['columns'] = report['tables'][0]['headers']
@@ -190,8 +190,11 @@ def parsejson(value,key):
   obj = json.loads(value.replace("'",'"'))
   return obj[key]
 def makeCoords(lonstr,latstr):
-  lon = float(lonstr) if lonstr != '' else ''
-  lat = float(latstr) if latstr != '' else ''
+  print(type(lonstr),latstr)
+  lon = float(lonstr) if lonstr not in ['','nan'] else ''
+  lat = float(latstr) if latstr not in ['','nan'] else ''
+  #lon = float(lonstr) if lonstr != '' else ''
+  #lat = float(latstr) if latstr != '' else ''
   coords = [] if (lonstr == ''  or latstr == '') else [lon,lat]
   return coords
 def elapsed(delta):

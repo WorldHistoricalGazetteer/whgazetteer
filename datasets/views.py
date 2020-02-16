@@ -14,7 +14,7 @@ from django.views.generic import (
 from django_celery_results.models import TaskResult
 
 from celery import current_app as celapp
-import codecs, tempfile, os, re, sys #ipdb,
+import codecs, tempfile, os, re, sys, math
 import simplejson as json
 import pandas as pd
 from pathlib import Path
@@ -417,7 +417,7 @@ def dataset_browse(request, label, f):
 # pobj = place object; row is a pandas dict
 def add_rels_tsv(pobj, row):
   header = row.keys()
-  print('row keys add_rels()',row)
+  print('add_rels() from row:',row)
   src_id = row['id']
   title = row['title']
   ccodes = [x.strip() for x in row['ccodes'].split(';')] \
@@ -434,8 +434,8 @@ def add_rels_tsv(pobj, row):
     if 'aat_types' in header else []
   parent_name = row['parent_name'] if 'parent_name' in header else ''
   parent_id = row['parent_id'] if 'parent_id' in header else ''
-  coords = makeCoords(row['lon'],row['lat']) \
-    if 'lon' in header and 'lat' in header else []
+  coords = makeCoords(row['lon'], row['lat']) \
+    if 'lon' in header and 'lat' in header and not math.isnan(row['lon']) else []
   #matches = [x.strip() for x in row['matches')].split(';')] \
     #if 'matches' in header else []
   matches = [x.strip() for x in row['matches'].split(';')] \
@@ -455,7 +455,7 @@ def add_rels_tsv(pobj, row):
   # title as a PlaceName
   objs['PlaceName'].append(
     PlaceName(
-      place_id=newpl,
+      place_id=pobj,
       src_id = src_id,
       toponym = title,
       jsonb={"toponym": title, "citation": {"id":title_uri,"label":title_source}}
@@ -466,7 +466,7 @@ def add_rels_tsv(pobj, row):
     for v in variants:
       objs['PlaceName'].append(
         PlaceName(
-          place_id=newpl,
+          place_id=pobj,
           src_id = src_id,
           toponym = v,
           jsonb={"toponym": v, "citation": {"id":"","label":title_source}}
@@ -480,7 +480,7 @@ def add_rels_tsv(pobj, row):
       aatnum=aat_types[i] if len(aat_types) >= len(types) else ''
       objs['PlaceType'].append(
         PlaceType(
-          place_id=newpl,
+          place_id=pobj,
           src_id = src_id,
           jsonb={ "identifier":aatnum,
                   "sourceLabel":t,
@@ -493,15 +493,15 @@ def add_rels_tsv(pobj, row):
   if len(coords) > 0:
     objs['PlaceGeom'].append(
       PlaceGeom(
-        place_id=newpl,
+        place_id=pobj,
         src_id = src_id,
         jsonb={"type": "Point", "coordinates": coords,
-                    "geowkt": 'POINT('+str(coords[0])+' '+str(coords[1])+')'}
+                "geowkt": 'POINT('+str(coords[0])+' '+str(coords[1])+')'}
     ))
   elif 'geowkt' in header and r[header.index('geowkt')] not in ['',None]: # some rows no geom
     objs['PlaceGeom'].append(
       PlaceGeom(
-        place_id=newpl,
+        place_id=pobj,
         src_id = src_id,
         # make GeoJSON using shapely
         jsonb=parse_wkt(r[header.index('geowkt')])
@@ -514,7 +514,7 @@ def add_rels_tsv(pobj, row):
       countlinks += 1
       objs['PlaceLink'].append(
         PlaceLink(
-          place_id=newpl,
+          place_id=pobj,
           src_id = src_id,
           jsonb={"type":"closeMatch", "identifier":m}
       ))
@@ -523,7 +523,7 @@ def add_rels_tsv(pobj, row):
   if parent_name != '':
     objs['PlaceRelated'].append(
       PlaceRelated(
-        place_id=newpl,
+        place_id=pobj,
         src_id=src_id,
         jsonb={
           "relationType": "gvp:broaderPartitive",
@@ -536,7 +536,7 @@ def add_rels_tsv(pobj, row):
   if start != '':
     objs['PlaceWhen'].append(
       PlaceWhen(
-        place_id=newpl,
+        place_id=pobj,
         src_id = src_id,
         jsonb={
               "timespans": [{"start":{"earliest":minmax[0]}, "end":{"latest":minmax[1]}}]
@@ -549,38 +549,39 @@ def add_rels_tsv(pobj, row):
   if description != '':
     objs['PlaceDescription'].append(
       PlaceDescription(
-        place_id=newpl,
+        place_id=pobj,
         src_id = src_id,
         jsonb={
           "@id": "", "value":description, "lang":""
         }
       ))
 
-    print('COUNTS:')
-    print('PlaceName:',len(objs['PlaceName']))
-    print('PlaceType:',len(objs['PlaceType']))
-    print('PlaceGeom:',len(objs['PlaceGeom']))
-    print('PlaceLink:',len(objs['PlaceLink']))
-    print('PlaceRelated:',len(objs['PlaceRelated']))
-    print('PlaceWhen:',len(objs['PlaceWhen']))
-    print('PlaceDescription:',len(objs['PlaceDescription']))
-    print('max places.id', )
-    
-    # bulk_create(Class, batch_size=n) for each
-    PlaceName.objects.bulk_create(objs['PlaceName'],batch_size=10000)
-    print('names done')
-    PlaceType.objects.bulk_create(objs['PlaceType'],batch_size=10000)
-    print('types done')
-    PlaceGeom.objects.bulk_create(objs['PlaceGeom'],batch_size=10000)
-    print('geoms done')
-    PlaceLink.objects.bulk_create(objs['PlaceLink'],batch_size=10000)
-    print('links done')
-    PlaceRelated.objects.bulk_create(objs['PlaceRelated'],batch_size=10000)
-    print('related done')
-    PlaceWhen.objects.bulk_create(objs['PlaceWhen'],batch_size=10000)
-    print('whens done')
-    PlaceDescription.objects.bulk_create(objs['PlaceDescription'],batch_size=10000)
-    print('descriptions done')
+  # what came from this row
+  print('COUNTS:')
+  print('PlaceName:',len(objs['PlaceName']))
+  print('PlaceType:',len(objs['PlaceType']))
+  print('PlaceGeom:',len(objs['PlaceGeom']))
+  print('PlaceLink:',len(objs['PlaceLink']))
+  print('PlaceRelated:',len(objs['PlaceRelated']))
+  print('PlaceWhen:',len(objs['PlaceWhen']))
+  print('PlaceDescription:',len(objs['PlaceDescription']))
+  print('max places.id', )
+  
+  # bulk_create(Class, batch_size=n) for each
+  PlaceName.objects.bulk_create(objs['PlaceName'],batch_size=10000)
+  print('names done')
+  PlaceType.objects.bulk_create(objs['PlaceType'],batch_size=10000)
+  print('types done')
+  PlaceGeom.objects.bulk_create(objs['PlaceGeom'],batch_size=10000)
+  print('geoms done')
+  PlaceLink.objects.bulk_create(objs['PlaceLink'],batch_size=10000)
+  print('links done')
+  PlaceRelated.objects.bulk_create(objs['PlaceRelated'],batch_size=10000)
+  print('related done')
+  PlaceWhen.objects.bulk_create(objs['PlaceWhen'],batch_size=10000)
+  print('whens done')
+  PlaceDescription.objects.bulk_create(objs['PlaceDescription'],batch_size=10000)
+  print('descriptions done')
       
 #
 # perform update on database and index 
@@ -631,6 +632,7 @@ def ds_update(request):
     if file_format == 'delimited':
       adf = pd.read_csv('media/'+compare_data['filename_cur'], delimiter='\t')
       bdf = pd.read_csv(filepath, delimiter='\t',dtype={'id':'str','ccodes':'str'})
+      bdf = bdf.astype({"ccodes": str})
       print('reopened old file, # lines:',len(adf))
       print('reopened new file, # lines:',len(bdf))
       ids_a = adf['id'].tolist()
@@ -658,10 +660,10 @@ def ds_update(request):
       place_fields = {'id', 'title', 'ccodes'}
       for index, row in bdf.iterrows():
         # make 3 dicts: all; for Places; for PlaceXxxxs
-        #rd=bdf.loc[20].to_dict()
+        #rd=bdf.loc[0].to_dict()
         rd = row.to_dict()
         rdp = {key:rd[key] for key in place_fields}
-        rdrels = {key:rd[key] for key in rd.keys() - place_fields}
+        #rdrels = {key:rd[key] for key in rd.keys() - place_fields}
         # look for corresponding current place
         #p = places.filter(src_id='1.0').first()
         p = places.filter(src_id=rdp['id']).first()
@@ -669,9 +671,9 @@ def ds_update(request):
           # place exists, update it
           count_updated +=1
           p.title = rdp['title']
-          p.ccodes = rdp['ccodes'].replace(' ','').split(';') # semicolon delimited, w or w/o space
+          p.ccodes = [] if str(rdp['ccodes']) == 'nan' else rdp['ccodes'].replace(' ','').split(';') 
           p.save()
-          print('updated '+str(p.id)+', add related from '+str(rdrels))
+          #print('updated '+str(p.id)+', add related from '+str(rdrels))
           pobj = p
         else:
           # entirely new place + related records
@@ -684,7 +686,7 @@ def ds_update(request):
           )
           newpl.save()
           pobj = newpl
-          print('new place, related:', newpl, rdrels)
+          #print('new place, related:', newpl, rdrels)
         
         # pobj is either an old & updated place or entirely new
         add_rels_tsv(pobj,rd)
@@ -704,8 +706,10 @@ def ds_compare(request):
     dsid=request.POST['dsid']
     user=request.user.username
     format=request.POST['format']
+    keepg=request.POST['preserve_geoms']
+    keepl=request.POST['preserve_links']
     ds = get_object_or_404(Dataset, id=dsid)
-    # wrangling names...grrrr...
+    # wrangling names
     # current file
     file_cur = DatasetFile.objects.filter(dataset_id_id=dsid).order_by('-upload_date')[0].file
     filename_cur = file_cur.name
@@ -745,7 +749,9 @@ def ds_compare(request):
       "filename_new": filename_new,
       "format": format,
       "validation_result": vresult,
-      "tempfn": tempfn_new
+      "tempfn": tempfn_new,
+      "keepg": keepg,
+      "keepl": keepl
     }
     
     # perform comparison
@@ -774,6 +780,7 @@ def ds_compare(request):
       print('need to compare lpf files:',fn_a,fn_b)
       comparison['compare_result'] = "it's lpf...tougher row to hoe"
     
+    print('comparison',comparison)
     return JsonResponse(comparison,safe=False)
     #return render(request, 'datasets/dataset.html', {'ds':ds})
 #
@@ -1231,7 +1238,7 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
       context['status'] = 'format_ok'
       print('cleaned_data',form.cleaned_data)
       
-      # new Dataset record ('owner','id','label','title','uri_base', 'description')
+      # new Dataset record ('owner','id','label','title','description')
       dsobj = form.save(commit=False)
       dsobj.ds_status = 'format_ok'
       try:
@@ -1260,11 +1267,10 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
         dataset_id = dsobj,
         file = 'user_'+user.username+'/'+filename,
         rev = 1,
-        uri_base = data['uri_base'],
         format = result['format'],
         delimiter = result['delimiter'] if "delimiter" in result.keys() else "n/a",
         df_status = 'format_ok',
-        accepted_date = None,
+        upload_date = None,
         header = result['columns'] if "columns" in result.keys() else [],
         numrows = result['count']
       )

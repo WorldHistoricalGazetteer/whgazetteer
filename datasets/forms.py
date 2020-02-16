@@ -91,16 +91,17 @@ class DatasetCreateModelForm(forms.ModelForm):
     model = Dataset
     # file fields = ('file','rev','uri_base','format','dataset_id','delimiter',
     #   'status','accepted_date','header','numrows')
-    fields = ('owner','id','title','label','datatype','description') #,'uri_base'
+    fields = ('owner','id','title','label','datatype','description','uri_base')
     widgets = {
       'description': forms.Textarea(attrs={
-        'rows':2,'cols': 35,'class':'textarea','placeholder':'brief description'}),
-      'uri_base': forms.URLInput(attrs={
+        'rows':2,'cols': 35,'class':'textarea','placeholder':'brief description'})
+      ,'uri_base': forms.URLInput(attrs={
         'placeholder':'Leave blank unless record IDs are URIs','size':35})
     }
   
   # fields used to create new DatasetFile record from form
-  #uri_base = forms.URLField(widget=forms.URLInput(attrs={'placeholder':'Leave blank unless record IDs are URIs'}))
+  #uri_base = forms.URLField(widget=forms.URLInput(
+    #attrs={'placeholder':'Leave blank unless record IDs are URIs','size':35}))
   file = forms.FileField()
   rev = forms.IntegerField()
   format = forms.ChoiceField(choices=FORMATS)
