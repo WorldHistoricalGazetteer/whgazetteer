@@ -74,6 +74,10 @@ class Dataset(models.Model):
     def dsusers(self):
         uids = DatasetUser.objects.filter(dataset_id_id = self.id).values_list('user_id_id')
         return User.objects.filter(id__in=uids)
+    
+    @property
+    def placeids(self):
+        return Place.objects.filter(dataset=self.label).values_list('id', flat=True)
         
     class Meta:
         managed = True

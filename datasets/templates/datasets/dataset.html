@@ -468,18 +468,17 @@
         <div class="modal-body">
           <div class="form-group">
             <form id="newfileform" method="POST" action="#" enctype="multipart/form-data">
-            {% csrf_token %}
-              <p><input type="file" id="newfile"></p>
-              <p>Preserve existing links <input type="checkbox" id="preserve_links" checked>; 
-                  geometries <input type="checkbox" id="preserve_geoms" checked>
-              </p>
-              <button id="btn_upload" type="submit" class="btn btn-primary btn-sm hidden">Upload</button>
+              {% csrf_token %}
+              <div id="loadfile">
+                <p><input type="file" id="newfile"></p>
+                <button id="btn_upload" type="submit" class="btn btn-primary btn-sm hidden">Upload</button>
+              </div>
+              <div id="results_text" class="compare-results mb-2 small">
+                <p>Uploaded data will be compared with existing data, and results reported here.</p> <p>You will be prompted to proceed or cancel this operation at that point.</p>
+              </div>          
             </form>
-          </div>
-          <div id="results_text" class="compare-results mb-2 small">
-            <p>Uploaded data will be compared with existing data, and results reported here.</p> <p>You will be prompted to proceed or cancel this operation at that point.</p>
-          </div>
-        </div>        
+          </div> <!-- .form-group -->
+        </div> <!-- .modal-body -->      
         <div class="modal-footer">
           <div id="buttons_pre">
             <button id="btn_cancel" type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Cancel</button>
@@ -515,8 +514,10 @@ js for Summary, Reconciliation
     var formData = new FormData();
     formData.append('dsid', '{{ ds.id }}');
     formData.append('format', '{{ current_file.format }}');
+    formData.append('keepg', $("#preserve_geoms").length ? $('#preserve_geoms')[0].checked : "true");
+    formData.append('keepl', $("#preserve_links").length ? $('#preserve_links')[0].checked : "true");
     formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
-    formData.append('compare_data',JSON.stringify(compare_data))
+    formData.append('compare_data',JSON.stringify(compare_data));
     
     $.ajax({
       type: 'POST',
@@ -549,6 +550,14 @@ js for Summary, Reconciliation
     html += stats['rows_del'].length >0?'<li>Remove records (<b>'+stats['rows_del'].join(', ')+'</b>)</li>':''
     html += stats['cols_add'].length >0?'<li>Add columns (<b>'+stats['cols_add']+'</b>)</li>':''
     html += stats['cols_del'].length >0?'<li>Remove columns (<b>'+stats['cols_del']+'</b>)</li>':''
+    if (data['count_geoms']>0){
+      html += '<li><b>'+data['count_geoms']+'</b> geometry records were previously added via reconciliation...keep?'+
+      ' <input type="checkbox" id="preserve_geoms" checked></li>'
+    }
+    if (data['count_links']>0){
+      html += '<li><b>'+data['count_links']+'</b> link records were previously added via reconciliation...keep?'+
+      ' <input type="checkbox" id="preserve_links" checked></li>'
+    }
     html += '</ul>'
     return html  
   }
@@ -561,8 +570,8 @@ js for Summary, Reconciliation
     formData.append('file', $('#newfile')[0].files[0]);
     formData.append('dsid', '{{ ds.id }}');
     formData.append('format', '{{ current_file.format }}');
-    formData.append('preserve_links', $('#preserve_links')[0].checked);
-    formData.append('preserve_geoms', $('#preserve_geoms')[0].checked);
+    <!--formData.append('preserve_links', $('#preserve_links')[0].checked);-->
+    <!--formData.append('preserve_geoms', $('#preserve_geoms')[0].checked);-->
     formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
     
     <!--console.log(fileName,fileSize)-->
@@ -582,7 +591,7 @@ js for Summary, Reconciliation
           (data['validation_result']['errors'].length <1?'format valid':data['validation_result']['errors'])+'</i><hr/>'
         <!--html += compare_text(data['compare_result'])-->
         html += compare_text(data)
-        $("#newfileform").addClass('hidden')
+        $("#loadfile").addClass('hidden')
         $("#btn_update").removeClass('hidden')
         $("#results_text").html(html)
         compare_data=data

@@ -590,7 +590,8 @@ def ds_update(request):
     dsid=request.POST['dsid']
     ds = get_object_or_404(Dataset, id=dsid)
     file_format=request.POST['format']
-    #user=request.user
+    keepg = request.POST['keepg']
+    keepl = request.POST['keepl']
 
     # compare_data {'compare_result':{}}
     compare_data = json.loads(request.POST['compare_data'])
@@ -604,7 +605,7 @@ def ds_update(request):
     dsfobj_cur = DatasetFile.objects.filter(dataset_id_id=dsid).order_by('-upload_date')[0]
     rev_cur = dsfobj_cur.rev
     rows_del = compare_result['rows_del']
-
+    
     # rename file if already exists in user area
     file_exists = Path('media/'+filename_new).exists()
     if file_exists:
@@ -654,6 +655,20 @@ def ds_update(request):
       PlaceWhen.objects.filter(place_id_id__in=places).delete()
       PlaceDescription.objects.filter(place_id_id__in=places).delete()
       PlaceDepiction.objects.filter(place_id_id__in=places).delete()
+      
+      # augmentation rows have a task_id
+      # keep or not is a form choice (keepg, keepl)
+      if keepg == 'false':
+        # keep none (they are being replaced in update)
+        PlaceGeom.objects.filter(place_id_id__in=places).delete()
+      else:
+        # keep augmentation rows; delete the rest
+        PlaceGeom.objects.filter(place_id_id__in=places,task_id=None).delete()
+      if keepl == 'false':
+        # keep none (they are being replaced in update)
+        PlaceLink.objects.filter(place_id_id__in=places).delete()
+      else:
+        PlaceLink.objects.filter(place_id_id__in=places,task_id=None).delete()
       
       count_updated, count_new = [0,0]
       # update remaining place instances w/data from new file
@@ -706,9 +721,15 @@ def ds_compare(request):
     dsid=request.POST['dsid']
     user=request.user.username
     format=request.POST['format']
-    keepg=request.POST['preserve_geoms']
-    keepl=request.POST['preserve_links']
+    # moved to ds_update
+    #keepg=request.POST['preserve_geoms']
+    #keepl=request.POST['preserve_links']
     ds = get_object_or_404(Dataset, id=dsid)
+    
+    # how many augmenting records previously created? (have task_id)
+    count_geoms = PlaceGeom.objects.filter(place_id_id__in=ds.placeids,task_id__isnull=False).count()
+    count_links = PlaceLink.objects.filter(place_id_id__in=ds.placeids,task_id__isnull=False).count()
+    
     # wrangling names
     # current file
     file_cur = DatasetFile.objects.filter(dataset_id_id=dsid).order_by('-upload_date')[0].file
@@ -750,8 +771,10 @@ def ds_compare(request):
       "format": format,
       "validation_result": vresult,
       "tempfn": tempfn_new,
-      "keepg": keepg,
-      "keepl": keepl
+      #"keepg": keepg,
+      #"keepl": keepl,
+      "count_links": count_links,
+      "count_geoms": count_geoms,
     }
     
     # perform comparison
