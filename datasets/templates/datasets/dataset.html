@@ -85,13 +85,14 @@
           </tr>
         </table>
         <input class="btn btn-primary btn-sm hidden btn-ds" type="submit" value="Save" />
-        <p> <i>Current data file</i> 
-            <span class="update-msg text-danger italic strong hidden">:: updating</span>
-            <span class="float-right mr-2">
+        <p> <i>Current data file</i>
+          {% if current_file.format == 'delimited' %}
+          <span class="update-msg text-danger italic strong hidden">:: updating</span>
+          <span class="float-right mr-2">
             <a href="#" id="a_update_modal" data-dsid = {{ ds.id }} data-toggle="modal" data-target="#updateModal">update</a>
-            <span class="help-matches" data-id="updates">
-            {% fontawesome_icon 'question-circle' color='#993333' %}</span>
+            <span class="help-matches" data-id="updates">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
           </span>
+          {% endif %}
         </p>
         <div id="div_file">
           <table id="file_metadata" class="ds-table table-striped">
@@ -461,9 +462,9 @@
           <h5 class="modal-title" id="updateModalLabel">
             Update <span class="text-danger">{{ ds.label }}</span> dataset <small>(<i>{{ current_file.format }} file only</i>)</small>
           </h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
+          <!--<button type="button" class="close" data-dismiss="modal" aria-label="Close">-->
+            <!--<span aria-hidden="true">&times;</span>-->
+          <!--</button>-->
         </div>
         <div class="modal-body">
           <div class="form-group">
@@ -473,6 +474,7 @@
                 <p><input type="file" id="newfile"></p>
                 <button id="btn_upload" type="submit" class="btn btn-primary btn-sm hidden">Upload</button>
               </div>
+              <div id="update_spinner"></div>
               <div id="results_text" class="compare-results mb-2 small">
                 <p>Uploaded data will be compared with existing data, and results reported here.</p> <p>You will be prompted to proceed or cancel this operation at that point.</p>
               </div>          
@@ -496,6 +498,11 @@
 js for Summary, Reconciliation
 -->
 <script type="text/javascript">
+  $("#a_update_modal").on('click', function(e){
+    if('{{ current_file.format }}' != 'delimited'){ 
+        alert('Sorry, update is available for delimited files right now. Soon...')
+      }
+  })
   // show upload button after file selected
   $("#newfile").on("change", function() {
     $("#btn_upload").removeClass('hidden')
@@ -504,13 +511,14 @@ js for Summary, Reconciliation
   $("#btn_done").on('click', function(){ location.reload(); })
   $("#btn_cancel").on('click', function(){ location.reload(); })
   
-  function startUpdaterSpinner(){
-    window.spinner_updater = new Spin.Spinner().spin();
-    $("#results_text").append(spinner_updater.el);   
+  function startUpdateSpinner(){
+    window.spinner_update = new Spin.Spinner().spin();
+    $("#update_spinner").append(spinner_update.el);   
   }
   // performs ds_update()
   $("#btn_update").on('click', function(){
     console.log('compare_data',compare_data)
+    startUpdateSpinner()
     var formData = new FormData();
     formData.append('dsid', '{{ ds.id }}');
     formData.append('format', '{{ current_file.format }}');
@@ -530,9 +538,11 @@ js for Summary, Reconciliation
       success:function(data){
         $("#buttons_pre").addClass('hidden')
         $("#btn_done").removeClass('hidden')
-        html = '<hr/><h6>update complete!</h6>'
-        html += 'results forthcoming...'
-        $("#results_text").html($("#results_text").html()+html)
+        html = '<h6>update complete!</h6>'
+        html += 'You probably want to know what just occurred...'
+        <!--$("#results_text").html($("#results_text").html()+html)-->
+        $("#results_text").html(html)
+        spinner_update.stop()
       }
     })
   })
@@ -600,15 +610,15 @@ js for Summary, Reconciliation
   })
   
   // toggle file form for update
-  $("#a_update").click(function(){
-    // flip display
-    $(".display-field, .update-field, .update-msg").toggleClass('hidden')
-    $("#div_file").toggleClass('border-red')
-    oldy=$("#a_update").text()
-    newy=$("#a_update").data('alt')
-    $("#a_update").text(newy).data('alt',oldy);
-    $(".btn-file").toggleClass("hidden")
-  })
+  <!--$("#a_update").click(function(){-->
+    <!--// flip display-->
+    <!--$(".display-field, .update-field, .update-msg").toggleClass('hidden')-->
+    <!--$("#div_file").toggleClass('border-red')-->
+    <!--oldy=$("#a_update").text()-->
+    <!--newy=$("#a_update").data('alt')-->
+    <!--$("#a_update").text(newy).data('alt',oldy);-->
+    <!--$(".btn-file").toggleClass("hidden")-->
+  <!--})-->
   // TODO: refactor this ugly bit below
   $(".edit-title").click(function() {
     <!--$(".hidden").toggle()-->
@@ -632,7 +642,6 @@ js for Summary, Reconciliation
     <!--location.reload()-->
   <!--})-->
   $(function(){
-  
     if('{{ status }}' == 'updating'){
       console.log('{{ status }}','{{ context }}')
       $("#ds_info").addClass('hidden')
