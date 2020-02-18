@@ -70,10 +70,10 @@ class Dataset(models.Model):
             collabs.append({'id':du.user_id_id,'user':u.username,'role':r})
         return collabs
     
-    @property
-    def dsusers(self):
-        uids = DatasetUser.objects.filter(dataset_id_id = self.id).values_list('user_id_id')
-        return User.objects.filter(id__in=uids)
+    #@property
+    #def dsusers(self):
+        #uids = DatasetUser.objects.filter(dataset_id_id = self.id).values_list('user_id_id')
+        #return User.objects.filter(id__in=uids)
     
     @property
     def placeids(self):

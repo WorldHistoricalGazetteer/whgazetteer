@@ -476,7 +476,12 @@
               </div>
               <div id="update_spinner"></div>
               <div id="results_text" class="compare-results mb-2 small">
-                <p>Uploaded data will be compared with existing data, and results reported here.</p> <p>You will be prompted to proceed or cancel this operation at that point.</p>
+                <p>Uploaded data will be compared with existing data, and results reported here.</p>
+                  <p>You may then proceed, or cancel this operation with no changes made.</p>
+                <!--{ if links_added > 0 or geoms_added > 0 %}-->
+                <!--<p>This dataset has been augmented with { links_added }} links and { geoms_added }} geometries-->
+                <!--via reconciliation tasks. </p>-->
+                <!--{ endif %}-->
               </div>          
             </form>
           </div> <!-- .form-group -->
@@ -552,16 +557,15 @@ js for Summary, Reconciliation
     console.log('comparison data returned',data)
     stats = data['compare_result']
     keepg = data['keepg']; keepl = data['keepl'];
-    keepers_note='Keep existing: geometry? <b>'+keepg+'</b>; links? <b>'+keepl+'</b>';
+    <!--keepers_note='Keep existing: geometry? <b>'+keepg+'</b>; links? <b>'+keepl+'</b>';-->
     html = 'This update would:<br/><ul style="padding:0;list-style: inside;">'
-    html += '<li>Replace <b>'+stats['count_replace']+
-      '</b> records having same IDs <br><span class="ml-4">'+'<i>('+keepers_note+')</i></span></li>'
+    html += '<li>Replace <b>'+stats['count_replace']+'</b> records having same IDs </li>'
     html += stats['rows_add'].length >0?'<li>Add records (<b>'+stats['rows_add'].join(', ')+'</b>)</li>':''
     html += stats['rows_del'].length >0?'<li>Remove records (<b>'+stats['rows_del'].join(', ')+'</b>)</li>':''
     html += stats['cols_add'].length >0?'<li>Add columns (<b>'+stats['cols_add']+'</b>)</li>':''
     html += stats['cols_del'].length >0?'<li>Remove columns (<b>'+stats['cols_del']+'</b>)</li>':''
     if (data['count_geoms']>0){
-      html += '<li><b>'+data['count_geoms']+'</b> geometry records were previously added via reconciliation...keep?'+
+      html += '<li class="text-danger"><b>'+data['count_geoms']+'</b> geometry records were previously added via reconciliation...keep?'+
       ' <input type="checkbox" id="preserve_geoms" checked></li>'
     }
     if (data['count_links']>0){

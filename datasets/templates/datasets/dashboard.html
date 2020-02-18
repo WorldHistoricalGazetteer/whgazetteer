@@ -20,7 +20,7 @@
       <div class="list-box">
         <table class="table table-striped">
           <thead class="small">
-            <th class="eye">{% fontawesome_icon 'eye' %}</th>
+            <!--<th class="eye">{ fontawesome_icon 'eye' %}</th>-->
             <th>id</th>
             <th>name</th>
             <th>label</th>
@@ -33,18 +33,18 @@
           <tbody>
             {% for d in dataset_list %}
               <tr class="place-row">
-                <td>
-                  {% if d.ds_status == "format_ok" %}
-                  <a href=
-                  {% if d.format == "delimited" %}"{% url 'datasets:ds_insert_tsv' d.id %}"
-                  {% elif "lpf" in d.format %}"{% url 'datasets:ds_insert_lpf' d.id %}"{% endif %}
-                   title="Insert to db" rel="tooltip"
-                  class="">{% fontawesome_icon 'database' color='#336699' %}</a>
-                  {% elif d.ds_status in viewable %}
-                  <a href="{% url 'datasets:dataset_browse' label=d.label f='all' %}" title="Browse dataset table & map" rel="tooltip"
-                  class="">{% fontawesome_icon 'table' color='#336699' %}</a>&nbsp;
-                  {% endif %}
-                </td>
+                <!--<td>-->
+                  <!--{ if d.ds_status == "format_ok" %}-->
+                  <!--<a href=-->
+                  <!--{ if d.format == "delimited" %}"{ url 'datasets:ds_insert_tsv' d.id %}"-->
+                  <!--{ elif "lpf" in d.format %}"{ url 'datasets:ds_insert_lpf' d.id %}"{ endif %}-->
+                   <!--title="Insert to db" rel="tooltip"-->
+                  <!--class="">{ fontawesome_icon 'database' color='#336699' %}</a>-->
+                  <!--{ elif d.ds_status in viewable %}-->
+                  <!--<a href="{ url 'datasets:dataset_detail' label=d.label f='all' %}" title="Browse dataset table & map" rel="tooltip"-->
+                  <!--class="">{ fontawesome_icon 'table' color='#336699' %}</a>&nbsp;-->
+                  <!--{ endif %}-->
+                <!--</td>-->
                 <td>{{ d.id }}</td>
                 <td><a href="{% url 'datasets:dataset-detail' d.id %}" title="Dataset details" rel="tooltip"
                   >{{ d.title }}</a></td>
