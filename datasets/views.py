@@ -68,7 +68,8 @@ def indexMatch(pid, hit_pid=None):
   print('indexMatch, wtf?',pid)
   from elasticsearch import Elasticsearch
   es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
-  idx='whg02'
+  #idx='whg02'
+  idx='whg_test'
   
   if hit_pid == None:
     print('making '+str(pid)+' a parent')
@@ -120,7 +121,7 @@ def indexMatch(pid, hit_pid=None):
       print('added '+str(place.id) + ' as child of '+ str(hit_pid))
       # add variants from this record to the parent's suggest.input[] field
       q_update = { "script": {
-          "source": "ctx._source.suggest.input.addAll(params.names); ctx._source.children.add(params.id)",
+          "source": "ctx._source.suggest.input.addAll(params.names); ctx._source.children.add(params.id); ctx._source.searchy.addAll(params.names)",
           "lang": "painless",
           "params":{"names": match_names, "id": str(place.id)}
         },

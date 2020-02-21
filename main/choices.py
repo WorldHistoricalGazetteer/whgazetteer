@@ -41,7 +41,8 @@ AUTHORITY_BASEURI = {
     'align_dbp':'dbp:',
     'align_gn':'gn:',
     'align_wd':'wd:',
-    'align_whg':'whg:'
+    'align_whg':'whg:',
+    'align_whg_b':'whg:'
 }
 
 MATCHTYPES = {

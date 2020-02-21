@@ -867,8 +867,8 @@ def es_lookup_whg(qobj, *args, **kwargs):
 
 
 # RETAKE: accessioning and/or queueing hits to whg
-@task(name="align_whg_b")
-def align_whg_b(pk, *args, **kwargs):
+@task(name="align_whg")
+def align_whg(pk, *args, **kwargs):
   ds = get_object_or_404(Dataset, id=pk)
   # set index
   idx='whg_test'
@@ -893,7 +893,7 @@ def align_whg_b(pk, *args, **kwargs):
   """
   qs = ds.places.all()
   for place in qs:
-    # place=get_object_or_404(Place,id=229515)
+    #place=get_object_or_404(Place,id=227676)
     count +=1
     qobj = {"place_id":place.id, "src_id":place.src_id, "title":place.title}
     links=[]; ccodes=[]; types=[]; variants=[]; parents=[]; geoms=[]; 
@@ -963,6 +963,7 @@ def align_whg_b(pk, *args, **kwargs):
         parent_obj['suggest']['input'].append(place.title)
         
       #index it
+      #print('parent_obj',parent_obj)
       try:
         res = es.index(index=idx, doc_type='place', id=str(whg_id), body=json.dumps(parent_obj))
         count_seeds +=1
@@ -978,7 +979,7 @@ def align_whg_b(pk, *args, **kwargs):
       [count_kids,count_errors] = [0,0]
       total_hits += result_obj['hit_count']
       
-      # TODO: can't be a child of more than one index record; implications?
+      # TODO: child doc can have only one parent; implications?
       for hit in result_obj['hits']:
         # title isn't always a variant but needs to be added to _source.suggest
         if place.title not in qobj['variants']:
@@ -1012,6 +1013,7 @@ def align_whg_b(pk, *args, **kwargs):
             #  add variants to suggest.input[] (also to searchy[], a temp hack for slow autocomplete)
             q_update = { "script": {
                 "source": "ctx._source.suggest.input.addAll(params.names); ctx._source.children.add(params.id); ctx._source.searchy.add(params.names)",
+                #"source": "ctx._source.suggest.input.addAll(params.names); ctx._source.children.add(params.id)",
                 "lang": "painless",
                 "params":{"names": qobj['variants'], "id": str(place.id)}
               },
@@ -1072,9 +1074,11 @@ def align_whg_b(pk, *args, **kwargs):
   print("hit_parade['summary']",hit_parade['summary'])
   return hit_parade['summary']
 
+
+# set aside to test new one
 # accessioning and/or queueing hits to whg
-@task(name="align_whg")
-def align_whg(pk, *args, **kwargs):
+@task(name="align_whg_bak")
+def align_whg_bak(pk, *args, **kwargs):
   ds = get_object_or_404(Dataset, id=pk)
   # set index
   idx='whg02' # 'whg'

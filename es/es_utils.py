@@ -1,4 +1,4 @@
-# es_utils.py 7 Feb 2019; rev 5 Mar 2019; 02 Oct 2019
+# es_utils.py 7 Feb 2019; rev 5 Mar 2019; 02 Oct 2019; 21 Feb 2020 (create whg_test)
 # misc supporting eleasticsearch tasks (es.py)
 
 def confirm(prompt=None, resp=False):
@@ -25,14 +25,16 @@ def confirm(prompt=None, resp=False):
         if ans == 'n' or ans == 'N':
             return False
         
-idx='whg02'
+idx='whg_test'
 def esInit(idx):
-    import os, codecs, time, datetime
+    import os, codecs
     os.chdir('/Users/karlg/Documents/Repos/_whgazetteer')
 
     from elasticsearch import Elasticsearch
     es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
-    mappings = codecs.open('es/mappings_whg02.json', 'r', 'utf8').read()
+    #mappings = codecs.open('es/mappings_whg02.json', 'r', 'utf8').read()
+    # added searchy, place_id, whg_id; were being auto-added by indexing
+    mappings = codecs.open('es/mappings_whg02a.json', 'r', 'utf8').read()
 
     # zap existing if exists, re-create
     if confirm(prompt='Zap index '+idx+'?', resp=False):
@@ -49,17 +51,6 @@ def esInit(idx):
         print('oh, okay')
         
         
-#def maxID(es,idx):
-    #q={"query": {"bool": {"must" : {"match_all" : {}} }},
-       #"sort": [{"whg_id": {"order": "desc"}}],
-       #"size": 1  
-       #}
-    #res = es.search(index=idx, body=q)
-    #if len(res['hits']['hits']) > 0:
-        #maxy = int(res['hits']['hits'][0]['_id'])
-    #else:
-        #maxy = 10000000
-    #return maxy
 
 def uriMaker(place):
     from django.shortcuts import get_object_or_404
@@ -112,7 +103,8 @@ def makeDoc(place,parentid):
         "timespans": [],
         "descriptions": parsePlace(place,'descriptions'),
         "depictions": [], 
-        "relations": []
+        "relations": [],
+        "searchy": []
     }
     return cc_obj
 
