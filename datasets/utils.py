@@ -64,7 +64,7 @@ def validate_lpf(tempfn,format):
   newfn = tempfn+'.jsonld'
   os.rename(tempfn,newfn)
   infile = codecs.open(tempfn, 'r', 'utf8')
-  fout = codecs.open('validate-lpf-result.txt','w','utf8')
+  #fout = codecs.open('validate-lpf-result.txt','w','utf8')
   result = {"format":"lpf","errors":[]}
   [countrows,count_ok] = [0,0]
   
@@ -89,8 +89,8 @@ def validate_lpf(tempfn,format):
         print('some kinda error',err)
         result["errors"].append({"feat":countrows,'error':err[1].args[0]})
 
-  fout.write(json.dumps(result["errors"]))
-  fout.close()
+  #fout.write(json.dumps(result["errors"]))
+  #fout.close()
   result['count'] = countrows
   print('validate_lpf() result',result)
   return result
