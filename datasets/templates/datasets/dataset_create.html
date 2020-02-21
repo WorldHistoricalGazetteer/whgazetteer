@@ -15,7 +15,7 @@
       {% if form.errors %}
         {% for field in form %}
             {% for error in field.errors %}
-                <div class="alert alert-danger">
+                <div class="alert alert-danger my-0">
                     <strong>{{ error|escape }}</strong>
                 </div>
             {% endfor %}
@@ -51,6 +51,10 @@
               <td><b>URI base</b></td>
               <td>{{ form.uri_base }}</td>
             </tr>
+            <tr>
+              <td><b>Public?</b></td>
+              <td>{{ form.public }}</td>
+            </tr>
           </table>
           <hr/><p class="my-0"><i>initial file</i></p>
           <table id="file_metadata" class="ds-table table-striped">
@@ -65,7 +69,9 @@
             <!--</tr>-->
             <tr>
               <td><b>Format</b></td>
-              <td>{{ form.format }}<a href="" title="{help:formats}" rel="tooltip"> {% fontawesome_icon 'question-circle' color='#336699' %}</a></td>
+              <td>{{ form.format }}
+              <!--<a href="" title="{help:formats}" rel="tooltip"> { fontawesome_icon 'question-circle' color='#336699' %}</a>-->
+              </td>
             </tr>
             <tr>
               <td><b>License</b></td>
@@ -112,7 +118,7 @@
                 </div>
               {% endif %}
           {% else %}
-            <div><p class="mb-0"><b>Sample data</b></p><p>During this beta phase, some sample datasets are available from our GitHub repository. Download <a href="https://github.com/kgeographer/whgazetteer/raw/master/example_data/beta_data.zip" download>this zip file</a>, check its README.txt file, and you can experiment with loading them from your local computer and reconciling them against TGN and/or Wikidata
+            <div><p class="mb-0"><b>Sample data</b></p><p>During this beta phase, some sample datasets are available from our GitHub repository. Download and open <a href="https://github.com/kgeographer/whgazetteer/raw/master/example_data/beta_data.zip" download>this zip file</a>, check its README.txt file, and you can experiment with loading them from your local computer and reconciling them against TGN and/or Wikidata
             <p class="mb-0"><b>Data formats</b></p>
             <p>For place data there are two accepted formats, Linked Places (expressive, JSON-LD and GeoJSON compatible), and the simpler LP-TSV, a tab-delimited format for relatively simpler records. <a href="/tutorials/choosing">More information on making the choice</a>. <br/><span class="text-danger"><b>NOTE</b>: Encoding for all uploaded files must be unicode</span></p>
             <p><i>Trace data uploads are a work-in-progress at this time.</i></p>

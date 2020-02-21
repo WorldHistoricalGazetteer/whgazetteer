@@ -8,7 +8,7 @@ from django.dispatch import receiver
 from django.urls import reverse
 from django.shortcuts import get_object_or_404
 
-from main.choices import AUTHORITIES, FORMATS, DATATYPES, STATUS, TEAMROLES
+from main.choices import AUTHORITIES, FORMATS, DATATYPES, STATUS, TEAMROLES, PASSES
 from places.models import Place
 
 def user_directory_path(instance, filename):
@@ -22,9 +22,10 @@ class Dataset(models.Model):
     title = models.CharField(max_length=255, null=False)
     description = models.CharField(max_length=2044, null=False)
     core = models.BooleanField(default=False)    
+    public = models.BooleanField(default=False)    
     ds_status = models.CharField(max_length=12, null=True, blank=True, choices=STATUS)
     create_date = models.DateTimeField(null=True, auto_now_add=True)
-    uri_base = models.URLField(blank=True, null=True, default="http://whgazetteer.org/api/places/")
+    uri_base = models.URLField(blank=True, null=True)
 
     # TODO: these are updated in both Dataset & DatasetFile  (??)
     datatype = models.CharField(max_length=12, null=False,choices=DATATYPES,
@@ -34,19 +35,7 @@ class Dataset(models.Model):
     # these are back-filled
     numlinked = models.IntegerField(null=True, blank=True)
     total_links = models.IntegerField(null=True, blank=True)
-    
-    # fields below are zombies; supplanted by DatasetFile model
-    #file = models.FileField(upload_to=user_directory_path)
-    #format = models.CharField(max_length=12, null=False,choices=FORMATS,
-        #default='lpf')
-    #delimiter = models.CharField(max_length=5, blank=True, null=True)
-    #accepted_date = models.DateTimeField(null=True, blank=True)
-    #header = ArrayField(models.CharField(max_length=30), null=True, blank=True)
-    
-    # abandon
-    #mapbox_id = models.CharField(max_length=200, null=True, blank=True)
-
-        
+            
     def __str__(self):
         return self.label
         # return '%d: %s' % (self.id, self.label)
@@ -69,12 +58,7 @@ class Dataset(models.Model):
             r = du.role
             collabs.append({'id':du.user_id_id,'user':u.username,'role':r})
         return collabs
-    
-    #@property
-    #def dsusers(self):
-        #uids = DatasetUser.objects.filter(dataset_id_id = self.id).values_list('user_id_id')
-        #return User.objects.filter(id__in=uids)
-    
+        
     @property
     def placeids(self):
         return Place.objects.filter(dataset=self.label).values_list('id', flat=True)
@@ -97,9 +81,6 @@ class DatasetFile(models.Model):
     upload_date = models.DateTimeField(null=True, auto_now_add=True)
     header = ArrayField(models.CharField(max_length=30), null=True, blank=True)
     numrows = models.IntegerField(null=True, blank=True)
-
-    #accepted_date = models.DateTimeField(null=True, blank=True)    
-    #uri_base = models.URLField(blank=True, null=True, default="http://whgazetteer.org/api/places/")
     
     #def __str__(self):
         #return 'file_'+str(self.rev)
@@ -137,7 +118,7 @@ class Hit(models.Model):
     task_id = models.CharField(max_length=50)
     authority = models.CharField(max_length=12, choices=AUTHORITIES )
     dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE)
-    query_pass = models.CharField(max_length=12, choices=AUTHORITIES )
+    query_pass = models.CharField(max_length=12, choices=PASSES )
     src_id = models.CharField(max_length=2044)
     score = models.FloatField()
     reviewed = models.BooleanField(default=False)

@@ -57,34 +57,6 @@ class AreaCreateView(CreateView):
         return context
 
 # combines detail and update
-class AreaDetailView(UpdateView):
-    form_class = AreaDetailModelForm
-    template_name = 'areas/area_detail.html'
-
-    def get_success_url(self):
-        id_ = self.kwargs.get("id")
-        return '/areas/'+str(id_)+'/detail'
-
-    def form_valid(self, form):
-        context={}
-        if form.is_valid():
-            print('form is valid')
-            print('cleaned_data: before ->', form.cleaned_data)
-        else:
-            print('form not valid', form.errors)
-            context['errors'] = form.errors
-        return super().form_valid(form)
-
-    def get_object(self):
-        print('kwargs:',self.kwargs)
-        id_ = self.kwargs.get("id")
-        return get_object_or_404(Area, id=id_)
-
-    def get_context_data(self, *args, **kwargs):
-        context = super(AreaDetailView, self).get_context_data(*args, **kwargs)
-        id_ = self.kwargs.get("id")
-
-        return context
 
 class AreaDeleteView(DeleteView):
     template_name = 'areas/area_delete.html'
@@ -119,3 +91,34 @@ class AreaUpdateView(UpdateView):
         context = super(AreaUpdateView, self).get_context_data(*args, **kwargs)
         context['action'] = 'update'
         return context
+
+#class AreaDetailView(UpdateView):
+    #form_class = AreaDetailModelForm
+    #template_name = 'areas/area_detail.html'
+
+    #def get_success_url(self):
+        #id_ = self.kwargs.get("id")
+        #return '/areas/'+str(id_)+'/detail'
+
+    #def form_valid(self, form):
+        #context={}
+        #if form.is_valid():
+            #print('form is valid')
+            #print('cleaned_data: before ->', form.cleaned_data)
+        #else:
+            #print('form not valid', form.errors)
+            #context['errors'] = form.errors
+        #return super().form_valid(form)
+
+    #def get_object(self):
+        #print('kwargs:',self.kwargs)
+        #id_ = self.kwargs.get("id")
+        #return get_object_or_404(Area, id=id_)
+
+    #def get_context_data(self, *args, **kwargs):
+        #context = super(AreaDetailView, self).get_context_data(*args, **kwargs)
+        #id_ = self.kwargs.get("id")
+
+        #return context
+
+

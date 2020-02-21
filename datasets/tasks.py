@@ -54,11 +54,11 @@ def reverse(coords):
   fubar = [coords[1],coords[0]]
   return fubar
 
-
 def parseWhen(when):
   print('when to parse',when)
   timespan = 'parse me now'
   return timespan
+
 def maxID(es,idx):
   q={"query": {"bool": {"must" : {"match_all" : {}} }},
        "sort": [{"whg_id": {"order": "desc"}}],
@@ -80,7 +80,7 @@ def parseDateTime(string):
 
 def ccDecode(codes):
   countries=[]
-  #print('codes in ccDecode',codes)
+  print('codes in ccDecode',codes)
   for c in codes:
     countries.append(ccodes[0][c]['gnlabel'])
   return countries
@@ -100,7 +100,7 @@ def normalize(h,auth):
                 for t in h['types']] if len(h['types']) > 0 else []
     # TODO: rewrite ccDecode to handle all conditions coming from index
     # ccodes might be [] or [''] or ['ZZ', ...]
-    rec.ccodes = ccDecode(h['ccodes']) if ('ccodes' in h.keys() and (len(h['ccodes']) > 0 and h['ccodes'] !='')) else []
+    rec.ccodes = ccDecode(h['ccodes']) if ('ccodes' in h.keys() and (len(h['ccodes']) > 0 and h['ccodes'][0] !='')) else []
     rec.parents = ['partOf: '+r.label+' ('+parseWhen(r['when']['timespans'])+')' for r in h['relations']] \
                 if 'relations' in h.keys() and len(h['relations']) > 0 else []
     rec.descriptions = h['descriptions'] if len(h['descriptions']) > 0 else []
@@ -265,7 +265,8 @@ def align_wd(pk, *args, **kwargs):
   
   #for place in ds.places.filter(flag=True):
   for place in ds.places.all().order_by('id'): #.filter(id__lt=224265):
-    #place=get_object_or_404(Place, id=128648) # Kampala
+    #place=get_object_or_404(Place, id=6293255) # Borneo
+    #place=get_object_or_404(Place, id=226821) # Kaudos
     count +=1
     place_id = place.id
     src_id = place.src_id
@@ -283,7 +284,8 @@ def align_wd(pk, *args, **kwargs):
       try:
         id = t.jsonb['identifier']
         if id !=None:
-          types.append(int(id[4:]) if id.startswith('aat:') else '')      
+          #types.append(int(id[4:]) if id.startswith('aat:') else '')      
+          types.append(id[4:] if id.startswith('aat:') else '')      
       except:
         print('int error in types',t.jsonb['identifier'])
     qobj['placetypes'] = types
@@ -307,10 +309,14 @@ def align_wd(pk, *args, **kwargs):
       # make everything a simple polygon hull for spatial filter
       qobj['geom'] = hully(g_list)
 
+    print('qobj before modifications for Wikidata',qobj)
     # wikidata sparql needs this form for lists
     variants = ' '.join(['"'+n+'"' for n in qobj['variants']])
-    countries = ', '.join([c for c in getQ(qobj['countries'],'ccodes')])
-    placetype = getQ([qobj['placetypes'][0]],'types')[0]
+    # countries, placetypes if they're there
+    countries = ', '.join([c for c in getQ(qobj['countries'],'ccodes')]) if len(qobj['countries'])>0 else ''
+    #placetype = getQ(qobj['placetypes'][0],'types')[0] if len(qobj['placetypes'])>0 else ''
+    placetype = getQ(qobj['placetypes'],'types')
+    print('variants,countries,placetype',variants,countries,placetype)
     
     # TODO admin parent P131, retrieve wiki article name, country P17, ??
     q='''SELECT ?place ?placeLabel ?countryLabel ?inception ?tgnid ?gnid ?viafid ?locid
@@ -362,7 +368,7 @@ def align_wd(pk, *args, **kwargs):
         ?place wdt:P625 ?location .
       '''
     qtype = q+'''
-      ?placeType (a | wdt:P279*) %s. # Sub-type of first type
+      ?placeType (a | wdt:P279*) %s.
       ?place wdt:P31 ?placeType.    
     '''%(placetype)
     
@@ -702,8 +708,6 @@ def align_tgn(pk, *args, **kwargs):
     }
   print("summary returned",hit_parade['summary'])
   return hit_parade['summary']
-
-
 # 
 def es_lookup_whg(qobj, *args, **kwargs):
   global whg_id
@@ -803,15 +807,13 @@ def es_lookup_whg(qobj, *args, **kwargs):
   
   # grab copies
   q1 = qlinks
-  q2 = qbase #qsugg
+  q2 = qbase
   q3 = qbare
-  count_seeds=0
   
-  # /\/\/\/\/\/
+  # /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
   # pass1: must[links]; should[names->variants]
-  # /\/\/\/\/\/
+  # /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
   try:
-    #print("q1:", q1)
     res1 = es.search(index=idx, body = q1)
     hits1 = res1['hits']['hits']
   except:
@@ -822,14 +824,15 @@ def es_lookup_whg(qobj, *args, **kwargs):
       hit['pass'] = 'pass1'
       result_obj['hits'].append(hit)
   elif len(hits1) == 0:
+    # this bit not relevant any more
     # no shared links; for black, index place as a parent immediately
-    # for any other dataset, continue to passes 2 & 3
-    if ds == 'black':
-      result_obj['hit_count'] = hit_count
-      return result_obj
-  # /\/\/\/\/\/
+    ## for any other dataset, continue to passes 2 & 3
+    #if ds == 'black':
+      #result_obj['hit_count'] = hit_count
+      #return result_obj
+  # /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
   # pass2: must[name, type]; should[parent]; filter[geom, bounds]
-  # /\/\/\/\/\/
+  # /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
     try:
       #print("q2:", q2)
       res2 = es.search(index=idx, body = q2)
@@ -842,9 +845,9 @@ def es_lookup_whg(qobj, *args, **kwargs):
         hit['pass'] = 'pass2'
         result_obj['hits'].append(hit)
     elif len(hits2) == 0:
-      # /\/\/\/\/\/
+      # /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
       # pass3: must[name]; should[parent]; filter[bounds]
-      # /\/\/\/\/\/
+      # /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
       try:
         #print("q3:", q3)
         res3 = es.search(index=idx, body = q3)
@@ -863,7 +866,213 @@ def es_lookup_whg(qobj, *args, **kwargs):
   return result_obj
 
 
-# accessioning and/or queueing hits to whg, POST-Black
+# RETAKE: accessioning and/or queueing hits to whg
+@task(name="align_whg_b")
+def align_whg_b(pk, *args, **kwargs):
+  ds = get_object_or_404(Dataset, id=pk)
+  # set index
+  idx='whg_test'
+  
+  # get last identifier (used for whg_id & _id)
+  whg_id = maxID(es,idx)
+    
+  #dummy for testing
+  #bounds = {'type': ['userarea'], 'id': ['0']}
+  bounds = kwargs['bounds']
+
+  # TODO: system for region creation
+  hit_parade = {"summary": {}, "hits": []}
+  [count,count_hit,count_nohit,total_hits,count_p1,count_p2,count_p3] = [0,0,0,0,0,0,0]
+  [count_errors,count_seeds,count_kids,count_fail] = [0,0,0,0]
+
+  start = datetime.datetime.now()
+
+  """
+  build query object 'qobj'
+  then result_obj = es_lookup_whg(qobj)
+  """
+  qs = ds.places.all()
+  for place in qs:
+    # place=get_object_or_404(Place,id=229515)
+    count +=1
+    qobj = {"place_id":place.id, "src_id":place.src_id, "title":place.title}
+    links=[]; ccodes=[]; types=[]; variants=[]; parents=[]; geoms=[]; 
+
+    # links
+    for l in place.links.all():
+      links.append(l.jsonb['identifier'])
+    qobj['links'] = links
+
+    # ccodes (2-letter iso codes)
+    for c in place.ccodes:
+      ccodes.append(c)
+    qobj['countries'] = list(set(place.ccodes))
+
+    # types (Getty AAT identifiers)
+    # accounts for 'null' in 97 black records
+    for t in place.types.all():
+      if t.jsonb['identifier'] != None:
+        types.append(t.jsonb['identifier'])
+      else:
+        # no type? use inhabited place, cultural group, site
+        types.extend(['aat:300008347','aat:300387171','aat:300000809'])
+    qobj['placetypes'] = types
+
+    # names
+    for name in place.names.all():
+      variants.append(name.toponym)
+    qobj['variants'] = variants
+
+    # parents
+    for rel in place.related.all():
+      if rel.jsonb['relationType'] == 'gvp:broaderPartitive':
+        parents.append(rel.jsonb['label'])
+    qobj['parents'] = parents
+
+    # geoms
+    if len(place.geoms.all()) > 0:
+      # any geoms at all...
+      g_list =[g.jsonb for g in place.geoms.all()]
+      # make everything a simple polygon hull for spatial filter purposes
+      qobj['geom'] = hully(g_list)
+
+    # run es_lookup_whg(qobj): 3 query passes
+    result_obj = es_lookup_whg(qobj, index=idx, bounds=bounds, dataset=ds.label, place=place)
+
+    # PARSE RESULTS
+    if result_obj['hit_count'] == 0:
+      # no hits on any pass, create parent record now
+      count_nohit += 1
+      # increment whg_id (max computed earlier)
+      whg_id += 1
+      print('new parent, whg_id:',whg_id)
+      
+      # es_utils.makeDoc() -> new ES format object
+      parent_obj = makeDoc(place,'none')
+      
+      # add more elements...
+      # make it a parent
+      parent_obj['relation']={"name":"parent"}
+      # give it the new, incremented whg_id
+      parent_obj['whg_id']=whg_id
+      # add its own names to the suggest field
+      for n in parent_obj['names']:
+        parent_obj['suggest']['input'].append(n['toponym'])
+      # add its title
+      if place.title not in parent_obj['suggest']['input']:
+        parent_obj['suggest']['input'].append(place.title)
+        
+      #index it
+      try:
+        res = es.index(index=idx, doc_type='place', id=str(whg_id), body=json.dumps(parent_obj))
+        count_seeds +=1
+        print('created parent:',result_obj['place_id'],result_obj['title'])
+      except:
+        print('failed indexing '+str(place.id)+' as parent')
+        pass
+        #print(sys.exc_info[0])
+        
+    elif result_obj['hit_count'] > 0:
+      # got some hits
+      count_hit +=1
+      [count_kids,count_errors] = [0,0]
+      total_hits += result_obj['hit_count']
+      
+      # TODO: can't be a child of more than one index record; implications?
+      for hit in result_obj['hits']:
+        # title isn't always a variant but needs to be added to _source.suggest
+        if place.title not in qobj['variants']:
+          qobj['variants'].append(place.title)
+        # hits are tagged for pass
+        # pass1: close/exact link in common; index w/o review
+        if hit['pass'] == 'pass1':
+          # prepare newchild obj 
+          count_p1+=1  
+          newchild = makeDoc(place, 'none')
+          # parent will be the hit or the hit's parent
+          if hit['_source']['relation']['name'] == 'child':
+            # it will become the hit's sibling
+            parent_whgid = hit['_source']['relation']['parent']
+          else:
+            # it will become the hit's child
+            parent_whgid = hit['_id'] 
+          # in either case, it's a child; assign parent _id
+          newchild['relation']={"name":"child","parent":parent_whgid}
+          
+          # index the record and update its parent
+          try:
+            # first index the place (newchild)
+            res = es.index(index=idx,doc_type='place',id=place.id,
+                           routing=1,body=json.dumps(newchild))
+            count_kids +=1                
+            print('added '+str(place.id) + ' as child of '+ parent_whgid + ' (_id)')
+            
+            # then update its parent: 
+            #  add new child place_id to _source.children[], 
+            #  add variants to suggest.input[] (also to searchy[], a temp hack for slow autocomplete)
+            q_update = { "script": {
+                "source": "ctx._source.suggest.input.addAll(params.names); ctx._source.children.add(params.id); ctx._source.searchy.add(params.names)",
+                "lang": "painless",
+                "params":{"names": qobj['variants'], "id": str(place.id)}
+              },
+              "query": {"match":{"_id": parent_whgid}}}
+            es.update_by_query(index=idx, doc_type='place', body=q_update, conflicts='proceed')            
+          except:
+            print('failed indexing '+str(place.id)+' as child of '+str(parent_whgid))
+            count_fail += 1
+            pass
+            #sys.exit(sys.exc_info())
+
+        elif hit['pass'] in ['pass2','pass3']:
+          # increment counters & write a hit record for review
+          # TODO: refactor
+          if hit['pass'] == 'pass2': 
+            count_p2+=1
+          if hit['pass'] == 'pass3': 
+            count_p3+=1          
+          hit_parade["hits"].append(hit)
+          loc = hit['_source']['geoms'] if 'geoms' in hit['_source'].keys() else None
+          # creates hit record for review process
+          try:
+            new = Hit(
+              authority = 'whg',
+              authrecord_id = hit['_id'],
+              dataset = ds,
+              place_id = get_object_or_404(Place, id=qobj['place_id']),
+              task_id = align_whg.request.id,
+              query_pass = hit['pass'],
+              # consistent json for review display
+              json = normalize(hit['_source'],'whg'),
+              src_id = qobj['src_id'],
+              score = hit['_score'],
+              geom = loc,
+              reviewed = False,
+            )
+            new.save()
+          except:
+            count_errors +=1
+            print("hit _source, error:",hit, sys.exc_info())
+          
+  end = datetime.datetime.now()
+  # ds.status = 'recon_whg'
+  hit_parade['summary'] = {
+    'count':count,
+    'got_hits':count_hit,
+    'total': total_hits, 
+    'seeds': count_seeds,
+    'kids': count_kids,
+    'pass1': count_p1, 
+    'pass2': count_p2, 
+    'pass3': count_p3,
+    'no_hits': {'count': count_nohit },
+    'elapsed': elapsed(end-start),
+    'skipped': count_fail
+  }
+  #if ds.label == 'black': errors_black.close()
+  print("hit_parade['summary']",hit_parade['summary'])
+  return hit_parade['summary']
+
+# accessioning and/or queueing hits to whg
 @task(name="align_whg")
 def align_whg(pk, *args, **kwargs):
   ds = get_object_or_404(Dataset, id=pk)
@@ -1060,4 +1269,3 @@ def align_whg(pk, *args, **kwargs):
   #if ds.label == 'black': errors_black.close()
   print("hit_parade['summary']",hit_parade['summary'])
   return hit_parade['summary']
-

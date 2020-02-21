@@ -37,7 +37,7 @@ html, body {
 /**
   general use
 **/
-
+.alert {padding: 0 1.25rem !important;}
 label {vertical-align:top;}
 .border-red { border:2px dotted red;}
 .strong { font-weight: bold;}

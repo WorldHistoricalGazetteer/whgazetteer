@@ -219,13 +219,15 @@ def bestParent(qobj, flag=False):
 # wikidata Qs from ccodes
 #TODO: consolidate hashes
 def getQ(arr,what):
+  print('arr,what',arr, what)
   qids=[]
   if what == 'ccodes':
     from datasets.static.hashes.parents import ccodes
     for c in arr:
       qids.append('wd:'+ccodes[0][c]['wdid'])
   elif what == 'types':
-    from datasets.static.hashes.aat_q import qnums
+    if len(arr) == 0:
+      qids.append('wd:Q486972')
     for t in arr:
       if t in qnums:
         for q in qnums[t]:

@@ -604,7 +604,6 @@ def ds_update(request):
     filename_new = compare_data['filename_new']
     dsfobj_cur = DatasetFile.objects.filter(dataset_id_id=dsid).order_by('-upload_date')[0]
     rev_cur = dsfobj_cur.rev
-    rows_del = compare_result['rows_del']
     
     # rename file if already exists in user area
     file_exists = Path('media/'+filename_new).exists()
@@ -638,16 +637,18 @@ def ds_update(request):
       print('reopened new file, # lines:',len(bdf))
       ids_a = adf['id'].tolist()
       ids_b = bdf['id'].tolist()      
-      # 
-      replace_these = set.intersection(set(ids_b),set(ids_a))
-      counter=0
+      delete_srcids = compare_result['rows_del']      
+      replace_srcids = set.intersection(set(ids_b),set(ids_a))
       
       # CURRENT
       # current places
       places = Place.objects.filter(dataset=ds.label)
+      # Place.id lists for ES searches
+      rows_replace = list(places.filter(src_id__in=replace_srcids).values_list('id',flat=True))
+      rows_delete = list(places.filter(src_id__in=delete_srcids).values_list('id',flat=True))
       
       # delete places with ids missing in new data (CASCADE includes links & geoms)
-      places.filter(src_id__in=rows_del).delete()
+      places.filter(id__in=rows_delete).delete()
       
       # delete related instances for the rest (except links and geoms)
       PlaceName.objects.filter(place_id_id__in=places).delete()
@@ -703,8 +704,10 @@ def ds_update(request):
           pobj = newpl
           #print('new place, related:', newpl, rdrels)
         
-        # pobj is either an old & updated place or entirely new
-        add_rels_tsv(pobj,rd)
+        # create related records (place_name, etc)
+        # pobj is either a current (now updated) place or entirely new
+        # rd is row dict
+        add_rels_tsv(pobj, rd)
     
       result = {"status": "updated", "#updated":count_updated , "#new":count_new
                 ,"newfile": filepath, "format":file_format
@@ -1213,7 +1216,11 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
   success_message = 'dataset created'
 
   def form_invalid(self,form):
-    print(form.errors.as_data())
+    print('form invalid...',form.errors.as_data())
+    context = {'form': form}
+    #return self.render_to_response(self.get_context_data(form=form,context=context))
+    return self.render_to_response(context=context)
+    #return redirect('datasets/dataset_create.html', context)    
       
   def form_valid(self, form):
     data=form.cleaned_data
@@ -1267,7 +1274,9 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
       try:
         dsobj.save()
       except:
-        sys.exit(sys.exc_info())
+        args['form'] = form
+        return render(request,'datasets/dataset_create.html', args)
+        #sys.exit(sys.exc_info())
 
       # build path, and rename file if already exists in user area
       file_exists = Path('media/user_'+user.username+'/'+filename).exists()

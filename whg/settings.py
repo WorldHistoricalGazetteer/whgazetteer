@@ -150,6 +150,8 @@ LEAFLET_CONFIG = {
 #EMAIL_HOST_USER = ''
 #EMAIL_HOST_PASSWORD = ''
 
+LOGIN_URL = '/accounts/login/'
+LOGIN_REDIRECT_URL='/accounts/login/'
 
 # Database
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases

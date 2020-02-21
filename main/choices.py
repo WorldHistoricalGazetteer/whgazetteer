@@ -8,7 +8,7 @@ COMMENT_TAGS = [
 ]
 
 FORMATS = [
-    ('lpf', 'Linked Places v1.0'),
+    ('lpf', 'Linked Places v1.1'),
     ('delimited', 'LP-TSV')
 ]
 
@@ -87,4 +87,10 @@ TEAMROLES = [
     ('creator', 'Creator'),
     ('owner', 'Owner'),
     ('member', 'Team Member'),
+]
+
+PASSES = [
+    ('pass1', 'Query pass 1'),
+    ('pass2', 'Query pass 2'),
+    ('pass3', 'Query pass 3'),
 ]

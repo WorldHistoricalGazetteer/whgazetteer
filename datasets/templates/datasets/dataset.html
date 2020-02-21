@@ -86,7 +86,7 @@
         </table>
         <input class="btn btn-primary btn-sm hidden btn-ds" type="submit" value="Save" />
         <p> <i>Current data file</i>
-          {% if current_file.format == 'delimited' %}
+          {% if ds.owner.id == user.id or user.is_superuser and current_file.format == 'delimited' %}
           <span class="update-msg text-danger italic strong hidden">:: updating</span>
           <span class="float-right mr-2">
             <a href="#" id="a_update_modal" data-dsid = {{ ds.id }} data-toggle="modal" data-target="#updateModal">update</a>
@@ -584,8 +584,6 @@ js for Summary, Reconciliation
     formData.append('file', $('#newfile')[0].files[0]);
     formData.append('dsid', '{{ ds.id }}');
     formData.append('format', '{{ current_file.format }}');
-    <!--formData.append('preserve_links', $('#preserve_links')[0].checked);-->
-    <!--formData.append('preserve_geoms', $('#preserve_geoms')[0].checked);-->
     formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
     
     <!--console.log(fileName,fileSize)-->
@@ -665,23 +663,6 @@ js for Summary, Reconciliation
       $('.nav-tabs a[href="#reconciliation"]').tab('show');
       location.href=taburl
     }
-    // TODO: just a stub; need to get file for comparison first
-    <!--$("#update_analyze").click(function(){-->
-      <!--startUpdaterSpinner()-->
-      <!--$.get("/search/analyzethis", {ds_id: '{{ds.id}}'}, function(data){-->
-        <!--html = 'ran DatasetFileUpdateView() <br/>'-->
-        <!--html+='<b>Current file</b>: '+data['last_filename']-->
-        <!--$("#update_analyze").addClass('hidden')-->
-        <!--$("#results_text").html(html)-->
-        <!--console.log(data)-->
-      <!--})-->
-    <!--})-->
-    <!--$("#update_start").click(function(){-->
-      <!--console.log('update initiated')-->
-    <!--})-->
-    <!--$("input[placeholder]").each(function () {-->
-        <!--$(this).attr('size', $(this).attr('placeholder').length);-->
-    <!--});-->
     // Browse onload
     window.spinner = new Spin.Spinner().spin();
     $("#map").append(spinner.el);
