@@ -734,9 +734,6 @@ def es_lookup_whg(qobj, *args, **kwargs):
        ,"must_not": [
           {"terms": {"links.type": ['related'] }}
         ]
-        #,"should": [
-          #{"terms": {"names.toponym": qobj['variants']}}
-        #]
      }
   }}
   
@@ -745,7 +742,6 @@ def es_lookup_whg(qobj, *args, **kwargs):
     "bool": {
       "must": [
         {"terms": {"names.toponym": qobj['variants']}},
-        #{"match": {"names.toponym": qobj['title']}},
         {"terms": {"types.identifier": qobj['placetypes']}}
         ],
       "filter": [get_bounds_filter(bounds,'whg')] if bounds['id'] != ['0'] else []
@@ -958,9 +954,12 @@ def align_whg(pk, *args, **kwargs):
       # add its own names to the suggest field
       for n in parent_obj['names']:
         parent_obj['suggest']['input'].append(n['toponym'])
+        # temp hack: using searchy field in place of suggest.input for autocomplete
+        parent_obj['searchy'].append(n['toponym'])
       # add its title
       if place.title not in parent_obj['suggest']['input']:
         parent_obj['suggest']['input'].append(place.title)
+        parent_obj['searchy'].append(place.title)
         
       #index it
       #print('parent_obj',parent_obj)
