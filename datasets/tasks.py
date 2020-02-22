@@ -181,6 +181,7 @@ def get_bounds_filter(bounds,idx):
   areatype = bounds['type'][0]
   area = Area.objects.get(id = id)
   # TODO: area always a hull polygon now; test MultiPolygon
+  # NOTE: 'whg' is generic, references current index for WHG, vs. 'tgn' for example
   geofield = "geoms.location" if idx == 'whg' else "location"
   filter = { "geo_shape": {
     geofield: {
@@ -867,7 +868,7 @@ def es_lookup_whg(qobj, *args, **kwargs):
 def align_whg(pk, *args, **kwargs):
   ds = get_object_or_404(Dataset, id=pk)
   # set index
-  idx='whg_test'
+  idx='whg_'
   
   # get last identifier (used for whg_id & _id)
   whg_id = maxID(es,idx)

@@ -346,7 +346,7 @@
           <div class="form-check text-danger">
             <label class="form-check-label" for="auth1">
               <input type="radio" class="form-check-input" id="auth1"
-                name="recon" value="whg">WHG Index <b>(whg_test!!!)</b>
+                name="recon" value="whg">WHG Index <!-- <b>(whg_test!!!)</b>-->
             </label>
           </div>
           <hr/>
@@ -569,7 +569,7 @@ js for Summary, Reconciliation
       ' <input type="checkbox" id="preserve_geoms" checked></li>'
     }
     if (data['count_links']>0){
-      html += '<li><b>'+data['count_links']+'</b> link records were previously added via reconciliation...keep?'+
+      html += '<li class="text-danger"><b>'+data['count_links']+'</b> link records were previously added via reconciliation...keep?'+
       ' <input type="checkbox" id="preserve_links" checked></li>'
     }
     html += '</ul>'

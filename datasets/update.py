@@ -12,27 +12,63 @@ from es.es_utils import makeDoc
 es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 idx='whg02'
 
-dsid=583 # 'diamonds' current file: user_whgadmin/diamonds135_rev3_g6cvm1l.tsv
+dsid=585 # 'diamonds' current file: user_whgadmin/diamonds135_rev3_g6cvm1l.tsv
+# start: diamonds135_rev3; proposed update: diamonds135_rev21-125
 ds = get_object_or_404(Dataset,pk=dsid)
+[keepg,keepl]=[True,True]
 oldids = list(Place.objects.filter(dataset=ds.label).values_list('src_id',flat=True))
-curfile = 'user_whgadmin/diamonds135_rev3_g6cvm1l.tsv'
-newfile = '/var/folders/f4/x09rdl7n3lg7r7gwt1n3wjsr0000gn/T/tmplstl8mdd.tsv'
+curfile = 'user_whgadmin/diamonds135_v91yay_.tsv'
+tempfile = '/var/folders/f4/x09rdl7n3lg7r7gwt1n3wjsr0000gn/T/tmp8eexkidy.tsv'
 adf = pd.read_csv('media/'+curfile, delimiter='\t',dtype={'id':'str','ccodes':'str'})
-bdf = pd.read_csv(newfile, delimiter='\t',dtype={'id':'str','ccodes':'str'})
-ids_a = adf['id'].tolist()
-ids_b = bdf['id'].tolist()      
+bdf = pd.read_csv(tempfile, delimiter='\t',dtype={'id':'str','ccodes':'str'})
+ids_a = adf['id'].tolist(); print(len(ids_a)) #135
+ids_b = bdf['id'].tolist(); print(len(ids_b)) #125
 # 
 delete_srcids = [str(x) for x in (set(ids_a)-set(ids_b))]
 replace_srcids = set.intersection(set(ids_b),set(ids_a))
 places = Place.objects.filter(dataset=ds.label)
-rows_delete = list(places.filter(src_id__in=delete_srcids).values_list('id',flat=True))
-rows_replace = list(places.filter(src_id__in=replace_srcids).values_list('id',flat=True))
+rows_delete = list(places.filter(src_id__in=delete_srcids).values_list('id',flat=True)); 
+rows_replace = list(places.filter(src_id__in=replace_srcids).values_list('id',flat=True));
+print('del',len(rows_delete),'replace',len(rows_replace) ) #9
 
 qdel = {}
 qrepl = {}
 
-# for pid in rows_delete:
-pid = rows_delete[0]
+# DATABASE actions
+# delete places with ids missing in new data (CASCADE includes links & geoms)
+places.filter(id__in=rows_delete).delete()
+
+
+ncount=PlaceName.objects.filter(place_id_id__in=places).count() # 134
+gcount=PlaceGeom.objects.filter(place_id_id__in=places).count() # 17
+lcount=PlaceLink.objects.filter(place_id_id__in=places).count() # 3
+# delete related instances for the rest (except links and geoms)
+PlaceName.objects.filter(place_id_id__in=places).delete()
+PlaceType.objects.filter(place_id_id__in=places).delete()
+PlaceWhen.objects.filter(place_id_id__in=places).delete()
+PlaceDescription.objects.filter(place_id_id__in=places).delete()
+PlaceDepiction.objects.filter(place_id_id__in=places).delete()
+
+# keep links and/or geoms is a form choice (keepg, keepl)
+# rows created during reconciliation review have a task_id
+if keepg == 'false':
+  # keep none (they are being replaced in update)
+  PlaceGeom.objects.filter(place_id_id__in=places).delete()
+else:
+  # keep augmentation rows; delete the rest
+  PlaceGeom.objects.filter(place_id_id__in=places,task_id=None).delete()
+if keepl == 'false':
+  # keep none (they are being replaced in update)
+  PlaceLink.objects.filter(place_id_id__in=places).delete()
+else:
+  PlaceLink.objects.filter(place_id_id__in=places,task_id=None).delete()
+
+print(ncount,gcount,lcount) # 0 2 3 (reflects 2 geoms added in reconciliation)
+# END DATABASE actions
+# Place instances to be kept remain, related are gone
+
+# now update values in places; recreate place_xxxxx rows
+# ds_update line 676
 
 # get db record
 place = get_object_or_404(Place, pk=pid)

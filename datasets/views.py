@@ -68,8 +68,8 @@ def indexMatch(pid, hit_pid=None):
   print('indexMatch, wtf?',pid)
   from elasticsearch import Elasticsearch
   es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
-  #idx='whg02'
-  idx='whg_test'
+  idx='whg02'
+  #idx='whg_test'
   
   if hit_pid == None:
     print('making '+str(pid)+' a parent')
@@ -215,14 +215,14 @@ def review(request, pk, tid, passnum): # dataset pk, celery recon task_id
         matches = 0
         for x in range(len(hits)):
           hit = hits[x]['id']
-          #if hits[x]['match'] not in ['none','related']:
+          hasGeom = 'geoms' in hits[x]['json'] and len(hits[x]['json']['geoms']) > 0
           if hits[x]['match'] not in ['none']:
             matches += 1
             if task.task_name != 'align_whg':
               # not accessioning; augmenting with links (& geom if requested)
               print('posting links from this hit:',hits[x])
               # if 'accept geometries' was checked in 'Initiate Reconciliation'
-              if kwargs['aug_geom'] == 'on' and 'geoms' in hits[x]['json']:
+              if kwargs['aug_geom'] == 'on' and hasGeom:
                 geom = PlaceGeom.objects.create(
                   place_id = place,
                   task_id = tid,
@@ -585,7 +585,8 @@ def add_rels_tsv(pobj, row):
   print('descriptions done')
       
 #
-# perform update on database and index 
+# perform update on database and index
+#
 def ds_update(request):
   if request.method == 'POST':
     dsid=request.POST['dsid']
@@ -629,7 +630,7 @@ def ds_update(request):
       numrows = compare_result['count_new']
     )
     
-    # (re-)open files as panda dataframes
+    # (re-)open files as panda dataframes; a = current, b = new
     if file_format == 'delimited':
       adf = pd.read_csv('media/'+compare_data['filename_cur'], delimiter='\t')
       bdf = pd.read_csv(filepath, delimiter='\t',dtype={'id':'str','ccodes':'str'})
@@ -638,13 +639,12 @@ def ds_update(request):
       print('reopened new file, # lines:',len(bdf))
       ids_a = adf['id'].tolist()
       ids_b = bdf['id'].tolist()      
-      delete_srcids = compare_result['rows_del']      
+      delete_srcids = [str(x) for x in (set(ids_a)-set(ids_b))]
       replace_srcids = set.intersection(set(ids_b),set(ids_a))
       
       # CURRENT
-      # current places
       places = Place.objects.filter(dataset=ds.label)
-      # Place.id lists for ES searches
+      # Place.id lists
       rows_replace = list(places.filter(src_id__in=replace_srcids).values_list('id',flat=True))
       rows_delete = list(places.filter(src_id__in=delete_srcids).values_list('id',flat=True))
       
@@ -658,7 +658,7 @@ def ds_update(request):
       PlaceDescription.objects.filter(place_id_id__in=places).delete()
       PlaceDepiction.objects.filter(place_id_id__in=places).delete()
       
-      # augmentation rows have a task_id
+      # rows created during reconciliation review have a task_id
       # keep or not is a form choice (keepg, keepl)
       if keepg == 'false':
         # keep none (they are being replaced in update)
@@ -672,15 +672,16 @@ def ds_update(request):
       else:
         PlaceLink.objects.filter(place_id_id__in=places,task_id=None).delete()
       
+      
       count_updated, count_new = [0,0]
       # update remaining place instances w/data from new file
       place_fields = {'id', 'title', 'ccodes'}
       for index, row in bdf.iterrows():
+        #row=bdf[0:1]
         # make 3 dicts: all; for Places; for PlaceXxxxs
-        #rd=bdf.loc[0].to_dict()
         rd = row.to_dict()
+        #rdp = {key:rd[key][0] for key in place_fields}
         rdp = {key:rd[key] for key in place_fields}
-        #rdrels = {key:rd[key] for key in rd.keys() - place_fields}
         # look for corresponding current place
         #p = places.filter(src_id='1.0').first()
         p = places.filter(src_id=rdp['id']).first()
