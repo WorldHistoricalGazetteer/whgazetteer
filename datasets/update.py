@@ -144,33 +144,43 @@ def esq_get(pid):
   q = {"query": {"bool": {"must": [{"match":{"place_id": pid }}]}}}
   return q
 
-pdels = fetch_pids('diamonds')
-# strip indexed places by Place.id
-def idxStripByID(pdels):
-  if len(pdels) > 0:
+#pids = fetch_pids('diamonds')
+# strip indexed places by Place.id; pids = place_id array
+def deleteFromIndex(pids):
+  if len(pids) > 0:
     delthese=[]
     # child: 6293916; parent with children: 13549548; parent w/no children 6293837
-    for p in pdels[:3]:
-      res = es.search(index=idx, body=esq_get(p))    
+    for pid in pids:
+      # get its index document
+      res = es.search(index=idx, body=esq_get(pid))    
       doc = res['hits']['hits'][0]
       src = doc['_source']
       role = src['relation']['name']; print(role)
-      variants = list(set(src['suggest']['input'])) # distinct only
-      # ugh; stripping mistakenly entered lists
+      sugs = list(set(src['suggest']['input'])) # distinct only
       searchy = list(set([item for item in src['searchy'] if type(item) != list])) 
+      # role-dependent action
       if role == 'parent':
-        if len(src['children'] == 0):
-          # childless, add to array for deletion
-          delthese.append(doc['_id'])
+        # convert to integers
+        # kids = ['5991423', '85196', '83140', '82439']
+        kids = [int(x) for x in src['children']]
+        eligible = list(set(kids)-set(pids)) # not slated for deletion
+        if len(eligible) == 0:
+          # add to array for deletion
+          delthese.append(pid)
         else:
-          # any in pdels?
-      elif role == 'parent' and len(src['children'] > 0):
-        # process children
-        for c in src['children']:
-          qget = {"query": {"bool": {"must": [{"match":{"place_id": c }}]}}}
+          # > 0 eligible children, promote first to parent
+          # TODO: can we make a logical choice?
+          newparent = eligible[0]
+          newkids = eligible.pop(newparent)
+          # get its index record and update it
+          # make it a parent, give it a whg_id - _id, 
+          # update its sugs and searchy
+          # update its children with newkids
+          qget = {"query": {"bool": {"must": [{"match":{"place_id": newparent }}]}}}
           res = es.search(index=idx, body=qget)
-          # get 1st sibling if any
-          sib = res['hits']['hits'][0]['_source']['children'].remove(c)[0]
+          hit = res['hits']['hits'][0]
+          _id = hit['_id']
+
       elif role == 'child':
         # get its parent
         parent = src['relation']['parent']
@@ -181,23 +191,26 @@ def idxStripByID(pdels):
         psugs = list(set(psrc['suggest']['input']))
         psearchy = list(set([item for item in psrc['searchy'] if type(item) != list]))
         # is parent slated for deletion? (walking dead)
-        zombie = psrc['place_id'] in pdels
-        if not zombie: # leave zombies; they're picked up with if role == 'parent':
-          # remove this id from children and remove its variants from suggest.input and searchy
-          newsugs = list(set(psugs)-set(variants))
+        zombie = psrc['place_id'] in pids
+        if not zombie: # skip zombies here; picked up above with if role == 'parent':
+          # remove this id from children and remove its variants (sugs) from suggest.input and searchy
+          newsugs = list(set(psugs)-set(sugs))
           newsearchy = list(set(psearchy)-set(searchy))
-          qupdate = {"script":{},"query":{}}
+          q_update = {"script":{
+            "source": "ctx._source.children.remove(ctx._source.children.indexOf(params.val)); \
+                ctx._source.suggest.input = params.sugs; ctx._source.searchy = params.searchy;",
+            "lang": "painless",
+            "params":{"val": str(pid), "sugs": newsugs, "searchy": newsearchy }
+            },
+            "query": {"match":{"_id": parent }}
+          }
           try:
             es.update_by_query(index=idx,body=q_update)
           except:
             print('aw shit',sys.exit(sys.exc_info()))
-
-        # and siblings
-        sibs = doc['_source']['children']
-        
-      parent = doc['_source']['relation']['parent'] if role == 'child' else None
-      children = doc['_source']['children']; print(children)
-      print(doc)
+        # child's presence in parent removed, add to delthese[]
+        delthese.append(doc['_id'])
+  es.delete_by_query(idx,body={"query": {"terms": {"place_id": delthese}}})
 
 # ES ACTIONS (database now current)
 # 1) delete records in rows_delete[]
