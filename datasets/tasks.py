@@ -868,7 +868,7 @@ def es_lookup_whg(qobj, *args, **kwargs):
 def align_whg(pk, *args, **kwargs):
   ds = get_object_or_404(Dataset, id=pk)
   # set index
-  idx='whg_'
+  idx='whg02'
   
   # get last identifier (used for whg_id & _id)
   whg_id = maxID(es,idx)
@@ -1012,8 +1012,7 @@ def align_whg(pk, *args, **kwargs):
             #  add new child place_id to _source.children[], 
             #  add variants to suggest.input[] (also to searchy[], a temp hack for slow autocomplete)
             q_update = { "script": {
-                "source": "ctx._source.suggest.input.addAll(params.names); ctx._source.children.add(params.id); ctx._source.searchy.add(params.names)",
-                #"source": "ctx._source.suggest.input.addAll(params.names); ctx._source.children.add(params.id)",
+                "source": "ctx._source.suggest.input.addAll(params.names); ctx._source.children.add(params.id); ctx._source.searchy.addAll(params.names)",
                 "lang": "painless",
                 "params":{"names": qobj['variants'], "id": str(place.id)}
               },
@@ -1081,7 +1080,7 @@ def align_whg(pk, *args, **kwargs):
 def align_whg_bak(pk, *args, **kwargs):
   ds = get_object_or_404(Dataset, id=pk)
   # set index
-  idx='whg02' # 'whg'
+  idx='whg02' 
   # get last identifier (used for whg_id & _id)
   whg_id=maxID(es,idx)
     

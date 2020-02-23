@@ -604,7 +604,8 @@ def ds_update(request):
     #tempfn = '/var/folders/f4/x09rdl7n3lg7r7gwt1n3wjsr0000gn/T/tmpsuncpnjl.tsv'
     tempfn = compare_data['tempfn']
     filename_new = compare_data['filename_new']
-    dsfobj_cur = DatasetFile.objects.filter(dataset_id_id=dsid).order_by('-upload_date')[0]
+    #dsfobj_cur = DatasetFile.objects.filter(dataset_id_id=dsid).order_by('-upload_date')[0]
+    dsfobj_cur = ds.files.all().order_by('-rev')[0]
     rev_cur = dsfobj_cur.rev
     
     # rename file if already exists in user area
@@ -632,7 +633,7 @@ def ds_update(request):
     
     # (re-)open files as panda dataframes; a = current, b = new
     if file_format == 'delimited':
-      adf = pd.read_csv('media/'+compare_data['filename_cur'], delimiter='\t')
+      adf = pd.read_csv('media/'+compare_data['filename_cur'], delimiter='\t',dtype={'id':'str','ccodes':'str'})
       bdf = pd.read_csv(filepath, delimiter='\t',dtype={'id':'str','ccodes':'str'})
       bdf = bdf.astype({"ccodes": str})
       print('reopened old file, # lines:',len(adf))
@@ -675,6 +676,7 @@ def ds_update(request):
       
       count_updated, count_new = [0,0]
       # update remaining place instances w/data from new file
+      # AND add new
       place_fields = {'id', 'title', 'ccodes'}
       for index, row in bdf.iterrows():
         #row=bdf[0:1]
@@ -685,6 +687,7 @@ def ds_update(request):
         # look for corresponding current place
         #p = places.filter(src_id='1.0').first()
         p = places.filter(src_id=rdp['id']).first()
+        print(p)
         if p != None:
           # place exists, update it
           count_updated +=1
@@ -711,6 +714,17 @@ def ds_update(request):
         # rd is row dict
         add_rels_tsv(pobj, rd)
     
+      # if dataset is indexed, update it there
+      from elasticsearch import Elasticsearch      
+      es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+      idx='whg02'      
+      q = {"query":{"match":{"dataset": ds.label }}}
+      res = es.search(index=idx, body=qget(r))    
+      if len(res['hits']['hits']) > 0:
+        print('start updating in ES')
+      else:
+        print('not yet indexed, all done for now')
+      
       result = {"status": "updated", "#updated":count_updated , "#new":count_new
                 ,"newfile": filepath, "format":file_format
                 }
@@ -737,7 +751,8 @@ def ds_compare(request):
     
     # wrangling names
     # current file
-    file_cur = DatasetFile.objects.filter(dataset_id_id=dsid).order_by('-upload_date')[0].file
+    #file_cur = DatasetFile.objects.filter(dataset_id_id=dsid).order_by('-upload_date')[0].file
+    file_cur = ds.files.all().order_by('-rev')[0].file
     filename_cur = file_cur.name
     # new file
     file_new=request.FILES['file']
@@ -818,8 +833,10 @@ def ds_insert_lpf(request, pk):
   [countrows,countlinked]= [0,0]
   ds = get_object_or_404(Dataset, id=pk)
   # insert data from initial file upload
-  dsf = DatasetFile.objects.filter(dataset_id_id=pk).order_by('-upload_date')[0]
-  uribase = DatasetFile.objects.filter(dataset_id_id=pk).order_by('-upload_date')[0].uri_base
+  #dsf = DatasetFile.objects.filter(dataset_id_id=pk).order_by('-upload_date')[0]
+  dsf = ds.files.all().order_by('-rev')[0]
+  #uribase = DatasetFile.objects.filter(dataset_id_id=pk).order_by('-upload_date')[0].uri_base
+  uribase = ds.uri_base
 
   infile = dsf.file.open(mode="r")
   print('ds_insert_lpf(); request.GET; infile',request.GET,infile)  
@@ -944,7 +961,8 @@ def ds_insert_tsv(request, pk):
   # retrieve just-added file, insert to db
   import os, csv
   ds = get_object_or_404(Dataset, id=pk)
-  dsf = DatasetFile.objects.filter(dataset_id_id=pk).order_by('-upload_date')[0]
+  #dsf = DatasetFile.objects.filter(dataset_id_id=pk).order_by('-upload_date')[0]
+  dsf = ds.files.all().order_by('-rev')[0]
 
   infile = dsf.file.open(mode="r")
   print('ds_insert_tsv(); request.GET; infile',request.GET,infile)
@@ -1344,7 +1362,7 @@ class DatasetDetailView(LoginRequiredMixin,UpdateView):
     dsid = ds.id
     user = self.request.user
     file=data['file']
-    filerev = DatasetFile.objects.filter(dataset_id_id=dsid).order_by('-rev')[0].rev
+    filerev = ds.files.all().order_by('-rev')[0].rev
     print('DatasetDetailView kwargs',self.kwargs)
     print('DatasetDetailView form_valid() data->', data)
     if data["file"] == None:
@@ -1463,7 +1481,8 @@ class DatasetDetailView(LoginRequiredMixin,UpdateView):
     print('DatasetDetailView get_context_data() kwargs:',self.kwargs)
     id_ = self.kwargs.get("id")
     ds = get_object_or_404(Dataset, id=id_)
-    file = DatasetFile.objects.filter(dataset_id_id = ds.id).order_by('-upload_date')[0]
+    #file = DatasetFile.objects.filter(dataset_id_id = ds.id).order_by('-upload_date')[0]
+    file = ds.files.all().order_by('upload_date')[0]
     
     # from DatasetCreateView()
     # insert to db immediately if file.df_status == format_ok 

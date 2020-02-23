@@ -544,8 +544,7 @@ js for Summary, Reconciliation
         $("#buttons_pre").addClass('hidden')
         $("#btn_done").removeClass('hidden')
         html = '<h6>update complete!</h6>'
-        html += 'You probably want to know what just occurred...'
-        <!--$("#results_text").html($("#results_text").html()+html)-->
+        html += JSON.stringify(data,null,2)
         $("#results_text").html(html)
         spinner_update.stop()
       }

@@ -9,8 +9,8 @@ import pandas as pd
 
 ds=get_object_or_404(Dataset,pk=543) #diamonds
 wd = '/Users/karlg/Documents/Repos/_whgazetteer/'
-file_a = DatasetFile.objects.filter(dataset_id_id=ds.id).order_by('-rev')[1]
-file_b = DatasetFile.objects.filter(dataset_id_id=ds.id).order_by('-rev')[0]
+file_a = ds.files.all().order_by('-rev')[1]
+file_b = ds.files.all().order_by('-rev')[0]
 fn_a = file_a.file.name
 fn_b = file_b.file.name
 adf = pd.read_csv(wd+'media/'+fn_a,delimiter='\t')
