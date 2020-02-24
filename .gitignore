@@ -2,6 +2,8 @@ _dumps/
 _notes/
 _older/
 _scratch/
+_testdata/
+
 media/
 datasets/static/_older/
 
@@ -11,6 +13,7 @@ nohup.out
 dump.rdb
 
 es-*.*
+# Wing IDE
 *.wp*
 
 ### Django ###

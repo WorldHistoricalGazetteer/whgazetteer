@@ -714,6 +714,8 @@ def ds_update(request):
         # rd is row dict
         add_rels_tsv(pobj, rd)
     
+      
+      #
       # if dataset is indexed, update it there
       from elasticsearch import Elasticsearch      
       es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
