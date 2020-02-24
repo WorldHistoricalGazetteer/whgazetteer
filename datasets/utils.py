@@ -22,7 +22,8 @@ def validate_lpf(tempfn,format):
   # rename tempfn
   newfn = tempfn+'.jsonld'
   os.rename(tempfn,newfn)
-  infile = codecs.open(tempfn, 'r', 'utf8')
+  #infile = codecs.open(tempfn, 'r', 'utf8')
+  infile = codecs.open(newfn, 'r', 'utf8')
   #fout = codecs.open('validate-lpf-result.txt','w','utf8')
   result = {"format":"lpf","errors":[]}
   [countrows,count_ok] = [0,0]

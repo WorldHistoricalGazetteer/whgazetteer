@@ -1278,7 +1278,8 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
       context["format"] = "lpf"
       # coll = FeatureCollection
       # TODO: json-lines alternative 
-      result = validate_lpf(fin,'coll')
+      #result = validate_lpf(fin,'coll')
+      result = validate_lpf(tempfn,'coll')
     print('validation result:',context["format"],result)
     fin.close()
 
