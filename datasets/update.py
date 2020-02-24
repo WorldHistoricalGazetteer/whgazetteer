@@ -144,7 +144,7 @@ def esq_get(pid):
   q = {"query": {"bool": {"must": [{"match":{"place_id": pid }}]}}}
   return q
 
-#pids = fetch_pids('diamonds')
+pids = fetch_pids('diamonds')
 # strip indexed places by Place.id; pids = place_id array
 def deleteFromIndex(pids):
   if len(pids) > 0:
@@ -166,13 +166,14 @@ def deleteFromIndex(pids):
         eligible = list(set(kids)-set(pids)) # not slated for deletion
         if len(eligible) == 0:
           # add to array for deletion
+          print('childless parent '+str(pid)+' tagged for deletion')
           delthese.append(pid)
         else:
-          # > 0 eligible children, promote first to parent
+          # > 0 eligible children, first promote one to parent
           # TODO: can we make a logical choice?
           newparent = eligible[0]
           newkids = eligible.pop(newparent)
-          # get its index record and update it
+          # get its index record and update it:
           # make it a parent, give it a whg_id - _id, 
           # update its sugs and searchy
           # update its children with newkids
@@ -180,7 +181,26 @@ def deleteFromIndex(pids):
           res = es.search(index=idx, body=qget)
           hit = res['hits']['hits'][0]
           _id = hit['_id']
-
+          # elevate to parent
+          q_update = {"script":{
+            "source": "ctx._source.whg_id = params._id; \
+              ctx._source.relation.name = 'parent'; \
+              ctx._source.relation.remove('parent'); \
+              ctx._source.children.addAll(params.newkids); \
+              ctx._source.suggest.input.addAll(params.sugs); \
+              ctx._source.searchy.addAll(params.sugs);",
+            "lang": "painless",
+            "params":{"_id": _id, "newkids": newkids, "sugs": sugs }
+            },
+            "query": {"match":{"place_id": newparent }}
+          }
+          try:
+            es.update_by_query(index=idx,body=q_update)
+          except:
+            print('aw shit',sys.exit(sys.exc_info()))
+          # parent status transfered to 'eligible' child, add to list
+          print('parent w/kids '+hit['_source']['title'],pid+' transferred resp to: '+parent+'; tagged for deletion')
+          delthese.append(pid)
       elif role == 'child':
         # get its parent
         parent = src['relation']['parent']
@@ -206,11 +226,13 @@ def deleteFromIndex(pids):
           }
           try:
             es.update_by_query(index=idx,body=q_update)
+            print('child '+psrc['title'],pid+' excised from parent: '+parent+'; tagged for deletion')
           except:
             print('aw shit',sys.exit(sys.exc_info()))
         # child's presence in parent removed, add to delthese[]
-        delthese.append(doc['_id'])
-  es.delete_by_query(idx,body={"query": {"terms": {"place_id": delthese}}})
+        delthese.append(pid)
+    es.delete_by_query(idx,body={"query": {"terms": {"place_id": delthese}}})
+    print('deleted '+len(delthese)+': '+str(delthese))
 
 # ES ACTIONS (database now current)
 # 1) delete records in rows_delete[]
