@@ -1,5 +1,5 @@
 {% extends "main/base.html" %}
-{% block title %}<title>WHG::Beta v0.1 Guide</title>{% endblock %}
+{% block title %}<title>WHG::Beta v0.3 Guide</title>{% endblock %}
 
 {% block content %}
 {% load static %}
@@ -7,33 +7,31 @@
 
   <div class="container">
     <div class="d-flex justify-content-center mt-3">
-      <h3>World Historical Gazetteer Beta 0.2a: A Tour</h3>
+      <h3>World Historical Gazetteer Beta 0.3: A Tour</h3>
     </div>
     <div id="contrib_content" class="mx-5">
-      <p class="lead">Welcome to our first public beta release. The Version 1 launch is planned for Spring 2020 and in the meantime we will be making a series of beta releases to give early adopters and contributors an early view of the capabilities of this platform and a chance to experiment. Notes about future improvements work-in-progress appear highlighted <mark>like this</mark>.</p>
+      <p class="lead">Welcome to our third public beta release (February, 2020). The Version 1 launch is planned for spring of 2020 and in the meantime we will be making further beta releases to give early adopters and contributors a preview of the capabilities of this platform and a chance to experiment with it. Notes about future improvements work-in-progress appear <mark>highlighted like this</mark>.</p>
       <div id="beta#Home" class="tute-section">
         <h4 class="p-1">Home page</h4>
         <div class="p-1">
           <h5>Register/Login/Profile</h5>
-          <p>Registration and login are required to be able to upload datasets, use our reconciliation service to find matches in modern placename authorities, <a href="#" target="_blank">Getty Thesaurus of Geographic Names (TGN)</a> and <a href="#" target="_blank">Wikidata</a> at this point), and ultimately to contribute your data to our index. Once logged in, top-level menu options for "My Places" and user profile appear.</p>
-          <p><mark>These functions are rudimentary now and will be upgraded soon. Features will include sharing dataset access with other registered users granting authority to review reconciliation results, etc.</mark></p>
-          <h5 name="search">Search for Places and Traces</h5>
+          <p>Registration and login are required to be able to upload datasets, designate collaborators, and use our reconciliation services to find matches in modern placename authorities (<a href="http://www.getty.edu/research/tools/vocabularies/tgn/" target="_blank">Getty Thesaurus of Geographic Names (TGN)</a> and <a href="https://www.wikidata.org/wiki/Wikidata:Main_Page" target="_blank">Wikidata</a> so far), and ultimately to contribute your data to the WHG index. Once logged in, top-level menu options for "My Data" and user profile appear.</p>
           <h6>Places</h6>
-          <p>Place search runs against a union index of ~1.8m core records and all contributed datasets. <span class="strikethrough">Autosuggest presents possibilities after typing a few characters.</span> <mark>For performance reasons, autosuggest has been temporarily disabled for places.</mark> Typing a name then pressing the {Enter} key performs a search, presents a list of results, and maps those which have geometry (not all do). Clicking a result item will highlight it on the map, providing further context. Clicking the place name takes you to its "place portal" page. The index record displayed can include any number of attestation "cards" drawn from multiple contributed datasets.</p>
+          <p>Place search runs against a union index of ~1.8m core records and all contributed datasets. <span class="strikethrough">Autosuggest presents possibilities after typing a few characters.</span> <mark>For performance reasons, autosuggest for place search has been temporarily disabled.</mark> Typing a name then pressing the {Enter} key performs a search, presents a list of results, and maps those which have geometry (not all do). Clicking a result item will highlight it on the map, providing further context. Clicking the name link takes you to the index record's "portal" page where any number of attestation "cards" drawn from our core datasets (grey banner) and multiple contributed datasets (beige banner) are gathered.</p>
           <h6>Traces</h6>
-          <p>Search for Trace data runs against a separate index. At this time there are only a few example trace records. <mark>A Linked Traces annotation format (LT-Anno) is in active development</mark>. Try typing 'buddhist' to see a couple of examples. Selecting an auto-suggestion will perform the search and the places in the trace record are mapped. As with places, clicking a result item highlights the place on the map, and clicking its name takes you to its place portal page.<mark>We welcome suggestions for how trace data can be better integrated into the WHG interface.</mark></p>
-          <h5>Map layer selector</h5>
-          <p>A few alternative base maps are available via the layer icon in the upper right corner.</p>
+          <p><mark>Integration of <a href="https://www.wikidata.org/wiki/Wikidata:Main_Page" target="_blank">trace data</a> is at an early experimental stage, and a Linked Traces annotation format (LT-Anno) is in active development. We welcome suggestions for how trace data can be better integrated into the WHG interface.</mark></p><p> Search for trace data runs against a separate index. At this time there are only a few example trace records. <mark></mark>. Try typing 'buddhist' to see a couple of examples. Selecting an auto-suggestion will perform the search and the places in the trace record are mapped. As with places, clicking a result item highlights the place on the map, and clicking its name takes you to its place portal page.</p>
+          <!--<h5>Map layer selector</h5>-->
+          <!--<p>A few alternative base maps are available via the layer icon in the upper right corner.</p>-->
         </div>
       </div>
       <div id="" class="tute-section">
         <a name="my-data"></a>
         <h4 class="p-1">My Data page</h4>
-        <p>The My Data page presents three lists of user-generated items: Datasets, Study Areas, and Collections (<mark>future</mark>). Upon registering, only two read-only "core" datasets are listed, which can be viewed but not acted upon. In each case, clicking a plus icon ({% fontawesome_icon 'plus-square' color='#336699' %}) starts the process of creating and managing datasets.</p>
+        <p>The My Data page presents three lists of user-generated items: Datasets, Study Areas, and Collections (<mark>future</mark>). Upon registering, only two read-only "core" datasets are listed, which can be viewed but not acted upon. In each case, clicking the "add new" link ({% fontawesome_icon 'plus-square' color='#336699' %}) starts the process of creating and managing a dataset.</p>
         <h5>Datasets</h5>
         <ul>
         <li><h6>Place data</h6>
-        <p>Registered users can create Place datasets by uploading files in one of two formats: the expressive GeoJSON-LD based Linked Places format ("LP format" for short), or the simpler LP-TSV format. Details of these and considerations for making the choice are found in the <a href="{% url 'main:tute-choosing' %}">"Choosing an upload data format"</a> tutorial.</p>
+        <p>Registered users can create Place datasets by uploading files in one of two formats: the expressive GeoJSON-LD based <a href="https://github.com/LinkedPasts/linked-places" target="_blank">Linked Places format</a> ("LP format" for short), or the simpler <a href="https://github.com/LinkedPasts/linked-places/blob/master/tsv_0.2.md" target="_blank">LP-TSV format</a>. Considerations for making the choice are found in the <a href="{% url 'main:tute-choosing' %}">"Choosing an upload data format"</a> tutorial.</p>
         <p>Help icons ({% fontawesome_icon 'question-circle' color='#336699' %}) for each field in the "Upload dataset" form provide popup instruction for filling it.</p>
         <p>Uploaded data files are validated for adherence to the relevant format spec, LP or LP-TSV. If there are formatting errors, their details are displayed and after correcting them the file upload can be attempted again.</p>
         <p>Upon successful upload, a <a href="{% url 'main:tute-beta' %}#dataset-portal">Dataset Portal page</a> is displayed.</p></li>
@@ -47,9 +45,16 @@
       <div id="" class="tute-section">
         <a name="dataset-portal"></a>
         <h4 class="p-1">Dataset Portal page</h4>
-        <p>This page provides a summary of the uploaded data file, a link to <a href="#reconciliation">initiate a reconciliation task</a> ({% fontawesome_icon 'plus-square' color='#336699' %}), and maintains counts of Link and Geometry augmentations generated by the reconciliation process (i.e. records added to the place_link and place_geom tables; see the <a href="{% url 'system' %}">"System Details" page</a> for more information).</p>
-        <p>Upon completion of each reconciliation task, a summary is generated and displayed in a column on the right, with links to (a) <a href="#review">review the reconciliation results</a>, and (b) clear matches confirmed in review work so far or delete the task and its results entirely. <span class="text-danger">Caution, no recovery from these actions!</span></p>
-        <p>The page also contains links to <a href="#dataset-browse">browse the dataset records</a> ({% fontawesome_icon 'table' color='#336699' %}), and to delete the dataset entirely ({% fontawesome_icon 'trash' color='#ff0000' %}); <span class="text-danger">Caution, no recovery from this action!</span>). <mark>In the future an option to update the dataset with a new file upload will be available</mark>.</p>
+        <p>This page contains several tabbed sections for managing datasets: Metadata, Browse, Reconciliation, and Sharing.</p>
+        <h5>Metadata</h5>
+        <p>This tab section provides metadata about the dataset and its most recent uploaded data file source. The <i>title</i>, <i>base URI</i> and <i>description</i> fields can be edited. Updating of the datasets can be initiated (<mark>only LP-TSV delimited files at present</mark>). Statistics are displayed on the right side of the screen: initial counts of rows, name variants, links, and geometries, as well as counts of link and geometry records added during the reconciliation review process.</p>
+        <h5>Browse</h5>
+        <p>This section combines a sortable, searchable list of the records currently in the dataset, and a map displaying any geometry it includes. Note that links and geometry from authority records matched in the reconciliation review process are reflected here, as dataset augmentation written as new <i>place_link</i> and <i>place_geom</i> records.</p>
+        <h5>Reconciliation</h5>
+        <p>Reconciliation "tasks" are initiated and managed from this tab section.</p>
+        <p>Upon completion of each reconciliation task, a summary is generated and displayed in a list, with links to (a) <a href="#review">review the its results</a>, and (b) clear matches confirmed in review work so far or delete the task and its results entirely. <span class="text-danger">Caution! There is no recovery from these clearing actions!</span></p>
+        <h5>Sharing</h5>
+        <p>Owners of a dataset can name registered users in WHG as collaborators, giving them permission to view the dataset and to perform review of prospective matches generated by a reconciliation task.</p>
         <h5>Contributing a dataset to WHG</h5>
         <p>After a dataset has been uploaded and, using our reconciliation services, augmented with as many links (matches) to modern authorities as possible (see below), it can be considered for accessioning. In that step, each record is compared with the WHG index to see if the referenced place already has one or more attestations from another dataset. If it does, it is marked as a "child" record of the first attestation we received. If it does not, it is considered a new "parent." <b>Accessioning relies on Place records having as many associated "place_link" records as can be obtained.</b>
           <mark>At this stage, all accessioning is performed internally by the WHG project team.</mark></p>
