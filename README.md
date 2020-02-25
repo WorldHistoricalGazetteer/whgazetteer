@@ -2,11 +2,11 @@
 
 This is the repository for the World Historical Gazetteer (WHG) web platform and API. The project is based at the University of Pittsburgh's [World History Center](https://www.worldhistory.pitt.edu/), and has been substantially funded by the US National Endownment for the Humanities (NEH).
 
-WHG is aggregating attestations of historical place references contributed by researchers. The [Beta release v0.2](http://dev.whgazetteer.org) was made available on 28 October 2019. More information on the project is available on [our blog website](http://whgazetteer.org).
+WHG is aggregating attestations of historical place references contributed by researchers. The [Beta release v0.3](http://dev.whgazetteer.org) was made available on 25 February 2020. More information on the project is available on [our blog website](http://whgazetteer.org).
 
 #### Software libraries and packages
 
-- Django 2.2.4
+- Django 2.2.10
 - Python 3.7.4
 - PostgreSQL 10
 - Elasticsearch 6.6
