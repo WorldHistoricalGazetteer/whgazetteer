@@ -1,6 +1,16 @@
 # es_utils.py 7 Feb 2019; rev 5 Mar 2019; 02 Oct 2019; 21 Feb 2020 (create whg_test)
 # misc supporting eleasticsearch tasks (es.py)
 
+# ***
+# in index :: bool
+def escount_ds(idx,label):
+    from elasticsearch import Elasticsearch
+    es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+    q = {"query":{"match":{"dataset": label }}}
+    res = es.search(index=idx,body=q)
+    
+    return res['hits']['total']
+    
 def confirm(prompt=None, resp=False):
     """prompts for yes or no response from the user. Returns True for yes and
     False for no.
@@ -25,7 +35,7 @@ def confirm(prompt=None, resp=False):
         if ans == 'n' or ans == 'N':
             return False
         
-idx='whg_test'
+#idx='whg_test'
 def esInit(idx):
     import os, codecs
     os.chdir('/Users/karlg/Documents/Repos/_whgazetteer')

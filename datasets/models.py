@@ -8,6 +8,7 @@ from django.dispatch import receiver
 from django.urls import reverse
 from django.shortcuts import get_object_or_404
 
+from es.es_utils import escount_ds
 from main.choices import AUTHORITIES, FORMATS, DATATYPES, STATUS, TEAMROLES, PASSES
 from places.models import Place
 
@@ -16,6 +17,7 @@ def user_directory_path(instance, filename):
     return 'user_{0}/{1}'.format(instance.owner.username, filename)
 
 class Dataset(models.Model):
+    idx='whg02'
     owner = models.ForeignKey(settings.AUTH_USER_MODEL,
         related_name='datasets', on_delete=models.CASCADE)
     label = models.CharField(max_length=20, null=False, unique="True")
@@ -48,6 +50,20 @@ class Dataset(models.Model):
         from django_celery_results.models import TaskResult
         return TaskResult.objects.all().filter(task_args = '['+str(self.id)+']')
     
+    @property
+    def status(self):
+        idx='whg02'
+        submissions = [{"task_id":t.task_id,
+                "date":t.date_done.strftime("%Y-%m-%d %H:%M"),
+                "hits_tbd":Hit.objects.filter(task_id=t,reviewed=False).count() } \
+                       for t in self.tasks.filter(task_name='align_whg').order_by('-date_done')]
+        idxtask = len(self.tasks.filter(task_name='align_whg', status='SUCCESS')) > 0
+        idxcount = escount_ds(idx,self.label)
+        
+        result = {"submissions":submissions,"idxcount":idxcount}
+        return result
+        
+            
     @property
     def collab(self):
         uids=DatasetUser.objects.filter(dataset_id_id = self.id).values_list('user_id_id')

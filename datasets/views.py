@@ -584,9 +584,9 @@ def add_rels_tsv(pobj, row):
   PlaceDescription.objects.bulk_create(objs['PlaceDescription'],batch_size=10000)
   print('descriptions done')
       
-#
+# ***
 # perform update on database and index
-#
+# ***
 def ds_update(request):
   if request.method == 'POST':
     dsid=request.POST['dsid']
@@ -732,9 +732,11 @@ def ds_update(request):
                 }
       return JsonResponse(result,safe=False)
 
-
-# initial validation and comparison of dataset update files
-# ajax call from modal returns json result object
+# ***
+# validates dataset update file & compares w/existing
+# called by ajax function from modal button
+# returns json result object
+# ***
 def ds_compare(request):
   if request.method == 'POST':
     print('request.POST',request.POST)
@@ -742,24 +744,33 @@ def ds_compare(request):
     dsid=request.POST['dsid']
     user=request.user.username
     format=request.POST['format']
-    # moved to ds_update
-    #keepg=request.POST['preserve_geoms']
-    #keepl=request.POST['preserve_links']
     ds = get_object_or_404(Dataset, id=dsid)
     
-    # how many augmenting records previously created? (have task_id)
+    # has dataset been submitted for accessioning (successful align_whg task)
+    # if yes, probably some indexed records from pass1 matches
+    #  - outstanding review work? i.e. unreviewed hits
+    indexed = ds.ds_status == 'indexed'
+    idxtask = len(ds.tasks.filter(task_name='align_whg', status='SUCCESS')) > 0
+    if idxtask: 
+      # most recent successful 
+      task = ds.tasks.filter(task_name='align_whg', status='SUCCESS').order_by('date_done')[0].task_id
+      # outstanding review work?
+      Hit.objects.filter(task_id=task)
+    
+    # how many augment records previously created by reconciliation?
     count_geoms = PlaceGeom.objects.filter(place_id_id__in=ds.placeids,task_id__isnull=False).count()
     count_links = PlaceLink.objects.filter(place_id_id__in=ds.placeids,task_id__isnull=False).count()
     
     # wrangling names
-    # current file
-    #file_cur = DatasetFile.objects.filter(dataset_id_id=dsid).order_by('-upload_date')[0].file
+    # current (previous) file
     file_cur = ds.files.all().order_by('-rev')[0].file
     filename_cur = file_cur.name
+    
     # new file
     file_new=request.FILES['file']
     tempf, tempfn = tempfile.mkstemp()
-    # write new file as temporary
+    
+    # write new file as temporary to /var/folders/../...
     try:
       for chunk in file_new.chunks():
         os.write(tempf, chunk)
@@ -769,20 +780,20 @@ def ds_compare(request):
       os.close(tempf)
     
     print('tempfn,filename_cur,file_new.name',tempfn,filename_cur,file_new.name)
-    # open the temp file & send for format validation
-    #fin = codecs.open(tempfn, 'r', 'utf8')
+    
+    # format validation 
     if format == 'delimited':
-      #context["format"] = "delimited"
+      # goodtable wants filename only
       vresult = goodtable(tempfn)
     elif format == 'lpf':
-      # TODO: feed tempfn only, like delimited, and rename
-      vresult = validate_lpf(tempfn,'coll')
+      # TODO: feed tempfn only?
+      # TODO: accept json-lines; only FeatureCollections ('coll') now
+      vresult = validate_lpf(tempfn,'coll') 
     print('format, vresult:',format,vresult)
-    #fin.close()
 
     # give new file a path
     filename_new = 'user_'+user+'/'+file_new.name
-    # temp files were renamed in validation    
+    # temp files were given extensions in validation functions  
     tempfn_new = tempfn+'.tsv' if format == 'delimited' else tempfn+'.jsonld'
     
     # begin report
@@ -793,8 +804,6 @@ def ds_compare(request):
       "format": format,
       "validation_result": vresult,
       "tempfn": tempfn_new,
-      #"keepg": keepg,
-      #"keepl": keepl,
       "count_links": count_links,
       "count_geoms": count_geoms,
     }
@@ -821,15 +830,17 @@ def ds_compare(request):
         'rows_add': [str(x) for x in (set(ids_b)-set(ids_a))],
         'rows_del': [str(x) for x in (set(ids_a)-set(ids_b))]        
       }
+    # TODO: process LP format, collections + json-lines
     elif format == 'lpf':
       print('need to compare lpf files:',fn_a,fn_b)
       comparison['compare_result'] = "it's lpf...tougher row to hoe"
     
     print('comparison',comparison)
+    # back to calling modal
     return JsonResponse(comparison,safe=False)
-    #return render(request, 'datasets/dataset.html', {'ds':ds})
-#
+# ***
 # insert lpf into database
+# ***
 def ds_insert_lpf(request, pk):
   import json
   [countrows,countlinked]= [0,0]
@@ -957,8 +968,9 @@ def ds_insert_lpf(request, pk):
   messages.add_message(request, messages.INFO, 'inserted lpf for '+str(countrows)+' places')
   return redirect('/dashboard')
 
-#
+# ***
 # insert LP-TSV file to database
+# ***
 def ds_insert_tsv(request, pk):
   # retrieve just-added file, insert to db
   import os, csv
@@ -1195,8 +1207,9 @@ def ds_insert_tsv(request, pk):
   #return render(request, '/datasets/dashboard.html', {'context': context})
   #return redirect('/dashboard', context=context)
 
-#
+# ***
 # list user datasets, area, place collections
+# ***
 class DashboardView(ListView):
   context_object_name = 'dataset_list'
   template_name = 'datasets/dashboard.html'
@@ -1228,10 +1241,11 @@ class DashboardView(ListView):
     return context
 
 
+# ***
 # initial create
 # upload file, validate format, create DatasetFile instance,
 # redirect to dataset.html for db insert if context['format_ok']
-#
+# ***
 class DatasetCreateView(LoginRequiredMixin, CreateView):
   form_class = DatasetCreateModelForm
   template_name = 'datasets/dataset_create.html'
@@ -1346,9 +1360,11 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
     #context['action'] = 'create'
     return context
 
-
-# dataset summary for "dataset portal" v1
+# ***
+# feeds "dataset portal" page
+# processes metadata edits
 # initiates DataFile update also
+# ***
 class DatasetDetailView(LoginRequiredMixin,UpdateView):
   form_class = DatasetDetailModelForm
   template_name = 'datasets/dataset.html'
@@ -1375,93 +1391,82 @@ class DatasetDetailView(LoginRequiredMixin,UpdateView):
       ds.description = data['description']
       ds.uri_base = data['uri_base']
       ds.save()
-    else:
-      # a file has been uploaded; need to validate, analyze, & return results
-      print('file '+data["file"].name+' has been uploaded; need: validation, analysis, return results')
-      context={}
-      owner=data['owner'].username
-      filename = file.name
-      tempf, tempfn = tempfile.mkstemp()
-      print('tempfn, filename in DatasetDetailView()',tempfn, filename)
-      try:
-        for chunk in file.chunks():
-          os.write(tempf, chunk)
-      except:
-        raise Exception("Problem with the input file %s" % file)
-      finally:
-        os.close(tempf)
+    #else:
+      ## a file has been uploaded; need to validate, analyze, & return results
+      ## TODO: not here - in ds_compare, ds_update from modal - RIGHT???
+      #print('file '+data["file"].name+' has been uploaded; need: validation, analysis, return results')
+      #context={}
+      #owner=data['owner'].username
+      #filename = file.name
+      #tempf, tempfn = tempfile.mkstemp()
+      #print('tempfn, filename in DatasetDetailView()',tempfn, filename)
+      #try:
+        #for chunk in file.chunks():
+          #os.write(tempf, chunk)
+      #except:
+        #raise Exception("Problem with the input file %s" % file)
+      #finally:
+        #os.close(tempf)
         
-      # open the temp file
-      fin = codecs.open(tempfn, 'r', 'utf8')
+      ## open the temp file
+      #fin = codecs.open(tempfn, 'r', 'utf8')
       
-      # send for format validation
-      if data['format'] == 'delimited':
-        context['format'] = 'delimited'
-        result = goodtable(tempfn)
-      elif data['format'] == 'lpf':
-        # TODO: json-lines alternative 
-        context['format'] = 'lpf'
-        result = validate_lpf(fin,'coll')
-      print('validation result:',result)
-      fin.close()
+      ## send for format validation
+      #if data['format'] == 'delimited':
+        #context['format'] = 'delimited'
+        #result = goodtable(tempfn)
+      #elif data['format'] == 'lpf':
+        ## TODO: json-lines alternative 
+        #context['format'] = 'lpf'
+        #result = validate_lpf(fin,'coll')
+      #print('validation result:',result)
+      #fin.close()
   
-      print('data valid, still in DatasetDetailView')
+      #print('data valid, still in DatasetDetailView')
     
-      if len(result['errors']) == 0:
-        context['status'] = 'newfile_ok'
-        print('validation result',result)
+      #if len(result['errors']) == 0:
+        #context['status'] = 'newfile_ok'
+        #print('validation result',result)
 
-        # create file name
-        file_exists = Path('media/user_'+user.username+'/'+filename).exists()
-        print('filename at write, exists?',filename,file_exists)
-        if not file_exists:
-          filepath = 'media/user_'+user.username+'/'+filename
-        else:
-          filename=filename[:-4]+'_'+tempfn[-7:]+filename[-4:]
-          filepath = 'media/user_'+user.username+'/'+filename
+        ## create file name
+        #file_exists = Path('media/user_'+user.username+'/'+filename).exists()
+        #print('filename at write, exists?',filename,file_exists)
+        #if not file_exists:
+          #filepath = 'media/user_'+user.username+'/'+filename
+        #else:
+          #filename=filename[:-4]+'_'+tempfn[-7:]+filename[-4:]
+          #filepath = 'media/user_'+user.username+'/'+filename
   
-        print("filepath to open/write",filepath)
-        fout = codecs.open(filepath,'w','utf8')
-        try:
-          for chunk in file.chunks():
-            #print('chunk',chunk, type(chunk))
-            fout.write(chunk.decode("utf-8"))
-        except:
-          sys.exit(sys.exc_info())
-        finally:
-          fout.close()
+        #print("filepath to open/write",filepath)
+        #fout = codecs.open(filepath,'w','utf8')
+        #try:
+          #for chunk in file.chunks():
+            ##print('chunk',chunk, type(chunk))
+            #fout.write(chunk.decode("utf-8"))
+        #except:
+          #sys.exit(sys.exc_info())
+        #finally:
+          #fout.close()
         
-        ds.ds_status = 'updating'
-        # add DatasetFile record
-        DatasetFile.objects.create(
-          dataset_id = ds,
-          file = 'user_'+user.username+'/'+filename,
-          rev = filerev+1,
-          uri_base = data['uri_base'],
-          format = result['format'],
-          delimiter = result['delimiter'] if "delimiter" in result.keys() else "n/a",
-          df_status = 'updating',
-          accepted_date = None,
-          header = result['columns'] if "columns" in result.keys() else [],
-          numrows = result['count']
-        )
+        #ds.ds_status = 'updating'
+        ## add DatasetFile record
+        #DatasetFile.objects.create(
+          #dataset_id = ds,
+          #file = 'user_'+user.username+'/'+filename,
+          #rev = filerev+1,
+          #uri_base = data['uri_base'],
+          #format = result['format'],
+          #delimiter = result['delimiter'] if "delimiter" in result.keys() else "n/a",
+          #df_status = 'updating',
+          #accepted_date = None,
+          #header = result['columns'] if "columns" in result.keys() else [],
+          #numrows = result['count']
+        #)
         
-        #comparison=compare(ds.id)
-        #print('comparison',comparison)
-        # now analyze differences
-        #file_a = DatasetFile.objects.filter(dataset_id_id=ds.id).order_by('-rev')[1]
-        #file_b = DatasetFile.objects.filter(dataset_id_id=ds.id).order_by('-rev')[0]
-        #adf = pd.read_csv('media/'+file_a.file.name,delimiter='\t')
-        #bdf = pd.read_csv('media/'+file_b.file.name,delimiter='\t')
-        #ids_a = adf['id'].tolist()
-        #ids_b = bdf['id'].tolist()
-        #astats={"count":len(ids_a)}
-        #bstats={"count":len(ids_b)}
-        return redirect('/datasets/'+ds+'/detail')
-        
-        
-      else:
-        print('validation errors',result['errors'])
+        #return redirect('/datasets/'+ds+'/detail')
+
+      #else:
+        #print('validation errors',result['errors'])
         
     return super().form_valid(form)
   
