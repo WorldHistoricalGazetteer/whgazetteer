@@ -63,7 +63,8 @@ class Dataset(models.Model):
         result = {"submissions":submissions,"idxcount":idxcount}
         return result
         
-            
+    # from datasets.models import Dataset
+    # ds = get_object_or_404(Dataset,pk=1)
     @property
     def collab(self):
         uids=DatasetUser.objects.filter(dataset_id_id = self.id).values_list('user_id_id')

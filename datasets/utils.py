@@ -56,7 +56,7 @@ def validate_lpf(tempfn,format):
   return result
 
 # validate LP-TSV file
-def goodtable(tempfn):
+def validate_tsv(tempfn):
   result = {"errors":[],"format":"delimited"}
   # TODO: detect encoding
   #enc = chardet.detect(open(tempfn,'rb').read())
@@ -76,7 +76,7 @@ def goodtable(tempfn):
   for e in report['tables'][0]['errors']:
     if e['code'] not in ["blank-header","missing-header"]:
       result["errors"].append(e)
-  print('goodtable() result',result)
+  print('validate_tsv() result',result)
   return result
 
 class HitRecord(object):

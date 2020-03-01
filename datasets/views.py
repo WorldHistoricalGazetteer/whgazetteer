@@ -741,21 +741,13 @@ def ds_compare(request):
   if request.method == 'POST':
     print('request.POST',request.POST)
     print('request.FILES',request.FILES)
-    dsid=request.POST['dsid']
+    dsid=request.POST['dsid'] # 586 for diamonds
     user=request.user.username
     format=request.POST['format']
     ds = get_object_or_404(Dataset, id=dsid)
     
-    # has dataset been submitted for accessioning (successful align_whg task)
-    # if yes, probably some indexed records from pass1 matches
-    #  - outstanding review work? i.e. unreviewed hits
-    indexed = ds.ds_status == 'indexed'
-    idxtask = len(ds.tasks.filter(task_name='align_whg', status='SUCCESS')) > 0
-    if idxtask: 
-      # most recent successful 
-      task = ds.tasks.filter(task_name='align_whg', status='SUCCESS').order_by('date_done')[0].task_id
-      # outstanding review work?
-      Hit.objects.filter(task_id=task)
+    # {idxcount, submissions[{task_id,date}]}
+    ds_status = ds.status
     
     # how many augment records previously created by reconciliation?
     count_geoms = PlaceGeom.objects.filter(place_id_id__in=ds.placeids,task_id__isnull=False).count()
@@ -784,7 +776,7 @@ def ds_compare(request):
     # format validation 
     if format == 'delimited':
       # goodtable wants filename only
-      vresult = goodtable(tempfn)
+      vresult = validate_tsv(tempfn)
     elif format == 'lpf':
       # TODO: feed tempfn only?
       # TODO: accept json-lines; only FeatureCollections ('coll') now
@@ -1287,7 +1279,7 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
     # send for format validation
     if data['format'] == 'delimited':
       context["format"] = "delimited"
-      result = goodtable(tempfn)
+      result = validate_tsv(tempfn)
     elif data['format'] == 'lpf':
       context["format"] = "lpf"
       # coll = FeatureCollection
@@ -1315,13 +1307,17 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
         return render(request,'datasets/dataset_create.html', args)
         #sys.exit(sys.exc_info())
 
+      # create user directory if necessary
+      userdir = r'media/user_'+user.username+'/'
+      if not Path(userdir).exists():
+        os.makedirs(userdir)
       # build path, and rename file if already exists in user area
-      file_exists = Path('media/user_'+user.username+'/'+filename).exists()
+      file_exists = Path(userdir+filename).exists()
       if not file_exists:
-        filepath = 'media/user_'+user.username+'/'+filename
+        filepath = userdir+filename
       else:
         filename=filename[:-4]+'_'+tempfn[-7:]+filename[-4:]
-        filepath = 'media/user_'+user.username+'/'+filename
+        filepath = userdir+filename
 
       # write the file
       fout = codecs.open(filepath,'w','utf8')
@@ -1361,9 +1357,9 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
     return context
 
 # ***
-# feeds "dataset portal" page
-# processes metadata edits
-# initiates DataFile update also
+# feeds "dataset portal" page, dataset.html
+# processes metadata edit form
+# if coming from DatasetCreateView(), runs ds_insert_[tsv|lpf]
 # ***
 class DatasetDetailView(LoginRequiredMixin,UpdateView):
   form_class = DatasetDetailModelForm
@@ -1373,7 +1369,7 @@ class DatasetDetailView(LoginRequiredMixin,UpdateView):
     id_ = self.kwargs.get("id")
     return '/datasets/'+str(id_)+'/detail'
 
-  # only if submitted
+  # Dataset has been edited, form submitted
   def form_valid(self, form):
     print('in form_valid()')
     data=form.cleaned_data
@@ -1390,84 +1386,7 @@ class DatasetDetailView(LoginRequiredMixin,UpdateView):
       ds.title = data['title']
       ds.description = data['description']
       ds.uri_base = data['uri_base']
-      ds.save()
-    #else:
-      ## a file has been uploaded; need to validate, analyze, & return results
-      ## TODO: not here - in ds_compare, ds_update from modal - RIGHT???
-      #print('file '+data["file"].name+' has been uploaded; need: validation, analysis, return results')
-      #context={}
-      #owner=data['owner'].username
-      #filename = file.name
-      #tempf, tempfn = tempfile.mkstemp()
-      #print('tempfn, filename in DatasetDetailView()',tempfn, filename)
-      #try:
-        #for chunk in file.chunks():
-          #os.write(tempf, chunk)
-      #except:
-        #raise Exception("Problem with the input file %s" % file)
-      #finally:
-        #os.close(tempf)
-        
-      ## open the temp file
-      #fin = codecs.open(tempfn, 'r', 'utf8')
-      
-      ## send for format validation
-      #if data['format'] == 'delimited':
-        #context['format'] = 'delimited'
-        #result = goodtable(tempfn)
-      #elif data['format'] == 'lpf':
-        ## TODO: json-lines alternative 
-        #context['format'] = 'lpf'
-        #result = validate_lpf(fin,'coll')
-      #print('validation result:',result)
-      #fin.close()
-  
-      #print('data valid, still in DatasetDetailView')
-    
-      #if len(result['errors']) == 0:
-        #context['status'] = 'newfile_ok'
-        #print('validation result',result)
-
-        ## create file name
-        #file_exists = Path('media/user_'+user.username+'/'+filename).exists()
-        #print('filename at write, exists?',filename,file_exists)
-        #if not file_exists:
-          #filepath = 'media/user_'+user.username+'/'+filename
-        #else:
-          #filename=filename[:-4]+'_'+tempfn[-7:]+filename[-4:]
-          #filepath = 'media/user_'+user.username+'/'+filename
-  
-        #print("filepath to open/write",filepath)
-        #fout = codecs.open(filepath,'w','utf8')
-        #try:
-          #for chunk in file.chunks():
-            ##print('chunk',chunk, type(chunk))
-            #fout.write(chunk.decode("utf-8"))
-        #except:
-          #sys.exit(sys.exc_info())
-        #finally:
-          #fout.close()
-        
-        #ds.ds_status = 'updating'
-        ## add DatasetFile record
-        #DatasetFile.objects.create(
-          #dataset_id = ds,
-          #file = 'user_'+user.username+'/'+filename,
-          #rev = filerev+1,
-          #uri_base = data['uri_base'],
-          #format = result['format'],
-          #delimiter = result['delimiter'] if "delimiter" in result.keys() else "n/a",
-          #df_status = 'updating',
-          #accepted_date = None,
-          #header = result['columns'] if "columns" in result.keys() else [],
-          #numrows = result['count']
-        #)
-        
-        #return redirect('/datasets/'+ds+'/detail')
-
-      #else:
-        #print('validation errors',result['errors'])
-        
+      ds.save()        
     return super().form_valid(form)
   
   def form_invalid(self,form):
@@ -1475,12 +1394,10 @@ class DatasetDetailView(LoginRequiredMixin,UpdateView):
     context = {}
     print('form not valid', form.errors)
     print('cleaned_data', form.cleaned_data)
-    #cleaned_data {'owner': <User: A_User>, 'label': 'places_p169b', 'title': 'P169 monasteries!', 'description': 'monasteries visited by BDRC P169', 'datatype': 'place', 'uri_base': 'http://library.bdrc.io/show/', 'format': 'delimited'}
     context['errors'] = form.errors
     return super().form_invalid(form)
     
   def get_object(self):
-    #print('kwargs:',self.kwargs)
     id_ = self.kwargs.get("id")
     return get_object_or_404(Dataset, id=id_)
   
@@ -1489,11 +1406,11 @@ class DatasetDetailView(LoginRequiredMixin,UpdateView):
     print('DatasetDetailView get_context_data() kwargs:',self.kwargs)
     id_ = self.kwargs.get("id")
     ds = get_object_or_404(Dataset, id=id_)
-    #file = DatasetFile.objects.filter(dataset_id_id = ds.id).order_by('-upload_date')[0]
-    file = ds.files.all().order_by('upload_date')[0]
     
-    # from DatasetCreateView()
-    # insert to db immediately if file.df_status == format_ok 
+    # coming from DatasetCreateView(),
+    # insert to db immediately (file.df_status == format_ok) 
+    # most recent data file
+    file = ds.files.all().order_by('upload_date')[0]
     if file.df_status == 'format_ok':
       print('format_ok , inserting dataset '+str(id_))
       if file.format == 'delimited':
@@ -1507,7 +1424,7 @@ class DatasetDetailView(LoginRequiredMixin,UpdateView):
       ds.save()
       file.save()
 
-    # load areas for dropdowns
+    # build context for rendering dataset.html
     me = self.request.user
     area_types=['ccodes','copied','drawn']
     
@@ -1527,7 +1444,6 @@ class DatasetDetailView(LoginRequiredMixin,UpdateView):
     context['current_file'] = file
     context['format'] = file.format
     context['numrows'] = file.numrows
-    #context['users'] = ds.dsusers
     context['collab'] = ds.collab
     placeset = Place.objects.filter(dataset=ds.label)
     context['tasks'] = TaskResult.objects.all().filter(task_args = [id_],status='SUCCESS')
@@ -1564,7 +1480,8 @@ class DatasetDetailView(LoginRequiredMixin,UpdateView):
     return context
 
 # 
-# confirm ok on delete
+# load page for confirm ok on delete
+#
 class DatasetDeleteView(DeleteView):
   template_name = 'datasets/dataset_delete.html'
 
@@ -1575,7 +1492,9 @@ class DatasetDeleteView(DeleteView):
   def get_success_url(self):
     return reverse('dashboard')
 
+#
 # fetch places in specified dataset 
+#
 def ds_list(request, label):
   print('in ds_list() for',label)
   qs = Place.objects.all().filter(dataset=label)

@@ -6,7 +6,7 @@ import codecs, tempfile, os, re, sys
 import pandas as pd
 from places.models import *
 from datasets.models import Dataset, Hit, DatasetFile
-from datasets.utils import validate_lpf, goodtable
+from datasets.utils import validate_lpf, validate_tsv
 from elasticsearch import Elasticsearch
 from es.es_utils import makeDoc
 es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
