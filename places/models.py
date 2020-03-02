@@ -19,6 +19,10 @@ class Place(models.Model):
     dataset = models.ForeignKey('datasets.Dataset', db_column='dataset',
         to_field='label', related_name='places', on_delete=models.CASCADE)
     ccodes = ArrayField(models.CharField(max_length=2))
+    
+    # indexed? toggle when deleted
+    indexed = models.BooleanField(default=False)
+    
     # general purpose
     flag = models.BooleanField(default=False)
 
@@ -26,6 +30,10 @@ class Place(models.Model):
         # return str(self.id)
         return '%s:%d' % (self.dataset, self.id)
 
+    @property
+    def indexed(self):
+        return self.indexed
+    
     @property
     def countries(self):
         return [cc[0][x]['gnlabel'] for x in self.ccodes]

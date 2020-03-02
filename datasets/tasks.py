@@ -606,7 +606,7 @@ def align_tgn(pk, *args, **kwargs):
   start = datetime.datetime.now()
 
   # build query object
-  # for place in ds.places.all()[:1]:
+  # TODO: filter out place.indexed = False
   for place in ds.places.all():
     #place=get_object_or_404(Place,id=131735) # Caledonian Canal (ne)
     count +=1
@@ -769,9 +769,6 @@ def es_lookup_whg(qobj, *args, **kwargs):
       "must": [
         {"terms": {"names.toponym":qobj['variants']}}
         ]
-      #,"should":[
-        #{"terms": {"parents":bestParent(qobj)}}                
-        #]
       ,"filter": [get_bounds_filter(bounds,'whg')] if bounds['id'] != ['0'] else []
     }
   }}
@@ -890,7 +887,7 @@ def align_whg(pk, *args, **kwargs):
   """
   qs = ds.places.all()
   for place in qs:
-    #place=get_object_or_404(Place,id=227676)
+    #place=get_object_or_404(Place,id=6294527)
     count +=1
     qobj = {"place_id":place.id, "src_id":place.src_id, "title":place.title}
     links=[]; ccodes=[]; types=[]; variants=[]; parents=[]; geoms=[]; 
@@ -918,7 +915,7 @@ def align_whg(pk, *args, **kwargs):
     # names
     for name in place.names.all():
       variants.append(name.toponym)
-    qobj['variants'] = variants
+    qobj['variants'] = [v.lower() for v in variants]
 
     # parents
     for rel in place.related.all():
@@ -962,8 +959,8 @@ def align_whg(pk, *args, **kwargs):
         parent_obj['suggest']['input'].append(place.title)
         parent_obj['searchy'].append(place.title)
         
-      #index it
-      #print('parent_obj',parent_obj)
+      # index it
+      # and flag its db record
       try:
         res = es.index(index=idx, doc_type='place', id=str(whg_id), body=json.dumps(parent_obj))
         count_seeds +=1
@@ -1003,6 +1000,7 @@ def align_whg(pk, *args, **kwargs):
           # index the record and update its parent
           try:
             # first index the place (newchild)
+            # and flag its db record
             res = es.index(index=idx,doc_type='place',id=place.id,
                            routing=1,body=json.dumps(newchild))
             count_kids +=1                

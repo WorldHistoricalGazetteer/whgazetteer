@@ -29,7 +29,7 @@ from datasets.models import Dataset, Hit, DatasetFile
 from datasets.static.hashes.parents import ccodes
 from datasets.tasks import align_tgn, align_whg, align_wd, maxID
 from datasets.utils import *
-from es.es_utils import makeDoc
+from es.es_utils import makeDoc, esq_get, fetch_pids, deleteFromIndex
 
 def pretty_request(request):
   headers = ''
@@ -280,9 +280,12 @@ def review(request, pk, tid, passnum): # dataset pk, celery recon task_id
               print('see if match for '+str(placeid)+' ('+str(hits[x]['json']['place_id'])+
                     ') is parent or child in index')
               indexMatch(placeid, hits[x]['json']['place_id'])
-          elif hits[x]['match'] == 'none' and ds.label in ['gn500','gnmore','tgn_filtered_01']:
+          #elif hits[x]['match'] == 'none' and ds.label in ['gn500','gnmore','tgn_filtered_01']:
+          elif hits[x]['match'] == 'none' and task.task_name == 'align_whg' or \
+               ds.label in ['gn500','gnmore','tgn_filtered_01']:
+            # no match upon review means it's a new parent
             indexMatch(placeid)
-            print('made record for:',placeid)
+            print('sent to indexMatch():',placeid)
           # flag as reviewed
           matchee = get_object_or_404(Hit, id=hit.id)
           matchee.reviewed = True
@@ -717,20 +720,28 @@ def ds_update(request):
       
       #
       # if dataset is indexed, update it there
-      from elasticsearch import Elasticsearch      
-      es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
-      idx='whg02'      
-      q = {"query":{"match":{"dataset": ds.label }}}
-      res = es.search(index=idx, body=qget(r))    
-      if len(res['hits']['hits']) > 0:
-        print('start updating in ES')
+      # TODO: this suggests a new reconciliation task and accessioning for added records
+      if compare_data['count_indexed'] > 0:
+        from elasticsearch import Elasticsearch      
+        es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+        idx='whg02'
+        
+        # surgically remove as req.
+        if len(rows_delete)> 0:
+          deleteFromIndex(es, idx, rows_delete)
+        
+        # update others
+        if len(rows_replace) > 0:
+          replaceInIndex(es, idx, rows_replace)
       else:
-        print('not yet indexed, all done for now')
+        print('not indexed, that is all')
       
       result = {"status": "updated", "#updated":count_updated , "#new":count_new
                 ,"newfile": filepath, "format":file_format
                 }
       return JsonResponse(result,safe=False)
+    elif file_format == 'lpf':
+      print("ds_update for lpf; doesn't get here yet")
 
 # ***
 # validates dataset update file & compares w/existing
@@ -798,6 +809,7 @@ def ds_compare(request):
       "tempfn": tempfn_new,
       "count_links": count_links,
       "count_geoms": count_geoms,
+      "count_indexed": ds_status['idxcount'],
     }
     
     # perform comparison
@@ -1410,7 +1422,8 @@ class DatasetDetailView(LoginRequiredMixin,UpdateView):
     # coming from DatasetCreateView(),
     # insert to db immediately (file.df_status == format_ok) 
     # most recent data file
-    file = ds.files.all().order_by('upload_date')[0]
+    #file = ds.files.all().order_by('upload_date')[0]
+    file = ds.files.all().order_by('-rev')[0]
     if file.df_status == 'format_ok':
       print('format_ok , inserting dataset '+str(id_))
       if file.format == 'delimited':
@@ -1481,6 +1494,7 @@ class DatasetDetailView(LoginRequiredMixin,UpdateView):
 
 # 
 # load page for confirm ok on delete
+# TODO: also delete from index
 #
 class DatasetDeleteView(DeleteView):
   template_name = 'datasets/dataset_delete.html'

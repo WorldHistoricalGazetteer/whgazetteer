@@ -552,7 +552,7 @@ js for Summary, Reconciliation
   })
   
   // prettify comparison results
-  function compare_text(data) {
+  function comparisonText(data) {
     console.log('comparison data returned',data)
     stats = data['compare_result']
     keepg = data['keepg']; keepl = data['keepl'];
@@ -572,7 +572,8 @@ js for Summary, Reconciliation
       ' <input type="checkbox" id="preserve_links" checked></li>'
     }
     html += '</ul>'
-    return html  
+    html += data['count_indexed'] > 0 ? '<p>Additionally, <b>'+data['count_indexed'] + '</b> records previously indexed will be updated (<b>'+stats['count_replace']+'</b>) or removed (<b>'+stats['rows_del'].length+'</b>)</p>' : ''
+    return html
   }
 
   // submit new file for comparison
@@ -601,7 +602,7 @@ js for Summary, Reconciliation
         html += '<b>Validation result</b>: <br/><i>' + 
           (data['validation_result']['errors'].length <1?'format valid':data['validation_result']['errors'])+'</i><hr/>'
         <!--html += compare_text(data['compare_result'])-->
-        html += compare_text(data)
+        html += comparisonText(data)
         $("#loadfile").addClass('hidden')
         $("#btn_update").removeClass('hidden')
         $("#results_text").html(html)
@@ -610,16 +611,6 @@ js for Summary, Reconciliation
     })
   })
   
-  // toggle file form for update
-  <!--$("#a_update").click(function(){-->
-    <!--// flip display-->
-    <!--$(".display-field, .update-field, .update-msg").toggleClass('hidden')-->
-    <!--$("#div_file").toggleClass('border-red')-->
-    <!--oldy=$("#a_update").text()-->
-    <!--newy=$("#a_update").data('alt')-->
-    <!--$("#a_update").text(newy).data('alt',oldy);-->
-    <!--$(".btn-file").toggleClass("hidden")-->
-  <!--})-->
   // TODO: refactor this ugly bit below
   $(".edit-title").click(function() {
     <!--$(".hidden").toggle()-->

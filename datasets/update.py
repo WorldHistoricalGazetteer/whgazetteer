@@ -131,18 +131,7 @@ print(pcount,ncount,gcount,lcount) # 125 125 24 9
 
 # ES STUFF
 # fetch place_ids for all docs in a dataset
-def fetch_pids(dslabel):
-  pids=[]
-  esq_ds = {"size":10000, "query":{"match":{"dataset": dslabel}}}
-  res = es.search(index=idx, body=esq_ds)
-  docs = res['hits']['hits']
-  for d in docs:
-    pids.append(d['_source']['place_id'])
-  return pids
 
-def esq_get(pid):
-  q = {"query": {"bool": {"must": [{"match":{"place_id": pid }}]}}}
-  return q
 
 pids = fetch_pids('diamonds')
 # strip indexed places by Place.id; pids = place_id array

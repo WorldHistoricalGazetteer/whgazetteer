@@ -55,7 +55,7 @@ class Dataset(models.Model):
         idx='whg02'
         submissions = [{"task_id":t.task_id,
                 "date":t.date_done.strftime("%Y-%m-%d %H:%M"),
-                "hits_tbd":Hit.objects.filter(task_id=t,reviewed=False).count() } \
+                "hits_tbr":Hit.objects.filter(task_id=t,reviewed=False).count() } \
                        for t in self.tasks.filter(task_name='align_whg').order_by('-date_done')]
         idxtask = len(self.tasks.filter(task_name='align_whg', status='SUCCESS')) > 0
         idxcount = escount_ds(idx,self.label)
