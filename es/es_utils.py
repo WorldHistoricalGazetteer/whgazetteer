@@ -1,12 +1,39 @@
-# es_utils.py 7 Feb 2019; rev 5 Mar 2019; 02 Oct 2019; 21 Feb 2020 (create whg_test)
-# misc supporting eleasticsearch tasks (es.py)
+# es_utils.py 21 rev. Feb 2020 (create whg_test); rev. 02 Oct 2019; rev 5 Mar 2019; created 7 Feb 2019;
+# misc eleasticsearch supporting tasks 
 
 # ***
-# replace docs in index by place_id
+# replace docs in index given place_id list
 # ***
 def replaceInIndex(es,idx,pids):
+  from django.shortcuts import get_object_or_404
+  from . import makeDoc, esq_get, uriMaker, parsePlace
   print('in replaceInIndex():', pids)
-
+  for pid in pids:
+    # pid=6294527 (child of 13504937); 2 others [6294533, 6294563]
+    res = es.search(index=idx, body=esq_get(pid))
+    # is it in the index?
+    if len(res['hits']['hits']) > 0:
+      hits = res['hits']['hits']
+      # get its key info 
+      # TODO: what if there are more than one?
+      doc = hits[0]
+      src = doc['_source']
+      role = src['relation']['name']; print(role)
+      sugs = list(set(src['suggest']['input'])) # distinct only
+      searchy = list(set([item for item in src['searchy'] if type(item) != list]))
+      # child or parent?
+      if role == 'child':
+        # get parent
+        parentid = src['relation']['parent']
+        # write a new doc from new (i.e. just replaced) place
+        place = get_object_or_404(Place, pk=pid)
+        newchild = makeDoc(place, 'none')
+        newchild['relation']={"name":"child","parent":parentid}
+        
+        # it will become the hit's child
+        # parent_whgid = hit['_id']         
+      
+      
 # ***
 # delete docs given place_id array
 # if parent, promotes a child if any
@@ -18,11 +45,12 @@ def replaceInIndex(es,idx,pids):
 #es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 def deleteFromIndex(es,idx,pids):
   delthese=[]
-  # child: 6293798; parent w/no children 6293937; DANGER!!! parent with children: 13549548; 
+  # 
   for pid in pids:
     # get its index document
     res = es.search(index=idx, body=esq_get(pid))
     hits=res['hits']['hits']
+    # is it in the index?
     if len(hits) > 0:
       doc = hits[0]
       src = doc['_source']
@@ -127,7 +155,8 @@ def esq_get(pid):
   return q
 
 # ***
-# in index :: bool
+# count of dataset docs in index
+# ***
 def escount_ds(idx,label):
   from elasticsearch import Elasticsearch
   es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
@@ -160,7 +189,10 @@ def confirm(prompt=None, resp=False):
     if ans == 'n' or ans == 'N':
       return False
 
-#idx='whg_test'
+
+# ***
+# create an index
+# ***
 def esInit(idx):
   import os, codecs
   os.chdir('/Users/karlg/Documents/Repos/_whgazetteer')
@@ -185,6 +217,9 @@ def esInit(idx):
   else:
     print('oh, okay')
 
+# ***
+# called from makeDoc()
+# ***
 def uriMaker(place):
   from django.shortcuts import get_object_or_404
   from datasets.models import Dataset
@@ -217,30 +252,38 @@ def uriMaker(place):
     ## else: create seed (and/or parent+child)
   #return matches
 
-def makeDoc(place,parentid):
-  cc_obj = {
-      "relation": {},
-        "children": [],
-        "suggest": {"input":[]},
-        "minmax": [],
-        "place_id": place.id,
-        "dataset": place.dataset.label,
-        "src_id": place.src_id,
-        "title": place.title,
-        "uri": uriMaker(place),
-        "ccodes": place.ccodes,
-        "names": parsePlace(place,'names'),
-        "types": parsePlace(place,'types'),
-        "geoms": parsePlace(place,'geoms'),
-        "links": parsePlace(place,'links'),
-        "timespans": [],
-        "descriptions": parsePlace(place,'descriptions'),
-        "depictions": [], 
-        "relations": [],
-        "searchy": []
-    }
-  return cc_obj
 
+# ***
+# make an ES doc from a Place instance
+# ***
+def makeDoc(place,parentid):
+  es_doc = {
+      "relation": {},
+      "children": [],
+      "suggest": {"input":[]},
+      "place_id": place.id,
+      "dataset": place.dataset.label,
+      "src_id": place.src_id,
+      "title": place.title,
+      "uri": uriMaker(place),
+      "ccodes": place.ccodes,
+      "names": parsePlace(place,'names'),
+      "types": parsePlace(place,'types'),
+      "geoms": parsePlace(place,'geoms'),
+      "links": parsePlace(place,'links'),
+      #"timespans": [],
+      "timespans": parsePlace(place,'whens'),
+      "minmax": [],
+      "descriptions": parsePlace(place,'descriptions'),
+      "depictions": parsePlace(place,'depictions'), 
+      "relations": parsePlace(place,'related'),
+      "searchy": []
+    }
+  return es_doc
+
+# ***
+# fill ES doc arrays with jsonb objects in database
+# ***
 def parsePlace(place,attr):
   qs = eval('place.'+attr+'.all()')
   arr = []
@@ -251,58 +294,23 @@ def parsePlace(place,attr):
       if 'citation' in g.keys(): geom["citation"] = g['citation']
       if 'geowkt' in g.keys(): geom["geowkt"] = g['geowkt']
       arr.append(geom)
+    elif attr == 'whens':
+      w = obj.jsonb
+      ts=w['timespans']
+      arr.append(ts)
     else:
       arr.append(obj.jsonb)
   return arr
 
-def jsonDefault(value):
-  import datetime
-  if isinstance(value, datetime.date):
-    return dict(year=value.year, month=value.month, day=value.day)
-  else:
-    return value.__dict__
+# date parser; not in use
+#def jsonDefault(value):
+  #import datetime
+  #if isinstance(value, datetime.date):
+    #return dict(year=value.year, month=value.month, day=value.day)
+  #else:
+    #return value.__dict__
 
-#def deleteDocs(ids):
-  #from elasticsearch import Elasticsearch
-  #es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
-  #for i in ids:
-    #try:
-      #es.delete(index='whg', doc_type='place', id=i)
-    #except:
-      #print('failed delete for: ',id)
-      #pass
-
-#def deleteKids(ids):
-  #from elasticsearch import Elasticsearch
-  #{"nested": {
-      #"path": "is_conflation_of",
-      #"query": 
-        #{"nested" : {
-        #"path" :  "is_conflation_of.types",
-        #"query" : {"terms": {"is_conflation_of.place_id": ids}}
-        #}
-        #}
-      #}}    
-  #q={"query": {"terms": { "":ds }}}
-  #es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
-  #for i in ids:
-    #try:
-      #es.delete(index='whg', doc_type='place', id=i)
-    #except:
-      #print('failed delete for: ',id)
-      #pass
-
-def deleteDataset(ds):
-  q={"query": {"match": { "seed_dataset":ds }}}
-  try:
-    es.delete(es_index='whg', doc_type='place', body=q)
-  except:
-    print('failed delete for: ',ds)
-    pass
-
-
-
-
+# used in scratch code es.py, es_black.py
 def queryObject(place):
   from datasets.utils import hully
   qobj = {"place_id":place.id,"src_id":place.src_id,"title":place.title}
@@ -345,91 +353,35 @@ def queryObject(place):
 
   return qobj
 
-def makeSeed(place, dataset, whgid):
-  # whgid, place_id, dataset, src_id, title
-  sobj = SeedPlace(whgid, place.id, dataset, place.src_id, place.title )
-
-  # pull from name.json
-  for n in place.names.all():
-    sobj.suggest['input'].append(n.json['toponym'])
-
-  # no place_when data yet
-  if len(place.whens.all()) > 0:
-    sobj['minmax'] = []
-
-  sobj.is_conflation_of.append(makeChildConflate(place))
-
-  return sobj
-
-# abandoned for makeDoc()
-class SeedPlace(object):
-  def __init__(self, whgid, place_id, dataset, src_id, title):
-    self.whgid = whgid
-    self.representative_title = title
-    self.seed_dataset = dataset
-    self.representative_point = []
-    self.representative_shape = []
-    self.suggest = {"input":[]}
-    self.minmax = []
-    self.is_conflation_of = []
-
-  def __str__(self):
-    import json
-    #return str(self.__class__) + ": " + str(self.__dict__)    
-    return json.dumps(self.__dict__)
-
-  def toJSON(self):
-    import json
-    return json.dumps(self, default=jsonDefault, sort_keys=True, indent=2)            
-
-class IndexedPlaceFlat(object):
-  def __init__(self, whg_id, place_id, dataset, src_id, title, uri):
-    self.relation = {"name":"parent"}
-    self.children = []
-    self.suggest = {"input":[]}
-    self.representative_point = []
-    self.minmax = []
-
-    self.whg_id = whg_id
-    self.place_id = place_id
-    self.dataset = dataset
-    self.src_id = src_id
-    self.title = title
-    self.uri = uri
-
-    self.ccodes = []
-    self.names = []
-    self.types = []
-    self.geoms = []
-    self.links = []
-    self.timespans = []
-    self.descriptions = []
-    self.depictions = []
-    self.relations = []
-
-  def __str__(self):
-    import json
-    #return str(self.__class__) + ": " + str(self.__dict__)    
-    return json.dumps(self.__dict__)
-
-  def toJSON(self):
-    import json
-    return json.dumps(self, default=lambda o: o.__dict__, 
-                          sort_keys=True, indent=2)    
 
 # to be used in subsequent adds to is_conflation_of[]
-class MatchRecord(object):
-  def __init__(self, dataset, id, title, uri, exact):
-    self.id = id
-    self.title = title
-    self.uri = uri
-    self.source_gazetteer = dataset
-    self.exact_matches = exact
-    self.names = [{"name":title,"language": ""}]
-    self.temporal_bounds = ["", "", "", "", ""]
+#def deleteDocs(ids):
+  #from elasticsearch import Elasticsearch
+  #es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+  #for i in ids:
+    #try:
+      #es.delete(index='whg', doc_type='place', id=i)
+    #except:
+      #print('failed delete for: ',id)
+      #pass
 
-  def __str__(self):
-    import json
-    return json.dumps(self.__dict__)    
-  
-# allpids(125) [6294620, 6294619, 6294573, 6294525, 6294495, 6294617, 6294616, 6294615, 6294614, 6294613, 6294612, 6294611, 6294610, 6294609, 6294608, 6294607, 6294606, 6294605, 6294604, 6294603, 6294602, 6294601, 6294600, 6294599, 6294598, 6294597, 6294596, 6294595, 6294594, 6294593, 6294592, 6294591, 6294590, 6294589, 6294588, 6294587, 6294586, 6294585, 6294584, 6294583, 6294582, 6294581, 6294580, 6294579, 6294578, 6294577, 6294576, 6294575, 6294574, 6294572, 6294571, 6294570, 6294569, 6294568, 6294567, 6294566, 6294565, 6294564, 6294563, 6294562, 6294561, 6294560, 6294559, 6294558, 6294557, 6294556, 6294555, 6294554, 6294553, 6294552, 6294551, 6294550, 6294549, 6294548, 6294547, 6294546, 6294545, 6294544, 6294543, 6294542, 6294541, 6294540, 6294539, 6294538, 6294537, 6294536, 6294535, 6294534, 6294533, 6294532, 6294531, 6294530, 6294529, 6294528, 6294527, 6294526, 6294524, 6294523, 6294522, 6294521, 6294520, 6294519, 6294518, 6294512, 6294511, 6294510, 6294509, 6294508, 6294507, 6294502, 6294501, 6294500, 6294499, 6294498, 6294497, 6294496, 6294494, 6294493, 6294492, 6294491, 6294490, 6294487, 6294486, 6294485, 6294484]
+#def deleteKids(ids):
+  #from elasticsearch import Elasticsearch
+  #{"nested": {
+      #"path": "is_conflation_of",
+      #"query": 
+        #{"nested" : {
+        #"path" :  "is_conflation_of.types",
+        #"query" : {"terms": {"is_conflation_of.place_id": ids}}
+        #}
+        #}
+      #}}    
+  #q={"query": {"terms": { "":ds }}}
+  #es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+  #for i in ids:
+    #try:
+      #es.delete(index='whg', doc_type='place', id=i)
+    #except:
+      #print('failed delete for: ',id)
+      #pass
+

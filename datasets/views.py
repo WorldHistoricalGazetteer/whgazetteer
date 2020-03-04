@@ -29,7 +29,7 @@ from datasets.models import Dataset, Hit, DatasetFile
 from datasets.static.hashes.parents import ccodes
 from datasets.tasks import align_tgn, align_whg, align_wd, maxID
 from datasets.utils import *
-from es.es_utils import makeDoc, esq_get, fetch_pids, deleteFromIndex
+from es.es_utils import makeDoc, esq_get, fetch_pids, deleteFromIndex, replaceInIndex
 
 def pretty_request(request):
   headers = ''
@@ -65,11 +65,10 @@ def link_uri(auth,id):
 # for reconciliation: write place_link & place_geom (if aug_geom == 'on') records if matched
 # for accessioning: if close or exact -> if match is parent -> make child else if match is child -> make sibling
 def indexMatch(pid, hit_pid=None):
-  print('indexMatch, wtf?',pid)
+  print('indexMatch(): pid '+pid+'w/hit_pid '+hit_pid)
   from elasticsearch import Elasticsearch
   es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
   idx='whg02'
-  #idx='whg_test'
   
   if hit_pid == None:
     print('making '+str(pid)+' a parent')
@@ -140,52 +139,60 @@ def isOwner(user):
   kwargs=json.loads(task.task_kwargs.replace("'",'"'))  
   return kwargs['owner'] == user.id
 
-#@user_passes_test(isOwner)
-def review(request, pk, tid, passnum): # dataset pk, celery recon task_id
-  #print('review() request', request)
+
+# ***
+# review reconciliation results
+# from passnum links on detail#reconciliation
+# dataset pk, celery task_id
+# responds to GET for display, POST if 'save' button submits
+# ***
+def review(request, pk, tid, passnum): 
   ds = get_object_or_404(Dataset, id=pk)
   task = get_object_or_404(TaskResult, task_id=tid)
   kwargs=json.loads(task.task_kwargs.replace("'",'"'))
   #print('task_kwargs as json',kwargs)
+  
   # filter place records by passnum for those with unreviewed hits on this task
+  # if request passnum is complete, increment
   cnt_pass = Hit.objects.values('place_id').filter(task_id=tid, reviewed=False, query_pass=passnum).count()
   pass_int = int(passnum[4])
   passnum = passnum if cnt_pass > 0 else 'pass'+str(pass_int+1)
-  # [place_id] for places with >0 hits
   
+  # place_ids of unreviewed for passnum
   hitplaces = Hit.objects.values('place_id').filter(
     task_id=tid,
       reviewed=False,
         query_pass=passnum)
   
+  # if some are unreviewed, queue in record_list
   if len(hitplaces) > 0:
     record_list = Place.objects.order_by('title').filter(pk__in=hitplaces)
   else:
     context = {"nohits":True,'ds_id':pk,'task_id': tid, 'passnum': passnum}
     return render(request, 'datasets/review.html', context=context)
-    # no unreviewed hits
 
+  # manage pagination & urls
+  # gets next place record as records[0]
   paginator = Paginator(record_list, 1)
   page = 1 if not request.GET.get('page') else request.GET.get('page')
   records = paginator.get_page(page)
   count = len(record_list)
-
   placeid = records[0].id
   place = get_object_or_404(Place, id=placeid)
-  print('placeid',placeid)
+  print('reviewing hits for place_id  #',placeid)
 
-  # recon task hits
+  # recon task hits for current place
   raw_hits = Hit.objects.all().filter(place_id=placeid, task_id=tid).order_by('query_pass','-score')
 
   # convert ccodes to names
   countries = []
   for r in records[0].ccodes:
-  #for r in place.ccodes:
     try:
       countries.append(ccodes[0][r]['gnlabel']+' ('+ccodes[0][r]['tgnlabel']+')')
     except:
       pass
 
+  # prep some context
   context = {
     'ds_id':pk, 'ds_label': ds.label, 'task_id': tid,
       'hit_list':raw_hits, 'authority': task.task_name[6:],
@@ -194,6 +201,7 @@ def review(request, pk, tid, passnum): # dataset pk, celery recon task_id
         'aug_geom':json.loads(task.task_kwargs.replace("'",'"'))['aug_geom']
   }
 
+  
   # Hit model fields = ['task_id','authority','dataset','place_id',
   #     'query_pass','src_id','authrecord_id','json','geom' ]
   HitFormset = modelformset_factory(
@@ -202,26 +210,30 @@ def review(request, pk, tid, passnum): # dataset pk, celery recon task_id
     form=HitModelForm, extra=0)
   formset = HitFormset(request.POST or None, queryset=raw_hits)
   context['formset'] = formset
-  #print('context:',context)
-  #print('formset data:',formset.data)
   method = request.method
+  
+  # if POST, process review choices (match/no match)
   if method == 'GET':
     print('a GET, just rendering next')
   else:
     try:
       if formset.is_valid():
-        # get the task
+        # 
         hits = formset.cleaned_data
+        print('hits (formset.cleaned_data)',hits)
         matches = 0
         for x in range(len(hits)):
           hit = hits[x]['id']
           hasGeom = 'geoms' in hits[x]['json'] and len(hits[x]['json']['geoms']) > 0
+          # is this hit a match?
           if hits[x]['match'] not in ['none']:
+            # yes, hit is a match
             matches += 1
-            if task.task_name != 'align_whg':
-              # not accessioning; augmenting with links (& geom if requested)
-              print('posting links from this hit:',hits[x])
-              # if 'accept geometries' was checked in 'Initiate Reconciliation'
+            # are we working with tgn or wikidata?
+            if task.task_name in ['align_tgn','align_wd']:
+              # align/recon to authority
+              # create PlaceGeom record if 'accept geometries' was checked
+              # 
               if kwargs['aug_geom'] == 'on' and hasGeom:
                 geom = PlaceGeom.objects.create(
                   place_id = place,
@@ -234,9 +246,10 @@ def review(request, pk, tid, passnum): # dataset pk, celery recon task_id
                     "coordinates":hits[x]['json']['geoms'][0]['coordinates']
                   }
                 )
+                print('created PlaceGeom instance:', geom)
               ds.save()
 
-              # create place_link for matched authority record
+              # create single PlaceLink for matched authority record
               print('place_link for', task.task_name,hits[x]['authrecord_id'])
               link = PlaceLink.objects.create(
                 place_id = place,
@@ -248,15 +261,14 @@ def review(request, pk, tid, passnum): # dataset pk, celery recon task_id
                       else hits[x]['json']['place_id'])
                 }
               )
-              print('place_link', link)
-              
-              # update <ds>.numlinked, <ds>.total_links
-              #ds.numlinked = ds.numlinked +1
-              #ds.total_links = ds.total_links +1
-              #ds.save()
-  
-              # grab links in the case of wikidata
-              # TODO: check not duplicate
+              # update totals
+              ds.numlinked = ds.numlinked +1
+              ds.total_links = ds.total_links +1
+              ds.save()
+              print('created place_link', link)
+
+              # create multiple PlaceLink records (e.g. Wikidata)
+              # TODO: filter duplicates
               if 'links' in hits[x]['json']:
                 for l in hits[x]['json']['links']:
                   link = PlaceLink.objects.create(
@@ -269,23 +281,25 @@ def review(request, pk, tid, passnum): # dataset pk, celery recon task_id
                       "identifier": re.search("\: (.*?)$", l).group(1)
                     }
                   )
-                  print('posted',link.jsonb)
+                  print('PlaceLink record created',link.jsonb)
                   # update totals
                   ds.numlinked = ds.numlinked +1
                   ds.total_links = ds.total_links +1
                   ds.save()
-              
+            # 
+            # this is accessioning step
             elif task.task_name == 'align_whg':
-              # 
-              print('see if match for '+str(placeid)+' ('+str(hits[x]['json']['place_id'])+
-                    ') is parent or child in index')
+              # match is to a whg index doc
+              # is the match a parent or child?
+              # if parent, make doc as its child
+              # if child, make doc as its sibling 
               indexMatch(placeid, hits[x]['json']['place_id'])
-          #elif hits[x]['match'] == 'none' and ds.label in ['gn500','gnmore','tgn_filtered_01']:
-          elif hits[x]['match'] == 'none' and task.task_name == 'align_whg' or \
-               ds.label in ['gn500','gnmore','tgn_filtered_01']:
-            # no match upon review means it's a new parent
-            indexMatch(placeid)
-            print('sent to indexMatch():',placeid)
+          # this hit not a match, do nothing
+        if matches == 0 and task.task_name == 'align_whg':
+          # no hits were a match; if tgn or wikidata, do nothing
+          # if align_whg, record get indexed as new parent
+          
+        
           # flag as reviewed
           matchee = get_object_or_404(Hit, id=hit.id)
           matchee.reviewed = True
@@ -731,8 +745,8 @@ def ds_update(request):
           deleteFromIndex(es, idx, rows_delete)
         
         # update others
-        if len(rows_replace) > 0:
-          replaceInIndex(es, idx, rows_replace)
+        #if len(rows_replace) > 0:
+          #replaceInIndex(es, idx, rows_replace)
       else:
         print('not indexed, that is all')
       

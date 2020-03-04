@@ -31,7 +31,7 @@ class Place(models.Model):
         return '%s:%d' % (self.dataset, self.id)
 
     @property
-    def indexed(self):
+    def idx(self):
         return self.indexed
     
     @property

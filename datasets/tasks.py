@@ -997,6 +997,8 @@ def align_whg(pk, *args, **kwargs):
           # in either case, it's a child; assign parent _id
           newchild['relation']={"name":"child","parent":parent_whgid}
           
+          # TODO: 
+          
           # index the record and update its parent
           try:
             # first index the place (newchild)
