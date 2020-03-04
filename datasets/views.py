@@ -7,7 +7,7 @@ from django.core.paginator import Paginator #,EmptyPage, PageNotAnInteger
 from django.db.models import Q
 from django.forms import modelformset_factory
 from django.http import JsonResponse
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse
 from django.views.generic import (
   CreateView, ListView, UpdateView, DeleteView, View, FormView)
@@ -367,10 +367,10 @@ def ds_recon(request, pk):
       result = func.delay(
         ds.id,
         ds=ds.id,
-          dslabel=ds.label,
-          owner=ds.owner.id,
-          bounds=bounds,
-          aug_geom=aug_geom
+        dslabel=ds.label,
+        owner=ds.owner.id,
+        bounds=bounds,
+        aug_geom=aug_geom
       )
     except:
       print(sys.exc_info())
@@ -649,9 +649,14 @@ def ds_update(request):
     )
     
     # (re-)open files as panda dataframes; a = current, b = new
+    # test files
+    # cur: user_whgadmin/diamonds135_rev3.tsv
+    # new: user_whgadmin/diamonds135_rev2a-125.tsv
     if file_format == 'delimited':
-      adf = pd.read_csv('media/'+compare_data['filename_cur'], delimiter='\t',dtype={'id':'str','ccodes':'str'})
-      bdf = pd.read_csv(filepath, delimiter='\t',dtype={'id':'str','ccodes':'str'})
+      #adf = pd.read_csv('media/'+compare_data['filename_cur'], delimiter='\t',dtype={'id':'str','ccodes':'str'})
+      adf = pd.read_csv('media/user_whgadmin/diamonds135_rev3.tsv', delimiter='\t',dtype={'id':'str','ccodes':'str'})
+      #bdf = pd.read_csv(filepath, delimiter='\t',dtype={'id':'str','ccodes':'str'})
+      bdf = pd.read_csv('/var/folders/f4/x09rdl7n3lg7r7gwt1n3wjsr0000gn/T/tmp1zca5x0d.tsv', delimiter='\t',dtype={'id':'str','ccodes':'str'})
       bdf = bdf.astype({"ccodes": str})
       print('reopened old file, # lines:',len(adf))
       print('reopened new file, # lines:',len(bdf))

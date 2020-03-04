@@ -29,9 +29,12 @@ def replaceInIndex(es,idx,pids):
         place = get_object_or_404(Place, pk=pid)
         newchild = makeDoc(place, 'none')
         newchild['relation']={"name":"child","parent":parentid}
-        
-        # it will become the hit's child
-        # parent_whgid = hit['_id']         
+        #newchild['_id']=doc['_id']
+        # delete the old
+        es.delete_by_query(idx,body={"query":{"match":{"_id":doc['_id']}}})
+        # index the new
+        es.index(index=idx,doc_type='place',id=doc['_id'],
+          routing=1,body=json.dumps(newchild))        
       
       
 # ***
@@ -295,9 +298,11 @@ def parsePlace(place,attr):
       if 'geowkt' in g.keys(): geom["geowkt"] = g['geowkt']
       arr.append(geom)
     elif attr == 'whens':
-      w = obj.jsonb
-      ts=w['timespans']
-      arr.append(ts)
+      when_ts = obj.jsonb['timespans']
+      for t in when_ts:
+        x={"start":t['start'][list(t['start'])[0]], \
+           "end":t['end'][list(t['end'])[0]]}
+        arr.append(x)
     else:
       arr.append(obj.jsonb)
   return arr
