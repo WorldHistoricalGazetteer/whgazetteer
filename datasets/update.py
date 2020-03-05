@@ -2,7 +2,7 @@
 
 from django.shortcuts import render, get_object_or_404
 import simplejson as json
-import codecs, tempfile, os, re, sys 
+import codecs, tempfile, os, re, sys, math
 import pandas as pd
 from places.models import *
 from datasets.models import Dataset, Hit, DatasetFile
@@ -141,7 +141,7 @@ def deleteFromIndex(pids):
     # child: 6293916; parent with children: 13549548; parent w/no children 6293837
     for pid in pids:
       # get its index document
-      res = es.search(index=idx, body=esq_get(pid))    
+      res = es.search(index=idx, body=esq_pid(pid))    
       doc = res['hits']['hits'][0]
       src = doc['_source']
       role = src['relation']['name']; print(role)
@@ -231,7 +231,7 @@ def deleteFromIndex(pids):
 
 if len(rows_delete) > 0:  
   for r in rows_delete:
-    res = es.search(index=idx, body=esq_get(r))    
+    res = es.search(index=idx, body=esq_pid(r))    
     doc = res['hits']['hits'][0]
     print(doc)
     

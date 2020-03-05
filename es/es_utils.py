@@ -1,4 +1,4 @@
-# es_utils.py 21 rev. Feb 2020 (create whg_test); rev. 02 Oct 2019; rev 5 Mar 2019; created 7 Feb 2019;
+# es_utils.py rev. Mar 2020; rev. 02 Oct 2019; rev 5 Mar 2019; created 7 Feb 2019;
 # misc eleasticsearch supporting tasks 
 
 # ***
@@ -6,35 +6,84 @@
 # ***
 def replaceInIndex(es,idx,pids):
   from django.shortcuts import get_object_or_404
-  from . import makeDoc, esq_get, uriMaker, parsePlace
+  from  . import makeDoc, esq_pid, esq_id, uriMaker
   print('in replaceInIndex():', pids)
+  # set counter
+  repl_count = 0
   for pid in pids:
-    # pid=6294527 (child of 13504937); 2 others [6294533, 6294563]
-    res = es.search(index=idx, body=esq_get(pid))
-    # is it in the index?
+    # pid=6294527 (child of 13504937); also 6294533
+    # a parent: 6294563
+    res = es.search(index=idx, body=esq_pid(pid))
+    # make sure it's in the index; in test, might not be
     if len(res['hits']['hits']) > 0:
       hits = res['hits']['hits']
       # get its key info 
-      # TODO: what if there are more than one?
+      # TODO: what if more than one?
       doc = hits[0]
       src = doc['_source']
-      role = src['relation']['name']; print(role)
-      sugs = list(set(src['suggest']['input'])) # distinct only
-      searchy = list(set([item for item in src['searchy'] if type(item) != list]))
-      # child or parent?
+      role = src['relation']['name'] #; print(role)
+      
+      # get the db instance
+      place = get_object_or_404(Place, pk=pid)
+      
+      # index doc child or parent?
       if role == 'child':
-        # get parent
+        # get parent _id
         parentid = src['relation']['parent']
-        # write a new doc from new (i.e. just replaced) place
-        place = get_object_or_404(Place, pk=pid)
+        # write a new doc from db place
         newchild = makeDoc(place, 'none')
         newchild['relation']={"name":"child","parent":parentid}
-        #newchild['_id']=doc['_id']
+        
+        # update parent sugs and searchy (from deleteFromIndex)
+        q_update = {"script":{
+                    "source": "ctx._source.suggest.input.addAll(params.sugs); \
+                      ctx._source.searchy.addAll(params.sugs);",
+          "lang": "painless",
+          "params":{"sugs": sugs }
+          },
+          "query": {"match":{"place_id": parentid }}
+        }
+        try:
+          es.update_by_query(index=idx,body=q_update)
+        except:
+          print('aw shit',sys.exit(sys.exc_info()))        
+
         # delete the old
         es.delete_by_query(idx,body={"query":{"match":{"_id":doc['_id']}}})
         # index the new
         es.index(index=idx,doc_type='place',id=doc['_id'],
-          routing=1,body=json.dumps(newchild))        
+          routing=1,body=json.dumps(newchild))
+        repl_count +=1
+      elif role == 'parent':
+        # get children, sugs fro existing index doc
+        kids_e = src['children']
+        #for test
+        #kids_e = src['children']+[11111,22222]
+        sugs_e = list(set(src['suggest']['input'])) # distinct only
+        
+        # new doc from db place; fill from existing
+        newparent = makeDoc(place, None)
+        newparent['children'] = kids_e
+        
+        # merge old & new names in new doc
+        previous = set([q['toponym'] for q in newparent['names']])
+        names_union = list(previous.union(set(sugs_e)))
+        newparent['suggest']['input'] = names_union
+        newparent['searchy'] = names_union
+        newparent['relation']={"name":"parent"}
+        
+        # out with the old
+        es.delete_by_query(idx,body=esq_id(doc['_id']))
+        # in with the new
+        es.index(index=idx,doc_type='place',id=doc['_id'],
+          routing=1,body=json.dumps(newparent))
+        
+        repl_count +=1
+        print('replaced parent', doc['_id'])
+    else:
+      print(str(pid)+' not in index, misplaced in pids[]')
+      pass
+  print('replaceInIndex() count:',repl_count)
       
       
 # ***
@@ -49,9 +98,9 @@ def replaceInIndex(es,idx,pids):
 def deleteFromIndex(es,idx,pids):
   delthese=[]
   # 
-  for pid in pids:
+  for pid in two: #pids:
     # get its index document
-    res = es.search(index=idx, body=esq_get(pid))
+    res = es.search(index=idx, body=esq_pid(pid))
     hits=res['hits']['hits']
     # is it in the index?
     if len(hits) > 0:
@@ -81,28 +130,30 @@ def deleteFromIndex(es,idx,pids):
           # update its children with newkids
           qget = {"query": {"bool": {"must": [{"match":{"place_id": newparent }}]}}}
           res = es.search(index=idx, body=qget)
-          hit = res['hits']['hits'][0]
-          _id = hit['_id']
-          # elevate to parent
-          q_update = {"script":{
-                      "source": "ctx._source.whg_id = params._id; \
-              ctx._source.relation.name = 'parent'; \
-              ctx._source.relation.remove('parent'); \
-              ctx._source.children.addAll(params.newkids); \
-              ctx._source.suggest.input.addAll(params.sugs); \
-              ctx._source.searchy.addAll(params.sugs);",
-              "lang": "painless",
-            "params":{"_id": _id, "newkids": newkids, "sugs": sugs }
-            },
-                                "query": {"match":{"place_id": newparent }}
-                      }
-          try:
-            es.update_by_query(index=idx,body=q_update)
-          except:
-            print('aw shit',sys.exit(sys.exc_info()))
-          # parent status transfered to 'eligible' child, add to list
-          print('parent w/kids '+hit['_source']['title'],pid+' transferred resp to: '+parent+'; tagged for deletion')
-          delthese.append(pid)
+          # TODO: this if meaningful only for tests
+          if len(res['hits']['hits']) > 0:
+            hit = res['hits']['hits'][0]
+            _id = hit['_id']
+            # elevate to parent
+            q_update = {"script":{
+                        "source": "ctx._source.whg_id = params._id; \
+                ctx._source.relation.name = 'parent'; \
+                ctx._source.relation.remove('parent'); \
+                ctx._source.children.addAll(params.newkids); \
+                ctx._source.suggest.input.addAll(params.sugs); \
+                ctx._source.searchy.addAll(params.sugs);",
+                "lang": "painless",
+              "params":{"_id": _id, "newkids": newkids, "sugs": sugs }
+              },
+                                  "query": {"match":{"place_id": newparent }}
+                        }
+            try:
+              es.update_by_query(index=idx,body=q_update)
+            except:
+              print('aw shit',sys.exit(sys.exc_info()))
+            # parent status transfered to 'eligible' child, add to list
+            print('parent w/kids '+hit['_source']['title'],pid+' transferred resp to: '+parent+'; tagged for deletion')
+            delthese.append(pid)
       elif role == 'child':
         # get its parent
         parent = src['relation']['parent']
@@ -131,8 +182,8 @@ def deleteFromIndex(es,idx,pids):
             print('child '+psrc['title'],str(pid)+' excised from parent: '+parent+'; tagged for deletion')
           except:
             print('aw shit',sys.exit(sys.exc_info()))
-        # child's presence in parent removed, add to delthese[]
-        delthese.append(pid)
+      # child's presence in parent removed, add to delthese[]
+      delthese.append(pid)
     elif len(hits) == 0:
       print('not indexed, skipping...')
   es.delete_by_query(idx,body={"query": {"terms": {"place_id": delthese}}})
@@ -153,8 +204,15 @@ def fetch_pids(dslabel):
 # ***
 # query to get a document by place_id
 # ***
-def esq_get(pid):
+def esq_pid(pid):
   q = {"query": {"bool": {"must": [{"match":{"place_id": pid }}]}}}
+  return q
+
+# ***
+# query to get a document by _id
+# ***
+def esq_id(_id):
+  q = {"query": {"bool": {"must": [{"match":{"_id": _id }}]}}}
   return q
 
 # ***
@@ -260,6 +318,8 @@ def uriMaker(place):
 # make an ES doc from a Place instance
 # ***
 def makeDoc(place,parentid):
+  from . import parsePlace
+  # TODO: remove parentid; used in early tests
   es_doc = {
       "relation": {},
       "children": [],
@@ -274,7 +334,6 @@ def makeDoc(place,parentid):
       "types": parsePlace(place,'types'),
       "geoms": parsePlace(place,'geoms'),
       "links": parsePlace(place,'links'),
-      #"timespans": [],
       "timespans": parsePlace(place,'whens'),
       "minmax": [],
       "descriptions": parsePlace(place,'descriptions'),
@@ -299,21 +358,15 @@ def parsePlace(place,attr):
       arr.append(geom)
     elif attr == 'whens':
       when_ts = obj.jsonb['timespans']
+      # TODO: index wants numbers, spec says strings
+      # expect strings, including operators
       for t in when_ts:
-        x={"start":t['start'][list(t['start'])[0]], \
-           "end":t['end'][list(t['end'])[0]]}
+        x={"start": int(t['start'][list(t['start'])[0]]), \
+           "end": int(t['end'][list(t['end'])[0]]) }
         arr.append(x)
     else:
       arr.append(obj.jsonb)
   return arr
-
-# date parser; not in use
-#def jsonDefault(value):
-  #import datetime
-  #if isinstance(value, datetime.date):
-    #return dict(year=value.year, month=value.month, day=value.day)
-  #else:
-    #return value.__dict__
 
 # used in scratch code es.py, es_black.py
 def queryObject(place):

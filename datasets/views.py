@@ -29,7 +29,7 @@ from datasets.models import Dataset, Hit, DatasetFile
 from datasets.static.hashes.parents import ccodes
 from datasets.tasks import align_tgn, align_whg, align_wd, maxID
 from datasets.utils import *
-from es.es_utils import makeDoc, esq_get, fetch_pids, deleteFromIndex, replaceInIndex
+from es.es_utils import makeDoc, esq_pid, esq_id, fetch_pids, deleteFromIndex, replaceInIndex
 
 def pretty_request(request):
   headers = ''
@@ -750,14 +750,14 @@ def ds_update(request):
           deleteFromIndex(es, idx, rows_delete)
         
         # update others
-        #if len(rows_replace) > 0:
-          #replaceInIndex(es, idx, rows_replace)
+        if len(rows_replace) > 0:
+          replaceInIndex(es, idx, rows_replace)
       else:
         print('not indexed, that is all')
       
-      result = {"status": "updated", "#updated":count_updated , "#new":count_new
-                ,"newfile": filepath, "format":file_format
-                }
+      result = {"status": "updated", "#updated":count_updated , 
+                "#new":count_new, "newfile": filepath, 
+                "format":file_format}
       return JsonResponse(result,safe=False)
     elif file_format == 'lpf':
       print("ds_update for lpf; doesn't get here yet")
