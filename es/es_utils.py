@@ -2,11 +2,18 @@
 # misc eleasticsearch supporting tasks 
 
 # ***
+# index docs given place_id list
+# ***
+# TODO:
+
+# ***
 # replace docs in index given place_id list
 # ***
 def replaceInIndex(es,idx,pids):
   from django.shortcuts import get_object_or_404
-  from  . import makeDoc, esq_pid, esq_id, uriMaker
+  from places.models import Place
+  import simplejson as json
+  #from  . import makeDoc, esq_pid, esq_id, uriMaker
   print('in replaceInIndex():', pids)
   # set counter
   repl_count = 0
@@ -33,13 +40,14 @@ def replaceInIndex(es,idx,pids):
         # write a new doc from db place
         newchild = makeDoc(place, 'none')
         newchild['relation']={"name":"child","parent":parentid}
-        
-        # update parent sugs and searchy (from deleteFromIndex)
+        # get names from replacement db record
+        newnames = [x.toponym for x in place.names.all()]
+        # update parent sugs and searchy
         q_update = {"script":{
                     "source": "ctx._source.suggest.input.addAll(params.sugs); \
                       ctx._source.searchy.addAll(params.sugs);",
           "lang": "painless",
-          "params":{"sugs": sugs }
+          "params":{"sugs": newnames }
           },
           "query": {"match":{"place_id": parentid }}
         }
@@ -98,7 +106,7 @@ def replaceInIndex(es,idx,pids):
 def deleteFromIndex(es,idx,pids):
   delthese=[]
   # 
-  for pid in two: #pids:
+  for pid in pids:
     # get its index document
     res = es.search(index=idx, body=esq_pid(pid))
     hits=res['hits']['hits']
@@ -318,7 +326,7 @@ def uriMaker(place):
 # make an ES doc from a Place instance
 # ***
 def makeDoc(place,parentid):
-  from . import parsePlace
+  #from . import parsePlace
   # TODO: remove parentid; used in early tests
   es_doc = {
       "relation": {},

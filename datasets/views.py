@@ -65,7 +65,7 @@ def link_uri(auth,id):
 # for reconciliation: write place_link & place_geom (if aug_geom == 'on') records if matched
 # for accessioning: if close or exact -> if match is parent -> make child else if match is child -> make sibling
 def indexMatch(pid, hit_pid=None):
-  print('indexMatch(): pid '+pid+'w/hit_pid '+hit_pid)
+  print('indexMatch(): pid '+str(pid)+'w/hit_pid '+str(hit_pid))
   from elasticsearch import Elasticsearch
   es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
   idx='whg02'
@@ -78,6 +78,7 @@ def indexMatch(pid, hit_pid=None):
     print('new whg_id',whg_id)
     parent_obj = makeDoc(place,'none')
     parent_obj['relation']={"name":"parent"}
+    # parents get an incremented _id & whg_id
     parent_obj['whg_id']=whg_id
     # add its own names to the suggest field
     for n in parent_obj['names']:
@@ -88,7 +89,8 @@ def indexMatch(pid, hit_pid=None):
     #index it
     try:
       res = es.index(index=idx, doc_type='place', id=str(whg_id), body=json.dumps(parent_obj))
-      #count_seeds +=1
+      place.indexed = True
+      place.save()
     except:
       #print('failed indexing '+str(place.id), parent_obj)
       print('failed indexing (as parent)'+str(pid))
@@ -126,6 +128,8 @@ def indexMatch(pid, hit_pid=None):
         },
         "query": {"match":{"_id": parent_whgid}}}
       es.update_by_query(index=idx, doc_type='place', body=q_update, conflicts='proceed')
+      place.indexed = True
+      place.save()
       print('indexed '+str(pid)+' as child of '+str(parent_whgid), child_obj)
     except:
       print('failed indexing '+str(pid)+' as child of '+str(parent_whgid), child_obj)
@@ -218,7 +222,6 @@ def review(request, pk, tid, passnum):
   else:
     try:
       if formset.is_valid():
-        # 
         hits = formset.cleaned_data
         print('hits (formset.cleaned_data)',hits)
         matches = 0
@@ -227,9 +230,9 @@ def review(request, pk, tid, passnum):
           hasGeom = 'geoms' in hits[x]['json'] and len(hits[x]['json']['geoms']) > 0
           # is this hit a match?
           if hits[x]['match'] not in ['none']:
-            # yes, hit is a match
+            # hit is a match, record that
             matches += 1
-            # are we working with tgn or wikidata?
+            # if tgn or wikidata, write place_link and place_geom record(s) now
             if task.task_name in ['align_tgn','align_wd']:
               # align/recon to authority
               # create PlaceGeom record if 'accept geometries' was checked
@@ -262,9 +265,10 @@ def review(request, pk, tid, passnum):
                 }
               )
               # update totals
-              ds.numlinked = ds.numlinked +1
-              ds.total_links = ds.total_links +1
-              ds.save()
+              # TODO: can't increment null; why null?
+              #ds.numlinked = ds.numlinked +1
+              #ds.total_links = ds.total_links +1
+              #ds.save()
               print('created place_link', link)
 
               # create multiple PlaceLink records (e.g. Wikidata)
@@ -289,26 +293,17 @@ def review(request, pk, tid, passnum):
             # 
             # this is accessioning step
             elif task.task_name == 'align_whg':
-              # match is to a whg index doc
-              # is the match a parent or child?
-              # if parent, make doc as its child
-              # if child, make doc as its sibling 
+              # match is to a whg index hit/doc
+              # index as child or sibling, as appropriate
               indexMatch(placeid, hits[x]['json']['place_id'])
-          # this hit not a match, do nothing
-        if matches == 0 and task.task_name == 'align_whg':
-          # no hits were a match; if tgn or wikidata, do nothing
-          # if align_whg, record get indexed as new parent
-          
-        
-          # flag as reviewed
+          # in any case, flag hit as reviewed; 
           matchee = get_object_or_404(Hit, id=hit.id)
           matchee.reviewed = True
           matchee.save()
-          #
-        if matches == 0:
-          print('no matches for',placeid)
-          # none are matches, make this place a parent
-          #indexMatch(placeid)
+
+        # no matches for align_whg? index as parent
+        if matches == 0 and task.task_name == 'align_whg':
+          indexMatch(placeid, None)
           
         return redirect('/datasets/'+str(pk)+'/review/'+tid+'/'+passnum+'?page='+str(int(page)))
       else:
@@ -618,10 +613,8 @@ def ds_update(request):
     print('compare_data from ds_compare', compare_data)
 
     # tempfn has .tsv or .jsonld extension from validation step
-    #tempfn = '/var/folders/f4/x09rdl7n3lg7r7gwt1n3wjsr0000gn/T/tmpsuncpnjl.tsv'
     tempfn = compare_data['tempfn']
     filename_new = compare_data['filename_new']
-    #dsfobj_cur = DatasetFile.objects.filter(dataset_id_id=dsid).order_by('-upload_date')[0]
     dsfobj_cur = ds.files.all().order_by('-rev')[0]
     rev_cur = dsfobj_cur.rev
     
@@ -653,10 +646,10 @@ def ds_update(request):
     # cur: user_whgadmin/diamonds135_rev3.tsv
     # new: user_whgadmin/diamonds135_rev2a-125.tsv
     if file_format == 'delimited':
-      #adf = pd.read_csv('media/'+compare_data['filename_cur'], delimiter='\t',dtype={'id':'str','ccodes':'str'})
-      adf = pd.read_csv('media/user_whgadmin/diamonds135_rev3.tsv', delimiter='\t',dtype={'id':'str','ccodes':'str'})
-      #bdf = pd.read_csv(filepath, delimiter='\t',dtype={'id':'str','ccodes':'str'})
-      bdf = pd.read_csv('/var/folders/f4/x09rdl7n3lg7r7gwt1n3wjsr0000gn/T/tmp1zca5x0d.tsv', delimiter='\t',dtype={'id':'str','ccodes':'str'})
+      adf = pd.read_csv('media/'+compare_data['filename_cur'], delimiter='\t',dtype={'id':'str','ccodes':'str'})
+      #adf = pd.read_csv('media/user_whgadmin/diamonds135_rev3.tsv', delimiter='\t',dtype={'id':'str','ccodes':'str'})
+      bdf = pd.read_csv(filepath, delimiter='\t',dtype={'id':'str','ccodes':'str'})
+      #bdf = pd.read_csv('/var/folders/f4/x09rdl7n3lg7r7gwt1n3wjsr0000gn/T/tmp1zca5x0d.tsv', delimiter='\t',dtype={'id':'str','ccodes':'str'})
       bdf = bdf.astype({"ccodes": str})
       print('reopened old file, # lines:',len(adf))
       print('reopened new file, # lines:',len(bdf))
@@ -670,6 +663,7 @@ def ds_update(request):
       # Place.id lists
       rows_replace = list(places.filter(src_id__in=replace_srcids).values_list('id',flat=True))
       rows_delete = list(places.filter(src_id__in=delete_srcids).values_list('id',flat=True))
+      #rows_add = list(places.filter(src_id__in=compare_result['rows_add']).values_list('id',flat=True))
       
       # delete places with ids missing in new data (CASCADE includes links & geoms)
       places.filter(id__in=rows_delete).delete()
@@ -752,6 +746,11 @@ def ds_update(request):
         # update others
         if len(rows_replace) > 0:
           replaceInIndex(es, idx, rows_replace)
+          
+        # process new
+        #if len(rows_add) > 0:
+          # notify need to reconcile & accession them
+        
       else:
         print('not indexed, that is all')
       

@@ -520,6 +520,11 @@ js for Summary, Reconciliation
     window.spinner_update = new Spin.Spinner().spin();
     $("#update_spinner").append(spinner_update.el);   
   }
+  // parse & prettify ds_update() results
+  function updateText(data){
+    html = JSON.prettify(data,None,2)
+    return html
+  }
   // performs ds_update()
   $("#btn_update").on('click', function(){
     console.log('compare_data',compare_data)
@@ -544,14 +549,14 @@ js for Summary, Reconciliation
         $("#buttons_pre").addClass('hidden')
         $("#btn_done").removeClass('hidden')
         html = '<h6>update complete!</h6>'
-        html += JSON.stringify(data,null,2)
+        html += updateText(data)
         $("#results_text").html(html)
         spinner_update.stop()
       }
     })
   })
   
-  // prettify comparison results
+  // parse & prettify ds_compare() results
   function comparisonText(data) {
     console.log('comparison data returned',data)
     stats = data['compare_result']
