@@ -36,7 +36,7 @@ urlpatterns = [
     #path('<str:label>/datatable/<str:f>', views.drf_table, name='drf_table'),
 
     # browse/map dataset
-    path('<str:label>/browse/<str:f>', views.dataset_browse, name='dataset_browse'),
+    #path('<str:label>/browse/<str:f>', views.dataset_browse, name='dataset_browse'),
 
     # list places in a dataset; for physical geog layers
     #path('<str:label>/places/<str:format>', views.ds_list, name='ds_list'),

@@ -7,154 +7,130 @@
 {% load fontawesome %}
 {% load dataset_extras %}
 
-  <div class="container">
-    <h4 class="mt-3">Create dataset</h4>
-      <form id="ds_form" method="POST" enctype="multipart/form-data">
-      {% csrf_token %}
-      <!-- errors -->
-      {% if form.errors %}
-        {% for field in form %}
-            {% for error in field.errors %}
-                <div class="alert alert-danger my-0">
-                    <strong>{{ error|escape }}</strong>
-                </div>
-            {% endfor %}
-        {% endfor %}
-        {% for error in form.non_field_errors %}
-            <div class="alert alert-danger">
-                <strong>{{ error|escape }}</strong>
-            </div>
-        {% endfor %}
-      {% endif %}
-      <!-- content -->
-      <div id="content_create" class="row mx-1">
-        <div id="create_form" class="form-box mt-2 col-sm-5" >
-          <table class="ds-table">
-            <tr>
-              <td><b>Title</b></td>
-                <td>{{ form.title }}</td>
-            </tr>
-            <tr>
-              <td><b>Label</b></td>
-              <td>{{ form.label }}</td>
-            </tr>
-            <tr>
-              <td><b>Data type</b></td>
-              <td>{{ form.datatype }}</td>
-            </tr>
-            <tr>
-              <td style="vertical-align:top;"><b>Description</b></td>
-              <td><span class="editing-description">{{ form.description }}</span>
-              </td>
-            </tr>
-            <tr>
-              <td><b>URI prefix</b></td>
-              <td>{{ form.uri_base }}</td>
-            </tr>
-            <tr>
-              <td><b>Public?</b></td>
-              <td>{{ form.public }}</td>
-            </tr>
-          </table>
-          <hr/><p class="my-0"><i>initial file</i></p>
-          <table id="file_metadata" class="ds-table table-striped">
-            <tr>
-              <td><b>File</b></td>
-              <td>{{ form.file }}</td>
-            </tr>
-            <!--<tr>-->
-              <!--<td><b>Uploaded</b></td>-->
-              <!--<td>{ file_form.upload_date|date:"d-M-Y, H:i (e)" }}</td>-->
-            <!--</tr>-->
-            <tr>
-              <td><b>Format</b></td>
-              <td>{{ form.format }}
-              <!--<a href="" title="{help:formats}" rel="tooltip"> { fontawesome_icon 'question-circle' color='#336699' %}</a>-->
-              </td>
-            </tr>
-            <tr>
-              <td><b>License</b></td>
-              <td><a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">CC BY 4.0</a></td>
-            </tr>
-          </table>
-          <!-- status, format, delimiter, numrows, header  -->
-          <input type="hidden" name="owner" value='{{ user.id }}'></input>
-          <input type="hidden" name="rev" value=-1></input>
-          <input type="hidden" name="df_status" value='uploaded'></input>
-          <input type="hidden" name="delimiter" value='fubar'></input>
-          <input type="hidden" name="numrows" value=-1></input>
-          <input type="hidden" name="numlinked" value=0></input>
-          <input type="hidden" name="header" value=[]></input>
-          <input type="hidden" name="upload_date" value='2020-02-15'></input>
-          <br/>
-          <!-- upload button initially & if it's not yet ok -->
-          {% if status != 'format_ok' %}
-          <input class="btn btn-primary btn-sm" type="submit" value="Upload" />
-          <span title="back"><a href="{% url 'dashboard' %}">Cancel</a></span>
-          {% endif %}
-        </div>
-        </form>
-        <div class="mt-2 col-sm-7" id="create_review">
-          {% if context.action == 'review' %}
-              <h5>{% fontawesome_icon 'exclamation-circle' color="#993333" %} This file has one or more problems:</h5>
-              <ul>
-              {% for e in context.errors %}
-                <li>{% if context.format == 'delimited' %}
-                      {{ e.message }}
-                    {% else %}
-                      <b>row #{{ e.feat }}</b>: {{ e.error }}
-                    {% endif %}</li>
-              {% endfor %}
-              </ul>
-              <p>After making corrections, try reloading the file</p><hr/>
-              {% if context.errors|haskey:'req' %}
-                <div class="ml-4">
-                  <i class="my-0">Your columns</i>
-                  <p>{{ context.errors.columns }}</p>
-                  <i class="my-0">Allowed column names</i>
-                  <p>['id', 'title', 'title_source', 'title_uri', 'ccodes', 'matches', 'variants', 'types', 'aat_types', 
-                      'parent_name', 'parent_id', 'lon', 'lat', 'geowkt', 'geo_source', 'geo_id', 'start', 'end']</p>
-                </div>
-              {% endif %}
-          {% else %}
-            <div><p class="mb-0"><b>Sample data</b></p><p>During this beta phase, some sample datasets are available from our GitHub repository. Download and open <a href="https://github.com/kgeographer/whgazetteer/raw/master/example_data/beta_data.zip" download>this zip file</a>, check its README.txt file, and you can experiment with loading them from your local computer and reconciling them against TGN and/or Wikidata
-            <p class="mb-0"><b>Data formats</b></p>
-            <p>For place data there are two accepted formats, Linked Places (expressive, JSON-LD and GeoJSON compatible), and the simpler LP-TSV, a tab-delimited format for relatively simpler records. <a href="/tutorials/choosing">More information on making the choice</a>. <br/><span class="text-danger"><b>NOTE</b>: Encoding for all uploaded files must be unicode</span></p>
-            <p><i>Trace data uploads are a work-in-progress at this time.</i></p>
-            <p class="mb-0"><b>URI base</b></p>
-            <p>If you have a permanent landing page for each of your records, supply the base URI in this field. Otherwise, leave as is, and a permanent URI within the whgazetteer domain will be generated based on your unique IDs.</p>
-            </div>
-          {% endif %}
-        </div>
-      </div> <!-- row#content_create -->
-      {% if action == 'update' %}
-      <!-- there are validation results-->
-      <input type="hidden" name="file" value='{{ form.file }}'></input>
-      <div class="form-box mt-3 ml-3" id="ds_errors">
-        <h5>Validation Results</h5>
-        {% if form.status.value != '' %}
-          <p><b>numrows</b>: {{ form.numrows.value }}</p>
-          <p><b>format</b>: {{ form.format.value }}</p>
-          <p><b>delimiter</b>: {{ form.delimiter.value }}</p>
-          <p><b>columns</b>: {{ form.header.value }}</p>
-          <!-- <p>columns: {{ form.columns.value|make_list }}</p> -->
-          {% if form.status.value == 'format_ok' %}
-          <p>Not yet inserted, so button back to dashboard</p>
-              <a href="{% url 'dashboard' %}">
-                <input class="btn btn-primary" type="text" value="Dashboard"/></a>
-          {% endif %}
+<div class="container">
+  <h4 class="mt-3">Create dataset</h4>
+  <form id="ds_form" method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    <!-- errors -->
+    {% if form.errors %}
+      {% for field in form %}
+          {% for error in field.errors %}
+              <div class="alert alert-danger my-0">
+                  <strong>{{ error|escape }}</strong>
+              </div>
+          {% endfor %}
+      {% endfor %}
+      {% for error in form.non_field_errors %}
+          <div class="alert alert-danger">
+              <strong>{{ error|escape }}</strong>
+          </div>
+      {% endfor %}
+    {% endif %}
+    <!-- content -->
+    <div id="content_create" class="row mx-1">
+      <div id="create_form" class="form-box mt-2 col-sm-5" >
+        <table class="ds-table">
+          <tr>
+            <td><b>Title</b></td>
+              <td>{{ form.title }}</td>
+          </tr>
+          <tr>
+            <td><b>Label</b></td>
+            <td>{{ form.label }}</td>
+          </tr>
+          <tr>
+            <td><b>Data type</b></td>
+            <td>{{ form.datatype }}</td>
+          </tr>
+          <tr>
+            <td style="vertical-align:top;"><b>Description</b></td>
+            <td><span class="editing-description">{{ form.description }}</span>
+            </td>
+          </tr>
+          <tr>
+            <td><b>URI prefix</b></td>
+            <td>{{ form.uri_base }}</td>
+          </tr>
+          <tr>
+            <td><b>Public?</b></td>
+            <td>{{ form.public }}</td>
+          </tr>
+        </table>
+        <hr/><p class="my-0"><i>initial file</i></p>
+        <table id="file_metadata" class="ds-table table-striped">
+          <tr>
+            <td><b>File</b></td>
+            <td>{{ form.file }}</td>
+          </tr>
+          <tr>
+            <td><b>Format</b></td>
+            <td>{{ form.format }}</td>
+          </tr>
+          <tr>
+            <td><b>License</b></td>
+            <td><a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">CC BY 4.0</a></td>
+          </tr>
+        </table>
+        <!-- status, format, delimiter, numrows, header  -->
+        <input type="hidden" name="owner" value='{{ user.id }}'></input>
+        <input type="hidden" name="rev" value=-1></input>
+        <input type="hidden" name="df_status" value='uploaded'></input>
+        <input type="hidden" name="delimiter" value='fubar'></input>
+        <input type="hidden" name="numrows" value=-1></input>
+        <input type="hidden" name="numlinked" value=0></input>
+        <input type="hidden" name="header" value=[]></input>
+        <input type="hidden" name="upload_date" value='2020-02-15'></input>
+        <br/>
+        <!-- upload button initially & if it's not yet ok -->
+        {% if status != 'format_ok' %}
+        <input class="btn btn-primary btn-sm" type="submit" value="Upload" />
+        <span title="back"><a href="{% url 'dashboard' %}">Cancel</a></span>
         {% endif %}
       </div>
+  </form>
+  <div class="mt-2 col-sm-7" id="create_review">
+      {% if context.action == 'errors' %}
+        <h5>{% fontawesome_icon 'exclamation-circle' color="#993333" %} This file has one or more problems:</h5>
+        <ul>
+        {% for e in context.errors %}
+          <li>{% if context.format == 'delimited' %}
+                {{ e.message }}
+              {% else %}
+                <b>row #{{ e.feat }}</b>: {{ e.error }}
+              {% endif %}</li>
+        {% endfor %}
+        </ul>
+        <p>After making corrections, try reloading the file</p><hr/>
+        {% if context.errors|haskey:'req' %}
+          <div class="ml-4">
+            <i class="my-0">Your columns</i>
+            <p>{{ context.errors.columns }}</p>
+            <i class="my-0">Allowed column names</i>
+            <p>['id', 'title', 'title_source', 'title_uri', 'ccodes', 'matches', 'variants', 'types', 'aat_types', 
+                'parent_name', 'parent_id', 'lon', 'lat', 'geowkt', 'geo_source', 'geo_id', 'start', 'end']</p>
+          </div>
+        {% endif %}
+      {% else %}
+        <div>
+          <p class="mb-0"><b>Sample data</b></p><p>During this beta phase, some sample datasets are available from our GitHub repository. Download and open <a href="https://github.com/kgeographer/whgazetteer/raw/master/example_data/beta_data.zip" download>this zip file</a>, check its README.txt file, and you can experiment with loading them from your local computer and reconciling them against TGN and/or Wikidata</p>
+          <p class="mb-0"><b>Data formats</b></p>
+          <p>For place data there are two accepted formats, Linked Places (expressive, JSON-LD and GeoJSON compatible), and the simpler LP-TSV, a tab-delimited format for relatively simpler records. <a href="/tutorials/choosing">More information on making the choice</a>. <br/><span class="text-danger"><b>NOTE</b>: Encoding for all uploaded files must be unicode</span></p>
+          <p><i>Trace data uploads are a work-in-progress at this time.</i></p>
+          <p class="mb-0"><b>URI base</b></p>
+          <p>If you have a permanent landing page for each of your records, supply the base URI in this field. Otherwise, leave as is, and a permanent URI within the whgazetteer domain will be generated based on your unique IDs.</p>
+        </div>
       {% endif %}
-      </form>
-    <!--</div> -->
-  </div>
-  <script type="text/javascript">
-    $(function(){
-      $('#id_format option[value="delimited"]').prop('selected',true)
-      $('#id_datatype option[value="anno"]').prop('disabled',true)
-      $('#id_datatype option[value="source"]').prop('disabled',true)
-    })
-    $("[rel='tooltip']").tooltip();
-  </script>
+    </div>
+  </div> <!-- create_review -->
+</div>
+
+<script type="text/javascript">
+  $(function(){
+    $('#id_format option[value="delimited"]').prop('selected',true)
+    $('#id_datatype option[value="anno"]').prop('disabled',true)
+    $('#id_datatype option[value="source"]').prop('disabled',true)
+  })
+  $("[rel='tooltip']").tooltip();
+</script>
+
 {% endblock %}

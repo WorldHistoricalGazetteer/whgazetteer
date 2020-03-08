@@ -11,6 +11,20 @@ from jsonschema import Draft7Validator, draft7_format_checker, validate
 pp = pprint.PrettyPrinter(indent=1)
 import pandas as pd
 
+# ***
+# format tsv validation errors for modal display
+# ***
+def parse_errors_tsv(err):
+  #print('parse_errors_tsv()',err)
+  html = '<p>Nah, errors in that file...'
+  return html
+
+# *** NOT YET CALLED
+# format lpf validation errors for modal display
+# *** 
+def parse_errors_lpf(err):
+  print('parse_errors_lpf()',err)
+  
 # use jsonschema to validate Linked Places json-ld
 # format ['coll' (FeatureCollection) | 'lines' (json-lines)]
 #def validate_lpf(infile,format):
@@ -69,14 +83,20 @@ def validate_tsv(tempfn):
   print('tempfn,newfn',tempfn,newfn)
   schema_lptsv = json.loads(codecs.open('datasets/static/validate/schema_tsv.json', 'r', 'utf8').read())
   report = gvalidate(newfn,schema=schema_lptsv,order_fields=True)
-  #pp.pprint(report)  
+  pp.pprint(report)  
   #print('error count',report['error-count'])
   result['count'] = report['tables'][0]['row-count']
   result['columns'] = report['tables'][0]['headers']
-  for e in report['tables'][0]['errors']:
-    if e['code'] not in ["blank-header","missing-header"]:
-      result["errors"].append(e)
-  print('validate_tsv() result',result)
+  result['file'] = report['tables'][0]['source']
+  # make sense of errors for users
+  # filter harmless errors (a goodtable library bug IMO)
+  errors = [x for x in report['tables'][0]['errors'] if x['code'] not in ["blank-header","missing-header"]]
+  error_types = list(set([x['code'] for x in errors]))
+  if 'non-matching-header' in error_types:
+    # have user fix that issue and try again
+    result['errors'].append({'message':'One or more column heading is invalid: '+str(result['columns'])})
+  else:
+    result['errors'] = [x['message'] for x in errors]
   return result
 
 class HitRecord(object):

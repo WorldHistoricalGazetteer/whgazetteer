@@ -1,7 +1,7 @@
 # datasets.views
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-#from django.contrib.auth.decorators import user_passes_test
 from django.core.files import File
 from django.core.paginator import Paginator #,EmptyPage, PageNotAnInteger
 from django.db.models import Q
@@ -24,38 +24,19 @@ from shutil import copyfile
 from areas.models import Area
 from main.choices import AUTHORITY_BASEURI
 from places.models import *
-from datasets.forms import DatasetFileModelForm, HitModelForm, DatasetDetailModelForm, DatasetCreateModelForm
+from datasets.forms import HitModelForm, DatasetDetailModelForm, DatasetCreateModelForm
 from datasets.models import Dataset, Hit, DatasetFile
 from datasets.static.hashes.parents import ccodes
 from datasets.tasks import align_tgn, align_whg, align_wd, maxID
 from datasets.utils import *
-from es.es_utils import makeDoc, esq_pid, esq_id, fetch_pids, deleteFromIndex, replaceInIndex
+from es.es_utils import makeDoc,deleteFromIndex, replaceInIndex, esq_pid, esq_id, fetch_pids 
 
-def pretty_request(request):
-  headers = ''
-  for header, value in request.META.items():
-    if not header.startswith('HTTP'):
-      continue
-    header = '-'.join([h.capitalize() for h in header[5:].lower().split('_')])
-    headers += '{}: {}\n'.format(header, value)
-
-  return (
-      '{method} HTTP/1.1\n'
-        'Content-Length: {content_length}\n'
-        'Content-Type: {content_type}\n'
-        '{headers}\n\n'
-        '{body}'
-        ).format(
-      method=request.method,
-        content_length=request.META['CONTENT_LENGTH'],
-        content_type=request.META['CONTENT_TYPE'],
-        headers=headers,
-        body=request.body,
-    )
 def celeryUp():
   response = celapp.control.ping(timeout=1.0)
   return len(response)>0
-
+# ***
+# append src_id to base_uri
+# ***
 def link_uri(auth,id):
   baseuri = AUTHORITY_BASEURI[auth]
   uri = baseuri + str(id)
@@ -422,11 +403,11 @@ def collab_add(request,dsid,role='member'):
   DatasetUser.objects.create(user_id_id=uid, dataset_id_id=dsid, role=role)
   return redirect('/datasets/'+str(dsid)+'/detail#sharing')
 #
-def dataset_browse(request, label, f):
-  # need only for title; calls API w/javascript for data
-  ds = get_object_or_404(Dataset, label=label)
-  filt = f
-  return render(request, 'datasets/dataset_browse.html', {'ds':ds,'filter':filt})
+#def dataset_browse(request, label, f):
+  ## need only for title; calls API w/javascript for data
+  #ds = get_object_or_404(Dataset, label=label)
+  #filt = f
+  #return render(request, 'datasets/dataset_browse.html', {'ds':ds,'filter':filt})
 # pobj = place object; row is a pandas dict
 def add_rels_tsv(pobj, row):
   header = row.keys()
@@ -761,7 +742,7 @@ def ds_update(request):
     elif file_format == 'lpf':
       print("ds_update for lpf; doesn't get here yet")
 
-# ***
+# *** 
 # validates dataset update file & compares w/existing
 # called by ajax function from modal button
 # returns json result object
@@ -812,6 +793,15 @@ def ds_compare(request):
       vresult = validate_lpf(tempfn,'coll') 
     print('format, vresult:',format,vresult)
 
+    # if errors, parse & return to modal
+    # which expects {validataion_result{errors[]}}
+    if len(vresult['errors']) > 0:
+      #errormsg = parse_errors_tsv(vresult['errors']) if format == 'delimited' else parse_errors_lpf(vresult['errors'])
+      errormsg = {"failed":{
+        "errors":vresult['errors']
+      }}
+      return JsonResponse(errormsg,safe=False)
+  
     # give new file a path
     filename_new = 'user_'+user+'/'+file_new.name
     # temp files were given extensions in validation functions  
@@ -1232,7 +1222,10 @@ def ds_insert_tsv(request, pk):
 # ***
 # list user datasets, area, place collections
 # ***
-class DashboardView(ListView):
+class DashboardView(LoginRequiredMixin, ListView):
+  login_url = '/accounts/login/'
+  redirect_field_name = 'redirect_to'
+  
   context_object_name = 'dataset_list'
   template_name = 'datasets/dashboard.html'
 
@@ -1269,6 +1262,9 @@ class DashboardView(ListView):
 # redirect to dataset.html for db insert if context['format_ok']
 # ***
 class DatasetCreateView(LoginRequiredMixin, CreateView):
+  login_url = '/accounts/login/'
+  redirect_field_name = 'redirect_to'
+  
   form_class = DatasetCreateModelForm
   template_name = 'datasets/dataset_create.html'
   success_message = 'dataset created'
@@ -1374,11 +1370,12 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
       return redirect('/datasets/'+str(dsobj.id)+'/detail')
 
     else:
-      context['ds_status'] = 'format_error'
+      context['action'] = 'errors'
       context['errors'] = result['errors']
-      context['action'] = ''
+      # delete tmp file
+      os.remove(result['file'])
       result['columns'] if "columns" in result.keys() else []
-      print('result:', result)
+      print('validation failed:', result)
       return self.render_to_response(self.get_context_data(form=form,context=context))
 
   def get_context_data(self, *args, **kwargs):
@@ -1391,7 +1388,10 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
 # processes metadata edit form
 # if coming from DatasetCreateView(), runs ds_insert_[tsv|lpf]
 # ***
-class DatasetDetailView(LoginRequiredMixin,UpdateView):
+class DatasetDetailView(LoginRequiredMixin, UpdateView):
+  login_url = '/accounts/login/'
+  redirect_field_name = 'redirect_to'
+  
   form_class = DatasetDetailModelForm
   template_name = 'datasets/dataset.html'
 
@@ -1512,8 +1512,8 @@ class DatasetDetailView(LoginRequiredMixin,UpdateView):
 
 # 
 # load page for confirm ok on delete
-# TODO: also delete from index
-#
+# TODO: also delete from index & uploaded files
+# ?? archive any?
 class DatasetDeleteView(DeleteView):
   template_name = 'datasets/dataset_delete.html'
 
@@ -1551,3 +1551,24 @@ def match_undo(request, ds, tid, pid):
   return redirect('/datasets/'+str(ds)+'/review/'+tid+'/pass1')
  # /datasets/1/review/d6ad4289-cae6-476d-873c-a81fed4d6315/pass1
  
+#def pretty_request(request):
+  #headers = ''
+  #for header, value in request.META.items():
+    #if not header.startswith('HTTP'):
+      #continue
+    #header = '-'.join([h.capitalize() for h in header[5:].lower().split('_')])
+    #headers += '{}: {}\n'.format(header, value)
+
+  #return (
+      #'{method} HTTP/1.1\n'
+        #'Content-Length: {content_length}\n'
+        #'Content-Type: {content_type}\n'
+        #'{headers}\n\n'
+        #'{body}'
+        #).format(
+      #method=request.method,
+        #content_length=request.META['CONTENT_LENGTH'],
+        #content_type=request.META['CONTENT_TYPE'],
+        #headers=headers,
+        #body=request.body,
+    #)
