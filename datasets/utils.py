@@ -94,9 +94,10 @@ def validate_tsv(tempfn):
   error_types = list(set([x['code'] for x in errors]))
   if 'non-matching-header' in error_types:
     # have user fix that issue and try again
-    result['errors'].append({'message':'One or more column heading is invalid: '+str(result['columns'])})
+    #result['errors'].append({'message':'One or more column heading is invalid: '+str(result['columns'])})
+    result['errors'].append('One or more column heading is invalid: '+str(result['columns']))
   else:
-    result['errors'] = [x['message'] for x in errors]
+    result['errors'] = [x['message'].replace('and format "default"','') for x in errors]
   return result
 
 class HitRecord(object):

@@ -37,6 +37,20 @@ html, body {
 /**
   general use
 **/
+.ul-flush{
+  display: table;
+  margin-left: 0;
+  padding-left: 0;
+  list-style: none;
+}
+.li-flush{
+  display: table-row;
+}
+.ul-flush ::before {
+    content: "•";
+    display: table-cell;
+    padding-right: 0.4em;
+}
 .alert {padding: 0 1.25rem !important;}
 label {vertical-align:top;}
 .border-red { border:2px dotted red;}

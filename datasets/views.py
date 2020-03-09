@@ -786,6 +786,7 @@ def ds_compare(request):
     # format validation 
     if format == 'delimited':
       # goodtable wants filename only
+      # returns [x['message'] for x in errors]
       vresult = validate_tsv(tempfn)
     elif format == 'lpf':
       # TODO: feed tempfn only?
@@ -794,9 +795,8 @@ def ds_compare(request):
     print('format, vresult:',format,vresult)
 
     # if errors, parse & return to modal
-    # which expects {validataion_result{errors[]}}
+    # which expects {validation_result{errors['','']}}
     if len(vresult['errors']) > 0:
-      #errormsg = parse_errors_tsv(vresult['errors']) if format == 'delimited' else parse_errors_lpf(vresult['errors'])
       errormsg = {"failed":{
         "errors":vresult['errors']
       }}

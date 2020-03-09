@@ -94,7 +94,8 @@
         <ul>
         {% for e in context.errors %}
           <li>{% if context.format == 'delimited' %}
-                {{ e.message }}
+                <!--{ e.message }}-->
+                {{ e }}
               {% else %}
                 <b>row #{{ e.feat }}</b>: {{ e.error }}
               {% endif %}</li>
