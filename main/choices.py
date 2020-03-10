@@ -1,5 +1,20 @@
 # datasets model field value choices
 
+LOG_CATEGORIES = [
+    ('user','User'),
+    ('dataset','Dataset')
+]
+
+LOG_TYPES = [
+    ('ds_create','Create dataset'),
+    ('ds_update','Update dataset'),
+    ('ds_delete','Delete dataset'),
+    ('ds_recon','Reconciliation task'),
+    ('area_create','Create dataset'),
+    ('area_update','Update dataset'),
+    ('area_delete','Delete dataset'),
+]
+
 COMMENT_TAGS = [
     ('bad_link','Incorrect match/link'),
     ('bad_type','Incorrect place type'),
@@ -14,8 +29,7 @@ FORMATS = [
 
 DATATYPES = [
     ('place', 'Places'),
-    ('anno', 'Traces'),
-    #('source', 'Sources')
+    ('anno', 'Traces')
 ]
 
 STATUS = [

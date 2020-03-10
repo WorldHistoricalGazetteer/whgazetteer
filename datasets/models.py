@@ -107,7 +107,7 @@ class DatasetFile(models.Model):
         db_table = 'dataset_file'
         
 class DatasetUser(models.Model):
-    dataset_id = models.ForeignKey(Dataset, related_name='users',
+    dataset_id = models.ForeignKey(Dataset, related_name='datasets',
         default=-1, on_delete=models.CASCADE)
     user_id = models.ForeignKey(User, related_name='users',
         default=-1, on_delete=models.CASCADE)

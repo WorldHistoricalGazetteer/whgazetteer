@@ -1,4 +1,4 @@
-# datasets.formset
+# datasets.forms
 
 from django import forms
 from django.db import models
@@ -116,36 +116,3 @@ class DatasetCreateModelForm(forms.ModelForm):
     for field in self.fields.values():
       field.error_messages = {'required':'The field {fieldname} is required'.format(
                   fieldname=field.label)}    
-
-#class DatasetModelForm(forms.ModelForm):
-  #class Meta:
-    #model = Dataset
-    #fields = ('id','title','label','description','format','datatype',
-              #'delimiter','ds_status','owner','header','numrows','numlinked','spine','uri_base')
-    #widgets = {
-      #'description': forms.Textarea(attrs={
-            #'rows':2,'cols': 40,'class':'textarea',
-              #'placeholder':'brief description'}),
-      #'format': forms.Select(),
-      #'datatype': forms.Select(),
-    #}
-    ##initial = {'format': 'delimited', 'datatype': 'places', 'uri_base': 'http://whgazetteer.org/api/places/'}
-    #initial = {'datatype': 'places', 'uri_base': 'fubar', 'numlinked':0}
-
-  ##def unique_label(self, *args, **kwargs):
-    ##label = self.cleaned_content['name'][:16]+'_'+user.first_name[:1]+user.last_name[:1]
-    ##return label
-    ## TODO: test uniqueness somehow
-
-  #def __init__(self, *args, **kwargs):
-    #self.format = 'delimited'
-    #self.datatype = 'place'
-    #super(DatasetModelForm, self).__init__(*args, **kwargs)
-
-  #def clean_label(self): 
-    #label = self.cleaned_data['label']
-    #print(label)
-    #labels = Dataset.objects.values_list('label', flat=True)
-    #if label in labels:
-      #raise forms.ValidationError("Dataset label must be unique")
-    #return label
