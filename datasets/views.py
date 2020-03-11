@@ -374,7 +374,17 @@ def ds_recon(request, pk):
     context['userarea'] = request.POST['userarea']
     context['geom'] = aug_geom
     context['result'] = result.get()
-    # recon task has completed
+    
+    # recon task has completed, log it
+    # write log entry
+    Log.objects.create(
+      # category, logtype, "timestamp", subtype, dataset_id, user_id
+      category = 'dataset',
+      logtype = 'ds_recon',
+      subtype = 'align_'+auth,
+      dataset_id = ds.id,
+      user_id = request.user.id
+    )    
     
     ds.ds_status = 'reconciling'
     ds.save()
