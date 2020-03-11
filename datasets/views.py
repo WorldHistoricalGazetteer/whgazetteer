@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.files import File
+from django.core.mail import send_mail
 from django.core.paginator import Paginator #,EmptyPage, PageNotAnInteger
 from django.db.models import Q
 from django.forms import modelformset_factory
@@ -23,6 +24,7 @@ from shutil import copyfile
 #from pprint import pprint
 from areas.models import Area
 from main.choices import AUTHORITY_BASEURI
+from main.models import Log
 from places.models import *
 from datasets.forms import HitModelForm, DatasetDetailModelForm, DatasetCreateModelForm
 from datasets.models import Dataset, Hit, DatasetFile
@@ -31,6 +33,15 @@ from datasets.tasks import align_tgn, align_whg, align_wd, maxID
 from datasets.utils import *
 from es.es_utils import makeDoc,deleteFromIndex, replaceInIndex, esq_pid, esq_id, fetch_pids 
 
+def emailer(subj,msg):
+  send_mail(
+      subj,
+      msg,
+      'whgazetteer@gmail.com',
+      ['karl@kgeographer.org'],
+      fail_silently=False,
+  )  
+  
 def celeryUp():
   response = celapp.control.ping(timeout=1.0)
   return len(response)>0
@@ -334,9 +345,9 @@ def ds_recon(request, pk):
     
     if not celeryUp():
       print('Celery is down :^(')
-      context['response'] = 'snap!'
-      context['result'] = "Sorry! The reconciliation task manager is down; working now to get it running"
-      return render(request, 'datasets/dataset.html', {'ds':ds, 'context': context})
+      emailer('Celery is down :^(','if not celeryUp() -- look into it, bub!')
+      messages.add_message(request, messages.INFO, "Sorry! Reconciliation services appears to be down. The system administrator has been notified.")
+      return redirect('/datasets/'+str(ds.id)+'/detail#reconciliation')
       
     # run celery/redis tasks e.g. align_tgn, align_wd, align_whg
     try:      
@@ -349,7 +360,10 @@ def ds_recon(request, pk):
         aug_geom=aug_geom
       )
     except:
+      print('failed: align_'+auth )
       print(sys.exc_info())
+      messages.add_message(request, messages.INFO, "Sorry! Reconciliation services appears to be down. The system administrator has been notified.<br/>"+sys.exc_info())
+      return redirect('/datasets/'+str(ds.id)+'/detail#reconciliation')     
       
     context['hash'] = "#reconciliation"
     context['task_id'] = result.id
@@ -360,7 +374,8 @@ def ds_recon(request, pk):
     context['userarea'] = request.POST['userarea']
     context['geom'] = aug_geom
     context['result'] = result.get()
-    #print(locals())
+    # recon task has completed
+    
     ds.ds_status = 'reconciling'
     ds.save()
     return render(request, 'datasets/dataset.html', {'ds':ds, 'context': context})
@@ -1345,6 +1360,16 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
         filename=filename[:-4]+'_'+tempfn[-7:]+filename[-4:]
         filepath = userdir+filename
 
+      # write log entry
+      Log.objects.create(
+        # category, logtype, "timestamp", subtype, dataset_id, user_id
+        category = 'dataset',
+        logtype = 'ds_create',
+        subtype = data['datatype'],
+        dataset_id = dsobj.id,
+        user_id = user.id
+      )
+      
       # write the file
       fout = codecs.open(filepath,'w','utf8')
       try:
@@ -1394,9 +1419,10 @@ class DatasetDetailView(LoginRequiredMixin, UpdateView):
   
   form_class = DatasetDetailModelForm
   template_name = 'datasets/dataset.html'
-
+  
   def get_success_url(self):
     id_ = self.kwargs.get("id")
+    print('messages:', messages.get_messages(self.kwargs))
     return '/datasets/'+str(id_)+'/detail'
 
   # Dataset has been edited, form submitted
