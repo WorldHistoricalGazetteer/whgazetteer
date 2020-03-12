@@ -36,6 +36,9 @@
     <li class="nav-item">
       <a class="nav-link" id="sharing-tab" data-toggle="tab" href="#sharing" role="tab" aria-controls="sharing" aria-selected="false">Sharing</a>
     </li>
+    <li class="nav-item">
+      <a class="nav-link" id="log-tab" data-toggle="tab" href="#log" role="tab" aria-controls="log" aria-selected="false">Log</a>
+    </li>
   </ul>
   <!-- Tab panes -->
   <div class="tab-content">
@@ -164,9 +167,6 @@
         <input type="hidden" name="numrows" value="{{ current_file.numrows }}">
       </div>
       <div class="col-sm-4 small">
-        <div id="ds_updating" class="hidden">
-          <span id="comparison">comparison summary</span>
-        </div>
         <div id="ds_info">
           <div id="ds_stats">
             <table style="width:100%">
@@ -186,23 +186,12 @@
                 <td><span class="text-white bg-danger">&nbsp;{{ geoms_added }}&nbsp;</span></td></tr>
             </table>
           </div>
-          <div id="ds_log" class="mt-2">
-            <span class="allcap-heading">LOG</span>
-            <div>
-            <ul class="ul-flush">
-              {% for l in log %} 
-                <li class="li-flush">{{l.logtype}} ({% if l.subtype %}{{l.subtype}}{% elif l.note %}{{l.note}}{%endif%}), {{l.timestamp|date:"Y-m-d" }}</li> 
-              {% endfor %}
-            </ul>
-            <!--<p>log entries</p>-->
-            </div>
+          <div id="ds_access" class="pt-0 px-0">
+            <p style="display:block; background-color:#eee; margin:0; padding-left:10px; font-weight:700;">Access</p>
+            <p style="display:block; margin:0; padding-left:10px;">Metadata edits, dataset updates, and initiation of reconciliation tasks may only be performed by the dataset contributor ("owner" in WHG). Collaborators added by the owner under the "Sharing" tab can view the dataset and perform review of reconciliation tasks.</p>
           </div>
-          <!--<div id="ds_access" class="pt-0 px-0">-->
-            <!--<p style="display:block; background-color:#eee; margin:0; padding-left:10px; font-weight:700;">Access</p>-->
-            <!--<p style="display:block; margin:0; padding-left:10px;">Metadata edits, dataset updates, and initiation of reconciliation tasks may only be performed by the dataset contributor ("owner" in WHG). Collaborators added by the owner under the "Sharing" tab can view the dataset and perform review of reconciliation tasks.</p>-->
-          <!--</div>-->
         </div> <!-- ds_info -->
-      </div>
+      </div> <!-- ds_details -->
       </div> <!-- row -->
       </form>
     </div>
@@ -320,6 +309,18 @@
         {% endfor %}
         {% endif %}
       </div>
+    </div>
+    <div id="log" class="tab-pane fade" role="tabpanel" aria-labelledby="log-tab">
+      <div id="ds_log" class="mt-2">
+        <!--<span class="allcap-heading">LOG</span>-->
+        <div>
+          <ul class="ul-flush">
+            {% for l in log %} 
+              <li class="li-flush">{{l.logtype}} ({% if l.subtype %}{{l.subtype}}{% elif l.note %}{{l.note}}{%endif%}), {{l.timestamp|date:"Y-m-d" }}</li> 
+            {% endfor %}
+          </ul>
+        </div>
+      </div> <!-- ds_log -->
     </div>
     <div id="sharing" class="tab-pane fade" role="tabpanel" aria-labelledby="sharing-tab">
       <form id="sharing_form" method="POST" action="{% url 'datasets:collab-add' dsid=ds.id %}" enctype="multipart/form-data">

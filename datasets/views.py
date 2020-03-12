@@ -759,7 +759,17 @@ def ds_update(request):
         
       else:
         print('not indexed, that is all')
-      
+
+      # write log entry
+      Log.objects.create(
+        # category, logtype, "timestamp", subtype, note, dataset_id, user_id
+        category = 'dataset',
+        logtype = 'ds_update',
+        note = json.dumps(compare_result),
+        dataset_id = dsid,
+        user_id = request.user.id
+      )
+              
       result = {"status": "updated", "#updated":count_updated , 
                 "#new":count_new, "newfile": filepath, 
                 "format":file_format}
