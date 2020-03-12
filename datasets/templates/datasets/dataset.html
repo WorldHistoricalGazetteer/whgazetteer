@@ -170,13 +170,17 @@
         <div id="ds_info">
           <div id="ds_stats">
             <table style="width:100%">
-              <tr><td class="pb-3"><b>Status</b></td><td class="pb-3">{{ ds.ds_status }}</td><td class="pb-3"></td></tr>
+              <!--<tr><td class="pb-3"><b>Status</b></td><td class="pb-3">{ ds.ds_status }}</td><td class="pb-3"></td></tr>-->
               <tr><th></th><th class="pb-1 text-secondary">count</th><th class="pb-1 text-secondary">added</th></tr>
               <tr><td><b>Rows</b></td><td>{{ ds.numrows }}</td><td class="text-secondary">n/a</td></tr>
+              {% if ds.unreviewed > 0 %}<tr class="text-danger">{%else%}<tr>{%endif%}
+                <td><b>Need review</b></td>
+                <td>{{ ds.unreviewed }}</td> 
+                <td class="text-secondary">n/a</td></tr>
               <tr><td><b>Names</b></td><td>{{ num_names }}</td><td class="text-secondary">n/a</td></tr>
               <tr>
-                <td><b>Links</b></td><td>{{ num_links }}</td>
-                <td><span class="text-white bg-danger">&nbsp;{{ links_added }}&nbsp;</span></td></tr>
+                <td class="pt-3"><b>Links</b></td><td class="pt-3">{{ num_links }}</td>
+                <td class="pt-3"><span class="text-white bg-danger">&nbsp;{{ links_added }}&nbsp;</span></td></tr>
               <tr>
                 <td><b>Geometries</b></td><td>{{ num_geoms }}</td>
                 <td><span class="text-white bg-danger">&nbsp;{{ geoms_added }}&nbsp;</span></td></tr>

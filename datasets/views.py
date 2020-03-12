@@ -1507,7 +1507,7 @@ class DatasetDetailView(LoginRequiredMixin, UpdateView):
     bounds = self.kwargs.get("bounds")
     # print('ds',ds.label)
     context['ds'] = ds
-    context['log'] = ds.log.filter(category='dataset')
+    context['log'] = ds.log.filter(category='dataset').order_by('-timestamp')
     # latest file
     context['current_file'] = file
     context['format'] = file.format

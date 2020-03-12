@@ -65,7 +65,7 @@ jdcal==1.4.1
 jedi==0.13.2
 Jinja2==2.10.1
 jmespath==0.9.4
-jobtastic==2.0.0
+jobtastic==2.1.1
 json-lines==0.5.0
 jsonfield==2.0.2
 jsonlines==1.2.0
@@ -89,7 +89,7 @@ pout==0.7.9
 pprint==0.1
 promise==2.2.1
 prompt-toolkit==2.0.7
-psutil==3.4.2
+psutil==5.7.0
 psycopg2==2.7.5
 psycopg2-binary==2.7.5
 ptyprocess==0.6.0
@@ -106,9 +106,11 @@ PyYAML==5.1.2
 rdflib==4.2.2
 redis==3.2.0
 requests==2.22.0
+reverse-geocoder==1.5.1
 rfc3986==1.3.2
 rfc3987==1.3.8
 s3transfer==0.2.1
+scipy==1.4.1
 selenium==3.141.0
 Shapely==1.6.4.post2
 simpleeval==0.9.8

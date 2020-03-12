@@ -11,6 +11,7 @@ from django.shortcuts import get_object_or_404
 from es.es_utils import escount_ds
 from main.choices import AUTHORITIES, FORMATS, DATATYPES, STATUS, TEAMROLES, PASSES
 from places.models import Place
+#from .models import Hit
 
 def user_directory_path(instance, filename):
     # upload to MEDIA_ROOT/user_<username>/<filename>
@@ -75,7 +76,14 @@ class Dataset(models.Model):
             r = du.role
             collabs.append({'id':du.user_id_id,'user':u.username,'role':r})
         return collabs
-        
+    
+    # count of unreviewed hits
+    @property
+    def unreviewed(self):
+        # select distinct(place_id_id) from hits where dataset_id = 602 and reviewed = false ;
+        unrev=len(set(list(Hit.objects.filter(dataset_id=self.id,reviewed=False).values_list('place_id_id',flat=True))))
+        return unrev
+    
     @property
     def placeids(self):
         return Place.objects.filter(dataset=self.label).values_list('id', flat=True)
