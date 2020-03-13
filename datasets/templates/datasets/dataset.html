@@ -539,7 +539,7 @@ js for Summary, Reconciliation
   }
   // parse & prettify ds_update() results
   function updateText(data){
-    html = JSON.prettify(data,None,2)
+    html = JSON.stringify(data,null,2)
     return html
   }
   // performs ds_update()

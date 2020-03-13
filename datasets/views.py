@@ -737,6 +737,8 @@ def ds_update(request):
         add_rels_tsv(pobj, rd)
     
       
+      # update numrows
+      ds.numrows = ds.places.count()
       #
       # if dataset is indexed, update it there
       # TODO: this suggests a new reconciliation task and accessioning for added records
@@ -1361,6 +1363,7 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
       # new Dataset record ('owner','id','label','title','description')
       dsobj = form.save(commit=False)
       dsobj.ds_status = 'format_ok'
+      dsobj.numrows = result['count']
       try:
         dsobj.save()
       except:
