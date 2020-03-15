@@ -739,6 +739,12 @@ def ds_update(request):
       
       # update numrows
       ds.numrows = ds.places.count()
+      ds.save()
+      
+      # initiate a result object
+      result = {"status": "updated", "update_count":count_updated , 
+                "new_count":count_new, "del_count": len(rows_delete), "newfile": filepath, 
+                "format":file_format}
       #
       # if dataset is indexed, update it there
       # TODO: this suggests a new reconciliation task and accessioning for added records
@@ -746,6 +752,8 @@ def ds_update(request):
         from elasticsearch import Elasticsearch      
         es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
         idx='whg02'
+        
+        result["indexed"] = True
         
         # surgically remove as req.
         if len(rows_delete)> 0:
@@ -772,9 +780,6 @@ def ds_update(request):
         user_id = request.user.id
       )
               
-      result = {"status": "updated", "#updated":count_updated , 
-                "#new":count_new, "newfile": filepath, 
-                "format":file_format}
       return JsonResponse(result,safe=False)
     elif file_format == 'lpf':
       print("ds_update for lpf; doesn't get here yet")
@@ -1556,7 +1561,7 @@ class DatasetDetailView(LoginRequiredMixin, UpdateView):
     context['descriptions_added'] = PlaceDescription.objects.filter(
       place_id_id__in = placeset, task_id__contains = '-').count()
 
-    print('context from DatasetDetailView',context)
+    #print('context from DatasetDetailView',context)
 
     return context
 

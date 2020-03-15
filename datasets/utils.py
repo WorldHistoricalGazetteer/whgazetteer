@@ -85,7 +85,7 @@ def validate_tsv(tempfn):
   report = gvalidate(newfn,schema=schema_lptsv,order_fields=True)
   pp.pprint(report)  
   #print('error count',report['error-count'])
-  result['count'] = report['tables'][0]['row-count']
+  result['count'] = report['tables'][0]['row-count']-1 # counts header apparently
   result['columns'] = report['tables'][0]['headers']
   result['file'] = report['tables'][0]['source']
   # make sense of errors for users

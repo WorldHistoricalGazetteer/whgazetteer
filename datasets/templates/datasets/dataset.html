@@ -539,7 +539,13 @@ js for Summary, Reconciliation
   }
   // parse & prettify ds_update() results
   function updateText(data){
-    html = JSON.stringify(data,null,2)
+    // { "status": "updated", "#updated": 133, "#new": 2, "newfile": "media/user_whgadmin/diamonds135_0t_h0b7.tsv", "format": "delimited" }
+    html = 'Update changes: <br/>' + 
+           'Added '+data["new_count"]+' rows <br/>'+ 
+           'Deleted '+data["del_count"]+' rows <br/>'+ 
+           'Updated '+data["update_count"]+' rows <br/>'+ 
+           'in database'
+    html += data['indexed'] == false?'.':' and in WHG index.'
     return html
   }
   // performs ds_update()
@@ -563,6 +569,7 @@ js for Summary, Reconciliation
       cache: false,
       data: formData,
       success:function(data){
+        console.log('update result data',data)
         $("#buttons_pre").addClass('hidden')
         $("#btn_done").removeClass('hidden')
         html = '<h6>update complete!</h6>'
