@@ -5,6 +5,10 @@ from django.contrib.auth.models import User
 from datasets.models import Dataset
 from places.models import *
 from django.shortcuts import get_object_or_404
+from es.es_utils import makeDoc,indexSomeParents
+
+from elasticsearch import Elasticsearch      
+
 
 class DatasetLifecycleTest(TestCase):
   @classmethod
@@ -55,8 +59,15 @@ class DatasetLifecycleTest(TestCase):
 # create whgtest index and 
 # add tgn dataset w/two records from db 
 # pids=[5004032,5335754] Pontianak, Sanggau
-# TESTS: 
+# TESTS:
+idx='whgtest'
+es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+pids=[5004032,5335754]
+indexSomeParents(es,idx,pids)
 
+# test some things
+es.indices.delete(idx)
+#
 # 2)
 # new generic user testuser, django9999, Test User, karl@kgeographer.org (future mailings)
 # TESTS:

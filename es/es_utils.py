@@ -1,11 +1,40 @@
 # es_utils.py rev. Mar 2020; rev. 02 Oct 2019; rev 5 Mar 2019; created 7 Feb 2019;
-# misc eleasticsearch supporting tasks 
+# misc elasticsearch supporting tasks 
 
 # ***
 # index docs given place_id list
 # ***
 # TODO:
-
+def indexSomeParents(es,idx,pids):
+  from datasets.tasks import maxID
+  from django.shortcuts import get_object_or_404
+  from places.models import Place
+  import sys,json
+  whg_id=maxID(es,idx)
+  for pid in pids:
+    place=get_object_or_404(Place,id=pid)
+    whg_id = whg_id+1
+    print('new whg_id',whg_id)
+    parent_obj = makeDoc(place,'none')
+    parent_obj['relation']={"name":"parent"}
+    # parents get an incremented _id & whg_id
+    parent_obj['whg_id']=whg_id+1
+    # add its own names to the suggest field
+    for n in parent_obj['names']:
+      parent_obj['suggest']['input'].append(n['toponym'])
+    # add its title
+    if place.title not in parent_obj['suggest']['input']:
+      parent_obj['suggest']['input'].append(place.title)
+    parent_obj['searchy'] = parent_obj['suggest']['input']
+    print('parent_obj',parent_obj)
+    #index it
+    try:
+      res = es.index(index=idx, doc_type='place', id=str(whg_id), body=json.dumps(parent_obj))
+    except:
+      print('failed indexing (as parent)'+str(pid),sys.exc_info())
+      pass
+    print('created parent:',idx,pid,place.title)    
+  
 # ***
 # replace docs in index given place_id list
 # ***

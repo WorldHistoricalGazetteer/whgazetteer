@@ -113,7 +113,7 @@ def indexDataset(pids=None):
 def init():
   global es, idx, rows
   dataset = input('dataset: ')
-  idx = 'whg_test' 
+  idx = 'whgtest' 
 
   from elasticsearch import Elasticsearch
   es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
