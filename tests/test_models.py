@@ -1,32 +1,22 @@
-#
+# basic write and read models
+# ensure req. fields conform to current
 from django.test import TestCase
 from django.contrib.auth.models import User
+from django.shortcuts import get_object_or_404
 from datasets.models import Dataset
 from places.models import Place
-from django.shortcuts import get_object_or_404
+import json
 
-class PlaceModelTest(TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        user = User.objects.create(username='tempy',password='tempy')
-        print("setUpTestData(): Run once to set up non-modified data for all class methods.")
-        
-
-    def test_title(self):
-        ds = Place.objects.get(id=1)
-        field_title = ds._meta.get_field('title').verbose_name
-        self.assertEquals(field_title, 'Timbuktu')
-        
-
-class DatasetModelTest(TestCase):
+class DatasetAndPlaceModelsTest(TestCase):
+    
     @classmethod
     def setUpTestData(cls):
         user = User.objects.create(username='tempy',password='tempy')
         print("setUpTestData(): Run once to set up non-modified data for all class methods.")
         Dataset.objects.create(
             owner=user,
-            label='test dataset',
-            title='longer dataset name',
+            label='tng',
+            title='TNG test',
             description='I could go on and on...',
             uri_base='https://fubar.edu',
             datatype='place',
@@ -40,19 +30,24 @@ class DatasetModelTest(TestCase):
             ccodes=['AR','CA']
         )
 
-    def test_ds_label(self):
+    def test_dataset(self):
         ds = Dataset.objects.get(id=1)
-        field_label = ds._meta.get_field('title').verbose_name
-        field_value = ds.label
-        self.assertEquals(field_label, 'title')
-        self.assertEquals(field_value, 'test dataset')
-        
-    def test_place_title(self):
-        p = Place.objects.get(src_id='foo123')
-        field_title = p._meta.get_field('title').verbose_name
-        field_value = p.src_id
+        field_title = ds._meta.get_field('title').verbose_name
+        field_label = ds.label
+        print('made database '+field_label)
         self.assertEquals(field_title, 'title')
-        self.assertEquals(field_value, 'foo123')
+        self.assertEquals(field_label, 'tng')
+        
+    def test_place(self):
+        p = Place.objects.get(id=1)
+        field_title = p._meta.get_field('title').verbose_name
+        field_srcid = p.src_id
+        field_ccodes = p.ccodes
+        print('made place '+field_title+' ('+field_srcid+')')
+        self.assertEquals(field_title, 'title')
+        self.assertEquals(field_srcid, 'foo123')
+        self.assertEquals(field_ccodes,['AR','CA'])
+        self.assertIn('AR',str(field_ccodes))
         
     #def test_false_is_false(self):
         #print("Method: test_false_is_false.")

@@ -298,30 +298,6 @@ def uriMaker(place):
   else:
     return ds.uri_base + str(place.src_id)
 
-#def findMatch(qobj,es):
-  #matches = {"parents":[], "names":[]}
-  #q_links_f = {"query": { 
-    #"bool": {
-    #"must": [
-      #{"terms": {"links.identifier": qobj['links'] }}
-    #]
-    #}
-  #}}
-
-  #if len(qobj['links']) > 0: # if links, terms query
-    #res = es.search(index='whg', doc_type='place', body=q_links_f)
-    #hits = res['hits']['hits']
-    #if len(hits) > 0:
-      #for h in hits:
-        ##print(h['_source']['names'])
-        #matches['parents'].append( h['_id'] )
-        ##matches['parents'].append( h['_source']['place_id'] )
-        #for n in h['_source']['names']:
-          #matches['names'].append(n['toponym'])
-    ## else: create seed (and/or parent+child)
-  #return matches
-
-
 # ***
 # make an ES doc from a Place instance
 # ***
@@ -399,7 +375,7 @@ def queryObject(place):
 
   # parents
   for rel in place.related.all():
-    if rel.json['relation_type'] == 'gvp:broaderPartitive':
+    if rel.jsonb['relationType'] == 'gvp:broaderPartitive':
       parents.append(rel.jsonb['label'])
   qobj['parents'] = parents
 
@@ -419,35 +395,4 @@ def queryObject(place):
 
   return qobj
 
-
-# to be used in subsequent adds to is_conflation_of[]
-#def deleteDocs(ids):
-  #from elasticsearch import Elasticsearch
-  #es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
-  #for i in ids:
-    #try:
-      #es.delete(index='whg', doc_type='place', id=i)
-    #except:
-      #print('failed delete for: ',id)
-      #pass
-
-#def deleteKids(ids):
-  #from elasticsearch import Elasticsearch
-  #{"nested": {
-      #"path": "is_conflation_of",
-      #"query": 
-        #{"nested" : {
-        #"path" :  "is_conflation_of.types",
-        #"query" : {"terms": {"is_conflation_of.place_id": ids}}
-        #}
-        #}
-      #}}    
-  #q={"query": {"terms": { "":ds }}}
-  #es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
-  #for i in ids:
-    #try:
-      #es.delete(index='whg', doc_type='place', id=i)
-    #except:
-      #print('failed delete for: ',id)
-      #pass
 

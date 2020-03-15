@@ -18,13 +18,16 @@ from datasets.regions import regions as region_hash
 from datasets.utils import roundy, fixName, classy, bestParent, elapsed, hully
 from places.models import Place
 
-# 
+#pids=[5004032,5335754]
 # TODO: handle multiple parents (dplace: 124883,124900,125065,125132; ne_rivers: )
 # TODO: conflate with align_whg reconcile operation; 
-def indexDataset():
+def indexDataset(pids=None):
   import codecs
   dataset = input('dataset: ')
-  qs = Place.objects.all().filter(dataset_id=dataset)
+  if pids != None:
+    qs = Place.objects.all().filter(id__in=pids)
+  else:
+    qs = Place.objects.all().filter(dataset_id=dataset)
   f_err_multi = codecs.open('../_notes/err_multiparent_'+dataset+'.txt', mode='w', encoding='utf8')
   f_err_geom = codecs.open('../_notes/err_geom_'+dataset+'.txt', mode='w', encoding='utf8')
   count = 0
@@ -110,7 +113,7 @@ def indexDataset():
 def init():
   global es, idx, rows
   dataset = input('dataset: ')
-  idx = 'whg' 
+  idx = 'whg_test' 
 
   from elasticsearch import Elasticsearch
   es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
