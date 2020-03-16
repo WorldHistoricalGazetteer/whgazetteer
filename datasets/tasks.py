@@ -153,7 +153,8 @@ def normalize(h,auth):
     rec = HitRecord(-1, 'tgn', h['tgnid'], h['title'])
     print('normalize rec, tgn',rec)
     rec.variants = [n['toponym'] for n in h['names']] # always >=1 names
-    rec.types = [t['placetype']+' ('+t['id']  +')' for t in h['types'] ] if len(h['types']) > 0 else []
+    rec.types = [t['placetype']+' ('+t['id']  +')' for t in h['types'] ] \
+      if len(h['types']) > 0 and t['placetype'] != None and t['id'] != None else []
     rec.ccodes = []
     rec.parents = ' > '.join(h['parents']) if len(h['parents']) > 0 else []
     rec.descriptions = [h['note']] if h['note'] != None else []

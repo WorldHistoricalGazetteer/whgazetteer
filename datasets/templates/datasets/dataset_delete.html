@@ -12,6 +12,9 @@
           <ul>
             <li>associated reconciliation "hits"</li>
             <li>links and geometry records added by reconciliation review</li>
+            {% if object.ds_status == 'indexed' %}
+              <li>records in index /li>
+            {% endif %}
           </ul>
           <p>You might want to perform an update to the dataset instead (coming soon)</p>
           <p class="mt-4">

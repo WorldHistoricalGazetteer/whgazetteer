@@ -167,13 +167,13 @@ def deleteFromIndex(es,idx,pids):
           # update its children with newkids
           qget = {"query": {"bool": {"must": [{"match":{"place_id": newparent }}]}}}
           res = es.search(index=idx, body=qget)
-          # TODO: this if meaningful only for tests
+          # TODO: this is meaningful only for tests
+          # ensure the prospective parent exists
           if len(res['hits']['hits']) > 0:
             hit = res['hits']['hits'][0]
             _id = hit['_id']
             # elevate to parent
-            q_update = {"script":{
-                        "source": "ctx._source.whg_id = params._id; \
+            q_update = {"script":{"source": "ctx._source.whg_id = params._id; \
                 ctx._source.relation.name = 'parent'; \
                 ctx._source.relation.remove('parent'); \
                 ctx._source.children.addAll(params.newkids); \
@@ -182,8 +182,7 @@ def deleteFromIndex(es,idx,pids):
                 "lang": "painless",
               "params":{"_id": _id, "newkids": newkids, "sugs": sugs }
               },
-                                  "query": {"match":{"place_id": newparent }}
-                        }
+              "query": {"match":{"place_id": newparent }}}
             try:
               es.update_by_query(index=idx,body=q_update)
             except:
@@ -219,8 +218,8 @@ def deleteFromIndex(es,idx,pids):
             print('child '+psrc['title'],str(pid)+' excised from parent: '+parent+'; tagged for deletion')
           except:
             print('aw shit',sys.exit(sys.exc_info()))
-      # child's presence in parent removed, add to delthese[]
-      delthese.append(pid)
+        # child's presence in parent removed, add to delthese[]
+        delthese.append(pid)
     elif len(hits) == 0:
       print('not indexed, skipping...')
   es.delete_by_query(idx,body={"query": {"terms": {"place_id": delthese}}})

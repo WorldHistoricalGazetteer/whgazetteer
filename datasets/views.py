@@ -32,6 +32,8 @@ from datasets.static.hashes.parents import ccodes
 from datasets.tasks import align_tgn, align_whg, align_wd, maxID
 from datasets.utils import *
 from es.es_utils import makeDoc,deleteFromIndex, replaceInIndex, esq_pid, esq_id, fetch_pids 
+from elasticsearch import Elasticsearch      
+es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 
 def emailer(subj,msg):
   send_mail(
@@ -1567,16 +1569,28 @@ class DatasetDetailView(LoginRequiredMixin, UpdateView):
 
 # 
 # load page for confirm ok on delete
-# TODO: also delete from index & uploaded files
-# ?? archive any?
+# delete dataset, with CASCADE to datasetFiles, places, place_name, etc
+# also deletes from index if indexed (fails silently if not)
+# TODO: delete other stuff: disk files; archive??
+#
 class DatasetDeleteView(DeleteView):
   template_name = 'datasets/dataset_delete.html'
 
+  def delete_from_index(self):
+    ds=get_object_or_404(Dataset,pk=self.kwargs.get("id"))
+    pids=list(ds.placeids)
+    deleteFromIndex(es,'whg02',pids)
+
+  def addup(self,a,b):
+    sum=a+b
+    print('addup()',sum)
+  
   def get_object(self):
     id_ = self.kwargs.get("id")
     return get_object_or_404(Dataset, id=id_)
 
   def get_success_url(self):
+    self.delete_from_index()  
     return reverse('dashboard')
 
 #

@@ -9,7 +9,19 @@ from es.es_utils import makeDoc,indexSomeParents
 
 from elasticsearch import Elasticsearch      
 
+# 0.9) one-shot
+# create whgtest index and 
+# add tgn dataset w/two records from db 
+# pids=[5004032,5335754] Pontianak, Sanggau
+# 
+#idx='whgtest'
+#es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+#pids=[5004032,5335754]
+#indexSomeParents(es,idx,pids)
 
+# 1)
+# create diamonds dataset (diamonds135.tsv) owned by tempy
+# create two records w/tgn links and geometry
 class DatasetLifecycleTest(TestCase):
   @classmethod
   def setUpTestData(cls):
@@ -46,6 +58,7 @@ class DatasetLifecycleTest(TestCase):
     PlaceGeom.objects.bulk_create(objs['PlaceGeom'],batch_size=10)
     PlaceLink.objects.bulk_create(objs['PlaceLink'],batch_size=10)    
 
+  # titles match when queried via dataset
   def test_dataset(self):
     ds = Dataset.objects.get(id=1)
     print(ds.places.first())
@@ -54,41 +67,12 @@ class DatasetLifecycleTest(TestCase):
     pl2title = ds.places.filter(src_id='135.0').first().title
     self.assertEquals(pl1title, 'Pontianak')
     self.assertEquals(pl2title, 'Sanggau')
+    
+  def test_index_add(self):
+    print('index the 2 db records')
 
-# 1)
-# create whgtest index and 
-# add tgn dataset w/two records from db 
-# pids=[5004032,5335754] Pontianak, Sanggau
-# TESTS:
-idx='whgtest'
-es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
-pids=[5004032,5335754]
-indexSomeParents(es,idx,pids)
 
-# test some things
-es.indices.delete(idx)
-#
 # 2)
-# new generic user testuser, django9999, Test User, karl@kgeographer.org (future mailings)
-# TESTS:
-# correct values
-# email ok
-
-# 3)
-# create diamonds dataset (diamonds135.tsv) owned by testuser
-# TESTS: 
-# new DatasetFile instance
-# count ds.names=135, ds.geoms=15
-# diskfile in media/whgadmin
-# len(User.datasets) == 1
-
-# 4)
-# add place_link closeMatch records for Pontianak 131.0 (tgn:7015960), Sanggau 135.0 (tgn:1078484)
-# simulates tgn review
-# TESTS:
-# records exist: get_obj_or_404(PlaceLink,src_id='131.0')
-
-# 5)
 # simulate acccessioning w/align_whg
 # align_whg({dsid},{'bounds':{'type': ['userarea'], 'id': ['0']}})
 
