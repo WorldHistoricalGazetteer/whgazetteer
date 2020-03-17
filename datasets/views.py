@@ -1580,10 +1580,6 @@ class DatasetDeleteView(DeleteView):
     ds=get_object_or_404(Dataset,pk=self.kwargs.get("id"))
     pids=list(ds.placeids)
     deleteFromIndex(es,'whg02',pids)
-
-  def addup(self,a,b):
-    sum=a+b
-    print('addup()',sum)
   
   def get_object(self):
     id_ = self.kwargs.get("id")

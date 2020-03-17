@@ -77,3 +77,5 @@ class DatasetLifecycleTest(TestCase):
 # align_whg({dsid},{'bounds':{'type': ['userarea'], 'id': ['0']}})
 
 
+ds = Dataset.objects.get(id=614)
+pids= list(ds.placeids)
