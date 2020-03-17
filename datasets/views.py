@@ -651,13 +651,13 @@ def ds_update(request):
     
     # (re-)open files as panda dataframes; a = current, b = new
     # test files
-    # cur: user_whgadmin/diamonds135_rev3.tsv
-    # new: user_whgadmin/diamonds135_rev2a-125.tsv
+    # cur: user_whgadmin/diamonds135.tsv
+    # new: user_whgadmin/diamonds135_rev2.tsv
     if file_format == 'delimited':
       adf = pd.read_csv('media/'+compare_data['filename_cur'], delimiter='\t',dtype={'id':'str','ccodes':'str'})
-      #adf = pd.read_csv('media/user_whgadmin/diamonds135_rev3.tsv', delimiter='\t',dtype={'id':'str','ccodes':'str'})
+      #adf = pd.read_csv('media/user_whgadmin/diamonds135.tsv', delimiter='\t',dtype={'id':'str','ccodes':'str'})
       bdf = pd.read_csv(filepath, delimiter='\t',dtype={'id':'str','ccodes':'str'})
-      #bdf = pd.read_csv('/var/folders/f4/x09rdl7n3lg7r7gwt1n3wjsr0000gn/T/tmp1zca5x0d.tsv', delimiter='\t',dtype={'id':'str','ccodes':'str'})
+      #bdf = pd.read_csv('/var/folders/f4/x09rdl7n3lg7r7gwt1n3wjsr0000gn/T/tmpcfees9hd.tsv', delimiter='\t',dtype={'id':'str','ccodes':'str'})
       bdf = bdf.astype({"ccodes": str})
       print('reopened old file, # lines:',len(adf))
       print('reopened new file, # lines:',len(bdf))
@@ -726,7 +726,7 @@ def ds_update(request):
           newpl = Place.objects.create(
             src_id = rdp['id'],
             title = re.sub('\(.*?\)', '', rdp['title']),
-            ccodes = rdp['ccodes'].replace(' ','').split(';'),
+            ccodes = [] if str(rdp['ccodes']) == 'nan' else rdp['ccodes'].replace(' ','').split(';'),
             dataset = ds
           )
           newpl.save()

@@ -177,6 +177,11 @@
                 <td><b>Need review</b></td>
                 <td>{{ ds.unreviewed }}</td> 
                 <td class="text-secondary">n/a</td></tr>
+              {% if ds.unindexed > 0 %} 
+                <tr class="text-danger">
+                <td><b>Need reconciliation</b></td>
+                <td>{{ ds.unindexed }}</td> 
+                <td class="text-secondary">n/a</td></tr>{% endif %}
               <tr><td><b>Names</b></td><td>{{ num_names }}</td><td class="text-secondary">n/a</td></tr>
               <tr>
                 <td class="pt-3"><b>Links</b></td><td class="pt-3">{{ num_links }}</td>

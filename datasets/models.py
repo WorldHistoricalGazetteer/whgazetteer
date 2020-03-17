@@ -84,6 +84,13 @@ class Dataset(models.Model):
         unrev=len(set(list(Hit.objects.filter(dataset_id=self.id,reviewed=False).values_list('place_id_id',flat=True))))
         return unrev
     
+    # count of unindexed places
+    @property
+    def unindexed(self):
+        unidxed=self.places.filter(indexed=False).count()
+        return unidxed
+        
+    # list of dataset place_id values
     @property
     def placeids(self):
         return Place.objects.filter(dataset=self.label).values_list('id', flat=True)

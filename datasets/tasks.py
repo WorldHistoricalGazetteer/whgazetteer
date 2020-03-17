@@ -965,6 +965,8 @@ def align_whg(pk, *args, **kwargs):
       try:
         res = es.index(index=idx, doc_type='place', id=str(whg_id), body=json.dumps(parent_obj))
         count_seeds +=1
+        place.indexed = True
+        place.save()
         print('created parent:',result_obj['place_id'],result_obj['title'])
       except:
         print('failed indexing '+str(place.id)+' as parent')
@@ -1018,7 +1020,10 @@ def align_whg(pk, *args, **kwargs):
                 "params":{"names": qobj['variants'], "id": str(place.id)}
               },
               "query": {"match":{"_id": parent_whgid}}}
-            es.update_by_query(index=idx, doc_type='place', body=q_update, conflicts='proceed')            
+            es.update_by_query(index=idx, doc_type='place', body=q_update, conflicts='proceed')
+            # flag it indexed in db
+            place.indexed = True
+            place.save()            
           except:
             print('failed indexing '+str(place.id)+' as child of '+str(parent_whgid))
             count_fail += 1
