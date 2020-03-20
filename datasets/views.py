@@ -360,7 +360,8 @@ def ds_recon(request, pk):
         dslabel=ds.label,
         owner=ds.owner.id,
         bounds=bounds,
-        aug_geom=aug_geom
+        aug_geom=aug_geom,
+        scope=scope
       )
     except:
       print('failed: align_'+auth )

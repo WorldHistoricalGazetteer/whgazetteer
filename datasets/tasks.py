@@ -153,8 +153,11 @@ def normalize(h,auth):
     rec = HitRecord(-1, 'tgn', h['tgnid'], h['title'])
     print('normalize rec, tgn',rec)
     rec.variants = [n['toponym'] for n in h['names']] # always >=1 names
-    rec.types = [t['placetype']+' ('+t['id']  +')' for t in h['types'] ] \
-      if len(h['types']) > 0 and t['placetype'] != None and t['id'] != None else []
+    if len(h['types']) > 0:
+      rec.types = [t['placetype']+' ('+t['id']  +')' for t in h['types']] \
+        if t['placetype'] != None and t['id'] != None else []
+    else:
+      rec.types = []
     rec.ccodes = []
     rec.parents = ' > '.join(h['parents']) if len(h['parents']) > 0 else []
     rec.descriptions = [h['note']] if h['note'] != None else []
@@ -599,6 +602,7 @@ def align_tgn(pk, *args, **kwargs):
   ds = get_object_or_404(Dataset, id=pk)
   print('ds',ds.__dict__)
   bounds = kwargs['bounds']
+  scope = kwargs['scope']
   print('kwargs from align_tgn() task',kwargs)
   #print('bounds:',bounds,type(bounds))
   hit_parade = {"summary": {}, "hits": []}
@@ -606,9 +610,11 @@ def align_tgn(pk, *args, **kwargs):
   [count, count_hit, count_nohit, total_hits, count_p1, count_p2, count_p3] = [0,0,0,0,0,0,0]
   start = datetime.datetime.now()
 
-  # build query object
-  # TODO: filter out place.indexed = False
-  for place in ds.places.all():
+  qs = ds.places.all() if scope == 'all' else ds.places.all().filter(indexed=False)
+  # queryset depends on choice of scope in addtask form
+  #for place in ds.places.all():
+  for place in qs:
+    # build query object
     #place=get_object_or_404(Place,id=131735) # Caledonian Canal (ne)
     count +=1
     qobj = {"place_id":place.id,"src_id":place.src_id,"title":place.title}
