@@ -8,8 +8,8 @@ from main.choices import FORMATS, DATATYPES, STATUS
 
 MATCHTYPES = [
   ('closeMatch','closeMatch'),
-  ('exactMatch','exactMatch'),
-  ('related','related'),
+  #('exactMatch','exactMatch'),
+  #('related','related'),
   ('none','no match'),]
 
 class HitModelForm(forms.ModelForm):

@@ -343,6 +343,7 @@ def ds_recon(request, pk):
       "type":["region" if region !="0" else "userarea"],
           "id": [region if region !="0" else userarea]
     }
+    scope = request.POST['scope']
     #print('bounds',bounds)
     
     if not celeryUp():

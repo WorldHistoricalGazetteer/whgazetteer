@@ -81,7 +81,7 @@ class Dataset(models.Model):
     @property
     def unreviewed(self):
         # select distinct(place_id_id) from hits where dataset_id = 602 and reviewed = false ;
-        unrev=len(set(list(Hit.objects.filter(dataset_id=self.id,reviewed=False).values_list('place_id_id',flat=True))))
+        unrev=Hit.objects.filter(dataset_id=self.id,reviewed=False).count()
         return unrev
     
     # count of unindexed places

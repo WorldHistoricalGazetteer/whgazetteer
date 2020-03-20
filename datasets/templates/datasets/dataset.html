@@ -167,7 +167,7 @@
         <input type="hidden" name="numrows" value="{{ current_file.numrows }}">
       </div>
       <div class="col-sm-4 small">
-        <div id="ds_info">
+        <div id="ds_info">{{ds.unreviewed}}
           <div id="ds_stats">
             <table style="width:100%">
               <!--<tr><td class="pb-3"><b>Status</b></td><td class="pb-3">{ ds.ds_status }}</td><td class="pb-3"></td></tr>-->
@@ -383,7 +383,7 @@
           <div class="form-check">
             <label class="form-check-label" for="auth4">
               <input type="radio" class="form-check-input" id="auth4"
-                name="recon" value="wd" >Wikidata (wd)<span class="ml-2 text-danger"><i>1+ seconds per record</i></span>
+                name="recon" value="wd" >Wikidata (wd)<span class="ml-2 text-danger"><i>~1 second per record</i></span>
             </label>
           </div>
           <div class="form-check">
@@ -399,6 +399,13 @@
             </label>
           </div>
           {% if request.method == 'GET' %}
+          <div id="recon_scope" class="mt-2">
+            <hr/><p class="font-weight-bold">Task scope</p>
+            <label class="radio-inline">
+            <input type="radio" name="scope" id="scope1" value="all"> All <b>{{ds.numrows}}</b> records</label>
+            <label class="radio-inline ml-3">
+            <input type="radio" name="survey" checked="true" id="scope2" value="unindexed"> Only the unindexed (<b>{{ds.unindexed}}</b>)</label>
+          </div>
           <div id="geo-constraint" class="mt-2">
             <hr/>
             <div class="mb-2">
