@@ -167,19 +167,19 @@
         <input type="hidden" name="numrows" value="{{ current_file.numrows }}">
       </div>
       <div class="col-sm-4 small">
-        <div id="ds_info">{{ds.unreviewed}}
+        <div id="ds_info">
           <div id="ds_stats">
             <table style="width:100%">
               <!--<tr><td class="pb-3"><b>Status</b></td><td class="pb-3">{ ds.ds_status }}</td><td class="pb-3"></td></tr>-->
               <tr><th></th><th class="pb-1 text-secondary">count</th><th class="pb-1 text-secondary">added</th></tr>
               <tr><td><b>Rows</b></td><td>{{ ds.numrows }}</td><td class="text-secondary">n/a</td></tr>
               {% if ds.unreviewed > 0 %}<tr class="text-danger">{%else%}<tr>{%endif%}
-                <td><b>Need review</b></td>
+                <td><b>Unreviewed hits</b></td>
                 <td>{{ ds.unreviewed }}</td> 
                 <td class="text-secondary">n/a</td></tr>
               {% if ds.unindexed > 0 %} 
                 <tr class="text-danger">
-                <td><b>Need reconciliation</b></td>
+                <td><b>Unindexed records</b></td>
                 <td>{{ ds.unindexed }}</td> 
                 <td class="text-secondary">n/a</td></tr>{% endif %}
               <tr><td><b>Names</b></td><td>{{ num_names }}</td><td class="text-secondary">n/a</td></tr>
@@ -399,6 +399,7 @@
             </label>
           </div>
           {% if request.method == 'GET' %}
+          {% if ds.unindexed < ds.numrows %}
           <div id="recon_scope" class="mt-2">
             <hr/><p class="font-weight-bold">Task scope</p>
             <label class="radio-inline">
@@ -406,6 +407,7 @@
             <label class="radio-inline ml-3">
             <input type="radio" name="scope" checked="true" id="scope2" value="unindexed"> Only the unindexed (<b>{{ds.unindexed}}</b>)</label>
           </div>
+          {% endif %}
           <div id="geo-constraint" class="mt-2">
             <hr/>
             <div class="mb-2">

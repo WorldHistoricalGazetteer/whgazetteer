@@ -28,7 +28,7 @@ class Dataset(models.Model):
     public = models.BooleanField(default=False)    
     ds_status = models.CharField(max_length=12, null=True, blank=True, choices=STATUS)
     create_date = models.DateTimeField(null=True, auto_now_add=True)
-    uri_base = models.URLField(blank=True, null=True)
+    uri_base = models.URLField(blank=True, null=True, default="http://dev.whgazetteer.org/api/places/")
 
     # TODO: these are updated in both Dataset & DatasetFile  (??)
     datatype = models.CharField(max_length=12, null=False,choices=DATATYPES,
@@ -81,7 +81,7 @@ class Dataset(models.Model):
     @property
     def unreviewed(self):
         # select distinct(place_id_id) from hits where dataset_id = 602 and reviewed = false ;
-        unrev=Hit.objects.filter(dataset_id=self.id,reviewed=False).count()
+        unrev=Hit.objects.all().filter(dataset_id=self.id,reviewed=False).count()
         return unrev
     
     # count of unindexed places

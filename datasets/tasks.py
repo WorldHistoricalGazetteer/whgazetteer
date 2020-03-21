@@ -153,11 +153,9 @@ def normalize(h,auth):
     rec = HitRecord(-1, 'tgn', h['tgnid'], h['title'])
     print('normalize rec, tgn',rec)
     rec.variants = [n['toponym'] for n in h['names']] # always >=1 names
-    if len(h['types']) > 0:
-      rec.types = [t['placetype']+' ('+t['id']  +')' for t in h['types']] \
-        if t['placetype'] != None and t['id'] != None else []
-    else:
-      rec.types = []
+    rec.types = [(t['placetype'] if 'placetype' in t and t['placetype'] != None else 'unspecified') + \
+                (' ('+t['id']  +')' if 'id' in t and t['id'] != None else '') for t in h['types']] \
+                if len(h['types']) > 0 else []
     rec.ccodes = []
     rec.parents = ' > '.join(h['parents']) if len(h['parents']) > 0 else []
     rec.descriptions = [h['note']] if h['note'] != None else []
@@ -473,8 +471,9 @@ def align_wd(pk, *args, **kwargs):
   return hit_parade['summary']
   
   
-# queries -> result_obj
-# TODO: count 'got hit' per pass not hit per pass
+# ***
+# performs elasticsearch queries
+# ***
 def es_lookup_tgn(qobj, *args, **kwargs):
   #print('qobj',qobj)
   bounds = kwargs['bounds']
@@ -596,7 +595,9 @@ def es_lookup_tgn(qobj, *args, **kwargs):
   result_obj['hit_count'] = hit_count
   return result_obj
 
-# manage ES queries to tgn
+# ***
+# manage reconcile to tgn
+# ***
 @task(name="align_tgn")
 def align_tgn(pk, *args, **kwargs):
   ds = get_object_or_404(Dataset, id=pk)
@@ -604,15 +605,14 @@ def align_tgn(pk, *args, **kwargs):
   bounds = kwargs['bounds']
   scope = kwargs['scope']
   print('kwargs from align_tgn() task',kwargs)
-  #print('bounds:',bounds,type(bounds))
   hit_parade = {"summary": {}, "hits": []}
   [nohits,tgn_es_errors,features] = [[],[],[]]
   [count, count_hit, count_nohit, total_hits, count_p1, count_p2, count_p3] = [0,0,0,0,0,0,0]
   start = datetime.datetime.now()
 
-  qs = ds.places.all() if scope == 'all' else ds.places.all().filter(indexed=False)
   # queryset depends on choice of scope in addtask form
-  #for place in ds.places.all():
+  qs = ds.places.all() if scope == 'all' else ds.places.all().filter(indexed=False)
+
   for place in qs:
     # build query object
     #place=get_object_or_404(Place,id=131735) # Caledonian Canal (ne)
@@ -716,7 +716,10 @@ def align_tgn(pk, *args, **kwargs):
     }
   print("summary returned",hit_parade['summary'])
   return hit_parade['summary']
-# 
+
+# ***
+# performs elasticsearch queries
+# ***
 def es_lookup_whg(qobj, *args, **kwargs):
   global whg_id
   idx = kwargs['index']
@@ -867,7 +870,11 @@ def es_lookup_whg(qobj, *args, **kwargs):
   return result_obj
 
 
-# RETAKE: accessioning and/or queueing hits to whg
+# ***
+# reconciling to whg
+# pass1 finds shared links, auto-indexes
+# pass2, pass3 hits queued for review
+# ***
 @task(name="align_whg")
 def align_whg(pk, *args, **kwargs):
   ds = get_object_or_404(Dataset, id=pk)
@@ -880,14 +887,18 @@ def align_whg(pk, *args, **kwargs):
   #dummy for testing
   #bounds = {'type': ['userarea'], 'id': ['0']}
   bounds = kwargs['bounds']
-
+  scope = kwargs['scope']
+  
   # TODO: system for region creation
   hit_parade = {"summary": {}, "hits": []}
   [count,count_hit,count_nohit,total_hits,count_p1,count_p2,count_p3] = [0,0,0,0,0,0,0]
   [count_errors,count_seeds,count_kids,count_fail] = [0,0,0,0]
 
   start = datetime.datetime.now()
-
+  
+  # queryset depends on choice of scope in addtask form
+  qs = ds.places.all() if scope == 'all' else ds.places.all().filter(indexed=False)
+  
   """
   build query object 'qobj'
   then result_obj = es_lookup_whg(qobj)
