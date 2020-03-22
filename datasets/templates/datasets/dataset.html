@@ -61,7 +61,7 @@
               <a href="#" class="edit-title">{% fontawesome_icon 'edit' color='#336699' %}</a>
             </td>
             <td>
-              <span class="form-title bigger strong text-danger">{{ form.title.value }}</span>
+              <span class="form-title bigger strong">{{ form.title.value }}</span>
               <span class="hidden editing-title">{{ form.title }}</span>&nbsp;
             </td>
           </tr>
@@ -172,16 +172,16 @@
             <table style="width:100%">
               <!--<tr><td class="pb-3"><b>Status</b></td><td class="pb-3">{ ds.ds_status }}</td><td class="pb-3"></td></tr>-->
               <tr><th></th><th class="pb-1 text-secondary">count</th><th class="pb-1 text-secondary">added</th></tr>
-              <tr><td><b>Rows</b></td><td>{{ ds.numrows }}</td><td class="text-secondary">n/a</td></tr>
-              {% if ds.unreviewed > 0 %}<tr class="text-danger">{%else%}<tr>{%endif%}
-                <td><b>Unreviewed hits</b></td>
-                <td>{{ ds.unreviewed }}</td> 
-                <td class="text-secondary">n/a</td></tr>
+              <tr><td><b>Records</b></td><td>{{ ds.numrows }}</td><td class="text-secondary">n/a</td></tr>
               {% if ds.unindexed > 0 %} 
                 <tr class="text-danger">
                 <td><b>Unindexed records</b></td>
                 <td>{{ ds.unindexed }}</td> 
                 <td class="text-secondary">n/a</td></tr>{% endif %}
+              {% if ds.unreviewed > 0 %}<tr class="text-danger">{%else%}<tr>{%endif%}
+                <td><b>Unreviewed hits</b></td>
+                <td>{{ ds.unreviewed }}</td> 
+                <td class="text-secondary">n/a</td></tr>
               <tr><td><b>Names</b></td><td>{{ num_names }}</td><td class="text-secondary">n/a</td></tr>
               <tr>
                 <td class="pt-3"><b>Links</b></td><td class="pt-3">{{ num_links }}</td>
@@ -599,7 +599,7 @@ js for Summary, Reconciliation
       stats = data['compare_result']
       keepg = data['keepg']; keepl = data['keepl'];
       <!--keepers_note='Keep existing: geometry? <b>'+keepg+'</b>; links? <b>'+keepl+'</b>';-->
-      html = 'This update would:<br/><ul style="padding:0;list-style: inside;">'
+      html = 'This action would perform these WHG <u>database</u> updates:<br/><ul style="padding:0;list-style: inside;">'
       html += '<li>Replace <b>'+stats['count_replace']+'</b> records having same IDs </li>'
       html += stats['rows_add'].length >0?'<li>Add records (<b>'+stats['rows_add'].join(', ')+'</b>)</li>':''
       html += stats['rows_del'].length >0?'<li>Remove records (<b>'+stats['rows_del'].join(', ')+'</b>)</li>':''
@@ -614,7 +614,8 @@ js for Summary, Reconciliation
         ' <input type="checkbox" id="preserve_links" checked></li>'
       }
       html += '</ul>'
-      html += data['count_indexed'] > 0 ? '<p>Additionally, <b>'+data['count_indexed'] + '</b> records previously indexed will be updated (<b>'+stats['count_replace']+'</b>) or removed (<b>'+stats['rows_del'].length+'</b>)</p>' : ''
+      html += data['count_indexed'] > 0 ? '<p>Also, in the WHG <u>index</u>, <b>'+stats['count_replace'] + '</b> records would be updated, and <b>'+stats['rows_del'].length+'</b> removed.</p>':''
+      html += stats['rows_add'].length >0 ? 'The '+stats['rows_add'].length+' record(s) added to the database will have to be reconciled and accessioned.':''
     return html
   }
 

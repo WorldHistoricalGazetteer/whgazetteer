@@ -726,8 +726,6 @@ def es_lookup_whg(qobj, *args, **kwargs):
   bounds = kwargs['bounds']
   ds = kwargs['dataset'] 
   place = kwargs['place']
-  #bounds = {'type': ['region'], 'id': ['87']}
-  #bounds = {'type': ['userarea'], 'id': ['0']}
   hit_count, err_count = [0,0]
 
   # create empty result object
@@ -736,6 +734,7 @@ def es_lookup_whg(qobj, *args, **kwargs):
       'hits':[], 'missed':-1, 'total_hits':-1
   }  
 
+  # prepare queries
   # initial for pass1: common link?
   qlinks = {"query": { 
      "bool": {
@@ -809,7 +808,7 @@ def es_lookup_whg(qobj, *args, **kwargs):
     qsugg['suggest']['suggest']['completion']['contexts']={"place_type": qobj['placetypes']}, \
       {"representative_point": {"lon":repr_point[0] , "lat":repr_point[1], "precision": "100km"}}
   
-  # grab copies
+  # grab a copy of each
   q1 = qlinks
   q2 = qbase
   q3 = qbare
@@ -821,19 +820,16 @@ def es_lookup_whg(qobj, *args, **kwargs):
     res1 = es.search(index=idx, body = q1)
     hits1 = res1['hits']['hits']
   except:
-    print("q1, error:", q1, sys.exc_info())
+    print("q1, ES error:", q1, sys.exc_info())
   if len(hits1) > 0:
+    # shared link(s); return for immed. indexinf
     for hit in hits1:
       hit_count +=1
       hit['pass'] = 'pass1'
       result_obj['hits'].append(hit)
+      result_obj['hit_count'] = hit_count
+      return result_obj
   elif len(hits1) == 0:
-    # this bit not relevant any more
-    # no shared links; for black, index place as a parent immediately
-    ## for any other dataset, continue to passes 2 & 3
-    #if ds == 'black':
-      #result_obj['hit_count'] = hit_count
-      #return result_obj
   # /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
   # pass2: must[name, type]; should[parent]; filter[geom, bounds]
   # /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
@@ -844,10 +840,13 @@ def es_lookup_whg(qobj, *args, **kwargs):
     except:
       print("q2, error:", q2, sys.exc_info())
     if len(hits2) > 0:
+      # pass2 hit(s); return them
       for hit in hits2:
         hit_count +=1
         hit['pass'] = 'pass2'
         result_obj['hits'].append(hit)
+        result_obj['hit_count'] = hit_count
+        return result_obj
     elif len(hits2) == 0:
       # /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
       # pass3: must[name]; should[parent]; filter[bounds]
@@ -903,7 +902,6 @@ def align_whg(pk, *args, **kwargs):
   build query object 'qobj'
   then result_obj = es_lookup_whg(qobj)
   """
-  qs = ds.places.all()
   for place in qs:
     #place=get_object_or_404(Place,id=6294527)
     count +=1
@@ -948,18 +946,21 @@ def align_whg(pk, *args, **kwargs):
       # make everything a simple polygon hull for spatial filter purposes
       qobj['geom'] = hully(g_list)
 
+    # ***
     # run es_lookup_whg(qobj): 3 query passes
+    # ***
     result_obj = es_lookup_whg(qobj, index=idx, bounds=bounds, dataset=ds.label, place=place)
 
+    
     # PARSE RESULTS
     if result_obj['hit_count'] == 0:
       # no hits on any pass, create parent record now
       count_nohit += 1
-      # increment whg_id (max computed earlier)
+      # increment whg_id (max at start computed earlier)
       whg_id += 1
-      print('new parent, whg_id:',whg_id)
+      #print('need new parent, whg_id:',whg_id)
       
-      # es_utils.makeDoc() -> new ES format object
+      # es_utils.makeDoc() -> new ES format document object
       parent_obj = makeDoc(place,'none')
       
       # add more elements...
@@ -970,13 +971,12 @@ def align_whg(pk, *args, **kwargs):
       # add its own names to the suggest field
       for n in parent_obj['names']:
         parent_obj['suggest']['input'].append(n['toponym'])
-        # temp hack: using searchy field in place of suggest.input for autocomplete
-        parent_obj['searchy'].append(n['toponym'])
       # add its title
       if place.title not in parent_obj['suggest']['input']:
         parent_obj['suggest']['input'].append(place.title)
-        parent_obj['searchy'].append(place.title)
-        
+      # temp hack: using searchy field duplicates suggest.input
+      # (autocomplete disabled for poor performance)
+      parent_obj['searchy'] =  parent_obj['suggest']['input']
       # index it
       # and flag its db record
       try:
@@ -984,7 +984,7 @@ def align_whg(pk, *args, **kwargs):
         count_seeds +=1
         place.indexed = True
         place.save()
-        print('created parent:',result_obj['place_id'],result_obj['title'])
+        print('created parent: '+whg_id+' from place: '+place.id+' ('+place.title+')')
       except:
         print('failed indexing '+str(place.id)+' as parent')
         pass
@@ -1078,7 +1078,7 @@ def align_whg(pk, *args, **kwargs):
             print("hit _source, error:",hit, sys.exc_info())
           
   end = datetime.datetime.now()
-  # ds.status = 'recon_whg'
+  #ds.ds_status = 'recon_whg'
   hit_parade['summary'] = {
     'count':count,
     'got_hits':count_hit,

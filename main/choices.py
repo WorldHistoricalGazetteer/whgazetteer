@@ -38,6 +38,7 @@ STATUS = [
     ('in_database', 'Inserted to database'),
     ('uploaded', 'File uploaded'),
     ('ready', 'Ready for submittal'),
+    ('accessioning', 'Accessioning'),
     ('accessioned', 'Accessioned'),
 ]
 

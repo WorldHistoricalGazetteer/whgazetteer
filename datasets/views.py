@@ -55,9 +55,9 @@ def link_uri(auth,id):
   uri = baseuri + str(id)
   return uri
 
-# present reconciliation (and accessioning!) hits for review
-# for reconciliation: write place_link & place_geom (if aug_geom == 'on') records if matched
-# for accessioning: if close or exact -> if match is parent -> make child else if match is child -> make sibling
+# from datasets.views.review()
+# indexes a db record
+# if close or exact -> if match is parent -> make child else if match is child -> make sibling
 def indexMatch(pid, hit_pid=None):
   print('indexMatch(): pid '+str(pid)+'w/hit_pid '+str(hit_pid))
   from elasticsearch import Elasticsearch
@@ -390,7 +390,13 @@ def ds_recon(request, pk):
       user_id = request.user.id
     )    
     
-    ds.ds_status = 'reconciling'
+    # set ds_status
+    if auth != 'whg':
+      # 1 or more recon tasks have been run
+      ds.ds_status = 'reconciling'
+    else:
+      # accessioning begun (align_whg); complete if ds.unindexed == 0
+      ds.ds_status = 'indexed' if ds.unindexed == 0 else 'accessioning'
     ds.save()
     return render(request, 'datasets/dataset.html', {'ds':ds, 'context': context})
 
@@ -1522,9 +1528,7 @@ class DatasetDetailView(LoginRequiredMixin, UpdateView):
   
     predefined = Area.objects.all().filter(type='predefined').order_by('-created')
     context['region_list'] = predefined
-  
-    #context['comparison'] = comparison
-    
+      
     context['updates'] = {}
     bounds = self.kwargs.get("bounds")
     # print('ds',ds.label)
