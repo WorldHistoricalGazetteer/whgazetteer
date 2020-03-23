@@ -147,6 +147,8 @@ def isOwner(user):
 def review(request, pk, tid, passnum): 
   ds = get_object_or_404(Dataset, id=pk)
   task = get_object_or_404(TaskResult, task_id=tid)
+  auth = task.task_name[6:]
+  authname = 'Wikidata' if auth == 'wd' else 'Getty TGN'
   kwargs=json.loads(task.task_kwargs.replace("'",'"'))
   #print('task_kwargs as json',kwargs)
   
@@ -239,7 +241,8 @@ def review(request, pk, tid, passnum):
                   # {"type": "Point", "geowkt": "POINT(20.58 -19.83)", "citation": {"id": "dplace:SCCS", "label": "Standard cross-cultural sample"}, "coordinates": [20.58, -19.83]}
                   jsonb = {
                     "type":hits[x]['json']['geoms'][0]['type'],
-                    "citation":{"id":"wd:"+hits[x]['authrecord_id'],"label":"Wikidata"},
+                    #"citation":{"id":"wd:"+hits[x]['authrecord_id'],"label":"Wikidata"},
+                    "citation":{"id":auth+':'+hits[x]['authrecord_id'],"label":authname},
                     "coordinates":hits[x]['json']['geoms'][0]['coordinates']
                   }
                 )
@@ -1538,7 +1541,7 @@ class DatasetDetailView(LoginRequiredMixin, UpdateView):
     context['current_file'] = file
     context['format'] = file.format
     context['numrows'] = file.numrows
-    context['collab'] = ds.collab
+    context['collaborators'] = ds.collab
     placeset = Place.objects.filter(dataset=ds.label)
     context['tasks'] = TaskResult.objects.all().filter(task_args = [id_],status='SUCCESS')
     # initial (non-task)

@@ -74,7 +74,8 @@ class Dataset(models.Model):
         for du in dus:
             u = get_object_or_404(User, id=du.user_id_id)
             r = du.role
-            collabs.append({'id':du.user_id_id,'user':u.username,'role':r})
+            #collabs.append({'id':du.user_id_id,'user':u.username,'role':r})
+            collabs.append(u)
         return collabs
     
     # count of unreviewed hits
