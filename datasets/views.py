@@ -241,7 +241,6 @@ def review(request, pk, tid, passnum):
                   # {"type": "Point", "geowkt": "POINT(20.58 -19.83)", "citation": {"id": "dplace:SCCS", "label": "Standard cross-cultural sample"}, "coordinates": [20.58, -19.83]}
                   jsonb = {
                     "type":hits[x]['json']['geoms'][0]['type'],
-                    #"citation":{"id":"wd:"+hits[x]['authrecord_id'],"label":"Wikidata"},
                     "citation":{"id":auth+':'+hits[x]['authrecord_id'],"label":authname},
                     "coordinates":hits[x]['json']['geoms'][0]['coordinates']
                   }
