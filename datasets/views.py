@@ -346,8 +346,7 @@ def ds_recon(request, pk):
           "id": [region if region !="0" else userarea]
     }
     scope = request.POST['scope'] if 'scope' in request.POST else 'all'
-    #print('bounds',bounds)
-    
+
     if not celeryUp():
       print('Celery is down :^(')
       emailer('Celery is down :^(','if not celeryUp() -- look into it, bub!')

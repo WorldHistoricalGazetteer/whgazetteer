@@ -92,12 +92,10 @@ def replaceInIndex(es,idx,pids):
           routing=1,body=json.dumps(newchild))
         repl_count +=1
       elif role == 'parent':
-        # get children, sugs fro existing index doc
+        # get id, children, sugs from existing index doc
         kids_e = src['children']
-        #for test
-        #kids_e = src['children']+[11111,22222]
         sugs_e = list(set(src['suggest']['input'])) # distinct only
-        
+                
         # new doc from db place; fill from existing
         newparent = makeDoc(place, None)
         newparent['children'] = kids_e
@@ -105,6 +103,7 @@ def replaceInIndex(es,idx,pids):
         # merge old & new names in new doc
         previous = set([q['toponym'] for q in newparent['names']])
         names_union = list(previous.union(set(sugs_e)))
+        newparent['whg_id'] = doc['_id']
         newparent['suggest']['input'] = names_union
         newparent['searchy'] = names_union
         newparent['relation']={"name":"parent"}

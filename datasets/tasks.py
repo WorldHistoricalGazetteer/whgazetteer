@@ -894,7 +894,7 @@ def align_whg(pk, *args, **kwargs):
   [count_errors,count_seeds,count_kids,count_fail] = [0,0,0,0]
 
   start = datetime.datetime.now()
-  
+  print('kwargs in align_whg()',kwargs)
   # dict to object
   #class Struct:
     #def __init__(self, **entries):
