@@ -144,13 +144,13 @@ def isOwner(user):
 # dataset pk, celery task_id
 # responds to GET for display, POST if 'save' button submits
 # ***
-def review(request, pk, tid, passnum): 
+def review(request, pk, tid, passnum):
   ds = get_object_or_404(Dataset, id=pk)
   task = get_object_or_404(TaskResult, task_id=tid)
   auth = task.task_name[6:]
   authname = 'Wikidata' if auth == 'wd' else 'Getty TGN'
   kwargs=json.loads(task.task_kwargs.replace("'",'"'))
-  #print('task_kwargs as json',kwargs)
+  #print('request.POST',request.POST)
   
   # filter place records by passnum for those with unreviewed hits on this task
   # if request passnum is complete, increment
@@ -171,6 +171,7 @@ def review(request, pk, tid, passnum):
     context = {"nohits":True,'ds_id':pk,'task_id': tid, 'passnum': passnum}
     return render(request, 'datasets/review.html', context=context)
 
+  # TODO: if 2 reviewers, save by one flags 
   # manage pagination & urls
   # gets next place record as records[0]
   paginator = Paginator(record_list, 1)
@@ -216,56 +217,52 @@ def review(request, pk, tid, passnum):
   if method == 'GET':
     print('a GET, just rendering next')
   else:
+    place_post = get_object_or_404(Place,pk=request.POST['place_id'])
+    print('POST place_id',request.POST['place_id'],place_post)
     try:
       if formset.is_valid():
         hits = formset.cleaned_data
-        print('hits (formset.cleaned_data)',hits)
+        #print('hits (formset.cleaned_data)',hits)
         matches = 0
         for x in range(len(hits)):
           hit = hits[x]['id']
           hasGeom = 'geoms' in hits[x]['json'] and len(hits[x]['json']['geoms']) > 0
           # is this hit a match?
           if hits[x]['match'] not in ['none']:
-            # hit is a match, record that
             matches += 1
-            # if tgn or wikidata, write place_link and place_geom record(s) now
+            # for tgn or wikidata, write place_link and place_geom record(s) now
+            # IF someone didn't just review it!
             if task.task_name in ['align_tgn','align_wd']:
-              # align/recon to authority
-              # create PlaceGeom record if 'accept geometries' was checked
-              # 
-              if kwargs['aug_geom'] == 'on' and hasGeom:
+              # only if 'accept geometries' was checked
+              if kwargs['aug_geom'] == 'on' and hasGeom \
+                 and tid not in place_post.geoms.all().values_list('task_id',flat=True):
                 geom = PlaceGeom.objects.create(
-                  place_id = place,
+                  place_id = place_post,
                   task_id = tid,
                   src_id = place.src_id,
-                  # {"type": "Point", "geowkt": "POINT(20.58 -19.83)", "citation": {"id": "dplace:SCCS", "label": "Standard cross-cultural sample"}, "coordinates": [20.58, -19.83]}
                   jsonb = {
                     "type":hits[x]['json']['geoms'][0]['type'],
                     "citation":{"id":auth+':'+hits[x]['authrecord_id'],"label":authname},
                     "coordinates":hits[x]['json']['geoms'][0]['coordinates']
                   }
                 )
-                print('created PlaceGeom instance:', geom)
+                print('created place_geom instance:', geom)
               ds.save()
 
               # create single PlaceLink for matched authority record
-              print('place_link for', task.task_name,hits[x]['authrecord_id'])
-              link = PlaceLink.objects.create(
-                place_id = place,
-                task_id = tid,
-                src_id = place.src_id,
-                jsonb = {
-                  "type":hits[x]['match'],
-                  "identifier":link_uri(task.task_name,hits[x]['authrecord_id'] if hits[x]['authority'] != 'whg' \
-                      else hits[x]['json']['place_id'])
-                }
-              )
-              # update totals
-              # TODO: can't increment null; why null?
-              #ds.numlinked = ds.numlinked +1
-              #ds.total_links = ds.total_links +1
-              #ds.save()
-              print('created place_link', link)
+              # IF someone didn't just do it for this record
+              if tid not in place_post.links.all().values_list('task_id',flat=True):
+                link = PlaceLink.objects.create(
+                  place_id = place_post,
+                  task_id = tid,
+                  src_id = place.src_id,
+                  jsonb = {
+                    "type":hits[x]['match'],
+                    "identifier":link_uri(task.task_name,hits[x]['authrecord_id'] \
+                        if hits[x]['authority'] != 'whg' else hits[x]['json']['place_id'])
+                  }
+                )
+                print('created place_link instance:', link)
 
               # create multiple PlaceLink records (e.g. Wikidata)
               # TODO: filter duplicates

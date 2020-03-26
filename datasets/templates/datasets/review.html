@@ -74,9 +74,6 @@
                   </span>
                 </h4>
               </span>
-              <!--<span class="float-right">-->
-                <!--<button type="submit" class="btn btn-secondary float-right">Save</button>-->
-              <!--</span>-->
             </div>
             {% for g in record.geoms.all %}
               {{ g.jsonb|safe|json_script:record.id }}
