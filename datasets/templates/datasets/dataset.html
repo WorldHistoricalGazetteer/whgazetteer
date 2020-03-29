@@ -1100,14 +1100,17 @@ js for Browse
     left+='</p><p><b>Types</b>: '
     typeids = ''
     for (t in data.types) {
-      <!--console.log('type:',t)-->
+      console.log('type:',data.types[t])
+      <!--typeids+=data.types[t].sourceLabel?data.types[t].sourceLabel +-->
+        <!--' (<i>'+data.types[t].label+'/'+data.types[t].identifier +'</i>); ':-->
+        <!--'(<i>'+data.types[t].label+'/'+data.types[t].identifier +'</i>); '-->
       typeids+=data.types[t].sourceLabel?data.types[t].sourceLabel +
-        ' (<i>'+data.types[t].label+'/'+data.types[t].identifier +'</i>); ':
-        '(<i>'+data.types[t].label+'/'+data.types[t].identifier +'</i>); '
+        ' (<a href="'+data.types[t].identifier+'"><i>'+data.types[t].label+'</i></a>); ':
+        '(<a href="'+data.types[t].identifier+'"><i>'+data.types[t].label+'</i></a>); '
     }
     left += typeids.replace(/(; $)/g, "") +'</p>'
     //
-    //
+    //+'/'+data.types[t].identifier 
     // LINKS
     // TODO: normalize on closeMatch, exactMatch
     left += '<p class="mb-0"><b>Linked records</b>: </p>'

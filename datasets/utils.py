@@ -6,7 +6,7 @@ import simplejson as json
 from goodtables import validate as gvalidate
 from shapely import wkt
 from datasets.models import DatasetFile, DatasetUser
-from datasets.static.hashes import aat, parents
+from datasets.static.hashes import aat, parents, aat_q
 from jsonschema import Draft7Validator, draft7_format_checker, validate
 pp = pprint.PrettyPrinter(indent=1)
 import pandas as pd
@@ -171,7 +171,7 @@ def parsejson(value,key):
   obj = json.loads(value.replace("'",'"'))
   return obj[key]
 def makeCoords(lonstr,latstr):
-  print(type(lonstr),latstr)
+  #print(type(lonstr),latstr)
   lon = float(lonstr) if lonstr not in ['','nan'] else ''
   lat = float(latstr) if latstr not in ['','nan'] else ''
   #lon = float(lonstr) if lonstr != '' else ''
@@ -210,8 +210,8 @@ def getQ(arr,what):
     if len(arr) == 0:
       qids.append('wd:Q486972')
     for t in arr:
-      if t in qnums:
-        for q in qnums[t]:
+      if t in aat_q.qnums:
+        for q in aat_q.qnums[t]:
           qids.append('wd:'+q)
       else:
         qids.append('wd:Q486972')

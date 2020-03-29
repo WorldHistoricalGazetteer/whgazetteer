@@ -269,7 +269,7 @@ def align_wd(pk, *args, **kwargs):
   #for place in ds.places.filter(flag=True):
   for place in ds.places.all().order_by('id'): #.filter(id__lt=224265):
     #place=get_object_or_404(Place, id=6293255) # Borneo
-    #place=get_object_or_404(Place, id=226821) # Kaudos
+    #place=get_object_or_404(Place, id=6297354) # Zelwa
     count +=1
     place_id = place.id
     src_id = place.src_id
@@ -288,7 +288,7 @@ def align_wd(pk, *args, **kwargs):
         id = t.jsonb['identifier']
         if id !=None:
           #types.append(int(id[4:]) if id.startswith('aat:') else '')      
-          types.append(id[4:] if id.startswith('aat:') else '')      
+          types.append(id[4:] if id.startswith('aat:') else int(id))      
       except:
         print('int error in types',t.jsonb['identifier'])
     qobj['placetypes'] = types
@@ -317,8 +317,8 @@ def align_wd(pk, *args, **kwargs):
     variants = ' '.join(['"'+n+'"' for n in qobj['variants']])
     # countries, placetypes if they're there
     countries = ', '.join([c for c in getQ(qobj['countries'],'ccodes')]) if len(qobj['countries'])>0 else ''
-    #placetype = getQ(qobj['placetypes'][0],'types')[0] if len(qobj['placetypes'])>0 else ''
-    placetype = getQ(qobj['placetypes'],'types')
+    placetype = getQ(qobj['placetypes'],'types')[0] if len(qobj['placetypes'])>0 else ''
+    #placetype = getQ(qobj['placetypes'],'types')
     print('variants,countries,placetype',variants,countries,placetype)
     
     # TODO admin parent P131, retrieve wiki article name, country P17, ??
@@ -371,7 +371,7 @@ def align_wd(pk, *args, **kwargs):
         ?place wdt:P625 ?location .
       '''
     qtype = q+'''
-      ?placeType (a | wdt:P279*) %s.
+      ?placeType p:P31/ps:P31/wdt:P279* %s .
       ?place wdt:P31 ?placeType.    
     '''%(placetype)
     

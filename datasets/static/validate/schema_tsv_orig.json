@@ -42,7 +42,10 @@
   },
   {"name": "variants",
     "type": "string",
-    "description": "One or more name variants, delimited w/';' & optionally suffixed with language-script codes"
+    "description": "One or more name variants, delimited w/';' & optionally suffixed with language-script codes",
+    "constraints": {
+     "pattern": "([a-zA-Z| ](@.*)?+;?)+" 
+    }
   }, 
   {"name": "types",
     "type": "string",
@@ -50,7 +53,10 @@
   },
   {"name": "aat_types",
     "type": "integer",
-    "description": "One or more AAT integer IDs from WHG's subset list of ~160 place type concepts"
+    "description": "One or more AAT integer IDs from WHG's subset list of ~160 place type concepts",
+    "constraints": {
+     "pattern": "(\\d{9};?)+" 
+    }
   },
   {"name": "parent_name",
     "type": "string",
