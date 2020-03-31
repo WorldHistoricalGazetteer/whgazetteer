@@ -157,7 +157,7 @@ def suggester(doctype,q,scope,idx):
 class SearchView(View):
   @staticmethod
   def get(request):
-    print('in SearchView',request.GET)
+    print('SearchView request',request.GET)
     """
       args in request.GET:
           [string] qstr: query string

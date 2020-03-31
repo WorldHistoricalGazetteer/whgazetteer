@@ -292,9 +292,6 @@
             "$id": "#/properties/geometry/properties/geometries/items",
             "type": "object",
             "title": "Geometries->Items",
-            "required": [
-              "type"
-            ],
             "properties": {
               "type": {
                 "$id": "#/properties/geometry/properties/geometries/items/properties/type",
@@ -314,7 +311,6 @@
                       "$id": "#/properties/names/items/properties/when/properties/timespans/items",
                       "type": "object",
                       "title": "Geometries->Items->When->Timespans->Items",
-                      "required":["start"],
                       "properties": {
                         "end": {
                           "$id": "#/properties/geometries/items/properties/when/properties/timespans/items/properties/end",

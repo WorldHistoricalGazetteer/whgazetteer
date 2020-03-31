@@ -943,12 +943,12 @@ def ds_insert_lpf(request, pk):
       # PlaceName: place_id,src_id,toponym,task_id,jsonb:{toponym, lang,citation,when{}}
       # TODO: adjust for 'ethnic', 'demonym'
       for n in feat['names']:
-        #print('from feat[names]:',n)
         if 'toponym' in n.keys():
+          # if comma-separated listed, get first
           objs['PlaceNames'].append(PlaceName(
             place_id=newpl,
             src_id=newpl.src_id,
-            toponym=n['toponym'],
+            toponym=n['toponym'].split(', ')[0],
             jsonb=n,
             task_id='initial'
           ))
@@ -1434,7 +1434,7 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
       context['action'] = 'errors'
       context['errors'] = result['errors']
       # delete tmp file
-      os.remove(result['file'])
+      #os.remove(result['file'])
       result['columns'] if "columns" in result.keys() else []
       print('validation failed:', result)
       return self.render_to_response(self.get_context_data(form=form,context=context))

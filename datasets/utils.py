@@ -32,7 +32,7 @@ def validate_lpf(tempfn,format):
   # TODO: handle json-lines
   # TODO: create v1.1 schema; phase out v1.0
   #wd = '/Users/karlg/Documents/Repos/_whgazetteer/'
-  schema = json.loads(codecs.open('datasets/static/validate/schema_lpf_v1.0.json','r','utf8').read())
+  schema = json.loads(codecs.open('datasets/static/validate/schema_lpf_v1.1.json','r','utf8').read())
   # rename tempfn
   newfn = tempfn+'.jsonld'
   os.rename(tempfn,newfn)
@@ -66,7 +66,7 @@ def validate_lpf(tempfn,format):
   #fout.write(json.dumps(result["errors"]))
   #fout.close()
   result['count'] = countrows
-  print('validate_lpf() result',result)
+  #print('validate_lpf() result',result)
   return result
 
 # validate LP-TSV file
