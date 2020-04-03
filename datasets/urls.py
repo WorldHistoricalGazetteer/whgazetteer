@@ -12,8 +12,6 @@ urlpatterns = [
     
     path('compare/', views.ds_compare, name='dataset-compare'),
     path('update/', views.ds_update, name='dataset-update'),
-
-    #path('addfile/', views.DatasetFileUpdateView.as_view(), name='dataset-addfile'),
     
     path('<int:id>/delete', views.DatasetDeleteView.as_view(), name='dataset-delete'),
 
