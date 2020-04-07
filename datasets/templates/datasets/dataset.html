@@ -222,6 +222,7 @@
                     <th>src_id</th>
                     <th>title</th>
                     <th>ccodes</th>
+                    <th>geom?</th>
                   </tr>
                 </thead>
               </table>
@@ -685,9 +686,6 @@ js for Summary, Reconciliation
     $(".form-uri_base").toggleClass("hidden")
     $(".btn-ds").toggleClass("hidden")
   })  
-  <!--$(".modal-footer button").click(function(){-->
-    <!--location.reload()-->
-  <!--})-->
   $(function(){
     if('{{ status }}' == 'updating'){
       console.log('{{ status }}','{{ context }}')
@@ -708,7 +706,9 @@ js for Summary, Reconciliation
       $('.nav-tabs a[href="#reconciliation"]').tab('show');
       location.href=taburl
     }
+    //***
     // Browse onload
+    //***
     window.spinner = new Spin.Spinner().spin();
     $("#map").append(spinner.el);
     
@@ -716,13 +716,12 @@ js for Summary, Reconciliation
     window.table = $('#placetable').DataTable({
       "serverSide": true,
       "ajax": "/api/places/?format=datatables&ds={{ ds.label }}&f={{ filter }}",
-      "ajax": "/api/places/?format=datatables&ds={{ ds.label }}&f={{ filter }}",
       "columns": [
           {"data": "id", "searchable": false},
           {"data": "src_id", "searchable": false},
           {"data": "title"},
           {"data": "ccodes"},
-          <!--{"data": "geom_count","sortable": false},-->
+          {"data": "geo", "sortable": false, "searchable": false},
       ],
     })
     table.on( 'draw', function () {

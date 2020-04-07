@@ -400,6 +400,8 @@ em { color: #993333;}
 /**
   dataset browse
 **/
+.globey{background-image:''}
+
 #detail_left {
   border-right: 1px dashed #999;
 }

@@ -65,15 +65,13 @@ class PlaceViewSet(viewsets.ModelViewSet):
     permission_classes = (permissions.IsAuthenticatedOrReadOnly)
 
     def get_queryset(self):
-        #qs = Place.objects.annotate(num_g=Count('geoms'))
-        #qs = Place.objects.order_by('geom_count')
         qs = Place.objects.all()
         query = self.request.GET.get('q')
         ds = self.request.GET.get('ds')
         #print('GET.get from PlaceViewSet()',self.request.GET)
         #f = self.request.GET.get('f')
-        for key, value in self.request.GET.items():
-            print('foo',key, value)
+        #for key, value in self.request.GET.items():
+            #print('foo',key, value)
         if ds is not None:
             qs = qs.filter(dataset = ds)
         #if f == 'nogeom':

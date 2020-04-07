@@ -115,15 +115,23 @@ class PlaceSerializer(serializers.HyperlinkedModelSerializer):
     whens = PlaceWhenSerializer(many=True, read_only=True)
     descriptions = PlaceDescriptionSerializer(many=True, read_only=True)
     depictions = PlaceDepictionSerializer(many=True, read_only=True)
-
+    #geo = serializers.ReadOnlyField(source='dataset.label') 
+    #"geom" if geoms.count() > 0 else ""
+    geo = serializers.SerializerMethodField('has_geom')
+    
+    def has_geom(self,place):
+        return '<i class="fa fa-globe"></i>' if place.geom_count > 0 else ""
+        
     class Meta:
         model = Place
         fields = ('url','id', 'title', 'src_id', 'dataset','ccodes',
             'names','types','geoms','links','related',
             'whens', 'descriptions', 'depictions',
-            #'geom_count','countries'
+            'geo'
+            #,'countries'
         )
 
+            
 # for ds_recon.html queries
 #class PlaceDRFSerializer(serializers.ModelSerializer):
     #class Meta:
