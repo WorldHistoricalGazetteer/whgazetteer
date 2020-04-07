@@ -1059,16 +1059,16 @@ js for Browse
   // TODO: better parsing here
   function parsePlace(data,side) {
     window.featdata = data
-    function minmax(timespans){
+    minmax = function(timespans){
       starts=[]; ends=[]
       for (t in timespans){
         starts.push('in' in timespans[t]['start'] ?  timespans[t]['start']['in'] : timespans[t]['start']['earliest'])
         ends.push('in' in timespans[t]['end'] ?  timespans[t]['end']['in'] : timespans[t]['end']['earliest'])
       } 
-      minmax=[Math.min((starts)),Math.max((ends))]
+      <!--console.log('starts',starts,'ends',ends)-->
+      minmax=[Math.max.apply(null, starts),Math.max.apply(null, ends)]
       return minmax
     }
-
 
     function onlyUnique(array) { 
       const map = new Map();
@@ -1174,7 +1174,14 @@ js for Browse
       <!--console.log('data.countries',data.countries)-->
       right+='<p><b>Modern country bounds</b>: '+ data.countries.join(', ')+'</p>'
     }
-    
+    //
+    // MINMAX
+    //
+    if (data.whens.length > 0) {
+      t = minmax(data.whens[0].timespans)
+      <!--console.log(t)-->
+      right += '<p><b>When</b>: earliest: '+t[0]+'; latest: '+t[1]
+    }
     left += '</div>'
     right += '</div>'
     return side=='left'?left:right

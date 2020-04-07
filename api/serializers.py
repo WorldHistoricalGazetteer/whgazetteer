@@ -120,7 +120,7 @@ class PlaceSerializer(serializers.HyperlinkedModelSerializer):
     geo = serializers.SerializerMethodField('has_geom')
     
     def has_geom(self,place):
-        return '<i class="fa fa-globe"></i>' if place.geom_count > 0 else ""
+        return '<i class="fa fa-globe"></i>' if place.geom_count > 0 else "-"
         
     class Meta:
         model = Place
