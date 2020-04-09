@@ -1003,7 +1003,7 @@ js for Browse
         if (type == 'MultiLineString')
           return {opacity: 1, weight: 1, color: "#336699"}
         else if (type == 'Point')
-          return {radius: 2, fillOpacity: 0.8, opacity: 1, stroke: false, fillColor:"#ff0000"}
+          return {radius: 1, fillOpacity: 0.8, opacity: 1, stroke: false, fillColor:"#ff0000"}
         else
           return {fillOpacity: 0.4, opacity: 1, color: "#fff", weight: 1, fillColor:"#993333"}
       }
@@ -1062,8 +1062,9 @@ js for Browse
     minmax = function(timespans){
       starts=[]; ends=[]
       for (t in timespans){
-        starts.push('in' in timespans[t]['start'] ?  timespans[t]['start']['in'] : timespans[t]['start']['earliest'])
-        ends.push('in' in timespans[t]['end'] ?  timespans[t]['end']['in'] : timespans[t]['end']['earliest'])
+        // gets 'in', 'earliest' or 'latest'
+        starts.push(Object.values(timespans[t].start)[0])
+        ends.push(Object.values(timespans[t].end)[0])
       } 
       <!--console.log('starts',starts,'ends',ends)-->
       minmax=[Math.max.apply(null, starts),Math.max.apply(null, ends)]
