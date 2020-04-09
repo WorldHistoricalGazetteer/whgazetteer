@@ -921,7 +921,7 @@ def ds_insert_lpf(request, pk):
       #print('feat properties:',feat['properties'])
       objs = {"PlaceNames":[], "PlaceTypes":[], "PlaceGeoms":[], "PlaceWhens":[],
               "PlaceLinks":[], "PlaceRelated":[], "PlaceDescriptions":[],
-                "PlaceDepictions":[]}
+              "PlaceDepictions":[]}
       countrows += 1
       #
       print(feat['@id'],feat['properties']['title'],feat.keys())
@@ -964,10 +964,10 @@ def ds_insert_lpf(request, pk):
           ))
 
       # PlaceWhen: place_id,src_id,task_id,minmax,jsonb:{timespans[],periods[],label,duration}
-      if 'whens' in feat.keys():
-        for w in feat['whens']:
-          objs['PlaceWhens'].append(PlaceWhen(
-            place_id=newpl,src_id=newpl.src_id,jsonb=w))
+      if 'when' in feat.keys() and feat['when'] != {}:
+        #for w in feat['when']:
+        objs['PlaceWhens'].append(PlaceWhen(
+          place_id=newpl,src_id=newpl.src_id,jsonb=feat['when']))
 
       # PlaceGeom: place_id,src_id,task_id,jsonb:{type,coordinates[],when{},geo_wkt,src}
       if 'geometry' in feat.keys():
