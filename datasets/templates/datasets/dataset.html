@@ -433,7 +433,6 @@
               <span class="ml-2 small">
                 <a href="{% url 'areas:area-create' %}?next={% url 'datasets:ds_recon' ds.id %}">create user area</a>
               </span></p>
-              <!--<p><input type="text" disabled id="search_region" name="search_region" value="" placeholder="Search region data (future)"/></p>-->
             </div>
           </div>
           <div class="bottom">
@@ -753,6 +752,7 @@ js for Summary, Reconciliation
       if(e.target.hash=="#browse"){
         mappy.invalidateSize();
         $("html,body").scrollTop(0)
+        mappy.fitBounds(features.getBounds())
       }
       if(e.target.hash=="#addtask"){
         mappyr.invalidateSize();
@@ -854,7 +854,7 @@ js for Browse
   $("[rel='tooltip']").tooltip();
   
   defaultStyle = {radius: 2, fillOpacity: 0.8, opacity: 1, stroke: false, fillColor:"#ff0000"}
-  focusStyle = {radius:12,fillColor:"#ff0000",fillOpacity:0.5,stroke:true,weight:1,color:"#000000"}
+  focusStyle = {radius:8,fillColor:"#ff9900",fillOpacity:0.5,stroke:true,weight:1,color:"#000000"}
   
   function focusFeature(feat){
     <!--console.log('feat',feat)-->
@@ -891,7 +891,7 @@ js for Browse
 
   // expose leaflet map for events, call it 'mappy'
   addEventListener('map:init', function (e) {
-    <!--console.log('e.detail',e.detail.id)-->
+    console.log('e.detail',e.detail.id)
     
     var attrib_mb = 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
             '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
@@ -933,10 +933,10 @@ js for Browse
       
       $.get("/api/geoms", {ds: "{{ ds.label }}", f: "{{ filter }}" },
         function(data){
-          <!--console.log('data',data)-->
-          $("#feature_count").html(data.count+' geometries for {{ ds.numrows }} records')
-          geom = {"type":"FeatureCollection","features":[]}
-          geom['features'] = data.results
+          console.log(data.count,'features')
+          <!--$("#feature_count").html(data.count+' geometries for {{ ds.numrows }} records')-->
+          geom = {"type":"FeatureCollection","features":data.results}
+          <!--geom['features'] = data.results-->
           if(geom.features.length < 15000) {
             renderMap(geom,'browse')
           } else {
@@ -984,9 +984,9 @@ js for Browse
       ' {% fontawesome_icon 'external-link' color='#336699' %}</a>'
     return link
   }
-  <!--function renderMap(geom,dslabel,screen){-->
+  // dual purpose for browse and recon
   function renderMap(geom,screen){
-    <!--console.log('dslabel, geom in renderMap()',screen,geom)-->
+    // 
     mappo = screen == 'browse' ? mappy : mappyr
     if (geom.features.length==0) {
       <!--console.log(geom.features)-->
@@ -1030,9 +1030,10 @@ js for Browse
           }
         }
       }).addTo(mappo);
+      <!--});-->
     }
-    
-    mappy.on('zoomend', function() {
+    mappo.fitBounds(features.getBounds())
+    mappo.on('zoomend', function() {
         var currentZoom = mappy.getZoom();
         <!--var myRadius = currentZoom*(1/2); //or whatever ratio you prefer-->
         var myRadius = currentZoom*(1); //or whatever ratio you prefer
@@ -1040,20 +1041,20 @@ js for Browse
         features.setStyle({radius: myRadius, weight: myWeight});
     });
     
-    if (geom['features'].length > 1 && geom['features'][0].type == 'Point') {
-      <!--mappy.fitBounds(features.getBounds().pad(1))-->
-      mappy.fitBounds(features.getBounds())
-    } else if (geom['features'].length > 0){
-      feat0 = geom['features'][0]
-      if (feat0.type == 'Point') {
-        latlng = L.latLng(
-          feat0.coordinates[1],
-          feat0.coordinates[0])
-        mappy.setView(latlng, 4)
-      } else if (['MultiLineString','MultiPolygon'].includes(feat0.type)) {
-        mappy.fitBounds(features.getBounds())
-      }
-    }
+    <!--if (geom['features'].length > 1 && geom['features'][0].type == 'Point') {-->
+      <!--console.log('>1 point')-->
+      <!--mappo.fitBounds(features.getBounds())-->
+    <!--} else if (geom['features'].length > 0){-->
+      <!--feat0 = geom['features'][0]-->
+      <!--if (feat0.type == 'Point') {-->
+        <!--latlng = L.latLng(-->
+          <!--feat0.coordinates[1],-->
+          <!--feat0.coordinates[0])-->
+        <!--mappo.setView(latlng, 4)-->
+      <!--} else if (['MultiLineString','MultiPolygon'].includes(feat0.type)) {-->
+        <!--mappo.fitBounds(features.getBounds())-->
+      <!--}-->
+    <!--}-->
     spinner.stop()
   }
   // TODO: better parsing here
@@ -1207,15 +1208,15 @@ js for Browse
   }
   // initialize, render map
   function map_init (map, options) {
-    if(typeof(features)!=='undefined'){
-      mappy.removeLayer(features)
-      mappy.setView([35.0, 13.0], 1)
-    }
-    $('.edit-row').on('click', function(){
-      alert('open a modal with full record')
-    })
-    // console.log('in map_init()')
-    geom = {"type":"FeatureCollection","features":[]}
+    <!--if(typeof(features)!=='undefined'){-->
+      <!--mappy.removeLayer(features)-->
+      <!--mappy.setView([35.0, 13.0], 1)-->
+    <!--}-->
+    <!--$('.edit-row').on('click', function(){-->
+      <!--alert('open a modal with full record')-->
+    <!--})-->
+    <!--// console.log('in map_init()')-->
+    <!--geom = {"type":"FeatureCollection","features":[]}-->
     
   } // end map_init
   function map_init2 (map, options) {}
