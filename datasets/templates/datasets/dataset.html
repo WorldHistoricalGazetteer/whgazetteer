@@ -199,13 +199,15 @@
       </div> <!-- ds_details -->
       </div> <!-- row -->
       </form>
-    </div>
+    </div> <!-- summary -->
     <div id="browse" class="tab-pane fade" role="tabpanel" aria-labelledby="browse-tab">
         <div class="container mt-3">
           <div class="row">
             <div id="drftable_detail" class="col-sm-6 pl-0">
+              <div class="toomany"></div>
               <div id="mapdiv_browse">
-                  {% leaflet_map "map" callback="map_init" %}
+                  <!--{ leaflet_map "map" callback="map_init" %}-->
+                  {% leaflet_map "map_browse" %}
                   <div class="spinner-border text-danger"></div>
               </div>
               <!-- row detail in 2 columns, populated with getPlace() -->
@@ -472,7 +474,8 @@
           {% endif %}
           {% if request.method == 'GET' %}
           <div id="mapdiv_recon" class="mt-2">
-            {% leaflet_map "map_recon" callback="map_init2" %}
+            <!--{ leaflet_map "map_recon" callback="map_init2" %}-->
+            {% leaflet_map "map_recon" %}
           </div>
           {% endif %}
         </div> <!-- recon_result -->
@@ -744,7 +747,6 @@ js for Summary, Reconciliation
 
     // Change hash for page-reload
     $('.nav-tabs a').on('shown.bs.tab', function (e) {
-      <!--console.log('e.target.hash',e.target.hash)-->
       window.location.hash = e.target.hash;
       if(e.target.hash=="#reconciliation"){
         updateTotals('{{ ds.id }}')
@@ -752,6 +754,7 @@ js for Summary, Reconciliation
       if(e.target.hash=="#browse"){
         mappy.invalidateSize();
         $("html,body").scrollTop(0)
+        // TODO: features not available on reload
         mappy.fitBounds(features.getBounds())
       }
       if(e.target.hash=="#addtask"){
@@ -853,14 +856,6 @@ js for Browse
 <script  type="text/javascript">
   $("[rel='tooltip']").tooltip();
   
-  defaultStyle = {radius: 2, fillOpacity: 0.8, opacity: 1, stroke: false, fillColor:"#ff0000"}
-  focusStyle = {radius:8,fillColor:"#ff9900",fillOpacity:0.5,stroke:true,weight:1,color:"#000000"}
-  
-  function focusFeature(feat){
-    <!--console.log('feat',feat)-->
-    feat.setStyle(focusStyle)
-    <!--mappy.setView(feat._latlng, 3);-->
-  }
   function setRowEvents(){
     $("#placetable tr").click(function() {
         t=$(this)
@@ -873,9 +868,16 @@ js for Browse
         // highlight fillColor:bright red, opacity .7, color:red , zoomTo, level 3
         if(typeof(idToFeature) != 'undefined'){
           if(pid in idToFeature){
-            features.setStyle(defaultStyle)
             feat = idToFeature[pid]
-            focusFeature(feat)
+            ftype = feat.feature.geometry.type
+            foptions = Object.values(idToFeature)[0].options
+            <!--console.log('ftype,style',ftype,styles[ftype].default)-->
+            // reset styles
+            features.setStyle(foptions)
+            // focus this one
+            // TODO: an appropriate zoom
+            feat.setStyle(styles[ftype].focus)
+            <!--mappy.setView(feat._latlng, 3);-->
           }
         }
         getPlace(pid)
@@ -888,11 +890,15 @@ js for Browse
     $("#placetable tbody").find('tr').eq(0).addClass('highlight-row')
     getPlace(pid)
   }
-
-  // expose leaflet map for events, call it 'mappy'
+  function focusFeature(feat){
+    console.log('feat',feat)
+    feat.setStyle(styles[feat.feature.geometry.type].focus)
+    <!--mappy.setView(feat._latlng, 3);-->
+  }
+  // responds to leaflet_map tags in both #browse and #addtask tabs
   addEventListener('map:init', function (e) {
-    console.log('e.detail',e.detail.id)
-    
+    <!--console.log('map id:',e.detail.id) // map_browse or map_recon-->
+    // layers common to both
     var attrib_mb = 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
             '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
             'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
@@ -916,8 +922,9 @@ js for Browse
       "Satellite": satellite
     };
 
-    if (e.detail.id == 'map'){
-      // it's the Browse map
+    
+    if (e.detail.id == 'map_browse'){
+      // it's the Browse map, name it mappy
       window.mappy = e.detail.map
       mappy.setMaxBounds(null)
       L.control.layers(baseLayers).addTo(mappy);
@@ -931,12 +938,11 @@ js for Browse
         hideControlContainer: true
       }).addTo(mappy)
       
+      // get dataset features -> renderMap() if < 15,000
       $.get("/api/geoms", {ds: "{{ ds.label }}", f: "{{ filter }}" },
         function(data){
-          console.log(data.count,'features')
-          <!--$("#feature_count").html(data.count+' geometries for {{ ds.numrows }} records')-->
+          console.log('feature count:',data.count)
           geom = {"type":"FeatureCollection","features":data.results}
-          <!--geom['features'] = data.results-->
           if(geom.features.length < 15000) {
             renderMap(geom,'browse')
           } else {
@@ -945,7 +951,7 @@ js for Browse
           }
       })  
     } else {
-      // it's the reconciliation study areas map
+      // it's map_recon in #addtask tab, name it mappyr
       window.mappyr = e.detail.map
       mappyr.setMaxBounds(null)
       L.control.layers(baseLayers).addTo(mappyr);
@@ -984,39 +990,38 @@ js for Browse
       ' {% fontawesome_icon 'external-link' color='#336699' %}</a>'
     return link
   }
+  
+  styles = {
+    "Point": {
+      "default": {radius: 1, fillColor:"#ff9900", fillOpacity: 0.8, stroke: false},
+      "focus": {radius:8, fillColor:"#ffff00",fillOpacity:1, stroke:true, weight:1,color:"#000"}},
+    "MultiLineString": {
+      "default":{opacity: 1, weight: 1, color: "#336699"},
+      "focus":{}},
+    "MultiPolygon": {
+      "default":{fillOpacity: 0.4, opacity: 1, color: "#fff", weight: 1, fillColor:"#993333"},
+      "focus":{}
+    }
+  }
   // dual purpose for browse and recon
-  function renderMap(geom,screen){
-    // 
-    mappo = screen == 'browse' ? mappy : mappyr
+  function renderMap(geom, tab){
+    // call the map being rendered 'mappo'
+    mappo = tab=='browse'?mappy:mappyr
     if (geom.features.length==0) {
-      <!--console.log(geom.features)-->
       spinner.stop()
     } else {
-      geomtype = geom.features[0]['type']
-      <!--clear out the previous if any-->
+      // clear existing if any
       if(typeof(features)!=='undefined'){
         mappo.removeLayer(features)
       }
-      // blue if rivers
-      // TODO: style should depend on #features, zoom level
-      function styler(type) {
-        if (type == 'MultiLineString')
-          return {opacity: 1, weight: 1, color: "#336699"}
-        else if (type == 'Point')
-          return {radius: 1, fillOpacity: 0.8, opacity: 1, stroke: false, fillColor:"#ff0000"}
-        else
-          return {fillOpacity: 0.4, opacity: 1, color: "#fff", weight: 1, fillColor:"#993333"}
-      }
       idToFeature = {}  // for feature lookup
       features = L.geoJSON(geom, {
-      // TODO: 
-        style: styler(geomtype),
+      // feature here is a geometry
+      // TODO: LPF v1.2 to allow single geometry or GeometryCollection
         pointToLayer: function (feature, latlng) {
-          <!--console.log('feature in renderMap()',feature)-->
           matchid = feature.place_id_id
-          <!--console.log('matchid',matchid)-->
-          marker = L.circleMarker(latlng).bindPopup('pid: '+matchid);
-       
+          <!--console.log('feature',feature)-->
+          marker = L.circleMarker(latlng,styles.Point.default).bindPopup('pid: '+matchid);
           idToFeature[matchid] = marker
           return marker
         }
@@ -1041,20 +1046,6 @@ js for Browse
         features.setStyle({radius: myRadius, weight: myWeight});
     });
     
-    <!--if (geom['features'].length > 1 && geom['features'][0].type == 'Point') {-->
-      <!--console.log('>1 point')-->
-      <!--mappo.fitBounds(features.getBounds())-->
-    <!--} else if (geom['features'].length > 0){-->
-      <!--feat0 = geom['features'][0]-->
-      <!--if (feat0.type == 'Point') {-->
-        <!--latlng = L.latLng(-->
-          <!--feat0.coordinates[1],-->
-          <!--feat0.coordinates[0])-->
-        <!--mappo.setView(latlng, 4)-->
-      <!--} else if (['MultiLineString','MultiPolygon'].includes(feat0.type)) {-->
-        <!--mappo.fitBounds(features.getBounds())-->
-      <!--}-->
-    <!--}-->
     spinner.stop()
   }
   // TODO: better parsing here
@@ -1207,19 +1198,12 @@ js for Browse
       });
   }
   // initialize, render map
-  function map_init (map, options) {
-    <!--if(typeof(features)!=='undefined'){-->
-      <!--mappy.removeLayer(features)-->
-      <!--mappy.setView([35.0, 13.0], 1)-->
-    <!--}-->
-    <!--$('.edit-row').on('click', function(){-->
-      <!--alert('open a modal with full record')-->
-    <!--})-->
-    <!--// console.log('in map_init()')-->
-    <!--geom = {"type":"FeatureCollection","features":[]}-->
+  function map_init_browse (map, options) {
+    console.log('map_init_browse(); wtf?')  } 
     
-  } // end map_init
-  function map_init2 (map, options) {}
+  function map_init_recon (map, options) {
+    console.log('map_init_recon(); wtf?')
+  }
   function zoomTo(id) {
     mappy.setView(idToFeature[id]._latlng, mappy.getZoom() +2 )
   }

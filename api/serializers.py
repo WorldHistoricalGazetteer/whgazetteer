@@ -82,7 +82,6 @@ class PlaceGeomSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PlaceGeom
-        #fields = ('type', 'geowkt', 'coordinates', 'geom_src', 'citation', 'when')
         fields = ('place_id_id','src_id','type', 'geowkt', 'coordinates', 'geom_src', 'citation', 'when')
 
 class PlaceTypeSerializer(serializers.ModelSerializer):

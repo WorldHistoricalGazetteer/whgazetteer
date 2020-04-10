@@ -53,10 +53,8 @@ class GeomViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         dslabel = self.request.GET.get('ds')
-        #ds = get_object_or_404(Dataset,label=dslabel)
         dsPlaceIds = Place.objects.values('id').filter(dataset = dslabel)
         qs = PlaceGeom.objects.filter(place_id_id__in=dsPlaceIds)
-        #print('qs count',qs.count())
         return qs
     
 class PlaceViewSet(viewsets.ModelViewSet):
