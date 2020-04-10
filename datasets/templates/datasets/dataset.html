@@ -858,8 +858,6 @@ js for Browse
   
   function setRowEvents(){
     $("#placetable tr").click(function() {
-        // get style/options in current view
-        console.log('foptions',foptions)
         t=$(this)
         pid=$(this)[0].cells[0].textContent
         var selected = $(this).hasClass("highlight-row");
@@ -876,6 +874,7 @@ js for Browse
             // focus this one
             // TODO: an appropriate zoom
             feat.setStyle(styles[ftype].focus)
+            feat.bringToFront()
             <!--mappy.setView(feat._latlng, 3);-->
           }
         }
@@ -940,7 +939,7 @@ js for Browse
       // get dataset features -> renderMap() if < 15,000
       $.get("/api/geoms", {ds: "{{ ds.label }}", f: "{{ filter }}" },
         function(data){
-          console.log('feature count:',data.count)
+          <!--console.log('feature count:',data.count)-->
           geom = {"type":"FeatureCollection","features":data.results}
           if(geom.features.length < 15000) {
             renderMap(geom,'browse')
@@ -1044,7 +1043,7 @@ js for Browse
       var myWeight = currentZoom*(1/5); //or whatever ratio you prefer
       features.setStyle({radius: myRadius, weight: myWeight});
       opt = Object.values(idToFeature)[0].options
-      console.log('zoomend() idToFeature',opt)
+      <!--console.log('zoomend() idToFeature',opt)-->
       <!--foptions = Object.assign({}, Object.values(idToFeature)[0].options);-->
       foptions = { ...opt };
     });
@@ -1199,13 +1198,14 @@ js for Browse
         });
       });
   }
-  // initialize, render map
+  // initialize maps 
   function map_init_browse (map, options) {
     console.log('map_init_browse(); wtf?')  } 
     
   function map_init_recon (map, options) {
     console.log('map_init_recon(); wtf?')
   }
+  // generic 
   function zoomTo(id) {
     mappy.setView(idToFeature[id]._latlng, mappy.getZoom() +2 )
   }
