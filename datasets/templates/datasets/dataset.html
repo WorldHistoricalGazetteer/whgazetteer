@@ -858,6 +858,8 @@ js for Browse
   
   function setRowEvents(){
     $("#placetable tr").click(function() {
+        // get style/options in current view
+        console.log('foptions',foptions)
         t=$(this)
         pid=$(this)[0].cells[0].textContent
         var selected = $(this).hasClass("highlight-row");
@@ -865,14 +867,11 @@ js for Browse
         if(!selected)
           $(this).removeClass( "rowhover" );
           $(this).addClass("highlight-row");
-        // highlight fillColor:bright red, opacity .7, color:red , zoomTo, level 3
         if(typeof(idToFeature) != 'undefined'){
           if(pid in idToFeature){
             feat = idToFeature[pid]
             ftype = feat.feature.geometry.type
-            foptions = Object.values(idToFeature)[0].options
-            <!--console.log('ftype,style',ftype,styles[ftype].default)-->
-            // reset styles
+            // reset style for all 
             features.setStyle(foptions)
             // focus this one
             // TODO: an appropriate zoom
@@ -1039,13 +1038,16 @@ js for Browse
     }
     mappo.fitBounds(features.getBounds())
     mappo.on('zoomend', function() {
-        var currentZoom = mappy.getZoom();
-        <!--var myRadius = currentZoom*(1/2); //or whatever ratio you prefer-->
-        var myRadius = currentZoom*(1); //or whatever ratio you prefer
-        var myWeight = currentZoom*(1/5); //or whatever ratio you prefer
-        features.setStyle({radius: myRadius, weight: myWeight});
+      var currentZoom = mappy.getZoom();
+      <!--var myRadius = currentZoom*(1/2); //or whatever ratio you prefer-->
+      var myRadius = currentZoom*(1); //or whatever ratio you prefer
+      var myWeight = currentZoom*(1/5); //or whatever ratio you prefer
+      features.setStyle({radius: myRadius, weight: myWeight});
+      opt = Object.values(idToFeature)[0].options
+      console.log('zoomend() idToFeature',opt)
+      <!--foptions = Object.assign({}, Object.values(idToFeature)[0].options);-->
+      foptions = { ...opt };
     });
-    
     spinner.stop()
   }
   // TODO: better parsing here
