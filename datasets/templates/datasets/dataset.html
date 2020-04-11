@@ -1052,12 +1052,13 @@ js for Browse
   // TODO: better parsing here
   function parsePlace(data,side) {
     window.featdata = data
+    
     minmax = function(timespans){
       starts=[]; ends=[]
       for (t in timespans){
         // gets 'in', 'earliest' or 'latest'
         starts.push(Object.values(timespans[t].start)[0])
-        ends.push(Object.values(timespans[t].end)[0])
+        ends.push(!!timespans[t].end ? Object.values(timespans[t].end)[0] : -1)
       } 
       <!--console.log('starts',starts,'ends',ends)-->
       minmax=[Math.max.apply(null, starts),Math.max.apply(null, ends)]
@@ -1078,7 +1079,7 @@ js for Browse
       }
       return(result)
     }
-    
+    timespan_arr = []
     //
     // TITLE 
     left='<p><b>Title</b>: <span id="row_title" class="larger text-danger">'+data.title+'</span>'
@@ -1086,7 +1087,13 @@ js for Browse
     // NAME VARIANTS
     left+='<p class="scroll60"><b>Variants</b>: '
     for (n in data.names) {
-      left+= '<p>'+data.names[n].toponym !=''?data.names[n].toponym+'; ': ''
+      let name = data.names[n]
+      // grab any timespans for minmax later
+      if (name.when && name.when.timespans){
+        console.log('name timespans',name.when.timespans)
+        timespan_arr = timespan_arr.concat(name.when.timespans)
+      }
+      left+= '<p>'+name.toponym !=''?name.toponym+'; ': ''
     }
     //
     // TYPES
@@ -1169,12 +1176,19 @@ js for Browse
       right+='<p><b>Modern country bounds</b>: '+ data.countries.join(', ')+'</p>'
     }
     //
-    // MINMAX
+    // WHEN in GEOMS
+    //    
+    //
+    
+    //
+    // BUILD MINMAX
     //
     if (data.whens.length > 0) {
-      t = minmax(data.whens[0].timespans)
-      <!--console.log(t)-->
-      right += '<p><b>When</b>: earliest: '+t[0]+'; latest: '+t[1]
+      timespan_arr=timespan_arr.concat(data.whens[0].timespans)
+    }
+    if(timespan_arr.length>0){
+      t = minmax(timespan_arr)
+      right += '<p><b>When</b>: earliest: '+t[0]+'; latest: '+t[1]    
     }
     left += '</div>'
     right += '</div>'

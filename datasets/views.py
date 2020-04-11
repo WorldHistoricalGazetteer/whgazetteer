@@ -907,14 +907,13 @@ def ds_insert_lpf(request, pk):
   import json
   [countrows,countlinked]= [0,0]
   ds = get_object_or_404(Dataset, id=pk)
-  # insert data from initial file upload
-  #dsf = DatasetFile.objects.filter(dataset_id_id=pk).order_by('-upload_date')[0]
+  # latest file
   dsf = ds.files.all().order_by('-rev')[0]
-  #uribase = DatasetFile.objects.filter(dataset_id_id=pk).order_by('-upload_date')[0].uri_base
   uribase = ds.uri_base
 
+  # TODO?: use stream reader; lpf can get big
   infile = dsf.file.open(mode="r")
-  print('ds_insert_lpf(); request.GET; infile',request.GET,infile)  
+  print('ds_insert_lpf(); request.GET; infile',request.GET,infile) 
   with infile:
     jdata = json.loads(infile.read())
     for feat in jdata['features']:
@@ -923,16 +922,13 @@ def ds_insert_lpf(request, pk):
               "PlaceLinks":[], "PlaceRelated":[], "PlaceDescriptions":[],
               "PlaceDepictions":[]}
       countrows += 1
-      #
-      print(feat['@id'],feat['properties']['title'],feat.keys())
-      # TODO: get src_id into LP format
 
-      # start Place record & save to get id
+      print(feat['@id'],feat['properties']['title'],feat.keys())
+
+      # instantiate Place record & save to get id
       # Place: src_id, title, ccodes, dataset
       newpl = Place(
         # TODO: add src_id to properties in LP format?
-        #src_id=feat['@id'] if 'http' not in feat['@id'] and len(feat['@id']) < 25 \
-          #else re.search("(\/|=)(?:.(?!\/|=))+$",feat['@id']).group(0)[1:],
         src_id=feat['@id'] if uribase == None else feat['@id'].replace(uribase,''),
         dataset=ds,
         title=feat['properties']['title'],
@@ -1053,20 +1049,13 @@ def ds_insert_tsv(request, pk):
   print('header', header)
 
   objs = {"PlaceName":[], "PlaceType":[], "PlaceGeom":[], "PlaceWhen":[],
-          "PlaceLink":[], "PlaceRelated":[], "PlaceDescription":[],
-            "PlaceDepiction":[]}
+          "PlaceLink":[], "PlaceRelated":[], "PlaceDescription":[]}
 
   # TSV * = required; ^ = encouraged
   # lists within fields are ';' delimited, no brackets
   # id*, title*, title_source*, title_uri^, ccodes[]^, matches[]^, variants[]^, types[]^, aat_types[]^,
   # parent_name, parent_id, lon, lat, geowkt, geo_source, geo_id, start, end
   
-  # moved to utils
-  #def makeCoords(lonstr,latstr):
-    #lon = float(lonstr) if lonstr != '' else ''
-    #lat = float(latstr) if latstr != '' else ''
-    #coords = [] if (lonstr == ''  or latstr == '') else [lon,lat]
-    #return coords
   #
   # TODO: what if simultaneous inserts?
   countrows=0
@@ -1098,8 +1087,8 @@ def ds_insert_tsv(request, pk):
       #if 'matches' in header else []
     matches = [x.strip() for x in r[header.index('matches')].split(';')] \
       if 'matches' in header and r[header.index('matches')] != '' else []
-    start = r[header.index('start')] if 'start' in header else ''
-    end = r[header.index('end')] if 'end' in header else ''
+    start = r[header.index('start')] if 'start' in header else None
+    end = r[header.index('end')] if 'end' in header else None
     # not sure this will get used
     minmax = [start,end]
     description = r[header.index('description')] \
@@ -1117,6 +1106,7 @@ def ds_insert_tsv(request, pk):
     countrows += 1
 
     # build associated objects and add to arrays
+    #
     # PlaceName()
     objs['PlaceName'].append(
       PlaceName(
@@ -1125,7 +1115,6 @@ def ds_insert_tsv(request, pk):
         toponym = title,
         jsonb={"toponym": title, "citation": {"id":title_uri,"label":title_source}}
     ))
-
     # variants if any; same source as title toponym?
     if len(variants) > 0:
       for v in variants:
@@ -1136,7 +1125,7 @@ def ds_insert_tsv(request, pk):
             toponym = v,
             jsonb={"toponym": v, "citation": {"id":"","label":title_source}}
         ))
-
+    #
     # PlaceType()
     # TODO: parse t
     if len(types) > 0:
@@ -1152,7 +1141,7 @@ def ds_insert_tsv(request, pk):
                     "label":aat_lookup(int(aatnum)) if aatnum !='' else ''
                   }
         ))
-
+    #
     # PlaceGeom()
     # TODO: test geometry type or force geojson
     if len(coords) > 0:
@@ -1171,7 +1160,7 @@ def ds_insert_tsv(request, pk):
           # make GeoJSON using shapely
           jsonb=parse_wkt(r[header.index('geowkt')])
       ))
-
+    #
     # PlaceLink() - all are closeMatch
     if len(matches) > 0:
       countlinked += 1
@@ -1184,6 +1173,7 @@ def ds_insert_tsv(request, pk):
             jsonb={"type":"closeMatch", "identifier":m}
         ))
 
+    #
     # PlaceRelated()
     if parent_name != '':
       objs['PlaceRelated'].append(
@@ -1196,6 +1186,7 @@ def ds_insert_tsv(request, pk):
             "label": parent_name}
       ))
 
+    #
     # PlaceWhen()
     # timespans[{start{}, end{}}], periods[{name,id}], label, duration
     if start != '':
@@ -1221,38 +1212,29 @@ def ds_insert_tsv(request, pk):
           }
         ))
 
-  print('COUNTS:')
-  print('PlaceName:',len(objs['PlaceName']))
-  print('PlaceType:',len(objs['PlaceType']))
-  print('PlaceGeom:',len(objs['PlaceGeom']))
-  print('PlaceLink:',len(objs['PlaceLink']))
-  print('PlaceRelated:',len(objs['PlaceRelated']))
-  print('PlaceWhen:',len(objs['PlaceWhen']))
-  print('PlaceDescription:',len(objs['PlaceDescription']))
-  print('max places.id', )
 
   # bulk_create(Class, batch_size=n) for each
   PlaceName.objects.bulk_create(objs['PlaceName'],batch_size=10000)
-  print('names done')
+  print(len(objs['PlaceName']),'names done')
   PlaceType.objects.bulk_create(objs['PlaceType'],batch_size=10000)
-  print('types done')
+  print(len(objs['PlaceType']),'types done')
   PlaceGeom.objects.bulk_create(objs['PlaceGeom'],batch_size=10000)
-  print('geoms done')
+  print(len(objs['PlaceGeom']),'geoms done')
   PlaceLink.objects.bulk_create(objs['PlaceLink'],batch_size=10000)
-  print('links done')
+  print(len(objs['PlaceLink']),'links done')
   PlaceRelated.objects.bulk_create(objs['PlaceRelated'],batch_size=10000)
-  print('related done')
+  print(len(objs['PlaceRelated']),'related done')
   PlaceWhen.objects.bulk_create(objs['PlaceWhen'],batch_size=10000)
-  print('whens done')
+  print(len(objs['PlaceWhen']),'whens done')
   PlaceDescription.objects.bulk_create(objs['PlaceDescription'],batch_size=10000)
-  print('descriptions done')
+  print(len(objs['PlaceDescription']),'descriptions done')
 
   infile.close()
 
+  # backfill some dataset counts
   print('ds record pre-update:', ds.__dict__)
-
   print('rows,linked,links:',countrows,countlinked,countlinks)
-  #ds.status = 'uploaded'
+
   ds.numrows = countrows
   ds.numlinked = countlinked
   ds.total_links = countlinks
@@ -1260,14 +1242,6 @@ def ds_insert_tsv(request, pk):
   
   print('ds record post-update:', ds.__dict__)
 
-  #dsf.status = 'uploaded'
-  #dsf.numrows = countrows
-  #dsf.header = header
-  #dsf.save()
-
-
-  #return render(request, '/datasets/dashboard.html', {'context': context})
-  #return redirect('/dashboard', context=context)
 
 # ***
 # list user datasets, area, place collections

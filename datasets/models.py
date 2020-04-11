@@ -28,7 +28,7 @@ class Dataset(models.Model):
     public = models.BooleanField(default=False)    
     ds_status = models.CharField(max_length=12, null=True, blank=True, choices=STATUS)
     create_date = models.DateTimeField(null=True, auto_now_add=True)
-    uri_base = models.URLField(blank=True, null=True, default="http://dev.whgazetteer.org/api/places/")
+    uri_base = models.URLField(blank=True, null=True)
 
     # TODO: these are updated in both Dataset & DatasetFile  (??)
     datatype = models.CharField(max_length=12, null=False,choices=DATATYPES,

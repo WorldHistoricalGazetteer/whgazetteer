@@ -99,10 +99,11 @@ class PlaceNameSerializer(serializers.ModelSerializer):
     # json: toponym, citation{}
     toponym = serializers.ReadOnlyField(source='jsonb.toponym')
     citation = serializers.ReadOnlyField(source='jsonb.citation')
+    when = serializers.ReadOnlyField(source='jsonb.when')
 
     class Meta:
         model = PlaceName
-        fields = ('toponym', 'citation')
+        fields = ('toponym', 'when', 'citation')
 
 class PlaceSerializer(serializers.HyperlinkedModelSerializer):
     dataset = serializers.ReadOnlyField(source='dataset.label')
