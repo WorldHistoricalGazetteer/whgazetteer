@@ -14,10 +14,10 @@ html, body {
 .modal-ext-content { height: 90%; overflow-y:scroll; background-color:#fff;}
 /*.modal-form-content { */
 .modal-content { 
-  /*height: 90%; */
+  height: 90%; 
   overflow-y:scroll; 
   background-color:#fff; 
-  width: fit-content !important; 
+  /*width: fit-content !important; */
   /*max-width: 75%; */
   margin:auto;
 }

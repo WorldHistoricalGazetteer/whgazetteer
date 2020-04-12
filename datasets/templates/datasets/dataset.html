@@ -855,7 +855,14 @@ js for Browse
 
 <script  type="text/javascript">
   $("[rel='tooltip']").tooltip();
-  
+  $('.vocab').on('click', function(e) {
+    <!--e.preventDefault();-->
+    <!--str=$(this).text()-->
+    console.log('id',$(this).data('id'))
+    <!--var re = /(http|dbp|gn|tgn|wd|loc|viaf|aat):(.*?)$/;-->
+    <!--url=str.match(re)[1]=='http' ? str : base_urls[str.match(re)[1]]+str.match(re)[2]-->
+    <!--window.open(url,'_blank')-->
+  });  
   function setRowEvents(){
     $("#placetable tr").click(function() {
         t=$(this)
@@ -869,13 +876,15 @@ js for Browse
           if(pid in idToFeature){
             feat = idToFeature[pid]
             ftype = feat.feature.geometry.type
-            // reset style for all 
-            features.setStyle(foptions)
+            // reset style for all if we've zoomed
+            if(typeof foptions !== 'undefined'){
+              features.setStyle(foptions)
+            }
             // focus this one
             // TODO: an appropriate zoom
             feat.setStyle(styles[ftype].focus)
             feat.bringToFront()
-            <!--mappy.setView(feat._latlng, 3);-->
+            mappy.setView(feat._latlng);
           }
         }
         getPlace(pid)
@@ -962,30 +971,16 @@ js for Browse
     }
   }, false);
   
-  function url_it(str) {
-    // resolves source alias; returns url where appropriate
-    <!--console.log('url_it() str',str)-->
-    uri = ''
-    if(str.startsWith('black') || str.startsWith('dplace')) {
-      // TODO: applicable for links?
-      link = str
-    } else {
-      if (str.startsWith('tgn')) {uri = str.replace('tgn:','http://vocab.getty.edu/page/tgn/')} 
-      else if(str.startsWith('dbp')) {uri = str.replace('dbp:','http://dbpedia.org/resource/')}
-      else if(str.startsWith('gn')) {uri = str.replace('gn:','http://www.geonames.org/')}
-      else if(str.startsWith('wwf:')) {uri = str.replace('wwf:','https://www.worldwildlife.org/ecoregions/')}
-      else if(str.startsWith('wd:')) {uri = str.replace('wd:','https://www.wikidata.org/wiki/')}
-      link = '<span class="small mr-2"><a href="'+ uri +'" class="ext" target="_blank">['+
-        str+']</a></span>'
-    }
-    <!--<a class="mr-2 ext" data-toggle="modal" data-target="#ext_site" href="'+sug['id']+-->
-                <!--'">{ link }} {# fontawesome_icon 'external-link' color='#336699' #}</a>-->
-    return link;
-  }
+  
   function url_modal(identifier) {
     <!-- e.g. 'wd:Q123456' -->
     link = ' <a href="" class="ext" data-toggle="modal" data-target="#ext_site">'+identifier+
       ' {% fontawesome_icon 'external-link' color='#336699' %}</a>'
+    return link
+  }
+  function url_tab(type) {
+    link = ' <a href="" class="exttab" data-id='+type.identifier+
+      '>('+type.label+' {% fontawesome_icon 'external-link' color='#336699' %})</a>'
     return link
   }
   
@@ -1038,15 +1033,16 @@ js for Browse
     mappo.fitBounds(features.getBounds())
     mappo.on('zoomend', function() {
       var currentZoom = mappy.getZoom();
-      <!--var myRadius = currentZoom*(1/2); //or whatever ratio you prefer-->
       var myRadius = currentZoom*(1); //or whatever ratio you prefer
       var myWeight = currentZoom*(1/5); //or whatever ratio you prefer
       features.setStyle({radius: myRadius, weight: myWeight});
       opt = Object.values(idToFeature)[0].options
-      <!--console.log('zoomend() idToFeature',opt)-->
-      <!--foptions = Object.assign({}, Object.values(idToFeature)[0].options);-->
       foptions = { ...opt };
+      <!--console.log('zoomend() idToFeature',opt)-->
     });
+    opt = Object.values(idToFeature)[0].options
+    foptions = { ...opt };
+    console.log('foptions',opt)
     spinner.stop()
   }
   // TODO: better parsing here
@@ -1079,7 +1075,7 @@ js for Browse
       }
       return(result)
     }
-    timespan_arr = []
+    <!--timespan_arr = []-->
     //
     // TITLE 
     left='<p><b>Title</b>: <span id="row_title" class="larger text-danger">'+data.title+'</span>'
@@ -1088,11 +1084,6 @@ js for Browse
     left+='<p class="scroll60"><b>Variants</b>: '
     for (n in data.names) {
       let name = data.names[n]
-      // grab any timespans for minmax later
-      if (name.when && name.when.timespans){
-        console.log('name timespans',name.when.timespans)
-        timespan_arr = timespan_arr.concat(name.when.timespans)
-      }
       left+= '<p>'+name.toponym !=''?name.toponym+'; ': ''
     }
     //
@@ -1100,11 +1091,12 @@ js for Browse
     left+='</p><p><b>Types</b>: '
     typeids = ''
     for (t in data.types) {
-      typeids+=data.types[t].sourceLabel?data.types[t].sourceLabel +
-        ' (<a href="'+data.types[t].identifier+'"><i>'+data.types[t].label+'</i></a>); ':
-        '(<a href="'+data.types[t].identifier+'"><i>'+data.types[t].label+'</i></a>); '
+      var type = data.types[t]
+      typeids+=type.sourceLabel?type.sourceLabel +
+        url_tab(type) : url_tab(type)
     }
     left += typeids.replace(/(; $)/g, "") +'</p>'
+
     //
     // LINKS
     // TODO: normalize on closeMatch, exactMatch
@@ -1176,19 +1168,10 @@ js for Browse
       right+='<p><b>Modern country bounds</b>: '+ data.countries.join(', ')+'</p>'
     }
     //
-    // WHEN in GEOMS
-    //    
+    // MINMAX
     //
-    
-    //
-    // BUILD MINMAX
-    //
-    if (data.whens.length > 0) {
-      timespan_arr=timespan_arr.concat(data.whens[0].timespans)
-    }
-    if(timespan_arr.length>0){
-      t = minmax(timespan_arr)
-      right += '<p><b>When</b>: earliest: '+t[0]+'; latest: '+t[1]    
+    if(data.minmax.length>0){
+      right += '<p><b>When</b>: earliest: '+data.minmax[0]+'; latest: '+data.minmax[1]    
     }
     left += '</div>'
     right += '</div>'
@@ -1202,15 +1185,25 @@ js for Browse
         $("#detail_left").html(parsePlace(data,'left'))
         $("#detail_right").html(parsePlace(data,'right'))
         $('.ext').on('click', function(e) {
-        e.preventDefault();
+          e.preventDefault();
           str=$(this).text()
-          var re = /(dbp|gn|tgn|wd):(.*?)$/;
+          <!--id=$(this).data('id')-->
+          var re = /(dbp|gn|tgn|wd|aat):(.*?)$/;
           url=base_urls[str.match(re)[1]]+str.match(re)[2]
+          <!--url=base_urls[id.match(re)[1]]+id.match(re)[2]-->
           console.log('url',url)
           $(".modal-body").html('<iframe width="100%" height="100%" frameborder="0" scrolling="yes" '+
             'allowtransparency="true" src="'+url+'"></iframe>');
         });
-      });
+        $('.exttab').on('click', function(e) {
+          e.preventDefault();
+          id=$(this).data('id')
+          console.log('id',id)
+          var re = /(http|dbp|gn|tgn|wd|loc|viaf|aat):(.*?)$/;
+          url=id.match(re)[1]=='http' ? id : base_urls[id.match(re)[1]]+id.match(re)[2]
+          window.open(url,'_blank')
+        }); 
+    });
   }
   // initialize maps 
   function map_init_browse (map, options) {

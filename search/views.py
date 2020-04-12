@@ -10,7 +10,7 @@ from elasticsearch import Elasticsearch
 from django.db.models import Count
 
 class UpdateCountsView(View):
-  """ Returns counts of unreviewed hist per pass """
+  """ Returns counts of unreviewed hits per pass """
   @staticmethod
   def get(request):
     print('UpdateCountsView GET:',request.GET)
@@ -200,8 +200,6 @@ class SearchView(View):
     #print('a raw suggestion (new style):',suggestions[1])
     suggestions = [ suggestionItem(s, doctype, scope) for s in suggestions]
     return JsonResponse(suggestions, safe=False)
-  
-"""  """
   
 ## ***
 ##    get features in current map viewport

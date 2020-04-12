@@ -3,7 +3,7 @@ from django.urls import path, include
 from django.conf.urls import url
 
 from search.views import (
-    advanced, SearchView, FeatureContextView, TraceGeomView, UpdateCountsView, LookupView)
+    advanced, SearchView, FeatureContextView, TraceGeomView, LookupView, UpdateCountsView)
 #from datasets.views import DatasetFileUpdateView
 
 urlpatterns = [

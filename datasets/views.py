@@ -905,7 +905,7 @@ def ds_compare(request):
 # ***
 def ds_insert_lpf(request, pk):
   import json
-  [countrows,countlinked]= [0,0]
+  [countrows,countlinked,total_links]= [0,0,0]
   ds = get_object_or_404(Dataset, id=pk)
   # latest file
   dsf = ds.files.all().order_by('-rev')[0]
@@ -922,8 +922,8 @@ def ds_insert_lpf(request, pk):
               "PlaceLinks":[], "PlaceRelated":[], "PlaceDescriptions":[],
               "PlaceDepictions":[]}
       countrows += 1
-
-      print(feat['@id'],feat['properties']['title'],feat.keys())
+      print('countrows',countrows)
+      #print(feat['@id'],feat['properties']['title'],feat.keys())
 
       # instantiate Place record & save to get id
       # Place: src_id, title, ccodes, dataset
@@ -973,9 +973,11 @@ def ds_insert_lpf(request, pk):
             place_id=newpl,src_id=newpl.src_id,jsonb=g))
 
       # PlaceLink: place_id,src_id,task_id,jsonb:{type,identifier}
-      if 'links' in feat.keys():
+      if 'links' in feat.keys() and len(feat['links'])>0:
+        countlinked +=1
+        print('countlinked',countlinked)
         for l in feat['links']:
-          if len(feat['links'])>0: countlinked +=1
+          total_links += 1
           objs['PlaceLinks'].append(PlaceLink(
             place_id=newpl,src_id=newpl.src_id,jsonb=l,task_id='initial'))
 
@@ -1007,20 +1009,21 @@ def ds_insert_lpf(request, pk):
       PlaceDescription.objects.bulk_create(objs['PlaceDescriptions'])
       PlaceDepiction.objects.bulk_create(objs['PlaceDepictions'])
 
-      #context = {'status':'inserted'}
-      # write some summary attributes
-      dsf.df_status = 'uploaded'
-      dsf.numrows = countrows
-      dsf.save()
-
-      ds.ds_status = 'uploaded'
-      ds.numrows = countrows
-      ds.numlinked = countlinked
-      ds.total_links = len(objs['PlaceLinks'])
-      ds.save()
-
     #print('record:', ds.__dict__)
     infile.close()
+
+  #context = {'status':'inserted'}
+  # write some summary attributes
+  dsf.df_status = 'uploaded'
+  dsf.numrows = countrows
+  dsf.save()
+
+  print('countlinked',countlinked)
+  ds.ds_status = 'uploaded'
+  ds.numrows = countrows
+  ds.numlinked = countlinked
+  ds.total_links = total_links
+  ds.save()
 
   print(str(countrows)+' inserted')
   messages.add_message(request, messages.INFO, 'inserted lpf for '+str(countrows)+' places')
@@ -1482,10 +1485,9 @@ class DatasetDetailView(LoginRequiredMixin, UpdateView):
       print('format_ok , inserting dataset '+str(id_))
       if file.format == 'delimited':
         ds_insert_tsv(self.request, id_)
-        #ds_insert_tsv(self.request, ds.id)
-        print('numlinked immed. after insert',ds.numlinked)
       else:
         ds_insert_lpf(self.request,id_)
+      print('numlinked immed. after insert',ds.numlinked)
       ds.ds_status = 'uploaded'
       file.df_status = 'uploaded'
       ds.save()
