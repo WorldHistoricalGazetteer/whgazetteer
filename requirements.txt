@@ -117,7 +117,7 @@ simpleeval==0.9.8
 simplejson==3.16.0
 six==1.11.0
 SPARQLWrapper==1.8.4
-SQLAlchemy==1.2.18
+SQLAlchemy==1.3.16
 sqlparse==0.3.0
 statistics==1.0.3.5
 tableschema==1.11.0
