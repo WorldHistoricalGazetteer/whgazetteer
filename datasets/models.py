@@ -17,9 +17,10 @@ def user_directory_path(instance, filename):
     # upload to MEDIA_ROOT/user_<username>/<filename>
     return 'user_{0}/{1}'.format(instance.owner.username, filename)
 
+# owner = models.ForeignKey('auth.User', related_name='snippets', on_delete=models.CASCADE)
 class Dataset(models.Model):
     idx='whg02'
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL,
+    owner = models.ForeignKey(User,
         related_name='datasets', on_delete=models.CASCADE)
     label = models.CharField(max_length=20, null=False, unique="True")
     title = models.CharField(max_length=255, null=False)

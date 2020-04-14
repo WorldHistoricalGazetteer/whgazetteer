@@ -53,6 +53,7 @@ geojson==2.4.1
 geomet==0.2.0.post2
 geopy==1.17.0
 goodtables==2.4.1
+httpie==2.0.0
 idna==2.8
 ijson==2.5.1
 importlib-metadata==0.23
@@ -94,7 +95,7 @@ psycopg2==2.7.5
 psycopg2-binary==2.7.5
 ptyprocess==0.6.0
 py==1.8.0
-Pygments==2.3.1
+Pygments==2.6.1
 pyparsing==2.4.0
 pyrsistent==0.14.11
 pytest==3.1.2

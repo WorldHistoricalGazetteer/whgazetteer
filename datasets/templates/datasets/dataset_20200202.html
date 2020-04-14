@@ -543,7 +543,6 @@ js for Summary, Reconciliation
     window.table = $('#placetable').DataTable({
       "serverSide": true,
       "ajax": "/api/places/?format=datatables&ds={{ ds.label }}&f={{ filter }}",
-      "ajax": "/api/places/?format=datatables&ds={{ ds.label }}&f={{ filter }}",
       "columns": [
           {"data": "id", "searchable": false},
           {"data": "src_id", "searchable": false},
