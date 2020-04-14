@@ -40,6 +40,7 @@ STATUS = [
     ('ready', 'Ready for submittal'),
     ('accessioning', 'Accessioning'),
     ('accessioned', 'Accessioned'),
+    ('indexed', 'Indexed'),
 ]
 
 AUTHORITIES = [

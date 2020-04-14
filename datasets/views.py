@@ -1440,7 +1440,6 @@ class DatasetDetailView(LoginRequiredMixin, UpdateView):
 
   # Dataset has been edited, form submitted
   def form_valid(self, form):
-    print('in form_valid()')
     data=form.cleaned_data
     ds = get_object_or_404(Dataset,pk=self.kwargs.get("id"))
     dsid = ds.id
