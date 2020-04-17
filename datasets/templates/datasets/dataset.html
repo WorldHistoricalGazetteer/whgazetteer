@@ -108,7 +108,6 @@
               <td><b>File</b></td>
               <td>
                 <span class="display-field">{{ current_file.file }}</span>
-                <span class="update-field hidden">{{ form.file }}</span>
               </td>
             </tr>
             <tr>
@@ -166,7 +165,7 @@
       </div>
       <div class="col-sm-4 small">
         <div id="ds_info">
-          <div id="ds_stats">
+          <div id="ds_stats" class="ds-card">
             <table style="width:100%">
               <!--<tr><td class="pb-3"><b>Status</b></td><td class="pb-3">{ ds.ds_status }}</td><td class="pb-3"></td></tr>-->
               <tr><th></th><th class="pb-1 text-secondary">count</th><th class="pb-1 text-secondary">added</th></tr>
@@ -189,9 +188,20 @@
                 <td><span class="text-white bg-danger">&nbsp;{{ geoms_added }}&nbsp;</span></td></tr>
             </table>
           </div>
-          <div id="ds_access" class="pt-0 px-0">
+          <div id="ds_access" class="pt-0 px-0 ds-card">
             <p style="display:block; background-color:#eee; margin:0; padding-left:10px; font-weight:700;">Access</p>
             <p style="display:block; margin:0; padding-left:10px;">Metadata edits, dataset updates, and initiation of reconciliation tasks may only be performed by the dataset contributor ("owner" in WHG). Collaborators added by the owner under the "Sharing" tab can view the dataset and perform review of reconciliation tasks.</p>
+          </div>
+          <div id="ds_downloads" class="pt-0 px-0 ds-card">
+            {% define 'datasets:download-'|add:current_file.format as dl_url %}
+            <p style="display:block; background-color:#eee; margin:0; padding-left:10px; font-weight:700;">Downloads</p>
+            <p style="display:block; margin:0; padding-left:10px;">
+              <a href="http://localhost:8000/media/{{ current_file.file }}">Current data file</a>
+              {% if links_added > 0 or geoms_added > 0 %}
+              <br/><a href="{% url dl_url ds.id %}">Augmented dataset</a> (added links/geometries){% endif %}
+              {% if current_file.format == 'lpf' %}
+              <br><a class="text-muted" href="#">Flattened geometry (for GIS)</a>{%endif%}
+            </p>
           </div>
         </div> <!-- ds_info -->
       </div> <!-- ds_details -->
@@ -507,7 +517,7 @@
                 <button id="btn_upload" type="submit" class="btn btn-primary btn-sm hidden">Upload</button>
               </div>
               <div id="update_spinner"></div>
-              <div id="results_text" class="compare-results mb-2 small">
+              <div id="results_text" class="mb-2 small ds-card">
                 <p>Uploaded data will be compared with existing data, and results reported here.</p>
                   <p>You may then proceed, or cancel this operation with no changes made.</p>
                 <!--{ if links_added > 0 or geoms_added > 0 %}-->

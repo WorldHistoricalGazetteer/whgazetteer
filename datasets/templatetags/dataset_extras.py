@@ -4,6 +4,10 @@ import json
 
 register = template.Library()
 
+@register.simple_tag
+def define(val=None):
+    return val
+
 @register.filter
 def addstr(arg1, arg2):
     """concatenate arg1 & arg2"""

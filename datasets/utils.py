@@ -1,16 +1,43 @@
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
+from django.utils.encoding import smart_str
 
 from pathlib import Path
-import codecs, datetime, sys, csv, os, pprint, chardet
+import codecs, sys, os, pprint, chardet, datetime, csv
 import simplejson as json
 from goodtables import validate as gvalidate
 from shapely import wkt
-from datasets.models import DatasetFile, DatasetUser
+from datasets.models import DatasetUser, Dataset
 from datasets.static.hashes import aat, parents, aat_q
-from jsonschema import Draft7Validator, draft7_format_checker, validate
+from jsonschema import draft7_format_checker, validate,Draft7Validator
 pp = pprint.PrettyPrinter(indent=1)
-import pandas as pd
 
+# ***
+# download dataset (augmented)
+# ***
+def download_delimited(request, *args, **kwargs):
+  print('download-delim kwargs',kwargs)
+  ds=get_object_or_404(Dataset,pk=kwargs['id'])
+  print('dataset:',ds.label)
+  #dataset = request['ds']
+  ## response content type
+  #response = HttpResponse(content_type='text/csv')
+  ##decide the file name
+  #response['Content-Disposition'] = 'attachment; filename="'+fn+'.csv"'
+  
+  #writer = csv.writer(response, csv.excel)
+  #response.write(u'\ufeff'.encode('utf8'))
+  
+  ##write the headers
+  #writer.writerow([
+    #smart_str(u"Event Name"),
+    #smart_str(u"Start Date"),
+    #smart_str(u"End Date"),
+    #smart_str(u"Notes"),
+  #])  
+  return HttpResponse(content=b'foo')
+    
+  
 # ***
 # format tsv validation errors for modal display
 # ***
@@ -25,9 +52,9 @@ def parse_errors_tsv(err):
 def parse_errors_lpf(err):
   print('parse_errors_lpf()',err)
   
-# use jsonschema to validate Linked Places json-ld
+# 
+# validate Linked Places json-ld (w/jsonschema)
 # format ['coll' (FeatureCollection) | 'lines' (json-lines)]
-#def validate_lpf(infile,format):
 def validate_lpf(tempfn,format):
   # TODO: handle json-lines
   # TODO: create v1.1 schema; phase out v1.0
@@ -69,7 +96,8 @@ def validate_lpf(tempfn,format):
   #print('validate_lpf() result',result)
   return result
 
-# validate LP-TSV file
+#
+# validate LP-TSV file (w/goodtables library)
 def validate_tsv(tempfn):
   result = {"errors":[],"format":"delimited"}
   # TODO: detect encoding

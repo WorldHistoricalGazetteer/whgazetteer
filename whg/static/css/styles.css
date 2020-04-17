@@ -367,14 +367,13 @@ em { color: #993333;}
 #ds_log { overflow-y:scroll; max-height: 450px; padding:4px;}
 .ds-table { width:100%; border-spacing: 1em .4em;}
 .ds-title { padding-top: 7px; font-weight:700; font-size: larger; color: grey;}
-/*.compare-results {max-width:300px;}*/
+
 #ds_details p { margin: .5rem 0 .2rem 0;}
 #ds_details td:nth-child(1) {width:20%;}
 #ds_details td:nth-child(3) {width:30%;}
 #dsfile_new td {width:20%;}
 #ds_tasks { max-height: 80vh; overflow-y:scroll; overflow-x: hidden; }
-#ds_stats, #ds_access, #results_text {
-  height: fit-content;
+.ds-card {height: fit-content;
   border-top: #ddd 1px solid;
   border-left: #ddd 1px solid;
   border-right: #999 2px solid;
@@ -384,6 +383,17 @@ em { color: #993333;}
   margin-top:8px;
   /*overflow-y:scroll;*/
   box-shadow: 1px 1px #eee;}
+/*#ds_stats, #ds_access, #results_text {*/
+  /*height: fit-content;*/
+  /*border-top: #ddd 1px solid;*/
+  /*border-left: #ddd 1px solid;*/
+  /*border-right: #999 2px solid;*/
+  /*border-bottom: #999 2px solid;*/
+  /*padding: 10px;*/
+  /*background-color: #fff;*/
+  /*margin-top:8px;*/
+  /*/*overflow-y:scroll;*/*/
+  /*box-shadow: 1px 1px #eee;}*/
 #ds_stats th { font-weight:400; font-style: italic; }
 #browse { width:100% !important; height:auto !important; }
 #ds_form .row {padding-right:4px;}

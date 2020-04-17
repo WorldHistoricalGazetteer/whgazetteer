@@ -4,6 +4,7 @@ from django.conf.urls.static import static
 from django.conf import settings
 
 from . import views
+from datasets.utils import download_delimited
 
 # dataset actions
 app_name='datasets'
@@ -14,6 +15,12 @@ urlpatterns = [
     path('update/', views.ds_update, name='dataset-update'),
     
     path('<int:id>/delete', views.DatasetDeleteView.as_view(), name='dataset-delete'),
+
+    # download delimited
+    path('<int:id>/delimited/', download_delimited, name="download-delimited"), # 
+
+    # download lpf
+    path('<int:pk>/lpf/', download_delimited, name="download-lpf"), # 
 
     # also handles update for name, description fields
     path('<int:id>/detail', views.DatasetDetailView.as_view(), name='dataset-detail'),
@@ -30,14 +37,7 @@ urlpatterns = [
     # review, validate hits
     path('<int:pk>/review/<str:tid>/<str:passnum>', views.review, name="review"),
 
-    # list places (for table)
-    #path('<str:label>/datatable/<str:f>', views.drf_table, name='drf_table'),
-
-    # browse/map dataset
-    #path('<str:label>/browse/<str:f>', views.dataset_browse, name='dataset_browse'),
-
     # list places in a dataset; for physical geog layers
-    #path('<str:label>/places/<str:format>', views.ds_list, name='ds_list'),
     path('<str:label>/places/', views.ds_list, name='ds_list'),
 
     # delete TaskResult & associated hits
