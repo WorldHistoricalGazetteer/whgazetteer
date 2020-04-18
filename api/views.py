@@ -11,6 +11,7 @@ from rest_framework import permissions
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.decorators import api_view
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer, TemplateHTMLRenderer
 from rest_framework.reverse import reverse
@@ -18,11 +19,16 @@ from rest_framework.views import APIView
 
 from accounts.permissions import IsOwnerOrReadOnly, IsOwner
 from api.serializers import UserSerializer, GroupSerializer, DatasetSerializer, \
-    PlaceSerializer, PlaceGeomSerializer, AreaSerializer, PSerializer
+    PlaceSerializer, PlaceGeomSerializer, AreaSerializer
 from areas.models import Area
 from datasets.models import Dataset
 from places.models import Place, PlaceGeom
 
+class StandardResultsSetPagination(PageNumberPagination):
+    page_size = 20
+    page_size_query_param = 'page_size'
+    max_page_size = 1000
+    
 @api_view(['GET'])
 def api_root(request, format=None):
     return Response({
@@ -56,32 +62,41 @@ class PlaceList(APIView):
     """
     List all places in dataset
     """
+    pagination_class = StandardResultsSetPagination
+    
     def get(self, request, *args, **kwargs):
         ds= kwargs['pk']
-        #print('request.GET',request.GET)
         places=get_object_or_404(Dataset,pk=ds).places.all()
         serializer = PlaceSerializer(places, many=True,context={'request': request})
-        #serializer = PlaceSerializer(places, many=True)
-        #return JsonResponse({'fuck':'this'+str(ds)})
         return Response(serializer.data) 
     
     permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
 
 
-class DatasetList(APIView):
-    """
-    List all public datasets
-    """
-    #renderer_classes = [JSONRenderer]
-    def get(self, request, format=None):
-        print('DatasetList request',request.__dict__)
-        datasets = Dataset.objects.all().filter(public=True).order_by('label')
-        serializer = DatasetSerializer(datasets, many=True)
-        #return Response(serializer.data, template_name='api/api.html') 
-        return Response(serializer.data) 
+
+class DatasetAPIView(generics.ListAPIView):
+    """    List public datasets    """
+    serializer_class = DatasetSerializer
+    
+    def get_queryset(self):
+        qs = Dataset.objects.all().filter(public=True).order_by('label')
+        query = self.request.GET.get('q')
+        if query is not None:
+            qs = qs.filter(description__icontains=query)
+        return qs
     
     permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
+    authentication_classes = []
 
+class DatasetDetailAPIView(generics.RetrieveAPIView):
+    """    Retrieve dataset record by id   """
+
+    queryset = Dataset.objects.all().filter(public=True).order_by('label')
+    serializer_class = DatasetSerializer
+    
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
+    authentication_classes = []
+    
 class DatasetDetail(APIView):
     """
     Retrieve a single dataset record.
@@ -109,7 +124,7 @@ class UserDetail(generics.RetrieveAPIView):
     serializer_class = UserSerializer
 
 #
-# in use
+# in use pre-Apr 2020
 class DatasetViewSet(viewsets.ModelViewSet):
     # print('in DatasetViewSet()')
     queryset = Dataset.objects.all().filter(public=True).order_by('label')

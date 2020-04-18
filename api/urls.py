@@ -30,8 +30,8 @@ urlpatterns = [
     path('api-auth/', include('rest_framework.urls')),
     path('', views.api_root),
 
-    path('datasets/', views.DatasetList.as_view(),name='dataset-list'),    
-    path('datasets/<int:pk>/', views.DatasetDetail.as_view(),name='dataset-detail'),
+    path('datasets/', views.DatasetAPIView.as_view(), name='dataset-list'),    
+    path('dataset/<int:pk>/', views.DatasetDetailAPIView.as_view(),name='dataset-detail'),
 
     # drf table browsing dataset places
     path('placetable/', views.PlaceTableViewSet.as_view({'get':'list'}),name='place-table'), 

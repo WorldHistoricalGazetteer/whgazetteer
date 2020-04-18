@@ -80,7 +80,7 @@ CELERY_TASK_EAGER_PROPAGATES = True
 
 #REST_FRAMEWORK = {
     #'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    #'PAGE_SIZE': 10,
+    #'PAGE_SIZE': 20,
 #}
 
 # replacement section from drf-datatables
@@ -95,7 +95,8 @@ REST_FRAMEWORK = {
         'rest_framework_datatables.filters.DatatablesFilterBackend',
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework_datatables.pagination.DatatablesPageNumberPagination',
-    'PAGE_SIZE': 15000,
+    #'PAGE_SIZE': 15000,
+    'PAGE_SIZE': 20,
 }
 
 TEMPLATES = [
