@@ -15,6 +15,8 @@ pp = pprint.PrettyPrinter(indent=1)
 # ***
 # download dataset (augmented)
 # ***
+# TODO: use DRF serializer? download_{format} methods on api.PlaceList() view?
+# https://stackoverflow.com/questions/38697529/how-to-return-generated-file-download-with-django-rest-framework
 def download_delimited(request, *args, **kwargs):
   print('download-delim kwargs',kwargs)
   ds=get_object_or_404(Dataset,pk=kwargs['id'])

@@ -12,6 +12,7 @@ from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.renderers import JSONRenderer, TemplateHTMLRenderer
 from rest_framework.reverse import reverse
 from rest_framework.views import APIView
 
@@ -46,15 +47,22 @@ class PlaceDetail(APIView):
         serializer = PlaceSerializer(place,context={'request': request})
         return Response(serializer.data)
     
+    def foo(self, pk):
+        return JsonResponse({"id":pk})
+    
     permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
 
 class PlaceList(APIView):
     """
     List all places in dataset
     """
-    def get(self, request, ds, format=None):
-        places = Place.objects.filter(dataset=request.ds)
+    def get(self, request, *args, **kwargs):
+        ds= kwargs['pk']
+        #print('request.GET',request.GET)
+        places=get_object_or_404(Dataset,pk=ds).places.all()
         serializer = PlaceSerializer(places, many=True,context={'request': request})
+        #serializer = PlaceSerializer(places, many=True)
+        #return JsonResponse({'fuck':'this'+str(ds)})
         return Response(serializer.data) 
     
     permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
@@ -64,9 +72,12 @@ class DatasetList(APIView):
     """
     List all public datasets
     """
+    #renderer_classes = [JSONRenderer]
     def get(self, request, format=None):
+        print('DatasetList request',request.__dict__)
         datasets = Dataset.objects.all().filter(public=True).order_by('label')
         serializer = DatasetSerializer(datasets, many=True)
+        #return Response(serializer.data, template_name='api/api.html') 
         return Response(serializer.data) 
     
     permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
@@ -153,7 +164,8 @@ class GeomViewSet(viewsets.ModelViewSet):
         qs = PlaceGeom.objects.filter(place_id_id__in=dsPlaceIds)
         return qs
     
-class PlaceViewSet(viewsets.ModelViewSet):
+# populates drf table in dataset.detail#browse
+class PlaceTableViewSet(viewsets.ModelViewSet):
     queryset = Place.objects.all().order_by('title')
     serializer_class = PlaceSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly)
@@ -163,18 +175,10 @@ class PlaceViewSet(viewsets.ModelViewSet):
         qs = Place.objects.all()
         query = self.request.GET.get('q')
         ds = self.request.GET.get('ds')
-        #print('GET.get from PlaceViewSet()',self.request.GET)
-        #f = self.request.GET.get('f')
-        #for key, value in self.request.GET.items():
-            #print('foo',key, value)
         if ds is not None:
             qs = qs.filter(dataset = ds)
-        #if f == 'nogeom':
-            #qs = qs.filter(num_g__lt=1)
-            #print('nogeom;count',qs.count())
         if query is not None:
             qs = qs.filter(title__istartswith=query)
-            #qs = qs.filter(title__icontains=query)
         return qs
 
     def get_permissions(self):

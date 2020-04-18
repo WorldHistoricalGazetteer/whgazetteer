@@ -725,7 +725,7 @@ js for Summary, Reconciliation
     window.dslabel = "{{ ds.label }}"
     window.table = $('#placetable').DataTable({
       "serverSide": true,
-      "ajax": "/api/places/?format=datatables&ds={{ ds.label }}&f={{ filter }}",
+      "ajax": "/api/placetable/?format=datatables&ds={{ ds.label }}&f={{ filter }}",
       "columns": [
           {"data": "id", "searchable": false},
           {"data": "src_id", "searchable": false},
@@ -1188,7 +1188,7 @@ js for Browse
 
   function getPlace(pid){
     $.ajax({
-      url: "/api/places/"+pid,
+      url: "/api/place/"+pid,
       }).done(function( data ) {
         $("#detail_left").html(parsePlace(data,'left'))
         $("#detail_right").html(parsePlace(data,'right'))

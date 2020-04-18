@@ -25,7 +25,7 @@ class DatasetSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Dataset
         fields = ('id', 'owner', 'label', 'title', 'description',
-            'datatype', 'ds_status', 'create_date', 'uri_base','public','core')
+            'datatype', 'ds_status', 'create_date', 'public','core')
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
     datasets = serializers.HyperlinkedRelatedField(
