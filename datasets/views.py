@@ -219,92 +219,92 @@ def review(request, pk, tid, passnum):
   else:
     place_post = get_object_or_404(Place,pk=request.POST['place_id'])
     print('POST place_id',request.POST['place_id'],place_post)
-    try:
-      if formset.is_valid():
-        hits = formset.cleaned_data
-        #print('hits (formset.cleaned_data)',hits)
-        matches = 0
-        for x in range(len(hits)):
-          hit = hits[x]['id']
-          hasGeom = 'geoms' in hits[x]['json'] and len(hits[x]['json']['geoms']) > 0
-          # is this hit a match?
-          if hits[x]['match'] not in ['none']:
-            matches += 1
-            # for tgn or wikidata, write place_link and place_geom record(s) now
-            # IF someone didn't just review it!
-            if task.task_name in ['align_tgn','align_wd']:
-              # only if 'accept geometries' was checked
-              if kwargs['aug_geom'] == 'on' and hasGeom \
-                 and tid not in place_post.geoms.all().values_list('task_id',flat=True):
-                geom = PlaceGeom.objects.create(
-                  place_id = place_post,
-                  task_id = tid,
-                  src_id = place.src_id,
-                  jsonb = {
-                    "type":hits[x]['json']['geoms'][0]['type'],
-                    "citation":{"id":auth+':'+hits[x]['authrecord_id'],"label":authname},
-                    "coordinates":hits[x]['json']['geoms'][0]['coordinates']
-                  }
-                )
-                print('created place_geom instance:', geom)
-              ds.save()
+    #try:
+    if formset.is_valid():
+      hits = formset.cleaned_data
+      #print('hits (formset.cleaned_data)',hits)
+      matches = 0
+      for x in range(len(hits)):
+        hit = hits[x]['id']
+        hasGeom = 'geoms' in hits[x]['json'] and len(hits[x]['json']['geoms']) > 0
+        # is this hit a match?
+        if hits[x]['match'] not in ['none']:
+          matches += 1
+          # for tgn or wikidata, write place_link and place_geom record(s) now
+          # IF someone didn't just review it!
+          if task.task_name in ['align_tgn','align_wd']:
+            # only if 'accept geometries' was checked
+            if kwargs['aug_geom'] == 'on' and hasGeom \
+               and tid not in place_post.geoms.all().values_list('task_id',flat=True):
+              geom = PlaceGeom.objects.create(
+                place_id = place_post,
+                task_id = tid,
+                src_id = place.src_id,
+                jsonb = {
+                  "type":hits[x]['json']['geoms'][0]['type'],
+                  "citation":{"id":auth+':'+hits[x]['authrecord_id'],"label":authname},
+                  "coordinates":hits[x]['json']['geoms'][0]['coordinates']
+                }
+              )
+              print('created place_geom instance:', geom)
+            ds.save()
 
-              # create single PlaceLink for matched authority record
-              # IF someone didn't just do it for this record
-              if tid not in place_post.links.all().values_list('task_id',flat=True):
+            # create single PlaceLink for matched authority record
+            # IF someone didn't just do it for this record
+            if tid not in place_post.links.all().values_list('task_id',flat=True):
+              link = PlaceLink.objects.create(
+                place_id = place_post,
+                task_id = tid,
+                src_id = place.src_id,
+                jsonb = {
+                  "type":hits[x]['match'],
+                  "identifier":link_uri(task.task_name,hits[x]['authrecord_id'] \
+                      if hits[x]['authority'] != 'whg' else hits[x]['json']['place_id'])
+                }
+              )
+              print('created place_link instance:', link)
+
+            # create multiple PlaceLink records (e.g. Wikidata)
+            # TODO: filter duplicates
+            if 'links' in hits[x]['json']:
+              for l in hits[x]['json']['links']:
                 link = PlaceLink.objects.create(
-                  place_id = place_post,
+                  place_id = place,
                   task_id = tid,
                   src_id = place.src_id,
                   jsonb = {
-                    "type":hits[x]['match'],
-                    "identifier":link_uri(task.task_name,hits[x]['authrecord_id'] \
-                        if hits[x]['authority'] != 'whg' else hits[x]['json']['place_id'])
+                    #"type": re.search("^(.*?):", l).group(1),
+                    "type": hits[x]['match'],
+                    "identifier": re.search("\: (.*?)$", l).group(1)
                   }
                 )
-                print('created place_link instance:', link)
+                print('PlaceLink record created',link.jsonb)
+                # update totals
+                ds.numlinked = ds.numlinked +1
+                ds.total_links = ds.total_links +1
+                ds.save()
+          # 
+          # this is accessioning step
+          elif task.task_name == 'align_whg':
+            # match is to a whg index hit/doc
+            # index as child or sibling, as appropriate
+            indexMatch(placeid, hits[x]['json']['place_id'])
+        # in any case, flag hit as reviewed; 
+        matchee = get_object_or_404(Hit, id=hit.id)
+        matchee.reviewed = True
+        matchee.save()
 
-              # create multiple PlaceLink records (e.g. Wikidata)
-              # TODO: filter duplicates
-              if 'links' in hits[x]['json']:
-                for l in hits[x]['json']['links']:
-                  link = PlaceLink.objects.create(
-                    place_id = place,
-                    task_id = tid,
-                    src_id = place.src_id,
-                    jsonb = {
-                      #"type": re.search("^(.*?):", l).group(1),
-                      "type": hits[x]['match'],
-                      "identifier": re.search("\: (.*?)$", l).group(1)
-                    }
-                  )
-                  print('PlaceLink record created',link.jsonb)
-                  # update totals
-                  ds.numlinked = ds.numlinked +1
-                  ds.total_links = ds.total_links +1
-                  ds.save()
-            # 
-            # this is accessioning step
-            elif task.task_name == 'align_whg':
-              # match is to a whg index hit/doc
-              # index as child or sibling, as appropriate
-              indexMatch(placeid, hits[x]['json']['place_id'])
-          # in any case, flag hit as reviewed; 
-          matchee = get_object_or_404(Hit, id=hit.id)
-          matchee.reviewed = True
-          matchee.save()
-
-        # no matches for align_whg? index as parent
-        if matches == 0 and task.task_name == 'align_whg':
-          indexMatch(placeid, None)
-          
-        return redirect('/datasets/'+str(pk)+'/review/'+tid+'/'+passnum+'?page='+str(int(page)))
-      else:
-        print('formset is NOT valid')
-        #print('formset data:',formset.data)
-        print('errors:',formset.errors)
-    except:
-      sys.exit(sys.exc_info())
+      # no matches for align_whg? index as parent
+      if matches == 0 and task.task_name == 'align_whg':
+        indexMatch(placeid, None)
+        
+      return redirect('/datasets/'+str(pk)+'/review/'+tid+'/'+passnum+'?page='+str(int(page)))
+    else:
+      print('formset is NOT valid')
+      print('formset data:',formset.data)
+      print('errors:',formset.errors)
+    #except:
+      #sys.exit(sys.exc_info())
 
   return render(request, 'datasets/review.html', context=context)
 
@@ -366,7 +366,7 @@ def ds_recon(request, pk):
       print(sys.exc_info())
       messages.add_message(request, messages.INFO, "Sorry! Reconciliation services appears to be down. The system administrator has been notified.<br/>"+sys.exc_info())
       return redirect('/datasets/'+str(ds.id)+'/detail#reconciliation')     
-      
+  
     context['hash'] = "#reconciliation"
     context['task_id'] = result.id
     context['response'] = result.state
@@ -396,7 +396,9 @@ def ds_recon(request, pk):
       # accessioning begun (align_whg); complete if ds.unindexed == 0
       ds.ds_status = 'indexed' if ds.unindexed == 0 else 'accessioning'
     ds.save()
-    return render(request, 'datasets/dataset.html', {'ds':ds, 'context': context})
+    print('ds_recon() context',context)
+    #return render(request, 'datasets/dataset.html', {'ds':ds, 'context': context})
+    return redirect('/datasets/'+str(ds.id)+'/detail#reconciliation')
 
   print('context',context)
   return render(request, 'datasets/dataset.html', {'ds':ds, 'context': context})
@@ -1478,7 +1480,6 @@ class DatasetDetailView(LoginRequiredMixin, UpdateView):
     # coming from DatasetCreateView(),
     # insert to db immediately (file.df_status == format_ok) 
     # most recent data file
-    #file = ds.files.all().order_by('upload_date')[0]
     file = ds.files.all().order_by('-rev')[0]
     if file.df_status == 'format_ok':
       print('format_ok , inserting dataset '+str(id_))

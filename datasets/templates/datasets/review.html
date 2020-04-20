@@ -119,6 +119,9 @@
               <input type="hidden" name="authrecord_id" value='{{ form.authrecord_id.value }}'></input>
               <input type="hidden" name="score" value='{{ form.score.value }}'></input>
               <input type="hidden" name="query_pass" value='{{ form.query_pass.value }}'></input>
+              {% for hidden in form.hidden_fields %}
+                {{ hidden }}
+              {% endfor %}
               <div class="pl-2 pr-2 mb-1 matchbar">
                 <div class="match_radio custom-control custom-radio">
                   <span class="mr-2 globeflash">

@@ -12,7 +12,7 @@ urlpatterns = [
     path('search/', SearchView.as_view(), name='search'), # home page search
     path('context/', FeatureContextView.as_view(), name='feature_context'), # place portal context
     path('tracegeom/', TraceGeomView.as_view(), name='trace_geom'), # trace features <- search & place portal
-    #path('updatecounts/', UpdateCountsView.as_view(), name='update_counts') # 
+    path('updatecounts/', UpdateCountsView.as_view(), name='update_counts') # 
 ]
 
 #path('lookup/', LookupView.as_view(), name='lookup'), # gets _id for a place_id
