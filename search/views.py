@@ -1,4 +1,5 @@
 # various search.views
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import View
@@ -154,7 +155,7 @@ def suggester(doctype,q,scope,idx):
     return suggestions 
 
 """ Returns place:search/suggest or trace:search """
-class SearchView(View):
+class SearchView(LoginRequiredMixin,View):
   @staticmethod
   def get(request):
     print('SearchView request',request.GET)
@@ -261,6 +262,8 @@ class FeatureContextView(View):
     features = contextSearch(idx, doctype, q_context_all)
     return JsonResponse(features, safe=False)
 
+
+''' search trace index '''
 def getGeomCollection(idx,doctype,q):
   # q includes list of place_ids from a trace record
   es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
@@ -321,7 +324,7 @@ class TraceGeomView(View):
 def home(request):
   return render(request, 'search/home.html')
 
-def advanced(request):
-  print('in search/advanced() view')
-  return render(request, 'search/advanced.html')
+#def advanced(request):
+  #print('in search/advanced() view')
+  #return render(request, 'search/advanced.html')
 

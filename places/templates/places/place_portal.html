@@ -426,7 +426,7 @@
   // for ES query
   function fetchContext(bbox){
     context={"type":"FeatureCollection","features":[]}
-    $.get("/search/features",{idx: 'whg02', search: bbox, doc_type: 'place'},
+    $.get("/search/context",{idx: 'whg02', search: bbox, doc_type: 'place'},
       function(data){
         <!--console.log('a hit:',data['hits'][0])-->
         <!--console.log('a geom in a hit:',data['hits'][0].geoms[0])-->

@@ -16,11 +16,15 @@ urlpatterns = [
     
     path('<int:id>/delete', views.DatasetDeleteView.as_view(), name='dataset-delete'),
 
+    # TODO: single download url w/format variable
     # download delimited
     path('<int:id>/delimited/', download_delimited, name="download-delimited"), # 
 
     # download lpf
     path('<int:pk>/lpf/', download_delimited, name="download-lpf"), # 
+
+    # download direct
+    path('<int:pk>/direct/', download_delimited, name="download-direct"), # 
 
     # also handles update for name, description fields
     path('<int:id>/detail', views.DatasetDetailView.as_view(), name='dataset-detail'),

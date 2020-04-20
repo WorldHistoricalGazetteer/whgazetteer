@@ -10,7 +10,7 @@ from django.shortcuts import get_object_or_404
 
 from es.es_utils import escount_ds
 from main.choices import AUTHORITIES, FORMATS, DATATYPES, STATUS, TEAMROLES, PASSES
-from places.models import Place
+from places.models import Place, PlaceGeom
 #from .models import Hit
 
 def user_directory_path(instance, filename):
@@ -96,6 +96,11 @@ class Dataset(models.Model):
     @property
     def placeids(self):
         return Place.objects.filter(dataset=self.label).values_list('id', flat=True)
+        
+    # list of dataset geometries
+    @property
+    def features(self):
+        return PlaceGeom.objects.filter(place_id_id__in=self.placeids)
         
     class Meta:
         managed = True

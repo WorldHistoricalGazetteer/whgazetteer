@@ -628,44 +628,6 @@
     return item
   }  
   
-  function idGet(){
-    var myvar
-    $.get("/search/lookup",{
-      idx: 'whg02',
-      place_id: pid
-    }, function(data){
-      myvar = data['whg-id']
-      console.log('myvar',myvar)
-    });
-    return myvar;
-  }
-  function idCallback(pid){
-    var myvar = null
-    function callback(response) {
-      myvar = response;
-      console.log('myvar',myvar)
-    }
-    $.ajax({
-      url: "/search/lookup",
-      data: {idx: 'whg02', place_id: pid},
-      success: function(data){
-        callback(data['whg_id'])
-      }
-    });
-    return myvar;
-  };
-  function idAjax(pid){
-    <!--var myvar = null-->
-    return $.ajax({
-      'async': 'false',
-      'url': "/search/lookup",
-      'data': {idx: 'whg02', place_id: pid},
-      'datatype': 'html',
-      'success': function(response){
-        Data=response;
-      }
-    });
-  };
 
   styles = {
     'marker_default': {
@@ -729,3 +691,42 @@
   })
 </script>
 {% endblock %}
+
+  <!--function idGet(){-->
+    <!--var myvar-->
+    <!--$.get("/search/lookup",{-->
+      <!--idx: 'whg02',-->
+      <!--place_id: pid-->
+    <!--}, function(data){-->
+      <!--myvar = data['whg-id']-->
+      <!--console.log('myvar',myvar)-->
+    <!--});-->
+    <!--return myvar;-->
+  <!--}-->
+  <!--function idCallback(pid){-->
+    <!--var myvar = null-->
+    <!--function callback(response) {-->
+      <!--myvar = response;-->
+      <!--console.log('myvar',myvar)-->
+    <!--}-->
+    <!--$.ajax({-->
+      <!--url: "/search/lookup",-->
+      <!--data: {idx: 'whg02', place_id: pid},-->
+      <!--success: function(data){-->
+        <!--callback(data['whg_id'])-->
+      <!--}-->
+    <!--});-->
+    <!--return myvar;-->
+  <!--};-->
+  <!--function idAjax(pid){-->
+    <!--<!--var myvar = null-->-->
+    <!--return $.ajax({-->
+      <!--'async': 'false',-->
+      <!--'url': "/search/lookup",-->
+      <!--'data': {idx: 'whg02', place_id: pid},-->
+      <!--'datatype': 'html',-->
+      <!--'success': function(response){-->
+        <!--Data=response;-->
+      <!--}-->
+    <!--});-->
+  <!--};-->

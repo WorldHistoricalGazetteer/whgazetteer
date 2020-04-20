@@ -123,7 +123,9 @@ class PlaceNameSerializer(serializers.ModelSerializer):
         model = PlaceName
         fields = ('toponym','when','citation')
 
-class PlaceSerializer(serializers.HyperlinkedModelSerializer):
+#class PlaceSerializer(serializers.HyperlinkedModelSerializer):
+# direct representation of normalized records in database
+class PlaceSerializer(serializers.ModelSerializer):
     dataset = serializers.ReadOnlyField(source='dataset.label')
     names = PlaceNameSerializer(many=True, read_only=True)
     types = PlaceTypeSerializer(many=True, read_only=True)
@@ -159,7 +161,44 @@ class PlaceSerializer(serializers.HyperlinkedModelSerializer):
             'whens', 'descriptions', 'depictions',
             'geo','minmax'
         )
-
+        
+# a Linked Places FeatureCollection ???
+class FeatureSerializer(serializers.ModelSerializer):
+    dataset = serializers.ReadOnlyField(source='dataset.label')
+    names = PlaceNameSerializer(many=True, read_only=True)
+    types = PlaceTypeSerializer(many=True, read_only=True)
+    geoms = PlaceGeomSerializer(many=True, read_only=True)
+    links = PlaceLinkSerializer(many=True, read_only=True)
+    related = PlaceRelatedSerializer(many=True, read_only=True)
+    whens = PlaceWhenSerializer(many=True, read_only=True)
+    descriptions = PlaceDescriptionSerializer(many=True, read_only=True)
+    depictions = PlaceDepictionSerializer(many=True, read_only=True)
+    
+    geo = serializers.SerializerMethodField('has_geom')    
+    def has_geom(self,place):
+        return '<i class="fa fa-globe"></i>' if place.geom_count > 0 else "-"
+    
+    # 6365611 (pleiades_20200402); 6367873 (euratlas_cities); 6365630 (owtrad10)
+    minmax = serializers.SerializerMethodField('get_minmax')
+    def get_minmax(self,place):
+        tsarr=[n.jsonb['timespans'][0] for n in place.whens.all() if place.whens.count()>0]
+        tsarr=tsarr+[n.jsonb['when']['timespans'][0] for n in place.names.all() if 'when' in n.jsonb]
+        tsarr=tsarr+[t.jsonb['when']['timespans'][0] for t in place.types.all() if 'when' in t.jsonb]
+        tsarr=tsarr+[g.jsonb['when']['timespans'][0] for g in place.geoms.all() if 'when' in g.jsonb]
+        starts=[];ends=[];years=[];nullset=set([None]);
+        for ts in tsarr:
+            years.append(int(list(ts['start'].values())[0]))
+            years.append(int(list(ts['end'].values())[0]) if 'end' in ts.keys() else None)
+            years = list(set(years)-nullset)
+        return [min(years),max(years)] if len(years)>0 else []
+    
+    class Meta:
+        model = Place
+        fields = ('url','id', 'title', 'src_id', 'dataset','ccodes',
+            'names','types','geoms','links','related',
+            'whens', 'descriptions', 'depictions',
+            'geo','minmax'
+        ) 
 
 class PSerializer(serializers.HyperlinkedModelSerializer):
     dataset = serializers.ReadOnlyField(source='dataset.label')

@@ -802,7 +802,7 @@ js for Summary, Reconciliation
     $.get("/search/updatecounts",{ds_id: dsid},
       function(data){
         updates=data
-        <!--console.log('fired updateTotals()',updates, dsid)-->
+        console.log('fired updateTotals()',updates, dsid)
         for(u in updates){
           html1='';html2='';html3='';
           <!--console.log(updates[u])-->
@@ -954,6 +954,7 @@ js for Browse
       }).addTo(mappy)
       
       // get dataset features -> renderMap() if < 15,000
+      <!--$.get("/api/geoms", {ds: "{{ ds.label }}", f: "{{ filter }}" },-->
       $.get("/api/geoms", {ds: "{{ ds.label }}", f: "{{ filter }}" },
         function(data){
           <!--console.log('feature count:',data.count)-->

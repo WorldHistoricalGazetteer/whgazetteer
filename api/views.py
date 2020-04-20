@@ -1,4 +1,5 @@
 # api.views
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User, Group
 from django.db.models import Count
 from django.http import JsonResponse, Http404
@@ -14,50 +15,40 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import api_view
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
-from rest_framework.renderers import JSONRenderer, TemplateHTMLRenderer
+from rest_framework.renderers import JSONRenderer
 from rest_framework.reverse import reverse
 from rest_framework.views import APIView
 
-from accounts.permissions import IsOwnerOrReadOnly, IsOwner
-from api.serializers import UserSerializer, GroupSerializer, DatasetSerializer, \
-    PlaceSerializer, PlaceGeomSerializer, AreaSerializer
+from accounts.permissions import IsOwnerOrReadOnly
+from api.serializers import UserSerializer, DatasetSerializer, \
+    PlaceSerializer, PlaceGeomSerializer, AreaSerializer, FeatureSerializer
 from areas.models import Area
 from datasets.models import Dataset
 from places.models import Place, PlaceGeom
 
-class StandardResultsSetPagination(PageNumberPagination):
-    page_size = 10
-    page_size_query_param = 'page_size'
-    #max_page_size = 1000
+#class StandardResultsSetPagination(PageNumberPagination):
+    #page_size = 10
+    #page_size_query_param = 'page_size'
+    #max_page_size = 15000
     
 @api_view(['GET'])
 def api_root(request, format=None):
     return Response({
-        'users': reverse('user-list', request=request, format=format),
+        #'users': reverse('user-list', request=request, format=format),
         'datasets': reverse('dataset-list', request=request, format=format)
-        #'datasets': reverse('dataset-list', request=request, format=format)
     })
-
 
 #
 # API
-class PlaceDetailAPIView(generics.RetrieveAPIView):
-    """  single place record by id  (database)  """
-    queryset = Place.objects.all()
-    serializer_class = PlaceSerializer
-    
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
-    authentication_classes = [SessionAuthentication]
 
 class PlaceAPIView(generics.ListAPIView):
-    """
-    Paged list of all places in dataset
-    """
+    """    Paged list of places in dataset. Optionally filtered on title with ?q={string}  """
     serializer_class = PlaceSerializer
-    pagination_class = StandardResultsSetPagination
+    #pagination_class = StandardResultsSetPagination
     
-    def get_queryset(self, *args, **kwargs):
+    def get_queryset(self, format=None, *args, **kwargs):
         print('kwargs',self.kwargs)
+        print('self.request.GET',self.request.GET)
         dslabel=self.kwargs['dslabel']
         qs = Place.objects.all().filter(dataset=dslabel).order_by('title')
         query = self.request.GET.get('q')
@@ -67,14 +58,20 @@ class PlaceAPIView(generics.ListAPIView):
     
     permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
 
+class PlaceDetailAPIView(generics.RetrieveAPIView):
+    """  single place record by id  (database)  """
+    queryset = Place.objects.all()
+    serializer_class = PlaceSerializer
+    
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
+    authentication_classes = [SessionAuthentication]
 
-
-class DatasetAPIView(generics.ListAPIView):
+class DatasetAPIView(LoginRequiredMixin, generics.ListAPIView):
     """    List public datasets    """
     serializer_class = DatasetSerializer
-    pagination_class = StandardResultsSetPagination
+    #pagination_class = StandardResultsSetPagination
     
-    def get_queryset(self):
+    def get_queryset(self, format=None):
         qs = Dataset.objects.all().filter(public=True).order_by('label')
         query = self.request.GET.get('q')
         if query is not None:
@@ -84,7 +81,8 @@ class DatasetAPIView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
     authentication_classes = [SessionAuthentication]
 
-class DatasetDetailAPIView(generics.RetrieveAPIView):
+class DatasetDetailAPIView(LoginRequiredMixin, generics.RetrieveAPIView):
+#class DatasetDetailAPIView(generics.RetrieveAPIView):
     """    dataset record by id   """
     queryset = Dataset.objects.all().filter(public=True)
     serializer_class = DatasetSerializer
@@ -101,11 +99,29 @@ class UserDetail(generics.RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
+class FeatureAPIView(generics.ListAPIView):
+    """  GeoJSON FeatureCollection """
+    serializer_class = FeatureSerializer
+    pagination_class = None
+    
+    def get_queryset(self, format=None, *args, **kwargs):
+        #print('kwargs',self.kwargs)
+        dslabel=self.kwargs['dslabel']
+        qs = Place.objects.all().filter(dataset=dslabel).order_by('title')
+        query = self.request.GET.get('q')
+        if query is not None:
+            qs = qs.filter(title__icontains=query)
+        #return {"type":"FeatureCollection","features":list(qs)}
+        return qs
+    
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
+
 #
 # in use pre-Apr 2020    
 class GeomViewSet(viewsets.ModelViewSet):
     queryset = PlaceGeom.objects.all()
     serializer_class = PlaceGeomSerializer
+    #pagination_class = None
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
     
     def get_queryset(self):

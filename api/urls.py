@@ -21,9 +21,14 @@ urlpatterns = [
     # 
     # *** PLACES ***
     # 
+    # search all places
+    #path('places/', views.PlaceAPIView.as_view(),name='place-list'), 
+    
     # places in a dataset
     # TODO: repurpose for full download
     path('places/<str:dslabel>/', views.PlaceAPIView.as_view(),name='place-list'), 
+    # LP format FeatureCollection
+    path('features/<str:dslabel>/', views.FeatureAPIView.as_view(),name='feature-list'), 
 
     # a place
     path('place/<int:pk>/', views.PlaceDetailAPIView.as_view(),name='place-detail'),    
@@ -54,4 +59,4 @@ urlpatterns = [
     
 ]
 
-#urlpatterns = format_suffix_patterns(urlpatterns)
+urlpatterns = format_suffix_patterns(urlpatterns, allowed=['json', 'tsv', 'geojson'])
