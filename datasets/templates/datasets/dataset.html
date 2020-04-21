@@ -193,12 +193,13 @@
             <p style="display:block; margin:0; padding-left:10px;">Metadata edits, dataset updates, and initiation of reconciliation tasks may only be performed by the dataset contributor ("owner" in WHG). Collaborators added by the owner under the "Sharing" tab can view the dataset and perform review of reconciliation tasks.</p>
           </div>
           <div id="ds_downloads" class="pt-0 px-0 ds-card">
-            {% define 'datasets:download-'|add:current_file.format as dl_url %}
+            <!--{ define 'datasets:download-'|add:current_file.format as dl_url %}-->
             <p style="display:block; background-color:#eee; margin:0; padding-left:10px; font-weight:700;">Downloads</p>
             <p style="display:block; margin:0; padding-left:10px;">
-              <a href="http://localhost:8000/media/{{ current_file.file }}">Current data file</a>
+              <!--<a href="http://localhost:8000/media/{ current_file.file }}">Current data file</a>-->
+              <a href="{% url 'datasets:download-file' ds.id %}">Current data file</a>
               {% if links_added > 0 or geoms_added > 0 %}
-              <br/><a href="{% url dl_url ds.id %}">Augmented dataset</a> (added links/geometries){% endif %}
+              <br/><a href="#">Augmented dataset</a> (added links/geometries){% endif %}
               {% if current_file.format == 'lpf' %}
               <br><a class="text-muted" href="#">Flattened geometry (for GIS)</a>{%endif%}
             </p>

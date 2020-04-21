@@ -20,8 +20,8 @@ from rest_framework.reverse import reverse
 from rest_framework.views import APIView
 
 from accounts.permissions import IsOwnerOrReadOnly
-from api.serializers import UserSerializer, DatasetSerializer, \
-    PlaceSerializer, PlaceGeomSerializer, AreaSerializer, FeatureSerializer
+from api.serializers import (UserSerializer, DatasetSerializer,
+    PlaceSerializer, PlaceGeomSerializer, AreaSerializer, FeatureSerializer)
 from areas.models import Area
 from datasets.models import Dataset
 from places.models import Place, PlaceGeom

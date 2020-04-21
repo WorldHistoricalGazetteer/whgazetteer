@@ -4,7 +4,7 @@ from django.conf.urls.static import static
 from django.conf import settings
 
 from . import views
-from datasets.utils import download_delimited
+from datasets.utils import download_file, download_augmented, download_gis
 
 # dataset actions
 app_name='datasets'
@@ -17,14 +17,15 @@ urlpatterns = [
     path('<int:id>/delete', views.DatasetDeleteView.as_view(), name='dataset-delete'),
 
     # TODO: single download url w/format variable
-    # download delimited
-    path('<int:id>/delimited/', download_delimited, name="download-delimited"), # 
+    # download current rev of upload file
+    path('<int:id>/dl_file/', download_file, name="download-file"), # 
 
-    # download lpf
-    path('<int:pk>/lpf/', download_delimited, name="download-lpf"), # 
+    # download augmented dataset as lpf
+    path('<int:id>/dl_augmented/', download_augmented, name="download-augmented"), # 
 
-    # download direct
-    path('<int:pk>/direct/', download_delimited, name="download-direct"), # 
+    # download flattened geojson data
+    path('<int:id>/dl_gis/', download_gis, name="download-gis"), # 
+
 
     # also handles update for name, description fields
     path('<int:id>/detail', views.DatasetDetailView.as_view(), name='dataset-detail'),

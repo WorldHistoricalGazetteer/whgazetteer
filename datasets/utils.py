@@ -1,9 +1,9 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, FileResponse
 from django.shortcuts import get_object_or_404
 from django.utils.encoding import smart_str
 
 from pathlib import Path
-import codecs, sys, os, pprint, chardet, datetime, csv
+import codecs, sys, os, pprint, chardet, time, datetime, csv
 import simplejson as json
 from goodtables import validate as gvalidate
 from shapely import wkt
@@ -12,21 +12,39 @@ from datasets.static.hashes import aat, parents, aat_q
 from jsonschema import draft7_format_checker, validate,Draft7Validator
 pp = pprint.PrettyPrinter(indent=1)
 
+
+def maketime():
+  ts = time.time()
+  sttime = datetime.datetime.fromtimestamp(ts).strftime('%Y%m%d_%H%M%S')
+  return sttime
 # ***
 # download dataset (augmented)
 # ***
 # TODO: use DRF serializer? download_{format} methods on api.PlaceList() view?
 # https://stackoverflow.com/questions/38697529/how-to-return-generated-file-download-with-django-rest-framework
-def download_delimited(request, *args, **kwargs):
-  print('download-delim kwargs',kwargs)
+def download_file(request, *args, **kwargs):
   ds=get_object_or_404(Dataset,pk=kwargs['id'])
-  print('dataset:',ds.label)
-  #dataset = request['ds']
-  ## response content type
-  #response = HttpResponse(content_type='text/csv')
-  ##decide the file name
-  #response['Content-Disposition'] = 'attachment; filename="'+fn+'.csv"'
+  fileobj = ds.files.all().order_by('-rev')[0]
+  fn = 'media/'+fileobj.file.name
+  file_handle = fileobj.file.open()
+  print('download_file: kwargs,fn,fileobj.format',kwargs,fn,fileobj.format)
+  # set content type
+  response = FileResponse(file_handle, content_type='text/csv' if fileobj.format=='delimited' else 'text/json')
+  response['Content-Disposition'] = 'attachment; filename="'+fileobj.file.name+'"'
   
+  return response
+
+def download_augmented(request, *args, **kwargs):
+  print('download_augmented kwargs',kwargs)
+  user = request.user.username
+  ds=get_object_or_404(Dataset,pk=kwargs['id'])
+  date=maketime()
+  # make file name
+  fn = 'media/user_'+user+'/'+ds.label+'_aug_'+date+'.json'
+  ## response content type
+  response = HttpResponse(content_type='text/json')
+  response['Content-Disposition'] = 'attachment; filename="'+fn+'"'
+
   #writer = csv.writer(response, csv.excel)
   #response.write(u'\ufeff'.encode('utf8'))
   
@@ -37,8 +55,21 @@ def download_delimited(request, *args, **kwargs):
     #smart_str(u"End Date"),
     #smart_str(u"Notes"),
   #])  
-  return HttpResponse(content=b'foo')
-    
+  
+  return HttpResponse(content='download_augmented: '+fn)
+  
+def download_gis(request, *args, **kwargs):
+  print('download_gis kwargs',kwargs)
+  user = request.user.username
+  ds=get_object_or_404(Dataset,pk=kwargs['id'])
+  date=maketime()
+  # make file name
+  fn = 'media/user_'+user+'/'+ds.label+'_geo_'+date+'.json'
+  ## response content type
+  response = HttpResponse(content_type='text/json')
+  response['Content-Disposition'] = 'attachment; filename="'+fn+'"'
+  
+  return HttpResponse(content='download_gis: '+fn)
   
 # ***
 # format tsv validation errors for modal display
