@@ -2,7 +2,7 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User, Group
 from django.db.models import Count
-from django.http import JsonResponse, Http404
+from django.http import JsonResponse, Http404, HttpResponse, FileResponse
 from django.shortcuts import get_object_or_404
 from django.views.generic import View
 from django.views.decorators.csrf import csrf_exempt
@@ -116,6 +116,20 @@ class FeatureAPIView(generics.ListAPIView):
     
     permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
 
+class DownloadGeomViewSet(viewsets.GenericViewSet):
+    queryset = PlaceGeom.objects.all()
+    serializer_class = PlaceGeomSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    def get_queryset(self):
+        fn='mygeom.json'
+        dslabel = self.request.GET.get('ds')
+        dsPlaceIds = Place.objects.values('id').filter(dataset = dslabel)
+        qs = PlaceGeom.objects.filter(place_id_id__in=dsPlaceIds)
+        #return qs
+        response = HttpResponse(qs,content_type='text/json')
+        response['Content-Disposition'] = 'attachment; filename="'+fn+'"'    
+    
+        return response
 #
 # in use pre-Apr 2020    
 class GeomViewSet(viewsets.ModelViewSet):

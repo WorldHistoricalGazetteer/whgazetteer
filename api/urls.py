@@ -17,6 +17,9 @@ urlpatterns = [
     path('datasets/', views.DatasetAPIView.as_view(), name='dataset-list'),
     # single dataset record
     path('dataset/<int:pk>/', views.DatasetDetailAPIView.as_view(),name='dataset-detail'),
+    # geom
+    path('dataset/<int:pk>/geom/', views.DownloadGeomViewSet.as_view({'get':'list'}),name='dataset-geom'),
+
 
     # 
     # *** PLACES ***

@@ -1,3 +1,4 @@
+from django.core import serializers
 from django.http import HttpResponse, FileResponse
 from django.shortcuts import get_object_or_404
 from django.utils.encoding import smart_str
@@ -9,6 +10,7 @@ from goodtables import validate as gvalidate
 from shapely import wkt
 from datasets.models import DatasetUser, Dataset
 from datasets.static.hashes import aat, parents, aat_q
+from places.models import Place,PlaceGeom
 from jsonschema import draft7_format_checker, validate,Draft7Validator
 pp = pprint.PrettyPrinter(indent=1)
 
@@ -33,18 +35,51 @@ def download_file(request, *args, **kwargs):
   response['Content-Disposition'] = 'attachment; filename="'+fileobj.file.name+'"'
   
   return response
+# TODO: crude, only properties are ids
+def download_gis(request, *args, **kwargs):
+  print('download_gis kwargs',kwargs)
+  user = request.user.username
+  ds=get_object_or_404(Dataset,pk=kwargs['id'])
+  date=maketime()
+  # make file name
+  fn = 'media/user_'+user+'/'+ds.label+'_aug_'+date+'.json'
+  # open it for write
+  fout = codecs.open(fn,'w','utf8')
+  
+  # build a flat FeatureCollection 
+  features=PlaceGeom.objects.filter(place_id_id__in=ds.placeids).values_list('jsonb','place_id_id','src_id')
+  fcoll = {"type":"FeatureCollection","features":[]}
+  for f in features:
+    feat={"type":"Feature","properties":{"pid":f[1],"src_id":f[2]},"geometry":f[0]}
+    fcoll['features'].append(feat)
+  fout.write(json.dumps(fcoll))
+  fout.close()
+  # response is reopened file and content type
+  response = FileResponse(open(fn, 'rb'),content_type='text/json')
+  response['Content-Disposition'] = 'attachment; filename="mydata.geojson"'
 
+  return response
+  #return HttpResponse(content='download_gis: '+fn)
+  
+# reutrns file in original format w/any new geoms, links
+# 616 delimited; 640 lpf
 def download_augmented(request, *args, **kwargs):
   print('download_augmented kwargs',kwargs)
   user = request.user.username
   ds=get_object_or_404(Dataset,pk=kwargs['id'])
+  fileobj = ds.files.all().order_by('-rev')[0]
   date=maketime()
   # make file name
   fn = 'media/user_'+user+'/'+ds.label+'_aug_'+date+'.json'
   ## response content type
   response = HttpResponse(content_type='text/json')
   response['Content-Disposition'] = 'attachment; filename="'+fn+'"'
-
+  
+  if fileobj.format == 'delimited':
+    print('augmented for delimited')
+  else:
+    print('augmented for lpf')    
+    
   #writer = csv.writer(response, csv.excel)
   #response.write(u'\ufeff'.encode('utf8'))
   
@@ -56,20 +91,7 @@ def download_augmented(request, *args, **kwargs):
     #smart_str(u"Notes"),
   #])  
   
-  return HttpResponse(content='download_augmented: '+fn)
-  
-def download_gis(request, *args, **kwargs):
-  print('download_gis kwargs',kwargs)
-  user = request.user.username
-  ds=get_object_or_404(Dataset,pk=kwargs['id'])
-  date=maketime()
-  # make file name
-  fn = 'media/user_'+user+'/'+ds.label+'_geo_'+date+'.json'
-  ## response content type
-  response = HttpResponse(content_type='text/json')
-  response['Content-Disposition'] = 'attachment; filename="'+fn+'"'
-  
-  return HttpResponse(content='download_gis: '+fn)
+  return HttpResponse(content='download_augmented: '+fn+' ('+fileobj.format+')')
   
 # ***
 # format tsv validation errors for modal display
