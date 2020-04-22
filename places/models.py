@@ -99,7 +99,8 @@ class PlaceType(models.Model):
         db_table = 'place_type'
 
 class PlaceGeom(models.Model):
-    place_id = models.ForeignKey(Place,related_name='geoms',
+    #place_id = models.ForeignKey(Place,related_name='geoms',
+    place = models.ForeignKey(Place,related_name='geoms',
         default=-1, on_delete=models.CASCADE)
     task_id = models.CharField(max_length=100, blank=True, null=True)
     geom_src = models.ForeignKey(Source, null=True, db_column='geom_src',

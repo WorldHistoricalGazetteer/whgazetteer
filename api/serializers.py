@@ -181,23 +181,18 @@ class FeatureSerializer(GeoFeatureModelSerializer):
         print('geom', djgeo.geojson)
         return GEOSGeometry(g2.wkt)
     
+    #title = serializers.SerializerMethodField('get_title')    
     #def get_title(self, obj):
-        #print('obj.place_id.title',obj.place_id.title)
-        #return obj.place_id.title
+        #return obj.place.title
     title = serializers.SerializerMethodField('get_title')    
     def get_title(self, obj):
-        return obj.place_id.title
+        return obj.place.title
     
     class Meta:
         model = PlaceGeom
         geo_field = 'geom'
-        fields = ('id','src_id','title')
-        #fields = ('id','src_id')
-        #fields = ('id','src_id', 'dataset','ccodes',
-            #'names','types','geoms','links','related',
-            #'whens', 'descriptions', 'depictions',
-            #'geo','minmax'
-        #) 
+        id_field = False
+        fields = ('place_id','src_id','title')
 
 class PSerializer(serializers.HyperlinkedModelSerializer):
     dataset = serializers.ReadOnlyField(source='dataset.label')

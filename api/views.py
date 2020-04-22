@@ -124,7 +124,7 @@ class DownloadGeomViewSet(generics.ListAPIView):
     def get_queryset(self, format=None, *args, **kwargs):
         #fn='mygeom.json'
         ds = get_object_or_404(Dataset,pk=self.kwargs['ds'])
-        qs = PlaceGeom.objects.all().filter(place_id_id__in=ds.placeids)
+        qs = PlaceGeom.objects.all().filter(place_id__in=ds.placeids)
         #print('qs',qs)
         return qs
         #response = HttpResponse(qs,content_type='text/json')
