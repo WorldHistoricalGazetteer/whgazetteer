@@ -116,20 +116,21 @@ class FeatureAPIView(generics.ListAPIView):
     
     permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
 
-class DownloadGeomViewSet(viewsets.GenericViewSet):
+class DownloadGeomViewSet(generics.ListAPIView):
     queryset = PlaceGeom.objects.all()
-    serializer_class = PlaceGeomSerializer
+    serializer_class = FeatureSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
-    def get_queryset(self):
-        fn='mygeom.json'
-        dslabel = self.request.GET.get('ds')
-        dsPlaceIds = Place.objects.values('id').filter(dataset = dslabel)
-        qs = PlaceGeom.objects.filter(place_id_id__in=dsPlaceIds)
-        #return qs
-        response = HttpResponse(qs,content_type='text/json')
-        response['Content-Disposition'] = 'attachment; filename="'+fn+'"'    
     
-        return response
+    def get_queryset(self, format=None, *args, **kwargs):
+        #fn='mygeom.json'
+        ds = get_object_or_404(Dataset,pk=self.kwargs['ds'])
+        qs = PlaceGeom.objects.all().filter(place_id_id__in=ds.placeids)
+        #print('qs',qs)
+        return qs
+        #response = HttpResponse(qs,content_type='text/json')
+        #response['Content-Disposition'] = 'attachment; filename="'+fn+'"'    
+    
+        #return response
 #
 # in use pre-Apr 2020    
 class GeomViewSet(viewsets.ModelViewSet):

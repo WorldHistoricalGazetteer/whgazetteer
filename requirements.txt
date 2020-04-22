@@ -39,6 +39,7 @@ django-timezone-field==3.0
 django-webpack-loader==0.6.0
 djangorestframework==3.11.0
 djangorestframework-datatables==0.4.1
+djangorestframework-gis==0.15
 djoser==2.0.3
 docutils==0.15.2
 elasticsearch==6.3.1

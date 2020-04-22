@@ -1,10 +1,14 @@
 # api.serializers.py
-
 from django.contrib.auth.models import User, Group
+from django.contrib.gis.geos import GEOSGeometry, Point, Polygon, MultiPolygon, LineString, MultiLineString
 from rest_framework import serializers
+from rest_framework_gis.serializers import GeoFeatureModelSerializer, GeometrySerializerMethodField
 from datasets.models import Dataset
 from areas.models import Area
 from places.models import *
+
+import json, geojson
+from shapely.geometry import shape
 
 # TODO: these are updated in both Dataset & DatasetFile  (??)
 datatype = models.CharField(max_length=12, null=False,choices=DATATYPES,
@@ -162,43 +166,38 @@ class PlaceSerializer(serializers.ModelSerializer):
             'geo','minmax'
         )
         
+
+
 # a Linked Places FeatureCollection ???
-class FeatureSerializer(serializers.ModelSerializer):
-    dataset = serializers.ReadOnlyField(source='dataset.label')
-    names = PlaceNameSerializer(many=True, read_only=True)
-    types = PlaceTypeSerializer(many=True, read_only=True)
-    geoms = PlaceGeomSerializer(many=True, read_only=True)
-    links = PlaceLinkSerializer(many=True, read_only=True)
-    related = PlaceRelatedSerializer(many=True, read_only=True)
-    whens = PlaceWhenSerializer(many=True, read_only=True)
-    descriptions = PlaceDescriptionSerializer(many=True, read_only=True)
-    depictions = PlaceDepictionSerializer(many=True, read_only=True)
+class FeatureSerializer(GeoFeatureModelSerializer):
     
-    geo = serializers.SerializerMethodField('has_geom')    
-    def has_geom(self,place):
-        return '<i class="fa fa-globe"></i>' if place.geom_count > 0 else "-"
+    geom = GeometrySerializerMethodField()
+    def get_geom(self, obj):
+        type=obj.jsonb['type']
+        s=json.dumps(obj.jsonb)
+        g1 = geojson.loads(s)
+        g2 = shape(g1)
+        djgeo = GEOSGeometry(g2.wkt)
+        print('geom', djgeo.geojson)
+        return GEOSGeometry(g2.wkt)
     
-    # 6365611 (pleiades_20200402); 6367873 (euratlas_cities); 6365630 (owtrad10)
-    minmax = serializers.SerializerMethodField('get_minmax')
-    def get_minmax(self,place):
-        tsarr=[n.jsonb['timespans'][0] for n in place.whens.all() if place.whens.count()>0]
-        tsarr=tsarr+[n.jsonb['when']['timespans'][0] for n in place.names.all() if 'when' in n.jsonb]
-        tsarr=tsarr+[t.jsonb['when']['timespans'][0] for t in place.types.all() if 'when' in t.jsonb]
-        tsarr=tsarr+[g.jsonb['when']['timespans'][0] for g in place.geoms.all() if 'when' in g.jsonb]
-        starts=[];ends=[];years=[];nullset=set([None]);
-        for ts in tsarr:
-            years.append(int(list(ts['start'].values())[0]))
-            years.append(int(list(ts['end'].values())[0]) if 'end' in ts.keys() else None)
-            years = list(set(years)-nullset)
-        return [min(years),max(years)] if len(years)>0 else []
+    #def get_title(self, obj):
+        #print('obj.place_id.title',obj.place_id.title)
+        #return obj.place_id.title
+    title = serializers.SerializerMethodField('get_title')    
+    def get_title(self, obj):
+        return obj.place_id.title
     
     class Meta:
-        model = Place
-        fields = ('url','id', 'title', 'src_id', 'dataset','ccodes',
-            'names','types','geoms','links','related',
-            'whens', 'descriptions', 'depictions',
-            'geo','minmax'
-        ) 
+        model = PlaceGeom
+        geo_field = 'geom'
+        fields = ('id','src_id','title')
+        #fields = ('id','src_id')
+        #fields = ('id','src_id', 'dataset','ccodes',
+            #'names','types','geoms','links','related',
+            #'whens', 'descriptions', 'depictions',
+            #'geo','minmax'
+        #) 
 
 class PSerializer(serializers.HyperlinkedModelSerializer):
     dataset = serializers.ReadOnlyField(source='dataset.label')

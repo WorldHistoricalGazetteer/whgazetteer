@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'mathfilters',
     'rest_framework',
     'rest_framework_datatables',
+    'rest_framework_gis',
 
     'accounts.apps.AccountsConfig',
     'api.apps.ApiConfig',
