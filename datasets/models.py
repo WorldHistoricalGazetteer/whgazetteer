@@ -100,7 +100,7 @@ class Dataset(models.Model):
     # list of dataset geometries
     @property
     def features(self):
-        return PlaceGeom.objects.filter(place_id_id__in=self.placeids)
+        return PlaceGeom.objects.filter(place_id__in=self.placeids)
         
     class Meta:
         managed = True

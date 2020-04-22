@@ -44,9 +44,9 @@ class DatasetLifecycleTest(TestCase):
                   jsonb={"toponym": "Sanggau", "citation": {"id": "", "label": "Broek"}})        
       ], 
       "PlaceGeom":[
-        PlaceGeom(place_id_id=newpl1.id,src_id = newpl1.src_id,
+        PlaceGeom(place_id=newpl1.id,src_id = newpl1.src_id,
           jsonb={"type": "Point", "geowkt": "POINT(109.325 -0.03194)", "coordinates": [109.325, -0.03194]}),
-        PlaceGeom(place_id_id=newpl2.id,src_id = newpl2.src_id,
+        PlaceGeom(place_id=newpl2.id,src_id = newpl2.src_id,
           jsonb={"type": "Point", "geowkt": "POINT(110.6 0.13333)", "coordinates": [110.6, 0.13333]})      
       ],
       "PlaceLink":[

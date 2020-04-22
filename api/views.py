@@ -142,7 +142,7 @@ class GeomViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         dslabel = self.request.GET.get('ds')
         dsPlaceIds = Place.objects.values('id').filter(dataset = dslabel)
-        qs = PlaceGeom.objects.filter(place_id_id__in=dsPlaceIds)
+        qs = PlaceGeom.objects.filter(place_id__in=dsPlaceIds)
         return qs
     
 #

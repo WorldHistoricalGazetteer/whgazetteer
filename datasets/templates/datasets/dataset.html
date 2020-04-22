@@ -923,13 +923,11 @@ js for Browse
       token_kg = 'pk.eyJ1Ijoia2dlb2dyYXBoZXIiLCJhIjoiUmVralBPcyJ9.mJegAI1R6KR21x_CVVTlqw',
       token_awmc = 'pk.eyJ1Ijoia2dlb2dyYXBoZXIiLCJhIjoiY2prcmgwc2cwMjRuZzNsdGhzZmVuMDRqbCJ9.MeLsyeOqwhTRdvt_Hgo7kg',
       token_whg = '',
-      mbtiles_url = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={token}';
       mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}';
       
-    var awmc = L.tileLayer(mbtiles_url, {id:'isawnyu.map-knmctlkh', token:token_awmc, attribution:attrib_awmc}),
-      grayscale = L.tileLayer(mbstyle_url, {id:'kgeographer/cjstfpenh6o1e1fldz95w8m6p', token:token_kg, attribution:attrib_mb}),
-      satellite  = L.tileLayer(mbtiles_url, {id:'mapbox.satellite', token:token_mb, attribution:attrib_mb}),
-      osm  = L.tileLayer(mbtiles_url, {id:'mapbox.light', token:token_mb, attribution:attrib_mb});
+    var awmc = L.tileLayer(mbstyle_url, {id:'isawnyu.map-knmctlkh', token:token_awmc, attribution:attrib_awmc})
+    var satellite  = L.tileLayer(mbstyle_url, {id:'mapbox/satellite-streets-v11', token:token_mb, attribution:attrib_mb})
+    var osm  = L.tileLayer(mbstyle_url, {id:'mapbox/light-v10', token:token_mb, attribution:attrib_mb})
 
     var baseLayers = {
       "AWMC Terrain": awmc,
@@ -1022,7 +1020,7 @@ js for Browse
       // feature here is a geometry
       // TODO: LPF v1.2 to allow single geometry or GeometryCollection
         pointToLayer: function (feature, latlng) {
-          matchid = feature.place_id_id
+          matchid = feature.place_id
           <!--console.log('feature',feature)-->
           marker = L.circleMarker(latlng,styles.Point.default).bindPopup('pid: '+matchid);
           idToFeature[matchid] = marker
@@ -1031,7 +1029,7 @@ js for Browse
         ,onEachFeature: function(feature,layer) {
           f=feature; l=layer;
           <!--console.log('f,l',feature,layer)-->
-          identifier = feature.place_id_id;
+          identifier = feature.place_id;
           if(feature.type != 'Point'){
             <!--layer.setStyle(styles.default)-->
             idToFeature[identifier] = layer

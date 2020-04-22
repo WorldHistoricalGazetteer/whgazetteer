@@ -104,7 +104,7 @@ class PlaceGeomSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PlaceGeom
-        fields = ('place_id_id','src_id','type', 'geowkt', 'coordinates', 'geom_src', 'citation', 'when')
+        fields = ('place_id','src_id','type', 'geowkt', 'coordinates', 'geom_src', 'citation', 'when')
 
 class PlaceTypeSerializer(serializers.ModelSerializer):
     # json: identifier, label, source_label, when{}
@@ -168,7 +168,8 @@ class PlaceSerializer(serializers.ModelSerializer):
         
 
 
-# a Linked Places FeatureCollection ???
+# TOD: a Linked Places FeatureCollection ???
+# nb. will have to be hand-rolled GeoFeatureModelSerializer will NOT work for this
 class FeatureSerializer(GeoFeatureModelSerializer):
     
     geom = GeometrySerializerMethodField()
@@ -184,9 +185,17 @@ class FeatureSerializer(GeoFeatureModelSerializer):
     #title = serializers.SerializerMethodField('get_title')    
     #def get_title(self, obj):
         #return obj.place.title
+    #
     title = serializers.SerializerMethodField('get_title')    
     def get_title(self, obj):
         return obj.place.title
+    #
+    #names = serializers.SerializerMethodField('get_names')    
+    #def get_names(self, obj):
+        #names=[]
+        #for n in obj.place.names.all():
+            #names.append(n.jsonb)
+        #return names
     
     class Meta:
         model = PlaceGeom

@@ -45,7 +45,7 @@ places.filter(id__in=rows_delete).delete()
 
 
 ncount=PlaceName.objects.filter(place_id_id__in=places).count() # 134
-gcount=PlaceGeom.objects.filter(place_id_id__in=places).count() # 17
+gcount=PlaceGeom.objects.filter(place_id__in=places).count() # 17
 lcount=PlaceLink.objects.filter(place_id_id__in=places).count() # 3
 print(ncount,gcount,lcount) #123 23 9
 # delete related instances for the rest (except links and geoms)
@@ -56,7 +56,7 @@ PlaceDescription.objects.filter(place_id_id__in=places).delete()
 PlaceDepiction.objects.filter(place_id_id__in=places).delete()
 #
 ncount=PlaceName.objects.filter(place_id_id__in=places).count() # 134
-gcount=PlaceGeom.objects.filter(place_id_id__in=places).count() # 17
+gcount=PlaceGeom.objects.filter(place_id__in=places).count() # 17
 lcount=PlaceLink.objects.filter(place_id_id__in=places).count() # 3
 print(ncount,gcount,lcount) #0 23 9
 
@@ -64,10 +64,10 @@ print(ncount,gcount,lcount) #0 23 9
 # rows created during reconciliation review have a task_id
 if keepg == 'false':
   # keep none (they are being replaced in update)
-  PlaceGeom.objects.filter(place_id_id__in=places).delete()
+  PlaceGeom.objects.filter(place_id__in=places).delete()
 else:
   # keep augmentation rows; delete the rest
-  PlaceGeom.objects.filter(place_id_id__in=places,task_id=None).delete()
+  PlaceGeom.objects.filter(place_id__in=places,task_id=None).delete()
 if keepl == 'false':
   # keep none (they are being replaced in update)
   PlaceLink.objects.filter(place_id_id__in=places).delete()
@@ -75,7 +75,7 @@ else:
   PlaceLink.objects.filter(place_id_id__in=places,task_id=None).delete()
 
 ncount=PlaceName.objects.filter(place_id_id__in=places).count() # 134
-gcount=PlaceGeom.objects.filter(place_id_id__in=places).count() # 17
+gcount=PlaceGeom.objects.filter(place_id__in=places).count() # 17
 lcount=PlaceLink.objects.filter(place_id_id__in=places).count() # 3
 print(ncount,gcount,lcount) #0 9 9 (augment geoms & links retained)
 
@@ -122,7 +122,7 @@ for index, row in bdf.iterrows():
 
 pcount=ds.places.count()
 ncount=PlaceName.objects.filter(place_id_id__in=places).count() # 134
-gcount=PlaceGeom.objects.filter(place_id_id__in=places).count() # 17
+gcount=PlaceGeom.objects.filter(place_id__in=places).count() # 17
 lcount=PlaceLink.objects.filter(place_id_id__in=places).count() # 3
 print(pcount,ncount,gcount,lcount) # 125 125 24 9
 # 2 new rows, all w/names, 15+9 geoms, 9 links CHECK

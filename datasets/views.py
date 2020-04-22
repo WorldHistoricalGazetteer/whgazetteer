@@ -695,10 +695,10 @@ def ds_update(request):
       # keep or not is a form choice (keepg, keepl)
       if keepg == 'false':
         # keep none (they are being replaced in update)
-        PlaceGeom.objects.filter(place_id_id__in=places).delete()
+        PlaceGeom.objects.filter(place_id__in=places).delete()
       else:
         # keep augmentation rows; delete the rest
-        PlaceGeom.objects.filter(place_id_id__in=places,task_id=None).delete()
+        PlaceGeom.objects.filter(place_id__in=places,task_id=None).delete()
       if keepl == 'false':
         # keep none (they are being replaced in update)
         PlaceLink.objects.filter(place_id_id__in=places).delete()
@@ -812,7 +812,7 @@ def ds_compare(request):
     ds_status = ds.status
     
     # how many augment records previously created by reconciliation?
-    count_geoms = PlaceGeom.objects.filter(place_id_id__in=ds.placeids,task_id__isnull=False).count()
+    count_geoms = PlaceGeom.objects.filter(place_id__in=ds.placeids,task_id__isnull=False).count()
     count_links = PlaceLink.objects.filter(place_id_id__in=ds.placeids,task_id__isnull=False).count()
     
     # wrangling names
@@ -1520,7 +1520,7 @@ class DatasetDetailView(LoginRequiredMixin, UpdateView):
       place_id_id__in = placeset, task_id = None).count()
     context['num_names'] = PlaceName.objects.filter(place_id_id__in = placeset).count()
     context['num_geoms'] = PlaceGeom.objects.filter(
-      place_id_id__in = placeset, task_id = None).count()
+      place_id__in = placeset, task_id = None).count()
     context['num_descriptions'] = PlaceDescription.objects.filter(
       place_id_id__in = placeset, task_id = None).count()
     # others
@@ -1539,7 +1539,7 @@ class DatasetDetailView(LoginRequiredMixin, UpdateView):
     context['names_added'] = PlaceName.objects.filter(
       place_id_id__in = placeset, task_id__contains = '-').count()
     context['geoms_added'] = PlaceGeom.objects.filter(
-      place_id_id__in = placeset, task_id__contains = '-').count()
+      place_id__in = placeset, task_id__contains = '-').count()
     context['descriptions_added'] = PlaceDescription.objects.filter(
       place_id_id__in = placeset, task_id__contains = '-').count()
 
@@ -1587,7 +1587,7 @@ def match_undo(request, ds, tid, pid):
   print('in match_undo() ds, task, pid:',ds,tid,pid)
   #ds=1;tid='d6ad4289-cae6-476d-873c-a81fed4d6315';pid=81474
   # 81474, 81445 (2), 81417, 81420, 81436, 81442, 81469
-  geom_matches = PlaceGeom.objects.all().filter(task_id=tid, place_id_id=pid)
+  geom_matches = PlaceGeom.objects.all().filter(task_id=tid, place_id=pid)
   link_matches = PlaceLink.objects.all().filter(task_id=tid, place_id_id=pid)
   geom_matches.delete()
   link_matches.delete()

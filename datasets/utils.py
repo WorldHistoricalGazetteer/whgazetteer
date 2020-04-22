@@ -47,7 +47,7 @@ def download_gis(request, *args, **kwargs):
   fout = codecs.open(fn,'w','utf8')
   
   # build a flat FeatureCollection 
-  features=PlaceGeom.objects.filter(place_id_id__in=ds.placeids).values_list('jsonb','place_id_id','src_id')
+  features=PlaceGeom.objects.filter(place_id__in=ds.placeids).values_list('jsonb','place_id','src_id')
   fcoll = {"type":"FeatureCollection","features":[]}
   for f in features:
     feat={"type":"Feature","properties":{"pid":f[1],"src_id":f[2]},"geometry":f[0]}
