@@ -40,7 +40,7 @@ def api_root(request, format=None):
 
 #
 # API
-
+# 
 class PlaceAPIView(generics.ListAPIView):
     """    Paged list of places in dataset. Optionally filtered on title with ?q={string}  """
     serializer_class = PlaceSerializer
@@ -99,24 +99,7 @@ class UserDetail(generics.RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
-class FeatureAPIView(generics.ListAPIView):
-    """  GeoJSON FeatureCollection """
-    serializer_class = FeatureSerializer
-    pagination_class = None
-    
-    def get_queryset(self, format=None, *args, **kwargs):
-        #print('kwargs',self.kwargs)
-        dslabel=self.kwargs['dslabel']
-        qs = Place.objects.all().filter(dataset=dslabel).order_by('title')
-        query = self.request.GET.get('q')
-        if query is not None:
-            qs = qs.filter(title__icontains=query)
-        #return {"type":"FeatureCollection","features":list(qs)}
-        return qs
-    
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
-
-class DownloadGeomViewSet(generics.ListAPIView):
+class DownloadGeomsAPIView(generics.ListAPIView):
     queryset = PlaceGeom.objects.all()
     serializer_class = FeatureSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
@@ -131,8 +114,25 @@ class DownloadGeomViewSet(generics.ListAPIView):
         #response['Content-Disposition'] = 'attachment; filename="'+fn+'"'    
     
         #return response
+class DownloadDatasetAPIView(generics.ListAPIView):
+    """  Dataset as LPF FeatureCollection  """
+    serializer_class = PlaceSerializer
+    #pagination_class = StandardResultsSetPagination
+    
+    def get_queryset(self, format=None, *args, **kwargs):
+        print('kwargs',self.kwargs)
+        print('self.request.GET',self.request.GET)
+        dslabel=self.kwargs['dslabel']
+        qs = Place.objects.all().filter(dataset=dslabel).order_by('title')
+        query = self.request.GET.get('q')
+        if query is not None:
+            qs = qs.filter(title__icontains=query)
+        return qs
+    
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
+
 #
-# in use pre-Apr 2020    
+# in use Apr 2020    
 class GeomViewSet(viewsets.ModelViewSet):
     queryset = PlaceGeom.objects.all()
     serializer_class = PlaceGeomSerializer

@@ -5,7 +5,7 @@ base_urls = {
     "gn": "http://www.geonames.org/",
     "wd": "https://www.wikidata.org/wiki/",
     "wwf": "https://www.worldwildlife.org/ecoregions/",
-    "whg": "/api/places/",
+    "whg": "/api/place/",
     "dplace": "http://dplace.org/societies/",
     "indias": "",
 }

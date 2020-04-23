@@ -168,13 +168,12 @@ class PlaceSerializer(serializers.ModelSerializer):
         
 
 
-# TOD: a Linked Places FeatureCollection ???
+# TODO: a Linked Places FeatureCollection ???
 # nb. will have to be hand-rolled GeoFeatureModelSerializer will NOT work for this
 class FeatureSerializer(GeoFeatureModelSerializer):
-    
     geom = GeometrySerializerMethodField()
     def get_geom(self, obj):
-        type=obj.jsonb['type']
+        print('obj',obj.__dict__)
         s=json.dumps(obj.jsonb)
         g1 = geojson.loads(s)
         g2 = shape(g1)
@@ -182,9 +181,6 @@ class FeatureSerializer(GeoFeatureModelSerializer):
         print('geom', djgeo.geojson)
         return GEOSGeometry(g2.wkt)
     
-    #title = serializers.SerializerMethodField('get_title')    
-    #def get_title(self, obj):
-        #return obj.place.title
     #
     title = serializers.SerializerMethodField('get_title')    
     def get_title(self, obj):
@@ -203,7 +199,7 @@ class FeatureSerializer(GeoFeatureModelSerializer):
         id_field = False
         fields = ('place_id','src_id','title')
 
-class PSerializer(serializers.HyperlinkedModelSerializer):
+class LPFSerializer(serializers.HyperlinkedModelSerializer):
     dataset = serializers.ReadOnlyField(source='dataset.label')
     names = PlaceNameSerializer(many=True, read_only=True)
     types = PlaceTypeSerializer(many=True, read_only=True)

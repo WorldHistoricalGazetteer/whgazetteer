@@ -1,5 +1,5 @@
 from django.core import serializers
-from django.http import HttpResponse, FileResponse
+from django.http import HttpResponse, FileResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils.encoding import smart_str
 
@@ -61,7 +61,7 @@ def download_gis(request, *args, **kwargs):
   return response
   #return HttpResponse(content='download_gis: '+fn)
   
-# reutrns file in original format w/any new geoms, links
+# returns file in original format w/any new geoms, links
 # 616 delimited; 640 lpf
 def download_augmented(request, *args, **kwargs):
   print('download_augmented kwargs',kwargs)
@@ -74,24 +74,46 @@ def download_augmented(request, *args, **kwargs):
   ## response content type
   response = HttpResponse(content_type='text/json')
   response['Content-Disposition'] = 'attachment; filename="'+fn+'"'
-  
+
+  features=ds.places.all() 
   if fileobj.format == 'delimited':
     print('augmented for delimited')
-  else:
-    print('augmented for lpf')    
+    #writer = csv.writer(response, csv.excel)
+    #response.write(u'\ufeff'.encode('utf8'))
     
-  #writer = csv.writer(response, csv.excel)
-  #response.write(u'\ufeff'.encode('utf8'))
+    ##write the headers
+    #writer.writerow([
+      #smart_str(u"Event Name"),
+      #smart_str(u"Start Date"),
+      #smart_str(u"End Date"),
+      #smart_str(u"Notes"),
+    #])   
+    return HttpResponse(content='download_augmented: '+fn+' ('+fileobj.format+')')
+  else:
+    fcoll = {"type":"FeatureCollection","features":[]}
+    for f in features:
+      feat={"type":"Feature",
+            "properties":{
+              "@id":f.dataset.uri_base+f.src_id,
+              "src_id":f.src_id,
+              "title":f.title,
+              "whg_pid":f.id}}
+      if len(f.geoms.all()) >1:
+        feat['geometry'] = {'type':'GeometryCollection'}
+        feat['geometry']['geometries'] = [g.jsonb for g in f.geoms.all()]
+      else:
+        feat['geometry'] = f.geoms.first().jsonb
+      feat['names'] = [n.jsonb for n in f.names.all()]
+      feat['types'] = [t.jsonb for t in f.types.all()]
+      feat['when'] = [w.jsonb for w in f.whens.all()]
+      feat['relations'] = [r.jsonb for r in f.related.all()]
+      feat['links'] = [l.jsonb for l in f.links.all()]
+      feat['descriptions'] = [des.jsonb for des in f.descriptions.all()]
+      feat['depictions'] = [dep.jsonb for dep in f.depictions.all()]
+      fcoll['features'].append(feat)  
+    print('augmented for lpf',fcoll)    
+    return JsonResponse(fcoll)
   
-  ##write the headers
-  #writer.writerow([
-    #smart_str(u"Event Name"),
-    #smart_str(u"Start Date"),
-    #smart_str(u"End Date"),
-    #smart_str(u"Notes"),
-  #])  
-  
-  return HttpResponse(content='download_augmented: '+fn+' ('+fileobj.format+')')
   
 # ***
 # format tsv validation errors for modal display

@@ -833,12 +833,11 @@ js for Add Task
 <script type="text/javascript">
   function render_area(aid) {
     $.ajax({
-        url: '/api/areas/'+aid
+        url: '/api/area/'+aid
       }).done(function(data){
         console.log('render_area()',data)
         geom = {"type":"FeatureCollecton","features":[]}
         geom['features'].push(data.geojson)
-        // geom,dslabel,screen
         renderMap(geom,'area')
     })
   }

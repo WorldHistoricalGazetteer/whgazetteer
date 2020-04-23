@@ -13,12 +13,17 @@ urlpatterns = [
     # 
     # *** DATASETS ***
     # 
-    # public datasets
+    # use > list public datasets in usingapi.html :: DatasetSerializer
     path('datasets/', views.DatasetAPIView.as_view(), name='dataset-list'),
-    # single dataset record
+    # use > single dataset record in usingapi.html :: DatasetSerializer
     path('dataset/<int:pk>/', views.DatasetDetailAPIView.as_view(),name='dataset-detail'),
-    # geom
-    path('dataset/<int:ds>/geom/', views.DownloadGeomViewSet.as_view(),name='dataset-geom'),
+    
+    # FOR DOWNLOAD
+    # db places in a dataset, lp format :: PlaceSerializer
+    path('dataset/<str:dslabel>/lpf/', views.DownloadDatasetAPIView.as_view(),name='dataset-lpf'), 
+    
+    # simple geojson :: FeatureSerializer
+    path('dataset/<int:ds>/geom/', views.DownloadGeomsAPIView.as_view(),name='dataset-geom'),
 
 
     # 
@@ -26,26 +31,21 @@ urlpatterns = [
     # 
     # search all places
     #path('places/', views.PlaceAPIView.as_view(),name='place-list'), 
-    
-    # places in a dataset
-    # TODO: repurpose for full download
-    path('places/<str:dslabel>/', views.PlaceAPIView.as_view(),name='place-list'), 
-    # LP format FeatureCollection
-    path('features/<str:dslabel>/', views.FeatureAPIView.as_view(),name='feature-list'), 
-
-    # a place
+        
+    # use > single place for dataset.html#browse:: PlaceSerializer
     path('place/<int:pk>/', views.PlaceDetailAPIView.as_view(),name='place-detail'),    
 
-    # drf table in dataset.html#browse
+    # use > drf table in dataset.html#browse  :: PlaceSerializer
     path('placetable/', views.PlaceTableViewSet.as_view({'get':'list'}),name='place-table'), 
 
-    # geometry for map in dataset.html#browse
+    # use > map in dataset.html#browse :: PlaceGeomSerializer
     path('geoms/', views.GeomViewSet.as_view({'get':'list'}),name='geom-list'),    
 
     # 
     # *** AREAS ***
     # 
-    path('areas/<int:pk>/', views.AreaViewSet.as_view({'get': 'retrieve'}),name='area-detail'),    
+    # use > single area in dataset.html#addtask
+    path('area/<int:pk>/', views.AreaViewSet.as_view({'get': 'retrieve'}),name='area-detail'),    
     
     # 
     # *** USERS ***
@@ -56,7 +56,7 @@ urlpatterns = [
     # 
     # *** INDEX ***
     # 
-    # single union record, ?idx=whg02&_id={whg_id}
+    # use > single union record in usingapi.html ?idx=whg02&_id={whg_id}
     # TODO: build from place_id
     url('union/', views.indexAPIView.as_view(), name='union_api')
     

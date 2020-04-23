@@ -51,7 +51,7 @@
                     <a href="#" rel="tooltip" class="ttip" title="{{rec.dataset.name}}" >{{rec.dataset.label}}</a>
                   {% endif %}
                   {% if core|haskey:rec.dataset.label and rec.dataset.label != 'tgn_filtered_01' %}
-                    (<a href="/api/places/{{rec.place_id}}/" target="_blank">pid:{{rec.place_id}}</a>)
+                    (<a href="/api/place/{{rec.place_id}}/" target="_blank">pid:{{rec.place_id}}</a>)
                   {% else %}
                     (<a href="{{rec.purl}}" target="_blank">{{rec.src_id}}</a>)
                   {% endif %}
@@ -144,7 +144,6 @@
                 <div id="map">{% leaflet_map "map" callback="map_init" %}</div>
             </div>
             <div id="place_traces" class="col-content small mt-1">
-            <!--{'target': {'id': 'http://www.worldcat.org/oclc/833253277', 'type': ['Journey', 'Text'], 'title': 'Xuanzang : a Buddhist pilgrim on the Silk Road'}, 'body': {'id': 'http://whgazetteer.org/api/places/12376709', 'when': [{'end': '0630', 'start': '0630'}], 'title': 'Aksu', 'whg_id': 12376709, 'relation': 'waypoint'}}-->
               <p class="mb-0 allcap-heading">TRACES<span> (related persons, events, works)</span></p>
               {% if traces|length > 0 %}
                 <ul>
