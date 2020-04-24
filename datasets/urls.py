@@ -18,13 +18,13 @@ urlpatterns = [
 
     # TODO: single download url w/format variable
     # download current upload file revision, unchanged
-    path('<int:id>/dl_file/', download_file, name="download-file"), # 
+    path('<int:id>/file/', download_file, name="dl-file"), # 
 
     # download augmented dataset as lpf
-    path('<int:id>/dl_augmented/', download_augmented, name="download-augmented"), # 
+    path('<int:id>/augmented/<str:format>', download_augmented, name="dl-aug"), # 
 
     # download flattened geojson data
-    path('<int:id>/dl_gis/', download_gis, name="download-gis"), # 
+    path('<int:id>/gis/', download_gis, name="dl-gis"), # 
 
 
     # also handles update for name, description fields

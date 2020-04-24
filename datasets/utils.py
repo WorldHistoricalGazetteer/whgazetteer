@@ -70,7 +70,7 @@ def download_augmented(request, *args, **kwargs):
   fileobj = ds.files.all().order_by('-rev')[0]
   date=maketime()
 
-  req_format = request.GET.get('format')
+  req_format = kwargs['format']
   if req_format is not None:
     print('got format',req_format)
     #qs = qs.filter(title__icontains=query)
@@ -111,7 +111,7 @@ def download_augmented(request, *args, **kwargs):
         writer.writerow(row)
         #print(row)
     response = FileResponse(open(fn, 'rb'),content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="'+fn+'"'
+    response['Content-Disposition'] = 'attachment; filename="'+os.path.basename(fn)+'"'
           
     return response
   else:
@@ -130,8 +130,10 @@ def download_augmented(request, *args, **kwargs):
         if len(f.geoms.all()) >1:
           feat['geometry'] = {'type':'GeometryCollection'}
           feat['geometry']['geometries'] = [g.jsonb for g in f.geoms.all()]
-        else:
+        elif len(f.geoms.all()) == 1:
           feat['geometry'] = f.geoms.first().jsonb
+        else: # no geoms
+          feat['geometry'] = feat['geometry'] = {'type':'GeometryCollection','geometries':[]}
         feat['names'] = [n.jsonb for n in f.names.all()]
         feat['types'] = [t.jsonb for t in f.types.all()]
         feat['when'] = [w.jsonb for w in f.whens.all()]
@@ -141,11 +143,10 @@ def download_augmented(request, *args, **kwargs):
         feat['depictions'] = [dep.jsonb for dep in f.depictions.all()]
         fcoll['features'].append(feat)  
       outfile.write(json.dumps(fcoll,indent=2))
-    #return JsonResponse(fcoll)
 
-    # response is reopened file and content type
+    # response is reopened file
     response = FileResponse(open(fn, 'rb'), content_type='text/json')
-    response['Content-Disposition'] = 'attachment; filename="'+fn+'"'
+    response['Content-Disposition'] = 'attachment; filename="'+os.path.basename(fn)+'"'
     
     return response
   

@@ -522,7 +522,8 @@ def add_rels_tsv(pobj, row):
   if len(coords) > 0:
     objs['PlaceGeom'].append(
       PlaceGeom(
-        place_id=pobj,
+        #place_id=pobj,
+        place=pobj,
         src_id = src_id,
         jsonb={"type": "Point", "coordinates": coords,
                 "geowkt": 'POINT('+str(coords[0])+' '+str(coords[1])+')'}
@@ -530,7 +531,8 @@ def add_rels_tsv(pobj, row):
   elif 'geowkt' in header and r[header.index('geowkt')] not in ['',None]: # some rows no geom
     objs['PlaceGeom'].append(
       PlaceGeom(
-        place_id=pobj,
+        #place_id=pobj,
+        place=pobj,
         src_id = src_id,
         # make GeoJSON using shapely
         jsonb=parse_wkt(r[header.index('geowkt')])
@@ -635,9 +637,10 @@ def ds_update(request):
     rev_cur = dsfobj_cur.rev
     
     # rename file if already exists in user area
-    file_exists = Path('media/'+filename_new).exists()
-    if file_exists:
-      filename_new=filename_new[:-4]+'_'+tempfn[-11:-4]+filename_new[-4:]
+    if Path('media/'+filename_new).exists():
+      fn=os.path.splitext(filename_new)
+      #filename_new=filename_new[:-4]+'_'+tempfn[-11:-4]+filename_new[-4:]
+      filename_new=fn[0]+'_'+tempfn[-11:-4]+fn[1]
         
     # user said go...copy tempfn to media/{user} folder
     filepath = 'media/'+filename_new

@@ -90,12 +90,13 @@
         </table>
         <input class="btn btn-primary btn-sm hidden btn-ds" type="submit" value="Save" />
         <p> <i>Current data file</i>
-          {% if ds.owner.id == user.id or user.is_superuser and current_file.format == 'delimited' %}
-          <span class="update-msg text-danger italic strong hidden">:: updating</span>
+          {% if current_file.format == 'delimited' %}
+          {% if ds.owner.id == user.id or user.is_superuser%}
           <span class="float-right mr-2">
             <a href="#" id="a_update_modal" data-dsid = {{ ds.id }} data-toggle="modal" data-target="#updateModal">update</a>
             <span class="help-matches" data-id="updates">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
           </span>
+          {% endif %}
           {% endif %}
         </p>
         <div id="div_file">
@@ -197,9 +198,14 @@
             <p style="display:block; background-color:#eee; margin:0; padding-left:10px; font-weight:700;">Downloads</p>
             <p style="display:block; margin:0; padding-left:10px;">
               <!--<a href="http://localhost:8000/media/{ current_file.file }}">Current data file</a>-->
-              <a href="{% url 'datasets:download-file' ds.id %}">Current data file</a>
+              <a href="{% url 'datasets:dl-file' ds.id %}">Current data file</a>
               {% if links_added > 0 or geoms_added > 0 %}
-              <br/><a href="#">Augmented dataset</a> (added links/geometries){% endif %}
+              <br/>Augmented dataset: <a href="{% url 'datasets:dl-aug' id=ds.id format='lpf' %}">lpf</a>;
+                {% if current_file.format == 'delimited' %}
+                  <a href="{% url 'datasets:dl-aug' id=ds.id format='tsv' %}">tsv</a>
+                {% endif %}
+              {% endif %}
+              <!--(added links/geometries)-->
               {% if current_file.format == 'lpf' %}
               <br><a class="text-muted" href="#">Flattened geometry (for GIS)</a>{%endif%}
             </p>

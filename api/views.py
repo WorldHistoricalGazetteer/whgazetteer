@@ -153,7 +153,7 @@ class PlaceTableViewSet(viewsets.ModelViewSet):
     permission_classes = (permissions.IsAuthenticatedOrReadOnly)
 
     def get_queryset(self):
-        print('PlaceViewSet.get_queryset()',self.request.GET)
+        #print('PlaceViewSet.get_queryset()',self.request.GET)
         qs = Place.objects.all()
         query = self.request.GET.get('q')
         ds = self.request.GET.get('ds')
