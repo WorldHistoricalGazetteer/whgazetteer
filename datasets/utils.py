@@ -81,9 +81,6 @@ def download_augmented(request, *args, **kwargs):
     print('augmented for delimited')
     # make file name
     fn = 'media/user_'+user+'/'+ds.label+'_aug_'+date+'.tsv'
-    # response content type
-    response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="'+fn+'"'
     
     def toWKT(coords):
       wkt = '('+str(coords[0])+','+str(coords[1])+')'
@@ -91,7 +88,7 @@ def download_augmented(request, *args, **kwargs):
     def augGeom(glist):
       aug_geom = []
       #for g in glist.exclude(task_id=None):
-      for g in glist:
+      for g in glist: # export all, not only added
         aug_geom.append(toWKT(g.jsonb['coordinates'])+ \
           (','+g.jsonb['citation']['id'] if 'citation' in g.jsonb else '')
         )
@@ -101,7 +98,7 @@ def download_augmented(request, *args, **kwargs):
       for l in linklist:
         aug_links.append(l.jsonb['identifier'])
       return ';'.join(aug_links)
-    # "citation": {"id": "tgn:7015963", "label": "Getty TGN"}
+
     #header_e = fileobj.header
     #header_new = ['id','whg_pid','title','ccodes','coords','matches']
     
@@ -109,54 +106,48 @@ def download_augmented(request, *args, **kwargs):
       writer = csv.writer(csvfile, delimiter='\t', quotechar='', quoting=csv.QUOTE_NONE)
       writer.writerow(['id','whg_pid','title','ccodes','coords','matches'])
       for f in features:
-        #row = str(f.src_id)+'\t'+str(f.id)+'\t'+f.title+'\t'+';'.join(f.ccodes)+'\t'+ \
-            #augGeom(f.geoms.all())+'\t'+str(augLinks(f.links.all()))
         row = [str(f.src_id),str(f.id),f.title,';'.join(f.ccodes), \
             augGeom(f.geoms.all()),str(augLinks(f.links.all()))]
         writer.writerow(row)
         #print(row)
     response = FileResponse(open(fn, 'rb'),content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="mydata.tsv"'
-  
-    with open('eggs.csv', 'w', newline='') as csvfile:
-        spamwriter = csv.writer(csvfile, delimiter='\t',quoting=csv.QUOTE_NONE)
-        spamwriter.writerow(['Spam'] * 3 + ['Baked Beans'])
-        spamwriter.writerow(['Spam', 'Lovely Spam', 'Wonderful Spam'])
-        
-        
+    response['Content-Disposition'] = 'attachment; filename="'+fn+'"'
+          
     return response
-    #return HttpResponse(content='download_augmented: '+fn+' ('+fileobj.format+')')
   else:
     # make file name
     fn = 'media/user_'+user+'/'+ds.label+'_aug_'+date+'.json'
-    # response content type
-    response = HttpResponse(content_type='text/json')
-    response['Content-Disposition'] = 'attachment; filename="'+fn+'"'
 
-    fcoll = {"type":"FeatureCollection","features":[]}
-    for f in features:
-      feat={"type":"Feature",
-            "properties":{
-              "@id":f.dataset.uri_base+f.src_id,
-              "src_id":f.src_id,
-              "title":f.title,
-              "whg_pid":f.id}}
-      if len(f.geoms.all()) >1:
-        feat['geometry'] = {'type':'GeometryCollection'}
-        feat['geometry']['geometries'] = [g.jsonb for g in f.geoms.all()]
-      else:
-        feat['geometry'] = f.geoms.first().jsonb
-      feat['names'] = [n.jsonb for n in f.names.all()]
-      feat['types'] = [t.jsonb for t in f.types.all()]
-      feat['when'] = [w.jsonb for w in f.whens.all()]
-      feat['relations'] = [r.jsonb for r in f.related.all()]
-      feat['links'] = [l.jsonb for l in f.links.all()]
-      feat['descriptions'] = [des.jsonb for des in f.descriptions.all()]
-      feat['depictions'] = [dep.jsonb for dep in f.depictions.all()]
-      fcoll['features'].append(feat)  
-    #print('augmented for lpf',fcoll)    
-    return JsonResponse(fcoll)
-  
+    with open(fn, 'w', encoding='utf-8') as outfile:
+      fcoll = {"type":"FeatureCollection","features":[]}
+      for f in features:
+        feat={"type":"Feature",
+              "properties":{
+                "@id":f.dataset.uri_base+f.src_id,
+                "src_id":f.src_id,
+                "title":f.title,
+                "whg_pid":f.id}}
+        if len(f.geoms.all()) >1:
+          feat['geometry'] = {'type':'GeometryCollection'}
+          feat['geometry']['geometries'] = [g.jsonb for g in f.geoms.all()]
+        else:
+          feat['geometry'] = f.geoms.first().jsonb
+        feat['names'] = [n.jsonb for n in f.names.all()]
+        feat['types'] = [t.jsonb for t in f.types.all()]
+        feat['when'] = [w.jsonb for w in f.whens.all()]
+        feat['relations'] = [r.jsonb for r in f.related.all()]
+        feat['links'] = [l.jsonb for l in f.links.all()]
+        feat['descriptions'] = [des.jsonb for des in f.descriptions.all()]
+        feat['depictions'] = [dep.jsonb for dep in f.depictions.all()]
+        fcoll['features'].append(feat)  
+      outfile.write(json.dumps(fcoll,indent=2))
+    #return JsonResponse(fcoll)
+
+    # response is reopened file and content type
+    response = FileResponse(open(fn, 'rb'), content_type='text/json')
+    response['Content-Disposition'] = 'attachment; filename="'+fn+'"'
+    
+    return response
   
 # ***
 # format tsv validation errors for modal display
