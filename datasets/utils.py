@@ -107,12 +107,14 @@ def download_augmented(request, *args, **kwargs):
     
     with open(fn, 'w', newline='', encoding='utf-8') as csvfile:
       writer = csv.writer(csvfile, delimiter='\t', quotechar='', quoting=csv.QUOTE_NONE)
-      writer.writerow('id\twhg_pid\ttitle\tccodes\tcoords\tmatches')
+      writer.writerow(['id','whg_pid','title','ccodes','coords','matches'])
       for f in features:
-        row = str(f.src_id)+'\t'+str(f.id)+'\t'+f.title+'\t'+';'.join(f.ccodes)+'\t'+ \
-            augGeom(f.geoms.all())+'\t'+str(augLinks(f.links.all()))
+        #row = str(f.src_id)+'\t'+str(f.id)+'\t'+f.title+'\t'+';'.join(f.ccodes)+'\t'+ \
+            #augGeom(f.geoms.all())+'\t'+str(augLinks(f.links.all()))
+        row = [str(f.src_id),str(f.id),f.title,';'.join(f.ccodes), \
+            augGeom(f.geoms.all()),str(augLinks(f.links.all()))]
         writer.writerow(row)
-        print(row)
+        #print(row)
     response = FileResponse(open(fn, 'rb'),content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="mydata.tsv"'
   
