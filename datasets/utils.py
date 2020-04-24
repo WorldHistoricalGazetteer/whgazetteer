@@ -69,27 +69,68 @@ def download_augmented(request, *args, **kwargs):
   ds=get_object_or_404(Dataset,pk=kwargs['id'])
   fileobj = ds.files.all().order_by('-rev')[0]
   date=maketime()
-  # make file name
-  fn = 'media/user_'+user+'/'+ds.label+'_aug_'+date+'.json'
-  ## response content type
-  response = HttpResponse(content_type='text/json')
-  response['Content-Disposition'] = 'attachment; filename="'+fn+'"'
+
+  req_format = request.GET.get('format')
+  if req_format is not None:
+    print('got format',req_format)
+    #qs = qs.filter(title__icontains=query)
 
   features=ds.places.all() 
-  if fileobj.format == 'delimited':
+  
+  if fileobj.format == 'delimited' and req_format == 'tsv':
     print('augmented for delimited')
-    #writer = csv.writer(response, csv.excel)
-    #response.write(u'\ufeff'.encode('utf8'))
+    # make file name
+    fn = 'media/user_'+user+'/'+ds.label+'_aug_'+date+'.tsv'
+    # response content type
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="'+fn+'"'
     
-    ##write the headers
-    #writer.writerow([
-      #smart_str(u"Event Name"),
-      #smart_str(u"Start Date"),
-      #smart_str(u"End Date"),
-      #smart_str(u"Notes"),
-    #])   
-    return HttpResponse(content='download_augmented: '+fn+' ('+fileobj.format+')')
+    def toWKT(coords):
+      wkt = '('+str(coords[0])+','+str(coords[1])+')'
+      return wkt    
+    def augGeom(glist):
+      aug_geom = []
+      #for g in glist.exclude(task_id=None):
+      for g in glist:
+        aug_geom.append(toWKT(g.jsonb['coordinates'])+ \
+          (','+g.jsonb['citation']['id'] if 'citation' in g.jsonb else '')
+        )
+      return ';'.join(aug_geom)
+    def augLinks(linklist):
+      aug_links = []
+      for l in linklist:
+        aug_links.append(l.jsonb['identifier'])
+      return ';'.join(aug_links)
+    # "citation": {"id": "tgn:7015963", "label": "Getty TGN"}
+    #header_e = fileobj.header
+    #header_new = ['id','whg_pid','title','ccodes','coords','matches']
+    
+    with open(fn, 'w', newline='', encoding='utf-8') as csvfile:
+      writer = csv.writer(csvfile, delimiter='\t', quotechar='', quoting=csv.QUOTE_NONE)
+      writer.writerow('id\twhg_pid\ttitle\tccodes\tcoords\tmatches')
+      for f in features:
+        row = str(f.src_id)+'\t'+str(f.id)+'\t'+f.title+'\t'+';'.join(f.ccodes)+'\t'+ \
+            augGeom(f.geoms.all())+'\t'+str(augLinks(f.links.all()))
+        writer.writerow(row)
+        print(row)
+    response = FileResponse(open(fn, 'rb'),content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="mydata.tsv"'
+  
+    with open('eggs.csv', 'w', newline='') as csvfile:
+        spamwriter = csv.writer(csvfile, delimiter='\t',quoting=csv.QUOTE_NONE)
+        spamwriter.writerow(['Spam'] * 3 + ['Baked Beans'])
+        spamwriter.writerow(['Spam', 'Lovely Spam', 'Wonderful Spam'])
+        
+        
+    return response
+    #return HttpResponse(content='download_augmented: '+fn+' ('+fileobj.format+')')
   else:
+    # make file name
+    fn = 'media/user_'+user+'/'+ds.label+'_aug_'+date+'.json'
+    # response content type
+    response = HttpResponse(content_type='text/json')
+    response['Content-Disposition'] = 'attachment; filename="'+fn+'"'
+
     fcoll = {"type":"FeatureCollection","features":[]}
     for f in features:
       feat={"type":"Feature",
@@ -111,7 +152,7 @@ def download_augmented(request, *args, **kwargs):
       feat['descriptions'] = [des.jsonb for des in f.descriptions.all()]
       feat['depictions'] = [dep.jsonb for dep in f.depictions.all()]
       fcoll['features'].append(feat)  
-    print('augmented for lpf',fcoll)    
+    #print('augmented for lpf',fcoll)    
     return JsonResponse(fcoll)
   
   

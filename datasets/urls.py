@@ -17,7 +17,7 @@ urlpatterns = [
     path('<int:id>/delete', views.DatasetDeleteView.as_view(), name='dataset-delete'),
 
     # TODO: single download url w/format variable
-    # download current rev of upload file
+    # download current upload file revision, unchanged
     path('<int:id>/dl_file/', download_file, name="download-file"), # 
 
     # download augmented dataset as lpf
