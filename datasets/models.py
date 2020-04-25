@@ -99,8 +99,8 @@ class Dataset(models.Model):
         
     # list of dataset geometries
     @property
-    def features(self):
-        return PlaceGeom.objects.filter(place_id__in=self.placeids)
+    def geometries(self):
+        return PlaceGeom.objects.filter(place_id__in=self.placeids).values_list('jsonb', flat=True)
         
     class Meta:
         managed = True

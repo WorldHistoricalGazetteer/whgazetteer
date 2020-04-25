@@ -806,10 +806,10 @@ js for Summary, Reconciliation
     });
   })
   function updateTotals(dsid){
-    $.get("/search/updatecounts",{ds_id: dsid},
+    $.get("/datasets/updatecounts",{ds_id: dsid},
       function(data){
         updates=data
-        console.log('fired updateTotals()',updates, dsid)
+        <!--console.log('fired updateTotals()',updates, dsid)-->
         for(u in updates){
           html1='';html2='';html3='';
           <!--console.log(updates[u])-->

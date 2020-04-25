@@ -1,17 +1,19 @@
-from django.core import serializers
-from django.http import HttpResponse, FileResponse, JsonResponse
+#from django.core import serializers
+from django.http import FileResponse, JsonResponse # HttpResponse
 from django.shortcuts import get_object_or_404
-from django.utils.encoding import smart_str
+#from django.utils.encoding import smart_str
+from django.views.generic import View
 
-from pathlib import Path
-import codecs, sys, os, pprint, chardet, time, datetime, csv
+import codecs, sys, os, pprint, time, datetime, csv #,chardet
 import simplejson as json
 from goodtables import validate as gvalidate
+from jsonschema import draft7_format_checker, validate #,Draft7Validator
+from pathlib import Path
 from shapely import wkt
-from datasets.models import DatasetUser, Dataset
+
+from datasets.models import Dataset, DatasetUser, Hit
 from datasets.static.hashes import aat, parents, aat_q
-from places.models import Place,PlaceGeom
-from jsonschema import draft7_format_checker, validate,Draft7Validator
+from places.models import PlaceGeom # ,Place
 pp = pprint.PrettyPrinter(indent=1)
 
 
@@ -20,7 +22,7 @@ def maketime():
   sttime = datetime.datetime.fromtimestamp(ts).strftime('%Y%m%d_%H%M%S')
   return sttime
 # ***
-# download dataset (augmented)
+# DOWNLOAD FILES
 # ***
 # TODO: use DRF serializer? download_{format} methods on api.PlaceList() view?
 # https://stackoverflow.com/questions/38697529/how-to-return-generated-file-download-with-django-rest-framework
@@ -62,7 +64,6 @@ def download_gis(request, *args, **kwargs):
   #return HttpResponse(content='download_gis: '+fn)
   
 # returns file in original format w/any new geoms, links
-# 616 delimited; 640 lpf
 def download_augmented(request, *args, **kwargs):
   print('download_augmented kwargs',kwargs)
   user = request.user.username
@@ -423,6 +424,25 @@ def classy(gaz, typeArray):
   if len(types) == 0:
     types.append(default)
   return list(set(types))
+
+class UpdateCountsView(View):
+  """ Returns counts of unreviewed hits per pass """
+  @staticmethod
+  def get(request):
+    print('UpdateCountsView GET:',request.GET)
+    """
+    args in request.GET:
+        [integer] ds_id: dataset id
+    """
+    ds = get_object_or_404(Dataset, id=request.GET.get('ds_id'))
+    updates = {}
+    for tid in [t.task_id for t in ds.tasks.all()]:
+      updates[tid] = {
+        'pass1':len(Hit.objects.raw('select distinct on (place_id_id) place_id_id, id from hits where task_id = %s and query_pass=%s and reviewed=false',[tid,'pass1'])),
+        'pass2':len(Hit.objects.raw('select distinct on (place_id_id) place_id_id, id from hits where task_id = %s and query_pass=%s and reviewed=false',[tid,'pass2'])),
+        'pass3':len(Hit.objects.raw('select distinct on (place_id_id) place_id_id, id from hits where task_id = %s and query_pass=%s and reviewed=false',[tid,'pass3']))
+      }    
+    return JsonResponse(updates, safe=False)
 
 # ABANDONED for views.ds_compare
 #def compare(dsid):

@@ -10,24 +10,6 @@ from datasets.models import Dataset, Hit
 from elasticsearch import Elasticsearch
 from django.db.models import Count
 
-class UpdateCountsView(View):
-  """ Returns counts of unreviewed hits per pass """
-  @staticmethod
-  def get(request):
-    print('UpdateCountsView GET:',request.GET)
-    """
-    args in request.GET:
-        [integer] ds_id: dataset id
-    """
-    ds = get_object_or_404(Dataset, id=request.GET.get('ds_id'))
-    updates = {}
-    for tid in [t.task_id for t in ds.tasks.all()]:
-      updates[tid] = {
-        'pass1':len(Hit.objects.raw('select distinct on (place_id_id) place_id_id, id from hits where task_id = %s and query_pass=%s and reviewed=false',[tid,'pass1'])),
-        'pass2':len(Hit.objects.raw('select distinct on (place_id_id) place_id_id, id from hits where task_id = %s and query_pass=%s and reviewed=false',[tid,'pass2'])),
-        'pass3':len(Hit.objects.raw('select distinct on (place_id_id) place_id_id, id from hits where task_id = %s and query_pass=%s and reviewed=false',[tid,'pass3']))
-      }    
-    return JsonResponse(updates, safe=False)
     
 class LookupView(View):
   @staticmethod
@@ -324,7 +306,22 @@ class TraceGeomView(View):
 def home(request):
   return render(request, 'search/home.html')
 
-#def advanced(request):
-  #print('in search/advanced() view')
-  #return render(request, 'search/advanced.html')
-
+##
+#class UpdateCountsView(View):
+  #""" Returns counts of unreviewed hits per pass """
+  #@staticmethod
+  #def get(request):
+    #print('UpdateCountsView GET:',request.GET)
+    #"""
+    #args in request.GET:
+        #[integer] ds_id: dataset id
+    #"""
+    #ds = get_object_or_404(Dataset, id=request.GET.get('ds_id'))
+    #updates = {}
+    #for tid in [t.task_id for t in ds.tasks.all()]:
+      #updates[tid] = {
+        #'pass1':len(Hit.objects.raw('select distinct on (place_id_id) place_id_id, id from hits where task_id = %s and query_pass=%s and reviewed=false',[tid,'pass1'])),
+        #'pass2':len(Hit.objects.raw('select distinct on (place_id_id) place_id_id, id from hits where task_id = %s and query_pass=%s and reviewed=false',[tid,'pass2'])),
+        #'pass3':len(Hit.objects.raw('select distinct on (place_id_id) place_id_id, id from hits where task_id = %s and query_pass=%s and reviewed=false',[tid,'pass3']))
+      #}    
+    #return JsonResponse(updates, safe=False)
