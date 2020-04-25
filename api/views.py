@@ -32,6 +32,7 @@ from places.models import Place, PlaceGeom
     #max_page_size = 15000
     
 @api_view(['GET'])
+# API 'home page' (not implemented)
 def api_root(request, format=None):
     return Response({
         #'users': reverse('user-list', request=request, format=format),
@@ -41,6 +42,16 @@ def api_root(request, format=None):
 #
 # API
 # 
+#@api_view(['GET'])
+class SearchAPIView(generics.ListAPIView):
+    def get(self, format=None, *args, **kwargs):
+        print('kwargs',self.kwargs)
+        print('self.request.GET',self.request.GET)
+        query = self.request.GET.get('q')
+        
+        result = {"stuff":[query]}
+        return JsonResponse(result, safe=True)
+    
 class PlaceAPIView(generics.ListAPIView):
     """    Paged list of places in dataset. Optionally filtered on title with ?q={string}  """
     serializer_class = PlaceSerializer
@@ -205,36 +216,3 @@ class indexAPIView(View):
         print('indexAPIView hit',hit)
         return JsonResponse(hit, safe=True)
         
-# DREK
-#class UserViewSet(viewsets.ModelViewSet):
-    #queryset = User.objects.all().order_by('-date_joined')
-    #serializer_class = UserSerializer
-
-    #def get_permissions(self):
-        #"""
-        #Instantiates and returns the list of permissions that this view requires.
-        #"""
-        #if self.action in ['list','retrieve']:
-            #print(self.action)
-            #permission_classes = [permissions.AllowAny]
-        #else:
-            #permission_classes = [permissions.IsAdminUser]
-        #return [permission() for permission in permission_classes]
-
-
-
-#class DatasetViewSet(viewsets.ModelViewSet):
-    ## print('in DatasetViewSet()')
-    #queryset = Dataset.objects.all().filter(public=True).order_by('label')
-    #serializer_class = DatasetSerializer
-
-    #def get_permissions(self):
-        #"""
-        #Instantiates and returns the list of permissions that this view requires.
-        #"""
-        #if self.action in ['list','retrieve']:
-            #print(self.action)
-            #permission_classes = [permissions.AllowAny]
-        #else:
-            #permission_classes = [permissions.IsAdminUser]
-        #return [permission() for permission in permission_classes]

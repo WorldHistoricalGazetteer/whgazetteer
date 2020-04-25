@@ -8,8 +8,8 @@ from . import views
 
 urlpatterns = [
     path('api-auth/', include('rest_framework.urls')),
-    path('', views.api_root),
-
+    #path('', views.api_root),
+    path('',views.SearchAPIView.as_view(),name='api-search'),
     # 
     # *** DATASETS ***
     # 
