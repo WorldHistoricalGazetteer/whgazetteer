@@ -19,6 +19,9 @@ numrows = models.IntegerField(null=True, blank=True)
 numlinked = models.IntegerField(null=True, blank=True)
 total_links = models.IntegerField(null=True, blank=True)
 
+# ***
+# IN USE Apr 2020
+# ***
 class DatasetSerializer(serializers.HyperlinkedModelSerializer):
 #class DatasetSerializer(serializers.ModelSerializer):
     # don't list all places in a dataset API record
@@ -128,7 +131,10 @@ class PlaceNameSerializer(serializers.ModelSerializer):
         fields = ('toponym','when','citation')
 
 #class PlaceSerializer(serializers.HyperlinkedModelSerializer):
-# direct representation of normalized records in database
+""" 
+    direct representation of normalized records in database 
+    used in multiple views
+"""
 class PlaceSerializer(serializers.ModelSerializer):
     dataset = serializers.ReadOnlyField(source='dataset.label')
     names = PlaceNameSerializer(many=True, read_only=True)
@@ -168,8 +174,8 @@ class PlaceSerializer(serializers.ModelSerializer):
         
 
 
-# TODO: a Linked Places FeatureCollection ???
-# nb. will have to be hand-rolled GeoFeatureModelSerializer will NOT work for this
+
+""" uses: DownloadGeomsAPIView() """
 class FeatureSerializer(GeoFeatureModelSerializer):
     geom = GeometrySerializerMethodField()
     def get_geom(self, obj):
@@ -185,36 +191,48 @@ class FeatureSerializer(GeoFeatureModelSerializer):
     title = serializers.SerializerMethodField('get_title')    
     def get_title(self, obj):
         return obj.place.title
-    #
-    #names = serializers.SerializerMethodField('get_names')    
-    #def get_names(self, obj):
-        #names=[]
-        #for n in obj.place.names.all():
-            #names.append(n.jsonb)
-        #return names
-    
+
     class Meta:
         model = PlaceGeom
         geo_field = 'geom'
         id_field = False
         fields = ('place_id','src_id','title')
 
+""" uses: AreaViewset()"""
+class AreaSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Area
+        fields = ('title', 'type', 'geojson')
+
+
 class LPFSerializer(serializers.HyperlinkedModelSerializer):
-    dataset = serializers.ReadOnlyField(source='dataset.label')
+    #dataset = serializers.ReadOnlyField(source='dataset.label')
     names = PlaceNameSerializer(many=True, read_only=True)
     types = PlaceTypeSerializer(many=True, read_only=True)
-    geoms = PlaceGeomSerializer(many=True, read_only=True)
     links = PlaceLinkSerializer(many=True, read_only=True)
     related = PlaceRelatedSerializer(many=True, read_only=True)
     whens = PlaceWhenSerializer(many=True, read_only=True)
     descriptions = PlaceDescriptionSerializer(many=True, read_only=True)
     depictions = PlaceDepictionSerializer(many=True, read_only=True)
 
-    geo = serializers.SerializerMethodField('has_geom')    
-    def has_geom(self,place):
-        return '<i class="fa fa-globe"></i>' if place.geom_count > 0 else "-"
-    
-    # 6365611 (pleiades_20200402); 6367873 (euratlas_cities); 6365630 (owtrad10)
+    # custom fields for LPF transform
+    properties = serializers.SerializerMethodField('get_properties')
+    def get_properties(self,place):
+        props = {
+            "src_id":place.src_id,
+            "title":place.title,
+            "whg_placeid":place.id,
+            "dataset":place.dataset.label,
+            "ccodes":place.ccodes
+        }
+        return props
+    geometry = serializers.SerializerMethodField('get_geometry')
+    def get_geometry(self,place):
+        collection = {"type":"FeatureCollection","features":[]}
+        geoms = [g.jsonb for g in place.geoms.all()]
+        for g in geoms:
+            collection['features'].append(g)
+        return collection
     minmax = serializers.SerializerMethodField('get_minmax')
     def get_minmax(self,place):
         tsarr=[n.jsonb['timespans'][0] for n in place.whens.all() if place.whens.count()>0]
@@ -228,30 +246,10 @@ class LPFSerializer(serializers.HyperlinkedModelSerializer):
             years = list(set(years)-nullset)
         return [min(years),max(years)] if len(years)>0 else []
     
+
     class Meta:
         model = Place
-        fields = ('url','id', 'title', 'src_id', 'dataset','ccodes',
-            'names','types','geoms','links','related',
-            'whens', 'descriptions', 'depictions',
-            'geo','minmax'
+        fields = ('url','properties','geometry',
+            'names','types','links','related',
+            'whens', 'descriptions', 'depictions','minmax'
         )
-
-class AreaSerializer(serializers.HyperlinkedModelSerializer):
-    class Meta:
-        model = Area
-        fields = ('title', 'type', 'geojson')
-
-
-#class UserSerializer(serializers.ModelSerializer):
-    #datasets = serializers.PrimaryKeyRelatedField(
-        #many=True,
-        #queryset=Dataset.objects.all(),
-    #)
-    #class Meta:
-        #model = User
-        #fields = ('id','url', 'username', 'email', 'groups', 'datasets')
-
-class GroupSerializer(serializers.HyperlinkedModelSerializer):
-    class Meta:
-        model = Group
-        fields = ('url', 'name')

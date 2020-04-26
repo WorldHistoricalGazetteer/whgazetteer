@@ -1,6 +1,7 @@
 # api.views
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User, Group
+from django.core import serializers
 from django.db.models import Count
 from django.http import JsonResponse, Http404, HttpResponse, FileResponse
 from django.shortcuts import get_object_or_404
@@ -20,42 +21,83 @@ from rest_framework.reverse import reverse
 from rest_framework.views import APIView
 
 from accounts.permissions import IsOwnerOrReadOnly
-from api.serializers import (UserSerializer, DatasetSerializer,
-    PlaceSerializer, PlaceGeomSerializer, AreaSerializer, FeatureSerializer)
+from api.serializers import (UserSerializer, DatasetSerializer, PlaceSerializer, 
+    PlaceGeomSerializer, AreaSerializer, FeatureSerializer, LPFSerializer)
 from areas.models import Area
 from datasets.models import Dataset
 from places.models import Place, PlaceGeom
 
-#class StandardResultsSetPagination(PageNumberPagination):
-    #page_size = 10
-    #page_size_query_param = 'page_size'
-    #max_page_size = 15000
+class StandardResultsSetPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 15000
     
-@api_view(['GET'])
-# API 'home page' (not implemented)
-def api_root(request, format=None):
-    return Response({
-        #'users': reverse('user-list', request=request, format=format),
-        'datasets': reverse('dataset-list', request=request, format=format)
-    })
 
 #
 # API
 # 
-#@api_view(['GET'])
-class SearchAPIView(generics.ListAPIView):
-    def get(self, format=None, *args, **kwargs):
-        print('kwargs',self.kwargs)
-        print('self.request.GET',self.request.GET)
-        query = self.request.GET.get('q')
+#
+
+#class SearchAPIView(generics.ListAPIView):
+    #serializer_class = PlaceSerializer
+    ## q <str>, scope [db}index], ccode <str>, mode [exact|fuzzy]; 
+    ## type {oneof}, cat [settlement|site|feature], dataset {oneof}
+    #def get(self, format=None, *args, **kwargs):
+    ##def get_queryset(self, format=None, *args, **kwargs):
+        #req=self.request.GET
+        #print('search request:',req)
+        #params = list(req.keys())
+        #if req.get('q') is None:
+            #result = {"errors":['Missing a query term, e.g. ?q=myplacename']}
+            #return JsonResponse(result, safe=True)
+        #f = 'json' if 'format' not in params else req['format']
+        #scope = 'db' if 'scope' not in params else req['scope']
+        #if scope == 'db':
+            #qs = Place.objects.all()
+            #if req.get('ds') is not None:
+                #qs=qs.filter(dataset=req.get('ds'))
+            #qs = qs.filter(title__icontains=req.get('q'))
+        #result = {"q":req,
+                  #"scope":scope,
+                  #"format":f,
+                  #"result":serializers.serialize("json", serializers.serialize("json", qs))}
+        ##return result
+        #return JsonResponse(result, safe=True)
+""" 
+    return lpf results from search 
+    q <str>, scope [db}index], ccode <str>, mode [exact|fuzzy], 
+    type {oneof}, category [settlement|site|feature], dataset {oneof}
+
+"""
+class SearchAPIView(APIView):
+#class SearchAPIView(generics.ListAPIView):
+    serializer_class = LPFSerializer
+    def get(self, request, format=None):
+    #def get_queryset(self, format=None):
+        req=self.request.GET
+        print('SearchAPIView() GET:',req)
+        qs = Place.objects.all()
         
-        result = {"stuff":[query]}
-        return JsonResponse(result, safe=True)
+        if req.get('q') is None:
+            return HttpResponse(content=b'<h3>Needs a "q" parameter at minimum (e.g. ?q=myplacename)</h3>')
+        else:
+            qs = qs.filter(title__icontains=req.get('q'))
+            serializer = LPFSerializer(qs, many=True, context={'request': request})
+            return Response(serializer.data)
+            #return Response(qs)
     
+    #def get_queryset(self, format=None, *args, **kwargs):
+        #print('kwargs',self.kwargs)
+        #print('self.request.GET',self.request.GET)
+        #return Response(qs)
+    
+""" 
+    Paged list of places in dataset. 
+    api/places/<str:dslabel>/[?q={string}]
+"""
 class PlaceAPIView(generics.ListAPIView):
-    """    Paged list of places in dataset. Optionally filtered on title with ?q={string}  """
     serializer_class = PlaceSerializer
-    #pagination_class = StandardResultsSetPagination
+    pagination_class = StandardResultsSetPagination
     
     def get_queryset(self, format=None, *args, **kwargs):
         print('kwargs',self.kwargs)
@@ -69,39 +111,6 @@ class PlaceAPIView(generics.ListAPIView):
     
     permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
 
-class PlaceDetailAPIView(generics.RetrieveAPIView):
-    """  single place record by id  (database)  """
-    queryset = Place.objects.all()
-    serializer_class = PlaceSerializer
-    
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
-    authentication_classes = [SessionAuthentication]
-
-class DatasetAPIView(LoginRequiredMixin, generics.ListAPIView):
-    """    List public datasets    """
-    serializer_class = DatasetSerializer
-    #pagination_class = StandardResultsSetPagination
-    
-    def get_queryset(self, format=None):
-        qs = Dataset.objects.all().filter(public=True).order_by('label')
-        query = self.request.GET.get('q')
-        if query is not None:
-            qs = qs.filter(description__icontains=query)
-        return qs
-    
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
-    authentication_classes = [SessionAuthentication]
-
-class DatasetDetailAPIView(LoginRequiredMixin, generics.RetrieveAPIView):
-#class DatasetDetailAPIView(generics.RetrieveAPIView):
-    """    dataset record by id   """
-    queryset = Dataset.objects.all().filter(public=True)
-    serializer_class = DatasetSerializer
-    
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
-    authentication_classes = [SessionAuthentication]
-    
-
 class UserList(generics.ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
@@ -110,21 +119,24 @@ class UserDetail(generics.RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
+""" 
+    /api/dataset/<int:ds>/geom/ 
+"""
 class DownloadGeomsAPIView(generics.ListAPIView):
+    # use: dataset/<int:ds>/geom/
     queryset = PlaceGeom.objects.all()
     serializer_class = FeatureSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
     
     def get_queryset(self, format=None, *args, **kwargs):
-        #fn='mygeom.json'
         ds = get_object_or_404(Dataset,pk=self.kwargs['ds'])
         qs = PlaceGeom.objects.all().filter(place_id__in=ds.placeids)
         #print('qs',qs)
         return qs
-        #response = HttpResponse(qs,content_type='text/json')
-        #response['Content-Disposition'] = 'attachment; filename="'+fn+'"'    
-    
-        #return response
+
+""" 
+    api/dataset/<str:dslabel>/lpf/
+"""
 class DownloadDatasetAPIView(generics.ListAPIView):
     """  Dataset as LPF FeatureCollection  """
     serializer_class = PlaceSerializer
@@ -142,8 +154,37 @@ class DownloadDatasetAPIView(generics.ListAPIView):
     
     permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
 
+# API 'home page' (not implemented)
+@api_view(['GET'])
+def api_root(request, format=None):
+    return Response({
+        #'users': reverse('user-list', request=request, format=format),
+        'datasets': reverse('dataset-list', request=request, format=format)
+    })
+
+
 #
-# in use Apr 2020    
+
+# IN USE Apr 2020
+
+#
+"""
+    place/<int:pk>/
+    in dataset.html#browse
+"""
+class PlaceDetailAPIView(generics.RetrieveAPIView):
+    """  single database place record by id  """
+    queryset = Place.objects.all()
+    serializer_class = PlaceSerializer
+    
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
+    authentication_classes = [SessionAuthentication]
+
+
+""" 
+    /api/geoms {ds:{{ ds.label }}} 
+    in dataset.html#browse
+"""
 class GeomViewSet(viewsets.ModelViewSet):
     queryset = PlaceGeom.objects.all()
     serializer_class = PlaceGeomSerializer
@@ -156,8 +197,9 @@ class GeomViewSet(viewsets.ModelViewSet):
         qs = PlaceGeom.objects.filter(place_id__in=dsPlaceIds)
         return qs
     
-#
-# populates drf table in dataset.detail#browse
+"""
+    populates drf table in dataset.detail#browse
+"""
 class PlaceTableViewSet(viewsets.ModelViewSet):
     queryset = Place.objects.all().order_by('title')
     serializer_class = PlaceSerializer
@@ -185,11 +227,18 @@ class PlaceTableViewSet(viewsets.ModelViewSet):
             permission_classes = [permissions.IsAdminUser]
         return [permission() for permission in permission_classes]
 
+"""
+    area/<int:pk>/
+    in dataset.html#addtask
+"""
 class AreaViewSet(viewsets.ModelViewSet):
     queryset = Area.objects.all().order_by('title')
     serializer_class = AreaSerializer
-#
-# search index
+
+"""
+    search index e.g. union/?idx=whg02&_id=12345979
+    in usingapi.html example
+"""
 class indexAPIView(View):
     @staticmethod
     def get(request):
@@ -215,4 +264,65 @@ class indexAPIView(View):
         #print('indexAPIView _id',_id)
         print('indexAPIView hit',hit)
         return JsonResponse(hit, safe=True)
-        
+
+
+
+"""
+    datasets/
+    in usingapi.html example
+"""
+class DatasetAPIView(LoginRequiredMixin, generics.ListAPIView):
+    """    List public datasets    """
+    serializer_class = DatasetSerializer
+    #pagination_class = StandardResultsSetPagination
+    
+    def get_queryset(self, format=None):
+        qs = Dataset.objects.all().filter(public=True).order_by('label')
+        query = self.request.GET.get('q')
+        if query is not None:
+            qs = qs.filter(description__icontains=query)
+        return qs
+    
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
+    authentication_classes = [SessionAuthentication]
+
+"""
+    dataset/<int:pk>/
+    in usingapi.html example
+"""
+class DatasetDetailAPIView(LoginRequiredMixin, generics.RetrieveAPIView):
+    """    dataset record by id   """
+    queryset = Dataset.objects.all().filter(public=True)
+    serializer_class = DatasetSerializer
+    
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
+    authentication_classes = [SessionAuthentication]
+
+
+#""" 
+    #Paged list of places w/title matching a query. 
+    #api/[?q={str}, ?ds={str}]
+#"""
+#class BoogeredSearchAPIView(generics.ListAPIView):
+    #serializer_class = PlaceSerializer
+    #pagination_class = StandardResultsSetPagination
+    #renderer_class = JSONRenderer
+    
+    #def get_queryset(self, format=None, *args, **kwargs):
+        #req=self.request.GET
+        #if req.get('q') is None:
+            #result = {"errors":['Missing a query term, e.g. ?q=myplacename']}
+            #return Response(result)
+        ##print('kwargs',self.kwargs)
+        #print('self.request.GET',self.request.GET)
+        #dslabel = self.request.GET.get('ds')
+        #query = self.request.GET.get('q')
+        #qs = Place.objects.all()
+        #if dslabel is not None:
+            #qs = qs.filter(dataset=dslabel).order_by('title')
+        #if query is not None:
+            #qs = qs.filter(title__icontains=query)
+        #return qs
+    
+    #permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
+

@@ -9,10 +9,13 @@ from . import views
 urlpatterns = [
     path('api-auth/', include('rest_framework.urls')),
     #path('', views.api_root),
+
+    # *** SEARCH ***
+
     path('',views.SearchAPIView.as_view(),name='api-search'),
-    # 
+
     # *** DATASETS ***
-    # 
+
     # use > list public datasets in usingapi.html :: DatasetSerializer
     path('datasets/', views.DatasetAPIView.as_view(), name='dataset-list'),
     # use > single dataset record in usingapi.html :: DatasetSerializer
@@ -26,11 +29,10 @@ urlpatterns = [
     path('dataset/<int:ds>/geom/', views.DownloadGeomsAPIView.as_view(),name='dataset-geom'),
 
 
-    # 
     # *** PLACES ***
-    # 
+
     # search all places
-    #path('places/', views.PlaceAPIView.as_view(),name='place-list'), 
+    path('places/<str:dslabel>/', views.PlaceAPIView.as_view(),name='place-list'), 
         
     # use > single place for dataset.html#browse:: PlaceSerializer
     path('place/<int:pk>/', views.PlaceDetailAPIView.as_view(),name='place-detail'),    
