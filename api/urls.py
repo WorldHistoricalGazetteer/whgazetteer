@@ -13,6 +13,7 @@ urlpatterns = [
     # *** SEARCH ***
 
     path('',views.SearchAPIView.as_view(),name='api-search'),
+    path('filter/',views.FilteredSearchAPIView.as_view(),name='api-filtered-search'),
 
     # *** DATASETS ***
 

@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     #'django_celery_beat',
     'django_celery_results',
     'django_extensions',
+    'django_filters',
     'djgeojson',
     'fontawesome',
     'leaflet',
@@ -94,6 +95,7 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_FILTER_BACKENDS': (
         'rest_framework_datatables.filters.DatatablesFilterBackend',
+        #'django_filters.rest_framework.DjangoFilterBackend'
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework_datatables.pagination.DatatablesPageNumberPagination',
     'PAGE_SIZE': 15000,

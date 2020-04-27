@@ -7,6 +7,7 @@ from django.http import JsonResponse, Http404, HttpResponse, FileResponse
 from django.shortcuts import get_object_or_404
 from django.views.generic import View
 from django.views.decorators.csrf import csrf_exempt
+from django_filters.rest_framework import DjangoFilterBackend
 from elasticsearch import Elasticsearch
 from rest_framework import generics
 from rest_framework import permissions
@@ -63,28 +64,47 @@ class StandardResultsSetPagination(PageNumberPagination):
                   #"result":serializers.serialize("json", serializers.serialize("json", qs))}
         ##return result
         #return JsonResponse(result, safe=True)
+
+""" cf. https://www.django-rest-framework.org/api-guide/filtering/#djangofilterbackend """
+class FilteredSearchAPIView(generics.ListAPIView):
+    queryset = Place.objects.all()
+    serializer_class = LPFSerializer
+    renderer_classes = [JSONRenderer]
+    filter_backends = [DjangoFilterBackend]    
+    filterset_fields = ['title','dataset','ccodes']
+    
+    
 """ 
     return lpf results from search 
     q <str>, scope [db}index], ccode <str>, mode [exact|fuzzy], 
     type {oneof}, category [settlement|site|feature], dataset {oneof}
 
 """
-class SearchAPIView(APIView):
-#class SearchAPIView(generics.ListAPIView):
-    serializer_class = LPFSerializer
-    def get(self, request, format=None):
+#class SearchAPIView(APIView):
+class SearchAPIView(generics.ListAPIView):
+    #serializer_class = LPFSerializer
+    renderer_classes = [JSONRenderer]
+    
+    #def get(self, request, format=None):
+    def get(self, format=None):
     #def get_queryset(self, format=None):
         req=self.request.GET
-        print('SearchAPIView() GET:',req)
+        q = req.get('q')
+        cc = req.get('ccodes').split(',') if req.get('ccodes') else None
+        dslabel = req.get('dataset')
+        
+        print('SearchAPIView() GET:',q,cc,dslabel)
         qs = Place.objects.all()
         
         if req.get('q') is None:
             return HttpResponse(content=b'<h3>Needs a "q" parameter at minimum (e.g. ?q=myplacename)</h3>')
         else:
-            qs = qs.filter(title__icontains=req.get('q'))
-            serializer = LPFSerializer(qs, many=True, context={'request': request})
+            qs = qs.filter(title__icontains=q)
+            qs = qs.filter(dataset=dslabel) if dslabel else qs
+            #qs = qs.filter(ccodes__in=cc) if cc else qs
+            qs = qs.filter(ccodes__contained_by=cc) if cc else qs
+            serializer = LPFSerializer(qs, many=True, context={'request': self.request})
             return Response(serializer.data)
-            #return Response(qs)
     
     #def get_queryset(self, format=None, *args, **kwargs):
         #print('kwargs',self.kwargs)

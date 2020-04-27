@@ -247,6 +247,7 @@ class LPFSerializer(serializers.HyperlinkedModelSerializer):
         return [min(years),max(years)] if len(years)>0 else []
     
 
+    
     class Meta:
         model = Place
         fields = ('url','properties','geometry',
