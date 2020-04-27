@@ -90,7 +90,7 @@ class SearchAPIView(generics.ListAPIView):
     #def get_queryset(self, format=None):
         req=self.request.GET
         q = req.get('q')
-        cc = req.get('ccodes').split(',') if req.get('ccodes') else None
+        cc = map(str.upper,req.get('ccodes').split(',')) if req.get('ccodes') else None
         dslabel = req.get('dataset')
         
         print('SearchAPIView() GET:',q,cc,dslabel)
@@ -101,8 +101,7 @@ class SearchAPIView(generics.ListAPIView):
         else:
             qs = qs.filter(title__icontains=q)
             qs = qs.filter(dataset=dslabel) if dslabel else qs
-            #qs = qs.filter(ccodes__in=cc) if cc else qs
-            qs = qs.filter(ccodes__contained_by=cc) if cc else qs
+            qs = qs.filter(ccodes__overlap=cc) if cc else qs
             serializer = LPFSerializer(qs, many=True, context={'request': self.request})
             return Response(serializer.data)
     
