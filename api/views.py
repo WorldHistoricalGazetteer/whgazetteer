@@ -1,6 +1,7 @@
 # api.views
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User, Group
+from django.contrib.postgres import search
 from django.core import serializers
 from django.db.models import Count
 from django.http import JsonResponse, Http404, HttpResponse, FileResponse
@@ -9,6 +10,7 @@ from django.views.generic import View
 from django.views.decorators.csrf import csrf_exempt
 from django_filters.rest_framework import DjangoFilterBackend
 from elasticsearch import Elasticsearch
+from rest_framework import filters
 from rest_framework import generics
 from rest_framework import permissions
 from rest_framework import status
@@ -20,7 +22,7 @@ from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from rest_framework.reverse import reverse
 from rest_framework.views import APIView
-
+import simplejson as json
 from accounts.permissions import IsOwnerOrReadOnly
 from api.serializers import (UserSerializer, DatasetSerializer, PlaceSerializer, 
     PlaceGeomSerializer, AreaSerializer, FeatureSerializer, LPFSerializer)
@@ -71,39 +73,46 @@ class FilteredSearchAPIView(generics.ListAPIView):
     serializer_class = LPFSerializer
     renderer_classes = [JSONRenderer]
     filter_backends = [DjangoFilterBackend]    
-    filterset_fields = ['title','dataset','ccodes']
+    #filter_backends = [filters.SearchFilter]    
+    filterset_fields = ['title']
     
     
 """ 
     return lpf results from search 
-    q <str>, scope [db}index], ccode <str>, mode [exact|fuzzy], 
-    type {oneof}, category [settlement|site|feature], dataset {oneof}
+    q <str>, dataset {oneof}, ccode <str>, mode [exact|fuzzy], 
+    type {oneof}, category [settlement|site|feature], scope [db}index]
 
 """
 #class SearchAPIView(APIView):
 class SearchAPIView(generics.ListAPIView):
     #serializer_class = LPFSerializer
     renderer_classes = [JSONRenderer]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['@title']
     
     #def get(self, request, format=None):
-    def get(self, format=None):
+    def get(self, format=None, *args, **kwargs):
     #def get_queryset(self, format=None):
-        req=self.request.GET
-        q = req.get('q')
-        cc = map(str.upper,req.get('ccodes').split(',')) if req.get('ccodes') else None
-        dslabel = req.get('dataset')
+        params=self.request.query_params
+        q = params.get('q',None)
+        contains = params.get('contains')
+        cc = map(str.upper,params.get('ccodes').split(',')) if params.get('ccodes') else None
+        dslabel = params.get('dataset',None)
         
-        print('SearchAPIView() GET:',q,cc,dslabel)
+        print('SearchAPIView() params',params)
         qs = Place.objects.all()
         
-        if req.get('q') is None:
-            return HttpResponse(content=b'<h3>Needs a "q" parameter at minimum (e.g. ?q=myplacename)</h3>')
+        if q is None and contains is None:
+            return HttpResponse(content=b'<h3>Needs either a "q" or "contains" parameter at minimum <br/>(e.g. ?q=myplacename or ?contains=astring)</h3>')
         else:
-            qs = qs.filter(title__icontains=q)
+            qs = qs.filter(title__icontains=q) if contains is not None else qs.filter(title__istartswith=q)
             qs = qs.filter(dataset=dslabel) if dslabel else qs
             qs = qs.filter(ccodes__overlap=cc) if cc else qs
-            serializer = LPFSerializer(qs, many=True, context={'request': self.request})
-            return Response(serializer.data)
+            filtered = qs[:20]
+            serializer = LPFSerializer(filtered, many=True, context={'request': self.request})
+            serialized_data = serializer.data
+            result = {"count":qs.count(),"parameters": params,"features":serialized_data}
+            return Response(result)
     
     #def get_queryset(self, format=None, *args, **kwargs):
         #print('kwargs',self.kwargs)

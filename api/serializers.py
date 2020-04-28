@@ -216,6 +216,9 @@ class LPFSerializer(serializers.HyperlinkedModelSerializer):
     depictions = PlaceDepictionSerializer(many=True, read_only=True)
 
     # custom fields for LPF transform
+    type = serializers.SerializerMethodField('get_type')
+    def get_type(self,place):
+        return "Feature"
     properties = serializers.SerializerMethodField('get_properties')
     def get_properties(self,place):
         props = {
@@ -227,12 +230,13 @@ class LPFSerializer(serializers.HyperlinkedModelSerializer):
         }
         return props
     geometry = serializers.SerializerMethodField('get_geometry')
+    # {"type": "Point", "geowkt": "POINT(110.6 0.13333)", "coordinates": [110.6, 0.13333]}
     def get_geometry(self,place):
-        collection = {"type":"FeatureCollection","features":[]}
+        gcoll = {"type":"GeometryCollection","geometries":[]}
         geoms = [g.jsonb for g in place.geoms.all()]
         for g in geoms:
-            collection['features'].append(g)
-        return collection
+            gcoll["geometries"].append(g)
+        return gcoll
     minmax = serializers.SerializerMethodField('get_minmax')
     def get_minmax(self,place):
         tsarr=[n.jsonb['timespans'][0] for n in place.whens.all() if place.whens.count()>0]
@@ -250,7 +254,7 @@ class LPFSerializer(serializers.HyperlinkedModelSerializer):
     
     class Meta:
         model = Place
-        fields = ('url','properties','geometry',
+        fields = ('url','type','properties','geometry',
             'names','types','links','related',
             'whens', 'descriptions', 'depictions','minmax'
         )
