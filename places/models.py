@@ -10,19 +10,16 @@ from django.db import models
 from datasets.static.hashes.parents import ccodes as cc
 from main.choices import *
 
-#import json
-
 class Place(models.Model):
-    # let id be auto-maintained, as Django decrees/prefers
+    # id is auto-maintained, per Django
     title = models.CharField(max_length=255)
     src_id = models.CharField(max_length=2044)
+    # FK is label, not id
     dataset = models.ForeignKey('datasets.Dataset', db_column='dataset',
         to_field='label', related_name='places', on_delete=models.CASCADE)
     ccodes = ArrayField(models.CharField(max_length=2))
-    
-    # indexed? toggle when deleted
+    # indexed?
     indexed = models.BooleanField(default=False)
-    
     # general purpose
     flag = models.BooleanField(default=False)
 
@@ -99,7 +96,6 @@ class PlaceType(models.Model):
         db_table = 'place_type'
 
 class PlaceGeom(models.Model):
-    #place_id = models.ForeignKey(Place,related_name='geoms',
     place = models.ForeignKey(Place,related_name='geoms',
         default=-1, on_delete=models.CASCADE)
     task_id = models.CharField(max_length=100, blank=True, null=True)

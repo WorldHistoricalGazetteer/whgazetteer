@@ -90,14 +90,14 @@ class SearchAPIView(generics.ListAPIView):
     filter_backends = [filters.SearchFilter]
     search_fields = ['@title']
     
-    #def get(self, request, format=None):
-    def get(self, format=None, *args, **kwargs):
     #def get_queryset(self, format=None):
+    def get(self, format=None, *args, **kwargs):
         params=self.request.query_params
         q = params.get('q',None)
         contains = params.get('contains')
         cc = map(str.upper,params.get('ccodes').split(',')) if params.get('ccodes') else None
         dslabel = params.get('dataset',None)
+        #aattype = params.get('type')
         
         print('SearchAPIView() params',params)
         qs = Place.objects.all()
@@ -114,10 +114,6 @@ class SearchAPIView(generics.ListAPIView):
             result = {"count":qs.count(),"parameters": params,"features":serialized_data}
             return Response(result)
     
-    #def get_queryset(self, format=None, *args, **kwargs):
-        #print('kwargs',self.kwargs)
-        #print('self.request.GET',self.request.GET)
-        #return Response(qs)
     
 """ 
     Paged list of places in dataset. 

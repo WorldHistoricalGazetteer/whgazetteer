@@ -82,7 +82,6 @@ class Dataset(models.Model):
     # count of unreviewed hits
     @property
     def unreviewed(self):
-        # select distinct(place_id_id) from hits where dataset_id = 602 and reviewed = false ;
         unrev=Hit.objects.all().filter(dataset_id=self.id,reviewed=False).count()
         return unrev
     
