@@ -688,11 +688,11 @@ def ds_update(request):
       places.filter(id__in=rows_delete).delete()
       
       # delete related instances for the rest (except links and geoms)
-      PlaceName.objects.filter(place_id_id__in=places).delete()
-      PlaceType.objects.filter(place_id_id__in=places).delete()
-      PlaceWhen.objects.filter(place_id_id__in=places).delete()
-      PlaceDescription.objects.filter(place_id_id__in=places).delete()
-      PlaceDepiction.objects.filter(place_id_id__in=places).delete()
+      PlaceName.objects.filter(place_id__in=places).delete()
+      PlaceType.objects.filter(place_id__in=places).delete()
+      PlaceWhen.objects.filter(place_id__in=places).delete()
+      PlaceDescription.objects.filter(place_id__in=places).delete()
+      PlaceDepiction.objects.filter(place_id__in=places).delete()
       
       # rows created during reconciliation review have a task_id
       # keep or not is a form choice (keepg, keepl)
@@ -704,9 +704,9 @@ def ds_update(request):
         PlaceGeom.objects.filter(place_id__in=places,task_id=None).delete()
       if keepl == 'false':
         # keep none (they are being replaced in update)
-        PlaceLink.objects.filter(place_id_id__in=places).delete()
+        PlaceLink.objects.filter(place_id__in=places).delete()
       else:
-        PlaceLink.objects.filter(place_id_id__in=places,task_id=None).delete()
+        PlaceLink.objects.filter(place_id__in=places,task_id=None).delete()
       
       
       count_updated, count_new = [0,0]
@@ -816,7 +816,7 @@ def ds_compare(request):
     
     # how many augment records previously created by reconciliation?
     count_geoms = PlaceGeom.objects.filter(place_id__in=ds.placeids,task_id__isnull=False).count()
-    count_links = PlaceLink.objects.filter(place_id_id__in=ds.placeids,task_id__isnull=False).count()
+    count_links = PlaceLink.objects.filter(place_id__in=ds.placeids,task_id__isnull=False).count()
     
     # wrangling names
     # current (previous) file
@@ -1520,31 +1520,31 @@ class DatasetDetailView(LoginRequiredMixin, UpdateView):
     context['tasks'] = TaskResult.objects.all().filter(task_args = [id_],status='SUCCESS')
     # initial (non-task)
     context['num_links'] = PlaceLink.objects.filter(
-      place_id_id__in = placeset, task_id = None).count()
-    context['num_names'] = PlaceName.objects.filter(place_id_id__in = placeset).count()
+      place_id__in = placeset, task_id = None).count()
+    context['num_names'] = PlaceName.objects.filter(place_id__in = placeset).count()
     context['num_geoms'] = PlaceGeom.objects.filter(
       place_id__in = placeset, task_id = None).count()
     context['num_descriptions'] = PlaceDescription.objects.filter(
-      place_id_id__in = placeset, task_id = None).count()
+      place_id__in = placeset, task_id = None).count()
     # others
     context['num_types'] = PlaceType.objects.filter(
-      place_id_id__in = placeset).count()
+      place_id__in = placeset).count()
     context['num_when'] = PlaceWhen.objects.filter(
-      place_id_id__in = placeset).count()
+      place_id__in = placeset).count()
     context['num_related'] = PlaceRelated.objects.filter(
-      place_id_id__in = placeset).count()
+      place_id__in = placeset).count()
     context['num_depictions'] = PlaceDepiction.objects.filter(
-      place_id_id__in = placeset).count()
+      place_id__in = placeset).count()
 
     # augmentations (has task_id)
     context['links_added'] = PlaceLink.objects.filter(
-      place_id_id__in = placeset, task_id__contains = '-').count()
+      place_id__in = placeset, task_id__contains = '-').count()
     context['names_added'] = PlaceName.objects.filter(
-      place_id_id__in = placeset, task_id__contains = '-').count()
+      place_id__in = placeset, task_id__contains = '-').count()
     context['geoms_added'] = PlaceGeom.objects.filter(
       place_id__in = placeset, task_id__contains = '-').count()
     context['descriptions_added'] = PlaceDescription.objects.filter(
-      place_id_id__in = placeset, task_id__contains = '-').count()
+      place_id__in = placeset, task_id__contains = '-').count()
 
     #print('context from DatasetDetailView',context)
 
@@ -1552,7 +1552,7 @@ class DatasetDetailView(LoginRequiredMixin, UpdateView):
 
 # 
 # load page for confirm ok on delete
-# delete dataset, with CASCADE to datasetFiles, places, place_name, etc
+# delete dataset, with CASCADE to DatasetFile, places, place_name, etc
 # also deletes from index if indexed (fails silently if not)
 # TODO: delete other stuff: disk files; archive??
 #
@@ -1591,7 +1591,7 @@ def match_undo(request, ds, tid, pid):
   #ds=1;tid='d6ad4289-cae6-476d-873c-a81fed4d6315';pid=81474
   # 81474, 81445 (2), 81417, 81420, 81436, 81442, 81469
   geom_matches = PlaceGeom.objects.all().filter(task_id=tid, place_id=pid)
-  link_matches = PlaceLink.objects.all().filter(task_id=tid, place_id_id=pid)
+  link_matches = PlaceLink.objects.all().filter(task_id=tid, place_id=pid)
   geom_matches.delete()
   link_matches.delete()
   # match task_id, place_id_id in hits; set reviewed = false
@@ -1599,24 +1599,3 @@ def match_undo(request, ds, tid, pid):
   return redirect('/datasets/'+str(ds)+'/review/'+tid+'/pass1')
  # /datasets/1/review/d6ad4289-cae6-476d-873c-a81fed4d6315/pass1
  
-#def pretty_request(request):
-  #headers = ''
-  #for header, value in request.META.items():
-    #if not header.startswith('HTTP'):
-      #continue
-    #header = '-'.join([h.capitalize() for h in header[5:].lower().split('_')])
-    #headers += '{}: {}\n'.format(header, value)
-
-  #return (
-      #'{method} HTTP/1.1\n'
-        #'Content-Length: {content_length}\n'
-        #'Content-Type: {content_type}\n'
-        #'{headers}\n\n'
-        #'{body}'
-        #).format(
-      #method=request.method,
-        #content_length=request.META['CONTENT_LENGTH'],
-        #content_type=request.META['CONTENT_TYPE'],
-        #headers=headers,
-        #body=request.body,
-    #)

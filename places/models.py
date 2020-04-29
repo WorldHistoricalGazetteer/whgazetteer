@@ -63,7 +63,7 @@ class Source(models.Model):
 
 class PlaceName(models.Model):
     # {toponym, lang, citation{}, when{}}
-    place_id = models.ForeignKey(Place, related_name='names',
+    place = models.ForeignKey(Place, related_name='names',
         default=-1, on_delete=models.CASCADE)
     task_id = models.CharField(max_length=100, blank=True, null=True)
     toponym = models.CharField(max_length=200)
@@ -81,7 +81,7 @@ class PlaceName(models.Model):
 
 class PlaceType(models.Model):
     # identifier, label, source_label, when{}
-    place_id = models.ForeignKey(Place,related_name='types',
+    place = models.ForeignKey(Place,related_name='types',
         default=-1, on_delete=models.CASCADE)
     jsonb = JSONField(blank=True, null=True)
 
@@ -110,7 +110,7 @@ class PlaceGeom(models.Model):
         db_table = 'place_geom'
 
 class PlaceLink(models.Model):
-    place_id = models.ForeignKey(Place,related_name='links',
+    place = models.ForeignKey(Place,related_name='links',
         default=-1, on_delete=models.CASCADE)
     task_id = models.CharField(max_length=100, blank=True, null=True)
     review_note = models.CharField(max_length=2044, blank=True, null=True)
@@ -124,7 +124,7 @@ class PlaceLink(models.Model):
         db_table = 'place_link'
 
 class PlaceWhen(models.Model):
-    place_id = models.ForeignKey(Place,related_name='whens',
+    place = models.ForeignKey(Place,related_name='whens',
         default=-1, on_delete=models.CASCADE)
     jsonb = JSONField(blank=True, null=True)
     # timespans[{start{}, end{}}], periods[{name,id}], label, duration
@@ -137,7 +137,7 @@ class PlaceWhen(models.Model):
         db_table = 'place_when'
 
 class PlaceRelated(models.Model):
-    place_id = models.ForeignKey(Place,related_name='related',
+    place = models.ForeignKey(Place,related_name='related',
         default=-1, on_delete=models.CASCADE)
     jsonb = JSONField(blank=True, null=True)
     # relation_type, relation_to, label, when{}, citation{label,id}, certainty
@@ -149,7 +149,7 @@ class PlaceRelated(models.Model):
         db_table = 'place_related'
 
 class PlaceDescription(models.Model):
-    place_id = models.ForeignKey(Place,related_name='descriptions',
+    place = models.ForeignKey(Place,related_name='descriptions',
         default=-1, on_delete=models.CASCADE)
     task_id = models.CharField(max_length=100, blank=True, null=True)
     jsonb = JSONField(blank=True, null=True)
@@ -162,7 +162,7 @@ class PlaceDescription(models.Model):
         db_table = 'place_description'
 
 class PlaceDepiction(models.Model):
-    place_id = models.ForeignKey(Place,related_name='depictions',
+    place = models.ForeignKey(Place,related_name='depictions',
         default=-1, on_delete=models.CASCADE)
     jsonb = JSONField(blank=True, null=True)
     # id, title, license

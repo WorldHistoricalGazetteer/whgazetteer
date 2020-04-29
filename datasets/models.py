@@ -105,6 +105,7 @@ class Dataset(models.Model):
         managed = True
         db_table = 'datasets'
 
+""" TODO: FK to dataset, not dataset_id"""
 class DatasetFile(models.Model):
     dataset_id = models.ForeignKey(Dataset, related_name='files',
         default=-1, on_delete=models.CASCADE)
@@ -141,11 +142,6 @@ class DatasetUser(models.Model):
         managed = True
         db_table = 'dataset_user'
 
-# TODO: operations on entire table
-# class DatasetQueryset(models.Queryset):
-#     pass
-# class DatasetManager(models.Manager):
-#     pass
 
 # TODO: multiple files per dataset w/File model and formset
 # TODO: linking delimited dataset with sources dataset

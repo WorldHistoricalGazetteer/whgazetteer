@@ -38,9 +38,9 @@ class DatasetLifecycleTest(TestCase):
     newpl2.save()
     objs = {
       "PlaceName":[
-        PlaceName(place_id_id=newpl1.id,src_id = newpl1.src_id,toponym = "Pontianak",
+        PlaceName(place_id=newpl1.id,src_id = newpl1.src_id,toponym = "Pontianak",
                   jsonb={"toponym": "Pontianak", "citation": {"id": "", "label": "Broek"}}),        
-        PlaceName(place_id_id=newpl2.id,src_id = newpl2.src_id,toponym = "Sanggau",
+        PlaceName(place_id=newpl2.id,src_id = newpl2.src_id,toponym = "Sanggau",
                   jsonb={"toponym": "Sanggau", "citation": {"id": "", "label": "Broek"}})        
       ], 
       "PlaceGeom":[
@@ -50,8 +50,8 @@ class DatasetLifecycleTest(TestCase):
           jsonb={"type": "Point", "geowkt": "POINT(110.6 0.13333)", "coordinates": [110.6, 0.13333]})      
       ],
       "PlaceLink":[
-        PlaceLink(place_id_id=newpl1.id,src_id = newpl1.src_id,jsonb={"type": "closeMatch", "identifier": "tgn:7015960"}),
-        PlaceLink(place_id_id=newpl2.id,src_id = newpl2.src_id,jsonb={"type": "closeMatch", "identifier": "tgn:1078484"})
+        PlaceLink(place_id=newpl1.id,src_id = newpl1.src_id,jsonb={"type": "closeMatch", "identifier": "tgn:7015960"}),
+        PlaceLink(place_id=newpl2.id,src_id = newpl2.src_id,jsonb={"type": "closeMatch", "identifier": "tgn:1078484"})
       ]
     }
     PlaceName.objects.bulk_create(objs['PlaceName'],batch_size=10)
