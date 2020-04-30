@@ -1,4 +1,27 @@
-# datasets model field value choices
+# datasets and places model field value choices
+
+# geonames classes for api filter
+FEATURE_CLASSES = [
+    ('A','Administrative divisions'),
+    ('H','Hydrological features'),
+    ('L','Landscape, regions'),
+    ('P','Populated places (settlements)'),
+    ('R','Roads, routes, transportation'),
+    ('S','Sites (various)'),
+    ('T','Topographical features'),
+    ('U','Undersea features'),
+    ('V','Vegetation landcover'),
+]
+
+#A: country, state, region,...
+#H: stream, lake, ...
+#L: parks,area, ...
+#P: city, village,...
+#R: road, railroad 
+#S: spot, building, farm
+#T: mountain,hill,rock,... 
+#U: undersea
+#V: forest,heath,...
 
 LOG_CATEGORIES = [
     ('user','User'),

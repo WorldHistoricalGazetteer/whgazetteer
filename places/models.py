@@ -8,7 +8,7 @@ from django.db import models
 #from django.utils import timezone
 
 from datasets.static.hashes.parents import ccodes as cc
-from main.choices import *
+from main.choices import FEATURE_CLASSES
 
 class Place(models.Model):
     # id is auto-maintained, per Django
@@ -18,9 +18,9 @@ class Place(models.Model):
     dataset = models.ForeignKey('datasets.Dataset', db_column='dataset',
         to_field='label', related_name='places', on_delete=models.CASCADE)
     ccodes = ArrayField(models.CharField(max_length=2))
-    # indexed?
+    # is it indexed?
     indexed = models.BooleanField(default=False)
-    # general purpose
+    # general purpose (not in use)
     flag = models.BooleanField(default=False)
 
     def __str__(self):
@@ -80,13 +80,16 @@ class PlaceName(models.Model):
         db_table = 'place_name'
 
 class PlaceType(models.Model):
-    # identifier, label, source_label, when{}
     place = models.ForeignKey(Place,related_name='types',
         default=-1, on_delete=models.CASCADE)
-    jsonb = JSONField(blank=True, null=True)
-
     src_id = models.CharField(max_length=100,default='') # contributor's identifier
 
+    jsonb = JSONField(blank=True, null=True)
+    # identifier, label, source_label, when{}
+
+    aat_id = models.IntegerField(null=True,blank=True) # Getty AAT identifier
+    fclass = models.CharField(max_length=1,choices=FEATURE_CLASSES) # geonames feature class
+ 
     def __str__(self):
         #return self.jsonb['src_label']
         return self.jsonb['sourceLabel']
