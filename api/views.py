@@ -97,7 +97,7 @@ class SearchAPIView(generics.ListAPIView):
         contains = params.get('contains')
         cc = map(str.upper,params.get('ccodes').split(',')) if params.get('ccodes') else None
         dslabel = params.get('dataset',None)
-        #aattype = params.get('type')
+        fclass = params.get('class',None)
         
         print('SearchAPIView() params',params)
         qs = Place.objects.all()
