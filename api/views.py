@@ -103,6 +103,7 @@ class SearchAPIView(generics.ListAPIView):
         qs = Place.objects.all()
         
         if q is None and contains is None:
+            # TODO: return a template with API instructions
             return HttpResponse(content=b'<h3>Needs either a "q" or "contains" parameter at minimum <br/>(e.g. ?q=myplacename or ?contains=astring)</h3>')
         else:
             qs = qs.filter(title__icontains=q) if contains is not None else qs.filter(title__istartswith=q)

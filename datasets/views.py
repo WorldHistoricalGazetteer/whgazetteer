@@ -922,7 +922,6 @@ def ds_insert_lpf(request, pk):
   with infile:
     jdata = json.loads(infile.read())
     for feat in jdata['features']:
-      #print('feat properties:',feat['properties'])
       objs = {"PlaceNames":[], "PlaceTypes":[], "PlaceGeoms":[], "PlaceWhens":[],
               "PlaceLinks":[], "PlaceRelated":[], "PlaceDescriptions":[],
               "PlaceDepictions":[]}
@@ -947,7 +946,7 @@ def ds_insert_lpf(request, pk):
         if 'toponym' in n.keys():
           # if comma-separated listed, get first
           objs['PlaceNames'].append(PlaceName(
-            place_id=newpl,
+            place=newpl,
             src_id=newpl.src_id,
             toponym=n['toponym'].split(', ')[0],
             jsonb=n,
@@ -959,7 +958,7 @@ def ds_insert_lpf(request, pk):
         for t in feat['types']:
           #print('from feat[types]:',t)
           objs['PlaceTypes'].append(PlaceType(
-            place_id=newpl,
+            place=newpl,
             src_id=newpl.src_id,
             jsonb=t
           ))
@@ -968,14 +967,14 @@ def ds_insert_lpf(request, pk):
       if 'when' in feat.keys() and feat['when'] != {}:
         #for w in feat['when']:
         objs['PlaceWhens'].append(PlaceWhen(
-          place_id=newpl,src_id=newpl.src_id,jsonb=feat['when']))
+          place=newpl,src_id=newpl.src_id,jsonb=feat['when']))
 
       # PlaceGeom: place_id,src_id,task_id,jsonb:{type,coordinates[],when{},geo_wkt,src}
       if 'geometry' in feat.keys():
         for g in feat['geometry']['geometries']:
           #print('from feat[geometry]:',g)
           objs['PlaceGeoms'].append(PlaceGeom(
-            place_id=newpl,src_id=newpl.src_id,jsonb=g))
+            place=newpl,src_id=newpl.src_id,jsonb=g))
 
       # PlaceLink: place_id,src_id,task_id,jsonb:{type,identifier}
       if 'links' in feat.keys() and len(feat['links'])>0:
@@ -984,25 +983,25 @@ def ds_insert_lpf(request, pk):
         for l in feat['links']:
           total_links += 1
           objs['PlaceLinks'].append(PlaceLink(
-            place_id=newpl,src_id=newpl.src_id,jsonb=l,task_id='initial'))
+            place=newpl,src_id=newpl.src_id,jsonb=l,task_id='initial'))
 
       # PlaceRelated: place_id,src_id,task_id,jsonb{relationType,relationTo,label,when{}}
       if 'relations' in feat.keys():
         for r in feat['relations']:
           objs['PlaceRelated'].append(PlaceRelated(
-            place_id=newpl,src_id=newpl.src_id,jsonb=r))
+            place=newpl,src_id=newpl.src_id,jsonb=r))
 
       # PlaceDescription: place_id,src_id,task_id,jsonb{@id,value,lang}
       if 'descriptions' in feat.keys():
         for des in feat['descriptions']:
           objs['PlaceDescriptions'].append(PlaceDescription(
-            place_id=newpl,src_id=newpl.src_id,jsonb=des))
+            place=newpl,src_id=newpl.src_id,jsonb=des))
 
       # PlaceDepiction: place_id,src_id,task_id,jsonb{@id,title,license}
       if 'depictions' in feat.keys():
         for dep in feat['depictions']:
           objs['PlaceDepictions'].append(PlaceDepiction(
-            place_id=newpl,src_id=newpl.src_id,jsonb=dep))
+            place=newpl,src_id=newpl.src_id,jsonb=dep))
 
       #print("objs['PlaceNames']",objs['PlaceNames'])
       PlaceName.objects.bulk_create(objs['PlaceNames'])

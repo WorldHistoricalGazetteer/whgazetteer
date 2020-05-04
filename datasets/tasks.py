@@ -206,7 +206,8 @@ def writeHit(b,passnum,ds,pid,srcid,title):
   for l in linklist:
     linkobj[l[:-2]] = b[l]['value']
   b['links'] = linkobj
-  if b['placeLabel']['value'] != b['place']['value'][31:]:
+  #  
+  if b['placeLabel']['value'] != b['place']['value'][31:]: # ??
     from datasets.models import Hit
     new = Hit(
       authority = 'wd',
@@ -249,14 +250,6 @@ def align_wd(pk, *args, **kwargs):
   timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M"); print(timestamp)
 
   hit_parade = {"summary": {}}
-  #outdir='/Users/karlg/Documents/Repos/_whgdata/pyout/align_wd/'
-  outdir='.'
-  
-  # missed, skipped
-  # can't know in advance
-  #fout1 = codecs.open(outdir+'/es-hits_'+str(ds.id)+'_'+timestamp+'.txt', 'w', 'utf8')
-  #fout2 = codecs.open(outdir+'/es-missed_'+str(ds.id)+'_'+timestamp+'.txt', 'w', 'utf8')
-  #fout3 = codecs.open(outdir+'/es-skipped_'+str(ds.id)+'_'+timestamp+'.txt', 'w', 'utf8')
   
   def toWKT(coords):
     wkt = 'POINT('+str(coords[0])+' '+str(coords[1])+')'
@@ -268,13 +261,13 @@ def align_wd(pk, *args, **kwargs):
   
   #for place in ds.places.filter(flag=True):
   for place in ds.places.all().order_by('id'): #.filter(id__lt=224265):
-    #place=get_object_or_404(Place, id=6293255) # Borneo
-    #place=get_object_or_404(Place, id=6297354) # Zelwa
+    #place=get_object_or_404(Place, id=227537) # Istanbul
+    #place=get_object_or_404(Place, id=6375671) # San Roque
     count +=1
     place_id = place.id
     src_id = place.src_id
     title = fixName(place.title)
-    qobj = {"place_id":place.id,"src_id":place.src_id,"title":fixName(place.title)}
+    qobj = {"place_id":place_id,"src_id":place.src_id,"title":fixName(place.title)}
     [variants,geoms,types,ccodes,parents]=[[],[],[],[],[]]
 
     # ccodes (2-letter iso codes)
@@ -315,10 +308,10 @@ def align_wd(pk, *args, **kwargs):
     print('qobj before modifications for Wikidata',qobj)
     # wikidata sparql needs this form for lists
     variants = ' '.join(['"'+n+'"' for n in qobj['variants']])
+    
     # countries, placetypes if they're there
     countries = ', '.join([c for c in getQ(qobj['countries'],'ccodes')]) if len(qobj['countries'])>0 else ''
     placetype = getQ(qobj['placetypes'],'types')[0] if len(qobj['placetypes'])>0 else ''
-    #placetype = getQ(qobj['placetypes'],'types')
     print('variants,countries,placetype',variants,countries,placetype)
     
     # TODO admin parent P131, retrieve wiki article name, country P17, ??
@@ -336,7 +329,7 @@ def align_wd(pk, *args, **kwargs):
             ?place wikibase:apiOutputItem mwapi:item .
             ?num wikibase:apiOrdinal true .
           }         
-  
+          OPTIONAL {?place wdt:P31 ?placeType .}  
           OPTIONAL {?place wdt:P17 ?country .}
           OPTIONAL {?place wdt:P131 ?parent .}
           OPTIONAL {?place wdt:P571 ?inception .}
@@ -370,11 +363,19 @@ def align_wd(pk, *args, **kwargs):
       q+='''
         ?place wdt:P625 ?location .
       '''
+    #qtype = q+'''
+      #?placeType p:P31/ps:P31/wdt:P279* %s .
+      #?place wdt:P31 ?placeType.    
+    #'''%(placetype)
+    #qtype = q+'''
+      #?place wdt:P31/wdt:P279* ?placeType.
+      #FILTER (?placeType in (wd:%s)) .
+    #'''%(placetype)
     qtype = q+'''
-      ?placeType p:P31/ps:P31/wdt:P279* %s .
-      ?place wdt:P31 ?placeType.    
+      ?place wdt:P31/wdt:P279* ?placeType .
+      FILTER (?placeType in (%s)) . 
     '''%(placetype)
-    
+        
     if countries != '':
       q+='FILTER (?country in (%s)) . }'% (countries)
       qtype+='FILTER (?country in (%s)) . }'% (countries)
@@ -408,14 +409,18 @@ def align_wd(pk, *args, **kwargs):
       # test, output results
       if len(bindings) > 0:
         print(str(len(bindings))+' bindings for pass1: '+str(place_id),qbase)
+        # TODO: this counts hits, written or not
         count_hit +=1 # got at least 1
-        count_p1+=1 # it's pass1
+        count_p1 +=1 # it's pass1
         for b in bindings:
-          if b['locations']['value'] != '':
+          # write hit only if there's geometry
+          if b['locations']['value'] != '': 
             total_hits+=1 # add to total
+            # if type is empty, insert from query
+            if b['types']['value'] == '':
+              b['types']['value'] = placetype 
             writeHit(b,'pass1',ds,place_id,src_id,title)
-            #fout1.write(str(place_id)+'\tpass1:'+' '+str(b)+'\n')   
-            print('pass1 hit binding:',b)   
+            print('pass1 hit binding:',b)
       elif len(bindings) == 0:
         # no hits, pass2(qbare) drops type
         sparql.setQuery(qbare)
@@ -448,6 +453,7 @@ def align_wd(pk, *args, **kwargs):
     try:
       runQuery()
     except:
+      print('runQuery() error:',sys.exc_info())
       count_skipped +=1
       continue
   

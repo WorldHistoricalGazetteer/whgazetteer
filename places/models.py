@@ -18,6 +18,7 @@ class Place(models.Model):
     dataset = models.ForeignKey('datasets.Dataset', db_column='dataset',
         to_field='label', related_name='places', on_delete=models.CASCADE)
     ccodes = ArrayField(models.CharField(max_length=2))
+    fclasses = ArrayField(models.CharField(max_length=1,choices=FEATURE_CLASSES),null=True,blank=True)
     # is it indexed?
     indexed = models.BooleanField(default=False)
     # general purpose (not in use)
@@ -30,6 +31,10 @@ class Place(models.Model):
     @property
     def idx(self):
         return self.indexed
+    
+    #@property
+    #def fclasses(self):
+        #return [t.fclass for t in self.types.all()]
     
     @property
     def countries(self):
