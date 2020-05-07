@@ -259,10 +259,11 @@ def align_wd(pk, *args, **kwargs):
   global count_hit, count_nohit, total_hits, count_p1, count_p2
   [count_hit, count_nohit, total_hits, count_p1, count_p2] = [0,0,0,0,0]
   
-  #for place in ds.places.filter(flag=True):
-  for place in ds.places.all().order_by('id'): #.filter(id__lt=224265):
-    #place=get_object_or_404(Place, id=227537) # Istanbul
-    #place=get_object_or_404(Place, id=6375671) # San Roque
+  for place in ds.places.filter(flag=True):
+  #for place in ds.places.all().order_by('id')[:20]: #.filter(id__lt=224265):
+    #place=get_object_or_404(Place, id=6369031) # Aachen
+    #place=get_object_or_404(Place, id=6369589) # Abrantes
+    #place=get_object_or_404(Place, id=6368883) # Istanbul
     count +=1
     place_id = place.id
     src_id = place.src_id
@@ -314,6 +315,7 @@ def align_wd(pk, *args, **kwargs):
     placetype = getQ(qobj['placetypes'],'types')[0] if len(qobj['placetypes'])>0 else ''
     print('variants,countries,placetype',variants,countries,placetype)
     
+    # belongs?          OPTIONAL {?place wdt:P31 ?placeType .}  
     # TODO admin parent P131, retrieve wiki article name, country P17, ??
     q='''SELECT ?place ?placeLabel ?countryLabel ?inception ?tgnid ?gnid ?viafid ?locid
         (group_concat(distinct ?parentLabel; SEPARATOR=", ") as ?parents)
@@ -329,12 +331,11 @@ def align_wd(pk, *args, **kwargs):
             ?place wikibase:apiOutputItem mwapi:item .
             ?num wikibase:apiOrdinal true .
           }         
-          OPTIONAL {?place wdt:P31 ?placeType .}  
           OPTIONAL {?place wdt:P17 ?country .}
           OPTIONAL {?place wdt:P131 ?parent .}
           OPTIONAL {?place wdt:P571 ?inception .}
   
-          OPTIONAL {?place wdt:P1667 ?tgnid .}
+          OPTIONAL {?place wdt:P1667 ?tgnid .} 
           OPTIONAL {?place wdt:P1566 ?gnid .}
           OPTIONAL {?place wdt:P214 ?viafid .}
           OPTIONAL {?place wdt:P244 ?locid .}
