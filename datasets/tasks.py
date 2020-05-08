@@ -86,6 +86,7 @@ def ccDecode(codes):
   return countries
   
 # normalize hits json from any authority
+# 
 def normalize(h,auth):
   if auth.startswith('whg'):
     rec = HitRecord(h['place_id'], h['dataset'], h['src_id'], h['title'])
@@ -121,14 +122,17 @@ def normalize(h,auth):
   
   elif auth == 'wd':
     try:
-      #
-      locs=[]
+      # locations and links may be multiple, comma-delimited
+      locs=[]; links = []
       if 'locations' in h.keys():
         for l in h['locations']['value'].split(', '):
           loc = parse_wkt(l)
           loc["id"]=h['place']['value'][31:]
           loc['ds']='wd'
           locs.append(loc)
+      if 'links' in h.keys():
+        for l in h['links']:
+          links.append('closeMatch: '+l)
       #  place_id, dataset, src_id, title
       rec = HitRecord(-1, 'wd', h['place']['value'][31:], h['placeLabel']['value'])
       rec.variants = []
@@ -136,9 +140,8 @@ def normalize(h,auth):
       rec.ccodes = [h['countryLabel']['value']]
       rec.parents =h['parents']['value'] if 'parents' in h.keys() else []
       rec.geoms = locs if len(locs)>0 else []
+      rec.links = links if len(links)>0 else []
       rec.minmax = []
-      rec.links = ['closeMatch: '+l+':'+h['links'][l] for l in h['links']] \
-                  if len(h['links']) > 0 else []
       rec.inception = parseDateTime(h['inception']['value']) if 'inception' in h.keys() else ''
       # {'datatype': 'http://www.w3.org/2001/XMLSchema#dateTime', 'type': 'literal', 'value': '1858-11-22T00:00:00Z'}
     except:
@@ -197,16 +200,20 @@ def get_bounds_filter(bounds,idx):
   return filter
 
 
-# wikidata: b,'pass1',ds,place_id,src_id,title
+# from align_wd (wikidata)
+# b: wikidata binding; passnum: 1 or 2; ds (obj); pid,srcid,title > whg Place instance
 def writeHit(b,passnum,ds,pid,srcid,title):
   # gather any links
   authkeys=['tgnids','gnids','viafids','locids']
-  linklist = list(set(list(b.keys())).intersection(authkeys))
-  linkobj = {}
-  for l in linklist:
-    linkobj[l[:-3]] = b[l]['value']
-  b['links'] = linkobj
-  print('linkobj, linklist',linkobj,linklist)
+  linkkeys = list(set(list(b.keys())).intersection(authkeys))
+  linklist = []
+  # TODO: yuk
+  for l in linkkeys:
+    for v in b[l]['value'].split(', '):
+      if v != '':
+        linklist.append(l[:-3]+':'+v)
+  b['links'] = linklist
+  print('linklist',linklist) # ['viaf:124330404', 'tgn:1003084', 'tgn:7004799', 'gn:6553047', 'loc:n80046295']
   if b['placeLabel']['value'] != b['place']['value'][31:]: # ??
     from datasets.models import Hit
     new = Hit(
@@ -251,16 +258,16 @@ def align_wd(pk, *args, **kwargs):
 
   hit_parade = {"summary": {}}
   
-  def toWKT(coords):
-    wkt = 'POINT('+str(coords[0])+' '+str(coords[1])+')'
-    return wkt
+  #def toWKT(coords):
+    #wkt = 'POINT('+str(coords[0])+' '+str(coords[1])+')'
+    #return wkt
   
   [count,count_skipped] = [0,0]
   global count_hit, count_nohit, total_hits, count_p1, count_p2
   [count_hit, count_nohit, total_hits, count_p1, count_p2] = [0,0,0,0,0]
   
   for place in ds.places.filter(flag=True):
-  #for place in ds.places.all().order_by('id')[:20]: #.filter(id__lt=224265):
+  #for place in ds.places.all(): #.order_by('id'): #[:20]: #.filter(id__lt=224265):
     #place=get_object_or_404(Place, id=6369031) # Aachen
     #place=get_object_or_404(Place, id=6369589) # Abrantes
     #place=get_object_or_404(Place, id=6368883) # Istanbul
@@ -406,7 +413,7 @@ def align_wd(pk, *args, **kwargs):
         
       # test, output results
       if len(bindings) > 0:
-        print(str(len(bindings))+' bindings for pass1: '+str(place_id),qbase)
+        #print(str(len(bindings))+' bindings for pass1: '+str(place_id),qbase)
         # TODO: this counts hits, written or not
         count_hit +=1 # got at least 1
         count_p1 +=1 # it's pass1
