@@ -200,13 +200,13 @@ def get_bounds_filter(bounds,idx):
 # wikidata: b,'pass1',ds,place_id,src_id,title
 def writeHit(b,passnum,ds,pid,srcid,title):
   # gather any links
-  authkeys=['tgnid','gnid','viafid','locid']
+  authkeys=['tgnids','gnids','viafids','locids']
   linklist = list(set(list(b.keys())).intersection(authkeys))
   linkobj = {}
   for l in linklist:
-    linkobj[l[:-2]] = b[l]['value']
+    linkobj[l[:-3]] = b[l]['value']
   b['links'] = linkobj
-  #  
+  print('linkobj, linklist',linkobj,linklist)
   if b['placeLabel']['value'] != b['place']['value'][31:]: # ??
     from datasets.models import Hit
     new = Hit(
@@ -317,10 +317,15 @@ def align_wd(pk, *args, **kwargs):
     
     # belongs?          OPTIONAL {?place wdt:P31 ?placeType .}  
     # TODO admin parent P131, retrieve wiki article name, country P17, ??
-    q='''SELECT ?place ?placeLabel ?countryLabel ?inception ?tgnid ?gnid ?viafid ?locid
+    #q='''SELECT ?place ?placeLabel ?countryLabel ?inception ?tgnids ?gnids ?viafids ?locids
+    q='''SELECT ?place ?placeLabel ?countryLabel ?inception 
         (group_concat(distinct ?parentLabel; SEPARATOR=", ") as ?parents)
         (group_concat(distinct ?placeTypeLabel; SEPARATOR=", ") as ?types)
         (group_concat(distinct ?location; SEPARATOR=", ") as ?locations)
+        (group_concat(distinct ?tgnid; SEPARATOR=", ") as ?tgnids)
+        (group_concat(distinct ?gnid; SEPARATOR=", ") as ?gnids)
+        (group_concat(distinct ?viafid; SEPARATOR=", ") as ?viafids)
+        (group_concat(distinct ?locid; SEPARATOR=", ") as ?locids)
         WHERE {
           VALUES ?plabel { %s } .
           SERVICE wikibase:mwapi {
@@ -364,14 +369,6 @@ def align_wd(pk, *args, **kwargs):
       q+='''
         ?place wdt:P625 ?location .
       '''
-    #qtype = q+'''
-      #?placeType p:P31/ps:P31/wdt:P279* %s .
-      #?place wdt:P31 ?placeType.    
-    #'''%(placetype)
-    #qtype = q+'''
-      #?place wdt:P31/wdt:P279* ?placeType.
-      #FILTER (?placeType in (wd:%s)) .
-    #'''%(placetype)
     qtype = q+'''
       ?place wdt:P31/wdt:P279* ?placeType .
       FILTER (?placeType in (%s)) . 
@@ -383,7 +380,7 @@ def align_wd(pk, *args, **kwargs):
       
     # qbase is pass1: names, types, geometry, countries
     qbase = qtype+'''
-      GROUP BY ?place ?placeLabel ?countryLabel ?inception ?tgnid ?gnid ?viafid ?locid
+      GROUP BY ?place ?placeLabel ?countryLabel ?inception ?tgnids ?gnids ?viafids ?locids
       ORDER BY ASC(?num) LIMIT 5
     '''
 
