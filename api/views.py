@@ -97,19 +97,22 @@ class SearchAPIView(generics.ListAPIView):
         contains = params.get('contains')
         cc = map(str.upper,params.get('ccodes').split(',')) if params.get('ccodes') else None
         dslabel = params.get('dataset',None)
-        fclass = params.get('class',None)
+        fc = params.get('class',None)
+        fclasses=[x.upper() for x in fc.split(',')] if fc else None
+        count = params.get('count',None)
         
-        print('SearchAPIView() params',params)
+        print('SearchAPIView() params (q,contains,cc,dslabel,fc,count',q,contains,cc,dslabel,fc,count)
         qs = Place.objects.all()
         
         if q is None and contains is None:
             # TODO: return a template with API instructions
             return HttpResponse(content=b'<h3>Needs either a "q" or "contains" parameter at minimum <br/>(e.g. ?q=myplacename or ?contains=astring)</h3>')
         else:
+            qs = qs.filter(fclasses__overlap=fclasses) if fc else qs
             qs = qs.filter(title__icontains=q) if contains is not None else qs.filter(title__istartswith=q)
             qs = qs.filter(dataset=dslabel) if dslabel else qs
             qs = qs.filter(ccodes__overlap=cc) if cc else qs
-            filtered = qs[:20]
+            filtered = qs[:count] if count else qs[:10]
             serializer = LPFSerializer(filtered, many=True, context={'request': self.request})
             serialized_data = serializer.data
             result = {"count":qs.count(),"parameters": params,"features":serialized_data}
