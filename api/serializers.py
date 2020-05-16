@@ -9,6 +9,7 @@ from main.choices import DATATYPES
 from places.models import *
 
 import json, geojson
+from edtf import parse_edtf
 from shapely.geometry import shape
 
 # TODO: these are updated in both Dataset & DatasetFile  (??)
@@ -154,16 +155,21 @@ class PlaceSerializer(serializers.ModelSerializer):
     
     # 6365611 (pleiades_20200402); 6367873 (euratlas_cities); 6365630 (owtrad10)
     minmax = serializers.SerializerMethodField('get_minmax')
+    # 
     def get_minmax(self,place):
-        tsarr=[n.jsonb['timespans'][0] for n in place.whens.all() if place.whens.count()>0]
+        tsarr=[w.jsonb['timespans'][0] for w in place.whens.all() if place.whens.count()>0]
         tsarr=tsarr+[n.jsonb['when']['timespans'][0] for n in place.names.all() if 'when' in n.jsonb]
         tsarr=tsarr+[t.jsonb['when']['timespans'][0] for t in place.types.all() if 'when' in t.jsonb]
         tsarr=tsarr+[g.jsonb['when']['timespans'][0] for g in place.geoms.all() if 'when' in g.jsonb]
-        starts=[];ends=[];years=[];nullset=set([None]);
+        years=[];nullset=set([None]) #;starts=[];ends=[];
+        #print('place,tsarr',place,tsarr)
         for ts in tsarr:
-            years.append(int(list(ts['start'].values())[0]))
-            years.append(int(list(ts['end'].values())[0]) if 'end' in ts.keys() else None)
-            years = list(set(years)-nullset)
+            start = list(ts['start'].values())[0]
+            end = list(ts['end'].values())[0] if 'end' in ts else ''
+            years.append(int( parse_edtf(start).get_year() ))
+            if end != '':
+                years.append(int(parse_edtf(end).get_year()))
+        years = list(set(years)-nullset)
         return [min(years),max(years)] if len(years)>0 else []
     
     class Meta:

@@ -237,7 +237,7 @@ def review(request, pk, tid, passnum):
             if kwargs['aug_geom'] == 'on' and hasGeom \
                and tid not in place_post.geoms.all().values_list('task_id',flat=True):
               geom = PlaceGeom.objects.create(
-                place_id = place_post,
+                place = place_post,
                 task_id = tid,
                 src_id = place.src_id,
                 jsonb = {
@@ -253,7 +253,7 @@ def review(request, pk, tid, passnum):
             # IF someone didn't just do it for this record
             if tid not in place_post.links.all().values_list('task_id',flat=True):
               link = PlaceLink.objects.create(
-                place_id = place_post,
+                place = place_post,
                 task_id = tid,
                 src_id = place.src_id,
                 jsonb = {
@@ -269,7 +269,7 @@ def review(request, pk, tid, passnum):
             if 'links' in hits[x]['json']:
               for l in hits[x]['json']['links']:
                 link = PlaceLink.objects.create(
-                  place_id = place,
+                  place = place,
                   task_id = tid,
                   src_id = place.src_id,
                   jsonb = {
@@ -286,8 +286,9 @@ def review(request, pk, tid, passnum):
           # 
           # this is accessioning step
           elif task.task_name == 'align_whg':
-            # match is to a whg index hit/doc
+            # match is to doc in the index
             # index as child or sibling, as appropriate
+            # TODO: write database PlaceLink records for incoming & matched
             indexMatch(placeid, hits[x]['json']['place_id'])
         # in any case, flag hit as reviewed; 
         matchee = get_object_or_404(Hit, id=hit.id)
@@ -723,6 +724,7 @@ def ds_update(request):
         #p = places.filter(src_id='1.0').first()
         p = places.filter(src_id=rdp['id']).first()
         print(p)
+        # TODO: compute fclasses, minmax as req.
         if p != None:
           # place exists, update it
           count_updated +=1
@@ -733,6 +735,7 @@ def ds_update(request):
           pobj = p
         else:
           # entirely new place + related records
+          # TODO: compute fclasses, minmax as req.
           count_new +=1
           newpl = Place.objects.create(
             src_id = rdp['id'],
@@ -926,11 +929,12 @@ def ds_insert_lpf(request, pk):
               "PlaceLinks":[], "PlaceRelated":[], "PlaceDescriptions":[],
               "PlaceDepictions":[]}
       countrows += 1
-      print('countrows',countrows)
+      #print('countrows',countrows)
       #print(feat['@id'],feat['properties']['title'],feat.keys())
 
       # instantiate Place record & save to get id
       # Place: src_id, title, ccodes, dataset
+      # TODO: compute fclasses and instance minmax
       newpl = Place(
         # TODO: add src_id to properties in LP format?
         src_id=feat['@id'] if uribase == None else feat['@id'].replace(uribase,''),
@@ -1012,8 +1016,9 @@ def ds_insert_lpf(request, pk):
       PlaceRelated.objects.bulk_create(objs['PlaceRelated'])
       PlaceDescription.objects.bulk_create(objs['PlaceDescriptions'])
       PlaceDepiction.objects.bulk_create(objs['PlaceDepictions'])
+      #print('new place record: ',newpl.src_id)
 
-    #print('record:', ds.__dict__)
+    print('new dataset:', ds.__dict__)
     infile.close()
 
   #context = {'status':'inserted'}
@@ -1022,7 +1027,7 @@ def ds_insert_lpf(request, pk):
   dsf.numrows = countrows
   dsf.save()
 
-  print('countlinked',countlinked)
+  #print('countlinked',countlinked)
   ds.ds_status = 'uploaded'
   ds.numrows = countrows
   ds.numlinked = countlinked
@@ -1083,20 +1088,17 @@ def ds_insert_tsv(request, pk):
       if 'types' in header else []
     aat_types = [x.strip() for x in r[header.index('aat_types')].split(';')] \
       if 'aat_types' in header else []
-    #print('types, aat_types',types, aat_types)
     ccodes = [x.strip() for x in r[header.index('ccodes')].split(';')] \
       if 'ccodes' in header else []
     parent_name = r[header.index('parent_name')] if 'parent_name' in header else ''
     parent_id = r[header.index('parent_id')] if 'parent_id' in header else ''
     coords = makeCoords(r[header.index('lon')],r[header.index('lat')]) \
       if 'lon' in header and 'lat' in header else []
-    #matches = [x.strip() for x in r[header.index('matches')].split(';')] \
-      #if 'matches' in header else []
     matches = [x.strip() for x in r[header.index('matches')].split(';')] \
       if 'matches' in header and r[header.index('matches')] != '' else []
     start = r[header.index('start')] if 'start' in header else None
     end = r[header.index('end')] if 'end' in header else None
-    # not sure this will get used
+    # TODO: write minmax to Place instance
     minmax = [start,end]
     description = r[header.index('description')] \
       if 'description' in header else ''
@@ -1117,7 +1119,7 @@ def ds_insert_tsv(request, pk):
     # PlaceName()
     objs['PlaceName'].append(
       PlaceName(
-        place_id=newpl,
+        place=newpl,
         src_id = src_id,
         toponym = title,
         jsonb={"toponym": title, "citation": {"id":title_uri,"label":title_source}}
@@ -1127,21 +1129,20 @@ def ds_insert_tsv(request, pk):
       for v in variants:
         objs['PlaceName'].append(
           PlaceName(
-            place_id=newpl,
+            place=newpl,
             src_id = src_id,
             toponym = v,
             jsonb={"toponym": v, "citation": {"id":"","label":title_source}}
         ))
     #
     # PlaceType()
-    # TODO: parse t
     if len(types) > 0:
       for i,t in enumerate(types):
         # i always 0 in tsv
         aatnum=aat_types[i] if len(aat_types) >= len(types) else ''
         objs['PlaceType'].append(
           PlaceType(
-            place_id=newpl,
+            place=newpl,
             src_id = src_id,
             jsonb={ "identifier":aatnum,
                     "sourceLabel":t,
@@ -1154,7 +1155,7 @@ def ds_insert_tsv(request, pk):
     if len(coords) > 0:
       objs['PlaceGeom'].append(
         PlaceGeom(
-          place_id=newpl,
+          place=newpl,
           src_id = src_id,
           jsonb={"type": "Point", "coordinates": coords,
                       "geowkt": 'POINT('+str(coords[0])+' '+str(coords[1])+')'}
@@ -1162,7 +1163,7 @@ def ds_insert_tsv(request, pk):
     elif 'geowkt' in header and r[header.index('geowkt')] not in ['',None]: # some rows no geom
       objs['PlaceGeom'].append(
         PlaceGeom(
-          place_id=newpl,
+          place=newpl,
           src_id = src_id,
           # make GeoJSON using shapely
           jsonb=parse_wkt(r[header.index('geowkt')])
@@ -1175,31 +1176,29 @@ def ds_insert_tsv(request, pk):
         countlinks += 1
         objs['PlaceLink'].append(
           PlaceLink(
-            place_id=newpl,
+            place=newpl,
             src_id = src_id,
             jsonb={"type":"closeMatch", "identifier":m}
         ))
-
     #
     # PlaceRelated()
     if parent_name != '':
       objs['PlaceRelated'].append(
         PlaceRelated(
-          place_id=newpl,
+          place=newpl,
           src_id=src_id,
           jsonb={
             "relationType": "gvp:broaderPartitive",
             "relationTo": parent_id,
             "label": parent_name}
       ))
-
     #
     # PlaceWhen()
     # timespans[{start{}, end{}}], periods[{name,id}], label, duration
     if start != '':
       objs['PlaceWhen'].append(
         PlaceWhen(
-          place_id=newpl,
+          place=newpl,
           src_id = src_id,
           jsonb={
                 "timespans": [{"start":{"earliest":minmax[0]}, "end":{"latest":minmax[1]}}]
@@ -1212,7 +1211,7 @@ def ds_insert_tsv(request, pk):
     if description != '':
       objs['PlaceDescription'].append(
         PlaceDescription(
-          place_id=newpl,
+          place=newpl,
           src_id = src_id,
           jsonb={
             "@id": "", "value":description, "lang":""
@@ -1358,6 +1357,9 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
       dsobj = form.save(commit=False)
       dsobj.ds_status = 'format_ok'
       dsobj.numrows = result['count']
+      # links will be counted later on insert
+      dsobj.numlinked = 0
+      dsobj.total_links = 0
       try:
         dsobj.save()
       except:
@@ -1560,8 +1562,9 @@ class DatasetDeleteView(DeleteView):
 
   def delete_from_index(self):
     ds=get_object_or_404(Dataset,pk=self.kwargs.get("id"))
-    pids=list(ds.placeids)
-    deleteFromIndex(es,'whg02',pids)
+    if ds.ds_status == 'indexed':
+      pids=list(ds.placeids)
+      deleteFromIndex(es,'whg02',pids)
   
   def get_object(self):
     id_ = self.kwargs.get("id")

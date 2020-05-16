@@ -51,6 +51,22 @@ class Place(models.Model):
             models.Index(fields=['src_id', 'dataset']),
         ]
 
+
+class Type(models.Model):
+    aat_id = models.IntegerField(unique=True)
+    parent_id = models.IntegerField(null=True,blank=True)
+    term = models.CharField(max_length=100)
+    term_full = models.CharField(max_length=100)
+    note = models.TextField(max_length=3000)
+    fclass = models.CharField(max_length=1)
+    
+    def __str__(self):
+        return str(self.aat_id) +':'+self.term
+    
+    class Meta:
+        managed = True
+        db_table = 'types'
+    
 class Source(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
     # TODO: force unique...turn into slug or integer

@@ -219,8 +219,8 @@ def deleteFromIndex(es,idx,pids):
             print('aw shit',sys.exit(sys.exc_info()))
         # child's presence in parent removed, add to delthese[]
         delthese.append(pid)
-    elif len(hits) == 0:
-      print('not indexed, skipping...')
+    #elif len(hits) == 0:
+      #print('not indexed, skipping...')
   es.delete_by_query(idx,body={"query": {"terms": {"place_id": delthese}}})
   print('deleted '+str(len(delthese))+': '+str(delthese))
 
@@ -355,7 +355,7 @@ def makeDoc(place,parentid):
   return es_doc
 
 # ***
-# fill ES doc arrays with jsonb objects in database
+# fill ES doc arrays from databse jsonb objects
 # ***
 def parsePlace(place,attr):
   qs = eval('place.'+attr+'.all()')
@@ -378,48 +378,4 @@ def parsePlace(place,attr):
     else:
       arr.append(obj.jsonb)
   return arr
-
-# used in scratch code es.py, es_black.py
-def queryObject(place):
-  from datasets.utils import hully
-  qobj = {"place_id":place.id,"src_id":place.src_id,"title":place.title}
-  variants=[]; geoms=[]; types=[]; ccodes=[]; parents=[]; links=[]
-
-  # ccodes (2-letter iso codes)
-  for c in place.ccodes:
-    ccodes.append(c)
-  qobj['ccodes'] = place.ccodes
-
-  # types (Getty AAT identifiers)
-  for t in place.types.all():
-    types.append(t.jsonb['identifier'])
-  qobj['types'] = types
-
-  # names
-  for name in place.names.all():
-    variants.append(name.toponym)
-  qobj['variants'] = variants
-
-  # parents
-  for rel in place.related.all():
-    if rel.jsonb['relationType'] == 'gvp:broaderPartitive':
-      parents.append(rel.jsonb['label'])
-  qobj['parents'] = parents
-
-  # links
-  if len(place.links.all()) > 0:
-    for l in place.links.all():
-      links.append(l.jsonb['identifier'])
-    qobj['links'] = links
-
-  # geoms
-  if len(place.geoms.all()) > 0:
-    geom = place.geoms.all()[0].jsonb
-    if geom['type'] in ('Point','MultiPolygon'):
-      qobj['geom'] = place.geoms.first().jsonb
-    elif geom['type'] == 'MultiLineString':
-      qobj['geom'] = hully(geom)
-
-  return qobj
-
 

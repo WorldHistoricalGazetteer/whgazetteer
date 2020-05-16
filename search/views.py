@@ -137,7 +137,7 @@ def suggester(doctype,q,scope,idx):
     return suggestions 
 
 """ Returns place:search/suggest or trace:search """
-class SearchView(LoginRequiredMixin,View):
+class SearchView(View):
   @staticmethod
   def get(request):
     print('SearchView request',request.GET)

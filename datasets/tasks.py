@@ -266,8 +266,8 @@ def align_wd(pk, *args, **kwargs):
   global count_hit, count_nohit, total_hits, count_p1, count_p2
   [count_hit, count_nohit, total_hits, count_p1, count_p2] = [0,0,0,0,0]
   
-  for place in ds.places.filter(flag=True):
-  #for place in ds.places.all(): #.order_by('id'): #[:20]: #.filter(id__lt=224265):
+  #for place in ds.places.filter(flag=True):
+  for place in ds.places.all(): #.order_by('id'): #[:20]: #.filter(id__lt=224265):
     #place=get_object_or_404(Place, id=6369031) # Aachen
     #place=get_object_or_404(Place, id=6369589) # Abrantes
     #place=get_object_or_404(Place, id=6368883) # Istanbul
@@ -622,6 +622,7 @@ def align_tgn(pk, *args, **kwargs):
   start = datetime.datetime.now()
 
   # queryset depends on choice of scope in addtask form
+  #qs = ds.places.all().filter(flag=True)
   qs = ds.places.all() if scope == 'all' else ds.places.all().filter(indexed=False)
 
   for place in qs:
@@ -823,7 +824,7 @@ def es_lookup_whg(qobj, *args, **kwargs):
   q1 = qlinks
   q2 = qbase
   q3 = qbare
-  
+  print('q1',q1)
   # /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
   # pass1: must[links]; should[names->variants]
   # /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
@@ -839,7 +840,7 @@ def es_lookup_whg(qobj, *args, **kwargs):
       hit['pass'] = 'pass1'
       result_obj['hits'].append(hit)
       result_obj['hit_count'] = hit_count
-      return result_obj
+    return result_obj
   elif len(hits1) == 0:
   # /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
   # pass2: must[name, type]; should[parent]; filter[geom, bounds]
@@ -906,11 +907,6 @@ def align_whg(pk, *args, **kwargs):
 
   start = datetime.datetime.now()
   print('kwargs in align_whg()',kwargs)
-  # dict to object
-  #class Struct:
-    #def __init__(self, **entries):
-      #self.__dict__.update(entries) 
-      
     
   # queryset depends on choice of scope in addtask form
   qs = ds.places.all() if scope == 'all' else ds.places.all().filter(indexed=False)
@@ -920,7 +916,8 @@ def align_whg(pk, *args, **kwargs):
   then result_obj = es_lookup_whg(qobj)
   """
   for place in qs:
-    #place=get_object_or_404(Place,id=6294527)
+    #place=get_object_or_404(Place,id=6369031) # Aachen
+    # (2 index docs with tgn:7004799 link)
     count +=1
     qobj = {"place_id":place.id, "src_id":place.src_id, "title":place.title}
     links=[]; ccodes=[]; types=[]; variants=[]; parents=[]; geoms=[]; 
@@ -1014,7 +1011,7 @@ def align_whg(pk, *args, **kwargs):
       total_hits += result_obj['hit_count']
       # extract pass1 if any
       pass1hits = [hit for hit in hits if hit['pass']=='pass1']
-      # 0 or >1 pass1 hit? write each to db for review
+      # 0 or >1 pass1 hit -> write each to db for review
       # (pass1 are never mixed with others)
       if len(pass1hits) == 0 or len(pass1hits) >1:
         for hit in hits:
