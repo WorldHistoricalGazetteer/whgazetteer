@@ -82,33 +82,34 @@ def download_augmented(request, *args, **kwargs):
     print('augmented for delimited')
     # make file name
     fn = 'media/user_'+user+'/'+ds.label+'_aug_'+date+'.tsv'
-    
-    def toWKT(coords):
-      wkt = '('+str(coords[0])+','+str(coords[1])+')'
-      return wkt    
-    def augGeom(glist):
-      aug_geom = []
-      #for g in glist.exclude(task_id=None):
-      for g in glist: # export all, not only added
-        aug_geom.append(toWKT(g.jsonb['coordinates'])+ \
-          (','+g.jsonb['citation']['id'] if 'citation' in g.jsonb else '')
-        )
-      return ';'.join(aug_geom)
     def augLinks(linklist):
       aug_links = []
       for l in linklist:
         aug_links.append(l.jsonb['identifier'])
       return ';'.join(aug_links)
 
-    #header_e = fileobj.header
-    #header_new = ['id','whg_pid','title','ccodes','coords','matches']
-    
+    def augGeom(qs_geoms):
+      coords = []
+      for g in qs_geoms: # export all, not only added
+        coords.append(g.jsonb['coordinates']) #+ \
+          #(','+g.jsonb['citation']['id'] if 'citation' in g.jsonb else ''))
+      #return ';'.join(aug_geom)
+      return coords
+
     with open(fn, 'w', newline='', encoding='utf-8') as csvfile:
       writer = csv.writer(csvfile, delimiter='\t', quotechar='', quoting=csv.QUOTE_NONE)
-      writer.writerow(['id','whg_pid','title','ccodes','coords','matches'])
+      writer.writerow(['id','whg_pid','title','ccodes','lon','lat','coordinates','matches'])
       for f in features:
-        row = [str(f.src_id),str(f.id),f.title,';'.join(f.ccodes), \
-            augGeom(f.geoms.all()),str(augLinks(f.links.all()))]
+        geoms = f.geoms.all()
+        coords = augGeom(geoms)
+        row = [str(f.src_id),
+               str(f.id),f.title,
+               ';'.join(f.ccodes),
+               coords[0][0] if len(coords)>0 else None,
+               coords[0][1] if len(coords)>0 else None,
+               coords,
+               str(augLinks(f.links.all()))
+        ]
         writer.writerow(row)
         #print(row)
     response = FileResponse(open(fn, 'rb'),content_type='text/csv')

@@ -15,7 +15,7 @@ from datasets.models import Dataset, Hit
 from datasets.static.regions import regions as region_hash
 from datasets.static.hashes.parents import ccodes
 from datasets.utils import *
-from places.models import Place
+from places.models import Place, PlaceLink
 ##
 #import shapely.geometry as sgeo
 from geopy import distance
@@ -736,7 +736,7 @@ def es_lookup_whg(qobj, *args, **kwargs):
   global whg_id
   idx = kwargs['index']
   bounds = kwargs['bounds']
-  ds = kwargs['dataset'] 
+  #ds = kwargs['dataset'] 
   place = kwargs['place']
   hit_count, err_count = [0,0]
 
@@ -963,7 +963,8 @@ def align_whg(pk, *args, **kwargs):
     # ***
     # run es_lookup_whg(qobj): 3 query passes
     # ***
-    result_obj = es_lookup_whg(qobj, index=idx, bounds=bounds, dataset=ds.label, place=place)
+    #result_obj = es_lookup_whg(qobj, index=idx, bounds=bounds, dataset=ds.label, place=place)
+    result_obj = es_lookup_whg(qobj, index=idx, bounds=bounds, place=place)
 
     # PARSE RESULTS
     # no hits on any pass, create parent record now
@@ -1043,8 +1044,7 @@ def align_whg(pk, *args, **kwargs):
           except:
             count_errors +=1
             print("hit _source, error:",hit, sys.exc_info())
-      # single pass1 hit? 
-      # make new doc from record and index it immediately
+      # single pass1 hit, index it 
       elif len(pass1hits) == 1:
         hit = hits[0]
         # instantiate a child doc

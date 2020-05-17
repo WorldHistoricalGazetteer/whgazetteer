@@ -20,7 +20,7 @@ urlpatterns = [
     # download current upload file revision, unchanged
     path('<int:id>/file/', download_file, name="dl-file"), # 
 
-    # download augmented dataset as lpf
+    # download augmented dataset
     path('<int:id>/augmented/<str:format>', download_augmented, name="dl-aug"), # 
 
     # download flattened geojson data

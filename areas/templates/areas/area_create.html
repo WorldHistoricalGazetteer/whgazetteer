@@ -75,8 +75,8 @@
         <input type="hidden" name="type" value='' />
       {% endif %}
       <p>Title<br/>{{ form.title }}</p>
-      {{ action }}
-      {{ form.type.value }}
+      <!--{ action }}-->
+      <!--{ form.type.value }}-->
       <p><span class="top">Description</span><br/>{{ form.description }}</p>
       <hr/>
       <div id="area_options">
@@ -183,14 +183,17 @@
           console.log('drawnlayer',drawnlayer)
           drawnItems.addLayer(drawnlayer);
           drawnItems.addTo(mappy)
-          $("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON()))
+          <!--$("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON()))-->
+          $("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON().features[0].geometry))
         });
         mappy.on(L.Draw.Event.EDITED, function (event) {
-          $("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON()))
+          <!--$("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON()))-->
+          $("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON().features[0].geometry))
           console.log('you changed it')
         });
         mappy.on(L.Draw.Event.DELETED, function (event) {
-          $("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON()))
+          <!--$("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON()))-->
+          $("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON().features[0].geometry))
           <!--drawnItems.addTo(mappy)-->
           console.log('you deleted something')
         })
@@ -224,13 +227,11 @@
       attrib_awmc = 'Tiles and Data &copy; 2013 <a href="http://www.awmc.unc.edu" target="_blank">AWMC</a>',
       token_mb = 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw',
       token_kg = 'pk.eyJ1Ijoia2dlb2dyYXBoZXIiLCJhIjoiUmVralBPcyJ9.mJegAI1R6KR21x_CVVTlqw',
-      token_awmc = 'pk.eyJ1Ijoia2dlb2dyYXBoZXIiLCJhIjoiY2prcmgwc2cwMjRuZzNsdGhzZmVuMDRqbCJ9.MeLsyeOqwhTRdvt_Hgo7kg',
       token_whg = '',
       mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}';
       
     var mbtiles_url = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={token}';
     var awmc = L.tileLayer(mbtiles_url, {id:'isawnyu.map-knmctlkh', token:token_kg, attribution:attrib_awmc})    
-    // var awmc = L.tileLayer(mbstyle_url, {id:'isawnyu.map-knmctlkh', token:token_awmc, attribution:attrib_awmc});
 
     var satellite  = L.tileLayer(mbstyle_url, {id:'mapbox/satellite-streets-v11', token:token_mb, attribution:attrib_mb});
     var osm  = L.tileLayer(mbstyle_url, {id:'mapbox/light-v10', token:token_mb, attribution:attrib_mb});
@@ -279,22 +280,24 @@
 
       drawControls(drawnItems)
       <!--drawnItems.addTo(mappy)-->
-      mappy.on(L.Draw.Event.CREATED, function (event) {
-        window.drawnlayer = event.layer;
-        console.log('drawnlayer',drawnlayer)
-        drawnItems.addLayer(drawnlayer);
-        drawnItems.addTo(mappy)
-        $("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON()))
-      });
-      mappy.on(L.Draw.Event.EDITED, function (event) {
-        $("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON()))
-        console.log('you changed it')
-      });
-      mappy.on(L.Draw.Event.DELETED, function (event) {
-        $("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON()))
+      <!--mappy.on(L.Draw.Event.CREATED, function (event) {-->
+        <!--window.drawnlayer = event.layer;-->
+        <!--<!--console.log('drawnlayer',drawnlayer)-->-->
+        <!--drawnItems.addLayer(drawnlayer);-->
+        <!--console.log('drawn',JSON.stringify(drawnItems.toGeoJSON().features[0].geometry))-->
         <!--drawnItems.addTo(mappy)-->
-        console.log('you deleted something')
-      });
+        <!--<!--$("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON()))-->-->
+        <!--<!--$("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON().features[0].geometry))-->-->
+      <!--});-->
+      <!--mappy.on(L.Draw.Event.EDITED, function (event) {-->
+        <!--$("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON()))-->
+        <!--console.log('you changed it')-->
+      <!--});-->
+      <!--mappy.on(L.Draw.Event.DELETED, function (event) {-->
+        <!--$("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON()))-->
+        <!--<!--drawnItems.addTo(mappy)-->-->
+        <!--console.log('you deleted something')-->
+      <!--});-->
     } else if('{{ action }}' == 'update' && '{{ form.type.value }}' == 'ccodes') {
       $('a[href="#areas_draw"]').addClass('disabled').css("cursor","default")
       map_render()
