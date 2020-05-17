@@ -267,7 +267,7 @@ def align_wd(pk, *args, **kwargs):
   [count_hit, count_nohit, total_hits, count_p1, count_p2] = [0,0,0,0,0]
   
   #for place in ds.places.filter(flag=True):
-  for place in ds.places.all(): #.order_by('id'): #[:20]: #.filter(id__lt=224265):
+  for place in ds.places.all(): #.order_by('id')[:10]: #.filter(id__lt=224265):
     #place=get_object_or_404(Place, id=6369031) # Aachen
     #place=get_object_or_404(Place, id=6369589) # Abrantes
     #place=get_object_or_404(Place, id=6368883) # Istanbul
@@ -278,10 +278,10 @@ def align_wd(pk, *args, **kwargs):
     qobj = {"place_id":place_id,"src_id":place.src_id,"title":fixName(place.title)}
     [variants,geoms,types,ccodes,parents]=[[],[],[],[],[]]
 
-    # ccodes (2-letter iso codes)
+    # ccodes (2-letter i  so codes)
     for c in place.ccodes:
       ccodes.append(c)
-    qobj['countries'] = place.ccodes
+    qobj['countries'] = ccodes
 
     # types (Getty AAT identifiers)
     for t in place.types.all():
@@ -435,11 +435,10 @@ def align_wd(pk, *args, **kwargs):
         try:
           bindings = sparql.query().convert()["results"]["bindings"]
         except ConnectionError as exc:
-        #except:
-          print(sys.exc_info())
+          print('pass2 error',sys.exc_info())
+          print('qbare',qbare)
           if exc.status_code == 429:
             self.retry(exc=exc, countdown=61)
-        #bindings = sparql.query().convert()["results"]["bindings"]
         if len(bindings) == 0:
           count_nohit +=1 # tried 2 passes, nothing
           #fout2.write(str(place_id)+' ('+title+'), pass2 \n')
@@ -458,6 +457,7 @@ def align_wd(pk, *args, **kwargs):
     try:
       runQuery()
     except:
+      print('runQuery() failed, place#',place_id)
       print('runQuery() error:',sys.exc_info())
       count_skipped +=1
       continue

@@ -158,7 +158,7 @@ class PlaceSerializer(serializers.ModelSerializer):
     
     # 6365611 (pleiades_20200402); 6367873 (euratlas_cities); 6365630 (owtrad10)
     minmax = serializers.SerializerMethodField('get_minmax')
-    # TODO: way too slow here
+    # TODO: slows down dataset browse table
     def get_minmax(self,place):
         tsarr=[]
         # whens
