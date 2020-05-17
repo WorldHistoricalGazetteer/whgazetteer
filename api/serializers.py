@@ -138,6 +138,9 @@ class PlaceNameSerializer(serializers.ModelSerializer):
     direct representation of normalized records in database 
     used in multiple views
 """
+def yearPadder(y):
+    year = str(y).zfill(5) if str(y)[0] == '-' else str(y).zfill(4)
+    return year
 class PlaceSerializer(serializers.ModelSerializer):
     dataset = serializers.ReadOnlyField(source='dataset.label')
     names = PlaceNameSerializer(many=True, read_only=True)
@@ -155,20 +158,28 @@ class PlaceSerializer(serializers.ModelSerializer):
     
     # 6365611 (pleiades_20200402); 6367873 (euratlas_cities); 6365630 (owtrad10)
     minmax = serializers.SerializerMethodField('get_minmax')
-    # 
+    # TODO: way too slow here
     def get_minmax(self,place):
-        tsarr=[w.jsonb['timespans'][0] for w in place.whens.all() if place.whens.count()>0]
-        tsarr=tsarr+[n.jsonb['when']['timespans'][0] for n in place.names.all() if 'when' in n.jsonb]
-        tsarr=tsarr+[t.jsonb['when']['timespans'][0] for t in place.types.all() if 'when' in t.jsonb]
-        tsarr=tsarr+[g.jsonb['when']['timespans'][0] for g in place.geoms.all() if 'when' in g.jsonb]
-        years=[];nullset=set([None]) #;starts=[];ends=[];
-        #print('place,tsarr',place,tsarr)
+        tsarr=[]
+        # whens
+        tsarr += [[t for t in w.jsonb['timespans']] for w in place.whens.all()][0] if place.whens.count()>0 else []
+        # names
+        wn = [w.jsonb['when'] for w in place.names.all() if 'when' in w.jsonb]
+        tsarr += [ ts for ts in [t['timespans'][0] for t in wn] ] if len(wn) >  0 else []
+        # types
+        wt = [w.jsonb['when'] for w in place.types.all() if 'when' in w.jsonb]
+        tsarr += [ ts for ts in [t['timespans'][0] for t in wt] ] if len(wt) >  0 else []
+        # geoms
+        wg = [w.jsonb['when'] for w in place.geoms.all() if 'when' in w.jsonb]
+        tsarr += [ ts for ts in [t['timespans'][0] for t in wg] ] if len(wg) >  0 else []
+        
+        years=[];nullset=set([None])
         for ts in tsarr:
             start = list(ts['start'].values())[0]
             end = list(ts['end'].values())[0] if 'end' in ts else ''
-            years.append(int( parse_edtf(start).get_year() ))
+            years.append(int( parse_edtf(yearPadder(start)).get_year() ))
             if end != '':
-                years.append(int(parse_edtf(end).get_year()))
+                years.append(int(parse_edtf(yearPadder(end)).get_year()))
         years = list(set(years)-nullset)
         return [min(years),max(years)] if len(years)>0 else []
     

@@ -159,6 +159,5 @@ types={
 300266571: {"term": "estuary", "parent": 300266059, "term_full": "estuaries"},
 300008680: {"term": "lake", "parent": 300266059, "term_full": "lakes"},
 300387029: {"term": "waterhole", "parent": 300266059, "term_full": "waterholes"},
-300008932: {"term": "cultural landscape", "parent": 300008346, "term_full": "cultural landscapes"},
-300008686: {"term": "oasis", "parent": 300008932, "term_full": "oases"}
+300008932: {"term": "cultural landscape", "parent": 300008346, "term_full": "cultural landscapes"}
 }

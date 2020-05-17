@@ -2,10 +2,6 @@
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import JSONField, ArrayField
 from django.db import models
-#from django.db.models.signals import pre_delete
-#from django.dispatch import receiver
-#from django.shortcuts import get_object_or_404
-#from django.utils import timezone
 
 from datasets.static.hashes.parents import ccodes as cc
 from main.choices import FEATURE_CLASSES
@@ -32,10 +28,6 @@ class Place(models.Model):
     def idx(self):
         return self.indexed
     
-    #@property
-    #def fclasses(self):
-        #return [t.fclass for t in self.types.all()]
-    
     @property
     def countries(self):
         return [cc[0][x]['gnlabel'] for x in self.ccodes]
@@ -58,7 +50,7 @@ class Type(models.Model):
     term = models.CharField(max_length=100)
     term_full = models.CharField(max_length=100)
     note = models.TextField(max_length=3000)
-    fclass = models.CharField(max_length=1)
+    fclass = models.CharField(max_length=1,null=True,blank=True)
     
     def __str__(self):
         return str(self.aat_id) +':'+self.term

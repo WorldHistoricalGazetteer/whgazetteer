@@ -444,7 +444,11 @@ def collab_add(request,dsid,role='member'):
   #ds = get_object_or_404(Dataset, label=label)
   #filt = f
   #return render(request, 'datasets/dataset_browse.html', {'ds':ds,'filter':filt})
-# pobj = place object; row is a pandas dict
+# ***
+# updates objects related to a Place (pobj)
+# then updates fclasses and minmax
+# row is a pandas dict
+#
 def add_rels_tsv(pobj, row):
   header = row.keys()
   print('add_rels() from row:',row)
@@ -466,8 +470,6 @@ def add_rels_tsv(pobj, row):
   parent_id = row['parent_id'] if 'parent_id' in header else ''
   coords = makeCoords(row['lon'], row['lat']) \
     if 'lon' in header and 'lat' in header and not math.isnan(row['lon']) else []
-  #matches = [x.strip() for x in row['matches')].split(';')] \
-    #if 'matches' in header else []
   matches = [x.strip() for x in row['matches'].split(';')] \
     if 'matches' in header and row['matches'] != '' else []
   start = row['start'] if 'start' in header else ''
@@ -485,7 +487,7 @@ def add_rels_tsv(pobj, row):
   # title as a PlaceName
   objs['PlaceName'].append(
     PlaceName(
-      place_id=pobj,
+      place=pobj,
       src_id = src_id,
       toponym = title,
       jsonb={"toponym": title, "citation": {"id":title_uri,"label":title_source}}
@@ -496,7 +498,7 @@ def add_rels_tsv(pobj, row):
     for v in variants:
       objs['PlaceName'].append(
         PlaceName(
-          place_id=pobj,
+          place=pobj,
           src_id = src_id,
           toponym = v,
           jsonb={"toponym": v, "citation": {"id":"","label":title_source}}
@@ -510,7 +512,7 @@ def add_rels_tsv(pobj, row):
       aatnum=aat_types[i] if len(aat_types) >= len(types) else ''
       objs['PlaceType'].append(
         PlaceType(
-          place_id=pobj,
+          place=pobj,
           src_id = src_id,
           jsonb={ "identifier":aatnum,
                   "sourceLabel":t,
@@ -546,7 +548,7 @@ def add_rels_tsv(pobj, row):
       countlinks += 1
       objs['PlaceLink'].append(
         PlaceLink(
-          place_id=pobj,
+          place=pobj,
           src_id = src_id,
           jsonb={"type":"closeMatch", "identifier":m}
       ))
@@ -555,7 +557,7 @@ def add_rels_tsv(pobj, row):
   if parent_name != '':
     objs['PlaceRelated'].append(
       PlaceRelated(
-        place_id=pobj,
+        place=pobj,
         src_id=src_id,
         jsonb={
           "relationType": "gvp:broaderPartitive",
@@ -568,7 +570,7 @@ def add_rels_tsv(pobj, row):
   if start != '':
     objs['PlaceWhen'].append(
       PlaceWhen(
-        place_id=pobj,
+        place=pobj,
         src_id = src_id,
         jsonb={
               "timespans": [{"start":{"earliest":minmax[0]}, "end":{"latest":minmax[1]}}]
@@ -581,7 +583,7 @@ def add_rels_tsv(pobj, row):
   if description != '':
     objs['PlaceDescription'].append(
       PlaceDescription(
-        place_id=pobj,
+        place=pobj,
         src_id = src_id,
         jsonb={
           "@id": "", "value":description, "lang":""
@@ -614,6 +616,8 @@ def add_rels_tsv(pobj, row):
   print('whens done')
   PlaceDescription.objects.bulk_create(objs['PlaceDescription'],batch_size=10000)
   print('descriptions done')
+  
+  # TODO: update fclasses, minmax
       
 # ***
 # perform update on database and index
@@ -724,7 +728,6 @@ def ds_update(request):
         #p = places.filter(src_id='1.0').first()
         p = places.filter(src_id=rdp['id']).first()
         print(p)
-        # TODO: compute fclasses, minmax as req.
         if p != None:
           # place exists, update it
           count_updated +=1
@@ -735,7 +738,6 @@ def ds_update(request):
           pobj = p
         else:
           # entirely new place + related records
-          # TODO: compute fclasses, minmax as req.
           count_new +=1
           newpl = Place.objects.create(
             src_id = rdp['id'],
@@ -934,7 +936,6 @@ def ds_insert_lpf(request, pk):
 
       # instantiate Place record & save to get id
       # Place: src_id, title, ccodes, dataset
-      # TODO: compute fclasses and instance minmax
       newpl = Place(
         # TODO: add src_id to properties in LP format?
         src_id=feat['@id'] if uribase == None else feat['@id'].replace(uribase,''),
@@ -944,7 +945,7 @@ def ds_insert_lpf(request, pk):
       )
       newpl.save()
 
-      # PlaceName: place_id,src_id,toponym,task_id,jsonb:{toponym, lang,citation,when{}}
+      # PlaceName: place,src_id,toponym,task_id,jsonb:{toponym, lang,citation,when{}}
       # TODO: adjust for 'ethnic', 'demonym'
       for n in feat['names']:
         if 'toponym' in n.keys():
@@ -957,30 +958,33 @@ def ds_insert_lpf(request, pk):
             task_id='initial'
           ))
 
-      # PlaceType: place_id,src_id,task_id,jsonb:{identifier,label,src_label}
+      # PlaceType: place,src_id,task_id,jsonb:{identifier,label,src_label}
       if 'types' in feat.keys():
         for t in feat['types']:
+          fc = get_object_or_404(Type,aat_id=int(t['identifier'][4:])).fclass \
+            if t['identifier'][:4] == 'aat:' else None
           #print('from feat[types]:',t)
           objs['PlaceTypes'].append(PlaceType(
             place=newpl,
             src_id=newpl.src_id,
-            jsonb=t
+            jsonb=t,
+            fclass=fc
           ))
 
-      # PlaceWhen: place_id,src_id,task_id,minmax,jsonb:{timespans[],periods[],label,duration}
+      # PlaceWhen: place,src_id,task_id,minmax,jsonb:{timespans[],periods[],label,duration}
       if 'when' in feat.keys() and feat['when'] != {}:
         #for w in feat['when']:
         objs['PlaceWhens'].append(PlaceWhen(
           place=newpl,src_id=newpl.src_id,jsonb=feat['when']))
 
-      # PlaceGeom: place_id,src_id,task_id,jsonb:{type,coordinates[],when{},geo_wkt,src}
+      # PlaceGeom: place,src_id,task_id,jsonb:{type,coordinates[],when{},geo_wkt,src}
       if 'geometry' in feat.keys():
         for g in feat['geometry']['geometries']:
           #print('from feat[geometry]:',g)
           objs['PlaceGeoms'].append(PlaceGeom(
             place=newpl,src_id=newpl.src_id,jsonb=g))
 
-      # PlaceLink: place_id,src_id,task_id,jsonb:{type,identifier}
+      # PlaceLink: place,src_id,task_id,jsonb:{type,identifier}
       if 'links' in feat.keys() and len(feat['links'])>0:
         countlinked +=1
         print('countlinked',countlinked)
@@ -989,19 +993,19 @@ def ds_insert_lpf(request, pk):
           objs['PlaceLinks'].append(PlaceLink(
             place=newpl,src_id=newpl.src_id,jsonb=l,task_id='initial'))
 
-      # PlaceRelated: place_id,src_id,task_id,jsonb{relationType,relationTo,label,when{}}
+      # PlaceRelated: place,src_id,task_id,jsonb{relationType,relationTo,label,when{}}
       if 'relations' in feat.keys():
         for r in feat['relations']:
           objs['PlaceRelated'].append(PlaceRelated(
             place=newpl,src_id=newpl.src_id,jsonb=r))
 
-      # PlaceDescription: place_id,src_id,task_id,jsonb{@id,value,lang}
+      # PlaceDescription: place,src_id,task_id,jsonb{@id,value,lang}
       if 'descriptions' in feat.keys():
         for des in feat['descriptions']:
           objs['PlaceDescriptions'].append(PlaceDescription(
             place=newpl,src_id=newpl.src_id,jsonb=des))
 
-      # PlaceDepiction: place_id,src_id,task_id,jsonb{@id,title,license}
+      # PlaceDepiction: place,src_id,task_id,jsonb{@id,title,license}
       if 'depictions' in feat.keys():
         for dep in feat['depictions']:
           objs['PlaceDepictions'].append(PlaceDepiction(
@@ -1017,7 +1021,10 @@ def ds_insert_lpf(request, pk):
       PlaceDescription.objects.bulk_create(objs['PlaceDescriptions'])
       PlaceDepiction.objects.bulk_create(objs['PlaceDepictions'])
       #print('new place record: ',newpl.src_id)
-
+      
+      # TODO: compute newpl.fclasses and newpl.minmax
+      
+      
     print('new dataset:', ds.__dict__)
     infile.close()
 
