@@ -213,7 +213,7 @@ def writeHit(b,passnum,ds,pid,srcid,title):
       if v != '':
         linklist.append(l[:-3]+':'+v)
   b['links'] = linklist
-  print('linklist',linklist) # ['viaf:124330404', 'tgn:1003084', 'tgn:7004799', 'gn:6553047', 'loc:n80046295']
+  print('writeHit() linklist',linklist) # ['viaf:124330404', 'tgn:1003084', 'tgn:7004799', 'gn:6553047', 'loc:n80046295']
   if b['placeLabel']['value'] != b['place']['value'][31:]: # ??
     from datasets.models import Hit
     new = Hit(
@@ -221,7 +221,7 @@ def writeHit(b,passnum,ds,pid,srcid,title):
       authrecord_id = b['place']['value'][31:],
       dataset = ds,
       place_id = get_object_or_404(Place, id=pid),
-      #task_id = 'wd_20190517',
+      #task_id = 'wd_20200517',
       task_id = align_wd.request.id,
       query_pass = passnum,
       # consistent json for review display
@@ -270,7 +270,7 @@ def align_wd(pk, *args, **kwargs):
   for place in ds.places.all(): #.order_by('id')[:10]: #.filter(id__lt=224265):
     #place=get_object_or_404(Place, id=6369031) # Aachen
     #place=get_object_or_404(Place, id=6369589) # Abrantes
-    #place=get_object_or_404(Place, id=6368883) # Istanbul
+    #place=get_object_or_404(Place, id=6453302) # Tourlaville
     count +=1
     place_id = place.id
     src_id = place.src_id
@@ -309,8 +309,12 @@ def align_wd(pk, *args, **kwargs):
 
     # geoms
     if len(place.geoms.all()) > 0:
-      g_list =[g.jsonb for g in place.geoms.all()]
+      g_types = [g.jsonb['type'] for g in place.geoms.all()]
+      g_list = [g.jsonb for g in place.geoms.all()]
+      if len(set(g_types)) > 1 and len(set(g_types) & set(['Polygon','MultiPolygon'])) >0:
+        g_list=list(filter(lambda d: d['type'] in ['Polygon','MultiPolygon'], g_list))
       # make everything a simple polygon hull for spatial filter
+      # TODO: hully() assumes list is all one type
       qobj['geom'] = hully(g_list)
 
     print('qobj before modifications for Wikidata',qobj)
