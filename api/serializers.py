@@ -155,34 +155,7 @@ class PlaceSerializer(serializers.ModelSerializer):
     geo = serializers.SerializerMethodField('has_geom')    
     def has_geom(self,place):
         return '<i class="fa fa-globe"></i>' if place.geom_count > 0 else "-"
-    
-    # 6365611 (pleiades_20200402); 6367873 (euratlas_cities); 6365630 (owtrad10)
-    minmax = serializers.SerializerMethodField('get_minmax')
-    # TODO: slows down dataset browse table
-    def get_minmax(self,place):
-        tsarr=[]
-        # whens
-        tsarr += [[t for t in w.jsonb['timespans']] for w in place.whens.all()][0] if place.whens.count()>0 else []
-        # names
-        wn = [w.jsonb['when'] for w in place.names.all() if 'when' in w.jsonb]
-        tsarr += [ ts for ts in [t['timespans'][0] for t in wn] ] if len(wn) >  0 else []
-        # types
-        wt = [w.jsonb['when'] for w in place.types.all() if 'when' in w.jsonb]
-        tsarr += [ ts for ts in [t['timespans'][0] for t in wt] ] if len(wt) >  0 else []
-        # geoms
-        wg = [w.jsonb['when'] for w in place.geoms.all() if 'when' in w.jsonb]
-        tsarr += [ ts for ts in [t['timespans'][0] for t in wg] ] if len(wg) >  0 else []
         
-        years=[];nullset=set([None])
-        for ts in tsarr:
-            start = list(ts['start'].values())[0]
-            end = list(ts['end'].values())[0] if 'end' in ts else ''
-            years.append(int( parse_edtf(yearPadder(start)).get_year() ))
-            if end != '':
-                years.append(int(parse_edtf(yearPadder(end)).get_year()))
-        years = list(set(years)-nullset)
-        return [min(years),max(years)] if len(years)>0 else []
-    
     class Meta:
         model = Place
         fields = ('url','id', 'title', 'src_id', 'dataset','ccodes',
@@ -191,7 +164,6 @@ class PlaceSerializer(serializers.ModelSerializer):
             'geo','minmax'
         )
         
-
 
 
 """ uses: DownloadGeomsAPIView() """

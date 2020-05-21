@@ -362,7 +362,7 @@
         </div>
         <p class="p-block px-2">Collaborators are assigned per dataset. They can view its contents and metadata, and  perform review of reconciliation task results.</p>
         <ul id="collabs_list">
-          {% for c in collaborators %}<li>{{ c }}
+          {% for c in collaborators %}<li>{{ c.first_name|add:' '|add:c.last_name }} ({{c}})
           {% if ds.owner.id == user.id or user.is_superuser %}
           <span class="float-right mr-2">
             <a href="{% url 'datasets:collab-delete' uid=c.id dsid=ds.id %}">

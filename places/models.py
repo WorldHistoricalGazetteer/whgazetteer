@@ -5,7 +5,10 @@ from django.db import models
 
 from datasets.static.hashes.parents import ccodes as cc
 from main.choices import FEATURE_CLASSES
-
+from edtf import parse_edtf
+def yearPadder(y):
+    year = str(y).zfill(5) if str(y)[0] == '-' else str(y).zfill(4)
+    return year
 class Place(models.Model):
     # id is auto-maintained, per Django
     title = models.CharField(max_length=255)
@@ -14,6 +17,8 @@ class Place(models.Model):
     dataset = models.ForeignKey('datasets.Dataset', db_column='dataset',
         to_field='label', related_name='places', on_delete=models.CASCADE)
     ccodes = ArrayField(models.CharField(max_length=2))
+    minmax = ArrayField(models.IntegerField(blank=True, null=True),null=True,blank=True)
+    timespans = JSONField(blank=True,null=True) # for list of lists
     fclasses = ArrayField(models.CharField(max_length=1,choices=FEATURE_CLASSES),null=True,blank=True)
     indexed = models.BooleanField(default=False)
     
@@ -22,6 +27,31 @@ class Place(models.Model):
     def __str__(self):
         # return str(self.id)
         return '%s:%d' % (self.dataset, self.id)
+
+    #@property
+    #def minmax(self):
+        #tsarr=[]
+        ## whens
+        #tsarr += [[t for t in w.jsonb['timespans']] for w in self.whens.all()][0] if self.whens.count()>0 else []
+        ## names
+        #wn = [w.jsonb['when'] for w in self.names.all() if 'when' in w.jsonb]
+        #tsarr += [ ts for ts in [t['timespans'][0] for t in wn] ] if len(wn) >  0 else []
+        ## types
+        #wt = [w.jsonb['when'] for w in self.types.all() if 'when' in w.jsonb]
+        #tsarr += [ ts for ts in [t['timespans'][0] for t in wt] ] if len(wt) >  0 else []
+        ## geoms
+        #wg = [w.jsonb['when'] for w in self.geoms.all() if 'when' in w.jsonb]
+        #tsarr += [ ts for ts in [t['timespans'][0] for t in wg] ] if len(wg) >  0 else []
+        
+        #years=[];nullset=set([None])
+        #for ts in tsarr:
+            #start = list(ts['start'].values())[0]
+            #end = list(ts['end'].values())[0] if 'end' in ts else ''
+            #years.append(int( parse_edtf(yearPadder(start)).get_year() ))
+            #if end != '':
+                #years.append(int(parse_edtf(yearPadder(end)).get_year()))
+        #years = list(set(years)-nullset)
+        #return [min(years),max(years)] if len(years)>0 else []
 
     @property
     def idx(self):
