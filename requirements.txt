@@ -18,6 +18,7 @@ Click==7.0
 click-default-group==1.2.2
 click-plugins==1.0.4
 cligj==0.5.0
+crlibm==1.0.3
 datapackage==1.10.0
 decorator==4.3.0
 Django==2.2.10
@@ -98,6 +99,7 @@ psycopg2-binary==2.7.5
 ptyprocess==0.6.0
 py==1.8.0
 Pygments==2.6.1
+pyinterval==1.2.0
 pyparsing==2.4.0
 pyrsistent==0.14.11
 pytest==3.1.2

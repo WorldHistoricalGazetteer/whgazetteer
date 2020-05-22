@@ -1,0 +1,97 @@
+{
+  "mappings": {
+    "place": {
+      "properties": {
+        "id": {"type": "keyword"},
+        "uri": {"type": "keyword"},
+        "dataset": {"type": "keyword"},
+        "relation": { 
+          "type": "join",
+          "relations": {
+            "parent": "child" 
+          }
+        },
+        "children": {"type": "keyword"},
+        "variants": {"type": "text"},
+        "title": {"type": "text"},
+        "suggest": {  
+          "type": "completion",
+          "contexts": [
+            { "name": "place_type",
+              "type": "category",
+              "path": "types.identifier"
+            },
+            { 
+              "name": "location",
+              "type": "geo",
+              "path": "representative_point",
+              "precision": 12
+            }
+          ]
+        },
+        "ccodes": {"type": "keyword"},
+        "fclasses": {"type": "keyword"},
+        "representative_point": {"type": "geo_point"},
+        "representative_polygon": {"type": "geo_shape"},
+        "searchy": {"type": "text"},        
+        "minmax": {
+          "type": "integer_range"
+        },
+        "names": {
+          "properties": {
+            "lang": {"type": "keyword"},
+            "toponym": {"type": "text"}
+            }
+        },
+        "types": {
+          "properties": {
+            "identifier": {"type": "keyword"},
+            "label": {"type": "keyword"},
+            "source_label": {"type": "text"}
+            }
+        },
+        "links": {
+          "properties": {
+            "type": {"type": "keyword"},
+            "identifier": {"type": "keyword"}
+            }
+        },
+        "geoms": {
+          "properties": {
+            "location": {"type": "geo_shape"},
+            "geowkt": {"type": "keyword"}
+          }
+        },
+        "timespans": {
+          "properties": {
+            "start": {"type": "long"},
+            "end": {"type": "long"}
+          }
+        },
+        "relations": {
+          "properties": {
+            "relationType": {"type": "keyword"},
+            "relationTo": {"type": "keyword"},
+            "label": {"type": "text"}
+          }
+        },
+        "descriptions": {
+          "properties": {
+            "id": {"type": "keyword"},
+            "value": {"type": "text"},
+            "lang": {"type": "keyword"}
+          }
+        },
+        "depictions": {
+          "properties": {
+            "id": {"type": "keyword"},
+            "title": {"type": "text"},
+            "license": {"type": "text"}
+          }
+        },
+        "place_id": {"type": "long"},
+        "whg_id": {"type": "long"}
+      }
+    }
+  }
+}

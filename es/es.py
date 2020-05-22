@@ -11,7 +11,6 @@ from celery.decorators import task
 from django.conf import settings
 from django.shortcuts import get_object_or_404, render, redirect
 
-from areas.models import Area
 from datasets.es_utils import * # 
 from datasets.models import Dataset, Hit
 from datasets.regions import regions as region_hash
@@ -23,13 +22,12 @@ from places.models import Place
 # TODO: conflate with align_whg reconcile operation; 
 def indexDataset(pids=None):
   import codecs
+  idx = input('index: ')
   dataset = input('dataset: ')
   if pids != None:
     qs = Place.objects.all().filter(id__in=pids)
   else:
     qs = Place.objects.all().filter(dataset_id=dataset)
-  f_err_multi = codecs.open('../_notes/err_multiparent_'+dataset+'.txt', mode='w', encoding='utf8')
-  f_err_geom = codecs.open('../_notes/err_geom_'+dataset+'.txt', mode='w', encoding='utf8')
   count = 0
   multiparents=[]
   errors=[]
