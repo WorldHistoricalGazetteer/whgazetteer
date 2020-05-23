@@ -4,7 +4,7 @@ from django.views.generic import DetailView
 
 from datetime import datetime
 from elasticsearch import Elasticsearch
-import simplejson as json
+import itertools
 
 from places.models import Place
 from datasets.models import Dataset
@@ -42,12 +42,12 @@ class PlacePortalView(DetailView):
       for a in attrib:
         minmax=[]
         if 'when' in a:
-          #starts = sorted([t['start']['in'] for t in a['when']['timespans']])
           starts = sorted([t['start']['in'] for t in a['when']['timespans']])
           # TODO: this could throw error if >1 timespan
           ends = sorted([t['end']['in'] for t in a['when']['timespans']]) \
             if 'end' in a['when']['timespans'][0] else [datetime.now().year]
           minmax = [int(min(starts)), int(max(ends))]
+          if len(minmax)>0: extent.append(minmax)
         elif 'timespans' in a:
           #print('place portal context a in attrib',a)
           starts = sorted(
@@ -57,7 +57,7 @@ class PlacePortalView(DetailView):
             [(t['end']['in'] if 'in' in t['end'] else t['end']['latest']) for t in a['timespans']]
           )
           minmax = [int(min(starts)), int(max(ends))]        
-        if len(minmax)>0: extent.append(minmax)
+          if len(minmax)>0: extent.append(minmax)
       return extent
 
     context = super(PlacePortalView, self).get_context_data(*args, **kwargs)
@@ -81,10 +81,10 @@ class PlacePortalView(DetailView):
     # database records for parent + children into 'payload'
     qs=Place.objects.filter(id__in=ids).order_by('-whens__minmax')
     context['title'] = qs.first().title
-    extents = []
+    
     for place in qs:
       ds = get_object_or_404(Dataset,id=place.dataset.id)
-      
+      extents = []
       # isolate temporal scoping where exists; build summing object
       whens = [when.jsonb for when in place.whens.all()]     
       names = [name.jsonb for name in place.names.all()]
@@ -92,6 +92,7 @@ class PlacePortalView(DetailView):
       geoms = [geom.jsonb for geom in place.geoms.all()]
       types = [t.jsonb for t in place.types.all()]
       related = [rel.jsonb for rel in place.related.all()]
+      timespans = list(t for t,_ in itertools.groupby(place.timespans)) if place.timespans else []
       # data object for summing temporality of all attestations for a place
       # TODO: leaving relations out b/c when for lugares is ill-formed
       # cf. 20190416_lugares-lpf.sql, line 63
@@ -114,9 +115,11 @@ class PlacePortalView(DetailView):
         "links":[link.jsonb for link in place.links.distinct('jsonb') if not link.jsonb['identifier'].startswith('whg')], 
         "descriptions":[descr.jsonb for descr in place.descriptions.all()], 
         "depictions":[depict.jsonb for depict in place.depictions.all()],
-        "extents":extents # array of [min,max] per attribute
+        "minmax":place.minmax,
+        "timespans":timespans
       }
       context['payload'].append(record)
+      context['extents'] = extents
     #TODO: compute global minmax for payload
     #print('payload',context['payload'])
     print('names',record['names'])

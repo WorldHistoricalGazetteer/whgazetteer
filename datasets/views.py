@@ -600,6 +600,8 @@ def add_rels_tsv(pobj, row):
   print('PlaceWhen:',len(objs['PlaceWhen']))
   print('PlaceDescription:',len(objs['PlaceDescription']))
   print('max places.id', )
+
+  # TODO: update place.fclasses, place.minmax, place.timespans
   
   # bulk_create(Class, batch_size=n) for each
   PlaceName.objects.bulk_create(objs['PlaceName'],batch_size=10000)
@@ -617,7 +619,7 @@ def add_rels_tsv(pobj, row):
   PlaceDescription.objects.bulk_create(objs['PlaceDescription'],batch_size=10000)
   print('descriptions done')
   
-  # TODO: update fclasses, minmax
+
       
 # ***
 # perform update on database and index
@@ -1226,6 +1228,8 @@ def ds_insert_tsv(request, pk):
         ))
 
 
+  # TODO: compute place.minmax, place.timespans
+  
   # bulk_create(Class, batch_size=n) for each
   PlaceName.objects.bulk_create(objs['PlaceName'],batch_size=10000)
   print(len(objs['PlaceName']),'names done')

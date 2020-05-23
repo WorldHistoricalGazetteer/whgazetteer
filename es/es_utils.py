@@ -18,7 +18,7 @@ def indexSomeParents(es,idx,pids):
     parent_obj = makeDoc(place,'none')
     parent_obj['relation']={"name":"parent"}
     # parents get an incremented _id & whg_id
-    parent_obj['whg_id']=whg_id+1
+    parent_obj['whg_id']=whg_id
     # add its own names to the suggest field
     for n in parent_obj['names']:
       parent_obj['suggest']['input'].append(n['toponym'])
@@ -327,9 +327,9 @@ def uriMaker(place):
 
 # ***
 # make an ES doc from a Place instance
+# called from ALL indexing functions (initial and updates)
 # ***
 def makeDoc(place,parentid):
-  #from . import parsePlace
   # TODO: remove parentid; used in early tests
   es_doc = {
       "relation": {},
@@ -346,7 +346,8 @@ def makeDoc(place,parentid):
       "geoms": parsePlace(place,'geoms'),
       "links": parsePlace(place,'links'),
       "timespans": parsePlace(place,'whens'),
-      "minmax": [],
+      #"minmax": [],
+      "minmax": {"gte":place.minmax[0],"lte":place.minmax[1]} if place.minmax !=[] else [],
       "descriptions": parsePlace(place,'descriptions'),
       "depictions": parsePlace(place,'depictions'), 
       "relations": parsePlace(place,'related'),
@@ -355,7 +356,7 @@ def makeDoc(place,parentid):
   return es_doc
 
 # ***
-# fill ES doc arrays from databse jsonb objects
+# fill ES doc arrays from database jsonb objects
 # ***
 def parsePlace(place,attr):
   qs = eval('place.'+attr+'.all()')

@@ -115,10 +115,13 @@
               </div>
               {% endif %}
               {% if rec.whens|length > 0 %}
+              <!--{ if rec.timespans|length > 0 %}-->
                 <div class="attest-element attesttime">Temporal:
                   <!-- aggregate into telems javascript object-->
                   {% for w in rec.whens %}
+                  <!--{ for w in rec.timespans %}-->
                     {{ w|json_script:rec.place_id }}
+                    <!--{ w }}-->
                   {% endfor %}
                   <!--{ rec.whens }}-->
                   {% for when in rec.whens %}
@@ -221,9 +224,11 @@
     // telems looks like: { 81011:[{"start":{},"end":{}}, ...], ... }
     window.telems = $('script').filter(function() {
       return this.id.match(/[0-9]/) && this.text != '"null"' && this.text.includes('timespans');
+      <!--return this.id.match(/[0-9]/) && this.text != '"null"' && this.text.charAt(0)=='[';-->
     });
     time_object = parseTelems(telems)[0]
     intervals = parseTelems(telems)[1]
+    <!--console.log('intervals, time_object',intervals,time_object)-->
     var min = Math.min.apply(null, intervals.map(function(row){ return Math.min.apply(Math, row); }));
     var max = Math.max.apply(null, intervals.map(function(row){ return Math.max.apply(Math, row); }));
     minmax=[min,max]
@@ -235,7 +240,8 @@
       });
       <!--intervals = time_object[key].map(ts => [ ts.start.in, ts.end.in ])-->
       <!--intervals_text = time_object[key].map(ts => ts.start.in+'/'+ts.end.in)-->
-      intervals_text = to_sorted.map(ts => ts.start.in+'/'+ts.end.in)
+      <!--intervals_text = to_sorted.map(ts => ts.start.in+'/'+ts.end.in)-->
+      intervals_text = to_sorted.map(ts => ts.start.in+'/'+(!ts.end?'-':ts.end.in))
       <!--console.log(key, intervals.join(', '));-->
       selector = "#card_"+key+" .attesttime"
       $(selector).html(intervals_text.join(', '))
@@ -285,7 +291,7 @@
     let ts_arr = []
     function pushy(ts){
       for (var j=0; j < ts.length; j++) {
-        <!--console.log('ts',ts[j])-->
+        console.log('pushy ts',ts[j])
         ts_arr.push( ts[j] );
       }
     }
@@ -293,19 +299,21 @@
     for (i=0;i<telems.length;i++){
       id=telems[i].id
       obj = JSON.parse(telems[i].text)
-      <!--console.log('a telem',id,obj)-->
-      // when obj keys include 'timespan', geom keys incl 'coordinates',
+      // when obj keys include 'timespan', geom keys incl 'coordinates'
+      <!--console.log('obj',obj)-->
       if (Object.keys(obj).includes('when')) {
+        <!--console.log('embedded telem:',id,obj.when.timespans)-->
         if (Object.keys(obj['when']).includes('timespans')) {
           ts_obj[id] = obj.when.timespans
           pushy(obj.when.timespans)
         }
       } else if (Object.keys(obj).includes('timespans')){
+        <!--console.log('when telem:',id,obj.timespans)-->
         ts_obj[id] = obj.timespans
         pushy(obj.timespans)
       }
     }
-    intervals=ts_arr.map(ts => [ ts.start.in, ts.end.in ])
+    intervals=ts_arr.map(ts => [ Number(ts.start.in), !ts.end?Number(ts.start.in)+9:Number(ts.end.in) ])
     return [ts_obj,intervals]  <!--console.log(ts_arr)-->
   }
   function intersects(a,b){
@@ -315,6 +323,7 @@
   }
   function histogram_data(intervals,minmax){
     <!--step = Number(((minmax[1]-minmax[0])/200).toPrecision(4))-->
+    console.log('hist data:minmax,intervals',minmax,intervals)
     step = Number(((minmax[1]-minmax[0])/200))
     bins = range(minmax[0],minmax[1],step)
     hist_array = Array.apply(null, Array(bins.length)).map(Number.prototype.valueOf,0);
