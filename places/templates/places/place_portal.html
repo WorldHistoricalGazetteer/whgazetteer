@@ -101,7 +101,8 @@
                     <i>Within {% for rel in rec.related %}
                     {{ rel.label }} 
                     {% if rel.when %}
-                    ({{ rel.when.timespans|first|parsedict:"start"|parsedict:"in" }}/{{ rel.when.timespans|first|parsedict:"end"|parsedict:"in" }})
+                      {{ rel.when|json_script:rec.place_id }}
+                      ({{ rel.when.timespans|first|parsedict:"start"|parsedict:"in" }}/{{ rel.when.timespans|first|parsedict:"end"|parsedict:"in" }})
                     {% endif %}
                     {% if not forloop.last %}| {% endif %}
                     {% endfor %}</i>
@@ -291,7 +292,7 @@
     let ts_arr = []
     function pushy(ts){
       for (var j=0; j < ts.length; j++) {
-        console.log('pushy ts',ts[j])
+        <!--console.log('pushy ts',ts[j])-->
         ts_arr.push( ts[j] );
       }
     }
