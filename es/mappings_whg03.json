@@ -12,7 +12,6 @@
           }
         },
         "children": {"type": "keyword"},
-        "variants": {"type": "text"},
         "title": {"type": "text"},
         "suggest": {  
           "type": "completion",
@@ -31,12 +30,9 @@
         },
         "ccodes": {"type": "keyword"},
         "fclasses": {"type": "keyword"},
-        "representative_point": {"type": "geo_point"},
-        "representative_polygon": {"type": "geo_shape"},
         "searchy": {"type": "text"},        
-        "minmax": {
-          "type": "integer_range"
-        },
+        "minmax": {"type": "integer_range"},
+        "timespans": {"type": "integer_range"},
         "names": {
           "properties": {
             "lang": {"type": "keyword"},
@@ -60,12 +56,6 @@
           "properties": {
             "location": {"type": "geo_shape"},
             "geowkt": {"type": "keyword"}
-          }
-        },
-        "timespans": {
-          "properties": {
-            "start": {"type": "long"},
-            "end": {"type": "long"}
           }
         },
         "relations": {
