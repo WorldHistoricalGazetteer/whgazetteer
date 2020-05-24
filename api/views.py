@@ -264,7 +264,7 @@ class AreaViewSet(viewsets.ModelViewSet):
     serializer_class = AreaSerializer
 
 """
-    search index e.g. union/?idx=whg02&_id=12345979
+    search index e.g. union/?idx=whg&_id=12345979
     in usingapi.html example
 """
 class indexAPIView(View):

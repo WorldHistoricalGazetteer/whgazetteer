@@ -30,10 +30,10 @@ def statusView(request):
     except:
         context["status_database"] = "down"
         
-    # whg02 index
+    # whg index
     try:
         q={"query": {"bool": {"must": [{"match":{"place_id": "81011"}}]}}}
-        res1 = es.search(index="whg02", body = q)
+        res1 = es.search(index="whg", body = q)
         context["status_index"] = "up" if (res1['hits']['total'] == 1 and \
             res1['hits']['hits'][0]['_source']['title'] == 'Abydos') else "error"
     except:

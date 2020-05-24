@@ -62,7 +62,7 @@ def indexMatch(pid, hit_pid=None):
   print('indexMatch(): pid '+str(pid)+'w/hit_pid '+str(hit_pid))
   from elasticsearch import Elasticsearch
   es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
-  idx='whg02'
+  idx='whg'
   
   if hit_pid == None:
     print('making '+str(pid)+' a parent')
@@ -771,7 +771,7 @@ def ds_update(request):
       if compare_data['count_indexed'] > 0:
         from elasticsearch import Elasticsearch      
         es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
-        idx='whg02'
+        idx='whg'
         
         result["indexed"] = True
         
@@ -1575,7 +1575,7 @@ class DatasetDeleteView(DeleteView):
     ds=get_object_or_404(Dataset,pk=self.kwargs.get("id"))
     if ds.ds_status == 'indexed':
       pids=list(ds.placeids)
-      deleteFromIndex(es,'whg02',pids)
+      deleteFromIndex(es,'whg',pids)
   
   def get_object(self):
     id_ = self.kwargs.get("id")

@@ -295,9 +295,7 @@ def esInit(idx):
 
   from elasticsearch import Elasticsearch
   es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
-  #mappings = codecs.open('es/mappings_whg02.json', 'r', 'utf8').read()
-  # added searchy, place_id, whg_id; were being auto-added by indexing
-  mappings = codecs.open('es/mappings_whg02-searchy.json', 'r', 'utf8').read()
+  mappings = codecs.open('es/mappings_whg03.json', 'r', 'utf8').read()
 
   # zap existing if exists, re-create
   if confirm(prompt='Zap index '+idx+'?', resp=False):

@@ -19,7 +19,7 @@ def user_directory_path(instance, filename):
 
 # owner = models.ForeignKey('auth.User', related_name='snippets', on_delete=models.CASCADE)
 class Dataset(models.Model):
-    idx='whg02'
+    idx='whg'
     owner = models.ForeignKey(User,
         related_name='datasets', on_delete=models.CASCADE)
     label = models.CharField(max_length=20, null=False, unique="True")
@@ -54,7 +54,7 @@ class Dataset(models.Model):
     
     @property
     def status(self):
-        idx='whg02'
+        idx='whg'
         submissions = [{"task_id":t.task_id,
                 "date":t.date_done.strftime("%Y-%m-%d %H:%M"),
                 "hits_tbr":Hit.objects.filter(task_id=t,reviewed=False).count() } \

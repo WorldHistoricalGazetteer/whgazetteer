@@ -25,7 +25,7 @@ class PlacePortalView(DetailView):
     es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
     q = {"query":{"bool": {"must": [{"match":{"_id": id_}}]}}}
     #q = {"query":{"bool": {"must": [{"match":{"place_id": id_}}]}}}
-    pid=es.search(index='whg02', doc_type='place', body=q)['hits']['hits'][0]['_source']['place_id']
+    pid=es.search(index='whg', doc_type='place', body=q)['hits']['hits'][0]['_source']['place_id']
     self.kwargs['pid'] = pid
     return get_object_or_404(Place, id=pid)
 
@@ -74,7 +74,7 @@ class PlacePortalView(DetailView):
     ids = [pid]
     # get child record ids from index
     q = {"query": {"parent_id": {"type": "child","id":id_}}}
-    children = es.search(index='whg02', doc_type='place', body=q)['hits']
+    children = es.search(index='whg', doc_type='place', body=q)['hits']
     for hit in children['hits']:
       ids.append(int(hit['_id']))
 

@@ -894,7 +894,7 @@ def es_lookup_whg(qobj, *args, **kwargs):
 def align_whg(pk, *args, **kwargs):
   ds = get_object_or_404(Dataset, id=pk)
   # set index
-  idx='whg02'
+  idx='whg'
   
   # get last identifier (used for whg_id & _id)
   whg_id = maxID(es,idx)

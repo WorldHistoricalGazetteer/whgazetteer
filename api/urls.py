@@ -59,7 +59,7 @@ urlpatterns = [
     # 
     # *** INDEX ***
     # 
-    # use > single union record in usingapi.html ?idx=whg02&_id={whg_id}
+    # use > single union record in usingapi.html ?idx=whg&_id={whg_id}
     # TODO: build from place_id
     url('union/', views.indexAPIView.as_view(), name='union_api')
     

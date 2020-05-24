@@ -1,4 +1,4 @@
-# testing ES whg02 index updating
+# testing ES whg index updating
 
 from django.shortcuts import render, get_object_or_404
 import simplejson as json
@@ -10,7 +10,7 @@ from datasets.utils import validate_lpf, validate_tsv
 from elasticsearch import Elasticsearch
 from es.es_utils import makeDoc
 es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
-idx='whg02'
+idx='whg'
 
 dsid=586 # 'diamonds' current file: user_whgadmin/diamonds135_rev3_g6cvm1l.tsv
 # start: diamonds135_rev3; proposed update: diamonds135_rev21-125

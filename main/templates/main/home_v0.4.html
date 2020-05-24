@@ -95,7 +95,7 @@
            var doctype = $("input[name='class']:checked").val();
            settings.url = '/search/index?doc_type='+doctype+'&scope=suggest&'+$.param({
                 qstr: query,
-                idx: doctype == 'place' ? 'whg02' : 'trace'
+                idx: doctype == 'place' ? 'whg' : 'trace'
             });
            return settings;
          } 
@@ -340,7 +340,7 @@
     // hack disables typeahead
     scope = doctype =='place' ? 'search' : 'suggest'
     // end hack
-    index = doctype =='place' ? 'whg02' : 'traces'    
+    index = doctype =='place' ? 'whg' : 'traces'    
     // clear filters
     $(".list-inline").html('')
     $.get("/search/index",{

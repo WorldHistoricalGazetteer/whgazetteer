@@ -39,7 +39,7 @@ class TraceDetailView(DetailView):
         ids = [pid]
         # get child record ids from index
         q = {"query": {"parent_id": {"type": "child","id":id_}}}
-        children = es.search(index='whg02', doc_type='place', body=q)['hits']
+        children = es.search(index='whg', doc_type='place', body=q)['hits']
         for hit in children['hits']:
             ids.append(int(hit['_id']))
 
