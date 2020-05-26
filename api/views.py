@@ -79,8 +79,8 @@ class FilteredSearchAPIView(generics.ListAPIView):
     
 """ 
     return lpf results from search 
-    q <str>, dataset {oneof}, ccode <str>, mode [exact|fuzzy], 
-    type {oneof}, category [settlement|site|feature], scope [db}index]
+    q <str>, contains <str>, dataset <str>, ccodes (xx[|,..]),
+    class [A,P,T,L,H], year <int>, range <int>,<int>
 
 """
 #class SearchAPIView(APIView):
@@ -99,6 +99,7 @@ class SearchAPIView(generics.ListAPIView):
         dslabel = params.get('dataset',None)
         fc = params.get('class',None)
         fclasses=[x.upper() for x in fc.split(',')] if fc else None
+        year = params.get('year',None)
         count = params.get('count',None)
         
         print('SearchAPIView() params (q,contains,cc,dslabel,fc,count',q,contains,cc,dslabel,fc,count)
@@ -108,8 +109,13 @@ class SearchAPIView(generics.ListAPIView):
             # TODO: return a template with API instructions
             return HttpResponse(content=b'<h3>Needs either a "q" or "contains" parameter at minimum <br/>(e.g. ?q=myplacename or ?contains=astring)</h3>')
         else:
+            qs = qs.filter(minmax__0__lte=year,minmax__1__gte=year) if year else qs
             qs = qs.filter(fclasses__overlap=fclasses) if fc else qs
-            qs = qs.filter(title__icontains=q) if contains is not None else qs.filter(title__istartswith=q)
+            if contains and contains != '':
+                qs = qs.filter(title__icontains=contains)
+            elif q and q != '':
+                qs.filter(title__istartswith=q)
+            #qs = qs.filter(title__icontains=q) if contains is not None else qs.filter(title__istartswith=q)
             qs = qs.filter(dataset=dslabel) if dslabel else qs
             qs = qs.filter(ccodes__overlap=cc) if cc else qs
             filtered = qs[:count] if count else qs[:10]
