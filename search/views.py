@@ -168,9 +168,9 @@ class SearchView(View):
                   "type": "phrase"
                 }}
               ]
-              ,"should":[
-                {"match": {"descriptions.value": qstr}}
-              ]
+              #,"should":[
+                #{"match": {"descriptions.value": qstr}}
+              #]
             }},
             "highlight": {"fields" : {"descriptions.value" : {}}}
         }

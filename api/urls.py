@@ -13,6 +13,9 @@ urlpatterns = [
     # *** SEARCH ***
 
     path('',views.SearchAPIView.as_view(),name='api-search'),
+    path('index/',views.IndexAPIView.as_view(),name='api-index-search'),
+    
+    # experiment
     path('filter/',views.FilteredSearchAPIView.as_view(),name='api-filtered-search'),
 
     # *** DATASETS ***
