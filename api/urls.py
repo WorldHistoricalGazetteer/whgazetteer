@@ -35,7 +35,7 @@ urlpatterns = [
 
     # *** PLACES ***
 
-    # search all places
+    # all places in a dataset
     path('places/<str:dslabel>/', views.PlaceAPIView.as_view(),name='place-list'), 
         
     # use > single place for dataset.html#browse:: PlaceSerializer

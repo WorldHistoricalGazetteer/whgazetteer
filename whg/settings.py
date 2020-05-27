@@ -90,6 +90,7 @@ CELERY_TASK_EAGER_PROPAGATES = True
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',
+        #'api.views.PrettyJsonRenderer',
         #'rest_framework.renderers.BrowsableAPIRenderer',
         'rest_framework_datatables.renderers.DatatablesRenderer',
     ),

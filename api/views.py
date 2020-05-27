@@ -37,7 +37,7 @@ class StandardResultsSetPagination(PageNumberPagination):
 
 
 #
-# API
+# External API
 # 
 #
 
@@ -114,7 +114,7 @@ def suggester(datatype,q,idx):
     return suggestions 
 
 """
-    search index given name string
+    search index parent records, given name string
     based on search.views.SearchView(View)
 
 """
@@ -128,32 +128,44 @@ class IndexAPIView(View):
           [string] datatype: place or trace
     """
     qstr = request.GET.get('q')
+    whgid = request.GET.get('id')
     datatype = 'trace' if request.GET.get('datatype') == 'trace' else 'place'
-    idx = 'whg03'
-    if datatype == 'place':
-      q = { 
-        "size": 100,
-        "query": { "bool": {
-          "must": [
-            {"exists": {"field": "whg_id"}},
-            {"multi_match": {
-              "query": qstr, 
-              "fields": ["title","names.toponym","searchy"],
-              "type": "phrase"
-          }}]
-        }},
-        "highlight": {"fields" : {"descriptions.value" : {}}}
-      }
-      print('search query:',q)
-    elif datatype == 'trace':
-      q = { "query": {"match": {"target.title": {"query": qstr, "operator": "and"}}} }
-      print('trace query:',q)
+    if whgid and whgid !='':
+      # fetch parent and any children
+      print('fetching whg_id',whgid)
+      result={"count":99,"result":'fetching whg_id: '+str(whgid)}
+    else:
+      # search
+      if datatype == 'place':
+        idx = 'whg03'
+        q = { 
+          "size": 100,
+          "query": { "bool": {
+            "must": [
+              {"exists": {"field": "whg_id"}},
+              {"multi_match": {
+                "query": qstr, 
+                "fields": ["title","names.toponym","searchy"],
+                "type": "phrase"
+            }}]
+          }}
+        }
+        print('search query:',q)
+      elif datatype == 'trace':
+        idx = 'traces'      
+        q = { "query": {"match": {"target.title": {"query": qstr, "operator": "and"}}} }
+        print('trace query:',q)
 
-    suggestions = suggester(datatype, q, idx)
-    #
-    suggestions = [ suggestionItem(s, datatype) for s in suggestions]
-    resut = {'count': len(suggestions), 'result':suggestions}
-    return JsonResponse(suggestions, safe=False,json_dumps_params={'ensure_ascii':False,'indent':2})
+      # run query
+      suggestions = suggester(datatype, q, idx)
+      # format hits
+      suggestions = [ suggestionItem(s, datatype) for s in suggestions]
+      
+      # result object
+      result = {'count': len(suggestions), 'result':suggestions}
+    
+    # to client
+    return JsonResponse(result, safe=False,json_dumps_params={'ensure_ascii':False,'indent':2})
 
 """ 
     return lpf results from database search 
@@ -284,9 +296,12 @@ class FilteredSearchAPIView(generics.ListAPIView):
   #filter_backends = [filters.SearchFilter]    
   filterset_fields = ['title']
 
+class PrettyJsonRenderer(JSONRenderer):    
+  def get_indent(self, accepted_media_type, renderer_context):
+    return 2
 #
 
-# IN USE Apr 2020
+# Internal IN USE May 2020
 
 #
 """
@@ -297,6 +312,7 @@ class PlaceDetailAPIView(generics.RetrieveAPIView):
   """  single database place record by id  """
   queryset = Place.objects.all()
   serializer_class = PlaceSerializer
+  renderer_classes = [PrettyJsonRenderer]
 
   permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
   authentication_classes = [SessionAuthentication]
