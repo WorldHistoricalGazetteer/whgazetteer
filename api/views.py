@@ -50,12 +50,13 @@ def suggestionItem(s,datatype):
   s=s['hit']
   if datatype == 'place':
     item = { 
-      "name":s['title'],
-      "type":s['types'][0]['label'],
-      "whg_id":s['whg_id'],
-      "pid":s['place_id'],
+      "index_id":s['whg_id'],
+      "title":s['title'],
+      "place_ids":[int(c) for c in s['children']]+[s['place_id']],
+      "types":[t['label'] for t in s['types']],
       "variants":[n for n in s['suggest']['input'] if n != s['title']],
-      "dataset":s['dataset'],
+      "timespans":s['timespans'],
+      "minmax":s['minmax'] if 'minmax' in s.keys() else [],
       "ccodes":s['ccodes'],
       #"geom": makeGeom(s['place_id'],s['geoms'])
     }
@@ -91,15 +92,14 @@ def suggester(datatype,q,idx):
     #print('suggester()/place hits',hits)
     if len(hits) > 0:
       for h in hits:
-        snippet = h['highlight'] if 'highlight' in h else ''
         suggestions.append(
           {"_id": h['_id'],
            "linkcount":len(h['_source']['links']),
+           "childcount":len(h['_source']['children']),
            "hit": h['_source'],
-           "snippet":snippet
           }
         )
-    sortedsugs = sorted(suggestions, key=lambda x: x['linkcount'], reverse=True)
+    sortedsugs = sorted(suggestions, key=lambda x: x['childcount'], reverse=True)
     #print('SUGGESTIONS from suggester()',type(suggestions), sortedsugs)
     return sortedsugs
     
@@ -128,8 +128,8 @@ class IndexAPIView(View):
           [string] datatype: place or trace
     """
     qstr = request.GET.get('q')
-    datatype = request.GET.get('datatype')
-    idx = 'whg'
+    datatype = 'trace' if request.GET.get('datatype') == 'trace' else 'place'
+    idx = 'whg03'
     if datatype == 'place':
       q = { 
         "size": 100,
@@ -152,7 +152,8 @@ class IndexAPIView(View):
     suggestions = suggester(datatype, q, idx)
     #
     suggestions = [ suggestionItem(s, datatype) for s in suggestions]
-    return JsonResponse(suggestions, safe=False)
+    resut = {'count': len(suggestions), 'result':suggestions}
+    return JsonResponse(suggestions, safe=False,json_dumps_params={'ensure_ascii':False,'indent':2})
 
 """ 
     return lpf results from database search 
