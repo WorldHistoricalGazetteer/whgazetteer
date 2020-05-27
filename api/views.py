@@ -113,6 +113,20 @@ def suggester(datatype,q,idx):
         suggestions.append({"_id":h['_id'],"hit":h['_source']})
     return suggestions 
 
+
+"""
+  bundler();  called by IndexAPIView
+  execute es.search, return post-processed results 
+"""
+def bundler(q,whgid,idx):
+  es = Elasticsearch([{'host': 'localhost', 'port': 9200, 'timeout':30, 'max_retries':10, 'retry_on_timeout':True}])
+  res = es.search(index=idx, doc_type='place', body=q)
+  hits = res['hits']['hits']
+  bundle = {"index_id":whgid, 
+            "count":res['hits']['total'],
+            "result": [h['_source'] for h in hits]
+            }
+  return bundle
 """
     search index parent records, given name string
     based on search.views.SearchView(View)
@@ -133,7 +147,13 @@ class IndexAPIView(View):
     if whgid and whgid !='':
       # fetch parent and any children
       print('fetching whg_id',whgid)
-      result={"count":99,"result":'fetching whg_id: '+str(whgid)}
+      idx='whg03'
+      q = {"query":{"bool":{"should": [
+          {"parent_id": {"type": "child","id":whgid}},
+          {"match":{"_id":whgid}}
+      ]}}}
+      bundle = bundler(q,whgid,idx)
+      result={"index_id":whgid,"count":bundle['count'],"result":bundle['result']}
     else:
       # search
       if datatype == 'place':
