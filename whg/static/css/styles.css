@@ -169,11 +169,11 @@ input[type="text"] {
 
 #home_search {
   z-index:500; 
-  position:absolute; 
-  top:80px;
-  min-width: 25%;
-  max-width: 25%;
-  margin:5px; padding:5px;
+  /*position:absolute; */
+  /*top:80px;*/
+  /*min-width: 25%;*/
+  /*max-width: 25%;*/
+  margin:0; padding:5px;
 }
 #search_panel {
   background-color: #fff;

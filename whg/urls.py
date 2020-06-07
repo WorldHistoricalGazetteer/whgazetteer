@@ -14,7 +14,8 @@ from django.urls import include, path
 
 app_name='main'
 urlpatterns = [
-    url(r'^$', TemplateView.as_view(template_name="main/home_v0.4.html"), name="home"),
+    #url(r'^$', TemplateView.as_view(template_name="main/home_v0.4.html"), name="home"),
+    url(r'^$', TemplateView.as_view(template_name="main/home_v0.6.html"), name="home"),
 
     # apps
     path('search/', include('search.urls')),
