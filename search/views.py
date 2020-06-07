@@ -147,11 +147,14 @@ class SearchView(View):
           [string] doc_type: place or trace
           [string] scope: suggest or search
           [string] idx: index to be queried
+          [string[]] fclasses: filter on geonames class (A,H,L,P,S,T)
     """
     qstr = request.GET.get('qstr')
     doctype = request.GET.get('doc_type')
     scope = request.GET.get('scope')
     idx = request.GET.get('idx')
+    fclasses = request.GET.get('fclasses')
+    print('fclasses', fclasses)
     if doctype == 'place':
       if scope == 'suggest':
         q = { "suggest":{"suggest":{"prefix":qstr,"completion":{"field":"suggest"}} } }
@@ -161,7 +164,7 @@ class SearchView(View):
               "query": {"bool": {
               "must": [
                 {"exists": {"field": "whg_id"}},
-                #{"match": {"variants": qstr}}
+                {"terms": {"fclasses": fclasses.split(',')}},
                 {"multi_match": {
                   "query": qstr, 
                   "fields": ["title","names.toponym","searchy"],
@@ -180,7 +183,7 @@ class SearchView(View):
       print('trace query:',q)
       
     suggestions = suggester(doctype, q, scope, idx)
-    #print('a raw suggestion (new style):',suggestions[1])
+    print('raw suggestions (new style):',suggestions)
     suggestions = [ suggestionItem(s, doctype, scope) for s in suggestions]
     return JsonResponse(suggestions, safe=False)
   

@@ -54,6 +54,7 @@ html, body {
 .alert {padding: 0 1.25rem !important;}
 label {vertical-align:top;}
 .border-red { border:2px dotted red;}
+.checkbox-inline {margin-right:.5rem;}
 .strong { font-weight: bold;}
 .strikethrough {text-decoration: line-through;}
 .no-bullet { list-style: none;}
@@ -117,7 +118,7 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
   vertical-align:top;
   position:relative;
   display: inline-block;
-  width: 250px;
+  /*width: 250px;*/
   height: 24px;
   padding: 4px 6px;
   font-size: .8rem;
@@ -174,18 +175,25 @@ input[type="text"] {
   /*min-width: 25%;*/
   /*max-width: 25%;*/
   margin:0; padding:5px;
+  background-color: #e0e0cd;
 }
 #search_panel {
   background-color: #fff;
   padding: 5px;
   border-radius: 8px;
   box-shadow: 2px 2px #999;
+  min-height: 300px;
+  
 }
 #options { padding:2px; display:none;}
 #searchbox { height: auto;}
 #search_input { 
   margin: auto;
   /*margin-bottom: .3rem;*/
+}
+#search_filters {
+  font-size: .75rem;
+  font-variant: small-caps;
 }
 #result_list {
   padding: 5px;

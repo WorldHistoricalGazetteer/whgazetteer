@@ -40,10 +40,22 @@
           <div class="input-group input-group-sm mb-3">
             <div id="search_input">
               <input id="input_box" class="tt-hint" type="text" placeholder="Enter place name">
-              <input id="input_box_traces" class="typeahead hidden" type="text" placeholder="Limited examples now, try 'bud'">
+              <input id="input_box_traces" class="typeahead hidden" type="text" placeholder="Term in title, e.g. 'bud'">
             </div>
           </div>
-        <!--<div id="search_filters" class="hidden">searchfilters</div>-->
+          <hr/>
+        <div id="search_filters" class="">
+          <p class="mb-0">feature class 
+            <span class="ml-1"><a href="#" onClick='return false;' title="A=admin; H=hydro; L=landscape; P=settlements; S=site; T=topo" rel="tooltip">{% fontawesome_icon 'question-circle' color='#336699' %}</a></span>  
+            <span class="float-right"><a href="">clear all</a></span>
+          </p>
+          <label class="checkbox-inline fclass"><input type="checkbox" value="A"> A&nbsp;</label>
+          <label class="checkbox-inline fclass"><input type="checkbox" value="H"> H&nbsp;</label>
+          <label class="checkbox-inline fclass"><input type="checkbox" value="L"> L&nbsp;</label> 
+          <label class="checkbox-inline fclass"><input type="checkbox" value="P"> P&nbsp;</label> 
+          <label class="checkbox-inline fclass"><input type="checkbox" value="S"> S&nbsp;</label> 
+          <label class="checkbox-inline fclass"><input type="checkbox" value="T"> T&nbsp;</label> 
+        </div>
       </div>
       <!-- separate div for full search results -->
       <div id="filters" class="hidden">
@@ -178,8 +190,6 @@
     var satellite  = L.tileLayer(mbstyle_url, {id:'mapbox/satellite-streets-v11', token:token_mb, attribution:attrib_mb})
     var osm  = L.tileLayer(mbstyle_url, {id:'mapbox/light-v10', token:token_mb, attribution:attrib_mb});
 
-    var frenchy = L.tileLayer(mbtiles_url, {id:'kgeographer.9y83u0n2v', token:token_kg});
-
     var countryStyle = {
       "color": "#ddd",
       "weight": 1,
@@ -201,8 +211,7 @@
       "Satellite": satellite
     };
     var dataLayers = {
-      "Countries": countries,
-      "frenchy": frenchy
+      "Countries": countries
     }
     mappy.zoomControl.setPosition('topright')
     L.control.layers(baseLayers,dataLayers).addTo(mappy);
@@ -338,7 +347,11 @@
   */
   searchPlaces = function (){
     window.doctype = $("input[name='class']:checked").val();
-    
+    // get filter values
+    var fclasses = [];
+    $('#search_filters input:checked').each(function() {
+      fclasses.push($(this).val());
+    });
     // hack disables typeahead
     scope = doctype =='place' ? 'search' : 'suggest'
     // end hack
@@ -351,7 +364,8 @@
         qstr: $('#input_box').val(), 
         doc_type: doctype,
         scope: scope,
-        idx: index
+        idx: index,
+        fclasses: fclasses.join(',')
       }, function(data){
         // render to html
         showResults(data,doctype,scope);
