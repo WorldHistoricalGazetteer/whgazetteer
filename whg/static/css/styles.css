@@ -182,7 +182,7 @@ input[type="text"] {
   padding: 5px;
   border-radius: 8px;
   box-shadow: 2px 2px #999;
-  min-height: 300px;
+  min-height: fit-content;
   
 }
 #options { padding:2px; display:none;}
