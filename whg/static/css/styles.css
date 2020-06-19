@@ -198,7 +198,7 @@ input[type="text"] {
 #options { padding:2px; display:none;}
 #searchbox { height: auto;}
 #search_input { border-bottom: 1px dashed #ddd;}
-#search_filters {
+#search_filters p {
   font-size: .75rem;
   font-variant: small-caps;
 }
