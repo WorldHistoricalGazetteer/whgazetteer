@@ -35,15 +35,19 @@
               <label class="form-check-label" for="r_trace">Traces
                   <span class="ml-1"><a href="#" onClick='return false;' title="historical entities having spatial-temporal 'footprints'" rel="tooltip">{% fontawesome_icon 'question-circle' color='#336699' %}</a></span>                
               </label>
+              <!--<span class="float-right">{ fontawesome_icon 'filter' color='#336699' %}</span>-->
             </div>
           </div>          
           <!--<div id="input_container" class="input-group input-group-sm mb-3 pb-3 ">-->
-            <div id="search_input"  class="input-group input-group-sm mb-3 pb-3" >
-              <input id="input_box" class="tt-hint" type="text" placeholder="Enter place name">
+            <div id="search_input"  class="input-group input-group-sm pb-2" >
+              <input id="input_box" class="tt-hint" type="text" placeholder="Enter place name"> 
               <input id="input_box_traces" class="typeahead hidden" type="text" placeholder="Term in title, e.g. 'bud'">
+              <div class="mx-auto mt-1 small"><a href="#">advanced options</a>
+              {% fontawesome_icon 'filter' color='#336699' %}
+              </div>
             </div>
           <!--</div>-->
-        <div id="search_filters" class="">
+        <div id="search_filters" class="hidden">
           <p class="mb-0">feature class 
             <span class="ml-1"><a href="#" onClick='return false;' title="A=admin; H=hydro; L=landscape; P=settlements; S=site; T=topo" rel="tooltip">{% fontawesome_icon 'question-circle' color='#336699' %}</a></span>  
             <span class="float-right"><a href="">clear all</a></span>
