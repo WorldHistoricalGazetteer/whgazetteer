@@ -183,7 +183,9 @@ input[type="text"] {
   /*min-width: 25%;*/
   /*max-width: 25%;*/
   margin:0; padding:5px;
-  background-color: #e0e0cd;
+  /*background-color: #e0e0cd;*/
+  border: 1px solid #ddd;
+  border-radius: 8px;
 }
 #search_panel {
   background-color: #fff;
