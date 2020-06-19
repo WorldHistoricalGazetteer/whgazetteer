@@ -141,6 +141,7 @@ class PlaceNameSerializer(serializers.ModelSerializer):
 def yearPadder(y):
     year = str(y).zfill(5) if str(y)[0] == '-' else str(y).zfill(4)
     return year
+
 class PlaceSerializer(serializers.ModelSerializer):
     dataset = serializers.ReadOnlyField(source='dataset.label')
     names = PlaceNameSerializer(many=True, read_only=True)
@@ -159,14 +160,12 @@ class PlaceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Place
         fields = ('url','id', 'title', 'src_id', 'dataset','ccodes',
-            'names','types','geoms','links','related',
-            'whens', 'descriptions', 'depictions',
-            'geo','minmax'
+            'names','types','geoms','links','related', 'whens', 
+            'descriptions', 'depictions', 'geo','minmax'
         )
         
 
-
-""" uses: DownloadGeomsAPIView() """
+""" used by: DownloadGeomsAPIView() """
 class FeatureSerializer(GeoFeatureModelSerializer):
     geom = GeometrySerializerMethodField()
     def get_geom(self, obj):

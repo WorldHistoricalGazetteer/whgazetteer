@@ -322,7 +322,8 @@ def align_wd(pk, *args, **kwargs):
     variants = ' '.join(['"'+n+'"' for n in qobj['variants']])
     
     # countries, placetypes if they're there
-    countries = ', '.join([c for c in getQ(qobj['countries'],'ccodes')]) if len(qobj['countries'])>0 else ''
+    countries = ', '.join([c for c in getQ(qobj['countries'],'ccodes')]) \
+      if len(qobj['countries'])>0 and qobj['countries'] != [''] else ''
     placetype = getQ(qobj['placetypes'],'types')[0] if len(qobj['placetypes'])>0 else ''
     print('variants,countries,placetype',variants,countries,placetype)
     

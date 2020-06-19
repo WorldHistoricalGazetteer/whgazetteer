@@ -4,60 +4,25 @@
 
 <div class="container">
   <div class="d-flex justify-content-center mt-3">
-    <div>
+    <div class="justify-content-center">
     {% if error %} <p style="color:red">{{ error }}</p> {% endif %}
-
-    <h2>Register</h2>
     <form method="post" action="{% url 'register' %}">
+    <h2 class="">User Registration</h2>
       {% csrf_token %}
       <input type="hidden" name="first_name" value="n/a"/> <input type="hidden" name="last_name" value="n/a"/>
-      <div class="mb-3">
-        <div class="form-check form-check-inline">
-          <input class="form-check-input" type="radio" name="user_type" id="r_indiv" value="individual" checked="checked">
-          <label class="form-check-label" for="r_indiv">Individual</label>
-        </div>
-        <div class="form-check form-check-inline">
-          <input class="form-check-input" type="radio" name="user_type" id="r_group" value="group">
-          <label class="form-check-label" for="r_group">Group or project team</label>
-        </div>
-      </div>
-      Login ID<br/>
-      <input type="text" name="username" />
-      <br/>
-      <span id="namelabel"></span><br/>
-      <input type="text" name="name" />
-      <br/>
-      Email<br/>
-      <input type="text" name="email" />
-      <br/>
-      Affiliation<br/>
-      <input type="text" name="affiliation" />
-      <br/>
-      Web page<br/>
-      <input type="text" name="web_page" />
-      <br/>
-      Password<br/>
-      <input type="password" name="password1" />
-      <br/>
-      Confirm password<br/>
-      <input type="password" name="password2" />
-      <br/><br/>
+      <table>
+        <tr><td class="">Username </td><td><input type="text" name="username" /></td></tr>
+        <tr><td class="">Full name </td><td><input type="text" name="name" /></td></tr>
+        <tr><td class="">Email </td><td><input type="text" name="email" /></td></tr>
+        <tr><td class="">Affiliation </td><td><input type="text" name="affiliation" /></td></tr>
+        <tr><td class="">Web page </td><td><input type="text" name="web_page" /></td></tr>
+        <tr><td class="">Password </td><td><input type="password" name="password1" /></td></tr>
+        <tr><td class="">Confirm password </td><td><input type="password" name="password2" /></td></tr>
+      </table>
       <input class="btn btn-primary" type="submit" value="Register" />
     </form>
   </div>
   </div>
 </div>
-<script type="text/javascript">
-  $(function(){
-    $("#namelabel").html("Full name")
-    $('input[type=radio][name=user_type]').change(function() {
-      if (this.value == 'individual') {
-          $("#namelabel").html("Full name");
-      }
-      else {
-          $("#namelabel").html("Project or group name");
-      }
-    });
-  })
-  </script>
+<script type="text/javascript"></script>
 {% endblock %}

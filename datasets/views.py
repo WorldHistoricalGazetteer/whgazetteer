@@ -439,11 +439,6 @@ def collab_add(request,dsid,role='member'):
   DatasetUser.objects.create(user_id_id=uid, dataset_id_id=dsid, role=role)
   return redirect('/datasets/'+str(dsid)+'/detail#sharing')
 #
-#def dataset_browse(request, label, f):
-  ## need only for title; calls API w/javascript for data
-  #ds = get_object_or_404(Dataset, label=label)
-  #filt = f
-  #return render(request, 'datasets/dataset_browse.html', {'ds':ds,'filter':filt})
 # ***
 # updates objects related to a Place (pobj)
 # then updates fclasses and minmax

@@ -51,7 +51,7 @@ def register(request):
                     last_name=request.POST['last_name']
                 )
                 user.profile.affiliation=request.POST['affiliation']
-                user.profile.user_type=request.POST['user_type']
+                #user.profile.user_type=request.POST['user_type']
                 user.profile.name=request.POST['name']
                 auth.login(request, user)
                 return redirect('home')

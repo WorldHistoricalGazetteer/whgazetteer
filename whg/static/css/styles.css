@@ -5,6 +5,7 @@ html, body {
   /*background-color: #fff5e6;*/
 }
 
+table {border-collapse:initial;}
 .navbar .container {border-bottom: 1px solid #eee;}
 /**
   modals
@@ -69,6 +70,7 @@ label {vertical-align:top;}
 .hidden-imp {display:none !important;}
 .texttop {vertical-align: text-top !important;}
 .textsub {vertical-align: sub !important;}
+.textcenter {text-align:center;}
 .smaller {font-size: small;} /* smaller than bootstrap */
 .larger {font-size: larger;}
 .notebox {background-color:#eee;box-shadow: 2px 2px #eee; border:1px dashed #ccc; padding:6px;}
