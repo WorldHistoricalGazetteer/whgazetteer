@@ -120,8 +120,9 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
   vertical-align:top;
   position:relative;
   display: inline-block;
-  /*width: 250px;*/
+  width: 90%;
   height: 24px;
+  margin: auto;
   padding: 4px 6px;
   font-size: .8rem;
   line-height: 24px;
@@ -129,6 +130,11 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
   border-radius: 4px;
   outline: none;
 }
+.twitter-typeahead {
+  width:90% !important;
+  margin:auto  !important;
+}
+#input_box_traces { width:100%;}
 .input-loading {    
     background-color: #ffffff;
     background-image: url("http://loadinggif.com/images/image-selection/3.gif");
@@ -189,10 +195,7 @@ input[type="text"] {
 }
 #options { padding:2px; display:none;}
 #searchbox { height: auto;}
-#search_input { 
-  margin: auto;
-  /*margin-bottom: .3rem;*/
-}
+#search_input { border-bottom: 1px dashed #ddd;}
 #search_filters {
   font-size: .75rem;
   font-variant: small-caps;
