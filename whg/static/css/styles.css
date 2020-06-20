@@ -198,9 +198,10 @@ input[type="text"] {
 #options { padding:2px; display:none;}
 #searchbox { height: auto;}
 #search_input { border-bottom: 1px dashed #ddd;}
-#search_filters p {
+#search_filters p, #search_filters label{
   font-size: .75rem;
   font-variant: small-caps;
+  color: #993333;
 }
 #result_list {
   padding: 5px;

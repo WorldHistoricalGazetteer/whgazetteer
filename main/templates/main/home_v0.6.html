@@ -49,8 +49,8 @@
           <!--</div>-->
         <div id="search_filters">
           <p class="mb-0">feature class 
-            <span class="ml-1"><a href="#" onClick='return false;' title="A=admin; H=hydro; L=landscape; P=settlements; S=site; T=topo" rel="tooltip">{% fontawesome_icon 'question-circle' color='#336699' %}</a></span>  
-            <span class="float-right"><a href="">clear all</a></span>
+            <span class="ml-1"><a href="#" data-html="true" onClick='return false;' title="A=administrative; H=hydrological; L=landscape; P=settlements;<br/> S='sites';<br/> T=topographical" rel="tooltip">{% fontawesome_icon 'question-circle' color='#336699' %}</a></span>  
+            <span class="float-right"><a href="#">clear all</a></span>
           </p>
           <label class="checkbox-inline fclass"><input type="checkbox" value="A"> A&nbsp;</label>
           <label class="checkbox-inline fclass"><input type="checkbox" value="H"> H&nbsp;</label>
@@ -60,7 +60,10 @@
           <label class="checkbox-inline fclass"><input type="checkbox" value="T"> T&nbsp;</label> 
           
           <p class="mb-0">temporal</p>
-          <div>slider? startend inputs?</div>
+          <div>
+            <label class="input-sm"><input type="text" size="5"> start</label>
+            <label class="input-sm"><input type="text" size="5"> end</label>          
+          </div>
         </div>
       </div>
       <!-- separate div for full search results -->
@@ -96,7 +99,21 @@
 
 <script type="text/javascript">
   var filterLayers = null
-  $(function(){
+  $(function(){  
+
+    $("[rel='tooltip']").tooltip();
+    <!--$("[rel='tooltip']").tooltip({-->
+      <!--content: function() {-->
+        <!--var el = $( this );-->
+        <!--if ( el.is( "[data-trace]" ) ) {-->
+          <!--return "trace stuff";-->
+        <!--}-->
+        <!--if ( el.is( "[data-fclass]" ) ) {-->
+          <!--return "fclass stuff";-->
+        <!--}-->
+      <!--}}    -->
+    <!--);-->
+  
     $("#filters").hide();
     var idToFeature = {} // for feature lookup
     var itf_new = []
@@ -706,7 +723,7 @@
     return html
   }
 
-  $("[rel='tooltip']").tooltip();
+
   $('label.btn').click(function(){
     $(".autosuggest").html('')
     $('#search_input').val('')
