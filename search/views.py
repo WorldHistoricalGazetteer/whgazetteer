@@ -75,8 +75,8 @@ def suggestionItem(s,doctype,scope):
         "variants":[n for n in h['suggest']['input'] if n != h['title']],
         "ccodes": h['ccodes'],
         "types": [t['label'] for t in h['types'] ],
-        "snippet": s['snippet']['descriptions.value'][0] if s['snippet'] != '' else []
-        ,"geom": makeGeom(h['place_id'],h['geoms'])
+        "geom": makeGeom(h['place_id'],h['geoms'])
+        #"snippet": s['snippet']['descriptions.value'][0] if s['snippet'] != '' else []
       }
   elif doctype == 'trace':
     # now with place_id, not whg_id (aka _id; they're transient)
@@ -112,17 +112,23 @@ def suggester(doctype,q,scope,idx):
     elif scope == 'search':
       hits = res['hits']['hits']
       #print('suggester()/place hits',hits)
+      # identify distinct parents
+      #parents = [h for h in hits if 'whg_id' in h['_source']]
+      #children = [h for h in hits if 'whg_id' not in h['_source']]
+      #parent_ids = [p['_source']['whg_id'] for p in parents]
+      #kid_parents = [int(c['_source']['relation']['parent']) for c in children]
       if len(hits) > 0:
         for h in hits:
-          snippet = h['highlight'] if 'highlight' in h else ''
+          #snippet = h['highlight'] if 'highlight' in h else ''
           suggestions.append(
             {"_id": h['_id'],
              "linkcount":len(h['_source']['links']),
              "hit": h['_source'],
-             "snippet":snippet
+             #"snippet":snippet
             }
           )
       sortedsugs = sorted(suggestions, key=lambda x: x['linkcount'], reverse=True)
+      # TODO: there may be parents and children
       #print('SUGGESTIONS from suggester()',type(suggestions), sortedsugs)
       return sortedsugs
     
@@ -147,6 +153,7 @@ class SearchView(View):
           [string] doc_type: place or trace
           [string] scope: suggest or search
           [string] idx: index to be queried
+          [int] year: filter for timespans including this
           [string[]] fclasses: filter on geonames class (A,H,L,P,S,T)
     """
     qstr = request.GET.get('qstr')
@@ -154,6 +161,7 @@ class SearchView(View):
     scope = request.GET.get('scope')
     idx = request.GET.get('idx')
     fclasses = request.GET.get('fclasses')
+    year = request.GET.get('year')
     print('fclasses', fclasses)
     if doctype == 'place':
       if scope == 'suggest':
@@ -169,21 +177,25 @@ class SearchView(View):
                   "query": qstr, 
                   "fields": ["title","names.toponym","searchy"],
                   "type": "phrase"
-                }}
+                }},
+                #{"bool":{"should":[
+                  #{"term":{"timespans" : {"value": year}}},
+                  #{"has_child":{
+                    #"type":"child",
+                    #"query":{"term":{"timespans" : {"value": year}}}
+                  #}}                
+                #]}}
               ]
-              #,"should":[
-                #{"match": {"descriptions.value": qstr}}
-              #]
-            }},
-            "highlight": {"fields" : {"descriptions.value" : {}}}
+            }}
         }
         print('search query:',q)
+
     elif doctype == 'trace':
       q = { "query": {"match": {"target.title": {"query": qstr,"operator": "and"}}} }
       print('trace query:',q)
       
     suggestions = suggester(doctype, q, scope, idx)
-    print('raw suggestions (new style):',suggestions)
+    #print('raw suggestions (new style):',suggestions)
     suggestions = [ suggestionItem(s, doctype, scope) for s in suggestions]
     return JsonResponse(suggestions, safe=False)
   

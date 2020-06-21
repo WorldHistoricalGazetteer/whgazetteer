@@ -50,7 +50,7 @@
         <div id="search_filters">
           <p class="mb-0">feature class 
             <span class="ml-1"><a href="#" data-html="true" onClick='return false;' title="A=administrative; H=hydrological; L=landscape; P=settlements;<br/> S='sites';<br/> T=topographical" rel="tooltip">{% fontawesome_icon 'question-circle' color='#336699' %}</a></span>  
-            <span class="float-right"><a href="#">clear all</a></span>
+            <!--<span class="float-right"><a href="#">clear all</a></span>-->
           </p>
           <label class="checkbox-inline fclass"><input type="checkbox" value="A"> A&nbsp;</label>
           <label class="checkbox-inline fclass"><input type="checkbox" value="H"> H&nbsp;</label>
@@ -61,8 +61,8 @@
           
           <p class="mb-0">temporal</p>
           <div>
-            <label class="input-sm"><input type="text" size="5"> start</label>
-            <label class="input-sm"><input type="text" size="5"> end</label>          
+            <label class="input-sm"><input id="input_year" type="text" size="5"> start</label>
+            <!--<label class="input-sm"><input id="input_end"  type="text" size="5"> end</label>          -->
           </div>
         </div>
       </div>
@@ -102,18 +102,7 @@
   $(function(){  
 
     $("[rel='tooltip']").tooltip();
-    <!--$("[rel='tooltip']").tooltip({-->
-      <!--content: function() {-->
-        <!--var el = $( this );-->
-        <!--if ( el.is( "[data-trace]" ) ) {-->
-          <!--return "trace stuff";-->
-        <!--}-->
-        <!--if ( el.is( "[data-fclass]" ) ) {-->
-          <!--return "fclass stuff";-->
-        <!--}-->
-      <!--}}    -->
-    <!--);-->
-  
+
     $("#filters").hide();
     var idToFeature = {} // for feature lookup
     var itf_new = []
@@ -345,7 +334,7 @@
     doctype = $("input[name='class']:checked").val()
     <!--if (e.keyCode === 13 && doctype == 'place') {-->
     if (e.keyCode === 13) {
-      console.log('enter on input_box')
+      <!--console.log('enter on input_box')-->
       searchPlaces()
     } 
   })
@@ -374,7 +363,7 @@
   */
   searchPlaces = function (){
     window.doctype = $("input[name='class']:checked").val();
-    // get filter values
+    // get filter values: fclasses, start, end, ??
     var fclasses = [];
     $('#search_filters input:checked').each(function() {
       fclasses.push($(this).val());
@@ -392,7 +381,9 @@
         doc_type: doctype,
         scope: scope,
         idx: index,
-        fclasses: fclasses.join(',')
+        fclasses: fclasses.join(','),
+        <!--year: $("#input_year").val()-->
+        <!--end: $("#input_start").val()-->
       }, function(data){
         // render to html
         showResults(data,doctype,scope);
@@ -414,7 +405,7 @@
     var results_div = '';
     geoms=[]
     var types=[], typesArr = []
-    console.log(data.length+ ' results')
+    console.log(data.length+ ' results',data)
     if (doctype == 'place'){
       if(data.length ==0) {
         results_div += '<p class="small ml-2">No results, sorry.</p>'
@@ -631,7 +622,7 @@
         sug['variants'].sort().slice(0,8).join('; ')+'; </i> ...' : ''
       <!--console.log(sug['variants'])-->
       if (scope=='search'){
-        snippet = sug['snippet'].length > 0 ? sug['snippet']+'...' : ''
+        <!--snippet = sug['snippet'].length > 0 ? sug['snippet']+'...' : ''-->
         ccodes = sug['ccodes'].length > 0 ? ' ['+sug['ccodes']+']' : ''
         types = ' ('+sug['types']+')'
         geo = sug['geom'].length > 0 ? ' {% fontawesome_icon 'globe' color='#666' %}' : ''

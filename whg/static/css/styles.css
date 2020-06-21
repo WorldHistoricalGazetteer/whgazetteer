@@ -190,6 +190,7 @@ input[type="text"] {
 #search_panel {
   background-color: #fff;
   padding: 5px;
+  border: 1px solid #eee;
   border-radius: 8px;
   box-shadow: 2px 2px #999;
   min-height: fit-content;
