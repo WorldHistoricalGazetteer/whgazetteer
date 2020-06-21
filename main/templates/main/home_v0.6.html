@@ -61,7 +61,7 @@
           
           <p class="mb-0">temporal</p>
           <div>
-            <label class="input-sm"><input id="input_year" type="text" size="5"> start</label>
+            <label class="input-sm"><input id="input_year" type="text" size="5"> year</label>
             <!--<label class="input-sm"><input id="input_end"  type="text" size="5"> end</label>          -->
           </div>
         </div>
@@ -382,7 +382,7 @@
         scope: scope,
         idx: index,
         fclasses: fclasses.join(','),
-        <!--year: $("#input_year").val()-->
+        year: $("#input_year").val()
         <!--end: $("#input_start").val()-->
       }, function(data){
         // render to html

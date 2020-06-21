@@ -178,6 +178,7 @@ class SearchView(View):
                   "fields": ["title","names.toponym","searchy"],
                   "type": "phrase"
                 }},
+                {"term":{"timespans" : {"value": year}}}
                 #{"bool":{"should":[
                   #{"term":{"timespans" : {"value": year}}},
                   #{"has_child":{
