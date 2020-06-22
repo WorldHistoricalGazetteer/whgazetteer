@@ -5,7 +5,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import View
 import simplejson as json, sys
 from areas.models import Area
-from datasets.tasks import normalize
+from datasets.tasks import normalize, get_bounds_filter
 from datasets.models import Dataset, Hit
 from elasticsearch import Elasticsearch
 from django.db.models import Count
@@ -162,7 +162,10 @@ class SearchView(View):
     idx = request.GET.get('idx')
     fclasses = request.GET.get('fclasses')
     year = request.GET.get('year')
-    print('fclasses', fclasses)
+    start = request.GET.get('start')
+    end = request.GET.get('end')
+    print('fclasses, span',fclasses,start,end)
+    
     if doctype == 'place':
       if scope == 'suggest':
         q = { "suggest":{"suggest":{"prefix":qstr,"completion":{"field":"suggest"}} } }
@@ -172,23 +175,21 @@ class SearchView(View):
               "query": {"bool": {
               "must": [
                 {"exists": {"field": "whg_id"}},
-                {"terms": {"fclasses": fclasses.split(',')}},
                 {"multi_match": {
                   "query": qstr, 
                   "fields": ["title","names.toponym","searchy"],
                   "type": "phrase"
-                }},
-                {"term":{"timespans" : {"value": year}}}
-                #{"bool":{"should":[
-                  #{"term":{"timespans" : {"value": year}}},
-                  #{"has_child":{
-                    #"type":"child",
-                    #"query":{"term":{"timespans" : {"value": year}}}
-                  #}}                
-                #]}}
+                }}
               ]
             }}
         }
+        if fclasses:
+          q['query']['bool']['must'].append({"terms": {"fclasses": fclasses.split(',')}})
+        if year:
+          q['query']['bool']['must'].append({"term":{"timespans":{"value": year}}})
+        if start:
+          q['query']['bool']['must'].append({"range":{"timespans":{"gte" :start,"lte":end if end else 2005}}})
+
         print('search query:',q)
 
     elif doctype == 'trace':
