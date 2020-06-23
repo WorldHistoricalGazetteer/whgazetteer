@@ -1507,10 +1507,11 @@ class DatasetDetailView(LoginRequiredMixin, UpdateView):
     me = self.request.user
     area_types=['ccodes','copied','drawn']
     
-    userareas = Area.objects.all().filter(type__in=area_types).order_by('-created')
+    userareas = Area.objects.all().filter(type__in=area_types).values('id','title').order_by('-created')
     context['area_list'] = userareas if me.username == 'whgadmin' else userareas.filter(owner=me)
   
-    predefined = Area.objects.all().filter(type='predefined').order_by('-created')
+    #predefined = Area.objects.all().filter(type='predefined').order_by('-created')
+    predefined = Area.objects.all().filter(type='predefined').values('id','title')
     context['region_list'] = predefined
       
     context['updates'] = {}

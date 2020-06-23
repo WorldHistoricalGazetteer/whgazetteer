@@ -105,17 +105,17 @@
 
 <script type="text/javascript">
   var filterLayers = null
-  window.area_list=[]
-  $(function(){  
-    <!--$.get('/api/areas', {mapid: map_id},-->
-    $.get('/api/areas',
+  
+  $(function(){
+    window.area_list=[]
+    $.get('/api/area_features',
       function(data){
         window.area_objs = data
-        <!--area_list = []-->
+        <!--console.log('features data',features)-->
         for (var i = 0; i < data.length; i++){
-          area_list.push(data[i].title)
+          area_list.push(data[i].properties.title)
+          console.log('properties:input',data[i].properties)
         }
-        console.log('area_list', area_list)
       }
     )
     
@@ -126,9 +126,13 @@
       minLength: 2,
       select: function( event, ui ) {
         // .find(o =>o.label===proj).id
-        areaid = area_objs.find(o =>o.title==ui.item.label).id
+        label = ui.item.label
+        areaid = area_objs.find(o =>o.properties.title==label).properties.id
         $( "#area-id" ).val( areaid )
         console.log( "highlight and filter on area #: ",areaid );
+        l = idToArea[areaid]
+        l.setStyle({"color":"red","weight":2})
+        mappy.fitBounds(l.getBounds())
       }
     } );
 
@@ -250,11 +254,16 @@
           }
     });
 
-    var regions = new L.GeoJSON.AJAX("/media/data/regions.json",
+    window.idToArea = {}
+    <!--var regions = new L.GeoJSON.AJAX("/media/data/regions.json",-->
+    var regions = new L.GeoJSON.AJAX('/api/area_features',
       {style:countryStyle,
         onEachFeature: function (feature, layer) {
+          console.log('properties (map)',feature.properties)
+          <!--area_list.push(feature.properties.title)-->
+          idToArea[feature.properties.id] = layer
           popupOptions = {maxWidth: 200};
-            layer.bindPopup(feature.properties.region, popupOptions);
+            layer.bindPopup(feature.properties.title, popupOptions);
           }
     });
 
@@ -270,7 +279,7 @@
     mappy.zoomControl.setPosition('topright')
     L.control.layers(baseLayers,dataLayers).addTo(mappy);
     baseLayers["AWMC Terrain"].addTo(mappy)
-    dataLayers["Countries"].addTo(mappy)
+    dataLayers["Regions (UN)"].addTo(mappy)
   }, false);
 
   function map_init (home_map, options) {
@@ -427,6 +436,7 @@
       }, function(data){
         // render to html
         showResults(data,doctype,scope);
+        console.log('searchPlaces()',data)
     });
     $('.tt-menu').hide()
   }
@@ -602,6 +612,7 @@
     <!--console.log('geodata prior to render',data)-->
     var count_features = 0
     idToFeature = {}
+    idToArea = {}
     mappy.createPane('placePane');
     mappy.getPane('placePane').style.zIndex = 200;
     stuff=L.layerGroup()

@@ -201,9 +201,9 @@ class SearchView(View):
     suggestions = [ suggestionItem(s, doctype, scope) for s in suggestions]
     return JsonResponse(suggestions, safe=False)
   
-## ***
-##    get features in current map viewport
-## ***
+'''
+  returns 300 index docs in current map viewport
+'''
 def contextSearch(idx,doctype,q):
   #print('context query',q)
   es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
@@ -228,9 +228,7 @@ def contextSearch(idx,doctype,q):
   # returns 'bodies' for TraceGeomView()
   # {id, title, relation, when, whg_id}
   return result_obj
-
 class FeatureContextView(View):
-  """ Returns places in a bounding box """
   @staticmethod
   def get(request):
     print('FeatureContextView GET:',request.GET)
@@ -262,7 +260,9 @@ class FeatureContextView(View):
     return JsonResponse(features, safe=False)
 
 
-''' search trace index '''
+''' 
+  Returns places in a trace body
+'''
 def getGeomCollection(idx,doctype,q):
   # q includes list of place_ids from a trace record
   es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
@@ -291,7 +291,6 @@ def getGeomCollection(idx,doctype,q):
   return collection
 
 class TraceGeomView(View):
-  """ Returns places in a trace body """
   @staticmethod
   def get(request):
     #print('TraceGeomView GET:',request.GET)

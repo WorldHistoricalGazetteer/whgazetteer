@@ -1,7 +1,7 @@
 # api.views
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User, Group
-from django.contrib.postgres import search
+#from django.contrib.postgres import search
 #from django.core import serializers
 from django.db.models import Q
 from django.http import JsonResponse, HttpResponse#, FileResponse
@@ -385,10 +385,11 @@ class PlaceTableViewSet(viewsets.ModelViewSet):
     return [permission() for permission in permission_classes]
 
 """
-    areas/
+  areas/
 
 """
-class AreasListView(View):
+# simple objects for dropdown
+class AreaListView(View):
   @staticmethod
   def get(request):
     #user = request.user
@@ -403,6 +404,22 @@ class AreasListView(View):
     return JsonResponse(area_list, safe=False)
     #return JsonResponse(areas_obj, safe=False)
   
+# geojson feature for map, dropdown
+class AreaFeaturesView(View):
+  @staticmethod
+  def get(request):
+    user = request.user
+    print('requst.GET',request.GET, user)
+    features = []
+    qs = Area.objects.filter(Q(type='predefined') | Q(owner=user)).values('id','title','geojson','type')
+    for a in qs:
+      feat = {
+        "type":"Feature",
+        "geometry":a['geojson'],
+        "properties":{"id":a['id'],"title":a['title'],"type":a['type']}}
+      features.append(feat)
+      
+    return JsonResponse(features, safe=False)  
   
 
 """
