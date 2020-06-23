@@ -52,7 +52,7 @@ urlpatterns = [
     # 
     # use > single area in dataset.html#addtask
     path('area/<int:pk>/', views.AreaViewSet.as_view({'get': 'retrieve'}),name='area-detail'),    
-    path('areas/', views.AreaViewSet.as_view({'get': 'list'}),name='area-list'),    
+    path('areas/', views.AreasListView.as_view(),name='area-list'),    
     
     # 
     # *** USERS ***

@@ -2,12 +2,12 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User, Group
 from django.contrib.postgres import search
-from django.core import serializers
-from django.db.models import Count
-from django.http import JsonResponse, Http404, HttpResponse, FileResponse
+#from django.core import serializers
+from django.db.models import Q
+from django.http import JsonResponse, HttpResponse#, FileResponse
 from django.shortcuts import get_object_or_404
 from django.views.generic import View
-from django.views.decorators.csrf import csrf_exempt
+#from django.views.decorators.csrf import csrf_exempt
 from django_filters.rest_framework import DjangoFilterBackend
 from elasticsearch import Elasticsearch
 from rest_framework import filters
@@ -383,6 +383,27 @@ class PlaceTableViewSet(viewsets.ModelViewSet):
     else:
       permission_classes = [permissions.IsAdminUser]
     return [permission() for permission in permission_classes]
+
+"""
+    areas/
+
+"""
+class AreasListView(View):
+  @staticmethod
+  def get(request):
+    #user = request.user
+    print('requst.GET',request.GET, request.user)
+    area_list = []
+    #areas_obj = {}
+    qs = Area.objects.filter(Q(type='predefined') | Q(owner=request.user)).values_list('id','title')
+    for a in qs:
+      area_list.append({"id": a[0], "title": a[1]})
+      #areas_obj[a[1]] = a[0]
+      
+    return JsonResponse(area_list, safe=False)
+    #return JsonResponse(areas_obj, safe=False)
+  
+  
 
 """
     area/<int:pk>/

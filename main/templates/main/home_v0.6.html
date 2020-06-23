@@ -68,6 +68,7 @@
           <p class="mb-0">spatial</p>
           <div>
             <label><input id="input_areas" type="text"  size="20"></label>
+            <input type="hidden" id="area-id">
           </div>
         </div>
       </div>
@@ -104,27 +105,33 @@
 
 <script type="text/javascript">
   var filterLayers = null
-  window.area_list = []
+  window.area_list=[]
   $(function(){  
     <!--$.get('/api/areas', {mapid: map_id},-->
     $.get('/api/areas',
-      function(areas){
-        console.log('areas', areas.results)
+      function(data){
+        window.area_objs = data
         <!--area_list = []-->
-        for (var i = 0; i < areas.results.length; i++){
-          area_list.push(areas.results[i].title)
+        for (var i = 0; i < data.length; i++){
+          area_list.push(data[i].title)
         }
-        <!--area_list = []-->
+        console.log('area_list', area_list)
       }
     )
     
     $("[rel='tooltip']").tooltip();
-
-    <!--area_list=['abc','abd','abe']-->
-    $("#input_areas").autocomplete({
-      source: area_list
-    });
     
+    $( "#input_areas" ).autocomplete({
+      source: area_list,
+      minLength: 2,
+      select: function( event, ui ) {
+        // .find(o =>o.label===proj).id
+        areaid = area_objs.find(o =>o.title==ui.item.label).id
+        $( "#area-id" ).val( areaid )
+        console.log( "highlight and filter on area #: ",areaid );
+      }
+    } );
+
     $("#filters").hide();
     var idToFeature = {} // for feature lookup
     var itf_new = []
