@@ -107,34 +107,34 @@
   var filterLayers = null
   
   $(function(){
-    window.area_list=[]
-    $.get('/api/area_features',
-      function(data){
-        window.area_objs = data
-        <!--console.log('features data',features)-->
-        for (var i = 0; i < data.length; i++){
-          area_list.push(data[i].properties.title)
-          console.log('properties:input',data[i].properties)
-        }
-      }
-    )
+    <!--window.area_list=[]-->
+    <!--$.get('/api/area_features',-->
+      <!--function(data){-->
+        <!--window.area_objs = data-->
+        <!--<!--console.log('features data',features)-->-->
+        <!--for (var i = 0; i < data.length; i++){-->
+          <!--area_list.push(data[i].properties.title)-->
+          <!--console.log('properties:input',data[i].properties)-->
+        <!--}-->
+      <!--}-->
+    <!--)-->
     
     $("[rel='tooltip']").tooltip();
     
-    $( "#input_areas" ).autocomplete({
-      source: area_list,
-      minLength: 2,
-      select: function( event, ui ) {
-        // .find(o =>o.label===proj).id
-        label = ui.item.label
-        areaid = area_objs.find(o =>o.properties.title==label).properties.id
-        $( "#area-id" ).val( areaid )
-        console.log( "highlight and filter on area #: ",areaid );
-        l = idToArea[areaid]
-        l.setStyle({"color":"red","weight":2})
-        mappy.fitBounds(l.getBounds())
-      }
-    } );
+    <!--$( "#input_areas" ).autocomplete({-->
+      <!--source: area_list,-->
+      <!--minLength: 2,-->
+      <!--select: function( event, ui ) {-->
+        <!--// .find(o =>o.label===proj).id-->
+        <!--label = ui.item.label-->
+        <!--areaid = area_objs.find(o =>o.properties.title==label).properties.id-->
+        <!--$( "#area-id" ).val( areaid )-->
+        <!--console.log( "highlight and filter on area #: ",areaid );-->
+        <!--l = idToArea[areaid]-->
+        <!--l.setStyle({"color":"red","weight":2})-->
+        <!--mappy.fitBounds(l.getBounds())-->
+      <!--}-->
+    <!--} );-->
 
     $("#filters").hide();
     var idToFeature = {} // for feature lookup
@@ -255,10 +255,18 @@
     });
 
     window.idToArea = {}
+	window.area_list = []
+	window.area_objs = []
     <!--var regions = new L.GeoJSON.AJAX("/media/data/regions.json",-->
+    <!--region_features = new L.GeoJSON.AJAX('/api/area_features')-->
+    <!--region_features = new L.GeoJSON.AJAX(area_objs)-->
+	<!--.then(function(data){	  console.log(data); 	});-->
+    
     var regions = new L.GeoJSON.AJAX('/api/area_features',
       {style:countryStyle,
         onEachFeature: function (feature, layer) {
+		  area_objs.push(feature)
+		  area_list.push(feature.properties.title)
           console.log('properties (map)',feature.properties)
           <!--area_list.push(feature.properties.title)-->
           idToArea[feature.properties.id] = layer
@@ -266,7 +274,20 @@
             layer.bindPopup(feature.properties.title, popupOptions);
           }
     });
-
+	$( "#input_areas" ).autocomplete({
+	  source: area_list,
+	  minLength: 2,
+	  select: function( event, ui ) {
+		// .find(o =>o.label===proj).id
+		label = ui.item.label
+		areaid = area_objs.find(o =>o.properties.title==label).properties.id
+		$( "#area-id" ).val( areaid )
+		console.log( "highlight and filter on area #: ",areaid );
+		l = idToArea[areaid]
+		l.setStyle({"color":"red","weight":2})
+		mappy.fitBounds(l.getBounds())
+	  }
+	} );
     var baseLayers = {
       "AWMC Terrain": awmc,
       "OSM": osm,      
