@@ -257,18 +257,13 @@
     window.idToArea = {}
 	window.area_list = []
 	window.area_objs = []
-    <!--var regions = new L.GeoJSON.AJAX("/media/data/regions.json",-->
-    <!--region_features = new L.GeoJSON.AJAX('/api/area_features')-->
-    <!--region_features = new L.GeoJSON.AJAX(area_objs)-->
-	<!--.then(function(data){	  console.log(data); 	});-->
     
     var regions = new L.GeoJSON.AJAX('/api/area_features',
       {style:countryStyle,
         onEachFeature: function (feature, layer) {
 		  area_objs.push(feature)
 		  area_list.push(feature.properties.title)
-          console.log('properties (map)',feature.properties)
-          <!--area_list.push(feature.properties.title)-->
+          <!--console.log('properties (map)',feature.properties)-->
           idToArea[feature.properties.id] = layer
           popupOptions = {maxWidth: 200};
             layer.bindPopup(feature.properties.title, popupOptions);

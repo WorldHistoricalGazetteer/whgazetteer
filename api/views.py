@@ -411,7 +411,7 @@ class AreaFeaturesView(View):
     user = request.user
     print('requst.GET',request.GET, user)
     features = []
-    qs = Area.objects.filter(Q(type='predefined') | Q(owner=user)).values('id','title','geojson','type')
+    qs = Area.objects.all().filter((Q(type='predefined') | Q(owner=user))).values('id','title','geojson','type')
     for a in qs:
       feat = {
         "type":"Feature",
