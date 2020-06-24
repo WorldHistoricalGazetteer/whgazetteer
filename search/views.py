@@ -164,6 +164,7 @@ class SearchView(View):
     year = request.GET.get('year')
     start = request.GET.get('start')
     end = request.GET.get('end')
+    bounds = request.GET.get('bounds')
     print('fclasses, span',fclasses,start,end)
     
     if doctype == 'place':
@@ -189,6 +190,8 @@ class SearchView(View):
           q['query']['bool']['must'].append({"term":{"timespans":{"value": year}}})
         if start:
           q['query']['bool']['must'].append({"range":{"timespans":{"gte" :start,"lte":end if end else 2005}}})
+        if bounds:
+          q['query']['bool']["filter"]=[get_bounds_filter(bounds,'whg')] if bounds['id'] != ['0'] else []
 
         print('search query:',q)
 

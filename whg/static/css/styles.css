@@ -52,10 +52,11 @@ table {border-collapse:initial;}
     display: table-cell;
     padding-right: 0.4em;
 }
+.i-blk {display:inline-block;}
 .alert {padding: 0 1.25rem !important;}
 label {vertical-align:top;}
 .border-red { border:2px dotted red;}
-.checkbox-inline {margin-right:.5rem;}
+.checkbox-inline {margin-right:.3rem;}
 .strong { font-weight: bold;}
 .strikethrough {text-decoration: line-through;}
 .no-bullet { list-style: none;}
@@ -109,6 +110,8 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
 **/
 .list-inline { padding-left: 4px;}
 .active-filter {font-weight:bold; color:#993333;}
+#search_input label { position:absolute; right: 20px; z-index:10;}
+#search_input label:hover { cursor:pointer;}
 #filters {
   background-color: #fff;
   font-size: small;
@@ -116,6 +119,15 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
   margin-top:8px;
   box-shadow: 2px 2px #999;
 }
+#splash {
+  margin-top:.5rem;
+  border-radius: 8px;
+  height: calc(100vh - 205px);
+  position: relative;
+  /*background-color: aliceblue;*/
+  padding: 0 8px;
+}
+#splash p {font-family: 'Raleway', sans-serif; font-size:.9rem;}
 #input_box {
   vertical-align:top;
   position:relative;

@@ -319,14 +319,15 @@ def ds_recon(request, pk):
   #print('me',me,me.id)
   context = {"dataset": ds.title}
 
-  types_ok=['ccodes','copied','drawn']
-  userareas = Area.objects.all().filter(type__in=types_ok).order_by('-created')
-  # TODO: this line throws an error but executes !?
-  context['area_list'] = userareas if me.username == 'whgadmin' else userareas.filter(owner=me)
-
-  predefined = Area.objects.all().filter(type='predefined').order_by('-created')
+  # build area lists for dropdowns
+  user_types=['ccodes','copied','drawn']
+  areas = Area.objects.fields('id','title','type')
+  predefined = areas.filter(type='predefined')
+  userareas = areas.filter(type__in=user_types).order_by('-created')
+  
+  context['area_list'] = userareas if me.is_superuser else userareas.filter(owner=me)
   context['region_list'] = predefined
-
+  
   if request.method == 'GET':
     print('recon request.GET:',request.GET)
   elif request.method == 'POST' and request.POST:

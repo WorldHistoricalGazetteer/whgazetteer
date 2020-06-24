@@ -11,6 +11,7 @@
   <script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>
   <link rel="stylesheet" href="//cdn.datatables.net/1.10.16/css/dataTables.bootstrap4.min.css">
   <link rel="stylesheet" href="{% static 'css/typeahead.css' %}">
+  <link href="https://fonts.googleapis.com/css?family=EB+Garamond|Raleway&display=swap" rel="stylesheet">
   <script src="{% static 'js/leaflet.ajax.min.js' %}"></script>
   <script src="{% static 'js/typeahead.bundle.js' %}"></script>
   <script src="{% static 'js/spin.umd.js' %}"></script>
@@ -38,18 +39,18 @@
               <!--<span class="float-right">{ fontawesome_icon 'filter' color='#336699' %}</span>-->
             </div>
           </div>          
-          <!--<div id="input_container" class="input-group input-group-sm mb-3 pb-3 ">-->
-            <div id="search_input"  class="input-group input-group-sm pb-2" >
-              <input id="input_box" class="tt-hint" type="text" placeholder="Enter place name"> 
-              <input id="input_box_traces" class="typeahead hidden" type="text" placeholder="Term in title, e.g. 'bud'">
-              <div class="mx-auto mt-1 small"><a id="link_advanced"href="#">advanced options</a>
-              {% fontawesome_icon 'filter' color='#336699' %}
-              </div>
-            </div>
-          <!--</div>-->
-        <div id="search_filters">
-          <p class="mb-0">feature class 
-            <span class="ml-1"><a href="#" data-html="true" onClick='return false;' title="A=administrative; H=hydrological; L=landscape; P=settlements;<br/> S='sites';<br/> T=topographical" rel="tooltip">{% fontawesome_icon 'question-circle' color='#336699' %}</a></span>  
+		  <div id="search_input"  class="input-group input-group-sm pb-2" >
+			<label for="input_box">{% fontawesome_icon 'search' color='#336699'%}</label>
+			<input id="input_box" class="tt-hint" type="text" placeholder="Enter place name"> 
+			<input id="input_box_traces" class="typeahead hidden" type="text" placeholder="Term in title, e.g. 'bud'">
+			<div class="mx-auto mt-1 small"><a id="link_filters"href="#">filters</a>
+			{% fontawesome_icon 'filter' color='#336699' %}
+			</div>
+		  </div>
+        <div id="search_filters" class="hidden">
+          <p class="mb-0">feature category 
+            <span class="ml-1">
+			  <a href="#" data-html="true" onClick='return false;' title="A=administrative; H=hydrological; L=landscape; P=settlements;<br/> S='sites';<br/> T=topographical" rel="tooltip">key</a></span>  
             <!--<span class="float-right"><a href="#">clear all</a></span>-->
           </p>
           <label class="checkbox-inline fclass"><input type="checkbox" value="A"> A&nbsp;</label>
@@ -62,13 +63,13 @@
           <p class="mb-0">temporal</p>
           <div>
             <label class="input-sm">start <input id="input_start" type="text" value = "-5000" size="5"></label>
-            <label class="input-sm">end <input id="input_end" type="text" value = "2005" size="5"></label>
+            <label class="input-sm ml-2">end <input id="input_end" type="text" value = "2005" size="5"></label>
             <!--<label class="input-sm">year <input id="input_year" type="text" size="5"></label>-->
           </div>
           <p class="mb-0">spatial</p>
           <div>
-            <label><input id="input_areas" type="text"  size="20"></label>
-            <input type="hidden" id="area-id">
+            <label><input id="input_areas" type="text" size="30" placeholder="Region, country, study area"></label>
+            <input type="hidden" id="area-id" >
           </div>
         </div>
       </div>
@@ -82,6 +83,13 @@
         <ul class="list-inline"></ul>
       </div>
       <div id="result_list" class="hidden"></div>
+	  <div id="splash">
+		<span style="text-align:center;"><img class="i-blk" src="{% static 'images/slide-indicator.png'%}" height='10'/></span>
+		<p>World Historical Gazetteer indexes place references drawn from historical sources, 
+		  adding temporal depth to a core of approximately 1.8 million modern records.</p>
+		<img src="{% static 'images/temporal-depth_splash.png'%}" width='250' />
+		<p>This is a work-in-progress; to date ~60,000 historical references have been added to our index. Blah, blah, and so on..</p>
+	  </div>
     </div>
     <div id="home_map" class="col-sm-9">
       {% leaflet_map "map_home" callback="map_init" %}
@@ -107,43 +115,17 @@
   var filterLayers = null
   
   $(function(){
-    <!--window.area_list=[]-->
-    <!--$.get('/api/area_features',-->
-      <!--function(data){-->
-        <!--window.area_objs = data-->
-        <!--<!--console.log('features data',features)-->-->
-        <!--for (var i = 0; i < data.length; i++){-->
-          <!--area_list.push(data[i].properties.title)-->
-          <!--console.log('properties:input',data[i].properties)-->
-        <!--}-->
-      <!--}-->
-    <!--)-->
-    
     $("[rel='tooltip']").tooltip();
     
-    <!--$( "#input_areas" ).autocomplete({-->
-      <!--source: area_list,-->
-      <!--minLength: 2,-->
-      <!--select: function( event, ui ) {-->
-        <!--// .find(o =>o.label===proj).id-->
-        <!--label = ui.item.label-->
-        <!--areaid = area_objs.find(o =>o.properties.title==label).properties.id-->
-        <!--$( "#area-id" ).val( areaid )-->
-        <!--console.log( "highlight and filter on area #: ",areaid );-->
-        <!--l = idToArea[areaid]-->
-        <!--l.setStyle({"color":"red","weight":2})-->
-        <!--mappy.fitBounds(l.getBounds())-->
-      <!--}-->
-    <!--} );-->
-
     $("#filters").hide();
     var idToFeature = {} // for feature lookup
     var itf_new = []
     var titles = {}
     var searchoption = null;
     clearit()
-    $("#link_advanced").click(function(e){
-      e.preventDefault()
+    $("#link_filters").click(function(){
+      <!--e.preventDefault()-->
+	  $("#splash").toggle()
       $("#search_filters").toggle(400)
     })
     //
@@ -241,7 +223,7 @@
 
     var countryStyle = {
       "color": "#ddd",
-      "weight": 1,
+      "weight": 0,
       "opacity": 0.5,
       "fillOpacity": 0
     };
@@ -258,7 +240,7 @@
 	window.area_list = []
 	window.area_objs = []
     
-    var regions = new L.GeoJSON.AJAX('/api/area_features',
+    regions = new L.GeoJSON.AJAX('/api/area_features',
       {style:countryStyle,
         onEachFeature: function (feature, layer) {
 		  area_objs.push(feature)
@@ -273,7 +255,8 @@
 	  source: area_list,
 	  minLength: 2,
 	  select: function( event, ui ) {
-		// .find(o =>o.label===proj).id
+		<!--regions.setStyle({"color": "#ddd","weight":0})-->
+		regions.setStyle(countryStyle)
 		label = ui.item.label
 		areaid = area_objs.find(o =>o.properties.title==label).properties.id
 		$( "#area-id" ).val( areaid )
@@ -511,7 +494,7 @@
     $('#result_list').html(titleMarkup+
       "<p class='half allcap-heading mb-0 pl-1'>"+(doctype=='place'?'SEARCH RESULTS ('+data.length+
       ')<span class="float-right filters-link">'+
-      '<a href="#">filters {% fontawesome_icon 'filter' %}</a></span>':
+      '<a href="#">filter type {% fontawesome_icon 'filter' %}</a></span>':
       'PLACE ANNOTATIONS IN TRACE  ('+data.length+')')+'</p>'
       +results_div
     );    
@@ -612,7 +595,7 @@
     $(".filters-link").on("click", function(e){
       e.preventDefault()
       $("#filters").toggle(300)
-      <!--$("#filters_link").toggle(500)-->
+      $("#splash").toggle()
     })
   }
  

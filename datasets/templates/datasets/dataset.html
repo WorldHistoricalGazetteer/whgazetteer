@@ -840,7 +840,7 @@ js for Add Task
     $.ajax({
         url: '/api/area/'+aid
       }).done(function(data){
-        console.log('render_area()',data)
+        <!--console.log('render_area()',data)-->
         geom = {"type":"FeatureCollecton","features":[]}
         geom['features'].push(data.geojson)
         renderMap(geom,'area')
@@ -1054,7 +1054,7 @@ js for Browse
     });
     opt = Object.values(idToFeature)[0].options
     foptions = { ...opt };
-    console.log('foptions',opt)
+    <!--console.log('foptions',opt)-->
     spinner.stop()
   }
   // TODO: better parsing here
