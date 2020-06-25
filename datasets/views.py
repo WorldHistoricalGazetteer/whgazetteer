@@ -319,7 +319,7 @@ def ds_recon(request, pk):
   #print('me',me,me.id)
   context = {"dataset": ds.title}
 
-  # build area lists for dropdowns
+  # build lean region/area lists for dropdowns
   user_types=['ccodes','copied','drawn']
   areas = Area.objects.fields('id','title','type')
   predefined = areas.filter(type='predefined')
@@ -340,10 +340,10 @@ def ds_recon(request, pk):
     region = request.POST['region'] # pre-defined UN regions
     userarea = request.POST['userarea'] # from ccodes, loaded, or drawn
     aug_geom = request.POST['geom'] if 'geom' in request.POST else '' # on == write geom if matched
+    # TODO: does this really need to be a list?
     bounds={
       "type":["region" if region !="0" else "userarea"],
-          "id": [region if region !="0" else userarea]
-    }
+      "id": [region if region !="0" else userarea]}
     scope = request.POST['scope'] if 'scope' in request.POST else 'all'
 
     if not celeryUp():

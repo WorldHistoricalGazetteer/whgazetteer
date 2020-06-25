@@ -68,8 +68,8 @@
           </div>
           <p class="mb-0">spatial</p>
           <div>
-            <label><input id="input_areas" type="text" size="30" placeholder="Region, country, study area"></label>
-            <input type="hidden" id="area-id" >
+            <label><input id="input_area" type="text" size="30" placeholder="Region, country, study area"></label>
+            <input type="hidden" id="boundsobj">
           </div>
         </div>
       </div>
@@ -251,16 +251,18 @@
             layer.bindPopup(feature.properties.title, popupOptions);
           }
     });
-	$( "#input_areas" ).autocomplete({
+	$( "#input_area" ).autocomplete({
 	  source: area_list,
 	  minLength: 2,
 	  select: function( event, ui ) {
 		<!--regions.setStyle({"color": "#ddd","weight":0})-->
 		regions.setStyle(countryStyle)
 		label = ui.item.label
-		areaid = area_objs.find(o =>o.properties.title==label).properties.id
-		$( "#area-id" ).val( areaid )
-		console.log( "highlight and filter on area #: ",areaid );
+		obj = area_objs.find(o =>o.properties.title==label)
+		areaid = obj.properties.id
+		boundsobj = '{"type":["'+obj.properties.type+'"],"id":["'+areaid+'"]}'
+		$( "#area-id" ).val( boundsobj )
+		console.log( "boundsobj for view ", boundsobj);
 		l = idToArea[areaid]
 		l.setStyle({"color":"red","weight":2})
 		mappy.fitBounds(l.getBounds())
@@ -430,8 +432,8 @@
         fclasses: fclasses.join(','),
         year: $("#input_year").val(),
         start: $("#input_start").val(),
-        end: $("#input_end").val()
-        <!--end: $("#input_start").val()-->
+        end: $("#input_end").val(),
+        bounds: $("#boundsobj").val()
       }, function(data){
         // render to html
         showResults(data,doctype,scope);
