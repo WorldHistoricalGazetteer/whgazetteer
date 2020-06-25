@@ -126,11 +126,18 @@
     var titles = {}
     var searchoption = null;
     clearit()
+	// show filters, hide splash and vice versa
     $("#link_filters").click(function(){
       <!--e.preventDefault()-->
 	  $("#splash").toggle()
       $("#search_filters").toggle(400)
     })
+	// 
+	$("label[for='input_box']").click(function(){
+	  console.log('clicked search')
+	  doctype = $("input[name='class']:checked").val()
+	  searchPlaces()
+	})	
     //
     // data type choice determines index searched
     var suggester = new Bloodhound({
