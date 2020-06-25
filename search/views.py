@@ -164,8 +164,8 @@ class SearchView(View):
     year = request.GET.get('year')
     start = request.GET.get('start')
     end = request.GET.get('end')
-    bounds = request.GET.get('bounds') # e.g. {'type': ['userarea'], 'id': ['0']}
-    print('fclasses, span',fclasses,start,end)
+    bounds = json.loads(request.GET.get('bounds')) # e.g. {'type': ['userarea'], 'id': ['0']}
+    #print('bounds',fclasses,start,end)
     
     if doctype == 'place':
       if scope == 'suggest':
@@ -192,8 +192,9 @@ class SearchView(View):
           q['query']['bool']['must'].append({"range":{"timespans":{"gte" :start,"lte":end if end else 2005}}})
         if bounds:
           q['query']['bool']["filter"]=get_bounds_filter(bounds,'whg') if bounds['id'] != ['0'] else []
-
-        print('search query:',q)
+          
+        # truncate, may include polygon coordinates
+        print('search query:',q['query']['bool']['must'])
 
     elif doctype == 'trace':
       q = { "query": {"match": {"target.title": {"query": qstr,"operator": "and"}}} }

@@ -113,7 +113,10 @@
 
 <script type="text/javascript">
   var filterLayers = null
-  
+  window.idToArea = {}
+  window.area_list = []
+  window.area_objs = []
+      
   $(function(){
     $("[rel='tooltip']").tooltip();
     
@@ -185,7 +188,62 @@
     .on('typeahead:asynccancel typeahead:asyncreceive', function() {
         $('.typeahead').removeClass('input-loading');
     });;
+	// fetch area list
+	$.get("/api/area_features", function(data){
+	  console.log('initial areas for list',data)
+	  for(var i=0;i<data.length;i++){
+		area_objs.push(data[i])
+		area_list.push(data[i]['title'])
+	  }
+	})
+	$( "#input_area" ).autocomplete({
+	  source: area_list,
+	  minLength: 2,
+	  select: function( event, ui ) {
+		// build boundsobj, insert as hidden input val()
+		label = ui.item.label
+		obj = area_objs.find(o =>o.title==label)
+		areaid = obj.id
+		boundsobj = '{"type":["'+obj.type+'"],"id":["'+areaid+'"]}'
+		$("#boundsobj").val( boundsobj )
+		console.log( "boundsobj for view ", boundsobj);
+		
+		// fetch and render selected area
+		render_area(areaid)
+	  }
+	});
+	
   })
+ /*
+	*** render_area() ***
+	fetch and display an area (region/area/country)
+  */
+  function render_area(areaid) {
+	$.ajax({
+		url: '/api/area/'+areaid
+	  }).done(function(data){
+		console.log('render_area()',data)
+		geom = {"type":"FeatureCollecton","features":[]}
+		geom['features'].push(data.geojson)
+
+		// clear existing
+		if(typeof arealayer !== 'undefined'){arealayer.removeFrom(mappy)}
+
+		// render new
+		arealayer = L.geoJSON(geom, {
+		  onEachFeature: function(feature,layer) {
+			f=feature; l=layer;
+			console.log('render_area() f,l',f,l)
+			l.setStyle({"color":"red","weight":2,"fillOpacity":0})
+			idToArea[areaid] = l
+			<!--identifier = f.place_id;-->
+			popupOptions = {maxWidth: 200};
+			l.bindPopup(data.title, popupOptions);
+		  }
+		}).addTo(mappy)
+		mappy.fitBounds(arealayer.getBounds())
+	  })
+  }  
   //
   // radio button switch btwn place & trace search inputs
   $('input[type=radio][name=class]').change(function() {
@@ -201,6 +259,8 @@
     $('#input_box').attr("placeholder",this.getAttribute("rel"));
     clearit()
   });
+  // 
+
   //
   // initializes map
   window.addEventListener('map:init', function (e) {
@@ -236,38 +296,7 @@
           }
     });
 
-    window.idToArea = {}
-	window.area_list = []
-	window.area_objs = []
-    
-    regions = new L.GeoJSON.AJAX('/api/area_features',
-      {style:countryStyle,
-        onEachFeature: function (feature, layer) {
-		  area_objs.push(feature)
-		  area_list.push(feature.properties.title)
-          <!--console.log('properties (map)',feature.properties)-->
-          idToArea[feature.properties.id] = layer
-          popupOptions = {maxWidth: 200};
-            layer.bindPopup(feature.properties.title, popupOptions);
-          }
-    });
-	$( "#input_area" ).autocomplete({
-	  source: area_list,
-	  minLength: 2,
-	  select: function( event, ui ) {
-		<!--regions.setStyle({"color": "#ddd","weight":0})-->
-		regions.setStyle(countryStyle)
-		label = ui.item.label
-		obj = area_objs.find(o =>o.properties.title==label)
-		areaid = obj.properties.id
-		boundsobj = '{"type":["'+obj.properties.type+'"],"id":["'+areaid+'"]}'
-		$( "#area-id" ).val( boundsobj )
-		console.log( "boundsobj for view ", boundsobj);
-		l = idToArea[areaid]
-		l.setStyle({"color":"red","weight":2})
-		mappy.fitBounds(l.getBounds())
-	  }
-	} );
+
     var baseLayers = {
       "AWMC Terrain": awmc,
       "OSM": osm,      
@@ -275,12 +304,12 @@
     };
     var dataLayers = {
       "Countries": countries,
-      "Regions (UN)": regions
+      <!--"Regions (UN)": regions-->
     }
     mappy.zoomControl.setPosition('topright')
     L.control.layers(baseLayers,dataLayers).addTo(mappy);
     baseLayers["AWMC Terrain"].addTo(mappy)
-    dataLayers["Regions (UN)"].addTo(mappy)
+    <!--dataLayers["Regions (UN)"].addTo(mappy)-->
   }, false);
 
   function map_init (home_map, options) {
@@ -371,7 +400,6 @@
   // catch Enter key press for places
   // traces are handled in core typeahead function
   // disabled typeahead: removed class .typeahead from #input_box
-  
   */
   // $(".typeahead").on('keyup', function(e){
   $("#input_box").on('keyup', function(e){
@@ -661,8 +689,6 @@
     }
     
   }
-    
-
   /*
     *** sugLister() ***  from showResults()
     formats search result item (sug)

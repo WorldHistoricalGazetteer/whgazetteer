@@ -410,16 +410,18 @@ class AreaFeaturesView(View):
   def get(request):
     user = request.user
     print('requst.GET',request.GET, user)
-    features = []
-    qs = Area.objects.all().filter((Q(type='predefined') | Q(owner=user))).values('id','title','geojson','type')
+    areas = []
+    #qs = Area.objects.all().filter((Q(type='predefined') | Q(owner=user))).values('id','title','geojson','type')
+    qs = Area.objects.all().filter((Q(type='predefined') | Q(owner=user))).values('id','title','type')
     for a in qs:
-      feat = {
-        "type":"Feature",
-        "geometry":a['geojson'],
-        "properties":{"id":a['id'],"title":a['title'],"type":a['type']}}
-      features.append(feat)
+      area = {"id":a['id'],"title":a['title'],"type":a['type']}
+      #feat = {
+        #"type":"Feature",
+        #"geometry":a['geojson'],
+        #"properties":{"id":a['id'],"title":a['title'],"type":a['type']}}
+      areas.append(area)
       
-    return JsonResponse(features, safe=False)  
+    return JsonResponse(areas, safe=False)  
   
 
 """
