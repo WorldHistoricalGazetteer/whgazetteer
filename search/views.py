@@ -147,6 +147,7 @@ class SearchView(View):
   @staticmethod
   def get(request):
     print('SearchView request',request.GET)
+    print('bounds',request.GET.get('bounds'))
     """
       args in request.GET:
           [string] qstr: query string
@@ -164,7 +165,9 @@ class SearchView(View):
     year = request.GET.get('year')
     start = request.GET.get('start')
     end = request.GET.get('end')
-    bounds = json.loads(request.GET.get('bounds')) # e.g. {'type': ['userarea'], 'id': ['0']}
+    bounds = request.GET.get('bounds')
+    #bounds = json.loads(bounds) if bounds else {"id":"0","type":"predefined"}
+    # e.g. {'type': ['userarea'], 'id': ['0']}
     #print('bounds',fclasses,start,end)
     
     if doctype == 'place':
@@ -191,7 +194,9 @@ class SearchView(View):
         if start:
           q['query']['bool']['must'].append({"range":{"timespans":{"gte" :start,"lte":end if end else 2005}}})
         if bounds:
-          q['query']['bool']["filter"]=get_bounds_filter(bounds,'whg') if bounds['id'] != ['0'] else []
+          bounds=json.loads(bounds)
+          #q['query']['bool']["filter"]=get_bounds_filter(bounds,'whg') if bounds['id'] != ['0'] else []
+          q['query']['bool']["filter"]=get_bounds_filter(bounds,'whg')
           
         # truncate, may include polygon coordinates
         print('search query:',q['query']['bool']['must'])

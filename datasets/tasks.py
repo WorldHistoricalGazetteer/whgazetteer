@@ -181,7 +181,7 @@ def normalize(h,auth):
 
 # user-supplied spatial bounds
 def get_bounds_filter(bounds,idx):
-  #print('bounds',bounds)
+  print('bounds in get_bounds_filter()',bounds)
   id = bounds['id'][0]
   areatype = bounds['type'][0]
   area = Area.objects.get(id = id)

@@ -190,7 +190,7 @@
     });;
 	// fetch area list
 	$.get("/api/area_features", function(data){
-	  console.log('initial areas for list',data)
+	  <!--console.log('initial areas for list',data)-->
 	  for(var i=0;i<data.length;i++){
 		area_objs.push(data[i])
 		area_list.push(data[i]['title'])
@@ -212,7 +212,14 @@
 		render_area(areaid)
 	  }
 	});
-	
+	$("#input_area").on('keyup', function(e){
+		// resets stuff 
+	  if($('#input_area').val().length < 3) {
+		  $("#boundsobj").val('')
+			if(typeof arealayer !== 'undefined'){arealayer.removeFrom(mappy)}
+			mappy.setView([38, 10], 2.4)
+	  }
+	})
   })
  /*
 	*** render_area() ***
@@ -234,7 +241,7 @@
 		  onEachFeature: function(feature,layer) {
 			f=feature; l=layer;
 			console.log('render_area() f,l',f,l)
-			l.setStyle({"color":"red","weight":2,"fillOpacity":0})
+			l.setStyle({"color":"orange","weight":2,"fillOpacity":0})
 			idToArea[areaid] = l
 			<!--identifier = f.place_id;-->
 			popupOptions = {maxWidth: 200};
@@ -450,6 +457,7 @@
     index = doctype =='place' ? 'whg' : 'traces'    
     // clear filters
     $(".list-inline").html('')
+	console.log('bounds in js SearchPlaces()',$("#boundsobj").val())
     $.get("/search/index",{
         // qstr: $(".tt-input")[0].value,
         // disabled typeahead
