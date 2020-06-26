@@ -2,11 +2,14 @@ html, body {
   margin: 0;
   padding: 0;
   height: 100%;
+  font-family:  'Raleway', sans-serif; 
   /*background-color: #fff5e6;*/
 }
 
 table {border-collapse:initial;}
-.navbar .container {border-bottom: 1px solid #eee;}
+.navbar .container {
+  border-bottom: 1px solid #eee;
+}
 /**
   modals
 **/
