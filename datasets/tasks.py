@@ -90,7 +90,7 @@ def ccDecode(codes):
 def normalize(h,auth):
   if auth.startswith('whg'):
     rec = HitRecord(h['place_id'], h['dataset'], h['src_id'], h['title'])
-    print('normalize(): hit',h)
+    #print('normalize(): hit',h)
     print('normalize(): HitRecord',rec)
     rec.whg_id = h['whg_id'] if 'whg_id' in h.keys() else h['relation']['parent']
     # add elements if non-empty in index record

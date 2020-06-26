@@ -36,7 +36,7 @@ def parsejson(value,key):
 @register.filter
 def parsedict(value,key):
     """returns value for given key"""
-    print('parsedict value, key',value,key)
+    #print('parsedict value, key',value,key)
     return value[key]
 
 @register.filter
