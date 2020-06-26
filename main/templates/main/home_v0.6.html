@@ -43,7 +43,7 @@
 			<label for="input_box">{% fontawesome_icon 'search' color='#336699'%}</label>
 			<input id="input_box" class="tt-hint" type="text" placeholder="Enter place name"> 
 			<input id="input_box_traces" class="typeahead hidden" type="text" placeholder="Term in title, e.g. 'bud'">
-			<div class="mx-auto mt-1 small"><a id="link_filters"href="#">filters</a>
+			<div id="filters_opener" class="mx-auto mt-1 small"><a id="link_filters"href="#">filters</a>
 			{% fontawesome_icon 'filter' color='#336699' %}
 			</div>
 		  </div>
@@ -136,6 +136,7 @@
 	$("label[for='input_box']").click(function(){
 	  console.log('clicked search')
 	  doctype = $("input[name='class']:checked").val()
+	  $("#splash").hide()
 	  searchPlaces()
 	})	
     //
@@ -425,6 +426,7 @@
     <!--if (e.keyCode === 13 && doctype == 'place') {-->
     if (e.keyCode === 13) {
       <!--console.log('enter on input_box')-->
+	  $("#splash").hide()
       searchPlaces()
     } 
   })

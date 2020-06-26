@@ -128,6 +128,14 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
   padding: 0 8px;
 }
 #splash p {font-family: 'Raleway', sans-serif; font-size:.9rem;}
+#filters_opener {
+  border-top: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+  background-color: #e8e8e8;
+  width: 50%;
+  text-align:center;
+  margin:auto;
+}
 #input_box {
   vertical-align:top;
   position:relative;
