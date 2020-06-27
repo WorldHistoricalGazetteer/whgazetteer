@@ -37,26 +37,29 @@ class PlacePortalView(DetailView):
   def get_context_data(self, *args, **kwargs):
     print('get_context_data kwargs',self.kwargs)
     def mm(attrib):
-      # names, geoms, types, relations, whens
+      print('attrib in PlacePortalView.mm()', attrib)
       extent=[]
       for a in attrib:
         minmax=[]
-        if 'when' in a:
+        if 'when' in a: # i.e. names, geoms, types, related
           starts = sorted([t['start']['in'] for t in a['when']['timespans']])
           # TODO: this could throw error if >1 timespan
           ends = sorted([t['end']['in'] for t in a['when']['timespans']]) \
             if 'end' in a['when']['timespans'][0] else [datetime.now().year]
           minmax = [int(min(starts)), int(max(ends))]
           if len(minmax)>0: extent.append(minmax)
-        elif 'timespans' in a:
-          #print('place portal context a in attrib',a)
+        elif 'timespans' in a: # i.e. whens
+          # object in LP v1.0 datasets, list in +=v1.1
+          if type(a['timespans']==dict): 
+            a['timespans'] = [a['timespans']]
           starts = sorted(
-            [(t['start']['in'] if 'in' in t['start'] else t['start']['earliest']) for t in a['timespans']]
+            [(t['start']['in'] if 'in' in t['start'] else t['start']['earliest']) for t in a['timespans'][0]]
           )
           ends = sorted(
-            [(t['end']['in'] if 'in' in t['end'] else t['end']['latest']) for t in a['timespans']]
+            [(t['end']['in'] if 'in' in t['end'] else t['end']['latest']) for t in a['timespans'][0]]
           )
-          minmax = [int(min(starts)), int(max(ends))]        
+          minmax = [int(min(starts)), int(max(ends))]
+          print('starts, ends, minmax',starts,ends,minmax)
           if len(minmax)>0: extent.append(minmax)
       return extent
 

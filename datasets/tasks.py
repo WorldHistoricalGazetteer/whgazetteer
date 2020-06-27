@@ -179,19 +179,25 @@ def normalize(h,auth):
       #print("normalize(tgn) error:", h['tgnid'], sys.exc_info())
   return rec.toJSON()
 
-# user-supplied spatial bounds
+# ***
+# elasticsearch filter from Area (types: predefined, ccodes, drawn)
+# e.g. {'type': ['drawn'], 'id': ['128']}
+# called from: es_lookup_tgn(), es_lookup_whg(), search.SearchView(), 
+# FUTURE: parse multiple areas
+# ***
 def get_bounds_filter(bounds,idx):
-  print('bounds in get_bounds_filter()',bounds)
+  print('bounds, type in get_bounds_filter()',bounds,type(bounds))
   id = bounds['id'][0]
   areatype = bounds['type'][0]
   area = Area.objects.get(id = id)
-  # TODO: area always a hull polygon now; test MultiPolygon
+  # 
   # NOTE: 'whg' is generic, references current index for WHG, vs. 'tgn' for example
   geofield = "geoms.location" if idx == 'whg' else "location"
   filter = { "geo_shape": {
     geofield: {
         "shape": {
-          "type": "polygon" if areatype == 'userarea' else "multipolygon",
+          "type": "polygon" if areatype in ['ccodes','drawn'] else "multipolygon",
+          #"coordinates": area.geojson['coordinates'] if areatype == 'predefined' else area.geojson['coordinates'][0]
           "coordinates": area.geojson['coordinates']
         },
         "relation": "intersects" if idx=='whg' else 'within' # within | intersects | contains

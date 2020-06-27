@@ -53,7 +53,6 @@
                   {% if core|haskey:rec.dataset.label and rec.dataset.label != 'tgn_filtered_01' %}
                     (<a href="/api/place/{{rec.place_id}}/" target="_blank">pid:{{rec.place_id}}</a>)
                   {% else %}
-                    <!--(<a href="{{rec.purl}}" target="_blank">{rec.src_id}}</a>)-->
                     (<a href="{{rec.purl}}" target="_blank">{{rec.place_id}}</a>)
                   {% endif %}
                 </span>
@@ -239,10 +238,10 @@
       to_sorted = time_object[key].sort(function(a, b) {
           return parseFloat(a.start.in) - parseFloat(b.start.in);
       });
-      <!--intervals = time_object[key].map(ts => [ ts.start.in, ts.end.in ])-->
-      <!--intervals_text = time_object[key].map(ts => ts.start.in+'/'+ts.end.in)-->
-      <!--intervals_text = to_sorted.map(ts => ts.start.in+'/'+ts.end.in)-->
+      console.log('to_sorted',to_sorted)
+      // TODO: this does not handle case for 14154850??
       intervals_text = to_sorted.map(ts => ts.start.in+'/'+(!ts.end?'-':ts.end.in))
+      <!--intervals_text = to_sorted[0].map(ts => ts.start.in+'/'+(!ts.end?'-':ts.end.in))-->
       <!--console.log(key, intervals.join(', '));-->
       selector = "#card_"+key+" .attesttime"
       $(selector).html(intervals_text.join(', '))
@@ -314,7 +313,10 @@
         pushy(obj.timespans)
       }
     }
+    // TODO: this does not handle case for 14154850 ??
     intervals=ts_arr.map(ts => [ Number(ts.start.in), !ts.end?Number(ts.start.in)+9:Number(ts.end.in) ])
+    <!--intervals=ts_arr[0].map(ts => [ Number(ts.start.in), !ts.end?Number(ts.start.in)+9:Number(ts.end.in) ])-->
+    
     return [ts_obj,intervals]  <!--console.log(ts_arr)-->
   }
   function intersects(a,b){

@@ -146,8 +146,8 @@ def suggester(doctype,q,scope,idx):
 class SearchView(View):
   @staticmethod
   def get(request):
-    print('SearchView request',request.GET)
-    print('bounds',request.GET.get('bounds'))
+    print('SearchView() request',request.GET)
+    print('SearchView() bounds',request.GET.get('bounds'))
     """
       args in request.GET:
           [string] qstr: query string
@@ -199,7 +199,9 @@ class SearchView(View):
           q['query']['bool']["filter"]=get_bounds_filter(bounds,'whg')
           
         # truncate, may include polygon coordinates
-        print('search query:',q['query']['bool']['must'])
+        print('search must[]:',q['query']['bool']['must'])
+        if 'filter' in q['query']['bool']:
+          print('search filter[]:',q['query']['bool']['filter'])
 
     elif doctype == 'trace':
       q = { "query": {"match": {"target.title": {"query": qstr,"operator": "and"}}} }
