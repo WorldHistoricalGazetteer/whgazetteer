@@ -7,7 +7,7 @@ def index_traces(trdata):
       del rec['@context'] # not needed in index
       res = es.index(
         index=idx, 
-            doc_type='trace', 
+            doc_type='trace',
               body=rec)
       count +=1
     except:
@@ -17,12 +17,12 @@ def index_traces(trdata):
 
 def init():
   global es, idx, rows, trdata
-  idx = 'traces02'
-  file = 'examples_whg.json'
+  wd = '/Users/karlg/Documents/Repos/_whgazetteer/es/'
+  idx = 'traces03'
+  file = wd+'trace_data/traces_20200629.json'
   #file = 'G271_out.json'
   import os, codecs, time, datetime, json,sys
-  mappings = codecs.open('static/mappings_traces.json', 'r', 'utf8').read()
-  os.chdir('/Users/karlg/Documents/Repos/linked-traces-format/')
+  mappings = codecs.open(wd+'mappings_traces03.json', 'r', 'utf8').read()
 
   from elasticsearch import Elasticsearch
   es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
@@ -46,10 +46,4 @@ def init():
 
 init()
 
-#def makeRanges(doc):
-  #for anno in doc:
-    #for body in anno['body']:
-      ##print(len(body['when']))
-      #for ts in body['when']:
-        #print('start',arr_start,'end',arr_end)
 

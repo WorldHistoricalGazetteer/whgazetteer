@@ -354,7 +354,7 @@
     $.get("/search/tracegeom",{idx: 'traces', search: trace_id, doc_type: 'trace'},
       function(data){
         <!--console.log('bodies in this trace',data.bodies)-->
-        console.log('this trace.data',data)
+        console.log('fetchTraceGeom() data',data)
         var count_features = 0
         window.idToFeature = {}
         window.itf_new = []
@@ -380,7 +380,7 @@
             <!--marker.on('mouseout', function (e) {-->
                 <!--this.closePopup();-->
             <!--});-->
-            console.log('marker feature?',marker[0])
+            <!--console.log('marker feature?',marker)-->
             idToFeature[identifier] = marker
             itf_new.push({"id":identifier,"feature":marker})
             return marker
@@ -394,7 +394,6 @@
         } else {
           mappy.fitBounds(bounds,{padding: [200, 0]})
         }
-        
         showResults(data,'trace','suggest',title)
     });
   }
@@ -482,9 +481,10 @@
         end: $("#input_end").val(),
         bounds: $("#boundsobj").val()
       }, function(data){
+		window.searchres=data
+        console.log('searchPlaces()',data)
         // render to html
         showResults(data,doctype,scope);
-        console.log('searchPlaces()',data)
     });
     $('.tt-menu').hide()
   }
@@ -499,11 +499,10 @@
     title:    
   */
   function showResults(data,doctype,scope='suggest',title){
-    <!--console.log('showResults(doctype,scope):',doctype,scope)-->
     var results_div = '';
     geoms=[]
     var types=[], typesArr = []
-    console.log(data.length+ ' results',data)
+    <!--console.log(data.bodies.length+ ' bodies',data)-->
     if (doctype == 'place'){
       if(data.length ==0) {
         results_div += '<p class="small ml-2">No results, sorry.</p>'
@@ -532,7 +531,8 @@
       }
     } else if (doctype == 'trace') {
       // data has features and bodies
-        data['bodies'].forEach(function(bod){ 
+		console.log(data.bodies.length+ ' bodies',data)
+        data.bodies.forEach(function(bod){ 
         // add a whg_id to bodies        
           results_div += sugLister(bod, doctype, scope)
       })
@@ -742,9 +742,9 @@
       }
       item =  ('<div class="container"><div class="row sug_row trace-item" data-id='+whgid+'>'+
               '<div class="col-sm-9 pl-0"><a href="#" class="trace-link" data-id="'+whgid+'">'+
-              sug['title']+'</a> ('+sug['relation']+')')
+              sug.title+'</a> ('+sug.relation+')')
       if ("when" in sug) {
-        item += '<br/><span class="mt-0"><i>'+parseWhen(sug['when'])+'</i></span>'
+        item += '<br/><span class="mt-0"><i>'+parseWhen(sug.when)+'</i></span>'
       }
       item += '</div><div class="col-sm-3"></div>'
       if("depiction" in sug){
@@ -801,6 +801,7 @@
   // from sugLister()    
   // TODO: doesn't reach into when.timespans; Indias data malformed
   function parseWhen(when){
+	console.log('parseWhen()',when)
     html=''
     for (w in when){
       s = 'start' in when[w]?'start: '+when[w]['start']:'earliest: '+when[w]['earliest']

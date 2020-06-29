@@ -323,7 +323,7 @@
   }
   function histogram_data(intervals,minmax){
     <!--step = Number(((minmax[1]-minmax[0])/200).toPrecision(4))-->
-    console.log('hist data:minmax,intervals',minmax,intervals)
+    <!--console.log('hist data:minmax,intervals',minmax,intervals)-->
     step = Number(((minmax[1]-minmax[0])/200))
     bins = range(minmax[0],minmax[1],step)
     hist_array = Array.apply(null, Array(bins.length)).map(Number.prototype.valueOf,0);

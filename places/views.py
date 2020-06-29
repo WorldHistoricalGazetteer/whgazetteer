@@ -96,7 +96,7 @@ class PlacePortalView(DetailView):
       related = [rel.jsonb for rel in place.related.all()]
       timespans = list(t for t,_ in itertools.groupby(place.timespans)) if place.timespans else []
       
-      # data object for summing temporality of all attestations for a place
+      # data object summing temporality of all attestations for a place
       # TODO: leaving relations out b/c when for lugares is ill-formed
       # cf. 20190416_lugares-lpf.sql, line 63
       extents += mm(names),mm(geoms),mm(types),mm(whens),mm(related)
