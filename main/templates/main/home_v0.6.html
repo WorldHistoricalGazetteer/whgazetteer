@@ -41,7 +41,7 @@
           </div>          
 		  <div id="search_input"  class="input-group input-group-sm pb-2" >
 			<label for="input_box">{% fontawesome_icon 'search' color='#336699'%}</label>
-			<input id="input_box" class="tt-hint" type="text" placeholder="Enter place name"> 
+			<input id="input_box" class="tt-hint" type="text" placeholder="Enter place name" autocomplete="false"> 
 			<input id="input_box_traces" class="typeahead hidden" type="text" placeholder="Term in title, e.g. 'bud'">
 			<div id="filters_opener" class="mx-auto mt-1 small"><a id="link_filters"href="#">filters</a>
 			{% fontawesome_icon 'filter' color='#336699' %}
@@ -263,9 +263,11 @@
   $('input[type=radio][name=class]').change(function() {
     console.log('changed class',$(this).val())
     if ($(this).val() == 'place'){
+	  $("#filters_opener").show()
       $("#input_box").show()
       $("#input_box_traces").hide()
     } else {
+	  $("#filters_opener").hide()
       $("#input_box").hide()
       $("#input_box_traces").show()    
     }
@@ -451,6 +453,7 @@
   /*
     *** searchPlaces() *** from #input_box keyup 
     index search w/o autocomplete -> showResults()
+	handles traces also !?
   */
   searchPlaces = function (){
     window.doctype = $("input[name='class']:checked").val();

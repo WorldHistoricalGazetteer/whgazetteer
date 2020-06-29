@@ -47,7 +47,9 @@ def makeGeom(pid,geom):
       )
   return geomset
 
-# make stuff available in autocomplete dropdown
+"""
+  format search result items (places or traces)
+"""
 def suggestionItem(s,doctype,scope):
   #print('sug geom',s['geometries'])
   if doctype == 'place':
@@ -80,17 +82,23 @@ def suggestionItem(s,doctype,scope):
       }
   elif doctype == 'trace':
     # now with place_id, not whg_id (aka _id; they're transient)
+    # TODO: targets are list in latest spec, but example data has only one
+    target = s['hit']['target'] if type(s['hit']['target']) == dict else s['hit']['target'][0]
     item = {
-      "_id":s['_id'],
-      "id":s['hit']['target']['id'],
-      "type":s['hit']['target']['type'],
-      "title":s['hit']['target']['title'],
-      "depiction":s['hit']['target']['depiction'] if 'depiction' in s['hit']['target'].keys() else '',
+      "_id": s['_id'],
+      "id": target['id'],
+      "type": target['type'],
+      "title": target['title'],
+      "depiction": target['depiction'] if 'depiction' in target.keys() else '',
       "bodies":s['hit']['body']
     }
   #print('place search item:',item)
   return item
 
+
+"""
+  actually performs es search, places (whg) or traces
+"""
 def suggester(doctype,q,scope,idx):
   # returns only parents; children retrieved into place portal
   #print('suggester',doctype,q)
@@ -140,9 +148,13 @@ def suggester(doctype,q,scope,idx):
     if len(hits) > 0:
       for h in hits:
         suggestions.append({"_id":h['_id'],"hit":h['_source']})
+    print('suggestions',suggestions)
     return suggestions 
 
-""" Returns place:search/suggest or trace:search """
+""" 
+  executes place:search/suggest or trace:search 
+  via suggester(), formatted by suggestionItem()
+"""
 class SearchView(View):
   @staticmethod
   def get(request):

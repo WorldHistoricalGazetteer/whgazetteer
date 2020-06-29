@@ -86,10 +86,10 @@
                 {% for link in rec.links %}
                   {% if link.identifier|slice:"0:2" == rec.dataset.label|slice:"0:2" %}<span><i>none</i></span>
                   {% elif link.identifier|slice:"0:3" not in 'loc,via' %}
-                    <a href="" class="mr-2 ext" data-toggle="modal" data-target="#ext_site">{{ link.identifier }} {% fontawesome_icon 'external-link' color='#336699' %}</a>({{link.type}})
+                    <a href="" class="mr-2 ext" data-toggle="modal" data-target="#ext_site">{{ link.identifier }} {% fontawesome_icon 'external-link' color='#336699' %}</a><!--({link.type}})-->
                     {% if not forloop.last %}; {% endif %}
                   {% else %}
-                    <a href="" class="mr-2 ext">{{ link.identifier }} {% fontawesome_icon 'external-link' color='#336699' %}</a>({{link.type}})
+                    <a href="" class="mr-2 ext">{{ link.identifier }} {% fontawesome_icon 'external-link' color='#336699' %}</a><!--({link.type}})-->
                   {% endif %}
                 {% endfor %}
                 </div>
@@ -114,6 +114,7 @@
                   {% if not forloop.last %}; {% endif %}{% endfor %}</div>
               </div>
               {% endif %}
+              
               {% if rec.whens|length > 0 %}
               <!--{ if rec.timespans|length > 0 %}-->
                 <div class="attest-element attesttime">Temporal:
@@ -124,13 +125,17 @@
                     <!--{ w }}-->
                   {% endfor %}
                   <!--{ rec.whens }}-->
-                  {% for when in rec.whens %}
-                    {% for t in when.timespans %}
-                      {{t.start.in}}/{{t.end.in}}
-                      {% if not forloop.last %}| {% endif %}
-                    {% endfor %}
-                  {% endfor %}
+                  <!--{ for when in rec.whens %}-->
+                    <!--{ for t in when.timespans %}-->
+                      <!--{t.start.in}}/{t.end.in}}-->
+                      <!--{ if not forloop.last %}| { endif %}-->
+                    <!--{ endfor %}-->
+                  <!--{ endfor %}-->
                 </div>
+              {% endif %}
+              
+              {% if rec.timespans|length > 0 %}
+                rec.timespans: {{ rec.timespans }}
               {% endif %}
             </div>
             {% endfor %} <!-- rec in payload-->
@@ -152,35 +157,19 @@
               {% if traces|length > 0 %}
                 <ul>
                 {% for t in traces %}
-                  <li><b>{{ t.body.relation }}</b> {{ t.target.type }}
+                  <li><b>{{ t.target.type }}</b> {{ t.body.relations }}
                     ; <a href="{{t.target.id}}" target="_blank">{{ t.target.title }}</a>
-                    {% if t.body.when %}; <i>when</i>: 
-                      {% for ts in t.body.when %}
-                        {% if ts.earliest %}
-                          c.{{ ts.earliest }}{%if ts.latest != ts.earliest %} - c.{{ ts.latest }}{%endif%}
-                        {% else %}
-                          {{ ts.start }}{%if ts.end != ts.start %}-{{ ts.end }}{%endif%}
-                        {% endif %}
-                      {% endfor %}
-                    {% endif %}
                     {% if t.bodycount > 1 %}
-                    <a href="" data-ctr={{ forloop.counter0 }} data-id={{t.trace_id}} class="trace-geo ml-1">{% fontawesome_icon 'globe' color='#336699' %}</a>
+                    <a href="#" data-ctr={{ forloop.counter0 }} data-id={{t.trace_id}} class="trace-geo ml-1">{% fontawesome_icon 'globe' color='#336699' %}</a>
                     {% endif %}
                     {% if t.target.depiction %}
                     <a href="#" data-toggle="tooltip" data-html="true" data-trigger="click" data-container="#place_traces"data-boundary="viewport" title="<img class='trace-img' src='{{ t.target.depiction }}'/>" class="ml-1 tip" data-placement="auto" style="z-index:10000 !important;">{% fontawesome_icon 'image' color='#336699' %}</a>                      
                     {% endif %}
                   </li>
-                  <!--{ t }}-->
                 {% endfor %}
-                </ul>
+                <!--</ul>-->
               {% else %}
                 <i>None yet</i>
-                <!--<ul>-->
-                  <!--<li>{ e.g. an event trace }</li>-->
-                  <!--<li>{ e.g. a person trace }</li>-->
-                  <!--<li>{ e.g. a works trace (texts, datasets, artworks, etc.) }</li>-->
-                  <!--<li>{ e.g. an object trace (artefacts, etc.) }</li>-->
-                <!--</ul>-->
               {% endif %}
             </div>
           </div> <!-- place_home_r -->
@@ -224,9 +213,16 @@
     // telems looks like: { 81011:[{"start":{},"end":{}}, ...], ... }
     window.telems = $('script').filter(function() {
       return this.id.match(/[0-9]/) && this.text != '"null"' && this.text.includes('timespans');
-      <!--return this.id.match(/[0-9]/) && this.text != '"null"' && this.text.charAt(0)=='[';-->
     });
+    
+    $(".trace-geo").click(function(){
+      <!--e.preventDefault()-->
+      console.log('trace-geo id, ctr',$(this).data('id'),$(this).data('ctr'))
+      fetchTraceGeom($(this).data('id'),$(this).data('ctr'))
+    })
+    
     time_object = parseTelems(telems)[0]
+    <!--intervals = time_object.intervals-->
     intervals = parseTelems(telems)[1]
     <!--console.log('intervals, time_object',intervals,time_object)-->
     var min = Math.min.apply(null, intervals.map(function(row){ return Math.min.apply(Math, row); }));
@@ -234,18 +230,18 @@
     minmax=[min,max]
    
     // distribute intervals to attestation cards
-    for (let key in time_object) {
-      to_sorted = time_object[key].sort(function(a, b) {
-          return parseFloat(a.start.in) - parseFloat(b.start.in);
-      });
-      console.log('to_sorted',to_sorted)
-      // TODO: this does not handle case for 14154850??
-      intervals_text = to_sorted.map(ts => ts.start.in+'/'+(!ts.end?'-':ts.end.in))
-      <!--intervals_text = to_sorted[0].map(ts => ts.start.in+'/'+(!ts.end?'-':ts.end.in))-->
-      <!--console.log(key, intervals.join(', '));-->
-      selector = "#card_"+key+" .attesttime"
-      $(selector).html(intervals_text.join(', '))
-    }
+    <!--for (let key in time_object) {-->
+      <!--to_sorted = time_object[key].sort(function(a, b) {-->
+          <!--return parseFloat(a.start.in) - parseFloat(b.start.in);-->
+      <!--});-->
+      <!--console.log('to_sorted',to_sorted)-->
+      <!--// TODO: this does not handle case for 14154850??-->
+      <!--intervals_text = to_sorted.map(ts => ts.start.in+'/'+(!ts.end?'-':ts.end.in))-->
+      <!--<!--intervals_text = to_sorted[0].map(ts => ts.start.in+'/'+(!ts.end?'-':ts.end.in))-->-->
+      <!--<!--console.log(key, intervals.join(', '));-->-->
+      <!--selector = "#card_"+key+" .attesttime"-->
+      <!--$(selector).html(intervals_text.join(', '))-->
+    <!--}-->
 
     <!--console.log('min/max',minmax)-->
     // feed to tvis_summary()
@@ -273,10 +269,6 @@
         nearby.removeFrom(mappy)
       }
     })
-    $(".trace-geo").click(function(e){
-      e.preventDefault()
-      fetchTraceGeom($(this).data('id'),$(this).data('ctr'))
-    })
   })
   
   function range(start, stop, step) {
@@ -289,9 +281,9 @@
   function parseTelems(telems){
     let ts_obj = {}
     let ts_arr = []
+    let ts_intervals = []
     function pushy(ts){
       for (var j=0; j < ts.length; j++) {
-        <!--console.log('pushy ts',ts[j])-->
         ts_arr.push( ts[j] );
       }
     }
@@ -299,22 +291,27 @@
     for (i=0;i<telems.length;i++){
       id=telems[i].id
       obj = JSON.parse(telems[i].text)
-      // when obj keys include 'timespan', geom keys incl 'coordinates'
+      // either {when: timespans:[]} or {timespans:[]}
       <!--console.log('obj',obj)-->
       if (Object.keys(obj).includes('when')) {
-        <!--console.log('embedded telem:',id,obj.when.timespans)-->
         if (Object.keys(obj['when']).includes('timespans')) {
           ts_obj[id] = obj.when.timespans
           pushy(obj.when.timespans)
         }
       } else if (Object.keys(obj).includes('timespans')){
-        <!--console.log('when telem:',id,obj.timespans)-->
         ts_obj[id] = obj.timespans
         pushy(obj.timespans)
       }
     }
-    // TODO: this does not handle case for 14154850 ??
-    intervals=ts_arr.map(ts => [ Number(ts.start.in), !ts.end?Number(ts.start.in)+9:Number(ts.end.in) ])
+    // distinct union of intervals for all children
+    for (var i = 0; i < ts_arr.length; i++){
+      for (var j = 0; j < ts_arr[i].length; j++){
+        if (ts_intervals.indexOf(ts_arr[i][j]) === -1){
+          ts_intervals.push(ts_arr[i][j])
+    }}};
+
+    <!--intervals=ts_arr.map(ts => [ Number(ts.start.in), !ts.end?Number(ts.start.in)+9:Number(ts.end.in) ])-->
+    intervals=ts_intervals.map(ts => [ Number(ts.start.in), !ts.end?Number(ts.start.in)+9:Number(ts.end.in) ])
     <!--intervals=ts_arr[0].map(ts => [ Number(ts.start.in), !ts.end?Number(ts.start.in)+9:Number(ts.end.in) ])-->
     
     return [ts_obj,intervals]  <!--console.log(ts_arr)-->

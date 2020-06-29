@@ -4,7 +4,6 @@ from django.contrib.postgres.fields import JSONField, ArrayField
 from django.core.validators import URLValidator
 from main.choices import TRACETYPES, TRACERELATIONS
 
-
 # FK dataset >> Dataset
 class Trace(models.Model):
     # auto id
@@ -29,7 +28,7 @@ class Trace(models.Model):
         indexes = [
             models.Index(fields=['dataset']),
         ]
-        
+# # defer,target_id,source,uri,title,trace_type,trace_datatype,description,format,language,selector_type,selector_value 
 # FK trace_id >> Trace
 class TraceTarget(models.Model):
     # auto id

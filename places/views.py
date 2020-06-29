@@ -91,11 +91,11 @@ class PlacePortalView(DetailView):
       # isolate temporal scoping where exists; build summing object
       whens = [when.jsonb for when in place.whens.all()]     
       names = [name.jsonb for name in place.names.all()]
-      #print('names in PlacePortalView',names)
       geoms = [geom.jsonb for geom in place.geoms.all()]
       types = [t.jsonb for t in place.types.all()]
       related = [rel.jsonb for rel in place.related.all()]
       timespans = list(t for t,_ in itertools.groupby(place.timespans)) if place.timespans else []
+      
       # data object for summing temporality of all attestations for a place
       # TODO: leaving relations out b/c when for lugares is ill-formed
       # cf. 20190416_lugares-lpf.sql, line 63
@@ -125,22 +125,35 @@ class PlacePortalView(DetailView):
       context['extents'] = extents
     #TODO: compute global minmax for payload
     #print('payload',context['payload'])
-    print('names',record['names'])
+    print('whens',record['whens'])
     
-    # GET TRACES; e.g. whg_id(id_) = 13040977 for Khotan (a child); pid = 6135435
-    # but traces have place_id; we have child ids already
+    def mm_trace(tsarr):
+      print('mm_trace() tsarr',tsarr)
+      starts = sorted( [int(t['start'] if 'start' in t else t['earliest']) for t in tsarr] )
+      ends = sorted( [int(t['end'] if 'end' in t else t['latest']) for t in tsarr] )
+      mm = [min(starts), max(ends)]
+      mm = sorted(list(set([min(starts), max(ends)])))
+      return '('+str(mm[0])+('/'+str(mm[1]) if len(mm)>1 else '')+')'    
+    # get traces for this index parent and its children
     print('ids',ids)
     qt = {"query": {"bool": {"must": [  {"terms":{"body.place_id": ids }}]}}}
-    #qt = {"query": {"bool": {"must": [{"match":{"body.whg_id": id_ }}]}}}
     trace_hits = es.search(index='traces', doc_type='trace', body=qt)['hits']['hits']
-    # TODO: parse, process
+    # for each hit, get target and aggregate body relation/when
     for h in trace_hits:
-      print('trace hit h',h)
+      #print('trace hit h',h)
+      # filter bodies for place_id
+      bods=[b for b in h['_source']['body'] if b['place_id'] in ids]
+      # agg "relation (start/end)" of bodies
+      bod = {
+        "id": bods[0]['id'],
+        "title": bods[0]['title'],
+        "place_id": bods[0]['place_id'],
+        "relations": [x['relation']+' '+mm_trace(x['when']) for x in bods]
+      }      
       context['traces'].append({
         'trace_id':h['_id'],
         'target':h['_source']['target'][0] if type(h['_source']['target']) == list else h['_source']['target'],
-        #'body':next((x for x in h['_source']['body'] if x['place_id'] == id_), None),
-        'body':next((x for x in h['_source']['body'] if x['place_id'] ), None),
+        'body': bod,
         'bodycount':len(h['_source']['body'])
       })
     
