@@ -531,7 +531,8 @@
         }      
       }
     } else if (doctype == 'trace') {
-      // data has features and bodies
+		// data has features and bodies
+		bodies = data.bodies
 		console.log(data.bodies.length+ ' bodies',data)
         data.bodies.forEach(function(bod){ 
         // add a whg_id to bodies        
@@ -545,7 +546,7 @@
       "<p class='half allcap-heading mb-0 pl-1'>"+(doctype=='place'?'SEARCH RESULTS ('+data.length+
       ')<span class="float-right filters-link">'+
       '<a href="#">filter type {% fontawesome_icon 'filter' %}</a></span>':
-      'PLACE ANNOTATIONS IN TRACE  ('+data.length+')')+'</p>'
+      'PLACE ANNOTATIONS IN TRACE  ('+data.bodies.length+')')+'</p>'
       +results_div
     );    
 
@@ -742,12 +743,9 @@
         <!--console.log(foo.length>0?'woe'+foo[0].id:'no foo, mofo')-->
       }
       item =  ('<div class="container"><div class="row sug_row trace-item" data-id='+whgid+'>'+
-              '<div class="col-sm-9 pl-0"><a href="#" class="trace-link" data-id="'+whgid+'">'+
-              sug.title+'</a> ('+sug.relation+')')
-      if ("when" in sug) {
-        item += '<br/><span class="mt-0"><i>'+parseWhen(sug.when)+'</i></span>'
-      }
-      item += '</div><div class="col-sm-3"></div>'
+              '<div class="col-sm-10 pl-0"><a href="#" class="trace-link" data-id="'+whgid+'">'+
+              sug.title+'</a> ('+parseRels(sug.relations)+')')
+      item += '</div><div class="col-sm-2"></div>'
       if("depiction" in sug){
         item += '<div class="trace_detail"><img class="trace-img" src="'+sug['depiction']+'"/></div>'
       }
@@ -755,7 +753,40 @@
     }
     return item
   }  
-  
+  // from sugLister()    
+  // TODO: doesn't reach into when.timespans; Indias data malformed
+  function parseRels(rels){
+	<!--console.log('parseRelations()',rels)-->
+	console.clear()
+    html=''
+	timespans=[]; starts=[]; ends=[]
+    for(r in rels){for(w in rels[r].when){timespans.push(rels[r].when[w])}}
+	reg = /(-?\d{1,4})\D?/
+	for (t in timespans){
+	  // no 'in', 'earliest' or 'latest' here
+	  console.log('reg',reg)
+	  <!--starts.push(Number(timespans[t].start))-->
+	  starts.push(Number(timespans[t].start.match(reg)[1]))
+	  <!--ends.push(!!timespans[t].end ? Number(timespans[t].end) : -1)-->
+	  ends.push(!!timespans[t].end ? Number(timespans[t].end.match(reg)[1]) : -1)
+	} 
+	console.log('starts',starts,'ends',ends)
+	minmax=[Math.max.apply(null, starts),Math.max.apply(null, ends)]
+    return minmax[0] + '-' + minmax[1]
+  }   
+  // from sugLister()    
+  // TODO: doesn't reach into when.timespans; Indias data malformed
+  function parseWhen(when){
+	console.log('parseWhen()',when)
+    html=''
+    for (w in when){
+      s = 'start' in when[w]?'start: '+when[w]['start']:'earliest: '+when[w]['earliest']
+      e = 'end' in when[w]?'end: '+when[w]['end']:'latest: '+when[w]['latest']
+      html += s +", " +e
+      html+=w==when.length-1?'':'; '
+    }
+    return html
+  }  
   // map feature styles
   styles = {
     'marker_default': {
@@ -799,21 +830,7 @@
     location.href = 'places/'+whgid+'/portal'
   });
     
-  // from sugLister()    
-  // TODO: doesn't reach into when.timespans; Indias data malformed
-  function parseWhen(when){
-	console.log('parseWhen()',when)
-    html=''
-    for (w in when){
-      s = 'start' in when[w]?'start: '+when[w]['start']:'earliest: '+when[w]['earliest']
-      e = 'end' in when[w]?'end: '+when[w]['end']:'latest: '+when[w]['latest']
-      html += s +", " +e
-      html+=w==when.length-1?'':'; '
-    }
-    return html
-  }
-
-
+  
   $('label.btn').click(function(){
     $(".autosuggest").html('')
     $('#search_input').val('')
