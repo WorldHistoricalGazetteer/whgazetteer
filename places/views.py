@@ -133,7 +133,9 @@ class PlacePortalView(DetailView):
       ends = sorted( [int(t['end'] if 'end' in t else t['latest']) for t in tsarr] )
       mm = [min(starts), max(ends)]
       mm = sorted(list(set([min(starts), max(ends)])))
-      return '('+str(mm[0])+('/'+str(mm[1]) if len(mm)>1 else '')+')'    
+      return '('+str(mm[0])+('/'+str(mm[1]) if len(mm)>1 else '')+')'  
+    
+    # TODO: new trace format will deliver aggregated body relation/when
     # get traces for this index parent and its children
     print('ids',ids)
     qt = {"query": {"bool": {"must": [  {"terms":{"body.place_id": ids }}]}}}

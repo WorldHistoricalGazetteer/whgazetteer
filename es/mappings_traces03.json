@@ -1,27 +1,21 @@
-{
+{ 
   "settings": {
     "analysis": {
-      "analyzer": {
-        "autocomplete": {
-          "tokenizer": "autocomplete",
-          "filter": [
-            "lowercase"
-          ]
+        "analyzer": {
+            "autocomplete": {
+                "tokenizer": "autocomplete",
+                "filter": ["lowercase"]
+            },
+            "autocomplete_search": {"tokenizer": "lowercase"}
         },
-        "autocomplete_search": {
-          "tokenizer": "lowercase"
+        "tokenizer": {
+            "autocomplete": {
+                "type": "edge_ngram",
+                "min_gram": 2,
+                "max_gram": 10,
+                "token_chars": ["letter"]
+            }
         }
-      },
-      "tokenizer": {
-        "autocomplete": {
-          "type": "edge_ngram",
-          "min_gram": 2,
-          "max_gram": 10,
-          "token_chars": [
-            "letter"
-          ]
-        }
-      }
     }
   },
   "mappings": {
@@ -42,28 +36,37 @@
           "properties":{
             "id":{"type": "keyword"},
             "title":{"type": "text"},
-            "relation":{"type": "keyword"},
-            "minmax":{"type": "date_range"},
-            "when":{
+            "place_id":{"type": "keyword"},
+            "relations":{
               "properties":{
-                "start": {"type":"date"},
-                "end": {"type":"date"}
-              }}
+                "when":{
+                  "properties":{
+                    "start": {"type":"date"},
+                    "end": {"type":"date"}
+                  }
+                },
+                "relation":{"type":"keyword"}
+              }
+            }
           }
         },
         "target":{
           "properties":{
             "id":{"type": "keyword"},
             "type":{"type": "keyword"},
+            "tags":{"type":"keyword"},
+            "tag_suggest": {
+               "type": "completion"
+            },
             "title":{
               "type": "text",
               "analyzer": "autocomplete",
               "search_analyzer": "autocomplete_search"
             },
-            "depiction":{"type": "keyword"}
+            "depiction":{"type": "keyword"},
+            "description":{"type": "text"}
           }
-        },
-        "suggest": {"type": "completion"}
+        }
       }
     }
   }

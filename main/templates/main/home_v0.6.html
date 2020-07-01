@@ -293,7 +293,8 @@
 
     var mbtiles_url = 'https://api.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={token}';
     var awmc = L.tileLayer(mbtiles_url, {id:'isawnyu.map-knmctlkh', token:token_kg, attribution:attrib_awmc})    
-      
+	// TODO: switch basemap with mapbox-gl-leaflet
+	// mapbox://styles/kgeographer/ckc21ai6n5ozq1io64x91hndl
     var satellite  = L.tileLayer(mbstyle_url, {id:'mapbox/satellite-streets-v11', token:token_mb, attribution:attrib_mb})
     var osm  = L.tileLayer(mbstyle_url, {id:'mapbox/light-v10', token:token_mb, attribution:attrib_mb});
 

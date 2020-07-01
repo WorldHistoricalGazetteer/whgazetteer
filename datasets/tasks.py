@@ -80,7 +80,7 @@ def parseDateTime(string):
 
 def ccDecode(codes):
   countries=[]
-  print('codes in ccDecode',codes)
+  #print('codes in ccDecode',codes)
   for c in codes:
     countries.append(ccodes[0][c]['gnlabel'])
   return countries
@@ -91,7 +91,7 @@ def normalize(h,auth):
   if auth.startswith('whg'):
     rec = HitRecord(h['place_id'], h['dataset'], h['src_id'], h['title'])
     #print('normalize(): hit',h)
-    print('normalize(): HitRecord',rec)
+    #print('normalize(): HitRecord',rec)
     rec.whg_id = h['whg_id'] if 'whg_id' in h.keys() else h['relation']['parent']
     # add elements if non-empty in index record
     rec.variants = [n['toponym'] for n in h['names']] # always >=1 names

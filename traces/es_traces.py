@@ -19,7 +19,7 @@ def init():
   global es, idx, rows, trdata
   wd = '/Users/karlg/Documents/Repos/_whgazetteer/es/'
   idx = 'traces03'
-  file = wd+'trace_data/traces_20200629.json'
+  file = wd+'trace_data/traces_20200630.json'
   #file = 'G271_out.json'
   import os, codecs, time, datetime, json,sys
   mappings = codecs.open(wd+'mappings_traces03.json', 'r', 'utf8').read()
@@ -38,6 +38,7 @@ def init():
     print(ex)
   try:
     es.indices.create(index=idx, ignore=400, body=mappings)
+    #es.indices.create(index=idx, ignore=400)
     print ('index "'+idx+'" created')
   except Exception as ex:
     print(ex)
