@@ -19,8 +19,7 @@ def init():
   global es, idx, rows, trdata
   wd = '/Users/karlg/Documents/Repos/_whgazetteer/es/'
   idx = 'traces03'
-  file = wd+'trace_data/traces_20200630.json'
-  #file = 'G271_out.json'
+  file = wd+'trace_data/traces_20200702.json'
   import os, codecs, time, datetime, json,sys
   mappings = codecs.open(wd+'mappings_traces03.json', 'r', 'utf8').read()
 

@@ -148,7 +148,7 @@ def suggester(doctype,q,scope,idx):
     if len(hits) > 0:
       for h in hits:
         suggestions.append({"_id":h['_id'],"hit":h['_source']})
-    print('suggestions',suggestions)
+    #print('suggestions',suggestions)
     return suggestions 
 
 """ 

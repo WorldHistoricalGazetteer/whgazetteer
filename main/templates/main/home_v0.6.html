@@ -393,7 +393,9 @@
           // single point
           mappy.setView(bounds.getCenter(),5)
         } else {
-          mappy.fitBounds(bounds,{padding: [200, 0]})
+          <!--mappy.fitBounds(bounds,{padding: [200, 0]})-->
+		  // TODO: some logic to provide padding if bounds too small
+          mappy.fitBounds(bounds)
         }
         showResults(data,'trace','suggest',title)
     });
@@ -671,8 +673,7 @@
         count_features +=1;
         identifier = feature.properties.whgid;
         if(feature.type=='Point'){
-          marker = L.circleMarker(latlng, styles.marker_default
-          )
+          marker = L.circleMarker(latlng, styles.marker_default)
           <!--.bindPopup(feature.properties.title+' (whg id:<a href="/places/'+identifier+'/portal">+identifier+</a>)');-->
           // add to array for selection
           idToFeature[identifier] = marker
@@ -687,6 +688,7 @@
           idToFeature[identifier] = layer
         }
         layer.bindPopup(feature.properties.title+' (whg id:<a href="/places/'+identifier+'/portal">'+identifier+'</a>)');
+        <!--layer.bindTooltip(feature.properties.title,{"permanent":true});-->
         layer.on('click',function(e){
           scroll = 20
           ele = $("#result_list")

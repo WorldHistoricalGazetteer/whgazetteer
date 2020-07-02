@@ -129,8 +129,13 @@ class PlacePortalView(DetailView):
     
     def mm_trace(tsarr):
       print('mm_trace() tsarr',tsarr)
-      starts = sorted( [int(t['start'] if 'start' in t else t['earliest']) for t in tsarr] )
-      ends = sorted( [int(t['end'] if 'end' in t else t['latest']) for t in tsarr] )
+      # TODO: not only simple years here; sorts string years?
+      #starts = sorted( [int(t['start'] if 'start' in t else t['earliest']) for t in tsarr] )
+      #ends = sorted( [int(t['end'] if 'end' in t else t['latest']) for t in tsarr] )
+      #starts = sorted( [int(t['start']) for t in tsarr] )
+      starts = sorted( [t['start'] for t in tsarr] )
+      #ends = sorted( [int(t['end']) for t in tsarr] )
+      ends = sorted( [t['end'] for t in tsarr] )
       mm = [min(starts), max(ends)]
       mm = sorted(list(set([min(starts), max(ends)])))
       return '('+str(mm[0])+('/'+str(mm[1]) if len(mm)>1 else '')+')'  
@@ -146,11 +151,14 @@ class PlacePortalView(DetailView):
       # filter bodies for place_id
       bods=[b for b in h['_source']['body'] if b['place_id'] in ids]
       # agg "relation (start/end)" of bodies
+      print('bods',bods)
+      # {'id': 'http://whgazetteer.org/place/174101', 'title': 'Santiago de Cuba', 'place_id': 174101, 'relations': [{'when': [{'end': '1519-02-10', 'start': '1519-02-10'}], 'relation': 'waypoint'}]}
       bod = {
         "id": bods[0]['id'],
         "title": bods[0]['title'],
         "place_id": bods[0]['place_id'],
-        "relations": [x['relation']+' '+mm_trace(x['when']) for x in bods]
+        #"relations": [x['relation']+' '+mm_trace(x['when']) for x in bods]
+        "relations": [x['relations'][0]['relation'] +' '+mm_trace(x['relations'][0]['when']) for x in bods]
       }      
       context['traces'].append({
         'trace_id':h['_id'],
