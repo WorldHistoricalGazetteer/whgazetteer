@@ -61,14 +61,14 @@ urlpatterns = [
     # *** USERS ***
     #   
     path('users/', views.UserList.as_view(),name='user-list'),
-    path('users/<int:pk>/', views.UserDetail.as_view(),name='user-detail'),
+    path('user/<int:pk>/', views.UserDetail.as_view(),name='user-detail'),
     
     # 
     # *** INDEX ***
     # 
     # use > single union record in usingapi.html ?idx=whg&_id={whg_id}
     # TODO: build from place_id
-    url('union/', views.indexAPIView.as_view(), name='union_api')
+    #url('union/', views.indexAPIView.as_view(), name='union_api')
     
 ]
 

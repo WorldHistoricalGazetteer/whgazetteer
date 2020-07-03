@@ -375,12 +375,6 @@
             ).bindPopup('whg:'+identifier+'<br/><b>'+
               '<a href="/places/'+identifier+'/portal">'+feature.properties.title+"</b></a>");
             
-            <!--marker.on('mouseover', function (e) {-->
-                <!--this.openPopup();-->
-            <!--});-->
-            <!--marker.on('mouseout', function (e) {-->
-                <!--this.closePopup();-->
-            <!--});-->
             <!--console.log('marker feature?',marker)-->
             idToFeature[identifier] = marker
             itf_new.push({"id":identifier,"feature":marker})

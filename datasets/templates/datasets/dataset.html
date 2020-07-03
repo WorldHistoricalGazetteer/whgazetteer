@@ -84,6 +84,15 @@
             </td>
           </tr>
           <tr>
+            <td style="vertical-align:top;"><b>Public?</b> 
+              <a href="#" class="edit-public">{% fontawesome_icon 'edit' color='#336699' %}</a>
+            </td>
+            <td>
+              <span class="form-public">{{ form.public.value }}</span>
+              <span class="hidden editing-public">{{ form.public }}</span>
+            </td>
+          </tr>
+          <tr>
             <td><b>Dataset status</b></td>
             <td>{{ ds.ds_status }}</td>
           </tr>
@@ -683,21 +692,23 @@ js for Summary, Reconciliation
     })
   })
   
-  // TODO: refactor this ugly bit below
+  // TODO: refactor this ugly nonsense
   $(".edit-title").click(function() {
-    <!--$(".hidden").toggle()-->
     $(".editing-title").toggleClass("hidden")
     $(".form-title").toggleClass("hidden")
     $(".btn-ds").toggleClass("hidden")
   })
   $(".edit-description").click(function() {
-    <!--$(".hidden").toggle()-->
     $(".editing-description").toggleClass("hidden")
     $(".form-description").toggleClass("hidden")
     $(".btn-ds").toggleClass("hidden")
   })  
+  $(".edit-public").click(function() {
+    $(".editing-public").toggleClass("hidden")
+    $(".form-public").toggleClass("hidden")
+    $(".btn-ds").toggleClass("hidden")
+  })  
   $(".edit-uri_base").click(function() {
-    <!--$(".hidden").toggle()-->
     $(".editing-uri_base").toggleClass("hidden")
     $(".form-uri_base").toggleClass("hidden")
     $(".btn-ds").toggleClass("hidden")

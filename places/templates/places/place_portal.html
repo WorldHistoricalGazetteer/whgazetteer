@@ -86,10 +86,10 @@
                 {% for link in rec.links %}
                   {% if link.identifier|slice:"0:2" == rec.dataset.label|slice:"0:2" %}<span><i>none</i></span>
                   {% elif link.identifier|slice:"0:3" not in 'loc,via' %}
-                    <a href="" class="mr-2 ext" data-toggle="modal" data-target="#ext_site">{{ link.identifier }} {% fontawesome_icon 'external-link' color='#336699' %}</a><!--({link.type}})-->
-                    {% if not forloop.last %}; {% endif %}
+                    <a href="" class="mr-2 ext" data-toggle="modal" data-target="#ext_site">{{ link.identifier }} {% fontawesome_icon 'external-link' color='#336699' %}</a>
+                    {% if not forloop.last %}{% endif %}
                   {% else %}
-                    <a href="" class="mr-2 ext">{{ link.identifier }} {% fontawesome_icon 'external-link' color='#336699' %}</a><!--({link.type}})-->
+                    <a href="" class="mr-2 ext">{{ link.identifier }} {% fontawesome_icon 'external-link' color='#336699' %}</a>
                   {% endif %}
                 {% endfor %}
                 </div>
@@ -124,18 +124,12 @@
                     {{ w|json_script:rec.place_id }}
                     <!--{ w }}-->
                   {% endfor %}
-                  <!--{ rec.whens }}-->
-                  <!--{ for when in rec.whens %}-->
-                    <!--{ for t in when.timespans %}-->
-                      <!--{t.start.in}}/{t.end.in}}-->
-                      <!--{ if not forloop.last %}| { endif %}-->
-                    <!--{ endfor %}-->
-                  <!--{ endfor %}-->
+                  {% if rec.timespans|length > 0 %}
+                    {% for t in rec.timespans %}
+                      {{t}} {% if not forloop.last %}| {% endif %}
+                    {% endfor %}                    
+                  {% endif %}
                 </div>
-              {% endif %}
-              
-              {% if rec.timespans|length > 0 %}
-                rec.timespans: {{ rec.timespans }}
               {% endif %}
             </div>
             {% endfor %} <!-- rec in payload-->
@@ -157,11 +151,12 @@
               {% if traces|length > 0 %}
                 <ul>
                 {% for t in traces %}
-                  <li><b>{{ t.target.type }}</b> {{ t.body.relations }}
-                    ; <a href="{{t.target.id}}" target="_blank">{{ t.target.title }}</a>
-                    {% if t.bodycount > 1 %}
-                    <a href="#" data-ctr={{ forloop.counter0 }} data-id={{t.trace_id}} class="trace-geo ml-1">{% fontawesome_icon 'globe' color='#336699' %}</a>
+                  <li><b>{{ t.target.type }}</b> {{ t.body.relations }}; 
+                    {% if t.bodycount > 1 %} {% fontawesome_icon 'globe' color='#336699' %} 
+                      <a href="#" data-ctr={{ forloop.counter0 }} data-id={{t.trace_id}} class="trace-geo ml-1">
+                         show trace places</a>
                     {% endif %}
+                     <br/><a href="{{t.target.id}}" target="_blank">{{ t.target.title }}</a>
                     {% if t.target.depiction %}
                     <a href="#" data-toggle="tooltip" data-html="true" data-trigger="click" data-container="#place_traces"data-boundary="viewport" title="<img class='trace-img' src='{{ t.target.depiction }}'/>" class="ml-1 tip" data-placement="auto" style="z-index:10000 !important;">{% fontawesome_icon 'image' color='#336699' %}</a>                      
                     {% endif %}
@@ -215,12 +210,6 @@
       return this.id.match(/[0-9]/) && this.text != '"null"' && this.text.includes('timespans');
     });
     
-    $(".trace-geo").click(function(){
-      <!--e.preventDefault()-->
-      console.log('trace-geo id, ctr',$(this).data('id'),$(this).data('ctr'))
-      fetchTraceGeom($(this).data('id'),$(this).data('ctr'))
-    })
-    
     time_object = parseTelems(telems)[0]
     <!--intervals = time_object.intervals-->
     intervals = parseTelems(telems)[1]
@@ -228,20 +217,6 @@
     var min = Math.min.apply(null, intervals.map(function(row){ return Math.min.apply(Math, row); }));
     var max = Math.max.apply(null, intervals.map(function(row){ return Math.max.apply(Math, row); }));
     minmax=[min,max]
-   
-    // distribute intervals to attestation cards
-    <!--for (let key in time_object) {-->
-      <!--to_sorted = time_object[key].sort(function(a, b) {-->
-          <!--return parseFloat(a.start.in) - parseFloat(b.start.in);-->
-      <!--});-->
-      <!--console.log('to_sorted',to_sorted)-->
-      <!--// TODO: this does not handle case for 14154850??-->
-      <!--intervals_text = to_sorted.map(ts => ts.start.in+'/'+(!ts.end?'-':ts.end.in))-->
-      <!--<!--intervals_text = to_sorted[0].map(ts => ts.start.in+'/'+(!ts.end?'-':ts.end.in))-->-->
-      <!--<!--console.log(key, intervals.join(', '));-->-->
-      <!--selector = "#card_"+key+" .attesttime"-->
-      <!--$(selector).html(intervals_text.join(', '))-->
-    <!--}-->
 
     <!--console.log('min/max',minmax)-->
     // feed to tvis_summary()
@@ -261,6 +236,7 @@
       placement: 'bottom',
       html: true
     });
+    // toggle nearby places
     $('input#fetch-context').prop('checked',false)
     $('input#fetch-context').click(function(){
       if($(this).is(':checked')) {
@@ -269,6 +245,28 @@
         nearby.removeFrom(mappy)
       }
     })
+    // toggle trace markers
+    $(".trace-geo").click(function(e){
+      e.preventDefault()
+      if(typeof traces == 'undefined'){
+        // traces never fetched
+        fetchTraceGeom($(this).data('id'),$(this).data('ctr'))
+        $(".trace-geo").text(' hide trace places')
+      } else {
+        // traces exist, visible?
+        if(mappy.getPane(traces)._map == null){
+          // no, add them
+          traces.addTo(mappy)
+          $(".trace-geo").text(' hide trace places')
+        } else {
+          // yes, remove them
+          traces.removeFrom(mappy)
+          $(".trace-geo").text(' show trace places')
+        }
+        <!--console.log('trace-geo id, ctr',$(this).data('id'),$(this).data('ctr'))-->
+      }
+    })
+    
   })
   
   function range(start, stop, step) {

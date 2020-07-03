@@ -362,6 +362,10 @@ class PlaceTableViewSet(viewsets.ModelViewSet):
   serializer_class = PlaceSerializer
   permission_classes = (permissions.IsAuthenticatedOrReadOnly)
 
+  """
+    q: query string
+    ds: dataset
+  """
   def get_queryset(self):
     #print('PlaceViewSet.get_queryset()',self.request.GET)
     qs = Place.objects.all()
@@ -436,31 +440,31 @@ class AreaViewSet(viewsets.ModelViewSet):
     search index e.g. union/?idx=whg&_id=12345979
     in usingapi.html example
 """
-class indexAPIView(View):
-  @staticmethod
-  def get(request):
-    print('in indexAPIView, GET =',request.GET)
-    """
-        args in request.GET:
-        [string] idx: latest name for whg index
-        [string] _id: same as whg_id in index
-        """
-    es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
-    idx = request.GET.get('idx')
-    _id = request.GET.get('_id')
-    q={"query": {"bool": {"must": [{"match":{"_id": _id }}]}}}
-    res = es.search(index=idx, doc_type='place', body=q)
-    # single hit (it's a unique id after all)
-    hit = res['hits']['hits'][0]
-    print('hit[_id] from indexAPIView()',hit['_id'])
-    # now get traces
-    # does hit have children?
+#class indexAPIView(View):
+  #@staticmethod
+  #def get(request):
+    #print('in indexAPIView, GET =',request.GET)
+    #"""
+        #args in request.GET:
+        #[string] idx: latest name for whg index
+        #[string] _id: same as whg_id in index
+        #"""
+    #es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+    #idx = request.GET.get('idx')
+    #_id = request.GET.get('_id')
+    #q={"query": {"bool": {"must": [{"match":{"_id": _id }}]}}}
+    #res = es.search(index=idx, doc_type='place', body=q)
+    ## single hit (it's a unique id after all)
+    #hit = res['hits']['hits'][0]
+    #print('hit[_id] from indexAPIView()',hit['_id'])
+    ## now get traces
+    ## does hit have children?
 
-    #qt={"query": {"bool": {"must": [{"match":{"_id": _id }}]}}}
-    #res_t = es.search(index="traces", doc_type='trace', body=q)
-    #print('indexAPIView _id',_id)
-    print('indexAPIView hit',hit)
-    return JsonResponse(hit, safe=True)
+    ##qt={"query": {"bool": {"must": [{"match":{"_id": _id }}]}}}
+    ##res_t = es.search(index="traces", doc_type='trace', body=q)
+    ##print('indexAPIView _id',_id)
+    #print('indexAPIView hit',hit)
+    #return JsonResponse(hit, safe=True)
 
 
 

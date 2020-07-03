@@ -328,6 +328,7 @@ class TraceGeomView(View):
     doctype = request.GET.get('doc_type')
     q_trace = {"query": {"bool": {"must": [{"match":{"_id": trace_id}}]}}}
     
+    # using contextSearch() to get bodyids (i.e. place_ids)
     bodies = contextSearch(idx, doctype, q_trace)['hits'][0]
     print('a body from TraceGeomView->contextSearch',bodies[0])
     

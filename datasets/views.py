@@ -1269,7 +1269,7 @@ class DashboardView(LoginRequiredMixin, ListView):
   def get_queryset(self):
     # TODO: make .team() a method on User
     me = self.request.user
-    if me.username in ['whgadmin','karlg']:
+    if me.is_superuser:
       print('in get_queryset() if',me)
       return Dataset.objects.all().order_by('ds_status','-core','-id')
     else:
@@ -1285,7 +1285,7 @@ class DashboardView(LoginRequiredMixin, ListView):
     types_ok=['ccodes','copied','drawn']
     # list areas
     userareas = Area.objects.all().filter(type__in=types_ok).order_by('created')
-    context['area_list'] = userareas if me.username == 'whgadmin' else userareas.filter(owner=self.request.user)
+    context['area_list'] = userareas if me.is_superuser else userareas.filter(owner=self.request.user)
 
     context['viewable'] = ['uploaded','inserted','reconciling','review_hits','reviewed','review_whg','indexed']
     # TODO: user place collections
