@@ -318,15 +318,6 @@ def ds_recon(request, pk):
   me = request.user
   #print('me',me,me.id)
   context = {"dataset": ds.title}
-
-  # build lean region/area lists for dropdowns
-  user_types=['ccodes','copied','drawn']
-  areas = Area.objects.fields('id','title','type')
-  predefined = areas.filter(type='predefined')
-  userareas = areas.filter(type__in=user_types).order_by('-created')
-  
-  context['area_list'] = userareas if me.is_superuser else userareas.filter(owner=me)
-  context['region_list'] = predefined
   
   if request.method == 'GET':
     print('recon request.GET:',request.GET)
