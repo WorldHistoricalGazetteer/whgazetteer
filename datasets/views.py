@@ -1038,213 +1038,224 @@ def ds_insert_lpf(request, pk):
 # insert LP-TSV file to database
 # ***
 def ds_insert_tsv(request, pk):
-  # retrieve just-added file, insert to db
   import os, csv
   ds = get_object_or_404(Dataset, id=pk)
-  #dsf = DatasetFile.objects.filter(dataset_id_id=pk).order_by('-upload_date')[0]
+  # retrieve just-added file
   dsf = ds.files.all().order_by('-rev')[0]
-
-  infile = dsf.file.open(mode="r")
-  print('ds_insert_tsv(); request.GET; infile',request.GET,infile)
-  # should already know delimiter
-  try:
-    dialect = csv.Sniffer().sniff(infile.read(16000),['\t',';','|'])
-    reader = csv.reader(infile, dialect)
-  except:
-    reader = csv.reader(infile, delimiter='\t')
-  infile.seek(0)
-  header = next(reader, None)
-  print('header', header)
-
-  objs = {"PlaceName":[], "PlaceType":[], "PlaceGeom":[], "PlaceWhen":[],
-          "PlaceLink":[], "PlaceRelated":[], "PlaceDescription":[]}
-
-  # TSV * = required; ^ = encouraged
-  # lists within fields are ';' delimited, no brackets
-  # id*, title*, title_source*, title_uri^, ccodes[]^, matches[]^, variants[]^, types[]^, aat_types[]^,
-  # parent_name, parent_id, lon, lat, geowkt, geo_source, geo_id, start, end
+  # TODO
+  # has it already loaded? dataset portal page load may fail for other reasons
+  dbcount = Place.objects.filter(dataset = ds.label).count()
+  print('dbcount',dbcount)
   
-  #
-  # TODO: what if simultaneous inserts?
-  countrows=0
-  countlinked = 0
-  countlinks = 0
-  for r in reader:
-    src_id = r[header.index('id')]
-    print('src_id from tsv_insert',src_id)
-    title = r[header.index('title')].replace("' ","'")
-    # for PlaceName insertion, strip anything in parens
-    title = re.sub('\(.*?\)', '', title)
-    title_source = r[header.index('title_source')]
-    #print('src_id, title, title_source from tsv_insert',src_id,title,title_source)
-    title_uri = r[header.index('title_uri')] if 'title_uri' in header else ''
-    variants = [x.strip() for x in r[header.index('variants')].split(';')] \
-      if 'variants' in header else []
-    types = [x.strip() for x in r[header.index('types')].split(';')] \
-      if 'types' in header else []
-    aat_types = [x.strip() for x in r[header.index('aat_types')].split(';')] \
-      if 'aat_types' in header else []
-    ccodes = [x.strip() for x in r[header.index('ccodes')].split(';')] \
-      if 'ccodes' in header else []
-    parent_name = r[header.index('parent_name')] if 'parent_name' in header else ''
-    parent_id = r[header.index('parent_id')] if 'parent_id' in header else ''
-    coords = makeCoords(r[header.index('lon')],r[header.index('lat')]) \
-      if 'lon' in header and 'lat' in header else []
-    matches = [x.strip() for x in r[header.index('matches')].split(';')] \
-      if 'matches' in header and r[header.index('matches')] != '' else []
-    start = r[header.index('start')] if 'start' in header else None
-    end = r[header.index('end')] if 'end' in header else None
-    # TODO: write minmax to Place instance
-    minmax = [start,end]
-    description = r[header.index('description')] \
-      if 'description' in header else ''
-
-    # build and save Place object
-    # id now available as newpl
-    newpl = Place(
-      src_id = src_id,
-      dataset = ds,
-      title = title,
-      ccodes = ccodes
-    )
-    newpl.save()
-    countrows += 1
-
-    # build associated objects and add to arrays
+  if dbcount == 0:
+    infile = dsf.file.open(mode="r")
+    print('ds_insert_tsv(); request.GET; infile',request.GET,infile)
+    # should already know delimiter
+    try:
+      dialect = csv.Sniffer().sniff(infile.read(16000),['\t',';','|'])
+      reader = csv.reader(infile, dialect)
+    except:
+      reader = csv.reader(infile, delimiter='\t')
+    
+    infile.seek(0)
+    header = next(reader, None)
+    print('header', header)
+  
+    objs = {"PlaceName":[], "PlaceType":[], "PlaceGeom":[], "PlaceWhen":[],
+            "PlaceLink":[], "PlaceRelated":[], "PlaceDescription":[]}
+  
+    # TSV * = required; ^ = encouraged
+    # lists within fields are ';' delimited, no brackets
+    # id*, title*, title_source*, title_uri^, ccodes[]^, matches[]^, variants[]^, types[]^, aat_types[]^,
+    # parent_name, parent_id, lon, lat, geowkt, geo_source, geo_id, start, end
+    
     #
-    # PlaceName()
-    objs['PlaceName'].append(
-      PlaceName(
-        place=newpl,
+    # TODO: what if simultaneous inserts?
+    countrows=0
+    countlinked = 0
+    countlinks = 0
+    for r in reader:
+      src_id = r[header.index('id')]
+      print('src_id from tsv_insert',src_id)
+      title = r[header.index('title')].replace("' ","'")
+      # for PlaceName insertion, strip anything in parens
+      title = re.sub('\(.*?\)', '', title)
+      title_source = r[header.index('title_source')]
+      #print('src_id, title, title_source from tsv_insert',src_id,title,title_source)
+      title_uri = r[header.index('title_uri')] if 'title_uri' in header else ''
+      variants = [x.strip() for x in r[header.index('variants')].split(';')] \
+        if 'variants' in header else []
+      types = [x.strip() for x in r[header.index('types')].split(';')] \
+        if 'types' in header else []
+      aat_types = [x.strip() for x in r[header.index('aat_types')].split(';')] \
+        if 'aat_types' in header else []
+      ccodes = [x.strip() for x in r[header.index('ccodes')].split(';')] \
+        if 'ccodes' in header else []
+      parent_name = r[header.index('parent_name')] if 'parent_name' in header else ''
+      parent_id = r[header.index('parent_id')] if 'parent_id' in header else ''
+      coords = makeCoords(r[header.index('lon')],r[header.index('lat')]) \
+        if 'lon' in header and 'lat' in header else []
+      matches = [x.strip() for x in r[header.index('matches')].split(';')] \
+        if 'matches' in header and r[header.index('matches')] != '' else []
+      start = r[header.index('start')] if 'start' in header else None
+      end = r[header.index('end')] if 'end' in header else None
+      # TODO: write minmax to Place instance
+      minmax = [start,end]
+      description = r[header.index('description')] \
+        if 'description' in header else ''
+  
+      # build and save Place object
+      # id now available as newpl
+      newpl = Place(
         src_id = src_id,
-        toponym = title,
-        jsonb={"toponym": title, "citation": {"id":title_uri,"label":title_source}}
-    ))
-    # variants if any; same source as title toponym?
-    if len(variants) > 0:
-      for v in variants:
-        objs['PlaceName'].append(
-          PlaceName(
-            place=newpl,
-            src_id = src_id,
-            toponym = v,
-            jsonb={"toponym": v, "citation": {"id":"","label":title_source}}
-        ))
-    #
-    # PlaceType()
-    if len(types) > 0:
-      for i,t in enumerate(types):
-        # i always 0 in tsv
-        aatnum=aat_types[i] if len(aat_types) >= len(types) else ''
-        objs['PlaceType'].append(
-          PlaceType(
-            place=newpl,
-            src_id = src_id,
-            jsonb={ "identifier":aatnum,
-                    "sourceLabel":t,
-                    "label":aat_lookup(int(aatnum)) if aatnum !='' else ''
-                  }
-        ))
-    #
-    # PlaceGeom()
-    # TODO: test geometry type or force geojson
-    if len(coords) > 0:
-      objs['PlaceGeom'].append(
-        PlaceGeom(
-          place=newpl,
-          src_id = src_id,
-          jsonb={"type": "Point", "coordinates": coords,
-                      "geowkt": 'POINT('+str(coords[0])+' '+str(coords[1])+')'}
-      ))
-    elif 'geowkt' in header and r[header.index('geowkt')] not in ['',None]: # some rows no geom
-      objs['PlaceGeom'].append(
-        PlaceGeom(
-          place=newpl,
-          src_id = src_id,
-          # make GeoJSON using shapely
-          jsonb=parse_wkt(r[header.index('geowkt')])
-      ))
-    #
-    # PlaceLink() - all are closeMatch
-    if len(matches) > 0:
-      countlinked += 1
-      for m in matches:
-        countlinks += 1
-        objs['PlaceLink'].append(
-          PlaceLink(
-            place=newpl,
-            src_id = src_id,
-            jsonb={"type":"closeMatch", "identifier":m}
-        ))
-    #
-    # PlaceRelated()
-    if parent_name != '':
-      objs['PlaceRelated'].append(
-        PlaceRelated(
-          place=newpl,
-          src_id=src_id,
-          jsonb={
-            "relationType": "gvp:broaderPartitive",
-            "relationTo": parent_id,
-            "label": parent_name}
-      ))
-    #
-    # PlaceWhen()
-    # timespans[{start{}, end{}}], periods[{name,id}], label, duration
-    if start != '':
-      objs['PlaceWhen'].append(
-        PlaceWhen(
-          place=newpl,
-          src_id = src_id,
-          jsonb={
-                "timespans": [{"start":{"earliest":minmax[0]}, "end":{"latest":minmax[1]}}]
-              }
-      ))
-
-    #
-    # PlaceDescription()
-    # @id, value, lang
-    if description != '':
-      objs['PlaceDescription'].append(
-        PlaceDescription(
-          place=newpl,
-          src_id = src_id,
-          jsonb={
-            "@id": "", "value":description, "lang":""
-          }
-        ))
-
-
-  # TODO: compute place.minmax, place.timespans
+        dataset = ds,
+        title = title,
+        ccodes = ccodes
+      )
+      newpl.save()
+      countrows += 1
   
-  # bulk_create(Class, batch_size=n) for each
-  PlaceName.objects.bulk_create(objs['PlaceName'],batch_size=10000)
-  print(len(objs['PlaceName']),'names done')
-  PlaceType.objects.bulk_create(objs['PlaceType'],batch_size=10000)
-  print(len(objs['PlaceType']),'types done')
-  PlaceGeom.objects.bulk_create(objs['PlaceGeom'],batch_size=10000)
-  print(len(objs['PlaceGeom']),'geoms done')
-  PlaceLink.objects.bulk_create(objs['PlaceLink'],batch_size=10000)
-  print(len(objs['PlaceLink']),'links done')
-  PlaceRelated.objects.bulk_create(objs['PlaceRelated'],batch_size=10000)
-  print(len(objs['PlaceRelated']),'related done')
-  PlaceWhen.objects.bulk_create(objs['PlaceWhen'],batch_size=10000)
-  print(len(objs['PlaceWhen']),'whens done')
-  PlaceDescription.objects.bulk_create(objs['PlaceDescription'],batch_size=10000)
-  print(len(objs['PlaceDescription']),'descriptions done')
-
-  infile.close()
-
-  # backfill some dataset counts
-  print('ds record pre-update:', ds.__dict__)
-  print('rows,linked,links:',countrows,countlinked,countlinks)
-
-  ds.numrows = countrows
-  ds.numlinked = countlinked
-  ds.total_links = countlinks
-  ds.save()
+      # build associated objects and add to arrays
+      #
+      # PlaceName()
+      objs['PlaceName'].append(
+        PlaceName(
+          place=newpl,
+          src_id = src_id,
+          toponym = title,
+          jsonb={"toponym": title, "citation": {"id":title_uri,"label":title_source}}
+      ))
+      # variants if any; same source as title toponym?
+      if len(variants) > 0:
+        for v in variants:
+          objs['PlaceName'].append(
+            PlaceName(
+              place=newpl,
+              src_id = src_id,
+              toponym = v,
+              jsonb={"toponym": v, "citation": {"id":"","label":title_source}}
+          ))
+      #
+      # PlaceType()
+      if len(types) > 0:
+        for i,t in enumerate(types):
+          # i always 0 in tsv
+          aatnum=aat_types[i] if len(aat_types) >= len(types) else ''
+          objs['PlaceType'].append(
+            PlaceType(
+              place=newpl,
+              src_id = src_id,
+              jsonb={ "identifier":aatnum,
+                      "sourceLabel":t,
+                      "label":aat_lookup(int(aatnum)) if aatnum !='' else ''
+                    }
+          ))
+      #
+      # PlaceGeom()
+      # TODO: test geometry type or force geojson
+      if len(coords) > 0:
+        objs['PlaceGeom'].append(
+          PlaceGeom(
+            place=newpl,
+            src_id = src_id,
+            jsonb={"type": "Point", "coordinates": coords,
+                        "geowkt": 'POINT('+str(coords[0])+' '+str(coords[1])+')'}
+        ))
+      elif 'geowkt' in header and r[header.index('geowkt')] not in ['',None]: # some rows no geom
+        objs['PlaceGeom'].append(
+          PlaceGeom(
+            place=newpl,
+            src_id = src_id,
+            # make GeoJSON using shapely
+            jsonb=parse_wkt(r[header.index('geowkt')])
+        ))
+      #
+      # PlaceLink() - all are closeMatch
+      if len(matches) > 0:
+        countlinked += 1
+        for m in matches:
+          countlinks += 1
+          objs['PlaceLink'].append(
+            PlaceLink(
+              place=newpl,
+              src_id = src_id,
+              jsonb={"type":"closeMatch", "identifier":m}
+          ))
+      #
+      # PlaceRelated()
+      if parent_name != '':
+        objs['PlaceRelated'].append(
+          PlaceRelated(
+            place=newpl,
+            src_id=src_id,
+            jsonb={
+              "relationType": "gvp:broaderPartitive",
+              "relationTo": parent_id,
+              "label": parent_name}
+        ))
+      #
+      # PlaceWhen()
+      # timespans[{start{}, end{}}], periods[{name,id}], label, duration
+      if start != '':
+        objs['PlaceWhen'].append(
+          PlaceWhen(
+            place=newpl,
+            src_id = src_id,
+            jsonb={
+                  "timespans": [{"start":{"earliest":minmax[0]}, "end":{"latest":minmax[1]}}]
+                }
+        ))
   
-  print('ds record post-update:', ds.__dict__)
+      #
+      # PlaceDescription()
+      # @id, value, lang
+      if description != '':
+        objs['PlaceDescription'].append(
+          PlaceDescription(
+            place=newpl,
+            src_id = src_id,
+            jsonb={
+              "@id": "", "value":description, "lang":""
+            }
+          ))
+  
+  
+    # TODO: compute place.minmax, place.timespans
+    
+    # bulk_create(Class, batch_size=n) for each
+    PlaceName.objects.bulk_create(objs['PlaceName'],batch_size=10000)
+    print(len(objs['PlaceName']),'names done')
+    PlaceType.objects.bulk_create(objs['PlaceType'],batch_size=10000)
+    print(len(objs['PlaceType']),'types done')
+    PlaceGeom.objects.bulk_create(objs['PlaceGeom'],batch_size=10000)
+    print(len(objs['PlaceGeom']),'geoms done')
+    PlaceLink.objects.bulk_create(objs['PlaceLink'],batch_size=10000)
+    print(len(objs['PlaceLink']),'links done')
+    PlaceRelated.objects.bulk_create(objs['PlaceRelated'],batch_size=10000)
+    print(len(objs['PlaceRelated']),'related done')
+    PlaceWhen.objects.bulk_create(objs['PlaceWhen'],batch_size=10000)
+    print(len(objs['PlaceWhen']),'whens done')
+    PlaceDescription.objects.bulk_create(objs['PlaceDescription'],batch_size=10000)
+    print(len(objs['PlaceDescription']),'descriptions done')
+  
+    infile.close()
+  
+    # backfill some dataset counts
+    print('ds record pre-update:', ds.__dict__)
+    print('rows,linked,links:',countrows,countlinked,countlinks)
+  
+    ds.numrows = countrows
+    ds.numlinked = countlinked
+    ds.total_links = countlinks
+    ds.save()
+    
+    print('ds record post-update:', ds.__dict__)
+  
+  else:
+    print('insert_tsv skipped, already in')
+    # message to user
+    messages.add_message(request, messages.INFO, 'data is uploaded, but problem displaying dataset page')
+    return redirect('/dashboard')    
 
 
 # ***

@@ -9,6 +9,9 @@
   {% load dataset_extras %}
 
   <div class="container">
+    {% if messages %}<div>{% for message in messages %}
+          <i style="display:block;" class="text-danger ml-4 mb-2">{{ message }}</i>
+    {%endfor%}</div>{% endif %}
     <div id="dataset_list" class="mt-3">
       <!--{# if messages %}-->
       <!--<p>{# for message in messages %}{ message }}{# endfor %}</p>-->
