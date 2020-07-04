@@ -176,7 +176,7 @@ class Hit(models.Model):
 
 @receiver(pre_delete, sender=Dataset)
 def remove_files(**kwargs):
-    print('remove_files()',kwargs)
+    print('pre_delete remove_files()',kwargs)
     ds_instance = kwargs.get('instance')
     files = DatasetFile.objects.filter(dataset_id_id=ds_instance.id)
     files.delete()

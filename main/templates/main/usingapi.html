@@ -1,23 +1,41 @@
 {% extends "main/base.html" %}
-{% block title %}<title>WHG::UsingAPI</title>{% endblock %}
+{% block title %}<title>WHG::Architecture</title>{% endblock %}
 
 {% block content %}
 {% load static %}
 
-<div class="container">
-  <div class="d-flex justify-content-center mt-3">
-    <h3>Using the API</h3>
+  <div class="container">
+    <div class="d-flex justify-content-center mt-3">
+      <h3>Using the API</h3>
+    </div>
+    <div id="system_content" class="mx-3">
+      <!--<p class="lead">Pipeline, architecture, and software</p>-->
+        <div class="row">
+          <div class="col-sm-6">  
+            <p class="mb-0">
+              <p>Development of the external API is in draft stage. We plan to refine options and add endpoints in response to community feedback. Please <a href="#">use this form for suggestions</a>.</p>
+              <h5 class="red-head strong">Two place data stores</h5>
+            <p>The <b class="red-head">relational database</b> holds individual records from uploaded datasets</p>
+            <p class="ml-2 notebox small">Note that records from all uploaded datasets are assigned a unique identifier within the WHG system (<b>place_id</b>). Both that place_id and the contributor's own <b>src_id</b> will be maintained unless and until the dataset is deleted by its owner. If a dataset is flagged as "public," its records will be accessible via the "database API" as indicated. In this way WHG can serve as a Linked Open Data publisher for those projects unable to stand up their own per-record landing pages.</p>
+            <p>The <b class="red-head">"union index"</b>: links all <i>contributed</i> (i.e. accessioned) attestations (and related trace annotations) deemed to be for the same place. Note that accessioning is a separate and optional step that follows uploading and reconciliation.</p>
+            <h5 class="red-head strong ">Trace data</h5>
+            <p>We have indexed a limited number of "trace annotation" datasets, which can be searched by keyword.</p>
+          </div>
+          <div class="col-sm-6">
+            <h5 class="strong red-head">Endpoints</h5>
+            <p class="strong red-head">Datasets</p>
+            <p class="strong red-head">Places</p>
+            <p class="smaller strong red-head">Database</p>
+            <p class="smaller strong red-head">Union Index</p>
+            <ul>
+              <li><p>A contributed record (Verapaz): <a href="http://dev.whgazetteer.org/api/place/173465/" target="_blank">http://dev.whgazetteer.org/api/places/140167/</a></p></li>
+              <li><p>The "union" record for Istanbul: <a href="http://dev.whgazetteer.org/api/union/?idx=whg&_id=12345979" target="_blank">http://dev.whgazetteer.org/api/union?idx=whg&amp;_id=12345979</a></p></li>
+              <li><p>List of datasets: <a href="http://localhost:8000/api/datasets/" target="_blank">http://dev.whgazetteer.org/api/datasets/</a></p></li>
+              <li><p>A single dataset: <a href="http://localhost:8000/api/dataset/1" target="_blank">http://dev.whgazetteer.org/api/dataset/1</p></li>
+            </ul>   
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
-  <div class="px-5">
-    <p>Development of the external API is at an early stage. There will be several place and dataset endpoints with numerous filtering and search options, to: 1) the relational database, accessing records from contributed datasets, 2) the "union index" that gathers all place attestations (and related trace annotations) for a given place, and 3) a listing of contributed datasets.</p>
-    <p class="ml-2 notebox"><i>Note that contributed records will have "permanent" URIs within the WHG system, allowing WHG to serve as a publisher of linked data for those projects unable to stand up per-record landing pages.</i></p>
-    <p>These are a few native Django REST API Framework screens available so far:</p>
-    <ul>
-      <li><p>A contributed record (Verapaz): <a href="http://dev.whgazetteer.org/api/place/173465/" target="_blank">http://dev.whgazetteer.org/api/places/140167/</a></p></li>
-      <li><p>The "union" record for Istanbul: <a href="http://dev.whgazetteer.org/api/union/?idx=whg&_id=12345979" target="_blank">http://dev.whgazetteer.org/api/union?idx=whg&amp;_id=12345979</a></p></li>
-      <li><p>List of datasets: <a href="http://localhost:8000/api/datasets/" target="_blank">http://dev.whgazetteer.org/api/datasets/</a></p></li>
-      <li><p>A single dataset: <a href="http://localhost:8000/api/dataset/1" target="_blank">http://dev.whgazetteer.org/api/dataset/1</p></li>
-    </ul>
-  </div>
-</div>
 {% endblock %}

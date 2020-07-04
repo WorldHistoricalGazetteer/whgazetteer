@@ -224,7 +224,7 @@ def validate_tsv(tempfn):
   os.rename(tempfn,newfn)
   print('tempfn,newfn',tempfn,newfn)
   schema_lptsv = json.loads(codecs.open('datasets/static/validate/schema_tsv.json', 'r', 'utf8').read())
-  report = gvalidate(newfn,schema=schema_lptsv,order_fields=True)
+  report = gvalidate(newfn,schema=schema_lptsv,order_fields=True,row_limit=20000,skip_checks='blank-header')
   pp.pprint(report)  
   #print('error count',report['error-count'])
   result['count'] = report['tables'][0]['row-count']-1 # counts header apparently

@@ -1080,7 +1080,7 @@ def ds_insert_tsv(request, pk):
   countlinks = 0
   for r in reader:
     src_id = r[header.index('id')]
-    #print('src_id from tsv_insert',src_id)
+    print('src_id from tsv_insert',src_id)
     title = r[header.index('title')].replace("' ","'")
     # for PlaceName insertion, strip anything in parens
     title = re.sub('\(.*?\)', '', title)
@@ -1492,6 +1492,7 @@ class DatasetDetailView(LoginRequiredMixin, UpdateView):
     # insert to db immediately (file.df_status == format_ok) 
     # most recent data file
     file = ds.files.all().order_by('-rev')[0]
+    print('file.df_status',file.df_status)
     if file.df_status == 'format_ok':
       print('format_ok , inserting dataset '+str(id_))
       if file.format == 'delimited':

@@ -2,7 +2,7 @@
 
 from django.core.mail import send_mail, BadHeaderError
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404, redirect, render_to_response
 from django.urls import reverse_lazy
 
 from main.models import Comment
@@ -66,8 +66,8 @@ def feedbackView(request):
     return render(request, "main/feedback.html", {'form': form})
 
 def feedbackSuccessView(request):
-    return render_to_response('home', message='Feedback sent, thanks!')
-    #return HttpResponse('Thank you for your feedback!')
+    #return render_to_response('home', message='Feedback sent, thanks!')
+    return HttpResponse('Thank you for your feedback!')
     #return redirect('/')
 
 class CommentCreateView(BSModalCreateView):

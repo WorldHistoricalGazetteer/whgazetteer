@@ -58,6 +58,7 @@ table {border-collapse:initial;}
 .i-blk {display:inline-block;}
 .alert {padding: 0 1.25rem !important;}
 label {vertical-align:top;}
+.red-head {color:#993300;}
 .border-red { border:2px dotted red;}
 .checkbox-inline {margin-right:.3rem;}
 .strong { font-weight: bold;}
