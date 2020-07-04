@@ -346,7 +346,7 @@
         <!--<span class="allcap-heading">LOG</span>-->
         <div>
           <ul class="ul-flush">
-            {% for l in log %} 
+            {% for l in log %}
               <li class="li-flush">{{l.logtype}} ({% if l.subtype %}{{l.subtype}}{% elif l.note %}{{l.note}}{%endif%}), {{l.timestamp|date:"Y-m-d" }}</li> 
             {% endfor %}
           </ul>
