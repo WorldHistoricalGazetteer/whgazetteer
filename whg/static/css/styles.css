@@ -61,6 +61,7 @@ label {vertical-align:top;}
 .alert {padding: 0 1.25rem !important;}
 .arial {font-family: arial, san-serif;}
 .red-head {color:#993300;}
+.bg-light { background-color: #fff !important; }
 .border-red { border:2px dotted red;}
 .checkbox-inline {margin-right:.3rem;}
 .strong { font-weight: bold;}
@@ -109,18 +110,7 @@ label {vertical-align:top;}
   /*margin: 2px 2px;*/
   cursor: pointer;
 }
-.docs-header {}
-.docs-subhead1 {
-  color:#993300; 
-  display:inline-block; 
-  width:100%;
-  background-color:#eaeaea;
-  font-weight:800;
-  padding-left:2px;
-  margin-bottom:0;}
 
-/*smaller strong red-head mb-0*/
-.docs-subhead2 {color:#993300;font-weight:800;margin-bottom:0;font-size:.9rem; }
 /**
   dashboard
 **/
@@ -220,12 +210,7 @@ input[type="text"] {
 
 #home_search {
   z-index:500; 
-  /*position:absolute; */
-  /*top:80px;*/
-  /*min-width: 25%;*/
-  /*max-width: 25%;*/
   margin:0; padding:5px;
-  /*background-color: #e0e0cd;*/
   border: 1px solid #ddd;
   border-radius: 8px;
 }
@@ -281,7 +266,6 @@ input[type="text"] {
   z-index: 600;
 }
 
-/*new style*/
 .place-item, .trace-item, .sug_row, .search-row{
   list-style-type: none;
   margin-top: 5px;
@@ -321,13 +305,21 @@ em { color: #993333;}
 /**
   place portal
 **/
+.card-header {
+  background-color: antiquewhite;
+  margin: 0;
+  padding: 0;
+}
+.card-header h4 { margin:0;}
+.accordion .btn-link { color: #336699;}
+
 #place_content { height: calc(100vh - 120px)}
 .trace-img {height: 250px;}
 #place_home_l {
   height: calc(100vh - 200px);
   overflow-y: auto;
 }
-#place_home_l tr, th {
+#place_home_l tr, #place_home_l th {
   line-height: .2rem;
 }
 #place_traces {
@@ -650,16 +642,21 @@ span.edit-row {
 /**
   Main: tutorials, etc.
 **/
-.bg-light { background-color: #fff !important; }
+.docs-header {}
+.docs-subhead1 {
+  color:#993300; 
+  display:inline-block; 
+  width:100%;
+  background-color:#eaeaea;
+  font-weight:800;
+  padding-left:2px;
+  margin-bottom:0;}
+
+.docs-subhead2 {color:#993300;font-weight:800;margin-bottom:0;font-size:.9rem; }
 .tute-section h4 { background-color: #eee;}
-/*#contrib_content h6 { font-style:italic; color: #993333; }*/
-.card-header {
-  background-color: antiquewhite;
-  margin: 0;
-  padding: 0;
-}
-.card-header h4 { margin:0;}
-.accordion .btn-link { color: #336699;}
+#api_content td, #api_content th {
+  padding: .4rem;}
+
 #api_cintent ul li {}
 
 

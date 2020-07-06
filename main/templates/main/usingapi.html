@@ -6,13 +6,14 @@
 {% load static %}
 
   <div class="container">
-    <div class="d-flex justify-content-center mt-3">
-      <h3>Using the API</h3>
-    </div>
+    <!--<div class="d-flex justify-content-center mt-3">-->
+      <!--<h3>Using the API</h3>-->
+    <!--</div>-->
     <div id="api_content" class="mx-3">
       <!--<p class="lead">Pipeline, architecture, and software</p>-->
-        <div class="row">
-          <div class="col-sm-6">  
+        <div class="row mt-2">
+          <div class="col-sm-5"> 
+			<h4>Using the API</h4>
             <p class="mb-2">Development of the external API is in draft stage. We plan to refine options and add endpoints in response to community feedback. Please <a href="#">use this form for suggestions</a>.</p>
 			
 			<h5 class="red-head strong">Two place data stores</h5>
@@ -25,45 +26,76 @@
             <h5 class="red-head strong ">Trace data</h5>
             <p>We have indexed a limited number of "trace annotation" datasets, which can be searched by keyword. Trace records can optionally be returned in place searches,</p>
           </div>
-          <div class="col-sm-6">
-            <h5 class="strong red-head">Endpoints</h5> <!-- &#x2609; -->
-            <p class="docs-subhead1">Places</p>
-            <div class="pl-1 smallish arial">
-              <p class="mb-0 strong">Search public database records:</p>
-              <p class="ml-1 my-0"><b>url</b>: whgazetteer.org/api/searchdb?</p>
-              <p class="ml-1 my-0 hang"><b>parameters</b>: q <i>(&lt;str&gt;)</i>; dataset<i> (id, &lt;int&gt; or label, &lt;str&gt;)</i>; 
-				<span class="nobr">ccode <i>(ISO 2-letter, >=1)</i>; </span>
-				<span class="nobr">fclass <i>(geonames feature class&nbsp;<a href="#" class="red-head" data-html="true" onClick='return false;' title="A=administrative; H=hydrological; L=landscape; P=settlements;<br/> S='sites';<br/> T=topographical" rel="tooltip"> {% fontawesome_icon 'question-circle' %}</a>; >=1)</i>; </span>
-				</span><span class="nobr">earliest <i>(not before, &lt;int&gt;)</i>; </span><span class="nobr">latest <i>(not after, &lt;int&gt;)</i>; </span><span class="nobr">area <i>(&lt;int&gt;)</i>; </span>
-			  </p>
-              <p class="ml-1 my-0 hang"><b>example</b>: whgazetteer.org/api/searchdb?</p>
-              
-              <p class="mb-0 mt-2 strong">Search union index (returns linked, accessioned records):</p>
-              <p class="ml-1 my-0"><b>url</b>: whgazetteer.org/api/searchidx?</p>
-              <p class="ml-1 my-0"><b>parameters</b>: q (string); </p>
-              <p class="ml-1 my-0 hang"><b>example</b>: </p>
-
-              <p class="mb-0 mt-2 strong">Single place record by id:</p>
-              <p class="ml-1 my-0"><b>url</b>: whgazetteer.org/api/place/<i>place_id</i></p>
-              <p class="ml-1 my-0 hang"><b>example</b>: </p>
-            </div>
-			
-            <p class="docs-subhead1 mt-2">Areas (incl. regions; user study areas)</p>
-			<div class="pl-1 smallish arial">
-			  <p class="mb-0 strong">Search database records:</p>
-              <p class="ml-1 my-0"><b>url</b>: whgazetteer.org/api/areas?</p>
-              <p class="ml-1 my-0"><b>parameters</b>: q <i>(&lt;str&gt;)</i>; <span class="nobr">ccode <i>(overlaps bounds, ISO 2-letter)</i>; </span>
-			  </p>
-              <p class="ml-1 my-0 hang"><b>example</b>: </p>
-			</div>
-            <p class="docs-subhead1 mt-2">Datasets</p>
-			<div class="pl-1 smallish arial">
-              <p class="mb-0 mt-2 strong">Single dataset record by id:</p>
-              <p class="ml-1 my-0"><b>url</b>: whgazetteer.org/api/dataset/<i>place_id</i></p>
-              <p class="ml-1 my-0 hang"><b>example</b>: </p>
-              <p class="mb-0 mt-2 strong">List public datasets:</p>
-              <p class="ml-1 my-0"><b>url</b>: whgazetteer.org/api/datasets/</p>
-              <p class="ml-1 my-0 hang"><b>example</b>: </p>
+          <div class="col-sm-7">
+			<h4>Endpoints</h4>
+			<ul id="api_tabs" class="nav nav-tabs" role="tablist">
+			  <li class="nav-item">
+				<a class="nav-link active" id="places-tab" data-toggle="tab" href="#place_endpoints" role="tab" aria-controls="place_endpoints" aria-selected="true">Places</a>
+			  </li>
+			  <li class="nav-item">
+				<a class="nav-link" id="areas-tab" data-toggle="tab" href="#area_endpoints" role="tab" aria-controls="area_endpoints" aria-selected="false">Areas</a>
+			  </li>
+			  <li class="nav-item">
+				<a class="nav-link" id="datasets-tab" data-toggle="tab" href="#dataset_endpoints" role="tab" aria-controls="dataset_endpoints" aria-selected="false">Datasets</a>
+			  </li>
+			</ul>
+			<div class="tab-content">
+			  <div id="place_endpoints" class="tab-pane fade show active smallish" role="tabpanel" aria-labelledby="places-tab">
+				<p class="mb-0">
+				  Search <span class="red-head strong">public database records</span> (<b>whgazetteer.org/api/db?</b>)</p>
+				<p class="smaller my-0"><i>OR</i></p>
+				<p class="mb-0">
+				  Search <span class="red-head strong">union index</span> (<b>whgazetteer.org/api/union?</b>):</p>
+				<p class="smaller my-0"><i>using these parameters</i></p>
+				<table class="table">
+				  <thead>
+					<tr><th scope="col">parameter</th><th scope="col">value</th><th scope="col">notes</th></tr>
+				  </thead>
+				  <tbody>
+					<tr><td>id</td><td>integer</td><td>returns single database record</td></tr>
+					<tr><td>name</td><td>string</td><td>equals or starts with; name or name_contains is required</td></tr>
+					<tr><td>name_contains</td><td>string</td><td>includes string</td></tr>
+					<tr><td>dataset</td><td>string</td><td>dataset label</td></tr>
+					<tr><td>ccode</td><td>string</td><td>1 or more 2-letter ISO codes, comma separate</td></tr>
+					<tr><td>fclass</td><td>string</td><td>1-letter GeoNames feature category 
+					  <a href="#" data-html="true" onClick='return false;' title="A=administrative; H=hydrological; L=landscape; P=settlements;<br/> S='sites';<br/> T=topographical" rel="tooltip"> {% fontawesome_icon 'question-circle' color='#993333' %}</a>; >=1)</i>; </span>
+					  </td></tr>
+					<tr><td>year</td><td>integer</td><td>attestion timespan includes this year;<br/>use '-' for BCE dates, to -9999</td></tr>
+					<tr><td>area</td><td>integer</td><td>id for region or user study area</td></tr>
+				  </tbody>
+				</table>
+				<div id="examples">
+				  <p class="mb-0">Examples</p>
+				  <p class="mb-0">Two records for Abydos, Egypt in the database</p>
+				  <p><a href="http://localhost:8000/api/db?name=abydos&ccode=eg&year=-4000" target="_blank">http://localhost:8000/api/db?name=abydos&ccode=eg&year=-4000</a></p>
+				  <p class="mb-0">A single union record joining those in the index</p>
+				  <p>get busy</p>
+				</div>
+				<!--<p class="mb-0 mt-2"><span class="red-head">Search union index</span> (<b>whgazetteer.org/api/union?</b>):</p>-->
+				<!--<table class="table">-->
+				  <!--<thead>-->
+					<!--<tr><th scope="col">parameter</th><th scope="col">value</th><th scope="col">notes</th></tr>-->
+				  <!--</thead>-->
+				  <!--<tbody>-->
+					<!--<tr><td>name</td><td>string</td><td>equals or starts with</td></tr>-->
+					<!--<tr><td>name_contains</td><td>string</td><td>includes string</td></tr>-->
+					<!--<tr><td>dataset</td><td>string</td><td>dataset label</td></tr>-->
+					<!--<tr><td>ccode</td><td>string</td><td>1 or more 2-letter ISO codes, comma separate</td></tr>-->
+					<!--<tr><td>fclass</td><td>string</td><td>1-letter GeoNames feature category -->
+					  <!--<a href="#" data-html="true" onClick='return false;' title="A=administrative; H=hydrological; L=landscape; P=settlements;<br/> S='sites';<br/> T=topographical" rel="tooltip"> {% fontawesome_icon 'question-circle' color='#993333' %}</a>; >=1)</i>; </span>-->
+					  <!--</td></tr>-->
+					<!--<tr><td>year</td><td>integer</td><td>use '-' for BCE dates, to -9999</td></tr>-->
+					<!--<tr><td>area</td><td>integer</td><td>id for region or user study area</td></tr>-->
+				  <!--</tbody>-->
+				<!--</table>-->
+			  </div>
+			  
+			  <div id="area_endpoints" class="tab-pane fade" role="tabpanel" aria-labelledby="areas-tab">
+				<p>yet again</p>
+			  </div>
+			  <div id="dataset_endpoints" class="tab-pane fade" role="tabpanel" aria-labelledby="datasets-tab">
+				<p>hours lost</p>
+			  </div>
 			</div>
           </div>
         </div>
@@ -76,3 +108,44 @@
 	})
   </script>
 {% endblock %}
+
+			<div id="other">
+            <h5 class="strong red-head">Endpoints</h5> <!-- &#x2609; -->
+            <p class="docs-subhead1">Places</p>
+            <div class="pl-1 smallish arial">
+              <p class="mb-0 red-head">Search public database records:</p>
+              <p class="ml-0 my-0"><b>url</b>: whgazetteer.org/api/db?</p>
+              <p class="ml-0 my-0 hang"><b>parameters</b>: q <i>(&lt;str&gt;)</i>; contains <i>(no)</i>; dataset <i>(label, &lt;str&gt;)</i>; 
+				<span class="nobr">ccode <i>(ISO 2-letter, >=1)</i>; </span>
+				<span class="nobr">fclass <i>(geonames feature class&nbsp;<a href="#" class="red-head" data-html="true" onClick='return false;' title="A=administrative; H=hydrological; L=landscape; P=settlements;<br/> S='sites';<br/> T=topographical" rel="tooltip"> {% fontawesome_icon 'question-circle' %}</a>; >=1)</i>; </span>
+				<span class="nobr">earliest <i>(not before, &lt;int&gt;)</i>; </span><span class="nobr">latest <i>(not after, &lt;int&gt;)</i>; </span><span class="nobr">area <i>(&lt;int&gt;)</i>; </span>
+			  </p>
+              <p class="ml-0 my-0 hang"><b>example</b>: whgazetteer.org/api/searchdb?</p>
+              
+              <p class="mb-0 mt-2 red-head">Search union index (returns linked, accessioned records):</p>
+              <p class="ml-0 my-0"><b>url</b>: whgazetteer.org/api/union?</p>
+              <p class="ml-0 my-0"><b>parameters</b>: q (string); </p>
+              <p class="ml-0 my-0 hang"><b>example</b>: </p>
+
+              <p class="mb-0 mt-2 red-head">Single place record by id:</p>
+              <p class="ml-0 my-0"><b>url</b>: whgazetteer.org/api/place/<i>place_id</i></p>
+              <p class="ml-0 my-0 hang"><b>example</b>: </p>
+            </div>
+			
+            <p class="docs-subhead1 mt-2">Areas (incl. regions; user study areas)</p>
+			<div class="pl-1 smallish arial">
+			  <p class="mb-0 red-head">Search database records:</p>
+              <p class="ml-0 my-0"><b>url</b>: whgazetteer.org/api/areas?</p>
+              <p class="ml-0 my-0"><b>parameters</b>: q <i>(&lt;str&gt;)</i>; <span class="nobr">ccode <i>(overlaps bounds, ISO 2-letter)</i>; </span>
+			  </p>
+              <p class="ml-0 my-0 hang"><b>example</b>: </p>
+			</div>
+            <p class="docs-subhead1 mt-2 mb-0">Datasets</p>
+			<div class="pl-1 smallish arial">
+              <p class="mb-0 red-head">Single dataset record by id:</p>
+              <p class="ml-0 my-0"><b>url</b>: whgazetteer.org/api/dataset/<i>place_id</i></p>
+              <p class="ml-0 my-0 hang"><b>example</b>: </p>
+              <p class="mb-0 mt-2 strong">List public datasets:</p>
+              <p class="ml-0 my-0"><b>url</b>: whgazetteer.org/api/datasets/</p>
+              <p class="ml-0 my-0 hang"><b>example</b>: </p>
+			</div>

@@ -188,8 +188,9 @@ class IndexAPIView(View):
     return JsonResponse(result, safe=False,json_dumps_params={'ensure_ascii':False,'indent':2})
 
 """ 
+    /api?
     return lpf results from database search 
-    q <str>, contains <str>, dataset <str>, ccodes (xx[|,..]),
+    q <str>, contains <str>, dataset <str>, ccode (xx[|,..]),
     class [A,P,T,L,H], year <int>, range <int>,<int>
 
 """
@@ -203,30 +204,32 @@ class SearchAPIView(generics.ListAPIView):
   #def get_queryset(self, format=None):
   def get(self, format=None, *args, **kwargs):
     params=self.request.query_params
-    q = params.get('q',None)
-    contains = params.get('contains')
-    cc = map(str.upper,params.get('ccodes').split(',')) if params.get('ccodes') else None
-    dslabel = params.get('dataset',None)
+    name = params.get('name',None)
+    name_contains = params.get('name_contains')
+    cc = map(str.upper,params.get('ccode').split(',')) if params.get('ccode') else None
+    ds = params.get('dataset',None)
     fc = params.get('class',None)
     fclasses=[x.upper() for x in fc.split(',')] if fc else None
     year = params.get('year',None)
     count = params.get('count',None)
 
-    print('SearchAPIView() params (q,contains,cc,dslabel,fc,count',q,contains,cc,dslabel,fc,count)
+    print('SearchAPIView() params',params)
     qs = Place.objects.all()
 
-    if q is None and contains is None:
+    if name is None and name_contains is None:
       # TODO: return a template with API instructions
-      return HttpResponse(content=b'<h3>Needs either a "q" or "contains" parameter at minimum <br/>(e.g. ?q=myplacename or ?contains=astring)</h3>')
+      return HttpResponse(content=b'<h3>Needs either a "name" or "name_contains" parameter at \
+          minimum <br/>(e.g. ?name=myplacename or ?name_contains=astring)</h3>')
     else:
       qs = qs.filter(minmax__0__lte=year,minmax__1__gte=year) if year else qs
       qs = qs.filter(fclasses__overlap=fclasses) if fc else qs
-      if contains and contains != '':
-        qs = qs.filter(title__icontains=contains)
-      elif q and q != '':
-        qs.filter(title__istartswith=q)
-      #qs = qs.filter(title__icontains=q) if contains is not None else qs.filter(title__istartswith=q)
-      qs = qs.filter(dataset=dslabel) if dslabel else qs
+      #if contains and contains != '':
+      if name_contains:
+        qs = qs.filter(title__icontains=name_contains)
+      elif name and name != '':
+        qs = qs.filter(title__istartswith=name)
+
+      qs = qs.filter(dataset=ds) if ds else qs
       qs = qs.filter(ccodes__overlap=cc) if cc else qs
       filtered = qs[:count] if count else qs[:10]
       serializer = LPFSerializer(filtered, many=True, context={'request': self.request})
