@@ -12,7 +12,7 @@ urlpatterns = [
 
     # *** SEARCH ***
 
-    path('db',views.SearchAPIView.as_view(),name='api-search'),
+    path('db/',views.SearchAPIView.as_view(),name='api-search'),
     path('index/',views.IndexAPIView.as_view(),name='api-index-search'),
     
     # experiment

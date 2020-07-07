@@ -29,9 +29,9 @@ class PlacePortalView(DetailView):
     self.kwargs['pid'] = pid
     return get_object_or_404(Place, id=pid)
 
-  def get_success_url(self):
-    id_ = self.kwargs.get("id")
-    return '/places/'+str(id_)+'/detail'
+  #def get_success_url(self):
+    #id_ = self.kwargs.get("id")
+    #return '/places/'+str(id_)+'/detail'
   
   
   def get_context_data(self, *args, **kwargs):
@@ -130,17 +130,12 @@ class PlacePortalView(DetailView):
     def mm_trace(tsarr):
       print('mm_trace() tsarr',tsarr)
       # TODO: not only simple years here; sorts string years?
-      #starts = sorted( [int(t['start'] if 'start' in t else t['earliest']) for t in tsarr] )
-      #ends = sorted( [int(t['end'] if 'end' in t else t['latest']) for t in tsarr] )
-      #starts = sorted( [int(t['start']) for t in tsarr] )
       starts = sorted( [t['start'] for t in tsarr] )
-      #ends = sorted( [int(t['end']) for t in tsarr] )
       ends = sorted( [t['end'] for t in tsarr] )
       mm = [min(starts), max(ends)]
       mm = sorted(list(set([min(starts), max(ends)])))
       return '('+str(mm[0])+('/'+str(mm[1]) if len(mm)>1 else '')+')'  
     
-    # TODO: new trace format will deliver aggregated body relation/when
     # get traces for this index parent and its children
     print('ids',ids)
     qt = {"query": {"bool": {"must": [  {"terms":{"body.place_id": ids }}]}}}

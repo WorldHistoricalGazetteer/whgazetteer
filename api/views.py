@@ -46,11 +46,13 @@ class StandardResultsSetPagination(PageNumberPagination):
   formats search hits 
 """
 def suggestionItem(s,datatype):
-  print('suggestionItem s',s)
+  #print('suggestionItem s',s)
+  _id = s['_id']
   s=s['hit']
   if datatype == 'place':
     item = { 
-      "index_id":s['whg_id'],
+      #"index_id":s['whg_id'],
+      "index_id":_id,
       "title":s['title'],
       "place_ids":[int(c) for c in s['children']]+[s['place_id']],
       "types":[t['label'] for t in s['types']],
@@ -100,7 +102,7 @@ def suggester(datatype,q,idx):
           }
         )
     sortedsugs = sorted(suggestions, key=lambda x: x['childcount'], reverse=True)
-    #print('SUGGESTIONS from suggester()',type(suggestions), sortedsugs)
+    print('sortedsugs from suggester()',sortedsugs)
     return sortedsugs
     
   elif datatype == 'trace':
@@ -122,11 +124,24 @@ def bundler(q,whgid,idx):
   es = Elasticsearch([{'host': 'localhost', 'port': 9200, 'timeout':30, 'max_retries':10, 'retry_on_timeout':True}])
   res = es.search(index=idx, doc_type='place', body=q)
   hits = res['hits']['hits']
-  bundle = {"index_id":whgid, 
-            "count":res['hits']['total'],
-            "result": [h['_source'] for h in hits]
-            }
-  return bundle
+  bundle = []
+  #bundle = {"index_id":whgid, 
+            #"count":res['hits']['total'],
+            ##"result": [h['_source'] for h in hits]
+            #"result": res['hits']
+            #}
+  if len(hits) > 0:
+    for h in hits:
+      bundle.append(
+        {"_id": h['_id'],
+         "linkcount":len(h['_source']['links']),
+         "childcount":len(h['_source']['children']),
+         "hit": h['_source'],
+        }
+      )
+  #return bundle
+  stuff = [ suggestionItem(i, 'place') for i in bundle]
+  return stuff
 """
     search index parent records, given name string
     based on search.views.SearchView(View)
@@ -135,54 +150,64 @@ def bundler(q,whgid,idx):
 class IndexAPIView(View):
   @staticmethod
   def get(request):
-    print('IndexAPIView request',request.GET)
+    idx='whg'
+    datatype='place'
+    params=request.GET
+    print('IndexAPIView request params',params)
     """
-      args in request.GET:
-          [string] q: query string
-          [string] datatype: place or trace
+      args in params:
+          [str] name: exact
+          [str] name_startswith
+          [int] whgid: whg_id
+          [int] pid: place_id
+          [str] class: geonames fclass
     """
-    qstr = request.GET.get('q')
-    whgid = request.GET.get('id')
-    datatype = 'trace' if request.GET.get('datatype') == 'trace' else 'place'
-    if whgid and whgid !='':
-      # fetch parent and any children
-      print('fetching whg_id',whgid)
-      idx='whg03'
-      q = {"query":{"bool":{"should": [
-          {"parent_id": {"type": "child","id":whgid}},
-          {"match":{"_id":whgid}}
-      ]}}}
-      bundle = bundler(q,whgid,idx)
-      result={"index_id":whgid,"count":bundle['count'],"result":bundle['result']}
+    whgid = request.GET.get('whgid')
+    pid = request.GET.get('pid')
+    name = request.GET.get('name')
+    name_startswith = request.GET.get('name_startswith')
+    fc = params.get('fclass',None)
+    fclasses=[x.upper() for x in fc.split(',')] if fc else None
+    
+    if all(v is None for v in [name,name_startswith,whgid,pid]):
+      # TODO: format better
+      return HttpResponse(content='<h3>Query requires either name, name_startswith, pid, or whgid</h3>'+
+                          '<p><a href="http://localhost:8000/usingapi/">API instructions</a>')
     else:
-      # search
-      if datatype == 'place':
-        idx = 'whg03'
+      if whgid and whgid !='':
+        print('fetching whg_id',whgid)
+        q = {"query":{"bool":{"should": [
+            {"parent_id": {"type": "child","id":whgid}},
+            {"match":{"_id":whgid}}
+        ]}}}
+        bundle = bundler(q,whgid,idx)
+        print('bundle',bundle)
+        result=[b for b in bundle]
+        #result={"index_id":whgid,"count":bundle['count'],"result":bundle['result']}
+      else:
         q = { 
           "size": 100,
           "query": { "bool": {
             "must": [
               {"exists": {"field": "whg_id"}},
               {"multi_match": {
-                "query": qstr, 
+                "query": name if name else name_startswith, 
                 "fields": ["title","names.toponym","searchy"],
-                "type": "phrase"
+                "type": "phrase" if name else "phrase_prefix"
             }}]
           }}
         }
-        print('search query:',q)
-      elif datatype == 'trace':
-        idx = 'traces'      
-        q = { "query": {"match": {"target.title": {"query": qstr, "operator": "and"}}} }
-        print('trace query:',q)
-
-      # run query
-      suggestions = suggester(datatype, q, idx)
-      # format hits
-      suggestions = [ suggestionItem(s, datatype) for s in suggestions]
+        if fc:
+          q['query']['bool']['must'].append({"terms": {"fclasses": fclasses}})
+          print('query run:',q)
+        
+        # run query
+        suggestions = suggester(datatype, q, idx)
+        # format hits
+        suggestions = [ suggestionItem(s, datatype) for s in suggestions]
       
-      # result object
-      result = {'count': len(suggestions), 'result':suggestions}
+        # result object
+        result = {'count': len(suggestions), 'result':suggestions}
     
     # to client
     return JsonResponse(result, safe=False,json_dumps_params={'ensure_ascii':False,'indent':2})
@@ -208,7 +233,7 @@ class SearchAPIView(generics.ListAPIView):
     name_contains = params.get('name_contains')
     cc = map(str.upper,params.get('ccode').split(',')) if params.get('ccode') else None
     ds = params.get('dataset',None)
-    fc = params.get('class',None)
+    fc = params.get('fclass',None)
     fclasses=[x.upper() for x in fc.split(',')] if fc else None
     year = params.get('year',None)
     count = params.get('count',None)
@@ -235,7 +260,8 @@ class SearchAPIView(generics.ListAPIView):
       serializer = LPFSerializer(filtered, many=True, context={'request': self.request})
       serialized_data = serializer.data
       result = {"count":qs.count(),"parameters": params,"features":serialized_data}
-      return Response(result)
+      return JsonResponse(result, safe=False,json_dumps_params={'ensure_ascii':False,'indent':2})
+      #return Response(result)
 
 
 """ 
