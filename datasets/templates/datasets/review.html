@@ -9,6 +9,9 @@
   {% leaflet_js %}
   {% leaflet_css %}
   <script src="{% static 'js/aliases.js' %}"></script>
+  <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.css' rel='stylesheet' />
+  <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.js'></script>
+  <script src="{% static 'js/leaflet-mapbox-gl.js' %}"></script>
 {% endblock %}
 {% block content %}
 <div class="container">
@@ -302,14 +305,19 @@
       token_whg = '',
       mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}';
       
-    var mbtiles_url = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={token}';
-    var awmc = L.tileLayer(mbtiles_url, {id:'isawnyu.map-knmctlkh', token:token_kg, attribution:attrib_awmc})    
+    <!--var mbtiles_url = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={token}';-->
+    <!--var awmc = L.tileLayer(mbtiles_url, {id:'isawnyu.map-knmctlkh', token:token_kg, attribution:attrib_awmc})    -->
 
+    var pleiades = L.mapboxGL({
+      style:'mapbox://styles/kgeographer/ckc21ai6n5ozq1io64x91hndl',
+      accessToken:token_kg,
+      attribution:attrib_awmc})
+      
     var satellite  = L.tileLayer(mbstyle_url, {id:'satellite-streets-v11', token:token_mb, attribution:attrib_mb})
     var osm  = L.tileLayer(mbstyle_url, {id:'mapbox/light-v10', token:token_mb, attribution:attrib_mb});
 
     var baseLayers = {
-      "AWMC Terrain": awmc,
+      "Pleiades Terrain": pleiades,
       "OSM": osm,
       "Satellite": satellite
     };

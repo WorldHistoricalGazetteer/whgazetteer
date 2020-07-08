@@ -128,9 +128,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'whg.wsgi.application'
 
-WHG_BASETILES = 'https://api.mapbox.com/styles/v1/kgeographer/cjstfpenh6o1e1fldz95w8m6p/tiles/{z}/{x}/{y}?access_token=pk.eyJ1Ijoia2dlb2dyYXBoZXIiLCJhIjoiUmVralBPcyJ9.mJegAI1R6KR21x_CVVTlqw'
+#WHG_BASETILES = 'https://api.mapbox.com/styles/v1/kgeographer/cjstfpenh6o1e1fldz95w8m6p/tiles/{z}/{x}/{y}?access_token=pk.eyJ1Ijoia2dlb2dyYXBoZXIiLCJhIjoiUmVralBPcyJ9.mJegAI1R6KR21x_CVVTlqw'
 
-AWMC_BASETILES = 'https://api.mapbox.com/styles/v1/isawnyu.map-knmctlkh/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1Ijoia2dlb2dyYXBoZXIiLCJhIjoiUmVralBPcyJ9.mJegAI1R6KR21x_CVVTlqw'
+#AWMC_BASETILES = 'https://api.mapbox.com/styles/v1/isawnyu.map-knmctlkh/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1Ijoia2dlb2dyYXBoZXIiLCJhIjoiUmVralBPcyJ9.mJegAI1R6KR21x_CVVTlqw'
 
 
 LEAFLET_CONFIG = {
