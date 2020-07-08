@@ -120,6 +120,11 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
 /**
   home, search
 **/
+.carousel-indicators {position:relative; bottom:0;}
+.carousel-indicators li {background-color:#993300;}
+.carousel-indicators .active {background-color:#ccc;}
+/*.carousel-inner {background-color: #e4e4e4;}*/
+
 .list-inline { padding-left: 4px;}
 .active-filter {font-weight:bold; color:#993333;}
 #search_input label { position:absolute; right: 20px; z-index:10;}

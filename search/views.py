@@ -216,7 +216,18 @@ class SearchView(View):
           print('search filter[]:',q['query']['bool']['filter'])
 
     elif doctype == 'trace':
-      q = { "query": {"match": {"target.title": {"query": qstr,"operator": "and"}}} }
+      q={ 
+        "size": 100,
+        "query": { "bool": {
+          "must": [
+            {"multi_match": {
+              "query": qstr,
+              "fields": ["target.title","tags"],
+              "type": "phrase_prefix"
+          }}]
+        }}
+      }      
+      #q = { "query": {"match": {"target.title": {"query": qstr,"operator": "and"}}} }
       print('trace query:',q)
       
     suggestions = suggester(doctype, q, scope, idx)

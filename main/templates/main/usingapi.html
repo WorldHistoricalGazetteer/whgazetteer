@@ -31,10 +31,10 @@
 			<span class="text-danger"><b>NOTE:</b> Only the example links are confirmed to work right now.</span>.
 			<ul id="api_tabs" class="nav nav-tabs" role="tablist">
 			  <li class="nav-item">
-				<a class="nav-link" id="placedb-tab" data-toggle="tab" href="#place_db" role="tab" aria-controls="place_db" aria-selected="true">Places (database)</a>
+				<a class="nav-link active" id="placedb-tab" data-toggle="tab" href="#place_db" role="tab" aria-controls="place_db" aria-selected="true">Places (database)</a>
 			  </li>
 			  <li class="nav-item">
-				<a class="nav-link active" id="placeidx-tab" data-toggle="tab" href="#place_idx" role="tab" aria-controls="place_idx" aria-selected="false">Places (index)</a>
+				<a class="nav-link" id="placeidx-tab" data-toggle="tab" href="#place_idx" role="tab" aria-controls="place_idx" aria-selected="false">Places (index)</a>
 			  </li>
 			  <li class="nav-item">
 				<a class="nav-link" id="traces-tab" data-toggle="tab" href="#traces" role="tab" aria-controls="traces" aria-selected="false">Traces</a>
@@ -47,7 +47,7 @@
 			  </li>
 			</ul>
 			<div class="tab-content">
-			  <div id="place_db" class="tab-pane fade" role="tabpanel" aria-labelledby="placedb-tab">
+			  <div id="place_db" class="tab-pane fade show active" role="tabpanel" aria-labelledby="placedb-tab">
 				<p class="mb-0">
 				  Search <span class="red-head strong">public database records</span> (<b>whgazetteer.org/api/db?</b>)</p>
 				<table class="table">
@@ -74,7 +74,7 @@
 				</div>
 			  </div> <!-- place_db -->	
 			  
-			  <div id="place_idx" class="tab-pane fade show active" role="tabpanel" aria-labelledby="placeidx-tab">
+			  <div id="place_idx" class="tab-pane fade" role="tabpanel" aria-labelledby="placeidx-tab">
 				<p class="mb-0">
 				  Search <span class="red-head strong">union index</span> (<b>whgazetteer.org/api/union?</b>):</p>
 				<!--<p class="smaller my-0"><i>using these parameters</i></p>-->
@@ -101,7 +101,7 @@
 				  <p class="mb-0">Examples</p>
 				  <p class="mb-0">Sites named Abydos: one in Turkey, two in Egypt. Two have two attestations each.</p>
 				  <p><a href="http://localhost:8000/api/index/?name=abydos&fclass=s" target="_blank">/api/index/?name=abydos&fclass=s</a></p>
-				  <p class="mb-0">A single index record joining the two db records for Abydos, EG</p>
+				  <p class="mb-0">List joining the two db records for Abydos, EG</p>
 				  <p><a href="http://localhost:8000/api/index/?whgid=12608007" target="_blank">/api/index/?whgid=12608007</a></p>
 				  <p class="mb-0">more to come...</p>
 				</div>
@@ -117,7 +117,7 @@
 					<tr><td>q</td><td>string</td><td>search term or place </td></tr>
 				  </tbody>
 				</table>
-				<div id="examples">
+				<div id="examples" class="hidden">
 				  <p class="mb-0">Examples</p>
 				  <p class="mb-0">Search for "foofah"</p>
 				  <p><a href="http://localhost:8000/api/traces?q=" target="_blank">http://localhost:8000/api/traces?q=
@@ -134,7 +134,7 @@
 					<tr><td>id</td><td>integer</td><td>returns 1 or more linked records</td></tr>
 				  </tbody>
 				</table>
-				<div id="examples">
+				<div id="examples" class="hidden">
 				  <p class="mb-0">Examples</p>
 				  <p class="mb-0">All regions and public user study areas</p>
 				  <p><a href="http://localhost:8000/api/union?name=abydos&ccode=eg&year=-4000" target="_blank">
@@ -151,7 +151,7 @@
 					<tr><td>id</td><td>integer</td><td>returns 1 or more linked records</td></tr>
 				  </tbody>
 				</table>
-				<div id="examples">
+				<div id="examples" class="hidden">
 				  <p class="mb-0">Examples</p>
 				  <p class="mb-0">blah blah ...</p>
 				  <p><a href="http://localhost:8000/api/datasets" target="_blank">http://whgazetteer.org/api/datasets</a></p>

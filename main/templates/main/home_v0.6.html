@@ -42,7 +42,7 @@
 		  <div id="search_input"  class="input-group input-group-sm pb-2" >
 			<label for="input_box">{% fontawesome_icon 'search' color='#336699'%}</label>
 			<input id="input_box" class="tt-hint" type="text" placeholder="Enter place name" autocomplete="false"> 
-			<input id="input_box_traces" class="typeahead hidden" type="text" placeholder="Term in title, e.g. 'bud'">
+			<input id="input_box_traces" class="typeahead hidden" type="text" placeholder="subject term, e.g. 'empire'">
 			<div id="filters_opener" class="mx-auto mt-1 small"><a id="link_filters"href="#">filters</a>
 			{% fontawesome_icon 'filter' color='#336699' %}
 			</div>
@@ -83,11 +83,33 @@
       </div>
       <div id="result_list" class="hidden"></div>
 	  <div id="splash">
-		<span style="text-align:center;"><img class="i-blk" src="{% static 'images/slide-indicator.png'%}" height='10'/></span>
-		<p>World Historical Gazetteer indexes place references drawn from historical sources, 
-		  adding temporal depth to a core of approximately 1.8 million modern records.</p>
-		<img src="{% static 'images/temporal-depth_splash.png'%}" width='250' />
-		<p>This is a work-in-progress; to date ~60,000 historical references have been added to our index. Blah, blah, and so on..</p>
+		<div id="carouselExampleIndicators" class="carousel slide" data-interval="false" data-ride="carousel">
+		  <ol class="carousel-indicators">
+			<li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
+			<li data-target="#carouselExampleIndicators" data-slide-to="1"></li>
+			<li data-target="#carouselExampleIndicators" data-slide-to="2"></li>
+		  </ol>
+		  <div class="carousel-inner">
+			<div class="carousel-item active">
+			  <p class="mb-1">World Historical Gazetteer indexes place references drawn from historical sources, 
+				adding temporal depth to a core of approximately 1.8 million modern records.</p>
+			  <img src="{% static 'images/temporal-depth_splash.png'%}" width='250' />
+			  <p class="mb-1">This is a work-in-progress; to date ~60,000 temporally scoped place records have been added to our index.</p><p class="mb-1">We are also experimentally indexing 'traces' - annotations of external web resources describing any sort of historical phenomena with places relevant to it.</p><p class="mb-1">Both place and trace indexes can be searched above.</p>
+			</div>
+			<div class="carousel-item">
+			  <p class="mb-1">Registered users can upload place datasets into a private workspace, augment them via reconciliation against Getty Thesaurus of Geographic Names (TGN) and/or Wikidata, publish them as Linked Open Data by flagging them as 'public', and eventually contribute them for accessionng to the WHG index.</p><p>Details are available in the 'Tutorials' and 'About' sections of this site.
+			</div>
+			<div class="carousel-item">
+			  <p>slide 3</p>
+			</div>
+		  </div>
+		  <!--</a>-->
+		</div>	  
+		<!--<span style="text-align:center;"><img class="i-blk" src="{% static 'images/slide-indicator.png'%}" height='10'/></span>-->
+		<!--<p>World Historical Gazetteer indexes place references drawn from historical sources, -->
+		  <!--adding temporal depth to a core of approximately 1.8 million modern records.</p>-->
+		<!--<img src="{% static 'images/temporal-depth_splash.png'%}" width='250' />-->
+		<!--<p>This is a work-in-progress; to date ~60,000 historical references have been added to our index. Blah, blah, and so on..</p>-->
 	  </div>
     </div>
     <div id="home_map" class="col-sm-9">
