@@ -8,86 +8,95 @@
   {% load mathfilters %}
   {% load dataset_extras %}
 
-  <div class="container">
+  <div class="container pt-3">
     {% if messages %}<div>{% for message in messages %}
           <i style="display:block;" class="text-danger ml-4 mb-2">{{ message }}</i>
     {%endfor%}</div>{% endif %}
-    <div id="dataset_list" class="mt-3">
-      <!--{# if messages %}-->
-      <!--<p>{# for message in messages %}{ message }}{# endfor %}</p>-->
-      <!--{# endif %}-->
-      <h4 class="mt-3">Datasets
-        {{ referrer }}<span class="half"><a href="{% url 'datasets:dataset-create' %}" class="ml-5">
-          {% fontawesome_icon 'plus-square' color='#336699' %} add new</a></span>
-      </h4>
-      <div class="list-box">
-        <table class="table table-striped">
-          <thead class="small">
-            <!--<th class="eye">{ fontawesome_icon 'eye' %}</th>-->
-            <th>id</th>
-            <th>name</th>
-            <th>label</th>
-            <th>created (utc)</th>
-            <th>type</th>
-            <th># rows</th>
-            <th>status</th>
-            <th>owner</th>
-          </thead>
-          <tbody>
-            {% for d in dataset_list %}
-              <tr class="place-row">
-                <td>{{ d.id }}</td>
-                <td><a href="{% url 'datasets:dataset-detail' d.id %}" title="Dataset details" rel="tooltip"
-                  >{{ d.title }}</a></td>
-                <td>{% if d.core == True %}
-                      {{ d.label }} <span class="corerow"> (core)</span>
-                    {% else %}{{ d.label }}{% endif %}</td>
-                <!--<td class="small">{ d.create_date|date:"d-M-Y, H:i (e)" }}</td>-->
-                <td class="small">{{ d.create_date|date:"d M Y, H:i" }}</td>
-                <td>{{ d.datatype }}</td>
-                <td><span class="float-right mr-2">{{ d.numrows }}</span></td>
-                <td>{{ d.ds_status }}</td>
-                <td>{{ d.owner }}</td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-    <div class="row">
-      <div id="area_list" class="col-sm-6 mt-3">
-        <h4 class="mt-3">Study Areas
-          <span class="half"><a href="{% url 'areas:area-create' %}" class="ml-5">
-            {% fontawesome_icon 'plus-square' color='#336699' %} <i>create new</i> </a></span></h4>
-        <div class="list-box">
-          <table class="table table-striped">
-            <thead class="small">
+    <ul id="api_tabs" class="nav nav-tabs" role="tablist">
+      <li class="nav-item">
+        <a class="nav-link active" id="mydslist-tab" data-toggle="tab" href="#mydslist" role="tab" aria-controls="dslist" aria-selected="true">My Datasets</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="pubdslist-tab" data-toggle="tab" href="#pubdslist" role="tab" aria-controls="dslist" aria-selected="true">Public Datasets</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="arealist-tab" data-toggle="tab" href="#arealist" role="tab" aria-controls="arealist" aria-selected="false">Study Areas</a>
+      </li>
+    </ul>
+    <div class="tab-content">
+      <div id="mydslist" class="tab-pane fade show active" role="tabpanel" aria-labelledby="mydslist-tab">
+        <p><a href="{% url 'datasets:dataset-create' %}" class="">
+          {% fontawesome_icon 'plus-square' color='#336699' %} add new</a></p>
+        <div id="dataset_list" class="mt-3">
+          <!--<h4 class="mt-3">Datasets-->
+            <!--{ referrer }}<span class="half"><a href="{ url 'datasets:dataset-create' %}" class="ml-5">-->
+              <!--{ fontawesome_icon 'plus-square' color='#336699' %} add new</a></span>-->
+          <!--</h4>-->
+          <div class="list-box">
+            <table class="table table-striped">
+              <thead class="small">
+                <!--<th class="eye">{ fontawesome_icon 'eye' %}</th>-->
                 <th>id</th>
-                <th>title</th>
+                <th>name</th>
+                <th>label</th>
+                <th>created (utc)</th>
                 <th>type</th>
-                <th>ccodes</th>
-            </thead>
-            <tbody>
-              {% for a in area_list %}
-                <tr class="place-row">
-                  <td>{{ a.id }}</td>
-                  <td><a href="{% url 'areas:area-update' a.id %}">{{ a.title }}</a></td>
-                  <td>{{ a.type }}</td>
-                  <td>{{ a.ccodes }}</td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
+                <th># rows</th>
+                <th>status</th>
+                <th>owner</th>
+              </thead>
+              <tbody>
+                {% for d in dataset_list %}
+                  <tr class="place-row">
+                    <td>{{ d.id }}</td>
+                    <td><a href="{% url 'datasets:dataset-detail' d.id %}" title="Dataset details" rel="tooltip"
+                      >{{ d.title }}</a></td>
+                    <td>{% if d.core == True %}
+                          {{ d.label }} <span class="corerow"> (core)</span>
+                        {% else %}{{ d.label }}{% endif %}</td>
+                    <!--<td class="small">{ d.create_date|date:"d-M-Y, H:i (e)" }}</td>-->
+                    <td class="small">{{ d.create_date|date:"d M Y, H:i" }}</td>
+                    <td>{{ d.datatype }}</td>
+                    <td><span class="float-right mr-2">{{ d.numrows }}</span></td>
+                    <td>{{ d.ds_status }}</td>
+                    <td>{{ d.owner }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>        
+      </div>
+      <div id="pubdslist" class="tab-pane fade" role="tabpanel" aria-labelledby="pubdslist-tab">
+      </div>
+      <div id="arealist" class="tab-pane fade " role="tabpanel" aria-labelledby="arealist-tab">
+        <div id="area_list" class="col-sm-6 mt-3">
+          <h4 class="mt-3">Study Areas
+            <span class="half"><a href="{% url 'areas:area-create' %}" class="ml-5">
+              {% fontawesome_icon 'plus-square' color='#336699' %} <i>create new</i> </a></span></h4>
+          <div class="list-box">
+            <table class="table table-striped">
+              <thead class="small">
+                  <th>id</th>
+                  <th>title</th>
+                  <th>type</th>
+                  <th>ccodes</th>
+              </thead>
+              <tbody>
+                {% for a in area_list %}
+                  <tr class="place-row">
+                    <td>{{ a.id }}</td>
+                    <td><a href="{% url 'areas:area-update' a.id %}">{{ a.title }}</a></td>
+                    <td>{{ a.type }}</td>
+                    <td>{{ a.ccodes }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
-      <div id="collection_list" class="col-sm-6 mt-3 text-secondary">
-        <h4 class="mt-3">Collections<span class="half pl-3"> 
-          <!--<a href="{ url 'areas:area-create' %}" class="ml-5">-->
-            {% fontawesome_icon 'plus-square' color='#336699' %}</span>
-          <!--</a>-->
-        </h4>
-        <div class="list-box"><p>User collections of place and trace records (<i>future</i>)</p></div>
-      </div>
+    </div>    
   </div>
   <script>
     $("[rel='tooltip']").tooltip();
