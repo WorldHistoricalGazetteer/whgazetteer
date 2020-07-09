@@ -103,7 +103,7 @@
 	$(function(){
 		abouts = ['/about/','/community/','/system/','/licensing/','/credits/']
 	  clicked = window.location.pathname
-	  console.log(clicked)
+	  <!--console.log(clicked)-->
 	  <!--$("[href='"+clicked+"']").addClass('navactive')-->
 	  if($.inArray(clicked, abouts) > -1) {
 		console.log('in abouts')
@@ -111,10 +111,7 @@
 	  } else {
 		$("[href='"+clicked+"']").addClass('navactive')
 	  }
-	  console.log($("#navbarNavAltMarkup .nav-item"))
-	  $("#navbarNavAltMarkup .nav-item").on('click', function(){
-	  $(this).addClass('active')})
-	  });  
+	});  
 </script>
   
 </body>
