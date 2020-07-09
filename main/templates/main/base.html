@@ -52,9 +52,6 @@
 		  
         <div class="collapse navbar-collapse pt-1" id="navbarNavAltMarkup">
           <div class="navbar-nav ml-auto pt-2">
-            <!--<li class="nav-item">-->
-              <!--<a class="nav-link" href="{ url 'maps_home' %}">Maps</a>-->
-            <!--</li>-->
             <li class="nav-item">
               <a class="nav-link" href="{% url 'usingapi' %}">API</a>
             </li>
@@ -102,7 +99,23 @@
   </header>
   {% block content %}
   {% endblock %}
-
+<script type="text/javascript">
+	$(function(){
+		abouts = ['/about/','/community/','/system/','/licensing/','/credits/']
+	  clicked = window.location.pathname
+	  console.log(clicked)
+	  <!--$("[href='"+clicked+"']").addClass('navactive')-->
+	  if($.inArray(clicked, abouts) > -1) {
+		console.log('in abouts')
+		$("#aboutDropdown").addClass('navactive')
+	  } else {
+		$("[href='"+clicked+"']").addClass('navactive')
+	  }
+	  console.log($("#navbarNavAltMarkup .nav-item"))
+	  $("#navbarNavAltMarkup .nav-item").on('click', function(){
+	  $(this).addClass('active')})
+	  });  
+</script>
   
 </body>
 </html>

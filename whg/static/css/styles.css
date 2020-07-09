@@ -120,6 +120,7 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
 /**
   home, search
 **/
+.navactive {color:#993300 !important; font-weight:bold;}
 .carousel-indicators {position:relative; bottom:0;}
 .carousel-indicators li {background-color:#993300;}
 .carousel-indicators .active {background-color:#ccc;}
