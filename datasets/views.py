@@ -1269,14 +1269,14 @@ class DashboardView(LoginRequiredMixin, ListView):
   template_name = 'datasets/dashboard.html'
 
   def get_queryset(self):
-    # TODO: make .team() a method on User
+    # 
     me = self.request.user
     if me.is_superuser:
       print('in get_queryset() if',me)
       return Dataset.objects.all().order_by('ds_status','-core','-id')
     else:
-      # returns permitted datasets (rw) + black and dplace (ro)
-      return Dataset.objects.filter( Q(id__in=myprojects(me)) | Q(owner=me) | Q(id__lt=3)).order_by('-id')
+      #return Dataset.objects.filter( Q(id__in=myprojects(me)) | Q(owner=me) | Q(id__lt=3)).order_by('-id')
+      return Dataset.objects.filter( Q(owner=me) ).order_by('-id')
 
 
   def get_context_data(self, *args, **kwargs):
@@ -1285,6 +1285,9 @@ class DashboardView(LoginRequiredMixin, ListView):
     print('in get_context',me)
 
     types_ok=['ccodes','copied','drawn']
+    # returns permitted datasets (rw) + black and dplace (ro)
+    context['shared_list'] = Dataset.objects.filter(Q(id__in=myprojects(me)) | Q(id__lt=3) ).order_by('-id')
+    
     # list areas
     userareas = Area.objects.all().filter(type__in=types_ok).order_by('created')
     context['area_list'] = userareas if me.is_superuser else userareas.filter(owner=self.request.user)
