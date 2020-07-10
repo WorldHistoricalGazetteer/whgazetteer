@@ -49,7 +49,11 @@
 		</a>
 		<div class="small">
 		  <span id="beta_badge" class="badge badge-warning">BETA 0.6</span>
-		  <span id="beta_links"><a href="{% url 'main:tute-beta' %}">site tour</a> | <a href="{% url 'feedback' %}">feedback</a></span></div>
+		  <span id="beta_links"><a href="{% url 'main:tute-beta' %}">site tour</a> | 
+			<!--<a href="{ url 'feedback' %}" class="feedback">feedback</a>-->
+			<a href="#" class="feedback">feedback</a>
+		  </span>
+		</div>
         <div class="collapse navbar-collapse pt-1" id="navbarNavAltMarkup">
           <div class="navbar-nav ml-auto pt-2">
             <li class="nav-item">
@@ -114,7 +118,21 @@
 	  } else {
 		$("[href='"+clicked+"']").addClass('navactive')
 	  }
-	});  
+	  
+	  $('[data-toggle="popover"]').popover(
+		{ template:'<div class="popover" role="tooltip"><div class="arrow"></div><h1 class="popover-header"></h1><div class="popover-body"></div></div>',
+		  html: true
+		}
+	  )
+	});
+	$(".feedback").click(function(){
+	  console.log(clicked)
+	  <!--from_url=window.location.pathname-->
+	  url=window.location.href="/feedback?from="+clicked
+	  <!--url = "{ url 'feedback' %}"-->
+	  window.location.href=url
+	  console.log('gwine to feedback form, from clicked',url)
+	})
 </script>
   
 </body>

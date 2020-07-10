@@ -49,6 +49,8 @@ def statusView(request):
     return render(request, "main/status.html", {"context":context})
 
 def feedbackView(request):
+    print('feedback request.GET',request.GET)
+    sending_url = request.GET.get('from')
     if request.method == 'GET':
         form = FeedbackForm()
     else:
@@ -62,7 +64,8 @@ def feedbackView(request):
                 send_mail(subject, message, from_email, ['whg@pitt.edu', "karl.geog@gmail.com"])
             except BadHeaderError:
                 return HttpResponse('Invalid header found.')
-            return redirect('success')
+            #return redirect('success')
+            return redirect(sending_url)
     return render(request, "main/feedback.html", {'form': form})
 
 def feedbackSuccessView(request):

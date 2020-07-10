@@ -40,6 +40,7 @@ urlpatterns = [
     
     path('comment/<int:rec_id>', views.CommentCreateView.as_view(), name='comment-create'),
     path('feedback/', views.feedbackView, name='feedback'),
+    #path('feedback/<str:fromurl>', views.feedbackView, name='feedback'),
     path('success/', views.feedbackSuccessView, name='success'),    
     path('status/', views.statusView, name='status'),
     

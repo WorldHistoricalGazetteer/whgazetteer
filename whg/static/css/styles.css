@@ -130,6 +130,7 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
 .active-filter {font-weight:bold; color:#993333;}
 #search_input label { position:absolute; right: 20px; z-index:10;}
 #search_input label:hover { cursor:pointer;}
+/*#filter_help {position:absolute; top:35px; right:3px;}*/
 #filters {
   background-color: #fff;
   font-size: small;
@@ -232,9 +233,11 @@ input[type="text"] {
 #options { padding:2px; display:none;}
 #searchbox { height: auto;}
 #search_input { border-bottom: 1px dashed #ddd;}
+
+#search_filters {position:relative;}
 #search_filters p, #search_filters label{
-  font-size: .75rem;
-  font-variant: small-caps;
+  font-size: .8rem;
+  /*font-variant: small-caps;*/
   color: #993333;
 }
 #result_list {

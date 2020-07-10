@@ -53,24 +53,33 @@
 			</div>
 		  </div>
         <div id="search_filters" class="hidden">
-          <p class="mb-0">feature category 
-            <span class="ml-1">
-			  <a href="#" data-html="true" onClick='return false;' title="A=administrative; H=hydrological; L=landscape; P=settlements;<br/> S='sites';<br/> T=topographical" rel="tooltip">key</a></span>  
-            <!--<span class="float-right"><a href="#">clear all</a></span>-->
-          </p>
+          <p class="mb-0">feature class 
+            <span class="ml-1 float-right">
+		  <a id="filter_help" data-toggle="popover" title="Feature classes" data-content="" tabindex="0" data-trigger="focus">
+			  {% fontawesome_icon 'question-circle' color='#993300' %}</a></span>
+		  </p>
+          <div>
           <label class="checkbox-inline fclass"><input type="checkbox" value="A"> A&nbsp;</label>
           <label class="checkbox-inline fclass"><input type="checkbox" value="H"> H&nbsp;</label>
           <label class="checkbox-inline fclass"><input type="checkbox" value="L"> L&nbsp;</label> 
           <label class="checkbox-inline fclass"><input type="checkbox" value="P" checked> P&nbsp;</label> 
           <label class="checkbox-inline fclass"><input type="checkbox" value="S"> S&nbsp;</label> 
-          <label class="checkbox-inline fclass"><input type="checkbox" value="T"> T&nbsp;</label> 
-          
-          <p class="mb-0">temporal</p>
+          <label class="checkbox-inline fclass"><input type="checkbox" value="T"> T&nbsp;</label>
+		  </div>
+          <p class="mb-0">temporal
+			<span class="float-right"><a id="temporal_help" data-toggle="popover" title="Temporal filter" data-content="start = not before<br/>end = not after <p>NOTE: most records do not have temporal attributes at this stage</p>" tabindex="0" data-trigger="focus">
+			  {% fontawesome_icon 'question-circle' color='#993300' %}</a></span>
+		  </p>
           <div>
             <label class="input-sm">start <input id="input_start" type="text" value = "" size="5"></label>
-            <label class="input-sm ml-2">end <input id="input_end" type="text" value = "" size="5"><span class="ml-2">( default = all )</span></label>
+            <label class="input-sm ml-2">end <input id="input_end" type="text" value = "" size="5">
+			<span class="ml-2">( default = all)</span></label>
           </div>
-          <p class="mb-0">spatial</p>
+          <p class="mb-0">spatial
+			<span class="float-right">
+			<a id="spatial_help" data-toggle="popover" title="Spatial filter" data-content="" tabindex="0" data-trigger="focus">
+			  {% fontawesome_icon 'question-circle' color='#993300' %}</a></span>	  
+		  </p>
           <div>
             <label><input id="input_area" type="text" size="30" placeholder="Region, country, study area"></label>
             <input type="hidden" id="boundsobj">
@@ -144,6 +153,13 @@
   window.area_objs = []
       
   $(function(){
+	$("#filter_help").attr(
+	  'data-content',"<p>GeoNames single-letter codes:</p>"+
+	  "<p>A=administrative areas<br/> H=hydrological features<br/> L='landscape' elements, e.g. regions<br/> P=settlements (cities, towns, etc.)<br/>S='sites' (various)<br/> T=topographical features</p>"
+	)
+	$("#spatial_help").attr(
+	  'data-content',"<p>Autocomplete lookup on global regions (UN) and your user-created study areas. Try 'north...' e.g.</p>"
+	)
     $("[rel='tooltip']").tooltip();
     
     $("#filters").hide();
