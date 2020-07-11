@@ -238,7 +238,7 @@ class SearchAPIView(generics.ListAPIView):
     fclasses=[x.upper() for x in fc.split(',')] if fc else None
     year = params.get('year',None)
     count = params.get('count',None)
-
+    err_note = None
     print('SearchAPIView() params',params)
     qs = Place.objects.all()
 
@@ -249,6 +249,7 @@ class SearchAPIView(generics.ListAPIView):
     else:
       if id_:
         qs=qs.filter(id=id_)
+        err_note = 'id given, other parameters ignored' if len(params.keys())>1 else None
       else:
         qs = qs.filter(minmax__0__lte=year,minmax__1__gte=year) if year else qs
         qs = qs.filter(fclasses__overlap=fclasses) if fc else qs
@@ -263,7 +264,11 @@ class SearchAPIView(generics.ListAPIView):
       filtered = qs[:count] if count else qs[:10]
       serializer = LPFSerializer(filtered, many=True, context={'request': self.request})
       serialized_data = serializer.data
-      result = {"count":qs.count(),"parameters": params,"features":serialized_data}
+      result = {"count":qs.count(),
+                "parameters": params,
+                "note": err_note,
+                "features":serialized_data
+                }
       return JsonResponse(result, safe=False,json_dumps_params={'ensure_ascii':False,'indent':2})
 
 

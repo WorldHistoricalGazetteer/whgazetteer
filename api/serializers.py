@@ -209,16 +209,20 @@ class LPFSerializer(serializers.HyperlinkedModelSerializer):
     type = serializers.SerializerMethodField('get_type')
     def get_type(self,place):
         return "Feature"
+    
     properties = serializers.SerializerMethodField('get_properties')
     def get_properties(self,place):
         props = {
+            "place_id":place.id,
+            "dataset":place.dataset.label,
             "src_id":place.src_id,
             "title":place.title,
-            "whg_placeid":place.id,
-            "dataset":place.dataset.label,
-            "ccodes":place.ccodes
+            "ccodes":place.ccodes,
+            "minmax":place.minmax,
+            "timespans":place.timespans
         }
         return props
+    
     geometry = serializers.SerializerMethodField('get_geometry')
     # {"type": "Point", "geowkt": "POINT(110.6 0.13333)", "coordinates": [110.6, 0.13333]}
     def get_geometry(self,place):
@@ -227,18 +231,26 @@ class LPFSerializer(serializers.HyperlinkedModelSerializer):
         for g in geoms:
             gcoll["geometries"].append(g)
         return gcoll
-    minmax = serializers.SerializerMethodField('get_minmax')
-    def get_minmax(self,place):
-        tsarr=[n.jsonb['timespans'][0] for n in place.whens.all() if place.whens.count()>0]
-        tsarr=tsarr+[n.jsonb['when']['timespans'][0] for n in place.names.all() if 'when' in n.jsonb]
-        tsarr=tsarr+[t.jsonb['when']['timespans'][0] for t in place.types.all() if 'when' in t.jsonb]
-        tsarr=tsarr+[g.jsonb['when']['timespans'][0] for g in place.geoms.all() if 'when' in g.jsonb]
-        starts=[];ends=[];years=[];nullset=set([None]);
-        for ts in tsarr:
-            years.append(int(list(ts['start'].values())[0]))
-            years.append(int(list(ts['end'].values())[0]) if 'end' in ts.keys() else None)
-            years = list(set(years)-nullset)
-        return [min(years),max(years)] if len(years)>0 else []
+    
+    # TODO: minmax and timespans now fields in Place model
+    #minmax = serializers.SerializerMethodField('get_minmax')
+    #def get_minmax(self,place):
+        #tsarr=[n.jsonb['timespans'][0] for n in place.whens.all() if place.whens.count()>0]
+        #tsarr=tsarr+[n.jsonb['when']['timespans'][0] for n in place.names.all() if 'when' in n.jsonb]
+        #tsarr=tsarr+[t.jsonb['when']['timespans'][0] for t in place.types.all() if 'when' in t.jsonb]
+        #tsarr=tsarr+[g.jsonb['when']['timespans'][0] for g in place.geoms.all() if 'when' in g.jsonb]
+
+        #tsarr=[n.jsonb['timespans'] for n in place.whens.all() if place.whens.count()>0][0]
+        #tsarr=tsarr+[n.jsonb['when']['timespans'] for n in place.names.all() if 'when' in n.jsonb][0]
+        #tsarr=tsarr+[t.jsonb['when']['timespans'] for t in place.types.all() if 'when' in t.jsonb][0]
+        #tsarr=tsarr+[g.jsonb['when']['timespans'] for g in place.geoms.all() if 'when' in g.jsonb][0]
+
+        #starts=[];ends=[];years=[];nullset=set([None]);
+        #for ts in tsarr:
+            #years.append(int(list(ts['start'].values())[0]))
+            #years.append(int(list(ts['end'].values())[0]) if 'end' in ts.keys() else None)
+            #years = list(set(years)-nullset)
+        #return [min(years),max(years)] if len(years)>0 else []
     
 
     
