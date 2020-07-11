@@ -333,7 +333,11 @@ em { color: #993333;}
 }
 #place_traces {
   max-height: 120px;
-  overflow-y:scroll;
+  /*overflow-y:scroll;*/
+}
+#trace_list {
+  max-height: 90px;
+  overflow-y:scroll
 }
 .truncate {
   max-height: 125px;
