@@ -2,7 +2,7 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User, Group
 #from django.contrib.postgres import search
-#from django.core import serializers
+from django.core import serializers
 from django.db.models import Q
 from django.http import JsonResponse, HttpResponse#, FileResponse
 from django.shortcuts import get_object_or_404
@@ -229,8 +229,9 @@ class SearchAPIView(generics.ListAPIView):
   #def get_queryset(self, format=None):
   def get(self, format=None, *args, **kwargs):
     params=self.request.query_params
+    id_ = params.get('id',None)
     name = params.get('name',None)
-    name_contains = params.get('name_contains')
+    name_contains = params.get('name_contains',None)
     cc = map(str.upper,params.get('ccode').split(',')) if params.get('ccode') else None
     ds = params.get('dataset',None)
     fc = params.get('fclass',None)
@@ -241,27 +242,29 @@ class SearchAPIView(generics.ListAPIView):
     print('SearchAPIView() params',params)
     qs = Place.objects.all()
 
-    if name is None and name_contains is None:
+    if all(v is None for v in [name,name_contains,id_]):
       # TODO: return a template with API instructions
-      return HttpResponse(content=b'<h3>Needs either a "name" or "name_contains" parameter at \
-          minimum <br/>(e.g. ?name=myplacename or ?name_contains=astring)</h3>')
+      return HttpResponse(content=b'<h3>Needs either a "name", a "name_contains", or "id" parameter at \
+          minimum <br/>(e.g. ?name=myplacename or ?name_contains=astring or ?id=integer)</h3>')
     else:
-      qs = qs.filter(minmax__0__lte=year,minmax__1__gte=year) if year else qs
-      qs = qs.filter(fclasses__overlap=fclasses) if fc else qs
-      #if contains and contains != '':
-      if name_contains:
-        qs = qs.filter(title__icontains=name_contains)
-      elif name and name != '':
-        qs = qs.filter(title__istartswith=name)
-
-      qs = qs.filter(dataset=ds) if ds else qs
-      qs = qs.filter(ccodes__overlap=cc) if cc else qs
+      if id_:
+        qs=qs.filter(id=id_)
+      else:
+        qs = qs.filter(minmax__0__lte=year,minmax__1__gte=year) if year else qs
+        qs = qs.filter(fclasses__overlap=fclasses) if fc else qs
+  
+        if name_contains:
+          qs = qs.filter(title__icontains=name_contains)
+        elif name and name != '':
+          qs = qs.filter(title__istartswith=name)
+  
+        qs = qs.filter(dataset=ds) if ds else qs
+        qs = qs.filter(ccodes__overlap=cc) if cc else qs
       filtered = qs[:count] if count else qs[:10]
       serializer = LPFSerializer(filtered, many=True, context={'request': self.request})
       serialized_data = serializer.data
       result = {"count":qs.count(),"parameters": params,"features":serialized_data}
       return JsonResponse(result, safe=False,json_dumps_params={'ensure_ascii':False,'indent':2})
-      #return Response(result)
 
 
 """ 
