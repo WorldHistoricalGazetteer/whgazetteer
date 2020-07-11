@@ -213,13 +213,11 @@ class IndexAPIView(View):
     return JsonResponse(result, safe=False,json_dumps_params={'ensure_ascii':False,'indent':2})
 
 """ 
-    /api?
-    return lpf results from database search 
-    q <str>, contains <str>, dataset <str>, ccode (xx[|,..]),
-    class [A,P,T,L,H], year <int>, range <int>,<int>
-
+  SearchAPIView()
+  /api/db?
+  return lpf results from database search 
+  
 """
-#class SearchAPIView(APIView):
 class SearchAPIView(generics.ListAPIView):
   #serializer_class = LPFSerializer
   renderer_classes = [JSONRenderer]
@@ -237,10 +235,10 @@ class SearchAPIView(generics.ListAPIView):
     fc = params.get('fclass',None)
     fclasses=[x.upper() for x in fc.split(',')] if fc else None
     year = params.get('year',None)
-    count = params.get('count',None)
+    maxrows = params.get('maxrows',None)
     err_note = None
     print('SearchAPIView() params',params)
-    qs = Place.objects.all()
+    qs = Place.objects.filter(dataset__public=True)
 
     if all(v is None for v in [name,name_contains,id_]):
       # TODO: return a template with API instructions
@@ -261,7 +259,8 @@ class SearchAPIView(generics.ListAPIView):
   
         qs = qs.filter(dataset=ds) if ds else qs
         qs = qs.filter(ccodes__overlap=cc) if cc else qs
-      filtered = qs[:count] if count else qs[:10]
+        
+      filtered = qs[:maxrows] if maxrows and maxrows < 200 else qs[:20]
       serializer = LPFSerializer(filtered, many=True, context={'request': self.request})
       serialized_data = serializer.data
       result = {"count":qs.count(),
@@ -269,6 +268,7 @@ class SearchAPIView(generics.ListAPIView):
                 "note": err_note,
                 "features":serialized_data
                 }
+      #print('place result',result)
       return JsonResponse(result, safe=False,json_dumps_params={'ensure_ascii':False,'indent':2})
 
 
@@ -291,6 +291,90 @@ class PlaceAPIView(generics.ListAPIView):
     return qs
 
   permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
+
+
+"""
+  /api/datasets?
+  identical to places
+    
+"""
+class DatasetSearchView(generics.ListAPIView):
+  """    List public datasets    """
+  renderer_classes = [JSONRenderer]
+  filter_backends = [filters.SearchFilter]
+  
+  def get_queryset(self, format=None, *args, **kwargs):
+    params=self.request.query_params  
+    print('api/datasets request',self.request)
+    
+    id_ = params.get('id', None)
+    dslabel = params.get('label', None)
+    query = params.get('q', None)
+    
+    qs = Dataset.objects.filter(public=True).order_by('label')
+    
+    if id_:
+      qs = qs.filter(id = id_)
+    elif dslabel:
+      qs = qs.filter(label = dslabel)
+    elif query is not None:
+      qs = qs.filter(Q(description__icontains=query) | Q(title__icontains=query))
+
+    print('qs',qs)
+    #serializer = DatasetSerializer(qs, many=True, context={'request': self.request})
+    serializer = DatasetSerializer(qs, context={'request': self.request})
+    serialized_data = serializer.data
+    #print('serialized_data',serialized_data)
+    result = {
+              "count":qs.count(),
+              "parameters": params,
+              "features":serialized_data
+              #"features":qs
+              }
+    print('ds result type, value',type(result),result)
+    #return qs
+    #return result
+    return JsonResponse(result, safe=False,json_dumps_params={'ensure_ascii':False,'indent':2})
+    
+class DatasetAPIView(LoginRequiredMixin, generics.ListAPIView):
+  """    List public datasets    """
+  serializer_class = DatasetSerializer
+  renderer_classes = [JSONRenderer]
+
+  def get_queryset(self, format=None, *args, **kwargs):
+    params=self.request.query_params  
+    print('api/datasets params',params)
+    id_ = params.get('id', None)
+    dslabel = params.get('label', None)
+    query = params.get('q', None)
+    
+    qs = Dataset.objects.filter(public=True).order_by('label')
+    
+    if id_:
+      qs = qs.filter(id = id_)
+    elif dslabel:
+      qs = qs.filter(label = dslabel)
+    elif query is not None:
+      qs = qs.filter(Q(description__icontains=query) | Q(title__icontains=query))
+
+    print('qs',qs)
+    #serializer = DatasetSerializer(qs, many=True, context={'request': self.request})
+    #serialized_data = serializer.data
+    #print('serialized_data',serialized_data)
+    result = {
+              "count":qs.count(),
+              "parameters": params,
+              #"features":serialized_data
+              "features":qs
+              }
+    print('ds result',result,type(result))
+    return qs
+    #return result
+    #return JsonResponse(result, safe=False,json_dumps_params={'ensure_ascii':False,'indent':2})
+    #return JsonResponse({'data':result}, safe=False)
+
+  #permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
+  #authentication_classes = [SessionAuthentication]
 
 class UserList(generics.ListAPIView):
   queryset = User.objects.all()
@@ -335,7 +419,9 @@ class DownloadDatasetAPIView(generics.ListAPIView):
 
   permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
 
-# API 'home page' (not implemented)
+"""
+  API 'home page' (not implemented)
+"""
 @api_view(['GET'])
 def api_root(request, format=None):
   return Response({
@@ -425,6 +511,7 @@ class PlaceTableViewSet(viewsets.ModelViewSet):
       permission_classes = [permissions.IsAdminUser]
     return [permission() for permission in permission_classes]
 
+
 """
   areas/
 
@@ -465,6 +552,7 @@ class AreaFeaturesView(View):
     return JsonResponse(areas, safe=False)  
   
 
+
 """
     area/<int:pk>/
     in dataset.html#addtask
@@ -473,56 +561,9 @@ class AreaViewSet(viewsets.ModelViewSet):
   queryset = Area.objects.all().order_by('title')
   serializer_class = AreaSerializer
 
-"""
-    search index e.g. union/?idx=whg&_id=12345979
-    in usingapi.html example
-"""
-#class indexAPIView(View):
-  #@staticmethod
-  #def get(request):
-    #print('in indexAPIView, GET =',request.GET)
-    #"""
-        #args in request.GET:
-        #[string] idx: latest name for whg index
-        #[string] _id: same as whg_id in index
-        #"""
-    #es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
-    #idx = request.GET.get('idx')
-    #_id = request.GET.get('_id')
-    #q={"query": {"bool": {"must": [{"match":{"_id": _id }}]}}}
-    #res = es.search(index=idx, doc_type='place', body=q)
-    ## single hit (it's a unique id after all)
-    #hit = res['hits']['hits'][0]
-    #print('hit[_id] from indexAPIView()',hit['_id'])
-    ## now get traces
-    ## does hit have children?
-
-    ##qt={"query": {"bool": {"must": [{"match":{"_id": _id }}]}}}
-    ##res_t = es.search(index="traces", doc_type='trace', body=q)
-    ##print('indexAPIView _id',_id)
-    #print('indexAPIView hit',hit)
-    #return JsonResponse(hit, safe=True)
 
 
 
-"""
-    datasets/
-    in usingapi.html example
-"""
-class DatasetAPIView(LoginRequiredMixin, generics.ListAPIView):
-  """    List public datasets    """
-  serializer_class = DatasetSerializer
-  #pagination_class = StandardResultsSetPagination
-
-  def get_queryset(self, format=None):
-    qs = Dataset.objects.all().filter(public=True).order_by('label')
-    query = self.request.GET.get('q')
-    if query is not None:
-      qs = qs.filter(description__icontains=query)
-    return qs
-
-  permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
-  authentication_classes = [SessionAuthentication]
 
 """
     dataset/<int:pk>/
@@ -563,4 +604,34 @@ class DatasetDetailAPIView(LoginRequiredMixin, generics.RetrieveAPIView):
     #return qs
 
   #permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
+
+"""
+    search index e.g. union/?idx=whg&_id=12345979
+    in usingapi.html example
+"""
+#class indexAPIView(View):
+  #@staticmethod
+  #def get(request):
+    #print('in indexAPIView, GET =',request.GET)
+    #"""
+        #args in request.GET:
+        #[string] idx: latest name for whg index
+        #[string] _id: same as whg_id in index
+        #"""
+    #es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+    #idx = request.GET.get('idx')
+    #_id = request.GET.get('_id')
+    #q={"query": {"bool": {"must": [{"match":{"_id": _id }}]}}}
+    #res = es.search(index=idx, doc_type='place', body=q)
+    ## single hit (it's a unique id after all)
+    #hit = res['hits']['hits'][0]
+    #print('hit[_id] from indexAPIView()',hit['_id'])
+    ## now get traces
+    ## does hit have children?
+
+    ##qt={"query": {"bool": {"must": [{"match":{"_id": _id }}]}}}
+    ##res_t = es.search(index="traces", doc_type='trace', body=q)
+    ##print('indexAPIView _id',_id)
+    #print('indexAPIView hit',hit)
+    #return JsonResponse(hit, safe=True)
 

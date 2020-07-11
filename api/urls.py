@@ -20,10 +20,9 @@ urlpatterns = [
 
     # *** DATASETS ***
 
-    # use > list public datasets in usingapi.html :: DatasetSerializer
+    # use > query public datasets :: DatasetSerializer
     path('datasets/', views.DatasetAPIView.as_view(), name='dataset-list'),
-    # use > single dataset record in usingapi.html :: DatasetSerializer
-    path('dataset/<int:pk>/', views.DatasetDetailAPIView.as_view(),name='dataset-detail'),
+    #path('datasets/', views.DatasetSearchView.as_view(), name='dataset-search'),
     
     # FOR DOWNLOAD
     # db places in a dataset, lp format :: PlaceSerializer

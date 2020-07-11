@@ -25,16 +25,19 @@ total_links = models.IntegerField(null=True, blank=True)
 # IN USE Apr 2020
 # ***
 class DatasetSerializer(serializers.HyperlinkedModelSerializer):
-#class DatasetSerializer(serializers.ModelSerializer):
     # don't list all places in a dataset API record
     owner = serializers.ReadOnlyField(source='owner.username')
     #files = serializers.HyperlinkedRelatedField(
         #many=True, view_name='datasetfile-detail', read_only=True)
+        
+    place_count = serializers.SerializerMethodField('get_count')
+    def get_count(self,ds):
+        return ds.places.count()
 
     class Meta:
         model = Dataset
-        fields = ('id', 'owner', 'label', 'title', 'description',
-            'datatype', 'ds_status', 'create_date', 'public','core')
+        fields = ('id', 'place_count', 'owner', 'label', 'title', 'description',
+            'datatype', 'ds_status', 'create_date', 'public', 'core',)
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
     datasets = serializers.HyperlinkedRelatedField(
@@ -218,8 +221,8 @@ class LPFSerializer(serializers.HyperlinkedModelSerializer):
             "src_id":place.src_id,
             "title":place.title,
             "ccodes":place.ccodes,
-            "minmax":place.minmax,
-            "timespans":place.timespans
+            "minmax":place.minmax
+            #"timespans":place.timespans
         }
         return props
     
