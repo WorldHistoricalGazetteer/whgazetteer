@@ -170,7 +170,7 @@ class PlaceSerializer(serializers.ModelSerializer):
 
 """ used by: DownloadGeomsAPIView() """
 class FeatureSerializer(GeoFeatureModelSerializer):
-    geom = GeometrySerializerMethodField()
+    geom = GeometrySerializerMethodField('get_geom')
     def get_geom(self, obj):
         print('obj',obj.__dict__)
         s=json.dumps(obj.jsonb)
@@ -196,7 +196,6 @@ class AreaSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Area
         fields = ('title', 'type', 'geojson')
-
 
 class LPFSerializer(serializers.HyperlinkedModelSerializer):
     #dataset = serializers.ReadOnlyField(source='dataset.label')
@@ -234,28 +233,6 @@ class LPFSerializer(serializers.HyperlinkedModelSerializer):
         for g in geoms:
             gcoll["geometries"].append(g)
         return gcoll
-    
-    # TODO: minmax and timespans now fields in Place model
-    #minmax = serializers.SerializerMethodField('get_minmax')
-    #def get_minmax(self,place):
-        #tsarr=[n.jsonb['timespans'][0] for n in place.whens.all() if place.whens.count()>0]
-        #tsarr=tsarr+[n.jsonb['when']['timespans'][0] for n in place.names.all() if 'when' in n.jsonb]
-        #tsarr=tsarr+[t.jsonb['when']['timespans'][0] for t in place.types.all() if 'when' in t.jsonb]
-        #tsarr=tsarr+[g.jsonb['when']['timespans'][0] for g in place.geoms.all() if 'when' in g.jsonb]
-
-        #tsarr=[n.jsonb['timespans'] for n in place.whens.all() if place.whens.count()>0][0]
-        #tsarr=tsarr+[n.jsonb['when']['timespans'] for n in place.names.all() if 'when' in n.jsonb][0]
-        #tsarr=tsarr+[t.jsonb['when']['timespans'] for t in place.types.all() if 'when' in t.jsonb][0]
-        #tsarr=tsarr+[g.jsonb['when']['timespans'] for g in place.geoms.all() if 'when' in g.jsonb][0]
-
-        #starts=[];ends=[];years=[];nullset=set([None]);
-        #for ts in tsarr:
-            #years.append(int(list(ts['start'].values())[0]))
-            #years.append(int(list(ts['end'].values())[0]) if 'end' in ts.keys() else None)
-            #years = list(set(years)-nullset)
-        #return [min(years),max(years)] if len(years)>0 else []
-    
-
     
     class Meta:
         model = Place

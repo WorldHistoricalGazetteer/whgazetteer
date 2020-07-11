@@ -354,13 +354,10 @@ class DatasetAPIView(LoginRequiredMixin, generics.ListAPIView):
       qs = qs.filter(id = id_)
     elif dslabel:
       qs = qs.filter(label = dslabel)
-    elif query is not None:
+    elif query:
       qs = qs.filter(Q(description__icontains=query) | Q(title__icontains=query))
 
     print('qs',qs)
-    #serializer = DatasetSerializer(qs, many=True, context={'request': self.request})
-    #serialized_data = serializer.data
-    #print('serialized_data',serialized_data)
     result = {
               "count":qs.count(),
               "parameters": params,
@@ -369,13 +366,42 @@ class DatasetAPIView(LoginRequiredMixin, generics.ListAPIView):
               }
     print('ds result',result,type(result))
     return qs
-    #return result
-    #return JsonResponse(result, safe=False,json_dumps_params={'ensure_ascii':False,'indent':2})
-    #return JsonResponse({'data':result}, safe=False)
 
-  #permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
-  #authentication_classes = [SessionAuthentication]
-
+"""
+  /api/areas?
+"""
+# geojson feature for api
+class AreaFeaturesView(generics.ListAPIView):
+  #@staticmethod
+  
+  def get(self, format=None, *args, **kwargs):
+    params=self.request.query_params  
+    user = self.request.user
+    print('api/areas request',self.request)
+    
+    id_ = params.get('id', None)
+    query = params.get('q', None)
+    
+    areas = []
+    qs = Area.objects.all().filter((Q(type='predefined') | Q(owner=user))).values('id','title','type','description','geojson')
+    
+    # filter for parameters
+    if id_:
+      qs=qs.filter(id=id_)
+    if query:
+      qs = qs.filter(title__icontains=query)
+      
+    for a in qs:
+      #area = {"id":a['id'],"title":a['title'],"type":a['type']}
+      feat = {
+        "type":"Feature",
+        "properties":{"id":a['id'],"title":a['title'],"type":a['type'],"description":a['description']},
+        "geometry":a['geojson']
+      }
+      areas.append(feat)
+      
+    return JsonResponse(areas, safe=False)  
+  
 class UserList(generics.ListAPIView):
   queryset = User.objects.all()
   serializer_class = UserSerializer
@@ -520,39 +546,16 @@ class PlaceTableViewSet(viewsets.ModelViewSet):
 class AreaListView(View):
   @staticmethod
   def get(request):
-    #user = request.user
-    print('requst.GET',request.GET, request.user)
-    area_list = []
-    #areas_obj = {}
-    qs = Area.objects.filter(Q(type='predefined') | Q(owner=request.user)).values_list('id','title')
-    for a in qs:
-      area_list.append({"id": a[0], "title": a[1]})
-      #areas_obj[a[1]] = a[0]
-      
-    return JsonResponse(area_list, safe=False)
-    #return JsonResponse(areas_obj, safe=False)
-  
-# geojson feature for map, dropdown
-class AreaFeaturesView(View):
-  @staticmethod
-  def get(request):
     user = request.user
-    print('requst.GET',request.GET, user)
-    areas = []
-    #qs = Area.objects.all().filter((Q(type='predefined') | Q(owner=user))).values('id','title','geojson','type')
-    qs = Area.objects.all().filter((Q(type='predefined') | Q(owner=user))).values('id','title','type')
+    area_list = []
+    qs = Area.objects.all().filter(Q(type='predefined') | Q(owner=request.user)).values('id','title','type')
     for a in qs:
       area = {"id":a['id'],"title":a['title'],"type":a['type']}
-      #feat = {
-        #"type":"Feature",
-        #"geometry":a['geojson'],
-        #"properties":{"id":a['id'],"title":a['title'],"type":a['type']}}
-      areas.append(area)
+      area_list.append(area)
       
-    return JsonResponse(areas, safe=False)  
+    return JsonResponse(area_list, safe=False)
+
   
-
-
 """
     area/<int:pk>/
     in dataset.html#addtask

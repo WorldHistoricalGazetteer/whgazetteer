@@ -53,7 +53,7 @@ urlpatterns = [
     path('area/<int:pk>/', views.AreaViewSet.as_view({'get': 'retrieve'}),name='area-detail'),
     # returns list of simple objects (id, title) for home>autocomplete
     path('area_list/', views.AreaListView.as_view(),name='area-list'),    
-    # geojson for home page map
+    # geojson for api
     path('area_features/', views.AreaFeaturesView.as_view(),name='area-features'),    
     
     # 

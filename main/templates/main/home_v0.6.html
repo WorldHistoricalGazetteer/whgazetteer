@@ -238,14 +238,17 @@
     .on('typeahead:asynccancel typeahead:asyncreceive', function() {
         $('.typeahead').removeClass('input-loading');
     });;
+	
 	// fetch area list
-	$.get("/api/area_features", function(data){
-	  <!--console.log('initial areas for list',data)-->
+	<!--$.get("/api/area_features", function(data){-->
+	$.get("/api/area_list", function(data){
+	  console.log('initial areas for list',data)
 	  for(var i=0;i<data.length;i++){
 		area_objs.push(data[i])
 		area_list.push(data[i]['title'])
 	  }
 	})
+	
 	$( "#input_area" ).autocomplete({
 	  source: area_list,
 	  minLength: 2,

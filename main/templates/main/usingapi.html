@@ -68,8 +68,9 @@
 				</table>
 				<div id="examples">
 				  <p class="mb-0">Examples</p>
-				  <p class="mb-0">Two records for Abydos, Egypt in the database, attested to exist at 4000 BCE</p>
-				  <p><a href="http://localhost:8000/api/db?name=abydos&ccode=eg&year=-4000" target="_blank">http://localhost:8000/api/db?name=abydos&ccode=eg&year=-4000</a></p>
+				  <p class="mb-0">Abydos, Egypt in the database, attested to exist at 4000 BCE</p>
+				  <p><a href="{% url 'api-search' %}?name=abydos&ccode=eg&year=-4000" target="_blank">http://whgazetteer.org/api/db?name=abydos&ccode=eg&year=-4000</a></p>
+				  
 				  <p class="mb-0">more to come...</p>
 				  <!--<p>By place_id: <a href="http://localhost:8000/api/index/?pid=" target="_blank">http://localhost:8000/api/index/?pid=</a></p>-->
 				</div>
@@ -144,8 +145,14 @@
 				<div id="examples" class="">
 				  <p class="mb-0">Examples</p>
 				  <p class="mb-0">All regions and public user study areas</p>
-				  <p><a href="http://localhost:8000/api/union?name=abydos&ccode=eg&year=-4000" target="_blank">
+				  <p><a href="{% url 'area-features' %}" target="_blank">
 				  http://whgazetteer.org/api/areas</a></p>
+				  <p class="mb-0">A region by id</p>
+				  <p><a href="{% url 'area-features' %}?id=75" target="_blank">
+				  http://whgazetteer.org/api/areas?id=75</a></p>
+				  <p class="mb-0">Search string</p>
+				  <p><a href="{% url 'area-features' %}?q=africa" target="_blank">
+				  http://whgazetteer.org/api/areas?q=africa</a></p>
 				</div>
 			  </div> <!-- areas -->
 			  <div id="datasets" class="tab-pane fade" role="tabpanel" aria-labelledby="datasets-tab">
