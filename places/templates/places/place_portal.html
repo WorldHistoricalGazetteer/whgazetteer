@@ -28,9 +28,9 @@
       <li class="nav-item">
         <a class="nav-link active" data-toggle="tab" href="#place_core" selected>Attestations</a>
       </li>
-      <li class="nav-item">
-        <a class="nav-link disabled" data-toggle="tab" href="#related_matches" selected>Related</a>
-      </li>
+      <!--<li class="nav-item">-->
+        <!--<a class="nav-link disabled" data-toggle="tab" href="#related_matches" selected>Related</a>-->
+      <!--</li>-->
     </ul>
     <div id="place_content" class="tab-content">
       <div id="place_core" class="tab-pane fade show active" >
@@ -407,7 +407,7 @@
                 radius: 5, fillOpacity: 0.8, opacity: 1, weight: 1,
                 color: "#fff", fillColor: filly(counter)
               }
-            ).bindPopup('whg:'+identifier+'<br/><b>'+
+            ).bindPopup('pid:'+identifier+'<br/><b>'+
               '<a href="/places/'+identifier+'/portal">'+feature.properties.title+"</b></a>");
             idToFeature[identifier] = marker
             return marker
