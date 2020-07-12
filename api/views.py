@@ -28,6 +28,7 @@ from api.serializers import (UserSerializer, DatasetSerializer, PlaceSerializer,
                              PlaceGeomSerializer, AreaSerializer, FeatureSerializer, LPFSerializer)
 from areas.models import Area
 from datasets.models import Dataset
+from datasets.tasks import get_bounds_filter
 from places.models import Place, PlaceGeom
 
 class StandardResultsSetPagination(PageNumberPagination):
@@ -42,82 +43,105 @@ class StandardResultsSetPagination(PageNumberPagination):
 #
 
 """
-  suggestionItem(); called by suggester();
-  formats search hits 
+  makeGeom(); called by collectionItem()
+  format index locations as geojson
 """
-def suggestionItem(s,datatype):
-  #print('suggestionItem s',s)
-  _id = s['_id']
-  s=s['hit']
+def makeGeom(geom):
+  print('geom',geom)
+  # TODO: account for non-point
+  if len(geom) > 1:
+    geomobj = {"type":"GeometryCollection", "geometries": []}  
+    for g in geom:
+      geomobj['geometries'].append(g['location'])
+        #{"type":g['location']['type'],
+         #"coordinates":g['location']['coordinates']
+  elif len(geom) == 1:
+    geomobj=geom[0]['location']
+  else:
+    geomobj=None
+  return geomobj
+
+"""
+  collectionItem(); called by collector();
+  formats api search hits 
+"""
+def collectionItem(i,datatype):
+  print('collectionItem i',i)
+  _id = i['_id']
   if datatype == 'place':
-    item = { 
-      #"index_id":s['whg_id'],
-      "index_id":_id,
-      "title":s['title'],
-      "place_ids":[int(c) for c in s['children']]+[s['place_id']],
-      "types":[t['label'] for t in s['types']],
-      "variants":[n for n in s['suggest']['input'] if n != s['title']],
-      "timespans":s['timespans'],
-      "minmax":s['minmax'] if 'minmax' in s.keys() else [],
-      "ccodes":s['ccodes'],
-      #"geom": makeGeom(s['place_id'],s['geoms'])
+    i=i['hit']
+    item = {
+      "type":"Feature",
+      "properties": {
+        "title":i['title'],
+        "index_id":_id,
+        "index_role":i['relation']['name'],
+        "place_id":i['place_id'],
+        "child_place_ids":[int(c) for c in i['children']],
+        "dataset":i['dataset'],
+        "placetypes":[t['label'] for t in i['types']],
+        "variants":[n for n in i['suggest']['input'] if n != i['title']],
+        "timespans":i['timespans'],
+        "minmax":i['minmax'] if 'minmax' in i.keys() else [],
+        "ccodes":i['ccodes']
+      },
+      "geometry": makeGeom(i['geoms'])
     }
     #print('place sug item', item)
   elif datatype == 'trace':
     # now with place_id, not whg_id (aka _id; they're transient)
     item = {
-      "_id":s['_id'],
-      "id":s['hit']['target']['id'],
-      "type":s['hit']['target']['type'],
-      "title":s['hit']['target']['title'],
-      "depiction":s['hit']['target']['depiction'] if 'depiction' in s['hit']['target'].keys() else '',
-      "bodies":s['hit']['body']
+      "_id":i['_id'],
+      "id":i['hit']['target']['id'],
+      "type":i['hit']['target']['type'],
+      "title":i['hit']['target']['title'],
+      "depiction":i['hit']['target']['depiction'] if 'depiction' in i['hit']['target'].keys() else '',
+      "bodies":i['hit']['body']
     }
   #print('place search item:',item)
   return item
-
 """
-  suggester(); called by IndexAPIView; 
+  collector(); called by IndexAPIView; 
   execute es.search, return results post-processed by suggestionItem()
 """
-def suggester(datatype,q,idx):
-  # returns only parents; children retrieved into place portal
-  #print('suggester',doctype,q)
+def collector(datatype,q,idx):
+  # returns only parents
+  #print('collector',doctype,q)
   es = Elasticsearch([{'host': 'localhost', 'port': 9200, 'timeout':30, 'max_retries':10, 'retry_on_timeout':True}])
-  suggestions = []
+  items = []
   
   if datatype=='place':
-    #print('suggester/place q:',q)
+    #print('collector/place q:',q)
     # TODO: trap errors
     res = es.search(index=idx, doc_type='place', body=q)
     hits = res['hits']['hits']
-    #print('suggester()/place hits',hits)
+    #print('collector()/place hits',hits)
     if len(hits) > 0:
       for h in hits:
-        suggestions.append(
+        items.append(
           {"_id": h['_id'],
            "linkcount":len(h['_source']['links']),
            "childcount":len(h['_source']['children']),
            "hit": h['_source'],
           }
         )
-    sortedsugs = sorted(suggestions, key=lambda x: x['childcount'], reverse=True)
-    print('sortedsugs from suggester()',sortedsugs)
-    return sortedsugs
+    sorteditems = sorted(items, key=lambda x: x['childcount'], reverse=True)
+    #print('sorteditems from collector()',sorteditems)
+    return sorteditems
     
   elif datatype == 'trace':
-    print('suggester()/trace q:',q)
+    print('collector()/trace q:',q)
     res = es.search(index='traces',doc_type='trace',body=q)
     hits = res['hits']['hits']
-    #print('suggester()/trace hits',hits)
+    #print('collector()/trace hits',hits)
     if len(hits) > 0:
       for h in hits:
-        suggestions.append({"_id":h['_id'],"hit":h['_source']})
-    return suggestions 
+        items.append({"_id":h['_id'],"hit":h['_source']})
+    return items 
 
 
 """
-  bundler();  called by IndexAPIView
+  bundler();  called by IndexAPIView, case api/index?whgid=
   execute es.search, return post-processed results 
 """
 def bundler(q,whgid,idx):
@@ -125,11 +149,6 @@ def bundler(q,whgid,idx):
   res = es.search(index=idx, doc_type='place', body=q)
   hits = res['hits']['hits']
   bundle = []
-  #bundle = {"index_id":whgid, 
-            #"count":res['hits']['total'],
-            ##"result": [h['_source'] for h in hits]
-            #"result": res['hits']
-            #}
   if len(hits) > 0:
     for h in hits:
       bundle.append(
@@ -140,11 +159,52 @@ def bundler(q,whgid,idx):
         }
       )
   #return bundle
-  stuff = [ suggestionItem(i, 'place') for i in bundle]
+  stuff = [ collectionItem(i, 'place') for i in bundle]
   return stuff
+
+""" 
+  /api/traces?
+  search index parent records, given name string
+  based on search.views.SearchView(View)
+
 """
-    search index parent records, given name string
-    based on search.views.SearchView(View)
+class TracesAPIView(View):
+  @staticmethod
+  def get(request):
+    idx='traces'
+    datatype='trace'
+    params=request.GET
+    print('TracesAPIView request params',params)
+    qstr = params.get('q')
+    """ 
+      args q = query string
+    """
+    q={ 
+      "size": 100,
+      "query": { "bool": {
+        "must": [
+          {"multi_match": {
+            "query": qstr, 
+            "fields": ["target.title","tags"],
+            "type": "phrase_prefix"
+        }}]
+      }}
+    }
+    
+    # run query
+    collection = collector(datatype, q, idx)
+    # format hits
+    collection = [ collectionItem(s, datatype) for s in collection]
+  
+    # result object
+    result = {"count":len(collection),"results":collection}
+    
+    return JsonResponse(result, safe=False,json_dumps_params={'ensure_ascii':False,'indent':2})
+    
+""" 
+  /api/index?
+  search index parent records, given name string
+  based on search.views.SearchView(View)
 
 """
 class IndexAPIView(View):
@@ -155,12 +215,8 @@ class IndexAPIView(View):
     params=request.GET
     print('IndexAPIView request params',params)
     """
-      args in params:
-          [str] name: exact
-          [str] name_startswith
-          [int] whgid: whg_id
-          [int] pid: place_id
-          [str] class: geonames fclass
+      args in params: whgid, pid, name, name_startswith, fclass, dataset, ccode, year, area
+
     """
     whgid = request.GET.get('whgid')
     pid = request.GET.get('pid')
@@ -168,6 +224,11 @@ class IndexAPIView(View):
     name_startswith = request.GET.get('name_startswith')
     fc = params.get('fclass',None)
     fclasses=[x.upper() for x in fc.split(',')] if fc else None
+    dataset = request.GET.get('dataset')
+    cc = request.GET.get('ccode')
+    ccodes=[x.upper() for x in cc.split(',')] if cc else None
+    year = request.GET.get('year')
+    area = request.GET.get('area')
     
     if all(v is None for v in [name,name_startswith,whgid,pid]):
       # TODO: format better
@@ -182,8 +243,11 @@ class IndexAPIView(View):
         ]}}}
         bundle = bundler(q,whgid,idx)
         print('bundle',bundle)
-        result=[b for b in bundle]
-        #result={"index_id":whgid,"count":bundle['count'],"result":bundle['result']}
+        #result=[b for b in bundle]
+        result={"index_id":whgid,
+                "note":str(len(bundle)) + " records asserted as skos:closeMatch",
+                "type":"FeatureCollection",
+                "features":[b for b in bundle]}
       else:
         q = { 
           "size": 100,
@@ -199,22 +263,36 @@ class IndexAPIView(View):
         }
         if fc:
           q['query']['bool']['must'].append({"terms": {"fclasses": fclasses}})
-          print('query run:',q)
+        if dataset:
+          q['query']['bool']['must'].append({"match": {"dataset": dataset}})
+        if ccodes:
+          q['query']['bool']['must'].append({"terms": {"ccodes": ccodes}})
+        if year:
+          q['query']['bool']['must'].append({"term":{"timespans":{"value": year}}})
+        #if area:
+          #TODO: 
+        if area:
+          a = get_object_or_404(Area,pk=area)
+          bounds={"id":[str(a.id)],"type":[a.type]} # nec. b/c some are polygons, some are multipolygons
+          q['query']['bool']["filter"]=get_bounds_filter(bounds,'whg')
+
+        print('the api query was:',q)
         
         # run query
-        suggestions = suggester(datatype, q, idx)
+        collection = collector(datatype, q, idx)
         # format hits
-        suggestions = [ suggestionItem(s, datatype) for s in suggestions]
+        collection = [ collectionItem(s, datatype) for s in collection]
       
         # result object
-        result = {'count': len(suggestions), 'result':suggestions}
+        result = {'type':'FeatureCollection','count': len(collection), 'features':collection}
+        #result = {'count': len(suggestions)}
     
     # to client
     return JsonResponse(result, safe=False,json_dumps_params={'ensure_ascii':False,'indent':2})
 
 """ 
-  SearchAPIView()
   /api/db?
+  SearchAPIView()
   return lpf results from database search 
   
 """

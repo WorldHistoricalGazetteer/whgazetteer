@@ -14,6 +14,7 @@ urlpatterns = [
 
     path('db/',views.SearchAPIView.as_view(),name='api-search'),
     path('index/',views.IndexAPIView.as_view(),name='api-index-search'),
+    path('traces/',views.TracesAPIView.as_view(),name='traces-search'),
     
     # experiment
     path('filter/',views.FilteredSearchAPIView.as_view(),name='api-filtered-search'),

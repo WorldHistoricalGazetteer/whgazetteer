@@ -240,9 +240,8 @@
     });;
 	
 	// fetch area list
-	<!--$.get("/api/area_features", function(data){-->
 	$.get("/api/area_list", function(data){
-	  console.log('initial areas for list',data)
+	  <!--console.log('initial areas for list',data)-->
 	  for(var i=0;i<data.length;i++){
 		area_objs.push(data[i])
 		area_list.push(data[i]['title'])
@@ -512,7 +511,7 @@
     index = doctype =='place' ? 'whg' : 'traces'    
     // clear filters
     $(".list-inline").html('')
-	console.log('bounds in js SearchPlaces()',$("#boundsobj").val())
+	<!--console.log('bounds in js SearchPlaces()',$("#boundsobj").val())-->
     $.get("/search/index",{
         // qstr: $(".tt-input")[0].value,
         // disabled typeahead
@@ -527,7 +526,7 @@
         bounds: $("#boundsobj").val()
       }, function(data){
 		window.searchres=data
-        console.log('searchPlaces()',data)
+        <!--console.log('searchPlaces()',data)-->
         // render to html
         showResults(data,doctype,scope);
     });
