@@ -89,25 +89,28 @@ def download_augmented(request, *args, **kwargs):
       return ';'.join(aug_links)
 
     def augGeom(qs_geoms):
-      coords = []
-      for g in qs_geoms: # export all, not only added
-        coords.append(g.jsonb['coordinates']) #+ \
-          #(','+g.jsonb['citation']['id'] if 'citation' in g.jsonb else ''))
-      #return ';'.join(aug_geom)
-      return coords
+      gobj = {'new':[]}
+      for g in qs_geoms:
+        if not g.task_id:
+          # it's an original
+          gobj['lonlat'] = g.jsonb['coordinates']
+        else:
+          # it's an aug/add
+          gobj['new'].append({"id":g.jsonb['citation']['id'],"coordinates":g.jsonb['coordinates']})
+      return gobj
 
     with open(fn, 'w', newline='', encoding='utf-8') as csvfile:
       writer = csv.writer(csvfile, delimiter='\t', quotechar='', quoting=csv.QUOTE_NONE)
-      writer.writerow(['id','whg_pid','title','ccodes','lon','lat','coordinates','matches'])
+      writer.writerow(['id','whg_pid','title','ccodes','lon','lat','added','matches'])
       for f in features:
         geoms = f.geoms.all()
-        coords = augGeom(geoms)
+        gobj = augGeom(geoms)
         row = [str(f.src_id),
                str(f.id),f.title,
                ';'.join(f.ccodes),
-               coords[0][0] if len(coords)>0 else None,
-               coords[0][1] if len(coords)>0 else None,
-               coords,
+               gobj['lonlat'][0] if 'lonlat' in gobj else None,
+               gobj['lonlat'][1] if 'lonlat' in gobj else None,
+               gobj['new'] if 'new' in gobj else None,
                str(augLinks(f.links.all()))
         ]
         writer.writerow(row)
