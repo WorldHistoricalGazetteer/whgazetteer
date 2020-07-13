@@ -800,20 +800,20 @@
   // TODO: doesn't reach into when.timespans; Indias data malformed
   function parseRels(rels){
 	<!--console.log('parseRelations()',rels)-->
-	console.clear()
+	<!--console.clear()-->
     html=''
 	timespans=[]; starts=[]; ends=[]
     for(r in rels){for(w in rels[r].when){timespans.push(rels[r].when[w])}}
 	reg = /(-?\d{1,4})\D?/
 	for (t in timespans){
 	  // no 'in', 'earliest' or 'latest' here
-	  console.log('reg',reg)
+	  <!--console.log('reg',reg)-->
 	  <!--starts.push(Number(timespans[t].start))-->
 	  starts.push(Number(timespans[t].start.match(reg)[1]))
 	  <!--ends.push(!!timespans[t].end ? Number(timespans[t].end) : -1)-->
 	  ends.push(!!timespans[t].end ? Number(timespans[t].end.match(reg)[1]) : -1)
 	} 
-	console.log('starts',starts,'ends',ends)
+	<!--console.log('starts',starts,'ends',ends)-->
 	minmax=[Math.max.apply(null, starts),Math.max.apply(null, ends)]
     return minmax[0] + '-' + minmax[1]
   }   

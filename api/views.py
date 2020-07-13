@@ -30,6 +30,7 @@ from areas.models import Area
 from datasets.models import Dataset
 from datasets.tasks import get_bounds_filter
 from places.models import Place, PlaceGeom
+from search.views import getGeomCollection
 
 class StandardResultsSetPagination(PageNumberPagination):
   page_size = 10
@@ -65,10 +66,11 @@ def makeGeom(geom):
   collectionItem(); called by collector();
   formats api search hits 
 """
-def collectionItem(i,datatype):
+def collectionItem(i,datatype,format):
   print('collectionItem i',i)
   _id = i['_id']
   if datatype == 'place':
+    # serialize as geojson
     i=i['hit']
     item = {
       "type":"Feature",
@@ -89,22 +91,45 @@ def collectionItem(i,datatype):
     }
     #print('place sug item', item)
   elif datatype == 'trace':
-    # now with place_id, not whg_id (aka _id; they're transient)
-    item = {
-      "_id":i['_id'],
-      "id":i['hit']['target']['id'],
-      "type":i['hit']['target']['type'],
-      "title":i['hit']['target']['title'],
-      "depiction":i['hit']['target']['depiction'] if 'depiction' in i['hit']['target'].keys() else '',
-      "bodies":i['hit']['body']
-    }
+    hit = i['hit']
+    pids = [b['place_id'] for b in hit['body'] if b['place_id']]
+    q_geom={"query": {"bool": {"must": [{"terms":{"place_id": pids}}]}}}
+    print('q_geom',q_geom)
+    geoms = getGeomCollection('whg','place',q_geom)
+    if format == 'geojson':
+      item = {
+        "type":"FeatureCollection",
+        "trace_id": 'http://whgazetteer.org/traces/'+i['_id'],
+        "target_id":hit['target']['id'],
+        "target_title":hit['target']['title'],
+        "features":geoms}
+    else: # W3C anno format
+      item = {
+        "@context": ["http://www.w3.org/ns/anno.jsonld", 
+                     {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], 
+        "_id":'http://whgazetteer.org/traces/'+i['_id'],
+        "type": "Annotation",
+        "created": hit['created'], 
+        "creator": hit['creator'], 
+        "motivation": hit['motivation'], 
+        "keywords": hit['tags'],
+        "target":{
+          "id":hit['target']['id'],
+          "type":hit['target']['type'],
+          "title":hit['target']['title'],
+          "depiction":hit['target']['depiction'] if 'depiction' in hit['target'].keys() else '',
+          "format": "text/html", 
+          "language": "en"
+        },
+        "bodies":hit['body']
+      }
   #print('place search item:',item)
   return item
 """
   collector(); called by IndexAPIView; 
   execute es.search, return results post-processed by suggestionItem()
 """
-def collector(datatype,q,idx):
+def collector(q,datatype,idx):
   # returns only parents
   #print('collector',doctype,q)
   es = Elasticsearch([{'host': 'localhost', 'port': 9200, 'timeout':30, 'max_retries':10, 'retry_on_timeout':True}])
@@ -164,18 +189,17 @@ def bundler(q,whgid,idx):
 
 """ 
   /api/traces?
-  search index parent records, given name string
-  based on search.views.SearchView(View)
+  search trace target titles and tags
 
 """
 class TracesAPIView(View):
   @staticmethod
   def get(request):
-    idx='traces'
-    datatype='trace'
     params=request.GET
     print('TracesAPIView request params',params)
-    qstr = params.get('q')
+    qstr = params.get('q',None)
+    format = params.get('format',None)
+    
     """ 
       args q = query string
     """
@@ -192,26 +216,24 @@ class TracesAPIView(View):
     }
     
     # run query
-    collection = collector(datatype, q, idx)
-    # format hits
-    collection = [ collectionItem(s, datatype) for s in collection]
+    collection = collector(q,'trace','traces')
+    # format results    
+    collection = [ collectionItem(item,'trace',format) for item in collection]
   
     # result object
-    result = {"count":len(collection),"results":collection}
+    result = {"trace_count":len(collection),"results":collection}
     
     return JsonResponse(result, safe=False,json_dumps_params={'ensure_ascii':False,'indent':2})
     
 """ 
   /api/index?
-  search index parent records, given name string
+  search place index (always whg) parent records
   based on search.views.SearchView(View)
 
 """
 class IndexAPIView(View):
   @staticmethod
   def get(request):
-    idx='whg'
-    datatype='place'
     params=request.GET
     print('IndexAPIView request params',params)
     """
@@ -233,7 +255,7 @@ class IndexAPIView(View):
     if all(v is None for v in [name,name_startswith,whgid,pid]):
       # TODO: format better
       return HttpResponse(content='<h3>Query requires either name, name_startswith, pid, or whgid</h3>'+
-                          '<p><a href="http://localhost:8000/usingapi/">API instructions</a>')
+                          '<p><a href="/usingapi/">API instructions</a>')
     else:
       if whgid and whgid !='':
         print('fetching whg_id',whgid)
@@ -279,13 +301,13 @@ class IndexAPIView(View):
         print('the api query was:',q)
         
         # run query
-        collection = collector(datatype, q, idx)
+        collection = collector(q,'place','whg')
         # format hits
-        collection = [ collectionItem(s, datatype) for s in collection]
+        collection = [ collectionItem(s,'place',None) for s in collection]
       
         # result object
         result = {'type':'FeatureCollection','count': len(collection), 'features':collection}
-        #result = {'count': len(suggestions)}
+
     
     # to client
     return JsonResponse(result, safe=False,json_dumps_params={'ensure_ascii':False,'indent':2})

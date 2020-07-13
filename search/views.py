@@ -307,7 +307,7 @@ def getGeomCollection(idx,doctype,q):
   hits = res['hits']['hits']
   print(len(hits),'hits from getGeomCollection()')
   #geoms=[]
-  collection={"type":"FeatureCollection","features":[]}
+  collection={"type":"FeatureCollection","feature_count":len(hits),"features":[]}
   for h in hits:
     if len(h['_source']['geoms'])>0:
       #print('hit _source from getGeomCollection',h['_source'])
@@ -343,15 +343,15 @@ class TraceGeomView(View):
     bodies = contextSearch(idx, doctype, q_trace)['hits'][0]
     print('a body from TraceGeomView->contextSearch',bodies[0])
     
-    #bodyids = [b['whg_id'] for b in bodies if b['whg_id']]
     bodyids = [b['place_id'] for b in bodies if b['place_id']]
     print('len(bodyids)',len(bodyids))
-    #q_geom={"query": {"bool": {"must": [{"terms":{"_id": bodyids}}]}}}
     q_geom={"query": {"bool": {"must": [{"terms":{"place_id": bodyids}}]}}}
     geoms = getGeomCollection(idx,doctype,q_geom)
     print('len(geoms["features"])',len(geoms['features']))
     geoms['bodies'] = bodies
-    return JsonResponse(geoms, safe=False)      
+    
+    return JsonResponse(geoms, safe=False,json_dumps_params={'ensure_ascii':False,'indent':2})
+    #return JsonResponse(geoms, safe=False)      
 
 
 def home(request):

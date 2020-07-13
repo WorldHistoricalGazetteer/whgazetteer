@@ -14,7 +14,7 @@
         <div class="row mt-2">
           <div class="col-sm-5"> 
 			<h4>Using the API</h4>
-            <p class="mb-2">Development of the external API is in draft stage. We plan to refine options and add endpoints in response to community feedback. Please <a href="#">use this form for suggestions</a>.</p>
+            <p class="mb-2">Development of the external API is in draft stage. We plan to refine options and add endpoints in response to community feedback. Please use <a href="#" class="feedback">this form</a> for suggestions.</p>
 			
 			<h5 class="red-head strong">Two place data stores</h5>
 			
@@ -31,13 +31,13 @@
 			<!--<span class="text-danger"><b>NOTE:</b> Only the example links are confirmed to work right now.</span>.-->
 			<ul id="api_tabs" class="nav nav-tabs" role="tablist">
 			  <li class="nav-item">
-				<a class="nav-link" id="placedb-tab" data-toggle="tab" href="#place_db" role="tab" aria-controls="place_db" aria-selected="true">Places (database)</a>
+				<a class="nav-link active" id="placedb-tab" data-toggle="tab" href="#place_db" role="tab" aria-controls="place_db" aria-selected="true">Places (database)</a>
 			  </li>
 			  <li class="nav-item">
 				<a class="nav-link" id="placeidx-tab" data-toggle="tab" href="#place_idx" role="tab" aria-controls="place_idx" aria-selected="false">Places (index)</a>
 			  </li>
 			  <li class="nav-item">
-				<a class="nav-link active" id="traces-tab" data-toggle="tab" href="#traces" role="tab" aria-controls="traces" aria-selected="false">Traces</a>
+				<a class="nav-link" id="traces-tab" data-toggle="tab" href="#traces" role="tab" aria-controls="traces" aria-selected="false">Traces</a>
 			  </li>
 			  <li class="nav-item">
 				<a class="nav-link" id="areas-tab" data-toggle="tab" href="#areas" role="tab" aria-controls="areas" aria-selected="false">Regions/Areas</a>
@@ -47,7 +47,7 @@
 			  </li>
 			</ul>
 			<div class="tab-content">
-			  <div id="place_db" class="tab-pane fade" role="tabpanel" aria-labelledby="placedb-tab">
+			  <div id="place_db" class="tab-pane fade show active" role="tabpanel" aria-labelledby="placedb-tab">
 				<p class="mb-0">
 				  Search <span class="red-head strong">public database records</span> (<b>whgazetteer.org/api/db?</b>)</p>
 				<table class="table">
@@ -111,7 +111,7 @@
 				</div>
 			  </div> <!-- place_idx -->
 			  
-			  <div id="traces" class="tab-pane fade show active" role="tabpanel" aria-labelledby="traces-tab">
+			  <div id="traces" class="tab-pane fade" role="tabpanel" aria-labelledby="traces-tab">
 				<p class="mb-0">Search <span class="red-head strong">traces</span> (<b>whgazetteer.org/api/traces?</b>)</p>
 				<table class="table">
 				  <thead>
@@ -119,12 +119,16 @@
 				  </thead>
 				  <tbody>
 					<tr><td>q</td><td>string</td><td>search term or place </td></tr>
+					<tr><td>format</td><td>string</td><td>anno (default) or geojson</td></tr>
 				  </tbody>
 				</table>
 				<div id="examples" class="">
 				  <p class="mb-0">Examples</p>
-				  <p class="mb-0">Search for "foofah"</p>
-				  <p><a href="http://localhost:8000/api/traces?q=" target="_blank">http://localhost:8000/api/traces?q=
+				  <p class="mb-0">Search for "empire," returning W3C Web Annotation format</p>
+				  <p><a href="{% url 'traces-search' %}?q=empire" target="_blank">/api/traces/?q=empire
+				  </a></p>
+				  <p class="mb-0">Search for "empire," returning GeoJSON (2 FeatureCollections)</p>
+				  <p><a href="{% url 'traces-search' %}?q=empire&format=geojson" target="_blank">/api/traces/?q=empire&format=geojson
 				  </a></p>
 				</div>
 			  </div> <!-- traces -->

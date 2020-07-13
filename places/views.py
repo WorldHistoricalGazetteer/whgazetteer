@@ -29,10 +29,6 @@ class PlacePortalView(DetailView):
     self.kwargs['pid'] = pid
     return get_object_or_404(Place, id=pid)
 
-  #def get_success_url(self):
-    #id_ = self.kwargs.get("id")
-    #return '/places/'+str(id_)+'/detail'
-  
   
   def get_context_data(self, *args, **kwargs):
     print('get_context_data kwargs',self.kwargs)
