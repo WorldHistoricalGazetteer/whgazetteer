@@ -648,7 +648,8 @@ class AreaListView(View):
   def get(request):
     user = request.user
     area_list = []
-    qs = Area.objects.all().filter(Q(type='predefined') | Q(owner=request.user)).values('id','title','type')
+    #qs = Area.objects.all().filter(Q(type='predefined')| Q(owner=request.user)).values('id','title','type')
+    qs = Area.objects.all().filter(Q(type__in=('predefined','country'))| Q(owner=request.user)).values('id','title','type')
     for a in qs:
       area = {"id":a['id'],"title":a['title'],"type":a['type']}
       area_list.append(area)

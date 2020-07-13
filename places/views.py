@@ -33,7 +33,7 @@ class PlacePortalView(DetailView):
   def get_context_data(self, *args, **kwargs):
     print('get_context_data kwargs',self.kwargs)
     def mm(attrib):
-      print('attrib in PlacePortalView.mm()', attrib)
+      #print('attrib in PlacePortalView.mm()', attrib)
       extent=[]
       for a in attrib:
         minmax=[]
@@ -55,7 +55,7 @@ class PlacePortalView(DetailView):
             [(t['end']['in'] if 'in' in t['end'] else t['end']['latest']) for t in a['timespans'][0]]
           )
           minmax = [int(min(starts)), int(max(ends))]
-          print('starts, ends, minmax',starts,ends,minmax)
+          #print('starts, ends, minmax',starts,ends,minmax)
           if len(minmax)>0: extent.append(minmax)
       return extent
 
@@ -121,7 +121,7 @@ class PlacePortalView(DetailView):
       context['extents'] = extents
     #TODO: compute global minmax for payload
     #print('payload',context['payload'])
-    print('whens',record['whens'])
+    #print('whens',record['whens'])
     
     def mm_trace(tsarr):
       print('mm_trace() tsarr',tsarr)

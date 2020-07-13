@@ -246,6 +246,8 @@
 		area_objs.push(data[i])
 		area_list.push(data[i]['title'])
 	  }
+	  // get countries from geojson?
+	  
 	})
 	
 	$( "#input_area" ).autocomplete({
@@ -353,7 +355,7 @@
       "fillOpacity": 0
     };
 
-    var countries = new L.GeoJSON.AJAX("/media/data/countries_simplified.json",
+    countries = new L.GeoJSON.AJAX("/media/data/countries_simplified.json",
       {style:countryStyle,
         onEachFeature: function (feature, layer) {
           popupOptions = {maxWidth: 200};
