@@ -31,27 +31,27 @@
   <div class="row">
     <div id="home_search" class="col-sm-3">
       <div id="search_panel">
-          <div id="search_type" class="form-group d-flex justify-content-center"> 
-            <div class="form-check form-check-inline">
-              <input class="form-check-input hover" type="radio" name="class" id="r_place" value="place" rel="Enter place name"  checked="checked">
-              <label class="form-check-label" for="r_place">Places</label>
-            </div>
-            <div class="form-check form-check-inline">
-              <input class="form-check-input hover" type="radio" name="class" id="r_trace" value="trace" rel="Enter term or name">
-              <label class="form-check-label" for="r_trace">Traces
-                  <span class="ml-1"><a href="#" onClick='return false;' title="historical entities having spatial-temporal 'footprints'" rel="tooltip">{% fontawesome_icon 'question-circle' color='#336699' %}</a></span>                
-              </label>
-              <!--<span class="float-right">{ fontawesome_icon 'filter' color='#336699' %}</span>-->
-            </div>
-          </div>          
-		  <div id="search_input"  class="input-group input-group-sm pb-2" >
-			<label for="input_box">{% fontawesome_icon 'search' color='#336699'%}</label>
-			<input id="input_box" class="tt-hint" type="text" placeholder="Enter place name" autocomplete="false"> 
-			<input id="input_box_traces" class="typeahead hidden" type="text" placeholder="subject term, e.g. 'empire'">
-			<div id="filters_opener" class="mx-auto mt-1 small"><a id="link_filters"href="#">filters</a>
-			{% fontawesome_icon 'filter' color='#336699' %}
-			</div>
+		<div id="search_type" class="form-group d-flex justify-content-center"> 
+		  <div class="form-check form-check-inline">
+			<input class="form-check-input hover" type="radio" name="class" id="r_place" value="place" rel="Enter place name"  checked="checked">
+			<label class="form-check-label" for="r_place">Places</label>
 		  </div>
+		  <div class="form-check form-check-inline">
+			<input class="form-check-input hover" type="radio" name="class" id="r_trace" value="trace" rel="Enter term or name">
+			<label class="form-check-label" for="r_trace">Traces
+				<span class="ml-1"><a href="#" onClick='return false;' title="historical entities having spatial-temporal 'footprints'" rel="tooltip">{% fontawesome_icon 'question-circle' color='#336699' %}</a></span>                
+			</label>
+			<!--<span class="float-right">{ fontawesome_icon 'filter' color='#336699' %}</span>-->
+		  </div>
+		</div>          
+		<div id="search_input"  class="input-group input-group-sm pb-2" >
+		  <label for="input_box">{% fontawesome_icon 'search' color='#336699'%}</label>
+		  <input id="input_box" class="tt-hint" type="text" placeholder="Enter place name" autocomplete="false"> 
+		  <input id="input_box_traces" class="typeahead hidden" type="text" placeholder="subject term, e.g. 'empire'">
+		  <div id="filters_opener" class="mx-auto mt-1 small">
+			<a id="link_filters"href="#">filters</a>{% fontawesome_icon 'filter' color='#336699' %}
+		  </div>
+		</div>
         <div id="search_filters" class="hidden">
           <p class="mb-0">feature class 
             <span class="ml-1 float-right">
@@ -87,8 +87,8 @@
         </div>
       </div>
       <!-- separate div for full search results -->
-      <div id="filters" class="hidden">
-        <p class='half allcap-heading mb-0 pl-1'>PLACE TYPES (select to limit)
+      <div id="type_filter" class="hidden">
+        <p class='allcap-heading half mb-0 pl-1'>PLACE TYPES (select to limit)
           <span class="float-right mr-2"><a href="#" class="hide-filter">
             close {% fontawesome_icon 'times-circle' color='#336699' %}</a></span>
           <span class="float-right clear-filter hidden mr-2"><a href="#">restore all</span></a>
@@ -96,6 +96,11 @@
         <ul class="list-inline"></ul>
       </div>
       <div id="result_list" class="hidden"></div>
+	  <div id="splash_traces" class="hidden p-2">
+		<p>Traces are an experimental feature of WHG, conceived in collaboration with the Pelagios project. A <span class="strong red-head">trace</span> is any sort of historical phenomena, including people, events, archaeological and museum objects, texts, art works, and so on.</p>
+		<p><span class="strong red-head">Trace data</span> are web-accessible descriptions and depictions of traces, which may take the form of text, images, datasets, or video, published to the web with permanent URIs.</p>
+		<p>We have indexed a few dozen exemplar <span class="strong red-head">trace annotations</span>: i.e. datasets annotating such trace data web resources with identifiers for places referenced in a resource as relevant to the trace. See <a href="">what?</a> for more detail.</p>
+	  </div>
 	  <div id="splash">
 		<div id="carouselExampleIndicators" class="carousel slide" data-interval="false" data-ride="carousel">
 		  <ol class="carousel-indicators">
@@ -111,20 +116,14 @@
 			  <p class="mb-1">This is a work-in-progress; to date ~60,000 temporally scoped place records have been added to our index.</p><p class="mb-1">We are also experimentally indexing 'traces' - annotations of external web resources describing any sort of historical phenomena with places relevant to it.</p><p class="mb-1">Both place and trace indexes can be searched above.</p>
 			</div>
 			<div class="carousel-item">
-			  <p class="mb-1">Registered users can upload place datasets into a private workspace, augment them via reconciliation against Getty Thesaurus of Geographic Names (TGN) and/or Wikidata, publish them as Linked Open Data by flagging them as 'public', and eventually contribute them for accessionng to the WHG index.</p><p>Details are available in the 'Tutorials' and 'About' sections of this site.
+			  <p class="mb-1">Registered users can upload place datasets into a private workspace, augment them via reconciliation against Getty Thesaurus of Geographic Names (TGN) and/or Wikidata, publish them as Linked Open Data by flagging them as 'public', and eventually contribute them for accessionng to the WHG index.</p><p>Details are available in the 'Tutorials' and 'About' sections of this site.</p>
 			</div>
 			<div class="carousel-item">
 			  <p>slide 3</p>
 			</div>
 		  </div>
-		  <!--</a>-->
 		</div>	  
-		<!--<span style="text-align:center;"><img class="i-blk" src="{% static 'images/slide-indicator.png'%}" height='10'/></span>-->
-		<!--<p>World Historical Gazetteer indexes place references drawn from historical sources, -->
-		  <!--adding temporal depth to a core of approximately 1.8 million modern records.</p>-->
-		<!--<img src="{% static 'images/temporal-depth_splash.png'%}" width='250' />-->
-		<!--<p>This is a work-in-progress; to date ~60,000 historical references have been added to our index. Blah, blah, and so on..</p>-->
-	  </div>
+	  </div> <!-- splash -->
     </div>
     <div id="home_map" class="col-sm-9">
       {% leaflet_map "map_home" callback="map_init" %}
@@ -162,23 +161,28 @@
 	)
     $("[rel='tooltip']").tooltip();
     
-    $("#filters").hide();
     var idToFeature = {} // for feature lookup
     var itf_new = []
     var titles = {}
     var searchoption = null;
+	
+	// clear map, inputs, results
     clearit()
+    $("#type_filter").hide();
+	
 	// show filters, hide splash and vice versa
     $("#link_filters").click(function(){
       <!--e.preventDefault()-->
-	  $("#splash").toggle()
+	  <!--$("#splash").toggle()-->
+	  if($("#splash")[0].hidden == false) {$("#splash").hide()}
+	  if($("#result_list")[0].hidden == true) {$("#splash").show()}
       $("#search_filters").toggle(400)
     })
 	// 
 	$("label[for='input_box']").click(function(){
 	  console.log('clicked search')
 	  doctype = $("input[name='class']:checked").val()
-	  $("#splash").hide()
+	  <!--$("#splash").hide()-->
 	  searchPlaces()
 	})	
     //
@@ -313,11 +317,15 @@
 	  $("#filters_opener").show()
       $("#input_box").show()
       $("#input_box_traces").hide()
+	  $("#splash_traces").hide()
+	  $("#splash").show()
     } else {
 	  $("#filters_opener").hide()
       $("#input_box").hide()
       $("#search_filters").hide()
-      $("#input_box_traces").show()    
+      $("#input_box_traces").show()
+	  $("#splash").hide()
+	  $("#splash_traces").show()
     }
     $('#input_box').val('')
     $('#input_box').attr("placeholder",this.getAttribute("rel"));
@@ -450,7 +458,7 @@
     $("#search_input").val('')
     $("#result_list").html('')
     $("#result_list").hide()
-    $("#filters").hide()
+    $("#type_filter").hide()
     $(".list-inline").html('')
     <!--features.clearLayers()-->
     if(typeof(traces) !== "undefined") {traces.clearLayers(); mappy.setView([38, 10], 2.4)}
@@ -471,8 +479,9 @@
     doctype = $("input[name='class']:checked").val()
     <!--if (e.keyCode === 13 && doctype == 'place') {-->
     if (e.keyCode === 13) {
-      <!--console.log('enter on input_box')-->
+      // always hide splash and splash_traces on search
 	  $("#splash").hide()
+	  $("#splash_traces").hide()
       searchPlaces()
     } 
   })
@@ -569,7 +578,7 @@
         types = Array.from(new Set(typesArr));
         <!--console.log('types',types)-->
         types.forEach(function(type){
-          $("#filters ul").append('<li class="filter list-inline-item" data-type="'+type+'"><a href="#">'+type+'</a></li>')
+          $("#type_filter ul").append('<li class="filter list-inline-item" data-type="'+type+'"><a href="#">'+type+'</a></li>')
         })
         if(scope=='search') {
           renderPlaces(geoms)
@@ -589,8 +598,8 @@
     titleMarkup = doctype=='trace'?'<p class="pl-1 mb-1 small strong">'+title+'</p>':''
     $('#result_list').html(titleMarkup+
       "<p class='half allcap-heading mb-0 pl-1'>"+(doctype=='place'?'SEARCH RESULTS ('+data.length+
-      ')<span class="float-right filters-link">'+
-      '<a href="#">filter type {% fontawesome_icon 'filter' %}</a></span>':
+      ')<span class="float-right typefilter-link">'+
+      '<a href="#">filter by type {% fontawesome_icon 'filter' %}</a></span>':
       'PLACE ANNOTATIONS IN TRACE  ('+data.bodies.length+')')+'</p>'
       +results_div
     );    
@@ -602,7 +611,7 @@
       set events on new elements 
     */
     //
-    // filter results list (old school JS)
+    // filter results list by type (old school JS)
     $(".filter").on('click',function(e){
       $(".clear-filter").show()
       if(filterLayers != null){filterLayers.addTo(mappy)}
@@ -643,13 +652,17 @@
     })
     $(".clear-filter").on('click',function(e){
       filterLayers.addTo(mappy)
+	  mappy.fitBounds(features.getBounds())
       $(".filter").removeClass('active-filter')
       $(".clear-filter").hide()
     })
     $(".hide-filter").on('click',function(e){
-      $("#filters").hide(200)
+      $("#type_filter").hide(200)
     })
-    
+    $(".typefilter-link").on("click", function(e){
+      e.preventDefault()
+      $("#type_filter").toggle(300)
+    })    
     $(".trace-item").on('click',function(e){
       // reset all markers to default
       traces.setStyle({"fillColor":"blue","radius":5})
@@ -688,11 +701,6 @@
       $(".modal-body").html('<iframe width="100%" height="100%" frameborder="0" scrolling="yes" '+
         'allowtransparency="true" src="'+url+'"></iframe>');
     });
-    $(".filters-link").on("click", function(e){
-      e.preventDefault()
-      $("#filters").toggle(300)
-      $("#splash").toggle()
-    })
   }
  
   /*

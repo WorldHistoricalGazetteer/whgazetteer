@@ -71,7 +71,7 @@ label {vertical-align:top;}
 .tooltip { z-index: 600; }
 .v-mid {vertical-align: super;}
 .top { vertical-align: top;}
-.half { font-size: .6em; font-style: italic; margin-top:.6em;}
+.half { font-size: .8em; font-style: italic; margin-top:.6em;}
 .h2em { height: 2em; }
 .h1em { height: 1em; }
 .hang {
@@ -127,11 +127,11 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
 /*.carousel-inner {background-color: #e4e4e4;}*/
 
 .list-inline { padding-left: 4px;}
-.active-filter {font-weight:bold; color:#993333;}
+.active-filter a {font-weight:bold; color:#993333 !important;}
 #search_input label { position:absolute; right: 20px; z-index:10;}
 #search_input label:hover { cursor:pointer;}
 /*#filter_help {position:absolute; top:35px; right:3px;}*/
-#filters {
+#type_filter {
   background-color: #fff;
   font-size: small;
   padding: 5px 0 5px 8px;
@@ -146,7 +146,7 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
   /*background-color: aliceblue;*/
   padding: 0 8px;
 }
-#splash p {font-family: 'Raleway', sans-serif; font-size:.9rem;}
+#splash p, #splash_traces p {font-family: 'Raleway', sans-serif; font-size:.9rem;}
 #filters_opener {
   border-top: 1px solid #ddd;
   border-bottom: 1px solid #ddd;
