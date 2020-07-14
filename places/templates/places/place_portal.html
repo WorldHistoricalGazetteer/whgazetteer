@@ -36,9 +36,6 @@
       <div id="place_core" class="tab-pane fade show active" >
         <div class="row pt-1">
           <div id="place_home_l" class="col-sm-6">
-            <!--<div class="col-content small mt-1">-->
-              <!--<p>{ title }} is a { place type }, { on the {...} }</p>-->
-            <!--</div>-->
             {% for rec in payload %}
             <div id="card_{{ rec.place_id }}" class="col-content small mt-1">
               <!-- 'core' array of dataset labels is context from view; color-code core -->
