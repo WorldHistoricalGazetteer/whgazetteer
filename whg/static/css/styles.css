@@ -94,9 +94,10 @@ label {vertical-align:top;}
 .p-block { display:block; }
 .tight-p { margin-top:0; margin-bottom:0;}
 .scroll100 {display:block; overflow-y:scroll; max-height:120px;}
-.scroll60 {display:block; overflow-y:scroll; max-height:60px;}
+.scroll60 {display:block; overflow-y:scroll; max-height:60px;width:100%}
 .status {color:#fff; box-shadow: 2px 2px #eee; border:1px dashed #ccc;}
 .step-links {vertical-align: middle;}
+button
 .button-sm {
   background-color: #fff;
   border: 1px gold solid;
@@ -348,7 +349,7 @@ em { color: #993333;}
 
 .bg-white { background-color: white; }
 .attest-header { background-color: antiquewhite; padding: 0 2px;}
-.core-header { background-color: #eee; padding: 0 2px;}
+.core-header { background-color: #eee; padding: 2px 0 2px 2px;}
 .allcap-heading {color: #993330;}
 .child-record {background-color:white; padding:3px;}
 .child-record p {margin-bottom:.3rem;}
@@ -682,12 +683,12 @@ span.edit-row {
 /**
   element IDs
 **/
-.create-comment {
-  padding: 0 2px;
-  background-color: white;
-  height: 20px;
-  margin-bottom: 4px;
-}
+/*.create-comment {*/
+  /*padding: 0 2px;*/
+  /*background-color: white;*/
+  /*height: 20px;*/
+  /*margin-bottom: 4px;*/
+/*}*/
 #review_list {
   height:calc(100vh - 180px);
   overflow:scroll;

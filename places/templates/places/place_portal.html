@@ -40,26 +40,23 @@
             <div id="card_{{ rec.place_id }}" class="col-content small mt-1">
               <!-- 'core' array of dataset labels is context from view; color-code core -->
               {% if core|haskey:rec.dataset.label %}<div class="core-header">{% else %}<div class="attest-header">{% endif %}
-                <b>{{ rec.title }}</b> 
-                 <button type="button" data-id="{{ rec.place_id }}" class="create-comment btn btn-sm ml-2" style="background-color:antiquewhite;">{% fontawesome_icon 'edit' color='#336699' %}</button>
+                <b>{{ rec.title }}</b>
+                <span class="ml-2">
+                  [pid: <a href="/api/place/{{rec.place_id}}/" target="_blank">{{rec.place_id}}</a>; 
+                  dataset: <a href="#" rel="tooltip" class="ttip" title="{{rec.dataset.name}}" >{{rec.dataset.label}}</a> </span>
+                <span class="float-right">
                   {% if rec.geoms|length > 0 %}
                     <span class="ml-2">
-                    <a href="#" class="flash-geo ttip" data-id="{{ rec.place_id }}">highlight</a> {% fontawesome_icon 'map-marker' %}</span>
-                  {% endif %}
-                <span class="float-right">
-                  dataset: {% if rec.dataset.label != 'tgn_filtered_01' %}
-                    <a href="/datasets/{{rec.dataset.id}}/detail" class="ttip" rel="tooltip" title="{{rec.dataset.name}}" >{{rec.dataset.label}}</a>
-                  {% else %}
-                    <a href="#" rel="tooltip" class="ttip" title="{{rec.dataset.name}}" >{{rec.dataset.label}}</a>
-                  {% endif %}
-                  {% if core|haskey:rec.dataset.label and rec.dataset.label != 'tgn_filtered_01' %}
-                    (<a href="/api/place/{{rec.place_id}}/" target="_blank">pid:{{rec.place_id}}</a>)
-                  {% else %}
-                    (<a href="{{rec.purl}}" target="_blank">{{rec.place_id}}</a>)
-                  {% endif %}
+                    <a href="#" class="flash-geo ttip" data-id="{{ rec.place_id }}" title="flash map marker">{% fontawesome_icon 'map-marker' %}</a>
+                  </span>{% endif %}
+                  <!--<button type="button" data-id="{{ rec.place_id }}" class="create-comment btn btn-sm ml-2">-->
+                  <a href="#" data-id="{{ rec.place_id }}" class="create-comment ml-2">
+                    {% fontawesome_icon 'edit' color='#336699' %}
+                  <!--</button>-->
+                  </a>
                 </span>
               </div>
-              <div class="attest-element scroll60">Variants: 
+              <div class="attest-element scroll60"><b>Variants</b>: 
                 {% for name in rec.names|dictsort:"toponym" %}
                   <i>{{name.toponym}}</i>
                   {% if name.when %}
@@ -72,7 +69,7 @@
                   {% if not forloop.last %}; {% endif %}
                 {% endfor %}
               </div>
-              <div class="attest-element">Types: 
+              <div class="attest-element"><b>Types</b>: 
                 {% for type in rec.types %}<i>{{type.sourceLabel}}</i>
                 {% if not forloop.last %}<i>;</i> {% endif %}{% endfor %}
               </div>
@@ -84,7 +81,7 @@
               {% endif %}
               <!-- TODO: display loc and viaf links? -->
               {% if rec.links|length > 0 %}
-                <div class="attest-element">Links: 
+                <div class="attest-element"><b>Links</b>: 
                 {% for link in rec.links %}
                   {% if link.identifier|slice:"0:2" == rec.dataset.label|slice:"0:2" %}<span><i>none</i></span>
                   {% elif link.identifier|slice:"0:3" not in 'loc,via' %}
@@ -97,8 +94,7 @@
                 </div>
               {% endif %}
               {% if rec.related|length > 0 %}
-                <div id="place_related" class="attest-element"> <!-- abrev -->
-                  Related:
+                <div id="place_related" class="attest-element"><b>Related</b>:
                     <i>Within {% for rel in rec.related %}
                     {{ rel.label }} 
                     {% if rel.when %}
@@ -109,22 +105,18 @@
                     {% endfor %}</i>
                 </div>
               {% endif %}
-              {% if rec.descriptions and rec.decriptions|length > 0 %}
-              <div class="attest-element">
-              <!--<div class="attest-element abbrev">-->
-                <div>Descriptions: {% for desc in rec.descriptions %}<i>{{desc.value}}</i>
-                  {% if not forloop.last %}; {% endif %}{% endfor %}</div>
-              </div>
-              {% endif %}
+              <!--{ if rec.descriptions and rec.descriptions|length > 0 %}-->
+                <!--<div class="attest-element">-->
+                  <!--<div><b>Descriptions</b>: { for desc in rec.descriptions %}<i>{desc.value}}</i>-->
+                    <!--{ if not forloop.last %}; { endif %}{ endfor %}</div>-->
+                <!--</div>-->
+              <!--{ endif %}-->
               
               {% if rec.whens|length > 0 %}
-              <!--{ if rec.timespans|length > 0 %}-->
-                <div class="attest-element attesttime">Temporal:
+                <div class="attest-element attesttime"><b>Temporal</b>:
                   <!-- aggregate into telems javascript object-->
                   {% for w in rec.whens %}
-                  <!--{ for w in rec.timespans %}-->
                     {{ w|json_script:rec.place_id }}
-                    <!--{ w }}-->
                   {% endfor %}
                   {% if rec.timespans|length > 0 %}
                     {% for t in rec.timespans %}
