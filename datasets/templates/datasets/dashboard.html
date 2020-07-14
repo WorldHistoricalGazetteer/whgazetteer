@@ -35,10 +35,10 @@
                 <th>name</th>
                 <th>label</th>
                 <th>created (utc)</th>
-                <th>type</th>
+                <!--<th>type</th>-->
                 <th># rows</th>
                 <th>status</th>
-                <th>owner</th>
+                <!--<th>owner</th>-->
               </thead>
               <tbody>
                 {% for d in dataset_list %}
@@ -51,24 +51,25 @@
                         {% else %}{{ d.label }}{% endif %}</td>
                     <!--<td class="small">{ d.create_date|date:"d-M-Y, H:i (e)" }}</td>-->
                     <td class="small">{{ d.create_date|date:"d M Y, H:i" }}</td>
-                    <td>{{ d.datatype }}</td>
-                    <td><span class="float-right mr-2">{{ d.numrows }}</span></td>
+                    <!--<td>{ d.datatype }}</td>-->
+                    <!--<td><span class="float-right mr-2">{ d.numrows }}</span></td>-->
+                    <td>{{ d.numrows }}</td>
                     <td>{{ d.ds_status }}</td>
-                    <td>{{ d.owner }}</td>
+                    <!--<td>{ d.owner }}</td>-->
                   </tr>
                 {% endfor %}
               </tbody>
             </table>
             {% endif %}
             {% if shared_list|length > 0 and user.is_superuser is False %}<hr/>
-            <h6 class="mb-0">Shared with me and core samples (read-only)</h6>
+            <h6 class="mb-0">Shared with me and read-only core samples</h6>
             <table class="table table-striped">
               <thead class="small strong">
                 <th>id</th>
                 <th>name</th>
                 <th>label</th>
                 <th>created (utc)</th>
-                <th>type</th>
+                <!--<th>type</th>-->
                 <th># rows</th>
                 <th>status</th>
                 <th>owner</th>
@@ -84,8 +85,8 @@
                         {% else %}{{ d.label }}{% endif %}</td>
                     <!--<td class="small">{ d.create_date|date:"d-M-Y, H:i (e)" }}</td>-->
                     <td class="small">{{ d.create_date|date:"d M Y, H:i" }}</td>
-                    <td>{{ d.datatype }}</td>
-                    <td><span class="float-right mr-2">{{ d.numrows }}</span></td>
+                    <!--<td>{ d.datatype }}</td>-->
+                    <td>{{ d.numrows }}</td>
                     <td>{{ d.ds_status }}</td>
                     <td>{{ d.owner }}</td>
                   </tr>
@@ -97,9 +98,9 @@
         </div>        
       </div>
       <div id="arealist" class="tab-pane fade " role="tabpanel" aria-labelledby="arealist-tab">
-        <div id="area_list" class="col-sm-8 mt-3">
-          <p><a href="{% url 'areas:area-create' %}" class="">
-            {% fontawesome_icon 'plus-square' color='#336699' %} <i>create new</i> </a></span></p>
+        <p class="mb-1 ml-1"><a href="{% url 'areas:area-create' %}" class="">
+          {% fontawesome_icon 'plus-square' color='#336699' %} create new</a></p>      
+        <div id="area_list" class="mt-1 ml-0">
           <div class="list-box">
             <table class="table table-striped">
               <thead class="small">

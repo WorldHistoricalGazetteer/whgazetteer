@@ -27,6 +27,8 @@ def update_profile(request):
         profile_form = ProfileModelForm(instance=request.user.profile)
         id_ = request.user.id
         u = get_object_or_404(User, id=id_)
+        context['projects'] = 'datasets I own or collaborate on'
+        context['comments'] = 'get comments associated with projects I own'
         context['groups'] = u.groups.values_list('name',flat=True)
         
     return render(request, 'accounts/profile.html', {
