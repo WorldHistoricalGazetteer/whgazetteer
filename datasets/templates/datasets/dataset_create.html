@@ -38,25 +38,33 @@
             <td><b>Label</b></td>
             <td>{{ form.label }}</td>
           </tr>
-          <tr>
-            <td><b>Data type</b></td>
-            <td>{{ form.datatype }}</td>
-          </tr>
+          <!--<tr>-->
+            <!--<td><b>Data type</b></td>-->
+            <!--<td>{ form.datatype }}</td>-->
+          <!--</tr>-->
           <tr>
             <td style="vertical-align:top;"><b>Description</b></td>
-            <td><span class="editing-description">{{ form.description }}</span>
-            </td>
+            <td><span class="editing-description">{{ form.description }}</span></td>
+          </tr>
+          <tr>
+            <td style="vertical-align:top;"><b>Creator(s)</b></td>
+            <td>{{ form.creator }}</td>
           </tr>
           <tr>
             <td><b>URI prefix</b></td>
-            <td>{{ form.uri_base }}</td>
+            <td>{{ form.uri_base }} <a class="pop-link" id="uribase_help" data-toggle="popover" title="URI prefix" data-content="If your records are published and each place has a landing page, enter the URI prefix, e.g. <span class='ml-2'>http://mygaz.org/places/</span><br/>Otherwise leave blank, and they will be assigned a WHG prefix." tabindex="0" data-trigger="focus">
+			  {% fontawesome_icon 'question-circle' color='#993300' %}</a></td>
+          </tr>
+          <tr>
+            <td><b>Web page</b></td>
+            <td>{{ form.webpage }}</td>
           </tr>
           <tr>
             <td><b>Public?</b></td>
             <td>{{ form.public }}</td>
           </tr>
         </table>
-        <hr/><p class="my-0"><i>initial file</i></p>
+        <hr/><p class="my-0 ml-3"><i>initial file</i></p>
         <table id="file_metadata" class="ds-table table-striped">
           <tr>
             <td><b>File</b></td>
@@ -113,7 +121,7 @@
         {% endif %}
       {% else %}
         <div>
-          <p class="mb-0"><b>Sample data</b></p><p>During this beta phase, some sample datasets are available from our GitHub repository. Download and open <a href="https://github.com/kgeographer/whgazetteer/raw/master/example_data/beta_data.zip" download>this zip file</a>, check its README.txt file, and you can experiment with loading them from your local computer and reconciling them against TGN and/or Wikidata</p>
+          <p class="mb-0"><b>Sample data</b></p><p>Some sample datasets are available from our GitHub repository. Download and open <a href="https://github.com/kgeographer/whgazetteer/raw/master/example_data/beta_data.zip" download>this zip file</a>, check its README.txt file, and you can experiment with loading them from your local computer and reconciling them against TGN and/or Wikidata</p>
           <p class="mb-0"><b>Data formats</b></p>
           <p>For place data there are two accepted formats, Linked Places (expressive, JSON-LD and GeoJSON compatible), and the simpler LP-TSV, a tab-delimited format for relatively simpler records. <a href="/tutorials/choosing">More information on making the choice</a>. <br/><span class="text-danger"><b>NOTE</b>: Encoding for all uploaded files must be unicode</span></p>
           <p><i>Trace data uploads are a work-in-progress at this time.</i></p>

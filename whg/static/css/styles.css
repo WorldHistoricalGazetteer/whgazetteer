@@ -79,6 +79,8 @@ label {vertical-align:top;}
   text-indent: -.2rem;} 
 .hidden {display:none;}
 .hidden-imp {display:none !important;}
+.pop-link {color: #993300; border-bottom: 1px dashed;cursor:pointer;}
+.popover-body p {margin:0;}
 .texttop {vertical-align: text-top !important;}
 .textsub {vertical-align: sub !important;}
 .textcenter {text-align:center;}

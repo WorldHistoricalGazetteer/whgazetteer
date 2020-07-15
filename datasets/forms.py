@@ -65,12 +65,13 @@ class DatasetDetailModelForm(forms.ModelForm):
     model = Dataset
     # file fields = ('file','rev','uri_base','format','dataset_id','delimiter',
     #   'status','accepted_date','header','numrows')
-    fields = ('owner','id','label','title','uri_base','description','datatype','numlinked','public')
+    fields = ('owner','id','label','title','uri_base','description',
+              'datatype','numlinked','public')
     widgets = {
       'description': forms.Textarea(attrs={
-        'rows':2,'cols': 40,'class':'textarea','placeholder':'brief description'}),
+        'rows':2,'cols': 40,'class':'textarea','placeholder':'brief description'})
     }
-    
+  
   file = forms.FileField(required=False)
   uri_base = forms.URLField(
     widget=forms.URLInput(
@@ -91,12 +92,15 @@ class DatasetCreateModelForm(forms.ModelForm):
     model = Dataset
     # file fields = ('file','rev','uri_base','format','dataset_id','delimiter',
     #   'status','accepted_date','header','numrows')
-    fields = ('owner','id','title','label','datatype','description','uri_base','public')
+    fields = ('owner','id','title','label','datatype','description','uri_base','public','creator','webpage')
     widgets = {
       'description': forms.Textarea(attrs={
-        'rows':2,'cols': 35,'class':'textarea','placeholder':'brief description'})
+        'rows':2,'cols': 39,'class':'textarea','placeholder':'brief description'})
       ,'uri_base': forms.URLInput(attrs={
-        'placeholder':'Leave blank unless record IDs are URIs','size':35})
+        'placeholder':'Leave blank unless record IDs are URIs','size':40})
+      ,'title': forms.TextInput(attrs={'size': 40})
+      ,'creator': forms.TextInput(attrs={'size': 40})
+      ,'webpage': forms.URLInput(attrs={'size': 40})
     }
   
   # fields used to create new DatasetFile record from form

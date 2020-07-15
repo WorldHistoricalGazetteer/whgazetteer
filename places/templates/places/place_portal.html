@@ -18,6 +18,7 @@
   <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.css' rel='stylesheet' />
   <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.js'></script>
   <script src="{% static 'js/leaflet-mapbox-gl.js' %}"></script>
+  <script src="{% static 'js/bootstrapx-clickover.js' %}"></script>
   
 {% endblock %}
 {% block content %}
@@ -43,7 +44,10 @@
                 <b>{{ rec.title }}</b>
                 <span class="ml-2">
                   [pid: <a href="/api/place/{{rec.place_id}}/" target="_blank">{{rec.place_id}}</a>; 
-                  dataset: <a href="#" rel="tooltip" class="ttip" title="{{rec.dataset.name}}" >{{rec.dataset.label}}</a> </span>
+                  dataset: <a class="pop-link pop-dataset" data-id={{rec.dataset.id}} data-toggle="popover" title="Dataset Profile" data-content="" tabindex="0" rel="clickover">{{rec.dataset.label}}</a>
+                  {% if rec.dataset.webpage %} <a href="{{ rec.dataset.webpage }}" target="_blank">{% fontawesome_icon 'external-link' color='#336699' %}</a>{%endif%}
+                  </span>]
+                  <!-- <a href="#" rel="tooltip" class="ttip" title="{{rec.dataset.name}}" >{rec.dataset.label}}</a>-->
                 <span class="float-right">
                   {% if rec.geoms|length > 0 %}
                     <span class="ml-2">
@@ -191,7 +195,42 @@
 </div>
 
 <script type="text/javascript">
+      
   $(function() {
+    var isVisible = false;
+  
+    var hideAllPopovers = function() {
+       $('.pop-dataset').each(function() {
+            $(this).popover('hide');
+        });  
+    };
+  
+    var dspop = $(".pop-dataset").popover({
+      trigger: 'focus',
+      placement: 'right',
+      html: true
+    }).on('show.bs.popover', function () {
+        $.ajax({
+          url: '/api/datasets/',
+          data: {id:$(this).data('id')},
+          dataType: "JSON",
+          async: false,
+          success: function (data) {
+            ds=data.results[0]
+            console.log('ds',ds)
+            html='<p class="thin"><b>Title</b>: '+ds.title+'</p>'
+            html+='<p class="thin"><b>Description</b>: '+ds.description+'</p>'
+            html+='<p class="thin"><b>WHG Owner</b>: '+ds.owner+'</p>'
+            html+='<p class="thin"><b>Creator</b>: '+ds.creator+'</p>'
+            <!--if(ds.webpage){-->
+              <!--html+='<p class="thin"><a href="'+ds.webpage+'" target="_blank">Web page</a></p>'-->
+            <!--}-->
+            dspop.attr('data-content', html);
+          }
+      });
+    })
+    
+    //
     // telems looks like: { 81011:[{"start":{},"end":{}}, ...], ... }
     window.telems = $('script').filter(function() {
       return this.id.match(/[0-9]/) && this.text != '"null"' && this.text.includes('timespans');

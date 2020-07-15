@@ -77,8 +77,7 @@
           </div>
           <p class="mb-0">spatial
 			<span class="float-right">
-			<a id="spatial_help" data-toggle="popover" title="Spatial filter" data-content="" tabindex="0" data-trigger="focus">
-			  {% fontawesome_icon 'question-circle' color='#993300' %}</a></span>	  
+			<a id="spatial_help" data-toggle="popover" title="Spatial filter" data-content="" tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#993300' %}</a></span>	  
 		  </p>
           <div>
             <label><input id="input_area" type="text" size="30" placeholder="Region, country, study area"></label>
@@ -152,6 +151,7 @@
   window.area_objs = []
       
   $(function(){
+	// popover content
 	$("#filter_help").attr(
 	  'data-content',"<p>GeoNames single-letter codes:</p>"+
 	  "<p>A=administrative areas<br/> H=hydrological features<br/> L='landscape' elements, e.g. regions<br/> P=settlements (cities, towns, etc.)<br/>S='sites' (various)<br/> T=topographical features</p>"
@@ -159,6 +159,7 @@
 	$("#spatial_help").attr(
 	  'data-content',"<p>Constrain search to the bounds of a UN global sub-region, a country, or a user-created study area. Try entering 'north...'</p>"
 	)
+	
     $("[rel='tooltip']").tooltip();
     
     var idToFeature = {} // for feature lookup
