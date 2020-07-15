@@ -183,17 +183,20 @@
 				<div id="examples">
 				  <p class="mb-0">Examples</p>
 				  <p class="mb-0">All 'public' datasets</p>
-				  <p><a href="http://localhost:8000/api/datasets" target="_blank">
+				  <p><a href="{% url 'dataset-list' %}" target="_blank">
 					http://whgazetteer.org/api/datasets</a></p>
 				  <p class="mb-0">A 'public' dataset by id</p>
-				  <p><a href="http://localhost:8000/api/datasets?id=1" target="_blank">
+				  <p><a href="{% url 'dataset-list' %}?id=1" target="_blank">
 					http://whgazetteer.org/api/datasets?id=1</a></p>
 				  <p class="mb-0">A 'public' dataset by label identifier</p>
-				  <p><a href="http://localhost:8000/api/datasets?label=dplace" target="_blank">
+				  <p><a href="{% url 'dataset-list' %}?label=dplace" target="_blank">
 					http://whgazetteer.org/api/datasets?label=dplace</a></p>
 				  <p class="mb-0">Search title and description for term</p>
-				  <p><a href="http://localhost:8000/api/datasets?q=spanish" target="_blank">
+				  <p><a href="{% url 'dataset-list' %}?q=spanish" target="_blank">
 					http://whgazetteer.org/api/datasets?q=spanish</a></p>
+				  <p class="mb-0">All places in a dataset <span class="text-danger">SLOW (~200 rows per min.)</span></p>
+				  <p><a href="{% url 'place-list' dslabel='owt10b' %}" target="_blank">
+					http://whgazetteer.org/api/places/owt10b/?page_size=300</a></p>
 				</div>
 			  </div> <!-- datasets -->
 			</div>

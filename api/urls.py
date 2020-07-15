@@ -27,7 +27,7 @@ urlpatterns = [
     
     # FOR DOWNLOAD
     # db places in a dataset, lp format :: PlaceSerializer
-    #path('dataset/<str:dslabel>/lpf/', views.DownloadDatasetAPIView.as_view(),name='dataset-lpf'), 
+    path('dataset/<str:dslabel>/lpf/', views.DownloadDatasetAPIView.as_view(),name='dataset-lpf'), 
     
     # simple geojson :: FeatureSerializer
     #path('dataset/<int:ds>/geom/', views.DownloadGeomsAPIView.as_view(),name='dataset-geom'),
