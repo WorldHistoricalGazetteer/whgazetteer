@@ -38,7 +38,7 @@
       <a class="nav-link" id="sharing-tab" data-toggle="tab" href="#sharing" role="tab" aria-controls="sharing" aria-selected="false">Sharing</a>
     </li>
     <li class="nav-item">
-      <a class="nav-link" id="log-tab" data-toggle="tab" href="#log" role="tab" aria-controls="log" aria-selected="false">Log</a>
+      <a class="nav-link" id="log-tab" data-toggle="tab" href="#log" role="tab" aria-controls="log" aria-selected="false">Log & Comments</a>
     </li>
   </ul>
   <!-- Tab panes -->
@@ -203,22 +203,28 @@
             <p style="display:block; background-color:#eee; margin:0; padding-left:10px; font-weight:700;">Access</p>
             <p style="display:block; margin:0; padding-left:10px;">Metadata edits, dataset updates, and initiation of reconciliation tasks may only be performed by the dataset contributor ("owner" in WHG). Collaborators added by the owner under the "Sharing" tab can view the dataset and perform review of reconciliation tasks.</p>
           </div>
+          {% if ds.owner.id == user.id or user.is_superuser %}
           <div id="ds_downloads" class="pt-0 px-0 ds-card">
-            <!--{ define 'datasets:download-'|add:current_file.format as dl_url %}-->
             <p style="display:block; background-color:#eee; margin:0; padding-left:10px; font-weight:700;">Downloads</p>
             <p style="display:block; margin:0; padding-left:10px;">
-              <a href="{% url 'datasets:dl-file' ds.id %}">Current data file</a>
-              {% if links_added > 0 or geoms_added > 0 %}
-              <br/>Augmented dataset: <a href="{% url 'datasets:dl-aug' id=ds.id format='lpf' %}">lpf</a>;
-                {% if current_file.format == 'delimited' %}
-                  <a href="{% url 'datasets:dl-aug' id=ds.id format='tsv' %}">tsv</a>
-                {% endif %}
+              {% if ds.id > 2 %} <!-- excludes black, dplace, which have no files -->
+                <a href="{% url 'datasets:dl-file' ds.id %}">Current data file</a>
               {% endif %}
-              <!--(added links/geometries)-->
-              {% if current_file.format == 'lpf' %}
-              <br><a class="text-muted" href="#">TODO: Flattened geometry (for GIS)</a>{%endif%}
+              {% if links_added > 0 or geoms_added > 0 %}
+                <br/>Augmented dataset:
+                {% if ds.numrows <= 500 %}
+                  {% if current_file.format == 'delimited' %}
+                    <a href="{% url 'datasets:dl-aug' id=ds.id format='tsv' %}">TSV format</a>
+                  {% elif current_file.format == 'lpf'   %}
+                    <a href="{ url 'datasets:dl-aug' id=ds.id format='lpf' %}">Linked Places format (120/min.)</a>
+                  {% endif %}
+                {% else %}  
+                  <span class="red-head"><br/>Sorry, download of augmented datasets larger than 500 rows not supported right now; too slow :^(</span>
+                {% endif %}  
+              {% endif %}
             </p>
           </div>
+          {% endif %}
         </div> <!-- ds_info -->
       </div> <!-- ds_details -->
       </div> <!-- row -->
@@ -343,14 +349,32 @@
       </div>
     </div>
     <div id="log" class="tab-pane fade" role="tabpanel" aria-labelledby="log-tab">
-      <div id="ds_log" class="mt-2">
-        <!--<span class="allcap-heading">LOG</span>-->
-        <div>
+      <div id="ds_log" class="mt-2 row">
+        <div class="col-sm-4">
+          <h4>Dataset Log</h4>
           <ul class="ul-flush">
             {% for l in log %}
               <li class="li-flush">{{l.logtype}} ({% if l.subtype %}{{l.subtype}}{% elif l.note %}{{l.note}}{%endif%}), {{l.timestamp|date:"Y-m-d" }}</li> 
             {% endfor %}
           </ul>
+        </div>
+        <div id="ds_comments" class="col-sm-8 small">
+          <h4>Comments</h4>
+            <table class="table table-striped">
+              <thead class="strong">
+                <th>created (utc)</th>
+                <th>place_id</th>
+                <th>tag</th>
+                <th>note</th>
+                <th>user</th>
+              </thead>
+              <tbody> 
+                {% for c in comments %}
+                <tr><td>{{c.created|date:"Y-m-d"}}</td><td>{{c.place_id.id}}</td>
+                  <td>{{c.tag}}</td><td>{{c.note}}</td><td>{{c.user}}</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
         </div>
       </div> <!-- ds_log -->
     </div>

@@ -24,7 +24,7 @@ from shutil import copyfile
 #from pprint import pprint
 from areas.models import Area
 from main.choices import AUTHORITY_BASEURI
-from main.models import Log
+from main.models import Log, Comment
 from places.models import *
 from datasets.forms import HitModelForm, DatasetDetailModelForm, DatasetCreateModelForm
 from datasets.models import Dataset, Hit, DatasetFile
@@ -1528,6 +1528,7 @@ class DatasetDetailView(LoginRequiredMixin, UpdateView):
     # print('ds',ds.label)
     context['ds'] = ds
     context['log'] = ds.log.filter(category='dataset').order_by('-timestamp')
+    context['comments'] = Comment.objects.filter(place_id__dataset=ds).order_by('-created')
     # latest file
     context['current_file'] = file
     context['format'] = file.format

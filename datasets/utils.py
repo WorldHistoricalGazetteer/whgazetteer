@@ -126,6 +126,7 @@ def download_augmented(request, *args, **kwargs):
     with open(fn, 'w', encoding='utf-8') as outfile:
       fcoll = {"type":"FeatureCollection","features":[]}
       for f in features:
+        print('dl_aug, lpf adding feature:',f)
         feat={"type":"Feature",
               "properties":{
                 "@id":f.dataset.uri_base+f.src_id,

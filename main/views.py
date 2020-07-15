@@ -80,11 +80,10 @@ class CommentCreateView(BSModalCreateView):
     success_url = reverse_lazy('')
     
     def form_valid(self, form, **kwargs):
-        print('form_valid() kwargs',self.kwargs)
-        print('form_valid() form',form.cleaned_data)
+        #print('form_valid() kwargs',self.kwargs)
+        #print('form_valid() form',form.cleaned_data)
         form.instance.user = self.request.user
         place=get_object_or_404(Place,id=self.kwargs['rec_id'])
-        #place=get_object_or_404(Place,id=form.place_id)
         form.instance.place_id = place
         return super(CommentCreateView, self).form_valid(form)
         
