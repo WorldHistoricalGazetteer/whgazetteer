@@ -6,6 +6,8 @@ html, body {
   /*background-color: #fff5e6;*/
 }
 
+
+
 table {border-collapse:initial;}
 .navbar .container {
   border-bottom: 1px solid #eee;
@@ -224,6 +226,7 @@ input[type="text"] {
   margin:0; padding:5px;
   border: 1px solid #ddd;
   border-radius: 8px;
+  height:100%;
 }
 #search_panel {
   background-color: #fff;

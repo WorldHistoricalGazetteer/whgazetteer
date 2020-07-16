@@ -15,6 +15,9 @@ from django.urls import include, path
 app_name='main'
 urlpatterns = [
     path('', TemplateView.as_view(template_name="main/home_v0.6.html"), name="home"),
+    
+    # TODO: convert to mapbox gl
+    #path('', TemplateView.as_view(template_name="main/home_gl.html"), name="home"),
 
     # apps
     path('search/', include('search.urls')),
@@ -37,6 +40,9 @@ urlpatterns = [
     url(r'^credits/$', TemplateView.as_view(template_name="main/credits.html"), name="credits"),
     url(r'^system/$', TemplateView.as_view(template_name="main/system.html"), name="system"),
     url(r'^licensing/$', TemplateView.as_view(template_name="main/licensing.html"), name="licensing"),
+    url(r'^licensing/$', TemplateView.as_view(template_name="main/licensing.html"), name="licensing"),
+
+    path('heat/', TemplateView.as_view(template_name="main/mb-heatmap.html"), name="heat"),
     
     path('comment/<int:rec_id>', views.CommentCreateView.as_view(), name='comment-create'),
     path('feedback/', views.feedbackView, name='feedback'),

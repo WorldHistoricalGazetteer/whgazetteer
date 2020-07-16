@@ -20,8 +20,8 @@
     mapboxgl.accessToken = 'pk.eyJ1Ijoia2dlb2dyYXBoZXIiLCJhIjoiUmVralBPcyJ9.mJegAI1R6KR21x_CVVTlqw';
     var map = new mapboxgl.Map({
         container: 'map',
-        <!--style: 'mapbox://styles/mapbox/light-v8',-->
-        style: 'mapbox://styles/kgeographer/cjstfpenh6o1e1fldz95w8m6p',
+        style: 'mapbox://styles/mapbox/light-v8',
+        <!--style: 'mapbox://styles/kgeographer/cjstfpenh6o1e1fldz95w8m6p',-->
         center: [-120, 50],
         zoom: 2
     });
@@ -29,20 +29,31 @@
     map.on('load', function() {
         // Add a geojson point source.
         // Heatmap layers also work with a vector tile source.
-        map.addSource('lugares_13k', {
-            "type": "geojson",
-            "data": "../media/data/lugares_13k.jsonld"
+        map.addSource('lugares', {
+            "type": "geojson","data": "../media/data/lugares_13k.jsonld"
         });
     
-        <!--map.addSource('lugares_13k', {-->
-            <!--"type": "geojson",-->
-            <!--"data": "../media/data/lugares_13k.jsonld"-->
-        <!--});-->
-    
+        map.addSource('alturayya', {
+            "type": "geojson",
+            "data": "../media/data/al-turayya.geojson"
+        });    
+
+        map.addSource('owtrad', {
+            "type": "geojson",
+            "data": "../media/data/owtrad.geojson"
+        });    
+
+        map.addSource('q', {
+            "type": "geojson",
+            "data": "http://localhost:8000/api/index/?name_startswith=ab&fclass=p,s&area=85"
+        });    
+    });
+
+    function mapit(dataset) {
         map.addLayer({
-            "id": "lugares-heat",
+            "id": dataset+"-heat",
             "type": "heatmap",
-            "source": "lugares_13k",
+            "source": dataset,
             "maxzoom": 9,
             "paint": {
                 // Increase the heatmap weight based on frequency and property magnitude
@@ -93,8 +104,8 @@
                     9, 0
                 ],
             }
-        });
-    });
+        });    
+    }    
 </script>
 
 </body>

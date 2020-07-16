@@ -28,7 +28,7 @@
 
 <div class="container">
   <div class="justify-content-center mt-2">
-  <div class="row">
+  <div class="row flex-row">
     <div id="home_search" class="col-sm-3">
       <div id="search_panel">
 		<div id="search_type" class="form-group d-flex justify-content-center"> 
@@ -125,7 +125,8 @@
 	  </div> <!-- splash -->
     </div>
     <div id="home_map" class="col-sm-9">
-      {% leaflet_map "map_home" callback="map_init" %}
+	  <div id="map" style="width:100%; height:calc(100vh - 90px);"></map>
+
     </div> <!-- map -->
   </div>
   </div>
@@ -333,64 +334,14 @@
     clearit()
   });
   // 
-  function heat(dataset) {
-	console.log('heat()',dataset)
-	  mappy.addLayer({
-		  "id": dataset+"-heat",
-		  "type": "heatmap",
-		  "source": dataset,
-		  "maxzoom": 9,
-		  "paint": {
-			  // Increase the heatmap weight based on frequency and property magnitude
-			  "heatmap-weight": [
-				  "interpolate",
-				  ["linear"],
-				  ["get", "mag"],
-				  0, 0,
-				  6, 1
-			  ],
-			  // Increase the heatmap color weight weight by zoom level
-			  // heatmap-intensity is a multiplier on top of heatmap-weight
-			  "heatmap-intensity": [
-				  "interpolate",
-				  ["linear"],
-				  ["zoom"],
-				  0, 1,
-				  9, 3
-			  ],
-			  // Color ramp for heatmap.  Domain is 0 (low) to 1 (high).
-			  // Begin color ramp at 0-stop with a 0-transparancy color
-			  // to create a blur-like effect.
-			  "heatmap-color": [
-				  "interpolate",
-				  ["linear"],
-				  ["heatmap-density"],
-				  0, "rgba(33,102,172,0)",
-				  0.2, "rgb(103,169,207)",
-				  0.4, "rgb(209,229,240)",
-				  0.6, "rgb(253,219,199)",
-				  0.8, "rgb(239,138,98)",
-				  1, "rgb(178,24,43)"
-			  ],
-			  // Adjust the heatmap radius by zoom level
-			  "heatmap-radius": [
-				  "interpolate",
-				  ["linear"],
-				  ["zoom"],
-				  0, 2,
-				  9, 20
-			  ],
-			  // Transition from heatmap to circle layer by zoom level
-			  "heatmap-opacity": [
-				  "interpolate",
-				  ["linear"],
-				  ["zoom"],
-				  7, 1,
-				  9, 0
-			  ],
-		  }
-	  });    
-  }
+  mapboxgl.accessToken = 'pk.eyJ1Ijoia2dlb2dyYXBoZXIiLCJhIjoiUmVralBPcyJ9.mJegAI1R6KR21x_CVVTlqw';
+  var mappy = new mapboxgl.Map({
+	  container: 'map',
+	  style: 'mapbox://styles/mapbox/light-v8',
+	  <!--style: 'mapbox://styles/kgeographer/cjstfpenh6o1e1fldz95w8m6p',-->
+	  center: [-1, 50],
+	  zoom: 1
+  });
   //
   // initializes map
   window.addEventListener('map:init', function (e) {
@@ -409,12 +360,10 @@
     var satellite  = L.tileLayer(mbstyle_url, {id:'mapbox/satellite-streets-v11', token:token_mb, attribution:attrib_mb})
     var osm  = L.tileLayer(mbstyle_url, {id:'mapbox/light-v10', token:token_mb, attribution:attrib_mb});
 
-	pleiades = L.mapboxGL({
+	var pleiades = L.mapboxGL({
 	  style:'mapbox://styles/kgeographer/ckc21ai6n5ozq1io64x91hndl',
 	  accessToken:token_kg,
 	  attribution:attrib_awmc})
-
-	<!--pleiades.getMapboxMap().addSource('lugares',{"type": "geojson","data": "../media/data/lugares_13k.jsonld"})	  -->
 	
     var countryStyle = {
       "color": "#ddd",
