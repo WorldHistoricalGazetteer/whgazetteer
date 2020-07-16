@@ -112,13 +112,23 @@
 			  <p class="mb-1">World Historical Gazetteer indexes place references drawn from historical sources, 
 				adding temporal depth to a core of approximately 1.8 million modern records.</p>
 			  <img src="{% static 'images/temporal-depth_splash.png'%}" width='250' />
-			  <p class="mb-1">This is a work-in-progress; to date ~60,000 temporally scoped place records have been added to our index.</p><p class="mb-1">We are also experimentally indexing 'traces' - annotations of external web resources describing any sort of historical phenomena with places relevant to it.</p><p class="mb-1">Both place and trace indexes can be searched above.</p>
+			  <p class="mb-1">This is a work-in-progress; to date ~60,000 temporally scoped place records have been added to our index. You can view the coverage of a few of our larger contributions by selecting from this list.</p>
+				<select id="map_dataset" name="region" class="custom-select-sm" style="width:auto;">
+				  <option value="0">Select dataset</option>
+				  <option disabled>___________</option>
+				  <option value="lugares">HGIS de las Indias (lugares)</option>
+				  <option value="owtrad">Old World Trade (OWTRAD)</option>
+				  <option value="alturayya">al-Turayya (11c Islam)</option>
+				  <!--{ for r in region_list %}-->
+					<!--<option value="{{ r.id }}">{{ r.title }}</option>-->
+				  <!--{ endfor %}-->
+				</select>		  
 			</div>
 			<div class="carousel-item">
 			  <p class="mb-1">Registered users can upload place datasets into a private workspace, augment them via reconciliation against Getty Thesaurus of Geographic Names (TGN) and/or Wikidata, publish them as Linked Open Data by flagging them as 'public', and eventually contribute them for accessionng to the WHG index.</p><p>Details are available in the 'Tutorials' and 'About' sections of this site.</p>
 			</div>
 			<div class="carousel-item">
-			  <p>slide 3</p>
+			  <p class="mb-1">We are also experimentally indexing 'traces' - annotations of external web resources describing any sort of historical phenomena with places relevant to it.</p><p class="mb-1">Both place and trace indexes can be searched above.</p>
 			</div>
 		  </div>
 		</div>	  
@@ -151,6 +161,12 @@
   window.area_objs = []
       
   $(function(){
+	$( "#map_dataset" ).change(function() {
+	  gl.removeLayer('heat_active')
+	  heat($(this).val())
+	  console.log('heat() for',$(this).val())
+	});	
+	
 	// popover content
 	$("#filter_help").attr(
 	  'data-content',"<p>GeoNames single-letter codes:</p>"+
@@ -334,68 +350,62 @@
   });
   // 
   function heat(dataset) {
-	gl=pleiades.getMapboxMap()
-	gl.addSource('lugares', {
-		"type": "geojson","data": "media/data/lugares_13k.jsonld"
-	});
 	console.log('heat()',dataset)
-	  //.addLayer({"id": "lugheat","type": "heatmap","source":"lugares"})
-	  // pleiades.getMapboxMap().addLayer({"id": "lugheat","type": "heatmap","source":"lugares"})
-	  gl.addLayer({
-		  "id": dataset+"-heat",
-		  "type": "heatmap",
-		  "source": dataset,
-		  "maxzoom": 9,
-		  "paint": {
-			  // Increase the heatmap weight based on frequency and property magnitude
-			  "heatmap-weight": [
-				  "interpolate",
-				  ["linear"],
-				  ["get", "mag"],
-				  0, 0,
-				  6, 1
-			  ],
-			  // Increase the heatmap color weight weight by zoom level
-			  // heatmap-intensity is a multiplier on top of heatmap-weight
-			  "heatmap-intensity": [
-				  "interpolate",
-				  ["linear"],
-				  ["zoom"],
-				  0, 1,
-				  9, 3
-			  ],
-			  // Color ramp for heatmap.  Domain is 0 (low) to 1 (high).
-			  // Begin color ramp at 0-stop with a 0-transparancy color
-			  // to create a blur-like effect.
-			  "heatmap-color": [
-				  "interpolate",
-				  ["linear"],
-				  ["heatmap-density"],
-				  0, "rgba(33,102,172,0)",
-				  0.2, "rgb(103,169,207)",
-				  0.4, "rgb(209,229,240)",
-				  0.6, "rgb(253,219,199)",
-				  0.8, "rgb(239,138,98)",
-				  1, "rgb(178,24,43)"
-			  ],
-			  // Adjust the heatmap radius by zoom level
-			  "heatmap-radius": [
-				  "interpolate",
-				  ["linear"],
-				  ["zoom"],
-				  0, 2,
-				  9, 20
-			  ],
-			  // Transition from heatmap to circle layer by zoom level
-			  "heatmap-opacity": [
-				  "interpolate",
-				  ["linear"],
-				  ["zoom"],
-				  7, 1,
-				  9, 0
-			  ],
-		  }
-	  });    
+	pleiades.getMapboxMap().addLayer({
+	  "id": "heat_active",
+	  "type": "heatmap",
+	  "source": dataset,
+	  "maxzoom": 9,
+	  "paint": {
+		  // Increase the heatmap weight based on frequency and property magnitude
+		"heatmap-weight": [
+		  "interpolate",
+		  ["linear"],
+		  ["get", "mag"],
+		  0, 0,
+		  6, 1
+		],
+		// Increase the heatmap color weight weight by zoom level
+		// heatmap-intensity is a multiplier on top of heatmap-weight
+		"heatmap-intensity": [
+		  "interpolate",
+		  ["linear"],
+		  ["zoom"],
+		  0, 1,
+		  9, 3
+		],
+		// Color ramp for heatmap.  Domain is 0 (low) to 1 (high).
+		// Begin color ramp at 0-stop with a 0-transparancy color
+		// to create a blur-like effect.
+		"heatmap-color": [
+		  "interpolate",
+		  ["linear"],
+		  ["heatmap-density"],
+		  0, "rgba(33,102,172,0)",
+		  0.2, "rgb(103,169,207)",
+		  0.4, "rgb(209,229,240)",
+		  0.6, "rgb(253,219,199)",
+		  0.8, "rgb(239,138,98)",
+		  1, "rgb(178,24,43)"
+		],
+		// Adjust the heatmap radius by zoom level
+		"heatmap-radius": [
+		  "interpolate",
+		  ["linear"],
+		  ["zoom"],
+		  0, 2,
+		  9, 20
+		],
+		// Transition from heatmap to circle layer by zoom level
+		"heatmap-opacity": [
+		  "interpolate",
+		  ["linear"],
+		  ["zoom"],
+		  7, 1,
+		  9, 0
+		],
+	  }
+	});    
   }
   //
   // initializes map
@@ -418,23 +428,22 @@
 	pleiades = L.mapboxGL({
 	  style:'mapbox://styles/kgeographer/ckc21ai6n5ozq1io64x91hndl',
 	  accessToken:token_kg,
-	  attribution:attrib_awmc})
-
-	<!--gl=pleiades.getMapboxMap()-->
-	
-	<!--gl.addSource('lugares', {-->
-		<!--"type": "geojson","data": "media/data/lugares_13k.jsonld"-->
-	<!--});-->
-
-	<!--gl.addSource('alturayya', {-->
-		<!--"type": "geojson",-->
-		<!--"data": "media/data/al-turayya.geojson"-->
-	<!--});    -->
-
-	<!--gl.addSource('owtrad', {-->
-		<!--"type": "geojson",-->
-		<!--"data": "media/data/owtrad.geojson"-->
-	<!--});    -->
+	  attribution:attrib_awmc}).addTo(mappy)
+	  
+	gl=pleiades.getMapboxMap().on('load',function(){
+	  gl.addSource('lugares', {
+			  "type": "geojson",
+			  "data": "media/data/lugares_13k.geojson"
+		  });	
+	  gl.addSource('owtrad', {
+			  "type": "geojson",
+			  "data": "media/data/owtrad.geojson"
+		  });	
+	  gl.addSource('alturayya', {
+			  "type": "geojson",
+			  "data": "media/data/al-turayya.geojson"
+		  });
+	})
 	
     var countryStyle = {
       "color": "#ddd",
@@ -451,7 +460,6 @@
           }
     });
 
-
     var baseLayers = {
       "Pleiades Terrain": pleiades,
       "OSM": osm,      
@@ -463,7 +471,7 @@
     }
     mappy.zoomControl.setPosition('topright')
     L.control.layers(baseLayers,dataLayers).addTo(mappy);
-    baseLayers["Pleiades Terrain"].addTo(mappy)
+    <!--baseLayers["Pleiades Terrain"].addTo(mappy)-->
   }, false);
 
   function map_init (home_map, options) {
