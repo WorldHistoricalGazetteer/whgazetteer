@@ -334,8 +334,14 @@
   });
   // 
   function heat(dataset) {
+	gl=pleiades.getMapboxMap()
+	gl.addSource('lugares', {
+		"type": "geojson","data": "media/data/lugares_13k.jsonld"
+	});
 	console.log('heat()',dataset)
-	  mappy.addLayer({
+	  //.addLayer({"id": "lugheat","type": "heatmap","source":"lugares"})
+	  // pleiades.getMapboxMap().addLayer({"id": "lugheat","type": "heatmap","source":"lugares"})
+	  gl.addLayer({
 		  "id": dataset+"-heat",
 		  "type": "heatmap",
 		  "source": dataset,
@@ -414,7 +420,21 @@
 	  accessToken:token_kg,
 	  attribution:attrib_awmc})
 
-	<!--pleiades.getMapboxMap().addSource('lugares',{"type": "geojson","data": "../media/data/lugares_13k.jsonld"})	  -->
+	<!--gl=pleiades.getMapboxMap()-->
+	
+	<!--gl.addSource('lugares', {-->
+		<!--"type": "geojson","data": "media/data/lugares_13k.jsonld"-->
+	<!--});-->
+
+	<!--gl.addSource('alturayya', {-->
+		<!--"type": "geojson",-->
+		<!--"data": "media/data/al-turayya.geojson"-->
+	<!--});    -->
+
+	<!--gl.addSource('owtrad', {-->
+		<!--"type": "geojson",-->
+		<!--"data": "media/data/owtrad.geojson"-->
+	<!--});    -->
 	
     var countryStyle = {
       "color": "#ddd",
