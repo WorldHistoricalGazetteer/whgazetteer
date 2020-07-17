@@ -197,9 +197,11 @@ class AreaSerializer(serializers.HyperlinkedModelSerializer):
         model = Area
         fields = ('title', 'type', 'geojson')
 
+
+""" used by SearchAPIView() from /api/db? """
 class LPFSerializer(serializers.HyperlinkedModelSerializer):
-    #dataset = serializers.ReadOnlyField(source='dataset.label')
     names = PlaceNameSerializer(many=True, read_only=True)
+    names = PlaceNameSerializer(source="placename_set", many=True, read_only=True)
     types = PlaceTypeSerializer(many=True, read_only=True)
     links = PlaceLinkSerializer(many=True, read_only=True)
     related = PlaceRelatedSerializer(many=True, read_only=True)
@@ -234,9 +236,11 @@ class LPFSerializer(serializers.HyperlinkedModelSerializer):
             gcoll["geometries"].append(g)
         return gcoll
     
+    
+    
     class Meta:
         model = Place
-        fields = ('url','type','properties','geometry',
-            'names','types','links','related',
-            'whens', 'descriptions', 'depictions','minmax'
+        #depth = 1
+        fields = ('url','type','properties','geometry','names', 'types','links'
+            ,'related','whens', 'descriptions', 'depictions','minmax'
         )

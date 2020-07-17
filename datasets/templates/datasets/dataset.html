@@ -212,11 +212,11 @@
               {% endif %}
               {% if links_added > 0 or geoms_added > 0 %}
                 <br/>Augmented dataset:
-                {% if ds.numrows <= 500 %}
+                {% if ds.numrows <= 5000 %}
                   {% if current_file.format == 'delimited' %}
                     <a href="{% url 'datasets:dl-aug' id=ds.id format='tsv' %}">TSV format</a>
                   {% elif current_file.format == 'lpf'   %}
-                    <a href="{ url 'datasets:dl-aug' id=ds.id format='lpf' %}">Linked Places format (120/min.)</a>
+                    <a href="{% url 'datasets:dl-aug' id=ds.id format='lpf' %}">Linked Places format (120/min.)</a>
                   {% endif %}
                 {% else %}  
                   <span class="red-head"><br/>Sorry, download of augmented datasets larger than 500 rows not supported right now; too slow :^(</span>
@@ -997,7 +997,6 @@ js for Browse
       }).addTo(mappy)
       
       // get dataset features -> renderMap() if < 15,000
-      <!--$.get("/api/geoms", {ds: "{{ ds.label }}", f: "{{ filter }}" },-->
       $.get("/api/geoms", {ds: "{{ ds.label }}", f: "{{ filter }}" },
         function(data){
           <!--console.log('feature count:',data.count)-->

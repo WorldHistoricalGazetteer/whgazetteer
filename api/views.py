@@ -319,7 +319,6 @@ class IndexAPIView(View):
   
 """
 class SearchAPIView(generics.ListAPIView):
-  #serializer_class = LPFSerializer
   renderer_classes = [JSONRenderer]
   filter_backends = [filters.SearchFilter]
   search_fields = ['@title']
@@ -335,10 +334,11 @@ class SearchAPIView(generics.ListAPIView):
     fc = params.get('fclass',None)
     fclasses=[x.upper() for x in fc.split(',')] if fc else None
     year = params.get('year',None)
-    maxrows = params.get('maxrows',None)
+    pagesize = params.get('pagesize',None)
     err_note = None
     print('SearchAPIView() params',params)
     qs = Place.objects.filter(dataset__public=True)
+    #qs = Place.objects.all()
 
     if all(v is None for v in [name,name_contains,id_]):
       # TODO: return a template with API instructions
@@ -360,21 +360,27 @@ class SearchAPIView(generics.ListAPIView):
         qs = qs.filter(dataset=ds) if ds else qs
         qs = qs.filter(ccodes__overlap=cc) if cc else qs
         
-      filtered = qs[:maxrows] if maxrows and maxrows < 200 else qs[:20]
+      filtered = qs[:pagesize] if pagesize and pagesize < 200 else qs[:20]
+
       serializer = LPFSerializer(filtered, many=True, context={'request': self.request})
       serialized_data = serializer.data
       result = {"count":qs.count(),
+                "pagesize": len(filtered),
                 "parameters": params,
                 "note": err_note,
+                "type": "FeatureCollection",
                 "features":serialized_data
                 }
       #print('place result',result)
       return JsonResponse(result, safe=False,json_dumps_params={'ensure_ascii':False,'indent':2})
 
 
+
+""" *** """
+""" TODO: the next two attempt the same and are WAY TOO SLOW """
 """ 
-    Paged list of places in dataset. 
     api/places/<str:dslabel>/[?q={string}]
+    Paged list of places in dataset. 
 """
 class PlaceAPIView(generics.ListAPIView):
   serializer_class = PlaceSerializer
@@ -392,50 +398,44 @@ class PlaceAPIView(generics.ListAPIView):
 
   permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
 
-
-"""
-  /api/datasets?
-  identical to places
-    
-"""
-class DatasetSearchView(generics.ListAPIView):
-  """    List public datasets    """
-  renderer_classes = [JSONRenderer]
-  filter_backends = [filters.SearchFilter]
   
-  def get_queryset(self, format=None, *args, **kwargs):
-    params=self.request.query_params  
-    print('api/datasets request',self.request)
-    
-    id_ = params.get('id', None)
-    dslabel = params.get('label', None)
-    query = params.get('q', None)
-    
-    qs = Dataset.objects.filter(public=True).order_by('label')
-    
-    if id_:
-      qs = qs.filter(id = id_)
-    elif dslabel:
-      qs = qs.filter(label = dslabel)
-    elif query is not None:
-      qs = qs.filter(Q(description__icontains=query) | Q(title__icontains=query))
+""" 
+    api/dataset/<str:dslabel>/lpf/
+    all places in a dataset, for download
+"""
+class DownloadDatasetAPIView(generics.ListAPIView):
+  """  Dataset as LPF FeatureCollection  """
+  #serializer_class = PlaceSerializer
+  #pagination_class = StandardResultsSetPagination
 
-    print('qs',qs)
-    #serializer = DatasetSerializer(qs, many=True, context={'request': self.request})
-    serializer = DatasetSerializer(qs, context={'request': self.request})
-    serialized_data = serializer.data
-    #print('serialized_data',serialized_data)
-    result = {
-              "count":qs.count(),
-              "parameters": params,
-              "features":serialized_data
-              #"features":qs
-              }
-    print('ds result type, value',type(result),result)
-    #return qs
-    #return result
-    return JsonResponse(result, safe=False,json_dumps_params={'ensure_ascii':False,'indent':2})
+  def get(self, format=None):
+    print('self.request.GET',self.request.GET)
+    dslabel=self.request.GET.get('dataset')
+    ds=get_object_or_404(Dataset,label=dslabel)
+    features = []
+    qs = ds.places.all()
+    for p in qs:
+      rec = {"type":"Feature",
+             "properties":{"id":p.id,"src_id":p.src_id,"title":p.title,"ccodes":p.ccodes},
+             "geometry":{"type":"GeometryCollection",
+                         "features":[g.jsonb for g in p.geoms.all()]},
+             "names": [n.jsonb for n in p.names.all()],
+             "types": [t.jsonb for t in p.types.all()],
+             "links": [l.jsonb for l in p.links.all()],
+             "whens": [w.jsonb for w in p.whens.all()],
+      }
+      #print('rec',rec)
+      features.append(rec)
     
+    result={"type":"FeatureCollection", "features": features}
+    print('result',result)
+    return JsonResponse(result, safe=False,json_dumps_params={'ensure_ascii':False,'indent':2})
+
+  #permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
+ 
+"""
+  /api/datasets? > query public datasets by id, label, term
+"""
 class DatasetAPIView(LoginRequiredMixin, generics.ListAPIView):
   """    List public datasets    """
   serializer_class = DatasetSerializer
@@ -525,26 +525,6 @@ class DownloadGeomsAPIView(generics.ListAPIView):
     #print('qs',qs)
     return qs
 
-""" 
-    api/dataset/<str:dslabel>/lpf/
-"""
-class DownloadDatasetAPIView(generics.ListAPIView):
-  """  Dataset as LPF FeatureCollection  """
-  serializer_class = PlaceSerializer
-  #pagination_class = StandardResultsSetPagination
-
-  def get_queryset(self, format=None, *args, **kwargs):
-    print('kwargs',self.kwargs)
-    print('self.request.GET',self.request.GET)
-    dslabel=self.kwargs['dslabel']
-    qs = Place.objects.all().filter(dataset=dslabel).order_by('title')
-    query = self.request.GET.get('q')
-    if query is not None:
-      qs = qs.filter(title__icontains=query)
-    return qs
-
-  permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
-
 """
   API 'home page' (not implemented)
 """
@@ -556,18 +536,10 @@ def api_root(request, format=None):
     })
 
 
-""" cf. https://www.django-rest-framework.org/api-guide/filtering/#djangofilterbackend """
-class FilteredSearchAPIView(generics.ListAPIView):
-  queryset = Place.objects.all()
-  serializer_class = LPFSerializer
-  renderer_classes = [JSONRenderer]
-  filter_backends = [DjangoFilterBackend]    
-  #filter_backends = [filters.SearchFilter]    
-  filterset_fields = ['title']
-
 class PrettyJsonRenderer(JSONRenderer):    
   def get_indent(self, accepted_media_type, renderer_context):
     return 2
+  
 #
 
 # Internal IN USE May 2020
@@ -589,7 +561,7 @@ class PlaceDetailAPIView(generics.RetrieveAPIView):
 
 """ 
     /api/geoms {ds:{{ ds.label }}} 
-    in dataset.html#browse
+    in dataset.html#browse for all geoms if < 15k
 """
 class GeomViewSet(viewsets.ModelViewSet):
   queryset = PlaceGeom.objects.all()
@@ -664,78 +636,4 @@ class AreaListView(View):
 class AreaViewSet(viewsets.ModelViewSet):
   queryset = Area.objects.all().order_by('title')
   serializer_class = AreaSerializer
-
-
-
-
-
-"""
-    dataset/<int:pk>/
-    in usingapi.html example
-"""
-class DatasetDetailAPIView(LoginRequiredMixin, generics.RetrieveAPIView):
-  """    dataset record by id   """
-  queryset = Dataset.objects.all().filter(public=True)
-  serializer_class = DatasetSerializer
-
-  permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
-  authentication_classes = [SessionAuthentication]
-
-
-#""" 
-  #Paged list of places w/title matching a query. 
-  #api/[?q={str}, ?ds={str}]
-#"""
-#class BoogeredSearchAPIView(generics.ListAPIView):
-  #serializer_class = PlaceSerializer
-  #pagination_class = StandardResultsSetPagination
-  #renderer_class = JSONRenderer
-
-  #def get_queryset(self, format=None, *args, **kwargs):
-    #req=self.request.GET
-    #if req.get('q') is None:
-      #result = {"errors":['Missing a query term, e.g. ?q=myplacename']}
-      #return Response(result)
-    ##print('kwargs',self.kwargs)
-    #print('self.request.GET',self.request.GET)
-    #dslabel = self.request.GET.get('ds')
-    #query = self.request.GET.get('q')
-    #qs = Place.objects.all()
-    #if dslabel is not None:
-      #qs = qs.filter(dataset=dslabel).order_by('title')
-    #if query is not None:
-      #qs = qs.filter(title__icontains=query)
-    #return qs
-
-  #permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
-
-"""
-    search index e.g. union/?idx=whg&_id=12345979
-    in usingapi.html example
-"""
-#class indexAPIView(View):
-  #@staticmethod
-  #def get(request):
-    #print('in indexAPIView, GET =',request.GET)
-    #"""
-        #args in request.GET:
-        #[string] idx: latest name for whg index
-        #[string] _id: same as whg_id in index
-        #"""
-    #es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
-    #idx = request.GET.get('idx')
-    #_id = request.GET.get('_id')
-    #q={"query": {"bool": {"must": [{"match":{"_id": _id }}]}}}
-    #res = es.search(index=idx, doc_type='place', body=q)
-    ## single hit (it's a unique id after all)
-    #hit = res['hits']['hits'][0]
-    #print('hit[_id] from indexAPIView()',hit['_id'])
-    ## now get traces
-    ## does hit have children?
-
-    ##qt={"query": {"bool": {"must": [{"match":{"_id": _id }}]}}}
-    ##res_t = es.search(index="traces", doc_type='trace', body=q)
-    ##print('indexAPIView _id',_id)
-    #print('indexAPIView hit',hit)
-    #return JsonResponse(hit, safe=True)
 

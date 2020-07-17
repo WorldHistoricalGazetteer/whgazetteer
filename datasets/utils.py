@@ -65,6 +65,136 @@ def download_gis(request, *args, **kwargs):
   
 # returns file in original format w/any new geoms, links
 def download_augmented(request, *args, **kwargs):
+  from django.db import connection
+  print('download_augmented kwargs',kwargs)
+  user = request.user.username
+  ds=get_object_or_404(Dataset,pk=kwargs['id'])
+  dslabel = ds.label
+  fileobj = ds.files.all().order_by('-rev')[0]
+  date=maketime()
+
+  req_format = kwargs['format']
+  if req_format is not None:
+    print('got format',req_format)
+    #qs = qs.filter(title__icontains=query)
+
+  features=ds.places.all() 
+  
+  if fileobj.format == 'delimited' and req_format == 'tsv':
+    print('augmented for delimited')
+    # make file name
+    fn = 'media/user_'+user+'/'+ds.label+'_aug_'+date+'.tsv'
+    def augLinks(linklist):
+      aug_links = []
+      for l in linklist:
+        aug_links.append(l.jsonb['identifier'])
+      return ';'.join(aug_links)
+
+    def augGeom(qs_geoms):
+      gobj = {'new':[]}
+      for g in qs_geoms:
+        if not g.task_id:
+          # it's an original
+          gobj['lonlat'] = g.jsonb['coordinates']
+        else:
+          # it's an aug/add
+          gobj['new'].append({"id":g.jsonb['citation']['id'],"coordinates":g.jsonb['coordinates']})
+      return gobj
+
+    with open(fn, 'w', newline='', encoding='utf-8') as csvfile:
+      writer = csv.writer(csvfile, delimiter='\t', quotechar='', quoting=csv.QUOTE_NONE)
+      writer.writerow(['id','whg_pid','title','ccodes','lon','lat','added','matches'])
+      for f in features:
+        geoms = f.geoms.all()
+        gobj = augGeom(geoms)
+        row = [str(f.src_id),
+               str(f.id),f.title,
+               ';'.join(f.ccodes),
+               gobj['lonlat'][0] if 'lonlat' in gobj else None,
+               gobj['lonlat'][1] if 'lonlat' in gobj else None,
+               gobj['new'] if 'new' in gobj else None,
+               str(augLinks(f.links.all()))
+        ]
+        writer.writerow(row)
+        #print(row)
+    response = FileResponse(open(fn, 'rb'),content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="'+os.path.basename(fn)+'"'
+          
+    return response
+  else:
+    print('download_augmented()')
+    # make file name
+    fn = 'media/user_'+user+'/'+ds.label+'_aug_'+date+'.json'
+    result={"type":"FeatureCollection","features":[]}
+    with open(fn, 'w', encoding='utf-8') as outfile:
+      with connection.cursor() as cursor:
+        cursor.execute("""with namings as 
+          (select place_id, jsonb_agg(jsonb) as names from place_name pn 
+          where place_id in (select id from places where dataset = '{ds}')
+          group by place_id ),
+          placetypes as 
+          (select place_id, jsonb_agg(jsonb) as "types" from place_type pt 
+          where place_id in (select id from places where dataset = '{ds}')
+          group by place_id ),
+          placelinks as 
+          (select place_id, jsonb_agg(jsonb) as links from place_link pl 
+          where place_id in (select id from places where dataset = '{ds}')
+          group by place_id ),
+          geometry as 
+          (select place_id, jsonb_agg(jsonb) as geoms from place_geom pg 
+          where place_id in (select id from places where dataset = '{ds}')
+          group by place_id ),
+          placewhens as
+          (select place_id, jsonb_agg(jsonb) as whens from place_when pw 
+          where place_id in (select id from places where dataset = '{ds}')
+          group by place_id ),
+          placerelated as
+          (select place_id, jsonb_agg(jsonb) as rels from place_related pr 
+          where place_id in (select id from places where dataset = '{ds}')
+          group by place_id ),
+          descriptions as
+          (select place_id, jsonb_agg(jsonb) as descrips from place_description pdes 
+          where place_id in (select id from places where dataset = '{ds}')
+          group by place_id ),
+          depictions as
+          (select place_id, jsonb_agg(jsonb) as depicts from place_depiction pdep 
+          where place_id in (select id from places where dataset = '{ds}')
+          group by place_id )	
+          select jsonb_build_object(
+            'type','Feature',
+            'properties', jsonb_build_object(
+                'id',p.id,'src_id',p.src_id),
+            'names',n.names,
+            'types',pt.types,
+            'links',pl.links,
+            'geometry',jsonb_build_object(
+                'type','GeometryCollection',
+                'geometries',g.geoms),
+            'whens',pw.whens,
+            'related',pr.rels,
+            'descriptions',pdes.descrips,
+            'depictions',pdep.depicts
+          ) from places p 
+          left join namings n on p.id = n.place_id
+          left join placetypes pt on p.id = pt.place_id
+          left join placelinks pl on p.id = pl.place_id
+          left join geometry g on p.id = g.place_id
+          left join placewhens pw on p.id = pw.place_id
+          left join placerelated pr on p.id = pr.place_id
+          left join descriptions pdes on p.id = pdes.place_id
+          left join depictions pdep on p.id = pdep.place_id
+          where dataset = '{ds}'        
+        """.format(ds=dslabel))
+        for row in cursor:
+          result['features'].append(row[0])
+        outfile.write(json.dumps(result,indent=2))
+    # response is reopened file
+    response = FileResponse(open(fn, 'rb'), content_type='text/json')
+    response['Content-Disposition'] = 'attachment; filename="'+os.path.basename(fn)+'"'
+    
+    return response
+      
+def download_augmented_slow(request, *args, **kwargs):
   print('download_augmented kwargs',kwargs)
   user = request.user.username
   ds=get_object_or_404(Dataset,pk=kwargs['id'])
@@ -124,7 +254,7 @@ def download_augmented(request, *args, **kwargs):
     fn = 'media/user_'+user+'/'+ds.label+'_aug_'+date+'.json'
 
     with open(fn, 'w', encoding='utf-8') as outfile:
-      fcoll = {"type":"FeatureCollection","features":[]}
+      #fcoll = {"type":"FeatureCollection","features":[]}
       for f in features:
         print('dl_aug, lpf adding feature:',f)
         feat={"type":"Feature",
@@ -147,8 +277,9 @@ def download_augmented(request, *args, **kwargs):
         feat['links'] = [l.jsonb for l in f.links.all()]
         feat['descriptions'] = [des.jsonb for des in f.descriptions.all()]
         feat['depictions'] = [dep.jsonb for dep in f.depictions.all()]
-        fcoll['features'].append(feat)  
-      outfile.write(json.dumps(fcoll,indent=2))
+        #fcoll['features'].append(feat)  
+        outfile.write(json.dumps(feat,indent=2))
+      #outfile.write(json.dumps(fcoll,indent=2))
 
     # response is reopened file
     response = FileResponse(open(fn, 'rb'), content_type='text/json')

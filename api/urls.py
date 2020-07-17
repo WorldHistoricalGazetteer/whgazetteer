@@ -10,33 +10,22 @@ urlpatterns = [
     path('api-auth/', include('rest_framework.urls')),
     #path('', views.api_root),
 
-    # *** SEARCH ***
+    # *** SEARCH (external) ***
 
+    # database places
     path('db/',views.SearchAPIView.as_view(),name='api-search'),
+    # index docs
     path('index/',views.IndexAPIView.as_view(),name='api-index-search'),
+    # traces
     path('traces/',views.TracesAPIView.as_view(),name='traces-search'),
-    
-    # experiment
-    path('filter/',views.FilteredSearchAPIView.as_view(),name='api-filtered-search'),
 
     # *** DATASETS ***
 
-    # use > query public datasets :: DatasetSerializer
+    # use > filter public datasets by id, label, term
     path('datasets/', views.DatasetAPIView.as_view(), name='dataset-list'),
-    #path('datasets/', views.DatasetSearchView.as_view(), name='dataset-search'),
     
-    # FOR DOWNLOAD
-    # db places in a dataset, lp format :: PlaceSerializer
-    path('dataset/<str:dslabel>/lpf/', views.DownloadDatasetAPIView.as_view(),name='dataset-lpf'), 
-    
-    # simple geojson :: FeatureSerializer
-    #path('dataset/<int:ds>/geom/', views.DownloadGeomsAPIView.as_view(),name='dataset-geom'),
-
 
     # *** PLACES ***
-
-    # all places in a dataset
-    path('places/<str:dslabel>/', views.PlaceAPIView.as_view(),name='place-list'), 
         
     # use > single place for dataset.html#browse:: PlaceSerializer
     path('place/<int:pk>/', views.PlaceDetailAPIView.as_view(),name='place-detail'),    
