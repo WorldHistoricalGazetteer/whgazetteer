@@ -679,11 +679,15 @@ span.edit-row {
 #api_content td, #api_content th {
   padding: .4rem;}
 
+#guide_content .subhead { display:block; background-color:#eee; padding-left:4px; margin-bottom:.2rem;}
+#guide_pages .subhead { padding-left:4px; margin-left:-4px; font-size:1.2rem;}
+#guide_content .answer { padding-left:4px;}
+#guide_pages h5 { font-size:1.1rem !important; margin-bottom:0;}
+#guide_pages h6 { margin-bottom:0;}
 #guide_using .nav-link { padding:.2rem .4rem; background-color:#eee; margin-right:.3rem;}
 #guide_using .nav-link.active { background-color:#336699;}
 #guide_using .tab-pane { border:none; padding-left:0;}
-#guide_using .subhead { display:block; background-color:#eee; padding-left:4px;}
-
+.contributing {padding:6px; font-size:.9rem; background-color:#f7f7f7;}
 
 /**
   Auth: Profile, etc
