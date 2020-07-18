@@ -14,10 +14,13 @@
       <div id="guide_tabs">
         <ul id="api_tabs" class="nav nav-tabs" role="tablist">
           <li class="nav-item">
-            <a class="nav-link active" id="guide-using-tab" data-toggle="tab" href="#guide_using" role="tab" aria-controls="place_db" aria-selected="true">Overview</a>
+            <a class="nav-link active" id="guide-using-tab" data-toggle="tab" href="#guide_using" role="tab" aria-controls="" aria-selected="true">Overview</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" id="guide-pages-tab" data-toggle="tab" href="#guide_pages" role="tab" aria-controls="place_idx" aria-selected="false">Page by page</a>
+            <a class="nav-link" id="guide-pages-tab" data-toggle="tab" href="#guide_pages" role="tab" aria-controls="" aria-selected="false">Page by page</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="guide-faq-tab" data-toggle="tab" href="#guide_faq" role="tab" aria-controls="" aria-selected="false">FAQ</a>
           </li>
         </ul>
       </div>
@@ -63,6 +66,7 @@
             </div>
           </div>
         </div>
+        <div id="guide_faq" class="tab-pane fade" role="tabpanel">wtaf???????</div>
         <div id="guide_pages" class="tab-pane fade" role="tabpanel">
           <div id="" class="tute-section">
             <h4 class="p-1">Home (search) page</h4>
@@ -139,11 +143,6 @@
               <li><i>exactMatch</i>: "...a high degree of confidence that two concepts can be used interchangeably across a wide range of information retrieval applications."</li></ul>
             <p>Furthermore, <i>closeMatch</i> is a super-property of <i>exactMatch</i>; that is, every <i>exactMatch</i> is also a <i>closeMatch</i>. Clear? Oh well. Practically speaking, for WHG both of these will serve as a linking "glue." Specifically, when we generate our union index, records that share one or more common links (closeMatch OR exactMatch) will be joined/linked, and returned together in response to queries. For example, records for Abyssinia and Ethiopia share two links, to a DBPedia record and a TGN record. Therefore, the appear together when searching for either Abyssinia or Ethiopia.</p>
           </div>
-          <!--<div id="" class="tute-section">-->
-            <!--<a name="maps"></a>-->
-            <!--<h4 class="p-1">Maps page</h4>-->
-            <!--<p>The heat maps presently appearing here are only serving to indicate the spatial extent of some datasets either already in WHG (HGIS de las Indias) or in the queue to enter soon. <mark>In time we will provide mapping that summarize WHG index contents in some way. Ideas (and coding help) are welcome!</mark></p>-->
-          <!--</div>-->
           <div class="tute-section">
             <a name="about"></a>
             <h4 class="p-1">About pages</h4>
