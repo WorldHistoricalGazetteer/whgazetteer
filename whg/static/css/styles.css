@@ -3,9 +3,10 @@ html, body {
   padding: 0;
   height: 100%;
   font-family:  'Raleway', sans-serif; 
+  
   /*background-color: #fff5e6;*/
 }
-
+body {overflow-y: scroll;}
 
 
 table {border-collapse:initial;}
@@ -188,7 +189,7 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
     background-repeat: no-repeat;
 }
 /*.navbar-brand {padding:0; }*/
-#beta_badge {
+#version_badge {
   font-size: 1rem;
   margin: 6px 0 0 30px;
 }
@@ -678,7 +679,10 @@ span.edit-row {
 #api_content td, #api_content th {
   padding: .4rem;}
 
-#api_cintent ul li {}
+#guide_using .nav-link { padding:.2rem .4rem; background-color:#eee; margin-right:.3rem;}
+#guide_using .nav-link.active { background-color:#336699;}
+#guide_using .tab-pane { border:none; padding-left:0;}
+#guide_using .subhead { display:block; background-color:#eee; padding-left:4px;}
 
 
 /**
