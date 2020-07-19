@@ -339,6 +339,7 @@ em { color: #993333;}
 #place_home_l tr, #place_home_l th {
   line-height: .2rem;
 }
+#place_home_r {padding-right:0;}
 #place_traces {
   max-height: 120px;
   /*overflow-y:scroll;*/
@@ -679,8 +680,8 @@ span.edit-row {
 #api_content td, #api_content th {
   padding: .4rem;}
 
-#guide_content .subhead { display:block; background-color:#eee; padding-left:4px; margin-bottom:.2rem;}
-#guide_pages .subhead { padding-left:4px; margin-left:-4px; font-size:1.2rem;}
+#guide_content .subhead { display:block; background-color:#eee; padding-left:4px; margin-left:-4px; margin-bottom:.2rem;}
+#guide_pages .subhead { padding-left:4px; font-size:1.2rem;}
 #guide_content .answer { padding-left:4px;}
 #guide_pages h5 { font-size:1.1rem !important; margin-bottom:0;}
 #guide_pages h6 { margin-bottom:0;}

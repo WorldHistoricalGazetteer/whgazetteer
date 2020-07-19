@@ -354,6 +354,15 @@
     <!--console.log(data)-->
     histogram(data,labels)
   }
+
+<!--var svg = d3.select('.chart-container').append("svg")-->
+    <!--.attr("width", '100%')-->
+    <!--.attr("height", '100%')-->
+    <!--.attr('viewBox','0 0 '+Math.min(width,height)+' '+Math.min(width,height))-->
+    <!--.attr('preserveAspectRatio','xMinYMin')-->
+    <!--.append("g")-->
+    <!--.attr("transform", "translate(" + Math.min(width,height) / 2 + "," + Math.min(width,height) / 2 + ")");-->
+    
   function histogram(data,labels){
     // exit if no data 
     if (data[0].bin == "Infinity"){ $("#histogram_sum").html('<i>None yet</i>'); return; }
@@ -362,10 +371,8 @@
       width = 500, height = 30,  padding_h = 20,  padding_w = 30;
       
     // set the ranges
-    <!--window.xScale = d3.scaleBand()-->
     window.xScale = d3.scaleLinear()
       .range([0, width])
-      <!--.padding(0.05);-->
     window.yScale = d3.scaleLinear()
       .range([height, 0]);
   
@@ -374,12 +381,15 @@
     yScale.domain([0, d3.max(data, function(d) { return d.count; })]);
     
     window.svg_hist = d3.select("#histogram_sum").append("svg")
-      .attr("width", width+padding_w)
+      <!--.attr("width", width)-->
+      .attr("width", '100%')
       .attr("height", height+padding_h)
-      <!--.attr("id", "tsvg_"+dataset)-->
-    .append("g")
+      .append("g")
       .attr("transform","translate(" + margin.left + "," + margin.top + ")")
-
+      
+      <!--.attr('viewBox','0 0 '+Math.min(width,height)+' '+Math.min(width,height))-->
+      <!--.attr('preserveAspectRatio','xMinYMin')-->
+  
     window.axisB = d3.axisBottom(xScale)
       .tickValues(labels.filter(function(d,i){return !(i%20)}))
       .tickFormat(d3.format("d"));
