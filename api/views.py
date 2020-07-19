@@ -542,12 +542,13 @@ class PrettyJsonRenderer(JSONRenderer):
   
 #
 
-# Internal IN USE May 2020
+# IN USE May 2020
 
 #
 """
     place/<int:pk>/
     in dataset.html#browse
+    "published record by place_id"
 """
 class PlaceDetailAPIView(generics.RetrieveAPIView):
   """  single database place record by id  """
@@ -555,6 +556,20 @@ class PlaceDetailAPIView(generics.RetrieveAPIView):
   serializer_class = PlaceSerializer
   renderer_classes = [PrettyJsonRenderer]
 
+  permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
+  authentication_classes = [SessionAuthentication]
+
+"""
+    place/<str:dslabel>/<str:src_id>/
+    published record by dataset label and src_id
+"""
+class PlaceDetailSourceAPIView(generics.RetrieveAPIView):
+  """  single database place record by src_id  """
+  queryset = Place.objects.all()
+  serializer_class = PlaceSerializer
+  renderer_classes = [PrettyJsonRenderer]
+
+  lookup_field = 'src_id'
   permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
   authentication_classes = [SessionAuthentication]
 

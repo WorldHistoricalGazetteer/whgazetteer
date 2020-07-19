@@ -387,7 +387,8 @@
       <!--console.log('t_geom',t_geom)-->
       if ('citation' in t_geom){
         t_geom['properties'] = {"id":t_geom['citation']['id'] }
-      } else t_geom['properties'] = {"id": t_geom.id,"ds": t_geom.ds!=null?t_geom.ds:ds}
+      <!--} else t_geom['properties'] = {"id": t_geom.id,"ds": t_geom.ds!=null?t_geom.ds:ds}-->
+      } else t_geom['properties'] = {"id": gelems[i].id,"ds": t_geom.ds!=null?t_geom.ds:ds}
       geom['features'].push(t_geom)
     }
 
@@ -404,7 +405,7 @@
       idToFeature = {} // for feature lookup
       features = L.geoJSON(geom, {
         pointToLayer: function (feature, latlng) {
-          <!--console.log(feature.properties)-->
+          console.log('feature.properties',feature.properties)
           matchid = feature.properties.id
           marker = L.circleMarker(latlng,
             {

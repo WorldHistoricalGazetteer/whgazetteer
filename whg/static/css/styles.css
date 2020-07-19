@@ -689,6 +689,7 @@ span.edit-row {
 #guide_using .nav-link.active { background-color:#336699;}
 #guide_using .tab-pane { border:none; padding-left:0;}
 .contributing {padding:6px; font-size:.9rem; background-color:#f7f7f7;}
+#pills-tabContent {height:calc(100vh - 350px) !important; overflow-y:scroll !important;}
 
 /**
   Auth: Profile, etc

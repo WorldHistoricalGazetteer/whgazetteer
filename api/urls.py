@@ -36,6 +36,9 @@ urlpatterns = [
     # use > map in dataset.html#browse :: PlaceGeomSerializer
     path('geoms/', views.GeomViewSet.as_view({'get':'list'}),name='geom-list'),    
 
+    # TODO: place/<str:dslabel>/<str:src_id>
+    path('place/<str:dslabel>/<str:src_id>/', views.PlaceDetailSourceAPIView.as_view(),name='place-detail-src'),        
+    
     # 
     # *** AREAS ***
     # 
