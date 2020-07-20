@@ -103,9 +103,10 @@
 	  <div id="splash">
 		<div id="carouselExampleIndicators" class="carousel slide" data-interval="false" data-ride="carousel">
 		  <ol class="carousel-indicators">
-			<li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
-			<li data-target="#carouselExampleIndicators" data-slide-to="1"></li>
-			<li data-target="#carouselExampleIndicators" data-slide-to="2"></li>
+			<li data-target="#carouselExampleIndicators" data-slide-to="0" class="active">1</li>
+			<li data-target="#carouselExampleIndicators" data-slide-to="1">2</li>
+			<li data-target="#carouselExampleIndicators" data-slide-to="2">3</li>
+			<li data-target="#carouselExampleIndicators" data-slide-to="3">4</li>
 		  </ol>
 		  <div class="carousel-inner">
 			<div class="carousel-item active">
@@ -113,16 +114,18 @@
 				adding temporal depth to a core of approximately 1.8 million modern records.</p>
 			  <img src="{% static 'images/temporal-depth_splash.png'%}" width='250' />
 			  <p class="mb-1">This is a work-in-progress; to date ~60,000 temporally scoped place records have been added to our index. You can view the coverage of a few of our larger contributions by selecting from this list.</p>
-				<select id="map_dataset" name="region" class="custom-select-sm" style="width:auto;">
-				  <option value="0">Select dataset</option>
-				  <option disabled>___________</option>
+			  <div id="map_select">
+				<select id="map_dataset" name="region" class="custom-select-sm">
+				  <option value="0">Display dataset</option>
+				  <!--<option disabled>___________</option>-->
 				  <option value="lugares">HGIS de las Indias (lugares)</option>
 				  <option value="owtrad">Old World Trade (OWTRAD)</option>
 				  <option value="alturayya">al-Turayya (11c Islam)</option>
-				  <!--{ for r in region_list %}-->
-					<!--<option value="{{ r.id }}">{{ r.title }}</option>-->
-				  <!--{ endfor %}-->
-				</select>		  
+				</select>
+			  </div>
+			</div>
+			<div class="carousel-item">
+			  <p class="mb-1">current stats</p>
 			</div>
 			<div class="carousel-item">
 			  <p class="mb-1">Registered users can upload place datasets into a private workspace, augment them via reconciliation against Getty Thesaurus of Geographic Names (TGN) and/or Wikidata, publish them as Linked Open Data by flagging them as 'public', and eventually contribute them for accessionng to the WHG index.</p><p>Details are available in the 'Tutorials' and 'About' sections of this site.</p>
