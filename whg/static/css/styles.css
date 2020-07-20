@@ -82,6 +82,7 @@ label {vertical-align:top;}
   text-indent: -.2rem;} 
 .hidden {display:none;}
 .hidden-imp {display:none !important;}
+.pointer {cursor:pointer;}
 .pop-link {color: #993300; border-bottom: 1px dashed;cursor:pointer;}
 .popover-body p {margin:0;}
 .table td, .table th {padding: .5rem;}

@@ -39,7 +39,8 @@
 		  <div class="form-check form-check-inline">
 			<input class="form-check-input hover" type="radio" name="class" id="r_trace" value="trace" rel="Enter term or name">
 			<label class="form-check-label" for="r_trace">Traces
-				<span class="ml-1"><a href="#" onClick='return false;' title="historical entities having spatial-temporal 'footprints'" rel="tooltip">{% fontawesome_icon 'question-circle' color='#336699' %}</a></span>                
+				<!--<span class="ml-1">-->
+				  <!--<a href="#" onClick='return false;' title="historical entities having spatial-temporal 'footprints'" rel="tooltip">{ fontawesome_icon 'question-circle' color='#336699' }</a></span>                -->
 			</label>
 			<!--<span class="float-right">{ fontawesome_icon 'filter' color='#336699' %}</span>-->
 		  </div>
@@ -55,8 +56,7 @@
         <div id="search_filters" class="hidden">
           <p class="mb-0">feature class 
             <span class="ml-1 float-right">
-		  <a id="filter_help" data-toggle="popover" title="Feature classes" data-content="" tabindex="0" data-trigger="focus">
-			  {% fontawesome_icon 'question-circle' color='#993300' %}</a></span>
+		  <a id="filter_help" class="pointer" data-toggle="popover" title="Feature classes" data-content="" tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a></span>
 		  </p>
           <div>
           <label class="checkbox-inline fclass"><input type="checkbox" value="A"> A&nbsp;</label>
@@ -67,8 +67,8 @@
           <label class="checkbox-inline fclass"><input type="checkbox" value="T"> T&nbsp;</label>
 		  </div>
           <p class="mb-0">temporal
-			<span class="float-right"><a id="temporal_help" data-toggle="popover" title="Temporal filter" data-content="start = not before<br/>end = not after <p>NOTE: most records do not have temporal attributes at this stage</p>" tabindex="0" data-trigger="focus">
-			  {% fontawesome_icon 'question-circle' color='#993300' %}</a></span>
+			<span class="float-right"><a id="temporal_help" class="pointer" data-toggle="popover" title="Temporal filter" data-content="start = not before<br/>end = not after <p>NOTE: most records do not have temporal attributes at this stage</p>" tabindex="0" data-trigger="focus">
+			  {% fontawesome_icon 'question-circle' color='#336699' %}</a></span>
 		  </p>
           <div>
             <label class="input-sm">start <input id="input_start" type="text" value = "" size="5"></label>
@@ -77,7 +77,7 @@
           </div>
           <p class="mb-0">spatial
 			<span class="float-right">
-			<a id="spatial_help" data-toggle="popover" title="Spatial filter" data-content="" tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#993300' %}</a></span>	  
+			<a id="spatial_help" class="pointer" data-toggle="popover" title="Spatial filter" data-content="" tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a></span>	  
 		  </p>
           <div>
             <label><input id="input_area" type="text" size="30" placeholder="Region, country, study area"></label>
@@ -101,12 +101,12 @@
 		<p>We have indexed several dozen exemplar <span class="strong red-head">trace annotations</span>: i.e. datasets annotating such trace data web resources with identifiers for places referenced in a resource as relevant to the trace. See <a href="">what?</a> for more detail.</p>
 	  </div>
 	  <div id="splash">
-		<div id="carouselExampleIndicators" class="carousel slide" data-interval="false" data-ride="carousel">
+		<div id="carouselSplash" class="carousel slide" data-interval="false" data-ride="carousel">
 		  <ol class="carousel-indicators">
-			<li data-target="#carouselExampleIndicators" data-slide-to="0" class="active">1</li>
-			<li data-target="#carouselExampleIndicators" data-slide-to="1">2</li>
-			<li data-target="#carouselExampleIndicators" data-slide-to="2">3</li>
-			<li data-target="#carouselExampleIndicators" data-slide-to="3">4</li>
+			<li data-target="#carouselSplash" data-slide-to="0" class="active">1</li>
+			<li data-target="#carouselSplash" data-slide-to="1">2</li>
+			<li data-target="#carouselSplash" data-slide-to="2">3</li>
+			<li data-target="#carouselSplash" data-slide-to="3">4</li>
 		  </ol>
 		  <div class="carousel-inner">
 			<div class="carousel-item active">
@@ -131,7 +131,9 @@
 			  <p class="mb-1">Registered users can upload place datasets into a private workspace, augment them via reconciliation against Getty Thesaurus of Geographic Names (TGN) and/or Wikidata, publish them as Linked Open Data by flagging them as 'public', and eventually contribute them for accessionng to the WHG index.</p><p>Details are available in the 'Tutorials' and 'About' sections of this site.</p>
 			</div>
 			<div class="carousel-item">
-			  <p class="mb-1">We are also experimentally indexing 'traces' - annotations of external web resources describing any sort of historical phenomena with places relevant to it.</p><p class="mb-1">Both place and trace indexes can be searched above.</p>
+			  <p class="mb-1">Traces are an experimental feature of WHG, conceived in collaboration with the Pelagios project. A <span class="strong red-head">trace</span> is any sort of historical phenomena, including people, events, archaeological and museum objects, texts, art works, and so on.</p>
+			  <p><span class="strong red-head">Trace data</span> are web-accessible descriptions and depictions of traces, which may take the form of text, images, datasets, or video, published to the web with permanent URIs.</p>
+			  <p>We have indexed several dozen exemplar <span class="strong red-head">trace annotations</span>: i.e. datasets annotating such trace data web resources with identifiers for places referenced in a resource as relevant to the trace. See <a href="">what?</a> for more detail.</p>
 			</div>
 		  </div>
 		</div>	  
@@ -192,11 +194,25 @@
 	
 	// show filters, hide splash and vice versa
     $("#link_filters").click(function(){
-      <!--e.preventDefault()-->
-	  <!--$("#splash").toggle()-->
-	  if($("#splash")[0].hidden == false) {$("#splash").hide()}
-	  if($("#result_list")[0].hidden == true) {$("#splash").show()}
-      $("#search_filters").toggle(400)
+	  if($("#search_filters").is(":visible")){
+		$("#splash").show()
+	  } else {
+		$("#splash").hide()
+	  }
+	  <!--if($("#search_filters")[0].hidden==true){-->
+		<!--console.log('filters were hidden')-->
+	  <!--} else {-->
+		<!--console.log('filters were visible')-->
+	  <!--}-->
+	  $("#search_filters").toggle(400)
+	  
+	  <!--if($("#splash")[0].hidden == false) {-->
+		<!--$("#splash").hide()-->
+	  <!--} else {-->
+		<!--$("#splash").show()-->
+	  <!--}-->
+	  <!--if($("#result_list")[0].hidden == true) {$("#splash").show()}-->
+      <!--$("#search_filters").toggle(400)-->
     })
 	// 
 	$("label[for='input_box']").click(function(){
@@ -334,18 +350,27 @@
   $('input[type=radio][name=class]').change(function() {
     console.log('changed class',$(this).val())
     if ($(this).val() == 'place'){
+	  if(!$("#splash").is(":visible")){
+		$("#splash").show()
+	  }
+	  $(".carousel").carousel(0)
 	  $("#filters_opener").show()
       $("#input_box").show()
       $("#input_box_traces").hide()
 	  $("#splash_traces").hide()
 	  $("#splash").show()
     } else {
+	  if(!$("#splash").is(":visible")){
+		$("#splash").show()
+	  }
+	  $(".carousel").carousel(3)
 	  $("#filters_opener").hide()
       $("#input_box").hide()
       $("#search_filters").hide()
       $("#input_box_traces").show()
-	  $("#splash").hide()
-	  $("#splash_traces").show()
+	  <!--$("#splash").hide()-->
+	  $('.nav-pills a[href="#pills-why"]').tab('show')
+	  <!--$("#splash_traces").show()-->
     }
     $('#input_box').val('')
     $('#input_box').attr("placeholder",this.getAttribute("rel"));
