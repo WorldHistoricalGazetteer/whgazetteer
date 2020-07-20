@@ -6,7 +6,7 @@ from main.models import Comment
 from main.choices import COMMENT_TAGS
 from bootstrap_modal_forms.forms import BSModalForm
 
-class FeedbackForm(forms.Form):
+class ContactForm(forms.Form):
     from_email = forms.EmailField(required=True,label="Your email address ")
     subject = forms.CharField(required=True)
     message = forms.CharField(widget=forms.Textarea, required=True)

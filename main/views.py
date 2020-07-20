@@ -1,8 +1,8 @@
 # main.views
 
 from django.core.mail import send_mail, BadHeaderError
-from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render, get_object_or_404, redirect, render_to_response
+from django.http import HttpResponse
+from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 
 from main.models import Comment
@@ -10,7 +10,7 @@ from datasets.tasks import testAdd
 from places.models import Place
 from bootstrap_modal_forms.generic import BSModalCreateView
 
-from .forms import CommentModalForm, FeedbackForm
+from .forms import CommentModalForm, ContactForm
 from elasticsearch import Elasticsearch
 es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 import requests
@@ -48,29 +48,33 @@ def statusView(request):
         
     return render(request, "main/status.html", {"context":context})
 
-def feedbackView(request):
-    print('feedback request.GET',request.GET)
+def contactView(request):
+    print('contact request.GET',request.GET)
     sending_url = request.GET.get('from')
     if request.method == 'GET':
-        form = FeedbackForm()
+        form = ContactForm()
     else:
-        form = FeedbackForm(request.POST)
+        form = ContactForm(request.POST)
         if form.is_valid():
             subject = form.cleaned_data['subject']
             from_email = form.cleaned_data['from_email']
             message = from_email+' says: \n'+form.cleaned_data['message']
+            subject_reply = "WHG message received"
+            message_reply = 'We received your message concerning "'+subject+'" and will respond soon.\n\n reagrds,\nThe WHG project team'
             try:
-                #send_mail(subject, message, from_email, ['whgazetteer@gmail.com'])
-                send_mail(subject, message, from_email, ['whg@pitt.edu', "karl.geog@gmail.com"])
+                send_mail(subject, message, from_email, ['whg@pitt.edu', 'scg52@pitt.edu', "karl.geog@gmail.com"])
+                send_mail(subject_reply, message_reply, 'whg@pitt.edu', [from_email])
             except BadHeaderError:
                 return HttpResponse('Invalid header found.')
-            #return redirect('success')
-            return redirect(sending_url)
-    return render(request, "main/feedback.html", {'form': form})
+            return redirect('/success?return='+sending_url)
+            #return redirect(sending_url)
+    return render(request, "main/contact.html", {'form': form})
 
-def feedbackSuccessView(request):
-    #return render_to_response('home', message='Feedback sent, thanks!')
-    return HttpResponse('Thank you for your feedback!')
+def contactSuccessView(request, *args, **kwargs):
+    returnurl = request.GET.get('return')
+    print('return, request',returnurl, str(request.GET))
+    return HttpResponse(
+        '<div style="font-family:sans-serif;margin-top:3rem; width:50%; margin-left:auto; margin-right:auto;"><h4>Thank you for your message! We will reply soon.</h4><p><a href="'+returnurl+'">Return</a><p></div>')
     #return redirect('/')
 
 class CommentCreateView(BSModalCreateView):
