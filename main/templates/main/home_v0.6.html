@@ -95,11 +95,6 @@
         <ul class="list-inline"></ul>
       </div>
       <div id="result_list" class="hidden"></div>
-	  <div id="splash_traces" class="hidden p-2">
-		<p>Traces are an experimental feature of WHG, conceived in collaboration with the Pelagios project. A <span class="strong red-head">trace</span> is any sort of historical phenomena, including people, events, archaeological and museum objects, texts, art works, and so on.</p>
-		<p><span class="strong red-head">Trace data</span> are web-accessible descriptions and depictions of traces, which may take the form of text, images, datasets, or video, published to the web with permanent URIs.</p>
-		<p>We have indexed several dozen exemplar <span class="strong red-head">trace annotations</span>: i.e. datasets annotating such trace data web resources with identifiers for places referenced in a resource as relevant to the trace. See <a href="">what?</a> for more detail.</p>
-	  </div>
 	  <div id="splash">
 		<div id="carouselSplash" class="carousel slide" data-interval="false" data-ride="carousel">
 		  <ol class="carousel-indicators">
@@ -110,14 +105,13 @@
 		  </ol>
 		  <div class="carousel-inner">
 			<div class="carousel-item active">
-			  <p class="mb-1">World Historical Gazetteer indexes place references drawn from historical sources, 
-				adding temporal depth to a core of approximately 1.8 million modern records.</p>
-			  <img src="{% static 'images/temporal-depth_splash.png'%}" width='250' />
-			  <p class="mb-1">This is a work-in-progress; to date ~60,000 temporally scoped place records have been added to our index. You can view the coverage of a few of our larger contributions by selecting from this list.</p>
+			  <p class="mb-0">World Historical Gazetteer indexes place data drawn from historical sources, contributed by research projects and individuals studying the past from many disciplinary perspectives.<p>
+			  <!--<img src="{ static 'images/.png'%}" width='250' />-->
+			  <p class="mb-0">This is a work-in-progress. To date about 60,000 temporally scoped place records have been added to our index, supplying "temporal depth" to a core of approximately 1.8 million modern records</p>
+			  <p>You can view the coverage of a few of our larger early contributions by selecting from this list.</p>
 			  <div id="map_select">
 				<select id="map_dataset" name="region" class="custom-select-sm">
 				  <option value="0">Display dataset</option>
-				  <!--<option disabled>___________</option>-->
 				  <option value="lugares">HGIS de las Indias (lugares)</option>
 				  <option value="owtrad">Old World Trade (OWTRAD)</option>
 				  <option value="alturayya">al-Turayya (11c Islam)</option>
@@ -125,10 +119,14 @@
 			  </div>
 			</div>
 			<div class="carousel-item">
-			  <p class="mb-1">current stats</p>
+			  <p class="mb-1">Registered users can upload place datasets into a private workspace, augment them via reconciliation against Getty Thesaurus of Geographic Names (TGN) and/or Wikidata, publish them as Linked Open Data by flagging them as 'public', and eventually contribute them for accessionng to the WHG index.</p><p>Details are available in the 'Tutorials' and 'About' sections of this site.</p>
 			</div>
 			<div class="carousel-item">
-			  <p class="mb-1">Registered users can upload place datasets into a private workspace, augment them via reconciliation against Getty Thesaurus of Geographic Names (TGN) and/or Wikidata, publish them as Linked Open Data by flagging them as 'public', and eventually contribute them for accessionng to the WHG index.</p><p>Details are available in the 'Tutorials' and 'About' sections of this site.</p>
+			  <h6 class="mb-1 strong">Current Counts</h6>
+			  <p><mark>nnnnnnnnn</mark> places</p>
+			  <p><mark>nnnnnnnnn</mark> names</p>
+			  <p><mark>nn</mark> uploaded datasets</p>
+			  <p><mark>nn</mark> indexed datasets</p>
 			</div>
 			<div class="carousel-item">
 			  <p class="mb-1">Traces are an experimental feature of WHG, conceived in collaboration with the Pelagios project. A <span class="strong red-head">trace</span> is any sort of historical phenomena, including people, events, archaeological and museum objects, texts, art works, and so on.</p>

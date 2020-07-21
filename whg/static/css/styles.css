@@ -137,7 +137,7 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
   width:30px; height:auto;text-align:center; }
 .carousel-indicators .active {background-color:#993300;}
 /*.carousel-inner {background-color: #e4e4e4;}*/
-#map_select{padding-top:.7rem;width:70%;margin:auto;}
+#map_select{width:70%;margin:auto;}
 .list-inline { padding-left: 4px;}
 .active-filter a {font-weight:bold; color:#993333 !important;}
 #search_input label { position:absolute; right: 20px; z-index:10;}

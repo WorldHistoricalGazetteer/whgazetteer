@@ -1285,9 +1285,11 @@ class DashboardView(LoginRequiredMixin, ListView):
     print('in get_context',me)
 
     types_ok=['ccodes','copied','drawn']
-    # returns permitted datasets (rw) + black and dplace (ro)
+    # returns owned and permissioned datasets (rw) + black and dplace (ro)
     context['shared_list'] = Dataset.objects.filter(Q(id__in=myprojects(me)) | Q(id__lt=3) ).order_by('-id')
-    
+
+    context['public_list'] = Dataset.objects.filter(public=True).order_by('-numrows')
+        
     # list areas
     userareas = Area.objects.all().filter(type__in=types_ok).order_by('created')
     context['area_list'] = userareas if me.is_superuser else userareas.filter(owner=self.request.user)
