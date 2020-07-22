@@ -345,9 +345,8 @@ def makeDoc(place,parentid):
       "links": parsePlace(place,'links'),
       #"timespans": parsePlace(place,'whens'),
       # new, for index whg03
-      "timespans": [{"gte":t[0],"lte":t[1]} for t in place.timespans] if place.timespans !=None else [],
-      #"minmax": [],
-      "minmax": {"gte":place.minmax[0],"lte":place.minmax[1]} if place.minmax !=None else [],
+      "timespans": [{"gte":t[0],"lte":t[1]} for t in place.timespans] if place.timespans not in [None,[]] else [],
+      "minmax": {"gte":place.minmax[0],"lte":place.minmax[1]} if place.minmax not in [None,[]] else [],
       "descriptions": parsePlace(place,'descriptions'),
       "depictions": parsePlace(place,'depictions'), 
       "relations": parsePlace(place,'related'),

@@ -655,7 +655,7 @@ em { color: #993333;}
 }
 
 tr.place-row, tr.dataset-row {
-  cursor: pointer;
+  /*cursor: pointer;*/
   line-height: 1.3rem;
   font-size: .9em;
 }
