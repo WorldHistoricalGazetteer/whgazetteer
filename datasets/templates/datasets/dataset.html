@@ -62,7 +62,9 @@
               <a href="#" class="edit-title">{% fontawesome_icon 'edit' color='#336699' %}</a>
             </td>
             <td>
-              <span class="form-title bigger strong">{{ form.title.value }}</span>
+              <span class="form-title bigger strong">{{ form.title.value }}
+                {% if ds.webpage %}<td> (<a href="{{ ds.webpage }}" target="_blank">webpage</a>){% endif %}
+              </span>
               <span class="hidden editing-title">{{ form.title }}</span>&nbsp;
             </td>
           </tr>
@@ -96,6 +98,10 @@
           <tr>
             <td><b>Dataset status</b></td>
             <td>{{ ds.ds_status }}</td>
+          </tr>
+          <tr>
+            <td><b>Creator</b></td>
+            <td>{{ ds.creator }}</td>
           </tr>
         </table>
         <input class="btn btn-primary btn-sm hidden btn-ds" type="submit" value="Save" />

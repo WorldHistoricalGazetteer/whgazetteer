@@ -921,6 +921,15 @@ def align_whg(pk, *args, **kwargs):
     
   # queryset depends on choice of scope in addtask form
   qs = ds.places.all() if scope == 'all' else ds.places.all().filter(indexed=False)
+
+  """ ONE-OFF TO COMPLETE EURATLAS """
+  # unindexed euratlas pids 2901
+  #ds_pidset=set(ds.places.all().filter(indexed=False).values_list('id',flat=True)); len(ds_pidset) 
+  ## already aligned (have hits) 2241
+  #hitpidset=set(Hit.objects.filter(task_id='f643a4ca-c513-4bc6-a3ec-5d6dbd3fa230').values_list('place_id_id',flat=True))
+  #todo=list(ds_pidset-hitpidset); len(todo) # 660
+  #qs = ds.places.all().filter(id__in=todo)
+  """ END """
   
   """
   build query object 'qobj'
@@ -928,7 +937,6 @@ def align_whg(pk, *args, **kwargs):
   """
   for place in qs:
     #place=get_object_or_404(Place,id=6369031) # Aachen
-    # (2 index docs with tgn:7004799 link)
     count +=1
     qobj = {"place_id":place.id, "src_id":place.src_id, "title":place.title}
     links=[]; ccodes=[]; types=[]; variants=[]; parents=[]; geoms=[]; 
