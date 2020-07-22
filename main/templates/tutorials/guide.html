@@ -12,9 +12,9 @@
     <div id="guide_content" class="mx-5">
       <p class="lead">Welcome to Version 1 of the World Historical Gazetteer (WHG) platform. WHG remains a work-in-progress, so expect refinements, new features and new data in subsequent releases. Notes about planned near-future updates appear <mark>highlighted like this</mark>.</p>
       <div id="guide_tabs">
-        <ul id="api_tabs" class="nav nav-tabs" role="tablist">
+        <ul class="nav nav-tabs" role="tablist">
           <li class="nav-item">
-            <a class="nav-link active" id="guide-using-tab" data-toggle="tab" href="#guide_using" role="tab" aria-controls="" aria-selected="true">Overview</a>
+            <a class="nav-link active" id="guide-overview-tab" data-toggle="tab" href="#guide_overview" role="tab" aria-controls="" aria-selected="true">Overview</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" id="guide-pages-tab" data-toggle="tab" href="#guide_pages" role="tab" aria-controls="" aria-selected="false">Page by page</a>
@@ -24,9 +24,9 @@
           </li>
         </ul>
       </div>
-      <div class="tab-content">
-        <div id="guide_using" class="tab-pane fade show active" role="tabpanel">
-          <ul class="nav nav-pills nav-fill mt-3 mb-1" id="pills-tab" role="tablist">
+      <div id="tab_content" class="tab-content">
+        <div id="guide_overview" class="guide tab-pane fade show active" role="tabpanel">
+          <ul class="nav nav-pills nav-fill mt-3 mb-1" role="tablist">
             <li class="nav-item">
               <a class="nav-link" id="pills-why-tab" data-toggle="pill" href="#pills-why" role="tab" aria-controls="pills-why" aria-selected="true">Why WHG?</a>
             </li>
@@ -127,112 +127,137 @@
         </div>
         <div id="guide_faq" class="tab-pane fade" role="tabpanel">
           <div id="" class="tute-section">
-            <p class="subhead">How many place names have there ever been?</p>
+            <p class="subhead">What is a "place" in WHG?</p>
+            <p class="answer">well...</p>
+            <p class="subhead">What is the geographic and temporal scope of WHG?</p>
+            <p class="answer">Let's find out</p>
+            <p class="subhead">Are some traces places, and vice versa?</p>
+            <p class="answer">A number of spatial-temporal entities could be modeled as either. For example...</p>
+            <p class="subhead">Are there "preferred names" in WHG?</p>
+            <p class="answer">Let's find out</p>
+            <p class="subhead">Does WHG suport multiple languages?</p>
+            <p class="answer">Let's find out</p>
+            <p class="subhead">How and why does WHG use modern country boundaries?</p>
+            <p class="answer">Let's find out</p>
+            <p class="subhead">Can contribution include urban-scale features?</p>
             <p class="answer">Let's find out</p>
           </div>
         </div>
-        <div id="guide_pages" class="tab-pane fade" role="tabpanel">
-          <div id="gp_home" class="tute-section mt-2">
-            <p class="subhead strong">Home/Search</p>
-            <div class="p-1">
-              <h5>Register/Login/User Profile</h5>
-              <p>Registration and login are required to be able to upload datasets, designate collaborators, to use our reconciliation services to find matches in modern placename authorities (<a href="http://www.getty.edu/research/tools/vocabularies/tgn/" target="_blank">Getty Thesaurus of Geographic Names (TGN)</a> and <a href="https://www.wikidata.org/wiki/Wikidata:Main_Page" target="_blank">Wikidata</a> so far), and ultimately, to contribute your data to the WHG index. Once logged in, top-level menu options for "Data", user profile appear.</p>
-              <h5>Search</h5>
-              <h6>Places</h6>
-              <mark>Autocomplete (available for Trace searches) will be added for Place searches soon.</mark>
-              <p>Place search runs against a union index of ~1.8m core records (~3m names) and all contributed datasets. Typing a name then pressing the {Enter} key performs a search, presents a list of results, and maps those which have geometry (not all do). Clicking a result item will highlight it on the map, providing further context. Clicking the name link takes you to the index record's "portal" page where any number of attestation "cards" drawn from our core datasets (grey banner) and multiple contributed datasets (beige banner) are gathered.</p>
-              <p>Filters are available to constrain place searches: a) GeoNames feature class, b) temporal (not before, not after), and c) spatial (bounds of world regions, modern countries, and user "study areas."). Search results can be further filtered by place type.
-              <h6>Traces</h6>
-              <p> Search for trace data runs against a separate index. At this time there are only a few dozen example trace records. Try typing 'empire' to see a couple of examples. Selecting an auto-suggestion will perform the search and the places referenced in the trace record are mapped. As with places, clicking a result item highlights the place on the map, and clicking its name takes you to its place portal page.</p>
-              <p><mark>Integration of trace data</a> is at an early experimental stage. We welcome suggestions for how trace data can be better integrated into the WHG interface.</mark></p>
-              <h5>Dataset mapper</h5>
-              <p>Heat maps indicating coverage for some larger contributed datasets are available via a dropdown menu.</p>
+        <div id="guide_pages" class="guide tab-pane fade" role="tabpanel">
+          <ul class="nav nav-pills nav-fill mt-3 mb-1" role="tablist">
+            <li class="nav-item">
+              <a class="nav-link active" id="pills-why-tab" data-toggle="pill" href="#pills-home" role="tab" aria-controls="pills-why" aria-selected="true">Home/Search</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="pills-what-tab" data-toggle="pill" href="#pills-data" role="tab" aria-controls="pills-what" aria-selected="false">Data Dashboard</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="pills-do-tab" data-toggle="pill" href="#pills-dataset" role="tab" aria-controls="pills-do" aria-selected="false">Dataset Portal</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="pills-comm-tab" data-toggle="pill" href="#pills-recon" role="tab" aria-controls="pills-comm" aria-selected="false">Reconciliation</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="pills-comm-tab" data-toggle="pill" href="#pills-review" role="tab" aria-controls="pills-comm" aria-selected="false">Reconciliation Review</a>
+            </li>
+          </ul>
+          <div class="tab-content mt-2" id="pills-pagesContent">
+            <div id="pills-home" class="tab-pane fade show active" role="tabpanel" aria-labelledby="pills-home-tab">
+              <div id="gp_home" class="tute-section mt-2">
+                <!--<p class="subhead strong">Home/Search</p>-->
+                <div class="p-1">
+                  <h5>Register/Login/User Profile</h5>
+                  <p>Registration and login are required to be able to upload datasets, designate collaborators, to use our reconciliation services to find matches in modern placename authorities (<a href="http://www.getty.edu/research/tools/vocabularies/tgn/" target="_blank">Getty Thesaurus of Geographic Names (TGN)</a> and <a href="https://www.wikidata.org/wiki/Wikidata:Main_Page" target="_blank">Wikidata</a> so far), and ultimately, to contribute your data to the WHG index. Once logged in, top-level menu options for "Data", user profile appear.</p>
+                  <h5>Search</h5>
+                  <h6>Places</h6>
+                  <mark>Autocomplete (available for Trace searches) will be added for Place searches soon.</mark>
+                  <p>Place search runs against a union index of ~1.8m core records (~3m names) and all contributed datasets. Typing a name then pressing the {Enter} key performs a search, presents a list of results, and maps those which have geometry (not all do). Clicking a result item will highlight it on the map, providing further context. Clicking the name link takes you to the index record's "portal" page where any number of attestation "cards" drawn from our core datasets (grey banner) and multiple contributed datasets (beige banner) are gathered.</p>
+                  <p>Filters are available to constrain place searches: a) GeoNames feature class, b) temporal (not before, not after), and c) spatial (bounds of world regions, modern countries, and user "study areas."). Search results can be further filtered by place type.
+                  <h6>Traces</h6>
+                  <p> Search for trace data runs against a separate index. At this time there are only a few dozen example trace records. Try typing 'empire' to see a couple of examples. Selecting an auto-suggestion will perform the search and the places referenced in the trace record are mapped. As with places, clicking a result item highlights the place on the map, and clicking its name takes you to its place portal page.</p>
+                  <p><mark>Integration of trace data</a> is at an early experimental stage. We welcome suggestions for how trace data can be better integrated into the WHG interface.</mark></p>
+                  <h5>Dataset mapper</h5>
+                  <p>Heat maps indicating coverage for some larger contributed datasets are available via a dropdown menu.</p>
+                </div>
+              </div>
             </div>
-          </div>
-          <div id="gp_data" class="tute-section">
-            <a name="dashboard"></a>
-            <p class="subhead strong">Data dashboard</p>
-            <p>The Data dashbord page lists datasets created by a user or for which they are a collaborator, and user "study areas." Additionally, two read-only "core" datasets are listed. Clicking an "add new" or "create new" link ({% fontawesome_icon 'plus-square' color='#336699' %}) starts the process of creating and managing either a dataset or study area.</p>
-            <h5>Datasets</h5>
-            <ul>
-            <li><h6>Place data</h6>
-            <p>Registered users can create Place datasets by uploading files in one of two formats: the expressive GeoJSON-LD based <a href="https://github.com/LinkedPasts/linked-places" target="_blank">Linked Places format</a> ("LP format" for short), or the simpler <a href="https://github.com/LinkedPasts/linked-places/blob/master/tsv_0.2.md" target="_blank">LP-TSV format</a>. Considerations for making the choice are found in the <a href="{% url 'main:tute-choosing' %}">"Choosing an upload data format"</a> tutorial.</p>
-            <p>Help icons ({% fontawesome_icon 'question-circle' color='#336699' %}) for each field in the "Upload dataset" form provide popup instruction for filling it.</p>
-            <p>Uploaded data files are validated for adherence to the relevant format spec, LP or LP-TSV. If there are formatting errors, their details are displayed and after correcting them the file upload can be attempted again.</p>
-            <p>Upon successful upload, a <a href="{% url 'main:tute-guide' %}#dataset-portal">Dataset Portal page</a> is displayed.</p></li>
-            <li><h6>Trace data</h6>
-            <p><mark>NOTE: Trace data uploads are not yet enabled.</mark></p></ul>
-            <h5>Study Areas</h5>
-            <p>These are user-created named polygon bounds used to constrain the searches used in the reconciliation process. See <a href="#reconciliation">Reconciliation</a> below.</p></li>
-            <h5>Collections</h5>
-            <p><mark>Planned, but not yet available. Users would be able to add place and trace records to personal collections, which can be mapped, edited, and optionally, shared. Would be useful for teaching scenarios. </mark></p>
-          </div>
-          <div id="gp_dataset" class="tute-section">
-            <a name="dataset-portal"></a>
-            <p class="subhead strong">Dataset Portal</p>
-            <p>This page contains several tabbed sections for managing datasets: Metadata, Browse, Reconciliation, Sharing, and Log/Comments.</p>
-            <h5>Metadata</h5>
-            <p>This tab section provides metadata about the dataset and its most recent uploaded data file source. The <i>title</i>, <i>base URI</i> and <i>description</i> fields can be edited. Updating of the datasets can be initiated (<mark>only LP-TSV delimited files at present</mark>). Statistics are displayed on the right side of the screen: initial counts of rows, name variants, links, and geometries, as well as counts of link and geometry records added during the reconciliation review process.</p>
-            <h5>Browse</h5>
-            <p>This section combines a sortable, searchable list of the records currently in the dataset, and a map displaying any geometry it includes. Note that links and geometry from authority records matched in the reconciliation review process are reflected here, as dataset augmentation written as new <i>place_link</i> and <i>place_geom</i> records.</p>
-            <h5>Reconciliation</h5>
-            <p>Reconciliation "tasks" are initiated from this tab section and listed for access to review screens; <a href="#reconciliation">a process outlined below</a>. A summary of the initial results is generated and displayed in a list, with links to (a) <a href="#review">review prospective matches</a>.</p>
-            <p>It is also possible to delete the task, its associated hits, and any match records created in review work. <span class="text-danger">Caution! There is no recovery from these clearing actions!</span></p>
-            <div class="ml-2 contributing">
-            <p class="mb-0 strong red-head">Contributing a dataset to WHG</p>
-            <p>After a dataset has been uploaded and, using our reconciliation services, augmented with as many links (matches) to modern authorities as possible (<a href="#reconciliation">see below</a>), it can be considered for accessioning &mdash; that is, contributed to the WHG "union index." At this time all accessioning will be initiated by the WHG project team, and review performed by the dataset owner.</p>
-            <p>Contributing a dataset to WHG entails reconciling its records to the WHG index. Any record sharing a link with one already in the index will be automatically indexed as a "child" or "sibling" to ours. Records for which there are no prospective matches are indexed as a "parent," in effect a new seed record for a place. Records for which there <b>are</b> prospective matches will be queued for review, just as with the TGN and Wikidata reconciliation.</p>
-             In that step, each record is compared with the WHG index to see if the referenced place already has one or more attestations from another dataset. If it does, it is marked as a "child" record of the first attestation we received. If it does not, it is considered a new "parent." <b>Accessioning relies on Place records having as many associated "place_link" records as can be obtained.</b>
-            <mark></mark></p>
+            <div id="pills-data" class="tab-pane fade" role="tabpanel" aria-labelledby="pills-data-tab">
+              <div id="gp_data" class="tute-section"><a name="dashboard"></a>
+                <!--<p class="subhead strong">Data dashboard</p>-->
+                <p>The Data dashbord page lists datasets created by a user or for which they are a collaborator, and user "study areas." Additionally, two read-only "core" datasets are listed. Clicking an "add new" or "create new" link ({% fontawesome_icon 'plus-square' color='#336699' %}) starts the process of creating and managing either a dataset or study area.</p>
+                <h5>Datasets</h5>
+                <ul>
+                <li><h6>Place data</h6>
+                <p>Registered users can create Place datasets by uploading files in one of two formats: the expressive GeoJSON-LD based <a href="https://github.com/LinkedPasts/linked-places" target="_blank">Linked Places format</a> ("LP format" for short), or the simpler <a href="https://github.com/LinkedPasts/linked-places/blob/master/tsv_0.2.md" target="_blank">LP-TSV format</a>. Considerations for making the choice are found in the <a href="{% url 'main:tute-choosing' %}">"Choosing an upload data format"</a> tutorial.</p>
+                <p>Help icons ({% fontawesome_icon 'question-circle' color='#336699' %}) for each field in the "Upload dataset" form provide popup instruction for filling it.</p>
+                <p>Uploaded data files are validated for adherence to the relevant format spec, LP or LP-TSV. If there are formatting errors, their details are displayed and after correcting them the file upload can be attempted again.</p>
+                <p>Upon successful upload, a <a href="{% url 'main:tute-guide' %}#dataset-portal">Dataset Portal page</a> is displayed.</p></li>
+                <li><h6>Trace data</h6>
+                <p><mark>NOTE: Trace data uploads are not yet enabled.</mark></p></ul>
+                <h5>Study Areas</h5>
+                <p>These are user-created named polygon bounds used to constrain the searches used in the reconciliation process. See <a href="#reconciliation">Reconciliation</a> below.</p></li>
+                <h5>Collections</h5>
+                <p><mark>Planned, but not yet available. Users would be able to add place and trace records to personal collections, which can be mapped, edited, and optionally, shared. Would be useful for teaching scenarios. </mark></p>
+              </div>
             </div>
-            <h5>Sharing</h5>
-            <p>Owners of a dataset can name any number of registered WHG users as collaborators, giving them permission to view the dataset and to perform review of prospective matches generated by reconciliation tasks.</p>
-            <h5>Log & Comments</h5>
-            <p>Actions related to datasets are logged and listed here.</p>
-            <p>On the Reconciliation Review and Place Portal pages, users can create comments specific to a database record. Comments for all places in a dataset are listed here. <mark>NOTE: Comments suggest followup action, e.g. correction of errors. We are contemplating how such corrections might be accomplished within the WHG interface.</mark></p>
-          </div>
-          <div id="gp_recon" class="tute-section">
-            <a name="reconciliation"></a>
-            <p class="subhead strong">Initiate Reconciliation page</p>
-            <p>Reconciliation is the process of identifying matches of your Place records to existing records in online place name authorities. So far, reconciliation to Getty TGN and Wikidata are offered. <mark>DBpedia and GeoNames will likely be added in the future</mark>. The purpose of reconciliation is to augment a dataset with associated "place_link" records, and optionally, geometry ("place_geom" records) derived from the authority. It is therefore possible to upload a dataset missing geometry for some or all of its records, and use this reconciliation service to make it mappable, at least in part.</p>
-            <p class="strong">NOTE: Making a dataset as rich with links to authorities as possible is a crucial step in making it ultimately a solid contribution to the WHG index.</p>
-            <p>In each case, the authority data store is queried for matches with your dataset records, one by one. Each query actually consists of multiple "passes," at first including as much context as your records may contain: name plus all variants; place type; one or more modern country or user-defined Study Area as a spatial constraint; coordinate geometry for the feature; and name(s) of "parent" entities. Subsequent passes (two for TGN, one for Wikidata) relax the query if no potential matches (hits) are found. Resulting hits for all records are queued for <a href="#review">review by the dataset creator</a>.</p>
-            <h6>Getty TGN</h6>
-            <p>WHG maintains a locally indexed copy of about 1.8 million place records retrieved from a TGN dump file in March, 2018. Because it is local, the process is considerably faster than for Wikidata. <mark>We hope to periodically update this index in the future, or to use the newly announce TGN Open Refine endpoint if its results are comparable and speed is acceptable.</p>
-            <p>Almost all TGN records include a point geometry, but have no concordances with other authorities or structured temporal attributes.</p>
-            <h6>Wikidata</h6>
-            <p>The Wikidata reconciliation is performed against its SPARQL endpoint (https://query.wikidata.org/). At approximately 1 second per record it is much slower than that for TGN. Many Wikidata records contain geometry and concordances with other authorities. When you confirm a Wikidata match, we create a "place_link" record not only for the Wikidata ID but for any TGN, GeoNames, VIAF and Library of Congress IDs, if found.</p>
-            <h6>Study Areas</h6>
-            <p>Many toponyms appear repeatedly in multiple locations, referring to different places, often far apart (e.g. Latin America and the Iberian Peninsula). To aid the reconciliation process, users can define a Study Area that will constrain the search for matches to its bounds, by a) entering a series of 2-letter country codes, which will generate a hull shape, or b) by drawing a polygon on a map.</p>
-            <p>Alternatively, a pre-defined region can be chosen from a separate dropdown menu.</p>
-          </div>
-          <div id="gp_review" class="tute-section">
-            <a name="review"></a>
-            <p class="subhead strong">Reconciliation Review</p>
-            <p>Prospective matches to external authorities are <b>not</b> automatically added to the WHG database during reconciliation; i.e. new "place_geom" and "place_link" records augmenting the dataset are created only by the Reconciliation Review step performed by the dataset creator or specified collaborators.</p>
-            <p>This page presents dataset records with one or more prospective matches ("hits') on the left of the screen, with a list of those hits on the right. A small map displays geometry for the record with a green marker, and that of all hits with orange markers. Hovering over the globe symbol ({% fontawesome_icon 'globe' color='#336699' %}) in a hit item highlights its position in the map.</p>
-            <p>The objective is to determine, for each dataset record, whether any of the hits are a "closeMatch" to it. By default, "no match" is selected for each hit. The reviewer can optionally change the selection to "closeMatch" for one or more hits. In any case, clicking save records the choice and advances to the next record. Attributes of the dataset record and the hits provide  context to assist making the assessment.</p>
-            <h6>Matching</h6>
-            <p>The meaning of <i>closeMatch</i> derives from the <a href="https://www.w3.org/TR/2009/REC-skos-reference-20090818/" target="_blank">Simple Knowledge Organization System (SKOS) vocabulary</a>, a data model commonly used in linked data applications. <mark>NOTE: The "related" relation is not yet defined formally, and assertions of it will not yet appear in the interface.</mark> For WHG, a Place record refers to a SKOS:Concept, so assertions of a closeMatch between your record and that of an external authority indicates:</p>
-            <ul>
-              <li>"...(the) two concepts are sufficiently similar that they can be used interchangeably in some information retrieval applications"</li></ul>
-            <p>Note that <i>closeMatch</i> is a super-property of <i>exactMatch</i>; that is, every <i>exactMatch</i> is also a <i>closeMatch</i>. Clear? Oh well. Practically speaking, for WHG asserting closeMatch serves as a linking "glue." Specifically, records that share one or more common authority link will conflated <b>in our union index" only</b>, and returned together in response to queries. For example, records from different source for Abyssinia and Ethiopia share two links, to a DBPedia record and a TGN record. Therefore, they appear together when searching for either Abyssinia or Ethiopia.</p>
-          </div>
-          <div id="gp_about" class="tute-section">
-            <a name="about"></a>
-            <p class="subhead strong">About pages</p>
-            <p>Page on Communities, Technologies used, Licensing, Creadits</p>
-          </div>
-          <div id="gp_tutes" class="tute-section">
-            <a name="tutorials"></a>
-            <p class="subhead strong">Tutorials</p>
-            <p>Two have been completed so far, more to come...</p>
-          </div>
-        </div>
-        </div>
-      </div>
-    </div>
-  </div>
+            <div id="pills-dataset" class="tab-pane fade" role="tabpanel" aria-labelledby="pills-dataset-tab">
+              <div id="gp_dataset" class="tute-section"><a name="dataset-portal"></a>
+                <!--<p class="subhead strong">Dataset Portal</p>-->
+                <p>This page contains several tabbed sections for managing datasets: Metadata, Browse, Reconciliation, Sharing, and Log/Comments.</p>
+                <h5>Metadata</h5>
+                <p>This tab section provides metadata about the dataset and its most recent uploaded data file source. The <i>title</i>, <i>base URI</i> and <i>description</i> fields can be edited. Updating of the datasets can be initiated (<mark>only LP-TSV delimited files at present</mark>). Statistics are displayed on the right side of the screen: initial counts of rows, name variants, links, and geometries, as well as counts of link and geometry records added during the reconciliation review process.</p>
+                <h5>Browse</h5>
+                <p>This section combines a sortable, searchable list of the records currently in the dataset, and a map displaying any geometry it includes. Note that links and geometry from authority records matched in the reconciliation review process are reflected here, as dataset augmentation written as new <i>place_link</i> and <i>place_geom</i> records.</p>
+                <h5>Reconciliation</h5>
+                <p>Reconciliation "tasks" are initiated from this tab section and listed for access to review screens; <a href="#reconciliation">a process outlined below</a>. A summary of the initial results is generated and displayed in a list, with links to (a) <a href="#review">review prospective matches</a>.</p>
+                <p>It is also possible to delete the task, its associated hits, and any match records created in review work. <span class="text-danger">Caution! There is no recovery from these clearing actions!</span></p>
+                <div class="ml-2 contributing">
+                <p class="mb-0 strong red-head">Contributing a dataset to WHG</p>
+                <p>After a dataset has been uploaded and, using our reconciliation services, augmented with as many links (matches) to modern authorities as possible (<a href="#reconciliation">see below</a>), it can be considered for accessioning &mdash; that is, contributed to the WHG "union index." At this time all accessioning will be initiated by the WHG project team, and review performed by the dataset owner.</p>
+                <p>Contributing a dataset to WHG entails reconciling its records to the WHG index. Any record sharing a link with one already in the index will be automatically indexed as a "child" or "sibling" to ours. Records for which there are no prospective matches are indexed as a "parent," in effect a new seed record for a place. Records for which there <b>are</b> prospective matches will be queued for review, just as with the TGN and Wikidata reconciliation.</p>
+                <p>In that step, each record is compared with the WHG index to see if the referenced place already has one or more attestations from another dataset. If it does, it is marked as a "child" record of the first attestation we received. If it does not, it is considered a new "parent." <b>Accessioning relies on Place records having as many associated "place_link" records as can be obtained.</b><mark></mark></p>
+                </div>
+                <h5>Sharing</h5>
+                <p>Owners of a dataset can name any number of registered WHG users as collaborators, giving them permission to view the dataset and to perform review of prospective matches generated by reconciliation tasks.</p>
+                <h5>Log & Comments</h5>
+                <p>Actions related to datasets are logged and listed here.</p>
+                <p>On the Reconciliation Review and Place Portal pages, users can create comments specific to a database record. Comments for all places in a dataset are listed here. <mark>NOTE: Comments suggest followup action, e.g. correction of errors. We are contemplating how such corrections might be accomplished within the WHG interface.</mark></p>
+              </div>            
+            </div>
+            <div id="pills-recon" class="tab-pane fade" role="tabpanel" aria-labelledby="pills-recon-tab">
+              <div id="gp_recon" class="tute-section"><a name="reconciliation"></a>
+                <!--<p class="subhead strong">Initiate Reconciliation page</p>-->
+                <p>Reconciliation is the process of identifying matches of your Place records to existing records in online place name authorities. So far, reconciliation to Getty TGN and Wikidata are offered. <mark>DBpedia and GeoNames will likely be added in the future</mark>. The purpose of reconciliation is to augment a dataset with associated "place_link" records, and optionally, geometry ("place_geom" records) derived from the authority. It is therefore possible to upload a dataset missing geometry for some or all of its records, and use this reconciliation service to make it mappable, at least in part.</p>
+                <p class="strong">NOTE: Making a dataset as rich with links to authorities as possible is a crucial step in making it ultimately a solid contribution to the WHG index.</p>
+                <p>In each case, the authority data store is queried for matches with your dataset records, one by one. Each query actually consists of multiple "passes," at first including as much context as your records may contain: name plus all variants; place type; one or more modern country or user-defined Study Area as a spatial constraint; coordinate geometry for the feature; and name(s) of "parent" entities. Subsequent passes (two for TGN, one for Wikidata) relax the query if no potential matches (hits) are found. Resulting hits for all records are queued for <a href="#review">review by the dataset creator</a>.</p>
+                <h6>Getty TGN</h6>
+                <p>WHG maintains a locally indexed copy of about 1.8 million place records retrieved from a TGN dump file in March, 2018. Because it is local, the process is considerably faster than for Wikidata. <mark>We hope to periodically update this index in the future, or to use the newly announce TGN Open Refine endpoint if its results are comparable and speed is acceptable.</p>
+                <p>Almost all TGN records include a point geometry, but have no concordances with other authorities or structured temporal attributes.</p>
+                <h6>Wikidata</h6>
+                <p>The Wikidata reconciliation is performed against its SPARQL endpoint (https://query.wikidata.org/). At approximately 1 second per record it is much slower than that for TGN. Many Wikidata records contain geometry and concordances with other authorities. When you confirm a Wikidata match, we create a "place_link" record not only for the Wikidata ID but for any TGN, GeoNames, VIAF and Library of Congress IDs, if found.</p>
+                <h6>Study Areas</h6>
+                <p>Many toponyms appear repeatedly in multiple locations, referring to different places, often far apart (e.g. Latin America and the Iberian Peninsula). To aid the reconciliation process, users can define a Study Area that will constrain the search for matches to its bounds, by a) entering a series of 2-letter country codes, which will generate a hull shape, or b) by drawing a polygon on a map.</p>
+                <p>Alternatively, a pre-defined region can be chosen from a separate dropdown menu.</p>
+              </div>            
+            </div>
+            <div id="pills-review" class="tab-pane fade" role="tabpanel" aria-labelledby="pills-review-tab">
+              <div id="gp_review" class="tute-section"><a name="review"></a>
+                <!--<p class="subhead strong">Reconciliation Review</p>-->
+                <p>Prospective matches to external authorities are <b>not</b> automatically added to the WHG database during reconciliation; i.e. new "place_geom" and "place_link" records augmenting the dataset are created only by the Reconciliation Review step performed by the dataset creator or specified collaborators.</p>
+                <p>This page presents dataset records with one or more prospective matches ("hits') on the left of the screen, with a list of those hits on the right. A small map displays geometry for the record with a green marker, and that of all hits with orange markers. Hovering over the globe symbol ({% fontawesome_icon 'globe' color='#336699' %}) in a hit item highlights its position in the map.</p>
+                <p>The objective is to determine, for each dataset record, whether any of the hits are a "closeMatch" to it. By default, "no match" is selected for each hit. The reviewer can optionally change the selection to "closeMatch" for one or more hits. In any case, clicking save records the choice and advances to the next record. Attributes of the dataset record and the hits provide  context to assist making the assessment.</p>
+                <h6>Matching</h6>
+                <p>The meaning of <i>closeMatch</i> derives from the <a href="https://www.w3.org/TR/2009/REC-skos-reference-20090818/" target="_blank">Simple Knowledge Organization System (SKOS) vocabulary</a>, a data model commonly used in linked data applications. <mark>NOTE: The "related" relation is not yet defined formally, and assertions of it will not yet appear in the interface.</mark> For WHG, a Place record refers to a SKOS:Concept, so assertions of a closeMatch between your record and that of an external authority indicates:</p>
+                <ul>
+                  <li>"...(the) two concepts are sufficiently similar that they can be used interchangeably in some information retrieval applications"</li></ul>
+                <p>Note that <i>closeMatch</i> is a super-property of <i>exactMatch</i>; that is, every <i>exactMatch</i> is also a <i>closeMatch</i>. Clear? Oh well. Practically speaking, for WHG asserting closeMatch serves as a linking "glue." Specifically, records that share one or more common authority link will conflated <b>in our union index" only</b>, and returned together in response to queries. For example, records from different source for Abyssinia and Ethiopia share two links, to a DBPedia record and a TGN record. Therefore, they appear together when searching for either Abyssinia or Ethiopia.</p>
+              </div>
+          </div> <!-- pills-pagesContent -->
+        </div> <!-- guide_pages -->
+      </div> <!-- tab_content-->
+    </div> <!-- guide_content -->
+  </div> <!-- container -->
+  
   <script type="text/javascript">
     $(function(){
       $('.nav-pills a[href="#pills-why"]').tab('show')

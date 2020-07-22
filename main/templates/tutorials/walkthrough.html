@@ -6,7 +6,7 @@
 
   <div class="container">
     <div class="d-flex justify-content-center mt-3">
-      <h3>WHG Walkthrough: Contributing and preparing data</h3>
+      <h3>WHG Walkthrough: Uploading and reconciling data</h3>
     </div>
     <div id="contrib_content" class="mx-5">
       <p class="lead">Take the following steps to walk through uploading sample datasets to WHG and performing reconciliation against our internal index of the complete Getty Thesaurus of Geographic Names (TGN)</p>
@@ -15,54 +15,54 @@
         <h4 class="p-1">Register and Upload</h4>
         <div class="p-1"><ul>
           <li>Register on the site and log in
-			  <li>Click menu option 'My Data'</li>
+			  <li>Click menu option 'Data'</li>
 			  <li>Click "add new" link</li>
 			  <li>Fill in Create Dataset form
 				  <ul>
 				  <li><u>Title</u>: any string</li>
 				  <li><u>Label</u>: a unique string, 20 or fewer characters</li>
 					  hint: try part of the title + '_' + your initials
-				  <li><u>Data type</u>: Places is the only choice right now</li>
 				  <li><u>Description</u>: Briefly</li>
-				  <li><u>URI base</u>: leave blank unless the data is published. Hint: if published, e.g. 'http://myorg.org/places/'</li>
+				  <li><u>URI base</u>: leave blank unless the data is published and each record has a distinct URI, e.g. 'http://myorg.org/places/99999'</li>
+				  <li><u>Web page</u>: URL to a project page</li>
 				  <li><u>Public?</u>: Check if it's okay for anyone to view the data</li>
 				  <li style="list-style: none;"><b>Initial file</b>
 					<ul>
-					  <li><u>Choose a file</u>: Example files are available via a link on the right side of the screen. Click to download the .zip file to a location you'll remember and expand it. Select one of these - either tsv or lpf format.</li>
+					  <li><u>Choose a file from disk</u>: Your own, or an example file. These are available via a link on the right side of the screen. Click to download the .zip file to a location you'll remember and expand it. Select one of these - either tsv or lpf format.</li>
 					  <li><u>Format</u>: LP-TSV (delimited text; spec); Linked Places format (JSON-LD & GeoJSON compatible; spec).	</li>
 					</ul>
 				  </li>
 				  </ul>
-				<li>Click the "Upload" button</li>
+				<li>Click the "Upload" button.</li>
+				  <ul><li>A fairly rigorous validation of file format is performed, and errors are reported on the right side of the screen. Some formatting errors may produce unexpected errors. Please get in touch via the <a href="{% url 'contact' %}">Contact form</a> and we will help troubleshoot the problem.</li></ul>
 			  </li>
 		  </ul>
-		<p class="lead">The data file will be validated for the chosen format, and if there are no errors, its contents are inserted into the WHG database and you are directed to its Portal page.</p>
-		<p class="lead">At this stage, you can:<ul class="lead">
-		  <li>browse the contents of the uploaded data (Browse tab)</li>
-		  <li>initiate reconciliation tasks in order to identify records for matching places in Wikidata and the Getty Thesaurus of Geographic Names (TGN)</li></ul></p>
+		<p>If there are no errors the file's its contents are inserted into the WHG database and you are directed to its Portal page.</p>
+		<p class="lead">At this stage, you can:</p><ul>
+		  <li>browse the contents of the uploaded data on the Browse tab</li>
+		  <li>initiate reconciliation tasks to find prospective matches in Wikidata and/or the Getty Thesaurus of Geographic Names (TGN)</li></ul></p>
         <h4 class="p-1">Reconciliation</h4>
-          <p class="lead">WHG reconciliation services allows dataset owners to augment their data with additional geometry for more complete mapping and analysis, and with links to modern name authority resources like Getty TGN, and via Wikidata, GeoNames, VIAF, and DBpedia. Those links are the essential "glue" enabling the semi-automation of data linking.</p>
+          <p>WHG reconciliation services allow dataset owners to augment their data with a) additional geometry for more complete mapping and analysis, and b) links to (matches with) modern name authority resources like Getty TGN, Wikidata, and via Wikidata concordances, GeoNames, VIAF AND Library of Congress. Those links are the essential "glue" enabling the semi-automation of accessioning to WHG.</p>
           <ul>
             <li>Leave default settings in place, with Getty TGN selected</li>
             <li>Click the "Start" button</li>
-            <li>For each record in the uploaded data file, a search is performed against an indexed copy of the entire TGN. Up to three passes (queries) are made; if the first returns no results, the second is performed, and so on. These are labeled pass1, pass2, and pass3 in the results.</li>
+            <li>For each record in the uploaded data file, a search is performed against an indexed copy of the most of TGN (~1.8m records). Up to three passes (queries) are made; if the first returns no results, the second is performed, and so on. These are labeled pass1, pass2, and pass3 in the results.</li>
             <li>Upon completion, a result summary is displayed, with links to review the prospective matches (hits) for each pass.</li>
 			<li>Click on the first 'review' link in the list on the right to begin</li>
           </ul>          
         <h4 class="p-1">Reconciliation Review</h4>
-          <p class="lead">Once a reconciliation task is complete, dataset owners and team members must review the prospective matches, declaring match/no match for each. This is made easier with our Review screen.</p>
+          <p>Once a reconciliation task is complete, dataset owners and team members must review the prospective matches, declaring match/no match for each. This is made easier with our Review screen.</p>
           <ul>
             <li>The Reconciliation Review screen presents all of the uploaded records that had any hits, one by one on the left and a list of the hits on the right.</li>
-            <li>If any of the hits on the right are a 'close match' or 'exact match' with your record, click the appropriate radio button, then the "Save" button. The screen then advances to the next record and the previous is removed from the queue.</li>
+            <li>The default selection for all hits is "<b>no match</b>." If any of the hits on the right are a 'close match' with your record, click the appropriate radio button. In either case, click the "Save" button to record your decisions. The screen then advances to the next record and the previous is removed from the queue.</li>
             <li>Assertions of matches are saved to the WHG database as 'place_link' records, associated with your dataset's place record.</li>
-            <li>Additionally, if the "accept geometries in matches" box was checked when creating this reconciliation task, any geometries in the authority record (TGN in this case), are saved as new place_geom records, also linked to your dataset's place record.</li>
-			<li>If none of the hits are a match, simply click "Save" and the screen advances.</li>
-			<li>If none of the hits are a match, simply click "Save" and the screen advances. A help icon links to an explanation of the formal relations, closeMatch and exactMatch</li>
+            <li>Additionally, if the "accept geometries in matches" box was checked when creating this reconciliation task (default is "yes"), any geometries in the authority record (TGN in this case), are saved as new place_geom records, and are now associated with your dataset's place record.</li>
+			<li>A help icon links to an explanation of the formal relation, "<b>closeMatch</b>."</li>
 			<li>The "related" choice is available experimentally. Any "related" assertions are recorded, but are not reflected in the interface at this time.</li>
 			<li>Note that if your record has a geometry, it will show up in the map as a green marker, and geometries from all of the hits appear as orange markers. Hovering over the globe symbol for a hit will highlight that record on the map.</li>
 			<li>Note that after the first save, an undo link appears on the left side of the grey banner. This will undo any result of the last save and return that record to the queue.</li>
           </ul>
-          <p class="lead">After reviewing all hits from all passes, affirming any matches discovered, you will have effectively augmented your dataset in the WHG database with new place_link and place_geom records. Those additions will be reflected in the Browse tab map and record details. Also, your dataset is now prepared for accessioning to the WHG index. Note that this step will be performed by WHG staff in consultation with contributors.</p>
+          <p>After reviewing all hits from all passes, affirming any matches discovered, you will have effectively augmented your dataset in the WHG database with new place_link and place_geom records. Those additions will be reflected in the Browse tab map and record details. Also, your dataset is now prepared for accessioning to the WHG index. <mark>Note: At this time, accessioning will be performed by WHG staff in consultation with contributors.</mark></p>
       </div>
     </div>
   </div>
