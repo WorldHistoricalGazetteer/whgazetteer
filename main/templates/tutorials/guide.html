@@ -31,36 +31,40 @@
               <a class="nav-link" id="pills-why-tab" data-toggle="pill" href="#pills-why" role="tab" aria-controls="pills-why" aria-selected="true">Why WHG?</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" id="pills-what-tab" data-toggle="pill" href="#pills-what" role="tab" aria-controls="pills-what" aria-selected="false">WHG Data</a>
+              <a class="nav-link active" id="pills-what-tab" data-toggle="pill" href="#pills-what" role="tab" aria-controls="pills-what" aria-selected="false">WHG Data</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" id="pills-do-tab" data-toggle="pill" href="#pills-do" role="tab" aria-controls="pills-do" aria-selected="false">WHG Services</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link active" id="pills-comm-tab" data-toggle="pill" href="#pills-comm" role="tab" aria-controls="pills-comm" aria-selected="false">Community</a>
+              <a class="nav-link" id="pills-comm-tab" data-toggle="pill" href="#pills-comm" role="tab" aria-controls="pills-comm" aria-selected="false">Community</a>
             </li>
           </ul>
           <div class="tab-content mt-2" id="pills-tabContent">
             <div id="pills-why" class="tab-pane fade" role="tabpanel" aria-labelledby="pills-why-tab">
               <div class="p-1">
                 <p class="subhead">Geography in Historical Research</p>
-                <p>Researchers studying the past from any number of disciplinary perspectives often have explicitly geospatial questions. Others simply want to map either phenomena of interest or references to places found in their sources. In any case, the difficult task of making a list of historical place names mappable and amenable to spatial analyses will be made easier given a digital <i><b>historical</b></i> gazetteer and associated services for geolocating those names, as possible. WHG is a pilot platform for gathering in one system, over time, contributions of such data&mdash;large and small&mdash; for all regions and historical periods.</p>
+                <p>Some scholars and students of the human past ask explicitly geospatial questions (“Where did that happen?” “What else happened in that place?”). Others simply want to make maps. Either of these cases requires making a list of historical place names and determining the coordinates of those places in order to make them mappable and amenable to spatial analysis. This is an extremely difficult and time-consuming task. The mission of the World Historical Gazetteer is to make it as easy as possible.  WHG is a pilot platform for gathering in one system, over time, contributions of place name data—large and small, and for all regions and historical periods—and to provide services for geolocating additional names.</p>
                 <p class="subhead">Teaching</p>
-                <p>Developing gazetteer datasets is a hecka good classroom exercise...</p>
+                <p>WHG is an excellent resource for teachers and students alike. Teachers can use information in WHG to refine lessons and to make custom maps for lectures or resources. Students can make their own historical datasets and then create maps from them. The services offered by WHG will help make historical mapping easier and more accessible to everyone. In short, developing gazetteer datasets is a hecka good classroom tool.</p>
                 <p class="subhead">Reference</p>
-                <p>A "union index" of place attestations drawn form historical sources can serve to link disparate research on the dimension of place. [...]</p>
+                <p>A "union index" of place attestations drawn from historical sources will over time increasingly link the disparate research of contributors on the dimension of place. Furthermore, by bringing together all the known references for a place without privileging any particular one, it decenters colonized name making. For instance, the WHG index contains 133 modern and historical name variants for the contemporary city of Beijing drawn from multiple sources, and 96 for the city of Istanbul. Searching for either Al Quds or Jerusalem returns contributed references for either.</p>
               </div>
             </div>
-            <div id="pills-what" class="tab-pane fade" role="tabpanel" aria-labelledby="pills-what-tab">
+            <div id="pills-what" class="tab-pane fade show active" role="tabpanel" aria-labelledby="pills-what-tab">
               <h5>Data</h5>
               <div class="p-1">
                 <p class="subhead">Two Place Data Stores: Database and Index</p>
-                <p>Data files uploaded to WHG, whether Linked Places (LP) format or the abbreviated LP-TSV, are imported directly into a PostgreSQL relational database, the schema for which matches the conceptual model of
-                Linked Places format. It is not editable, but if originally LP-TSV, can be updated (i.e. replaced).</p>
-                <p>During the reconciliation process, when an external authority record is accepted as a closeMatch, one or more place_link and place_geom records are added to the database, reflecting that match [video]. This effectively augments the original data without altering it in any way.
-                <mark>We are evaluating ways to permit editing in the future.</mark></p>
-                <p>Separately, a WHG maintains a high-speed Elasticsearch index linking records for the same place contained within different datasets. For example, a search for either Istanbul, Constantinople, or Byzantium will lead you to a Place Portal page listing attestations for any of those names from multiple sources.</p>
+                <p class="mb-0"><img src="{% static 'images/two-stores.png'%}" height=250/></p>
+                <p class="mb-0">Data from files uploaded to WHG in either the full Linked Place format (LP) or abbreviated LP-TSV format are imported into a PostgreSQL relational database and made available to you for viewing and augmenting via our reconciliation process. You cannot edit them in WHG, but in the case of LP-TSV files, you can replace a dataset with a new file reflecting changes you made locally.</p>
+                
+                <p class="mb-0">The reconciliation process finds prospective matches to your records in Getty TGN and/or Wikidata. When such an external record is accepted as a “closeMatch,” one or more place_link and place_geom records are added to the database, reflecting that match. This augments your dataset within the WHG database with additional attestations to the same place (links), and geographical coordinates, but does not alter the uploaded content in any way. If you flag your dataset as public, it's records will publicly accessible via <a href="{% url 'usingapi' %}">the WHG API</a>.</p>
+                
+                <p class="mb-0">Separately from the database, WHG maintains a high-speed index that links records for the same place contained within multiple datasets. This conflation within the index means that for example, a search for either Istanbul, Constantinople, or Byzantium will lead you to a Place Portal page listing attestations for any of those names from multiple sources.</p>
+                
+                <mark>NOTE: We are evaluating ways to permit editing in the future.</mark></p>
                 <p class="subhead">Place</p>
+                <p class="mb-0">As of August, 2020 World Historical Gazetteer includes:</p>
                 <p class="mb-0"><i><b>Core (non-historical) data</b></i></p>
                   <ul>
                     <li>942 records from <a href="http://geonames.org" target="_blank">GeoNames</a>, including cities with population > 500,000 and world capitals</li>
@@ -71,7 +75,7 @@
                   </ul>
                   <p class="mb-0"><i><b>Historical data</b> (all are in the database, but indexing is partial and in progress for some, as noted)</i></p>
                   <ul>
-                    <li>10,643 records from the DK Atlas of World History (Jeremy Black (ed.), 1999)</li>
+                    <li>10,643 records from the <a href="https://www.worldcat.org/title/dk-atlas-of-world-history/oclc/43091166" target="_blank">DK Atlas of World History</a> (Jeremy Black (ed.), 1999)</li>
                     <li>13,258 <i>lugares</i> and 892 <i> territorios</i> from <a href="http://www.hgis-indias.net/" target="_blank">HGIS de las Indias</a> (Werner Stangl)</li>
                     <li>20,365 settlements, archaeological sites, rivers and mountains from the <a href="http://pleiades.stoa.org" target="_blank">Pleiades gazetteer</a>. <mark>in progress</mark></li>
                     <li>4,117 settlements from the <a href="http://ciolek.com/owtrad.html" target="_blank">Old World Trade Routes project</a> (T. Matthew Ciolek) <mark>in progress</mark></li>
@@ -80,10 +84,10 @@
                   </ul>                
                     <p>Several additional historical datasets are in queue for accessioning at this time. We welcome further contributions, large and small. If you have one in the works or in mind, please let us know via the <a href="">conteact form</a>. We will publicize these additions as they occur via <a href="http://whgazetteer.org" target="_blank">our blog</a> and our Twitter account (<a href="https://twitter.com/WHGazetteer" target="_blank">@WHGazetteer</a>)</p>
                 <p class="subhead">Trace annotations (experimental)</p>
-                <p>Trace annotation data in WHG are records annotating web resources about historical events, people, works and objects (traces) with identifiers for places relevant to them. The annotations typically include the relation between the trace and the place (waypoint, birthplace, findspot, etc.) and a year or timespan. Currently indexed trace annotation datasets include:</p>
+                <p>Trace annotations are records annotating web resources about historical events, people, works and objects (“traces”) with identifiers for the places that are relevant to them. The annotations assert a relation between the trace and the place (for instance, they note that a place was the waypoint on a journey or the birthplace of an individual) and they attest a year or timespan during which the trace and the place were connected. Each annotation record joins one trace with any number of places. In connection with one another, one or multiple trace records link places together to create spatially explicit historical narratives.</p>
                 <ul>
                 <li>Hernán Cortes and the Conquest of the Aztec Empire</li>
-                <li>The Journey of Xuanzang, a 7c Buddhist Monk</li>
+                <li>The Journey of Xuanzang, a seventh century Buddhist Monk</li>
                 <li>The Lifepath of Gautama Buddha</li>
                 <li>The Empire of Alexander</li>
                 <li></li>
@@ -113,7 +117,7 @@
                 </ul>
               </div>            
             </div>
-            <div id="pills-comm" class="tab-pane fade show active" role="tabpanel" aria-labelledby="pills-comm-tab">
+            <div id="pills-comm" class="tab-pane fade" role="tabpanel" aria-labelledby="pills-comm-tab">
               <div class="p-1">
                 <p class="subhead">Community</p>
                 <p>The WHG project belongs to a growing community interested in linking information <b>about</b> historical places and linking historical information from multiple disciplines <b>via place</b>. As such we are active partners in the <a href="https://pelagios.org/" target="_blank">Pelagios Network</a>.</p>
