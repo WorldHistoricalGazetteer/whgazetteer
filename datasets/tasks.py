@@ -923,7 +923,7 @@ def align_whg(pk, *args, **kwargs):
   # queryset depends on choice of scope in addtask form
   qs = ds.places.all() if scope == 'all' else ds.places.all().filter(indexed=False)
 
-  """ ONE-OFF TO COMPLETE PLEIADES """
+  """ ONE-OFF TO COMPLETE FAILED align_whg tasks """
   # unindexed pleiades pids 10963
   #ds_pidset=set(ds.places.all().filter(indexed=False).values_list('id',flat=True)); len(ds_pidset) 
   # already aligned (have hits) 
