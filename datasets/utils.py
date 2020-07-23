@@ -408,20 +408,22 @@ def hully(g_list):
   from django.contrib.gis.geos import GEOSGeometry
   from django.contrib.gis.geos import MultiPoint
   from django.contrib.gis.geos import GeometryCollection
-  if g_list[0]['type'] == 'Point':
-    # 1 or more points >> make hull; if not near 180 deg., add buffer(1) (~200km @ 20deg lat)
-    hull=MultiPoint([GEOSGeometry(json.dumps(g)) for g in g_list]).convex_hull
+  
+  # maybe mixed bag
+  types = list(set([g['type'] for g in g_list]))
+  # should work for any combination
+  try:
+    hull=GeometryCollection([GEOSGeometry(json.dumps(g)) for g in g_list]).convex_hull
+  except:
+    print('hully() failed on g_list',g_list)
+  # buffer points, but only a little if near meridian
+  if len(types) ==1 and types[0] == 'Point':
     l = list(set([g_list[0]['coordinates'][0] for c in g_list[0]]))
     if len([i for i in l if i >= 175]) == 0:
       hull = hull.buffer(1)
     else:
       hull = hull.buffer(0.1)
-  elif g_list[0]['type'] == 'MultiLineString':
-    hull=GeometryCollection([GEOSGeometry(json.dumps(g)) for g in g_list]).convex_hull
-  else:
-    # now only linestrings and multiple multipolygons -> simple convex_hull (unions are precise but bigger)
-    hull=GeometryCollection([GEOSGeometry(json.dumps(g)) for g in g_list]).convex_hull
-  return json.loads(hull.geojson)
+  return json.loads(hull.geojson) if hull.geojson !=None else []
 
 def parse_wkt(g):
   print('wkt',g)

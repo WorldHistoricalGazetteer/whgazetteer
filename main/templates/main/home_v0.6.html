@@ -119,7 +119,23 @@
 			  </div>
 			</div>
 			<div class="carousel-item">
-			  <p class="mb-1">Registered users can upload place datasets into a private workspace, augment them via reconciliation against Getty Thesaurus of Geographic Names (TGN) and/or Wikidata, publish them as Linked Open Data by flagging them as 'public', and eventually contribute them for accessionng to the WHG index.</p><p>Details are available in the 'Tutorials' and 'About' sections of this site.</p>
+			  <p>Registered users can</p>
+			  <div class="row small">
+				<div class="col-sm">
+				  <img src="{% static 'images/upload100.png'%}" height="75"/><br/>
+					<span class="red-head strong">upload</span> place datasets into a private workspace
+				  <img src="{% static 'images/publish100.png'%}" width="75"/><br/>
+					<span class="red-head strong">publish</span> them as Linked Open Data by flagging them as 'public'
+				</div>
+				<div class="col-sm">
+				  <img src="{% static 'images/augment100.png'%}" width="75"/><br/>
+					<span class="red-head strong">augment</span> them via reconciliation against <a href="#" data-html="true" onClick='return false;' title="Getty Thesaurus of Geographic Names" rel="tooltip" class="ttip">Getty TGN</a> and/or Wikidata
+				  <img src="{% static 'images/contribute100.png'%}" width="75"/><br/>
+				   <span class="red-head strong">contribute</span> them for accessionng to the WHG index
+				</div>
+			  </div>
+			  <hr/>
+			  <p>Details are available in the <a href="{% url 'main:tute-guide' %}">Site Guide</p>
 			</div>
 			<div class="carousel-item">
 			  <h6 class="mb-1 strong">Current Counts</h6>
@@ -169,7 +185,9 @@
 	  heat($(this).val())
 	  console.log('heat() for',$(this).val())
 	});	
-	
+	$(function(){
+	  $("[rel='tooltip']").tooltip();
+	})	
 	// popover content
 	$("#filter_help").attr(
 	  'data-content',"<p>GeoNames single-letter codes:</p>"+

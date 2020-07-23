@@ -805,8 +805,9 @@ def es_lookup_whg(qobj, *args, **kwargs):
     }
   }}
 
-  # if geom, define intersect filter & apply to qbase (q2)
-  if 'geom' in qobj.keys():
+  # if geom, and it's not [] result of a failed hully()
+  # define intersect filter & apply to qbase (q2)
+  if 'geom' in qobj.keys() and qobj['geom'] !=[]:
     # call it location
     location = qobj['geom']
     #print('location for filter_intersects_area:',location)
@@ -815,7 +816,7 @@ def es_lookup_whg(qobj, *args, **kwargs):
         "shape": {
           # always a polygon, from hully(g_list)
           "type": location['type'],
-            "coordinates" : location['coordinates']
+          "coordinates" : location['coordinates']
         },
         "relation": "intersects" # within | intersects | contains
       }
@@ -922,12 +923,12 @@ def align_whg(pk, *args, **kwargs):
   # queryset depends on choice of scope in addtask form
   qs = ds.places.all() if scope == 'all' else ds.places.all().filter(indexed=False)
 
-  """ ONE-OFF TO COMPLETE EURATLAS """
-  # unindexed euratlas pids 2901
+  """ ONE-OFF TO COMPLETE PLEIADES """
+  # unindexed pleiades pids 10963
   #ds_pidset=set(ds.places.all().filter(indexed=False).values_list('id',flat=True)); len(ds_pidset) 
-  ## already aligned (have hits) 2241
-  #hitpidset=set(Hit.objects.filter(task_id='f643a4ca-c513-4bc6-a3ec-5d6dbd3fa230').values_list('place_id_id',flat=True))
-  #todo=list(ds_pidset-hitpidset); len(todo) # 660
+  # already aligned (have hits) 
+  #hitpidset=set(Hit.objects.filter(task_id__in=['4cb95d8e-1a73-476a-b06a-a6e71b3732b7','2c4d988f-6ce1-453e-9dba-59cb1acdac64']).values_list('place_id_id',flat=True)); len(hitpidset) -- 2584
+  #todo=list(ds_pidset-hitpidset); len(todo) # 8379
   #qs = ds.places.all().filter(id__in=todo)
   """ END """
   
@@ -937,6 +938,7 @@ def align_whg(pk, *args, **kwargs):
   """
   for place in qs:
     #place=get_object_or_404(Place,id=6369031) # Aachen
+    print('building qobj for place.id',place.id, place.title)
     count +=1
     qobj = {"place_id":place.id, "src_id":place.src_id, "title":place.title}
     links=[]; ccodes=[]; types=[]; variants=[]; parents=[]; geoms=[]; 
@@ -978,6 +980,7 @@ def align_whg(pk, *args, **kwargs):
       g_list =[g.jsonb for g in place.geoms.all()]
       # make everything a simple polygon hull for spatial filter purposes
       qobj['geom'] = hully(g_list)
+        
 
     # ***
     # run es_lookup_whg(qobj): 3 query passes

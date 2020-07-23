@@ -1,0 +1,1376 @@
+[{"id": "http://whgazetteer.org/traces/2", "body": [{"id": "http://whgazetteer.org/place/81053", "title": "Aden", "place_id": 81053, "relations": [{"when": [{"end": "1328", "start": "1328"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/81229", "title": "Alexandria", "place_id": 81229, "relations": [{"when": [{"end": "1337", "start": "1325"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/81613", "title": "Astrakhan", "place_id": 81613, "relations": [{"when": [{"end": "1330", "start": "1330"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/81764", "title": "Baghdad", "place_id": 81764, "relations": [{"when": [{"end": "1337", "start": "1325"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/81919", "title": "Basra", "place_id": 81919, "relations": [{"when": [{"end": "1337", "start": "1325"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/82473", "title": "Cairo", "place_id": 82473, "relations": [{"when": [{"end": "1337", "start": "1325"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/83140", "title": "Constantinople", "place_id": 83140, "relations": [{"when": [{"end": "1330", "start": "1330"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/83387", "title": "Damascus", "place_id": 83387, "relations": [{"when": [{"end": "1337", "start": "1325"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/85177", "title": "Esfahan", "place_id": 85177, "relations": [{"when": [{"end": "1337", "start": "1325"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/85308", "title": "Jedda", "place_id": 85308, "relations": [{"when": [{"end": "1328", "start": "1328"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/85324", "title": "Jerusalem", "place_id": 85324, "relations": [{"when": [{"end": "1337", "start": "1325"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/85432", "title": "Kabul", "place_id": 85432, "relations": [{"when": [{"end": "1330", "start": "1330"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/85778", "title": "Kilwa", "place_id": 85778, "relations": [{"when": [{"end": "1328", "start": "1328"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/86870", "title": "Mecca", "place_id": 86870, "relations": [{"when": [{"end": "1337", "start": "1325"}, {"end": "1328", "start": "1328"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/87901", "title": "Ormuz", "place_id": 87901, "relations": [{"when": [{"end": "1328", "start": "1328"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/89030", "title": "Samarkand", "place_id": 89030, "relations": [{"when": [{"end": "1330", "start": "1330"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/89809", "title": "Suakin", "place_id": 89809, "relations": [{"when": [{"end": "1328", "start": "1328"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/89929", "title": "Tabriz", "place_id": 89929, "relations": [{"when": [{"end": "1337", "start": "1325"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/90031", "title": "Tangier", "place_id": 90031, "relations": [{"when": [{"end": "1337", "start": "1325"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/91400", "title": "Medina", "place_id": 91400, "relations": [{"when": [{"end": "1337", "start": "1325"}], "relation": "waypoint"}]}], "tags": [], "type": "Annotation", "target": {"id": "http://www.worldcat.org/oclc/664066213", "type": "event", "title": "The Journeys of Ibn Battuta", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/4", "body": [{"id": "http://whgazetteer.org/place/81229", "title": "Alexandria", "place_id": 81229, "relations": [{"when": [{"end": "-0332", "start": "-0332"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/81370", "title": "Ancyra", "place_id": 81370, "relations": [{"when": [{"end": "-0333", "start": "-0333"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/81423", "title": "Aornos", "place_id": 81423, "relations": [{"when": [{"end": "-0327", "start": "-0327"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/81427", "title": "Apamea", "place_id": 81427, "relations": [{"when": [{"end": "-0334", "start": "-0334"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/81471", "title": "Aradus", "place_id": 81471, "relations": [{"when": [{"end": "-0333", "start": "-0333"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/81496", "title": "Arbela", "place_id": 81496, "relations": [{"when": [{"end": "-0331", "start": "-0331"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/81741", "title": "Heliopolis", "place_id": 81741, "relations": [{"when": [{"end": "-0333", "start": "-0333"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/81744", "title": "Babylon", "place_id": 81744, "relations": [{"when": [{"end": "-0331", "start": "-0331"}, {"end": "-0324", "start": "-0324"}, {"end": "-0325", "start": "-0325"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/82368", "title": "Bucephala", "place_id": 82368, "relations": [{"when": [{"end": "-0327", "start": "-0327"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/82434", "title": "Byblos", "place_id": 82434, "relations": [{"when": [{"end": "-0333", "start": "-0333"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/83630", "title": "Drapsaca", "place_id": 83630, "relations": [{"when": [{"end": "-0329", "start": "-0329"}, {"end": "-0327", "start": "-0327"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/83743", "title": "Ecbatana", "place_id": 83743, "relations": [{"when": [{"end": "-0330", "start": "-0330"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/83840", "title": "Emesa", "place_id": 83840, "relations": [{"when": [{"end": "-0331", "start": "-0331"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/83867", "title": "Ephesus", "place_id": 83867, "relations": [{"when": [{"end": "-0334", "start": "-0334"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/84198", "title": "Gabae", "place_id": 84198, "relations": [{"when": [{"end": "-0330", "start": "-0330"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/84274", "title": "Gaugamela", "place_id": 84274, "relations": [{"when": [{"end": "-0331", "start": "-0331"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/84281", "title": "Gaza", "place_id": 84281, "relations": [{"when": [{"end": "-0332", "start": "-0332"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/84418", "title": "Gordium", "place_id": 84418, "relations": [{"when": [{"end": "-0333", "start": "-0333"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/84460", "title": "Granicus", "place_id": 84460, "relations": [{"when": [{"end": "-0334", "start": "-0334"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/84616", "title": "Gwadar", "place_id": 84616, "relations": [{"when": [{"end": "-0326", "start": "-0326"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/84662", "title": "Halicarnassus", "place_id": 84662, "relations": [{"when": [{"end": "-0334", "start": "-0334"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/84726", "title": "Harmozia", "place_id": 84726, "relations": [{"when": [{"end": "-0325", "start": "-0325"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/84767", "title": "Hecatompylos", "place_id": 84767, "relations": [{"when": [{"end": "-0330", "start": "-0330"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/85008", "title": "Hydaspes", "place_id": 85008, "relations": [{"when": [{"end": "-0326", "start": "-0326"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/85115", "title": "Indus River", "place_id": 85115, "relations": [{"when": [{"end": "-0325", "start": "-0325"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/85193", "title": "Issus", "place_id": 85193, "relations": [{"when": [{"end": "-0333", "start": "-0333"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/85530", "title": "Kandahar", "place_id": 85530, "relations": [{"when": [{"end": "-0330", "start": "-0330"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/86919", "title": "Memphis", "place_id": 86919, "relations": [{"when": [{"end": "-0332", "start": "-0332"}, {"end": "-0331", "start": "-0331"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/86955", "title": "Meshed", "place_id": 86955, "relations": [{"when": [{"end": "-0330", "start": "-0330"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/87340", "title": "Nad-i-Ali", "place_id": 87340, "relations": [{"when": [{"end": "-0330", "start": "-0330"}, {"end": "-0325", "start": "-0325"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/87630", "title": "Nisibis", "place_id": 87630, "relations": [{"when": [{"end": "-0331", "start": "-0331"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/87849", "title": "Gulf of Oman", "place_id": 87849, "relations": [{"when": [{"end": "-0325", "start": "-0325"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/87868", "title": "Opiana", "place_id": 87868, "relations": [{"when": [{"end": "-0326", "start": "-0326"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/88088", "title": "Paraetonium", "place_id": 88088, "relations": [{"when": [{"end": "-0332", "start": "-0332"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/88124", "title": "Pasargadae", "place_id": 88124, "relations": [{"when": [{"end": "-0331", "start": "-0331"}, {"end": "-0325", "start": "-0325"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/88144", "title": "Pattala", "place_id": 88144, "relations": [{"when": [{"end": "-0326", "start": "-0326"}, {"end": "-0325", "start": "-0325"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/88178", "title": "Pella", "place_id": 88178, "relations": [{"when": [{"end": "-0334", "start": "-0334"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/88180", "title": "Pelusium", "place_id": 88180, "relations": [{"when": [{"end": "-0332", "start": "-0332"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/88209", "title": "Perge", "place_id": 88209, "relations": [{"when": [{"end": "-0334", "start": "-0334"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/88220", "title": "Persepolis", "place_id": 88220, "relations": [{"when": [{"end": "-0331", "start": "-0331"}, {"end": "-0325", "start": "-0325"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/88224", "title": "Persian Gulf", "place_id": 88224, "relations": [{"when": [{"end": "-0325", "start": "-0325"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/88575", "title": "Pura", "place_id": 88575, "relations": [{"when": [{"end": "-0326", "start": "-0326"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/88671", "title": "Quetta", "place_id": 88671, "relations": [{"when": [{"end": "-0325", "start": "-0325"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/88755", "title": "Rhagae", "place_id": 88755, "relations": [{"when": [{"end": "-0330", "start": "-0330"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/89030", "title": "Samarkand", "place_id": 89030, "relations": [{"when": [{"end": "-0329", "start": "-0329"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/89166", "title": "Sardis", "place_id": 89166, "relations": [{"when": [{"end": "-0334", "start": "-0334"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/89477", "title": "Sidon", "place_id": 89477, "relations": [{"when": [{"end": "-0333", "start": "-0333"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/89553", "title": "Siwa", "place_id": 89553, "relations": [{"when": [{"end": "-0331", "start": "-0331"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/89588", "title": "Sogdian Rock", "place_id": 89588, "relations": [{"when": [{"end": "-0329", "start": "-0329"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/89869", "title": "Susa", "place_id": 89869, "relations": [{"when": [{"end": "-0331", "start": "-0331"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/89869", "title": "Susa ", "place_id": 89869, "relations": [{"when": [{"end": "-0324", "start": "-0324"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/89870", "title": "Susia", "place_id": 89870, "relations": [{"when": [{"end": "-0330", "start": "-0330"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/90084", "title": "Tarsus", "place_id": 90084, "relations": [{"when": [{"end": "-0333", "start": "-0333"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/90108", "title": "Taxila", "place_id": 90108, "relations": [{"when": [{"end": "-0326", "start": "-0326"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/90244", "title": "Thapsacus", "place_id": 90244, "relations": [{"when": [{"end": "-0331", "start": "-0331"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/90539", "title": "Troy", "place_id": 90539, "relations": [{"when": [{"end": "-0334", "start": "-0334"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/90638", "title": "Tyana", "place_id": 90638, "relations": [{"when": [{"end": "-0333", "start": "-0333"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/90645", "title": "Tyre", "place_id": 90645, "relations": [{"when": [{"end": "-0332", "start": "-0332"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/90805", "title": "Bactra", "place_id": 90805, "relations": [{"when": [{"end": "-0329", "start": "-0329"}, {"end": "-0327", "start": "-0327"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/91266", "title": "Xanthus", "place_id": 91266, "relations": [{"when": [{"end": "-0334", "start": "-0334"}], "relation": "waypoint"}]}, {"id": null, "title": "Gulashkird", "place_id": null, "relations": [{"when": [{"end": "-0325", "start": "-0325"}, {"end": "-0325", "start": "-0325"}], "relation": "waypoint"}]}], "tags": [], "type": "Annotation", "target": {"id": "http://www.worldcat.org/oclc/664066213", "type": "empire", "title": "The Empire of Alexander", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/6", "body": [{"id": "http://whgazetteer.org/place/81035", "title": "Acre", "place_id": 81035, "relations": [{"when": [{"end": "1099", "start": "1096"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/81065", "title": "Adrianople", "place_id": 81065, "relations": [{"when": [{"end": "1099", "start": "1096"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/81401", "title": "Antioch", "place_id": 81401, "relations": [{"when": [{"end": "1099", "start": "1096"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/81990", "title": "Belgrade", "place_id": 81990, "relations": [{"when": [{"end": "1099", "start": "1096"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/82252", "title": "Bouillon", "place_id": 82252, "relations": [{"when": [{"end": "1099", "start": "1096"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/83140", "title": "Constantinople", "place_id": 83140, "relations": [{"when": [{"end": "1099", "start": "1096"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/83616", "title": "Dorylaeum", "place_id": 83616, "relations": [{"when": [{"end": "1099", "start": "1096"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/85324", "title": "Jerusalem", "place_id": 85324, "relations": [{"when": [{"end": "1099", "start": "1096"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/87577", "title": "Nicaea", "place_id": 87577, "relations": [{"when": [{"end": "1099", "start": "1096"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/87626", "title": "Nish", "place_id": 87626, "relations": [{"when": [{"end": "1099", "start": "1096"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/88770", "title": "Regensburg", "place_id": 88770, "relations": [{"when": [{"end": "1099", "start": "1096"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/89585", "title": "Sofia", "place_id": 89585, "relations": [{"when": [{"end": "1099", "start": "1096"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/90645", "title": "Tyre", "place_id": 90645, "relations": [{"when": [{"end": "1099", "start": "1096"}], "relation": "waypoint"}]}], "tags": [], "type": "Annotation", "target": {"id": "http://www.worldcat.org/oclc/664066213", "type": "event", "title": "First Crusade (Godfrey of Bouillon)", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/7", "body": [{"id": "http://whgazetteer.org/place/81774", "title": "Bahia", "place_id": 81774, "relations": [{"when": [{"end": "1835", "start": "1832"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/82377", "title": "Buenos Aires", "place_id": 82377, "relations": [{"when": [{"end": "1835", "start": "1832"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/82495", "title": "Callao", "place_id": 82495, "relations": [{"when": [{"end": "1835", "start": "1832"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/82535", "title": "Canary Islands", "place_id": 82535, "relations": [{"when": [{"end": "1835", "start": "1832"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/82576", "title": "Cape Verde Islands", "place_id": 82576, "relations": [{"when": [{"end": "1835", "start": "1832"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/82909", "title": "Isla de Chiloé", "place_id": 82909, "relations": [{"when": [{"end": "1835", "start": "1832"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/83124", "title": "Concepción", "place_id": 83124, "relations": [{"when": [{"end": "1835", "start": "1832"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/83153", "title": "Copiapó", "place_id": 83153, "relations": [{"when": [{"end": "1835", "start": "1832"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/83778", "title": "El Carmen", "place_id": 83778, "relations": [{"when": [{"end": "1835", "start": "1832"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/84214", "title": "Galapagos Islands", "place_id": 84214, "relations": [{"when": [{"end": "1835", "start": "1832"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/85148", "title": "Iquique", "place_id": 85148, "relations": [{"when": [{"end": "1835", "start": "1832"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/86551", "title": "Strait of Magellan", "place_id": 86551, "relations": [{"when": [{"end": "1835", "start": "1832"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/87175", "title": "Montevideo", "place_id": 87175, "relations": [{"when": [{"end": "1835", "start": "1832"}, {"end": "1835", "start": "1832"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/88423", "title": "Port Desire", "place_id": 88423, "relations": [{"when": [{"end": "1835", "start": "1832"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/88827", "title": "Rio de Janeiro", "place_id": 88827, "relations": [{"when": [{"end": "1835", "start": "1832"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/89123", "title": "Santa Fe", "place_id": 89123, "relations": [{"when": [{"end": "1835", "start": "1832"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/89140", "title": "Santiago", "place_id": 89140, "relations": [{"when": [{"end": "1835", "start": "1832"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/89950", "title": "Tahiti", "place_id": 89950, "relations": [{"when": [{"end": "1835", "start": "1832"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/90797", "title": "Valdivia", "place_id": 90797, "relations": [{"when": [{"end": "1835", "start": "1832"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/90812", "title": "Valparaíso", "place_id": 90812, "relations": [{"when": [{"end": "1835", "start": "1832"}], "relation": "waypoint"}]}], "tags": [], "type": "Annotation", "target": {"id": "http://www.worldcat.org/oclc/664066213", "type": "event", "title": "Darwin 2nd Expedition", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/9", "body": [{"id": "http://whgazetteer.org/place/82548", "title": "Cannae", "place_id": 82548, "relations": [{"when": [{"end": "-0216", "start": "-0216"}], "relation": "battle_site"}]}, {"id": "http://whgazetteer.org/place/82586", "title": "Capua", "place_id": 82586, "relations": [{"when": [{"end": "-0203", "start": "-0216"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/82635", "title": "Carthago Nova", "place_id": 82635, "relations": [{"when": [{"end": "-0219", "start": "-0219"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/83245", "title": "Croton", "place_id": 83245, "relations": [{"when": [{"end": "-0203", "start": "-0216"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/84643", "title": "Hadrumetum", "place_id": 84643, "relations": [{"when": [{"end": "-0203", "start": "-0203"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/87412", "title": "Narbo", "place_id": 87412, "relations": [{"when": [{"end": "-0218", "start": "-0218"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/88233", "title": "Perusia", "place_id": 88233, "relations": [{"when": [{"end": "-0217", "start": "-0217"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/88797", "title": "Rhegium", "place_id": 88797, "relations": [{"when": [{"end": "-0203", "start": "-0216"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/88953", "title": "Saguntum", "place_id": 88953, "relations": [{"when": [{"end": "-0219", "start": "-0219"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/90070", "title": "Tarentum", "place_id": 90070, "relations": [{"when": [{"end": "-0203", "start": "-0216"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/90081", "title": "Tarraco", "place_id": 90081, "relations": [{"when": [{"end": "-0219", "start": "-0219"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/90282", "title": "Thurii", "place_id": 90282, "relations": [{"when": [{"end": "-0203", "start": "-0216"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/90497", "title": "Lacus Trasimenus", "place_id": 90497, "relations": [{"when": [{"end": "-0217", "start": "-0217"}], "relation": "battle_site"}]}, {"id": "http://whgazetteer.org/place/90499", "title": "Trebia", "place_id": 90499, "relations": [{"when": [{"end": "-0218", "start": "-0218"}], "relation": "battle_site"}]}, {"id": "http://whgazetteer.org/place/91516", "title": "Zama", "place_id": 91516, "relations": [{"when": [{"end": "-0202", "start": "-0202"}], "relation": "battle_site"}]}], "tags": [], "type": "Annotation", "target": {"id": "http://www.worldcat.org/oclc/664066213", "type": "event", "title": "The First and Second Punic Wars 264-201 BC", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/10", "body": [{"id": "http://whgazetteer.org/place/81221", "title": "Aleppo", "place_id": 81221, "relations": [{"when": [{"end": "1183", "start": "1183"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/82473", "title": "Cairo", "place_id": 82473, "relations": [{"when": [{"end": "1171", "start": "1169"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/83387", "title": "Damascus", "place_id": 83387, "relations": [{"when": [{"end": "1174", "start": "1174"}], "relation": "waypoint"}]}], "tags": [], "type": "Annotation", "target": {"id": "http://www.worldcat.org/oclc/664066213", "type": "event", "title": "Saladin's campaigns", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/11", "body": [{"id": "http://whgazetteer.org/place/81383", "title": "Ankara", "place_id": 81383, "relations": [{"when": [{"end": "1402", "start": "1402"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/81613", "title": "Astrakhan", "place_id": 81613, "relations": [{"when": [{"end": "1395", "start": "1395"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/83498", "title": "Derbent ", "place_id": 83498, "relations": [{"when": [{"end": "1395", "start": "1395"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/85448", "title": "Kaffa", "place_id": 85448, "relations": [{"when": [{"end": "1395", "start": "1395"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/87541", "title": "New Sarai", "place_id": 87541, "relations": [{"when": [{"end": "1395", "start": "1395"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/89030", "title": "Samarkand", "place_id": 89030, "relations": [{"when": [{"end": "1395", "start": "1395"}, {"end": "1400", "start": "1400"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/89552", "title": "Sivas", "place_id": 89552, "relations": [{"when": [{"end": "1402", "start": "1402"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/89576", "title": "Smyrna", "place_id": 89576, "relations": [{"when": [{"end": "1402", "start": "1402"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/91414", "title": "Yelets", "place_id": 91414, "relations": [{"when": [{"end": "1395", "start": "1395"}], "relation": "waypoint"}]}], "tags": [], "type": "Annotation", "target": {"id": "http://www.worldcat.org/oclc/664066213", "type": "eveny", "title": "Timur campaigns", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/14", "body": [{"id": "http://whgazetteer.org/place/90173", "title": "Tenochtitlan", "place_id": 90173, "relations": [{"when": [{"end": "0900", "start": "0900"}], "relation": "location_of"}]}], "tags": [], "type": "Annotation", "target": {"id": "https://en.wikipedia.org/wiki/Templo_Mayor", "type": "structure", "title": "Templo Mayor of Tlaloc", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/15", "body": [{"id": "http://whgazetteer.org/place/81229", "title": "Alexandria", "place_id": 81229, "relations": [{"when": [{"end": "-0246", "start": "-0284"}], "relation": "location_of"}]}], "tags": [], "type": "Annotation", "target": {"id": "https://en.wikipedia.org/wiki/Lighthouse_of_Alexandria", "type": "structure", "title": "Lighthouse of Alexandria", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/16", "body": [{"id": "http://whgazetteer.org/place/81229", "title": "Alexandria", "place_id": 81229, "relations": [{"when": [{"end": "0199", "start": "0100"}], "relation": "location_of"}]}], "tags": [], "type": "Annotation", "target": {"id": "https://en.wikipedia.org/wiki/Catacombs_of_Kom_El_Shoqafa", "type": "structure", "title": "Catacombs of Kom El Shoqafa", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/17", "body": [{"id": "http://whgazetteer.org/place/81744", "title": "Babylon", "place_id": 81744, "relations": [{"when": [{"end": "0299", "start": "0200"}], "relation": "location_of"}]}], "tags": [], "type": "Annotation", "target": {"id": "https://en.wikipedia.org/wiki/The_Hanging_Church", "type": "structure", "title": "The Hanging Church", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/18", "body": [{"id": "http://whgazetteer.org/place/85324", "title": "Jerusalem", "place_id": 85324, "relations": [{"when": [{"end": "0692", "start": "0692"}], "relation": "location_of"}]}], "tags": [], "type": "Annotation", "target": {"id": "https://en.wikipedia.org/wiki/Dome_of_the_Rock", "type": "structure", "title": "Dome of the Rock", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/19", "body": [{"id": "http://whgazetteer.org/place/81764", "title": "Baghdad", "place_id": 81764, "relations": [{"when": [{"end": "0775", "start": "0754"}], "relation": "location_of"}]}], "tags": [], "type": "Annotation", "target": {"id": "https://en.wikipedia.org/wiki/House_of_Wisdom", "type": "structure", "title": "House of Wisdom", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/20", "body": [{"id": "http://whgazetteer.org/place/83140", "title": "Constantinople", "place_id": 83140, "relations": [{"when": [{"end": "0537", "start": "0537"}], "relation": "location_of"}]}], "tags": [], "type": "Annotation", "target": {"id": "https://en.wikipedia.org/wiki/Hagia_Sophia", "type": "structure", "title": "Hagia Sophia", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/21", "body": [{"id": "http://whgazetteer.org/place/83140", "title": "Constantinople", "place_id": 83140, "relations": [{"when": [{"end": "0299", "start": "0200"}], "relation": "location_of"}]}], "tags": [], "type": "Annotation", "target": {"id": "https://en.wikipedia.org/wiki/Hippodrome_of_Constantinople", "type": "structure", "title": "Hippodrome of Constantinople", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/22", "body": [{"id": "http://whgazetteer.org/place/88106", "title": "Paris", "place_id": 88106, "relations": [{"when": [{"end": "1793", "start": "1793"}], "relation": "location_of"}]}], "tags": [], "type": "Annotation", "target": {"id": "https://commons.wikimedia.org/wiki/Louvre", "type": "structure", "title": "The Louvre", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/23", "body": [{"id": "http://whgazetteer.org/place/88106", "title": "Paris", "place_id": 88106, "relations": [{"when": [{"end": "1836", "start": "1836"}], "relation": "location_of"}]}], "tags": [], "type": "Annotation", "target": {"id": "https://commons.wikimedia.org/wiki/Category:Arc_de_Triomphe_de_l%27%C3%89toile", "type": "structure", "title": "Arc de Triomphe", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/24", "body": [{"id": "http://whgazetteer.org/place/88106", "title": "Paris", "place_id": 88106, "relations": [{"when": [{"end": "1889", "start": "1836"}], "relation": "location_of"}]}], "tags": [], "type": "Annotation", "target": {"id": "https://commons.wikimedia.org/wiki/Tour_Eiffel", "type": "structure", "title": "Eiffel Tower", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/25", "body": [{"id": "http://whgazetteer.org/place/84662", "title": "Halicarnassus", "place_id": 84662, "relations": [{"when": [{"end": "1494", "start": "-0351"}], "relation": "location_of"}]}], "tags": [], "type": "Annotation", "target": {"id": "https://en.wikipedia.org/wiki/Mausoleum_at_Halicarnassus", "type": "structure", "title": "Mausoleum of Halicarnassus", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/26", "body": [{"id": "http://whgazetteer.org/place/81641", "title": "Athens", "place_id": 81641, "relations": [{"when": [{"end": "-0432", "start": "-0432"}], "relation": "location_of"}]}], "tags": [], "type": "Annotation", "target": {"id": "https://en.wikipedia.org/wiki/Parthenon", "type": "structure", "title": "Parthenon", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/27", "body": [{"id": "http://whgazetteer.org/place/88827", "title": "Rio de Janeiro", "place_id": 88827, "relations": [{"when": [{"end": "1931", "start": "1931"}], "relation": "location_of"}]}], "tags": [], "type": "Annotation", "target": {"id": "https://en.wikipedia.org/wiki/Christ_the_Redeemer_(statue)", "type": "structure", "title": "Christ the Redeemer", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/28", "body": [{"id": "http://whgazetteer.org/place/81065", "title": "Adrianople", "place_id": 81065, "relations": [{"when": [{"end": "1574", "start": "1574"}], "relation": "location_of"}]}], "tags": [], "type": "Annotation", "target": {"id": "https://en.wikipedia.org/wiki/Selimiye_Mosque", "type": "structure", "title": "Selimiye Mosque", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/29", "body": [{"id": "http://whgazetteer.org/place/90173", "title": "Tenochtitlan", "place_id": 90173, "relations": [{"when": [{"end": "1469", "start": "1440"}], "relation": "created_at"}]}], "tags": [], "type": "Annotation", "target": {"id": "https://en.wikipedia.org/wiki/Stone_of_Motecuhzoma_I", "type": "structure", "title": "Stone of Motecuhzoma I", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/30", "body": [{"id": "http://whgazetteer.org/place/83140", "title": "Constantinople", "place_id": 83140, "relations": [{"when": [{"end": "1000", "start": "0900"}], "relation": "created_at"}]}], "tags": [], "type": "Annotation", "target": {"id": "https://www.britishmuseum.org/collection/object/H_1923-1205-1", "type": "work.object", "title": "The Borradaile Triptych", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/31", "body": [{"id": "http://whgazetteer.org/place/89929", "title": "Tabriz", "place_id": 89929, "relations": [{"when": [{"end": "1540", "start": "1540"}], "relation": "created_at"}]}], "tags": [], "type": "Annotation", "target": {"id": "https://www.britishmuseum.org/collection/object/W_1996-0326-0-1", "type": "work.painting", "title": "Hunter on Horseback", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/32", "body": [{"id": "http://whgazetteer.org/place/90224", "title": "Texcoco", "place_id": 90224, "relations": [{"when": [{"end": "1400", "start": "1400"}], "relation": "created_at"}]}], "tags": [], "type": "Annotation", "target": {"id": "https://www.britishmuseum.org/collection/object/E_Am1902-1114-1", "type": "work.mask", "title": "Xipe Totec Mask", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/33", "body": [{"id": "http://whgazetteer.org/place/81229", "title": "Alexandria", "place_id": 81229, "relations": [{"when": [{"end": "-0343", "start": "-0360"}], "relation": "created_at"}]}], "tags": [], "type": "Annotation", "target": {"id": "https://www.metmuseum.org/art/collection/search/546037", "type": "work.object", "title": "Magical Stela (Cippus of Horus)", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/34", "body": [{"id": "http://whgazetteer.org/place/88106", "title": "Paris", "place_id": 88106, "relations": [{"when": [{"end": "1922", "start": "1922"}], "relation": "created_at"}]}], "tags": [], "type": "Annotation", "target": {"id": "https://www.metmuseum.org/art/collection/search/196439", "type": "work.sculpture", "title": "The Little Fourteen-Year-Old Dancer", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/35", "body": [{"id": "http://whgazetteer.org/place/88106", "title": "Paris", "place_id": 88106, "relations": [{"when": [{"end": "1892", "start": "1892"}], "relation": "created_at"}]}], "tags": [], "type": "Annotation", "target": {"id": "https://www.metmuseum.org/art/collection/search/437835", "type": "work.painting", "title": "The Englishman", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/36", "body": [{"id": "http://whgazetteer.org/place/81744", "title": "Babylon", "place_id": 81744, "relations": [{"when": [{"end": "-0562", "start": "-0604"}], "relation": "created_at"}]}], "tags": [], "type": "Annotation", "target": {"id": "https://www.metmuseum.org/art/collection/search/322585", "type": "work.ceramics", "title": "Panel with Striding Lion", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/37", "body": [{"id": "http://whgazetteer.org/place/81975", "title": "Beijing", "place_id": 81975, "relations": [{"when": [{"end": "1773", "start": "1773"}], "relation": "created_at"}]}], "tags": [], "type": "Annotation", "target": {"id": "https://www.metmuseum.org/art/collection/search/49254", "type": "work.painting", "title": "Drinking in the Bamboo Garden", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/38", "body": [{"id": "http://whgazetteer.org/place/81975", "title": "Beijing", "place_id": 81975, "relations": [{"when": [{"end": "1676", "start": "1676"}], "relation": "created_at"}]}], "tags": [], "type": "Annotation", "target": {"id": "https://www.metmuseum.org/art/collection/search/715005", "type": "work.text", "title": "San Li Tu", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/39", "body": [{"id": "http://whgazetteer.org/place/86476", "title": "Lyon", "place_id": 86476, "relations": [{"when": [{"end": "-0010-10-13", "start": "-0010-10-13"}], "relation": "birthplace_of"}]}], "tags": [], "type": "Annotation", "target": {"id": "https://en.wikipedia.org/wiki/Claudius", "type": "person", "title": "Claudius", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/40", "body": [{"id": "http://whgazetteer.org/place/88106", "title": "Paris", "place_id": 88106, "relations": [{"when": [{"end": "1694-11-21", "start": "1694-11-21"}], "relation": "birthplace_of"}]}], "tags": [], "type": "Annotation", "target": {"id": "https://viaf.org/viaf/36925746/", "type": "person", "title": "Voltaire", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/41", "body": [{"id": "http://whgazetteer.org/place/88106", "title": "Paris", "place_id": 88106, "relations": [{"when": [{"end": "1840-11-14", "start": "1840-11-14"}], "relation": "birthplace_of"}]}], "tags": [], "type": "Annotation", "target": {"id": "https://viaf.org/viaf/24605513/", "type": "person", "title": "Claude Monet", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/42", "body": [{"id": "http://whgazetteer.org/place/88106", "title": "Paris", "place_id": 88106, "relations": [{"when": [{"end": "1748-08-30", "start": "1748-08-30"}], "relation": "birthplace_of"}]}], "tags": [], "type": "Annotation", "target": {"id": "https://viaf.org/viaf/66575297/", "type": "person", "title": "Jacques-Louis David", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/43", "body": [{"id": "http://whgazetteer.org/place/81229", "title": "Alexandria", "place_id": 81229, "relations": [{"when": [{"end": "-0020", "start": "-0020"}], "relation": "birthplace_of"}]}], "tags": [], "type": "Annotation", "target": {"id": "http://vocab.getty.edu/page/ulan/500211786", "type": "person", "title": "Philo of Alexandria", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/44", "body": [{"id": "http://whgazetteer.org/place/89470", "title": "Sicily", "place_id": 89470, "relations": [{"when": [{"end": "0231", "start": "0231"}], "relation": "birthplace_of"}]}], "tags": [], "type": "Annotation", "target": {"id": "http://vocab.getty.edu/page/ulan/500372806", "type": "person", "title": "Saint Agatha", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/45", "body": [{"id": "http://whgazetteer.org/place/87111", "title": "Mogadishu", "place_id": 87111, "relations": [{"when": [{"end": "1982-10-04", "start": "1982-10-04"}], "relation": "birthplace_of"}]}], "tags": [], "type": "Annotation", "target": {"id": "https://en.wikipedia.org/wiki/Ilhan_Omar", "type": "person", "title": "Ilhan Omar", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/46", "body": [{"id": "http://whgazetteer.org/place/90173", "title": "Tenochtitlan", "place_id": 90173, "relations": [{"when": [{"end": "1520", "start": "1502"}], "relation": "ruled_by"}]}], "tags": [], "type": "Annotation", "target": {"id": "https://en.wikipedia.org/wiki/Moctezuma_II", "type": "person", "title": "Moctezuma II", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/47", "body": [{"id": "http://whgazetteer.org/place/90224", "title": "Texcoco", "place_id": 90224, "relations": [{"when": [{"end": "1472", "start": "1429"}], "relation": "ruled_by"}]}], "tags": [], "type": "Annotation", "target": {"id": "https://en.wikipedia.org/wiki/Nezahualcoyotl_(tlatoani)", "type": "person", "title": "Nezahualcoyotl", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/48", "body": [{"id": "http://whgazetteer.org/place/83387", "title": "Damascus", "place_id": 83387, "relations": [{"when": [{"end": "1193-03-04", "start": "1174"}], "relation": "ruled_by"}]}], "tags": [], "type": "Annotation", "target": {"id": "https://en.wikipedia.org/wiki/Saladin", "type": "person", "title": "Saladin", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/49", "body": [{"id": "http://whgazetteer.org/place/85324", "title": "Jerusalem", "place_id": 85324, "relations": [{"when": [{"end": "-0970", "start": "-1010"}], "relation": "ruled_by"}]}], "tags": [], "type": "Annotation", "target": {"id": "https://en.wikipedia.org/wiki/David", "type": "person", "title": "David", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/50", "body": [{"id": "http://whgazetteer.org/place/85324", "title": "Jerusalem", "place_id": 85324, "relations": [{"when": [{"end": "-0931", "start": "-0970"}], "relation": "ruled_by"}]}], "tags": [], "type": "Annotation", "target": {"id": "https://en.wikipedia.org/wiki/Solomon", "type": "person", "title": "Solomon", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/51", "body": [{"id": "http://whgazetteer.org/place/83387", "title": "Damascus", "place_id": 83387, "relations": [{"when": [{"end": "-1340", "start": "-1360"}], "relation": "ruled_by"}]}], "tags": [], "type": "Annotation", "target": {"id": "https://en.wikipedia.org/wiki/Biryawaza", "type": "person", "title": "Biryawaza", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/52", "body": [{"id": "http://whgazetteer.org/place/88855", "title": "Roman Empire", "place_id": 88855, "relations": [{"when": [{"end": "0337", "start": "-0324"}], "relation": "ruled_by"}]}], "tags": [], "type": "Annotation", "target": {"id": "https://en.wikipedia.org/wiki/Constantine_the_Great", "type": "person", "title": "Constantine the Great", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/53", "body": [{"id": "http://whgazetteer.org/place/87943", "title": "Ottoman Empire", "place_id": 87943, "relations": [{"when": [{"end": "1574", "start": "1566"}], "relation": "ruled_by"}]}], "tags": [], "type": "Annotation", "target": {"id": "https://en.wikipedia.org/wiki/Selim_II", "type": "person", "title": "Selim II", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/54", "body": [{"id": "http://whgazetteer.org/place/88855", "title": "Roman Empire", "place_id": 88855, "relations": [{"when": [{"end": "0305", "start": "0284"}], "relation": "ruled_by"}]}], "tags": [], "type": "Annotation", "target": {"id": "http://vocab.getty.edu/page/ulan/500115704", "type": "person", "title": "Diocletian", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/55", "body": [{"id": "http://whgazetteer.org/place/88855", "title": "Roman Empire", "place_id": 88855, "relations": [{"when": [{"end": "0117", "start": "0098"}], "relation": "ruled_by"}]}], "tags": [], "type": "Annotation", "target": {"id": "http://vocab.getty.edu/page/ulan/500115699", "type": "person", "title": "Trajan", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/56", "body": [{"id": "http://whgazetteer.org/place/90224", "title": "Texcoco", "place_id": 90224, "relations": [{"when": [{"end": "1520", "start": "1483"}], "relation": "deathplace_of"}]}], "tags": [], "type": "Annotation", "target": {"id": "https://en.wikipedia.org/wiki/Cacamatzin", "type": "person", "title": "Cacamatzin", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/57", "body": [{"id": "http://whgazetteer.org/place/81229", "title": "Alexandria", "place_id": 81229, "relations": [{"when": [{"end": "0444", "start": "0444"}], "relation": "deathplace_of"}]}], "tags": [], "type": "Annotation", "target": {"id": "http://vocab.getty.edu/page/ulan/500091600", "type": "person", "title": "Cyril of Alexandria", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/58", "body": [{"id": "http://whgazetteer.org/place/88106", "title": "Paris", "place_id": 88106, "relations": [{"when": [{"end": "1900-11-30", "start": "1900-11-30"}], "relation": "deathplace_of"}]}], "tags": [], "type": "Annotation", "target": {"id": "https://commons.wikimedia.org/wiki/Oscar_Wilde", "type": "person", "title": "Oscar Wilde", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/59", "body": [{"id": "http://whgazetteer.org/place/82473", "title": "Cairo", "place_id": 82473, "relations": [{"when": [{"end": "1900-11-30", "start": "1981-11-06"}], "relation": "deathplace_of"}]}], "tags": [], "type": "Annotation", "target": {"id": "https://commons.wikimedia.org/wiki/%D9%85%D8%AD%D9%85%D8%AF_%D8%A3%D9%86%D9%88%D8%B1_%D8%A7%D9%84%D8%B3%D8%A7%D8%AF%D8%A7%D8%AA", "type": "person", "title": "Anwar Sadat ", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/60", "body": [{"id": "http://whgazetteer.org/place/83140", "title": "Constantinople", "place_id": 83140, "relations": [{"when": [{"end": "0565-11-14", "start": "0565-11-14"}], "relation": "deathplace_of"}]}], "tags": [], "type": "Annotation", "target": {"id": "https://en.wikipedia.org/wiki/Justinian_I", "type": "person", "title": "Justinian", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/61", "body": [{"id": "http://whgazetteer.org/place/82473", "title": "Cairo", "place_id": 82473, "relations": [{"when": [{"end": "1945", "start": "1945"}], "relation": "location_of"}]}], "tags": [], "type": "Annotation", "target": {"id": "https://en.wikipedia.org/wiki/Arab_League", "type": "organization", "title": "Arab League Headquarters", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/62", "body": [{"id": "http://whgazetteer.org/place/86640", "title": "Malta", "place_id": 86640, "relations": [{"when": [{"end": "1530", "start": "1530"}], "relation": "location_of"}]}], "tags": [], "type": "Annotation", "target": {"id": "http://vocab.getty.edu/page/ulan/500271811", "type": "organization", "title": "Knights of Malta", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/63", "body": [{"id": "http://whgazetteer.org/place/84281", "title": "Gaza", "place_id": 84281, "relations": [{"when": [{"end": "1995", "start": "1995"}], "relation": "location_of"}]}], "tags": [], "type": "Annotation", "target": {"id": "https://en.wikipedia.org/wiki/Palestinian_Centre_for_Human_Rights", "type": "organization", "title": "Palestinian Centre for Civil Rights", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/64", "body": [{"id": "http://whgazetteer.org/place/88106", "title": "Paris", "place_id": 88106, "relations": [{"when": [{"end": "1945", "start": "1945"}], "relation": "location_of"}]}], "tags": [], "type": "Annotation", "target": {"id": "https://en.wikipedia.org/wiki/UNESCO", "type": "organization", "title": "UNESCO", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/65", "body": [{"id": "http://whgazetteer.org/place/83387", "title": "Damascus", "place_id": 83387, "relations": [{"when": [{"end": "1860", "start": "1860"}], "relation": "location_of"}]}], "tags": [], "type": "Annotation", "target": {"id": "https://en.wikipedia.org/wiki/1860_Mount_Lebanon_civil_war", "type": "event", "title": "Christian Massacre of 1860", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/67", "body": [{"id": "http://whgazetteer.org/place/82550", "title": "Cannes", "place_id": 82550, "relations": [{"when": [{"end": "1946", "start": "1946"}], "relation": "location_of"}]}], "tags": [], "type": "Annotation", "target": {"id": "https://en.wikipedia.org/wiki/Cannes_Film_Festival", "type": "event", "title": "Cannes Film Festival", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/68", "body": [{"id": "http://whgazetteer.org/place/86259", "title": "Ligny", "place_id": 86259, "relations": [{"when": [{"end": "1815-06-16", "start": "1815-06-16"}], "relation": "location_of"}]}], "tags": [], "type": "Annotation", "target": {"id": "https://en.wikipedia.org/wiki/Battle_of_Ligny", "type": "event", "title": "Battle of Ligny", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/69", "body": [{"id": "http://whgazetteer.org/place/90539", "title": "Troy", "place_id": 90539, "relations": [{"when": [{"end": "-1180", "start": "-1260"}], "relation": "subject_of"}]}], "tags": [], "type": "Annotation", "target": {"id": "https://en.wikipedia.org/wiki/Iliad", "type": "text", "title": "Iliad", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/70", "body": [{"id": "http://whgazetteer.org/place/81731", "title": "Azcapotzalco", "place_id": 81731, "relations": [{"when": [{"end": "1521-02-22", "start": "1521-02-22"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/82706", "title": "Cempoala", "place_id": 82706, "relations": [{"when": [{"end": "1520-05-29", "start": "1520-05-29"}], "relation": "battle_site"}, {"when": [{"end": "1519-06-07", "start": "1519-06-07"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/82952", "title": "Cholula", "place_id": 82952, "relations": [{"when": [{"end": "1519-10", "start": "1519-10"}, {"end": "1520-05", "start": "1520-05"}, {"end": "1520-08", "start": "1520-08"}, {"end": "1519-11-01", "start": "1519-11-01"}, {"end": "1519-10-18", "start": "1519-10-18"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/83270", "title": "Cuautitlan", "place_id": 83270, "relations": [{"when": [{"end": "1521-02-21", "start": "1521-02-21"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/83277", "title": "Cuernavaca", "place_id": 83277, "relations": [{"when": [{"end": "1521-04-13", "start": "1521-04-13"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/84967", "title": "Hueyotlipan", "place_id": 84967, "relations": [{"when": [{"end": "1520-07-08", "start": "1520-07-08"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/85229", "title": "Ixhuacan", "place_id": 85229, "relations": [{"when": [{"end": "1519-08", "start": "1519-08"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/85234", "title": "Ixtapalapa", "place_id": 85234, "relations": [{"when": [{"end": "1519-11", "start": "1519-11"}, {"end": "1521-06-02", "start": "1521-06-02"}], "relation": "waypoint"}, {"when": [{"end": "1521-01-09", "start": "1521-01-09"}], "relation": "battle_site"}]}, {"id": "http://whgazetteer.org/place/87945", "title": "Otumba", "place_id": 87945, "relations": [{"when": [{"end": "1520-07-07", "start": "1520-07-07"}], "relation": "battle_site"}]}, {"id": "http://whgazetteer.org/place/89074", "title": "San Juan de Ulua", "place_id": 89074, "relations": [{"when": [{"end": "1519-04-22", "start": "1519-04-22"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/89934", "title": "Tacuba", "place_id": 89934, "relations": [{"when": [{"end": "1521-02-22", "start": "1521-02-22"}], "relation": "battle_site"}]}, {"id": "http://whgazetteer.org/place/90173", "title": "Tenochtitlan", "place_id": 90173, "relations": [{"when": [{"end": "1521-08-13", "start": "1521-06-16"}], "relation": "battle_site"}, {"when": [{"end": "1519-11-08", "start": "1519-11-08"}, {"end": "1521-02-23", "start": "1521-02-23"}, {"end": "1521-06-10", "start": "1521-06-10"}, {"end": "1521-06-15", "start": "1521-06-15"}, {"end": "1520-05", "start": "1520-05"}, {"end": "1520-07-01", "start": "1520-07-01"}, {"end": "1521-06-10", "start": "1521-06-10"}, {"end": "1521-06-15", "start": "1521-06-15"}, {"end": "1520-06-24", "start": "1520-06-24"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/90224", "title": "Texcoco", "place_id": 90224, "relations": [{"when": [{"end": "1520-06", "start": "1520-06"}, {"end": "1521-01-02", "start": "1521-01-02"}, {"end": "1521-01-09", "start": "1521-01-09"}, {"end": "1521-02-19", "start": "1521-02-19"}, {"end": "1521-04-03", "start": "1521-04-03"}, {"end": "1521-06-01", "start": "1521-06-01"}, {"end": "1521-02", "start": "1521-02"}, {"end": "1521-04-22", "start": "1521-04-22"}, {"end": "1521-01-10", "start": "1521-01-10"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/90371", "title": "Tlaxcala", "place_id": 90371, "relations": [{"when": [{"end": "1519-09-12", "start": "1519-08-31"}], "relation": "battle_site"}, {"when": [{"end": "1520-12-29", "start": "1520-12-29"}, {"end": "1520-12-27", "start": "1520-12-27"}, {"end": "1520-07-11", "start": "1520-07-11"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/90870", "title": "Villa Rica de la Vera Cruz", "place_id": 90870, "relations": [{"when": [{"end": "1519-08-08", "start": "1519-08-08"}, {"end": "1519-05-01", "start": "1519-05-01"}, {"end": "1519-07-01", "start": "1519-07-01"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/90870", "title": "Xaltocan", "place_id": 90870, "relations": [{"when": [{"end": "1521-02-20", "start": "1521-02-20"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/91285", "title": "Xicochimalco", "place_id": 91285, "relations": [{"when": [{"end": "1519-08", "start": "1519-08"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/167539", "title": "Popotla", "place_id": 167539, "relations": [{"when": [{"end": "1520-07-01", "start": "1520-07-01"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/167699", "title": "Huejutla", "place_id": 167699, "relations": [{"when": [{"end": "1521-01-02", "start": "1521-01-02"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/167961", "title": "Izucar", "place_id": 167961, "relations": [{"when": [{"end": "1520-10", "start": "1520-10"}], "relation": "battle_site"}]}, {"id": "http://whgazetteer.org/place/168511", "title": "Amecameca", "place_id": 168511, "relations": [{"when": [{"end": "1519-11", "start": "1519-11"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/168562", "title": "Tlalmanalco", "place_id": 168562, "relations": [{"when": [{"end": "1520-04-05", "start": "1521-04-04"}], "relation": "battle_site"}, {"when": [{"end": "1521-04-03", "start": "1521-04-03"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/168646", "title": "Tepotzotlan", "place_id": 168646, "relations": [{"when": [{"end": "1520-07", "start": "1520-07"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/168704", "title": "Oaxtepec", "place_id": 168704, "relations": [{"when": [{"end": "1521-04-08", "start": "1521-04-08"}], "relation": "battle_site"}]}, {"id": "http://whgazetteer.org/place/169393", "title": "Acolman", "place_id": 169393, "relations": [{"when": [{"end": "1521-02", "start": "1521-02"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/170835", "title": "Cuautinchan", "place_id": 170835, "relations": [{"when": [{"end": "1521-01-02", "start": "1521-01-02"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/171175", "title": "Ixtacamaxtitlan", "place_id": 171175, "relations": [{"when": [{"end": "1519-08", "start": "1519-08"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/171253", "title": "Acatzingo", "place_id": 171253, "relations": [{"when": [{"end": "1520-08", "start": "1520-08"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/174101", "title": "Santiago de Cuba", "place_id": 174101, "relations": [{"when": [{"end": "1519-02-10", "start": "1519-02-10"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/2487569", "title": "Coyoacan", "place_id": 2487569, "relations": [{"when": [{"end": "1521-04-20", "start": "1521-04-20"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/4573395", "title": "Jalapa", "place_id": 4573395, "relations": [{"when": [{"end": "1519-08", "start": "1519-08"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/4854893", "title": "Quiahuiztlan", "place_id": 4854893, "relations": [{"when": [{"end": "1519-06-28", "start": "1519-06-28"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/4882767", "title": "Huejotzingo", "place_id": 4882767, "relations": [{"when": [{"end": "1520-08", "start": "1520-08"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/5256086", "title": "Cozumel", "place_id": 5256086, "relations": [{"when": [{"end": "1519-02-21", "start": "1519-02-21"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/5715196", "title": "Tenayuca", "place_id": 5715196, "relations": [{"when": [{"end": "1521-02-22", "start": "1521-02-22"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/5828511", "title": "Tepeaca", "place_id": 5828511, "relations": [{"when": [{"end": "1520-08-07", "start": "1520-08-07"}, {"end": "1520-10", "start": "1520-10"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/5913375", "title": "Huaquechula", "place_id": 5913375, "relations": [{"when": [{"end": "1520-09", "start": "1520-09"}], "relation": "battle_site"}]}, {"id": "http://whgazetteer.org/place/6230702", "title": "Zautla", "place_id": 6230702, "relations": [{"when": [{"end": "1519-08", "start": "1519-08"}], "relation": "waypoint"}]}, {"id": null, "title": "Coatepec", "place_id": null, "relations": [{"when": [{"end": "1521-01-01", "start": "1521-01-01"}], "relation": "waypoint"}]}, {"id": null, "title": "Heujotzingo", "place_id": null, "relations": [{"when": [{"end": "1519-11", "start": "1519-11"}], "relation": "waypoint"}]}, {"id": null, "title": "Jilotepec", "place_id": null, "relations": [{"when": [{"end": "1521-04-10", "start": "1521-04-10"}], "relation": "waypoint"}]}, {"id": null, "title": "Nueva Sevilla", "place_id": null, "relations": [{"when": [{"end": "1519-08-16", "start": "1519-08-16"}], "relation": "waypoint"}]}, {"id": null, "title": "Potonchan", "place_id": null, "relations": [{"when": [{"end": "1519-03-24", "start": "1519-03-24"}], "relation": "battle_site"}]}, {"id": null, "title": "Santa Maria de la Victori", "place_id": null, "relations": [{"when": [{"end": "1519-04-17", "start": "1519-04-17"}], "relation": "waypoint"}]}, {"id": null, "title": "Segura de la Frontera", "place_id": null, "relations": [{"when": [{"end": "1520-08-21", "start": "1520-08-21"}], "relation": "waypoint"}]}, {"id": null, "title": "Teocalhueyacan", "place_id": null, "relations": [{"when": [{"end": "1520-07-02", "start": "1520-07-02"}], "relation": "battle_site"}]}, {"id": null, "title": "Teocatcingo", "place_id": null, "relations": [{"when": [{"end": "1519-09-01", "start": "1519-09-01"}], "relation": "waypoint"}]}, {"id": null, "title": "Tizapantzingo", "place_id": null, "relations": [{"when": [{"end": "1519-06-30", "start": "1519-06-30"}], "relation": "battle_site"}]}, {"id": null, "title": "Xochimilco", "place_id": null, "relations": [{"when": [{"end": "1521-04-15", "start": "1521-04-15"}], "relation": "waypoint"}]}, {"id": null, "title": "Xoloc", "place_id": null, "relations": [{"when": [{"end": "1521-06-01", "start": "1521-06-01"}], "relation": "waypoint"}]}], "tags": ["Cortes", "Conquest", "Mexico", "Aztec", "Conquistador", "Tenochtitlan", "Mexico City"], "type": "Annotation", "target": {"id": "https://doi.org/10.7910/DVN/AMPGMW", "type": "event", "title": "Hernan Cortes and the Conquest of the Aztec Empire", "format": "text/html", "language": "en"}, "created": "2020-06-16", "creator": {"id": "", "name": "Susan Grunewald", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": ["Cortes", "Conquest", "Mexico", "Aztec", "Conquistador", "Tenochtitlan", "Mexico City"]},
+{"id": "http://whgazetteer.org/traces/71", "body": [{"id": "http://whgazetteer.org/place/81018", "title": "Acapulco", "place_id": 81018, "relations": [{"when": [{"end": "1803", "start": "1799"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/81371", "title": "Angostura", "place_id": 81371, "relations": [{"when": [{"end": "1803", "start": "1799"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/81884", "title": "Barcelona", "place_id": 81884, "relations": [{"when": [{"end": "1803", "start": "1799"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/82184", "title": "Bogota", "place_id": 82184, "relations": [{"when": [{"end": "1803", "start": "1799"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/82495", "title": "Callao", "place_id": 82495, "relations": [{"when": [{"end": "1803", "start": "1799"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/82535", "title": "Canary Islands", "place_id": 82535, "relations": [{"when": [{"end": "1803", "start": "1799"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/82576", "title": "Cape Verde Islands", "place_id": 82576, "relations": [{"when": [{"end": "1803", "start": "1799"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/82591", "title": "Caracas", "place_id": 82591, "relations": [{"when": [{"end": "1803", "start": "1799"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/84569", "title": "Guayaquil", "place_id": 84569, "relations": [{"when": [{"end": "1803", "start": "1799"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/84749", "title": "Havana", "place_id": 84749, "relations": [{"when": [{"end": "1803", "start": "1799"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/86267", "title": "Lima", "place_id": 86267, "relations": [{"when": [{"end": "1803", "start": "1799"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/88687", "title": "Quito", "place_id": 88687, "relations": [{"when": [{"end": "1803", "start": "1799"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/90544", "title": "Trujillo", "place_id": 90544, "relations": [{"when": [{"end": "1803", "start": "1799"}], "relation": "waypoint"}]}], "tags": [], "type": "Annotation", "target": {"id": "http://www.worldcat.org/oclc/664066213", "type": "event", "title": "Humboldt Expedition", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/72", "body": [{"id": "http://whgazetteer.org/place/81044", "title": "Adalia", "place_id": 81044, "relations": [{"when": [{"end": "1149", "start": "1147"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/81065", "title": "Adrianople", "place_id": 81065, "relations": [{"when": [{"end": "1149", "start": "1147"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/81401", "title": "Antioch", "place_id": 81401, "relations": [{"when": [{"end": "1149", "start": "1147"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/81990", "title": "Belgrade", "place_id": 81990, "relations": [{"when": [{"end": "1149", "start": "1147"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/83140", "title": "Constantinople", "place_id": 83140, "relations": [{"when": [{"end": "1149", "start": "1147"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/83616", "title": "Nish", "place_id": 83616, "relations": [{"when": [{"end": "1149", "start": "1147"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/83867", "title": "Ephesus", "place_id": 83867, "relations": [{"when": [{"end": "1149", "start": "1147"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/85324", "title": "Jerusalem", "place_id": 85324, "relations": [{"when": [{"end": "1149", "start": "1147"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/87577", "title": "Nicaea", "place_id": 87577, "relations": [{"when": [{"end": "1149", "start": "1147"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/88106", "title": "Paris", "place_id": 88106, "relations": [{"when": [{"end": "1149", "start": "1147"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/88770", "title": "Regensburg", "place_id": 88770, "relations": [{"when": [{"end": "1149", "start": "1147"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/89585", "title": "Sofia", "place_id": 89585, "relations": [{"when": [{"end": "1149", "start": "1147"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/90645", "title": "Tyre", "place_id": 90645, "relations": [{"when": [{"end": "1149", "start": "1147"}], "relation": "waypoint"}]}], "tags": [], "type": "Annotation", "target": {"id": "http://www.worldcat.org/oclc/664066213", "type": "event", "title": "Second Crusade (Louis VII of France)", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/73", "body": [{"id": "http://whgazetteer.org/place/81035", "title": "Acre", "place_id": 81035, "relations": [{"when": [{"end": "1192", "start": "1189"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/82777", "title": "Champagne", "place_id": 82777, "relations": [{"when": [{"end": "1192", "start": "1189"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/83950", "title": "Famagusta", "place_id": 83950, "relations": [{"when": [{"end": "1192", "start": "1189"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/84299", "title": "Genoa", "place_id": 84299, "relations": [{"when": [{"end": "1192", "start": "1189"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/86798", "title": "Marseille", "place_id": 86798, "relations": [{"when": [{"end": "1192", "start": "1189"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/86963", "title": "Messina", "place_id": 86963, "relations": [{"when": [{"end": "1192", "start": "1189"}], "relation": "waypoint"}]}], "tags": [], "type": "Annotation", "target": {"id": "http://www.worldcat.org/oclc/664066213", "type": "event", "title": "Third Crusade (Richard I)", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+{"id": "http://whgazetteer.org/traces/74", "body": [{"id": "http://whgazetteer.org/place/81035", "title": "Acre", "place_id": 81035, "relations": [{"when": [{"end": "1248", "start": "1248"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/81124", "title": "Aigues-Mortes", "place_id": 81124, "relations": [{"when": [{"end": "1248", "start": "1248"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/83319", "title": "Cyprus", "place_id": 83319, "relations": [{"when": [{"end": "1248", "start": "1248"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/83392", "title": "Damietta", "place_id": 83392, "relations": [{"when": [{"end": "1248", "start": "1248"}], "relation": "waypoint"}]}, {"id": "http://whgazetteer.org/place/88106", "title": "Paris", "place_id": 88106, "relations": [{"when": [{"end": "1248", "start": "1248"}], "relation": "waypoint"}]}], "tags": [], "type": "Annotation", "target": {"id": "http://www.worldcat.org/oclc/664066213", "type": "event", "title": "Crusades of Louis IX", "format": "text/html", "language": "en"}, "created": "2019-07-15", "creator": {"id": "", "name": "Alec Story", "homepage": ""}, "@context": ["http://www.w3.org/ns/anno.jsonld", {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], "motivation": "linking", "tag_suggest": []},
+  {
+    "@context": [
+      "http://www.w3.org/ns/anno.jsonld",
+      {
+        "lpo": "http://linkedpasts.org/ontology/lpo.jsonld"
+      }
+    ],
+    "id": "http://example.org/annotations/54322",
+    "type": "Annotation",
+    "creator": {
+      "id": "https://orcid.org/0000-0002-4066-8297",
+      "name": "Karl Grossner",
+      "homepage": "http://kgeographer.org"
+    },
+    "created": "2019-04-07",
+    "motivation": "linking",
+    "target": {
+      "id": "http://www.worldcat.org/oclc/833253277",
+      "type": "Journey",
+      "title": "Xuanzang : a Buddhist pilgrim on the Silk Road",
+      "format": "text/html",
+      "language": "en"
+    },
+    "body": [
+      {
+        "id": "http://whgazetteer.org/api/places/4603973",
+        "title": "Balkh",
+        "place_id": 4603973,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0630",
+                "start": "0630"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/82862",
+        "title": "Cherchen",
+        "place_id": 82862,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0644",
+                "start": "0644"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/5058148",
+        "title": "Darel",
+        "place_id": 5058148,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0630",
+                "start": "0630"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/6087168",
+        "title": "Hami",
+        "place_id": 6087168,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0629",
+                "start": "0629"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/6021669",
+        "title": "Kapilavastu",
+        "place_id": 6021669,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0636",
+                "start": "0636"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/89173",
+        "title": "Sarnath and Varanasi",
+        "place_id": 89173,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0637",
+                "start": "0637"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://geonames.org/1271883",
+        "title": "Chinabhukti",
+        "place_id": null,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0633",
+                "start": "0633"
+              },
+              {
+                "end": "0634",
+                "start": "0634"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://geonames.org/1278718",
+        "title": "Dhanakataka",
+        "place_id": null,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0639",
+                "start": "0639"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/5173815",
+        "title": "Faizabad",
+        "place_id": 5173815,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0644",
+                "start": "0644"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/228002",
+        "title": "Jalandhara",
+        "place_id": 228002,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0634",
+                "start": "0634"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/4541576",
+        "title": "Karashahr",
+        "place_id": 4541576,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0630",
+                "start": "0630"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/81601",
+        "title": "Assam",
+        "place_id": 81601,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0638",
+                "start": "0638"
+              },
+              {
+                "end": "0642",
+                "start": "0642"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/81164",
+        "title": "Aksu",
+        "place_id": 81164,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0630",
+                "start": "0630"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://geonames.org/1148671",
+        "title": "Andarab",
+        "place_id": null,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0644",
+                "start": "0644"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/5760896",
+        "title": "An-hsi",
+        "place_id": 5760896,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0629",
+                "start": "0629"
+              },
+              {
+                "end": "0645",
+                "start": "0645"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/4467393",
+        "title": "Attock",
+        "place_id": 4467393,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0630",
+                "start": "0630"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/5262790",
+        "title": "Ayodhya",
+        "place_id": 5262790,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0636",
+                "start": "0636"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/81829",
+        "title": "Bamiyan",
+        "place_id": 81829,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0630",
+                "start": "0630"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/82342",
+        "title": "Bharukaccha",
+        "place_id": 82342,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0641",
+                "start": "0641"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/82182",
+        "title": "Bodh Gaya",
+        "place_id": 82182,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0637",
+                "start": "0637"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/5170159",
+        "title": "Charsadda",
+        "place_id": 5170159,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0630",
+                "start": "0630"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://geonames.org/4494264",
+        "title": "Chang'an",
+        "place_id": 4494264,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0629",
+                "start": "0629"
+              },
+              {
+                "end": "0645",
+                "start": "0645"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/5689902",
+        "title": "Charkhlik",
+        "place_id": 5689902,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0644",
+                "start": "0644"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/87370",
+        "title": "Nalanda",
+        "place_id": 87370,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0637",
+                "start": "0637"
+              },
+              {
+                "end": "0642",
+                "start": "0642"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://geonames.org/1139715",
+        "title": "Nagarahara",
+        "place_id": null,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0630",
+                "start": "0630"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/4738386",
+        "title": "Vaisali",
+        "place_id": 4738386,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0637",
+                "start": "0637"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/89712",
+        "title": "Sravasti",
+        "place_id": 89712,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0636",
+                "start": "0636"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/90013",
+        "title": "Tamralipti",
+        "place_id": 90013,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0639",
+                "start": "0639"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/85528",
+        "title": "Kancipuram",
+        "place_id": 85528,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0639",
+                "start": "0639"
+              },
+              {
+                "end": "0640",
+                "start": "0640"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/85525",
+        "title": "Kanyakubja",
+        "place_id": 85525,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0635",
+                "start": "0635"
+              },
+              {
+                "end": "0636",
+                "start": "0636"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://geonames.org/1263879",
+        "title": "Matipura",
+        "place_id": null,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0635",
+                "start": "0635"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/81768",
+        "title": "Kapisi",
+        "place_id": 81768,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0630",
+                "start": "0630"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/85615",
+        "title": "Kashgar",
+        "place_id": 85615,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0644",
+                "start": "0644"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/85652",
+        "title": "Kausambi",
+        "place_id": 85652,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0636",
+                "start": "0636"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/85754",
+        "title": "Khotan",
+        "place_id": 85754,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0644",
+                "start": "0644"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/85945",
+        "title": "Kucha",
+        "place_id": 85945,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0630",
+                "start": "0630"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/88504",
+        "title": "Prayaga",
+        "place_id": 88504,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0642",
+                "start": "0642"
+              },
+              {
+                "end": "0643",
+                "start": "0643"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://geonames.org/1164909",
+        "title": "Sakala",
+        "place_id": null,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0633",
+                "start": "0633"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/86715",
+        "title": "Samarkand",
+        "place_id": 86715,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0630",
+                "start": "0630"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://geonames.org/1257373",
+        "title": "Sankasya",
+        "place_id": null,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0635",
+                "start": "0635"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://geonames.org/7074006",
+        "title": "Shabaz Gharhi",
+        "place_id": null,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0630",
+                "start": "0630"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/86001",
+        "title": "Kusinagara",
+        "place_id": 86001,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0636",
+                "start": "0636"
+              },
+              {
+                "end": "0637",
+                "start": "0637"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/5407446",
+        "title": "Liangzhou",
+        "place_id": 5407446,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0629",
+                "start": "0629"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/6135440",
+        "title": "Tashkurghan",
+        "place_id": 6135440,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0644",
+                "start": "0644"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/5642814",
+        "title": "Tokmak",
+        "place_id": 5642814,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0630",
+                "start": "0630"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/4703320",
+        "title": "Tun-huang",
+        "place_id": 4703320,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0644",
+                "start": "0644"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/86387",
+        "title": "Loulan",
+        "place_id": 86387,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0644",
+                "start": "0644"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/86438",
+        "title": "Lumbini",
+        "place_id": 86438,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0636",
+                "start": "0636"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/86816",
+        "title": "Mathura",
+        "place_id": 86816,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0634",
+                "start": "0634"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/87275",
+        "title": "Multan",
+        "place_id": 87275,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0641",
+                "start": "0641"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/87430",
+        "title": "Nasik",
+        "place_id": 87430,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0640",
+                "start": "0640"
+              },
+              {
+                "end": "0641",
+                "start": "0641"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/87635",
+        "title": "Niya",
+        "place_id": 87635,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0644",
+                "start": "0644"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/88134",
+        "title": "Pataliputra",
+        "place_id": 88134,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0637",
+                "start": "0637"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/88236",
+        "title": "Peshawar",
+        "place_id": 88236,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0630",
+                "start": "0630"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/89719",
+        "title": "Shrinigar",
+        "place_id": 89719,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0630",
+                "start": "0630"
+              },
+              {
+                "end": "0633",
+                "start": "0633"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/90091",
+        "title": "Tashkent",
+        "place_id": 90091,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0630",
+                "start": "0630"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/4797224",
+        "title": "Taxila",
+        "place_id": 4797224,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0643",
+                "start": "0643"
+              },
+              {
+                "end": "0644",
+                "start": "0644"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/90594",
+        "title": "Turfan",
+        "place_id": 90594,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0629",
+                "start": "0629"
+              },
+              {
+                "end": "0630",
+                "start": "0630"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/90683",
+        "title": "Ujjayini",
+        "place_id": 90683,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0641",
+                "start": "0641"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/91393",
+        "title": "Yarkand",
+        "place_id": 91393,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0644",
+                "start": "0644"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/85968",
+        "title": "Kunduz",
+        "place_id": 85968,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0630",
+                "start": "0630"
+              },
+              {
+                "end": "0644",
+                "start": "0644"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/api/places/81137",
+        "title": "Ajanta",
+        "place_id": 81137,
+        "relations": [
+          {
+            "when": [
+              {
+                "end": "0641",
+                "start": "0641"
+              }
+            ],
+            "relation": "waypoint"
+          }
+        ]
+      }
+    ],
+    "tags": [],
+    "tags_suggest": []
+  },
+  {
+    "@context": [
+      "http://www.w3.org/ns/anno.jsonld",
+      {
+        "lpo": "http://linkedpasts.org/ontology/lpo.jsonld"
+      }
+    ],
+    "id": "http://example.org/annotations/54321",
+    "type": "Annotation",
+    "creator": {
+      "id": "https://orcid.org/0000-0002-4066-8297",
+      "name": "Karl Grossner",
+      "homepage": "http://kgeographer.org"
+    },
+    "created": "2019-04-09",
+    "motivation": "linking",
+    "target": {
+      "id": "https://en.wikipedia.org/wiki/Gautama_Buddha",
+      "type": "Person",
+      "title": "Gautama Buddha",
+      "format": "text/html",
+      "language": "en"
+    },
+    "body": [
+      {
+        "id": "http://whgazetteer.org/places/86438",
+        "title": "Lumbini",
+        "place_id": 86438,
+        "relations": [
+          {
+            "when": [
+              {
+                "earliest": "-0563",
+                "latest": "-0480"
+              }
+            ],
+            "relation": "birthplace"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/places/86001",
+        "title": "Kusinagara",
+        "place_id": 86001,
+        "relations": [
+          {
+            "when": [
+              {
+                "earliest": "-0483",
+                "latest": "-0400"
+              }
+            ],
+            "relation": "deathplace"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/places/86545",
+        "title": "Magadha",
+        "place_id": 86545,
+        "relations": [
+          {
+            "when": [],
+            "relation": "taught"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/places/85904",
+        "title": "Koshala",
+        "place_id": 85904,
+        "relations": [
+          {
+            "when": [],
+            "relation": "taught"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/places/6021669",
+        "title": "Kapilavastu",
+        "place_id": 6021669,
+        "relations": [
+          {
+            "when": [],
+            "relation": "resided"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/places/88706",
+        "title": "Rajagriha",
+        "place_id": 88706,
+        "relations": [
+          {
+            "when": [],
+            "relation": "resided"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/places/82182",
+        "title": "Bodh Gaya",
+        "place_id": 82182,
+        "relations": [
+          {
+            "when": [
+              {
+                "earliest": "-0528",
+                "latest": "-0445"
+              }
+            ],
+            "relation": "enlightened"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/places/89173",
+        "title": "Sarnath",
+        "place_id": 89173,
+        "relations": [
+          {
+            "when": [],
+            "relation": "resided"
+          }
+        ]
+      },
+      {
+        "id": "http://whgazetteer.org/places/5249052",
+        "title": "Indo-Gangetic Plain",
+        "place_id": 5249052,
+        "relations": [
+          {
+            "when": [],
+            "relation": "resided"
+          }
+        ]
+      }
+    ],
+    "tags": [],
+    "tags_suggest": []
+  },
+  {
+    "@context": [
+      "http://www.w3.org/ns/anno.jsonld",
+      {
+        "lpo": "http://linkedpasts.org/ontology/lpo.jsonld"
+      }
+    ],
+    "id": "http://example.org/annotations/54321",
+    "type": "Annotation",
+    "creator": {
+      "id": "https://orcid.org/0000-0002-4066-8297",
+      "name": "Karl Grossner",
+      "homepage": "http://kgeographer.org"
+    },
+    "created": "2019-04-10",
+    "motivation": "linking",
+    "target": {
+      "id": "https://en.wikipedia.org/wiki/Li_Shengtian",
+      "type": "Person",
+      "title": "Li Shengtian",
+      "depiction": "https://upload.wikimedia.org/wikipedia/commons/4/48/YuTian.jpg",
+      "format": "text/html",
+      "language": "en"
+    },
+    "body": [
+      {
+        "id": "http://whgazetteer.org/places/85754",
+        "title": "Khotan",
+        "place_id": 85754,
+        "relations": [
+          {
+            "when": [
+              {
+                "earliest": "0912",
+                "latest": "0966"
+              }
+            ],
+            "relation": "ruled"
+          }
+        ]
+      }
+    ],
+    "tags": [],
+    "tags_suggest": []
+  },
+  {
+    "@context": [
+      "http://www.w3.org/ns/anno.jsonld",
+      {
+        "lpo": "http://linkedpasts.org/ontology/lpo.jsonld"
+      }
+    ],
+    "id": "http://example.org/annotations/54322",
+    "type": "Annotation",
+    "creator": {
+      "id": "https://orcid.org/0000-0002-4066-8297",
+      "name": "Karl Grossner",
+      "homepage": "http://kgeographer.org"
+    },
+    "created": "2019-04-10",
+    "motivation": "linking",
+    "target": {
+      "id": "https://www.britishmuseum.org/collection/object/A_MAS-203",
+      "type": "Artifact",
+      "title": "bead; \u73e0",
+      "depiction": "https://media.britishmuseum.org/media/Repository/Documents/2014_11/4_11/c2badb42_17fe_4471_a7cf_a3d900c5ac50/mid_01152518_001.jpg",
+      "format": "text/html",
+      "language": "en"
+    },
+    "body": [
+      {
+        "id": "http://whgazetteer.org/places/85754",
+        "title": "Khotan",
+        "place_id": 85754,
+        "relations": [
+          {
+            "when": [
+              {
+                "earliest": "0001",
+                "latest": "0400"
+              }
+            ],
+            "relation": "findspot"
+          }
+        ]
+      }
+    ],
+    "tags": [],
+    "tags_suggest": []
+  }
+]
