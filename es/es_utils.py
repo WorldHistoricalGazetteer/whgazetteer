@@ -142,7 +142,7 @@ def deleteFromIndex(es,idx,pids):
     if len(hits) > 0:
       doc = hits[0]
       src = doc['_source']
-      role = src['relation']['name']; print(role)
+      role = src['relation']['name']; print('role:',role)
       sugs = list(set(src['suggest']['input'])) # distinct only
       searchy = list(set([item for item in src['searchy'] if type(item) != list])) 
       # role-dependent action
@@ -218,9 +218,7 @@ def deleteFromIndex(es,idx,pids):
           except:
             print('aw shit',sys.exit(sys.exc_info()))
         # child's presence in parent removed, add to delthese[]
-        delthese.append(pid)
-    #elif len(hits) == 0:
-      #print('not indexed, skipping...')
+        delthese.append(pid)  
   es.delete_by_query(idx,body={"query": {"terms": {"place_id": delthese}}})
   print('deleted '+str(len(delthese))+': '+str(delthese))
 

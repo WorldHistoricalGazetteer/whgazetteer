@@ -197,7 +197,6 @@ def get_bounds_filter(bounds,idx):
     geofield: {
         "shape": {
           "type": "polygon" if areatype in ['ccodes','drawn'] else "multipolygon",
-          #"coordinates": area.geojson['coordinates'] if areatype == 'predefined' else area.geojson['coordinates'][0]
           "coordinates": area.geojson['coordinates']
         },
         "relation": "intersects" if idx=='whg' else 'within' # within | intersects | contains
@@ -744,6 +743,7 @@ def align_tgn(pk, *args, **kwargs):
 # performs elasticsearch queries
 # ***
 def es_lookup_whg(qobj, *args, **kwargs):
+  print('kwargs from es_lookup_whg',kwargs)
   global whg_id
   idx = kwargs['index']
   bounds = kwargs['bounds']
@@ -815,7 +815,8 @@ def es_lookup_whg(qobj, *args, **kwargs):
       "geoms.location": {
         "shape": {
           # always a polygon, from hully(g_list)
-          "type": location['type'],
+          #"type": location['type'],
+          "type": "Polygon",
           "coordinates" : location['coordinates']
         },
         "relation": "intersects" # within | intersects | contains
