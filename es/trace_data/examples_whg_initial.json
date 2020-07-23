@@ -1,15 +1,10 @@
 [
   { "@context":[
       "http://www.w3.org/ns/anno.jsonld",
-      { "lpo": "http://linkedpasts.org/ontology/lpo.jsonld"}
-    ],
+      { "lpo": "http://linkedpasts.org/ontology/lpo.jsonld"}],
     "id": "http://example.org/annotations/54322",
     "type": "Annotation",
-    "creator": {
-      "id":"https://orcid.org/0000-0002-4066-8297",
-      "name":"Karl Grossner",
-      "homepage":"http://kgeographer.org"
-    },
+    "creator": {"id":"https://orcid.org/0000-0002-4066-8297","name":"Karl Grossner","homepage":"http://kgeographer.org"},
     "created": "2019-04-07",
     "motivation": "linking",
     "target": {
@@ -19,8 +14,10 @@
     },
     "body": [
       { "id": "http://whgazetteer.org/api/places/4603973", 
-        "when": [{"end": "0630", "start": "0630"}], "title": "Balkh", 
-        "place_id": 4603973,"relation": "waypoint"},
+        "when": [{"end": "0630", "start": "0630"}], 
+        "title": "Balkh", 
+        "place_id": 4603973,
+        "relation": "waypoint"},
         {"id": "http://whgazetteer.org/api/places/82862", 
         "when": [{"end": "0644", "start": "0644"}], "title": "Cherchen", 
         "place_id": 82862, "relation": "waypoint"},

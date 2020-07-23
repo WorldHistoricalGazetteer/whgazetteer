@@ -1107,8 +1107,8 @@
           {
             "when": [
               {
-                "earliest": "-0563",
-                "latest": "-0480"
+                "start": "-0563",
+                "end": "-0480"
               }
             ],
             "relation": "birthplace"
@@ -1123,8 +1123,8 @@
           {
             "when": [
               {
-                "earliest": "-0483",
-                "latest": "-0400"
+                "start": "-0483",
+                "end": "-0400"
               }
             ],
             "relation": "deathplace"
@@ -1183,8 +1183,8 @@
           {
             "when": [
               {
-                "earliest": "-0528",
-                "latest": "-0445"
+                "start": "-0528",
+                "end": "-0445"
               }
             ],
             "relation": "enlightened"
@@ -1250,8 +1250,8 @@
           {
             "when": [
               {
-                "earliest": "0912",
-                "latest": "0966"
+                "start": "0912",
+                "end": "0966"
               }
             ],
             "relation": "ruled"
@@ -1295,8 +1295,8 @@
           {
             "when": [
               {
-                "earliest": "0001",
-                "latest": "0400"
+                "start": "0001",
+                "end": "0400"
               }
             ],
             "relation": "findspot"
