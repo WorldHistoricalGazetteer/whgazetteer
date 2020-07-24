@@ -134,14 +134,16 @@
         </div>
         <div id="guide_faq" class="tab-pane fade" role="tabpanel">
           <div id="" class="tute-section">
+            <p class="subhead">What now?</p>
+            <p class="answer">WHG is a start&mdash;the platform needs more data and it needs further software design and development in response to community needs. We are hopeful that it can be sustained and improved over the long term.</p>
             <p class="subhead">What is a gazetteer?</p>
             <p class="answer">In its simplest form, a gazetteer is a list of place names. Typically, digital gazetteers  provide some level of description for each listed place, e.g. its type and geographic coordinates. Historical gazetteers include prior names and sometimes a time span or period each name was in use. The <b>Linked Places format</b> (<a href="https://github.com/LinkedPasts/linked-places" target="_blank">spec {% fontawesome_icon 'external-link' %}</a>; <a href="{% url 'main:tute-choosing' %}">tutorial</a>) used by WHG allows us to record temporally scoped name variants, coordinates, place types, and relations with other places, as well as related descriptions and depictions.</p>
             <p class="subhead">Who uses historical gazetteers?</p>
             <p class="answer">Historical gazetteers are useful for anyone concerned with the history of a place or series of places, including researchers, teachers, and students. They help connect our present to our past.</p>
             <p class="subhead">What is a place?</p>
-            <p class="answer">The term has multiple related meanings. A short sampler: (i) one answer to a where question, (ii) a setting for events and activity, (iii) "...an object resulting from a shared identification of a location. As an object, it may become a part of a network and participate in events" (<a href="https://asistdl.onlinelibrary.wiley.com/doi/pdf/10.1002/asi.24194" target="_blank">Purves, Winter & Kuhn 2019</a> {% fontawesome_icon 'external-link' %}). Attributes of places include names, locations, and types&mdash;all of which routinely change over time.</p>
+            <p class="answer">The term has multiple related meanings. A few we like: (i) one answer to a where question, (ii) a setting for events and activity, (iii) "...an object resulting from a shared identification of a location. As an object, it may become a part of a network and participate in events" (<a href="https://asistdl.onlinelibrary.wiley.com/doi/pdf/10.1002/asi.24194" target="_blank">Purves, Winter & Kuhn 2019</a> {% fontawesome_icon 'external-link' %}). Attributes of places include names, locations, and types&mdash;all of which routinely change over time.</p>
             <p class="subhead">What is a place in WHG?</p>
-            <p class="answer">A place record represents one or more attestations of a place found in historical sources or in modern gazetteers and name authorities. </p>
+            <p class="answer">A place record represents one or more attestations of a place found in historical sources or in modern gazetteers and name authorities. Due to our use of <a href="{% url 'main:tute-choosing' %}">Linked Places format</a>, a WHG place record may include any number of names, types, locations (geometry), relations, descriptions, depictions, and links with other records. The entire record can be temporally scoped with a "when" assertion, as can any individual name, type, geometry or relation.</p>
             <p class="subhead">What is the geographic and temporal scope of WHG?</p>
             <p class="answer">The geographic scope is global, and the temporal scope is roughly the span of written history.</p>
             <p class="subhead">Are some traces places, and vice versa?</p>
@@ -151,7 +153,7 @@
             <p class="subhead">Does WHG suport multiple languages?</p>
             <p class="answer">The name variants found in WHG are of numerous languages and scripts. Unfortunately, to date most of the contributed names do not arrive tagged with language-script codes. Separately, the <a href="https://www.w3.org/standards/webdesign/i18n" target="_blank">internationalization {% fontawesome_icon 'external-link' %}</a> of the WHG site is a high priority for the next phase of work.</p>
             <p class="subhead">How and why does WHG use modern country boundaries?</p>
-            <p class="answer">Modern country boundaries are used in WHG primarily to filter queries and constrain reconciliation results. Country codes are included in place records for this purpose and do not reflect a given place's historical "containment" in administrative areas at any given time in the past.</p>
+            <p class="answer">Modern country boundaries are used in WHG primarily to filter queries and constrain reconciliation results. Country codes are included in place records for this purpose and do not reflect a given place's historical "containment" in, or association with, administrative areas at any given time in the past.</p>
             <p class="subhead">What is the WHG vocabulary of place types?</p>
             <p class="answer">We have adopted a subset of 160 place type concepts from approximately 900 contained the <a href="http://www.getty.edu/research/tools/vocabularies/aat/" target="_blank">Getty Art & Achitecture Thesuarus {% fontawesome_icon 'external-link' %}</a>. Our focus in selecting these was on settlements (inhabited places), administrative divisions, sites, and natural features.</p>
             <p class="subhead">Can contributions include urban-scale features?</p>

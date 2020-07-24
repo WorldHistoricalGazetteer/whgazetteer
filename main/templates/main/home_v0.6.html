@@ -216,20 +216,7 @@
 	  } else {
 		$("#splash").hide()
 	  }
-	  <!--if($("#search_filters")[0].hidden==true){-->
-		<!--console.log('filters were hidden')-->
-	  <!--} else {-->
-		<!--console.log('filters were visible')-->
-	  <!--}-->
 	  $("#search_filters").toggle(400)
-	  
-	  <!--if($("#splash")[0].hidden == false) {-->
-		<!--$("#splash").hide()-->
-	  <!--} else {-->
-		<!--$("#splash").show()-->
-	  <!--}-->
-	  <!--if($("#result_list")[0].hidden == true) {$("#splash").show()}-->
-      <!--$("#search_filters").toggle(400)-->
     })
 	// 
 	$("label[for='input_box']").click(function(){
@@ -731,7 +718,8 @@
       })
     };
      
-    $('#result_list').show()
+    $("#result_list").show()
+	$("#splash").hide()
     titleMarkup = doctype=='trace'?'<p class="pl-1 mb-1 small strong">'+title+'</p>':''
     $('#result_list').html(titleMarkup+
       "<p class='half allcap-heading mb-0 pl-1'>"+(doctype=='place'?'SEARCH RESULTS ('+data.length+
