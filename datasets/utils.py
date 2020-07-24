@@ -235,14 +235,14 @@ def download_augmented_slow(request, *args, **kwargs):
       for f in features:
         geoms = f.geoms.all()
         gobj = augGeom(geoms)
-        row = [str(f.src_id),
-               str(f.id),f.title,
-               ';'.join(f.ccodes),
-               gobj['lonlat'][0] if 'lonlat' in gobj else None,
-               gobj['lonlat'][1] if 'lonlat' in gobj else None,
-               gobj['new'] if 'new' in gobj else None,
-               str(augLinks(f.links.all()))
-        ]
+        row = [
+          str(f.src_id),
+          str(f.id),f.title,
+          ';'.join(f.ccodes),
+          gobj['lonlat'][0] if 'lonlat' in gobj else None,
+          gobj['lonlat'][1] if 'lonlat' in gobj else None,
+          gobj['new'] if 'new' in gobj else None,
+          str(augLinks(f.links.all())) ]
         writer.writerow(row)
         #print(row)
     response = FileResponse(open(fn, 'rb'),content_type='text/csv')

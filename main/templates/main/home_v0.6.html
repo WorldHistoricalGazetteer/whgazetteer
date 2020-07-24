@@ -114,6 +114,7 @@
 				  <option value="0">Display dataset</option>
 				  <option value="lugares">HGIS de las Indias (lugares)</option>
 				  <option value="owtrad">Old World Trade (OWTRAD)</option>
+				  <option value="euratlas">Euratlas Cities</option>
 				  <option value="alturayya">al-Turayya (11c Islam)</option>
 				</select>
 			  </div>
@@ -124,7 +125,7 @@
 				<div class="col-sm">
 				  <img src="{% static 'images/upload100.png'%}" height="75"/><br/>
 					<span class="red-head strong">upload</span> place datasets into a private workspace
-				  <img src="{% static 'images/publish100.png'%}" width="75"/><br/>
+				  <img src="{% static 'images/publish100.png'%}" width="75" title="Share by Flatart from the Noun Project"/><br/>
 					<span class="red-head strong">publish</span> them as Linked Open Data by flagging them as 'public'
 				</div>
 				<div class="col-sm">
@@ -482,6 +483,10 @@
 	  gl.addSource('owtrad', {
 			  "type": "geojson",
 			  "data": "media/data/owtrad.geojson"
+		  });	
+	  gl.addSource('euratlas', {
+			  "type": "geojson",
+			  "data": "media/data/euratlas_cities.geojson"
 		  });	
 	  gl.addSource('alturayya', {
 			  "type": "geojson",
