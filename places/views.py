@@ -124,16 +124,19 @@ class PlacePortalView(DetailView):
     #print('whens',record['whens'])
     
     def mm_trace(tsarr):
-      print('mm_trace() tsarr',tsarr)
-      # TODO: not only simple years here; sorts string years?
-      starts = sorted( [t['start'] for t in tsarr] )
-      ends = sorted( [t['end'] for t in tsarr] )
-      mm = [min(starts), max(ends)]
-      mm = sorted(list(set([min(starts), max(ends)])))
-      return '('+str(mm[0])+('/'+str(mm[1]) if len(mm)>1 else '')+')'  
+      if tsarr==[]:
+        return ''
+      else:
+        print('mm_trace() tsarr',tsarr)
+        # TODO: not only simple years here; sorts string years?
+        starts = sorted( [t['start'] for t in tsarr] )
+        ends = sorted( [t['end'] for t in tsarr] )
+        mm = [min(starts), max(ends)]
+        mm = sorted(list(set([min(starts), max(ends)])))
+        return '('+str(mm[0])+('/'+str(mm[1]) if len(mm)>1 else '')+')'  
     
     # get traces for this index parent and its children
-    print('ids',ids)
+    #print('ids',ids)
     qt = {"query": {"bool": {"must": [  {"terms":{"body.place_id": ids }}]}}}
     trace_hits = es.search(index='traces', doc_type='trace', body=qt)['hits']['hits']
     # for each hit, get target and aggregate body relation/when
@@ -148,7 +151,6 @@ class PlacePortalView(DetailView):
         "id": bods[0]['id'],
         "title": bods[0]['title'],
         "place_id": bods[0]['place_id'],
-        #"relations": [x['relation']+' '+mm_trace(x['when']) for x in bods]
         "relations": [x['relations'][0]['relation'] +' '+mm_trace(x['relations'][0]['when']) for x in bods]
       }      
       context['traces'].append({

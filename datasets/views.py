@@ -1089,6 +1089,7 @@ def ds_insert_tsv(request, pk):
         if 'types' in header else []
       aat_types = [x.strip() for x in r[header.index('aat_types')].split(';')] \
         if 'aat_types' in header else []
+      print('aat_types',aat_types)
       ccodes = [x.strip() for x in r[header.index('ccodes')].split(';')] \
         if 'ccodes' in header else []
       parent_name = r[header.index('parent_name')] if 'parent_name' in header else ''
@@ -1103,14 +1104,20 @@ def ds_insert_tsv(request, pk):
       minmax = [start,end]
       description = r[header.index('description')] \
         if 'description' in header else ''
-  
+      # TODO: generate fclasses
+      # lookup fclasses in Type table
+      #fclasses = list(set([get_object_or_404(Type,aat_id=t).fclass for t in aat_types])) \
+        #if aat_types != [''] else []
+        #if len(aat_types) > 0 else []
+
       # build and save Place object
-      # id now available as newpl
       newpl = Place(
         src_id = src_id,
         dataset = ds,
         title = title,
-        ccodes = ccodes
+        ccodes = ccodes,
+        minmax = minmax
+        #,fclasses = fclasses
       )
       newpl.save()
       countrows += 1

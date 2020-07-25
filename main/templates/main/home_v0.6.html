@@ -352,7 +352,7 @@
   //
   // radio button switch btwn place & trace search inputs
   $('input[type=radio][name=class]').change(function() {
-    console.log('changed class',$(this).val())
+    <!--console.log('changed class',$(this).val())-->
     if ($(this).val() == 'place'){
 	  if(!$("#splash").is(":visible")){
 		$("#splash").show()
@@ -536,7 +536,7 @@
     $.get("/search/tracegeom",{idx: 'traces', search: trace_id, doc_type: 'trace'},
       function(data){
         <!--console.log('bodies in this trace',data.bodies)-->
-        console.log('fetchTraceGeom() data',data)
+        <!--console.log('fetchTraceGeom() data',data)-->
         var count_features = 0
         window.idToFeature = {}
         window.itf_new = []
@@ -572,6 +572,7 @@
 		  // TODO: some logic to provide padding if bounds too small
           mappy.fitBounds(bounds)
         }
+		console.log('searchResults from fetchTraceGeometry()')
         showResults(data,'trace','suggest',title)
     });
   }
@@ -661,9 +662,11 @@
         bounds: $("#boundsobj").val()
       }, function(data){
 		window.searchres=data
-        <!--console.log('searchPlaces()',data)-->
         // render to html
-        showResults(data,doctype,scope);
+		console.log('searchResults from searchPlaces()')
+		if(doctype == 'place'){
+		  showResults(data,doctype,scope);
+		}
     });
     $('.tt-menu').hide()
   }
@@ -678,6 +681,7 @@
     title:    
   */
   function showResults(data,doctype,scope='suggest',title){
+	console.log('in showResults()')
     var results_div = '';
     geoms=[]
     var types=[], typesArr = []
@@ -711,7 +715,8 @@
     } else if (doctype == 'trace') {
 		// data has features and bodies
 		bodies = data.bodies
-		console.log(data.bodies.length+ ' bodies',data)
+		console.log('trace data',data)
+		console.log('trace data bodies',data.bodies)
         data.bodies.forEach(function(bod){ 
         // add a whg_id to bodies        
           results_div += sugLister(bod, doctype, scope)
@@ -921,9 +926,9 @@
         <!--console.log(foo.length>0?'woe'+foo[0].id:'no foo, mofo')-->
       }
       item =  ('<div class="container"><div class="row sug_row trace-item" data-id='+whgid+'>'+
-              '<div class="col-sm-10 pl-0"><a href="#" class="trace-link" data-id="'+whgid+'">'+
+              '<div class="col-sm-12 pl-0"><a href="#" class="trace-link" data-id="'+whgid+'">'+
               sug.title+'</a> ('+parseRels(sug.relations)+')')
-      item += '</div><div class="col-sm-2"></div>'
+      item += '</div>'
       if("depiction" in sug){
         item += '<div class="trace_detail"><img class="trace-img" src="'+sug['depiction']+'"/></div>'
       }
@@ -934,23 +939,23 @@
   // from sugLister()    
   // TODO: doesn't reach into when.timespans; Indias data malformed
   function parseRels(rels){
-	<!--console.log('parseRelations()',rels)-->
-	<!--console.clear()-->
     html=''
 	timespans=[]; starts=[]; ends=[]
-    for(r in rels){for(w in rels[r].when){timespans.push(rels[r].when[w])}}
+    for(r in rels){
+	  html += rels[r].relation
+	  for(w in rels[r].when){
+	  timespans.push(rels[r].when[w])
+	}}
 	reg = /(-?\d{1,4})\D?/
 	for (t in timespans){
 	  // no 'in', 'earliest' or 'latest' here
-	  <!--console.log('reg',reg)-->
-	  <!--starts.push(Number(timespans[t].start))-->
 	  starts.push(Number(timespans[t].start.match(reg)[1]))
-	  <!--ends.push(!!timespans[t].end ? Number(timespans[t].end) : -1)-->
 	  ends.push(!!timespans[t].end ? Number(timespans[t].end.match(reg)[1]) : -1)
 	} 
 	<!--console.log('starts',starts,'ends',ends)-->
-	minmax=[Math.max.apply(null, starts),Math.max.apply(null, ends)]
-    return minmax[0] + '-' + minmax[1]
+	minmax=' ['+[starts.length>0?Math.max.apply(null, starts):'-',ends.length>0?Math.max.apply(null, ends):'-']+']'
+	if(!starts.length==0 && !ends.length==0){ html += minmax}
+    return html
   }   
   // from sugLister()    
   // TODO: doesn't reach into when.timespans; Indias data malformed
