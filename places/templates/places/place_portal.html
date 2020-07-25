@@ -555,28 +555,39 @@
       "fillOpacity": 0.1
     };
     
-    window.setRegionColor = function(d) {
-      return d == 'AA' ? '#5F9EA0' :
-        d == 'AN' ? '#7FFF00' :
-        d == 'PA' ? '#DC143C' :
-        d == 'NA' ? '#FF7F50' :
-        d == 'OC' ? '#483D8B' :
-        d == 'AT' ? '#FF8C00' :
-        d == 'IM' ? '#FF1493' :
-        d == 'NT' ? '#FF00FF' : '#66CDAA'
-    }
-
     function ecoregionStyle(feature) {
-      <!--console.log(feature.properties.src_id.substring(0,2))-->
+      var fclass = feature.properties.src_id.substring(0,2)
+      console.log(fclass)
+      if(fclass=='AN') {c =  '#7FFF00';}
+      else if(fclass=='PA') {c =  '#DC143C';}
+      else if(fclass=='NA') {c =  '#FF7F50';}
+      else if(fclass=='OC') {c =  '#483D8B';}
+      else if(fclass=='AT') {c =  '#FF8C00';}
+      else if(fclass=='IM') {c =  '#FF1493';}
+      else if(fclass=='NT') {c =  '#FF00FF';}
+      else {c =  '#66CDAA';}
+            
       return {
-        fillColor: setRegionColor(feature.properties.src_id.substring(0,2)),
-        <!--fillColor: "green",-->
+        fillColor: c,
         color: "#fff",
         weight: 1,
         opacity: 0.7,
         fillOpacity: 0.3
       };
     }
+
+    function random_rgba() {
+        var o = Math.round, ra = Math.random, s = 255;
+        tup = [o(ra()*s), o(ra()*s), o(ra()*s)]
+        
+        const rgbToHex = (r,g,b) => '#' + [r,g,b].map(x => {
+          const hex = x.toString(16)
+          return hex.length === 1 ? '0' + hex : hex
+        }).join('')
+          
+        return rgbToHex(tup[0],tup[1],tup[2])
+    }
+  
     var riverStyle = {
       "color": "#336699",
       "weight": 1
@@ -593,13 +604,20 @@
     watersheds = new L.GeoJSON.AJAX("/datasets/wri_watersheds/places",
       { style:watershedStyle,
         onEachFeature: function (feature, layer) {
+        layer.setStyle({"fillColor":random_rgba()})
           popupOptions = {maxWidth: 200};
             layer.bindPopup(feature.properties.name+" ("+feature.properties.src_id+")", popupOptions);
         }
       })
     ecoregions = new L.GeoJSON.AJAX("/datasets/tnc_ecoregions/places",
-      { style:ecoregionStyle,
+      { style: {
+          color: "#fff",
+          <!--fillColor:random_rgba(),-->
+          weight: 1,
+          opacity: 0.7,
+          fillOpacity: 0.3},
         onEachFeature: function (feature, layer) {
+          layer.setStyle({"fillColor":random_rgba()})
           <!--console.log('feature',feature)-->
           popupOptions = {maxWidth: 200};
             layer.bindPopup(feature.properties.name+" ("+feature.properties.src_id+")", popupOptions);
