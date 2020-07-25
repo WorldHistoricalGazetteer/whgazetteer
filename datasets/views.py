@@ -29,7 +29,7 @@ from places.models import *
 from datasets.forms import HitModelForm, DatasetDetailModelForm, DatasetCreateModelForm
 from datasets.models import Dataset, Hit, DatasetFile
 from datasets.static.hashes.parents import ccodes
-from datasets.tasks import align_tgn, align_whg, align_wd, maxID
+from datasets.tasks import align_tgn, align_whg, align_wd, align_whg_pre, maxID
 from datasets.utils import *
 from es.es_utils import makeDoc,deleteFromIndex, replaceInIndex, esq_pid, esq_id, fetch_pids 
 from elasticsearch import Elasticsearch      
@@ -310,8 +310,11 @@ def review(request, pk, tid, passnum):
   return render(request, 'datasets/review.html', context=context)
 
 
-# 
+"""
 # initiate, monitor Celery tasks
+# from dataset.html form addtask tab
+#
+"""
 def ds_recon(request, pk):
   ds = get_object_or_404(Dataset, id=pk)
   # TODO: handle multipolygons from "#area_load" and "#area_draw"

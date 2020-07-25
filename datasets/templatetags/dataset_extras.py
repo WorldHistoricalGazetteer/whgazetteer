@@ -18,6 +18,13 @@ def haskey(objlist, arg):
     """True if any obj in objlist has key arg"""
     return any(arg in x for x in objlist)
 
+@register.filter
+#@register.filter('startswith')
+def startswith(text, starts):
+    if isinstance(text, str):
+        return text.startswith(starts)
+    return False
+
 def cut(value, arg):
     """Removes all values of arg from the given string"""
     return value.replace(arg, '')

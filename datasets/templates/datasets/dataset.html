@@ -346,7 +346,7 @@
                 <img src="{% static 'images/Wikidata-logo-en.svg'%}" width="80"/>
               {% elif t.task_name == 'align_tgn' %}
                 <img src="{% static 'images/getty80.png'%}" />
-              {% elif t.task_name == 'align_whg' %}
+              {% elif t.task_name|startswith:'align_whg'%}
                 <img src="{% static 'images/whg_accessioning.svg'%}" width="80"/>
               {% endif %}
             </div>
@@ -427,7 +427,7 @@
           <div class="form-check text-danger">
             <label class="form-check-label" for="auth1">
               <input type="radio" class="form-check-input" id="auth1"
-                name="recon" value="whg">WHG Index <!-- <b>(whg_test!!!)</b>-->
+                name="recon" value="whg">WHG (accessioning) 
             </label>
           </div>
           <hr/>
@@ -442,21 +442,27 @@
           <div class="form-check">
             <label class="form-check-label" for="auth4">
               <input type="radio" class="form-check-input" id="auth4"
-                name="recon" value="wd" >Wikidata (wd)<span class="ml-2 text-danger"><i>~1 second per record</i></span>
+                name="recon" value="wd" >Wikidata (wd)<span class="ml-2 text-danger"><i>Be patient, ~1 second per record</i></span>
             </label>
           </div>
           <div class="form-check">
-            <label class="form-check-label text-muted" for="auth3">
+            <label class="form-check-label" for="auth6">
               <input type="radio" class="form-check-input" id="auth3"
-                name="recon" value="dbp" disabled>DBpedia (dbp)
+                name="recon" value="whg_pre">WHG (preliminary)
             </label>
           </div>
-          <div class="form-check">
-            <label class="form-check-label text-muted" for="auth5">
-              <input type="radio" class="form-check-input" id="auth5"
-                name="recon" value="gn" disabled>GeoNames (gn)
-            </label>
-          </div>
+          <!--<div class="form-check">-->
+            <!--<label class="form-check-label text-muted" for="auth3">-->
+              <!--<input type="radio" class="form-check-input" id="auth3"-->
+                <!--name="recon" value="dbp" disabled>DBpedia (dbp)-->
+            <!--</label>-->
+          <!--</div>-->
+          <!--<div class="form-check">-->
+            <!--<label class="form-check-label text-muted" for="auth5">-->
+              <!--<input type="radio" class="form-check-input" id="auth5"-->
+                <!--name="recon" value="gn" disabled>GeoNames (gn)-->
+            <!--</label>-->
+          <!--</div>-->
           {% if request.method == 'GET' %}
           {% if ds.unindexed < ds.numrows %}
           <div id="recon_scope" class="mt-2">

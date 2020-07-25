@@ -74,7 +74,7 @@ label {vertical-align:top;}
 .tooltip { z-index: 600; }
 .v-mid {vertical-align: super;}
 .top { vertical-align: top;}
-.half { font-size: .8em; font-style: italic; margin-top:.6em;}
+.half { font-size: .7em; font-style: italic; margin-top:.6em;}
 .h2em { height: 2em; }
 .h1em { height: 1em; }
 .hang {
@@ -104,7 +104,7 @@ label {vertical-align:top;}
 .scroll60 {display:block; overflow-y:scroll; max-height:60px;width:100%}
 .status {color:#fff; box-shadow: 2px 2px #eee; border:1px dashed #ccc;}
 .step-links {vertical-align: middle;}
-button
+/*button*/
 .button-sm {
   background-color: #fff;
   border: 1px gold solid;
@@ -711,12 +711,12 @@ span.edit-row {
 /**
   element IDs
 **/
-/*.create-comment {*/
-  /*padding: 0 2px;*/
-  /*background-color: white;*/
-  /*height: 20px;*/
-  /*margin-bottom: 4px;*/
-/*}*/
+.create-comment {
+  padding: 0 2px;
+  background-color: white;
+  height: 20px;
+  margin-bottom: 4px;
+}
 #review_list {
   height:calc(100vh - 180px);
   overflow:scroll;

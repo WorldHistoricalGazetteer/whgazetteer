@@ -894,11 +894,12 @@ def es_lookup_whg(qobj, *args, **kwargs):
   return result_obj
 
 
-# ***
-# reconciling to whg
-# pass1 finds shared links, auto-indexes
+"""
+# reconcile/accession to whg
+# pass1 auto-indexes as child if shared link
 # pass2, pass3 hits queued for review
-# ***
+# if no hits, indexed as parent
+"""
 @task(name="align_whg")
 def align_whg(pk, *args, **kwargs):
   ds = get_object_or_404(Dataset, id=pk)
@@ -1132,4 +1133,145 @@ def align_whg(pk, *args, **kwargs):
     'skipped': count_fail
   }
   print("hit_parade['summary']",hit_parade['summary'])
+  return hit_parade['summary']
+"""
+# reconcileto whg
+# no auto-indexing as in align_whg
+"""
+@task(name="align_whg_pre")
+def align_whg_pre(pk, *args, **kwargs):
+  ds = get_object_or_404(Dataset, id=pk)
+  # set index
+  idx='whg'
+  
+  #dummy for testing
+  #bounds = {'type': ['userarea'], 'id': ['0']}
+  bounds = kwargs['bounds']
+  scope = kwargs['scope']
+  
+  # empty vessels
+  hit_parade = {"summary": {}, "hits": []}
+  [nohits,whg_pre_es_errors,features] = [[],[],[]]
+  [count,count_hit,count_nohit,total_hits,count_p1,count_p2,count_p3] = [0,0,0,0,0,0,0]
+  #[count_errors,count_seeds,count_kids,count_fail] = [0,0,0,0]
+
+  start = datetime.datetime.now()
+  print('kwargs in align_whg_pre()',kwargs)
+    
+  # queryset depends on choice of scope in addtask form
+  qs = ds.places.all() if scope == 'all' else ds.places.all().filter(indexed=False)
+ 
+  """
+  build query object 'qobj'
+
+  """
+  for place in qs:
+    #place=get_object_or_404(Place,id=6369031) # Aachen
+    print('_PRE() building qobj for place.id',place.id, place.title)
+    count +=1
+    qobj = {"place_id":place.id, "src_id":place.src_id, "title":place.title}
+    links=[]; ccodes=[]; types=[]; variants=[]; parents=[]; geoms=[]; 
+
+    # links
+    for l in place.links.all():
+      links.append(l.jsonb['identifier'])
+    qobj['links'] = links
+
+    # ccodes (2-letter iso codes)
+    for c in place.ccodes:
+      ccodes.append(c)
+    qobj['countries'] = list(set(place.ccodes))
+
+    # types (Getty AAT identifiers)
+    for t in place.types.all():
+      if t.jsonb['identifier'] != None:
+        types.append(t.jsonb['identifier'])
+      else:
+        # no type? use inhabited place, cultural group, site
+        types.extend(['aat:300008347','aat:300387171','aat:300000809'])
+    qobj['placetypes'] = types
+
+    # names
+    for name in place.names.all():
+      variants.append(name.toponym)
+    qobj['variants'] = [v.lower() for v in variants]
+
+    # parents
+    for rel in place.related.all():
+      if rel.jsonb['relationType'] == 'gvp:broaderPartitive':
+        parents.append(rel.jsonb['label'])
+    qobj['parents'] = parents
+
+    # geoms
+    if len(place.geoms.all()) > 0:
+      # any geoms at all...
+      g_list =[g.jsonb for g in place.geoms.all()]
+      # make everything a simple polygon hull for spatial filter purposes
+      qobj['geom'] = hully(g_list)
+        
+
+    # ***
+    # run es_lookup_whg(qobj): 3 query passes
+    # ***
+    result_obj = es_lookup_whg(qobj, index=idx, bounds=bounds, place=place)
+
+    # PARSE RESULTS
+    if result_obj['hit_count'] == 0:
+      count_nohit +=1
+      # TODO: why gather no_hits 
+      #nohits.append(result_obj['missed'])
+    else:
+      count_hit +=1
+      total_hits += len(result_obj['hits'])
+      #print("hit[0]: ",result_obj['hits'][0]['_source'])  
+      print('hits from align_whg_pre',result_obj['hits'])
+      for hit in result_obj['hits']:
+        if hit['pass'] == 'pass1': 
+          count_p1+=1 
+        elif hit['pass'] == 'pass2': 
+          count_p2+=1
+        elif hit['pass'] == 'pass3': 
+          count_p3+=1
+        hit_parade["hits"].append(hit)
+        
+        loc = hit['_source']['geoms'] if 'geoms' in hit['_source'].keys() else None
+        
+        new = Hit(
+          authority = 'whg',
+          authrecord_id = hit['_id'],
+          dataset = ds,
+          place_id = get_object_or_404(Place, id=qobj['place_id']),
+          
+          #task_id = align_tgn.request.id,
+          task_id = align_whg_pre.request.id,
+          
+          query_pass = hit['pass'],
+          
+          #*** consistent, for review display
+          #json = normalize(hit['_source'],'tgn'),
+          json = normalize(hit['_source'],'whg'),
+          
+          src_id = qobj['src_id'],
+          score = hit['_score'],
+          geom = loc,
+          reviewed = False,
+        )
+        new.save()
+  end = datetime.datetime.now()
+
+  print('whg_pre ES errors:',whg_pre_es_errors)
+  hit_parade['summary'] = {
+      'count':count,
+      'got_hits':count_hit,
+      'total': total_hits, 
+      'pass1': count_p1, 
+      'pass2': count_p2, 
+      'pass3': count_p3,
+      'pass1remains': -1,
+      'pass2remains': -1,
+      'pass3remains': -1,
+      'no_hits': {'count': count_nohit },
+      'elapsed': elapsed(end-start)
+    }
+  print("summary returned",hit_parade['summary'])
   return hit_parade['summary']
