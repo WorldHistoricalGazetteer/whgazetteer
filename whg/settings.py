@@ -108,6 +108,7 @@ TEMPLATES = [
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
             os.path.join(BASE_DIR, 'main/templates'),
+            os.path.join(BASE_DIR, 'templates')
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -158,6 +159,7 @@ LEAFLET_CONFIG = {
 
 LOGIN_URL = '/accounts/login/'
 LOGIN_REDIRECT_URL='/accounts/login/'
+LOGOUT_REDIRECT_URL='/'
 
 # Database
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
