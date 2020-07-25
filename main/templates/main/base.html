@@ -58,7 +58,7 @@
 		  <span class="navbar-toggler-icon"></span>
 		</button>		
         <div class="collapse navbar-collapse pt-1" id="navbarNavAltMarkup">
-          <div class="navbar-nav ml-auto pt-2">
+          <div class="navbar-nav ml-auto pt-2 smallish">
             <li class="nav-item">
               <a class="nav-link" href="{% url 'home' %}">Search</a>
             </li>
@@ -72,11 +72,11 @@
 			  <a class="nav-link dropdown-toggle" href="#" id="aboutDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 				About
 			  </a>
-			  <div class="dropdown-menu" aria-labelledby="aboutDropdown">
+			  <div class="dropdown-menu smallish" aria-labelledby="aboutDropdown">
 				<a class="dropdown-item" href="{% url 'about' %}">Introduction</a>
-				<a class="dropdown-item" href="{% url 'community' %}">Communities</a>
+				<!--<a class="dropdown-item" href="{ url 'community' %}">Communities</a>-->
 				<a class="dropdown-item" href="{% url 'system' %}">System details</a>
-				<a class="dropdown-item" href="{% url 'licensing' %}">Licensing</a>
+				<a class="dropdown-item" href="{% url 'licensing' %}">Licensing, Terms</a>
 				<div class="dropdown-divider"></div>
 				<a class="dropdown-item" href="{% url 'credits' %}">Credits & Contacts</a>
 			  </div>
@@ -111,7 +111,8 @@
   {% endblock %}
 <script type="text/javascript">
 	$(function(){
-	  abouts = ['/about/','/community/','/system/','/licensing/','/credits/']
+	  <!--abouts = ['/about/','/community/','/system/','/licensing/','/credits/']-->
+	  abouts = ['/about/','/system/','/licensing/','/credits/']
 	  clicked = window.location.pathname
 
 	  if($.inArray(clicked, abouts) > -1) {

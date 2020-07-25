@@ -14,6 +14,9 @@
   <script src="{% static 'js/jquery.bootstrap.modal.forms.min.js' %}"></script>
   <!--TODO: load local, only what's needed-->
   <script src = "https://d3js.org/d3.v4.min.js"></script>
+  <!-- spinners stuff -->
+  <script src="{% static 'js/spin.umd.js' %}"></script>
+  <link rel="stylesheet" href="{% static 'css/spin.css' %}"/>
   
   <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.css' rel='stylesheet' />
   <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.js'></script>
@@ -195,6 +198,12 @@
 </div>
 
 <script type="text/javascript">
+  //
+  // for loading rivers, watersheds, ecoregions
+  function startMapitSpinner(){
+    window.spinner_mapit = new Spin.Spinner().spin();
+    $("#map").append(spinner_mapit.el);   
+  }
       
   $(function() {
     var isVisible = false;
@@ -354,14 +363,6 @@
     <!--console.log(data)-->
     histogram(data,labels)
   }
-
-<!--var svg = d3.select('.chart-container').append("svg")-->
-    <!--.attr("width", '100%')-->
-    <!--.attr("height", '100%')-->
-    <!--.attr('viewBox','0 0 '+Math.min(width,height)+' '+Math.min(width,height))-->
-    <!--.attr('preserveAspectRatio','xMinYMin')-->
-    <!--.append("g")-->
-    <!--.attr("transform", "translate(" + Math.min(width,height) / 2 + "," + Math.min(width,height) / 2 + ")");-->
     
   function histogram(data,labels){
     // exit if no data 
@@ -463,6 +464,7 @@
     
   // for ES query
   function fetchContext(bbox){
+    startMapitSpinner()
     context={"type":"FeatureCollection","features":[]}
     $.get("/search/context",{idx: 'whg', search: bbox, doc_type: 'place'},
       function(data){
@@ -503,6 +505,7 @@
             return marker
           }
         }).addTo(mappy);
+        spinner_mapit.stop()
     });
   }
 
@@ -555,27 +558,6 @@
       "fillOpacity": 0.1
     };
     
-    function ecoregionStyle(feature) {
-      var fclass = feature.properties.src_id.substring(0,2)
-      console.log(fclass)
-      if(fclass=='AN') {c =  '#7FFF00';}
-      else if(fclass=='PA') {c =  '#DC143C';}
-      else if(fclass=='NA') {c =  '#FF7F50';}
-      else if(fclass=='OC') {c =  '#483D8B';}
-      else if(fclass=='AT') {c =  '#FF8C00';}
-      else if(fclass=='IM') {c =  '#FF1493';}
-      else if(fclass=='NT') {c =  '#FF00FF';}
-      else {c =  '#66CDAA';}
-            
-      return {
-        fillColor: c,
-        color: "#fff",
-        weight: 1,
-        opacity: 0.7,
-        fillOpacity: 0.3
-      };
-    }
-
     function random_rgba() {
         var o = Math.round, ra = Math.random, s = 255;
         tup = [o(ra()*s), o(ra()*s), o(ra()*s)]
@@ -622,7 +604,7 @@
           popupOptions = {maxWidth: 200};
             layer.bindPopup(feature.properties.name+" ("+feature.properties.src_id+")", popupOptions);
         }
-      })
+      }).add()
     <!--rivers.addTo(mappy)-->
 
     var baseLayers = {

@@ -90,7 +90,7 @@ label {vertical-align:top;}
 .textsub {vertical-align: sub !important;}
 .textcenter {text-align:center;}
 .smaller {font-size: small;} /* smaller than bootstrap */
-.smallish {font-size: .8rem;} /* smaller than bootstrap */
+.smallish {font-size: .9rem;} /* smaller than bootstrap */
 .larger {font-size: larger;}
 .nobr {white-space: nowrap;}
 .notebox {box-shadow: 2px 2px #eee; border:1px dashed #ccc; border-radius:8px; padding:6px;}
