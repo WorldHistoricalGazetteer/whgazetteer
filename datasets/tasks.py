@@ -196,7 +196,8 @@ def get_bounds_filter(bounds,idx):
   filter = { "geo_shape": {
     geofield: {
         "shape": {
-          "type": "polygon" if areatype in ['ccodes','drawn'] else "multipolygon",
+          #"type": "polygon" if areatype in ['ccodes','drawn'] else "multipolygon",
+          "type": area.geojson['type'],
           "coordinates": area.geojson['coordinates']
         },
         "relation": "intersects" if idx=='whg' else 'within' # within | intersects | contains
@@ -557,6 +558,7 @@ def es_lookup_tgn(qobj, *args, **kwargs):
       "location": {
         "shape": {
           "type": location['type'],
+          #"coordinates" : location['coordinates']
           "coordinates" : location['coordinates']
         },
         "relation": "within" # within | intersects | contains
@@ -567,7 +569,7 @@ def es_lookup_tgn(qobj, *args, **kwargs):
   # /\/\/\/\/\/
   # pass1: must[name]; should[type,parent]; filter[bounds,geom]
   # /\/\/\/\/\/
-  #print('q1',q1)
+  print('q1',q1)
   try:
     res1 = es.search(index="tgn_shape", body = q1)
     hits1 = res1['hits']['hits']
@@ -583,7 +585,7 @@ def es_lookup_tgn(qobj, *args, **kwargs):
     # pass2: revert to qbase{} (drops geom)
     # /\/\/\/\/\/  
     q2 = qbase
-    #print('q2 (base)',q2)
+    print('q2 (base)',q2)
     try:
       res2 = es.search(index="tgn_shape", body = q2)
       hits2 = res2['hits']['hits']
@@ -668,7 +670,7 @@ def align_tgn(pk, *args, **kwargs):
     else:
       qobj['parents'] = []
 
-    # align_whg geoms
+    # align_tgn geoms
     if len(place.geoms.all()) > 0:
       g_list =[g.jsonb for g in place.geoms.all()]
       # make everything a simple polygon hull for spatial filter
