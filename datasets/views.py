@@ -1302,7 +1302,7 @@ class DashboardView(LoginRequiredMixin, ListView):
         
     # list areas
     userareas = Area.objects.all().filter(type__in=types_ok).order_by('created')
-    context['area_list'] = userareas if me.is_superuser else userareas.filter(owner=self.request.user)
+    context['area_list'] = userareas if me.is_superuser else userareas.filter(owner=me)
 
     context['viewable'] = ['uploaded','inserted','reconciling','review_hits','reviewed','review_whg','indexed']
     # TODO: user place collections

@@ -103,6 +103,10 @@ class Dataset(models.Model):
     @property
     def geometries(self):
         return PlaceGeom.objects.filter(place_id__in=self.placeids).values_list('jsonb', flat=True)
+
+    @property
+    def format(self):
+        return self.files.first().format
         
     class Meta:
         managed = True

@@ -249,7 +249,7 @@ input[type="text"] {
 
 #search_filters {position:relative;}
 #search_filters p, #search_filters label{
-  font-size: .8rem;
+  font-size: .7rem;
   /*font-variant: small-caps;*/
   color: #993333;
 }

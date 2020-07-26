@@ -7,6 +7,7 @@
     <div class="col-md-4 mt-5">
       <form action='' method='POST'>{% csrf_token %}
           <h3 class="text-danger">CAREFUL!!</h3>
+          format {{ object.format }}
           <p>This will destroy all <b>{{ object.numrows }}</b> place records in the dataset
             <b>{{ object.name }} ({{ object.label }})</b>, as well as:</p>
           <ul>
@@ -16,7 +17,9 @@
               <li>records in the WHG index </li>
             {% endif %}
           </ul>
-          <p>You might want to perform an update to the dataset instead (coming soon)</p>
+          {% if object.format == 'delimited' %}
+            <p>You might want to perform an update to the dataset instead. <a href="{% url 'contact' %}">Contact us</a> if you would like help with that.</p>
+          {% endif %}
           <p class="mt-4">
             <input type='submit' value='Destroy' />
             <a href="javascript:history.back()">Cancel</a>
