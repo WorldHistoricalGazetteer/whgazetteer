@@ -1,10 +1,21 @@
 ## World Historical Gazetteer
 
-This is the repository for the World Historical Gazetteer (WHG) web platform and API. The project is based at the University of Pittsburgh's [World History Center](https://www.worldhistory.pitt.edu/), and has been substantially funded by the US National Endownment for the Humanities (NEH).
+This is the repository for the World Historical Gazetteer (WHG) web platform and API. The project is based at the University of Pittsburgh's [World History Center (WHC)](https://www.worldhistory.pitt.edu/). It has been substantially funded by a US National Endownment for the Humanities (NEH) grant and in-kind support from WHC..
 
-WHG is aggregating attestations of historical place references contributed by researchers. The [beta release v0.4](http://dev.whgazetteer.org) was made available on 2 May 2020. More information on the project is available on [our blog website](http://whgazetteer.org).
+WHG is aggregating attestations of historical place references contributed by researchers. [Version 1](http://whgazetteer.org) was launched on 27 July 2020 . There is substantial information about WHG in its [Site Guide]() and [Tutorials](). Announcements and discussion about the project is also available on [our blog website](http://blog.whgazetteer.org) and via oour [Twitter feed]().
 
 ### Change log
+
+#### v1.0 (27 July 2020)
+- _Additional data accessioned:_ 28,000 historical records from Pleiades, Euratlas, and OWTRAD datasets.
+- _APIs for access to the database and the Elasticsearch index._ Site search is against accessioned and conflated records in the index, but data uploaded to the database is discoverable as well, if flagged 'public'
+- _Additional trace data added._ 70 new sets of annotations
+- _Search function significantly updated._ Filters for feature class/category, spatial, temporal constraints.
+- _Comprehensive Site Guide added._
+- _Download datasets, before and after augmenting via reconciliation._
+- _Recover password functionality._
+- _Numerous GUI improvements and fixes._ Including redesign of home page.
+
 
 #### beta v0.4 (2 May 2020)
 - _Dataset downloads._ Options from dataset detail panel to download a) latest uploaded data file as is, b) augmented dataset (includes any geometries and/or concordance 'links' added during reconciliation review step).

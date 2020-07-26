@@ -14,20 +14,81 @@
       <div id="traces#Intro" class="tute-section">
         <h4 class="p-1">In Brief</h4>
         <div class="p-1">
-          <p></p>
-          <p>... include:</p>
+          <p>Our conception of traces and trace data was developed in collaboration with Rainer Simon of the Pelagios project, and follows on from work he did in developing the <a href="http://peripleo.pelagios.org" target="_blank">Peripleo</a> pilot web application. In that project, annotations of web records for ancient coins and inscriptions were annotated for ther findspots, or locales. There seems to be broad interest in extending the kinds of records that may be annotated with places, to include events, people, and other kinds of material objects, including works of all kinds.</p>
+          <p>We in the WHG project have a particular interest in annotating records concerning geographic movement, including individual journeys and expeditions, and flows of all kinds.</p>
+          <p><a href="#" class="popimg"><img src="{% static 'images/traces_april2020.png' %}" height=300 align="right" /></a>We are using the following vocabulary:</p>
           <ul>
-            <li>foo</li>
+            <li>A <span class="strong red-head">trace</span> is any historical entity&mdash;something that existed or happened in the past.</li>
+            <li><span class="strong red-head">Trace data</span> is a web resource with a permanent URI that describes a trace in some way. These include datasets, texts, images, etc.</li>
+            <li><span class="strong red-head">Trace annotations</span> for WHG are records linking one or more <span class="strong red-head">trace data</span> resource (the "target") with one or more web-accessible records for places (the "body").</li>
           </ul>
+          <p>
         </div>
         <h4 class="p-1">Linked Traces format</h4>
         <div class="p-1">
-          <p><a href="https://github.com/LinkedPasts/linked-traces-format" target="_blank">The Linked Traces format</a> used is ...developed so far by WHG, working with a small working group...</p>
-          <p>The distinctive features of Linked Traces format include:</p>
+          <p>The <a href="https://github.com/LinkedPasts/linked-traces-format" target="_blank">Linked Traces format</a> used in WHG so far is a work in progress. It is not so much a format as it is an implementation pattern of the <a href="https://www.w3.org/TR/annotation-model/" target="_blank">W3C Web Annotation model</a> and <a href="https://www.w3.org/TR/annotation-vocab/" target="_blank">vocabulary</a>. We have been collaborating in a small working group to enumerate what patterns may be broadly useful, and in the meantime have created a template for our own use.</p>
+          <p>The distinctive features of our approach and our annotation pattern include:</p>
           <ul>
-            <li></li>
-          </ul>          
+            <li>We are typically annotating a single web-accessible resource describing a trace phenomenon (the <b>target</b>)  with identifiers for multiple places relevant to it (the <b>bodies</b>). Our intent is to represent connection between places in this way&mdash;for example, via journeys and routes, or being part of an empire or alliance.</li>
+            <li>For each place (<b>body</b>) we want to capture the relation between the trace and the place, and the time period it was related.</li>
+          </ul>
+          <p>What follows is a partial Linked Traces record now indexed in our system. It annotates a dataset, "<a href="https://doi.org/10.7910/DVN/AMPGMW" target="_blank">Hernán Cortes and the Conquest of the Aztec Empire</a>", with 82 places involved in that event.</p>
+          <pre>
+{	
+    "@context": [
+        "http://www.w3.org/ns/anno.jsonld", 
+        {"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], 
+    "id": "http://whgazetteer.org/traces/70", 
+    "type": "Annotation", 
+    "target": {
+        "id": "https://doi.org/10.7910/DVN/AMPGMW", 
+        "type": "event", 
+        "title": "Hernan Cortes and the Conquest of the Aztec Empire", 
+        "format": "text/html", 
+        "language": "en"
+    }, 
+    "created": "2020-06-16", 
+    "creator": {"id": "","name": "Susan Grunewald","homepage": "https://susangrunewald.com"}, 
+    "motivation": "linking"
+    "body": [
+      {	"id": 
+        "http://whgazetteer.org/place/81731", 
+        "title": "Azcapotzalco", 
+        "place_id": 81731, 
+        "relations": [
+          { "when": [{"end": "1521-02-22", "start": "1521-02-22"}], 
+            "relation": "waypoint"}]
+      }, 
+      { "id": "http://whgazetteer.org/place/82706", "title": "Cempoala", "place_id": 82706, "relations": [{"when": [{"end": "1520-05-29", "start": "1520-05-29"}], "relation": "battle_site"}, {"when": [{"end": "1519-06-07", "start": "1519-06-07"}], "relation": "waypoint"}]}, 
+      { "id": "http://whgazetteer.org/place/82952", "title": "Cholula", "place_id": 82952, "relations": [{"when": [{"end": "1519-10", "start": "1519-10"}, {"end": "1520-05", "start": "1520-05"}, {"end": "1520-08", "start": "1520-08"}, {"end": "1519-11-01", "start": "1519-11-01"}, {"end": "1519-10-18", "start": "1519-10-18"}], "relation": "waypoint"}]},
+      { 79 more ...}
+    ],
+    "tags": [
+        "Cortes", "Conquest", "Mexico", "Aztec", "Conquistador", "Tenochtitlan", "Mexico City"] 
+}
+          </pre>
       </div>
     </div>
   </div>
+  <div class="modal fade" id="imagemodal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+      </div>
+      <div class="modal-body">
+        <img src="" id="imagepreview" style="width: 600px;" >
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>  
+  <script type="text/javascript">
+    $(".popimg").on("click", function() {
+      imagelink = $(".popimg img").attr('src')
+      console.log('imagelink',imagelink)
+      $('#imagepreview').attr('src', imagelink); 
+      $('#imagemodal').modal('show');
+    });
+  </script>    
 {% endblock %}

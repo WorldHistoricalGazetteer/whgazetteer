@@ -390,6 +390,9 @@
       <form id="sharing_form" method="POST" action="{% url 'datasets:collab-add' dsid=ds.id %}" enctype="multipart/form-data">
       {% csrf_token %}
       <div></div>
+        {% if messages %}<div>{% for message in messages %}
+          <i style="display:block;" class="text-danger ml-4 mb-2">{{ message }}</i>
+        {%endfor%}</div>{% endif %}
       <div class="sharing-box my-3 w-50">
         <div class="sharing-header">Collaborators
           {% if ds.owner.id == user.id or user.is_superuser %}

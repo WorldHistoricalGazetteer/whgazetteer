@@ -331,9 +331,7 @@
           ts_intervals.push(ts_arr[i][j])
     }}};
 
-    <!--intervals=ts_arr.map(ts => [ Number(ts.start.in), !ts.end?Number(ts.start.in)+9:Number(ts.end.in) ])-->
     intervals=ts_intervals.map(ts => [ Number(ts.start.in), !ts.end?Number(ts.start.in)+9:Number(ts.end.in) ])
-    <!--intervals=ts_arr[0].map(ts => [ Number(ts.start.in), !ts.end?Number(ts.start.in)+9:Number(ts.end.in) ])-->
     
     return [ts_obj,intervals]  <!--console.log(ts_arr)-->
   }
@@ -382,7 +380,6 @@
     yScale.domain([0, d3.max(data, function(d) { return d.count; })]);
     
     window.svg_hist = d3.select("#histogram_sum").append("svg")
-      <!--.attr("width", width)-->
       .attr("width", '100%')
       .attr("height", height+padding_h)
       
@@ -391,8 +388,6 @@
       
       .append("g")
       .attr("transform","translate(" + margin.left + "," + margin.top + ")")
-      <!--.attr("transform", "translate(" + Math.min(width,height+padding_h) / 2 + -->
-        <!--"," + Math.min(width,height+padding_h) / 2 + ")")      -->
   
     window.axisB = d3.axisBottom(xScale)
       .tickValues(labels.filter(function(d,i){return !(i%20)}))
@@ -645,7 +640,8 @@
     features = L.geoJSON(geom, {
       pane: 'mainPane',
       pointToLayer: function (feature, latlng) {
-        <!--console.log(feature)-->
+        console.log(latlng)
+        ll = latlng
         <!--identifier = 'whg:'+feature.properties.id-->
         identifier = feature.properties.id
         marker = L.circleMarker(latlng,
@@ -653,7 +649,8 @@
             radius: 8, fillOpacity: 0.8, opacity: 1, weight: 1,
             color: "#000", fillColor: fill(feature.properties.dataset)
           }
-        ).bindPopup('<b>'+identifier+'</b>'+('when' in feature?'<br/>('+
+        ).bindPopup('pid: <b>'+identifier+'</b><br/>['+latlng['lat']+', '+latlng['lng']+']'
+          +('when' in feature?'<br/>('+
           feature.when.timespans[0].start.in+
           ('end' in feature.when.timespans[0]?'/'+feature.when.timespans[0].end.in:'/-')+')':''));
      

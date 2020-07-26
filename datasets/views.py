@@ -428,7 +428,8 @@ def collab_add(request,dsid,role='member'):
     uid=get_object_or_404(User,username=request.POST['username']).id
   except:
     # TODO: raise error to screen
-    messages.add_message(request, messages.INFO, "Please check username, we don't have '" + request.POST['username']+"'")    
+    messages.add_message(
+      request, messages.INFO, "Please check username, we don't have '" + request.POST['username']+"'")    
     return redirect('/datasets/'+str(dsid)+'/detail#sharing')
   print('collab_add():',request.POST['username'],dsid,uid)
   DatasetUser.objects.create(user_id_id=uid, dataset_id_id=dsid, role=role)

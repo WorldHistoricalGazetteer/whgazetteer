@@ -1,0 +1,32 @@
+{	
+	"@context": [
+		"http://www.w3.org/ns/anno.jsonld", 
+		{"lpo:": "http://linkedpasts.org/ontology/lpo.jsonld"}], 
+	"id": "http://whgazetteer.org/traces/70", 
+	"type": "Annotation", 
+	"target": {
+		"id": "https://doi.org/10.7910/DVN/AMPGMW", 
+		"type": "event", 
+		"title": "Hernan Cortes and the Conquest of the Aztec Empire", 
+		"format": "text/html", 
+		"language": "en"
+	}, 
+	"created": "2020-06-16", 
+	"creator": {"id": "","name": "Susan Grunewald","homepage": ""}, 
+	"motivation": "linking"
+	"body": [
+		{	"id": 
+			"http://whgazetteer.org/place/81731", 
+			"title": "Azcapotzalco", 
+			"place_id": 81731, 
+			"relations": [
+				{	"when": [{"end": "1521-02-22", "start": "1521-02-22"}], 
+					"relation": "waypoint"}
+			]}, 
+		{"id": "http://whgazetteer.org/place/82706", "title": "Cempoala", "place_id": 82706, "relations": [{"when": [{"end": "1520-05-29", "start": "1520-05-29"}], "relation": "battle_site"}, {"when": [{"end": "1519-06-07", "start": "1519-06-07"}], "relation": "waypoint"}]}, 
+		{"id": "http://whgazetteer.org/place/82952", "title": "Cholula", "place_id": 82952, "relations": [{"when": [{"end": "1519-10", "start": "1519-10"}, {"end": "1520-05", "start": "1520-05"}, {"end": "1520-08", "start": "1520-08"}, {"end": "1519-11-01", "start": "1519-11-01"}, {"end": "1519-10-18", "start": "1519-10-18"}], "relation": "waypoint"}]},
+		{ 79 more ...}
+	],
+	"tags": [
+		"Cortes", "Conquest", "Mexico", "Aztec", "Conquistador", "Tenochtitlan", "Mexico City"] 
+}
