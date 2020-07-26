@@ -100,7 +100,7 @@ class DatasetCreateModelForm(forms.ModelForm):
         'placeholder':'Leave blank unless record IDs are URIs','size':40})
       ,'title': forms.TextInput(attrs={'size': 40})
       ,'creator': forms.TextInput(attrs={'size': 40})
-      ,'webpage': forms.URLInput(attrs={'size': 40})
+      ,'webpage': forms.URLInput(attrs={'size': 40,'placeholder':'Blank if none'})
     }
   
   # fields used to create new DatasetFile record from form
