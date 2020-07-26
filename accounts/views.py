@@ -2,9 +2,11 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User, Group
 from django.contrib import auth, messages
 from django.db import transaction
+from django.http import HttpResponseRedirect
+from django import forms
 from django.shortcuts import render, redirect, get_object_or_404
 
-from accounts.forms import UserModelForm, ProfileModelForm
+from accounts.forms import UserModelForm, ProfileModelForm, LoginForm
 
 @login_required
 @transaction.atomic
@@ -65,14 +67,25 @@ def register(request):
 def login(request):
     if request.method == 'POST':
         user = auth.authenticate(username=request.POST['username'],password=request.POST['password'])
+        
         if user is not None:
             auth.login(request,user)
             return redirect('dashboard')
         else:
-            return redirect('home', {'error': 'username or password is incorrect :^('})
+            raise forms.ValidationError("Sorry, that login was invalid. Please try again.")
+            #return redirect('home', {'error': 'username or password is incorrect :^('})
     else:
         return render(request, 'accounts/login.html')
 
+def login_view(request):
+    form = LoginForm(request.POST or None)
+    if request.POST and form.is_valid():
+        user = form.login(request)
+        if user:
+            login(request, user)
+            return HttpResponseRedirect("/")# Redirect to a success page.
+    return render(request, 'accounts/login.html', {'login_form': form })
+        
 def logout(request):
     if request.method == 'POST':
         auth.logout(request)
