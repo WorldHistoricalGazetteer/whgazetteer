@@ -55,7 +55,10 @@
               <h5>Data</h5>
               <div class="p-1">
                 <p class="subhead">Two Place Data Stores: Database and Index</p>
-                <p class="mb-0"><img src="{% static 'images/two-stores.png'%}" height=250/></p>
+                <p class="mb-0">
+                  <a class="popimg" href="#">
+                    <img src="{% static 'images/two-stores.png'%}" height=250 class="img-responsive"/>
+                  </a></p>
                 <p class="mb-0">Data from files uploaded to WHG in either the full Linked Place format (LP) or abbreviated LP-TSV format are imported into a PostgreSQL relational database and made available to you for viewing and augmenting via our reconciliation process. You cannot edit them in WHG, but in the case of LP-TSV files, you can replace a dataset with a new file reflecting changes you made locally.</p>
                 
                 <p class="mb-0">The reconciliation process finds prospective matches to your records in Getty TGN and/or Wikidata. When such an external record is accepted as a “closeMatch,” one or more place_link and place_geom records are added to the database, reflecting that match. This augments your dataset within the WHG database with additional attestations to the same place (links), and geographical coordinates, but does not alter the uploaded content in any way. If you flag your dataset as public, it's records will publicly accessible via <a href="{% url 'usingapi' %}">the WHG API</a>.</p>
@@ -90,9 +93,6 @@
                 <li>The Journey of Xuanzang, a seventh century Buddhist Monk</li>
                 <li>The Lifepath of Gautama Buddha</li>
                 <li>The Empire of Alexander</li>
-                <li></li>
-                <li></li>
-                <li></li>
                 </ul>
               </div>            
             </div>
@@ -274,11 +274,30 @@
       </div> <!-- tab_content-->
     </div> <!-- guide_content -->
   </div> <!-- container -->
-  
+    <div class="modal fade" id="imagemodal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+        </div>
+        <div class="modal-body">
+          <img src="" id="imagepreview" style="width: 800px;" >
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
   <script type="text/javascript">
     $(function(){
       $('.nav-pills a[href="#pills-why"]').tab('show')
     })
+    $(".popimg").on("click", function() {
+      imagelink = $(".popimg img").attr('src')
+      <!--console.log($(this).attr('src')-->
+      $('#imagepreview').attr('src', imagelink); 
+      $('#imagemodal').modal('show');
+    });
     $("[rel='tooltip']").tooltip();
   </script>
 {% endblock %}
