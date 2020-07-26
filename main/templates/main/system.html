@@ -12,7 +12,7 @@
       <p class="lead">Pipeline, architecture, and software</p>
         <div class="row">
           <div class="col-sm-4">  
-            <img src="{% static 'images/system01.png'%}" align="left" width="350" style="margin-bottom:1.5rem;"/>
+            <a href="#" class="popimg"><img src="{% static 'images/system01.png'%}" align="left" width="350" style="margin-bottom:1.5rem;"/></a>
             <p class="mb-0">Software
             <ul style="padding-left:1.2rem;">
               <li>Django 2.2.4 (Python framework)</li>
@@ -40,4 +40,25 @@
       </div>
     </div>
   </div>
+  <div class="modal fade" id="imagemodal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+      </div>
+      <div class="modal-body">
+        <img src="" id="imagepreview" style="height: 400px; width: 600px;" >
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>  
+  <script type="text/javascript">
+    $(".popimg").on("click", function() {
+      imagelink = $(".popimg img").attr('src')
+      console.log('imagelink',imagelink)
+      $('#imagepreview').attr('src', imagelink); 
+      $('#imagemodal').modal('show');
+    });
+  </script>  
 {% endblock %}
