@@ -156,6 +156,7 @@ LEAFLET_CONFIG = {
 #EMAIL_PORT = 587
 #EMAIL_HOST_USER = ''
 #EMAIL_HOST_PASSWORD = ''
+EMAIL_FILE_PATH = os.path.join(BASE_DIR, "sent_emails")
 
 LOGIN_URL = '/accounts/login/'
 LOGIN_REDIRECT_URL='/accounts/login/'
