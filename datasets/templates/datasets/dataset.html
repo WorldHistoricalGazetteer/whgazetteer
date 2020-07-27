@@ -63,9 +63,10 @@
             </td>
             <td>
               <span class="form-title bigger strong">{{ form.title.value }}
-                {% if ds.webpage %}(<a href="{{ ds.webpage }}" target="_blank">webpage</a>){% endif %}
+                {% if ds.webpage %}(<a href="{{ ds.webpage }}" target="_blank">webpage</a> <a href="#" class="edit-webpage">{% fontawesome_icon 'edit' color='#336699' %}</a>){% endif %}
               </span>
               <span class="hidden editing-title">{{ form.title }}</span>&nbsp;
+              <span class="hidden editing-webpage">{{ form.webpage }}</span>&nbsp;
             </td>
           </tr>
           <tr>
@@ -77,6 +78,15 @@
               <span class="hidden editing-uri_base">{{ form.uri_base }}</span>
             </td>
           </tr>
+          <!--<tr>-->
+            <!--<td><b>Web page</b>-->
+              <!--<a href="#" class="edit-webpage">{ fontawesome_icon 'edit' color='#336699' %}</a>-->
+            <!--</td>-->
+            <!--<td>-->
+              <!--<span class="form-webpage">{{ form.webpage.value }}</span>-->
+              <!--<span class="hidden editing-webpage">{{ form.webpage }}</span>-->
+            <!--</td>-->
+          <!--</tr>-->
           <tr>
             <td style="vertical-align:top;"><b>Description</b> 
               <a href="#" class="edit-description">{% fontawesome_icon 'edit' color='#336699' %}</a>
@@ -766,6 +776,11 @@ js for Summary, Reconciliation
   $(".edit-uri_base").click(function() {
     $(".editing-uri_base").toggleClass("hidden")
     $(".form-uri_base").toggleClass("hidden")
+    $(".btn-ds").toggleClass("hidden")
+  })  
+  $(".edit-webpage").click(function() {
+    $(".editing-webpage").toggleClass("hidden")
+    $(".form-webpage").toggleClass("hidden")
     $(".btn-ds").toggleClass("hidden")
   })  
   $(function(){
