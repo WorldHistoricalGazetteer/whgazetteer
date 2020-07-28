@@ -633,6 +633,30 @@ class PlaceTableViewSet(viewsets.ModelViewSet):
 class AreaListView(View):
   @staticmethod
   def get(request):
+    print('area_list() request.user',request.user, type(request.user))
+    print('area_list() request.user',str(request.user))
+    userstr = str(request.user)
+    if userstr == 'AnonymousUser':
+      qs = Area.objects.all().filter(Q(type__in=('predefined','country'))).values('id','title','type')
+    else:
+      user = request.user
+      qs = Area.objects.all().filter(Q(type__in=('predefined','country'))| Q(owner=user)).values('id','title','type')
+    area_list = []
+    for a in qs:
+      area = {"id":a['id'],"title":a['title'],"type":a['type']}
+      area_list.append(area)
+      
+    return JsonResponse(area_list, safe=False)
+  
+"""
+  areas/
+
+"""
+# simple objects for dropdown
+class AreaListAllView(View):
+  @staticmethod
+  def get(request):
+    console.log('area_list() request',request)
     user = request.user
     area_list = []
     #qs = Area.objects.all().filter(Q(type='predefined')| Q(owner=request.user)).values('id','title','type')

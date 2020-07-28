@@ -50,7 +50,7 @@
 		  <input id="input_box" class="tt-hint" type="text" placeholder="Enter place name" autocomplete="false"> 
 		  <input id="input_box_traces" class="typeahead hidden" type="text" placeholder="subject term, e.g. 'empire'">
 		  <div id="filters_opener" class="mx-auto mt-1 small">
-			<a id="link_filters"href="#">filters</a>{% fontawesome_icon 'filter' color='#336699' %}
+			<a id="link_filters"href="#">filters</a> {% fontawesome_icon 'filter' color='#336699' %}
 		  </div>
 		</div>
         <div id="search_filters" class="hidden">
@@ -107,7 +107,7 @@
 			<div class="carousel-item active">
 			  <p class="mb-1">World Historical Gazetteer indexes place data drawn from historical sources, contributed by research projects and individuals studying the past from many disciplinary perspectives.</p>
 			  <p class="mb-1">This is a work-in-progress. To date about 60,000 temporally scoped place records have been added to our index, supplying "temporal depth" to a core of approximately 1.8 million modern records</p>
-			  <p>You can view the coverage of a few of our larger early contributions by selecting from this list.</p>
+			  <p>You can view preview coverage of some early contributions in progress, by selecting from the list below.</p>
 			  <div id="map_select">
 				<select id="map_dataset" name="region" class="custom-select-sm">
 				  <option value="0">Display dataset</option>
@@ -284,6 +284,7 @@
 	
 	// fetch area list
 	$.get("/api/area_list", function(data){
+	<!--$.get("{ url 'area-list' ref='search' %}", function(data){-->
 	  <!--console.log('initial areas for list',data)-->
 	  for(var i=0;i<data.length;i++){
 		area_objs.push(data[i])

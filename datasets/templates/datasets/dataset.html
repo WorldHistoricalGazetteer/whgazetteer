@@ -1110,7 +1110,8 @@ js for Browse
         pointToLayer: function (feature, latlng) {
           matchid = feature.place_id
           <!--console.log('feature',feature)-->
-          marker = L.circleMarker(latlng,styles.Point.default).bindPopup('pid: '+matchid);
+          marker = L.circleMarker(latlng,styles.Point.default).bindPopup(
+            'place_id: <a href="http://whgazetteer.org/api/place/'+matchid+'" target="_blank">'+matchid+'</a>');
           idToFeature[matchid] = marker
           return marker
         }
