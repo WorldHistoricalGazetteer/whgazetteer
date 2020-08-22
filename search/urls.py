@@ -6,6 +6,8 @@ from search.views import (
     SearchView, FeatureContextView, TraceGeomView 
 )
 
+#app_name = "search"
+
 urlpatterns = [
     path('index/', SearchView.as_view(), name='search'), # home page search
     path('context/', FeatureContextView.as_view(), name='feature_context'), # place portal context

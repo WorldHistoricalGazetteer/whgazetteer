@@ -1,10 +1,10 @@
 #from django.core import serializers
 from django.http import FileResponse, JsonResponse # HttpResponse
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
 #from django.utils.encoding import smart_str
 from django.views.generic import View
 
-import codecs, sys, os, pprint, time, datetime, csv #,chardet
+import codecs, sys, os, pprint, time, datetime, csv, openpyxl
 import simplejson as json
 from goodtables import validate as gvalidate
 from jsonschema import draft7_format_checker, validate #,Draft7Validator
@@ -16,11 +16,45 @@ from datasets.static.hashes import aat, parents, aat_q
 from places.models import PlaceGeom # ,Place
 pp = pprint.PrettyPrinter(indent=1)
 
+# ***
+# UPLOAD UTILS
+# ***
+def xl_tester(): 
+  fn = '/Users/karlg/repos/_whgdata/data/_source/CentralEurasia/bregel_in progress.xlsx'
+  from openpyxl import load_workbook
+  wb = load_workbook(filename = fn)
+  sheet_ranges = wb['range names']
 
-def maketime():
-  ts = time.time()
-  sttime = datetime.datetime.fromtimestamp(ts).strftime('%Y%m%d_%H%M%S')
-  return sttime
+def xl_upload(request):
+  if "GET" == request.method:
+    return render(request, 'datasets/xl.html', {})
+  else:
+    excel_file = request.FILES["excel_file"]
+
+    # you may put validations here to check extension or file size
+
+    wb = openpyxl.load_workbook(excel_file)
+
+    # getting all sheets
+    sheets = wb.sheetnames
+    print(sheets)
+
+    # getting a particular sheet by name out of many sheets
+    ws = wb["Sheet1"]
+    print(ws)
+
+    excel_data = list()
+    # iterating over the rows and
+    # getting value from each cell in row
+    for row in ws.iter_rows():
+      row_data = list()
+      for cell in row:
+        #row_data.append(str(cell.value))
+        row_data.append(cell.value)
+      excel_data.append(row_data)
+
+    return render(request, 'datasets/xl.html', {"excel_data":excel_data}) 
+
 # ***
 # DOWNLOAD FILES
 # ***
@@ -35,7 +69,7 @@ def download_file(request, *args, **kwargs):
   # set content type
   response = FileResponse(file_handle, content_type='text/csv' if fileobj.format=='delimited' else 'text/json')
   response['Content-Disposition'] = 'attachment; filename="'+fileobj.file.name+'"'
-  
+
   return response
 # TODO: crude, only properties are ids
 def download_gis(request, *args, **kwargs):
@@ -47,7 +81,7 @@ def download_gis(request, *args, **kwargs):
   fn = 'media/user_'+user+'/'+ds.label+'_aug_'+date+'.json'
   # open it for write
   fout = codecs.open(fn,'w','utf8')
-  
+
   # build a flat FeatureCollection 
   features=PlaceGeom.objects.filter(place_id__in=ds.placeids).values_list('jsonb','place_id','src_id')
   fcoll = {"type":"FeatureCollection","features":[]}
@@ -62,7 +96,7 @@ def download_gis(request, *args, **kwargs):
 
   return response
   #return HttpResponse(content='download_gis: '+fn)
-  
+
 # returns file in original format w/any new geoms, links
 def download_augmented(request, *args, **kwargs):
   from django.db import connection
@@ -79,7 +113,7 @@ def download_augmented(request, *args, **kwargs):
     #qs = qs.filter(title__icontains=query)
 
   features=ds.places.all() 
-  
+
   if fileobj.format == 'delimited' and req_format == 'tsv':
     print('augmented for delimited')
     # make file name
@@ -114,12 +148,12 @@ def download_augmented(request, *args, **kwargs):
                gobj['lonlat'][1] if 'lonlat' in gobj else None,
                gobj['new'] if 'new' in gobj else None,
                str(augLinks(f.links.all()))
-        ]
+               ]
         writer.writerow(row)
         #print(row)
     response = FileResponse(open(fn, 'rb'),content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="'+os.path.basename(fn)+'"'
-          
+
     return response
   else:
     print('download_augmented()')
@@ -191,9 +225,9 @@ def download_augmented(request, *args, **kwargs):
     # response is reopened file
     response = FileResponse(open(fn, 'rb'), content_type='text/json')
     response['Content-Disposition'] = 'attachment; filename="'+os.path.basename(fn)+'"'
-    
+
     return response
-      
+
 def download_augmented_slow(request, *args, **kwargs):
   print('download_augmented kwargs',kwargs)
   user = request.user.username
@@ -207,7 +241,7 @@ def download_augmented_slow(request, *args, **kwargs):
     #qs = qs.filter(title__icontains=query)
 
   features=ds.places.all() 
-  
+
   if fileobj.format == 'delimited' and req_format == 'tsv':
     print('augmented for delimited')
     # make file name
@@ -247,7 +281,7 @@ def download_augmented_slow(request, *args, **kwargs):
         #print(row)
     response = FileResponse(open(fn, 'rb'),content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="'+os.path.basename(fn)+'"'
-          
+
     return response
   else:
     # make file name
@@ -284,9 +318,9 @@ def download_augmented_slow(request, *args, **kwargs):
     # response is reopened file
     response = FileResponse(open(fn, 'rb'), content_type='text/json')
     response['Content-Disposition'] = 'attachment; filename="'+os.path.basename(fn)+'"'
-    
+
     return response
-  
+
 # ***
 # format tsv validation errors for modal display
 # ***
@@ -300,7 +334,7 @@ def parse_errors_tsv(err):
 # *** 
 def parse_errors_lpf(err):
   print('parse_errors_lpf()',err)
-  
+
 # 
 # validate Linked Places json-ld (w/jsonschema)
 # format ['coll' (FeatureCollection) | 'lines' (json-lines)]
@@ -317,7 +351,7 @@ def validate_lpf(tempfn,format):
   #fout = codecs.open('validate-lpf-result.txt','w','utf8')
   result = {"format":"lpf","errors":[]}
   [countrows,count_ok] = [0,0]
-  
+
   jdata = json.loads(infile.read())
   if ['type', '@context', 'features'] != list(jdata.keys()) \
      or jdata['type'] != 'FeatureCollection' \
@@ -408,7 +442,7 @@ def hully(g_list):
   from django.contrib.gis.geos import GEOSGeometry
   from django.contrib.gis.geos import MultiPoint
   from django.contrib.gis.geos import GeometryCollection
-  
+
   # maybe mixed bag
   types = list(set([g['type'] for g in g_list]))
   # should work for any combination
@@ -433,17 +467,13 @@ def parse_wkt(g):
   #print('wkt, feature',g, feature)
   return feature
 
-# TODO: not truly implemented; cf. datasets.views.DashboardView
-def myteam(me):
-  myteam=[]
-  for g in me.groups.all():
-    for u in g.user_set.all():
-      myteam.append(u)
-  return myteam
+#
+def maketime():
+  ts = time.time()
+  sttime = datetime.datetime.fromtimestamp(ts).strftime('%Y%m%d_%H%M%S')
+  return sttime
 def myprojects(me):
   return DatasetUser.objects.filter(user_id_id=me.id).values_list('dataset_id_id')
-  
-  
 def parsejson(value,key):
   """returns value for given key"""
   print('parsejson() value',value)
@@ -615,10 +645,10 @@ class UpdateCountsView(View):
   #text='The revised dataset has '+str(resobj['count_new'])+' records, a difference of '+str(resobj['count_diff'])+". Columns "
   #text += 'to add: '+str(resobj['col_add']) + '. 'if len(resobj['col_add']) > 0 else \
     #'to remove: '+ str(resobj['col_del'])+'. ' if len(resobj['col_del']) > 0 \
-              #else "remain the same. "
+          #else "remain the same. "
   #text += 'Records to be added: '+str(resobj['rows_add'])+'. ' if len(resobj['rows_add'])>0 else ''
   #text += 'Records to be removed: '+str(resobj['rows_del'])+'. ' if len(resobj['rows_del'])>0 else ''
   #text += 'All records with an ID matching one in the existing dataset will be replaced.'  
   #resobj['text'] = text
-  
+
   #return resobj

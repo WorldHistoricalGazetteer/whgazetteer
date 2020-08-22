@@ -1,5 +1,5 @@
-<!-- places/place_detail.html -->
-{% extends "main/base.html" %}
+<!-- places/place_modal.html -->
+<!--{ extends "main/base.html" }-->
 {% load fontawesome %}
 {% load static %}
 {% load dataset_extras %}
@@ -9,11 +9,12 @@
 {% block extra_head %}
   {% leaflet_js %}
   {% leaflet_css %}
+  <!--<script src = "https://d3js.org/d3.v4.min.js"></script>-->
+  <script src="{% static 'js/d3.v4.min.js' %}"></script>
   <script src="{% static 'js/aliases.js' %}"></script>
   <script src="{% static 'js/leaflet.ajax.min.js' %}"></script>
   <script src="{% static 'js/jquery.bootstrap.modal.forms.min.js' %}"></script>
   <!--TODO: load local, only what's needed-->
-  <script src = "https://d3js.org/d3.v4.min.js"></script>
   <!-- spinners stuff -->
   <script src="{% static 'js/spin.umd.js' %}"></script>
   <link rel="stylesheet" href="{% static 'css/spin.css' %}"/>
@@ -640,7 +641,7 @@
     features = L.geoJSON(geom, {
       pane: 'mainPane',
       pointToLayer: function (feature, latlng) {
-        <!--console.log(latlng)-->
+        console.log(latlng)
         ll = latlng
         <!--identifier = 'whg:'+feature.properties.id-->
         identifier = feature.properties.id

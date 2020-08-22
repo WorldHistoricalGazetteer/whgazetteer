@@ -1,0 +1,54 @@
+{% extends "main/base.html" %}
+{% block title %}<title>WHG::v1 Guide</title>{% endblock %}
+
+{% block content %}
+{% load static %}
+{% load fontawesome %}
+<div class="container">
+
+<!--<a href="javascript:void(0);" data-href="getContent.php?id=1" class="openPopup">Got Modal?</a>-->
+<a href="javascript:void(0);" class="openPopup">Got Modal?</a>
+</div>
+<!-- Modal -->
+<div class="modal fade" id="myModal" role="dialog">
+    <div class="modal-dialog">
+    
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5>Preview <small><a href="#">full record</a></small></h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+            </div>
+        </div>
+      
+    </div>
+</div>
+<script>
+$(document).ready(function(){
+    $('.openPopup').on('click',function(){
+        <!--var dataURL = $(this).attr('data-href');-->
+        console.log('clicked link')
+        var dataURL = '/places/12608007/modal';
+        $('.modal-body').load(dataURL,function(){
+            $('#myModal').modal({show:true});
+        });
+    }); 
+});
+</script>
+{% endblock %}
+    <!--$('.modal-body').load('getContent.php?id=2',function(){-->
+    <!--$.get("/search/index",{-->
+        <!--// qstr: $(".tt-input")[0].value,-->
+        <!--// disabled typeahead-->
+        <!--qstr: $('#input_box').val(), -->
+        <!--doc_type: doctype,-->
+        <!--scope: scope,-->
+        <!--idx: index,-->
+        <!--fclasses: fclasses.join(','),-->
+        <!--year: $("#input_year").val(),-->
+        <!--start: $("#input_start").val(),-->
+        <!--end: $("#input_end").val(),-->
+        <!--bounds: $("#boundsobj").val()-->
+      <!--}-->

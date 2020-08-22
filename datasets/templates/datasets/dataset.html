@@ -119,7 +119,8 @@
           {% if current_file.format == 'delimited' %}
           {% if ds.owner.id == user.id or user.is_superuser%}
           <span class="float-right mr-2">
-            <a href="#" id="a_update_modal" data-dsid = {{ ds.id }} data-toggle="modal" data-target="#updateModal">update</a>
+            <a href="#" id="a_update_modal" data-dsid = {{ ds.id }} data-toggle="modal" data-target="#updateModal">
+              update</a>
             <span class="help-matches" data-id="updates">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
           </span>
           {% endif %}
@@ -602,6 +603,7 @@ js for Summary, Reconciliation
 -->
 <script type="text/javascript">
   $("#a_update_modal").on('click', function(e){
+    console.log('clicked update')
     if('{{ current_file.format }}' != 'delimited'){ 
         alert('Sorry, update is available for delimited files right now. Soon...')
       }

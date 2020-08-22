@@ -9,6 +9,7 @@ from . import views
 
 # area actions
 app_name='areas'
+
 urlpatterns = [
 
     path('create/', views.AreaCreateView.as_view(), name='area-create'),

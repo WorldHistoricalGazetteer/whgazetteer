@@ -4,12 +4,15 @@ from django.conf.urls.static import static
 from django.conf import settings
 
 from . import views
-from datasets.utils import download_file, download_augmented, download_gis, UpdateCountsView
+from datasets.utils import download_file, download_augmented, download_gis, UpdateCountsView, xl_upload
 
 # dataset actions
 app_name='datasets'
 urlpatterns = [
     path('create/', views.DatasetCreateView.as_view(), name='dataset-create'),
+    
+    # upload excel
+    path('xl/', views.xl_upload, name='xl-upload'),
     
     path('compare/', views.ds_compare, name='dataset-compare'),
     path('update/', views.ds_update, name='dataset-update'),

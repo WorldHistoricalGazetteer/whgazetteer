@@ -20,5 +20,8 @@ urlpatterns = [
     path('traces/', TemplateView.as_view(template_name="tutorials/traces.html"), name="tute-traces"),
     
     
+    path('modal/', TemplateView.as_view(template_name="main/modal.html"), name="dynamic-modal"),
+    
+    
 
 ] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
