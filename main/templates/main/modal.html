@@ -17,7 +17,9 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5>Preview <small><a href="#">full record</a></small></h5>
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <button type="button" class="close larger" data-dismiss="modal">
+                    {% fontawesome_icon 'window-close' color='#336699' %}
+                </button>
             </div>
             <div class="modal-body">
             </div>
@@ -30,7 +32,7 @@ $(document).ready(function(){
     $('.openPopup').on('click',function(){
         <!--var dataURL = $(this).attr('data-href');-->
         console.log('clicked link')
-        var dataURL = '/places/12608007/modal';
+        var dataURL = '/places/12345979/modal';  <!-- 12608007-->
         $('.modal-body').load(dataURL,function(){
             $('#myModal').modal({show:true});
         });
@@ -38,17 +40,3 @@ $(document).ready(function(){
 });
 </script>
 {% endblock %}
-    <!--$('.modal-body').load('getContent.php?id=2',function(){-->
-    <!--$.get("/search/index",{-->
-        <!--// qstr: $(".tt-input")[0].value,-->
-        <!--// disabled typeahead-->
-        <!--qstr: $('#input_box').val(), -->
-        <!--doc_type: doctype,-->
-        <!--scope: scope,-->
-        <!--idx: index,-->
-        <!--fclasses: fclasses.join(','),-->
-        <!--year: $("#input_year").val(),-->
-        <!--start: $("#input_start").val(),-->
-        <!--end: $("#input_end").val(),-->
-        <!--bounds: $("#boundsobj").val()-->
-      <!--}-->

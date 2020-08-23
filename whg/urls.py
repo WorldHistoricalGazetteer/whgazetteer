@@ -14,7 +14,8 @@ from django.urls import include, path
 
 app_name='main'
 urlpatterns = [
-    path('', TemplateView.as_view(template_name="main/home_v0.6.html"), name="home"),
+    path('', TemplateView.as_view(template_name="main/home_v1.html"), name="home"),
+    path('alt/', TemplateView.as_view(template_name="main/home_alt.html"), name="home-alt"),
     
     # TODO: convert to mapbox gl
     #path('', TemplateView.as_view(template_name="main/home_gl.html"), name="home"),

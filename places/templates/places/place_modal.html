@@ -141,12 +141,7 @@
               <p class="mb-0 allcap-heading">TEMPORAL ATTESTATIONS</p>
               <div id="histogram_sum"></div>
             </div>
-            <div id="place_map" class="col-content small">
-                <p class="mb-0 allcap-heading">GEOGRAPHY <span class="nogeo text-danger"></span>
-                    <span class="float-right">nearby places (300 max) <input id="fetch-context" type="checkbox"/></span>
-                      <!--{# fontawesome_icon 'search-plus'#} -->
-                </p>
-                <div id="map">{% leaflet_map "map" callback="map_init" %}</div>
+            <div id="place_map" class="col-content small">map was here
             </div>
             <div id="place_traces" class="col-content small mt-1">
               <p class="mb-0 allcap-heading">TRACES (related persons, events, works, objects)
@@ -524,103 +519,103 @@
     return JSON.stringify(geom["coordinates"])
   }
   
-  window.addEventListener('map:init', function (e) {
-    window.mappy = e.detail.map
-    mappy.createPane('tracePane');
-    mappy.getPane('tracePane').style.zIndex = 200;
-    traceLayers = new L.layerGroup().addTo(mappy)
-    var attrib_mb = 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
-            '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-            'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-      attrib_awmc = 'Tiles and Data &copy; 2013 <a href="http://www.awmc.unc.edu" target="_blank">AWMC</a>',
-      token_mb = 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw',
-      token_kg = 'pk.eyJ1Ijoia2dlb2dyYXBoZXIiLCJhIjoiUmVralBPcyJ9.mJegAI1R6KR21x_CVVTlqw',
-      mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}';
+  <!--window.addEventListener('map:init', function (e) {-->
+    <!--window.mappy = e.detail.map-->
+    <!--mappy.createPane('tracePane');-->
+    <!--mappy.getPane('tracePane').style.zIndex = 200;-->
+    <!--traceLayers = new L.layerGroup().addTo(mappy)-->
+    <!--var attrib_mb = 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +-->
+            <!--'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +-->
+            <!--'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',-->
+      <!--attrib_awmc = 'Tiles and Data &copy; 2013 <a href="http://www.awmc.unc.edu" target="_blank">AWMC</a>',-->
+      <!--token_mb = 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw',-->
+      <!--token_kg = 'pk.eyJ1Ijoia2dlb2dyYXBoZXIiLCJhIjoiUmVralBPcyJ9.mJegAI1R6KR21x_CVVTlqw',-->
+      <!--mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}';-->
       
-    <!--var mbtiles_url = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={token}';-->
-    <!--var awmc = L.tileLayer(mbtiles_url, {id:'isawnyu.map-knmctlkh', token:token_kg, attribution:attrib_awmc})-->
-    var satellite  = L.tileLayer(mbstyle_url, {id:'mapbox/satellite-streets-v11', token:token_mb, attribution:attrib_mb})
-    var osm  = L.tileLayer(mbstyle_url, {id:'mapbox/light-v10', token:token_mb, attribution:attrib_mb});
+    <!--<!--var mbtiles_url = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={token}';-->-->
+    <!--<!--var awmc = L.tileLayer(mbtiles_url, {id:'isawnyu.map-knmctlkh', token:token_kg, attribution:attrib_awmc})-->-->
+    <!--var satellite  = L.tileLayer(mbstyle_url, {id:'mapbox/satellite-streets-v11', token:token_mb, attribution:attrib_mb})-->
+    <!--var osm  = L.tileLayer(mbstyle_url, {id:'mapbox/light-v10', token:token_mb, attribution:attrib_mb});-->
 
-    var pleiades = L.mapboxGL({
-      style:'mapbox://styles/kgeographer/ckc21ai6n5ozq1io64x91hndl',
-      accessToken:token_kg})
+    <!--var pleiades = L.mapboxGL({-->
+      <!--style:'mapbox://styles/kgeographer/ckc21ai6n5ozq1io64x91hndl',-->
+      <!--accessToken:token_kg})-->
 
-    var watershedStyle = {
-      "fillColor": "#993333",
-      "color": "#fff",
-      "weight": 1,
-      "opacity": 0.7,
-      "fillOpacity": 0.1
-    };
+    <!--var watershedStyle = {-->
+      <!--"fillColor": "#993333",-->
+      <!--"color": "#fff",-->
+      <!--"weight": 1,-->
+      <!--"opacity": 0.7,-->
+      <!--"fillOpacity": 0.1-->
+    <!--};-->
     
-    function random_rgba() {
-        var o = Math.round, ra = Math.random, s = 255;
-        tup = [o(ra()*s), o(ra()*s), o(ra()*s)]
+    <!--function random_rgba() {-->
+        <!--var o = Math.round, ra = Math.random, s = 255;-->
+        <!--tup = [o(ra()*s), o(ra()*s), o(ra()*s)]-->
         
-        const rgbToHex = (r,g,b) => '#' + [r,g,b].map(x => {
-          const hex = x.toString(16)
-          return hex.length === 1 ? '0' + hex : hex
-        }).join('')
+        <!--const rgbToHex = (r,g,b) => '#' + [r,g,b].map(x => {-->
+          <!--const hex = x.toString(16)-->
+          <!--return hex.length === 1 ? '0' + hex : hex-->
+        <!--}).join('')-->
           
-        return rgbToHex(tup[0],tup[1],tup[2])
-    }
+        <!--return rgbToHex(tup[0],tup[1],tup[2])-->
+    <!--}-->
   
-    var riverStyle = {
-      "color": "#336699",
-      "weight": 1
-    };
-    var popupOptions = {}
+    <!--var riverStyle = {-->
+      <!--"color": "#336699",-->
+      <!--"weight": 1-->
+    <!--};-->
+    <!--var popupOptions = {}-->
     
-    rivers = new L.GeoJSON.AJAX("/datasets/ne_rivers982/places",
-      {style:riverStyle,
-        onEachFeature: function (feature, layer) {
-          popupOptions = {maxWidth: 200};
-            layer.bindPopup(feature.properties.name+" ("+feature.properties.src_id+")", popupOptions);
-          }
-      });
-    watersheds = new L.GeoJSON.AJAX("/datasets/wri_watersheds/places",
-      { style:watershedStyle,
-        onEachFeature: function (feature, layer) {
-        layer.setStyle({"fillColor":random_rgba()})
-          popupOptions = {maxWidth: 200};
-            layer.bindPopup(feature.properties.name+" ("+feature.properties.src_id+")", popupOptions);
-        }
-      })
-    ecoregions = new L.GeoJSON.AJAX("/datasets/tnc_ecoregions/places",
-      { style: {
-          color: "#fff",
-          <!--fillColor:random_rgba(),-->
-          weight: 1,
-          opacity: 0.7,
-          fillOpacity: 0.3},
-        onEachFeature: function (feature, layer) {
-          layer.setStyle({"fillColor":random_rgba()})
-          <!--console.log('feature',feature)-->
-          popupOptions = {maxWidth: 200};
-            layer.bindPopup(feature.properties.name+" ("+feature.properties.src_id+")", popupOptions);
-        }
-      })
-    <!--rivers.addTo(mappy)-->
+    <!--rivers = new L.GeoJSON.AJAX("/datasets/ne_rivers982/places",-->
+      <!--{style:riverStyle,-->
+        <!--onEachFeature: function (feature, layer) {-->
+          <!--popupOptions = {maxWidth: 200};-->
+            <!--layer.bindPopup(feature.properties.name+" ("+feature.properties.src_id+")", popupOptions);-->
+          <!--}-->
+      <!--});-->
+    <!--watersheds = new L.GeoJSON.AJAX("/datasets/wri_watersheds/places",-->
+      <!--{ style:watershedStyle,-->
+        <!--onEachFeature: function (feature, layer) {-->
+        <!--layer.setStyle({"fillColor":random_rgba()})-->
+          <!--popupOptions = {maxWidth: 200};-->
+            <!--layer.bindPopup(feature.properties.name+" ("+feature.properties.src_id+")", popupOptions);-->
+        <!--}-->
+      <!--})-->
+    <!--ecoregions = new L.GeoJSON.AJAX("/datasets/tnc_ecoregions/places",-->
+      <!--{ style: {-->
+          <!--color: "#fff",-->
+          <!--<!--fillColor:random_rgba(),-->-->
+          <!--weight: 1,-->
+          <!--opacity: 0.7,-->
+          <!--fillOpacity: 0.3},-->
+        <!--onEachFeature: function (feature, layer) {-->
+          <!--layer.setStyle({"fillColor":random_rgba()})-->
+          <!--<!--console.log('feature',feature)-->-->
+          <!--popupOptions = {maxWidth: 200};-->
+            <!--layer.bindPopup(feature.properties.name+" ("+feature.properties.src_id+")", popupOptions);-->
+        <!--}-->
+      <!--})-->
+    <!--<!--rivers.addTo(mappy)-->-->
 
-    var baseLayers = {
-      "Pleiades Terrain": pleiades,
-      "OSM": osm,
-      "Satellite": satellite
-    };
-    var dataLayers = {
-      "Rivers": rivers,
-      "Watersheds": watersheds,
-      "Ecoregions": ecoregions
-    }
-    L.control.layers(baseLayers,dataLayers).addTo(mappy);
-    baseLayers['OSM'].addTo(mappy)
-  }, false);
+    <!--var baseLayers = {-->
+      <!--"Pleiades Terrain": pleiades,-->
+      <!--"OSM": osm,-->
+      <!--"Satellite": satellite-->
+    <!--};-->
+    <!--var dataLayers = {-->
+      <!--"Rivers": rivers,-->
+      <!--"Watersheds": watersheds,-->
+      <!--"Ecoregions": ecoregions-->
+    <!--}-->
+    <!--L.control.layers(baseLayers,dataLayers).addTo(mappy);-->
+    <!--baseLayers['OSM'].addTo(mappy)-->
+  <!--}, false);-->
 
-  function getClose() {
-    mappy.setZoom(mappy.getZoom()+2)
+  <!--function getClose() {-->
+    <!--mappy.setZoom(mappy.getZoom()+2)-->
     <!--mappy.fitBounds(features.getBounds().pad(3))-->
-  }
+  <!--}-->
   function fill(foo) {
     if (foo == 'tgn')
       return "#ff7800"
@@ -670,36 +665,36 @@
   }
 
   // initialize, render map w/settings.LEAFLET_CONFIG
-  function map_init (map, options) {
-    <!--console.log('in map_init()')-->
-    geom = {"type":"FeatureCollecton","features":[]}
-    // gather geom script from html body
-    window.gelems = $('script').filter(function() {
-      return this.id.match(/[0-9]/) && this.text != '"null"' && this.text.includes('coordinates');
-    });
+  <!--function map_init (map, options) {-->
+    <!--<!--console.log('in map_init()')-->-->
+    <!--geom = {"type":"FeatureCollecton","features":[]}-->
+    <!--// gather geom script from html body-->
+    <!--window.gelems = $('script').filter(function() {-->
+      <!--return this.id.match(/[0-9]/) && this.text != '"null"' && this.text.includes('coordinates');-->
+    <!--});-->
 
-    // 
-    for (i=0;i<gelems.length;i++){
-      <!--let t_geom = cleanJson(gelems[i].text)-->
-      let g = JSON.parse(gelems[i].text)
-      g['properties'] = {"id": gelems[i].id}
-      geom['features'].push(g)
-    }
-    renderMap(geom)
-  } // end map_init
+    <!--// -->
+    <!--for (i=0;i<gelems.length;i++){-->
+      <!--<!--let t_geom = cleanJson(gelems[i].text)-->-->
+      <!--let g = JSON.parse(gelems[i].text)-->
+      <!--g['properties'] = {"id": gelems[i].id}-->
+      <!--geom['features'].push(g)-->
+    <!--}-->
+    <!--renderMap(geom)-->
+  <!--} // end map_init-->
   
-  var fopt = null;
-  $('.flash-geo').mouseover(function(e){
-    e.preventDefault()
-    feature = idToFeature[$(this).data('id')]
-    feature.bringToFront().setStyle({fillColor:"red",fillOpacity: 1})
-    window.fopt = feature.options
-  })
-  $('.flash-geo').mouseleave(function(e){
-    e.preventDefault()
-    feature = idToFeature[$(this).data('id')]
-    feature.setStyle({fillColor:"#7AFF7A"})
-  })
+  <!--var fopt = null;-->
+  <!--$('.flash-geo').mouseover(function(e){-->
+    <!--e.preventDefault()-->
+    <!--feature = idToFeature[$(this).data('id')]-->
+    <!--feature.bringToFront().setStyle({fillColor:"red",fillOpacity: 1})-->
+    <!--window.fopt = feature.options-->
+  <!--})-->
+  <!--$('.flash-geo').mouseleave(function(e){-->
+    <!--e.preventDefault()-->
+    <!--feature = idToFeature[$(this).data('id')]-->
+    <!--feature.setStyle({fillColor:"#7AFF7A"})-->
+  <!--})-->
   
   $('.ext').on('click', function(e) {
     e.preventDefault();
