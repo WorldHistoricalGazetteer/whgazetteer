@@ -172,7 +172,22 @@
     </div>
   </div>
 </div> <!-- ext_site -->
-
+<!-- Modal -->
+<div id="place_modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">  
+	<!-- Modal content-->
+	<div class="modal-content">
+		<div class="modal-header">
+			<h5>Preview <small><a href="#">full record</a></small></h5>
+			<button type="button" class="close larger" data-dismiss="modal">
+				{% fontawesome_icon 'window-close' color='#336699' %}
+			</button>
+		</div>
+		<div class="modal-body">
+		</div>
+	</div>
+  </div>
+</div>
 
 <script type="text/javascript">
   var filterLayers = null
@@ -726,7 +741,7 @@
     $("#result_list").show()
 	$("#splash").hide()
     titleMarkup = doctype=='trace'?'<p class="pl-1 mb-1 small strong">'+title+'</p>':''
-    $('#result_list').html(titleMarkup+'<h3 class="alt-label">ALT</h3>'+
+    $('#result_list').html(titleMarkup+
       "<p class='half allcap-heading mb-0 pl-1'>"+(doctype=='place'?'SEARCH RESULTS ('+data.length+
       ')<span class="float-right typefilter-link">'+
       '<a href="#">filter by type {% fontawesome_icon 'filter' %}</a></span>':
@@ -828,7 +843,7 @@
       e.preventDefault();
       var url = $(this).attr('href');
       console.log('url',url)
-      $(".modal-body").html('<iframe width="100%" height="100%" frameborder="0" scrolling="yes" '+
+      $("#ext_content .modal-body").html('<iframe width="100%" height="100%" frameborder="0" scrolling="yes" '+
         'allowtransparency="true" src="'+url+'"></iframe>');
     });
   }
@@ -1010,9 +1025,23 @@
     console.log('whgid',whgid)
     window.spinner = new Spin.Spinner().spin();
     $("#map_home").append(spinner.el);
-    location.href = 'places/'+whgid+'/portal'
+    <!--location.href = 'places/'+whgid+'/portal'-->
+    <!--location.href = 'localhost://places/'+whgid+'/portal'-->
+	var dataURL = '/places/'+whgid+'/modal';  <!-- abydos: 12608007-->
+	$('#place_modal .modal-body').load(dataURL,function(){
+	  $('#place_modal').modal({show:true});
+	  spinner.stop()
+	});
   });
     
+	<!--$('.place-link').on('click',function(){-->
+		<!--var pid = $(this).attr('data-id');-->-->
+		<!--console.log('clicked link for',pid)-->
+		<!--var dataURL = '/places/'+pid+'/modal';  <!-- abydos: 12608007-->-->
+		<!--$('.modal-body').load(dataURL,function(){-->
+			<!--$('place_modal').modal({show:true});-->
+		<!--});-->
+	<!--});     -->
   
   $('label.btn').click(function(){
     $(".autosuggest").html('')
