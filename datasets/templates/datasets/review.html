@@ -83,17 +83,17 @@
             {% endfor %}
             <p><strong>WHG place id</strong>: {{ record.id }} </p>
             <p><strong>Source id</strong>: {{ record.src_id }}</p>
-            <p class="scroll100"><strong>Name variants</strong>:
+            <p class="scroll100"><strong>Name variants</strong>:<i>
               {% for name in record.names.all %}
                {{ name.jsonb.toponym }};
-              {% endfor %}</p>
+              {% endfor %}</i></p>
             {% if countries %}
             <p><strong>Modern countries</strong>:
               {% for c in countries %}
                 {{ c }};
               {% endfor %}</p>
             {% endif %}
-            {% if record.related %}
+            {% if record.related|length > 0 %}
             <p><strong>Relations</strong>: 
               {% for rel in record.related.all %}
                 {{ rel.jsonb.label }}; <!--({ rel.jsonb.relationType }); -->
@@ -103,7 +103,7 @@
               {% for type in record.types.all %}
                 {{ type.jsonb.sourceLabel }} ({{ type.jsonb.label }}); 
               {% endfor %}</p>
-            {% if record.links %}
+            {% if record.links|length > 0 %}
             <p><strong>Links</strong>: 
               {% for link in record.links.all %}
                 <a href="" class="mr-2 ext" data-toggle="modal" data-target="#ext_site">{{ link.jsonb.identifier }} {% fontawesome_icon 'external-link' color='#336699' %}</a>
@@ -127,19 +127,20 @@
               {% endfor %}
               <div class="pl-2 pr-2 mb-1 matchbar">
                 <div class="match_radio custom-control custom-radio">
-                  <span class="mr-2 globeflash">
-                  {% if form.json.value|get:"geoms" != Null %}
-                    <a class="geolink" rel="tooltip" 
-                      {% if ds_label == 'tgn_filtered_01' or authority == 'whg' %}
-                        id="{{ form.json.value|get:"place_id" }}" 
-                      {% else %}
-                        id="{{ form.authrecord_id.value }}"
-                      {% endif %}
-                      href="javascript:{ zoomTo(+{{ form.authrecord_id.value }} ) }" title="Flash map marker">
-                      {% fontawesome_icon 'globe' color='#000' %}</a>
-                  </span>
-                  <span class="inline">{{ form.match }}</span>
+                  {% if form.json.value|get:"geoms"|length > 0 %}
+                    <span class="mr-2 globeflash">
+                    <!--{ if form.json.value|get:"geoms" != Null }-->
+                      <a class="geolink" rel="tooltip" 
+                        {% if ds_label == 'tgn_filtered_01' or authority == 'whg' or authority == 'whg_pre'%}
+                          id="{{ form.json.value|get:"place_id" }}" 
+                        {% else %}
+                          id="{{ form.authrecord_id.value }}"
+                        {% endif %}
+                        href="javascript:{ zoomTo(+{{ form.authrecord_id.value }} ) }" title="Flash map marker">
+                        {% fontawesome_icon 'globe' color='#000' %}</a>
+                    </span>
                   {% endif %}
+                  <span class="inline">{{ form.match }}</span>
                   <!--<span class="float-right mr-2"><button type="submit" class="button-sm mr-2">Save</button>-->
                   <span class="help-matches" data-id="matches">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
                   {% if authority == 'whg' %}
@@ -154,11 +155,14 @@
               {{ form.non_field_errors }}
               <div class="auth-match bg-light pl-2 mt-0 mb-2">
                 <!-- pull geometries to js -->
-                {% for g in form.json.value|get:"geoms" %}
-                  {{ g|safe|json_script:g.id }}
-                {% endfor %}
+                {% if form.json.value|get:"geoms"|length > 0 %}
+                  {% for g in form.json.value|get:"geoms" %}
+                    {{ g|safe|json_script:g.id }}
+                    g: {{ g }}
+                  {% endfor %}
+                {% endif %}
                 <p><strong>Title/Preferred</strong>: <span class="text-danger h6">{{ form.json.value|get:"title" }}</p>
-                {% if authority == 'whg' %}
+                {% if authority|startswith:'whg' %}
                   <p><strong>WHG place id</strong>: {{ form.json.value|get:"place_id" }}</p> 
                   <p><strong>Source (id)</strong>: {{ form.json.value|get:"dataset" }} ({{ form.json.value|get:"src_id" }})</p>
                 {% else %}
@@ -384,11 +388,11 @@
     <!--console.log(gelems)-->
     for (i=0;i<gelems.length;i++){
       let t_geom = cleanJson(gelems[i].text)
-      <!--console.log('t_geom',t_geom)-->
-      if ('citation' in t_geom){
-        t_geom['properties'] = {"id":t_geom['citation']['id'] }
-      <!--} else t_geom['properties'] = {"id": t_geom.id,"ds": t_geom.ds!=null?t_geom.ds:ds}-->
-      } else t_geom['properties'] = {"id": gelems[i].id,"ds": t_geom.ds!=null?t_geom.ds:ds}
+      t_geom['properties'] = {"id": gelems[i].id,"ds": t_geom.ds!=null?t_geom.ds:ds}
+      <!-- citation does not always have id-->
+      <!--if ('citation' in t_geom){-->
+        <!--t_geom['properties'] = {"id":t_geom['citation']['id'] }-->
+      <!--} else t_geom['properties'] = {"id": gelems[i].id,"ds": t_geom.ds!=null?t_geom.ds:ds}-->
       geom['features'].push(t_geom)
     }
 
@@ -405,7 +409,8 @@
       idToFeature = {} // for feature lookup
       features = L.geoJSON(geom, {
         pointToLayer: function (feature, latlng) {
-          console.log('feature.properties',feature.properties)
+          <!--console.log('feature.properties',feature.properties)-->
+          console.log('feature',feature)
           matchid = feature.properties.id
           marker = L.circleMarker(latlng,
             {

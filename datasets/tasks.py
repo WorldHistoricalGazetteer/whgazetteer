@@ -849,7 +849,7 @@ def es_lookup_whg(qobj, *args, **kwargs):
   except:
     print("q1, ES error:", q1, sys.exc_info())
   if len(hits1) > 0:
-    # shared link(s); return for immed. indexinf
+    # shared link(s); return for immed. indexing
     for hit in hits1:
       hit_count +=1
       hit['pass'] = 'pass1'
@@ -989,11 +989,10 @@ def align_whg(pk, *args, **kwargs):
     # ***
     # run es_lookup_whg(qobj): 3 query passes
     # ***
-    #result_obj = es_lookup_whg(qobj, index=idx, bounds=bounds, dataset=ds.label, place=place)
     result_obj = es_lookup_whg(qobj, index=idx, bounds=bounds, place=place)
 
     # PARSE RESULTS
-    # no hits on any pass, create parent record now
+    # no hits on any pass, create parent index doc now
     if result_obj['hit_count'] == 0:
       count_nohit += 1
       # increment whg_id (max at start computed earlier)
@@ -1137,8 +1136,8 @@ def align_whg(pk, *args, **kwargs):
   print("hit_parade['summary']",hit_parade['summary'])
   return hit_parade['summary']
 """
-# reconcileto whg
-# no auto-indexing as in align_whg
+# reconcile to whg w/no
+# indexing as in align_whg
 """
 @task(name="align_whg_pre")
 def align_whg_pre(pk, *args, **kwargs):
@@ -1163,14 +1162,14 @@ def align_whg_pre(pk, *args, **kwargs):
   # queryset depends on choice of scope in addtask form
   qs = ds.places.all() if scope == 'all' else ds.places.all().filter(indexed=False)
  
-  """
-  build query object 'qobj'
-
-  """
   for place in qs:
     #place=get_object_or_404(Place,id=6369031) # Aachen
     print('_PRE() building qobj for place.id',place.id, place.title)
     count +=1
+    
+    """ 
+      build query object 'qobj' 
+    """
     qobj = {"place_id":place.id, "src_id":place.src_id, "title":place.title}
     links=[]; ccodes=[]; types=[]; variants=[]; parents=[]; geoms=[]; 
 
@@ -1212,16 +1211,14 @@ def align_whg_pre(pk, *args, **kwargs):
       qobj['geom'] = hully(g_list)
         
 
-    # ***
-    # run es_lookup_whg(qobj): 3 query passes
-    # ***
+    """
+      run es_lookup_whg(qobj): 3 query passes
+    """
     result_obj = es_lookup_whg(qobj, index=idx, bounds=bounds, place=place)
 
-    # PARSE RESULTS
+    # WRITE HITS
     if result_obj['hit_count'] == 0:
       count_nohit +=1
-      # TODO: why gather no_hits 
-      #nohits.append(result_obj['missed'])
     else:
       count_hit +=1
       total_hits += len(result_obj['hits'])
@@ -1275,5 +1272,5 @@ def align_whg_pre(pk, *args, **kwargs):
       'no_hits': {'count': count_nohit },
       'elapsed': elapsed(end-start)
     }
-  print("summary returned",hit_parade['summary'])
+  print("whg_pre summary returned",hit_parade['summary'])
   return hit_parade['summary']
