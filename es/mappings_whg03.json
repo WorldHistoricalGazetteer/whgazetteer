@@ -43,7 +43,7 @@
           "properties": {
             "identifier": {"type": "keyword"},
             "label": {"type": "keyword"},
-            "source_label": {"type": "text"}
+            "sourceLabel": {"type": "text"}
             }
         },
         "links": {
