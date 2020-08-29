@@ -1086,7 +1086,7 @@ js for Browse
     return link
   }
   function url_tab(type) {
-    link = ' <a href="" class="exttab" data-id='+type.identifier+
+    link = ' <a href="#" class="exttab" data-id='+type.identifier+
       '>('+type.label+' {% fontawesome_icon 'external-link' color='#336699' %})</a>'
     return link
   }
@@ -1194,6 +1194,7 @@ js for Browse
     }
     //
     // TYPES
+    console.log('data.types',data.types)
     left+='</p><p><b>Types</b>: '
     typeids = ''
     for (t in data.types) {
@@ -1307,6 +1308,7 @@ js for Browse
           console.log('id',id)
           var re = /(http|dbp|gn|tgn|wd|loc|viaf|aat):(.*?)$/;
           url=id.match(re)[1]=='http' ? id : base_urls[id.match(re)[1]]+id.match(re)[2]
+          console.log('url',url)
           window.open(url,'_blank')
         }); 
     });

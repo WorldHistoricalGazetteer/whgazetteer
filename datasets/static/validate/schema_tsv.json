@@ -49,7 +49,7 @@
     "description": "One or more contributor terms for place type, delimited with ';'"
   },
   {"name": "aat_types",
-    "type": "integer",
+    "type": "string",
     "description": "One or more AAT integer IDs from WHG's subset list of ~160 place type concepts"
   },
   {"name": "parent_name",

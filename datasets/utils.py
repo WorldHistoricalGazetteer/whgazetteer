@@ -460,7 +460,7 @@ def hully(g_list):
   return json.loads(hull.geojson) if hull.geojson !=None else []
 
 def parse_wkt(g):
-  print('wkt',g)
+  #print('wkt',g)
   from shapely.geometry import mapping
   gw = wkt.loads(g)
   feature = mapping(gw)

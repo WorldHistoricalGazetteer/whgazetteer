@@ -441,8 +441,8 @@ def collab_add(request,dsid,role='member'):
 # row is a pandas dict
 #
 def add_rels_tsv(pobj, row):
-  header = row.keys()
-  print('add_rels() from row:',row)
+  header = list(row.keys())
+  print('add_rels() from row, header',row,header)
   src_id = row['id']
   title = row['title']
   ccodes = [x.strip() for x in row['ccodes'].split(';')] \
@@ -454,9 +454,10 @@ def add_rels_tsv(pobj, row):
   variants = [x.strip() for x in row['variants'].split(';')] \
     if 'variants' in header else []
   types = [x.strip() for x in row['types'].split(';')] \
-    if 'types' in header else []
+    if 'types' in header and str(row['types']) not in ('nan','') else []
+  #aat_types = [x.strip() for x in row['aat_types'].split(';')] \
   aat_types = [x.strip() for x in row['aat_types'].split(';')] \
-    if 'aat_types' in header else []
+    if 'aat_types' in header and str(row['aat_types']) not in ('nan','') else []
   parent_name = row['parent_name'] if 'parent_name' in header else ''
   parent_id = row['parent_id'] if 'parent_id' in header else ''
   coords = makeCoords(row['lon'], row['lat']) \
@@ -500,14 +501,14 @@ def add_rels_tsv(pobj, row):
   if len(types) > 0:
     for i,t in enumerate(types):
       # i always 0 in tsv
-      aatnum=aat_types[i] if len(aat_types) >= len(types) else ''
+      aatnum='aat:'+aat_types[i] if len(aat_types) >= len(types) else ''
       objs['PlaceType'].append(
         PlaceType(
           place=pobj,
           src_id = src_id,
           jsonb={ "identifier":aatnum,
                   "sourceLabel":t,
-                  "label":aat_lookup(int(aatnum)) if aatnum !='' else ''
+                  "label":aat_lookup(int(aatnum[4:])) if aatnum !='aat:' else ''
                 }
       ))
 
@@ -522,14 +523,15 @@ def add_rels_tsv(pobj, row):
         jsonb={"type": "Point", "coordinates": coords,
                 "geowkt": 'POINT('+str(coords[0])+' '+str(coords[1])+')'}
     ))
-  elif 'geowkt' in header and r[header.index('geowkt')] not in ['',None]: # some rows no geom
+  #elif 'geowkt' in header and row[header.index('geowkt')] not in ['',None]: # some rows no geom
+  elif 'geowkt' in header and row['geowkt'] not in ['',None]: # some rows no geom
     objs['PlaceGeom'].append(
       PlaceGeom(
         #place_id=pobj,
         place=pobj,
         src_id = src_id,
         # make GeoJSON using shapely
-        jsonb=parse_wkt(r[header.index('geowkt')])
+        jsonb=parse_wkt(row['geowkt'])
     ))
 
   # PlaceLink() - all are closeMatch
@@ -712,9 +714,10 @@ def ds_update(request):
       # AND add new
       place_fields = {'id', 'title', 'ccodes'}
       for index, row in bdf.iterrows():
-        #row=bdf[0:1]
         # make 3 dicts: all; for Places; for PlaceXxxxs
         rd = row.to_dict()
+        #print('row in ds_update',row)
+        print('rd in ds_update',rd)
         #rdp = {key:rd[key][0] for key in place_fields}
         rdp = {key:rd[key] for key in place_fields}
         # look for corresponding current place
@@ -1080,7 +1083,7 @@ def ds_insert_tsv(request, pk):
     countlinks = 0
     for r in reader:
       src_id = r[header.index('id')]
-      print('src_id from tsv_insert',src_id)
+      #print('src_id ds_from insert_tsv',src_id)
       title = r[header.index('title')].replace("' ","'")
       # for PlaceName insertion, strip anything in parens
       title = re.sub('\(.*?\)', '', title)
@@ -1093,7 +1096,7 @@ def ds_insert_tsv(request, pk):
         if 'types' in header else []
       aat_types = [x.strip() for x in r[header.index('aat_types')].split(';')] \
         if 'aat_types' in header else []
-      print('aat_types',aat_types)
+      #print('aat_types',aat_types)
       ccodes = [x.strip() for x in r[header.index('ccodes')].split(';')] \
         if 'ccodes' in header else []
       parent_name = r[header.index('parent_name')] if 'parent_name' in header else ''
@@ -1151,14 +1154,15 @@ def ds_insert_tsv(request, pk):
       if len(types) > 0:
         for i,t in enumerate(types):
           # i always 0 in tsv
-          aatnum=aat_types[i] if len(aat_types) >= len(types) else ''
+          aatnum='aat:'+aat_types[i] if len(aat_types) >= len(types) else ''
+          print('aatnum',aatnum)
           objs['PlaceType'].append(
             PlaceType(
               place=newpl,
               src_id = src_id,
               jsonb={ "identifier":aatnum,
                       "sourceLabel":t,
-                      "label":aat_lookup(int(aatnum)) if aatnum !='' else ''
+                      "label":aat_lookup(int(aatnum[4:])) if aatnum !='aat:' else ''
                     }
           ))
       #
