@@ -701,18 +701,18 @@ js for Summary, Reconciliation
       stats = data['compare_result']
       keepg = data['keepg']; keepl = data['keepl'];
       <!--keepers_note='Keep existing: geometry? <b>'+keepg+'</b>; links? <b>'+keepl+'</b>';-->
-      html = 'This action would perform these WHG <u>database</u> updates:<br/><ul style="padding:0;list-style: inside;">'
-      html += '<li>Replace <b>'+stats['count_replace']+'</b> records having same IDs </li>'
+      html = 'This action would perform these WHG <i>database</i> updates:<br/><ul style="padding:0;list-style: inside;">'
+      html += '<li>Replace <b>'+stats['count_replace']+'</b> place records having same IDs </li>'
       html += stats['rows_add'].length >0?'<li>Add records (<b>'+stats['rows_add'].join(', ')+'</b>)</li>':''
       html += stats['rows_del'].length >0?'<li>Remove records (<b>'+stats['rows_del'].join(', ')+'</b>)</li>':''
       html += stats['cols_add'].length >0?'<li>Add columns (<b>'+stats['cols_add']+'</b>)</li>':''
       html += stats['cols_del'].length >0?'<li>Remove columns (<b>'+stats['cols_del']+'</b>)</li>':''
       if (data['count_geoms']>0){
-        html += '<li class="text-danger"><b>'+data['count_geoms']+'</b> geometry records were previously added via reconciliation...keep?'+
+        html += '<li class="text-danger">There are <b>'+data['count_geoms']+'</b> existing place-geometry records...keep them?'+
         ' <input type="checkbox" id="preserve_geoms" checked></li>'
       }
       if (data['count_links']>0){
-        html += '<li class="text-danger"><b>'+data['count_links']+'</b> link records were previously added via reconciliation...keep?'+
+        html += '<li class="text-danger">There are <b>'+data['count_links']+'</b> existing place-link records...keep them?'+
         ' <input type="checkbox" id="preserve_links" checked></li>'
       }
       html += '</ul>'

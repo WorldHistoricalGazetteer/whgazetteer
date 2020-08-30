@@ -434,19 +434,18 @@ def collab_add(request,dsid,role='member'):
   print('collab_add():',request.POST['username'],dsid,uid)
   DatasetUser.objects.create(user_id_id=uid, dataset_id_id=dsid, role=role)
   return redirect('/datasets/'+str(dsid)+'/detail#sharing')
-#
-# ***
-# updates objects related to a Place (pobj)
-# then updates fclasses and minmax
-# row is a pandas dict
-#
-def add_rels_tsv(pobj, row):
+
+"""
+updates objects related to a Place (pobj)
+make new child objects of pobj: names, types, whens, related, descriptions
+for geoms and links, add from row if not there
+row is a pandas dict
+"""
+def update_rels_tsv(pobj, row):  
   header = list(row.keys())
-  print('add_rels() from row, header',row,header)
+  print('update_rels_tsv(): pobj, row, header',pobj,row,header)
   src_id = row['id']
   title = row['title']
-  ccodes = [x.strip() for x in row['ccodes'].split(';')] \
-    if 'ccodes' in header else []
   # for PlaceName insertion, strip anything in parens
   title = re.sub('\(.*?\)', '', title)
   title_source = row['title_source']
@@ -464,10 +463,6 @@ def add_rels_tsv(pobj, row):
     if 'lon' in header and 'lat' in header and not math.isnan(row['lon']) else []
   matches = [x.strip() for x in row['matches'].split(';')] \
     if 'matches' in header and row['matches'] != '' else []
-  start = row['start'] if 'start' in header else ''
-  end = row['end'] if 'end' in header else ''
-  # not sure this will get used
-  minmax = [start,end]
   description = row['description'] \
     if 'description' in header else ''
 
@@ -485,7 +480,7 @@ def add_rels_tsv(pobj, row):
       jsonb={"toponym": title, "citation": {"id":title_uri,"label":title_source}}
   ))
 
-  # add variants if any
+  # add variants as PlaceNames, if any
   if len(variants) > 0:
     for v in variants:
       objs['PlaceName'].append(
@@ -496,6 +491,7 @@ def add_rels_tsv(pobj, row):
           jsonb={"toponym": v, "citation": {"id":"","label":title_source}}
       ))
 
+  #
   # PlaceType()
   # TODO: parse t
   if len(types) > 0:
@@ -512,40 +508,49 @@ def add_rels_tsv(pobj, row):
                 }
       ))
 
+    
+  #
   # PlaceGeom()
   # TODO: test geometry type or force geojson
   if len(coords) > 0:
-    objs['PlaceGeom'].append(
-      PlaceGeom(
-        #place_id=pobj,
-        place=pobj,
-        src_id = src_id,
-        jsonb={"type": "Point", "coordinates": coords,
-                "geowkt": 'POINT('+str(coords[0])+' '+str(coords[1])+')'}
-    ))
-  #elif 'geowkt' in header and row[header.index('geowkt')] not in ['',None]: # some rows no geom
+    geom = {"type": "Point", 
+            "coordinates": coords,
+            "geowkt": 'POINT('+str(coords[0])+' '+str(coords[1])+')'}
   elif 'geowkt' in header and row['geowkt'] not in ['',None]: # some rows no geom
-    objs['PlaceGeom'].append(
-      PlaceGeom(
-        #place_id=pobj,
-        place=pobj,
-        src_id = src_id,
-        # make GeoJSON using shapely
-        jsonb=parse_wkt(row['geowkt'])
-    ))
+    geom = parse_wkt(row['geowkt'])
+  
+  print('new geom',geom)
+  def trunc4(val):
+    print('val in trunc4()',val)
+    return round(val,4)
+  new_coords = list(map(trunc4,list(geom['coordinates'])))
+  # only add new geometry
+  if len(pobj.geoms.all()) >0:
+    for g in pobj.geoms.all():
+      if list(map(trunc4,g.jsonb['coordinates'])) != new_coords:
+        objs['PlaceGeom'].append(
+            PlaceGeom(
+              place=pobj,
+              src_id = src_id,
+              jsonb=geom
+          ))
 
+  #
   # PlaceLink() - all are closeMatch
   if len(matches) > 0:
-    countlinked += 1
-    for m in matches:
-      countlinks += 1
-      objs['PlaceLink'].append(
-        PlaceLink(
-          place=pobj,
-          src_id = src_id,
-          jsonb={"type":"closeMatch", "identifier":m}
-      ))
+    # any existing? only add new
+    exist_links = list(pobj.links.all().values_list('jsonb__identifier',flat=True))    
+    if set(matches)-set(exist_links) > 0:
+      # one or more new matches; add 'em
+      for m in matches:
+        objs['PlaceLink'].append(
+          PlaceLink(
+            place=pobj,
+            src_id = src_id,
+            jsonb={"type":"closeMatch", "identifier":m}
+        ))
 
+  #
   # PlaceRelated()
   if parent_name != '':
     objs['PlaceRelated'].append(
@@ -558,18 +563,19 @@ def add_rels_tsv(pobj, row):
           "label": parent_name}
     ))
 
+  #
   # PlaceWhen()
   # timespans[{start{}, end{}}], periods[{name,id}], label, duration
-  if start != '':
-    objs['PlaceWhen'].append(
-      PlaceWhen(
-        place=pobj,
-        src_id = src_id,
-        jsonb={
-              "timespans": [{"start":{"earliest":minmax[0]}, "end":{"latest":minmax[1]}}]
-            }
-    ))
-
+  objs['PlaceWhen'].append(
+    PlaceWhen(
+      place=pobj,
+      src_id = src_id,
+      jsonb={
+            "timespans": [{
+              "start":{"earliest":pobj.minmax[0]}, 
+              "end":{"latest":pobj.minmax[1]}}]
+          }
+  ))
   #
   # PlaceDescription()
   # @id, value, lang
@@ -624,11 +630,13 @@ def ds_update(request):
     file_format=request.POST['format']
     keepg = request.POST['keepg']
     keepl = request.POST['keepl']
-
+    
+    #print('keepg,type in ds_update() request',keepg,type(keepg))
+    
     # compare_data {'compare_result':{}}
     compare_data = json.loads(request.POST['compare_data'])
     compare_result = compare_data['compare_result']
-    print('compare_data from ds_compare', compare_data)
+    #print('compare_data from ds_compare', compare_data)
 
     # tempfn has .tsv or .jsonld extension from validation step
     tempfn = compare_data['tempfn']
@@ -665,11 +673,11 @@ def ds_update(request):
     # cur: user_whgadmin/diamonds135.tsv
     # new: user_whgadmin/diamonds135_rev2.tsv
     if file_format == 'delimited':
-      adf = pd.read_csv('media/'+compare_data['filename_cur'], delimiter='\t',dtype={'id':'str','ccodes':'str'})
       #adf = pd.read_csv('media/user_whgadmin/diamonds135.tsv', delimiter='\t',dtype={'id':'str','ccodes':'str'})
-      bdf = pd.read_csv(filepath, delimiter='\t',dtype={'id':'str','ccodes':'str'})
       #bdf = pd.read_csv('/var/folders/f4/x09rdl7n3lg7r7gwt1n3wjsr0000gn/T/tmpcfees9hd.tsv', delimiter='\t',dtype={'id':'str','ccodes':'str'})
-      bdf = bdf.astype({"ccodes": str})
+      adf = pd.read_csv('media/'+compare_data['filename_cur'], delimiter='\t',dtype={'id':'str','ccodes':'str'})
+      bdf = pd.read_csv(filepath, delimiter='\t')
+      bdf = bdf.astype({"id":str,"ccodes":str})
       print('reopened old file, # lines:',len(adf))
       print('reopened new file, # lines:',len(bdf))
       ids_a = adf['id'].tolist()
@@ -691,46 +699,49 @@ def ds_update(request):
       PlaceName.objects.filter(place_id__in=places).delete()
       PlaceType.objects.filter(place_id__in=places).delete()
       PlaceWhen.objects.filter(place_id__in=places).delete()
+      PlaceRelated.objects.filter(place_id__in=places).delete()
       PlaceDescription.objects.filter(place_id__in=places).delete()
       PlaceDepiction.objects.filter(place_id__in=places).delete()
       
-      # rows created during reconciliation review have a task_id
-      # keep or not is a form choice (keepg, keepl)
-      if keepg == 'false':
+      # keepg, keepl default to True
+      #if keepg == 'false':
         # keep none (they are being replaced in update)
-        PlaceGeom.objects.filter(place_id__in=places).delete()
-      else:
+        #PlaceGeom.objects.filter(place_id__in=places).delete()
+      #else:
         # keep augmentation rows; delete the rest
-        PlaceGeom.objects.filter(place_id__in=places,task_id=None).delete()
-      if keepl == 'false':
+        #PlaceGeom.objects.filter(place_id__in=places,task_id=None).delete()
+      #if keepl == 'false':
         # keep none (they are being replaced in update)
-        PlaceLink.objects.filter(place_id__in=places).delete()
-      else:
-        PlaceLink.objects.filter(place_id__in=places,task_id=None).delete()
+        #PlaceLink.objects.filter(place_id__in=places).delete()
+      #else:
+        #PlaceLink.objects.filter(place_id__in=places,task_id=None).delete()
       
       
       count_updated, count_new = [0,0]
       # update remaining place instances w/data from new file
       # AND add new
-      place_fields = {'id', 'title', 'ccodes'}
+      place_fields = {'id', 'title', 'ccodes','start','end'}
       for index, row in bdf.iterrows():
         # make 3 dicts: all; for Places; for PlaceXxxxs
         rd = row.to_dict()
-        #print('row in ds_update',row)
         print('rd in ds_update',rd)
         #rdp = {key:rd[key][0] for key in place_fields}
         rdp = {key:rd[key] for key in place_fields}
         # look for corresponding current place
         #p = places.filter(src_id='1.0').first()
         p = places.filter(src_id=rdp['id']).first()
-        print(p)
+        print('rdp (new row)',rdp)
+        start = int(rdp['start']) if 'start' in rdp else None
+        end = int(rdp['end']) if 'end' in rdp and str(rdp['end']) != 'nan' else start
+        minmax_new = [start,end] if start else [None]
         if p != None:
           # place exists, update it
           count_updated +=1
           p.title = rdp['title']
           p.ccodes = [] if str(rdp['ccodes']) == 'nan' else rdp['ccodes'].replace(' ','').split(';') 
+          p.minmax = minmax_new
+          p.timespans = [minmax_new] 
           p.save()
-          #print('updated '+str(p.id)+', add related from '+str(rdrels))
           pobj = p
         else:
           # entirely new place + related records
@@ -739,16 +750,20 @@ def ds_update(request):
             src_id = rdp['id'],
             title = re.sub('\(.*?\)', '', rdp['title']),
             ccodes = [] if str(rdp['ccodes']) == 'nan' else rdp['ccodes'].replace(' ','').split(';'),
-            dataset = ds
+            dataset = ds,
+            minmax = minmax_new,
+            timespans = [minmax_new]
           )
           newpl.save()
           pobj = newpl
           #print('new place, related:', newpl, rdrels)
         
+        # TODO: needs to update, not add
         # create related records (place_name, etc)
         # pobj is either a current (now updated) place or entirely new
         # rd is row dict
-        add_rels_tsv(pobj, rd)
+        print('pobj,rd for add_rels_tsv()',pobj,rd)
+        update_rels_tsv(pobj, rd)
     
       
       # update numrows
@@ -815,9 +830,11 @@ def ds_compare(request):
     # {idxcount, submissions[{task_id,date}]}
     ds_status = ds.status
     
-    # how many augment records previously created by reconciliation?
-    count_geoms = PlaceGeom.objects.filter(place_id__in=ds.placeids,task_id__isnull=False).count()
-    count_links = PlaceLink.objects.filter(place_id__in=ds.placeids,task_id__isnull=False).count()
+    # how many exist, whether from recon or original?
+    #count_geoms = PlaceGeom.objects.filter(place_id__in=ds.placeids,task_id__isnull=False).count()
+    #count_links = PlaceLink.objects.filter(place_id__in=ds.placeids,task_id__isnull=False).count()
+    count_geoms = PlaceGeom.objects.filter(place_id__in=ds.placeids).count()
+    count_links = PlaceLink.objects.filter(place_id__in=ds.placeids).count()
     
     # wrangling names
     # current (previous) file
@@ -875,7 +892,7 @@ def ds_compare(request):
       "count_geoms": count_geoms,
       "count_indexed": ds_status['idxcount'],
     }
-    
+    print('count_geoms in ds_compare:894',count_geoms)
     # perform comparison
     fn_a = 'media/'+filename_cur
     fn_b = tempfn_new
@@ -1106,11 +1123,11 @@ def ds_insert_tsv(request, pk):
       matches = [x.strip() for x in r[header.index('matches')].split(';')] \
         if 'matches' in header and r[header.index('matches')] != '' else []
       start = r[header.index('start')] if 'start' in header else None
-      end = r[header.index('end')] if 'end' in header else None
-      # TODO: write minmax to Place instance
+      end = r[header.index('end')] if 'end' in header and r[header.index('end')] !='' else start
       minmax = [start,end]
       description = r[header.index('description')] \
         if 'description' in header else ''
+      print('minmax',minmax,[minmax])
       # TODO: generate fclasses
       # lookup fclasses in Type table
       #fclasses = list(set([get_object_or_404(Type,aat_id=t).fclass for t in aat_types])) \
@@ -1123,7 +1140,8 @@ def ds_insert_tsv(request, pk):
         dataset = ds,
         title = title,
         ccodes = ccodes,
-        minmax = minmax
+        minmax = minmax,
+        timespans = [minmax]
         #,fclasses = fclasses
       )
       newpl.save()
@@ -1635,3 +1653,24 @@ def match_undo(request, ds, tid, pid):
   return redirect('/datasets/'+str(ds)+'/review/'+tid+'/pass1')
  # /datasets/1/review/d6ad4289-cae6-476d-873c-a81fed4d6315/pass1
  
+ ## PlaceGeom()
+ ## TODO: test geometry type or force geojson
+ #if len(coords) > 0:
+   #objs['PlaceGeom'].append(
+     #PlaceGeom(
+       ##place_id=pobj,
+       #place=pobj,
+       #src_id = src_id,
+       #jsonb={"type": "Point", "coordinates": coords,
+               #"geowkt": 'POINT('+str(coords[0])+' '+str(coords[1])+')'}
+   #))
+ ##elif 'geowkt' in header and row[header.index('geowkt')] not in ['',None]: # some rows no geom
+ #elif 'geowkt' in header and row['geowkt'] not in ['',None]: # some rows no geom
+   #objs['PlaceGeom'].append(
+     #PlaceGeom(
+       ##place_id=pobj,
+       #place=pobj,
+       #src_id = src_id,
+       ## make GeoJSON using shapely
+       #jsonb=parse_wkt(row['geowkt'])
+   #))
