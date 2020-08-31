@@ -11,7 +11,6 @@
   <script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>
   <link rel="stylesheet" href="//cdn.datatables.net/1.10.16/css/dataTables.bootstrap4.min.css">
   <link rel="stylesheet" href="{% static 'css/typeahead.css' %}">
-  <!--<link href="https://fonts.googleapis.com/css?family=EB+Garamond|Raleway&display=swap" rel="stylesheet">-->
   <script src="{% static 'js/leaflet.ajax.min.js' %}"></script>
   <script src="{% static 'js/typeahead.bundle.js' %}"></script>
   <script src="{% static 'js/spin.umd.js' %}"></script>
@@ -38,11 +37,7 @@
 		  </div>
 		  <div class="form-check form-check-inline">
 			<input class="form-check-input hover" type="radio" name="class" id="r_trace" value="trace" rel="Enter term or name">
-			<label class="form-check-label" for="r_trace">Traces
-				<!--<span class="ml-1">-->
-				  <!--<a href="#" onClick='return false;' title="historical entities having spatial-temporal 'footprints'" rel="tooltip">{ fontawesome_icon 'question-circle' color='#336699' }</a></span>                -->
-			</label>
-			<!--<span class="float-right">{ fontawesome_icon 'filter' color='#336699' %}</span>-->
+			<label class="form-check-label" for="r_trace">Traces</label>
 		  </div>
 		</div>          
 		<div id="search_input"  class="input-group input-group-sm pb-2" >
@@ -283,14 +278,11 @@
 	
 	// fetch area list
 	$.get("/api/area_list", function(data){
-	<!--$.get("{ url 'area-list' ref='search' %}", function(data){-->
 	  <!--console.log('initial areas for list',data)-->
 	  for(var i=0;i<data.length;i++){
 		area_objs.push(data[i])
 		area_list.push(data[i]['title'])
-	  }
-	  // get countries from geojson?
-	  
+	  }	  
 	})
 	
 	$( "#input_area" ).autocomplete({
@@ -481,9 +473,9 @@
 	})
 	
     var countryStyle = {
-      "color": "#ddd",
-      "weight": 0,
-      "opacity": 0.5,
+      "color": "#ffe",
+      "weight": 1,
+      "opacity": 0.4,
       "fillOpacity": 0
     };
 

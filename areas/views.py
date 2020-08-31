@@ -40,6 +40,11 @@ class AreaCreateView(CreateView):
         return kwargs
     # ** END
     
+    def form_invalid(self,form):
+        print('form invalid...',form.errors.as_data())
+        context = {'form': form}
+        return self.render_to_response(context=context)
+    
     def form_valid(self, form):
         context={}
         if form.is_valid():
@@ -48,7 +53,7 @@ class AreaCreateView(CreateView):
             print('form not valid', form.errors)
             context['errors'] = form.errors
         return super().form_valid(form)
-
+    
     def get_context_data(self, *args, **kwargs):
         context = super(AreaCreateView, self).get_context_data(*args, **kwargs)
         #print('args',args,kwargs)

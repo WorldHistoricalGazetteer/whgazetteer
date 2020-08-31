@@ -64,23 +64,23 @@
   <h4 class="mt-3">
     {% if action == 'update' %}Update Study Area <span class="text-danger">"{{ form.title.value }}"</span>
     <a href="{% url 'areas:area-delete' object.id %}" class="float-right"
-      title="Delete dataset" rel="tooltip" style="margin-top:-2px;">
+      title="Delete area feature" rel="tooltip" style="margin-top:-2px;">
       {% fontawesome_icon 'trash' color='#336699' %}</a>
     {% else %}Create Study Area{% endif %}
       <!--{ fontawesome_icon 'question-circle' color='#336699' %}-->
   </h4>
   <div class="d-flex">
     <div class="form-box mt-2 col-sm-4">
-    <form id="ds_form" method="POST" action="#" enctype="multipart/form-data">
+    <form id="area_form" method="POST" action="#" enctype="multipart/form-data">
       {% csrf_token %}
       <input type="hidden" name="owner" value='{{ user.id }}'></input>
       {% if action == 'update' %}
         <input type="hidden" name="type" value='{{ form.type.value }}' />
       {% else %}
-        <input type="hidden" name="type" value='' />
+        <input type="hidden" name="type" value='ccodes' />
       {% endif %}
       <p>Title<br/>{{ form.title }}</p>
-      <!--{ action }}-->
+      <!--action: { action }}-->
       <!--{ form.type.value }}-->
       <p><span class="top">Description</span><br/>{{ form.description }}</p>
       <hr/>
@@ -119,31 +119,8 @@
 </div> <!-- container -->
 
 <script type="text/javascript">
-  var cities = new Bloodhound({
-    datumTokenizer: Bloodhound.tokenizers.obj.whitespace('text'),
-    queryTokenizer: Bloodhound.tokenizers.whitespace,
-    <!--prefetch: '/media/data/countries_simplified_fr.json'-->
-    prefetch: '/media/data/cities.json'
-  });
-  cities.initialize();
-  
-  var elt = $('.ccodes');
-  elt.tagsinput({
-    itemValue: 'value',
-    itemText: 'text',
-    typeaheadjs: {
-      name: 'cities',
-      displayKey: 'text',
-      source: cities.ttAdapter()
-    }
-  });
-  <!--elt.tagsinput('add', { "value": 1 , "text": "Amsterdam"   , "continent": "Europe"    });-->
-  <!--elt.tagsinput('add', { "value": 4 , "text": "Washington"  , "continent": "America"   });-->
-  <!--elt.tagsinput('add', { "value": 7 , "text": "Sydney"      , "continent": "Australia" });-->
-  <!--elt.tagsinput('add', { "value": 10, "text": "Beijing"     , "continent": "Asia"      });-->
-  <!--elt.tagsinput('add', { "value": 13, "text": "Cairo"       , "continent": "Africa"    });-->
-
   $(function(){
+    <!--area_type = 'ccodes' // default-->
     $( ".textarea" ).each(function(index) {
       if ( ["None","null"].includes( $(this).val() ) ) {
         $(this).val('')
@@ -154,7 +131,7 @@
 
   $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
     var target = $(e.target).attr("href") // activated tab
-    var area_type = $(e.target).attr("ref") // activated tab
+    area_type = $(e.target).attr("ref") // activated tab
     map_clear() // switch create modes? clear the deck
     // feed area type to hidden input
     $("input[name='type']").val(area_type)

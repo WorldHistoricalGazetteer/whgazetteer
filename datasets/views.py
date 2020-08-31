@@ -1349,9 +1349,7 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
   def form_invalid(self,form):
     print('form invalid...',form.errors.as_data())
     context = {'form': form}
-    #return self.render_to_response(self.get_context_data(form=form,context=context))
     return self.render_to_response(context=context)
-    #return redirect('datasets/dataset_create.html', context)    
       
   def form_valid(self, form):
     data=form.cleaned_data
