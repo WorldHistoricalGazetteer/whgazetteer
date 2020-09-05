@@ -483,13 +483,16 @@ def update_rels_tsv(pobj, row):
   # add variants as PlaceNames, if any
   if len(variants) > 0:
     for v in variants:
-      objs['PlaceName'].append(
-        PlaceName(
-          place=pobj,
-          src_id = src_id,
-          toponym = v,
-          jsonb={"toponym": v, "citation": {"id":"","label":title_source}}
-      ))
+      haslang = re.search("@(.*)$", v.strip())
+      new_name = PlaceName(
+        place=pobj,
+        src_id = src_id,
+        toponym = v.strip(),
+        jsonb={"toponym": v.strip(), "citation": {"id":"","label":title_source}}
+      )
+      if haslang:
+        new_name.jsonb['lang'] = haslang.group(1)
+      objs['PlaceName'].append(new_name)
 
   #
   # PlaceType()
@@ -702,21 +705,7 @@ def ds_update(request):
       PlaceRelated.objects.filter(place_id__in=places).delete()
       PlaceDescription.objects.filter(place_id__in=places).delete()
       PlaceDepiction.objects.filter(place_id__in=places).delete()
-      
-      # keepg, keepl default to True
-      #if keepg == 'false':
-        # keep none (they are being replaced in update)
-        #PlaceGeom.objects.filter(place_id__in=places).delete()
-      #else:
-        # keep augmentation rows; delete the rest
-        #PlaceGeom.objects.filter(place_id__in=places,task_id=None).delete()
-      #if keepl == 'false':
-        # keep none (they are being replaced in update)
-        #PlaceLink.objects.filter(place_id__in=places).delete()
-      #else:
-        #PlaceLink.objects.filter(place_id__in=places,task_id=None).delete()
-      
-      
+           
       count_updated, count_new = [0,0]
       # update remaining place instances w/data from new file
       # AND add new
@@ -1113,7 +1102,6 @@ def ds_insert_tsv(request, pk):
         if 'types' in header else []
       aat_types = [x.strip() for x in r[header.index('aat_types')].split(';')] \
         if 'aat_types' in header else []
-      #print('aat_types',aat_types)
       ccodes = [x.strip() for x in r[header.index('ccodes')].split(';')] \
         if 'ccodes' in header else []
       parent_name = r[header.index('parent_name')] if 'parent_name' in header else ''
@@ -1127,7 +1115,12 @@ def ds_insert_tsv(request, pk):
       minmax = [start,end]
       description = r[header.index('description')] \
         if 'description' in header else ''
-      print('minmax',minmax,[minmax])
+      row_obj = {'title':title,'title_uri':title_uri,'variants':variants,'types':types,
+             'aat_types':aat_types,'ccodes':ccodes,'parent_name':parent_name,
+             'parent_id':parent_id,'coords':coords,'matches':matches,'start':start,'end':end,
+             'minmax':minmax,'description':description}
+      print('row_obj',row_obj)
+      
       # TODO: generate fclasses
       # lookup fclasses in Type table
       #fclasses = list(set([get_object_or_404(Type,aat_id=t).fclass for t in aat_types])) \
@@ -1160,27 +1153,30 @@ def ds_insert_tsv(request, pk):
       # variants if any; same source as title toponym?
       if len(variants) > 0:
         for v in variants:
-          objs['PlaceName'].append(
-            PlaceName(
-              place=newpl,
-              src_id = src_id,
-              toponym = v,
-              jsonb={"toponym": v, "citation": {"id":"","label":title_source}}
-          ))
+          haslang = re.search("@(.*)$", v.strip())
+          new_name = PlaceName(
+            place=newpl,
+            src_id = src_id,
+            toponym = v.strip(),
+            jsonb={"toponym": v.strip(), "citation": {"id":"","label":title_source}}
+          )
+          if haslang:
+            new_name.jsonb['lang'] = haslang.group(1)
+          
+          objs['PlaceName'].append(new_name)
+
       #
       # PlaceType()
       if len(types) > 0:
         for i,t in enumerate(types):
-          # i always 0 in tsv
-          aatnum='aat:'+aat_types[i] if len(aat_types) >= len(types) else ''
-          print('aatnum',aatnum)
+          aatnum='aat:'+aat_types[i] if len(aat_types) >= len(types) else None
           objs['PlaceType'].append(
             PlaceType(
               place=newpl,
               src_id = src_id,
-              jsonb={ "identifier":aatnum,
+              jsonb={ "identifier":aatnum if aatnum else '',
                       "sourceLabel":t,
-                      "label":aat_lookup(int(aatnum[4:])) if aatnum !='aat:' else ''
+                      "label":aat_lookup(int(aatnum[4:])) if aatnum else ''
                     }
           ))
       #

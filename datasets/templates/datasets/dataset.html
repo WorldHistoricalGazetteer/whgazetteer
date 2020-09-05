@@ -1195,12 +1195,14 @@ js for Browse
     //
     // TYPES
     console.log('data.types',data.types)
+    // {"label":"","sourceLabel":"town","identifier":""}
     left+='</p><p><b>Types</b>: '
     typeids = ''
     for (t in data.types) {
       var type = data.types[t]
-      typeids+=type.sourceLabel?type.sourceLabel +
-        url_tab(type) : url_tab(type)
+      str = type.sourceLabel!='' ? type.sourceLabel+'; ' : ''
+      if(type.label!=''){ str += url_tab(type) + ' ' }
+      typeids+=str
     }
     left += typeids.replace(/(; $)/g, "") +'</p>'
 

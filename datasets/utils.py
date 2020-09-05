@@ -384,14 +384,9 @@ def validate_lpf(tempfn,format):
 def validate_tsv(tempfn):
   result = {"errors":[],"format":"delimited"}
   # TODO: detect encoding
-  #enc = chardet.detect(open(tempfn,'rb').read())
-  #print('encoding is',enc)
-  #if enc['encoding'] != 'utf-8':
-    #result['errors'].append({'message':'File is not utf-8 encoded'})
-    #return result
   newfn = tempfn+'.tsv'
   os.rename(tempfn,newfn)
-  print('tempfn,newfn',tempfn,newfn)
+  print('tempfn,newfn',tempfn,type(tempfn),newfn,type(newfn))
   schema_lptsv = json.loads(codecs.open('datasets/static/validate/schema_tsv.json', 'r', 'utf8').read())
   report = gvalidate(newfn,schema=schema_lptsv,order_fields=True,row_limit=20000,skip_checks='blank-header')
   pp.pprint(report)  
