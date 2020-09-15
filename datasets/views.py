@@ -1048,6 +1048,17 @@ def ds_insert_lpf(request, pk):
   return redirect('/dashboard')
 
 # ***
+# parse start & end for insert to db
+# ***
+def parsedates_tsv(s,e):
+  def intmap(arr):
+    return [int(a) for a in arr]
+  union = intmap([*set(e.split('/')), *set(s.split('/'))])
+
+  return {"timespan":{"start": {"":""}, "end": {"":""}},
+          "minmax":[min(union),max(union)]}
+
+# ***
 # insert LP-TSV file to database
 # ***
 def ds_insert_tsv(request, pk):
@@ -1110,15 +1121,21 @@ def ds_insert_tsv(request, pk):
         if 'lon' in header and 'lat' in header else []
       matches = [x.strip() for x in r[header.index('matches')].split(';')] \
         if 'matches' in header and r[header.index('matches')] != '' else []
+      
+
       start = r[header.index('start')] if 'start' in header else None
-      end = r[header.index('end')] if 'end' in header and r[header.index('end')] !='' else start
-      minmax = [start,end]
+      #end = r[header.index('end')] if 'end' in header and r[header.index('end')] !='' else ''
+      end = r[header.index('end')] if 'end' in header else ''
+      #datesobj = parsedates_tsv([start,end]) # returns {timespan{},minmax[]}
+      
       description = r[header.index('description')] \
         if 'description' in header else ''
+      
+      # for debugging
       row_obj = {'title':title,'title_uri':title_uri,'variants':variants,'types':types,
              'aat_types':aat_types,'ccodes':ccodes,'parent_name':parent_name,
              'parent_id':parent_id,'coords':coords,'matches':matches,'start':start,'end':end,
-             'minmax':minmax,'description':description}
+             'description':description}
       print('row_obj',row_obj)
       
       # TODO: generate fclasses
@@ -1133,8 +1150,8 @@ def ds_insert_tsv(request, pk):
         dataset = ds,
         title = title,
         ccodes = ccodes,
-        minmax = minmax,
-        timespans = [minmax]
+        minmax = datesobj['minmax'],
+        timespans = {'timespans':[[datesobj['timespan']]]}
         #,fclasses = fclasses
       )
       newpl.save()
@@ -1222,17 +1239,17 @@ def ds_insert_tsv(request, pk):
               "relationTo": parent_id,
               "label": parent_name}
         ))
+
       #
       # PlaceWhen()
       # timespans[{start{}, end{}}], periods[{name,id}], label, duration
       if start != '':
+        # TODO: account for 
         objs['PlaceWhen'].append(
           PlaceWhen(
             place=newpl,
             src_id = src_id,
-            jsonb={
-                  "timespans": [{"start":{"earliest":minmax[0]}, "end":{"latest":minmax[1]}}]
-                }
+            jsonb=datesobj['timespan']
         ))
   
       #
