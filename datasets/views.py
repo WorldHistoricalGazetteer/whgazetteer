@@ -1124,9 +1124,10 @@ def ds_insert_tsv(request, pk):
       
 
       start = r[header.index('start')] if 'start' in header else None
-      #end = r[header.index('end')] if 'end' in header and r[header.index('end')] !='' else ''
-      end = r[header.index('end')] if 'end' in header else ''
-      #datesobj = parsedates_tsv([start,end]) # returns {timespan{},minmax[]}
+      #end = r[header.index('end')] if 'end' in header else ''
+      end = r[header.index('end')] if 'end' in header and r[header.index('end')] !='' else start
+      minmax = [start,end]
+      #datesobj = parsedates_tsv(start,end) # returns {timespan{},minmax[]}
       
       description = r[header.index('description')] \
         if 'description' in header else ''
@@ -1144,21 +1145,22 @@ def ds_insert_tsv(request, pk):
         #if aat_types != [''] else []
         #if len(aat_types) > 0 else []
 
-      # build and save Place object
+      # create new Place object
       newpl = Place(
         src_id = src_id,
         dataset = ds,
         title = title,
         ccodes = ccodes,
-        minmax = datesobj['minmax'],
-        timespans = {'timespans':[[datesobj['timespan']]]}
+        minmax = minmax,
+        #minmax = datesobj['minmax'],
+        #timespans = {'timespans':[[datesobj['timespan']]]}
+        timespans = [minmax]
         #,fclasses = fclasses
       )
       newpl.save()
       countrows += 1
   
       # build associated objects and add to arrays
-      #
       # PlaceName()
       objs['PlaceName'].append(
         PlaceName(
@@ -1186,7 +1188,7 @@ def ds_insert_tsv(request, pk):
       # PlaceType()
       if len(types) > 0:
         for i,t in enumerate(types):
-          aatnum='aat:'+aat_types[i] if len(aat_types) >= len(types) else None
+          aatnum='aat:'+aat_types[i] if len(aat_types) >= len(types) and aat_types[i] !='' else None
           objs['PlaceType'].append(
             PlaceType(
               place=newpl,
@@ -1249,7 +1251,8 @@ def ds_insert_tsv(request, pk):
           PlaceWhen(
             place=newpl,
             src_id = src_id,
-            jsonb=datesobj['timespan']
+            #jsonb=datesobj['timespan']
+            jsonb={"timespans": [{"start":{"earliest":minmax[0]}, "end":{"latest":minmax[1]}}]}            
         ))
   
       #
@@ -1305,7 +1308,7 @@ def ds_insert_tsv(request, pk):
 
 
 # ***
-# list user datasets, area, place collections
+# list user datasets, areas
 # ***
 class DashboardView(LoginRequiredMixin, ListView):
   login_url = '/accounts/login/'
