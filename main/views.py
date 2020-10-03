@@ -62,7 +62,7 @@ def contactView(request):
             subject_reply = "WHG message received"
             message_reply = 'We received your message concerning "'+subject+'" and will respond soon.\n\n reagrds,\nThe WHG project team'
             try:
-                send_mail(subject, message, from_email, ['whg@pitt.edu', 'scg52@pitt.edu', "karl.geog@gmail.com"])
+                send_mail(subject, message, from_email, ["karl.geog@gmail.com"])
                 send_mail(subject_reply, message_reply, 'whg@pitt.edu', [from_email])
             except BadHeaderError:
                 return HttpResponse('Invalid header found.')

@@ -448,6 +448,8 @@
     var satellite  = L.tileLayer(mbstyle_url, {id:'mapbox/satellite-streets-v11', token:token_mb, attribution:attrib_mb})
     var osm  = L.tileLayer(mbstyle_url, {id:'mapbox/light-v10', token:token_mb, attribution:attrib_mb});
 
+	// references isawnyu-map-knmctlkh
+	// mapbox://styles/kgeographer/ckc21ai6n5ozq1io64x91hndl
 	pleiades = L.mapboxGL({
 	  style:'mapbox://styles/kgeographer/ckc21ai6n5ozq1io64x91hndl',
 	  accessToken:token_kg,
@@ -499,6 +501,7 @@
     mappy.zoomControl.setPosition('topright')
     L.control.layers(baseLayers,dataLayers).addTo(mappy);
     <!--baseLayers["Pleiades Terrain"].addTo(mappy)-->
+    baseLayers["OSM"].addTo(mappy)
   }, false);
 
   function map_init (home_map, options) {
