@@ -1049,14 +1049,17 @@ def ds_insert_lpf(request, pk):
 
 # ***
 # parse start & end for insert to db
+# TODO: is year-only minmax useful in GUI?
+# parsedates for ds_insert_lpf will be different
 # ***
+#def intmap(arr):
+  #return [int(a) for a in arr]
 def parsedates_tsv(s,e):
-  def intmap(arr):
-    return [int(a) for a in arr]
-  union = intmap([*set(e.split('/')), *set(s.split('/'))])
-
-  return {"timespan":{"start": {"":""}, "end": {"":""}},
-          "minmax":[min(union),max(union)]}
+  s_yr=s[:5] if s[0] == '-' else s[:4]
+  e_yr=e[:5] if e[0] == '-' else e[:4]
+  #union = intmap([*set(e.split('/')), *set(s.split('/'))])
+  return {"timespan":{"start": {"earliest":s}, "end": {"latest":e}},
+          "minmax":[int(s_yr),int(e_yr)]}
 
 # ***
 # insert LP-TSV file to database
@@ -1126,8 +1129,9 @@ def ds_insert_tsv(request, pk):
       start = r[header.index('start')] if 'start' in header else None
       #end = r[header.index('end')] if 'end' in header else ''
       end = r[header.index('end')] if 'end' in header and r[header.index('end')] !='' else start
-      minmax = [start,end]
-      #datesobj = parsedates_tsv(start,end) # returns {timespan{},minmax[]}
+      #minmax = [start,end]
+      # -300-04	2006-01-01
+      datesobj = parsedates_tsv(start,end) # returns {timespan{},minmax[]}
       
       description = r[header.index('description')] \
         if 'description' in header else ''
@@ -1151,10 +1155,10 @@ def ds_insert_tsv(request, pk):
         dataset = ds,
         title = title,
         ccodes = ccodes,
-        minmax = minmax,
-        #minmax = datesobj['minmax'],
-        #timespans = {'timespans':[[datesobj['timespan']]]}
-        timespans = [minmax]
+        minmax = datesobj['minmax'],
+        timespans = {'timespans':[[datesobj['timespan']]]}
+        #minmax = minmax,
+        #timespans = [minmax]
         #,fclasses = fclasses
       )
       newpl.save()
@@ -1252,7 +1256,7 @@ def ds_insert_tsv(request, pk):
             place=newpl,
             src_id = src_id,
             #jsonb=datesobj['timespan']
-            jsonb={"timespans": [{"start":{"earliest":minmax[0]}, "end":{"latest":minmax[1]}}]}            
+            jsonb={"timespans": [datesobj['timespan']]}            
         ))
   
       #
