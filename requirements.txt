@@ -64,6 +64,7 @@ importlib-metadata==0.23
 ipdb==0.11
 ipython==7.2.0
 ipython-genutils==0.2.0
+iso8601==0.1.13
 isodate==0.6.0
 itsdangerous==1.1.0
 jdcal==1.4.1
