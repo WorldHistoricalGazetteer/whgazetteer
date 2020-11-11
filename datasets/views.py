@@ -1268,7 +1268,8 @@ def ds_insert_tsv(request, pk):
             place=newpl,
             src_id = src_id,
             jsonb={
-              "@id": "", "value":description, "lang":""
+              #"@id": "", "value":description, "lang":""
+              "value":description
             }
           ))
   

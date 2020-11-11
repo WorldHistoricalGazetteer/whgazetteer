@@ -104,6 +104,7 @@ def download_augmented(request, *args, **kwargs):
   user = request.user.username
   ds=get_object_or_404(Dataset,pk=kwargs['id'])
   dslabel = ds.label
+  url_prefix='http://whgazetteer.org/api/place/'
   fileobj = ds.files.all().order_by('-rev')[0]
   date=maketime()
 
@@ -159,7 +160,8 @@ def download_augmented(request, *args, **kwargs):
     print('download_augmented()')
     # make file name
     fn = 'media/user_'+user+'/'+ds.label+'_aug_'+date+'.json'
-    result={"type":"FeatureCollection","features":[]}
+    result={"type":"FeatureCollection","features":[],
+            "@context": "https://raw.githubusercontent.com/LinkedPasts/linked-places/master/linkedplaces-context-v1.1.jsonld",}
     with open(fn, 'w', encoding='utf-8') as outfile:
       with connection.cursor() as cursor:
         cursor.execute("""with namings as 
@@ -197,7 +199,8 @@ def download_augmented(request, *args, **kwargs):
           select jsonb_build_object(
             'type','Feature',
             'properties', jsonb_build_object(
-                'id',p.id,'src_id',p.src_id),
+                'id','{urlpre}'||p.id,
+                'src_id',p.src_id),
             'names',n.names,
             'types',pt.types,
             'links',pl.links,
@@ -218,7 +221,7 @@ def download_augmented(request, *args, **kwargs):
           left join descriptions pdes on p.id = pdes.place_id
           left join depictions pdep on p.id = pdep.place_id
           where dataset = '{ds}'        
-        """.format(ds=dslabel))
+        """.format(ds=dslabel,urlpre=url_prefix))
         for row in cursor:
           result['features'].append(row[0])
         outfile.write(json.dumps(result,indent=2))
