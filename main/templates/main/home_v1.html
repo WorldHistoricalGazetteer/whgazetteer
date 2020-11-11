@@ -101,7 +101,7 @@
 		  <div class="carousel-inner">
 			<div class="carousel-item active">
 			  <p class="mb-1">World Historical Gazetteer indexes place data drawn from historical sources, contributed by research projects and individuals studying the past from many disciplinary perspectives.</p>
-			  <p class="mb-1">This is a work-in-progress. To date about 60,000 temporally scoped place records have been added to our index, supplying "temporal depth" to a core of approximately 1.8 million modern records</p>
+			  <p class="mb-1">This is a work-in-progress. To date about 60,000 temporally scoped place records have been added to our index, supplying "temporal depth" to a core of approximately 1.8 million modern records.</p>
 			  <p>You can preview coverage of some early contributions in progress, by selecting from the list below.</p>
 			  <div id="map_select">
 				<select id="map_dataset" name="region" class="custom-select-sm">
@@ -109,7 +109,7 @@
 				  <option value="lugares">HGIS de las Indias (lugares)</option>
 				  <option value="owtrad">Old World Trade (OWTRAD)</option>
 				  <option value="euratlas">Euratlas Cities</option>
-				  <option value="alturayya">al-Turayya (11c Islam)</option>
+				  <option value="alturayya">al-Thurayya (11c Islam)</option>
 				</select>
 			  </div>
 			</div>
@@ -374,7 +374,7 @@
   // 
   function heat(dataset) {
 	console.log('heat()',dataset)
-	pleiades.getMapboxMap().addLayer({
+	mb_terrain.getMapboxMap().addLayer({
 	  "id": "heat_active",
 	  "type": "heatmap",
 	  "source": dataset,
@@ -439,23 +439,34 @@
             '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
             'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
       attrib_awmc = 'Tiles and Data &copy; 2013 <a href="http://www.awmc.unc.edu" target="_blank">AWMC</a>',
+	  attrib_dare = '© Johan Åhlfeldt, Centre for Digital Humanities, University of Gothenburg 2019',
       token_mb = 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw',
       token_kg = 'pk.eyJ1Ijoia2dlb2dyYXBoZXIiLCJhIjoiUmVralBPcyJ9.mJegAI1R6KR21x_CVVTlqw',
       mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}';
-
+	  dare_url = 'https://dh.gu.se/tiles/imperium/{z}/{x}/{y}.png'
+	  
     <!--var mbtiles_url = 'https://api.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={token}';-->
     <!--var awmc = L.tileLayer(mbtiles_url, {id:'isawnyu.map-knmctlkh', token:token_kg, attribution:attrib_awmc})    -->
     var satellite  = L.tileLayer(mbstyle_url, {id:'mapbox/satellite-streets-v11', token:token_mb, attribution:attrib_mb})
     var osm  = L.tileLayer(mbstyle_url, {id:'mapbox/light-v10', token:token_mb, attribution:attrib_mb});
+	<!--var dare = L.tileLayer(dare_url);-->
+	// DARE tiles: https://dh.gu.se/tiles/imperium/{z}/{x}/{y}.png
 
-	// references isawnyu-map-knmctlkh
-	// mapbox://styles/kgeographer/ckc21ai6n5ozq1io64x91hndl
-	pleiades = L.mapboxGL({
-	  style:'mapbox://styles/kgeographer/ckc21ai6n5ozq1io64x91hndl',
+	// nextzen api key fsno0yMASjibfuaO9tU0Ow
+	// https://tile.nextzen.org/tilezen/terrain/v1/{tilesize}/terrarium/{z}/{x}/{y}.png?api_key=your-nextzen-api-key
+	// https://tile.nextzen.org/tilezen/terrain/v1/{tilesize}/normal/{z}/{x}/{y}.png?api_key=your-nextzen-api-key
+	// https://tile.nextzen.org/tilezen/terrain/v1/geotiff/{z}/{x}/{y}.tif?api_key=your-nextzen-api-key
+	// https://tile.nextzen.org/tilezen/terrain/v1/skadi/{N|S}{y}/{N|S}{y}{E|W}{x}.hgt.gz?api_key=your-nextzen-api-key
+
+	// mb_terrain is mapbox style based on 'world terrain'
+	// mapbox://styles/kgeographer/ckga536pu2pls19q2enuq22zf
+	mb_terrain = L.mapboxGL({
+	  <!--style:'mapbox://styles/kgeographer/ckc21ai6n5ozq1io64x91hndl',-->
+	  style:'mapbox://styles/kgeographer/ckga536pu2pls19q2enuq22zf',
 	  accessToken:token_kg,
 	  attribution:attrib_awmc}).addTo(mappy)
 	  
-	gl=pleiades.getMapboxMap().on('load',function(){
+	gl=mb_terrain.getMapboxMap().on('load',function(){
 	  gl.addSource('lugares', {
 			  "type": "geojson",
 			  "data": "media/data/lugares_13k.geojson"
@@ -475,7 +486,7 @@
 	})
 	
     var countryStyle = {
-      "color": "#ffe",
+      "color": "#ffff00",
       "weight": 1,
       "opacity": 0.4,
       "fillOpacity": 0
@@ -490,7 +501,8 @@
     });
 
     var baseLayers = {
-      "Pleiades Terrain": pleiades,
+	  <!--"DARE tiles": dare,-->
+      "Terrain": mb_terrain,
       "OSM": osm,      
       "Satellite": satellite
     };
@@ -500,8 +512,7 @@
     }
     mappy.zoomControl.setPosition('topright')
     L.control.layers(baseLayers,dataLayers).addTo(mappy);
-    <!--baseLayers["Pleiades Terrain"].addTo(mappy)-->
-    baseLayers["OSM"].addTo(mappy)
+    baseLayers["Terrain"].addTo(mappy)
   }, false);
 
   function map_init (home_map, options) {

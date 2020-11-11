@@ -228,20 +228,20 @@
               {% if ds.id > 2 %} <!-- excludes black, dplace, which have no files -->
                 <a href="{% url 'datasets:dl-file' ds.id %}" ref="current">Current data file</a>
               {% endif %}
-              {% if links_added > 0 or geoms_added > 0 %}
+              <!--{ if links_added > 0 or geoms_added > 0 %}-->
                 <br/>Augmented dataset:
                 {% if ds.numrows <= 5000 %}
-                  {% if current_file.format == 'delimited' %}
-                    <a href="{% url 'datasets:dl-aug' id=ds.id format='tsv' %}" ref="tsv">TSV format</a>
+                  <!--{ if current_file.format == 'delimited' %}-->
+                    <a href="{% url 'datasets:dl-aug' id=ds.id format='tsv' %}" ref="tsv">TSV format</a> | 
                     <!--<a href="#" ref="tsv">TSV format</a>-->
-                  {% elif current_file.format == 'lpf'   %}
+                  <!--{ elif current_file.format == 'lpf'   %}-->
                     <a href="{% url 'datasets:dl-aug' id=ds.id format='lpf' %}" ref="lpf">Linked Places format</a>
                     <!--<a href="#" ref="lpf">Linked Places format (120/min.)</a>-->
-                  {% endif %}
+                  <!--{ endif %}-->
                 {% else %}  
                   <span class="red-head"><br/>Sorry, download of augmented datasets larger than 5000 rows not supported right now; too slow :^(</span>
                 {% endif %}  
-              {% endif %}
+              <!--{ endif %}-->
             </p>
           </div>
           {% endif %}
@@ -1081,7 +1081,7 @@ js for Browse
   
   
   function url_modal(identifier) {
-    <!-- e.g. 'wd:Q123456' -->
+    <!-- e.g. 'wd:Q123456' OR 'http://whatever.com/places/09384'-->
     link = ' <a href="" class="ext" data-toggle="modal" data-target="#ext_site">'+identifier+
       ' {% fontawesome_icon 'external-link' color='#336699' %}</a>'
     return link
@@ -1297,10 +1297,14 @@ js for Browse
         $('.ext').on('click', function(e) {
           e.preventDefault();
           str=$(this).text()
-          <!--id=$(this).data('id')-->
-          var re = /(dbp|gn|tgn|wd|aat):(.*?)$/;
-          url=base_urls[str.match(re)[1]]+str.match(re)[2]
-          <!--url=base_urls[id.match(re)[1]]+id.match(re)[2]-->
+          console.log('str (identifier)',str)
+          // URL identifiers can be 'wd:*' or 'http*'
+          if(str.substring(0,4).toLowerCase() == 'http'){
+            url = str
+          } else {
+            var re = /(dbp|gn|tgn|wd|aat):(.*?)$/;
+            url=base_urls[str.match(re)[1]]+str.match(re)[2]            
+          }
           console.log('url',url)
           $(".modal-body").html('<iframe width="100%" height="100%" frameborder="0" scrolling="yes" '+
             'allowtransparency="true" src="'+url+'"></iframe>');

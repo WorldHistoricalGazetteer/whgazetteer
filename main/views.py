@@ -66,7 +66,7 @@ def contactView(request):
                 send_mail(subject_reply, message_reply, 'whg@pitt.edu', [from_email])
             except BadHeaderError:
                 return HttpResponse('Invalid header found.')
-            return redirect('/success?return='+sending_url)
+            return redirect('/success?return='+sending_url if sending_url else '/')
             #return redirect(sending_url)
     return render(request, "main/contact.html", {'form': form})
 
