@@ -9,17 +9,17 @@ from main import views
 from datasets.views import DashboardView
 
 from django.views.generic.base import TemplateView
+from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path
 
+
+
 app_name='main'
 urlpatterns = [
-    path('', TemplateView.as_view(template_name="main/home_v1.html"), name="home"),
-    path('alt/', TemplateView.as_view(template_name="main/home_alt.html"), name="home-alt"),
+    #path('', TemplateView.as_view(template_name="main/home_v1.html",greeting="G'day"), name="home"),
+    path('', views.Home.as_view(), name="home"),
     
-    # TODO: convert to mapbox gl
-    #path('', TemplateView.as_view(template_name="main/home_gl.html"), name="home"),
-
     # apps
     path('search/', include('search.urls')),
     path('maps/', include('maps.urls')),

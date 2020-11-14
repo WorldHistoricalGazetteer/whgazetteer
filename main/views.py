@@ -1,10 +1,11 @@
 # main.views
 
+from django.conf import settings
 from django.core.mail import send_mail, BadHeaderError
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
-
+from django.views.generic.base import TemplateView
 from main.models import Comment
 from datasets.tasks import testAdd
 from places.models import Place
@@ -15,6 +16,14 @@ from elasticsearch import Elasticsearch
 es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 import requests
 
+class Home(TemplateView):
+    template_name = 'main/home_v1.html'
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(Home, self).get_context_data(*args, **kwargs)
+        context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
+        return context
+    
 def statusView(request):
     context = {"status_site":"??","status_database":"??","status_index":"??"}
     
