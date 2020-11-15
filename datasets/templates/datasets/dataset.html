@@ -508,7 +508,8 @@
                   <option value="create">{ new }</option>
                 </select>
               <span class="ml-2 small">
-                <a href="{% url 'areas:area-create' %}?next={% url 'datasets:ds_recon' ds.id %}">create user area</a>
+                <!--<a href="{ url 'areas:area-create' %}?next={ url 'datasets:ds_recon' ds.id %}">create user area</a>-->
+                <a href="{% url 'areas:area-create' %}?next=/datasets/{{ds.id}}/detail#addtask">create user area</a>
               </span></p>
             </div>
           </div>

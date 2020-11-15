@@ -462,7 +462,6 @@
 	// mb_terrain is mapbox style based on 'world terrain'
 	// mapbox://styles/kgeographer/ckga536pu2pls19q2enuq22zf
 	mb_terrain = L.mapboxGL({
-	  <!--style:'mapbox://styles/kgeographer/ckc21ai6n5ozq1io64x91hndl',-->
 	  style:'mapbox://styles/kgeographer/ckga536pu2pls19q2enuq22zf',
 	  accessToken:token_kg,
 	  attribution:attrib_awmc}).addTo(mappy)
@@ -502,7 +501,7 @@
     });
 
     var baseLayers = {
-      <!--"Terrain": mb_terrain,-->
+      "Terrain": mb_terrain,
 	  "AWMC": awmc,
       "OSM": osm,      
       "Satellite": satellite
@@ -513,7 +512,7 @@
     }
     mappy.zoomControl.setPosition('topright')
     L.control.layers(baseLayers,dataLayers).addTo(mappy);
-    baseLayers["AWMC"].addTo(mappy)
+    baseLayers["Terrain"].addTo(mappy)
   }, false);
 
   function map_init (home_map, options) {

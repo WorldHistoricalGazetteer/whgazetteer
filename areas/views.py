@@ -20,23 +20,21 @@ class AreaCreateView(CreateView):
     
     # ** commented for referrer redirect
     #success_url = '/dashboard'
+    
+    # kwargs {'initial': {}, 'prefix': None, 'instance': None}
+    # redirect from recon: '/datasets/737/recon/'
+    # redirect from dashboard: None
 
     # ** ADDED for referrer redirect
     def get_form_kwargs(self, **kwargs):
         kwargs = super(AreaCreateView, self).get_form_kwargs()
-        redirect = self.request.GET.get('next')
-        print('redirect in get_form_kwargs():',redirect)
-        if redirect != None:
+        redirect = self.request.GET.get('next')+'#addtask'
+        print('kwargs in get_form_kwargs():',kwargs)
+        print('redirect',redirect)
+        if redirect:
             self.success_url = redirect
         else:
             self.success_url = '/dashboard'
-        #print('cleaned_data in get_form_kwargs()',form.cleaned_data)
-        if redirect:
-            if 'initial' in kwargs.keys():
-                kwargs['initial'].update({'next': redirect})
-            else:
-                kwargs['initial'] = {'next': redirect}
-        print('kwargs in get_form_kwargs():',kwargs)
         return kwargs
     # ** END
     
