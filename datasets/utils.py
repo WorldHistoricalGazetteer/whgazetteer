@@ -1,7 +1,6 @@
 #from django.core import serializers
-from django.http import FileResponse, JsonResponse # HttpResponse
+from django.http import FileResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render
-#from django.utils.encoding import smart_str
 from django.views.generic import View
 
 import codecs, sys, os, pprint, time, datetime, csv, openpyxl
@@ -15,45 +14,6 @@ from datasets.models import Dataset, DatasetUser, Hit
 from datasets.static.hashes import aat, parents, aat_q
 from places.models import PlaceGeom # ,Place
 pp = pprint.PrettyPrinter(indent=1)
-
-# ***
-# UPLOAD UTILS
-# ***
-def xl_tester(): 
-  fn = '/Users/karlg/repos/_whgdata/data/_source/CentralEurasia/bregel_in progress.xlsx'
-  from openpyxl import load_workbook
-  wb = load_workbook(filename = fn)
-  sheet_ranges = wb['range names']
-
-def xl_upload(request):
-  if "GET" == request.method:
-    return render(request, 'datasets/xl.html', {})
-  else:
-    excel_file = request.FILES["excel_file"]
-
-    # you may put validations here to check extension or file size
-
-    wb = openpyxl.load_workbook(excel_file)
-
-    # getting all sheets
-    sheets = wb.sheetnames
-    print(sheets)
-
-    # getting a particular sheet by name out of many sheets
-    ws = wb["Sheet1"]
-    print(ws)
-
-    excel_data = list()
-    # iterating over the rows and
-    # getting value from each cell in row
-    for row in ws.iter_rows():
-      row_data = list()
-      for cell in row:
-        #row_data.append(str(cell.value))
-        row_data.append(cell.value)
-      excel_data.append(row_data)
-
-    return render(request, 'datasets/xl.html', {"excel_data":excel_data}) 
 
 # ***
 # DOWNLOAD FILES
@@ -608,6 +568,46 @@ class UpdateCountsView(View):
         'pass3':len(Hit.objects.raw('select distinct on (place_id_id) place_id_id, id from hits where task_id = %s and query_pass=%s and reviewed=false',[tid,'pass3']))
       }    
     return JsonResponse(updates, safe=False)
+
+# ***
+# UPLOAD UTILS
+# ***
+def xl_tester(): 
+  fn = '/Users/karlg/repos/_whgdata/data/_source/CentralEurasia/bregel_in progress.xlsx'
+  from openpyxl import load_workbook
+  wb = load_workbook(filename = fn)
+  sheet_ranges = wb['range names']
+
+def xl_upload(request):
+  if "GET" == request.method:
+    return render(request, 'datasets/xl.html', {})
+  else:
+    excel_file = request.FILES["excel_file"]
+
+    # you may put validations here to check extension or file size
+
+    wb = openpyxl.load_workbook(excel_file)
+
+    # getting all sheets
+    sheets = wb.sheetnames
+    print(sheets)
+
+    # getting a particular sheet by name out of many sheets
+    ws = wb["Sheet1"]
+    print(ws)
+
+    excel_data = list()
+    # iterating over the rows and
+    # getting value from each cell in row
+    for row in ws.iter_rows():
+      row_data = list()
+      for cell in row:
+        #row_data.append(str(cell.value))
+        row_data.append(cell.value)
+      excel_data.append(row_data)
+
+    return render(request, 'datasets/xl.html', {"excel_data":excel_data}) 
+
 
 # ABANDONED for views.ds_compare
 #def compare(dsid):

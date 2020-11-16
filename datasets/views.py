@@ -1062,7 +1062,7 @@ def parsedates_tsv(s,e):
           "minmax":[int(s_yr),int(e_yr)]}
 
 # ***
-# insert LP-TSV file to database
+# insert lp-tsv to database
 # ***
 def ds_insert_tsv(request, pk):
   import os, csv
@@ -1403,10 +1403,8 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
       context["format"] = "delimited"
       result = validate_tsv(tempfn)
     elif data['format'] == 'lpf':
-      context["format"] = "lpf"
-      # coll = FeatureCollection
       # TODO: json-lines alternative 
-      #result = validate_lpf(fin,'coll')
+      context["format"] = "lpf"
       result = validate_lpf(tempfn,'coll')
     print('validation result:',context["format"],result)
     fin.close()

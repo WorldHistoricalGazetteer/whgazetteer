@@ -52,6 +52,7 @@ et-xmlfile==1.0.1
 Fiona==1.8.6
 Flask==1.0.2
 flower==0.9.3
+frictionless==3.29.0
 geographiclib==1.49
 geojson==2.4.1
 geomet==0.2.0.post2
@@ -59,7 +60,7 @@ geopy==1.17.0
 goodtables==2.4.1
 httpie==2.0.0
 idna==2.8
-ijson==2.5.1
+ijson==3.1.2.post0
 importlib-metadata==0.23
 ipdb==0.11
 ipython==7.2.0
@@ -88,6 +89,7 @@ numpy==1.18.4
 openpyxl==3.0.2
 pandas==0.23.4
 parso==0.3.1
+petl==1.6.8
 pexpect==4.6.0
 pickleshare==0.7.5
 Pillow==7.0.0
@@ -106,15 +108,16 @@ pyparsing==2.4.0
 pyrsistent==0.14.11
 pytest==3.1.2
 python-crontab==2.3.5
-python-dateutil==2.7.3
+python-dateutil==2.8.1
 python-magic==0.4.15
+python-slugify==4.0.1
 pytz==2018.5
-PyYAML==5.1.2
+PyYAML==5.3.1
 rdflib==4.2.2
 redis==3.2.0
 requests==2.22.0
 reverse-geocoder==1.5.1
-rfc3986==1.3.2
+rfc3986==1.4.0
 rfc3987==1.3.8
 s3transfer==0.2.1
 scipy==1.4.1
@@ -127,8 +130,10 @@ SPARQLWrapper==1.8.4
 SQLAlchemy==1.3.16
 sqlparse==0.3.0
 statistics==1.0.3.5
+stringcase==1.2.0
 tableschema==1.11.0
 tabulator==1.30.0
+text-unidecode==1.3
 tornado==5.1.1
 traitlets==4.3.2
 unicodecsv==0.14.1
@@ -139,4 +144,5 @@ vine==1.3.0
 wcwidth==0.1.7
 Werkzeug==0.15.6
 xlrd==1.2.0
+xlwt==1.3.0
 zipp==0.6.0
