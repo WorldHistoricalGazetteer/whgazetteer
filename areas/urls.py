@@ -13,7 +13,6 @@ app_name='areas'
 urlpatterns = [
 
     path('create/', views.AreaCreateView.as_view(), name='area-create'),
-    #path('<int:id>/detail', views.AreaDetailView.as_view(), name='area-detail'),
     path('<int:id>/update', views.AreaUpdateView.as_view(), name='area-update'),
     path('<int:id>/delete', views.AreaDeleteView.as_view(), name='area-delete'),
 

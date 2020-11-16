@@ -469,13 +469,6 @@
                 name="recon" value="wd" >Wikidata (wd) <span class="text-danger small ml-2">approx. 1 record per second</span>
             </label>
           </div>
-          <!-- TODO: make public? -->
-          <!--<div class="form-check">-->
-            <!--<label class="form-check-label" for="auth6">-->
-              <!--<input type="radio" class="form-check-input" id="auth3"-->
-                <!--name="recon" value="whg_pre">WHG (preliminary)-->
-            <!--</label>-->
-          <!--</div>-->
           {% if request.method == 'GET' %}
           {% if ds.unindexed < ds.numrows %}
           <div id="recon_scope" class="mt-2">
@@ -508,7 +501,6 @@
                   <option value="create">{ new }</option>
                 </select>
               <span class="ml-2 small">
-                <!--<a href="{ url 'areas:area-create' %}?next={ url 'datasets:ds_recon' ds.id %}">create user area</a>-->
                 <a href="{% url 'areas:area-create' %}?next=/datasets/{{ds.id}}/detail#addtask">create user area</a>
               </span></p>
             </div>
@@ -557,7 +549,7 @@
         </div> <!-- recon_result -->
       </div> <!-- row -->
       {% else %}
-      <div><p class="pl-3 text-danger"><b>Sorry, as you are not the dataset owner, initiating reconciliation tasks for it is not possible.</b></p></div>
+      <div><p class="pl-3 text-danger"><b>Sorry, reconciliation tasks can only be initiated by the dataset owner.</b></p></div>
       {% endif %}
       </form>
         <!--<div class="selector py-3"><div id="updater"></div></div>-->

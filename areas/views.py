@@ -1,12 +1,9 @@
-# areas.views
+# areas.views (study areas)
 
-from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 from django.views.generic import (
     CreateView,
-    ListView,
-    DetailView,
     UpdateView,
     DeleteView )
 
@@ -17,26 +14,18 @@ class AreaCreateView(CreateView):
     form_class = AreaModelForm
     template_name = 'areas/area_create.html'
     queryset = Area.objects.all()
-    
-    # ** commented for referrer redirect
-    #success_url = '/dashboard'
-    
-    # kwargs {'initial': {}, 'prefix': None, 'instance': None}
-    # redirect from recon: '/datasets/737/recon/'
-    # redirect from dashboard: None
 
-    # ** ADDED for referrer redirect
+    # if called from reconciliation addtask, return there
     def get_form_kwargs(self, **kwargs):
         kwargs = super(AreaCreateView, self).get_form_kwargs()
         redirect = self.request.GET.get('next')+'#addtask'
-        print('kwargs in get_form_kwargs():',kwargs)
-        print('redirect',redirect)
+        #print('kwargs in get_form_kwargs():',kwargs)
+        #print('redirect',redirect)
         if redirect:
             self.success_url = redirect
         else:
             self.success_url = '/dashboard'
         return kwargs
-    # ** END
     
     def form_invalid(self,form):
         print('form invalid...',form.errors.as_data())
@@ -59,7 +48,6 @@ class AreaCreateView(CreateView):
         #context['referrer'] = self.request.POST.get('referrer')
         return context
 
-# combines detail and update
 
 class AreaDeleteView(DeleteView):
     template_name = 'areas/area_delete.html'
@@ -71,7 +59,9 @@ class AreaDeleteView(DeleteView):
     def get_success_url(self):
         return reverse('dashboard')
 
-# TODO: abandon for multipurpose AreaDetailView?
+#
+# detail & update
+#
 class AreaUpdateView(UpdateView):
     form_class = AreaModelForm
     template_name = 'areas/area_create.html'
@@ -94,34 +84,4 @@ class AreaUpdateView(UpdateView):
         context = super(AreaUpdateView, self).get_context_data(*args, **kwargs)
         context['action'] = 'update'
         return context
-
-#class AreaDetailView(UpdateView):
-    #form_class = AreaDetailModelForm
-    #template_name = 'areas/area_detail.html'
-
-    #def get_success_url(self):
-        #id_ = self.kwargs.get("id")
-        #return '/areas/'+str(id_)+'/detail'
-
-    #def form_valid(self, form):
-        #context={}
-        #if form.is_valid():
-            #print('form is valid')
-            #print('cleaned_data: before ->', form.cleaned_data)
-        #else:
-            #print('form not valid', form.errors)
-            #context['errors'] = form.errors
-        #return super().form_valid(form)
-
-    #def get_object(self):
-        #print('kwargs:',self.kwargs)
-        #id_ = self.kwargs.get("id")
-        #return get_object_or_404(Area, id=id_)
-
-    #def get_context_data(self, *args, **kwargs):
-        #context = super(AreaDetailView, self).get_context_data(*args, **kwargs)
-        #id_ = self.kwargs.get("id")
-
-        #return context
-
 

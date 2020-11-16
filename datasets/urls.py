@@ -1,3 +1,5 @@
+# datasets.urls
+
 from django.urls import path, include
 from django.conf.urls import url
 from django.conf.urls.static import static
@@ -28,7 +30,6 @@ urlpatterns = [
 
     # download flattened geojson data
     path('<int:id>/gis/', download_gis, name="dl-gis"), # 
-
 
     # also handles update for name, description fields
     path('<int:id>/detail', views.DatasetDetailView.as_view(), name='dataset-detail'),
