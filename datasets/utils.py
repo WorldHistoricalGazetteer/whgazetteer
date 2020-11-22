@@ -351,7 +351,46 @@ def validate_tsv(tempfn):
   os.rename(tempfn,newfn)
   print('tempfn,newfn',tempfn,type(tempfn),newfn,type(newfn))
   schema_lptsv = json.loads(codecs.open('datasets/static/validate/schema_tsv.json', 'r', 'utf8').read())
-  report = gvalidate(newfn,schema=schema_lptsv,order_fields=True,row_limit=20000,skip_checks='blank-header')
+  report = gvalidate(newfn,
+                     schema=schema_lptsv,
+                     order_fields=True,
+                     row_limit=20000,
+                     skip_errors=['missing-header','missing-cell','non-matching-header'])
+  #pp.pprint(report)  
+  #print('error count',report['error-count'])
+  result['count'] = report['tables'][0]['row-count']-1 # counts header apparently
+  result['columns'] = report['tables'][0]['headers']
+  result['file'] = report['tables'][0]['source']
+  # make sense of errors for users
+  # filter harmless errors (a goodtable library bug IMO)
+  errors = [x for x in report['tables'][0]['errors'] if x['code'] not in ["blank-header","missing-header"]]
+  error_types = list(set([x['code'] for x in errors]))
+  print('error types',error_types)
+  pp.pprint(report['tables'][0]['errors']) 
+  
+  result['errors'] = [x['message'].replace('and format "default"','') for x in errors]
+  
+  #if 'non-matching-header' in error_types:
+    ## have user fix that issue and try again
+    #result['errors'].append('One or more column heading is invalid: '+str(result['columns']))
+  #else:
+    #result['errors'] = [x['message'].replace('and format "default"','') for x in errors]
+  return result
+
+
+# next gen of goodtables, allows xlsx but has issues
+def frictionless_tsv(tempfn):
+  result = {"errors":[],"format":"delimited"}
+  # TODO: detect encoding
+  newfn = tempfn+'.tsv'
+  os.rename(tempfn,newfn)
+  print('tempfn,newfn',tempfn,type(tempfn),newfn,type(newfn))
+  schema_lptsv = json.loads(codecs.open('datasets/static/validate/schema_tsv.json', 'r', 'utf8').read())
+  report = gvalidate(newfn,
+                     schema=schema_lptsv,
+                     order_fields=True,
+                     row_limit=20000,
+                     skip_errors=['missing-header','missing-cell','non-matching-header'])
   pp.pprint(report)  
   #print('error count',report['error-count'])
   result['count'] = report['tables'][0]['row-count']-1 # counts header apparently

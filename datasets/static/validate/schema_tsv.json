@@ -113,5 +113,5 @@
   }
 ],
   "primaryKey": "id",
-  "missingValues": [""," ","null","Null"]
+  "missingValues": [""," ","null","Null","None"]
 }

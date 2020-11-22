@@ -15,7 +15,7 @@ from django.views.generic import (
 from django_celery_results.models import TaskResult
 
 from celery import current_app as celapp
-import codecs, tempfile, os, re, sys, math
+import codecs, tempfile, os, re, sys, math, mimetypes
 import simplejson as json
 import pandas as pd
 from pathlib import Path
@@ -1385,7 +1385,7 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
     # open & write tempf to a temp location;
     # call it tempfn for reference
     tempf, tempfn = tempfile.mkstemp()
-    print('tempfn, filename, file in DatasetCreateView()',tempfn, filename, data['file'])
+    print('tempfn, filename, type(file) in DatasetCreateView()',tempfn, filename, type(data['file']))
     try:
       for chunk in data['file'].chunks():
         #print('chunk',chunk)
@@ -1394,11 +1394,25 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
       raise Exception("Problem with the input file %s" % request.FILES['file'])
     finally:
       os.close(tempf)
-      
-    # open the temp file
-    fin = codecs.open(tempfn, 'r', 'utf8')
+
+    # IN PROGRESS 19 Nov
+    # open & sniff
+    #mimes = {'text/csv':'csv',
+             #'text/tab-separated-values':'tsv',
+             #'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':'xls',
+             #'application/vnd.oasis.opendocument.spreadsheet':'ods',
+             #'application/json':'json'}  
+    #fin = codecs.open(tempfn, 'r')
+    #encoding = fin.encoding
+    #mimetype = mimetypes.guess_type(tempfn, strict=True)
+    #print('encoding, mimetype',encoding,mimetype)
+    #if mimetype[0] not in mimes.keys():
+      #context['errors'] = "Not a valid file type; must be one of [.csv, .tsv, .xls(x), .ods, .json]"
+      #return self.render_to_response(self.get_context_data(form=form,context=context))
+    #else:
+      # proceed with validation
     
-    # send for format validation
+    # 
     if data['format'] == 'delimited':
       context["format"] = "delimited"
       result = validate_tsv(tempfn)
@@ -1407,7 +1421,7 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
       context["format"] = "lpf"
       result = validate_lpf(tempfn,'coll')
     print('validation result:',context["format"],result)
-    fin.close()
+    #fin.close()
 
     print('validation complete, still in DatasetCreateView')
     

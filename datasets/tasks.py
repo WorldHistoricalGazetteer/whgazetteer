@@ -901,6 +901,8 @@ def es_lookup_whg(qobj, *args, **kwargs):
 # pass1 auto-indexes as child if shared link
 # pass2, pass3 hits queued for review
 # if no hits, indexed as parent
+# TODO: hits may include multiple linked docs
+#       need to group them for review display
 """
 @task(name="align_whg")
 def align_whg(pk, *args, **kwargs):
@@ -1138,6 +1140,8 @@ def align_whg(pk, *args, **kwargs):
 """
 # reconcile to whg w/no
 # indexing as in align_whg
+# TODO: hits may include multiple linked docs
+#       need to group them for review display
 """
 @task(name="align_whg_pre")
 def align_whg_pre(pk, *args, **kwargs):
