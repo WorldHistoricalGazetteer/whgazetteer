@@ -925,9 +925,10 @@ def ds_insert_lpf(request, pk):
 
   # TODO?: use stream reader; lpf can get big
   infile = dsf.file.open(mode="r")
-  print('ds_insert_lpf(); request.GET; infile',request.GET,infile) 
+  print('ds_insert_lpf() request.GET, infile',request.GET,infile) 
   with infile:
     jdata = json.loads(infile.read())
+    print('count of features, 0th',len(jdata['features']), jdata['features'][0])
     for feat in jdata['features']:
       objs = {"PlaceNames":[], "PlaceTypes":[], "PlaceGeoms":[], "PlaceWhens":[],
               "PlaceLinks":[], "PlaceRelated":[], "PlaceDescriptions":[],
@@ -963,8 +964,10 @@ def ds_insert_lpf(request, pk):
       # PlaceType: place,src_id,task_id,jsonb:{identifier,label,src_label}
       if 'types' in feat.keys():
         for t in feat['types']:
-          fc = get_object_or_404(Type,aat_id=int(t['identifier'][4:])).fclass \
-            if t['identifier'][:4] == 'aat:' else None
+          if 'identifier' in t.keys() and t['identifier'][:4] == 'aat:' \
+             and t['identifier'][:4] in Type.objects.values_list('aat_id',flat=True):
+            fc = get_object_or_404(Type,aat_id=int(t['identifier'][4:])).fclass \
+              if t['identifier'][:4] == 'aat:' else None
           #print('from feat[types]:',t)
           objs['PlaceTypes'].append(PlaceType(
             place=newpl,

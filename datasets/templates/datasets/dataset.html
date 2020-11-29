@@ -1189,17 +1189,22 @@ js for Browse
     //
     // TYPES
     console.log('data.types',data.types)
-    // {"label":"","sourceLabel":"town","identifier":""}
+    // {"label":"town","identifier":"aat:300001234","sourceLabels":[{"label":"Military Town","lang":"en"}]}
     left+='</p><p><b>Types</b>: '
     typeids = ''
     for (t in data.types) {
+      str = ''
       var type = data.types[t]
-      str = type.sourceLabel!='' ? type.sourceLabel+'; ' : ''
+      srclabels = type.sourceLabels
+      for(l in srclabels){
+        str = srclabels[l]['label']!='' ? srclabels[l]['label']+'; ' : ''
+        console.log('str',str)
+      }
       if(type.label!=''){ str += url_tab(type) + ' ' }
       typeids+=str
     }
     left += typeids.replace(/(; $)/g, "") +'</p>'
-
+    
     //
     // LINKS
     // TODO: normalize on closeMatch, exactMatch

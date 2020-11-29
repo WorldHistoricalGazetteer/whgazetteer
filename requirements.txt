@@ -1,4 +1,4 @@
-amqp==5.0.2
+amqp==2.6.1
 appdirs==1.4.3
 appnope==0.1.0
 asgiref==3.2.3
@@ -11,7 +11,7 @@ boto3==1.10.28
 botocore==1.13.28
 cached-property==1.5.2
 cchardet==2.1.5
-celery==5.0.0
+celery==4.4.7
 celery-progress==0.0.14
 certifi==2019.9.11
 chardet==3.0.4
@@ -29,8 +29,7 @@ decorator==4.3.0
 Django==2.2.13
 django-bootstrap-breadcrumbs==0.9.1
 django-bootstrap-modal-forms==1.4.1
-django-celery-beat==1.3.0
-django-celery-results==2.0.0
+django-celery-results==1.0.2
 django-cors-headers==2.4.0
 django-datatables-view==1.17.0
 django-extensions==2.1.5
@@ -41,7 +40,7 @@ django-leaflet==0.24.0
 django-mathfilters==0.4.0
 django-shapeshifter==18.9.23
 django-templated-mail==1.1.1
-django-timezone-field==3.0
+django-timezone-field==4.0
 django-webpack-loader==0.6.0
 djangorestframework==3.11.0
 djangorestframework-datatables==0.4.1
@@ -82,7 +81,7 @@ jsonfield==2.0.2
 jsonlines==1.2.0
 jsonpointer==2.0
 jsonschema==3.2.0
-kombu==5.0.2
+kombu==4.6.11
 libmagic==1.0
 linear-tsv==1.1.0
 Markdown==3.0.1
@@ -96,7 +95,8 @@ parso==0.3.1
 petl==1.6.8
 pexpect==4.6.0
 pickleshare==0.7.5
-Pillow==7.0.0
+Pillow==7.1.0
+pipdeptree==1.0.0
 pout==0.7.9
 pprint==0.1
 promise==2.2.1
@@ -118,7 +118,7 @@ python-slugify==4.0.1
 pytz==2018.5
 PyYAML==5.3.1
 rdflib==4.2.2
-redis==3.2.0
+redis==3.5.3
 requests==2.22.0
 reverse-geocoder==1.5.1
 rfc3986==1.4.0
@@ -146,7 +146,7 @@ unicodecsv==0.14.1
 uritemplate==3.0.0
 urllib3==1.24.2
 validictory==1.1.2
-vine==5.0.0
+vine==1.3.0
 wcwidth==0.1.7
 Werkzeug==0.15.6
 xlrd==1.2.0

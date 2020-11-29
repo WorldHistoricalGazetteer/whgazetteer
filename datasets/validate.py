@@ -6,6 +6,7 @@ from frictionless import extract, validate, describe, validate_schema, validate_
 from pprint import pprint as pp
 import codecs, json, mimetypes
 wd = '/Users/karlg/repos/_whgazetteer/_testdata/validate/'
+#sch_new = wd+'schema_ex.json'
 sch_new = wd+'schema_csv.json'
 sch = wd + 'schema_tsv.json'
 #tempfn = wd+files[0]
@@ -25,8 +26,8 @@ def v(num):
     report=validate_table(wd+files[num], 
                           schema=sch_new, 
                           #skip_errors=['missing-cell','non-matching-header'],
-                          skip_errors=['missing-cell'],
-                          #skip_errors=['missing-cell','missing-header'])
+                          #skip_errors=['missing-cell'],
+                          skip_errors=['missing-cell','missing-header','blank-header'],
                           sync_schema=True)
     if len(req - set(report.tables[0]['header'])) >0:
         return 'required column(s) is missing: '+ ", ".join(list(req - set(report.tables[0]['header'])))

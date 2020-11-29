@@ -624,9 +624,11 @@ def es_lookup_tgn(qobj, *args, **kwargs):
 @task(name="align_tgn")
 def align_tgn(pk, *args, **kwargs):
   ds = get_object_or_404(Dataset, id=pk)
-  print('ds',ds.__dict__)
+  #print('ds',ds.__dict__)
+  print('task args, kwargs',args,kwargs)
   bounds = kwargs['bounds']
   scope = kwargs['scope']
+  print('args from align_tgn() task',args)
   print('kwargs from align_tgn() task',kwargs)
   hit_parade = {"summary": {}, "hits": []}
   [nohits,tgn_es_errors,features] = [[],[],[]]

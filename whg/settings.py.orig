@@ -71,7 +71,6 @@ PUBLIC_GROUP_ID = 'review'
 
 TIME_ZONE = 'America/New_York'
 
-
 CELERY_BROKER_URL = 'redis://localhost:6379'
 CELERY_RESULT_BACKEND = 'django-db'
 CELERY_ACCEPT_CONTENT = ['application/json']
@@ -81,7 +80,13 @@ CELERY_TIMEZONE = TIME_ZONE
 # trying to throw error if no worker available
 CELERY_TASK_EAGER_PROPAGATES = True
 
-
+CELERY_CACHE_BACKEND = 'default'
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': '127.0.0.1:11211',
+    }
+}
 
 # replacement section from drf-datatables
 # https://django-rest-framework-datatables.readthedocs.io/en/latest/
