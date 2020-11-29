@@ -1188,6 +1188,8 @@ js for Browse
     }
     //
     // TYPES
+    // may include sourceLabel:"" **OR** sourceLabels[{"label":"","lang":""},...]
+    // NOTE TO SELF: Change LP format spec VERY carefully
     console.log('data.types',data.types)
     // {"label":"town","identifier":"aat:300001234","sourceLabels":[{"label":"Military Town","lang":"en"}]}
     left+='</p><p><b>Types</b>: '
@@ -1195,10 +1197,14 @@ js for Browse
     for (t in data.types) {
       str = ''
       var type = data.types[t]
-      srclabels = type.sourceLabels
-      for(l in srclabels){
-        str = srclabels[l]['label']!='' ? srclabels[l]['label']+'; ' : ''
-        console.log('str',str)
+      if('sourceLabels' in type){
+        srclabels = type.sourceLabels
+        for(l in srclabels){
+          label = srclabels[l]['label']
+          str = label !='' ? label + '; ' : ''
+        }
+      } else if ('sourceLabel' in type) {
+        str = type.sourceLabel !='' ? type.sourceLabel + '; ' : ''
       }
       if(type.label!=''){ str += url_tab(type) + ' ' }
       typeids+=str

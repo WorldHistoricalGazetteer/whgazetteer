@@ -115,16 +115,17 @@ class PlaceGeomSerializer(serializers.ModelSerializer):
         fields = ('place_id','src_id','type', 'geowkt', 'coordinates', 'geom_src', 'citation', 'when')
 
 class PlaceTypeSerializer(serializers.ModelSerializer):
-    # json: identifier, label, source_label, when{}
+    # json: identifier, label, sourceLabel OR sourceLabels[{}], when{}
     identifier = serializers.ReadOnlyField(source='jsonb.identifier')
     label = serializers.ReadOnlyField(source='jsonb.label')
+    sourceLabel = serializers.ReadOnlyField(source='jsonb.sourceLabel')
     sourceLabels = serializers.ReadOnlyField(source='jsonb.sourceLabels')
     when = serializers.ReadOnlyField(source='jsonb.when')
     gn_class = serializers.ReadOnlyField(source='fclass')
 
     class Meta:
         model = PlaceType
-        fields = ('label', 'sourceLabels', 'when', 'identifier','gn_class')
+        fields = ('label', 'sourceLabel', 'sourceLabels', 'when', 'identifier','gn_class')
 
 class PlaceNameSerializer(serializers.ModelSerializer):
     # json: toponym, citation{}
