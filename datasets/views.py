@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.files import File
-from django.core.mail import send_mail
+from django.core.mail import send_mail, EmailMultiAlternatives
 from django.core.paginator import Paginator #,EmptyPage, PageNotAnInteger
 from django.db.models import Q
 from django.forms import modelformset_factory
@@ -43,6 +43,20 @@ def emailer(subj,msg):
       ['karl@kgeographer.org'],
       fail_silently=False,
   )  
+def task_emailer(owner,taskobj,dslabel):
+  print('taskobj taskname & status',taskobj, taskobj.task_name,taskobj.status)
+
+  subject, from_email = 'WHG reconciliation result', 'whgazetteer@gmail.com'
+  text_content="Greetings "+owner.username+"! Your {"+taskobj.task_name+"} reconciliation task has completed with status: "+taskobj.status
+  html_content="<h3>Greetings "+owner.username+",</h3> <p>Your <b>"+taskobj.task_name+"</b> reconciliation task for the <b>"+dslabel+"</b> dataset has completed with status: "+ \
+    taskobj.status+"</p>"
+
+  msg = EmailMultiAlternatives(
+    subject, 
+    text_content, 
+    from_email, [owner.email])  
+  msg.attach_alternative(html_content, "text/html")
+  msg.send(fail_silently=False)
   
 def celeryUp():
   response = celapp.control.ping(timeout=1.0)
@@ -357,12 +371,18 @@ def ds_recon(request, pk):
         aug_geom=aug_geom,
         scope=scope
       )
+      messages.add_message(request, messages.INFO, "Your reconciliation task is under way. When complete you will receive an email and results will appear below (You may have to refresh screen). In the meantime, you can navigate elsewhere.")
+      #task_emailer(ds.owner, ds.tasks.all().order_by('-id')[0], ds.label) 
+      return redirect('/datasets/'+str(ds.id)+'/detail#reconciliation')
     except:
       print('failed: align_'+auth )
       print(sys.exc_info())
-      messages.add_message(request, messages.INFO, "Sorry! Reconciliation services appears to be down. The system administrator has been notified.<br/>"+sys.exc_info())
+      messages.add_message(request, messages.INFO, "Sorry! Reconciliation services appear to be down. The system administrator has been notified.<br/>"+sys.exc_info())
       return redirect('/datasets/'+str(ds.id)+'/detail#reconciliation')     
   
+    # send ds owner an email when task is complete
+    print('recon result', result)
+    
     context['hash'] = "#reconciliation"
     context['task_id'] = result.id
     context['response'] = result.state

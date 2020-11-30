@@ -2,6 +2,8 @@
 from __future__ import absolute_import, unicode_literals
 from celery.decorators import task
 from django.conf import settings
+from django.core.mail import send_mail,EmailMultiAlternatives
+from django.forms.models import model_to_dict
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.gis.geos import Polygon, Point, LineString
 import logging
@@ -23,6 +25,27 @@ from elasticsearch import Elasticsearch
 es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 ##
 
+@task(name="task_emailer")
+def task_emailer(dslabel,username,email):
+  ds=get_object_or_404(Dataset,label=dslabel)
+  #task = model_to_dict(ds.tasks.all().order_by('-id')[0])
+  task = ds.tasks.all().order_by('-id')[0]
+  #dsdict = model_to_dict(ds)
+  print('dsid, id, task_name',ds.id, task.id, task.task_name)
+  #print('model_to_dict',dsdict)
+  subject, from_email = 'WHG reconciliation result', 'whgazetteer@gmail.com'
+  #print('emailer email, taskname, :',email,task['name'])
+  #print('subject, from_email',subject, from_email)
+  text_content="Greetings "+username+"! Your {"+task.task_name+"} reconciliation task has completed with status: "+task.status
+  html_content="<h3>Greetings "+username+",</h3> <p>Your <b>"+task.task_name+"</b> reconciliation task for the <b>"+ds.label+"</b> dataset has completed with status: "+ task.status
+
+  msg = EmailMultiAlternatives(
+    subject, 
+    text_content, 
+    from_email, [email])  
+  msg.attach_alternative(html_content, "text/html")
+  msg.send(fail_silently=False)
+  
 # test task for uptimerobot
 @task(name="testAdd")
 def testAdd(n1,n2):
@@ -492,7 +515,7 @@ def align_wd(pk, *args, **kwargs):
   print("summary returned",hit_parade['summary'])
   return hit_parade['summary']
   
-  
+
 # ***
 # performs elasticsearch queries
 # ***
@@ -625,11 +648,9 @@ def es_lookup_tgn(qobj, *args, **kwargs):
 def align_tgn(pk, *args, **kwargs):
   ds = get_object_or_404(Dataset, id=pk)
   #print('ds',ds.__dict__)
-  print('task args, kwargs',args,kwargs)
   bounds = kwargs['bounds']
   scope = kwargs['scope']
-  print('args from align_tgn() task',args)
-  print('kwargs from align_tgn() task',kwargs)
+  print('args, kwargs from align_tgn() task',args,kwargs)
   hit_parade = {"summary": {}, "hits": []}
   [nohits,tgn_es_errors,features] = [[],[],[]]
   [count, count_hit, count_nohit, total_hits, count_p1, count_p2, count_p3] = [0,0,0,0,0,0,0]
@@ -741,6 +762,11 @@ def align_tgn(pk, *args, **kwargs):
       'elapsed': elapsed(end-start)
     }
   print("summary returned",hit_parade['summary'])
+  
+  # email owner when complete
+  # dslabel,username,email
+  task_emailer.delay(ds.label,ds.owner.username,ds.owner.email)
+  
   return hit_parade['summary']
 
 # ***

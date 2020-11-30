@@ -22,6 +22,8 @@ files = ['croniken20.tsv','bdda34.csv','bdda34_err1.csv','bdda34_err1.tsv','bdda
 def v(num):
     global descrip, rows, report, req
     req = set(['id','title','title_source','start'])
+    allowed = set(['id','title','title_source','start','title_uri','ccodes','matches','variants',
+                   'types','aat_types','parent_name','parent_id','lon','lat','geo_wkt','geo_source','geo_id','end','description'])
     fout=codecs.open(wd+files[num]+'_errors.json', 'w', encoding='utf8')
     report=validate_table(wd+files[num], 
                           schema=sch_new, 
@@ -30,7 +32,10 @@ def v(num):
                           skip_errors=['missing-cell','missing-header','blank-header'],
                           sync_schema=True)
     if len(req - set(report.tables[0]['header'])) >0:
-        return 'required column(s) is missing: '+ ", ".join(list(req - set(report.tables[0]['header'])))
+        return 'Required column(s) missing: '+ ", ".join(list(req - set(report.tables[0]['header'])))
+    if len(set(report.tables[0]['header'])-allowed) >0:
+        return 'These columns are not recognized as LP-TSV: '+ \
+               ', '.join(set(report.tables[0]['header'])-allowed)
     else:   
         descrip = describe(wd+files[num])
         rows = extract(wd+files[num])
