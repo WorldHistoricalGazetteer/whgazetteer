@@ -69,7 +69,7 @@ class DatasetDetailModelForm(forms.ModelForm):
               'datatype','numlinked','public','webpage')
     widgets = {
       'description': forms.Textarea(attrs={
-        'rows':2,'cols': 40,'class':'textarea','placeholder':'brief description'}),
+        'rows':2,'cols': 40,'class':'textarea','placeholder':'Brief description'}),
       'webpage': forms.TextInput(attrs={'size': 30})
     }
   
@@ -96,12 +96,12 @@ class DatasetCreateModelForm(forms.ModelForm):
     fields = ('owner','id','title','label','datatype','description','uri_base','public','creator','webpage')
     widgets = {
       'description': forms.Textarea(attrs={
-        'rows':2,'cols': 39,'class':'textarea','placeholder':'brief description'})
+        'rows':2,'cols': 39,'class':'textarea','placeholder':'Brief description'})
       ,'uri_base': forms.URLInput(attrs={
         'placeholder':'Leave blank unless record IDs are URIs','size':40})
       ,'title': forms.TextInput(attrs={'size': 40})
       ,'creator': forms.TextInput(attrs={'size': 40})
-      ,'webpage': forms.URLInput(attrs={'size': 40,'placeholder':'Blank if none'})
+      ,'webpage': forms.URLInput(attrs={'size': 40,'placeholder':'Project home page, if any'})
     }
   
   # fields used to create new DatasetFile record from form

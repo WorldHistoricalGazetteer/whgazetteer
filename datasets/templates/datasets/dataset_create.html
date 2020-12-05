@@ -6,9 +6,15 @@
 {% load static %}
 {% load fontawesome %}
 {% load dataset_extras %}
+{% block extra_head %}
+    <script src="{% static 'js/spin.umd.js' %}"></script>
+{% endblock %}
 
 <div class="container">
   <h4 class="mt-3">Create dataset</h4>
+  {% if messages %}
+    <span class="text-danger strong"> {% for message in messages %}{{ message }}{% endfor %}</span>
+  {% endif %}
   <form id="ds_form" method="POST" enctype="multipart/form-data">
     {% csrf_token %}
     <!-- errors -->
@@ -52,7 +58,7 @@
             <td>{{ form.creator }}</td>
           </tr>
           <tr>
-            <td><b>URI base</b> <a class="pop-link" id="uribase_help" data-toggle="popover" title="URI base" data-content="If your records are published and each place has a landing page, enter the URI base/prefix, e.g. <span class='ml-2'>http://mygaz.org/places/</span><br/>Otherwise leave blank, and they will be assigned a WHG prefix." tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#993300' %}</a>
+            <td><b>URI base</b> <a class="pop-link" id="uribase_help" data-toggle="popover" title="URI base" data-content="If your records are published and each place has a landing page, enter the URI base prefix, e.g. <span class='ml-2'><i>http://mygaz.org/places/</i></span><br/>Otherwise leave blank, and they will be assigned a WHG base." tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#993300' %}</a>
             </td>
             <td>{{ form.uri_base }}</td>
           </tr>
@@ -65,7 +71,7 @@
             <td>{{ form.public }}</td>
           </tr>
         </table>
-        <hr/><p class="my-0 ml-3"><i>initial file</i></p>
+        <hr/><!--<p class="my-0 ml-3">initial file</p>-->
         <table id="file_metadata" class="ds-table table-striped">
           <tr>
             <td><b>File</b></td>
@@ -93,7 +99,7 @@
         <br/>
         <!-- upload button initially & if it's not yet ok -->
         {% if status != 'format_ok' %}
-        <input class="btn btn-primary btn-sm" type="submit" value="Upload" />
+        <input id="btn_upload" class="btn btn-primary btn-sm" type="submit" value="Upload" />
         <span title="back"><a href="{% url 'dashboard' %}">Cancel</a></span>
         {% endif %}
       </div>
@@ -122,13 +128,16 @@
           </div>
         {% endif %}
       {% else %}
-        <div>
-          <p class="mb-0"><b>Sample data</b></p><p>Some sample datasets are available from our GitHub repository. Download and open <a href="https://github.com/kgeographer/whgazetteer/raw/master/example_data/whg_example-data.zip" download>this zip file</a>, check its README.txt file, and you can experiment with loading them from your local computer and reconciling them against TGN and/or Wikidata</p>
+        <div class="smallish">
+          <p class="mb-0"><b>Sample data</b></p>
+          <p class="mb-2">Some sample datasets are available from our GitHub repository. Download and open <a href="https://github.com/kgeographer/whgazetteer/raw/master/example_data/whg_example-data.zip" download>this zip file</a>, check its README.txt file, and try loading them from your local computer and reconciling them against the <a href="http://www.getty.edu/research/tools/vocabularies/tgn/" target="_blank">Getty Thesaurus of Geographic Names (TGN)</a> and/or <a href="https://www.wikidata.org/" target="_blank">Wikidata</a>.</p>
           <p class="mb-0"><b>Data formats</b></p>
-          <p>For place data there are two accepted formats, Linked Places (expressive, JSON-LD and GeoJSON compatible), and the simpler LP-TSV, a tab-delimited format for relatively simpler records. <a href="/tutorials/choosing">More information on making the choice</a>.</p> <p><span class="text-danger"><b>NOTE</b>: Encoding for all uploaded files must be unicode</span></p>
-          <!--<p><i>Trace data uploads are not yet possible.</i></p>-->
-          <!--<p class="mb-0"><b>URI base</b></p>-->
-          <!--<p>If you have a permanent landing page for each of your records, supply the base URI in this field. Otherwise, leave as is, and a permanent URI within the whgazetteer domain will be generated based on your unique IDs.</p>-->
+          <p class="mb-2">There are two accepted upload formats: <a href="https://github.com/LinkedPasts/linked-places" target="_blank">Linked Places</a> (JSON-LD based, GeoJSON compatible, expressive), and the simpler <a href="https://github.com/LinkedPasts/linked-places/blob/master/tsv_0.2.md" target="_blank">LP-TSV</a>, a tab-delimited format for relatively simpler records. <a href="/tutorials/choosing" target="_blank">More information on making the choice</a>. <span class="strong"><i>NOTE: Encoding for all uploaded files must be unicode</i></span></p>
+          <div id="upload_spinner"></div>
+          <p class="mb-0"><b>Validation Errors</b></p>
+          <p class="mb-2">Uploaded files are validated for adherence to our format(s). In most cases, if there is a problem, an error message will explain, but the error-trapping is not yet perfect. If you are unable to upload a dataset successfully, please <a href="#" class="feedback">contact us</a>. We will gladly help sort out the issue quickly.</p>
+          <p class="mb-0"><b>Consultations welcome!</b></p>
+          <p class="mb-1">If you are planning a data contribution to WHG, or want help exploring its usefulness or feasability for your project, please do <a href="#" class="feedback">contact us</a>.</p>
         </div>
       {% endif %}
     </div>
@@ -140,8 +149,17 @@
     $('#id_format option[value="delimited"]').prop('selected',true)
     $('#id_datatype option[value="anno"]').prop('disabled',true)
     $('#id_datatype option[value="source"]').prop('disabled',true)
+
+    $("#btn_upload").on('click', function(){
+      console.log('upload_data spinner')
+      startUploadSpinner()
+    })
   })
   $("[rel='tooltip']").tooltip();
+  function startUploadSpinner() {
+    window.spinner_update = new Spin.Spinner().spin();
+    $("#upload_spinner").append(spinner_update.el);   
+  }
 </script>
 
 {% endblock %}

@@ -946,6 +946,8 @@ def ds_compare(request):
     return JsonResponse(comparison,safe=False)
 # ***
 # insert lpf into database
+# file is validated, dataset exists
+# if insert fails anywhere, delete dataset + any related objects
 # ***
 def ds_insert_lpf(request, pk):
   import json
@@ -956,20 +958,21 @@ def ds_insert_lpf(request, pk):
   uribase = ds.uri_base
 
   # TODO?: use stream reader; lpf can get big
+  # if anything fails, delete dataset
+
   infile = dsf.file.open(mode="r")
   print('ds_insert_lpf() request.GET, infile',request.GET,infile) 
+  print('ds_insert_lpf() for dataset',ds) 
   with infile:
     jdata = json.loads(infile.read())
     print('count of features, 0th',len(jdata['features']), jdata['features'][0])
     for feat in jdata['features']:
+      # create Place, save to get id, then build associated records for each
       objs = {"PlaceNames":[], "PlaceTypes":[], "PlaceGeoms":[], "PlaceWhens":[],
               "PlaceLinks":[], "PlaceRelated":[], "PlaceDescriptions":[],
               "PlaceDepictions":[]}
       countrows += 1
-      #print('countrows',countrows)
-      #print(feat['@id'],feat['properties']['title'],feat.keys())
 
-      # instantiate Place record & save to get id
       # Place: src_id, title, ccodes, dataset
       newpl = Place(
         # TODO: add src_id to properties in LP format?
@@ -978,6 +981,7 @@ def ds_insert_lpf(request, pk):
         title=feat['properties']['title'],
         ccodes=feat['properties']['ccodes'] if 'ccodes' in feat['properties'].keys() else []
       )
+      print('new place: ',newpl.title)
       newpl.save()
 
       # PlaceName: place,src_id,toponym,task_id,jsonb:{toponym, lang,citation,when{}}
@@ -994,20 +998,27 @@ def ds_insert_lpf(request, pk):
           ))
 
       # PlaceType: place,src_id,task_id,jsonb:{identifier,label,src_label}
+      #try:        
       if 'types' in feat.keys():
         for t in feat['types']:
           if 'identifier' in t.keys() and t['identifier'][:4] == 'aat:' \
-             and t['identifier'][:4] in Type.objects.values_list('aat_id',flat=True):
+             and int(t['identifier'][4:]) in Type.objects.values_list('aat_id',flat=True):
             fc = get_object_or_404(Type,aat_id=int(t['identifier'][4:])).fclass \
               if t['identifier'][:4] == 'aat:' else None
-          #print('from feat[types]:',t)
+          print('from feat[types]:',t)
           objs['PlaceTypes'].append(PlaceType(
             place=newpl,
             src_id=newpl.src_id,
             jsonb=t,
             fclass=fc
           ))
-
+      #except:
+        #print('PlaceType create failed for: '+feat['@id']+'. Error:'+str(sys.exc_info()))
+        #ds.delete()
+        #messages.add_message(request, messages.INFO, 
+                             #'PlaceType create failed for: '+feat['@id']+'. Error: '+str(sys.exc_info()))
+        #return redirect('/datasets/create')
+      
       # PlaceWhen: place,src_id,task_id,minmax,jsonb:{timespans[],periods[],label,duration}
       if 'when' in feat.keys() and feat['when'] != {}:
         #for w in feat['when']:
@@ -1048,7 +1059,8 @@ def ds_insert_lpf(request, pk):
           objs['PlaceDepictions'].append(PlaceDepiction(
             place=newpl,src_id=newpl.src_id,jsonb=dep))
 
-      #print("objs['PlaceNames']",objs['PlaceNames'])
+      #
+      # create related objects 
       PlaceName.objects.bulk_create(objs['PlaceNames'])
       PlaceType.objects.bulk_create(objs['PlaceTypes'])
       PlaceWhen.objects.bulk_create(objs['PlaceWhens'])
@@ -1060,7 +1072,7 @@ def ds_insert_lpf(request, pk):
       #print('new place record: ',newpl.src_id)
       
       # TODO: compute newpl.fclasses and newpl.minmax
-      
+      # something failed in *any* Place creation; delete dataset
       
     print('new dataset:', ds.__dict__)
     infile.close()
@@ -1077,7 +1089,6 @@ def ds_insert_lpf(request, pk):
   ds.numlinked = countlinked
   ds.total_links = total_links
   ds.save()
-
   print(str(countrows)+' inserted')
   messages.add_message(request, messages.INFO, 'inserted lpf for '+str(countrows)+' places')
   return redirect('/dashboard')

@@ -302,6 +302,7 @@
     var attrib_mb = 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
             '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
             'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+      attrib_mb_lite = 'Map data &copy; OSM, (CC-BY-SA), '+ 'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
       attrib_awmc = 'Tiles and Data &copy; 2013 <a href="http://www.awmc.unc.edu" target="_blank">AWMC</a>',
       token_mb = 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw',
       token_kg = 'pk.eyJ1Ijoia2dlb2dyYXBoZXIiLCJhIjoiUmVralBPcyJ9.mJegAI1R6KR21x_CVVTlqw',
@@ -316,8 +317,10 @@
       accessToken:token_kg,
       attribution:attrib_awmc})
       
-    var satellite  = L.tileLayer(mbstyle_url, {id:'satellite-streets-v11', token:token_mb, attribution:attrib_mb})
-    var osm  = L.tileLayer(mbstyle_url, {id:'mapbox/light-v10', token:token_mb, attribution:attrib_mb});
+    <!--var satellite  = L.tileLayer(mbstyle_url, {id:'satellite-streets-v11', token:token_mb, attribution:attrib_mb})-->
+    <!--var osm  = L.tileLayer(mbstyle_url, {id:'mapbox/light-v10', token:token_mb, attribution:attrib_mb});-->
+    var satellite  = L.tileLayer(mbstyle_url, {id:'satellite-streets-v11', token:token_mb, attribution:attrib_mb_lite})
+    var osm  = L.tileLayer(mbstyle_url, {id:'mapbox/light-v10', token:token_mb});
 
     var baseLayers = {
       "Pleiades Terrain": pleiades,
