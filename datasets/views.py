@@ -371,7 +371,7 @@ def ds_recon(request, pk):
         aug_geom=aug_geom,
         scope=scope
       )
-      messages.add_message(request, messages.INFO, "Your reconciliation task is under way. When complete you will receive an email and results will appear below (You may have to refresh screen). In the meantime, you can navigate elsewhere.")
+      messages.add_message(request, messages.INFO, "Your reconciliation task is under way. When complete you will receive an email and if successful, results will appear below (You may have to refresh screen). In the meantime, you can navigate elsewhere.")
       #task_emailer(ds.owner, ds.tasks.all().order_by('-id')[0], ds.label) 
       return redirect('/datasets/'+str(ds.id)+'/detail#reconciliation')
     except:
@@ -454,6 +454,18 @@ def collab_add(request,dsid,role='member'):
   print('collab_add():',request.POST['username'],dsid,uid)
   DatasetUser.objects.create(user_id_id=uid, dataset_id_id=dsid, role=role)
   return redirect('/datasets/'+str(dsid)+'/detail#sharing')
+#
+# delete dataset file(s) from disk on DatasetDelete()
+def dataset_file_delete(ds):
+  dsf_list = ds.files.all()
+  for f in dsf_list:
+    ffn = 'media/'+f.file.name
+    if os.path.exists(ffn):
+      os.remove(ffn)
+      print('zapped file '+ffn)
+    else:
+      print('did not find file '+ffn)
+    
 
 """
 updates objects related to a Place (pobj)
@@ -1661,23 +1673,25 @@ class DatasetDetailView(LoginRequiredMixin, UpdateView):
 # load page for confirm ok on delete
 # delete dataset, with CASCADE to DatasetFile, places, place_name, etc
 # also deletes from index if indexed (fails silently if not)
+# also removes dataset_file records
 # TODO: delete other stuff: disk files; archive??
 #
 class DatasetDeleteView(DeleteView):
   template_name = 'datasets/dataset_delete.html'
 
-  def delete_from_index(self):
+  def delete_complete(self):
     ds=get_object_or_404(Dataset,pk=self.kwargs.get("id"))
+    dataset_file_delete(ds)
     if ds.ds_status == 'indexed':
       pids=list(ds.placeids)
       deleteFromIndex(es,'whg',pids)
-  
+
   def get_object(self):
     id_ = self.kwargs.get("id")
     return get_object_or_404(Dataset, id=id_)
 
   def get_success_url(self):
-    self.delete_from_index()  
+    self.delete_complete()  
     return reverse('dashboard')
 
 #

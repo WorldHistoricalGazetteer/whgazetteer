@@ -17,7 +17,7 @@ sch = wd + 'schema_tsv.json'
 # application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
 # application/vnd.oasis.opendocument.spreadsheet
 mimes = ['text/csv','text/tab-separated-values','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',' application/vnd.oasis.opendocument.spreadsheet','application/json']
-files = ['croniken20.tsv','bdda34.csv','bdda34_err1.csv','bdda34_err1.tsv','bdda34.xlsx','bdda34.ods','lugares60.json']
+files = ['diamonds135.tsv','croniken20.tsv','bdda34.csv','bdda34_err1.csv','bdda34_err1.tsv','bdda34.xlsx','bdda34.ods','lugares60.json']
 # 0: valid, 1: valid, 
 def v(num):
     global descrip, rows, report, req

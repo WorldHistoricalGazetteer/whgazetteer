@@ -355,7 +355,7 @@ def validate_tsv(tempfn):
                      schema=schema_lptsv,
                      order_fields=True,
                      row_limit=20000,
-                     skip_errors=['missing-header','missing-cell','non-matching-header'])
+                     skip_checks=['blank-header'])
   #pp.pprint(report)  
   #print('error count',report['error-count'])
   result['count'] = report['tables'][0]['row-count']-1 # counts header apparently

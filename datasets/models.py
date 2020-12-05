@@ -53,7 +53,7 @@ class Dataset(models.Model):
     @property
     def tasks(self):
         from django_celery_results.models import TaskResult
-        return TaskResult.objects.all().filter(task_args = '['+str(self.id)+']')
+        return TaskResult.objects.all().filter(task_args = '['+str(self.id)+']',task_name__startswith='align')
     
     @property
     def status(self):

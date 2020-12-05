@@ -28,22 +28,29 @@ es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 @task(name="task_emailer")
 def task_emailer(dslabel,username,email):
   ds=get_object_or_404(Dataset,label=dslabel)
-  #task = model_to_dict(ds.tasks.all().order_by('-id')[0])
   task = ds.tasks.all().order_by('-id')[0]
-  #dsdict = model_to_dict(ds)
+  print('in task_emailer()')
   print('dsid, id, task_name',ds.id, task.id, task.task_name)
-  #print('model_to_dict',dsdict)
-  subject, from_email = 'WHG reconciliation result', 'whgazetteer@gmail.com'
-  #print('emailer email, taskname, :',email,task['name'])
-  #print('subject, from_email',subject, from_email)
-  text_content="Greetings "+username+"! Your {"+task.task_name+"} reconciliation task has completed with status: "+task.status
-  html_content="<h3>Greetings "+username+",</h3> <p>Your <b>"+task.task_name+"</b> reconciliation task for the <b>"+ds.label+"</b> dataset has completed with status: "+ task.status
+  tasklabel = 'Wikidata' if task.task_name.endswith('wd') else \
+    'Getty TGN' if task.task_name.endswith('tgn') else 'WHGazetteer'
+  if task.status == "FAILURE":
+    fail_msg = task.result['exc_message']
+    text_content="Greetings "+username+"! Unfortunately, your "+tasklabel+" reconciliation task has completed with status: "+ \
+      task.status+". \nError: "+fail_msg+"\nWHG staff have been notified. Ee will troubleshoot the issue and get back to you."
+    html_content_fail="<h3>Greetings, "+username+"</h3> <p>Unfortunately, your <b>"+tasklabel+"</b> reconciliation task for the <b>"+ds.label+"</b> dataset has completed with status: "+ task.status+".</p><p>Error: "+fail_msg+". WHG staff have been notified. We will troubleshoot the issue and get back to you.</p>"
+  else:
+    text_content="Greetings "+username+"! Your "+tasklabel+" reconciliation task has completed with status: "+ \
+      task.status+". \nRefresh the dataset page and view results on the 'Reconciliation' tab"
+    html_content_success="<h3>Greetings, "+username+"</h3> <p>Your <b>"+tasklabel+"</b> reconciliation task for the <b>"+ds.label+"</b> dataset has completed with status: "+ task.status+".</p>" + \
+      "<p>Refresh the dataset page and view results on the 'Reconciliation' tab</p>"
 
+  subject, from_email = 'WHG reconciliation result', 'whgazetteer@gmail.com'
   msg = EmailMultiAlternatives(
     subject, 
     text_content, 
-    from_email, [email])  
-  msg.attach_alternative(html_content, "text/html")
+    from_email, 
+    [email] if task.status=='SUCCESS' else [email,'karl.geog@gmail.com'])  
+  msg.attach_alternative(html_content_success if task.status == 'SUCCESS' else html_content_fail, "text/html")
   msg.send(fail_silently=False)
   
 # test task for uptimerobot
@@ -286,20 +293,13 @@ def align_wd(pk, *args, **kwargs):
   timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M"); print(timestamp)
 
   hit_parade = {"summary": {}}
-  
-  #def toWKT(coords):
-    #wkt = 'POINT('+str(coords[0])+' '+str(coords[1])+')'
-    #return wkt
-  
+    
   [count,count_skipped] = [0,0]
   global count_hit, count_nohit, total_hits, count_p1, count_p2
   [count_hit, count_nohit, total_hits, count_p1, count_p2] = [0,0,0,0,0]
   
-  #for place in ds.places.filter(flag=True):
   for place in ds.places.all(): #.order_by('id')[:10]: #.filter(id__lt=224265):
     #place=get_object_or_404(Place, id=6369031) # Aachen
-    #place=get_object_or_404(Place, id=6369589) # Abrantes
-    #place=get_object_or_404(Place, id=6453302) # Tourlaville
     count +=1
     place_id = place.id
     src_id = place.src_id
@@ -434,8 +434,7 @@ def align_wd(pk, *args, **kwargs):
       global count_hit, count_nohit, total_hits, count_p1, count_p2
       sparql.setQuery(qbase)
       sparql.setReturnFormat(JSON)
-      sparql.addCustomHttpHeader('User-Agent','WHGazetteer/0.2 (http://dev.whgazetteer.org; karl@kgeographer.org)')
-      #sparql.addCustomHttpHeader('Retry-After','')
+      sparql.addCustomHttpHeader('User-Agent','WHGazetteer/1.0 (http://whgazetteer.org; karl@kgeographer.org)')
   
       # pass1 (qbase)
       try:
@@ -464,7 +463,7 @@ def align_wd(pk, *args, **kwargs):
         # no hits, pass2(qbare) drops type
         sparql.setQuery(qbare)
         sparql.setReturnFormat(JSON)
-        sparql.addCustomHttpHeader('User-Agent','WHGazetteer/0.2 (http://dev.whgazetteer.org; karl@kgeographer.org)')
+        sparql.addCustomHttpHeader('User-Agent','WHGazetteer/1.0 (http://whgazetteer.org; karl@kgeographer.org)')
         # pass2 (qbare)
         try:
           bindings = sparql.query().convert()["results"]["bindings"]
@@ -513,6 +512,10 @@ def align_wd(pk, *args, **kwargs):
       'elapsed': int((end - start)/60)
     }
   print("summary returned",hit_parade['summary'])
+
+  # email owner when complete
+  task_emailer.delay(ds.label,ds.owner.username,ds.owner.email)
+  
   return hit_parade['summary']
   
 
@@ -693,19 +696,15 @@ def align_tgn(pk, *args, **kwargs):
     else:
       qobj['parents'] = []
 
-    # align_tgn geoms
+    # geoms
     if len(place.geoms.all()) > 0:
       g_list =[g.jsonb for g in place.geoms.all()]
       # make everything a simple polygon hull for spatial filter
       qobj['geom'] = hully(g_list)
 
     ## run pass1-pass3 ES queries
-    # don't trap here - it masks errors in es_lookup_tgn()
-    #try:
     print('qobj in align_tgn()',qobj)
     result_obj = es_lookup_tgn(qobj, bounds=bounds)
-    #except:
-      #print('es_lookup_tgn failed on ',place.id, sys.exc_info())
       
     if result_obj['hit_count'] == 0:
       count_nohit +=1
@@ -737,7 +736,7 @@ def align_tgn(pk, *args, **kwargs):
           place_id = get_object_or_404(Place, id=qobj['place_id']),
           task_id = align_tgn.request.id,
           query_pass = hit['pass'],
-          # consistent, for review display
+          # prepare for consistent display in review screen
           json = normalize(hit['_source'],'tgn'),
           src_id = qobj['src_id'],
           score = hit['_score'],
@@ -764,7 +763,6 @@ def align_tgn(pk, *args, **kwargs):
   print("summary returned",hit_parade['summary'])
   
   # email owner when complete
-  # dslabel,username,email
   task_emailer.delay(ds.label,ds.owner.username,ds.owner.email)
   
   return hit_parade['summary']
