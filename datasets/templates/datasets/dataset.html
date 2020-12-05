@@ -306,7 +306,7 @@
         </h6>
         {% if messages %}<div>{% for message in messages %}
           <!--<i style="display:block;" class="text-danger ml-4 mb-2">{{ message }}</i>-->
-          <h5 class="text-danger ml-4 mb-2">{{ message }}</h5>
+          <p class="text-danger ml-4 mb-2">{{ message }}</p>
         {%endfor%}</div>{% endif %}
         {% if ds.owner.id == user.id or user.is_superuser or user in collaborators %}
         {% if tasks|length < 1 %}<i>None yet...</i>{% endif %}

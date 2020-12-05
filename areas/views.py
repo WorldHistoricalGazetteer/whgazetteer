@@ -7,7 +7,7 @@ from django.views.generic import (
     UpdateView,
     DeleteView )
 
-from .forms import AreaModelForm, AreaDetailModelForm
+from .forms import AreaModelForm
 from .models import Area
 
 class AreaCreateView(CreateView):
@@ -18,10 +18,10 @@ class AreaCreateView(CreateView):
     # if called from reconciliation addtask, return there
     def get_form_kwargs(self, **kwargs):
         kwargs = super(AreaCreateView, self).get_form_kwargs()
-        redirect = self.request.GET.get('next')+'#addtask'
-        #print('kwargs in get_form_kwargs():',kwargs)
+        redirect = self.request.GET.get('next')+'#addtask' if 'next' in self.request.GET else ''
+        print('GET in AreaCreate()',self.request.GET)
         #print('redirect',redirect)
-        if redirect:
+        if redirect != '':
             self.success_url = redirect
         else:
             self.success_url = '/dashboard'

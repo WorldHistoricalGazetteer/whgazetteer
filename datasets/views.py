@@ -371,7 +371,7 @@ def ds_recon(request, pk):
         aug_geom=aug_geom,
         scope=scope
       )
-      messages.add_message(request, messages.INFO, "Your reconciliation task is under way. When complete you will receive an email and if successful, results will appear below (You may have to refresh screen). In the meantime, you can navigate elsewhere.")
+      messages.add_message(request, messages.INFO, "Your reconciliation task is under way. When complete, you will receive an email and if successful, results will appear below (You may have to refresh screen). In the meantime, you can navigate elsewhere.")
       #task_emailer(ds.owner, ds.tasks.all().order_by('-id')[0], ds.label) 
       return redirect('/datasets/'+str(ds.id)+'/detail#reconciliation')
     except:
