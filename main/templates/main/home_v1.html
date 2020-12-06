@@ -4,7 +4,7 @@
 {% load fontawesome %}
 {% load static %}
 
-{% block title %}<title>WHG v1</title>{% endblock %}
+{% block title %}<title>WHG v1.1</title>{% endblock %}
 {% block extra_head %}
   {% leaflet_js %}
   {% leaflet_css %}
@@ -444,12 +444,16 @@
       token_kg = 'pk.eyJ1Ijoia2dlb2dyYXBoZXIiLCJhIjoiUmVralBPcyJ9.mJegAI1R6KR21x_CVVTlqw',
       mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}';
 	  dare_url = 'https://dh.gu.se/tiles/imperium/{z}/{x}/{y}.png'
-	  <!--var mbtiles_url = 'https://api.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={token}';-->
-      var mbtiles_url = 'https://api.mapbox.com/v3/{id}/{z}/{x}/{y}.png';
+	  <!--cost accrues to AWMC, don't use-->
+      <!--var mbtiles_url = 'https://api.mapbox.com/v3/{id}/{z}/{x}/{y}.png';-->
+	  var ne_url = 'http://blog.whgazetteer.org/tiles/ne/{z}/{x}/{y}.png';
+	  ne_options = {mapMinZoom: 0, mapMaxZoom: 7, opacity: 1.0, tms: false, mapExtent:[-180.00000000, -85.05112878, 179.99652662, 85.05112878]}
 	// http://a.tiles.mapbox.com/v3/isawnyu.map-knmctlkh/22/2380956/1623451.png
-    var awmc = L.tileLayer(mbtiles_url, {id:'isawnyu.map-knmctlkh', token:"{{mbtokenkg}}", attribution:attrib_awmc})    
+    <!--var awmc = L.tileLayer(mbtiles_url, {id:'isawnyu.map-knmctlkh', token:"{{mbtokenkg}}", attribution:attrib_awmc})    -->
     var satellite  = L.tileLayer(mbstyle_url, {id:'mapbox/satellite-streets-v11', token:token_mb, attribution:attrib_mb})
     var osm  = L.tileLayer(mbstyle_url, {id:'mapbox/light-v10', token:token_mb, attribution:attrib_mb});
+	
+	var ne = L.tileLayer(ne_url, ne_options);
 	<!--var dare = L.tileLayer(dare_url);-->
 	// DARE tiles: https://dh.gu.se/tiles/imperium/{z}/{x}/{y}.png
 
@@ -502,9 +506,10 @@
 
     var baseLayers = {
       "Terrain": mb_terrain,
-	  "AWMC": awmc,
+	  <!--"AWMC": awmc,-->
       "OSM": osm,      
-      "Satellite": satellite
+      "Satellite": satellite,
+	  "Natural Earth": ne
     };
     var dataLayers = {
       "Countries": countries,
@@ -512,7 +517,7 @@
     }
     mappy.zoomControl.setPosition('topright')
     L.control.layers(baseLayers,dataLayers).addTo(mappy);
-    baseLayers["Terrain"].addTo(mappy)
+    baseLayers["Natural Earth"].addTo(mappy)
   }, false);
 
   function map_init (home_map, options) {
