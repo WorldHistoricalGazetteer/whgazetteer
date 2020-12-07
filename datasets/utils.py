@@ -494,7 +494,7 @@ def bestParent(qobj, flag=False):
   # merge parent country/ies & parents
   if len(qobj['countries']) > 0 and qobj['countries'][0] != '':
     for c in qobj['countries']:
-      best.append(parents.ccodes[0][c]['tgnlabel'])
+      best.append(parents.ccodes[0][c.upper()]['tgnlabel'])
   if len(qobj['parents']) > 0:
     for p in qobj['parents']:
       best.append(p)

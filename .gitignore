@@ -17,11 +17,11 @@ es-*.*
 *.wp*
 
 ### Django ###
+local_settings.py
 *.log
 *.pot
 *.pyc
 __pycache__/
 whg/__pycache__/
-local_settings.py
 db.sqlite3
 /static
