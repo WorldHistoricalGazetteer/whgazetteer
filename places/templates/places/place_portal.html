@@ -531,13 +531,10 @@
     var attrib_mb = 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
             '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
             'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-      attrib_awmc = 'Tiles and Data &copy; 2013 <a href="http://www.awmc.unc.edu" target="_blank">AWMC</a>',
       token_mb = 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw',
       token_kg = 'pk.eyJ1Ijoia2dlb2dyYXBoZXIiLCJhIjoiUmVralBPcyJ9.mJegAI1R6KR21x_CVVTlqw',
       mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}';
       
-    <!--var mbtiles_url = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={token}';-->
-    <!--var awmc = L.tileLayer(mbtiles_url, {id:'isawnyu.map-knmctlkh', token:token_kg, attribution:attrib_awmc})-->
     var satellite  = L.tileLayer(mbstyle_url, {id:'mapbox/satellite-streets-v11', token:token_mb, attribution:attrib_mb})
     var osm  = L.tileLayer(mbstyle_url, {id:'mapbox/light-v10', token:token_mb, attribution:attrib_mb});
 
@@ -545,6 +542,10 @@
       style:'mapbox://styles/kgeographer/ckc21ai6n5ozq1io64x91hndl',
       accessToken:token_kg})
 
+    ne_global= L.mapboxGL({
+      style:'mapbox://styles/kgeographer/ckidglq8l2nra19nzzbl995ue',
+      accessToken:token_kg})
+      
     var watershedStyle = {
       "fillColor": "#993333",
       "color": "#fff",
@@ -603,8 +604,9 @@
     <!--rivers.addTo(mappy)-->
 
     var baseLayers = {
-      "Pleiades Terrain": pleiades,
-      "OSM": osm,
+      <!--"Pleiades Terrain": pleiades,-->
+      "OpenStreetMap": osm,
+      "NE Terrain": ne_global,
       "Satellite": satellite
     };
     var dataLayers = {
@@ -613,7 +615,7 @@
       "Ecoregions": ecoregions
     }
     L.control.layers(baseLayers,dataLayers).addTo(mappy);
-    baseLayers['OSM'].addTo(mappy)
+    baseLayers['OpenStreetMap'].addTo(mappy)
   }, false);
 
   function getClose() {

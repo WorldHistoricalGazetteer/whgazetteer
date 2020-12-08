@@ -127,10 +127,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'whg.wsgi.application'
 
-#WHG_BASETILES = 'https://api.mapbox.com/styles/v1/kgeographer/cjstfpenh6o1e1fldz95w8m6p/tiles/{z}/{x}/{y}?access_token=pk.eyJ1Ijoia2dlb2dyYXBoZXIiLCJhIjoiUmVralBPcyJ9.mJegAI1R6KR21x_CVVTlqw'
-
-#AWMC_BASETILES = 'https://api.mapbox.com/styles/v1/isawnyu.map-knmctlkh/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1Ijoia2dlb2dyYXBoZXIiLCJhIjoiUmVralBPcyJ9.mJegAI1R6KR21x_CVVTlqw'
-
 
 LEAFLET_CONFIG = {
     'TILES':[],
@@ -144,9 +140,6 @@ LEAFLET_CONFIG = {
     "Tiles &copy; <a href='http://mapbox.com/' target='_blank'>MapBox</a> | "+
     "<a href='http://creativecommons.org/licenses/by-nc/3.0/deed.en_US' target='_blank'> CC-BY-NC 3.0</a>"
 }
-#"Tiles and Data &copy; 2013 <a href='http://www.awmc.unc.edu' target='_blank'>AWMC</a> | " +
-# mapbox://styles/kgeographer/cjstfpenh6o1e1fldz95w8m6p
-# pk.eyJ1Ijoia2dlb2dyYXBoZXIiLCJhIjoiUmVralBPcyJ9.mJegAI1R6KR21x_CVVTlqw
 
 #EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 #EMAIL_USE_TLS = True

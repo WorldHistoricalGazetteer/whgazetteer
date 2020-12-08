@@ -1,7 +1,7 @@
 <!-- datasets/home.html -->
 {% extends "main/base.html" %}
 {% load leaflet_tags %}
-{% load fontawesome %}
+{%load fontawesome %}
 {% load static %}
 
 {% block title %}<title>WHG v1.1</title>{% endblock %}
@@ -176,7 +176,7 @@
       
   $(function(){
 	$( "#map_dataset" ).change(function() {
-	  gl.removeLayer('heat_active')
+	  if (!!gl.getLayer('heat_active')){gl.removeLayer('heat_active')}
 	  heat($(this).val())
 	  console.log('heat() for',$(this).val())
 	});	
@@ -374,7 +374,7 @@
   // 
   function heat(dataset) {
 	console.log('heat()',dataset)
-	mb_terrain.getMapboxMap().addLayer({
+	ne_global.getMapboxMap().addLayer({
 	  "id": "heat_active",
 	  "type": "heatmap",
 	  "source": dataset,
@@ -432,7 +432,7 @@
   }
   //
   // initializes map
-  window.addEventListener('map:init', function (e) {
+  addEventListener('map:init', function (e) {
     window.mappy = e.detail.map
     mappy.setMaxBounds(null)
 	// attribution
@@ -461,16 +461,17 @@
 	// GL wrapper to display heatmaps
 
 	<!--terrain-->
-	<!--mb_terrain = L.mapboxGL({-->
-	  <!--style:'mapbox://styles/kgeographer/ckhf6o8yf07fw19qhbrm7f2q7',-->
-	  <!--accessToken:token_kg}).addTo(mappy)-->
+	mb_terrain = L.mapboxGL({
+	  style:'mapbox://styles/kgeographer/ckhf6o8yf07fw19qhbrm7f2q7',
+	  accessToken:token_kg})
 
 	<!--natural earth global-->
-	mb_terrain = L.mapboxGL({
+	<!--mb_terrain = L.mapboxGL({-->
+	ne_global= L.mapboxGL({
 	  style:'mapbox://styles/kgeographer/ckidglq8l2nra19nzzbl995ue',
 	  accessToken:token_kg}).addTo(mappy)
 	  
-	gl=mb_terrain.getMapboxMap().on('load',function(){
+	gl=ne_global.getMapboxMap().on('load',function(){
 	  gl.addSource('lugares', {
 			  "type": "geojson",
 			  "data": "media/data/lugares_13k.geojson"
@@ -505,10 +506,10 @@
     });
 
     var baseLayers = {
+      "NE global": ne_global,
 	  "Terrain": mb_terrain,
-	  "NE self": ne,
-      "NE mapbox": ne_mb,
-      "OSM": osm,      
+	  <!--"NE self": ne,-->
+      "OpenStreetMap": osm,      
       "Satellite": satellite
     };
     var dataLayers = {
@@ -517,7 +518,7 @@
     }
     mappy.zoomControl.setPosition('topright')
     L.control.layers(baseLayers,dataLayers).addTo(mappy);
-    baseLayers["Terrain"].addTo(mappy)
+    baseLayers["NE global"].addTo(mappy)
   }, false);
 
   function map_init (home_map, options) {
@@ -725,8 +726,8 @@
     } else if (doctype == 'trace') {
 		// data has features and bodies
 		bodies = data.bodies
-		console.log('trace data',data)
-		console.log('trace data bodies',data.bodies)
+		<!--console.log('trace data',data)-->
+		<!--console.log('trace data bodies',data.bodies)-->
         data.bodies.forEach(function(bod){ 
         // add a whg_id to bodies        
           results_div += sugLister(bod, doctype, scope)
