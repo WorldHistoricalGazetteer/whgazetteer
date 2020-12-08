@@ -672,7 +672,7 @@ def align_tgn(pk, *args, **kwargs):
 
     # ccodes (2-letter iso codes)
     for c in place.ccodes:
-      ccodes.append(c)
+      ccodes.append(c.upper())
     qobj['countries'] = place.ccodes
 
     # types (Getty AAT identifiers)
