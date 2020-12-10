@@ -8,8 +8,11 @@ WHG is aggregating attestations of historical place references contributed by re
 
 #### v1.1 (10 Dec 2020)
 
-- a
-- b
+- Reconciliation tasks now queued, and dataset owner notified by email upon completion.
+- Base map replaced w/Natural Earth tiles
+- Numerous minor bug fixes
+
+
 
 
 #### v1.0 (27 July 2020)
