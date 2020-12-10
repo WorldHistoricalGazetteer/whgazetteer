@@ -2,9 +2,15 @@
 
 This is the repository for the World Historical Gazetteer (WHG) web platform and API. The project is based at the University of Pittsburgh's [World History Center (WHC)](https://www.worldhistory.pitt.edu/). It has been substantially funded by a US National Endownment for the Humanities (NEH) grant and in-kind support from WHC..
 
-WHG is aggregating attestations of historical place references contributed by researchers. [Version 1](http://whgazetteer.org) was launched on 27 July 2020 . There is substantial information about WHG in its [Site Guide]() and [Tutorials](). Announcements and discussion about the project is also available on [our blog website](http://blog.whgazetteer.org) and via oour [Twitter feed]().
+WHG is aggregating attestations of historical place references contributed by researchers. [Version 1](http://whgazetteer.org) was launched on 27 July 2020 . There is substantial information about WHG in its [Site Guide]() and [Tutorials](). Announcements and discussion about the project is also available on [our blog website](http://blog.whgazetteer.org) and via our Twitter feed, [@WHGazetteer](https://twitter.com/WHGazetteer).
 
 ### Change log
+
+#### v1.1 (10 Dec 2020)
+
+- a
+- b
+
 
 #### v1.0 (27 July 2020)
 - _Additional data accessioned:_ 28,000 historical records from Pleiades, Euratlas, and OWTRAD datasets.

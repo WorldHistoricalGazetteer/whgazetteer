@@ -49,7 +49,7 @@ def task_emailer(dslabel,username,email):
     subject, 
     text_content, 
     from_email, 
-    [email] if task.status=='SUCCESS' else [email,'karl.geog@gmail.com'])  
+    [email,'karl.geog@gmail.com'] if task.status=='SUCCESS' else [email,'karl.geog@gmail.com'])  
   msg.attach_alternative(html_content_success if task.status == 'SUCCESS' else html_content_fail, "text/html")
   msg.send(fail_silently=False)
   
