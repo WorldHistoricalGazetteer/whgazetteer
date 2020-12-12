@@ -2,9 +2,9 @@
 from __future__ import absolute_import, unicode_literals
 from celery.decorators import task
 from django.conf import settings
-from django.core.mail import send_mail,EmailMultiAlternatives
+from django.core.mail import EmailMultiAlternatives
 from django.forms.models import model_to_dict
-from django.shortcuts import get_object_or_404, render, redirect
+from django.shortcuts import get_object_or_404
 from django.contrib.gis.geos import Polygon, Point, LineString
 import logging
 ##
@@ -17,9 +17,8 @@ from datasets.models import Dataset, Hit
 from datasets.static.regions import regions as region_hash
 from datasets.static.hashes.parents import ccodes
 from datasets.utils import *
-from places.models import Place, PlaceLink
+from places.models import Place
 ##
-#import shapely.geometry as sgeo
 from geopy import distance
 from elasticsearch import Elasticsearch
 es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
@@ -37,19 +36,21 @@ def task_emailer(dslabel,username,email):
     fail_msg = task.result['exc_message']
     text_content="Greetings "+username+"! Unfortunately, your "+tasklabel+" reconciliation task has completed with status: "+ \
       task.status+". \nError: "+fail_msg+"\nWHG staff have been notified. Ee will troubleshoot the issue and get back to you."
-    html_content_fail="<h3>Greetings, "+username+"</h3> <p>Unfortunately, your <b>"+tasklabel+"</b> reconciliation task for the <b>"+ds.label+"</b> dataset has completed with status: "+ task.status+".</p><p>Error: "+fail_msg+". WHG staff have been notified. We will troubleshoot the issue and get back to you.</p>"
+    html_content_fail="<h3>Greetings, "+username+"</h3> <p>Unfortunately, your <b>"+tasklabel+"</b> reconciliation task for the <b>"+ds.label+"</b> dataset has completed with status: "+ task.status+".</p><p>Error: "+fail_msg+". WHG staff have been notified. We will troubleshoot the issue and get back to you soon.</p>"
   else:
     text_content="Greetings "+username+"! Your "+tasklabel+" reconciliation task has completed with status: "+ \
       task.status+". \nRefresh the dataset page and view results on the 'Reconciliation' tab"
     html_content_success="<h3>Greetings, "+username+"</h3> <p>Your <b>"+tasklabel+"</b> reconciliation task for the <b>"+ds.label+"</b> dataset has completed with status: "+ task.status+".</p>" + \
-      "<p>Refresh the dataset page and view results on the 'Reconciliation' tab</p>"
+      "<p><a href='http://whgazetteer.org/datasets/"+str(ds.id)+"/detail#reconciliation'>View results</a> on the 'Reconciliation' tab (you may have to refresh the page)</p>"
 
   subject, from_email = 'WHG reconciliation result', 'whgazetteer@gmail.com'
   msg = EmailMultiAlternatives(
     subject, 
     text_content, 
     from_email, 
-    [email,'karl.geog@gmail.com'] if task.status=='SUCCESS' else [email,'karl.geog@gmail.com'])  
+    #[email,'karl.geog@gmail.com'] if task.status=='SUCCESS' else [email,'karl.geog@gmail.com'])
+    [email])
+  msg.bcc = ['karl@kgeographer.com']
   msg.attach_alternative(html_content_success if task.status == 'SUCCESS' else html_content_fail, "text/html")
   msg.send(fail_silently=False)
   
