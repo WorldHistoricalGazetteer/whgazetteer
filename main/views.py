@@ -69,7 +69,7 @@ def contactView(request):
             from_email = form.cleaned_data['from_email']
             message = from_email+' says: \n'+form.cleaned_data['message']
             subject_reply = "WHG message received"
-            message_reply = 'We received your message concerning "'+subject+'" and will respond soon.\n\n reagrds,\nThe WHG project team'
+            message_reply = 'We received your message concerning "'+subject+'" and will respond soon.\n\n regards,\nThe WHG project team'
             try:
                 send_mail(subject, message, from_email, ["karl.geog@gmail.com"])
                 send_mail(subject_reply, message_reply, 'whg@pitt.edu', [from_email])
