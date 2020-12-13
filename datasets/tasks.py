@@ -326,7 +326,8 @@ def align_wd(pk, *args, **kwargs):
 
     # names
     for name in place.names.all():
-      variants.append(name.toponym)
+      #variants.append(name.toponym)
+      variants.append(name.toponym.strip())
     qobj['variants'] = variants
     qobj['variants'].append(title)
 
@@ -347,7 +348,7 @@ def align_wd(pk, *args, **kwargs):
       # TODO: hully() assumes list is all one type
       qobj['geom'] = hully(g_list)
 
-    print('qobj before modifications for Wikidata',qobj)
+    print('qobj input for Wikidata sparql query',qobj)
     # wikidata sparql needs this form for lists
     variants = ' '.join(['"'+n+'"' for n in qobj['variants']])
     
@@ -419,6 +420,9 @@ def align_wd(pk, *args, **kwargs):
     if countries != '':
       q+='FILTER (?country in (%s)) . }'% (countries)
       qtype+='FILTER (?country in (%s)) . }'% (countries)
+    else:
+      q+='}'
+      qtype+='}'
       
     # qbase is pass1: names, types, geometry, countries
     qbase = qtype+'''
