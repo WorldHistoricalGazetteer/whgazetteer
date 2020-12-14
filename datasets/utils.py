@@ -354,7 +354,8 @@ def validate_tsv(tempfn):
   report = gvalidate(newfn,
                      schema=schema_lptsv,
                      order_fields=True,
-                     row_limit=20000,
+                     #row_limit=20000,
+                     row_limit=30000,
                      skip_checks=['blank-header'])
   #pp.pprint(report)  
   #print('error count',report['error-count'])
@@ -389,7 +390,8 @@ def frictionless_tsv(tempfn):
   report = gvalidate(newfn,
                      schema=schema_lptsv,
                      order_fields=True,
-                     row_limit=20000,
+                     #row_limit=20000,
+                     row_limit=30000,
                      skip_errors=['missing-header','missing-cell','non-matching-header'])
   pp.pprint(report)  
   #print('error count',report['error-count'])

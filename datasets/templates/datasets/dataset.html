@@ -270,7 +270,7 @@
               <table id="placetable" class="table table-striped table-bordered" style="width:100%">
                 <thead>
                   <tr>
-                    <th>pid</th>
+                    <th>id</th>
                     <th>src_id</th>
                     <th>title</th>
                     <th>ccodes</th>
@@ -1045,7 +1045,10 @@ js for Browse
         function(data){
           <!--console.log('feature count:',data.count)-->
           geom = {"type":"FeatureCollection","features":data.results}
-          if(geom.features.length < 15000) {
+          if(geom.features.length >= 15000) {
+            $(".toomany").html('for performance reasons, mapping only the first 15,000 features - sorry!')
+          }
+          if(geom.features.length <= 15000) {
             renderMap(geom,'browse')
           } else {
             spinner.stop()

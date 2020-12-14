@@ -1126,12 +1126,15 @@ def ds_insert_tsv(request, pk):
     # should already know delimiter
     try:
       dialect = csv.Sniffer().sniff(infile.read(16000),['\t',';','|'])
+      # TODO sniff out BOM
       reader = csv.reader(infile, dialect)
     except:
       reader = csv.reader(infile, delimiter='\t')
     
     infile.seek(0)
     header = next(reader, None)
+    # strip BOM character if exists
+    header[0] = header[0][1:] if '\ufeff' in header[0] else header[0]
     print('header', header)
   
     objs = {"PlaceName":[], "PlaceType":[], "PlaceGeom":[], "PlaceWhen":[],

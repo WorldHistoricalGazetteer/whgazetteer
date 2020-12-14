@@ -35,7 +35,7 @@ from search.views import getGeomCollection
 class StandardResultsSetPagination(PageNumberPagination):
   page_size = 10
   page_size_query_param = 'page_size'
-  max_page_size = 15000
+  max_page_size = 20000
 
 
 #
@@ -594,7 +594,7 @@ class GeomViewSet(viewsets.ModelViewSet):
     populates drf table in dataset.detail#browse
 """
 class PlaceTableViewSet(viewsets.ModelViewSet):
-  queryset = Place.objects.all().order_by('title')
+  #queryset = Place.objects.all().order_by('title')
   serializer_class = PlaceSerializer
   permission_classes = (permissions.IsAuthenticatedOrReadOnly)
 
@@ -603,12 +603,12 @@ class PlaceTableViewSet(viewsets.ModelViewSet):
     ds: dataset
   """
   def get_queryset(self):
-    #print('PlaceViewSet.get_queryset()',self.request.GET)
+    print('PlaceViewSet.get_queryset()',self.request.GET)
     qs = Place.objects.all()
     query = self.request.GET.get('q')
     ds = self.request.GET.get('ds')
     if ds is not None:
-      qs = qs.filter(dataset = ds)
+      qs = qs.filter(dataset = ds).order_by('src_id')
     if query is not None:
       qs = qs.filter(title__istartswith=query)
     return qs
