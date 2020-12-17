@@ -1071,7 +1071,7 @@ def ds_insert_lpf(request, pk):
       PlaceDepiction.objects.bulk_create(objs['PlaceDepictions'])
       #print('new place record: ',newpl.src_id)
       
-      # TODO: compute newpl.fclasses and newpl.minmax
+      # TODO: compute newpl.ccodes (if geom), newpl.fclasses, newpl.minmax
       # something failed in *any* Place creation; delete dataset
       
     print('new dataset:', ds.__dict__)
@@ -1110,6 +1110,10 @@ def parsedates_tsv(s,e):
 # ***
 # insert lp-tsv to database
 # ***
+from datasets.models import Dataset, DatasetFile
+from django.shortcuts import get_object_or_404
+pk = 793
+
 def ds_insert_tsv(request, pk):
   import os, csv
   ds = get_object_or_404(Dataset, id=pk)
@@ -1152,12 +1156,10 @@ def ds_insert_tsv(request, pk):
     countlinks = 0
     for r in reader:
       src_id = r[header.index('id')]
-      #print('src_id ds_from insert_tsv',src_id)
       title = r[header.index('title')].replace("' ","'")
       # for PlaceName insertion, strip anything in parens
       title = re.sub('\(.*?\)', '', title)
       title_source = r[header.index('title_source')]
-      #print('src_id, title, title_source from tsv_insert',src_id,title,title_source)
       title_uri = r[header.index('title_uri')] if 'title_uri' in header else ''
       variants = [x.strip() for x in r[header.index('variants')].split(';')] \
         if 'variants' in header else []
@@ -1165,21 +1167,24 @@ def ds_insert_tsv(request, pk):
         if 'types' in header else []
       aat_types = [x.strip() for x in r[header.index('aat_types')].split(';')] \
         if 'aat_types' in header else []
-      ccodes = [x.strip() for x in r[header.index('ccodes')].split(';')] \
-        if 'ccodes' in header else []
       parent_name = r[header.index('parent_name')] if 'parent_name' in header else ''
       parent_id = r[header.index('parent_id')] if 'parent_id' in header else ''
       coords = makeCoords(r[header.index('lon')],r[header.index('lat')]) \
         if 'lon' in header and 'lat' in header else []
+      # ccodes; compute if missing and coords
+      if r[header.index('ccodes')] in ['',None]:
+        ccodes = []
+      else:
+        ccodes = [x.strip().upper() for x in r[header.index('ccodes')].split(';')]
+      #ccodes = [x.strip().upper() for x in r[header.index('ccodes')].split(';')] \
+        #if r[header.index('ccodes')] not in ['',None] else []
+        #if 'ccodes' in header else []
       matches = [x.strip() for x in r[header.index('matches')].split(';')] \
         if 'matches' in header and r[header.index('matches')] != '' else []
       
 
       start = r[header.index('start')] if 'start' in header else None
-      #end = r[header.index('end')] if 'end' in header else ''
       end = r[header.index('end')] if 'end' in header and r[header.index('end')] !='' else start
-      #minmax = [start,end]
-      # -300-04	2006-01-01
       datesobj = parsedates_tsv(start,end) # returns {timespan{},minmax[]}
       
       description = r[header.index('description')] \
@@ -1192,13 +1197,8 @@ def ds_insert_tsv(request, pk):
              'description':description}
       print('row_obj',row_obj)
       
-      # TODO: generate fclasses
-      # lookup fclasses in Type table
-      #fclasses = list(set([get_object_or_404(Type,aat_id=t).fclass for t in aat_types])) \
-        #if aat_types != [''] else []
-        #if len(aat_types) > 0 else []
-
       # create new Place object
+      # TODO: compute newpl.ccodes (if geom), newpl.fclasses
       newpl = Place(
         src_id = src_id,
         dataset = ds,
@@ -1206,9 +1206,6 @@ def ds_insert_tsv(request, pk):
         ccodes = ccodes,
         minmax = datesobj['minmax'],
         timespans = {'timespans':[[datesobj['timespan']]]}
-        #minmax = minmax,
-        #timespans = [minmax]
-        #,fclasses = fclasses
       )
       newpl.save()
       countrows += 1

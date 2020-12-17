@@ -310,7 +310,7 @@ def align_wd(pk, *args, **kwargs):
 
     # ccodes (2-letter i  so codes)
     for c in place.ccodes:
-      ccodes.append(c)
+      ccodes.append(c.upper())
     qobj['countries'] = ccodes
 
     # types (Getty AAT identifiers)

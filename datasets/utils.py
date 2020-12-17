@@ -485,6 +485,8 @@ def makeCoords(lonstr,latstr):
   #lat = float(latstr) if latstr != '' else ''
   coords = [] if (lonstr == ''  or latstr == '') else [lon,lat]
   return coords
+def ccodesFromCoords(coords):
+  print(coords)
 def elapsed(delta):
   minutes, seconds = divmod(delta.seconds, 60)
   return '{:02}:{:02}'.format(int(minutes), int(seconds))
@@ -512,7 +514,7 @@ def getQ(arr,what):
   if what == 'ccodes':
     from datasets.static.hashes.parents import ccodes
     for c in arr:
-      qids.append('wd:'+ccodes[0][c]['wdid'])
+      qids.append('wd:'+ccodes[0][c]['wdid'].upper())
   elif what == 'types':
     if len(arr) == 0:
       qids.append('wd:Q486972')
