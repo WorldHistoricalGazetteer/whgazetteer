@@ -22,6 +22,8 @@ class Home(TemplateView):
     def get_context_data(self, *args, **kwargs):
         context = super(Home, self).get_context_data(*args, **kwargs)
         context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
+        context['mbtokenwhg'] = settings.MAPBOX_TOKEN_WHG
+        context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
         return context
     
 def statusView(request):
