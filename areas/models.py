@@ -8,18 +8,23 @@ from djgeojson.fields import PolygonField
 
 
 class Country(models.Model):
-    tgnid = models.IntegerField(blank=True, null=True)
-    tgnlabel = models.CharField(max_length=255, blank=True, null=True)
-    iso = models.CharField(max_length=2)
-    gnlabel = models.CharField(max_length=255)
-    geonameid = models.IntegerField()
-    un = models.CharField(max_length = 3, blank=True, null=True)
-    variants = JSONField(blank=True, null=True)
+    tgnid = models.IntegerField('Getty TGN id',blank=True, null=True)
+    tgnlabel = models.CharField('Getty TGN preferred name',max_length=255, blank=True, null=True)
+    iso = models.CharField('2-character code',max_length=2)
+    gnlabel = models.CharField('geonames label',max_length=255)
+    geonameid = models.IntegerField('geonames id')
+    un = models.CharField('UN name',max_length = 3, blank=True, null=True)
+    variants = models.CharField(max_length=512, blank=True, null=True)
     
-    poly = geomodels.PolygonField()
+    mpoly = geomodels.MultiPolygonField()
     
     def __str__(self):
-        return self.gnlabel    
+        return self.gnlabel
+
+    class Meta:
+        managed = True
+        db_table = 'countries'
+
 
 # user-created study area to constrain reconciliation
 class Area(models.Model):

@@ -1110,12 +1110,16 @@ def parsedates_tsv(s,e):
 # ***
 # insert lp-tsv to database
 # ***
-from datasets.models import Dataset, DatasetFile
-from django.shortcuts import get_object_or_404
-pk = 793
+
+# for testing
+#from datasets.models import Dataset, DatasetFile
+#from django.shortcuts import get_object_or_404
+#from datasets.utils import parse_wkt
+#pk = 793
+# 
 
 def ds_insert_tsv(request, pk):
-  import os, csv
+  import os, csv, re
   ds = get_object_or_404(Dataset, id=pk)
   # retrieve just-added file
   dsf = ds.files.all().order_by('-rev')[0]
@@ -1126,7 +1130,7 @@ def ds_insert_tsv(request, pk):
   
   if dbcount == 0:
     infile = dsf.file.open(mode="r")
-    print('ds_insert_tsv(); request.GET; infile',request.GET,infile)
+    #print('ds_insert_tsv(); request.GET; infile',request.GET,infile)
     # should already know delimiter
     try:
       dialect = csv.Sniffer().sniff(infile.read(16000),['\t',';','|'])
@@ -1170,7 +1174,20 @@ def ds_insert_tsv(request, pk):
       parent_name = r[header.index('parent_name')] if 'parent_name' in header else ''
       parent_id = r[header.index('parent_id')] if 'parent_id' in header else ''
       coords = makeCoords(r[header.index('lon')],r[header.index('lat')]) \
-        if 'lon' in header and 'lat' in header else []
+        if 'lon' in header and 'lat' in header else None
+      geowkt = r[header.index('geowkt')] if 'geowkt' in header else None
+      geojson = None # zero it out
+
+      # make Point geometry from lon/lat if there
+      if coords and len(coords) == 2:
+        geojson = {"type": "Point", "coordinates": coords,
+                    "geowkt": 'POINT('+str(coords[0])+' '+str(coords[1])+')'}
+      # else make geometry (any) w/Shapely if geowkt
+      if geowkt and geowkt not in ['',None]:
+        geojson = parse_wkt(r[header.index('geowkt')])
+      # else geojson is None
+      #print(geojson if geojson else 'no geometry in this row')
+        
       # ccodes; compute if missing and coords
       if r[header.index('ccodes')] in ['',None]:
         ccodes = []
@@ -1191,11 +1208,11 @@ def ds_insert_tsv(request, pk):
         if 'description' in header else ''
       
       # for debugging
-      row_obj = {'title':title,'title_uri':title_uri,'variants':variants,'types':types,
-             'aat_types':aat_types,'ccodes':ccodes,'parent_name':parent_name,
-             'parent_id':parent_id,'coords':coords,'matches':matches,'start':start,'end':end,
-             'description':description}
-      print('row_obj',row_obj)
+      #row_obj = {'title':title,'title_uri':title_uri,'variants':variants,'types':types,
+             #'aat_types':aat_types,'ccodes':ccodes,'parent_name':parent_name,
+             #'parent_id':parent_id,'coords':coords,'matches':matches,'start':start,'end':end,
+             #'description':description}
+      #print('row_obj',row_obj)
       
       # create new Place object
       # TODO: compute newpl.ccodes (if geom), newpl.fclasses
@@ -1250,23 +1267,32 @@ def ds_insert_tsv(request, pk):
           ))
       #
       # PlaceGeom()
-      # TODO: test geometry type or force geojson
-      if len(coords) > 0:
+      # 
+      if geojson:
         objs['PlaceGeom'].append(
           PlaceGeom(
             place=newpl,
             src_id = src_id,
-            jsonb={"type": "Point", "coordinates": coords,
-                        "geowkt": 'POINT('+str(coords[0])+' '+str(coords[1])+')'}
+            jsonb=geojson
         ))
-      elif 'geowkt' in header and r[header.index('geowkt')] not in ['',None]: # some rows no geom
-        objs['PlaceGeom'].append(
-          PlaceGeom(
-            place=newpl,
-            src_id = src_id,
-            # make GeoJSON using shapely
-            jsonb=parse_wkt(r[header.index('geowkt')])
-        ))
+        
+      #if len(coords) > 0:
+        #objs['PlaceGeom'].append(
+          #PlaceGeom(
+            #place=newpl,
+            #src_id = src_id,
+            #jsonb={"type": "Point", "coordinates": coords,
+                        #"geowkt": 'POINT('+str(coords[0])+' '+str(coords[1])+')'}
+        #))
+      #elif 'geowkt' in header and r[header.index('geowkt')] not in ['',None]: # some rows no geom
+        #objs['PlaceGeom'].append(
+          #PlaceGeom(
+            #place=newpl,
+            #src_id = src_id,
+            ## make GeoJSON using shapely
+            #jsonb=parse_wkt(r[header.index('geowkt')])
+        #))
+        
       #
       # PlaceLink() - all are closeMatch
       if len(matches) > 0:

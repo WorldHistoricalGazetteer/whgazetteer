@@ -127,6 +127,10 @@ class PlaceGeom(models.Model):
 
     src_id = models.CharField(max_length=100,default='') # contributor's identifier
 
+    @property
+    def title(self):
+        return self.place.title
+    
     class Meta:
         managed = True
         db_table = 'place_geom'
