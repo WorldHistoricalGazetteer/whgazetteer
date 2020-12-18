@@ -1,4 +1,5 @@
 #from django.core import serializers
+from django.contrib.gis.geos import GEOSGeometry
 from django.http import FileResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
@@ -10,6 +11,7 @@ from jsonschema import draft7_format_checker, validate #,Draft7Validator
 from pathlib import Path
 from shapely import wkt
 
+from areas.models import Country
 from datasets.models import Dataset, DatasetUser, Hit
 from datasets.static.hashes import aat, parents, aat_q
 from places.models import PlaceGeom # ,Place
@@ -461,7 +463,7 @@ def parse_wkt(g):
   #print('wkt',g)
   from shapely.geometry import mapping
   gw = wkt.loads(g)
-  feature = mapping(gw)
+  feature = json.loads(json.dumps(mapping(gw)))
   #print('wkt, feature',g, feature)
   return feature
 
@@ -485,8 +487,12 @@ def makeCoords(lonstr,latstr):
   #lat = float(latstr) if latstr != '' else ''
   coords = [] if (lonstr == ''  or latstr == '') else [lon,lat]
   return coords
-def ccodesFromCoords(coords):
-  print(coords)
+def ccodesFromGeom(geom):
+  print('ccodesFromGeom() geom',geom)
+  g = GEOSGeometry(str(geom))
+  qs = Country.objects.filter(mpoly__intersects=g)
+  ccodes = [c.iso for c in qs]
+  return ccodes
 def elapsed(delta):
   minutes, seconds = divmod(delta.seconds, 60)
   return '{:02}:{:02}'.format(int(minutes), int(seconds))

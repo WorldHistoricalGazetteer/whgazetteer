@@ -29,6 +29,7 @@ from places.models import *
 from datasets.forms import HitModelForm, DatasetDetailModelForm, DatasetCreateModelForm
 from datasets.models import Dataset, Hit, DatasetFile
 from datasets.static.hashes.parents import ccodes
+# these task names ARE in use, they generated dynamically
 from datasets.tasks import align_tgn, align_whg, align_wd, align_whg_pre, maxID
 from datasets.utils import *
 from es.es_utils import makeDoc,deleteFromIndex, replaceInIndex, esq_pid, esq_id, fetch_pids 
@@ -1112,10 +1113,10 @@ def parsedates_tsv(s,e):
 # ***
 
 # for testing
-#from datasets.models import Dataset, DatasetFile
-#from django.shortcuts import get_object_or_404
-#from datasets.utils import parse_wkt
-#pk = 793
+from datasets.models import Dataset, DatasetFile
+from django.shortcuts import get_object_or_404
+from datasets.utils import parse_wkt, makeCoords, ccodesFromGeom
+pk = 793
 # 
 
 def ds_insert_tsv(request, pk):
@@ -1188,18 +1189,18 @@ def ds_insert_tsv(request, pk):
       # else geojson is None
       #print(geojson if geojson else 'no geometry in this row')
         
-      # ccodes; compute if missing and coords
+      # ccodes; compute if missing and there is geometry
       if r[header.index('ccodes')] in ['',None]:
-        ccodes = []
+        if geojson:
+          ccodes = ccodesFromGeom(geojson)
+        else:
+          ccodes = []
       else:
         ccodes = [x.strip().upper() for x in r[header.index('ccodes')].split(';')]
-      #ccodes = [x.strip().upper() for x in r[header.index('ccodes')].split(';')] \
-        #if r[header.index('ccodes')] not in ['',None] else []
-        #if 'ccodes' in header else []
+
       matches = [x.strip() for x in r[header.index('matches')].split(';')] \
         if 'matches' in header and r[header.index('matches')] != '' else []
       
-
       start = r[header.index('start')] if 'start' in header else None
       end = r[header.index('end')] if 'end' in header and r[header.index('end')] !='' else start
       datesobj = parsedates_tsv(start,end) # returns {timespan{},minmax[]}
@@ -1254,8 +1255,12 @@ def ds_insert_tsv(request, pk):
       #
       # PlaceType()
       if len(types) > 0:
+        fclass_list=[]
         for i,t in enumerate(types):
           aatnum='aat:'+aat_types[i] if len(aat_types) >= len(types) and aat_types[i] !='' else None
+          if aatnum:
+            fclass_list.append(get_object_or_404(Type,aat_id=int(aatnum[4:])).fclass)
+          #fclasses.append(get_object_or_404(Type,aat_id=300008346))
           objs['PlaceType'].append(
             PlaceType(
               place=newpl,
@@ -1265,6 +1270,10 @@ def ds_insert_tsv(request, pk):
                       "label":aat_lookup(int(aatnum[4:])) if aatnum else ''
                     }
           ))
+      # TODO: get fclasses from types
+        newpl.fclasses = fclass_list
+        newpl.save()
+      
       #
       # PlaceGeom()
       # 
@@ -1276,22 +1285,6 @@ def ds_insert_tsv(request, pk):
             jsonb=geojson
         ))
         
-      #if len(coords) > 0:
-        #objs['PlaceGeom'].append(
-          #PlaceGeom(
-            #place=newpl,
-            #src_id = src_id,
-            #jsonb={"type": "Point", "coordinates": coords,
-                        #"geowkt": 'POINT('+str(coords[0])+' '+str(coords[1])+')'}
-        #))
-      #elif 'geowkt' in header and r[header.index('geowkt')] not in ['',None]: # some rows no geom
-        #objs['PlaceGeom'].append(
-          #PlaceGeom(
-            #place=newpl,
-            #src_id = src_id,
-            ## make GeoJSON using shapely
-            #jsonb=parse_wkt(r[header.index('geowkt')])
-        #))
         
       #
       # PlaceLink() - all are closeMatch
@@ -1346,7 +1339,7 @@ def ds_insert_tsv(request, pk):
           ))
   
   
-    # TODO: compute place.minmax, place.timespans
+    # TODO: place.fclass
     
     # bulk_create(Class, batch_size=n) for each
     PlaceName.objects.bulk_create(objs['PlaceName'],batch_size=10000)
