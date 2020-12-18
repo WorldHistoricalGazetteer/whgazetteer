@@ -987,6 +987,8 @@ js for Browse
             // account for lines and polygons
             // mappy.setView(feat._latlng);
             mappy.setView(ftype=='Point'?feat._latlng:feat.getCenter());
+          } else {
+            features.setStyle(foptions)
           }
         }
         getPlace(pid)
