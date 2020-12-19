@@ -32,7 +32,7 @@
       "$id": "#/properties/properties",
       "type": "object",
       "title": "The Properties Schema",
-      "required": ["title","ccodes"],
+      "required": ["title"],
       "properties": {
         "title": {
           "$id": "#/properties/properties/properties/title",

@@ -958,15 +958,18 @@ def ds_insert_lpf(request, pk):
   dsf = ds.files.all().order_by('-rev')[0]
   uribase = ds.uri_base
 
-  # TODO?: use stream reader; lpf can get big
+  # TODO?: use stream reader; lpf can get big; json-lines
   # if anything fails, delete dataset
 
   infile = dsf.file.open(mode="r")
-  print('ds_insert_lpf() request.GET, infile',request.GET,infile) 
   print('ds_insert_lpf() for dataset',ds) 
+  print('ds_insert_lpf() request.GET, infile',request.GET,infile) 
   with infile:
     jdata = json.loads(infile.read())
-    print('count of features, 0th',len(jdata['features']), jdata['features'][0])
+    
+    print('count of features',len(jdata['features']))
+    print('0th feature',jdata['features'][0])
+    
     for feat in jdata['features']:
       # create Place, save to get id, then build associated records for each
       objs = {"PlaceNames":[], "PlaceTypes":[], "PlaceGeoms":[], "PlaceWhens":[],
@@ -974,13 +977,38 @@ def ds_insert_lpf(request, pk):
               "PlaceDepictions":[]}
       countrows += 1
 
+      # build attributes for new Place instance
+      title=re.sub('\(.*?\)', '', feat['properties']['title'])
+      
+      # geometry
+      if 'geometry' in feat.keys():
+        geojson = feat['geometry'] # GeometryCollection :^(
+      
+      # ccodes  
+      if 'ccodes' not in feat['properties'].keys():
+        if geojson:
+          # a GeometryCollection
+          ccodes = ccodesFromGeom(geojson)
+        else:
+          ccodes = []
+      else:
+        ccodes = feat['properties']['ccodes']
+      
+      # temporal
+      
+      
       # Place: src_id, title, ccodes, dataset
       newpl = Place(
-        # TODO: add src_id to properties in LP format?
+        # strip uribase from @id
         src_id=feat['@id'] if uribase == None else feat['@id'].replace(uribase,''),
         dataset=ds,
-        title=feat['properties']['title'],
-        ccodes=feat['properties']['ccodes'] if 'ccodes' in feat['properties'].keys() else []
+        #title=feat['properties']['title'],
+        # strip anything in parens for title only
+        title=title,
+        #ccodes=feat['properties']['ccodes'] if 'ccodes' in feat['properties'].keys() else []
+        ccodes=ccodes
+        #,timespans = 
+        #,minmax = 
       )
       print('new place: ',newpl.title)
       newpl.save()
@@ -1113,10 +1141,11 @@ def parsedates_tsv(s,e):
 # ***
 
 # for testing
-from datasets.models import Dataset, DatasetFile
-from django.shortcuts import get_object_or_404
-from datasets.utils import parse_wkt, makeCoords, ccodesFromGeom
-pk = 793
+#from datasets.models import Dataset, DatasetFile
+#from django.shortcuts import get_object_or_404
+#from datasets.utils import parse_wkt, makeCoords, ccodesFromGeom
+#from areas.models import Country
+#pk = 793
 # 
 
 def ds_insert_tsv(request, pk):
@@ -1160,9 +1189,10 @@ def ds_insert_tsv(request, pk):
     countlinked = 0
     countlinks = 0
     for r in reader:
+      # build attributes for new Place instance
       src_id = r[header.index('id')]
-      title = r[header.index('title')].replace("' ","'")
-      # for PlaceName insertion, strip anything in parens
+      title = r[header.index('title')].replace("' ","'") # why?
+      # strip anything in parens for title only
       title = re.sub('\(.*?\)', '', title)
       title_source = r[header.index('title_source')]
       title_uri = r[header.index('title_uri')] if 'title_uri' in header else ''
@@ -1216,7 +1246,6 @@ def ds_insert_tsv(request, pk):
       #print('row_obj',row_obj)
       
       # create new Place object
-      # TODO: compute newpl.ccodes (if geom), newpl.fclasses
       newpl = Place(
         src_id = src_id,
         dataset = ds,
@@ -1229,6 +1258,8 @@ def ds_insert_tsv(request, pk):
       countrows += 1
   
       # build associated objects and add to arrays
+      
+      #
       # PlaceName()
       objs['PlaceName'].append(
         PlaceName(
@@ -1270,7 +1301,7 @@ def ds_insert_tsv(request, pk):
                       "label":aat_lookup(int(aatnum[4:])) if aatnum else ''
                     }
           ))
-      # TODO: get fclasses from types
+      # add fclasses to new Place
         newpl.fclasses = fclass_list
         newpl.save()
       
@@ -1320,7 +1351,6 @@ def ds_insert_tsv(request, pk):
           PlaceWhen(
             place=newpl,
             src_id = src_id,
-            #jsonb=datesobj['timespan']
             jsonb={"timespans": [datesobj['timespan']]}            
         ))
   
@@ -1337,10 +1367,7 @@ def ds_insert_tsv(request, pk):
               "value":description
             }
           ))
-  
-  
-    # TODO: place.fclass
-    
+      
     # bulk_create(Class, batch_size=n) for each
     PlaceName.objects.bulk_create(objs['PlaceName'],batch_size=10000)
     print(len(objs['PlaceName']),'names done')

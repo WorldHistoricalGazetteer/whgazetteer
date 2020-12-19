@@ -490,7 +490,11 @@ def makeCoords(lonstr,latstr):
 def ccodesFromGeom(geom):
   print('ccodesFromGeom() geom',geom)
   g = GEOSGeometry(str(geom))
-  qs = Country.objects.filter(mpoly__intersects=g)
+  if geom['type'] != 'GeometryCollection':
+    qs = Country.objects.filter(mpoly__intersects=g)
+  else:
+    # just hull them all
+    qs = Country.objects.filter(mpoly__intersects=g.convex_hull)    
   ccodes = [c.iso for c in qs]
   return ccodes
 def elapsed(delta):
