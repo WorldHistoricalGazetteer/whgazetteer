@@ -300,6 +300,29 @@ def parse_errors_tsv(err):
 def parse_errors_lpf(err):
   print('parse_errors_lpf()',err)
 
+# ***
+# parse start & end for insert to db
+# TODO: is year-only minmax useful in GUI?
+# parsedates for ds_insert_lpf will be different
+# ***
+#def intmap(arr):
+  #return [int(a) for a in arr]
+#
+# produce datesobj from start & end
+#
+def parsedates_tsv(s,e):
+  s_yr=s[:5] if s[0] == '-' else s[:4]
+  e_yr=e[:5] if e[0] == '-' else e[:4]
+  #union = intmap([*set(e.split('/')), *set(s.split('/'))])
+  return {"timespan":{"start": {"earliest":s}, "end": {"latest":e}},
+          "minmax":[int(s_yr),int(e_yr)]}
+
+#
+# produce datesobj from entire lpf feature
+# TODO: replicates get_context_data() in PlacePortalView()
+def parsedates_lpf(feat):
+  return {"timespans":[[665,667],[123,987]], "minmax":[666,666]}
+  
 # 
 # validate Linked Places json-ld (w/jsonschema)
 # format ['coll' (FeatureCollection) | 'lines' (json-lines)]

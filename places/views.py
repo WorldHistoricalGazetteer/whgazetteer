@@ -67,6 +67,7 @@ class PlacePortalView(DetailView):
     context['whg_id'] = id_
     context['payload'] = [] # parent and children if any
     context['traces'] = [] # 
+    context['allts'] = [] # agg timespans from records
     # place portal headers gray for records from these
     context['core'] = ['gn500','gnmore','ne_countries','ne_rivers982','ne_mountains','wri_lakes','tgn_filtered_01']
 
@@ -80,23 +81,25 @@ class PlacePortalView(DetailView):
     # database records for parent + children into 'payload'
     qs=Place.objects.filter(id__in=ids).order_by('-whens__minmax')
     context['title'] = qs.first().title
-    
+    extents=[]
     for place in qs:
       ds = get_object_or_404(Dataset,id=place.dataset.id)
-      extents = []
-      # isolate temporal scoping where exists; build summing object
       whens = [when.jsonb for when in place.whens.all()]     
       names = [name.jsonb for name in place.names.all()]
       geoms = [geom.jsonb for geom in place.geoms.all()]
       types = [t.jsonb for t in place.types.all()]
       related = [rel.jsonb for rel in place.related.all()]
-      timespans = list(t for t,_ in itertools.groupby(place.timespans)) if place.timespans else []
       
+      # 
+      timespans = list(t for t,_ in itertools.groupby(place.timespans)) if place.timespans else []
+      context['allts'] += timespans
       # data object summing temporality of all attestations for a place
       # TODO: leaving relations out b/c when for lugares is ill-formed
       # cf. 20190416_lugares-lpf.sql, line 63
       extents += mm(names),mm(geoms),mm(types),mm(whens),mm(related)
+      #extents += timespans
       #extents += mm(names),mm(geoms),mm(types),mm(whens)
+      #print('extents',extents)
       
       record = {
         "whg_id":id_,
@@ -118,7 +121,8 @@ class PlacePortalView(DetailView):
         "timespans":timespans
       }
       context['payload'].append(record)
-      context['extents'] = extents
+
+
     #TODO: compute global minmax for payload
     #print('payload',context['payload'])
     #print('whens',record['whens'])
@@ -127,7 +131,7 @@ class PlacePortalView(DetailView):
       if tsarr==[]:
         return ''
       else:
-        print('mm_trace() tsarr',tsarr)
+        #print('mm_trace() tsarr',tsarr)
         # TODO: not only simple years here; sorts string years?
         starts = sorted( [t['start'] for t in tsarr] )
         ends = sorted( [t['end'] for t in tsarr] )
@@ -145,7 +149,7 @@ class PlacePortalView(DetailView):
       # filter bodies for place_id
       bods=[b for b in h['_source']['body'] if b['place_id'] in ids]
       # agg "relation (start/end)" of bodies
-      print('bods',bods)
+      #print('bods',bods)
       # {'id': 'http://whgazetteer.org/place/174101', 'title': 'Santiago de Cuba', 'place_id': 174101, 'relations': [{'when': [{'end': '1519-02-10', 'start': '1519-02-10'}], 'relation': 'waypoint'}]}
       bod = {
         "id": bods[0]['id'],
@@ -162,7 +166,7 @@ class PlacePortalView(DetailView):
     
     return context
 
-
+# TODO: used?
 class PlaceModalView(DetailView):
   template_name = 'places/place_modal.html'
 
@@ -183,32 +187,32 @@ class PlaceModalView(DetailView):
   
   def get_context_data(self, *args, **kwargs):
     print('get_context_data kwargs',self.kwargs)
-    def mm(attrib):
-      #print('attrib in PlacePortalView.mm()', attrib)
-      extent=[]
-      for a in attrib:
-        minmax=[]
-        if 'when' in a: # i.e. names, geoms, types, related
-          starts = sorted([t['start']['in'] for t in a['when']['timespans']])
-          # TODO: this could throw error if >1 timespan
-          ends = sorted([t['end']['in'] for t in a['when']['timespans']]) \
-            if 'end' in a['when']['timespans'][0] else [datetime.now().year]
-          minmax = [int(min(starts)), int(max(ends))]
-          if len(minmax)>0: extent.append(minmax)
-        elif 'timespans' in a: # i.e. whens
-          # object in LP v1.0 datasets, list in +=v1.1
-          if type(a['timespans']==dict): 
-            a['timespans'] = [a['timespans']]
-          starts = sorted(
-            [(t['start']['in'] if 'in' in t['start'] else t['start']['earliest']) for t in a['timespans'][0]]
-          )
-          ends = sorted(
-            [(t['end']['in'] if 'in' in t['end'] else t['end']['latest']) for t in a['timespans'][0]]
-          )
-          minmax = [int(min(starts)), int(max(ends))]
-          #print('starts, ends, minmax',starts,ends,minmax)
-          if len(minmax)>0: extent.append(minmax)
-      return extent
+    #def mm(attrib):
+      ##print('attrib in PlacePortalView.mm()', attrib)
+      #extent=[]
+      #for a in attrib:
+        #minmax=[]
+        #if 'when' in a: # i.e. names, geoms, types, related
+          #starts = sorted([t['start']['in'] for t in a['when']['timespans']])
+          ## TODO: this could throw error if >1 timespan
+          #ends = sorted([t['end']['in'] for t in a['when']['timespans']]) \
+            #if 'end' in a['when']['timespans'][0] else [datetime.now().year]
+          #minmax = [int(min(starts)), int(max(ends))]
+          #if len(minmax)>0: extent.append(minmax)
+        #elif 'timespans' in a: # i.e. whens
+          ## object in LP v1.0 datasets, list in +=v1.1
+          #if type(a['timespans']==dict): 
+            #a['timespans'] = [a['timespans']]
+          #starts = sorted(
+            #[(t['start']['in'] if 'in' in t['start'] else t['start']['earliest']) for t in a['timespans'][0]]
+          #)
+          #ends = sorted(
+            #[(t['end']['in'] if 'in' in t['end'] else t['end']['latest']) for t in a['timespans'][0]]
+          #)
+          #minmax = [int(min(starts)), int(max(ends))]
+          ##print('starts, ends, minmax',starts,ends,minmax)
+          #if len(minmax)>0: extent.append(minmax)
+      #return extent
 
     context = super(PlaceModalView, self).get_context_data(*args, **kwargs)
     es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
@@ -216,6 +220,7 @@ class PlaceModalView(DetailView):
     pid = self.kwargs.get("pid")
     place = get_object_or_404(Place, id=pid)
     context['whg_id'] = id_
+    context['intervals'] = []
     context['payload'] = [] # parent and children if any
     context['traces'] = [] # 
     # place portal headers gray for records from these
@@ -231,10 +236,9 @@ class PlaceModalView(DetailView):
     # database records for parent + children into 'payload'
     qs=Place.objects.filter(id__in=ids).order_by('-whens__minmax')
     context['title'] = qs.first().title
-    
     for place in qs:
       ds = get_object_or_404(Dataset,id=place.dataset.id)
-      extents = []
+
       # isolate temporal scoping where exists; build summing object
       whens = [when.jsonb for when in place.whens.all()]     
       names = [name.jsonb for name in place.names.all()]
@@ -242,11 +246,11 @@ class PlaceModalView(DetailView):
       types = [t.jsonb for t in place.types.all()]
       related = [rel.jsonb for rel in place.related.all()]
       timespans = list(t for t,_ in itertools.groupby(place.timespans)) if place.timespans else []
-      
+      print('timespans',timespans)
       # data object summing temporality of all attestations for a place
       # TODO: leaving relations out b/c when for lugares is ill-formed
       # cf. 20190416_lugares-lpf.sql, line 63
-      extents += mm(names),mm(geoms),mm(types),mm(whens),mm(related)
+      #extents += mm(names),mm(geoms),mm(types),mm(whens),mm(related)
       #extents += mm(names),mm(geoms),mm(types),mm(whens)
       
       record = {
@@ -269,16 +273,13 @@ class PlaceModalView(DetailView):
         "timespans":timespans
       }
       context['payload'].append(record)
-      context['extents'] = extents
-    #TODO: compute global minmax for payload
-    #print('payload',context['payload'])
-    #print('whens',record['whens'])
+      context['intervals'].append(timespans)
     
     def mm_trace(tsarr):
       if tsarr==[]:
         return ''
       else:
-        print('mm_trace() tsarr',tsarr)
+        #print('mm_trace() tsarr',tsarr)
         # TODO: not only simple years here; sorts string years?
         starts = sorted( [t['start'] for t in tsarr] )
         ends = sorted( [t['end'] for t in tsarr] )
@@ -296,7 +297,7 @@ class PlaceModalView(DetailView):
       # filter bodies for place_id
       bods=[b for b in h['_source']['body'] if b['place_id'] in ids]
       # agg "relation (start/end)" of bodies
-      print('bods',bods)
+      #print('bods',bods)
       # {'id': 'http://whgazetteer.org/place/174101', 'title': 'Santiago de Cuba', 'place_id': 174101, 'relations': [{'when': [{'end': '1519-02-10', 'start': '1519-02-10'}], 'relation': 'waypoint'}]}
       bod = {
         "id": bods[0]['id'],

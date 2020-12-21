@@ -995,7 +995,8 @@ def ds_insert_lpf(request, pk):
         ccodes = feat['properties']['ccodes']
       
       # temporal
-      
+      # send entire feat for time summary
+      datesobj=parsedates_lpf(feat)
       
       # Place: src_id, title, ccodes, dataset
       newpl = Place(
@@ -1006,9 +1007,9 @@ def ds_insert_lpf(request, pk):
         # strip anything in parens for title only
         title=title,
         #ccodes=feat['properties']['ccodes'] if 'ccodes' in feat['properties'].keys() else []
-        ccodes=ccodes
-        #,timespans = 
-        #,minmax = 
+        ccodes=ccodes,
+        timespans = datesobj['timespans'],
+        minmax = datesobj['minmax']
       )
       print('new place: ',newpl.title)
       newpl.save()
@@ -1122,19 +1123,6 @@ def ds_insert_lpf(request, pk):
   messages.add_message(request, messages.INFO, 'inserted lpf for '+str(countrows)+' places')
   return redirect('/dashboard')
 
-# ***
-# parse start & end for insert to db
-# TODO: is year-only minmax useful in GUI?
-# parsedates for ds_insert_lpf will be different
-# ***
-#def intmap(arr):
-  #return [int(a) for a in arr]
-def parsedates_tsv(s,e):
-  s_yr=s[:5] if s[0] == '-' else s[:4]
-  e_yr=e[:5] if e[0] == '-' else e[:4]
-  #union = intmap([*set(e.split('/')), *set(s.split('/'))])
-  return {"timespan":{"start": {"earliest":s}, "end": {"latest":e}},
-          "minmax":[int(s_yr),int(e_yr)]}
 
 # ***
 # insert lp-tsv to database
@@ -1315,7 +1303,19 @@ def ds_insert_tsv(request, pk):
             src_id = src_id,
             jsonb=geojson
         ))
-        
+          
+      #
+      # PlaceWhen()
+      # timespans[{start{}, end{}}], periods[{name,id}], label, duration
+      if start != '':
+        # TODO: account for 
+        objs['PlaceWhen'].append(
+          PlaceWhen(
+            place=newpl,
+            src_id = src_id,
+            jsonb={"timespans": [datesobj['timespan']]}            
+        ))
+    
         
       #
       # PlaceLink() - all are closeMatch
@@ -1342,18 +1342,6 @@ def ds_insert_tsv(request, pk):
               "label": parent_name}
         ))
 
-      #
-      # PlaceWhen()
-      # timespans[{start{}, end{}}], periods[{name,id}], label, duration
-      if start != '':
-        # TODO: account for 
-        objs['PlaceWhen'].append(
-          PlaceWhen(
-            place=newpl,
-            src_id = src_id,
-            jsonb={"timespans": [datesobj['timespan']]}            
-        ))
-  
       #
       # PlaceDescription()
       # @id, value, lang

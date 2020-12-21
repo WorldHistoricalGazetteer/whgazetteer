@@ -27,6 +27,7 @@
 {% block content %}
 <div class="container">
   <div id="place_title"><h4>{{ title }}</h4></div>
+  {{ allts }}
   <div id="place_tabset">
     <ul class="nav nav-tabs" id="myTab">
       <li class="nav-item">
@@ -111,18 +112,12 @@
                     {% if not forloop.last %}| {% endif %}
                     {% endfor %}</i>
                 </div>
-              {% endif %}
-              <!--{ if rec.descriptions and rec.descriptions|length > 0 %}-->
-                <!--<div class="attest-element">-->
-                  <!--<div><b>Descriptions</b>: { for desc in rec.descriptions %}<i>{desc.value}}</i>-->
-                    <!--{ if not forloop.last %}; { endif %}{ endfor %}</div>-->
-                <!--</div>-->
-              <!--{ endif %}-->
-              
+              {% endif %}              
               {% if rec.whens|length > 0 %}
                 <div class="attest-element attesttime"><b>Temporal</b>:
                   <!-- aggregate into telems javascript object-->
                   {% for w in rec.whens %}
+                  <!--{ for w in rec.timespans %}-->
                     {{ w|json_script:rec.place_id }}
                   {% endfor %}
                   {% if rec.timespans|length > 0 %}
@@ -132,6 +127,12 @@
                   {% endif %}
                 </div>
               {% endif %}
+              <!--{ if rec.descriptions and rec.descriptions|length > 0 %}-->
+                <!--<div class="attest-element">-->
+                  <!--<div><b>Descriptions</b>: { for desc in rec.descriptions %}<i>{desc.value}}</i>-->
+                    <!--{ if not forloop.last %}; { endif %}{ endfor %}</div>-->
+                <!--</div>-->
+              <!--{ endif %}-->
             </div>
             {% endfor %} <!-- rec in payload-->
           </div> <!-- place_home_l-->
@@ -246,16 +247,21 @@
     });
     
     time_object = parseTelems(telems)[0]
-    <!--intervals = time_object.intervals-->
     intervals = parseTelems(telems)[1]
-    <!--console.log('intervals, time_object',intervals,time_object)-->
-    var min = Math.min.apply(null, intervals.map(function(row){ return Math.min.apply(Math, row); }));
-    var max = Math.max.apply(null, intervals.map(function(row){ return Math.max.apply(Math, row); }));
+    allts = {{ allts }}
+    console.log('allts', allts, typeof(allts))
+
+    <!--var min = Math.min.apply(null, intervals.map(function(row){ return Math.min.apply(Math, row); }));-->
+    <!--var max = Math.max.apply(null, intervals.map(function(row){ return Math.max.apply(Math, row); }));-->
+    <!--minmax=[min,max]-->
+    var min = Math.min.apply(null, allts.map(function(row){ return Math.min.apply(Math, row); }));
+    var max = Math.max.apply(null, allts.map(function(row){ return Math.max.apply(Math, row); }));
     minmax=[min,max]
 
     <!--console.log('min/max',minmax)-->
     // feed to tvis_summary()
-    histogram_data(intervals,minmax)
+    <!--histogram_data(intervals,minmax)-->
+    histogram_data(allts,minmax)
     
     $(".create-comment").each(function () {
       var recpk = $(this).data('id');
@@ -355,7 +361,6 @@
         }
       }
     }
-    <!--data=hist_array.map(function(d,i){return {"bin":i,"count":d}})-->
     data=hist_array.map(function(d,i){return {"bin":labels[i],"count":d}})
     // now visualize it
     <!--console.log(data)-->
@@ -365,7 +370,8 @@
   function histogram(data,labels){
     // exit if no data 
     if (data[0].bin == "Infinity"){ $("#histogram_sum").html('<i>None yet</i>'); return; }
-    data=data.slice(0,199)
+    data=data.slice(0,200)
+    <!--var margin = {top: 0, right: 10, bottom: 0, left: 10},-->
     var margin = {top: 0, right: 10, bottom: 0, left: 10},
       width = 500, height = 30,  padding_h = 20,  padding_w = 30;
       
