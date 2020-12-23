@@ -308,21 +308,44 @@ def parse_errors_lpf(err):
 #def intmap(arr):
   #return [int(a) for a in arr]
 #
-# produce datesobj from start & end
+# datesobj from start & end
 #
 def parsedates_tsv(s,e):
   s_yr=s[:5] if s[0] == '-' else s[:4]
   e_yr=e[:5] if e[0] == '-' else e[:4]
   #union = intmap([*set(e.split('/')), *set(s.split('/'))])
-  return {"timespan":{"start": {"earliest":s}, "end": {"latest":e}},
+  return {"timespan":[{"start": {"earliest":s}, "end": {"latest":e}}],
           "minmax":[int(s_yr),int(e_yr)]}
 
 #
-# produce datesobj from entire lpf feature
-# TODO: replicates get_context_data() in PlacePortalView()
+# datesobj from entire lpf feature
 def parsedates_lpf(feat):
-  return {"timespans":[[665,667],[123,987]], "minmax":[666,666]}
-  
+  timespans=[]
+  # global when?
+  when_feat = feat['when'] if 'when' in feat else None
+  # get keys that MAY have a when
+  possible_keys = list(set(feat.keys() & set(['names','types','relations','geometry'])))
+  #print(when_feat,possible_keys)
+  # get whens in geometry if exist
+  if 'geometry' in possible_keys:
+    for g in feat['geometry']['geometries']:
+      #print(g)
+      if 'when' in g and 'timespans' in g['when']:
+        timespans += g['when']['timespans']
+  for k in possible_keys:
+    if k != 'geometry':    
+      obj = feat[k]
+      for o in obj:
+        if 'when' in o and 'timespans' in o['when']:
+          timespans += o['when']['timespans']  
+  starts = sorted(
+    [int(t['start'][list(t['start'].keys())[0]]) for t in timespans]
+  )
+  ends = sorted(
+    [int(t['end'][list(t['end'].keys())[0]]) for t in timespans]
+  )
+  minmax = [int(min(starts)), int(max(ends))]  
+  return {"timespans": timespans, "minmax": minmax}
 # 
 # validate Linked Places json-ld (w/jsonschema)
 # format ['coll' (FeatureCollection) | 'lines' (json-lines)]

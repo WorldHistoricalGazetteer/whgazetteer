@@ -1226,13 +1226,6 @@ def ds_insert_tsv(request, pk):
       description = r[header.index('description')] \
         if 'description' in header else ''
       
-      # for debugging
-      #row_obj = {'title':title,'title_uri':title_uri,'variants':variants,'types':types,
-             #'aat_types':aat_types,'ccodes':ccodes,'parent_name':parent_name,
-             #'parent_id':parent_id,'coords':coords,'matches':matches,'start':start,'end':end,
-             #'description':description}
-      #print('row_obj',row_obj)
-      
       # create new Place object
       newpl = Place(
         src_id = src_id,
@@ -1240,13 +1233,13 @@ def ds_insert_tsv(request, pk):
         title = title,
         ccodes = ccodes,
         minmax = datesobj['minmax'],
-        timespans = {'timespans':[[datesobj['timespan']]]}
+        # list of one in lp-tsv
+        timespans = datesobj['timespan']
       )
       newpl.save()
       countrows += 1
   
       # build associated objects and add to arrays
-      
       #
       # PlaceName()
       objs['PlaceName'].append(
