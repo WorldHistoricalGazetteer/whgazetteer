@@ -64,8 +64,8 @@
                 </span>
               </div>
               <div class="attest-element scroll60"><b>Variants</b>: 
-                {% for name in rec.names|dictsort:"toponym" %}
-                  <i>{{name.toponym}}</i>
+                {% for name in rec.names|dictsort:"label" %}
+                  <i>{{name.label}}</i>
                   {% if name.when %}
                     ({% for t in name.when.timespans|sortts %}
                       <!--TODO: not necessarily 'in'-->
@@ -78,13 +78,13 @@
               </div>
               <div class="attest-element"><b>Types</b>: 
                 {% for type in rec.types %}
-                  <i>{{type.sourceLabel}} ({{type.label}}, 
+                  <i>{{ type.label }}
                     {% if type.when %}
                       {% for t in type.when.timespans|sortts %}
                         {{ t.start.in }}-{{ t.end.in }}
                         {% if not forloop.last %}| {% endif %}
                       {% endfor %}
-                    {% endif %})</i>
+                    {% endif %}</i>
                   {% if not forloop.last %}<i>;</i> {% endif %}
                 {% endfor %}
               </div>
@@ -102,14 +102,16 @@
                 </div>
               {% endif %}
               {% if rec.related|length > 0 %}
-                <div id="place_related" class="attest-element"><b>Related</b>:
-                    <i>Within {% for rel in rec.related %}
-                    {{ rel.label }} 
-                    {% if rel.when %}
-                      {{ rel.when|json_script:rec.place_id }}
-                      ({{ rel.when.timespans|first|parsedict:"start"|parsedict:"in" }}/{{ rel.when.timespans|first|parsedict:"end"|parsedict:"in" }})
-                    {% endif %}
-                    {% if not forloop.last %}| {% endif %}
+                <div class="attest-element"><b>Related</b>:<i>
+                    {% for rel in rec.related %}
+                      {% if rel.relationType == 'gvp:broaderPartitive'%}
+                        <b>within</b>{% endif %}
+                      {{ rel.label }} 
+                      {% if rel.when %}
+                        {{ rel.when|json_script:rec.place_id }}
+                        ({{ rel.when.timespans|first|parsedict:"start"|parsedict:"in" }}/{{ rel.when.timespans|first|parsedict:"end"|parsedict:"in" }})
+                      {% endif %}
+                      {% if not forloop.last %}| {% endif %}
                     {% endfor %}</i>
                 </div>
               {% endif %}              

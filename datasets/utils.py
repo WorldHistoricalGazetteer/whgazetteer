@@ -307,28 +307,6 @@ def parse_errors_lpf(err):
 # ***
 #def intmap(arr):
   #return [int(a) for a in arr]
-#
-# abbreviated place attribute lists from queryset
-# 
-def attribListFromSet(attr,qs):
-  attrib_list=[]
-  value='toponym' if attr=='names' else 'label'
-  for item in qs:
-    if 'when' in item.jsonb:
-      #print(item.toponym)
-      obj={
-        "label":item.jsonb[value],
-        "timespans": [[int(t['start'][list(t['start'].keys())[0]]) , \
-                       int(t['end'][list(t['end'].keys())[0]]) \
-                       if 'end' in t else \
-                       int(t['start'][list(t['start'].keys())[0]])] \
-                      for t in item.jsonb['when']['timespans']]
-      }
-      print(obj)
-      attrib_list.append(obj)
-  return attrib_list
-
-
 
 #
 # datesobj from start & end

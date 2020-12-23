@@ -7,8 +7,9 @@ from datetime import datetime
 from elasticsearch import Elasticsearch
 import itertools
 
-from places.models import Place
 from datasets.models import Dataset
+from places.models import Place
+from places.utils import attribListFromSet
 
 class PlacePortalView(DetailView):
   template_name = 'places/place_portal.html'
@@ -62,8 +63,11 @@ class PlacePortalView(DetailView):
     for place in qs:
       ds = get_object_or_404(Dataset,id=place.dataset.id)
       # temporally scoped attributes
-      names = [name.jsonb for name in place.names.all()]
-      types = [t.jsonb for t in place.types.all()]
+      #names = [name.jsonb for name in place.names.all()]
+      names = attribListFromSet('names',place.names.all())
+      #types = [t.jsonb for t in place.types.all()]
+      types = attribListFromSet('types',place.types.all())
+      
       geoms = [geom.jsonb for geom in place.geoms.all()]
       related = [rel.jsonb for rel in place.related.all()]
       
@@ -81,10 +85,9 @@ class PlacePortalView(DetailView):
         "purl":ds.uri_base+str(place.id) if 'whgaz' in ds.uri_base else ds.uri_base+place.src_id,
         "title":place.title,
         "ccodes":place.ccodes, 
-        #"whens":whens, 
         "names":names, 
-        "geoms":geoms,
         "types":types, 
+        "geoms":geoms,
         "related":related, 
         "links":[link.jsonb for link in place.links.distinct('jsonb') if not link.jsonb['identifier'].startswith('whg')], 
         "descriptions":[descr.jsonb for descr in place.descriptions.all()], 
