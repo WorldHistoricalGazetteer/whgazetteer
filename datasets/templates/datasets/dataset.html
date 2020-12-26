@@ -1146,22 +1146,24 @@ js for Browse
     opt = Object.values(idToFeature)[0].options
     foptions = { ...opt };
   }
+  
+  function minmaxer(timespans){
+    <!--console.log('got to minmax()',JSON.stringify(timespans))-->
+    starts=[]; ends=[]
+    for (t in timespans){
+      // gets 'in', 'earliest' or 'latest'
+      starts.push(Object.values(timespans[t].start)[0])
+      ends.push(!!timespans[t].end ? Object.values(timespans[t].end)[0] : -1)
+    } 
+    <!--console.log('starts',starts,'ends',ends)-->
+    minmax=[Math.max.apply(null, starts),Math.max.apply(null, ends)]
+    return minmax
+  }
+
   // TODO: better parsing here
   function parsePlace(data,side) {
     window.featdata = data
     
-    minmax = function(timespans){
-      starts=[]; ends=[]
-      for (t in timespans){
-        // gets 'in', 'earliest' or 'latest'
-        starts.push(Object.values(timespans[t].start)[0])
-        ends.push(!!timespans[t].end ? Object.values(timespans[t].end)[0] : -1)
-      } 
-      <!--console.log('starts',starts,'ends',ends)-->
-      minmax=[Math.max.apply(null, starts),Math.max.apply(null, ends)]
-      return minmax
-    }
-
     function onlyUnique(array) { 
       const map = new Map();
       const result = [];
@@ -1249,13 +1251,14 @@ js for Browse
       right_related='<p class="mb-0"><b>Related</b>: ';
       for (r in data.related){
         rel = data.related[r]
-        <!--console.log('rel',rel)-->
+        console.log('rel',rel)
         if (rel.relation_type == 'gvp:broaderPartitive'){
           right_parent += '<span class="small h1em">'+rel.label
           right_parent += 'when' in rel && !('timespans' in rel.when) ? 
-            ', '+rel.when.start.in+'-'+rel.when.end.in : 'when' in rel && ('timespans' in rel.when) ? ', '+
-              minmax(rel.when.timespans) : ''
-          <!--html_parent += 'when' in rel and !(timespans in rel.when) ? ', '+rel.when.start.in+'-'+rel.when.end.in : ''-->
+            ', '+rel.when.start.in+'-'+rel.when.end.in : 
+            'when' in rel && ('timespans' in rel.when) ? ', '+
+              minmaxer(rel.when.timespans) : ''
+              <!--rel.when.timespans : ''-->
           right_parent += '</span>; '
         } 
         else {

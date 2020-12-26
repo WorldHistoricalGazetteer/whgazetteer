@@ -950,6 +950,13 @@ def ds_compare(request):
 # file is validated, dataset exists
 # if insert fails anywhere, delete dataset + any related objects
 # ***
+#import os, codecs, json, re
+#from datasets.utils import parsedates_lpf
+#fn=os.getcwd()+'/example_data/whg_example-data/lugares_20.jsonld'
+#infile = codecs.open(fn)
+#jdata = json.loads(infile.read())
+#feat=jdata['features'][0]
+
 def ds_insert_lpf(request, pk):
   import json
   [countrows,countlinked,total_links]= [0,0,0]
@@ -996,6 +1003,7 @@ def ds_insert_lpf(request, pk):
       
       # temporal
       # send entire feat for time summary
+      # (minmax and intervals[])
       datesobj=parsedates_lpf(feat)
       
       # Place: src_id, title, ccodes, dataset
@@ -1003,12 +1011,9 @@ def ds_insert_lpf(request, pk):
         # strip uribase from @id
         src_id=feat['@id'] if uribase == None else feat['@id'].replace(uribase,''),
         dataset=ds,
-        #title=feat['properties']['title'],
-        # strip anything in parens for title only
         title=title,
-        #ccodes=feat['properties']['ccodes'] if 'ccodes' in feat['properties'].keys() else []
         ccodes=ccodes,
-        timespans = datesobj['timespans'],
+        timespans = datesobj['intervals'],
         minmax = datesobj['minmax']
       )
       print('new place: ',newpl.title)
@@ -1152,7 +1157,6 @@ def ds_insert_tsv(request, pk):
     # should already know delimiter
     try:
       dialect = csv.Sniffer().sniff(infile.read(16000),['\t',';','|'])
-      # TODO sniff out BOM
       reader = csv.reader(infile, dialect)
     except:
       reader = csv.reader(infile, delimiter='\t')

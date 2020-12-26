@@ -315,38 +315,54 @@ def parsedates_tsv(s,e):
   s_yr=s[:5] if s[0] == '-' else s[:4]
   e_yr=e[:5] if e[0] == '-' else e[:4]
   #union = intmap([*set(e.split('/')), *set(s.split('/'))])
-  return {"timespan":[{"start": {"earliest":s}, "end": {"latest":e}}],
-          "minmax":[int(s_yr),int(e_yr)]}
+  return {"timespan":[{"start": {"earliest":s}, "end": {"latest":e}}],"minmax":[int(s_yr),int(e_yr)]}
 
+# examples
+#tsl1 = [{'end': {'in': 1808}, 'start': {'in': 1701}}]
+#tsl2 = [{'start': {'in': '-0200'}}]
+#tsl = tsl1
+# extracts integers 
+def timespansReduce(tsl):
+  result = []
+  for ts in tsl:
+    s = int(ts['start'][list(ts['start'].keys())[0]])
+    e = int(ts['end'][list(ts['end'].keys())[0]]) \
+      if 'end' in ts else s
+    result.append([s,e])
+  return result
 #
 # datesobj from entire lpf feature
 def parsedates_lpf(feat):
-  timespans=[]
+  intervals=[]
+  # gather all when elements
   # global when?
-  when_feat = feat['when'] if 'when' in feat else None
-  # get keys that MAY have a when
-  possible_keys = list(set(feat.keys() & set(['names','types','relations','geometry'])))
-  #print(when_feat,possible_keys)
-  # get whens in geometry if exist
+  if 'when' in feat and 'timespans' in feat['when']:
+    intervals += timespansReduce(feat['when']['timespans']) 
+    
+  # which feat keys might have a when?
+  possible_keys = list(set(feat.keys() & \
+                    set(['names','types','relations','geometry'])))
+
+  # first, geometry
   if 'geometry' in possible_keys:
     for g in feat['geometry']['geometries']:
-      #print(g)
       if 'when' in g and 'timespans' in g['when']:
-        timespans += g['when']['timespans']
+        intervals += timespansReduce(g['when']['timespans'])
+  # then the rest
   for k in possible_keys:
     if k != 'geometry':    
       obj = feat[k]
       for o in obj:
         if 'when' in o and 'timespans' in o['when']:
-          timespans += o['when']['timespans']  
-  starts = sorted(
-    [int(t['start'][list(t['start'].keys())[0]]) for t in timespans]
-  )
-  ends = sorted(
-    [int(t['end'][list(t['end'].keys())[0]]) for t in timespans]
-  )
-  minmax = [int(min(starts)), int(max(ends))]  
-  return {"timespans": timespans, "minmax": minmax}
+          intervals += timespansReduce(o['when']['timespans']) 
+  # features must have >=1 when, with >=1 timespan
+  # absent end replaced by start by timespansReduce()
+  starts = [ts[0] for ts in intervals]
+  ends = [ts[1] for ts in intervals]
+  minmax = [int(min(starts)), int(max(ends))]
+  # de-duplicate
+  unique=list(set(tuple(sorted(sub)) for sub in intervals))
+  return {"intervals": unique, "minmax": minmax}
 # 
 # validate Linked Places json-ld (w/jsonschema)
 # format ['coll' (FeatureCollection) | 'lines' (json-lines)]

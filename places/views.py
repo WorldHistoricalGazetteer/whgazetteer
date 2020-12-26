@@ -63,9 +63,7 @@ class PlacePortalView(DetailView):
     for place in qs:
       ds = get_object_or_404(Dataset,id=place.dataset.id)
       # temporally scoped attributes
-      #names = [name.jsonb for name in place.names.all()]
       names = attribListFromSet('names',place.names.all())
-      #types = [t.jsonb for t in place.types.all()]
       types = attribListFromSet('types',place.types.all())
       
       geoms = [geom.jsonb for geom in place.geoms.all()]
