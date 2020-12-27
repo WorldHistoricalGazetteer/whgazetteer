@@ -6,8 +6,9 @@ from django.views.generic import View
 
 import codecs, sys, os, pprint, time, datetime, csv, openpyxl
 import simplejson as json
+from frictionless import validate as fvalidate
 from goodtables import validate as gvalidate
-from jsonschema import draft7_format_checker, validate #,Draft7Validator
+from jsonschema import draft7_format_checker, validate 
 from pathlib import Path
 from shapely import wkt
 
@@ -309,13 +310,17 @@ def parse_errors_lpf(err):
   #return [int(a) for a in arr]
 
 #
-# datesobj from start & end
+# called by ds_insert_tsv()
+# returns object for PlaceWhen.jsonb in db
+# and minmax int years for PlacePortalView()
 #
 def parsedates_tsv(s,e):
   s_yr=s[:5] if s[0] == '-' else s[:4]
   e_yr=e[:5] if e[0] == '-' else e[:4]
   #union = intmap([*set(e.split('/')), *set(s.split('/'))])
-  return {"timespan":[{"start": {"earliest":s}, "end": {"latest":e}}],"minmax":[int(s_yr),int(e_yr)]}
+  return {"timespans":[
+    {"start": {"earliest":s}, "end": {"latest":e}}],
+          "minmax":[int(s_yr),int(e_yr)]}
 
 # examples
 #tsl1 = [{'end': {'in': 1808}, 'start': {'in': 1701}}]
@@ -331,7 +336,9 @@ def timespansReduce(tsl):
     result.append([s,e])
   return result
 #
-# datesobj from entire lpf feature
+# called by ds_insert_lpf()
+# 
+#
 def parsedates_lpf(feat):
   intervals=[]
   # gather all when elements
@@ -409,20 +416,27 @@ def validate_lpf(tempfn,format):
 
 #
 # validate LP-TSV file (w/goodtables library)
-def validate_tsv(tempfn):
+#def validate_tsv(tempfn):
+def validate_tsv(tempfn,ext):
   result = {"errors":[],"format":"delimited"}
   # TODO: detect encoding
-  newfn = tempfn+'.tsv'
+  newfn = tempfn+'.'+ext
+  #newfn = tempfn+'.csv'
   os.rename(tempfn,newfn)
-  print('tempfn,newfn',tempfn,type(tempfn),newfn,type(newfn))
+  #print('tempfn,newfn',tempfn,type(tempfn),newfn,type(newfn))
   schema_lptsv = json.loads(codecs.open('datasets/static/validate/schema_tsv.json', 'r', 'utf8').read())
-  report = gvalidate(newfn,
-                     schema=schema_lptsv,
-                     order_fields=True,
-                     #row_limit=20000,
-                     row_limit=30000,
-                     skip_checks=['blank-header'])
-  #pp.pprint(report)  
+  #report = gvalidate(newfn,
+                     #schema=schema_lptsv,
+                     #order_fields=True,
+                     #row_limit=30000,
+                     #skip_checks=['blank-header'])
+  report = fvalidate(newfn,
+                    schema=schema_lptsv,
+                    sync_schema=True
+                    #row_limit=30000,
+                    #skip_checks=['blank-header']
+                    )
+  pp.pprint(report)  
   #print('error count',report['error-count'])
   result['count'] = report['tables'][0]['row-count']-1 # counts header apparently
   result['columns'] = report['tables'][0]['headers']

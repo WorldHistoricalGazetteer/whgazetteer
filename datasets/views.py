@@ -15,19 +15,19 @@ from django.views.generic import (
 from django_celery_results.models import TaskResult
 
 from celery import current_app as celapp
-import codecs, tempfile, os, re, sys, math, mimetypes
-import simplejson as json
+import codecs, csv, math, os, re, sys, tempfile
+import mimetypes as mtypes
 import pandas as pd
+import simplejson as json
 from pathlib import Path
 from shutil import copyfile
-#from itertools import islice
-#from pprint import pprint
 from areas.models import Area
 from main.choices import AUTHORITY_BASEURI
 from main.models import Log, Comment
 from places.models import *
 from datasets.forms import HitModelForm, DatasetDetailModelForm, DatasetCreateModelForm
 from datasets.models import Dataset, Hit, DatasetFile
+from datasets.static.hashes import mimetypes as mthash
 from datasets.static.hashes.parents import ccodes
 # these task names ARE in use, they generated dynamically
 from datasets.tasks import align_tgn, align_whg, align_wd, align_whg_pre, maxID
@@ -950,13 +950,6 @@ def ds_compare(request):
 # file is validated, dataset exists
 # if insert fails anywhere, delete dataset + any related objects
 # ***
-#import os, codecs, json, re
-#from datasets.utils import parsedates_lpf
-#fn=os.getcwd()+'/example_data/whg_example-data/lugares_20.jsonld'
-#infile = codecs.open(fn)
-#jdata = json.loads(infile.read())
-#feat=jdata['features'][0]
-
 def ds_insert_lpf(request, pk):
   import json
   [countrows,countlinked,total_links]= [0,0,0]
@@ -1153,10 +1146,10 @@ def ds_insert_tsv(request, pk):
   
   if dbcount == 0:
     infile = dsf.file.open(mode="r")
-    #print('ds_insert_tsv(); request.GET; infile',request.GET,infile)
     # should already know delimiter
     try:
-      dialect = csv.Sniffer().sniff(infile.read(16000),['\t',';','|'])
+      dialect = csv.Sniffer().sniff(
+        infile.read(16000),['\t',','])
       reader = csv.reader(infile, dialect)
     except:
       reader = csv.reader(infile, delimiter='\t')
@@ -1224,21 +1217,23 @@ def ds_insert_tsv(request, pk):
         if 'matches' in header and r[header.index('matches')] != '' else []
       
       start = r[header.index('start')] if 'start' in header else None
-      end = r[header.index('end')] if 'end' in header and r[header.index('end')] !='' else start
+      # validate_tsv() ensures there is always a start
+      has_end = 'end' in header and r[header.index('end')] !=''
+      end = r[header.index('end')] if has_end else start
       datesobj = parsedates_tsv(start,end) # returns {timespan{},minmax[]}
       
       description = r[header.index('description')] \
         if 'description' in header else ''
       
       # create new Place object
+      # TODO: generate fclasses
       newpl = Place(
         src_id = src_id,
         dataset = ds,
         title = title,
         ccodes = ccodes,
         minmax = datesobj['minmax'],
-        # list of one in lp-tsv
-        timespans = datesobj['timespan']
+        timespans = datesobj['minmax']
       )
       newpl.save()
       countrows += 1
@@ -1303,14 +1298,13 @@ def ds_insert_tsv(request, pk):
           
       #
       # PlaceWhen()
-      # timespans[{start{}, end{}}], periods[{name,id}], label, duration
+      # via parsedates_tsv(): {"timespans":[{start{}, end{}}]}
       if start != '':
-        # TODO: account for 
         objs['PlaceWhen'].append(
           PlaceWhen(
             place=newpl,
             src_id = src_id,
-            jsonb={"timespans": [datesobj['timespan']]}            
+            jsonb=datesobj['timespans']          
         ))
     
         
@@ -1455,14 +1449,16 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
     user=self.request.user
     file=self.request.FILES['file']
     filename = file.name
-    print('form is valid; request',user,filename)
+    mimetype = file.content_type
+    
+    print('form_valid() user, filename, type',user,filename,mimetype)
     #TODO: generate a slug label?
     #label = data['title'][:16]+'_'+user.first_name[:1]+user.last_name[:1]
     
     # open & write tempf to a temp location;
     # call it tempfn for reference
     tempf, tempfn = tempfile.mkstemp()
-    print('tempfn, filename, type(file) in DatasetCreateView()',tempfn, filename, type(data['file']))
+    #print('tempfn, filename, type(file) in DatasetCreateView()',tempfn, filename, type(data['file']))
     try:
       for chunk in data['file'].chunks():
         #print('chunk',chunk)
@@ -1472,37 +1468,44 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
     finally:
       os.close(tempf)
 
-    # IN PROGRESS 19 Nov
-    # open & sniff
-    #mimes = {'text/csv':'csv',
-             #'text/tab-separated-values':'tsv',
-             #'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':'xls',
-             #'application/vnd.oasis.opendocument.spreadsheet':'ods',
-             #'application/json':'json'}  
-    #fin = codecs.open(tempfn, 'r')
-    #encoding = fin.encoding
-    #mimetype = mimetypes.guess_type(tempfn, strict=True)
-    #print('encoding, mimetype',encoding,mimetype)
-    #if mimetype[0] not in mimes.keys():
-      #context['errors'] = "Not a valid file type; must be one of [.csv, .tsv, .xls(x), .ods, .json]"
-      #return self.render_to_response(self.get_context_data(form=form,context=context))
-    #else:
-      # proceed with validation
-    
-    # 
-    if data['format'] == 'delimited':
-      context["format"] = "delimited"
-      result = validate_tsv(tempfn)
-    elif data['format'] == 'lpf':
-      # TODO: json-lines alternative 
-      context["format"] = "lpf"
-      result = validate_lpf(tempfn,'coll')
-    print('validation result:',context["format"],result)
-    #fin.close()
+    # IN PROGRESS 27 Dec
+    # open, sniff, validate; pass to ds_insert_{tsv|lpf} if valid
+    fin = codecs.open(tempfn, 'r')
+    encoding = fin.encoding
+    #mimetype = mtypes.guess_type(tempfn, strict=True)[0]
+    print('tempfn,encoding, mimetype',tempfn,encoding,mimetype)
+    if mimetype not in mthash.mimetypes:
+      context['errors'] = "Not a valid file type; must be one of [.csv, .tsv, .xls(x), .ods, .json]"
+      return self.render_to_response(self.get_context_data(form=form,context=context))
+    else:
+      mimetype = mthash.mimetypes[mimetype]
+      if encoding == 'UTF-8':
+        # proceed with validation
+        if mimetype in ['csv','tsv']:
+          context["format"] = "delimited"
+          result = validate_tsv(tempfn,mimetype)
+        elif mimetype in ['json']:
+          # TODO: json-lines alternative (coll = FeatureCollection)
+          context["format"] = "lpf"
+          result = validate_lpf(tempfn,'coll')
+        print('validation result:',context["format"],result)
+      else:
+        context['errors'] = "Dataset file encoding must be UTF-8; this is "+encoding
+        return self.render_to_response(self.get_context_data(form=form,context=context))
+        
+    #if data['format'] == 'delimited':
+      #context["format"] = "delimited"
+      #result = validate_tsv(tempfn)
+    #elif data['format'] == 'lpf':
+      ## TODO: json-lines alternative 
+      #context["format"] = "lpf"
+      #result = validate_lpf(tempfn,'coll')
+    #print('validation result:',context["format"],result)
+
 
     print('validation complete, still in DatasetCreateView')
     
-    # create Dataset & DatasetFile instances & advance to dataset_detail if validated
+    # if validated, create Dataset & DatasetFile instances & advance to dataset_detail 
     # otherwise present form again with errors
     if len(result['errors']) == 0:
       context['status'] = 'format_ok'

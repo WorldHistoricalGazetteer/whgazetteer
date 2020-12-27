@@ -1,6 +1,5 @@
 {"fields": [
   {"name": "id",
-    "type": "string",
     "unique": true,
     "description": "contributor's permanent identifier",
     "constraints": {
