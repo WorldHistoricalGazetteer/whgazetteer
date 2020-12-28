@@ -171,13 +171,6 @@
               <td>{{ current_file.header }}</td>
             </tr>
             {% endif %}
-            {% if ds.mapbox_id %}
-            <tr>
-              <td><b>MapBox ID</b></td>
-              <td><p class="form-value"><b>MapBox ID</b>: {{ ds.mapbox_id }}</p>
-                  <p class="hidden editing"><b>MapBox ID</b>: {{ current_file.mapbox_id }}</p></td>
-            </tr>
-            {% endif %}
           </table>
           <input class="btn btn-primary btn-sm hidden btn-file" type="submit" value="Upload" />
         </div> <!-- div_file -->
@@ -1013,9 +1006,8 @@ js for Browse
     var attrib_mb = 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
             '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
             'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-      token_mb = 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw',
-      token_kg = 'pk.eyJ1Ijoia2dlb2dyYXBoZXIiLCJhIjoiUmVralBPcyJ9.mJegAI1R6KR21x_CVVTlqw',
-      token_whg = '',
+      token_mb = '{{ mbtokenmb }}',
+      token_kg = '{{ mbtokenkg }}',
       mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}';
       
     var satellite  = L.tileLayer(mbstyle_url, {id:'mapbox/satellite-streets-v11', token:token_mb, attribution:attrib_mb})

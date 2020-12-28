@@ -1,11 +1,8 @@
 # areas.views (study areas)
-
-from django.shortcuts import render, get_object_or_404, redirect
+from django.conf import settings
+from django.shortcuts import get_object_or_404
 from django.urls import reverse
-from django.views.generic import (
-    CreateView,
-    UpdateView,
-    DeleteView )
+from django.views.generic import (CreateView, UpdateView, DeleteView )
 
 from .forms import AreaModelForm
 from .models import Area
@@ -43,6 +40,7 @@ class AreaCreateView(CreateView):
     
     def get_context_data(self, *args, **kwargs):
         context = super(AreaCreateView, self).get_context_data(*args, **kwargs)
+        context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB        
         #print('args',args,kwargs)
         context['action'] = 'create'
         #context['referrer'] = self.request.POST.get('referrer')

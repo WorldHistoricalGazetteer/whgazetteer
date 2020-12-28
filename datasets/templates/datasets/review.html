@@ -303,14 +303,17 @@
             '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
             'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
       attrib_mb_lite = 'Map data &copy; OSM, (CC-BY-SA), '+ 'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-      token_mb = 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw',
-      token_kg = 'pk.eyJ1Ijoia2dlb2dyYXBoZXIiLCJhIjoiUmVralBPcyJ9.mJegAI1R6KR21x_CVVTlqw',
-      token_whg = '',
+      token_mb = '{{ mbtokenmb }}',
       mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}';
       
-           
-    var satellite  = L.tileLayer(mbstyle_url, {id:'satellite-streets-v11', token:token_mb, attribution:attrib_mb_lite})
-    var osm  = L.tileLayer(mbstyle_url, {id:'mapbox/light-v10', token:token_mb});
+    var satellite  = L.tileLayer(mbstyle_url, {
+      id:'mapbox/satellite-streets-v11', 
+      token:token_mb, 
+      attribution:attrib_mb}),
+    osm  = L.tileLayer(mbstyle_url, {
+      id:'mapbox/light-v10',
+      token:token_mb,
+      attribution:attrib_mb});
 
     var baseLayers = {
       "OSM": osm,
@@ -337,9 +340,9 @@
   })
 
   $( ".geolink" ).hover(function() {
-      console.log($(this))
+      <!--console.log($(this))-->
       let id = $(this)[0].id
-      console.log('id:',id)
+      <!--console.log('id:',id)-->
       feat = idToFeature[id]
       ogcolor = feat.options.fillColor
       feat.setStyle(
@@ -401,7 +404,7 @@
       features = L.geoJSON(geom, {
         pointToLayer: function (feature, latlng) {
           <!--console.log('feature.properties',feature.properties)-->
-          console.log('feature',feature)
+          <!--console.log('feature',feature)-->
           matchid = feature.properties.id
           marker = L.circleMarker(latlng,
             {

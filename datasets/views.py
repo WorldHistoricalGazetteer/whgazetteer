@@ -1,22 +1,20 @@
 # datasets.views
+from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.files import File
 from django.core.mail import send_mail, EmailMultiAlternatives
-from django.core.paginator import Paginator #,EmptyPage, PageNotAnInteger
+from django.core.paginator import Paginator
 from django.db.models import Q
 from django.forms import modelformset_factory
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse
-from django.views.generic import (
-  CreateView, ListView, UpdateView, DeleteView, View, FormView)
+from django.views.generic import (CreateView, ListView, UpdateView, DeleteView)
 from django_celery_results.models import TaskResult
 
 from celery import current_app as celapp
-import codecs, csv, math, os, re, sys, tempfile
-import mimetypes as mtypes
+import codecs, math, os, re, sys, tempfile
 import pandas as pd
 import simplejson as json
 from pathlib import Path
@@ -29,10 +27,10 @@ from datasets.forms import HitModelForm, DatasetDetailModelForm, DatasetCreateMo
 from datasets.models import Dataset, Hit, DatasetFile
 from datasets.static.hashes import mimetypes as mthash
 from datasets.static.hashes.parents import ccodes
-# these task names ARE in use, they generated dynamically
+# NB these task names ARE in use; they are generated dynamically
 from datasets.tasks import align_tgn, align_whg, align_wd, align_whg_pre, maxID
 from datasets.utils import *
-from es.es_utils import makeDoc,deleteFromIndex, replaceInIndex, esq_pid, esq_id, fetch_pids 
+from es.es_utils import makeDoc,deleteFromIndex, replaceInIndex
 from elasticsearch import Elasticsearch      
 es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 
@@ -210,11 +208,13 @@ def review(request, pk, tid, passnum):
 
   # prep some context
   context = {
-    'ds_id':pk, 'ds_label': ds.label, 'task_id': tid,
-      'hit_list':raw_hits, 'authority': task.task_name[6:],
-        'records': records, 'countries': countries, 'passnum': passnum,
-        'page': page if request.method == 'GET' else str(int(page)-1),
-        'aug_geom':json.loads(task.task_kwargs.replace("'",'"'))['aug_geom']
+    'ds_id': pk, 'ds_label': ds.label, 'task_id': tid,
+      'hit_list': raw_hits, 'authority': task.task_name[6:],
+      'records': records, 'countries': countries, 'passnum': passnum,
+      'page': page if request.method == 'GET' else str(int(page)-1),
+      'aug_geom': json.loads(task.task_kwargs.replace("'",'"'))['aug_geom'],
+      'mbtokenmb': settings.MAPBOX_TOKEN_MB
+      
   }
 
   
@@ -1625,10 +1625,13 @@ class DatasetDetailView(LoginRequiredMixin, UpdateView):
   
   def get_context_data(self, *args, **kwargs):
     context = super(DatasetDetailView, self).get_context_data(*args, **kwargs)
+    context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
+    context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
+
     print('DatasetDetailView get_context_data() kwargs:',self.kwargs)
     id_ = self.kwargs.get("id")
     ds = get_object_or_404(Dataset, id=id_)
-    
+
     # coming from DatasetCreateView(),
     # insert to db immediately (file.df_status == format_ok) 
     # most recent data file
@@ -1649,7 +1652,7 @@ class DatasetDetailView(LoginRequiredMixin, UpdateView):
     # build context for rendering dataset.html
     me = self.request.user
     area_types=['ccodes','copied','drawn']
-    
+
     userareas = Area.objects.all().filter(type__in=area_types).values('id','title').order_by('-created')
     context['area_list'] = userareas if me.username == 'whgadmin' else userareas.filter(owner=me)
   
