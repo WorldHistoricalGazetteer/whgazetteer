@@ -26,6 +26,7 @@ colorama==0.4.4
 crlibm==1.0.3
 datapackage==1.10.0
 decorator==4.3.0
+defusedxml==0.6.0
 Django==2.2.13
 django-bootstrap-breadcrumbs==0.9.1
 django-bootstrap-modal-forms==1.4.1
@@ -54,6 +55,7 @@ envoy==0.0.3
 et-xmlfile==1.0.1
 ezodf==0.3.2
 Fiona==1.8.6
+flake8==3.8.4
 Flask==1.0.2
 flower==0.9.3
 frictionless==3.31.0
@@ -88,14 +90,16 @@ linear-tsv==1.1.0
 lxml==4.6.1
 Markdown==3.0.1
 MarkupSafe==1.1.1
+mccabe==0.6.1
 more-itertools==7.2.0
 munch==2.3.2
 mypy-extensions==0.4.3
 numpy==1.18.4
+odfpy==1.4.1
 openpyxl==3.0.2
-pandas==0.23.4
+pandas==1.1.5
 parso==0.3.1
-petl==1.6.8
+petl @ file:///Users/karlg/Downloads/petl-1.6.8.tar.gz
 pexpect==4.6.0
 pickleshare==0.7.5
 Pillow==7.1.0
@@ -109,6 +113,8 @@ psycopg2==2.7.5
 psycopg2-binary==2.7.5
 ptyprocess==0.6.0
 py==1.8.0
+pycodestyle==2.6.0
+pyflakes==2.2.0
 Pygments==2.6.1
 pyinterval==1.2.0
 pyparsing==2.4.0
@@ -151,6 +157,7 @@ uritemplate==3.0.0
 urllib3==1.24.2
 validictory==1.1.2
 vine==1.3.0
+vladiate==0.0.23
 wcwidth==0.1.7
 Werkzeug==0.15.6
 Wikidata==0.7.0

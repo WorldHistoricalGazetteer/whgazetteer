@@ -9,7 +9,6 @@ import simplejson as json
 from frictionless import validate as fvalidate
 from goodtables import validate as gvalidate
 from jsonschema import draft7_format_checker, validate 
-from pathlib import Path
 from shapely import wkt
 
 from areas.models import Country
