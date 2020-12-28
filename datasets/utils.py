@@ -374,19 +374,16 @@ def parsedates_lpf(feat):
 # validate Linked Places json-ld (w/jsonschema)
 # format ['coll' (FeatureCollection) | 'lines' (json-lines)]
 def validate_lpf(tempfn,format):
-  # TODO: handle json-lines
-  # TODO: create v1.1 schema; phase out v1.0
   #wd = '/Users/karlg/Documents/Repos/_whgazetteer/'
   schema = json.loads(codecs.open('datasets/static/validate/schema_lpf_v1.1.json','r','utf8').read())
   # rename tempfn
   newfn = tempfn+'.jsonld'
   os.rename(tempfn,newfn)
-  #infile = codecs.open(tempfn, 'r', 'utf8')
   infile = codecs.open(newfn, 'r', 'utf8')
-  #fout = codecs.open('validate-lpf-result.txt','w','utf8')
   result = {"format":"lpf","errors":[]}
   [countrows,count_ok] = [0,0]
 
+  # TODO: handle json-lines
   jdata = json.loads(infile.read())
   if ['type', '@context', 'features'] != list(jdata.keys()) \
      or jdata['type'] != 'FeatureCollection' \
@@ -407,58 +404,36 @@ def validate_lpf(tempfn,format):
         err = sys.exc_info()
         print('some kinda error',err)
         result["errors"].append({"feat":countrows,'error':err[1].args[0]})
-
-  #fout.write(json.dumps(result["errors"]))
-  #fout.close()
-  result['count'] = countrows
-  #print('validate_lpf() result',result)
+    result['count'] = countrows
   return result
 
 #
-# validate LP-TSV file (w/goodtables library)
-#def validate_tsv(tempfn):
+# validate LP-TSV file (w/frictionless library)
 def validate_tsv(tempfn,ext):
   result = {"errors":[],"format":"delimited"}
-  # TODO: detect encoding
   newfn = tempfn+'.'+ext
-  #newfn = tempfn+'.csv'
   os.rename(tempfn,newfn)
-  #print('tempfn,newfn',tempfn,type(tempfn),newfn,type(newfn))
   schema_lptsv = json.loads(codecs.open('datasets/static/validate/schema_tsv.json', 'r', 'utf8').read())
-  #report = gvalidate(newfn,
-                     #schema=schema_lptsv,
-                     #order_fields=True,
-                     #row_limit=30000,
-                     #skip_checks=['blank-header'])
   report = fvalidate(newfn,
                     schema=schema_lptsv,
-                    sync_schema=True
-                    #row_limit=30000,
-                    #skip_checks=['blank-header']
-                    )
-  pp.pprint(report)  
-  #print('error count',report['error-count'])
-  result['count'] = report['tables'][0]['row-count']-1 # counts header apparently
-  result['columns'] = report['tables'][0]['headers']
-  result['file'] = report['tables'][0]['source']
-  # make sense of errors for users
-  # filter harmless errors (a goodtable library bug IMO)
-  errors = [x for x in report['tables'][0]['errors'] if x['code'] not in ["blank-header","missing-header"]]
-  error_types = list(set([x['code'] for x in errors]))
+                    sync_schema=True)
+  print(report)  
+  rpt = report['tables'][0]
+
+  result['count'] = rpt['stats']['rows'] # count
+  result['columns'] = rpt['header']
+
+  # filter harmless errors 
+  result['errors'] = [x['message'] for x in rpt['errors'] \
+            if x['code'] not in ["blank-header","missing-header"]]
+  error_types = list(set([x['code'] for x in result['errors']]))
   print('error types',error_types)
-  pp.pprint(report['tables'][0]['errors']) 
+  pp.pprint(rpt['errors']) 
   
-  result['errors'] = [x['message'].replace('and format "default"','') for x in errors]
-  
-  #if 'non-matching-header' in error_types:
-    ## have user fix that issue and try again
-    #result['errors'].append('One or more column heading is invalid: '+str(result['columns']))
-  #else:
-    #result['errors'] = [x['message'].replace('and format "default"','') for x in errors]
   return result
 
 
-# next gen of goodtables, allows xlsx but has issues
+# nextgen goodtables, allows xlsx, ods but has issues
 def frictionless_tsv(tempfn):
   result = {"errors":[],"format":"delimited"}
   # TODO: detect encoding
@@ -739,43 +714,3 @@ def xl_upload(request):
     return render(request, 'datasets/xl.html', {"excel_data":excel_data}) 
 
 
-# ABANDONED for views.ds_compare
-#def compare(dsid):
-  ## get last two uploaded DatasetFile instances for this dataset
-  ## a is the current data, b is newly uploaded
-  ##file_a = DatasetFile.objects.filter(dataset_id_id=dsid).order_by('-rev')[1]
-  ## TODO: for testing, a is always the initial
-  #file_a = get_object_or_404(DatasetFile,dataset_id_id=dsid,rev=1)
-  #file_b = DatasetFile.objects.filter(dataset_id_id=dsid).order_by('-rev')[0]
-  #fn_a = file_a.file.name
-  #fn_b = file_b.file.name
-  #print('dsid; files to compare():',dsid,fn_a,fn_b)
-  #print('files exist?',Path('media/'+fn_a).exists(),Path('media/'+fn_b).exists())
-  #adf = pd.read_csv('media/'+fn_a,delimiter='\t')
-  ##print('adf',adf)
-  #bdf = pd.read_csv('/Users/karlg/Documents/Repos/_whgazetteer/media/'+fn_b,delimiter='\t')
-  ##try:
-    ##bdf = pd.read_csv('media/'+fn_b,delimiter='\t')
-  ##except:
-    ##sys.exit(sys.exc_info())
-  #ids_a = adf['id'].tolist()
-  #ids_b = bdf['id'].tolist()
-  #resobj={"count_new":len(ids_b),'count_diff':len(ids_b)-len(ids_a)}
-  ## new or removed columns?
-  #col_del = list(set(adf.columns)-set(bdf.columns))
-  #col_add = list(set(bdf.columns)-set(adf.columns))
-  #resobj['col_add']=col_add
-  #resobj['col_del']=col_del
-  #resobj['rows_add']=list(set(ids_b)-set(ids_a))
-  #resobj['rows_del']=list(set(ids_a)-set(ids_b))
-  ## build a little blurb
-  #text='The revised dataset has '+str(resobj['count_new'])+' records, a difference of '+str(resobj['count_diff'])+". Columns "
-  #text += 'to add: '+str(resobj['col_add']) + '. 'if len(resobj['col_add']) > 0 else \
-    #'to remove: '+ str(resobj['col_del'])+'. ' if len(resobj['col_del']) > 0 \
-          #else "remain the same. "
-  #text += 'Records to be added: '+str(resobj['rows_add'])+'. ' if len(resobj['rows_add'])>0 else ''
-  #text += 'Records to be removed: '+str(resobj['rows_del'])+'. ' if len(resobj['rows_del'])>0 else ''
-  #text += 'All records with an ID matching one in the existing dataset will be replaced.'  
-  #resobj['text'] = text
-
-  #return resobj

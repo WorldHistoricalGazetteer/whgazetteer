@@ -999,15 +999,15 @@ def ds_insert_lpf(request, pk):
       # (minmax and intervals[])
       datesobj=parsedates_lpf(feat)
       
-      # Place: src_id, title, ccodes, dataset
+      # TODO: compute fclasses
       newpl = Place(
         # strip uribase from @id
         src_id=feat['@id'] if uribase == None else feat['@id'].replace(uribase,''),
         dataset=ds,
         title=title,
         ccodes=ccodes,
-        timespans = datesobj['intervals'],
-        minmax = datesobj['minmax']
+        minmax = datesobj['minmax'],
+        timespans = datesobj['intervals']
       )
       print('new place: ',newpl.title)
       newpl.save()
@@ -1028,11 +1028,13 @@ def ds_insert_lpf(request, pk):
       # PlaceType: place,src_id,task_id,jsonb:{identifier,label,src_label}
       #try:        
       if 'types' in feat.keys():
+        fclass_list = []
         for t in feat['types']:
           if 'identifier' in t.keys() and t['identifier'][:4] == 'aat:' \
              and int(t['identifier'][4:]) in Type.objects.values_list('aat_id',flat=True):
             fc = get_object_or_404(Type,aat_id=int(t['identifier'][4:])).fclass \
               if t['identifier'][:4] == 'aat:' else None
+            fclass_list.append(fc)
           print('from feat[types]:',t)
           objs['PlaceTypes'].append(PlaceType(
             place=newpl,
@@ -1040,12 +1042,8 @@ def ds_insert_lpf(request, pk):
             jsonb=t,
             fclass=fc
           ))
-      #except:
-        #print('PlaceType create failed for: '+feat['@id']+'. Error:'+str(sys.exc_info()))
-        #ds.delete()
-        #messages.add_message(request, messages.INFO, 
-                             #'PlaceType create failed for: '+feat['@id']+'. Error: '+str(sys.exc_info()))
-        #return redirect('/datasets/create')
+        newpl.fclasses = fclass_list
+        newpl.save()
       
       # PlaceWhen: place,src_id,task_id,minmax,jsonb:{timespans[],periods[],label,duration}
       if 'when' in feat.keys() and feat['when'] != {}:
@@ -1233,7 +1231,7 @@ def ds_insert_tsv(request, pk):
         title = title,
         ccodes = ccodes,
         minmax = datesobj['minmax'],
-        timespans = datesobj['minmax']
+        timespans = [datesobj['minmax']] # list of lists
       )
       newpl.save()
       countrows += 1
@@ -1472,14 +1470,15 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
     # open, sniff, validate; pass to ds_insert_{tsv|lpf} if valid
     fin = codecs.open(tempfn, 'r')
     encoding = fin.encoding
-    #mimetype = mtypes.guess_type(tempfn, strict=True)[0]
-    print('tempfn,encoding, mimetype',tempfn,encoding,mimetype)
+    #fn='/Users/karlg/repos/_whgazetteer/_tests/data/lugares_20.jsonld'
+    #fin = codecs.open(fn, 'r')
+    print('tempfn, encoding, mimetype',tempfn,encoding,mimetype)
     if mimetype not in mthash.mimetypes:
-      context['errors'] = "Not a valid file type; must be one of [.csv, .tsv, .xls(x), .ods, .json]"
+      context['errors'] = "Not a valid file type; must be one of [.csv, .tsv, .json]"
       return self.render_to_response(self.get_context_data(form=form,context=context))
     else:
       mimetype = mthash.mimetypes[mimetype]
-      if encoding == 'UTF-8':
+      if encoding.lower() == 'utf-8':
         # proceed with validation
         if mimetype in ['csv','tsv']:
           context["format"] = "delimited"
@@ -1492,21 +1491,11 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
       else:
         context['errors'] = "Dataset file encoding must be UTF-8; this is "+encoding
         return self.render_to_response(self.get_context_data(form=form,context=context))
-        
-    #if data['format'] == 'delimited':
-      #context["format"] = "delimited"
-      #result = validate_tsv(tempfn)
-    #elif data['format'] == 'lpf':
-      ## TODO: json-lines alternative 
-      #context["format"] = "lpf"
-      #result = validate_lpf(tempfn,'coll')
-    #print('validation result:',context["format"],result)
-
 
     print('validation complete, still in DatasetCreateView')
     
-    # if validated, create Dataset & DatasetFile instances & advance to dataset_detail 
-    # otherwise present form again with errors
+    # if validated, create Dataset, DatasetFile, Log instances, advance to dataset_detail 
+    # else present form again with errors
     if len(result['errors']) == 0:
       context['status'] = 'format_ok'
       print('cleaned_data',form.cleaned_data)
