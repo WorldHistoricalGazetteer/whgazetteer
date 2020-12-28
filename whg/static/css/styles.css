@@ -435,9 +435,12 @@ em { color: #993333;}
 /**
   dataset create
 **/
-#create_review {
-  /*background-color: yellow;*/
+#id_format { margin: 8px 0 0 0; padding-left:0;}
+#id_format li {
+  display:inline-block;
+  margin-right: 1rem;
 }
+#file_metadata td { padding: 0;}
 
 /**
   dataset tabs

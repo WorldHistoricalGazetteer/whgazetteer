@@ -49,17 +49,18 @@
 		  </div>
 		</div>
         <div id="search_filters" class="hidden">
-          <p class="mb-0">feature class 
+          <p class="mb-0">feature class(es) 
             <span class="ml-1 float-right">
+			  <span class="mr-1"><a href="#" class="fc-check">clear all</a>
 		  <a id="filter_help" class="pointer" data-toggle="popover" title="Feature classes" data-content="" tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a></span>
 		  </p>
           <div>
-          <label class="checkbox-inline fclass"><input type="checkbox" value="A"> A&nbsp;</label>
-          <label class="checkbox-inline fclass"><input type="checkbox" value="H"> H&nbsp;</label>
-          <label class="checkbox-inline fclass"><input type="checkbox" value="L"> L&nbsp;</label> 
+          <label class="checkbox-inline fclass"><input type="checkbox" value="A" checked> A&nbsp;</label>
+          <label class="checkbox-inline fclass"><input type="checkbox" value="H" checked> H&nbsp;</label>
+          <label class="checkbox-inline fclass"><input type="checkbox" value="L" checked> L&nbsp;</label> 
           <label class="checkbox-inline fclass"><input type="checkbox" value="P" checked> P&nbsp;</label> 
-          <label class="checkbox-inline fclass"><input type="checkbox" value="S"> S&nbsp;</label> 
-          <label class="checkbox-inline fclass"><input type="checkbox" value="T"> T&nbsp;</label>
+          <label class="checkbox-inline fclass"><input type="checkbox" value="S" checked> S&nbsp;</label> 
+          <label class="checkbox-inline fclass"><input type="checkbox" value="T" checked> T&nbsp;</label>
 		  </div>
           <p class="mb-0">temporal
 			<span class="float-right"><a id="temporal_help" class="pointer" data-toggle="popover" title="Temporal filter" data-content="start = not before<br/>end = not after <p>NOTE: most records do not have temporal attributes at this stage</p>" tabindex="0" data-trigger="focus">
@@ -68,7 +69,7 @@
           <div>
             <label class="input-sm"><input id="input_start" type="text" value = "" size="8" placeholder="start year"></label>
             <label class="input-sm ml-2"><input id="input_end" type="text" value = "" size="8" placeholder="end year">
-			<span class="ml-2">( def. = all)</span></label>
+			<span class="ml-2">( default = all)</span></label>
           </div>
           <p class="mb-0">spatial
 			<span class="float-right">
@@ -173,6 +174,7 @@
   window.idToArea = {}
   window.area_list = []
   window.area_objs = []
+
       
   $(function(){
 	$( "#map_dataset" ).change(function() {
@@ -203,6 +205,7 @@
     clearit()
     $("#type_filter").hide();
 	
+	
 	// show filters, hide splash and vice versa
     $("#link_filters").click(function(){
 	  if($("#search_filters").is(":visible")){
@@ -212,6 +215,20 @@
 	  }
 	  $("#search_filters").toggle(400)
     })
+	
+	//
+	$(".fc-check").click(function(e){
+	  e.preventDefault()
+	  if($(this).text() == 'clear all') {
+		$(this).text('check all')
+		$('input:checkbox').removeAttr('checked')
+	  } else {
+		$(this).text('clear all')
+		$('input:checkbox').attr('checked','checked')
+	  }
+	  <!--console.log('clicked clear',foo.text)-->
+	  
+	})
 	// 
 	$("label[for='input_box']").click(function(){
 	  console.log('clicked search')

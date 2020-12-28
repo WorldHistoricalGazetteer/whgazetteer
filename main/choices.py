@@ -46,8 +46,8 @@ COMMENT_TAGS = [
 ]
 
 FORMATS = [
+    ('delimited', 'LP-TSV'),
     ('lpf', 'Linked Places v1.1'),
-    ('delimited', 'LP-TSV')
 ]
 
 DATATYPES = [

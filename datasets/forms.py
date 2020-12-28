@@ -4,12 +4,10 @@ from django import forms
 from django.db import models
 from django.forms import ClearableFileInput
 from datasets.models import Dataset, Hit, DatasetFile
-from main.choices import FORMATS, DATATYPES, STATUS
+from main.choices import FORMATS, STATUS, DATATYPES
 
 MATCHTYPES = [
   ('closeMatch','closeMatch'),
-  #('exactMatch','exactMatch'),
-  #('related','related'),
   ('none','no match'),]
 
 class HitModelForm(forms.ModelForm):
@@ -109,7 +107,7 @@ class DatasetCreateModelForm(forms.ModelForm):
     #attrs={'placeholder':'Leave blank unless record IDs are URIs','size':35}))
   file = forms.FileField()
   rev = forms.IntegerField()
-  format = forms.ChoiceField(choices=FORMATS)
+  format = forms.ChoiceField(choices=FORMATS, widget=forms.RadioSelect, initial = 'delimited')
   delimiter = forms.CharField()
   header = forms.CharField()
   df_status = forms.ChoiceField(choices=STATUS)
