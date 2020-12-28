@@ -453,10 +453,18 @@
 	  
 	ne_options = {mapMinZoom: 0, mapMaxZoom: 7, opacity: 1.0, tms: false, mapExtent:[-180.00000000, -85.05112878, 179.99652662, 85.05112878]}
 
-    var satellite  = L.tileLayer(mbstyle_url, {id:'mapbox/satellite-streets-v11', token:token_mb, attribution:attrib_mb}),
-		osm  = L.tileLayer(mbstyle_url, {id:'mapbox/light-v10', token:token_mb, attribution:attrib_mb}),
-		ne = L.tileLayer(ne_url, ne_options);
-    var ne_mb = L.tileLayer(mbtiles_url, {id:'kgeographer.ne_global', token:token_kg})
+    var satellite  = L.tileLayer(mbstyle_url, {
+	  id:'mapbox/satellite-streets-v11', 
+	  token:token_mb, 
+	  attribution:attrib_mb}),
+	osm  = L.tileLayer(mbstyle_url, {
+	  id:'mapbox/light-v10', 
+	  token:token_mb, 
+	  attribution:attrib_mb}),
+	ne = L.tileLayer(ne_url, ne_options);
+    var ne_mb = L.tileLayer(mbtiles_url, {
+	  id:'kgeographer.ne_global', 
+	  token:token_kg})
 
 	// GL wrapper to display heatmaps
 

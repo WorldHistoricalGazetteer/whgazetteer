@@ -417,7 +417,7 @@ def validate_tsv(tempfn,ext):
   report = fvalidate(newfn,
                     schema=schema_lptsv,
                     sync_schema=True)
-  print(report)  
+  #print(report)  
   rpt = report['tables'][0]
 
   result['count'] = rpt['stats']['rows'] # count
@@ -426,9 +426,12 @@ def validate_tsv(tempfn,ext):
   # filter harmless errors 
   result['errors'] = [x['message'] for x in rpt['errors'] \
             if x['code'] not in ["blank-header","missing-header"]]
-  error_types = list(set([x['code'] for x in result['errors']]))
-  print('error types',error_types)
-  pp.pprint(rpt['errors']) 
+
+  # TODO: filter cascade errors, e.g. caused by missing-cell
+  
+  #error_types = list(set([x['code'] for x in result['errors']]))
+  #print('error types',error_types)
+  print(result['errors'])
   
   return result
 
