@@ -1,12 +1,12 @@
 _dumps/
 _notes/
-_older/
 _scratch/
-_testdata/
 _tests/
+_testdata/
 
-media/
 datasets/static/_older/
+media/
+sent_emails/
 
 .DS_Store
 
@@ -14,6 +14,7 @@ nohup.out
 dump.rdb
 
 es-*.*
+
 # Wing IDE
 *.wp*
 
