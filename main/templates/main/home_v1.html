@@ -51,7 +51,7 @@
         <div id="search_filters" class="hidden">
           <p class="mb-0">feature class(es) 
             <span class="ml-1 float-right">
-			  <span class="mr-1"><a href="#" class="fc-check">clear all</a>
+			  <span class="mr-1"><a id="check_toggle" href="#">clear all</a></span>
 		  <a id="filter_help" class="pointer" data-toggle="popover" title="Feature classes" data-content="" tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a></span>
 		  </p>
           <div>
@@ -175,8 +175,37 @@
   window.area_list = []
   window.area_objs = []
 
+  // TODO: refactor this copied-from-web thing
+  <!--function check(){-->
+   <!--var check=document.getElementsByTagName('input');-->
+   <!--for(var i=0;i<check.length;i++){-->
+	<!--if(check[i].type=='checkbox'){ -->
+	  <!--check[i].checked=true; }-->
+	<!--}-->
+  <!--}-->
+  
+  <!--function uncheck(){-->
+	<!--var uncheck=document.getElementsByTagName('input');-->
+	<!--for(var i=0;i<uncheck.length;i++) { -->
+	  <!--if(uncheck[i].type=='checkbox') {-->
+		<!--uncheck[i].checked=false;}-->
+	<!--}-->
+  <!--}-->
       
   $(function(){
+	// toggle all fclass checkboxes
+	$("#check_toggle").click(function(e){
+	  e.preventDefault()
+	  var state = $("#check_toggle").text()
+	  if(state == 'check all'){
+		$("input:checkbox").prop('checked', true);
+		$("#check_toggle").text('clear all');
+	  } else if( state == 'clear all'){
+		$("input:checkbox").prop('checked', false);
+		$("#check_toggle").text('check all');		
+	  }
+	})
+	
 	$( "#map_dataset" ).change(function() {
 	  if (!!gl.getLayer('heat_active')){gl.removeLayer('heat_active')}
 	  heat($(this).val())
@@ -216,19 +245,7 @@
 	  $("#search_filters").toggle(400)
     })
 	
-	//
-	$(".fc-check").click(function(e){
-	  e.preventDefault()
-	  if($(this).text() == 'clear all') {
-		$(this).text('check all')
-		$('input:checkbox').removeAttr('checked')
-	  } else {
-		$(this).text('clear all')
-		$('input:checkbox').attr('checked','checked')
-	  }
-	  <!--console.log('clicked clear',foo.text)-->
-	  
-	})
+
 	// 
 	$("label[for='input_box']").click(function(){
 	  console.log('clicked search')
