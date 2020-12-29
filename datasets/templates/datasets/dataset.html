@@ -211,26 +211,27 @@
             </table>
           </div>
           <div id="ds_access" class="pt-0 px-0 ds-card">
-            <p style="display:block; background-color:#eee; margin:0; padding-left:10px; font-weight:700;">Access</p>
-            <p style="display:block; margin:0; padding-left:10px;">Metadata edits, dataset updates, and initiation of reconciliation tasks may only be performed by the dataset contributor ("owner" in WHG). Collaborators added by the owner under the "Sharing" tab can view the dataset and perform review of reconciliation tasks.</p>
+            <p class="ds-card-header">Access</p>
+            <p class="m-0 pl-2 pr-2">
+              Metadata edits, dataset updates, and initiation of reconciliation tasks may only be performed by the dataset contributor ("owner" in WHG). Collaborators added by the owner under the "Sharing" tab can view the dataset and perform review of reconciliation tasks.</p>
           </div>
           {% if ds.owner.id == user.id or user.is_superuser %}
           <div id="ds_downloads" class="pt-0 px-0 ds-card">
-            <p style="display:block; background-color:#eee; margin:0; padding-left:10px; font-weight:700;">Downloads</p>
-            <p style="display:block; margin:0; padding-left:10px;">
-              {% if ds.id > 2 %} <!-- excludes black, dplace, which have no files -->
+            <p class="ds-card-header">Downloads</p>
+            <p class="m-0 pl-2 pr-2">
+              {% if ds.id > 2 %} <!-- exclude black, dplace, which have no upload files -->
                 <a href="{% url 'datasets:dl-file' ds.id %}" ref="current">Current data file</a>
               {% endif %}
-              <!--{ if links_added > 0 or geoms_added > 0 %}-->
-                <br/>Augmented dataset:
+                <br/>
+              {% if links_added > 0 or geoms_added > 0 %}Augmented dataset: {% endif %}
                 {% if ds.numrows <= 5000 %}
                   <!--{ if current_file.format == 'delimited' %}-->
-                    <a href="{% url 'datasets:dl-aug' id=ds.id format='tsv' %}" ref="tsv">TSV format</a> | 
-                    <!--<a href="#" ref="tsv">TSV format</a>-->
+                    <!--<a href="{ url 'datasets:dl-aug' id=ds.id format='tsv' %}" ref="tsv">TSV format</a> | -->
+                  <!--{ endif %}  -->
                   <!--{ elif current_file.format == 'lpf'   %}-->
+                  {% if current_file.format == 'delimited' %}
                     <a href="{% url 'datasets:dl-aug' id=ds.id format='lpf' %}" ref="lpf">Linked Places format</a>
-                    <!--<a href="#" ref="lpf">Linked Places format (120/min.)</a>-->
-                  <!--{ endif %}-->
+                  {% endif %}
                 {% else %}  
                   <span class="red-head"><br/>Sorry, download of augmented datasets larger than 5000 rows not supported right now; too slow :^(</span>
                 {% endif %}  

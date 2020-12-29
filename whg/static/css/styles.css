@@ -466,17 +466,7 @@ em { color: #993333;}
   margin-top:8px;
   /*overflow-y:scroll;*/
   box-shadow: 1px 1px #eee;}
-/*#ds_stats, #ds_access, #results_text {*/
-  /*height: fit-content;*/
-  /*border-top: #ddd 1px solid;*/
-  /*border-left: #ddd 1px solid;*/
-  /*border-right: #999 2px solid;*/
-  /*border-bottom: #999 2px solid;*/
-  /*padding: 10px;*/
-  /*background-color: #fff;*/
-  /*margin-top:8px;*/
-  /*/*overflow-y:scroll;*/*/
-  /*box-shadow: 1px 1px #eee;}*/
+.ds-card-header {display:block; background-color:#eee; margin:0; padding-left:8px; font-weight:700;}
 #ds_stats th { font-weight:400; font-style: italic; }
 #browse { width:100% !important; height:auto !important; }
 #ds_form .row {padding-right:4px;}
