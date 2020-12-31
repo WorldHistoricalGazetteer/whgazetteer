@@ -141,7 +141,6 @@
                     </span>
                   {% endif %}
                   <span class="inline">{{ form.match }}</span>
-                  <!--<span class="float-right mr-2"><button type="submit" class="button-sm mr-2">Save</button>-->
                   <span class="help-matches" data-id="matches">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
                   {% if authority == 'whg' %}
                     <button type="button" 
@@ -165,7 +164,9 @@
                   <p><strong>WHG place id</strong>: {{ form.json.value|get:"place_id" }}</p> 
                   <p><strong>Source (id)</strong>: {{ form.json.value|get:"dataset" }} ({{ form.json.value|get:"src_id" }})</p>
                 {% else %}
-                  <p><strong>{{ authority|upper }} ID</strong>: {{ form.authrecord_id.value }}</p>                
+                  <p><strong>{{ authority|upper }} ID</strong>: 
+                  <a href="" data-auth={{authority}} class="mr-2 ext-recon" >{{ form.authrecord_id.value }}</a>{% fontawesome_icon 'external-link' color='#336699' %}
+                  </p>
                 {% endif %}
                 
                 {% if form.json.value|get:"variants"|length > 0 %} 
@@ -255,6 +256,14 @@
     console.log('str',str)
     var re = /(http|dbp|gn|tgn|wd|loc|viaf|whg):(.*?)$/;
     url=str.match(re)[1]=='http' ? str : base_urls[str.match(re)[1]]+str.match(re)[2]
+    window.open(url,'_blank')
+  });
+  // recon authority external links (wd, tgn)
+  $('.ext-recon').on('click', function(e) {
+    e.preventDefault();
+    id=$(this).text()
+    url = base_urls[$(this).data('auth')]+id.toString()
+    <!--console.log('id, url',id,url)-->
     window.open(url,'_blank')
   });
 
