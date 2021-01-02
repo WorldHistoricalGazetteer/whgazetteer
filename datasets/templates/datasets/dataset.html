@@ -438,14 +438,14 @@
           <input type="hidden" name="ds" value="{{ ds.id }}">
           {% if user.is_superuser %}
           <div class="form-check text-danger">
-            <label class="form-check-label" for="auth1">
-              <input type="radio" class="form-check-input" id="auth1"
+            <label class="form-check-label" for="r_whg">
+              <input type="radio" class="form-check-input" id="r_whg"
                 name="recon" value="whg">WHG (accessioning) 
             </label>
           </div>
           <div class="form-check text-danger">
-            <label class="form-check-label" for="auth1a">
-              <input type="radio" class="form-check-input" id="auth1a"
+            <label class="form-check-label" for="r_whgpre">
+              <input type="radio" class="form-check-input" id="r_whgpre"
                 name="recon" value="whg_pre">WHG (align) 
             </label>
           </div>
@@ -453,14 +453,14 @@
           {% endif %}
           <p class="font-weight-bold">Authority name source</p>
           <div class="form-check">
-            <label class="form-check-label" for="auth2">
-              <input type="radio" class="form-check-input" id="auth2"
+            <label class="form-check-label" for="r_tgn">
+              <input type="radio" class="form-check-input" id="r_tgn"
                 name="recon" value="tgn" checked>Getty TGN (tgn) <span class="text-danger small ml-2">approx. 3 records per second</span>
             </label>
           </div>
           <div class="form-check">
-            <label class="form-check-label" for="auth4">
-              <input type="radio" class="form-check-input" id="auth4"
+            <label class="form-check-label" for="r_wd">
+              <input type="radio" class="form-check-input" id="r_wd"
                 name="recon" value="wd" >Wikidata (wd) <span class="text-danger small ml-2">approx. 1 record per second</span>
             </label>
           </div>
@@ -474,7 +474,7 @@
             <input type="radio" name="scope" checked="true" id="scope2" value="unindexed"> Only the unindexed (<b>{{ds.unindexed}}</b>)</label>
           </div>
           {% endif %}
-          <div id="geo-constraint" class="mt-2">
+          <div id="geo_constraint" class="mt-2">
             <hr/>
             <div class="mb-2">
               <p class="font-weight-bold">Geographic constraint</p>
@@ -600,6 +600,10 @@
 js for Summary, Reconciliation
 -->
 <script type="text/javascript">
+  // show/hide geo constraint options
+  $("#r_tgn").click(function(){console.log('tgn now');$("#geo_constraint").show(400)})
+  $("#r_wd").click(function(){console.log('wd now');$("#geo_constraint").hide(400)})
+  
   $("#a_update_modal").on('click', function(e){
     console.log('clicked update')
     if('{{ current_file.format }}' != 'delimited'){ 

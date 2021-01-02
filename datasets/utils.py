@@ -588,7 +588,7 @@ def getQ(arr,what):
           qids.append('wd:'+q)
       else:
         qids.append('wd:Q486972')
-  return qids
+  return list(set(qids))
 
 def roundy(x, direct="up", base=10):
   import math

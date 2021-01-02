@@ -179,7 +179,7 @@ def review(request, pk, tid, passnum):
   
   # if some are unreviewed, queue in record_list
   if len(hitplaces) > 0:
-    record_list = Place.objects.order_by('title').filter(pk__in=hitplaces)
+    record_list = Place.objects.order_by('id').filter(pk__in=hitplaces)
   else:
     context = {"nohits":True,'ds_id':pk,'task_id': tid, 'passnum': passnum}
     return render(request, 'datasets/review.html', context=context)
@@ -1118,7 +1118,7 @@ def ds_insert_lpf(request, pk):
   ds.total_links = total_links
   ds.save()
   print(str(countrows)+' inserted')
-  messages.add_message(request, messages.INFO, 'inserted lpf for '+str(countrows)+' places')
+  #messages.add_message(request, messages.INFO, 'inserted lpf for '+str(countrows)+' places')
   return redirect('/dashboard')
 
 

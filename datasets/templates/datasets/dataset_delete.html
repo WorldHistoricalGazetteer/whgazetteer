@@ -7,7 +7,6 @@
     <div class="col-md-4 mt-5">
       <form action='' method='POST'>{% csrf_token %}
           <h3 class="text-danger">CAREFUL!!</h3>
-          format {{ object.format }}
           <p>This will destroy all <b>{{ object.numrows }}</b> place records in the dataset
             <b>{{ object.name }} ({{ object.label }})</b>, as well as:</p>
           <ul>
