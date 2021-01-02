@@ -1,0 +1,16 @@
+{
+  "mappings": {
+    "place": {
+      "properties": {
+          "type":{"type": "keyword"},
+          "id":{"type": "keyword"},
+          "labels":{"type": "nested"}, 
+          "descriptions":{"type": "nested"},
+          "aliases":{"type": "nested"},
+          "claims":{"type": "nested"},
+          "sitelinks":{"type": "nested"},
+          "lastrevid":{"type": "keyword"}
+      }
+    }
+  }
+}

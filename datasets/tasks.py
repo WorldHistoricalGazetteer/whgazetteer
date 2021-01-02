@@ -26,10 +26,11 @@ es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 
 @task(name="task_emailer")
 def task_emailer(dslabel,username,email):
-  ds=get_object_or_404(Dataset,label=dslabel)
-  task = ds.tasks.all().order_by('-id')[0]
   print('in task_emailer()')
-  print('dsid, id, task_name',ds.id, task.id, task.task_name)
+  ds=get_object_or_404(Dataset,label=dslabel)
+  #print('dslabel, task_id, task_name',ds.label, task.id, task.task_name)
+  print('ds.id, username, email',ds.label, username, email)
+  task = ds.tasks.all().order_by('-id')[0]
   tasklabel = 'Wikidata' if task.task_name.endswith('wd') else \
     'Getty TGN' if task.task_name.endswith('tgn') else 'WHGazetteer'
   if task.status == "FAILURE":
@@ -355,7 +356,8 @@ def align_wd(pk, *args, **kwargs):
     # countries, placetypes if they're there
     countries = ', '.join([c for c in getQ(qobj['countries'],'ccodes')]) \
       if len(qobj['countries'])>0 and qobj['countries'] != [''] else ''
-    placetype = getQ(qobj['placetypes'],'types')[0] if len(qobj['placetypes'])>0 else ''
+    # TODO: multiple placetypes?
+    placetype = getQ(qobj['placetypes'],'types')[0] if len(qobj['placetypes'])>0 else None
     print('variants,countries,placetype',variants,countries,placetype)
     
     # belongs?          OPTIONAL {?place wdt:P31 ?placeType .}  
@@ -412,11 +414,17 @@ def align_wd(pk, *args, **kwargs):
       q+='''
         ?place wdt:P625 ?location .
       '''
-    qtype = q+'''
-      ?place wdt:P31/wdt:P279* ?placeType .
-      FILTER (?placeType in (%s)) . 
-    '''%(placetype)
-        
+
+    if placetype:      
+      qtype = q+'''
+        ?place wdt:P31/wdt:P279* ?placeType .
+        FILTER (?placeType in (%s)) . 
+      '''%(placetype)
+    else:
+      # no place_id, no filter, no sublasses
+      qtype = q+'''
+        ?place wdt:P31 ?placeType .
+      '''
     if countries != '':
       q+='FILTER (?country in (%s)) . }'% (countries)
       qtype+='FILTER (?country in (%s)) . }'% (countries)
@@ -427,10 +435,10 @@ def align_wd(pk, *args, **kwargs):
     # qbase is pass1: names, types, geometry, countries
     qbase = qtype+'''
       GROUP BY ?place ?placeLabel ?countryLabel ?inception ?tgnids ?gnids ?viafids ?locids
-      ORDER BY ASC(?num) LIMIT 5
+      ORDER BY ASC(?num) LIMIT 10
     '''
 
-    # qbare is pass2, omitting type filter
+    # qbare is pass2, omit type filter and limit subclasses
     qbare = q+'''
       GROUP BY ?place ?placeLabel ?countryLabel ?inception ?tgnid ?gnid ?viafid ?locid
       ORDER BY ASC(?num) LIMIT 10'''

@@ -658,12 +658,14 @@ def update_rels_tsv(pobj, row):
       
 # ***
 # perform update on database and index
+# given new datafile
 # ***
 def ds_update(request):
   if request.method == 'POST':
     dsid=request.POST['dsid']
     ds = get_object_or_404(Dataset, id=dsid)
     file_format=request.POST['format']
+    # keep previous recon/review results?
     keepg = request.POST['keepg']
     keepl = request.POST['keepl']
     
@@ -724,8 +726,8 @@ def ds_update(request):
       # CURRENT
       places = Place.objects.filter(dataset=ds.label)
       # Place.id lists
-      rows_replace = list(places.filter(src_id__in=replace_srcids).values_list('id',flat=True))
       rows_delete = list(places.filter(src_id__in=delete_srcids).values_list('id',flat=True))
+      rows_replace = list(places.filter(src_id__in=replace_srcids).values_list('id',flat=True))
       #rows_add = list(places.filter(src_id__in=compare_result['rows_add']).values_list('id',flat=True))
       
       # delete places with ids missing in new data (CASCADE includes links & geoms)
@@ -797,8 +799,8 @@ def ds_update(request):
                 "new_count":count_new, "del_count": len(rows_delete), "newfile": filepath, 
                 "format":file_format}
       #
-      # if dataset is indexed, update it there
-      # TODO: this suggests a new reconciliation task and accessioning for added records
+      # if dataset is indexed, update it there too
+      # TODO: if new records, new recon task & accessioning tasks needed
       if compare_data['count_indexed'] > 0:
         from elasticsearch import Elasticsearch      
         es = Elasticsearch([{'host': 'localhost', 'port': 9200}])

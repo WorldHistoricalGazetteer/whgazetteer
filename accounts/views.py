@@ -44,7 +44,7 @@ def register(request):
         if request.POST['password1'] == request.POST['password2']:
             try:
                 User.objects.get(username=request.POST['username'])
-                return render(request, 'accounts/register.html', {'error': 'User ID is already taken'})
+                return render(request, 'accounts/register.html', {'error': 'User name is already taken'})
             except User.DoesNotExist:
                 #print('request.POST',request.POST)
                 user = User.objects.create_user(

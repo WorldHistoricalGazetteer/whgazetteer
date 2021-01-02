@@ -2,9 +2,8 @@
 
 from django import forms
 from django.db import models
-from django.forms import ClearableFileInput
 from datasets.models import Dataset, Hit, DatasetFile
-from main.choices import FORMATS, STATUS, DATATYPES
+from main.choices import FORMATS, STATUS
 
 MATCHTYPES = [
   ('closeMatch','closeMatch'),

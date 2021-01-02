@@ -22,17 +22,17 @@ class Dataset(models.Model):
     idx='whg'
     owner = models.ForeignKey(User,
         related_name='datasets', on_delete=models.CASCADE)
-    label = models.CharField(max_length=20, null=False, unique="True",
+    label = models.CharField(null=False, max_length=20, unique="True",
         error_messages={'unique': 'The dataset label entered is already in use, and must be unique. Try appending a version # or initials.'})
-    title = models.CharField(max_length=255, null=False)
-    description = models.CharField(max_length=2044, null=False)
+    title = models.CharField(null=False, max_length=255)
+    description = models.CharField( null=False, max_length=2044)
     core = models.BooleanField(default=False)    
     public = models.BooleanField(default=False)    
     ds_status = models.CharField(max_length=12, null=True, blank=True, choices=STATUS)
     creator = models.CharField(max_length=500, null=True, blank=True)
     create_date = models.DateTimeField(null=True, auto_now_add=True)
-    uri_base = models.URLField(blank=True, null=True)
-    webpage = models.URLField(blank=True, null=True)
+    uri_base = models.URLField(null=True, blank=True)
+    webpage = models.URLField(null=True, blank=True)
 
     # TODO: these are updated in both Dataset & DatasetFile  (??)
     datatype = models.CharField(max_length=12, null=False,choices=DATATYPES,
@@ -120,9 +120,9 @@ class DatasetFile(models.Model):
     file = models.FileField(upload_to=user_directory_path)
     format = models.CharField(max_length=12, null=False,
         choices=FORMATS, default='lpf')
-    datatype = models.CharField(max_length=12, null=False,choices=DATATYPES,
+    datatype = models.CharField(max_length=12, null=False, choices=DATATYPES,
         default='place')
-    delimiter = models.CharField(max_length=5, blank=True, null=True)
+    delimiter = models.CharField(max_length=5, null=True, blank=True)
     df_status = models.CharField(max_length=12, null=True, blank=True, choices=STATUS)
     upload_date = models.DateTimeField(null=True, auto_now_add=True)
     header = ArrayField(models.CharField(max_length=30), null=True, blank=True)
