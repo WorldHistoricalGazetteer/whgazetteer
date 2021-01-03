@@ -413,25 +413,24 @@ def validate_tsv(tempfn,ext):
   newfn = tempfn+'.'+ext
   os.rename(tempfn,newfn)
   schema_lptsv = json.loads(codecs.open('datasets/static/validate/schema_tsv.json', 'r', 'utf8').read())
-  report = fvalidate(newfn,
-                    schema=schema_lptsv,
-                    sync_schema=True)
+  #schema_lptsv = json.loads(codecs.open('../datasets/static/validate/schema_tsv.json', 'r', 'utf8').read())
+  report = fvalidate(newfn, schema=schema_lptsv, sync_schema=True)
   #print(report)  
   rpt = report['tables'][0]
-
+  req = ['id','title','title_source','start']
+  
   result['count'] = rpt['stats']['rows'] # count
   result['columns'] = rpt['header']
 
   # filter harmless errors 
   result['errors'] = [x['message'] for x in rpt['errors'] \
-            if x['code'] not in ["blank-header","missing-header"]]
+            #if x['code'] not in ["blank-header"]]
+            if x['code'] not in ["blank-header", "missing-header"]]
+  if len(list(set(req) - set(rpt['header']))) >0:
+    result['errors'].insert(0,'Required field(s) missing: '+', '.join(list(set(req)-set(rpt['header']))))
 
   # TODO: filter cascade errors, e.g. caused by missing-cell
-  
-  #error_types = list(set([x['code'] for x in result['errors']]))
-  #print('error types',error_types)
-  print(result['errors'])
-  
+    
   return result
 
 

@@ -1436,7 +1436,6 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
   form_class = DatasetCreateModelForm
   template_name = 'datasets/dataset_create.html'
   success_message = 'dataset created'
-
   def form_invalid(self,form):
     print('form invalid...',form.errors.as_data())
     context = {'form': form}
@@ -1476,22 +1475,22 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
     print('tempfn, encoding, mimetype',tempfn,encoding,mimetype)
     if mimetype not in mthash.mimetypes:
       context['errors'] = "Not a valid file type; must be one of [.csv, .tsv, .json]"
-      return self.render_to_response(self.get_context_data(form=form,context=context))
+      return self.render_to_response(self.get_context_data(form=form, context=context))
     else:
       mimetype = mthash.mimetypes[mimetype]
       if encoding.lower() == 'utf-8':
         # proceed with validation
         if mimetype in ['csv','tsv']:
           context["format"] = "delimited"
-          result = validate_tsv(tempfn,mimetype)
+          result = validate_tsv(tempfn, mimetype)
         elif mimetype in ['json']:
           # TODO: json-lines alternative (coll = FeatureCollection)
           context["format"] = "lpf"
-          result = validate_lpf(tempfn,'coll')
+          result = validate_lpf(tempfn, 'coll')
         print('validation result:',context["format"],result)
       else:
         context['errors'] = "Dataset file encoding must be UTF-8; this is "+encoding
-        return self.render_to_response(self.get_context_data(form=form,context=context))
+        return self.render_to_response(self.get_context_data(form=form, context=context))
 
     print('validation complete, still in DatasetCreateView')
     
