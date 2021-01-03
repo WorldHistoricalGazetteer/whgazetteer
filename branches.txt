@@ -1,0 +1,13 @@
+  alt
+  areas
+  basemap
+* links
+  lp_prep
+  master
+  miscbugs
+  newvalid
+  place_lpf
+  placedefs
+  resuming
+  whg_align
+  wikidata

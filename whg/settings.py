@@ -52,7 +52,7 @@ INSTALLED_APPS = [
     'maps.apps.MapsConfig',
     'places.apps.PlacesConfig',
     'search.apps.SearchConfig',
-    'traces.apps.TracesConfig',
+    'traces.apps.TracesConfig'
 ]
 
 MIDDLEWARE = [
