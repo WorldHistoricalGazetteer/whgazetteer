@@ -1,4 +1,5 @@
 # validate tsv/csv and lpf uploads
+from django.http import HttpResponseRedirect
 from django.test import Client
 from django.test import TestCase, SimpleTestCase
 from django.urls import reverse
@@ -7,15 +8,13 @@ from chardet import detect
 from datasets.static.hashes import mimetypes as mthash
 from datasets.utils import validate_tsv
 
-# datasets/create/ ->
-# validate_tsv(filepath, extension)
+# DatasetCreateView() -> 
+# load file, get encoding, mimetype (file.content_type)
+# validate_tsv(filepath,extension)
 
 class ValidateTSV(SimpleTestCase):
-
+  # test OK 3 Jan 2021
   def testValidateFiles(self):
-    # DatasetCreateView() -> 
-    # load file, get encoding, mimetype (file.content_type)
-    # validate_tsv(filepath,extension)
     os.chdir('/Users/karlg/Documents/repos/_whgazetteer/')
     dd = '/Users/karlg/Documents/repos/_whgazetteer/_testdata/'
     #files = ['diamonds135.tsv', 'croniken20.tsv', 'bdda34.csv', 'bdda34.xlsx', 'bdda34.ods']
@@ -32,44 +31,52 @@ class ValidateTSV(SimpleTestCase):
     #for f in files:
     for f in files_err:
       fn = dd+f
-      #infile = codecs.open(fn, 'r', encoding='utf8')
+      mimetype = mimetypes.guess_type(fn, strict=True)[0]; #print(encoding, mimetype)
       encoding = get_encoding_type(fn); print(encoding)
-      #encoding = infile.encoding #; print(encoding)
-      #mimetype = mimetypes.guess_type(fn, strict=True)[0]; #print(encoding, mimetype)    
-      # proceed only if utf-8 and csv or tsv
-      #if encoding.lower() in ['utf-8', 'utf8']:
-      if encoding and encoding.startswith('UTF-8'):
-        mimetype = mimetypes.guess_type(fn, strict=True)[0]; #print(encoding, mimetype)
-        if mimetype in mthash.mimetypes:
+      # proceed only if (csv or tsv) and utf8
+      if mimetype in mthash.mimetypes:
+        if encoding and encoding.startswith('UTF-8'):
           ext = mthash.mimetypes[mimetype]
           result = validate_tsv(fn, ext)
           errors.append({"file":f, "msg":result['errors']})
-          # validate_tsv adds extension; strip it
+          # validate_tsv() adds extension; strip it
           os.rename(fn+'.'+ext,fn)
         else:
-          errors.append({"file":f, "msg": "incorrect mimetype: "+mimetype})
-          #sys.exit()
+          errors.append({"file":f, "msg": "incorrect encoding: "+str(encoding)})
       else:
-        errors.append({"file":f, "msg": "incorrect encoding: "+str(encoding)})
-        #sys.exit()
-    print(errors)
+        errors.append({"file":f, "msg": "incorrect mimetype: "+mimetype})
+    #print(errors)
+
     # tests
     self.assertIn('constraint "required" is "True"', errors[0]['msg'][0])
     self.assertIn('not conform to a constraint', errors[0]['msg'][1])
     self.assertEquals(errors[1]['msg'],[])
     self.assertIn('Required field(s) missing', errors[2]['msg'][0])
-    self.assertIn('incorrect encoding', errors[3]['msg'])
-    #self.assertIn('incorrect mimetype', errors[4]['msg'])
+    self.assertIn('incorrect mimetype', errors[3]['msg'])
+    self.assertIn('incorrect encoding', errors[4]['msg'])
   
   
-#for f in files_err:
-  #fn = dd+f
-  #print(get_encoding_type(fn))
-#
-# validate_lpf(filepath,'coll')
+# TODO: validate_lpf(filepath,'coll')
 
 # DatasetCreateModelForm ->
+class CallViews(SimpleTestCase):
+  def testViews(self):
+    responses = []
+    urls = ['dashboard', 'datasets:dataset-create']
+    param_urls = ['datasets:dataset-detail', 'datasets:dataset-delete']
+    client = Client()
+    for url in urls:
+      responses.append( client.get(reverse(url)).status_code )
+    
+    for url in param_urls:
+      responses.append( HttpResponseRedirect(reverse(url, args=(99999,))).status_code )
+    
+    self.assertEquals(list(set(responses)), [302])
 
 # datasets/dataset_create.html -> SUBMIT
-
 # DatasetCreateView() -> form_valid()
+
+
+#for f in files_err:
+  # fn = dd+f
+  # print(get_encoding_type(fn))
