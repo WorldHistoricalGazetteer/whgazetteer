@@ -12,26 +12,25 @@ from datasets.utils import validate_tsv
 # DatasetCreateView() -> 
 # load file, get encoding, mimetype (file.content_type)
 # validate_tsv(filepath,extension)
-fields = ['id','title','title_source','start','title_uri','ccodes','matches','variants',
- 'types','aat_types','parent_name','parent_id','lon','lat','geo_wkt','geo_source',
- 'geo_id','end','description']
 
-class ValidateTSV(SimpleTestCase):
-  # test 
+class ValidateDelimited(SimpleTestCase):
+  
+  # ok 5 Jan 2021
+  # saves spreadsheet as TSV to ./temp, runs validate_tsv() on it
+  # TODO: save both spreadsheet and tsv version?
   def testValidateSpreadsheet(self):
     import pandas as pd
     os.chdir('/Users/karlg/Documents/repos/_whgazetteer/')
     dd = '/Users/karlg/Documents/repos/_whgazetteer/_testdata/'
-    files_ok = ['bdda34_xlsx.xlsx','bdda34_ods.ods']
-    files_err = ['bdda34_err_xlsx.xlsx','bdda34_err_ods.ods']
+    #files_ok = ['bdda34_xlsx.xlsx','bdda34_ods.ods']
+    files = ['bdda34_err_xlsx.xlsx','bdda34_err_ods.ods','bdda34_xlsx.xlsx','bdda34_ods.ods','bdda34_ods_extra-col.ods']
     
     def get_encoding_excel(file):
       fin = codecs.open(file, 'r')
       return fin.encoding
     
     errors = []
-    #for f in files_err:
-    for f in files_ok:
+    for f in files:
       fn = dd+f
       mimetype = mimetypes.guess_type(fn, strict=True)[0]
       valid_mime = mimetype in mthash_plus.mimetypes
@@ -45,41 +44,32 @@ class ValidateTSV(SimpleTestCase):
       if encoding and encoding.lower().startswith('utf-8'):
         ext = mthash_plus.mimetypes[mimetype]
 
-        fnout = dd+'/_temp/'+f+'.tsv'
+        fnout = dd+'/_temp/'+f
         fout=codecs.open(fnout, 'w', encoding='utf8')
-        df = pd.read_excel(fn)
+        df = pd.read_excel(fn,converters={'id': str, 'start':str, 'end':str, 'aat_types': str, 'lon': float, 'lat': float})
         header = list(df.columns.values)
-        # TODO: auto pop data_types_dict keys missing in header
-        schema = {'id': str, 'start':str, 'end':str, 'aat_types': str, 'lon': float, 'lat': float}
-        types = dict(filter(lambda col: col[0] in header, schema.items()))
         
-        df = df.astype(types)
-        table=df.to_csv(sep='\t', index=False)
+        table=df.to_csv(sep='\t', index=False).replace('\nan','')
         fout.write(table)
         fout.close()
-        #infile = codecs.open(fnout, 'r')
         result = validate_tsv(fnout, 'tsv')
-        
-        ccodesRegex = r"^([a-zA-Z]{2})$|([a-zA-Z]{2})(;\s*(([a-zA-Z]{2});?)*)"
-        ccodes=df['ccodes'].str.contains(ccodesRegex, regex=True)
-        df.index[ccodes == False].tolist()
-        
-        #result = validate_tsv(fn, ext)
+
         errors.append({"file":f, "msg":result['errors']})
-        # validate_tsv() adds extension; strip it
-        os.rename(fn+'.'+ext,fn)
       else:
         errors.append({"file":f, "msg": "incorrect encoding: "+str(encoding)})
-      
       print(f, mimetype, encoding)
     print(errors)
 
-    # tests
+    # errors
     self.assertIn('constraint "required" is "True"', errors[0]['msg'][0])
-    self.assertIn('not conform to a constraint', errors[0]['msg'][1])
-    self.assertEquals(errors[1]['msg'],[])
-    self.assertIn('Required field(s) missing', errors[2]['msg'][0])
-    self.assertIn('incorrect encoding', errors[3]['msg'])
+    self.assertIn('constraint "pattern" is', errors[0]['msg'][1])    
+    self.assertIn('Required field(s) missing', errors[1]['msg'][0])
+    self.assertIn('constraint "required" is "True"', errors[1]['msg'][1])
+    self.assertIn('constraint "pattern" is', errors[1]['msg'][2])
+    # no errors
+    self.assertEquals(errors[2]['msg'],[])
+    self.assertEquals(errors[3]['msg'],[])
+    self.assertEquals(errors[4]['msg'],[]) # extra column, no errors
 
   # ok, 4 Jan 2021
   def testValidateTSV(self):
