@@ -1,11 +1,10 @@
 # validate tsv/csv and lpf uploads
 from django.http import HttpResponseRedirect
 from django.test import Client
-from django.test import TestCase, SimpleTestCase
+from django.test import SimpleTestCase
 from django.urls import reverse
 import os, codecs, json, mimetypes, re, sys
 from chardet import detect
-from datasets.static.hashes import mimetypes as mthash
 from datasets.static.hashes import mimetypes_plus as mthash_plus
 from datasets.utils import validate_tsv
 
@@ -13,8 +12,7 @@ from datasets.utils import validate_tsv
 # load file, get encoding, mimetype (file.content_type)
 # validate_tsv(filepath,extension)
 
-class ValidateDelimited(SimpleTestCase):
-  
+class ValidateDelimited(SimpleTestCase):  
   # ok 5 Jan 2021
   # saves spreadsheet as TSV to ./temp, runs validate_tsv() on it
   # TODO: save both spreadsheet and tsv version?

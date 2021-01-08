@@ -1470,8 +1470,6 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
     # open, sniff, validate; pass to ds_insert_{tsv|lpf} if valid
     fin = codecs.open(tempfn, 'r')
     encoding = fin.encoding
-    #fn='/Users/karlg/repos/_whgazetteer/_tests/data/lugares_20.jsonld'
-    #fin = codecs.open(fn, 'r')
     print('tempfn, encoding, mimetype',tempfn,encoding,mimetype)
     if mimetype not in mthash.mimetypes:
       context['errors'] = "Not a valid file type; must be one of [.csv, .tsv, .json]"
