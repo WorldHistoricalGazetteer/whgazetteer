@@ -6,6 +6,7 @@ from django.views.generic import View
 
 import codecs, sys, os, pprint, time, datetime, csv, openpyxl
 import simplejson as json
+from chardet import detect
 from frictionless import validate as fvalidate
 from goodtables import validate as gvalidate
 from jsonschema import draft7_format_checker, validate 
@@ -286,6 +287,18 @@ def download_augmented_slow(request, *args, **kwargs):
 
     return response
 
+
+def get_encoding_excel(fn):
+      fin = codecs.open(fn, 'r')
+      fin.close()
+      return fin.encoding
+
+def get_encoding_delim(fn):
+  with open(fn, 'rb') as f:
+    rawdata = f.read()
+  return detect(rawdata)['encoding']
+
+
 # ***
 # format tsv validation errors for modal display
 # ***
@@ -407,14 +420,14 @@ def validate_lpf(tempfn,format):
   return result
 
 #
-# validate LP-TSV file (w/frictionless library)
-def validate_tsv(tempfn,ext):
-  result = {"errors":[],"format":"delimited"}
-  newfn = tempfn+'.'+ext
-  os.rename(tempfn,newfn)
+# validate LP-TSV file (w/frictionless.py)
+# 
+def validate_tsv(fn, ext):
+  # incoming csv or tsv
+  print('validate_tsv() fn', fn)
+  result = {"format":"delimited", "errors":[]}
   schema_lptsv = json.loads(codecs.open('datasets/static/validate/schema_tsv.json', 'r', 'utf8').read())
-  #schema_lptsv = json.loads(codecs.open('../datasets/static/validate/schema_tsv.json', 'r', 'utf8').read())
-  report = fvalidate(newfn, schema=schema_lptsv, sync_schema=True)
+  report = fvalidate(fn, schema=schema_lptsv, sync_schema=True)
   #print(report)  
   rpt = report['tables'][0]
   req = ['id','title','title_source','start']

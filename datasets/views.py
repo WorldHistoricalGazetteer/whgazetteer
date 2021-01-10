@@ -12,27 +12,29 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse
 from django.views.generic import (CreateView, ListView, UpdateView, DeleteView)
 from django_celery_results.models import TaskResult
-
+# external
 from celery import current_app as celapp
-import codecs, math, os, re, sys, tempfile
+from chardet import detect
+import codecs, math, mimetypes, os, re, shutil, sys, tempfile
+from elasticsearch import Elasticsearch      
+es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 import pandas as pd
 import simplejson as json
 from pathlib import Path
 from shutil import copyfile
+# whg app
 from areas.models import Area
-from main.choices import AUTHORITY_BASEURI
-from main.models import Log, Comment
-from places.models import *
 from datasets.forms import HitModelForm, DatasetDetailModelForm, DatasetCreateModelForm
 from datasets.models import Dataset, Hit, DatasetFile
-from datasets.static.hashes import mimetypes as mthash
+from datasets.static.hashes import mimetypes_plus as mthash_plus
 from datasets.static.hashes.parents import ccodes
 # NB these task names ARE in use; they are generated dynamically
 from datasets.tasks import align_tgn, align_whg, align_wd, align_whg_pre, maxID
 from datasets.utils import *
 from es.es_utils import makeDoc,deleteFromIndex, replaceInIndex
-from elasticsearch import Elasticsearch      
-es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+from main.choices import AUTHORITY_BASEURI
+from main.models import Log, Comment
+from places.models import *
 
 def emailer(subj,msg):
   send_mail(
@@ -1436,6 +1438,7 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
   form_class = DatasetCreateModelForm
   template_name = 'datasets/dataset_create.html'
   success_message = 'dataset created'
+  
   def form_invalid(self,form):
     print('form invalid...',form.errors.as_data())
     context = {'form': form}
@@ -1448,54 +1451,88 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
     file=self.request.FILES['file']
     filename = file.name
     mimetype = file.content_type
-    
-    print('form_valid() user, filename, type',user,filename,mimetype)
-    #TODO: generate a slug label?
-    #label = data['title'][:16]+'_'+user.first_name[:1]+user.last_name[:1]
+    newfn, newtempfn = ['', '']
+    print('form_valid() mimetype',mimetype)
     
     # open & write tempf to a temp location;
     # call it tempfn for reference
     tempf, tempfn = tempfile.mkstemp()
-    #print('tempfn, filename, type(file) in DatasetCreateView()',tempfn, filename, type(data['file']))
     try:
       for chunk in data['file'].chunks():
-        #print('chunk',chunk)
         os.write(tempf, chunk)
     except:
       raise Exception("Problem with the input file %s" % request.FILES['file'])
     finally:
       os.close(tempf)
+    #mimetype = mimetypes.guess_type(tempfn, strict=True)[0]
 
-    # IN PROGRESS 27 Dec
-    # open, sniff, validate; pass to ds_insert_{tsv|lpf} if valid
+    print('tempfn',tempfn)
+    # IN PROGRESS 8 Jan
+    # open, sniff, validate
+    # pass to ds_insert_{tsv|lpf} if valid
     fin = codecs.open(tempfn, 'r')
-    encoding = fin.encoding
-    print('tempfn, encoding, mimetype',tempfn,encoding,mimetype)
-    if mimetype not in mthash.mimetypes:
-      context['errors'] = "Not a valid file type; must be one of [.csv, .tsv, .json]"
-      return self.render_to_response(self.get_context_data(form=form, context=context))
-    else:
-      mimetype = mthash.mimetypes[mimetype]
-      if encoding.lower() == 'utf-8':
-        # proceed with validation
-        if mimetype in ['csv','tsv']:
-          context["format"] = "delimited"
-          result = validate_tsv(tempfn, mimetype)
-        elif mimetype in ['json']:
-          # TODO: json-lines alternative (coll = FeatureCollection)
-          context["format"] = "lpf"
-          result = validate_lpf(tempfn, 'coll')
-        print('validation result:',context["format"],result)
-      else:
-        context['errors'] = "Dataset file encoding must be UTF-8; this is "+encoding
-        return self.render_to_response(self.get_context_data(form=form, context=context))
+    #mimetype = mimetypes.guess_type(tempfn, strict=True)[0]
+    valid_mime = mimetype in mthash_plus.mimetypes
 
+    if valid_mime:
+      if mimetype.startswith('text/'):
+        encoding = get_encoding_delim(tempfn)
+      elif 'spreadsheet' in mimetype:
+        encoding = get_encoding_excel(tempfn) 
+      elif mimetype.startswith('application/'):
+        encoding = fin.encoding
+    else:
+      context['errors'] = "Not a valid file type; must be one of [.csv, .tsv, .xlsx, .ods]"
+      return self.render_to_response(self.get_context_data(form=form, context=context))
+
+    # it's csv, tsv, spreadsheet, or json...
+    # if utf8, get extension and validate
+    if encoding and encoding.lower().startswith('utf-8'):
+      ext = mthash_plus.mimetypes[mimetype]
+      if ext == 'json':
+        result = validate_lpf(tempfn, 'coll') 
+      elif ext in ['csv', 'tsv']:
+        result = validate_tsv(tempfn, ext)
+      elif ext in ['xlsx', 'ods']:
+        print('spreadsheet, use pandas')
+        import pandas as pd
+        
+        # open new file for tsv write
+        newfn = tempfn + '.tsv'
+        fout=codecs.open(newfn, 'w', encoding='utf8')
+        
+        # add ext to tempfn (pandas need this)
+        newtempfn = tempfn+'.'+ext
+        os.rename(tempfn, newtempfn)
+        print('renamed tempfn for pandas:', tempfn)
+        
+        # dataframe from spreadsheet
+        df = pd.read_excel(newtempfn, converters={
+          'id': str, 'start':str, 'end':str, 
+          'aat_types': str, 'lon': float, 'lat': float})
+        
+        # write it as tsv
+        table=df.to_csv(sep='\t', index=False).replace('\nan','')
+        fout.write(table)
+        fout.close()
+        
+        print('to validate_tsv(newfn):', newfn)
+        # validate it...
+        result = validate_tsv(newfn, 'tsv')
+    else:
+      # return form with error
+      context['errors'] = "Dataset file encoding must be UTF-8; this file is <b>"+encoding+'</b>.'
+      return self.render_to_response(self.get_context_data(form=form, context=context))
+    
     print('validation complete, still in DatasetCreateView')
     
-    # if validated, create Dataset, DatasetFile, Log instances, advance to dataset_detail 
+    # validated -> create Dataset, DatasetFile, Log instances, 
+    # advance to dataset_detail 
     # else present form again with errors
     if len(result['errors']) == 0:
       context['status'] = 'format_ok'
+      
+      print('validated, no errors')      
       print('cleaned_data',form.cleaned_data)
       
       # new Dataset record ('owner','id','label','title','description')
@@ -1514,16 +1551,19 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
         return render(request,'datasets/dataset_create.html', args)
         #sys.exit(sys.exc_info())
 
+      # 
       # create user directory if necessary
       userdir = r'media/user_'+user.username+'/'
       if not Path(userdir).exists():
         os.makedirs(userdir)
+        
       # build path, and rename file if already exists in user area
       file_exists = Path(userdir+filename).exists()
       if not file_exists:
         filepath = userdir+filename
       else:
-        filename=filename[:-4]+'_'+tempfn[-7:]+filename[-4:]
+        splitty = filename.split('.')
+        filename=splitty[0]+'_'+tempfn[-7:]+'.'+splitty[1]
         filepath = userdir+filename
 
       # write log entry
@@ -1536,18 +1576,31 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
         user_id = user.id
       )
       
-      # write the file
-      fout = codecs.open(filepath,'w','utf8')
-      try:
-        for chunk in file.chunks():
-          fout.write(chunk.decode("utf-8"))
-      except:
-        sys.exit(sys.exc_info())
-        
+      print('pre-write')
+      print('ext='+ext+'; newfn='+newfn+'; filepath='+filepath+
+            '; tempfn='+tempfn+'; newtempfn='+newtempfn)
+      
+      # write request obj file to user directory
+      # can't write binary here
+      if ext in ['csv', 'tsv']:
+        fout = codecs.open(filepath,'w','utf8')
+        try:
+          for chunk in file.chunks():
+            fout.write(chunk.decode("utf-8"))
+        except:
+          print('error writing file')
+          sys.exit(sys.exc_info()[0])
+          
+      # if spreadsheet, copy newfn (tsv conversion)
+      if ext in ['xlsx', 'ods']:
+        print('copying newfn -> filepath', newfn, filepath)
+        shutil.copy(newfn, filepath+'.tsv')
+      
       # create initial DatasetFile record
       DatasetFile.objects.create(
         dataset_id = dsobj,
-        file = 'user_'+user.username+'/'+filename,
+        # uploaded valid file as is
+        file = filepath[6:]+'.tsv' if ext in ['xlsx','ods'] else filepath[6:], 
         rev = 1,
         format = result['format'],
         delimiter = result['delimiter'] if "delimiter" in result.keys() else "n/a",
@@ -1557,16 +1610,18 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
         numrows = result['count']
       )
       
-      # data will be written on load of detail w/dsobj.status = 'format_ok'
+      # data will be written on load of dataset.html w/dsobj.status = 'format_ok'
       return redirect('/datasets/'+str(dsobj.id)+'/detail')
 
     else:
+      print('validation failed:', result['errors'])
       context['action'] = 'errors'
-      context['errors'] = result['errors']
-      # delete tmp file
-      #os.remove(result['file'])
-      result['columns'] if "columns" in result.keys() else []
-      print('validation failed:', result)
+      context['format'] = result['format']
+      context['errors'] = [e.replace('cell','value') for e in result['errors']]
+      context['columns'] = result['columns']
+      # TODO: delete tmp file if exists
+      os.remove(tempfn)
+      #context['columns'] if "columns" in result.keys() else []
       return self.render_to_response(self.get_context_data(form=form,context=context))
 
   def get_context_data(self, *args, **kwargs):

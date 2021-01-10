@@ -1,10 +1,11 @@
 # validate tsv/csv and lpf uploads
 from django.http import HttpResponseRedirect
 from django.test import Client
-from django.test import SimpleTestCase
+from django.test import TestCase, SimpleTestCase
 from django.urls import reverse
 import os, codecs, json, mimetypes, re, sys
 from chardet import detect
+from datasets.static.hashes import mimetypes as mthash
 from datasets.static.hashes import mimetypes_plus as mthash_plus
 from datasets.utils import validate_tsv
 
@@ -12,6 +13,7 @@ from datasets.utils import validate_tsv
 # load file, get encoding, mimetype (file.content_type)
 # validate_tsv(filepath,extension)
 
+  
 class ValidateDelimited(SimpleTestCase):  
   # ok 5 Jan 2021
   # saves spreadsheet as TSV to ./temp, runs validate_tsv() on it
@@ -137,8 +139,38 @@ class CallViews(SimpleTestCase):
     
     self.assertEquals(list(set(responses)), [302])
 
-# datasets/dataset_create.html -> SUBMIT
-# DatasetCreateView() -> form_valid()
+class ViewTests(TestCase):
+  def datasetCreate(self):
+    dd = '/Users/karlg/Documents/repos/_whgazetteer/_testdata/'
+    files = ['bdda34.csv','bdda34_xlsx.xlsx']
+    url = 'datasets:dataset-create'
+    from django.test import Client
+    from django.shortcuts import get_object_or_404
+    from django.urls import reverse
+    from accounts.models import User
+    user = User.objects.create_user('Satch', password='foo')
+    #user = get_object_or_404(User,pk=14)
+    c = Client()
+    c.login(username='Satch', password='foo')
+    with open(dd+files[0]) as f:
+      response = c.post(reverse(url), {
+        'owner': user.id,
+        'label': 'my-dataset',
+        'title': 'My Dataset',
+        'description': 'blah',
+        'file': f,
+        'datatype': 'place',
+        # dataset_file
+        'rev':1,
+        'format':'delimited',
+        'header': ['a','b'],
+        'df_status': 'uploaded',
+        'numrows': 34,
+        'upload_date': '2021-01-20',
+        'delimiter': '\t'
+      })
+    print('response', response)
+  
 
 
 #for f in files_err:
