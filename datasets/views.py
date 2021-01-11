@@ -1580,7 +1580,6 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
             '; tempfn='+tempfn+'; newtempfn='+newtempfn)
       
       # write request obj file to user directory
-      # can't write binary here
       if ext in ['csv', 'tsv', 'json']:
         fout = codecs.open(filepath,'w','utf8')
         try:
