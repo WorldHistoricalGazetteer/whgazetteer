@@ -139,40 +139,36 @@ class CallViews(SimpleTestCase):
     
     self.assertEquals(list(set(responses)), [302])
 
-class ViewTests(TestCase):
-  def datasetCreate(self):
-    dd = '/Users/karlg/Documents/repos/_whgazetteer/_testdata/'
-    files = ['bdda34.csv','bdda34_xlsx.xlsx']
-    url = 'datasets:dataset-create'
-    from django.test import Client
-    from django.shortcuts import get_object_or_404
-    from django.urls import reverse
-    from accounts.models import User
-    user = User.objects.create_user('Satch', password='foo')
-    #user = get_object_or_404(User,pk=14)
-    c = Client()
-    c.login(username='Satch', password='foo')
-    with open(dd+files[0]) as f:
-      response = c.post(reverse(url), {
-        'owner': user.id,
-        'label': 'my-dataset',
-        'title': 'My Dataset',
-        'description': 'blah',
-        'file': f,
-        'datatype': 'place',
-        # dataset_file
-        'rev':1,
-        'format':'delimited',
-        'header': ['a','b'],
-        'df_status': 'uploaded',
-        'numrows': 34,
-        'upload_date': '2021-01-20',
-        'delimiter': '\t'
-      })
-    print('response', response)
+#class ViewTests(TestCase):
+  #def datasetCreate(self):
+    #dd = '/Users/karlg/Documents/repos/_whgazetteer/_testdata/'
+    #files = ['bdda34.csv','bdda34_xlsx.xlsx']
+    #url = 'datasets:dataset-create'
+    #from django.test import Client
+    #from django.shortcuts import get_object_or_404
+    #from django.urls import reverse
+    #from accounts.models import User
+    #user = User.objects.create_user('Satch', password='foo')
+    ##user = get_object_or_404(User,pk=14)
+    #c = Client()
+    #c.login(username='Satch', password='foo')
+    #with open(dd+files[0]) as f:
+      #response = c.post(reverse(url), {
+        #'owner': user.id,
+        #'label': 'my-dataset',
+        #'title': 'My Dataset',
+        #'description': 'blah',
+        #'file': f,
+        #'datatype': 'place',
+        ## dataset_file
+        #'rev':1,
+        #'format':'delimited',
+        #'header': ['a','b'],
+        #'df_status': 'uploaded',
+        #'numrows': 34,
+        #'upload_date': '2021-01-20',
+        #'delimiter': '\t'
+      #})
+    #print('response', response)
   
 
-
-#for f in files_err:
-  # fn = dd+f
-  # print(get_encoding_type(fn))

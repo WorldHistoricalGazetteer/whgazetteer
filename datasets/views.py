@@ -1464,14 +1464,13 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
       raise Exception("Problem with the input file %s" % request.FILES['file'])
     finally:
       os.close(tempf)
-    #mimetype = mimetypes.guess_type(tempfn, strict=True)[0]
 
     print('tempfn',tempfn)
-    # IN PROGRESS 8 Jan
+
     # open, sniff, validate
     # pass to ds_insert_{tsv|lpf} if valid
+
     fin = codecs.open(tempfn, 'r')
-    #mimetype = mimetypes.guess_type(tempfn, strict=True)[0]
     valid_mime = mimetype in mthash_plus.mimetypes
 
     if valid_mime:
@@ -1582,7 +1581,7 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
       
       # write request obj file to user directory
       # can't write binary here
-      if ext in ['csv', 'tsv']:
+      if ext in ['csv', 'tsv', 'json']:
         fout = codecs.open(filepath,'w','utf8')
         try:
           for chunk in file.chunks():
@@ -1595,6 +1594,7 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
       if ext in ['xlsx', 'ods']:
         print('copying newfn -> filepath', newfn, filepath)
         shutil.copy(newfn, filepath+'.tsv')
+      
       
       # create initial DatasetFile record
       DatasetFile.objects.create(
@@ -1617,11 +1617,11 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
       print('validation failed:', result['errors'])
       context['action'] = 'errors'
       context['format'] = result['format']
-      context['errors'] = [e.replace('cell','value') for e in result['errors']]
+      context['errors'] = parse_errors_tsv(result['errors'])
       context['columns'] = result['columns']
-      # TODO: delete tmp file if exists
+
       os.remove(tempfn)
-      #context['columns'] if "columns" in result.keys() else []
+
       return self.render_to_response(self.get_context_data(form=form,context=context))
 
   def get_context_data(self, *args, **kwargs):

@@ -4,7 +4,7 @@ from django.http import FileResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
 
-import codecs, sys, os, pprint, time, datetime, csv, openpyxl
+import codecs, csv, datetime, sys, openpyxl, os, pprint, re, time
 import simplejson as json
 from chardet import detect
 from frictionless import validate as fvalidate
@@ -300,12 +300,17 @@ def get_encoding_delim(fn):
 
 
 # ***
-# format tsv validation errors for modal display
+# format tsv validation errors for display
 # ***
-def parse_errors_tsv(err):
-  #print('parse_errors_tsv()',err)
-  html = '<p>Nah, errors in that file...'
-  return html
+def parse_errors_tsv(errors):
+  new_errors = []
+  for e in errors:
+    newe = re.sub('a constraint: constraint', 'the constraint:', e)
+    newe = re.sub('at position "(\\d+)" does', 'does', newe)
+    newe = re.sub('row at position "(\\d+)"', 'row \\1', newe)
+    newe = re.sub('value', 'cell', newe)
+    new_errors.append(newe)
+  return new_errors
 
 # *** NOT YET CALLED
 # format lpf validation errors for modal display
