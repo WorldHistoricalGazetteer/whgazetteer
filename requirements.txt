@@ -49,7 +49,8 @@ djangorestframework-gis==0.15
 djoser==2.0.3
 docutils==0.15.2
 edtf==4.0.1
-elasticsearch==6.3.1
+elastic-wikidata==0.3.7
+elasticsearch==7.8.1
 elasticsearch-dsl==6.3.1
 envoy==0.0.3
 et-xmlfile==1.0.1
@@ -129,7 +130,7 @@ PyYAML==5.3.1
 qwikidata==0.4.0
 rdflib==4.2.2
 redis==3.5.3
-requests==2.22.0
+requests==2.24.0
 reverse-geocoder==1.5.1
 rfc3986==1.4.0
 rfc3987==1.3.8
@@ -141,7 +142,7 @@ shellingham==1.3.2
 simpleeval==0.9.8
 simplejson==3.16.0
 six==1.11.0
-SPARQLWrapper==1.8.4
+SPARQLWrapper==1.8.5
 SQLAlchemy==1.3.16
 sqlparse==0.3.0
 statistics==1.0.3.5
@@ -150,6 +151,7 @@ tableschema==1.20.0
 tabulator==1.53.0
 text-unidecode==1.3
 tornado==5.1.1
+tqdm==4.55.0
 traitlets==4.3.2
 typer==0.3.2
 unicodecsv==0.14.1
