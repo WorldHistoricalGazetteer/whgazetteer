@@ -357,6 +357,7 @@ def timespansReduce(tsl):
 # 
 #
 def parsedates_lpf(feat):
+  print('feat in parsedates_lpf()',feat)
   intervals=[]
   # gather all when elements
   # global when?
@@ -383,7 +384,11 @@ def parsedates_lpf(feat):
   # absent end replaced by start by timespansReduce()
   starts = [ts[0] for ts in intervals]
   ends = [ts[1] for ts in intervals]
-  minmax = [int(min(starts)), int(max(ends))]
+  # some lpf records have no time at all b/c not required as with lp-tsv
+  minmax = [
+    int(min(starts)) if len(starts)>0 else None, 
+    int(max(ends))  if len(ends)>0 else None
+  ]
   # de-duplicate
   unique=list(set(tuple(sorted(sub)) for sub in intervals))
   return {"intervals": unique, "minmax": minmax}

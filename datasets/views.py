@@ -972,7 +972,7 @@ def ds_insert_lpf(request, pk):
     jdata = json.loads(infile.read())
     
     print('count of features',len(jdata['features']))
-    print('0th feature',jdata['features'][0])
+    #print('0th feature',jdata['features'][0])
     
     for feat in jdata['features']:
       # create Place, save to get id, then build associated records for each
@@ -1619,7 +1619,7 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
       context['errors'] = parse_errors_tsv(result['errors'])
       context['columns'] = result['columns']
 
-      os.remove(tempfn)
+      #os.remove(tempfn)
 
       return self.render_to_response(self.get_context_data(form=form,context=context))
 

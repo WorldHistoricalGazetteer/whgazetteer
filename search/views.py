@@ -106,7 +106,7 @@ def suggester(doctype,q,scope,idx):
   suggestions = []
   
   if doctype=='place':
-    #print('suggester/place q:',q)
+    print('suggester/place q:',q)
     res = es.search(index=idx, doc_type='place', body=q)
     if scope == 'suggest':
       sugs = res['suggest']['suggest'][0]['options']
@@ -174,12 +174,9 @@ class SearchView(View):
     scope = request.GET.get('scope')
     idx = request.GET.get('idx')
     fclasses = request.GET.get('fclasses')
-    year = request.GET.get('year')
     start = request.GET.get('start')
     end = request.GET.get('end')
     bounds = request.GET.get('bounds')
-    #bounds = json.loads(bounds) if bounds else {"id":"0","type":"predefined"}
-    # e.g. {'type': ['userarea'], 'id': ['0']}
     #print('bounds',fclasses,start,end)
     
     if doctype == 'place':
@@ -201,8 +198,6 @@ class SearchView(View):
         }
         if fclasses:
           q['query']['bool']['must'].append({"terms": {"fclasses": fclasses.split(',')}})
-        if year:
-          q['query']['bool']['must'].append({"term":{"timespans":{"value": year}}})
         if start:
           q['query']['bool']['must'].append({"range":{"timespans":{"gte" :start,"lte":end if end else 2005}}})
         if bounds:

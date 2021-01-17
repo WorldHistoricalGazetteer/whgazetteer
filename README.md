@@ -8,7 +8,7 @@ WHG is aggregating attestations of historical place references contributed by re
 
 #### v1.1a (11 Jan 2021)
 
-- Support for uploading, validating .csv, xlsx, and .ods formats added
+- Support for uploading & validating .csv, .xlsx, and .ods formats added
 - Compute country codes if absent & geometry present
 - Fixes: wikidata links; reporting upload errors; temporal data parsing 
 

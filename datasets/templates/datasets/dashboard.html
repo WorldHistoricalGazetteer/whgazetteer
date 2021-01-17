@@ -38,10 +38,11 @@
                 <th>name</th>
                 <th>label</th>
                 <th>created (utc)</th>
-                <!--<th>type</th>-->
+                <th>format</th>
                 <th># rows</th>
                 <th>status</th>
-                <!--<th>owner</th>-->
+                {% if user.is_superuser %}
+                <th>owner</th>{% endif %}
               </thead>
               <tbody>
                 {% for d in dataset_list %}
@@ -54,11 +55,13 @@
                         {% else %}{{ d.label }}{% endif %}</td>
                     <!--<td class="small">{ d.create_date|date:"d-M-Y, H:i (e)" }}</td>-->
                     <td class="small">{{ d.create_date|date:"d M Y, H:i" }}</td>
-                    <!--<td>{ d.datatype }}</td>-->
+                    <td>{{ d.format }}</td>
                     <!--<td><span class="float-right mr-2">{ d.numrows }}</span></td>-->
                     <td>{{ d.numrows }}</td>
                     <td>{{ d.ds_status }}</td>
-                    <!--<td>{ d.owner }}</td>-->
+                    {% if user.is_superuser %}
+                    <td>{{ d.owner }}</td>
+                    {% endif %}
                   </tr>
                 {% endfor %}
               </tbody>
