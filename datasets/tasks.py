@@ -14,8 +14,9 @@ from pprint import pprint
 from areas.models import Area
 from es.es_utils import makeDoc
 from datasets.models import Dataset, Hit
-from datasets.static.regions import regions as region_hash
+#from datasets.static.regions import regions as region_hash
 from datasets.static.hashes.parents import ccodes
+from datasets.static.hashes.qtypes import qtypes
 from datasets.utils import *
 from places.models import Place
 ##
@@ -182,12 +183,28 @@ def normalize(h,auth):
     # create rec (json for a Hit record) from h._source
     #['id', 'type', 'modified', 'descriptions', 'claims', 'sitelinks', 'variants', 'minmax', 'types', 'location'] 
     try:
+      # generate a title
+      # TODO: do it in index?
+      variants=h['variants']
+      title = next(
+        (v['name'] for v in variants if v['lang'] == 'en'), 
+        '; '.join([v['name'] for v in variants[:2]]) + ('; ...' if len(variants)>2 else '')
+      ) #; print(title)
+
+      # list of variant@lang
+      rec.variants = [v['name']+'@'+v['lang'] for v in variants if v['name'] != title]
+      
+      #  place_id, dataset, src_id, title
+      rec = HitRecord(-1, 'wd', h['id'], title)
+      
       if 'location' in h.keys():
         # single MultiPoint geometry
         loc = h['location']
         loc['id'] = h['id']
-        loc['ds'] = 'wd'
-        
+        loc['ds'] = 'wd'        
+        # single MultiPoint geom if exists
+      rec.geoms = [loc] if loc else []
+      
       # turn these claims into links
       qlinks = {'P1566':'gn', 'P1584':'pl', 'P244':'loc', 'P1667':'tgn', 'P214':'viaf'}
       links=[]
@@ -195,15 +212,21 @@ def normalize(h,auth):
       if len(hlinks) > 0:
         for l in hlinks:
           links.append(qlinks[l]+':'+str(h['claims'][l][0]))
-      #  place_id, dataset, src_id, title
-      # TODO: generate a title sooner
-      rec = HitRecord(-1, 'wd', h['id'], h['title'])
-      rec.variants = []
-      rec.types = h['types']['value'] if 'types' in h.keys() else []
-      rec.ccodes = [h['countryLabel']['value']]
-      rec.parents =h['parents']['value'] if 'parents' in h.keys() else []
-      rec.geoms = locs if len(locs)>0 else []
-      rec.links = links if len(links)>0 else []
+      rec.links = links
+
+      
+      # look up Q class labels
+      htypes = set(h['claims']['P31'])
+      qtypekeys = set([t[0] for t in qtypes.items()])
+      rec.types = [qtypes[t] for t in list(set(htypes & qtypekeys))]
+
+      # countries
+      rec.ccodes = [ccodes[0][c]['gnlabel'] for c in ccodes[0] \
+                    if ccodes[0][c]['wdid'] in h['claims']['P17']]
+        
+      # not applicable
+      rec.parents = []
+
       rec.minmax = []
       rec.inception = parseDateTime(h['inception']['value']) if 'inception' in h.keys() else ''
       # {'datatype': 'http://www.w3.org/2001/XMLSchema#dateTime', 'type': 'literal', 'value': '1858-11-22T00:00:00Z'}
