@@ -254,7 +254,7 @@
     e.preventDefault();
     str=$(this).text()
     console.log('str',str)
-    var re = /(http|dbp|gn|tgn|wd|loc|viaf|whg):(.*?)$/;
+    var re = /(http|dbp|gn|tgn|wd|loc|viaf|whg|pl):(.*?)$/;
     url=str.match(re)[1]=='http' ? str : base_urls[str.match(re)[1]]+str.match(re)[2]
     window.open(url,'_blank')
   });

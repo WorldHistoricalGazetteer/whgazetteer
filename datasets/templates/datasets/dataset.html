@@ -449,6 +449,14 @@
                 name="recon" value="whg_pre">WHG (align) 
             </label>
           </div>
+          <div class="form-check">
+            <label class="form-check-label" for="r_wdlocal">
+              <input type="radio" class="form-check-input r_wd" id="r_wdlocal" name="recon" value="wdlocal" >Wikidata local (wdlocal) <span class="text-danger small ml-2">approx. n records per second</span>
+            </label>
+          </div>
+          <div id="wd_lang" class="hidden">
+            Preferred label language: <input class="input-sm col-xs-2"type="text" name="lang">
+          </div>
           <hr/>
           {% endif %}
           <p class="font-weight-bold">Authority name source</p>
@@ -460,8 +468,7 @@
           </div>
           <div class="form-check">
             <label class="form-check-label" for="r_wd">
-              <input type="radio" class="form-check-input" id="r_wd"
-                name="recon" value="wd" >Wikidata (wd) <span class="text-danger small ml-2">approx. 1 record per second</span>
+              <input type="radio" class="form-check-input r_wd" id="r_wd" name="recon" value="wd" >Wikidata (wd) <span class="text-danger small ml-2">approx. 1 record per second</span>
             </label>
           </div>
           {% if request.method == 'GET' %}
@@ -602,7 +609,7 @@ js for Summary, Reconciliation
 <script type="text/javascript">
   // show/hide geo constraint options
   $("#r_tgn").click(function(){console.log('tgn now');$("#geo_constraint").show(400)})
-  $("#r_wd").click(function(){console.log('wd now');$("#geo_constraint").hide(400)})
+  $(".r_wd").click(function(){console.log('wd now');$("#geo_constraint").hide(400)})
   
   $("#a_update_modal").on('click', function(e){
     console.log('clicked update')

@@ -1,12 +1,14 @@
 "base_urls": {
-    "tgn": "http://vocab.getty.edu/page/tgn/",
     "dbp": "http://dbpedia.org/resource/",
-    "gn": "http://www.geonames.org/",
-    "wd": "https://www.wikidata.org/wiki/",
-    "loc": "http://id.loc.gov/authorities/subjects/",
-    "viaf": "http://viaf.org/viaf/",
-    "wwf": "https://www.worldwildlife.org/ecoregions/",
-    "whg": "/api/places/",
     "dplace": "http://dplace.org/societies/",
+    "gn": "http://www.geonames.org/",
+    "loc": "http://id.loc.gov/authorities/subjects/",
+    "pl": "https://pleiades.stoa.org/places/",
+    "tgn": "http://vocab.getty.edu/page/tgn/",
+    "viaf": "http://viaf.org/viaf/",
+    "wd": "https://www.wikidata.org/wiki/",
+    "whg": "/api/places/",
+    "wp_en": "https://en.wikipedia.org/wiki/",
+    "wwf": "https://www.worldwildlife.org/ecoregions/",
     "indias": "https://www.hgis-indias.net/dokuwiki/doku.php?id=gazetteer:"
 }

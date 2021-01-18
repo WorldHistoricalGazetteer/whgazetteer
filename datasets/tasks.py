@@ -117,7 +117,7 @@ def ccDecode(codes):
     countries.append(ccodes[0][c]['gnlabel'])
   return countries
   
-# normalize hits json from any authority
+# normalize hit json from any authority
 # 
 def normalize(h,auth):
   if auth.startswith('whg'):
@@ -178,6 +178,38 @@ def normalize(h,auth):
       # {'datatype': 'http://www.w3.org/2001/XMLSchema#dateTime', 'type': 'literal', 'value': '1858-11-22T00:00:00Z'}
     except:
       print("normalize(wd) error:", h['place']['value'][31:], sys.exc_info())    
+  elif auth == 'wdloc':
+    # create rec (json for a Hit record) from h._source
+    #['id', 'type', 'modified', 'descriptions', 'claims', 'sitelinks', 'variants', 'minmax', 'types', 'location'] 
+    try:
+      if 'location' in h.keys():
+        # single MultiPoint geometry
+        loc = h['location']
+        loc['id'] = h['id']
+        loc['ds'] = 'wd'
+        
+      # turn these claims into links
+      qlinks = {'P1566':'gn', 'P1584':'pl', 'P244':'loc', 'P1667':'tgn', 'P214':'viaf'}
+      links=[]
+      hlinks = list(set(h['claims'].keys()) & set(['P1566','P1584','P244','P1667','P214']))
+      if len(hlinks) > 0:
+        for l in hlinks:
+          links.append(qlinks[l]+':'+str(h['claims'][l][0]))
+      #  place_id, dataset, src_id, title
+      # TODO: generate a title sooner
+      rec = HitRecord(-1, 'wd', h['id'], h['title'])
+      rec.variants = []
+      rec.types = h['types']['value'] if 'types' in h.keys() else []
+      rec.ccodes = [h['countryLabel']['value']]
+      rec.parents =h['parents']['value'] if 'parents' in h.keys() else []
+      rec.geoms = locs if len(locs)>0 else []
+      rec.links = links if len(links)>0 else []
+      rec.minmax = []
+      rec.inception = parseDateTime(h['inception']['value']) if 'inception' in h.keys() else ''
+      # {'datatype': 'http://www.w3.org/2001/XMLSchema#dateTime', 'type': 'literal', 'value': '1858-11-22T00:00:00Z'}
+    except:
+      print("normalize(wd) error:", h['place']['value'][31:], sys.exc_info())    
+    
   elif auth == 'tgn':
     # h=hit['_source']; ['tgnid', 'title', 'names', 'suggest', 'types', 'parents', 'note', 'location']
     # whg_id, place_id, dataset, src_id, title
@@ -276,7 +308,9 @@ def writeHit(b,passnum,ds,pid,srcid,title):
           b['place']['value']+'\t'
     print('wrote hit: '+hit + '\n')
 
-# 
+# ***
+# manage, perform SPARQL reconcile to remote wikidata
+# ***
 @task(name="align_wd")
 def align_wd(pk, *args, **kwargs):
   ds = get_object_or_404(Dataset, id=pk)
@@ -526,10 +560,9 @@ def align_wd(pk, *args, **kwargs):
   task_emailer.delay(ds.label, ds.owner.username, ds.owner.email, count_hit, total_hits)
   
   return hit_parade['summary']
-  
 
 # ***
-# performs elasticsearch queries
+# performs elasticsearch > tgn queries
 # ***
 def es_lookup_tgn(qobj, *args, **kwargs):
   #print('qobj',qobj)
@@ -776,8 +809,261 @@ def align_tgn(pk, *args, **kwargs):
   
   return hit_parade['summary']
 
+
 # ***
-# performs elasticsearch queries
+# performs elasticsearch > wdlocal queries
+# ***
+def es_lookup_wdlocal(qobj, *args, **kwargs):
+  #print('qobj',qobj)
+  bounds = kwargs['bounds']
+  hit_count = 0
+
+  # empty result object
+  result_obj = {
+      'place_id': qobj['place_id'], 'hits':[],
+        'missed':-1, 'total_hits':-1
+    }  
+
+  # array (includes title)
+  variants = list(set(qobj['variants']))
+
+  # bestParent() coalesces mod. country and region; countries.json
+  #parent = bestParent(qobj)
+
+  # types
+  # map getty aat ids to wikidata Q ids; strip wd: prefix
+  placetypes = [t[3:] for t in getQ(qobj['placetypes'],'types')]
+  #placetypes = list(set(qobj['placetypes']))
+
+  countries = [t for t in getQ(qobj['countries'],'ccodes')]
+  # if none returns ''
+
+  # base query: name, type, country, bounds if specified
+  # geo_polygon filter added later for pass1; used as-is for pass2
+  qbase = {"query": { 
+    "bool": {
+      "must": [
+        #{"terms": {"names.name":variants}},
+        {"terms": {"variants.name":variants}},
+        #{"terms": {"types.id":placetypes}}
+        {"terms": {"claims.P31":placetypes}}
+      ],
+      "should":[
+        #{"terms": {"parents":parent}}
+        #,{"terms": {"types.id":placetypes}}
+        {"terms": {"claims.P17": countries}}
+      ],
+      #"filter": [get_bounds_filter(bounds,'tgn')] if bounds['id'] != ['0'] else []
+      "filter": [get_bounds_filter(bounds,'wd')] if bounds['id'] != ['0'] else []
+    }
+  }}
+
+  qlite = {"query": { 
+    "bool": {
+      "must": [
+        {"terms": {"variants.name":variants}}
+        ],
+      "should":[
+        {"terms": {"claims.P17": countries}}
+        #{"terms": {"parents":parent}}                
+        ],
+      #"filter": [get_bounds_filter(bounds,'tgn')] if bounds['id'] != ['0'] else []
+      "filter": [get_bounds_filter(bounds,'wd')] if bounds['id'] != ['0'] else []
+    }
+  }}
+
+  # grab deep copy of qbase, add w/geo filter if 'geom'
+  q1 = deepcopy(qbase)
+
+  # create 'within polygon' filter and add to q1
+  if 'geom' in qobj.keys():
+    location = qobj['geom']
+    # always polygon returned from hully(g_list)
+    filter_within = { "geo_shape": {
+      "location": {
+        "shape": {
+          "type": location['type'],
+          #"coordinates" : location['coordinates']
+          "coordinates" : location['coordinates']
+        },
+        "relation": "within" # within | intersects | contains
+      }
+    }}    
+    q1['query']['bool']['filter'].append(filter_within)
+
+  # /\/\/\/\/\/
+  # pass1 (qbase): must[name, placetype]; filter[bounds, geom] if exist
+  # /\/\/\/\/\/
+  print('q1',q1)
+  try:
+    res1 = es.search(index="wd", body = q1)
+    hits1 = res1['hits']['hits']
+  except:
+    print('pass1 error:',sys.exc_info())
+  if len(hits1) > 0:
+    for hit in hits1:
+      hit_count +=1
+      hit['pass'] = 'pass1'
+      result_obj['hits'].append(hit)
+  elif len(hits1) == 0:
+    # /\/\/\/\/\/
+    # pass2 (qbare): must[name]; filter[bounds] if exist
+    # /\/\/\/\/\/  
+    q2 = deepcopy(qlite)
+    print('q2 (qlite)',q2)
+    try:
+      res2 = es.search(index="wd", body = q2)
+      hits2 = res2['hits']['hits']
+    except:
+      print('pass2 error:',sys.exc_info()) 
+    if len(hits2) > 0:
+      for hit in hits2:
+        hit_count +=1
+        hit['pass'] = 'pass2'
+        result_obj['hits'].append(hit)
+    elif len(hits2) == 0:
+      result_obj['missed'] = qobj['place_id']
+  result_obj['hit_count'] = hit_count
+  return result_obj
+
+
+# ***
+# manage reconcile to local wikidata
+# ***
+# test stuff
+from django.shortcuts import get_object_or_404
+from datasets.models import Dataset
+from datasets.static.hashes import aat, parents, aat_q
+from datasets.utils import getQ, hully
+from places.models import Place
+place=get_object_or_404(Place, pk = 5446206)
+bounds = {'type': ['userarea'], 'id': ['0']}
+from copy import deepcopy
+from elasticsearch import Elasticsearch
+es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+##
+@task(name="align_wdlocal")
+def align_wdlocal(pk, *args, **kwargs):
+  ds = get_object_or_404(Dataset, id=pk)
+  #print('ds',ds.__dict__)
+  bounds = kwargs['bounds']
+  scope = kwargs['scope']
+  print('args, kwargs from align_wdlocal() task',args,kwargs)
+  start = datetime.datetime.now()
+  hit_parade = {"summary": {}, "hits": []}
+  [nohits,wdlocal_es_errors,features] = [[],[],[]]
+  [count, count_hit, count_nohit, total_hits, count_p1, count_p2, count_p3] = [0,0,0,0,0,0,0]
+
+  # queryset depends on choice of scope in addtask form
+  #qs = ds.places.all().filter(flag=True)
+  qs = ds.places.all() if scope == 'all' else ds.places.all().filter(indexed=False)
+
+  for place in qs:
+    # build query object
+    #place=get_object_or_404(Place,id=131735) # Caledonian Canal (ne)
+    count +=1
+    qobj = {"place_id":place.id,"src_id":place.src_id,"title":place.title}
+    [variants,geoms,types,ccodes,parents]=[[],[],[],[],[]]
+
+    # ccodes (2-letter iso codes)
+    for c in place.ccodes:
+      ccodes.append(c.upper())
+    qobj['countries'] = place.ccodes
+
+    # types (Getty AAT integer ids)
+    for t in place.types.all():
+      types.append(int(t.jsonb['identifier'].replace('aat:','')))
+    qobj['placetypes'] = types
+
+    # names
+    for name in place.names.all():
+      variants.append(name.toponym)
+    qobj['variants'] = variants
+
+    # parents
+    # TODO: other relations
+    if len(place.related.all()) > 0:
+      for rel in place.related.all():
+        if rel.jsonb['relationType'] == 'gvp:broaderPartitive':
+          parents.append(rel.jsonb['label'])
+      qobj['parents'] = parents
+    else:
+      qobj['parents'] = []
+
+    # geoms
+    if len(place.geoms.all()) > 0:
+      g_list =[g.jsonb for g in place.geoms.all()]
+      # make everything a simple polygon hull for spatial filter
+      qobj['geom'] = hully(g_list)
+
+    #
+    # run pass1-pass2 ES queries
+    print('qobj in align_wd_local()',qobj)
+    result_obj = es_lookup_wdlocal(qobj, bounds=bounds)
+      
+    if result_obj['hit_count'] == 0:
+      count_nohit +=1
+      nohits.append(result_obj['missed'])
+    else:
+      count_hit +=1
+      total_hits += len(result_obj['hits'])
+      #print("hit[0]: ",result_obj['hits'][0]['_source'])  
+      print('hits from align_wd_local',result_obj['hits'])
+      for hit in result_obj['hits']:
+        if hit['pass'] == 'pass1': 
+          count_p1+=1 
+        elif hit['pass'] == 'pass2': 
+          count_p2+=1
+        #elif hit['pass'] == 'pass3': 
+          #count_p3+=1
+        hit_parade["hits"].append(hit)
+        # correct lower case 'point' in tgn index
+        # TODO: reindex properly
+        #if 'location' in hit['_source'].keys():
+          #loc = hit['_source']['location'] 
+          #loc['type'] = "Point"
+        #else:
+          #loc={}
+        new = Hit(
+          authority = 'wd',
+          authrecord_id = hit['_id'],
+          dataset = ds,
+          place_id = get_object_or_404(Place, id=qobj['place_id']),
+          task_id = align_tgn.request.id,
+          query_pass = hit['pass'],
+          # prepare for consistent display in review screen
+          json = normalize(hit['_source'],'wd'),
+          src_id = qobj['src_id'],
+          score = hit['_score'],
+          geom = loc,
+          reviewed = False,
+        )
+        new.save()
+  end = datetime.datetime.now()
+
+  print('wdlocal ES errors:',wdlocal_es_errors)
+  hit_parade['summary'] = {
+      'count':count,
+      'got_hits':count_hit,
+      'total': total_hits, 
+      'pass1': count_p1, 
+      'pass2': count_p2, 
+      #'pass3': count_p3,
+      'pass1remains': -1,
+      'pass2remains': -1,
+      #'pass3remains': -1,
+      'no_hits': {'count': count_nohit },
+      'elapsed': elapsed(end-start)
+    }
+  print("summary returned",hit_parade['summary'])
+  
+  # email owner when complete
+  task_emailer.delay(ds.label,ds.owner.username,ds.owner.email)
+  
+  return hit_parade['summary']
+
+# ***
+# performs elasticsearch > whg queries
 # ***
 def es_lookup_whg(qobj, *args, **kwargs):
   print('kwargs from es_lookup_whg',kwargs)
@@ -1308,254 +1594,5 @@ def align_whg_pre(pk, *args, **kwargs):
 
 
 '''
-backup of working task; doesn't get pass2 type though
+backup code
 '''
-#@task(name="align_wd")
-#def align_wd(pk, *args, **kwargs):
-  #ds = get_object_or_404(Dataset, id=pk)
-  ##bounds = kwargs['bounds']
-  
-  #from SPARQLWrapper import SPARQLWrapper, JSON
-  #import sys, os, re, json, codecs, time, datetime, geojson
-  #from datasets.align_utils import classy, roundy, fixName
-  #from shapely.geometry import shape
-  
-  ##endpoint = "http://dbpedia.org/sparql"
-  #endpoint = "https://query.wikidata.org/sparql"
-  #sparql = SPARQLWrapper(endpoint)
-  
-  #start = time.time()
-  #timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M"); print(timestamp)
-
-  #hit_parade = {"summary": {}}
-    
-  #[count,count_skipped] = [0,0]
-  #global count_hit, count_nohit, total_hits, count_p1, count_p2
-  #[count_hit, count_nohit, total_hits, count_p1, count_p2] = [0,0,0,0,0]
-  
-  #for place in ds.places.all(): #.order_by('id')[:10]: #.filter(id__lt=224265):
-    ##place=get_object_or_404(Place, id=6369031) # Aachen
-    #count +=1
-    #place_id = place.id
-    #src_id = place.src_id
-    #title = fixName(place.title)
-    #qobj = {"place_id":place_id,"src_id":place.src_id,"title":fixName(place.title)}
-    #[variants,geoms,types,ccodes,parents]=[[],[],[],[],[]]
-
-    ## ccodes (2-letter i  so codes)
-    #for c in place.ccodes:
-      #ccodes.append(c.upper())
-    #qobj['countries'] = ccodes
-
-    ## types (Getty AAT identifiers)
-    #for t in place.types.all():
-      #try:
-        #id = t.jsonb['identifier']
-        #if id !=None:
-          #types.append(id[4:] if id.startswith('aat:') else int(id))      
-      #except:
-        #print('no aat_id for', t.jsonb['sourceLabel'])
-    #qobj['placetypes'] = types
-
-    ## names
-    #for name in place.names.all():
-      ##variants.append(name.toponym)
-      #variants.append(name.toponym.strip())
-    #qobj['variants'] = variants
-    #qobj['variants'].append(title)
-
-    ## parents
-    ## TODO: other relations
-    #for rel in place.related.all():
-      #if rel.jsonb['relationType'] == 'gvp:broaderPartitive':
-        #parents.append(rel.jsonb['label'])
-    #qobj['parents'] = parents
-
-    ## geoms
-    #if len(place.geoms.all()) > 0:
-      #g_types = [g.jsonb['type'] for g in place.geoms.all()]
-      #g_list = [g.jsonb for g in place.geoms.all()]
-      #if len(set(g_types)) > 1 and len(set(g_types) & set(['Polygon','MultiPolygon'])) >0:
-        #g_list=list(filter(lambda d: d['type'] in ['Polygon','MultiPolygon'], g_list))
-      ## make everything a simple polygon hull for spatial filter
-      ## TODO: hully() assumes list is all one type
-      #qobj['geom'] = hully(g_list)
-
-    #print('qobj input for Wikidata sparql query',qobj)
-    ## wikidata sparql needs this form for lists
-    #variants = ' '.join(['"'+n+'"' for n in qobj['variants']])
-    
-    ## countries, placetypes if they're there
-    #countries = ', '.join([c for c in getQ(qobj['countries'],'ccodes')]) \
-      #if len(qobj['countries'])>0 and qobj['countries'] != [''] else ''
-    ## TODO: multiple placetypes?
-    #placetype = getQ(qobj['placetypes'],'types')[0] if len(qobj['placetypes'])>0 else ''
-    #print('variants,countries,placetype',variants,countries,placetype)
-    
-    ## belongs?          OPTIONAL {?place wdt:P31 ?placeType .}  
-    ## TODO admin parent P131, retrieve wiki article name, country P17, ??
-    ##q='''SELECT ?place ?placeLabel ?countryLabel ?inception ?tgnids ?gnids ?viafids ?locids
-    #q='''SELECT ?place ?placeLabel ?countryLabel ?inception 
-        #(group_concat(distinct ?parentLabel; SEPARATOR=", ") as ?parents)
-        #(group_concat(distinct ?placeTypeLabel; SEPARATOR=", ") as ?types)
-        #(group_concat(distinct ?location; SEPARATOR=", ") as ?locations)
-        #(group_concat(distinct ?tgnid; SEPARATOR=", ") as ?tgnids)
-        #(group_concat(distinct ?gnid; SEPARATOR=", ") as ?gnids)
-        #(group_concat(distinct ?viafid; SEPARATOR=", ") as ?viafids)
-        #(group_concat(distinct ?locid; SEPARATOR=", ") as ?locids)
-        #WHERE {
-          #VALUES ?plabel { %s } .
-          #SERVICE wikibase:mwapi {
-            #bd:serviceParam wikibase:api "EntitySearch" .
-            #bd:serviceParam wikibase:endpoint "www.wikidata.org" .
-            #bd:serviceParam mwapi:search ?plabel .
-            #bd:serviceParam mwapi:language "en" .
-            #?place wikibase:apiOutputItem mwapi:item .
-            #?num wikibase:apiOrdinal true .
-          #}         
-          #OPTIONAL {?place wdt:P17 ?country .}
-          #OPTIONAL {?place wdt:P131 ?parent .}
-          #OPTIONAL {?place wdt:P571 ?inception .}
-  
-          #OPTIONAL {?place wdt:P1667 ?tgnid .} 
-          #OPTIONAL {?place wdt:P1566 ?gnid .}
-          #OPTIONAL {?place wdt:P214 ?viafid .}
-          #OPTIONAL {?place wdt:P244 ?locid .}
-  
-          #SERVICE wikibase:label { 
-            #bd:serviceParam wikibase:language "en".
-            #?place rdfs:label ?placeLabel .
-            #?parent rdfs:label ?parentLabel . 
-            #?country rdfs:label ?countryLabel .
-            #?placeType rdfs:label ?placeTypeLabel .
-          #}
-      #'''% (variants)
-      
-    #if 'geom' in qobj.keys():
-      #loc=shape(geojson.loads(json.dumps(qobj['geom'])))
-      #loc_sw='POINT('+str(loc.bounds[0])+' '+str(loc.bounds[1])+')'
-      #loc_ne='POINT('+str(loc.bounds[2])+' '+str(loc.bounds[3])+')'
-      #q+='''
-          #SERVICE wikibase:box {
-            #?place wdt:P625 ?location .
-              #bd:serviceParam wikibase:cornerWest "%s"^^geo:wktLiteral .
-              #bd:serviceParam wikibase:cornerEast "%s"^^geo:wktLiteral .
-          #}
-        #'''% (loc_sw, loc_ne)
-    #else:
-      #q+='''
-        #?place wdt:P625 ?location .
-      #'''
-    
-    #qtype = q+'''
-      #?place wdt:P31/wdt:P279* ?placeType .
-      #FILTER (?placeType in (%s)) . 
-    #'''%(placetype)
-        
-    #if countries != '':
-      #q+='FILTER (?country in (%s)) . }'% (countries)
-      #qtype+='FILTER (?country in (%s)) . }'% (countries)
-    #else:
-      #q+='}'
-      #qtype+='}'
-      
-    ## qbase is pass1: names, types, geometry, countries
-    #qbase = qtype+'''
-      #GROUP BY ?place ?placeLabel ?countryLabel ?inception ?tgnids ?gnids ?viafids ?locids
-      #ORDER BY ASC(?num) LIMIT 5
-    #'''
-
-    ## qbare is pass2, omitting type filter
-    #qbare = q+'''
-      #GROUP BY ?place ?placeLabel ?countryLabel ?inception ?tgnid ?gnid ?viafid ?locid
-      #ORDER BY ASC(?num) LIMIT 10'''
-
-    #def runQuery():
-      #global count_hit, count_nohit, total_hits, count_p1, count_p2
-      #sparql.setQuery(qbase)
-      #sparql.setReturnFormat(JSON)
-      #sparql.addCustomHttpHeader('User-Agent','WHGazetteer/1.0 (http://whgazetteer.org; karl@kgeographer.org)')
-  
-      ## pass1 (qbase)
-      #try:
-        #bindings = sparql.query().convert()["results"]["bindings"]
-      #except ConnectionError as exc:
-        #print('429',sys.exc_info())
-        #if exc.status_code == 429:
-          #self.retry(exc=exc, countdown=61)
-        
-      ## test, output results
-      #if len(bindings) > 0:
-        ##print(str(len(bindings))+' bindings for pass1: '+str(place_id),qbase)
-        ## TODO: this counts hits, written or not
-        #count_hit +=1 # got at least 1
-        #count_p1 +=1 # it's pass1
-        #for b in bindings:
-          ## write hit only if there's geometry
-          #if b['locations']['value'] != '': 
-            #total_hits+=1 # add to total
-            ## if type is empty, insert from query
-            #if b['types']['value'] == '':
-              #b['types']['value'] = placetype 
-            #writeHit(b,'pass1',ds,place_id,src_id,title)
-            #print('pass1 hit binding:',b)
-      #elif len(bindings) == 0:
-        ## no hits, pass2(qbare) drops type
-        #sparql.setQuery(qbare)
-        #sparql.setReturnFormat(JSON)
-        #sparql.addCustomHttpHeader('User-Agent','WHGazetteer/1.0 (http://whgazetteer.org; karl@kgeographer.org)')
-        ## pass2 (qbare)
-        #try:
-          #bindings = sparql.query().convert()["results"]["bindings"]
-        #except ConnectionError as exc:
-          #print('pass2 error',sys.exc_info())
-          #print('qbare',qbare)
-          #if exc.status_code == 429:
-            #self.retry(exc=exc, countdown=61)
-        #if len(bindings) == 0:
-          #count_nohit +=1 # tried 2 passes, nothing
-          ##fout2.write(str(place_id)+' ('+title+'), pass2 \n')
-        #else:
-          #count_hit+=1 # got at least 1
-          #count_p2+=1 # it's pass2
-          #print(str(len(bindings))+' bindings, pass2: '+str(place_id),qbare)
-          #for b in bindings:
-            ## could be anything, see if it has a location
-            #if b['locations']['value'] != '':
-              #total_hits+=1 # add to total
-              #writeHit(b,'pass2',ds,place_id,src_id,title)
-              ##fout1.write(str(place_id)+'\tpass2:'+' '+str(b)+'\n')   
-              #print('pass2 hit binding:',b)
-    ## any exception, go on to the next
-    #try:
-      #runQuery()
-    #except:
-      #print('runQuery() failed, place#',place_id)
-      #print('runQuery() error:',sys.exc_info())
-      #count_skipped +=1
-      #continue
-  
-  #print(str(count)+' rows; >=1 hit:'+str(count_hit)+'; '+str(total_hits)+' in total; ', str(count_nohit) + \
-        #' misses; '+str(count_skipped)+' skipped')
-  
-  #end = time.time()
-  #print('elapsed time in minutes:',int((end - start)/60))
-  ##   [count, count_hit, count_nohit, total_hits, count_p1, count_p2] = [0,0,0,0,0,0]
-  #hit_parade['summary'] = {
-      #'count':count,
-      #'got_hits':count_hit,
-      #'total': total_hits, 
-      #'pass1': count_p1, 
-      #'pass2': count_p2, 
-      #'pass3': 'n/a', 
-      #'no_hits': {'count': count_nohit },
-      #'elapsed': int((end - start)/60)
-    #}
-  #print("summary returned",hit_parade['summary'])
-
-  ## email owner when complete
-  #task_emailer.delay(ds.label,ds.owner.username,ds.owner.email)
-  
-  #return hit_parade['summary']
-  
-

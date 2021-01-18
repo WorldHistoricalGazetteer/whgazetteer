@@ -488,7 +488,6 @@ def frictionless_tsv(tempfn):
   return result
 
 class HitRecord(object):
-  #def __init__(self, whg_id, place_id, dataset, src_id, title):
   def __init__(self, place_id, dataset, src_id, title):
     #self.whg_id = whg_id
     self.place_id = place_id
@@ -578,7 +577,8 @@ def elapsed(delta):
   return '{:02}:{:02}'.format(int(minutes), int(seconds))
 
 def bestParent(qobj, flag=False):
-  # applicable for tgn only 
+  # applicable for tgn only
+  # TODO; adapt for wikidata
   best = []
   print('qobj in bestParent',qobj)
   # merge parent country/ies & parents
@@ -600,7 +600,8 @@ def getQ(arr,what):
   if what == 'ccodes':
     from datasets.static.hashes.parents import ccodes
     for c in arr:
-      qids.append('wd:'+ccodes[0][c]['wdid'].upper())
+      if c.upper() in ccodes[0]:
+        qids.append('wd:'+ccodes[0][c.upper()]['wdid'].upper())
   elif what == 'types':
     if len(arr) == 0:
       qids.append('wd:Q486972')

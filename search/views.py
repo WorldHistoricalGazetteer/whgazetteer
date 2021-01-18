@@ -206,7 +206,7 @@ class SearchView(View):
           q['query']['bool']["filter"]=get_bounds_filter(bounds,'whg')
           
         # truncate, may include polygon coordinates
-        #print('search must[]:',q['query']['bool']['must'])
+        print('search must[]:',q['query']['bool']['must'])
         #if 'filter' in q['query']['bool']:
           #print('search filter[]:',q['query']['bool']['filter'])
 
