@@ -432,13 +432,15 @@ def validate_lpf(tempfn,format):
 #
 # validate LP-TSV file (w/frictionless.py)
 # 
+#wd='/Users/karlg/documents/repos/_whgazetteer/_testdata/'
+#fn=wd+'priest_1line.tsv'
 def validate_tsv(fn, ext):
   # incoming csv or tsv
   print('validate_tsv() fn', fn)
   result = {"format":"delimited", "errors":[]}
   schema_lptsv = json.loads(codecs.open('datasets/static/validate/schema_tsv.json', 'r', 'utf8').read())
   report = fvalidate(fn, schema=schema_lptsv, sync_schema=True)
-  #print(report)  
+  #print(report)
   rpt = report['tables'][0]
   req = ['id','title','title_source','start']
   

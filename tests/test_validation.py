@@ -24,7 +24,6 @@ class ValidateDelimited(SimpleTestCase):
     dd = '/Users/karlg/Documents/repos/_whgazetteer/_testdata/'
     #files_ok = ['bdda34_xlsx.xlsx','bdda34_ods.ods']
     files = ['bdda34_err_xlsx.xlsx','bdda34_err_ods.ods','bdda34_xlsx.xlsx','bdda34_ods.ods','bdda34_ods_extra-col.ods']
-    
     def get_encoding_excel(file):
       fin = codecs.open(file, 'r')
       return fin.encoding
@@ -76,7 +75,8 @@ class ValidateDelimited(SimpleTestCase):
     os.chdir('/Users/karlg/Documents/repos/_whgazetteer/')
     dd = '/Users/karlg/Documents/repos/_whgazetteer/_testdata/'
     #files_ok = ['diamonds135.tsv', 'croniken20.tsv', 'bdda34.csv']
-    files_err = ['bdda34_errors.tsv','bdda34_extra-col.csv','bdda34_missing-col.csv', 'bdda34_utf16.tsv']
+    #files_err = ['bdda34_errors.tsv','bdda34_extra-col.csv','bdda34_missing-col.csv', 'bdda34_utf16.tsv']
+    files_err = ['priest_1line.tsv']
     
     def get_encoding_type(file):
       with open(file, 'rb') as f:

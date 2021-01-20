@@ -1148,18 +1148,22 @@ def ds_insert_tsv(request, pk):
   
   if dbcount == 0:
     infile = dsf.file.open(mode="r")
+    #infile = open('/var/folders/f4/x09rdl7n3lg7r7gwt1n3wjsr0000gn/T/tmpz6abjfnb',mode="r")
+
     # should already know delimiter
-    try:
-      dialect = csv.Sniffer().sniff(
-        infile.read(16000),['\t',','])
-      reader = csv.reader(infile, dialect)
-    except:
-      reader = csv.reader(infile, delimiter='\t')
+    #try:
+      #dialect = csv.Sniffer().sniff(
+        #infile.read(16000),['\t',','])
+      #reader = csv.reader(infile, dialect)
+    #except:
+      #reader = csv.reader(infile, delimiter='\t')
+    reader = csv.reader(infile, delimiter=dsf.delimiter)
     
     infile.seek(0)
     header = next(reader, None)
     # strip BOM character if exists
     header[0] = header[0][1:] if '\ufeff' in header[0] else header[0]
+    #header = header if type(header) = list else 
     print('header', header)
   
     objs = {"PlaceName":[], "PlaceType":[], "PlaceGeom":[], "PlaceWhen":[],
@@ -1491,7 +1495,10 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
       if ext == 'json':
         result = validate_lpf(tempfn, 'coll') 
       elif ext in ['csv', 'tsv']:
-        result = validate_tsv(tempfn, ext)
+        # fvalidate() wants an extension
+        newfn = tempfn+'.'+ext
+        os.rename(tempfn, newfn)
+        result = validate_tsv(newfn, ext)
       elif ext in ['xlsx', 'ods']:
         print('spreadsheet, use pandas')
         import pandas as pd
@@ -1602,7 +1609,8 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
         file = filepath[6:]+'.tsv' if ext in ['xlsx','ods'] else filepath[6:], 
         rev = 1,
         format = result['format'],
-        delimiter = result['delimiter'] if "delimiter" in result.keys() else "n/a",
+        #delimiter = result['delimiter'] if "delimiter" in result.keys() else "n/a",
+        delimiter = '\t' if ext in ['tsv','xlsx','ods'] else ',' if ext == 'csv' else 'n/a',
         df_status = 'format_ok',
         upload_date = None,
         header = result['columns'] if "columns" in result.keys() else [],
