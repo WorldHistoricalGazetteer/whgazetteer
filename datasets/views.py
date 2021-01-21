@@ -29,7 +29,7 @@ from datasets.models import Dataset, Hit, DatasetFile
 from datasets.static.hashes import mimetypes_plus as mthash_plus
 from datasets.static.hashes.parents import ccodes
 # NB these task names ARE in use; they are generated dynamically
-from datasets.tasks import align_tgn, align_whg, align_wd, align_whg_pre, maxID
+from datasets.tasks import align_tgn, align_whg, align_wd, align_whg_pre, align_wdlocal, maxID
 from datasets.utils import *
 from es.es_utils import makeDoc,deleteFromIndex, replaceInIndex
 from main.choices import AUTHORITY_BASEURI
@@ -363,7 +363,7 @@ def ds_recon(request, pk):
       messages.add_message(request, messages.INFO, "Sorry! Reconciliation services appears to be down. The system administrator has been notified.")
       return redirect('/datasets/'+str(ds.id)+'/detail#reconciliation')
       
-    # run celery/redis tasks e.g. align_tgn, align_wd, align_whg, align_whg_pre
+    # run celery/redis tasks e.g. align_tgn, align_wd, align_whg, align_whg_pre, align_wdlocal
     try:      
       result = func.delay(
         ds.id,

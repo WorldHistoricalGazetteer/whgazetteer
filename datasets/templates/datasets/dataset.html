@@ -609,7 +609,11 @@ js for Summary, Reconciliation
 <script type="text/javascript">
   // show/hide geo constraint options
   $("#r_tgn").click(function(){console.log('tgn now');$("#geo_constraint").show(400)})
-  $(".r_wd").click(function(){console.log('wd now');$("#geo_constraint").hide(400)})
+  
+  $(".r_wd").click(function(){
+    console.log($(this).attr('value'));
+    $("#geo_constraint").hide(400)}
+  )
   
   $("#a_update_modal").on('click', function(e){
     console.log('clicked update')

@@ -121,10 +121,10 @@ def ccDecode(codes):
 # normalize hit json from any authority
 # 
 def normalize(h,auth):
+  print(auth + ' hit _source in normalize()', h)  
   if auth.startswith('whg'):
     rec = HitRecord(h['place_id'], h['dataset'], h['src_id'], h['title'])
-    #print('normalize(): hit',h)
-    #print('normalize(): HitRecord',rec)
+    print('"rec" HitRecord',rec)
     rec.whg_id = h['whg_id'] if 'whg_id' in h.keys() else h['relation']['parent']
     # add elements if non-empty in index record
     rec.variants = [n['toponym'] for n in h['names']] # always >=1 names
@@ -168,6 +168,7 @@ def normalize(h,auth):
           links.append('closeMatch: '+l)
       #  place_id, dataset, src_id, title
       rec = HitRecord(-1, 'wd', h['place']['value'][31:], h['placeLabel']['value'])
+      print('"rec" HitRecord',rec)      
       rec.variants = []
       rec.types = h['types']['value'] if 'types' in h.keys() else []
       rec.ccodes = [h['countryLabel']['value']]
@@ -176,12 +177,10 @@ def normalize(h,auth):
       rec.links = links if len(links)>0 else []
       rec.minmax = []
       rec.inception = parseDateTime(h['inception']['value']) if 'inception' in h.keys() else ''
-      # {'datatype': 'http://www.w3.org/2001/XMLSchema#dateTime', 'type': 'literal', 'value': '1858-11-22T00:00:00Z'}
     except:
       print("normalize(wd) error:", h['place']['value'][31:], sys.exc_info())    
-  elif auth == 'wdloc':
-    # create rec (json for a Hit record) from h._source
-    #['id', 'type', 'modified', 'descriptions', 'claims', 'sitelinks', 'variants', 'minmax', 'types', 'location'] 
+  elif auth == 'wdlocal':
+    # key: ['id', 'type', 'modified', 'descriptions', 'claims', 'sitelinks', 'variants', 'minmax', 'types', 'location'] 
     try:
       # generate a title
       # TODO: do it in index?
@@ -189,14 +188,15 @@ def normalize(h,auth):
       title = next(
         (v['name'] for v in variants if v['lang'] == 'en'), 
         '; '.join([v['name'] for v in variants[:2]]) + ('; ...' if len(variants)>2 else '')
-      ) #; print(title)
+      )
 
-      # list of variant@lang
-      rec.variants = [v['name']+'@'+v['lang'] for v in variants if v['name'] != title]
-      
       #  place_id, dataset, src_id, title
       rec = HitRecord(-1, 'wd', h['id'], title)
+      print('"rec" HitRecord',rec)
       
+      # list of variant@lang
+      rec.variants = [v['name']+'@'+v['lang'] for v in variants if v['name'] != title]
+            
       if 'location' in h.keys():
         # single MultiPoint geometry
         loc = h['location']
@@ -205,10 +205,11 @@ def normalize(h,auth):
         # single MultiPoint geom if exists
       rec.geoms = [loc] if loc else []
       
-      # turn these claims into links
-      qlinks = {'P1566':'gn', 'P1584':'pl', 'P244':'loc', 'P1667':'tgn', 'P214':'viaf'}
+      # turn these identifier claims into links
+      qlinks = {'P1566':'gn', 'P1584':'pl', 'P244':'loc', 'P1667':'tgn', 'P214':'viaf', 'P268':'bnf', 'P1667':'tgn', 'P2503':'gov', 'P1871':'cerl', 'P6060':'moeml', 'P227':'gnd'}
       links=[]
-      hlinks = list(set(h['claims'].keys()) & set(['P1566','P1584','P244','P1667','P214']))
+      hlinks = list(
+        set(h['claims'].keys()) & set(qlinks.keys()))
       if len(hlinks) > 0:
         for l in hlinks:
           links.append(qlinks[l]+':'+str(h['claims'][l][0]))
@@ -221,27 +222,20 @@ def normalize(h,auth):
       rec.types = [qtypes[t] for t in list(set(htypes & qtypekeys))]
 
       # countries
-      rec.ccodes = [ccodes[0][c]['gnlabel'] for c in ccodes[0] \
-                    if ccodes[0][c]['wdid'] in h['claims']['P17']]
+      rec.ccodes = [
+        ccodes[0][c]['gnlabel'] for c in ccodes[0] \
+          if ccodes[0][c]['wdid'] in h['claims']['P17']
+      ]
         
       # not applicable
       rec.parents = []
 
-      rec.minmax = []
-      rec.inception = parseDateTime(h['inception']['value']) if 'inception' in h.keys() else ''
-      # {'datatype': 'http://www.w3.org/2001/XMLSchema#dateTime', 'type': 'literal', 'value': '1858-11-22T00:00:00Z'}
+      rec.minmax = [h['minmax']['gte'],h['minmax']['lte']]
     except:
-      print("normalize(wd) error:", h['place']['value'][31:], sys.exc_info())    
+      print("normalize(wd) error:", h['id'], sys.exc_info())    
     
   elif auth == 'tgn':
-    # h=hit['_source']; ['tgnid', 'title', 'names', 'suggest', 'types', 'parents', 'note', 'location']
-    # whg_id, place_id, dataset, src_id, title
-    # h['location'] = {'type': 'point', 'coordinates': [105.041, 26.398]}
-    #try:
-      #rec = HitRecord(-1, -1, 'tgn', h['tgnid'], h['title'])
-    print('hit (h) in normalize()',h)
     rec = HitRecord(-1, 'tgn', h['tgnid'], h['title'])
-    print('normalize rec, tgn',rec)
     rec.variants = [n['toponym'] for n in h['names']] # always >=1 names
     rec.types = [(t['placetype'] if 'placetype' in t and t['placetype'] != None else 'unspecified') + \
                 (' ('+t['id']  +')' if 'id' in t and t['id'] != None else '') for t in h['types']] \
@@ -828,7 +822,13 @@ def align_tgn(pk, *args, **kwargs):
   print("summary returned",hit_parade['summary'])
   
   # email owner when complete
-  task_emailer.delay(ds.label,ds.owner.username,ds.owner.email)
+  task_emailer.delay(
+    ds.label,
+    ds.owner.username,
+    ds.owner.email,
+    count_hit,
+    total_hits
+  )
   
   return hit_parade['summary']
 
@@ -954,16 +954,16 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
 # manage reconcile to local wikidata
 # ***
 # test stuff
-from django.shortcuts import get_object_or_404
-from datasets.models import Dataset
-from datasets.static.hashes import aat, parents, aat_q
-from datasets.utils import getQ, hully
-from places.models import Place
-place=get_object_or_404(Place, pk = 5446206)
-bounds = {'type': ['userarea'], 'id': ['0']}
-from copy import deepcopy
-from elasticsearch import Elasticsearch
-es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+#from django.shortcuts import get_object_or_404
+#from datasets.models import Dataset
+#from datasets.static.hashes import aat, parents, aat_q
+#from datasets.utils import getQ, hully
+#from places.models import Place
+#place=get_object_or_404(Place, pk = 5446206)
+#bounds = {'type': ['userarea'], 'id': ['0']}
+#from copy import deepcopy
+#from elasticsearch import Elasticsearch
+#es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 ##
 @task(name="align_wdlocal")
 def align_wdlocal(pk, *args, **kwargs):
@@ -1037,28 +1037,19 @@ def align_wdlocal(pk, *args, **kwargs):
           count_p1+=1 
         elif hit['pass'] == 'pass2': 
           count_p2+=1
-        #elif hit['pass'] == 'pass3': 
-          #count_p3+=1
         hit_parade["hits"].append(hit)
-        # correct lower case 'point' in tgn index
-        # TODO: reindex properly
-        #if 'location' in hit['_source'].keys():
-          #loc = hit['_source']['location'] 
-          #loc['type'] = "Point"
-        #else:
-          #loc={}
         new = Hit(
           authority = 'wd',
           authrecord_id = hit['_id'],
           dataset = ds,
           place_id = get_object_or_404(Place, id=qobj['place_id']),
-          task_id = align_tgn.request.id,
+          task_id = align_wdlocal.request.id,
           query_pass = hit['pass'],
           # prepare for consistent display in review screen
-          json = normalize(hit['_source'],'wd'),
+          json = normalize(hit['_source'],'wdlocal'),
           src_id = qobj['src_id'],
           score = hit['_score'],
-          geom = loc,
+          #geom = loc,
           reviewed = False,
         )
         new.save()
@@ -1081,7 +1072,13 @@ def align_wdlocal(pk, *args, **kwargs):
   print("summary returned",hit_parade['summary'])
   
   # email owner when complete
-  task_emailer.delay(ds.label,ds.owner.username,ds.owner.email)
+  task_emailer.delay(
+    ds.label,
+    ds.owner.username,
+    ds.owner.email,
+    count_hit,
+    total_hits
+  )
   
   return hit_parade['summary']
 
