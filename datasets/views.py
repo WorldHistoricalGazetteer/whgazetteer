@@ -163,7 +163,7 @@ def review(request, pk, tid, passnum):
   ds = get_object_or_404(Dataset, id=pk)
   task = get_object_or_404(TaskResult, task_id=tid)
   auth = task.task_name[6:]
-  authname = 'Wikidata' if auth == 'wd' else 'Getty TGN'
+  authname = 'Wikidata' if auth in ['wd','wdlocal'] else 'Getty TGN'
   kwargs=json.loads(task.task_kwargs.replace("'",'"'))
   #print('request.POST',request.POST)
   
@@ -195,23 +195,27 @@ def review(request, pk, tid, passnum):
   count = len(record_list)
   placeid = records[0].id
   place = get_object_or_404(Place, id=placeid)
-  print('reviewing hits for place_id  #',placeid)
+  print('reviewing hits for place_id  #',placeid, records[0])
 
   # recon task hits for current place
   raw_hits = Hit.objects.all().filter(place_id=placeid, task_id=tid).order_by('query_pass','-score')
 
   # convert ccodes to names
   countries = []
-  for r in records[0].ccodes:
+  #for r in records[0].ccodes:
+  for r in place.ccodes:
+    print('r',r.upper())
     try:
-      countries.append(ccodes[0][r]['gnlabel']+' ('+ccodes[0][r]['tgnlabel']+')')
+      countries.append(ccodes[0][r.upper()]['gnlabel']+
+                       ' ('+ccodes[0][r.upper()]['tgnlabel']+')')
     except:
       pass
 
   # prep some context
   context = {
     'ds_id': pk, 'ds_label': ds.label, 'task_id': tid,
-      'hit_list': raw_hits, 'authority': task.task_name[6:],
+      'hit_list': raw_hits, 
+      'authority': task.task_name[6:8] if auth=='wdlocal' else task.task_name[6:],
       'records': records, 'countries': countries, 'passnum': passnum,
       'page': page if request.method == 'GET' else str(int(page)-1),
       'aug_geom': json.loads(task.task_kwargs.replace("'",'"'))['aug_geom'],
@@ -249,7 +253,7 @@ def review(request, pk, tid, passnum):
           matches += 1
           # for tgn or wikidata, write place_link and place_geom record(s) now
           # IF someone didn't just review it!
-          if task.task_name in ['align_tgn','align_wd']:
+          if task.task_name in ['align_tgn','align_wd','align_wdlocal']:
             # only if 'accept geometries' was checked
             if kwargs['aug_geom'] == 'on' and hasGeom \
                and tid not in place_post.geoms.all().values_list('task_id',flat=True):
@@ -284,7 +288,9 @@ def review(request, pk, tid, passnum):
             # create multiple PlaceLink records (e.g. Wikidata)
             # TODO: filter duplicates
             if 'links' in hits[x]['json']:
+              print('json', hits[x]['json']['links'])
               for l in hits[x]['json']['links']:
+                print('l in links',l)
                 link = PlaceLink.objects.create(
                   place = place,
                   task_id = tid,

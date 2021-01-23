@@ -298,16 +298,16 @@
           </span>
           {% endif %}
         </h6>
-        {% if messages %}<div>{% for message in messages %}
-          <!--<i style="display:block;" class="text-danger ml-4 mb-2">{{ message }}</i>-->
-          <p class="text-danger ml-4 mb-2">{{ message }}</p>
-        {%endfor%}</div>{% endif %}
+        {% if messages %}<div>
+          {% for message in messages %}
+            <h5 class="text-danger ml-4 mb-2 strong">{{ message }}</h5>
+          {%endfor%}</div>
+        {% endif %}
         {% if ds.owner.id == user.id or user.is_superuser or user in collaborators %}
         {% if tasks|length < 1 %}<i>None yet...</i>{% endif %}
         {% for t in tasks %}
         <div class="task-box mb-2">
           <!-- TODO: display bounds used if any -->
-          <!--{ t.task_kwargs|parsejson:"bounds" }}-->
           <div class="row">
             <div class="col-sm-5">
               <p><b>Task</b>: {{ t.task_name }} <span class="small">
@@ -338,7 +338,7 @@
                   <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass2' %}">
                    review</i></a>{% endif %}
                 </li>
-                {% if t.task_name != 'align_wd' %}
+                {% if t.task_name == 'align_tgn' %}
                 <li><i>Pass 3</i>
                   {% if t.result|get:"pass3" > 0 %}
                   <i>remaining</i>: <span class="strong" id='{{t.task_id}}_3'>nn</span> 
@@ -351,6 +351,8 @@
             <div class="col-sm-2">
               {% if t.task_name == 'align_wd' %}
                 <img src="{% static 'images/Wikidata-logo-en.svg'%}" width="80"/>
+              {% elif t.task_name == 'align_wdlocal' %}
+                <img src="{% static 'images/wikidata-logo-local.png'%}" width="80"/>
               {% elif t.task_name == 'align_tgn' %}
                 <img src="{% static 'images/getty80.png'%}" />
               <!--{ elif t.task_name|startswith:'align_whg'%}-->
@@ -1192,7 +1194,7 @@ js for Browse
     left='<p><b>Title</b>: <span id="row_title" class="larger text-danger">'+data.title+'</span>'
     //
     // NAME VARIANTS
-    left+='<p class="scroll60"><b>Variants</b>: '
+    left+='<p class="scroll65"><b>Variants</b>: '
     for (n in data.names) {
       let name = data.names[n]
       left+= '<p>'+name.toponym !=''?name.toponym+'; ': ''

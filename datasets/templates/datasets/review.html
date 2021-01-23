@@ -170,7 +170,7 @@
                 {% endif %}
                 
                 {% if form.json.value|get:"variants"|length > 0 %} 
-                <p><strong>Variants</strong>:
+                <p class="scroll65"><strong>Variants</strong>:
                   {% for n in form.json.value|get:"variants" %}
                     {{ n|add:"; " }}
                   {% endfor %}
@@ -199,7 +199,7 @@
                 </p>{% endif %}
                 
                 {% if form.json.value|get:"minmax"|length > 0 %} 
-                  <p><strong>Temporal attestations extent</strong>: 
+                  <p><strong>Temporal attestations</strong>: 
                   {{ form.json.value|get:"minmax" }}</p>
                 {% endif %}
                                   
@@ -253,9 +253,9 @@
   $('.ext').on('click', function(e) {
     e.preventDefault();
     str=$(this).text()
-    console.log('str',str)
     var re = /(http|dbp|gn|tgn|wd|loc|viaf|whg|pl):(.*?)$/;
     url=str.match(re)[1]=='http' ? str : base_urls[str.match(re)[1]]+str.match(re)[2]
+    console.log('str, url',str, url)
     window.open(url,'_blank')
   });
   // recon authority external links (wd, tgn)

@@ -212,7 +212,7 @@ def normalize(h,auth):
         set(h['claims'].keys()) & set(qlinks.keys()))
       if len(hlinks) > 0:
         for l in hlinks:
-          links.append(qlinks[l]+':'+str(h['claims'][l][0]))
+          links.append('closeMatch: '+qlinks[l]+':'+str(h['claims'][l][0]))
       rec.links = links
 
       
@@ -230,9 +230,9 @@ def normalize(h,auth):
       # not applicable
       rec.parents = []
 
-      rec.minmax = [h['minmax']['gte'],h['minmax']['lte']]
+      rec.minmax = [h['minmax']['gte'],h['minmax']['lte']] if len(h['minmax']) > 0 else []
     except:
-      print("normalize(wd) error:", h['id'], sys.exc_info())    
+      print("normalize(wdlocal) error:", h['id'], sys.exc_info())    
     
   elif auth == 'tgn':
     rec = HitRecord(-1, 'tgn', h['tgnid'], h['title'])
@@ -251,13 +251,9 @@ def normalize(h,auth):
         "ds":"tgn"}]
     else: 
       rec.geoms=[]
-    #rec.geoms = [h['location']] if h['location'] != None else []
     rec.minmax = []
-    #rec.whens =[]
     rec.links = []
     print(rec)
-    #except:
-      #print("normalize(tgn) error:", h['tgnid'], sys.exc_info())
   return rec.toJSON()
 
 # ***
@@ -867,13 +863,13 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
     "bool": {
       "must": [
         #{"terms": {"names.name":variants}},
-        {"terms": {"variants.name":variants}},
+        {"terms": {"variants.name":variants}}
         #{"terms": {"types.id":placetypes}}
-        {"terms": {"claims.P31":placetypes}}
+        #{"terms": {"claims.P31":placetypes}}
       ],
       "should":[
         #{"terms": {"parents":parent}}
-        #,{"terms": {"types.id":placetypes}}
+        {"terms": {"types.id":placetypes}},
         {"terms": {"claims.P17": countries}}
       ],
       #"filter": [get_bounds_filter(bounds,'tgn')] if bounds['id'] != ['0'] else []
@@ -959,16 +955,15 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
 #from datasets.static.hashes import aat, parents, aat_q
 #from datasets.utils import getQ, hully
 #from places.models import Place
-#place=get_object_or_404(Place, pk = 5446206)
+#place=get_object_or_404(Place, pk = 6587047)
 #bounds = {'type': ['userarea'], 'id': ['0']}
 #from copy import deepcopy
 #from elasticsearch import Elasticsearch
 #es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
-##
+#
 @task(name="align_wdlocal")
 def align_wdlocal(pk, *args, **kwargs):
   ds = get_object_or_404(Dataset, id=pk)
-  #print('ds',ds.__dict__)
   bounds = kwargs['bounds']
   scope = kwargs['scope']
   print('args, kwargs from align_wdlocal() task',args,kwargs)
@@ -978,12 +973,10 @@ def align_wdlocal(pk, *args, **kwargs):
   [count, count_hit, count_nohit, total_hits, count_p1, count_p2, count_p3] = [0,0,0,0,0,0,0]
 
   # queryset depends on choice of scope in addtask form
-  #qs = ds.places.all().filter(flag=True)
   qs = ds.places.all() if scope == 'all' else ds.places.all().filter(indexed=False)
 
   for place in qs:
     # build query object
-    #place=get_object_or_404(Place,id=131735) # Caledonian Canal (ne)
     count +=1
     qobj = {"place_id":place.id,"src_id":place.src_id,"title":place.title}
     [variants,geoms,types,ccodes,parents]=[[],[],[],[],[]]
