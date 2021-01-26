@@ -227,6 +227,7 @@
 </div>
 <script type="text/javascript">
   // capture pid for place just reviewed
+  // https://catalogue.bnf.fr/ark:/12148/cb11942741p
   $(".help-matches").click(function(){
     page=$(this).data('id')
     $('.selector').dialog('open');
@@ -253,7 +254,7 @@
   $('.ext').on('click', function(e) {
     e.preventDefault();
     str=$(this).text()
-    var re = /(http|dbp|gn|tgn|wd|loc|viaf|whg|pl):(.*?)$/;
+    var re = /(http|bnf|cerl|dbp|gn||gnd|gov|loc|pl|tgn|viaf|wd|wdlocal|whg|wp):(.*?)$/;
     url=str.match(re)[1]=='http' ? str : base_urls[str.match(re)[1]]+str.match(re)[2]
     console.log('str, url',str, url)
     window.open(url,'_blank')

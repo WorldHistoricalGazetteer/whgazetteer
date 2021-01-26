@@ -597,7 +597,7 @@ def bestParent(qobj, flag=False):
 # wikidata Qs from ccodes
 #TODO: consolidate hashes
 def getQ(arr,what):
-  print('arr,what',arr, what)
+  #print('arr,what',arr, what)
   qids=[]
   if what == 'ccodes':
     from datasets.static.hashes.parents import ccodes

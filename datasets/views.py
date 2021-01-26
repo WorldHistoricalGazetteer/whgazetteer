@@ -349,15 +349,15 @@ def ds_recon(request, pk):
     print('recon request.GET:',request.GET)
   elif request.method == 'POST' and request.POST:
     print('recon request.POST:',request.POST)
-    # TODO: has this dataset/authority been done before?
+    # TODO: has this dataset/authority combo been done before?
     auth = request.POST['recon']
     # what task?
     func = eval('align_'+auth)
     # TODO: let this vary per authority?
     region = request.POST['region'] # pre-defined UN regions
-    userarea = request.POST['userarea'] # from ccodes, loaded, or drawn
+    userarea = request.POST['userarea'] # from ccodes, or drawn
     aug_geom = request.POST['geom'] if 'geom' in request.POST else '' # on == write geom if matched
-    # TODO: does this really need to be a list?
+    # bounds arg, e.g. {'type': ['userarea'], 'id': ['0']}
     bounds={
       "type":["region" if region !="0" else "userarea"],
       "id": [region if region !="0" else userarea]}
@@ -1154,15 +1154,6 @@ def ds_insert_tsv(request, pk):
   
   if dbcount == 0:
     infile = dsf.file.open(mode="r")
-    #infile = open('/var/folders/f4/x09rdl7n3lg7r7gwt1n3wjsr0000gn/T/tmpz6abjfnb',mode="r")
-
-    # should already know delimiter
-    #try:
-      #dialect = csv.Sniffer().sniff(
-        #infile.read(16000),['\t',','])
-      #reader = csv.reader(infile, dialect)
-    #except:
-      #reader = csv.reader(infile, delimiter='\t')
     reader = csv.reader(infile, delimiter=dsf.delimiter)
     
     infile.seek(0)
@@ -1250,9 +1241,10 @@ def ds_insert_tsv(request, pk):
       newpl.save()
       countrows += 1
   
-      # build associated objects and add to arrays
+      #** build associated objects and add to arrays **#
       #
-      # PlaceName()
+      # PlaceName(); title, then variants
+      #
       objs['PlaceName'].append(
         PlaceName(
           place=newpl,
@@ -1277,6 +1269,7 @@ def ds_insert_tsv(request, pk):
 
       #
       # PlaceType()
+      #
       if len(types) > 0:
         fclass_list=[]
         for i,t in enumerate(types):
@@ -1321,6 +1314,7 @@ def ds_insert_tsv(request, pk):
         
       #
       # PlaceLink() - all are closeMatch
+      #
       if len(matches) > 0:
         countlinked += 1
         for m in matches:
@@ -1333,6 +1327,7 @@ def ds_insert_tsv(request, pk):
           ))
       #
       # PlaceRelated()
+      #
       if parent_name != '':
         objs['PlaceRelated'].append(
           PlaceRelated(
@@ -1360,19 +1355,19 @@ def ds_insert_tsv(request, pk):
       
     # bulk_create(Class, batch_size=n) for each
     PlaceName.objects.bulk_create(objs['PlaceName'],batch_size=10000)
-    print(len(objs['PlaceName']),'names done')
+    #print(len(objs['PlaceName']),'names done')
     PlaceType.objects.bulk_create(objs['PlaceType'],batch_size=10000)
-    print(len(objs['PlaceType']),'types done')
+    #print(len(objs['PlaceType']),'types done')
     PlaceGeom.objects.bulk_create(objs['PlaceGeom'],batch_size=10000)
-    print(len(objs['PlaceGeom']),'geoms done')
+    #print(len(objs['PlaceGeom']),'geoms done')
     PlaceLink.objects.bulk_create(objs['PlaceLink'],batch_size=10000)
-    print(len(objs['PlaceLink']),'links done')
+    #print(len(objs['PlaceLink']),'links done')
     PlaceRelated.objects.bulk_create(objs['PlaceRelated'],batch_size=10000)
-    print(len(objs['PlaceRelated']),'related done')
+    #print(len(objs['PlaceRelated']),'related done')
     PlaceWhen.objects.bulk_create(objs['PlaceWhen'],batch_size=10000)
-    print(len(objs['PlaceWhen']),'whens done')
+    #print(len(objs['PlaceWhen']),'whens done')
     PlaceDescription.objects.bulk_create(objs['PlaceDescription'],batch_size=10000)
-    print(len(objs['PlaceDescription']),'descriptions done')
+    #print(len(objs['PlaceDescription']),'descriptions done')
   
     infile.close()
   

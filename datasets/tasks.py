@@ -29,10 +29,9 @@ es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 def task_emailer(dslabel,username,email,counthit,totalhits):
   print('in task_emailer()')
   ds=get_object_or_404(Dataset,label=dslabel)
-  #print('dslabel, task_id, task_name',ds.label, task.id, task.task_name)
-  print('ds.id, username, email',ds.label, username, email)
   task = ds.tasks.all().order_by('-id')[0]
-  tasklabel = 'Wikidata' if task.task_name.endswith('wd') else \
+  print('dslabel, task_id, task_name',ds.label, task.id, task.task_name)
+  tasklabel = 'Wikidata' if task.task_name[6:8]=='wd' else \
     'Getty TGN' if task.task_name.endswith('tgn') else 'WHGazetteer'
   if task.status == "FAILURE":
     fail_msg = task.result['exc_message']
@@ -206,13 +205,16 @@ def normalize(h,auth):
       rec.geoms = [loc] if loc else []
       
       # turn these identifier claims into links
-      qlinks = {'P1566':'gn', 'P1584':'pl', 'P244':'loc', 'P1667':'tgn', 'P214':'viaf', 'P268':'bnf', 'P1667':'tgn', 'P2503':'gov', 'P1871':'cerl', 'P6060':'moeml', 'P227':'gnd'}
+      qlinks = {'P1566':'gn', 'P1584':'pl', 'P244':'loc', 'P1667':'tgn', 'P214':'viaf', 'P268':'bnf', 'P1667':'tgn', 'P2503':'gov', 'P1871':'cerl', 'P227':'gnd'}
       links=[]
       hlinks = list(
         set(h['claims'].keys()) & set(qlinks.keys()))
       if len(hlinks) > 0:
         for l in hlinks:
           links.append('closeMatch: '+qlinks[l]+':'+str(h['claims'][l][0]))
+      # en wikipedia
+      if 'enwiki' in h['sitelinks']:
+        links.append('closeMatch: wp:'+h['sitelinks']['enwiki'])
       rec.links = links
 
       
@@ -263,9 +265,9 @@ def normalize(h,auth):
 # FUTURE: parse multiple areas
 # ***
 def get_bounds_filter(bounds,idx):
-  print('bounds, type in get_bounds_filter()',bounds,type(bounds))
+  print('bounds in get_bounds_filter()',bounds)
   id = bounds['id'][0]
-  areatype = bounds['type'][0]
+  #areatype = bounds['type'][0]
   area = Area.objects.get(id = id)
   # 
   # NOTE: 'whg' is generic, references current index for WHG, vs. 'tgn' for example
@@ -705,7 +707,6 @@ def es_lookup_tgn(qobj, *args, **kwargs):
 @task(name="align_tgn")
 def align_tgn(pk, *args, **kwargs):
   ds = get_object_or_404(Dataset, id=pk)
-  #print('ds',ds.__dict__)
   bounds = kwargs['bounds']
   scope = kwargs['scope']
   print('args, kwargs from align_tgn() task',args,kwargs)
@@ -827,13 +828,16 @@ def align_tgn(pk, *args, **kwargs):
   )
   
   return hit_parade['summary']
-
+#qobjs=[{'place_id': 6587009, 'src_id': '26', 'title': 'Cherkasy', 'countries': ['UA'], 'placetypes': [300008375, 300164060], 'variants': ['Черкасы', 'Cherkasy'], 'parents': [], 'geom': {'type': 'Polygon', 'coordinates': [[[33.048145552496, 49.4507804536655], [33.028930832899235, 49.255690131649374], [32.97202508500729, 49.06809702130041], [32.87961516479855, 48.8952102206459], [32.75525233368255, 48.743673672478955], [32.603715785515604, 48.61931084136296], [32.430828984861094, 48.526900921154215], [32.24323587451213, 48.46999517326227], [32.048145552496, 48.4507804536655], [31.853055230479875, 48.46999517326227], [31.665462120130915, 48.526900921154215], [31.4925753194764, 48.61931084136295], [31.341038771309456, 48.743673672478955], [31.216675940193458, 48.8952102206459], [31.124266019984717, 49.06809702130041], [31.067360272092774, 49.255690131649374], [31.048145552496003, 49.4507804536655], [31.06736027209277, 49.64587077568163], [31.124266019984713, 49.833463886030586], [31.216675940193454, 50.0063506866851], [31.341038771309453, 50.15788723485205], [31.492575319476398, 50.28225006596804], [31.665462120130908, 50.37465998617679], [31.85305523047987, 50.431565734068734], [32.048145552495996, 50.4507804536655], [32.24323587451213, 50.431565734068734], [32.43082898486109, 50.37465998617679], [32.603715785515604, 50.28225006596805], [32.75525233368255, 50.15788723485205], [32.879615164798544, 50.0063506866851], [32.97202508500729, 49.83346388603059], [33.028930832899235, 49.64587077568163], [33.048145552496, 49.4507804536655]]]}}]
+#bounds={'type': ['userarea'], 'id': ['369']}
+#from datasets.static.hashes import aat, parents, aat_q
+#from datasets.utils import getQ
+#from areas.models import Area
 
 # ***
 # performs elasticsearch > wdlocal queries
 # ***
 def es_lookup_wdlocal(qobj, *args, **kwargs):
-  #print('qobj',qobj)
   bounds = kwargs['bounds']
   hit_count = 0
 
@@ -843,75 +847,69 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
         'missed':-1, 'total_hits':-1
     }  
 
-  # array (includes title)
+  # names (distinct, w/o language)
   variants = list(set(qobj['variants']))
+
+  # types
+  # wikidata Q ids for aat_ids, ccodes; strip wd: prefix
+  # if no aatids, returns ['Q486972'] (human settlement)
+  qtypes = [t[3:] for t in getQ(qobj['placetypes'],'types')]
+  # if no ccodes, returns []
+  countries = [t[3:] for t in getQ(qobj['countries'],'ccodes')]
 
   # bestParent() coalesces mod. country and region; countries.json
   #parent = bestParent(qobj)
 
-  # types
-  # map getty aat ids to wikidata Q ids; strip wd: prefix
-  placetypes = [t[3:] for t in getQ(qobj['placetypes'],'types')]
-  #placetypes = list(set(qobj['placetypes']))
-
-  countries = [t for t in getQ(qobj['countries'],'ccodes')]
-  # if none returns ''
-
-  # base query: name, type, country, bounds if specified
-  # geo_polygon filter added later for pass1; used as-is for pass2
+  has_bounds = bounds['id'] != ['0']
+  has_geom = 'geom' in qobj.keys()
+  has_countries = len(countries) > 0
+  if has_bounds:
+    area_filter = get_bounds_filter(bounds,'wd')
+  if has_geom:
+    geom_filter = { "geo_shape": {
+      "location": {
+        "shape": {
+          "type": qobj['geom']['type'],
+          "coordinates" : qobj['geom']['coordinates']},
+        "relation": "within" }
+    }}
+  if has_countries:
+    countries_filter = {"terms": {"claims.P17":countries}}
+  
+  # base query
   qbase = {"query": { 
     "bool": {
       "must": [
-        #{"terms": {"names.name":variants}},
         {"terms": {"variants.name":variants}}
-        #{"terms": {"types.id":placetypes}}
-        #{"terms": {"claims.P31":placetypes}}
       ],
       "should":[
-        #{"terms": {"parents":parent}}
-        {"terms": {"types.id":placetypes}},
-        {"terms": {"claims.P17": countries}}
+        countries_filter
       ],
-      #"filter": [get_bounds_filter(bounds,'tgn')] if bounds['id'] != ['0'] else []
-      "filter": [get_bounds_filter(bounds,'wd')] if bounds['id'] != ['0'] else []
+      "filter": []
     }
   }}
-
-  qlite = {"query": { 
-    "bool": {
-      "must": [
-        {"terms": {"variants.name":variants}}
-        ],
-      "should":[
-        {"terms": {"claims.P17": countries}}
-        #{"terms": {"parents":parent}}                
-        ],
-      #"filter": [get_bounds_filter(bounds,'tgn')] if bounds['id'] != ['0'] else []
-      "filter": [get_bounds_filter(bounds,'wd')] if bounds['id'] != ['0'] else []
-    }
-  }}
-
-  # grab deep copy of qbase, add w/geo filter if 'geom'
+  
+  # add spatial filter if available
+  if has_bounds:
+    qbase['query']['bool']['filter'].append(area_filter)
+  elif has_geom:
+    qbase['query']['bool']['filter'].append(geom_filter)
+  elif has_countries:
+    qbase['query']['bool']['must'].append(countries_filter)
+  
+  # grab deep copy of qbase, add types
   q1 = deepcopy(qbase)
+  q1['query']['bool']['must'].append({"terms": {"types.id":qtypes}})
 
-  # create 'within polygon' filter and add to q1
-  if 'geom' in qobj.keys():
-    location = qobj['geom']
-    # always polygon returned from hully(g_list)
-    filter_within = { "geo_shape": {
-      "location": {
-        "shape": {
-          "type": location['type'],
-          #"coordinates" : location['coordinates']
-          "coordinates" : location['coordinates']
-        },
-        "relation": "within" # within | intersects | contains
-      }
-    }}    
-    q1['query']['bool']['filter'].append(filter_within)
+  # leave geom, no types, add fclasses
+  q2 = deepcopy(qbase)
+  q2['query']['bool']['must'].append(
+    {"terms": {"fclasses":qobj['fclasses']}})
+
 
   # /\/\/\/\/\/
-  # pass1 (qbase): must[name, placetype]; filter[bounds, geom] if exist
+  # pass1 (q1): 
+  # must[name, placetype]; spatial filter
   # /\/\/\/\/\/
   print('q1',q1)
   try:
@@ -926,10 +924,9 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
       result_obj['hits'].append(hit)
   elif len(hits1) == 0:
     # /\/\/\/\/\/
-    # pass2 (qbare): must[name]; filter[bounds] if exist
+    # pass2: remove type, add fclasses
     # /\/\/\/\/\/  
-    q2 = deepcopy(qlite)
-    print('q2 (qlite)',q2)
+    print('q2',q2)
     try:
       res2 = es.search(index="wd", body = q2)
       hits2 = res2['hits']['hits']
@@ -955,7 +952,7 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
 #from datasets.static.hashes import aat, parents, aat_q
 #from datasets.utils import getQ, hully
 #from places.models import Place
-#place=get_object_or_404(Place, pk = 6587047)
+#place=get_object_or_404(Place, pk = 6587009) #Cherkasy, UA
 #bounds = {'type': ['userarea'], 'id': ['0']}
 #from copy import deepcopy
 #from elasticsearch import Elasticsearch
@@ -978,7 +975,7 @@ def align_wdlocal(pk, *args, **kwargs):
   for place in qs:
     # build query object
     count +=1
-    qobj = {"place_id":place.id,"src_id":place.src_id,"title":place.title}
+    qobj = {"place_id":place.id,"src_id":place.src_id,"title":place.title,"fclasses":place.fclasses}
     [variants,geoms,types,ccodes,parents]=[[],[],[],[],[]]
 
     # ccodes (2-letter iso codes)
