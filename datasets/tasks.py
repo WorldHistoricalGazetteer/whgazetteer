@@ -873,6 +873,12 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
           "coordinates" : qobj['geom']['coordinates']},
         "relation": "within" }
     }}
+    # alternatively, distance
+    #point = qobj['geom']['coordinates']
+    #geom_filter = {"geo_distance" : {
+        #"distance" : "1000km",
+        #"repr_point" : {"lon" : ,"lat" : }
+        #}}
   if has_countries:
     countries_filter = {"terms": {"claims.P17":countries}}
   
@@ -952,7 +958,7 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
 #from datasets.static.hashes import aat, parents, aat_q
 #from datasets.utils import getQ, hully
 #from places.models import Place
-#place=get_object_or_404(Place, pk = 6587009) #Cherkasy, UA
+#place=get_object_or_404(Place, pk =  6587009) #6587009 Cherkasy, UA
 #bounds = {'type': ['userarea'], 'id': ['0']}
 #from copy import deepcopy
 #from elasticsearch import Elasticsearch
@@ -976,6 +982,8 @@ def align_wdlocal(pk, *args, **kwargs):
     # build query object
     count +=1
     qobj = {"place_id":place.id,"src_id":place.src_id,"title":place.title,"fclasses":place.fclasses}
+
+    # TODO: add links 
     [variants,geoms,types,ccodes,parents]=[[],[],[],[],[]]
 
     # ccodes (2-letter iso codes)
