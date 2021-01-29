@@ -1081,15 +1081,20 @@ js for Browse
     }
   }, false);
   
-  
-  function url_modal(identifier) {
-    <!-- e.g. 'wd:Q123456' OR 'http://whatever.com/places/09384'-->
-    <!--link = ' <a href="" class="ext" data-toggle="modal" data-target="#ext_site">'+identifier+-->
-    link = ' <a href="" class="ext" data-target="#ext_site">'+identifier+
-      ' {% fontawesome_icon 'external-link' color='#336699' %}</a>'
+  // builds link for external place record
+  function url_extplace(identifier) {
+    // abbreviate links not in aliases.base_urls
+    if(identifier.startsWith('http')) {
+      let tag = identifier.replace(/.+\/\/|www.|\..+/g, '')
+      link = '<a href="'+identifier+'" target="_blank">{% fontawesome_icon 'external-link' color='#336699' %} '+tag+', </a>'          
+    } else {
+    link = ' <a href="" class="ext" data-target="#ext_site">{% fontawesome_icon 'external-link' color='#336699' %}&nbsp;'+identifier+', </a>'    
+    }
     return link
   }
-  function url_tab(type) {
+  
+  // builds link for external placetype record
+  function url_exttype(type) {
     link = ' <a href="#" class="exttab" data-id='+type.identifier+
       '>('+type.label+' {% fontawesome_icon 'external-link' color='#336699' %})</a>'
     return link
@@ -1110,7 +1115,7 @@ js for Browse
   // dual purpose for browse and recon
   function renderMap(geom, tab){
     // call the map being rendered 'mappo'
-    mappo = tab=='browse'?mappy:mappyr
+    mappo = tab=='browse' ? mappy : mappyr
     if (geom.features.length==0) {
       console.log('no features in renderMap() call')
     } else {
@@ -1121,7 +1126,7 @@ js for Browse
       idToFeature = {}  // for feature lookup
       features = L.geoJSON(geom, {
       // feature here is a geometry
-      // TODO: LPF v1.2 to allow single geometry or GeometryCollection
+      // TODO: LPF should allow single geometry, not only GeometryCollection
         pointToLayer: function (feature, latlng) {
           matchid = feature.place_id
           <!--console.log('feature',feature)-->
@@ -1219,7 +1224,7 @@ js for Browse
       } else if ('sourceLabel' in type) {
         str = type.sourceLabel !='' ? type.sourceLabel + '; ' : ''
       }
-      if(type.label!=''){ str += url_tab(type) + ' ' }
+      if(type.label!=''){ str += url_exttype(type) + ' ' }
       typeids+=str
     }
     left += typeids.replace(/(; $)/g, "") +'</p>'
@@ -1237,20 +1242,15 @@ js for Browse
       for (l in links_arr) {
         if (links_arr[l].type.substring(0,5) == 'exact') {
           exact_count += 1
-          html_exact+=url_modal(links_arr[l].identifier)
+          html_exact+=url_extplace(links_arr[l].identifier)
         }
         else if (links_arr[l].type.substring(0,5) == 'close') {
           close_count += 1
-          html_close+=url_modal(links_arr[l].identifier)
-        }
-        else if (links_arr[l].type == 'related') {
-          related_count +=1
-          html_related+=url_modal(links_arr[l].identifier)
+          html_close+=url_extplace(links_arr[l].identifier)
         }
       }
-      if (exact_count > 0) left += '<i>exactMatch</i>: ['+html_exact+' ]'
-      if (close_count > 0) left += ' <i>closeMatch</i>: ['+html_close+' ]'
-      if (related_count > 0) left += ' <i>related</i>: ['+html_related+' ]'
+      if (exact_count > 0) left += '<i>exact</i>: [ '+html_exact+' ]'
+      if (close_count > 0) left += ' <i>close</i>: [ '+html_close+' ]'
     } else { left += "<i class='small'>no links established yet</i>" }
 
     //
@@ -1305,7 +1305,7 @@ js for Browse
     right += '</div>'
     return side=='left'?left:right
   }
-  // $('#myModal').modal('show');
+
   function getPlace(pid){
     $.ajax({
       url: "/api/place/"+pid,
@@ -1320,19 +1320,11 @@ js for Browse
           if(str.substring(0,4).toLowerCase() == 'http'){
             url = str
           } else {
-            var re = /(dbp|gn|tgn|wd|aat|viaf):(.*?)$/;
+            var re = /(http|bnf|cerl|dbp|gn|gnd|gov|loc|pl|tgn|viaf|wd|wdlocal|whg|wp):(.*?)$/;
             url=base_urls[str.match(re)[1]]+str.match(re)[2] 
             console.log('url',url)
           }
           window.open(url, '_blank');
-          // TODO: refactor when to open modal or not (gn disallows)
-          <!--if (str.match(re)[1]== 'gn'){-->
-            <!--window.open(url, '_blank');-->
-            <!--return-->
-          <!--} else {-->
-            <!--$(".modal-body").html('<iframe width="100%" height="100%" frameborder="0" scrolling="yes" '+-->
-              <!--'allowtransparency="true" src="'+url+'"></iframe>');            -->
-          <!--}-->
         });
         $('.exttab').on('click', function(e) {
           e.preventDefault();

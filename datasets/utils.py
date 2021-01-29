@@ -15,6 +15,7 @@ from shapely import wkt
 from areas.models import Country
 from datasets.models import Dataset, DatasetUser, Hit
 from datasets.static.hashes import aat, parents, aat_q
+from datasets.static.hashes import aliases as al
 from places.models import PlaceGeom # ,Place
 pp = pprint.PrettyPrinter(indent=1)
 
@@ -514,6 +515,19 @@ def aat_lookup(id):
   except:
     print(id,' broke it')
     print("error:", sys.exc_info())        
+
+url='https://catalogue.bnf.fr/ark:/12148/cb193409'
+def aliasIt(url):
+  r1=re.compile(r"\/(?:.(?!\/))+$")
+  id=re.search(r1,url)
+  if id: 
+    id = id.group(0)[1:].replace('cb','')
+  r2 = re.compile(r"bnf|cerl|dbpedia|geonames|d-nb|loc|pleiades|tgn|viaf|wikidata|whg|wikipedia")
+  tag=re.search(r2,url)
+  if tag and id:
+    return al.tags[tag.group(0)]['alias']+':'+id
+  else:
+    return url
 
 def hully(g_list):
   from django.contrib.gis.geos import GEOSGeometry

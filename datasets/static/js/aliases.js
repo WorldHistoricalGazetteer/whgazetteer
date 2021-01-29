@@ -1,4 +1,5 @@
 base_urls = {
+    "aat": "http://vocab.getty.edu/page/aat/",
     "bnf": "https://catalogue.bnf.fr/ark:/12148/cb",
     "cerl": "https://data.cerl.org/thesaurus/",
     "dbp": "http://dbpedia.org/resource/",

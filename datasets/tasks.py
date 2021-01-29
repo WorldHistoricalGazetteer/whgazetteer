@@ -865,7 +865,7 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
   has_countries = len(countries) > 0
   if has_bounds:
     area_filter = get_bounds_filter(bounds,'wd')
-  if has_geom:
+  elif has_geom:
     geom_filter = { "geo_shape": {
       "location": {
         "shape": {
@@ -879,7 +879,7 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
         #"distance" : "1000km",
         #"repr_point" : {"lon" : ,"lat" : }
         #}}
-  if has_countries:
+  elif has_countries:
     countries_filter = {"terms": {"claims.P17":countries}}
   
   # base query
@@ -984,7 +984,7 @@ def align_wdlocal(pk, *args, **kwargs):
     qobj = {"place_id":place.id,"src_id":place.src_id,"title":place.title,"fclasses":place.fclasses}
 
     # TODO: add links 
-    [variants,geoms,types,ccodes,parents]=[[],[],[],[],[]]
+    [variants,geoms,types,ccodes,parents,links]=[[],[],[],[],[],[]]
 
     # ccodes (2-letter iso codes)
     for c in place.ccodes:
@@ -1017,6 +1017,11 @@ def align_wdlocal(pk, *args, **kwargs):
       # make everything a simple polygon hull for spatial filter
       qobj['geom'] = hully(g_list)
 
+    #
+    # links
+    #if len(place.links.all()) > 0:
+      #l_list = [l.jsonb['identifier'] for l in place.links.all()]
+      
     #
     # run pass1-pass2 ES queries
     print('qobj in align_wd_local()',qobj)
