@@ -1070,12 +1070,17 @@ def ds_insert_lpf(request, pk):
 
       # PlaceLink: place,src_id,task_id,jsonb:{type,identifier}
       if 'links' in feat.keys() and len(feat['links'])>0:
-        countlinked +=1
-        print('countlinked',countlinked)
+        countlinked +=1 # record has *any* links
+        #print('countlinked',countlinked)
         for l in feat['links']:
-          total_links += 1
+          total_links += 1 # record has n links
           objs['PlaceLinks'].append(PlaceLink(
-            place=newpl,src_id=newpl.src_id,jsonb=l,task_id='initial'))
+            place=newpl,
+            src_id=newpl.src_id,
+            # alias uri base for known authorities
+            jsonb={"type":l['type'], "identifier": aliasIt(l['identifier'].rstrip('/'))},
+            task_id='initial'
+          ))
 
       # PlaceRelated: place,src_id,task_id,jsonb{relationType,relationTo,label,when{}}
       if 'relations' in feat.keys():

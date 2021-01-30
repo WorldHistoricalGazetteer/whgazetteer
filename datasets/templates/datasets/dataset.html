@@ -1088,7 +1088,7 @@ js for Browse
       let tag = identifier.replace(/.+\/\/|www.|\..+/g, '')
       link = '<a href="'+identifier+'" target="_blank">{% fontawesome_icon 'external-link' color='#336699' %} '+tag+', </a>'          
     } else {
-    link = ' <a href="" class="ext" data-target="#ext_site">{% fontawesome_icon 'external-link' color='#336699' %}&nbsp;'+identifier+', </a>'    
+    link = ' <a href="" class="ext" data-target="#ext_site">{% fontawesome_icon 'external-link' color='#336699' %}&nbsp;'+identifier+'</a>, '    
     }
     return link
   }
