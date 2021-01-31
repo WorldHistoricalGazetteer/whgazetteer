@@ -828,11 +828,14 @@ def align_tgn(pk, *args, **kwargs):
   )
   
   return hit_parade['summary']
-#qobjs=[{'place_id': 6587009, 'src_id': '26', 'title': 'Cherkasy', 'countries': ['UA'], 'placetypes': [300008375, 300164060], 'variants': ['Черкасы', 'Cherkasy'], 'parents': [], 'geom': {'type': 'Polygon', 'coordinates': [[[33.048145552496, 49.4507804536655], [33.028930832899235, 49.255690131649374], [32.97202508500729, 49.06809702130041], [32.87961516479855, 48.8952102206459], [32.75525233368255, 48.743673672478955], [32.603715785515604, 48.61931084136296], [32.430828984861094, 48.526900921154215], [32.24323587451213, 48.46999517326227], [32.048145552496, 48.4507804536655], [31.853055230479875, 48.46999517326227], [31.665462120130915, 48.526900921154215], [31.4925753194764, 48.61931084136295], [31.341038771309456, 48.743673672478955], [31.216675940193458, 48.8952102206459], [31.124266019984717, 49.06809702130041], [31.067360272092774, 49.255690131649374], [31.048145552496003, 49.4507804536655], [31.06736027209277, 49.64587077568163], [31.124266019984713, 49.833463886030586], [31.216675940193454, 50.0063506866851], [31.341038771309453, 50.15788723485205], [31.492575319476398, 50.28225006596804], [31.665462120130908, 50.37465998617679], [31.85305523047987, 50.431565734068734], [32.048145552495996, 50.4507804536655], [32.24323587451213, 50.431565734068734], [32.43082898486109, 50.37465998617679], [32.603715785515604, 50.28225006596805], [32.75525233368255, 50.15788723485205], [32.879615164798544, 50.0063506866851], [32.97202508500729, 49.83346388603059], [33.028930832899235, 49.64587077568163], [33.048145552496, 49.4507804536655]]]}}]
-#bounds={'type': ['userarea'], 'id': ['369']}
+
+#qobj={'place_id': 83387, 'src_id': '12452', 'title': 'Damascus', 'fclasses': ['P'], 'countries': ['SY'], 'placetypes': [300008347], 'variants': ['Damascus'], 'parents': [], 'geom': {'type': 'Polygon', 'coordinates': [[[36.35348122657498, 32.5148527769508], [36.15770923760578, 32.51926129697558], [35.96654993104803, 32.561737481245416], [35.78733352207033, 32.6406525334655], [35.62693226221618, 32.75298036862209], [35.49149691531298, 32.89441365156134], [35.38622089962589, 33.059528966522784], [35.31514114048685, 33.24199478401883], [35.280983269924995, 33.43481425034016], [35.28505710929001, 33.63059348965473], [35.32720644270285, 33.82182513035944], [35.40581500732658, 34.001176183552786], [35.5178684707535, 34.16176923460978], [35.659070018917404, 34.297446165257114], [35.824005122184246, 34.403004293433575], [36.00634916148332, 34.47439587589162], [36.19910995282503, 34.50888332339183], [36.21300995282503, 34.50998332339183], [36.428593959617245, 34.50371332587653], [36.637819540686685, 34.45136417994673], [36.83095440559231, 34.355370946792966], [36.99901473605554, 34.220198826228064], [36.999059180055546, 34.22015438122806], [37.11990546209573, 34.07384121148016], [37.21093573561722, 33.907333383354214], [37.26887187598436, 33.726627071444604], [37.29162752355343, 33.53822975716351], [37.278383216336564, 33.34892588543618], [37.22961589994856, 33.1655325475612], [37.147081752143045, 32.99465398843035], [37.033752940449986, 32.84244377863858], [36.89371059035838, 32.7143832159917], [36.7319978184064, 32.615083936476594], [36.55443812265821, 32.548121842942805], [36.36742567057498, 32.5159083319508], [36.35348122657498, 32.5148527769508]]]}, 'authids': ['loc:n79143055', 'gn:170654', 'viaf:238973527', 'wd:Q3766', 'dbp:Damascus', 'tgn:7002261']}
+
+#bounds={'type': ['region'], 'id': ['95']}
 #from datasets.static.hashes import aat, parents, aat_q
 #from datasets.utils import getQ
 #from areas.models import Area
+#from datasets.tasks import get_bounds_filter
 
 # ***
 # performs elasticsearch > wdlocal queries
@@ -865,7 +868,7 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
   has_countries = len(countries) > 0
   if has_bounds:
     area_filter = get_bounds_filter(bounds,'wd')
-  elif has_geom:
+  if has_geom:
     geom_filter = { "geo_shape": {
       "location": {
         "shape": {
@@ -879,16 +882,23 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
         #"distance" : "1000km",
         #"repr_point" : {"lon" : ,"lat" : }
         #}}
-  elif has_countries:
+  if has_countries:
     countries_filter = {"terms": {"claims.P17":countries}}
   
+  # prelim query: got authid mathes?
+  q0 = {"query": { "bool": {
+      "must": {"terms": {"authids":qobj['authids']}}
+  }}}
+
   # base query
   qbase = {"query": { 
     "bool": {
       "must": [
         {"terms": {"variants.name":variants}}
       ],
+      # boosts score if matched
       "should":[
+        {"terms": {"authids":qobj['authids']}},
         countries_filter
       ],
       "filter": []
@@ -912,39 +922,54 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
   q2['query']['bool']['must'].append(
     {"terms": {"fclasses":qobj['fclasses']}})
 
-
   # /\/\/\/\/\/
-  # pass1 (q1): 
-  # must[name, placetype]; spatial filter
+  # pass0 (q0): 
+  # must[authid]; match any link
   # /\/\/\/\/\/
-  print('q1',q1)
   try:
-    res1 = es.search(index="wd", body = q1)
-    hits1 = res1['hits']['hits']
+    res0 = es.search(index="wd", body = q0)
+    #res0 = es.search(index="wd4000test", body = q0)
+    hits0 = res0['hits']['hits']
   except:
-    print('pass1 error:',sys.exc_info())
-  if len(hits1) > 0:
-    for hit in hits1:
+    print('pass0 error:',sys.exc_info())
+  if len(hits0) > 0:
+    for hit in hits0:
       hit_count +=1
-      hit['pass'] = 'pass1'
+      hit['pass'] = 'pass0'
       result_obj['hits'].append(hit)
-  elif len(hits1) == 0:
+  elif len(hits0) == 0:
     # /\/\/\/\/\/
-    # pass2: remove type, add fclasses
-    # /\/\/\/\/\/  
-    print('q2',q2)
+    # pass1 (q1): 
+    # must[name, placetype]; spatial filter
+    # /\/\/\/\/\/
+    print('q1',q1)
     try:
-      res2 = es.search(index="wd", body = q2)
-      hits2 = res2['hits']['hits']
+      res1 = es.search(index="wd", body = q1)
+      hits1 = res1['hits']['hits']
     except:
-      print('pass2 error:',sys.exc_info()) 
-    if len(hits2) > 0:
-      for hit in hits2:
+      print('pass1 error:',sys.exc_info())
+    if len(hits1) > 0:
+      for hit in hits1:
         hit_count +=1
-        hit['pass'] = 'pass2'
+        hit['pass'] = 'pass1'
         result_obj['hits'].append(hit)
-    elif len(hits2) == 0:
-      result_obj['missed'] = qobj['place_id']
+    elif len(hits1) == 0:
+      # /\/\/\/\/\/
+      # pass2: remove type, add fclasses
+      # /\/\/\/\/\/  
+      print('q2',q2)
+      try:
+        res2 = es.search(index="wd", body = q2)
+        hits2 = res2['hits']['hits']
+      except:
+        print('pass2 error:',sys.exc_info()) 
+      if len(hits2) > 0:
+        for hit in hits2:
+          hit_count +=1
+          hit['pass'] = 'pass2'
+          result_obj['hits'].append(hit)
+      elif len(hits2) == 0:
+        result_obj['missed'] = qobj['place_id']
   result_obj['hit_count'] = hit_count
   return result_obj
 
@@ -958,8 +983,8 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
 #from datasets.static.hashes import aat, parents, aat_q
 #from datasets.utils import getQ, hully
 #from places.models import Place
-#place=get_object_or_404(Place, pk =  6587009) #6587009 Cherkasy, UA
-#bounds = {'type': ['userarea'], 'id': ['0']}
+#place=get_object_or_404(Place, pk = 6591148) #6587009 Cherkasy, UA
+bounds = {'type': ['userarea'], 'id': ['369']}
 #from copy import deepcopy
 #from elasticsearch import Elasticsearch
 #es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
@@ -973,7 +998,7 @@ def align_wdlocal(pk, *args, **kwargs):
   start = datetime.datetime.now()
   hit_parade = {"summary": {}, "hits": []}
   [nohits,wdlocal_es_errors,features] = [[],[],[]]
-  [count, count_hit, count_nohit, total_hits, count_p1, count_p2, count_p3] = [0,0,0,0,0,0,0]
+  [count, count_hit, count_nohit, total_hits, count_p0, count_p1, count_p2] = [0,0,0,0,0,0,0]
 
   # queryset depends on choice of scope in addtask form
   qs = ds.places.all() if scope == 'all' else ds.places.all().filter(indexed=False)
@@ -1017,13 +1042,17 @@ def align_wdlocal(pk, *args, **kwargs):
       # make everything a simple polygon hull for spatial filter
       qobj['geom'] = hully(g_list)
 
-    #
+    # TODO: aggregate links in index
+    # 'P1566':'gn', 'P1584':'pleiades', 'P244':'loc', 'P214':'viaf', 'P268':'bnf', 'P1667':'tgn', 'P2503':'gov', 'P1871':'cerl', 'P227':'gnd'
     # links
-    #if len(place.links.all()) > 0:
-      #l_list = [l.jsonb['identifier'] for l in place.links.all()]
+    if len(place.links.all()) > 0:
+      l_list = [l.jsonb['identifier'] for l in place.links.all()]
+      qobj['authids'] = l_list
+    else:
+      qobj['authids'] = []
       
     #
-    # run pass1-pass2 ES queries
+    # run pass0-pass2 ES queries
     print('qobj in align_wd_local()',qobj)
     result_obj = es_lookup_wdlocal(qobj, bounds=bounds)
       
@@ -1036,6 +1065,8 @@ def align_wdlocal(pk, *args, **kwargs):
       #print("hit[0]: ",result_obj['hits'][0]['_source'])  
       print('hits from align_wd_local',result_obj['hits'])
       for hit in result_obj['hits']:
+        if hit['pass'] == 'pass0': 
+          count_p0+=1 
         if hit['pass'] == 'pass1': 
           count_p1+=1 
         elif hit['pass'] == 'pass2': 
@@ -1063,11 +1094,12 @@ def align_wdlocal(pk, *args, **kwargs):
       'count':count,
       'got_hits':count_hit,
       'total': total_hits, 
+      'pass0': count_p0, 
       'pass1': count_p1, 
       'pass2': count_p2, 
       #'pass3': count_p3,
-      'pass1remains': -1,
-      'pass2remains': -1,
+      #'pass1remains': -1,
+      #'pass2remains': -1,
       #'pass3remains': -1,
       'no_hits': {'count': count_nohit },
       'elapsed': elapsed(end-start)

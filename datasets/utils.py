@@ -516,7 +516,7 @@ def aat_lookup(id):
     print(id,' broke it')
     print("error:", sys.exc_info())        
 
-url='https://catalogue.bnf.fr/ark:/12148/cb193409'
+u='https://catalogue.bnf.fr/ark:/12148/cb193409'
 def aliasIt(url):
   r1=re.compile(r"\/(?:.(?!\/))+$")
   id=re.search(r1,url)

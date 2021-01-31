@@ -220,7 +220,6 @@ def review(request, pk, tid, passnum):
       'page': page if request.method == 'GET' else str(int(page)-1),
       'aug_geom': json.loads(task.task_kwargs.replace("'",'"'))['aug_geom'],
       'mbtokenmb': settings.MAPBOX_TOKEN_MB
-      
   }
 
   
