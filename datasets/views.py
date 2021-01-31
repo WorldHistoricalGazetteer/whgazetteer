@@ -196,7 +196,7 @@ def review(request, pk, tid, passnum):
   placeid = records[0].id
   place = get_object_or_404(Place, id=placeid)
   print('reviewing hits for place_id  #',placeid, records[0])
-
+  print(records[0].links.all())
   # recon task hits for current place
   raw_hits = Hit.objects.all().filter(place_id=placeid, task_id=tid).order_by('query_pass','-score')
 
@@ -233,7 +233,7 @@ def review(request, pk, tid, passnum):
   context['formset'] = formset
   method = request.method
   
-  # if POST, process review choices (match/no match)
+  # if GET, just display; if POST, process review choices (match/no match)
   if method == 'GET':
     print('a GET, just rendering next')
   else:
@@ -287,24 +287,27 @@ def review(request, pk, tid, passnum):
             # create multiple PlaceLink records (e.g. Wikidata)
             # TODO: filter duplicates
             if 'links' in hits[x]['json']:
-              print('json', hits[x]['json']['links'])
+              #print('json', hits[x]['json']['links'])
               for l in hits[x]['json']['links']:
                 print('l in links',l)
-                link = PlaceLink.objects.create(
-                  place = place,
-                  task_id = tid,
-                  src_id = place.src_id,
-                  jsonb = {
-                    #"type": re.search("^(.*?):", l).group(1),
-                    "type": hits[x]['match'],
-                    "identifier": re.search("\: (.*?)$", l).group(1)
-                  }
-                )
-                print('PlaceLink record created',link.jsonb)
-                # update totals
-                ds.numlinked = ds.numlinked +1
-                ds.total_links = ds.total_links +1
-                ds.save()
+                authid = re.search("\: (.*?)$", l).group(1)
+                if authid not in place.authids:                  
+                  link = PlaceLink.objects.create(
+                    place = place,
+                    task_id = tid,
+                    src_id = place.src_id,
+                    jsonb = {
+                      #"type": re.search("^(.*?):", l).group(1),
+                      "type": hits[x]['match'],
+                      #"identifier": re.search("\: (.*?)$", l).group(1)
+                      "identifier": authid
+                    }
+                  )
+                  print('PlaceLink record created',link.jsonb)
+                  # update totals
+                  ds.numlinked = ds.numlinked +1 if ds.numlinked else 1
+                  ds.total_links = ds.total_links +1
+                  ds.save()
           # 
           # this is accessioning step
           elif task.task_name == 'align_whg':

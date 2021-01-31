@@ -326,25 +326,26 @@
                   {{ t.result|get:"count"|safe }}) got total of <b>{{ t.result|get:"total"|safe }}</b> hits</p>
               <p id="latest"></p>
               <ul>
-                <li><i>Pass 1</i>
-                  {% if t.result|get:"pass1" > 0 %}
-                  <i>remaining</i>: <span class="strong" id='{{t.task_id}}_1'>nn</span> 
+                {% if t.result|get:"pass0" > 0 %}
+                  <li><i>Pass 0 (matched links)</i>: <span class="strong" id='{{t.task_id}}_0'>nn</span> 
+                  <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass0' %}">
+                   review</i></a> | <a href="#" onClick="javascript:console.log('accept all')">accept all</a></li>
+                {% endif %}
+                {% if t.result|get:"pass1" > 0 %}
+                  <li><i>Pass 1 remaining</i>: <span class="strong" id='{{t.task_id}}_1'>nn</span> 
                   <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass1' %}">
-                   review</i></a>{% endif %}
-                </li>
-                <li><i>Pass 2</i>
-                  {% if t.result|get:"pass2" > 0 %}
-                  <i>remaining</i>: <span class="strong" id='{{t.task_id}}_2'>nn</span> 
+                   review</i></a></li>
+                {% endif %}
+                {% if t.result|get:"pass2" > 0 %}
+                  <li><i>Pass 2 remaining</i>: <span class="strong" id='{{t.task_id}}_2'>nn</span> 
                   <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass2' %}">
-                   review</i></a>{% endif %}
-                </li>
-                {% if t.task_name == 'align_tgn' %}
-                <li><i>Pass 3</i>
-                  {% if t.result|get:"pass3" > 0 %}
-                  <i>remaining</i>: <span class="strong" id='{{t.task_id}}_3'>nn</span> 
+                   review</i></a></li>
+                {% endif %}
+                <!--{ if t.task_name == 'align_tgn' %}-->
+                {% if t.result|get:"pass3" > 0 %} <!-- TGN only -->
+                  <li><i>Pass 3 remaining</i>: <span class="strong" id='{{t.task_id}}_3'>nn</span> 
                   <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass3' %}">
-                   review</i></a>{% endif %}
-                </li>
+                   review</i></a></li>
                 {% endif %}
               </ul>            
             </div>
@@ -521,32 +522,8 @@
           {% endif %}
         </div> <!-- recon_form -->
         <div id="recon_result" class="col-md-6 p-tight py-2 dashedbox">
-          {% if context.response and context.response != 'snap!' %}
-            <div>
-            <p class="text-warning">{ TODO: progress bar }</p>
-            <p><b>Authority</b>: {{ context.authority }}</p>
-            <p><b>Task ID</b>: {{ context.task_id }}</p>
-            <p class="mb-3"><b>Result summary</b>:
-              {{ context.result }}    </p>
-            <a href="{% url 'datasets:dataset-detail' id=ds.pk %}">
-              <input class="btn btn-sm btn-outline-primary" type="text" value="Return to Dataset"/></a>
-            <!-- TODO: refactor this; direct to first non-zero pass -->
-            {% if context.result.pass1 > 0 %}
-              <a href="{% url 'datasets:review' pk=ds.pk tid=context.task_id passnum='pass1' %}">
-            {% elif context.result.pass2 > 0 %}
-              <a href="{% url 'datasets:review' pk=ds.pk tid=context.task_id passnum='pass2' %}">
-            {% else %}
-              <a href="{% url 'datasets:review' pk=ds.pk tid=context.task_id passnum='pass3' %}">
-            {% endif %}
-            <input class="btn btn-sm btn-outline-primary" type="text" value="Review Hits"/>
-            </a></div>
-          {% elif context.response == 'snap!' %}
-            <div><p>{{ context.result }}</p>
-            <p><a href="javascript:history.back()">Return to dataset portal</a></p></div>
-          {% endif %}
           {% if request.method == 'GET' %}
           <div id="mapdiv_recon" class="mt-2">
-            <!--{ leaflet_map "map_recon" callback="map_init2" %}-->
             {% leaflet_map "map_recon" %}
           </div>
           {% endif %}
@@ -908,11 +885,13 @@ js for Summary, Reconciliation
         updates=data
         <!--console.log('fired updateTotals()',updates, dsid)-->
         for(u in updates){
-          html1='';html2='';html3='';
+          html0='';html1='';html2='';html3='';
           <!--console.log(updates[u])-->
+          html0+=updates[u]['pass0']
           html1+=updates[u]['pass1']
           html2+=updates[u]['pass2']
           html3+=updates[u]['pass3']
+          $("#"+u+'_0').html(html0)
           $("#"+u+'_1').html(html1)
           $("#"+u+'_2').html(html2)
           $("#"+u+'_3').html(html3)

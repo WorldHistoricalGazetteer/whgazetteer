@@ -42,6 +42,10 @@ class Place(models.Model):
     def geom_count(self):
         return self.geoms.count()
         
+    @property
+    def authids(self):
+        return [i.jsonb['identifier'] for i in self.links.all()]
+        
     class Meta:
         managed = True
         db_table = 'places'

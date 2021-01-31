@@ -20,6 +20,7 @@
     <span class="small"> <a href="{% url 'datasets:dataset-detail' id=ds_id %}"> 
       {{ ds_label }}</a> {%if authority != 'whg' %}> {{ authority }}{%endif%}
       <select id="select_pass" name="pass" class="custom-select-sm mr-2" style="width:auto;">
+        <option value="pass0">PASS 0 (auto-matched)&nbsp;</option>
         <option value="pass1">PASS 1&nbsp;</option>
         <option value="pass2">PASS 2&nbsp;</option>
         {% if authority != 'wd' %}
@@ -103,7 +104,7 @@
               {% for type in record.types.all %}
                 {{ type.jsonb.sourceLabel }} ({{ type.jsonb.label }}); 
               {% endfor %}</p>
-            {% if record.links|length > 0 %}
+            {% if record.links.all|length > 0 %}
             <p><strong>Links</strong>: 
               {% for link in record.links.all %}
                 <a href="" class="mr-2 ext" data-toggle="modal" data-target="#ext_site">{{ link.jsonb.identifier }} {% fontawesome_icon 'external-link' color='#336699' %}</a>
