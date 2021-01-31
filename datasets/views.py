@@ -336,22 +336,29 @@ def review(request, pk, tid, passnum):
 
 """
 write_wd_pass0(taskid)
+called from dataset_detail>reconciliation tab
+accepts all pass0 wikidata matches, writes geoms and links
  
 """
-from django.shortcuts import get_object_or_404
-from datasets.models import Dataset, Hit
-from places.models import Place, PlaceGeom, PlaceLink
-from django_celery_results.models import TaskResult
-import simplejson as json
-taskid = '24c0db66-62b0-48c7-b2a2-510abe0ab11d' # wdlocal, ds=904, russian_towns_10_lpf
-def write_wd_pass0(taskid):
-  task = get_object_or_404(TaskResult,task_id=taskid)
+# TEST SETUP
+#from django.shortcuts import get_object_or_404
+#from datasets.models import Dataset, Hit
+#from places.models import Place, PlaceGeom, PlaceLink
+#from django_celery_results.models import TaskResult
+#import simplejson as json
+#taskid = '24c0db66-62b0-48c7-b2a2-510abe0ab11d' # wdlocal, ds=904, russian_towns_10_lpf
+def write_wd_pass0(request, tid):
+  task = get_object_or_404(TaskResult,task_id=tid)
   kwargs=json.loads(task.task_kwargs.replace("'",'"'))
   auth = task.task_name[6:].replace('local','')
   ds = get_object_or_404(Dataset, pk=kwargs['ds'])
   authname = 'Wikidata'
-  # get pass0 hits
-  hits = Hit.objects.filter(task_id=taskid,query_pass='pass0')
+  # get unreviewed pass0 hits
+  hits = Hit.objects.filter(
+    task_id=tid, 
+    query_pass='pass0',
+    reviewed=False
+  )
   for h in hits:
     hasGeom = 'geoms' in h.json and len(h.json['geoms']) > 0
     hasLink = 'links' in h.json and len(h.json['links']) > 0
@@ -359,12 +366,12 @@ def write_wd_pass0(taskid):
     # GEOMS
     # confirm another user hasn't just done this...
     if hasGeom and kwargs['aug_geom'] == 'on' \
-       and task.task_id not in place.geoms.all().values_list('task_id',flat=True):
+       and tid not in place.geoms.all().values_list('task_id',flat=True):
       for g in h.json['geoms']:
         #place.geoms.all().values_list('task_id',flat=True)
         geom = PlaceGeom.objects.create(
           place = place,
-          task_id = task.task_id,
+          task_id = tid,
           src_id = place.src_id,
           jsonb = {
             "type":g['type'],
@@ -376,12 +383,12 @@ def write_wd_pass0(taskid):
     # LINKS
     link_counter = 0
     # confirm another user hasn't just done this...
-    if task.task_id not in place.links.all().values_list('task_id',flat=True):
+    if tid not in place.links.all().values_list('task_id',flat=True):
       # create single wikidata link
       link_counter += 1
       link = PlaceLink.objects.create(
         place = place,
-        task_id = task.task_id,
+        task_id = tid,
         src_id = place.src_id,
         jsonb = {
           "type": "closeMatch",
@@ -392,23 +399,37 @@ def write_wd_pass0(taskid):
     
     # create link for each wikidata concordance, if any
     if hasLink:
+      authids=place.links.all().values_list(
+        'jsonb__identifier',flat=True)
       for l in h.json['links']:
         link_counter += 1
         authid = re.search("\: (.*?)$", l).group(1)
-        link = PlaceLink.objects.create(
-          place = place,
-          task_id = task.task_id,
-          src_id = place.src_id,
-          jsonb = {
-            "type": "closeMatch",
-            "identifier": authid
-          }
-        )
+        # TODO: same no-dupe logic in review()
+        # don't write duplicates
+        if authid not in authids:
+          link = PlaceLink.objects.create(
+            place = place,
+            task_id = tid,
+            src_id = place.src_id,
+            jsonb = {
+              "type": "closeMatch",
+              "identifier": authid
+            }
+          )
       print('created '+str(len(h.json['links']))+' place_link instances')
-    ds.numlinked = ds.numlinked +1 if ds.numlinked else 1
+    
+    # update dataset totals for metadata page
+    #ds.numlinked = ds.numlinked +1 if ds.numlinked else 1
+    # count distinct(place_id) in
+    ds.numlinked = len(set(PlaceLink.objects.filter(place_id__in=ds.placeids).values_list('place_id',flat=True)))
     ds.total_links += link_counter
     ds.save()
     
+    # flag hit as reviewed
+    h.reviewed = True
+    h.save()
+    
+  return redirect('/datasets/'+str(ds.id)+'/detail#reconciliation')
   
 """
 # initiate, monitor Celery tasks
@@ -1194,22 +1215,23 @@ def ds_insert_lpf(request, pk):
       
     print('new dataset:', ds.__dict__)
     infile.close()
+  
+  # WRITE THESE IN DatasetDetailView()
+  #dsf.df_status = 'uploaded'
+  #dsf.numrows = countrows
+  #dsf.save()
 
-  #context = {'status':'inserted'}
-  # write some summary attributes
-  dsf.df_status = 'uploaded'
-  dsf.numrows = countrows
-  dsf.save()
-
-  #print('countlinked',countlinked)
-  ds.ds_status = 'uploaded'
-  ds.numrows = countrows
-  ds.numlinked = countlinked
-  ds.total_links = total_links
-  ds.save()
-  print(str(countrows)+' inserted')
-  #messages.add_message(request, messages.INFO, 'inserted lpf for '+str(countrows)+' places')
-  return redirect('/dashboard')
+  #print('# linked, # links',countlinked, total_links)
+  #ds.ds_status = 'uploaded'
+  #ds.numrows = countrows
+  #ds.numlinked = countlinked
+  #ds.total_links = total_links
+  #ds.save()
+  #print(str(countrows)+' records inserted')
+  
+  return({"numrows":countrows,
+          "numlinked":countlinked,
+          "total_links":total_links})
 
 
 # ***
@@ -1225,7 +1247,7 @@ def ds_insert_lpf(request, pk):
 # 
 
 def ds_insert_tsv(request, pk):
-  import os, csv, re
+  import csv, re
   ds = get_object_or_404(Dataset, id=pk)
   # retrieve just-added file
   dsf = ds.files.all().order_by('-rev')[0]
@@ -1435,6 +1457,7 @@ def ds_insert_tsv(request, pk):
             }
           ))
       
+      
     # bulk_create(Class, batch_size=n) for each
     PlaceName.objects.bulk_create(objs['PlaceName'],batch_size=10000)
     #print(len(objs['PlaceName']),'names done')
@@ -1443,7 +1466,7 @@ def ds_insert_tsv(request, pk):
     PlaceGeom.objects.bulk_create(objs['PlaceGeom'],batch_size=10000)
     #print(len(objs['PlaceGeom']),'geoms done')
     PlaceLink.objects.bulk_create(objs['PlaceLink'],batch_size=10000)
-    #print(len(objs['PlaceLink']),'links done')
+    print(len(objs['PlaceLink']),'links done')
     PlaceRelated.objects.bulk_create(objs['PlaceRelated'],batch_size=10000)
     #print(len(objs['PlaceRelated']),'related done')
     PlaceWhen.objects.bulk_create(objs['PlaceWhen'],batch_size=10000)
@@ -1455,12 +1478,17 @@ def ds_insert_tsv(request, pk):
   
     # backfill some dataset counts
     print('ds record pre-update:', ds.__dict__)
-    print('rows,linked,links:',countrows,countlinked,countlinks)
+    print('rows,linked,links:', countrows, countlinked, countlinks)
   
+    # write some summary attributes
     ds.numrows = countrows
     ds.numlinked = countlinked
     ds.total_links = countlinks
     ds.save()
+
+    dsf.df_status = 'uploaded'
+    dsf.numrows = countrows
+    dsf.save()
     
     print('ds record post-update:', ds.__dict__)
   
@@ -1630,6 +1658,7 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
       dsobj.numrows = result['count']
       if not form.cleaned_data['uri_base']:
         dsobj.uri_base = 'http://whgazetteer.org/places/'+form.cleaned_data['label']+'/'
+
       # links will be counted later on insert
       dsobj.numlinked = 0
       dsobj.total_links = 0
@@ -1638,7 +1667,6 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
       except:
         args['form'] = form
         return render(request,'datasets/dataset_create.html', args)
-        #sys.exit(sys.exc_info())
 
       # 
       # create user directory if necessary
@@ -1784,12 +1812,16 @@ class DatasetDetailView(LoginRequiredMixin, UpdateView):
     if file.df_status == 'format_ok':
       print('format_ok , inserting dataset '+str(id_))
       if file.format == 'delimited':
-        ds_insert_tsv(self.request, id_)
+        result = ds_insert_tsv(self.request, id_)
       else:
-        ds_insert_lpf(self.request,id_)
-      print('numlinked immed. after insert',ds.numlinked)
+        result = ds_insert_lpf(self.request,id_)
+      print('ds_insert_xxx() results')
+      ds.numrows = result['numrows']
+      ds.numlinked = result['numlinked']
+      ds.total_links = result['total_links']
       ds.ds_status = 'uploaded'
       file.df_status = 'uploaded'
+      file.numrows = result['numrows']
       ds.save()
       file.save()
 
@@ -1819,7 +1851,7 @@ class DatasetDetailView(LoginRequiredMixin, UpdateView):
     context['tasks'] = TaskResult.objects.all().filter(task_args = [id_],status='SUCCESS')
     # initial (non-task)
     context['num_links'] = PlaceLink.objects.filter(
-      place_id__in = placeset, task_id = None).count()
+      place_id__in = placeset, task_id = 'initial').count()
     context['num_names'] = PlaceName.objects.filter(place_id__in = placeset).count()
     context['num_geoms'] = PlaceGeom.objects.filter(
       place_id__in = placeset, task_id = None).count()
@@ -1838,9 +1870,11 @@ class DatasetDetailView(LoginRequiredMixin, UpdateView):
     # augmentations (has task_id)
     context['links_added'] = PlaceLink.objects.filter(
       place_id__in = placeset, task_id__contains = '-').count()
-    context['names_added'] = PlaceName.objects.filter(
-      place_id__in = placeset, task_id__contains = '-').count()
     context['geoms_added'] = PlaceGeom.objects.filter(
+      place_id__in = placeset, task_id__contains = '-').count()
+
+    # names, descriptions not currently retrieved from recon matches
+    context['names_added'] = PlaceName.objects.filter(
       place_id__in = placeset, task_id__contains = '-').count()
     context['descriptions_added'] = PlaceDescription.objects.filter(
       place_id__in = placeset, task_id__contains = '-').count()

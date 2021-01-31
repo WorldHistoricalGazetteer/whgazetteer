@@ -327,9 +327,11 @@
               <p id="latest"></p>
               <ul>
                 {% if t.result|get:"pass0" > 0 %}
-                  <li><i>Pass 0 (matched links)</i>: <span class="strong" id='{{t.task_id}}_0'>nn</span> 
+                  <li id="pass0"><i>Pass 0 (matched links)</i>: <span class="strong" id='{{t.task_id}}_0'>nn</span> 
                   <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass0' %}">
-                   review</i></a> | <a href="#" onClick="javascript:console.log('accept all')">accept all</a></li>
+                   review</i></a> 
+                   <span>| <a href="{% url 'datasets:wd_pass0' tid=t.task_id %}">accept remaining</a></span>
+                   </li>
                 {% endif %}
                 {% if t.result|get:"pass1" > 0 %}
                   <li><i>Pass 1 remaining</i>: <span class="strong" id='{{t.task_id}}_1'>nn</span> 
@@ -888,6 +890,7 @@ js for Summary, Reconciliation
           html0='';html1='';html2='';html3='';
           <!--console.log(updates[u])-->
           html0+=updates[u]['pass0']
+          if(html0 == '0'){$("#pass0").addClass('hidden')}
           html1+=updates[u]['pass1']
           html2+=updates[u]['pass2']
           html3+=updates[u]['pass3']

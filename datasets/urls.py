@@ -46,6 +46,9 @@ urlpatterns = [
     # review, validate hits
     path('<int:pk>/review/<str:tid>/<str:passnum>', views.review, name="review"),
 
+    # accept any unreviewed wikidata pass0 hits from given task
+    path('wd_pass0/<str:tid>', views.write_wd_pass0, name="wd_pass0"),
+
     # list places in a dataset; for physical geog layers
     path('<str:label>/places/', views.ds_list, name='ds_list'),
 
