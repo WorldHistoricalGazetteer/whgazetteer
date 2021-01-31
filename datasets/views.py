@@ -162,8 +162,8 @@ def isOwner(user):
 def review(request, pk, tid, passnum):
   ds = get_object_or_404(Dataset, id=pk)
   task = get_object_or_404(TaskResult, task_id=tid)
-  auth = task.task_name[6:]
-  authname = 'Wikidata' if auth in ['wd','wdlocal'] else 'Getty TGN'
+  auth = task.task_name[6:].replace('local','')
+  authname = 'Wikidata' if auth == 'wd' else 'Getty TGN'
   kwargs=json.loads(task.task_kwargs.replace("'",'"'))
   #print('request.POST',request.POST)
   
@@ -334,7 +334,82 @@ def review(request, pk, tid, passnum):
 
   return render(request, 'datasets/review.html', context=context)
 
-
+"""
+write_wd_pass0(taskid)
+ 
+"""
+from django.shortcuts import get_object_or_404
+from datasets.models import Dataset, Hit
+from places.models import Place, PlaceGeom, PlaceLink
+from django_celery_results.models import TaskResult
+import simplejson as json
+taskid = '24c0db66-62b0-48c7-b2a2-510abe0ab11d' # wdlocal, ds=904, russian_towns_10_lpf
+def write_wd_pass0(taskid):
+  task = get_object_or_404(TaskResult,task_id=taskid)
+  kwargs=json.loads(task.task_kwargs.replace("'",'"'))
+  auth = task.task_name[6:].replace('local','')
+  ds = get_object_or_404(Dataset, pk=kwargs['ds'])
+  authname = 'Wikidata'
+  # get pass0 hits
+  hits = Hit.objects.filter(task_id=taskid,query_pass='pass0')
+  for h in hits:
+    hasGeom = 'geoms' in h.json and len(h.json['geoms']) > 0
+    hasLink = 'links' in h.json and len(h.json['links']) > 0
+    place = h.place_id # object
+    # GEOMS
+    # confirm another user hasn't just done this...
+    if hasGeom and kwargs['aug_geom'] == 'on' \
+       and task.task_id not in place.geoms.all().values_list('task_id',flat=True):
+      for g in h.json['geoms']:
+        #place.geoms.all().values_list('task_id',flat=True)
+        geom = PlaceGeom.objects.create(
+          place = place,
+          task_id = task.task_id,
+          src_id = place.src_id,
+          jsonb = {
+            "type":g['type'],
+            "citation":{"id":auth+':'+h.authrecord_id,"label":authname},
+            "coordinates":g['coordinates']
+          }
+        )
+      print('created place_geom instance:', geom)
+    # LINKS
+    link_counter = 0
+    # confirm another user hasn't just done this...
+    if task.task_id not in place.links.all().values_list('task_id',flat=True):
+      # create single wikidata link
+      link_counter += 1
+      link = PlaceLink.objects.create(
+        place = place,
+        task_id = task.task_id,
+        src_id = place.src_id,
+        jsonb = {
+          "type": "closeMatch",
+          "identifier":link_uri(task.task_name, h.authrecord_id)
+        }
+      )
+    print('created wd place_link instance:', link)
+    
+    # create link for each wikidata concordance, if any
+    if hasLink:
+      for l in h.json['links']:
+        link_counter += 1
+        authid = re.search("\: (.*?)$", l).group(1)
+        link = PlaceLink.objects.create(
+          place = place,
+          task_id = task.task_id,
+          src_id = place.src_id,
+          jsonb = {
+            "type": "closeMatch",
+            "identifier": authid
+          }
+        )
+      print('created '+str(len(h.json['links']))+' place_link instances')
+    ds.numlinked = ds.numlinked +1 if ds.numlinked else 1
+    ds.total_links += link_counter
+    ds.save()
+    
+  
 """
 # initiate, monitor Celery tasks
 # from dataset.html form addtask tab
