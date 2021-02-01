@@ -449,6 +449,7 @@ def ds_recon(request, pk):
     print('recon request.POST:',request.POST)
     # TODO: has this dataset/authority combo been done before?
     auth = request.POST['recon']
+    language = request.LANGUAGE_CODE
     # what task?
     func = eval('align_'+auth)
     # TODO: let this vary per authority?
@@ -476,7 +477,8 @@ def ds_recon(request, pk):
         owner=ds.owner.id,
         bounds=bounds,
         aug_geom=aug_geom,
-        scope=scope
+        scope=scope,
+        lang=language
       )
       messages.add_message(request, messages.INFO, "Your reconciliation task is under way. When complete, you will receive an email and if successful, results will appear below (You may have to refresh screen). In the meantime, you can navigate elsewhere.")
       #task_emailer(ds.owner, ds.tasks.all().order_by('-id')[0], ds.label) 

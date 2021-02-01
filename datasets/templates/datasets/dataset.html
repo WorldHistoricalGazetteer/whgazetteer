@@ -441,6 +441,7 @@
       <div class="row"> <!-- page-wide -->
         <div id="recon_form" class="col-md-6">
           <input type="hidden" name="ds" value="{{ ds.id }}">
+          <input type="hidden" name="wd_lang" value="">
           {% if user.is_superuser %}
           <div class="form-check text-danger">
             <label class="form-check-label" for="r_whg">
@@ -959,12 +960,16 @@ js for Browse
   function setRowEvents(){
     $("#placetable tr").click(function() {
         t=$(this)
+        // get id
         pid=$(this)[0].cells[0].textContent
+        // highlight this row, clear others
         var selected = $(this).hasClass("highlight-row");
         $("#placetable tr").removeClass("highlight-row");
+        
         if(!selected)
           $(this).removeClass( "rowhover" );
           $(this).addClass("highlight-row");
+          
         if(typeof(idToFeature) != 'undefined'){
           if(pid in idToFeature){
             feat = idToFeature[pid]
@@ -979,7 +984,9 @@ js for Browse
             feat.bringToFront()
             // account for lines and polygons
             // mappy.setView(feat._latlng);
-            mappy.setView(ftype=='Point'?feat._latlng:feat.getCenter());
+            mappy.setView(
+              ftype=='Point'?feat._latlng:feat.getBounds().getCenter()
+            )
           } else {
             features.setStyle(foptions)
           }
@@ -1084,6 +1091,9 @@ js for Browse
   
   styles = {
     "Point": {
+      "default": {radius: 1, fillColor:"#ff9900", fillOpacity: 0.8, stroke: false},
+      "focus": {radius:8, fillColor:"#ffff00",fillOpacity:1, stroke:true, weight:1,color:"#000"}},
+    "MultiPoint": {
       "default": {radius: 1, fillColor:"#ff9900", fillOpacity: 0.8, stroke: false},
       "focus": {radius:8, fillColor:"#ffff00",fillOpacity:1, stroke:true, weight:1,color:"#000"}},
     "MultiLineString": {

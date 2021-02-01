@@ -118,8 +118,9 @@ def ccDecode(codes):
   return countries
   
 # normalize hit json from any authority
-# 
-def normalize(h,auth):
+# only wdlocal provides language
+def normalize(h, auth, language=None):
+  print('language in normlize()',language)
   print(auth + ' hit _source in normalize()', h)  
   if auth.startswith('whg'):
     rec = HitRecord(h['place_id'], h['dataset'], h['src_id'], h['title'])
@@ -185,7 +186,7 @@ def normalize(h,auth):
       # TODO: do it in index?
       variants=h['variants']
       title = next(
-        (v['name'] for v in variants if v['lang'] == 'en'), 
+        (v['name'] for v in variants if v['lang'] == language), 
         '; '.join([v['name'] for v in variants[:2]]) + ('; ...' if len(variants)>2 else '')
       )
 
@@ -212,12 +213,12 @@ def normalize(h,auth):
       if len(hlinks) > 0:
         for l in hlinks:
           links.append('closeMatch: '+qlinks[l]+':'+str(h['claims'][l][0]))
-      # en wikipedia
+
+      # add en wikipedia
       if 'enwiki' in h['sitelinks']:
-        links.append('closeMatch: wp:'+h['sitelinks']['enwiki'])
+        links.append('primaryTopicOf: wp:'+h['sitelinks']['enwiki'])
       rec.links = links
 
-      
       # look up Q class labels
       htypes = set(h['claims']['P31'])
       qtypekeys = set([t[0] for t in qtypes.items()])
@@ -994,6 +995,7 @@ def align_wdlocal(pk, *args, **kwargs):
   ds = get_object_or_404(Dataset, id=pk)
   bounds = kwargs['bounds']
   scope = kwargs['scope']
+  language = kwargs['lang']
   print('args, kwargs from align_wdlocal() task',args,kwargs)
   start = datetime.datetime.now()
   hit_parade = {"summary": {}, "hits": []}
@@ -1080,7 +1082,7 @@ def align_wdlocal(pk, *args, **kwargs):
           task_id = align_wdlocal.request.id,
           query_pass = hit['pass'],
           # prepare for consistent display in review screen
-          json = normalize(hit['_source'],'wdlocal'),
+          json = normalize(hit['_source'],'wdlocal',language),
           src_id = qobj['src_id'],
           score = hit['_score'],
           #geom = loc,

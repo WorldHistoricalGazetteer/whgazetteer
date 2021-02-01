@@ -1,13 +1,13 @@
 {
   "definitions": {},
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "http://example.com/root.json",
+  "$id": "schema_lpf_v1.1.json",
   "type": "object",
   "title": "The Linked Place Schema",
   "additionalProperties": false,
   "required": [
-    "type",
     "@id",
+    "type",
     "properties",
     "names"
   ],
@@ -52,7 +52,7 @@
             "title": "Properties->Ccodes->Items",
             "default": "",
             "examples": ["CR"],
-            "pattern": "^(.*)$"
+            "pattern": "^([a-z,A-Z]{2})$"
           }
         }
       }

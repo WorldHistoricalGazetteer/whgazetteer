@@ -32,7 +32,6 @@ INSTALLED_APPS = [
     'django.contrib.gis',
 
     'bootstrap_modal_forms',
-    #'django_celery_beat',
     'django_celery_results',
     'django_extensions',
     'django_filters',
@@ -54,15 +53,15 @@ INSTALLED_APPS = [
     'search.apps.SearchConfig',
     'traces.apps.TracesConfig'
 ]
-
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.middleware.locale.LocaleMiddleware',  
+    'django.middleware.security.SecurityMiddleware',
 ]
 
 ROOT_URLCONF = 'whg.urls'
