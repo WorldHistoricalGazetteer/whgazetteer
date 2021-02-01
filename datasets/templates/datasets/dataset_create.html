@@ -103,12 +103,13 @@
   <div class="mt-2 col-sm-7" id="create_review">
       {% if context.action == 'errors' %}
         <h5>{% fontawesome_icon 'exclamation-circle' color="#993333" %} This file has one or more problems:</h5>
+        <!--Context: {{ context }}-->
         <ul>
         {% for e in context.errors %}
           <li>{% if context.format == 'delimited' %}
                 {{ e }}
               {% else %}
-                <b>row #{{ e.feat }}</b>: {{ e.error }}
+                <b>row #{{ e.row }}</b>: {{ e.msg }}; <b>path</b>: {{ e.path }}
               {% endif %}</li>
         {% endfor %}
         </ul>

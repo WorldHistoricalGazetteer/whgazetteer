@@ -1279,7 +1279,7 @@ def ds_insert_tsv(request, pk):
     # TODO: what if simultaneous inserts?
     countrows=0
     countlinked = 0
-    countlinks = 0
+    total_links = 0
     for r in reader:
       # build attributes for new Place instance
       src_id = r[header.index('id')]
@@ -1422,7 +1422,7 @@ def ds_insert_tsv(request, pk):
       if len(matches) > 0:
         countlinked += 1
         for m in matches:
-          countlinks += 1
+          total_links += 1
           objs['PlaceLink'].append(
             PlaceLink(
               place=newpl,
@@ -1477,27 +1477,30 @@ def ds_insert_tsv(request, pk):
     infile.close()
   
     # backfill some dataset counts
-    print('ds record pre-update:', ds.__dict__)
-    print('rows,linked,links:', countrows, countlinked, countlinks)
+    #print('ds record pre-update:', ds.__dict__)
+    print('rows,linked,links:', countrows, countlinked, total_links)
   
     # write some summary attributes
-    ds.numrows = countrows
-    ds.numlinked = countlinked
-    ds.total_links = countlinks
-    ds.save()
+    #ds.numrows = countrows
+    #ds.numlinked = countlinked
+    #ds.total_links = countlinks
+    #ds.save()
 
-    dsf.df_status = 'uploaded'
-    dsf.numrows = countrows
-    dsf.save()
+    #dsf.df_status = 'uploaded'
+    #dsf.numrows = countrows
+    #dsf.save()
     
-    print('ds record post-update:', ds.__dict__)
+    #print('ds record post-update:', ds.__dict__)
   
   else:
     print('insert_tsv skipped, already in')
     # message to user
     messages.add_message(request, messages.INFO, 'data is uploaded, but problem displaying dataset page')
     return redirect('/dashboard')    
-
+  
+  return({"numrows":countrows,
+          "numlinked":countlinked,
+          "total_links":total_links})  
 
 # ***
 # list user datasets, areas
@@ -1596,7 +1599,7 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
       elif mimetype.startswith('application/'):
         encoding = fin.encoding
     else:
-      context['errors'] = "Not a valid file type; must be one of [.csv, .tsv, .xlsx, .ods]"
+      context['errors'] = "Not a valid file type; must be one of [.csv, .tsv, .xlsx, .ods, .json]"
       return self.render_to_response(self.get_context_data(form=form, context=context))
 
     # it's csv, tsv, spreadsheet, or json...
@@ -1732,15 +1735,19 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
       return redirect('/datasets/'+str(dsobj.id)+'/detail')
 
     else:
-      print('validation failed:', result['errors'])
       context['action'] = 'errors'
       context['format'] = result['format']
-      context['errors'] = parse_errors_tsv(result['errors'])
-      context['columns'] = result['columns']
+      context['errors'] = parse_errors_lpf(result['errors']) \
+        if ext == 'json' else parse_errors_tsv(result['errors'])
+      context['columns'] = result['columns'] \
+        if ext != 'json' else []
 
       #os.remove(tempfn)
 
-      return self.render_to_response(self.get_context_data(form=form,context=context))
+      return self.render_to_response(
+        self.get_context_data(
+          form=form, context=context
+      ))
 
   def get_context_data(self, *args, **kwargs):
     context = super(DatasetCreateView, self).get_context_data(*args, **kwargs)
@@ -1815,7 +1822,7 @@ class DatasetDetailView(LoginRequiredMixin, UpdateView):
         result = ds_insert_tsv(self.request, id_)
       else:
         result = ds_insert_lpf(self.request,id_)
-      print('ds_insert_xxx() results')
+      print('ds_insert_xxx() result',result)
       ds.numrows = result['numrows']
       ds.numlinked = result['numlinked']
       ds.total_links = result['total_links']

@@ -301,7 +301,7 @@ def get_encoding_delim(fn):
 
 
 # ***
-# format tsv validation errors for display
+# format validation errors for display
 # ***
 def parse_errors_tsv(errors):
   new_errors = []
@@ -312,12 +312,17 @@ def parse_errors_tsv(errors):
     newe = re.sub('value', 'cell', newe)
     new_errors.append(newe)
   return new_errors
+# tsv error: ['The cell "" in row at position "2" and field "id" at position "1" does not conform to a constraint: constraint "required" is "True"', 'The row at position "2" does not conform to the primary key constraint: cells composing the primary keys are all "None"']
+
+# lpf error: [{'feat': 2, 'error': "'null' is not of type 'object'"}, {'feat': 3, 'error': "'null' is not of type 'object'"}]
 
 # *** NOT YET CALLED
 # format lpf validation errors for modal display
 # *** 
-def parse_errors_lpf(err):
-  print('parse_errors_lpf()',err)
+#def parse_errors_lpf(errors):
+  #new_errors = []
+  #for e in error
+  #print('parse_errors_lpf()',errors)
 
 # ***
 # parse start & end for insert to db
@@ -326,6 +331,14 @@ def parse_errors_lpf(err):
 # ***
 #def intmap(arr):
   #return [int(a) for a in arr]
+
+def parse_errors_lpf(errors):
+  print('relative_path 0',errors[0]['error'].relative_path)
+  "deque(['geometry', 'geometries', 0])"
+  msg = [{"row":e['feat'], "msg":e['error'].message, "path":
+         re.search('deque\(\[(.*)\]\)', 
+          str(e['error'].relative_path)).group(1) } for e in errors]
+  return msg
 
 #
 # called by ds_insert_tsv()
@@ -425,8 +438,9 @@ def validate_lpf(tempfn,format):
         count_ok +=1
       except:
         err = sys.exc_info()
-        print('some kinda error',err)
-        result["errors"].append({"feat":countrows,'error':err[1].args[0]})
+        print('res: some kinda error',err[1].args)
+        #result["errors"].append({"feat":countrows,'error':err[1].args[0]})
+        result["errors"].append({"feat":countrows,'error':err[1]})
     result['count'] = countrows
   return result
 
