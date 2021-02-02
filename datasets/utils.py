@@ -543,25 +543,34 @@ def aliasIt(url):
   else:
     return url
 
+#*# test loads
+#from django.shortcuts import get_object_or_404
+#from places.models import Place
+#place=get_object_or_404(Place,pk=6591626)
+#g_list =[g.jsonb for g in place.geoms.all()]
+#*#
 def hully(g_list):
-  from django.contrib.gis.geos import GEOSGeometry
-  from django.contrib.gis.geos import MultiPoint
-  from django.contrib.gis.geos import GeometryCollection
+  from django.contrib.gis.geos import GeometryCollection, GEOSGeometry, MultiPoint
 
   # maybe mixed bag
-  types = list(set([g['type'] for g in g_list]))
-  # should work for any combination
+  #types = list(set([g['type'] for g in g_list]))
+
+  # make a hull from any geometry
+  # 1 point -> Point; 2 points -> LineString; >2 -> Polygon
   try:
     hull=GeometryCollection([GEOSGeometry(json.dumps(g)) for g in g_list]).convex_hull
   except:
-    print('hully() failed on g_list',g_list)
-  # buffer points, but only a little if near meridian
-  if len(types) ==1 and types[0] == 'Point':
-    l = list(set([g_list[0]['coordinates'][0] for c in g_list[0]]))
-    if len([i for i in l if i >= 175]) == 0:
-      hull = hull.buffer(1)
+    print('hully() failed on g_list', g_list)
+    
+  if hull.geom_type in ['Point', 'LineString', 'Polygon']:
+    # buffer hull, but only a little if near meridian
+    coll = GeometryCollection([GEOSGeometry(json.dumps(g)) for g in g_list]).simplify()
+    longs = list(c[0] for c in coll.coords)
+    if len([i for i in longs if i >= 175]) == 0:
+      hull = hull.buffer(1.4) # ~100km radius
     else:
       hull = hull.buffer(0.1)
+  #print(hull.geojson)    
   return json.loads(hull.geojson) if hull.geojson !=None else []
 
 def parse_wkt(g):

@@ -117,11 +117,21 @@ def ccDecode(codes):
     countries.append(ccodes[0][c]['gnlabel'])
   return countries
   
+# generate a language-dependent {name} ({en}) from wikidata variants
+def wdTitle(variants, language):
+  vpref=next( (v['name'] for v in variants if v['lang'] == language), None)
+  vstd=next( (v['name'] for v in variants if v['lang'] == 'en'), None)
+  #print(vpref, vstd)
+  
+  title = vpref + (' (' + vstd + ')' if vstd else '') \
+    if vpref and language != 'en' else vstd
+  return title
+
 # normalize hit json from any authority
 # only wdlocal provides language
 def normalize(h, auth, language=None):
   print('language in normlize()',language)
-  print(auth + ' hit _source in normalize()', h)  
+  #print(auth + ' hit _source in normalize()', h)  
   if auth.startswith('whg'):
     rec = HitRecord(h['place_id'], h['dataset'], h['src_id'], h['title'])
     print('"rec" HitRecord',rec)
@@ -182,17 +192,13 @@ def normalize(h, auth, language=None):
   elif auth == 'wdlocal':
     # key: ['id', 'type', 'modified', 'descriptions', 'claims', 'sitelinks', 'variants', 'minmax', 'types', 'location'] 
     try:
-      # generate a title
       # TODO: do it in index?
       variants=h['variants']
-      title = next(
-        (v['name'] for v in variants if v['lang'] == language), 
-        '; '.join([v['name'] for v in variants[:2]]) + ('; ...' if len(variants)>2 else '')
-      )
+      title = wdTitle(variants, language)
 
       #  place_id, dataset, src_id, title
       rec = HitRecord(-1, 'wd', h['id'], title)
-      print('"rec" HitRecord',rec)
+      #print('"rec" HitRecord',rec)
       
       # list of variant@lang
       rec.variants = [v['name']+'@'+v['lang'] for v in variants if v['name'] != title]
@@ -214,10 +220,16 @@ def normalize(h, auth, language=None):
         for l in hlinks:
           links.append('closeMatch: '+qlinks[l]+':'+str(h['claims'][l][0]))
 
-      # add en wikipedia
-      if 'enwiki' in h['sitelinks']:
-        links.append('primaryTopicOf: wp:'+h['sitelinks']['enwiki'])
+      # add en and FIRST {language} wikipedia
+      wplinks = []
+      wplinks.append([l['title'] for l in h['sitelinks'] if l['lang'] == 'en'][0])
+      if language != 'en':
+        wplinks.append([l['title'] for l in h['sitelinks'] if l['lang'] == language][0])
+      
+      links += ['primaryTopicOf: wp:'+l for l in wplinks]
+
       rec.links = links
+      print('rec.links',rec.links)
 
       # look up Q class labels
       htypes = set(h['claims']['P31'])
@@ -257,6 +269,7 @@ def normalize(h, auth, language=None):
     rec.minmax = []
     rec.links = []
     print(rec)
+  print('rec from normalize()',rec.toJSON())
   return rec.toJSON()
 
 # ***
@@ -860,9 +873,13 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
   qtypes = [t[3:] for t in getQ(qobj['placetypes'],'types')]
   # if no ccodes, returns []
   countries = [t[3:] for t in getQ(qobj['countries'],'ccodes')]
-
-  # bestParent() coalesces mod. country and region; countries.json
-  #parent = bestParent(qobj)
+  
+  # alternatively, distance
+  #qobj_coords = qobj['geom']['coordinates']
+  #distance_filter = {"geo_distance" : {
+      #"distance" : "100km",
+      #"repr_point" : {"lon" : qobj_coords[0],"lat" : [1]}
+      #}}
 
   has_bounds = bounds['id'] != ['0']
   has_geom = 'geom' in qobj.keys()
@@ -870,23 +887,19 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
   if has_bounds:
     area_filter = get_bounds_filter(bounds,'wd')
   if has_geom:
-    geom_filter = { "geo_shape": {
+    # qobj['geom'] always a polygon hull
+    shape_filter = { "geo_shape": {
       "location": {
         "shape": {
           "type": qobj['geom']['type'],
           "coordinates" : qobj['geom']['coordinates']},
-        "relation": "within" }
+        "relation": "intersects" }
     }}
-    # alternatively, distance
-    #point = qobj['geom']['coordinates']
-    #geom_filter = {"geo_distance" : {
-        #"distance" : "1000km",
-        #"repr_point" : {"lon" : ,"lat" : }
-        #}}
   if has_countries:
     countries_filter = {"terms": {"claims.P17":countries}}
   
-  # prelim query: got authid mathes?
+  # prelim query: any authid matches?
+  # can be accepted without review
   q0 = {"query": { "bool": {
       "must": {"terms": {"authids":qobj['authids']}}
   }}}
@@ -906,19 +919,22 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
     }
   }}
   
-  # add spatial filter if available
-  if has_bounds:
-    qbase['query']['bool']['filter'].append(area_filter)
-  elif has_geom:
-    qbase['query']['bool']['filter'].append(geom_filter)
+  # add spatial filter as available in qobj
+  if has_geom:
+    # shape_filter is polygon hull ~100km diameter
+    qbase['query']['bool']['filter'].append(shape_filter)
   elif has_countries:
+    # matches ccodes
     qbase['query']['bool']['must'].append(countries_filter)
+  elif has_bounds:
+    # area_filter (predefined region or study area)
+    qbase['query']['bool']['filter'].append(area_filter)
   
-  # grab deep copy of qbase, add types
+  # q1 = qbase + types
   q1 = deepcopy(qbase)
   q1['query']['bool']['must'].append({"terms": {"types.id":qtypes}})
 
-  # leave geom, no types, add fclasses
+  # add fclasses, drop types; geom if any remains
   q2 = deepcopy(qbase)
   q2['query']['bool']['must'].append(
     {"terms": {"fclasses":qobj['fclasses']}})
@@ -996,7 +1012,8 @@ def align_wdlocal(pk, *args, **kwargs):
   bounds = kwargs['bounds']
   scope = kwargs['scope']
   language = kwargs['lang']
-  print('args, kwargs from align_wdlocal() task',args,kwargs)
+  #language = 'zh'
+  print('kwargs from align_wdlocal() task', kwargs)
   start = datetime.datetime.now()
   hit_parade = {"summary": {}, "hits": []}
   [nohits,wdlocal_es_errors,features] = [[],[],[]]
@@ -1041,9 +1058,11 @@ def align_wdlocal(pk, *args, **kwargs):
     # geoms
     if len(place.geoms.all()) > 0:
       g_list =[g.jsonb for g in place.geoms.all()]
-      # make everything a simple polygon hull for spatial filter
+      # make simple polygon hull for ES shape filter
       qobj['geom'] = hully(g_list)
-
+      # make a representative_point for ES distance
+      #qobj['repr_point'] = pointy(g_list)
+      
     # TODO: aggregate links in index
     # 'P1566':'gn', 'P1584':'pleiades', 'P244':'loc', 'P214':'viaf', 'P268':'bnf', 'P1667':'tgn', 'P2503':'gov', 'P1871':'cerl', 'P227':'gnd'
     # links
@@ -1065,7 +1084,7 @@ def align_wdlocal(pk, *args, **kwargs):
       count_hit +=1
       total_hits += len(result_obj['hits'])
       #print("hit[0]: ",result_obj['hits'][0]['_source'])  
-      print('hits from align_wd_local',result_obj['hits'])
+      #print('hits from align_wd_local',result_obj['hits'])
       for hit in result_obj['hits']:
         if hit['pass'] == 'pass0': 
           count_p0+=1 

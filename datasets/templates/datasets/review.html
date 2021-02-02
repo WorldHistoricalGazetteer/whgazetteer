@@ -21,11 +21,12 @@
       {{ ds_label }}</a> {%if authority != 'whg' %}> {{ authority }}{%endif%}
       <select id="select_pass" name="pass" class="custom-select-sm mr-2" style="width:auto;">
         <option value="pass0">PASS 0 (auto-matched)&nbsp;</option>
-        <option value="pass1">PASS 1&nbsp;</option>
-        <option value="pass2">PASS 2&nbsp;</option>
-        {% if authority != 'wd' %}
-        <option value="pass3">PASS 3&nbsp;</option>
-        {% endif %}
+        {% if count_pass1 > 0 %}
+          <option value="pass1">PASS 1&nbsp;</option>{% endif %}
+        {% if count_pass2 > 0 %}
+          <option value="pass2">PASS 2&nbsp;</option>{% endif %}
+        {% if authority == 'tgn' and count_pass3 > 0 %}
+          <option value="pass3">PASS 3&nbsp;</option>{% endif %}
       </select>
     </span>
     <span class="half float-right">

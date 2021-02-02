@@ -170,6 +170,15 @@ def review(request, pk, tid, passnum):
   # filter place records by passnum for those with unreviewed hits on this task
   # if request passnum is complete, increment
   cnt_pass = Hit.objects.values('place_id').filter(task_id=tid, reviewed=False, query_pass=passnum).count()
+
+  # TODO: refactor this awful mess; controls whether PASS appears in review dropdown
+  cnt_pass1 = Hit.objects.values('place_id').filter(
+    task_id=tid, reviewed=False, query_pass='pass1').count()
+  cnt_pass2 = Hit.objects.values('place_id').filter(
+    task_id=tid, reviewed=False, query_pass='pass2').count()
+  cnt_pass3 = Hit.objects.values('place_id').filter(
+    task_id=tid, reviewed=False, query_pass='pass3').count()
+  
   pass_int = int(passnum[4])
   passnum = passnum if cnt_pass > 0 else 'pass'+str(pass_int+1)
   
@@ -183,7 +192,12 @@ def review(request, pk, tid, passnum):
   if len(hitplaces) > 0:
     record_list = Place.objects.order_by('id').filter(pk__in=hitplaces)
   else:
-    context = {"nohits":True,'ds_id':pk,'task_id': tid, 'passnum': passnum}
+    context = {
+      "nohits":True,
+      'ds_id':pk,
+      'task_id': tid, 
+      'passnum': passnum,
+    }
     return render(request, 'datasets/review.html', context=context)
 
   # TODO: if 2 reviewers, save by one flags 
@@ -219,7 +233,11 @@ def review(request, pk, tid, passnum):
       'records': records, 'countries': countries, 'passnum': passnum,
       'page': page if request.method == 'GET' else str(int(page)-1),
       'aug_geom': json.loads(task.task_kwargs.replace("'",'"'))['aug_geom'],
-      'mbtokenmb': settings.MAPBOX_TOKEN_MB
+      'mbtokenmb': settings.MAPBOX_TOKEN_MB,
+      'count_pass1': cnt_pass1,
+      'count_pass2': cnt_pass2,
+      'count_pass3': cnt_pass3
+      
   }
 
   
@@ -480,7 +498,7 @@ def ds_recon(request, pk):
         scope=scope,
         lang=language
       )
-      messages.add_message(request, messages.INFO, "Your reconciliation task is under way. When complete, you will receive an email and if successful, results will appear below (You may have to refresh screen). In the meantime, you can navigate elsewhere.")
+      messages.add_message(request, messages.INFO, "Your reconciliation task is under way. <br/>When complete, you will receive an email and if successful, results will appear below (You may have to refresh screen). In the meantime, you can navigate elsewhere.")
       #task_emailer(ds.owner, ds.tasks.all().order_by('-id')[0], ds.label) 
       return redirect('/datasets/'+str(ds.id)+'/detail#reconciliation')
     except:
