@@ -442,28 +442,29 @@
         <div id="recon_form" class="col-md-6">
           <input type="hidden" name="ds" value="{{ ds.id }}">
           <input type="hidden" name="wd_lang" value="">
-          {% if user.is_superuser %}
-          <div class="form-check text-danger">
-            <label class="form-check-label" for="r_whg">
-              <input type="radio" class="form-check-input" id="r_whg"
-                name="recon" value="whg">WHG (accessioning) 
-            </label>
-          </div>
-          <div class="form-check text-danger">
-            <label class="form-check-label" for="r_whgpre">
-              <input type="radio" class="form-check-input" id="r_whgpre"
-                name="recon" value="whg_pre">WHG (align) 
-            </label>
-          </div>
-          <div class="form-check">
-            <label class="form-check-label" for="r_wdlocal">
-              <input type="radio" class="form-check-input r_wd" id="r_wdlocal" name="recon" value="wdlocal">Wikidata (wdlocal)
-            </label>
-          </div>
-          <div id="wd_lang" class="hidden">
-            Preferred label language: <input class="input-sm col-xs-2"type="text" name="lang">
-          </div>
-          <hr/>
+          <!--{ if user.is_superuser %}-->
+          {% if beta_or_better %}
+            <div class="form-check text-danger">
+              <label class="form-check-label" for="r_whg">
+                <input type="radio" class="form-check-input" id="r_whg"
+                  name="recon" value="whg">WHG (accessioning) 
+              </label>
+            </div>
+            <div class="form-check text-danger">
+              <label class="form-check-label" for="r_whgpre">
+                <input type="radio" class="form-check-input" id="r_whgpre"
+                  name="recon" value="whg_pre">WHG (align) 
+              </label>
+            </div>
+            <div class="form-check">
+              <label class="form-check-label" for="r_wdlocal">
+                <input type="radio" class="form-check-input r_wd" id="r_wdlocal" name="recon" value="wdlocal">Wikidata (wdlocal)
+              </label>
+            </div>
+            <div id="wd_lang" class="hidden">
+              Preferred label language: <input class="input-sm col-xs-2"type="text" name="lang">
+            </div>
+            <hr/>
           {% endif %}
           <p class="font-weight-bold mb-0">Authority name source</p>
           <p class="small ml-2">Your task will enter a queue and an email will be sent when it is completed.</p>

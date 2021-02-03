@@ -1862,7 +1862,7 @@ class DatasetDetailView(LoginRequiredMixin, UpdateView):
     #predefined = Area.objects.all().filter(type='predefined').order_by('-created')
     predefined = Area.objects.all().filter(type='predefined').values('id','title')
     context['region_list'] = predefined
-      
+    
     context['updates'] = {}
     bounds = self.kwargs.get("bounds")
     # print('ds',ds.label)
@@ -1906,6 +1906,7 @@ class DatasetDetailView(LoginRequiredMixin, UpdateView):
     context['descriptions_added'] = PlaceDescription.objects.filter(
       place_id__in = placeset, task_id__contains = '-').count()
 
+    context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admin']).exists() else False
     #print('context from DatasetDetailView',context)
 
     return context

@@ -2,6 +2,7 @@
 from __future__ import absolute_import, unicode_literals
 from celery.decorators import task
 from django.conf import settings
+from django.contrib.auth.decorators import permission_required, user_passes_test
 from django.core.mail import EmailMultiAlternatives
 from django.forms.models import model_to_dict
 from django.shortcuts import get_object_or_404
@@ -220,7 +221,7 @@ def normalize(h, auth, language=None):
         for l in hlinks:
           links.append('closeMatch: '+qlinks[l]+':'+str(h['claims'][l][0]))
 
-      # add en and FIRST {language} wikipedia
+      # add en and FIRST {language} wikipedia sitelink
       wplinks = []
       wplinks.append([l['title'] for l in h['sitelinks'] if l['lang'] == 'en'][0])
       if language != 'en':
@@ -1006,7 +1007,11 @@ bounds = {'type': ['userarea'], 'id': ['369']}
 #from elasticsearch import Elasticsearch
 #es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 #
+def is_beta_or_better(user):
+  return user.groups.filter(name__in=['beta', 'admin']).exists()
+
 @task(name="align_wdlocal")
+@user_passes_test(is_beta_or_better)
 def align_wdlocal(pk, *args, **kwargs):
   ds = get_object_or_404(Dataset, id=pk)
   bounds = kwargs['bounds']
