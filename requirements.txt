@@ -37,6 +37,7 @@ django-extensions==2.1.5
 django-filter==2.0.0
 django-fontawesome==1.0
 django-geojson==2.11.0
+django-guardian==2.3.0
 django-leaflet==0.24.0
 django-mathfilters==0.4.0
 django-shapeshifter==18.9.23
@@ -100,7 +101,7 @@ odfpy==1.4.1
 openpyxl==3.0.2
 pandas==1.1.5
 parso==0.3.1
-petl==1.6.8
+petl @ file:///Users/karlg/Downloads/petl-1.6.8.tar.gz
 pexpect==4.6.0
 pickleshare==0.7.5
 Pillow==7.1.0

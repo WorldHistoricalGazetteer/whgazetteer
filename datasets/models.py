@@ -11,7 +11,6 @@ from django.shortcuts import get_object_or_404
 from es.es_utils import escount_ds
 from main.choices import AUTHORITIES, FORMATS, DATATYPES, STATUS, TEAMROLES, PASSES
 from places.models import Place, PlaceGeom
-#from .models import Hit
 
 def user_directory_path(instance, filename):
     # upload to MEDIA_ROOT/user_<username>/<filename>
@@ -68,19 +67,28 @@ class Dataset(models.Model):
         result = {"submissions":submissions,"idxcount":idxcount}
         return result
         
-    # from datasets.models import Dataset
-    # ds = get_object_or_404(Dataset,pk=1)
+    # test    
+    #from datasets.models import Dataset, DatasetUser
+    #from django.contrib.auth.models import User
+    #from django.shortcuts import get_object_or_404
+    #ds = get_object_or_404(Dataset,pk=897)
+    #user = get_object_or_404(User, pk=14)
+    
     @property
-    def collab(self):
-        uids=DatasetUser.objects.filter(dataset_id_id = self.id).values_list('user_id_id')
-        dus=DatasetUser.objects.filter(dataset_id_id = self.id)
-        collabs=[]
-        for du in dus:
-            u = get_object_or_404(User, id=du.user_id_id)
-            r = du.role
-            #collabs.append({'id':du.user_id_id,'user':u.username,'role':r})
-            collabs.append(u)
-        return collabs
+    def collaborators(self):
+        ## includes roles: member, owner
+        team = DatasetUser.objects.filter(dataset_id_id = self.id).values_list('user_id_id')
+        teamusers = User.objects.filter(id__in=team)
+        return teamusers
+    
+    @property
+    def owners(self):
+        # only owners
+        #du_owner_ids = list(self.collabs.filter(role = 'owner').values_list('user_id_id',flat=True)).append(self.owner.id)
+        du_owner_ids = list(self.collabs.filter(role = 'owner').values_list('user_id_id',flat=True))
+        du_owner_ids.append(self.owner.id)
+        ds_owners = User.objects.filter(id__in=du_owner_ids)
+        return ds_owners
     
     # count of unreviewed hits
     @property
@@ -136,9 +144,9 @@ class DatasetFile(models.Model):
         db_table = 'dataset_file'
         
 class DatasetUser(models.Model):
-    dataset_id = models.ForeignKey(Dataset, related_name='datasets',
+    dataset_id = models.ForeignKey(Dataset, related_name='collabs',
         default=-1, on_delete=models.CASCADE)
-    user_id = models.ForeignKey(User, related_name='users',
+    user_id = models.ForeignKey(User, related_name='ds_collab',
         default=-1, on_delete=models.CASCADE)
     role = models.CharField(max_length=20, null=False, choices=TEAMROLES)
 
@@ -150,11 +158,10 @@ class DatasetUser(models.Model):
         db_table = 'dataset_user'
 
 
-# TODO: multiple files per dataset w/File model and formset
-# TODO: linking delimited dataset with sources dataset
+# 
 class Hit(models.Model):
+    # FK to celery_results_task_result.task_id
     place_id = models.ForeignKey(Place, on_delete=models.CASCADE)
-    # FK to celery_results_task_result.task_id; TODO: written yet?
     # task_id = models.ForeignKey(TaskResult, related_name='task_id', on_delete=models.CASCADE)
     task_id = models.CharField(max_length=50)
     authority = models.CharField(max_length=12, choices=AUTHORITIES )
@@ -187,6 +194,3 @@ def remove_files(**kwargs):
     ds_instance = kwargs.get('instance')
     files = DatasetFile.objects.filter(dataset_id_id=ds_instance.id)
     files.delete()
-
-# raw hits from reconciliation
-# [{'place_id', 'task_id', 'authority', 'dataset', 'authrecord_id', 'id'}]

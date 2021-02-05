@@ -1007,11 +1007,11 @@ bounds = {'type': ['userarea'], 'id': ['369']}
 #from elasticsearch import Elasticsearch
 #es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 #
-def is_beta_or_better(user):
-  return user.groups.filter(name__in=['beta', 'admin']).exists()
+#def is_beta_or_better(user):
+  #return user.groups.filter(name__in=['beta', 'admin']).exists()
 
 @task(name="align_wdlocal")
-@user_passes_test(is_beta_or_better)
+#@user_passes_test(is_beta_or_better)
 def align_wdlocal(pk, *args, **kwargs):
   ds = get_object_or_404(Dataset, id=pk)
   bounds = kwargs['bounds']
@@ -1030,7 +1030,10 @@ def align_wdlocal(pk, *args, **kwargs):
   for place in qs:
     # build query object
     count +=1
-    qobj = {"place_id":place.id,"src_id":place.src_id,"title":place.title,"fclasses":place.fclasses}
+    qobj = {"place_id":place.id,
+            "src_id":place.src_id,
+            "title":place.title,
+            "fclasses":place.fclasses or []}
 
     # TODO: add links 
     [variants,geoms,types,ccodes,parents,links]=[[],[],[],[],[],[]]
@@ -1040,9 +1043,10 @@ def align_wdlocal(pk, *args, **kwargs):
       ccodes.append(c.upper())
     qobj['countries'] = place.ccodes
 
-    # types (Getty AAT integer ids)
+    # types (Getty AAT integer ids if available)
     for t in place.types.all():
-      types.append(int(t.jsonb['identifier'].replace('aat:','')))
+      if t.jsonb['identifier'].startswith('aat:'):
+        types.append(int(t.jsonb['identifier'].replace('aat:','')) )
     qobj['placetypes'] = types
 
     # names

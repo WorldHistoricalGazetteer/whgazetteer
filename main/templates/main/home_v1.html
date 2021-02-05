@@ -190,10 +190,12 @@
 	})
 	
 	$( "#map_dataset" ).change(function() {
-	  if (!!gl.getLayer('heat_active')){gl.removeLayer('heat_active')}
+	  if (!!gl.getLayer('heat_active')){
+		gl.removeLayer('heat_active')}
 	  heat($(this).val())
 	  console.log('heat() for',$(this).val())
 	});	
+	
 	$(function(){
 	  $("[rel='tooltip']").tooltip();
 	})	

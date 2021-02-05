@@ -22,7 +22,7 @@ import pandas as pd
 import simplejson as json
 from pathlib import Path
 from shutil import copyfile
-# whg app
+#
 from areas.models import Area
 from datasets.forms import HitModelForm, DatasetDetailModelForm, DatasetCreateModelForm
 from datasets.models import Dataset, Hit, DatasetFile
@@ -147,10 +147,11 @@ def indexMatch(pid, hit_pid=None):
       #sys.exit(sys.exc_info())
   
 
-def isOwner(user):
-  task = get_object_or_404(TaskResult, task_id=tid)
-  kwargs=json.loads(task.task_kwargs.replace("'",'"'))  
-  return kwargs['owner'] == user.id
+
+#def isOwner(user):
+  #task = get_object_or_404(TaskResult, task_id=tid)
+  #kwargs=json.loads(task.task_kwargs.replace("'",'"'))  
+  #return kwargs['owner'] == user.id
 
 
 # ***
@@ -172,6 +173,8 @@ def review(request, pk, tid, passnum):
   cnt_pass = Hit.objects.values('place_id').filter(task_id=tid, reviewed=False, query_pass=passnum).count()
 
   # TODO: refactor this awful mess; controls whether PASS appears in review dropdown
+  cnt_pass0 = Hit.objects.values('place_id').filter(
+    task_id=tid, reviewed=False, query_pass='pass0').count()
   cnt_pass1 = Hit.objects.values('place_id').filter(
     task_id=tid, reviewed=False, query_pass='pass1').count()
   cnt_pass2 = Hit.objects.values('place_id').filter(
@@ -1873,7 +1876,8 @@ class DatasetDetailView(LoginRequiredMixin, UpdateView):
     context['current_file'] = file
     context['format'] = file.format
     context['numrows'] = file.numrows
-    context['collaborators'] = ds.collab
+    context['collaborators'] = ds.collaborators
+    context['owners'] = ds.owners
     placeset = Place.objects.filter(dataset=ds.label)
     context['tasks'] = TaskResult.objects.all().filter(task_args = [id_],status='SUCCESS')
     # initial (non-task)
@@ -1906,7 +1910,7 @@ class DatasetDetailView(LoginRequiredMixin, UpdateView):
     context['descriptions_added'] = PlaceDescription.objects.filter(
       place_id__in = placeset, task_id__contains = '-').count()
 
-    context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admin']).exists() else False
+    context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False
     #print('context from DatasetDetailView',context)
 
     return context

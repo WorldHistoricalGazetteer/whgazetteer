@@ -292,7 +292,7 @@
         <h6 class="">Reconciliation Tasks 
           <span class="small help-matches" data-id="reconciliation">
             {% fontawesome_icon 'question-circle' color='#993333' %}</span>
-          {% if ds.owner.id == user.id or user.is_superuser %}
+          {% if user.is_superuser or user in owners %}
           <span class="float-right small">
             <a id="addtask_link" href="#" >Add new task {% fontawesome_icon 'plus-square' color='#336699' %}</a>
           </span>
@@ -303,7 +303,7 @@
             <p class="larger text-danger ml-4 mb-2 strong">{{ message|safe }}</p>
           {%endfor%}</div>
         {% endif %}
-        {% if ds.owner.id == user.id or user.is_superuser or user in collaborators %}
+        {% if user.is_superuser or user in collaborators %}
         {% if tasks|length < 1 %}<i>None yet...</i>{% endif %}
         {% for t in tasks %}
         <div class="task-box mb-2">
@@ -409,18 +409,29 @@
           <i style="display:block;" class="text-danger ml-4 mb-2">{{ message }}</i>
         {%endfor%}</div>{% endif %}
       <div class="sharing-box my-3 w-50">
-        <div class="sharing-header">Collaborators
-          {% if ds.owner.id == user.id or user.is_superuser %}
-          <!--<span class="float-right small mr-2">-->
-          <span class="sharing-input float-right input-group">
-            <input type="text" class="form-control input-sm" name="username" placeholder="Enter username">
-            <div class="input-group-append">
-              <button class="btn btn-sm btn-outline-secondary" type="submit">Add</button>
+        <div class="sharing-header mb-0">Collaborators</div>
+        <p class="mb-1 px-2">Collaborators are assigned per dataset. Members can view its contents and metadata, and perform review of reconciliation task results.
+         Co-owners can perform all actions.</p>
+        {% if user.is_superuser or user in owners %}
+          <div class="ml-2 my-2">
+            <div class="form-check form-check-inline sharing-input">
+              <span class="input-group"> 
+                <input type="text" class="form-control input-sm" name="username" placeholder="Enter username">
+                <div class="input-group-append">
+                  <button class="btn btn-sm btn-outline-secondary" type="submit">Add</button>
+                </div>
+              </span>
             </div>
-          </span>
-          {% endif %}
-        </div>
-        <p class="p-block px-2">Collaborators are assigned per dataset. They can view its contents and metadata, and  perform review of reconciliation task results.</p>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input hover" type="radio" name="role" id="r_place" value="member" checked="checked">
+              <label class="form-check-label" for="r_place">Member</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input hover" type="radio" name="role" id="r_trace" value="owner">
+              <label class="form-check-label" for="r_trace">Co-owner</label>
+            </div>
+          </div>
+        {% endif %}
         <ul id="collabs_list">
           {% for c in collaborators %}<li>{{ c.first_name|add:' '|add:c.last_name }} ({{c}})
           {% if ds.owner.id == user.id or user.is_superuser %}

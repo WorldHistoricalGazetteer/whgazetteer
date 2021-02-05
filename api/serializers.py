@@ -38,6 +38,8 @@ class DatasetSerializer(serializers.HyperlinkedModelSerializer):
         model = Dataset
         fields = ('id', 'place_count', 'owner', 'label', 'title', 'description',
             'datatype', 'ds_status', 'create_date', 'public', 'core','creator','webpage')
+        extra_kwargs = {
+            'created_by':  { 'read_only': True }}        
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
     datasets = serializers.HyperlinkedRelatedField(
