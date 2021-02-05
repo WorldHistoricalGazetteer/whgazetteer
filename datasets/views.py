@@ -568,8 +568,9 @@ def task_delete(request,tid,scope="foo"):
 
   return redirect('/datasets/'+ds+'/detail#reconciliation')
 # remove collaborator from dataset
-def collab_delete(request,uid,dsid):
-  get_object_or_404(DatasetUser,user_id_id=uid,dataset_id_id=dsid).delete()
+def collab_delete(request, uid, dsid):
+  qs = DatasetUser.objects.filter(user_id_id=uid, dataset_id_id=dsid)
+  #get_object_or_404(DatasetUser, user_id_id=uid, dataset_id_id=dsid).delete()
   return redirect('/datasets/'+str(dsid)+'/detail#sharing')
 
 # add collaborator to dataset

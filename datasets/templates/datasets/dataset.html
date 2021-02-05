@@ -434,7 +434,7 @@
         {% endif %}
         <ul id="collabs_list">
           {% for c in collaborators %}<li>{{ c.first_name|add:' '|add:c.last_name }} ({{c}})
-          {% if ds.owner.id == user.id or user.is_superuser %}
+          {% if user.is_superuser or user in owners %}
           <span class="float-right mr-2">
             <a href="{% url 'datasets:collab-delete' uid=c.id dsid=ds.id %}">
             {%fontawesome_icon 'times-circle' color='#336699'%}</a>
