@@ -549,7 +549,7 @@ def ds_recon(request, pk):
   print('context',context)
   return render(request, 'datasets/dataset.html', {'ds':ds, 'context': context})
 
-def task_delete(request,tid,scope="foo"):
+def task_delete(request, tid, scope="foo"):
   hits = Hit.objects.all().filter(task_id=tid)
   tr = get_object_or_404(TaskResult, task_id=tid)
   ds = tr.task_args[1:-1]
@@ -567,22 +567,26 @@ def task_delete(request,tid,scope="foo"):
     placegeoms.delete()    
 
   return redirect('/datasets/'+ds+'/detail#reconciliation')
-# remove collaborator from dataset
+#
+# remove collaborator from dataset (all roles)
+# TODO: limit to role?
 def collab_delete(request, uid, dsid):
-  qs = DatasetUser.objects.filter(user_id_id=uid, dataset_id_id=dsid)
-  #get_object_or_404(DatasetUser, user_id_id=uid, dataset_id_id=dsid).delete()
+  print('collab_delete() request, uid, dsid', request, uid, dsid)
+  #qs = DatasetUser.objects.filter(user_id_id=1, dataset_id_id=897).delete()
+  qs = DatasetUser.objects.filter(user_id_id=uid, dataset_id_id=dsid).delete()
   return redirect('/datasets/'+str(dsid)+'/detail#sharing')
-
-# add collaborator to dataset
-def collab_add(request,dsid,role='member'):
+#
+# add collaborator to dataset in role
+def collab_add(request, dsid):
   try:
     uid=get_object_or_404(User,username=request.POST['username']).id
+    role=request.POST['role']
   except:
     # TODO: raise error to screen
     messages.add_message(
       request, messages.INFO, "Please check username, we don't have '" + request.POST['username']+"'")    
     return redirect('/datasets/'+str(dsid)+'/detail#sharing')
-  print('collab_add():',request.POST['username'],dsid,uid)
+  print('collab_add():',request.POST['username'],role, dsid, uid)
   DatasetUser.objects.create(user_id_id=uid, dataset_id_id=dsid, role=role)
   return redirect('/datasets/'+str(dsid)+'/detail#sharing')
 #
@@ -1581,7 +1585,7 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
   template_name = 'datasets/dataset_create.html'
   success_message = 'dataset created'
   
-  def form_invalid(self,form):
+  def form_invalid(self, form):
     print('form invalid...',form.errors.as_data())
     context = {'form': form}
     return self.render_to_response(context=context)
@@ -1814,7 +1818,7 @@ class DatasetDetailView(LoginRequiredMixin, UpdateView):
       ds.save()        
     return super().form_valid(form)
   
-  def form_invalid(self,form):
+  def form_invalid(self, form):
     print('kwargs',self.kwargs)
     context = {}
     print('form not valid', form.errors)
@@ -1877,7 +1881,8 @@ class DatasetDetailView(LoginRequiredMixin, UpdateView):
     context['current_file'] = file
     context['format'] = file.format
     context['numrows'] = file.numrows
-    context['collaborators'] = ds.collaborators
+    #context['collaborators'] = ds.collaborators
+    context['collaborators'] = ds.collabs.all()
     context['owners'] = ds.owners
     placeset = Place.objects.filter(dataset=ds.label)
     context['tasks'] = TaskResult.objects.all().filter(task_args = [id_],status='SUCCESS')

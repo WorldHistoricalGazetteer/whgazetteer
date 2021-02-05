@@ -150,8 +150,9 @@ class DatasetUser(models.Model):
         default=-1, on_delete=models.CASCADE)
     role = models.CharField(max_length=20, null=False, choices=TEAMROLES)
 
-    #def __str__(self):
-        #return self.toponym
+    def __str__(self):
+        username = self.user_id.username
+        return '<b>' + username + '</b> (' + self.role + ')'
 
     class Meta:
         managed = True
