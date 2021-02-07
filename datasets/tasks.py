@@ -1,6 +1,7 @@
 # celery reconciliation tasks [align_tgn(), align_whg()] and related functions
 from __future__ import absolute_import, unicode_literals
 from celery.decorators import task
+from django_celery_results.models import TaskResult
 from django.conf import settings
 from django.contrib.auth.decorators import permission_required, user_passes_test
 from django.core.mail import EmailMultiAlternatives
@@ -27,11 +28,13 @@ es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 ##
 
 @task(name="task_emailer")
-def task_emailer(dslabel,username,email,counthit,totalhits):
+def task_emailer(tid, dslabel, username, email, counthit, totalhits):
   print('in task_emailer()', dslabel)
-  ds=get_object_or_404(Dataset,label=dslabel)
-  task = ds.tasks.all().order_by('-id')[0]
-  print('dslabel, task_id, task_name',ds.label, task.id, task.task_name)
+  ds=get_object_or_404(Dataset, label=dslabel)
+  #task = ds.tasks.all().order_by('-id')[0]
+  #task = ds.tasks.filter(task_id=tid)
+  task = get_object_or_404(TaskResult,task_id=tid)
+  print('dslabel, task_id, task_name',ds.label, task.task_id, task.task_name)
   tasklabel = 'Wikidata' if task.task_name[6:8]=='wd' else \
     'Getty TGN' if task.task_name.endswith('tgn') else 'WHGazetteer'
   if task.status == "FAILURE":
@@ -221,12 +224,14 @@ def normalize(h, auth, language=None):
         for l in hlinks:
           links.append('closeMatch: '+qlinks[l]+':'+str(h['claims'][l][0]))
 
-      # add en and FIRST {language} wikipedia sitelink
+      # add en and FIRST {language} wikipedia sitelink OR first sitelink
       wplinks = []
-      wplinks.append([l['title'] for l in h['sitelinks'] if l['lang'] == 'en'][0])
+      wplinks += [l['title'] for l in h['sitelinks'] if l['lang'] == 'en']
       if language != 'en':
-        wplinks.append([l['title'] for l in h['sitelinks'] if l['lang'] == language][0])
-      
+        wplinks += [l['title'] for l in h['sitelinks'] if l['lang'] == language]
+      if len(wplinks) == 0 and len(h['sitelinks']) > 0:
+        wplinks += [h['sitelinks'][0]['title']]
+        
       links += ['primaryTopicOf: wp:'+l for l in wplinks]
 
       rec.links = links
@@ -844,7 +849,7 @@ def align_tgn(pk, *args, **kwargs):
   
   return hit_parade['summary']
 
-#qobj={'place_id': 83387, 'src_id': '12452', 'title': 'Damascus', 'fclasses': ['P'], 'countries': ['SY'], 'placetypes': [300008347], 'variants': ['Damascus'], 'parents': [], 'geom': {'type': 'Polygon', 'coordinates': [[[36.35348122657498, 32.5148527769508], [36.15770923760578, 32.51926129697558], [35.96654993104803, 32.561737481245416], [35.78733352207033, 32.6406525334655], [35.62693226221618, 32.75298036862209], [35.49149691531298, 32.89441365156134], [35.38622089962589, 33.059528966522784], [35.31514114048685, 33.24199478401883], [35.280983269924995, 33.43481425034016], [35.28505710929001, 33.63059348965473], [35.32720644270285, 33.82182513035944], [35.40581500732658, 34.001176183552786], [35.5178684707535, 34.16176923460978], [35.659070018917404, 34.297446165257114], [35.824005122184246, 34.403004293433575], [36.00634916148332, 34.47439587589162], [36.19910995282503, 34.50888332339183], [36.21300995282503, 34.50998332339183], [36.428593959617245, 34.50371332587653], [36.637819540686685, 34.45136417994673], [36.83095440559231, 34.355370946792966], [36.99901473605554, 34.220198826228064], [36.999059180055546, 34.22015438122806], [37.11990546209573, 34.07384121148016], [37.21093573561722, 33.907333383354214], [37.26887187598436, 33.726627071444604], [37.29162752355343, 33.53822975716351], [37.278383216336564, 33.34892588543618], [37.22961589994856, 33.1655325475612], [37.147081752143045, 32.99465398843035], [37.033752940449986, 32.84244377863858], [36.89371059035838, 32.7143832159917], [36.7319978184064, 32.615083936476594], [36.55443812265821, 32.548121842942805], [36.36742567057498, 32.5159083319508], [36.35348122657498, 32.5148527769508]]]}, 'authids': ['loc:n79143055', 'gn:170654', 'viaf:238973527', 'wd:Q3766', 'dbp:Damascus', 'tgn:7002261']}
+
 
 #bounds={'type': ['region'], 'id': ['95']}
 #from datasets.static.hashes import aat, parents, aat_q
@@ -861,13 +866,11 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
 
   # empty result object
   result_obj = {
-      'place_id': qobj['place_id'], 'hits':[],
-        'missed':-1, 'total_hits':-1
-    }  
+    'place_id': qobj['place_id'], 'hits':[],
+    'missed':-1, 'total_hits':-1}  
 
   # names (distinct, w/o language)
   variants = list(set(qobj['variants']))
-
   # types
   # wikidata Q ids for aat_ids, ccodes; strip wd: prefix
   # if no aatids, returns ['Q486972'] (human settlement)
@@ -901,8 +904,23 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
   
   # prelim query: any authid matches?
   # can be accepted without review
-  q0 = {"query": { "bool": {
-      "must": {"terms": {"authids":qobj['authids']}}
+  #q0 = {"query": { "bool": {
+      #"must": {"terms": {"authids":qobj['authids']}}
+  #}}}
+  # incoming might have a wd in authids[]
+  q0 = {"query": { 
+    "bool": {
+      "must": [
+        #{"terms": {"authids":qobj['authids']}},
+        {"bool": {
+          "should": [
+            {"terms": {"authids": qobj['authids']}},
+            # capture any wd: Q ids
+            {"terms": {"_id": [i[3:] for i in qobj['authids']] }}
+          ],
+          "minimum_should_match": 1
+        }}
+      ]
   }}}
 
   # base query
@@ -913,7 +931,7 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
       ],
       # boosts score if matched
       "should":[
-        {"terms": {"authids":qobj['authids']}}
+        {"terms": {"authids": qobj['authids']}}
       ],
       "filter": []
     }
@@ -950,7 +968,6 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
   # /\/\/\/\/\/
   try:
     res0 = es.search(index="wd", body = q0)
-    #res0 = es.search(index="wd4000test", body = q0)
     hits0 = res0['hits']['hits']
   except:
     print('pid; pass0 error:', qobj, sys.exc_info())
@@ -961,6 +978,7 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
       hit['pass'] = 'pass0'
       result_obj['hits'].append(hit)
   elif len(hits0) == 0:
+    print('q0 (no hits)', qobj)
     # /\/\/\/\/\/
     # pass1 (q1): 
     # must[name, placetype]; spatial filter
@@ -970,7 +988,9 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
       res1 = es.search(index="wd", body = q1)
       hits1 = res1['hits']['hits']
     except:
-      print('pid; pass1 error:', qobj, sys.exc_info())
+      print('pass1 error qobj:', qobj, sys.exc_info())
+      print('pass1 error q1:', q1)
+      sys.exit()
     if len(hits1) > 0:
       for hit in hits1:
         hit_count +=1
@@ -985,7 +1005,9 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
         res2 = es.search(index="wd", body = q2)
         hits2 = res2['hits']['hits']
       except:
-        print('pid; pass2 error:', qobj, sys.exc_info())
+        print('pass2 error qobj', qobj, sys.exc_info())
+        print('pass2 error q2', q2)
+        sys.exit()
       if len(hits2) > 0:
         for hit in hits2:
           hit_count +=1
@@ -1008,7 +1030,7 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
 #from datasets.utils import getQ, hully
 #from places.models import Place
 #place=get_object_or_404(Place, pk = 6591148) #6587009 Cherkasy, UA
-bounds = {'type': ['userarea'], 'id': ['369']}
+#bounds = {'type': ['userarea'], 'id': ['369']}
 #from copy import deepcopy
 #from elasticsearch import Elasticsearch
 #es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
@@ -1017,8 +1039,8 @@ bounds = {'type': ['userarea'], 'id': ['369']}
   #return user.groups.filter(name__in=['beta', 'admin']).exists()
 
 @task(name="align_wdlocal")
-#@user_passes_test(is_beta_or_better)
 def align_wdlocal(pk, **kwargs):
+  task_id = align_wdlocal.request.id
   ds = get_object_or_404(Dataset, id=pk)
   print('kwargs from align_wdlocal() task', kwargs)
   bounds = kwargs['bounds']
@@ -1097,8 +1119,6 @@ def align_wdlocal(pk, **kwargs):
     else:
       count_hit +=1
       total_hits += len(result_obj['hits'])
-      #print("hit[0]: ",result_obj['hits'][0]['_source'])  
-      #print('hits from align_wd_local',result_obj['hits'])
       for hit in result_obj['hits']:
         if hit['pass'] == 'pass0': 
           count_p0+=1 
@@ -1112,7 +1132,8 @@ def align_wdlocal(pk, **kwargs):
           authrecord_id = hit['_id'],
           dataset = ds,
           place_id = get_object_or_404(Place, id=qobj['place_id']),
-          task_id = align_wdlocal.request.id,
+          #task_id = align_wdlocal.request.id,
+          task_id = task_id,
           query_pass = hit['pass'],
           # prepare for consistent display in review screen
           json = normalize(hit['_source'],'wdlocal',language),
@@ -1139,6 +1160,7 @@ def align_wdlocal(pk, **kwargs):
   
   # email owner when complete
   task_emailer.delay(
+    task_id,
     ds.label,
     ds.owner.username,
     ds.owner.email,

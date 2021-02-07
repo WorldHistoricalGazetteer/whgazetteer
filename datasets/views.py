@@ -384,6 +384,8 @@ def write_wd_pass0(request, tid):
     hasGeom = 'geoms' in h.json and len(h.json['geoms']) > 0
     hasLink = 'links' in h.json and len(h.json['links']) > 0
     place = h.place_id # object
+    # link identifiers 
+    authids=place.links.all().values_list('jsonb__identifier',flat=True)
     # GEOMS
     # confirm another user hasn't just done this...
     if hasGeom and kwargs['aug_geom'] == 'on' \
@@ -403,9 +405,8 @@ def write_wd_pass0(request, tid):
       print('created place_geom instance:', geom)
     # LINKS
     link_counter = 0
-    # confirm another user hasn't just done this...
-    if tid not in place.links.all().values_list('task_id',flat=True):
-      # create single wikidata link
+    # add PlaceLink record for wikidata hit if not already there
+    if 'wd:'+h.authrecord_id not in authids:
       link_counter += 1
       link = PlaceLink.objects.create(
         place = place,
@@ -416,12 +417,12 @@ def write_wd_pass0(request, tid):
           "identifier":link_uri(task.task_name, h.authrecord_id)
         }
       )
-    print('created wd place_link instance:', link)
+      print('created wd place_link instance:', link)
     
     # create link for each wikidata concordance, if any
     if hasLink:
-      authids=place.links.all().values_list(
-        'jsonb__identifier',flat=True)
+      #authids=place.links.all().values_list(
+        #'jsonb__identifier',flat=True)
       for l in h.json['links']:
         link_counter += 1
         authid = re.search("\: (.*?)$", l).group(1)
@@ -501,7 +502,7 @@ def ds_recon(request, pk):
         scope=scope,
         lang=language
       )
-      messages.add_message(request, messages.INFO, "Your reconciliation task is under way. <br/>When complete, you will receive an email and if successful, results will appear below (You may have to refresh screen). In the meantime, you can navigate elsewhere.")
+      messages.add_message(request, messages.INFO, "<span class='text-danger'>Your reconciliation task is under way.</span><br/>When complete, you will receive an email and if successful, results will appear below (you may have to refresh screen). In the meantime, you can navigate elsewhere.")
       #task_emailer(ds.owner, ds.tasks.all().order_by('-id')[0], ds.label) 
       return redirect('/datasets/'+str(ds.id)+'/detail#reconciliation')
     except:

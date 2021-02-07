@@ -8,7 +8,7 @@ register = template.Library()
 def time_estimate(numrows):
     seconds = round(numrows/3)
     return 'about '+str(round(seconds/60))+' minute(s)' \
-           if seconds >= 60 else '<1 minute'
+           if seconds >= 60 else 'under 1 minute'
 
 @register.simple_tag
 def define(val=None):

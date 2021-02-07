@@ -80,8 +80,13 @@ def wdlocal(ds):
         total_hits += 1
         hit_parade["hits"].append(hit)
     
-  print('rows w/hits:'+str(some_hits)+'; total_hits: '+str(total_hits)+
-        '; no hits: '+str(nohits))
+  hits = hit_parade['hits']
+  print('rows w/hits:'+str(some_hits)+'; total_hits: '+str(total_hits)+'; no hits: '+str(nohits))
+  print(
+    'pass0:'+str(len([h['_id'] for h in hits if h['pass'] == 'pass0']))+'; ',
+    'pass1:'+str(len([h['_id'] for h in hits if h['pass'] == 'pass1']))+'; ',
+    'pass2:'+str(len([h['_id'] for h in hits if h['pass'] == 'pass2'])),
+  )
   print('hits:',hit_parade['hits'])
 
 ds_array = input('one or more ds ids, comma delimited:   ')

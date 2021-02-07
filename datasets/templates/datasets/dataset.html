@@ -115,18 +115,7 @@
           </tr>
         </table>
         <input class="btn btn-primary btn-sm hidden btn-ds" type="submit" value="Save" />
-        <p> <i>Current data file</i>
-          <!-- TODO: debug update, temporal data handling -->
-          <!--{ if current_file.format == 'delimited' %}-->
-          <!--{ if ds.owner.id == user.id or user.is_superuser%}-->
-          <!--<span class="float-right mr-2">-->
-            <!--<a href="#" id="a_update_modal" data-dsid = { ds.id }} data-toggle="modal" data-target="#updateModal">-->
-              <!--update</a>-->
-            <!--<span class="help-matches" data-id="updates">{ fontawesome_icon 'question-circle' color='#993333' %}</span>-->
-          <!--</span>-->
-          <!--{ endif %}-->
-          <!--{ endif %}-->
-        </p>
+        <p> <i>Current data file</i></p>
         <div id="div_file">
           <table id="file_metadata" class="ds-table table-striped">
             <tr>
@@ -300,7 +289,7 @@
         </h6>
         {% if messages %}<div>
           {% for message in messages %}
-            <p class="larger text-danger ml-4 mb-2 strong">{{ message|safe }}</p>
+            <p class="larger ml-1 mb-2 strong">{{ message|safe }}</p>
           {%endfor%}</div>
         {% endif %}
         {% if user.is_superuser or user in collaborators %}
@@ -324,28 +313,29 @@
             <div class="col-sm-5">
               <p><b>Result</b>: {{ t.result|get:"got_hits"|safe }} records (of
                   {{ t.result|get:"count"|safe }}) got total of <b>{{ t.result|get:"total"|safe }}</b> hits</p>
-              <p id="latest"></p>
               <ul>
                 {% if t.result|get:"pass0" > 0 %}
-                  <li id="pass0"><i>Pass 0 (matched links)</i>: <span class="strong" id='{{t.task_id}}_0'>nn</span> 
+                  <li id="pass0"  class="li-left"><i>Pass 0 (matched links)</i>: <span class="strong" id='{{t.task_id}}_0'>nn</span> 
                   <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass0' %}">
                    review</i></a> 
-                   <span>| <a href="{% url 'datasets:wd_pass0' tid=t.task_id %}">accept remaining</a></span>
+                   <span>| <a href="{% url 'datasets:wd_pass0' tid=t.task_id %}">auto-accept</a>  
+                   <span class="help-matches" data-id="auto-match">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
+                   </span>
                    </li>
                 {% endif %}
                 {% if t.result|get:"pass1" > 0 %}
-                  <li><i>Pass 1 remaining</i>: <span class="strong" id='{{t.task_id}}_1'>nn</span> 
+                  <li class="li-left"><i>Pass 1 remaining</i>: <span class="strong" id='{{t.task_id}}_1'>nn</span> 
                   <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass1' %}">
                    review</i></a></li>
                 {% endif %}
                 {% if t.result|get:"pass2" > 0 %}
-                  <li><i>Pass 2 remaining</i>: <span class="strong" id='{{t.task_id}}_2'>nn</span> 
+                  <li class="li-left"><i>Pass 2 remaining</i>: <span class="strong" id='{{t.task_id}}_2'>nn</span> 
                   <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass2' %}">
                    review</i></a></li>
                 {% endif %}
                 <!--{ if t.task_name == 'align_tgn' %}-->
                 {% if t.result|get:"pass3" > 0 %} <!-- TGN only -->
-                  <li><i>Pass 3 remaining</i>: <span class="strong" id='{{t.task_id}}_3'>nn</span> 
+                  <li class="li-left"><i>Pass 3 remaining</i>: <span class="strong" id='{{t.task_id}}_3'>nn</span> 
                   <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass3' %}">
                    review</i></a></li>
                 {% endif %}
@@ -406,7 +396,7 @@
       {% csrf_token %}
       <div></div>
         {% if messages %}<div>{% for message in messages %}
-          <i style="display:block;" class="text-danger ml-4 mb-2">{{ message }}</i>
+          <i style="display:block;" class="mb-2">{{ message }}</i>
         {%endfor%}</div>{% endif %}
       <div class="sharing-box my-3 w-50">
         <div class="sharing-header mb-0">Collaborators</div>
@@ -454,23 +444,17 @@
         <div id="recon_form" class="col-md-6">
           <input type="hidden" name="ds" value="{{ ds.id }}">
           <input type="hidden" name="wd_lang" value="">
-          <!--{ if user.is_superuser %}-->
-          {% if beta_or_better %}
-            <div class="form-check text-danger">
-              <label class="form-check-label" for="r_whg">
-                <input type="radio" class="form-check-input" id="r_whg"
-                  name="recon" value="whg">WHG (accessioning) 
-              </label>
-            </div>
+          {% if user.is_superuser %}
             <div class="form-check text-danger">
               <label class="form-check-label" for="r_whgpre">
                 <input type="radio" class="form-check-input" id="r_whgpre"
-                  name="recon" value="whg_pre">WHG (align) 
+                  name="recon" value="whg_pre">WHG (align only) 
               </label>
             </div>
-            <div class="form-check">
-              <label class="form-check-label" for="r_wdlocal">
-                <input type="radio" class="form-check-input r_wd" id="r_wdlocal" name="recon" value="wdlocal">Wikidata (wdlocal)
+            <div class="form-check text-danger">
+              <label class="form-check-label" for="r_whg">
+                <input type="radio" class="form-check-input" id="r_whg"
+                  name="recon" value="whg">WHG (accession/reconcile) 
               </label>
             </div>
             <div id="wd_lang" class="hidden">
@@ -479,12 +463,19 @@
             <hr/>
           {% endif %}
           <p class="font-weight-bold mb-0">Authority name source</p>
-          <p class="small ml-2">Your task will enter a queue and an email will be sent when it is completed.</p>
-          <!--<br/>The <b>{ ds.numrows }}</b> records in this dataset will take <b>{ds.numrows|time_estimate }}</b>.</p>-->
+          <p class="small">Your task will enter a queue and an email will be sent when it is completed. <br/>The <b>{{ ds.numrows }}</b> records in this dataset will take <b>{{ds.numrows|time_estimate }}</b>.</p>
+          {% if beta_or_better %}
+          <div class="form-check">
+            <label class="form-check-label" for="r_wdlocal">
+              <input type="radio" class="form-check-input r_wd" id="r_wdlocal" 
+                name="recon" value="wdlocal" checked>Wikidata (wdlocal)
+            </label>
+          </div>
+          {% endif %}
           <div class="form-check">
             <label class="form-check-label" for="r_tgn">
               <input type="radio" class="form-check-input" id="r_tgn"
-                name="recon" value="tgn" checked>Getty TGN (tgn) <span class="text-danger small ml-2">approx. 3 records per second</span>
+                name="recon" value="tgn">Getty TGN (tgn) 
             </label>
           </div>
           <div class="form-check">
@@ -610,6 +601,9 @@ js for Summary, Reconciliation
   $("#r_wd").click(function(){
     console.log($(this).attr('value'));
     $("#geo_constraint").hide(400)}
+  )
+  $("#r_wdlocal").click(function(){
+    $("#geo_constraint").show(400)}
   )
   
   $("#a_update_modal").on('click', function(e){
@@ -901,7 +895,7 @@ js for Summary, Reconciliation
     $.get("/datasets/updatecounts",{ds_id: dsid},
       function(data){
         updates=data
-        <!--console.log('fired updateTotals()',updates, dsid)-->
+        console.log('fired updateTotals()',updates, dsid)
         for(u in updates){
           html0='';html1='';html2='';html3='';
           <!--console.log(updates[u])-->
@@ -1268,7 +1262,7 @@ js for Browse
       right_related='<p class="mb-0"><b>Related</b>: ';
       for (r in data.related){
         rel = data.related[r]
-        console.log('rel',rel)
+        <!--console.log('rel',rel)-->
         if (rel.relation_type == 'gvp:broaderPartitive'){
           right_parent += '<span class="small h1em">'+rel.label
           right_parent += 'when' in rel && !('timespans' in rel.when) ? 

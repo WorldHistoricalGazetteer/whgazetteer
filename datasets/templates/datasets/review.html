@@ -166,7 +166,11 @@
                   <p><strong>WHG place id</strong>: {{ form.json.value|get:"place_id" }}</p> 
                   <p><strong>Source (id)</strong>: {{ form.json.value|get:"dataset" }} ({{ form.json.value|get:"src_id" }})</p>
                 {% else %}
+                  {% if authority|startswith:"wd" %}
+                  <p><strong>Wikidata ID</strong>: 
+                  {% else %}
                   <p><strong>{{ authority|upper }} ID</strong>: 
+                  {% endif %}
                   <a href="" data-auth={{authority}} class="mr-2 ext-recon" >{{ form.authrecord_id.value }}</a>{% fontawesome_icon 'external-link' color='#336699' %}
                   </p>
                 {% endif %}
