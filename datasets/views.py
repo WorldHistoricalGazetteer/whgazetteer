@@ -1168,7 +1168,7 @@ def ds_insert_lpf(request, pk):
         for t in feat['types']:
           if 'identifier' in t.keys() and t['identifier'][:4] == 'aat:' \
              and int(t['identifier'][4:]) in Type.objects.values_list('aat_id',flat=True):
-            fc = get_object_or_404(Type,aat_id=int(t['identifier'][4:])).fclass \
+            fc = get_object_or_404(Type, aat_id=int(t['identifier'][4:])).fclass \
               if t['identifier'][:4] == 'aat:' else None
             fclass_list.append(fc)
           print('from feat[types]:',t)

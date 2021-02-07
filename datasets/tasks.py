@@ -28,7 +28,7 @@ es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 
 @task(name="task_emailer")
 def task_emailer(dslabel,username,email,counthit,totalhits):
-  print('in task_emailer()')
+  print('in task_emailer()', dslabel)
   ds=get_object_or_404(Dataset,label=dslabel)
   task = ds.tasks.all().order_by('-id')[0]
   print('dslabel, task_id, task_name',ds.label, task.id, task.task_name)
@@ -131,7 +131,7 @@ def wdTitle(variants, language):
 # normalize hit json from any authority
 # only wdlocal provides language
 def normalize(h, auth, language=None):
-  print('language in normlize()',language)
+  print('language in normalize()',language)
   #print(auth + ' hit _source in normalize()', h)  
   if auth.startswith('whg'):
     rec = HitRecord(h['place_id'], h['dataset'], h['src_id'], h['title'])
@@ -230,7 +230,7 @@ def normalize(h, auth, language=None):
       links += ['primaryTopicOf: wp:'+l for l in wplinks]
 
       rec.links = links
-      print('rec.links',rec.links)
+      #print('rec.links',rec.links)
 
       # look up Q class labels
       htypes = set(h['claims']['P31'])
@@ -270,7 +270,7 @@ def normalize(h, auth, language=None):
     rec.minmax = []
     rec.links = []
     print(rec)
-  print('rec from normalize()',rec.toJSON())
+  #print('rec from normalize()',rec.toJSON())
   return rec.toJSON()
 
 # ***
@@ -280,7 +280,7 @@ def normalize(h, auth, language=None):
 # FUTURE: parse multiple areas
 # ***
 def get_bounds_filter(bounds,idx):
-  print('bounds in get_bounds_filter()',bounds)
+  #print('bounds in get_bounds_filter()',bounds)
   id = bounds['id'][0]
   #areatype = bounds['type'][0]
   area = Area.objects.get(id = id)
@@ -774,7 +774,7 @@ def align_tgn(pk, *args, **kwargs):
       qobj['geom'] = hully(g_list)
 
     ## run pass1-pass3 ES queries
-    print('qobj in align_tgn()',qobj)
+    #print('qobj in align_tgn()',qobj)
     result_obj = es_lookup_tgn(qobj, bounds=bounds)
       
     if result_obj['hit_count'] == 0:
@@ -897,7 +897,7 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
         "relation": "intersects" }
     }}
   if has_countries:
-    countries_filter = {"terms": {"claims.P17":countries}}
+    countries_match = {"terms": {"claims.P17":countries}}
   
   # prelim query: any authid matches?
   # can be accepted without review
@@ -913,8 +913,7 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
       ],
       # boosts score if matched
       "should":[
-        {"terms": {"authids":qobj['authids']}},
-        countries_filter
+        {"terms": {"authids":qobj['authids']}}
       ],
       "filter": []
     }
@@ -924,21 +923,26 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
   if has_geom:
     # shape_filter is polygon hull ~100km diameter
     qbase['query']['bool']['filter'].append(shape_filter)
+    if has_countries:
+      qbase['query']['bool']['should'].append(countries_match)
   elif has_countries:
     # matches ccodes
-    qbase['query']['bool']['must'].append(countries_filter)
+    qbase['query']['bool']['must'].append(countries_match)
   elif has_bounds:
     # area_filter (predefined region or study area)
     qbase['query']['bool']['filter'].append(area_filter)
+    if has_countries:
+      qbase['query']['bool']['should'].append(countries_match)
   
   # q1 = qbase + types
   q1 = deepcopy(qbase)
   q1['query']['bool']['must'].append({"terms": {"types.id":qtypes}})
 
-  # add fclasses, drop types; geom if any remains
+  # add fclasses if any, drop types; geom if any remains
   q2 = deepcopy(qbase)
-  q2['query']['bool']['must'].append(
-    {"terms": {"fclasses":qobj['fclasses']}})
+  if len(qobj['fclasses']) > 0:
+    q2['query']['bool']['must'].append(
+      {"terms": {"fclasses":qobj['fclasses']}})
 
   # /\/\/\/\/\/
   # pass0 (q0): 
@@ -949,7 +953,8 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
     #res0 = es.search(index="wd4000test", body = q0)
     hits0 = res0['hits']['hits']
   except:
-    print('pass0 error:',sys.exc_info())
+    print('pid; pass0 error:', qobj, sys.exc_info())
+
   if len(hits0) > 0:
     for hit in hits0:
       hit_count +=1
@@ -960,12 +965,12 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
     # pass1 (q1): 
     # must[name, placetype]; spatial filter
     # /\/\/\/\/\/
-    print('q1',q1)
+    #print('q1',q1)
     try:
       res1 = es.search(index="wd", body = q1)
       hits1 = res1['hits']['hits']
     except:
-      print('pass1 error:',sys.exc_info())
+      print('pid; pass1 error:', qobj, sys.exc_info())
     if len(hits1) > 0:
       for hit in hits1:
         hit_count +=1
@@ -975,12 +980,12 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
       # /\/\/\/\/\/
       # pass2: remove type, add fclasses
       # /\/\/\/\/\/  
-      print('q2',q2)
+      print('q1: no hits',q1)
       try:
         res2 = es.search(index="wd", body = q2)
         hits2 = res2['hits']['hits']
       except:
-        print('pass2 error:',sys.exc_info()) 
+        print('pid; pass2 error:', qobj, sys.exc_info())
       if len(hits2) > 0:
         for hit in hits2:
           hit_count +=1
@@ -988,6 +993,7 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
           result_obj['hits'].append(hit)
       elif len(hits2) == 0:
         result_obj['missed'] = qobj['place_id']
+        print('q2: no hits',q2)
   result_obj['hit_count'] = hit_count
   return result_obj
 
@@ -1012,13 +1018,12 @@ bounds = {'type': ['userarea'], 'id': ['369']}
 
 @task(name="align_wdlocal")
 #@user_passes_test(is_beta_or_better)
-def align_wdlocal(pk, *args, **kwargs):
+def align_wdlocal(pk, **kwargs):
   ds = get_object_or_404(Dataset, id=pk)
+  print('kwargs from align_wdlocal() task', kwargs)
   bounds = kwargs['bounds']
   scope = kwargs['scope']
   language = kwargs['lang']
-  #language = 'zh'
-  print('kwargs from align_wdlocal() task', kwargs)
   start = datetime.datetime.now()
   hit_parade = {"summary": {}, "hits": []}
   [nohits,wdlocal_es_errors,features] = [[],[],[]]
@@ -1072,7 +1077,7 @@ def align_wdlocal(pk, *args, **kwargs):
       # make a representative_point for ES distance
       #qobj['repr_point'] = pointy(g_list)
       
-    # TODO: aggregate links in index
+
     # 'P1566':'gn', 'P1584':'pleiades', 'P244':'loc', 'P214':'viaf', 'P268':'bnf', 'P1667':'tgn', 'P2503':'gov', 'P1871':'cerl', 'P227':'gnd'
     # links
     if len(place.links.all()) > 0:
@@ -1083,7 +1088,7 @@ def align_wdlocal(pk, *args, **kwargs):
       
     #
     # run pass0-pass2 ES queries
-    print('qobj in align_wd_local()',qobj)
+    #print('qobj in align_wd_local()',qobj)
     result_obj = es_lookup_wdlocal(qobj, bounds=bounds)
       
     if result_obj['hit_count'] == 0:
@@ -1127,10 +1132,6 @@ def align_wdlocal(pk, *args, **kwargs):
       'pass0': count_p0, 
       'pass1': count_p1, 
       'pass2': count_p2, 
-      #'pass3': count_p3,
-      #'pass1remains': -1,
-      #'pass2remains': -1,
-      #'pass3remains': -1,
       'no_hits': {'count': count_nohit },
       'elapsed': elapsed(end-start)
     }
