@@ -31,8 +31,6 @@ es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 def task_emailer(tid, dslabel, username, email, counthit, totalhits):
   print('in task_emailer()', dslabel)
   ds=get_object_or_404(Dataset, label=dslabel)
-  #task = ds.tasks.all().order_by('-id')[0]
-  #task = ds.tasks.filter(task_id=tid)
   task = get_object_or_404(TaskResult,task_id=tid)
   print('dslabel, task_id, task_name',ds.label, task.task_id, task.task_name)
   tasklabel = 'Wikidata' if task.task_name[6:8]=='wd' else \
@@ -131,11 +129,16 @@ def wdTitle(variants, language):
     if vpref and language != 'en' else vstd
   return title
 
+def wdDescriptions(descrips, language):
+  dpref=next( (v for v in descrips if v['lang'] == language), None)
+  dstd=next( (v for v in descrips if v['lang'] == 'en'), None)
+
+  result = [dstd, dpref] if language != 'en' else [dstd]
+  return result
+
 # normalize hit json from any authority
-# only wdlocal provides language
+# language relevant only for wikidata local)
 def normalize(h, auth, language=None):
-  print('language in normalize()',language)
-  #print(auth + ' hit _source in normalize()', h)  
   if auth.startswith('whg'):
     rec = HitRecord(h['place_id'], h['dataset'], h['src_id'], h['title'])
     print('"rec" HitRecord',rec)
@@ -194,15 +197,16 @@ def normalize(h, auth, language=None):
     except:
       print("normalize(wd) error:", h['place']['value'][31:], sys.exc_info())    
   elif auth == 'wdlocal':
-    # key: ['id', 'type', 'modified', 'descriptions', 'claims', 'sitelinks', 'variants', 'minmax', 'types', 'location'] 
+    # hit['_source'] keys(): ['id', 'type', 'modified', 'descriptions', 'claims', 'sitelinks', 'variants', 'minmax', 'types', 'location'] 
     try:
+      print('h in normalize',h)
       # TODO: do it in index?
       variants=h['variants']
       title = wdTitle(variants, language)
 
       #  place_id, dataset, src_id, title
       rec = HitRecord(-1, 'wd', h['id'], title)
-      #print('"rec" HitRecord',rec)
+      print('"rec" HitRecord',rec)
       
       # list of variant@lang
       rec.variants = [v['name']+'@'+v['lang'] for v in variants if v['name'] != title]
@@ -247,13 +251,19 @@ def normalize(h, auth, language=None):
         ccodes[0][c]['gnlabel'] for c in ccodes[0] \
           if ccodes[0][c]['wdid'] in h['claims']['P17']
       ]
-        
+      
+      # include en + native lang if not en
+      print('h["descriptions"]',h['descriptions'])
+      rec.descriptions = wdDescriptions(h['descriptions'], language) \
+        if 'descriptions' in h.keys() else []
+      
       # not applicable
       rec.parents = []
 
       rec.minmax = [h['minmax']['gte'],h['minmax']['lte']] if len(h['minmax']) > 0 else []
     except:
-      print("normalize(wdlocal) error:", h['id'], sys.exc_info())    
+      print("normalize(wdlocal) error:", h['id'], sys.exc_info())  
+
     
   elif auth == 'tgn':
     rec = HitRecord(-1, 'tgn', h['tgnid'], h['title'])
@@ -275,7 +285,7 @@ def normalize(h, auth, language=None):
     rec.minmax = []
     rec.links = []
     print(rec)
-  #print('rec from normalize()',rec.toJSON())
+  print('rec from normalize()',rec.toJSON())
   return rec.toJSON()
 
 # ***
@@ -307,7 +317,7 @@ def get_bounds_filter(bounds,idx):
 
 # from align_wd (wikidata)
 # b: wikidata binding; passnum: 1 or 2; ds (obj); pid,srcid,title > whg Place instance
-def writeHit(b,passnum,ds,pid,srcid,title):
+def writeHit(b, passnum, ds, pid, srcid, title):
   # gather any links
   authkeys=['tgnids','gnids','viafids','locids']
   linkkeys = list(set(list(b.keys())).intersection(authkeys))
@@ -1120,6 +1130,7 @@ def align_wdlocal(pk, **kwargs):
       count_hit +=1
       total_hits += len(result_obj['hits'])
       for hit in result_obj['hits']:
+        print('pre-write hit', hit)
         if hit['pass'] == 'pass0': 
           count_p0+=1 
         if hit['pass'] == 'pass1': 

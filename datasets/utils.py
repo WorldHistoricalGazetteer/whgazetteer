@@ -566,10 +566,13 @@ def hully(g_list):
     # buffer hull, but only a little if near meridian
     coll = GeometryCollection([GEOSGeometry(json.dumps(g)) for g in g_list]).simplify()
     longs = list(c[0] for c in coll.coords)
-    if len([i for i in longs if i >= 175]) == 0:
-      hull = hull.buffer(1.4) # ~100km radius
-    else:
-      hull = hull.buffer(0.1)
+    try:
+      if len([i for i in longs if i >= 175]) == 0:
+        hull = hull.buffer(1.4) # ~100km radius
+      else:
+        hull = hull.buffer(0.1)
+    except:
+      print('hully buffer error longs:', longs )
   #print(hull.geojson)    
   return json.loads(hull.geojson) if hull.geojson !=None else []
 

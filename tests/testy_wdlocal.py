@@ -91,3 +91,10 @@ def wdlocal(ds):
 
 ds_array = input('one or more ds ids, comma delimited:   ')
 wdlocal(ds_array)
+
+#done [807, 812, 925, 927, 897]
+
+#delthese=[]
+#for d in delthese:
+  #ds=get_object_or_404(Dataset,pk=d)
+  #ds.delete()

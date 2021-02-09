@@ -182,7 +182,7 @@
                   {% endfor %}
                 </p>{% endif %}
                 
-                <p class="mt-2"><strong>Types</strong>:
+                <p class="mt-2 strong">Types:
                 {% if authority == 'whg' %}
                   {% for t in form.json.value|get:"types" %}
                     {{ t|add:"; " }}
@@ -191,11 +191,9 @@
                   {{ form.json.value|get:"types"}}
                 {% endif %}
                 
-                {% if form.json.value|get:"parents"|length > 0 %} 
-                <p><strong>Parents</strong>: {{ form.json.value|get:"parents" }}</p>{% endif %}
-
                 {% if form.json.value|get:"ccodes"|length > 0 %} 
-                <p><strong>Countries</strong>: {{ form.json.value|get:"ccodes" }}</p>{% endif %}
+                <p><strong>Countries</strong>: {{ form.json.value|get:"ccodes" }}</p>
+                {% endif %}
 
                 {% if form.json.value|get:"links"|length > 0 %} 
                   <p><strong>Links</strong>: 
@@ -208,12 +206,11 @@
                   <p><strong>Temporal attestations</strong>: 
                   {{ form.json.value|get:"minmax" }}</p>
                 {% endif %}
-                                  
                 {% if form.json.value|get:"descriptions"|length > 0 %} 
-                  <p class="mb-0"><strong>Descriptions</strong>:</p> 
+                  <p class="mb-0"><strong>Description(s)</strong>:</p> 
                   <div class="attest-element abbrev">
                   {% for d in form.json.value|get:"descriptions" %}
-                      <p>{{ d }}</p>{% endfor %}
+                    <p>({{d.lang}}) {{ d.text }}</p>{% endfor %}
                   </div>
                 {% endif %}
               </div>
