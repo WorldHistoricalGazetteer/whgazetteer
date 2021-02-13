@@ -8,7 +8,7 @@ import os, sys, re
 import simplejson as json
 
 from datasets.models import Dataset, Hit
-from datasets.tasks import es_lookup_wdlocal
+from datasets.tasks import es_lookup_tgn
 from datasets.utils import hully
 #from datasets.views import ds_recon
 from places.models import Place
@@ -18,7 +18,7 @@ whgadmin = get_object_or_404(User, pk=1)
 
 
   
-def wdlocal(ds):
+def tgn_test(ds):
   dsids = [int(x) for x in str(ds).split(',')]
   datasets = Dataset.objects.filter(id__in=dsids).values_list('label')
   print('datasets', datasets)
@@ -69,7 +69,7 @@ def wdlocal(ds):
       
     #print('qobj', qobj)
     # run pass0-pass2 ES queries
-    result_obj = es_lookup_wdlocal(qobj, bounds=bounds)      
+    result_obj = es_lookup_tgn(qobj, bounds=bounds)      
 
     if result_obj['hit_count'] == 0:
       count_nohits +=1
@@ -83,14 +83,14 @@ def wdlocal(ds):
   hits = hit_parade['hits']
   print('rows w/hits:'+str(some_hits)+'; total_hits: '+str(total_hits)+'; no hits: '+str(nohits))
   print(
-    'pass0:'+str(len([h['_id'] for h in hits if h['pass'] == 'pass0']))+'; ',
     'pass1:'+str(len([h['_id'] for h in hits if h['pass'] == 'pass1']))+'; ',
-    'pass2:'+str(len([h['_id'] for h in hits if h['pass'] == 'pass2'])),
+    'pass2:'+str(len([h['_id'] for h in hits if h['pass'] == 'pass2']))+'; ',
+    'pass2:'+str(len([h['_id'] for h in hits if h['pass'] == 'pass3'])),
   )
   print('hits:',hit_parade['hits'])
 
 ds_array = input('one or more ds ids, comma delimited:   ')
-wdlocal(ds_array)
+tgn_test(ds_array)
 
 #done [807, 812, 925, 927, 897]
 

@@ -3,7 +3,6 @@ from __future__ import absolute_import, unicode_literals
 from celery.decorators import task
 from django_celery_results.models import TaskResult
 from django.conf import settings
-from django.contrib.auth.decorators import permission_required, user_passes_test
 from django.core.mail import EmailMultiAlternatives
 from django.forms.models import model_to_dict
 from django.shortcuts import get_object_or_404
@@ -31,8 +30,8 @@ es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 def task_emailer(tid, dslabel, username, email, counthit, totalhits):
   print('in task_emailer()', dslabel)
   ds=get_object_or_404(Dataset, label=dslabel)
+  print('emailer tid, dslabel, username, email, counthit, totalhits',tid, dslabel, username, email, counthit, totalhits)
   task = get_object_or_404(TaskResult,task_id=tid)
-  print('dslabel, task_id, task_name',ds.label, task.task_id, task.task_name)
   tasklabel = 'Wikidata' if task.task_name[6:8]=='wd' else \
     'Getty TGN' if task.task_name.endswith('tgn') else 'WHGazetteer'
   if task.status == "FAILURE":
@@ -285,7 +284,7 @@ def normalize(h, auth, language=None):
     rec.minmax = []
     rec.links = []
     print(rec)
-  print('rec from normalize()',rec.toJSON())
+  print('normalized hit record',rec.toJSON())
   return rec.toJSON()
 
 # ***
@@ -682,9 +681,10 @@ def es_lookup_tgn(qobj, *args, **kwargs):
   # /\/\/\/\/\/
   # pass1: must[name]; should[type,parent]; filter[bounds,geom]
   # /\/\/\/\/\/
-  print('q1',q1)
+  #print('q1',q1)
   try:
     res1 = es.search(index="tgn_shape", body = q1)
+    #res1 = es.search(index="tgn", body = q1)
     hits1 = res1['hits']['hits']
   except:
     print('pass1 error:',sys.exc_info())
@@ -694,11 +694,11 @@ def es_lookup_tgn(qobj, *args, **kwargs):
       hit['pass'] = 'pass1'
       result_obj['hits'].append(hit)
   elif len(hits1) == 0:
+    print('q1 no result:)',q1)
     # /\/\/\/\/\/
     # pass2: revert to qbase{} (drops geom)
     # /\/\/\/\/\/  
     q2 = qbase
-    print('q2 (base)',q2)
     try:
       res2 = es.search(index="tgn_shape", body = q2)
       hits2 = res2['hits']['hits']
@@ -710,6 +710,7 @@ def es_lookup_tgn(qobj, *args, **kwargs):
         hit['pass'] = 'pass2'
         result_obj['hits'].append(hit)
     elif len(hits2) == 0:
+      print('q2 no result:)',q2)
       # /\/\/\/\/\/
       # pass3: revert to qbare{} (drops placetype)
       # /\/\/\/\/\/  
@@ -727,6 +728,7 @@ def es_lookup_tgn(qobj, *args, **kwargs):
           result_obj['hits'].append(hit)
       else:
         # no hit at all, name & bounds only
+        print('q3 no result:)',q3)
         result_obj['missed'] = qobj['place_id']
   result_obj['hit_count'] = hit_count
   return result_obj
@@ -736,6 +738,8 @@ def es_lookup_tgn(qobj, *args, **kwargs):
 # ***
 @task(name="align_tgn")
 def align_tgn(pk, *args, **kwargs):
+  task_id = align_tgn.request.id
+  print('task_id', task_id)
   ds = get_object_or_404(Dataset, id=pk)
   bounds = kwargs['bounds']
   scope = kwargs['scope']
@@ -762,9 +766,10 @@ def align_tgn(pk, *args, **kwargs):
     qobj['countries'] = place.ccodes
 
     # types (Getty AAT identifiers)
-    # tgn_shape index has 'aat:' prefix
+    # all have 'aat:' prefixes
     for t in place.types.all():
-      types.append('aat:'+t.jsonb['identifier'])
+      #types.append('aat:'+t.jsonb['identifier'])
+      types.append(t.jsonb['identifier'])
     qobj['placetypes'] = types
 
     # names
@@ -799,7 +804,7 @@ def align_tgn(pk, *args, **kwargs):
       count_hit +=1
       total_hits += len(result_obj['hits'])
       #print("hit[0]: ",result_obj['hits'][0]['_source'])  
-      print('hits from align_tgn',result_obj['hits'])
+      #print('hits from align_tgn',result_obj['hits'])
       for hit in result_obj['hits']:
         if hit['pass'] == 'pass1': 
           count_p1+=1 
@@ -850,11 +855,12 @@ def align_tgn(pk, *args, **kwargs):
   
   # email owner when complete
   task_emailer.delay(
+    task_id,
     ds.label,
     ds.owner.username,
     ds.owner.email,
     count_hit,
-    total_hits
+    total_hits  
   )
   
   return hit_parade['summary']
@@ -937,7 +943,7 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
   qbase = {"query": { 
     "bool": {
       "must": [
-        {"terms": {"variants.name":variants}}
+        {"terms": {"variants.names":variants}}
       ],
       # boosts score if matched
       "should":[
@@ -961,6 +967,7 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
     qbase['query']['bool']['filter'].append(area_filter)
     if has_countries:
       qbase['query']['bool']['should'].append(countries_match)
+
   
   # q1 = qbase + types
   q1 = deepcopy(qbase)

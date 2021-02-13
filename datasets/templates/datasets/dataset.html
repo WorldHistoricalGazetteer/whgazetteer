@@ -438,8 +438,7 @@
     <div id="addtask" class="tab-pane" role="tabpanel" aria-labelledby="addtask-tab">
       <form action="{% url 'datasets:ds_recon' ds.id %}" method="POST">
       {% csrf_token %}
-      {% if ds.owner.id == user.id or user.is_superuser %}
-      <!--from context: { area_list }}-->
+      {% if user.is_superuser or user in owners %}
       <div class="row"> <!-- page-wide -->
         <div id="recon_form" class="col-md-6">
           <input type="hidden" name="ds" value="{{ ds.id }}">
@@ -463,26 +462,28 @@
             <hr/>
           {% endif %}
           <p class="font-weight-bold mb-0">Authority name source</p>
-          <p class="small">Your task will enter a queue and an email will be sent when it is completed. <br/>The <b>{{ ds.numrows }}</b> records in this dataset will take <b>{{ds.numrows|time_estimate }}</b>.</p>
+          <p class="small">Your task will enter a queue and an email will be sent when it is completed. 
+          <!--<br/>The <b>{ ds.numrows }}</b> records in this dataset will take <b>{ ds.numrows|time_estimate }}</b>.-->
+          </p>
+          <div class="form-check">
+            <label class="form-check-label" for="r_tgn">
+              <input type="radio" class="form-check-input" id="r_tgn"
+                name="recon" value="tgn" checked>Getty TGN (tgn) <span class="text-danger small ml-2">estimated time: {{ ds.numrows|time_estimate }}</span>
+            </label>
+          </div>
+          <div class="form-check">
+            <label class="form-check-label" for="r_wd">
+              <input type="radio" class="form-check-input r_wd" id="r_wd" name="recon" value="wd" >Wikidata remote sparql (wd) <span class="ml-2 text-danger small">estimated time: {{ ds.numrows|time_estimate_sparql }}</span>
+            </label>
+          </div>
           {% if beta_or_better %}
           <div class="form-check">
             <label class="form-check-label" for="r_wdlocal">
               <input type="radio" class="form-check-input r_wd" id="r_wdlocal" 
-                name="recon" value="wdlocal" checked>Wikidata (wdlocal)
+                name="recon" value="wdlocal" checked>Wikidata local (BETA) <span class="ml-2 text-danger small">estimated time: {{ ds.numrows|time_estimate }}</span>
             </label>
           </div>
           {% endif %}
-          <div class="form-check">
-            <label class="form-check-label" for="r_tgn">
-              <input type="radio" class="form-check-input" id="r_tgn"
-                name="recon" value="tgn">Getty TGN (tgn) 
-            </label>
-          </div>
-          <div class="form-check hidden">
-            <label class="form-check-label" for="r_wd">
-              <input type="radio" class="form-check-input r_wd" id="r_wd" name="recon" value="wd" >Wikidata remote sparql (wd) <span class="text-danger small ml-2">approx. 1 record per second</span>
-            </label>
-          </div>
           {% if request.method == 'GET' %}
           {% if ds.unindexed < ds.numrows %}
           <div id="recon_scope" class="mt-2">
@@ -496,7 +497,8 @@
           <div id="geo_constraint" class="mt-2">
             <hr/>
             <div class="mb-2">
-              <p class="font-weight-bold">Geographic constraint</p>
+              <p class="font-weight-bold">Geographic constraint <span class="help-matches" data-id="fubar">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
+              </p>
               <p>
                 <select id="select_region" name="region" class="custom-select-sm" style="width:auto;">
                   <option value="0">Select pre-defined region</option>
@@ -875,6 +877,7 @@ js for Summary, Reconciliation
     })   
     $(".help-matches").click(function(){
       page=$(this).data('id')
+      console.log('help:', page)
       $('.selector').dialog('open');
     })
     $(".selector").dialog({

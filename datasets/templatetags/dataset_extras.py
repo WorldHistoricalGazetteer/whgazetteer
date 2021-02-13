@@ -9,6 +9,11 @@ def time_estimate(numrows):
     seconds = round(numrows/3)
     return 'about '+str(round(seconds/60))+' minute(s)' \
            if seconds >= 60 else 'under 1 minute'
+@register.filter
+def time_estimate_sparql(numrows):
+    seconds = numrows
+    return 'about '+str(round(seconds/60))+' minute(s)' \
+           if seconds >= 60 else 'under 1 minute'
 
 @register.simple_tag
 def define(val=None):

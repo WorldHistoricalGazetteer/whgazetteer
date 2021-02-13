@@ -618,11 +618,11 @@ def elapsed(delta):
   minutes, seconds = divmod(delta.seconds, 60)
   return '{:02}:{:02}'.format(int(minutes), int(seconds))
 
+# called from es_lookup_tgn()
 def bestParent(qobj, flag=False):
   # applicable for tgn only
-  # TODO; adapt for wikidata
   best = []
-  print('qobj in bestParent',qobj)
+  #print('qobj in bestParent',qobj)
   # merge parent country/ies & parents
   if len(qobj['countries']) > 0 and qobj['countries'][0] != '':
     for c in qobj['countries']:
