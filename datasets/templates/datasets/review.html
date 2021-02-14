@@ -116,8 +116,7 @@
             {% leaflet_map "map_review" callback="map_init" %}
           </div>
         </div>
-        <!--available: ['whg_id', 'place_id', 'src_id', 'title', 'dataset', 'variants', 'types', 
-        'ccodes', 'parents', 'descriptions', 'geoms', 'timespans', 'links']-->
+        <!--available: ['whg_id', 'place_id', 'src_id', 'title', 'dataset', 'variants', 'types', 'ccodes', 'parents', 'descriptions', 'geoms', 'timespans', 'links']-->
         <div id="review_list" class="col-sm-8 pr-0">
             {% for form in formset %}
               <input type="hidden" name="id" value='{{ form.id.value }}'></input>
@@ -161,6 +160,7 @@
                     {{ g|safe|json_script:g.id }}
                   {% endfor %}
                 {% endif %}
+                <!--{ form.json.value }}-->
                 <p><strong>Title/Preferred</strong>: <span class="text-danger h6">{{ form.json.value|get:"title" }}</p>
                 {% if authority|startswith:'whg' %}
                   <p><strong>WHG place id</strong>: {{ form.json.value|get:"place_id" }}</p> 
@@ -190,7 +190,7 @@
                 {% else %}
                   {{ form.json.value|get:"types"}}
                 {% endif %}
-                
+
                 {% if form.json.value|get:"ccodes"|length > 0 %} 
                 <p><strong>Countries</strong>: {{ form.json.value|get:"ccodes" }}</p>
                 {% endif %}
@@ -207,6 +207,7 @@
                   {{ form.json.value|get:"minmax" }}</p>
                 {% endif %}
                 {% if form.json.value|get:"descriptions"|length > 0 %} 
+                <!--{ if form.json.value|get:"descriptions" != null %} -->
                   <p class="mb-0"><strong>Description(s)</strong>:</p> 
                   <div class="attest-element abbrev">
                   {% for d in form.json.value|get:"descriptions" %}

@@ -1882,8 +1882,8 @@ class DatasetDetailView(LoginRequiredMixin, UpdateView):
     context['current_file'] = file
     context['format'] = file.format
     context['numrows'] = file.numrows
-    #context['collaborators'] = ds.collaborators
-    context['collaborators'] = ds.collabs.all()
+    context['collaborators'] = ds.collaborators
+    #context['collaborators'] = ds.collabs.all()
     context['owners'] = ds.owners
     placeset = Place.objects.filter(dataset=ds.label)
     context['tasks'] = TaskResult.objects.all().filter(task_args = [id_],status='SUCCESS')

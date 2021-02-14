@@ -292,7 +292,7 @@
             <p class="larger ml-1 mb-2 strong">{{ message|safe }}</p>
           {%endfor%}</div>
         {% endif %}
-        {% if user.is_superuser or user in collaborators %}
+        {% if user.is_superuser or user in owners or user in collaborators %}
         {% if tasks|length < 1 %}<i>None yet...</i>{% endif %}
         {% for t in tasks %}
         <div class="task-box mb-2">

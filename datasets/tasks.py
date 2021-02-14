@@ -1,17 +1,17 @@
 # celery reconciliation tasks [align_tgn(), align_whg()] and related functions
 from __future__ import absolute_import, unicode_literals
-from celery.decorators import task
+#from celery.decorators import task
 from django_celery_results.models import TaskResult
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
-from django.forms.models import model_to_dict
+#from django.forms.models import model_to_dict
 from django.shortcuts import get_object_or_404
 from django.contrib.gis.geos import Polygon, Point, LineString
-import logging
+#import logging
 ##
-import sys, os, re, json, codecs, datetime, time, csv, random
+import  datetime, json, os, re, sys #, codecs, time, csv, random
 from copy import deepcopy
-from pprint import pprint
+#from pprint import pprint
 from areas.models import Area
 from es.es_utils import makeDoc
 from datasets.models import Dataset, Hit
@@ -21,7 +21,7 @@ from datasets.static.hashes.qtypes import qtypes
 from datasets.utils import *
 from places.models import Place
 ##
-from geopy import distance
+#from gesopy import distance
 from elasticsearch import Elasticsearch
 es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 ##
@@ -119,20 +119,21 @@ def ccDecode(codes):
   return countries
   
 # generate a language-dependent {name} ({en}) from wikidata variants
-def wdTitle(variants, language):
-  vpref=next( (v['name'] for v in variants if v['lang'] == language), None)
-  vstd=next( (v['name'] for v in variants if v['lang'] == 'en'), None)
-  #print(vpref, vstd)
+def wdTitle(variants, lang):
+  vl_en=next( (v for v in variants if v['lang'] == 'en'), None)#; print(vl_en)
+  vl_pref=next( (v for v in variants if v['lang'] == lang), None)#; print(vl_pref)
+  vl_first=next( (v for v in variants ), None); print(vl_first)
   
-  title = vpref + (' (' + vstd + ')' if vstd else '') \
-    if vpref and language != 'en' else vstd
+  title = vl_pref['names'][0] + (' (' + vl_en['names'][0] + ')' if vl_en else '') \
+    if vl_pref and lang != 'en' else vl_en['names'][0] if vl_en else vl_first['names'][0]
   return title
 
-def wdDescriptions(descrips, language):
-  dpref=next( (v for v in descrips if v['lang'] == language), None)
+def wdDescriptions(descrips, lang):
+  dpref=next( (v for v in descrips if v['lang'] == lang), None)
   dstd=next( (v for v in descrips if v['lang'] == 'en'), None)
 
-  result = [dstd, dpref] if language != 'en' else [dstd]
+  result = [dstd, dpref] if lang != 'en' else [dstd] \
+    if dstd else []
   return result
 
 # normalize hit json from any authority
@@ -205,10 +206,16 @@ def normalize(h, auth, language=None):
 
       #  place_id, dataset, src_id, title
       rec = HitRecord(-1, 'wd', h['id'], title)
-      print('"rec" HitRecord',rec)
+      #print('"rec" HitRecord',rec)
       
-      # list of variant@lang
-      rec.variants = [v['name']+'@'+v['lang'] for v in variants if v['name'] != title]
+      # list of variant@lang (excldes chosen title)
+      #variants= [{'lang': 'ru', 'names': ['Toamasina', 'Туамасина']},{'lang': 'ja', 'names': ['タマタヴ', 'トゥアマシナ']}]
+      v_array=[]
+      for v in variants:
+        for n in v['names']:
+          if n != title:
+            v_array.append(n+'@'+v['lang'])
+      rec.variants = v_array
             
       if 'location' in h.keys():
         # single MultiPoint geometry
@@ -216,8 +223,8 @@ def normalize(h, auth, language=None):
         loc['id'] = h['id']
         loc['ds'] = 'wd'        
         # single MultiPoint geom if exists
-      rec.geoms = [loc] if loc else []
-      
+        rec.geoms = [loc]
+
       # turn these identifier claims into links
       qlinks = {'P1566':'gn', 'P1584':'pl', 'P244':'loc', 'P1667':'tgn', 'P214':'viaf', 'P268':'bnf', 'P1667':'tgn', 'P2503':'gov', 'P1871':'cerl', 'P227':'gnd'}
       links=[]
@@ -252,18 +259,18 @@ def normalize(h, auth, language=None):
       ]
       
       # include en + native lang if not en
-      print('h["descriptions"]',h['descriptions'])
-      rec.descriptions = wdDescriptions(h['descriptions'], language) \
-        if 'descriptions' in h.keys() else []
+      #print('h["descriptions"]',h['descriptions'])
+      rec.descriptions = wdDescriptions(h['descriptions'], language) if 'descriptions' in h.keys() else []
       
       # not applicable
       rec.parents = []
-
-      rec.minmax = [h['minmax']['gte'],h['minmax']['lte']] if len(h['minmax']) > 0 else []
+      
+      # no minmax in hit if no inception value(s)
+      rec.minmax = [h['minmax']['gte'],h['minmax']['lte']] if 'minmax' in h else []
     except:
-      print("normalize(wdlocal) error:", h['id'], sys.exc_info())  
+      # TODO: log error
+      print("normalize(wdlocal) error:", h['id'], sys.exc_info())
 
-    
   elif auth == 'tgn':
     rec = HitRecord(-1, 'tgn', h['tgnid'], h['title'])
     rec.variants = [n['toponym'] for n in h['names']] # always >=1 names
@@ -285,6 +292,7 @@ def normalize(h, auth, language=None):
     rec.links = []
     print(rec)
   print('normalized hit record',rec.toJSON())
+  # TODO: raise any errors
   return rec.toJSON()
 
 # ***
