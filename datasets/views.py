@@ -487,7 +487,7 @@ def ds_recon(request, pk):
     if not celeryUp():
       print('Celery is down :^(')
       emailer('Celery is down :^(','if not celeryUp() -- look into it, bub!')
-      messages.add_message(request, messages.INFO, "Sorry! Reconciliation services appears to be down. The system administrator has been notified.")
+      messages.add_message(request, messages.INFO, "Sorry! WHG reconciliation services appears to be down. The system administrator has been notified.")
       return redirect('/datasets/'+str(ds.id)+'/detail#reconciliation')
       
     # run celery/redis tasks e.g. align_tgn, align_wd, align_whg, align_whg_pre, align_wdlocal

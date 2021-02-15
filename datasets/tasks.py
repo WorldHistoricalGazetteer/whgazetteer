@@ -1,6 +1,6 @@
-# celery reconciliation tasks [align_tgn(), align_whg()] and related functions
+# celery reconciliation tasks [align_tgn(), align_whg(), align_wdlocal()] and related functions
 from __future__ import absolute_import, unicode_literals
-#from celery.decorators import task
+from celery.decorators import task # this is @task decorator
 from django_celery_results.models import TaskResult
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
@@ -1039,7 +1039,7 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
           hit['pass'] = 'pass2'
           result_obj['hits'].append(hit)
       elif len(hits2) == 0:
-        result_obj['missed'] = qobj['place_id']
+        result_obj['missed'] = str(qobj['place_id']) + ': ' + qobj['title']
         print('q2: no hits',q2)
   result_obj['hit_count'] = hit_count
   return result_obj
@@ -1158,7 +1158,6 @@ def align_wdlocal(pk, **kwargs):
           authrecord_id = hit['_id'],
           dataset = ds,
           place_id = get_object_or_404(Place, id=qobj['place_id']),
-          #task_id = align_wdlocal.request.id,
           task_id = task_id,
           query_pass = hit['pass'],
           # prepare for consistent display in review screen

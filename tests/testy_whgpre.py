@@ -1,5 +1,5 @@
-# testy_wdlocal.py 14 Feb 2021
-# for Dataset id in list, perform wdlocal recon, write results to file
+# testy_whgpre.py 15 Feb 2021
+# for Dataset id in list, perform whg recon, write summary to file
 
 from django.contrib.auth.models import User, Group
 from django.shortcuts import get_object_or_404
@@ -8,7 +8,7 @@ import codecs
 import simplejson as json
 from datetime import date
 from datasets.models import Dataset, Hit
-from datasets.tasks import es_lookup_wdlocal, normalize
+from datasets.tasks import es_lookup_whg, normalize
 from datasets.utils import *
 #from datasets.views import ds_recon
 from places.models import Place
@@ -71,7 +71,7 @@ def wdlocal(dsids):
         
       #print('qobj', qobj)
       # run pass0-pass2 ES queries
-      result_obj = es_lookup_wdlocal(qobj, bounds=bounds)      
+      result_obj = es_lookup_whg(qobj, bounds=bounds)      
   
       if result_obj['hit_count'] == 0:
         count_nohits +=1
