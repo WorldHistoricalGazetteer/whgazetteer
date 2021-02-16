@@ -28,8 +28,8 @@ es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 
 @task(name="task_emailer")
 def task_emailer(tid, dslabel, username, email, counthit, totalhits):
-  print('in task_emailer()', dslabel)
-  ds=get_object_or_404(Dataset, label=dslabel)
+  #print('in task_emailer()', dslabel)
+  #ds=get_object_or_404(Dataset, label=dslabel)
   print('emailer tid, dslabel, username, email, counthit, totalhits',tid, dslabel, username, email, counthit, totalhits)
   task = get_object_or_404(TaskResult,task_id=tid)
   tasklabel = 'Wikidata' if task.task_name[6:8]=='wd' else \
@@ -42,8 +42,8 @@ def task_emailer(tid, dslabel, username, email, counthit, totalhits):
   else:
     text_content="Greetings "+username+"! Your "+tasklabel+" reconciliation task has completed with status: "+ \
       task.status+". \n"+str(counthit)+" records got a total of "+str(totalhits)+" hits.\nRefresh the dataset page and view results on the 'Reconciliation' tab."
-    html_content_success="<h3>Greetings, "+username+"</h3> <p>Your <b>"+tasklabel+"</b> reconciliation task for the <b>"+ds.label+"</b> dataset has completed with status: "+ task.status+". "+str(counthit)+" records got a total of "+str(totalhits)+" hits.</p>" + \
-      "<p><a href='http://whgazetteer.org/datasets/"+str(ds.id)+"/detail#reconciliation'>View results</a> on the 'Reconciliation' tab (you may have to refresh the page).</p>"
+    html_content_success="<h3>Greetings, "+username+"</h3> <p>Your <b>"+tasklabel+"</b> reconciliation task for the <b>"+dslabel+"</b> dataset has completed with status: "+ task.status+". "+str(counthit)+" records got a total of "+str(totalhits)+" hits.</p>" + \
+      "<p>View results on the 'Reconciliation' tab (you may have to refresh the page).</p>"
 
   subject, from_email = 'WHG reconciliation result', 'whgazetteer@gmail.com'
   msg = EmailMultiAlternatives(
@@ -1199,12 +1199,13 @@ def align_wdlocal(pk, **kwargs):
 # performs elasticsearch > whg queries
 # ***
 def es_lookup_whg(qobj, *args, **kwargs):
-  print('kwargs from es_lookup_whg',kwargs)
+  #print('kwargs from es_lookup_whg',kwargs)
   global whg_id
-  idx = kwargs['index']
+  #idx = kwargs['index']
+  idx = 'whg'
   bounds = kwargs['bounds']
   #ds = kwargs['dataset'] 
-  place = kwargs['place']
+  #place = kwargs['place']
   hit_count, err_count = [0,0]
 
   # create empty result object
@@ -1293,7 +1294,7 @@ def es_lookup_whg(qobj, *args, **kwargs):
   q1 = qlinks
   q2 = qbase
   q3 = qbare
-  print('q1',q1)
+  #print('q1',q1)
   # /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
   # pass1: must[links]; should[names->variants]
   # /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
@@ -1393,7 +1394,7 @@ def align_whg(pk, *args, **kwargs):
     print('building qobj for place.id',place.id, place.title)
     count +=1
     qobj = {"place_id":place.id, "src_id":place.src_id, "title":place.title}
-    links=[]; ccodes=[]; types=[]; variants=[]; parents=[]; geoms=[]; 
+    [links,ccodes,types,variants,parents,geoms] = [[],[],[],[],[],[]] 
 
     # links
     for l in place.links.all():

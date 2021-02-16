@@ -233,10 +233,13 @@ def review(request, pk, tid, passnum):
     'ds_id': pk, 'ds_label': ds.label, 'task_id': tid,
       'hit_list': raw_hits, 
       'authority': task.task_name[6:8] if auth=='wdlocal' else task.task_name[6:],
-      'records': records, 'countries': countries, 'passnum': passnum,
+      'records': records, 
+      'countries': countries, 
+      'passnum': passnum,
       'page': page if request.method == 'GET' else str(int(page)-1),
       'aug_geom': json.loads(task.task_kwargs.replace("'",'"'))['aug_geom'],
       'mbtokenmb': settings.MAPBOX_TOKEN_MB,
+      'count_pass0': cnt_pass0,
       'count_pass1': cnt_pass1,
       'count_pass2': cnt_pass2,
       'count_pass3': cnt_pass3
@@ -1886,7 +1889,7 @@ class DatasetDetailView(LoginRequiredMixin, UpdateView):
     #context['collaborators'] = ds.collabs.all()
     context['owners'] = ds.owners
     placeset = Place.objects.filter(dataset=ds.label)
-    context['tasks'] = TaskResult.objects.all().filter(task_args = [id_],status='SUCCESS')
+    context['tasks'] = TaskResult.objects.all().filter(task_args = [id_], status='SUCCESS')
     # initial (non-task)
     context['num_links'] = PlaceLink.objects.filter(
       place_id__in = placeset, task_id = 'initial').count()
@@ -1918,7 +1921,7 @@ class DatasetDetailView(LoginRequiredMixin, UpdateView):
       place_id__in = placeset, task_id__contains = '-').count()
 
     context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False
-    #print('context from DatasetDetailView',context)
+    print('context["tasks"] from DatasetDetailView', context['tasks'])
 
     return context
 

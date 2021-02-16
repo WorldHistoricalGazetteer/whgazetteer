@@ -18,9 +18,10 @@
   <!-- incoming: ds, hit_list -->
   <h5 class="mb-2 mt-3">{% if authority == 'whg' %}Accessioning{%else%}Reconciliation{%endif%} Review: 
     <span class="small"> <a href="{% url 'datasets:dataset-detail' id=ds_id %}"> 
-      {{ ds_label }}</a> {%if authority != 'whg' %}> {{ authority }}{%endif%}
+      {{ ds_label }}</a> {% if authority != 'whg' %}> {{ authority }} {%endif%}
       <select id="select_pass" name="pass" class="custom-select-sm mr-2" style="width:auto;">
-        <option value="pass0">PASS 0 (auto-matched)&nbsp;</option>
+        {% if count_pass1 > 0 %}
+        <option value="pass0">PASS 0 (auto-matched)&nbsp;</option>{% endif %}
         {% if count_pass1 > 0 %}
           <option value="pass1">PASS 1&nbsp;</option>{% endif %}
         {% if count_pass2 > 0 %}

@@ -2,6 +2,7 @@
 # for Dataset id in list, perform whg recon, write summary to file
 
 from django.contrib.auth.models import User, Group
+from django.contrib.gis.geos import Polygon, Point, LineString
 from django.shortcuts import get_object_or_404
 
 import codecs
@@ -16,65 +17,85 @@ from places.models import Place
 someuser = get_object_or_404(User, pk=14)
 whgadmin = get_object_or_404(User, pk=1)
 today=date.today().strftime("%Y%m%d")
-workdir = '/Users/karlg/Documents/Repos/_whgdata/elastic/wikidata/results/'
-def wdlocal(dsids):
+workdir = '/Users/karlg/Documents/Repos/_whgdata/elastic/whg/results/'
+#dsids = 925
+def whgpre(dsids):
   fout_summary = codecs.open(workdir + 'summary_' + str(dsids) + '.txt', mode='w', encoding = 'utf8')
   dsidlist = [int(x) for x in str(dsids).split(',')]
+  idx='whg'
   for d in dsidlist:
-    fout = codecs.open(workdir + 'wdlocal_out_'+str(d)+'.txt', mode='w', encoding='utf8')
+    fout = codecs.open(workdir + 'whgpre_out_'+str(d)+'.txt', mode='w', encoding='utf8')
     datasets = Dataset.objects.filter(id__in=dsidlist).values_list('label')
     print('datasets', datasets)
-    [nohits, some_hits, total_hits, count_nohits] = [[],0,0,0]
+
     hit_parade = {"summary": {}, "hits": []}
+    [count,count_hit,count_nohit,total_hits,count_p1,count_p2,count_p3] = [0,0,0,0,0,0,0]
+    [nohits, some_hits, total_hits, count_nohits] = [[],0,0,0]
   
     qs = Place.objects.filter(dataset__in = datasets)
     bounds = {'type': ['userarea'], 'id': ['0']}
     #scope = 'all',
     #language = 'en'
     for place in qs:
-      [variants,geoms,types,ccodes,parents,links]=[[],[],[],[],[],[]]
-      qobj = {"place_id":place.id,
-              "src_id":place.src_id,
-              "title":place.title,
-              "fclasses":place.fclasses or []}
-      # ccodes
+      #place = qs[0]
+      """
+      build query object 'qobj'
+      then result_obj = es_lookup_whg(qobj)
+      """      
+      count +=1
+      qobj = {
+        "place_id":place.id, 
+        "src_id":place.src_id, 
+        "title":place.title
+      }
+      [links,ccodes,types,variants,parents,geoms] = [[],[],[],[],[],[]]
+  
+      # links
+      for l in place.links.all():
+        links.append(l.jsonb['identifier'])
+      qobj['links'] = links
+  
+      # ccodes (2-letter iso codes)
       for c in place.ccodes:
-        ccodes.append(c.upper())
-      qobj['countries'] = place.ccodes
-      # types
+        ccodes.append(c)
+      qobj['countries'] = list(set(place.ccodes))
+  
+      # types (Getty AAT identifiers)
+      # accounts for 'null' in 97 black records
       for t in place.types.all():
-        if t.jsonb['identifier'].startswith('aat:'):
-          types.append(int(t.jsonb['identifier'].replace('aat:','')) )
+        if t.jsonb['identifier'] != None:
+          types.append(t.jsonb['identifier'])
+        else:
+          # no type? use inhabited place, cultural group, site
+          types.extend(['aat:300008347','aat:300387171','aat:300000809'])
       qobj['placetypes'] = types
+  
       # names
       for name in place.names.all():
         variants.append(name.toponym)
-      qobj['variants'] = variants
+      qobj['variants'] = [v.lower() for v in variants]
+  
       # parents
-      if len(place.related.all()) > 0:
-        for rel in place.related.all():
-          if rel.jsonb['relationType'] == 'gvp:broaderPartitive':
-            parents.append(rel.jsonb['label'])
-        qobj['parents'] = parents
-      else:
-        qobj['parents'] = []
+      for rel in place.related.all():
+        if rel.jsonb['relationType'] == 'gvp:broaderPartitive':
+          parents.append(rel.jsonb['label'])
+      qobj['parents'] = parents
+  
       # geoms
       if len(place.geoms.all()) > 0:
+        # any geoms at all...
         g_list =[g.jsonb for g in place.geoms.all()]
-        qobj['geom'] = hully(g_list)  
-      # links
-      if len(place.links.all()) > 0:
-        l_list = [l.jsonb['identifier'] for l in place.links.all()]
-        qobj['authids'] = l_list
-      else:
-        qobj['authids'] = []
+        # make everything a simple polygon hull for spatial filter purposes
+        qobj['geom'] = hully(g_list)
+          
         
-      #print('qobj', qobj)
-      # run pass0-pass2 ES queries
-      result_obj = es_lookup_whg(qobj, bounds=bounds)      
+      # ***
+      # run es_lookup_whg(qobj): 3 query passes
+      # ***
+      result_obj = es_lookup_whg(qobj, index=idx, bounds=bounds, place=place)
   
       if result_obj['hit_count'] == 0:
-        count_nohits +=1
+        count_nohit +=1
         nohits.append(result_obj['missed'])
       else:
         some_hits +=1
@@ -86,10 +107,10 @@ def wdlocal(dsids):
     normalized_hits = []
     language = 'en'
     for h in hits:
-      normalized_hits.append(normalize(h['_source'],'wdlocal',language))
+      normalized_hits.append(normalize(h['_source'],'whg',language))
     fout.write('no hits:\n')
     for n in nohits:
-      fout.write(n+'\n')
+      fout.write(str(n)+'\n')
     print(
       'pass0:'+str(len([h['_id'] for h in hits if h['pass'] == 'pass0']))+'; ',
       'pass1:'+str(len([h['_id'] for h in hits if h['pass'] == 'pass1']))+'; ',
@@ -103,9 +124,9 @@ def wdlocal(dsids):
   fout_summary.close()
   
 ds_array = input('one or more ds ids, comma delimited:   ')
-wdlocal(ds_array)
+whgpre(ds_array)
 
-#done [807, 812, 925, 927, 897]
+#done []
 
 #delthese=[]
 #for d in delthese:
