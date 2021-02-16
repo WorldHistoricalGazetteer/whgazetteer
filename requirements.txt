@@ -89,7 +89,7 @@ jsonschema==3.2.0
 kombu==4.6.11
 libmagic==1.0
 linear-tsv==1.1.0
-lxml==4.6.2
+lxml==4.6.1
 Markdown==3.0.1
 MarkupSafe==1.1.1
 mccabe==0.6.1
