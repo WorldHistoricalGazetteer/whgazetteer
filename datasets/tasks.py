@@ -120,13 +120,16 @@ def ccDecode(codes):
   
 # generate a language-dependent {name} ({en}) from wikidata variants
 def wdTitle(variants, lang):
-  vl_en=next( (v for v in variants if v['lang'] == 'en'), None)#; print(vl_en)
-  vl_pref=next( (v for v in variants if v['lang'] == lang), None)#; print(vl_pref)
-  vl_first=next( (v for v in variants ), None); print(vl_first)
+  if len(variants) == 0:
+    return 'unnamed'
+  else:
+    vl_en=next( (v for v in variants if v['lang'] == 'en'), None)#; print(vl_en)
+    vl_pref=next( (v for v in variants if v['lang'] == lang), None)#; print(vl_pref)
+    vl_first=next( (v for v in variants ), None); print(vl_first)
   
-  title = vl_pref['names'][0] + (' (' + vl_en['names'][0] + ')' if vl_en else '') \
-    if vl_pref and lang != 'en' else vl_en['names'][0] if vl_en else vl_first['names'][0]
-  return title
+    title = vl_pref['names'][0] + (' (' + vl_en['names'][0] + ')' if vl_en else '') \
+      if vl_pref and lang != 'en' else vl_en['names'][0] if vl_en else vl_first['names'][0]
+    return title
 
 def wdDescriptions(descrips, lang):
   dpref=next( (v for v in descrips if v['lang'] == lang), None)
@@ -206,7 +209,7 @@ def normalize(h, auth, language=None):
 
       #  place_id, dataset, src_id, title
       rec = HitRecord(-1, 'wd', h['id'], title)
-      #print('"rec" HitRecord',rec)
+      print('"rec" HitRecord',rec)
       
       # list of variant@lang (excldes chosen title)
       #variants= [{'lang': 'ru', 'names': ['Toamasina', 'Туамасина']},{'lang': 'ja', 'names': ['タマタヴ', 'トゥアマシナ']}]
@@ -270,6 +273,7 @@ def normalize(h, auth, language=None):
     except:
       # TODO: log error
       print("normalize(wdlocal) error:", h['id'], sys.exc_info())
+      print('h in normalize', h)
 
   elif auth == 'tgn':
     rec = HitRecord(-1, 'tgn', h['tgnid'], h['title'])
