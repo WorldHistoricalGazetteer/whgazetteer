@@ -184,7 +184,7 @@ def bundler(q,whgid,idx):
         }
       )
   #return bundle
-  stuff = [ collectionItem(i, 'place') for i in bundle]
+  stuff = [ collectionItem(i, 'place', None ) for i in bundle]
   return stuff
 
 """ 
@@ -251,20 +251,21 @@ class IndexAPIView(View):
     ccodes=[x.upper() for x in cc.split(',')] if cc else None
     year = request.GET.get('year')
     area = request.GET.get('area')
+    idx = 'whg'
     
-    if all(v is None for v in [name,name_startswith,whgid,pid]):
+    if all(v is None for v in [name, name_startswith, whgid,pid]):
       # TODO: format better
       return HttpResponse(content='<h3>Query requires either name, name_startswith, pid, or whgid</h3>'+
                           '<p><a href="/usingapi/">API instructions</a>')
     else:
       if whgid and whgid !='':
-        print('fetching whg_id',whgid)
+        print('fetching whg_id', whgid)
         q = {"query":{"bool":{"should": [
             {"parent_id": {"type": "child","id":whgid}},
             {"match":{"_id":whgid}}
         ]}}}
-        bundle = bundler(q,whgid,idx)
-        print('bundle',bundle)
+        bundle = bundler(q, whgid, idx)
+        print('bundle', bundle)
         #result=[b for b in bundle]
         result={"index_id":whgid,
                 "note":str(len(bundle)) + " records asserted as skos:closeMatch",
@@ -303,7 +304,7 @@ class IndexAPIView(View):
         # run query
         collection = collector(q,'place','whg')
         # format hits
-        collection = [ collectionItem(s,'place',None) for s in collection]
+        collection = [ collectionItem(s,'place', None) for s in collection]
       
         # result object
         result = {'type':'FeatureCollection','count': len(collection), 'features':collection}
