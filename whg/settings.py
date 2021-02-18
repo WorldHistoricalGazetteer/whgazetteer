@@ -14,7 +14,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
+# 
 SECRET_KEY = 'saiz(s6w1+okoz@3duv!%3bv=4cei8--f+5jb=a*_3&l0u!!wr'
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -26,11 +26,21 @@ INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
     'django.contrib.gis',
+    'django.contrib.messages',
+    'django.contrib.sessions',
+    'django.contrib.sites',
+    'django.contrib.staticfiles',
 
+    # django-allauth 17 Feb 2021
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    #'allauth.socialaccount.providers.github',
+    #'allauth.socialaccount.providers.google',
+    #'allauth.socialaccount.providers.orcid',
+
+    # 3rd party
     'bootstrap_modal_forms',
     'django_celery_results',
     'django_extensions',
@@ -44,6 +54,7 @@ INSTALLED_APPS = [
     'rest_framework_datatables',
     'rest_framework_gis',
 
+    # project apps
     'accounts.apps.AccountsConfig',
     'api.apps.ApiConfig',
     'areas.apps.AreasConfig',
@@ -54,6 +65,7 @@ INSTALLED_APPS = [
     'search.apps.SearchConfig',
     'traces.apps.TracesConfig'
 ]
+
 MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -112,10 +124,9 @@ TEMPLATES = [
         'OPTIONS': {
             'debug': True,
             'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.debug',
                 'django.template.context_processors.request',
             ],
             'builtins': [
@@ -165,10 +176,45 @@ DATABASES = {
 # not implemented
 # DATABASE_ROUTERS = ('whg.dbrouters.MyDBRouter',)
 
+# /././././././.
+# start django-allauth
+# /././././././.
+SITE_ID = 1 
+
+ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS =1
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+ACCOUNT_LOGIN_ATTEMPTS_LIMIT = 5
+ACCOUNT_LOGIN_ATTEMPTS_TIMEOUT = 86400 # 1 day in seconds
+#ACCOUNT_LOGOUT_REDIRECT_URL ='/accounts/login/'
+ACCOUNT_LOGOUT_REDIRECT_URL ='/'
+LOGIN_REDIRECT_URL = '/accounts/email/' # default to /accounts/profile 
+
+#SOCIALACCOUNT_PROVIDERS = {
+    ## For each OAuth based provider, either add a ``SocialApp``
+    ## (``socialaccount`` app) containing the required client
+    ## credentials, or list them here:
+    #'github': {
+        #'APP': {
+            #'client_id': '123',
+            #'secret': '456',
+            #'key': ''
+        #}
+    #},
+    #'orcid': {
+            ## Base domain of the API. Default value: 'orcid.org', for the production API
+            #'BASE_DOMAIN':'sandbox.orcid.org',  # for the sandbox API
+            ## Member API or Public API? Default: False (for the public API)
+            #'MEMBER_API': True,  # for the member API
+    #}}
+# /././././././.
+# end django-allauth
+# /././././././.
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend', # default
-    'guardian.backends.ObjectPermissionBackend',    
+    'guardian.backends.ObjectPermissionBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
 )
 
 # Password validation
