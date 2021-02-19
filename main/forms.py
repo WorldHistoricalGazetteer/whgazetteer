@@ -5,11 +5,18 @@ from django.utils.safestring import mark_safe
 from main.models import Comment
 from main.choices import COMMENT_TAGS
 from bootstrap_modal_forms.forms import BSModalForm
+from captcha.fields import CaptchaField
 
 class ContactForm(forms.Form):
-    from_email = forms.EmailField(required=True,label="Your email address ")
-    subject = forms.CharField(required=True)
-    message = forms.CharField(widget=forms.Textarea, required=True)
+    from_email = forms.EmailField(
+        widget=forms.EmailInput(attrs={'size': 50}),
+        required=True,
+        label="Your email address ")
+    subject = forms.CharField(
+        widget=forms.TextInput(attrs={'size': 50}),
+        required=True)
+    message = forms.CharField(widget=forms.Textarea(attrs={'cols': 50, 'rows': 5}), required=True)
+    captcha = CaptchaField()
 
 class CommentModalForm(BSModalForm):
     

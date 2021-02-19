@@ -44,6 +44,7 @@ table {border-collapse:initial;}
 /**
   general use
 **/
+/*.50w {width:"300px"}*/
 label {vertical-align:top;}
 .i-blk {display:inline-block;}
 .alert {padding: 0 1.25rem !important;}

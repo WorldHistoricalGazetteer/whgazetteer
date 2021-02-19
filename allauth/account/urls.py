@@ -1,11 +1,12 @@
 from django.urls import path, re_path
 
 from . import views
-from accounts.views import update_profile
+from accounts.views import register, update_profile
 
 
 urlpatterns = [
     path("signup/", views.signup, name="account_signup"),
+    #path('register/', register, name='register'),
     path("login/", views.login, name="account_login"),
     #path("logout/", views.logout, name="account_logout"),
     path("logout/", views.logout, {'next': '/'}, name="account_logout"),

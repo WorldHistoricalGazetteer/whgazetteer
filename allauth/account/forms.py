@@ -10,6 +10,8 @@ from django.core import exceptions, validators
 from django.urls import reverse
 from django.utils.translation import gettext, gettext_lazy as _, pgettext
 
+from captcha.fields import CaptchaField
+
 from ..utils import (
     build_absolute_uri,
     get_username_max_length,
@@ -418,10 +420,20 @@ class SignupForm(BaseSignupForm):
         user = adapter.new_user(request)
         adapter.save_user(request, user, self)
         self.custom_signup(request, user)
-        # TODO: Move into adapter `save_user` ?
         setup_user_email(request, user, [])
         return user
 
+
+class WHGRegisterForm(SignupForm):
+    first_name = forms.CharField(max_length=30, label='First Name')
+    last_name = forms.CharField(max_length=30, label='Last Name')
+    captcha = CaptchaField(label='foo')
+    
+    def signup(self, request, user):
+        user.first_name = self.cleaned_data['first_name']
+        user.last_name = self.cleaned_data['last_name']
+        user.save()
+        return user
 
 class UserForm(forms.Form):
     def __init__(self, user=None, *args, **kwargs):

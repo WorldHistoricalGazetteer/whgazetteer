@@ -66,6 +66,7 @@ def contactView(request):
     else:
         form = ContactForm(request.POST)
         if form.is_valid():
+            human = True
             subject = form.cleaned_data['subject']
             from_email = form.cleaned_data['from_email']
             message = from_email+' says: \n'+form.cleaned_data['message']

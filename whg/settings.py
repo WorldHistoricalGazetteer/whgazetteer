@@ -42,6 +42,7 @@ INSTALLED_APPS = [
 
     # 3rd party
     'bootstrap_modal_forms',
+    'captcha',
     'django_celery_results',
     'django_extensions',
     'django_filters',
@@ -93,7 +94,9 @@ CELERY_TIMEZONE = TIME_ZONE
 # trying to throw error if no worker available
 CELERY_TASK_EAGER_PROPAGATES = True
 
-
+CAPTCHA_NOISE_FUNCTIONS = (
+    #'captcha.helpers.noise_arcs',
+    'captcha.helpers.noise_dots',)
 
 # replacement section from drf-datatables
 # https://django-rest-framework-datatables.readthedocs.io/en/latest/
@@ -190,6 +193,9 @@ ACCOUNT_LOGIN_ATTEMPTS_TIMEOUT = 86400 # 1 day in seconds
 ACCOUNT_LOGOUT_REDIRECT_URL ='/'
 LOGIN_REDIRECT_URL = '/accounts/email/' # default to /accounts/profile 
 
+ACCOUNT_FORMS = {
+    'signup': 'allauth.account.forms.WHGRegisterForm',
+}
 #SOCIALACCOUNT_PROVIDERS = {
     ## For each OAuth based provider, either add a ``SocialApp``
     ## (``socialaccount`` app) containing the required client

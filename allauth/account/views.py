@@ -172,6 +172,7 @@ class LoginView(
         ret = super(LoginView, self).get_context_data(**kwargs)
         signup_url = passthrough_next_redirect_url(
             self.request, reverse("account_signup"), self.redirect_field_name
+            #self.request, reverse("register"), self.redirect_field_name
         )
         redirect_field_value = get_request_param(self.request, self.redirect_field_name)
         site = get_current_site(self.request)

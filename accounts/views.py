@@ -40,6 +40,7 @@ def update_profile(request):
     })
     
 def register(request):
+#def register(request, backend='allauth.account.auth_backends.AuthenticationBackend'):
     if request.method == 'POST':
         if request.POST['password1'] == request.POST['password2']:
             try:
