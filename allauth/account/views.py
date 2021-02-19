@@ -831,8 +831,7 @@ class LogoutView(TemplateResponseMixin, LogoutFunctionalityMixin, View):
 
     template_name = "account/logout." + app_settings.TEMPLATE_EXTENSION
     redirect_field_name = "next"
-    
-    #success_url = "/home" # KG add
+
 
     def get(self, *args, **kwargs):
         if app_settings.LOGOUT_ON_GET:
