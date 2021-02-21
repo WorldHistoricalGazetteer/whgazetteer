@@ -429,7 +429,7 @@
               {{ c|safe }}
               {% if user.is_superuser or user in owners %}
                 <span class="float-right mr-2">
-                <a href="{% url 'datasets:collab-delete' uid=c.id dsid=ds.id %}">
+                <a href="{% url 'datasets:collab-delete' uid=c.user_id_id dsid=ds.id %}">
                 {% fontawesome_icon 'times-circle' color='#336699'%}</a></span>
               {% endif %}
             </li>
