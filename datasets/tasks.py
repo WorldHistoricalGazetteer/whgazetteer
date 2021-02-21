@@ -31,20 +31,28 @@ def task_emailer(tid, dslabel, username, email, counthit, totalhits):
   #print('in task_emailer()', dslabel)
   #ds=get_object_or_404(Dataset, label=dslabel)
   print('emailer tid, dslabel, username, email, counthit, totalhits',tid, dslabel, username, email, counthit, totalhits)
-  task = get_object_or_404(TaskResult,task_id=tid)
-  tasklabel = 'Wikidata' if task.task_name[6:8]=='wd' else \
-    'Getty TGN' if task.task_name.endswith('tgn') else 'WHGazetteer'
-  if task.status == "FAILURE":
-    fail_msg = task.result['exc_message']
-    text_content="Greetings "+username+"! Unfortunately, your "+tasklabel+" reconciliation task has completed with status: "+ \
-      task.status+". \nError: "+fail_msg+"\nWHG staff have been notified. We will troubleshoot the issue and get back to you."
-    html_content_fail="<h3>Greetings, "+username+"</h3> <p>Unfortunately, your <b>"+tasklabel+"</b> reconciliation task for the <b>"+ds.label+"</b> dataset has completed with status: "+ task.status+".</p><p>Error: "+fail_msg+". WHG staff have been notified. We will troubleshoot the issue and get back to you soon.</p>"
-  else:
-    text_content="Greetings "+username+"! Your "+tasklabel+" reconciliation task has completed with status: "+ \
-      task.status+". \n"+str(counthit)+" records got a total of "+str(totalhits)+" hits.\nRefresh the dataset page and view results on the 'Reconciliation' tab."
-    html_content_success="<h3>Greetings, "+username+"</h3> <p>Your <b>"+tasklabel+"</b> reconciliation task for the <b>"+dslabel+"</b> dataset has completed with status: "+ task.status+". "+str(counthit)+" records got a total of "+str(totalhits)+" hits.</p>" + \
+  # TODO: sometimes a valid tid is not recognized (race?)
+  try:
+    task = get_object_or_404(TaskResult,task_id=tid)
+    tasklabel = 'Wikidata' if task.task_name[6:8]=='wd' else \
+      'Getty TGN' if task.task_name.endswith('tgn') else 'WHGazetteer'
+    if task.status == "FAILURE":
+      fail_msg = task.result['exc_message']
+      text_content="Greetings "+username+"! Unfortunately, your "+tasklabel+" reconciliation task has completed with status: "+ \
+        task.status+". \nError: "+fail_msg+"\nWHG staff have been notified. We will troubleshoot the issue and get back to you."
+      html_content_fail="<h3>Greetings, "+username+"</h3> <p>Unfortunately, your <b>"+tasklabel+"</b> reconciliation task for the <b>"+ds.label+"</b> dataset has completed with status: "+ task.status+".</p><p>Error: "+fail_msg+". WHG staff have been notified. We will troubleshoot the issue and get back to you soon.</p>"
+    else:
+      text_content="Greetings "+username+"! Your "+tasklabel+" reconciliation task has completed with status: "+ \
+        task.status+". \n"+str(counthit)+" records got a total of "+str(totalhits)+" hits.\nRefresh the dataset page and view results on the 'Reconciliation' tab."
+      html_content_success="<h3>Greetings, "+username+"</h3> <p>Your <b>"+tasklabel+"</b> reconciliation task for the <b>"+dslabel+"</b> dataset has completed with status: "+ task.status+". "+str(counthit)+" records got a total of "+str(totalhits)+" hits.</p>" + \
+        "<p>View results on the 'Reconciliation' tab (you may have to refresh the page).</p>"
+  except:
+    print('task lookup in task_emailer() failed on tid', tid, 'how come?')
+    text_content="Greetings "+username+"! Your reconciliation task for the <b>"+dslabel+"</b> dataset has completed.\n"+ \
+      str(counthit)+" records got a total of "+str(totalhits)+" hits.\nRefresh the dataset page and view results on the 'Reconciliation' tab."
+    html_content_success="<h3>Greetings, "+username+"</h3> <p>Your reconciliation task for the <b>"+dslabel+"</b> dataset has completed. "+str(counthit)+" records got a total of "+str(totalhits)+" hits.</p>" + \
       "<p>View results on the 'Reconciliation' tab (you may have to refresh the page).</p>"
-
+    
   subject, from_email = 'WHG reconciliation result', 'whgazetteer@gmail.com'
   msg = EmailMultiAlternatives(
     subject, 

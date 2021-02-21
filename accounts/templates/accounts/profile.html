@@ -10,7 +10,7 @@
   {{ user_form.non_field_errors }}
   {{ profile_form.non_field_errors }}
   <div class="d-flex justify-content-center mt-3">
-    <h3><span class="red-head">{{ user.username }}</span> profile<small class="ml-2"><a id="edit_link" href="#">edit {% fontawesome_icon 'edit' color='#336699' %}</a></small></h3>
+    <h3><span class="red-head">{{ user.username }}</span> profile <span class="small ml-2"><a id="edit_link" href="#">edit {% fontawesome_icon 'edit' color='#336699' %}</a></span></h3>
   </div>
   <!-- non-changeable fields -->
   <span class="hidden">{{ user_form.username }}</span>

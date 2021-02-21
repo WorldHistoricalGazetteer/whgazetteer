@@ -576,12 +576,13 @@ def task_delete(request, tid, scope="foo"):
 # TODO: limit to role?
 def collab_delete(request, uid, dsid):
   print('collab_delete() request, uid, dsid', request, uid, dsid)
-  #qs = DatasetUser.objects.filter(user_id_id=1, dataset_id_id=897).delete()
-  qs = DatasetUser.objects.filter(user_id_id=uid, dataset_id_id=dsid).delete()
+  #qs = DatasetUser.objects.filter(user_id_id=uid, dataset_id_id=dsid).delete()
+  get_object_or_404(DatasetUser,user_id_id=uid, dataset_id_id=dsid).delete()
   return redirect('/datasets/'+str(dsid)+'/detail#sharing')
 #
 # add collaborator to dataset in role
 def collab_add(request, dsid):
+  print('collab_add() request, dsid', request, dsid)
   try:
     uid=get_object_or_404(User,username=request.POST['username']).id
     role=request.POST['role']
