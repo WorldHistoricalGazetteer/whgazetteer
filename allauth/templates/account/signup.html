@@ -18,7 +18,7 @@
           {% if redirect_field_value %}
           <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
           {% endif %}
-          
+          <input type="hidden" name="user_type" value = "individual" />
           <table>
             <tr>
               <td class="">Username* </td>
@@ -36,6 +36,14 @@
             <tr>
               <td class="">Last name </td>
               <td><input type="text" name="last_name" id="id_last_name"/></td>
+            </tr>
+            <tr>
+              <td class="">Affiliation</td>
+              <td><input type="text" name="affiliation" id="id_affiliation"/></td>
+            </tr>
+            <tr>
+              <td class="">Web page</td>
+              <td><input type="text" name="web_page" id="id_web_page"/></td>
             </tr>
             <tr>
               <td class="">Password* </td>

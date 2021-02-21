@@ -34,8 +34,10 @@ class ProfileModelForm(forms.ModelForm):
     
     class Meta:
         model = Profile
-        fields = ('name','affiliation','web_page','user_type')
+        #fields = ('name','affiliation','web_page','user_type')
+        fields = ('affiliation','web_page','user_type')
         widgets = {
+            'name': forms.TextInput(attrs={'size': 60}),
             'affiliation': forms.TextInput(attrs={'size': 60}),
             'web_page': forms.TextInput(attrs={'size': 60}),
             'password': forms.PasswordInput(attrs={'size': 60}),

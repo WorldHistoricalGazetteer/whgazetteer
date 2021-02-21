@@ -1,7 +1,7 @@
 from django.urls import path, re_path
 
 from . import views
-from accounts.views import register, update_profile
+from accounts.views import update_profile
 
 
 urlpatterns = [

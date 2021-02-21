@@ -81,5 +81,6 @@ class AreaUpdateView(UpdateView):
     def get_context_data(self, *args, **kwargs):
         context = super(AreaUpdateView, self).get_context_data(*args, **kwargs)
         context['action'] = 'update'
+        context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
         return context
 

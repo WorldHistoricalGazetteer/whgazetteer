@@ -67,7 +67,6 @@
       title="Delete area feature" rel="tooltip" style="margin-top:-2px;">
       {% fontawesome_icon 'trash' color='#336699' %}</a>
     {% else %}Create Study Area{% endif %}
-      <!--{ fontawesome_icon 'question-circle' color='#336699' %}-->
   </h4>
   <div class="d-flex">
     <div class="form-box mt-2 col-sm-4">
@@ -80,8 +79,6 @@
         <input type="hidden" name="type" value='ccodes' />
       {% endif %}
       <p>Title<br/>{{ form.title }}</p>
-      <!--action: { action }}-->
-      <!--{ form.type.value }}-->
       <p><span class="top">Description</span><br/>{{ form.description }}</p>
       <hr/>
       <div id="area_options">
@@ -191,6 +188,7 @@
   //
   // expose leaflet map for events, call it 'mappy'
   window.addEventListener('map:init', function (e) {
+    console.log('map:init, w.action', '{{ action }}')
     window.mappy = e.detail.map
     var attrib_mb = 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
             '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
@@ -244,25 +242,6 @@
       <!--console.log('geom on init',lgeojson)-->
 
       drawControls(drawnItems)
-      <!--drawnItems.addTo(mappy)-->
-      <!--mappy.on(L.Draw.Event.CREATED, function (event) {-->
-        <!--window.drawnlayer = event.layer;-->
-        <!--<!--console.log('drawnlayer',drawnlayer)-->-->
-        <!--drawnItems.addLayer(drawnlayer);-->
-        <!--console.log('drawn',JSON.stringify(drawnItems.toGeoJSON().features[0].geometry))-->
-        <!--drawnItems.addTo(mappy)-->
-        <!--<!--$("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON()))-->-->
-        <!--<!--$("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON().features[0].geometry))-->-->
-      <!--});-->
-      <!--mappy.on(L.Draw.Event.EDITED, function (event) {-->
-        <!--$("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON()))-->
-        <!--console.log('you changed it')-->
-      <!--});-->
-      <!--mappy.on(L.Draw.Event.DELETED, function (event) {-->
-        <!--$("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON()))-->
-        <!--<!--drawnItems.addTo(mappy)-->-->
-        <!--console.log('you deleted something')-->
-      <!--});-->
     } else if('{{ action }}' == 'update' && '{{ form.type.value }}' == 'ccodes') {
       $('a[href="#areas_draw"]').addClass('disabled').css("cursor","default")
       map_render()
@@ -330,11 +309,25 @@
     $("#buffer_km").val(null)
   }
 </script>
+
 {% endblock %}
 
-    <!--} else if (target == '#areas_load'){-->
-      <!--$("#id_geojson").attr("placeholder","paste valid GeoJSON geometry here")-->
-      <!--if ($(".leaflet-draw-toolbar").length > 0) {-->
-          <!--// console.log('remove drawControl')-->
-          <!--$(".leaflet-draw").remove()-->
-      <!--}-->
+      <!--drawnItems.addTo(mappy)-->
+      <!--mappy.on(L.Draw.Event.CREATED, function (event) {-->
+        <!--window.drawnlayer = event.layer;-->
+        <!--<!--console.log('drawnlayer',drawnlayer)-->-->
+        <!--drawnItems.addLayer(drawnlayer);-->
+        <!--console.log('drawn',JSON.stringify(drawnItems.toGeoJSON().features[0].geometry))-->
+        <!--drawnItems.addTo(mappy)-->
+        <!--<!--$("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON()))-->-->
+        <!--<!--$("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON().features[0].geometry))-->-->
+      <!--});-->
+      <!--mappy.on(L.Draw.Event.EDITED, function (event) {-->
+        <!--$("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON()))-->
+        <!--console.log('you changed it')-->
+      <!--});-->
+      <!--mappy.on(L.Draw.Event.DELETED, function (event) {-->
+        <!--$("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON()))-->
+        <!--<!--drawnItems.addTo(mappy)-->-->
+        <!--console.log('you deleted something')-->
+      <!--});-->

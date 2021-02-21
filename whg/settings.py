@@ -193,9 +193,7 @@ ACCOUNT_LOGIN_ATTEMPTS_TIMEOUT = 86400 # 1 day in seconds
 ACCOUNT_LOGOUT_REDIRECT_URL ='/'
 LOGIN_REDIRECT_URL = '/accounts/email/' # default to /accounts/profile 
 
-ACCOUNT_FORMS = {
-    'signup': 'allauth.account.forms.WHGRegisterForm',
-}
+ACCOUNT_FORMS = {'signup': 'allauth.account.forms.WHGRegisterForm',}
 #SOCIALACCOUNT_PROVIDERS = {
     ## For each OAuth based provider, either add a ``SocialApp``
     ## (``socialaccount`` app) containing the required client
