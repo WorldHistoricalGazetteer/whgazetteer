@@ -25,6 +25,7 @@ class Home(TemplateView):
         context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
         context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
         context['mbtokenwhg'] = settings.MAPBOX_TOKEN_WHG
+        context['media_url'] = settings.MEDIA_URL
         return context
 
 

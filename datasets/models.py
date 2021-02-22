@@ -84,19 +84,11 @@ class Dataset(models.Model):
     
     @property
     def owners(self):
-        # only owners
-        #du_owner_ids = list(self.collabs.filter(role = 'owner').values_list('user_id_id',flat=True)).append(self.owner.id)
         du_owner_ids = list(self.collabs.filter(role = 'owner').values_list('user_id_id',flat=True))
         du_owner_ids.append(self.owner.id)
         ds_owners = User.objects.filter(id__in=du_owner_ids)
         return ds_owners
     
-    # count of unreviewed hits
-    @property
-    def unreviewed_cnt(self):
-        unrev=Hit.objects.all().filter(dataset_id=self.id,reviewed=False).count()
-        return unrev
-
     # unreviewed hits
     @property
     def unreviewed(self):

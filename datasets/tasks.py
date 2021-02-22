@@ -28,12 +28,10 @@ es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 
 @task(name="task_emailer")
 def task_emailer(tid, dslabel, username, email, counthit, totalhits):
-  #print('in task_emailer()', dslabel)
-  #ds=get_object_or_404(Dataset, label=dslabel)
   print('emailer tid, dslabel, username, email, counthit, totalhits',tid, dslabel, username, email, counthit, totalhits)
   # TODO: sometimes a valid tid is not recognized (race?)
   try:
-    task = get_object_or_404(TaskResult,task_id=tid)
+    task = get_object_or_404(TaskResult, task_id=tid) or False
     tasklabel = 'Wikidata' if task.task_name[6:8]=='wd' else \
       'Getty TGN' if task.task_name.endswith('tgn') else 'WHGazetteer'
     if task.status == "FAILURE":
@@ -61,7 +59,7 @@ def task_emailer(tid, dslabel, username, email, counthit, totalhits):
     #[email,'karl.geog@gmail.com'] if task.status=='SUCCESS' else [email,'karl.geog@gmail.com'])
     [email])
   msg.bcc = ['karl@kgeographer.com']
-  msg.attach_alternative(html_content_success if task.status == 'SUCCESS' else html_content_fail, "text/html")
+  msg.attach_alternative(html_content_success if task and task.status == 'SUCCESS' else html_content_fail, "text/html")
   msg.send(fail_silently=False)
   
 # test task for uptimerobot

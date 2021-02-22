@@ -63,6 +63,7 @@ label {vertical-align:top;}
 .hidden {display:none;}
 .hidden-imp {display:none !important;}
 .hover {cursor:pointer;}
+.ital {font-style: italic;}
 .larger {font-size: larger;}
 .nobr {white-space: nowrap;}
 .no-bullet { list-style: none;}

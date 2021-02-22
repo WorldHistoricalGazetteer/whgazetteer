@@ -497,11 +497,13 @@
 	ne_global= L.mapboxGL({
 	  style:'mapbox://styles/kgeographer/ckidglq8l2nra19nzzbl995ue',
 	  accessToken:token_kg}).addTo(mappy)
-	  
+	
+	
 	gl=ne_global.getMapboxMap().on('load',function(){
 	  gl.addSource('lugares', {
 			  "type": "geojson",
-			  "data": "media/data/lugares_13k.geojson"
+			  <!--"data": "/media/data/lugares_13k.geojson"-->
+			  "data": "{{media_url}}data/lugares_13k.geojson"
 		  });	
 	  gl.addSource('owtrad', {
 			  "type": "geojson",
@@ -549,6 +551,7 @@
   }, false);
 
   function map_init (home_map, options) {
+	console.log('fuck this shit{{ mbtokenmb }}')
     mappy.setView([38, 10], 2.4)
     // empty features[]
     geom = {"type":"FeatureCollecton","features":[]}

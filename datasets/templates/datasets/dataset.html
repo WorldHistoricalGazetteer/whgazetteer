@@ -181,22 +181,22 @@
               <!--<tr><td class="pb-3"><b>Status</b></td><td class="pb-3">{ ds.ds_status }}</td><td class="pb-3"></td></tr>-->
               <tr><th></th><th class="pb-1 text-secondary">count</th><th class="pb-1 text-secondary">added</th></tr>
               <tr><td><b>Records</b></td><td>{{ ds.numrows }}</td><td class="text-secondary">n/a</td></tr>
+              <tr><td><b>Name variants</b></td><td>{{ num_names }}</td><td class="text-secondary">n/a</td></tr>
+              <tr>
+                <td><b>Geometries</b></td><td>{{ num_geoms }}</td>
+                <td><span class="text-white bg-success">&nbsp;{{ geoms_added }}&nbsp;</span></td></tr>
+              <tr>
+                <td><b>Links</b></td><td>{{ num_links }}</td>
+                <td><span class="text-white bg-success">&nbsp;{{ links_added }}&nbsp;</span></td></tr>
+              {% if ds.unreviewed|length > 0 %}<tr class="text-danger">{%else%}<tr>{%endif%}
+                <td class="pt-3"><b>Unreviewed hits (total)</b></td>
+                <td class="pt-3">{{ ds.unreviewed|length }}</td> 
+                <td class="pt-3 text-secondary">n/a</td></tr>
               {% if ds.unindexed > 0 %} 
                 <tr class="text-danger">
                 <td><b>Unindexed records</b></td>
                 <td>{{ ds.unindexed }}</td> 
                 <td class="text-secondary">n/a</td></tr>{% endif %}
-              {% if ds.unreviewed > 0 %}<tr class="text-danger">{%else%}<tr>{%endif%}
-                <td><b>Unreviewed hits</b></td>
-                <td>{{ ds.unreviewed }}</td> 
-                <td class="text-secondary">n/a</td></tr>
-              <tr><td><b>Name variants</b></td><td>{{ num_names }}</td><td class="text-secondary">n/a</td></tr>
-              <tr>
-                <td class="pt-3"><b>Links</b></td><td class="pt-3">{{ num_links }}</td>
-                <td class="pt-3"><span class="text-white bg-success">&nbsp;{{ links_added }}&nbsp;</span></td></tr>
-              <tr>
-                <td><b>Geometries</b></td><td>{{ num_geoms }}</td>
-                <td><span class="text-white bg-success">&nbsp;{{ geoms_added }}&nbsp;</span></td></tr>
             </table>
           </div>
           <div id="ds_access" class="pt-0 px-0 ds-card">
@@ -293,7 +293,7 @@
           {% endfor %}</div>
         {% endif %}
         {% if user.is_superuser or user in owners or user in collaborators %}
-        {% if tasks|length < 1 %}<i>None yet...</i>{% endif %}
+        {% if tasks|length < 1 %}<i id="none_yet">None yet...</i>{% endif %}
         {% for t in tasks %}
         <div class="task-box mb-2">
           <!-- TODO: display bounds used if any -->
@@ -311,11 +311,11 @@
               </p>
             </div>
             <div class="col-sm-5">
-              <p><b>Result</b>: {{ t.result|get:"got_hits"|safe }} records (of
-                  {{ t.result|get:"count"|safe }}) got total of <b>{{ t.result|get:"total"|safe }}</b> hits</p>
+              <p><b>Result</b>: {{ t.result|get:"got_hits"|safe }} records (of {{ t.result|get:"count"|safe }}) got total of <b>{{ t.result|get:"total"|safe }}</b> hits</p>
+              <p class="mb-0 ital">Remaining to review:</p>
               <ul>
                 {% if t.result|get:"pass0" > 0 %}
-                  <li id="pass0_{{t.task_id}}"  class="li-left"><i>Pass 0 (matched links)</i>: <span class="strong" id='{{t.task_id}}_0'>nn</span> 
+                  <li id="pass0_{{t.task_id}}"  class="li-left">Pass 0 (matched links): <span class="mx-2 strong" id='{{t.task_id}}_0'>nn</span> 
                   <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass0' %}">
                    review</i></a> 
                    <span>| <a href="{% url 'datasets:wd_pass0' tid=t.task_id %}">auto-accept</a>  
@@ -324,18 +324,18 @@
                    </li>
                 {% endif %}
                 {% if t.result|get:"pass1" > 0 %}
-                  <li class="li-left"><i>Pass 1 remaining</i>: <span class="strong" id='{{t.task_id}}_1'>nn</span> 
+                  <li class="li-left">Pass 1: <span class="strong mx-2" id='{{t.task_id}}_1'>nn</span> 
                   <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass1' %}">
                    review</i></a></li>
                 {% endif %}
                 {% if t.result|get:"pass2" > 0 %}
-                  <li class="li-left"><i>Pass 2 remaining</i>: <span class="strong" id='{{t.task_id}}_2'>nn</span> 
+                  <li class="li-left">Pass 2: <span class="strong mx-2" id='{{t.task_id}}_2'>nn</span> 
                   <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass2' %}">
                    review</i></a></li>
                 {% endif %}
                 <!--{ if t.task_name == 'align_tgn' %}-->
                 {% if t.result|get:"pass3" > 0 %} <!-- TGN only -->
-                  <li class="li-left"><i>Pass 3 remaining</i>: <span class="strong" id='{{t.task_id}}_3'>nn</span> 
+                  <li class="li-left">Pass 3: <span class="strong mx-2" id='{{t.task_id}}_3'>nn</span> 
                   <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass3' %}">
                    review</i></a></li>
                 {% endif %}
@@ -484,6 +484,15 @@
               <input type="radio" class="form-check-input r_wd" id="r_wdlocal" 
                 name="recon" value="wdlocal" checked>Wikidata local (BETA) <span class="ml-2 text-danger small">estimated time: {{ ds.numrows|time_estimate }}</span>
             </label>
+            {% for t in tasks %}
+            {% if t.task_name == 'align_wdlocal'%}
+            <div class="mt-0 smaller">
+              <p>You have already run one or more Wikidata alignment tasks for this dataset.<br/>Only place records NOT already reviewed and decided upon (no match, closeMatch) will be submitted now.
+              <span class="help-matches" data-id="recon_rerun">{% fontawesome_icon 'question-circle' color='#993333' %}</span></p>
+              <input type="hidden" name="scope" value="unreviewed">
+            </div>
+            {% endif %}
+            {% endfor %}
           </div>
           {% endif %}
           {% if request.method == 'GET' %}
@@ -497,7 +506,7 @@
               <input type="radio" name="scope" checked="true" id="scope2" value="unindexed"> Only the unindexed (<b>{{ds.unindexed}}</b>)</label>
             </div>
           {% endif %}
-          {% if ds.unreviewed_cnt < ds.numrows %}
+          {% if ds.tasks|length > 0 and ds.unreviewed|length < ds.numrows %}
             <!-- if some are indexed, offer to skip them -->
             <div id="recon_scope" class="mt-2">
               <hr/><p class="font-weight-bold">Task scope</p>
@@ -510,7 +519,7 @@
           <div id="geo_constraint" class="mt-2">
             <hr/>
             <div class="mb-2">
-              <p class="font-weight-bold">Geographic constraint <span class="help-matches" data-id="fubar">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
+              <p class="font-weight-bold">Geographic constraint <span class="help-matches" data-id="geo-constraint">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
               </p>
               <p>
                 <select id="select_region" name="region" class="custom-select-sm" style="width:auto;">

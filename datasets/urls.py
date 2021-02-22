@@ -6,7 +6,7 @@ from django.conf.urls.static import static
 from django.conf import settings
 
 from . import views
-from datasets.utils import download_file, download_augmented, download_gis, UpdateCountsView, xl_upload
+from datasets.utils import download_file, download_augmented, download_gis, UpdateCountsView
 
 # dataset actions
 app_name='datasets'
