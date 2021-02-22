@@ -375,6 +375,7 @@ def writeHit(b, passnum, ds, pid, srcid, title):
 # ***
 @task(name="align_wd")
 def align_wd(pk, *args, **kwargs):
+  task_id = align_wd.request.id
   ds = get_object_or_404(Dataset, id=pk)
   #bounds = kwargs['bounds']
   
@@ -619,10 +620,15 @@ def align_wd(pk, *args, **kwargs):
   print("summary returned",hit_parade['summary'])
 
   # email owner when complete
-  task_emailer.delay(ds.label, ds.owner.username, ds.owner.email, count_hit, total_hits)
+  task_emailer.delay(
+    task_id,
+    ds.label, 
+    ds.owner.username, 
+    ds.owner.email, 
+    count_hit, 
+    total_hits)
   
   return hit_parade['summary']
-
 # ***
 # performs elasticsearch > tgn queries
 # ***

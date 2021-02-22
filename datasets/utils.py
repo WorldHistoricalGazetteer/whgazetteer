@@ -77,7 +77,7 @@ def download_augmented(request, *args, **kwargs):
     print('got format',req_format)
     #qs = qs.filter(title__icontains=query)
 
-  features=ds.places.all() 
+  features=ds.places.all().order_by('id')
 
   if fileobj.format == 'delimited' and req_format == 'tsv':
     print('augmented for delimited')

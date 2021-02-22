@@ -214,17 +214,13 @@
                 <br/>
               {% if links_added > 0 or geoms_added > 0 %}Augmented dataset: {% endif %}
                 {% if ds.numrows <= 5000 %}
-                  <!--{ if current_file.format == 'delimited' %}-->
-                    <!--<a href="{ url 'datasets:dl-aug' id=ds.id format='tsv' %}" ref="tsv">TSV format</a> | -->
-                  <!--{ endif %}  -->
-                  <!--{ elif current_file.format == 'lpf'   %}-->
-                  {% if current_file.format == 'delimited' %}
                     <a href="{% url 'datasets:dl-aug' id=ds.id format='lpf' %}" ref="lpf">Linked Places format</a>
+                  {% if current_file.format == 'delimited' %}
+                    | <a href="{% url 'datasets:dl-aug' id=ds.id format='tsv' %}" ref="tsv">TSV</a>
                   {% endif %}
                 {% else %}  
                   <span class="red-head"><br/>Sorry, download of augmented datasets larger than 5000 rows not supported right now; too slow :^(</span>
                 {% endif %}  
-              <!--{ endif %}-->
             </p>
           </div>
           {% endif %}

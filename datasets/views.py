@@ -1693,7 +1693,7 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
     if len(result['errors']) == 0:
       context['status'] = 'format_ok'
       
-      print('validated, no errors')      
+      print('validated, no errors; result:', result)      
       print('cleaned_data',form.cleaned_data)
       
       # new Dataset record ('owner','id','label','title','description')
