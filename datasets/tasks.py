@@ -1089,7 +1089,13 @@ def align_wdlocal(pk, **kwargs):
   [count, count_hit, count_nohit, total_hits, count_p0, count_p1, count_p2] = [0,0,0,0,0,0,0]
 
   # queryset depends on choice of scope in addtask form
-  qs = ds.places.all() if scope == 'all' else ds.places.all().filter(indexed=False)
+  # 
+  pids = Hit.objects.filter(dataset_id=pk, authority ='wd',reviewed=False).values_list('place_id_id',flat=True)
+  if scope == 'unreviewed':
+    qs = ds.places.filter(id__in=pids)
+  elif scope == 'all':
+    #qs = ds.places.all() if scope == 'all' else ds.places.filter(indexed=False)
+    qs = ds.places.all()
 
   for place in qs:
     # build query object

@@ -154,19 +154,19 @@ def indexMatch(pid, hit_pid=None):
   #return kwargs['owner'] == user.id
 
 
-# ***
+"""
 # review reconciliation results
-# from passnum links on detail#reconciliation
+# called from detail#reconciliationp assnum links on 
 # dataset pk, celery task_id
 # responds to GET for display, POST if 'save' button submits
-# ***
+"""
 def review(request, pk, tid, passnum):
   ds = get_object_or_404(Dataset, id=pk)
   task = get_object_or_404(TaskResult, task_id=tid)
   auth = task.task_name[6:].replace('local','')
   authname = 'Wikidata' if auth == 'wd' else 'Getty TGN'
   kwargs=json.loads(task.task_kwargs.replace("'",'"'))
-  #print('request.POST',request.POST)
+  print('request.POST in review()', request.POST)
   
   # filter place records by passnum for those with unreviewed hits on this task
   # if request passnum is complete, increment
@@ -471,11 +471,11 @@ def ds_recon(request, pk):
   if request.method == 'GET':
     print('recon request.GET:',request.GET)
   elif request.method == 'POST' and request.POST:
-    print('recon request.POST:',request.POST)
+    print('ds_recon() request.POST:',request.POST)
     # TODO: has this dataset/authority combo been done before?
     auth = request.POST['recon']
     language = request.LANGUAGE_CODE
-    # what task?
+    # what task? tgn, wd, wdlocal, whg
     func = eval('align_'+auth)
     # TODO: let this vary per authority?
     region = request.POST['region'] # pre-defined UN regions
@@ -553,6 +553,12 @@ def ds_recon(request, pk):
   print('context',context)
   return render(request, 'datasets/dataset.html', {'ds':ds, 'context': context})
 
+
+"""
+# delete results of a reconciliation task:
+# hits + any geoms and links added by review
+#
+"""
 def task_delete(request, tid, scope="foo"):
   hits = Hit.objects.all().filter(task_id=tid)
   tr = get_object_or_404(TaskResult, task_id=tid)
@@ -571,9 +577,11 @@ def task_delete(request, tid, scope="foo"):
     placegeoms.delete()    
 
   return redirect('/datasets/'+ds+'/detail#reconciliation')
-#
+"""
 # remove collaborator from dataset (all roles)
 # TODO: limit to role?
+#
+"""
 def collab_delete(request, uid, dsid):
   print('collab_delete() request, uid, dsid', request, uid, dsid)
   #qs = DatasetUser.objects.filter(user_id_id=uid, dataset_id_id=dsid).delete()
@@ -1842,8 +1850,10 @@ class DatasetDetailView(LoginRequiredMixin, UpdateView):
 
     print('DatasetDetailView get_context_data() kwargs:',self.kwargs)
     id_ = self.kwargs.get("id")
+    bounds = self.kwargs.get("bounds")
     ds = get_object_or_404(Dataset, id=id_)
-
+    # print('ds',ds.label)
+    
     # coming from DatasetCreateView(),
     # insert to db immediately (file.df_status == format_ok) 
     # most recent data file
@@ -1872,13 +1882,12 @@ class DatasetDetailView(LoginRequiredMixin, UpdateView):
     userareas = Area.objects.all().filter(type__in=area_types).values('id','title').order_by('-created')
     context['area_list'] = userareas if me.username == 'whgadmin' else userareas.filter(owner=me)
   
-    #predefined = Area.objects.all().filter(type='predefined').order_by('-created')
     predefined = Area.objects.all().filter(type='predefined').values('id','title')
-    context['region_list'] = predefined
+    placeset = Place.objects.filter(dataset=ds.label)
+    ds_tasks = TaskResult.objects.all().filter(task_args = [id_], status='SUCCESS')
     
+    context['region_list'] = predefined    
     context['updates'] = {}
-    bounds = self.kwargs.get("bounds")
-    # print('ds',ds.label)
     context['ds'] = ds
     context['log'] = ds.log.filter(category='dataset').order_by('-timestamp')
     context['comments'] = Comment.objects.filter(place_id__dataset=ds).order_by('-created')
@@ -1886,11 +1895,9 @@ class DatasetDetailView(LoginRequiredMixin, UpdateView):
     context['current_file'] = file
     context['format'] = file.format
     context['numrows'] = file.numrows
-    #context['collaborators'] = ds.collaborators
     context['collaborators'] = ds.collabs.all()
     context['owners'] = ds.owners
-    placeset = Place.objects.filter(dataset=ds.label)
-    context['tasks'] = TaskResult.objects.all().filter(task_args = [id_], status='SUCCESS')
+    context['tasks'] = ds_tasks
     # initial (non-task)
     context['num_links'] = PlaceLink.objects.filter(
       place_id__in = placeset, task_id = 'initial').count()

@@ -282,10 +282,9 @@
           <span class="small help-matches" data-id="reconciliation">
             {% fontawesome_icon 'question-circle' color='#993333' %}</span>
           {% if user.is_superuser or user in owners %}
-          <!--<span class="float-right small">-->
-          <span class="ml-4 small">
+            <span class="ml-4 small">
             <a id="addtask_link" href="#" >Add new task {% fontawesome_icon 'plus-square' color='#336699' %}</a>
-          </span>
+            </span>
           {% endif %}
         </h6>
         {% if messages %}<div>
@@ -489,13 +488,24 @@
           {% endif %}
           {% if request.method == 'GET' %}
           {% if ds.unindexed < ds.numrows %}
-          <div id="recon_scope" class="mt-2">
-            <hr/><p class="font-weight-bold">Task scope</p>
-            <label class="radio-inline">
-            <input type="radio" name="scope" id="scope1" value="all"> All <b>{{ds.numrows}}</b> records</label>
-            <label class="radio-inline ml-3">
-            <input type="radio" name="scope" checked="true" id="scope2" value="unindexed"> Only the unindexed (<b>{{ds.unindexed}}</b>)</label>
-          </div>
+            <!-- if some are indexed, offer to skip them -->
+            <div id="recon_scope" class="mt-2">
+              <hr/><p class="font-weight-bold">Task scope</p>
+              <label class="radio-inline">
+              <input type="radio" name="scope" id="scope1" value="all"> All <b>{{ds.numrows}}</b> records</label>
+              <label class="radio-inline ml-3">
+              <input type="radio" name="scope" checked="true" id="scope2" value="unindexed"> Only the unindexed (<b>{{ds.unindexed}}</b>)</label>
+            </div>
+          {% endif %}
+          {% if ds.unreviewed_cnt < ds.numrows %}
+            <!-- if some are indexed, offer to skip them -->
+            <div id="recon_scope" class="mt-2">
+              <hr/><p class="font-weight-bold">Task scope</p>
+              <label class="radio-inline">
+              <input type="radio" name="scope" id="scope1" value="all"> All <b>{{ds.numrows}}</b> records</label>
+              <label class="radio-inline ml-3">
+              <input type="radio" name="scope" checked="true" id="scope2" value="unreviewed"> Only unreviewed records (<b>{{ds.unreviewed_cnt}}</b>)</label>
+            </div>
           {% endif %}
           <div id="geo_constraint" class="mt-2">
             <hr/>

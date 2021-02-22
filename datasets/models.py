@@ -93,8 +93,14 @@ class Dataset(models.Model):
     
     # count of unreviewed hits
     @property
-    def unreviewed(self):
+    def unreviewed_cnt(self):
         unrev=Hit.objects.all().filter(dataset_id=self.id,reviewed=False).count()
+        return unrev
+
+    # unreviewed hits
+    @property
+    def unreviewed(self):
+        unrev=Hit.objects.all().filter(dataset_id=self.id, reviewed=False)
         return unrev
     
     # count of unindexed places
