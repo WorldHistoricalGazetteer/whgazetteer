@@ -543,6 +543,15 @@ def aliasIt(url):
   else:
     return url
 
+# flattens nested tuple list
+def flatten(l):
+  for el in l:
+    if isinstance(el, tuple) and any(isinstance(sub, tuple) for sub in el):
+      for sub in flatten(el):
+        yield sub
+    else:
+      yield el
+      
 #*# test loads
 #from django.shortcuts import get_object_or_404
 #from places.models import Place
@@ -555,6 +564,7 @@ def hully(g_list):
   # maybe mixed bag
   #types = list(set([g['type'] for g in g_list]))
 
+      
   # make a hull from any geometry
   # 1 point -> Point; 2 points -> LineString; >2 -> Polygon
   try:
@@ -565,7 +575,8 @@ def hully(g_list):
   if hull.geom_type in ['Point', 'LineString', 'Polygon']:
     # buffer hull, but only a little if near meridian
     coll = GeometryCollection([GEOSGeometry(json.dumps(g)) for g in g_list]).simplify()
-    longs = list(c[0] for c in coll.coords)
+    #longs = list(c[0] for c in coll.coords)
+    longs = list(c[0] for c in flatten(coll.coords))
     try:
       if len([i for i in longs if i >= 175]) == 0:
         hull = hull.buffer(1.4) # ~100km radius

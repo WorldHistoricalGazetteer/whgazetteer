@@ -891,7 +891,7 @@ def align_tgn(pk, *args, **kwargs):
 
 
 
-#bounds={'type': ['region'], 'id': ['95']}
+#bounds={'type': ['userarea'], 'id': ['0']}
 #from datasets.static.hashes import aat, parents, aat_q
 #from datasets.utils import getQ
 #from areas.models import Area
@@ -901,6 +901,7 @@ def align_tgn(pk, *args, **kwargs):
 # performs elasticsearch > wdlocal queries
 # ***
 def es_lookup_wdlocal(qobj, *args, **kwargs):
+  #bounds = {'type': ['userarea'], 'id': ['0']}
   bounds = kwargs['bounds']
   hit_count = 0
 
@@ -995,7 +996,8 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
   
   # q1 = qbase + types
   q1 = deepcopy(qbase)
-  q1['query']['bool']['must'].append({"terms": {"types.id":qtypes}})
+  q1['query']['bool']['must'].append(    
+    {"terms": {"types.id":qtypes}})
 
   # add fclasses if any, drop types; geom if any remains
   q2 = deepcopy(qbase)
@@ -1084,6 +1086,7 @@ def align_wdlocal(pk, **kwargs):
   task_id = align_wdlocal.request.id
   ds = get_object_or_404(Dataset, id=pk)
   print('kwargs from align_wdlocal() task', kwargs)
+  #bounds = {'type': ['userarea'], 'id': ['0']}
   bounds = kwargs['bounds']
   scope = kwargs['scope']
   language = kwargs['lang']
@@ -1124,9 +1127,10 @@ def align_wdlocal(pk, **kwargs):
     qobj['placetypes'] = types
 
     # names
+    variants.append(place.title)
     for name in place.names.all():
       variants.append(name.toponym)
-    qobj['variants'] = variants
+    qobj['variants'] = list(set(variants))
 
     # parents
     # TODO: other relations

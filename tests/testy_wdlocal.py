@@ -1,12 +1,12 @@
 # testy_wdlocal.py 14 Feb 2021
 # for Dataset id in list, perform wdlocal recon, write results to file
 
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 
-import codecs
+import codecs, pytz
 import simplejson as json
-from datetime import date
+from datetime import datetime
 from datasets.models import Dataset, Hit
 from datasets.tasks import es_lookup_wdlocal, normalize
 from datasets.utils import *
@@ -15,19 +15,25 @@ from places.models import Place
 
 someuser = get_object_or_404(User, pk=14)
 whgadmin = get_object_or_404(User, pk=1)
-today=date.today().strftime("%Y%m%d")
+TZ=pytz.timezone('America/Denver')
+today=datetime.date.today().strftime("%Y%m%d"); print(today)
+now = datetime.datetime.now(tz=TZ).strftime(today+'_%H%M'); print(now)
+
 workdir = '/Users/karlg/Documents/Repos/_whgdata/elastic/wikidata/results/'
-def wdlocal(dsids):
-  fout_summary = codecs.open(workdir + 'summary_' + str(dsids) + '.txt', mode='w', encoding = 'utf8')
-  dsidlist = [int(x) for x in str(dsids).split(',')]
-  for d in dsidlist:
+dslabels = ['wri_watersheds','priests_1line_10_csv','rtowns_lpf_lessgeo','owt10','pleiades20k','euratlas_cities','althurayya_2241','kima_redux','template_ods','croniken_rjs','lugares_test','lug20_lpf_refactor','tnc_ecoregions','grece9','owtrad','bdda_tsv','sauls_missing','owt_test','russianprov','owt_noccodes']
+
+def wdlocal(dslabels):
+  fout_summary = codecs.open(workdir + 'summary_' + now + '.txt', mode='w', encoding = 'utf8')
+  #dsidlist = [int(x) for x in str(dsids).split(',')]
+  for d in dslabels[10:11]:
     fout = codecs.open(workdir + 'wdlocal_out_'+str(d)+'.txt', mode='w', encoding='utf8')
-    datasets = Dataset.objects.filter(id__in=dsidlist).values_list('label')
-    print('datasets', datasets)
+    #datasets = Dataset.objects.filter(label__in=dsidlist).values_list('label')
+    
+    #print('datasets', datasets)
     [nohits, some_hits, total_hits, count_nohits] = [[],0,0,0]
     hit_parade = {"summary": {}, "hits": []}
   
-    qs = Place.objects.filter(dataset__in = datasets)
+    qs = Place.objects.filter(dataset = d)[:20]
     bounds = {'type': ['userarea'], 'id': ['0']}
     #scope = 'all',
     #language = 'en'
@@ -47,9 +53,10 @@ def wdlocal(dsids):
           types.append(int(t.jsonb['identifier'].replace('aat:','')) )
       qobj['placetypes'] = types
       # names
+      variants.append(place.title)
       for name in place.names.all():
         variants.append(name.toponym)
-      qobj['variants'] = variants
+      qobj['variants'] = list(set(variants))
       # parents
       if len(place.related.all()) > 0:
         for rel in place.related.all():
@@ -102,8 +109,8 @@ def wdlocal(dsids):
     fout.close()
   fout_summary.close()
   
-ds_array = input('one or more ds ids, comma delimited:   ')
-wdlocal(ds_array)
+#ds_array = input('one or more ds ids, comma delimited:   ')
+wdlocal(dslabels)
 
 #done [807, 812, 925, 927, 897]
 
