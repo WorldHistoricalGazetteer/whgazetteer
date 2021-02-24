@@ -190,7 +190,7 @@ ACCOUNT_LOGOUT_REDIRECT_URL ='/'
 LOGIN_REDIRECT_URL = '/accounts/email/' # default to /accounts/profile 
 
 ACCOUNT_FORMS = {'signup': 'allauth.account.forms.WHGRegisterForm',}
-#URL_FRONT = "http://whgazetteer.org/"
+
 
 #SOCIALACCOUNT_PROVIDERS = {
     ## For each OAuth based provider, either add a ``SocialApp``

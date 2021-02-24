@@ -135,7 +135,6 @@ class DefaultAccountAdapter(object):
         msg = self.render_mail(template_prefix, email, context)
         msg.send()
 
-        
     def get_signup_redirect_url(self, request):
         return resolve_url(app_settings.SIGNUP_REDIRECT_URL)
 
