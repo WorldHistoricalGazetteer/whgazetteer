@@ -507,9 +507,9 @@
             <div id="recon_scope" class="mt-2">
               <hr/><p class="font-weight-bold">Task scope</p>
               <label class="radio-inline">
-              <input type="radio" name="scope" id="scope1" value="all"> All <b>{{ds.numrows}}</b> records</label>
+              <input type="radio" name="scope" checked="true" id="scope1" value="all"> All <b>{{ds.numrows}}</b> records</label>
               <label class="radio-inline ml-3">
-              <input type="radio" name="scope" checked="true" id="scope2" value="unreviewed"> Only unreviewed records (<b>{{ds.unreviewed_cnt}}</b>)</label>
+              <input type="radio" name="scope" id="scope2" value="unreviewed"> Only unreviewed records (<b>{{ds.unreviewed_cnt}}</b>)</label>
             </div>
           {% endif %}
           <div id="geo_constraint" class="mt-2">

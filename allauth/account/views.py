@@ -242,9 +242,9 @@ class SignupView(
         return ret
 
     def form_valid(self, form):
-        #print('request ib SignupView()', self.request)
-        #print('form in SignupView()', form)
-        #print('cleaned_data in SignupView()', form.cleaned_data)
+        print('request in SignupView()', self.request)
+        print('form in SignupView()', form)
+        print('cleaned_data in SignupView()', form.cleaned_data)
         # By assigning the User to a property on the view, we allow subclasses
         # of SignupView to access the newly created User instance
         self.user = form.save(self.request)
@@ -253,7 +253,7 @@ class SignupView(
         up = self.user.profile
         up.user_type = "individual"
         up.affiliation = form.cleaned_data['affiliation']
-        up.web_page = form.cleaned_data['web_page']
+        #up.web_page = form.cleaned_data['web_page']
         up.save()
 
         try:
