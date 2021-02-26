@@ -439,7 +439,6 @@ class WHGRegisterForm(SignupForm):
         user.save()
         
         print('user, user.profile', user, user.profile)
-        
         return user
 
 class UserForm(forms.Form):

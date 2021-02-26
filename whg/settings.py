@@ -14,8 +14,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
 # 
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+#
+#DEBUG = True
+#DEBUG = False
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -191,6 +192,7 @@ LOGIN_REDIRECT_URL = '/accounts/email/' # default to /accounts/profile
 
 ACCOUNT_FORMS = {'signup': 'allauth.account.forms.WHGRegisterForm',}
 
+URL_FRONT = 'http://localahost:8000/'
 
 #SOCIALACCOUNT_PROVIDERS = {
     ## For each OAuth based provider, either add a ``SocialApp``

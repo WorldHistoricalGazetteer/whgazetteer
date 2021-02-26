@@ -48,7 +48,7 @@ class StandardResultsSetPagination(PageNumberPagination):
   format index locations as geojson
 """
 def makeGeom(geom):
-  print('geom',geom)
+  #print('geom',geom)
   # TODO: account for non-point
   if len(geom) > 1:
     geomobj = {"type":"GeometryCollection", "geometries": []}  
@@ -67,7 +67,7 @@ def makeGeom(geom):
   formats api search hits 
 """
 def collectionItem(i,datatype,format):
-  print('collectionItem i',i)
+  #print('collectionItem i',i)
   _id = i['_id']
   if datatype == 'place':
     # serialize as geojson
@@ -265,7 +265,8 @@ class IndexAPIView(View):
             {"match":{"_id":whgid}}
         ]}}}
         bundle = bundler(q, whgid, idx)
-        print('bundle', bundle)
+        #print('bundler', bundle)
+        print('bundler q', q)
         #result=[b for b in bundle]
         result={"index_id":whgid,
                 "note":str(len(bundle)) + " records asserted as skos:closeMatch",
@@ -299,7 +300,7 @@ class IndexAPIView(View):
           bounds={"id":[str(a.id)],"type":[a.type]} # nec. b/c some are polygons, some are multipolygons
           q['query']['bool']["filter"]=get_bounds_filter(bounds,'whg')
 
-        print('the api query was:',q)
+        #print('the api query was:',q)
         
         # run query
         collection = collector(q,'place','whg')
