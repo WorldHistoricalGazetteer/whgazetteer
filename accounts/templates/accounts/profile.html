@@ -30,7 +30,7 @@
             <td class="float-right pr-3 strong">Email</td>
             <td>{{ user_form.email.value }}</td></tr>
           <tr><td class="float-right pr-3 strong">Affiliation</td><td>{{ profile_form.affiliation.value }}</td></tr>
-          <tr><td class="float-right pr-3 strong">Web page</td><td>{{ profile_form.web_page.value }}</td></tr>
+          <!--<tr><td class="float-right pr-3 strong">Web page</td><td>{ profile_form.web_page.value }}</td></tr>-->
           {% if context.groups|length > 0 %}
             <tr><td class="float-right pr-3 strong">Groups</td><td>
               {% for g in context.groups %}{{g}}{% if not forloop.last %}; {% endif %}{% endfor %}
@@ -50,8 +50,8 @@
           <tr>
             <td class="float-right pr-3 strong">Email</td>
             <td>{{ user_form.email }}</td></tr>
-          <tr><td class="float-right pr-3 strong">Affiliation</td><td>{{ profile_form.affiliation }}</td></tr>
-          <tr><td class="float-right pr-3 strong">Web page</td><td>{{ profile_form.web_page }}</td></tr>
+          <tr><td class="float-right pr-3 strong">Affiliations</td><td>{{ profile_form.affiliation }}</td></tr>
+          <!--<tr><td class="float-right pr-3 strong">Web page</td><td>{ profile_form.web_page }}</td></tr>-->
         <tbody>
       </table>
       <div>

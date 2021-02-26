@@ -181,7 +181,7 @@ class FeatureSerializer(GeoFeatureModelSerializer):
         g1 = geojson.loads(s)
         g2 = shape(g1)
         djgeo = GEOSGeometry(g2.wkt)
-        print('geom', djgeo.geojson)
+        #print('geom', djgeo.geojson)
         return GEOSGeometry(g2.wkt)
     
     #

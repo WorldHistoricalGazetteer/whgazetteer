@@ -3,7 +3,7 @@ from django.urls import path, re_path
 from . import views
 from accounts.views import update_profile
 
-
+# prefix is 'accounts/' not account/
 urlpatterns = [
     path("signup/", views.signup, name="account_signup"),
     #path('register/', register, name='register'),
