@@ -471,16 +471,15 @@
             {% if ds.taskstats.align_tgn|length > 0 %}
               <div id="tgn_tasks" class="hidden">
                 <div class="mt-0 smaller">
-                <p class="mb-0">You have already run one or more TGN alignment tasks for this dataset.<br/>Only place records NOT already reviewed will be submitted now.
+                <p class="mb-0">You have already run one or more TGN alignment tasks for this dataset.<br/>Only the <b class="text-danger">{{ds.taskstats.align_tgn.0.total}}</b> place records NOT already reviewed will be submitted now.
                 <span class="help-matches" data-id="recon_rerun">{% fontawesome_icon 'question-circle' color='#993333' %}</span></p>
                 <input type="hidden" name="scope" value="unreviewed">
                 </div>
               {% for ts in ds.taskstats.align_tgn %}
               {% if ts.total > 0 %}
                 <p class="my-0">
-                <i class="small">task</i>: {{ ts.tid|truncatechars:9 }}...; 
-                <i class="small">date</i>: {{ ts.date }}; 
-                <i class="small">not yet reviewed</i>: <b>{{ ts.total }}</b></p>
+                <i class="small">task</i>: {{ ts.tid|truncatechars:9 }}
+                <i class="small">date</i>: {{ ts.date }}
               {% endif %}
               {% endfor %}
             </div>
@@ -500,16 +499,15 @@
             {% if ds.taskstats.align_wdlocal|length > 0 %}
               <div id="wdlocal_tasks">
                 <div  id="wdlocal_tasks" class="mt-0 smaller">
-                <p class="mb-0">You have already run one or more Wikidata alignment tasks for this dataset.<br/>Only place records NOT already reviewed will be submitted now.
+                <p class="mb-0">You have already run one or more Wikidata alignment tasks for this dataset.<br/>Only the <b class="text-danger">{{ds.taskstats.align_wdlocal.0.total}}</b> place records NOT already reviewed will be submitted now.
                 <span class="help-matches" data-id="recon_rerun">{% fontawesome_icon 'question-circle' color='#993333' %}</span></p>
                 <input type="hidden" name="scope" value="unreviewed">
                 </div>
                 {% for ts in ds.taskstats.align_wdlocal %}
                 {% if ts.total > 0 %}
                   <p class="my-0">
-                  <i class="small">task</i>: {{ ts.tid|truncatechars:9 }}...; 
-                  <i class="small">date</i>: {{ ts.date }}; 
-                  <i class="small">not yet reviewed</i>: <b>{{ ts.total }}</b></p>
+                  <i class="small">task</i>: {{ ts.tid|truncatechars:9 }}
+                  <i class="small">date</i>: {{ ts.date }}
                 {% endif %}
                 {% endfor %}
               </div>
