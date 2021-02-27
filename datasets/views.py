@@ -505,7 +505,7 @@ def ds_recon(request, pk):
         scope=scope,
         lang=language
       )
-      messages.add_message(request, messages.INFO, "<span class='text-danger'>Your reconciliation task is under way.</span><br/>When complete, you will receive an email and if successful, results will appear below (you may have to refresh screen). In the meantime, you can navigate elsewhere.")
+      messages.add_message(request, messages.INFO, "<span class='text-danger'>Your reconciliation task is under way.</span><br/>When complete, you will receive an email and if successful, results will appear below (you may have to refresh screen). <br/>In the meantime, you can navigate elsewhere.")
       #task_emailer(ds.owner, ds.tasks.all().order_by('-id')[0], ds.label) 
       return redirect('/datasets/'+str(ds.id)+'/detail#reconciliation')
     except:
@@ -999,7 +999,7 @@ def ds_compare(request):
     ds = get_object_or_404(Dataset, id=dsid)
     
     # {idxcount, submissions[{task_id,date}]}
-    ds_status = ds.status
+    ds_status = ds.status_idx
     
     # how many exist, whether from recon or original?
     #count_geoms = PlaceGeom.objects.filter(place_id__in=ds.placeids,task_id__isnull=False).count()

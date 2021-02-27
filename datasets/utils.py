@@ -733,8 +733,29 @@ def classy(gaz, typeArray):
     types.append(default)
   return list(set(types))
 
+#class UpdateCountsView(View):
+  #""" Returns counts of unreviewed hits, per pass and total """
+  #@staticmethod
+  #def get(request):
+    #print('UpdateCountsView GET:',request.GET)
+    #"""
+    #args in request.GET:
+        #[integer] ds_id: dataset id
+    #"""
+    #ds = get_object_or_404(Dataset, id=request.GET.get('ds_id'))
+    #updates = {}
+    #for tid in list(ds.tasks.all().values_list('task_id',flat=True)):
+      #updates[tid] = {
+        #'pass0':len(Hit.objects.raw('select distinct on (place_id_id) place_id_id, id from hits where task_id = %s and query_pass=%s and reviewed=false',[tid,'pass0'])),
+        #'pass1':len(Hit.objects.raw('select distinct on (place_id_id) place_id_id, id from hits where task_id = %s and query_pass=%s and reviewed=false',[tid,'pass1'])),
+        #'pass2':len(Hit.objects.raw('select distinct on (place_id_id) place_id_id, id from hits where task_id = %s and query_pass=%s and reviewed=false',[tid,'pass2'])),
+        #'pass3':len(Hit.objects.raw('select distinct on (place_id_id) place_id_id, id from hits where task_id = %s and query_pass=%s and reviewed=false',[tid,'pass3']))
+      #}    
+    #return JsonResponse(updates, safe=False)
+
+# faster?, w/totals
 class UpdateCountsView(View):
-  """ Returns counts of unreviewed hits per pass """
+  """ Returns counts of unreviewed hits, per pass and total """
   @staticmethod
   def get(request):
     print('UpdateCountsView GET:',request.GET)
@@ -743,15 +764,35 @@ class UpdateCountsView(View):
         [integer] ds_id: dataset id
     """
     ds = get_object_or_404(Dataset, id=request.GET.get('ds_id'))
-    updates = {}
-    for tid in [t.task_id for t in ds.tasks.all()]:
-      updates[tid] = {
-        'pass0':len(Hit.objects.raw('select distinct on (place_id_id) place_id_id, id from hits where task_id = %s and query_pass=%s and reviewed=false',[tid,'pass0'])),
-        'pass1':len(Hit.objects.raw('select distinct on (place_id_id) place_id_id, id from hits where task_id = %s and query_pass=%s and reviewed=false',[tid,'pass1'])),
-        'pass2':len(Hit.objects.raw('select distinct on (place_id_id) place_id_id, id from hits where task_id = %s and query_pass=%s and reviewed=false',[tid,'pass2'])),
-        'pass3':len(Hit.objects.raw('select distinct on (place_id_id) place_id_id, id from hits where task_id = %s and query_pass=%s and reviewed=false',[tid,'pass3']))
-      }    
+    updates={}
+    for t in ds.tasks.all():
+      hits0 = Hit.objects.filter(task_id=t.task_id,query_pass='pass0', reviewed=False).values("place_id_id").distinct().count()
+      hits1 = Hit.objects.filter(task_id=t.task_id,query_pass='pass1', reviewed=False).values("place_id_id").distinct().count()
+      hits2 = Hit.objects.filter(task_id=t.task_id,query_pass='pass2', reviewed=False).values("place_id_id").distinct().count()
+      hits3 = Hit.objects.filter(task_id=t.task_id,query_pass='pass3', reviewed=False).values("place_id_id").distinct().count()
+      sum = hits0+hits1+hits2+hits3
+      updates[t.task_id] = {
+        "task":t.task_name,
+        "total":sum, 
+        "pass0":hits0, 
+        "pass1":hits1, 
+        "pass2":hits2, 
+        "pass3":hits3 }
     return JsonResponse(updates, safe=False)
+
+# testy:
+#updates={}
+#for t in ds.tasks.all():
+  #hits0 = Hit.objects.filter(task_id=t.task_id,query_pass='pass0', reviewed=False).values("place_id_id").distinct().count()
+  #hits1 = Hit.objects.filter(task_id=t.task_id,query_pass='pass1', reviewed=False).values("place_id_id").distinct().count()
+  #hits2 = Hit.objects.filter(task_id=t.task_id,query_pass='pass2', reviewed=False).values("place_id_id").distinct().count()
+  #hits3 = Hit.objects.filter(task_id=t.task_id,query_pass='pass3', reviewed=False).values("place_id_id").distinct().count()
+  #sum = hits0+hits1+hits2+hits3
+  #updates[t.task_id] = {"total":sum, "pass0":hits0, "pass1":hits1, "pass2":hits2, "pass3":hits3 }
+#print(updates)
+#{'d2d3e236-ac7a-4a32-a34a-2e912ee3cf27': {'total': -1, 'pass0': 0, 'pass1': 0, 'pass2': 0, 'pass3': 117}, 
+ #'e1cecae2-0f06-459b-afb2-1750c1009f9d': {'total': -1, 'pass0': 0, 'pass1': 0, 'pass2': 157, 'pass3': 0}
+#}  
 
 # ***
 # UPLOAD UTILS
