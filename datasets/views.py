@@ -29,7 +29,7 @@ from datasets.models import Dataset, Hit, DatasetFile
 from datasets.static.hashes import mimetypes_plus as mthash_plus
 from datasets.static.hashes.parents import ccodes
 # NB these task names ARE in use; they are generated dynamically
-from datasets.tasks import align_tgn, align_whg, align_wd, align_whg_pre, align_wdlocal, maxID
+from datasets.tasks import align_tgn, align_whg, align_wd, align_wdlocal, align_idx, maxID
 from datasets.utils import *
 from es.es_utils import makeDoc,deleteFromIndex, replaceInIndex
 from main.choices import AUTHORITY_BASEURI
@@ -334,7 +334,7 @@ def review(request, pk, tid, passnum):
                   ds.save()
           # 
           # this is accessioning step
-          elif task.task_name == 'align_whg':
+          elif task.task_name == 'align_idx':
             # match is to doc in the index
             # index as child or sibling, as appropriate
             # TODO: write database PlaceLink records for incoming & matched
@@ -344,8 +344,8 @@ def review(request, pk, tid, passnum):
         matchee.reviewed = True
         matchee.save()
 
-      # no matches for align_whg? index as parent
-      if matches == 0 and task.task_name == 'align_whg':
+      # no matches for align_idx? index as parent
+      if matches == 0 and task.task_name == 'align_idx':
         indexMatch(placeid, None)
         
       return redirect('/datasets/'+str(pk)+'/review/'+tid+'/'+passnum+'?page='+str(int(page)))
@@ -493,7 +493,7 @@ def ds_recon(request, pk):
       messages.add_message(request, messages.INFO, "Sorry! WHG reconciliation services appears to be down. The system administrator has been notified.")
       return redirect('/datasets/'+str(ds.id)+'/detail#reconciliation')
       
-    # run celery/redis tasks e.g. align_tgn, align_wd, align_whg, align_whg_pre, align_wdlocal
+    # run celery/redis tasks e.g. align_wdlocal, align_tgn, align_idx, align_whg, align_wdlocal, align_wd
     try:      
       result = func.delay(
         ds.id,
@@ -543,7 +543,7 @@ def ds_recon(request, pk):
       # 1 or more recon tasks have been run
       ds.ds_status = 'reconciling'
     else:
-      # accessioning begun (align_whg); complete if ds.unindexed == 0
+      # accessioning begun (align_idx); complete if ds.unindexed == 0
       ds.ds_status = 'indexed' if ds.unindexed == 0 else 'accessioning'
     ds.save()
     print('ds_recon() context',context)
@@ -1256,20 +1256,7 @@ def ds_insert_lpf(request, pk):
       
     print('new dataset:', ds.__dict__)
     infile.close()
-  
-  # WRITE THESE IN DatasetDetailView()
-  #dsf.df_status = 'uploaded'
-  #dsf.numrows = countrows
-  #dsf.save()
-
-  #print('# linked, # links',countlinked, total_links)
-  #ds.ds_status = 'uploaded'
-  #ds.numrows = countrows
-  #ds.numlinked = countlinked
-  #ds.total_links = total_links
-  #ds.save()
-  #print(str(countrows)+' records inserted')
-  
+    
   return({"numrows":countrows,
           "numlinked":countlinked,
           "total_links":total_links})
@@ -1286,7 +1273,6 @@ def ds_insert_lpf(request, pk):
 #from areas.models import Country
 #pk = 793
 # 
-
 def ds_insert_tsv(request, pk):
   import csv, re
   ds = get_object_or_404(Dataset, id=pk)

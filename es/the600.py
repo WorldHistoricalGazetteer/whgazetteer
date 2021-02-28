@@ -1,4 +1,4 @@
-# celery reconciliation tasks [align_tgn(), align_whg()] and related functions
+# celery reconciliation tasks [align_tgn(), align_idx()] and related functions
 
 from __future__ import absolute_import, unicode_literals
 from celery.decorators import task

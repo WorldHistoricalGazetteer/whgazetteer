@@ -133,7 +133,7 @@
                     <span class="mr-2 globeflash">
                     <!--{ if form.json.value|get:"geoms" != Null }-->
                       <a class="geolink" rel="tooltip" 
-                        {% if ds_label == 'tgn_filtered_01' or authority == 'whg' or authority == 'whg_pre'%}
+                        {% if ds_label == 'tgn_filtered_01' or authority == 'whg' or authority == 'idx'%}
                           id="{{ form.json.value|get:"place_id" }}" 
                         {% else %}
                           id="{{ form.authrecord_id.value }}"

@@ -19,7 +19,7 @@ from places.models import Place
 
 #pids=[5004032,5335754]
 # TODO: handle multiple parents (dplace: 124883,124900,125065,125132; ne_rivers: )
-# TODO: conflate with align_whg reconcile operation; 
+# TODO: conflate with align_idx reconcile operation; 
 def indexDataset(pids=None):
   import codecs
   idx = input('index: ')

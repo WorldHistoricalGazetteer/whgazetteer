@@ -70,9 +70,7 @@ class Dataset(models.Model):
     submissions = [
           {"task_id":t.task_id, "date":t.date_done.strftime("%Y-%m-%d %H:%M"),
              "hits_tbr":Hit.objects.filter(task_id=t.task_id, reviewed=False).count() }
-            for t in self.tasks.filter(task_name='align_whg').order_by('-date_done')]
-            #for t in self.tasks.filter(task_name=task).order_by('-date_done')]
-    #idxtask = len(self.tasks.filter(task_name='align_whg', status='SUCCESS')) > 0
+            for t in self.tasks.filter(task_name='align_idx').order_by('-date_done')]
     idxcount = escount_ds(idx, self.label)
 
     result = {"submissions":submissions,"idxcount":idxcount}
@@ -100,7 +98,7 @@ class Dataset(models.Model):
     result = {}
     # array for each kind of task
     #task_types = self.tasks.all().values_list("task_name", flat=True)
-    task_types = ['align_wdlocal','align_tgn','align_wd','align_whg','align_whgpre']
+    task_types = ['align_wdlocal','align_tgn','align_wd','align_idx','align_whg']
     for tt in task_types:
       result[tt] = []
       #for t in ds.tasks.filter(task_name=tt):

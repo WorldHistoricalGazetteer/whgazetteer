@@ -1,4 +1,4 @@
-# celery reconciliation tasks [align_tgn(), align_whg(), align_wdlocal()] and related functions
+# celery reconciliation tasks [align_tgn(), align_wdlocal(), align_idx(), align_whg] and related functions
 from __future__ import absolute_import, unicode_literals
 from celery.decorators import task # this is @task decorator
 from django_celery_results.models import TaskResult
@@ -924,13 +924,6 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
   # if no ccodes, returns []
   countries = [t[3:] for t in getQ(qobj['countries'],'ccodes')]
   
-  # alternatively, distance
-  #qobj_coords = qobj['geom']['coordinates']
-  #distance_filter = {"geo_distance" : {
-      #"distance" : "100km",
-      #"repr_point" : {"lon" : qobj_coords[0],"lat" : [1]}
-      #}}
-
   has_bounds = bounds['id'] != ['0']
   has_geom = 'geom' in qobj.keys()
   has_countries = len(countries) > 0
@@ -1390,8 +1383,8 @@ def es_lookup_whg(qobj, *args, **kwargs):
 # TODO: hits may include multiple linked docs
 #       need to group them for review display
 """
-@task(name="align_whg")
-def align_whg(pk, *args, **kwargs):
+@task(name="align_idx")
+def align_idx(pk, *args, **kwargs):
   ds = get_object_or_404(Dataset, id=pk)
   # set index
   idx='whg'
@@ -1410,7 +1403,7 @@ def align_whg(pk, *args, **kwargs):
   [count_errors,count_seeds,count_kids,count_fail] = [0,0,0,0]
 
   start = datetime.datetime.now()
-  print('kwargs in align_whg()',kwargs)
+  print('kwargs in align_idx()',kwargs)
     
   # queryset depends on choice of scope in addtask form
   qs = ds.places.all() if scope == 'all' else ds.places.all().filter(indexed=False)
@@ -1536,7 +1529,7 @@ def align_whg(pk, *args, **kwargs):
               authrecord_id = hit['_id'],
               dataset = ds,
               place_id = get_object_or_404(Place, id=qobj['place_id']),
-              task_id = align_whg.request.id,
+              task_id = align_idx.request.id,
               query_pass = hit['pass'],
               # consistent json for review display
               json = normalize(hit['_source'],'whg'),
@@ -1616,13 +1609,12 @@ def align_whg(pk, *args, **kwargs):
   print("hit_parade['summary']",hit_parade['summary'])
   return hit_parade['summary']
 """
-# reconcile to whg w/no
-# indexing as in align_whg
+# reconcile to whg w/no indexing as in align_idx
 # TODO: hits may include multiple linked docs
 #       need to group them for review display
 """
-@task(name="align_whg_pre")
-def align_whg_pre(pk, *args, **kwargs):
+@task(name="align_whg")
+def align_whg(pk, *args, **kwargs):
   ds = get_object_or_404(Dataset, id=pk)
   # set index
   idx='whg'
@@ -1634,12 +1626,12 @@ def align_whg_pre(pk, *args, **kwargs):
   
   # empty vessels
   hit_parade = {"summary": {}, "hits": []}
-  [nohits,whg_pre_es_errors,features] = [[],[],[]]
+  [nohits,whg_es_errors,features] = [[],[],[]]
   [count,count_hit,count_nohit,total_hits,count_p1,count_p2,count_p3] = [0,0,0,0,0,0,0]
   #[count_errors,count_seeds,count_kids,count_fail] = [0,0,0,0]
 
   start = datetime.datetime.now()
-  print('kwargs in align_whg_pre()',kwargs)
+  print('kwargs in align_whg()',kwargs)
     
   # queryset depends on choice of scope in addtask form
   qs = ds.places.all() if scope == 'all' else ds.places.all().filter(indexed=False)
@@ -1705,7 +1697,7 @@ def align_whg_pre(pk, *args, **kwargs):
       count_hit +=1
       total_hits += len(result_obj['hits'])
       #print("hit[0]: ",result_obj['hits'][0]['_source'])  
-      print('hits from align_whg_pre',result_obj['hits'])
+      print('hits from align_whg',result_obj['hits'])
       for hit in result_obj['hits']:
         if hit['pass'] == 'pass1': 
           count_p1+=1 
@@ -1724,7 +1716,7 @@ def align_whg_pre(pk, *args, **kwargs):
           place_id = get_object_or_404(Place, id=qobj['place_id']),
           
           #task_id = align_tgn.request.id,
-          task_id = align_whg_pre.request.id,
+          task_id = align_whg.request.id,
           
           query_pass = hit['pass'],
           
@@ -1740,7 +1732,7 @@ def align_whg_pre(pk, *args, **kwargs):
         new.save()
   end = datetime.datetime.now()
 
-  print('whg_pre ES errors:',whg_pre_es_errors)
+  print('align_whg ES errors:',whg_es_errors)
   hit_parade['summary'] = {
       'count':count,
       'got_hits':count_hit,
@@ -1754,7 +1746,7 @@ def align_whg_pre(pk, *args, **kwargs):
       'no_hits': {'count': count_nohit },
       'elapsed': elapsed(end-start)
     }
-  print("whg_pre summary returned",hit_parade['summary'])
+  print("align_whg summary returned",hit_parade['summary'])
   return hit_parade['summary']
 
 

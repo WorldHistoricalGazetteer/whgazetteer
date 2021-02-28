@@ -81,7 +81,7 @@ AUTHORITY_BASEURI = {
     'align_gn':'gn:',
     'align_wd':'wd:',
     'align_wdlocal':'wd:',
-    'align_whg':'whg:',
+    'align_idx':'whg:',
     'align_whg_b':'whg:'
 }
 

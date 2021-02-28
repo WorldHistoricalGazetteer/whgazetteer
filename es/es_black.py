@@ -20,7 +20,7 @@ from places.models import Place
 
 # 
 # TODO: handle multiple parents (dplace: 124883,124900,125065,125132; ne_rivers: )
-# TODO: conflate with align_whg reconcile operation; 
+# TODO: conflate with align_idx reconcile operation; 
 def indexDataset():
   import codecs
   dataset = input('dataset: ')
