@@ -21,7 +21,6 @@ from datasets.static.hashes.qtypes import qtypes
 from datasets.utils import *
 from places.models import Place
 ##
-#from gesopy import distance
 from elasticsearch import Elasticsearch
 es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 ##
@@ -891,11 +890,17 @@ def align_tgn(pk, *args, **kwargs):
 
 
 
+
+#
+# test stuff
 #bounds={'type': ['userarea'], 'id': ['0']}
 #from datasets.static.hashes import aat, parents, aat_q
 #from datasets.utils import getQ
 #from areas.models import Area
+#from places.models import Place
 #from datasets.tasks import get_bounds_filter
+#from elasticsearch import Elasticsearch
+#es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 
 # ***
 # performs elasticsearch > wdlocal queries

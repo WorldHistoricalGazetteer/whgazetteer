@@ -1349,8 +1349,6 @@ def ds_insert_tsv(request, pk):
       # else make geometry (any) w/Shapely if geowkt
       if geowkt and geowkt not in ['',None]:
         geojson = parse_wkt(r[header.index('geowkt')])
-      # else geojson is None
-      #print(geojson if geojson else 'no geometry in this row')
         
       # ccodes; compute if missing and there is geometry
       if r[header.index('ccodes')] in ['',None]:

@@ -28,7 +28,7 @@ class Place(models.Model):
 
     def __str__(self):
         # return str(self.id)
-        return '%s:%d' % (self.id, self.title)
+        return '%s:%s' % (self.id, self.title)
 
     @property
     def idx(self):
