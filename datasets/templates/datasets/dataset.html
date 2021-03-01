@@ -204,7 +204,7 @@
             <p class="m-0 pl-2 pr-2">
               Metadata edits, dataset updates, and initiation of reconciliation tasks may only be performed by the dataset contributor ("owner" in WHG). Collaborators added by the owner under the "Sharing" tab can view the dataset and perform review of reconciliation tasks.</p>
           </div>
-          {% if ds.owner.id == user.id or user.is_superuser %}
+          {% if user.is_superuser or user in owners %}
           <div id="ds_downloads" class="pt-0 px-0 ds-card">
             <p class="ds-card-header">Downloads</p>
             <p class="m-0 pl-2 pr-2">
@@ -442,15 +442,15 @@
           <input type="hidden" name="wd_lang" value="">
           {% if user.is_superuser %}
             <div class="form-check text-danger">
-              <label class="form-check-label" for="r_whgpre">
-                <input type="radio" class="form-check-input" id="r_whgpre"
-                  name="recon" value="whg">WHG (align only) 
-              </label>
-            </div>
-            <div class="form-check text-danger">
               <label class="form-check-label" for="r_whg">
                 <input type="radio" class="form-check-input" id="r_whg"
                   name="recon" value="idx">WHG (accession/reconcile) 
+              </label>
+            </div>
+            <div class="form-check text-danger">
+              <label class="form-check-label" for="r_whgpre">
+                <input type="radio" class="form-check-input" id="r_whgpre"
+                  name="recon" value="whg">WHG (align only) 
               </label>
             </div>
             <div id="wd_lang" class="hidden">
@@ -926,16 +926,18 @@ js for Summary, Reconciliation
   })
   // updates recon task card totals 
   function updateTotals(dsid){
-    console.log('updateTotals()')
     $.get("/datasets/updatecounts",{ds_id: dsid},
       function(data){
         updates=Object.entries(data)
+        console.log('updateTotals()', updates)
         for(u in updates){
           tid = updates[u][0]
           counts = updates[u][1]
           foo = "#pass0_"+tid
           if(tid['pass0'] == 0){ 
-            $(foo).addClass('hidden') }
+            $(foo).addClass('hidden') 
+          } else {$(foo).removeClass('hidden')}          
+          $("#"+tid+'_0').html(counts['pass0'])
           $("#"+tid+'_1').html(counts['pass1'])
           $("#"+tid+'_2').html(counts['pass2'])
           $("#"+tid+'_3').html(counts['pass3'])

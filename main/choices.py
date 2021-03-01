@@ -82,7 +82,7 @@ AUTHORITY_BASEURI = {
     'align_wd':'wd:',
     'align_wdlocal':'wd:',
     'align_idx':'whg:',
-    'align_whg_b':'whg:'
+    'align_whg':'whg:'
 }
 
 MATCHTYPES = {

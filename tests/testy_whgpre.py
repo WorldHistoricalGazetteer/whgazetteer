@@ -1,4 +1,4 @@
-# testy_whgpre.py 15 Feb 2021
+# testy_whg.py 28 Feb 2021
 # for Dataset id in list, perform whg recon, write summary to file
 
 from django.contrib.auth.models import User, Group
@@ -18,13 +18,13 @@ someuser = get_object_or_404(User, pk=14)
 whgadmin = get_object_or_404(User, pk=1)
 today=date.today().strftime("%Y%m%d")
 workdir = '/Users/karlg/Documents/Repos/_whgdata/elastic/whg/results/'
-#dsids = 925
+#dsids = 807
 def whgpre(dsids):
   fout_summary = codecs.open(workdir + 'summary_' + str(dsids) + '.txt', mode='w', encoding = 'utf8')
   dsidlist = [int(x) for x in str(dsids).split(',')]
   idx='whg'
   for d in dsidlist:
-    fout = codecs.open(workdir + 'whgpre_out_'+str(d)+'.txt', mode='w', encoding='utf8')
+    fout = codecs.open(workdir + 'whg_out_'+str(d)+'.txt', mode='w', encoding='utf8')
     datasets = Dataset.objects.filter(id__in=dsidlist).values_list('label')
     print('datasets', datasets)
 

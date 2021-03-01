@@ -212,8 +212,8 @@ def review(request, pk, tid, passnum):
   count = len(record_list)
   placeid = records[0].id
   place = get_object_or_404(Place, id=placeid)
-  print('reviewing hits for place_id  #',placeid, records[0])
-  print(records[0].links.all())
+  print('reviewing hits for place', records[0])
+  print('existing links:', records[0].links.all())
   # recon task hits for current place
   raw_hits = Hit.objects.all().filter(place_id=placeid, task_id=tid).order_by('query_pass','-score')
 
@@ -221,7 +221,7 @@ def review(request, pk, tid, passnum):
   countries = []
   #for r in records[0].ccodes:
   for r in place.ccodes:
-    print('r',r.upper())
+    #print('r',r.upper())
     try:
       countries.append(ccodes[0][r.upper()]['gnlabel']+
                        ' ('+ccodes[0][r.upper()]['tgnlabel']+')')
@@ -262,7 +262,7 @@ def review(request, pk, tid, passnum):
     print('a GET, just rendering next')
   else:
     place_post = get_object_or_404(Place,pk=request.POST['place_id'])
-    print('POST place_id',request.POST['place_id'],place_post)
+    #print('POST place_id',request.POST['place_id'],place_post)
     #try:
     if formset.is_valid():
       hits = formset.cleaned_data
@@ -276,7 +276,8 @@ def review(request, pk, tid, passnum):
           matches += 1
           # for tgn or wikidata, write place_link and place_geom record(s) now
           # IF someone didn't just review it!
-          if task.task_name in ['align_tgn','align_wd','align_wdlocal']:
+          if task.task_name in ['align_tgn','align_wdlocal','align_wd']:
+            print('task.task_name', task.task_name)
             # only if 'accept geometries' was checked
             if kwargs['aug_geom'] == 'on' and hasGeom \
                and tid not in place_post.geoms.all().values_list('task_id',flat=True):
@@ -291,6 +292,7 @@ def review(request, pk, tid, passnum):
                 }
               )
               print('created place_geom instance:', geom)
+            # TODO: why save here?
             ds.save()
 
             # create single PlaceLink for matched authority record
@@ -332,9 +334,12 @@ def review(request, pk, tid, passnum):
                   ds.numlinked = ds.numlinked +1 if ds.numlinked else 1
                   ds.total_links = ds.total_links +1
                   ds.save()
-          # 
-          # this is accessioning step
+          # informational lookup on whg index
+          elif task.task_name == 'align_whg':
+            print('align_whg (non-accessioning) DOING NOTHING (YET)')
+          # this is accessioning to whg index
           elif task.task_name == 'align_idx':
+            print('align_idx (accessioning)')
             # match is to doc in the index
             # index as child or sibling, as appropriate
             # TODO: write database PlaceLink records for incoming & matched
@@ -464,7 +469,7 @@ def write_wd_pass0(request, tid):
 def ds_recon(request, pk):
   ds = get_object_or_404(Dataset, id=pk)
   # TODO: handle multipolygons from "#area_load" and "#area_draw"
-  me = request.user
+  user = request.user
   #print('me',me,me.id)
   context = {"dataset": ds.title}
   
@@ -475,7 +480,7 @@ def ds_recon(request, pk):
     # TODO: has this dataset/authority combo been done before?
     auth = request.POST['recon']
     language = request.LANGUAGE_CODE
-    # what task? tgn, wd, wdlocal, whg
+    # what task? wd, wdlocal, whg, tgn, idx
     func = eval('align_'+auth)
     # TODO: let this vary per authority?
     region = request.POST['region'] # pre-defined UN regions
@@ -493,17 +498,19 @@ def ds_recon(request, pk):
       messages.add_message(request, messages.INFO, "Sorry! WHG reconciliation services appears to be down. The system administrator has been notified.")
       return redirect('/datasets/'+str(ds.id)+'/detail#reconciliation')
       
-    # run celery/redis tasks e.g. align_wdlocal, align_tgn, align_idx, align_whg, align_wdlocal, align_wd
+    # run celery/redis tasks 
+    # e.g. align_[wdlocal | tgn | whg | idx | align_wd]
     try:      
       result = func.delay(
         ds.id,
         ds=ds.id,
         dslabel=ds.label,
         owner=ds.owner.id,
+        user=user.id,
         bounds=bounds,
         aug_geom=aug_geom,
         scope=scope,
-        lang=language
+        lang=language,
       )
       messages.add_message(request, messages.INFO, "<span class='text-danger'>Your reconciliation task is under way.</span><br/>When complete, you will receive an email and if successful, results will appear below (you may have to refresh screen). <br/>In the meantime, you can navigate elsewhere.")
       #task_emailer(ds.owner, ds.tasks.all().order_by('-id')[0], ds.label) 
@@ -511,7 +518,7 @@ def ds_recon(request, pk):
     except:
       print('failed: align_'+auth )
       print(sys.exc_info())
-      messages.add_message(request, messages.INFO, "Sorry! Reconciliation services appear to be down. The system administrator has been notified.<br/>"+sys.exc_info())
+      messages.add_message(request, messages.INFO, "Sorry! Reconciliation services appear to be down. The system administrator has been notified.<br/>"+ str(sys.exc_info()))
       return redirect('/datasets/'+str(ds.id)+'/detail#reconciliation')     
   
     # send ds owner an email when task is complete
