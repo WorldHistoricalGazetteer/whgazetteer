@@ -450,7 +450,7 @@
             <div class="form-check text-danger">
               <label class="form-check-label" for="r_whgpre">
                 <input type="radio" class="form-check-input" id="r_whgpre"
-                  name="recon" value="whg">WHG (align only) 
+                  name="recon" value="whg">WHG (align only)
               </label>
             </div>
             <div id="wd_lang" class="hidden">
@@ -470,7 +470,10 @@
             {% if ds.taskstats.align_tgn|length > 0 %}
               <div id="tgn_tasks" class="hidden">
                 <div class="mt-0 smaller">
-                <p class="mb-0">You have already run one or more TGN alignment tasks for this dataset.<br/>Only the <b class="text-danger">{{ds.taskstats.align_tgn.0.total}}</b> place records NOT already reviewed will be submitted now.
+                <p class="mb-0">You have already run one or more TGN alignment tasks for this dataset
+                {% if ds.taskstats.align_tgn.0.total == 0 %}.<br/>All results have been reviewed and matching decisions recorded. Running it again risks duplicating that effort.
+                {% else %}.<br/>Only the <b class="text-danger">{{ds.taskstats.align_tgn.0.total}}</b> place records NOT already reviewed will be submitted now.
+                {% endif %}
                 <span class="help-matches" data-id="recon_rerun">{% fontawesome_icon 'question-circle' color='#993333' %}</span></p>
                 <input type="hidden" name="scope" value="unreviewed">
                 </div>
@@ -497,23 +500,18 @@
             </label>
             {% if ds.taskstats.align_wdlocal|length > 0 %}
               <div id="wdlocal_tasks">
-                <div  id="wdlocal_tasks" class="mt-0 smaller">
-                <p class="mb-0">You have already run one or more Wikidata alignment tasks for this dataset.<br/>Only the <b class="text-danger">{{ds.taskstats.align_wdlocal.0.total}}</b> place records NOT already reviewed will be submitted now.
+                <div class="mt-0 smaller">
+                <p class="mb-0">You have already run one or more Wikidata alignment tasks for this dataset
+                {% if ds.taskstats.align_wdlocal.0.total == 0 %}.<br/>All results have been reviewed and matching decisions recorded. Running it again risks duplicating that effort.
+                {% else %}.<br/>Only the <b class="text-danger">{{ds.taskstats.align_wdlocal.0.total}}</b> place records NOT already reviewed will be submitted now.
+                {% endif %}
                 <span class="help-matches" data-id="recon_rerun">{% fontawesome_icon 'question-circle' color='#993333' %}</span></p>
                 <input type="hidden" name="scope" value="unreviewed">
                 </div>
-                {% for ts in ds.taskstats.align_wdlocal %}
-                {% if ts.total > 0 %}
-                  <p class="my-0">
-                  <i class="small">task</i>: {{ ts.tid|truncatechars:9 }}
-                  <i class="small">date</i>: {{ ts.date }}
-                {% endif %}
-                {% endfor %}
               </div>
             {% endif %}
           </div>
           {% endif %}
-          <!--<p class="small">numrows: {{ ds.numrows }}; tasks: {{ ds.tasks|length }}; hits: {{ ds.hits|length }}; unreviewed (hits): {{ ds.unreviewed|length }}; unindexed: {{ ds.unindexed }}</p>-->
           {% if ds.unindexed < ds.numrows %}
             <!-- if some are indexed, offer to skip them -->
             <div id="recon_scope" class="mt-2">
@@ -527,7 +525,7 @@
           <div id="geo_constraint" class="mt-2">
             <hr/>
             <div class="mb-2">
-              <p class="font-weight-bold">Geographic constraint <span class="help-matches" data-id="geo-constraint">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
+              <p class="font-weight-bold">Geographic bounds <span class="help-matches" data-id="geo_bounds">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
               </p>
               <p>
                 <select id="select_region" name="region" class="custom-select-sm" style="width:auto;">
@@ -933,6 +931,12 @@ js for Summary, Reconciliation
         for(u in updates){
           tid = updates[u][0]
           counts = updates[u][1]
+          // if all are reviewed, disable radio button
+          radio_id = "#r_" + counts['task'].substring(6)
+          if(counts['total'] == 0){
+            $(radio_id).attr('disabled', true)
+            $(radio_id).attr('checked', false)
+          }
           foo = "#pass0_"+tid
           if(tid['pass0'] == 0){ 
             $(foo).addClass('hidden') 
