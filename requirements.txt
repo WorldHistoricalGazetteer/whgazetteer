@@ -55,7 +55,8 @@ djangorestframework-gis==0.15
 djoser==2.0.3
 docutils==0.15.2
 edtf==4.0.1
-elasticsearch==7.8.1
+elastic-wikidata==0.3.7
+elasticsearch==6.3.1
 elasticsearch-dsl==6.3.1
 envoy==0.0.3
 et-xmlfile==1.0.1
@@ -93,7 +94,7 @@ jsonschema==3.2.0
 kombu==4.6.11
 libmagic==1.0
 linear-tsv==1.1.0
-lxml==4.6.1
+lxml==4.6.2
 Markdown==3.0.1
 MarkupSafe==1.1.1
 mccabe==0.6.1
@@ -106,7 +107,6 @@ odfpy==1.4.1
 openpyxl==3.0.2
 pandas==1.1.5
 parso==0.3.1
-petl @ file:///Users/karlg/Downloads/petl-1.6.8.tar.gz
 pexpect==4.6.0
 pickleshare==0.7.5
 Pillow==7.1.0

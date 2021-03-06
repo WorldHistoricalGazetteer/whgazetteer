@@ -6,12 +6,12 @@ WHG is aggregating attestations of historical place references contributed by re
 
 ### Change log
 
-#### v1.2 (25 Feb 2021)
+#### v1.2 (5 Mar 2021)
 
 - New local 3.5m record Wikidata index for reconciliation (beta; ask for access)
 - New and improved authorization functions (register, login, password recovery)
 - Add dataset collaborators in 'member' or 'co-owner' roles
-- 
+- Reconciliation task progress tracking and status feedback improved
 
 #### v1.1a (11 Jan 2021)
 
