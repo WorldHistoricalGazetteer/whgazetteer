@@ -1368,7 +1368,7 @@ js for Browse
 
   // render single row's geometry/geometries
   function renderPlace(geom) {
-    props = {"place_id":geom[0].place_id, "src_id":geom[0].src_id}
+    props = {"place_id":geom[0].place_id, "src_id":geom[0].src_id, "title":geom[0].title}
     row_geojson = {
       "type":"Feature",
       "properties": props,
@@ -1380,16 +1380,40 @@ js for Browse
       row_geojson.geometry.geometries.push(
         {"type":geom[g].type, "coordinates":geom[g].coordinates}
       )}
-    <!--row_geojson.pointToLayer(feature, latlng) {-->
-          <!--matchid = feature.place_id-->
-          <!--<!--console.log('feature',feature)-->-->
-          <!--marker = L.circleMarker(latlng,styles.Point.default).bindPopup(feature.title+-->
-            <!--'<br>pid: <a href="'+window.location.origin+'/api/db?id='+matchid+'" target="_blank">'+-->
-            <!--matchid+'</a>');-->
-          <!--<!--idToFeature[matchid] = marker-->-->
-          <!--return marker-->
-        <!--}-->
-    rowfeat = L.geoJSON(row_geojson).addTo(mappy)  
+    if(typeof(grp) != 'undefined'){ grp.removeFrom(mappy)}
+    rowfeat = L.geoJSON(row_geojson, {
+      onEachFeature: function (feature, layer){
+        <!--features.onEachFeature(function(feature, layer){-->
+        <!--console.log('feature',feature)            -->
+        <!--console.log('layer',layer)            -->
+        <!--})-->
+        grp = L.featureGroup()
+        layer.eachLayer(function(lyr){
+          lyrc = lyr
+          <!--console.log('lyr',lyr)-->
+          // {radius: 1, fillColor:"#ff9900", fillOpacity: 0.8, stroke: false}
+          matchid = feature.properties.place_id
+          title = feature.properties.title
+          if(lyr._latlng){
+            m = L.circleMarker(lyr._latlng).bindPopup(
+            title+'<br>pid: <a href="'+window.location.origin+
+            '/api/db?id='+matchid+'" target="_blank">'+matchid+'</a>')
+            m.addTo(grp)
+          }
+          <!--else{ // it's a line or polygon                       -->
+              <!--var t_style = {-->
+                  <!--"weight":'3',-->
+                  <!--"opacity":'1',-->
+                  <!--"color":"#fcba03",-->
+                  <!--"fillOpacity":'0.5',-->
+                  <!--"fillColor":"#fcba03"-->
+              <!--}   -->
+              <!--layer.setStyle(t_style);-->
+          <!--}-->
+        })
+      }
+    })
+    grp.setStyle({radius: 8, fillColor:"#ff9900", fillOpacity: 0.2, stroke: true, weight: 1, color:"#000"}).addTo(mappy)
   }
   // get single place record, display data, render map marker(s)
   function getPlace(pid){
@@ -1397,6 +1421,7 @@ js for Browse
       url: "/api/place/"+pid,
       }).done(function( data ) {
         console.log('api/place/ data.geoms', data.geoms)
+        dg = data.geoms
         $("#detail_left").html(parsePlace(data,'left'))
         $("#detail_right").html(parsePlace(data,'right'))
         $('.ext').on('click', function(e) {
