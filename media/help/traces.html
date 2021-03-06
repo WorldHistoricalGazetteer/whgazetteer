@@ -1,0 +1,20 @@
+<html>
+<body>
+<div>
+    <a href=""></a><!-- avoids scroll to the bottom anchor-->
+    <h4>Traces and trace annotation data</h4>
+    <p>We use the term ‘traces’ to refer to records of historical entities or activity for which location (at time) is of interest. The subjects of such trace records include agents (e.g. people and groups), artifacts (e.g. textual and visual works, museum objects, datasets), and events of all kinds. In this early experimental phase we are especially interested in traces related to geographic movement, such as historical journeys and flows, and web-accessible datasets.</p>
+    <p>Trace data contributions to WHG will take the form of W3C Web Annotations, fitting one of the implementation patterns in a forthcoming Linked Traces format specification. That format is currently in development by a small working group which includes members of the WHG project team and the Pelagios Network.</p>
+    <p>To date the WHG system has indexed only a handful of examples. One of these, for the pilgrimage of 7th century Chinese monk Xuanzang, can be found by selecting “Trace” and entering “xua...” or “bud...”.</p>
+    <p>If you have place data related to historical movement (journeys, flows) at any stage of development, we would love to hear from you via an email to info@whgazetteer.org or a tweet tagging @WHGaztetteer.</p>
+</div>
+</body>
+</html>
+<script type="text/javascript">
+    $(function(){
+        $(".replace-content").click(function(){
+            console.log('loaded reconciliation help',$(this).data('id'))
+            $('#helpme').load('/media/help/'+$(this).data('id')+'.html');
+        })
+    })
+</script>    

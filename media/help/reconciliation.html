@@ -1,0 +1,30 @@
+<html>
+<body>
+<div>
+    <a href=""></a><!-- avoids scroll to the bottom anchor-->
+    <h4>Reconciliation Services</h4>
+    <p>Reconciliation is a two-step process of (a) <b>querying authorities</b>: identifying potential matches between places referenced in your uploaded attestation records and places found in modern place name authority resource like Getty Thesaurus of Geographic Names (tgn), Wikidata (wd), DBpedia (dbp), and GeoNames (gn); and (b) <b>reviewing hits</b> (potential matches) returned, accepting those which are valid. In this release, only Getty TGN and Wikidata are available.<p>
+    <h5>Querying Authorities</h5>
+    <p>For each dataset record, the authority is queried in multiple passes. In the first pass, the most complete "query object" derived from the record is sent. If there are no hits, the query is relaxed; that is, elements of the query object are removed. Each authority has its own data structure and capabilities, so there are separate scripts/functions tailored for each. When initiating a reconciliation, you can choose whether to accept the authority's geometry in the subsequent review step (the default is "yes").</p>
+    <i>Getty TGN</i>
+    <p>WHG maintains an indexed copy of the 2.5 million TGN records obtained in a download in Spring, 2018. The first pass query to TGN includes all of these which are provided: <i>title</i>, <i>variants</i>, <i>place types</i>, <i>geom</i>, "parents", and a constraining study area if supplied. The "parents" element is derived from <i>parent_name</i> and/or <i>ccodes</i>. If no hits are returned, pass two removes any supplied geometry. If no hits result, then place types are removed for pass three.</p>
+    <i>Wikidata</i>
+    <p>The Wikidata reconciliation runs against a SPARQL endpoint and has two passes. The first pass considers all names, parent and/or country names, and geometry, then filters for place types. The second pass omits the type filter.</p>
+    <h5>Reviewing Hits</h5>
+    <p>The Reconciliation Review page presents those records from the uploaded dataset that received any hits, one by one, on the left side of the screen. On the right are the hits&em;prospective matches&em; returned. A map on the left side shows markers for both, if any. Markers for the uploaded record are green; those from the hits are orange. At the top of each hit is a "match bar," which contains:</p>
+    <ul>
+    <li>A globe icon; hovering over it highlights its marker in the map.</li>
+    <li>A set of buttons for asserting a match (or no match) for that hit with the dataset record.</li>
+    <li>A help icon; clicking it loads <a href="#" class="replace-content" data-id="matches">a help screen explaining the match options in detail</a>.</li>
+    </ul>
+    </div>
+</body>
+</html>
+<script type="text/javascript">
+    $(function(){
+        $(".replace-content").click(function(){
+            console.log('loaded reconciliation help',$(this).data('id'))
+            $('#helpme').load('/media/help/'+$(this).data('id')+'.html');
+        })
+    })
+</script>

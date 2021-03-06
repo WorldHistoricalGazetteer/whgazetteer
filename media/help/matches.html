@@ -1,0 +1,22 @@
+<html>
+<body>
+<div>
+    <a href=""></a><!-- avoids scroll to the bottom anchor-->
+    <h4>What does closeMatch mean?</h4>
+    <p><i>NOTE: if a hit has no geometry, match choices are unavailable.</i></p>
+    <p>The meaning of <i>closeMatch</i> derives from the <a href="https://www.w3.org/TR/2009/REC-skos-reference-20090818/" target="_blank">Simple Knowledge Organization System (SKOS) vocabulary</a>, a widely used data model. Practically speaking, for WHG asserting a "clseMatch" serves as a linking "glue." Specifically, records that share one or more common linked asserted as (<i>closeMatch</i>) are joined/linked in our "union index" and returned together in response to queries. For example, records for Abyssinia and Ethiopia share two <i>closeMatch</i> links, to a DBPedia record and a TGN record. Therefore, they appear together when searching for either Abyssinia or Ethiopia. We have determined there is not a clear enough distinction with SKOS:exactMatch to offer that choice.</p>
+    <p>From the SKOS specification:</p>
+    <ul>
+      <li><i>closeMatch</i>: "...(the) two concepts are sufficiently similar that they can be used interchangeably in some information retrieval applications"</li>
+      <li><i>exactMatch</i>: "...a high degree of confidence that two concepts can be used interchangeably across a wide range of information retrieval applications."</li></ul>
+    <p>Furthermore, <i>closeMatch</i> is a super-property of <i>exactMatch</i>; that is, every <i>exactMatch</i> is also a <i>closeMatch</i>. Remember, the purpose of the assertion is to ensure records that should intuitively appear together, do.</p></div>
+</body>
+</html>
+<script type="text/javascript">
+    $(function(){
+        $(".replace-content").click(function(){
+            console.log('loaded reconciliation help',$(this).data('id'))
+            $('#helpme').load('/media/help/'+$(this).data('id')+'.html');
+        })
+    })
+</script>    

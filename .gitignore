@@ -6,7 +6,9 @@ _tests/
 _testdata/
 
 datasets/static/_older/
-media/
+media/data/
+media/user*
+
 sent_emails/
 
 .DS_Store

@@ -1,0 +1,38 @@
+<html>
+<body>
+<div>
+    <a href=""></a><!-- avoids scroll to the bottom anchor-->
+    <h4>Update Dataset <span id="dsid"></span></h4>
+    <p><mark>Not yet available</mark></p>
+    <p>The "update dataset" function performs the following steps:</p>
+    <ul>
+        <li>step 1</li>
+        <li>step 2</li>
+        <li>step 3</li>
+    </ul>
+    <p>
+        <button class="but" data-id="continue" data-action="{% url 'datasets:dataset-update' pk=ds.id %}">Continue</button>
+        <!--<button class="but" data-action="{ url 'datasets:dataset-update' pk=ds.id %}">Continue</button>-->
+        <button class="but" data-action="cancel">Cancel</button>
+    </p>
+    <div id="compare_results" class="hidden" style="border:1px solid #ccc; height:fit-content; background-color:aliceblue; padding:12px;">
+        <p>analysis results...</p>
+        <button class="btn btn-sm btn-outline-secondary" type="button">Perform update</button>
+    </div>
+</div>
+</body>
+</html>
+<script type="text/javascript">
+    $(function(){
+        $(".but").click(function(){
+            console.log('clicked',$(this).data('action'))
+            if($(this).data('id') == 'continue'){
+                $("#compare_results").show()
+            } else { $(".selector").dialog('close') }
+        })
+        $(".replace-content").click(function(){
+            console.log('loaded reconciliation help',$(this).data('id'))
+            $('#helpme').load('/media/help/'+$(this).data('id')+'.html');
+        })
+    })
+</script>    

@@ -1,0 +1,26 @@
+<html>
+<body>
+<div>
+    <a href=""></a><!-- avoids scroll to the bottom anchor-->
+    <h4>Re-running a reconciliation task</h4>
+    <p>You have already run a task of this type for this dataset.</p>
+    <p>During the Review step after running a reconciliation task, any decisions made ('no match' or 'closeMatch') are recorded in the WHG database. All hits presented for each given record are marked 'reviewed' and in the case of a 'closeMatch' decision, new <i>place-link</i> and possibly <i>place-geom</i> records are created.</p>
+    
+    <p><b>If review of a prior task is incomplete</b> and you run the same task type again (e.g. wikidata, tgn), by default we will skip submitting any place records already reviewed. For example: in a previous task, 200 records got 1 or more hits, and you made decisions on 50 of the records. If you submit the same type of task, the 50 records already reviewed will be skipped, and decision results already made for them will be retained.</p>
+    
+    <p><b>If you never made any review decisions for the earlier task(s)</b>, ALL records will once again be submitted. You should delete the previous task to avoid confusion.</p>
+    
+    <p><b>If review of results from the previous task(s) is complete</b>, the option to run it again is disabled to prevent duplication of effort.</p>
+    
+    <p>If you really want to submit all your records again (and review hits for all), you should delete any previous tasks of that type on the Reconciliation tab. That choice of task will then be enabled here again.</p>
+</div>
+</body>
+</html>
+<script type="text/javascript">
+    $(function(){
+        $(".replace-content").click(function(){
+            console.log('loaded recon_rerun help',$(this).data('id'))
+            $('#helpme').load('/media/help/'+$(this).data('id')+'.html');
+        })
+    })
+</script>    
