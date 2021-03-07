@@ -1021,7 +1021,7 @@ js for Browse
         t=$(this)
         // get id
         pid=$(this)[0].cells[0].textContent
-        console.log('selected row pid', pid)
+        <!--console.log('selected row pid', pid)-->
         // highlight this row, clear others
         var selected = $(this).hasClass("highlight-row");
         $("#placetable tr").removeClass("highlight-row");
@@ -1035,21 +1035,30 @@ js for Browse
         // highlights marker if idToFeature
         if(typeof(idToFeature) != 'undefined'){
           if(pid in idToFeature){
+            // un-highlight last
+            if(typeof(hilit) != 'undefined'){
+              ftype = hilit.feature.geometry.type
+              feat.setStyle(styles[ftype]['default'])
+            }
             feat = idToFeature[pid]
             ftype = feat.feature.geometry.type
-            // reset style for all if we've zoomed
-            if(typeof foptions !== 'undefined'){
-              features.setStyle(foptions)
-            }
+            
             // focus this one
-            // TODO: an appropriate zoom
             feat.setStyle(styles[ftype].focus)
             feat.bringToFront()
-            // account for lines and polygons
-            // mappy.setView(feat._latlng);
-            mappy.setView(
-              ftype=='Point'?feat._latlng:feat.getBounds().getCenter()
-            )
+            hilit = feat
+
+            // zoom to it
+            if(ftype=='Point'){
+              mappy.setView(feat._latlng)
+            } else {
+              mappy.fitBounds(
+                feat.getBounds(),
+                {padding: [70,70]})
+            }
+            <!--mappy.setView(-->
+              <!--ftype=='Point' ? feat._latlng : feat.getBounds().getCenter()-->
+            <!--)-->
           } else {
             features.setStyle(foptions)
           }
@@ -1170,10 +1179,11 @@ js for Browse
       "focus": {radius:8, fillColor:"#ffff00",fillOpacity:1, stroke:true, weight:1,color:"#000"}},
     "MultiLineString": {
       "default":{opacity: 1, weight: 1, stroke: true, color: "#336699"},
-      "focus":{}},
+      "focus": {opacity: 1, weight: 4, stroke: true, color: "orange"},
+    },
     "Polygon": {
-      "default":{fillOpacity: 0.4, stroke: true, opacity: 1, color: "#fff", weight: 1, fillColor:"#993333"},
-      "focus":{}
+      "default":{fillOpacity: 0.2, stroke: true, opacity: 1, color: "#fff", weight: 1, fillColor:"#993333"},
+      "focus":{fillOpacity: 0.2, stroke: true, opacity: 1, color: "red", weight: 2, fillColor:"#993333"}
     },
     "MultiPolygon": {
       "default":{fillOpacity: 0.4, stroke: true, opacity: 1, color: "#fff", weight: 1, fillColor:"#993333"},
@@ -1194,14 +1204,16 @@ js for Browse
       }
       idToFeature = {}  // for feature lookup
       features = L.geoJSON(geom, {
+        // each object in features._layers includes 
+        //  feature{type,properties,geometry}, options, _bounds, _latlngs array
         style: function(feature) {
-          console.log('feature',feature)
+          // initial style for non-Point features
           ftype = feature.geometry.type
-          console.log('ftype',ftype, styles[ftype])
+          <!--console.log('ftype',ftype, styles[ftype])-->
           return styles[ftype]['default']
         },
-      // feature here is a geometry
-      // TODO: LPF should allow single geometry, not only GeometryCollection
+        // TODO: LPF should allow single geometry, not only GeometryCollection
+        // adds any points in geom
         pointToLayer: function (feature, latlng) {
           matchid = feature.place_id
           <!--console.log('feature',feature)-->
@@ -1212,17 +1224,10 @@ js for Browse
           return marker
         },
         onEachFeature: function(feature, layer) {
+          // add to lookup
           feat=feature; lyr=layer;
-          <!--console.log('lyr',lyr)-->
           identifier = feat.place_id;
           idToFeature[identifier] = lyr
-          <!--if(feat.type != 'Point'){-->
-            <!--lyr.setStyle(styles.Point.default)-->
-          <!--} else if (feat.type != 'MultiLineString') {-->
-            <!--lyr.setStyle(styles.MultiLineString.default)-->
-          <!--} else if (feat.type != 'MultiPolygon') {-->
-            <!--lyr.setStyle(styles.MultiPolygon.default)-->
-          <!--}-->
         }
       }).addTo(mappo);
       <!--});-->
@@ -1231,7 +1236,8 @@ js for Browse
     mappo.on('zoomend', function() {
       var currentZoom = mappy.getZoom();
       var myRadius = currentZoom*(1); //or whatever ratio you prefer
-      var myWeight = currentZoom*(1/5); //or whatever ratio you prefer
+      <!--var myWeight = currentZoom*(1/5); //or whatever ratio you prefer-->
+      var myWeight = currentZoom*(2/5); //or whatever ratio you prefer
       features.setStyle({radius: myRadius, weight: myWeight});
       opt = Object.values(idToFeature)[0].options
       foptions = { ...opt };

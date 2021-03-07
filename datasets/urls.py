@@ -12,9 +12,17 @@ from datasets.utils import download_file, download_augmented, download_gis, Upda
 app_name='datasets'
 urlpatterns = [
     
-    # try refactoring 
-    path('<int:id>/summary', views.DatasetDetailViewDev.as_view(), name='ds_summary'),
+    ### 
+    # try refactoring, ea. tab w/its own view, template
+    # templates include ds_tabs.html
+    ###
+    path('<int:id>/summary', views.DatasetSummaryView.as_view(), name='ds_summary'),
+    path('<int:id>/log', views.DatasetLogView.as_view(), name='ds_log'),
     
+    
+    ###
+    # in use
+    ###
     path('create/', views.DatasetCreateView.as_view(), name='dataset-create'),
     
     # upload excel
@@ -37,10 +45,6 @@ urlpatterns = [
 
     # also handles update for name, description fields
     path('<int:id>/detail', views.DatasetDetailView.as_view(), name='dataset-detail'),
-
-
-    # refactoring dataset detail
-    path('<int:id>/detail/dev', views.DatasetDetailViewDev.as_view(), name='dataset-dev'),
 
     # insert validated delimited (csv for short) file data to db
     path('<int:pk>/insert_tsv/', views.ds_insert_tsv, name="ds_insert_tsv"),
