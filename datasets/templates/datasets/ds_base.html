@@ -1,3 +1,4 @@
+<!-- dataset_dev.html big refactor -->
 {% extends "main/base.html" %}
 {% load static %}
 {% load leaflet_tags %}
@@ -16,13 +17,10 @@
   <script src="//cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
   <script src="//cdn.datatables.net/1.10.23/js/dataTables.bootstrap4.min.js"></script>
 
-  <!--<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.css' rel='stylesheet' />-->
-  <!--<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.js'></script>-->
-  <!--<script src="{ static 'js/leaflet-mapbox-gl.js' %}"></script>-->
 {% endblock %}
 {% block title %}<title>Dataset::{{ ds.label }}</title>{% endblock %}
 {% block content %}
-<div id="dataset_content" class="container mt-1 px-1">
+<div id="dataset_content" class="container mt-1 px-1" style="border:1px solid red;">
   <ul id="dataset_tabs" class="nav nav-tabs" role="tablist">
     <span class="ds-title ml-1 mr-3">{{ ds.title }}</span>
     <li class="nav-item">
@@ -46,538 +44,6 @@
   </ul>
   <!-- Tab panes -->
   <div class="tab-content">
-    <div id="summary" class="tab-pane fade show active" role="tabpanel" aria-labelledby="summary-tab">
-      <form id="ds_form" method="POST" action="#" enctype="multipart/form-data">
-      {% csrf_token %}
-      <div class="row">
-      <div id="ds_details" class="col-sm-8 small">
-      {% if object.owner.id == user.id or user.is_superuser %}
-        <span class="float-right">
-          Delete dataset <a href="{% url 'datasets:dataset-delete' ds.id %}" class="" title="Delete dataset" rel="tooltip">{% fontawesome_icon 'trash' color='#ff0000' %}</a></span>
-      {% endif %}
-        <table class="ds-table">
-          <tr>
-            <td><b>ID / label</b></td>
-            <td>{{ ds.id }} / {{ ds.label }}</td>
-          </tr>
-          <tr>
-            <td><b>Title</b> 
-              <a href="#" class="edit-title">{% fontawesome_icon 'edit' color='#336699' %}</a>
-            </td>
-            <td>
-              <span class="form-title bigger strong">{{ form.title.value }}
-                {% if ds.webpage %}(<a href="{{ ds.webpage }}" target="_blank">webpage</a> <a href="#" class="edit-webpage">{% fontawesome_icon 'edit' color='#336699' %}</a>){% endif %}
-              </span>
-              <span class="hidden editing-title">{{ form.title }}</span>&nbsp;
-              <span class="hidden editing-webpage">{{ form.webpage }}</span>&nbsp;
-            </td>
-          </tr>
-          <tr>
-            <td><b>URI base</b>
-              <a href="#" class="edit-uri_base">{% fontawesome_icon 'edit' color='#336699' %}</a>
-            </td>
-            <td>
-              <span class="form-uri_base">{{ form.uri_base.value }}</span>
-              <span class="hidden editing-uri_base">{{ form.uri_base }}</span>
-            </td>
-          </tr>
-          <!--<tr>-->
-            <!--<td><b>Web page</b>-->
-              <!--<a href="#" class="edit-webpage">{ fontawesome_icon 'edit' color='#336699' %}</a>-->
-            <!--</td>-->
-            <!--<td>-->
-              <!--<span class="form-webpage">{{ form.webpage.value }}</span>-->
-              <!--<span class="hidden editing-webpage">{{ form.webpage }}</span>-->
-            <!--</td>-->
-          <!--</tr>-->
-          <tr>
-            <td style="vertical-align:top;"><b>Description</b> 
-              <a href="#" class="edit-description">{% fontawesome_icon 'edit' color='#336699' %}</a>
-            </td>
-            <td>
-              <span class="form-description">{{ form.description.value }}</span>
-              <span class="hidden editing-description">{{ form.description }}</span>
-            </td>
-          </tr>
-          <tr>
-            <td style="vertical-align:top;"><b>Public?</b> 
-              <a href="#" class="edit-public">{% fontawesome_icon 'edit' color='#336699' %}</a>
-            </td>
-            <td>
-              <span class="form-public">{{ form.public.value }}</span>
-              <span class="hidden editing-public">{{ form.public }}</span>
-            </td>
-          </tr>
-          <tr>
-            <td><b>Dataset status</b></td>
-            <td>{{ ds.ds_status }}</td>
-          </tr>
-          <tr>
-            <td><b>Creator</b></td>
-            <td>{{ ds.creator }}</td>
-          </tr>
-        </table>
-        <input class="btn btn-primary btn-sm hidden btn-ds" type="submit" value="Save" />
-        <p> <i>Current data file</i></p>
-        <div id="div_file">
-          <table id="file_metadata" class="ds-table table-striped">
-            <tr>
-              <td><b>Revision</b></td>
-              <td>{{ current_file.rev }}</td>
-            </tr>
-            <tr>
-              <td><b>File</b></td>
-              <td>
-                <span class="display-field">{{ current_file.file }}</span>
-              </td>
-            </tr>
-            <tr>
-              <td><b>File status</b></td>
-              <td>{{ current_file.df_status }}</td>
-            </tr>
-            <tr>
-              <td><b>Uploaded</b></td>
-              <td>{{ current_file.upload_date|date:"d-M-Y, H:i (e)" }}</td>
-            </tr>
-            <tr>
-              <td><b>Data type</b></td>
-              <td>{{ current_file.datatype }}</td>
-            </tr>
-            <tr>
-              <td><b>Format</b></td>
-              <td>
-                <span class="display-field">
-                  {{ current_file.format }} 
-                  <!--{ if ds.format == 'delimited' %}({ ds.delimiter }}){endif%}-->
-                </span>
-                <span class="update-field hidden">{{ form.format }}</span>
-              </td>
-            </tr>
-            <tr>
-              <td><b>License</b></td>
-              <td><a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">CC BY 4.0</a></td>
-            </tr>
-            {% if current_file.format == 'delimited' %}
-            <tr>
-              <td><b>Columns</b></td>
-              <td>{{ current_file.header }}</td>
-            </tr>
-            {% endif %}
-          </table>
-          <input class="btn btn-primary btn-sm hidden btn-file" type="submit" value="Upload" />
-        </div> <!-- div_file -->
-        <input type="hidden" name="owner" value="{{ ds.owner.id }}">
-        <input type="hidden" name="label" value="{{ ds.label }}">
-        <input type="hidden" name="datatype" value="{{ current_file.datatype }}">
-        <input type="hidden" name="rev" value="{{ current_file.rev }}">
-        <input type="hidden" name="format" value="{{ current_file.format }}">
-        <input type="hidden" name="delimiter" value="{{ current_file.delimiter }}">
-        <input type="hidden" name="df_status" value="{{ current_file.df_status }}">
-        <input type="hidden" name="accepted_date" value="2020-04-01">
-        <input type="hidden" name="header" value="{{ current_file.header }}">
-        <input type="hidden" name="numrows" value="{{ current_file.numrows }}">
-      </div>
-      <div class="col-sm-4 small">
-        <div id="ds_info">
-          <div id="ds_stats" class="ds-card">
-            <table style="width:100%">
-              <!--<tr><td class="pb-3"><b>Status</b></td><td class="pb-3">{ ds.ds_status }}</td><td class="pb-3"></td></tr>-->
-              <tr><th></th><th class="pb-1 text-secondary">count</th><th class="pb-1 text-secondary">added</th></tr>
-              <tr><td><b>Records</b></td><td>{{ ds.numrows }}</td><td class="text-secondary">n/a</td></tr>
-              <tr><td><b>Name variants</b></td><td>{{ num_names }}</td><td class="text-secondary">n/a</td></tr>
-              <tr>
-                <td><b>Geometries</b></td><td>{{ num_geoms }}</td>
-                <td><span class="text-white bg-success">&nbsp;{{ geoms_added }}&nbsp;</span></td></tr>
-              <tr>
-                <td><b>Links</b></td><td>{{ num_links }}</td>
-                <td><span class="text-white bg-success">&nbsp;{{ links_added }}&nbsp;</span></td></tr>
-              {% if ds.unreviewed|length > 0 %}<tr class="text-danger">{%else%}<tr>{%endif%}
-                <td class="pt-3"><b>Unreviewed hits (total)</b></td>
-                <td class="pt-3">{{ ds.unreviewed|length }}</td> 
-                <td class="pt-3 text-secondary">n/a</td></tr>
-              {% if ds.unindexed > 0 %} 
-                <tr class="text-danger">
-                <td><b>Unindexed records</b></td>
-                <td>{{ ds.unindexed }}</td> 
-                <td class="text-secondary">n/a</td></tr>{% endif %}
-            </table>
-          </div>
-          <div id="ds_access" class="pt-0 px-0 ds-card">
-            <p class="ds-card-header">Access</p>
-            <p class="m-0 pl-2 pr-2">
-              Metadata edits, dataset updates, and initiation of reconciliation tasks may only be performed by the dataset contributor ("owner" in WHG). Collaborators added by the owner under the "Sharing" tab can view the dataset and perform review of reconciliation tasks.</p>
-          </div>
-          {% if user.is_superuser or user in owners %}
-          <div id="ds_downloads" class="pt-0 px-0 ds-card">
-            <p class="ds-card-header">Downloads</p>
-            <p class="m-0 pl-2 pr-2">
-              {% if ds.id > 2 %} <!-- exclude black, dplace, which have no upload files -->
-                <a href="{% url 'datasets:dl-file' ds.id %}" ref="current">Current data file</a>
-              {% endif %}
-                <br/>
-              {% if links_added > 0 or geoms_added > 0 %}Augmented dataset: {% endif %}
-                {% if ds.numrows <= 5000 %}
-                    <a href="{% url 'datasets:dl-aug' id=ds.id format='lpf' %}" ref="lpf">Linked Places format</a>
-                  {% if current_file.format == 'delimited' %}
-                    | <a href="{% url 'datasets:dl-aug' id=ds.id format='tsv' %}" ref="tsv">TSV</a>
-                  {% endif %}
-                {% else %}  
-                  <span class="red-head"><br/>Sorry, download of augmented datasets larger than 5000 rows not supported right now; too slow :^(</span>
-                {% endif %}  
-            </p>
-          </div>
-          {% endif %}
-        </div> <!-- ds_info -->
-      </div> <!-- ds_details -->
-      </div> <!-- row -->
-      </form>
-    </div> <!-- summary -->
-    <div id="browse" class="tab-pane fade" role="tabpanel" aria-labelledby="browse-tab">
-        <div class="container mt-3">
-          <div class="row">
-            <div id="drftable_detail" class="col-sm-6 pl-0">
-              <div class="toomany"></div>
-              <div id="mapdiv_browse">
-                  <!--{ leaflet_map "map" callback="map_init" %}-->
-                  {% leaflet_map "map_browse" %}
-                  <div class="spinner-border text-danger"></div>
-              </div>
-              <!-- row detail in 2 columns, populated with getPlace() -->
-              <div id="row_detail" class="row">
-                <div id="detail_left" class="small col-sm-6"></div>
-                <div id="detail_right" class="small col-sm-6"></div>
-              </div>
-            </div> <!-- drftable_detail -->
-            <div id="drftable_list" class="col-sm-6">
-              <table id="placetable" class="table table-striped table-bordered" style="width:100%">
-                <thead>
-                  <tr>
-                    <th>pid</th>
-                    <th>src_id</th>
-                    <th>title</th>
-                    <th>ccodes</th>
-                    <th>geom?</th>
-                  </tr>
-                </thead>
-              </table>
-            </div>
-          </div>
-        </div>
-      <div id="ext_site" class="modal fade" role="dialog">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span></button>
-            </div>
-            <div id="ext_content" class="modal-body">foo</div>
-          </div>
-        </div>
-      </div> <!-- ext_site -->
-    </div> <!-- browse -->
-    <div id="reconciliation" class="tab-pane fade" role="tabpanel" aria-labelledby="reconciliation-tab">
-      <div id="ds_tasks" class="small">
-        <h6 class="">Reconciliation Tasks 
-          <span class="small help-matches" data-id="reconciliation">
-            {% fontawesome_icon 'question-circle' color='#993333' %}</span>
-          {% if user.is_superuser or user in owners %}
-            <span class="ml-4 small">
-            <a id="addtask_link" href="#" >Add new task {% fontawesome_icon 'plus-square' color='#336699' %}</a>
-            </span>
-          {% endif %}
-        </h6>
-        {% if user.is_superuser or user in owners or user in collaborators %}
-        {% if tasks|length < 1 %}<i id="none_yet">None yet...</i>{% endif %}
-        {% if messages %}<div>
-          {% for message in messages %}
-            <p class="larger ml-1 mb-2 strong">{{ message|safe }}</p>
-          {% endfor %}</div>
-        {% endif %}
-        {% for t in tasks %}
-        <div class="task-box mb-2">
-          <!-- TODO: display bounds used if any -->
-          <div class="row">
-            <div class="col-sm-5">
-              <p><b>Task</b>: {{ t.task_name }} <span class="small">
-                ({{ t.date_done|date:"d-M-Y, H:i (e)" }}; elapsed: {{ t.result|get:"elapsed"|safe }})</span>
-              </p>
-              <p><b>ID</b>: {{ t.task_id }}</p>
-              <p class="small">
-                 <a class="confirm-del-all" data-id={{t.task_id}} href="{% url 'datasets:task-delete' tid=t.task_id scope='task' %}">
-                   Delete task & hits, clear matches {% fontawesome_icon 'trash' color='#ff0000' %}</a><br/>
-                   <a class="confirm-del-geoms" href="{% url 'datasets:task-delete' tid=t.task_id scope='geoms'%}">
-                  Delete geometries added so far</a>
-              </p>
-            </div>
-            <div class="col-sm-5">
-              <p><b>Result</b>: {{ t.result|get:"got_hits"|safe }} records (of {{ t.result|get:"count"|safe }}) got total of <b>{{ t.result|get:"total"|safe }}</b> hits</p>
-              <p class="mb-0 ital">Remaining to review:</p>
-              <ul>
-                {% if t.result|get:"pass0" > 0 %}
-                  <li id="pass0_{{t.task_id}}"  class="li-left">Pass 0 (matched links): <span class="mx-2 strong" id='{{t.task_id}}_0'>nn</span> 
-                  <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass0' %}">
-                   review</i></a> 
-                   <span>| <a href="{% url 'datasets:wd_pass0' tid=t.task_id %}">auto-accept</a>  
-                   <span class="help-matches" data-id="auto-match">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
-                   </span>
-                   </li>
-                {% endif %}
-                {% if t.result|get:"pass1" > 0 %}
-                  <li class="li-left">Pass 1: <span class="strong mx-2" id='{{t.task_id}}_1'>nn</span> 
-                  <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass1' %}">
-                   review</i></a></li>
-                {% endif %}
-                {% if t.result|get:"pass2" > 0 %}
-                  <li class="li-left">Pass 2: <span class="strong mx-2" id='{{t.task_id}}_2'>nn</span> 
-                  <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass2' %}">
-                   review</i></a></li>
-                {% endif %}
-                <!--{ if t.task_name == 'align_tgn' %}-->
-                {% if t.result|get:"pass3" > 0 %} <!-- TGN only -->
-                  <li class="li-left">Pass 3: <span class="strong mx-2" id='{{t.task_id}}_3'>nn</span> 
-                  <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass3' %}">
-                   review</i></a></li>
-                {% endif %}
-              </ul>            
-            </div>
-            <div class="col-sm-2">
-              {% if t.task_name == 'align_wd' %}
-                <img src="{% static 'images/Wikidata-logo-en.svg'%}" width="80"/>
-              {% elif t.task_name == 'align_wdlocal' %}
-                <img src="{% static 'images/wikidata-logo-local.png'%}" width="80"/>
-              {% elif t.task_name == 'align_tgn' %}
-                <img src="{% static 'images/getty80.png'%}" width="80"/>
-              {% elif t.task_name == 'align_idx'%}
-                <img src="{% static 'images/whg_accessioning.svg'%}" width="80"/>
-              {% elif t.task_name == 'align_whg'%}
-                <img src="{% static 'images/whg_aligning.svg'%}" width="80"/>
-              {% endif %}
-            </div>
-          </div> <!-- row -->
-        </div> <!-- task-box -->
-        {% endfor %}
-        {% endif %}
-      </div>
-    </div>
-    <div id="log" class="tab-pane fade" role="tabpanel" aria-labelledby="log-tab">
-      <div id="ds_log" class="mt-2 row">
-        <div class="col-sm-4">
-          <h4>Dataset Log</h4>
-          <ul class="ul-flush">
-            {% for l in log %}
-              <li class="li-flush">{{l.logtype}} ({% if l.subtype %}{{l.subtype}}{% elif l.note %}{{l.note}}{%endif%}), {{l.timestamp|date:"Y-m-d" }}</li> 
-            {% endfor %}
-          </ul>
-        </div>
-        <div id="ds_comments" class="col-sm-8 small">
-          <h4>Comments</h4>
-            <table class="table table-striped">
-              <thead class="strong">
-                <th>created (utc)</th>
-                <th>place_id</th>
-                <th>tag</th>
-                <th>note</th>
-                <th>user</th>
-              </thead>
-              <tbody> 
-                {% for c in comments %}
-                <tr><td>{{c.created|date:"Y-m-d"}}</td><td>{{c.place_id.id}}</td>
-                  <td>{{c.tag}}</td><td>{{c.note}}</td><td>{{c.user}}</td></tr>
-                {% endfor %}
-              </tbody>
-            </table>
-        </div>
-      </div> <!-- ds_log -->
-    </div>
-    <div id="sharing" class="tab-pane fade" role="tabpanel" aria-labelledby="sharing-tab">
-      <form id="sharing_form" method="POST" action="{% url 'datasets:collab-add' dsid=ds.id %}" enctype="multipart/form-data">
-      {% csrf_token %}
-      <div></div>
-        {% if messages %}<div>{% for message in messages %}
-          <i style="display:block;" class="mb-2">{{ message }}</i>
-        {%endfor%}</div>{% endif %}
-      <div class="sharing-box my-3 w-50">
-        <div class="sharing-header mb-0">Collaborators</div>
-        <p class="mb-1 px-2">Collaborators are assigned per dataset. Members can view its contents and metadata, and perform review of reconciliation task results.
-         Co-owners can perform all actions.</p>
-        {% if user.is_superuser or user in owners %}
-          <div class="ml-2 my-2">
-            <div class="form-check form-check-inline sharing-input">
-              <span class="input-group"> 
-                <input type="text" class="form-control input-sm" name="username" placeholder="Enter username">
-                <div class="input-group-append">
-                  <button class="btn btn-sm btn-outline-secondary" type="submit">Add</button>
-                </div>
-              </span>
-            </div>
-            <div class="form-check form-check-inline">
-              <input class="form-check-input hover" type="radio" name="role" id="r_place" value="member" checked="checked">
-              <label class="form-check-label" for="r_place">Member</label>
-            </div>
-            <div class="form-check form-check-inline">
-              <input class="form-check-input hover" type="radio" name="role" id="r_trace" value="owner">
-              <label class="form-check-label" for="r_trace">Co-owner</label>
-            </div>
-          </div>
-        {% endif %}
-        <ul id="collabs_list">
-          {% for c in collaborators %}
-            <li>
-              {{ c|safe }}
-              {% if user.is_superuser or user in owners %}
-                <span class="float-right mr-2">
-                <a href="{% url 'datasets:collab-delete' uid=c.user_id_id dsid=ds.id %}">
-                {% fontawesome_icon 'times-circle' color='#336699'%}</a></span>
-              {% endif %}
-            </li>
-          {% endfor %}
-        </ul>
-      </div>
-      </form>
-    </div>
-    <div id="addtask" class="tab-pane" role="tabpanel" aria-labelledby="addtask-tab">
-      <form action="{% url 'datasets:ds_recon' ds.id %}" method="POST">
-      {% csrf_token %}
-      {% if user.is_superuser or user in owners %}
-      <div class="row"> <!-- page-wide -->
-        <div id="recon_form" class="col-md-6">
-          <input type="hidden" name="ds" value="{{ ds.id }}">
-          <input type="hidden" name="wd_lang" value="">
-          {% if user.is_superuser %}
-            <div class="form-check text-danger">
-              <label class="form-check-label" for="r_whg">
-                <input type="radio" class="form-check-input" id="r_whg"
-                  name="recon" value="idx">WHG (accession/reconcile) 
-              </label>
-            </div>
-            <div class="form-check text-danger">
-              <label class="form-check-label" for="r_whgpre">
-                <input type="radio" class="form-check-input" id="r_whgpre"
-                  name="recon" value="whg">WHG (align only)
-              </label>
-            </div>
-            <div id="wd_lang" class="hidden">
-              Preferred label language: <input class="input-sm col-xs-2"type="text" name="lang">
-            </div>
-            <hr/>
-          {% endif %}
-          <p class="font-weight-bold mb-0">Name authority source</p>
-          <p class="small">Your task will enter a queue and email notification sent when completed. 
-          <!--<br/>The <b>{ ds.numrows }}</b> records in this dataset will take <b>{ ds.numrows|time_estimate }}</b>.-->
-          </p>
-          <div class="form-check">
-            <label class="form-check-label" for="r_tgn">
-              <input type="radio" class="form-check-input" id="r_tgn"
-                name="recon" value="tgn" checked>Getty TGN (tgn) <span class="text-danger small ml-2">estimated time: {{ ds.numrows|time_estimate }}</span>
-            </label>
-            {% if ds.taskstats.align_tgn|length > 0 %}
-              <div id="tgn_tasks" class="hidden">
-                <div class="mt-0 smaller">
-                <p class="mb-0">You have already run one or more TGN alignment tasks for this dataset
-                {% if ds.taskstats.align_tgn.0.total == 0 %}.<br/>All results have been reviewed and matching decisions recorded. Running it again risks duplicating that effort.
-                {% else %}.<br/>Only the <b class="text-danger">{{ds.taskstats.align_tgn.0.total}}</b> place records NOT already reviewed will be submitted now.
-                {% endif %}
-                <span class="help-matches" data-id="recon_rerun">{% fontawesome_icon 'question-circle' color='#993333' %}</span></p>
-                <input type="hidden" name="scope" value="unreviewed">
-                </div>
-              {% for ts in ds.taskstats.align_tgn %}
-              {% if ts.total > 0 %}
-                <p class="my-0">
-                <i class="small">task</i>: {{ ts.tid|truncatechars:9 }}
-                <i class="small">date</i>: {{ ts.date }}
-              {% endif %}
-              {% endfor %}
-            </div>
-            {% endif %}
-          </div>
-          <div class="form-check">
-            <label class="form-check-label" for="r_wd">
-              <input type="radio" class="form-check-input r_wd" id="r_wd" name="recon" value="wd" >Wikidata remote sparql (wd) <span class="ml-2 text-danger small">estimated time: {{ ds.numrows|time_estimate_sparql }}</span>
-            </label>
-          </div>
-          {% if beta_or_better %}
-          <div class="form-check">
-            <label class="form-check-label" for="r_wdlocal">
-              <input type="radio" class="form-check-input r_wd" id="r_wdlocal" 
-                name="recon" value="wdlocal" checked>Wikidata local (BETA) <span class="ml-2 text-danger small">estimated time: {{ ds.numrows|time_estimate }}</span>
-            </label>
-            {% if ds.taskstats.align_wdlocal|length > 0 %}
-              <div id="wdlocal_tasks">
-                <div class="mt-0 smaller">
-                <p class="mb-0">You have already run one or more Wikidata alignment tasks for this dataset
-                {% if ds.taskstats.align_wdlocal.0.total == 0 %}.<br/>All results have been reviewed and matching decisions recorded. Running it again risks duplicating that effort.
-                {% else %}.<br/>Only the <b class="text-danger">{{ds.taskstats.align_wdlocal.0.total}}</b> place records NOT already reviewed will be submitted now.
-                {% endif %}
-                <span class="help-matches" data-id="recon_rerun">{% fontawesome_icon 'question-circle' color='#993333' %}</span></p>
-                <input type="hidden" name="scope" value="unreviewed">
-                </div>
-              </div>
-            {% endif %}
-          </div>
-          {% endif %}
-          {% if ds.unindexed < ds.numrows %}
-            <!-- if some are indexed, offer to skip them -->
-            <div id="recon_scope" class="mt-2">
-              <hr/><p class="font-weight-bold">Task scope</p>
-              <label class="radio-inline">
-              <input type="radio" name="scope" id="scope1" value="all"> All <b>{{ds.numrows}}</b> records</label>
-              <label class="radio-inline ml-3">
-              <input type="radio" name="scope" checked="true" id="scope2" value="unindexed"> Only the unindexed (<b>{{ds.unindexed}}</b>)</label>
-            </div>
-          {% endif %}
-          <div id="geo_constraint" class="mt-2">
-            <hr/>
-            <div class="mb-2">
-              <p class="font-weight-bold">Geographic bounds <span class="help-matches" data-id="geo_bounds">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
-              </p>
-              <p>
-                <select id="select_region" name="region" class="custom-select-sm" style="width:auto;">
-                  <option value="0">Select pre-defined region</option>
-                  <option disabled>___________</option>
-                  {% for r in region_list %}
-                    <option value="{{ r.id }}">{{ r.title }}</option>
-                  {% endfor %}
-                </select><span class="ml-2"><b>or...</b></span></p>
-              <p>
-                <select id="select_userarea" name="userarea" class="custom-select-sm" style="width:auto;">
-                  <option value="0" selected="selected">Select user-defined study area</option>
-                  <option disabled>___________</option>
-                  {% for a in area_list %}
-                      <option value="{{ a.id }}">{{ a.title }}</option>
-                  {% endfor %}
-                  <option value="create">{ new }</option>
-                </select>
-              <span class="ml-2 small">
-                <a href="{% url 'areas:area-create' %}?next=/datasets/{{ds.id}}/detail#addtask">create user area</a>
-              </span></p>
-            </div>
-          </div>
-          <div class="bottom">
-            <hr/>
-            <button type="submit" id="btn_startrecon" class="btn btn-primary">Start</button>
-            <span title="back"><a id="cancel_taskadd" href="#">Cancel</a></span>
-            <span id="q_accept" class="ml-3 small">
-              <input id="accept_geom" name="geom" type="checkbox" checked="checked"/> accept geometries in matches
-          <span class="help-matches" data-id="accept-geometry">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
-            </span>
-          </div>
-        </div> <!-- recon_form -->
-        <div id="recon_result" class="col-md-6 p-tight py-2 dashedbox">
-          {% if request.method == 'GET' %}
-          <div id="mapdiv_recon" class="mt-2">
-            {% leaflet_map "map_recon" %}
-          </div>
-          {% endif %}
-        </div> <!-- recon_result -->
-      </div> <!-- row -->
-      {% else %}
-      <div><p class="pl-3 text-danger"><b>Sorry, reconciliation tasks can only be initiated by the dataset owner.</b></p></div>
-      {% endif %}
-      </form>
-        <!--<div class="selector py-3"><div id="updater"></div></div>-->
-        <div class="selector py-3"><div id="helpme"></div></div>
-      </div> <!-- .row -->
-    </div> <!-- #addtask -->
   </div> <!-- .tab-content -->
   <div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
@@ -622,7 +88,7 @@
     </div>
   </div>
 </div>
-
+<!--{ endblock %}-->
 <!--
 js for Summary, Reconciliation
 -->
@@ -934,7 +400,7 @@ js for Summary, Reconciliation
     $.get("/datasets/updatecounts",{ds_id: dsid},
       function(data){
         updates=Object.entries(data)
-        <!--console.log('updateTotals()', updates)-->
+        console.log('updateTotals()', updates)
         for(u in updates){
           tid = updates[u][0]
           counts = updates[u][1]
@@ -988,7 +454,7 @@ js for Add Task
         <!--console.log('render_area()',data)-->
         geom = {"type":"FeatureCollecton","features":[]}
         geom['features'].push(data.geojson)
-        renderMap(geom, 'area')
+        renderMap(geom,'area')
     })
   }
   // clear dropdown choice if other is used & render geometry
@@ -1106,7 +572,7 @@ js for Browse
         hideControlContainer: true
       }).addTo(mappy)
       
-      <!--console.log('count of places: { ds.numrows }}')-->
+      console.log('count of places: {{ ds.numrows }}')
       // TODO: if <= 1000, download & render them all
       if('{{ ds.numrows}}' <= 1000) {
         $.get("/api/geoms", {ds: "{{ ds.label }}", f: "{{ filter }}" },
@@ -1116,7 +582,7 @@ js for Browse
               $(".toomany").html('for performance reasons, mapping only the first 15,000 features - sorry!')
             }
             if(geom.features.length <= 15000) {
-              renderMap(geom, 'browse')
+              renderMap(geom,'browse')
             } else {
               spinner.stop()
               $(".toomany").html('too many features to map (> '+geom.features.length+'), sorry!')
@@ -1169,22 +635,17 @@ js for Browse
       "default": {radius: 1, fillColor:"#ff9900", fillOpacity: 0.8, stroke: false},
       "focus": {radius:8, fillColor:"#ffff00",fillOpacity:1, stroke:true, weight:1,color:"#000"}},
     "MultiLineString": {
-      "default":{opacity: 1, weight: 1, stroke: true, color: "#336699"},
+      "default":{opacity: 1, weight: 1, color: "#336699"},
       "focus":{}},
-    "Polygon": {
-      "default":{fillOpacity: 0.4, stroke: true, opacity: 1, color: "#fff", weight: 1, fillColor:"#993333"},
-      "focus":{}
-    },
     "MultiPolygon": {
-      "default":{fillOpacity: 0.4, stroke: true, opacity: 1, color: "#fff", weight: 1, fillColor:"#993333"},
+      "default":{fillOpacity: 0.4, opacity: 1, color: "#fff", weight: 1, fillColor:"#993333"},
       "focus":{}
     }
   }
   // dual purpose for browse and recon
   function renderMap(geom, tab){
-    console.log('tab in renderMap()', tab)
     // call the map being rendered 'mappo'
-    mappo = 'browse' ? mappy : mappyr
+    mappo = tab=='browse' ? mappy : mappyr
     if (geom.features.length==0) {
       console.log('no features in renderMap() call')
     } else {
@@ -1194,12 +655,6 @@ js for Browse
       }
       idToFeature = {}  // for feature lookup
       features = L.geoJSON(geom, {
-        style: function(feature) {
-          console.log('feature',feature)
-          ftype = feature.geometry.type
-          console.log('ftype',ftype, styles[ftype])
-          return styles[ftype]['default']
-        },
       // feature here is a geometry
       // TODO: LPF should allow single geometry, not only GeometryCollection
         pointToLayer: function (feature, latlng) {
@@ -1210,19 +665,15 @@ js for Browse
             matchid+'</a>');
           idToFeature[matchid] = marker
           return marker
-        },
-        onEachFeature: function(feature, layer) {
-          feat=feature; lyr=layer;
-          <!--console.log('lyr',lyr)-->
-          identifier = feat.place_id;
-          idToFeature[identifier] = lyr
-          <!--if(feat.type != 'Point'){-->
-            <!--lyr.setStyle(styles.Point.default)-->
-          <!--} else if (feat.type != 'MultiLineString') {-->
-            <!--lyr.setStyle(styles.MultiLineString.default)-->
-          <!--} else if (feat.type != 'MultiPolygon') {-->
-            <!--lyr.setStyle(styles.MultiPolygon.default)-->
-          <!--}-->
+        }
+        ,onEachFeature: function(feature,layer) {
+          f=feature; l=layer;
+          <!--console.log('f,l',feature,layer)-->
+          identifier = feature.place_id;
+          if(feature.type != 'Point'){
+            <!--layer.setStyle(styles.default)-->
+            idToFeature[identifier] = layer
+          }
         }
       }).addTo(mappo);
       <!--});-->
@@ -1387,7 +838,6 @@ js for Browse
 
   // render single row's geometry/geometries
   function renderPlace(geom) {
-    console.log('renderPlace() geom', geom)
     if(geom.length > 0) {
       props = {"place_id":geom[0].place_id, "src_id":geom[0].src_id, "title":geom[0].title}
       row_geojson = {
@@ -1404,9 +854,15 @@ js for Browse
       if(typeof(grp) != 'undefined'){ grp.removeFrom(mappy)}
       rowfeat = L.geoJSON(row_geojson, {
         onEachFeature: function (feature, layer){
+          <!--features.onEachFeature(function(feature, layer){-->
+          <!--console.log('feature',feature)            -->
+          <!--console.log('layer',layer)            -->
+          <!--})-->
           grp = L.featureGroup()
           layer.eachLayer(function(lyr){
             lyrc = lyr
+            <!--console.log('lyr',lyr)-->
+            // {radius: 1, fillColor:"#ff9900", fillOpacity: 0.8, stroke: false}
             matchid = feature.properties.place_id
             title = feature.properties.title
             if(lyr._latlng){
@@ -1414,21 +870,21 @@ js for Browse
               title+'<br>pid: <a href="'+window.location.origin+
               '/api/db?id='+matchid+'" target="_blank">'+matchid+'</a>')
               m.addTo(grp)
-            } else { // it's a line or polygon                       -->
-              var t_style = {
-                  "weight":'3',
-                  "opacity":'1',
-                  "color":"#fcba03",
-                  "fillOpacity":'0.5',
-                  "fillColor":"#fcba03"
-              }   
-              lyr.setStyle(t_style);
             }
+            <!--else{ // it's a line or polygon                       -->
+                <!--var t_style = {-->
+                    <!--"weight":'3',-->
+                    <!--"opacity":'1',-->
+                    <!--"color":"#fcba03",-->
+                    <!--"fillOpacity":'0.5',-->
+                    <!--"fillColor":"#fcba03"-->
+                <!--}   -->
+                <!--layer.setStyle(t_style);-->
+            <!--}-->
           })
         }
       })
       grp.setStyle({radius: 8, fillColor:"#ffff00", fillOpacity: 1, stroke: true, weight: 1}).addTo(mappy)
-      mappy.fitBounds(features.getBounds())
     } else {
       if(typeof(grp) != 'undefined'){ grp.removeFrom(mappy)}
     }
@@ -1482,4 +938,3 @@ js for Browse
   }
 
 </script>
-{% endblock %}

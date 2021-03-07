@@ -1,3 +1,4 @@
+<!-- dataset_dev.html big refactor -->
 {% extends "main/base.html" %}
 {% load static %}
 {% load leaflet_tags %}
@@ -16,13 +17,10 @@
   <script src="//cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
   <script src="//cdn.datatables.net/1.10.23/js/dataTables.bootstrap4.min.js"></script>
 
-  <!--<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.css' rel='stylesheet' />-->
-  <!--<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.js'></script>-->
-  <!--<script src="{ static 'js/leaflet-mapbox-gl.js' %}"></script>-->
 {% endblock %}
 {% block title %}<title>Dataset::{{ ds.label }}</title>{% endblock %}
 {% block content %}
-<div id="dataset_content" class="container mt-1 px-1">
+<div id="dataset_content" class="container mt-1 px-1" style="border:1px solid red;">
   <ul id="dataset_tabs" class="nav nav-tabs" role="tablist">
     <span class="ds-title ml-1 mr-3">{{ ds.title }}</span>
     <li class="nav-item">
@@ -359,36 +357,9 @@
         {% endif %}
       </div>
     </div>
-    <div id="log" class="tab-pane fade" role="tabpanel" aria-labelledby="log-tab">
-      <div id="ds_log" class="mt-2 row">
-        <div class="col-sm-4">
-          <h4>Dataset Log</h4>
-          <ul class="ul-flush">
-            {% for l in log %}
-              <li class="li-flush">{{l.logtype}} ({% if l.subtype %}{{l.subtype}}{% elif l.note %}{{l.note}}{%endif%}), {{l.timestamp|date:"Y-m-d" }}</li> 
-            {% endfor %}
-          </ul>
-        </div>
-        <div id="ds_comments" class="col-sm-8 small">
-          <h4>Comments</h4>
-            <table class="table table-striped">
-              <thead class="strong">
-                <th>created (utc)</th>
-                <th>place_id</th>
-                <th>tag</th>
-                <th>note</th>
-                <th>user</th>
-              </thead>
-              <tbody> 
-                {% for c in comments %}
-                <tr><td>{{c.created|date:"Y-m-d"}}</td><td>{{c.place_id.id}}</td>
-                  <td>{{c.tag}}</td><td>{{c.note}}</td><td>{{c.user}}</td></tr>
-                {% endfor %}
-              </tbody>
-            </table>
-        </div>
-      </div> <!-- ds_log -->
-    </div>
+    
+    {% include 'datasets/ds_log.html' %}
+    
     <div id="sharing" class="tab-pane fade" role="tabpanel" aria-labelledby="sharing-tab">
       <form id="sharing_form" method="POST" action="{% url 'datasets:collab-add' dsid=ds.id %}" enctype="multipart/form-data">
       {% csrf_token %}
@@ -934,7 +905,7 @@ js for Summary, Reconciliation
     $.get("/datasets/updatecounts",{ds_id: dsid},
       function(data){
         updates=Object.entries(data)
-        <!--console.log('updateTotals()', updates)-->
+        console.log('updateTotals()', updates)
         for(u in updates){
           tid = updates[u][0]
           counts = updates[u][1]
@@ -988,7 +959,7 @@ js for Add Task
         <!--console.log('render_area()',data)-->
         geom = {"type":"FeatureCollecton","features":[]}
         geom['features'].push(data.geojson)
-        renderMap(geom, 'area')
+        renderMap(geom,'area')
     })
   }
   // clear dropdown choice if other is used & render geometry
@@ -1008,6 +979,7 @@ js for Add Task
 <!--
 js for Browse
 -->
+
 <script  type="text/javascript">
   $("[rel='tooltip']").tooltip();
   $('.vocab').on('click', function(e) {
@@ -1106,7 +1078,7 @@ js for Browse
         hideControlContainer: true
       }).addTo(mappy)
       
-      <!--console.log('count of places: { ds.numrows }}')-->
+      console.log('count of places: {{ ds.numrows }}')
       // TODO: if <= 1000, download & render them all
       if('{{ ds.numrows}}' <= 1000) {
         $.get("/api/geoms", {ds: "{{ ds.label }}", f: "{{ filter }}" },
@@ -1116,7 +1088,7 @@ js for Browse
               $(".toomany").html('for performance reasons, mapping only the first 15,000 features - sorry!')
             }
             if(geom.features.length <= 15000) {
-              renderMap(geom, 'browse')
+              renderMap(geom,'browse')
             } else {
               spinner.stop()
               $(".toomany").html('too many features to map (> '+geom.features.length+'), sorry!')
@@ -1169,22 +1141,17 @@ js for Browse
       "default": {radius: 1, fillColor:"#ff9900", fillOpacity: 0.8, stroke: false},
       "focus": {radius:8, fillColor:"#ffff00",fillOpacity:1, stroke:true, weight:1,color:"#000"}},
     "MultiLineString": {
-      "default":{opacity: 1, weight: 1, stroke: true, color: "#336699"},
+      "default":{opacity: 1, weight: 1, color: "#336699"},
       "focus":{}},
-    "Polygon": {
-      "default":{fillOpacity: 0.4, stroke: true, opacity: 1, color: "#fff", weight: 1, fillColor:"#993333"},
-      "focus":{}
-    },
     "MultiPolygon": {
-      "default":{fillOpacity: 0.4, stroke: true, opacity: 1, color: "#fff", weight: 1, fillColor:"#993333"},
+      "default":{fillOpacity: 0.4, opacity: 1, color: "#fff", weight: 1, fillColor:"#993333"},
       "focus":{}
     }
   }
   // dual purpose for browse and recon
   function renderMap(geom, tab){
-    console.log('tab in renderMap()', tab)
     // call the map being rendered 'mappo'
-    mappo = 'browse' ? mappy : mappyr
+    mappo = tab=='browse' ? mappy : mappyr
     if (geom.features.length==0) {
       console.log('no features in renderMap() call')
     } else {
@@ -1194,12 +1161,6 @@ js for Browse
       }
       idToFeature = {}  // for feature lookup
       features = L.geoJSON(geom, {
-        style: function(feature) {
-          console.log('feature',feature)
-          ftype = feature.geometry.type
-          console.log('ftype',ftype, styles[ftype])
-          return styles[ftype]['default']
-        },
       // feature here is a geometry
       // TODO: LPF should allow single geometry, not only GeometryCollection
         pointToLayer: function (feature, latlng) {
@@ -1210,19 +1171,15 @@ js for Browse
             matchid+'</a>');
           idToFeature[matchid] = marker
           return marker
-        },
-        onEachFeature: function(feature, layer) {
-          feat=feature; lyr=layer;
-          <!--console.log('lyr',lyr)-->
-          identifier = feat.place_id;
-          idToFeature[identifier] = lyr
-          <!--if(feat.type != 'Point'){-->
-            <!--lyr.setStyle(styles.Point.default)-->
-          <!--} else if (feat.type != 'MultiLineString') {-->
-            <!--lyr.setStyle(styles.MultiLineString.default)-->
-          <!--} else if (feat.type != 'MultiPolygon') {-->
-            <!--lyr.setStyle(styles.MultiPolygon.default)-->
-          <!--}-->
+        }
+        ,onEachFeature: function(feature,layer) {
+          f=feature; l=layer;
+          <!--console.log('f,l',feature,layer)-->
+          identifier = feature.place_id;
+          if(feature.type != 'Point'){
+            <!--layer.setStyle(styles.default)-->
+            idToFeature[identifier] = layer
+          }
         }
       }).addTo(mappo);
       <!--});-->
@@ -1387,7 +1344,6 @@ js for Browse
 
   // render single row's geometry/geometries
   function renderPlace(geom) {
-    console.log('renderPlace() geom', geom)
     if(geom.length > 0) {
       props = {"place_id":geom[0].place_id, "src_id":geom[0].src_id, "title":geom[0].title}
       row_geojson = {
@@ -1404,9 +1360,15 @@ js for Browse
       if(typeof(grp) != 'undefined'){ grp.removeFrom(mappy)}
       rowfeat = L.geoJSON(row_geojson, {
         onEachFeature: function (feature, layer){
+          <!--features.onEachFeature(function(feature, layer){-->
+          <!--console.log('feature',feature)            -->
+          <!--console.log('layer',layer)            -->
+          <!--})-->
           grp = L.featureGroup()
           layer.eachLayer(function(lyr){
             lyrc = lyr
+            <!--console.log('lyr',lyr)-->
+            // {radius: 1, fillColor:"#ff9900", fillOpacity: 0.8, stroke: false}
             matchid = feature.properties.place_id
             title = feature.properties.title
             if(lyr._latlng){
@@ -1414,21 +1376,21 @@ js for Browse
               title+'<br>pid: <a href="'+window.location.origin+
               '/api/db?id='+matchid+'" target="_blank">'+matchid+'</a>')
               m.addTo(grp)
-            } else { // it's a line or polygon                       -->
-              var t_style = {
-                  "weight":'3',
-                  "opacity":'1',
-                  "color":"#fcba03",
-                  "fillOpacity":'0.5',
-                  "fillColor":"#fcba03"
-              }   
-              lyr.setStyle(t_style);
             }
+            <!--else{ // it's a line or polygon                       -->
+                <!--var t_style = {-->
+                    <!--"weight":'3',-->
+                    <!--"opacity":'1',-->
+                    <!--"color":"#fcba03",-->
+                    <!--"fillOpacity":'0.5',-->
+                    <!--"fillColor":"#fcba03"-->
+                <!--}   -->
+                <!--layer.setStyle(t_style);-->
+            <!--}-->
           })
         }
       })
       grp.setStyle({radius: 8, fillColor:"#ffff00", fillOpacity: 1, stroke: true, weight: 1}).addTo(mappy)
-      mappy.fitBounds(features.getBounds())
     } else {
       if(typeof(grp) != 'undefined'){ grp.removeFrom(mappy)}
     }

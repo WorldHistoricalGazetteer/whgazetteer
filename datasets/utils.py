@@ -107,7 +107,8 @@ def download_augmented(request, *args, **kwargs):
         geoms = f.geoms.all()
         gobj = augGeom(geoms)
         row = [str(f.src_id),
-               str(f.id),f.title,
+               str(f.id),
+               f.title,
                ';'.join(f.ccodes),
                gobj['lonlat'][0] if 'lonlat' in gobj else None,
                gobj['lonlat'][1] if 'lonlat' in gobj else None,

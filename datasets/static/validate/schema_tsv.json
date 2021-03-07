@@ -36,7 +36,7 @@
     "type": "string",
     "description": "One or more URIs for close/exact matches in place name authority resources",
     "constraints": {
-     "pattern": "(https?:\\/\\/.*\\..*;?)+" 
+     "pattern": "(https?:\\/\\/.*\\..*;?)+|([a-z]{1,8}:.*;?)+" 
     }
   },
   {"name": "variants",

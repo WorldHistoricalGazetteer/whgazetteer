@@ -48,8 +48,12 @@
                 {% for d in dataset_list %}
                   <tr class="place-row">
                     <td>{{ d.id }}</td>
-                    <td><a href="{% url 'datasets:dataset-detail' d.id %}" title="Dataset details" rel="tooltip"
-                      >{{ d.title }}</a></td>
+                    <td>{% if user.is_superuser %}
+                    <a href="{% url 'datasets:dataset-detail' d.id %}" title="Dataset details" rel="tooltip">{{ d.title }}</a>
+                    {% else %}
+                    <a href="{% url 'datasets:dataset-detail' d.id %}" title="Dataset details" rel="tooltip">{{ d.title }}</a>
+                    {% endif %}
+                    </td>
                     <td>{% if d.core == True %}
                           {{ d.label }} <span class="corerow"> (core)</span>
                         {% else %}{{ d.label }}{% endif %}</td>

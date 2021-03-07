@@ -1,0 +1,30 @@
+<div id="log" class="tab-pane fade" role="tabpanel" aria-labelledby="log-tab">
+    <div id="ds_log" class="mt-2 row">
+        <div class="col-sm-4">
+            <h4>Dataset Log</h4>
+            <ul class="ul-flush">
+                {% for l in log %}
+                    <li class="li-flush">{{l.logtype}} ({% if l.subtype %}{{l.subtype}}{% elif l.note %}{{l.note}}{%endif%}), {{l.timestamp|date:"Y-m-d" }}</li> 
+                {% endfor %}
+            </ul>
+        </div>
+        <div id="ds_comments" class="col-sm-8 small">
+            <h4>Comments</h4>
+                <table class="table table-striped">
+                    <thead class="strong">
+                        <th>created (utc)</th>
+                        <th>place_id</th>
+                        <th>tag</th>
+                        <th>note</th>
+                        <th>user</th>
+                    </thead>
+                    <tbody> 
+                        {% for c in comments %}
+                        <tr><td>{{c.created|date:"Y-m-d"}}</td><td>{{c.place_id.id}}</td>
+                            <td>{{c.tag}}</td><td>{{c.note}}</td><td>{{c.user}}</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+        </div>
+    </div> <!-- ds_log -->
+</div> <!-- log -->

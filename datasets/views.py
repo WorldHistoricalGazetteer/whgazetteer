@@ -1787,6 +1787,147 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
     return context
 
 # ***
+
+# ***
+class DatasetDetailViewDev(LoginRequiredMixin, UpdateView):
+  login_url = '/accounts/login/'
+  redirect_field_name = 'redirect_to'
+  
+  form_class = DatasetDetailModelForm
+  
+  #template_name = 'datasets/dataset_dev.html'
+  template_name = 'datasets/ds_summary.html'
+  
+  def get_success_url(self):
+    id_ = self.kwargs.get("id")
+    user = self.request.user
+    print('messages:', messages.get_messages(self.kwargs))
+    #return '/datasets/'+str(id_)+'/detail'
+    return '/datasets/'+str(id_)+'/summary'
+
+  # Dataset has been edited, form submitted
+  def form_valid(self, form):
+    data=form.cleaned_data
+    ds = get_object_or_404(Dataset,pk=self.kwargs.get("id"))
+    dsid = ds.id
+    user = self.request.user
+    file=data['file']
+    filerev = ds.files.all().order_by('-rev')[0].rev
+    print('DatasetDetailViewDev kwargs',self.kwargs)
+    print('DatasetDetailViewDev form_valid() data->', data)
+    if data["file"] == None:
+      print('data["file"] == None')
+      # no file, updating dataset only
+      ds.title = data['title']
+      ds.description = data['description']
+      ds.uri_base = data['uri_base']
+      ds.save()        
+    return super().form_valid(form)
+  
+  def form_invalid(self, form):
+    print('kwargs',self.kwargs)
+    context = {}
+    print('form not valid', form.errors)
+    print('cleaned_data', form.cleaned_data)
+    context['errors'] = form.errors
+    return super().form_invalid(form)
+    
+  def get_object(self):
+    id_ = self.kwargs.get("id")
+    return get_object_or_404(Dataset, id=id_)
+  
+  def get_context_data(self, *args, **kwargs):
+    context = super(DatasetDetailViewDev, self).get_context_data(*args, **kwargs)
+    context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
+    context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
+
+    print('DatasetDetailView get_context_data() kwargs:',self.kwargs)
+    print('DatasetDetailView get_context_data() request:',self.request.user)
+    id_ = self.kwargs.get("id")
+    bounds = self.kwargs.get("bounds")
+    ds = get_object_or_404(Dataset, id=id_)
+    # print('ds',ds.label)
+    
+    # coming from DatasetCreateView(),
+    # insert to db immediately (file.df_status == format_ok) 
+    # most recent data file
+    file = ds.files.all().order_by('-rev')[0]
+    print('file.df_status',file.df_status)
+    if file.df_status == 'format_ok':
+      print('format_ok , inserting dataset '+str(id_))
+      if file.format == 'delimited':
+        result = ds_insert_tsv(self.request, id_)
+      else:
+        result = ds_insert_lpf(self.request,id_)
+      print('ds_insert_xxx() result',result)
+      ds.numrows = result['numrows']
+      ds.numlinked = result['numlinked']
+      ds.total_links = result['total_links']
+      ds.ds_status = 'uploaded'
+      file.df_status = 'uploaded'
+      file.numrows = result['numrows']
+      ds.save()
+      file.save()
+
+    # build context for rendering dataset.html
+    me = self.request.user
+    area_types=['ccodes','copied','drawn']
+
+    userareas = Area.objects.all().filter(type__in=area_types).values('id','title').order_by('-created')
+    context['area_list'] = userareas if me.username == 'whgadmin' else userareas.filter(owner=me)
+  
+    predefined = Area.objects.all().filter(type='predefined').values('id','title')
+    placeset = Place.objects.filter(dataset=ds.label)
+    ds_tasks = TaskResult.objects.all().filter(task_args = [id_], status='SUCCESS')
+    
+    context['region_list'] = predefined    
+    context['updates'] = {}
+    context['ds'] = ds
+    context['log'] = ds.log.filter(category='dataset').order_by('-timestamp')
+    context['comments'] = Comment.objects.filter(place_id__dataset=ds).order_by('-created')
+    # latest file
+    context['current_file'] = file
+    context['format'] = file.format
+    context['numrows'] = file.numrows
+    context['collaborators'] = ds.collabs.all()
+    context['owners'] = ds.owners
+    context['tasks'] = ds_tasks
+    # initial (non-task)
+    context['num_links'] = PlaceLink.objects.filter(
+      place_id__in = placeset, task_id = 'initial').count()
+    context['num_names'] = PlaceName.objects.filter(place_id__in = placeset).count()
+    context['num_geoms'] = PlaceGeom.objects.filter(
+      place_id__in = placeset, task_id = None).count()
+    context['num_descriptions'] = PlaceDescription.objects.filter(
+      place_id__in = placeset, task_id = None).count()
+    # others
+    context['num_types'] = PlaceType.objects.filter(
+      place_id__in = placeset).count()
+    context['num_when'] = PlaceWhen.objects.filter(
+      place_id__in = placeset).count()
+    context['num_related'] = PlaceRelated.objects.filter(
+      place_id__in = placeset).count()
+    context['num_depictions'] = PlaceDepiction.objects.filter(
+      place_id__in = placeset).count()
+
+    # augmentations (has task_id)
+    context['links_added'] = PlaceLink.objects.filter(
+      place_id__in = placeset, task_id__contains = '-').count()
+    context['geoms_added'] = PlaceGeom.objects.filter(
+      place_id__in = placeset, task_id__contains = '-').count()
+
+    # names, descriptions not currently retrieved from recon matches
+    context['names_added'] = PlaceName.objects.filter(
+      place_id__in = placeset, task_id__contains = '-').count()
+    context['descriptions_added'] = PlaceDescription.objects.filter(
+      place_id__in = placeset, task_id__contains = '-').count()
+
+    context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False
+    print('context["tasks"] from DatasetDetailView', context['tasks'])
+
+    return context
+
+# ***
 # feeds "dataset portal" page, dataset.html
 # processes metadata edit form
 # if coming from DatasetCreateView(), runs ds_insert_[tsv|lpf]
@@ -1796,10 +1937,15 @@ class DatasetDetailView(LoginRequiredMixin, UpdateView):
   redirect_field_name = 'redirect_to'
   
   form_class = DatasetDetailModelForm
+  
+  #if self.request.user.id == 1:
+    #template_name = 'wtf.html'
+  #else:
   template_name = 'datasets/dataset.html'
   
   def get_success_url(self):
     id_ = self.kwargs.get("id")
+    user = self.request.user
     print('messages:', messages.get_messages(self.kwargs))
     return '/datasets/'+str(id_)+'/detail'
 
@@ -1840,6 +1986,7 @@ class DatasetDetailView(LoginRequiredMixin, UpdateView):
     context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
 
     print('DatasetDetailView get_context_data() kwargs:',self.kwargs)
+    print('DatasetDetailView get_context_data() request:',self.request.user)
     id_ = self.kwargs.get("id")
     bounds = self.kwargs.get("bounds")
     ds = get_object_or_404(Dataset, id=id_)
