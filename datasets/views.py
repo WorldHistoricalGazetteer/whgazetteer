@@ -1322,6 +1322,7 @@ def ds_insert_tsv(request, pk):
       title = re.sub('\(.*?\)', '', title)
       title_source = r[header.index('title_source')]
       title_uri = r[header.index('title_uri')] if 'title_uri' in header else ''
+      ccodes = r[header.index('ccodes')] if 'ccodes' in header else []
       variants = [x.strip() for x in r[header.index('variants')].split(';')] \
         if 'variants' in header else []
       types = [x.strip() for x in r[header.index('types')].split(';')] \
@@ -1344,7 +1345,7 @@ def ds_insert_tsv(request, pk):
         geojson = parse_wkt(r[header.index('geowkt')])
         
       # ccodes; compute if missing and there is geometry
-      if r[header.index('ccodes')] in ['',None]:
+      if len(ccodes) == 0:
         if geojson:
           ccodes = ccodesFromGeom(geojson)
         else:

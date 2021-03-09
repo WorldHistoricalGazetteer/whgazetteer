@@ -490,16 +490,16 @@
             </div>
             {% endif %}
           </div>
-          <div class="form-check">
-            <label class="form-check-label" for="r_wd">
-              <input type="radio" class="form-check-input r_wd" id="r_wd" name="recon" value="wd" >Wikidata remote sparql (wd) <span class="ml-2 text-danger small">estimated time: {{ ds.numrows|time_estimate_sparql }}</span>
-            </label>
-          </div>
-          {% if beta_or_better %}
+          <!--<div class="form-check">-->
+            <!--<label class="form-check-label" for="r_wd">-->
+              <!--<input type="radio" class="form-check-input r_wd" id="r_wd" name="recon" value="wd" >Wikidata remote sparql (wd) <span class="ml-2 text-danger small">estimated time: { ds.numrows|time_estimate_sparql }}</span>-->
+            <!--</label>-->
+          <!--</div>-->
+          <!--{ if beta_or_better %}-->
           <div class="form-check">
             <label class="form-check-label" for="r_wdlocal">
               <input type="radio" class="form-check-input r_wd" id="r_wdlocal" 
-                name="recon" value="wdlocal" checked>Wikidata local (BETA) <span class="ml-2 text-danger small">estimated time: {{ ds.numrows|time_estimate }}</span>
+                name="recon" value="wdlocal" checked>Wikidata (BETA) <span class="ml-2 text-danger small">estimated time: {{ ds.numrows|time_estimate }}</span>
             </label>
             {% if ds.taskstats.align_wdlocal|length > 0 %}
               <div id="wdlocal_tasks">
@@ -514,7 +514,7 @@
               </div>
             {% endif %}
           </div>
-          {% endif %}
+          <!--{ endif %}-->
           {% if ds.unindexed < ds.numrows %}
             <!-- if some are indexed, offer to skip them -->
             <div id="recon_scope" class="mt-2">
@@ -1443,7 +1443,7 @@ js for Browse
     $.ajax({
       url: "/api/place/"+pid,
       }).done(function( data ) {
-        <!--console.log('api/place/ data', data)-->
+        console.log('getPlace() data', data)
         dg = data.geoms
         $("#detail_left").html(parsePlace(data,'left'))
         $("#detail_right").html(parsePlace(data,'right'))

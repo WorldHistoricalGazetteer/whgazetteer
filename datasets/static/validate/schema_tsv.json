@@ -78,7 +78,7 @@
       "maximum": 90
     }
   },
-  {"name": "geowkt",
+  {"name": "geo_wkt",
     "type": "string",
     "description": "Any geometry in OGC WKT format."
   },
