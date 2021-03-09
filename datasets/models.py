@@ -101,8 +101,7 @@ class Dataset(models.Model):
     task_types = ['align_wdlocal','align_tgn','align_wd','align_idx','align_whg']
     for tt in task_types:
       result[tt] = []
-      #for t in ds.tasks.filter(task_name=tt):
-      for t in self.tasks.filter(task_name=tt):
+      for t in self.tasks.filter(task_name=tt, status="SUCCESS"):
         result[tt].append(distinctPlaces(t))
 
     #print(result)

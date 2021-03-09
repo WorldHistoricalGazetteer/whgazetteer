@@ -765,6 +765,7 @@ def align_tgn(pk, *args, **kwargs):
   task_id = align_tgn.request.id
   print('task_id', task_id)
   ds = get_object_or_404(Dataset, id=pk)
+  user = get_object_or_404(User, pk=kwargs['user'])
   bounds = kwargs['bounds']
   scope = kwargs['scope']
   print('args, kwargs from align_tgn() task',args,kwargs)
@@ -881,8 +882,10 @@ def align_tgn(pk, *args, **kwargs):
   task_emailer.delay(
     task_id,
     ds.label,
-    ds.owner.username,
-    ds.owner.email,
+    user.username,
+    user.email,
+    #ds.owner.username,
+    #ds.owner.email,
     count_hit,
     total_hits  
   )
@@ -1089,6 +1092,7 @@ def align_wdlocal(pk, **kwargs):
   ds = get_object_or_404(Dataset, id=pk)
   print('kwargs from align_wdlocal() task', kwargs)
   #bounds = {'type': ['userarea'], 'id': ['0']}
+  user = get_object_or_404(User, pk=kwargs['user'])
   bounds = kwargs['bounds']
   scope = kwargs['scope']
   language = kwargs['lang']
@@ -1215,8 +1219,10 @@ def align_wdlocal(pk, **kwargs):
   task_emailer.delay(
     task_id,
     ds.label,
-    ds.owner.username,
-    ds.owner.email,
+    #ds.owner.username,
+    #ds.owner.email,
+    user.username,
+    user.email,
     count_hit,
     total_hits
   )

@@ -36,6 +36,7 @@ from main.choices import AUTHORITY_BASEURI
 from main.models import Log, Comment
 from places.models import *
 
+# used for Celery down notice
 def emailer(subj,msg):
   send_mail(
       subj,
@@ -44,20 +45,21 @@ def emailer(subj,msg):
       ['karl@kgeographer.org'],
       fail_silently=False,
   )  
-def task_emailer(owner,taskobj,dslabel):
-  print('taskobj taskname & status',taskobj, taskobj.task_name,taskobj.status)
+# abandoned for datasets.tasks.task_emailer
+#def task_emailer(owner,taskobj,dslabel):
+  #print('taskobj taskname & status',taskobj, taskobj.task_name,taskobj.status)
 
-  subject, from_email = 'WHG reconciliation result', 'whgazetteer@gmail.com'
-  text_content="Greetings "+owner.username+"! Your {"+taskobj.task_name+"} reconciliation task has completed with status: "+taskobj.status
-  html_content="<h3>Greetings "+owner.username+",</h3> <p>Your <b>"+taskobj.task_name+"</b> reconciliation task for the <b>"+dslabel+"</b> dataset has completed with status: "+ \
-    taskobj.status+"</p>"
+  #subject, from_email = 'WHG reconciliation result', 'whgazetteer@gmail.com'
+  #text_content="Greetings "+owner.username+"! Your {"+taskobj.task_name+"} reconciliation task has completed with status: "+taskobj.status
+  #html_content="<h3>Greetings "+owner.username+",</h3> <p>Your <b>"+taskobj.task_name+"</b> reconciliation task for the <b>"+dslabel+"</b> dataset has completed with status: "+ \
+    #taskobj.status+"</p>"
 
-  msg = EmailMultiAlternatives(
-    subject, 
-    text_content, 
-    from_email, [owner.email])  
-  msg.attach_alternative(html_content, "text/html")
-  msg.send(fail_silently=False)
+  #msg = EmailMultiAlternatives(
+    #subject, 
+    #text_content, 
+    #from_email, [owner.email])  
+  #msg.attach_alternative(html_content, "text/html")
+  #msg.send(fail_silently=False)
   
 def celeryUp():
   response = celapp.control.ping(timeout=1.0)
@@ -1282,6 +1284,7 @@ def ds_insert_lpf(request, pk):
 # 
 def ds_insert_tsv(request, pk):
   import csv, re
+  csv.field_size_limit(300000)
   ds = get_object_or_404(Dataset, id=pk)
   # retrieve just-added file
   dsf = ds.files.all().order_by('-rev')[0]
