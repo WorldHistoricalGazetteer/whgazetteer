@@ -209,7 +209,7 @@
             <p class="ds-card-header">Downloads</p>
             <p class="m-0 pl-2 pr-2">
               {% if ds.id > 2 %} <!-- exclude black, dplace, which have no upload files -->
-                <a href="{% url 'datasets:dl-file' ds.id %}" ref="current">Current data file</a>
+                <a href="{% url 'datasets:dl-file' ds.id %}" ref="current">Latest uploaded file</a>
               {% endif %}
                 <br/>
               {% if links_added > 0 or geoms_added > 0 %}Augmented dataset: {% endif %}
@@ -661,10 +661,6 @@ js for Summary, Reconciliation
     window.spinner_dl = new Spin.Spinner().spin();
     $("#ds_downloads").append(spinner_dl.el);   
   }
-  function startTableSpinner(){
-    window.spinner_table = new Spin.Spinner().spin();
-    $("#drftable_list").append(spinner_table.el);   
-  }
   <!--$("#ds_downloads a").click(function(){console.log($(this)})-->
   $("#ds_downloads a").click(function(e){
     urly='/datasets/{{ds.id}}/augmented/'+$(this).attr('ref')
@@ -861,8 +857,7 @@ js for Summary, Reconciliation
       ],
     })
     table.on( 'draw', function () {
-      spinner_table.stop()
-      setRowEvents();
+      initiateTable();
     });
     // end Browse onload js
     
@@ -888,18 +883,19 @@ js for Summary, Reconciliation
       }
       if(e.target.hash=="#browse"){
         mappy.invalidateSize();
-        startTableSpinner()
         $("html,body").scrollTop(0)
-        if(typeof(features) != 'undefined'){
-          mappy.fitBounds(features.getBounds())        
-        }
+        // TODO: features not available on reload
+        <!--mappy.fitBounds(features.getBounds())-->
       }
       if(e.target.hash=="#addtask"){
         mappyr.invalidateSize();
         $("html,body").scrollTop(0)
       }
     })
-        
+    
+    // TODO: reload should NOT be necessary
+    <!--updateTotals('{{ ds.id }}')-->
+    
     steps={"uploaded":1,"reconciling":2,"review_hits":3,"reviewed":4,"review_whg":5,"indexed":6}
     $("[ref="+steps['{{ ds.ds_status }}']+"]").addClass('prog-active')
 
@@ -1011,14 +1007,12 @@ js for Browse
 <script  type="text/javascript">
   $("[rel='tooltip']").tooltip();
   $('.vocab').on('click', function(e) {
-    <!--e.preventDefault();-->
-    <!--str=$(this).text()-->
     console.log('id',$(this).data('id'))
-    <!--var re = /(http|dbp|gn|tgn|wd|loc|viaf|aat):(.*?)$/;-->
-    <!--url=str.match(re)[1]=='http' ? str : base_urls[str.match(re)[1]]+str.match(re)[2]-->
-    <!--window.open(url,'_blank')-->
   });  
-  function setRowEvents(){
+
+  // set events, run getPlace() for row[0]
+  function initiateTable(){
+    console.log('initiateTable()')
     $("#placetable tr").click(function() {
         t=$(this)
         // get id
@@ -1102,7 +1096,7 @@ js for Browse
         hideControlContainer: true
       }).addTo(mappy)
       
-      // get dataset features -> renderMap() if < 15,000
+      // get dataset features -> renderMap() w/ up to 15,000
       $.get("/api/geoms", {ds: "{{ ds.label }}", f: "{{ filter }}" },
         function(data){
           <!--console.log('feature count:',data.count)-->
@@ -1161,11 +1155,9 @@ js for Browse
       "default":{opacity: 1, weight: 1, color: "#336699"},
       "focus":{opacity: 1, weight: 2, color: "blue"}},
     "MultiPolygon": {
-      "default":{fillOpacity: 0.3, opacity: 1, color: "#000", weight: 1, fillColor:"#ff9999"},
-      "focus":{fillOpacity: 0.3, opacity: 1, color: "#fff", weight: 2, fillColor:"#ff9999"}},
-    "Polygon": {
-      "default":{fillOpacity: 0.3, opacity: .5, color: "#666", weight: 1, fillColor:"#ff9999"},
-      "focus":{fillOpacity: 0.3, opacity: .5, color: "#fff", weight: 2, fillColor:"#ff9999"}}
+      "default":{fillOpacity: 0.4, opacity: 1, color: "#fff", weight: 1, fillColor:"#993333"},
+      "focus":{fillOpacity: 0.4, opacity: 1, color: "#fff", weight: 1, fillColor:"#993333"}
+    }
   }
   // dual purpose for browse and recon
   function renderMap(geom, tab){
@@ -1194,18 +1186,19 @@ js for Browse
         ,onEachFeature: function(feature,layer) {
           f=feature; l=layer;
           <!--console.log('f,l',feature,layer)-->
-          identifier = feature.place_id;
-          if(feature.type != 'Point'){
+          identifier = f.place_id;
+          if(f.type != 'Point'){
             layer.setStyle(styles[f.type].default)
+            <!--layer.setStyle(styles.default)-->
             idToFeature[identifier] = layer
           }
         }
       }).addTo(mappo);
+      <!--});-->
     }
     mappo.fitBounds(features.getBounds())
     mappo.on('zoomend', function() {
-      console.log('just zoomed')
-      var currentZoom = mappo.getZoom();
+      var currentZoom = mappy.getZoom();
       var myRadius = currentZoom*(1); //or whatever ratio you prefer
       var myWeight = currentZoom*(1/5); //or whatever ratio you prefer
       features.setStyle({radius: myRadius, weight: myWeight});
@@ -1361,10 +1354,12 @@ js for Browse
     return side=='left'?left:right
   }
 
+  // writes place detail to columns under map
   function getPlace(pid){
     $.ajax({
       url: "/api/place/"+pid,
       }).done(function( data ) {
+        console.log('pid, data from getPlace()',pid,data)
         $("#detail_left").html(parsePlace(data,'left'))
         $("#detail_right").html(parsePlace(data,'right'))
         $('.ext').on('click', function(e) {
