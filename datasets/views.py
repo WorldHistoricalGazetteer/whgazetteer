@@ -1600,7 +1600,8 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
       
   def form_valid(self, form):
     data=form.cleaned_data
-    context={"format":""}
+    print('data from create form', data)
+    context={"format":data['format']}
     user=self.request.user
     file=self.request.FILES['file']
     filename = file.name
@@ -1619,7 +1620,7 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
     finally:
       os.close(tempf)
 
-    print('tempfn',tempfn)
+    print('tempfn in DatasetCreate()',tempfn)
 
     # open, sniff, validate
     # pass to ds_insert_{tsv|lpf} if valid
@@ -1634,51 +1635,54 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
         encoding = get_encoding_excel(tempfn) 
       elif mimetype.startswith('application/'):
         encoding = fin.encoding
+      print('encoding in DatasetCreate()', encoding)
     else:
       context['errors'] = "Not a valid file type; must be one of [.csv, .tsv, .xlsx, .ods, .json]"
       return self.render_to_response(self.get_context_data(form=form, context=context))
 
     # it's csv, tsv, spreadsheet, or json...
     # if utf8, get extension and validate
-    if encoding and encoding.lower().startswith('utf-8'):
-      ext = mthash_plus.mimetypes[mimetype]
-      if ext == 'json':
-        result = validate_lpf(tempfn, 'coll') 
-      elif ext in ['csv', 'tsv']:
-        # fvalidate() wants an extension
-        newfn = tempfn+'.'+ext
-        os.rename(tempfn, newfn)
-        result = validate_tsv(newfn, ext)
-      elif ext in ['xlsx', 'ods']:
-        print('spreadsheet, use pandas')
-        import pandas as pd
-        
-        # open new file for tsv write
-        newfn = tempfn + '.tsv'
-        fout=codecs.open(newfn, 'w', encoding='utf8')
-        
-        # add ext to tempfn (pandas need this)
-        newtempfn = tempfn+'.'+ext
-        os.rename(tempfn, newtempfn)
-        print('renamed tempfn for pandas:', tempfn)
-        
-        # dataframe from spreadsheet
-        df = pd.read_excel(newtempfn, converters={
-          'id': str, 'start':str, 'end':str, 
-          'aat_types': str, 'lon': float, 'lat': float})
-        
-        # write it as tsv
-        table=df.to_csv(sep='\t', index=False).replace('\nan','')
-        fout.write(table)
-        fout.close()
-        
-        print('to validate_tsv(newfn):', newfn)
-        # validate it...
-        result = validate_tsv(newfn, 'tsv')
-    else:
-      # return form with error
-      context['errors'] = "Dataset file encoding must be UTF-8; this file is <b>"+encoding+'</b>.'
-      return self.render_to_response(self.get_context_data(form=form, context=context))
+    # TODO: disabled utf-8 check here 9 March
+    #if encoding and encoding.lower().startswith('utf-8'):
+    ext = mthash_plus.mimetypes[mimetype]
+    if ext == 'json':
+      result = validate_lpf(tempfn, 'coll') 
+    elif ext in ['csv', 'tsv']:
+      # fvalidate() wants an extension
+      newfn = tempfn+'.'+ext
+      os.rename(tempfn, newfn)
+      result = validate_tsv(newfn, ext)
+    elif ext in ['xlsx', 'ods']:
+      print('spreadsheet, use pandas')
+      import pandas as pd
+      
+      # open new file for tsv write
+      newfn = tempfn + '.tsv'
+      fout=codecs.open(newfn, 'w', encoding='utf8')
+      
+      # add ext to tempfn (pandas need this)
+      newtempfn = tempfn+'.'+ext
+      os.rename(tempfn, newtempfn)
+      print('renamed tempfn for pandas:', tempfn)
+      
+      # dataframe from spreadsheet
+      df = pd.read_excel(newtempfn, converters={
+        'id': str, 'start':str, 'end':str, 
+        'aat_types': str, 'lon': float, 'lat': float})
+      
+      # write it as tsv
+      table=df.to_csv(sep='\t', index=False).replace('\nan','')
+      fout.write(table)
+      fout.close()
+      
+      print('to validate_tsv(newfn):', newfn)
+      # validate it...
+      result = validate_tsv(newfn, 'tsv')
+    #else:
+      ## return form with error
+      #context['action'] = "errors"
+      #context['errors'] = ["Dataset file encoding must be UTF-8; this file is <b>"+encoding+'</b>.']
+      #return self.render_to_response(self.get_context_data(form=form, context=context))
     
     print('validation complete, still in DatasetCreateView')
     

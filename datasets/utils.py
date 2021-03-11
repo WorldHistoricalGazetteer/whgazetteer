@@ -297,6 +297,7 @@ def get_encoding_excel(fn):
 
 def get_encoding_delim(fn):
   with open(fn, 'rb') as f:
+  #with codecs.open(fn, mode='r', encoding="utf-8") as f:
     rawdata = f.read()
   return detect(rawdata)['encoding']
 

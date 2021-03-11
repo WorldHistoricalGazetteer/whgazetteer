@@ -104,25 +104,16 @@
   <div class="mt-2 col-sm-7" id="create_review">
       {% if context.action == 'errors' %}
         <h5>{% fontawesome_icon 'exclamation-circle' color="#993333" %} This file has one or more problems:</h5>
-        <!--Context: {{ context }}-->
         <ul>
         {% for e in context.errors %}
           <li>{% if context.format == 'delimited' %}
-                {{ e }}
+                {{ e|safe }}
               {% else %}
                 <b>row #{{ e.row }}</b>: {{ e.msg }}; <b>path</b>: {{ e.path }}
               {% endif %}</li>
         {% endfor %}
         </ul>
         <p>After making corrections, try reloading the file</p><hr/>
-        <!--{ if context.errors|haskey:'Required field(s) missing' %}-->
-          <!--<div class="ml-4">-->
-            <!--<i class="my-0">Your columns</i>-->
-            <!--<p>{ context.columns }}</p>-->
-            <!--<i class="my-0">Required columns</i>-->
-            <!--<p>['id', 'title', 'title_source', 'start']</p>-->
-          <!--</div>-->
-        <!--{ endif %}-->
       {% else %}
         <div class="smallish">
           <p class="mb-0"><b>Sample data</b></p>
