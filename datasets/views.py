@@ -1179,6 +1179,8 @@ def ds_insert_lpf(request, pk):
             fc = get_object_or_404(Type, aat_id=int(t['identifier'][4:])).fclass \
               if t['identifier'][:4] == 'aat:' else None
             fclass_list.append(fc)
+          else:
+            fc = None
           print('from feat[types]:',t)
           objs['PlaceTypes'].append(PlaceType(
             place=newpl,
@@ -1388,7 +1390,7 @@ def ds_insert_tsv(request, pk):
           toponym = title,
           jsonb={"toponym": title, "citation": {"id":title_uri,"label":title_source}}
       ))
-      # variants if any; same source as title toponym?
+      # variants if any; assume same source as title toponym
       if len(variants) > 0:
         for v in variants:
           haslang = re.search("@(.*)$", v.strip())
@@ -1396,7 +1398,7 @@ def ds_insert_tsv(request, pk):
             place=newpl,
             src_id = src_id,
             toponym = v.strip(),
-            jsonb={"toponym": v.strip(), "citation": {"id":"","label":title_source}}
+            jsonb={"toponym": v.strip(), "citations": [{"id":"","label":title_source}]}
           )
           if haslang:
             new_name.jsonb['lang'] = haslang.group(1)

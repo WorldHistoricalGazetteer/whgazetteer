@@ -128,7 +128,6 @@ def download_augmented(request, *args, **kwargs):
     result={"type":"FeatureCollection","features":[],
             "@context": "https://raw.githubusercontent.com/LinkedPasts/linked-places/master/linkedplaces-context-v1.1.jsonld"}
     print('augmented lpf template', result)
-    empty = {'type':'Point','coordinates':[]}
     with open(fn, 'w', encoding='utf-8') as outfile:
       with connection.cursor() as cursor:
         cursor.execute("""with namings as 
@@ -201,7 +200,7 @@ def download_augmented(request, *args, **kwargs):
             row[0].pop('geometry')
           result['features'].append(row[0])
         #outfile.write(json.dumps(result,indent=2))
-        outfile.write(json.dumps(result,indent=2))
+        outfile.write(json.dumps(result))
     # response is reopened file
     response = FileResponse(open(fn, 'rb'), content_type='text/json')
     response['Content-Disposition'] = 'attachment; filename="'+os.path.basename(fn)+'"'

@@ -541,7 +541,7 @@
         "$id": "#/properties/descriptions/items",
         "type": "object",
         "title": "Descriptions->Items",
-        "required": ["value","lang"],
+        "required": ["value"],
         "properties": {
           "@id": {
             "$id": "#/properties/descriptions/items/properties/@id",
