@@ -6,7 +6,6 @@ from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views.generic.base import TemplateView
-# from main.models import Comment
 from datasets.tasks import testAdd
 from places.models import Place
 from bootstrap_modal_forms.generic import BSModalCreateView

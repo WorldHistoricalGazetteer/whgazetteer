@@ -30,6 +30,7 @@ es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 def task_emailer(tid, dslabel, username, email, counthit, totalhits):
   print('emailer tid, dslabel, username, email, counthit, totalhits',tid, dslabel, username, email, counthit, totalhits)
   # TODO: sometimes a valid tid is not recognized (race?)
+  time.sleep(5)
   try:
     task = get_object_or_404(TaskResult, task_id=tid) or False
     tasklabel = 'Wikidata' if task.task_name[6:8]=='wd' else \
@@ -916,15 +917,19 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
 
   # empty result object
   result_obj = {
-    'place_id': qobj['place_id'], 'hits':[],
-    'missed':-1, 'total_hits':-1}  
+    'place_id': qobj['place_id'], 
+    'hits':[],'missed':-1, 'total_hits':-1}  
 
   # names (distinct, w/o language)
   variants = list(set(qobj['variants']))
+
   # types
   # wikidata Q ids for aat_ids, ccodes; strip wd: prefix
   # if no aatids, returns ['Q486972'] (human settlement)
   qtypes = [t[3:] for t in getQ(qobj['placetypes'],'types')]
+
+  # prep spatial 
+  
   # if no ccodes, returns []
   countries = [t[3:] for t in getQ(qobj['countries'],'ccodes')]
   
@@ -947,9 +952,6 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
   
   # prelim query: any authid matches?
   # can be accepted without review
-  #q0 = {"query": { "bool": {
-      #"must": {"terms": {"authids":qobj['authids']}}
-  #}}}
   # incoming qobj['authids'] might include
   # a wikidata identifier matching an index _id (Qnnnnnnn)
   # OR an id match in wikidata authids[] e.g. gn:, tgn:, pl:, bnf:, viaf:
@@ -1118,7 +1120,6 @@ def align_wdlocal(pk, **kwargs):
             "title":place.title,
             "fclasses":place.fclasses or []}
 
-    # TODO: add links 
     [variants,geoms,types,ccodes,parents,links]=[[],[],[],[],[],[]]
 
     # ccodes (2-letter iso codes)
@@ -1132,7 +1133,7 @@ def align_wdlocal(pk, **kwargs):
         types.append(int(t.jsonb['identifier'].replace('aat:','')) )
     qobj['placetypes'] = types
 
-    # names
+    # variants
     variants.append(place.title)
     for name in place.names.all():
       variants.append(name.toponym)
@@ -1235,18 +1236,41 @@ def align_wdlocal(pk, **kwargs):
 def es_lookup_whg(qobj, *args, **kwargs):
   #print('kwargs from es_lookup_whg',kwargs)
   global whg_id
-  #idx = kwargs['index']
   idx = 'whg'
+  #bounds = {'type': ['userarea'], 'id': ['0']}
   bounds = kwargs['bounds']
-  #ds = kwargs['dataset'] 
-  #place = kwargs['place']
   hit_count, err_count = [0,0]
 
-  # create empty result object
+  # empty result object
   result_obj = {
-    'place_id': qobj['place_id'], 'title': qobj['title'], 
-      'hits':[], 'missed':-1, 'total_hits':-1
+    'place_id': qobj['place_id'], 
+    'title': qobj['title'], 
+    'hits':[], 'missed':-1, 'total_hits':-1
   }  
+
+  # distinct names, w/o language)
+  variants = list(set(qobj['variants']))
+
+  # PREP SPATIAL CONSTRAINTS
+  has_bounds = bounds['id'] != ['0']
+  has_geom = 'geom' in qobj.keys()
+  has_countries = len(qobj['countries']) > 0
+  if has_bounds:
+    area_filter = get_bounds_filter(bounds,'wd')
+    print('area_filter', area_filter)
+  if has_geom:
+    # qobj['geom'] always a polygon hull
+    shape_filter = { "geo_shape": {
+      "geoms.location": {
+        "shape": {
+          "type": qobj['geom']['type'],
+          "coordinates" : qobj['geom']['coordinates']},
+        "relation": "intersects" }
+    }}
+    print('shape_filter', shape_filter)
+  if has_countries:
+    countries_match = {"terms": {"ccodes":qobj['countries']}}
+    print('countries_match', countries_match)
 
   # /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
   # prepare queries from qobj
@@ -1256,137 +1280,87 @@ def es_lookup_whg(qobj, *args, **kwargs):
   # a wikidata identifier matching an index _id (Qnnnnnnn)
   # OR an id match in wikidata authids[] 
   # e.g. gn:, tgn:, pl:, bnf:, viaf:
-  qlinks = {"query": { 
-     "bool": {
-       "must": [
-          {"terms": {"links.identifier": qobj['links'] }}
-        ]
-       ,"must_not": [
-          {"terms": {"links.type": ['related'] }}
-        ]
-     }
-  }}
+  #qlinks = {"query": { 
+     #"bool": {
+       #"must": [
+          #{"terms": {"links.identifier": qobj['links'] }}
+        #]
+       #,"must_not": [
+          #{"terms": {"links.type": ['related'] }}
+        #]
+     #}
+  #}}
   
-  # base query: name, type, bounds if specified
+  # NEW
   qbase = {"query": { 
     "bool": {
       "must": [
-        {"terms": {"names.toponym": qobj['variants']}},
+        # must share a variant (strict match)
+        {"terms": {"names.toponym": variants}},
+      ],
+      "should": [
+        # weights for shared links, type matches
+        {"terms": {"links.identifier": qobj['links'] }},
         {"terms": {"types.identifier": qobj['placetypes']}}
-        ],
-      "filter": [get_bounds_filter(bounds,'whg')] if bounds['id'] != ['0'] else []
-    }
-  }}
-  
-  # suggest w/spatial experiment: can't do type AND geom contexts
-  qsugg = {
-    "suggest": {
-      "suggest" : {
-        "prefix" : qobj['title'],
-        "completion" : {
-          "field" : "suggest",
-          "size": 10,
-          "contexts": 
-            {"place_type": qobj['placetypes']}
-        }
-      }
-  }}
-  
-  # last gasp: only name(s) and bounds
-  qbare = {"query": { 
-    "bool": {
-      "must": [
-        {"terms": {"names.toponym":qobj['variants']}}
-        ]
-      ,"filter": [get_bounds_filter(bounds,'whg')] if bounds['id'] != ['0'] else []
+      ],
+      # spatial filters added according to what's available
+      "filter": []
     }
   }}
 
-  # if geom, and it's not [] result of a failed hully()
-  # define intersect filter & apply to qbase (q2)
-  if 'geom' in qobj.keys() and qobj['geom'] !=[]:
-    # call it location
-    location = qobj['geom']
-    #print('location for filter_intersects_area:',location)
-    filter_intersects_area = { "geo_shape": {
-      "geoms.location": {
-        "shape": {
-          # always a polygon, from hully(g_list)
-          #"type": location['type'],
-          "type": "Polygon",
-          "coordinates" : location['coordinates']
-        },
-        "relation": "intersects" # within | intersects | contains
-      }
-    }}
-    qbase['query']['bool']['filter'].append(filter_intersects_area)
+  # if fclasses, use them, broadly
+  if len(qobj['fclasses']) > 0:
+    # include A, P, S if any in fclasses
+    if len(set(qobj['fclasses']) & set(['A','P','S'])) > 0:
+      class_grp = ['A','P','S']
+    else: 
+      class_grp = qobj['fclasses']
+    qbase['query']['bool']['must'].append(
+      {"terms": {"fclasses": class_grp}})
     
-    repr_point=list(Polygon(location['coordinates'][0]).centroid.coords) \
-                    if location['type'].lower() == 'polygon' else \
-                    list(LineString(location['coordinates']).centroid.coords) \
-                    if location['type'].lower() == 'linestring' else \
-                    list(Point(location['coordinates']).coords)
     
-    qsugg['suggest']['suggest']['completion']['contexts']={"place_type": qobj['placetypes']}, \
-      {"representative_point": {"lon":repr_point[0] , "lat":repr_point[1], "precision": "100km"}}
-  
-  # grab a copy of each
-  q0 = qlinks
+  # target intersects ~100km diam polygon hull 
+  if has_geom:
+    qbase['query']['bool']['filter'].append(shape_filter)
+    if has_countries:
+      # add weight for country match
+      qbase['query']['bool']['should'].append(countries_match)
+
+  # no geom, use country codes if there
+  if not has_geom and has_countries:
+    qbase['query']['bool']['must'].append(countries_match)
+    
+  # has no geom but has bounds (region or user study area)
+  if not has_geom and has_bounds:
+    # area_filter (predefined region or study area)
+    qbase['query']['bool']['filter'].append(area_filter)
+    if has_countries:
+      # add weight for country match
+      qbase['query']['bool']['should'].append(countries_match)
+
+
+  # grab a copy
   q1 = qbase
-  q2 = qbare
-  #print('q0',q0)
+  print('q1', q1)
   # /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-  # pass0: must[links]
+  # pass1 (only one)
   # /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
   try:
-    res0 = es.search(index=idx, body = q0)
-    hits0 = res0['hits']['hits']
+    res1 = es.search(index=idx, body=q1)
+    hits1 = res1['hits']['hits']
   except:
-    print("q0, ES error:", q0, sys.exc_info())
-  if len(hits0) > 0:
+    print("q1, ES error:", q0, sys.exc_info())
+  if len(hits1) > 0:
     # shared link(s); return for immed. indexing
-    for hit in hits0:
+    for hit in hits1:
       hit_count +=1
-      hit['pass'] = 'pass0'
+      hit['pass'] = 'pass1'
       result_obj['hits'].append(hit)
       result_obj['hit_count'] = hit_count
     return result_obj
-  elif len(hits0) == 0:
-    # /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-    # pass1: must[name, type]; should[parent]; filter[geom, bounds]
-    # /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-    try:
-      #print("q1:", q1)
-      res1 = es.search(index=idx, body = q1)
-      hits1 = res1['hits']['hits']
-    except:
-      print("q1, error:", q1, sys.exc_info())
-    if len(hits1) > 0:
-      # pass1 hit(s); return them
-      for hit in hits1:
-        hit_count +=1
-        hit['pass'] = 'pass1'
-        result_obj['hits'].append(hit)
-        result_obj['hit_count'] = hit_count
-        return result_obj
-    elif len(hits1) == 0:
-      # /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-      # pass2: must[name]; should[parent]; filter[bounds]
-      # /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-      try:
-        #print("q2:", q2)
-        res2 = es.search(index=idx, body = q2)
-        hits2 = res2['hits']['hits']
-      except:
-        print("q2, error:", q2, sys.exc_info())
-      if len(hits2) > 0:
-        for hit in hits2:
-          hit_count +=1
-          hit['pass'] = 'pass2'
-          result_obj['hits'].append(hit)
-      else:
-        # no hits at all
-        result_obj['missed'] = qobj['place_id']
+  elif len(hits1) == 0:
+    # no matches, this will be an index seed
+    print('congrats, a seed')
   result_obj['hit_count'] = hit_count
   return result_obj
 
@@ -1406,8 +1380,6 @@ def align_whg(pk, *args, **kwargs):
   # set index
   idx='whg'
   
-  #dummy for testing
-  #bounds = {'type': ['userarea'], 'id': ['0']}
   bounds = kwargs['bounds']
   scope = kwargs['scope']
   
@@ -1420,17 +1392,29 @@ def align_whg(pk, *args, **kwargs):
     
   # queryset depends on choice of scope in addtask form
   qs = ds.places.all() if scope == 'all' else ds.places.all().filter(indexed=False)
+
+  #from places.models import Place
+  #from django.shortcuts import get_object_or_404
+  #from datasets.utils import hully
+  #from datasets.tasks import es_lookup_whg
+  #bounds = {'type': ['userarea'], 'id': ['0']}    
+  #idx='whg'
+  #from pprint import pprint as pp
  
   for place in qs:
-    #place=get_object_or_404(Place,id=6369031) # Aachen
+    #place=get_object_or_404(Place,id=6585671) # Antakya
+    
     print('building qobj for ' + str(place.id) + ': ' + place.title)
     count +=1
     
     """ 
       build query object 'qobj' 
     """
-    qobj = {"place_id":place.id, "src_id":place.src_id, "title":place.title}
-    links=[]; ccodes=[]; types=[]; variants=[]; parents=[]; geoms=[]; 
+    qobj = {"place_id":place.id, 
+            "src_id":place.src_id, 
+            "title":place.title,
+            "fclasses":place.fclasses or []}
+    [links,ccodes,types,variants,parents,geoms]=[[],[],[],[],[],[]]
 
     # links
     for l in place.links.all():
@@ -1451,7 +1435,7 @@ def align_whg(pk, *args, **kwargs):
         types.extend(['aat:300008347','aat:300387171','aat:300000809'])
     qobj['placetypes'] = types
 
-    # names
+    # variants
     for name in place.names.all():
       variants.append(name.toponym)
     qobj['variants'] = [v.lower() for v in variants]
@@ -1484,12 +1468,8 @@ def align_whg(pk, *args, **kwargs):
       #print("hit[0]: ",result_obj['hits'][0]['_source'])  
       print('hits from align_whg',result_obj['hits'])
       for hit in result_obj['hits']:
-        if hit['pass'] == 'pass0': 
-          count_p0+=1 
-        elif hit['pass'] == 'pass1': 
+        if hit['pass'] == 'pass1': 
           count_p1+=1
-        elif hit['pass'] == 'pass2': 
-          count_p2+=1
         hit_parade["hits"].append(hit)
         
         loc = hit['_source']['geoms'] if 'geoms' in hit['_source'].keys() else None
@@ -1522,9 +1502,9 @@ def align_whg(pk, *args, **kwargs):
       'count':count,
       'got_hits':count_hit,
       'total': total_hits, 
-      'pass0': count_p0, 
+      #'pass0': count_p0, 
       'pass1': count_p1, 
-      'pass2': count_p2,
+      #'pass2': count_p2,
       'no_hits': {'count': count_nohit },
       'elapsed': elapsed(end-start)
     }

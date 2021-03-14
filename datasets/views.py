@@ -45,21 +45,6 @@ def emailer(subj,msg):
       ['karl@kgeographer.org'],
       fail_silently=False,
   )  
-# abandoned for datasets.tasks.task_emailer
-#def task_emailer(owner,taskobj,dslabel):
-  #print('taskobj taskname & status',taskobj, taskobj.task_name,taskobj.status)
-
-  #subject, from_email = 'WHG reconciliation result', 'whgazetteer@gmail.com'
-  #text_content="Greetings "+owner.username+"! Your {"+taskobj.task_name+"} reconciliation task has completed with status: "+taskobj.status
-  #html_content="<h3>Greetings "+owner.username+",</h3> <p>Your <b>"+taskobj.task_name+"</b> reconciliation task for the <b>"+dslabel+"</b> dataset has completed with status: "+ \
-    #taskobj.status+"</p>"
-
-  #msg = EmailMultiAlternatives(
-    #subject, 
-    #text_content, 
-    #from_email, [owner.email])  
-  #msg.attach_alternative(html_content, "text/html")
-  #msg.send(fail_silently=False)
   
 def celeryUp():
   response = celapp.control.ping(timeout=1.0)
@@ -1139,8 +1124,9 @@ def ds_insert_lpf(request, pk):
       title=re.sub('\(.*?\)', '', feat['properties']['title'])
       
       # geometry
-      if 'geometry' in feat.keys():
-        geojson = feat['geometry'] # GeometryCollection :^(
+      #if 'geometry' in feat.keys():
+        #geojson = feat['geometry'] # GeometryCollection :^(
+      geojson = feat['geometry'] if 'geometry' in feat.keys() else None
       
       # ccodes  
       if 'ccodes' not in feat['properties'].keys():
@@ -1205,17 +1191,27 @@ def ds_insert_lpf(request, pk):
       
       # PlaceWhen: place,src_id,task_id,minmax,jsonb:{timespans[],periods[],label,duration}
       if 'when' in feat.keys() and feat['when'] != {}:
-        #for w in feat['when']:
         objs['PlaceWhens'].append(PlaceWhen(
-          place=newpl,src_id=newpl.src_id,jsonb=feat['when']))
+          place=newpl,
+          src_id=newpl.src_id,
+          jsonb=feat['when']))
 
       # PlaceGeom: place,src_id,task_id,jsonb:{type,coordinates[],when{},geo_wkt,src}
-      if 'geometry' in feat.keys():
-        for g in feat['geometry']['geometries']:
+      #if 'geometry' in feat.keys() and feat['geometry']['type']=='GeometryCollection':
+      if geojson and geojson['type']=='GeometryCollection':
+        #for g in feat['geometry']['geometries']:
+        for g in geojson['geometries']:
           #print('from feat[geometry]:',g)
           objs['PlaceGeoms'].append(PlaceGeom(
-            place=newpl,src_id=newpl.src_id,jsonb=g))
-
+            place=newpl,
+            src_id=newpl.src_id,
+            jsonb=g))
+      elif geojson:
+        objs['PlaceGeoms'].append(PlaceGeom(
+          place=newpl,
+          src_id=newpl.src_id,
+          jsonb=geojson))
+        
       # PlaceLink: place,src_id,task_id,jsonb:{type,identifier}
       if 'links' in feat.keys() and len(feat['links'])>0:
         countlinked +=1 # record has *any* links
@@ -1645,13 +1641,20 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
     # TODO: disabled utf-8 check here 9 March
     #if encoding and encoding.lower().startswith('utf-8'):
     ext = mthash_plus.mimetypes[mimetype]
+    print('DatasetCreateView() extenstion', ext)
     if ext == 'json':
-      result = validate_lpf(tempfn, 'coll') 
+      try:
+        result = validate_lpf(tempfn, 'coll')
+      except:
+        sys.exit()
     elif ext in ['csv', 'tsv']:
-      # fvalidate() wants an extension
-      newfn = tempfn+'.'+ext
-      os.rename(tempfn, newfn)
-      result = validate_tsv(newfn, ext)
+      try:
+        # fvalidate() wants an extension
+        newfn = tempfn+'.'+ext
+        os.rename(tempfn, newfn)
+        result = validate_tsv(newfn, ext)
+      except:
+        sys.exit()
     elif ext in ['xlsx', 'ods']:
       print('spreadsheet, use pandas')
       import pandas as pd

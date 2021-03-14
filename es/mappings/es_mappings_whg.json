@@ -2,7 +2,7 @@
   "mappings": {
     "place": {
       "properties": {
-        "id": {"type": "keyword"},
+        "src_id": {"type": "keyword"},
         "uri": {"type": "keyword"},
         "dataset": {"type": "keyword"},
         "relation": { 
@@ -12,7 +12,6 @@
           }
         },
         "children": {"type": "keyword"},
-        "variants": {"type": "text"},
         "title": {"type": "text"},
         "suggest": {  
           "type": "completion",
@@ -30,15 +29,10 @@
           ]
         },
         "ccodes": {"type": "keyword"},
-        "representative_point": {"type": "geo_point"},
-        "representative_polygon": {"type": "geo_shape"},
+        "fclasses": {"type": "keyword"},
         "searchy": {"type": "text"},        
-        "minmax": {
-          "properties": {
-            "start": {"type": "integer"},
-            "end": {"type": "integer"}
-          }
-        },
+        "minmax": {"type": "integer_range"},
+        "timespans": {"type": "integer_range"},
         "names": {
           "properties": {
             "lang": {"type": "keyword"},
@@ -49,7 +43,7 @@
           "properties": {
             "identifier": {"type": "keyword"},
             "label": {"type": "keyword"},
-            "source_label": {"type": "text"}
+            "sourceLabel": {"type": "text"}
             }
         },
         "links": {
@@ -62,12 +56,6 @@
           "properties": {
             "location": {"type": "geo_shape"},
             "geowkt": {"type": "keyword"}
-          }
-        },
-        "timespans": {
-          "properties": {
-            "start": {"type": "long"},
-            "end": {"type": "long"}
           }
         },
         "relations": {

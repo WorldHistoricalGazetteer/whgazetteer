@@ -22,19 +22,19 @@ urlpatterns = [
 
     # *** DATASETS ***
 
-    # use > filter public datasets by id, label, term
+    # use: filter public datasets by id, label, term
     path('datasets/', views.DatasetAPIView.as_view(), name='dataset-list'),
     
 
     # *** PLACES ***
         
-    # use > single place for dataset.html#browse:: PlaceSerializer
+    # use: single place for dataset.html#browse:: PlaceSerializer
     path('place/<int:pk>/', views.PlaceDetailAPIView.as_view(),name='place-detail'),    
 
-    # use > drf table in dataset.html#browse  :: PlaceSerializer
+    # use: drf table in dataset.html#browse  :: PlaceSerializer
     path('placetable/', views.PlaceTableViewSet.as_view({'get':'list'}),name='place-table'), 
 
-    # use > map in dataset.html#browse :: PlaceGeomSerializer
+    # use: map in dataset.html#browse :: PlaceGeomSerializer
     path('geoms/', views.GeomViewSet.as_view({'get':'list'}),name='geom-list'),    
 
     # TODO: place/<str:dslabel>/<str:src_id>
@@ -43,7 +43,7 @@ urlpatterns = [
     # 
     # *** AREAS ***
     # 
-    # use > single area in dataset.html#addtask
+    # use: single area in dataset.html#addtask
     path('area/<int:pk>/', views.AreaViewSet.as_view({'get': 'retrieve'}),name='area-detail'),
     # returns list of simple objects (id, title) for home>autocomplete
     path('area_list/', views.AreaListView.as_view(),name='area-list'),    
@@ -60,7 +60,7 @@ urlpatterns = [
     # 
     # *** INDEX ***
     # 
-    # use > single union record in usingapi.html ?idx=whg&_id={whg_id}
+    # use: single union record in usingapi.html ?idx=whg&_id={whg_id}
     # TODO: build from place_id
     #url('union/', views.indexAPIView.as_view(), name='union_api')
     

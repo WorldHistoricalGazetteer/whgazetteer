@@ -1,0 +1,89 @@
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "comma_analyzer": {
+          "tokenizer": "comma_tokenizer"
+        }
+      },
+      "tokenizer": {
+        "comma_tokenizer": {
+          "type": "simple_pattern_split",
+          "pattern": ", "
+        }
+      },
+      "normalizer": {
+        "asciifolding": {
+          "type": "custom",
+          "char_filter": [],
+          "filter": ["lowercase", "asciifolding"]
+        }
+      }
+    }
+  },
+  "mappings": {
+    "place": {
+      "properties": {
+        "location": {"type": "geo_shape"},
+        "names": {
+          "properties": {
+            "display": {"type": "long"},
+            "lang": {"type": "keyword"},
+            "name": {
+              "type": "keyword",
+              "normalizer": "asciifolding"
+            },
+            "toponym": {"type": "text"}
+          }
+        },
+        "suggest": {  
+          "type": "completion",
+          "contexts": [
+            { "name": "place_type",
+              "type": "category",
+              "path": "types.id"
+            },
+            { 
+              "name": "location",
+              "type": "geo",
+              "path": "location.coordinates",
+              "precision": 12
+            }
+          ]
+        },
+        "note": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "parents": {
+          "type": "text",
+          "analyzer": "comma_analyzer"
+        },
+        "tgnid": {
+          "type": "long"
+        },
+        "title": {
+          "type": "keyword"
+        },
+        "types": {
+          "properties": {
+            "display": {
+              "type": "long"
+            },
+            "id": {
+              "type": "keyword"
+            },
+            "placetype": {
+              "type": "keyword"
+            }
+          }
+        }
+      }
+    }
+  }
+}

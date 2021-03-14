@@ -126,7 +126,9 @@ def download_augmented(request, *args, **kwargs):
     # make file name
     fn = 'media/user_'+user+'/'+ds.label+'_aug_'+date+'.json'
     result={"type":"FeatureCollection","features":[],
-            "@context": "https://raw.githubusercontent.com/LinkedPasts/linked-places/master/linkedplaces-context-v1.1.jsonld",}
+            "@context": "https://raw.githubusercontent.com/LinkedPasts/linked-places/master/linkedplaces-context-v1.1.jsonld"}
+    print('augmented lpf template', result)
+    empty = {'type':'Point','coordinates':[]}
     with open(fn, 'w', encoding='utf-8') as outfile:
       with connection.cursor() as cursor:
         cursor.execute("""with namings as 
@@ -146,9 +148,8 @@ def download_augmented(request, *args, **kwargs):
           where place_id in (select id from places where dataset = '{ds}')
           group by place_id ),
           placewhens as
-          (select place_id, jsonb_agg(jsonb) as whens from place_when pw 
-          where place_id in (select id from places where dataset = '{ds}')
-          group by place_id ),
+          (select place_id, jsonb as whens from place_when pw 
+          where place_id in (select id from places where dataset = 'owt10')),
           placerelated as
           (select place_id, jsonb_agg(jsonb) as rels from place_related pr 
           where place_id in (select id from places where dataset = '{ds}')
@@ -163,19 +164,25 @@ def download_augmented(request, *args, **kwargs):
           group by place_id )	
           select jsonb_build_object(
             'type','Feature',
+            '@id', p.src_id,
             'properties', jsonb_build_object(
-                'id','{urlpre}'||p.id,
-                'src_id',p.src_id),
-            'names',n.names,
-            'types',pt.types,
-            'links',pl.links,
-            'geometry',jsonb_build_object(
+                'pid', '{urlpre}'||p.id,
+                'title', p.title),
+            'names', n.names,
+            'types', coalesce(pt.types, '[]'),
+            'links', coalesce(pl.links, '[]'),
+            'geometry', case when g.geoms is not null 
+                then jsonb_build_object(
                 'type','GeometryCollection',
-                'geometries',g.geoms),
-            'whens',pw.whens,
-            'related',pr.rels,
-            'descriptions',pdes.descrips,
-            'depictions',pdep.depicts
+                'geometries', g.geoms)
+                else jsonb_build_object(
+                'type','Point','coordinates','{a}'::char[])
+                end,
+            'when', case when pw.whens is not null 
+                then pw.whens else '{a}' end,
+            'relations',coalesce(pr.rels, '[]'),
+            'descriptions',coalesce(pdes.descrips, '[]'),
+            'depictions',coalesce(pdep.depicts, '[]')
           ) from places p 
           left join namings n on p.id = n.place_id
           left join placetypes pt on p.id = pt.place_id
@@ -186,9 +193,14 @@ def download_augmented(request, *args, **kwargs):
           left join descriptions pdes on p.id = pdes.place_id
           left join depictions pdep on p.id = pdep.place_id
           where dataset = '{ds}'        
-        """.format(ds=dslabel,urlpre=url_prefix))
+        """.format(urlpre=url_prefix, ds=dslabel, a='{}'))
         for row in cursor:
+          g = row[0]['geometry']
+          # get rid of empty/unknown geometry
+          if g['type'] != 'GeometryCollection' and g['coordinates'] == []:
+            row[0].pop('geometry')
           result['features'].append(row[0])
+        #outfile.write(json.dumps(result,indent=2))
         outfile.write(json.dumps(result,indent=2))
     # response is reopened file
     response = FileResponse(open(fn, 'rb'), content_type='text/json')
@@ -383,12 +395,21 @@ def parsedates_lpf(feat):
   # which feat keys might have a when?
   possible_keys = list(set(feat.keys() & \
                     set(['names','types','relations','geometry'])))
-
+  print('possible_keys in parsedates_lpf()',possible_keys)
+  
   # first, geometry
-  if 'geometry' in possible_keys:
-    for g in feat['geometry']['geometries']:
+  # collections...
+  geom = feat['geometry'] if 'geometry' in feat else None
+  if geom and geom['type'] == 'GeometryCollection':
+    for g in geom['geometries']:
       if 'when' in g and 'timespans' in g['when']:
         intervals += timespansReduce(g['when']['timespans'])
+  # or singleton
+  else:
+    if geom and 'when' in geom:
+      if 'timespans' in geom['when']:
+        intervals += timespansReduce(g['when']['timespans'])
+        
   # then the rest
   for k in possible_keys:
     if k != 'geometry':    
@@ -413,7 +434,8 @@ def parsedates_lpf(feat):
 # format ['coll' (FeatureCollection) | 'lines' (json-lines)]
 def validate_lpf(tempfn,format):
   #wd = '/Users/karlg/Documents/Repos/_whgazetteer/'
-  schema = json.loads(codecs.open('datasets/static/validate/schema_lpf_v1.1.json','r','utf8').read())
+  #schema = json.loads(codecs.open('datasets/static/validate/schema_lpf_v1.1.json','r','utf8').read())
+  schema = json.loads(codecs.open('datasets/static/validate/schema_lpf_v1.2.json','r','utf8').read())
   # rename tempfn
   newfn = tempfn+'.jsonld'
   os.rename(tempfn,newfn)
@@ -423,7 +445,7 @@ def validate_lpf(tempfn,format):
 
   # TODO: handle json-lines
   jdata = json.loads(infile.read())
-  if ['type', '@context', 'features'] != list(jdata.keys()) \
+  if len(set(['type', '@context', 'features'])-set(jdata.keys())) > 0 \
      or jdata['type'] != 'FeatureCollection' \
      or len(jdata['features']) == 0:
     print('not valid GeoJSON-LD')
@@ -617,16 +639,39 @@ def makeCoords(lonstr,latstr):
   #lat = float(latstr) if latstr != '' else ''
   coords = [] if (lonstr == ''  or latstr == '') else [lon,lat]
   return coords
+
+#def ccodesFromGeom(geom):
+  #if len(geom['coordinates']) == 0:
+    #return []
+  #else: 
+    #print('ccodesFromGeom() geom',geom)
+    #g = GEOSGeometry(str(geom))
+    #if geom['type'] != 'GeometryCollection':
+      #qs = Country.objects.filter(mpoly__intersects=g)
+    #else:
+      ## just hull them all
+      #qs = Country.objects.filter(mpoly__intersects=g.convex_hull)    
+    #ccodes = [c.iso for c in qs]
+    #return ccodes
+
+# might be GeometryCollection or singleton
 def ccodesFromGeom(geom):
   print('ccodesFromGeom() geom',geom)
-  g = GEOSGeometry(str(geom))
-  if geom['type'] != 'GeometryCollection':
-    qs = Country.objects.filter(mpoly__intersects=g)
-  else:
-    # just hull them all
-    qs = Country.objects.filter(mpoly__intersects=g.convex_hull)    
-  ccodes = [c.iso for c in qs]
-  return ccodes
+  if geom['type'] == 'Point' and geom['coordinates'] ==[]:
+    ccodes = []
+    return ccodes
+    #print(ccodes)
+  else:    
+    g = GEOSGeometry(str(geom))
+    if g.geom_type == 'GeometryCollection':
+      # just hull them all
+      qs = Country.objects.filter(mpoly__intersects=g.convex_hull)
+    else:
+      qs = Country.objects.filter(mpoly__intersects=g)       
+    ccodes = [c.iso for c in qs]
+    return ccodes
+    #print(ccodes)
+
 def elapsed(delta):
   minutes, seconds = divmod(delta.seconds, 60)
   return '{:02}:{:02}'.format(int(minutes), int(seconds))
