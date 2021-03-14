@@ -190,7 +190,7 @@
                 <td><span class="text-white bg-success">&nbsp;{{ links_added }}&nbsp;</span></td></tr>
               {% if ds.unreviewed|length > 0 %}<tr class="text-danger">{%else%}<tr>{%endif%}
                 <td class="pt-3"><b>Unreviewed hits (total)</b></td>
-                <td class="pt-3">{{ ds.unreviewed|length }}</td> 
+                <td class="pt-3">{{ ds.unreviewed }}</td> 
                 <td class="pt-3 text-secondary">n/a</td></tr>
               {% if ds.unindexed > 0 %} 
                 <tr class="text-danger">

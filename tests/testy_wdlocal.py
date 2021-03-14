@@ -20,12 +20,12 @@ today=datetime.date.today().strftime("%Y%m%d"); print(today)
 now = datetime.datetime.now(tz=TZ).strftime(today+'_%H%M'); print(now)
 
 workdir = '/Users/karlg/Documents/Repos/_whgdata/elastic/wikidata/results/'
-dslabels = ['wri_watersheds','priests_1line_10_csv','rtowns_lpf_lessgeo','owt10','pleiades20k','euratlas_cities','althurayya_2241','kima_redux','template_ods','croniken_rjs','lugares_test','lug20_lpf_refactor','tnc_ecoregions','grece9','owtrad','bdda_tsv','sauls_missing','owt_test','russianprov','owt_noccodes']
+dslabels = ['wri_watersheds','priests_1line_10_csv','rtowns_lpf_lessgeo','owt10','pleiades20k','euratlas_cities','althurayya_2241','kima_redux','template_ods','croniken_og','lugares_test','lug20_lpf_refactor','tnc_ecoregions','grece9','owtrad','bdda_tsv','sauls_missing','owt_test','russianprov','owt_noccodes']
 
 def wdlocal(dslabels):
   fout_summary = codecs.open(workdir + 'summary_' + now + '.txt', mode='w', encoding = 'utf8')
   #dsidlist = [int(x) for x in str(dsids).split(',')]
-  for d in dslabels[10:11]:
+  for d in dslabels[9:10]:
     fout = codecs.open(workdir + 'wdlocal_out_'+str(d)+'.txt', mode='w', encoding='utf8')
     #datasets = Dataset.objects.filter(label__in=dsidlist).values_list('label')
     
@@ -33,7 +33,7 @@ def wdlocal(dslabels):
     [nohits, some_hits, total_hits, count_nohits] = [[],0,0,0]
     hit_parade = {"summary": {}, "hits": []}
   
-    qs = Place.objects.filter(dataset = d)[:20]
+    qs = Place.objects.filter(dataset = d)
     bounds = {'type': ['userarea'], 'id': ['0']}
     #scope = 'all',
     #language = 'en'

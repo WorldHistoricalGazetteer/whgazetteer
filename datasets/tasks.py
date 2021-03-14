@@ -252,7 +252,7 @@ def normalize(h, auth, language=None):
       if len(wplinks) == 0 and len(h['sitelinks']) > 0:
         wplinks += [h['sitelinks'][0]['title']]
         
-      links += ['primaryTopicOf: wp:'+l for l in wplinks]
+      links += ['primaryTopicOf: wp:'+l for l in set(wplinks)]
 
       rec.links = links
       #print('rec.links',rec.links)
