@@ -1024,7 +1024,7 @@ js for Browse
   function zoomTo(pid) {
     l = idToFeature[pid]
     ftype=l.feature.geometry.type
-    console.log('zoomTo() pid, ftype',pid, ftype)
+    <!--console.log('zoomTo() pid, ftype',pid, ftype)-->
     if (ftype=='Point'){
        mappy.setView(l._latlng, 7 )
     } else {
@@ -1033,7 +1033,7 @@ js for Browse
   }
 
   function highlightFeature(pid){
-    console.log('highlightFeature()', pid)
+    <!--console.log('highlightFeature()', pid)-->
     if(typeof(idToFeature) != 'undefined'){
       if(pid in idToFeature){
         feat = idToFeature[pid]
@@ -1229,7 +1229,7 @@ js for Browse
     mappo.fitBounds(features.getBounds())
     mappo.on('zoomend', function() {
       var currentZoom = mappo.getZoom();
-      console.log('on zoomend', currentZoom)
+      <!--console.log('on zoomend', currentZoom)-->
       var myRadius = currentZoom*(1); //or whatever ratio you prefer
       var myWeight = currentZoom*(1/5); //or whatever ratio you prefer
       features.setStyle({radius: myRadius, weight: myWeight});
@@ -1386,7 +1386,7 @@ js for Browse
   }
 
   function getPlace(pid){
-    console.log('getPlace()', pid)
+    <!--console.log('getPlace()', pid)-->
     $.ajax({
       url: "/api/place/"+pid,
       }).done(function( data ) {

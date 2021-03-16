@@ -147,8 +147,8 @@ def download_augmented(request, *args, **kwargs):
           where place_id in (select id from places where dataset = '{ds}')
           group by place_id ),
           placewhens as
-          (select place_id, jsonb as whens from place_when pw 
-          where place_id in (select id from places where dataset = 'owt10')),
+          (select place_id, jsonb as whenobj from place_when pw 
+          where place_id in (select id from places where dataset = '{ds}')),
           placerelated as
           (select place_id, jsonb_agg(jsonb) as rels from place_related pr 
           where place_id in (select id from places where dataset = '{ds}')
@@ -177,8 +177,7 @@ def download_augmented(request, *args, **kwargs):
                 else jsonb_build_object(
                 'type','Point','coordinates','{a}'::char[])
                 end,
-            'when', case when pw.whens is not null 
-                then pw.whens else '{a}' end,
+            'when', pw.whenobj,
             'relations',coalesce(pr.rels, '[]'),
             'descriptions',coalesce(pdes.descrips, '[]'),
             'depictions',coalesce(pdep.depicts, '[]')
@@ -199,8 +198,8 @@ def download_augmented(request, *args, **kwargs):
           if g['type'] != 'GeometryCollection' and g['coordinates'] == []:
             row[0].pop('geometry')
           result['features'].append(row[0])
-        #outfile.write(json.dumps(result,indent=2))
-        outfile.write(json.dumps(result))
+        outfile.write(json.dumps(result,indent=2))
+        #outfile.write(json.dumps(result))
     # response is reopened file
     response = FileResponse(open(fn, 'rb'), content_type='text/json')
     response['Content-Disposition'] = 'attachment; filename="'+os.path.basename(fn)+'"'
@@ -366,25 +365,28 @@ def parsedates_tsv(s,e):
     {"start": {"earliest":s}, "end": {"latest":e}}],
           "minmax":[int(s_yr),int(e_yr)]}
 
-# examples
-#tsl1 = [{'end': {'in': 1808}, 'start': {'in': 1701}}]
-#tsl2 = [{'start': {'in': '-0200'}}]
-#tsl = tsl1
-# extracts integers 
+# extract integers for new Place from lpf
 def timespansReduce(tsl):
   result = []
   for ts in tsl:
-    s = int(ts['start'][list(ts['start'].keys())[0]])
-    e = int(ts['end'][list(ts['end'].keys())[0]]) \
-      if 'end' in ts else s
-    result.append([s,e])
+    s = ts['start'][list(ts['start'].keys())[0]]
+    s_yr=s[:5] if s[0] == '-' else s[:4]
+    e = ts['end'][list(ts['end'].keys())[0]] \
+            if 'end' in ts else s
+    e_yr=e[:5] if e[0] == '-' else e[:4]
+    result.append([int(s_yr), int(e_yr)])
+    #s = int(ts['start'][list(ts['start'].keys())[0]])
+    #e = int(ts['end'][list(ts['end'].keys())[0]]) \
+      #if 'end' in ts else s
+    #result.append([s,e])
   return result
+
 #
 # called by ds_insert_lpf()
-# 
+# TODO: replicate outcome of parsedates_tsv()
 #
 def parsedates_lpf(feat):
-  print('feat in parsedates_lpf()',feat)
+  print('feat.when in parsedates_lpf()',feat['when'])
   intervals=[]
   # gather all when elements
   # global when?
@@ -655,7 +657,7 @@ def makeCoords(lonstr,latstr):
 
 # might be GeometryCollection or singleton
 def ccodesFromGeom(geom):
-  print('ccodesFromGeom() geom',geom)
+  #print('ccodesFromGeom() geom',geom)
   if geom['type'] == 'Point' and geom['coordinates'] ==[]:
     ccodes = []
     return ccodes

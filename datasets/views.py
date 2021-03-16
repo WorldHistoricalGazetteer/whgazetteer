@@ -1274,11 +1274,11 @@ def ds_insert_lpf(request, pk):
 # ***
 
 # for testing
-#from datasets.models import Dataset, DatasetFile
-#from django.shortcuts import get_object_or_404
-#from datasets.utils import parse_wkt, makeCoords, ccodesFromGeom
-#from areas.models import Country
-#pk = 793
+from datasets.models import Dataset, DatasetFile
+from django.shortcuts import get_object_or_404
+from datasets.utils import parse_wkt, makeCoords, ccodesFromGeom
+from areas.models import Country
+pk = 980
 # 
 def ds_insert_tsv(request, pk):
   import csv, re
@@ -1287,7 +1287,8 @@ def ds_insert_tsv(request, pk):
   # retrieve just-added file
   dsf = ds.files.all().order_by('-rev')[0]
   # TODO
-  # has it already loaded? dataset portal page load may fail for other reasons
+  # has it already loaded? 
+  # dataset portal page load may fail for other reasons
   dbcount = Place.objects.filter(dataset = ds.label).count()
   print('dbcount',dbcount)
   
@@ -1325,7 +1326,7 @@ def ds_insert_tsv(request, pk):
       title_uri = r[header.index('title_uri')] if 'title_uri' in header else ''
       ccodes = r[header.index('ccodes')] if 'ccodes' in header else []
       variants = [x.strip() for x in r[header.index('variants')].split(';')] \
-        if 'variants' in header else []
+        if 'variants' in header and r[header.index('variants')] !='' else []
       types = [x.strip() for x in r[header.index('types')].split(';')] \
         if 'types' in header else []
       aat_types = [x.strip() for x in r[header.index('aat_types')].split(';')] \
@@ -1361,7 +1362,10 @@ def ds_insert_tsv(request, pk):
       # validate_tsv() ensures there is always a start
       has_end = 'end' in header and r[header.index('end')] !=''
       end = r[header.index('end')] if has_end else start
-      datesobj = parsedates_tsv(start,end) # returns {timespan{},minmax[]}
+      
+      datesobj = parsedates_tsv(start,end) 
+      # returns {timespans:[{}],minmax[]}
+
       
       description = r[header.index('description')] \
         if 'description' in header else ''
@@ -1388,7 +1392,7 @@ def ds_insert_tsv(request, pk):
           place=newpl,
           src_id = src_id,
           toponym = title,
-          jsonb={"toponym": title, "citation": {"id":title_uri,"label":title_source}}
+          jsonb={"toponym": title, "citations": [{"id":title_uri,"label":title_source}]}
       ))
       # variants if any; assume same source as title toponym
       if len(variants) > 0:
@@ -1446,7 +1450,8 @@ def ds_insert_tsv(request, pk):
           PlaceWhen(
             place=newpl,
             src_id = src_id,
-            jsonb=datesobj['timespans']          
+            #jsonb=datesobj['timespans']          
+            jsonb=datesobj         
         ))
     
         
