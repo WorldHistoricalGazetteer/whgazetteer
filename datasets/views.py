@@ -457,14 +457,12 @@ def ds_recon(request, pk):
   ds = get_object_or_404(Dataset, id=pk)
   # TODO: handle multipolygons from "#area_load" and "#area_draw"
   user = request.user
-  #print('me',me,me.id)
   context = {"dataset": ds.title}
   
   if request.method == 'GET':
     print('recon request.GET:',request.GET)
   elif request.method == 'POST' and request.POST:
     print('ds_recon() request.POST:',request.POST)
-    # TODO: has this dataset/authority combo been done before?
     auth = request.POST['recon']
     language = request.LANGUAGE_CODE
     # what task? wd, wdlocal, whg, tgn, idx
@@ -500,8 +498,7 @@ def ds_recon(request, pk):
         lang=language,
       )
       messages.add_message(request, messages.INFO, "<span class='text-danger'>Your reconciliation task is under way.</span><br/>When complete, you will receive an email and if successful, results will appear below (you may have to refresh screen). <br/>In the meantime, you can navigate elsewhere.")
-      #task_emailer(ds.owner, ds.tasks.all().order_by('-id')[0], ds.label) 
-      return redirect('/datasets/'+str(ds.id)+'/detail#reconciliation')
+      #return redirect('/datasets/'+str(ds.id)+'/detail#reconciliation')
     except:
       print('failed: align_'+auth )
       print(sys.exc_info())
@@ -522,15 +519,16 @@ def ds_recon(request, pk):
     context['result'] = result.get()
     
     # recon task has completed, log it
-    # write log entry
-    Log.objects.create(
-      # category, logtype, "timestamp", subtype, dataset_id, user_id
+    logobj = Log.objects.create(
+      # category, logtype, subtype, dataset_id, user_id, "timestamp", 
       category = 'dataset',
       logtype = 'ds_recon',
       subtype = 'align_'+auth,
       dataset_id = ds.id,
       user_id = request.user.id
-    )    
+    )
+    logobj.save()
+    print('logobj',logobj)
     
     # set ds_status
     if auth != 'whg':
