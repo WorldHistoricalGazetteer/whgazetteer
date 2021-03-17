@@ -879,17 +879,18 @@ def align_tgn(pk, *args, **kwargs):
     }
   print("summary returned",hit_parade['summary'])
   
+  # create log entry and update ds status
+  post_recon_update(ds, user, 'tgn')
+
   # email owner when complete
   task_emailer.delay(
     task_id,
     ds.label,
     user.username,
     user.email,
-    #ds.owner.username,
-    #ds.owner.email,
     count_hit,
     total_hits  
-  )
+  )  
   
   return hit_parade['summary']
 
@@ -1109,7 +1110,6 @@ def align_wdlocal(pk, **kwargs):
   if scope == 'unreviewed':
     qs = ds.places.filter(id__in=pids)
   elif scope == 'all':
-    #qs = ds.places.all() if scope == 'all' else ds.places.filter(indexed=False)
     qs = ds.places.all()
 
   for place in qs:
@@ -1215,13 +1215,14 @@ def align_wdlocal(pk, **kwargs):
       'elapsed': elapsed(end-start)
     }
   print("summary returned",hit_parade['summary'])
-  
+
+  # create log entry and update ds status
+  post_recon_update(ds, user, 'wdlocal')
+    
   # email owner when complete
   task_emailer.delay(
     task_id,
     ds.label,
-    #ds.owner.username,
-    #ds.owner.email,
     user.username,
     user.email,
     count_hit,
@@ -1510,6 +1511,9 @@ def align_whg(pk, *args, **kwargs):
     }
   print("align_whg summary returned",hit_parade['summary'])
 
+  # create log entry and update ds status
+  post_recon_update(ds, user, 'whg')
+
   task_emailer.delay(
     task_id,
     ds.label,
@@ -1518,6 +1522,7 @@ def align_whg(pk, *args, **kwargs):
     count_hit,
     total_hits
   )
+  
   return hit_parade['summary']
 
 
@@ -1534,7 +1539,7 @@ def align_idx(pk, *args, **kwargs):
   ds = get_object_or_404(Dataset, id=pk)
   # set index
   idx='whg'
-  
+  user = get_object_or_404(User, id=kwargs['user'])
   # get last identifier (used for whg_id & _id)
   whg_id = maxID(es,idx)
     
@@ -1753,10 +1758,9 @@ def align_idx(pk, *args, **kwargs):
     'skipped': count_fail
   }
   print("hit_parade['summary']",hit_parade['summary'])
+  
+  # create log entry and update ds status
+  post_recon_update(ds, user, 'idx')
+    
   return hit_parade['summary']
 
-
-
-'''
-backup code
-'''

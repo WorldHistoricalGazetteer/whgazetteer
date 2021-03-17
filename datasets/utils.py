@@ -16,7 +16,8 @@ from areas.models import Country
 from datasets.models import Dataset, DatasetUser, Hit
 from datasets.static.hashes import aat, parents, aat_q
 from datasets.static.hashes import aliases as al
-from places.models import PlaceGeom # ,Place
+from main.models import Log
+from places.models import PlaceGeom
 pp = pprint.PrettyPrinter(indent=1)
 
 # ***
@@ -780,6 +781,26 @@ def classy(gaz, typeArray):
   if len(types) == 0:
     types.append(default)
   return list(set(types))
+
+# log recon action & update status
+def post_recon_update(ds, user, task):
+  if task == 'idx':
+    ds.ds_status = 'indexed' if ds.unindexed == 0 else 'accessioning'  
+  else:
+    ds.ds_status = 'reconciling'
+  ds.save()
+  
+  # recon task has completed, log it
+  logobj = Log.objects.create(
+    category = 'dataset',
+    logtype = 'ds_recon',
+    subtype = 'align_'+task,
+    dataset_id = ds.id,
+    user_id = user.id
+  )
+  logobj.save()
+  print('post_recon_update() logobj',logobj)
+
 
 #class UpdateCountsView(View):
   #""" Returns counts of unreviewed hits, per pass and total """

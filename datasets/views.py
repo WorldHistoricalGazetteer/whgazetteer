@@ -498,15 +498,14 @@ def ds_recon(request, pk):
         lang=language,
       )
       messages.add_message(request, messages.INFO, "<span class='text-danger'>Your reconciliation task is under way.</span><br/>When complete, you will receive an email and if successful, results will appear below (you may have to refresh screen). <br/>In the meantime, you can navigate elsewhere.")
-      #return redirect('/datasets/'+str(ds.id)+'/detail#reconciliation')
+      return redirect('/datasets/'+str(ds.id)+'/detail#reconciliation')
     except:
       print('failed: align_'+auth )
       print(sys.exc_info())
       messages.add_message(request, messages.INFO, "Sorry! Reconciliation services appear to be down. The system administrator has been notified.<br/>"+ str(sys.exc_info()))
       return redirect('/datasets/'+str(ds.id)+'/detail#reconciliation')     
   
-    # send ds owner an email when task is complete
-    print('recon result', result)
+
     
     context['hash'] = "#reconciliation"
     context['task_id'] = result.id
@@ -517,33 +516,21 @@ def ds_recon(request, pk):
     context['userarea'] = request.POST['userarea']
     context['geom'] = aug_geom
     context['result'] = result.get()
-    
-    # recon task has completed, log it
-    logobj = Log.objects.create(
-      # category, logtype, subtype, dataset_id, user_id, "timestamp", 
-      category = 'dataset',
-      logtype = 'ds_recon',
-      subtype = 'align_'+auth,
-      dataset_id = ds.id,
-      user_id = request.user.id
-    )
-    logobj.save()
-    print('logobj',logobj)
-    
-    # set ds_status
-    if auth != 'whg':
-      # 1 or more recon tasks have been run
-      ds.ds_status = 'reconciling'
-    else:
-      # accessioning begun (align_idx); complete if ds.unindexed == 0
-      ds.ds_status = 'indexed' if ds.unindexed == 0 else 'accessioning'
-    ds.save()
-    print('ds_recon() context',context)
-    #return render(request, 'datasets/dataset.html', {'ds':ds, 'context': context})
-    return redirect('/datasets/'+str(ds.id)+'/detail#reconciliation')
+        
+    ## set ds_status
+    #if auth != 'whg':
+      ## 1 or more recon tasks have been run
+      #ds.ds_status = 'reconciling'
+    #else:
+      ## accessioning begun (align_idx); complete if ds.unindexed == 0
+      #ds.ds_status = 'indexed' if ds.unindexed == 0 else 'accessioning'
+    #ds.save()
+    #print('ds_recon() context',context)
+    ##return render(request, 'datasets/dataset.html', {'ds':ds, 'context': context})
+    #return redirect('/datasets/'+str(ds.id)+'/detail#reconciliation')
 
-  print('context',context)
-  return render(request, 'datasets/dataset.html', {'ds':ds, 'context': context})
+  #print('context',context)
+  #return render(request, 'datasets/dataset.html', {'ds':ds, 'context': context})
 
 
 """
