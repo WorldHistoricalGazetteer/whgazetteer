@@ -49,7 +49,7 @@ django-simple-captcha==0.5.13
 django-templated-mail==1.1.1
 django-timezone-field==4.0
 django-webpack-loader==0.6.0
-djangorestframework==3.11.0
+djangorestframework==3.11.2
 djangorestframework-datatables==0.4.1
 djangorestframework-gis==0.15
 djoser==2.0.3
