@@ -83,7 +83,7 @@ isodate==0.6.0
 itsdangerous==1.1.0
 jdcal==1.4.1
 jedi==0.13.2
-Jinja2==2.10.1
+Jinja2==2.11.3
 jmespath==0.9.4
 jobtastic==2.1.1
 json-lines==0.5.0
