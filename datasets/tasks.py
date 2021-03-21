@@ -150,9 +150,22 @@ def wdDescriptions(descrips, lang):
 # language relevant only for wikidata local)
 def normalize(h, auth, language=None):
   if auth.startswith('whg'):
-    rec = HitRecord(h['place_id'], h['dataset'], h['src_id'], h['title'])
+    # for whg h is full hit, not only _source
+    hit = deepcopy(h)
+    h = hit['_source']
+    _score = hit['_score']
+    _id = hit['_id']
+    # build a json object, for Hit.json field
+    rec = HitRecord(
+      h['place_id'], 
+      h['dataset'],
+      h['src_id'], 
+      h['title']
+    )
     print('"rec" HitRecord',rec)
-    rec.whg_id = h['whg_id'] if 'whg_id' in h.keys() else h['relation']['parent']
+    rec.score = _score
+    rec.whg_id = _id # can be index id (parent) or pid (child)
+    
     # add elements if non-empty in index record
     rec.variants = [n['toponym'] for n in h['names']] # always >=1 names
     # TODO: grungy hack b/c index has both src_label and sourceLabel
@@ -178,8 +191,7 @@ def normalize(h, auth, language=None):
     #rec.whens = [parseWhen(t) for t in h['timespans']] \
                 #if len(h['timespans']) > 0 else []
     rec.links = [l['type']+': '+l['identifier'] for l in h['links']] \
-                if len(h['links']) > 0 else []
-  
+                if len(h['links']) > 0 else []    
   elif auth == 'wd':
     try:
       # locations and links may be multiple, comma-delimited
@@ -1231,9 +1243,9 @@ def align_wdlocal(pk, **kwargs):
   
   return hit_parade['summary']
 
-# ***
-# performs elasticsearch > whg queries
-# ***
+"""
+# performs elasticsearch queries on whg
+"""
 def es_lookup_whg(qobj, *args, **kwargs):
   #print('kwargs from es_lookup_whg',kwargs)
   global whg_id
@@ -1260,7 +1272,7 @@ def es_lookup_whg(qobj, *args, **kwargs):
     area_filter = get_bounds_filter(bounds,'wd')
     print('area_filter', area_filter)
   if has_geom:
-    # qobj['geom'] always a polygon hull
+    # qobj['geom'] is always a polygon hull
     shape_filter = { "geo_shape": {
       "geoms.location": {
         "shape": {
@@ -1273,25 +1285,9 @@ def es_lookup_whg(qobj, *args, **kwargs):
     countries_match = {"terms": {"ccodes":qobj['countries']}}
     print('countries_match', countries_match)
 
-  # /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-  # prepare queries from qobj
-  # /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-  #
-  # incoming qobj['authids'] might include
-  # a wikidata identifier matching an index _id (Qnnnnnnn)
-  # OR an id match in wikidata authids[] 
-  # e.g. gn:, tgn:, pl:, bnf:, viaf:
-  #qlinks = {"query": { 
-     #"bool": {
-       #"must": [
-          #{"terms": {"links.identifier": qobj['links'] }}
-        #]
-       #,"must_not": [
-          #{"terms": {"links.type": ['related'] }}
-        #]
-     #}
-  #}}
-  
+  """
+  prepare queries from qobj
+  """  
   # NEW
   qbase = {"query": { 
     "bool": {
@@ -1309,9 +1305,9 @@ def es_lookup_whg(qobj, *args, **kwargs):
     }
   }}
 
-  # if fclasses, use them, broadly
+  # if fclasses, use broadly as a 'must'
   if len(qobj['fclasses']) > 0:
-    # include A, P, S if any in fclasses
+    # if A, P, or S, use all three
     if len(set(qobj['fclasses']) & set(['A','P','S'])) > 0:
       class_grp = ['A','P','S']
     else: 
@@ -1320,7 +1316,7 @@ def es_lookup_whg(qobj, *args, **kwargs):
       {"terms": {"fclasses": class_grp}})
     
     
-  # target intersects ~100km diam polygon hull 
+  # if geom, does target intersect ~100km diam polygon hull 
   if has_geom:
     qbase['query']['bool']['filter'].append(shape_filter)
     if has_countries:
@@ -1368,17 +1364,17 @@ def es_lookup_whg(qobj, *args, **kwargs):
 
 """
 # reconcile to whg w/no indexing
-# TODO: hits may include multiple linked docs
-#       need to group them for review display
+# returns all potential matches
+# (does not stop at shared link)
 """
 @task(name="align_whg")
 def align_whg(pk, *args, **kwargs):
   print('kwargs from align_whg() task', kwargs)
   print('align_whg.request', align_whg.request)
+  
   task_id = align_whg.request.id
   ds = get_object_or_404(Dataset, id=pk)
   user = get_object_or_404(User, id=kwargs['user'])
-  # set index
   idx='whg'
   
   bounds = kwargs['bounds']
@@ -1401,10 +1397,9 @@ def align_whg(pk, *args, **kwargs):
   #bounds = {'type': ['userarea'], 'id': ['0']}    
   #idx='whg'
   #from pprint import pprint as pp
+  #place=get_object_or_404(Place,id=6594341) # Al Madain
  
-  for place in qs:
-    #place=get_object_or_404(Place,id=6585671) # Antakya
-    
+  for place in qs:    
     print('building qobj for ' + str(place.id) + ': ' + place.title)
     count +=1
     
@@ -1466,9 +1461,10 @@ def align_whg(pk, *args, **kwargs):
     else:
       count_hit +=1
       total_hits += len(result_obj['hits'])
-      #print("hit[0]: ",result_obj['hits'][0]['_source'])  
-      print('hits from align_whg',result_obj['hits'])
+      print("hit[0]: ",result_obj['hits'][0]['_source'])  
+      #print('hits from align_whg',result_obj['hits'])
       for hit in result_obj['hits']:
+        # they are ALL pass1 for now
         if hit['pass'] == 'pass1': 
           count_p1+=1
         hit_parade["hits"].append(hit)
@@ -1481,14 +1477,14 @@ def align_whg(pk, *args, **kwargs):
           dataset = ds,
           place_id = get_object_or_404(Place, id=qobj['place_id']),
           
-          #task_id = align_tgn.request.id,
           task_id = align_whg.request.id,
           
           query_pass = hit['pass'],
           
-          #*** consistent, for review display
-          #json = normalize(hit['_source'],'tgn'),
-          json = normalize(hit['_source'],'whg'),
+          # for review display
+          # TODO; tailor for whg case
+          # add _score, _id
+          json = normalize(hit,'whg'),
           
           src_id = qobj['src_id'],
           score = hit['_score'],
@@ -1503,9 +1499,7 @@ def align_whg(pk, *args, **kwargs):
       'count':count,
       'got_hits':count_hit,
       'total': total_hits, 
-      #'pass0': count_p0, 
       'pass1': count_p1, 
-      #'pass2': count_p2,
       'no_hits': {'count': count_nohit },
       'elapsed': elapsed(end-start)
     }
@@ -1527,12 +1521,9 @@ def align_whg(pk, *args, **kwargs):
 
 
 """
-# reconcile/accession to whg
-# pass1 auto-indexes as child if shared link
-# pass2, pass3 hits queued for review
-# if no hits, indexed as parent
-# TODO: hits may include multiple linked docs
-#       need to group them for review display
+# accession to whg
+#
+#
 """
 @task(name="align_idx")
 def align_idx(pk, *args, **kwargs):
@@ -1764,3 +1755,37 @@ def align_idx(pk, *args, **kwargs):
     
   return hit_parade['summary']
 
+"""
+original if 'whg' from normalize 
+
+"""
+#if auth.startswith('whg'):
+  #rec = HitRecord(h['place_id'], h['dataset'], h['src_id'], h['title'])
+  #print('"rec" HitRecord',rec)
+  #rec.whg_id = h['whg_id'] if 'whg_id' in h.keys() else h['relation']['parent']
+  ## add elements if non-empty in index record
+  #rec.variants = [n['toponym'] for n in h['names']] # always >=1 names
+  ## TODO: grungy hack b/c index has both src_label and sourceLabel
+  #key = 'src_label' if 'src_label' in h['types'][0] else 'sourceLabel'      
+  #rec.types = [t['label']+' ('+t[key]  +')' if t['label']!=None else t[key] \
+              #for t in h['types']] if len(h['types']) > 0 else []
+  ## TODO: rewrite ccDecode to handle all conditions coming from index
+  ## ccodes might be [] or [''] or ['ZZ', ...]
+  #rec.ccodes = ccDecode(h['ccodes']) if ('ccodes' in h.keys() and (len(h['ccodes']) > 0 and h['ccodes'][0] !='')) else []
+  #rec.parents = ['partOf: '+r.label+' ('+parseWhen(r['when']['timespans'])+')' for r in h['relations']] \
+              #if 'relations' in h.keys() and len(h['relations']) > 0 else []
+  #rec.descriptions = h['descriptions'] if len(h['descriptions']) > 0 else []
+  
+  #rec.geoms = [{
+    #"type":h['geoms'][0]['location']['type'],
+    #"coordinates":h['geoms'][0]['location']['coordinates'],
+    #"id":h['place_id'], \
+    #"ds":"whg"}] \
+    #if len(h['geoms'])>0 else []   
+  
+  #rec.minmax = dict(sorted(h['minmax'].items(),reverse=True)) if len(h['minmax']) > 0 else []
+  ## TODO: deal with whens
+  ##rec.whens = [parseWhen(t) for t in h['timespans']] \
+              ##if len(h['timespans']) > 0 else []
+  #rec.links = [l['type']+': '+l['identifier'] for l in h['links']] \
+              #if len(h['links']) > 0 else []

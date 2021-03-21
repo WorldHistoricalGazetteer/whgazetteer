@@ -532,7 +532,6 @@ def frictionless_tsv(tempfn):
 
 class HitRecord(object):
   def __init__(self, place_id, dataset, src_id, title):
-    #self.whg_id = whg_id
     self.place_id = place_id
     self.src_id = src_id
     self.title = title
@@ -541,7 +540,6 @@ class HitRecord(object):
   def __str__(self):
     import json
     return json.dumps(str(self.__dict__))    
-    #return json.dumps(self.__dict__)
 
   def toJSON(self):
     import json

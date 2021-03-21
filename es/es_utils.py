@@ -1,5 +1,63 @@
-# es_utils.py rev. Mar 2020; rev. 02 Oct 2019; rev 5 Mar 2019; created 7 Feb 2019;
+# es_utils.py rev. Mar 2021; rev. Mar 2020; rev. 02 Oct 2019; rev 5 Mar 2019; created 7 Feb 2019;
 # misc elasticsearch supporting tasks 
+from django.shortcuts import get_object_or_404
+from places.models import Place
+#from datasets.utils import hully
+
+
+"""
+build query object qobj
+"""
+def build_qobj(pid):
+  from datasets.utils import hully
+  place=get_object_or_404(Place, pk=pid)
+  #print('building qobj for ' + str(place.id) + ': ' + place.title)
+
+  qobj = {"place_id":place.id, 
+            "src_id":place.src_id, 
+            "title":place.title,
+            "fclasses":place.fclasses or []}
+  [links,ccodes,types,variants,parents,geoms]=[[],[],[],[],[],[]]
+
+  # links
+  for l in place.links.all():
+    links.append(l.jsonb['identifier'])
+  qobj['links'] = links
+
+  # ccodes (2-letter iso codes)
+  for c in place.ccodes:
+    ccodes.append(c)
+  qobj['countries'] = list(set(place.ccodes))
+
+  # types (Getty AAT identifiers)
+  for t in place.types.all():
+    if t.jsonb['identifier'] != None:
+      types.append(t.jsonb['identifier'])
+    else:
+      # no type? use inhabited place, cultural group, site
+      types.extend(['aat:300008347','aat:300387171','aat:300000809'])
+  qobj['placetypes'] = types
+
+  # variants
+  for name in place.names.all():
+    variants.append(name.toponym)
+  qobj['variants'] = [v.lower() for v in variants]
+
+  # parents
+  for rel in place.related.all():
+    if rel.jsonb['relationType'] == 'gvp:broaderPartitive':
+      parents.append(rel.jsonb['label'])
+  qobj['parents'] = parents
+
+  # geoms
+  if len(place.geoms.all()) > 0:
+    # any geoms at all...
+    g_list =[g.jsonb for g in place.geoms.all()]
+    # make everything a simple polygon hull for spatial filter purposes
+    qobj['geom'] = hully(g_list)
+
+  return qobj
+
 
 # ***
 # index docs given place_id list
@@ -34,7 +92,7 @@ def indexSomeParents(es,idx,pids):
       print('failed indexing (as parent)'+str(pid),sys.exc_info())
       pass
     print('created parent:',idx,pid,place.title)    
-  
+
 # ***
 # replace docs in index given place_id list
 # ***
@@ -58,10 +116,10 @@ def replaceInIndex(es,idx,pids):
       doc = hits[0]
       src = doc['_source']
       role = src['relation']['name'] #; print(role)
-      
+
       # get the db instance
       place = get_object_or_404(Place, pk=pid)
-      
+
       # index doc child or parent?
       if role == 'child':
         # get parent _id
@@ -73,13 +131,13 @@ def replaceInIndex(es,idx,pids):
         newnames = [x.toponym for x in place.names.all()]
         # update parent sugs and searchy
         q_update = {"script":{
-                    "source": "ctx._source.suggest.input.addAll(params.sugs); \
+          "source": "ctx._source.suggest.input.addAll(params.sugs); \
                       ctx._source.searchy.addAll(params.sugs);",
-          "lang": "painless",
+                    "lang": "painless",
           "params":{"sugs": newnames }
           },
-          "query": {"match":{"place_id": parentid }}
-        }
+                    "query": {"match":{"place_id": parentid }}
+          }
         try:
           es.update_by_query(index=idx,body=q_update)
         except:
@@ -89,17 +147,17 @@ def replaceInIndex(es,idx,pids):
         es.delete_by_query(idx,body={"query":{"match":{"_id":doc['_id']}}})
         # index the new
         es.index(index=idx,doc_type='place',id=doc['_id'],
-          routing=1,body=json.dumps(newchild))
+                 routing=1,body=json.dumps(newchild))
         repl_count +=1
       elif role == 'parent':
         # get id, children, sugs from existing index doc
         kids_e = src['children']
         sugs_e = list(set(src['suggest']['input'])) # distinct only
-                
+
         # new doc from db place; fill from existing
         newparent = makeDoc(place, None)
         newparent['children'] = kids_e
-        
+
         # merge old & new names in new doc
         previous = set([q['toponym'] for q in newparent['names']])
         names_union = list(previous.union(set(sugs_e)))
@@ -107,21 +165,21 @@ def replaceInIndex(es,idx,pids):
         newparent['suggest']['input'] = names_union
         newparent['searchy'] = names_union
         newparent['relation']={"name":"parent"}
-        
+
         # out with the old
         es.delete_by_query(idx,body=esq_id(doc['_id']))
         # in with the new
         es.index(index=idx,doc_type='place',id=doc['_id'],
-          routing=1,body=json.dumps(newparent))
-        
+                 routing=1,body=json.dumps(newparent))
+
         repl_count +=1
         print('replaced parent', doc['_id'])
     else:
       print(str(pid)+' not in index, misplaced in pids[]')
       pass
   print('replaceInIndex() count:',repl_count)
-      
-      
+
+
 # ***
 # delete docs given place_id array
 # if parent, promotes a child if any
@@ -178,10 +236,10 @@ def deleteFromIndex(es,idx,pids):
                 ctx._source.children.addAll(params.newkids); \
                 ctx._source.suggest.input.addAll(params.sugs); \
                 ctx._source.searchy.addAll(params.sugs);",
-                "lang": "painless",
-              "params":{"_id": _id, "newkids": newkids, "sugs": sugs }
+                                  "lang": "painless",
+                "params":{"_id": _id, "newkids": newkids, "sugs": sugs }
               },
-              "query": {"match":{"place_id": newparent }}}
+                        "query": {"match":{"place_id": newparent }}}
             try:
               es.update_by_query(index=idx,body=q_update)
             except:
@@ -210,8 +268,8 @@ def deleteFromIndex(es,idx,pids):
             "lang": "painless",
             "params":{"val": str(pid), "sugs": newsugs, "searchy": newsearchy }
             },
-            "query": {"match":{"_id": parent }}
-          }
+                      "query": {"match":{"_id": parent }}
+            }
           try:
             es.update_by_query(index=idx,body=q_update)
             print('child '+psrc['title'],str(pid)+' excised from parent: '+parent+'; tagged for deletion')
@@ -328,7 +386,7 @@ def uriMaker(place):
 def makeDoc(place,parentid):
   # TODO: remove parentid; used in early tests
   es_doc = {
-      "relation": {},
+    "relation": {},
       "children": [],
       "suggest": {"input":[]},
       "place_id": place.id,
@@ -349,7 +407,7 @@ def makeDoc(place,parentid):
       "depictions": parsePlace(place,'depictions'), 
       "relations": parsePlace(place,'related'),
       "searchy": []
-    }
+  }
   return es_doc
 
 # ***
