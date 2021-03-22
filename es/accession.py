@@ -27,8 +27,9 @@ def addChild(place, parent_id):
   #add _id to parent children[]
   #add variants to parent searchy[]
 
-def demoteParent(_id, newparent_id):
-  print('demoting', _id, 'to child of', newparent_id, '(& its kids to siblings)')
+def demoteParents(_ids, newparent_id):
+  for _id in _ids:
+    print('demoting', _id, 'to child of', newparent_id, '(& its kids to siblings)')
   # makes _id a child of newparent_id
   # relation = {'name':'child', 'parent': newparent_id}
   # adds its children[] to newparent_id
@@ -37,7 +38,7 @@ def demoteParent(_id, newparent_id):
   # empties pe.searchy[]
 
 def topParent(parents, form):
-  print('reduceParents():', parents)
+  print('topParent():', parents)
   if form == 'set':
     # if eq # of kids, use lowest _id
     parents.sort(key=lambda x:(-x[1], x[0]))
@@ -45,10 +46,9 @@ def topParent(parents, form):
   else:
     # a list of external parent _ids
     # get one with most children, or just the first?
-    parents.
     top = parents[0]
-  #return top
-  print('topParent is', top)
+  print('winner_id is', top)
+  return top
 
 # HITLIST EXAMPLES 
 # case3: (6595829) parent/child plus child w/external parent 

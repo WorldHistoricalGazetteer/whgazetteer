@@ -8,9 +8,9 @@ from places.models import Place
 """
 build query object qobj
 """
-def build_qobj(pid):
+def build_qobj(place):
   from datasets.utils import hully
-  place=get_object_or_404(Place, pk=pid)
+  #place=get_object_or_404(Place, pk=pid)
   #print('building qobj for ' + str(place.id) + ': ' + place.title)
 
   qobj = {"place_id":place.id, 
