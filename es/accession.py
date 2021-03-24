@@ -1,11 +1,11 @@
-# functions for accessioning a dataset
-# 20 Mar 2021
+# functions for grooming, accessioning a dataset
+# 22 Mar 2021
 
 from es.es_utils import *
 from elasticsearch import Elasticsearch      
 es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 
-# used by datasets.align_whg_testy(), eventually: 
+# use by datasets.align_whg_testy(), eventually: 
 # align_idx(dsid)
 #   for place in ds.places.all()
 #     build_qobj(pid)
@@ -16,7 +16,18 @@ es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 #           addChild() or demoteParent()
 #     write Hit records w/normalized json fields 
 #    
+# use by groom_idx.py
+# pids = [place_id] all indexed places for a dataset
+# groomy(pids)
+#   for pid in pids:
+#     doc = es.search(body = match place_id)['hits']['hits'][0]
+#     profile = profileHit(doc)
+#     if profile['links]:
+#       hitlist = es.search(profile['links])
+#       append all to profiles[]
+#       processProfiles(pid, profiles)
 
+# used in accessioning, not grooming
 def addChild(place, parent_id):
   print('adding', place, 'as child of', parent_id)
   # child_doc = makeDoc(place)
@@ -27,8 +38,8 @@ def addChild(place, parent_id):
   #add _id to parent children[]
   #add variants to parent searchy[]
 
-def demoteParents(_ids, newparent_id):
-  for _id in _ids:
+def demoteParents(others, newparent_id):
+  for _id in others:
     print('demoting', _id, 'to child of', newparent_id, '(& its kids to siblings)')
   # makes _id a child of newparent_id
   # relation = {'name':'child', 'parent': newparent_id}
@@ -38,7 +49,7 @@ def demoteParents(_ids, newparent_id):
   # empties pe.searchy[]
 
 def topParent(parents, form):
-  print('topParent():', parents)
+  #print('topParent():', parents)   
   if form == 'set':
     # if eq # of kids, use lowest _id
     parents.sort(key=lambda x:(-x[1], x[0]))
@@ -47,7 +58,7 @@ def topParent(parents, form):
     # a list of external parent _ids
     # get one with most children, or just the first?
     top = parents[0]
-  print('winner_id is', top)
+  #print('winner_id is', top)
   return top
 
 # HITLIST EXAMPLES 

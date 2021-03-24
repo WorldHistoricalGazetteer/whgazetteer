@@ -4,7 +4,7 @@
 {% load fontawesome %}
 {% load static %}
 
-{% block title %}<title>WHG v1.2</title>{% endblock %}
+{% block title %}<title>beta2a</title>{% endblock %}
 {% block extra_head %}
   {% leaflet_js %}
   {% leaflet_css %}
@@ -28,7 +28,7 @@
 <div class="container">
   <div class="justify-content-center mt-2">
   <div class="row">
-    <div id="home_search" class="col-sm-3">
+    <div id="home_search" class="col-sm-4">
       <div id="search_panel">
 		<div id="search_type" class="form-group d-flex justify-content-center"> 
 		  <div class="form-check form-check-inline">
@@ -48,19 +48,19 @@
 			<a id="link_filters"href="#">filters</a> {% fontawesome_icon 'filter' color='#336699' %}
 		  </div>
 		</div>
-        <div id="search_filters" class="hidden">
+        <div id="search_filters">
           <p class="mb-0">feature class(es) 
             <span class="ml-1 float-right">
 			  <span class="mr-1"><a id="check_toggle" href="#">clear all</a></span>
 		  <a id="filter_help" class="pointer" data-toggle="popover" title="Feature classes" data-content="" tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a></span>
 		  </p>
           <div>
-          <label class="checkbox-inline fclass"><input type="checkbox" value="A" checked> A&nbsp;</label>
-          <label class="checkbox-inline fclass"><input type="checkbox" value="H" checked> H&nbsp;</label>
-          <label class="checkbox-inline fclass"><input type="checkbox" value="L" checked> L&nbsp;</label> 
-          <label class="checkbox-inline fclass"><input type="checkbox" value="P" checked> P&nbsp;</label> 
-          <label class="checkbox-inline fclass"><input type="checkbox" value="S" checked> S&nbsp;</label> 
-          <label class="checkbox-inline fclass"><input type="checkbox" value="T" checked> T&nbsp;</label>
+			<label class="checkbox-inline fclass"><input type="checkbox" value="A" checked> A&nbsp;</label>
+			<label class="checkbox-inline fclass"><input type="checkbox" value="H" checked> H&nbsp;</label>
+			<label class="checkbox-inline fclass"><input type="checkbox" value="L" checked> L&nbsp;</label> 
+			<label class="checkbox-inline fclass"><input type="checkbox" value="P" checked> P&nbsp;</label> 
+			<label class="checkbox-inline fclass"><input type="checkbox" value="S" checked> S&nbsp;</label> 
+			<label class="checkbox-inline fclass"><input type="checkbox" value="T" checked> T&nbsp;</label>
 		  </div>
           <p class="mb-0">temporal
 			<span class="float-right"><a id="temporal_help" class="pointer" data-toggle="popover" title="Temporal filter" data-content="start = not before<br/>end = not after <p>NOTE: most records do not have temporal attributes at this stage</p>" tabindex="0" data-trigger="focus">
@@ -79,6 +79,7 @@
             <label><input id="input_area" type="text" size="30" placeholder="Region, country, study area"></label>
             <input type="hidden" id="boundsobj">
           </div>
+		  
         </div>
       </div>
       <!-- separate div for full search results -->
@@ -91,7 +92,7 @@
         <ul class="list-inline"></ul>
       </div>
       <div id="result_list" class="hidden"></div>
-	  <div id="splash">
+	  <div id="splash" class="hidden">
 		<div id="carouselSplash" class="carousel slide" data-interval="false" data-ride="carousel">
 		  <ol class="carousel-indicators">
 			<li data-target="#carouselSplash" data-slide-to="0" class="active">1</li>
@@ -112,7 +113,6 @@
 				  <option value="euratlas">Euratlas Cities</option>
 				  <option value="alturayya">al-Thurayya (11c Islam)</option>
 				</select>
-				<p class="v2hideme"><a href="{% url 'home2beta' %}">v2beta1</a></p>
 			  </div>
 			</div>
 			<div class="carousel-item">
@@ -150,9 +150,18 @@
 		</div>	  
 	  </div> <!-- splash -->
     </div>
-    <div id="home_map" class="col-sm-9">
-      {% leaflet_map "map_home" callback="map_init" %}
-    </div> <!-- map -->
+    <div id="home_map" class="col-sm-8">
+	  <!--<div class="row" style="height:70%;background:antiquewhite">-->
+		<!--<div id="map_div">-->
+		  {% leaflet_map "map_home" callback="map_init" %}
+		<!--</div>-->
+	  <!--</div>-->
+	  <div class="row px-3" style="height:30%;">
+		<div id="right_bottom" style="background-color:aliceblue;width:100%;">
+		  <p>right_bottom</p>
+		</div>
+	  </div>
+    </div> <!-- home_map -->
   </div>
   </div>
 </div>

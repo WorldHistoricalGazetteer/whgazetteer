@@ -131,6 +131,8 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
 /**
   home, search
 **/
+.v2hideme a {color: #fff}
+.v2hideme a:hover {color: #fff}
 .alt-label {font-weight:bold; color:#990000;display:block;position:absolute;top:100px;left:75px;background-color:beige;}
 .navactive {color:#000 !important; font-weight:bold;}
 .carousel-indicators {position:relative; bottom:0; margin-bottom:.5rem;font-size:smaller;}
@@ -228,7 +230,8 @@ input[type="text"] {
    /*line-height: rem;*/
 }
 
-#map_home.leaflet-container { height: calc(100vh - 90px);}
+/*#map_home.leaflet-container { height: calc(100vh - 90px);}*/
+#map_home.leaflet-container { height: 70%;}
 #home_map {  position:relative; z-index: 0;}
 
 #home_search {

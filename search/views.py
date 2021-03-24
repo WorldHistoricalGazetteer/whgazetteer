@@ -187,7 +187,7 @@ class SearchView(View):
         q = { "size": 100,
               "query": {"bool": {
               "must": [
-                {"exists": {"field": "whg_id"}},
+                #{"exists": {"field": "whg_id"}},
                 {"multi_match": {
                   "query": qstr, 
                   "fields": ["title","names.toponym","searchy"],

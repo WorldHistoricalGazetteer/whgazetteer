@@ -4,7 +4,7 @@
 {% load fontawesome %}
 {% load static %}
 
-{% block title %}<title>WHG v1.2</title>{% endblock %}
+{% block title %}<title>beta2a</title>{% endblock %}
 {% block extra_head %}
   {% leaflet_js %}
   {% leaflet_css %}
@@ -27,8 +27,8 @@
 
 <div class="container">
   <div class="justify-content-center mt-2">
-  <div class="row">
-    <div id="home_search" class="col-sm-3">
+  <div class="row" style="height: calc(100vh - 90px); background:#f1f1eb">
+    <div id="home_left" class="col-sm-5">
       <div id="search_panel">
 		<div id="search_type" class="form-group d-flex justify-content-center"> 
 		  <div class="form-check form-check-inline">
@@ -48,19 +48,19 @@
 			<a id="link_filters"href="#">filters</a> {% fontawesome_icon 'filter' color='#336699' %}
 		  </div>
 		</div>
-        <div id="search_filters" class="hidden">
+        <div id="search_filters">
           <p class="mb-0">feature class(es) 
             <span class="ml-1 float-right">
 			  <span class="mr-1"><a id="check_toggle" href="#">clear all</a></span>
 		  <a id="filter_help" class="pointer" data-toggle="popover" title="Feature classes" data-content="" tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a></span>
 		  </p>
           <div>
-          <label class="checkbox-inline fclass"><input type="checkbox" value="A" checked> A&nbsp;</label>
-          <label class="checkbox-inline fclass"><input type="checkbox" value="H" checked> H&nbsp;</label>
-          <label class="checkbox-inline fclass"><input type="checkbox" value="L" checked> L&nbsp;</label> 
-          <label class="checkbox-inline fclass"><input type="checkbox" value="P" checked> P&nbsp;</label> 
-          <label class="checkbox-inline fclass"><input type="checkbox" value="S" checked> S&nbsp;</label> 
-          <label class="checkbox-inline fclass"><input type="checkbox" value="T" checked> T&nbsp;</label>
+			<label class="checkbox-inline fclass"><input type="checkbox" value="A" checked> A&nbsp;</label>
+			<label class="checkbox-inline fclass"><input type="checkbox" value="H" checked> H&nbsp;</label>
+			<label class="checkbox-inline fclass"><input type="checkbox" value="L" checked> L&nbsp;</label> 
+			<label class="checkbox-inline fclass"><input type="checkbox" value="P" checked> P&nbsp;</label> 
+			<label class="checkbox-inline fclass"><input type="checkbox" value="S" checked> S&nbsp;</label> 
+			<label class="checkbox-inline fclass"><input type="checkbox" value="T" checked> T&nbsp;</label>
 		  </div>
           <p class="mb-0">temporal
 			<span class="float-right"><a id="temporal_help" class="pointer" data-toggle="popover" title="Temporal filter" data-content="start = not before<br/>end = not after <p>NOTE: most records do not have temporal attributes at this stage</p>" tabindex="0" data-trigger="focus">
@@ -79,81 +79,29 @@
             <label><input id="input_area" type="text" size="30" placeholder="Region, country, study area"></label>
             <input type="hidden" id="boundsobj">
           </div>
+		  
         </div>
-      </div>
-      <!-- separate div for full search results -->
-      <div id="type_filter" class="hidden">
-        <p class='allcap-heading half mb-0 pl-1'>PLACE TYPES (select to limit)
-          <span class="float-right mr-2"><a href="#" class="hide-filter">
-            close {% fontawesome_icon 'times-circle' color='#336699' %}</a></span>
-          <span class="float-right clear-filter hidden mr-2"><a href="#">restore all</span></a>
-        </p>
-        <ul class="list-inline"></ul>
-      </div>
-      <div id="result_list" class="hidden"></div>
-	  <div id="splash">
-		<div id="carouselSplash" class="carousel slide" data-interval="false" data-ride="carousel">
-		  <ol class="carousel-indicators">
-			<li data-target="#carouselSplash" data-slide-to="0" class="active">1</li>
-			<li data-target="#carouselSplash" data-slide-to="1">2</li>
-			<li data-target="#carouselSplash" data-slide-to="2">3</li>
-			<li data-target="#carouselSplash" data-slide-to="3">4</li>
-		  </ol>
-		  <div class="carousel-inner">
-			<div class="carousel-item active">
-			  <p class="mb-1">World Historical Gazetteer indexes place data drawn from historical sources, contributed by research projects and individuals studying the past from many disciplinary perspectives.</p>
-			  <p class="mb-1">This is a work-in-progress. To date about 60,000 temporally scoped place records have been added to our index, supplying "temporal depth" to a core of approximately 1.8 million modern records.</p>
-			  <p>You can preview coverage of some early contributions in progress, by selecting from the list below.</p>
-			  <div id="map_select">
-				<select id="map_dataset" name="region" class="custom-select-sm">
-				  <option value="0">Display dataset</option>
-				  <option value="lugares">HGIS de las Indias (lugares)</option>
-				  <option value="owtrad">Old World Trade (OWTRAD)</option>
-				  <option value="euratlas">Euratlas Cities</option>
-				  <option value="alturayya">al-Thurayya (11c Islam)</option>
-				</select>
-				<p class="v2hideme"><a href="{% url 'home2beta' %}">v2beta1</a></p>
-			  </div>
-			</div>
-			<div class="carousel-item">
-			  <p>Registered users can</p>
-			  <div class="row small">
-				<div class="col-sm">
-				  <img src="{% static 'images/upload100.png'%}" height="75"/><br/>
-					<span class="red-head strong">upload</span> place datasets into a private workspace
-				  <img src="{% static 'images/publish100.png'%}" width="75" title="Share by Flatart from the Noun Project"/><br/>
-					<span class="red-head strong">publish</span> them as Linked Open Data by flagging them as 'public'
-				</div>
-				<div class="col-sm">
-				  <img src="{% static 'images/augment100.png'%}" width="75"/><br/>
-					<span class="red-head strong">augment</span> them via reconciliation against <a href="#" data-html="true" onClick='return false;' title="Getty Thesaurus of Geographic Names" rel="tooltip" class="ttip">Getty TGN</a> and/or Wikidata
-				  <img src="{% static 'images/contribute100.png'%}" width="75"/><br/>
-				   <span class="red-head strong">contribute</span> them for accessionng to the WHG index
-				</div>
-			  </div>
-			  <hr/>
-			  <p>Details are available in the <a href="{% url 'main:tute-guide' %}">Site Guide</a></p>
-			</div>
-			<div class="carousel-item">
-			  <h6 class="mb-1 strong">Current Counts</h6>
-			  <p><mark>1,873,349</mark> places</p>
-			  <p><mark>3,028,626</mark> names</p>
-			  <p><mark>18</mark> uploaded datasets</p>
-			  <p><mark>14</mark> indexed datasets</p>
-			</div>
-			<div class="carousel-item">
-			  <p class="mb-1">Traces are an experimental feature of WHG, conceived in collaboration with the Pelagios project. A <span class="strong red-head">trace</span> is any sort of historical phenomena, including people, events, archaeological and museum objects, texts, art works, and so on.</p>
-			  <p><span class="strong red-head">Trace data</span> are web-accessible descriptions and depictions of traces, which may take the form of text, images, datasets, or video, published to the web with permanent URIs.</p>
-			  <p>We have indexed several dozen exemplar <span class="strong red-head">trace annotations</span>: i.e. datasets annotating such trace data web resources with identifiers for places referenced in a resource as relevant to the trace. See <a href="{% url 'main:tute-traces' %}">the Traces intro tutorial</a> for more detail.</p>
-			</div>
-		  </div>
-		</div>	  
-	  </div> <!-- splash -->
-    </div>
-    <div id="home_map" class="col-sm-9">
-      {% leaflet_map "map_home" callback="map_init" %}
-    </div> <!-- map -->
-  </div>
+		<div id="search_results" class="p-1" style="background:aliceblue;border:1px solid grey;"><p>search_results</p></div>
+      </div> <!-- search_panel -->
+    </div> <!-- home_left -->
+    <div id="home_right" class="col-sm-7">
+	  {% leaflet_map "map_home" callback="map_init" %}
+	  <div style="height: 30%; background-color: rgba(255,0,0,0.1); width=100%">
+		<div class="h-25 p-2" style="background-color: yellow">time visualization</div>
+		<div class="h-75 p-2" style="background-color: lightblue">featured contributions</div>
+	  </div>
+	  <!--<div id="right_bottom" class="py-2" style="">-->
+		<!--<!--<div id="time" style="height:10%">-->
+		<!--<div id="time" class="h-30" style="background:#fff;>-->
+		  <!--<p class="my-0"">temporal vis</p>-->
+		<!--</div>-->
+		<!--<!--<div id="featured" style="height:20%; background:aliceblue;">-->
+		<!--<div id="featured" class="h-70" style="background:aliceblue;">-->
+		  <!--<p>featured</p>-->
+		<!--</div>-->
+	  <!--</div> <!-- right_bottom -->
+    </div> <!-- home_map -->
+  </div> <!-- row -->
   </div>
 </div>
 

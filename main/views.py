@@ -27,6 +27,17 @@ class Home(TemplateView):
         context['media_url'] = settings.MEDIA_URL
         return context
 
+class Home2a(TemplateView):
+    template_name = 'main/home_v2a_bare.html'
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(Home2a, self).get_context_data(*args, **kwargs)
+        context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
+        context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
+        context['mbtokenwhg'] = settings.MAPBOX_TOKEN_WHG
+        context['media_url'] = settings.MEDIA_URL
+        return context
+
 
 def statusView(request):
     context = {"status_site": "??",
