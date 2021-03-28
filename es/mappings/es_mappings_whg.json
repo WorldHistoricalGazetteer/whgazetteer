@@ -1,4 +1,7 @@
 {
+  "settings":{
+    "number_of_shards": 1
+  },
   "mappings": {
     "place": {
       "properties": {
@@ -19,12 +22,6 @@
             { "name": "place_type",
               "type": "category",
               "path": "types.identifier"
-            },
-            { 
-              "name": "location",
-              "type": "geo",
-              "path": "representative_point",
-              "precision": 12
             }
           ]
         },

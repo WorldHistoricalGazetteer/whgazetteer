@@ -107,8 +107,8 @@ def suggester(doctype,q,scope,idx):
   
   if doctype=='place':
     print('suggester/place q:',q)
-    res = es.search(index=idx, doc_type='place', body=q)
-    #res = es.search(index='whg,tgn', doc_type='place', body=q)
+    #res = es.search(index=idx, doc_type='place', body=q)
+    res = es.search(body=q)
     if scope == 'suggest':
       sugs = res['suggest']['suggest'][0]['options']
       #print('suggester()/place sugs',sugs)

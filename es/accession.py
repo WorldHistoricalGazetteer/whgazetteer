@@ -1,10 +1,11 @@
 # functions for grooming, accessioning a dataset
 # 22 Mar 2021
 
+from copy import deepcopy
 from es.es_utils import *
 from elasticsearch import Elasticsearch      
 es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
-
+idx='whg'
 # use by datasets.align_whg_testy(), eventually: 
 # align_idx(dsid)
 #   for place in ds.places.all()
@@ -38,15 +39,84 @@ def addChild(place, parent_id):
   #add _id to parent children[]
   #add variants to parent searchy[]
 
-def demoteParents(others, newparent_id):
-  for _id in others:
-    print('demoting', _id, 'to child of', newparent_id, '(& its kids to siblings)')
-  # makes _id a child of newparent_id
-  # relation = {'name':'child', 'parent': newparent_id}
-  # adds its children[] to newparent_id
-  # adds its variants to newparent_id.searchy[] 
-  #then de-dupe it
-  # empties pe.searchy[]
+def demoteParents(demoted, winner_id):
+  #demoted = ['14156468']
+  #newparent_id = winner_id
+  qget = """{"query": {"bool": {"must": [{"match":{"_id": "%s" }}]}}}"""
+  
+  # updates 'winner' with children & names from demoted
+  def q_updatewinner(kids, names):
+    return {"script":{
+	"source": """ctx._source.children.addAll(params.newkids);
+	ctx._source.suggest.input.addAll(params.names);
+	ctx._source.searchy.addAll(params.names);
+    """,
+	"lang": "painless",
+	"params":{
+		"newkids": kids,
+		"names": names }
+    }}
+
+  for d in demoted:
+    # get the demoted doc, its names and kids if any
+    #d = demoted[0]
+    qget = qget % (d)
+    doc = es.search(index='whg', body=qget)['hits']['hits'][0]
+    src = doc['_source']
+    kids = src['children']
+    # add this doc b/c it's now a kid
+    kids.append(doc['_id'])
+    names = list(set(src['suggest']['input']))
+    
+    # first update the 'winner' parent
+    q=q_updatewinner(kids, names)
+    es.update('whg',winner_id,body=q,doc_type='place')
+
+
+    q_demote = {"script":{
+	"source": """
+	ctx._source.remove("whg_id");
+	ctx._source.relation={
+      "name":"child","parent":params.winner};
+    ctx._source.children=params.children;
+    """,
+	"lang": "painless",
+	"params":{
+		"winner": winner_id,
+		"children": [] }
+    }}
+    q_demote_ubq = {"script": {
+      "source": """ctx._source.relation=params.relation;
+      ctx._source.children=[];""", 
+      "lang": "painless", 
+      "params": {
+        "relation": {"name": "child", "parent": winner_id},
+        "role": "child"
+      }, 
+      "query": {"match": {"_id": d}}}}
+    
+    # then modify and replace demoted
+    es.update(idx, int(d), q_demote)
+    # Document mapping type name can't start with '_'
+    
+    es.update(idx, int(d), q_demote, doc_type='place')
+    # '[place][14156468]: document missing'
+    
+    es.update_by_query(idx, body=q_demote_ubq)
+    # 
+    
+    # delete, reindex approach
+    # update and update_by_query DO NOT work
+    # --------------
+    #newsrc = deepcopy(src)
+    #newsrc['relation'] = {"name":"child","parent":winner_id}
+    #newsrc['children'] = []
+    #if 'whg_id' in newsrc:
+      #newsrc.pop('whg_id')
+    ## zap the old, index the modified
+    #es.delete('whg',d,doc_type='place')
+    #es.index(index='whg',doc_type='place',id=d,body=newsrc,routing=1)
+    #es.index(index='whg',doc_type='place',id=d,body=src)
 
 def topParent(parents, form):
   #print('topParent():', parents)   

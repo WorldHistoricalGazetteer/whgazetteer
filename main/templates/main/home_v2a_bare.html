@@ -85,21 +85,13 @@
       </div> <!-- search_panel -->
     </div> <!-- home_left -->
     <div id="home_right" class="col-sm-7">
-	  {% leaflet_map "map_home" callback="map_init" %}
-	  <div style="height: 30%; background-color: rgba(255,0,0,0.1); width=100%">
-		<div class="h-25 p-2" style="background-color: yellow">time visualization</div>
-		<div class="h-75 p-2" style="background-color: lightblue">featured contributions</div>
+	  {% leaflet_map "map_home2" callback="map_init" %}
+	  <div style="height: 40%; background-color: rgba(255,0,0,0.1); width=100%">
+		<div id="time" class="h-25 p-2" style="background-color: yellow">
+		  time visualization</div>
+		<div id="featured" class="h-75 p-2" style="background-color: lightblue">
+		  featured contributions</div>
 	  </div>
-	  <!--<div id="right_bottom" class="py-2" style="">-->
-		<!--<!--<div id="time" style="height:10%">-->
-		<!--<div id="time" class="h-30" style="background:#fff;>-->
-		  <!--<p class="my-0"">temporal vis</p>-->
-		<!--</div>-->
-		<!--<!--<div id="featured" style="height:20%; background:aliceblue;">-->
-		<!--<div id="featured" class="h-70" style="background:aliceblue;">-->
-		  <!--<p>featured</p>-->
-		<!--</div>-->
-	  <!--</div> <!-- right_bottom -->
     </div> <!-- home_map -->
   </div> <!-- row -->
   </div>
@@ -500,7 +492,7 @@
   }, false);
 
   function map_init (home_map, options) {
-    mappy.setView([38, 10], 2.4)
+    mappy.setView([38, 10], 1)
     // empty features[]
     geom = {"type":"FeatureCollecton","features":[]}
   } // end map_init
@@ -997,7 +989,7 @@
     whgid=$(this).data('id')
     console.log('whgid',whgid)
     window.spinner = new Spin.Spinner().spin();
-    $("#map_home").append(spinner.el);
+    $("#map_home2").append(spinner.el);
     location.href = 'places/'+whgid+'/portal'
   });
     

@@ -230,8 +230,8 @@ input[type="text"] {
    /*line-height: rem;*/
 }
 
-/*#map_home.leaflet-container { height: calc(100vh - 90px);}*/
-#map_home.leaflet-container { height: 70%;}
+#map_home.leaflet-container { height: calc(100vh - 90px);}
+#map_home2.leaflet-container { height: 60%;}
 #home_map {  position:relative; z-index: 0;}
 
 #home_search {
