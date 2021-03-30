@@ -549,6 +549,10 @@
     mappy.zoomControl.setPosition('topright')
     L.control.layers(baseLayers,dataLayers).addTo(mappy);
     baseLayers["NE global"].addTo(mappy)
+		previous = JSON.parse(localStorage.getItem('last_results'))
+	if(document.referrer.indexOf('place') >= 0 && previous){
+	  showResults(previous,'place','search')
+	}
   }, false);
 
   function map_init (home_map, options) {
@@ -701,11 +705,13 @@
         end: $("#input_end").val(),
         bounds: $("#boundsobj").val()
       }, function(data){
-		window.searchres=data
+		window.searchres=data['suggestions']
+		// store locally
+		localStorage.setItem('last_results',JSON.stringify(searchres))
         // render to html
-		console.log('searchResults from searchPlaces()')
+		console.log('get from that query',data['get'])
 		if(doctype == 'place'){
-		  showResults(data,doctype,scope);
+		  showResults(data['suggestions'],doctype,scope);
 		}
     });
     $('.tt-menu').hide()

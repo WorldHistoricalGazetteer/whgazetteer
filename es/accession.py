@@ -60,6 +60,8 @@ def demoteParents(demoted, winner_id):
   for d in demoted:
     # get the demoted doc, its names and kids if any
     #d = demoted[0]
+    #d = '14156468'
+    #winner_id = '14156467'
     qget = qget % (d)
     doc = es.search(index='whg', body=qget)['hits']['hits'][0]
     src = doc['_source']
@@ -70,36 +72,29 @@ def demoteParents(demoted, winner_id):
     
     # first update the 'winner' parent
     q=q_updatewinner(kids, names)
-    es.update('whg',winner_id,body=q,doc_type='place')
+    es.update(idx,winner_id,body=q,doc_type='place')
 
 
     q_demote = {"script":{
-	"source": """
-	ctx._source.remove("whg_id");
-	ctx._source.relation={
-      "name":"child","parent":params.winner};
-    ctx._source.children=params.children;
-    """,
-	"lang": "painless",
-	"params":{
-		"winner": winner_id,
-		"children": [] }
+      "source":"ctx._source.relation.name=params.name;ctx._source.relation.parent=params.parent",
+      "lang": "painless",
+      "params":{
+        "name":"child",
+        "parent": winner_id}
     }}
     q_demote_ubq = {"script": {
-      "source": """ctx._source.relation=params.relation;
-      ctx._source.children=[];""", 
+      "source": """ctx._source.relation=params.relation;ctx._source.children=[];""", 
       "lang": "painless", 
       "params": {
-        "relation": {"name": "child", "parent": winner_id},
-        "role": "child"
+        "relation": {"name": "child", "parent": winner_id}
       }, 
       "query": {"match": {"_id": d}}}}
     
     # then modify and replace demoted
-    es.update(idx, int(d), q_demote)
+    #es.update(idx, int(d), q_demote)
     # Document mapping type name can't start with '_'
     
-    es.update(idx, int(d), q_demote, doc_type='place')
+    es.update('whg', d, q_demote, doc_type='place')
     # '[place][14156468]: document missing'
     
     es.update_by_query(idx, body=q_demote_ubq)
@@ -114,9 +109,9 @@ def demoteParents(demoted, winner_id):
     #if 'whg_id' in newsrc:
       #newsrc.pop('whg_id')
     ## zap the old, index the modified
-    #es.delete('whg',d,doc_type='place')
+    #es.delete('whg',winner_id,doc_type='place')
     #es.index(index='whg',doc_type='place',id=d,body=newsrc,routing=1)
-    #es.index(index='whg',doc_type='place',id=d,body=src)
+    #es.index(index='whg',doc_type='place',id=winner_id,body=src_w)
 
 def topParent(parents, form):
   #print('topParent():', parents)   

@@ -178,7 +178,6 @@ class SearchView(View):
     start = request.GET.get('start')
     end = request.GET.get('end')
     bounds = request.GET.get('bounds')
-    #print('bounds',fclasses,start,end)
     
     if doctype == 'place':
       if scope == 'suggest':
@@ -226,10 +225,13 @@ class SearchView(View):
       #q = { "query": {"match": {"target.title": {"query": qstr,"operator": "and"}}} }
       print('trace query:',q)
       
+    result = {}
     suggestions = suggester(doctype, q, scope, idx)
-    #print('raw suggestions (new style):',suggestions)
-    suggestions = [ suggestionItem(s, doctype, scope) for s in suggestions]
-    return JsonResponse(suggestions, safe=False)
+    #suggestions = [ suggestionItem(s, doctype, scope) for s in suggestions]
+    result['suggestions'] = [ suggestionItem(s, doctype, scope) for s in suggestions]
+    result['get'] = request.GET
+    #return JsonResponse(suggestions, safe=False)
+    return JsonResponse(result, safe=False)
   
 '''
   returns 300 index docs in current map viewport

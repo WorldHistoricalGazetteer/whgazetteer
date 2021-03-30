@@ -255,8 +255,7 @@ class IndexAPIView(View):
     
     if all(v is None for v in [name, name_startswith, whgid,pid]):
       # TODO: format better
-      return HttpResponse(content='<h3>Query requires either name, name_startswith, pid, or whgid</h3>'+
-                          '<p><a href="/usingapi/">API instructions</a>')
+      return HttpResponse(content='<h3>Query requires either name, name_startswith, pid, or whgid</h3>'+'<p><a href="/usingapi/">API instructions</a>')
     else:
       if whgid and whgid !='':
         print('fetching whg_id', whgid)

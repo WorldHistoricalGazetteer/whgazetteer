@@ -55,6 +55,8 @@ INSTALLED_APPS = [
     'accounts.apps.AccountsConfig',
     'api.apps.ApiConfig',
     'areas.apps.AreasConfig',
+    # collections is reserved in python
+    'collection.apps.CollectionConfig',
     'datasets.apps.DatasetsConfig',
     'main.apps.MainConfig',
     'maps.apps.MapsConfig',

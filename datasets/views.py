@@ -24,6 +24,7 @@ from pathlib import Path
 from shutil import copyfile
 #
 from areas.models import Area
+from collection.models import Collection
 from datasets.forms import HitModelForm, DatasetDetailModelForm, DatasetCreateModelForm
 from datasets.models import Dataset, Hit, DatasetFile
 from datasets.static.hashes import mimetypes_plus as mthash_plus
@@ -1259,11 +1260,11 @@ def ds_insert_lpf(request, pk):
 # ***
 
 # for testing
-from datasets.models import Dataset, DatasetFile
-from django.shortcuts import get_object_or_404
-from datasets.utils import parse_wkt, makeCoords, ccodesFromGeom
-from areas.models import Country
-pk = 980
+#from datasets.models import Dataset, DatasetFile
+#from django.shortcuts import get_object_or_404
+#from datasets.utils import parse_wkt, makeCoords, ccodesFromGeom
+#from areas.models import Country
+#pk = 980
 # 
 def ds_insert_tsv(request, pk):
   import csv, re
@@ -1561,6 +1562,10 @@ class DashboardView(LoginRequiredMixin, ListView):
     # list areas
     userareas = Area.objects.all().filter(type__in=types_ok).order_by('created')
     context['area_list'] = userareas if me.is_superuser else userareas.filter(owner=me)
+
+    # list collections
+    collection_list = Collection.objects.all().order_by('create_date')
+    context['collections'] = collection_list if me.is_superuser else collection_list.filter(owner=me)
 
     context['viewable'] = ['uploaded','inserted','reconciling','review_hits','reviewed','review_whg','indexed']
     # TODO: user place collections

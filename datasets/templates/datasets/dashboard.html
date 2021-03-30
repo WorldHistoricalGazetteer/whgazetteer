@@ -16,6 +16,11 @@
       <li class="nav-item">
         <a class="nav-link active" id="mydslist-tab" data-toggle="tab" href="#mydslist" role="tab" aria-controls="dslist" aria-selected="true">Datasets</a>
       </li>
+      {% if beta_or_better or user.is_superuser %}
+      <li class="nav-item">
+        <a class="nav-link" id="collectionlist-tab" data-toggle="tab" href="#collectionlist" role="tab" aria-controls="collectionlist" aria-selected="false">Collections</a>
+      </li>
+      {% endif %}
       <li class="nav-item">
         <a class="nav-link" id="arealist-tab" data-toggle="tab" href="#arealist" role="tab" aria-controls="arealist" aria-selected="false">Study Areas</a>
       </li>
@@ -106,6 +111,31 @@
             {% endif %}
           </div>
         </div>        
+      </div>
+      <div id="collectionlist" class="tab-pane fade " role="tabpanel" aria-labelledby="collectionlist-tab">
+        <!--<p class="mb-1 ml-1"><a href="{ url 'areas:area-create' %}" class="">-->
+          <!--{ fontawesome_icon 'plus-square' color='#336699' %} create new</a></p>  -->
+        <div id="collection_list" class="mt-1 ml-0">
+          <div class="list-box">
+            <table class="table table-striped">
+              <thead class="small">
+                  <th>id</th>
+                  <th>title</th>
+                  <th>created</th>
+              </thead>
+              <tbody>
+                {% for c in collections %}
+                  <tr class="place-row">
+                    <td>{{ c.id }}</td>
+                    <!--<td><a href="{ url 'areas:area-update' a.id %}">{{ c.title }}</a></td>-->
+                    <td>{{ c.title }}</td>
+                    <td>{{ c.create_date }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
       <div id="arealist" class="tab-pane fade " role="tabpanel" aria-labelledby="arealist-tab">
         <p class="mb-1 ml-1"><a href="{% url 'areas:area-create' %}" class="">
