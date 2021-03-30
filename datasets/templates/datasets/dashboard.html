@@ -113,8 +113,8 @@
         </div>        
       </div>
       <div id="collectionlist" class="tab-pane fade " role="tabpanel" aria-labelledby="collectionlist-tab">
-        <!--<p class="mb-1 ml-1"><a href="{ url 'areas:area-create' %}" class="">-->
-          <!--{ fontawesome_icon 'plus-square' color='#336699' %} create new</a></p>  -->
+        <p class="mb-1 ml-1"><a href="{% url 'collection:collection-create' %}" class="">
+          {% fontawesome_icon 'plus-square' color='#336699' %} create new</a></p>  
         <div id="collection_list" class="mt-1 ml-0">
           <div class="list-box">
             <table class="table table-striped">
@@ -127,8 +127,8 @@
                 {% for c in collections %}
                   <tr class="place-row">
                     <td>{{ c.id }}</td>
-                    <!--<td><a href="{ url 'areas:area-update' a.id %}">{{ c.title }}</a></td>-->
-                    <td>{{ c.title }}</td>
+                    <td><a href="{% url 'collection:collection-update' c.id %}">{{ c.title }}</a></td>
+                    <!--<td>{ c.title }}</td>-->
                     <td>{{ c.create_date }}</td>
                   </tr>
                 {% endfor %}

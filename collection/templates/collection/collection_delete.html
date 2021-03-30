@@ -1,0 +1,21 @@
+{% extends 'main/base.html' %}
+
+{% block content %}
+
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-md-4 mt-5">
+      <form action='' method='POST'>{% csrf_token %}
+          <h3 class="text-danger">CAREFUL!!</h3>
+          <p>This will destroy the <b>{{ object.title }} ({{ object.id }})</b> collection</p>
+          <p class="mt-4">
+            <input type='submit' value='Destroy' />
+            <a href="javascript:history.back()">Cancel</a>
+          </p>
+      </form>
+    </div>
+  </div>
+</div>
+
+</div>
+{% endblock %}

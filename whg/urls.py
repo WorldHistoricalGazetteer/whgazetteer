@@ -25,6 +25,7 @@ urlpatterns = [
     path('maps/', include('maps.urls')),
     path('datasets/', include('datasets.urls')),
     path('areas/', include('areas.urls')),
+    path('collections/', include('collection.urls')),
     path('places/', include('places.urls')),
     path('tutorials/', include('main.urls')),
     

@@ -30,14 +30,14 @@ class AreaModelForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(AreaModelForm, self).__init__(*args, **kwargs)
 
-class AreaDetailModelForm(forms.ModelForm):
-    class Meta:
-        model = Area
-        fields = ('id','type','owner','title','description','ccodes','geojson')
-        widgets = {
-            'description': forms.Textarea(attrs={
-                'rows':1,'cols': 60,'class':'textarea','placeholder':'brief description'}),
-        }
+#class AreaDetailModelForm(forms.ModelForm):
+    #class Meta:
+        #model = Area
+        #fields = ('id','type','owner','title','description','ccodes','geojson')
+        #widgets = {
+            #'description': forms.Textarea(attrs={
+                #'rows':1,'cols': 60,'class':'textarea','placeholder':'brief description'}),
+        #}
 
-    def __init__(self, *args, **kwargs):
-        super(AreaDetailModelForm, self).__init__(*args, **kwargs)
+    #def __init__(self, *args, **kwargs):
+        #super(AreaDetailModelForm, self).__init__(*args, **kwargs)
