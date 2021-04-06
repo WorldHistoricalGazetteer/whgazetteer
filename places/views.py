@@ -54,7 +54,8 @@ class PlacePortalView(DetailView):
     q = {"query": {"parent_id": {"type": "child","id":id_}}}
     children = es.search(index='whg', doc_type='place', body=q)['hits']
     for hit in children['hits']:
-      ids.append(int(hit['_id']))
+      #ids.append(int(hit['_id']))
+      ids.append(int(hit['_source']['place_id']))
 
     # database records for parent + children into 'payload'
     qs=Place.objects.filter(id__in=ids).order_by('-whens__minmax')

@@ -498,6 +498,7 @@
               <input type="radio" class="form-check-input r_wd" id="r_wdlocal" 
                 name="recon" value="wdlocal" checked>Wikidata local (BETA) <span class="ml-2 text-danger small">estimated time: {{ ds.numrows|time_estimate }}</span>
             </label>
+            <!--{ds.taskstats }}-->
             {% if ds.taskstats.align_wdlocal|length > 0 %}
               <div id="wdlocal_tasks">
                 <div class="mt-0 smaller">

@@ -9,7 +9,7 @@ from django.dispatch import receiver
 from django.urls import reverse
 #from django.shortcuts import get_object_or_404
 
-from es.es_utils import escount_ds
+from elastic.es_utils import escount_ds
 from main.choices import AUTHORITIES, FORMATS, DATATYPES, STATUS, TEAMROLES, PASSES
 from places.models import Place, PlaceGeom
 

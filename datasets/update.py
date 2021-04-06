@@ -8,7 +8,7 @@ from places.models import *
 from datasets.models import Dataset, Hit, DatasetFile
 from datasets.utils import validate_lpf, validate_tsv
 from elasticsearch import Elasticsearch
-from es.es_utils import makeDoc
+from elastic.es_utils import makeDoc
 es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 idx='whg'
 

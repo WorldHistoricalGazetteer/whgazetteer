@@ -74,13 +74,17 @@
       {% csrf_token %}
       <input type="hidden" name="owner" value='{{ user.id }}'></input>
       <!--{ if action == 'update' %}-->
-        <!--<input type="hidden" name="type" value='{{ form.type.value }}' />-->
+        <!--<input type="hidden" name="type" value='{ form.type.value }}' />-->
       <!--{ else %}-->
         <!--<input type="hidden" name="type" value='ccodes' />-->
       <!--{ endif %}-->
       <p>Title<br/>{{ form.title }}</p>
       <p><span class="top">Description</span><br/>{{ form.description }}</p>
+      <p>Tags (no quotes, separate with commas) </br>{{ form.tags }}
+      <p>Image file (.png, .jpg)</br>{{ form.image_file }}
+      {% if action == 'update' %}
       <p>Created: {{ create_date }}</p>
+      {% endif %}
       <hr/>
       <div id="collection_options">
         <!--<ul id="area_tabs_ul" class="nav nav-tabs">-->
@@ -111,7 +115,17 @@
     </form>
     </div>
     <div id="map_container" class="col-sm-8 p-3">
-      <p>map, maybe</p>
+      <h4>Datasets</h4>
+      {% if action == 'update' %}
+        <ul>
+        {% for d in datasets %}
+          <li>{{ d }}</li>
+        {% endfor %}
+        </ul>
+      {% endif %}
+      <hr/>
+      <p>map w/bboxes for datasets as added, maybe?</p>
+      <p>and/or "cards" for each added dataset, with remove button</p>
       <!--{ leaflet_map "map_collection" callback="map_init" %}-->
     </div>
   </div> <!-- d-flex -->

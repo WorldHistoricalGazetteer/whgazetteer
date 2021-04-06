@@ -47,10 +47,6 @@ class DatasetFileModelForm(forms.ModelForm):
     fields = ('dataset_id','file','rev','format','delimiter',
               'df_status','datatype','header','numrows')
     
-  #file = forms.FileField()
-  #uri_base = forms.URLField(widget=forms.URLInput(attrs={'placeholder':'Leave blank unless changed'}))
-  #format = forms.ChoiceField(choices=FORMATS)
-    
   def __init__(self, *args, **kwargs):
     super(DatasetFileModelForm, self).__init__(*args, **kwargs)
     for field in self.fields.values():

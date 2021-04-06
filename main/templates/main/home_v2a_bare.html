@@ -27,7 +27,7 @@
 
 <div class="container">
   <div class="justify-content-center mt-2">
-  <div class="row" style="height: calc(100vh - 90px); background:#f1f1eb">
+  <div class="row" style="height: calc(100vh - 90px);">
     <div id="home_left" class="col-sm-5">
       <div id="search_panel">
 		<div id="search_type" class="form-group d-flex justify-content-center"> 
@@ -54,13 +54,22 @@
 			  <span class="mr-1"><a id="check_toggle" href="#">clear all</a></span>
 		  <a id="filter_help" class="pointer" data-toggle="popover" title="Feature classes" data-content="" tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a></span>
 		  </p>
-          <div>
-			<label class="checkbox-inline fclass"><input type="checkbox" value="A" checked> A&nbsp;</label>
-			<label class="checkbox-inline fclass"><input type="checkbox" value="H" checked> H&nbsp;</label>
-			<label class="checkbox-inline fclass"><input type="checkbox" value="L" checked> L&nbsp;</label> 
-			<label class="checkbox-inline fclass"><input type="checkbox" value="P" checked> P&nbsp;</label> 
-			<label class="checkbox-inline fclass"><input type="checkbox" value="S" checked> S&nbsp;</label> 
-			<label class="checkbox-inline fclass"><input type="checkbox" value="T" checked> T&nbsp;</label>
+          <div class="small row">
+			<div class="col-sm-6">
+			  <ul class="ul-left p-0">
+			  <li class="li-flush"><input type="checkbox" value="A" checked> A&nbsp;administrative entities</li>
+			  <li class="li-flush"><input type="checkbox" value="P" checked> P&nbsp;cities, towns, hamlets...</li> 
+			  <li class="li-flush"><input type="checkbox" value="S" checked> S&nbsp;sites, buildings, complexes...</li> 
+			  <li class="li-flush"><input type="checkbox" value="R" checked> R&nbsp;roads, routes, rail...</li> 
+			  </ul>
+			</div>
+			<div class="col-sm-6">
+			  <ul class="ul-left p-0">
+			  <li class="li-flush"><input type="checkbox" value="L" checked> L&nbsp;regions, landscape areas</li> 
+			  <li class="li-flush"><input type="checkbox" value="T" checked> T&nbsp;terrestrial landforms</li>
+			  <li class="li-flush"><input type="checkbox" value="H" checked> H&nbsp;water bodies</li>
+			  </ul>
+			</div>
 		  </div>
           <p class="mb-0">temporal
 			<span class="float-right"><a id="temporal_help" class="pointer" data-toggle="popover" title="Temporal filter" data-content="start = not before<br/>end = not after <p>NOTE: most records do not have temporal attributes at this stage</p>" tabindex="0" data-trigger="focus">
@@ -81,16 +90,30 @@
           </div>
 		  
         </div>
-		<div id="search_results" class="p-1" style="background:aliceblue;border:1px solid grey;"><p>search_results</p></div>
+		<div id="search_results" class="p-1" style="border:1px solid grey;overflow-y:scroll;">
+		  <div class="search-row place-item" style="min-height:50px;">result</div>
+		  <div class="search-row place-item" style="min-height:50px;">result</div>
+		  <div class="search-row place-item" style="min-height:50px;">result</div>
+		  <div class="search-row place-item" style="min-height:50px;">result</div>
+		  <div class="search-row place-item" style="min-height:50px;">result</div>
+		</div>
       </div> <!-- search_panel -->
     </div> <!-- home_left -->
-    <div id="home_right" class="col-sm-7">
+    <div id="home_right" class="col-sm-7 p-0">
 	  {% leaflet_map "map_home2" callback="map_init" %}
-	  <div style="height: 40%; background-color: rgba(255,0,0,0.1); width=100%">
-		<div id="time" class="h-25 p-2" style="background-color: yellow">
-		  time visualization</div>
-		<div id="featured" class="h-75 p-2" style="background-color: lightblue">
-		  featured contributions</div>
+	  <!--<div style="height: 40%; background-color: rgba(255,0,0,0.1); width=100%">-->
+	  <div style="height: 40%; width=100%">
+		<div id="time" class="h-25 p-2 mt-1" style="background-color: #ffffcc;">
+		  temporal visualization
+		</div>
+		<div id="featured" class="h-75 py-2 px-0 d-flex">
+		  <!--<div class="featured p-2 h-100 w-50 mr-1"><img src="{ static 'images/upload100.png'%}" height="75"/></div>-->
+		  <div class="featured p-2 h-100 w-50 mr-1" style="position:relative; background: no-repeat top url('{% static 'images/dutch-football-330.png'%}')">
+		  <p style="position:absolute; bottom:0; left:50px;">
+			<a href="{% url 'collection:collection-update' 2 %}">KNAW/HuC Dutch Collection</a>
+		  </p></div>
+		  <div class="featured p-2 h-100 w-50 ml-1">featured collection #2</div>
+		</div>
 	  </div>
     </div> <!-- home_map -->
   </div> <!-- row -->

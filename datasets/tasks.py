@@ -14,7 +14,7 @@ import  datetime, json, os, re, sys #, codecs, time, csv, random
 from copy import deepcopy
 #from pprint import pprint
 from areas.models import Area
-from es.es_utils import makeDoc
+from elastic.es_utils import makeDoc
 from datasets.models import Dataset, Hit
 #from datasets.static.regions import regions as region_hash
 from datasets.static.hashes.parents import ccodes
@@ -164,7 +164,10 @@ def normalize(h, auth, language=None):
     )
     print('"rec" HitRecord',rec)
     rec.score = _score
-    rec.whg_id = _id # can be index id (parent) or pid (child)
+    
+    # only parents have whg_id
+    if 'whg_id' in h:
+      rec.whg_id = h['whg_id']
     
     # add elements if non-empty in index record
     rec.variants = [n['toponym'] for n in h['names']] # always >=1 names
@@ -1461,10 +1464,11 @@ def align_whg(pk, *args, **kwargs):
     else:
       count_hit +=1
       total_hits += len(result_obj['hits'])
-      print("hit[0]: ",result_obj['hits'][0]['_source'])  
+      #print("hit[0]: ",result_obj['hits'][0]['_source'])  
       #print('hits from align_whg',result_obj['hits'])
       for hit in result_obj['hits']:
         # they are ALL pass1 for now
+        print('align_whg hit', hit)
         if hit['pass'] == 'pass1': 
           count_p1+=1
         hit_parade["hits"].append(hit)

@@ -12,6 +12,7 @@ app_name='collection'
 urlpatterns = [
 
     path('create/', views.CollectionCreateView.as_view(), name='collection-create'),
+    # create handles create and update
     path('<int:id>/update', views.CollectionUpdateView.as_view(), name='collection-update'),
     path('<int:id>/delete', views.CollectionDeleteView.as_view(), name='collection-delete'),
 

@@ -101,7 +101,7 @@ def suggestionItem(s,doctype,scope):
 """
 def suggester(doctype,q,scope,idx):
   # returns only parents; children retrieved into place portal
-  #print('suggester',doctype,q)
+  print('suggester',doctype,q)
   es = Elasticsearch([{'host': 'localhost', 'port': 9200, 'timeout':30, 'max_retries':10, 'retry_on_timeout':True}])
   suggestions = []
   
@@ -188,11 +188,7 @@ class SearchView(View):
               "query": {"bool": {
               "must": [
                 {"exists": {"field": "whg_id"}},
-                {"multi_match": {
-                  "query": qstr, 
-                  "fields": ["title","names.toponym","searchy"],
-                  "type": "phrase"
-                }}
+                {"match": {"searchy": qstr}}
               ]
             }}
         }
@@ -202,13 +198,10 @@ class SearchView(View):
           q['query']['bool']['must'].append({"range":{"timespans":{"gte" :start,"lte":end if end else 2005}}})
         if bounds:
           bounds=json.loads(bounds)
-          #q['query']['bool']["filter"]=get_bounds_filter(bounds,'whg') if bounds['id'] != ['0'] else []
           q['query']['bool']["filter"]=get_bounds_filter(bounds,'whg')
           
         # truncate, may include polygon coordinates
         print('search must[]:',q['query']['bool']['must'])
-        #if 'filter' in q['query']['bool']:
-          #print('search filter[]:',q['query']['bool']['filter'])
 
     elif doctype == 'trace':
       q={ 
@@ -222,16 +215,16 @@ class SearchView(View):
           }}]
         }}
       }      
-      #q = { "query": {"match": {"target.title": {"query": qstr,"operator": "and"}}} }
       print('trace query:',q)
-      
-    result = {}
+    
     suggestions = suggester(doctype, q, scope, idx)
-    #suggestions = [ suggestionItem(s, doctype, scope) for s in suggestions]
-    result['suggestions'] = [ suggestionItem(s, doctype, scope) for s in suggestions]
-    result['get'] = request.GET
-    #return JsonResponse(suggestions, safe=False)
+    suggestions = [ suggestionItem(s, doctype, scope) for s in suggestions]
+    
+    result = suggestions if doctype=='trace' else \
+      {'get': request.GET, 'suggestions': suggestions}
+
     return JsonResponse(result, safe=False)
+      
   
 '''
   returns 300 index docs in current map viewport

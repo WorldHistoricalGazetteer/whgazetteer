@@ -351,7 +351,7 @@ def esInit(idx):
 
   from elasticsearch import Elasticsearch
   es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
-  mappings = codecs.open('es/mappings/es_mappings_whg.json', 'r', 'utf8').read()
+  mappings = codecs.open('elastic/mappings/es_mappings_whg.json', 'r', 'utf8').read()
 
   # zap existing if exists, re-create
   if confirm(prompt='Zap index '+idx+'?', resp=False):

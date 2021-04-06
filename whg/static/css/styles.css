@@ -295,6 +295,14 @@ input[type="text"] {
   z-index: 600;
 }
 
+/*.flex-even {flex: 1; background-color: white; margin: .5rem; }*/
+.featured {
+  background-color:#fff;
+  border: lightgrey 1px solid;
+  border-radius: 10px;
+  box-shadow: 2px 2px lightgrey;
+}
+
 .place-item, .trace-item, .sug_row, .search-row{
   list-style-type: none;
   margin-top: 5px;
@@ -545,8 +553,8 @@ em { color: #993333;}
   margin-top: 65px;
   margin-right: 10px;
   padding: 6px 6px 0 6px;
-  border: grey 1px dashed;
   max-width:150px;
+  border: grey 1px dashed;
   border-radius: 10px;
   box-shadow: 2px 2px lightgrey;
   text-align: center;

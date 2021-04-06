@@ -59,6 +59,7 @@
           <label class="checkbox-inline fclass"><input type="checkbox" value="H" checked> H&nbsp;</label>
           <label class="checkbox-inline fclass"><input type="checkbox" value="L" checked> L&nbsp;</label> 
           <label class="checkbox-inline fclass"><input type="checkbox" value="P" checked> P&nbsp;</label> 
+          <label class="checkbox-inline fclass"><input type="checkbox" value="R" checked> R&nbsp;</label> 
           <label class="checkbox-inline fclass"><input type="checkbox" value="S" checked> S&nbsp;</label> 
           <label class="checkbox-inline fclass"><input type="checkbox" value="T" checked> T&nbsp;</label>
 		  </div>
@@ -126,9 +127,9 @@
 				</div>
 				<div class="col-sm">
 				  <img src="{% static 'images/augment100.png'%}" width="75"/><br/>
-					<span class="red-head strong">augment</span> them via reconciliation against <a href="#" data-html="true" onClick='return false;' title="Getty Thesaurus of Geographic Names" rel="tooltip" class="ttip">Getty TGN</a> and/or Wikidata
+					<span class="red-head strong">augment</span> them via reconciliation against Wikidata and/or <a href="#" data-html="true" onClick='return false;' title="Getty Thesaurus of Geographic Names" rel="tooltip" class="ttip">Getty TGN</a>
 				  <img src="{% static 'images/contribute100.png'%}" width="75"/><br/>
-				   <span class="red-head strong">contribute</span> them for accessionng to the WHG index
+				   <span class="red-head strong">contribute</span> them for accessioning to the WHG index
 				</div>
 			  </div>
 			  <hr/>
@@ -203,7 +204,7 @@
 	// popover content
 	$("#filter_help").attr(
 	  'data-content',"<p>Select one or more GeoNames single-letter code:</p>"+
-	  "<p>A=administrative areas<br/> H=hydrological features<br/> L='landscape' elements, e.g. regions<br/> P=settlements (cities, towns, etc.)<br/>S='sites' (various)<br/> T=topographical features</p>"
+	  "<p>A=administrative areas<br/> H=hydrological features<br/> L='landscape' elements, e.g. regions<br/> P=settlements (cities, towns, etc.)<br/>R='routes, roads, etc.' (various)<br/>S='sites' (various)<br/> T=topographical features</p>"
 	)
 	$("#spatial_help").attr(
 	  'data-content',"<p>Constrain search to the bounds of a <a href='http://apple.com'>UN global sub-region</a>, a country, or a user-created study area. Try entering 'north...'</p>"
@@ -231,6 +232,7 @@
 	  $("#search_filters").toggle(400)
     })
 	
+
 
 	// 
 	$("label[for='input_box']").click(function(){
@@ -276,7 +278,7 @@
                   data.variants.filter(hh).join(', ') + '<i></p>' : 
                 '<p class="tight-p">' + data.name + '</p>'
             } else {
-              <!--console.log(data)-->
+              console.log('data',data)
               return '<p rel="'+data._id+'">'+data.title+'</p>'
             }
           }
@@ -549,7 +551,9 @@
     mappy.zoomControl.setPosition('topright')
     L.control.layers(baseLayers,dataLayers).addTo(mappy);
     baseLayers["NE global"].addTo(mappy)
-		previous = JSON.parse(localStorage.getItem('last_results'))
+	if(localStorage.getItem('last_results') != null){
+	  previous = JSON.parse(localStorage.getItem('last_results'))	
+	}
 	if(document.referrer.indexOf('place') >= 0 && previous){
 	  showResults(previous,'place','search')
 	}
@@ -761,7 +765,7 @@
     } else if (doctype == 'trace') {
 		// data has features and bodies
 		bodies = data.bodies
-		<!--console.log('trace data',data)-->
+		console.log('trace data',data)
 		<!--console.log('trace data bodies',data.bodies)-->
         data.bodies.forEach(function(bod){ 
         // add a whg_id to bodies        

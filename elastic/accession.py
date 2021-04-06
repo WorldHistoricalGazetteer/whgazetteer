@@ -2,7 +2,7 @@
 # 22 Mar 2021
 
 from copy import deepcopy
-from es.es_utils import *
+from elastic.es_utils import *
 from elasticsearch import Elasticsearch      
 es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 idx='whg'
@@ -39,10 +39,11 @@ def addChild(place, parent_id):
   #add _id to parent children[]
   #add variants to parent searchy[]
 
-def demoteParents(demoted, winner_id):
+def demoteParents(demoted, winner_id, pid):
   #demoted = ['14156468']
   #newparent_id = winner_id
-  qget = """{"query": {"bool": {"must": [{"match":{"_id": "%s" }}]}}}"""
+  print('demoteParents()',demoted, winner_id, pid)
+  #qget = """{"query": {"bool": {"must": [{"match":{"_id": "%s" }}]}}}"""
   
   # updates 'winner' with children & names from demoted
   def q_updatewinner(kids, names):
@@ -62,56 +63,43 @@ def demoteParents(demoted, winner_id):
     #d = demoted[0]
     #d = '14156468'
     #winner_id = '14156467'
-    qget = qget % (d)
-    doc = es.search(index='whg', body=qget)['hits']['hits'][0]
-    src = doc['_source']
-    kids = src['children']
+    qget = """{"query": {"bool": {"must": [{"match":{"_id": "%s" }}]}}}"""    
+    try:      
+      qget = qget % (d)
+      doc = es.search(index='whg', body=qget)['hits']['hits'][0]
+    except:
+      print('failed getting winner; winner_id, pid',winner_id, pid)
+      sys.exit(sys.exc_info())
+    srcd = doc['_source']
+    kids = srcd['children']
     # add this doc b/c it's now a kid
     kids.append(doc['_id'])
-    names = list(set(src['suggest']['input']))
+    names = list(set(srcd['suggest']['input']))
     
     # first update the 'winner' parent
     q=q_updatewinner(kids, names)
-    es.update(idx,winner_id,body=q,doc_type='place')
+    try:
+      es.update(idx,winner_id,body=q,doc_type='place')
+    except:
+      print('q_updatewinner failed (pid, winner_id)',pid,winner_id)
+      sys.exit(sys.exc_info())
 
-
-    q_demote = {"script":{
-      "source":"ctx._source.relation.name=params.name;ctx._source.relation.parent=params.parent",
-      "lang": "painless",
-      "params":{
-        "name":"child",
-        "parent": winner_id}
-    }}
-    q_demote_ubq = {"script": {
-      "source": """ctx._source.relation=params.relation;ctx._source.children=[];""", 
-      "lang": "painless", 
-      "params": {
-        "relation": {"name": "child", "parent": winner_id}
-      }, 
-      "query": {"match": {"_id": d}}}}
-    
-    # then modify and replace demoted
-    #es.update(idx, int(d), q_demote)
-    # Document mapping type name can't start with '_'
-    
-    es.update('whg', d, q_demote, doc_type='place')
-    # '[place][14156468]: document missing'
-    
-    es.update_by_query(idx, body=q_demote_ubq)
-    # 
-    
-    # delete, reindex approach
-    # update and update_by_query DO NOT work
+    # then modify copy of demoted,
+    # delete the old, index the new
     # --------------
-    #newsrc = deepcopy(src)
-    #newsrc['relation'] = {"name":"child","parent":winner_id}
-    #newsrc['children'] = []
-    #if 'whg_id' in newsrc:
-      #newsrc.pop('whg_id')
-    ## zap the old, index the modified
-    #es.delete('whg',winner_id,doc_type='place')
-    #es.index(index='whg',doc_type='place',id=d,body=newsrc,routing=1)
-    #es.index(index='whg',doc_type='place',id=winner_id,body=src_w)
+    newsrcd = deepcopy(srcd)
+    newsrcd['relation'] = {"name":"child","parent":winner_id}
+    newsrcd['children'] = []
+    if 'whg_id' in newsrcd:
+      newsrcd.pop('whg_id')
+    # zap the old demoted, index the modified
+    try:      
+      es.delete('whg', d, doc_type='place')
+      es.index(index='whg',doc_type='place',id=d,body=newsrcd,routing=1)
+    except:
+      print('reindex failed (pid, demoted)',pid,d)
+      sys.exit(sys.exc_info())
+
 
 def topParent(parents, form):
   #print('topParent():', parents)   
@@ -262,3 +250,29 @@ hl1 = [
   }
 ]
 
+    #q_demote = {"script":{
+      #"source":"ctx._source.relation.name=params.name;ctx._source.relation.parent=params.parent",
+      #"lang": "painless",
+      #"params":{
+        #"name":"child",
+        #"parent": winner_id}
+    #}}
+    #q_demote_ubq = {"script": {
+      #"source": """ctx._source.relation=params.relation;ctx._source.children=[];""", 
+      #"lang": "painless", 
+      #"params": {
+        #"relation": {"name": "child", "parent": winner_id}
+      #}, 
+      #"query": {"match": {"_id": d}}}}
+    
+    # then modify and replace demoted
+    #es.update(idx, int(d), q_demote)
+    # Document mapping type name can't start with '_'
+    
+    #es.update('whg', d, q_demote, doc_type='place')
+    # '[place][14156468]: document missing'
+    
+    #es.update_by_query(idx, body=q_demote_ubq)
+    # 
+    
+#es.index(index='whg',doc_type='place',id=winner_id,body=src_w)

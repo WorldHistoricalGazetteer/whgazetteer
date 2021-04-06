@@ -32,7 +32,7 @@ from datasets.static.hashes.parents import ccodes
 # NB these task names ARE in use; they are generated dynamically
 from datasets.tasks import align_tgn, align_whg, align_wd, align_wdlocal, align_idx, maxID
 from datasets.utils import *
-from es.es_utils import makeDoc,deleteFromIndex, replaceInIndex
+from elastic.es_utils import makeDoc,deleteFromIndex, replaceInIndex
 from main.choices import AUTHORITY_BASEURI
 from main.models import Log, Comment
 from places.models import *
@@ -144,7 +144,7 @@ def indexMatch(pid, hit_pid=None):
 
 """
 # review reconciliation results
-# called from detail#reconciliationp assnum links on 
+# called from detail#reconciliation passnum links on 
 # dataset pk, celery task_id
 # responds to GET for display, POST if 'save' button submits
 """
@@ -175,9 +175,7 @@ def review(request, pk, tid, passnum):
   
   # place_ids of unreviewed for passnum
   hitplaces = Hit.objects.values('place_id').filter(
-    task_id=tid,
-      reviewed=False,
-        query_pass=passnum)
+    task_id=tid, reviewed=False, query_pass=passnum)
   
   # if some are unreviewed, queue in record_list
   if len(hitplaces) > 0:
