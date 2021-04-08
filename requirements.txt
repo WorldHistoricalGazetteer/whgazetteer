@@ -29,7 +29,7 @@ cryptography==3.4.6
 datapackage==1.10.0
 decorator==4.3.0
 defusedxml==0.6.0
-Django==2.2.13
+Django==2.2.20
 django-allauth==0.44.0
 django-bootstrap-breadcrumbs==0.9.1
 django-bootstrap-modal-forms==1.4.1
