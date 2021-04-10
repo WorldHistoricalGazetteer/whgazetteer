@@ -827,19 +827,6 @@ class UpdateCountsView(View):
         "pass3":hits3 }
     return JsonResponse(updates, safe=False)
 
-# testy:
-#updates={}
-#for t in ds.tasks.all():
-  #hits0 = Hit.objects.filter(task_id=t.task_id,query_pass='pass0', reviewed=False).values("place_id_id").distinct().count()
-  #hits1 = Hit.objects.filter(task_id=t.task_id,query_pass='pass1', reviewed=False).values("place_id_id").distinct().count()
-  #hits2 = Hit.objects.filter(task_id=t.task_id,query_pass='pass2', reviewed=False).values("place_id_id").distinct().count()
-  #hits3 = Hit.objects.filter(task_id=t.task_id,query_pass='pass3', reviewed=False).values("place_id_id").distinct().count()
-  #sum = hits0+hits1+hits2+hits3
-  #updates[t.task_id] = {"total":sum, "pass0":hits0, "pass1":hits1, "pass2":hits2, "pass3":hits3 }
-#print(updates)
-#{'d2d3e236-ac7a-4a32-a34a-2e912ee3cf27': {'total': -1, 'pass0': 0, 'pass1': 0, 'pass2': 0, 'pass3': 117}, 
- #'e1cecae2-0f06-459b-afb2-1750c1009f9d': {'total': -1, 'pass0': 0, 'pass1': 0, 'pass2': 157, 'pass3': 0}
-#}  
 
 # ***
 # UPLOAD UTILS
