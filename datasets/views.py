@@ -28,7 +28,7 @@ from collection.models import Collection
 from datasets.forms import HitModelForm, DatasetDetailModelForm, DatasetCreateModelForm
 from datasets.models import Dataset, Hit, DatasetFile
 from datasets.static.hashes import mimetypes_plus as mthash_plus
-from datasets.static.hashes.parents import ccodes
+from datasets.static.hashes.parents import ccodes as cchash
 # NB these task names ARE in use; they are generated dynamically
 from datasets.tasks import align_tgn, align_whg, align_wd, align_wdlocal, align_idx, maxID
 from datasets.utils import *
@@ -188,6 +188,7 @@ def review(request, pk, tid, passnum):
       'passnum': passnum,
     }
     return render(request, 'datasets/review.html', context=context)
+    #return render(request, 'datasets/accession.html', context=context)
 
   # TODO: if 2 reviewers, save by one flags 
   # manage pagination & urls
@@ -209,8 +210,8 @@ def review(request, pk, tid, passnum):
   for r in place.ccodes:
     #print('r',r.upper())
     try:
-      countries.append(ccodes[0][r.upper()]['gnlabel']+
-                       ' ('+ccodes[0][r.upper()]['tgnlabel']+')')
+      countries.append(cchash[0][r.upper()]['gnlabel']+
+        ' ('+cchash[0][r.upper()]['tgnlabel']+')')
     except:
       pass
 
@@ -351,6 +352,7 @@ def review(request, pk, tid, passnum):
       #sys.exit(sys.exc_info())
 
   return render(request, 'datasets/review.html', context=context)
+  #return render(request, 'datasets/accession.html', context=context)
 
 """
 write_wd_pass0(taskid)
