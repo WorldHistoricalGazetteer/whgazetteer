@@ -191,7 +191,7 @@ class DatasetUser(models.Model):
 # 
 class Hit(models.Model):
   # FK to celery_results_task_result.task_id
-  place_id = models.ForeignKey(Place, on_delete=models.CASCADE)
+  place = models.ForeignKey(Place, on_delete=models.CASCADE)
   # task_id = models.ForeignKey(TaskResult, related_name='task_id', on_delete=models.CASCADE)
   task_id = models.CharField(max_length=50)
   authority = models.CharField(max_length=12, choices=AUTHORITIES )

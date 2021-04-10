@@ -193,8 +193,8 @@
                   {{ form.json.value|get:"types"}}
                 {% endif %}
 
-                {% if form.json.value|get:"ccodes"|length > 0 %} 
-                <p><strong>Countries</strong>: {{ form.json.value|get:"ccodes" }}</p>
+                {% if form.json.value|get:"countries"|length > 0 %} 
+                <p><strong>Countries</strong>: {{ form.json.value|get:"countries" }}</p>
                 {% endif %}
 
                 {% if form.json.value|get:"links"|length > 0 %} 

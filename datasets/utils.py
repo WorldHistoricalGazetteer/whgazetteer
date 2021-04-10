@@ -800,26 +800,6 @@ def post_recon_update(ds, user, task):
   print('post_recon_update() logobj',logobj)
 
 
-#class UpdateCountsView(View):
-  #""" Returns counts of unreviewed hits, per pass and total """
-  #@staticmethod
-  #def get(request):
-    #print('UpdateCountsView GET:',request.GET)
-    #"""
-    #args in request.GET:
-        #[integer] ds_id: dataset id
-    #"""
-    #ds = get_object_or_404(Dataset, id=request.GET.get('ds_id'))
-    #updates = {}
-    #for tid in list(ds.tasks.all().values_list('task_id',flat=True)):
-      #updates[tid] = {
-        #'pass0':len(Hit.objects.raw('select distinct on (place_id_id) place_id_id, id from hits where task_id = %s and query_pass=%s and reviewed=false',[tid,'pass0'])),
-        #'pass1':len(Hit.objects.raw('select distinct on (place_id_id) place_id_id, id from hits where task_id = %s and query_pass=%s and reviewed=false',[tid,'pass1'])),
-        #'pass2':len(Hit.objects.raw('select distinct on (place_id_id) place_id_id, id from hits where task_id = %s and query_pass=%s and reviewed=false',[tid,'pass2'])),
-        #'pass3':len(Hit.objects.raw('select distinct on (place_id_id) place_id_id, id from hits where task_id = %s and query_pass=%s and reviewed=false',[tid,'pass3']))
-      #}    
-    #return JsonResponse(updates, safe=False)
-
 # faster?, w/totals
 class UpdateCountsView(View):
   """ Returns counts of unreviewed hits, per pass and total """
@@ -833,10 +813,10 @@ class UpdateCountsView(View):
     ds = get_object_or_404(Dataset, id=request.GET.get('ds_id'))
     updates={}
     for t in ds.tasks.all():
-      hits0 = Hit.objects.filter(task_id=t.task_id,query_pass='pass0', reviewed=False).values("place_id_id").distinct().count()
-      hits1 = Hit.objects.filter(task_id=t.task_id,query_pass='pass1', reviewed=False).values("place_id_id").distinct().count()
-      hits2 = Hit.objects.filter(task_id=t.task_id,query_pass='pass2', reviewed=False).values("place_id_id").distinct().count()
-      hits3 = Hit.objects.filter(task_id=t.task_id,query_pass='pass3', reviewed=False).values("place_id_id").distinct().count()
+      hits0 = Hit.objects.filter(task_id=t.task_id,query_pass='pass0', reviewed=False).values("place_id").distinct().count()
+      hits1 = Hit.objects.filter(task_id=t.task_id,query_pass='pass1', reviewed=False).values("place_id").distinct().count()
+      hits2 = Hit.objects.filter(task_id=t.task_id,query_pass='pass2', reviewed=False).values("place_id").distinct().count()
+      hits3 = Hit.objects.filter(task_id=t.task_id,query_pass='pass3', reviewed=False).values("place_id").distinct().count()
       sum = hits0+hits1+hits2+hits3
       updates[t.task_id] = {
         "task":t.task_name,

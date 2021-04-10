@@ -30,13 +30,16 @@ def build_qobj(place):
   qobj['countries'] = list(set(place.ccodes))
 
   # types (Getty AAT identifiers)
+  # if no aat mappings (srcLabel only), make assumption
   for t in place.types.all():
-    if t.jsonb['identifier'] != None:
+    if t.jsonb['identifier'] not in ['', None]:
       types.append(t.jsonb['identifier'])
     else:
       # no type? use inhabited place, cultural group, site
       types.extend(['aat:300008347','aat:300387171','aat:300000809'])
-  qobj['placetypes'] = types
+      # add fclasses
+      qobj['fclasses'] = ['P','S']
+  qobj['placetypes'] = list(set(types))
 
   # variants
   for name in place.names.all():
@@ -387,33 +390,33 @@ def makeDoc(place,parentid):
   # TODO: remove parentid; used in early tests
   es_doc = {
     "relation": {},
-      "children": [],
-      "suggest": {"input":[]},
-      "place_id": place.id,
-      "dataset": place.dataset.label,
-      "src_id": place.src_id,
-      "title": place.title,
-      "uri": uriMaker(place),
-      "ccodes": place.ccodes,
-      "names": parsePlace(place,'names'),
-      "types": parsePlace(place,'types'),
-      "geoms": parsePlace(place,'geoms'),
-      "links": parsePlace(place,'links'),
-      # new, for index whg03
-      "fclasses": place.fclasses,
-      "timespans": [{"gte":t[0],"lte":t[1]} for t in place.timespans] if place.timespans not in [None,[]] else [],
-      "minmax": {"gte":place.minmax[0],"lte":place.minmax[1]} if place.minmax not in [None,[]] else [],
-      "descriptions": parsePlace(place,'descriptions'),
-      "depictions": parsePlace(place,'depictions'), 
-      "relations": parsePlace(place,'related'),
-      "searchy": []
+    "children": [],
+    "suggest": {"input":[]},
+    "place_id": place.id,
+    "dataset": place.dataset.label,
+    "src_id": place.src_id,
+    "title": place.title,
+    "uri": uriMaker(place),
+    "ccodes": place.ccodes,
+    "names": parsePlace(place,'names'),
+    "types": parsePlace(place,'types'),
+    "geoms": parsePlace(place,'geoms'),
+    "links": parsePlace(place,'links'),
+    # new, for index whg03
+    "fclasses": place.fclasses,
+    "timespans": [{"gte":t[0],"lte":t[1]} for t in place.timespans] if place.timespans not in [None,[]] else [],
+    "minmax": {"gte":place.minmax[0],"lte":place.minmax[1]} if place.minmax not in [None,[]] else [],
+    "descriptions": parsePlace(place,'descriptions'),
+    "depictions": parsePlace(place,'depictions'), 
+    "relations": parsePlace(place,'related'),
+    "searchy": []
   }
   return es_doc
 
 # ***
 # fill ES doc arrays from database jsonb objects
 # ***
-def parsePlace(place,attr):
+def parsePlace(place, attr):
   qs = eval('place.'+attr+'.all()')
   arr = []
   for obj in qs:

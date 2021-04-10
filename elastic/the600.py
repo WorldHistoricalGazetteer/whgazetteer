@@ -54,7 +54,7 @@ def add_black(pk, *args, **kwargs):
   start = datetime.datetime.now()
   skipped=[]
   #one-time filter for black atlas children
-  black_dupes = [h.place_id_id for h in Hit.objects.distinct('place_id_id').filter(task_id='a102377e-4645-4c2d-a932-b530994da2ba')]
+  black_dupes = [h.place_id for h in Hit.objects.distinct('place_id').filter(task_id='a102377e-4645-4c2d-a932-b530994da2ba')]
   qs = ds.places.all().filter(id__in=black_dupes)
   for place in qs:
     count+=1

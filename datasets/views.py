@@ -59,7 +59,7 @@ def link_uri(auth,id):
   return uri
 
 # from datasets.views.review()
-# indexes a db record
+# indexes a db record upon match reviewing align_idx hits
 # if close or exact -> if match is parent -> make child else if match is child -> make sibling
 def indexMatch(pid, hit_pid=None):
   print('indexMatch(): pid '+str(pid)+'w/hit_pid '+str(hit_pid))
@@ -152,7 +152,7 @@ def review(request, pk, tid, passnum):
   ds = get_object_or_404(Dataset, id=pk)
   task = get_object_or_404(TaskResult, task_id=tid)
   auth = task.task_name[6:].replace('local','')
-  authname = 'Wikidata' if auth == 'wd' else 'Getty TGN'
+  authname = 'Wikidata' if auth == 'wd' else 'Getty TGN' if auth == 'tgn' else 'WHG'
   kwargs=json.loads(task.task_kwargs.replace("'",'"'))
   print('request.POST in review()', request.POST)
   
@@ -199,10 +199,10 @@ def review(request, pk, tid, passnum):
   placeid = records[0].id
   place = get_object_or_404(Place, id=placeid)
   print('reviewing hits for place', records[0])
-  print('existing links:', records[0].links.all())
+  #print('existing links:', records[0].links.all())
   # recon task hits for current place
   raw_hits = Hit.objects.all().filter(place_id=placeid, task_id=tid).order_by('query_pass','-score')
-
+  print('raw_hits for '+str(records[0]), raw_hits)
   # convert ccodes to names
   countries = []
   #for r in records[0].ccodes:
@@ -214,6 +214,9 @@ def review(request, pk, tid, passnum):
     except:
       pass
 
+
+  # TODO: if auth in ['whg','idx], group children within parents
+  
   # prep some context
   context = {
     'ds_id': pk, 'ds_label': ds.label, 'task_id': tid,
@@ -2261,8 +2264,8 @@ def match_undo(request, ds, tid, pid):
   link_matches = PlaceLink.objects.all().filter(task_id=tid, place_id=pid)
   geom_matches.delete()
   link_matches.delete()
-  # match task_id, place_id_id in hits; set reviewed = false
-  Hit.objects.filter(task_id=tid, place_id_id=pid).update(reviewed=False)
+  # match task_id, place_id in hits; set reviewed = false
+  Hit.objects.filter(task_id=tid, place_id=pid).update(reviewed=False)
   return redirect('/datasets/'+str(ds)+'/review/'+tid+'/pass1')
  # /datasets/1/review/d6ad4289-cae6-476d-873c-a81fed4d6315/pass1
  

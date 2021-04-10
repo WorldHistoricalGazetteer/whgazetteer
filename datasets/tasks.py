@@ -17,7 +17,7 @@ from areas.models import Area
 from elastic.es_utils import makeDoc
 from datasets.models import Dataset, Hit
 #from datasets.static.regions import regions as region_hash
-from datasets.static.hashes.parents import ccodes
+from datasets.static.hashes.parents import ccodes as cchash
 from datasets.static.hashes.qtypes import qtypes
 from datasets.utils import *
 from places.models import Place
@@ -122,7 +122,7 @@ def ccDecode(codes):
   countries=[]
   #print('codes in ccDecode',codes)
   for c in codes:
-    countries.append(ccodes[0][c]['gnlabel'])
+    countries.append(cchash[0][c]['gnlabel'])
   return countries
   
 # generate a language-dependent {name} ({en}) from wikidata variants
@@ -171,13 +171,13 @@ def normalize(h, auth, language=None):
     
     # add elements if non-empty in index record
     rec.variants = [n['toponym'] for n in h['names']] # always >=1 names
-    # TODO: grungy hack b/c index has both src_label and sourceLabel
+    # TODO: fix grungy hack (index has both src_label and sourceLabel)
     key = 'src_label' if 'src_label' in h['types'][0] else 'sourceLabel'      
     rec.types = [t['label']+' ('+t[key]  +')' if t['label']!=None else t[key] \
                 for t in h['types']] if len(h['types']) > 0 else []
     # TODO: rewrite ccDecode to handle all conditions coming from index
     # ccodes might be [] or [''] or ['ZZ', ...]
-    rec.ccodes = ccDecode(h['ccodes']) if ('ccodes' in h.keys() and (len(h['ccodes']) > 0 and h['ccodes'][0] !='')) else []
+    rec.countries = ccDecode(h['ccodes']) if ('ccodes' in h.keys() and (len(h['ccodes']) > 0 and h['ccodes'][0] !='')) else []
     rec.parents = ['partOf: '+r.label+' ('+parseWhen(r['when']['timespans'])+')' for r in h['relations']] \
                 if 'relations' in h.keys() and len(h['relations']) > 0 else []
     rec.descriptions = h['descriptions'] if len(h['descriptions']) > 0 else []
@@ -1121,7 +1121,7 @@ def align_wdlocal(pk, **kwargs):
 
   # queryset depends on choice of scope in addtask form
   # 
-  pids = Hit.objects.filter(dataset_id=pk, authority ='wd',reviewed=False).values_list('place_id_id',flat=True)
+  pids = Hit.objects.filter(dataset_id=pk, authority ='wd',reviewed=False).values_list('place_id',flat=True)
   if scope == 'unreviewed':
     qs = ds.places.filter(id__in=pids)
   elif scope == 'all':
@@ -1487,7 +1487,6 @@ def align_whg(pk, *args, **kwargs):
           
           # for review display
           # TODO; tailor for whg case
-          # add _score, _id
           json = normalize(hit,'whg'),
           
           src_id = qobj['src_id'],
