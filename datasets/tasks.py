@@ -153,8 +153,7 @@ def normalize(h, auth, language=None):
     # for whg h is full hit, not only _source
     hit = deepcopy(h)
     h = hit['_source']
-    _score = hit['_score']
-    _id = hit['_id']
+    #_id = hit['_id']
     # build a json object, for Hit.json field
     rec = HitRecord(
       h['place_id'], 
@@ -163,7 +162,8 @@ def normalize(h, auth, language=None):
       h['title']
     )
     print('"rec" HitRecord',rec)
-    rec.score = _score
+    rec.score = hit['_score']
+    rec.passnum = hit['pass'][:5]
     
     # only parents have whg_id
     if 'whg_id' in h:
@@ -190,6 +190,7 @@ def normalize(h, auth, language=None):
       if len(h['geoms'])>0 else []   
     
     rec.minmax = dict(sorted(h['minmax'].items(),reverse=True)) if len(h['minmax']) > 0 else []
+    
     # TODO: deal with whens
     #rec.whens = [parseWhen(t) for t in h['timespans']] \
                 #if len(h['timespans']) > 0 else []

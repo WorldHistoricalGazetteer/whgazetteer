@@ -152,7 +152,8 @@ def review(request, pk, tid, passnum):
   ds = get_object_or_404(Dataset, id=pk)
   task = get_object_or_404(TaskResult, task_id=tid)
   auth = task.task_name[6:].replace('local','')
-  authname = 'Wikidata' if auth == 'wd' else 'Getty TGN' if auth == 'tgn' else 'WHG'
+  authname = 'Wikidata' if auth == 'wd' else 'Getty TGN' \
+    if auth == 'tgn' else 'WHG'
   kwargs=json.loads(task.task_kwargs.replace("'",'"'))
   print('request.POST in review()', request.POST)
   
@@ -173,10 +174,14 @@ def review(request, pk, tid, passnum):
   pass_int = int(passnum[4])
   passnum = passnum if cnt_pass > 0 else 'pass'+str(pass_int+1)
   
-  # place_ids of unreviewed for passnum
-  hitplaces = Hit.objects.values('place_id').filter(
-    task_id=tid, reviewed=False, query_pass=passnum)
-  
+  # if whg or idx, no pass filter & accession.html for review
+  if auth in ['whg','idx']:
+    hitplaces = Hit.objects.values('place_id').filter(task_id=tid, reviewed=False)
+    review_page = 'accession.html'
+  else:
+    hitplaces = Hit.objects.values('place_id').filter(task_id=tid, reviewed=False, query_pass=passnum)
+    review_page = 'review.html'
+    
   # if some are unreviewed, queue in record_list
   if len(hitplaces) > 0:
     record_list = Place.objects.order_by('id').filter(pk__in=hitplaces)
@@ -187,8 +192,7 @@ def review(request, pk, tid, passnum):
       'task_id': tid, 
       'passnum': passnum,
     }
-    return render(request, 'datasets/review.html', context=context)
-    #return render(request, 'datasets/accession.html', context=context)
+    return render(request, 'datasets/'+review_page, context=context)
 
   # TODO: if 2 reviewers, save by one flags 
   # manage pagination & urls
@@ -351,8 +355,7 @@ def review(request, pk, tid, passnum):
     #except:
       #sys.exit(sys.exc_info())
 
-  return render(request, 'datasets/review.html', context=context)
-  #return render(request, 'datasets/accession.html', context=context)
+  return render(request, 'datasets/'+review_page, context=context)
 
 """
 write_wd_pass0(taskid)

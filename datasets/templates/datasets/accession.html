@@ -19,16 +19,16 @@
   <h5 class="mb-2 mt-3">{% if authority == 'idx' %}Accessioning{%else%}Reconciliation{%endif%} Review: 
     <span class="small"> <a href="{% url 'datasets:dataset-detail' id=ds_id %}"> 
       {{ ds_label }}</a> {% if authority != 'whg' %}> {{ authority }} {%endif%}
-      <select id="select_pass" name="pass" class="custom-select-sm mr-2" style="width:auto;">
-        {% if count_pass0 > 0 %}
-        <option value="pass0">PASS 0 (auto-matched)&nbsp;</option>{% endif %}
-        {% if count_pass1 > 0 %}
-          <option value="pass1">PASS 1&nbsp;</option>{% endif %}
-        {% if count_pass2 > 0 %}
-          <option value="pass2">PASS 2&nbsp;</option>{% endif %}
-        {% if authority == 'tgn' and count_pass3 > 0 %}
-          <option value="pass3">PASS 3&nbsp;</option>{% endif %}
-      </select>
+      <!--<select id="select_pass" name="pass" class="custom-select-sm mr-2" style="width:auto;">-->
+        <!--{ if count_pass0 > 0 %}-->
+        <!--<option value="pass0">PASS 0 (auto-matched)&nbsp;</option>{ endif %}-->
+        <!--{ if count_pass1 > 0 %}-->
+          <!--<option value="pass1">PASS 1&nbsp;</option>{ endif %}-->
+        <!--{ if count_pass2 > 0 %}-->
+          <!--<option value="pass2">PASS 2&nbsp;</option>{ endif %}-->
+        <!--{ if authority == 'tgn' and count_pass3 > 0 %}-->
+          <!--<option value="pass3">PASS 3&nbsp;</option>{ endif %}-->
+      <!--</select>-->
     </span>
     <span class="half float-right">
       task id: {{ task_id }} (+links{% if aug_geom == 'on' %}+geom{% endif %})
@@ -150,7 +150,6 @@
                       class="create-comment btn btn-sm" style="background-color:oldlace;">
                     {% fontawesome_icon 'edit' color='#336699' %}</button>
                   {% endif %}
-                  {{ form.json.value|get:"whg_id" }}
                   </span>
                 </div>
               </div>
@@ -208,13 +207,20 @@
                   <p><strong>Temporal attestations</strong>: 
                   {{ form.json.value|get:"minmax" }}</p>
                 {% endif %}
+                
                 {% if form.json.value|get:"descriptions"|length > 0 %} 
-                <!--{ if form.json.value|get:"descriptions" != null %} -->
                   <p class="mb-0"><strong>Description(s)</strong>:</p> 
-                  <div class="attest-element abbrev">
+                  <div>
                   {% for d in form.json.value|get:"descriptions" %}
                     <p>({{d.lang}}) {{ d.text }}</p>{% endfor %}
                   </div>
+                {% endif %}
+                
+                {% if form.json.value|get:"children"|length > 0 %}
+                  <p class="mb-0"><strong>Linked attestations</strong>:
+                  {% for kid in form.json.value|get:"children" %}
+                    {{ kid.dataset }}: {{ kid.place_id }}
+                  {% endfor %}</p> 
                 {% endif %}
               </div>
             {% endfor %}
