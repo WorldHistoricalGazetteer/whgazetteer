@@ -156,6 +156,7 @@ def review(request, pk, tid, passnum):
     if auth == 'tgn' else 'WHG'
   kwargs=json.loads(task.task_kwargs.replace("'",'"'))
   print('request.POST in review()', request.POST)
+  print('passnum in review()',passnum)
   
   # filter place records by passnum for those with unreviewed hits on this task
   # if request passnum is complete, increment

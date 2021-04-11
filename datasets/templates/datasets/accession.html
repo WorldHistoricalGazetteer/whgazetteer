@@ -16,9 +16,8 @@
 {% block content %}
 <div class="container">
   <!-- incoming: ds, hit_list -->
-  <h5 class="mb-2 mt-3">{% if authority == 'idx' %}Accessioning{%else%}Reconciliation{%endif%} Review: 
-    <span class="small"> <a href="{% url 'datasets:dataset-detail' id=ds_id %}"> 
-      {{ ds_label }}</a> {% if authority != 'whg' %}> {{ authority }} {%endif%}
+  <h5 class="mb-2 mt-3">{% if authority == 'idx' %}Accessioning{%else%}Reconciliation{%endif%} Review <span class="help" data-id="accessioning">{% fontawesome_icon 'question-circle' color='#993333' %}</span> 
+    <span class="small ml-3"> <i>dataset</i>: <a href="{% url 'datasets:dataset-detail' id=ds_id %}"> {{ ds_label }}</a>
       <!--<select id="select_pass" name="pass" class="custom-select-sm mr-2" style="width:auto;">-->
         <!--{ if count_pass0 > 0 %}-->
         <!--<option value="pass0">PASS 0 (auto-matched)&nbsp;</option>{ endif %}-->
@@ -30,9 +29,7 @@
           <!--<option value="pass3">PASS 3&nbsp;</option>{ endif %}-->
       <!--</select>-->
     </span>
-    <span class="half float-right">
-      task id: {{ task_id }} (+links{% if aug_geom == 'on' %}+geom{% endif %})
-    </span>
+    <span class="half float-right mr-2"><i>task id</i>: {{ task_id }}</span>
   </h5>
   {% if nohits %}
     <div>
@@ -143,7 +140,10 @@
                     </span>
                   {% endif %}
                   <span class="inline">{{ form.match }}</span>
-                  <span class="help-matches" data-id="matches">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
+                  <span class="help" data-id="matches">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
+                  {% if form.json.value|get:"children" %}
+                  <span class="float-right mr-1">{{ form.json.value|get:"children"|length|add:1 }} linked attestations {% fontawesome_icon 'link' %}</span>
+                  {% endif %}
                   {% if authority == 'whg' %}
                     <button type="button" 
                       data-id="{{ form.json.value|get:"place_id" }}" 
@@ -161,16 +161,15 @@
                     {{ g|safe|json_script:g.id }}
                   {% endfor %}
                 {% endif %}
-                <!--{ form.json.value }}-->
                 <p><strong>Title/Preferred</strong>: <span class="text-danger h6">{{ form.json.value|get:"title" }}</p>
-                {% if authority|startswith:'whg' %}
-                  <p><strong>WHG place id</strong>: {{ form.json.value|get:"place_id" }}</p> 
+                {% if authority|startswith:'idx' %}
+                  <p><strong>WHG index id</strong>: {{ form.json.value|get:"whg_id" }}</p> 
                   <p><strong>Source (id)</strong>: {{ form.json.value|get:"dataset" }} ({{ form.json.value|get:"src_id" }})</p>
                 {% else %}
                   {% if authority|startswith:"wd" %}
-                  <p><strong>Wikidata ID</strong>: 
+                  <p><strong>Wikidata id</strong>: 
                   {% else %}
-                  <p><strong>{{ authority|upper }} ID</strong>: 
+                  <p><strong>TGN id</strong>: 
                   {% endif %}
                   <a href="" data-auth={{authority}} class="mr-2 ext-recon" >{{ form.authrecord_id.value }}</a>{% fontawesome_icon 'external-link' color='#336699' %}
                   </p>
@@ -240,7 +239,7 @@
 <script type="text/javascript">
   // capture pid for place just reviewed
   // https://catalogue.bnf.fr/ark:/12148/cb11942741p
-  $(".help-matches").click(function(){
+  $(".help").click(function(){
     page=$(this).data('id')
     $('.selector').dialog('open');
   })

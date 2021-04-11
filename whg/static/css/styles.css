@@ -54,7 +54,7 @@ label {vertical-align:top;}
 .checkbox-inline {margin-right:.3rem;}
 .dashedbox {border:1px dashed #ccc; border-radius:8px; }
 .fa-search, .fa-times {color:#999; }
-.half { font-size: .7em; font-style: italic; margin-top:.6em;}
+.half { font-size: .7em; margin-top:.6em;}
 .h2em { height: 2em; }
 .h1em { height: 1em; }
 .hang {
@@ -419,11 +419,16 @@ em { color: #993333;}
   font-weight: bold;
   color: firebrick;
 }
+.auth-match {
+  border-bottom: 1px dashed lightgrey; 
+  border-left: 1px dashed lightgrey; 
+  padding-bottom: .5rem;}
 .auth-match p {font-size: small; margin-bottom: .4rem;}
 .globeflash {
-  padding-top:3px; padding-bottom:6px; padding-right:3px; 
+  padding-top:2px; padding-bottom:7px; padding-right:3px; 
   background-color:gold;
 }
+.help {vertical-align:text-top;}
 .help-matches:hover { cursor:pointer;}
 #map_review {z-index:0 !important;}
 .ui-dialog {z-index:1001 !important}
@@ -442,7 +447,7 @@ em { color: #993333;}
 .notefield {  height:100;  display: none;}
 .noteicon {margin-left: 4px;}
 .noteicon:hover {cursor: pointer;}
-.inline {display:inline-block;}
+.inline {display:inline-block; vertical-align: text-top;}
 .inline ul {margin-bottom:0;}
 
 
@@ -580,7 +585,10 @@ em { color: #993333;}
 }
 .pagination {
   background-color: #eee;
-}
+} 
+.pagination-accession {
+  background-color: #efe0e0;
+} 
 
 
 /*#id_uri_base{width: 300px;}*/

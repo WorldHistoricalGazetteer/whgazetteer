@@ -206,9 +206,9 @@ def normalize(h, auth, language=None):
           loc["id"]=h['place']['value'][31:]
           loc['ds']='wd'
           locs.append(loc)
-      if 'links' in h.keys():
-        for l in h['links']:
-          links.append('closeMatch: '+l)
+      #if 'links' in h.keys():
+        #for l in h['links']:
+          #links.append('closeMatch: '+l)
       #  place_id, dataset, src_id, title
       rec = HitRecord(-1, 'wd', h['place']['value'][31:], h['placeLabel']['value'])
       print('"rec" HitRecord',rec)      
@@ -258,7 +258,8 @@ def normalize(h, auth, language=None):
         set(h['claims'].keys()) & set(qlinks.keys()))
       if len(hlinks) > 0:
         for l in hlinks:
-          links.append('closeMatch: '+qlinks[l]+':'+str(h['claims'][l][0]))
+          #links.append('closeMatch: '+qlinks[l]+':'+str(h['claims'][l][0]))
+          links.append(qlinks[l]+':'+str(h['claims'][l][0]))
 
       # add en and FIRST {language} wikipedia sitelink OR first sitelink
       wplinks = []

@@ -309,11 +309,11 @@
             <div class="col-sm-5">
               <p><b>Result</b>: {{ t.result|get:"got_hits"|safe }} records (of {{ t.result|get:"count"|safe }}) got total of <b>{{ t.result|get:"total"|safe }}</b> hits</p>
               <!--{ t.result }}-->
-              {% if not t.task_name == 'align_idx' %}
               <p class="mb-0 ital">Remaining to review:</p>
+              {% if not t.task_name == 'align_idx' %}
               <ul>
                 {% if t.result|get:"pass0" > 0 %}
-                  <li id="pass0_{{t.task_id}}"  class="li-left">Pass 0 (matched links): <span class="mx-2 strong" id='{{t.task_id}}_0'>nn</span> 
+                  <li id="pass0_{{t.task_id}}" class="li-left">Pass 0 (matched links): <span class="mx-2 strong" id='{{t.task_id}}_0'>nn</span> 
                   <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass0' %}">
                    review</i></a> 
                    <span>| <a href="{% url 'datasets:wd_pass0' tid=t.task_id %}">auto-accept</a>  
@@ -339,7 +339,11 @@
                 {% endif %}
               </ul> 
               {% else %}
-                <p><a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass0' %}">Review candidate matches</a></p>
+                <ul>
+                {% if t.result|get:"pass0" > 0 %}
+                <li id="pass0_{{t.task_id}}" class="li-left">Pass 0: <span class="mx-2 strong" id='{{t.task_id}}_0'>nn</span><a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass0' %}">review</a></li>
+                {% endif %}
+                </ul>
               {% endif %}
             </div>
             <div class="col-sm-2">
@@ -492,12 +496,6 @@
             </div>
             {% endif %}
           </div>
-<!--           <div class="form-check">
-            <label class="form-check-label" for="r_wd">
-              <input type="radio" class="form-check-input r_wd" id="r_wd" name="recon" value="wd" >Wikidata remote sparql (wd) <span class="ml-2 text-danger small">estimated time: { ds.numrows|time_estimate_sparql }}</span>
-            </label>
-          </div>-->
-          <!-- { if beta_or_better %}-->
           <div class="form-check">
             <label class="form-check-label" for="r_wdlocal">
               <input type="radio" class="form-check-input r_wd" id="r_wdlocal" 
