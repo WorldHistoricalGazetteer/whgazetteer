@@ -474,7 +474,6 @@
           {% endif %}
           <p class="font-weight-bold mb-0">Name authority source</p>
           <p class="small">Your task will enter a queue and email notification sent when completed. 
-          <!--<br/>The <b>{ ds.numrows }}</b> records in this dataset will take <b>{ ds.numrows|time_estimate }}</b>.-->
           </p>
           <div class="form-check">
             <label class="form-check-label" for="r_tgn">
@@ -504,7 +503,7 @@
           <div class="form-check">
             <label class="form-check-label" for="r_wdlocal">
               <input type="radio" class="form-check-input r_wd" id="r_wdlocal" 
-                name="recon" value="wdlocal" checked>Wikidata local (BETA) <span class="ml-2 text-danger small">estimated time: {{ ds.numrows|time_estimate }}</span>
+                name="recon" value="wdlocal" checked>Wikidata local (wdlocal) <span class="ml-2 text-danger small">estimated time: {{ ds.numrows|time_estimate }}</span>
             </label>
             <!--{ds.taskstats }}-->
             {% if ds.taskstats.align_wdlocal|length > 0 %}

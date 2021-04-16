@@ -1,9 +1,16 @@
 # es_utils.py rev. Mar 2021; rev. Mar 2020; rev. 02 Oct 2019; rev 5 Mar 2019; created 7 Feb 2019;
 # misc elasticsearch supporting tasks 
-from django.shortcuts import get_object_or_404
+#from django.shortcuts import get_object_or_404
 from places.models import Place
+#from datasets.tasks import ccDecode
 #from datasets.utils import hully
-
+from datasets.static.hashes.parents import ccodes as cchash
+def ccDecode(codes):
+  countries=[]
+  #print('codes in ccDecode',codes)
+  for c in codes:
+    countries.append(cchash[0][c]['gnlabel'])
+  return countries
 
 """
 build query object qobj
@@ -61,6 +68,38 @@ def build_qobj(place):
 
   return qobj
 
+
+"""
+summarize a WHG hit for analysis
+"""
+def profileHit(hit):
+  #print('_source keys',hit['_source'].keys())
+  _id = hit['_id']
+  src = hit['_source']
+  pid = src['place_id']
+  
+  relation = src['relation']
+  profile = {
+    '_id':_id,'pid':pid,'title':src['title'],
+    'pass': hit['pass'], 'role':relation['name'],
+    'dataset':src['dataset'],
+    'score':hit['_score']
+  }
+  profile['parent'] = relation['parent'] if \
+    relation['name']=='child' else None
+  profile['children'] = src['children'] if \
+    relation['name']=='parent' else None
+  profile['minmax'] = [src['minmax']['gte'],src['minmax']['lte']] if type(src['minmax']) == dict else None
+  profile['links'] = [l['identifier'] for l in src['links']]\
+    if len(src['links'])>0 else None
+  profile['countries'] = ccDecode(src['ccodes'])
+  profile['variants'] = [n['toponym'] for n in src['names']]
+  profile['types'] = [t['sourceLabel'] for t in src['types']]
+  if len(src['descriptions']) > 0:
+    profile['descriptions'] = [d['value'] for d in src['descriptions']]
+  profile['geoms'] = [{'id':pid, 'ds':src['dataset'], 'coordinates':g['location']['coordinates'], 'type':g['location']['type']} for g in src['geoms']]
+  
+  return profile
 
 # ***
 # index docs given place_id list
@@ -386,8 +425,7 @@ def uriMaker(place):
 # make an ES doc from a Place instance
 # called from ALL indexing functions (initial and updates)
 # ***
-def makeDoc(place,parentid):
-  # TODO: remove parentid; used in early tests
+def makeDoc(place):
   es_doc = {
     "relation": {},
     "children": [],

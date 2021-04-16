@@ -463,9 +463,11 @@ def write_wd_pass0(request, tid):
   return redirect('/datasets/'+str(ds.id)+'/detail#reconciliation')
   
 """
-# initiate, monitor Celery tasks
-# from dataset.html form addtask tab
-#
+# initiate, monitor Celery tasks against Elasticsearch indexes
+# i.e. align_[wdlocal | tgn | idx | whg ] in tasks.py
+# url: datasets/{ds.id}/recon (datasets.html#addtask)
+# params: pk (dataset id), auth, region, userarea, geom, scope
+# each align_{auth} task runs matching es_lookup_{auth}() and writes Hit instances
 """
 def ds_recon(request, pk):
   ds = get_object_or_404(Dataset, id=pk)
@@ -479,9 +481,11 @@ def ds_recon(request, pk):
     print('ds_recon() request.POST:',request.POST)
     auth = request.POST['recon']
     language = request.LANGUAGE_CODE
-    # what task? wd, wdlocal, whg, tgn, idx
+    
+    # which task? wdlocal, tgn, idx, wd, whg
     func = eval('align_'+auth)
-    # TODO: let this vary per authority?
+    
+    # TODO: let this vary per task?
     region = request.POST['region'] # pre-defined UN regions
     userarea = request.POST['userarea'] # from ccodes, or drawn
     aug_geom = request.POST['geom'] if 'geom' in request.POST else '' # on == write geom if matched
@@ -491,14 +495,15 @@ def ds_recon(request, pk):
       "id": [region if region !="0" else userarea]}
     scope = request.POST['scope'] if 'scope' in request.POST else 'all'
 
+    # check Celery service
     if not celeryUp():
       print('Celery is down :^(')
       emailer('Celery is down :^(','if not celeryUp() -- look into it, bub!')
       messages.add_message(request, messages.INFO, "Sorry! WHG reconciliation services appears to be down. The system administrator has been notified.")
       return redirect('/datasets/'+str(ds.id)+'/detail#reconciliation')
       
-    # run celery/redis tasks 
-    # e.g. align_[wdlocal | tgn | whg | idx | align_wd]
+    # initiate celery/redis task
+    # 'func' == align_[wdlocal | tgn | idx | whg ]
     try:      
       result = func.delay(
         ds.id,
