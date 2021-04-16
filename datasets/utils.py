@@ -811,6 +811,7 @@ class UpdateCountsView(View):
         [integer] ds_id: dataset id
     """
     ds = get_object_or_404(Dataset, id=request.GET.get('ds_id'))
+    #ds = get_object_or_404(Dataset, id=dsid)
     updates={}
     for t in ds.tasks.all():
       hits0 = Hit.objects.filter(task_id=t.task_id,query_pass='pass0', reviewed=False).values("place_id").distinct().count()

@@ -9,6 +9,7 @@ def time_estimate(numrows):
     seconds = round(numrows/3)
     return 'about '+str(round(seconds/60))+' minute(s)' \
            if seconds >= 60 else 'under 1 minute'
+
 @register.filter
 def time_estimate_sparql(numrows):
     seconds = numrows
@@ -30,7 +31,6 @@ def haskey(objlist, arg):
     return any(arg in x for x in objlist)
 
 @register.filter
-#@register.filter('startswith')
 def startswith(text, starts):
     if isinstance(text, str):
         return text.startswith(starts)
@@ -50,6 +50,13 @@ def parsejson(value,key):
     """returns value for given key"""
     obj = json.loads(value.replace("'",'"'))
     return obj[key]
+
+@register.filter
+def join(value,delimit):
+    """joins list/array items"""
+    if type(value[0]) == int:
+        value=map(str,value)
+    return delimit.join(value)
 
 @register.filter
 def parsedict(value,key):

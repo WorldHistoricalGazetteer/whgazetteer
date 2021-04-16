@@ -18,16 +18,16 @@
   <!-- incoming: ds, hit_list -->
   <h5 class="mb-2 mt-3">{% if authority == 'idx' %}Accessioning{%else%}Reconciliation{%endif%} Review <span class="help" data-id="accessioning">{% fontawesome_icon 'question-circle' color='#993333' %}</span> 
     <span class="small ml-3"> <i>dataset</i>: <a href="{% url 'datasets:dataset-detail' id=ds_id %}"> {{ ds_label }}</a>
-      <!--<select id="select_pass" name="pass" class="custom-select-sm mr-2" style="width:auto;">-->
-        <!--{ if count_pass0 > 0 %}-->
-        <!--<option value="pass0">PASS 0 (auto-matched)&nbsp;</option>{ endif %}-->
-        <!--{ if count_pass1 > 0 %}-->
-          <!--<option value="pass1">PASS 1&nbsp;</option>{ endif %}-->
-        <!--{ if count_pass2 > 0 %}-->
+      <select id="select_pass" name="pass" class="custom-select-sm mr-2" style="width:auto;">
+        { if count_pass0 > 0 %}
+        <option value="pass0">PASS 0 (auto-matched)&nbsp;</option>{ endif %}
+        { if count_pass1 > 0 %}
+          <option value="pass1">PASS 1&nbsp;</option>{ endif %}
+        { if count_pass2 > 0 %}
           <!--<option value="pass2">PASS 2&nbsp;</option>{ endif %}-->
         <!--{ if authority == 'tgn' and count_pass3 > 0 %}-->
           <!--<option value="pass3">PASS 3&nbsp;</option>{ endif %}-->
-      <!--</select>-->
+      </select>
     </span>
     <span class="half float-right mr-2"><i>task id</i>: {{ task_id }}</span>
   </h5>
@@ -65,12 +65,17 @@
       </div>
       <div class="row mt-2">
         <div id="review_record" class="col-sm-4 pl-0 small">
-          <div class="bg-secondary font-weight-bold pl-2 text-light">{{ dataset_label }}</div>
+          <div class="bg-secondary font-weight-bold pl-2 text-light">
+            {{ dataset_label }}</div>
           <div id="place_record" class="mb-2">
             <div>
               <input type="hidden" name="place_id" value="{{ record.id }}" />
               <span>
                 <h4 class="text-danger">{{ record.title }}
+                  {% if record.geoms %}
+                  <span class="ml-2"><svg height="18" width="18">
+                    <circle cx="9" cy="8" r="7" stroke="grey" stroke-width="1" fill="green" fill-opacity="0.4"/>
+                  </svg></span>{% endif %}
                   <span class="float-right">
                     <button type="button" data-id="{{ record.id }}" class="create-comment btn"
                       data-src='record'> {% fontawesome_icon 'edit' color='#336699' %}</button>
@@ -109,13 +114,14 @@
                 <a href="" class="mr-2 ext" data-toggle="modal" data-target="#ext_site">{{ link.jsonb.identifier }} {% fontawesome_icon 'external-link' color='#336699' %}</a>
               {% endfor %}</p>
             {% endif %}
-          </div>
+          </div> <!-- place_record -->
           <div id="map">
             {% leaflet_map "map_review" callback="map_init" %}
           </div>
         </div>
         <!--available: ['whg_id', 'place_id', 'src_id', 'title', 'dataset', 'variants', 'types', 'ccodes', 'parents', 'descriptions', 'geoms', 'timespans', 'links']-->
         <div id="review_list" class="col-sm-8 pr-0">
+            <!--<p>formset length: { formset|length }}</p>-->
             {% for form in formset %}
               <input type="hidden" name="id" value='{{ form.id.value }}'></input>
               <input type="hidden" name="authrecord_id" value='{{ form.authrecord_id.value }}'></input>
@@ -141,8 +147,8 @@
                   {% endif %}
                   <span class="inline">{{ form.match }}</span>
                   <span class="help" data-id="matches">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
-                  {% if form.json.value|get:"children" %}
-                  <span class="float-right mr-1">{{ form.json.value|get:"children"|length|add:1 }} linked attestations {% fontawesome_icon 'link' %}</span>
+                  {% if form.json.value|get:"sources" %}
+                  <span class="float-right mr-1 mt-1 smaller">{{ form.json.value|get:"sources"|length }} linked records {% fontawesome_icon 'link' %}</span>
                   {% endif %}
                   {% if authority == 'whg' %}
                     <button type="button" 
@@ -161,66 +167,47 @@
                     {{ g|safe|json_script:g.id }}
                   {% endfor %}
                 {% endif %}
-                <p><strong>Title/Preferred</strong>: <span class="text-danger h6">{{ form.json.value|get:"title" }}</p>
-                {% if authority|startswith:'idx' %}
-                  <p><strong>WHG index id</strong>: {{ form.json.value|get:"whg_id" }}</p> 
-                  <p><strong>Source (id)</strong>: {{ form.json.value|get:"dataset" }} ({{ form.json.value|get:"src_id" }})</p>
-                {% else %}
-                  {% if authority|startswith:"wd" %}
-                  <p><strong>Wikidata id</strong>: 
-                  {% else %}
-                  <p><strong>TGN id</strong>: 
-                  {% endif %}
-                  <a href="" data-auth={{authority}} class="mr-2 ext-recon" >{{ form.authrecord_id.value }}</a>{% fontawesome_icon 'external-link' color='#336699' %}
-                  </p>
-                {% endif %}
-                
-                {% if form.json.value|get:"variants"|length > 0 %} 
-                <p class="scroll65"><strong>Variants</strong>:
-                  {% for n in form.json.value|get:"variants" %}
-                    {{ n|add:"; " }}
-                  {% endfor %}
-                </p>{% endif %}
-                
-                <p class="mt-2 strong">Types:
-                {% if authority == 'whg' %}
-                  {% for t in form.json.value|get:"types" %}
-                    {{ t|add:"; " }}
-                  {% endfor %}</p>
-                {% else %}
-                  {{ form.json.value|get:"types"}}
-                {% endif %}
-
+                <!--<p>{ form.json.value }}</p>-->
+                <p><strong>Title(s)</strong>: <span class="text-danger h6">{{ form.json.value|get:"titles" }}</p>
+                <!--<p><strong>WHG index id</strong>: { form.json.value|get:"whg_id" }}</p> -->
+                <p>{{ form.query_pass.value }}</p>
                 {% if form.json.value|get:"countries"|length > 0 %} 
                 <p><strong>Countries</strong>: {{ form.json.value|get:"countries" }}</p>
                 {% endif %}
 
+                <p class="mb-0"><strong>Linked records ({{ form.json.value|get:"sources"|length }})</strong>:
+                {% for src in form.json.value|get:"sources" %}
+                  <div class="accession-div-row">
+                  <p><a class="pop-link pop-dataset" data-label={{src.dslabel}} data-toggle="popover" title="Dataset Profile" data-content="" tabindex="0" rel="clickover">{{ src.dslabel }}</a> (<a href="/api/place/{{src.pid}}/" target="_blank">{{ src.pid }}</a>): <i>variants</i>: <b>{{ src.variants|join:", " }}</b>
+                  {% if src.types|length > 0 %}; <i>type(s)</i>: <b>{{ src.types|join:","}}</b>
+                  {% endif %}
+                  {% if src.minmax %}; <i>earliest/latest</i>:<b> {{ src.minmax|join:"/"}}</b>{% endif %} <i class="text-muted">{{ src.pass }}</i>: 
+                  </p>
+                  <p></p>
+                  </div>
+                {% endfor %}</p> 
+
                 {% if form.json.value|get:"links"|length > 0 %} 
-                  <p><strong>Links</strong>: 
+                  <p><strong>All concordances</strong>: 
                   {% for link in form.json.value|get:"links" %}
                     <a href="" class="mr-2 ext" data-toggle="modal" data-target="#ext_site">{{ link }} {% fontawesome_icon 'external-link' color='#336699' %}</a>
                   {% endfor %}
                 </p>{% endif %}
+                
                 
                 {% if form.json.value|get:"minmax"|length > 0 %} 
                   <p><strong>Temporal attestations</strong>: 
                   {{ form.json.value|get:"minmax" }}</p>
                 {% endif %}
                 
-                {% if form.json.value|get:"descriptions"|length > 0 %} 
-                  <p class="mb-0"><strong>Description(s)</strong>:</p> 
-                  <div>
-                  {% for d in form.json.value|get:"descriptions" %}
-                    <p>({{d.lang}}) {{ d.text }}</p>{% endfor %}
-                  </div>
-                {% endif %}
+                <!--{ if form.json.value|get:"descriptions"|length > 0 %} -->
+                  <!--<p class="mb-0"><strong>Description(s)</strong>:</p> -->
+                  <!--<div>-->
+                  <!--{ for d in form.json.value|get:"descriptions" %}-->
+                    <!--<p>({d.lang}}) { d.text }}</p>{ endfor %}-->
+                  <!--</div>-->
+                <!--{ endif %}-->
                 
-                {% if form.json.value|get:"children"|length > 0 %}
-                  <p class="mb-0"><strong>Linked attestations</strong>:
-                  {% for kid in form.json.value|get:"children" %}
-                    {{ kid.dataset }}: {{ kid.place_id }}
-                  {% endfor %}</p> 
-                {% endif %}
               </div>
             {% endfor %}
           </div>
@@ -279,7 +266,10 @@
     window.open(url,'_blank')
   });
 
+
   var ds = "{{ ds_label }}"+':'
+  var pass = document.location.pathname.slice(-5)
+  
   $("#btn_save").click(function(){
     current_place = $('input[name=place_id]').val()
     sessionStorage.setItem('reviewBegun',true)
@@ -295,8 +285,8 @@
   $(function(){
     // on each page load...
     current_place = $('input[name=place_id]').val()
-    console.log('lastPlace:',sessionStorage.lastPlace)
-    console.log('current place:', $('input[name=place_id]').val())
+    <!--console.log('lastPlace:',sessionStorage.lastPlace)-->
+    <!--console.log('current place:', $('input[name=place_id]').val())-->
     // show undo link if there is a lastPlace & it's not the current place
     if((sessionStorage.lastPlace && sessionStorage.lastPlace != current_place)){
       $("#undo").removeClass('hidden-imp')}
@@ -315,6 +305,34 @@
     });
     
     $("[rel='tooltip']").tooltip();
+    var hideAllPopovers = function() {
+       $('.pop-dataset').each(function() {
+            $(this).popover('hide');
+        });  
+    };
+  
+    var dspop = $(".pop-dataset").popover({
+      trigger: 'focus',
+      placement: 'right',
+      html: true
+    }).on('show.bs.popover', function () {
+        $.ajax({
+          url: '/api/datasets/',
+          data: {label:$(this).data('label')},
+          dataType: "JSON",
+          async: false,
+          success: function (data) {
+            ds=data.results[0]
+            console.log('ds',ds)
+            html='<p class="thin"><b>Title</b>: '+ds.title+'</p>'
+            html+='<p class="thin"><b>Description</b>: '+ds.description+'</p>'
+            html+='<p class="thin"><b>WHG Owner</b>: '+ds.owner+'</p>'
+            html+='<p class="thin"><b>Creator</b>: '+ds.creator+'</p>'
+            dspop.attr('data-content', html);
+          }
+      });
+    })
+    
   })
             
   // expose leaflet map for events, call it 'mappy'
@@ -391,34 +409,30 @@
   }
 
   // initialize, render map
-  // authority geom "geoms": [{"type": "point", "coordinates": [-72.8667, -13.6167]}]
   function map_init (map, options) {
     // console.log('in map_init()')
     window.geom = {"type":"FeatureCollecton","features":[]}
 
     window.gelems = $('script').filter(function() {
-      <!--return this.id.match(/[0-9]/) && this.text != '"null"';-->
       return this.id !='' && this.text != '"null"';
     });
     <!--console.log(gelems)-->
     for (i=0;i<gelems.length;i++){
       let t_geom = cleanJson(gelems[i].text)
       t_geom['properties'] = {"id": gelems[i].id,"ds": t_geom.ds!=null?t_geom.ds:ds}
-      <!-- citation does not always have id-->
-      <!--if ('citation' in t_geom){-->
-        <!--t_geom['properties'] = {"id":t_geom['citation']['id'] }-->
-      <!--} else t_geom['properties'] = {"id": gelems[i].id,"ds": t_geom.ds!=null?t_geom.ds:ds}-->
       geom['features'].push(t_geom)
     }
 
-    function fill(ds) {
-      <!--console.log('ds',ds)-->
-      if (['tgn','wd','whg'].indexOf(ds)>=0){
-        return "orange"}
-      else {
-        return "green"}
+    function markerIt(src_ds) {
+      if(src_ds == ds){
+        style = {radius: 8, fillOpacity: 0.4, opacity: 1, weight: 1,
+              color: "#333", fillColor: "green"}        
+      } else {
+        style = {radius: 8, fillOpacity: 0.4, opacity: 1, weight: 1,
+              color: "#333", fillColor: "orange"}      
+      }
+      return style
     }
-
     if (geom['features'].length > 0) {
       <!--console.log('geom: ',geom)-->
       idToFeature = {} // for feature lookup
@@ -427,11 +441,11 @@
           <!--console.log('feature.properties',feature.properties)-->
           <!--console.log('feature',feature)-->
           matchid = feature.properties.id
-          marker = L.circleMarker(latlng,
-            {
-              radius: 8, fillOpacity: 0.4, opacity: 1, weight: 1,
-              color: "#333", fillColor: fill(feature.properties.ds)
-            }
+          marker = L.circleMarker(latlng, markerIt(feature.properties.ds)
+            <!--{-->
+              <!--radius: 8, fillOpacity: 0.4, opacity: 1, weight: 1,-->
+              <!--color: "#333", fillColor: fill(feature.properties.ds)-->
+            <!--}-->
           ).bindPopup(feature.properties.id);
 
           idToFeature[matchid] = marker

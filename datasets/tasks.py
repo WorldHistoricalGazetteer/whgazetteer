@@ -146,6 +146,63 @@ def wdDescriptions(descrips, lang):
     if dstd else []
   return result
 
+def profileHit(hit):
+  #print('_source keys',hit['_source'].keys())
+  _id = hit['_id']
+  src = hit['_source']
+  pid = src['place_id']
+  
+  relation = src['relation']
+  profile = {
+    '_id':_id,'pid':pid,'title':src['title'],
+    'pass': hit['pass'], 'role':relation['name'],
+    'dataset':src['dataset'],
+    'score':hit['_score']
+  }
+  profile['parent'] = relation['parent'] if \
+    relation['name']=='child' else None
+  profile['children'] = src['children'] if \
+    relation['name']=='parent' else None
+  profile['minmax'] = [src['minmax']['gte'],src['minmax']['lte']] if type(src['minmax']) == dict else None
+  profile['links'] = [l['identifier'] for l in src['links']]\
+    if len(src['links'])>0 else None
+  profile['countries'] = ccDecode(src['ccodes'])
+  profile['variants'] = [n['toponym'] for n in src['names']]
+  profile['types'] = [t['sourceLabel'] for t in src['types']]
+  if len(src['descriptions']) > 0:
+    profile['descriptions'] = [d['value'] for d in src['descriptions']]
+  profile['geoms'] = [{'id':pid, 'ds':src['dataset'], 'coordinates':g['location']['coordinates'], 'type':g['location']['type']} for g in src['geoms']]
+  
+  return profile
+
+# create cluster payload from set of hits for a place
+def normalize_whg(hits):
+  result = []
+  src = [h['_source'] for h in hits]
+  parents = [h for h in hits if 'whg_id' in h['_source']]
+  children = [h for h in hits if 'whg_id' not in h['_source']]
+  titles=list(set([h['_source']['title'] for h in hits]))
+  [links, countries] = [[],[]]
+  for h in src:
+    countries.append(ccDecode(h['ccodes']))
+    for l in h['links']:
+      links.append(l['identifier'])
+  # each parent seeds cluster of >=1 hit
+  for par in parents:
+    kid_ids = par['_source']['children'] or None
+    kids = [c['_source'] for c in children if c['_id'] in kid_ids]
+    cluster={
+      "whg_id": par["_id"],
+      "titles": titles,
+      "countries":list(set(countries)), 
+      "links":list(set(links)), 
+      "geoms":[],
+      "sources":[]
+    }
+    result.append(cluster)
+  return result.toJSON()
+    
+    
 # normalize hit json from any authority
 # language relevant only for wikidata local)
 def normalize(h, auth, language=None):
@@ -194,7 +251,7 @@ def normalize(h, auth, language=None):
     # TODO: deal with whens
     #rec.whens = [parseWhen(t) for t in h['timespans']] \
                 #if len(h['timespans']) > 0 else []
-    rec.links = [l['type']+': '+l['identifier'] for l in h['links']] \
+    rec.links = [l['identifier'] for l in h['links']] \
                 if len(h['links']) > 0 else []    
   elif auth == 'wd':
     try:

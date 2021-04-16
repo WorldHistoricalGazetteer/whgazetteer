@@ -110,16 +110,15 @@ label {vertical-align:top;}
 /* buttons */
 .button-sm {
   background-color: #fff;
-  border: 1px gold solid;
+  border: 1px #333 solid;
   color: black;
-  /*padding: 2px 0;*/
   text-align: center;
   text-decoration: none;
   display: inline-block;
   font-size: .7rem;
   margin: 0 0 3px -3px;
-  /*margin: 2px 2px;*/
   cursor: pointer;
+  box-shadow: 1px 1px grey;
 }
 
 /**
@@ -419,11 +418,12 @@ em { color: #993333;}
   font-weight: bold;
   color: firebrick;
 }
+.accession-div-row { border-bottom:1px dotted lightgrey; padding-left:6px;}
 .auth-match {
   border-bottom: 1px dashed lightgrey; 
   border-left: 1px dashed lightgrey; 
   padding-bottom: .5rem;}
-.auth-match p {font-size: small; margin-bottom: .4rem;}
+.auth-match p {font-size: small; margin: .3rem 0;}
 .globeflash {
   padding-top:2px; padding-bottom:7px; padding-right:3px; 
   background-color:gold;
@@ -438,6 +438,7 @@ em { color: #993333;}
   margin-bottom: .6rem;
   font-size: small;
 }
+
 .match_radio {background-color: oldlace; padding-left:0; min-height: 1.8rem; max-height:24px}
 /*.match_radio li {display:inline; margin-left:5px;}*/
 .match_radio li {display:inline; margin-right:4px;}

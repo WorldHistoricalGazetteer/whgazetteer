@@ -175,9 +175,14 @@ def review(request, pk, tid, passnum):
   pass_int = int(passnum[4])
   passnum = passnum if cnt_pass > 0 else 'pass'+str(pass_int+1)
   
-  # if whg or idx, no pass filter & accession.html for review
+  #tid='abc-double-xyz'
+  #qs0=hitplaces = Hit.objects.values_list('place_id', flat=True).filter(~Q(query_pass='pass1'), task_id=tid, reviewed=False)
+  
+  #qs1 = Hit.objects.values_list('place_id',flat=True).filter(~Q(query_pass='pass0'), task_id=tid, reviewed=False)
+  
+  # if whg or idx ... ???
   if auth in ['whg','idx']:
-    hitplaces = Hit.objects.values('place_id').filter(task_id=tid, reviewed=False)
+    hitplaces = Hit.objects.values('place_id').filter(task_id=tid, reviewed=False, query_pass=passnum)
     review_page = 'accession.html'
   else:
     hitplaces = Hit.objects.values('place_id').filter(task_id=tid, reviewed=False, query_pass=passnum)
@@ -207,7 +212,8 @@ def review(request, pk, tid, passnum):
   print('reviewing hits for place', records[0])
   #print('existing links:', records[0].links.all())
   # recon task hits for current place
-  raw_hits = Hit.objects.all().filter(place_id=placeid, task_id=tid).order_by('query_pass','-score')
+  #raw_hits = Hit.objects.filter(place_id=placeid, task_id=tid).order_by('query_pass','-score')
+  raw_hits = Hit.objects.filter(place_id=placeid, task_id=tid, query_pass=passnum).order_by('-score')
   print('raw_hits for '+str(records[0]), raw_hits)
   # convert ccodes to names
   countries = []
