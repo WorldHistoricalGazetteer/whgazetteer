@@ -287,7 +287,7 @@
         {% if tasks|length < 1 %}<i id="none_yet">None yet...</i>{% endif %}
         {% if messages %}<div>
           {% for message in messages %}
-            <p class="larger ml-1 mb-2 strong">{{ message|safe }}</p>
+            <p class="larger mb-2 strong">{{ message|safe }}</p>
           {% endfor %}</div>
         {% endif %}
         {% for t in tasks %}
@@ -310,15 +310,20 @@
               <p><b>Result</b>: {{ t.result|get:"got_hits"|safe }} records (of {{ t.result|get:"count"|safe }}) got total of <b>{{ t.result|get:"total"|safe }}</b> hits</p>
               <!--{ t.result }}-->
               <p class="mb-0 ital">Remaining to review:</p>
-              {% if not t.task_name == 'align_idx' %}
+              <!--{ if not t.task_name == 'align_idx' %}-->
               <ul>
                 {% if t.result|get:"pass0" > 0 %}
-                  <li id="pass0_{{t.task_id}}" class="li-left">Pass 0 (matched links): <span class="mx-2 strong" id='{{t.task_id}}_0'>nn</span> 
+                  <li id="pass0_{{t.task_id}}" class="li-left">Pass 0 (matched links): 
+                  <span class="mx-2 strong" id='{{t.task_id}}_0'>nn</span> 
                   <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass0' %}">
                    review</i></a> 
-                   <span>| <a href="{% url 'datasets:wd_pass0' tid=t.task_id %}">auto-accept</a>  
-                   <span class="help-matches" data-id="auto-match">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
-                   </span>
+                   <span>| 
+                    {% if t.task_name == 'align_idx'%}
+                    <a href="{% url 'datasets:idx_pass0' tid=t.task_id %}">auto-accept</a>  
+                    {% else %}
+                    <a href="{% url 'datasets:wd_pass0' tid=t.task_id %}">auto-accept</a> 
+                    {% endif %}
+                   <span class="help-matches" data-id="auto-match">{% fontawesome_icon 'question-circle' color='#993333' %}</span></span>
                    </li>
                 {% endif %}
                 {% if t.result|get:"pass1" > 0 %}
@@ -338,18 +343,18 @@
                    review</i></a></li>
                 {% endif %}
               </ul> 
-              {% else %}
-                <ul>
-                {% if t.result|get:"pass0" > 0 %}
-                <li id="pass0_{{t.task_id}}" class="li-left">Pass 0: <span class="mx-2 strong" id='{{t.task_id}}_0'>nn</span><a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass0' %}">review</a></li>
-                {% endif %}
-                {% if t.result|get:"pass1" > 0 %}
-                  <li class="li-left">Pass 1: <span class="strong mx-2" id='{{t.task_id}}_1'>nn</span> 
-                  <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass1' %}">
-                   review</i></a></li>
-                {% endif %}
-                </ul>
-              {% endif %}
+              <!--{ else %} <!-- align_idx-->
+                <!--<ul>-->
+                <!--{ if t.result|get:"pass0" > 0 %}-->
+                <!--<li id="pass0_{{t.task_id}}" class="li-left">Pass 0: <span class="mx-2 strong" id='{{t.task_id}}_0'>nn</span><a href="{ url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass0' %}">review</a></li>-->
+                <!--{ endif %}-->
+                <!--{ if t.result|get:"pass1" > 0 %}-->
+                  <!--<li class="li-left">Pass 1: <span class="strong mx-2" id='{{t.task_id}}_1'>nn</span> -->
+                  <!--<a href="{ url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass1' %}">-->
+                   <!--review</i></a></li>-->
+                <!--{ endif %}-->
+                <!--</ul>-->
+              <!--{ endif %}-->
             </div>
             <div class="col-sm-2">
               {% if t.task_name == 'align_wd' %}

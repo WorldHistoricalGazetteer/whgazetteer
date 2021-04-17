@@ -12,17 +12,6 @@ from datasets.utils import download_file, download_augmented, download_gis, Upda
 app_name='datasets'
 urlpatterns = [
     
-    ### 
-    # try refactoring, ea. tab w/its own view, template
-    # templates include ds_tabs.html
-    ###
-    path('<int:id>/summary', views.DatasetSummaryView.as_view(), name='ds_summary'),
-    path('<int:id>/log', views.DatasetLogView.as_view(), name='ds_log'),
-    
-    
-    ###
-    # in use
-    ###
     path('create/', views.DatasetCreateView.as_view(), name='dataset-create'),
     
     # upload excel
@@ -34,7 +23,7 @@ urlpatterns = [
     path('<int:id>/delete', views.DatasetDeleteView.as_view(), name='dataset-delete'),
 
     # TODO: single download url w/format variable
-    # download current upload file revision, unchanged
+    # download latest file, as uploaded
     path('<int:id>/file/', download_file, name="dl-file"), # 
 
     # download augmented dataset
@@ -61,8 +50,8 @@ urlpatterns = [
     # accept any unreviewed wikidata pass0 hits from given task
     path('wd_pass0/<str:tid>', views.write_wd_pass0, name="wd_pass0"),
 
-    # list places in a dataset; for physical geog layers
-    path('<str:label>/places/', views.ds_list, name='ds_list'),
+    # accept any unreviewed whg pass0 hits; create & index child docs
+    path('idx_pass0/<str:tid>', views.write_idx_pass0, name="idx_pass0"),
 
     # delete TaskResult & associated hits
     path('task-delete/<str:tid>/<str:scope>', views.task_delete, name="task-delete"),
@@ -76,6 +65,20 @@ urlpatterns = [
     # undo last save in review
     path('match-undo/<int:ds>/<str:tid>/<int:pid>', views.match_undo, name="match-undo"),
     
-    path('updatecounts/', UpdateCountsView.as_view(), name='update_counts') #     
+    # refresh reconciliation counts
+    path('updatecounts/', UpdateCountsView.as_view(), name='update_counts')   
     
+
 ] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
+
+# list places in a dataset; for physical geog layers
+#path('<str:label>/places/', views.ds_list, name='ds_list'),
+
+#
+# draft refactoring, ea. tab w/its own view, template
+# templates include ds_tabs.html
+# not in use
+#
+path('<int:id>/summary', views.DatasetSummaryView.as_view(), name='ds_summary'),
+path('<int:id>/log', views.DatasetLogView.as_view(), name='ds_log'),
+

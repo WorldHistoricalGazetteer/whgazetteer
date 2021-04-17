@@ -7,7 +7,7 @@ from django.core.mail import send_mail, EmailMultiAlternatives
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.forms import modelformset_factory
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse
 from django.views.generic import (CreateView, ListView, UpdateView, DeleteView)
@@ -314,20 +314,18 @@ def review(request, pk, tid, passnum):
             # create multiple PlaceLink records (e.g. Wikidata)
             # TODO: filter duplicates
             if 'links' in hits[x]['json']:
-              #print('json', hits[x]['json']['links'])
+              #print('json links', hits[x]['json']['links'])
               for l in hits[x]['json']['links']:
-                print('l in links',l)
-                authid = re.search("\: (.*?)$", l).group(1)
+                #print('l in links',l)
+                authid = re.search("\: ?(.*?)$", l).group(1)
                 if authid not in place.authids:                  
                   link = PlaceLink.objects.create(
                     place = place,
                     task_id = tid,
                     src_id = place.src_id,
                     jsonb = {
-                      #"type": re.search("^(.*?):", l).group(1),
                       "type": hits[x]['match'],
-                      #"identifier": re.search("\: (.*?)$", l).group(1)
-                      "identifier": authid
+                      "identifier": authid.strip()
                     }
                   )
                   print('PlaceLink record created',link.jsonb)
@@ -380,6 +378,7 @@ accepts all pass0 wikidata matches, writes geoms and links
 def write_wd_pass0(request, tid):
   task = get_object_or_404(TaskResult,task_id=tid)
   kwargs=json.loads(task.task_kwargs.replace("'",'"'))
+  referer = request.META.get('HTTP_REFERER') + '#reconciliation'
   auth = task.task_name[6:].replace('local','')
   ds = get_object_or_404(Dataset, pk=kwargs['ds'])
   authname = 'Wikidata'
@@ -460,9 +459,33 @@ def write_wd_pass0(request, tid):
     h.reviewed = True
     h.save()
     
-  return redirect('/datasets/'+str(ds.id)+'/detail#reconciliation')
-  
+  #return redirect('/datasets/'+str(ds.id)+'/detail#reconciliation')
+  return HttpResponseRedirect(referer)
+
 """
+write_idx_pass0(taskid)
+called from dataset_detail>reconciliation tab
+accepts all pass0 whg matches, indexes new child doc for each
+if >1 match, compute parent winner and merge others as children
+"""
+def write_idx_pass0(request, tid):
+  task = get_object_or_404(TaskResult,task_id=tid)
+  kwargs=json.loads(task.task_kwargs.replace("'",'"'))
+  ds = get_object_or_404(Dataset, pk=kwargs['ds'])
+  referer = request.META.get('HTTP_REFERER') + '#reconciliation'
+  print('referer',referer)
+  # get unreviewed pass0 hits
+  hits = Hit.objects.filter(
+    task_id=tid, 
+    query_pass='pass0',
+    reviewed=False
+  )
+  print('write_idx_pass0(); process '+str(hits.count())+' hits')
+  #return redirect('/datasets/'+str(ds.id)+'/detail#reconciliation')
+  return HttpResponseRedirect(referer)  
+
+"""
+# ds_recon(pk)
 # initiate, monitor Celery tasks against Elasticsearch indexes
 # i.e. align_[wdlocal | tgn | idx | whg ] in tasks.py
 # url: datasets/{ds.id}/recon (datasets.html#addtask)
@@ -553,6 +576,7 @@ def ds_recon(request, pk):
 
 
 """
+# task_delete(tid, scope)
 # delete results of a reconciliation task:
 # hits + any geoms and links added by review
 #
@@ -580,13 +604,10 @@ def task_delete(request, tid, scope="foo"):
 # TODO: limit to role?
 #
 """
-def collab_delete(request, uid, dsid):
-  print('collab_delete() request, uid, dsid', request, uid, dsid)
-  #qs = DatasetUser.objects.filter(user_id_id=uid, dataset_id_id=dsid).delete()
-  get_object_or_404(DatasetUser,user_id_id=uid, dataset_id_id=dsid).delete()
-  return redirect('/datasets/'+str(dsid)+'/detail#sharing')
-#
-# add collaborator to dataset in role
+
+""" 
+add collaborator to dataset in role 
+"""
 def collab_add(request, dsid):
   print('collab_add() request, dsid', request, dsid)
   try:
@@ -600,8 +621,20 @@ def collab_add(request, dsid):
   print('collab_add():',request.POST['username'],role, dsid, uid)
   DatasetUser.objects.create(user_id_id=uid, dataset_id_id=dsid, role=role)
   return redirect('/datasets/'+str(dsid)+'/detail#sharing')
-#
-# delete dataset file(s) from disk on DatasetDelete()
+
+""" 
+collab_delete(uid, dsid)
+remove collaborator from dataset
+"""
+def collab_delete(request, uid, dsid):
+  print('collab_delete() request, uid, dsid', request, uid, dsid)
+  get_object_or_404(DatasetUser,user_id_id=uid, dataset_id_id=dsid).delete()
+  return redirect('/datasets/'+str(dsid)+'/detail#sharing')
+
+"""
+dataset_file_delete(ds)
+delete all uploaded files for a dataset
+"""
 def dataset_file_delete(ds):
   dsf_list = ds.files.all()
   for f in dsf_list:
@@ -614,6 +647,7 @@ def dataset_file_delete(ds):
     
 
 """
+update_rels_tsv(pobj, row)
 updates objects related to a Place (pobj)
 make new child objects of pobj: names, types, whens, related, descriptions
 for geoms and links, add from row if not there
@@ -800,11 +834,11 @@ def update_rels_tsv(pobj, row):
   print('descriptions done')
   
 
-      
-# ***
-# perform update on database and index
-# given new datafile
-# ***
+"""
+ds_update()
+perform updates to database and index
+given new datafile
+"""
 def ds_update(request):
   if request.method == 'POST':
     dsid=request.POST['dsid']
@@ -982,11 +1016,12 @@ def ds_update(request):
     elif file_format == 'lpf':
       print("ds_update for lpf; doesn't get here yet")
 
-# *** 
-# validates dataset update file & compares w/existing
-# called by ajax function from modal button
-# returns json result object
-# ***
+"""
+ds_compare()
+validates dataset update file & compares w/existing
+called by ajax function from modal button
+returns json result object
+"""
 def ds_compare(request):
   if request.method == 'POST':
     print('request.POST',request.POST)
@@ -1092,11 +1127,12 @@ def ds_compare(request):
     print('comparison',comparison)
     # back to calling modal
     return JsonResponse(comparison,safe=False)
-# ***
-# insert lpf into database
-# file is validated, dataset exists
-# if insert fails anywhere, delete dataset + any related objects
-# ***
+"""
+ds_insert_lpf(pk)
+insert lpf into database
+file is validated, dataset exists
+if insert fails anywhere, delete dataset + any related objects
+"""
 def ds_insert_lpf(request, pk):
   import json
   [countrows,countlinked,total_links]= [0,0,0]
@@ -1273,10 +1309,13 @@ def ds_insert_lpf(request, pk):
           "total_links":total_links})
 
 
-# ***
-# insert lp-tsv to database
-# ***
 
+"""
+ds_insert_tsv(pk)
+insert tsv into database
+file is validated, dataset exists
+if insert fails anywhere, delete dataset + any related objects
+"""
 # for testing
 #from datasets.models import Dataset, DatasetFile
 #from django.shortcuts import get_object_or_404
@@ -1545,9 +1584,10 @@ def ds_insert_tsv(request, pk):
           "numlinked":countlinked,
           "total_links":total_links})  
 
-# ***
-# list user datasets, areas
-# ***
+"""
+DashboardView()
+list user datasets, study areas, collections
+"""
 class DashboardView(LoginRequiredMixin, ListView):
   login_url = '/accounts/login/'
   redirect_field_name = 'redirect_to'
@@ -1591,11 +1631,12 @@ class DashboardView(LoginRequiredMixin, ListView):
     return context
 
 
-# ***
-# initial create
-# upload file, validate format, create DatasetFile instance,
-# redirect to dataset.html for db insert if context['format_ok']
-# ***
+"""
+DatasetCreateView()
+initial create
+upload file, validate format, create DatasetFile instance,
+redirect to dataset.html for db insert if context['format_ok']
+"""
 class DatasetCreateView(LoginRequiredMixin, CreateView):
   login_url = '/accounts/login/'
   redirect_field_name = 'redirect_to'
@@ -1813,283 +1854,6 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
     return context
 
 # ***
-
-# ***
-class DatasetSummaryView(LoginRequiredMixin, UpdateView):
-  login_url = '/accounts/login/'
-  redirect_field_name = 'redirect_to'
-  
-  form_class = DatasetDetailModelForm
-  
-  template_name = 'datasets/ds_summary.html'
-  
-  def get_success_url(self):
-    id_ = self.kwargs.get("id")
-    user = self.request.user
-    print('messages:', messages.get_messages(self.kwargs))
-    #return '/datasets/'+str(id_)+'/detail'
-    return '/datasets/'+str(id_)+'/summary'
-
-  # Dataset has been edited, form submitted
-  def form_valid(self, form):
-    data=form.cleaned_data
-    ds = get_object_or_404(Dataset,pk=self.kwargs.get("id"))
-    dsid = ds.id
-    user = self.request.user
-    file=data['file']
-    filerev = ds.files.all().order_by('-rev')[0].rev
-    print('DatasetDetailViewDev kwargs',self.kwargs)
-    print('DatasetDetailViewDev form_valid() data->', data)
-    if data["file"] == None:
-      print('data["file"] == None')
-      # no file, updating dataset only
-      ds.title = data['title']
-      ds.description = data['description']
-      ds.uri_base = data['uri_base']
-      ds.save()        
-    return super().form_valid(form)
-  
-  def form_invalid(self, form):
-    print('kwargs',self.kwargs)
-    context = {}
-    print('form not valid', form.errors)
-    print('cleaned_data', form.cleaned_data)
-    context['errors'] = form.errors
-    return super().form_invalid(form)
-    
-  def get_object(self):
-    id_ = self.kwargs.get("id")
-    return get_object_or_404(Dataset, id=id_)
-  
-  def get_context_data(self, *args, **kwargs):
-    context = super(DatasetDetailViewDev, self).get_context_data(*args, **kwargs)
-    context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
-    context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
-
-    print('DatasetDetailView get_context_data() kwargs:',self.kwargs)
-    print('DatasetDetailView get_context_data() request:',self.request.user)
-    id_ = self.kwargs.get("id")
-    bounds = self.kwargs.get("bounds")
-    ds = get_object_or_404(Dataset, id=id_)
-    # print('ds',ds.label)
-    
-    # coming from DatasetCreateView(),
-    # insert to db immediately (file.df_status == format_ok) 
-    # most recent data file
-    file = ds.files.all().order_by('-rev')[0]
-    print('file.df_status',file.df_status)
-    if file.df_status == 'format_ok':
-      print('format_ok , inserting dataset '+str(id_))
-      if file.format == 'delimited':
-        result = ds_insert_tsv(self.request, id_)
-      else:
-        result = ds_insert_lpf(self.request,id_)
-      print('ds_insert_xxx() result',result)
-      ds.numrows = result['numrows']
-      ds.numlinked = result['numlinked']
-      ds.total_links = result['total_links']
-      ds.ds_status = 'uploaded'
-      file.df_status = 'uploaded'
-      file.numrows = result['numrows']
-      ds.save()
-      file.save()
-
-    # build context for rendering dataset.html
-    me = self.request.user
-    area_types=['ccodes','copied','drawn']
-
-    userareas = Area.objects.all().filter(type__in=area_types).values('id','title').order_by('-created')
-    context['area_list'] = userareas if me.username == 'whgadmin' else userareas.filter(owner=me)
-  
-    predefined = Area.objects.all().filter(type='predefined').values('id','title')
-    placeset = Place.objects.filter(dataset=ds.label)
-    ds_tasks = TaskResult.objects.all().filter(task_args = [id_], status='SUCCESS')
-    
-    context['region_list'] = predefined    
-    context['updates'] = {}
-    context['ds'] = ds
-    context['log'] = ds.log.filter(category='dataset').order_by('-timestamp')
-    context['comments'] = Comment.objects.filter(place_id__dataset=ds).order_by('-created')
-    # latest file
-    context['current_file'] = file
-    context['format'] = file.format
-    context['numrows'] = file.numrows
-    context['collaborators'] = ds.collabs.all()
-    context['owners'] = ds.owners
-    context['tasks'] = ds_tasks
-    # initial (non-task)
-    context['num_links'] = PlaceLink.objects.filter(
-      place_id__in = placeset, task_id = 'initial').count()
-    context['num_names'] = PlaceName.objects.filter(place_id__in = placeset).count()
-    context['num_geoms'] = PlaceGeom.objects.filter(
-      place_id__in = placeset, task_id = None).count()
-    context['num_descriptions'] = PlaceDescription.objects.filter(
-      place_id__in = placeset, task_id = None).count()
-    # others
-    context['num_types'] = PlaceType.objects.filter(
-      place_id__in = placeset).count()
-    context['num_when'] = PlaceWhen.objects.filter(
-      place_id__in = placeset).count()
-    context['num_related'] = PlaceRelated.objects.filter(
-      place_id__in = placeset).count()
-    context['num_depictions'] = PlaceDepiction.objects.filter(
-      place_id__in = placeset).count()
-
-    # augmentations (has task_id)
-    context['links_added'] = PlaceLink.objects.filter(
-      place_id__in = placeset, task_id__contains = '-').count()
-    context['geoms_added'] = PlaceGeom.objects.filter(
-      place_id__in = placeset, task_id__contains = '-').count()
-
-    # names, descriptions not currently retrieved from recon matches
-    context['names_added'] = PlaceName.objects.filter(
-      place_id__in = placeset, task_id__contains = '-').count()
-    context['descriptions_added'] = PlaceDescription.objects.filter(
-      place_id__in = placeset, task_id__contains = '-').count()
-
-    context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False
-    print('context["tasks"] from DatasetDetailView', context['tasks'])
-
-    return context
-
-# ***
-class DatasetLogView(LoginRequiredMixin, UpdateView):
-  login_url = '/accounts/login/'
-  redirect_field_name = 'redirect_to'
-  
-  form_class = DatasetDetailModelForm
-  
-  template_name = 'datasets/ds_log.html'
-  
-  def get_success_url(self):
-    id_ = self.kwargs.get("id")
-    user = self.request.user
-    print('messages:', messages.get_messages(self.kwargs))
-    return '/datasets/'+str(id_)+'/log'
-
-  # Dataset has been edited, form submitted
-  def form_valid(self, form):
-    data=form.cleaned_data
-    ds = get_object_or_404(Dataset,pk=self.kwargs.get("id"))
-    dsid = ds.id
-    user = self.request.user
-    file=data['file']
-    filerev = ds.files.all().order_by('-rev')[0].rev
-    print('DatasetDetailViewDev kwargs',self.kwargs)
-    print('DatasetDetailViewDev form_valid() data->', data)
-    if data["file"] == None:
-      print('data["file"] == None')
-      # no file, updating dataset only
-      ds.title = data['title']
-      ds.description = data['description']
-      ds.uri_base = data['uri_base']
-      ds.save()        
-    return super().form_valid(form)
-  
-  def form_invalid(self, form):
-    print('kwargs',self.kwargs)
-    context = {}
-    print('form not valid', form.errors)
-    print('cleaned_data', form.cleaned_data)
-    context['errors'] = form.errors
-    return super().form_invalid(form)
-    
-  def get_object(self):
-    id_ = self.kwargs.get("id")
-    return get_object_or_404(Dataset, id=id_)
-  
-  def get_context_data(self, *args, **kwargs):
-    context = super(DatasetLogView, self).get_context_data(*args, **kwargs)
-    context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
-    context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
-
-    print('DatasetDetailView get_context_data() kwargs:',self.kwargs)
-    print('DatasetDetailView get_context_data() request:',self.request.user)
-    id_ = self.kwargs.get("id")
-    bounds = self.kwargs.get("bounds")
-    ds = get_object_or_404(Dataset, id=id_)
-    # print('ds',ds.label)
-    
-    # coming from DatasetCreateView(),
-    # insert to db immediately (file.df_status == format_ok) 
-    # most recent data file
-    file = ds.files.all().order_by('-rev')[0]
-    print('file.df_status',file.df_status)
-    if file.df_status == 'format_ok':
-      print('format_ok , inserting dataset '+str(id_))
-      if file.format == 'delimited':
-        result = ds_insert_tsv(self.request, id_)
-      else:
-        result = ds_insert_lpf(self.request,id_)
-      print('ds_insert_xxx() result',result)
-      ds.numrows = result['numrows']
-      ds.numlinked = result['numlinked']
-      ds.total_links = result['total_links']
-      ds.ds_status = 'uploaded'
-      file.df_status = 'uploaded'
-      file.numrows = result['numrows']
-      ds.save()
-      file.save()
-
-    # build context for rendering dataset.html
-    me = self.request.user
-    area_types=['ccodes','copied','drawn']
-
-    userareas = Area.objects.all().filter(type__in=area_types).values('id','title').order_by('-created')
-    context['area_list'] = userareas if me.username == 'whgadmin' else userareas.filter(owner=me)
-  
-    predefined = Area.objects.all().filter(type='predefined').values('id','title')
-    placeset = Place.objects.filter(dataset=ds.label)
-    ds_tasks = TaskResult.objects.all().filter(task_args = [id_], status='SUCCESS')
-    
-    context['region_list'] = predefined    
-    context['updates'] = {}
-    context['ds'] = ds
-    context['log'] = ds.log.filter(category='dataset').order_by('-timestamp')
-    context['comments'] = Comment.objects.filter(place_id__dataset=ds).order_by('-created')
-    # latest file
-    context['current_file'] = file
-    context['format'] = file.format
-    context['numrows'] = file.numrows
-    context['collaborators'] = ds.collabs.all()
-    context['owners'] = ds.owners
-    context['tasks'] = ds_tasks
-    # initial (non-task)
-    context['num_links'] = PlaceLink.objects.filter(
-      place_id__in = placeset, task_id = 'initial').count()
-    context['num_names'] = PlaceName.objects.filter(place_id__in = placeset).count()
-    context['num_geoms'] = PlaceGeom.objects.filter(
-      place_id__in = placeset, task_id = None).count()
-    context['num_descriptions'] = PlaceDescription.objects.filter(
-      place_id__in = placeset, task_id = None).count()
-    # others
-    context['num_types'] = PlaceType.objects.filter(
-      place_id__in = placeset).count()
-    context['num_when'] = PlaceWhen.objects.filter(
-      place_id__in = placeset).count()
-    context['num_related'] = PlaceRelated.objects.filter(
-      place_id__in = placeset).count()
-    context['num_depictions'] = PlaceDepiction.objects.filter(
-      place_id__in = placeset).count()
-
-    # augmentations (has task_id)
-    context['links_added'] = PlaceLink.objects.filter(
-      place_id__in = placeset, task_id__contains = '-').count()
-    context['geoms_added'] = PlaceGeom.objects.filter(
-      place_id__in = placeset, task_id__contains = '-').count()
-
-    # names, descriptions not currently retrieved from recon matches
-    context['names_added'] = PlaceName.objects.filter(
-      place_id__in = placeset, task_id__contains = '-').count()
-    context['descriptions_added'] = PlaceDescription.objects.filter(
-      place_id__in = placeset, task_id__contains = '-').count()
-
-    context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False
-    print('context["tasks"] from DatasetDetailView', context['tasks'])
-
-    return context
-
-# ***
 # feeds "dataset portal" page, dataset.html
 # processes metadata edit form
 # if coming from DatasetCreateView(), runs ds_insert_[tsv|lpf]
@@ -2261,21 +2025,21 @@ class DatasetDeleteView(DeleteView):
 
 #
 # fetch places in specified dataset 
-#
-def ds_list(request, label):
-  print('in ds_list() for',label)
-  qs = Place.objects.all().filter(dataset=label)
-  geoms=[]
-  for p in qs.all():
-    feat={"type":"Feature",
-          "properties":{"src_id":p.src_id,"name":p.title},
-              "geometry":p.geoms.first().jsonb}
-    geoms.append(feat)
-  return JsonResponse(geoms,safe=False)
+# 
+#def ds_list(request, label):
+  #print('in ds_list() for',label)
+  #qs = Place.objects.all().filter(dataset=label)
+  #geoms=[]
+  #for p in qs.all():
+    #feat={"type":"Feature",
+          #"properties":{"src_id":p.src_id,"name":p.title},
+              #"geometry":p.geoms.first().jsonb}
+    #geoms.append(feat)
+  #return JsonResponse(geoms,safe=False)
 
 def match_undo(request, ds, tid, pid):
   print('in match_undo() ds, task, pid:',ds,tid,pid)
-  #ds=1;tid='d6ad4289-cae6-476d-873c-a81fed4d6315';pid=81474
+  # ds=1;tid='d6ad4289-cae6-476d-873c-a81fed4d6315';pid=81474
   # 81474, 81445 (2), 81417, 81420, 81436, 81442, 81469
   geom_matches = PlaceGeom.objects.all().filter(task_id=tid, place_id=pid)
   link_matches = PlaceLink.objects.all().filter(task_id=tid, place_id=pid)
@@ -2283,27 +2047,281 @@ def match_undo(request, ds, tid, pid):
   link_matches.delete()
   # match task_id, place_id in hits; set reviewed = false
   Hit.objects.filter(task_id=tid, place_id=pid).update(reviewed=False)
-  return redirect('/datasets/'+str(ds)+'/review/'+tid+'/pass1')
- # /datasets/1/review/d6ad4289-cae6-476d-873c-a81fed4d6315/pass1
- 
- ## PlaceGeom()
- ## TODO: test geometry type or force geojson
- #if len(coords) > 0:
-   #objs['PlaceGeom'].append(
-     #PlaceGeom(
-       ##place_id=pobj,
-       #place=pobj,
-       #src_id = src_id,
-       #jsonb={"type": "Point", "coordinates": coords,
-               #"geowkt": 'POINT('+str(coords[0])+' '+str(coords[1])+')'}
-   #))
- ##elif 'geowkt' in header and row[header.index('geowkt')] not in ['',None]: # some rows no geom
- #elif 'geowkt' in header and row['geowkt'] not in ['',None]: # some rows no geom
-   #objs['PlaceGeom'].append(
-     #PlaceGeom(
-       ##place_id=pobj,
-       #place=pobj,
-       #src_id = src_id,
-       ## make GeoJSON using shapely
-       #jsonb=parse_wkt(row['geowkt'])
-   #))
+  return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+  #return redirect('/datasets/'+str(ds)+'/review/'+tid+'/pass1')
+
+""" draft for dataset detail refactor """
+class DatasetSummaryView(LoginRequiredMixin, UpdateView):
+  login_url = '/accounts/login/'
+  redirect_field_name = 'redirect_to'
+  
+  form_class = DatasetDetailModelForm
+  
+  template_name = 'datasets/ds_summary.html'
+  
+  def get_success_url(self):
+    id_ = self.kwargs.get("id")
+    user = self.request.user
+    print('messages:', messages.get_messages(self.kwargs))
+    #return '/datasets/'+str(id_)+'/detail'
+    return '/datasets/'+str(id_)+'/summary'
+
+  # Dataset has been edited, form submitted
+  def form_valid(self, form):
+    data=form.cleaned_data
+    ds = get_object_or_404(Dataset,pk=self.kwargs.get("id"))
+    dsid = ds.id
+    user = self.request.user
+    file=data['file']
+    filerev = ds.files.all().order_by('-rev')[0].rev
+    print('DatasetDetailViewDev kwargs',self.kwargs)
+    print('DatasetDetailViewDev form_valid() data->', data)
+    if data["file"] == None:
+      print('data["file"] == None')
+      # no file, updating dataset only
+      ds.title = data['title']
+      ds.description = data['description']
+      ds.uri_base = data['uri_base']
+      ds.save()        
+    return super().form_valid(form)
+  
+  def form_invalid(self, form):
+    print('kwargs',self.kwargs)
+    context = {}
+    print('form not valid', form.errors)
+    print('cleaned_data', form.cleaned_data)
+    context['errors'] = form.errors
+    return super().form_invalid(form)
+    
+  def get_object(self):
+    id_ = self.kwargs.get("id")
+    return get_object_or_404(Dataset, id=id_)
+  
+  def get_context_data(self, *args, **kwargs):
+    context = super(DatasetDetailViewDev, self).get_context_data(*args, **kwargs)
+    context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
+    context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
+
+    print('DatasetDetailView get_context_data() kwargs:',self.kwargs)
+    print('DatasetDetailView get_context_data() request:',self.request.user)
+    id_ = self.kwargs.get("id")
+    bounds = self.kwargs.get("bounds")
+    ds = get_object_or_404(Dataset, id=id_)
+    # print('ds',ds.label)
+    
+    # coming from DatasetCreateView(),
+    # insert to db immediately (file.df_status == format_ok) 
+    # most recent data file
+    file = ds.files.all().order_by('-rev')[0]
+    print('file.df_status',file.df_status)
+    if file.df_status == 'format_ok':
+      print('format_ok , inserting dataset '+str(id_))
+      if file.format == 'delimited':
+        result = ds_insert_tsv(self.request, id_)
+      else:
+        result = ds_insert_lpf(self.request,id_)
+      print('ds_insert_xxx() result',result)
+      ds.numrows = result['numrows']
+      ds.numlinked = result['numlinked']
+      ds.total_links = result['total_links']
+      ds.ds_status = 'uploaded'
+      file.df_status = 'uploaded'
+      file.numrows = result['numrows']
+      ds.save()
+      file.save()
+
+    # build context for rendering dataset.html
+    me = self.request.user
+    area_types=['ccodes','copied','drawn']
+
+    userareas = Area.objects.all().filter(type__in=area_types).values('id','title').order_by('-created')
+    context['area_list'] = userareas if me.username == 'whgadmin' else userareas.filter(owner=me)
+  
+    predefined = Area.objects.all().filter(type='predefined').values('id','title')
+    placeset = Place.objects.filter(dataset=ds.label)
+    ds_tasks = TaskResult.objects.all().filter(task_args = [id_], status='SUCCESS')
+    
+    context['region_list'] = predefined    
+    context['updates'] = {}
+    context['ds'] = ds
+    context['log'] = ds.log.filter(category='dataset').order_by('-timestamp')
+    context['comments'] = Comment.objects.filter(place_id__dataset=ds).order_by('-created')
+    # latest file
+    context['current_file'] = file
+    context['format'] = file.format
+    context['numrows'] = file.numrows
+    context['collaborators'] = ds.collabs.all()
+    context['owners'] = ds.owners
+    context['tasks'] = ds_tasks
+    # initial (non-task)
+    context['num_links'] = PlaceLink.objects.filter(
+      place_id__in = placeset, task_id = 'initial').count()
+    context['num_names'] = PlaceName.objects.filter(place_id__in = placeset).count()
+    context['num_geoms'] = PlaceGeom.objects.filter(
+      place_id__in = placeset, task_id = None).count()
+    context['num_descriptions'] = PlaceDescription.objects.filter(
+      place_id__in = placeset, task_id = None).count()
+    # others
+    context['num_types'] = PlaceType.objects.filter(
+      place_id__in = placeset).count()
+    context['num_when'] = PlaceWhen.objects.filter(
+      place_id__in = placeset).count()
+    context['num_related'] = PlaceRelated.objects.filter(
+      place_id__in = placeset).count()
+    context['num_depictions'] = PlaceDepiction.objects.filter(
+      place_id__in = placeset).count()
+
+    # augmentations (has task_id)
+    context['links_added'] = PlaceLink.objects.filter(
+      place_id__in = placeset, task_id__contains = '-').count()
+    context['geoms_added'] = PlaceGeom.objects.filter(
+      place_id__in = placeset, task_id__contains = '-').count()
+
+    # names, descriptions not currently retrieved from recon matches
+    context['names_added'] = PlaceName.objects.filter(
+      place_id__in = placeset, task_id__contains = '-').count()
+    context['descriptions_added'] = PlaceDescription.objects.filter(
+      place_id__in = placeset, task_id__contains = '-').count()
+
+    context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False
+    print('context["tasks"] from DatasetDetailView', context['tasks'])
+
+    return context
+
+""" draft for dataset detail refactor """
+class DatasetLogView(LoginRequiredMixin, UpdateView):
+  login_url = '/accounts/login/'
+  redirect_field_name = 'redirect_to'
+  
+  form_class = DatasetDetailModelForm
+  
+  template_name = 'datasets/ds_log.html'
+  
+  def get_success_url(self):
+    id_ = self.kwargs.get("id")
+    user = self.request.user
+    print('messages:', messages.get_messages(self.kwargs))
+    return '/datasets/'+str(id_)+'/log'
+
+  # Dataset has been edited, form submitted
+  def form_valid(self, form):
+    data=form.cleaned_data
+    ds = get_object_or_404(Dataset,pk=self.kwargs.get("id"))
+    dsid = ds.id
+    user = self.request.user
+    file=data['file']
+    filerev = ds.files.all().order_by('-rev')[0].rev
+    print('DatasetDetailViewDev kwargs',self.kwargs)
+    print('DatasetDetailViewDev form_valid() data->', data)
+    if data["file"] == None:
+      print('data["file"] == None')
+      # no file, updating dataset only
+      ds.title = data['title']
+      ds.description = data['description']
+      ds.uri_base = data['uri_base']
+      ds.save()        
+    return super().form_valid(form)
+  
+  def form_invalid(self, form):
+    print('kwargs',self.kwargs)
+    context = {}
+    print('form not valid', form.errors)
+    print('cleaned_data', form.cleaned_data)
+    context['errors'] = form.errors
+    return super().form_invalid(form)
+    
+  def get_object(self):
+    id_ = self.kwargs.get("id")
+    return get_object_or_404(Dataset, id=id_)
+  
+  def get_context_data(self, *args, **kwargs):
+    context = super(DatasetLogView, self).get_context_data(*args, **kwargs)
+    context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
+    context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
+
+    print('DatasetDetailView get_context_data() kwargs:',self.kwargs)
+    print('DatasetDetailView get_context_data() request:',self.request.user)
+    id_ = self.kwargs.get("id")
+    bounds = self.kwargs.get("bounds")
+    ds = get_object_or_404(Dataset, id=id_)
+    # print('ds',ds.label)
+    
+    # coming from DatasetCreateView(),
+    # insert to db immediately (file.df_status == format_ok) 
+    # most recent data file
+    file = ds.files.all().order_by('-rev')[0]
+    print('file.df_status',file.df_status)
+    if file.df_status == 'format_ok':
+      print('format_ok , inserting dataset '+str(id_))
+      if file.format == 'delimited':
+        result = ds_insert_tsv(self.request, id_)
+      else:
+        result = ds_insert_lpf(self.request,id_)
+      print('ds_insert_xxx() result',result)
+      ds.numrows = result['numrows']
+      ds.numlinked = result['numlinked']
+      ds.total_links = result['total_links']
+      ds.ds_status = 'uploaded'
+      file.df_status = 'uploaded'
+      file.numrows = result['numrows']
+      ds.save()
+      file.save()
+
+    # build context for rendering dataset.html
+    me = self.request.user
+    area_types=['ccodes','copied','drawn']
+
+    userareas = Area.objects.all().filter(type__in=area_types).values('id','title').order_by('-created')
+    context['area_list'] = userareas if me.username == 'whgadmin' else userareas.filter(owner=me)
+  
+    predefined = Area.objects.all().filter(type='predefined').values('id','title')
+    placeset = Place.objects.filter(dataset=ds.label)
+    ds_tasks = TaskResult.objects.all().filter(task_args = [id_], status='SUCCESS')
+    
+    context['region_list'] = predefined    
+    context['updates'] = {}
+    context['ds'] = ds
+    context['log'] = ds.log.filter(category='dataset').order_by('-timestamp')
+    context['comments'] = Comment.objects.filter(place_id__dataset=ds).order_by('-created')
+    # latest file
+    context['current_file'] = file
+    context['format'] = file.format
+    context['numrows'] = file.numrows
+    context['collaborators'] = ds.collabs.all()
+    context['owners'] = ds.owners
+    context['tasks'] = ds_tasks
+    # initial (non-task)
+    context['num_links'] = PlaceLink.objects.filter(
+      place_id__in = placeset, task_id = 'initial').count()
+    context['num_names'] = PlaceName.objects.filter(place_id__in = placeset).count()
+    context['num_geoms'] = PlaceGeom.objects.filter(
+      place_id__in = placeset, task_id = None).count()
+    context['num_descriptions'] = PlaceDescription.objects.filter(
+      place_id__in = placeset, task_id = None).count()
+    # others
+    context['num_types'] = PlaceType.objects.filter(
+      place_id__in = placeset).count()
+    context['num_when'] = PlaceWhen.objects.filter(
+      place_id__in = placeset).count()
+    context['num_related'] = PlaceRelated.objects.filter(
+      place_id__in = placeset).count()
+    context['num_depictions'] = PlaceDepiction.objects.filter(
+      place_id__in = placeset).count()
+
+    # augmentations (has task_id)
+    context['links_added'] = PlaceLink.objects.filter(
+      place_id__in = placeset, task_id__contains = '-').count()
+    context['geoms_added'] = PlaceGeom.objects.filter(
+      place_id__in = placeset, task_id__contains = '-').count()
+
+    # names, descriptions not currently retrieved from recon matches
+    context['names_added'] = PlaceName.objects.filter(
+      place_id__in = placeset, task_id__contains = '-').count()
+    context['descriptions_added'] = PlaceDescription.objects.filter(
+      place_id__in = placeset, task_id__contains = '-').count()
+
+    context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False
+    print('context["tasks"] from DatasetDetailView', context['tasks'])
+
+    return context
+

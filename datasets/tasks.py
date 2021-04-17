@@ -934,7 +934,7 @@ def align_wdlocal(pk, **kwargs):
           authority = 'wd',
           authrecord_id = hit['_id'],
           dataset = ds,
-          place_id = get_object_or_404(Place, id=qobj['place_id']),
+          place = place,
           task_id = task_id,
           query_pass = hit['pass'],
           # prepare for consistent display in review screen
