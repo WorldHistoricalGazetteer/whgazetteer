@@ -338,7 +338,7 @@ def review(request, pk, tid, passnum):
           # this is accessioning to whg index
           elif task.task_name == 'align_idx':
             print('reviewed hit for align_idx', hits[x])
-            # match is to doc in the index
+            # match is to parent doc in the index
             # index as child
             # TODO: write database PlaceLink records for incoming & matched
             #indexMatch(placeid, hits[x]['json']['place_id'])
