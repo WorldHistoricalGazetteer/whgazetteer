@@ -103,6 +103,7 @@ label {vertical-align:top;}
 }
 .ul-flush ::before {
     content: "•";
+    list-style: square;
     display: table-cell;
     padding-right: 0.4em;
 }

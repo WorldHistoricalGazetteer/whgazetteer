@@ -1,0 +1,28 @@
+{% extends "main/base.html" %}
+{% load static %}
+{% load leaflet_tags %}
+{% load fontawesome %}
+{% load mathfilters %}
+{% load dataset_extras %}
+
+{% block extra_head %}
+  {% leaflet_js %}
+  {% leaflet_css %}
+  <script src="{% static 'js/aliases.js' %}"></script>
+  <script src="{% static 'js/easyprint.js' %}"></script>
+  <script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>
+  <script src="{% static 'js/spin.umd.js' %}"></script>
+  <link rel="stylesheet" href="{% static 'css/spin.css' %}"/>
+  <link rel="stylesheet" href="//cdn.datatables.net/1.10.23/css/dataTables.bootstrap4.min.css">
+  <script src="//cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+  <script src="//cdn.datatables.net/1.10.23/js/dataTables.bootstrap4.min.js"></script>
+{% endblock %}
+
+{% block title %}<title>Dataset::{{ ds.label }}</title>{% endblock %}
+
+{% block content %}
+<div id="dataset_content" class="container mt-1 px-1">
+
+  {% include 'datasets/ds_tabs_jq.html' %}
+
+{% endblock %}

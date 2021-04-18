@@ -57,28 +57,32 @@ urlpatterns = [
     path('task-delete/<str:tid>/<str:scope>', views.task_delete, name="task-delete"),
     
     # add DatasetUser collaborator
-    path('collab-add/<int:dsid>', views.collab_add, name="collab-add"),
+    path('collab-add/<int:dsid>/<str:v>', views.collab_add, name="collab-add"),
     
     # delete DatasetUser collaborator
-    path('collab-delete/<int:uid>/<int:dsid>', views.collab_delete, name="collab-delete"),
+    path('collab-delete/<int:uid>/<int:dsid>/<str:v>', views.collab_delete, name="collab-delete"),
     
     # undo last save in review
     path('match-undo/<int:ds>/<str:tid>/<int:pid>', views.match_undo, name="match-undo"),
     
     # refresh reconciliation counts
-    path('updatecounts/', UpdateCountsView.as_view(), name='update_counts')   
+    path('updatecounts/', UpdateCountsView.as_view(), name='update_counts'),
     
+    #
+    # draft refactoring, ea. tab w/its own view, template
+    # templates include ds_tabs.html
+    # not in use
+    #
+    path('<int:id>/summary', views.DatasetSummaryView.as_view(), name='ds_summary'),
+    path('<int:id>/browse', views.DatasetBrowseView.as_view(), name='ds_browse'),
+    path('<int:id>/reconcile', views.DatasetReconcileView.as_view(), name='ds_reconcile'),
+    path('<int:id>/collab', views.DatasetCollabView.as_view(), name='ds_collab'),
+
+    path('<int:id>/log', views.DatasetLogView.as_view(), name='ds_log'),
+
 
 ] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
 
 # list places in a dataset; for physical geog layers
 #path('<str:label>/places/', views.ds_list, name='ds_list'),
-
-#
-# draft refactoring, ea. tab w/its own view, template
-# templates include ds_tabs.html
-# not in use
-#
-path('<int:id>/summary', views.DatasetSummaryView.as_view(), name='ds_summary'),
-path('<int:id>/log', views.DatasetLogView.as_view(), name='ds_log'),
 
