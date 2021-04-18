@@ -148,7 +148,7 @@
                   <span class="inline">{{ form.match }}</span>
                   <span class="help" data-id="matches">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
                   {% if form.json.value|get:"sources" %}
-                  <span class="float-right mr-1 mt-1 smaller">{{ form.json.value|get:"sources"|length }} linked records {% fontawesome_icon 'link' %}</span>
+                  <span class="float-right mr-1 mt-1 smaller">{{ form.json.value|get:"whg_id" }}&nbsp;&nbsp;{{ form.json.value|get:"sources"|length }} linked records {% fontawesome_icon 'link' %}</span>
                   {% endif %}
                   {% if authority == 'whg' %}
                     <button type="button" 
@@ -170,7 +170,7 @@
                 <!--<p>{ form.json.value }}</p>-->
                 <p><strong>Title(s)</strong>: <span class="text-danger h6">{{ form.json.value|get:"titles" }}</p>
                 <!--<p><strong>WHG index id</strong>: { form.json.value|get:"whg_id" }}</p> -->
-                <p>{{ form.query_pass.value }}</p>
+                <!--<p>{ form.query_pass.value }}</p>-->
                 {% if form.json.value|get:"countries"|length > 0 %} 
                 <p><strong>Countries</strong>: {{ form.json.value|get:"countries" }}</p>
                 {% endif %}

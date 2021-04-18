@@ -5,6 +5,99 @@ from places.models import Place
 #from datasets.tasks import ccDecode
 #from datasets.utils import hully
 from datasets.static.hashes.parents import ccodes as cchash
+
+"""
+addChild(place, parent_id)
+?? needed?
+"""
+def addChild(place, parent_id):
+  print('adding', place, 'as child of', parent_id)
+  
+"""
+demoteParents(demoted, winner_id, pid)
+makes each of demoted[] (and its children if any)
+a child of winner_id
+
+"""
+def demoteParents(demoted, winner_id, pid):
+  #demoted = ['14156468']
+  #newparent_id = winner_id
+  print('demoteParents()',demoted, winner_id, pid)
+  #qget = """{"query": {"bool": {"must": [{"match":{"_id": "%s" }}]}}}"""
+  
+  # updates 'winner' with children & names from demoted
+  def q_updatewinner(kids, names):
+    return {"script":{
+	"source": """ctx._source.children.addAll(params.newkids);
+	ctx._source.suggest.input.addAll(params.names);
+	ctx._source.searchy.addAll(params.names);
+    """,
+	"lang": "painless",
+	"params":{
+		"newkids": kids,
+		"names": names }
+    }}
+
+  for d in demoted:
+    # get the demoted doc, its names and kids if any
+    #d = demoted[0]
+    #d = '14156468'
+    #winner_id = '14156467'
+    qget = """{"query": {"bool": {"must": [{"match":{"_id": "%s" }}]}}}"""    
+    try:      
+      qget = qget % (d)
+      doc = es.search(index='whg', body=qget)['hits']['hits'][0]
+    except:
+      print('failed getting winner; winner_id, pid',winner_id, pid)
+      sys.exit(sys.exc_info())
+    srcd = doc['_source']
+    kids = srcd['children']
+    # add this doc b/c it's now a kid
+    kids.append(doc['_id'])
+    names = list(set(srcd['suggest']['input']))
+    
+    # first update the 'winner' parent
+    q=q_updatewinner(kids, names)
+    try:
+      es.update(idx,winner_id,body=q,doc_type='place')
+    except:
+      print('q_updatewinner failed (pid, winner_id)',pid,winner_id)
+      sys.exit(sys.exc_info())
+
+    # then modify copy of demoted,
+    # delete the old, index the new
+    # --------------
+    newsrcd = deepcopy(srcd)
+    newsrcd['relation'] = {"name":"child","parent":winner_id}
+    newsrcd['children'] = []
+    if 'whg_id' in newsrcd:
+      newsrcd.pop('whg_id')
+    # zap the old demoted, index the modified
+    try:      
+      es.delete('whg', d, doc_type='place')
+      es.index(index='whg',doc_type='place',id=d,body=newsrcd,routing=1)
+    except:
+      print('reindex failed (pid, demoted)',pid,d)
+      sys.exit(sys.exc_info())
+
+"""
+topParent(parents, form)
+parents is set or list 
+
+"""
+def topParent(parents, form):
+  #print('topParent():', parents)   
+  if form == 'set':
+    # if eq # of kids, use lowest _id
+    parents.sort(key=lambda x:(-x[1], x[0]))
+    top = parents[0][0]
+  else:
+    # a list of external parent _ids
+    # get one with most children, or just the first?
+    top = parents[0]
+  #print('winner_id is', top)
+  return top
+
 def ccDecode(codes):
   countries=[]
   #print('codes in ccDecode',codes)

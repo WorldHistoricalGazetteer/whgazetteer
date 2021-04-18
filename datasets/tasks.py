@@ -1269,6 +1269,7 @@ def align_idx(pk, *args, **kwargs):
                   'countries': par['countries'],
                   'geoms': par['geoms'],
                   'links': par['links'],
+                  'children': par['children'],
                   'sources': [
                     {'dslabel': par['dataset'], 
                      'pid': par['pid'],

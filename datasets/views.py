@@ -113,11 +113,13 @@ def indexMatch(pid, hit_pid=None):
     
     # all or nothing; pass if error
     try:
-      res = es.index(index=idx,doc_type='place',id=place.id,
-                     routing=1,body=json.dumps(child_obj))
+      # index child
+      es.index(index=idx,doc_type='place',id=place.id,
+                routing=1,body=json.dumps(child_obj))
       #count_kids +=1                
       print('added '+str(place.id) + ' as child of '+ str(hit_pid))
-      # add variants from this record to the parent's suggest.input[] field
+      
+      # add child's names to parent's searchy & suggest.input[] fields
       q_update = { "script": {
           "source": "ctx._source.suggest.input.addAll(params.names); ctx._source.children.add(params.id); ctx._source.searchy.addAll(params.names)",
           "lang": "painless",
@@ -260,18 +262,17 @@ def review(request, pk, tid, passnum):
   
   # if GET, just display; if POST, process review choices (match/no match)
   if method == 'GET':
+    # just display
     print('a GET, just rendering next')
   else:
+    # process review choices
     place_post = get_object_or_404(Place,pk=request.POST['place_id'])
-    #print('POST place_id',request.POST['place_id'],place_post)
-    #try:
     if formset.is_valid():
       hits = formset.cleaned_data
       #print('hits (formset.cleaned_data)',hits)
       matches = 0
       for x in range(len(hits)):
         hit = hits[x]['id']
-        hasGeom = 'geoms' in hits[x]['json'] and len(hits[x]['json']['geoms']) > 0
         # is this hit a match?
         if hits[x]['match'] not in ['none']:
           matches += 1
@@ -279,6 +280,7 @@ def review(request, pk, tid, passnum):
           # IF someone didn't just review it!
           if task.task_name in ['align_tgn','align_wdlocal','align_wd']:
             print('task.task_name', task.task_name)
+            hasGeom = 'geoms' in hits[x]['json'] and len(hits[x]['json']['geoms']) > 0
             # only if 'accept geometries' was checked
             if kwargs['aug_geom'] == 'on' and hasGeom \
                and tid not in place_post.geoms.all().values_list('task_id',flat=True):
@@ -333,16 +335,16 @@ def review(request, pk, tid, passnum):
                   ds.numlinked = ds.numlinked +1 if ds.numlinked else 1
                   ds.total_links = ds.total_links +1
                   ds.save()
+          # this is accessioning to whg index
+          elif task.task_name == 'align_idx':
+            print('reviewed hit for align_idx', hits[x])
+            # match is to doc in the index
+            # index as child
+            # TODO: write database PlaceLink records for incoming & matched
+            #indexMatch(placeid, hits[x]['json']['place_id'])
           # informational lookup on whg index
           elif task.task_name == 'align_whg':
             print('align_whg (non-accessioning) DOING NOTHING (YET)')
-          # this is accessioning to whg index
-          elif task.task_name == 'align_idx':
-            print('align_idx (accessioning)')
-            # match is to doc in the index
-            # index as child or sibling, as appropriate
-            # TODO: write database PlaceLink records for incoming & matched
-            indexMatch(placeid, hits[x]['json']['place_id'])
         # in any case, flag hit as reviewed; 
         matchee = get_object_or_404(Hit, id=hit.id)
         matchee.reviewed = True
@@ -468,6 +470,13 @@ called from dataset_detail>reconciliation tab
 accepts all pass0 whg matches, indexes new child doc for each
 if >1 match, compute parent winner and merge others as children
 """
+from django.shortcuts import get_object_or_404
+from datasets.models import Hit
+from places.models import Place
+from elastic.es_utils import makeDoc, topParent, demoteParents
+from elasticsearch import Elasticsearch      
+es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+tid = 'afe74607-da91-4317-801d-09243bdea61b'
 def write_idx_pass0(request, tid):
   task = get_object_or_404(TaskResult,task_id=tid)
   kwargs=json.loads(task.task_kwargs.replace("'",'"'))
@@ -480,6 +489,46 @@ def write_idx_pass0(request, tid):
     query_pass='pass0',
     reviewed=False
   )
+  # some have more than one hit
+  pids = set([h.place_id for h in hits])
+  chosen = [] # gather parent _ids
+  for pid in pids:
+    hset = [h for h in hits if h.place_id == pid]
+    doc = makeDoc(get_object_or_404(Place, pk=pid))
+    if len(hset) == 1:
+      # index as child
+      parent_id = hset[0].json['whg_id']
+      doc['relation'] = {"name":"child", "parent": parent_id}
+      names = list(set([n['toponym'] for n in doc['names']]))
+      #print('index '+str(pid)+' as child of '+hset[0].json['whg_id'])
+      # addChildren(pids[],parent)
+      # es.index(index='whg', doc_type='place', id=d ,body=newsrcd, routing=1)
+      chosen.append(parent_id)
+      pass
+    else:
+      # 
+      parent_ids = [h.json['whg_id'] for h in hset]
+      # calc weight as len(sources) + len(links)
+      # create (whg_id, weight) sets
+      parents = [(h.json['whg_id'], len(h.json['sources']) + \
+                  len(h.json['links'])) for h in hset]
+      already = len(set(chosen) & set([p[0] for p in parent_ids])) > 0
+      names = list(set([n['toponym'] for n in doc['names']]))
+      #print('index '+str(pid)+' as child of winner between '+', '.join(parent_ids))
+      winner_id = topParent(parents,'set')
+      doc['relation'] = {"name":"child", "parent": winner_id}
+      
+      # index this as child; add names to winner searchy and suggest.input
+      #es.index('whg', doc, id=pid)
+      
+      # demote others & transfer kids, names
+      demoted = parent_ids.remove(winner_id)
+      demoteParents(demoted, winner_id, pid)
+      
+      # log this winner, may be needed
+      chosen.append(winner_id)
+      
+    print(len(hset), hset)
   print('write_idx_pass0(); process '+str(hits.count())+' hits')
   #return redirect('/datasets/'+str(ds.id)+'/detail#reconciliation')
   return HttpResponseRedirect(referer)  
