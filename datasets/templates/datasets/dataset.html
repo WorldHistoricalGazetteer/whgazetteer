@@ -406,7 +406,7 @@
       </div> <!-- ds_log -->
     </div>
     <div id="sharing" class="tab-pane fade" role="tabpanel" aria-labelledby="sharing-tab">
-      <form id="sharing_form" method="POST" action="{% url 'datasets:collab-add' dsid=ds.id %}" enctype="multipart/form-data">
+      <form id="sharing_form" method="POST" action="{% url 'datasets:collab-add' dsid=ds.id v='1' %}" enctype="multipart/form-data">
       {% csrf_token %}
       <div></div>
         {% if messages %}<div>{% for message in messages %}
@@ -442,7 +442,7 @@
               {{ c|safe }}
               {% if user.is_superuser or user in owners %}
                 <span class="float-right mr-2">
-                <a href="{% url 'datasets:collab-delete' uid=c.user_id_id dsid=ds.id %}">
+                <a href="{% url 'datasets:collab-delete' uid=c.user_id_id dsid=ds.id v='1' %}">
                 {% fontawesome_icon 'times-circle' color='#336699'%}</a></span>
               {% endif %}
             </li>
@@ -589,6 +589,7 @@
       </div> <!-- .row -->
     </div> <!-- #addtask -->
   </div> <!-- .tab-content -->
+  
   <div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
@@ -678,7 +679,7 @@ js for Summary, Reconciliation
     window.spinner_table = new Spin.Spinner().spin();
     $("#drftable_list").append(spinner_table.el);   
   }
-  <!--$("#ds_downloads a").click(function(){console.log($(this)})-->
+
   $("#ds_downloads a").click(function(e){
     urly='/datasets/{{ds.id}}/augmented/'+$(this).attr('ref')
     startDownloadSpinner()
@@ -693,10 +694,9 @@ js for Summary, Reconciliation
   $("#btn_startrecon").click(function(e){
     startReconSpinner()
   })
-  <!--$('a[ref="dl"]').click(function(){startDownloadSpinner()})-->
+
   // parse & prettify ds_update() results
   function updateText(data){
-    // { "status": "updated", "#updated": 133, "#new": 2, "newfile": "media/user_whgadmin/diamonds135_0t_h0b7.tsv", "format": "delimited" }
     html = 'Update changes: <br/>' + 
            'Added '+data["new_count"]+' rows <br/>'+ 
            'Deleted '+data["del_count"]+' rows <br/>'+ 
@@ -846,7 +846,6 @@ js for Summary, Reconciliation
     
     // manage url
     var url = document.location.toString();
-    <!--console.log('url, context on load',url,"{{context}}".length)-->
     if (url.match('#')) {
       tab = url.split('#')[1]
       $('.nav-tabs a[href="#' + tab+ '"]').tab('show');

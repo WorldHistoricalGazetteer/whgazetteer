@@ -29,61 +29,160 @@
           <a class="nav-link" id="summary-tab" href="{% url 'datasets:ds_summary' id=ds.id %}" role="tab" aria-controls="summary" aria-selected="false">Metadata</a>
       </li>
       <li class="nav-item">
-          <a class="nav-link active" id="browse-tab" data-toggle="tab" href="#" role="tab" aria-controls="browse" aria-selected="false">Browse</a>
+          <a class="nav-link" id="browse-tab" href="{% url 'datasets:ds_browse' id=ds.id %}" role="tab" aria-controls="browse" aria-selected="false">Browse</a>
       </li>
       <li class="nav-item">
           <a class="nav-link" id="reconciliation-tab" href="{% url 'datasets:ds_reconcile' id=ds.id %}" role="tab" aria-controls="reconciliation" aria-selected="false">Reconciliation</a>
+      </li>
+      <li id="addtask_li" class="nav-item">
+          <a class="nav-link active" id="addtask-tab" href="" role="tab" aria-controls="addtask" aria-selected="false">Add task</a>
       </li>
       <li class="nav-item">
           <a class="nav-link" id="sharing-tab" href="{% url 'datasets:ds_collab' id=ds.id %}" role="tab" aria-controls="sharing" aria-selected="false">Collaborators</a>
       </li>
       <li class="nav-item">
-          <a class="nav-link" id="log-tab" href="{% url 'datasets:ds_log' id=ds.id %}" role="tab" aria-controls="log" aria-selected="true">Log & Comments</a>
+          <a class="nav-link" id="log-tab" data-toggle="tab" href="#" role="tab" aria-controls="log" aria-selected="true">Log & Comments</a>
       </li>
   </ul>  
+  
   <div class="tab-content">
-    <div id="browse" class="tab-pane fade show active" role="tabpanel" aria-labelledby="browse-tab">
-        <div class="container mt-3">
-          <div class="row">
-            <div id="drftable_detail" class="col-sm-6 pl-0">
-              <div class="toomany"></div>
-              <div id="mapdiv_browse">
-                  {% leaflet_map "map_browse" %}
-                  <div class="spinner-border text-danger"></div>
+    <div id="addtask" class="tab-pane fade show active" role="tabpanel" aria-labelledby="addtask-tab">
+      <form action="{% url 'datasets:ds_recon' ds.id %}" method="POST">
+      {% csrf_token %}
+      {% if user.is_superuser or user in owners %}
+      <div class="row"> <!-- page-wide -->
+        <div id="recon_form" class="col-md-6">
+          <input type="hidden" name="ds" value="{{ ds.id }}">
+          <input type="hidden" name="wd_lang" value="">
+          {% if user.is_superuser %}
+            <div class="form-check text-danger mt-2">
+              <label class="form-check-label" for="r_whg">
+                <input type="radio" class="form-check-input" id="r_whg"
+                  name="recon" value="idx">WHG (accession/reconcile) 
+              </label>
+            </div>
+            <!--<div class="form-check text-danger">-->
+              <!--<label class="form-check-label" for="r_whgpre">-->
+                <!--<input type="radio" class="form-check-input" id="r_whgpre"-->
+                  <!--name="recon" value="whg">WHG (align only)-->
+              <!--</label>-->
+            <!--</div>-->
+            <div id="wd_lang" class="hidden">
+              Preferred label language: <input class="input-sm col-xs-2"type="text" name="lang">
+            </div>
+            <hr/>
+          {% endif %}
+          <p class="font-weight-bold mb-0">Name authority source</p>
+          <p class="small">Your task will enter a queue and email notification sent when completed. 
+          </p>
+          <div class="form-check">
+            <label class="form-check-label" for="r_tgn">
+              <input type="radio" class="form-check-input" id="r_tgn"
+                name="recon" value="tgn" checked>Getty TGN (tgn) <span class="text-danger small ml-2">estimated time: {{ ds.numrows|time_estimate }}</span>
+            </label>
+            {% if ds.taskstats.align_tgn|length > 0 %}
+              <div id="tgn_tasks" class="hidden">
+                <div class="mt-0 smaller">
+                <p class="mb-0">You have already run one or more TGN alignment tasks for this dataset
+                {% if ds.taskstats.align_tgn.0.total == 0 %}.<br/>All results have been reviewed and matching decisions recorded. Running it again risks duplicating that effort.
+                {% else %}.<br/>Only the <b class="text-danger">{{ds.taskstats.align_tgn.0.total}}</b> place records NOT already reviewed will be submitted now.
+                {% endif %}
+                <span class="help-matches" data-id="recon_rerun">{% fontawesome_icon 'question-circle' color='#993333' %}</span></p>
+                <input type="hidden" name="scope" value="unreviewed">
+                </div>
+              {% for ts in ds.taskstats.align_tgn %}
+              {% if ts.total > 0 %}
+                <p class="my-0">
+                <i class="small">task</i>: {{ ts.tid|truncatechars:9 }}
+                <i class="small">date</i>: {{ ts.date }}
+              {% endif %}
+              {% endfor %}
+            </div>
+            {% endif %}
+          </div>
+          <div class="form-check">
+            <label class="form-check-label" for="r_wdlocal">
+              <input type="radio" class="form-check-input r_wd" id="r_wdlocal" 
+                name="recon" value="wdlocal" checked>Wikidata local (wdlocal) <span class="ml-2 text-danger small">estimated time: {{ ds.numrows|time_estimate }}</span>
+            </label>
+            <!--{ds.taskstats }}-->
+            {% if ds.taskstats.align_wdlocal|length > 0 %}
+              <div id="wdlocal_tasks">
+                <div class="mt-0 smaller">
+                <p class="mb-0">You have already run one or more Wikidata alignment tasks for this dataset
+                {% if ds.taskstats.align_wdlocal.0.total == 0 %}.<br/>All results have been reviewed and matching decisions recorded. Running it again risks duplicating that effort.
+                {% else %}.<br/>Only the <b class="text-danger">{{ds.taskstats.align_wdlocal.0.total}}</b> place records NOT already reviewed will be submitted now.
+                {% endif %}
+                <span class="help-matches" data-id="recon_rerun">{% fontawesome_icon 'question-circle' color='#993333' %}</span></p>
+                <input type="hidden" name="scope" value="unreviewed">
+                </div>
               </div>
-              <!-- row detail in 2 columns, populated with getPlace() -->
-              <div id="row_detail" class="row">
-                <div id="detail_left" class="small col-sm-6">left side</div>
-                <div id="detail_right" class="small col-sm-6">right side</div>
-              </div>
-            </div> <!-- drftable_detail -->
-            <div id="drftable_list" class="col-sm-6">
-              <table id="placetable" class="table table-striped table-bordered" style="width:100%">
-                <thead>
-                  <tr>
-                    <th>pid</th>
-                    <th>src_id</th>
-                    <th>title</th>
-                    <th>ccodes</th>
-                    <th>geom?</th>
-                  </tr>
-                </thead>
-              </table>
+            {% endif %}
+          </div>
+          <!-- { endif %} -->
+          {% if ds.unindexed < ds.numrows %}
+            <!-- if some are indexed, offer to skip them -->
+            <div id="recon_scope" class="mt-2">
+              <hr/><p class="font-weight-bold">Task scope</p>
+              <label class="radio-inline">
+              <input type="radio" name="scope" id="scope1" value="all"> All <b>{{ds.numrows}}</b> records</label>
+              <label class="radio-inline ml-3">
+              <input type="radio" name="scope" checked="true" id="scope2" value="unindexed"> Only the unindexed (<b>{{ds.unindexed}}</b>)</label>
+            </div>
+          {% endif %}
+          <div id="geo_constraint" class="mt-2">
+            <hr/>
+            <div class="mb-2">
+              <p class="font-weight-bold">Geographic bounds <span class="help-matches" data-id="geo_bounds">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
+              </p>
+              <p>
+                <select id="select_region" name="region" class="custom-select-sm" style="width:auto;">
+                  <option value="0">Select pre-defined region</option>
+                  <option disabled>___________</option>
+                  {% for r in region_list %}
+                    <option value="{{ r.id }}">{{ r.title }}</option>
+                  {% endfor %}
+                </select><span class="ml-2"><b>or...</b></span></p>
+              <p>
+                <select id="select_userarea" name="userarea" class="custom-select-sm" style="width:auto;">
+                  <option value="0" selected="selected">Select user-defined study area</option>
+                  <option disabled>___________</option>
+                  {% for a in area_list %}
+                      <option value="{{ a.id }}">{{ a.title }}</option>
+                  {% endfor %}
+                  <option value="create">{ new }</option>
+                </select>
+              <span class="ml-2 small">
+                <a href="{% url 'areas:area-create' %}?next=/datasets/{{ds.id}}/detail#addtask">create user area</a>
+              </span></p>
             </div>
           </div>
-        </div>
-      <div id="ext_site" class="modal fade" role="dialog">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span></button>
-            </div>
-            <div id="ext_content" class="modal-body">foo</div>
+          <div class="bottom">
+            <hr/>
+            <button type="submit" id="btn_startrecon" class="btn btn-primary">Start</button>
+            <span title="back"><a id="cancel_taskadd" href="#">Cancel</a></span>
+            <span id="q_accept" class="ml-3 small">
+              <input id="accept_geom" name="geom" type="checkbox" checked="checked"/> accept geometries in matches
+          <span class="help-matches" data-id="accept-geometry">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
+            </span>
           </div>
-        </div>
-      </div> <!-- ext_site -->
-    </div> <!-- browse -->
+        </div> <!-- recon_form -->
+        <div id="recon_result" class="col-md-6 p-tight py-2 dashedbox">
+          {% if request.method == 'GET' %}
+          <div id="mapdiv_recon" class="mt-2">
+            {% leaflet_map "map_recon" %}
+          </div>
+          {% endif %}
+        </div> <!-- recon_result -->
+      </div> <!-- row -->
+      {% else %}
+      <div><p class="pl-3 text-danger"><b>Sorry, reconciliation tasks can only be initiated by the dataset owner.</b></p></div>
+      {% endif %}
+      </form>
+        <!--<div class="selector py-3"><div id="updater"></div></div>-->
+        <div class="selector py-3"><div id="helpme"></div></div>
+      </div> <!-- .row -->
+    </div> <!-- #addtask -->
   </div> <!-- .tab-content -->
 
   <div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">

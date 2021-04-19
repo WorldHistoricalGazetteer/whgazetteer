@@ -26,16 +26,13 @@
   <ul id="dataset_tabs" class="nav nav-tabs" role="tablist">
       <span class="ds-title ml-1 mr-3">{{ ds.title }}</span>
       <li class="nav-item">
-          <a class="nav-link active" id="summary-tab" data-toggle="tab" data-link="summary" href="" role="tab" aria-controls="summary" aria-selected="false">Metadata</a>
+          <a class="nav-link active" id="summary-tab" data-link="summary" href="" role="tab" aria-controls="summary" aria-selected="false">Metadata</a>
       </li>
       <li class="nav-item">
           <a class="nav-link" id="browse-tab" href="{% url 'datasets:ds_browse' id=ds.id %}" role="tab" aria-controls="browse" aria-selected="false">Browse</a>
       </li>
       <li class="nav-item">
           <a class="nav-link" id="reconciliation-tab" href="{% url 'datasets:ds_reconcile' id=ds.id %}" role="tab" aria-controls="reconciliation" aria-selected="false">Reconciliation</a>
-      </li>
-      <li id="addtask_li" class="nav-item hidden">
-          <a class="nav-link" id="addtask-tab" href="#" role="tab" aria-controls="addtask" aria-selected="false">Add task</a>
       </li>
       <li class="nav-item">
           <a class="nav-link" id="sharing-tab" href="{% url 'datasets:ds_collab' id=ds.id %}" role="tab" aria-controls="sharing" aria-selected="false">Collaborators</a>
@@ -306,11 +303,11 @@ js for Summary, Reconciliation
     window.spinner_dl = new Spin.Spinner().spin();
     $("#ds_downloads").append(spinner_dl.el);   
   }
-  function startDetailSpinner(){
-    window.spinner_dl = new Spin.Spinner().spin();
-    $("#detail_left").append(spinner_dl.el);   
+  function startTableSpinner(){
+    window.spinner_table = new Spin.Spinner().spin();
+    $("#drftable_list").append(spinner_table.el);   
   }
-  <!--$("#ds_downloads a").click(function(){console.log($(this)})-->
+
   $("#ds_downloads a").click(function(e){
     urly='/datasets/{{ds.id}}/augmented/'+$(this).attr('ref')
     startDownloadSpinner()
@@ -325,10 +322,9 @@ js for Summary, Reconciliation
   $("#btn_startrecon").click(function(e){
     startReconSpinner()
   })
-  <!--$('a[ref="dl"]').click(function(){startDownloadSpinner()})-->
+
   // parse & prettify ds_update() results
   function updateText(data){
-    // { "status": "updated", "#updated": 133, "#new": 2, "newfile": "media/user_whgadmin/diamonds135_0t_h0b7.tsv", "format": "delimited" }
     html = 'Update changes: <br/>' + 
            'Added '+data["new_count"]+' rows <br/>'+ 
            'Deleted '+data["del_count"]+' rows <br/>'+ 
@@ -478,7 +474,6 @@ js for Summary, Reconciliation
     
     // manage url
     var url = document.location.toString();
-    <!--console.log('url, context on load',url,"{{context}}".length)-->
     if (url.match('#')) {
       tab = url.split('#')[1]
       $('.nav-tabs a[href="#' + tab+ '"]').tab('show');
@@ -488,8 +483,9 @@ js for Summary, Reconciliation
       location.href=taburl
     }
     //***
-    // Browse onload
+    // onload for Browse
     //***
+    startTableSpinner()
     spinner_map = new Spin.Spinner().spin();
     $("#map").append(spinner_map.el);
     
@@ -506,6 +502,7 @@ js for Summary, Reconciliation
       ],
     })
     table.on( 'draw', function () {
+      spinner_table.stop()
       setRowEvents();
     });
     // end Browse onload js
@@ -532,19 +529,18 @@ js for Summary, Reconciliation
       }
       if(e.target.hash=="#browse"){
         mappy.invalidateSize();
+        <!--startTableSpinner()-->
         $("html,body").scrollTop(0)
-        // TODO: features not available on reload
-        <!--mappy.fitBounds(features.getBounds())-->
+        if(typeof(features) != 'undefined'){
+          mappy.fitBounds(features.getBounds())        
+        }
       }
       if(e.target.hash=="#addtask"){
         mappyr.invalidateSize();
         $("html,body").scrollTop(0)
       }
     })
-    
-    // TODO: reload should NOT be necessary
-    <!--updateTotals('{{ ds.id }}')-->
-    
+        
     steps={"uploaded":1,"reconciling":2,"review_hits":3,"reviewed":4,"review_whg":5,"indexed":6}
     $("[ref="+steps['{{ ds.ds_status }}']+"]").addClass('prog-active')
 
@@ -650,21 +646,62 @@ js for Add Task
 <!--
 js for Browse
 -->
+<script src="//cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+<script src="//cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
 
 <script  type="text/javascript">
   $("[rel='tooltip']").tooltip();
   $('.vocab').on('click', function(e) {
+    <!--e.preventDefault();-->
+    <!--str=$(this).text()-->
     console.log('id',$(this).data('id'))
     <!--var re = /(http|dbp|gn|tgn|wd|loc|viaf|aat):(.*?)$/;-->
     <!--url=str.match(re)[1]=='http' ? str : base_urls[str.match(re)[1]]+str.match(re)[2]-->
     <!--window.open(url,'_blank')-->
   });  
+  
+  // generic 
+  function zoomTo(pid) {
+    l = idToFeature[pid]
+    ftype=l.feature.geometry.type
+    <!--console.log('zoomTo() pid, ftype',pid, ftype)-->
+    if (ftype=='Point'){
+       mappy.setView(l._latlng, 7 )
+    } else {
+      mappy.fitBounds(l.getBounds(), {padding:[100,100]})
+    }
+  }
+
+  function highlightFeature(pid){
+    <!--console.log('highlightFeature()', pid)-->
+    if(typeof(idToFeature) != 'undefined'){
+      if(pid in idToFeature){
+        feat = idToFeature[pid]
+        ftype = feat.feature.geometry.type
+        
+        // reset style of last if there is a last
+        if(typeof(last)!='undefined'){
+          last[0].setStyle(styles[last[1]].default)
+        }
+
+        // highlight this one
+        feat.setStyle(styles[ftype].focus)
+        feat.bringToFront()
+        
+        zoomTo(pid)
+        
+        last = [feat, ftype]
+      } else {
+        features.setStyle(foptions)
+      }
+    }    
+  }
   function setRowEvents(){
     $("#placetable tr").click(function() {
         t=$(this)
         // get id
         pid=$(this)[0].cells[0].textContent
-        console.log('selected row pid', pid)
+        
         // highlight this row, clear others
         var selected = $(this).hasClass("highlight-row");
         $("#placetable tr").removeClass("highlight-row");
@@ -673,47 +710,20 @@ js for Browse
           $(this).removeClass( "rowhover" );
           $(this).addClass("highlight-row");
 
-        if(typeof(grp) != 'undefined'){ grp.removeFrom(mappy)}
-        
-        // highlights marker if idToFeature
-        if(typeof(idToFeature) != 'undefined'){
-          if(pid in idToFeature){
-            feat = idToFeature[pid]
-            ftype = feat.feature.geometry.type
-            // reset style for all if we've zoomed
-            if(typeof foptions !== 'undefined'){
-              features.setStyle(foptions)
-            }
-            // focus this one
-            // TODO: an appropriate zoom
-            feat.setStyle(styles[ftype].focus)
-            feat.bringToFront()
-            // account for lines and polygons
-            // mappy.setView(feat._latlng);
-            mappy.setView(
-              ftype=='Point'?feat._latlng:feat.getBounds().getCenter()
-            )
-          } else {
-            features.setStyle(foptions)
-          }
-        } else {
-          // no idToFeature object
-          getPlace(pid)        
-        }
+        // highlight marker and center
+        highlightFeature(pid)
+        getPlace(pid)
       }
     ) 
         
     row = $("#drftable_list table tbody")[0].rows[0]
     pid = parseInt(row.cells[0].textContent)
+    highlightFeature(pid)
     // display first row detail
     $("#placetable tbody").find('tr').eq(0).addClass('highlight-row')
     getPlace(pid)
   }
-  function focusFeature(feat){
-    console.log('feat',feat)
-    feat.setStyle(styles[feat.feature.geometry.type].focus)
-    <!--mappy.setView(feat._latlng, 3);-->
-  }
+
   // responds to leaflet_map tags in both #browse and #addtask tabs
   addEventListener('map:init', function (e) {
     <!--console.log('map id:',e.detail.id) // map_browse or map_recon-->
@@ -749,28 +759,21 @@ js for Browse
         hideControlContainer: true
       }).addTo(mappy)
       
-      console.log('count of places: {{ ds.numrows }}')
-      // TODO: if <= 1000, download & render them all
-      if('{{ ds.numrows}}' <= 1000) {
-        $.get("/api/geoms", {ds: "{{ ds.label }}", f: "{{ filter }}" },
-          function(data){
-            geom = {"type":"FeatureCollection","features":data.results}
-            if(geom.features.length >= 15000) {
-              $(".toomany").html('for performance reasons, mapping only the first 15,000 features - sorry!')
-            }
-            if(geom.features.length <= 15000) {
-              renderMap(geom,'browse')
-            } else {
-              spinner.stop()
-              $(".toomany").html('too many features to map (> '+geom.features.length+'), sorry!')
-            }
-        })          
-      }
-      <!--} else {-->
-        <!--spinner_map.stop()-->
-        <!--$(".toomany").html('too many features to map all, sorry!')      -->
-      <!--}-->
-
+      // get dataset features -> renderMap() if < 15,000
+      $.get("/api/geoms", {ds: "{{ ds.label }}", f: "{{ filter }}" },
+        function(data){
+          <!--console.log('feature count:',data.count)-->
+          geom = {"type":"FeatureCollection","features":data.results}
+          if(geom.features.length >= 15000) {
+            $(".toomany").html('for performance reasons, mapping only the first 15,000 features - sorry!')
+          }
+          if(geom.features.length <= 15000) {
+            renderMap(geom,'browse')
+          } else {
+            spinner.stop()
+            $(".toomany").html('too many features to map (> '+geom.features.length+'), sorry!')
+          }
+      })  
     } else {
       // it's map_recon in #addtask tab, name it mappyr
       window.mappyr = e.detail.map
@@ -811,13 +814,18 @@ js for Browse
     "MultiPoint": {
       "default": {radius: 1, fillColor:"#ff9900", fillOpacity: 0.8, stroke: false},
       "focus": {radius:8, fillColor:"#ffff00",fillOpacity:1, stroke:true, weight:1,color:"#000"}},
+    "LineString": {
+      "default":{opacity: 1, weight: 1, color: "#336699"},
+      "focus":{opacity: 1, weight: 2, color: "blue"}},
     "MultiLineString": {
       "default":{opacity: 1, weight: 1, color: "#336699"},
-      "focus":{}},
+      "focus":{opacity: 1, weight: 2, color: "blue"}},
     "MultiPolygon": {
-      "default":{fillOpacity: 0.4, opacity: 1, color: "#fff", weight: 1, fillColor:"#993333"},
-      "focus":{}
-    }
+      "default":{fillOpacity: 0.3, opacity: 1, color: "#000", weight: 1, fillColor:"#ff9999"},
+      "focus":{fillOpacity: 0.3, opacity: 1, color: "red", weight: 2, fillColor:"#ff9999"}},
+    "Polygon": {
+      "default":{fillOpacity: 0.3, opacity: .5, color: "#666", weight: 1, fillColor:"#ff9999"},
+      "focus":{fillOpacity: 0.3, opacity: .5, color: "red", weight: 2, fillColor:"#ff9999"}}
   }
   // dual purpose for browse and recon
   function renderMap(geom, tab){
@@ -846,18 +854,22 @@ js for Browse
         ,onEachFeature: function(feature,layer) {
           f=feature; l=layer;
           <!--console.log('f,l',feature,layer)-->
-          identifier = feature.place_id;
-          if(feature.type != 'Point'){
-            <!--layer.setStyle(styles.default)-->
+          identifier = f.place_id;
+          if(f.type != 'Point'){
+            layer.setStyle(styles[f.type].default).bindPopup(
+              f.title+'<br>pid: <a href="'+
+              window.location.origin+'/api/db?id='+
+              identifier+'" target="_blank">'+identifier+'</a>'
+            )
             idToFeature[identifier] = layer
           }
         }
       }).addTo(mappo);
-      <!--});-->
     }
     mappo.fitBounds(features.getBounds())
     mappo.on('zoomend', function() {
-      var currentZoom = mappy.getZoom();
+      var currentZoom = mappo.getZoom();
+      <!--console.log('on zoomend', currentZoom)-->
       var myRadius = currentZoom*(1); //or whatever ratio you prefer
       var myWeight = currentZoom*(1/5); //or whatever ratio you prefer
       features.setStyle({radius: myRadius, weight: myWeight});
@@ -1013,66 +1025,11 @@ js for Browse
     return side=='left'?left:right
   }
 
-  // render single row's geometry/geometries
-  function renderPlace(geom) {
-    if(geom.length > 0) {
-      props = {"place_id":geom[0].place_id, "src_id":geom[0].src_id, "title":geom[0].title}
-      row_geojson = {
-        "type":"Feature",
-        "properties": props,
-        "geometry": {
-          "type": "GeometryCollection",
-          "geometries":[]}
-      }
-      for(g in geom){
-        row_geojson.geometry.geometries.push(
-          {"type":geom[g].type, "coordinates":geom[g].coordinates}
-        )}
-      if(typeof(grp) != 'undefined'){ grp.removeFrom(mappy)}
-      rowfeat = L.geoJSON(row_geojson, {
-        onEachFeature: function (feature, layer){
-          <!--features.onEachFeature(function(feature, layer){-->
-          <!--console.log('feature',feature)            -->
-          <!--console.log('layer',layer)            -->
-          <!--})-->
-          grp = L.featureGroup()
-          layer.eachLayer(function(lyr){
-            lyrc = lyr
-            <!--console.log('lyr',lyr)-->
-            // {radius: 1, fillColor:"#ff9900", fillOpacity: 0.8, stroke: false}
-            matchid = feature.properties.place_id
-            title = feature.properties.title
-            if(lyr._latlng){
-              m = L.circleMarker(lyr._latlng).bindPopup(
-              title+'<br>pid: <a href="'+window.location.origin+
-              '/api/db?id='+matchid+'" target="_blank">'+matchid+'</a>')
-              m.addTo(grp)
-            }
-            <!--else{ // it's a line or polygon                       -->
-                <!--var t_style = {-->
-                    <!--"weight":'3',-->
-                    <!--"opacity":'1',-->
-                    <!--"color":"#fcba03",-->
-                    <!--"fillOpacity":'0.5',-->
-                    <!--"fillColor":"#fcba03"-->
-                <!--}   -->
-                <!--layer.setStyle(t_style);-->
-            <!--}-->
-          })
-        }
-      })
-      grp.setStyle({radius: 8, fillColor:"#ffff00", fillOpacity: 1, stroke: true, weight: 1}).addTo(mappy)
-    } else {
-      if(typeof(grp) != 'undefined'){ grp.removeFrom(mappy)}
-    }
-  }
-  // get single place record, display data, render map marker(s)
   function getPlace(pid){
+    <!--console.log('getPlace()', pid)-->
     $.ajax({
       url: "/api/place/"+pid,
       }).done(function( data ) {
-        <!--console.log('api/place/ data.geoms', data.geoms)-->
-        dg = data.geoms
         $("#detail_left").html(parsePlace(data,'left'))
         $("#detail_right").html(parsePlace(data,'right'))
         $('.ext').on('click', function(e) {
@@ -1098,21 +1055,7 @@ js for Browse
           console.log('url',url)
           window.open(url,'_blank')
         }); 
-        // 
-        renderPlace(data.geoms)
     });
   }
-  // initialize maps 
-  function map_init_browse (map, options) {
-    console.log('map_init_browse(); wtf?')  } 
-    
-  function map_init_recon (map, options) {
-    console.log('map_init_recon(); wtf?')
-  }
-  // generic 
-  function zoomTo(id) {
-    mappy.setView(idToFeature[id]._latlng, mappy.getZoom() +2 )
-  }
-
 </script>
 {% endblock %}

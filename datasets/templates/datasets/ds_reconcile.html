@@ -26,7 +26,7 @@
   <ul id="dataset_tabs" class="nav nav-tabs" role="tablist">
       <span class="ds-title ml-1 mr-3">{{ ds.title }}</span>
       <li class="nav-item">
-          <a class="nav-link" id="summary-tab" data-toggle="tab" data-link="summary" href="{% url 'datasets:ds_summary' id=ds.id %}" role="tab" aria-controls="summary" aria-selected="false">Metadata</a>
+          <a class="nav-link" id="summary-tab" data-link="summary" href="{% url 'datasets:ds_summary' id=ds.id %}" role="tab" aria-controls="summary" aria-selected="false">Metadata</a>
       </li>
       <li class="nav-item">
           <a class="nav-link" id="browse-tab" href="{% url 'datasets:ds_browse' id=ds.id %}" role="tab" aria-controls="browse" aria-selected="false">Browse</a>
@@ -447,10 +447,11 @@ js for Summary, Reconciliation
     })
     $("#addtask_link").click(function(e){
       e.preventDefault()
-      window.location.hash = "#addtask"
-      $("#addtask_li").removeClass('hidden')
-      $('.nav-tabs a[href="#addtask"]').tab('show');
-      mappyr.invalidateSize()
+      window.location.href = "{% url 'datasets:ds_addtask' id=ds.id %}"
+      <!--window.location.hash = "#addtask"-->
+      <!--$("#addtask_li").removeClass('hidden')-->
+      <!--$('.nav-tabs a[href="#addtask"]').tab('show');-->
+      <!--mappyr.invalidateSize()-->
     })
 
     // Change hash for page-reload

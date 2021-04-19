@@ -13,6 +13,9 @@ app_name='datasets'
 urlpatterns = [
     
     path('create/', views.DatasetCreateView.as_view(), name='dataset-create'),
+
+    # also handles update for name, description fields
+    path('<int:id>/detail', views.DatasetDetailView.as_view(), name='dataset-detail'),
     
     # upload excel
     path('xl/', views.xl_upload, name='xl-upload'),
@@ -31,9 +34,6 @@ urlpatterns = [
 
     # download flattened geojson data
     path('<int:id>/gis/', download_gis, name="dl-gis"), # 
-
-    # also handles update for name, description fields
-    path('<int:id>/detail', views.DatasetDetailView.as_view(), name='dataset-detail'),
 
     # insert validated delimited (csv for short) file data to db
     path('<int:pk>/insert_tsv/', views.ds_insert_tsv, name="ds_insert_tsv"),
@@ -77,7 +77,7 @@ urlpatterns = [
     path('<int:id>/browse', views.DatasetBrowseView.as_view(), name='ds_browse'),
     path('<int:id>/reconcile', views.DatasetReconcileView.as_view(), name='ds_reconcile'),
     path('<int:id>/collab', views.DatasetCollabView.as_view(), name='ds_collab'),
-
+    path('<int:id>/addtask', views.DatasetAddTaskView.as_view(), name='ds_addtask'),
     path('<int:id>/log', views.DatasetLogView.as_view(), name='ds_log'),
 
 
