@@ -12,10 +12,12 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse
 from django.views.generic import (CreateView, ListView, UpdateView, DeleteView, DetailView)
 from django_celery_results.models import TaskResult
+
 # external
 from celery import current_app as celapp
 from chardet import detect
 import codecs, math, mimetypes, os, re, shutil, sys, tempfile
+import django_tables2 as tables
 from elasticsearch import Elasticsearch      
 es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 import pandas as pd
@@ -144,6 +146,45 @@ def indexMatch(pid, hit_pid=None):
   #return kwargs['owner'] == user.id
 
 
+
+"""
+try adding a table of ds.places to review screens
+"""
+class PlaceTable(tables.Table):
+  class Meta:
+    model = Place
+    fields = ('src_id', 'title', )
+
+""" refactored loads only placelist table """
+def review2(request, pk, tid):
+  ds = get_object_or_404(Dataset, id=pk)
+  task = get_object_or_404(TaskResult, task_id=tid)
+  auth = task.task_name[6:].replace('local','')
+  authname = 'Wikidata' if auth == 'wd' else 'Getty TGN' \
+    if auth == 'tgn' else 'WHG'
+  kwargs=json.loads(task.task_kwargs.replace("'",'"'))
+  beta = 'beta' in list(request.user.groups.all().values_list('name',flat=True))
+  print('auth, dataset, task', auth, pk, tid)
+  
+  # place list table for left column
+  table = PlaceTable(ds.places.all())
+  hitplaces = Hit.objects.values('place_id').filter(task_id=tid, reviewed=False)
+  
+  # if whg or idx ...
+  if auth in ['whg','idx']:
+    review_page = 'accession.html'
+  else:
+    review_page = 'review2.html' if beta else 'review.html'
+    
+  context = {
+    'ds_id': pk, 'ds_label': ds.label, 'task_id': tid,
+    'authority': task.task_name[6:8] if auth=='wdlocal' else task.task_name[6:],
+    'aug_geom': json.loads(task.task_kwargs.replace("'",'"'))['aug_geom'],
+    'mbtokenmb': settings.MAPBOX_TOKEN_MB,
+    'place_list': table      
+  }  
+  return render(request, 'datasets/'+review_page, context=context)
+
 """
 # review reconciliation results
 # called from detail#reconciliation passnum links on 
@@ -159,6 +200,10 @@ def review(request, pk, tid, passnum):
   kwargs=json.loads(task.task_kwargs.replace("'",'"'))
   print('request.POST in review()', request.POST)
   print('passnum in review()',passnum)
+  beta = 'beta' in list(request.user.groups.all().values_list('name',flat=True))
+  
+  # try addin place list table in left column
+  table = PlaceTable(ds.places.all())
   
   # filter place records by passnum for those with unreviewed hits on this task
   # if request passnum is complete, increment
@@ -188,7 +233,7 @@ def review(request, pk, tid, passnum):
     review_page = 'accession.html'
   else:
     hitplaces = Hit.objects.values('place_id').filter(task_id=tid, reviewed=False, query_pass=passnum)
-    review_page = 'review.html'
+    review_page = 'review2.html' if  beta else 'review.html'
     
   # if some are unreviewed, queue in record_list
   if len(hitplaces) > 0:
@@ -234,18 +279,19 @@ def review(request, pk, tid, passnum):
   # prep some context
   context = {
     'ds_id': pk, 'ds_label': ds.label, 'task_id': tid,
-      'hit_list': raw_hits, 
-      'authority': task.task_name[6:8] if auth=='wdlocal' else task.task_name[6:],
-      'records': records, 
-      'countries': countries, 
-      'passnum': passnum,
-      'page': page if request.method == 'GET' else str(int(page)-1),
-      'aug_geom': json.loads(task.task_kwargs.replace("'",'"'))['aug_geom'],
-      'mbtokenmb': settings.MAPBOX_TOKEN_MB,
-      'count_pass0': cnt_pass0,
-      'count_pass1': cnt_pass1,
-      'count_pass2': cnt_pass2,
-      'count_pass3': cnt_pass3
+    'hit_list': raw_hits, 
+    'authority': task.task_name[6:8] if auth=='wdlocal' else task.task_name[6:],
+    'records': records, 
+    'countries': countries, 
+    'passnum': passnum,
+    'page': page if request.method == 'GET' else str(int(page)-1),
+    'aug_geom': json.loads(task.task_kwargs.replace("'",'"'))['aug_geom'],
+    'mbtokenmb': settings.MAPBOX_TOKEN_MB,
+    'count_pass0': cnt_pass0,
+    'count_pass1': cnt_pass1,
+    'count_pass2': cnt_pass2,
+    'count_pass3': cnt_pass3,
+    'place_list': table,
       
   }
 

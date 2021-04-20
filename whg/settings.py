@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django_celery_results',
     'django_extensions',
     'django_filters',
+    'django_tables2',
     'djgeojson',
     'fontawesome',
     'guardian',

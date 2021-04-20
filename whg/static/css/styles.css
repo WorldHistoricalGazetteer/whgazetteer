@@ -414,6 +414,15 @@ em { color: #993333;}
 /**
   review
 **/
+
+/* for review2.html */
+.table-container { font-family: sans-serif; }
+.table-container tr { line-height: normal; font-size: smaller;}
+.table-container .even { background-color: #eee;}
+
+#review_placelist { padding-left:0;}
+/* end */
+
 #select_pass {
   margin-left: 40px;
   font-weight: bold;
@@ -736,7 +745,7 @@ span.edit-row {
   height: 20px;
   margin-bottom: 4px;
 }
-#review_list {
+#review_hitlist {
   height:calc(100vh - 180px);
   overflow:scroll;
 }
