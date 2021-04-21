@@ -84,12 +84,15 @@
               <p><b>Result</b>: {{ t.result|get:"got_hits"|safe }} records (of {{ t.result|get:"count"|safe }}) got total of <b>{{ t.result|get:"total"|safe }}</b> hits</p>
               <!--{ t.result }}-->
               <p class="mb-0 ital">Remaining to review:</p>
-              <!--{ if not t.task_name == 'align_idx' %}-->
               <ul>
                 {% if t.result|get:"pass0" > 0 %}
                   <li id="pass0_{{t.task_id}}" class="li-left">Pass 0 (matched links): 
                   <span class="mx-2 strong" id='{{t.task_id}}_0'>nn</span> 
-                    <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass0' %}">review</i></a>
+                    {% if beta_or_better %}
+                      <a href="{% url 'datasets:review2' pk=ds.id tid=t.task_id %}">review</i></a>
+                    {% else %}
+                      <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass0' %}">review</i></a>
+                    {% endif %}
                    <span>| 
                     {% if t.task_name == 'align_idx'%}
                     <a href="{% url 'datasets:idx_pass0' tid=t.task_id %}">auto-accept</a>  
@@ -100,34 +103,44 @@
                    </li>
                 {% endif %}
                 {% if t.result|get:"pass1" > 0 %}
-                  <li class="li-left">Pass 1: <span class="strong mx-2" id='{{t.task_id}}_1'>nn</span> 
-                  <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass1' %}">
-                   review</i></a></li>
+                  <li class="li-left">Pass 1: 
+                  <span class="strong mx-2" id='{{t.task_id}}_1'>nn</span>
+                    {% if beta_or_better %}
+                      <a href="{% url 'datasets:review2' pk=ds.id tid=t.task_id %}">review</i></a>
+                    {% else %}
+                      <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass1' %}">review</i></a>
+                    {% endif %}
+                  </li>
                 {% endif %}
                 {% if t.result|get:"pass2" > 0 %}
-                  <li class="li-left">Pass 2: <span class="strong mx-2" id='{{t.task_id}}_2'>nn</span> 
-                  <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass2' %}">
-                   review</i></a></li>
+                  <li class="li-left">Pass 2: 
+                  <span class="strong mx-2" id='{{t.task_id}}_2'>nn</span> 
+                    {% if beta_or_better %}
+                      <a href="{% url 'datasets:review2' pk=ds.id tid=t.task_id %}">review</i></a>
+                    {% else %}
+                      <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass2' %}">review</i></a>
+                    {% endif %}
+                  </li>
                 {% endif %}
-                <!--{ if t.task_name == 'align_tgn' %}-->
+                {% if t.task_name == 'align_tgn' %}
                 {% if t.result|get:"pass3" > 0 %} <!-- TGN only -->
                   <li class="li-left">Pass 3: <span class="strong mx-2" id='{{t.task_id}}_3'>nn</span> 
                   <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass3' %}">
                    review</i></a></li>
                 {% endif %}
               </ul> 
-              <!--{ else %} <!-- align_idx-->
+              {# else %} <!-- align_idx-->
                 <!--<ul>-->
-                <!--{ if t.result|get:"pass0" > 0 %}-->
+                <!--{# if t.result|get:"pass0" > 0 %}-->
                 <!--<li id="pass0_{{t.task_id}}" class="li-left">Pass 0: <span class="mx-2 strong" id='{{t.task_id}}_0'>nn</span><a href="{ url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass0' %}">review</a></li>-->
-                <!--{ endif %}-->
-                <!--{ if t.result|get:"pass1" > 0 %}-->
-                  <!--<li class="li-left">Pass 1: <span class="strong mx-2" id='{{t.task_id}}_1'>nn</span> -->
+                {# endif %}
+                {# if t.result|get:"pass1" > 0 %}
+                  <li class="li-left">Pass 1: <span class="strong mx-2" id='{{t.task_id}}_1'>nn</span> 
                   <!--<a href="{ url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass1' %}">-->
                    <!--review</i></a></li>-->
-                <!--{ endif %}-->
-                <!--</ul>-->
-              <!--{ endif %}-->
+                <!--{# endif %}-->
+                </ul>
+              {% endif %}
             </div>
             <div class="col-sm-2">
               {% if t.task_name == 'align_wd' %}

@@ -145,8 +145,6 @@ def indexMatch(pid, hit_pid=None):
   #kwargs=json.loads(task.task_kwargs.replace("'",'"'))  
   #return kwargs['owner'] == user.id
 
-
-
 """
 try adding a table of ds.places to review screens
 """
@@ -155,35 +153,45 @@ class PlaceTable(tables.Table):
     model = Place
     fields = ('src_id', 'title', )
 
+class HitTable(tables.Table):
+  class Meta:
+    model = Hit
+    fields = ('place_id', 'json__whg_id')
+
 """ refactored loads only placelist table """
 def review2(request, pk, tid):
   ds = get_object_or_404(Dataset, id=pk)
   task = get_object_or_404(TaskResult, task_id=tid)
   auth = task.task_name[6:].replace('local','')
-  authname = 'Wikidata' if auth == 'wd' else 'Getty TGN' \
-    if auth == 'tgn' else 'WHG'
+  #authname = 'Wikidata' if auth == 'wd' else 'Getty TGN' \
+    #if auth == 'tgn' else 'WHG'
   kwargs=json.loads(task.task_kwargs.replace("'",'"'))
   beta = 'beta' in list(request.user.groups.all().values_list('name',flat=True))
   print('auth, dataset, task', auth, pk, tid)
+  print('kwargs', kwargs)
   
   # place list table for left column
-  table = PlaceTable(ds.places.all())
-  hitplaces = Hit.objects.values('place_id').filter(task_id=tid, reviewed=False)
+  place_table = PlaceTable(ds.places.all())
+  hit_table = HitTable(Hit.objects.filter(task_id=tid))
+  #hitplaces = Hit.objects.values('place_id').filter(task_id=tid, reviewed=False)
   
   # if whg or idx ...
-  if auth in ['whg','idx']:
-    review_page = 'accession.html'
-  else:
-    review_page = 'review2.html' if beta else 'review.html'
+  #if auth in ['whg','idx']:
+    #review_page = 'accession.html'
+  #else:
+  review_page = 'review2.html' if beta else 'review.html'
     
   context = {
     'ds_id': pk, 'ds_label': ds.label, 'task_id': tid,
     'authority': task.task_name[6:8] if auth=='wdlocal' else task.task_name[6:],
     'aug_geom': json.loads(task.task_kwargs.replace("'",'"'))['aug_geom'],
     'mbtokenmb': settings.MAPBOX_TOKEN_MB,
-    'place_list': table      
+    'passnum': 'pass99',
+    'place_list': place_table,
+    'hit_list': hit_table
   }  
-  return render(request, 'datasets/'+review_page, context=context)
+
+  return render(request, 'datasets/review2.html', context=context)
 
 """
 # review reconciliation results

@@ -17,7 +17,7 @@
 <div class="container">
   <!-- incoming: ds, hit_list -->
   <h5 class="mb-2 mt-3">{% if authority == 'idx' %}Accessioning{%else%}Reconciliation{%endif%} Review: 
-    <span class="small"> <a href="{% url 'datasets:dataset-detail' id=ds_id %}"> 
+    <span class="small"> <a href="{% url 'datasets:ds_reconcile' id=ds_id %}"> 
       {{ ds_label }}</a> {% if authority != 'whg' %}> {{ authority }} {%endif%}
       <select id="select_pass" name="pass" class="custom-select-sm mr-2" style="width:auto;">
         {% if count_pass0 > 0 %}
@@ -37,7 +37,7 @@
   {% if nohits %}
     <div>
       <p>No unreviewed hits for this reconciliation task!</p>
-      <p><a href="{% url 'datasets:dataset-detail' id=ds_id %}">Return to dataset detail page</a></p>
+      <p><a href="{% url 'datasets:ds_summary' id=ds_id %}">Return to dataset detail page</a></p>
     </div>
   {% else %}
     <form id="form_related" method="POST" action="" >
