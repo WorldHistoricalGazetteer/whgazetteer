@@ -417,10 +417,26 @@ em { color: #993333;}
 
 /* for review2.html */
 .table-container { font-family: sans-serif; }
-.table-container tr { line-height: normal; font-size: smaller;}
+.table-container tr { line-height: normal; font-size: .8rem;}
 .table-container .even { background-color: #eee;}
 
-#review_placelist { padding-left:0;}
+#review_nav .pagination {
+  background-color: #eee;
+} 
+#review_placelist {
+  padding-left:0;
+} 
+#review_placelist .pagination {
+  font-size:small;
+} 
+#review_placelist li {
+  margin-right:2px;
+}
+.pagination-accession {
+  background-color: #efe0e0;
+} 
+
+
 /* end */
 
 #select_pass {
@@ -595,12 +611,6 @@ em { color: #993333;}
 .p-tight p {
   margin-bottom: .6rem;
 }
-.pagination {
-  background-color: #eee;
-} 
-.pagination-accession {
-  background-color: #efe0e0;
-} 
 
 
 /*#id_uri_base{width: 300px;}*/

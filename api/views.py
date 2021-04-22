@@ -24,8 +24,7 @@ from rest_framework.reverse import reverse
 from rest_framework.views import APIView
 import simplejson as json
 from accounts.permissions import IsOwnerOrReadOnly
-from api.serializers import (UserSerializer, DatasetSerializer, PlaceSerializer, 
-                             PlaceGeomSerializer, AreaSerializer, FeatureSerializer, LPFSerializer)
+from api.serializers import (UserSerializer, DatasetSerializer, PlaceSerializer, PlaceTableSerializer, PlaceGeomSerializer, AreaSerializer, FeatureSerializer, LPFSerializer)
 from areas.models import Area
 from datasets.models import Dataset
 from datasets.tasks import get_bounds_filter
@@ -83,6 +82,7 @@ def collectionItem(i,datatype,format):
         "dataset":i['dataset'],
         "placetypes":[t['label'] for t in i['types']],
         "variants":[n for n in i['suggest']['input'] if n != i['title']],
+        'links':i['links'],
         "timespans":i['timespans'],
         "minmax":i['minmax'] if 'minmax' in i.keys() else [],
         "ccodes":i['ccodes']
@@ -596,20 +596,31 @@ class GeomViewSet(viewsets.ModelViewSet):
 """
 class PlaceTableViewSet(viewsets.ModelViewSet):
   #queryset = Place.objects.all().order_by('title')
-  serializer_class = PlaceSerializer
+  serializer_class = PlaceTableSerializer
   permission_classes = (permissions.IsAuthenticatedOrReadOnly)
 
   """
     q: query string
     ds: dataset
   """
+  #def get_queryset(self):
+    ##print('PlaceViewSet.get_queryset()',self.request.GET)
+    #qs = Place.objects.all()
+    #query = self.request.GET.get('q')
+    #ds = self.request.GET.get('ds')
+    #if ds is not None:
+      #qs = qs.filter(dataset = ds).order_by('src_id')
+    #if query is not None:
+      #qs = qs.filter(title__istartswith=query)
+    #return qs
   def get_queryset(self):
     #print('PlaceViewSet.get_queryset()',self.request.GET)
-    qs = Place.objects.all()
+    ds = get_object_or_404(Dataset, label=self.request.GET.get('ds'))
+    qs = ds.places.all()
     query = self.request.GET.get('q')
-    ds = self.request.GET.get('ds')
-    if ds is not None:
-      qs = qs.filter(dataset = ds).order_by('src_id')
+    #ds = self.request.GET.get('ds')
+    #if ds is not None:
+      #qs = qs.filter(dataset = ds).order_by('src_id')
     if query is not None:
       qs = qs.filter(title__istartswith=query)
     return qs

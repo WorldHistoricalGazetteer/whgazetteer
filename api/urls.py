@@ -29,10 +29,12 @@ urlpatterns = [
     # *** PLACES ***
         
     # use: single place for dataset.html#browse:: PlaceSerializer
-    path('place/<int:pk>/', views.PlaceDetailAPIView.as_view(),name='place-detail'),    
+    path('place/<int:pk>/', views.PlaceDetailAPIView.as_view(),
+         name='place-detail'),    
 
     # use: drf table in dataset.html#browse  :: PlaceSerializer
-    path('placetable/', views.PlaceTableViewSet.as_view({'get':'list'}),name='place-table'), 
+    path('placetable/', views.PlaceTableViewSet.as_view({'get':'list'}), name='place-table'), 
+    #path('placetable/', views.PlaceTableViewSet, name='place-table'), 
 
     # use: map in dataset.html#browse :: PlaceGeomSerializer
     path('geoms/', views.GeomViewSet.as_view({'get':'list'}),name='geom-list'),    

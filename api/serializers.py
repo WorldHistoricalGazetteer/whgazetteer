@@ -171,6 +171,26 @@ class PlaceSerializer(serializers.ModelSerializer):
             'descriptions', 'depictions', 'geo','minmax'
         )
         
+class PlaceTableSerializer(serializers.ModelSerializer):
+    #dataset = serializers.ReadOnlyField(source='dataset.label')
+    #names = PlaceNameSerializer(many=True, read_only=True)
+    #types = PlaceTypeSerializer(many=True, read_only=True)
+    #geoms = PlaceGeomSerializer(many=True, read_only=True)
+    #links = PlaceLinkSerializer(many=True, read_only=True)
+    #related = PlaceRelatedSerializer(many=True, read_only=True)
+    #whens = PlaceWhenSerializer(many=True, read_only=True)
+    #descriptions = PlaceDescriptionSerializer(many=True, read_only=True)
+    #depictions = PlaceDepictionSerializer(many=True, read_only=True)
+
+    geo = serializers.SerializerMethodField('has_geom')    
+    def has_geom(self, place):
+        return '<i class="fa fa-globe"></i>' if place.geom_count > 0 else "-"
+        
+    class Meta:
+        model = Place
+        fields = ('url','id', 'title', 'src_id', 
+                  'ccodes', 'geo', 'minmax'
+        )
 
 """ used by: DownloadGeomsAPIView() """
 class FeatureSerializer(GeoFeatureModelSerializer):

@@ -49,6 +49,7 @@ urlpatterns = [
     
     # review2 refactored view and template
     path('<int:pk>/review2/<str:tid>', views.review2, name="review2"),
+    path('<int:pk>/review2/<str:tid>/<int:pid>', views.review2, name="review2"),
 
     # accept any unreviewed wikidata pass0 hits from given task
     path('wd_pass0/<str:tid>', views.write_wd_pass0, name="wd_pass0"),
