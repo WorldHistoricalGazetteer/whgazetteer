@@ -178,11 +178,15 @@ def review2 (request, pk, tid, pid=-1):
   print('request.POST in review()', request.POST)
   print('request.GET in review()', request.GET)
   beta = request.user.groups.filter(name = 'beta').exists()
-  sort = request.GET['sort']
+  if 'sort' in request.GET:
+    sort = request.GET['sort']
+  else:
+    sort = 'id'
   
   hitplaces = Hit.objects.values_list('place_id', flat=True).filter(task_id=tid)
   # try addin place list table in left column
   place_list = PlaceTable(ds.places.filter(id__in=hitplaces).order_by(sort))
+  #place_list = PlaceTable(ds.places.filter(id__in=hitplaces))
   place_list.paginate(page=request.GET.get("page", 1), per_page=20)
   #tid='abc-double-xyz'
   
@@ -190,6 +194,7 @@ def review2 (request, pk, tid, pid=-1):
   
   # all Place instances for dataset
   places = ds.places.filter(id__in=hitplaces).order_by(sort)
+  #places = ds.places.filter(id__in=hitplaces)
   # refactored review screen for wikidata, tgn
   if auth in ['whg','idx']:
     review_page = 'accession.html'
@@ -224,7 +229,7 @@ def review2 (request, pk, tid, pid=-1):
     'records': places, 
     'place': place,
     'countries': countries, 
-    #'passnum': passnum,
+    'passnum': "fubar",
     #'page': page if request.method == 'GET' else str(int(page)-1),
     'aug_geom': json.loads(task.task_kwargs.replace("'",'"'))['aug_geom'],
     'mbtokenmb': settings.MAPBOX_TOKEN_MB,
