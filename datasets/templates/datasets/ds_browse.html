@@ -65,9 +65,9 @@
                     <th>title</th>
                     <th>ccodes</th>
                     {% if ds.ds_status == 'accessioning' %}
-                    <th>whg <a rel="tooltip" data-html="true" title="no hits (<b>-</b>)<br/> unreviewed (&#x25a2;)<br/>reviewed (✓)" class="pointer text-danger strong">?</a></th>
+                    <th>whg <a rel="tooltip" data-html="true" title="no hits (<b>-</b>)<br/> unreviewed hits (&#x25a2;)<br/>reviewed (✓)" class="pointer text-danger strong">?</a></th>
                     {% endif %}
-                    <th>wikidata <a rel="tooltip" data-html="true" title="no hits (<b>-</b>)<br/> unreviewed (&#x25a2;)<br/>reviewed (&#x2713;)" class="pointer text-danger strong">?</a></th>
+                    <th>wikidata <a rel="tooltip" data-html="true" title="no hits (<b>-</b>)<br/> unreviewed hits(&#x25a2;)<br/>reviewed (&#x2713;)" class="pointer text-danger strong">?</a></th>
                     <th>geo</th>
                   </tr>
                 </thead>
@@ -170,10 +170,6 @@ js for Summary, Reconciliation
   function startDownloadSpinner(){
     window.spinner_dl = new Spin.Spinner().spin();
     $("#ds_downloads").append(spinner_dl.el);   
-  }
-  function startTableSpinner(){
-    window.spinner_table = new Spin.Spinner().spin();
-    $("#drftable_list").append(spinner_table.el);   
   }
 
   $("#ds_downloads a").click(function(e){
@@ -330,7 +326,13 @@ js for Summary, Reconciliation
     $(".editing-webpage").toggleClass("hidden")
     $(".form-webpage").toggleClass("hidden")
     $(".btn-ds").toggleClass("hidden")
-  })  
+  })
+  
+  function startTableSpinner(){
+    window.spinner_table = new Spin.Spinner().spin();
+    $("#drftable_list").append(spinner_table.el);   
+  }
+  
   $(function(){
     if('{{ status }}' == 'updating'){
       console.log('{{ status }}','{{ context }}')
@@ -571,25 +573,25 @@ js for Browse
     }    
   }
   function setRowEvents(){
-    $("#placetable tr").click(function() {
-        t=$(this)
-        // get id
-        pid=$(this)[0].cells[0].textContent
-        
-        // highlight this row, clear others
-        var selected = $(this).hasClass("highlight-row");
-        $("#placetable tr").removeClass("highlight-row");
-        
-        if(!selected)
-          $(this).removeClass( "rowhover" );
-          $(this).addClass("highlight-row");
+    $("#placetable tbody tr").click(function() {
+      t=$(this)
+      console.log('clicked', t)
+      // get id
+      pid=$(this)[0].cells[0].textContent
+      
+      // highlight this row, clear others
+      var selected = $(this).hasClass("highlight-row");
+      $("#placetable tr").removeClass("highlight-row");
+      
+      if(!selected)
+        $(this).removeClass( "rowhover" );
+        $(this).addClass("highlight-row");
 
-        // highlight marker and center
-        highlightFeature(pid)
-        <!--getPlace(pid)-->
-        getPlaceNew(pid)
-      }
-    ) 
+      // highlight marker and center
+      highlightFeature(pid)
+      <!--getPlace(pid)-->
+      getPlaceNew(pid)
+    }) 
         
     row = $("#drftable_list table tbody")[0].rows[0]
     pid = parseInt(row.cells[0].textContent)
@@ -742,6 +744,7 @@ js for Browse
         }
       }).addTo(mappo);
     }
+    <!--highlightFeature(pid)-->
     mappo.fitBounds(features.getBounds())
     mappo.on('zoomend', function() {
       var currentZoom = mappo.getZoom();
@@ -1035,7 +1038,7 @@ js for Browse
   }
 
   function getPlaceNew(pid){
-    <!--console.log('getPlace()', pid)-->
+    console.log('getPlaceNew()', pid)
     $.ajax({
       url: "/api/place/"+pid,
       }).done(function( data ) {
@@ -1063,6 +1066,7 @@ js for Browse
           console.log('url',url)
           window.open(url,'_blank')
         }); 
+        highlightFeature(pid)
     });
   }
   function getPlace(pid){
