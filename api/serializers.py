@@ -172,24 +172,23 @@ class PlaceSerializer(serializers.ModelSerializer):
         )
         
 class PlaceTableSerializer(serializers.ModelSerializer):
-    #dataset = serializers.ReadOnlyField(source='dataset.label')
-    #names = PlaceNameSerializer(many=True, read_only=True)
-    #types = PlaceTypeSerializer(many=True, read_only=True)
-    #geoms = PlaceGeomSerializer(many=True, read_only=True)
-    #links = PlaceLinkSerializer(many=True, read_only=True)
-    #related = PlaceRelatedSerializer(many=True, read_only=True)
-    #whens = PlaceWhenSerializer(many=True, read_only=True)
-    #descriptions = PlaceDescriptionSerializer(many=True, read_only=True)
-    #depictions = PlaceDepictionSerializer(many=True, read_only=True)
-
     geo = serializers.SerializerMethodField('has_geom')    
     def has_geom(self, place):
         return '<i class="fa fa-globe"></i>' if place.geom_count > 0 else "-"
+    
+    revwd = serializers.SerializerMethodField('rev_wd')    
+    def rev_wd(self, place):
+        return '-' if not place.hashits_wd else '&#x2713;' if place.review_wd == 1 else '&#x25a2;'
+        
+    revwhg = serializers.SerializerMethodField('rev_whg')    
+    def rev_whg(self, place):
+        return '-' if not place.hashits_whg else '&#x2713;' if place.review_whg == 1 else '&#x25a2;'
         
     class Meta:
         model = Place
         fields = ('url','id', 'title', 'src_id', 
-                  'ccodes', 'geo', 'minmax'
+                  'ccodes', 'geo', 'minmax', 
+                  'revwhg', 'revwd'
         )
 
 """ used by: DownloadGeomsAPIView() """

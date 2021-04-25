@@ -102,6 +102,7 @@
                    <span class="help-matches" data-id="auto-match">{% fontawesome_icon 'question-circle' color='#993333' %}</span></span>
                    </li>
                 {% endif %}
+                
                 {% if t.result|get:"pass1" > 0 %}
                   <li class="li-left">Pass 1: 
                   <span class="strong mx-2" id='{{t.task_id}}_1'>nn</span>
@@ -112,6 +113,7 @@
                     {% endif %}
                   </li>
                 {% endif %}
+                
                 {% if t.result|get:"pass2" > 0 %}
                   <li class="li-left">Pass 2: 
                   <span class="strong mx-2" id='{{t.task_id}}_2'>nn</span> 
@@ -122,25 +124,23 @@
                     {% endif %}
                   </li>
                 {% endif %}
-                {% if t.task_name == 'align_tgn' %}
+                <!--{ if t.task_name == 'align_tgn' %}-->
                 {% if t.result|get:"pass3" > 0 %} <!-- TGN only -->
                   <li class="li-left">Pass 3: <span class="strong mx-2" id='{{t.task_id}}_3'>nn</span> 
-                  <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass3' %}">
-                   review</i></a></li>
+                  <a href="{ url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass3' %}">review</i></a></li>
                 {% endif %}
               </ul> 
-              {# else %} <!-- align_idx-->
+              <!--{ else %} <!-- align_idx-->
                 <!--<ul>-->
-                <!--{# if t.result|get:"pass0" > 0 %}-->
+                <!--{ if t.result|get:"pass0" > 0 %}-->
                 <!--<li id="pass0_{{t.task_id}}" class="li-left">Pass 0: <span class="mx-2 strong" id='{{t.task_id}}_0'>nn</span><a href="{ url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass0' %}">review</a></li>-->
-                {# endif %}
-                {# if t.result|get:"pass1" > 0 %}
-                  <li class="li-left">Pass 1: <span class="strong mx-2" id='{{t.task_id}}_1'>nn</span> 
-                  <!--<a href="{ url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass1' %}">-->
-                   <!--review</i></a></li>-->
-                <!--{# endif %}-->
-                </ul>
-              {% endif %}
+                <!--{ endif %}-->
+                <!--{ if t.result|get:"pass1" > 0 %}-->
+                  <!--<li class="li-left">Pass 1: <span class="strong mx-2" id='{{t.task_id}}_1'>nn</span>-->
+                  <!--<a href="{ url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass1' %}">review</i></a></li>-->
+                <!--{ endif %}-->
+                <!--</ul>-->
+              <!--{ endif %}-->
             </div>
             <div class="col-sm-2">
               {% if t.task_name == 'align_wd' %}

@@ -4,7 +4,7 @@ from django.contrib.postgres.fields import JSONField, ArrayField
 from django.db import models
 
 from datasets.static.hashes.parents import ccodes as cc
-from main.choices import FEATURE_CLASSES
+from main.choices import FEATURE_CLASSES, STATUS_REVIEW
 #from edtf import parse_edtf
 
 def yearPadder(y):
@@ -21,18 +21,18 @@ class Place(models.Model):
     ccodes = ArrayField(models.CharField(max_length=2))
     minmax = ArrayField(models.IntegerField(blank=True, null=True),null=True,blank=True)
     timespans = JSONField(blank=True,null=True) # for list of lists
-    fclasses = ArrayField(models.CharField(max_length=1,choices=FEATURE_CLASSES),null=True,blank=True)
-    indexed = models.BooleanField(default=False)
-    
+    fclasses = ArrayField(models.CharField(max_length=1, choices=FEATURE_CLASSES), null=True, blank=True)
+    indexed = models.BooleanField(default=False)  
     flag = models.BooleanField(default=False) # not in use
-
+    
+    # 0=unreviewed, 1=reviewed, -1=deferred
+    review_wd = models.IntegerField(default=0, choices=STATUS_REVIEW)
+    review_tgn = models.IntegerField(default=0, choices=STATUS_REVIEW)
+    review_whg = models.IntegerField(default=0, choices=STATUS_REVIEW)
+    
     def __str__(self):
-        # return str(self.id)
         return '%s:%s' % (self.id, self.title)
 
-    @property
-    def idx(self):
-        return self.indexed
     
     @property
     def countries(self):
@@ -41,6 +41,14 @@ class Place(models.Model):
     @property
     def geom_count(self):
         return self.geoms.count()
+        
+    @property
+    def hashits_wd(self):
+        return self.hit_set.filter(authority='wd').count() >0
+        
+    @property
+    def hashits_whg(self):
+        return self.hit_set.filter(authority='whg').count()>0
         
     @property
     def authids(self):

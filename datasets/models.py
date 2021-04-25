@@ -10,7 +10,7 @@ from django.urls import reverse
 #from django.shortcuts import get_object_or_404
 
 from elastic.es_utils import escount_ds
-from main.choices import AUTHORITIES, FORMATS, DATATYPES, STATUS, TEAMROLES, PASSES
+from main.choices import *
 from places.models import Place, PlaceGeom
 
 def user_directory_path(instance, filename):
@@ -26,7 +26,7 @@ class Dataset(models.Model):
   description = models.CharField( null=False, max_length=2044)
   core = models.BooleanField(default=False)    
   public = models.BooleanField(default=False)    
-  ds_status = models.CharField(max_length=12, null=True, blank=True, choices=STATUS)
+  ds_status = models.CharField(max_length=12, null=True, blank=True, choices=STATUS_DS)
   creator = models.CharField(max_length=500, null=True, blank=True)
   create_date = models.DateTimeField(null=True, auto_now_add=True)
   uri_base = models.URLField(null=True, blank=True)
@@ -105,7 +105,7 @@ class Dataset(models.Model):
     #print(result)
     return result
 
-  # unreviewed hits
+  # count of unreviewed hits
   @property
   def unreviewed(self):
     unrev=Hit.objects.all().filter(dataset_id=self.id, reviewed=False).count()
@@ -160,7 +160,7 @@ class DatasetFile(models.Model):
   datatype = models.CharField(max_length=12, null=False, choices=DATATYPES,
                                 default='place')
   delimiter = models.CharField(max_length=5, null=True, blank=True)
-  df_status = models.CharField(max_length=12, null=True, blank=True, choices=STATUS)
+  df_status = models.CharField(max_length=12, null=True, blank=True, choices=STATUS_FILE)
   upload_date = models.DateTimeField(null=True, auto_now_add=True)
   header = ArrayField(models.CharField(max_length=30), null=True, blank=True)
   numrows = models.IntegerField(null=True, blank=True)
@@ -192,14 +192,17 @@ class DatasetUser(models.Model):
 class Hit(models.Model):
   # FK to celery_results_task_result.task_id
   place = models.ForeignKey(Place, on_delete=models.CASCADE)
-  # task_id = models.ForeignKey(TaskResult, related_name='task_id', on_delete=models.CASCADE)
+  # task_id = models.ForeignKey(TaskResult, 
+    #related_name='task_id', on_delete=models.CASCADE)
   task_id = models.CharField(max_length=50)
   authority = models.CharField(max_length=12, choices=AUTHORITIES )
   dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE)
   query_pass = models.CharField(max_length=12, choices=PASSES )
   src_id = models.CharField(max_length=2044)
   score = models.FloatField()
+  
   reviewed = models.BooleanField(default=False)
+  matched = models.BooleanField(default=False)
   flag = models.BooleanField(default=False)
 
 

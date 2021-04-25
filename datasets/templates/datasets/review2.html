@@ -191,6 +191,7 @@
     <div class="modal-content"></div>
   </div>
   <div class="selector py-3"><div id="helpme" class="my-3"><div></div>
+  <!--{ task_id|safe|json_script:'tid' }}-->
 </div>
 <script type="text/javascript">
   // capture pid for place just reviewed
@@ -198,8 +199,8 @@
   function setRowEvents(){
     $("#review_placelist tr").click(function() {
         t=$(this)
-        // get src_id
-        src_id=$(this)[0].cells[0].textContent
+        // get pid
+        pid=$(this)[0].cells[0].textContent
         
         // highlight this row, clear others
         var selected = $(this).hasClass("highlight-row");
@@ -210,7 +211,7 @@
           $(this).addClass("highlight-row");
 
         <!--getPlace(pid)-->
-        getPlace(src_id, '{{ ds_id }}')
+        getPlace(pid, '{{ ds_id }}')
       }
     ) 
         
@@ -222,8 +223,16 @@
     <!--getPlace(pid)-->
     <!--getPlace(src_id, '{{ ds_id }}')-->
   }
-  function getPlace(src_id, ds_id){
-    console.log('fetch record and hits for: '+ds_id+' ('+src_id+')')
+  function getPlace(placeid, ds_id){
+    'pk, tid, pid'
+    tid="{{ task_id }}"
+    console.log('fetch record and hits for: '+placeid+' ('+ds_id+')')
+    <!--task_id = JSON.parse(document.getElementById('tid').textContent)-->
+    <!--foo = "{ url 'datasets:review2' pk=ds_id tid=task_id pid=placeid %}"-->
+    url = 'http://'+window.location.host+'/datasets/'+ds_id+'/review2/'+tid+'/'+pid
+    window.location.href = url
+    <!--uri='http://localhost:8000/datasets/985/review2/4770d8a4-cd43-4e08-8542-fa57418d5f2e/6595836'  -->
+    <!--'985/review2/4770d8a4-cd43-4e08-8542-fa57418d5f2e/6595836'-->
   }
   $(".help-matches").click(function(){
     page=$(this).data('id')

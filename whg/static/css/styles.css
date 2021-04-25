@@ -529,6 +529,8 @@ em { color: #993333;}
 /**
   dataset browse
 **/
+#browse_legend {background:#e0e0e0;}
+
 .globey{background-image:''}
 
 #detail_left {

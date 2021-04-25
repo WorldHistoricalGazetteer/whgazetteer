@@ -64,11 +64,11 @@
                     <th>src_id</th>
                     <th>title</th>
                     <th>ccodes</th>
-                    <th>geom?</th>
-                    <th>wikidata</th>
                     {% if ds.ds_status == 'accessioning' %}
-                    <th>whg</th>
+                    <th>whg <a rel="tooltip" data-html="true" title="no hits (<b>-</b>)<br/> unreviewed (&#x25a2;)<br/>reviewed (✓)" class="pointer text-danger strong">?</a></th>
                     {% endif %}
+                    <th>wikidata <a rel="tooltip" data-html="true" title="no hits (<b>-</b>)<br/> unreviewed (&#x25a2;)<br/>reviewed (&#x2713;)" class="pointer text-danger strong">?</a></th>
+                    <th>geo</th>
                   </tr>
                 </thead>
               </table>
@@ -365,7 +365,9 @@ js for Summary, Reconciliation
           {"data": "id", "searchable": false},
           {"data": "src_id", "searchable": false},
           {"data": "title"},
-          {"data": "ccodes"},
+          {"data": "ccodes", "searchable": false},
+          {"data": "revwhg", "sortable": false, "searchable": false},
+          {"data": "revwd", "sortable": false, "searchable": false},
           {"data": "geo", "sortable": false, "searchable": false},
       ],
     })
@@ -518,6 +520,10 @@ js for Browse
 <script src="//cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
 
 <script  type="text/javascript">
+  $("#legend_help").attr(
+    'data-content',"<p>Legend</p>"
+  )
+
   $("[rel='tooltip']").tooltip();
   $('.vocab').on('click', function(e) {
     <!--e.preventDefault();-->

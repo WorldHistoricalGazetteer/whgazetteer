@@ -1149,7 +1149,7 @@ def ds_update(request):
       format = file_format,
       # TODO: accept csv, track delimiter
       #delimiter = result['delimiter'] if "delimiter" in result.keys() else "n/a",
-      df_status = 'updating',
+      #df_status = 'updating',
       upload_date = datetime.date.today(),
       header = compare_result['header_new'],
       numrows = compare_result['count_new']
@@ -1969,7 +1969,7 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
     # TODO: disabled utf-8 check here 9 March
     #if encoding and encoding.lower().startswith('utf-8'):
     ext = mthash_plus.mimetypes[mimetype]
-    print('DatasetCreateView() extenstion', ext)
+    print('DatasetCreateView() extension', ext)
     if ext == 'json':
       try:
         result = validate_lpf(tempfn, 'coll')
@@ -2094,7 +2094,6 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
         file = filepath[6:]+'.tsv' if ext in ['xlsx','ods'] else filepath[6:], 
         rev = 1,
         format = result['format'],
-        #delimiter = result['delimiter'] if "delimiter" in result.keys() else "n/a",
         delimiter = '\t' if ext in ['tsv','xlsx','ods'] else ',' if ext == 'csv' else 'n/a',
         df_status = 'format_ok',
         upload_date = None,

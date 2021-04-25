@@ -3,7 +3,7 @@
 from django import forms
 from django.db import models
 from datasets.models import Dataset, Hit, DatasetFile
-from main.choices import FORMATS, STATUS
+from main.choices import FORMATS, STATUS_FILE
 
 MATCHTYPES = [
   ('closeMatch','closeMatch'),
@@ -13,7 +13,6 @@ class HitModelForm(forms.ModelForm):
   match = forms.CharField(
     initial='none',
     widget=forms.RadioSelect(choices=MATCHTYPES))
-  #flag = forms.BooleanField(initial=False, required=False)
   
   class Meta:
     model = Hit
@@ -31,14 +30,6 @@ class HitModelForm(forms.ModelForm):
 
     for key in self.fields:
       self.fields[key].required = False     
-
-
-#class DatasetFileModelForm(forms.ModelForm):
-  #class Meta:
-    #model = DatasetFile
-    #fields = ['file','rev','uri_base','format','dataset_id','delimiter',
-              #'status','accepted_date','header','numrows']
-    #widgets = { 'file': ClearableFileInput() }    
   
 
 class DatasetFileModelForm(forms.ModelForm):
@@ -105,7 +96,7 @@ class DatasetCreateModelForm(forms.ModelForm):
   format = forms.ChoiceField(choices=FORMATS, widget=forms.RadioSelect, initial = 'delimited')
   delimiter = forms.CharField()
   header = forms.CharField()
-  df_status = forms.ChoiceField(choices=STATUS)
+  df_status = forms.ChoiceField(choices=STATUS_FILE)
   numrows = forms.IntegerField()
   upload_date = forms.DateTimeField()
 
