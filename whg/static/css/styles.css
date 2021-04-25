@@ -420,7 +420,7 @@ em { color: #993333;}
 .table-container tr { line-height: normal; font-size: .8rem;}
 .table-container .even { background-color: #eee;}
 
-#review_nav .pagination {
+#review_nav {
   background-color: #eee;
 } 
 #review_placelist {

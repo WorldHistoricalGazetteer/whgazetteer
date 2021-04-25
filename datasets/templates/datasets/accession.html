@@ -42,7 +42,7 @@
     {{ formset.management_form }}
     {% for record in records %} <!-- there is only one; if last, do nothing -->
     <div class="container">
-      <div class="pagination row justify-content-center">
+      <div id="review_nav" class="pagination row justify-content-center">
         <div class="col-sm-4 pl-1">
           <a id="undo" class="small hidden-imp" href="" data-url="{% url 'datasets:match-undo' ds=ds_id tid=task_id pid=999 %}">
               Undo last save {% fontawesome_icon 'undo' color='#336699' %}</a></div>
