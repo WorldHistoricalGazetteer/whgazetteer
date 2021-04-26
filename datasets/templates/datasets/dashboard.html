@@ -53,11 +53,12 @@
                 {% for d in dataset_list %}
                   <tr class="place-row">
                     <td>{{ d.id }}</td>
-                    <td>{% if beta_or_better %}
+                    <td>
+                    <!--{ if beta_or_better %}-->
                     <a href="{% url 'datasets:ds_summary' d.id %}" title="Dataset details" rel="tooltip">{{ d.title }}</a>
-                    {% else %}
-                    <a href="{% url 'datasets:dataset-detail' d.id %}" title="Dataset details" rel="tooltip">{{ d.title }}</a>
-                    {% endif %}
+                    <!--{ else %}-->
+                    <!--<a href="{ url 'datasets:dataset-detail' d.id %}" title="Dataset details" rel="tooltip">{{ d.title }}</a>-->
+                    <!--{ endif %}-->
                     </td>
                     <td>{% if d.core == True %}
                           {{ d.label }} <span class="corerow"> (core)</span>

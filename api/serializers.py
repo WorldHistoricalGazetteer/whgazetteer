@@ -188,7 +188,8 @@ class PlaceTableSerializer(serializers.ModelSerializer):
         model = Place
         fields = ('url','id', 'title', 'src_id', 
                   'ccodes', 'geo', 'minmax', 
-                  'revwhg', 'revwd'
+                  'revwhg', 'revwd', 
+                  'review_whg', 'review_wd'
         )
 
 """ used by: DownloadGeomsAPIView() """

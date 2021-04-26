@@ -536,7 +536,7 @@ em { color: #993333;}
 #detail_left {
   border-right: 1px dashed #999;
 }
-#row_detail { margin-top:3px;}
+#row_detail { margin-top:3px; position:relative;}
 
 #row_detail p {
   margin-top: 0;

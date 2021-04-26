@@ -44,12 +44,16 @@ class Place(models.Model):
         
     @property
     def hashits_wd(self):
-        return self.hit_set.filter(authority='wd').count() >0
+        return self.hit_set.filter(authority__in=['wd','wdlocal']).count() >0
         
     @property
     def hashits_whg(self):
-        return self.hit_set.filter(authority='whg').count()>0
+        return self.hit_set.filter(authority__in=['whg','idx']).count()>0
         
+    @property
+    def hashits_tgn(self):
+        return self.hit_set.filter(authority='tgn').count()>0
+
     @property
     def authids(self):
         return [i.jsonb['identifier'] for i in self.links.all()]

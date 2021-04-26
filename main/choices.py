@@ -115,9 +115,10 @@ STATUS_HIT = [
 ]
 
 STATUS_REVIEW = [
+    (-1, 'No hits'),
     (0, 'Unreviewed'),
     (1, 'Reviewed'),
-    (-1, 'Deferred')
+    (2, 'Deferred')
 ]
 
 TEAMROLES = [

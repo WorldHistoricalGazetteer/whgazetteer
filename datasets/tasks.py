@@ -603,6 +603,7 @@ def align_tgn(pk, *args, **kwargs):
           score = hit['_score'],
           geom = loc,
           reviewed = False,
+          matched = False,
         )
         new.save()
   end = datetime.datetime.now()
@@ -943,6 +944,7 @@ def align_wdlocal(pk, **kwargs):
           score = hit['_score'],
           #geom = loc,
           reviewed = False,
+          matched = False
         )
         new.save()
   end = datetime.datetime.now()
@@ -1315,6 +1317,7 @@ def align_idx(pk, *args, **kwargs):
           score = hitobj['score'],
           geom = hitobj['geoms'],
           reviewed = False,
+          matched = False,
           json = hitobj
           
         )
@@ -1483,6 +1486,7 @@ def align_whg(pk, *args, **kwargs):
           score = hit['_score'],
           geom = loc,
           reviewed = False,
+          matched = False,
         )
         new.save()
   end = datetime.datetime.now()
@@ -1542,6 +1546,7 @@ def writeHit(b, passnum, ds, pid, srcid, title):
       #score = hit['_score'],
       geom = parse_wkt(b['locations']['value']) if 'locations' in b.keys() else [],
       reviewed = False,
+      matched = False
     )
     new.save()          
     hit = str(pid)+'\t'+ \
