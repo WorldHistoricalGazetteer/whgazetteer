@@ -367,6 +367,7 @@ def review(request, pk, tid, passnum):
   kwargs=json.loads(task.task_kwargs.replace("'",'"'))
   print('request.POST in review()', request.POST)
   print('passnum in review()',passnum)
+  print('page in review()', request.GET.get('page'))
   beta = 'beta' in list(request.user.groups.all().values_list('name',flat=True))
   
   # try addin place list table in left column

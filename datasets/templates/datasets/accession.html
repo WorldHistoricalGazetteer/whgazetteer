@@ -24,9 +24,6 @@
         { if count_pass1 > 0 %}
           <option value="pass1">PASS 1&nbsp;</option>{ endif %}
         { if count_pass2 > 0 %}
-          <!--<option value="pass2">PASS 2&nbsp;</option>{ endif %}-->
-        <!--{ if authority == 'tgn' and count_pass3 > 0 %}-->
-          <!--<option value="pass3">PASS 3&nbsp;</option>{ endif %}-->
       </select>
     </span>
     <span class="half float-right mr-2"><i>task id</i>: {{ task_id }}</span>
@@ -34,20 +31,23 @@
   {% if nohits %}
     <div>
       <p>No unreviewed hits for this reconciliation task!</p>
-      <p><a href="{% url 'datasets:ds_summary' id=ds_id %}">Return to dataset detail page</a></p>
+      <p><a href="{% url 'datasets:ds_summary' id=ds_id %}">return to dataset summary page</a></p>
     </div>
   {% else %}
     <form id="form_related" method="POST" action="" >
     {% csrf_token %}
     {{ formset.management_form }}
     {% for record in records %} <!-- there is only one; if last, do nothing -->
+    {{ record.id|json_script:'placeid' }}
     <div class="container">
       <div id="review_nav" class="pagination row justify-content-center">
         <div class="col-sm-4 pl-1">
-          <a id="undo" class="small hidden-imp" href="" data-url="{% url 'datasets:match-undo' ds=ds_id tid=task_id pid=999 %}">
-              Undo last save {% fontawesome_icon 'undo' color='#336699' %}</a></div>
+          <a id="undo" class="small hidden-imp" href="" data-url="{% url 'datasets:match-undo' ds=ds_id tid=task_id pid=999 %}">Undo last save {% fontawesome_icon 'undo' color='#336699' %}</a>
+        </div>
         <div class="col-sm-8">
-        <span><button type="submit" id="btn_save" class="button-sm">Save</button>
+        <span>
+          <button type="submit" id="btn_save" class="button-sm mr-2">Save</button>
+          <a id="defer_link" rel="tooltip" title="flag for separate review" class="small" href="{% url 'places:defer-review' pid=record.id auth=authority %}">defer</a>
         <span class="step-links">
             {% if records.has_previous %}
                 <a href="?page=1">&laquo; first</a>&nbsp;&nbsp;
@@ -223,7 +223,31 @@
   </div>
   <div class="selector py-3"><div id="helpme" class="my-3"><div></div>
 </div>
+
 <script type="text/javascript">
+  nextnum = "{{ records.next_page_number }}"
+  placeid = $('script').filter(function() {
+    return this.id.match("placeid")
+  }).text()
+    
+  <!--$("#defer_link").click(function(e){-->
+    <!--e.preventDefault()-->
+    <!--auth = "{ authority }}"-->
+    <!--<!--nextnum = "{ records.next_page_number }}"-->-->
+    <!--next = '?page=' + nextnum-->
+    <!--// TODO: write int(2) to Place record-->
+    <!--<!--var url = "{ url 'places:defer-review' placeid auth %}"-->-->
+    <!--var url = "/places/"+placeid+"/"+auth+"/defer"-->
+    <!--console.log('url',url)-->
+    <!--<!--$.ajax({-->-->
+      <!--<!--type: 'GET',-->-->
+      <!--<!--url: url-->-->
+    <!--<!--}).done(function() {-->-->
+      <!--<!--console.log('set defer of', placeid);-->-->
+      <!--<!--<!--window.location.href = next-->-->-->
+    <!--<!--})-->-->
+  <!--})-->
+
   // capture pid for place just reviewed
   // https://catalogue.bnf.fr/ark:/12148/cb11942741p
   $(".help").click(function(){
@@ -323,7 +347,7 @@
           async: false,
           success: function (data) {
             ds=data.results[0]
-            console.log('ds',ds)
+            <!--console.log('ds',ds)-->
             html='<p class="thin"><b>Title</b>: '+ds.title+'</p>'
             html+='<p class="thin"><b>Description</b>: '+ds.description+'</p>'
             html+='<p class="thin"><b>WHG Owner</b>: '+ds.owner+'</p>'
@@ -338,21 +362,15 @@
   // expose leaflet map for events, call it 'mappy'
   window.addEventListener('map:init', function (e) {
     window.mappy = e.detail.map
-    var attrib_mb = 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
-            '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-            'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-      attrib_mb_lite = 'Map data &copy; OSM, (CC-BY-SA), '+ 'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-      token_mb = '{{ mbtokenmb }}',
-      mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}';
+    var token_mb = '{{ mbtokenmb }}',
+    mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}';
       
     var satellite  = L.tileLayer(mbstyle_url, {
       id:'mapbox/satellite-streets-v11', 
-      token:token_mb, 
-      attribution:attrib_mb}),
+      token:token_mb}),
     osm  = L.tileLayer(mbstyle_url, {
       id:'mapbox/light-v10',
-      token:token_mb,
-      attribution:attrib_mb});
+      token:token_mb});
 
     var baseLayers = {
       "OSM": osm,
@@ -399,6 +417,7 @@
 
   // closer look
   function zoomTo(id) {
+    console.log('zoomTo()', id)
     mappy.setView(idToFeature[id]._latlng, mappy.getZoom() +2 )
   }
 

@@ -78,7 +78,7 @@ label {vertical-align:top;}
 .smaller {font-size: small;} /* smaller than bootstrap */
 .smallish {font-size: .9rem;} /* smaller than bootstrap */
 .status {color:#fff; box-shadow: 2px 2px #eee; border:1px dashed #ccc;}
-.step-links {vertical-align: middle;}
+.step-links {vertical-align: middle; float:right;}
 .strikethrough {text-decoration: line-through;}
 .strong { font-weight: bold;}
 .table td, .table th {padding: .5rem;}

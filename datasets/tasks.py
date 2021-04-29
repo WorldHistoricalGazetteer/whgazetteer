@@ -1090,6 +1090,7 @@ def es_lookup_whg(qobj, *args, **kwargs):
   except:
     print("q0a, ES error:", q0, sys.exc_info())
   if len(hits0a) > 0:
+    result_obj['hit_count'] += len(hits0a)
     for h in hits0a:
       # add full hit to result
       result_obj["hits"].append(h)
@@ -1125,6 +1126,7 @@ def es_lookup_whg(qobj, *args, **kwargs):
       except:
         print("q0b, ES error:", sys.exc_info())
       # add new results if any to hitobjlist and result_obj["hits"]
+      result_obj['hit_count'] += len(hits0b)
       for h in hits0b:
         if h['_id'] not in _ids:
           _ids.append(h['_id'])
@@ -1159,6 +1161,7 @@ def es_lookup_whg(qobj, *args, **kwargs):
     print("q0a, ES error:", q0a, sys.exc_info())  
     h["pass"] = "pass0b"
 
+  result_obj['hit_count'] += len(hits1)
   # filter out _ids found in pass0
   for h in hits1:
     if h['_id'] not in _ids:
@@ -1252,14 +1255,20 @@ def align_idx(pk, *args, **kwargs):
       total_hits += result_obj['hit_count']
       
       """ 
-      align_idx_testy.py code below 
+      imported some align_idx_testy.py code below 
       """
       parents = [profileHit(h) for h in hits \
                 if h['_source']['relation']['name']=='parent']
       children = [profileHit(h) for h in hits \
                 if h['_source']['relation']['name']=='child']
+      #titles = ', '.join([h['_source']['title'] for h in hits])
       # if there are any
       for par in parents:
+        total_hits +=1
+        if par['pass'] == 'pass0':
+          count_p0 += 1
+        elif par['pass'] == "pass1":
+          count_p1 +=1
         # children of *this* parent, if any
         kids = [c for c in children if c['_id'] in par['children']] or None
         # merge values into hit.json object
@@ -1268,6 +1277,7 @@ def align_idx(pk, *args, **kwargs):
         hitobj = {'whg_id': par['_id'],
                   'score': score,
                   'titles': [par['title']],
+                  #'titles': titles,
                   'countries': par['countries'],
                   'geoms': par['geoms'],
                   'links': par['links'],
@@ -1283,7 +1293,6 @@ def align_idx(pk, *args, **kwargs):
                   }
         if kids:
           hitobj['titles'].extend([k['title'] for k in kids])
-          hitobj['titles'] = ', '.join(list(dict.fromkeys(hitobj['titles'])))
           hitobj['countries'].extend([','.join(k['countries']) for k in kids])
           
           # unnest
@@ -1292,8 +1301,9 @@ def align_idx(pk, *args, **kwargs):
           
           # components: 
           hitobj['sources'].extend([{'dslabel':k['dataset'],'pid':k['pid'],'variants':k['variants'],'types':k['types'],'minmax':k['minmax'],'pass':k['pass'][:5]} for k in kids])
-  
-  
+        
+        hitobj['titles'] = ', '.join(list(dict.fromkeys(hitobj['titles'])))
+        
         if hitobj['links']:
           hitobj['links'] = list(dict.fromkeys(hitobj['links']))
   

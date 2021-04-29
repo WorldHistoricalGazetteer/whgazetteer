@@ -1,15 +1,35 @@
 from django.conf import settings
-from django.http import JsonResponse
+from django.http import JsonResponse,HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.views.generic import DetailView
 
 from datetime import datetime
 from elasticsearch import Elasticsearch
-import itertools
+import itertools, re
 
 from datasets.models import Dataset
 from places.models import Place
 from places.utils import attribListFromSet
+
+# write review status = 2 (per authority)
+def defer_review(request, pid, auth):
+  print('defer_review() pid, auth', pid, auth)
+  p = get_object_or_404(Place, pk=pid)
+  if auth in ['whg','idx']:
+    p.review_whg = 2
+  elif auth == 'wd':
+    p.review_wd = 2
+  else:
+    p.review_tgn = 2
+  p.save()
+  referer = request.META.get('HTTP_REFERER')
+  if '?page' in referer:
+    nextpage = int(referer[-1]) + 1
+    return_url = referer[:-1] + str(nextpage)
+  else:
+    return_url = referer + '?page=2'
+  # return to calling page
+  return HttpResponseRedirect(return_url)
 
 class PlacePortalView(DetailView):
   template_name = 'places/place_portal.html'

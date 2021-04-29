@@ -7,7 +7,8 @@ from main.choices import FORMATS, STATUS_FILE
 
 MATCHTYPES = [
   ('closeMatch','closeMatch'),
-  ('none','no match'),]
+  ('none','no match'),
+]
 
 class HitModelForm(forms.ModelForm):
   match = forms.CharField(

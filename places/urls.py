@@ -14,7 +14,11 @@ urlpatterns = [
     # will eventually take purl
     path('<int:id>/portal', views.PlacePortalView.as_view(), name='place-portal'),
     path('<int:id>/modal', views.PlaceModalView.as_view(), name='place-modal'),
-
+    
+    
+    #path('<int:pid>/<str:auth>/defer', views.defer_review, name='defer-review'),
+    path('defer/<int:pid>/<str:auth>', views.defer_review, name='defer-review'),
+    
     # ??
     path('<int:id>/full', views.PlaceFullView.as_view(), name='place-full'),
 

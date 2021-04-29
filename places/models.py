@@ -25,10 +25,10 @@ class Place(models.Model):
     indexed = models.BooleanField(default=False)  
     flag = models.BooleanField(default=False) # not in use
     
-    # 0=unreviewed, 1=reviewed, -1=deferred
-    review_wd = models.IntegerField(default=0, choices=STATUS_REVIEW)
-    review_tgn = models.IntegerField(default=0, choices=STATUS_REVIEW)
-    review_whg = models.IntegerField(default=0, choices=STATUS_REVIEW)
+    # 0=hits:unreviewed, 1=hits:reviewed, 2=hits:deferred, null=no hits
+    review_wd = models.IntegerField(default=0, null=True, choices=STATUS_REVIEW)
+    review_tgn = models.IntegerField(default=0, null=True, choices=STATUS_REVIEW)
+    review_whg = models.IntegerField(default=0, null=True, choices=STATUS_REVIEW)
     
     def __str__(self):
         return '%s:%s' % (self.id, self.title)

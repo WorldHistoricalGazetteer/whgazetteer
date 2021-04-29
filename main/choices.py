@@ -83,8 +83,8 @@ LOG_TYPES = [
 ]
 
 MATCHTYPES = [
-    ('exact','exactMatch'),
     ('close','closeMatch'),
+    ('exact','exactMatch'),
     ('related','related'),
 ]
 
@@ -115,7 +115,7 @@ STATUS_HIT = [
 ]
 
 STATUS_REVIEW = [
-    (-1, 'No hits'),
+    #null = 'No hits'
     (0, 'Unreviewed'),
     (1, 'Reviewed'),
     (2, 'Deferred')
