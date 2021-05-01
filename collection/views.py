@@ -9,7 +9,7 @@ from .forms import CollectionModelForm
 from .models import *
 
 class CollectionCreateView(CreateView):
-    print('CollectionCreateView()')
+    #print('CollectionCreateView()')
     form_class = CollectionModelForm
     template_name = 'collection/collection_create.html'
     queryset = Collection.objects.all()
@@ -63,7 +63,7 @@ class CollectionDeleteView(DeleteView):
 # detail & update
 #
 class CollectionUpdateView(UpdateView):
-    print('CollectionUpdateView()')    
+    #print('CollectionUpdateView()')    
     form_class = CollectionModelForm
     template_name = 'collection/collection_create.html'
     success_url = '/dashboard'

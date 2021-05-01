@@ -43,14 +43,17 @@
     <form id="form_related" method="POST" action="" >
     {% csrf_token %}
     {{ formset.management_form }}
-    {% for record in records %} <!-- there is only one; if last, do nothing -->
+    {% for record in records %} 
+    <!-- there is only one; if last, do nothing -->
     <div class="container">
       <div id="review_nav" class="pagination row justify-content-center">
         <div class="col-sm-4 pl-1">
           <a id="undo" class="small hidden-imp" href="" data-url="{% url 'datasets:match-undo' ds=ds_id tid=task_id pid=999 %}">
-              Undo last save {% fontawesome_icon 'undo' color='#336699' %}</a></div>
+              Undo last save {% fontawesome_icon 'undo' color='#336699' %}</a>
+        </div>
         <div class="col-sm-8">
         <span><button type="submit" id="btn_save" class="button-sm">Save</button>
+          <a id="defer_link" rel="tooltip" title="flag for separate review" class="small" href="{% url 'places:defer-review' pid=record.id auth=authority %}">defer</a>
         <span class="step-links">
             {% if records.has_previous %}
                 <a href="?page=1">&laquo; first</a>&nbsp;&nbsp;
@@ -65,7 +68,7 @@
             {% endif %}
         </span>
         </div>
-      </div>
+      </div> <!-- #review_nav-->
       <div class="row mt-2">
         <div id="review_record" class="col-sm-4 pl-0 small">
           <div class="bg-secondary font-weight-bold pl-2 text-light">{{ dataset_label }}</div>

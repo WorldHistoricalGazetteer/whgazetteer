@@ -190,8 +190,16 @@ def profileHit(hit):
   profile['types'] = [t['sourceLabel'] for t in src['types']]
   if len(src['descriptions']) > 0:
     profile['descriptions'] = [d['value'] for d in src['descriptions']]
-  profile['geoms'] = [{'id':pid, 'ds':src['dataset'], 'coordinates':g['location']['coordinates'], 'type':g['location']['type']} for g in src['geoms']]
-  
+  geom_objlist = []
+  for g in src['geoms']:
+    if g not in geom_objlist:
+      geom_objlist.append(
+        {'pid':pid, 
+         'ds':src['dataset'], 
+         'coordinates':g['location']['coordinates'], 
+         'type':g['location']['type']} 
+      )
+  profile['geoms'] = geom_objlist
   return profile
 
 # ***

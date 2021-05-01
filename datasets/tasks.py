@@ -8,7 +8,7 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import Polygon, Point, LineString
 
-import  datetime, json, re, sys #, codecs, time, csv, random, os
+import  datetime, itertools, json, re, sys #, codecs, time, csv, random, os
 from copy import deepcopy
 from itertools import chain
 #from pprint import pprint
@@ -374,9 +374,11 @@ def get_bounds_filter(bounds, idx):
   return filter
 
 
-# ***
-# performs elasticsearch > tgn queries
-# ***
+"""
+perform elasticsearch > tgn queries
+from align_tgn()
+
+"""
 def es_lookup_tgn(qobj, *args, **kwargs):
   #print('qobj',qobj)
   bounds = kwargs['bounds']
@@ -502,9 +504,12 @@ def es_lookup_tgn(qobj, *args, **kwargs):
   result_obj['hit_count'] = hit_count
   return result_obj
 
-# ***
-# manage reconcile to tgn
-# ***
+"""
+manage align/reconcile to tgn
+get result_obj per Place via es_lookup_tgn()
+parse, write Hit records for review
+
+"""
 @task(name="align_tgn")
 def align_tgn(pk, *args, **kwargs):
   task_id = align_tgn.request.id
@@ -612,7 +617,7 @@ def align_tgn(pk, *args, **kwargs):
   hit_parade['summary'] = {
       'count':count,
       'got_hits':count_hit,
-      'total': total_hits, 
+      'total_hits': total_hits, 
       'pass1': count_p1, 
       'pass2': count_p2, 
       'pass3': count_p3,
@@ -643,7 +648,7 @@ def align_tgn(pk, *args, **kwargs):
 
 
 #
-# test stuff
+# for tests
 #bounds={'type': ['userarea'], 'id': ['0']}
 #from datasets.static.hashes import aat, parents, aat_q
 #from datasets.utils import getQ
@@ -653,9 +658,11 @@ def align_tgn(pk, *args, **kwargs):
 #from elasticsearch import Elasticsearch
 #es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 
-# ***
-# performs elasticsearch > wdlocal queries
-# ***
+"""
+performs elasticsearch > wdlocal queries
+from align_wdlocal()
+
+"""
 def es_lookup_wdlocal(qobj, *args, **kwargs):
   #bounds = {'type': ['userarea'], 'id': ['0']}
   bounds = kwargs['bounds']
@@ -834,6 +841,12 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
 #def is_beta_or_better(user):
   #return user.groups.filter(name__in=['beta', 'admin']).exists()
 
+"""
+manage align/reconcile to local wikidata index
+get result_obj per Place via es_lookup_wdlocal()
+parse, write Hit records for review
+
+"""
 @task(name="align_wdlocal")
 def align_wdlocal(pk, **kwargs):
   task_id = align_wdlocal.request.id
@@ -953,7 +966,7 @@ def align_wdlocal(pk, **kwargs):
   hit_parade['summary'] = {
       'count':count,
       'got_hits':count_hit,
-      'total': total_hits, 
+      'total_hits': total_hits, 
       'pass0': count_p0, 
       'pass1': count_p1, 
       'pass2': count_p2, 
@@ -977,11 +990,14 @@ def align_wdlocal(pk, **kwargs):
   
   return hit_parade['summary']
 
+
 """
-# performs elasticsearch queries on whg
+# performs elasticsearch > whg index queries
+# from align_idx(), returns result_obj
+
 """
-def es_lookup_whg(qobj, *args, **kwargs):
-  #print('kwargs from es_lookup_whg',kwargs)
+def es_lookup_idx(qobj, *args, **kwargs):
+  #print('kwargs from es_lookup_idx',kwargs)
   global whg_id
   idx = 'whg'
   #bounds = {'type': ['userarea'], 'id': ['0']}
@@ -994,10 +1010,9 @@ def es_lookup_whg(qobj, *args, **kwargs):
   result_obj = {
     'place_id': qobj['place_id'], 
     'title': qobj['title'], 
-    'hits':[], 'missed':-1, 'total_hits':-1,
+    'hits':[], 'missed':-1, 'total_hits':0,
     'hit_count': 0
   }  
-
   # de-dupe
   variants = list(set(qobj["variants"]))
   links = list(set(qobj["links"]))
@@ -1158,8 +1173,8 @@ def es_lookup_whg(qobj, *args, **kwargs):
     result1 = es.search(index=idx, body=q1)
     hits1 = result1["hits"]["hits"]
   except:
-    print("q0a, ES error:", q0a, sys.exc_info())  
-    h["pass"] = "pass0b"
+    print("q1, ES error:", q1, sys.exc_info())  
+    h["pass"] = "pass1"
 
   result_obj['hit_count'] += len(hits1)
   # filter out _ids found in pass0
@@ -1173,7 +1188,7 @@ def es_lookup_whg(qobj, *args, **kwargs):
         "pid":h["_source"]['place_id'],
         "title":h["_source"]['title'],
         "dataset":h["_source"]['dataset'],
-        "pass":"pass0b",
+        "pass":"pass1",
         "links":[l["identifier"] \
             for l in h["_source"]["links"]],
         "role":relation["name"],
@@ -1184,7 +1199,7 @@ def es_lookup_whg(qobj, *args, **kwargs):
       if hitobj['_id'] not in [h['_id'] for h in hitobjlist]:
         result_obj["hits"].append(h)
         hitobjlist.append(hitobj)
-      result_obj['total_hits'] = len((result_obj["hits"]))
+      result_obj['total_hits'] = len(result_obj["hits"])
   #ds_hits[p.id] = hitobjlist
   # no more need for hitobjlist
   
@@ -1192,40 +1207,42 @@ def es_lookup_whg(qobj, *args, **kwargs):
   return result_obj
 
 """
-# align/accession(?) to whg index
-#
-#
+# align/accession to whg index
+# gets result_obj per Place
+# writes union Hit records to db for review
+# OR writes seed parent to whg index
+# TODO: dry-run option (no index writes)
 """
 @task(name="align_idx")
 def align_idx(pk, *args, **kwargs):
+  print('kwargs in align_idx()',kwargs)  
   task_id = align_idx.request.id
   ds = get_object_or_404(Dataset, id=pk)
   idx = 'whg'
   user = get_object_or_404(User, id=kwargs['user'])
-  # get last identifier (used for whg_id & _id)
+  # get last index identifier (used for _id)
   whg_id = maxID(es,idx)
+
+  # write new seed/parents for inspection
   wd = "/Users/karlg/Documents/repos/_whgazetteer/_scratch/"
-  fn1 = "new-parents_"+str(pk)+".txt"
+  fn1 = "new-parents_"+str(ds.id)+".txt"
   fout1 = codecs.open(wd+fn1, mode="w", encoding="utf8")
   
   #bounds = {'type': ['userarea'], 'id': ['0']}
   bounds = kwargs['bounds']
   scope = kwargs['scope']
   
-  # 
   hit_parade = {"summary": {}, "hits": []}
-  [count,count_hit,count_nohit,total_hits,count_p0,count_p1] = [0,0,0,0,0,0]
+  [count_hit,count_nohit,total_hits,count_p0,count_p1] = [0,0,0,0,0]
   [count_errors,count_seeds,count_kids,count_fail] = [0,0,0,0]
-  new_parents = []  
+  new_seeds = []  
   start = time.time()
-  print('kwargs in align_idx()',kwargs)
-
     
   # limit scope if some are already indexed (choice in #addtask screen)
   qs = ds.places.all() if scope == 'all' else ds.places.filter(indexed=False)
   
   """
-  for each place, create qobj and es_lookup_whg(qobj) it
+  for each place, create qobj and es_lookup_idx(qobj) it
   parse results: 
     if hits, write Hit instances for review
     if no hits, write new parent doc in index
@@ -1233,26 +1250,26 @@ def align_idx(pk, *args, **kwargs):
   for p in qs:
     # 6595825:Marienborch (3)
     # 6595826:Eluinghen (2) 6595829:Thorun (2x2) 
-    count +=1
     qobj = build_qobj(p)
     
-    result_obj = es_lookup_whg(qobj, bounds=bounds)
+    result_obj = es_lookup_idx(qobj, bounds=bounds)
     
     # PARSE RESULTS
     # no hits on any pass
     if len(result_obj['hits']) == 0:
       # create new parent (write to file for now)
       print('create parent doc for', p)
-      new_parents.append(makeDoc(p))
+      new_seeds.append(makeDoc(p))
       #new_parent = makeDoc(p)
       #es.index(idx, new_parent, doc_type='place',id=whg_id+1)
       
     # got some hits, format json & write to db
     elif len(result_obj['hits']) > 0:
+      count_hit +=1  # this record got >=1 hits
       hits = result_obj['hits']
-      count_hit +=1
       [count_kids,count_errors] = [0,0]
-      total_hits += result_obj['hit_count']
+      #total_hits += result_obj['hit_count']
+      total_hits += result_obj['total_hits']
       
       """ 
       imported some align_idx_testy.py code below 
@@ -1261,11 +1278,13 @@ def align_idx(pk, *args, **kwargs):
                 if h['_source']['relation']['name']=='parent']
       children = [profileHit(h) for h in hits \
                 if h['_source']['relation']['name']=='child']
-      #titles = ', '.join([h['_source']['title'] for h in hits])
+      """ *** """
+      def uniq_geom(lst):
+        for _, grp in itertools.groupby(lst, lambda d: (d['coordinates'])):
+          yield list(grp)[0]      
       # if there are any
       for par in parents:
-        total_hits +=1
-        if par['pass'] == 'pass0':
+        if par['pass'][:5] == 'pass0':
           count_p0 += 1
         elif par['pass'] == "pass1":
           count_p1 +=1
@@ -1274,23 +1293,23 @@ def align_idx(pk, *args, **kwargs):
         # merge values into hit.json object
         # profile keys ['_id', 'pid', 'title', 'role', 'dataset', 'parent', 'children', 'links', 'countries', 'variants', 'geoms']
         score = par['score']+sum([k['score'] for k in kids]) if kids else par['score']
-        hitobj = {'whg_id': par['_id'],
-                  'score': score,
-                  'titles': [par['title']],
-                  #'titles': titles,
-                  'countries': par['countries'],
-                  'geoms': par['geoms'],
-                  'links': par['links'],
-                  'children': par['children'],
-                  'sources': [
-                    {'dslabel': par['dataset'], 
-                     'pid': par['pid'],
-                     'variants': par['variants'],
-                     'types': par['types'],
-                     'minmax': par['minmax'],
-                     'pass': par['pass'][:5]
-                     }]
-                  }
+        hitobj = {
+          'whg_id': par['_id'],
+          'score': score,
+          'titles': [par['title']],
+          'countries': par['countries'],
+          'geoms': list(uniq_geom(par['geoms'])),
+          'links': par['links'],
+          'children': par['children'],
+          'sources': [
+            {'dslabel': par['dataset'], 
+             'pid': par['pid'],
+             'variants': par['variants'],
+             'types': par['types'],
+             'minmax': par['minmax'],
+             'pass': par['pass'][:5]
+             }]
+        }
         if kids:
           hitobj['titles'].extend([k['title'] for k in kids])
           hitobj['countries'].extend([','.join(k['countries']) for k in kids])
@@ -1334,19 +1353,19 @@ def align_idx(pk, *args, **kwargs):
         new.save()
         #print(json.dumps(jsonic,indent=2))
   
-  fout1.write(json.dumps(new_parents, indent=2))
+  # write new index seed/parent docs for inspection
+  fout1.write(json.dumps(new_seeds, indent=2))
   fout1.close()
-  print(str(len(new_parents)) + ' new parents written to '+fn1)
+  print(str(len(new_seeds)) + ' new index seeds written to '+ fn1)
+  
   end = time.time()  
   hit_parade['summary'] = {
-    'count':count,
-    'got_hits':count_hit,
-    'total': total_hits, 
-    'seeds': len(new_parents),
-    'kids': count_kids,
+    'count':qs.count(), # records in dataset
+    'got_hits':count_hit, # count of parents
+    'total_hits': total_hits, # overall total
+    'seeds': len(new_seeds), # new index seeds
     'pass0': count_p0, 
     'pass1': count_p1, 
-    'no_hits': {'count': count_nohit },
     'elapsed_min': int((end - start)/60),
     'skipped': count_fail
   }
@@ -1369,458 +1388,464 @@ def align_idx(pk, *args, **kwargs):
   return hit_parade['summary']
 
 """
+DEPRECATED
+# from align_wd (wikidata)
+# b: wikidata binding; passnum: 1 or 2; ds (obj); pid,srcid,title > whg Place instance
+"""
+#def writeHit(b, passnum, ds, pid, srcid, title):
+  ## gather any links
+  #authkeys=['tgnids','gnids','viafids','locids']
+  #linkkeys = list(set(list(b.keys())).intersection(authkeys))
+  #linklist = []
+  ## TODO: yuk
+  #for l in linkkeys:
+    #for v in b[l]['value'].split(', '):
+      #if v != '':
+        #linklist.append(l[:-3]+':'+v)
+  #b['links'] = linklist
+  #print('writeHit() linklist',linklist) # ['viaf:124330404', 'tgn:1003084', 'tgn:7004799', 'gn:6553047', 'loc:n80046295']
+  #if b['placeLabel']['value'] != b['place']['value'][31:]: # ??
+    #from datasets.models import Hit
+    #new = Hit(
+      #authority = 'wd',
+      #authrecord_id = b['place']['value'][31:],
+      #dataset = ds,
+      #place_id = get_object_or_404(Place, id=pid),
+      ##task_id = 'wd_20200517',
+      #task_id = align_wd.request.id,
+      #query_pass = passnum,
+      ## consistent json for review display
+      #json = normalize(b,'wd'),
+      #src_id = srcid,
+      ##score = hit['_score'],
+      #geom = parse_wkt(b['locations']['value']) if 'locations' in b.keys() else [],
+      #reviewed = False,
+      #matched = False
+    #)
+    #new.save()          
+    #hit = str(pid)+'\t'+ \
+          #title+'\t'+ \
+          #b['placeLabel']['value']+'\t'+ \
+          #b['place']['value']+'\t'
+    #print('wrote hit: '+hit + '\n')
+
+
+"""
+# manage, perform SPARQL reconcile to remote wikidata
+# DEPRECATED for wdlocal()
+"""
+#@task(name="align_wd")
+#def align_wd(pk, *args, **kwargs):
+  #task_id = align_wd.request.id
+  #ds = get_object_or_404(Dataset, id=pk)
+  ##bounds = kwargs['bounds']
+  
+  #from SPARQLWrapper import SPARQLWrapper, JSON
+  ##import sys, os, re, json, codecs, time, datetime, geojson
+  ##from datasets.align_utils import classy, roundy, fixName
+  #import sys, json, time, datetime, geojson
+  #from datasets.align_utils import fixName
+  #from shapely.geometry import shape
+  
+  ##endpoint = "http://dbpedia.org/sparql"
+  #endpoint = "https://query.wikidata.org/sparql"
+  #sparql = SPARQLWrapper(endpoint)
+  
+  #start = time.time()
+  #timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M"); print(timestamp)
+
+  #hit_parade = {"summary": {}}
+    
+  #[count,count_skipped] = [0,0]
+  #global count_hit, count_nohit, total_hits, count_p1, count_p2
+  #[count_hit, count_nohit, total_hits, count_p1, count_p2] = [0,0,0,0,0]
+  
+  #for place in ds.places.all():
+    ## e.g. place=get_object_or_404(Place, id=6369031) # Aachen
+    #count +=1
+    #place_id = place.id
+    #src_id = place.src_id
+    #title = fixName(place.title)
+    #qobj = {"place_id":place_id,"src_id":place.src_id,"title":fixName(place.title)}
+    #[variants,geoms,types,ccodes,parents]=[[],[],[],[],[]]
+
+    ## ccodes (2-letter iso codes)
+    #for c in place.ccodes:
+      #ccodes.append(c.upper())
+    #qobj['countries'] = ccodes
+
+    ## types (pull aat_ids from types if there)
+    #for t in place.types.all():
+      #try:
+        #id = t.jsonb['identifier']
+        #if id !=None:
+          #types.append(int(id[4:]) if id.startswith('aat:') else int(id))      
+      #except:
+        #print('no aat_id for', t.jsonb['sourceLabel'])
+    #qobj['placetypes'] = types
+
+    ## names
+    #for name in place.names.all():
+      ##variants.append(name.toponym)
+      #variants.append(name.toponym.strip())
+    #qobj['variants'] = variants
+    #qobj['variants'].append(title)
+
+    ## parents
+    ## TODO: other relations
+    #for rel in place.related.all():
+      #if rel.jsonb['relationType'] == 'gvp:broaderPartitive':
+        #parents.append(rel.jsonb['label'])
+    #qobj['parents'] = parents
+
+    ## geoms
+    #if len(place.geoms.all()) > 0:
+      #g_types = [g.jsonb['type'] for g in place.geoms.all()]
+      #g_list = [g.jsonb for g in place.geoms.all()]
+      #if len(set(g_types)) > 1 and len(set(g_types) & set(['Polygon','MultiPolygon'])) >0:
+        #g_list=list(filter(lambda d: d['type'] in ['Polygon','MultiPolygon'], g_list))
+      ## make everything a simple polygon hull for spatial filter
+      ## TODO: hully() assumes list is all one type
+      #qobj['geom'] = hully(g_list)
+
+    #print('qobj input for Wikidata sparql query',qobj)
+
+    ## lists for wikidata sparql
+    #variants = ' '.join(['"'+n+'"' for n in qobj['variants']])
+    ## countries, placetypes if they're there
+    #countries = ', '.join([c for c in getQ(qobj['countries'],'ccodes')]) \
+      #if len(qobj['countries'])>0 and qobj['countries'] != [''] else ''
+    ## types
+    #placetypes = ', '.join([t for t in getQ(qobj['placetypes'],'types')])
+
+    #print('variants,countries,placetype',variants,countries,placetypes)
+    
+    ## TODO admin parent P131, retrieve wiki article name, country P17, ??
+    #q='''SELECT ?place ?placeLabel ?countryLabel ?inception 
+        #(group_concat(distinct ?parentLabel; SEPARATOR=", ") as ?parents)
+        #(group_concat(distinct ?placeTypeLabel; SEPARATOR=", ") as ?types)
+        #(group_concat(distinct ?location; SEPARATOR=", ") as ?locations)
+        #(group_concat(distinct ?tgnid; SEPARATOR=", ") as ?tgnids)
+        #(group_concat(distinct ?gnid; SEPARATOR=", ") as ?gnids)
+        #(group_concat(distinct ?viafid; SEPARATOR=", ") as ?viafids)
+        #(group_concat(distinct ?locid; SEPARATOR=", ") as ?locids)
+        #WHERE {
+          #VALUES ?plabel { %s } .
+          #SERVICE wikibase:mwapi {
+            #bd:serviceParam wikibase:api "EntitySearch" .
+            #bd:serviceParam wikibase:endpoint "www.wikidata.org" .
+            #bd:serviceParam mwapi:search ?plabel .
+            #bd:serviceParam mwapi:language "en" .
+            #?place wikibase:apiOutputItem mwapi:item .
+            #?num wikibase:apiOrdinal true .
+          #}         
+          #OPTIONAL {?place wdt:P17 ?country .}
+          #OPTIONAL {?place wdt:P131 ?parent .}
+          #OPTIONAL {?place wdt:P571 ?inception .}
+  
+          #OPTIONAL {?place wdt:P1667 ?tgnid .} 
+          #OPTIONAL {?place wdt:P1566 ?gnid .}
+          #OPTIONAL {?place wdt:P214 ?viafid .}
+          #OPTIONAL {?place wdt:P244 ?locid .}
+  
+          #SERVICE wikibase:label { 
+            #bd:serviceParam wikibase:language "en".
+            #?place rdfs:label ?placeLabel .
+            #?parent rdfs:label ?parentLabel . 
+            #?country rdfs:label ?countryLabel .
+            #?placeType rdfs:label ?placeTypeLabel .
+          #}
+      #'''% (variants)
+    ##
+    ## geom here is a hull
+    ## area constraint is not used!
+    #if 'geom' in qobj.keys():
+      #loc=shape(geojson.loads(json.dumps(qobj['geom'])))
+      #loc_sw='POINT('+str(loc.bounds[0])+' '+str(loc.bounds[1])+')'
+      #loc_ne='POINT('+str(loc.bounds[2])+' '+str(loc.bounds[3])+')'
+      #q+='''
+          #SERVICE wikibase:box {
+            #?place wdt:P625 ?location .
+              #bd:serviceParam wikibase:cornerWest "%s"^^geo:wktLiteral .
+              #bd:serviceParam wikibase:cornerEast "%s"^^geo:wktLiteral .
+          #}
+        #'''% (loc_sw, loc_ne)
+    #else:
+      #q+='''
+        #?place wdt:P625 ?location .
+      #'''
+    #if countries != '':
+      #q += 'FILTER (?country in (%s)) .'% (countries)
+    ## 
+    ## placetype is 1st aat_id if any
+    ## separate pass1 and pass2 queries here
+    #qpass1 = q+'''
+      #?place wdt:P31/wdt:P279* ?placeType .
+      #FILTER (?placeType in (%s)) . }
+    #'''%(placetypes)
+    
+    #qpass2 = q+'''
+      #?place wdt:P31 ?placeType . }
+    #'''
+      
+    ## 
+    #qpass1 += '''
+      #GROUP BY ?place ?placeLabel ?countryLabel ?inception ?tgnids ?gnids ?viafids ?locids
+      #ORDER BY ASC(?num) LIMIT 5
+    #'''
+
+    ## return type, but no type filter 
+    #qpass2 += '''
+      #GROUP BY ?place ?placeLabel ?countryLabel ?inception ?tgnid ?gnid ?viafid ?locid
+      #ORDER BY ASC(?num) LIMIT 10'''
+
+    #def runQuery():
+      #global count_hit, count_nohit, total_hits, count_p1, count_p2
+      #sparql.setQuery(qpass1)
+      #sparql.setReturnFormat(JSON)
+      #sparql.addCustomHttpHeader('User-Agent','WHGazetteer/1.1 (http://whgazetteer.org; karl@kgeographer.org)')
+  
+      ## pass1
+      #try:
+        #bindings = sparql.query().convert()["results"]["bindings"]
+      #except ConnectionError as exc:
+        #print('429',sys.exc_info())
+        #if exc.status_code == 429:
+          #self.retry(exc=exc, countdown=61)
+        
+      ## test, output results
+      #if len(bindings) > 0:
+        ##print(str(len(bindings))+' bindings for pass1: '+str(place_id),qbase)
+        ## TODO: this counts hits, written or not
+        #count_hit +=1 # got at least 1
+        #count_p1 +=1 # it's pass1
+        #for b in bindings:
+          ## write hit only if there's geometry
+          #if b['locations']['value'] != '': 
+            #total_hits+=1 # add to total
+            ## if type is empty, insert from query
+            #if b['types']['value'] == '':
+              #b['types']['value'] = placetype 
+            #writeHit(b,'pass1',ds,place_id,src_id,title)
+            #print('pass1 hit binding:',b)
+      #elif len(bindings) == 0:
+        ## no hits, pass2 drops type filter
+        #sparql.setQuery(qpass2)
+        #sparql.setReturnFormat(JSON)
+        #sparql.addCustomHttpHeader('User-Agent','WHGazetteer/1.0 (http://whgazetteer.org; karl@kgeographer.org)')
+        #try:
+          #bindings = sparql.query().convert()["results"]["bindings"]
+        #except ConnectionError as exc:
+          #print('pass2 error',sys.exc_info())
+          #print('qpass2', qpass2)
+          #if exc.status_code == 429:
+            #self.retry(exc=exc, countdown=61)
+        #if len(bindings) == 0:
+          #count_nohit +=1 # tried 2 passes, nothing
+        #else:
+          #count_hit+=1 # got at least 1
+          #count_p2+=1 # it's pass2
+          #print(str(len(bindings))+' bindings, pass2: '+str(place_id), qpass2)
+          #for b in bindings:
+            ## could be anything, see if it has a location
+            #if b['locations']['value'] != '':
+              #total_hits+=1 # add to total
+              #writeHit(b, 'pass2', ds,place_id, src_id,title)
+              ##fout1.write(str(place_id)+'\tpass2:'+' '+str(b)+'\n')   
+              #print('pass2 hit binding:', b)
+    ## any exception, go on to the next
+    #try:
+      #runQuery()
+    #except:
+      #print('runQuery() failed, place#', place_id)
+      #print('runQuery() error:', sys.exc_info())
+      #count_skipped +=1
+      #continue
+  
+  #print(str(count)+' rows; >=1 hit:'+str(count_hit)+'; '+str(total_hits)+' in total; ', str(count_nohit) + \
+        #' misses; '+str(count_skipped)+' skipped')
+  
+  #end = time.time()
+  #print('elapsed time in minutes:',int((end - start)/60))
+  ##   [count, count_hit, count_nohit, total_hits, count_p1, count_p2] = [0,0,0,0,0,0]
+  #hit_parade['summary'] = {
+      #'count':count,
+      #'got_hits':count_hit,
+      #'total_hits': total_hits, 
+      #'pass1': count_p1, 
+      #'pass2': count_p2, 
+      #'pass3': 'n/a', 
+      #'no_hits': {'count': count_nohit },
+      #'elapsed': int((end - start)/60)
+    #}
+  #print("summary returned",hit_parade['summary'])
+
+  ## email owner when complete
+  #task_emailer.delay(
+    #task_id,
+    #ds.label, 
+    #ds.owner.username, 
+    #ds.owner.email, 
+    #count_hit, 
+    #total_hits)
+  
+  #return hit_parade['summary']
+
+"""
 # reconcile to whg w/no indexing
 # returns all potential matches
 # (does not stop at shared link)
+# DEPRECATED
 """
-@task(name="align_whg")
-def align_whg(pk, *args, **kwargs):
-  print('kwargs from align_whg() task', kwargs)
-  print('align_whg.request', align_whg.request)
+#@task(name="align_whg")
+#def align_whg(pk, *args, **kwargs):
+  #print('kwargs from align_whg() task', kwargs)
+  #print('align_whg.request', align_whg.request)
   
-  task_id = align_whg.request.id
-  ds = get_object_or_404(Dataset, id=pk)
-  user = get_object_or_404(User, id=kwargs['user'])
-  idx='whg'
-  
-  bounds = kwargs['bounds']
-  scope = kwargs['scope']
-  
-  # empty vessels
-  hit_parade = {"summary": {}, "hits": []}
-  [nohits,whg_es_errors,features] = [[],[],[]]
-  [count,count_hit,count_nohit,total_hits,count_p0,count_p1,count_p2] = [0,0,0,0,0,0,0]
-
-  start = datetime.datetime.now()
-    
-  # queryset depends on choice of scope in addtask form
-  qs = ds.places.all() if scope == 'all' else ds.places.all().filter(indexed=False)
-
-  #from places.models import Place
-  #from django.shortcuts import get_object_or_404
-  #from datasets.utils import hully
-  #from datasets.tasks import es_lookup_whg
-  #bounds = {'type': ['userarea'], 'id': ['0']}    
+  #task_id = align_whg.request.id
+  #ds = get_object_or_404(Dataset, id=pk)
+  #user = get_object_or_404(User, id=kwargs['user'])
   #idx='whg'
-  #from pprint import pprint as pp
-  #place=get_object_or_404(Place,id=6594341) # Al Madain
- 
-  for place in qs:    
-    print('building qobj for ' + str(place.id) + ': ' + place.title)
-    count +=1
-    
-    """ 
-      build query object 'qobj' 
-    """
-    qobj = {"place_id":place.id, 
-            "src_id":place.src_id, 
-            "title":place.title,
-            "fclasses":place.fclasses or []}
-    [links,ccodes,types,variants,parents,geoms]=[[],[],[],[],[],[]]
-
-    # links
-    for l in place.links.all():
-      links.append(l.jsonb['identifier'])
-    qobj['links'] = links
-
-    # ccodes (2-letter iso codes)
-    for c in place.ccodes:
-      ccodes.append(c)
-    qobj['countries'] = list(set(place.ccodes))
-
-    # types (Getty AAT identifiers)
-    for t in place.types.all():
-      if t.jsonb['identifier'] != None:
-        types.append(t.jsonb['identifier'])
-      else:
-        # no type? use inhabited place, cultural group, site
-        types.extend(['aat:300008347','aat:300387171','aat:300000809'])
-    qobj['placetypes'] = types
-
-    # variants
-    for name in place.names.all():
-      variants.append(name.toponym)
-    qobj['variants'] = [v.lower() for v in variants]
-
-    # parents
-    for rel in place.related.all():
-      if rel.jsonb['relationType'] == 'gvp:broaderPartitive':
-        parents.append(rel.jsonb['label'])
-    qobj['parents'] = parents
-
-    # geoms
-    if len(place.geoms.all()) > 0:
-      # any geoms at all...
-      g_list =[g.jsonb for g in place.geoms.all()]
-      # make everything a simple polygon hull for spatial filter purposes
-      qobj['geom'] = hully(g_list)
-        
-
-    """
-      run es_lookup_whg(qobj): query passes 0, 1, 2
-    """
-    result_obj = es_lookup_whg(qobj, index=idx, bounds=bounds, place=place)
-
-    # WRITE HITS
-    if result_obj['hit_count'] == 0:
-      count_nohit +=1
-    else:
-      count_hit +=1
-      total_hits += len(result_obj['hits'])
-      #print("hit[0]: ",result_obj['hits'][0]['_source'])  
-      #print('hits from align_whg',result_obj['hits'])
-      for hit in result_obj['hits']:
-        # they are ALL pass1 for now
-        print('align_whg hit', hit)
-        if hit['pass'] == 'pass1': 
-          count_p1+=1
-        hit_parade["hits"].append(hit)
-        
-        loc = hit['_source']['geoms'] if 'geoms' in hit['_source'].keys() else None
-        
-        new = Hit(
-          authority = 'whg',
-          authrecord_id = hit['_id'],
-          dataset = ds,
-          place_id = get_object_or_404(Place, id=qobj['place_id']),
-          
-          task_id = align_whg.request.id,
-          
-          query_pass = hit['pass'],
-          
-          # for review display
-          # TODO; tailor for whg case
-          json = normalize(hit,'whg'),
-          
-          src_id = qobj['src_id'],
-          score = hit['_score'],
-          geom = loc,
-          reviewed = False,
-          matched = False,
-        )
-        new.save()
-  end = datetime.datetime.now()
-
-  print('align_whg ES errors:',whg_es_errors)
-  hit_parade['summary'] = {
-      'count':count,
-      'got_hits':count_hit,
-      'total': total_hits, 
-      'pass1': count_p1, 
-      'no_hits': {'count': count_nohit },
-      'elapsed': elapsed(end-start)
-    }
-  print("align_whg summary returned",hit_parade['summary'])
-
-  # create log entry and update ds status
-  post_recon_update(ds, user, 'whg')
-
-  task_emailer.delay(
-    task_id,
-    ds.label,
-    user.username,
-    user.email,
-    count_hit,
-    total_hits
-  )
   
-  return hit_parade['summary']
-
-# from align_wd (wikidata)
-# b: wikidata binding; passnum: 1 or 2; ds (obj); pid,srcid,title > whg Place instance
-def writeHit(b, passnum, ds, pid, srcid, title):
-  # gather any links
-  authkeys=['tgnids','gnids','viafids','locids']
-  linkkeys = list(set(list(b.keys())).intersection(authkeys))
-  linklist = []
-  # TODO: yuk
-  for l in linkkeys:
-    for v in b[l]['value'].split(', '):
-      if v != '':
-        linklist.append(l[:-3]+':'+v)
-  b['links'] = linklist
-  print('writeHit() linklist',linklist) # ['viaf:124330404', 'tgn:1003084', 'tgn:7004799', 'gn:6553047', 'loc:n80046295']
-  if b['placeLabel']['value'] != b['place']['value'][31:]: # ??
-    from datasets.models import Hit
-    new = Hit(
-      authority = 'wd',
-      authrecord_id = b['place']['value'][31:],
-      dataset = ds,
-      place_id = get_object_or_404(Place, id=pid),
-      #task_id = 'wd_20200517',
-      task_id = align_wd.request.id,
-      query_pass = passnum,
-      # consistent json for review display
-      json = normalize(b,'wd'),
-      src_id = srcid,
-      #score = hit['_score'],
-      geom = parse_wkt(b['locations']['value']) if 'locations' in b.keys() else [],
-      reviewed = False,
-      matched = False
-    )
-    new.save()          
-    hit = str(pid)+'\t'+ \
-          title+'\t'+ \
-          b['placeLabel']['value']+'\t'+ \
-          b['place']['value']+'\t'
-    print('wrote hit: '+hit + '\n')
-
-# ***
-# manage, perform SPARQL reconcile to remote wikidata
-# ***
-@task(name="align_wd")
-def align_wd(pk, *args, **kwargs):
-  task_id = align_wd.request.id
-  ds = get_object_or_404(Dataset, id=pk)
   #bounds = kwargs['bounds']
+  #scope = kwargs['scope']
   
-  from SPARQLWrapper import SPARQLWrapper, JSON
-  #import sys, os, re, json, codecs, time, datetime, geojson
-  #from datasets.align_utils import classy, roundy, fixName
-  import sys, json, time, datetime, geojson
-  from datasets.align_utils import fixName
-  from shapely.geometry import shape
-  
-  #endpoint = "http://dbpedia.org/sparql"
-  endpoint = "https://query.wikidata.org/sparql"
-  sparql = SPARQLWrapper(endpoint)
-  
-  start = time.time()
-  timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M"); print(timestamp)
+  ## empty vessels
+  #hit_parade = {"summary": {}, "hits": []}
+  #[nohits,whg_es_errors,features] = [[],[],[]]
+  #[count,count_hit,count_nohit,total_hits,count_p0,count_p1,count_p2] = [0,0,0,0,0,0,0]
 
-  hit_parade = {"summary": {}}
+  #start = datetime.datetime.now()
     
-  [count,count_skipped] = [0,0]
-  global count_hit, count_nohit, total_hits, count_p1, count_p2
-  [count_hit, count_nohit, total_hits, count_p1, count_p2] = [0,0,0,0,0]
-  
-  for place in ds.places.all():
-    # e.g. place=get_object_or_404(Place, id=6369031) # Aachen
-    count +=1
-    place_id = place.id
-    src_id = place.src_id
-    title = fixName(place.title)
-    qobj = {"place_id":place_id,"src_id":place.src_id,"title":fixName(place.title)}
-    [variants,geoms,types,ccodes,parents]=[[],[],[],[],[]]
+  ## queryset depends on choice of scope in addtask form
+  #qs = ds.places.all() if scope == 'all' else ds.places.all().filter(indexed=False)
 
-    # ccodes (2-letter iso codes)
-    for c in place.ccodes:
-      ccodes.append(c.upper())
-    qobj['countries'] = ccodes
+  ##from places.models import Place
+  ##from django.shortcuts import get_object_or_404
+  ##from datasets.utils import hully
+  ##from datasets.tasks import es_lookup_whg
+  ##bounds = {'type': ['userarea'], 'id': ['0']}    
+  ##idx='whg'
+  ##from pprint import pprint as pp
+  ##place=get_object_or_404(Place,id=6594341) # Al Madain
+ 
+  #for place in qs:    
+    #print('building qobj for ' + str(place.id) + ': ' + place.title)
+    #count +=1
+    
+    #""" 
+      #build query object 'qobj' 
+    #"""
+    #qobj = {"place_id":place.id, 
+            #"src_id":place.src_id, 
+            #"title":place.title,
+            #"fclasses":place.fclasses or []}
+    #[links,ccodes,types,variants,parents,geoms]=[[],[],[],[],[],[]]
 
-    # types (pull aat_ids from types if there)
-    for t in place.types.all():
-      try:
-        id = t.jsonb['identifier']
-        if id !=None:
-          types.append(int(id[4:]) if id.startswith('aat:') else int(id))      
-      except:
-        print('no aat_id for', t.jsonb['sourceLabel'])
-    qobj['placetypes'] = types
+    ## links
+    #for l in place.links.all():
+      #links.append(l.jsonb['identifier'])
+    #qobj['links'] = links
 
-    # names
-    for name in place.names.all():
+    ## ccodes (2-letter iso codes)
+    #for c in place.ccodes:
+      #ccodes.append(c)
+    #qobj['countries'] = list(set(place.ccodes))
+
+    ## types (Getty AAT identifiers)
+    #for t in place.types.all():
+      #if t.jsonb['identifier'] != None:
+        #types.append(t.jsonb['identifier'])
+      #else:
+        ## no type? use inhabited place, cultural group, site
+        #types.extend(['aat:300008347','aat:300387171','aat:300000809'])
+    #qobj['placetypes'] = types
+
+    ## variants
+    #for name in place.names.all():
       #variants.append(name.toponym)
-      variants.append(name.toponym.strip())
-    qobj['variants'] = variants
-    qobj['variants'].append(title)
+    #qobj['variants'] = [v.lower() for v in variants]
 
-    # parents
-    # TODO: other relations
-    for rel in place.related.all():
-      if rel.jsonb['relationType'] == 'gvp:broaderPartitive':
-        parents.append(rel.jsonb['label'])
-    qobj['parents'] = parents
+    ## parents
+    #for rel in place.related.all():
+      #if rel.jsonb['relationType'] == 'gvp:broaderPartitive':
+        #parents.append(rel.jsonb['label'])
+    #qobj['parents'] = parents
 
-    # geoms
-    if len(place.geoms.all()) > 0:
-      g_types = [g.jsonb['type'] for g in place.geoms.all()]
-      g_list = [g.jsonb for g in place.geoms.all()]
-      if len(set(g_types)) > 1 and len(set(g_types) & set(['Polygon','MultiPolygon'])) >0:
-        g_list=list(filter(lambda d: d['type'] in ['Polygon','MultiPolygon'], g_list))
-      # make everything a simple polygon hull for spatial filter
-      # TODO: hully() assumes list is all one type
-      qobj['geom'] = hully(g_list)
-
-    print('qobj input for Wikidata sparql query',qobj)
-
-    # lists for wikidata sparql
-    variants = ' '.join(['"'+n+'"' for n in qobj['variants']])
-    # countries, placetypes if they're there
-    countries = ', '.join([c for c in getQ(qobj['countries'],'ccodes')]) \
-      if len(qobj['countries'])>0 and qobj['countries'] != [''] else ''
-    # types
-    placetypes = ', '.join([t for t in getQ(qobj['placetypes'],'types')])
-
-    print('variants,countries,placetype',variants,countries,placetypes)
-    
-    # TODO admin parent P131, retrieve wiki article name, country P17, ??
-    q='''SELECT ?place ?placeLabel ?countryLabel ?inception 
-        (group_concat(distinct ?parentLabel; SEPARATOR=", ") as ?parents)
-        (group_concat(distinct ?placeTypeLabel; SEPARATOR=", ") as ?types)
-        (group_concat(distinct ?location; SEPARATOR=", ") as ?locations)
-        (group_concat(distinct ?tgnid; SEPARATOR=", ") as ?tgnids)
-        (group_concat(distinct ?gnid; SEPARATOR=", ") as ?gnids)
-        (group_concat(distinct ?viafid; SEPARATOR=", ") as ?viafids)
-        (group_concat(distinct ?locid; SEPARATOR=", ") as ?locids)
-        WHERE {
-          VALUES ?plabel { %s } .
-          SERVICE wikibase:mwapi {
-            bd:serviceParam wikibase:api "EntitySearch" .
-            bd:serviceParam wikibase:endpoint "www.wikidata.org" .
-            bd:serviceParam mwapi:search ?plabel .
-            bd:serviceParam mwapi:language "en" .
-            ?place wikibase:apiOutputItem mwapi:item .
-            ?num wikibase:apiOrdinal true .
-          }         
-          OPTIONAL {?place wdt:P17 ?country .}
-          OPTIONAL {?place wdt:P131 ?parent .}
-          OPTIONAL {?place wdt:P571 ?inception .}
-  
-          OPTIONAL {?place wdt:P1667 ?tgnid .} 
-          OPTIONAL {?place wdt:P1566 ?gnid .}
-          OPTIONAL {?place wdt:P214 ?viafid .}
-          OPTIONAL {?place wdt:P244 ?locid .}
-  
-          SERVICE wikibase:label { 
-            bd:serviceParam wikibase:language "en".
-            ?place rdfs:label ?placeLabel .
-            ?parent rdfs:label ?parentLabel . 
-            ?country rdfs:label ?countryLabel .
-            ?placeType rdfs:label ?placeTypeLabel .
-          }
-      '''% (variants)
-    #
-    # geom here is a hull
-    # area constraint is not used!
-    if 'geom' in qobj.keys():
-      loc=shape(geojson.loads(json.dumps(qobj['geom'])))
-      loc_sw='POINT('+str(loc.bounds[0])+' '+str(loc.bounds[1])+')'
-      loc_ne='POINT('+str(loc.bounds[2])+' '+str(loc.bounds[3])+')'
-      q+='''
-          SERVICE wikibase:box {
-            ?place wdt:P625 ?location .
-              bd:serviceParam wikibase:cornerWest "%s"^^geo:wktLiteral .
-              bd:serviceParam wikibase:cornerEast "%s"^^geo:wktLiteral .
-          }
-        '''% (loc_sw, loc_ne)
-    else:
-      q+='''
-        ?place wdt:P625 ?location .
-      '''
-    if countries != '':
-      q += 'FILTER (?country in (%s)) .'% (countries)
-    # 
-    # placetype is 1st aat_id if any
-    # separate pass1 and pass2 queries here
-    qpass1 = q+'''
-      ?place wdt:P31/wdt:P279* ?placeType .
-      FILTER (?placeType in (%s)) . }
-    '''%(placetypes)
-    
-    qpass2 = q+'''
-      ?place wdt:P31 ?placeType . }
-    '''
-      
-    # 
-    qpass1 += '''
-      GROUP BY ?place ?placeLabel ?countryLabel ?inception ?tgnids ?gnids ?viafids ?locids
-      ORDER BY ASC(?num) LIMIT 5
-    '''
-
-    # return type, but no type filter 
-    qpass2 += '''
-      GROUP BY ?place ?placeLabel ?countryLabel ?inception ?tgnid ?gnid ?viafid ?locid
-      ORDER BY ASC(?num) LIMIT 10'''
-
-    def runQuery():
-      global count_hit, count_nohit, total_hits, count_p1, count_p2
-      sparql.setQuery(qpass1)
-      sparql.setReturnFormat(JSON)
-      sparql.addCustomHttpHeader('User-Agent','WHGazetteer/1.1 (http://whgazetteer.org; karl@kgeographer.org)')
-  
-      # pass1
-      try:
-        bindings = sparql.query().convert()["results"]["bindings"]
-      except ConnectionError as exc:
-        print('429',sys.exc_info())
-        if exc.status_code == 429:
-          self.retry(exc=exc, countdown=61)
+    ## geoms
+    #if len(place.geoms.all()) > 0:
+      ## any geoms at all...
+      #g_list =[g.jsonb for g in place.geoms.all()]
+      ## make everything a simple polygon hull for spatial filter purposes
+      #qobj['geom'] = hully(g_list)
         
-      # test, output results
-      if len(bindings) > 0:
-        #print(str(len(bindings))+' bindings for pass1: '+str(place_id),qbase)
-        # TODO: this counts hits, written or not
-        count_hit +=1 # got at least 1
-        count_p1 +=1 # it's pass1
-        for b in bindings:
-          # write hit only if there's geometry
-          if b['locations']['value'] != '': 
-            total_hits+=1 # add to total
-            # if type is empty, insert from query
-            if b['types']['value'] == '':
-              b['types']['value'] = placetype 
-            writeHit(b,'pass1',ds,place_id,src_id,title)
-            print('pass1 hit binding:',b)
-      elif len(bindings) == 0:
-        # no hits, pass2 drops type filter
-        sparql.setQuery(qpass2)
-        sparql.setReturnFormat(JSON)
-        sparql.addCustomHttpHeader('User-Agent','WHGazetteer/1.0 (http://whgazetteer.org; karl@kgeographer.org)')
-        try:
-          bindings = sparql.query().convert()["results"]["bindings"]
-        except ConnectionError as exc:
-          print('pass2 error',sys.exc_info())
-          print('qpass2', qpass2)
-          if exc.status_code == 429:
-            self.retry(exc=exc, countdown=61)
-        if len(bindings) == 0:
-          count_nohit +=1 # tried 2 passes, nothing
-        else:
-          count_hit+=1 # got at least 1
-          count_p2+=1 # it's pass2
-          print(str(len(bindings))+' bindings, pass2: '+str(place_id), qpass2)
-          for b in bindings:
-            # could be anything, see if it has a location
-            if b['locations']['value'] != '':
-              total_hits+=1 # add to total
-              writeHit(b, 'pass2', ds,place_id, src_id,title)
-              #fout1.write(str(place_id)+'\tpass2:'+' '+str(b)+'\n')   
-              print('pass2 hit binding:', b)
-    # any exception, go on to the next
-    try:
-      runQuery()
-    except:
-      print('runQuery() failed, place#', place_id)
-      print('runQuery() error:', sys.exc_info())
-      count_skipped +=1
-      continue
-  
-  print(str(count)+' rows; >=1 hit:'+str(count_hit)+'; '+str(total_hits)+' in total; ', str(count_nohit) + \
-        ' misses; '+str(count_skipped)+' skipped')
-  
-  end = time.time()
-  print('elapsed time in minutes:',int((end - start)/60))
-  #   [count, count_hit, count_nohit, total_hits, count_p1, count_p2] = [0,0,0,0,0,0]
-  hit_parade['summary'] = {
-      'count':count,
-      'got_hits':count_hit,
-      'total': total_hits, 
-      'pass1': count_p1, 
-      'pass2': count_p2, 
-      'pass3': 'n/a', 
-      'no_hits': {'count': count_nohit },
-      'elapsed': int((end - start)/60)
-    }
-  print("summary returned",hit_parade['summary'])
 
-  # email owner when complete
-  task_emailer.delay(
-    task_id,
-    ds.label, 
-    ds.owner.username, 
-    ds.owner.email, 
-    count_hit, 
-    total_hits)
+    #"""
+      #run es_lookup_whg(qobj): query passes 0, 1, 2
+    #"""
+    #result_obj = es_lookup_whg(qobj, index=idx, bounds=bounds, place=place)
+
+    ## WRITE HITS
+    #if result_obj['hit_count'] == 0:
+      #count_nohit +=1
+    #else:
+      #count_hit +=1
+      #total_hits += len(result_obj['hits'])
+      ##print("hit[0]: ",result_obj['hits'][0]['_source'])  
+      ##print('hits from align_whg',result_obj['hits'])
+      #for hit in result_obj['hits']:
+        ## they are ALL pass1 for now
+        #print('align_whg hit', hit)
+        #if hit['pass'] == 'pass1': 
+          #count_p1+=1
+        #hit_parade["hits"].append(hit)
+        
+        #loc = hit['_source']['geoms'] if 'geoms' in hit['_source'].keys() else None
+        
+        #new = Hit(
+          #authority = 'whg',
+          #authrecord_id = hit['_id'],
+          #dataset = ds,
+          #place_id = get_object_or_404(Place, id=qobj['place_id']),
+          
+          #task_id = align_whg.request.id,
+          
+          #query_pass = hit['pass'],
+          
+          ## for review display
+          ## TODO; tailor for whg case
+          #json = normalize(hit,'whg'),
+          
+          #src_id = qobj['src_id'],
+          #score = hit['_score'],
+          #geom = loc,
+          #reviewed = False,
+          #matched = False,
+        #)
+        #new.save()
+  #end = datetime.datetime.now()
+
+  #print('align_whg ES errors:',whg_es_errors)
+  #hit_parade['summary'] = {
+      #'count':count,
+      #'got_hits':count_hit,
+      #'total_hits': total_hits, 
+      #'pass1': count_p1, 
+      #'no_hits': {'count': count_nohit },
+      #'elapsed': elapsed(end-start)
+    #}
+  #print("align_whg summary returned",hit_parade['summary'])
+
+  ## create log entry and update ds status
+  #post_recon_update(ds, user, 'whg')
+
+  #task_emailer.delay(
+    #task_id,
+    #ds.label,
+    #user.username,
+    #user.email,
+    #count_hit,
+    #total_hits
+  #)
   
-  return hit_parade['summary']
+  #return hit_parade['summary']

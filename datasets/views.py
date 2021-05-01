@@ -32,7 +32,7 @@ from datasets.models import Dataset, Hit, DatasetFile
 from datasets.static.hashes import mimetypes_plus as mthash_plus
 from datasets.static.hashes.parents import ccodes as cchash
 # NB these task names ARE in use; they are generated dynamically
-from datasets.tasks import align_tgn, align_whg, align_wd, align_wdlocal, align_idx, maxID
+from datasets.tasks import align_wdlocal, align_idx, align_tgn, maxID
 from datasets.utils import *
 from elastic.es_utils import makeDoc,deleteFromIndex, replaceInIndex
 from main.choices import AUTHORITY_BASEURI
@@ -365,13 +365,14 @@ def review(request, pk, tid, passnum):
   authname = 'Wikidata' if auth == 'wd' else 'Getty TGN' \
     if auth == 'tgn' else 'WHG'
   kwargs=json.loads(task.task_kwargs.replace("'",'"'))
-  print('request.POST in review()', request.POST)
-  print('passnum in review()',passnum)
-  print('page in review()', request.GET.get('page'))
+  review_request = request.GET.__dict__ if request.method == 'GET' \
+    else request.POST.__dict__
+  print('review() request', review_request)
+  print('review() GET page', request.GET.get('page'))
   beta = 'beta' in list(request.user.groups.all().values_list('name',flat=True))
   
   # try addin place list table in left column
-  table = PlaceTable(ds.places.all())
+  #table = PlaceTable(ds.places.all())
   
   # filter place records by passnum for those with unreviewed hits on this task
   # if request passnum is complete, increment
@@ -388,22 +389,19 @@ def review(request, pk, tid, passnum):
     task_id=tid, reviewed=False, query_pass='pass3').count()
   
   pass_int = int(passnum[4])
+  # if no unreviewed left, go to next pass
   passnum = passnum if cnt_pass > 0 else 'pass'+str(pass_int+1)
-  
-  #tid='abc-double-xyz'
-  #qs0=hitplaces = Hit.objects.values_list('place_id', flat=True).filter(~Q(query_pass='pass1'), task_id=tid, reviewed=False)
-  
-  #qs1 = Hit.objects.values_list('place_id',flat=True).filter(~Q(query_pass='pass0'), task_id=tid, reviewed=False)
-  
-  # if whg or idx ... ???
+    
+  # separate review pages
   hitplaces = Hit.objects.values('place_id').filter(task_id=tid, reviewed=False, query_pass=passnum)
   if auth in ['whg','idx']:
-    review_page = 'accession.html'
+    review_page = 'review.html'
   else:
     review_page = 'review.html'
     
   # if some are unreviewed, queue in record_list
   if len(hitplaces) > 0:
+    #print('>0 hitplace', len(hitplaces))
     record_list = Place.objects.order_by('id').filter(pk__in=hitplaces)
   else:
     context = {
@@ -423,10 +421,7 @@ def review(request, pk, tid, passnum):
   count = len(record_list)
   placeid = records[0].id
   place = get_object_or_404(Place, id=placeid)
-  print('reviewing hits for place', records[0])
-  #print('existing links:', records[0].links.all())
-  # recon task hits for current place
-  #raw_hits = Hit.objects.filter(place_id=placeid, task_id=tid).order_by('query_pass','-score')
+  print('reviewing '+str(count)+' hits for place', records[0])
   raw_hits = Hit.objects.filter(place_id=placeid, task_id=tid, query_pass=passnum).order_by('-score')
   print('raw_hits for '+str(records[0]), raw_hits)
   # convert ccodes to names
@@ -442,7 +437,7 @@ def review(request, pk, tid, passnum):
 
 
   # TODO: if auth in ['whg','idx], group children within parents
-  
+  print('records[0] in review()',records[0].__dict__)
   # prep some context
   context = {
     'ds_id': pk, 'ds_label': ds.label, 'task_id': tid,
@@ -458,7 +453,7 @@ def review(request, pk, tid, passnum):
     'count_pass1': cnt_pass1,
     'count_pass2': cnt_pass2,
     'count_pass3': cnt_pass3,
-    'place_list': table,
+    #'place_list': table,
       
   }
 
@@ -551,6 +546,9 @@ def review(request, pk, tid, passnum):
           # this is accessioning to whg index
           elif task.task_name == 'align_idx':
             print('reviewed hit for align_idx', hits[x])
+            # set indexed flag, though it isn't yet
+            place_post.indexed = True
+            place_post.save
             # match is to parent doc in the index
             # index as child
             # TODO: write database PlaceLink records for incoming & matched
@@ -748,9 +746,9 @@ def write_idx_pass0(request, tid):
 
 """
 # ds_recon(pk)
-# initiate, monitor Celery tasks against Elasticsearch indexes
-# i.e. align_[wdlocal | tgn | idx | whg ] in tasks.py
-# url: datasets/{ds.id}/recon (datasets.html#addtask)
+# initiate & monitor Celery tasks against Elasticsearch indexes
+# i.e. align_[wdlocal | idx | tgn ] in tasks.py
+# url: datasets/{ds.id}/reconcile ('ds_reconcile'; from ds_addtask.html)
 # params: pk (dataset id), auth, region, userarea, geom, scope
 # each align_{auth} task runs matching es_lookup_{auth}() and writes Hit instances
 """
@@ -802,12 +800,14 @@ def ds_recon(request, pk):
         lang=language,
       )
       messages.add_message(request, messages.INFO, "<span class='text-danger'>Your reconciliation task is under way.</span><br/>When complete, you will receive an email and if successful, results will appear below (you may have to refresh screen). <br/>In the meantime, you can navigate elsewhere.")
-      return redirect('/datasets/'+str(ds.id)+'/detail#reconciliation')
+      #return redirect('/datasets/'+str(ds.id)+'/detail#reconciliation')
+      return redirect('/datasets/'+str(ds.id)+'/reconcile')
     except:
       print('failed: align_'+auth )
       print(sys.exc_info())
       messages.add_message(request, messages.INFO, "Sorry! Reconciliation services appear to be down. The system administrator has been notified.<br/>"+ str(sys.exc_info()))
-      return redirect('/datasets/'+str(ds.id)+'/detail#reconciliation')     
+      #return redirect('/datasets/'+str(ds.id)+'/detail#reconciliation')     
+      return redirect('/datasets/'+str(ds.id)+'/reconcile')
   
 
     

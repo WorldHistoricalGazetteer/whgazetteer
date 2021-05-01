@@ -1,4 +1,4 @@
-<!-- datasets/review.html -->
+<!-- datasets/accession.html -->
 {% extends "main/base.html" %}
 {% load leaflet_tags %}
 {% load fontawesome %}
@@ -37,8 +37,8 @@
     <form id="form_related" method="POST" action="" >
     {% csrf_token %}
     {{ formset.management_form }}
-    {% for record in records %} <!-- there is only one; if last, do nothing -->
-    {{ record.id|json_script:'placeid' }}
+    {% for record in records %} 
+    <!-- there is only one; if last, do nothing -->
     <div class="container">
       <div id="review_nav" class="pagination row justify-content-center">
         <div class="col-sm-4 pl-1">
@@ -70,7 +70,7 @@
           <div id="place_record" class="mb-2">
             <div>
               <input type="hidden" name="place_id" value="{{ record.id }}" />
-              <span>
+              <span>{{ record.first }}, {{ record.has_next }}
                 <h4 class="text-danger">{{ record.title }}
                   {% if record.geoms %}
                   <span class="ml-2"><svg height="18" width="18">
