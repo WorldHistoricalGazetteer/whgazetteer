@@ -54,7 +54,7 @@
         </div>
         <div class="col-sm-8">
         <span><button type="submit" id="btn_save" class="button-sm">Save</button>
-          <a id="defer_link" rel="tooltip" title="flag for separate review" class="small" href="{% url 'places:defer-review' pid=record.id auth=authority %}">defer</a>
+          <a id="defer_link" rel="tooltip" title="flag for separate review" class="small" href="{% url 'places:defer-review' pid=record.id auth=authority last=records.paginator.num_pages %}">defer</a>
         <span class="step-links">
             {% if records.has_previous %}
                 <a href="?page=1">&laquo; first</a>&nbsp;&nbsp;

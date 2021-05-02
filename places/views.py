@@ -17,7 +17,7 @@ def defer_review(request, pid, auth, last):
   p = get_object_or_404(Place, pk=pid)
   if auth in ['whg','idx']:
     p.review_whg = 2
-  elif auth == 'wd':
+  elif auth.startswith('wd'):
     p.review_wd = 2
   else:
     p.review_tgn = 2

@@ -127,8 +127,11 @@
                 <!--{ if t.task_name == 'align_tgn' %}-->
                 {% if t.result|get:"pass3" > 0 %} <!-- TGN only -->
                   <li class="li-left">Pass 3: <span class="strong mx-2" id='{{t.task_id}}_3'>nn</span> 
-                  <a href="{ url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass3' %}">review</i></a></li>
+                  <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass3' %}">review</i></a></li>
                 {% endif %}
+                
+                <li class="li-left">Deferred: <span class="strong mx-2" id='{{t.task_id}}_d'>nn</span> 
+                <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='d' %}">review</i></a></li>
               </ul> 
               <!--{ else %} <!-- align_idx-->
                 <!--<ul>-->
@@ -524,6 +527,7 @@ js for Summary, Reconciliation
           $("#"+tid+'_1').html(counts['pass1'])
           $("#"+tid+'_2').html(counts['pass2'])
           $("#"+tid+'_3').html(counts['pass3'])
+          $("#"+tid+'_d').html(counts['deferred'])
         }
       }
     )

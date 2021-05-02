@@ -7,6 +7,7 @@ from django.views.generic import View
 import codecs, csv, datetime, sys, openpyxl, os, pprint, re, time
 import simplejson as json
 from chardet import detect
+from django_celery_results.models import TaskResult
 from frictionless import validate as fvalidate
 from goodtables import validate as gvalidate
 from jsonschema import draft7_format_checker, validate 
@@ -800,8 +801,48 @@ def post_recon_update(ds, user, task):
   print('post_recon_update() logobj',logobj)
 
 
-# faster?, w/totals
+# TODO: faster?
 class UpdateCountsView(View):
+  """ Returns counts of unreviewed hits, per pass and total; also deferred per task """
+  @staticmethod
+  def get(request):
+    print('UpdateCountsView GET:',request.GET)
+    """
+    args in request.GET:
+        [integer] ds_id: dataset id
+    """
+    ds = get_object_or_404(Dataset, id=request.GET.get('ds_id'))
+
+    def defcountfunc(taskname, pids):
+      if taskname[6:] in ['whg', 'idx']:
+        return ds.places.filter(id__in=pids, review_whg = 2).count()
+      elif taskname[6:].startswith('wd'):
+        return ds.places.filter(id__in=pids, review_wd = 2).count()
+      else:
+        return ds.places.filter(id__in=pids, review_tgn = 2).count()
+          
+    updates={}
+    # counts of distinct place ids w/unreviewed hits per task/pass
+    for t in ds.tasks.all():
+      taskhits = Hit.objects.filter(task_id=t.task_id, reviewed=False)
+      # ids of all unreviewed places
+      pids = list(taskhits.all().values_list("place_id",flat=True).distinct())
+      defcount = defcountfunc(t.task_name, pids)
+      
+      updates[t.task_id] = {
+        "task":t.task_name,
+        "total":len(pids), 
+        "pass0":taskhits.filter(query_pass='pass0').count(), 
+        "pass1":taskhits.filter(query_pass='pass1').count(), 
+        "pass2":taskhits.filter(query_pass='pass2').count(), 
+        "pass3":taskhits.filter(query_pass='pass3').count(),
+        "deferred": defcount
+      }
+        
+    return JsonResponse(updates, safe=False)
+    #print(json.dumps(updates, indent=2))
+
+class UpdateCountsViewBak(View):
   """ Returns counts of unreviewed hits, per pass and total """
   @staticmethod
   def get(request):
@@ -811,21 +852,26 @@ class UpdateCountsView(View):
         [integer] ds_id: dataset id
     """
     ds = get_object_or_404(Dataset, id=request.GET.get('ds_id'))
-    #ds = get_object_or_404(Dataset, id=dsid)
+    deferred_wd = ds.places.filter(review_wd = 2).values_list('id', flat=True)
+    deferred_tgn = ds.places.filter(review_tgn = 2).values_list('id', flat=True)
+    deferred_whg = ds.places.filter(review_whg = 2).values_list('id', flat=True)
+
     updates={}
+    # counts of distinct place ids w/unreviewed hits per task/pass
     for t in ds.tasks.all():
-      hits0 = Hit.objects.filter(task_id=t.task_id,query_pass='pass0', reviewed=False).values("place_id").distinct().count()
-      hits1 = Hit.objects.filter(task_id=t.task_id,query_pass='pass1', reviewed=False).values("place_id").distinct().count()
-      hits2 = Hit.objects.filter(task_id=t.task_id,query_pass='pass2', reviewed=False).values("place_id").distinct().count()
-      hits3 = Hit.objects.filter(task_id=t.task_id,query_pass='pass3', reviewed=False).values("place_id").distinct().count()
-      sum = hits0+hits1+hits2+hits3
+      hits0 = Hit.objects.filter(task_id=t.task_id,query_pass='pass0', reviewed=False).values_list("place_id",flat=True).distinct()
+      hits1 = Hit.objects.filter(task_id=t.task_id,query_pass='pass1', reviewed=False).values_list("place_id",flat=True).distinct()
+      hits2 = Hit.objects.filter(task_id=t.task_id,query_pass='pass2', reviewed=False).values_list("place_id",flat=True).distinct()
+      hits3 = Hit.objects.filter(task_id=t.task_id,query_pass='pass3', reviewed=False).values_list("place_id",flat=True).distinct()
+
+      sum = hits0.count()+hits1.count()+hits2.count()+hits3.count()
       updates[t.task_id] = {
         "task":t.task_name,
         "total":sum, 
-        "pass0":hits0, 
-        "pass1":hits1, 
-        "pass2":hits2, 
-        "pass3":hits3 }
+        "pass0":hits0.count(), 
+        "pass1":hits1.count(), 
+        "pass2":hits2.count(), 
+        "pass3":hits3.count() }
     return JsonResponse(updates, safe=False)
 
 
