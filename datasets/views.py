@@ -387,24 +387,41 @@ def review(request, pk, tid, passnum):
   cnt_pass3 = Hit.objects.values('place_id').filter(
     task_id=tid, reviewed=False, query_pass='pass3').count()
   
-  pass_int = int(passnum[4])
-  # if no unreviewed left, go to next pass
-  passnum = passnum if cnt_pass > 0 else 'pass'+str(pass_int+1)
+  if passnum.startswith('pass'):
+    pass_int = int(passnum[4])
+    # if no unreviewed left, go to next pass
+    passnum = passnum if cnt_pass > 0 else 'pass'+str(pass_int+1)
+    hitplaces = Hit.objects.values('place_id').filter(task_id=tid, reviewed=False, query_pass=passnum)
+  else:
+    # queue deferred from any pass
+    hitplaces = Hit.objects.values('place_id').filter(task_id=tid, reviewed=False)
+
+
   params = {'pk':pk,'tid':tid,'passnum':passnum,'auth':auth}
   print('review() params', params)
-    
   # separate review pages
-  hitplaces = Hit.objects.values('place_id').filter(task_id=tid, reviewed=False, query_pass=passnum)
+  #hitplaces = Hit.objects.values('place_id').filter(task_id=tid, reviewed=False, query_pass=passnum)
   if auth in ['whg','idx']:
     #review_page = 'fubar.html'
     review_page = 'accession.html'
   else:
     review_page = 'review.html'
+
+  def deferred(auth, pids):
+    if auth in ['whg', 'idx']:
+      return ds.places.order_by('id').filter(id__in=pids, review_whg = 2)
+    elif auth.startswith('wd'):
+      return ds.places.order_by('id').filter(id__in=pids, review_wd = 2)
+    else:
+      return ds.places.order_by('id').filter(id__in=pids, review_tgn = 2)
+      
     
   # if some are unreviewed, queue in record_list
   if len(hitplaces) > 0:
-    #print('>0 hitplace', len(hitplaces))
-    record_list = Place.objects.order_by('id').filter(pk__in=hitplaces)
+    if passnum.startswith('pass'):
+      record_list = ds.places.order_by('id').filter(pk__in=hitplaces)
+    else:
+      record_list = deferred(auth, hitplaces)
   else:
     context = {
       "nohits":True,
