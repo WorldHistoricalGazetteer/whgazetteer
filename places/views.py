@@ -12,8 +12,8 @@ from places.models import Place
 from places.utils import attribListFromSet
 
 # write review status = 2 (per authority)
-def defer_review(request, pid, auth):
-  print('defer_review() pid, auth', pid, auth)
+def defer_review(request, pid, auth, last):
+  print('defer_review() pid, auth, last', pid, auth, last)
   p = get_object_or_404(Place, pk=pid)
   if auth in ['whg','idx']:
     p.review_whg = 2
@@ -23,11 +23,22 @@ def defer_review(request, pid, auth):
     p.review_tgn = 2
   p.save()
   referer = request.META.get('HTTP_REFERER')
+  base = re.search('^(.*?)review', referer).group(1)
+  print('referer',referer)
+  print('last:',int(last))
   if '?page' in referer:
-    nextpage = int(referer[-1]) + 1
-    return_url = referer[:-1] + str(nextpage)
+    nextpage=int(referer[-1])+1
+    if nextpage < int(last):
+      # there's a next record/page
+      return_url = referer[:-1] + str(nextpage)
+    else:
+      return_url = base + 'reconcile'
   else:
-    return_url = referer + '?page=2'
+    # first page, might also be last for pass
+    if int(last) > 1:
+      return_url = referer + '?page=2'
+    else:
+      return_url = base + 'reconcile'
   # return to calling page
   return HttpResponseRedirect(return_url)
 

@@ -194,7 +194,7 @@ def profileHit(hit):
   for g in src['geoms']:
     if g not in geom_objlist:
       geom_objlist.append(
-        {'pid':pid, 
+        {'id':pid, 
          'ds':src['dataset'], 
          'coordinates':g['location']['coordinates'], 
          'type':g['location']['type']} 

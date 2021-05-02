@@ -344,16 +344,16 @@ js for Summary, Reconciliation
     }
     
     // manage url
-    var url = document.location.toString();
-    <!--console.log('url, context on load',url,"{{context}}".length)-->
-    if (url.match('#')) {
-      tab = url.split('#')[1]
-      $('.nav-tabs a[href="#' + tab+ '"]').tab('show');
-    } else if ("{{context}}".length > 0){
-      taburl = location.protocol+'//'+location.host+'/datasets/'+'{{ds.id}}'+'/detail#reconciliation'
-      $('.nav-tabs a[href="#reconciliation"]').tab('show');
-      location.href=taburl
-    }
+    <!--var url = document.location.toString();-->
+    <!--<!--console.log('url, context on load',url,"{{context}}".length)-->-->
+    <!--if (url.match('#')) {-->
+      <!--tab = url.split('#')[1]-->
+      <!--$('.nav-tabs a[href="#' + tab+ '"]').tab('show');-->
+    <!--} else if ("{{context}}".length > 0){-->
+      <!--taburl = location.protocol+'//'+location.host+'/datasets/'+'{{ds.id}}'+'/reconcile'-->
+      <!--$('.nav-tabs a[href="#reconciliation"]').tab('show');-->
+      <!--location.href=taburl-->
+    <!--}-->
     //***
     // onload for Browse
     //***

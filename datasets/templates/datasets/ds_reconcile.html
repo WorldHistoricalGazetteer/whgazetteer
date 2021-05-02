@@ -81,7 +81,7 @@
               </p>
             </div>
             <div class="col-sm-5">
-              <p><b>Result</b>: {{ t.result|get:"got_hits"|safe }} records (of {{ t.result|get:"count"|safe }}) got total of <b>{{ t.result|get:"total"|safe }}</b> hits</p>
+              <p><b>Result</b>: {{ t.result|get:"got_hits"|safe }} records (of {{ t.result|get:"count"|safe }}) got total of <b>{{ t.result|get:"total_hits"|safe }}</b> hits</p>
               <!--{ t.result }}-->
               <p class="mb-0 ital">Remaining to review:</p>
               <ul>
@@ -415,17 +415,6 @@ js for Summary, Reconciliation
       $(".update-msg").removeClass('hidden')
     }
     
-    // manage url
-    var url = document.location.toString();
-    <!--console.log('url, context on load',url,"{{context}}".length)-->
-    if (url.match('#')) {
-      tab = url.split('#')[1]
-      $('.nav-tabs a[href="#' + tab+ '"]').tab('show');
-    } else if ("{{context}}".length > 0){
-      taburl = location.protocol+'//'+location.host+'/datasets/'+'{{ds.id}}'+'/detail#reconciliation'
-      $('.nav-tabs a[href="#reconciliation"]').tab('show');
-      location.href=taburl
-    }
     //***
     // onload for Browse
     //***

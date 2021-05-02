@@ -1,0 +1,138 @@
+{% extends "main/base.html" %}
+{% load leaflet_tags %}
+{% load fontawesome %}
+{% load static %}
+{% load dataset_extras %}
+{% block extra_head %}
+  {% leaflet_js %}
+  {% leaflet_css %}
+  <script src="{% static 'js/aliases.js' %}"></script>
+  <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.css' rel='stylesheet' />
+  <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.js'></script>
+  <script src="{% static 'js/leaflet-mapbox-gl.js' %}"></script>
+{% endblock %}
+{% block content %}
+<div class="container">
+  <h5 class="mb-2 mt-3">
+    {% if authority == 'idx' %}Accessioning
+    {%else%}Reconciliation
+    {%endif%} Review 
+    <span class="help" data-id="accessioning">{% fontawesome_icon 'question-circle' color='#993333' %}</span> 
+    <span class="small ml-3"> <i>dataset</i>: <a href="{% url 'datasets:ds_reconcile' id=ds_id %}"> {{ ds_label }}</a>
+      <select id="select_pass" name="pass" class="custom-select-sm mr-2" style="width:auto;">
+        { if count_pass0 > 0 %}
+        <option value="pass0">PASS 0 (auto-matched)&nbsp;</option>{ endif %}
+        { if count_pass1 > 0 %}
+          <option value="pass1">PASS 1&nbsp;</option>{ endif %}
+        { if count_pass2 > 0 %}
+      </select>
+    </span>
+    <span class="half float-right mr-2"><i>task id</i>: {{ task_id }}</span>
+  </h5>
+{% for record in records %}
+  <div id="review_nav" class="pagination row justify-content-center">
+    <div class="col-sm-4 pl-1">
+      <a id="undo" class="small hidden-imp" href="" data-url="{% url 'datasets:match-undo' ds=ds_id tid=task_id pid=999 %}">Undo last save {% fontawesome_icon 'undo' color='#336699' %}</a>
+    </div>
+    <div class="col-sm-8">
+      <span>
+        <button type="submit" id="btn_save" class="button-sm mr-2">Save</button>
+        <a id="defer_link" rel="tooltip" title="flag for separate review" class="small" href="{% url 'places:defer-review' pid=record.id auth=authority %}">defer</a>
+      <span class="step-links">
+          {% if records.has_previous %}
+              <a href="?page=1">&laquo; first</a>&nbsp;&nbsp;
+              <a href="?page={{ records.previous_page_number }}">previous</a>
+          {% endif %}
+          <span class="current">
+              Record {{ records.number }} of {{ records.paginator.num_pages }}
+          </span>
+          {% if records.has_next %}
+              <a href="?page={{ records.next_page_number }}">next</a>&nbsp;&nbsp;
+              <a href="?page={{ records.paginator.num_pages }}">last &raquo;</a>
+          {% endif %}
+      </span>
+    </div>
+  </div>
+  <div class="row mt-2">
+  <div id="review_record" class="col-sm-4 pl-0 small">
+    <div class="bg-secondary font-weight-bold pl-2 text-light">
+      {{ dataset_label }}</div>
+    <div id="place_record" class="mb-2">
+      <div>
+        <input type="hidden" name="place_id" value="{{ record.id }}" />
+        <span>
+          <h4 class="text-danger">{{ record.title }}
+            {% if record.geoms %}
+            <span class="ml-2"><svg height="18" width="18">
+              <circle cx="9" cy="8" r="7" stroke="grey" stroke-width="1" fill="green" fill-opacity="0.4"/>
+            </svg></span>{% endif %}
+            <span class="float-right">
+              <button type="button" data-id="{{ record.id }}" class="create-comment btn"
+                data-src='record'> {% fontawesome_icon 'edit' color='#336699' %}</button>
+            </span>
+          </h4>
+        </span>
+      </div>
+      {% for g in record.geoms.all %}
+        {{ g.jsonb|safe|json_script:record.id }}
+      {% endfor %}
+      <p><strong>WHG place id</strong>: {{ record.id }} </p>
+      <p><strong>Source id</strong>: {{ record.src_id }}</p>
+      <p class="scroll100"><strong>Name variants</strong>:<i>
+        {% for name in record.names.all %}
+         {{ name.jsonb.toponym }};
+        {% endfor %}</i></p>
+      {% if countries %}
+      <p><strong>Modern countries</strong>:
+        {% for c in countries %}
+          {{ c }};
+        {% endfor %}</p>
+      {% endif %}
+      {% if record.related|length > 0 %}
+      <p><strong>Relations</strong>: 
+        {% for rel in record.related.all %}
+          {{ rel.jsonb.label }}; <!--({ rel.jsonb.relationType }); -->
+        {% endfor %}</p>
+      {% endif %}
+      <p><strong>Place type(s)</strong>:
+        {% for type in record.types.all %}
+          {{ type.jsonb.sourceLabel }} ({{ type.jsonb.label }}); 
+        {% endfor %}</p>
+      {% if record.links.all|length > 0 %}
+      <p><strong>Links</strong>: 
+        {% for link in record.links.all %}
+          <a href="" class="mr-2 ext" data-toggle="modal" data-target="#ext_site">{{ link.jsonb.identifier }} {% fontawesome_icon 'external-link' color='#336699' %}</a>
+        {% endfor %}</p>
+      {% endif %}
+    </div> <!-- place_record -->
+    <div id="map">
+      {% leaflet_map "map_review" callback="map_init" %}
+    </div>
+  </div>
+  <!--available: ['whg_id', 'place_id', 'src_id', 'title', 'dataset', 'variants', 'types', 'ccodes', 'parents', 'descriptions', 'geoms', 'timespans', 'links']-->
+  <div id="review_list" class="col-sm-8 pr-0">
+    <p>review list</p>
+  </div>
+
+{% endfor %}
+</div>
+
+<script type="text/javascript">
+</script>
+<script src="{% static 'js/jquery.bootstrap.modal.forms.min.js' %}"></script>
+
+{% endblock %}
+
+<!--<span class="step-links">-->
+    <!--<p>-->
+    <!--{ if records.has_previous }-->
+    <!--&laquo; <a href="?page=1">first</a>&nbsp;&nbsp;-->
+    <!--<a href="?page={{ records.previous_page_number }}">previous</a>-->
+    <!--{ endif }-->
+    
+    <!--{ if records.has_next }-->
+    <!--<a href="?page={{ records.next_page_number }}">next</a>&nbsp;&nbsp;&nbsp;&nbsp;-->
+    <!--<a href="?page={{ records.paginator.num_pages }}">last ({{ records.paginator.num_pages }})</a>&raquo;-->
+    <!--{ endif }-->
+    <!--</p>-->
+<!--</span-->>

@@ -368,7 +368,6 @@ def review(request, pk, tid, passnum):
   review_request = request.GET.__dict__ if request.method == 'GET' \
     else request.POST.__dict__
   print('review() request', review_request)
-  print('review() GET page', request.GET.get('page'))
   beta = 'beta' in list(request.user.groups.all().values_list('name',flat=True))
   
   # try addin place list table in left column
@@ -391,11 +390,14 @@ def review(request, pk, tid, passnum):
   pass_int = int(passnum[4])
   # if no unreviewed left, go to next pass
   passnum = passnum if cnt_pass > 0 else 'pass'+str(pass_int+1)
+  params = {'pk':pk,'tid':tid,'passnum':passnum,'auth':auth}
+  print('review() params', params)
     
   # separate review pages
   hitplaces = Hit.objects.values('place_id').filter(task_id=tid, reviewed=False, query_pass=passnum)
   if auth in ['whg','idx']:
-    review_page = 'review.html'
+    #review_page = 'fubar.html'
+    review_page = 'accession.html'
   else:
     review_page = 'review.html'
     
@@ -422,6 +424,7 @@ def review(request, pk, tid, passnum):
   placeid = records[0].id
   place = get_object_or_404(Place, id=placeid)
   print('reviewing '+str(count)+' hits for place', records[0])
+  #print(paginator.)
   raw_hits = Hit.objects.filter(place_id=placeid, task_id=tid, query_pass=passnum).order_by('-score')
   print('raw_hits for '+str(records[0]), raw_hits)
   # convert ccodes to names
@@ -437,7 +440,7 @@ def review(request, pk, tid, passnum):
 
 
   # TODO: if auth in ['whg','idx], group children within parents
-  print('records[0] in review()',records[0].__dict__)
+  #print('records[0] in review()',records[0].__dict__)
   # prep some context
   context = {
     'ds_id': pk, 'ds_label': ds.label, 'task_id': tid,
@@ -457,7 +460,6 @@ def review(request, pk, tid, passnum):
       
   }
 
-  
   # Hit model fields = ['task_id','authority','dataset','place_id',
   #     'query_pass','src_id','authrecord_id','json','geom' ]
   HitFormset = modelformset_factory(
@@ -783,7 +785,7 @@ def ds_recon(request, pk):
       print('Celery is down :^(')
       emailer('Celery is down :^(','if not celeryUp() -- look into it, bub!')
       messages.add_message(request, messages.INFO, "Sorry! WHG reconciliation services appears to be down. The system administrator has been notified.")
-      return redirect('/datasets/'+str(ds.id)+'/detail#reconciliation')
+      return redirect('/datasets/'+str(ds.id)+'/reconcile')
       
     # initiate celery/redis task
     # 'func' == align_[wdlocal | tgn | idx | whg ]
@@ -841,12 +843,14 @@ def ds_recon(request, pk):
 # task_delete(tid, scope)
 # delete results of a reconciliation task:
 # hits + any geoms and links added by review
+# reset Place.review_{auth} to null
 #
 """
 def task_delete(request, tid, scope="foo"):
   hits = Hit.objects.all().filter(task_id=tid)
   tr = get_object_or_404(TaskResult, task_id=tid)
   ds = tr.task_args[1:-1]
+  
 
   placelinks = PlaceLink.objects.all().filter(task_id=tid)
   placegeoms = PlaceGeom.objects.all().filter(task_id=tid)
@@ -860,7 +864,7 @@ def task_delete(request, tid, scope="foo"):
   elif scope == 'geoms':
     placegeoms.delete()    
 
-  return redirect('/datasets/'+ds+'/detail#reconciliation')
+  return redirect('/datasets/'+ds+'/reconcile')
 """
 # remove collaborator from dataset (all roles)
 # TODO: limit to role?
@@ -880,13 +884,13 @@ def collab_add(request, dsid, v):
     messages.add_message(
       request, messages.INFO, "Please check username, we don't have '" + request.POST['username']+"'")
     if not v:
-      return redirect('/datasets/'+str(dsid)+'/detail#sharing')
+      return redirect('/datasets/'+str(dsid)+'/collab')
     else:
       return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
   print('collab_add():',request.POST['username'],role, dsid, uid)
   DatasetUser.objects.create(user_id_id=uid, dataset_id_id=dsid, role=role)
   if v == '1':
-    return redirect('/datasets/'+str(dsid)+'/detail#sharing')
+    return redirect('/datasets/'+str(dsid)+'/collab')
   else:
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
@@ -898,7 +902,7 @@ def collab_delete(request, uid, dsid, v):
   print('collab_delete() request, uid, dsid', request, uid, dsid)
   get_object_or_404(DatasetUser,user_id_id=uid, dataset_id_id=dsid).delete()
   if v == '1':
-    return redirect('/datasets/'+str(dsid)+'/detail#sharing')
+    return redirect('/datasets/'+str(dsid)+'/collab')
   else:
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 

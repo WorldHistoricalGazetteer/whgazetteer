@@ -40,15 +40,17 @@
     {% for record in records %} 
     <!-- there is only one; if last, do nothing -->
     <div class="container">
-      <div id="review_nav" class="pagination row justify-content-center">
+      <div id="review_nav" class="row pagination justify-content-center">
         <div class="col-sm-4 pl-1">
           <a id="undo" class="small hidden-imp" href="" data-url="{% url 'datasets:match-undo' ds=ds_id tid=task_id pid=999 %}">Undo last save {% fontawesome_icon 'undo' color='#336699' %}</a>
         </div>
         <div class="col-sm-8">
         <span>
           <button type="submit" id="btn_save" class="button-sm mr-2">Save</button>
-          <a id="defer_link" rel="tooltip" title="flag for separate review" class="small" href="{% url 'places:defer-review' pid=record.id auth=authority %}">defer</a>
-        <span class="step-links">
+          <a id="defer_link" rel="tooltip" 
+            title="flag for separate review" class="small" 
+            href="{% url 'places:defer-review' pid=record.id auth=authority last=records.paginator.num_pages  %}">defer</a>
+          <span class="step-links">
             {% if records.has_previous %}
                 <a href="?page=1">&laquo; first</a>&nbsp;&nbsp;
                 <a href="?page={{ records.previous_page_number }}">previous</a>
@@ -70,7 +72,7 @@
           <div id="place_record" class="mb-2">
             <div>
               <input type="hidden" name="place_id" value="{{ record.id }}" />
-              <span>{{ record.first }}, {{ record.has_next }}
+              <span>
                 <h4 class="text-danger">{{ record.title }}
                   {% if record.geoms %}
                   <span class="ml-2"><svg height="18" width="18">
@@ -121,101 +123,100 @@
         </div>
         <!--available: ['whg_id', 'place_id', 'src_id', 'title', 'dataset', 'variants', 'types', 'ccodes', 'parents', 'descriptions', 'geoms', 'timespans', 'links']-->
         <div id="review_list" class="col-sm-8 pr-0">
-            <!--<p>formset length: { formset|length }}</p>-->
-            {% for form in formset %}
-              <input type="hidden" name="id" value='{{ form.id.value }}'></input>
-              <input type="hidden" name="authrecord_id" value='{{ form.authrecord_id.value }}'></input>
-              <input type="hidden" name="score" value='{{ form.score.value }}'></input>
-              <input type="hidden" name="query_pass" value='{{ form.query_pass.value }}'></input>
-              {% for hidden in form.hidden_fields %}
-                {{ hidden }}
-              {% endfor %}
-              <div class="pl-2 pr-2 mb-1 matchbar">
-                <div class="match_radio custom-control custom-radio">
-                  {% if form.json.value|get:"geoms"|length > 0 %}
-                    <span class="mr-2 globeflash">
-                    <!--{ if form.json.value|get:"geoms" != Null }-->
-                      <a class="geolink" rel="tooltip" 
-                        {% if ds_label == 'tgn_filtered_01' or authority == 'whg' or authority == 'idx'%}
-                          id="{{ form.json.value|get:"place_id" }}" 
-                        {% else %}
-                          id="{{ form.authrecord_id.value }}"
-                        {% endif %}
-                        href="javascript:{ zoomTo(+{{ form.authrecord_id.value }} ) }" title="Flash map marker">
-                        {% fontawesome_icon 'globe' color='#000' %}</a>
-                    </span>
-                  {% endif %}
-                  <span class="inline">{{ form.match }}</span>
-                  <span class="help" data-id="matches">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
-                  {% if form.json.value|get:"sources" %}
-                  <span class="float-right mr-1 mt-1 smaller">{{ form.json.value|get:"whg_id" }}&nbsp;&nbsp;{{ form.json.value|get:"sources"|length }} linked records {% fontawesome_icon 'link' %}</span>
-                  {% endif %}
-                  {% if authority == 'whg' %}
-                    <button type="button" 
-                      data-id="{{ form.json.value|get:"place_id" }}" 
-                      class="create-comment btn btn-sm" style="background-color:oldlace;">
-                    {% fontawesome_icon 'edit' color='#336699' %}</button>
-                  {% endif %}
-                  </span>
-                </div>
-              </div>
-              {{ form.non_field_errors }}
-              <div class="auth-match bg-light pl-2 mt-0 mb-2">
-                <!-- pull geometries to js -->
-                {% if form.json.value|get:"geoms"|length > 0 %}
-                  {% for g in form.json.value|get:"geoms" %}
-                    {{ g|safe|json_script:g.id }}
-                  {% endfor %}
-                {% endif %}
-                <!--<p>{ form.json.value }}</p>-->
-                <p><strong>Title(s)</strong>: <span class="text-danger h6">{{ form.json.value|get:"titles" }}</p>
-                <!--<p><strong>WHG index id</strong>: { form.json.value|get:"whg_id" }}</p> -->
-                <!--<p>{ form.query_pass.value }}</p>-->
-                {% if form.json.value|get:"countries"|length > 0 %} 
-                <p><strong>Countries</strong>: {{ form.json.value|get:"countries" }}</p>
-                {% endif %}
-
-                <p class="mb-0"><strong>Linked records ({{ form.json.value|get:"sources"|length }})</strong>:
-                {% for src in form.json.value|get:"sources" %}
-                  <div class="accession-div-row">
-                  <p><a class="pop-link pop-dataset" data-label={{src.dslabel}} data-toggle="popover" title="Dataset Profile" data-content="" tabindex="0" rel="clickover">{{ src.dslabel }}</a> (<a href="/api/place/{{src.pid}}/" target="_blank">{{ src.pid }}</a>): <i>variants</i>: <b>{{ src.variants|join:", " }}</b>
-                  {% if src.types|length > 0 %}; <i>type(s)</i>: <b>{{ src.types|join:","}}</b>
-                  {% endif %}
-                  {% if src.minmax %}; <i>earliest/latest</i>:<b> {{ src.minmax|join:"/"}}</b>{% endif %} <i class="text-muted">{{ src.pass }}</i>: 
-                  </p>
-                  <p></p>
-                  </div>
-                {% endfor %}</p> 
-
-                {% if form.json.value|get:"links"|length > 0 %} 
-                  <p><strong>All concordances</strong>: 
-                  {% for link in form.json.value|get:"links" %}
-                    <a href="" class="mr-2 ext" data-toggle="modal" data-target="#ext_site">{{ link }} {% fontawesome_icon 'external-link' color='#336699' %}</a>
-                  {% endfor %}
-                </p>{% endif %}
-                
-                
-                {% if form.json.value|get:"minmax"|length > 0 %} 
-                  <p><strong>Temporal attestations</strong>: 
-                  {{ form.json.value|get:"minmax" }}</p>
-                {% endif %}
-                
-                <!--{ if form.json.value|get:"descriptions"|length > 0 %} -->
-                  <!--<p class="mb-0"><strong>Description(s)</strong>:</p> -->
-                  <!--<div>-->
-                  <!--{ for d in form.json.value|get:"descriptions" %}-->
-                    <!--<p>({d.lang}}) { d.text }}</p>{ endfor %}-->
-                  <!--</div>-->
-                <!--{ endif %}-->
-                
-              </div>
+          <!--<p>formset length: { formset|length }}</p>-->
+          {% for form in formset %}
+            <input type="hidden" name="id" value='{{ form.id.value }}'></input>
+            <input type="hidden" name="authrecord_id" value='{{ form.authrecord_id.value }}'></input>
+            <input type="hidden" name="score" value='{{ form.score.value }}'></input>
+            <input type="hidden" name="query_pass" value='{{ form.query_pass.value }}'></input>
+            {% for hidden in form.hidden_fields %}
+              {{ hidden }}
             {% endfor %}
-          </div>
+            <div class="pl-2 pr-2 mb-1 matchbar">
+              <div class="match_radio custom-control custom-radio">
+                {% if form.json.value|get:"geoms"|length > 0 %}
+                  <span class="mr-2 globeflash">
+                  <!--{ if form.json.value|get:"geoms" != Null }-->
+                    <a class="geolink" rel="tooltip" 
+                      {% if ds_label == 'tgn_filtered_01' or authority == 'whg' or authority == 'idx'%}
+                        id="{{ form.json.value|get:"place_id" }}" 
+                      {% else %}
+                        id="{{ form.authrecord_id.value }}"
+                      {% endif %}
+                      href="javascript:{ zoomTo(+{{ form.authrecord_id.value }} ) }" title="Flash map marker">
+                      {% fontawesome_icon 'globe' color='#000' %}</a>
+                  </span>
+                {% endif %}
+                <span class="inline">{{ form.match }}</span>
+                <span class="help" data-id="matches">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
+                {% if form.json.value|get:"sources" %}
+                <span class="float-right mr-1 mt-1 smaller">{{ form.json.value|get:"whg_id" }}&nbsp;&nbsp;{{ form.json.value|get:"sources"|length }} linked records {% fontawesome_icon 'link' %}</span>
+                {% endif %}
+                {% if authority == 'whg' %}
+                  <button type="button" 
+                    data-id="{{ form.json.value|get:"place_id" }}" 
+                    class="create-comment btn btn-sm" style="background-color:oldlace;">
+                  {% fontawesome_icon 'edit' color='#336699' %}</button>
+                {% endif %}
+                </span>
+              </div>
+            </div>
+            {{ form.non_field_errors }}
+            <div class="auth-match bg-light pl-2 mt-0 mb-2">
+              <!-- pull geometries to js -->
+              {% if form.json.value|get:"geoms"|length > 0 %}
+                {% for g in form.json.value|get:"geoms" %}
+                  {{ g|safe|json_script:g.id }}
+                {% endfor %}
+              {% endif %}
+              <!--<p>{ form.json.value }}</p>-->
+              <p><strong>Title(s)</strong>: <span class="text-danger h6">{{ form.json.value|get:"titles" }}</p>
+              <!--<p><strong>WHG index id</strong>: { form.json.value|get:"whg_id" }}</p> -->
+              <!--<p>{ form.query_pass.value }}</p>-->
+              {% if form.json.value|get:"countries"|length > 0 %} 
+              <p><strong>Countries</strong>: {{ form.json.value|get:"countries" }}</p>
+              {% endif %}
+
+              <p class="mb-0"><strong>Linked records ({{ form.json.value|get:"sources"|length }})</strong>:
+              {% for src in form.json.value|get:"sources" %}
+                <div class="accession-div-row">
+                <p><a class="pop-link pop-dataset" data-label={{src.dslabel}} data-toggle="popover" title="Dataset Profile" data-content="" tabindex="0" rel="clickover">{{ src.dslabel }}</a> (<a href="/api/place/{{src.pid}}/" target="_blank">{{ src.pid }}</a>): <i>variants</i>: <b>{{ src.variants|join:", " }}</b>
+                {% if src.types|length > 0 %}; <i>type(s)</i>: <b>{{ src.types|join:","}}</b>
+                {% endif %}
+                {% if src.minmax %}; <i>earliest/latest</i>:<b> {{ src.minmax|join:"/"}}</b>{% endif %} <i class="text-muted">{{ src.pass }}</i>: 
+                </p>
+                <p></p>
+                </div>
+              {% endfor %}</p> 
+
+              {% if form.json.value|get:"links"|length > 0 %} 
+                <p><strong>All concordances</strong>: 
+                {% for link in form.json.value|get:"links" %}
+                  <a href="" class="mr-2 ext" data-toggle="modal" data-target="#ext_site">{{ link }} {% fontawesome_icon 'external-link' color='#336699' %}</a>
+                {% endfor %}
+              </p>{% endif %}
+              
+              
+              {% if form.json.value|get:"minmax"|length > 0 %} 
+                <p><strong>Temporal attestations</strong>: 
+                {{ form.json.value|get:"minmax" }}</p>
+              {% endif %}
+              
+              <!--{ if form.json.value|get:"descriptions"|length > 0 %} -->
+                <!--<p class="mb-0"><strong>Description(s)</strong>:</p> -->
+                <!--<div>-->
+                <!--{ for d in form.json.value|get:"descriptions" %}-->
+                  <!--<p>({d.lang}}) { d.text }}</p>{ endfor %}-->
+                <!--</div>-->
+              <!--{ endif %}-->
+              
+            </div>
+          {% endfor %}
+        </div> <!-- review_list -->
       </div> <!-- .row -->
     </div> <!-- container flex -->
     </form>
-
-  {% endfor %} <!-- record in records -->
+    {% endfor %} <!-- record in records -->
   {% endif %}
   <div class="modal fade" tabindex="-1" role="dialog" id="modal">
   <div class="modal-dialog modal-form" role="document">
@@ -225,29 +226,10 @@
 </div>
 
 <script type="text/javascript">
-  nextnum = "{{ records.next_page_number }}"
   placeid = $('script').filter(function() {
     return this.id.match("placeid")
   }).text()
     
-  <!--$("#defer_link").click(function(e){-->
-    <!--e.preventDefault()-->
-    <!--auth = "{ authority }}"-->
-    <!--<!--nextnum = "{ records.next_page_number }}"-->-->
-    <!--next = '?page=' + nextnum-->
-    <!--// TODO: write int(2) to Place record-->
-    <!--<!--var url = "{ url 'places:defer-review' placeid auth %}"-->-->
-    <!--var url = "/places/"+placeid+"/"+auth+"/defer"-->
-    <!--console.log('url',url)-->
-    <!--<!--$.ajax({-->-->
-      <!--<!--type: 'GET',-->-->
-      <!--<!--url: url-->-->
-    <!--<!--}).done(function() {-->-->
-      <!--<!--console.log('set defer of', placeid);-->-->
-      <!--<!--<!--window.location.href = next-->-->-->
-    <!--<!--})-->-->
-  <!--})-->
-
   // capture pid for place just reviewed
   // https://catalogue.bnf.fr/ark:/12148/cb11942741p
   $(".help").click(function(){
@@ -482,14 +464,3 @@
 </script>
 <script src="{% static 'js/jquery.bootstrap.modal.forms.min.js' %}"></script>
 {% endblock %}
-<!--<div id="ext_site" class="modal fade" role="dialog">-->
-  <!--<div class="modal-dialog">-->
-    <!--<div class="modal-content">-->
-      <!--<div class="modal-header">-->
-        <!--<button type="button" class="close" data-dismiss="modal" aria-label="Close">-->
-          <!--<span aria-hidden="true">&times;</span></button>-->
-      <!--</div>-->
-      <!--<div id="ext_content" class="modal-body">foo</div>-->
-    <!--</div>-->
-  <!--</div>-->
-<!--</div> <!-- ext_site -->

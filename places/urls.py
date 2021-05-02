@@ -17,7 +17,7 @@ urlpatterns = [
     
     
     #path('<int:pid>/<str:auth>/defer', views.defer_review, name='defer-review'),
-    path('defer/<int:pid>/<str:auth>', views.defer_review, name='defer-review'),
+    path('defer/<int:pid>/<str:auth>/<str:last>', views.defer_review, name='defer-review'),
     
     # ??
     path('<int:id>/full', views.PlaceFullView.as_view(), name='place-full'),
