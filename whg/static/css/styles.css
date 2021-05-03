@@ -423,15 +423,20 @@ em { color: #993333;}
 #review_nav {
   background-color: #eee;
 } 
-#review_placelist {
-  padding-left:0;
-} 
-#review_placelist .pagination {
-  font-size:small;
-} 
-#review_placelist li {
-  margin-right:2px;
+
+#review_list {
+  max-height: 75vh;
+  overflow-y: scroll;
 }
+/*#review_placelist {*/
+  /*padding-left:0;*/
+/*} */
+/*#review_placelist .pagination {*/
+  /*font-size:small;*/
+/*} */
+/*#review_placelist li {*/
+  /*margin-right:2px;*/
+/*}*/
 .pagination-accession {
   background-color: #efe0e0;
 } 

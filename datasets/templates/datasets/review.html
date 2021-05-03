@@ -15,10 +15,16 @@
 {% endblock %}
 {% block content %}
 <div class="container">
-  <!-- incoming: ds, hit_list -->
-  <h5 class="mb-2 mt-3">{% if authority == 'idx' %}Accessioning{%else%}Reconciliation{%endif%} Review: 
-    <span class="small"> <a href="{% url 'datasets:ds_reconcile' id=ds_id %}"> 
-      {{ ds_label }}</a> {% if authority != 'whg' %}> {{ authority }} {%endif%}
+  <h5 class="mb-2 mt-3">
+  {% if authority == 'idx' %}Accessioning
+  {%else%}
+  Reconciliation{%endif%} Review 
+  {% if deferred is True %} 
+    (<span class="text-danger">"deferred"</span>)
+  {% endif %}
+    <span class="help" data-id="accessioning">{% fontawesome_icon 'question-circle' color='#993333' %}</span> 
+    <span class="small ml-3"> <i>dataset</i>: <a href="{% url 'datasets:ds_reconcile' id=ds_id %}"> {{ ds_label }}</a>
+    {% if deferred is False %}
       <select id="select_pass" name="pass" class="custom-select-sm mr-2" style="width:auto;">
         {% if count_pass0 > 0 %}
         <option value="pass0">PASS 0 (auto-matched)&nbsp;</option>{% endif %}
@@ -26,19 +32,18 @@
           <option value="pass1">PASS 1&nbsp;</option>{% endif %}
         {% if count_pass2 > 0 %}
           <option value="pass2">PASS 2&nbsp;</option>{% endif %}
-        {% if authority == 'tgn' and count_pass3 > 0 %}
-          <option value="pass3">PASS 3&nbsp;</option>{% endif %}
       </select>
+    {% endif %}
     </span>
-    <span class="half float-right">
-      task id: {{ task_id }} 
-      <!--(+links{ if aug_geom == 'on' %}+geom{ endif %})-->
-    </span>
+    <span class="half float-right mr-2"><i>task id</i>: {{ task_id }}</span>
   </h5>
-  {% if nohits %}
+  {% if nohits and passnum == 'def' %}
+      <p>No unreviewed hits remaining in "deferred" queue</p>
+      <p><a href="{% url 'datasets:ds_reconcile' id=ds_id %}">return to task list</a></p>    
+  {% elif nohits %}
     <div>
-      <p>No unreviewed hits for this reconciliation task!</p>
-      <p><a href="{% url 'datasets:ds_summary' id=ds_id %}">return to dataset summary page</a></p>
+      <p>No unreviewed hits for this pass!</p>
+      <p><a href="{% url 'datasets:ds_reconcile' id=ds_id %}">return to task list</a></p>
     </div>
   {% else %}
     <form id="form_related" method="POST" action="" >
@@ -54,7 +59,9 @@
         </div>
         <div class="col-sm-8">
         <span><button type="submit" id="btn_save" class="button-sm">Save</button>
+          {% if deferred is False %}
           <a id="defer_link" rel="tooltip" title="flag for separate review" class="small" href="{% url 'places:defer-review' pid=record.id auth=authority last=records.paginator.num_pages %}">defer</a>
+          {% endif %}
         <span class="step-links">
             {% if records.has_previous %}
                 <a href="?page=1">&laquo; first</a>&nbsp;&nbsp;
@@ -441,6 +448,28 @@
 </script>
 <script src="{% static 'js/jquery.bootstrap.modal.forms.min.js' %}"></script>
 {% endblock %}
+
+  <!--<h5 class="mb-2 mt-3">{ if authority == 'idx' %}Accessioning{else%}Reconciliation{endif%} Review: -->
+    <!--<span class="small"> <a href="{ url 'datasets:ds_reconcile' id=ds_id %}"> -->
+      <!--{{ ds_label }}</a> { if authority != 'whg' %}> {{ authority }} {endif%}-->
+      <!--<select id="select_pass" name="pass" class="custom-select-sm mr-2" style="width:auto;">-->
+        <!--{ if count_pass0 > 0 %}-->
+        <!--<option value="pass0">PASS 0 (auto-matched)&nbsp;</option>{ endif %}-->
+        <!--{ if count_pass1 > 0 %}-->
+          <!--<option value="pass1">PASS 1&nbsp;</option>{ endif %}-->
+        <!--{ if count_pass2 > 0 %}-->
+          <!--<option value="pass2">PASS 2&nbsp;</option>{ endif %}-->
+        <!--{ if authority == 'tgn' and count_pass3 > 0 %}-->
+          <!--<option value="pass3">PASS 3&nbsp;</option>{ endif %}-->
+      <!--</select>-->
+    <!--</span>-->
+    <!--<span class="half float-right">-->
+      <!--task id: {{ task_id }} -->
+      <!--<!--(+links{ if aug_geom == 'on' %}+geom{ endif %})-->-->
+    <!--</span>-->
+  <!--</h5>-->
+
+
 <!--<div id="ext_site" class="modal fade" role="dialog">-->
   <!--<div class="modal-dialog">-->
     <!--<div class="modal-content">-->

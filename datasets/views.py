@@ -414,22 +414,32 @@ def review(request, pk, tid, passnum):
       return ds.places.order_by('id').filter(id__in=pids, review_wd = 2)
     else:
       return ds.places.order_by('id').filter(id__in=pids, review_tgn = 2)
-      
+  
+  record_list = deferred(auth, hitplaces) if passnum == 'def' else \
+    ds.places.order_by('id').filter(pk__in=hitplaces)
     
   # if some are unreviewed, queue in record_list
-  if len(hitplaces) > 0:
-    if passnum.startswith('pass'):
-      record_list = ds.places.order_by('id').filter(pk__in=hitplaces)
-    else:
-      record_list = deferred(auth, hitplaces)
-  else:
+  if len(record_list) == 0:
     context = {
       "nohits":True,
       'ds_id':pk,
       'task_id': tid, 
       'passnum': passnum,
     }
-    return render(request, 'datasets/'+review_page, context=context)
+    return render(request, 'datasets/'+review_page, context=context)    
+  #if len(record_list) > 0:
+    #if passnum.startswith('pass'):
+      #record_list = ds.places.order_by('id').filter(pk__in=hitplaces)
+    #elif passnum == 'def':
+      #record_list = deferred(auth, hitplaces)
+  #else:
+    #context = {
+      #"nohits":True,
+      #'ds_id':pk,
+      #'task_id': tid, 
+      #'passnum': passnum,
+    #}
+    #return render(request, 'datasets/'+review_page, context=context)
 
   # TODO: if 2 reviewers, save by one flags 
   # manage pagination & urls
@@ -441,8 +451,10 @@ def review(request, pk, tid, passnum):
   placeid = records[0].id
   place = get_object_or_404(Place, id=placeid)
   print('reviewing '+str(count)+' hits for place', records[0])
-  #print(paginator.)
-  raw_hits = Hit.objects.filter(place_id=placeid, task_id=tid, query_pass=passnum).order_by('-score')
+  if passnum.startswith('pass'):
+    raw_hits = Hit.objects.filter(place_id=placeid, task_id=tid, query_pass=passnum).order_by('-score')
+  else:
+    raw_hits = Hit.objects.filter(place_id=placeid, task_id=tid).order_by('-score')
   print('raw_hits for '+str(records[0]), raw_hits)
   # convert ccodes to names
   countries = []
@@ -473,7 +485,7 @@ def review(request, pk, tid, passnum):
     'count_pass1': cnt_pass1,
     'count_pass2': cnt_pass2,
     'count_pass3': cnt_pass3,
-    #'place_list': table,
+    'deferred': True if passnum =='def' else False,
       
   }
 
@@ -866,12 +878,23 @@ def ds_recon(request, pk):
 def task_delete(request, tid, scope="foo"):
   hits = Hit.objects.all().filter(task_id=tid)
   tr = get_object_or_404(TaskResult, task_id=tid)
-  ds = tr.task_args[1:-1]
-  
-
+  dsid = tr.task_args[1:-1]
+  auth = tr.task_name[6:]
+  places = Place.objects.filter(id__in=[h.place_id for h in hits])
   placelinks = PlaceLink.objects.all().filter(task_id=tid)
   placegeoms = PlaceGeom.objects.all().filter(task_id=tid)
-
+  print('task_delete()',{'tid':tr,'dsid':dsid,'auth':auth})
+  
+  # reset Place.review_{auth} to null
+  for p in places:
+    if auth in ['whg','idx']:
+      p.review_whg = None
+    elif auth.startswith('wd'):
+      p.review_wd = None
+    else:
+      p.review_tgn = None
+    p.save()
+    
   # zap task record & its hits
   if scope == 'task':
     tr.delete()
@@ -881,7 +904,7 @@ def task_delete(request, tid, scope="foo"):
   elif scope == 'geoms':
     placegeoms.delete()    
 
-  return redirect('/datasets/'+ds+'/reconcile')
+  return redirect('/datasets/'+dsid+'/reconcile')
 """
 # remove collaborator from dataset (all roles)
 # TODO: limit to role?
