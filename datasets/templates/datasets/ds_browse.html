@@ -171,10 +171,12 @@ IN PROGRESS: removing non-Browse code
   // table events
   // TODO: use datatables methods
   function setRowEvents(){
-    $("#status_filter").change(function(){
+    $("#status_select").change(function(){
       val=$(this).val()
       console.log('clicked', val)
+      <!--table.-->
     })
+    
     $("#placetable tbody tr").click(function() {
       t=$(this)
       console.log('clicked', t)
@@ -205,20 +207,12 @@ IN PROGRESS: removing non-Browse code
     getPlaceNew(pid)
   }
 
-select = '<label>Filters: <select name="status" aria-controls="placetable" id="status_select" class="datatables_length">'+
-'<option value="-1">All</option>'+
-'<option value="0">Need review</option>'+
-'<option value="1">Reviewed</option>'+
-'<option value="2">Deferred</option>'+
-'</select></label>'
-
-<!--select = '<select id="status_filter">'+-->
-<!--'<option>Filter...</option>'+-->
-<!--'<option value="-1">All</option>'+-->
-<!--'<option value="0">Need review</option>'+-->
-<!--'<option value="1">Reviewed</option>'+-->
-<!--'<option value="2">Deferred</option>'+-->
-<!--'</select>'       -->
+  select = '<label>Filters: <select name="status" aria-controls="placetable" id="status_select" class="datatables_length">'+
+  '<option value="-1">All</option>'+
+  '<option value="0">Needs review</option>'+
+  '<option value="1">Reviewed</option>'+
+  '<option value="2">Deferred</option>'+
+  '</select></label>'
 
   $(function(){
     //***
@@ -254,8 +248,8 @@ select = '<label>Filters: <select name="status" aria-controls="placetable" id="s
       columnDefs:[
         { className: "browse-task-col", "targets": [4,5] },
         { orderable: false, "targets": [4,5,6,7,8]},
-        { searchable: false, "targets": [0,1,3,4,5,6,7,8]},
-        { visible: false, "targets": [7,8]}
+        { searchable: false, "targets": [0,1,3,4,5,6,7,8]}
+        <!--,{ visible: false, "targets": [7,8]}-->
       ]
     })
 
