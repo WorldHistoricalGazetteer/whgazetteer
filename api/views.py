@@ -603,18 +603,8 @@ class PlaceTableViewSet(viewsets.ModelViewSet):
     q: query string
     ds: dataset
   """
-  #def get_queryset(self):
-    ##print('PlaceViewSet.get_queryset()',self.request.GET)
-    #qs = Place.objects.all()
-    #query = self.request.GET.get('q')
-    #ds = self.request.GET.get('ds')
-    #if ds is not None:
-      #qs = qs.filter(dataset = ds).order_by('src_id')
-    #if query is not None:
-      #qs = qs.filter(title__istartswith=query)
-    #return qs
   def get_queryset(self):
-    #print('PlaceViewSet.get_queryset()',self.request.GET)
+    print('PlaceViewSet.get_queryset()',self.request.GET)
     ds = get_object_or_404(Dataset, label=self.request.GET.get('ds'))
     qs = ds.places.all()
     query = self.request.GET.get('q')

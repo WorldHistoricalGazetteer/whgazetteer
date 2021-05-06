@@ -50,6 +50,7 @@
         <div class="container mt-3 pl-0">
           <div class="row">
             <div id="drftable_detail" class="col-sm-5">
+              {{ filter }}
               <div class="toomany"></div>
               <div id="mapdiv_browse" style="position:relative">
                   {% leaflet_map "map_browse" %}
@@ -79,6 +80,18 @@
                     <th class="hidden">revwhg</th>
                   </tr>
                 </thead>
+                <!--<tfoot>-->
+                  <!--<tr>-->
+                    <!--<th></th>-->
+                    <!--<th>src_id</th>-->
+                    <!--<th>title</th>-->
+                    <!--<th>ccodes</th>-->
+                    <!--<th>revwd</th>-->
+                    <!--<th>revwhg</th>-->
+                    <!--<th>geo</th>-->
+                    <!--<th>review_wd</th>-->
+                    <!--<th>review_whg</th>-->
+                <!--</tfoot>-->
               </table>
             </div>
           </div>
@@ -143,10 +156,14 @@ IN PROGRESS: removing non-Browse code
 -->
 <script type="text/javascript">
   // spinners
-  spin_opts = { scale: .5, top: '75%'}
+  spin_opts = { scale: .5, top: '50%'}
   function startTableSpinner(){
     window.spinner_table = new Spin.Spinner(spin_opts).spin();
     $("#drftable_list").append(spinner_table.el);   
+  }
+  function startFilterSpinner(){
+    window.spinner_filter = new Spin.Spinner(spin_opts).spin();
+    $("#status_filter").append(spinner_filter.el);   
   }
   function startDetailSpinner(){
     window.spinner_detail = new Spin.Spinner(spin_opts).spin();
@@ -160,23 +177,41 @@ IN PROGRESS: removing non-Browse code
   //*
   
   
-  <!--function filterColumn ( i ) {-->
-      <!--$('#example').DataTable().column( i ).search(-->
-          <!--$('#col'+i+'_filter').val(),-->
-          <!--$('#col'+i+'_regex').prop('checked'),-->
-          <!--$('#col'+i+'_smart').prop('checked')-->
-      <!--).draw();-->
-  <!--}    -->
+  function filterColumn (i, v) {
+    // clear then search
+    table
+    .columns([7,8])
+    .search( '' )
+    .columns( i )
+    .search( v )
+    .draw();
+    $("#status_select").val(localStorage.getItem('filter'))
+  }    
+  function clearFilters() {
+    // clear
+    table
+    .columns([7,8])
+    .search( '' )
+    .draw();
+    $("#status_select").val('99')
+  }    
   
   // table events
   // TODO: use datatables methods
   function setRowEvents(){
-    $("#status_select").change(function(){
-      val=$(this).val()
-      console.log('clicked', val)
-      table.columns(7).search(val).draw()
+    $("#status_select").change(function(e){
+      val = $(this).val()
+      localStorage.setItem('filter', val)
+      console.log(val)
+      if(val == '99'){
+        // clear search
+        clearFilters()
+      } else {
+        filterColumn(val[0], val[1])
+      }
+      <!--spinner_filter.stop()-->
     })
-    
+
     $("#placetable tbody tr").click(function() {
       t=$(this)
       console.log('clicked', t)
@@ -208,33 +243,43 @@ IN PROGRESS: removing non-Browse code
   }
 
   select = '<label>Filters: <select name="status" aria-controls="placetable" id="status_select" class="datatables_length">'+
-  '<option value="-1">All</option>'+
-  '<option value="0">Needs review</option>'+
-  '<option value="1">Reviewed</option>'+
-  '<option value="2">Deferred</option>'+
+  '<option value="99" selected="selected">All</option>'+
+  '<option value="70">Needs review (wd)</option>'+
+  '<option value="71">Reviewed (wd)</option>'+
+  '<option value="72">Deferred (wd)</option>'+
+  '<option disabled>_________________</option>'+
+  '<option value="80">Needs review (whg)</option>'+
+  '<option value="81">Reviewed (whg)</option>'+
+  '<option value="82">Deferred (whg)</option>'+
   '</select></label>'
-
+    
   $(function(){
+    localStorage.setItem('filter', '99')
     //***
     // onload for Browse
     //***
-    <!--startMapSpinner()-->
+    startFilterSpinner()
     startTableSpinner()
     startDetailSpinner()
     
     window.dslabel = "{{ ds.label }}"
+    window.filter = "{{ filter }}"
     table = $('#placetable').DataTable({
       <!--dom: 'lfrtip',-->
-      <!--dom: 'Bfrtip',-->
+      <!--dom: 'Pfrtip',-->
       dom: "<'row'<'col-sm-12 col-md-3'l><'#status_filter.col-sm-12 col-md-5'>"+
       "<'col-sm-12 col-md-4'f>>" +
       "<'row'<'col-sm-12'tr>>" +
-      "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
-      serverSide: true,
-      ajax: "/api/placetable/?format=datatables&ds={{ ds.label }}&f={{ filter }}",
-      scrollY: 400,
-      select: true,
-      columns: [
+      "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"
+      ,serverSide: true
+      <!--ajax: "/api/placetable/?format=datatables&ds={{ ds.label }}&f={{ filter }}",-->
+      ,ajax: {
+        url: "/api/placetable/?format=datatables&ds={{ ds.label }}"
+      }
+      ,scrollY: 400
+      ,select: true
+      <!--,initComplete: function() { spinner_filter.stop() }-->
+      ,columns: [
           {"data": "id"}, //index 0
           {"data": "src_id"},
           {"data": "title"},
@@ -244,17 +289,18 @@ IN PROGRESS: removing non-Browse code
           {"data": "geo"},
           {"data": "review_wd"},
           {"data": "review_whg"},
-      ],
-      columnDefs:[
+      ]
+      ,columnDefs:[
         { className: "browse-task-col", "targets": [4,5] },
         { orderable: false, "targets": [4,5,6,7,8]},
-        { searchable: false, "targets": [0,1,3,4,5,6,7,8]}
-        <!--,{ visible: false, "targets": [7,8]}-->
+        { searchable: false, "targets": [0,1,3,4,5,6]}
+        ,{ visible: false, "targets": [7,8]}
       ]
     })
 
     table.on( 'draw', function () {
       $("#status_filter").html(select);
+      $("#status_select").val(localStorage.getItem('filter'))
       spinner_table.stop()
       setRowEvents();
     })
@@ -357,7 +403,7 @@ IN PROGRESS: removing non-Browse code
     // get dataset features -> renderMap() if < 15,000
     $.get("/api/geoms", {ds: "{{ ds.label }}", f: "{{ filter }}" },
       function(data){
-        console.log('feature count:',data.count)
+        <!--console.log('feature count:',data.count)-->
         geom = {"type":"FeatureCollection","features":data.results}
         if(geom.features.length >= 15000) {
           $(".toomany").html('for performance reasons, mapping only the first 15,000 features - sorry!')
