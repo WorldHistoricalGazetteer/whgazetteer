@@ -174,7 +174,7 @@ IN PROGRESS: removing non-Browse code
     $("#status_select").change(function(){
       val=$(this).val()
       console.log('clicked', val)
-      <!--table.-->
+      table.columns(7).search(val).draw()
     })
     
     $("#placetable tbody tr").click(function() {
