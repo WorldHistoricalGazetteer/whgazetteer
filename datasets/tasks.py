@@ -576,6 +576,9 @@ def align_tgn(pk, *args, **kwargs):
       count_nohit +=1
       nohits.append(result_obj['missed'])
     else:
+      # place/task status 0 (unreviewed hits)
+      place.review_tgn = 0
+      place.save()
       count_hit +=1
       total_hits += len(result_obj['hits'])
       #print("hit[0]: ",result_obj['hits'][0]['_source'])  
@@ -871,6 +874,7 @@ def align_wdlocal(pk, **kwargs):
     qs = ds.places.all()
 
   for place in qs:
+    #place = get_object_or_404(Place, pk=6596036)
     # build query object
     count +=1
     qobj = {"place_id":place.id,
@@ -933,6 +937,10 @@ def align_wdlocal(pk, **kwargs):
       count_nohit +=1
       nohits.append(result_obj['missed'])
     else:
+      # place/task status 0 (unreviewed hits)
+      place.review_wd = 0
+      place.save()
+
       count_hit +=1
       total_hits += len(result_obj['hits'])
       for hit in result_obj['hits']:
@@ -1266,6 +1274,10 @@ def align_idx(pk, *args, **kwargs):
     # got some hits, format json & write to db
     elif len(result_obj['hits']) > 0:
       count_hit +=1  # this record got >=1 hits
+      # place/task status 0 (unreviewed hits)
+      p.review_whg = 0
+      p.save()
+      
       hits = result_obj['hits']
       [count_kids,count_errors] = [0,0]
       #total_hits += result_obj['hit_count']
@@ -1279,15 +1291,18 @@ def align_idx(pk, *args, **kwargs):
       children = [profileHit(h) for h in hits \
                 if h['_source']['relation']['name']=='child']
       """ *** """
+      p0 = 'pass0' in [p['pass'] for p in parents]
+      p1 = 'pass1' in [p['pass'] for p in parents]
+      if p0:
+        count_p0 += 1
+      elif p1:
+        count_p1 +=1
+
       def uniq_geom(lst):
         for _, grp in itertools.groupby(lst, lambda d: (d['coordinates'])):
           yield list(grp)[0]      
       # if there are any
       for par in parents:
-        if par['pass'][:5] == 'pass0':
-          count_p0 += 1
-        elif par['pass'] == "pass1":
-          count_p1 +=1
         # children of *this* parent, if any
         kids = [c for c in children if c['_id'] in par['children']] or None
         # merge values into hit.json object

@@ -246,7 +246,8 @@ qrepl = {}
 place = get_object_or_404(Place, pk=pid)
 
 # make an ES doc for it
-pdoc = makeDoc(place,'none')
+#pdoc = makeDoc(place,'none')
+pdoc = makeDoc(place)
 
 # find it in the index, if exists
 qget = {"query": {"bool": {"must": [{"match":{"place_id": pid }}]}}}

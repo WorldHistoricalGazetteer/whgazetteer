@@ -175,14 +175,18 @@ class PlaceTableSerializer(serializers.ModelSerializer):
     geo = serializers.SerializerMethodField('has_geom')    
     def has_geom(self, place):
         return '<i class="fa fa-globe"></i>' if place.geom_count > 0 else "-"
+    # empty: &#9744;  checked: &#9745; x: &#9746;
+    # <i class="fa fa-square-o" aria-hidden="true"></i>
+    # <i class="fa fa-check-square-o" aria-hidden="true"></i>
+    # <i class="fa fa-window-close-o" aria-hidden="true"></i>
     
     revwd = serializers.SerializerMethodField('rev_wd')    
     def rev_wd(self, place):
-        return '-' if not place.hashits_wd else '&#x2713;' if place.review_wd == 1 else '&#x25a2;'
+        return '<i>no hits</i>' if not place.hashits_wd else '<i class="fa fa-check-square-o" aria-hidden="true"></i>' if place.review_wd == 1 else '&#9744;'
         
     revwhg = serializers.SerializerMethodField('rev_whg')    
     def rev_whg(self, place):
-        return '-' if not place.hashits_whg else '&#x2713;' if place.review_whg == 1 else '&#x25a2;'
+        return '<i>no hits</i>' if not place.hashits_whg else '<i class="fa fa-check-square-o" aria-hidden="true"></i>' if place.review_whg == 1 else '&#9744;'
         
     class Meta:
         model = Place

@@ -67,7 +67,8 @@ def add_black(pk, *args, **kwargs):
       whg_id+=1
       #place=get_object_or_404(Place,id=result_obj['place_id'])
       #print('new whg_id',whg_id)
-      parent_obj = makeDoc(place,'none')
+      #parent_obj = makeDoc(place,'none')
+      parent_obj = makeDoc(place)
       parent_obj['relation']={"name":"parent"}
       parent_obj['whg_id']=whg_id
       # add its own names to the suggest field
@@ -101,7 +102,8 @@ def add_black(pk, *args, **kwargs):
         
         # gather names, make an index doc
         match_names = [p.toponym for p in place.names.all()]
-        child_obj = makeDoc(place,'none')
+        #child_obj = makeDoc(place,'none')
+        child_obj = makeDoc(place)
         child_obj['relation']={"name":"child","parent":parent_whgid}
         
         # index it

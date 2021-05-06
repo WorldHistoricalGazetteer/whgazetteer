@@ -534,6 +534,8 @@ em { color: #993333;}
 /**
   dataset browse
 **/
+#status_select { padding: 4px; }
+#status_filter { text-align: center; }
 #browse_legend {background:#e0e0e0;}
 
 .globey{background-image:''}

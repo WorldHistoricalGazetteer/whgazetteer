@@ -16,8 +16,10 @@
   <!--<link rel="stylesheet" href="//cdn.datatables.net/1.10.23/css/dataTables.bootstrap4.min.css">-->
   <!--<script src="//cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>-->
   <!--<script src="//cdn.datatables.net/1.10.23/js/dataTables.bootstrap4.min.js"></script>-->
-  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs4/dt-1.10.24/b-1.7.0/sc-2.0.3/datatables.min.css"/>
-  <script type="text/javascript" src="https://cdn.datatables.net/v/bs4/dt-1.10.24/b-1.7.0/sc-2.0.3/datatables.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.10.24/b-1.7.0/b-colvis-1.7.0/b-html5-1.7.0/cr-1.5.3/fh-3.1.8/sc-2.0.3/sp-1.2.2/sl-1.3.3/datatables.min.css"/>
+
+  <script type="text/javascript" src="https://cdn.datatables.net/v/dt/dt-1.10.24/b-1.7.0/b-colvis-1.7.0/b-html5-1.7.0/cr-1.5.3/fh-3.1.8/sc-2.0.3/sp-1.2.2/sl-1.3.3/datatables.min.js"></script>
+
 {% endblock %}
 
 {% block title %}<title>Dataset::{{ ds.label }}</title>{% endblock %}
@@ -65,11 +67,11 @@
                     <th>title</th>
                     <th>ccodes</th>
                 {% if wdtask %}
-                    <th>wikidata <a rel="tooltip" data-html="true" title="hit(s), not reviewed (&#x25a2;)<br/>hit(s) reviewed (&#x2713;)<br/>no hits (<b>-</b>)" class="pointer text-danger strong">?</a></th>
+                    <th>wikidata <a rel="tooltip" data-html="true" title="&#x25a2; not reviewed<br/><i class='fa fa-check-square-o'></i> reviewed" class="pointer text-danger strong">?</a></th>
                 {% else %}<th class="text-muted">wikidata</th>
                 {% endif %}
                 {% if whgtask %}
-                    <th>whg <a rel="tooltip" data-html="true" title="hit(s), not reviewed (&#x25a2;)<br/>hit(s) reviewed (&#x2713;)<br/>no hits (<b>-</b>)" class="pointer text-danger strong">?</a></th>
+                    <th>whg <a rel="tooltip" data-html="true" title="&#x25a2; not reviewed<br/><i class='fa fa-check-square-o'></i> reviewed )" class="pointer text-danger strong">?</a></th>
                 {% else %}<th class="text-muted">whg</th>
                 {% endif %}
                     <th>geo</th>
@@ -157,6 +159,67 @@ IN PROGRESS: removing non-Browse code
   }
   //*
   
+  
+  <!--function filterColumn ( i ) {-->
+      <!--$('#example').DataTable().column( i ).search(-->
+          <!--$('#col'+i+'_filter').val(),-->
+          <!--$('#col'+i+'_regex').prop('checked'),-->
+          <!--$('#col'+i+'_smart').prop('checked')-->
+      <!--).draw();-->
+  <!--}    -->
+  
+  // table events
+  // TODO: use datatables methods
+  function setRowEvents(){
+    $("#status_filter").change(function(){
+      val=$(this).val()
+      console.log('clicked', val)
+    })
+    $("#placetable tbody tr").click(function() {
+      t=$(this)
+      console.log('clicked', t)
+      // get id
+      pid=$(this)[0].cells[0].textContent
+      
+      // highlight this row, clear others
+      var selected = $(this).hasClass("highlight-row");
+      $("#placetable tr").removeClass("highlight-row");
+      
+      if(!selected)
+        $(this).removeClass( "rowhover" );
+        $(this).addClass("highlight-row");
+
+      // highlight marker, zoomTo()
+      highlightFeature(pid)
+
+      // fetch its detail
+      getPlaceNew(pid)
+      
+    }) 
+        
+    row = $("#drftable_list table tbody")[0].rows[0]
+    pid = parseInt(row.cells[0].textContent)
+    // highlight first row, fetch detail, but don't zoomTo() it
+    $("#placetable tbody").find('tr').eq(0).addClass('highlight-row')
+
+    getPlaceNew(pid)
+  }
+
+select = '<label>Filters: <select name="status" aria-controls="placetable" id="status_select" class="datatables_length">'+
+'<option value="-1">All</option>'+
+'<option value="0">Need review</option>'+
+'<option value="1">Reviewed</option>'+
+'<option value="2">Deferred</option>'+
+'</select></label>'
+
+<!--select = '<select id="status_filter">'+-->
+<!--'<option>Filter...</option>'+-->
+<!--'<option value="-1">All</option>'+-->
+<!--'<option value="0">Need review</option>'+-->
+<!--'<option value="1">Reviewed</option>'+-->
+<!--'<option value="2">Deferred</option>'+-->
+<!--'</select>'       -->
+
   $(function(){
     //***
     // onload for Browse
@@ -167,39 +230,37 @@ IN PROGRESS: removing non-Browse code
     
     window.dslabel = "{{ ds.label }}"
     table = $('#placetable').DataTable({
-      dom: 'Bfrtip',
+      <!--dom: 'lfrtip',-->
+      <!--dom: 'Bfrtip',-->
+      dom: "<'row'<'col-sm-12 col-md-3'l><'#status_filter.col-sm-12 col-md-5'>"+
+      "<'col-sm-12 col-md-4'f>>" +
+      "<'row'<'col-sm-12'tr>>" +
+      "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
       serverSide: true,
       ajax: "/api/placetable/?format=datatables&ds={{ ds.label }}&f={{ filter }}",
+      scrollY: 400,
+      select: true,
       columns: [
-          {"data": "id", "searchable": false},
-          {"data": "src_id", "searchable": false},
+          {"data": "id"}, //index 0
+          {"data": "src_id"},
           {"data": "title"},
-          {"data": "ccodes", "searchable": false},
-          {"data": "revwd", "sortable": false, "searchable": false },
-          {"data": "revwhg", "sortable": false, "searchable": false },
-          {"data": "geo", "sortable": false, "searchable": false},
-          {"data": "review_wd", "sortable": false, "visible": false},
-          {"data": "review_whg", "sortable": false, "visible": false },
+          {"data": "ccodes"},
+          {"data": "revwd"},
+          {"data": "revwhg"},
+          {"data": "geo"},
+          {"data": "review_wd"},
+          {"data": "review_whg"},
       ],
-      buttons: [
-        {
-            text: 'wd reviewed',
-            action: function ( e, dt, node, config ) {
-              dt.column(7).search("1").draw()
-              console.log('clicked wd reviewed')
-            }
-        },
-        {
-            text: 'wd unreviewed',
-            action: function ( e, dt, node, config ) {
-              dt.column(7).search("0").draw()
-              console.log('clicked wd unreviewed')
-            }
-        }
+      columnDefs:[
+        { className: "browse-task-col", "targets": [4,5] },
+        { orderable: false, "targets": [4,5,6,7,8]},
+        { searchable: false, "targets": [0,1,3,4,5,6,7,8]},
+        { visible: false, "targets": [7,8]}
       ]
     })
 
     table.on( 'draw', function () {
+      $("#status_filter").html(select);
       spinner_table.stop()
       setRowEvents();
     })
@@ -269,37 +330,6 @@ IN PROGRESS: removing non-Browse code
     }    
   }
   
-
-  // table events
-  function setRowEvents(){
-    $("#placetable tbody tr").click(function() {
-      t=$(this)
-      console.log('clicked', t)
-      // get id
-      pid=$(this)[0].cells[0].textContent
-      
-      // highlight this row, clear others
-      var selected = $(this).hasClass("highlight-row");
-      $("#placetable tr").removeClass("highlight-row");
-      
-      if(!selected)
-        $(this).removeClass( "rowhover" );
-        $(this).addClass("highlight-row");
-
-      // highlight marker, zoomTo()
-      highlightFeature(pid)
-
-      // fetch its detail
-      getPlaceNew(pid)
-    }) 
-        
-    row = $("#drftable_list table tbody")[0].rows[0]
-    pid = parseInt(row.cells[0].textContent)
-    // highlight first row, fetch detail, but don't zoomTo() it
-    $("#placetable tbody").find('tr').eq(0).addClass('highlight-row')
-
-    getPlaceNew(pid)
-  }
 
   // initiate map, fetch data -> renderMap()
   addEventListener('map:init', function (e) {

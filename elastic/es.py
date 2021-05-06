@@ -49,7 +49,8 @@ def indexDataset(pids=None):
     if len(matches['parents']) == 0:
       # it's a parent (seed)
       whg_id +=1
-      parent_obj = makeDoc(place,'none')
+      #parent_obj = makeDoc(place,'none')
+      parent_obj = makeDoc(place)
       parent_obj['relation']={"name":"parent"}
       parent_obj['whg_id'] = whg_id
       # add its own names to the suggest field
@@ -72,7 +73,8 @@ def indexDataset(pids=None):
         f_err_multi.write(str({"pid":place.id, "title":place.title, "matches":matches})+'\n')
         # multiparents.append({"pid":place.id, "title":place.title, "matches":matches})
       for pid in matches['parents']:
-        child_obj = makeDoc(place,pid)
+        #child_obj = makeDoc(place,pid)
+        child_obj = makeDoc(place)
         child_obj['relation']={"name":"child","parent":pid}
         # index it
         try:

@@ -216,7 +216,8 @@ def indexSomeParents(es,idx,pids):
     place=get_object_or_404(Place,id=pid)
     whg_id = whg_id+1
     print('new whg_id',whg_id)
-    parent_obj = makeDoc(place,'none')
+    #parent_obj = makeDoc(place,'none')
+    parent_obj = makeDoc(place)
     parent_obj['relation']={"name":"parent"}
     # parents get an incremented _id & whg_id
     parent_obj['whg_id']=whg_id
@@ -268,7 +269,8 @@ def replaceInIndex(es,idx,pids):
         # get parent _id
         parentid = src['relation']['parent']
         # write a new doc from db place
-        newchild = makeDoc(place, 'none')
+        #newchild = makeDoc(place, 'none')
+        newchild = makeDoc(place)
         newchild['relation']={"name":"child","parent":parentid}
         # get names from replacement db record
         newnames = [x.toponym for x in place.names.all()]
@@ -298,7 +300,8 @@ def replaceInIndex(es,idx,pids):
         sugs_e = list(set(src['suggest']['input'])) # distinct only
 
         # new doc from db place; fill from existing
-        newparent = makeDoc(place, None)
+        #newparent = makeDoc(place, None)
+        newparent = makeDoc(place)
         newparent['children'] = kids_e
 
         # merge old & new names in new doc
