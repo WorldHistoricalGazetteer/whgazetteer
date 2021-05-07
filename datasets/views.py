@@ -2360,6 +2360,7 @@ class DatasetBrowseView(LoginRequiredMixin, DetailView):
     #placeset = Place.objects.filter(dataset=ds.label)
     context['updates'] = {}
     context['ds'] = ds
+    context['tgntask'] = 'tgn' in ds_tasks
     context['whgtask'] = len(set(['whg','idx']) & set(ds_tasks)) > 0
     context['wdtask'] = len(set(['wd','wdlocal']) & set(ds_tasks)) > 0
     context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False

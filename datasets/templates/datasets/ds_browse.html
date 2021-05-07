@@ -255,6 +255,10 @@ IN PROGRESS: removing non-Browse code
     
   $(function(){
     localStorage.setItem('filter', '99')
+    tgntask = "{{tgntask}}" == "True"?true:false
+    wdtask = "{{wdtask}}" == "True"?true:false
+    whgtask = "{{whgtask}}" == "True"?true:false
+    console.log('tgntask, wdtask, whgtask',tgntask, wdtask, whgtask)
     //***
     // onload for Browse
     //***
