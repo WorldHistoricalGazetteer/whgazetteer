@@ -192,6 +192,18 @@ class PlaceTableSerializer(serializers.ModelSerializer):
       val = '<i>deferred</i>'
     return val
 
+  revtgn = serializers.SerializerMethodField('rev_tgn')    
+  def rev_tgn(self, place):
+    if not place.hashits_tgn:
+      val = '<i>no hits</i>'
+    elif place.review_tgn == 1:
+      val = '<i class="fa fa-check-square-o"></i>'
+    elif place.review_tgn == 0:
+      val = '&#9744;'
+    else:
+      val = '<i>deferred</i>'
+    return val
+
   revwhg = serializers.SerializerMethodField('rev_whg')    
   def rev_whg(self, place):
     if not place.hashits_whg:
@@ -210,8 +222,8 @@ class PlaceTableSerializer(serializers.ModelSerializer):
     model = Place
     fields = ('url','id', 'title', 'src_id', 
                   'ccodes', 'geo', 'minmax', 
-                  'revwhg', 'revwd', 
-                  'review_whg', 'review_wd'
+                  'revwhg', 'revwd', 'revtgn',
+                  'review_whg', 'review_wd', 'review_tgn'
                   )
 
 """ used by: DownloadGeomsAPIView() """
