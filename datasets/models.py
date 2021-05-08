@@ -96,7 +96,7 @@ class Dataset(models.Model):
     result = {}
     # array for each kind of task
     #task_types = self.tasks.all().values_list("task_name", flat=True)
-    task_types = ['align_wdlocal','align_tgn','align_wd','align_idx','align_whg']
+    task_types = ['align_wdlocal','align_tgn','align_idx','align_whg','align_wd']
     for tt in task_types:
       result[tt] = []
       for t in self.tasks.filter(task_name=tt, status="SUCCESS"):

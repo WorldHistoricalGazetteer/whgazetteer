@@ -15,7 +15,7 @@ urlpatterns = [
     path('create/', views.DatasetCreateView.as_view(), name='dataset-create'),
 
     # also handles update for name, description fields
-    path('<int:id>/detail', views.DatasetDetailView.as_view(), name='dataset-detail'),
+    #path('<int:id>/detail', views.DatasetDetailView.as_view(), name='dataset-detail'),
     
     # upload excel
     path('xl/', views.xl_upload, name='xl-upload'),

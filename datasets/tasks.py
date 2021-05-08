@@ -602,7 +602,8 @@ def align_tgn(pk, *args, **kwargs):
           authority = 'tgn',
           authrecord_id = hit['_id'],
           dataset = ds,
-          place_id = get_object_or_404(Place, id=qobj['place_id']),
+          #place_id = get_object_or_404(Place, id=qobj['place_id']),
+          place = place,
           task_id = align_tgn.request.id,
           query_pass = hit['pass'],
           # prepare for consistent display in review screen
