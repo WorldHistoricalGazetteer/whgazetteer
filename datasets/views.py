@@ -2334,8 +2334,8 @@ class DatasetAddTaskView(LoginRequiredMixin, DetailView):
       gothits[t.task_id] = int(json.loads(t.result)['got_hits'])
 
     # deliver status to template
-    msg_unreviewed = """There is already a  <b>%s</b> task in progress, but all records that got hits remain unreviewed. Starting this new task will delete the previous, with no impact on your dataset."""
-    msg_inprogress = """There is already a <b>%s</b> task in progress, and %s of the %s records that got hits have been reviewed. Your choices will be revealed..."""
+    msg_unreviewed = """There is already a  <span class='text-danger strong'>%s</span> task in progress, but all %s records that got hits remain unreviewed. Starting this new task will delete the previous, with no impact on your dataset."""
+    msg_inprogress = """There is already a <span class='text-danger strong'>%s</span> task in progress, and %s of the %s records that got hits have been reviewed. Your choices will be revealed..."""
     for i in ds.taskstats.items():
       if len(i[1]) > 0:
         auth = i[0][6:]
@@ -2347,7 +2347,7 @@ class DatasetAddTaskView(LoginRequiredMixin, DetailView):
           context['msg_'+auth] = msg_inprogress%(auth, hadhits-remaining, hadhits)
           print(context)
         else:
-          context['msg_'+auth] = msg_unreviewed%(auth)    
+          context['msg_'+auth] = msg_unreviewed%(auth,hadhits)    
     
     context['region_list'] = predefined    
     context['ds'] = ds
