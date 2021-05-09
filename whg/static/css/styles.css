@@ -530,6 +530,13 @@ em { color: #993333;}
 #div_file { background-color: #f9f9f9;}
 #div_file p { display:block; background-color:#e9e9e9; margin:0; font-weight:700;}
 
+/**
+  dataset add task
+**/
+/*.radiodiv p {margin-bottom: 0;}*/
+.radiodiv input[type="radio"] {
+  vertical-align: middle;
+}
 
 /**
   dataset browse

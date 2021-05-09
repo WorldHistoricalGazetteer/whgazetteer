@@ -4,6 +4,7 @@ from celery.decorators import task # this is @task decorator
 from django_celery_results.models import TaskResult
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import Polygon, Point, LineString
@@ -524,9 +525,9 @@ def align_tgn(pk, *args, **kwargs):
   [count, count_hit, count_nohit, total_hits, count_p1, count_p2, count_p3] = [0,0,0,0,0,0,0]
   start = datetime.datetime.now()
 
-  # queryset depends on choice of scope in addtask form
-  #qs = ds.places.all().filter(flag=True)
-  qs = ds.places.all() if scope == 'all' else ds.places.all().filter(indexed=False)
+  # queryset depends 'scope', indirectly on 'prior' in ds_addtask.html
+  qs = ds.places.all() if scope == 'all' else \
+    ds.places.all().filter(Q(review_tgn=None) | Q(review_tgn = 0))
 
   for place in qs:
     # build query object
@@ -866,13 +867,18 @@ def align_wdlocal(pk, **kwargs):
   [nohits,wdlocal_es_errors,features] = [[],[],[]]
   [count, count_hit, count_nohit, total_hits, count_p0, count_p1, count_p2] = [0,0,0,0,0,0,0]
 
-  # queryset depends on choice of scope in addtask form
-  # 
-  pids = Hit.objects.filter(dataset_id=pk, authority ='wd',reviewed=False).values_list('place_id',flat=True)
-  if scope == 'unreviewed':
-    qs = ds.places.filter(id__in=pids)
-  elif scope == 'all':
-    qs = ds.places.all()
+  # queryset depends on 'scope'
+  # new logic
+  qs = ds.places.all() if scope == 'all' else \
+    ds.places.filter(Q(review_wd=None) | Q(review_wd = 0))
+  print('qs', qs)
+
+  #pids = Hit.objects.filter(dataset_id=pk, authority ='wd',reviewed=False).values_list('place_id',flat=True)
+    
+  #if scope == 'unreviewed':
+    #qs = ds.places.filter(id__in=pids)
+  #elif scope == 'all':
+    #qs = ds.places.all()
 
   for place in qs:
     #place = get_object_or_404(Place, pk=6596036)

@@ -586,6 +586,21 @@ def ds_recon(request, pk):
     auth = request.POST['recon']
     language = request.LANGUAGE_CODE
     
+    # 'keep' or 'zap'
+    prior = request.POST['prior'] if 'prior' in request.POST else 'keep'
+    
+    # 'all' or 'unindexed'
+    scope = 'unreviewed' if prior == 'keep' else 'all'
+    
+    if prior == 'zap':
+      tid = ds.tasks.filter(task_name='align_'+auth,status='SUCCESS').order_by('-id')[0].task_id
+      task_delete_local(tid, 'task')
+      print('recon(): delete/cascade existing task; then submitting w/ scope=all')
+    else:
+      print("prior = 'keep', so scope is ", scope)
+    
+    #return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+    
     # which task? wdlocal, tgn, idx, wd, whg
     func = eval('align_'+auth)
     
@@ -597,7 +612,6 @@ def ds_recon(request, pk):
     bounds={
       "type":["region" if region !="0" else "userarea"],
       "id": [region if region !="0" else userarea]}
-    scope = request.POST['scope'] if 'scope' in request.POST else 'all'
 
     # check Celery service
     if not celeryUp():
@@ -695,6 +709,45 @@ def task_delete(request, tid, scope="foo"):
     placegeoms.delete()    
 
   return redirect('/datasets/'+dsid+'/reconcile')
+
+
+"""
+# task_delete_local(tid, scope)
+# from ds_recon()
+# delete results of a reconciliation task:
+# hits + any geoms and links added by review
+# reset Place.review_{auth} to null
+#
+"""
+def task_delete_local(tid, scope="foo"):
+  hits = Hit.objects.all().filter(task_id=tid)
+  tr = get_object_or_404(TaskResult, task_id=tid)
+  dsid = tr.task_args[1:-1]
+  auth = tr.task_name[6:]
+  places = Place.objects.filter(id__in=[h.place_id for h in hits])
+  placelinks = PlaceLink.objects.all().filter(task_id=tid)
+  placegeoms = PlaceGeom.objects.all().filter(task_id=tid)
+  print('task_delete()',{'tid':tr,'dsid':dsid,'auth':auth})
+  
+  # reset Place.review_{auth} to null
+  for p in places:
+    if auth in ['whg','idx']:
+      p.review_whg = None
+    elif auth.startswith('wd'):
+      p.review_wd = None
+    else:
+      p.review_tgn = None
+    p.save()
+    
+  # zap task record & its hits
+  if scope == 'task':
+    tr.delete()
+    hits.delete()
+    placelinks.delete()
+    placegeoms.delete()
+  elif scope == 'geoms':
+    placegeoms.delete()
+
 """
 # remove collaborator from dataset (all roles)
 # TODO: limit to role?
@@ -2311,8 +2364,8 @@ class DatasetAddTaskView(LoginRequiredMixin, DetailView):
     context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
     context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
 
-    print('DatasetAddTaskView get_context_data() kwargs:',self.kwargs)
-    print('DatasetAddTaskView get_context_data() request.user:',self.request.user)
+    #print('DatasetAddTaskView get_context_data() kwargs:',self.kwargs)
+    #print('DatasetAddTaskView get_context_data() request.user:',self.request.user)
     id_ = self.kwargs.get("id")
     #bounds = self.kwargs.get("bounds")
     ds = get_object_or_404(Dataset, id=id_)
@@ -2330,24 +2383,31 @@ class DatasetAddTaskView(LoginRequiredMixin, DetailView):
     predefined = Area.objects.all().filter(type='predefined').values('id','title')
 
     gothits={}
-    for t in ds.tasks.all():
+    for t in ds.tasks.filter(status='SUCCESS'):
       gothits[t.task_id] = int(json.loads(t.result)['got_hits'])
 
     # deliver status to template
     msg_unreviewed = """There is already a  <span class='text-danger strong'>%s</span> task in progress, but all %s records that got hits remain unreviewed. Starting this new task will delete the previous, with no impact on your dataset."""
-    msg_inprogress = """There is already a <span class='text-danger strong'>%s</span> task in progress, and %s of the %s records that got hits have been reviewed. Your choices will be revealed..."""
+    msg_inprogress = """<p class='mb-1'>There is already a <span class='text-danger strong'>%s</span> task in progress, and %s of the %s records that got hits have been reviewed. You can:</p>"""
     for i in ds.taskstats.items():
       if len(i[1]) > 0:
         auth = i[0][6:]
         tid = i[1][0]['tid']
         remaining = i[1][0]['total']
         hadhits = gothits[tid]
-        print(auth, tid, remaining, hadhits)
+        #print(auth, tid, remaining, hadhits)
         if remaining < hadhits:
-          context['msg_'+auth] = msg_inprogress%(auth, hadhits-remaining, hadhits)
-          print(context)
+          context['msg_'+auth] = {
+            'msg': msg_inprogress%(auth, hadhits-remaining, hadhits),
+            'type': 'inprogress'}
+          #print(context)
         else:
-          context['msg_'+auth] = msg_unreviewed%(auth,hadhits)    
+          context['msg_'+auth] = {
+            'msg': msg_unreviewed%(auth,hadhits),
+            'type': 'unreviewed'
+          }
+          
+            
     
     context['region_list'] = predefined    
     context['ds'] = ds
@@ -2356,7 +2416,7 @@ class DatasetAddTaskView(LoginRequiredMixin, DetailView):
     context['tasks'] = ds.tasks.filter(status='SUCCESS')
     context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False
     
-    print('context["tasks"] from DatasetAddTaskView', context['tasks'])
+    #print('context["tasks"] from DatasetAddTaskView', context['tasks'])
 
     return context
 

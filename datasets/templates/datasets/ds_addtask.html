@@ -80,23 +80,15 @@
               <input type="radio" class="form-check-input" id="r_tgn"
                 name="recon" value="tgn" checked>Getty TGN (tgn) <span class="text-danger small ml-2">estimated time: {{ ds.numrows|time_estimate }}</span>
             </label>
-            {% if ds.taskstats.align_tgn|length > 0 %}
-              <div id="tgn_tasks" class="hidden">
-                <div class="mt-0 smaller">
-                <p class="mb-0">You have already run one or more TGN alignment tasks for this dataset
-                {% if ds.taskstats.align_tgn.0.total == 0 %}.<br/>All results have been reviewed and matching decisions recorded. Running it again risks duplicating that effort.
-                {% else %}.<br/>Only the <b class="text-danger">{{ds.taskstats.align_tgn.0.total}}</b> place records NOT already reviewed will be submitted now.
-                {% endif %}
-                <span class="help-matches" data-id="recon_rerun">{% fontawesome_icon 'question-circle' color='#993333' %}</span></p>
-                <input type="hidden" name="scope" value="unreviewed">
-                </div>
-              {% for ts in ds.taskstats.align_tgn %}
-              {% if ts.total > 0 %}
-                <p class="my-0">
-                <i class="small">task</i>: {{ ts.tid|truncatechars:9 }}
-                <i class="small">date</i>: {{ ts.date }}
+            {% if msg_tgn %}
+            <div id="tgn_tasks" class="smaller hidden">
+              <div class="mt-0 smaller radiodiv">
+              {{ msg_tgn.msg|safe }}
+              {% if msg_tgn.type == 'inprogress' %}
+              <label class="mb-0"><input id="r_keep_tgn" type="radio" name="prior" value="keep" checked> keep any match results (links, geometry) & resubmit only unreviewed records</label>
+              <label class="mb-0"><input type="radio" name="prior" value="zap"> delete the prior task and any links and geometry it added</label>
               {% endif %}
-              {% endfor %}
+              </div>            
             </div>
             {% endif %}
           </div>
@@ -105,30 +97,28 @@
               <input type="radio" class="form-check-input r_wd" id="r_wdlocal" 
                 name="recon" value="wdlocal" checked>Wikidata local (wdlocal) <span class="ml-2 text-danger small">estimated time: {{ ds.numrows|time_estimate }}</span>
             </label>
-            {% if ds.taskstats.align_wdlocal|length > 0 %}
-              <div id="wdlocal_tasks">
-                <div class="mt-0 smaller">
-                <p class="mb-0">You have already run one or more Wikidata alignment tasks for this dataset
-                {% if ds.taskstats.align_wdlocal.0.total == 0 %}.<br/>All results have been reviewed and matching decisions recorded. Running it again risks duplicating that effort.
-                {% else %}.<br/>Only the <b class="text-danger">{{ds.taskstats.align_wdlocal.0.total}}</b> place records NOT already reviewed will be submitted now.
-                {% endif %}
-                <span class="help-matches" data-id="recon_rerun">{% fontawesome_icon 'question-circle' color='#993333' %}</span></p>
-                <input type="hidden" name="scope" value="unreviewed">
-                </div>
+            {% if msg_wdlocal %}
+            <div id="wdlocal_tasks" class="smaller">
+              <div class="mt-0 smaller radiodiv">
+              {{ msg_wdlocal.msg|safe }}
+              {% if msg_wdlocal.type == 'inprogress' %}
+              <label class="mb-0"><input type="radio" name="prior" value="keep" checked> keep any match results (links, geometry) & resubmit only unreviewed records</label>
+              <label class="mb-0"><input type="radio" name="prior" value="zap"> delete the prior task and any links and geometry it added</label>
+              {% endif %}
               </div>
+            </div>
             {% endif %}
           </div>
-          <!-- { endif %} -->
-          {% if ds.unindexed < ds.numrows %}
-            <!-- if some are indexed, offer to skip them -->
-            <div id="recon_scope" class="mt-2">
-              <hr/><p class="font-weight-bold">Task scope</p>
-              <label class="radio-inline">
-              <input type="radio" name="scope" id="scope1" value="all"> All <b>{{ds.numrows}}</b> records</label>
-              <label class="radio-inline ml-3">
-              <input type="radio" name="scope" checked="true" id="scope2" value="unindexed"> Only the unindexed (<b>{{ds.unindexed}}</b>)</label>
-            </div>
-          {% endif %}
+          <!--{ if ds.unindexed < ds.numrows %}-->
+            <!--<!-- if some are indexed, offer to skip them -->
+            <!--<div id="recon_scope" class="mt-2">-->
+              <!--<hr/><p class="font-weight-bold">Task scope</p>-->
+              <!--<label class="radio-inline">-->
+              <!--<input type="radio" name="scope" id="scope1" value="all"> All <b>{{ds.numrows}}</b> records</label>-->
+              <!--<label class="radio-inline ml-3">-->
+              <!--<input type="radio" name="scope" checked="true" id="scope2" value="unindexed"> Only the unindexed (<b>{{ds.unindexed}}</b>)</label>-->
+            <!--</div>-->
+          <!--{ endif %}-->
           <div id="geo_constraint" class="mt-2">
             <hr/>
             <div class="mb-2">
@@ -172,12 +162,6 @@
             {% leaflet_map "map_recon" %}
           </div>
           {% endif %}
-          <!--<p class="small">{ ds.taskstats }}</p>-->
-          <ul class="small">
-          {% if msg_wdlocal %}<li>{{ msg_wdlocal|safe }}</li>{%endif%}
-          {% if msg_tgn %}<li>{{ msg_tgn|safe }}</li>{%endif%}
-          {% if msg_idx %}<li>{{ msg_idx|safe }}</li>{%endif%}
-          </ul>
         </div> <!-- recon_result -->
       </div> <!-- row -->
       {% else %}
@@ -585,7 +569,6 @@ js for Add Task
   })
   $("#r_wdlocal").click(function(){
     $("#wdlocal_tasks").removeClass('hidden')
-    <!--$("#tgn_tasks").addClass('hidden')-->
     $("#tgn_tasks").hide(400)
   })
   function render_area(aid) {
