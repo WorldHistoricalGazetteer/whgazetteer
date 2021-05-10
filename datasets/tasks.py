@@ -522,7 +522,7 @@ def align_tgn(pk, *args, **kwargs):
   print('args, kwargs from align_tgn() task',args,kwargs)
   hit_parade = {"summary": {}, "hits": []}
   [nohits,tgn_es_errors,features] = [[],[],[]]
-  [count, count_hit, count_nohit, total_hits, count_p1, count_p2, count_p3] = [0,0,0,0,0,0,0]
+  [count_hit, count_nohit, total_hits, count_p1, count_p2, count_p3] = [0,0,0,0,0,0]
   start = datetime.datetime.now()
 
   # queryset depends 'scope', indirectly on 'prior' in ds_addtask.html
@@ -530,9 +530,9 @@ def align_tgn(pk, *args, **kwargs):
     ds.places.all().filter(Q(review_tgn=None) | Q(review_tgn = 0))
 
   for place in qs:
-    # build query object
     #place=get_object_or_404(Place,id=131735) # Caledonian Canal (ne)
-    count +=1
+
+    # build query object
     qobj = {"place_id":place.id,"src_id":place.src_id,"title":place.title}
     [variants,geoms,types,ccodes,parents]=[[],[],[],[],[]]
 
@@ -593,7 +593,7 @@ def align_tgn(pk, *args, **kwargs):
           count_p3+=1
         hit_parade["hits"].append(hit)
         # correct lower case 'point' in tgn index
-        # TODO: reindex properly
+        # TODO: fix in index
         if 'location' in hit['_source'].keys():
           loc = hit['_source']['location'] 
           loc['type'] = "Point"
@@ -603,7 +603,6 @@ def align_tgn(pk, *args, **kwargs):
           authority = 'tgn',
           authrecord_id = hit['_id'],
           dataset = ds,
-          #place_id = get_object_or_404(Place, id=qobj['place_id']),
           place = place,
           task_id = align_tgn.request.id,
           query_pass = hit['pass'],
@@ -620,15 +619,12 @@ def align_tgn(pk, *args, **kwargs):
 
   print('tgn ES errors:',tgn_es_errors)
   hit_parade['summary'] = {
-      'count':count,
+      'count':qs.count(),
       'got_hits':count_hit,
       'total_hits': total_hits, 
       'pass1': count_p1, 
       'pass2': count_p2, 
       'pass3': count_p3,
-      'pass1remains': -1,
-      'pass2remains': -1,
-      'pass3remains': -1,
       'no_hits': {'count': count_nohit },
       'elapsed': elapsed(end-start)
     }
@@ -865,7 +861,7 @@ def align_wdlocal(pk, **kwargs):
   start = datetime.datetime.now()
   hit_parade = {"summary": {}, "hits": []}
   [nohits,wdlocal_es_errors,features] = [[],[],[]]
-  [count, count_hit, count_nohit, total_hits, count_p0, count_p1, count_p2] = [0,0,0,0,0,0,0]
+  [count_hit, count_nohit, total_hits, count_p0, count_p1, count_p2] = [0,0,0,0,0,0]
 
   # queryset depends on 'scope'
   # new logic
@@ -883,7 +879,6 @@ def align_wdlocal(pk, **kwargs):
   for place in qs:
     #place = get_object_or_404(Place, pk=6596036)
     # build query object
-    count +=1
     qobj = {"place_id":place.id,
             "src_id":place.src_id,
             "title":place.title,
@@ -979,7 +974,7 @@ def align_wdlocal(pk, **kwargs):
 
   print('wdlocal ES errors:',wdlocal_es_errors)
   hit_parade['summary'] = {
-      'count':count,
+      'count':qs.count(),
       'got_hits':count_hit,
       'total_hits': total_hits, 
       'pass0': count_p0, 
@@ -1251,13 +1246,13 @@ def align_idx(pk, *args, **kwargs):
   [count_hit,count_nohit,total_hits,count_p0,count_p1] = [0,0,0,0,0]
   [count_errors,count_seeds,count_kids,count_fail] = [0,0,0,0]
   new_seeds = []  
-  start = time.time()
+  start = datetime.datetime.now()
     
   # limit scope if some are already indexed (choice in #addtask screen)
   qs = ds.places.all() if scope == 'all' else ds.places.filter(indexed=False)
   
   """
-  for each place, create qobj and es_lookup_idx(qobj) it
+  for each place, create qobj and run es_lookup_idx(qobj)
   parse results: 
     if hits, write Hit instances for review
     if no hits, write new parent doc in index
@@ -1380,7 +1375,8 @@ def align_idx(pk, *args, **kwargs):
   fout1.close()
   print(str(len(new_seeds)) + ' new index seeds written to '+ fn1)
   
-  end = time.time()  
+  end = datetime.datetime.now()
+  
   hit_parade['summary'] = {
     'count':qs.count(), # records in dataset
     'got_hits':count_hit, # count of parents
@@ -1388,7 +1384,7 @@ def align_idx(pk, *args, **kwargs):
     'seeds': len(new_seeds), # new index seeds
     'pass0': count_p0, 
     'pass1': count_p1, 
-    'elapsed_min': int((end - start)/60),
+    'elapsed_min': elapsed(end-start),
     'skipped': count_fail
   }
   print("hit_parade['summary']",hit_parade['summary'])

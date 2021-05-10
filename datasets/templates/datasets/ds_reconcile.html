@@ -88,11 +88,11 @@
                 {% if t.result|get:"pass0" > 0 %}
                   <li id="pass0_{{t.task_id}}" class="li-left">Pass 0 (matched links): 
                   <span class="mx-2 strong" id='{{t.task_id}}_0'>nn</span> 
-                    {% if beta_or_better %}
-                      <a href="{% url 'datasets:review2' pk=ds.id tid=t.task_id %}">review</i></a>
-                    {% else %}
+                    <!--{ if beta_or_better %}-->
+                      <!--<a href="{ url 'datasets:review2' pk=ds.id tid=t.task_id %}">review</i></a>-->
+                    <!--{ else %}-->
                       <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass0' %}">review</i></a>
-                    {% endif %}
+                    <!--{ endif %}-->
                    <span>| 
                     {% if t.task_name == 'align_idx'%}
                     <a href="{% url 'datasets:idx_pass0' tid=t.task_id %}">auto-accept</a>  
@@ -200,20 +200,6 @@
   // modal buttons
   $("#btn_done").on('click', function(){ location.reload(); })
   $("#btn_cancel").on('click', function(){ location.reload(); })
-
-  <!--$("#cancel_taskadd").click(function(e){-->
-    <!--e.preventDefault();-->
-    <!--$('#addtask_li').addClass('hidden')-->
-    <!--$('.nav-tabs a[href="#reconciliation"]').tab('show');-->
-    <!--location.reload()-->
-  <!--})-->
-  <!--$("#addtask_link").click(function(e){-->
-    <!--e.preventDefault()-->
-    <!--window.location.hash = "#addtask"-->
-    <!--$("#addtask_li").removeClass('hidden')-->
-    <!--$('.nav-tabs a[href="#addtask"]').tab('show');-->
-    <!--mappyr.invalidateSize()-->
-  <!--})-->
   
   // on page load
   $(function(){
