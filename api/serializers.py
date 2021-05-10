@@ -27,8 +27,6 @@ total_links = models.IntegerField(null=True, blank=True)
 class DatasetSerializer(serializers.HyperlinkedModelSerializer):
   # don't list all places in a dataset API record
   owner = serializers.ReadOnlyField(source='owner.username')
-  #files = serializers.HyperlinkedRelatedField(
-    #many=True, view_name='datasetfile-detail', read_only=True)
 
   place_count = serializers.SerializerMethodField('get_count')
   def get_count(self,ds):
@@ -36,10 +34,9 @@ class DatasetSerializer(serializers.HyperlinkedModelSerializer):
 
   class Meta:
     model = Dataset
-    fields = ('id', 'place_count', 'owner', 'label', 'title', 'description',
-                  'datatype', 'ds_status', 'create_date', 'public', 'core','creator','webpage')
+    fields = ('id', 'place_count', 'owner', 'label', 'title', 'description','datatype', 'ds_status', 'create_date', 'public', 'core','creator','webpage')
     extra_kwargs = {
-          'created_by':  { 'read_only': True }}        
+          'created_by': { 'read_only': True }}        
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
   datasets = serializers.HyperlinkedRelatedField(
@@ -97,12 +94,16 @@ class PlaceRelatedSerializer(serializers.ModelSerializer):
 
 class PlaceLinkSerializer(serializers.ModelSerializer):
   # json: type, identifier
+  aug = serializers.SerializerMethodField('augmented')
+  def augmented(self, obj):
+    return True if obj.task_id is not None else False
+  
   type = serializers.ReadOnlyField(source='jsonb.type')
   identifier = serializers.ReadOnlyField(source='jsonb.identifier')
 
   class Meta:
     model = PlaceLink
-    fields = ('type', 'identifier')
+    fields = ('type', 'identifier', 'aug')
 
 class PlaceGeomSerializer(serializers.ModelSerializer):
   # json: type, geowkt, coordinates, when{}

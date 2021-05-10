@@ -68,6 +68,9 @@
                     <th>title</th>
                     <th>ccodes</th>
                     <th>geo</th>
+                    <th class="hidden">revwd</th>
+                    <th class="hidden">revtgn</th>
+                    <th class="hidden">revwhg</th>
                 <!--{ if wdtask %}-->
                     <th>wikidata <a rel="tooltip" data-html="true" title="&#x25a2; not reviewed<br/><i class='fa fa-check-square-o'></i> reviewed" class="pointer text-danger strong">?</a></th>
                 <!--{ endif %}-->
@@ -77,9 +80,6 @@
                 <!--{ if whgtask %}-->
                     <th>whg <a rel="tooltip" data-html="true" title="&#x25a2; not reviewed<br/><i class='fa fa-check-square-o'></i> reviewed )" class="pointer text-danger strong">?</a></th>
                 <!--{ endif %}-->
-                    <th class="hidden">revwd</th>
-                    <th class="hidden">revtgn</th>
-                    <th class="hidden">revwhg</th>
                   </tr>
                 </thead>
               </table>
@@ -180,7 +180,7 @@ IN PROGRESS: removing non-Browse code
   function clearFilters() {
     // clear
     table
-    .columns([7,8])
+    .columns([5,6,7])
     .search( '' )
     .draw();
     $("#status_select").val('99')
@@ -195,8 +195,10 @@ IN PROGRESS: removing non-Browse code
       console.log(val)
       if(val == '99'){
         // clear search
+        startFilterSpinner()
         clearFilters()
       } else {
+        clearFilters()
         filterColumn(val[0], val[1])
       }
       <!--spinner_filter.stop()-->
@@ -232,43 +234,39 @@ IN PROGRESS: removing non-Browse code
     getPlaceNew(pid)
   }
 
-  select = '<label>Filters: <select name="status" aria-controls="placetable" id="status_select" class="datatables_length">'+
-  '<option value="99" selected="selected">All</option>'+
-  '<option value="70">Needs review (wd)</option>'+
-  '<option value="71">Reviewed (wd)</option>'+
-  '<option value="72">Deferred (wd)</option>'+
-  '<option disabled>_________________</option>'+
-  '<option value="80">Needs review (whg)</option>'+
-  '<option value="81">Reviewed (whg)</option>'+
-  '<option value="82">Deferred (whg)</option>'+
-  '</select></label>'
+
+  // build select 
+  function buildSelect(){
+    select = '<label>Filters: <select name="status" aria-controls="placetable" id="status_select" class="datatables_length">'+
+    '<option value="99" selected="selected">All</option>'
     
+    if(wdtask){ select += 
+    '<option disabled>_____wikidata_____</option>'+
+    '<option value="50">Needs review (wd)</option>'+
+    '<option value="51">Reviewed (wd)</option>'+
+    '<option value="52">Deferred (wd)</option>'}
+    if(tgntask){ select += 
+    '<option disabled>_______tgn________</option>'+
+    '<option value="60">Needs review (tgn)</option>'+
+    '<option value="61">Reviewed (tgn)</option>'+
+    '<option value="62">Deferred (tgn)</option>'}    
+    if(whgtask){ select += 
+    '<option disabled>_______whg________</option>'+
+    '<option value="70">Needs review (whg)</option>'+
+    '<option value="71">Reviewed (whg)</option>'+
+    '<option value="72">Deferred (whg)</option>'}
+    
+    select +='</select></label>'
+    return select
+  }
   $(function(){
     localStorage.setItem('filter', '99')
-    tgntask = "{{tgntask}}" == "True"?true:false
     wdtask = "{{wdtask}}" == "True"?true:false
+    tgntask = "{{tgntask}}" == "True"?true:false
     whgtask = "{{whgtask}}" == "True"?true:false
     console.log('tgntask, wdtask, whgtask',tgntask, wdtask, whgtask)
-    function makeCols(){
-      cols = [
-        {"data": "id", "searchable": false},
-        {"data": "src_id", "searchable": false},
-        {"data": "title"},
-        {"data": "ccodes", "searchable": false},
-        {"data": "geo", "searchable": false, "orderable": false}
-      ]
-      if(tgntask){cols=cols.concat([
-        {"data": "revtgn", "orderable": false}, 
-        {"data": "review_tgn", "visible": false}])}
-      if(wdtask){cols=cols.concat([
-        {"data": "revwd", "orderable": false}, 
-        {"data": "review_wd", "visible": false}])}
-      if(whgtask){cols=cols.concat([
-        {"data": "revwhg", "orderable": false}, 
-        {"data": "review_whg", "visible": false}])}
-      console.log('cols', cols)
-      return cols
-    }
+    buildSelect()
+    
     //***
     // onload for Browse
     //***
@@ -299,23 +297,27 @@ IN PROGRESS: removing non-Browse code
           {"data": "title"},
           {"data": "ccodes"},
           {"data": "geo"},
-          {"data": "revwd", "visible": wdtask?true:false},
-          {"data": "revtgn", "visible": tgntask?true:false},
-          {"data": "revwhg", "visible": whgtask?true:false},
           {"data": "review_wd"},
           {"data": "review_tgn"},
           {"data": "review_whg"},
+          {"data": "revwd", "visible": wdtask?true:false, 
+            "orderable":false},
+          {"data": "revtgn", "visible": tgntask?true:false, 
+            "orderable":false},
+          {"data": "revwhg", "visible": whgtask?true:false, 
+            "orderable":false}
       ]
       ,columnDefs:[
-        { className: "browse-task-col", "targets": [5,6,7] },
+        { className: "browse-task-col", "targets": [8,9,10] },
         { orderable: false, "targets": [4,5,6,7]},
-        { searchable: false, "targets": [0,1,3,4,5,6,7]}
-        ,{ visible: false, "targets": [8,9,10]}
+        { searchable: false, "targets": [0,1,3,4,8,9,10]}
+        ,{ visible: false, "targets": [5,6,7]}
       ]
     })
 
     table.on( 'draw', function () {
-      $("#status_filter").html(select);
+      <!--$("#status_filter").html(select);-->
+      $("#status_filter").html(buildSelect());
       $("#status_select").val(localStorage.getItem('filter'))
       spinner_table.stop()
       setRowEvents();
@@ -556,7 +558,8 @@ IN PROGRESS: removing non-Browse code
             map.set(item.identifier, true);
             result.push({
                 identifier: item.identifier,
-                type: item.type
+                type: item.type,
+                aug: item.aug
             });
         }
       }
@@ -600,23 +603,29 @@ IN PROGRESS: removing non-Browse code
     
     //
     // LINKS
-    // TODO: normalize on closeMatch, exactMatch
-    descrip += '<p class="mb-0"><b>Linked records</b>: '
-    close_count = exact_count = related_count = 0
-    html_exact = html_close = html_related = ''
+    // 
+    descrip += '<p class="mb-0"><b>Links</b>: <i>original: </i>'
+    close_count = added_count = related_count = 0
+    html_close = html_added = html_related = ''
     if (data.links.length > 0) {
-      window.links=data.links
+      links=data.links
       links_arr = onlyUnique(data.links)
       <!--console.log('distinct data.links',links_arr)-->
       for (l in links_arr) {
-        if (links_arr[l].type.substring(0,5) == 'close') {
-          close_count += 1
+        <!--if (links_arr[l].type.substring(0,5) == 'close') {-->
+          <!--close_count += 1-->
+          <!--html_close+=url_extplace(links_arr[l].identifier)-->
+        <!--}-->
+        if (links_arr[l].aug == true) {
+          added_count +=1
+          html_added += url_extplace(links_arr[l].identifier)
+        } else {
+          close_count +=1
           html_close+=url_extplace(links_arr[l].identifier)
         }
       }
-      <!--if (exact_count > 0) descrip += '<i>exact</i>: [ '+html_exact+' ]'-->
-      <!--if (close_count > 0) descrip += ' <i>close matches</i>: [ '+html_close+' ]'-->
-      if (close_count > 0) descrip += html_close
+      descrip += close_count > 0 ? html_close : 'none'
+      descrip += added_count > 0 ? '<i>added</i>: '+html_added : '<i>added</i>: none'
     } else { descrip += "<i class='small'>no links established yet</i>" }
     descrip += '</p>'
 

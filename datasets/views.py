@@ -1364,8 +1364,7 @@ def ds_insert_lpf(request, pk):
             place=newpl,
             src_id=newpl.src_id,
             toponym=n['toponym'].split(', ')[0],
-            jsonb=n,
-            task_id='initial'
+            jsonb=n
           ))
 
       # PlaceType: place,src_id,task_id,jsonb:{identifier,label,src_label}
@@ -1423,8 +1422,7 @@ def ds_insert_lpf(request, pk):
             place=newpl,
             src_id=newpl.src_id,
             # alias uri base for known authorities
-            jsonb={"type":l['type'], "identifier": aliasIt(l['identifier'].rstrip('/'))},
-            task_id='initial'
+            jsonb={"type":l['type'], "identifier": aliasIt(l['identifier'].rstrip('/'))}
           ))
 
       # PlaceRelated: place,src_id,task_id,jsonb{relationType,relationTo,label,when{}}
@@ -2176,7 +2174,7 @@ class DatasetSummaryView(LoginRequiredMixin, UpdateView):
     #context['tasks'] = ds_tasks
     # initial (non-task)
     context['num_links'] = PlaceLink.objects.filter(
-      place_id__in = placeset, task_id = 'initial').count()
+      place_id__in = placeset, task_id = None).count()
     context['num_names'] = PlaceName.objects.filter(place_id__in = placeset).count()
     context['num_geoms'] = PlaceGeom.objects.filter(
       place_id__in = placeset, task_id = None).count()
