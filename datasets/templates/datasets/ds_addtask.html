@@ -114,7 +114,7 @@
             <!--<div id="recon_scope" class="mt-2">-->
               <!--<hr/><p class="font-weight-bold">Task scope</p>-->
               <!--<label class="radio-inline">-->
-              <!--<input type="radio" name="scope" id="scope1" value="all"> All <b>{{ds.numrows}}</b> records</label>-->
+              <!--<input type="radio" name="scope" id="scope1" value="all"> All <b>{ds.numrows}}</b> records</label>-->
               <!--<label class="radio-inline ml-3">-->
               <!--<input type="radio" name="scope" checked="true" id="scope2" value="unindexed"> Only the unindexed (<b>{{ds.unindexed}}</b>)</label>-->
             <!--</div>-->
@@ -168,7 +168,6 @@
       <div><p class="pl-3 text-danger"><b>Sorry, reconciliation tasks can only be initiated by the dataset owner.</b></p></div>
       {% endif %}
       </form>
-        <!--<div class="selector py-3"><div id="updater"></div></div>-->
         <div class="selector py-3"><div id="helpme"></div></div>
       </div> <!-- .row -->
     </div> <!-- #addtask -->
@@ -222,16 +221,15 @@
     $("#r_keep_wd").attr('checked',false)
     $("#r_keep_tgn").attr('checked',true)
     $("#geo_constraint").show(400)})
-  
-  $("#r_wd").click(function(){
-    $("#r_keep_wd").attr('checked', true)
-    $("#geo_constraint").hide(400)}
-  )
   $("#r_wdlocal").click(function(){
     $("#r_keep_tgn").attr('checked',false)
     $("#r_keep_wd").attr('checked',true)
     $("#geo_constraint").show(400)}
   )
+  <!--$("#r_wd").click(function(){-->
+    <!--$("#r_keep_wd").attr('checked', true)-->
+    <!--$("#geo_constraint").hide(400)}-->
+  <!--)-->
   
   // modal buttons
   $("#btn_done").on('click', function(){ location.reload(); })
