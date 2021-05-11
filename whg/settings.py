@@ -195,7 +195,7 @@ LOGIN_REDIRECT_URL = '/accounts/email/' # default to /accounts/profile
 
 ACCOUNT_FORMS = {'signup': 'allauth.account.forms.WHGRegisterForm',}
 
-URL_FRONT = 'http://localahost:8000/'
+URL_FRONT = 'http://localhost:8000/'
 
 #SOCIALACCOUNT_PROVIDERS = {
     ## For each OAuth based provider, either add a ``SocialApp``

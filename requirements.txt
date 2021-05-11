@@ -46,6 +46,7 @@ django-mathfilters==0.4.0
 django-ranged-response==0.2.0
 django-shapeshifter==18.9.23
 django-simple-captcha==0.5.13
+django-tables2==2.3.4
 django-templated-mail==1.1.1
 django-timezone-field==4.0
 django-webpack-loader==0.6.0
@@ -56,7 +57,7 @@ djoser==2.0.3
 docutils==0.15.2
 edtf==4.0.1
 elastic-wikidata==0.3.7
-elasticsearch==7.8.1
+elasticsearch==6.3.1
 elasticsearch-dsl==6.3.1
 envoy==0.0.3
 et-xmlfile==1.0.1
