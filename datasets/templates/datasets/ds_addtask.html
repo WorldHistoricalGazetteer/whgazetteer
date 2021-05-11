@@ -78,15 +78,15 @@
           <div class="form-check">
             <label class="form-check-label" for="r_tgn">
               <input type="radio" class="form-check-input" id="r_tgn"
-                name="recon" value="tgn" checked>Getty TGN (tgn) <span class="text-danger small ml-2">estimated time: {{ ds.numrows|time_estimate }}</span>
+                name="recon" value="tgn" checked>Getty TGN (tgn) <span class=" small font-italic ml-2">estimated time: {{ ds.numrows|time_estimate }}</span>
             </label>
             {% if msg_tgn %}
             <div id="tgn_tasks" class="smaller hidden">
-              <div class="mt-0 smaller radiodiv">
+              <div class="mt-0 mb-2 smaller radiodiv">
               {{ msg_tgn.msg|safe }}
               {% if msg_tgn.type == 'inprogress' %}
-              <label class="mb-0"><input id="r_keep_tgn" type="radio" name="prior" value="keep"> keep any match results (links, geometry) & resubmit only unreviewed records</label>
-              <label class="mb-0"><input type="radio" name="prior" value="zap"> delete the prior task and any links and geometry it added</label>
+              <label class="mb-0"><input id="r_keep_tgn" type="radio" name="prior" value="keep"> keep prior match results (links, geometry) & resubmit only unreviewed records</label>
+              <label class="mb-0"><input type="radio" name="prior" value="zap"> delete any links and geometry prior review added</label>
               {% endif %}
               </div>            
             </div>
@@ -95,15 +95,15 @@
           <div class="form-check">
             <label class="form-check-label" for="r_wdlocal">
               <input type="radio" class="form-check-input r_wd" id="r_wdlocal" 
-                name="recon" value="wdlocal" checked>Wikidata local (wdlocal) <span class="ml-2 text-danger small">estimated time: {{ ds.numrows|time_estimate }}</span>
+                name="recon" value="wdlocal" checked>Wikidata local (wdlocal) <span class="ml-2 font-italic small">estimated time: {{ ds.numrows|time_estimate }}</span>
             </label>
             {% if msg_wdlocal %}
             <div id="wdlocal_tasks" class="smaller">
               <div class="mt-0 smaller radiodiv">
               {{ msg_wdlocal.msg|safe }}
               {% if msg_wdlocal.type == 'inprogress' %}
-              <label class="mb-0"><input type="radio" name="prior" id="r_keep_wd" value="keep"> keep any match results (links, geometry) & resubmit only unreviewed records</label>
-              <label class="mb-0"><input type="radio" name="prior" value="zap"> delete the prior task and any links and geometry it added</label>
+              <label class="mb-0"><input type="radio" name="prior" id="r_keep_wd" value="keep"> keep prior match results (links, geometry) & resubmit only unreviewed records</label>
+              <label class="mb-0"><input type="radio" name="prior" value="zap"> delete any links and geometry prior review added</label>
               {% endif %}
               </div>
             </div>

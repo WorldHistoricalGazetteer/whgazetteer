@@ -2385,8 +2385,8 @@ class DatasetAddTaskView(LoginRequiredMixin, DetailView):
       gothits[t.task_id] = int(json.loads(t.result)['got_hits'])
 
     # deliver status to template
-    msg_unreviewed = """There is already a  <span class='text-danger strong'>%s</span> task in progress, but all %s records that have hits remain unreviewed. Starting this new task will delete the previous, with no impact on your dataset."""
-    msg_inprogress = """<p class='mb-1'>There is already a <span class='text-danger strong'>%s</span> task in progress, and %s of the %s records that have hits have been reviewed. You can:</p>"""
+    msg_unreviewed = """There is already a <span class='strong'>%s</span> task in progress, but all %s records that have hits remain unreviewed. <span class='text-danger strong'>Starting this new task will delete the existing one</span>, with no impact on your dataset."""
+    msg_inprogress = """<p class='mb-1'>There is already a <span class='strong'>%s</span> task in progress, and %s of the %s records that have hits have been reviewed. <span class='text-danger strong'>Starting this new task will delete the existing one</span>. You can:</p>"""
     for i in ds.taskstats.items():
       if len(i[1]) > 0:
         auth = i[0][6:]
@@ -2405,8 +2405,6 @@ class DatasetAddTaskView(LoginRequiredMixin, DetailView):
             'type': 'unreviewed'
           }
           
-            
-    
     context['region_list'] = predefined    
     context['ds'] = ds
     context['collaborators'] = ds.collabs.all()
