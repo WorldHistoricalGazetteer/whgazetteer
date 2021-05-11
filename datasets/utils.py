@@ -803,7 +803,9 @@ def post_recon_update(ds, user, task):
 
 # TODO: faster?
 class UpdateCountsView(View):
-  """ Returns counts of unreviewed hits, per pass and total; also deferred per task """
+  """ Returns counts of unreviewed hits, per pass and total; also deferred per task 
+  TODO: counts of unreviewed *records* not hits
+  """
   @staticmethod
   def get(request):
     print('UpdateCountsView GET:',request.GET)
@@ -820,27 +822,40 @@ class UpdateCountsView(View):
         return ds.places.filter(id__in=pids, review_wd = 2).count()
       else:
         return ds.places.filter(id__in=pids, review_tgn = 2).count()
-          
+    
+    def placecounter(th):
+      pcounts={}      
+      #for th in taskhits.all():
+      pcounts['p0'] = th.filter(query_pass='pass0').values('place_id').distinct().count()
+      pcounts['p1'] = th.filter(query_pass='pass1').values('place_id').distinct().count()
+      pcounts['p2'] = th.filter(query_pass='pass2').values('place_id').distinct().count()
+      pcounts['p3'] = th.filter(query_pass='pass3').values('place_id').distinct().count()
+      return pcounts
+    
     updates={}
     # counts of distinct place ids w/unreviewed hits per task/pass
     for t in ds.tasks.all():
       taskhits = Hit.objects.filter(task_id=t.task_id, reviewed=False)
+      pcounts = placecounter(taskhits)
       # ids of all unreviewed places
-      pids = list(taskhits.all().values_list("place_id",flat=True).distinct())
+      pids = list(set(taskhits.all().values_list("place_id",flat=True)))
       defcount = defcountfunc(t.task_name, pids)
       
       updates[t.task_id] = {
         "task":t.task_name,
-        "total":len(pids), 
-        "pass0":taskhits.filter(query_pass='pass0').count(), 
-        "pass1":taskhits.filter(query_pass='pass1').count(), 
-        "pass2":taskhits.filter(query_pass='pass2').count(), 
-        "pass3":taskhits.filter(query_pass='pass3').count(),
+        "total":len(pids),
+        #"pass0":taskhits.filter(query_pass='pass0', place_id__in=pids).count(),
+        #"pass1":taskhits.filter(query_pass='pass1', place_id__in=pids).count(),
+        #"pass2":taskhits.filter(query_pass='pass2', place_id__in=pids).count(),
+        #"pass3":taskhits.filter(query_pass='pass3', place_id__in=pids).count(),
+        "pass0":pcounts['p0'],
+        "pass1":pcounts['p1'],
+        "pass2":pcounts['p2'],
+        "pass3":pcounts['p3'],
         "deferred": defcount
       }
-        
+    print(json.dumps(updates, indent=2))        
     return JsonResponse(updates, safe=False)
-    #print(json.dumps(updates, indent=2))
 
 class UpdateCountsViewBak(View):
   """ Returns counts of unreviewed hits, per pass and total """

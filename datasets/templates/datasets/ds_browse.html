@@ -624,7 +624,7 @@ IN PROGRESS: removing non-Browse code
           html_close+=url_extplace(links_arr[l].identifier)
         }
       }
-      descrip += close_count > 0 ? html_close : 'none'
+      descrip += close_count > 0 ? html_close : 'none; '
       descrip += added_count > 0 ? '<i>added</i>: '+html_added : '<i>added</i>: none'
     } else { descrip += "<i class='small'>no links established yet</i>" }
     descrip += '</p>'

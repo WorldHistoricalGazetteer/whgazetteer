@@ -268,14 +268,13 @@
           })
           
           if (counts['deferred'] > 0) {
-            console.log('got deferred',counts['deferred'] )
+            <!--console.log('got deferred',counts['deferred'] )-->
             $("#"+tid+'_def').html(counts['deferred']+$("#"+tid+'_def').html()) 
             $("#"+tid+'_def').removeClass('hidden')
           } else {
             $("#"+tid+'_def').html('none') 
             $("#"+tid+'_def').removeClass('hidden')            
           }
-          
         }
       }
     )
