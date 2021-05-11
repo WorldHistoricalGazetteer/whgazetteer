@@ -56,7 +56,7 @@ djoser==2.0.3
 docutils==0.15.2
 edtf==4.0.1
 elastic-wikidata==0.3.7
-elasticsearch==7.8.1
+elasticsearch==6.3.1
 elasticsearch-dsl==6.3.1
 envoy==0.0.3
 et-xmlfile==1.0.1

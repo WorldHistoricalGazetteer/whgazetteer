@@ -40,7 +40,8 @@ class DatasetSerializer(serializers.HyperlinkedModelSerializer):
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
   datasets = serializers.HyperlinkedRelatedField(
-      many=True, view_name='dataset-detail', read_only=True)
+      #many=True, view_name='dataset-detail', read_only=True)
+      many=True, view_name='ds_summary', read_only=True)
 
   class Meta:
     model = User
