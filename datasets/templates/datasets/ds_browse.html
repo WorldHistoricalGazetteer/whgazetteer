@@ -71,15 +71,9 @@
                     <th class="hidden">revwd</th>
                     <th class="hidden">revtgn</th>
                     <th class="hidden">revwhg</th>
-                <!--{ if wdtask %}-->
                     <th>wikidata <a rel="tooltip" data-html="true" title="&#x25a2; not reviewed<br/><i class='fa fa-check-square-o'></i> reviewed" class="pointer text-danger strong">?</a></th>
-                <!--{ endif %}-->
-                <!--{ if tgntask %}-->
                     <th>tgn <a rel="tooltip" data-html="true" title="&#x25a2; not reviewed<br/><i class='fa fa-check-square-o'></i> reviewed" class="pointer text-danger strong">?</a></th>
-                <!--{ endif %}-->
-                <!--{ if whgtask %}-->
                     <th>whg <a rel="tooltip" data-html="true" title="&#x25a2; not reviewed<br/><i class='fa fa-check-square-o'></i> reviewed )" class="pointer text-danger strong">?</a></th>
-                <!--{ endif %}-->
                   </tr>
                 </thead>
               </table>
@@ -141,9 +135,6 @@
   </div>
 </div>
 
-<!--
-IN PROGRESS: removing non-Browse code
--->
 <script type="text/javascript">
   // spinners
   spin_opts = { scale: .5, top: '50%'}
@@ -187,7 +178,7 @@ IN PROGRESS: removing non-Browse code
   }    
   
   // table events
-  // TODO: use datatables methods
+  // TODO: use datatables methods?
   function setRowEvents(){
     $("#status_select").change(function(e){
       val = $(this).val()
@@ -222,7 +213,7 @@ IN PROGRESS: removing non-Browse code
       highlightFeature(pid)
 
       // fetch its detail
-      getPlaceNew(pid)
+      getPlace(pid)
       
     }) 
         
@@ -231,7 +222,7 @@ IN PROGRESS: removing non-Browse code
     // highlight first row, fetch detail, but don't zoomTo() it
     $("#placetable tbody").find('tr').eq(0).addClass('highlight-row')
 
-    getPlaceNew(pid)
+    getPlace(pid)
   }
 
 
@@ -267,18 +258,12 @@ IN PROGRESS: removing non-Browse code
     console.log('tgntask, wdtask, whgtask',tgntask, wdtask, whgtask)
     buildSelect()
     
-    //***
-    // onload for Browse
-    //***
-    startFilterSpinner()
     startTableSpinner()
     startDetailSpinner()
     
     window.dslabel = "{{ ds.label }}"
     window.filter = "{{ filter }}"
     table = $('#placetable').DataTable({
-      <!--dom: 'lfrtip',-->
-      <!--dom: 'Pfrtip',-->
       dom: "<'row'<'col-sm-12 col-md-3'l><'#status_filter.col-sm-12 col-md-5'>"+
       "<'col-sm-12 col-md-4'f>>" +
       "<'row'<'col-sm-12'tr>>" +
@@ -289,7 +274,6 @@ IN PROGRESS: removing non-Browse code
       }
       ,scrollY: 400
       ,select: true
-      <!--,initComplete: function() { spinner_filter.stop() }-->
       ,columns: 
       [
           {"data": "id"},
@@ -316,7 +300,6 @@ IN PROGRESS: removing non-Browse code
     })
 
     table.on( 'draw', function () {
-      <!--$("#status_filter").html(select);-->
       $("#status_filter").html(buildSelect());
       $("#status_select").val(localStorage.getItem('filter'))
       spinner_table.stop()
@@ -344,7 +327,7 @@ IN PROGRESS: removing non-Browse code
       hide: {effect: "fade",duration: 400 }
     });
     //**
-  }) // onload
+  }) 
 
   // activate all tooltips
   $("[rel='tooltip']").tooltip();
@@ -547,7 +530,7 @@ IN PROGRESS: removing non-Browse code
   }
 
   // single column
-  function parsePlaceNew(data) {
+  function parsePlace(data) {
     window.featdata = data
     
     function onlyUnique(array) { 
@@ -680,13 +663,12 @@ IN PROGRESS: removing non-Browse code
     return descrip
   }
 
-  function getPlaceNew(pid){
-    <!--console.log('getPlaceNew()', pid)-->
-    <!--startDetailSpinner()-->
+  function getPlace(pid){
+    <!--console.log('getPlace()', pid)-->
     $.ajax({
       url: "/api/place/"+pid,
       }).done(function( data ) {
-        $("#detail").html(parsePlaceNew(data))
+        $("#detail").html(parsePlace(data))
         spinner_detail.stop()
         // events on detail items
         $('.ext').on('click', function(e) {
