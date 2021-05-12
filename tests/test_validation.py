@@ -129,7 +129,7 @@ class CallViews(SimpleTestCase):
   def testViews(self):
     responses = []
     urls = ['dashboard', 'datasets:dataset-create']
-    param_urls = ['datasets:dataset-detail', 'datasets:dataset-delete']
+    param_urls = ['datasets:ds_summary', 'datasets:dataset-delete']
     client = Client()
     for url in urls:
       responses.append( client.get(reverse(url)).status_code )

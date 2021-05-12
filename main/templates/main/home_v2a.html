@@ -25,99 +25,19 @@
 {% block content %}
 {% load static %}
 
-<div class="container">
-  <div class="justify-content-center mt-2">
-  <div class="row" style="height: calc(100vh - 90px);">
-    <div id="home_left" class="col-sm-5">
-      <div id="search_panel">
-		<div id="search_type" class="form-group d-flex justify-content-center"> 
-		  <div class="form-check form-check-inline">
-			<input class="form-check-input hover" type="radio" name="class" id="r_place" value="place" rel="Enter place name"  checked="checked">
-			<label class="form-check-label" for="r_place">Places</label>
-		  </div>
-		  <div class="form-check form-check-inline">
-			<input class="form-check-input hover" type="radio" name="class" id="r_trace" value="trace" rel="Enter term or name">
-			<label class="form-check-label" for="r_trace">Traces</label>
-		  </div>
-		</div>          
-		<div id="search_input"  class="input-group input-group-sm pb-2" >
-		  <label for="input_box">{% fontawesome_icon 'search' color='#336699'%}</label>
-		  <input id="input_box" class="tt-hint" type="text" placeholder="Enter place name" autocomplete="false"> 
-		  <input id="input_box_traces" class="typeahead hidden" type="text" placeholder="subject term, e.g. 'empire'">
-		  <div id="filters_opener" class="mx-auto mt-1 small">
-			<a id="link_filters"href="#">filters</a> {% fontawesome_icon 'filter' color='#336699' %}
-		  </div>
-		</div>
-        <div id="search_filters">
-          <p class="mb-0">feature class(es) 
-            <span class="ml-1 float-right">
-			  <span class="mr-1"><a id="check_toggle" href="#">clear all</a></span>
-		  <a id="filter_help" class="pointer" data-toggle="popover" title="Feature classes" data-content="" tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a></span>
-		  </p>
-          <div class="small row">
-			<div class="col-sm-6">
-			  <ul class="ul-left p-0">
-			  <li class="li-flush"><input type="checkbox" value="A" checked> A&nbsp;administrative entities</li>
-			  <li class="li-flush"><input type="checkbox" value="P" checked> P&nbsp;cities, towns, hamlets...</li> 
-			  <li class="li-flush"><input type="checkbox" value="S" checked> S&nbsp;sites, buildings, complexes...</li> 
-			  <li class="li-flush"><input type="checkbox" value="R" checked> R&nbsp;roads, routes, rail...</li> 
-			  </ul>
-			</div>
-			<div class="col-sm-6">
-			  <ul class="ul-left p-0">
-			  <li class="li-flush"><input type="checkbox" value="L" checked> L&nbsp;regions, landscape areas</li> 
-			  <li class="li-flush"><input type="checkbox" value="T" checked> T&nbsp;terrestrial landforms</li>
-			  <li class="li-flush"><input type="checkbox" value="H" checked> H&nbsp;water bodies</li>
-			  </ul>
-			</div>
-		  </div>
-          <p class="mb-0">temporal
-			<span class="float-right"><a id="temporal_help" class="pointer" data-toggle="popover" title="Temporal filter" data-content="start = not before<br/>end = not after <p>NOTE: most records do not have temporal attributes at this stage</p>" tabindex="0" data-trigger="focus">
-			  {% fontawesome_icon 'question-circle' color='#336699' %}</a></span>
-		  </p>
-          <div>
-            <label class="input-sm"><input id="input_start" type="text" value = "" size="8" placeholder="start year"></label>
-            <label class="input-sm ml-2"><input id="input_end" type="text" value = "" size="8" placeholder="end year">
-			<span class="ml-2">( default = all)</span></label>
-          </div>
-          <p class="mb-0">spatial
-			<span class="float-right">
-			<a id="spatial_help" class="pointer" data-toggle="popover" title="Spatial filter" data-content="" tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a></span>	  
-		  </p>
-          <div>
-            <label><input id="input_area" type="text" size="30" placeholder="Region, country, study area"></label>
-            <input type="hidden" id="boundsobj">
-          </div>
-		  
-        </div>
-		<div id="search_results" class="p-1" style="border:1px solid grey;overflow-y:scroll;">
-		  <div class="search-row place-item" style="min-height:50px;">result</div>
-		  <div class="search-row place-item" style="min-height:50px;">result</div>
-		  <div class="search-row place-item" style="min-height:50px;">result</div>
-		  <div class="search-row place-item" style="min-height:50px;">result</div>
-		  <div class="search-row place-item" style="min-height:50px;">result</div>
-		</div>
-      </div> <!-- search_panel -->
-    </div> <!-- home_left -->
-    <div id="home_right" class="col-sm-7 p-0">
-	  {% leaflet_map "map_home2" callback="map_init" %}
-	  <!--<div style="height: 40%; background-color: rgba(255,0,0,0.1); width=100%">-->
-	  <div style="height: 40%; width=100%">
-		<div id="time" class="h-25 p-2 mt-1" style="background-color: #ffffcc;">
-		  temporal visualization
-		</div>
-		<div id="featured" class="h-75 py-2 px-0 d-flex">
-		  <!--<div class="featured p-2 h-100 w-50 mr-1"><img src="{ static 'images/upload100.png'%}" height="75"/></div>-->
-		  <div class="featured p-2 h-100 w-50 mr-1" style="position:relative; background: no-repeat top url('{% static 'images/dutch-football-330.png'%}')">
-		  <p style="position:absolute; bottom:0; left:50px;">
-			<a href="{% url 'collection:collection-update' 2 %}">KNAW/HuC Dutch Collection</a>
-		  </p></div>
-		  <div class="featured p-2 h-100 w-50 ml-1">featured collection #2</div>
-		</div>
-	  </div>
-    </div> <!-- home_map -->
-  </div> <!-- row -->
-  </div>
+<div class="container" style="height: calc(100vh - 90px);">
+  <div id="banner" class="w-100 h-50 mb-2 p-2"><p>banner slides</p></div>
+  <div id="content" class="row h-50 mx-0">
+	<div id="content_left" class="col-sm-4 p-2">
+	  <div id="search_link" class="mb-1 px-2">
+		<p class="mt-0">search 'button'</p></div>
+	  <div id="intro" class="p-2">
+		<p>intro</p></div>
+	</div>
+	<div id="collections" class="col-sm-8 mt-2">
+	  <p>collections</p>
+	</div>
+  </div> <!-- content -->
 </div>
 
 <div id="ext_site" class="modal fade" role="dialog">

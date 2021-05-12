@@ -45,8 +45,8 @@ class Dataset(models.Model):
     return self.label
     # return '%d: %s' % (self.id, self.label)
 
-  def get_absolute_url(self):
-    return reverse('datasets:dataset-detail', kwargs={'id': self.id})
+  #def get_absolute_url(self):
+    #return reverse('datasets:ds_summary', kwargs={'id': self.id})
 
   # test    
   #from datasets.models import Dataset, DatasetUser, Hit

@@ -28,7 +28,7 @@
 <div class="container">
   <div class="justify-content-center mt-2">
   <div class="row">
-    <div id="home_search" class="col-sm-3">
+    <div id="home_search" class="col-sm-5">
       <div id="search_panel">
 		<div id="search_type" class="form-group d-flex justify-content-center"> 
 		  <div class="form-check form-check-inline">
@@ -150,12 +150,77 @@
 		</div>	  
 	  </div> <!-- splash -->
     </div>
-    <div id="home_map" class="col-sm-9">
-      {% leaflet_map "map_home" callback="map_init" %}
-    </div> <!-- map -->
+    <div id="home_right" class="col-sm-7">
+      {% leaflet_map "map_search" callback="map_init" %}
+	  <div style="height: 33%; width=100%">
+		<div id="time" class="h-25 p-2 mt-1" style="background-color: #ffffcc;">
+		  <p>temporal visualization</p>
+		</div>
+		<div id="info" class="h-75 p-2 d-flex" style="background-color: #e0e0e0;">
+		  <p>dataset lists/filters</p>
+		  <!--<!--<div class="featured p-2 h-100 w-50 mr-1"><img src="{ static 'images/upload100.png'%}" height="75"/></div>-->
+		  <!--<div class="featured p-2 h-100 w-50 mr-1" style="position:relative; background: no-repeat top url('{ static 'images/dutch-football-330.png'%}')">-->
+		  <!--<p style="position:absolute; bottom:0; left:50px;">-->
+			<!--<a href="{ url 'collection:collection-update' 2 %}">KNAW/HuC Dutch Collection</a>-->
+		  <!--</p></div>-->
+		  <!--<div class="featured p-2 h-100 w-50 ml-1">featured collection #2</div>-->
+		</div>
+	  </div>
+    </div> <!--  -->
   </div>
   </div>
 </div>
+
+<!-- expanded feature classes & results markup -->
+<!--<div id="search_filters">-->
+  <!--<p class="mb-0">feature class(es) -->
+	<!--<span class="ml-1 float-right">-->
+	  <!--<span class="mr-1"><a id="check_toggle" href="#">clear all</a></span>-->
+  <!--<a id="filter_help" class="pointer" data-toggle="popover" title="Feature classes" data-content="" tabindex="0" data-trigger="focus">{ fontawesome_icon 'question-circle' color='#336699' %}</a></span>-->
+  <!--</p>-->
+  <!--<div class="small row">-->
+	<!--<div class="col-sm-6">-->
+	  <!--<ul class="ul-left p-0">-->
+	  <!--<li class="li-flush"><input type="checkbox" value="A" checked> A&nbsp;administrative entities</li>-->
+	  <!--<li class="li-flush"><input type="checkbox" value="P" checked> P&nbsp;cities, towns, hamlets...</li> -->
+	  <!--<li class="li-flush"><input type="checkbox" value="S" checked> S&nbsp;sites, buildings, complexes...</li> -->
+	  <!--<li class="li-flush"><input type="checkbox" value="R" checked> R&nbsp;roads, routes, rail...</li> -->
+	  <!--</ul>-->
+	<!--</div>-->
+	<!--<div class="col-sm-6">-->
+	  <!--<ul class="ul-left p-0">-->
+	  <!--<li class="li-flush"><input type="checkbox" value="L" checked> L&nbsp;regions, landscape areas</li> -->
+	  <!--<li class="li-flush"><input type="checkbox" value="T" checked> T&nbsp;terrestrial landforms</li>-->
+	  <!--<li class="li-flush"><input type="checkbox" value="H" checked> H&nbsp;water bodies</li>-->
+	  <!--</ul>-->
+	<!--</div>-->
+  <!--</div>-->
+  <!--<p class="mb-0">temporal-->
+	<!--<span class="float-right"><a id="temporal_help" class="pointer" data-toggle="popover" title="Temporal filter" data-content="start = not before<br/>end = not after <p>NOTE: most records do not have temporal attributes at this stage</p>" tabindex="0" data-trigger="focus">-->
+	  <!--{ fontawesome_icon 'question-circle' color='#336699' %}</a></span>-->
+  <!--</p>-->
+  <!--<div>-->
+	<!--<label class="input-sm"><input id="input_start" type="text" value = "" size="8" placeholder="start year"></label>-->
+	<!--<label class="input-sm ml-2"><input id="input_end" type="text" value = "" size="8" placeholder="end year">-->
+	<!--<span class="ml-2">( default = all)</span></label>-->
+  <!--</div>-->
+  <!--<p class="mb-0">spatial-->
+	<!--<span class="float-right">-->
+	<!--<a id="spatial_help" class="pointer" data-toggle="popover" title="Spatial filter" data-content="" tabindex="0" data-trigger="focus">{ fontawesome_icon 'question-circle' color='#336699' %}</a></span>	  -->
+  <!--</p>-->
+  <!--<div>-->
+	<!--<label><input id="input_area" type="text" size="30" placeholder="Region, country, study area"></label>-->
+	<!--<input type="hidden" id="boundsobj">-->
+  <!--</div>-->
+  
+<!--</div>-->
+<!--<div id="search_results" class="p-1" style="border:1px solid grey;overflow-y:scroll;">-->
+  <!--<div class="search-row place-item" style="min-height:50px;">result</div>-->
+  <!--<div class="search-row place-item" style="min-height:50px;">result</div>-->
+  <!--<div class="search-row place-item" style="min-height:50px;">result</div>-->
+  <!--<div class="search-row place-item" style="min-height:50px;">result</div>-->
+  <!--<div class="search-row place-item" style="min-height:50px;">result</div>-->
+<!--</div>-->
 
 <div id="ext_site" class="modal fade" role="dialog">
   <div class="modal-dialog">
@@ -1058,7 +1123,8 @@
     whgid=$(this).data('id')
     console.log('whgid',whgid)
     window.spinner = new Spin.Spinner().spin();
-    $("#map_home").append(spinner.el);
+    window.spinner = new Spin.Spinner().spin();
+    $("#map_search").append(spinner.el);
     location.href = 'places/'+whgid+'/portal'
   });
     

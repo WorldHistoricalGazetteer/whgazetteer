@@ -129,7 +129,24 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
 .corerow {background-color:#ffffcc;}
 
 /**
-  home, search
+  home
+**/
+#banner {background-color: aliceblue;}
+#content {background-color: beige; height:100%;}
+#content_left {background-color: beige;}
+#search_link {
+  cursor:pointer;
+  background-color: white; 
+  height:15%;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  box-shadow: 1px 1px #ddd;
+  }
+#intro {background-color: blanchedalmond; height:80%}
+#collections {background-color: #ffffcc;}
+
+/**
+  search
 **/
 .v2hideme a {color: #fff}
 .v2hideme a:hover {color: #fff}
@@ -232,6 +249,7 @@ input[type="text"] {
 
 #map_home.leaflet-container { height: calc(100vh - 90px);}
 #map_home2.leaflet-container { height: 60%;}
+#map_search.leaflet-container { height: 65%;}
 #home_map {  position:relative; z-index: 0;}
 
 #home_search {
