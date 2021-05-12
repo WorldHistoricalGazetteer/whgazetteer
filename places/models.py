@@ -26,9 +26,9 @@ class Place(models.Model):
     flag = models.BooleanField(default=False) # not in use
     
     # 0=hits:unreviewed, 1=hits:reviewed, 2=hits:deferred, null=no hits
-    review_wd = models.IntegerField(default=0, null=True, choices=STATUS_REVIEW)
-    review_tgn = models.IntegerField(default=0, null=True, choices=STATUS_REVIEW)
-    review_whg = models.IntegerField(default=0, null=True, choices=STATUS_REVIEW)
+    review_wd = models.IntegerField(null=True, choices=STATUS_REVIEW)
+    review_tgn = models.IntegerField(null=True, choices=STATUS_REVIEW)
+    review_whg = models.IntegerField(null=True, choices=STATUS_REVIEW)
     
     def __str__(self):
         return '%s:%s' % (self.id, self.title)
