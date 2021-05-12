@@ -1,0 +1,1026 @@
+<!-- datasets/home.html -->
+{% extends "main/base.html" %}
+{% load leaflet_tags %}
+{% load fontawesome %}
+{% load static %}
+
+{% block title %}<title>beta2a</title>{% endblock %}
+{% block extra_head %}
+  {% leaflet_js %}
+  {% leaflet_css %}
+  <script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>
+  <link rel="stylesheet" href="//cdn.datatables.net/1.10.16/css/dataTables.bootstrap4.min.css">
+  <link rel="stylesheet" href="{% static 'css/typeahead.css' %}">
+  <script src="{% static 'js/leaflet.ajax.min.js' %}"></script>
+  <script src="{% static 'js/typeahead.bundle.js' %}"></script>
+  <script src="{% static 'js/spin.umd.js' %}"></script>
+  
+  <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.css' rel='stylesheet' />
+  <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.js'></script>
+  <script src="{% static 'js/leaflet-mapbox-gl.js' %}"></script>
+
+  <link rel="stylesheet" href="{% static 'css/spin.css' %}"/>
+{% endblock %}
+
+{% block content %}
+{% load static %}
+
+<div class="container">
+  <div class="justify-content-center mt-2">
+  <div class="row" style="height: calc(100vh - 90px);">
+    <div id="home_left" class="col-sm-5">
+      <div id="search_panel">
+		<div id="search_type" class="form-group d-flex justify-content-center"> 
+		  <div class="form-check form-check-inline">
+			<input class="form-check-input hover" type="radio" name="class" id="r_place" value="place" rel="Enter place name"  checked="checked">
+			<label class="form-check-label" for="r_place">Places</label>
+		  </div>
+		  <div class="form-check form-check-inline">
+			<input class="form-check-input hover" type="radio" name="class" id="r_trace" value="trace" rel="Enter term or name">
+			<label class="form-check-label" for="r_trace">Traces</label>
+		  </div>
+		</div>          
+		<div id="search_input"  class="input-group input-group-sm pb-2" >
+		  <label for="input_box">{% fontawesome_icon 'search' color='#336699'%}</label>
+		  <input id="input_box" class="tt-hint" type="text" placeholder="Enter place name" autocomplete="false"> 
+		  <input id="input_box_traces" class="typeahead hidden" type="text" placeholder="subject term, e.g. 'empire'">
+		  <div id="filters_opener" class="mx-auto mt-1 small">
+			<a id="link_filters"href="#">filters</a> {% fontawesome_icon 'filter' color='#336699' %}
+		  </div>
+		</div>
+        <div id="search_filters">
+          <p class="mb-0">feature class(es) 
+            <span class="ml-1 float-right">
+			  <span class="mr-1"><a id="check_toggle" href="#">clear all</a></span>
+		  <a id="filter_help" class="pointer" data-toggle="popover" title="Feature classes" data-content="" tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a></span>
+		  </p>
+          <div class="small row">
+			<div class="col-sm-6">
+			  <ul class="ul-left p-0">
+			  <li class="li-flush"><input type="checkbox" value="A" checked> A&nbsp;administrative entities</li>
+			  <li class="li-flush"><input type="checkbox" value="P" checked> P&nbsp;cities, towns, hamlets...</li> 
+			  <li class="li-flush"><input type="checkbox" value="S" checked> S&nbsp;sites, buildings, complexes...</li> 
+			  <li class="li-flush"><input type="checkbox" value="R" checked> R&nbsp;roads, routes, rail...</li> 
+			  </ul>
+			</div>
+			<div class="col-sm-6">
+			  <ul class="ul-left p-0">
+			  <li class="li-flush"><input type="checkbox" value="L" checked> L&nbsp;regions, landscape areas</li> 
+			  <li class="li-flush"><input type="checkbox" value="T" checked> T&nbsp;terrestrial landforms</li>
+			  <li class="li-flush"><input type="checkbox" value="H" checked> H&nbsp;water bodies</li>
+			  </ul>
+			</div>
+		  </div>
+          <p class="mb-0">temporal
+			<span class="float-right"><a id="temporal_help" class="pointer" data-toggle="popover" title="Temporal filter" data-content="start = not before<br/>end = not after <p>NOTE: most records do not have temporal attributes at this stage</p>" tabindex="0" data-trigger="focus">
+			  {% fontawesome_icon 'question-circle' color='#336699' %}</a></span>
+		  </p>
+          <div>
+            <label class="input-sm"><input id="input_start" type="text" value = "" size="8" placeholder="start year"></label>
+            <label class="input-sm ml-2"><input id="input_end" type="text" value = "" size="8" placeholder="end year">
+			<span class="ml-2">( default = all)</span></label>
+          </div>
+          <p class="mb-0">spatial
+			<span class="float-right">
+			<a id="spatial_help" class="pointer" data-toggle="popover" title="Spatial filter" data-content="" tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a></span>	  
+		  </p>
+          <div>
+            <label><input id="input_area" type="text" size="30" placeholder="Region, country, study area"></label>
+            <input type="hidden" id="boundsobj">
+          </div>
+		  
+        </div>
+		<div id="search_results" class="p-1" style="border:1px solid grey;overflow-y:scroll;">
+		  <div class="search-row place-item" style="min-height:50px;">result</div>
+		  <div class="search-row place-item" style="min-height:50px;">result</div>
+		  <div class="search-row place-item" style="min-height:50px;">result</div>
+		  <div class="search-row place-item" style="min-height:50px;">result</div>
+		  <div class="search-row place-item" style="min-height:50px;">result</div>
+		</div>
+      </div> <!-- search_panel -->
+    </div> <!-- home_left -->
+    <div id="home_right" class="col-sm-7 p-0">
+	  {% leaflet_map "map_home2" callback="map_init" %}
+	  <!--<div style="height: 40%; background-color: rgba(255,0,0,0.1); width=100%">-->
+	  <div style="height: 40%; width=100%">
+		<div id="time" class="h-25 p-2 mt-1" style="background-color: #ffffcc;">
+		  temporal visualization
+		</div>
+		<div id="featured" class="h-75 py-2 px-0 d-flex">
+		  <!--<div class="featured p-2 h-100 w-50 mr-1"><img src="{ static 'images/upload100.png'%}" height="75"/></div>-->
+		  <div class="featured p-2 h-100 w-50 mr-1" style="position:relative; background: no-repeat top url('{% static 'images/dutch-football-330.png'%}')">
+		  <p style="position:absolute; bottom:0; left:50px;">
+			<a href="{% url 'collection:collection-update' 2 %}">KNAW/HuC Dutch Collection</a>
+		  </p></div>
+		  <div class="featured p-2 h-100 w-50 ml-1">featured collection #2</div>
+		</div>
+	  </div>
+    </div> <!-- home_map -->
+  </div> <!-- row -->
+  </div>
+</div>
+
+<div id="ext_site" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span></button>
+      </div>
+      <div id="ext_content" class="modal-body">foo</div>
+    </div>
+  </div>
+</div> <!-- ext_site -->
+
+
+<script type="text/javascript">
+  var filterLayers = null
+  window.idToArea = {}
+  window.area_list = []
+  window.area_objs = []
+
+  $(function(){
+	// toggle all fclass checkboxes
+	$("#check_toggle").click(function(e){
+	  e.preventDefault()
+	  var state = $("#check_toggle").text()
+	  if(state == 'check all'){
+		$("input:checkbox").prop('checked', true);
+		$("#check_toggle").text('clear all');
+	  } else if( state == 'clear all'){
+		$("input:checkbox").prop('checked', false);
+		$("#check_toggle").text('check all');		
+	  }
+	})
+	
+	$( "#map_dataset" ).change(function() {
+	  if (!!gl.getLayer('heat_active')){
+		gl.removeLayer('heat_active')}
+	  heat($(this).val())
+	  console.log('heat() for',$(this).val())
+	});	
+	
+	$(function(){
+	  $("[rel='tooltip']").tooltip();
+	})	
+	// popover content
+	$("#filter_help").attr(
+	  'data-content',"<p>Select one or more GeoNames single-letter code:</p>"+
+	  "<p>A=administrative areas<br/> H=hydrological features<br/> L='landscape' elements, e.g. regions<br/> P=settlements (cities, towns, etc.)<br/>S='sites' (various)<br/> T=topographical features</p>"
+	)
+	$("#spatial_help").attr(
+	  'data-content',"<p>Constrain search to the bounds of a <a href='http://apple.com'>UN global sub-region</a>, a country, or a user-created study area. Try entering 'north...'</p>"
+	)
+	
+    $("[rel='tooltip']").tooltip();
+    
+    var idToFeature = {} // for feature lookup
+    var itf_new = []
+    var titles = {}
+    var searchoption = null;
+	
+	// clear map, inputs, results
+    clearit()
+    $("#type_filter").hide();
+	
+	
+	// show filters, hide splash and vice versa
+    $("#link_filters").click(function(){
+	  if($("#search_filters").is(":visible")){
+		$("#splash").show()
+	  } else {
+		$("#splash").hide()
+	  }
+	  $("#search_filters").toggle(400)
+    })
+	
+
+	// 
+	$("label[for='input_box']").click(function(){
+	  console.log('clicked search')
+	  doctype = $("input[name='class']:checked").val()
+	  searchPlaces()
+	})	
+    //
+    // data type choice determines index searched
+    var suggester = new Bloodhound({
+        datumTokenizer: Bloodhound.tokenizers.whitespace,
+        queryTokenizer: Bloodhound.tokenizers.whitespace,
+        remote: {
+          wildcard: '%QUERY',
+          url: 'foofah',
+          prepare: function (query, settings) {
+           var doctype = $("input[name='class']:checked").val();
+           settings.url = '/search/index?doc_type='+doctype+'&scope=suggest&'+$.param({
+                qstr: query,
+                idx: doctype == 'place' ? 'whg' : 'trace'
+            });
+           return settings;
+         } 
+        }
+    });
+    function hh(element) {
+      el=element.toLowerCase()
+      return el.includes($("#input_box").val().toLowerCase());
+    }
+    $('.typeahead').typeahead({minLength:2,highlight:true}, {
+        name: 'suggester',
+        source: suggester,
+        display: 'name',
+        limit: 10,
+        templates: {
+          empty: ['<div class="small ml-2">','no results...','</div>'].join('\n'),
+          suggestion: function (data) {
+            doctype = $("input[name='class']:checked").val()
+            if(doctype == 'place'){
+              <!--console.log('variants',data.variants)-->
+              return data.variants.length>0 ? 
+                '<p class="tight-p tt-suggestion">' + data.name + '<br/><i class="tight-p">' + 
+                  data.variants.filter(hh).join(', ') + '<i></p>' : 
+                '<p class="tight-p">' + data.name + '</p>'
+            } else {
+              <!--console.log(data)-->
+              return '<p rel="'+data._id+'">'+data.title+'</p>'
+            }
+          }
+        }
+    })
+    .on('typeahead:selected', function (obj, datum) {
+      // fetchTraceGeom() -> [views.TraceGeomView() <- views.getGeomCollection()] -> showResults() -> sugLister
+      <!--console.log('trace typeahead clicked: datum',datum)-->
+      if(doctype=='trace'){
+        fetchTraceGeom(datum._id,0,datum.title)
+      }
+    })
+    .on('typeahead:asyncrequest', function() {
+        $('.typeahead').addClass('input-loading');
+    })
+    .on('typeahead:asynccancel typeahead:asyncreceive', function() {
+        $('.typeahead').removeClass('input-loading');
+    });;
+	
+	// fetch area list
+	$.get("/api/area_list", function(data){
+	  <!--console.log('initial areas for list',data)-->
+	  for(var i=0;i<data.length;i++){
+		area_objs.push(data[i])
+		area_list.push(data[i]['title'])
+	  }	  
+	})
+	
+	$( "#input_area" ).autocomplete({
+	  source: area_list,
+	  minLength: 2,
+	  select: function( event, ui ) {
+		// build boundsobj, insert as hidden input val()
+		label = ui.item.label
+		obj = area_objs.find(o =>o.title==label)
+		areaid = obj.id
+		boundsobj = '{"type":["'+obj.type+'"],"id":["'+areaid+'"]}'
+		$("#boundsobj").val( boundsobj )
+		console.log( "boundsobj for view ", boundsobj);
+		
+		// fetch and render selected area
+		render_area(areaid)
+	  }
+	});
+	$("#input_area").on('keyup', function(e){
+		// resets stuff 
+	  if($('#input_area').val().length < 3) {
+		  $("#boundsobj").val('')
+			if(typeof arealayer !== 'undefined'){arealayer.removeFrom(mappy)}
+			mappy.setView([38, 10], 2.4)
+	  }
+	})
+  })
+ /*
+	*** render_area() ***
+	fetch and display an area (region/area/country)
+  */
+  function render_area(areaid) {
+	$.ajax({
+		url: '/api/area/'+areaid
+	  }).done(function(data){
+		console.log('render_area()',data)
+		geom = {"type":"FeatureCollecton","features":[]}
+		geom['features'].push(data.geojson)
+
+		// clear existing
+		if(typeof arealayer !== 'undefined'){arealayer.removeFrom(mappy)}
+
+		// render new
+		arealayer = L.geoJSON(geom, {
+		  onEachFeature: function(feature,layer) {
+			f=feature; l=layer;
+			console.log('render_area() f,l',f,l)
+			l.setStyle({"color":"orange","weight":2,"fillOpacity":0})
+			idToArea[areaid] = l
+			<!--identifier = f.place_id;-->
+			popupOptions = {maxWidth: 200};
+			l.bindPopup(data.title, popupOptions);
+		  }
+		}).addTo(mappy)
+		mappy.fitBounds(arealayer.getBounds())
+	  })
+  }  
+  //
+  // radio button switch btwn place & trace search inputs
+  $('input[type=radio][name=class]').change(function() {
+    <!--console.log('changed class',$(this).val())-->
+    if ($(this).val() == 'place'){
+	  if(!$("#splash").is(":visible")){
+		$("#splash").show()
+	  }
+	  $(".carousel").carousel(0)
+	  $("#filters_opener").show()
+      $("#input_box").show()
+      $("#input_box_traces").hide()
+	  $("#splash_traces").hide()
+	  $("#splash").show()
+    } else {
+	  if(!$("#splash").is(":visible")){
+		$("#splash").show()
+	  }
+	  $(".carousel").carousel(3)
+	  $("#filters_opener").hide()
+      $("#input_box").hide()
+      $("#search_filters").hide()
+      $("#input_box_traces").show()
+	  <!--$("#splash").hide()-->
+	  $('.nav-pills a[href="#pills-why"]').tab('show')
+	  <!--$("#splash_traces").show()-->
+    }
+    $('#input_box').val('')
+    $('#input_box').attr("placeholder",this.getAttribute("rel"));
+    clearit()
+  });
+  // 
+  function heat(dataset) {
+	console.log('heat()',dataset)
+	ne_global.getMapboxMap().addLayer({
+	  "id": "heat_active",
+	  "type": "heatmap",
+	  "source": dataset,
+	  "maxzoom": 9,
+	  "paint": {
+		  // Increase the heatmap weight based on frequency and property magnitude
+		"heatmap-weight": [
+		  "interpolate",
+		  ["linear"],
+		  ["get", "mag"],
+		  0, 0,
+		  6, 1
+		],
+		// Increase the heatmap color weight weight by zoom level
+		// heatmap-intensity is a multiplier on top of heatmap-weight
+		"heatmap-intensity": [
+		  "interpolate",
+		  ["linear"],
+		  ["zoom"],
+		  0, 1,
+		  9, 3
+		],
+		// Color ramp for heatmap.  Domain is 0 (low) to 1 (high).
+		// Begin color ramp at 0-stop with a 0-transparancy color
+		// to create a blur-like effect.
+		"heatmap-color": [
+		  "interpolate",
+		  ["linear"],
+		  ["heatmap-density"],
+		  0, "rgba(33,102,172,0)",
+		  0.2, "rgb(103,169,207)",
+		  0.4, "rgb(209,229,240)",
+		  0.6, "rgb(253,219,199)",
+		  0.8, "rgb(239,138,98)",
+		  1, "rgb(178,24,43)"
+		],
+		// Adjust the heatmap radius by zoom level
+		"heatmap-radius": [
+		  "interpolate",
+		  ["linear"],
+		  ["zoom"],
+		  0, 2,
+		  9, 20
+		],
+		// Transition from heatmap to circle layer by zoom level
+		"heatmap-opacity": [
+		  "interpolate",
+		  ["linear"],
+		  ["zoom"],
+		  7, 1,
+		  9, 0
+		],
+	  }
+	});    
+  }
+  //
+  // initializes map
+  addEventListener('map:init', function (e) {
+    window.mappy = e.detail.map
+    mappy.setMaxBounds(null)
+	// attribution
+    var attrib_mb = 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
+            '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+            'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+        attrib_awmc = 'Tiles and Data &copy; 2013 <a href="http://www.awmc.unc.edu" target="_blank">AWMC</a>';
+
+	// mapbox tokens 
+	var token_kg = '{{ mbtokenkg }}', 
+		token_whg = '{{ mbtokenwhg }}', 
+		token_mb = '{{ mbtokenmb }}';
+	
+	// style/tile urls
+	var mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}',
+		mbtiles_url = 'https://api.mapbox.com/v3/{id}/{z}/{x}/{y}.png',
+		ne_url = 'http://blog.whgazetteer.org/tiles/ne/{z}/{x}/{y}.png';
+	  
+	ne_options = {mapMinZoom: 0, mapMaxZoom: 7, opacity: 1.0, tms: false, mapExtent:[-180.00000000, -85.05112878, 179.99652662, 85.05112878]}
+
+    var satellite  = L.tileLayer(mbstyle_url, {
+	  id:'mapbox/satellite-streets-v11', 
+	  token:token_mb, 
+	  attribution:attrib_mb}),
+	osm  = L.tileLayer(mbstyle_url, {
+	  id:'mapbox/light-v10', 
+	  token:token_mb, 
+	  attribution:attrib_mb}),
+	ne = L.tileLayer(ne_url, ne_options);
+    var ne_mb = L.tileLayer(mbtiles_url, {
+	  id:'kgeographer.ne_global', 
+	  token:token_kg})
+
+	// GL wrapper to display heatmaps
+
+	<!--terrain-->
+	mb_terrain = L.mapboxGL({
+	  style:'mapbox://styles/kgeographer/ckhf6o8yf07fw19qhbrm7f2q7',
+	  accessToken:token_kg})
+
+	<!--natural earth global-->
+	<!--mb_terrain = L.mapboxGL({-->
+	ne_global= L.mapboxGL({
+	  style:'mapbox://styles/kgeographer/ckidglq8l2nra19nzzbl995ue',
+	  accessToken:token_kg}).addTo(mappy)
+	
+	
+	gl=ne_global.getMapboxMap().on('load',function(){
+	  gl.addSource('lugares', {
+			  "type": "geojson",
+			  <!--"data": "/media/data/lugares_13k.geojson"-->
+			  "data": "{{media_url}}data/lugares_13k.geojson"
+		  });	
+	  gl.addSource('owtrad', {
+			  "type": "geojson",
+			  "data": "media/data/owtrad.geojson"
+		  });	
+	  gl.addSource('euratlas', {
+			  "type": "geojson",
+			  "data": "media/data/euratlas_cities.geojson"
+		  });	
+	  gl.addSource('alturayya', {
+			  "type": "geojson",
+			  "data": "media/data/al-turayya.geojson"
+		  });
+	})
+	
+    var countryStyle = {
+      "color": "#999",
+      "weight": 1,
+      "opacity": 0.4,
+      "fillOpacity": 0
+    };
+
+    countries = new L.GeoJSON.AJAX("/media/data/countries_simplified.json",
+      {style:countryStyle,
+        onEachFeature: function (feature, layer) {
+          popupOptions = {maxWidth: 200};
+            layer.bindPopup(feature.properties.gnlabel, popupOptions);
+          }
+    });
+
+    var baseLayers = {
+      "NE global": ne_global,
+	  "Terrain": mb_terrain,
+	  <!--"NE self": ne,-->
+      "OpenStreetMap": osm,      
+      "Satellite": satellite
+    };
+    var dataLayers = {
+      "Countries": countries,
+      <!--"Regions (UN)": regions-->
+    }
+    mappy.zoomControl.setPosition('topright')
+    L.control.layers(baseLayers,dataLayers).addTo(mappy);
+    baseLayers["NE global"].addTo(mappy)
+  }, false);
+
+  function map_init (home_map, options) {
+    mappy.setView([38, 10], 1)
+    // empty features[]
+    geom = {"type":"FeatureCollecton","features":[]}
+  } // end map_init
+  
+  function filly(counter) {
+    if (counter == 0)
+      return "blue"
+    else if (counter == 1)
+      return "orange"
+    else if (counter == 2)
+      return "purple"
+    else if (counter == 3)
+      return "greenyellow"
+    else 
+      return "yellow"
+  }
+
+  function fetchTraceGeom(trace_id,counter,title) {
+    <!-- get trace GeoJSON (includes features[] and bodies[] ) -->
+    if(typeof(traces) !== "undefined") {traces.clearLayers();}
+    if(typeof(features) !== "undefined") {features.clearLayers();}
+    $.get("/search/tracegeom",{idx: 'traces', search: trace_id, doc_type: 'trace'},
+      function(data){
+        <!--console.log('bodies in this trace',data.bodies)-->
+        <!--console.log('fetchTraceGeom() data',data)-->
+        var count_features = 0
+        window.idToFeature = {}
+        window.itf_new = []
+        mappy.createPane('tracePane');
+        mappy.getPane('tracePane').style.zIndex = 200;
+        traces = L.geoJSON(data, {
+          pane: 'tracePane',
+          pointToLayer: function (feature, latlng) {
+            count_features +=1;
+            identifier = feature.properties.whg_id;
+            <!--console.log(feature,identifier)-->
+            marker = L.circleMarker(latlng,
+              {
+                radius: 5, fillOpacity: 0.8, opacity: 1, weight: 1,
+                color: "#fff", fillColor: filly(counter)
+              }
+            ).bindPopup('whg:'+identifier+'<br/><b>'+
+              '<a href="/places/'+identifier+'/portal">'+feature.properties.title+"</b></a>");
+            
+            <!--console.log('marker feature?',marker)-->
+            idToFeature[identifier] = marker
+            itf_new.push({"id":identifier,"feature":marker})
+            return marker
+          }
+        }).addTo(mappy);
+
+        bounds = traces.getBounds()
+        if (bounds.getSouthWest().equals(bounds.getNorthEast())) {
+          // single point
+          mappy.setView(bounds.getCenter(),5)
+        } else {
+          <!--mappy.fitBounds(bounds,{padding: [200, 0]})-->
+		  // TODO: some logic to provide padding if bounds too small
+          mappy.fitBounds(bounds)
+        }
+		console.log('searchResults from fetchTraceGeometry()')
+        showResults(data,'trace','suggest',title)
+    });
+  }
+
+  // clear results, type filter
+  clearit = function(){
+    <!--console.log('clearit() called')-->
+    $("#search_input").val('')
+    $("#result_list").html('')
+    $("#result_list").hide()
+    $("#type_filter").hide()
+    $(".list-inline").html('')
+    <!--features.clearLayers()-->
+    if(typeof(traces) !== "undefined") {traces.clearLayers(); mappy.setView([38, 10], 2.4)}
+    if(typeof(features) !== "undefined") {features.clearLayers(); mappy.setView([38, 10], 2.4)}
+    
+  }  
+  /*
+  // catch Enter key press for places
+  // traces are handled in core typeahead function
+  // disabled typeahead: removed class .typeahead from #input_box
+  */
+  // $(".typeahead").on('keyup', function(e){
+  $("#input_box").on('keyup', function(e){
+    // resets page 
+    if($('#input_box').val().length < 3) {
+      clearit()
+    }
+    doctype = $("input[name='class']:checked").val()
+    <!--if (e.keyCode === 13 && doctype == 'place') {-->
+    if (e.keyCode === 13) {
+      // always hide splash and splash_traces on search
+	  $("#splash").hide()
+	  $("#splash_traces").hide()
+      searchPlaces()
+    } 
+  })
+  // hack: typeahead disabled for place
+  // only valid if doctype has been changed
+  $(".typeahead").on('keyup', function(e){
+    <!--if($('#input_box').val().length < 3) {-->
+      <!--clearit()-->
+    <!--}-->
+    doctype = $("input[name='class']:checked").val()
+    if (e.keyCode === 13) {
+      searchPlaces()
+    } 
+  })
+
+  // acts on suggest items (.tt-selectable)
+  $("#search_input").on('click','.tt-selectable', function(e) {
+    if(doctype == 'place') {
+      console.log('clicked place suggestion',$(this))
+      searchPlaces()    
+    } 
+  })
+  /*
+    *** searchPlaces() *** from #input_box keyup 
+    index search w/o autocomplete -> showResults()
+	handles traces also !?
+  */
+  searchPlaces = function (){
+    window.doctype = $("input[name='class']:checked").val();
+    // get filter values: fclasses, start, end, ??
+    var fclasses = [];
+    $('#search_filters input:checked').each(function() {
+      fclasses.push($(this).val());
+    });
+    // hack disables typeahead
+    scope = doctype =='place' ? 'search' : 'suggest'
+    // end hack
+    index = doctype =='place' ? 'whg' : 'traces'    
+    // clear filters
+    $(".list-inline").html('')
+	<!--console.log('bounds in js SearchPlaces()',$("#boundsobj").val())-->
+    $.get("/search/index",{
+        // qstr: $(".tt-input")[0].value,
+        // disabled typeahead
+        qstr: $('#input_box').val(), 
+        doc_type: doctype,
+        scope: scope,
+        idx: index,
+        fclasses: fclasses.join(','),
+        start: $("#input_start").val(),
+        end: $("#input_end").val(),
+        bounds: $("#boundsobj").val()
+      }, function(data){
+		window.searchres=data
+        // render to html
+		console.log('searchResults from searchPlaces()')
+		if(doctype == 'place'){
+		  showResults(data,doctype,scope);
+		}
+    });
+    $('.tt-menu').hide()
+  }
+
+  /* 
+    *** showResults() *** from searchPlaces(), fetchTraceGeometry()
+    Builds results_div, renders to #result_list; builds geoms[] -> renderPlaces(geoms)
+
+    data: 
+    doctype ['place' | 'trace' ]
+    scope: ['suggest' | 'search']
+    title:    
+  */
+  function showResults(data,doctype,scope='suggest',title){
+	console.log('in showResults()')
+    var results_div = '';
+    geoms=[]
+    var types=[], typesArr = []
+    <!--console.log(data.bodies.length+ ' bodies',data)-->
+    if (doctype == 'place'){
+      if(data.length ==0) {
+        results_div += '<p class="small ml-2">No results, sorry.</p>'
+      } else {
+        data.forEach(function(sug){  
+          typesArr=typesArr.concat(sug.types)      
+          if(!!sug.geom) {
+            sug.geom.forEach(function(g){
+              g['properties']['title']=sug.name
+              g['properties']['whgid'] = (doctype=='place')?sug.whg_id:sug.place_id
+              geoms.push(g)
+            })
+          }
+          <!--console.log('types Set',types)-->
+          results_div += sugLister(sug, doctype, scope)   
+        }) 
+        <!--console.log('typesArr',typesArr)-->
+        types = Array.from(new Set(typesArr));
+        <!--console.log('types',types)-->
+        types.forEach(function(type){
+          $("#type_filter ul").append('<li class="filter list-inline-item" data-type="'+type+'"><a href="#">'+type+'</a></li>')
+        })
+        if(scope=='search') {
+          renderPlaces(geoms)
+        }      
+      }
+    } else if (doctype == 'trace') {
+		// data has features and bodies
+		bodies = data.bodies
+		<!--console.log('trace data',data)-->
+		<!--console.log('trace data bodies',data.bodies)-->
+        data.bodies.forEach(function(bod){ 
+        // add a whg_id to bodies        
+          results_div += sugLister(bod, doctype, scope)
+      })
+    };
+     
+    $("#result_list").show()
+	$("#splash").hide()
+    titleMarkup = doctype=='trace'?'<p class="pl-1 mb-1 small strong">'+title+'</p>':''
+    $('#result_list').html(titleMarkup+
+      "<p class='half allcap-heading mb-0 pl-1'>"+(doctype=='place'?'SEARCH RESULTS ('+data.length+
+      ')<span class="float-right typefilter-link">'+
+      '<a href="#">filter by type {% fontawesome_icon 'filter' %}</a></span>':
+      'PLACE ANNOTATIONS IN TRACE  ('+data.bodies.length+')')+'</p>'
+      +results_div
+    );    
+
+    // empty the typeahead suggestions
+    $(".tt-dataset").html('')
+    
+    /* 
+      set events on new elements 
+    */
+    //
+    // filter results list by type (old school JS)
+    $(".filter").on('click',function(e){
+      $(".clear-filter").show()
+      if(filterLayers != null){filterLayers.addTo(mappy)}
+      $(".filter").removeClass('active-filter')
+      $(this).addClass('active-filter')
+      filter=$(this).data('type')
+      result_div = document.getElementById("result_list")
+      results = result_div.getElementsByTagName("div")
+      hide_ids=[]; show_ids = []
+      for (i = 0; i < results.length; i++) {
+        types = results[i].getAttribute('data-types')
+        _id = results[i].getAttribute('data-id')
+        <!--console.log('results[i]',results[i])-->
+        if (types.indexOf(filter) > -1){
+          results[i].style.display = "";
+          show_ids.push(_id)
+        } else {
+          results[i].style.display = "none";
+          hide_ids.push(_id)
+        }
+      }
+      // filter map too
+      <!--console.log('filter these from map',_ids)-->
+      hide_these = $.map(hide_ids,function(i){
+        return idToFeature[i]
+      })
+      show_these = $.map(show_ids,function(i){
+        return idToFeature[i]
+      })
+      window.filterLayers = L.layerGroup(hide_these)
+      window.showLayers = L.featureGroup(show_these)
+      for(l in hide_these){hide_these[l].removeFrom(mappy)}
+      mappy.fitBounds(showLayers.getBounds(), {padding: [200, 0]})
+      if(showLayers.getLayers().length ==1){
+        mappy.setZoom(5)
+      }
+      
+    })
+    $(".clear-filter").on('click',function(e){
+      filterLayers.addTo(mappy)
+	  mappy.fitBounds(features.getBounds())
+      $(".filter").removeClass('active-filter')
+      $(".clear-filter").hide()
+    })
+    $(".hide-filter").on('click',function(e){
+      $("#type_filter").hide(200)
+    })
+    $(".typefilter-link").on("click", function(e){
+      e.preventDefault()
+      $("#type_filter").toggle(300)
+    })    
+    $(".trace-item").on('click',function(e){
+      // reset all markers to default
+      traces.setStyle({"fillColor":"blue","radius":5})
+      whgid = $(this).attr('data-id')
+      console.log(whgid,'from body-place click')
+      if(whgid in idToFeature) {
+        idToFeature[whgid].setStyle({"fillColor":"#ff3333","radius":10})
+        mappy.panTo(idToFeature[whgid]._latlng)
+      } else {
+        h = $(this).html()
+        h += '...<b>no geometry yet</b>'
+        $(this).html(h)
+      }
+    })
+    
+    // highlight map marker from list
+    $(".search-row").on('click',function(e){
+      // set all layers to default style
+      for (i in idToFeature){
+        type = idToFeature[i].feature.geometry.type
+        idToFeature[i].setStyle(type=='Point'?styles.marker_default:styles.line_default)
+      }
+      whgid = $(this).data('id')
+      f = idToFeature[whgid]
+      // raise z-index
+      f.bringToFront().setStyle(f.feature.geometry.type=='Point'?styles.marker_highlight:styles.line_highlight)
+      // get a centroid
+      center = f.feature.geometry.type=='Point' ? f._latlng : f.getCenter(f._latlngs)
+      mappy.panTo(center)
+    })
+    // open a modal for external page
+    $('.ext').on('click', function(e) {
+      e.preventDefault();
+      var url = $(this).attr('href');
+      console.log('url',url)
+      $(".modal-body").html('<iframe width="100%" height="100%" frameborder="0" scrolling="yes" '+
+        'allowtransparency="true" src="'+url+'"></iframe>');
+    });
+  }
+ 
+  /*
+    *** renderPlaces() *** from showResults()
+    render geometries from search results to map
+  */
+  renderPlaces = function(geoms) {
+    if(typeof(features)!=='undefined'){ features.clearLayers() }
+    if(typeof(traces)!=='undefined'){ traces.clearLayers() }
+    
+    data = {"type":"FeatureCollection","features":geoms}
+    <!--console.log('geodata prior to render',data)-->
+    var count_features = 0
+    idToFeature = {}
+    idToArea = {}
+    mappy.createPane('placePane');
+    mappy.getPane('placePane').style.zIndex = 200;
+    stuff=L.layerGroup()
+    features = L.geoJSON(data, {
+      pointToLayer: function (feature, latlng) {
+        count_features +=1;
+        identifier = feature.properties.whgid;
+        if(feature.type=='Point'){
+          marker = L.circleMarker(latlng, styles.marker_default)
+          <!--.bindPopup(feature.properties.title+' (whg id:<a href="/places/'+identifier+'/portal">+identifier+</a>)');-->
+          // add to array for selection
+          idToFeature[identifier] = marker
+          return marker
+        }
+      },
+      onEachFeature: function(feature,layer) {
+        f=feature; l=layer;
+        identifier = feature.properties.whgid;
+        if(feature.type != 'Point'){
+          layer.setStyle(['LineString','MultiLineString'].indexOf(feature.type)>-1 ? styles.line_default:styles.pgon_default)
+          idToFeature[identifier] = layer
+        }
+        layer.bindPopup(feature.properties.title+' (whg id:<a href="/places/'+identifier+'/portal">'+identifier+'</a>)');
+        <!--layer.bindTooltip(feature.properties.title,{"permanent":true});-->
+        layer.on('click',function(e){
+          scroll = 20
+          ele = $("#result_list")
+          $(".search-row").css('background-color','#fff')
+          <!--divtop = $('#result_list').offset().top-->
+          fid = this.feature.geometry.properties.whgid
+          foo=$("div.place-item").find('[data-id="'+fid+'"]').closest('.search-row')
+          foo.css('background-color','#f4f4d7')
+          <!--foo[0].scrollIntoView({behavior:'smooth'})-->
+          foo[0].scrollIntoView()
+          ele.scrollTop(ele.scrollTop() - scroll);
+        })
+      }
+    }).addTo(mappy);
+    bounds = features.getBounds()
+    <!--mappy.setView(bounds.getCenter(),5) -->
+    if(geoms.length > 0 ){
+      mappy.fitBounds(bounds)
+      if(mappy.getZoom() > 5){ mappy.setZoom(5)}
+      <!--mappy.setView(bounds.getCenter(),)-->
+    }
+    
+  }
+  /*
+    *** sugLister() ***  from showResults()
+    formats search result item (sug)
+  */  
+  function sugLister(sug,doctype,scope) {
+    <!--console.log(sug)-->
+    if (doctype=='place') {
+      variants = sug['variants'].length > 0 ? '<br/><i class="text-secondary"> var: '+
+        sug['variants'].sort().slice(0,8).join('; ')+'; </i> ...' : ''
+      <!--console.log(sug['variants'])-->
+      if (scope=='search'){
+        <!--snippet = sug['snippet'].length > 0 ? sug['snippet']+'...' : ''-->
+        ccodes = sug['ccodes'].length > 0 ? ' ['+sug['ccodes']+']' : ''
+        types = ' ('+sug['types']+')'
+        geo = sug['geom'].length > 0 ? ' {% fontawesome_icon 'globe' color='#666' %}' : ''
+        item = '<div class="search-row place-item" data-id="'+sug['whg_id']+'" data-types="'+sug['types']+
+          '"><a class="place-link" href="#" data-id="'+sug['whg_id']+'"><b>'+
+          sug['name']+'</b></a>'+types+ccodes+geo+variants
+          +'</div>'
+      } else {
+        item = '<div class="sug_row sug-item">'+sug['name']+' '+variants+'</div>'
+      }
+    } else if (doctype=='trace') {
+      let pid = sug['place_id'] != null ? sug['place_id'] : ""
+      <!-- make object array from idToFeature{}-->
+      if(pid in idToFeature){
+        whgid=idToFeature[pid].feature.properties['whg_id']
+      } else {
+        foo=itf_new.filter(function(f){return f.feature.feature.properties['place_id']==pid})
+        whgid = foo.length>0 ? foo[0].id : 'no foo'
+        <!--console.log(foo.length>0?'woe'+foo[0].id:'no foo, mofo')-->
+      }
+      item =  ('<div class="container"><div class="row sug_row trace-item" data-id='+whgid+'>'+
+              '<div class="col-sm-12 pl-0"><a href="#" class="trace-link" data-id="'+whgid+'">'+
+              sug.title+'</a> ('+parseRels(sug.relations)+')')
+      item += '</div>'
+      if("depiction" in sug){
+        item += '<div class="trace_detail"><img class="trace-img" src="'+sug['depiction']+'"/></div>'
+      }
+      item += '</div></div>' // trace-item, container
+    }
+    return item
+  }  
+  // from sugLister()    
+  // TODO: doesn't reach into when.timespans; Indias data malformed
+  function parseRels(rels){
+    html=''
+	timespans=[]; starts=[]; ends=[]
+    for(r in rels){
+	  html += rels[r].relation
+	  for(w in rels[r].when){
+	  timespans.push(rels[r].when[w])
+	}}
+	reg = /(-?\d{1,4})\D?/
+	for (t in timespans){
+	  // no 'in', 'earliest' or 'latest' here
+	  starts.push(Number(timespans[t].start.match(reg)[1]))
+	  ends.push(!!timespans[t].end ? Number(timespans[t].end.match(reg)[1]) : -1)
+	} 
+	<!--console.log('starts',starts,'ends',ends)-->
+	minmax=' ['+[starts.length>0?Math.max.apply(null, starts):'-',ends.length>0?Math.max.apply(null, ends):'-']+']'
+	if(!starts.length==0 && !ends.length==0){ html += minmax}
+    return html
+  }   
+  // from sugLister()    
+  // TODO: doesn't reach into when.timespans; Indias data malformed
+  function parseWhen(when){
+	console.log('parseWhen()',when)
+    html=''
+    for (w in when){
+      s = 'start' in when[w]?'start: '+when[w]['start']:'earliest: '+when[w]['earliest']
+      e = 'end' in when[w]?'end: '+when[w]['end']:'latest: '+when[w]['latest']
+      html += s +", " +e
+      html+=w==when.length-1?'':'; '
+    }
+    return html
+  }  
+  // map feature styles
+  styles = {
+    'marker_default': {
+      fillColor: "#ff0000",
+      color:"#666",
+      weight:1,
+      fillOpacity:0.5,
+      opacity:0.5},
+    'marker_highlight': {
+      radius:10,fillOpacity:1,fillColor:"yellow",color:"#000"
+    },
+    'line_default':{
+      weight:3,
+      opacity:1,
+      color: "#00ccff"
+    },
+    'line_highlight':{weight: 4, color:"yellow"},
+    'pgon_default':{
+      fillColor: "#ff0000",
+      color:"#fff",
+      weight:2,
+      fillOpacity:0.1,
+      opacity:1},
+    'pgon_highlight':{
+      fillOpacity:1,fillColor:"yellow",color:"#000"
+    }
+  }
+  
+  // load place portal page from results_list item title links       
+  // TODO: links are nested so click produces 2 events
+  $("#result_list").on('click', '.trace-link', function(e){
+    whgid=$(this).data('id')
+    console.log('whgid',whgid)
+    location.href = 'places/'+whgid+'/portal'
+  });
+  $("#result_list").on('click', '.place-link', function(e){
+    whgid=$(this).data('id')
+    console.log('whgid',whgid)
+    window.spinner = new Spin.Spinner().spin();
+    $("#map_home2").append(spinner.el);
+    location.href = 'places/'+whgid+'/portal'
+  });
+    
+  
+  $('label.btn').click(function(){
+    $(".autosuggest").html('')
+    $('#search_input').val('')
+    $('#search_input').attr("placeholder",this.getAttribute("rel"));
+  })
+</script>
+{% endblock %}

@@ -1,8 +1,10 @@
 # various search.views
+from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import View
+from django.views.generic.base import TemplateView
 import simplejson as json, sys
 from areas.models import Area
 from datasets.tasks import normalize, get_bounds_filter
@@ -11,6 +13,17 @@ from elasticsearch import Elasticsearch
 from django.db.models import Count
 
     
+class SearchPageView(TemplateView):
+  template_name = 'search/search.html'
+
+  def get_context_data(self, *args, **kwargs):
+    context = super(SearchPageView, self).get_context_data(*args, **kwargs)
+    context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
+    context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
+    context['mbtokenwhg'] = settings.MAPBOX_TOKEN_WHG
+    context['media_url'] = settings.MEDIA_URL
+    return context
+  
 class LookupView(View):
   @staticmethod
   def get(request):
