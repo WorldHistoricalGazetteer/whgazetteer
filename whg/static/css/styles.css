@@ -133,17 +133,47 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
 **/
 #banner {background-color: aliceblue;}
 #content {background-color: beige; height:100%;}
-#content_left {background-color: beige;}
-#search_link {
+#content_left, #content_right {
+  background-color: beige; 
+  max-height:100%;
+  border: 1px dashed #ccc;
+  /*position:absolute;*/
+}
+.home-wrapper {
+  max-height: 100%;
+  border: 1px dashed #ccc;
+  /*position: absolute;*/
+}
+.feature-panel {
   cursor:pointer;
-  background-color: white; 
-  height:15%;
+  background-color: #f2f2f2; 
   border: 1px solid #eee;
   border-radius: 4px;
   box-shadow: 1px 1px #ddd;
+  height: 75px;
   }
-#intro {background-color: blanchedalmond; height:80%}
-#collections {background-color: #ffffcc;}
+#intro, #collections {
+  background-color: blanchedalmond; 
+  /*overflow-y:scroll;  */
+  height:100%}
+
+/*#scroller {*/
+  /*overflow-y:scroll;  */
+  /*height:100%}*/
+
+#coll_cards {
+  background-color: blanchedalmond; 
+}
+  /*overflow-y:scroll;  */
+  /*height:100%}*/
+.col-card {
+  background-color: #f2f2f2;
+  border: 1px solid #eee;
+  box-shadow: 1px 1px #ddd;
+  height: 150px;
+  /*max-width: */
+  margin:0 .3rem .3rem .3rem;
+}
 
 /**
   search
