@@ -1234,9 +1234,9 @@ def align_idx(pk, *args, **kwargs):
   whg_id = maxID(es,idx)
 
   # write new seed/parents for inspection
-  wd = "/Users/karlg/Documents/repos/_whgazetteer/_scratch/"
-  fn1 = "new-parents_"+str(ds.id)+".txt"
-  fout1 = codecs.open(wd+fn1, mode="w", encoding="utf8")
+  #wd = "/Users/karlg/Documents/repos/_whgazetteer/_scratch/"
+  #fn1 = "new-parents_"+str(ds.id)+".txt"
+  #fout1 = codecs.open(wd+fn1, mode="w", encoding="utf8")
   
   #bounds = {'type': ['userarea'], 'id': ['0']}
   bounds = kwargs['bounds']
@@ -1371,9 +1371,9 @@ def align_idx(pk, *args, **kwargs):
         #print(json.dumps(jsonic,indent=2))
   
   # write new index seed/parent docs for inspection
-  fout1.write(json.dumps(new_seeds, indent=2))
-  fout1.close()
-  print(str(len(new_seeds)) + ' new index seeds written to '+ fn1)
+  #fout1.write(json.dumps(new_seeds, indent=2))
+  #fout1.close()
+  #print(str(len(new_seeds)) + ' new index seeds written to '+ fn1)
   
   end = datetime.datetime.now()
   
@@ -1401,7 +1401,8 @@ def align_idx(pk, *args, **kwargs):
     count_hit,
     total_hits
   )    
-  print('elapsed time in minutes:',int((end - start)/60))
+  print('elapsed time:', elapsed(end-start))
+
 
   return hit_parade['summary']
 
