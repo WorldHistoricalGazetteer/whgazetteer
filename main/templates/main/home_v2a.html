@@ -25,79 +25,90 @@
 {% block content %}
 {% load static %}
 
-<div class="container" style="height: calc(100vh - 90px);">
-  <div id="banner" class="w-100 h-25 mb-2 p-2"><p>banner slides</p></div>
-  <div id="content" class="row h-75 mx-0">
-	<div id="content_left" class="col-sm-6 p-2">
-	  <div class="h4 w-100" style="background-color:#fff; text-align:center;">Features</div>
-	  <div id="intro" class="home-wrapper p-2">
-		<div id="feature_search" class="feature-panel mb-1 px-2">
-		  <p class="mt-0">Explore: Search within and across datasets and collections</p>
-		</div>
-		<div id="feature_enhance" class="feature-panel mb-1 px-2">
-		  <p class="mt-0">Upload, enhance, and publish your data</p>
-		</div>
-		<div id="feature_contribute" class="feature-panel mb-1 px-2">
-		  <p class="mt-0">Contribute: add your data to WHG's "union index"</p>
-		</div>
-		<div id="feature_collection" class="feature-panel mb-1 px-2">
-		  <p class="mt-0">Build a collection: define & share groups of data</p>
-		</div>
-		<div id="feature_api" class="feature-panel mb-1 px-2">
-		  <p class="mt-0">APIs: access data with the WHG application programming interface</p>
-		</div>
-		<div id="feature_collection" class="feature-panel mb-1 px-2">
-		  <p class="mt-0">Build a collection: define & share groups of data</p>
-		</div>
-		<div id="feature_api" class="feature-panel mb-1 px-2">
-		  <p class="mt-0">APIs: access data with the WHG application programming interface</p>
-		</div>
+<div class="container mt-1" style="height: calc(100vh - 90px); border: 1px dashed #ddd;">
+	<div id="banner" class="w-100 my-1 p-2">
+		<!--<p>banner image and tag line</p>-->
 	</div>
-	</div>
-	<div id="content_right" class="col-sm-6 p-2">
-	  <div class="h4 w-100" style="background-color:#fff; text-align:center;">Collections</div>
-	  <div id="collections" class="p-2 home-wrapper"><p>collections</p>
-		<!--<div class="row">-->
-		  <!--<div id="feature_api" class="col-card col-md-6 mb-1">-->
-			<!--<p class="mt-0">collection #1</p>-->
-		  <!--</div>-->
-		  <!--<div id="feature_api" class="col-card col-md-6 mb-1">-->
-			<!--<p class="mt-0">collection #1</p>-->
-		  <!--</div>-->
-		<!--</div>-->
-		  <!--<div id="feature_api" class="col-card w-50 mb-1 px-2">-->
-			<!--<p class="mt-0">collection #1</p>-->
-		  <!--</div>-->
-		  <!--<div id="feature_api" class="col-card w-50 mb-1 px-2">-->
-			<!--<p class="mt-0">collection #2</p>-->
-		  <!--</div>-->
-		<!--</div>-->
-	  </div>
-	</div>
-	<!--<div id="collections" class="col-sm-6 mt-2">-->
-	  <!--<!--<div class="h4 w-100" style="background-color:#fff; text-align:center;">Collections</div>-->
-	  <!--<div id="coll_cards" class="p-2" style="background-color:#fff;">-->
-		<!--<div class='col col-card'>collection #1</div>-->
-		<!--<div class='col col-card'>collection #2</div>-->
-		<!--<!--<div class="w-100"></div>-->
-		<!--<div class='col col-card'>collection #3</div>-->
-		<!--<div class='col col-card'>collection #4</div>-->
-		<!--<!--<div class="w-100"></div>-->
-		<!--<div class='col col-card'>collection #5</div>-->
-		<!--<div class='col col-card'>collection #6</div>-->
-	  <!--</div>-->
-	<!--</div>-->
-  </div> <!-- content -->
+	<div id="content" class="row mx-0">
+		<div class="home-col-wrapper col-sm-6 h-100">
+			<div id="content_left" class="p-2">
+				<div class="h5 w-100 home-header">Features</div>
+				<div class="wrapper-left p-1">
+					<div class="item-left mb-1 px-2">
+						<p><b>Explore historical place data</b> from many sources</p>
+					</div>
+					<div class="item-left mb-1 px-2">
+						<p><b>Upload</b>, <b>enhance</b>, and <b>publish</b> your place data</p>
+					</div>
+					<div class="item-left mb-1 px-2">
+						<p><img src="{% static 'images/contribute100.png'%}" class="d-inline-block mr-2" height=70 alt="contribute"/><b>Contribute</b> to WHG</p>
+					</div>
+					<div class="item-left mb-1 px-2">
+						<p><b>Build and share collections</b></p>
+					</div>
+					<div class="item-left mb-1 px-2">
+						<p><b>API</b>: application programming interface</p>
+					</div>
+				</div>
+			</div>
+		</div> <!-- content_left-->
+		<div class="home-col-wrapper col-sm-6 h-100">
+			<div id="content_right" class=" d-flex flex-column p-2">
+				<div class="h5 w-100 home-header bg-info">Selected Datasets and Collections</div>
+				<div class="wrapper-right">
+					<div class="row mx-1 mb-2">
+						<div class="col-6 item-right px-2">
+							<p class="mt-0">coll #1</p>
+						</div>
+						<div class="col-6 item-right px-2">
+							<p class="mt-0">coll #2</p>
+						</div>
+					</div>
+					<div class="row mx-1 mb-1">
+						<div class="col-6 item-right px-2">
+							<p>coll #3</p>
+						</div>
+						<div class="col-6 item-right px-2">
+							<p>coll #4</p>
+						</div>
+					</div>
+					<div class="row mx-1 mb-1">
+						<div class="col-6 item-right px-2">
+							<p>coll #5</p>
+						</div>
+						<div class="col-6 item-right px-2">
+							<p>coll #6</p>
+						</div>
+					</div>
+					<div class="row mx-1 mb-1">
+						<div class="col-6 item-right px-2">
+							<p>coll #7</p>
+						</div>
+						<div class="col-6 item-right px-2">
+							<p>coll #8</p>
+						</div>
+					</div>
+					<div class="row mx-1 mb-1">
+						<div class="col-6 item-right px-2">
+							<p>coll #9</p>
+						</div>
+						<div class="col-6 item-right px-2">
+							<p>coll #10</p>
+						</div>
+					</div>
+					<div class="row mx-1 mb-1">
+						<div class="col-6 item-right px-2">
+							<p>coll #11</p>
+						</div>
+						<div class="col-6 item-right px-2">
+							<p>coll #12</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div> <!-- content_right -->
+	</div> <!-- content -->
 </div>
-		<!--<div class='col col-card'>collection #1</div>-->
-		<!--<div class='col col-card'>collection #2</div>-->
-		<!--<div class="w-100"></div>-->
-		<!--<div class='col col-card'>collection #3</div>-->
-		<!--<div class='col col-card'>collection #4</div>-->
-		<!--<div class="w-100"></div>-->
-		<!--<div class='col col-card'>collection #5</div>-->
-		<!--<div class='col col-card'>collection #6</div>-->
-
 <div id="ext_site" class="modal fade" role="dialog">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -876,7 +887,7 @@
   }
   /*
     *** sugLister() ***  from showResults()
-    formats search result item (sug)
+    formats search result coll (sug)
   */  
   function sugLister(sug,doctype,scope) {
     <!--console.log(sug)-->
@@ -889,12 +900,12 @@
         ccodes = sug['ccodes'].length > 0 ? ' ['+sug['ccodes']+']' : ''
         types = ' ('+sug['types']+')'
         geo = sug['geom'].length > 0 ? ' {% fontawesome_icon 'globe' color='#666' %}' : ''
-        item = '<div class="search-row place-item" data-id="'+sug['whg_id']+'" data-types="'+sug['types']+
+        coll = '<div class="search-row place-item" data-id="'+sug['whg_id']+'" data-types="'+sug['types']+
           '"><a class="place-link" href="#" data-id="'+sug['whg_id']+'"><b>'+
           sug['name']+'</b></a>'+types+ccodes+geo+variants
           +'</div>'
       } else {
-        item = '<div class="sug_row sug-item">'+sug['name']+' '+variants+'</div>'
+        coll = '<div class="sug_row sug-item">'+sug['name']+' '+variants+'</div>'
       }
     } else if (doctype=='trace') {
       let pid = sug['place_id'] != null ? sug['place_id'] : ""
@@ -906,14 +917,14 @@
         whgid = foo.length>0 ? foo[0].id : 'no foo'
         <!--console.log(foo.length>0?'woe'+foo[0].id:'no foo, mofo')-->
       }
-      item =  ('<div class="container"><div class="row sug_row trace-item" data-id='+whgid+'>'+
+      coll =  ('<div class="container"><div class="row sug_row trace-item" data-id='+whgid+'>'+
               '<div class="col-sm-12 pl-0"><a href="#" class="trace-link" data-id="'+whgid+'">'+
               sug.title+'</a> ('+parseRels(sug.relations)+')')
-      item += '</div>'
+      coll += '</div>'
       if("depiction" in sug){
-        item += '<div class="trace_detail"><img class="trace-img" src="'+sug['depiction']+'"/></div>'
+        coll += '<div class="trace_detail"><img class="trace-img" src="'+sug['depiction']+'"/></div>'
       }
-      item += '</div></div>' // trace-item, container
+      coll += '</div></div>' // trace-item, container
     }
     return item
   }  
@@ -979,7 +990,7 @@
     }
   }
   
-  // load place portal page from results_list item title links       
+  // load place portal page from results_list coll title links       
   // TODO: links are nested so click produces 2 events
   $("#result_list").on('click', '.trace-link', function(e){
     whgid=$(this).data('id')

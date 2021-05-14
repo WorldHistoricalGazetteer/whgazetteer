@@ -131,49 +131,65 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
 /**
   home
 **/
-#banner {background-color: aliceblue;}
-#content {background-color: beige; height:100%;}
-#content_left, #content_right {
-  background-color: beige; 
-  max-height:100%;
-  border: 1px dashed #ccc;
-  /*position:absolute;*/
+#banner {
+    background-image: url('/static/images/banner_70percent.jpg');
+    height: 20%;
+    /*border: 1px dotted blue;*/
 }
-.home-wrapper {
-  max-height: 100%;
-  border: 1px dashed #ccc;
-  /*position: absolute;*/
+#content {
+    border: 1px dotted #aaa;
+    height: 77%;
+    position: relative;
 }
-.feature-panel {
-  cursor:pointer;
-  background-color: #f2f2f2; 
-  border: 1px solid #eee;
+.home-col-wrapper {
+  padding:0;
+}
+.home-header {
+  background: #336699;
+  text-align:center;
+  color: #eee;
+  line-height: 2rem;
   border-radius: 4px;
-  box-shadow: 1px 1px #ddd;
-  height: 75px;
-  }
-#intro, #collections {
-  background-color: blanchedalmond; 
-  /*overflow-y:scroll;  */
-  height:100%}
-
-/*#scroller {*/
-  /*overflow-y:scroll;  */
-  /*height:100%}*/
-
-#coll_cards {
-  background-color: blanchedalmond; 
+  box-shadow: 2px 2px #ccc;
 }
-  /*overflow-y:scroll;  */
-  /*height:100%}*/
-.col-card {
-  background-color: #f2f2f2;
-  border: 1px solid #eee;
-  box-shadow: 1px 1px #ddd;
-  height: 150px;
-  /*max-width: */
-  margin:0 .3rem .3rem .3rem;
+
+#content_left {
+    /*background-color: #ddd;*/
+    height: 100%;
+    overflow-y: auto;
 }
+
+#content_right {
+    /*background-color: #ddd;*/
+    height: 100%;
+    position: relative;
+    /* overflow-y: scroll; */
+}
+
+.item-left {
+    min-height: 75px;
+    background-color: #fff;
+    border: 1px dotted #666;
+    border-radius: 4px;
+    box-shadow: 2px 2px #ccc;
+    
+}
+.item-left p { margin:0;}
+
+.item-right {
+    min-height: 100px;
+    background-color: beige;
+    border-right: solid 0.175rem #fff;
+    /* border: 2px dotted #ddd; */
+}
+
+.item-right + .item-right {
+    border-left: solid 0.175rem #fff;
+    border-right: none;
+}
+
+.wrapper-left b { color: #993333;}
+.wrapper-right { overflow: auto; }
 
 /**
   search
