@@ -1,5 +1,6 @@
 <!-- datasets/home.html -->
-{% extends "main/base.html" %}
+<!--{ extends "main/base.html" %}-->
+{% extends "main/base_home.html" %}
 {% load leaflet_tags %}
 {% load fontawesome %}
 {% load static %}
@@ -25,83 +26,80 @@
 {% block content %}
 {% load static %}
 
-<div class="container mt-1" style="height: calc(100vh - 90px); border: 1px dashed #ddd;">
+<!--<div class="container mt-1" style="height: calc(100vh - 90px); border: 1px dashed #ddd;">-->
+<div class="container mt-1" style="height: calc(100vh - 90px);">
 	<div id="banner" class="w-100 my-1 p-2">
-		<!--<p>banner image and tag line</p>-->
+		<div class="centered w-100">
+		  <span class="title mb-0"><img src="{% static 'images/whg_logo.svg'%}" class="d-inline-block align-bottom" height=80 width=80 alt=""/>World Historical Gazetteer</span>
+		  <span id="tagline" class="mx-auto" style="display:block">Linking records of historical places</span>
+		</div>
 	</div>
 	<div id="content" class="row mx-0">
-		<div class="home-col-wrapper col-sm-6 h-100">
-			<div id="content_left" class="p-2">
-				<div class="h5 w-100 home-header">Features</div>
-				<div class="wrapper-left p-1">
+		<div class="home-col-wrapper col-sm-5 h-100">
+			<div id="content_left" class="d-flex flex-column p-2">
+				<div class="h5 w-100 mb-1 home-header">Features</div>
+				<div class="wrapper-left">
 					<div class="item-left mb-1 px-2">
-						<p><b>Explore historical place data</b> from many sources</p>
+					<p><img src="{% static 'images/001-binoculars.png'%}" class="d-inline-block mr-3 mt-1" height=48 width=48 alt=""/><b>Explore historical place data</b></p>
 					</div>
 					<div class="item-left mb-1 px-2">
-						<p><b>Upload</b>, <b>enhance</b>, and <b>publish</b> your place data</p>
+						<p><img src="{% static 'images/001-up-arrow.png'%}" class="d-inline-block mr-3 mt-1" height=48 alt="upload, enhance, publish"/><b>Upload</b>, <b>enhance</b>, and <b>publish</b> place data</p>
 					</div>
 					<div class="item-left mb-1 px-2">
-						<p><img src="{% static 'images/contribute100.png'%}" class="d-inline-block mr-2" height=70 alt="contribute"/><b>Contribute</b> to WHG</p>
+						<p><img src="{% static 'images/010-jigsaw.png'%}" class="d-inline-block mr-3" height=48 alt="contribute"/><b>Contribute</b> to WHG's union index</p>
 					</div>
 					<div class="item-left mb-1 px-2">
-						<p><b>Build and share collections</b></p>
+						<p><img src="{% static 'images/008-collect.png'%}" class="d-inline-block mr-3 mt-1" height=48 width=48 alt=""/><b>Build and share collections</b></p>
 					</div>
 					<div class="item-left mb-1 px-2">
-						<p><b>API</b>: application programming interface</p>
+						<p><img src="{% static 'images/006-api-2.png'%}" class="d-inline-block mr-3 mt-1" height=48 width=48 alt=""/><b>Access Linked Data</b></p>
 					</div>
 				</div>
 			</div>
 		</div> <!-- content_left-->
-		<div class="home-col-wrapper col-sm-6 h-100">
+		<div class="home-col-wrapper col-sm-7 h-100">
 			<div id="content_right" class=" d-flex flex-column p-2">
-				<div class="h5 w-100 home-header bg-info">Selected Datasets and Collections</div>
+				<div class="h5 w-100 home-header">Selected Datasets and Collections</div>
 				<div class="wrapper-right">
-					<div class="row mx-1 mb-2">
+					<div class="row mx-1 mb-1">
 						<div class="col-6 item-right px-2">
-							<p class="mt-0">coll #1</p>
+							<p class="mt-0 strong">KNAW/HuC Gazetteers Of Dutch History</p>
+							<div class="coll-description">Duis ac lectus a est finibus pellentesque. Vestibulum eget porta eros. Donec in vulputate augue. Quisque tempor...</div>
+							<span class="col-bottom cb-coll">collection</span>
 						</div>
 						<div class="col-6 item-right px-2">
-							<p class="mt-0">coll #2</p>
+							<p class="mt-0">HGIS de las Indias</p>
+							<span class="col-bottom cb-dataset">dataset</span>
 						</div>
 					</div>
 					<div class="row mx-1 mb-1">
 						<div class="col-6 item-right px-2">
-							<p>coll #3</p>
+							<p>Old World Trade</p>
+							<span class="col-bottom cb-dataset">dataset</span>
 						</div>
 						<div class="col-6 item-right px-2">
-							<p>coll #4</p>
-						</div>
-					</div>
-					<div class="row mx-1 mb-1">
-						<div class="col-6 item-right px-2">
-							<p>coll #5</p>
-						</div>
-						<div class="col-6 item-right px-2">
-							<p>coll #6</p>
+							<p>DK Atlas of World History</p>
+							<span class="col-bottom cb-dataset">dataset</span>
 						</div>
 					</div>
 					<div class="row mx-1 mb-1">
 						<div class="col-6 item-right px-2">
-							<p>coll #7</p>
+							<p>Pleiades</p>
+							<span class="col-bottom cb-dataset">dataset</span>
 						</div>
 						<div class="col-6 item-right px-2">
-							<p>coll #8</p>
-						</div>
-					</div>
-					<div class="row mx-1 mb-1">
-						<div class="col-6 item-right px-2">
-							<p>coll #9</p>
-						</div>
-						<div class="col-6 item-right px-2">
-							<p>coll #10</p>
+							<p>Euratlas Cities</p>
+							<span class="col-bottom cb-dataset">dataset</span>
 						</div>
 					</div>
 					<div class="row mx-1 mb-1">
 						<div class="col-6 item-right px-2">
-							<p>coll #11</p>
+							<p>D-Place</p>
+							<span class="col-bottom cb-dataset">dataset</span>
 						</div>
 						<div class="col-6 item-right px-2">
-							<p>coll #12</p>
+							<p>African Ports, 1887</p>
+							<span class="col-bottom cb-dataset">dataset</span>
 						</div>
 					</div>
 				</div>
