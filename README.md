@@ -9,8 +9,9 @@ WHG is aggregating attestations of historical place references contributed by re
 #### v1.21 (11 May 2021)
 
 - New 'deferred' queue for reconciliation tasks
-- Reconciliation review status per-record now tracked on Dataset>Browse screen
+- Reconciliation review status per-record and per-task now tracked on Dataset > Browse screen
 - Reconcile-to-WHG (accessioning) now finds candidate _sets_ within WHG index, not individual records
+- Collections feature enabled for beta testers
 
 #### v1.2 (5 Mar 2021)
 
