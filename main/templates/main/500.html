@@ -5,13 +5,17 @@
 
 {% block content %}
 <div class="container h-100">
-{% if messages %}
-<ul class="messages">
-  {% for message in messages %}
-  <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-  {% endfor %}
-</ul>
-{% endif %}
-<h3>Server error, man - sorry!</h3>
+<h4>Server error</h4>
+
+  <div class="messages">
+    {% if messages %}
+      {% for message in messages %}
+      <p {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message|safe }}</p>
+      {% endfor %}
+    {% else %}
+      <p>This error has been logged and sent to WHG admin staff. We will look into it and get back to you within a day. Apologies!</p>
+    {% endif %}
+    <p class="mt-2"><a href="{{ request.META.HTTP_REFERER }}">Back</a></p>
+  </div>
 </div>
 {% endblock %}
