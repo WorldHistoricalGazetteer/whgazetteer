@@ -3,7 +3,7 @@
 from django.conf import settings
 from django.core.mail import send_mail, BadHeaderError
 from django.http import HttpResponse
-from django.shortcuts import render, get_object_or_404, redirect, render_to_response
+from django.shortcuts import render, get_object_or_404, redirect #, render_to_response
 from django.urls import reverse_lazy
 from django.views.generic.base import TemplateView
 from datasets.tasks import testAdd
@@ -15,11 +15,8 @@ from elasticsearch import Elasticsearch
 es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 # import requests
 
-def handler500(request, exception, template_name="main/500.html"):
-    response = render_to_response(template_name)
-    response.status_code = 500
-    return response
 def custom_error_view(request, exception=None):
+    print('error request',request.GET.__dict__)
     return render(request, "main/500.html", {'error':'fubar'})
 
 class Home(TemplateView):

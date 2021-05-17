@@ -1711,6 +1711,7 @@ def ds_insert_tsv(request, pk):
     except:
       ds.delete()
       #sys.exit()
+      messages.error(request, "tsv insert failed")
       return HttpResponseServerError()
   else:
     print('insert_tsv skipped, already in')
