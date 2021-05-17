@@ -7,7 +7,7 @@ from django.core.mail import send_mail, EmailMultiAlternatives
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.forms import modelformset_factory
-from django.http import JsonResponse, HttpResponseRedirect
+from django.http import HttpResponseServerError, JsonResponse, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse
 from django.views.generic import (CreateView, ListView, UpdateView, DeleteView, DetailView)
@@ -38,6 +38,7 @@ from elastic.es_utils import makeDoc,deleteFromIndex, replaceInIndex
 from main.choices import AUTHORITY_BASEURI
 from main.models import Log, Comment
 from places.models import *
+
 
 """used for Celery down notice"""
 def emailer(subj,msg):
@@ -1484,6 +1485,7 @@ def ds_insert_tsv(request, pk):
   import csv, re
   csv.field_size_limit(300000)
   ds = get_object_or_404(Dataset, id=pk)
+  print('ds_insert_tsv()',ds)
   # retrieve just-added file
   dsf = ds.files.all().order_by('-rev')[0]
   # TODO
@@ -1493,244 +1495,223 @@ def ds_insert_tsv(request, pk):
   print('dbcount',dbcount)
   
   if dbcount == 0:
-    infile = dsf.file.open(mode="r")
-    reader = csv.reader(infile, delimiter=dsf.delimiter)
+    try:
+      infile = dsf.file.open(mode="r")
+      reader = csv.reader(infile, delimiter=dsf.delimiter)
+      
+      infile.seek(0)
+      header = next(reader, None)
+      # strip BOM character if exists
+      header[0] = header[0][1:] if '\ufeff' in header[0] else header[0]
+      #header = header if type(header) = list else 
+      print('header', header)
     
-    infile.seek(0)
-    header = next(reader, None)
-    # strip BOM character if exists
-    header[0] = header[0][1:] if '\ufeff' in header[0] else header[0]
-    #header = header if type(header) = list else 
-    print('header', header)
-  
-    objs = {"PlaceName":[], "PlaceType":[], "PlaceGeom":[], "PlaceWhen":[],
-            "PlaceLink":[], "PlaceRelated":[], "PlaceDescription":[]}
-  
-    # TSV * = required; ^ = encouraged
-    # lists within fields are ';' delimited, no brackets
-    # id*, title*, title_source*, title_uri^, ccodes[]^, matches[]^, variants[]^, types[]^, aat_types[]^,
-    # parent_name, parent_id, lon, lat, geowkt, geo_source, geo_id, start, end
-    
-    #
-    # TODO: what if simultaneous inserts?
-    countrows=0
-    countlinked = 0
-    total_links = 0
-    for r in reader:
-      # build attributes for new Place instance
-      src_id = r[header.index('id')]
-      title = r[header.index('title')].replace("' ","'") # why?
-      # strip anything in parens for title only
-      title = re.sub('\(.*?\)', '', title)
-      title_source = r[header.index('title_source')]
-      title_uri = r[header.index('title_uri')] if 'title_uri' in header else ''
-      ccodes = r[header.index('ccodes')] if 'ccodes' in header else []
-      variants = [x.strip() for x in r[header.index('variants')].split(';')] \
-        if 'variants' in header and r[header.index('variants')] !='' else []
-      types = [x.strip() for x in r[header.index('types')].split(';')] \
-        if 'types' in header else []
-      aat_types = [x.strip() for x in r[header.index('aat_types')].split(';')] \
-        if 'aat_types' in header else []
-      parent_name = r[header.index('parent_name')] if 'parent_name' in header else ''
-      parent_id = r[header.index('parent_id')] if 'parent_id' in header else ''
-      coords = makeCoords(r[header.index('lon')],r[header.index('lat')]) \
-        if 'lon' in header and 'lat' in header else None
-      geowkt = r[header.index('geowkt')] if 'geowkt' in header else None
-      geojson = None # zero it out
-
-      # make Point geometry from lon/lat if there
-      if coords and len(coords) == 2:
-        geojson = {"type": "Point", "coordinates": coords,
-                    "geowkt": 'POINT('+str(coords[0])+' '+str(coords[1])+')'}
-      # else make geometry (any) w/Shapely if geowkt
-      if geowkt and geowkt not in ['',None]:
-        geojson = parse_wkt(r[header.index('geowkt')])
+      objs = {"PlaceName":[], "PlaceType":[], "PlaceGeom":[], "PlaceWhen":[],
+              "PlaceLink":[], "PlaceRelated":[], "PlaceDescription":[]}
         
-      # ccodes; compute if missing and there is geometry
-      if len(ccodes) == 0:
-        if geojson:
-          ccodes = ccodesFromGeom(geojson)
+      #
+      # TODO: what if simultaneous inserts?
+      countrows=0
+      countlinked = 0
+      total_links = 0
+      for r in reader:
+        # build attributes for new Place instance
+        src_id = r[header.index('id')]
+        title = r[header.index('title')].replace("' ","'") # why?
+        # strip anything in parens for title only
+        title = re.sub('\(.*?\)', '', title)
+        title_source = r[header.index('title_source')]
+        title_uri = r[header.index('title_uri')] if 'title_uri' in header else ''
+        ccodes = r[header.index('ccodes')] if 'ccodes' in header else []
+        variants = [x.strip() for x in r[header.index('variants')].split(';')] \
+          if 'variants' in header and r[header.index('variants')] !='' else []
+        types = [x.strip() for x in r[header.index('types')].split(';')] \
+          if 'types' in header else []
+        aat_types = [x.strip() for x in r[header.index('aat_types')].split(';')] \
+          if 'aat_types' in header else []
+        parent_name = r[header.index('parent_name')] if 'parent_name' in header else ''
+        parent_id = r[header.index('parent_id')] if 'parent_id' in header else ''
+        coords = makeCoords(r[header.index('lon')],r[header.index('lat')]) \
+          if 'lon' in header and 'lat' in header else None
+        geowkt = r[header.index('geowkt')] if 'geowkt' in header else None
+        geojson = None # zero it out
+  
+        # make Point geometry from lon/lat if there
+        if coords and len(coords) == 2:
+          geojson = {"type": "Point", "coordinates": coords,
+                      "geowkt": 'POINT('+str(coords[0])+' '+str(coords[1])+')'}
+        # else make geometry (any) w/Shapely if geowkt
+        if geowkt and geowkt not in ['',None]:
+          geojson = parse_wkt(r[header.index('geowkt')])
+          
+        # ccodes; compute if missing and there is geometry
+        if len(ccodes) == 0:
+          if geojson:
+            ccodes = ccodesFromGeom(geojson)
+          else:
+            ccodes = []
         else:
-          ccodes = []
-      else:
-        ccodes = [x.strip().upper() for x in r[header.index('ccodes')].split(';')]
-      # TODO: assign aliases if wd, tgn, pl, bnf, gn, viaf
-      matches = [aliasIt(x.strip()) for x in r[header.index('matches')].split(';')] \
-        if 'matches' in header and r[header.index('matches')] != '' else []
-      
-      start = r[header.index('start')] if 'start' in header else None
-      # validate_tsv() ensures there is always a start
-      has_end = 'end' in header and r[header.index('end')] !=''
-      end = r[header.index('end')] if has_end else start
-      
-      datesobj = parsedates_tsv(start,end) 
-      # returns {timespans:[{}],minmax[]}
-
-      
-      description = r[header.index('description')] \
-        if 'description' in header else ''
-      
-      # create new Place object
-      # TODO: generate fclasses
-      newpl = Place(
-        src_id = src_id,
-        dataset = ds,
-        title = title,
-        ccodes = ccodes,
-        minmax = datesobj['minmax'],
-        timespans = [datesobj['minmax']] # list of lists
-      )
-      newpl.save()
-      countrows += 1
-  
-      #** build associated objects and add to arrays **#
-      #
-      # PlaceName(); title, then variants
-      #
-      objs['PlaceName'].append(
-        PlaceName(
-          place=newpl,
-          src_id = src_id,
-          toponym = title,
-          jsonb={"toponym": title, "citations": [{"id":title_uri,"label":title_source}]}
-      ))
-      # variants if any; assume same source as title toponym
-      if len(variants) > 0:
-        for v in variants:
-          haslang = re.search("@(.*)$", v.strip())
-          new_name = PlaceName(
-            place=newpl,
-            src_id = src_id,
-            toponym = v.strip(),
-            jsonb={"toponym": v.strip(), "citations": [{"id":"","label":title_source}]}
-          )
-          if haslang:
-            new_name.jsonb['lang'] = haslang.group(1)
-          
-          objs['PlaceName'].append(new_name)
-
-      #
-      # PlaceType()
-      #
-      if len(types) > 0:
-        fclass_list=[]
-        for i,t in enumerate(types):
-          aatnum='aat:'+aat_types[i] if len(aat_types) >= len(types) and aat_types[i] !='' else None
-          if aatnum:
-            fclass_list.append(get_object_or_404(Type,aat_id=int(aatnum[4:])).fclass)
-          objs['PlaceType'].append(
-            PlaceType(
-              place=newpl,
-              src_id = src_id,
-              jsonb={ "identifier":aatnum if aatnum else '',
-                      "sourceLabel":t,
-                      "label":aat_lookup(int(aatnum[4:])) if aatnum else ''
-                    }
-          ))
-      # add fclasses to new Place
-        newpl.fclasses = fclass_list
-        newpl.save()
-      
-      #
-      # PlaceGeom()
-      # 
-      if geojson:
-        objs['PlaceGeom'].append(
-          PlaceGeom(
-            place=newpl,
-            src_id = src_id,
-            jsonb=geojson
-        ))
-          
-      #
-      # PlaceWhen()
-      # via parsedates_tsv(): {"timespans":[{start{}, end{}}]}
-      if start != '':
-        objs['PlaceWhen'].append(
-          PlaceWhen(
-            place=newpl,
-            src_id = src_id,
-            #jsonb=datesobj['timespans']          
-            jsonb=datesobj         
-        ))
-    
+          ccodes = [x.strip().upper() for x in r[header.index('ccodes')].split(';')]
+        # TODO: assign aliases if wd, tgn, pl, bnf, gn, viaf
+        matches = [aliasIt(x.strip()) for x in r[header.index('matches')].split(';')] \
+          if 'matches' in header and r[header.index('matches')] != '' else []
         
-      #
-      # PlaceLink() - all are closeMatch
-      #
-      if len(matches) > 0:
-        countlinked += 1
-        for m in matches:
-          total_links += 1
-          objs['PlaceLink'].append(
-            PlaceLink(
-              place=newpl,
-              src_id = src_id,
-              jsonb={"type":"closeMatch", "identifier":m}
-          ))
-      #
-      # PlaceRelated()
-      #
-      if parent_name != '':
-        objs['PlaceRelated'].append(
-          PlaceRelated(
-            place=newpl,
-            src_id=src_id,
-            jsonb={
-              "relationType": "gvp:broaderPartitive",
-              "relationTo": parent_id,
-              "label": parent_name}
-        ))
-
-      #
-      # PlaceDescription()
-      # @id, value, lang
-      if description != '':
-        objs['PlaceDescription'].append(
-          PlaceDescription(
+        start = r[header.index('start')] if 'start' in header else None
+        # validate_tsv() ensures there is always a start
+        has_end = 'end' in header and r[header.index('end')] !=''
+        end = r[header.index('end')] if has_end else start
+        
+        datesobj = parsedates_tsv(start,end) 
+        # returns {timespans:[{}],minmax[]}
+  
+        
+        description = r[header.index('description')] \
+          if 'description' in header else ''
+        
+        # create new Place object
+        # TODO: generate fclasses
+        newpl = Place(
+          src_id = src_id,
+          dataset = ds,
+          title = title,
+          ccodes = ccodes,
+          minmax = datesobj['minmax'],
+          timespans = [datesobj['minmax']] # list of lists
+        )
+        newpl.save()
+        countrows += 1
+    
+        #** build associated objects and add to arrays **#
+        #
+        # PlaceName(); title, then variants
+        #
+        objs['PlaceName'].append(
+          PlaceName(
             place=newpl,
             src_id = src_id,
-            jsonb={
-              #"@id": "", "value":description, "lang":""
-              "value":description
-            }
+            toponym = title,
+            jsonb={"toponym": title, "citations": [{"id":title_uri,"label":title_source}]}
+        ))
+        # variants if any; assume same source as title toponym
+        if len(variants) > 0:
+          for v in variants:
+            haslang = re.search("@(.*)$", v.strip())
+            new_name = PlaceName(
+              place=newpl,
+              src_id = src_id,
+              toponym = v.strip(),
+              jsonb={"toponym": v.strip(), "citations": [{"id":"","label":title_source}]}
+            )
+            if haslang:
+              new_name.jsonb['lang'] = haslang.group(1)
+            
+            objs['PlaceName'].append(new_name)
+  
+        #
+        # PlaceType()
+        #
+        if len(types) > 0:
+          fclass_list=[]
+          for i,t in enumerate(types):
+            aatnum='aat:'+aat_types[i] if len(aat_types) >= len(types) and aat_types[i] !='' else None
+            if aatnum:
+              fclass_list.append(get_object_or_404(Type,aat_id=int(aatnum[4:])).fclass)
+            objs['PlaceType'].append(
+              PlaceType(
+                place=newpl,
+                src_id = src_id,
+                jsonb={ "identifier":aatnum if aatnum else '',
+                        "sourceLabel":t,
+                        "label":aat_lookup(int(aatnum[4:])) if aatnum else ''
+                      }
+            ))
+        # add fclasses to new Place
+          newpl.fclasses = fclass_list
+          newpl.save()
+        
+        #
+        # PlaceGeom()
+        # 
+        if geojson:
+          objs['PlaceGeom'].append(
+            PlaceGeom(
+              place=newpl,
+              src_id = src_id,
+              jsonb=geojson
+          ))
+            
+        #
+        # PlaceWhen()
+        # via parsedates_tsv(): {"timespans":[{start{}, end{}}]}
+        if start != '':
+          objs['PlaceWhen'].append(
+            PlaceWhen(
+              place=newpl,
+              src_id = src_id,
+              #jsonb=datesobj['timespans']          
+              jsonb=datesobj         
           ))
       
-      
-    # bulk_create(Class, batch_size=n) for each
-    PlaceName.objects.bulk_create(objs['PlaceName'],batch_size=10000)
-    #print(len(objs['PlaceName']),'names done')
-    PlaceType.objects.bulk_create(objs['PlaceType'],batch_size=10000)
-    #print(len(objs['PlaceType']),'types done')
-    PlaceGeom.objects.bulk_create(objs['PlaceGeom'],batch_size=10000)
-    #print(len(objs['PlaceGeom']),'geoms done')
-    PlaceLink.objects.bulk_create(objs['PlaceLink'],batch_size=10000)
-    print(len(objs['PlaceLink']),'links done')
-    PlaceRelated.objects.bulk_create(objs['PlaceRelated'],batch_size=10000)
-    #print(len(objs['PlaceRelated']),'related done')
-    PlaceWhen.objects.bulk_create(objs['PlaceWhen'],batch_size=10000)
-    #print(len(objs['PlaceWhen']),'whens done')
-    PlaceDescription.objects.bulk_create(objs['PlaceDescription'],batch_size=10000)
-    #print(len(objs['PlaceDescription']),'descriptions done')
+          
+        #
+        # PlaceLink() - all are closeMatch
+        #
+        if len(matches) > 0:
+          countlinked += 1
+          for m in matches:
+            total_links += 1
+            objs['PlaceLink'].append(
+              PlaceLink(
+                place=newpl,
+                src_id = src_id,
+                jsonb={"type":"closeMatch", "identifier":m}
+            ))
+        #
+        # PlaceRelated()
+        #
+        if parent_name != '':
+          objs['PlaceRelated'].append(
+            PlaceRelated(
+              place=newpl,
+              src_id=src_id,
+              jsonb={
+                "relationType": "gvp:broaderPartitive",
+                "relationTo": parent_id,
+                "label": parent_name}
+          ))
   
-    infile.close()
-  
-    # backfill some dataset counts
-    #print('ds record pre-update:', ds.__dict__)
-    print('rows,linked,links:', countrows, countlinked, total_links)
-  
-    # write some summary attributes
-    #ds.numrows = countrows
-    #ds.numlinked = countlinked
-    #ds.total_links = countlinks
-    #ds.save()
-
-    #dsf.df_status = 'uploaded'
-    #dsf.numrows = countrows
-    #dsf.save()
+        #
+        # PlaceDescription()
+        # @id, value, lang
+        if description != '':
+          objs['PlaceDescription'].append(
+            PlaceDescription(
+              place=newpl,
+              src_id = src_id,
+              jsonb={
+                #"@id": "", "value":description, "lang":""
+                "value":description
+              }
+            ))
+        
+        
+      # bulk_create(Class, batch_size=n) for each
+      PlaceName.objects.bulk_create(objs['PlaceName'],batch_size=10000)
+      PlaceType.objects.bulk_create(objs['PlaceType'],batch_size=10000)
+      PlaceGeom.objects.bulk_create(objs['PlaceGeom'],batch_size=10000)
+      PlaceLink.objects.bulk_create(objs['PlaceLink'],batch_size=10000)
+      PlaceRelated.objects.bulk_create(objs['PlaceRelated'],batch_size=10000)
+      PlaceWhen.objects.bulk_create(objs['PlaceWhen'],batch_size=10000)
+      PlaceDescription.objects.bulk_create(objs['PlaceDescription'],batch_size=10000)
     
-    #print('ds record post-update:', ds.__dict__)
-  
+      infile.close()
+    
+      #print('ds record pre-update:', ds.__dict__)
+      print('rows,linked,links:', countrows, countlinked, total_links)
+    except:
+      ds.delete()
+      #sys.exit()
+      return HttpResponseServerError()
   else:
     print('insert_tsv skipped, already in')
     # message to user
@@ -1989,7 +1970,8 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
       )
       
       # data will be written on load of dataset.html w/dsobj.status = 'format_ok'
-      return redirect('/datasets/'+str(dsobj.id)+'/detail')
+      #return redirect('/datasets/'+str(dsobj.id)+'/detail')
+      return redirect('/datasets/'+str(dsobj.id)+'/summary')
 
     else:
       context['action'] = 'errors'
@@ -2078,12 +2060,11 @@ class DatasetSummaryView(LoginRequiredMixin, UpdateView):
   
   template_name = 'datasets/ds_summary.html'
   
-  def get_success_url(self):
-    id_ = self.kwargs.get("id")
-    user = self.request.user
-    print('messages:', messages.get_messages(self.kwargs))
-    #return '/datasets/'+str(id_)+'/detail'
-    return '/datasets/'+str(id_)+'/summary'
+  #def get_success_url(self):
+    #id_ = self.kwargs.get("id")
+    #user = self.request.user
+    #print('messages:', messages.get_messages(self.kwargs))
+    #return '/datasets/'+str(id_)+'/summary'
 
   # Dataset has been edited, form submitted
   def form_valid(self, form):
@@ -2101,7 +2082,7 @@ class DatasetSummaryView(LoginRequiredMixin, UpdateView):
       ds.title = data['title']
       ds.description = data['description']
       ds.uri_base = data['uri_base']
-      ds.save()        
+      ds.save()
     return super().form_valid(form)
   
   def form_invalid(self, form):
@@ -2134,7 +2115,7 @@ class DatasetSummaryView(LoginRequiredMixin, UpdateView):
     file = ds.files.all().order_by('-rev')[0]
     print('file.df_status',file.df_status)
     if file.df_status == 'format_ok':
-      print('format_ok , inserting dataset '+str(id_))
+      print('format_ok, attempting to insert dataset '+str(id_))
       if file.format == 'delimited':
         result = ds_insert_tsv(self.request, id_)
       else:
@@ -2149,29 +2130,25 @@ class DatasetSummaryView(LoginRequiredMixin, UpdateView):
       ds.save()
       file.save()
 
+      #ds.delete()
+      #print('insert failed, dataset deleted')
+      #context['inserted'] = False
+        #response = redirect('/datasets/create')
+        #return response
+
     # build context for rendering dataset.html
     me = self.request.user
-    #area_types=['ccodes','copied','drawn']
-
-    #userareas = Area.objects.all().filter(type__in=area_types).values('id','title').order_by('-created')
-    #context['area_list'] = userareas if me.username == 'whgadmin' else userareas.filter(owner=me)
   
-    #predefined = Area.objects.all().filter(type='predefined').values('id','title')
     placeset = Place.objects.filter(dataset=ds.label)
-    #ds_tasks = TaskResult.objects.all().filter(task_args = [id_], status='SUCCESS')
     
-    #context['region_list'] = predefined    
     context['updates'] = {}
     context['ds'] = ds
-    #context['log'] = ds.log.filter(category='dataset').order_by('-timestamp')
-    #context['comments'] = Comment.objects.filter(place_id__dataset=ds).order_by('-created')
     # latest file
     context['current_file'] = file
     context['format'] = file.format
     context['numrows'] = file.numrows
     context['collaborators'] = ds.collabs.all()
     context['owners'] = ds.owners
-    #context['tasks'] = ds_tasks
     # initial (non-task)
     context['num_links'] = PlaceLink.objects.filter(
       place_id__in = placeset, task_id = None).count()
@@ -2179,33 +2156,15 @@ class DatasetSummaryView(LoginRequiredMixin, UpdateView):
     context['num_geoms'] = PlaceGeom.objects.filter(
       place_id__in = placeset, task_id = None).count()
 
-    # others
-    #context['num_descriptions'] = PlaceDescription.objects.filter(
-      #place_id__in = placeset, task_id = None).count()
-    #context['num_types'] = PlaceType.objects.filter(
-      #place_id__in = placeset).count()
-    #context['num_when'] = PlaceWhen.objects.filter(
-      #place_id__in = placeset).count()
-    #context['num_related'] = PlaceRelated.objects.filter(
-      #place_id__in = placeset).count()
-    #context['num_depictions'] = PlaceDepiction.objects.filter(
-      #place_id__in = placeset).count()
-
     # augmentations (has task_id)
     context['links_added'] = PlaceLink.objects.filter(
       place_id__in = placeset, task_id__contains = '-').count()
     context['geoms_added'] = PlaceGeom.objects.filter(
       place_id__in = placeset, task_id__contains = '-').count()
 
-    # names, descriptions not currently retrieved from recon matches
-    #context['names_added'] = PlaceName.objects.filter(
-      #place_id__in = placeset, task_id__contains = '-').count()
-    #context['descriptions_added'] = PlaceDescription.objects.filter(
-      #place_id__in = placeset, task_id__contains = '-').count()
-
     context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False
-    #print('context["tasks"] from DatasetSummaryView', context['tasks'])
 
+    print('context from DatasetSummaryView', context)
     return context
 
 

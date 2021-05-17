@@ -14,8 +14,10 @@ from django.contrib import admin
 from django.urls import include, path
 
 
-
 app_name='main'
+#handler404 = 'datasets.views.handler404',
+handler500 = 'main.views.custom_error_view'    
+
 urlpatterns = [
     path('', views.Home.as_view(), name="home"),
     path('v2beta', views.Home2a.as_view(), name="home2beta"),
@@ -56,4 +58,5 @@ urlpatterns = [
     #path('accounts/', include('accounts.urls')),
     path('admin/', admin.site.urls),
     path('captcha/', include('captcha.urls')),
+        
 ] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)

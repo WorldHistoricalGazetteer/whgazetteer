@@ -72,6 +72,13 @@
             </div>
             <hr/>
           {% endif %}
+          <!--{ if ds.ds_status == 'accessioning' and not user.is_superuser %}-->
+          {% if ds.ds_status == 'accessioning' %}
+            <p>Accessioning has begun for this dataset. Initiating another reconciliation task would disrupt the workflow in progress. If you would like to stop the accessioning step and roll back the workflow, please <a href="#" class="feedback">contact the editorial team</a>.</p>
+          <!--{ elif ds.ds_status == 'indexed' and not user.is_superuser %}-->
+          {% elif ds.ds_status == 'indexed' %}
+            <p>This dataset has been fully indexed in WHG. <br/>Please <a href="#" class="feedback">contact the editorial team</a> to discuss options.</p>
+          {% else %}
           <p class="font-weight-bold mb-0">Name authority source</p>
           <p class="small">Your task will enter a queue and email notification sent when completed. 
           </p>
@@ -109,16 +116,6 @@
             </div>
             {% endif %}
           </div>
-          <!--{ if ds.unindexed < ds.numrows %}-->
-            <!--<!-- if some are indexed, offer to skip them -->
-            <!--<div id="recon_scope" class="mt-2">-->
-              <!--<hr/><p class="font-weight-bold">Task scope</p>-->
-              <!--<label class="radio-inline">-->
-              <!--<input type="radio" name="scope" id="scope1" value="all"> All <b>{ds.numrows}}</b> records</label>-->
-              <!--<label class="radio-inline ml-3">-->
-              <!--<input type="radio" name="scope" checked="true" id="scope2" value="unindexed"> Only the unindexed (<b>{{ds.unindexed}}</b>)</label>-->
-            <!--</div>-->
-          <!--{ endif %}-->
           <div id="geo_constraint" class="mt-2">
             <hr/>
             <div class="mb-2">
@@ -155,6 +152,7 @@
           <span class="help-matches" data-id="accept-geometry">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
             </span>
           </div>
+        {% endif %} <!-- ds.ds_status != 'accessioning' -->
         </div> <!-- recon_form -->
         <div id="recon_result" class="col-md-6 p-tight py-2 dashedbox">
           {% if request.method == 'GET' %}

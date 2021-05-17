@@ -85,7 +85,6 @@ urlpatterns = [
     path('<int:id>/addtask', views.DatasetAddTaskView.as_view(), name='ds_addtask'),
     path('<int:id>/log', views.DatasetLogView.as_view(), name='ds_log'),
 
-
 ] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
 
 # list places in a dataset; for physical geog layers

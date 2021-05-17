@@ -1052,8 +1052,6 @@ def es_lookup_idx(qobj, *args, **kwargs):
     countries_match = {"terms": {"ccodes":qobj["countries"]}}
     #print("countries_match", countries_match)
   
-
-
   """
   prepare queries from qobj
   """  
@@ -1253,13 +1251,10 @@ def align_idx(pk, *args, **kwargs):
   
   """
   for each place, create qobj and run es_lookup_idx(qobj)
-  parse results: 
-    if hits, write Hit instances for review
-    if no hits, write new parent doc in index
+  if hits: write Hit instances for review
+  if no hits: write new parent doc in index
   """
   for p in qs:
-    # 6595825:Marienborch (3)
-    # 6595826:Eluinghen (2) 6595829:Thorun (2x2) 
     qobj = build_qobj(p)
     
     result_obj = es_lookup_idx(qobj, bounds=bounds)
@@ -1276,7 +1271,7 @@ def align_idx(pk, *args, **kwargs):
     # got some hits, format json & write to db
     elif len(result_obj['hits']) > 0:
       count_hit +=1  # this record got >=1 hits
-      # place/task status 0 (unreviewed hits)
+      # place/task status 0 (has unreviewed hits)
       p.review_whg = 0
       p.save()
       
@@ -1285,15 +1280,12 @@ def align_idx(pk, *args, **kwargs):
       #total_hits += result_obj['hit_count']
       total_hits += result_obj['total_hits']
       
-      """ 
-      imported some align_idx_testy.py code below 
-      """
       parents = [profileHit(h) for h in hits \
                 if h['_source']['relation']['name']=='parent']
       children = [profileHit(h) for h in hits \
                 if h['_source']['relation']['name']=='child']
       """ *** """
-      p0 = 'pass0' in [p['pass'] for p in parents]
+      p0 = len(set(['pass0a','pass0b'])&set([p['pass'] for p in parents])) >0
       p1 = 'pass1' in [p['pass'] for p in parents]
       if p0:
         count_p0 += 1
