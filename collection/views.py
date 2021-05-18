@@ -44,12 +44,15 @@ class CollectionCreateView(CreateView):
         context = super(CollectionCreateView, self).get_context_data(*args, **kwargs)
         context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
         user = self.request.user
-        dslist = Dataset.objects.filter(owner_id = user.id)
-        print('dslist', dslist)
-        #print('args',args,kwargs)
-        context['ds_list'] = dslist
+        _id = self.kwargs.get("id")
+        qs = CollectionDataset.objects.filter(collection_id = _id)
+        coll_set = [cd.dataset for cd in qs]
+        ds_select = Dataset.objects.filter(owner_id = user.id)
+
         context['action'] = 'create'
-        #context['referrer'] = self.request.POST.get('referrer')
+        context['ds_select'] = ds_select
+        context['coll_set'] = coll_set
+        
         return context
 
 
@@ -87,14 +90,17 @@ class CollectionUpdateView(UpdateView):
 
     def get_context_data(self, *args, **kwargs):
         context = super(CollectionUpdateView, self).get_context_data(*args, **kwargs)
-
         user = self.request.user
-        dslist = Dataset.objects.filter(owner_id = user.id)
+        _id = self.kwargs.get("id")
+        qs = CollectionDataset.objects.filter(collection_id = _id)
+        coll_set = [cd.dataset for cd in qs]
+        ds_select = Dataset.objects.filter(owner_id = user.id)
+
         context['action'] = 'update'
-        context['ds_list'] = dslist
+        context['ds_select'] = ds_select
+        context['coll_set'] = coll_set
         context['create_date'] = self.object.create_date.strftime("%Y-%m-%d")
         context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
-        qs = CollectionDataset.objects.filter(collection_id = self.kwargs.get("id"))
-        context['datasets'] = qs
+        #context['datasets'] = qs
         return context
 

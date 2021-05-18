@@ -86,55 +86,49 @@
       <p>Created: {{ create_date }}</p>
       {% endif %}
       <hr/>
-      <div id="collection_options">
-        <!--<ul id="area_tabs_ul" class="nav nav-tabs">-->
-          <!--<li class="nav-item">-->
-            <!--<a class="nav-link active" role="tab" data-toggle="tab" ref="ccodes" href="#areas_codes">Countries</a></li>-->
-          <!--<li class="nav-item">-->
-            <!--<a class="nav-link" role="tab" data-toggle="tab" ref="drawn" href="#areas_draw">Draw</a></li>-->
-        <!--</ul>-->
-        <!--<div class="tab-content">-->
-          <!--<div id="areas_codes" class="tab-pane fade show active">-->
-            <!--<p id="p_ccodes">Country codes (ISO 3166 alpha2) &nbsp;<a href="https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2" target="_blank">{ fontawesome_icon 'external-link' color='#336699' %}</a><br/>{{ form.ccodes }}-->
-              <!--<span class="float-right ml-1">-->
-                <!--<a href="javascript:{ map_clear() }">clear</a></span>-->
-              <!--<span class="float-right">-->
-                <!--<a href="javascript:{ map_render() }">preview |</a></span>-->
-            <!--</p>-->
-            <!--<p>Buffer (optional, km)<br/>-->
-              <!--<input type="text" id="buffer_km" name="buffer_km" value=""/></p>-->
-          <!--</div>-->
-          <!--<div id="areas_draw" class="tab-pane fade in">-->
-            <!--<p>Use map controls to draw/edit bounding box or polygon</p></div>-->
-        <!--</div>-->
-        <!--<p class="mt-2">GeoJSON<br/>{{ form.geojson }}</p>-->
-      </div> <!-- area_options -->
+      <div id="collection_options"></div> <!-- collection_options -->
       <p id="referrer"></p>
       <input class="btn-sm btn-primary mt-2" type="submit" value="Save" />
       <span title="back"><a href="{% url 'dashboard' %}">Cancel</a></span>
     </form>
     </div>
-    <div id="map_container" class="col-sm-8 p-3">
-      <h4>Datasets</h4>
-      <select id="select_region" name="region" class="custom-select-sm" style="width:auto;">
-        <option value="0">Select dataset</option>
-        <option disabled>___________</option>
-        {% for ds in ds_list %}
-          <option value="{{ ds.id }}">{{ ds.label }}</option>
-        {% endfor %}
-      </select>
-      {% if action == 'update' %}
-        <ul>
-        {% for d in datasets %}
-          <li>{{ d }}</li>
-        {% endfor %}
-        </ul>
-      {% endif %}
-      <hr/>
-      <p>map w/bboxes for datasets as added, maybe?</p>
-      <p>and/or "cards" for each added dataset, with remove button</p>
-      <!--{ leaflet_map "map_collection" callback="map_init" %}-->
-    </div>
+    <div id="coll_builder" class="col-sm-8 p-3">
+      <div class="row">
+        <div class="col-sm-7">
+          <h4>Datasets <span class="small ml-5">
+            <select id="select_ds" name="ds" class="custom-select-sm" style="width:auto;">
+            <option value="0">Add a dataset</option>
+            <option disabled>___________</option>
+            {% for ds in ds_select %}
+              {% if ds not in coll_set %}
+                <option value="{{ ds.id }}">{{ ds.title }}</option>
+              {% endif %}
+            {% endfor %}
+          </select></span>
+          </h4>
+          <!-- id, label, title, description, creator, create_date, webpage, numrows, datatype -->
+          <div id="coll_panels">
+            {% if coll_set|length == 0 %}<p class="font-italic">None yet...</p>{% endif %}
+            <!--{ if action == 'update' %}-->
+            {% for d in coll_set %}
+              <div class="ds_panel">
+                <p class="mb-0"><span class="ds_title">{{ d.title }}</span> ({{d.label}}/{{ d.id}})</p>
+                <div class="ds_fields">
+                  <p class="my-1"><b>Description</b>: {{ d.description }}</p>
+                  <p class="my-1"><b>Create dat</b>e: {{ d.create_date }}</p>
+                  <p class="my-1"><b># rows</b>: {{ d.numrows }}</p>
+                </div>
+              </div>
+            {% endfor %}
+            <!--{ endif %}-->
+          </div> <!-- #coll_panels -->
+        </div> <!-- .col-sm-8 -->
+        <div class="col-sm-5">
+          <div id="mapdiv_coll" class="mt-2">
+            {% leaflet_map "map_coll" %}
+          </div>
+      </div>
+    </div> <!-- .row -->
   </div> <!-- d-flex -->
 </div> <!-- container -->
 
@@ -191,24 +185,6 @@
       }
     }
   });
-  //
-  // add draw controls to map
-  // on tab switch && on update Area if type == 'drawn'
-  function drawControls(mode){
-    var drawControl = new L.Control.Draw({
-      draw: {
-         marker: false,
-         polyline: false,
-         circle: false,
-         circlemarker: false,
-     },
-      edit: {
-         featureGroup: mode
-      }
-    });
-    mappy.addControl(drawControl);  
-  }
-  //
   // expose leaflet map for events, call it 'mappy'
   window.addEventListener('map:init', function (e) {
     console.log('map:init, w.action', '{{ action }}')
@@ -220,8 +196,8 @@
       mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}';
       
 
-    var satellite  = L.tileLayer(mbstyle_url, {id:'mapbox/satellite-streets-v11', token:token_mb, attribution:attrib_mb});
-    var osm  = L.tileLayer(mbstyle_url, {id:'mapbox/light-v10', token:token_mb, attribution:attrib_mb});
+    var satellite  = L.tileLayer(mbstyle_url, {id:'mapbox/satellite-streets-v11', token:token_mb});
+    var osm  = L.tileLayer(mbstyle_url, {id:'mapbox/light-v10', token:token_mb});
   
     drawnItems = L.featureGroup().addTo(mappy)
 
@@ -334,23 +310,3 @@
 </script>
 
 {% endblock %}
-
-      <!--drawnItems.addTo(mappy)-->
-      <!--mappy.on(L.Draw.Event.CREATED, function (event) {-->
-        <!--window.drawnlayer = event.layer;-->
-        <!--<!--console.log('drawnlayer',drawnlayer)-->-->
-        <!--drawnItems.addLayer(drawnlayer);-->
-        <!--console.log('drawn',JSON.stringify(drawnItems.toGeoJSON().features[0].geometry))-->
-        <!--drawnItems.addTo(mappy)-->
-        <!--<!--$("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON()))-->-->
-        <!--<!--$("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON().features[0].geometry))-->-->
-      <!--});-->
-      <!--mappy.on(L.Draw.Event.EDITED, function (event) {-->
-        <!--$("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON()))-->
-        <!--console.log('you changed it')-->
-      <!--});-->
-      <!--mappy.on(L.Draw.Event.DELETED, function (event) {-->
-        <!--$("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON()))-->
-        <!--<!--drawnItems.addTo(mappy)-->-->
-        <!--console.log('you deleted something')-->
-      <!--});-->

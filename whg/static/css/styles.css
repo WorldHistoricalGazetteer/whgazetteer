@@ -253,6 +253,8 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
 .wrapper-left { overflow: auto; }
 .wrapper-left b { color: #993333;}
 .wrapper-right { overflow: auto; }
+
+
 /**
   search
 **/
@@ -465,6 +467,18 @@ em { color: #993333;}
 .overlap { position:relative; }
 .abbrev { max-height: 60px; overflow:scroll;}
 
+/**
+  collections
+**/
+.ds_panel {
+  padding: .2rem 0 1rem .2rem ;
+  border: 1px dashed #999;
+  border-radius: 8px;
+  margin-bottom: .5rem;
+}
+.ds_title { font-weight:600; color:#993333;}
+.ds_fields { border-top: 1px solid #ccc;}
+.ds_fields p { font-size: .9rem;}
 /**
   place portal
 **/
