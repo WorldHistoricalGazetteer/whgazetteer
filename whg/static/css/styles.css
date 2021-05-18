@@ -167,8 +167,8 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
 #tagline {
   width: 59%;
   font-weight: bold;
-  background-color: rgba(242,240,230,0.7);
-  margin-top: -6px;
+  /*background-color: rgba(242,240,230,0.7);*/
+  margin-top: -12px;
 }
 .home-header {
   background: #336699;
@@ -273,7 +273,7 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
 #map_select{width:70%;margin:auto;}
 .list-inline { padding-left: 4px;}
 .active-filter a {font-weight:bold; color:#993333 !important;}
-#search_input label { position:absolute; right: 20px; z-index:10;}
+#search_input label { position:absolute; right: 140px; z-index:10;}
 #search_input label:hover { cursor:pointer;}
 /*#filter_help {position:absolute; top:35px; right:3px;}*/
 #type_filter {
@@ -304,7 +304,7 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
   vertical-align:top;
   position:relative;
   display: inline-block;
-  width: 90%;
+  width: 50%;
   height: 24px;
   margin: auto;
   padding: 4px 6px;
@@ -360,8 +360,8 @@ input[type="text"] {
 #map_home.leaflet-container { height: calc(100vh - 90px);}
 #map_home2.leaflet-container { height: 60%;}
 #map_search.leaflet-container { height: 65%;}
-#home_map {  position:relative; z-index: 0;}
 
+#home_right {  position:relative; z-index: 0;}
 #home_search {
   z-index:500; 
   margin:0; padding:5px;
@@ -380,19 +380,31 @@ input[type="text"] {
 }
 #options { padding:2px; display:none;}
 #searchbox { height: auto;}
-#search_input { border-bottom: 1px dashed #ddd;}
+/*#search_input { border-bottom: 1px dashed #ddd;}*/
 
 #search_filters {position:relative;}
-#search_filters p, #search_filters label{
-  font-size: .7rem;
-  /*font-variant: small-caps;*/
+/*#search_filters p, #search_filters label{*/
+#search_filters p {
+  font-size: .9rem;
+  font-variant: small-caps;
   color: #993333;
 }
+.filters-title {
+  display:block;
+  /*margin:auto;*/
+  color:#993333;
+  text-align:center;
+  font-variant:small-caps;
+  font-weight: strong;
+  background-color: aliceblue;
+}
+#filters_class { padding-right:.2rem;}
+#filters_st { padding-left:.2rem;}
 #result_list {
   padding: 5px;
   background-color: #fff;
   margin-top:8px;
-  max-height: 70vh;
+  max-height: 40vh;
   overflow-y:scroll;
   box-shadow: 2px 2px #999;
 }

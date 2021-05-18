@@ -28,7 +28,7 @@
 <div class="container">
   <div class="justify-content-center mt-2">
   <div class="row">
-    <div id="home_search" class="col-sm-5">
+    <div id="home_search" class="col-sm-6">
       <div id="search_panel">
 		<div id="search_type" class="form-group d-flex justify-content-center"> 
 		  <div class="form-check form-check-inline">
@@ -44,42 +44,46 @@
 		  <label for="input_box">{% fontawesome_icon 'search' color='#336699'%}</label>
 		  <input id="input_box" class="tt-hint" type="text" placeholder="Enter place name" autocomplete="false"> 
 		  <input id="input_box_traces" class="typeahead hidden" type="text" placeholder="subject term, e.g. 'empire'">
-		  <div id="filters_opener" class="mx-auto mt-1 small">
-			<a id="link_filters"href="#">filters</a> {% fontawesome_icon 'filter' color='#336699' %}
-		  </div>
 		</div>
-        <div id="search_filters" class="hidden">
+        <div id="search_filters">
+  		  <span class="filters-title">search filters</span>
+          <div class="small row">
+			<div id="filters_class" class="col-sm-6">
           <p class="mb-0">feature class(es) 
-            <span class="ml-1 float-right">
+            <!--<span class="ml-1 float-right">-->
+            <span class="ml-1">
 			  <span class="mr-1"><a id="check_toggle" href="#">clear all</a></span>
-		  <a id="filter_help" class="pointer" data-toggle="popover" title="Feature classes" data-content="" tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a></span>
+			<a id="filter_help" class="pointer" data-toggle="popover" title="Feature classes" data-content="" tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a></span>
 		  </p>
-          <div>
-          <label class="checkbox-inline fclass"><input type="checkbox" value="A" checked> A&nbsp;</label>
-          <label class="checkbox-inline fclass"><input type="checkbox" value="H" checked> H&nbsp;</label>
-          <label class="checkbox-inline fclass"><input type="checkbox" value="L" checked> L&nbsp;</label> 
-          <label class="checkbox-inline fclass"><input type="checkbox" value="P" checked> P&nbsp;</label> 
-          <label class="checkbox-inline fclass"><input type="checkbox" value="R" checked> R&nbsp;</label> 
-          <label class="checkbox-inline fclass"><input type="checkbox" value="S" checked> S&nbsp;</label> 
-          <label class="checkbox-inline fclass"><input type="checkbox" value="T" checked> T&nbsp;</label>
+			  <ul class="ul-left p-0">
+			  <li class="li-flush"><input type="checkbox" value="A" checked> A&nbsp;administrative entities</li>
+			  <li class="li-flush"><input type="checkbox" value="P" checked> P&nbsp;cities, towns, hamlets...</li> 
+			  <li class="li-flush"><input type="checkbox" value="S" checked> S&nbsp;sites, buildings, complexes...</li> 
+			  <li class="li-flush"><input type="checkbox" value="R" checked> R&nbsp;roads, routes, rail...</li> 
+			  <li class="li-flush"><input type="checkbox" value="L" checked> L&nbsp;regions, landscape areas</li> 
+			  <li class="li-flush"><input type="checkbox" value="T" checked> T&nbsp;terrestrial landforms</li>
+			  <li class="li-flush"><input type="checkbox" value="H" checked> H&nbsp;water bodies</li>
+			  </ul>
+			</div>
+			<div id="filters_st" class="col-sm-6">
+			  <p class="mb-0">temporal ( default = all)
+				<span class="float-right"><a id="temporal_help" class="pointer" data-toggle="popover" title="Temporal filter" data-content="start = not before<br/>end = not after <p>NOTE: most records do not have temporal attributes at this stage</p>" tabindex="0" data-trigger="focus">
+				  {% fontawesome_icon 'question-circle' color='#336699' %}</a></span>
+			  </p>
+			  <div>
+				<label class="input-sm"><input id="input_start" type="text" value = "" size="12" placeholder="earliest year"></label>
+				<label class="input-sm ml-2"><input id="input_end" type="text" value = "" size="12" placeholder="latest year"></label>
+			  </div>
+			  <p class="mb-0">spatial
+				<span class="float-right">
+				<a id="spatial_help" class="pointer" data-toggle="popover" title="Spatial filter" data-content="" tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a></span>	  
+			  </p>
+			  <div>
+				<label><input id="input_area" type="text" size="30" placeholder="Region, country, study area"></label>
+				<input type="hidden" id="boundsobj">
+			  </div>			
+			</div>
 		  </div>
-          <p class="mb-0">temporal
-			<span class="float-right"><a id="temporal_help" class="pointer" data-toggle="popover" title="Temporal filter" data-content="start = not before<br/>end = not after <p>NOTE: most records do not have temporal attributes at this stage</p>" tabindex="0" data-trigger="focus">
-			  {% fontawesome_icon 'question-circle' color='#336699' %}</a></span>
-		  </p>
-          <div>
-            <label class="input-sm"><input id="input_start" type="text" value = "" size="8" placeholder="start year"></label>
-            <label class="input-sm ml-2"><input id="input_end" type="text" value = "" size="8" placeholder="end year">
-			<span class="ml-2">( default = all)</span></label>
-          </div>
-          <p class="mb-0">spatial
-			<span class="float-right">
-			<a id="spatial_help" class="pointer" data-toggle="popover" title="Spatial filter" data-content="" tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a></span>	  
-		  </p>
-          <div>
-            <label><input id="input_area" type="text" size="30" placeholder="Region, country, study area"></label>
-            <input type="hidden" id="boundsobj">
-          </div>
         </div>
       </div>
       <!-- separate div for full search results -->
@@ -92,135 +96,21 @@
         <ul class="list-inline"></ul>
       </div>
       <div id="result_list" class="hidden"></div>
-	  <div id="splash">
-		<div id="carouselSplash" class="carousel slide" data-interval="false" data-ride="carousel">
-		  <ol class="carousel-indicators">
-			<li data-target="#carouselSplash" data-slide-to="0" class="active">1</li>
-			<li data-target="#carouselSplash" data-slide-to="1">2</li>
-			<li data-target="#carouselSplash" data-slide-to="2">3</li>
-			<li data-target="#carouselSplash" data-slide-to="3">4</li>
-		  </ol>
-		  <div class="carousel-inner">
-			<div class="carousel-item active">
-			  <p class="mb-1">World Historical Gazetteer indexes place data drawn from historical sources, contributed by research projects and individuals studying the past from many disciplinary perspectives.</p>
-			  <p class="mb-1">This is a work-in-progress. To date about 60,000 temporally scoped place records have been added to our index, supplying "temporal depth" to a core of approximately 1.8 million modern records.</p>
-			  <p>You can preview coverage of some early contributions in progress, by selecting from the list below.</p>
-			  <div id="map_select">
-				<select id="map_dataset" name="region" class="custom-select-sm">
-				  <option value="0">Display dataset</option>
-				  <option value="lugares">HGIS de las Indias (lugares)</option>
-				  <option value="owtrad">Old World Trade (OWTRAD)</option>
-				  <option value="euratlas">Euratlas Cities</option>
-				  <option value="alturayya">al-Thurayya (11c Islam)</option>
-				</select>
-			  </div>
-			</div>
-			<div class="carousel-item">
-			  <p>Registered users can</p>
-			  <div class="row small">
-				<div class="col-sm">
-				  <img src="{% static 'images/upload100.png'%}" height="75"/><br/>
-					<span class="red-head strong">upload</span> place datasets into a private workspace
-				  <img src="{% static 'images/publish100.png'%}" width="75" title="Share by Flatart from the Noun Project"/><br/>
-					<span class="red-head strong">publish</span> them as Linked Open Data by flagging them as 'public'
-				</div>
-				<div class="col-sm">
-				  <img src="{% static 'images/augment100.png'%}" width="75"/><br/>
-					<span class="red-head strong">augment</span> them via reconciliation against Wikidata and/or <a href="#" data-html="true" onClick='return false;' title="Getty Thesaurus of Geographic Names" rel="tooltip" class="ttip">Getty TGN</a>
-				  <img src="{% static 'images/contribute100.png'%}" width="75"/><br/>
-				   <span class="red-head strong">contribute</span> them for accessioning to the WHG index
-				</div>
-			  </div>
-			  <hr/>
-			  <p>Details are available in the <a href="{% url 'main:tute-guide' %}">Site Guide</a></p>
-			</div>
-			<div class="carousel-item">
-			  <h6 class="mb-1 strong">Current Counts</h6>
-			  <p><mark>1,873,349</mark> places</p>
-			  <p><mark>3,028,626</mark> names</p>
-			  <p><mark>18</mark> uploaded datasets</p>
-			  <p><mark>14</mark> indexed datasets</p>
-			</div>
-			<div class="carousel-item">
-			  <p class="mb-1">Traces are an experimental feature of WHG, conceived in collaboration with the Pelagios project. A <span class="strong red-head">trace</span> is any sort of historical phenomena, including people, events, archaeological and museum objects, texts, art works, and so on.</p>
-			  <p><span class="strong red-head">Trace data</span> are web-accessible descriptions and depictions of traces, which may take the form of text, images, datasets, or video, published to the web with permanent URIs.</p>
-			  <p>We have indexed several dozen exemplar <span class="strong red-head">trace annotations</span>: i.e. datasets annotating such trace data web resources with identifiers for places referenced in a resource as relevant to the trace. See <a href="{% url 'main:tute-traces' %}">the Traces intro tutorial</a> for more detail.</p>
-			</div>
-		  </div>
-		</div>	  
-	  </div> <!-- splash -->
     </div>
-    <div id="home_right" class="col-sm-7">
+    <div id="home_right" class="col-sm-6">
       {% leaflet_map "map_search" callback="map_init" %}
-	  <div style="height: 33%; width=100%">
-		<div id="time" class="h-25 p-2 mt-1" style="background-color: #ffffcc;">
+	  <div style="width=100%">
+		<div id="time" class="p-2 mt-1" style="background-color: #ffffcc;">
 		  <p>temporal visualization</p>
 		</div>
-		<div id="info" class="h-75 p-2 d-flex" style="background-color: #e0e0e0;">
+		<div id="info" class="p-2 d-flex" style="background-color: #e0e0e0;">
 		  <p>dataset lists/filters</p>
-		  <!--<!--<div class="featured p-2 h-100 w-50 mr-1"><img src="{ static 'images/upload100.png'%}" height="75"/></div>-->
-		  <!--<div class="featured p-2 h-100 w-50 mr-1" style="position:relative; background: no-repeat top url('{ static 'images/dutch-football-330.png'%}')">-->
-		  <!--<p style="position:absolute; bottom:0; left:50px;">-->
-			<!--<a href="{ url 'collection:collection-update' 2 %}">KNAW/HuC Dutch Collection</a>-->
-		  <!--</p></div>-->
-		  <!--<div class="featured p-2 h-100 w-50 ml-1">featured collection #2</div>-->
 		</div>
 	  </div>
     </div> <!--  -->
   </div>
   </div>
 </div>
-
-<!-- expanded feature classes & results markup -->
-<!--<div id="search_filters">-->
-  <!--<p class="mb-0">feature class(es) -->
-	<!--<span class="ml-1 float-right">-->
-	  <!--<span class="mr-1"><a id="check_toggle" href="#">clear all</a></span>-->
-  <!--<a id="filter_help" class="pointer" data-toggle="popover" title="Feature classes" data-content="" tabindex="0" data-trigger="focus">{ fontawesome_icon 'question-circle' color='#336699' %}</a></span>-->
-  <!--</p>-->
-  <!--<div class="small row">-->
-	<!--<div class="col-sm-6">-->
-	  <!--<ul class="ul-left p-0">-->
-	  <!--<li class="li-flush"><input type="checkbox" value="A" checked> A&nbsp;administrative entities</li>-->
-	  <!--<li class="li-flush"><input type="checkbox" value="P" checked> P&nbsp;cities, towns, hamlets...</li> -->
-	  <!--<li class="li-flush"><input type="checkbox" value="S" checked> S&nbsp;sites, buildings, complexes...</li> -->
-	  <!--<li class="li-flush"><input type="checkbox" value="R" checked> R&nbsp;roads, routes, rail...</li> -->
-	  <!--</ul>-->
-	<!--</div>-->
-	<!--<div class="col-sm-6">-->
-	  <!--<ul class="ul-left p-0">-->
-	  <!--<li class="li-flush"><input type="checkbox" value="L" checked> L&nbsp;regions, landscape areas</li> -->
-	  <!--<li class="li-flush"><input type="checkbox" value="T" checked> T&nbsp;terrestrial landforms</li>-->
-	  <!--<li class="li-flush"><input type="checkbox" value="H" checked> H&nbsp;water bodies</li>-->
-	  <!--</ul>-->
-	<!--</div>-->
-  <!--</div>-->
-  <!--<p class="mb-0">temporal-->
-	<!--<span class="float-right"><a id="temporal_help" class="pointer" data-toggle="popover" title="Temporal filter" data-content="start = not before<br/>end = not after <p>NOTE: most records do not have temporal attributes at this stage</p>" tabindex="0" data-trigger="focus">-->
-	  <!--{ fontawesome_icon 'question-circle' color='#336699' %}</a></span>-->
-  <!--</p>-->
-  <!--<div>-->
-	<!--<label class="input-sm"><input id="input_start" type="text" value = "" size="8" placeholder="start year"></label>-->
-	<!--<label class="input-sm ml-2"><input id="input_end" type="text" value = "" size="8" placeholder="end year">-->
-	<!--<span class="ml-2">( default = all)</span></label>-->
-  <!--</div>-->
-  <!--<p class="mb-0">spatial-->
-	<!--<span class="float-right">-->
-	<!--<a id="spatial_help" class="pointer" data-toggle="popover" title="Spatial filter" data-content="" tabindex="0" data-trigger="focus">{ fontawesome_icon 'question-circle' color='#336699' %}</a></span>	  -->
-  <!--</p>-->
-  <!--<div>-->
-	<!--<label><input id="input_area" type="text" size="30" placeholder="Region, country, study area"></label>-->
-	<!--<input type="hidden" id="boundsobj">-->
-  <!--</div>-->
-  
-<!--</div>-->
-<!--<div id="search_results" class="p-1" style="border:1px solid grey;overflow-y:scroll;">-->
-  <!--<div class="search-row place-item" style="min-height:50px;">result</div>-->
-  <!--<div class="search-row place-item" style="min-height:50px;">result</div>-->
-  <!--<div class="search-row place-item" style="min-height:50px;">result</div>-->
-  <!--<div class="search-row place-item" style="min-height:50px;">result</div>-->
-  <!--<div class="search-row place-item" style="min-height:50px;">result</div>-->
-<!--</div>-->
 
 <div id="ext_site" class="modal fade" role="dialog">
   <div class="modal-dialog">
@@ -295,8 +185,6 @@
 	  }
 	  $("#search_filters").toggle(400)
     })
-	
-
 
 	// 
 	$("label[for='input_box']").click(function(){
@@ -437,6 +325,7 @@
 	  $(".carousel").carousel(0)
 	  $("#filters_opener").show()
       $("#input_box").show()
+	  $("#search_filters").show()
       $("#input_box_traces").hide()
 	  $("#splash_traces").hide()
 	  $("#splash").show()
@@ -574,15 +463,15 @@
 		  });	
 	  gl.addSource('owtrad', {
 			  "type": "geojson",
-			  "data": "media/data/owtrad.geojson"
+			  "data": "/media/data/owtrad.geojson"
 		  });	
 	  gl.addSource('euratlas', {
 			  "type": "geojson",
-			  "data": "media/data/euratlas_cities.geojson"
+			  "data": "/media/data/euratlas_cities.geojson"
 		  });	
 	  gl.addSource('alturayya', {
 			  "type": "geojson",
-			  "data": "media/data/al-turayya.geojson"
+			  "data": "/media/data/al-turayya.geojson"
 		  });
 	})
 	
@@ -624,7 +513,7 @@
   }, false);
 
   function map_init (home_map, options) {
-    mappy.setView([38, 10], 2.4)
+    mappy.setView([30, 8], 1)
     // empty features[]
     geom = {"type":"FeatureCollecton","features":[]}
   } // end map_init
