@@ -116,6 +116,13 @@
     </div>
     <div id="map_container" class="col-sm-8 p-3">
       <h4>Datasets</h4>
+      <select id="select_region" name="region" class="custom-select-sm" style="width:auto;">
+        <option value="0">Select dataset</option>
+        <option disabled>___________</option>
+        {% for ds in ds_list %}
+          <option value="{{ ds.id }}">{{ ds.label }}</option>
+        {% endfor %}
+      </select>
       {% if action == 'update' %}
         <ul>
         {% for d in datasets %}

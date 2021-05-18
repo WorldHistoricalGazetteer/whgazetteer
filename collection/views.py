@@ -42,8 +42,12 @@ class CollectionCreateView(CreateView):
     
     def get_context_data(self, *args, **kwargs):
         context = super(CollectionCreateView, self).get_context_data(*args, **kwargs)
-        context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB        
+        context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
+        user = self.request.user
+        dslist = Dataset.objects.filter(owner_id = user.id)
+        print('dslist', dslist)
         #print('args',args,kwargs)
+        context['ds_list'] = dslist
         context['action'] = 'create'
         #context['referrer'] = self.request.POST.get('referrer')
         return context
@@ -83,7 +87,11 @@ class CollectionUpdateView(UpdateView):
 
     def get_context_data(self, *args, **kwargs):
         context = super(CollectionUpdateView, self).get_context_data(*args, **kwargs)
+
+        user = self.request.user
+        dslist = Dataset.objects.filter(owner_id = user.id)
         context['action'] = 'update'
+        context['ds_list'] = dslist
         context['create_date'] = self.object.create_date.strftime("%Y-%m-%d")
         context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
         qs = CollectionDataset.objects.filter(collection_id = self.kwargs.get("id"))
