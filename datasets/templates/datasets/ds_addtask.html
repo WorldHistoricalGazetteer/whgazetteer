@@ -72,11 +72,11 @@
             </div>
             <hr/>
           {% endif %}
-          <!--{ if ds.ds_status == 'accessioning' and not user.is_superuser %}-->
-          {% if ds.ds_status == 'accessioning' %}
+          {% if ds.ds_status == 'accessioning' and not user.is_superuser %}
+          <!--{ if ds.ds_status == 'accessioning' %}-->
             <p>Accessioning has begun for this dataset. Initiating another reconciliation task would disrupt the workflow in progress. If you would like to stop the accessioning step and roll back the workflow, please <a href="#" class="feedback">contact the editorial team</a>.</p>
-          <!--{ elif ds.ds_status == 'indexed' and not user.is_superuser %}-->
-          {% elif ds.ds_status == 'indexed' %}
+          {% elif ds.ds_status == 'indexed' and not user.is_superuser %}
+          <!--{ elif ds.ds_status == 'indexed' %}-->
             <p>This dataset has been fully indexed in WHG. <br/>Please <a href="#" class="feedback">contact the editorial team</a> to discuss options.</p>
           {% else %}
           <p class="font-weight-bold mb-0">Name authority source</p>
