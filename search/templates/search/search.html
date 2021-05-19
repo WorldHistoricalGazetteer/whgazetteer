@@ -67,7 +67,7 @@
 			</div>
 			<div id="filters_st" class="col-sm-6">
 			  <p class="mb-0">temporal ( default = all)
-				<span class="float-right"><a id="temporal_help" class="pointer" data-toggle="popover" title="Temporal filter" data-content="start = not before<br/>end = not after <p>NOTE: most records do not have temporal attributes at this stage</p>" tabindex="0" data-trigger="focus">
+				<span class="float-right"><a id="temporal_help" class="pointer" data-toggle="popover" title="Temporal filter" data-content="<p>NOTE: Records in our largest core datasets do not have temporal attributes, so the default is all periods. Nevertheless, limiting the timespan here may be useful for some queries,</p>" tabindex="0" data-trigger="focus">
 				  {% fontawesome_icon 'question-circle' color='#336699' %}</a></span>
 			  </p>
 			  <div>
@@ -157,11 +157,10 @@
 	})	
 	// popover content
 	$("#filter_help").attr(
-	  'data-content',"<p>Select one or more GeoNames single-letter code:</p>"+
-	  "<p>A=administrative areas<br/> H=hydrological features<br/> L='landscape' elements, e.g. regions<br/> P=settlements (cities, towns, etc.)<br/>R='routes, roads, etc.' (various)<br/>S='sites' (various)<br/> T=topographical features</p>"
+	  'data-content',"<p>Select one or more feature class (uses GeoNames single-letter codes)</p>"
 	)
 	$("#spatial_help").attr(
-	  'data-content',"<p>Constrain search to the bounds of a <a href='http://apple.com'>UN global sub-region</a>, a country, or a user-created study area. Try entering 'north...'</p>"
+	  'data-content',"<p>Constrain search to the bounds of a <a href='https://unstats.un.org/unsd/methodology/m49/'>UN global sub-region</a>, a country, or a user-created study area. Try entering 'south...'</p>"
 	)
 	
     $("[rel='tooltip']").tooltip();
