@@ -1,6 +1,6 @@
 # datasets.urls
 
-from django.urls import path, include
+from django.urls import path#, include
 from django.conf.urls import url
 from django.conf.urls.static import static
 from django.conf import settings
@@ -44,11 +44,6 @@ urlpatterns = [
     # review, validate hits
     path('<int:pk>/review/<str:tid>/<str:passnum>', views.review, name="review"),
     
-    # review2 refactored view and template
-    # ABANDONED
-    #path('<int:pk>/review2/<str:tid>', views.review2, name="review2"),
-    #path('<int:pk>/review2/<str:tid>/<int:pid>', views.review2, name="review2"),
-
     # accept any unreviewed wikidata pass0 hits from given task
     path('wd_pass0/<str:tid>', views.write_wd_pass0, name="wd_pass0"),
 
@@ -71,16 +66,18 @@ urlpatterns = [
     path('updatecounts/', UpdateCountsView.as_view(), name='update_counts'),
     
     #
-    # draft refactoring, ea. tab w/its own view, template
-    # templates include ds_tabs.html
-    # not in use
-    #
+    # refactored tabs to individual views, templates
+    # 
     path('<int:id>/summary', views.DatasetSummaryView.as_view(), name='ds_summary'),
     path('<int:id>/browse', views.DatasetBrowseView.as_view(), name='ds_browse'),
     path('<int:id>/reconcile', views.DatasetReconcileView.as_view(), name='ds_reconcile'),
     path('<int:id>/collab', views.DatasetCollabView.as_view(), name='ds_collab'),
     path('<int:id>/addtask', views.DatasetAddTaskView.as_view(), name='ds_addtask'),
     path('<int:id>/log', views.DatasetLogView.as_view(), name='ds_log'),
+
+    # public dataset displays: metadata, detail (browse?)
+    path('<int:pk>/metadata', views.DatasetPublicView.as_view(), name='ds_meta'),
+    path('<int:pk>/detail', views.DatasetDetailView.as_view(), name='ds_detail'),
 
 
 ] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)

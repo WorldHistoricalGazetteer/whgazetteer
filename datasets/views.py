@@ -2011,6 +2011,43 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
     #context['action'] = 'create'
     return context
 
+class DatasetDetailView(DetailView):
+  template_name = 'datasets/ds_detail.html'
+
+  model = Dataset
+
+  def get_context_data(self, **kwargs):
+    context = super(DatasetDetailView, self).get_context_data(**kwargs)
+    id_ = self.kwargs.get("pk")
+    print('self, kwargs',self, self.kwargs)
+
+    #qs = Dataset.objects.filter(collection_id = id_)
+    ##coll_set = [cd.dataset for cd in qs]
+
+    
+    #context['ds_list'] = [cd.dataset for cd in qs]
+    context['links_added'] = 1
+    context['geoms_added'] = 1
+    return context
+
+class DatasetPublicView(DetailView):
+  template_name = 'datasets/ds_meta.html'
+
+  model = Dataset
+
+  def get_context_data(self, **kwargs):
+    context = super(DatasetPublicView, self).get_context_data(**kwargs)
+    #id_ = self.kwargs.get("pk")
+    print('self, kwargs',self, self.kwargs)
+
+    #qs = Dataset.objects.filter(collection_id = id_)
+    ##coll_set = [cd.dataset for cd in qs]
+
+    #context['ds_list'] = [cd.dataset for cd in qs]
+    context['foo'] = 'bar'
+    return context
+
+
 
 """
 # load page for confirm ok on delete

@@ -225,6 +225,7 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
   border: 1px solid #ddd;
   position: relative;
 }
+.item-right img { max-width: 100%;}
 .item-right p {
   margin-bottom:0;
   font-size: .9rem;
@@ -233,6 +234,7 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
 }
 .coll-description {
   font-size: .8rem;
+  line-height:normal;
 }
 .col-bottom {
   position: absolute;
