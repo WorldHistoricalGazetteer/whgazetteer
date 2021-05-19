@@ -4,7 +4,7 @@
 {% load fontawesome %}
 {% load static %}
 {% load dataset_extras %}
-{% block title %}<title>WHG::Create/Update Collection</title>{% endblock %}
+{% block title %}<title>WHG::Collection</title>{% endblock %}
 {% block extra_head %}
   {% leaflet_js %}
   {% leaflet_css %}
@@ -62,55 +62,25 @@
 {% block content %}
 <div class="container">
   <h4 class="mt-3">
-    {% if action == 'update' %}Update Collection <span class="text-danger">"{{ form.title.value }}"</span>
-    <a href="{% url 'collection:collection-delete' object.id %}" class="float-right"
-      title="Delete collection" rel="tooltip" style="margin-top:-2px;">
-      {% fontawesome_icon 'trash' color='#336699' %}</a>
-    {% else %}Create Collection{% endif %}
+    The <span class="text-danger">{{ object.title }}</span> Collection
   </h4>
   <div class="d-flex">
     <div class="form-box mt-2 col-sm-4">
-    <form id="collection_form" method="POST" action="#" enctype="multipart/form-data">
-      {% csrf_token %}
       <input type="hidden" name="owner" value='{{ user.id }}'></input>
-      <!--{ if action == 'update' %}-->
-        <!--<input type="hidden" name="type" value='{ form.type.value }}' />-->
-      <!--{ else %}-->
-        <!--<input type="hidden" name="type" value='ccodes' />-->
-      <!--{ endif %}-->
-      <p>Title<br/>{{ form.title }}</p>
-      <p><span class="top">Description</span><br/>{{ form.description }}</p>
-      <p>Tags (no quotes, separate with commas) </br>{{ form.tags }}
-      <p>Image file (.png, .jpg)</br>{{ form.image_file }}
-      {% if action == 'update' %}
-      <p>Created: {{ create_date }}</p>
-      {% endif %}
+      <p><b>Title</b>: {{ object.title }}</p>
+      <p><b>Description</b>: {{ object.description }}</p>
+      <p><b>Tags</b>: {{ object.tags }}
+      <p><b>Created</b>: {{ object.create_date }}</p>
       <hr/>
-      <div id="collection_options"></div> <!-- collection_options -->
       <p id="referrer"></p>
-      <input class="btn-sm btn-primary mt-2" type="submit" value="Save" />
-      <span title="back"><a href="{% url 'dashboard' %}">Cancel</a></span>
-    </form>
     </div>
     <div id="coll_builder" class="col-sm-8 p-3">
       <div class="row">
         <div class="col-sm-7">
-          <h4>Datasets <span class="small ml-5">
-            <select id="select_ds" name="ds" class="custom-select-sm" style="width:auto;">
-            <option value="0">Add a dataset</option>
-            <option disabled>___________</option>
-            {% for ds in ds_select %}
-              {% if ds not in coll_set %}
-                <option value="{{ ds.id }}">{{ ds.title }}</option>
-              {% endif %}
-            {% endfor %}
-          </select></span>
-          </h4>
+          <h4>Datasets</h4>
           <!-- id, label, title, description, creator, create_date, webpage, numrows, datatype -->
           <div id="coll_panels">
-            {% if coll_set|length == 0 %}<p class="font-italic">None yet...</p>{% endif %}
-            <!--{ if action == 'update' %}-->
-            {% for d in coll_set %}
+            {% for d in ds_list %} 
               <div class="ds_panel">
                 <p class="mb-0"><span class="ds_title">{{ d.title }}</span> ({{d.label}}/{{ d.id}})</p>
                 <div class="ds_fields">
@@ -127,6 +97,7 @@
           <div id="mapdiv_coll" class="mt-2">
             {% leaflet_map "map_coll" %}
           </div>
+        </div>
       </div>
     </div> <!-- .row -->
   </div> <!-- d-flex -->

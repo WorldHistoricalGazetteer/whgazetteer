@@ -3,7 +3,7 @@
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
-from django.views.generic import (CreateView, UpdateView, DeleteView )
+from django.views.generic import (CreateView, UpdateView, DetailView, DeleteView )
 
 from .forms import CollectionModelForm
 from .models import *
@@ -56,6 +56,31 @@ class CollectionCreateView(CreateView):
         return context
 
 
+
+class CollectionDetailView(DetailView):
+    template_name = 'collection/collection_detail.html'
+
+    model = Collection
+
+    def get_context_data(self, **kwargs):
+        context = super(CollectionDetailView, self).get_context_data(**kwargs)
+        id_ = self.kwargs.get("pk")
+        print('self, kwargs',self, self.kwargs)
+        
+        qs = CollectionDataset.objects.filter(collection_id = id_)
+        #coll_set = [cd.dataset for cd in qs]
+
+        context['ds_list'] = [cd.dataset for cd in qs]
+        context['foo'] = 'bar'
+        return context
+
+    #def get_object(self):
+        #id_ = self.kwargs.get("id")
+        #return get_object_or_404(Collection, id=id_)
+
+    #def get_success_url(self):
+        #return reverse('dashboard')
+    
 class CollectionDeleteView(DeleteView):
     template_name = 'collection/collection_delete.html'
 
