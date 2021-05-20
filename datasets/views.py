@@ -636,13 +636,16 @@ def ds_recon(request, pk):
         lang=language,
       )
       messages.add_message(request, messages.INFO, "<span class='text-danger'>Your reconciliation task is under way.</span><br/>When complete, you will receive an email and if successful, results will appear below (you may have to refresh screen). <br/>In the meantime, you can navigate elsewhere.")
-      #return redirect('/datasets/'+str(ds.id)+'/detail#reconciliation')
       return redirect('/datasets/'+str(ds.id)+'/reconcile')
     except:
       print('failed: align_'+auth )
       print(sys.exc_info())
       messages.add_message(request, messages.INFO, "Sorry! Reconciliation services appear to be down. The system administrator has been notified.<br/>"+ str(sys.exc_info()))
-      #return redirect('/datasets/'+str(ds.id)+'/detail#reconciliation')     
+      emailer('WHG recon task failed', 
+              'a reconciliation task has failed for dataset #'+ds.id+', w/error: \n' +str(sys.exc_info())+'\n\n', 
+              'whgazetteer@gmail.com', 
+              'karl@kgeographer.org')
+      
       return redirect('/datasets/'+str(ds.id)+'/reconcile')
   
 
@@ -667,7 +670,6 @@ def ds_recon(request, pk):
     #ds.save()
     #print('ds_recon() context',context)
     ##return render(request, 'datasets/dataset.html', {'ds':ds, 'context': context})
-    #return redirect('/datasets/'+str(ds.id)+'/detail#reconciliation')
 
   #print('context',context)
   #return render(request, 'datasets/dataset.html', {'ds':ds, 'context': context})
