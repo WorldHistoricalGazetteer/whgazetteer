@@ -181,6 +181,13 @@
   // TODO: use datatables methods?
   function setRowEvents(){
     $("#status_select").change(function(e){
+      // clear search first
+      console.log('search has val:',$("#placetable_filter input").val())
+      <!--$("#placetable_filter input").val('')-->
+      if($("#placetable_filter input").val() != ''){
+        $('#placetable').DataTable().search('').draw()
+      }
+      <!--fnDraw()-->
       val = $(this).val()
       localStorage.setItem('filter', val)
       console.log(val)
