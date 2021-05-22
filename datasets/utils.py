@@ -808,7 +808,7 @@ class UpdateCountsView(View):
   """
   @staticmethod
   def get(request):
-    print('UpdateCountsView GET:',request.GET)
+    #print('UpdateCountsView GET:',request.GET)
     """
     args in request.GET:
         [integer] ds_id: dataset id
@@ -854,14 +854,14 @@ class UpdateCountsView(View):
         "pass3":pcounts['p3'],
         "deferred": defcount
       }
-    print(json.dumps(updates, indent=2))        
+    #print(json.dumps(updates, indent=2))        
     return JsonResponse(updates, safe=False)
 
 class UpdateCountsViewBak(View):
   """ Returns counts of unreviewed hits, per pass and total """
   @staticmethod
   def get(request):
-    print('UpdateCountsView GET:',request.GET)
+    #print('UpdateCountsView GET:',request.GET)
     """
     args in request.GET:
         [integer] ds_id: dataset id

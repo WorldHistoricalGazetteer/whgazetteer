@@ -308,8 +308,8 @@ def normalize(h, auth, language=None):
 
       # countries
       rec.ccodes = [
-        ccodes[0][c]['gnlabel'] for c in ccodes[0] \
-          if ccodes[0][c]['wdid'] in h['claims']['P17']
+        cchash[0][c]['gnlabel'] for c in cchash[0] \
+          if cchash[0][c]['wdid'] in h['claims']['P17']
       ]
       
       # include en + native lang if not en
@@ -527,7 +527,7 @@ def align_tgn(pk, *args, **kwargs):
 
   # queryset depends 'scope', indirectly on 'prior' in ds_addtask.html
   qs = ds.places.all() if scope == 'all' else \
-    ds.places.all().filter(Q(review_tgn=None) | Q(review_tgn = 0))
+    ds.places.filter(~Q(review_tgn = 1))
 
   for place in qs:
     #place=get_object_or_404(Place,id=131735) # Caledonian Canal (ne)
@@ -867,7 +867,7 @@ def align_wdlocal(pk, **kwargs):
   # new logic
   qs = ds.places.all() if scope == 'all' else \
     ds.places.filter(Q(review_wd=None) | Q(review_wd = 0))
-  print('qs', qs)
+  print('qs count:', qs.count())
 
   #pids = Hit.objects.filter(dataset_id=pk, authority ='wd',reviewed=False).values_list('place_id',flat=True)
     
