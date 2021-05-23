@@ -84,6 +84,7 @@
                 <p><b>Result</b>: {{ t.result|get:"got_hits"|safe }} of the {{ t.result|get:"count"|safe }} records submitted got total of <b>{{ t.result|get:"total_hits"|safe }}</b> hits</p>
                 <!--{ t.result }}-->
                 <p class="mb-0 ital">Remaining to review:</p>
+                <span id="spinner"></span>
                 <ul>
                   {% if t.result|get:"pass0" > 0 %}
                     <li id="pass0_{{t.task_id}}" class="li-left">Pass 0 (matched links): 
@@ -209,8 +210,16 @@
   $("#btn_done").on('click', function(){ location.reload(); })
   $("#btn_cancel").on('click', function(){ location.reload(); })
   
+  spin_opts = { scale: .5, top: '50%'}
+  function startCountsSpinner(){
+    window.spinner_counts = new Spin.Spinner(spin_opts).spin();
+    $("#spinner").append(spinner_counts.el);   
+  }
+  
   // on page load
   $(function(){
+    startCountsSpinner()
+    
     updateTotals('{{ ds.id }}')
     if('{{ status }}' == 'updating'){
       console.log('{{ status }}','{{ context }}')
@@ -285,7 +294,9 @@
           }
         }
       }
-    )
+    ).done(function(){
+      spinner_counts.stop()
+    })
   }  
   $(".confirm-del-geoms").click(function(){
     return confirm('DANGER! Deletes all place_geom records created so far in Review step');
