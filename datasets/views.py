@@ -2242,7 +2242,8 @@ class DatasetBrowseView(LoginRequiredMixin, DetailView):
 
     ds = get_object_or_404(Dataset, id=id_)
     me = self.request.user
-    ds_tasks = [t.task_name[6:] for t in ds.tasks.all()]
+    #ds_tasks = [t.task_name[6:] for t in ds.tasks.all()]
+    ds_tasks = [t.task_name[6:] for t in ds.tasks.filter(status='SUCCESS')]
     #placeset = Place.objects.filter(dataset=ds.label)
     context['updates'] = {}
     context['ds'] = ds

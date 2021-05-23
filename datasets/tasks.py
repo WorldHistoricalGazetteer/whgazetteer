@@ -514,7 +514,6 @@ parse, write Hit records for review
 @task(name="align_tgn")
 def align_tgn(pk, *args, **kwargs):
   task_id = align_tgn.request.id
-  print('task_id', task_id)
   ds = get_object_or_404(Dataset, id=pk)
   user = get_object_or_404(User, pk=kwargs['user'])
   bounds = kwargs['bounds']
@@ -525,15 +524,16 @@ def align_tgn(pk, *args, **kwargs):
   [count_hit, count_nohit, total_hits, count_p1, count_p2, count_p3] = [0,0,0,0,0,0]
   start = datetime.datetime.now()
 
-  # queryset depends 'scope', indirectly on 'prior' in ds_addtask.html
+  # queryset depends 'scope'
   qs = ds.places.all() if scope == 'all' else \
     ds.places.filter(~Q(review_tgn = 1))
 
   for place in qs:
-    #place=get_object_or_404(Place,id=131735) # Caledonian Canal (ne)
-
+    #place=get_object_or_404(Place,id=131735)
     # build query object
-    qobj = {"place_id":place.id,"src_id":place.src_id,"title":place.title}
+    qobj = {"place_id":place.id,
+            "src_id":place.src_id,
+            "title":place.title}
     [variants,geoms,types,ccodes,parents]=[[],[],[],[],[]]
 
     # ccodes (2-letter iso codes)
@@ -852,30 +852,22 @@ parse, write Hit records for review
 def align_wdlocal(pk, **kwargs):
   task_id = align_wdlocal.request.id
   ds = get_object_or_404(Dataset, id=pk)
-  print('kwargs from align_wdlocal() task', kwargs)
-  #bounds = {'type': ['userarea'], 'id': ['0']}
   user = get_object_or_404(User, pk=kwargs['user'])
   bounds = kwargs['bounds']
   scope = kwargs['scope']
+  print('kwargs from align_wdlocal() task', kwargs)
+  #bounds = {'type': ['userarea'], 'id': ['0']}
   language = kwargs['lang']
-  start = datetime.datetime.now()
   hit_parade = {"summary": {}, "hits": []}
   [nohits,wdlocal_es_errors,features] = [[],[],[]]
   [count_hit, count_nohit, total_hits, count_p0, count_p1, count_p2] = [0,0,0,0,0,0]
+  start = datetime.datetime.now()
 
   # queryset depends on 'scope'
-  # new logic
   qs = ds.places.all() if scope == 'all' else \
-    ds.places.filter(Q(review_wd=None) | Q(review_wd = 0))
-  print('qs count:', qs.count())
-
-  #pids = Hit.objects.filter(dataset_id=pk, authority ='wd',reviewed=False).values_list('place_id',flat=True)
-    
-  #if scope == 'unreviewed':
-    #qs = ds.places.filter(id__in=pids)
-  #elif scope == 'all':
-    #qs = ds.places.all()
-
+    ds.places.filter(~Q(review_wd = 1))
+  
+  print('wtf? scope, count',scope,qs.count())
   for place in qs:
     #place = get_object_or_404(Place, pk=6596036)
     # build query object
