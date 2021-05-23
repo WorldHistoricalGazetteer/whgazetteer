@@ -38,11 +38,11 @@
     <span class="half float-right mr-2"><i>task id</i>: {{ task_id }}</span>
   </h5>
   {% if nohits and passnum == 'def' %}
-      <p>No unreviewed hits remaining in "deferred" queue</p>
+      <p>No unreviewed records remaining in "deferred" queue</p>
       <p><a href="{% url 'datasets:ds_reconcile' id=ds_id %}">return to task list</a></p>    
   {% elif nohits %}
     <div>
-      <p>No unreviewed hits for this pass!</p>
+      <p>No unreviewed records for this pass!</p>
       <p><a href="{% url 'datasets:ds_reconcile' id=ds_id %}">return to task list</a></p>
     </div>
   {% else %}

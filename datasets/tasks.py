@@ -188,7 +188,7 @@ def normalize(h, auth, language=None):
       h['src_id'], 
       h['title']
     )
-    print('"rec" HitRecord',rec)
+    #print('"rec" HitRecord',rec)
     rec.score = hit['_score']
     rec.passnum = hit['pass'][:5]
     
@@ -238,7 +238,7 @@ def normalize(h, auth, language=None):
           #links.append('closeMatch: '+l)
       #  place_id, dataset, src_id, title
       rec = HitRecord(-1, 'wd', h['place']['value'][31:], h['placeLabel']['value'])
-      print('"rec" HitRecord',rec)      
+      #print('"rec" HitRecord',rec)      
       rec.variants = []
       rec.types = h['types']['value'] if 'types' in h.keys() else []
       rec.ccodes = [h['countryLabel']['value']]
@@ -252,14 +252,14 @@ def normalize(h, auth, language=None):
   elif auth == 'wdlocal':
     # hit['_source'] keys(): ['id', 'type', 'modified', 'descriptions', 'claims', 'sitelinks', 'variants', 'minmax', 'types', 'location'] 
     try:
-      print('h in normalize',h)
+      #print('h in normalize',h)
       # TODO: do it in index?
       variants=h['variants']
       title = wdTitle(variants, language)
 
       #  place_id, dataset, src_id, title
       rec = HitRecord(-1, 'wd', h['id'], title)
-      print('"rec" HitRecord',rec)
+      #print('"rec" HitRecord',rec)
       
       # list of variant@lang (excldes chosen title)
       #variants= [{'lang': 'ru', 'names': ['Toamasina', 'Туамасина']},{'lang': 'ja', 'names': ['タマタヴ', 'トゥアマシナ']}]
@@ -324,7 +324,7 @@ def normalize(h, auth, language=None):
     except:
       # TODO: log error
       print("normalize(wdlocal) error:", h['id'], sys.exc_info())
-      print('h in normalize', h)
+      #print('h in normalize', h)
 
   elif auth == 'tgn':
     rec = HitRecord(-1, 'tgn', h['tgnid'], h['title'])
@@ -345,8 +345,8 @@ def normalize(h, auth, language=None):
       rec.geoms=[]
     rec.minmax = []
     rec.links = []
-    print(rec)
-  print('normalized hit record',rec.toJSON())
+    #print(rec)
+  #print('normalized hit record',rec.toJSON())
   # TODO: raise any errors
   return rec.toJSON()
 
@@ -466,7 +466,7 @@ def es_lookup_tgn(qobj, *args, **kwargs):
       hit['pass'] = 'pass1'
       result_obj['hits'].append(hit)
   elif len(hits1) == 0:
-    print('q1 no result:)',q1)
+    #print('q1 no result:)',q1)
     # /\/\/\/\/\/
     # pass2: revert to qbase{} (drops geom)
     # /\/\/\/\/\/  
@@ -482,7 +482,7 @@ def es_lookup_tgn(qobj, *args, **kwargs):
         hit['pass'] = 'pass2'
         result_obj['hits'].append(hit)
     elif len(hits2) == 0:
-      print('q2 no result:)',q2)
+      #print('q2 no result:)',q2)
       # /\/\/\/\/\/
       # pass3: revert to qbare{} (drops placetype)
       # /\/\/\/\/\/  
@@ -500,7 +500,7 @@ def es_lookup_tgn(qobj, *args, **kwargs):
           result_obj['hits'].append(hit)
       else:
         # no hit at all, name & bounds only
-        print('q3 no result:)',q3)
+        #print('q3 no result:)',q3)
         result_obj['missed'] = qobj['place_id']
   result_obj['hit_count'] = hit_count
   return result_obj
@@ -782,7 +782,7 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
       hit['pass'] = 'pass0'
       result_obj['hits'].append(hit)
   elif len(hits0) == 0:
-    print('q0 (no hits)', qobj)
+    #print('q0 (no hits)', qobj)
     # /\/\/\/\/\/
     # pass1 (q1): 
     # must[name, placetype]; spatial filter
@@ -804,7 +804,7 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
       # /\/\/\/\/\/
       # pass2: remove type, add fclasses
       # /\/\/\/\/\/  
-      print('q1: no hits',q1)
+      #print('q1: no hits',q1)
       try:
         res2 = es.search(index="wd", body = q2)
         hits2 = res2['hits']['hits']
@@ -819,7 +819,7 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
           result_obj['hits'].append(hit)
       elif len(hits2) == 0:
         result_obj['missed'] = str(qobj['place_id']) + ': ' + qobj['title']
-        print('q2: no hits',q2)
+        #print('q2: no hits',q2)
   result_obj['hit_count'] = hit_count
   return result_obj
 
@@ -869,6 +869,7 @@ def align_wdlocal(pk, **kwargs):
   
   print('wtf? scope, count',scope,qs.count())
   for place in qs:
+    print('review_wd',place.review_wd)
     #place = get_object_or_404(Place, pk=6596036)
     # build query object
     qobj = {"place_id":place.id,
@@ -938,7 +939,7 @@ def align_wdlocal(pk, **kwargs):
       count_hit +=1
       total_hits += len(result_obj['hits'])
       for hit in result_obj['hits']:
-        print('pre-write hit', hit)
+        #print('pre-write hit', hit)
         if hit['pass'] == 'pass0': 
           count_p0+=1 
         if hit['pass'] == 'pass1': 

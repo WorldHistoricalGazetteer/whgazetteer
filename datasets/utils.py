@@ -803,8 +803,7 @@ def post_recon_update(ds, user, task):
 
 # TODO: faster?
 class UpdateCountsView(View):
-  """ Returns counts of unreviewed hits, per pass and total; also deferred per task 
-  TODO: counts of unreviewed *records* not hits
+  """ Returns counts of unreviewed records, per pass and total; also deferred per task 
   """
   @staticmethod
   def get(request):
@@ -856,39 +855,6 @@ class UpdateCountsView(View):
       }
     #print(json.dumps(updates, indent=2))        
     return JsonResponse(updates, safe=False)
-
-class UpdateCountsViewBak(View):
-  """ Returns counts of unreviewed hits, per pass and total """
-  @staticmethod
-  def get(request):
-    #print('UpdateCountsView GET:',request.GET)
-    """
-    args in request.GET:
-        [integer] ds_id: dataset id
-    """
-    ds = get_object_or_404(Dataset, id=request.GET.get('ds_id'))
-    deferred_wd = ds.places.filter(review_wd = 2).values_list('id', flat=True)
-    deferred_tgn = ds.places.filter(review_tgn = 2).values_list('id', flat=True)
-    deferred_whg = ds.places.filter(review_whg = 2).values_list('id', flat=True)
-
-    updates={}
-    # counts of distinct place ids w/unreviewed hits per task/pass
-    for t in ds.tasks.all():
-      hits0 = Hit.objects.filter(task_id=t.task_id,query_pass='pass0', reviewed=False).values_list("place_id",flat=True).distinct()
-      hits1 = Hit.objects.filter(task_id=t.task_id,query_pass='pass1', reviewed=False).values_list("place_id",flat=True).distinct()
-      hits2 = Hit.objects.filter(task_id=t.task_id,query_pass='pass2', reviewed=False).values_list("place_id",flat=True).distinct()
-      hits3 = Hit.objects.filter(task_id=t.task_id,query_pass='pass3', reviewed=False).values_list("place_id",flat=True).distinct()
-
-      sum = hits0.count()+hits1.count()+hits2.count()+hits3.count()
-      updates[t.task_id] = {
-        "task":t.task_name,
-        "total":sum, 
-        "pass0":hits0.count(), 
-        "pass1":hits1.count(), 
-        "pass2":hits2.count(), 
-        "pass3":hits3.count() }
-    return JsonResponse(updates, safe=False)
-
 
 # ***
 # UPLOAD UTILS

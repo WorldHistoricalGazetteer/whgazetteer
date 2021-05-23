@@ -109,15 +109,23 @@ class Dataset(models.Model):
 
   # count of unreviewed hits
   @property
-  def unreviewed(self):
+  def unreviewed_hitcount(self):
     unrev=Hit.objects.all().filter(dataset_id=self.id, reviewed=False).count()
     return unrev
-  
   # count of unindexed places
   @property
   def unindexed(self):
     unidxed=self.places.filter(indexed=False).count()
     return unidxed
+
+  # count of reviewed places
+  @property
+  def reviewed_places(self):
+    result = {}
+    result['rev_wd'] = self.places.filter(review_wd = 1).count()
+    result['rev_tgn'] = self.places.filter(review_tgn = 1).count()
+    result['rev_whg'] = self.places.filter(review_whg = 1).count()
+    return result
 
   # status of each recon task type
   @property
