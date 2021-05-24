@@ -67,12 +67,6 @@
                   <input type="radio" class="form-check-input" id="r_whg"
                     name="recon" value="idx">WHG (accession/reconcile) 
                 </label>
-                <!--<div class="form-check text-danger">-->
-                  <!--<label class="form-check-label" for="r_whgpre">-->
-                    <!--<input type="radio" class="form-check-input" id="r_whgpre"-->
-                      <!--name="recon" value="whg">WHG (align only)-->
-                  <!--</label>-->
-                <!--</div>-->
                 <div id="wd_lang" class="hidden">
                   Preferred label language: <input class="input-sm col-xs-2"type="text" name="lang">
                 </div>
@@ -119,42 +113,44 @@
                 </div>
                 {% endif %}
               </div>
-              <div id="geo_constraint" class="mt-2">
-                <hr/>
-                <div class="mb-2">
-                  <p class="font-weight-bold">Geographic bounds <span class="help-matches" data-id="geo_bounds">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
-                  </p>
-                  <p>
-                    <select id="select_region" name="region" class="custom-select-sm" style="width:auto;">
-                      <option value="0">Select pre-defined region</option>
-                      <option disabled>___________</option>
-                      {% for r in region_list %}
-                        <option value="{{ r.id }}">{{ r.title }}</option>
-                      {% endfor %}
-                    </select><span class="ml-2"><b>or...</b></span></p>
-                  <p>
-                    <select id="select_userarea" name="userarea" class="custom-select-sm" style="width:auto;">
-                      <option value="0" selected="selected">Select user-defined study area</option>
-                      <option disabled>___________</option>
-                      {% for a in area_list %}
-                          <option value="{{ a.id }}">{{ a.title }}</option>
-                      {% endfor %}
-                      <option value="create">{ new }</option>
-                    </select>
-                  <span class="ml-2 small">
-                    <a href="{% url 'areas:area-create' %}?next=/datasets/{{ds.id}}/addtask">create user area</a>
-                  </span></p>
+              <div id="addtask_lower">
+                <div id="geo_constraint" class="mt-2">
+                  <hr/>
+                  <div class="mb-2">
+                    <p class="font-weight-bold">Geographic bounds <span class="help-matches" data-id="geo_bounds">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
+                    </p>
+                    <p>
+                      <select id="select_region" name="region" class="custom-select-sm" style="width:auto;">
+                        <option value="0">Select pre-defined region</option>
+                        <option disabled>___________</option>
+                        {% for r in region_list %}
+                          <option value="{{ r.id }}">{{ r.title }}</option>
+                        {% endfor %}
+                      </select><span class="ml-2"><b>or...</b></span></p>
+                    <p>
+                      <select id="select_userarea" name="userarea" class="custom-select-sm" style="width:auto;">
+                        <option value="0" selected="selected">Select user-defined study area</option>
+                        <option disabled>___________</option>
+                        {% for a in area_list %}
+                            <option value="{{ a.id }}">{{ a.title }}</option>
+                        {% endfor %}
+                        <option value="create">{ new }</option>
+                      </select>
+                    <span class="ml-2 small">
+                      <a href="{% url 'areas:area-create' %}?next=/datasets/{{ds.id}}/addtask">create user area</a>
+                    </span></p>
+                  </div>
                 </div>
-              </div>
-              <div class="bottom">
-                <hr/>
-                <button type="submit" id="btn_startrecon" class="btn btn-primary">Start</button>
-                <span title="back"><a id="cancel_taskadd" href="#">Cancel</a></span>
-                <span id="q_accept" class="ml-3 small">
-                  <input id="accept_geom" name="geom" type="checkbox" checked="checked"/> accept geometries in matches
-              <span class="help-matches" data-id="accept-geometry">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
-                </span>
-              </div>
+                <div class="bottom">
+                  <hr/>
+                  <button type="submit" id="btn_startrecon" class="btn btn-primary">Start</button>
+                  <span title="back"><a id="cancel_taskadd" href="#">Cancel</a></span>
+                  <span id="q_accept" class="ml-3 small">
+                    <input id="accept_geom" name="geom" type="checkbox" checked="checked"/> accept geometries in matches
+                <span class="help-matches" data-id="accept-geometry">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
+                  </span>
+                </div>
+              </div> <!-- #addtask_lower -->
             {% endif %} <!-- ds.ds_status != 'accessioning' -->
           {% endif %} <!-- ds.unindexed -->
         </div> <!-- recon_form -->
@@ -164,11 +160,11 @@
             {% leaflet_map "map_recon" %}
           </div>
           {% endif %}
-          <div>
-            <p> ds status: {{ ds.ds_status }}
-            <p>unindexed: {{ds.unindexed}}</p>
-            <p>remaining: {{ remain_to_review }}</p>
-          </div>
+          <!--<div>-->
+            <!--<p> ds status: {{ ds.ds_status }}-->
+            <!--<p>unindexed: {{ds.unindexed}}</p>-->
+            <!--<p>remaining: {{ remain_to_review }}</p>-->
+          <!--</div>-->
         </div> <!-- recon_result -->
       </div> <!-- row -->
       {% else %}
@@ -248,6 +244,24 @@
   <!--})-->
 
   $(function(){
+    <!--console.log('msg_wdlocal', JSON.parse("{ msg_wdlocal|safe }}"))-->
+    <!--console.log('msg_wdlocal', "{{ msg_wdlocal.type }}")-->
+    <!--console.log('msg_tgn', "{{ msg_tgn.type }}")-->
+    <!--console.log('msg_whg', "{{ msg_whg.type }}")-->
+    msgs = ["{{ msg_wdlocal.type }}","{{ msg_tgn.type }}","{{ msg_whg.type }}"]
+    console.log('msgs',msgs)
+    if("{{ msg_wdlocal.type }}" == 'done'){
+      $("#r_wdlocal").attr('disabled',true)
+    }
+    if("{{ msg_tgn.type }}" == 'done'){
+      $("#r_tgn").attr('disabled',true)
+    }
+    <!--found = arr1.some(r=> arr2.includes(r))-->
+    found = msgs.slice(0,2).some(r=> ['none','unreviewed'].includes(r))
+    <!--if(msgs.slice(0,2).includes("done") && !msgs.slice(0,2).includes("inprogress")){-->
+    if(msgs.slice(0,2).includes("done") && !found){
+      $("#addtask_lower").addClass("hidden")
+    }
     // set default 
     $("#r_keep_wd").attr('checked', true)
     

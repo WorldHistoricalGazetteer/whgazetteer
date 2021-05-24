@@ -2388,15 +2388,21 @@ class DatasetAddTaskView(LoginRequiredMixin, DetailView):
     # deliver status messae(s) to template
     msg_unreviewed = """There is a <span class='strong'>%s</span> task in progress, and all %s records that got hits remain unreviewed. <span class='text-danger strong'>Starting this new task will delete the existing one</span>, with no impact on your dataset."""
     msg_inprogress = """<p class='mb-1'>There is a <span class='strong'>%s</span> task in progress, and %s of the %s records that had hits have been reviewed. <span class='text-danger strong'>Starting this new task will archive the existing task and submit only unreviewed records.</span>. If you proceed, you can keep or delete prior match results (links and/or geometry):</p>"""
+    msg_done = """All records have been submitted for reconciliation to %s and reviewed. To begin the step of accessioning to the WHG index, please <a href="%s">contact our editorial team</a>"""
     for i in ds.taskstats.items():
+      auth = i[0][6:]
       if len(i[1]) > 0:
-        auth = i[0][6:]
+        #auth = i[0][6:]
         tid = i[1][0]['tid']
         remaining = i[1][0]['total']
         hadhits = gothits[tid]
         reviewed = hadhits-remaining
-        #print(auth, tid, remaining, hadhits)
-        if remaining < hadhits:
+        print('auth, tid, remaining, hadhits', auth, tid, remaining, hadhits)
+        if remaining == 0:
+          context['msg_'+auth] = {
+            'msg': msg_done%(auth,"/contact"),
+            'type': 'done'}          
+        elif remaining < hadhits:
           context['msg_'+auth] = {
             'msg': msg_inprogress%(auth, reviewed, hadhits),
             'type': 'inprogress'}
@@ -2406,6 +2412,12 @@ class DatasetAddTaskView(LoginRequiredMixin, DetailView):
             'msg': msg_unreviewed%(auth, hadhits),
             'type': 'unreviewed'
           }
+      else:
+        context['msg_'+auth] = {
+          'msg': "no tasks of this type",
+          'type': 'none'
+        }
+        
     active_tasks = dict(filter(lambda elem: len(elem[1]) > 0, ds.taskstats.items()))
     remaining = {}
     for t in active_tasks.items():
