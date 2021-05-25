@@ -5,7 +5,7 @@
 {% load fontawesome %}
 {% load static %}
 
-{% block title %}<title>beta2a</title>{% endblock %}
+{% block title %}<title>WHG v2dev</title>{% endblock %}
 {% block extra_head %}
   {% leaflet_js %}
   {% leaflet_css %}
@@ -31,33 +31,37 @@
 	<div id="banner" class="banner-bare w-100 my-1 p-2">
 		<div class="centered w-100">
 		  <span class="title mb-0"><img src="{% static 'images/whg_logo.svg'%}" class="d-inline-block align-bottom" height=80 width=80 alt=""/>World Historical Gazetteer</span>
-		  <span id="tagline" class="mx-auto" style="display:block">linking scholarship about the past via place</span>
+		  <span id="tagline" class="mx-auto" style="display:block">linking knowledge about the past via place</span>
 		</div>
 	</div>
 	<div id="content" class="row mx-0">
 		<div class="home-col-wrapper col-sm-5 h-100">
 			<div id="content_left" class="d-flex flex-column p-2">
-				<div class="h5 w-100 mb-1 home-header">Features</div>
-				<div class="wrapper-left">
-				  <div class="item-left mb-1 pl-2">
-					<p><img src="{% static 'images/001-binoculars.png'%}" class="d-inline-block mr-3 mt-1" height=48 width=48 alt=""/><b>Explore historical place data</b><a href="{% url 'search-page' %}"><span class="link-spanner"></span></a></p>
-					<!--<span class="float-right"><img src="{ static 'images/right-arrow.png'%}"</span></p>-->
-					</div>
-					<div class="item-left mb-1 px-2">
-					  <p><img src="{% static 'images/001-up-arrow.png' %}" class="d-inline-block mr-3 mt-1" height=48 alt="upload, enhance, publish"/><b>Enhance</b> your place data<a href="{% url 'main:tute-walkthrough' %}"><span class="link-spanner"></span></a></p>
-					</div>
-					<div class="item-left mb-1 px-2">
-						<p><img src="{% static 'images/010-jigsaw.png'%}" class="d-inline-block mr-3" height=48 alt="contribute"/><b>Publish</b> Linked Open Data<a href="{% url 'main:tute-contributing' %}"><span class="link-spanner"></span></a></p>
-					</div>
-					<div class="item-left mb-1 px-2">
-						<p><img src="{% static 'images/008-collect.png'%}" class="d-inline-block mr-3 mt-1" height=48 width=48 alt=""/><b>Build and share collections</b><a href="{% url 'main:tute-collections' %}"><span class="link-spanner"></span></a></p>
-					</div>
-					<div class="item-left mb-1 px-2">
-						<p><img src="{% static 'images/006-api-2.png'%}" class="d-inline-block mr-3 mt-1" height=48 width=48 alt=""/><b>Access Linked Data</b><a href="{% url 'usingapi' %}"><span class="link-spanner"></span></a></p>
-					</div>
-				</div>
-			</div>
-		</div> <!-- content_left-->
+			  <div class="home-header h5 w-100 mb-1">Features</div>
+			  <div class="wrapper-left">
+				<div class="item-left row mx-0 mb-1 pl-2" id="item_left_search">
+				  <div class="col-sm-2 home-icon"><img src="{% static 'images/001-binoculars.png'%}" class="" height=54 width=54 alt=""/><span class="helper"></span></div>
+				  <div class="col-sm-10 pt-1"><p class="pr-2"><b>Explore</b> linked historical place data with faceted search<a href="{% url 'search-page' %}"><span class="link-spanner"></span></a></p></div>
+				</div><!-- .item-left -->
+				<div class="item-left row mx-0 mb-1 pl-2">
+				  <div class="col-sm-2 home-icon"><img src="{% static 'images/001-up-arrow.png'%}" class="" height=48 width=48 alt=""/></div>
+				  <div class="col-sm-10 pt-1"><p class="pr-2"><b>Augment</b> your data with geometry and identifiers from Wikidata and Getty TGN<a href="{% url 'main:tute-walkthrough' %}"><span class="link-spanner"></span></a></p></div>
+				</div><!-- .item-left -->
+				<div class="item-left row mx-0 mb-1 pl-2">
+				  <div class="col-sm-2 home-icon"><img src="{% static 'images/010-jigsaw.png'%}" class="" height=48 width=48 alt=""/></div>
+				  <div class="col-sm-10 pt-1"><p class="pr-2"><b>Contribute</b> to WHG by publishing place data, then linking it with others' in our index<a href="{% url 'main:tute-contributing' %}"><span class="link-spanner"></span></a></p></div>
+				</div> <!-- .item-left -->
+				<div class="item-left row mx-0 mb-1 pl-2">
+				  <div class="col-sm-2 home-icon"><img src="{% static 'images/008-collect.png'%}" class="" height=48 width=48 alt=""/></div>
+				  <div class="col-sm-10 pt-3"><p class="pr-2"><b>Build and share collections</b> by linking datasets<a href="{% url 'main:tute-collections' %}"><span class="link-spanner"></span></a></p></div>
+				</div> <!-- .item-left --> 
+				<div class="item-left row mx-0 mb-1 pl-2">
+				  <div class="col-sm-2 home-icon"><img src="{% static 'images/006-api-2.png'%}" class="" height=48 width=48 alt=""/></div>
+				  <div class="col-sm-10 pt-1"><p class="pr-2"><b>Access Linked Data</b> via our application programming interface<a href="{% url 'usingapi' %}"><span class="link-spanner"></span></a></p></div>
+				</div> <!-- .item-left -->
+			  </div> <!-- wrapper-left-->
+		  </div> <!-- content_left-->
+		</div>
 		<div class="home-col-wrapper col-sm-7 h-100">
 			<div id="content_right" class=" d-flex flex-column p-2">
 				<div class="h5 w-100 home-header">Selected Datasets and Collections</div>
@@ -70,7 +74,7 @@
 							<span class="col-bottom cb-coll">collection</span>
 						</div>
 						<div class="col-6 item-right px-2">
-							<p class="mt-0"><a href="{% url 'datasets:ds_detail' 2 %}">D-Place</a></p>
+							<p class="mt-0"><a href="{% url 'datasets:ds_meta' 2 %}">D-Place</a></p>
 							<div class="coll-description">D-PLACE (the Database of Places, Language, Culture, and Environment) contains cultural, linguistic, environmental and geographic information for over 1400 human ‘societies’. </div>							
 							<span class="col-bottom cb-dataset">dataset</span>
 						</div>

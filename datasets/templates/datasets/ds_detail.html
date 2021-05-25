@@ -22,12 +22,22 @@
 
 {% block content %}
 <div id="dataset_content" class="container mt-1 px-1">
+
+  <ul id="dataset_tabs" class="nav nav-tabs" role="tablist">
+      <span class="ds-title ml-1 mr-3">{{ object.title }}</span>
+      <li class="nav-item">
+          <a class="nav-link" id="summary-tab" data-link="summary" href="{% url 'datasets:ds_meta' pk=object.id %}" role="tab">Summary</a>
+      </li>
+      <li class="nav-item">
+          <a class="nav-link active" id="browse-tab" href="" role="tab" >Browse</a>
+      </li>
+  </ul>  
   <div class="tab-content">
     <div id="browse" class="tab-pane fade show active" role="tabpanel" aria-labelledby="browse-tab">
         <div class="container mt-3 pl-0">
           <div class="row">
             <div id="drftable_detail" class="col-sm-5">
-              <h5>{{ object.title }}</h5>
+              <!--<h5>{{ object.title }}</h5>-->
               <div class="toomany"></div>
               <div id="mapdiv_browse" style="position:relative">
                   {% leaflet_map "map_browse" %}

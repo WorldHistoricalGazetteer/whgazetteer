@@ -23,7 +23,18 @@
 {% block content %}
 <div id="dataset_content" class="container mt-1 px-1">
   <!--{ include 'datasets/ds_tabs.html' %}-->
-  <span class="ds-title ml-1 mr-3">{{ object.title }}</span>
+  <!--<span class="ds-title ml-1 mr-3">{{ object.title }}</span>-->
+
+  <ul id="dataset_tabs" class="nav nav-tabs" role="tablist">
+      <span class="ds-title ml-1 mr-3">{{ object.title }}</span>
+      <li class="nav-item">
+          <a class="nav-link active" id="summary-tab" data-link="summary" href="" role="tab" aria-controls="summary" aria-selected="false">Summary</a>
+      </li>
+      <li class="nav-item">
+          <a class="nav-link" id="browse-tab" href="{% url 'datasets:ds_detail' pk=object.id %}" role="tab" aria-controls="browse" aria-selected="false">Browse</a>
+      </li>
+  </ul>
+  
   <div class="tab-content">
     <div id="summary" class="tab-pane fade show active" role="tabpanel" aria-labelledby="summary-tab">
       <form id="ds_form" method="POST" action="#" enctype="multipart/form-data">
@@ -39,10 +50,13 @@
             <td><b>Title</b></td>
             <td>
               <span class="form-title bigger strong">{{ object.title }}
-                {% if object.webpage %}(<a href="{{ object.webpage }}" target="_blank">webpage</a> <a href="#" class="edit-webpage">{% fontawesome_icon 'edit' color='#336699' %}</a>){% endif %}
+                {% if object.webpage %} <a href="{{ object.webpage }}" target="_blank">webpage {% fontawesome_icon 'external-link' color='#336699' %}</a>{% endif %}
               </span>
             </td>
           </tr>
+          <tr>
+            <td><b># Records</b></td><td>{{ object.numrows }}
+          </tr>          
           <tr>
             <td><b>URI base</b></td>
             <td>
@@ -64,16 +78,6 @@
             <td>{{ object.creator }}</td>
           </tr>
         </table>
-        <!--<input type="hidden" name="owner" value="{{ ds.owner.id }}">-->
-        <!--<input type="hidden" name="label" value="{{ ds.label }}">-->
-        <!--<input type="hidden" name="datatype" value="{{ current_file.datatype }}">-->
-        <!--<input type="hidden" name="rev" value="{{ current_file.rev }}">-->
-        <!--<input type="hidden" name="format" value="{{ current_file.format }}">-->
-        <!--<input type="hidden" name="delimiter" value="{{ current_file.delimiter }}">-->
-        <!--<input type="hidden" name="df_status" value="{{ current_file.df_status }}">-->
-        <!--<input type="hidden" name="accepted_date" value="2020-04-01">-->
-        <!--<input type="hidden" name="header" value="{{ current_file.header }}">-->
-        <!--<input type="hidden" name="numrows" value="{{ current_file.numrows }}">-->
       </div>
       <div class="col-sm-4 small">
         <div id="ds_info">
@@ -81,7 +85,7 @@
             <!--<table style="width:100%">-->
               <!--<!--<tr><td class="pb-3"><b>Status</b></td><td class="pb-3">{ ds.ds_status }}</td><td class="pb-3"></td></tr>-->
               <!--<tr><th></th><th class="pb-1 text-secondary">count</th><th class="pb-1 text-secondary">added</th></tr>-->
-              <!--<tr><td><b>Records</b></td><td>{{ ds.numrows }}</td><td class="text-secondary">n/a</td></tr>-->
+              <!--<tr><td><b>Records</b></td><td>{{ object.numrows }}</td><td class="text-secondary">n/a</td></tr>-->
               <!--<tr><td><b>Name variants</b></td><td>{{ num_names }}</td><td class="text-secondary">n/a</td></tr>-->
               <!--<tr>-->
                 <!--<td><b>Geometries</b></td><td>{{ num_geoms }}</td>-->
@@ -102,14 +106,13 @@
           <!--</div>-->
           <div id="ds_access" class="pt-0 px-0 ds-card">
             <p class="ds-card-header">Access</p>
-            <p class="m-0 pl-2 pr-2">
-              Metadata edits, dataset updates, and initiation of reconciliation tasks may only be performed by the dataset contributor ("owner" in WHG). Collaborators added by the owner under the "Sharing" tab can view the dataset and perform review of reconciliation tasks.</p>
+            <p class="m-0 pl-2 pr-2">Lorem ipsum</p>
           </div>
           <!--{ if user.is_superuser or user in owners %}-->
           <div id="ds_downloads" class="pt-0 px-0 ds-card">
             <p class="ds-card-header">Downloads</p>
             <p class="m-0 pl-2 pr-2">
-              <!--{ if object.id > 2 %} <!-- exclude black, dplace, which have no upload files -->-->
+              <!--{ if object.id > 2 %} <!-- exclude black, dplace, which have no upload files -->
                 <!--<a href="{% url 'datasets:dl-file' object.id %}" ref="current">Current data file</a>-->
               <!--{ endif %}-->
                 <!--<br/>-->

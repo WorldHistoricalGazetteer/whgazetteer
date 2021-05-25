@@ -167,6 +167,8 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
 #tagline {
   width: 59%;
   font-weight: bold;
+  font-size: 1.2rem;
+  color: #999;
   /*background-color: rgba(242,240,230,0.7);*/
   margin-top: -12px;
 }
@@ -199,14 +201,20 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
 .item-left {
   position: relative;
   min-height: 74px;
-  background-color: #fff;
+  /*background-color: rgb(248 253 255);*/
+  background-color: rgb(255 253 248);
   border: 1px dotted #666;
   border-radius: 4px;
   box-shadow: 2px 2px #ccc;
   /*cursor: pointer;*/
   /*background-image: url('/static/images/right-arrow.png') right no-repeat;*/
 }
-.item-left p { margin: .5rem 0;}
+.item-left p { margin:.5rem 0; font-size:.95rem;}
+#item_left_search {
+  background-image: url('/static/images/search-map-50_425x80.png');
+  background-color: #fff !important;
+  font-weight:600;
+}
 .link-spanner { 
   position:absolute; 
   width:100%;
@@ -218,6 +226,8 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
      make sure you have an empty gif */
   background-image: url('/static/images/empty.gif');
 } 
+.home-icon { margin:0; padding:12px 0 0 0; text-align:center; }
+.imghelper {display: inline-block; height: 100%; vertical-align:middle;}
 .item-right {
   min-height: 100px;
   max-height: 200px;
@@ -253,7 +263,7 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
 /*}*/
 
 .wrapper-left { overflow: auto; }
-.wrapper-left b { color: #993333;}
+.wrapper-left b { color: #336699;}
 .wrapper-right { overflow: auto; }
 
 
