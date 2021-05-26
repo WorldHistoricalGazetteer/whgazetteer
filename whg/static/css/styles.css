@@ -92,6 +92,11 @@ label {vertical-align:top;}
 
 /* lists */
 .li-left {margin-left: -1rem;}
+ul.no-bullets {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
 .ul-flush{
   display: table;
   margin-left: 0;
@@ -494,15 +499,30 @@ em { color: #993333;}
 /**
   collections
 **/
-.ds_panel {
-  padding: .2rem 0 1rem .2rem ;
+#coll_meta table td {
+  border-left: 1em solid transparent;
+  vertical-align: top;
+  /*border-top: 1em solid transparent;*/
+}
+#coll_meta table td:first-child {
+   border-left: 0;
+}
+#coll_meta table tr:first-child td {
+   border-top: 0;
+}
+#coll_dslist {}
+#coll_dscards { overflow-y: auto; }
+.ds_card {
+  padding: .2rem;
   border: 1px dashed #999;
   border-radius: 8px;
   margin-bottom: .5rem;
+  background-color: rgb(255 253 248);
 }
 .ds_title { font-weight:600; color:#993333;}
-.ds_fields { border-top: 1px solid #ccc;}
+/*.ds_fields { border-top: 1px solid #ccc;}*/
 .ds_fields p { font-size: .9rem;}
+
 /**
   place portal
 **/

@@ -125,7 +125,9 @@ class Dataset(models.Model):
   # list of dataset geometries
   @property
   def geometries(self):
-    return PlaceGeom.objects.filter(place_id__in=self.placeids).values_list('jsonb', flat=True)
+    #g_list_b =[g.jsonb for g in place.geoms.all()]
+    g_list = PlaceGeom.objects.filter(place_id__in=self.placeids).values_list('jsonb', flat=True)
+    return g_list
 
   @property
   def format(self):

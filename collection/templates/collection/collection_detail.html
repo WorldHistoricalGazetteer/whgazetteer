@@ -16,47 +16,9 @@
   <link rel="stylesheet" href="{% static 'js/tags/bootstrap-tagsinput.css' %}"/>
   <link rel="stylesheet" href="{% static 'js/tags/bootstrap-tagsinput-typeahead.css' %}"/>
   
-  <script src="{% static 'js/leaflet-draw/Leaflet.draw.js' %}"></script>
-  <script src="{% static 'js/leaflet-draw/Leaflet.Draw.Event.js' %}"></script>
-  <link rel="stylesheet" href="{% static 'js/leaflet-draw/leaflet.draw.css' %}"/>
-
-  <script src="{% static 'js/leaflet-draw/Toolbar.js' %}"></script>
-  <script src="{% static 'js/leaflet-draw/Tooltip.js' %}"></script>
-
-  <script src="{% static 'js/leaflet-draw/ext/GeometryUtil.js' %}"></script>
-  <script src="{% static 'js/leaflet-draw/ext/LatLngUtil.js' %}"></script>
-  <script src="{% static 'js/leaflet-draw/ext/LineUtil.Intersect.js' %}"></script>
-  <script src="{% static 'js/leaflet-draw/ext/Polygon.Intersect.js' %}"></script>
-  <script src="{% static 'js/leaflet-draw/ext/Polyline.Intersect.js' %}"></script>
-  <script src="{% static 'js/leaflet-draw/ext/TouchEvents.js' %}"></script>
-
-  <script src="{% static 'js/leaflet-draw/draw/DrawToolbar.js' %}"></script>
-  <script src="{% static 'js/leaflet-draw/draw/handler/Draw.Feature.js' %}"></script>
-  <script src="{% static 'js/leaflet-draw/draw/handler/Draw.SimpleShape.js' %}"></script>
-  <script src="{% static 'js/leaflet-draw/draw/handler/Draw.Polyline.js' %}"></script>
-  <script src="{% static 'js/leaflet-draw/draw/handler/Draw.Marker.js' %}"></script>
-  <script src="{% static 'js/leaflet-draw/draw/handler/Draw.Circle.js' %}"></script>
-  <script src="{% static 'js/leaflet-draw/draw/handler/Draw.CircleMarker.js' %}"></script>
-  <script src="{% static 'js/leaflet-draw/draw/handler/Draw.Polygon.js' %}"></script>
-  <script src="{% static 'js/leaflet-draw/draw/handler/Draw.Rectangle.js' %}"></script>
-
-  <script src="{% static 'js/leaflet-draw/edit/EditToolbar.js' %}"></script>
-  <script src="{% static 'js/leaflet-draw/edit/handler/EditToolbar.Edit.js' %}"></script>
-  <script src="{% static 'js/leaflet-draw/edit/handler/EditToolbar.Delete.js' %}"></script>
-
-  <script src="{% static 'js/leaflet-draw/Control.Draw.js' %}"></script>
-
-  <script src="{% static 'js/leaflet-draw/edit/handler/Edit.Poly.js' %}"></script>
-  <script src="{% static 'js/leaflet-draw/edit/handler/Edit.SimpleShape.js' %}"></script>
-  <script src="{% static 'js/leaflet-draw/edit/handler/Edit.Rectangle.js' %}"></script>
-  <script src="{% static 'js/leaflet-draw/edit/handler/Edit.Marker.js' %}"></script>
-  <script src="{% static 'js/leaflet-draw/edit/handler/Edit.CircleMarker.js' %}"></script>
-  <script src="{% static 'js/leaflet-draw/edit/handler/Edit.Circle.js' %}"></script>
-  
   <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.css' rel='stylesheet' />
   <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.js'></script>
   <script src="{% static 'js/leaflet-mapbox-gl.js' %}"></script>
-
 {% endblock %}
 
 {% block content %}
@@ -65,40 +27,43 @@
     The <span class="text-danger">{{ object.title }}</span> Collection
   </h4>
   <div class="d-flex">
-    <div class="form-box mt-2 col-sm-4">
-      <input type="hidden" name="owner" value='{{ user.id }}'></input>
-      <p><b>Title</b>: {{ object.title }}</p>
-      <p><b>Description</b>: {{ object.description }}</p>
-      <p><b>Tags</b>: {{ object.tags }}
-      <p><b>Created</b>: {{ object.create_date }}</p>
-      <hr/>
-      <p id="referrer"></p>
-    </div>
-    <div id="coll_builder" class="col-sm-8 p-3">
-      <div class="row">
-        <div class="col-sm-7">
-          <h4>Datasets</h4>
-          <!-- id, label, title, description, creator, create_date, webpage, numrows, datatype -->
-          <div id="coll_panels">
-            {% for d in ds_list %} 
-              <div class="ds_panel">
-                <p class="mb-0"><span class="ds_title">{{ d.title }}</span> ({{d.label}}/{{ d.id}})</p>
-                <div class="ds_fields">
-                  <p class="my-1"><b>Description</b>: {{ d.description }}</p>
-                  <p class="my-1"><b>Create date</b>: {{ d.create_date }}</p>
-                  <p class="my-1"><b># rows</b>: {{ d.numrows }}</p>
-                </div>
-              </div>
-            {% endfor %}
-            <!--{ endif %}-->
-          </div> <!-- #coll_panels -->
-        </div> <!-- .col-sm-8 -->
-        <div class="col-sm-5">
-          <div id="mapdiv_coll" class="mt-2">
-            {% leaflet_map "map_coll" %}
-          </div>
-        </div>
+    <div class="form-box col-sm-5 mt-2">
+      <div id="coll_meta">
+        <table>
+        <tr><td><b>Description</b></td><td>{{ object.description }}<//tr>
+        <tr><td><b>Tags</b></td><td>{{ object.tags|join:', ' }}</tr>
+        <tr><td><b>Created</b></td><td>{{ object.create_date|date:"d M Y" }}</tr>
+        </table>
       </div>
+      <hr/>{%comment%}
+      {% for g in bboxes %}
+        {{ g|safe|json_script:d.id }}
+      {% endfor %}{%endcomment%}
+      <div id="coll_dslist">
+        <h5>Datasets</h5>
+        <!-- fields: id, label, title, description, creator, create_date, webpage, numrows, datatype -->
+        <div id="ds_cards">
+          {% for d in ds_list %} 
+            <div class="ds_card">
+              <div class="ds_fields">
+                <ul class="no-bullets">
+                <li class=""><b>Title</b>: 
+                  <a class="ds_title" href="{% url 'datasets:ds_meta' d.id %}">{{ d.title }}</a> ({{ d.id}})</li>
+                <li class=""><b>Description</b>: {{ d.description }}</li>
+                <li class=""><b>Created</b>: {{ d.create_date|date:"d M Y" }}</li>
+                <li class=""><b>Number of records</b>: {{ d.numrows }}</li>
+                </ul>
+              </div>
+            </div>
+          {% endfor %}
+        </div> <!-- #ds_cards -->        
+      </div> <!-- #coll_dslist -->
+    </div>
+    <div id="coll_map" class="col-sm-7 mt-2">
+      <div id="mapdiv_coll" class="">
+        {% leaflet_map "map_coll" callback="map_init" %}
+      </div>
+      <!--<div>{ bboxes }}</div>-->
     </div> <!-- .row -->
   </div> <!-- d-flex -->
 </div> <!-- container -->
@@ -114,72 +79,65 @@
     $("#id_geojson").attr("placeholder","generated from country codes")
   })
 
-  $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-    var target = $(e.target).attr("href") // activated tab
-    area_type = $(e.target).attr("ref") // activated tab
-    map_clear() // switch create modes? clear the deck
-    // feed area type to hidden input
-    $("input[name='type']").val(area_type)
-    // console.log('tab id:',target);
-    active = $("ul#area_tabs_ul a.active").attr("href")
-    // TODO: better refactor 
-    if (target == '#areas_codes') {
-      $("#id_geojson").attr("placeholder","generated from country codes")
-      if ($(".leaflet-draw-toolbar").length > 0) {
-          // console.log('remove drawControl')
-          $(".leaflet-draw").remove()
-      }
-    } else if (target == '#areas_draw') {
-      $("#id_geojson").attr("placeholder","generated from drawn shapes")
-      if ($(".leaflet-draw").length == 0) {
-        drawnItems = L.featureGroup().addTo(mappy)
-        drawControls(drawnItems)
-        mappy.on(L.Draw.Event.CREATED, function (event) {
-          window.drawnlayer = event.layer;
-          console.log('drawnlayer',drawnlayer)
-          drawnItems.addLayer(drawnlayer);
-          drawnItems.addTo(mappy)
-          <!--$("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON()))-->
-          $("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON().features[0].geometry))
-        });
-        mappy.on(L.Draw.Event.EDITED, function (event) {
-          <!--$("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON()))-->
-          $("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON().features[0].geometry))
-          console.log('you changed it')
-        });
-        mappy.on(L.Draw.Event.DELETED, function (event) {
-          <!--$("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON()))-->
-          $("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON().features[0].geometry))
-          <!--drawnItems.addTo(mappy)-->
-          console.log('you deleted something')
-        })
-      }
-    }
-  });
   // expose leaflet map for events, call it 'mappy'
   window.addEventListener('map:init', function (e) {
-    console.log('map:init, w.action', '{{ action }}')
     window.mappy = e.detail.map
-    var attrib_mb = 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
-            '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-            'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-      token_mb = '{{ mbtokenmb }}',
-      mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}';
-      
+    mappy.setMaxBounds(null)
 
-    var satellite  = L.tileLayer(mbstyle_url, {id:'mapbox/satellite-streets-v11', token:token_mb});
-    var osm  = L.tileLayer(mbstyle_url, {id:'mapbox/light-v10', token:token_mb});
-  
-    drawnItems = L.featureGroup().addTo(mappy)
+    // mapbox tokens 
+    var token_kg = '{{ mbtokenkg }}', 
+        token_whg = '{{ mbtokenwhg }}', 
+        token_mb = '{{ mbtokenmb }}';
+    
+    // style/tile urls
+    var mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}',
+        mbtiles_url = 'https://api.mapbox.com/v3/{id}/{z}/{x}/{y}.png',
+        ne_url = 'http://blog.whgazetteer.org/tiles/ne/{z}/{x}/{y}.png';
+      
+    var satellite  = L.tileLayer(mbstyle_url, {
+      id:'mapbox/satellite-streets-v11', 
+      token:token_mb}),
+    osm  = L.tileLayer(mbstyle_url, {
+      id:'mapbox/light-v10', 
+      token:token_mb}),
+    ne_mb = L.tileLayer(mbtiles_url, {
+      id:'kgeographer.ne_global', 
+      token:token_kg})
+
+    // GL wrappers to display heatmaps
+    mb_terrain = L.mapboxGL({
+      style:'mapbox://styles/kgeographer/ckhf6o8yf07fw19qhbrm7f2q7',
+      accessToken:token_kg})
+
+    ne_global= L.mapboxGL({
+      style:'mapbox://styles/kgeographer/ckidglq8l2nra19nzzbl995ue',
+      accessToken:token_kg}).addTo(mappy)
+
 
     var baseLayers = {
-      "OSM": osm,
+      "NE global": ne_global,
+      "Terrain": mb_terrain,
+      <!--"NE self": ne,-->
+      "OpenStreetMap": osm,      
       "Satellite": satellite
     };
-    var overlays = {"Drawn features": drawnItems}
 
-    layerGroup = L.control.layers(baseLayers,overlays).addTo(mappy);
-    baseLayers['OSM'].addTo(mappy)
+    layerGroup = L.control.layers(baseLayers).addTo(mappy);
+    
+    $.get("/api/geoms", {ds: "{{ ds.label }}", f: "{{ filter }}" },
+      function(data){
+        <!--console.log('feature count:',data.count)-->
+        geom = {"type":"FeatureCollection","features":data.results}
+        if(geom.features.length >= 15000) {
+          $(".toomany").html('for performance reasons, mapping only the first 15,000 features - sorry!')
+        }
+        if(geom.features.length <= 15000) {
+          renderMap(geom,'browse')
+        } else {
+          $(".toomany").html('too many features to map (> '+geom.features.length+'), sorry!')
+        }
+    })    
+    <!--baseLayers['OpenStreetMap'].addTo(mappy)-->
   }, false);
 
 
@@ -195,89 +153,65 @@
 
    // initialize, render map w/settings.LEAFLET_CONFIG
   function map_init (map, options) {
-    // edit/update drawn area
-    if('{{ action }}' == 'update' && '{{ form.type.value }}' == 'drawn'){
-      // TODO: 
-      $('a[href="#areas_draw"]').tab('show');
-      $('a[href="#areas_codes"]').addClass('disabled').css("cursor","default")
-      <!--}-->
-      // load existing data for editing
-      <!--editItems = L.featureGroup()-->
-      lgeojson = L.geoJson(JSON.parse($("textarea#id_geojson").val()), {
-        onEachFeature: function (feature, layer) {
-          drawnItems.addLayer(layer);
-        }
-      }).addTo(mappy)
-      mappy.fitBounds(lgeojson.getBounds())
-      <!--console.log('geom on init',lgeojson)-->
-
-      drawControls(drawnItems)
-    } else if('{{ action }}' == 'update' && '{{ form.type.value }}' == 'ccodes') {
-      $('a[href="#areas_draw"]').addClass('disabled').css("cursor","default")
-      map_render()
-    }
+    console.log('in map_init()')  
   }  
-  function map_render() {
-    console.log('in map_render()')
-    ccodes = $("input#id_ccodes").val()
-    window.geoj = $("textarea#id_geojson")
-    window.geom = {"type":"FeatureCollection","features":[]}
-    window.buffer = $("input#buffer_km").val()
-    // console.clear()
+  
 
-    var country_url = "/media/data/countries_simplified.json"
-    // clear geoJSON
-    if (Object.keys(mappy._layers).length > 2 ) {
-      cc_layer.clearLayers()
-      hull_layer.clearLayers()
-    }
-    if (ccodes != '') {
-      // TODO: test csv format
-      ccode_arr = ccodes.toUpperCase().split(",")
-      // console.log(ccode_arr)
-      fetch(country_url)
-        .then(function(resp) {
-          return resp.json();
-        })
-        .then(function(data) {
-          // console.log('fetched data', data)
-          window.cc_layer = L.geoJson(data, {
-            filter: function(feature, layer) {
-              return ccode_arr.includes(feature.properties.iso) ;
-            },
-            onEachFeature: function onEachFeature(feature, layer) {
-              // console.log('feature:', JSON.stringify(feature))
-              geom['features'].push(feature)
-              var props = feature.properties;
-              var content = `<p>${props.iso}</p><p>${props.gnlabel}</p>`;
-              layer.bindPopup(content);
-          }}).addTo(mappy);
-        })
-        .then(function(){
-          hull = turf.buffer(turf.convex(geom),buffer,{units:'kilometers'})
-          // hull_mp = turf.multiPolygon(hull.geometry.coordinates)
-          // geoj.val(JSON.stringify(hull_mp.geometry))
-          geoj.val(JSON.stringify(hull.geometry))
-          hull_layer = L.geoJSON(hull, {
-            style: function (feature) {
-              return {color: '#ff8c00'}; }
-          }).addTo(mappy);
-          mappy.fitBounds(hull_layer.getBounds())
-        })
+  function renderMap(geom, tab){
+    // call the map being rendered 'mappo'
+    console.log('geom in renderMap()', geom)
+    mappo = tab=='browse' ? mappy : mappyr
+    if (geom.features.length==0) {
+      console.log('no features in renderMap() call')
     } else {
-      // alert('Need some comma-delimited 2-letter country codes')
+      // clear existing if any
+      if(typeof(features)!=='undefined'){
+        mappo.removeLayer(features)
+      }
+      idToFeature = {}  // for feature lookup
+      features = L.geoJSON(geom, {
+      // feature here is a geometry
+      // TODO: LPF should allow single geometry, not only GeometryCollection
+        pointToLayer: function (feature, latlng) {
+          matchid = feature.place_id
+          <!--console.log('feature',feature)-->
+          marker = L.circleMarker(latlng,styles.Point.default).bindPopup(feature.title+
+            '<br>pid: <a href="'+window.location.origin+'/api/db?id='+matchid+'" target="_blank">'+
+            matchid+'</a>');
+          idToFeature[matchid] = marker
+          return marker
+        }
+        ,onEachFeature: function(feature,layer) {
+          f=feature; l=layer;
+          <!--console.log('f,l',feature,layer)-->
+          identifier = f.place_id;
+          if(f.type != 'Point'){
+            layer.setStyle(styles[f.type].default).bindPopup(
+              f.title+'<br>pid: <a href="'+
+              window.location.origin+'/api/db?id='+
+              identifier+'" target="_blank">'+identifier+'</a>'
+            )
+            idToFeature[identifier] = layer
+          }
+        }
+      }).addTo(mappo);
     }
+    <!--highlightFeature(pid)-->
+    mappo.fitBounds(features.getBounds())
+    mappo.on('zoomend', function() {
+      var currentZoom = mappo.getZoom();
+      <!--console.log('on zoomend', currentZoom)-->
+      var myRadius = currentZoom*(1); //or whatever ratio you prefer
+      var myWeight = currentZoom*(1/5); //or whatever ratio you prefer
+      features.setStyle({radius: myRadius, weight: myWeight});
+      opt = Object.values(idToFeature)[0].options
+      foptions = { ...opt };
+      <!--console.log('zoomend() idToFeature',opt)-->
+    });
+    opt = Object.values(idToFeature)[0].options
+    foptions = { ...opt };
   }
 
-  function map_clear() {
-    if(typeof cc_layer != "undefined"){cc_layer.remove()}
-    if(typeof hull_layer != "undefined"){hull_layer.remove()}
-    $("input#id_ccodes").val(null)
-    if('{{ action }}' == "create"){
-      $("textarea#id_geojson").val(null)
-    }
-    $("#buffer_km").val(null)
-  }
 </script>
 
 {% endblock %}

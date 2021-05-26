@@ -409,11 +409,6 @@
   addEventListener('map:init', function (e) {
     window.mappy = e.detail.map
     mappy.setMaxBounds(null)
-	// attribution
-    var attrib_mb = 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
-            '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-            'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-        attrib_awmc = 'Tiles and Data &copy; 2013 <a href="http://www.awmc.unc.edu" target="_blank">AWMC</a>';
 
 	// mapbox tokens 
 	var token_kg = '{{ mbtokenkg }}', 
@@ -425,30 +420,21 @@
 		mbtiles_url = 'https://api.mapbox.com/v3/{id}/{z}/{x}/{y}.png',
 		ne_url = 'http://blog.whgazetteer.org/tiles/ne/{z}/{x}/{y}.png';
 	  
-	ne_options = {mapMinZoom: 0, mapMaxZoom: 7, opacity: 1.0, tms: false, mapExtent:[-180.00000000, -85.05112878, 179.99652662, 85.05112878]}
-
     var satellite  = L.tileLayer(mbstyle_url, {
 	  id:'mapbox/satellite-streets-v11', 
-	  token:token_mb, 
-	  attribution:attrib_mb}),
+	  token:token_mb}),
 	osm  = L.tileLayer(mbstyle_url, {
 	  id:'mapbox/light-v10', 
-	  token:token_mb, 
-	  attribution:attrib_mb}),
-	ne = L.tileLayer(ne_url, ne_options);
-    var ne_mb = L.tileLayer(mbtiles_url, {
+	  token:token_mb}),
+    ne_mb = L.tileLayer(mbtiles_url, {
 	  id:'kgeographer.ne_global', 
 	  token:token_kg})
 
-	// GL wrapper to display heatmaps
-
-	<!--terrain-->
+	// GL wrappers to display heatmaps
 	mb_terrain = L.mapboxGL({
 	  style:'mapbox://styles/kgeographer/ckhf6o8yf07fw19qhbrm7f2q7',
 	  accessToken:token_kg})
 
-	<!--natural earth global-->
-	<!--mb_terrain = L.mapboxGL({-->
 	ne_global= L.mapboxGL({
 	  style:'mapbox://styles/kgeographer/ckidglq8l2nra19nzzbl995ue',
 	  accessToken:token_kg}).addTo(mappy)

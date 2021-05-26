@@ -594,6 +594,7 @@ def hully(g_list):
   # 1 point -> Point; 2 points -> LineString; >2 -> Polygon
   try:
     hull=GeometryCollection([GEOSGeometry(json.dumps(g)) for g in g_list]).convex_hull
+    #hull=GeometryCollection([GEOSGeometry(json.dumps(g)) for g in g_list_b]).convex_hull
   except:
     print('hully() failed on g_list', g_list)
     

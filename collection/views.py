@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.views.generic import (CreateView, UpdateView, DetailView, DeleteView )
 
+from datasets.utils import hully
 from .forms import CollectionModelForm
 from .models import *
 
@@ -70,8 +71,26 @@ class CollectionDetailView(DetailView):
         qs = CollectionDataset.objects.filter(collection_id = id_)
         #coll_set = [cd.dataset for cd in qs]
 
-        context['ds_list'] = [cd.dataset for cd in qs]
-        context['foo'] = 'bar'
+        #g_list =[g.jsonb for g in place.geoms.all()]
+        ## make everything a simple polygon hull for spatial filter
+        #qobj['geom'] = hully(g_list)
+        #GeometryCollection([GEOSGeometry(json.dumps(g)) for g in g_list])
+        
+        datasets = [cd.dataset for cd in qs]
+        # compute bounding boxes
+        bboxes = []
+        #from shapely.geometry import shape
+        for ds in datasets:
+            dsgeom = [g for g in ds.geometries.all()]
+            hull = hully(dsgeom)
+            bboxes.append(hull)
+
+        context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
+        context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
+        context['mbtokenwhg'] = settings.MAPBOX_TOKEN_WHG
+
+        context['ds_list'] = datasets
+        context['bboxes'] = bboxes
         return context
 
     #def get_object(self):
