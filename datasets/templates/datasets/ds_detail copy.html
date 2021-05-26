@@ -13,16 +13,12 @@
   <script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>
   <script src="{% static 'js/spin.umd.js' %}"></script>
   <link rel="stylesheet" href="{% static 'css/spin.css' %}"/>
-  <!--<link rel="stylesheet" href="//cdn.datatables.net/1.10.23/css/dataTables.bootstrap4.min.css">-->
-  <!--<script src="//cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>-->
-  <!--<script src="//cdn.datatables.net/1.10.23/js/dataTables.bootstrap4.min.js"></script>-->
   <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.10.24/b-1.7.0/b-colvis-1.7.0/b-html5-1.7.0/cr-1.5.3/fh-3.1.8/sc-2.0.3/sp-1.2.2/sl-1.3.3/datatables.min.css"/>
 
   <script type="text/javascript" src="https://cdn.datatables.net/v/dt/dt-1.10.24/b-1.7.0/b-colvis-1.7.0/b-html5-1.7.0/cr-1.5.3/fh-3.1.8/sc-2.0.3/sp-1.2.2/sl-1.3.3/datatables.min.js"></script>
 
 {% endblock %}
-
-{% block title %}<title>Dataset::{{ ds.label }}</title>{% endblock %}
+{% block title %}<title>Dataset::{{ object.title }}</title>{% endblock %}
 
 {% block content %}
 <div id="dataset_content" class="container mt-1 px-1">
@@ -33,15 +29,15 @@
           <a class="nav-link" id="summary-tab" data-link="summary" href="{% url 'datasets:ds_meta' pk=object.id %}" role="tab">Summary</a>
       </li>
       <li class="nav-item">
-          <a class="nav-link active" id="browse-tab" href="" role="tab">Browse</a>
+          <a class="nav-link active" id="browse-tab" href="" role="tab" >Browse</a>
       </li>
-  </ul>
+  </ul>  
   <div class="tab-content">
     <div id="browse" class="tab-pane fade show active" role="tabpanel" aria-labelledby="browse-tab">
         <div class="container mt-3 pl-0">
           <div class="row">
             <div id="drftable_detail" class="col-sm-5">
-              {{ filter }}
+              <!--<h5>{{ object.title }}</h5>-->
               <div class="toomany"></div>
               <div id="mapdiv_browse" style="position:relative">
                   {% leaflet_map "map_browse" %}
@@ -85,7 +81,7 @@
     </div> <!-- browse -->
   </div> <!-- .tab-content -->
 
-  <div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
+  <div id="updateModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
@@ -171,6 +167,20 @@
   // table events
   // TODO: use datatables methods?
   function setRowEvents(){
+    $("#status_select").change(function(e){
+      val = $(this).val()
+      localStorage.setItem('filter', val)
+      console.log(val)
+      if(val == '99'){
+        // clear search
+        startFilterSpinner()
+        clearFilters()
+      } else {
+        clearFilters()
+        filterColumn(val[0], val[1])
+      }
+      <!--spinner_filter.stop()-->
+    })
 
     $("#placetable tbody tr").click(function() {
       t=$(this)
@@ -203,62 +213,85 @@
   }
 
 
+  // build select 
+  function buildSelect(){
+    select = '<label>Filters: <select name="status" aria-controls="placetable" id="status_select" class="datatables_length">'+
+    '<option value="99" selected="selected">All</option>'
+    
+    if(wdtask){ select += 
+    '<option disabled>-----wikidata-----</option>'+
+    '<option value="50">Needs review (wd)</option>'+
+    '<option value="51">Reviewed (wd)</option>'+
+    '<option value="52">Deferred (wd)</option>'}
+    if(tgntask){ select += 
+    '<option disabled>-------tgn-------</option>'+
+    '<option value="60">Needs review (tgn)</option>'+
+    '<option value="61">Reviewed (tgn)</option>'+
+    '<option value="62">Deferred (tgn)</option>'}    
+    if(whgtask){ select += 
+    '<option disabled>-------whg-------</option>'+
+    '<option value="70">Needs review (whg)</option>'+
+    '<option value="71">Reviewed (whg)</option>'+
+    '<option value="72">Deferred (whg)</option>'}
+    
+    select +='</select></label>'
+    return select
+  }
   $(function(){
     localStorage.setItem('filter', '99')
-    wdtask = false
-    tgntask = false
-    whgtask = false
-    <!--whgtask = "{{whgtask}}" == "True"?true:false-->
-    <!--console.log('tgntask, wdtask, whgtask',tgntask, wdtask, whgtask)-->
-    <!--buildSelect()-->
+    wdtask = "{{wdtask}}" == "True"?true:false
+    tgntask = "{{tgntask}}" == "True"?true:false
+    whgtask = "{{whgtask}}" == "True"?true:false
+    console.log('tgntask, wdtask, whgtask',tgntask, wdtask, whgtask)
+    buildSelect()
     
-    startTableSpinner()
-    startDetailSpinner()
+    <!--startTableSpinner()-->
+    <!--startDetailSpinner()-->
     
     window.dslabel = "{{ ds.label }}"
     window.filter = "{{ filter }}"
-    table = $('#placetable').DataTable({
-      dom: "<'row'<'col-sm-12 col-md-3'l><'#status_filter.col-sm-12 col-md-5'>"+
-      "<'col-sm-12 col-md-4'f>>" +
-      "<'row'<'col-sm-12'tr>>" +
-      "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"
-      ,serverSide: true
-      ,ajax: {
-        url: "/api/placetable/?format=datatables&ds={{ ds.label }}"
-      }
-      ,scrollY: 400
-      ,select: true
-      ,columns: 
-      [
-          {"data": "id"},
-          {"data": "src_id"},
-          {"data": "title"},
-          {"data": "ccodes"},
-          {"data": "geo"},
-          {"data": "review_wd"},
-          {"data": "review_tgn"},
-          {"data": "review_whg"},
-          {"data": "revwd", "visible": wdtask?true:false, 
-            "orderable":false},
-          {"data": "revtgn", "visible": tgntask?true:false, 
-            "orderable":false},
-          {"data": "revwhg", "visible": whgtask?true:false, 
-            "orderable":false}
-      ]
-      ,columnDefs:[
-        { className: "browse-task-col", "targets": [8,9,10] },
-        { orderable: false, "targets": [4,5,6,7]},
-        { searchable: false, "targets": [0,1,3,4,8,9,10]}
-        ,{ visible: false, "targets": [5,6,7]}
-      ]
-    })
+    <!--table = $('#placetable').DataTable({-->
+      <!--dom: "<'row'<'col-sm-12 col-md-3'l><'#status_filter.col-sm-12 col-md-5'>"+-->
+      <!--"<'col-sm-12 col-md-4'f>>" +-->
+      <!--"<'row'<'col-sm-12'tr>>" +-->
+      <!--"<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"-->
+      <!--,serverSide: true-->
+      <!--,ajax: {-->
+        <!--url: "/api/placetable/?format=datatables&ds={{ ds.label }}"-->
+      <!--}-->
+      <!--,scrollY: 400-->
+      <!--,select: true-->
+      <!--,columns: -->
+      <!--[-->
+          <!--{"data": "id"},-->
+          <!--{"data": "src_id"},-->
+          <!--{"data": "title"},-->
+          <!--{"data": "ccodes"},-->
+          <!--{"data": "geo"},-->
+          <!--{"data": "review_wd"},-->
+          <!--{"data": "review_tgn"},-->
+          <!--{"data": "review_whg"},-->
+          <!--{"data": "revwd", "visible": wdtask?true:false, -->
+            <!--"orderable":false},-->
+          <!--{"data": "revtgn", "visible": tgntask?true:false, -->
+            <!--"orderable":false},-->
+          <!--{"data": "revwhg", "visible": whgtask?true:false, -->
+            <!--"orderable":false}-->
+      <!--]-->
+      <!--,columnDefs:[-->
+        <!--{ className: "browse-task-col", "targets": [8,9,10] },-->
+        <!--{ orderable: false, "targets": [4,5,6,7]},-->
+        <!--{ searchable: false, "targets": [0,1,3,4,8,9,10]}-->
+        <!--,{ visible: false, "targets": [5,6,7]}-->
+      <!--]-->
+    <!--})-->
 
-    table.on( 'draw', function () {
+    <!--table.on( 'draw', function () {-->
       <!--$("#status_filter").html(buildSelect());-->
       <!--$("#status_select").val(localStorage.getItem('filter'))-->
-      spinner_table.stop()
-      setRowEvents();
-    })
+      <!--spinner_table.stop()-->
+      <!--setRowEvents();-->
+    <!--})-->
     
     // help popups
     $(".help-matches").click(function(){

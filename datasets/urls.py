@@ -77,7 +77,8 @@ urlpatterns = [
 
     # public dataset displays: metadata, detail (browse?)
     path('<int:pk>/metadata', views.DatasetPublicView.as_view(), name='ds_meta'),
-    path('<int:pk>/detail', views.DatasetDetailView.as_view(), name='ds_detail'),
+    #path('<int:pk>/detail', views.DatasetDetailView.as_view(), name='ds_detail'),
+    path('<int:id>/detail', views.DatasetDetailView.as_view(), name='ds_detail'),
 
 
 ] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)

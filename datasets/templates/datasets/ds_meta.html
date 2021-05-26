@@ -28,10 +28,10 @@
   <ul id="dataset_tabs" class="nav nav-tabs" role="tablist">
       <span class="ds-title ml-1 mr-3">{{ object.title }}</span>
       <li class="nav-item">
-          <a class="nav-link active" id="summary-tab" data-link="summary" href="" role="tab" aria-controls="summary" aria-selected="false">Summary</a>
+          <a class="nav-link active" id="summary-tab" data-link="summary" href="" role="tab">Summary</a>
       </li>
       <li class="nav-item">
-          <a class="nav-link" id="browse-tab" href="{% url 'datasets:ds_detail' pk=object.id %}" role="tab" aria-controls="browse" aria-selected="false">Browse</a>
+          <a class="nav-link" id="browse-tab" href="{% url 'datasets:ds_detail' id=object.id %}" role="tab">Browse</a>
       </li>
   </ul>
   
@@ -222,7 +222,7 @@ js for Summary, Reconciliation
   }
 
   $("#ds_downloads a").click(function(e){
-    urly='/datasets/{{ds.id}}/augmented/'+$(this).attr('ref')
+    urly='/datasets/{{object.id}}/augmented/'+$(this).attr('ref')
     startDownloadSpinner()
     $.ajax({
             type: 'GET',
@@ -554,7 +554,7 @@ js for Add Task
     <!--if ($( "#select_userarea option[value='create']" ).prop('selected') == true) {-->
       <!--location.href="{ url 'areas:area-create' %}?next={ url 'datasets:ds_recon' ds.id %}"-->
     <!--}-->
-  });
+  <!--});-->
 </script>
 <!--
 js for Browse

@@ -100,11 +100,14 @@
     <div id="home_right" class="col-sm-6">
       {% leaflet_map "map_search" callback="map_init" %}
 	  <div style="width=100%">
-		<div id="time" class="p-2 mt-1" style="background-color: #ffffcc;">
-		  <p>temporal visualization</p>
+		<div id="search_time" class="mt-1" style="background-color: #ffffcc;">
+		  <img src="{% static 'images/hist_static.png' %}" class="" alt=""/>
 		</div>
-		<div id="info" class="p-2 d-flex" style="background-color: #e0e0e0;">
-		  <p>dataset lists/filters</p>
+		<div id="search_info" class="p-2 small" style="background-color: #eeeee0;">
+		  <p class="allcap-heading mb-0">FILTER ON DATASET</p>
+		  {% for ds in dslist %}
+			<a href="" data-id={{ds.id}}>{{ds.title}}</a>;&nbsp; 
+		  {% endfor %}
 		</div>
 	  </div>
     </div> <!--  -->

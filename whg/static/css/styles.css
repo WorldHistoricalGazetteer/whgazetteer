@@ -271,6 +271,8 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
 .wrapper-left b { color: #336699;}
 .wrapper-right { overflow: auto; }
 
+#search_time { position: relative; }
+#search_time img { max-width: 100%;}
 
 /**
   search
