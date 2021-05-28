@@ -235,11 +235,20 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
 } 
 .home-icon { margin:0; padding:12px 0 0 0; text-align:center; }
 .imghelper {display: inline-block; height: 100%; vertical-align:middle;}
-.item-right {
-  min-height: 100px;
-  max-height: 200px;
+.item-right-top {
+  min-height: 200px;
+  max-height: 300px;
+  padding: .4rem;
   border-radius: 6px;
   border: 1px solid #ddd;
+  position: relative;
+}
+.item-right {
+  min-height: 200px;
+  max-height: 300px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  padding: .4rem;  
   position: relative;
 }
 .item-right img { max-width: 100%;}
@@ -271,7 +280,7 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
 
 .wrapper-left { overflow: auto; }
 .wrapper-left b { color: #336699;}
-.wrapper-right { overflow: auto; }
+.wrapper-right { overflow-x: hidden; }
 
 #search_time { position: relative; }
 #search_time img { max-width: 100%;}

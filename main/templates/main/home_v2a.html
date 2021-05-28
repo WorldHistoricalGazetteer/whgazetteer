@@ -36,85 +36,101 @@
 	</div>
 	<!-- <span rel="tooltip" title="The Getty Thesuarus of Geographic Names"></span>-->
 	<div id="content" class="row mx-0">
-		<div class="home-col-wrapper col-sm-5 h-100">
-			<div id="content_left" class="d-flex flex-column p-2">
-			  <div class="home-header h5 w-100 mb-1">Features</div>
-			  <div class="wrapper-left">
-				<div class="item-left row mx-0 mb-1 pl-2" id="item_left_search">
-				  <div class="col-sm-2 home-icon"><img src="{% static 'images/001-binoculars.png'%}" class="" height=54 width=54 alt=""/><span class="helper"></span></div>
-				  <div class="col-sm-10 pt-1"><p class="pr-2"><b>Explore</b> and download linked open historical place data<a href="{% url 'search-page' %}"><span class="link-spanner"></span></a></p></div>
-				</div><!-- .item-left -->
-				<div class="item-left row mx-0 mb-1 pl-2">
-				  <div class="col-sm-2 home-icon"><img src="{% static 'images/001-up-arrow.png'%}" class="" height=48 width=48 alt=""/></div>
-				  <div class="col-sm-10 pt-1"><p class="pr-2"><b>Upload and extend</b> your data with geometry and identifiers from Wikidata and Getty TGN<a href="{% url 'main:tute-walkthrough' %}"><span class="link-spanner"></span></a></p></div>
-				</div><!-- .item-left -->
-				<div class="item-left row mx-0 mb-1 pl-2">
-				  <div class="col-sm-2 home-icon"><img src="{% static 'images/003-browser.png'%}" class="" height=48 width=48 alt=""/></div>
-				  <div class="col-sm-10 pt-1"><p class="pr-2"><b>Contribute</b> to WHG by publishing your data, then linking its places to others in our index<a href="{% url 'main:tute-contributing' %}"><span class="link-spanner"></span></a></p></div>
-				</div> <!-- .item-left -->
-				<div class="item-left row mx-0 mb-1 pl-2">
-				  <div class="col-sm-2 home-icon"><img src="{% static 'images/008-collect.png'%}" class="" height=48 width=48 alt=""/></div>
-				  <div class="col-sm-10 pt-1"><p class="pr-2"><b>Build and share custom collections</b> of datasets published in WHG<a href="{% url 'main:tute-collections' %}"><span class="link-spanner"></span></a></p></div>
-				</div> <!-- .item-left --> 
-				<div class="item-left row mx-0 mb-1 pl-2">
-				  <div class="col-sm-2 home-icon"><img src="{% static 'images/006-api-2.png'%}" class="" height=48 width=48 alt=""/></div>
-				  <div class="col-sm-10 pt-1"><p class="pr-2"><b>Integrate WHG data</b> with other systems via our application programming interface<a href="{% url 'usingapi' %}"><span class="link-spanner"></span></a></p></div>
-				</div> <!-- .item-left -->
-			  </div> <!-- wrapper-left-->
-		  </div> <!-- content_left-->
-		</div>
-		<div class="home-col-wrapper col-sm-7 h-100">
-			<div id="content_right" class=" d-flex flex-column p-2">
-				<div class="h5 w-100 home-header">Featured Datasets and Collections<span id="list_all" class="mr-2"><a href="">list all</a></span></div>
-				<div class="wrapper-right">
-					<div class="row mx-1 mb-1">
-						<div class="col-6 item-right px-2">
-							<p class="mt-0 strong"><a href="{% url 'collection:collection-detail' 3 %}">KNAW/HuC Gazetteers Of Dutch History</a></p>
-							<div class="coll-description">Dutch places, from East to West, near and far. Just some text to see how it looks when wrapping....</div>
-							<img src="{% static 'userimages/dutch-football-330.png'%}"/>
-							<span class="col-bottom cb-coll">collection</span>
-						</div>
-						<div class="col-6 item-right px-2">
-							<p class="mt-0"><a href="{% url 'datasets:ds_meta' 2 %}">D-Place</a></p>
-							<div class="coll-description">D-PLACE (the Database of Places, Language, Culture, and Environment) contains cultural, linguistic, environmental and geographic information for over 1400 human ‘societies’. </div>							
-							<span class="col-bottom cb-dataset">dataset</span>
-						</div>
-					</div>
-					<div class="row mx-1 mb-1">
-						<div class="col-6 item-right px-2">
-							<p>Old World Trade</p>
-							<span class="col-bottom cb-dataset">dataset</span>
-						</div>
-						<div class="col-6 item-right px-2">
-							<p>DK Atlas of World History</p>
-							<span class="col-bottom cb-dataset">dataset</span>
-						</div>
-					</div>
-					<div class="row mx-1 mb-1">
-						<div class="col-6 item-right px-2">
-							<p>Pleiades</p>
-							<span class="col-bottom cb-dataset">dataset</span>
-						</div>
-						<div class="col-6 item-right px-2">
-							<p>Euratlas Cities</p>
-							<span class="col-bottom cb-dataset">dataset</span>
-						</div>
-					</div>
-					<div class="row mx-1 mb-1">
-						<div class="col-6 item-right px-2">
-							<p>HGIS de las Indias</p>
-							<span class="col-bottom cb-dataset">dataset</span>
-						</div>
-						<div class="col-6 item-right px-2">
-							<p>African Ports, 1887</p>
-							<span class="col-bottom cb-dataset">dataset</span>
-						</div>
-					</div>
-				</div>
-			</div>
+	  <div class="home-col-wrapper col-sm-5 h-100">
+		<div id="content_left" class="d-flex flex-column p-2">
+		  <div class="home-header h5 w-100 mb-1">Features</div>
+		  <div class="wrapper-left">
+			<div class="item-left row mx-0 mb-1 pl-2" id="item_left_search">
+			  <div class="col-sm-2 home-icon"><img src="{% static 'images/001-binoculars.png'%}" class="" height=54 width=54 alt=""/><span class="helper"></span></div>
+			  <div class="col-sm-10 pt-1"><p class="pr-2"><b>Explore</b> and download linked open historical place data<a href="{% url 'search-page' %}"><span class="link-spanner"></span></a></p></div>
+			</div><!-- .item-left -->
+			<div class="item-left row mx-0 mb-1 pl-2">
+			  <div class="col-sm-2 home-icon"><img src="{% static 'images/001-up-arrow.png'%}" class="" height=48 width=48 alt=""/></div>
+			  <div class="col-sm-10 pt-1"><p class="pr-2"><b>Upload and extend</b> your data with geometry and identifiers from Wikidata and Getty TGN<a href="{% url 'main:tute-walkthrough' %}"><span class="link-spanner"></span></a></p></div>
+			</div><!-- .item-left -->
+			<div class="item-left row mx-0 mb-1 pl-2">
+			  <div class="col-sm-2 home-icon"><img src="{% static 'images/003-browser.png'%}" class="" height=48 width=48 alt=""/></div>
+			  <div class="col-sm-10 pt-1"><p class="pr-2"><b>Contribute</b> to WHG by publishing your data, then linking its places to others in our index<a href="{% url 'main:tute-contributing' %}"><span class="link-spanner"></span></a></p></div>
+			</div> <!-- .item-left -->
+			<div class="item-left row mx-0 mb-1 pl-2">
+			  <div class="col-sm-2 home-icon"><img src="{% static 'images/008-collect.png'%}" class="" height=48 width=48 alt=""/></div>
+			  <div class="col-sm-10 pt-1"><p class="pr-2"><b>Build and share custom collections</b> of datasets published in WHG<a href="{% url 'main:tute-collections' %}"><span class="link-spanner"></span></a></p></div>
+			</div> <!-- .item-left --> 
+			<div class="item-left row mx-0 mb-1 pl-2">
+			  <div class="col-sm-2 home-icon"><img src="{% static 'images/006-api-2.png'%}" class="" height=48 width=48 alt=""/></div>
+			  <div class="col-sm-10 pt-1"><p class="pr-2"><b>Integrate WHG data</b> with other systems via our application programming interface<a href="{% url 'usingapi' %}"><span class="link-spanner"></span></a></p></div>
+			</div> <!-- .item-left -->
+		  </div> <!-- wrapper-left-->
+		</div> <!-- content_left-->
+	  </div> <!-- col-sm-5 -->
+	  <div class="home-col-wrapper col-sm-7 h-100">
+		<div id="content_right" class=" d-flex flex-column p-2">
+		  <div class="h5 w-100 home-header">Featured Datasets and Collections
+			<span id="list_all" class="mr-2"><a href="">list all</a></span>
+		  </div>
+		  <div class="wrapper-right">
+			<div class="item-right-top">
+				<p class="my-0 strong"><a href="{% url 'collection:collection-detail' 3 %}">KNAW/HuC Gazetteers Of Dutch History</a></p>
+				<div class="coll-description">Dutch places, from East to West, near and far. Just some text to see how it looks when wrapping....</div>
+				<img src="{% static 'userimages/dutch-football-330.png'%}"/>
+				<span class="col-bottom cb-coll">collection</span>
+			</div> <!-- topdog -->
+			<div class="row">
+			  <div class="col-sm-6 pr-0">
+				<div class="item-right">
+				  <p class="mt-0"><a href="{% url 'datasets:ds_meta' 2 %}">D-Place</a></p>
+				  <div class="coll-description">
+					D-PLACE (the Database of Places, Language, Culture, and Environment) contains cultural, linguistic, environmental and geographic information for over 1400 human ‘societies’. 
+				  </div>
+				  <span class="col-bottom cb-dataset">dataset</span>
+				</div> <!-- item-right -->
+			  </div> <!-- col-sm-6 -->
+			  <div class="col-sm-6 pl-0">
+				<div class="item-right">
+				  <p class="mt-0"><a href="{% url 'datasets:ds_meta' 2 %}">D-Place</a></p>
+				  <div class="coll-description">
+					D-PLACE (the Database of Places, Language, Culture, and Environment) contains cultural, linguistic, environmental and geographic information for over 1400 human ‘societies’.
+				  </div>
+				  <span class="col-bottom cb-dataset">dataset</span>
+				</div> <!-- item-right -->
+			  </div> <!-- col-sm-6 -->
+			</div> <!-- row -->
+		  </div> <!-- wrapper-right -->
 		</div> <!-- content_right -->
+	  </div> <!-- col-sm-7 -->
 	</div> <!-- content -->
 </div>
+<!--<div class="row mx-1 mb-1">-->
+	<!--<div class="col-6 item-right px-2">-->
+		<!--<p>Old World Trade</p>-->
+		<!--<span class="col-bottom cb-dataset">dataset</span>-->
+	<!--</div>-->
+	<!--<div class="col-6 item-right px-2">-->
+		<!--<p>DK Atlas of World History</p>-->
+		<!--<span class="col-bottom cb-dataset">dataset</span>-->
+	<!--</div>-->
+<!--</div>-->
+<!--<div class="row mx-1 mb-1">-->
+	<!--<div class="col-6 item-right px-2">-->
+		<!--<p>Pleiades</p>-->
+		<!--<span class="col-bottom cb-dataset">dataset</span>-->
+	<!--</div>-->
+	<!--<div class="col-6 item-right px-2">-->
+		<!--<p>Euratlas Cities</p>-->
+		<!--<span class="col-bottom cb-dataset">dataset</span>-->
+	<!--</div>-->
+<!--</div>-->
+<!--<div class="row mx-1 mb-1">-->
+	<!--<div class="col-6 item-right px-2">-->
+		<!--<p>HGIS de las Indias</p>-->
+		<!--<span class="col-bottom cb-dataset">dataset</span>-->
+	<!--</div>-->
+	<!--<div class="col-6 item-right px-2">-->
+		<!--<p>African Ports, 1887</p>-->
+		<!--<span class="col-bottom cb-dataset">dataset</span>-->
+	<!--</div>-->
+<!--</div>-->
+
 <div id="ext_site" class="modal fade" role="dialog">
   <div class="modal-dialog">
     <div class="modal-content">
