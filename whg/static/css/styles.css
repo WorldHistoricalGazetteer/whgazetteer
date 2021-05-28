@@ -203,6 +203,8 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
 #content_right .home-header {
   background-color: #3c8894 !important;
 }
+#list_all {position:absolute; right:2rem; font-size:.9rem;}
+#list_all a {color:lightskyblue !important;}
 .item-left {
   position: relative;
   min-height: 74px;
@@ -226,7 +228,7 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
   height:100%;
   top:0;
   left: 0;
-  /*z-index: 1;*/
+  z-index: 1;
   /* fixes overlap error in IE7/8, 
      make sure you have an empty gif */
   background-image: url('/static/images/empty.gif');

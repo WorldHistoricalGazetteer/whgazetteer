@@ -31,9 +31,10 @@
 	<div id="banner" class="banner-bare w-100 my-1 p-2">
 		<div class="centered w-100">
 		  <span class="title mb-0"><img src="{% static 'images/whg_logo.svg'%}" class="d-inline-block align-bottom" height=80 width=80 alt=""/>World Historical Gazetteer</span>
-		  <span id="tagline" class="mx-auto" style="display:block">linking knowledge about the past via place</span>
+		  <span id="tagline" class="mx-auto" style="display:block">linking our knowledge about the past via place</span>
 		</div>
 	</div>
+	<!-- <span rel="tooltip" title="The Getty Thesuarus of Geographic Names"></span>-->
 	<div id="content" class="row mx-0">
 		<div class="home-col-wrapper col-sm-5 h-100">
 			<div id="content_left" class="d-flex flex-column p-2">
@@ -41,30 +42,30 @@
 			  <div class="wrapper-left">
 				<div class="item-left row mx-0 mb-1 pl-2" id="item_left_search">
 				  <div class="col-sm-2 home-icon"><img src="{% static 'images/001-binoculars.png'%}" class="" height=54 width=54 alt=""/><span class="helper"></span></div>
-				  <div class="col-sm-10 pt-1"><p class="pr-2"><b>Explore</b> linked historical place data with faceted search<a href="{% url 'search-page' %}"><span class="link-spanner"></span></a></p></div>
+				  <div class="col-sm-10 pt-1"><p class="pr-2"><b>Explore</b> and download linked open historical place data<a href="{% url 'search-page' %}"><span class="link-spanner"></span></a></p></div>
 				</div><!-- .item-left -->
 				<div class="item-left row mx-0 mb-1 pl-2">
 				  <div class="col-sm-2 home-icon"><img src="{% static 'images/001-up-arrow.png'%}" class="" height=48 width=48 alt=""/></div>
-				  <div class="col-sm-10 pt-1"><p class="pr-2"><b>Augment</b> your data with geometry and identifiers from Wikidata and Getty TGN<a href="{% url 'main:tute-walkthrough' %}"><span class="link-spanner"></span></a></p></div>
+				  <div class="col-sm-10 pt-1"><p class="pr-2"><b>Upload and extend</b> your data with geometry and identifiers from Wikidata and Getty TGN<a href="{% url 'main:tute-walkthrough' %}"><span class="link-spanner"></span></a></p></div>
 				</div><!-- .item-left -->
 				<div class="item-left row mx-0 mb-1 pl-2">
-				  <div class="col-sm-2 home-icon"><img src="{% static 'images/010-jigsaw.png'%}" class="" height=48 width=48 alt=""/></div>
-				  <div class="col-sm-10 pt-1"><p class="pr-2"><b>Contribute</b> to WHG: publish place data, link it with others' in our index; review matches<a href="{% url 'main:tute-contributing' %}"><span class="link-spanner"></span></a></p></div>
+				  <div class="col-sm-2 home-icon"><img src="{% static 'images/003-browser.png'%}" class="" height=48 width=48 alt=""/></div>
+				  <div class="col-sm-10 pt-1"><p class="pr-2"><b>Contribute</b> to WHG by publishing your data, then linking its places to others in our index<a href="{% url 'main:tute-contributing' %}"><span class="link-spanner"></span></a></p></div>
 				</div> <!-- .item-left -->
 				<div class="item-left row mx-0 mb-1 pl-2">
 				  <div class="col-sm-2 home-icon"><img src="{% static 'images/008-collect.png'%}" class="" height=48 width=48 alt=""/></div>
-				  <div class="col-sm-10 pt-3"><p class="pr-2"><b>Build and share collections</b> by linking datasets<a href="{% url 'main:tute-collections' %}"><span class="link-spanner"></span></a></p></div>
+				  <div class="col-sm-10 pt-1"><p class="pr-2"><b>Build and share custom collections</b> of datasets published in WHG<a href="{% url 'main:tute-collections' %}"><span class="link-spanner"></span></a></p></div>
 				</div> <!-- .item-left --> 
 				<div class="item-left row mx-0 mb-1 pl-2">
 				  <div class="col-sm-2 home-icon"><img src="{% static 'images/006-api-2.png'%}" class="" height=48 width=48 alt=""/></div>
-				  <div class="col-sm-10 pt-1"><p class="pr-2"><b>Access Linked Data</b> via our application programming interface<a href="{% url 'usingapi' %}"><span class="link-spanner"></span></a></p></div>
+				  <div class="col-sm-10 pt-1"><p class="pr-2"><b>Integrate WHG data</b> with other systems via our application programming interface<a href="{% url 'usingapi' %}"><span class="link-spanner"></span></a></p></div>
 				</div> <!-- .item-left -->
 			  </div> <!-- wrapper-left-->
 		  </div> <!-- content_left-->
 		</div>
 		<div class="home-col-wrapper col-sm-7 h-100">
 			<div id="content_right" class=" d-flex flex-column p-2">
-				<div class="h5 w-100 home-header">Selected Datasets and Collections</div>
+				<div class="h5 w-100 home-header">Featured Datasets and Collections<span id="list_all" class="mr-2"><a href="">list all</a></span></div>
 				<div class="wrapper-right">
 					<div class="row mx-1 mb-1">
 						<div class="col-6 item-right px-2">
@@ -159,11 +160,7 @@
 	  console.log('heat() for',$(this).val())
 	});	
 	
-	$(function(){
-	  $("[rel='tooltip']").tooltip();
-	})	
-
-    $("[rel='tooltip']").tooltip();
+	$("[rel='tooltip']").tooltip();
     
     var idToFeature = {} // for feature lookup
     var itf_new = []
