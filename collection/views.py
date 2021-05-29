@@ -48,7 +48,8 @@ class CollectionCreateView(CreateView):
         _id = self.kwargs.get("id")
         qs = CollectionDataset.objects.filter(collection_id = _id)
         coll_set = [cd.dataset for cd in qs]
-        ds_select = Dataset.objects.filter(owner_id = user.id)
+        # owners create collections from their datasets
+        ds_select = [obj for obj in Dataset.objects.all() if user in obj.owners or user.is_superuser]
 
         context['action'] = 'create'
         context['ds_select'] = ds_select
@@ -138,7 +139,7 @@ class CollectionUpdateView(UpdateView):
         _id = self.kwargs.get("id")
         qs = CollectionDataset.objects.filter(collection_id = _id)
         coll_set = [cd.dataset for cd in qs]
-        ds_select = Dataset.objects.filter(owner_id = user.id)
+        ds_select = [obj for obj in Dataset.objects.all() if user in obj.owners or user.is_superuser]
 
         context['action'] = 'update'
         context['ds_select'] = ds_select

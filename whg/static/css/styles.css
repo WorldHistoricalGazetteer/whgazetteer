@@ -204,7 +204,7 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
   background-color: #3c8894 !important;
 }
 #list_all {position:absolute; right:2rem; font-size:.9rem;}
-#list_all a {color:lightskyblue !important;}
+#list_all a {color:#fff; !important; vertical-align:middle;}
 .item-left {
   position: relative;
   min-height: 74px;
@@ -236,12 +236,13 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
 .home-icon { margin:0; padding:12px 0 0 0; text-align:center; }
 .imghelper {display: inline-block; height: 100%; vertical-align:middle;}
 .item-right-top {
-  min-height: 200px;
+  /*min-height: 200px;*/
   max-height: 300px;
   padding: .4rem;
   border-radius: 6px;
   border: 1px solid #ddd;
   position: relative;
+  font-size: .9rem;
 }
 .item-right {
   min-height: 200px;
@@ -250,11 +251,13 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
   border: 1px solid #ddd;
   padding: .4rem;  
   position: relative;
+  font-size: .8rem;
 }
-.item-right img { max-width: 100%;}
+.item-right-top img { max-width: 100%; float:right}
+.item-right img { max-height: 100%; float:right;}
 .item-right p {
   margin-bottom:0;
-  font-size: .9rem;
+  font-size: .8rem;
   font-weight: strong;
   color: #993333;
 }
@@ -265,7 +268,7 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
 .col-bottom {
   position: absolute;
   bottom: 0;
-  right:0;
+  left:0;
   /*background-color: beige;*/
   font-size: .7rem;
   padding-left: 0.3rem;
