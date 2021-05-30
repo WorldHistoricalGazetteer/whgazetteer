@@ -100,11 +100,11 @@
                       <!--{ else %}-->
                         <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass0' %}">review</i></a>
                       <!--{ endif %}-->
-                     <span>| 
+                     <span class="pass0auto">
                       {% if t.task_name == 'align_idx'%}
-                      <a href="{% url 'datasets:idx_pass0' tid=t.task_id %}">auto-accept</a>  
-                      {% else %}
-                      <a href="{% url 'datasets:wd_pass0' tid=t.task_id %}">auto-accept</a> 
+                      | <a href="{% url 'datasets:idx_pass0' tid=t.task_id %}">auto-accept</a>  
+                      {% elif t.task_name == 'align_wdlocal'%}
+                      | <a href="{% url 'datasets:wd_pass0' tid=t.task_id %}">auto-accept</a> 
                       {% endif %}
                      <span class="help-matches" data-id="auto-match">{% fontawesome_icon 'question-circle' color='#993333' %}</span></span>
                      </li>
@@ -155,8 +155,8 @@
         {% endif %}
         {% endfor %}
         {% endif %}
-      </div>
-    </div>
+      </div> <!-- #ds_tasks -->
+    </div> <!-- #reconciliation -->
   </div> <!-- .tab-content -->
   <div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
@@ -194,7 +194,10 @@
           </div>
           <button id="btn_done" type="button" class="btn btn-secondary btn-sm hidden" data-dismiss="modal">Done</button>
         </div>
-        <div class="selector py-3"><div id="helpme" class="my-3"><div></div>
+        <div class="selector py-3">
+          <div id="helpme" class="my-3">
+          <div>
+        </div>
       </div>
     </div>
   </div>
@@ -262,17 +265,14 @@
           <!--console.log('updateTotals() counts', task, counts)-->
           
           // if all are reviewed, disable radio button
-          radio_id = "#r_" + counts['task'].substring(6)
+          <!--radio_id = "#r_" + counts['task'].substring(6)-->
+          
           if(counts['total'] == 0){
             console.log(task + ' task down to zero: ' + tid)
             $('.'+task).css('border', '2px dashed darkseagreen')
             $("#authtag").html(task=='align_tgn'?'Getty TGN':'Wikidata')
             $("#ready").removeClass("hidden")
           }
-          foo = "#pass0_"+tid
-          if(tid['pass0'] == 0){ 
-            $(foo).addClass('hidden') 
-          } else {$(foo).removeClass('hidden')}
           
           $("#"+tid+'_0').html(counts['pass0'])
           $("#"+tid+'_1').html(counts['pass1'])
@@ -280,9 +280,15 @@
           $("#"+tid+'_3').html(counts['pass3'])
           
           // hide 'review' link if count is 0
+          // hide 'auto-accept' if it's pass0
           Object.keys(counts).forEach(function(key) {
             if(key.startsWith('pass') && counts[key] == 0){
+              console.log('foo:', "#"+tid+'_'+key.slice(-1))
               $("#"+tid+'_'+key.slice(-1)).next().addClass('hidden')
+              if(key == 'pass0'){
+                foo = "#pass0_"+tid+" .pass0auto"
+                $(foo).hide()
+              }
             }
           })
           

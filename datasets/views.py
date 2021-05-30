@@ -410,7 +410,7 @@ accepts all pass0 wikidata matches, writes geoms and links
 #from places.models import Place, PlaceGeom, PlaceLink
 #from django_celery_results.models import TaskResult
 #import simplejson as json
-#taskid = '24c0db66-62b0-48c7-b2a2-510abe0ab11d' # wdlocal, ds=904, russian_towns_10_lpf
+#tid = '4770d8a4-cd43-4e08-8542-fa57418d5f2e' # wdlocal, ds=985, croniken_og_json
 def write_wd_pass0(request, tid):
   task = get_object_or_404(TaskResult,task_id=tid)
   kwargs=json.loads(task.task_kwargs.replace("'",'"'))
@@ -427,7 +427,8 @@ def write_wd_pass0(request, tid):
   for h in hits:
     hasGeom = 'geoms' in h.json and len(h.json['geoms']) > 0
     hasLink = 'links' in h.json and len(h.json['links']) > 0
-    place = h.place_id # object
+    #place = h.place_id # object
+    place = h.place # object
     # link identifiers 
     authids=place.links.all().values_list('jsonb__identifier',flat=True)
     # GEOMS
@@ -469,7 +470,7 @@ def write_wd_pass0(request, tid):
         #'jsonb__identifier',flat=True)
       for l in h.json['links']:
         link_counter += 1
-        authid = re.search("\: (.*?)$", l).group(1)
+        authid = re.search("\: ?(.*?)$", l).group(1)
         # TODO: same no-dupe logic in review()
         # don't write duplicates
         if authid not in authids:
@@ -494,6 +495,10 @@ def write_wd_pass0(request, tid):
     # flag hit as reviewed
     h.reviewed = True
     h.save()
+    
+    # flag place as reviewed
+    place.review_wd = 1
+    place.save()
     
   #return redirect('/datasets/'+str(ds.id)+'/detail#reconciliation')
   return HttpResponseRedirect(referer)
@@ -568,7 +573,7 @@ def write_idx_pass0(request, tid):
 
 """
 # ds_recon(pk)
-# initiate & monitor Celery tasks against Elasticsearch indexes
+# initiates & monitors Celery tasks against Elasticsearch indexes
 # i.e. align_[wdlocal | idx | tgn ] in tasks.py
 # url: datasets/{ds.id}/reconcile ('ds_reconcile'; from ds_addtask.html)
 # params: pk (dataset id), auth, region, userarea, geom, scope
@@ -652,31 +657,6 @@ def ds_recon(request, pk):
       
       return redirect('/datasets/'+str(ds.id)+'/reconcile')
   
-
-    # TODO: never gets here, right?
-    #context['hash'] = "#reconciliation"
-    #context['task_id'] = result.id
-    #context['response'] = result.state
-    #context['dataset id'] = ds.label
-    #context['authority'] = request.POST['recon']
-    #context['region'] = request.POST['region']
-    #context['userarea'] = request.POST['userarea']
-    #context['geom'] = aug_geom
-    #context['result'] = result.get()
-        
-    ## set ds_status
-    #if auth != 'whg':
-      ## 1 or more recon tasks have been run
-      #ds.ds_status = 'reconciling'
-    #else:
-      ## accessioning begun (align_idx); complete if ds.unindexed == 0
-      #ds.ds_status = 'indexed' if ds.unindexed == 0 else 'accessioning'
-    #ds.save()
-    #print('ds_recon() context',context)
-    ##return render(request, 'datasets/dataset.html', {'ds':ds, 'context': context})
-
-  #print('context',context)
-  #return render(request, 'datasets/dataset.html', {'ds':ds, 'context': context})
 
 
 """

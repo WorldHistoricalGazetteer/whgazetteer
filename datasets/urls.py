@@ -52,10 +52,10 @@ urlpatterns = [
     # undo last save in review
     path('match-undo/<int:ds>/<str:tid>/<int:pid>', views.match_undo, name="match-undo"),
         
-    # accept any unreviewed wikidata pass0 hits from given task
+    # accept unreviewed wikidata pass0 hits; write place_link and place_geom records
     path('wd_pass0/<str:tid>', views.write_wd_pass0, name="wd_pass0"),
 
-    # accept any unreviewed whg pass0 hits; create & index child docs
+    # accept unreviewed whg pass0 hits; create & index child docs
     path('idx_pass0/<str:tid>', views.write_idx_pass0, name="idx_pass0"),
 
     # delete task (celery_results_taskresult) & associated hits
