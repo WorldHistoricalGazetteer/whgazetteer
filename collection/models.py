@@ -18,15 +18,15 @@ class Collection(models.Model):
   create_date = models.DateTimeField(null=True, auto_now_add=True)
   public = models.BooleanField(default=False)
 
-  @property
-  def datasets(self):
-    return [cd.dataset for cd in self.collection_datasets.all()]
+  #@property
+  #def datasets(self):
+    #return [cd.dataset for cd in self.collection_datasets.all()]
 
-  @property
-  def places(self):
-    # TODO: gang up indiv & ds places
-    dses = [d for d in self.datasets]
-    return Place.objects.filter(dataset__in=dses)
+  #@property
+  #def places(self):
+    ## TODO: gang up indiv & ds places
+    #dses = [d for d in self.datasets]
+    #return Place.objects.filter(dataset__in=dses)
 
   def __str__(self):
     return '%s:%s' % (self.id, self.title)

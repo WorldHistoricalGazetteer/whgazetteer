@@ -40,6 +40,8 @@ class Dataset(models.Model):
   # these are back-filled
   numlinked = models.IntegerField(null=True, blank=True)
   total_links = models.IntegerField(null=True, blank=True)
+  
+  collections = models.ManyToManyField("collection.Collection")
 
   def __str__(self):
     return self.label
