@@ -184,15 +184,19 @@ def review(request, pk, tid, passnum):
   cnt_pass3 = Hit.objects.values('place_id').filter(
     task_id=tid, reviewed=False, query_pass='pass3').count()
   
+  # TODO: get reviewed/deferred status from ds.places.filter(review_wd__in) e.g.
   if passnum.startswith('pass'):
     pass_int = int(passnum[4])
     # if no unreviewed left, go to next pass
     passnum = passnum if cnt_pass > 0 else 'pass'+str(pass_int+1)
-    hitplaces = Hit.objects.values('place_id').filter(task_id=tid, reviewed=False, query_pass=passnum)
+    hitplaces = Hit.objects.values('place_id').filter(
+      task_id=tid, 
+      reviewed=False, 
+      query_pass=passnum)
+    # remove any deferred
   else:
     # queue deferred from any pass
     hitplaces = Hit.objects.values('place_id').filter(task_id=tid, reviewed=False)
-
 
   params = {'pk':pk,'tid':tid,'passnum':passnum,'auth':auth}
   #print('review() params', params)
@@ -211,6 +215,7 @@ def review(request, pk, tid, passnum):
   lookup = '__'.join([review_field, 'in'])
   # 2 is deferred; 0 is unreviewed
   status = [2] if passnum == 'def' else [0,2]
+  #status = [2] if passnum == 'def' else [0]
   #record_list = ds.places.order_by('id').filter(pk__in=hitplaces, **{lookup: status})
   record_list = ds.places.order_by('id').filter(**{lookup: status},pk__in=hitplaces)
 

@@ -256,8 +256,8 @@
     if("{{ msg_tgn.type }}" == 'done'){
       $("#r_tgn").attr('disabled',true)
     }
-    <!--found = arr1.some(r=> arr2.includes(r))-->
-    found = msgs.slice(0,2).some(r=> ['none','unreviewed'].includes(r))
+
+    found = msgs.slice(0,2).some(r=> ['none','unreviewed','inprogress'].includes(r))
     <!--if(msgs.slice(0,2).includes("done") && !msgs.slice(0,2).includes("inprogress")){-->
     if(msgs.slice(0,2).includes("done") && !found){
       $("#addtask_lower").addClass("hidden")
