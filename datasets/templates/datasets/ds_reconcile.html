@@ -61,7 +61,7 @@
           <div id="ready" class="row hidden">
           <div class="col-sm-6">
           <p class="my-0">All potential matches to <span id="authtag"></span> have been reviewed, so the dataset <i><b>may</b></i> be ready for accessioning to the WHG index.</p></div> 
-          <div class="col-sm-6 pt-2 >
+          <div class="col-sm-6 pt-2>
           <p class="my-0">If you would like to proceed, please <a class="btn btn-success btn-sm text-light py-0" href="{% url 'contact' %}">contact our editorial team.</a></p></div>
           </div>
         {% if tasks|length < 1 %}<i id="none_yet">None yet...</i>{% endif %}
@@ -79,7 +79,7 @@
                   ({{ t.date_done|date:"d-M-Y, H:i (e)" }}; elapsed: {{ t.result|get:"elapsed"|safe }})</span>
                 </p>
                 <p><b>ID</b>: {{ t.task_id }}</p>
-                <p class="small">
+                <p id="{{ t.task_name }}" class="small">
                    <a class="confirm-del-all" data-id={{t.task_id}} href="{% url 'datasets:task-delete' tid=t.task_id scope='task' %}">
                      Delete task & hits, clear matches {% fontawesome_icon 'trash' color='#ff0000' %}</a><br/>
                      <a class="confirm-del-geoms" href="{% url 'datasets:task-delete' tid=t.task_id scope='geoms'%}">
@@ -272,6 +272,8 @@
             $('.'+task).css('border', '2px dashed darkseagreen')
             $("#authtag").html(task=='align_tgn'?'Getty TGN':'Wikidata')
             $("#ready").removeClass("hidden")
+            $('#'+task).addClass("hidden")
+            <!--$('#del_'+task).addClass("hidden")-->
           }
           
           $("#"+tid+'_0').html(counts['pass0'])
@@ -283,7 +285,7 @@
           // hide 'auto-accept' if it's pass0
           Object.keys(counts).forEach(function(key) {
             if(key.startsWith('pass') && counts[key] == 0){
-              console.log('foo:', "#"+tid+'_'+key.slice(-1))
+              <!--console.log('foo:', "#"+tid+'_'+key.slice(-1))-->
               $("#"+tid+'_'+key.slice(-1)).next().addClass('hidden')
               if(key == 'pass0'){
                 foo = "#pass0_"+tid+" .pass0auto"

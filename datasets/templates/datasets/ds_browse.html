@@ -262,7 +262,7 @@
     wdtask = "{{wdtask}}" == "True"?true:false
     tgntask = "{{tgntask}}" == "True"?true:false
     whgtask = "{{whgtask}}" == "True"?true:false
-    console.log('tgntask, wdtask, whgtask',tgntask, wdtask, whgtask)
+    <!--console.log('tgntask, wdtask, whgtask',tgntask, wdtask, whgtask)-->
     buildSelect()
     
     startTableSpinner()
@@ -601,10 +601,7 @@
       links_arr = onlyUnique(data.links)
       <!--console.log('distinct data.links',links_arr)-->
       for (l in links_arr) {
-        <!--if (links_arr[l].type.substring(0,5) == 'close') {-->
-          <!--close_count += 1-->
-          <!--html_close+=url_extplace(links_arr[l].identifier)-->
-        <!--}-->
+        <!--console.log('link',links_arr[l])-->
         if (links_arr[l].aug == true) {
           added_count +=1
           html_added += url_extplace(links_arr[l].identifier)
@@ -663,7 +660,9 @@
     //
     // MINMAX
     //
-    if(data.minmax && data.minmax.length>0){
+    <!--console.log('data.minmax',data.minmax)-->
+    mm=data.minmax
+    if(data.minmax && !(mm[0] == null && mm[1] == null)) {
       descrip += '<p><b>When</b>: earliest: '+data.minmax[0]+'; latest: '+data.minmax[1]    
     }
     descrip += '</div>'
@@ -688,9 +687,10 @@
           } else {
             var re = /(http|bnf|cerl|dbp|gn|gnd|gov|loc|pl|tgn|viaf|wd|wdlocal|whg|wp):(.*?)$/;
             url=base_urls[str.match(re)[1]]+str.match(re)[2] 
-            console.log('url',url)
+            console.log('url',encodeURI(url))
           }
-          window.open(url, '_blank');
+          <!--window.open(url, '_blank');-->
+          window.open(encodeURI(url), '_blank');
         });
         $('.exttab').on('click', function(e) {
           e.preventDefault();

@@ -69,6 +69,9 @@ urlpatterns = [
     
     # refresh reconciliation counts
     path('updatecounts/', UpdateCountsView.as_view(), name='update_counts'),
+
+    # list places in a dataset; for physical geog layers
+    path('<str:label>/places/', views.ds_list, name='ds_list'),
     
     #
     # IN USE?
@@ -81,6 +84,4 @@ urlpatterns = [
 
 #path('<int:id>/detail', views.DatasetDetailView.as_view(), name='dataset-detail'),
     
-# list places in a dataset; for physical geog layers
-#path('<str:label>/places/', views.ds_list, name='ds_list'),
 

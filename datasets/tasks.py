@@ -285,7 +285,6 @@ def normalize(h, auth, language=None):
         set(h['claims'].keys()) & set(qlinks.keys()))
       if len(hlinks) > 0:
         for l in hlinks:
-          #links.append('closeMatch: '+qlinks[l]+':'+str(h['claims'][l][0]))
           links.append(qlinks[l]+':'+str(h['claims'][l][0]))
 
       # add en and FIRST {language} wikipedia sitelink OR first sitelink
@@ -293,10 +292,12 @@ def normalize(h, auth, language=None):
       wplinks += [l['title'] for l in h['sitelinks'] if l['lang'] == 'en']
       if language != 'en':
         wplinks += [l['title'] for l in h['sitelinks'] if l['lang'] == language]
-      if len(wplinks) == 0 and len(h['sitelinks']) > 0:
-        wplinks += [h['sitelinks'][0]['title']]
+      # TODO: non-English wp pages do not resolve well
+      #if len(wplinks) == 0 and len(h['sitelinks']) > 0:
+        #wplinks += [h['sitelinks'][0]['title']]
+        #wplinks += [h['sitelinks'][0]['title']+'@'+h['sitelinks'][0]['lang']]
         
-      links += ['primaryTopicOf: wp:'+l for l in set(wplinks)]
+      links += ['wp:'+l for l in set(wplinks)]
 
       rec.links = links
       #print('rec.links',rec.links)

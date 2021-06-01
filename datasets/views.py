@@ -207,11 +207,15 @@ def review(request, pk, tid, passnum):
   # record_list is all unreviewed or only deferred
   review_field = 'review_whg' if auth in ['whg','idx'] else \
     'review_wd' if auth.startswith('wd') else 'review_tgn'
-  lookup = '__'.join([review_field, 'exact'])
+  #lookup = '__'.join([review_field, 'exact'])
+  lookup = '__'.join([review_field, 'in'])
   # 2 is deferred; 0 is unreviewed
-  status = 2 if passnum == 'def' else 0
-  record_list = ds.places.order_by('id').filter(pk__in=hitplaces, **{lookup: status})
+  status = [2] if passnum == 'def' else [0,2]
+  #record_list = ds.places.order_by('id').filter(pk__in=hitplaces, **{lookup: status})
+  record_list = ds.places.order_by('id').filter(**{lookup: status},pk__in=hitplaces)
 
+  #if passnum != 'def' and hitplaces.count() >0:
+    
   # no records left for pass (or in deferred queue)
   if len(record_list) == 0:
     context = {
@@ -426,10 +430,10 @@ def write_wd_pass0(request, tid):
   )
   for h in hits:
     hasGeom = 'geoms' in h.json and len(h.json['geoms']) > 0
-    hasLink = 'links' in h.json and len(h.json['links']) > 0
+    hasLinks = 'links' in h.json and len(h.json['links']) > 0
     #place = h.place_id # object
     place = h.place # object
-    # link identifiers 
+    # existing for the place 
     authids=place.links.all().values_list('jsonb__identifier',flat=True)
     # GEOMS
     # confirm another user hasn't just done this...
@@ -465,12 +469,13 @@ def write_wd_pass0(request, tid):
       print('created wd place_link instance:', link)
     
     # create link for each wikidata concordance, if any
-    if hasLink:
+    if hasLinks:
       #authids=place.links.all().values_list(
         #'jsonb__identifier',flat=True)
       for l in h.json['links']:
         link_counter += 1
-        authid = re.search("\: ?(.*?)$", l).group(1)
+        authid = re.search("\:?(.*?)$", l).group(1)
+        print(authid)
         # TODO: same no-dupe logic in review()
         # don't write duplicates
         if authid not in authids:
@@ -599,12 +604,18 @@ def ds_recon(request, pk):
     if previous.count() > 0:
       # get its id
       tid = previous.first().task_id
+      #hadhits = Hit.objects.filter(task_id=tid,reviewed=True).count() > 0
       # delete it, keep/zap links + geoms per value of prior
+      #if hadhits:
       task_archive(tid, prior)
-      # always submit only unreviewed if previous
+      # submit only unreviewed if previous
       scope = 'unreviewed'
-      print('recon(): archived previous task; deleted hits, links+geoms were '+
-            'kept' if prior=='keep' else 'zapped')
+      print('recon(): archived previous task')
+      #else:
+        #task_delete(tid)
+        #scope = 'all'
+        #print('recon(): deleted previous task')
+      print('recon(): links+geoms were '+ ('kept' if prior=='keep' else 'zapped'))
     else:
       # no existing task, submit all rows
       print('ds_recon(): no previous, submitting all')
@@ -670,8 +681,10 @@ def task_delete(request, tid, scope="foo"):
   hits = Hit.objects.all().filter(task_id=tid)
   tr = get_object_or_404(TaskResult, task_id=tid)
   dsid = tr.task_args[1:-1]
+  ds=get_object_or_404(Dataset,pk=dsid)
   auth = tr.task_name[6:]
   places = Place.objects.filter(id__in=[h.place_id for h in hits])
+  #places = Place.objects.filter(dataset = ds.label)
   placelinks = PlaceLink.objects.all().filter(task_id=tid)
   placegeoms = PlaceGeom.objects.all().filter(task_id=tid)
   print('task_delete()',{'tid':tr,'dsid':dsid,'auth':auth})
@@ -724,14 +737,17 @@ def task_archive(tid, prior):
     p.save()
     
   # zap hits
-  hits.delete()  
-  # flag task as ARCHIVED
-  tr.status = 'ARCHIVED'
-  tr.save()
-  # zap prior links/geoms if requested
-  if prior == 'zap':
-    PlaceLink.objects.all().filter(task_id=tid).delete()
-    PlaceGeom.objects.all().filter(task_id=tid).delete()
+  hits.delete()
+  if prior == 'na':
+    tr.delete()
+  else:
+    # flag task as ARCHIVED
+    tr.status = 'ARCHIVED'
+    tr.save()
+    # zap prior links/geoms if requested
+    if prior == 'zap':
+      PlaceLink.objects.all().filter(task_id=tid).delete()
+      PlaceGeom.objects.all().filter(task_id=tid).delete()
 
 """
 # remove collaborator from dataset (all roles)
@@ -2042,16 +2058,16 @@ class DatasetDeleteView(DeleteView):
 #
 # fetch places in specified dataset 
 # 
-#def ds_list(request, label):
-  #print('in ds_list() for',label)
-  #qs = Place.objects.all().filter(dataset=label)
-  #geoms=[]
-  #for p in qs.all():
-    #feat={"type":"Feature",
-          #"properties":{"src_id":p.src_id,"name":p.title},
-              #"geometry":p.geoms.first().jsonb}
-    #geoms.append(feat)
-  #return JsonResponse(geoms,safe=False)
+def ds_list(request, label):
+  print('in ds_list() for',label)
+  qs = Place.objects.all().filter(dataset=label)
+  geoms=[]
+  for p in qs.all():
+    feat={"type":"Feature",
+          "properties":{"src_id":p.src_id,"name":p.title},
+              "geometry":p.geoms.first().jsonb}
+    geoms.append(feat)
+  return JsonResponse(geoms,safe=False)
 
 
 """ undo last review mtch action"""
