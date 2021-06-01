@@ -25,6 +25,8 @@ class Place(models.Model):
     indexed = models.BooleanField(default=False)  
     flag = models.BooleanField(default=False) # not in use
     
+    collections = models.ManyToManyField("collection.Collection")
+    
     # 0=hits:unreviewed, 1=hits:reviewed, 2=hits:deferred, null=no hits
     review_wd = models.IntegerField(default=0, null=True, choices=STATUS_REVIEW)
     review_tgn = models.IntegerField(default=0, null=True, choices=STATUS_REVIEW)

@@ -9,6 +9,7 @@ from datasets.utils import hully
 from .forms import CollectionModelForm
 from .models import *
 
+# TODO: merge create and update views (templates are the same)
 class CollectionCreateView(CreateView):
     #print('CollectionCreateView()')
     form_class = CollectionModelForm
@@ -45,15 +46,19 @@ class CollectionCreateView(CreateView):
         context = super(CollectionCreateView, self).get_context_data(*args, **kwargs)
         context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
         user = self.request.user
-        _id = self.kwargs.get("id")
-        qs = CollectionDataset.objects.filter(collection_id = _id)
-        coll_set = [cd.dataset for cd in qs]
+        #_id = self.kwargs.get("id")
+        print('CollectionCreate() user', user)
+
+        #qs = CollectionDataset.objects.filter(collection_id = _id)
+        #coll_set = [cd.dataset for cd in qs]
+        #datasets = Collection.objects.get(id=_id).dataset_set.all()
+
         # owners create collections from their datasets
         ds_select = [obj for obj in Dataset.objects.all() if user in obj.owners or user.is_superuser]
 
         context['action'] = 'create'
         context['ds_select'] = ds_select
-        context['coll_set'] = coll_set
+        #context['coll_set'] = datasets
         
         return context
 
@@ -69,15 +74,15 @@ class CollectionDetailView(DetailView):
         id_ = self.kwargs.get("pk")
         print('self, kwargs',self, self.kwargs)
         
-        qs = CollectionDataset.objects.filter(collection_id = id_)
-        #coll_set = [cd.dataset for cd in qs]
+        #qs = CollectionDataset.objects.filter(collection_id = id_)
 
         #g_list =[g.jsonb for g in place.geoms.all()]
         ## make everything a simple polygon hull for spatial filter
         #qobj['geom'] = hully(g_list)
         #GeometryCollection([GEOSGeometry(json.dumps(g)) for g in g_list])
         
-        datasets = [cd.dataset for cd in qs]
+        #datasets = [cd.dataset for cd in qs]
+        datasets = self.dataset_set
         # compute bounding boxes
         bboxes = []
         #from shapely.geometry import shape
@@ -137,15 +142,18 @@ class CollectionUpdateView(UpdateView):
         context = super(CollectionUpdateView, self).get_context_data(*args, **kwargs)
         user = self.request.user
         _id = self.kwargs.get("id")
-        qs = CollectionDataset.objects.filter(collection_id = _id)
-        coll_set = [cd.dataset for cd in qs]
+        print('CollectionUpdateView() kwargs', self.kwargs)
+        #qs = CollectionDataset.objects.filter(collection_id = _id)
+        #coll_set = [cd.dataset for cd in qs]
+        datasets = Collection.objects.get(id=_id).dataset_set.all()
+
+        # populates dropdown
         ds_select = [obj for obj in Dataset.objects.all() if user in obj.owners or user.is_superuser]
 
         context['action'] = 'update'
         context['ds_select'] = ds_select
-        context['coll_set'] = coll_set
+        context['coll_set'] = datasets
         context['create_date'] = self.object.create_date.strftime("%Y-%m-%d")
         context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
-        #context['datasets'] = qs
         return context
 

@@ -20,13 +20,13 @@ class Collection(models.Model):
 
   #@property
   #def datasets(self):
-    #return [cd.dataset for cd in self.collection_datasets.all()]
+    #return [cd.dataset for cd in self.dataset_set]
 
-  #@property
-  #def places(self):
-    ## TODO: gang up indiv & ds places
-    #dses = [d for d in self.datasets]
-    #return Place.objects.filter(dataset__in=dses)
+  @property
+  def places(self):
+    # TODO: gang up indiv & ds places
+    dses = self.dataset_set.all()
+    return Place.objects.filter(dataset__in=dses).distinct()
 
   def __str__(self):
     return '%s:%s' % (self.id, self.title)
@@ -34,29 +34,29 @@ class Collection(models.Model):
   class Meta:
     db_table = 'collections'
 
-class CollectionPlace(models.Model):
-  collection = models.ForeignKey(Collection, related_name='coll_places',
-                                   default=-1, on_delete=models.CASCADE)
-  place = models.ForeignKey(Place, related_name='places',
-                              default=-1, on_delete=models.CASCADE)
+#class CollectionPlace(models.Model):
+  #collection = models.ForeignKey(Collection, related_name='coll_places',
+                                   #default=-1, on_delete=models.CASCADE)
+  #place = models.ForeignKey(Place, related_name='places',
+                              #default=-1, on_delete=models.CASCADE)
 
-  def __str__(self):
-    return self.collection + '<>' + self.place
+  #def __str__(self):
+    #return self.collection + '<>' + self.place
 
-  class Meta:
-    managed = True
-    db_table = 'collection_place'
+  #class Meta:
+    #managed = True
+    #db_table = 'collection_place'
 
-class CollectionDataset(models.Model):
-  collection = models.ForeignKey(Collection, related_name='collection_datasets',default=-1, on_delete=models.CASCADE)
-  dataset = models.ForeignKey(Dataset, related_name='dataset_collections',default=-1, on_delete=models.CASCADE)
+#class CollectionDataset(models.Model):
+  #collection = models.ForeignKey(Collection, related_name='collection_datasets',default=-1, on_delete=models.CASCADE)
+  #dataset = models.ForeignKey(Dataset, related_name='dataset_collections',default=-1, on_delete=models.CASCADE)
 
-  def __str__(self):
-    return '%s:%s' % (self.collection, self.dataset)
+  #def __str__(self):
+    #return '%s:%s' % (self.collection, self.dataset)
 
-  class Meta:
-    managed = True
-    db_table = 'collection_dataset'
+  #class Meta:
+    #managed = True
+    #db_table = 'collection_dataset'
 
 
 
