@@ -16,5 +16,6 @@ urlpatterns = [
     path('<int:id>/update', views.CollectionUpdateView.as_view(), name='collection-update'),
     path('<int:pk>/detail', views.CollectionDetailView.as_view(), name='collection-detail'),
     path('<int:id>/delete', views.CollectionDeleteView.as_view(), name='collection-delete'),
+    path('get-ds/', views.ListDatasetView.as_view(), name='collection-add-ds'),
 
 ] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)

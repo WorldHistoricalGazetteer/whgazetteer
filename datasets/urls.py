@@ -62,7 +62,7 @@ urlpatterns = [
     # undo last save in review
     path('match-undo/<int:ds>/<str:tid>/<int:pid>', views.match_undo, name="match-undo"),
     
-    # refresh reconciliation counts
+    # refresh reconciliation counts (ds.id from $.get)
     path('updatecounts/', UpdateCountsView.as_view(), name='update_counts'),
     
     #

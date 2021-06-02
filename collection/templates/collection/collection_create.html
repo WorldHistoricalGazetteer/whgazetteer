@@ -93,20 +93,24 @@
     </form>
     </div>
     <div id="coll_builder" class="col-sm-8 p-3">
-    {{ ds_select }}
+    <!--{{ ds_select }}{{ coll_set }}-->
       <div class="row">
         <div class="col-sm-7">
-          <h4>Datasets <span class="small ml-5">
-            <select id="select_ds" name="ds" class="custom-select-sm" style="width:auto;">
-            <option value="0">Add a dataset</option>
-            <option disabled>___________</option>
-            {% for ds in ds_select %}
-              {% if ds not in coll_set %}
-                <option value="{{ ds.id }}">{{ ds.title }}</option>
-              {% endif %}
-            {% endfor %}
-          </select></span>
-          </h4>
+          <h4>Datasets</h4>
+          <p>
+            <span class="mr-2">
+              <select id="select_ds" name="ds" class="custom-select-sm" style="width:auto;">
+              <option value="0">Select dataset</option>
+              <option disabled>___________</option>
+              {% for ds in ds_select %}
+                {% if ds not in coll_set %}
+                  <option value="{{ ds.id }}">{{ ds.title }}</option>
+                {% endif %}
+              {% endfor %}
+              </select>
+            </span>
+            <a href="javascript:{ fetchDataset() }" class="">
+          {% fontawesome_icon 'plus-square' color='#336699' %} add</a></p>
           <!-- id, label, title, description, creator, create_date, webpage, numrows, datatype -->
           <div id="coll_panels">
             {% if coll_set|length == 0 %}<p class="font-italic">None yet...</p>{% endif %}
@@ -143,7 +147,20 @@
     });
     $("#id_geojson").attr("placeholder","generated from country codes")
   })
-
+  
+  function listDataset(data) {
+    console.log('list this:', data)
+  }
+  // retrieve metadata for single dataset; display in list
+  function fetchDataset() {
+    console.log('selected', $("#select_ds").val())
+    $.get("/collections/get-ds", {ds_id: $("#select_ds").val()},
+      function(data){
+        // render to html
+        console.log('ds to list:',data)
+        <!--listDataset(data);-->
+    });
+  }
   $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
     var target = $(e.target).attr("href") // activated tab
     area_type = $(e.target).attr("ref") // activated tab
