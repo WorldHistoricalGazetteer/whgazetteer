@@ -158,8 +158,10 @@
       function(data){
         // render to html
         console.log('ds to list:',data)
-        <!--listDataset(data);-->
+        // append ds.id to form
     });
+    // reset select
+    $("#select_ds").val(0)
   }
   $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
     var target = $(e.target).attr("href") // activated tab
