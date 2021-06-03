@@ -16,12 +16,13 @@ urlpatterns = [
     path('guide/', TemplateView.as_view(template_name="tutorials/guide.html"), name="tute-guide"),
     path('choosing/', TemplateView.as_view(template_name="tutorials/choosing.html"), name="tute-choosing"),
     path('walkthrough/', TemplateView.as_view(template_name="tutorials/walkthrough.html"), name="tute-walkthrough"),
-    #path('template/', TemplateView.as_view(template_name="tutorials/tute-template.html"), name="tute-template"),
     path('traces/', TemplateView.as_view(template_name="tutorials/traces.html"), name="tute-traces"),
+    path('create_lptsv/', TemplateView.as_view(template_name="tutorials/create_lptsv.html"), name="tute-lptsv"),
     
     
     path('modal/', TemplateView.as_view(template_name="main/modal.html"), name="dynamic-modal"),
     
+    #path('template/', TemplateView.as_view(template_name="tutorials/tute-template.html"), name="tute-template"),
     
 
 ] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
