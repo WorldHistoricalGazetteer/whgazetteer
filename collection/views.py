@@ -1,7 +1,7 @@
 # collection.views (collections)
 
 from django.conf import settings
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.views.generic import (View, CreateView, UpdateView, DetailView, DeleteView )
@@ -27,7 +27,14 @@ class AddDatasetView(View):
     }
     return JsonResponse(result, safe=False)
 
-#def dataset_remove():
+def remove_dataset(request, *args, **kwargs):
+  print('args', args)
+  print('kwargs', kwargs)
+  coll = Collection.objects.get(id=kwargs['coll_id'])
+  ds = Dataset.objects.get(id=kwargs['ds_id'])
+  coll.datasets.remove(ds)
+  
+  return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
   
 # TODO: merge create and update views (templates are the same)
 class CollectionCreateView(CreateView):

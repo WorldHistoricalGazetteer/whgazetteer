@@ -122,7 +122,7 @@
                   <p class="my-1"><b>Description</b>: {{ d.description }}</p>
                   <p class="my-1"><b>Create date</b>: {{ d.create_date|date:"d M Y" }}</p>
                   <p class="my-1"><b># rows</b>: {{ d.numrows }} 
-                    <a href="javascript:{ removeDataset() }" class="float-right">
+                    <a href="{% url 'collection:remove-ds' ds_id=d.id coll_id=object.id %}" class="float-right">
                       {% fontawesome_icon 'minus-square' color='#336699' %} remove</a>
                     <!--<span class="float-right mr-2 bg-light"><a href="">remove</a></span>-->
                   </p>
@@ -160,7 +160,7 @@
           +'<p class="my-1"><b>Description</b>: '+d.description+'</p>'
           +'<p class="my-1"><b>Create date</b>: '+d.create_date+'</p>'
           +'<p class="my-1"><b># rows</b>: '+d.numrows 
-            +'<a href="javascript:{ removeDataset() }" class="float-right">'
+            +'<a href="javascript:{ removeDataset('+d.id+') }" class="float-right">'
               +'{% fontawesome_icon "minus-square" color="#336699" %} remove</a>'
           +'</p></div></div>'
     $("#coll_panels").append(card)
@@ -169,7 +169,7 @@
   // adds, displays single dataset
   function addDataset() {
     console.log('selected', $("#select_ds").val())
-    $.get("/collections/add-ds", {ds_id:$("#select_ds").val(), coll_id:{{object.id}}},
+    $.get("/collections/add_ds", {ds_id:$("#select_ds").val(), coll_id:{{object.id}}},
       function(data){
         // render to html
         listDataset(data)
@@ -179,6 +179,15 @@
     // reset select
     $("#select_ds").val(0)
   }
+  <!--function removeDataset(dsid) {-->
+    <!--console.log('removed', dsid)-->
+    <!--$.ajax("/collections/remove-ds", {ds_id:dsid, coll_id:{{object.id}}},-->
+      <!--function(){-->
+        <!--console.log('huh?')-->
+    <!--});-->
+    // reset select
+    <!--$("#select_ds").val(0)-->
+  <!--}-->
   $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
     var target = $(e.target).attr("href") // activated tab
     area_type = $(e.target).attr("ref") // activated tab

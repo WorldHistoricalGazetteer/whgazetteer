@@ -15,7 +15,8 @@ urlpatterns = [
     # create handles create and update
     path('<int:id>/update', views.CollectionUpdateView.as_view(), name='collection-update'),
     path('<int:id>/delete', views.CollectionDeleteView.as_view(), name='collection-delete'),
-    path('add-ds/', views.AddDatasetView.as_view(), name='collection-add-ds'),
+    path('add_ds/', views.AddDatasetView.as_view(), name='add-ds'),
+    path('remove_ds/<int:coll_id>/<int:ds_id>', views.remove_dataset, name='remove-ds'),
 
     # detail is the public view
     path('<int:pk>/detail', views.CollectionDetailView.as_view(), name='collection-detail'),
