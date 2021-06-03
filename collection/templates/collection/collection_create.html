@@ -103,25 +103,29 @@
               <option value="0">Select dataset</option>
               <option disabled>___________</option>
               {% for ds in ds_select %}
-                {% if ds not in coll_set %}
+                {% if ds not in coll_dsset %}
                   <option value="{{ ds.id }}">{{ ds.title }}</option>
                 {% endif %}
               {% endfor %}
               </select>
             </span>
-            <a href="javascript:{ fetchDataset() }" class="">
+            <a href="javascript:{ addDataset() }" class="">
           {% fontawesome_icon 'plus-square' color='#336699' %} add</a></p>
           <!-- id, label, title, description, creator, create_date, webpage, numrows, datatype -->
           <div id="coll_panels">
-            {% if coll_set|length == 0 %}<p class="font-italic">None yet...</p>{% endif %}
+            {% if coll_dsset|length == 0 %}<p class="font-italic">None yet...</p>{% endif %}
             <!--{ if action == 'update' %}-->
-            {% for d in coll_set %}
-              <div class="ds_panel">
+            {% for d in coll_dsset %}
+              <div class="ds_card">
                 <p class="mb-0"><span class="ds_title">{{ d.title }}</span> ({{d.label}}/{{ d.id}})</p>
                 <div class="ds_fields">
                   <p class="my-1"><b>Description</b>: {{ d.description }}</p>
-                  <p class="my-1"><b>Create date</b>: {{ d.create_date }}</p>
-                  <p class="my-1"><b># rows</b>: {{ d.numrows }}</p>
+                  <p class="my-1"><b>Create date</b>: {{ d.create_date|date:"d M Y" }}</p>
+                  <p class="my-1"><b># rows</b>: {{ d.numrows }} 
+                    <a href="javascript:{ removeDataset() }" class="float-right">
+                      {% fontawesome_icon 'minus-square' color='#336699' %} remove</a>
+                    <!--<span class="float-right mr-2 bg-light"><a href="">remove</a></span>-->
+                  </p>
                 </div>
               </div>
             {% endfor %}
@@ -148,16 +152,28 @@
     $("#id_geojson").attr("placeholder","generated from country codes")
   })
   
-  function listDataset(data) {
-    console.log('list this:', data)
+  function listDataset(d) {
+    console.log('listing this:', d.title)
+    card='<div class="ds_card">'
+        +'<p class="mb-0"><span class="ds_title">'+d.title+'</span> ('+d.label+'/'+d.id+')</p>'
+        +'<div class="ds_fields">'
+          +'<p class="my-1"><b>Description</b>: '+d.description+'</p>'
+          +'<p class="my-1"><b>Create date</b>: '+d.create_date+'</p>'
+          +'<p class="my-1"><b># rows</b>: '+d.numrows 
+            +'<a href="javascript:{ removeDataset() }" class="float-right">'
+              +'{% fontawesome_icon "minus-square" color="#336699" %} remove</a>'
+          +'</p></div></div>'
+    $("#coll_panels").append(card)
+    <!--console.log(card)-->
   }
-  // retrieve metadata for single dataset; display in list
-  function fetchDataset() {
+  // adds, displays single dataset
+  function addDataset() {
     console.log('selected', $("#select_ds").val())
-    $.get("/collections/get-ds", {ds_id: $("#select_ds").val()},
+    $.get("/collections/add-ds", {ds_id:$("#select_ds").val(), coll_id:{{object.id}}},
       function(data){
         // render to html
-        console.log('ds to list:',data)
+        listDataset(data)
+        <!--console.log('ds to list:',data)-->
         // append ds.id to form
     });
     // reset select

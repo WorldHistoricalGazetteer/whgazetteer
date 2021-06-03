@@ -10,18 +10,25 @@ from datasets.utils import hully
 from .forms import CollectionModelForm
 from .models import *
 
-class ListDatasetView(View):
+# adds selected dataset to collection, returns json for display
+class AddDatasetView(View):
   @staticmethod
   def get(request):
     print('ListDatasetView() GET', request.GET)
+    coll = Collection.objects.get(id=request.GET['coll_id'])
     ds = Dataset.objects.get(id=request.GET['ds_id'])
+    coll.datasets.add(ds)
     result = {
       "title": ds.title,
+      "label": ds.label,
       "id": ds.id,
-      "description": ds.description
+      "description": ds.description,
+      "numrows": ds.places.count()
     }
     return JsonResponse(result, safe=False)
 
+#def dataset_remove():
+  
 # TODO: merge create and update views (templates are the same)
 class CollectionCreateView(CreateView):
   #print('CollectionCreateView()')
@@ -74,7 +81,6 @@ class CollectionCreateView(CreateView):
     context['coll_set'] = datasets
 
     return context
-
 
 
 class CollectionDetailView(DetailView):
@@ -156,16 +162,15 @@ class CollectionUpdateView(UpdateView):
     user = self.request.user
     _id = self.kwargs.get("id")
     print('CollectionUpdateView() kwargs', self.kwargs)
-    #qs = CollectionDataset.objects.filter(collection_id = _id)
-    #coll_set = [cd.dataset for cd in qs]
-    datasets = Collection.objects.get(id=_id).dataset_set.all()
+
+    datasets = self.object.datasets.all()
 
     # populates dropdown
     ds_select = [obj for obj in Dataset.objects.all() if user in obj.owners or user.is_superuser]
 
     context['action'] = 'update'
     context['ds_select'] = ds_select
-    context['coll_set'] = datasets
+    context['coll_dsset'] = datasets
     context['create_date'] = self.object.create_date.strftime("%Y-%m-%d")
     context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
     return context

@@ -15,7 +15,7 @@ class CollectionModelForm(forms.ModelForm):
             'description': forms.Textarea(attrs={
                 'rows':2,'cols': 50,'class':'textarea'
             }),
-            'tags': forms.TextInput(attrs={'size': 50}),
+            'tags': forms.TextInput(attrs={'size': 50})
         }
 
     def __init__(self, *args, **kwargs):
