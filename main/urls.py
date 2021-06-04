@@ -18,9 +18,10 @@ urlpatterns = [
     path('collections/', TemplateView.as_view(template_name="tutorials/collections.html"), name="tute-collections"),
     path('contributing/', TemplateView.as_view(template_name="tutorials/contributing.html"), name="tute-contributing"),
     path('walkthrough/', TemplateView.as_view(template_name="tutorials/walkthrough.html"), name="tute-walkthrough"),
-    #path('template/', TemplateView.as_view(template_name="tutorials/tute-template.html"), name="tute-template"),
     path('traces/', TemplateView.as_view(template_name="tutorials/traces.html"), name="tute-traces"),
+    path('create_lptsv/', TemplateView.as_view(template_name="tutorials/create_lptsv.html"), name="tute-lptsv"),
     
+    #path('template/', TemplateView.as_view(template_name="tutorials/tute-template.html"), name="tute-template"),
     
     path('modal/', TemplateView.as_view(template_name="main/modal.html"), name="dynamic-modal"),
     

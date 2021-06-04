@@ -81,10 +81,12 @@
       <p>Title<br/>{{ form.title }}</p>
       <p><span class="top">Description</span><br/>{{ form.description }}</p>
       <p>Tags (no quotes, separate with commas) </br>{{ form.tags }}
-      <p>Image file (.png, .jpg)</br>{{ form.image_file }}
+      <!--<p>Image file (.png, .jpg)</br>{{ form.image_file }}-->
       {% if action == 'update' %}
-      <p>Created: {{ create_date }}</p>
+        <p>Created: {{ create_date }}</p>
       {% endif %}
+      <!-- hide this multicheckboxselect; filled programmatically by js:listDataset()-->
+      <div id="select_div" class="hidden">{{ form.datasets }}</div>
       <hr/>
       <div id="collection_options"></div> <!-- collection_options -->
       <p id="referrer"></p>
@@ -93,7 +95,6 @@
     </form>
     </div>
     <div id="coll_builder" class="col-sm-8 p-3">
-    <!--{{ ds_select }}{{ coll_set }}-->
       <div class="row">
         <div class="col-sm-7">
           <h4>Datasets</h4>
@@ -119,7 +120,7 @@
               <div class="ds_card">
                 <p class="mb-0"><span class="ds_title">{{ d.title }}</span> ({{d.label}}/{{ d.id}})</p>
                 <div class="ds_fields">
-                  <p class="my-1"><b>Description</b>: {{ d.description }}</p>
+                  <p class="my-1"><b>Description</b>: {{ d.description|truncatechars:150 }}</p>
                   <p class="my-1"><b>Create date</b>: {{ d.create_date|date:"d M Y" }}</p>
                   <p class="my-1"><b># rows</b>: {{ d.numrows }} 
                     <a href="{% url 'collection:remove-ds' ds_id=d.id coll_id=object.id %}" class="float-right">
@@ -143,6 +144,7 @@
 
 <script type="text/javascript">
   $(function(){
+    dslist=[]
     <!--area_type = 'ccodes' // default-->
     $( ".textarea" ).each(function(index) {
       if ( ["None","null"].includes( $(this).val() ) ) {
@@ -154,6 +156,8 @@
   
   function listDataset(d) {
     console.log('listing this:', d.title)
+    dslist.push(d.id)
+    $("#id_datasets [value=" + d.id + "]").attr("checked", "checked");
     card='<div class="ds_card">'
         +'<p class="mb-0"><span class="ds_title">'+d.title+'</span> ('+d.label+'/'+d.id+')</p>'
         +'<div class="ds_fields">'
@@ -169,11 +173,12 @@
   // adds, displays single dataset
   function addDataset() {
     console.log('selected', $("#select_ds").val())
-    $.get("/collections/add_ds", {ds_id:$("#select_ds").val(), coll_id:{{object.id}}},
+    <!--$.get("/collections/add_ds", {ds_id:$("#select_ds").val(), coll_id:{{object.id}}},-->
+    $.get("/collections/list_ds", {ds_id:$("#select_ds").val()},
       function(data){
         // render to html
         listDataset(data)
-        <!--console.log('ds to list:',data)-->
+        console.log('ds to list:',data)
         // append ds.id to form
     });
     // reset select
@@ -232,7 +237,7 @@
   });
   // expose leaflet map for events, call it 'mappy'
   window.addEventListener('map:init', function (e) {
-    console.log('map:init, w.action', '{{ action }}')
+    console.log('map:init(), w.action:', '{{ action }}')
     window.mappy = e.detail.map
     var attrib_mb = 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
             '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +

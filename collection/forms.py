@@ -9,13 +9,14 @@ class CollectionModelForm(forms.ModelForm):
     
     class Meta:
         model = Collection
-        fields = ('id','owner','title','description', 'tags', 'image_file')
+        fields = ('id','owner','title','description', 'tags', 'image_file', 'datasets')
         widgets = {
             'title': forms.TextInput(attrs={'size': 50}),
             'description': forms.Textarea(attrs={
                 'rows':2,'cols': 50,'class':'textarea'
             }),
-            'tags': forms.TextInput(attrs={'size': 50})
+            'tags': forms.TextInput(attrs={'size': 50}),
+            'datasets': forms.CheckboxSelectMultiple
         }
 
     def __init__(self, *args, **kwargs):

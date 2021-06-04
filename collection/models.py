@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import ArrayField #,JSONField
+from django.urls import reverse
 from datasets.models import Dataset
 from places.models import Place
 
@@ -23,6 +24,9 @@ class Collection(models.Model):
   #@property
   #def datasets(self):
     #return [cd.dataset for cd in self.dataset_set]
+  def get_absolute_url(self):
+    #return reverse('datasets:dashboard', kwargs={'id': self.id})
+    return reverse('datasets:dashboard')  
 
   @property
   def places(self):

@@ -1,0 +1,87 @@
+{% extends "main/base.html" %}
+{% block title %}<title>WHG::Create, upload LP-TSV</title>{% endblock %}
+
+{% block content %}
+{% load static %}
+
+  <div class="container">
+    <div class="d-flex justify-content-center mt-3">
+      <h3>Walkthrough: Create and upload an LP-TSV file</h3>
+    </div>
+    <div id="contrib_content" class="mx-5">
+      <p class="lead">This tutorial is a guide for how to transform a historical, spatial dataset built in Microsoft Excel into the Linked Places delimited file format (LP-TSV) for ingest into the World Historical Gazetteer (WHG).</p>
+      <div id="" class="tute-section">
+        <h4 class="p-1">Overview: LP-TSV</h4>
+        <div class="p-1">
+		  <p>First, what is LP-TSV? In short, <a href="https://github.com/LinkedPasts/linked-places/blob/master/tsv_0.3.md" target="_blank">LP-TSV is a delimited file format</a> (csv, tsv, or spreadsheet) developed by WHG to support users and contributors whose data is relatively simple. For example, an LP-TSV row can include a timespan for an entire record, but does not permit temporally scoping individual components (names, geometries, etc.) as the full, JSON-based <a href="https://github.com/LinkedPasts/linked-places/" target="_blank">Linked Places format</a> does.</p>
+		  <p>The distinctive features of LP-TSV include:</p>
+		<ul>
+          <li>It requires one "title" toponym, a named source for it, and at minimum a "start" year integer.</li>
+          <li>It permits any number of name variants, 2-letter country codes, types, and matches (links to other records) but only as semicolon-delimited lists of strings within those columns.</li>
+          <li>It permits one geometry, which can be either a longitude/latitude pair or a <a href="https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry" target="_blank">WKT (Well-Known Text)</a> expression.</li>
+          <li>With respect to relations, it permits only a single "parent_name"/"parent_id" combination.</li>
+		</ul>
+		<p class="">If the above bullets were a little confusing, do not worry. This guide will show you what each of these four main points mean and how to add or organize that information for your data.</p>
+		
+        <h4 class="p-1">An Example Historical Dataset</h4>
+		<p>We will begin with a sample historical dataset. This dataset, “<a href="https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/AMPGMW" target="_blank">Hernan Cortes and the Conquest of the Aztec Empire</a>,” has been published to the World Historical Gazetteer Dataverse. You can download it in MS Excel format to try to the steps of this guide yourself.</p>
+		<p>After downloading the dataset from Dataverse, you will see that the first sheet of the file contains metadata. There are other sheets about the sources, notes on data, and the data itself. While much of this is important for a historical research project, WHG is primarily concerned with how places have been named and when.</p>
+		<p>Let’s navigate to the data itself by clicking on the data sheet button on the bottom left of the screen.</p>
+		<p><img src="{% static 'images/tutes/lptsv_fig1.JPG' %}" width=800 /></p>
+		<p>We see there are ID numbers, dates of events, where the event happened, the type of activity, and descriptions of the event. The description column also occasionally lists a name variant for a given place.</p>
+		<p><img src="{% static 'images/tutes/lptsv_fig2.JPG' %}" width=800 /></p>
+        <h4 class="p-1">Converting Historical Datasets to LP-TSV</h4>
+		<p>In the above LP-TSV section, the four bullets listed some key parameters needed for that format. Of these, this dataset already contains the most important one, toponym, or the name of the place. The dataset also includes the start date (and occasionally end date) of an event.</p>
+		<p>To begin the conversion process, first <a href="https://github.com/LinkedPasts/linked-places/blob/master/LP-TSV_template.xlsx" target="_blank">download this LP-TSV template file</a>. It has all the necessary columns included for the dataset to be successfully loaded into the WHG. The sample file also shows via color scheme which columns are required, encouraged, and optional. The more of this information we include, the easier it will be for us to reconcile, or match up, our list of places with places in Wikidata and in the WHG system.</p>
+		<p><img src="{% static 'images/tutes/lptsv_fig3.JPG' %}" width=800 /></p>
+		
+		<p>To begin the dataset conversion process, let’s select the “Date” and “Place” columns in the Cortes dataset. We will copy them and paste them first into a new, blank Excel Worksheet, because we have to do a few bits of cleaning and data modification before we can paste this information into an LP-TSV template. It is always good to do this conversion work in a new file so that we do not accidentally overwrite the original dataset. Always work in a different working file than your master dataset.</p>
+		<p>We have to correct two things with this dataset before it can be ready for LP-TSV. First, LP-TSV requires only one instance of a place name. We do not need to mention each and every instance of a given place, such as Cholula. Instead, we care only about the first and last times that Cholula is mentioned in our historical sources. First, we will convert the “Date” column into start and end dates, then we will remove duplicate instances of a place name.</p>
+		<p>We will now insert two columns between “Date” and “Place”, “start” and “end”. It is better to be as specific as possible when converting the dates, because we have a level of precision from the original source. For simplicity’s sake in this tutorial, we will use only the year of the start and end when applicable for the dataset. In each “start” and “end” column place the year included in the “Date” column for the row. Row 1 would be 1519 and 1519. Go through the whole list. You will have chunks that start and end in 1519, 1520, and 1521.</p>
+		<p><<img src="{% static 'images/tutes/lptsv_fig4.JPG' %}" width=800 /></p>
+		
+		<p>Once that is done, delete the “ID” and “Date” columns. Now that we have the necessary start and end dates for the historical range, we need to remove duplicate instances of the places. We will select everything in our worksheet and click on the “Data” button on the top ribbon. Towards the right there should be a section of options called “Data Tools.” One icon has a series of boxes with a red X over it, which if you hover you mouse is the option for “Remove Duplicates.” Click that button.</p>
+		<p><img src="{% static 'images/tutes/lptsv_fig5.JPG' %}" width=800 /></p>
+		
+		<p>A box will appear asking which columns you want to select for removing the duplicates. Keep all of them selected and hit “OK.” Excel will run the operation and will give us a message saying how many duplicates it found and how many unique values remain.</p>
+		<p><img src="{% static 'images/tutes/lptsv_fig6.JPG' %}" width=800 /></p>
+		
+		<p>We are almost done cleaning our data. A few places still have duplicates, but they were not cleaned out by the previous operation because the dates were different. Insert a new column and call it “ID” and then fill it with sequential numbers.</p>
+		<p><img src="{% static 'images/tutes/lptsv_fig7.JPG' %}" width=800 /></p>
+		
+		<p>Highlight the entire “Place” column while “Home” is selected on the top ribbon of Excel. Next, click “Sort & Filter” and choose “Sort A to Z.” This will organize your places alphabetically.</p>
+		<p><img src="{% static 'images/tutes/lptsv_fig8.JPG' %}" width=800 /></p>
+		
+		<p>A box will appear asking if you want to expand the selection or continue with the current selection. Choose to expand the selection and then click “Sort.”</p>
+		<p><img src="{% static 'images/tutes/lptsv_fig9.JPG' %}" width=800 /></p>
+		
+		<p>Now we look for duplicate values. In the case of duplicates, change the end date for a repeated location in the first instance to the end date given in the last instance. For example, the first repeat is Cempoala. One row has a start and end of 1519 and another of 1520.</p>
+		<p><img src="{% static 'images/tutes/lptsv_fig10.JPG' %}" width=800 /></p>
+		
+		<p>We want our one instance of Cempoala to show a start of 1519, the first date associated with the place in the dataset, and an end of 1520, the last time associated with that particular place in the dataset. For this example, we will change the end date associated with ID 7 to 1520 and then delete the entire row associated with ID 25. Go down the sheet and repeat this process for the remaining duplicates. Then, sort the data again by the ID column to put the places back into the order in which they first appeared in the text (in general, this step is not necessary, but there is one location that is different than the others in a different step of this exercise and restoring the data to that order makes that step easier).</p>
+		<p>Our original data has now been cleaned and can be put into an LP-TSV template. Let’s take the LP-TSV template file we downloaded and save a new copy of it. Working in the copy file, remove everything but the information in row 1, that is keep nothing but the column headers.</p>
+		<p><img src="{% static 'images/tutes/lptsv_fig11.JPG' %}" width=800 /></p>
+		
+		<p>Now we will go back to the worksheet where we removed the duplicates. Copy and paste the values from the “Place” column into the “title” column in the LP template. Copy and paste the corresponding values from the “start” and “end” columns between the two workbooks as well. When you’ve done that, your screens should look something like the below image.</p>
+		<p><img src="{% static 'images/tutes/lptsv_fig12.JPG' %}" width=800 /></p>
+		
+		<p>Now to fill in the other two required columns. For ID, just put sequential ID numbers. Again, for simplicity’s sake, we will start with 1 and fill in the column to 50. Next, we need a source for where we got these names. We have a few options here. We could choose to give the book from which we originally got the information. Because the original dataset is online, we can simply give the URI for the dataset, interested readers will find that deeper level of detail there.</p>
+		<p><img src="{% static 'images/tutes/lptsv_fig13.JPG' %}" width=800 /></p>
+		
+		<p>Our next step is to fill in as much of the encouraged information as possible. One important additional column that can be fairly simple is to include the Country Code, represented by the “ccodes” column. We need to use the <a href="https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2" target="_blank">two-letter ISO Alpha code</a> for the corresponding modern country where the historical place in question currently lies. For this exemplar dataset, all the places, with the exception of the first one, are in present-day Mexico, which uses the code “MX.” So in our “ccodes” column we put MX for each row other than the first. The first location, Santiago de Cuba, is in present day Cuba, so we put “CU” as the ccode for that instance.</p>
+		<p><img src="{% static 'images/tutes/lptsv_fig14.JPG' %}" width=800 /></p>
+		
+		<p>The next easiest and helpful columns to have are “types” and “aat_types.” The type refers to the way a contributor might classify the type of place. In this example, the places related to Cortes’ conquest were all settlements, so we will fill the "types" column with "settlement." You are free to use any term(s) you wish; if more than one, separate them with a semicolon.</p>
+		<p>The “aat_types” column refers to one or more codes supplied by the <a href="http://www.getty.edu/research/tools/vocabularies/aat/" target="_blank">Getty Art & Architecture Thesaurus (AAT)</a> hierarchy. The WHG also currently supports the use of roughly 160 AAT codes. That list can be downloaded <a href="https://github.com/LinkedPasts/linked-places/blob/master/feature-types-AAT_20210118.xlsx" target="_blank">here</a>. 
+		We ask that, if possible, you map your place type terms to one of the 160 we support. One of the most common AAT codes for WHG is <a href="http://www.getty.edu/vow/AATServlet?english=N&find=300008347&logic=AND&page=1&note=" target="_blank">300008347</a>, or “inhabited places.” Because "settlement" corresponds closely with that, we will fill the “aat_types” column with 300008347.</p>
+		<p><img src="{% static 'images/tutes/lptsv_fig15.JPG' %}" width=800 /></p>
+		
+		<p>If we look back at the original dataset, we can see that a few places have an alternative place name listed in the “Description of Event” column. For example, row 15 of the original dataset gives Xico Viejo as the modern variant of Xicochimalco. We can place “Xico Viejo” in the variants column of our LP dataset, and do the same for any similar cases. If there are multiple variants in multiple languages, it is possible to list them all in the column separated by a semicolon; for example, in this case “Xicochimalco; Xico Viejo” (without the quotes)</p>
+		<p>If geographic coordinates are available for any of the records, it is helpful to include them—either as longitude and latitude ("lon", "lat") or Well-Known Text format ("geowkt"). The more information provided in the upload file, the easier it is for the user and the WHG system to match the places in their submission to those in Wikidata and those already indexed in the WHG.</p>
+		<p>As a last step, remove any columns that are empty (including their header label). WHG accepts Excel and .ODT spreadsheet files, as well as TSV and CSV text files. One reliable option is to copy/paste the contents of a single worksheet into an empty text file; this automatically converts it to TSV (tab-separated values) format.</p>
+		<h4 class="p-1">Next steps</h4>
+		<p>Your data is now valid LP-TSV format (whether spreadsheet, TSV or CSV) and is ready to upload to your private workspace in the WHG database, where you can reconcile it with Wikidata and ultimately the WHG index. For a guide to that process, please see the tutorial, <a href="{% url 'main:tute-walkthrough' %}">Uploading and reconciling data</a>.</p>
+      </div>
+    </div>
+  </div>
+{% endblock %}

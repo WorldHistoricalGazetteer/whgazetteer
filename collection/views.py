@@ -10,26 +10,26 @@ from datasets.utils import hully
 from .forms import CollectionModelForm
 from .models import *
 
-# adds selected dataset to collection, returns json for display
-class AddDatasetView(View):
+# returns json for display
+class ListDatasetView(View):
   @staticmethod
   def get(request):
     print('ListDatasetView() GET', request.GET)
-    coll = Collection.objects.get(id=request.GET['coll_id'])
+    #coll = Collection.objects.get(id=request.GET['coll_id'])
     ds = Dataset.objects.get(id=request.GET['ds_id'])
-    coll.datasets.add(ds)
+    #coll.datasets.add(ds)
     result = {
-      "title": ds.title,
-      "label": ds.label,
       "id": ds.id,
-      "description": ds.description,
+      "label": ds.label,
+      "title": ds.title,
+      "description": ds.description[:100]+'...',
       "numrows": ds.places.count()
     }
     return JsonResponse(result, safe=False)
 
+# removes dataset from collection, refreshes page
 def remove_dataset(request, *args, **kwargs):
-  print('args', args)
-  print('kwargs', kwargs)
+  #print('kwargs', kwargs)
   coll = Collection.objects.get(id=kwargs['coll_id'])
   ds = Dataset.objects.get(id=kwargs['ds_id'])
   coll.datasets.remove(ds)
@@ -42,17 +42,19 @@ class CollectionCreateView(CreateView):
   form_class = CollectionModelForm
   template_name = 'collection/collection_create.html'
   queryset = Collection.objects.all()
-
-  # if called from reconciliation addtask, return there
+  
+  def get_success_url(self):
+    return reverse('dashboard')  
+  # 
   def get_form_kwargs(self, **kwargs):
     kwargs = super(CollectionCreateView, self).get_form_kwargs()
-    redirect = self.request.GET.get('next')+'#addtask' if 'next' in self.request.GET else ''
-    print('GET in CollectionCreate()',self.request.GET)
-    #print('redirect',redirect)
-    if redirect != '':
-      self.success_url = redirect
-    else:
-      self.success_url = '/dashboard'
+    #redirect = self.request.GET.get('next')+'#addtask' if 'next' in self.request.GET else ''
+    #print('GET in CollectionCreate()',self.request.GET)
+    ##print('redirect',redirect)
+    #if redirect != '':
+      #self.success_url = redirect
+    #else:
+      #self.success_url = '/dashboard'
     return kwargs
 
   def form_invalid(self,form):
@@ -85,7 +87,7 @@ class CollectionCreateView(CreateView):
 
     context['action'] = 'create'
     context['ds_select'] = ds_select
-    context['coll_set'] = datasets
+    context['coll_dsset'] = datasets
 
     return context
 
@@ -108,7 +110,7 @@ class CollectionDetailView(DetailView):
     #GeometryCollection([GEOSGeometry(json.dumps(g)) for g in g_list])
 
     #datasets = [cd.dataset for cd in qs]
-    datasets = self.dataset_set
+    datasets = self.object.datasets.all()
     # compute bounding boxes
     bboxes = []
     #from shapely.geometry import shape

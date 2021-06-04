@@ -6,19 +6,21 @@
 
   <div class="container">
     <div class="d-flex justify-content-center mt-3">
-      <h3>Collections in WHG</h3>
+      <h3>Collections in World Historical Gazetteer</h3>
     </div>
     <div id="contrib_content" class="mx-5">
-      <p class="lead">Collections in WHG are sets of datasets. Registered users can link datsets they own (or co-own), for purposes of presentation and filtering of searches.</p>
+      <p class="lead">Collections in WHG are sets of datasets. Registered users can link datsets they own (or co-own), for purposes of presentation and filtering of searches. <mark>In a future release, it will be possible to create collections from individual records and/or search results.</mark></p>
       <div class="tute-section">
-        <h4 class="p-1">Step 1</h4>
+        <h4 class="p-1">Why collections?</h4>
         <div class="p-1">
+		  <p>Creators of gazetteers for a particular region and period are increasingly interested in linking their data with projects that have overlapping spatial and/or temporal coverage. Loosely joining datasets in the WHG platform can potentially generate rich domains of focus, effectively combining the efforts of numerous specialized projects.</p>
+		  <p>For example, the KNAW/HuC group in the Netherlands <a href="{% url 'collection:collection-detail' pk=3 %}">has begun developing a collection</a> that will ultimately link a few dozen datasets of settlements and administrative areas in historically Dutch territories around the globe.</p> 
+		  <p>Preliminary discussion have begin on several similar efforts, including for Colonial and pre-Colonial Latin America (LatAm), for the Ottoman Empire, for Central Eurasia, for Early Modern Europe, and for the geography of the Atlantic slave trade.</p>
+		  <p>Collections can also be used to link datasets from a single contributor, as Werner Stangl has done with <a href="{% url 'collection:collection-detail' pk=4 %}">HGIS de las Indias</a>. One dataset contains around 13,000 settlements (lugares), and another contains the 900 political and religious administrative areas (territorios) they lay within.</p>
+        <h4 class="p-1">Creating a collection</h4>
 		  <p>Lorem ipsum</p>
 		  <p>Lorem ipsum rendundantum</p>
-        <h4 class="p-1">Step 2</h4>
-		  <p>Lorem ipsum</p>
-		  <p>Lorem ipsum rendundantum</p>
-        <h4 class="p-1">Step 3</h4>
+        <h4 class="p-1">Using collections</h4>
 		  <p>Lorem ipsum</p>
 		  <p>Lorem ipsum rendundantum</p>
       </div>
