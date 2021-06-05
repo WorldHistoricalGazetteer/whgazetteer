@@ -42,7 +42,7 @@
         {{ g|safe|json_script:g.properties.id }}
       {% endfor %}
       <div id="coll_dslist">
-        <h5>Datasets<span class="small float-right mr-2">{% fontawesome_icon 'download' color='#336699' %} <a href="" title="download options"> download options</a></span></h5>
+        <h5>Datasets<span class="small float-right mr-2">{% fontawesome_icon 'download' color='#336699' %} <a href="" id="a_update_modal" data-dsid = {{ ds.id }} data-toggle="modal" data-target="#updateModal" title="download options"> download options</a></span></h5>
         <!-- fields: id, label, title, description, creator, create_date, webpage, numrows, datatype -->
         <div id="ds_cards">
           {% for d in ds_list %} 
