@@ -76,13 +76,16 @@ def download_augmented(request, *args, **kwargs):
 
   req_format = kwargs['format']
   if req_format is not None:
-    print('got format',req_format)
+    print('download format',req_format)
     #qs = qs.filter(title__icontains=query)
 
   features=ds.places.all().order_by('id')
 
+  print('download_augmented() file format', fileobj.format)
+  print('download_augmented() req. format', req_format)
+  
   if fileobj.format == 'delimited' and req_format == 'tsv':
-    print('augmented for delimited')
+    print('getting tsv file')
     # make file name
     fn = 'media/user_'+user+'/'+ds.label+'_aug_'+date+'.tsv'
     def augLinks(linklist):
@@ -124,7 +127,7 @@ def download_augmented(request, *args, **kwargs):
 
     return response
   else:
-    print('download_augmented()')
+    print('building lpf file')
     # make file name
     fn = 'media/user_'+user+'/'+ds.label+'_aug_'+date+'.json'
     result={"type":"FeatureCollection","features":[],

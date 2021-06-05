@@ -10,12 +10,13 @@
   {% leaflet_js %}
   {% leaflet_css %}
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-3-typeahead/4.0.2/bootstrap3-typeahead.min.js" integrity="sha256-LOnFraxKlOhESwdU/dX+K0GArwymUDups0czPWLEg4E=" crossorigin="anonymous"></script>
-  <script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>
   
   <script src="{% static 'js/tags/bootstrap-tagsinput.js' %}"></script>
   <script src="{% static 'js/tags/bloodhound.js' %}"></script>
+  <script src="{% static 'js/spin.umd.js' %}"></script>
   <link rel="stylesheet" href="{% static 'js/tags/bootstrap-tagsinput.css' %}"/>
   <link rel="stylesheet" href="{% static 'js/tags/bootstrap-tagsinput-typeahead.css' %}"/>
+  <link rel="stylesheet" href="{% static 'css/spin.css' %}"/>
   
   <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.css' rel='stylesheet' />
   <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.js'></script>
@@ -25,7 +26,7 @@
 {% block content %}
 <div class="container">
   <h4 class="mt-3">
-    The <span class="text-danger">{{ object.title }}</span> Collection
+    <small class="text-secondary">WHG Collection:</small> <span class="text-danger">{{ object.title }}</span>
   </h4>
   <div class="d-flex">
     <div class="form-box col-sm-5 mt-2">
@@ -41,7 +42,7 @@
         {{ g|safe|json_script:g.properties.id }}
       {% endfor %}
       <div id="coll_dslist">
-        <h5>Datasets<small><span class=" float-right mr-2">{% fontawesome_icon 'download' color='#336699' %} (all) &nbsp;&nbsp;<a href="" title="Linked Places format">lp</a>&nbsp;&nbsp;<a href="" title="tab-delimited text">tsv</a></span></small></h5>
+        <h5>Datasets<span class="small float-right mr-2">{% fontawesome_icon 'download' color='#336699' %} <a href="" title="download options"> download options</a></span></h5>
         <!-- fields: id, label, title, description, creator, create_date, webpage, numrows, datatype -->
         <div id="ds_cards">
           {% for d in ds_list %} 
@@ -54,7 +55,17 @@
                 <li class=""><b>Created</b>: {{ d.create_date|date:"d M Y" }}</li>
                 <li class="">
                   <b>Number of records</b>: {{ d.numrows }}
-                  <span class="float-right mr-2">{% fontawesome_icon 'download' color='#336699' %}&nbsp;&nbsp;<a href="" data-id={{d.id}} title="Linked Places format">lp</a>&nbsp;&nbsp;<a href="" data-id={{d.id}} title="tab-delimited text">tsv</a></span>
+                  <span class="dl-links float-right mr-2">
+                  {%comment%}<select placeholder="Select format">
+                    <option disabled selected class="text-secondary"value="">Select format</option>
+                    <option value="lpf">Linked Places (LPF)</option>
+                    <option value="gis">simplified LPF</option>
+                    <option value="tsv">simplified TSV</option>
+                  </select> {% fontawesome_icon 'download' color='#336699' %}
+                  
+                  {% fontawesome_icon 'download' color='#336699' %}&nbsp;&nbsp;<a href="{% url 'datasets:dl-aug' id=d.id format='lpf' %}" data-id={{d.id}} ref="lpf" title="Linked Places format">lp</a>&nbsp;&nbsp;<a href="" data-id={{d.id}} ref="gis" title="tab-delimited text">tsv</a>{%endcomment%}
+                  
+                  </span>
                 </li>
                 </ul>
               </div>
@@ -71,6 +82,45 @@
       <!--<div>{ bboxes }}</div>-->
     </div> <!-- .row -->
   </div> <!-- d-flex -->
+  <div class="modal fade" id="updateModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="updateModalLabel">
+            Update <span class="text-danger">{{ ds.label }}</span> dataset <small>(<i>{{ current_file.format }} file only</i>)</small>
+          </h5>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <form id="newfileform" method="POST" action="#" enctype="multipart/form-data">
+              {% csrf_token %}
+              <div id="loadfile">
+                <p><input type="file" id="newfile"></p>
+                <button id="btn_upload" type="submit" class="btn btn-primary btn-sm hidden">Upload</button>
+              </div>
+              <div id="update_spinner"></div>
+              <div id="results_text" class="mb-2 small ds-card">
+                <p>Uploaded data will be compared with existing data, and results reported here.</p>
+                  <p>You may then proceed, or cancel this operation with no changes made.</p>
+                <!--{ if links_added > 0 or geoms_added > 0 %}-->
+                <!--<p>This dataset has been augmented with { links_added }} links and { geoms_added }} geometries-->
+                <!--via reconciliation tasks. </p>-->
+                <!--{ endif %}-->
+              </div>          
+            </form>
+          </div> <!-- .form-group -->
+        </div> <!-- .modal-body -->      
+        <div class="modal-footer">
+          <div id="buttons_pre">
+            <button id="btn_cancel" type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Cancel</button>
+            <button id="btn_update" type="button" data-dsid={{ds.id}} class="btn btn-primary btn-sm hidden">
+              Proceed</button>
+          </div>
+          <button id="btn_done" type="button" class="btn btn-secondary btn-sm hidden" data-dismiss="modal">Done</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div> <!-- container -->
 
 <script type="text/javascript">
@@ -114,7 +164,25 @@
       )
     }
   );
-  
+
+  function startDownloadSpinner(){
+    window.spinner_dl = new Spin.Spinner().spin();
+    $("#ds_cards").append(spinner_dl.el);   
+  }  
+
+  $(".dl-links a").click(function(e){
+    <!--e.preventDefault()-->
+    urly='/datasets/'+$(this).data('id')+'/augmented/'+$(this).attr('ref')
+    console.log('urly',urly)
+    startDownloadSpinner()
+    $.ajax({
+          type: 'GET',
+          url: urly
+        }).done(function() {
+            spinner_dl.stop();
+        })
+  })
+
   // expose leaflet map for events, call it 'mappy'
   window.addEventListener('map:init', function (e) {
     window.mappy = e.detail.map
@@ -219,7 +287,7 @@
         onEachFeature: function(feature,layer) {
           f=feature; l=layer;
           identifier = f.properties.id;
-          console.log('identifier, type',identifier,f.geometry.type)
+          <!--console.log('identifier, type',identifier,f.geometry.type)-->
           if(f.type != 'Point'){
             layer.setStyle(styles[f.geometry.type].default).bindPopup(
               f.properties.title+' ('+identifier+')'
