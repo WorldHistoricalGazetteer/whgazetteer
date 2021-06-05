@@ -1,9 +1,10 @@
 <!-- areas/area_create.html -->
 {% extends "main/base.html" %}
-{% load leaflet_tags %}
-{% load fontawesome %}
-{% load static %}
 {% load dataset_extras %}
+{% load fontawesome %}
+{% load geojson_tags %}
+{% load leaflet_tags %}
+{% load static %}
 {% block title %}<title>WHG::Collection</title>{% endblock %}
 {% block extra_head %}
   {% leaflet_js %}
@@ -35,10 +36,10 @@
         <tr><td><b>Created</b></td><td>{{ object.create_date|date:"d M Y" }}</tr>
         </table>
       </div>
-      <hr/>{%comment%}
+      <hr/>
       {% for g in bboxes %}
-        {{ g|safe|json_script:d.id }}
-      {% endfor %}{%endcomment%}
+        {{ g|safe|json_script:g.properties.id }}
+      {% endfor %}
       <div id="coll_dslist">
         <h5>Datasets</h5>
         <!-- fields: id, label, title, description, creator, create_date, webpage, numrows, datatype -->
@@ -55,7 +56,7 @@
                 </ul>
               </div>
             </div>
-            {{ d.bounds }}
+            <!--{ d.bounds }}-->
           {% endfor %}
         </div> <!-- #ds_cards -->        
       </div> <!-- #coll_dslist -->
@@ -125,19 +126,19 @@
 
     layerGroup = L.control.layers(baseLayers).addTo(mappy);
     
-    $.get("/api/geoms", {ds: "{{ ds.label }}", f: "{{ filter }}" },
-      function(data){
-        <!--console.log('feature count:',data.count)-->
-        geom = {"type":"FeatureCollection","features":data.results}
-        if(geom.features.length >= 15000) {
-          $(".toomany").html('for performance reasons, mapping only the first 15,000 features - sorry!')
-        }
-        if(geom.features.length <= 15000) {
-          renderMap(geom,'browse')
-        } else {
-          $(".toomany").html('too many features to map (> '+geom.features.length+'), sorry!')
-        }
-    })    
+    <!--$.get("/api/geoms", {ds: "{{ ds.label }}", f: "{{ filter }}" },-->
+      <!--function(data){-->
+        <!--<!--console.log('feature count:',data.count)-->-->
+        <!--geom = {"type":"FeatureCollection","features":data.results}-->
+        <!--if(geom.features.length >= 15000) {-->
+          <!--$(".toomany").html('for performance reasons, mapping only the first 15,000 features - sorry!')-->
+        <!--}-->
+        <!--if(geom.features.length <= 15000) {-->
+          <!--renderMap(geom,'browse')-->
+        <!--} else {-->
+          <!--$(".toomany").html('too many features to map (> '+geom.features.length+'), sorry!')-->
+        <!--}-->
+    <!--})    -->
     <!--baseLayers['OpenStreetMap'].addTo(mappy)-->
   }, false);
 
@@ -152,66 +153,111 @@
     return JSON.parse(JSON.parse(y))
   }
 
-   // initialize, render map w/settings.LEAFLET_CONFIG
-  function map_init (map, options) {
-    console.log('in map_init()')  
-  }  
-  
+  styles = {
+    "MultiPolygon": {
+      "default":{fillOpacity: 0.3, opacity: 1, color: "#000", weight: 1, fillColor:"#ff9999"},
+      "focus":{fillOpacity: 0.3, opacity: 1, color: "red", weight: 2, fillColor:"#ff9999"}},
+    "Polygon": {
+      "default":{fillOpacity: 0.3, opacity: .5, color: "#666", weight: 1, fillColor:"#ff9999"},
+      "focus":{fillOpacity: 0.3, opacity: .5, color: "red", weight: 2, fillColor:"#ff9999"}}
+  }
 
-  function renderMap(geom, tab){
-    // call the map being rendered 'mappo'
-    console.log('geom in renderMap()', geom)
-    mappo = tab=='browse' ? mappy : mappyr
-    if (geom.features.length==0) {
-      console.log('no features in renderMap() call')
-    } else {
-      // clear existing if any
-      if(typeof(features)!=='undefined'){
-        mappo.removeLayer(features)
-      }
-      idToFeature = {}  // for feature lookup
-      features = L.geoJSON(geom, {
-      // feature here is a geometry
-      // TODO: LPF should allow single geometry, not only GeometryCollection
-        pointToLayer: function (feature, latlng) {
-          matchid = feature.place_id
-          <!--console.log('feature',feature)-->
-          marker = L.circleMarker(latlng,styles.Point.default).bindPopup(feature.title+
-            '<br>pid: <a href="'+window.location.origin+'/api/db?id='+matchid+'" target="_blank">'+
-            matchid+'</a>');
-          idToFeature[matchid] = marker
-          return marker
-        }
-        ,onEachFeature: function(feature,layer) {
+   // initialize, render map w/settings.LEAFLET_CONFIG
+  function map_init(map, options) {
+    // console.log('in map_init()')
+    <!--window.geom = {"type":"FeatureCollecton","features":[]}-->
+    window.geoms = []
+
+    window.gelems = $('script').filter(function() {
+      <!--return this.id.match(/[0-9]/) && this.text != '"null"';-->
+      return this.id !='' && this.text != '"null"';
+    });
+    for (i=0;i<gelems.length;i++){
+      let t_geom = cleanJson(gelems[i].text)
+      <!--t_geom['properties'] = {"id": gelems[i].id,"ds": t_geom.ds!=null?t_geom.ds:ds}-->
+      geoms.push(t_geom)
+    }
+
+    if (geoms.length > 0) {
+      <!--console.log('geom: ',geom)-->
+      idToFeature = {} // for feature lookup
+      features = L.geoJSON(geoms, {
+        onEachFeature: function(feature,layer) {
           f=feature; l=layer;
-          <!--console.log('f,l',feature,layer)-->
-          identifier = f.place_id;
+          identifier = f.properties.id;
+          console.log('identifier, type',identifier,f.geometry.type)
           if(f.type != 'Point'){
-            layer.setStyle(styles[f.type].default).bindPopup(
-              f.title+'<br>pid: <a href="'+
-              window.location.origin+'/api/db?id='+
-              identifier+'" target="_blank">'+identifier+'</a>'
+            layer.setStyle(styles[f.geometry.type].default).bindPopup(
+              f.properties.title+' ('+identifier+')'
             )
             idToFeature[identifier] = layer
           }
         }
-      }).addTo(mappo);
+      }).addTo(map);
+
+      <!--mappy.setView(features.getBounds().getCenter(),6)-->
+      mappy.fitBounds(features.getBounds())
+      mappy.setZoom(mappy.getZoom()-1)
+    } else {
+      console.log('no geometries, no feature')
     }
-    <!--highlightFeature(pid)-->
-    mappo.fitBounds(features.getBounds())
-    mappo.on('zoomend', function() {
-      var currentZoom = mappo.getZoom();
-      <!--console.log('on zoomend', currentZoom)-->
-      var myRadius = currentZoom*(1); //or whatever ratio you prefer
-      var myWeight = currentZoom*(1/5); //or whatever ratio you prefer
-      features.setStyle({radius: myRadius, weight: myWeight});
-      opt = Object.values(idToFeature)[0].options
-      foptions = { ...opt };
-      <!--console.log('zoomend() idToFeature',opt)-->
-    });
-    opt = Object.values(idToFeature)[0].options
-    foptions = { ...opt };
-  }
+  } // end map_init  
+
+  <!--function renderMap(geom, tab){-->
+    <!--// call the map being rendered 'mappo'-->
+    <!--console.log('geom in renderMap()', geom)-->
+    <!--mappo = tab=='browse' ? mappy : mappyr-->
+    <!--if (geom.features.length==0) {-->
+      <!--console.log('no features in renderMap() call')-->
+    <!--} else {-->
+      <!--// clear existing if any-->
+      <!--if(typeof(features)!=='undefined'){-->
+        <!--mappo.removeLayer(features)-->
+      <!--}-->
+      <!--idToFeature = {}  // for feature lookup-->
+      <!--<!--L.geoJson({ object_list|geojsonfeature|safe}}).addTo(map);-->-->
+      <!--features = L.geoJSON(geom, {-->
+      <!--// feature here is a geometry-->
+      <!--// TODO: LPF should allow single geometry, not only GeometryCollection-->
+        <!--pointToLayer: function (feature, latlng) {-->
+          <!--matchid = feature.place_id-->
+          <!--<!--console.log('feature',feature)-->-->
+          <!--marker = L.circleMarker(latlng,styles.Point.default).bindPopup(feature.title+-->
+            <!--'<br>pid: <a href="'+window.location.origin+'/api/db?id='+matchid+'" target="_blank">'+-->
+            <!--matchid+'</a>');-->
+          <!--idToFeature[matchid] = marker-->
+          <!--return marker-->
+        <!--}-->
+        <!--,onEachFeature: function(feature,layer) {-->
+          <!--f=feature; l=layer;-->
+          <!--<!--console.log('f,l',feature,layer)-->-->
+          <!--identifier = f.place_id;-->
+          <!--if(f.type != 'Point'){-->
+            <!--layer.setStyle(styles[f.type].default).bindPopup(-->
+              <!--f.title+'<br>pid: <a href="'+-->
+              <!--window.location.origin+'/api/db?id='+-->
+              <!--identifier+'" target="_blank">'+identifier+'</a>'-->
+            <!--)-->
+            <!--idToFeature[identifier] = layer-->
+          <!--}-->
+        <!--}-->
+      <!--}).addTo(mappo);-->
+    <!--}-->
+    <!--<!--highlightFeature(pid)-->-->
+    <!--mappo.fitBounds(features.getBounds())-->
+    <!--mappo.on('zoomend', function() {-->
+      <!--var currentZoom = mappo.getZoom();-->
+      <!--<!--console.log('on zoomend', currentZoom)-->-->
+      <!--var myRadius = currentZoom*(1); //or whatever ratio you prefer-->
+      <!--var myWeight = currentZoom*(1/5); //or whatever ratio you prefer-->
+      <!--features.setStyle({radius: myRadius, weight: myWeight});-->
+      <!--opt = Object.values(idToFeature)[0].options-->
+      <!--foptions = { ...opt };-->
+      <!--<!--console.log('zoomend() idToFeature',opt)-->-->
+    <!--});-->
+    <!--opt = Object.values(idToFeature)[0].options-->
+    <!--foptions = { ...opt };-->
+  <!--}-->
 
 </script>
 
