@@ -106,7 +106,16 @@
           </tr>
         </table>
         <input class="btn btn-primary btn-sm hidden btn-ds" type="submit" value="Save" />
-        <p> <i>Current data file</i></p>
+        <p> <i>Current data file</i>
+          {% if current_file.format == 'delimited' %}
+          {% if ds.owner.id == user.id or user.is_superuser%}
+          <span class="float-right mr-2">
+            <a href="#" id="a_update_modal" data-dsid = {{ ds.id }} data-toggle="modal" data-target="#updateModal">update</a>
+            <span class="help-matches" data-id="updates">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
+          </span>
+          {% endif %}
+          {% endif %}        
+        </p>
         <div id="div_file">
           <table id="file_metadata" class="ds-table table-striped">
             <tr>
