@@ -111,20 +111,22 @@ class CollectionDetailView(DetailView):
 
     #datasets = [cd.dataset for cd in qs]
     datasets = self.object.datasets.all()
+    
     # compute bounding boxes
-    bboxes = []
-    #from shapely.geometry import shape
-    for ds in datasets:
-      dsgeom = [g for g in ds.geometries.all()]
-      hull = hully(dsgeom)
-      bboxes.append(hull)
+    # TODO: too expensive, compute bbox on create?
+    #bboxes = []
+    ##from shapely.geometry import shape
+    #for ds in datasets:
+      #dsgeom = [g for g in ds.geometries.all()]
+      #hull = hully(dsgeom)
+      #bboxes.append(hull)
 
     context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
     context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
     context['mbtokenwhg'] = settings.MAPBOX_TOKEN_WHG
 
     context['ds_list'] = datasets
-    context['bboxes'] = bboxes
+    #context['bboxes'] = bboxes
     return context
 
   #def get_object(self):

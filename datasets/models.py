@@ -1,6 +1,8 @@
 # datasets.models
 from django.conf import settings
 from django.contrib.postgres.fields import JSONField, ArrayField
+from django.contrib.gis.db import models as geomodels
+from django.contrib.gis.geos import GeometryCollection
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import Q
@@ -12,6 +14,7 @@ from django.urls import reverse
 from elastic.es_utils import escount_ds
 from main.choices import *
 from places.models import Place, PlaceGeom
+import simplejson as json
 
 def user_directory_path(instance, filename):
   # upload to MEDIA_ROOT/user_<username>/<filename>
@@ -31,6 +34,7 @@ class Dataset(models.Model):
   create_date = models.DateTimeField(null=True, auto_now_add=True)
   uri_base = models.URLField(null=True, blank=True)
   webpage = models.URLField(null=True, blank=True)
+  bbox = geomodels.PolygonField(null=True, blank=True, srid=4326)
 
   # TODO: these are updated in both Dataset & DatasetFile  (??)
   datatype = models.CharField(max_length=12, null=False,choices=DATATYPES,
@@ -41,7 +45,7 @@ class Dataset(models.Model):
   numlinked = models.IntegerField(null=True, blank=True)
   total_links = models.IntegerField(null=True, blank=True)
   
-  collections = models.ManyToManyField("collection.Collection")
+  #collections = models.ManyToManyField("collection.Collection")
 
   def __str__(self):
     return self.label
@@ -58,6 +62,13 @@ class Dataset(models.Model):
   #d = get_object_or_404(Dataset, label='pleiades20k')
   #user = get_object_or_404(User, pk=14)
 
+  @property
+  def bounds(self):
+    pg_geoms=PlaceGeom.objects.values_list('geom',flat=True).filter(place__dataset=self.label)
+    gc=GeometryCollection(tuple(pg_geoms))
+    
+    return json.loads(gc.envelope.geojson)
+    
   @property
   def tasks(self):
     from django_celery_results.models import TaskResult

@@ -1,5 +1,6 @@
 # place.models
 from django.contrib.auth.models import User
+from django.contrib.gis.db import models as geomodels
 from django.contrib.postgres.fields import JSONField, ArrayField
 from django.db import models
 
@@ -25,7 +26,7 @@ class Place(models.Model):
     indexed = models.BooleanField(default=False)  
     flag = models.BooleanField(default=False) # not in use
     
-    collections = models.ManyToManyField("collection.Collection")
+    #collections = models.ManyToManyField("collection.Collection")
     
     # 0=hits:unreviewed, 1=hits:reviewed, 2=hits:deferred, null=no hits
     review_wd = models.IntegerField(default=0, null=True, choices=STATUS_REVIEW)
@@ -142,9 +143,10 @@ class PlaceGeom(models.Model):
     geom_src = models.ForeignKey(Source, null=True, db_column='geom_src',
         to_field='src_id', on_delete=models.SET_NULL)
     jsonb = JSONField(blank=True, null=True)
-
     src_id = models.CharField(max_length=100,default='') # contributor's identifier
-
+    # TODO: test speed for MultiPolygons
+    geom = geomodels.GeometryField(null=True, blank=True, srid=4326)
+    
     @property
     def title(self):
         return self.place.title
