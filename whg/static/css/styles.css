@@ -537,7 +537,13 @@ em { color: #993333;}
 .radiodiv input[type="radio"] {
   vertical-align: middle;
 }
-
+/**
+  dataset reconcile
+**/
+#ready { font-size:1rem; 
+  background-color:#b1d8b836; 
+  padding:.3rem; margin-bottom:.5rem;}
+#readt p {margin-bottom:0;}
 /**
   dataset browse
 **/

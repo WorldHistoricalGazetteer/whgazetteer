@@ -179,15 +179,11 @@
               <tr>
                 <td><b>Links</b></td><td>{{ num_links }}</td>
                 <td><span class="text-white bg-success">&nbsp;{{ links_added }}&nbsp;</span></td></tr>
-              {% if ds.unreviewed|length > 0 %}<tr class="text-danger">{%else%}<tr>{%endif%}
-                <td class="pt-3"><b>Unreviewed hits (total)</b></td>
-                <td class="pt-3">{{ ds.unreviewed|length }}</td> 
-                <td class="pt-3 text-secondary">n/a</td></tr>
               {% if ds.unindexed > 0 %} 
                 <tr class="text-danger">
-                <td><b>Unindexed records</b></td>
-                <td>{{ ds.unindexed }}</td> 
-                <td class="text-secondary">n/a</td></tr>{% endif %}
+                <td class="pt-3"><b>Unindexed records</b></td>
+                <td class="pt-3">{{ ds.unindexed }}</td> 
+                <td class="pt-3 text-secondary">n/a</td></tr>{% endif %}
             </table>
           </div>
           <div id="ds_access" class="pt-0 px-0 ds-card">
@@ -472,16 +468,6 @@ js for Summary, Reconciliation
       $(".update-msg").removeClass('hidden')
     }
     
-    // manage url
-    <!--var url = document.location.toString();-->
-    <!--if (url.match('#')) {-->
-      <!--tab = url.split('#')[1]-->
-      <!--$('.nav-tabs a[href="#' + tab+ '"]').tab('show');-->
-    <!--} else if ("{{context}}".length > 0){-->
-      <!--taburl = location.protocol+'//'+location.host+'/datasets/'+'{{ds.id}}'+'/detail#reconciliation'-->
-      <!--$('.nav-tabs a[href="#reconciliation"]').tab('show');-->
-      <!--location.href=taburl-->
-    <!--}-->
     //***
     // onload for Browse
     //***

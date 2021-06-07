@@ -184,10 +184,10 @@ class PlaceTableSerializer(serializers.ModelSerializer):
 
   revwd = serializers.SerializerMethodField('rev_wd')    
   def rev_wd(self, place):
-    if not place.hashits_wd:
-      val = '<i>no hits</i>'
-    elif place.review_wd == 1:
+    if place.review_wd == 1:
       val = '<i class="fa fa-check-square-o"></i>'
+    elif not place.hashits_wd:
+        val = '<i>no hits</i>'
     elif place.review_wd == 0:
       val = '&#9744;'
     else:
@@ -196,10 +196,10 @@ class PlaceTableSerializer(serializers.ModelSerializer):
 
   revtgn = serializers.SerializerMethodField('rev_tgn')    
   def rev_tgn(self, place):
-    if not place.hashits_tgn:
-      val = '<i>no hits</i>'
-    elif place.review_tgn == 1:
+    if place.review_tgn == 1:
       val = '<i class="fa fa-check-square-o"></i>'
+    elif not place.hashits_tgn:
+      val = '<i>no hits</i>'
     elif place.review_tgn == 0:
       val = '&#9744;'
     else:
@@ -208,10 +208,10 @@ class PlaceTableSerializer(serializers.ModelSerializer):
 
   revwhg = serializers.SerializerMethodField('rev_whg')    
   def rev_whg(self, place):
-    if not place.hashits_whg:
-      val = '<i>no hits</i>'
-    elif place.review_whg == 1:
+    if place.review_whg == 1:
       val = '<i class="fa fa-check-square-o"></i>'
+    elif not place.hashits_whg:
+      val = '<i>no hits</i>'
     elif place.review_whg == 0:
       val = '&#9744;'
     else:

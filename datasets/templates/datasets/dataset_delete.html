@@ -11,9 +11,9 @@
             <b>{{ object.name }} ({{ object.label }})</b>, as well as:</p>
           <ul>
             <li>associated reconciliation "hits"</li>
-            <li>any links and geometry records added by reconciliation review</li>
-            {% if object.ds_status == 'indexed' %}
-              <li>records in the WHG index </li>
+            <li>any links and geometry records added during reconciliation review</li>
+            {% if object.ds_status == 'indexed' or object.ds_status == 'accessioning' %}
+              <li>{{ object.status_idx.idxcount }} records already accessioned to the WHG index </li>
             {% endif %}
           </ul>
           {% if object.format == 'delimited' %}

@@ -26,7 +26,7 @@ from django.contrib.gis.geos import Point, GEOSGeometry
 # Points
 pnt = Point(-9.3385, 29.7245)
 qs=Country.objects.filter(mpoly__contains = pnt)
-print(len(qs),' countries')
+print(qs.count(),' countries')
 for c in qs:
     print(c.iso, c.gnlabel)
 
