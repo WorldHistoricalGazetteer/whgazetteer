@@ -51,11 +51,12 @@ class DatasetDetailModelForm(forms.ModelForm):
     # file fields = ('file','rev','uri_base','format','dataset_id','delimiter',
     #   'status','accepted_date','header','numrows')
     fields = ('owner','id','label','title','uri_base','description',
-              'datatype','numlinked','public','webpage')
+              'datatype','numlinked','public','webpage','featured','image_file')
     widgets = {
       'description': forms.Textarea(attrs={
         'rows':2,'cols': 40,'class':'textarea','placeholder':'Brief description'}),
-      'webpage': forms.TextInput(attrs={'size': 30})
+      'webpage': forms.TextInput(attrs={'size': 30}),
+      'featured': forms.TextInput(attrs={'size': 4})
     }
   
   file = forms.FileField(required=False)
@@ -78,7 +79,7 @@ class DatasetCreateModelForm(forms.ModelForm):
     model = Dataset
     # file fields = ('file','rev','uri_base','format','dataset_id','delimiter',
     #   'status','accepted_date','header','numrows')
-    fields = ('owner','id','title','label','datatype','description','uri_base','public','creator','webpage')
+    fields = ('owner','id','title','label','datatype','description','uri_base','public','creator','webpage','image_file','featured')
     widgets = {
       'description': forms.Textarea(attrs={
         'rows':2,'cols': 39,'class':'textarea','placeholder':'Brief description'})
@@ -86,6 +87,7 @@ class DatasetCreateModelForm(forms.ModelForm):
         'placeholder':'Leave blank unless record IDs are URIs','size':40})
       ,'title': forms.TextInput(attrs={'size': 40})
       ,'creator': forms.TextInput(attrs={'size': 40})
+      ,'featured': forms.TextInput(attrs={'size': 4})
       ,'webpage': forms.URLInput(attrs={'size': 40,'placeholder':'Project home page, if any'})
     }
   

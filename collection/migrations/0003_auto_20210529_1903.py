@@ -14,6 +14,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='collection',
             name='image_file',
-            field=models.FileField(null=True, upload_to=collection.models.user_directory_path),
+            #field=models.FileField(null=True, upload_to=collection.models.user_directory_path),
+            field=models.FileField(null=True, upload_to=collection.models.coll_image_path),
         ),
     ]

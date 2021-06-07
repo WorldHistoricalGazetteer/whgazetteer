@@ -104,6 +104,21 @@
             <td><b>Creator</b></td>
             <td>{{ ds.creator }}</td>
           </tr>
+          {% if user.is_superuser or user.is_admin %}
+            <tr>
+              <td style="vertical-align:top;"><b>Featured rank</b> 
+                <a href="#" class="edit-featured">{% fontawesome_icon 'edit' color='#336699' %}</a>
+              </td>
+              <td>
+                <span class="form-featured">{{ form.featured.value }}</span>
+                <span class="hidden editing-featured">{{ form.featured }}</span>
+              </td>
+            </tr>
+            <tr>
+              <td>Image file</td>
+              <td>{{ form.image_file.value }}</td>
+            </tr>
+          {% endif %}
         </table>
         <input class="btn btn-primary btn-sm hidden btn-ds" type="submit" value="Save" />
         <p> <i>Current data file</i>
@@ -472,6 +487,12 @@ js for Summary, Reconciliation
     $(".form-webpage").toggleClass("hidden")
     $(".btn-ds").toggleClass("hidden")
   })  
+  $(".edit-featured").click(function() {
+    $(".editing-featured").toggleClass("hidden")
+    $(".form-featured").toggleClass("hidden")
+    $(".btn-ds").toggleClass("hidden")
+  })  
+  
   $(function(){
     if('{{ status }}' == 'updating'){
       console.log('{{ status }}','{{ context }}')

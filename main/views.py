@@ -6,6 +6,8 @@ from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views.generic.base import TemplateView
+from collection.models import Collection
+from datasets.models import Dataset
 from datasets.tasks import testAdd
 from places.models import Place
 from bootstrap_modal_forms.generic import BSModalCreateView
@@ -33,6 +35,17 @@ class Home2a(TemplateView):
 
     def get_context_data(self, *args, **kwargs):
         context = super(Home2a, self).get_context_data(*args, **kwargs)
+        
+        # deliver featured datasets and collections
+        f_list = []
+        f_datasets = Dataset.objects.exclude(featured__isnull=True)
+        f_collections = Collection.objects.exclude(featured__isnull=True)
+        for ds in f_datasets:
+            f_list.append({"type":"dataset", "id":ds.id})
+        for c in f_collections:
+            f_list.append({"type":"collection", "id":c.id})
+        
+        context['featured'] = f_list
         context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
         context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
         context['mbtokenwhg'] = settings.MAPBOX_TOKEN_WHG

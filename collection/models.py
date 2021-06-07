@@ -5,25 +5,23 @@ from django.urls import reverse
 from datasets.models import Dataset
 from places.models import Place
 
-def user_directory_path(instance, filename):
-  # upload to MEDIA_ROOT/user_<username>/<filename>
-  return 'user_{0}/{1}'.format(instance.owner.username, filename)
+def coll_image_path(instance, filename):
+  # upload to MEDIA_ROOT/collections/<id>_<filename>
+  return 'collections/{0}_{1}'.format(instance.id, filename)
 
 class Collection(models.Model):
   owner = models.ForeignKey(User,related_name='collections', on_delete=models.CASCADE)
   title = models.CharField(null=False, max_length=255)
   description = models.CharField( null=False, max_length=2044)
   tags = ArrayField(models.CharField(max_length=50))
-  image_file = models.FileField(upload_to=user_directory_path, blank=True, null=True)
+  image_file = models.FileField(upload_to=coll_image_path, blank=True, null=True)
   
   create_date = models.DateTimeField(null=True, auto_now_add=True)
   public = models.BooleanField(default=False)
+  featured = models.IntegerField(null=True, blank=True)
   
   datasets = models.ManyToManyField("datasets.Dataset")
 
-  #@property
-  #def datasets(self):
-    #return [cd.dataset for cd in self.dataset_set]
   def get_absolute_url(self):
     #return reverse('datasets:dashboard', kwargs={'id': self.id})
     return reverse('datasets:dashboard')  

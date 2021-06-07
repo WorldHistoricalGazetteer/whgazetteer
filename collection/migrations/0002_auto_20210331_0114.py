@@ -15,7 +15,8 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='collection',
             name='image_file',
-            field=models.FileField(default='', upload_to=collection.models.user_directory_path),
+            #field=models.FileField(default='', upload_to=collection.models.user_directory_path),
+            field=models.FileField(default='', upload_to=collection.models.coll_image_path),
             preserve_default=False,
         ),
         migrations.AlterField(

@@ -20,6 +20,10 @@ def user_directory_path(instance, filename):
   # upload to MEDIA_ROOT/user_<username>/<filename>
   return 'user_{0}/{1}'.format(instance.owner.username, filename)
 
+def ds_image_path(instance, filename):
+  # upload to MEDIA_ROOT/datasets/<id>_<filename>
+  return 'datasets/{0}_{1}'.format(instance.id, filename)
+
 # owner = models.ForeignKey('auth.User', related_name='snippets', on_delete=models.CASCADE)
 class Dataset(models.Model):
   idx='whg'
@@ -34,7 +38,9 @@ class Dataset(models.Model):
   create_date = models.DateTimeField(null=True, auto_now_add=True)
   uri_base = models.URLField(null=True, blank=True)
   webpage = models.URLField(null=True, blank=True)
+  image_file = models.FileField(upload_to=ds_image_path, blank=True, null=True)
   bbox = geomodels.PolygonField(null=True, blank=True, srid=4326)
+  featured = models.IntegerField(null=True, blank=True)
 
   # TODO: these are updated in both Dataset & DatasetFile  (??)
   datatype = models.CharField(max_length=12, null=False,choices=DATATYPES,
