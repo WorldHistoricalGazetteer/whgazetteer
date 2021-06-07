@@ -9,7 +9,6 @@
 {% block extra_head %}
   {% leaflet_js %}
   {% leaflet_css %}
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-3-typeahead/4.0.2/bootstrap3-typeahead.min.js" integrity="sha256-LOnFraxKlOhESwdU/dX+K0GArwymUDups0czPWLEg4E=" crossorigin="anonymous"></script>
   
   <script src="{% static 'js/tags/bootstrap-tagsinput.js' %}"></script>
   <script src="{% static 'js/tags/bloodhound.js' %}"></script>
@@ -42,7 +41,7 @@
         {{ g|safe|json_script:g.properties.id }}
       {% endfor %}
       <div id="coll_dslist">
-        <h5>Datasets<span class="small float-right mr-2">{% fontawesome_icon 'download' color='#336699' %} <a href="" id="a_update_modal" data-dsid = {{ object.id }} data-toggle="modal" data-target="#updateModal" title="download options"> download options</a></span></h5>
+        <h5>Datasets<span class="small float-right mr-2">{% fontawesome_icon 'download' color='#336699' %} <a href="" id="a_download_modal" data-dsid = {{ object.id }} data-toggle="modal" data-target="#downloadModal" title="download options"> download options</a></span></h5>
         <!-- fields: id, label, title, description, creator, create_date, webpage, numrows, datatype -->
         <div id="ds_cards">
           {% for d in ds_list %} 
@@ -51,7 +50,7 @@
                 <ul class="no-bullets">
                 <li class=""><b>Title</b>: 
                   <a class="ds_title" href="{% url 'datasets:ds_meta' d.id %}">{{ d.title }}</a> ({{ d.id}})</li>
-                <li class=""><b>Description</b>: {{ d.description }}</li>
+                <li class=""><b>Description</b>: {{ d.description|readmore:200|safe }}</li>
                 <li class=""><b>Created</b>: {{ d.create_date|date:"d M Y" }}</li>
                 <li class="">
                   <b>Number of records</b>: {{ d.numrows }}
@@ -82,41 +81,41 @@
       <!--<div>{ bboxes }}</div>-->
     </div> <!-- .row -->
   </div> <!-- d-flex -->
-  <div class="modal fade" id="updateModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
+  <div class="modal fade" id="downloadModal" tabindex="-1" aria-labelledby="downloadModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content modal-narrow">
         <div class="modal-header">
-          <h5 class="modal-title" id="updateModalLabel">
-            Update <span class="text-danger">{{ ds.label }}</span> dataset <small>(<i>{{ current_file.format }} file only</i>)</small>
-          </h5>
+          <h5 class="modal-title" id="downloadModalLabel">{% fontawesome_icon 'download' color='#336699' %} Download options for <span class="text-danger">{{ object.title }}</span></h5>
+          <!--<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">X</button>-->
         </div>
-        <div class="modal-body">
-          <div class="form-group">
-            <form id="newfileform" method="POST" action="#" enctype="multipart/form-data">
-              {% csrf_token %}
-              <div id="loadfile">
-                <p><input type="file" id="newfile"></p>
-                <button id="btn_upload" type="submit" class="btn btn-primary btn-sm hidden">Upload</button>
+        <div class="modal-body container">
+        <form id="download_collection_form" method="POST" action="#" enctype="multipart/form-data">
+        {% csrf_token %}
+          <div class="row">
+            <div class="col-sm-6 modal-col scroll-div">
+              <p class="modal-col-head p-1">Datasets</p>
+              <ul class="ul-left p-1">
+              {% for d in ds_list %} 
+                <li class="li-flush"><input type="checkbox" value="{{d.id}}" checked> {{ d.title }} ({{ d.id }}) <span class="float-right">{{d.numrows}} rows</span></li>
+              {% endfor %}
+              </ul>
+            </div>
+            <div class="col-sm-6 modal-col">
+              <p class="modal-col-head p-1">File Format</p>
+              <div class="p-1">
+              <p><label><input type="radio" name="dl_format" id="lpf" checked> Linked Places format</label>  
+              <p><label><input type="radio" name="dl_format" id="lptsv"> LP-TSV</label>
+              <hr/>
+              <p><b>Linked Places format</b> is JSON-based, valid GeoJSON with temporal extensions</p>
+              <p class="mt-2"><b>LP-TSV downloads</b> are tab-separated text files.</p>
               </div>
-              <div id="update_spinner"></div>
-              <div id="results_text" class="mb-2 small ds-card">
-                <p>Uploaded data will be compared with existing data, and results reported here.</p>
-                  <p>You may then proceed, or cancel this operation with no changes made.</p>
-                <!--{ if links_added > 0 or geoms_added > 0 %}-->
-                <!--<p>This dataset has been augmented with { links_added }} links and { geoms_added }} geometries-->
-                <!--via reconciliation tasks. </p>-->
-                <!--{ endif %}-->
-              </div>          
-            </form>
-          </div> <!-- .form-group -->
-        </div> <!-- .modal-body -->      
-        <div class="modal-footer">
-          <div id="buttons_pre">
-            <button id="btn_cancel" type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Cancel</button>
-            <button id="btn_update" type="button" data-dsid={{ds.id}} class="btn btn-primary btn-sm hidden">
-              Proceed</button>
+            </div>
           </div>
-          <button id="btn_done" type="button" class="btn btn-secondary btn-sm hidden" data-dismiss="modal">Done</button>
+        </form>
+        </div> <!-- .modal-body -->
+        <div class="modal-footer">
+          <button type="button" id="b_download" class="btn btn-primary">Download</button>
+          <button type="button" class="btn btn-secondary btn-cancel" data-bs-dismiss="modal">Cancel</button>
         </div>
       </div>
     </div>
@@ -132,6 +131,18 @@
       }
     });
     $("#id_geojson").attr("placeholder","generated from country codes")
+
+    $(".a_more").click(function(e){
+      clicked = $(this)
+      clicked.hide()
+      clicked.parent().find("#dots").hide()
+      clicked.next().removeClass('hidden')
+      <!--clicked.css("display","contents")-->
+      <!--$(this).hide()-->
+      console.log('clicked',clicked)  
+      <!--clicked.removeClass('hidden')-->
+    })
+
   })
   $(".ds_card").on('click',function(e){
     // set all layers to default style
@@ -165,11 +176,39 @@
     }
   );
 
+  $("#b_download").click(function(){
+    var dsids = [];
+    $('.modal-body input:checked').each(function() {
+      dsids.push($(this).val());
+    });
+    console.log('download datasets:', dsids)
+  })
+  
   function startDownloadSpinner(){
     window.spinner_dl = new Spin.Spinner().spin();
     $("#ds_cards").append(spinner_dl.el);   
   }  
 
+  $(".btn-cancel").click(function(){$("#downloadModal").modal('hide') })
+  
+  function showMore() {
+    foo = $(this)
+    console.log('foo',foo)
+    <!--var dots = document.getElementById("dots");-->
+    <!--var moreText = document.getElementById("more");-->
+    <!--<!--var btnText = document.getElementById("myBtn");-->-->
+  
+    <!--if (dots.style.display === "none") {-->
+      <!--dots.style.display = "inline";-->
+      <!--<!--btnText.innerHTML = "Read more";-->-->
+      <!--moreText.style.display = "none";-->
+    <!--} else {-->
+      <!--dots.style.display = "none";-->
+      <!--<!--btnText.innerHTML = "Read less";-->-->
+      <!--moreText.style.display = "inline";-->
+    <!--}-->
+  } 
+  
   $(".dl-links a").click(function(e){
     <!--e.preventDefault()-->
     urly='/datasets/'+$(this).data('id')+'/augmented/'+$(this).attr('ref')

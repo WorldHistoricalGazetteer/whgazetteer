@@ -5,6 +5,16 @@ import json, math
 register = template.Library()
 
 @register.filter
+def readmore(txt,numchars):
+    dots = '<span id="dots">...</span>'
+    link = '<a href="#" class="a_more">more</a><span class="more hidden">'
+    
+    if len(txt) <= numchars:
+        return txt
+    else:
+        return txt[:numchars]+dots+link+txt[numchars:]+'</span>'
+
+@register.filter
 def time_estimate(numrows):
     seconds = round(numrows/3)
     return 'about '+str(round(seconds/60))+' minute(s)' \

@@ -28,7 +28,18 @@ table {border-collapse:initial;}
   /*max-width: 75%; */
   margin:auto;
 }
-
+.modal-narrow { 
+  max-width: 60%;
+  height: fit-content;
+}
+.modal-footer{justify-content:flex-start;}
+.modal-col-head {
+  display:block;
+  background-color:beige;
+  font-weight: 600;
+  color: #993333;
+}
+.modal-col p, .modal-col li { margin-bottom: 0; font-size: .8rem;}
 /**
   dialogs
 **/
@@ -65,6 +76,7 @@ label {vertical-align:top;}
 .hover {cursor:pointer;}
 .ital {font-style: italic;}
 .larger {font-size: larger;}
+/*.more {display: none;}*/
 .nobr {white-space: nowrap;}
 .no-bullet { list-style: none;}
 .notebox {box-shadow: 2px 2px #eee; border:1px dashed #ccc; border-radius:8px; padding:6px;}
@@ -73,6 +85,7 @@ label {vertical-align:top;}
 .popover-body p {margin:0;}
 .p-block { display:block; }
 .red-head {color:#993300;}
+.scrolldiv {overflow-y:scroll;}
 .scroll100 {display:block; overflow-y:scroll; max-height:120px;}
 .scroll65 {display:block; overflow-y:scroll; max-height:65px;width:100%}
 .smaller {font-size: small;} /* smaller than bootstrap */
@@ -104,7 +117,8 @@ ul.no-bullets {
   list-style: none;
 }
 .li-flush{
-  display: table-row;
+  /*display: table-row;*/
+  list-style:none;
 }
 .ul-flush ::before {
     content: "•";
