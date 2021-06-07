@@ -9,7 +9,7 @@ class CollectionModelForm(forms.ModelForm):
     
     class Meta:
         model = Collection
-        fields = ('id','owner','title','description', 'tags', 'image_file', 'datasets')
+        fields = ('id','owner','title','description', 'tags', 'image_file', 'datasets', 'public')
         widgets = {
             'title': forms.TextInput(attrs={'size': 50}),
             'description': forms.Textarea(attrs={

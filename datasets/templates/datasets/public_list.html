@@ -1,0 +1,88 @@
+<!-- datasets/dashboard.html -->
+{% extends "main/base.html" %}
+{% block title %}<title>WHG::Datasets</title>{% endblock %}
+
+{% block content %}
+  {% load static %}
+  {% load fontawesome %}
+  {% load mathfilters %}
+  {% load dataset_extras %}
+
+  <div class="container pt-3">
+    <ul id="api_tabs" class="nav nav-tabs" role="tablist">
+      <li class="nav-item">
+        <a class="nav-link active" id="dslist-tab" data-toggle="tab" href="#ds_list" role="tab" aria-controls="ds_list" aria-selected="false">Public Datasets</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="colllist-tab" data-toggle="tab" href="#coll_list" role="tab" aria-controls="coll_list" aria-selected="true">Public Collections</a>
+      </li>
+    </ul>
+    <div class="tab-content">
+      <div id="ds_list" class="tab-pane fade show active" role="tabpanel" aria-labelledby="dslist-tab">
+        <p class="mb-1 ml-1">These datasets are flagged as "public" in WHG. Most are downloadable from their linked page. All such public data are made available under a <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">Creative Commons Attribution 4.0 International (CC BY 4.0) License</a>.</p>
+        <p>If marked as <mark>indexed</mark>, records are fully searchable from the home page and the Index API. If marked as <mark>accessioning</mark>, records are partially indexed. Those not yet indexed are accessible through the Database API. See the <a href="{% url 'usingapi' %}">API documentation</a> for further details</p>      
+        <div id="public_list" class="mt-1 ml-0">
+          <div class="list-box">
+            <table class="table table-striped small">
+              <thead>
+                  <th>id/label</th>
+                  <th>title</th>
+                  <th># rows</th>
+                  <th class="w-50">description</th>
+                  <th>webpage</th>
+                  <th>contributor</th>
+              </thead>
+              <tbody>
+                {% for ds in dataset_list %}
+                  <tr class="place-row">
+                    <td>{{ ds.id }}/<b>{{ ds.label }}</b>
+                    <br/><mark>{{ ds.ds_status }}</mark>
+                    </td>
+                    <td><a href="{% url 'datasets:ds_detail' ds.id %}">{{ ds.title }}</a></td>
+                    <td>{{ ds.numrows }}</td>
+                    <td class="w-50">{{ ds.description }}</td>
+                    <td>{% if ds.webpage %}<a href="{{ ds.webpage }}" target="_blank">link 
+                    {% fontawesome_icon 'external-link' %}</a>{%endif%}</td>
+                    <td>{{ ds.owner }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div id="coll_list" class="tab-pane fade " role="tabpanel" aria-labelledby="colllist-tab">
+        <p class="mb-1 ml-1">These collections of datasets are flagged as "public" in WHG. Most are downloadable from their linked page. Public data contained therein are made available under a <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">Creative Commons Attribution 4.0 International (CC BY 4.0) License</a>.</p>
+        <div id="collection_list" class="mt-1 ml-0">
+          <div class="list-box">
+            <table class="table table-striped">
+              <thead class="small">
+                  <th>id</th>
+                  <th>title</th>
+                  <th>created</th>
+                  <th>creator</th>
+              </thead>
+              <tbody>
+                {% for c in coll_list %}
+                  <tr class="place-row">
+                    <td>{{ c.id }}</td>
+                    <td><a href="{% url 'collection:collection-detail' c.id %}">{{ c.title }}</a></td>
+                    <!--<td>{ c.title }}</td>-->
+                    <td>{{ c.create_date }}</td>
+                    <td>{{ c.owner }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>    
+  </div>
+  <script>
+    $("[rel='tooltip']").tooltip();
+    $(function(){
+        <!--alert('{{ msg }}')-->
+    })
+  </script>
+{% endblock %}

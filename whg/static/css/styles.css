@@ -218,7 +218,7 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
   background-color: #3c8894 !important;
 }
 #list_all {position:absolute; right:2rem; font-size:.9rem;}
-#list_all a {color:#fff; !important; vertical-align:middle;}
+#list_all a {color:#cff8ff; !important; vertical-align:middle; text-decoration:underline; letter-spacing:0.04em;}
 .item-left {
   position: relative;
   min-height: 74px;

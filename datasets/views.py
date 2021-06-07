@@ -1791,6 +1791,36 @@ class DashboardView(LoginRequiredMixin, ListView):
 
 
 """
+PublicListView()
+list public datasets and collections
+"""
+class PublicListsView(ListView):
+  #login_url = '/accounts/login/'
+  redirect_field_name = 'redirect_to'
+  
+  context_object_name = 'dataset_list'
+  template_name = 'datasets/public_list.html'
+  model = Dataset
+
+  def get_queryset(self):
+    # original qs
+    qs = super().get_queryset() 
+    return qs.filter(public = True).order_by('ds_status','-core','-id')
+  
+  def get_context_data(self, *args, **kwargs):
+    context = super(PublicListsView, self).get_context_data(*args, **kwargs)
+
+    # public datasets available as dataset_list    
+    # public collections
+    context['coll_list'] = Collection.objects.filter(public=True).order_by('create_date')
+    context['viewable'] = ['uploaded','inserted','reconciling','review_hits','reviewed','review_whg','indexed']
+    
+    context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False
+    #print('DashboardView context:', context)
+    return context
+
+
+"""
 DatasetCreateView()
 initial create
 upload file, validate format, create DatasetFile instance,

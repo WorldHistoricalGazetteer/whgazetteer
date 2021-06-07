@@ -49,7 +49,7 @@
               <div class="ds_fields">
                 <ul class="no-bullets">
                 <li class=""><b>Title</b>: 
-                  <a class="ds_title" href="{% url 'datasets:ds_meta' d.id %}">{{ d.title }}</a> ({{ d.id}})</li>
+                  <a class="ds_title" href="{% url 'datasets:ds_meta' d.id %}">{{ d.title }}</a> (id: {{ d.id}})</li>
                 <li class=""><b>Description</b>: {{ d.description|readmore:200|safe }}</li>
                 <li class=""><b>Created</b>: {{ d.create_date|date:"d M Y" }}</li>
                 <li class="">
@@ -114,8 +114,8 @@
         </form>
         </div> <!-- .modal-body -->
         <div class="modal-footer">
-          <button type="button" id="b_download" class="btn btn-primary">Download</button>
-          <button type="button" class="btn btn-secondary btn-cancel" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" id="b_download" class="btn btn-sm btn-primary">Download</button>
+          <button type="button" class="btn btn-sm btn-secondary btn-cancel" data-bs-dismiss="modal">Cancel</button>
         </div>
       </div>
     </div>
