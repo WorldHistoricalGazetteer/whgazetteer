@@ -15,6 +15,7 @@ from bootstrap_modal_forms.generic import BSModalCreateView
 from .forms import CommentModalForm, ContactForm
 from elasticsearch import Elasticsearch
 es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+from random import shuffle
 # import requests
 
 
@@ -37,15 +38,13 @@ class Home2a(TemplateView):
         context = super(Home2a, self).get_context_data(*args, **kwargs)
         
         # deliver featured datasets and collections
-        f_list = []
-        f_datasets = Dataset.objects.exclude(featured__isnull=True)
         f_collections = Collection.objects.exclude(featured__isnull=True)
-        for ds in f_datasets:
-            f_list.append({"type":"dataset", "id":ds.id})
-        for c in f_collections:
-            f_list.append({"type":"collection", "id":c.id})
+        f_datasets = list(Dataset.objects.exclude(featured__isnull=True))
+        shuffle(f_datasets)
         
-        context['featured'] = f_list
+        # 2 collections, rotate datasets randomly
+        context['featured_coll'] = f_collections.order_by('featured')[:2]
+        context['featured_ds'] = f_datasets
         context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
         context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
         context['mbtokenwhg'] = settings.MAPBOX_TOKEN_WHG

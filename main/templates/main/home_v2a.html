@@ -68,38 +68,46 @@
 		  <div class="h5 w-100 home-header">Featured Datasets and Collections
 			<span id="list_all" class="mr-2"><a href="{% url 'public-lists' %}">list all</a></span>
 		  </div>
-		  {{ featured }}
 		  <div class="wrapper-right">
 			<div class="item-right-top">
+			  {% with featured_coll.0.image_file.url as imgc0 %}
 			  <div class="row">
 				<div class="col-sm-8">
-				<p class="mb-0"><a href="{% url 'collection:collection-detail' 3 %}">KNAW/HuC Gazetteers Of Dutch History</a></p>
-				Dutch places, from East to West, near and far. Just some text to see how it looks when wrapping....</div>
-				<div class="col-sm-4"><img src="{% static 'userimages/zuider-zee-200.png'%}" height=150 width=150 /></div>
+				  <p class="mb-0"><a href="{% url 'collection:collection-detail' featured_coll.0.id %}">{{ featured_coll.0.title}}</a></p>{{ featured_coll.0.description }}
+				</div>
+				<div class="col-sm-4"><img src="{{ imgc0 }}" height=150 width=150 /></div>
 				<span class="col-bottom cb-coll">collection</span>
 			  </div>
-			</div> <!-- topdog -->
+			  {% endwith %}
+			</div> <!-- .item-right-top -->
 			<div class="row">
+			  {% with featured_ds.0.image_file.url as imgd0 %}
 			  <div class="col-sm-6 pr-0">
 				<div class="item-right">
-				  <p class="mt-0"><a href="{% url 'datasets:ds_meta' 2 %}">D-Place</a></p>
+				  <p class="mt-0"><a href="{% url 'datasets:ds_meta' pk=featured_ds.0.id %}">{{featured_ds.0.title}}</a></p>
 				  <div class="row">
-				  <div class="col-sm-8 pr-0 coll-description">The Database of Places, Language, Culture, and Environment, containing cultural, linguistic, environmental and geographic information for over 1400 human societies. A ‘society’ in D-PLACE represents a group of people in a particular locality, who often share a language and cultural identity.</div>
-				  <div class="col-sm-4 pl-0"><img src="{% static 'userimages/d-place-200.png'%}" height=75 width=75 /></div>
+				  <div class="col-sm-8 pr-0 coll-description">{{ featured_ds.0.description|truncatechars:300 }}</div>
+				  <div class="col-sm-4 pl-0"><img src="{{ imgd0 }}" height=75 width=75 /></div>
 				  </div> <!-- .row -->
 				  <span class="col-bottom cb-dataset">dataset</span>
 				</div> <!-- .item-right -->
 			  </div> <!-- col-sm-6 -->
+			  {% endwith %}
+			  
+			  {% with featured_coll.1.image_file.url as imgc1 %}
 			  <div class="col-sm-6 pl-0">
 				<div class="item-right">
-				  <p class="mt-0"><a href="{% url 'collection:collection-detail' 5 %}">HGIS de las Indias</a></p>
+				  <p class="mt-0"><a href="{% url 'collection:collection-detail' featured_coll.1.id %}">{{featured_coll.1.title}}</a></p>
 				  <div class="row">
-				  <div class="col-sm-8 pr-0 coll-description">Historical geography for the Bourbon Spanish America through time (1701-1808), comprising settlements (<i>lugares</i>) and their temporally scoped position within the administrative territorial structure (territorios) of that period and region.</div>
-				  <div class="col-sm-4 pl-0"><img src="{% static 'userimages/indias-75w.png'%}" /></div>
+				  <div class="col-sm-8 pr-0 coll-description">{{ featured_coll.1.description }}</div>
+				  <div class="col-sm-4"><img src="{{ imgc1 }}" /></div>
+				  <!--<div class="col-sm-4 pl-0"><img src="{ static 'userimages/indias-75w.png'%}" /></div>-->
 				  </div> <!-- .row -->
 				  <span class="col-bottom cb-coll">collection</span>
 				</div> <!-- .item-right -->
 			  </div> <!-- col-sm-6 -->
+			  {% endwith %}
+			  
 			</div> <!-- row -->
 		  </div> <!-- wrapper-right -->
 		</div> <!-- content_right -->

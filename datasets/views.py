@@ -2019,7 +2019,8 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
       )
       
       # data will be written on load of dataset.html w/dsobj.status = 'format_ok'
-      return redirect('/datasets/'+str(dsobj.id)+'/detail')
+      #return redirect('/datasets/'+str(dsobj.id)+'/detail')
+      return redirect('/datasets/'+str(dsobj.id)+'/ds_summary')
 
     else:
       context['action'] = 'errors'

@@ -38,7 +38,7 @@ class Dataset(models.Model):
   create_date = models.DateTimeField(null=True, auto_now_add=True)
   uri_base = models.URLField(null=True, blank=True)
   webpage = models.URLField(null=True, blank=True)
-  image_file = models.FileField(upload_to=ds_image_path, blank=True, null=True)
+  image_file = models.FileField(upload_to='datasets/', blank=True, null=True)
   bbox = geomodels.PolygonField(null=True, blank=True, srid=4326)
   featured = models.IntegerField(null=True, blank=True)
 

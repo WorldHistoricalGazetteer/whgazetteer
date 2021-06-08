@@ -38,14 +38,8 @@
       <p><span class="top">Description</span><br/>{{ form.description }}</p>
       <p>Tags (no quotes, separate with commas) </br>{{ form.tags }}
       {% if user.is_superuser or user.is_admin %}
-      <tr>
-        <td>"featured" rank</td>
-        <td>{{ form.featured }}</td>
-      </tr>
-      <tr>
-        <td>"feature" image</td>
-        <td>{{ form.image_file }}</td>
-      </tr>
+        <p>Featured" rank: {{ form.featured }}</p>
+        <p>Image: {{ form.image_file.value }}</p>
       {% endif %}
       <p>Public?: {{ form.public }}</p>
       {% if action == 'update' %}

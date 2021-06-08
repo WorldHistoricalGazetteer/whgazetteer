@@ -14,7 +14,7 @@ class Collection(models.Model):
   title = models.CharField(null=False, max_length=255)
   description = models.CharField( null=False, max_length=2044)
   tags = ArrayField(models.CharField(max_length=50))
-  image_file = models.FileField(upload_to=coll_image_path, blank=True, null=True)
+  image_file = models.FileField(upload_to='collections/', blank=True, null=True)
   
   create_date = models.DateTimeField(null=True, auto_now_add=True)
   public = models.BooleanField(default=False)

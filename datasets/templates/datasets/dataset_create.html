@@ -66,6 +66,16 @@
             <td><b>Public? <a class="pop-link" id="public_help" data-toggle="popover" title="Public flag" data-content="Checking this box makes your records accessible via our database API, but <b>not</b> via our Search feature. That occurs only after a separate accessioning step. You can change this setting later." tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#993300' %}</a></b></td>
             <td>{{ form.public }}</td>
           </tr>
+          {% if user.is_superuser or user.is_admin %}
+            <tr>
+              <td style="vertical-align:top;"><b>Featured rank</b></td>
+              <td>{{ form.featured }}</td>
+            </tr>
+            <tr>
+              <td style="vertical-align:top;"><b>Image</b></td>
+              <td>{{ form.image_file }}</td>
+            </tr>
+          {% endif %}
           <tr><td class="my-0 small"><i><b>* = required</b></i></td><td></td></tr>
         </table>
         <hr/><!--<p class="my-0 ml-3">initial file</p>-->

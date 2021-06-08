@@ -115,8 +115,13 @@
               </td>
             </tr>
             <tr>
-              <td>Image file</td>
-              <td>{{ form.image_file.value }}</td>
+              <td style="vertical-align:top;"><b>Image</b> 
+                <a href="#" class="edit-image">{% fontawesome_icon 'edit' color='#336699' %}</a>
+              </td>
+              <td>
+                <span class="form-image">{{ form.image_file.value }}</span>
+                <span class="hidden editing-image">{{ form.image_file }}</span>
+              </td>
             </tr>
           {% endif %}
         </table>
@@ -490,6 +495,11 @@ js for Summary, Reconciliation
   $(".edit-featured").click(function() {
     $(".editing-featured").toggleClass("hidden")
     $(".form-featured").toggleClass("hidden")
+    $(".btn-ds").toggleClass("hidden")
+  })  
+  $(".edit-image").click(function() {
+    $(".editing-image").toggleClass("hidden")
+    $(".form-image").toggleClass("hidden")
     $(".btn-ds").toggleClass("hidden")
   })  
   
