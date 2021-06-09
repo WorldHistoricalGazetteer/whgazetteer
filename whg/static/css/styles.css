@@ -13,6 +13,10 @@ table {border-collapse:initial;}
 .navbar .container {
   border-bottom: 1px solid #eee;
 }
+input[type="radio"] {
+  margin-top: -1px;
+  vertical-align: middle;
+}
 /**
   modals
 **/
@@ -320,7 +324,7 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
 #map_select{width:70%;margin:auto;}
 .list-inline { padding-left: 4px;}
 .active-filter a {font-weight:bold; color:#993333 !important;}
-#search_input label { position:absolute; right: 140px; z-index:10;}
+#search_input label { position:absolute; right: 120px; z-index:10;}
 #search_input label:hover { cursor:pointer;}
 /*#filter_help {position:absolute; top:35px; right:3px;}*/
 #type_filter {
@@ -404,18 +408,18 @@ input[type="text"] {
    /*line-height: rem;*/
 }
 
-#map_home.leaflet-container { height: calc(100vh - 90px);}
-#map_home2.leaflet-container { height: 60%;}
-#map_search.leaflet-container { height: 65%;}
+/*#map_home.leaflet-container { height: calc(100vh - 90px);}*/
+/*#map_home2.leaflet-container { height: 60%;}*/
 
-#home_right {  position:relative; z-index: 0;}
-#home_search {
+#search_left {
   z-index:500; 
   margin:0; padding:5px;
   border: 1px solid #ddd;
   border-radius: 8px;
   height:100%;
 }
+#search_right {  position:relative; z-index: 0;}
+#map_search.leaflet-container { height: 65%;}
 #search_panel {
   background-color: #fff;
   padding: 5px;
@@ -425,12 +429,11 @@ input[type="text"] {
   min-height: fit-content;
   
 }
-#options { padding:2px; display:none;}
-#searchbox { height: auto;}
+/*#options { padding:2px; display:none;}*/
+/*#searchbox { height: auto;}*/
 /*#search_input { border-bottom: 1px dashed #ddd;}*/
 
 #search_filters {position:relative;}
-/*#search_filters p, #search_filters label{*/
 #search_filters p {
   font-size: .9rem;
   font-variant: small-caps;
@@ -440,13 +443,17 @@ input[type="text"] {
   display:block;
   /*margin:auto;*/
   color:#993333;
-  text-align:center;
+  /*text-align:center;*/
   font-variant:small-caps;
   font-weight: strong;
   background-color: aliceblue;
 }
+/*.filters-title label {margin-bottom:0; vertical-align:bottom !important;}*/
+.filters-title label {margin-bottom:0; vertical-align:initial;}
 #filters_class { padding-right:.2rem;}
 #filters_st { padding-left:.2rem;}
+#select_ds_search { font-size: .7rem;}
+
 #result_list {
   padding: 5px;
   background-color: #fff;

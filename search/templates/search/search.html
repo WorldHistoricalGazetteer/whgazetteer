@@ -28,7 +28,7 @@
 <div class="container">
   <div class="justify-content-center mt-2">
   <div class="row">
-    <div id="home_search" class="col-sm-6">
+    <div id="search_left" class="col-sm-5">
       <div id="search_panel">
 		<div id="search_type" class="form-group d-flex justify-content-center"> 
 		  <div class="form-check form-check-inline">
@@ -46,16 +46,20 @@
 		  <input id="input_box_traces" class="typeahead hidden" type="text" placeholder="subject term, e.g. 'empire'">
 		</div>
         <div id="search_filters">
-  		  <span class="filters-title">search filters</span>
+  		  <!--<span class="filters-title">search filters</span>-->
+  		  <span class="filters-title">search<span class="ml-5 small">
+			<label><input type="radio" name="search_source" value="idx" checked> index</label>
+			<label><input type="radio" name="search_source" value="db"> database</label></span>
+		  </span>
           <div class="small row">
 			<div id="filters_class" class="col-sm-6">
-          <p class="mb-0">feature class(es) 
-            <!--<span class="ml-1 float-right">-->
-            <span class="ml-1">
-			  <span class="mr-1"><a id="check_toggle" href="#">clear all</a></span>
-			  <a id="filter_help" class="pointer" data-toggle="popover" title="Feature classes" data-content="" tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a>
-			</span>
-		  </p>
+			  <p class="mb-0">feature class(es) 
+				<!--<span class="ml-1 float-right">-->
+				<span class="ml-1">
+				  <span class="mr-1"><a id="check_toggle" href="#">clear all</a></span>
+				  <a id="filter_help" class="pointer" data-toggle="popover" title="Feature classes" data-content="" tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a>
+				</span>
+			  </p>
 			  <ul class="ul-left p-0">
 			  <li class="li-flush"><input type="checkbox" value="A" checked> A&nbsp;administrative entities</li>
 			  <li class="li-flush"><input type="checkbox" value="P" checked> P&nbsp;cities, towns, hamlets...</li> 
@@ -68,7 +72,7 @@
 			</div>
 			<div id="filters_st" class="col-sm-6">
 			  <p class="mb-0">temporal ( default = all)
-				<span class="float-right"><a id="temporal_help" class="pointer" data-toggle="popover" title="Temporal filter" data-content="<p>NOTE: Records in our largest core datasets do not have temporal attributes, so the default is all periods. Nevertheless, limiting the timespan here may be useful for some queries,</p>" tabindex="0" data-trigger="focus">
+				<span class="float-right"><a id="temporal_help" class="pointer" data-toggle="popover" title="Temporal filter" data-content="" tabindex="0" data-trigger="focus">
 				  {% fontawesome_icon 'question-circle' color='#336699' %}</a></span>
 			  </p>
 			  <div>
@@ -82,7 +86,22 @@
 			  <div>
 				<label><input id="input_area" type="text" size="30" placeholder="Region, country, study area"></label>
 				<input type="hidden" id="boundsobj">
-			  </div>			
+			  </div>
+			  <div id="div_ds_select" class="hidden">
+				<p class="mb-0">dataset
+				  <span class="float-right">
+				  <a id="dataset_help" class="pointer" data-toggle="popover" title="Dataset filter" data-content="" tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a></span>	  
+				</p>
+				<div>
+				  <select id="select_ds_search" name="ds" class="custom-select-sm small" style="width:auto;">
+				  <option value="0">Select dataset</option>
+				  <option disabled>___________</option>
+				  {% for ds in dslist %}
+					<option value="{{ ds.id }}">{{ ds.title }}</option>
+				  {% endfor %}
+				  </select>
+				</div>
+			  </div>
 			</div>
 		  </div>
         </div>
@@ -98,17 +117,21 @@
       </div>
       <div id="result_list" class="hidden"></div>
     </div>
-    <div id="home_right" class="col-sm-6">
+    <div id="search_right" class="col-sm-7">
+	  <div id="map_options" class="p-1 small">draw bbox, etc.</div>
       {% leaflet_map "map_search" callback="map_init" %}
 	  <div style="width=100%">
 		<div id="search_time" class="mt-1" style="background-color: #ffffcc;">
 		  <img src="{% static 'images/hist_static.png' %}" class="" alt=""/>
 		</div>
 		<div id="search_info" class="p-2 small" style="background-color: #eeeee0;">
-		  <p class="allcap-heading mb-0">FILTER ON DATASET</p>
-		  {% for ds in dslist %}
-			<a href="" data-id={{ds.id}}>{{ds.title}}</a>;&nbsp; 
+		  <p class="allcap-heading mb-0">SOMETHING HERE</p>
+		  {%comment%}{% for g in bboxes %}
+			{{ g|safe|json_script:g.properties.id }}
 		  {% endfor %}
+		  {% for ds in dslist %}
+			<a class="bblink" href="#" data-id={{ds.id}}>{{ds.title}}</a>;&nbsp; 
+		  {% endfor %}{%endcomment%}
 		</div>
 	  </div>
     </div> <!--  -->
@@ -134,7 +157,26 @@
   window.idToArea = {}
   window.area_list = []
   window.area_objs = []
-
+  
+  $(".bblink").click(function(){
+	console.log('bbox for',$(this).data('id'))
+	feat = idToFeature[$(this).data('id')]
+	feat.addTo(mappy)
+  })
+  
+  $("#select_ds_search").change(function(){
+	console.log('ds chosen', $(this).val())
+  })
+  // radio $("#checkbox_div input:radio").click(function() {
+  $(".filters-title input:radio").click(function(){
+	t = $(this)
+	console.log('clicked', $(this).val())
+	if($(this).val() == 'idx'){
+	  $("#div_ds_select").hide()
+	} else {
+	  $("#div_ds_select").show()
+	}
+  })
   $(function(){
 	// toggle all fclass checkboxes
 	$("#check_toggle").click(function(e){
@@ -156,18 +198,23 @@
 	  console.log('heat() for',$(this).val())
 	});	
 	
-	$(function(){
-	  $("[rel='tooltip']").tooltip();
-	})	
+	$("[rel='tooltip']").tooltip();
+	$("[data-toggle=popover]").popover({html:true})  
+	
 	// popover content
 	$("#filter_help").attr(
 	  'data-content',"<p>Select one or more feature class (uses GeoNames single-letter codes)</p>"
 	)
-	$("#spatial_help").attr(
-	  'data-content',"<p>Constrain search to the bounds of a <a href='https://unstats.un.org/unsd/methodology/m49/'>UN global sub-region</a>, a country, or a user-created study area. Try entering 'south...'</p>"
+	$("#temporal_help").attr(
+	  'data-content',"<p>NOTE: Records in our largest core datasets do not have temporal attributes, so the default is all periods. Nevertheless, limiting the timespan here may be useful for some queries</p>"
 	)
-	
-    $("[rel='tooltip']").tooltip();
+	$("#spatial_help").attr(
+	  'data-content',"<p>Constrain search to the bounds of a UN global sub-region</a>, a country, or a user-created study area. Try entering 'south...'</p>"
+	) // <a href='https://unstats.un.org/unsd/methodology/m49/'></a>
+	$("#dataset_help").attr(
+	  'data-content',"<p>Constrain search to indexed places attested in a single public dataset.</p>"
+	) // [<a href='{ url 'public-lists'%}'>list</a>] Choosing a dataset will override spatial filtering.
+    
     
     var idToFeature = {} // for feature lookup
     var itf_new = []
@@ -177,7 +224,6 @@
 	// clear map, inputs, results
     clearit()
     $("#type_filter").hide();
-	
 	
 	// show filters, hide splash and vice versa
     $("#link_filters").click(function(){
@@ -500,11 +546,59 @@
 	  showResults(previous,'place','search')
 	}
   }, false);
+  
+  function cleanJson(text) {
+	z=text.replace(/'/g,'\\"')
+	y=z.replace(/point/,'Point')
+	return JSON.parse(JSON.parse(y))
+  }
 
-  function map_init (home_map, options) {
-    mappy.setView([30, 8], 1)
-    // empty features[]
-    geom = {"type":"FeatureCollecton","features":[]}
+  styles_bbox = {
+	"MultiPolygon": {
+	  "default":{fillOpacity: 0.3, opacity: 1, color: "#000", weight: 1, fillColor:"#ff9999"},
+	  "focus":{fillOpacity: 0.3, opacity: 1, color: "red", weight: 2, fillColor:"#ff9999"}},
+	"Polygon": {
+	  "default":{fillOpacity: 0.3, opacity: .5, color: "#666", weight: 1, fillColor:"#ff9999"},
+	  "focus":{fillOpacity: 0.3, opacity: .5, color: "red", weight: 2, fillColor:"#ff9999"}}
+  }
+
+  function map_init (map_search, options) {
+	window.geoms = []
+	window.gelems = $('script').filter(function() {
+	  <!--return this.id.match(/[0-9]/) && this.text != '"null"';-->
+	  return this.id !='' && this.text != '"null"';
+	});
+	for (i=0;i<gelems.length;i++){
+	  let t_geom = cleanJson(gelems[i].text)
+	  <!--t_geom['properties'] = {"id": gelems[i].id,"ds": t_geom.ds!=null?t_geom.ds:ds}-->
+	  geoms.push(t_geom)
+	}
+
+	if (geoms.length > 0) {
+	  <!--console.log('geom: ',geom)-->
+	  idToFeature = {} // for feature lookup
+	  bboxes = L.layerGroup()
+	  features = L.geoJSON(geoms, {
+		onEachFeature: function(feature,layer) {
+		  f=feature; l=layer;
+		  bboxes.addLayer(l)
+		  identifier = f.properties.id;
+		  <!--console.log('identifier, type',identifier,f.geometry.type)-->
+		  if(f.type != 'Point'){
+			layer.setStyle(styles_bbox[f.geometry.type].default).bindPopup(
+			  f.properties.title+' ('+identifier+')'
+			)
+			idToFeature[identifier] = layer
+		  }
+		}
+	  })<!--.addTo(mappy);-->
+
+	  <!--mappy.setView(features.getBounds().getCenter(),6)-->
+	  mappy.fitBounds(features.getBounds())
+	  mappy.setZoom(mappy.getZoom()-1)
+	} else {
+	  console.log('no geometries, no feature')
+	}
   } // end map_init
   
   function filly(counter) {
@@ -583,10 +677,9 @@
   }  
   /*
   // catch Enter key press for places
-  // traces are handled in core typeahead function
+  // traces are handled in .typeahead function
   // disabled typeahead: removed class .typeahead from #input_box
   */
-  // $(".typeahead").on('keyup', function(e){
   $("#input_box").on('keyup', function(e){
     // resets page 
     if($('#input_box').val().length < 3) {
@@ -650,6 +743,7 @@
         start: $("#input_start").val(),
         end: $("#input_end").val(),
         bounds: $("#boundsobj").val()
+		<!--,ds: $("#select_ds_search").val()-->
       }, function(data){
 		window.searchres=data['suggestions']
 		// store locally
@@ -1002,9 +1096,8 @@
     console.log('whgid',whgid)
     window.spinner = new Spin.Spinner().spin();
     $("#map_search").append(spinner.el);
-    location.href = 'places/'+whgid+'/portal'
+    location.href = '/places/'+whgid+'/portal'
   });
-    
   
   $('label.btn').click(function(){
     $(".autosuggest").html('')

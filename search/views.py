@@ -18,7 +18,12 @@ class SearchPageView(TemplateView):
   
   def get_context_data(self, *args, **kwargs):
     # return list of datasets
-    dslist = Dataset.objects.filter(public=True).values('id','title','description')
+    dslist = Dataset.objects.filter(public=True)
+
+    #bboxes = [
+      #{"type":"Feature",
+       #"properties": {"id":ds.id, "label": ds.label, "title": ds.title},
+       #"geometry":ds.bounds} for ds in dslist if ds.label not in ['tgn_filtered_01']]
 
     context = super(SearchPageView, self).get_context_data(*args, **kwargs)
     context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
@@ -26,6 +31,7 @@ class SearchPageView(TemplateView):
     context['mbtokenwhg'] = settings.MAPBOX_TOKEN_WHG
     context['media_url'] = settings.MEDIA_URL
     context['dslist'] = dslist
+    #context['bboxes'] = bboxes
     return context
   
 class LookupView(View):
@@ -195,6 +201,7 @@ class SearchView(View):
     start = request.GET.get('start')
     end = request.GET.get('end')
     bounds = request.GET.get('bounds')
+    #ds = request.GET.get('ds')
     
     if doctype == 'place':
       if scope == 'suggest':
@@ -213,6 +220,8 @@ class SearchView(View):
           q['query']['bool']['must'].append({"terms": {"fclasses": fclasses.split(',')}})
         if start:
           q['query']['bool']['must'].append({"range":{"timespans":{"gte" :start,"lte":end if end else 2005}}})
+        #if ds and ds != "0":
+          #q['query']['bool']['must'].append({"match": {"dataset": ds}})
         if bounds:
           bounds=json.loads(bounds)
           q['query']['bool']["filter"]=get_bounds_filter(bounds,'whg')

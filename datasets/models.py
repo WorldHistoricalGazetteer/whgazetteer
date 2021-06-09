@@ -71,6 +71,7 @@ class Dataset(models.Model):
   @property
   def bounds(self):
     pg_geoms=PlaceGeom.objects.values_list('geom',flat=True).filter(place__dataset=self.label)
+    #pg_geoms=PlaceGeom.objects.values_list('geom',flat=True).filter(place__dataset='croniken')
     gc=GeometryCollection(tuple(pg_geoms))
     
     return json.loads(gc.envelope.geojson)
