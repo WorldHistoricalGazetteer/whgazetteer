@@ -47,7 +47,7 @@
 		</div>
         <div id="search_filters">
   		  <!--<span class="filters-title">search filters</span>-->
-  		  <span class="filters-title">search<span class="ml-5 small">
+  		  <span class="filters-title">search<span class="ml-2 small">
 			<label><input type="radio" name="search_source" value="idx" checked> index</label>
 			<label><input type="radio" name="search_source" value="db"> database</label></span>
 		  </span>
@@ -87,7 +87,9 @@
 				<label><input id="input_area" type="text" size="30" placeholder="Region, country, study area"></label>
 				<input type="hidden" id="boundsobj">
 			  </div>
-			  <div id="div_ds_select" class="hidden">
+			</div>
+		  </div>
+			  <div id="div_ds_select" class="hidden mt-0">
 				<p class="mb-0">dataset
 				  <span class="float-right">
 				  <a id="dataset_help" class="pointer" data-toggle="popover" title="Dataset filter" data-content="" tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a></span>	  
@@ -101,11 +103,13 @@
 				  {% endfor %}
 				  </select>
 				</div>
-			  </div>
-			</div>
-		  </div>
+			  </div> <!-- #div_ds_select -->
         </div>
-      </div>
+      </div><!-- #search_panel -->
+	  <div id="search_info" class="p-2">
+		<p>Search in WHG</p>
+		<p>explanation of index vs. database, etc. with a picture</p>
+	  </div>
       <!-- separate div for full search results -->
       <div id="type_filter" class="hidden">
         <p class='allcap-heading half mb-0 pl-1'>PLACE TYPES (select to limit)

@@ -24,7 +24,8 @@ urlpatterns = [
     #path('template/', TemplateView.as_view(template_name="tutorials/tute-template.html"), name="tute-template"),
     
     path('modal/', TemplateView.as_view(template_name="main/modal.html"), name="dynamic-modal"),
-    
-    
+]
+#] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
+if settings.DEBUG is True:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
