@@ -45,13 +45,24 @@
 		  <input id="input_box" class="tt-hint" type="text" placeholder="Enter place name" autocomplete="false"> 
 		  <input id="input_box_traces" class="typeahead hidden" type="text" placeholder="subject term, e.g. 'empire'">
 		</div>
-        <div id="search_filters">
-  		  <!--<span class="filters-title">search filters</span>-->
-  		  <span class="filters-title">search<span class="ml-2 small">
-			<label><input type="radio" name="search_source" value="idx" checked> index</label>
-			<label><input type="radio" name="search_source" value="db"> database</label></span>
-		  </span>
-          <div class="small row">
+		  <ul id="dataset_tabs" class="nav nav-tabs small">
+			  <span class="ds-title ml-1 mr-3">Search
+			  <a id="search_help" class="pointer" data-toggle="popover" title="Search scope" data-html="true" tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a>
+			  </span>
+			  <li class="nav-item">
+				<a class="nav-link active" id="scope_idx" data-link="idx" href="#" role="tab">Index</a>
+			  </li>
+			  <li class="nav-item">
+				<a class="nav-link" id="scope_db" data-link="db" href="#" role="tab">Database</a>
+			  </li>
+		  </ul>	
+		<div id="search_filters" class="tab-pane fade show active" role="tabpanel">
+		  <!--<span class="filters-title">search filters</span>-->
+		  <!--<span class="filters-title">search<span class="ml-2 small">-->
+			<!--<label><input type="radio" name="search_source" value="idx" checked> index</label>-->
+			<!--<label><input type="radio" name="search_source" value="db"> database</label></span>-->
+		  <!--</span>-->
+		  <div class="small row">
 			<div id="filters_class" class="col-sm-6">
 			  <p class="mb-0">feature class(es) 
 				<!--<span class="ml-1 float-right">-->
@@ -104,9 +115,9 @@
 				  </select>
 				</div>
 			  </div> <!-- #div_ds_select -->
-        </div>
+		</div> <!-- #search_filters -->
       </div><!-- #search_panel -->
-	  <div id="search_info" class="p-2">
+	  <div id="search_info" class="p-2">  
 		<p>Search in WHG</p>
 		<p>explanation of index vs. database, etc. with a picture</p>
 	  </div>
@@ -124,10 +135,14 @@
     <div id="search_right" class="col-sm-7">
 	  <div id="map_options" class="p-1 small">draw bbox, etc.</div>
       {% leaflet_map "map_search" callback="map_init" %}
-	  <div style="width=100%">
+	  {%comment%}<div style="width=100%">
 		<div id="search_time" class="mt-1" style="background-color: #ffffcc;">
 		  <img src="{% static 'images/hist_static.png' %}" class="" alt=""/>
 		</div>
+		
+		
+		
+		
 		<div id="search_info" class="p-2 small" style="background-color: #eeeee0;">
 		  <p class="allcap-heading mb-0">SOMETHING HERE</p>
 		  {%comment%}{% for g in bboxes %}
@@ -138,8 +153,8 @@
 		  {% endfor %}{%endcomment%}
 		</div>
 	  </div>
-    </div> <!--  -->
-  </div>
+    </div> <!-- below map -->
+  </div> <!--#search_right -->
   </div>
 </div>
 
@@ -167,7 +182,16 @@
 	feat = idToFeature[$(this).data('id')]
 	feat.addTo(mappy)
   })
-  
+  // search scope faux tab actionss
+  $(".nav-link").click(function(){
+	let link = $(this).data('link')
+	other = link == 'idx'?$("#scope_db"):$("#scope_idx")
+	console.log('data-link, other', link, other)
+	if(other.data('link') == 'idx'){ $("#div_ds_select").show()} else {$("#div_ds_select").hide()}
+	other.removeClass('active')
+	$(this).addClass('active')
+  })
+  // dataset dropdown
   $("#select_ds_search").change(function(){
 	console.log('ds chosen', $(this).val())
   })
@@ -208,6 +232,13 @@
 	// popover content
 	$("#filter_help").attr(
 	  'data-content',"<p>Select one or more feature class (uses GeoNames single-letter codes)</p>"
+	)
+	$("#search_help").attr(
+	  'data-content',"<p class='mb-2'>Search of the WHG <b>index</b> is limited to fully accessioned (linked) datasets. Returns conflated sets of attestations.</p>"+
+	  "<p>Search of the WHG <b>database</b> included datasets not yet indexed. Returns individual (non-conflated) attestations.</p>"
+	)
+	$("#db_help").attr(
+	  'data-content',"<p>Search of all public datasets, including those not yet indexed. Returns individual (non-conflated) attestations.</p>"
 	)
 	$("#temporal_help").attr(
 	  'data-content',"<p>NOTE: Records in our largest core datasets do not have temporal attributes, so the default is all periods. Nevertheless, limiting the timespan here may be useful for some queries</p>"
@@ -521,7 +552,8 @@
       "fillOpacity": 0
     };
 
-    countries = new L.GeoJSON.AJAX("/media/data/countries_simplified.json",
+    <!--countries = new L.GeoJSON.AJAX("/media/data/countries_simplified.json",-->
+    countries = new L.GeoJSON.AJAX("/media/data/countries_noantarctica.json",
       {style:countryStyle,
         onEachFeature: function (feature, layer) {
           popupOptions = {maxWidth: 200};
@@ -566,7 +598,9 @@
 	  "focus":{fillOpacity: 0.3, opacity: .5, color: "red", weight: 2, fillColor:"#ff9999"}}
   }
 
+  //  triggerEvent(window, 'map:init', {id: id, map: map, options: options});
   function map_init (map_search, options) {
+	console.log('options', options)
 	window.geoms = []
 	window.gelems = $('script').filter(function() {
 	  <!--return this.id.match(/[0-9]/) && this.text != '"null"';-->

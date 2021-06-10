@@ -408,9 +408,6 @@ input[type="text"] {
    /*line-height: rem;*/
 }
 
-/*#map_home.leaflet-container { height: calc(100vh - 90px);}*/
-/*#map_home2.leaflet-container { height: 60%;}*/
-
 #search_left {
   z-index:500; 
   margin:0; padding:5px;
@@ -419,7 +416,9 @@ input[type="text"] {
   height:100%;
 }
 #search_right {  position:relative; z-index: 0;}
-#map_search.leaflet-container { height: 65%;}
+
+/*#map_search.leaflet-container { height: 65%;}*/
+#map_search {height: 100%;}
 #search_panel {
   background-color: #fff;
   padding: 5px;
