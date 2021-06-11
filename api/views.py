@@ -327,19 +327,22 @@ class SearchAPIView(generics.ListAPIView):
   #def get_queryset(self, format=None):
   def get(self, format=None, *args, **kwargs):
     params=self.request.query_params
+    print('SearchAPIView() params',params)
+
     id_ = params.get('id',None)
     name = params.get('name',None)
     name_contains = params.get('name_contains',None)
-    cc = map(str.upper,params.get('ccode').split(',')) if params.get('ccode') else None
+    cc = map(str.upper, params.get('ccode').split(',')) if params.get('ccode') else None
     ds = params.get('dataset',None)
-    fc = params.get('fclass',None)
-    fclasses=[x.upper() for x in fc.split(',')] if fc else None
+    fc = params.get('fc',None)
+    fclasses=list(set([x.upper() for x in ','.join(fc)])) if fc else None
     year = params.get('year',None)
     pagesize = params.get('pagesize',None)
     err_note = None
-    print('SearchAPIView() params',params)
+    # params
+    print({"cc":cc,"fclasses":fclasses})
+    
     qs = Place.objects.filter(dataset__public=True)
-    #qs = Place.objects.all()
 
     if all(v is None for v in [name,name_contains,id_]):
       # TODO: return a template with API instructions
@@ -352,11 +355,14 @@ class SearchAPIView(generics.ListAPIView):
       else:
         qs = qs.filter(minmax__0__lte=year,minmax__1__gte=year) if year else qs
         qs = qs.filter(fclasses__overlap=fclasses) if fc else qs
-  
+        
+        #res=qs.filter(names__jsonb__toponym__icontains=name)
+        
         if name_contains:
           qs = qs.filter(title__icontains=name_contains)
         elif name and name != '':
-          qs = qs.filter(title__istartswith=name)
+          #qs = qs.filter(title__istartswith=name)
+          qs = qs.filter(names__jsonb__toponym__icontains=name)
   
         qs = qs.filter(dataset=ds) if ds else qs
         qs = qs.filter(ccodes__overlap=cc) if cc else qs
@@ -364,6 +370,7 @@ class SearchAPIView(generics.ListAPIView):
       filtered = qs[:pagesize] if pagesize and pagesize < 200 else qs[:20]
 
       serializer = LPFSerializer(filtered, many=True, context={'request': self.request})
+      #serializer = LPFSerializer(filtered, many=True)
       serialized_data = serializer.data
       result = {"count":qs.count(),
                 "pagesize": len(filtered),

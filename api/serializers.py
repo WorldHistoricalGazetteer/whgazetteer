@@ -167,9 +167,9 @@ class PlaceSerializer(serializers.ModelSerializer):
 
   class Meta:
     model = Place
-    fields = ('url','id', 'title', 'src_id', 'dataset','ccodes',
-                  'names','types','geoms','links','related', 'whens', 
-            'descriptions', 'depictions', 'geo','minmax'
+    fields = ('url','id', 'title', 'src_id', 'dataset','ccodes', 'fclasses',
+              'names','types','geoms','links','related', 'whens', 
+              'descriptions', 'depictions', 'geo','minmax'
             )
 
 class PlaceTableSerializer(serializers.ModelSerializer):
@@ -281,6 +281,7 @@ class LPFSerializer(serializers.HyperlinkedModelSerializer):
             "src_id":place.src_id,
             "title":place.title,
             "ccodes":place.ccodes,
+            "fclasses":place.fclasses,
             "minmax":place.minmax
             #"timespans":place.timespans
         }

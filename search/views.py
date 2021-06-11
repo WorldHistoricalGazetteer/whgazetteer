@@ -252,6 +252,12 @@ class SearchView(View):
     return JsonResponse(result, safe=False)
       
   
+"""
+  executes search on db.places
+"""
+class SearchDatabaseView(View):
+  print('in SearchDatabaseView()')
+  
 '''
   returns 300 index docs in current map viewport
 '''

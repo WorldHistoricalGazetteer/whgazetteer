@@ -135,28 +135,10 @@
     <div id="search_right" class="col-sm-7">
 	  <div id="map_options" class="p-1 small">draw bbox, etc.</div>
       {% leaflet_map "map_search" callback="map_init" %}
-	  {%comment%}<div style="width=100%">
-		<div id="search_time" class="mt-1" style="background-color: #ffffcc;">
-		  <img src="{% static 'images/hist_static.png' %}" class="" alt=""/>
-		</div>
-		
-		
-		
-		
-		<div id="search_info" class="p-2 small" style="background-color: #eeeee0;">
-		  <p class="allcap-heading mb-0">SOMETHING HERE</p>
-		  {%comment%}{% for g in bboxes %}
-			{{ g|safe|json_script:g.properties.id }}
-		  {% endfor %}
-		  {% for ds in dslist %}
-			<a class="bblink" href="#" data-id={{ds.id}}>{{ds.title}}</a>;&nbsp; 
-		  {% endfor %}{%endcomment%}
-		</div>
-	  </div>
-    </div> <!-- below map -->
-  </div> <!--#search_right -->
+    </div> <!--#search_right -->
+  </div> <!-- .row -->
   </div>
-</div>
+</div> <!-- .container -->
 
 <div id="ext_site" class="modal fade" role="dialog">
   <div class="modal-dialog">
@@ -795,6 +777,25 @@
     $('.tt-menu').hide()
   }
 
+  // search public datasets in db
+  searchDatabase = function(){
+    fclasses = [];
+    $('#search_filters input:checked').each(function() {
+      fclasses.push($(this).val());
+    });
+	years = [Number($("#input_start").val()),Number($("#input_end").val())]
+	y = years.find(element => element >0 );
+	console.log('fc', fclasses.join(','))
+	console.log('y', y)
+	$.get("/api/db",{
+	  name: $('#input_box').val(), 
+	  name_contains: null, // if 'contains checked
+	  fc: fclasses.join(','),
+	  year: !y?null:y
+	}, function(data) {
+	  console.log('data',data)
+	})
+  }
   /* 
     *** showResults() *** from searchPlaces(), fetchTraceGeometry()
     Builds results_div, renders to #result_list; builds geoms[] -> renderPlaces(geoms)
@@ -1144,3 +1145,20 @@
   })
 </script>
 {% endblock %}
+
+	  {%comment%}
+	  <div id="" style="width=100%">
+		<div id="search_time" class="mt-1" style="background-color: #ffffcc;">
+		  <img src="{% static 'images/hist_static.png' %}" class="" alt=""/>
+		</div> <!-- #search_time -->
+		<div id="search_info" class="p-2 small" style="background-color: #eeeee0;">
+		  <p class="allcap-heading mb-0">SOMETHING HERE</p>
+		  {% for g in bboxes %}
+			{{ g|safe|json_script:g.properties.id }}
+		  {% endfor %}
+		  {% for ds in dslist %}
+			<a class="bblink" href="#" data-id={{ds.id}}>{{ds.title}}</a>;&nbsp; 
+		  {% endfor %}
+		</div> <!-- #search_info -->
+	  </div> <!-- below map -->
+	  {%endcomment%}
