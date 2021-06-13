@@ -217,7 +217,7 @@
 	)
 	$("#search_help").attr(
 	  'data-content',"<p class='mb-2'>Search of the WHG <b>index</b> is limited to fully accessioned (linked) datasets. Returns conflated sets of attestations.</p>"+
-	  "<p>Search of the WHG <b>database</b> included datasets not yet indexed. Returns individual (non-conflated) attestations.</p>"
+	  "<p>Search of the WHG <b>database</b> includes datasets not yet indexed. Returns individual (non-conflated) attestations.</p>"
 	)
 	$("#db_help").attr(
 	  'data-content',"<p>Search of all public datasets, including those not yet indexed. Returns individual (non-conflated) attestations.</p>"
@@ -582,7 +582,7 @@
 
   //  triggerEvent(window, 'map:init', {id: id, map: map, options: options});
   function map_init (map_search, options) {
-	console.log('options', options)
+	<!--console.log('options', options)-->
 	window.geoms = []
 	window.gelems = $('script').filter(function() {
 	  <!--return this.id.match(/[0-9]/) && this.text != '"null"';-->
@@ -616,9 +616,9 @@
 	  <!--mappy.setView(features.getBounds().getCenter(),6)-->
 	  mappy.fitBounds(features.getBounds())
 	  mappy.setZoom(mappy.getZoom()-1)
-	} else {
-	  console.log('no geometries, no feature')
-	}
+	} //else {
+	  //console.log('no geometries, no feature')
+	//}
   } // end map_init
   
   function filly(counter) {
@@ -770,6 +770,7 @@
 		localStorage.setItem('last_results',JSON.stringify(searchres))
         // render to html
 		console.log('get from that query',data['get'])
+		console.log('results/suggestions',data['suggestions'])
 		if(doctype == 'place'){
 		  showResults(data['suggestions'],doctype,scope);
 		}
@@ -849,7 +850,7 @@
     };
      
     $("#result_list").show()
-	$("#splash").hide()
+	$("#search_info").hide()
     titleMarkup = doctype=='trace'?'<p class="pl-1 mb-1 small strong">'+title+'</p>':''
     $('#result_list').html(titleMarkup+
       "<p class='half allcap-heading mb-0 pl-1'>"+(doctype=='place'?'SEARCH RESULTS ('+data.length+

@@ -259,7 +259,7 @@ class AreaSerializer(serializers.HyperlinkedModelSerializer):
 
 """ used by SearchAPIView() from /api/db? """
 class LPFSerializer(serializers.HyperlinkedModelSerializer):
-  names = PlaceNameSerializer(many=True, read_only=True)
+  #names = PlaceNameSerializer(many=True, read_only=True)
   names = PlaceNameSerializer(source="placename_set", many=True, read_only=True)
   types = PlaceTypeSerializer(many=True, read_only=True)
   links = PlaceLinkSerializer(many=True, read_only=True)

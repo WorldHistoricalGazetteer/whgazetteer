@@ -190,7 +190,6 @@ def bundler(q,whgid,idx):
 """ 
   /api/traces?
   search trace target titles and tags
-
 """
 class TracesAPIView(View):
   @staticmethod
@@ -229,7 +228,6 @@ class TracesAPIView(View):
   /api/index?
   search place index (always whg) parent records
   based on search.views.SearchView(View)
-
 """
 class IndexAPIView(View):
   @staticmethod
