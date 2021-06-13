@@ -324,8 +324,11 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
 #map_select{width:70%;margin:auto;}
 .list-inline { padding-left: 4px;}
 .active-filter a {font-weight:bold; color:#993333 !important;}
+
 #search_input label { position:absolute; right: 120px; z-index:10;}
-#search_input label:hover { cursor:pointer;}
+#search_input label, #search_input_traces label:hover { cursor:pointer;}
+#search_input_traces label { position:absolute; right: 120px; z-index:10;}
+
 /*#filter_help {position:absolute; top:35px; right:3px;}*/
 #type_filter {
   background-color: #fff;
@@ -334,15 +337,7 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
   margin-top:8px;
   box-shadow: 2px 2px #999;
 }
-#splash {
-  margin-top:.5rem;
-  border-radius: 8px;
-  height: calc(100vh - 205px);
-  position: relative;
-  /*background-color: aliceblue;*/
-  padding: 0 8px;
-}
-#splash p, #splash_traces p {font-family: 'Raleway', sans-serif; font-size:.85rem;}
+
 #filters_opener {
   border-top: 1px solid #ddd;
   border-bottom: 1px solid #ddd;
@@ -365,12 +360,15 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
   border-radius: 4px;
   outline: none;
 }
+#input_box_traces { width:55%; left:110px;}
+.tt-menu { left:110px !important;}
+/*.tt-input {position: absolute;}*/
+.typeahead {position: absolute;}
 .twitter-typeahead {
   width:90% !important;
   margin:auto  !important;
 }
 /*#input_box_traces { width:100%;}*/
-#input_box_traces { width:50%;}
 .input-loading {    
     background-color: #ffffff;
     background-image: url("http://loadinggif.com/images/image-selection/3.gif");

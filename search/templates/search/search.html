@@ -40,10 +40,13 @@
 			<label class="form-check-label" for="r_trace">Traces</label>
 		  </div>
 		</div>          
-		<div id="search_input"  class="input-group input-group-sm pb-2" >
+		<div id="search_input" class="input-group input-group-sm pb-2" >
 		  <label for="input_box">{% fontawesome_icon 'search' color='#336699'%}</label>
-		  <input id="input_box" class="tt-hint" type="text" placeholder="Enter place name" autocomplete="false"> 
-		  <input id="input_box_traces" class="typeahead hidden" type="text" placeholder="subject term, e.g. 'empire'">
+		  <input id="input_box" class="" type="text" placeholder="Enter place name" autocomplete="false"> 
+		</div>
+		<div id="search_input_traces" class="input-group input-group-sm pb-2 hidden" >
+		  <label for="input_box_traces">{% fontawesome_icon 'search' color='#336699'%}</label>
+		  <input id="input_box_traces" class="typeahead" type="text" placeholder="subject term, e.g. 'empire'">
 		</div>
 		  <ul id="scope_tabs" class="nav nav-tabs small">
 			  <span class="ds-title ml-1 mr-3">Search
@@ -170,7 +173,7 @@
 	feat = idToFeature[$(this).data('id')]
 	feat.addTo(mappy)
   })
-  // search scope faux tab actionss
+  // search scope faux tab actions
   $(".nav-link").click(function(){
 	let link = $(this).data('link')
 	other = link == 'idx'?$("#scope_db"):$("#scope_idx")
@@ -398,11 +401,11 @@
 	  }
 	  <!--$(".carousel").carousel(0)-->
 	  $("#filters_opener").show()
-      $("#input_box").show()
+      $("#search_input").show()
 	  $("#search_filters").show()
-      $("#input_box_traces").hide()
+      $("#search_input_traces").hide()
 	  <!--$("#traces_info").hide()-->
-	  $("#search_info").show()
+	  <!--$("#search_input").show()-->
     } else {
 	  if(!$("#traces_info").is(":visible")){
 		$("#search_info").hide()
@@ -411,9 +414,9 @@
 	  }
 	  <!--$(".carousel").carousel(3)-->
 	  $("#filters_opener").hide()
-      $("#input_box").hide()
+      $("#search_input").hide()
       $("#search_filters").hide()
-      $("#input_box_traces").show()
+      $("#search_input_traces").show()
 	  <!--$("#splash").hide()-->
 	  $('.nav-pills a[href="#pills-why"]').tab('show')
 	  <!--$("#traces_info").show()-->
