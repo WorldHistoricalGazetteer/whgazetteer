@@ -313,7 +313,7 @@
     })
     .on('typeahead:selected', function (obj, datum) {
       // fetchTraceGeom() -> [views.TraceGeomView() <- views.getGeomCollection()] -> showResults() -> sugLister
-      <!--console.log('trace typeahead clicked: datum',datum)-->
+      console.log('trace typeahead clicked: datum',datum)
       if(doctype=='trace'){
         fetchTraceGeom(datum._id,0,datum.title)
       }
@@ -864,6 +864,7 @@
      
     $("#result_list").show()
 	$("#search_info").hide()
+	$("#traces_info").hide()
     titleMarkup = doctype=='trace'?'<p class="pl-1 mb-1 small strong">'+title+'</p>':''
     $('#result_list').html(titleMarkup+
       "<p class='half allcap-heading mb-0 pl-1'>"+(doctype=='place'?'SEARCH RESULTS ('+data.length+
