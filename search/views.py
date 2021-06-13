@@ -79,7 +79,7 @@ def suggestionItem(s,doctype,scope):
     if scope == 'suggest':
       item = { 
         "name":s['title'],
-        "type":s['types'][0]['label'],
+        "type": s['types'][0]['sourceLabel'] if 'sourceLabel' in s['types'][0] else s['types'][0]['label'],
         "whg_id":s['whg_id'],
         "pid":s['place_id'],
         "variants":[n for n in s['suggest']['input'] if n != s['title']],
@@ -90,8 +90,6 @@ def suggestionItem(s,doctype,scope):
       #print('place sug item', item)
     else:
       h = s['hit']
-      #print('place search "s":',s)
-      #print('place search hit:',h)
       item = {
         "whg_id": h['whg_id'] if 'whg_id' in h else '',
         "pid":h['place_id'],
@@ -99,7 +97,8 @@ def suggestionItem(s,doctype,scope):
         "name": h['title'],
         "variants":[n for n in h['suggest']['input'] if n != h['title']],
         "ccodes": h['ccodes'],
-        "types": [t['label'] for t in h['types'] ],
+        #"types": [t['label'] for t in h['types'] ],
+        "types": [t['sourceLabel'] or t['label'] for t in h['types'] ],
         "geom": makeGeom(h['place_id'],h['geoms'])
         #"snippet": s['snippet']['descriptions.value'][0] if s['snippet'] != '' else []
       }
@@ -154,7 +153,8 @@ def suggester(doctype,q,scope,idx):
           #snippet = h['highlight'] if 'highlight' in h else ''
           suggestions.append(
             {"_id": h['_id'],
-             "linkcount":len(h['_source']['links']),
+             #"linkcount":len(h['_source']['links']),
+             "linkcount":len(h['_source']['children']),
              "hit": h['_source'],
              #"snippet":snippet
             }
@@ -176,7 +176,7 @@ def suggester(doctype,q,scope,idx):
     return suggestions 
 
 """ 
-  executes place:search/suggest or trace:search 
+  executes place:search/suggest or trace:search on index
   via suggester(), formatted by suggestionItem()
 """
 class SearchView(View):

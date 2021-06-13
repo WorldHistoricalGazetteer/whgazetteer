@@ -141,15 +141,10 @@ class PlaceNameSerializer(serializers.ModelSerializer):
     model = PlaceName
     fields = ('toponym','when','citation')
 
-#class PlaceSerializer(serializers.HyperlinkedModelSerializer):
 """ 
     direct representation of normalized records in database 
     used in multiple views
 """
-def yearPadder(y):
-  year = str(y).zfill(5) if str(y)[0] == '-' else str(y).zfill(4)
-  return year
-
 class PlaceSerializer(serializers.ModelSerializer):
   dataset = serializers.ReadOnlyField(source='dataset.label')
   names = PlaceNameSerializer(many=True, read_only=True)
@@ -304,3 +299,7 @@ class LPFSerializer(serializers.HyperlinkedModelSerializer):
     fields = ('url','type','properties','geometry','names', 'types','links'
                   ,'related','whens', 'descriptions', 'depictions','minmax'
             )
+
+#def yearPadder(y):
+  #year = str(y).zfill(5) if str(y)[0] == '-' else str(y).zfill(4)
+  #return year

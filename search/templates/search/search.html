@@ -45,9 +45,9 @@
 		  <input id="input_box" class="tt-hint" type="text" placeholder="Enter place name" autocomplete="false"> 
 		  <input id="input_box_traces" class="typeahead hidden" type="text" placeholder="subject term, e.g. 'empire'">
 		</div>
-		  <ul id="dataset_tabs" class="nav nav-tabs small">
+		  <ul id="scope_tabs" class="nav nav-tabs small">
 			  <span class="ds-title ml-1 mr-3">Search
-			  <a id="search_help" class="pointer" data-toggle="popover" title="Search scope" data-html="true" tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a>
+			  <a id="search_help" class="pointer" data-toggle="popover" title="Search scope" data-html="true" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a>
 			  </span>
 			  <li class="nav-item">
 				<a class="nav-link active" id="scope_idx" data-link="idx" href="#" role="tab">Index</a>
@@ -121,6 +121,10 @@
 		<p>Search in WHG</p>
 		<p>explanation of index vs. database, etc. with a picture</p>
 	  </div>
+	  <div id="traces_info" class="p-2 hidden">  
+		<p>Traces in WHG</p>
+		<p>explanation of traces w/link</p>
+	  </div>
       <!-- separate div for full search results -->
       <div id="type_filter" class="hidden">
         <p class='allcap-heading half mb-0 pl-1'>PLACE TYPES (select to limit)
@@ -158,6 +162,8 @@
   window.idToArea = {}
   window.area_list = []
   window.area_objs = []
+  
+  scope = $("li a.active").data('link')
   
   $(".bblink").click(function(){
 	console.log('bbox for',$(this).data('id'))
@@ -242,12 +248,12 @@
     clearit()
     $("#type_filter").hide();
 	
-	// show filters, hide splash and vice versa
+	// show filters, hide search_info and vice versa
     $("#link_filters").click(function(){
 	  if($("#search_filters").is(":visible")){
-		$("#splash").show()
+		$("#search_info").show()
 	  } else {
-		$("#splash").hide()
+		$("#search_info").hide()
 	  }
 	  $("#search_filters").toggle(400)
     })
@@ -256,7 +262,7 @@
 	$("label[for='input_box']").click(function(){
 	  console.log('clicked search')
 	  doctype = $("input[name='class']:checked").val()
-	  searchPlaces()
+	  searchPlacesIdx()
 	})	
     //
     // data type choice determines index searched
@@ -383,30 +389,34 @@
   //
   // radio button switch btwn place & trace search inputs
   $('input[type=radio][name=class]').change(function() {
-    <!--console.log('changed class',$(this).val())-->
+    console.log('changed class',$(this).val())
     if ($(this).val() == 'place'){
-	  if(!$("#splash").is(":visible")){
-		$("#splash").show()
+	  if(!$("#search_info").is(":visible")){
+		$("#traces_info").hide()
+		$("#search_info").show()
+		$("#scope_tabs").show()
 	  }
-	  $(".carousel").carousel(0)
+	  <!--$(".carousel").carousel(0)-->
 	  $("#filters_opener").show()
       $("#input_box").show()
 	  $("#search_filters").show()
       $("#input_box_traces").hide()
-	  $("#splash_traces").hide()
-	  $("#splash").show()
+	  <!--$("#traces_info").hide()-->
+	  $("#search_info").show()
     } else {
-	  if(!$("#splash").is(":visible")){
-		$("#splash").show()
+	  if(!$("#traces_info").is(":visible")){
+		$("#search_info").hide()
+		$("#traces_info").show()
+		$("#scope_tabs").hide()
 	  }
-	  $(".carousel").carousel(3)
+	  <!--$(".carousel").carousel(3)-->
 	  $("#filters_opener").hide()
       $("#input_box").hide()
       $("#search_filters").hide()
       $("#input_box_traces").show()
 	  <!--$("#splash").hide()-->
 	  $('.nav-pills a[href="#pills-why"]').tab('show')
-	  <!--$("#splash_traces").show()-->
+	  <!--$("#traces_info").show()-->
     }
     $('#input_box').val('')
     $('#input_box').attr("placeholder",this.getAttribute("rel"));
@@ -708,10 +718,10 @@
     doctype = $("input[name='class']:checked").val()
     <!--if (e.keyCode === 13 && doctype == 'place') {-->
     if (e.keyCode === 13) {
-      // always hide splash and splash_traces on search
-	  $("#splash").hide()
-	  $("#splash_traces").hide()
-      searchPlaces()
+      // always hide search_info and traces_info on search
+	  $("#search_info").hide()
+	  $("#traces_info").hide()
+      searchPlacesIdx()
     } 
   })
   // hack: typeahead disabled for place
@@ -722,7 +732,7 @@
     <!--}-->
     doctype = $("input[name='class']:checked").val()
     if (e.keyCode === 13) {
-      searchPlaces()
+      searchPlacesIdx()
     } 
   })
 
@@ -730,15 +740,15 @@
   $("#search_input").on('click','.tt-selectable', function(e) {
     if(doctype == 'place') {
       console.log('clicked place suggestion',$(this))
-      searchPlaces()    
+      searchPlacesIdx()    
     } 
   })
   /*
-    *** searchPlaces() *** from #input_box keyup 
+    *** searchPlacesIdx() *** from #input_box keyup 
     index search w/o autocomplete -> showResults()
 	handles traces also !?
   */
-  searchPlaces = function (){
+  searchPlacesIdx = function (){
     window.doctype = $("input[name='class']:checked").val();
     // get filter values: fclasses, start, end, ??
     var fclasses = [];
@@ -751,7 +761,7 @@
     index = doctype =='place' ? 'whg' : 'traces'    
     // clear filters
     $(".list-inline").html('')
-	<!--console.log('bounds in js SearchPlaces()',$("#boundsobj").val())-->
+	<!--console.log('bounds in js SearchPlacesIdx()',$("#boundsobj").val())-->
     $.get("/search/index",{
         // qstr: $(".tt-input")[0].value,
         // disabled typeahead
@@ -770,7 +780,7 @@
 		localStorage.setItem('last_results',JSON.stringify(searchres))
         // render to html
 		console.log('get from that query',data['get'])
-		console.log('results/suggestions',data['suggestions'])
+		console.log('results [data]',data)
 		if(doctype == 'place'){
 		  showResults(data['suggestions'],doctype,scope);
 		}
@@ -779,7 +789,7 @@
   }
 
   // search public datasets in db
-  searchDatabase = function(){
+  searchPlacesDb = function(){
     fclasses = [];
     $('#search_filters input:checked').each(function() {
       fclasses.push($(this).val());
@@ -798,7 +808,7 @@
 	})
   }
   /* 
-    *** showResults() *** from searchPlaces(), fetchTraceGeometry()
+    *** showResults() *** from searchPlacesIdx(), fetchTraceGeometry()
     Builds results_div, renders to #result_list; builds geoms[] -> renderPlaces(geoms)
 
     data: 
@@ -1026,17 +1036,19 @@
   function sugLister(sug,doctype,scope) {
     <!--console.log(sug)-->
     if (doctype=='place') {
+	  linkcount =  (parseInt(sug['linkcount']) +1)
+	  attestations = ' <i>' + linkcount + (linkcount>1?' linked attestations</i>; ':' attestation</i>; ')
       variants = sug['variants'].length > 0 ? '<br/><i class="text-secondary"> var: '+
-        sug['variants'].sort().slice(0,8).join('; ')+'; </i> ...' : ''
+        sug['variants'].sort().slice(0,6).join('; ')+'; </i> ...' : ''
       <!--console.log(sug['variants'])-->
       if (scope=='search'){
         <!--snippet = sug['snippet'].length > 0 ? sug['snippet']+'...' : ''-->
         ccodes = sug['ccodes'].length > 0 ? ' ['+sug['ccodes']+']' : ''
-        types = ' ('+sug['types']+')'
+        types = '<br/>('+sug['types']+')'
         geo = sug['geom'].length > 0 ? ' {% fontawesome_icon 'globe' color='#666' %}' : ''
         item = '<div class="search-row place-item" data-id="'+sug['whg_id']+'" data-types="'+sug['types']+
           '"><a class="place-link" href="#" data-id="'+sug['whg_id']+'"><b>'+
-          sug['name']+'</b></a>'+types+ccodes+geo+variants
+          sug['name']+'</b></a>'+attestations+ccodes+geo+types+variants
           +'</div>'
       } else {
         item = '<div class="sug_row sug-item">'+sug['name']+' '+variants+'</div>'
