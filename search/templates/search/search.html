@@ -215,6 +215,32 @@
 	
 	$("[rel='tooltip']").tooltip();
 	$("[data-toggle=popover]").popover({html:true})  
+
+	// dynamic dataset info popover
+	var dspop = $(".pop-dataset").popover({
+	  trigger: 'focus',
+	  placement: 'right',
+	  html: true
+	}).on('show.bs.popover', function () {
+		$.ajax({
+		  url: '/api/datasets/',
+		  data: {id:$(this).data('id')},
+		  dataType: "JSON",
+		  async: false,
+		  success: function (data) {
+			ds=data.results[0]
+			console.log('ds',ds)
+			html='<p class="thin"><b>Title</b>: '+ds.title+'</p>'
+			html+='<p class="thin"><b>Description</b>: '+ds.description+'</p>'
+			html+='<p class="thin"><b>WHG Owner</b>: '+ds.owner+'</p>'
+			html+='<p class="thin"><b>Creator</b>: '+ds.creator+'</p>'
+			<!--if(ds.webpage){-->
+			  <!--html+='<p class="thin"><a href="'+ds.webpage+'" target="_blank">Web page</a></p>'-->
+			<!--}-->
+			dspop.attr('data-content', html);
+		  }
+	  });
+	})
 	
 	// popover content
 	$("#filter_help").attr(
@@ -750,7 +776,7 @@
     } 
   })
 
-  spin_opts = { scale: .5, top: '50%'}
+  spin_opts = { scale: .8, top: '50%'}
   function startSearchSpinner(){
 	window.spinner_search = new Spin.Spinner(spin_opts).spin();
 	$("#search_filters").append(spinner_search.el);   
@@ -976,8 +1002,11 @@
         type = idToFeature[i].feature.geometry.type
         idToFeature[i].setStyle(type=='Point'?styles.marker_default:styles.line_default)
       }
-      whgid = $(this).data('id')
-      f = idToFeature[whgid]
+      <!--whgid = $(this).data('id')-->
+      <!--f = idToFeature[whgid]-->
+	  // identifier either a whg (index search) or pid (db search)
+      layerid = $(this).data('id')
+      f = idToFeature[layerid]
       // raise z-index
       f.bringToFront().setStyle(f.feature.geometry.type=='Point'?styles.marker_highlight:styles.line_highlight)
       // get a centroid
@@ -1081,15 +1110,16 @@
         types = '<br/>('+sug['types']+')'
         geo = sug['geom'].length > 0 ? ' {% fontawesome_icon 'globe' color='#666' %}' : ''
 		
+		// whgid if index search, else pid
+		identifier = sug['ds'] ? sug['pid'] : sug['whg_id']
 		// add dataset link if this is db search result
-		//<a class="pop-link pop-dataset" data-id={{rec.dataset.id}} data-toggle="popover" title="Dataset Profile" data-content="" tabindex="0" rel="clickover">{{rec.dataset.label}}</a>
-		
-		dsitem = sug['ds'] ? ' dataset: <a href="#" data-toggle="tooltip">'+sug['ds']['title']+'</a>' : ''
-        item = '<div class="search-row place-item" data-id="'+sug['whg_id']+'" data-types="'+sug['types']+
-          '"><a class="place-link" href="#" data-id="'+sug['whg_id']+'"><b>'+
-          sug['name']+'</b></a>'+attestations+ccodes+dsitem+geo+types+variants
-          +'</div>'
-      } else {
+		dslink = sug['ds'] ? ' dataset: '+
+		'<a class="pop-link pop-dataset" data-id='+sug['ds']['id']+' data-toggle="popover" title="Dataset Profile" data-content="" tabindex="0" rel="clickover">'+sug['ds']['id']+'</a>' : ''	
+		// link destination varies
+		link_class = sug['ds'] ? 'db-link' : 'place-link'
+		// dynamic search result 'card'
+		item = '<div class="search-row place-item" data-id="'+identifier+'" data-types="'+sug['types']+'"><a class="'+link_class+'" href="#" data-id="'+identifier+'"><b>'+sug['name']+'</b></a>'+attestations+ccodes+dslink+geo+types+variants+'</div>'		  		
+	  } else {
         item = '<div class="sug_row sug-item">'+sug['name']+' '+variants+'</div>'
       }
     } else if (doctype=='trace') {
@@ -1188,6 +1218,13 @@
     window.spinner = new Spin.Spinner().spin();
     $("#map_search").append(spinner.el);
     location.href = '/places/'+whgid+'/portal'
+  });
+  $("#result_list").on('click', '.db-link', function(e){
+    pid=$(this).data('id')
+    console.log('pid', pid)
+    window.spinner = new Spin.Spinner().spin();
+    $("#map_search").append(spinner.el);
+    location.href = '/places/'+pid+'/detail'
   });
   
   $('label.btn').click(function(){
