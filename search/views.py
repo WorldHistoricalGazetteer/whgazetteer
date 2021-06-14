@@ -68,7 +68,9 @@ def makeGeom(pid,geom):
   if len(geom) > 0:    
     for g in geom:
       geomset.append(
-        {"type":g['location']['type'],"coordinates":g['location']['coordinates'],"properties":{"pid": pid}}
+        {"type":g['location']['type'],
+         "coordinates":g['location']['coordinates'],
+         "properties":{"pid": pid}}
       )
   return geomset
 
@@ -267,18 +269,19 @@ class SearchDatabaseView(View):
     """
       args in request.GET:
         [string] name: query string
-        [string[]] fclasses: geonames class (A,H,L,P,S,T)
+        [string] fclasses: geonames class (A,H,L,P,S,T)
         [int] year: within place.minmax timespan
         [string] bounds: text of JSON geometry
-        [int] ds: dataset.id
+        [int] dsid: dataset.id
         
     """
     name = request.GET.get('name')
     name_contains = request.GET.get('name') or None
-    fclasses = request.GET.get('fclasses')
+    fclasses = request.GET.get('fclasses').split(',')
     year = request.GET.get('year')
     bounds = request.GET.get('bounds')
-    ds = Dataset.objects.get(pk=request.GET.get('ds'))
+    dsid = request.GET.get('dsid')
+    ds = Dataset.objects.get(pk=int(dsid)) if dsid else None
     
     qs = Place.objects.filter(dataset__public=True)
 
@@ -291,7 +294,7 @@ class SearchDatabaseView(View):
       #qs = qs.filter(title__istartswith=name)
       qs = qs.filter(names__jsonb__toponym__icontains=name)
 
-    qs = qs.filter(dataset=ds) if ds else qs
+    qs = qs.filter(dataset=ds.label) if ds else qs
     #qs = qs.filter(ccodes__overlap=cc) if cc else qs
         
     #filtered = qs[:pagesize] if pagesize and pagesize < 200 else qs[:20]
@@ -300,7 +303,18 @@ class SearchDatabaseView(View):
     # needed for suglister
     #pid    #name    #variants[]    #ccodes[]    #types[]    #geom[]
     # adding dataset
-
+    
+    # normalizes place.geoms objects for results display
+    def dbsug_geoms(pobjs):
+      suglist = []
+      for p in pobjs:
+        g = p.jsonb
+        if 'citation' in g: del g['citation']
+        g['src'] = 'db'
+        g["properties"] = {"pid":p.id, "title": p.title}
+        suglist.append(g)
+      return suglist
+      
     # mimics suggestion items from SearchView (index)
     suggestions = []
     for place in filtered:
@@ -312,7 +326,7 @@ class SearchDatabaseView(View):
         "variants": [n.jsonb['toponym'] for n in place.names.all()],
         "ccodes": place.ccodes,
         "types": [t.jsonb['sourceLabel'] or t.jsonb['sourceLabel'] for t in place.types.all()],
-        "geom": [g.jsonb for g in place.geoms.all()]
+        "geom": dbsug_geoms(place.geoms.all())
       })
       
     result = {'get': request.GET, 'suggestions': suggestions}

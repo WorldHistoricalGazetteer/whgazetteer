@@ -167,10 +167,10 @@
 	feat = idToFeature[$(this).data('id')]
 	feat.addTo(mappy)
   })
-  // search scope faux tab actions
+  // search source faux tab actions
   $(".nav-link").click(function(){
 	let link = $(this).data('link')
-	scope = link
+	search_scope = link
 	other = link == 'idx'?$("#scope_db"):$("#scope_idx")
 	<!--console.log('data-link, other', link, other)-->
 	if(other.data('link') == 'idx'){ $("#div_ds_select").show()} else {$("#div_ds_select").hide()}
@@ -192,7 +192,7 @@
 	}
   })
   $(function(){
-	window.scope = $("li a.active").data('link')
+	window.search_scope = $("li a.active").data('link')
 	// toggle all fclass checkboxes
 	$("#check_toggle").click(function(e){
 	  e.preventDefault()
@@ -261,7 +261,9 @@
 	$("label[for='input_box']").click(function(){
 	  console.log('clicked search')
 	  doctype = $("input[name='class']:checked").val()
-	  searchPlacesIdx()
+	  if(search_scope == 'idx'){
+		searchPlacesIdx()
+	  } else { searchPlacesDb()}	  
 	})	
     //
     // data type choice determines index searched
@@ -721,7 +723,7 @@
       // always hide search_info and traces_info on search
 	  $("#search_info").hide()
 	  $("#traces_info").hide()
-	  if (scope == 'idx'){
+	  if (search_scope == 'idx'){
 		searchPlacesIdx()		
 	  } else {
 		searchPlacesDb()
@@ -798,8 +800,11 @@
     $('.tt-menu').hide()
   }
 
-  // search public datasets in db
-  searchPlacesDb = function(){
+  /* 
+    *** searchPlacesDb() *** from #input_box keyup 
+    database search w/o autocomplete -> showResults()
+  */
+  function searchPlacesDb(){
 	startSearchSpinner()
     fclasses = [];
     $('#search_filters input:checked').each(function() {
@@ -807,18 +812,20 @@
     });
 	years = [Number($("#input_start").val()),Number($("#input_end").val())]
 	y = years.find(element => element != 0 );
-	dsid = $("#select_ds_search").val() 
-	ds = dsid!="0" ? dsid : null
-	console.log('params',{'fc':fclasses.join(','),"y":y,"ds":ds})
+	ds_select = $("#select_ds_search").val()
+	dsid = ds_select!="0" ? parseInt(ds_select) : null
+	console.log('params',{'fc':fclasses, "y":y, "dsid":dsid})
 	$.get("/search/db",{
 	  name: $('#input_box').val(), 
 	  name_contains: null, // if 'contains checked
-	  fc: fclasses.join(','),
+	  // break array nec. - WHY???
+	  fclasses: fclasses.join(','),
 	  year: !y?null:y,
-	  ds: ds,
+	  dsid: dsid,
 	  context: "search"
 	}, function(data) {
-	  console.log('data',data)
+	  console.log('data',data['suggestions'])
+	  showResults(data['suggestions'], doctype, "search")
 	  spinner_search.stop()
 	})
   }
@@ -841,8 +848,9 @@
       if(data.length ==0) {
         results_div += '<p class="small ml-2">No results, sorry.</p>'
       } else {
-        data.forEach(function(sug){  
-          typesArr=typesArr.concat(sug.types)      
+        data.forEach(function(sug){
+		  console.log('sug', sug)
+		  typesArr=typesArr.concat(sug.types)
           if(!!sug.geom) {
             sug.geom.forEach(function(g){
               g['properties']['title']=sug.name
@@ -878,8 +886,9 @@
 	$("#search_info").hide()
 	$("#traces_info").hide()
     titleMarkup = doctype=='trace'?'<p class="pl-1 mb-1 small strong">'+title+'</p>':''
+	let src=search_scope=='idx'?'INDEX':'DATABASE'
     $('#result_list').html(titleMarkup+
-      "<p class='half allcap-heading mb-0 pl-1'>"+(doctype=='place'?'SEARCH RESULTS ('+data.length+
+      "<p class='half allcap-heading mb-0 pl-1'>"+(doctype=='place'?src+' SEARCH RESULTS ('+data.length+
       ')<span class="float-right typefilter-link">'+
       '<a href="#">filter by type {% fontawesome_icon 'filter' %}</a></span>':
       'PLACE ANNOTATIONS IN TRACE  ('+data.bodies.length+')')+'</p>'
@@ -1004,7 +1013,8 @@
     features = L.geoJSON(data, {
       pointToLayer: function (feature, latlng) {
         count_features +=1;
-        identifier = feature.properties.whgid;
+		// if feature has src key, it's from a database search
+        identifier = feature.src?feature.properties.pid:feature.properties.whgid;
         if(feature.type=='Point'){
           marker = L.circleMarker(latlng, styles.marker_default)
           <!--.bindPopup(feature.properties.title+' (whg id:<a href="/places/'+identifier+'/portal">+identifier+</a>)');-->
@@ -1015,12 +1025,20 @@
       },
       onEachFeature: function(feature,layer) {
         f=feature; l=layer;
-        identifier = feature.properties.whgid;
+        <!--identifier = feature.properties.whgid;-->
+		// if feature has src key, it's from a database search; also, popup link differs
+		if(feature.src){
+		  identifier = feature.properties.pid
+		  popup_link = ' (<a href="/places/'+identifier+'/detail">place page</a>)'
+		} else {
+		  identifier = feature.properties.whgid
+		  popup_link = ' (<a href="/places/'+identifier+'/portal">place portal</a>)'
+		}
         if(feature.type != 'Point'){
           layer.setStyle(['LineString','MultiLineString'].indexOf(feature.type)>-1 ? styles.line_default:styles.pgon_default)
           idToFeature[identifier] = layer
         }
-        layer.bindPopup(feature.properties.title+' (whg id:<a href="/places/'+identifier+'/portal">'+identifier+'</a>)');
+        layer.bindPopup(feature.properties.title+popup_link);
         <!--layer.bindTooltip(feature.properties.title,{"permanent":true});-->
         layer.on('click',function(e){
           scroll = 20
@@ -1049,22 +1067,27 @@
     *** sugLister() ***  from showResults()
     formats search result item (sug)
   */  
-  function sugLister(sug,doctype,scope) {
+  function sugLister(sug, doctype, scope) {
     <!--console.log(sug)-->
     if (doctype=='place') {
-	  linkcount =  (parseInt(sug['linkcount']) +1)
-	  attestations = ' <i>' + linkcount + (linkcount>1?' linked attestations</i>; ':' attestation</i>; ')
+	  linkcount = sug['ds'] ? '' : (parseInt(sug['linkcount']) +1)
+	  attestations = sug['ds'] ? '' : ' <i>' + linkcount + (linkcount>1?' linked attestations</i>; ':' attestation</i>; ')
       variants = sug['variants'].length > 0 ? '<br/><i class="text-secondary"> var: '+
         sug['variants'].sort().slice(0,6).join('; ')+'; </i> ...' : ''
       <!--console.log(sug['variants'])-->
       if (scope=='search'){
         <!--snippet = sug['snippet'].length > 0 ? sug['snippet']+'...' : ''-->
-        ccodes = sug['ccodes'].length > 0 ? ' ['+sug['ccodes']+']' : ''
+        ccodes = sug['ccodes'] != '' ? ' ['+sug['ccodes']+']' : ''
         types = '<br/>('+sug['types']+')'
         geo = sug['geom'].length > 0 ? ' {% fontawesome_icon 'globe' color='#666' %}' : ''
+		
+		// add dataset link if this is db search result
+		//<a class="pop-link pop-dataset" data-id={{rec.dataset.id}} data-toggle="popover" title="Dataset Profile" data-content="" tabindex="0" rel="clickover">{{rec.dataset.label}}</a>
+		
+		dsitem = sug['ds'] ? ' dataset: <a href="#" data-toggle="tooltip">'+sug['ds']['title']+'</a>' : ''
         item = '<div class="search-row place-item" data-id="'+sug['whg_id']+'" data-types="'+sug['types']+
           '"><a class="place-link" href="#" data-id="'+sug['whg_id']+'"><b>'+
-          sug['name']+'</b></a>'+attestations+ccodes+geo+types+variants
+          sug['name']+'</b></a>'+attestations+ccodes+dsitem+geo+types+variants
           +'</div>'
       } else {
         item = '<div class="sug_row sug-item">'+sug['name']+' '+variants+'</div>'
