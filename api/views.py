@@ -24,7 +24,7 @@ from rest_framework.reverse import reverse
 from rest_framework.views import APIView
 import simplejson as json
 from accounts.permissions import IsOwnerOrReadOnly
-from api.serializers import (UserSerializer, DatasetSerializer, PlaceSerializer, PlaceTableSerializer, PlaceGeomSerializer, AreaSerializer, FeatureSerializer, LPFSerializer)
+from api.serializers import (UserSerializer, DatasetSerializer, PlaceSerializer, PlaceTableSerializer, PlaceGeomSerializer, AreaSerializer, FeatureSerializer, LPFSerializer, SearchDatabaseSerializer)
 from areas.models import Area
 from datasets.models import Dataset
 from datasets.tasks import get_bounds_filter
@@ -315,7 +315,6 @@ class IndexAPIView(View):
   /api/db?
   SearchAPIView()
   return lpf results from database search 
-  
 """
 class SearchAPIView(generics.ListAPIView):
   renderer_classes = [JSONRenderer]
@@ -337,6 +336,7 @@ class SearchAPIView(generics.ListAPIView):
     year = params.get('year',None)
     pagesize = params.get('pagesize',None)
     err_note = None
+    context = params.get('context',None)
     # params
     print({"cc":cc,"fclasses":fclasses})
     
@@ -367,8 +367,9 @@ class SearchAPIView(generics.ListAPIView):
         
       filtered = qs[:pagesize] if pagesize and pagesize < 200 else qs[:20]
 
-      serializer = LPFSerializer(filtered, many=True, context={'request': self.request})
-      #serializer = LPFSerializer(filtered, many=True)
+      serial = LPFSerializer if context else SearchDatabaseSerializer
+      serializer = serial(filtered, many=True, context={'request': self.request})
+      
       serialized_data = serializer.data
       result = {"count":qs.count(),
                 "pagesize": len(filtered),

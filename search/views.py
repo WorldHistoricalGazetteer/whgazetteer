@@ -1,16 +1,18 @@
 # various search.views
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Count
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import View
 from django.views.generic.base import TemplateView
 import simplejson as json, sys
+from api.serializers import SearchDatabaseSerializer
 from areas.models import Area
-from datasets.tasks import normalize, get_bounds_filter
 from datasets.models import Dataset, Hit
+from datasets.tasks import normalize, get_bounds_filter
 from elasticsearch import Elasticsearch
-from django.db.models import Count
+from places.models import Place
 
     
 class SearchPageView(TemplateView):
@@ -186,12 +188,13 @@ class SearchView(View):
     print('SearchView() bounds',request.GET.get('bounds'))
     """
       args in request.GET:
-          [string] qstr: query string
-          [string] doc_type: place or trace
-          [string] scope: suggest or search
-          [string] idx: index to be queried
-          [int] year: filter for timespans including this
-          [string[]] fclasses: filter on geonames class (A,H,L,P,S,T)
+        [string] qstr: query string
+        [string] doc_type: place or trace
+        [string] scope: suggest or search
+        [string] idx: index to be queried
+        [int] year: filter for timespans including this
+        [string[]] fclasses: filter on geonames class (A,H,L,P,S,T)
+        [string] bounds: text of JSON geometry
     """
     qstr = request.GET.get('qstr')
     doctype = request.GET.get('doc_type')
@@ -256,7 +259,64 @@ class SearchView(View):
   executes search on db.places
 """
 class SearchDatabaseView(View):
-  print('in SearchDatabaseView()')
+  @staticmethod
+  def get(request):
+    pagesize = 50
+    print('SearchDatabaseView() request',request.GET)
+    print('SearchDatabaseView() bounds',request.GET.get('bounds'))
+    """
+      args in request.GET:
+        [string] name: query string
+        [string[]] fclasses: geonames class (A,H,L,P,S,T)
+        [int] year: within place.minmax timespan
+        [string] bounds: text of JSON geometry
+        [int] ds: dataset.id
+        
+    """
+    name = request.GET.get('name')
+    name_contains = request.GET.get('name') or None
+    fclasses = request.GET.get('fclasses')
+    year = request.GET.get('year')
+    bounds = request.GET.get('bounds')
+    ds = Dataset.objects.get(pk=request.GET.get('ds'))
+    
+    qs = Place.objects.filter(dataset__public=True)
+
+    qs = qs.filter(minmax__0__lte=year,minmax__1__gte=year) if year else qs
+    qs = qs.filter(fclasses__overlap=fclasses) if fclasses else qs
+    
+    if name_contains:
+      qs = qs.filter(title__icontains=name_contains)
+    elif name and name != '':
+      #qs = qs.filter(title__istartswith=name)
+      qs = qs.filter(names__jsonb__toponym__icontains=name)
+
+    qs = qs.filter(dataset=ds) if ds else qs
+    #qs = qs.filter(ccodes__overlap=cc) if cc else qs
+        
+    #filtered = qs[:pagesize] if pagesize and pagesize < 200 else qs[:20]
+    filtered = qs[:pagesize]
+
+    # needed for suglister
+    #pid    #name    #variants[]    #ccodes[]    #types[]    #geom[]
+    # adding dataset
+
+    # mimics suggestion items from SearchView (index)
+    suggestions = []
+    for place in filtered:
+      ds=place.dataset
+      suggestions.append({
+        "pid": place.id,
+        "ds": {"id":ds.id, "label": ds.label, "title": ds.label},
+        "name": place.title,
+        "variants": [n.jsonb['toponym'] for n in place.names.all()],
+        "ccodes": place.ccodes,
+        "types": [t.jsonb['sourceLabel'] or t.jsonb['sourceLabel'] for t in place.types.all()],
+        "geom": [g.jsonb for g in place.geoms.all()]
+      })
+      
+    result = {'get': request.GET, 'suggestions': suggestions}
+    return JsonResponse(result, safe=False, json_dumps_params={'ensure_ascii':False})
   
 '''
   returns 300 index docs in current map viewport

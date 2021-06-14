@@ -252,6 +252,16 @@ class AreaSerializer(serializers.HyperlinkedModelSerializer):
     fields = ('title', 'type', 'geojson')
 
 
+
+class SearchDatabaseSerializer(serializers.HyperlinkedModelSerializer):
+
+  class Meta:
+    model = Place
+    #depth = 1
+    fields = ('url','type','properties','geometry','names', 'types','links'
+                  ,'related','whens', 'descriptions', 'depictions','minmax'
+            )
+
 """ used by SearchAPIView() from /api/db? """
 class LPFSerializer(serializers.HyperlinkedModelSerializer):
   #names = PlaceNameSerializer(many=True, read_only=True)
@@ -265,7 +275,7 @@ class LPFSerializer(serializers.HyperlinkedModelSerializer):
 
   # custom fields for LPF transform
   type = serializers.SerializerMethodField('get_type')
-  def get_type(self,place):
+  def get_type(self, place):
     return "Feature"
 
   properties = serializers.SerializerMethodField('get_properties')
@@ -284,14 +294,12 @@ class LPFSerializer(serializers.HyperlinkedModelSerializer):
 
   geometry = serializers.SerializerMethodField('get_geometry')
   # {"type": "Point", "geowkt": "POINT(110.6 0.13333)", "coordinates": [110.6, 0.13333]}
-  def get_geometry(self,place):
+  def get_geometry(self, place):
     gcoll = {"type":"GeometryCollection","geometries":[]}
     geoms = [g.jsonb for g in place.geoms.all()]
     for g in geoms:
       gcoll["geometries"].append(g)
     return gcoll
-
-
 
   class Meta:
     model = Place
@@ -299,7 +307,3 @@ class LPFSerializer(serializers.HyperlinkedModelSerializer):
     fields = ('url','type','properties','geometry','names', 'types','links'
                   ,'related','whens', 'descriptions', 'depictions','minmax'
             )
-
-#def yearPadder(y):
-  #year = str(y).zfill(5) if str(y)[0] == '-' else str(y).zfill(4)
-  #return year

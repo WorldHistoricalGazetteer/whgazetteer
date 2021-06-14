@@ -53,18 +53,13 @@
 			  <a id="search_help" class="pointer" data-toggle="popover" title="Search scope" data-html="true" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a>
 			  </span>
 			  <li class="nav-item">
-				<a class="nav-link active" id="scope_idx" data-link="idx" href="#" role="tab">Index</a>
+				<a class="nav-link" id="scope_idx" data-link="idx" href="#" role="tab">Index</a>
 			  </li>
 			  <li class="nav-item">
-				<a class="nav-link" id="scope_db" data-link="db" href="#" role="tab">Database</a>
+				<a class="nav-link active" id="scope_db" data-link="db" href="#" role="tab">Database</a>
 			  </li>
 		  </ul>	
 		<div id="search_filters" class="tab-pane fade show active" role="tabpanel">
-		  <!--<span class="filters-title">search filters</span>-->
-		  <!--<span class="filters-title">search<span class="ml-2 small">-->
-			<!--<label><input type="radio" name="search_source" value="idx" checked> index</label>-->
-			<!--<label><input type="radio" name="search_source" value="db"> database</label></span>-->
-		  <!--</span>-->
 		  <div class="small row">
 			<div id="filters_class" class="col-sm-6">
 			  <p class="mb-0">feature class(es) 
@@ -74,7 +69,7 @@
 				  <a id="filter_help" class="pointer" data-toggle="popover" title="Feature classes" data-content="" tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a>
 				</span>
 			  </p>
-			  <ul class="ul-left p-0">
+			  <ul class="ul-left p-0 mb-0">
 			  <li class="li-flush"><input type="checkbox" value="A" checked> A&nbsp;administrative entities</li>
 			  <li class="li-flush"><input type="checkbox" value="P" checked> P&nbsp;cities, towns, hamlets...</li> 
 			  <li class="li-flush"><input type="checkbox" value="S" checked> S&nbsp;sites, buildings, complexes...</li> 
@@ -103,7 +98,8 @@
 			  </div>
 			</div>
 		  </div>
-			  <div id="div_ds_select" class="hidden mt-0">
+			  <!--<div id="div_ds_select" class="hidden mt-0">-->
+			  <div id="div_ds_select" class="mt-0">
 				<p class="mb-0">dataset
 				  <span class="float-right">
 				  <a id="dataset_help" class="pointer" data-toggle="popover" title="Dataset filter" data-content="" tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a></span>	  
@@ -165,9 +161,7 @@
   window.idToArea = {}
   window.area_list = []
   window.area_objs = []
-  
-  scope = $("li a.active").data('link')
-  
+    
   $(".bblink").click(function(){
 	console.log('bbox for',$(this).data('id'))
 	feat = idToFeature[$(this).data('id')]
@@ -176,8 +170,9 @@
   // search scope faux tab actions
   $(".nav-link").click(function(){
 	let link = $(this).data('link')
+	scope = link
 	other = link == 'idx'?$("#scope_db"):$("#scope_idx")
-	console.log('data-link, other', link, other)
+	<!--console.log('data-link, other', link, other)-->
 	if(other.data('link') == 'idx'){ $("#div_ds_select").show()} else {$("#div_ds_select").hide()}
 	other.removeClass('active')
 	$(this).addClass('active')
@@ -197,6 +192,7 @@
 	}
   })
   $(function(){
+	window.scope = $("li a.active").data('link')
 	// toggle all fclass checkboxes
 	$("#check_toggle").click(function(e){
 	  e.preventDefault()
@@ -570,7 +566,8 @@
     mappy.zoomControl.setPosition('topright')
     L.control.layers(baseLayers,dataLayers).addTo(mappy);
     baseLayers["NE global"].addTo(mappy)
-	if(localStorage.getItem('last_results') != null){
+	<!--if(localStorage.getItem('last_results') != null){-->
+	if(localStorage.getItem('last_results') != "undefined"){
 	  previous = JSON.parse(localStorage.getItem('last_results'))	
 	}
 	if(document.referrer.indexOf('place') >= 0 && previous){
@@ -608,7 +605,7 @@
 	}
 
 	if (geoms.length > 0) {
-	  <!--console.log('geom: ',geom)-->
+	  console.log('geom: ',geom)
 	  idToFeature = {} // for feature lookup
 	  bboxes = L.layerGroup()
 	  features = L.geoJSON(geoms, {
@@ -629,9 +626,9 @@
 	  <!--mappy.setView(features.getBounds().getCenter(),6)-->
 	  mappy.fitBounds(features.getBounds())
 	  mappy.setZoom(mappy.getZoom()-1)
-	} //else {
-	  //console.log('no geometries, no feature')
-	//}
+	} else {
+	  console.log('no geometries, no feature')
+	}
   } // end map_init
   
   function filly(counter) {
@@ -724,7 +721,11 @@
       // always hide search_info and traces_info on search
 	  $("#search_info").hide()
 	  $("#traces_info").hide()
-      searchPlacesIdx()
+	  if (scope == 'idx'){
+		searchPlacesIdx()		
+	  } else {
+		searchPlacesDb()
+	  }
     } 
   })
   // hack: typeahead disabled for place
@@ -746,6 +747,12 @@
       searchPlacesIdx()    
     } 
   })
+
+  spin_opts = { scale: .5, top: '50%'}
+  function startSearchSpinner(){
+	window.spinner_search = new Spin.Spinner(spin_opts).spin();
+	$("#search_filters").append(spinner_search.el);   
+  }
   /*
     *** searchPlacesIdx() *** from #input_box keyup 
     index search w/o autocomplete -> showResults()
@@ -793,21 +800,26 @@
 
   // search public datasets in db
   searchPlacesDb = function(){
+	startSearchSpinner()
     fclasses = [];
     $('#search_filters input:checked').each(function() {
       fclasses.push($(this).val());
     });
 	years = [Number($("#input_start").val()),Number($("#input_end").val())]
-	y = years.find(element => element >0 );
-	console.log('fc', fclasses.join(','))
-	console.log('y', y)
-	$.get("/api/db",{
+	y = years.find(element => element != 0 );
+	dsid = $("#select_ds_search").val() 
+	ds = dsid!="0" ? dsid : null
+	console.log('params',{'fc':fclasses.join(','),"y":y,"ds":ds})
+	$.get("/search/db",{
 	  name: $('#input_box').val(), 
 	  name_contains: null, // if 'contains checked
 	  fc: fclasses.join(','),
-	  year: !y?null:y
+	  year: !y?null:y,
+	  ds: ds,
+	  context: "search"
 	}, function(data) {
 	  console.log('data',data)
+	  spinner_search.stop()
 	})
   }
   /* 
