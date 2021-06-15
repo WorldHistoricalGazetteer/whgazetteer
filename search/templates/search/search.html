@@ -620,11 +620,11 @@
 
   //  triggerEvent(window, 'map:init', {id: id, map: map, options: options});
   function map_init (map_search, options) {
-	<!--console.log('options', options)-->
-	window.geoms = []
-	window.gelems = $('script').filter(function() {
-	  <!--return this.id.match(/[0-9]/) && this.text != '"null"';-->
-	  return this.id !='' && this.text != '"null"';
+		<!--console.log('options', options)-->
+		window.geoms = []
+		window.gelems = $('script').filter(function() {
+			<!--return this.id.match(/[0-9]/) && this.text != '"null"';-->
+			return this.id !='' && this.text != '"null"';
 	});
 	for (i=0;i<gelems.length;i++){
 	  let t_geom = cleanJson(gelems[i].text)
@@ -776,7 +776,7 @@
     } 
   })
 
-  spin_opts = { scale: .8, top: '50%'}
+  spin_opts = { scale: .8, top: '70%', 'right':'30%'}
   function startSearchSpinner(){
 	window.spinner_search = new Spin.Spinner(spin_opts).spin();
 	$("#search_filters").append(spinner_search.el);   
@@ -850,7 +850,7 @@
 	  dsid: dsid,
 	  context: "search"
 	}, function(data) {
-	  console.log('data',data['suggestions'])
+	  <!--console.log('searchPlacesDb() sugs', data['suggestions'])-->
 	  showResults(data['suggestions'], doctype, "search")
 	  spinner_search.stop()
 	})
@@ -864,8 +864,8 @@
     scope: ['suggest' | 'search']
     title:    
   */
-  function showResults(data,doctype,scope='suggest',title){
-	console.log('in showResults()')
+  function showResults(data, doctype, scope='suggest', title){
+		console.log('in showResults()')
     var results_div = '';
     geoms=[]
     var types=[], typesArr = []
@@ -875,18 +875,18 @@
         results_div += '<p class="small ml-2">No results, sorry.</p>'
       } else {
         data.forEach(function(sug){
-		  console.log('sug', sug)
-		  typesArr=typesArr.concat(sug.types)
+					console.log('sug', sug)
+					typesArr=typesArr.concat(sug.types)
           if(!!sug.geom) {
             sug.geom.forEach(function(g){
-              g['properties']['title']=sug.name
+              g['properties']['title'] = sug.name
               g['properties']['whgid'] = (doctype=='place')?sug.whg_id:sug.place_id
               geoms.push(g)
             })
           }
           <!--console.log('types Set',types)-->
           results_div += sugLister(sug, doctype, scope)   
-        }) 
+        })
         <!--console.log('typesArr',typesArr)-->
         types = Array.from(new Set(typesArr));
         <!--console.log('types',types)-->
@@ -894,24 +894,25 @@
           $("#type_filter ul").append('<li class="filter list-inline-item" data-type="'+type+'"><a href="#">'+type+'</a></li>')
         })
         if(scope=='search') {
+					console.log('geoms from sugs, to renderPlaces()', geoms)
           renderPlaces(geoms)
         }      
       }
     } else if (doctype == 'trace') {
-		// data has features and bodies
-		bodies = data.bodies
-		console.log('trace data',data)
-		<!--console.log('trace data bodies',data.bodies)-->
-        data.bodies.forEach(function(bod){ 
+			// data has features and bodies
+			bodies = data.bodies
+			console.log('trace data',data)
+			<!--console.log('trace data bodies',data.bodies)-->
+			data.bodies.forEach(function(bod){ 
         // add a whg_id to bodies        
-          results_div += sugLister(bod, doctype, scope)
+				results_div += sugLister(bod, doctype, scope)
       })
     };
      
-    $("#result_list").show()
+	$("#result_list").show()
 	$("#search_info").hide()
 	$("#traces_info").hide()
-    titleMarkup = doctype=='trace'?'<p class="pl-1 mb-1 small strong">'+title+'</p>':''
+	titleMarkup = doctype=='trace'?'<p class="pl-1 mb-1 small strong">'+title+'</p>':''
 	let src=search_scope=='idx'?'INDEX':'DATABASE'
     $('#result_list').html(titleMarkup+
       "<p class='half allcap-heading mb-0 pl-1'>"+(doctype=='place'?src+' SEARCH RESULTS ('+data.length+
@@ -1114,7 +1115,7 @@
 		identifier = sug['ds'] ? sug['pid'] : sug['whg_id']
 		// add dataset link if this is db search result
 		dslink = sug['ds'] ? ' dataset: '+
-		'<a class="pop-link pop-dataset" data-id='+sug['ds']['id']+' data-toggle="popover" title="Dataset Profile" data-content="" tabindex="0" rel="clickover">'+sug['ds']['id']+'</a>' : ''	
+		'<a class="pop-link pop-dataset" data-id='+sug['ds']['id']+' data-toggle="popover" title="Dataset Profile" data-content="" tabindex="0" rel="clickover">'+sug['ds']['title']+'</a>' : ''	
 		// link destination varies
 		link_class = sug['ds'] ? 'db-link' : 'place-link'
 		// dynamic search result 'card'

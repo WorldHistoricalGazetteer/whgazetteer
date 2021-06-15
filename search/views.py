@@ -265,7 +265,7 @@ class SearchDatabaseView(View):
   def get(request):
     pagesize = 50
     print('SearchDatabaseView() request',request.GET)
-    print('SearchDatabaseView() bounds',request.GET.get('bounds'))
+    #print('SearchDatabaseView() bounds',request.GET.get('bounds'))
     """
       args in request.GET:
         [string] name: query string
@@ -276,13 +276,14 @@ class SearchDatabaseView(View):
         
     """
     name = request.GET.get('name')
-    name_contains = request.GET.get('name') or None
+    name_contains = request.GET.get('name_contains') or None
     fclasses = request.GET.get('fclasses').split(',')
     year = request.GET.get('year')
     bounds = request.GET.get('bounds')
     dsid = request.GET.get('dsid')
     ds = Dataset.objects.get(pk=int(dsid)) if dsid else None
     
+    print('seach db params:', {'name':name,'name_contains':name_contains,'fclasses':fclasses,'bounds':bounds,'ds':ds})
     qs = Place.objects.filter(dataset__public=True)
 
     qs = qs.filter(minmax__0__lte=year,minmax__1__gte=year) if year else qs
@@ -311,17 +312,18 @@ class SearchDatabaseView(View):
         g = p.jsonb
         if 'citation' in g: del g['citation']
         g['src'] = 'db'
-        g["properties"] = {"pid":p.id, "title": p.title}
+        g["properties"] = {"pid":p.place_id, "title": p.title}
         suglist.append(g)
       return suglist
       
     # mimics suggestion items from SearchView (index)
     suggestions = []
+    print('filtered qs length', len(filtered))
     for place in filtered:
       ds=place.dataset
       suggestions.append({
         "pid": place.id,
-        "ds": {"id":ds.id, "label": ds.label, "title": ds.label},
+        "ds": {"id":ds.id, "label": ds.label, "title": ds.title},
         "name": place.title,
         "variants": [n.jsonb['toponym'] for n in place.names.all()],
         "ccodes": place.ccodes,
