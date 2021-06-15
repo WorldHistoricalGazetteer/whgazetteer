@@ -282,6 +282,7 @@ class SearchDatabaseView(View):
     bounds = request.GET.get('bounds')
     dsid = request.GET.get('dsid')
     ds = Dataset.objects.get(pk=int(dsid)) if dsid else None
+    print('dsid, ds',dsid, ds)
 
     from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
     if bounds:
@@ -291,14 +292,14 @@ class SearchDatabaseView(View):
       ga = GEOSGeometry(json.dumps(area.geojson))
 
       # test values
-      bounds = None
-      name='vilnius'
-      name_contains=None
-      year=None
-      area = Area.objects.get(id = 360)
-      ga = GEOSGeometry(json.dumps(area.geojson))
-      ds=None
-      pagesize=30
+      #bounds = None
+      #name='vilnius'
+      #name_contains=None
+      #year=None
+      #area = Area.objects.get(id = 360)
+      #ga = GEOSGeometry(json.dumps(area.geojson))
+      #ds=None
+      #pagesize=30
     
     print('seach db params:', {'name':name,'name_contains':name_contains,'fclasses':fclasses,'bounds':bounds,'ds':ds})
     
