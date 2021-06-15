@@ -428,6 +428,7 @@ input[type="text"] {
   min-height: fit-content;
   
 }
+#result_extra { background-color: cornsilk;}
 /*#options { padding:2px; display:none;}*/
 /*#searchbox { height: auto;}*/
 /*#search_input { border-bottom: 1px dashed #ddd;}*/

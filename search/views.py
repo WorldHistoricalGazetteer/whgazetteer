@@ -282,22 +282,48 @@ class SearchDatabaseView(View):
     bounds = request.GET.get('bounds')
     dsid = request.GET.get('dsid')
     ds = Dataset.objects.get(pk=int(dsid)) if dsid else None
+
+    from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
+    if bounds:
+      bounds=json.loads(bounds)
+      area = Area.objects.get(id = bounds['id'][0])
+      print('bounds area', area)
+      ga = GEOSGeometry(json.dumps(area.geojson))
+
+      # test values
+      bounds = None
+      name='vilnius'
+      name_contains=None
+      year=None
+      area = Area.objects.get(id = 360)
+      ga = GEOSGeometry(json.dumps(area.geojson))
+      ds=None
+      pagesize=30
     
     print('seach db params:', {'name':name,'name_contains':name_contains,'fclasses':fclasses,'bounds':bounds,'ds':ds})
+    
     qs = Place.objects.filter(dataset__public=True)
-
-    qs = qs.filter(minmax__0__lte=year,minmax__1__gte=year) if year else qs
+    #qsg = PlaceGeom.objects.all(); print(qsg.count())
+    ##qsg = qsg.filter(jsonb__intersects=geom_area)
+    #qsg = qsg.filter(geom__within=ga)
+    
+    if bounds:
+      #qs = qs.filter(geoms__geom__within=ga)      
+      qs = qs.filter(geoms__geom__intersects=ga)      
     qs = qs.filter(fclasses__overlap=fclasses) if fclasses else qs
+    qs = qs.filter(minmax__0__lte=year,minmax__1__gte=year) if year else qs
     
     if name_contains:
+      print( 'name_contains exists',name_contains)
       qs = qs.filter(title__icontains=name_contains)
     elif name and name != '':
       #qs = qs.filter(title__istartswith=name)
-      qs = qs.filter(names__jsonb__toponym__icontains=name)
+      qs = qs.filter(names__jsonb__toponym__istartswith=name).distinct()
 
     qs = qs.filter(dataset=ds.label) if ds else qs
     #qs = qs.filter(ccodes__overlap=cc) if cc else qs
-        
+      
+
     #filtered = qs[:pagesize] if pagesize and pagesize < 200 else qs[:20]
     filtered = qs[:pagesize]
 

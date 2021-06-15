@@ -136,8 +136,12 @@
       <div id="result_list" class="hidden"></div>
     </div>
     <div id="search_right" class="col-sm-7">
-	  <div id="map_options" class="p-1 small">draw bbox, etc.</div>
+			<div id="map_options" class="p-1 small">draw bbox, etc.</div>
       {% leaflet_map "map_search" callback="map_init" %}
+			<div id="result_extra" class="p-2">
+				<p>#result_extra</p>
+				<p>single db record detail if db search, otherwise?</p>
+			</div>
     </div> <!--#search_right -->
   </div> <!-- .row -->
   </div>
@@ -848,7 +852,8 @@
 	  fclasses: fclasses.join(','),
 	  year: !y?null:y,
 	  dsid: dsid,
-	  context: "search"
+	  context: "search",
+		bounds: $("#boundsobj").val()
 	}, function(data) {
 	  <!--console.log('searchPlacesDb() sugs', data['suggestions'])-->
 	  showResults(data['suggestions'], doctype, "search")
@@ -1115,7 +1120,7 @@
 		identifier = sug['ds'] ? sug['pid'] : sug['whg_id']
 		// add dataset link if this is db search result
 		dslink = sug['ds'] ? ' dataset: '+
-		'<a class="pop-link pop-dataset" data-id='+sug['ds']['id']+' data-toggle="popover" title="Dataset Profile" data-content="" tabindex="0" rel="clickover">'+sug['ds']['title']+'</a>' : ''	
+		'<a class="pop-link pop-dataset" data-id='+sug['ds']['id']+' data-toggle="popover" title="Dataset Profile" data-content="" tabindex="0" rel="clickover">'+sug['ds']['title']+'</a> ('+identifier+')' : ''	
 		// link destination varies
 		link_class = sug['ds'] ? 'db-link' : 'place-link'
 		// dynamic search result 'card'
