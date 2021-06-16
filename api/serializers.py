@@ -146,7 +146,7 @@ class PlaceNameSerializer(serializers.ModelSerializer):
     used in multiple views
 """
 class PlaceSerializer(serializers.ModelSerializer):
-  dataset = serializers.ReadOnlyField(source='dataset.label')
+  dataset = serializers.ReadOnlyField(source='dataset.title')
   names = PlaceNameSerializer(many=True, read_only=True)
   types = PlaceTypeSerializer(many=True, read_only=True)
   geoms = PlaceGeomSerializer(many=True, read_only=True)

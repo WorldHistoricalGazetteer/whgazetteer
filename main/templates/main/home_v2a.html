@@ -54,24 +54,28 @@
 			<span id="list_all" class="mr-2"><a href="{% url 'public-lists' %}">list all</a></span>
 		  </div>
 		  <div class="wrapper-right">
-			<div class="item-right-top">
+			<div class="item-right">
 			  {% with featured_coll.0.image_file.url as imgc0 %}
 			  <div class="row">
-				<div class="col-sm-8">
-				  <p class="mb-0"><a href="{% url 'collection:collection-detail' featured_coll.0.id %}">{{ featured_coll.0.title}}</a></p>{{ featured_coll.0.description }}
+				<div class="col-sm-9">
+				  <p class="mb-0 featured-title"><a href="{% url 'collection:collection-detail' featured_coll.0.id %}">{{ featured_coll.0.title}}</a></p>
+					<p class="coll-description">{{ featured_coll.0.description }}</p>
 				</div>
-				<div class="col-sm-4"><img src="{{ imgc0 }}" height=150 width=150 /></div>
+				<div class="col-sm-3"><img src="{{ imgc0 }}" height=150 width=150 /></div>
 				<span class="col-bottom cb-coll">collection</span>
 			  </div>
 			  {% endwith %}
 			</div> <!-- .item-right-top -->
 			<div class="row">
+			
 			  {% with featured_ds.0.image_file.url as imgd0 %}
 			  <div class="col-sm-6 pr-0">
 				<div class="item-right">
-				  <p class="mt-0"><a href="{% url 'datasets:ds_meta' pk=featured_ds.0.id %}">{{featured_ds.0.title}}</a></p>
+				  <p class="my-0 featured-title"><a href="{% url 'datasets:ds_meta' pk=featured_ds.0.id %}">{{featured_ds.0.title}}</a></p>
 				  <div class="row">
-				  <div class="col-sm-8 pr-0 coll-description">{{ featured_ds.0.description|truncatechars:300 }}</div>
+				  <div class="col-sm-8 pr-0 coll-description">
+						{{ featured_ds.0.description|truncatechars:250 }}
+					</div>
 				  <div class="col-sm-4 pl-0"><img src="{{ imgd0 }}" width=75 /></div>
 				  </div> <!-- .row -->
 				  <span class="col-bottom cb-dataset">dataset</span>
@@ -82,7 +86,7 @@
 			  {% with featured_coll.1.image_file.url as imgc1 %}
 			  <div class="col-sm-6 pl-0">
 				<div class="item-right">
-				  <p class="mt-0"><a href="{% url 'collection:collection-detail' featured_coll.1.id %}">{{featured_coll.1.title}}</a></p>
+				  <p class="my-0 featured-title"><a href="{% url 'collection:collection-detail' featured_coll.1.id %}">{{featured_coll.1.title}}</a></p>
 				  <div class="row">
 				  <div class="col-sm-8 pr-0 coll-description">{{ featured_coll.1.description }}</div>
 				  <div class="col-sm-4"><img src="{{ imgc1 }}" /></div>

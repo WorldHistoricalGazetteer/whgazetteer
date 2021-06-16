@@ -253,9 +253,10 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
 } 
 .home-icon { margin:0; padding:12px 0 0 0; text-align:center; }
 .imghelper {display: inline-block; height: 100%; vertical-align:middle;}
+.featured-title { font-size: .9rem;}
 .item-right-top {
   /*min-height: 200px;*/
-  max-height: 300px;
+  /*max-height: 200px;*/
   padding: .4rem;
   border-radius: 6px;
   border: 1px solid #ddd;
@@ -263,8 +264,9 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
   font-size: .9rem;
 }
 .item-right {
-  min-height: 200px;
-  max-height: 300px;
+  /*min-height: 200px;*/
+  /*max-height: 200px;*/
+  height: 180px;
   border-radius: 6px;
   border: 1px solid #ddd;
   padding: .4rem;  
@@ -273,12 +275,12 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
 }
 .item-right-top img { max-width: 100%; float:right}
 .item-right img { max-height: 100%; float:right;}
-.item-right p {
-  margin-bottom:0;
-  font-size: .8rem;
-  font-weight: strong;
-  color: #993333;
-}
+/*.item-right p {*/
+  /*margin-bottom:0;*/
+  /*font-size: .8rem;*/
+  /*font-weight: strong;*/
+  /*color: #993333;*/
+/*}*/
 .coll-description {
   font-size: .8rem;
   line-height:normal;
@@ -428,7 +430,8 @@ input[type="text"] {
   min-height: fit-content;
   
 }
-#result_extra { background-color: cornsilk;}
+#result_extra { background-color: cornsilk; font-size:.7rem;}
+#result_extra p {margin: .5rem;}
 /*#options { padding:2px; display:none;}*/
 /*#searchbox { height: auto;}*/
 /*#search_input { border-bottom: 1px dashed #ddd;}*/

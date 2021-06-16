@@ -8,6 +8,7 @@
 {% block extra_head %}
   {% leaflet_js %}
   {% leaflet_css %}
+	<script src="{% static 'js/aliases.js' %}"></script>
   <script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>
   <link rel="stylesheet" href="//cdn.datatables.net/1.10.16/css/dataTables.bootstrap4.min.css">
   <link rel="stylesheet" href="{% static 'css/typeahead.css' %}">
@@ -28,7 +29,7 @@
 <div class="container">
   <div class="justify-content-center mt-2">
   <div class="row">
-    <div id="search_left" class="col-sm-5">
+    <div id="search_left" class="col-sm-6">
       <div id="search_panel">
 		<div id="search_type" class="form-group d-flex justify-content-center"> 
 		  <div class="form-check form-check-inline">
@@ -135,12 +136,12 @@
       </div>
       <div id="result_list" class="hidden"></div>
     </div>
-    <div id="search_right" class="col-sm-7">
+    <div id="search_right" class="col-sm-6">
 			<div id="map_options" class="p-1 small">draw bbox, etc.</div>
       {% leaflet_map "map_search" callback="map_init" %}
 			<div id="result_extra" class="p-2">
-				<p>#result_extra</p>
-				<p>single db record detail if db search, otherwise?</p>
+				<!--<p>#result_extra</p>-->
+				<!--<p>single db record detail if db search, otherwise?</p>-->
 			</div>
     </div> <!--#search_right -->
   </div> <!-- .row -->
@@ -175,7 +176,9 @@
   $(".nav-link").click(function(){
 	let link = $(this).data('link')
 	search_scope = link
+	src=search_scope=='db'?'DATABASE':'INDEX'
 	other = link == 'idx'?$("#scope_db"):$("#scope_idx")
+	$("#result_list").html('<p class="half allcap-heading mb-0 pl-1">'+src+ ' SEARCH RESULTS</p>')
 	<!--console.log('data-link, other', link, other)-->
 	if(other.data('link') == 'idx'){ $("#div_ds_select").show()} else {$("#div_ds_select").hide()}
 	other.removeClass('active')
@@ -1234,6 +1237,9 @@
 		// TITLE 
 		descrip = '<p><b>Title</b>: <span id="row_title" class="larger text-danger">'+data.title+'</span>'
 		//
+		// DATASET
+		descrip+='<p><b>Dataset</b>: '+data.dataset + ' ('+data.id+')'		
+		//
 		// NAME VARIANTS
 		descrip+='<p class="scroll65"><b>Variants</b>: '
 		for (n in data.names) {
@@ -1296,7 +1302,7 @@
 				rel = data.related[r]
 				<!--console.log('rel',rel)-->
 				if (rel.relation_type == 'gvp:broaderPartitive'){
-					parent += '<span class="small h1em">'+rel.label
+					parent += '<span class="h1em">'+rel.label
 					parent += 'when' in rel && !('timespans' in rel.when) ? 
 						', '+rel.when.start.in+'-'+rel.when.end.in : 
 						'when' in rel && ('timespans' in rel.when) ? ', '+
@@ -1305,7 +1311,7 @@
 					parent += '</span>; '
 				} 
 				else {
-					related += '<p class="small h1em">'+rel.label+ ', '+rel.when.start.in+'-'+rel.when.end.in+'</p>'
+					related += '<p class="h1em">'+rel.label+ ', '+rel.when.start.in+'-'+rel.when.end.in+'</p>'
 				}
 			}
 			descrip+=parent.length > 39 ? parent :''
@@ -1314,10 +1320,13 @@
 		//
 		// DESCRIPTIONS
 		// TODO: link description to identifier URI if present
-		if (data.descriptions.length > 0) {
-			val = data.descriptions[0]['value'].substring(0,300)
-			descrip+='<p><b>Description</b>: '+(val.startsWith('http')?'<a href="'+val+'" target="_blank">Link</a>':val)
+		if (data.descriptions.length > 0 ) {
+			<!--val = data.descriptions[0]['value'].substring(0,300)-->
+			val = data.descriptions[0]['value']
+			if(val != undefined){
+				descrip+='<p><b>Description</b>: '+(val.startsWith('http')?'<a href="'+val+'" target="_blank">Link</a>':val)
 				+' ... </p>'
+			}
 		}
 		//
 		// CCODES
@@ -1343,7 +1352,7 @@
 			url: "/api/place/"+pid,
 			}).done(function( data ) {
 				$("#result_extra").html(parsePlace(data))
-				spinner_detail.stop()
+				<!--spinner_detail.stop()-->
 				// events on detail items
 				$('.ext').on('click', function(e) {
 					e.preventDefault();
