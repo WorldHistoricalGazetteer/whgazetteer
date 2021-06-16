@@ -629,38 +629,39 @@
 		window.gelems = $('script').filter(function() {
 			<!--return this.id.match(/[0-9]/) && this.text != '"null"';-->
 			return this.id !='' && this.text != '"null"';
-	});
-	for (i=0;i<gelems.length;i++){
-	  let t_geom = cleanJson(gelems[i].text)
-	  <!--t_geom['properties'] = {"id": gelems[i].id,"ds": t_geom.ds!=null?t_geom.ds:ds}-->
-	  geoms.push(t_geom)
-	}
-
-	if (geoms.length > 0) {
-	  console.log('geom: ',geom)
-	  idToFeature = {} // for feature lookup
-	  bboxes = L.layerGroup()
-	  features = L.geoJSON(geoms, {
-		onEachFeature: function(feature,layer) {
-		  f=feature; l=layer;
-		  bboxes.addLayer(l)
-		  identifier = f.properties.id;
-		  <!--console.log('identifier, type',identifier,f.geometry.type)-->
-		  if(f.type != 'Point'){
-			layer.setStyle(styles_bbox[f.geometry.type].default).bindPopup(
-			  f.properties.title+' ('+identifier+')'
-			)
-			idToFeature[identifier] = layer
-		  }
+		});
+		for (i=0;i<gelems.length;i++){
+			let t_geom = cleanJson(gelems[i].text)
+			<!--t_geom['properties'] = {"id": gelems[i].id,"ds": t_geom.ds!=null?t_geom.ds:ds}-->
+			geoms.push(t_geom)
 		}
-	  })<!--.addTo(mappy);-->
 
-	  <!--mappy.setView(features.getBounds().getCenter(),6)-->
-	  mappy.fitBounds(features.getBounds())
-	  mappy.setZoom(mappy.getZoom()-1)
-	} else {
-	  console.log('no geometries, no feature')
-	}
+		if (geoms.length > 0) {
+			console.log('geom: ',geom)
+			idToFeature = {} // for feature lookup
+			bboxes = L.layerGroup()
+			features = L.geoJSON(geoms, {
+			onEachFeature: function(feature,layer) {
+				f=feature; l=layer;
+				bboxes.addLayer(l)
+				identifier = f.properties.id;
+				<!--console.log('identifier, type',identifier,f.geometry.type)-->
+				if(f.type != 'Point'){
+				layer.setStyle(styles_bbox[f.geometry.type].default).bindPopup(
+					f.properties.title+' ('+identifier+')'
+				)
+				idToFeature[identifier] = layer
+				}
+			}
+			})<!--.addTo(mappy);-->
+	
+			<!--mappy.setView(features.getBounds().getCenter(),6)-->
+			mappy.fitBounds(features.getBounds())
+			mappy.setZoom(mappy.getZoom()-1)
+		} 
+		<!--else {-->
+			<!--console.log('no geometries, no feature')-->
+		<!--}-->
   } // end map_init
   
   function filly(counter) {
@@ -821,8 +822,8 @@
 		// store locally
 		localStorage.setItem('last_results',JSON.stringify(searchres))
         // render to html
-		console.log('get from that query',data['get'])
-		console.log('results [data]',data)
+		<!--console.log('get from that query',data['get'])-->
+		<!--console.log('results [data]',data)-->
 		if(doctype == 'place'){
 		  showResults(data['suggestions'],doctype,scope);
 		}
@@ -844,7 +845,7 @@
 	y = years.find(element => element != 0 );
 	ds_select = $("#select_ds_search").val()
 	dsid = ds_select!="0" ? parseInt(ds_select) : null
-	console.log('params',{'fc':fclasses, "y":y, "dsid":dsid})
+	<!--console.log('params',{'fc':fclasses, "y":y, "dsid":dsid})-->
 	$.get("/search/db",{
 	  name: $('#input_box').val(), 
 	  name_contains: null, // if 'contains checked
@@ -870,7 +871,7 @@
     title:    
   */
   function showResults(data, doctype, scope='suggest', title){
-		console.log('in showResults()')
+		<!--console.log('in showResults()')-->
     var results_div = '';
     geoms=[]
     var types=[], typesArr = []
@@ -880,7 +881,7 @@
         results_div += '<p class="small ml-2">No results, sorry.</p>'
       } else {
         data.forEach(function(sug){
-					console.log('sug', sug)
+					<!--console.log('sug', sug)-->
 					typesArr=typesArr.concat(sug.types)
           if(!!sug.geom) {
             sug.geom.forEach(function(g){
@@ -899,7 +900,7 @@
           $("#type_filter ul").append('<li class="filter list-inline-item" data-type="'+type+'"><a href="#">'+type+'</a></li>')
         })
         if(scope=='search') {
-					console.log('geoms from sugs, to renderPlaces()', geoms)
+					<!--console.log('geoms from sugs, to renderPlaces()', geoms)-->
           renderPlaces(geoms)
         }      
       }
@@ -1003,16 +1004,20 @@
     
     // highlight map marker from list
     $(".search-row").on('click',function(e){
+			// identifier either a whgid (index search) or pid (db search)
+      layerid = $(this).data('id')
+      f = idToFeature[layerid]
+			
+			// fetch record detail and put it in #result_extra
+			if(search_scope == 'db'){
+				let pid = layerid
+				getPlace(pid)
+			}
       // set all layers to default style
       for (i in idToFeature){
         type = idToFeature[i].feature.geometry.type
         idToFeature[i].setStyle(type=='Point'?styles.marker_default:styles.line_default)
       }
-      <!--whgid = $(this).data('id')-->
-      <!--f = idToFeature[whgid]-->
-	  // identifier either a whg (index search) or pid (db search)
-      layerid = $(this).data('id')
-      f = idToFeature[layerid]
       // raise z-index
       f.bringToFront().setStyle(f.feature.geometry.type=='Point'?styles.marker_highlight:styles.line_highlight)
       // get a centroid
@@ -1185,6 +1190,188 @@
     }
     return html
   }  
+
+	// from parserPlace() builds link for external place record
+	function url_extplace(identifier) {
+		// abbreviate links not in aliases.base_urls
+		if(identifier.startsWith('http')) {
+			let tag = identifier.replace(/.+\/\/|www.|\..+/g, '')
+			link = '<a href="'+identifier+'" target="_blank">'+tag+'{% fontawesome_icon 'external-link' color='#336699' %},  </a>'          
+		} else {
+		link = '<a href="" class="ext" data-target="#ext_site">'+identifier+'&nbsp;{% fontawesome_icon 'external-link' color='#336699' %}</a>, '    
+		}
+		return link
+	}
+	
+	// from parserPlace() builds link for external placetype record
+	function url_exttype(type) {
+		link = ' <a href="#" class="exttab" data-id='+type.identifier+
+			'>('+type.label+' {% fontawesome_icon 'external-link' color='#336699' %})</a>'
+		return link
+	}
+	
+	// parse most data from a Place object
+	function parsePlace(data) {
+		window.featdata = data
+		
+		function onlyUnique(array) { 
+			const map = new Map();
+			const result = [];
+			for (const item of array) {
+				if(!map.has(item.identifier)){
+						map.set(item.identifier, true);
+						result.push({
+								identifier: item.identifier,
+								type: item.type,
+								aug: item.aug
+						});
+				}
+			}
+			return(result)
+		}
+		<!--timespan_arr = []-->
+		//
+		// TITLE 
+		descrip = '<p><b>Title</b>: <span id="row_title" class="larger text-danger">'+data.title+'</span>'
+		//
+		// NAME VARIANTS
+		descrip+='<p class="scroll65"><b>Variants</b>: '
+		for (n in data.names) {
+			let name = data.names[n]
+			descrip+= '<p>'+name.toponym !=''?name.toponym+'; ': ''
+		}
+		//
+		// TYPES
+		// may include sourceLabel:"" **OR** sourceLabels[{"label":"","lang":""},...]
+		descrip+='</p><p><b>Types</b>: '
+		typeids = ''
+		for (t in data.types) {
+			str = ''
+			var type = data.types[t]
+			if('sourceLabels' in type){
+				srclabels = type.sourceLabels
+				for(l in srclabels){
+					label = srclabels[l]['label']
+					str = label !='' ? label + '; ' : ''
+				}
+			} else if ('sourceLabel' in type) {
+				str = type.sourceLabel !='' ? type.sourceLabel + '; ' : ''
+			}
+			if(type.label!=''){ str += url_exttype(type) + ' ' }
+			typeids+=str
+		}
+		descrip += typeids.replace(/(; $)/g, "") +'</p>'
+		
+		//
+		// LINKS
+		// 
+		descrip += '<p class="mb-0"><b>Links</b>: <i>original: </i>'
+		close_count = added_count = related_count = 0
+		html_close = html_added = html_related = ''
+		if (data.links.length > 0) {
+			links=data.links
+			links_arr = onlyUnique(data.links)
+			<!--console.log('distinct data.links',links_arr)-->
+			for (l in links_arr) {
+				if (links_arr[l].aug == true) {
+					added_count +=1
+					html_added += url_extplace(links_arr[l].identifier)
+				} else {
+					close_count +=1
+					html_close+=url_extplace(links_arr[l].identifier)
+				}
+			}
+			descrip += close_count > 0 ? html_close : 'none; '
+			descrip += added_count > 0 ? '<i>added</i>: '+html_added : '<i>added</i>: none'
+		} else { descrip += "<i class='small'>no links established yet</i>" }
+		descrip += '</p>'
+
+		//
+		// RELATED
+		<!--right=''-->
+		if (data.related.length > 0) {
+			parent='<p class="mb-0"><b>Parent(s)</b>: '; 
+			related='<p class="mb-0"><b>Related</b>: ';
+			for (r in data.related){
+				rel = data.related[r]
+				<!--console.log('rel',rel)-->
+				if (rel.relation_type == 'gvp:broaderPartitive'){
+					parent += '<span class="small h1em">'+rel.label
+					parent += 'when' in rel && !('timespans' in rel.when) ? 
+						', '+rel.when.start.in+'-'+rel.when.end.in : 
+						'when' in rel && ('timespans' in rel.when) ? ', '+
+							minmaxer(rel.when.timespans) : ''
+							<!--rel.when.timespans : ''-->
+					parent += '</span>; '
+				} 
+				else {
+					related += '<p class="small h1em">'+rel.label+ ', '+rel.when.start.in+'-'+rel.when.end.in+'</p>'
+				}
+			}
+			descrip+=parent.length > 39 ? parent :''
+			descrip+=related.length > 37 ? related :''
+		}
+		//
+		// DESCRIPTIONS
+		// TODO: link description to identifier URI if present
+		if (data.descriptions.length > 0) {
+			val = data.descriptions[0]['value'].substring(0,300)
+			descrip+='<p><b>Description</b>: '+(val.startsWith('http')?'<a href="'+val+'" target="_blank">Link</a>':val)
+				+' ... </p>'
+		}
+		//
+		// CCODES
+		//
+		<!--if (data.ccodes.length > 0) {-->
+		if (!!data.countries) {
+			<!--console.log('data.countries',data.countries)-->
+			descrip+='<p><b>Modern country bounds</b>: '+ data.countries.join(', ')+'</p>'
+		}
+		//
+		// MINMAX
+		//
+		if(data.minmax && data.minmax.length>0){
+			descrip += '<p><b>When</b>: earliest: '+data.minmax[0]+'; latest: '+data.minmax[1]    
+		}
+		descrip += '</div>'
+		return descrip
+	}
+	// put a place record in #result_extra
+	function getPlace(pid){
+		<!--console.log('getPlace()', pid)-->
+		$.ajax({
+			url: "/api/place/"+pid,
+			}).done(function( data ) {
+				$("#result_extra").html(parsePlace(data))
+				spinner_detail.stop()
+				// events on detail items
+				$('.ext').on('click', function(e) {
+					e.preventDefault();
+					str=$(this).text()
+					<!--console.log('str (identifier)',str)-->
+					// URL identifiers can be 'http*' or an authority prefix
+					if(str.substring(0,4).toLowerCase() == 'http'){
+						url = str
+					} else {
+						var re = /(http|bnf|cerl|dbp|gn|gnd|gov|loc|pl|tgn|viaf|wd|wdlocal|whg|wp):(.*?)$/;
+						url=base_urls[str.match(re)[1]]+str.match(re)[2] 
+						console.log('url',url)
+					}
+					window.open(url, '_blank');
+				});
+				$('.exttab').on('click', function(e) {
+					e.preventDefault();
+					id=$(this).data('id')
+					console.log('id',id)
+					var re = /(http|dbp|gn|tgn|wd|loc|viaf|aat):(.*?)$/;
+					url=id.match(re)[1]=='http' ? id : base_urls[id.match(re)[1]]+id.match(re)[2]
+					console.log('url',url)
+					window.open(url,'_blank')
+				});
+		});
+		<!--spinner_detail.stop()-->
+	}
+
   // map feature styles
   styles = {
     'marker_default': {
