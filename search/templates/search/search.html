@@ -1061,14 +1061,14 @@
       onEachFeature: function(feature,layer) {
         f=feature; l=layer;
         <!--identifier = feature.properties.whgid;-->
-		// if feature has src key, it's from a database search; also, popup link differs
-		if(feature.src){
-		  identifier = feature.properties.pid
-		  popup_link = ' (<a href="/places/'+identifier+'/detail">place page</a>)'
-		} else {
-		  identifier = feature.properties.whgid
-		  popup_link = ' (<a href="/places/'+identifier+'/portal">place portal</a>)'
-		}
+				// if feature has src key, it's from a database search; also, popup link differs
+				if(feature.src){
+					identifier = feature.properties.pid
+					popup_link = ' (<a href="/places/'+identifier+'/detail">place page</a>)'
+				} else {
+					identifier = feature.properties.whgid
+					popup_link = ' (<a href="/places/'+identifier+'/portal">place portal</a>)'
+				}
         if(feature.type != 'Point'){
           layer.setStyle(['LineString','MultiLineString'].indexOf(feature.type)>-1 ? styles.line_default:styles.pgon_default)
           idToFeature[identifier] = layer
@@ -1080,7 +1080,9 @@
           ele = $("#result_list")
           $(".search-row").css('background-color','#fff')
           <!--divtop = $('#result_list').offset().top-->
-          fid = this.feature.geometry.properties.whgid
+					
+          fid = search_scope=='idx'?this.feature.geometry.properties.whgid:this.feature.geometry.properties.pid
+					
           foo=$("div.place-item").find('[data-id="'+fid+'"]').closest('.search-row')
           foo.css('background-color','#f4f4d7')
           <!--foo[0].scrollIntoView({behavior:'smooth'})-->
