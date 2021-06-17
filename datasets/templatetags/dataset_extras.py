@@ -12,7 +12,7 @@ def readmore(txt,numchars):
     if len(txt) <= numchars:
         return txt
     else:
-        return txt[:numchars]+dots+link+txt[numchars:]+'</span>'
+        return txt[:numchars]+dots+link+txt[numchars:]+'<a href="#" class="ml-2 a_less hidden">less</a></span>'
 
 @register.filter
 def time_estimate(numrows):

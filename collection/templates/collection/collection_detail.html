@@ -24,14 +24,14 @@
 
 {% block content %}
 <div class="container">
-  <h4 class="mt-3">
-    <small class="text-secondary">WHG Collection:</small> <span class="text-danger">{{ object.title }}</span>
-  </h4>
+  <h5 class="mt-3">
+    <span class="text-secondary">WHG Collection:</span> <b>{{ object.title }}</b>
+  </h5>
   <div class="d-flex">
     <div class="form-box col-sm-5 mt-2">
       <div id="coll_meta">
         <table>
-        <tr><td><b>Description</b></td><td>{{ object.description }}</td></tr>
+        <tr><td><b>Description</b></td><td>{{ object.description|readmore:200|safe }}</td></tr>
         <tr><td><b>Tags</b></td><td>{{ object.tags|join:', ' }}</td></tr>
         <tr><td><b>Created</b></td><td>{{ object.create_date|date:"d M Y" }}</td></tr>
         </table>
@@ -136,11 +136,18 @@
       clicked = $(this)
       clicked.hide()
       clicked.parent().find("#dots").hide()
-      clicked.next().removeClass('hidden')
-      <!--clicked.css("display","contents")-->
-      <!--$(this).hide()-->
+      clicked.next().show()
+      $(".a_less").show()
       console.log('clicked',clicked)  
-      <!--clicked.removeClass('hidden')-->
+    })
+    $(".a_less").click(function(e){
+      clicked = $(this)
+      console.log('this clicked',clicked)  
+      console.log('parent',parent)  
+      clicked.hide() // hide 'less' link
+      $(".more").hide() // hide the extra text again
+      $("#dots").show() // show dots again
+      $(".a_more").show() // show more link again
     })
 
   })
