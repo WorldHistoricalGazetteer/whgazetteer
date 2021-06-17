@@ -32,7 +32,7 @@
       <div id="coll_meta">
         <table>
         <tr><td><b>Description</b></td><td>{{ object.description|readmore:200|safe }}</td></tr>
-        <tr><td><b>Tags</b></td><td>{{ object.tags|join:', ' }}</td></tr>
+        <tr><td><b>Keywords</b></td><td>{{ object.tags|join:', ' }}</td></tr>
         <tr><td><b>Created</b></td><td>{{ object.create_date|date:"d M Y" }}</td></tr>
         </table>
       </div>
