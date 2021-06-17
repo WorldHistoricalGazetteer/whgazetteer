@@ -20,8 +20,10 @@ urlpatterns = [
     path('walkthrough/', TemplateView.as_view(template_name="tutorials/walkthrough.html"), name="tute-walkthrough"),
     path('traces/', TemplateView.as_view(template_name="tutorials/traces.html"), name="tute-traces"),
     path('create_lptsv/', TemplateView.as_view(template_name="tutorials/create_lptsv.html"), name="tute-lptsv"),
+
+    # curricula
+    path('asian_history/', TemplateView.as_view(template_name="curricula/asian_history.html"), name="curric-asian"),
     
-    #path('template/', TemplateView.as_view(template_name="tutorials/tute-template.html"), name="tute-template"),
     
     path('modal/', TemplateView.as_view(template_name="main/modal.html"), name="dynamic-modal"),
 ]
