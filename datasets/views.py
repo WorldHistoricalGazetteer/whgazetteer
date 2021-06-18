@@ -1641,7 +1641,7 @@ def ds_insert_tsv(request, pk):
           for i,t in enumerate(types):
             aatnum='aat:'+aat_types[i] if len(aat_types) >= len(types) and aat_types[i] !='' else None
             if aatnum:
-              fclass_list.append(get_object_or_404(Type,aat_id=int(aatnum[4:])).fclass)
+              fclass_list.append(get_object_or_404(Type, aat_id=int(aatnum[4:])).fclass)
             objs['PlaceType'].append(
               PlaceType(
                 place=newpl,

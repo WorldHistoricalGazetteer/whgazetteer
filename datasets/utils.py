@@ -481,8 +481,13 @@ def validate_tsv(fn, ext):
   print('validate_tsv() fn', fn)
   result = {"format":"delimited", "errors":[]}
   schema_lptsv = json.loads(codecs.open('datasets/static/validate/schema_tsv.json', 'r', 'utf8').read())
-  report = fvalidate(fn, schema=schema_lptsv, sync_schema=True)
-  #print(report)
+  try:
+    report = fvalidate(fn, schema=schema_lptsv, sync_schema=True)
+  except:
+    err = sys.exc_info()
+    print('error on fvalidate',err)    
+    print('error args',err[1].args)    
+  print(report)
   rpt = report['tables'][0]
   req = ['id','title','title_source','start']
   
