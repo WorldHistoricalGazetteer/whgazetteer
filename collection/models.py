@@ -8,6 +8,10 @@ def user_directory_path(instance, filename):
   # upload to MEDIA_ROOT/user_<username>/<filename>
   return 'user_{0}/{1}'.format(instance.owner.username, filename)
 
+#def coll_image_path(instance, filename):
+  ## upload to MEDIA_ROOT/user_<username>/<filename>
+  #return 'user_{0}/{1}'.format(instance.owner.username, filename)
+
 class Collection(models.Model):
   owner = models.ForeignKey(User,related_name='collections', on_delete=models.CASCADE)
   title = models.CharField(null=False, max_length=255)
@@ -21,19 +25,21 @@ class Collection(models.Model):
   
   datasets = models.ManyToManyField("datasets.Dataset")
 
-  #@property
-  #def datasets(self):
-    #return [cd.dataset for cd in self.collection_datasets.all()]
+  def __str__(self):
+    return '%s:%s' % (self.id, self.title)
+
+  class Meta:
+    db_table = 'collections'
 
   def get_absolute_url(self):
     #return reverse('datasets:dashboard', kwargs={'id': self.id})
     return reverse('datasets:dashboard')  
 
-  @property
-  def places(self):
-    # TODO: gang up indiv & ds places
-    dses = self.dataset_set.all()
-    return Place.objects.filter(dataset__in=dses).distinct()
+  #@property
+  #def places(self):
+    ## TODO: gang up indiv & ds places
+    #dses = self.dataset_set.all()
+    #return Place.objects.filter(dataset__in=dses).distinct()
 
   #@property
   #def places(self):
@@ -41,11 +47,6 @@ class Collection(models.Model):
     #dses = [d for d in self.datasets]
     #return Place.objects.filter(dataset__in=dses)
 
-  def __str__(self):
-    return '%s:%s' % (self.id, self.title)
-
-  class Meta:
-    db_table = 'collections'
 
 #class CollectionPlace(models.Model):
   #collection = models.ForeignKey(Collection, related_name='coll_places',

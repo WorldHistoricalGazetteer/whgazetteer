@@ -86,7 +86,7 @@ class CollectionUpdateView(UpdateView):
         context['action'] = 'update'
         context['create_date'] = self.object.create_date.strftime("%Y-%m-%d")
         context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
-        qs = CollectionDataset.objects.filter(collection_id = self.kwargs.get("id"))
-        context['datasets'] = qs
+        #qs = CollectionDataset.objects.filter(collection_id = self.kwargs.get("id"))
+        #context['datasets'] = qs
         return context
 
