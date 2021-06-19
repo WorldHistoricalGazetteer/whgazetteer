@@ -24,10 +24,28 @@
 
 {% block content %}
 <div class="container">
-  <h5 class="mt-3">
+  <h5 class="mt-3 ">
     <b>{{ object.title }}</b><small class="text-secondary ml-3">a WHG Collection:</small>
   </h5>
   <div class="d-flex">
+    <div id="coll_map" class="col-sm-7 mt-2 pl-0">
+      <div id="coll_meta">
+        <table>
+        <tr><td><b>Description</b></td><td>{{ object.description|readmore:200|safe }}</td></tr>
+        <tr><td><b>Keywords</b></td><td>{{ object.keywords|join:', ' }}</td></tr>
+        {% if object.webpage %}
+        <tr><td><b>Webpage</b></td><td>
+          <a href="{{object.webpage }}" target="_blank">link {% fontawesome_icon 'external-link' color='#336699' %}</a>
+        </td></tr>
+        {% endif %}
+        <tr><td><b>Creator</b></td><td>{{ object.creator }}</td></tr>
+        <tr><td><b>Contact</b></td><td>{{ object.contact }}</td></tr>
+        </table>
+      </div>      
+      <div id="mapdiv_coll" class="">
+        {% leaflet_map "map_coll" callback="map_init" %}
+      </div>
+    </div> <!-- .row -->
     <div  id="coll_dslist" class="col-sm-5 mt-2">
       {% for g in bboxes %}
         {{ g|safe|json_script:g.properties.id }}
@@ -66,20 +84,6 @@
         </div> <!-- #ds_cards -->        
       </div> 
     </div><!-- #coll_dslist -->
-    <div id="coll_map" class="col-sm-7 mt-2">
-      <div id="coll_meta">
-        <table>
-        <tr><td><b>Description</b></td><td>{{ object.description|readmore:200|safe }}</td></tr>
-        <tr><td><b>Keywords</b></td><td>{{ object.keywords|join:', ' }}</td></tr>
-        <tr><td><b>Creator</b></td><td>{{ object.creator }}</td></tr>
-        <tr><td><b>Contact</b></td><td>{{ object.contact }}</td></tr>
-        <!--<tr><td><b>Created</b></td><td>{ object.create_date|date:"d M Y" }}</td></tr>-->
-        </table>
-      </div>      
-      <div id="mapdiv_coll" class="">
-        {% leaflet_map "map_coll" callback="map_init" %}
-      </div>
-    </div> <!-- .row -->
   </div> <!-- d-flex -->
   <div class="modal fade" id="downloadModal" tabindex="-1" aria-labelledby="downloadModalLabel" aria-hidden="true">
     <div class="modal-dialog">

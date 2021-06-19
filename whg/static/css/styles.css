@@ -542,7 +542,7 @@ em { color: #993333;}
 **/
 #collection_form p { margin-bottom: .3rem;}
 #coll_meta {
-  background-color: rgb(255 253 248);
+  background-color: oldlace;
   padding: .3rem;
   margin-bottom: .5rem;
   font-size: .85rem;
@@ -562,9 +562,9 @@ em { color: #993333;}
 }
 #coll_dslist {
   height: fit-content;
-  border: 1px solid lightgray;
-  background-color: oldlace;
-  padding:8px;
+  /*border: 1px solid lightgray;*/
+  /*background-color: oldlace;*/
+  padding:0 8px 0 8px;
   border-radius: 8px;
   /*box-shadow: 3px 3px #eee;*/
   font-size: .8rem;
