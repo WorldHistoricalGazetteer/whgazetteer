@@ -541,6 +541,14 @@ em { color: #993333;}
   collections
 **/
 #collection_form p { margin-bottom: .3rem;}
+#coll_meta {
+  background-color: rgb(255 253 248);
+  padding: .3rem;
+  margin-bottom: .5rem;
+  font-size: .85rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
 #coll_meta table td {
   border-left: 1em solid transparent;
   vertical-align: top;
@@ -551,6 +559,15 @@ em { color: #993333;}
 }
 #coll_meta table tr:first-child td {
    border-top: 0;
+}
+#coll_dslist {
+  height: fit-content;
+  border: 1px solid lightgray;
+  background-color: oldlace;
+  padding:8px;
+  border-radius: 8px;
+  /*box-shadow: 3px 3px #eee;*/
+  font-size: .8rem;
 }
 #coll_dscards { overflow-y: auto; }
 .ds_card {
