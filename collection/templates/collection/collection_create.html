@@ -36,14 +36,19 @@
       <input type="hidden" name="owner" value='{{ user.id }}'></input>
       <p>Title<br/>{{ form.title }}</p>
       <p><span class="top">Description</span><br/>{{ form.description }}</p>
-      <p>Tags (no quotes, separate with commas) </br>{{ form.tags }}
-      {% if user.is_superuser or user.is_admin %}
-        <p>Featured" rank: {{ form.featured }}</p>
-        <p>Image: {{ form.image_file.value }}</p>
-      {% endif %}
+      <p>Creator<br/>{{ form.creator }}
+      <p>Contact<br/>{{ form.contact }}
+      <p>Webpage URL<br/>{{ form.webpage }}
+      <p>Keywords<br/>{{ form.keywords }}
       <p>Public?: {{ form.public }}</p>
       {% if action == 'update' %}
-        <p>Created: {{ create_date }}</p>
+        <p>Create date: {{ create_date }}</p>
+      {% endif %}
+      {% if action == 'update' and user.is_superuser or user.is_admin %}
+        <hr class="my-1"/>
+          <p class="rem1">Editor options</p>
+          <p>Featured rank: {{ form.featured }}</p>
+          <p>Image: {{ form.image_file }}</p>
       {% endif %}
       <!-- hidden multicheckboxselect; filled programmatically by js:listDataset()-->
       <div id="select_div" class="hidden">{{ form.datasets }}</div>
@@ -54,10 +59,10 @@
       <span title="back"><a href="{% url 'dashboard' %}">Cancel</a></span>
     </form>
     </div>
-    <div id="coll_builder" class="col-sm-8 p-3">
+    <div id="coll_builder" class="col-sm-8 p-2">
       <div class="row">
         <div class="col-sm-7">
-          <h4>Datasets</h4>
+          <h5>Datasets</h5>
           <p>
             <span class="mr-2">
               <select id="select_ds" name="ds" class="custom-select-sm" style="width:auto;">
@@ -73,19 +78,17 @@
             <a href="javascript:{ addDataset() }" class="">
           {% fontawesome_icon 'plus-square' color='#336699' %} add</a></p>
           <!-- id, label, title, description, creator, create_date, webpage, numrows, datatype -->
-          <div id="coll_panels">
-            {% if coll_dsset|length == 0 %}<p class="font-italic">None yet...</p>{% endif %}
+          <div id="coll_dscards">
+            {% if coll_dsset|length == 0 %}<p class="font-italic smaller">None yet...</p>{% endif %}
             <!--{ if action == 'update' %}-->
             {% for d in coll_dsset %}
               <div class="ds_card">
-                <p class="mb-0"><span class="ds_title">{{ d.title }}</span> ({{d.label}}/{{ d.id}})</p>
+                <p class="mb-0"><span class="ds_title">{{ d.title }}</span> <small>({{d.label}}/{{ d.id}})</small></p>
                 <div class="ds_fields">
                   <p class="my-1"><b>Description</b>: {{ d.description|truncatechars:150 }}</p>
                   <p class="my-1"><b>Create date</b>: {{ d.create_date|date:"d M Y" }}</p>
                   <p class="my-1"><b># rows</b>: {{ d.numrows }} 
-                    <a href="{% url 'collection:remove-ds' ds_id=d.id coll_id=object.id %}" class="float-right">
-                      {% fontawesome_icon 'minus-square' color='#336699' %} remove</a>
-                    <!--<span class="float-right mr-2 bg-light"><a href="">remove</a></span>-->
+                    <a href="{% url 'collection:remove-ds' ds_id=d.id coll_id=object.id %}" class="float-right">{% fontawesome_icon 'minus-square' color='#336699' %} remove</a>
                   </p>
                 </div>
               </div>
@@ -93,10 +96,10 @@
             <!--{ endif %}-->
           </div> <!-- #coll_panels -->
         </div> <!-- .col-sm-8 -->
-        <div class="col-sm-5">
+        <div class="col-sm-5">{%comment%}
           <div id="mapdiv_coll" class="mt-2">
             {% leaflet_map "map_coll" %}
-          </div>
+          </div>{%endcomment%}
       </div>
     </div> <!-- .row -->
   </div> <!-- d-flex -->

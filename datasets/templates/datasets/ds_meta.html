@@ -26,12 +26,12 @@
   <!--<span class="ds-title ml-1 mr-3">{{ object.title }}</span>-->
 
   <ul id="dataset_tabs" class="nav nav-tabs" role="tablist">
-      <span class="ds-title ml-1 mr-3">{{ object.title }}</span>
+      {%comment%}<span class="ds-title ml-1 mr-3"><small class="text-secondary">Dataset:</small></span>{%endcomment%}
       <li class="nav-item">
-          <a class="nav-link active" id="summary-tab" data-link="summary" href="" role="tab">Summary</a>
+          <a class="nav-link active" id="summary-tab" data-link="summary" href="" role="tab">Dataset Summary</a>
       </li>
       <li class="nav-item">
-          <a class="nav-link" id="browse-tab" href="{% url 'datasets:ds_detail' id=object.id %}" role="tab">Browse</a>
+          <a class="nav-link" id="browse-tab" href="{% url 'datasets:ds_places' id=object.id %}" role="tab">Browse</a>
       </li>
   </ul>
   
@@ -43,79 +43,55 @@
       <div id="ds_details" class="col-sm-8 small">
         <table class="ds-table">
           <tr>
+            <td><b>Title</b></td>
+            <td>
+              <span class="ds-title">{{ object.title }}</span>
+            </td>
+          </tr>
+          <tr>
             <td><b>ID / label</b></td>
             <td>{{ object.id }} / {{ object.label }}</td>
           </tr>
           <tr>
-            <td><b>Title</b></td>
-            <td>
-              <span class="form-title bigger strong">{{ object.title }}
-                {% if object.webpage %} <a href="{{ object.webpage }}" target="_blank">webpage {% fontawesome_icon 'external-link' color='#336699' %}</a>{% endif %}
-              </span>
-            </td>
-          </tr>
-          <tr>
-            <td><b># Records</b></td><td>{{ object.numrows }}
-          </tr>          
-          <tr>
-            <td><b>URI base</b></td>
-            <td>
-              <span class="form-uri_base">{{ object.uri_base }}</span>
-            </td>
-          </tr>
-          <tr>
             <td style="vertical-align:top;"><b>Description</b></td>
-            <td>
-              <span class="form-description">{{ object.description }}</span>
-            </td>
+            <td><span class="form-description">{{ object.description }}</span></td>
           </tr>
           <tr>
-            <td><b>Dataset status</b></td>
-            <td>{{ object.ds_status }}</td>
+            <td><b># Records</b></td>
+            <td>{{ object.numrows }}</td>
+          </tr>          
+          {% if object.webpage %} 
+          <tr>
+            <td><b>Webpage</b></td>
+            <td><a href="{{ object.webpage }}" target="blank">{{ object.webpage }}</a></td>
+          </tr>
+          {% endif %}
+          <tr>
+            <td><b>WHG Permalink</b></td>
+            <td><a href="http://whgazetteer.org/datasets/{{object.id}}">http://whgazetteer.org/datasets/{{object.id}}</a></td>
           </tr>
           <tr>
             <td><b>Creator</b></td>
             <td>{{ object.creator }}</td>
           </tr>
+          <tr>
+            <td><b>Contributors</b></td>
+            <td>{{ object.contributors }}</td>
+          </tr>
         </table>
       </div>
       <div class="col-sm-4 small">
         <div id="ds_info">
-          <!--<div id="ds_stats" class="ds-card">-->
-            <!--<table style="width:100%">-->
-              <!--<!--<tr><td class="pb-3"><b>Status</b></td><td class="pb-3">{ ds.ds_status }}</td><td class="pb-3"></td></tr>-->
-              <!--<tr><th></th><th class="pb-1 text-secondary">count</th><th class="pb-1 text-secondary">added</th></tr>-->
-              <!--<tr><td><b>Records</b></td><td>{{ object.numrows }}</td><td class="text-secondary">n/a</td></tr>-->
-              <!--<tr><td><b>Name variants</b></td><td>{{ num_names }}</td><td class="text-secondary">n/a</td></tr>-->
-              <!--<tr>-->
-                <!--<td><b>Geometries</b></td><td>{{ num_geoms }}</td>-->
-                <!--<td><span class="text-white bg-success">&nbsp;{{ geoms_added }}&nbsp;</span></td></tr>-->
-              <!--<tr>-->
-                <!--<td><b>Links</b></td><td>{{ num_links }}</td>-->
-                <!--<td><span class="text-white bg-success">&nbsp;{{ links_added }}&nbsp;</span></td></tr>-->
-              <!--{ if ds.unreviewed|length > 0 %}<tr class="text-danger">{else%}<tr>{endif%}-->
-                <!--<td class="pt-3"><b>Unreviewed hits (total)</b></td>-->
-                <!--<td class="pt-3">{{ ds.unreviewed|length }}</td> -->
-                <!--<td class="pt-3 text-secondary">n/a</td></tr>-->
-              <!--{ if ds.unindexed > 0 %} -->
-                <!--<tr class="text-danger">-->
-                <!--<td><b>Unindexed records</b></td>-->
-                <!--<td>{{ ds.unindexed }}</td> -->
-                <!--<td class="text-secondary">n/a</td></tr>{ endif %}-->
-            <!--</table>-->
-          <!--</div>-->
           <div id="ds_access" class="pt-0 px-0 ds-card">
             <p class="ds-card-header">Access</p>
-            <p class="m-0 pl-2 pr-2">Lorem ipsum</p>
+            <p class="mx-0 mb-1 px-2">Datasets in World Historical Gazetteer flagged "public" by contributors are open access, and may be downloaded under the <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">Creative Commons Attribution 4.0 International (CC BY 4.0) License</a>. This means you are free to:</p>
+            <ul>
+            <li class="li-left"><b>Share</b> — copy and redistribute the material in any medium or format</li>
+            <li class="li-left"><b>Adapt</b> — remix, transform, and build upon the material for any purpose, even commercially.</li></ul>
           </div>
-          <!--{ if user.is_superuser or user in owners %}-->
           <div id="ds_downloads" class="pt-0 px-0 ds-card">
             <p class="ds-card-header">Downloads</p>
             <p class="m-0 pl-2 pr-2">
-              <!--{ if object.id > 2 %} <!-- exclude black, dplace, which have no upload files -->
-                <!--<a href="{% url 'datasets:dl-file' object.id %}" ref="current">Current data file</a>-->
-              <!--{ endif %}-->
-                <!--<br/>-->
               {% if links_added > 0 or geoms_added > 0 %}Augmented dataset: {% endif %}
                 {% if object.numrows <= 5000 %}
                     <a href="{% url 'datasets:dl-aug' id=object.id format='lpf' %}" ref="lpf">Linked Places format</a>

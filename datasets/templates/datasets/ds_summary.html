@@ -24,9 +24,9 @@
 <div id="dataset_content" class="container mt-1 px-1">
   <!--{ include 'datasets/ds_tabs.html' %}-->
   <ul id="dataset_tabs" class="nav nav-tabs" role="tablist">
-      <span class="ds-title ml-1 mr-3">{{ ds.title }}</span>
+      <!--<span class="ds-title ml-1 mr-3">{ ds.title }}</span>-->
       <li class="nav-item">
-          <a class="nav-link active" id="summary-tab" data-link="summary" href="" role="tab" aria-controls="summary" aria-selected="false">Metadata</a>
+          <a class="nav-link active" id="summary-tab" data-link="summary" href="" role="tab" aria-controls="summary" aria-selected="false">Dataset Metadata</a>
       </li>
       <li class="nav-item">
           <a class="nav-link" id="browse-tab" href="{% url 'datasets:ds_browse' id=ds.id %}" role="tab" aria-controls="browse" aria-selected="false">Browse</a>
@@ -54,28 +54,15 @@
       {% endif %}
         <table class="ds-table">
           <tr>
-            <td><b>ID / label</b></td>
-            <td>{{ ds.id }} / {{ ds.label }}</td>
-          </tr>
-          <tr>
             <td><b>Title</b> 
               <a href="#" class="edit-title">{% fontawesome_icon 'edit' color='#336699' %}</a>
             </td>
             <td>
-              <span class="form-title bigger strong">{{ form.title.value }}
+              <span class="form-title h6 strong">{{ form.title.value }}
                 {% if ds.webpage %}(<a href="{{ ds.webpage }}" target="_blank">webpage</a> <a href="#" class="edit-webpage">{% fontawesome_icon 'edit' color='#336699' %}</a>){% endif %}
               </span>
               <span class="hidden editing-title">{{ form.title }}</span>&nbsp;
               <span class="hidden editing-webpage">{{ form.webpage }}</span>&nbsp;
-            </td>
-          </tr>
-          <tr>
-            <td><b>URI base</b>
-              <a href="#" class="edit-uri_base">{% fontawesome_icon 'edit' color='#336699' %}</a>
-            </td>
-            <td>
-              <span class="form-uri_base">{{ form.uri_base.value }}</span>
-              <span class="hidden editing-uri_base">{{ form.uri_base }}</span>
             </td>
           </tr>
           <tr>
@@ -85,6 +72,33 @@
             <td>
               <span class="form-description">{{ form.description.value }}</span>
               <span class="hidden editing-description">{{ form.description }}</span>
+            </td>
+          </tr>
+          <tr>
+            <td><b>ID / label</b></td>
+            <td>{{ ds.id }} / {{ ds.label }}</td>
+          </tr>
+          <!--<tr>-->
+            <!--<td><b>Creator</b></td>-->
+            <!--<td>{form.creator }}</td>-->
+          <!--</tr>-->
+          <tr>
+            <td style="vertical-align:top;"><b>Creator</b> 
+              <a href="#" class="edit-creator">{% fontawesome_icon 'edit' color='#336699' %}</a>
+            </td>
+            <td>
+              <span class="form-creator">{{ form.creator.value }}</span>
+              <span class="hidden editing-creator">{{ form.creator }}</span>
+            </td>
+          </tr>
+          <tr>
+            <td style="vertical-align:top;"><b>Contributors</b> 
+              <a href="#" class="edit-contrib">{% fontawesome_icon 'edit' color='#336699' %}</a>
+            </td>
+            <td>
+              <span class="form-contrib">{{ form.contributors.value }}</span>
+              <span class="hidden editing-contrib">{{ form.contributors }}</span>
+              <span class="hidden editing-contrib">{{ form.contributors }}</span>
             </td>
           </tr>
           <tr>
@@ -101,8 +115,13 @@
             <td>{{ ds.ds_status }}</td>
           </tr>
           <tr>
-            <td><b>Creator</b></td>
-            <td>{{ ds.creator }}</td>
+            <td><b>URI base</b>
+              <a href="#" class="edit-uri_base">{% fontawesome_icon 'edit' color='#336699' %}</a>
+            </td>
+            <td>
+              <span class="form-uri_base">{{ form.uri_base.value }}</span>
+              <span class="hidden editing-uri_base">{{ form.uri_base }}</span>
+            </td>
           </tr>
           {% if user.is_superuser or user.is_admin %}
             <tr>
@@ -230,8 +249,8 @@
             <p class="m-0 pl-2 pr-2">
               {% if ds.id > 2 %} <!-- exclude black, dplace, which have no upload files -->
                 <a href="{% url 'datasets:dl-file' ds.id %}" ref="current">Current data file</a>
-              {% endif %}
                 <br/>
+              {% endif %}
               {% if links_added > 0 or geoms_added > 0 %}Augmented dataset: {% endif %}
                 {% if ds.numrows <= 5000 %}
                     <a href="{% url 'datasets:dl-aug' id=ds.id format='lpf' %}" ref="lpf">Linked Places format</a>
@@ -480,6 +499,16 @@ js for Summary, Reconciliation
   $(".edit-public").click(function() {
     $(".editing-public").toggleClass("hidden")
     $(".form-public").toggleClass("hidden")
+    $(".btn-ds").toggleClass("hidden")
+  })  
+  $(".edit-creator").click(function() {
+    $(".editing-creator").toggleClass("hidden")
+    $(".form-creator").toggleClass("hidden")
+    $(".btn-ds").toggleClass("hidden")
+  })  
+  $(".edit-contrib").click(function() {
+    $(".editing-contrib").toggleClass("hidden")
+    $(".form-contrib").toggleClass("hidden")
     $(".btn-ds").toggleClass("hidden")
   })  
   $(".edit-uri_base").click(function() {

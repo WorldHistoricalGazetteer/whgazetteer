@@ -26,21 +26,27 @@ def ds_image_path(instance, filename):
 
 # owner = models.ForeignKey('auth.User', related_name='snippets', on_delete=models.CASCADE)
 class Dataset(models.Model):
-  idx='whg'
+  #idx='whg'
   owner = models.ForeignKey(User,related_name='datasets', on_delete=models.CASCADE)
-  label = models.CharField(null=False, max_length=20, unique="True",error_messages={'unique': 'The dataset label entered is already in use, and must be unique. Try appending a version # or initials.'})
+  label = models.CharField(null=False, max_length=20, unique="True",
+            error_messages={'unique': 'The dataset label entered is already in use, and must be unique. Try appending a version # or initials.'})
   title = models.CharField(null=False, max_length=255)
   description = models.CharField( null=False, max_length=2044)
+  webpage = models.URLField(null=True, blank=True)
+  create_date = models.DateTimeField(null=True, auto_now_add=True)
+  uri_base = models.URLField(null=True, blank=True)
+  image_file = models.FileField(upload_to=ds_image_path, blank=True, null=True)
+  featured = models.IntegerField(null=True, blank=True)
+  bbox = geomodels.PolygonField(null=True, blank=True, srid=4326)
+
   core = models.BooleanField(default=False)    
   public = models.BooleanField(default=False)    
   ds_status = models.CharField(max_length=12, null=True, blank=True, choices=STATUS_DS)
+
+  # 3 added 20210619
   creator = models.CharField(max_length=500, null=True, blank=True)
-  create_date = models.DateTimeField(null=True, auto_now_add=True)
-  uri_base = models.URLField(null=True, blank=True)
-  webpage = models.URLField(null=True, blank=True)
-  image_file = models.FileField(upload_to='datasets/', blank=True, null=True)
-  bbox = geomodels.PolygonField(null=True, blank=True, srid=4326)
-  featured = models.IntegerField(null=True, blank=True)
+  source = models.CharField(max_length=500, null=True, blank=True)
+  contributors = models.CharField(max_length=500, null=True, blank=True)
 
   # TODO: these are updated in both Dataset & DatasetFile  (??)
   datatype = models.CharField(max_length=12, null=False,choices=DATATYPES,
@@ -63,10 +69,12 @@ class Dataset(models.Model):
   # test    
   #from datasets.models import Dataset, DatasetUser, Hit
   #from django.contrib.auth.models import User
+  #from places.models import *
+  #from collection.models import *
   #from django.shortcuts import get_object_or_404
-  #ds = get_object_or_404(Dataset, label='croniken_rjs')
-  #d = get_object_or_404(Dataset, label='pleiades20k')
+  #ds = get_object_or_404(Dataset, pk=1034)
   #user = get_object_or_404(User, pk=14)
+  #coll = get_object_or_404(Collection,pk=3)
 
   @property
   def bounds(self):
@@ -145,7 +153,6 @@ class Dataset(models.Model):
   # list of dataset geometries
   @property
   def geometries(self):
-    #g_list_b =[g.jsonb for g in place.geoms.all()]
     g_list = PlaceGeom.objects.filter(place_id__in=self.placeids).values_list('jsonb', flat=True)
     return g_list
 
@@ -174,7 +181,7 @@ class Dataset(models.Model):
 """ TODO: FK to dataset, not dataset_id"""
 class DatasetFile(models.Model):
   dataset_id = models.ForeignKey(Dataset, related_name='files',
-                                   default=-1, on_delete=models.CASCADE)
+    default=-1, on_delete=models.CASCADE)
   rev = models.IntegerField(null=True, blank=True)
   file = models.FileField(upload_to=user_directory_path)
   format = models.CharField(max_length=12, null=False,

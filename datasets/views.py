@@ -2,6 +2,7 @@
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.gis.geos import GEOSGeometry
 from django.core.files import File
 from django.core.mail import send_mail, EmailMultiAlternatives
 from django.core.paginator import Paginator
@@ -1639,7 +1640,8 @@ def ds_insert_tsv(request, pk):
           PlaceGeom(
             place=newpl,
             src_id = src_id,
-            jsonb=geojson
+            jsonb=geojson,
+            geom=GEOSGeometry(json.dumps(geojson))
         ))
           
       #
@@ -2243,26 +2245,26 @@ class DatasetSummaryView(LoginRequiredMixin, UpdateView):
 
 
 """ public dataset browse table """
-class DatasetDetailView(LoginRequiredMixin, DetailView):
+class DatasetPlacesView(LoginRequiredMixin, DetailView):
   login_url = '/accounts/login/'
   redirect_field_name = 'redirect_to'
   
   model = Dataset
-  template_name = 'datasets/ds_detail.html'
+  template_name = 'datasets/ds_places.html'
 
   
   def get_success_url(self):
     id_ = self.kwargs.get("id")
     user = self.request.user
     print('messages:', messages.get_messages(self.kwargs))
-    return '/datasets/'+str(id_)+'/detail'
+    return '/datasets/'+str(id_)+'/places'
 
   def get_object(self):
     id_ = self.kwargs.get("id")
     return get_object_or_404(Dataset, id=id_)
   
   def get_context_data(self, *args, **kwargs):
-    context = super(DatasetDetailView, self).get_context_data(*args, **kwargs)
+    context = super(DatasetPlacesView, self).get_context_data(*args, **kwargs)
     context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
     context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
 

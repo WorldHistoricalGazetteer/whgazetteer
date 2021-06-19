@@ -54,6 +54,10 @@
             <td>{{ form.creator }}</td>
           </tr>
           <tr>
+            <td style="vertical-align:top;"><b>Contributors</b></td>
+            <td>{{ form.contributors }}</td>
+          </tr>
+          <tr>
             <td><b>URI base</b> <a class="pop-link" id="uribase_help" data-toggle="popover" title="URI base" data-content="If your records are published and each place has a landing page, enter the URI base prefix, e.g. <span class='ml-2'><i>http://mygaz.org/places/</i></span><br/>Otherwise leave blank, and they will be assigned a WHG base." tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#993300' %}</a>
             </td>
             <td>{{ form.uri_base }}</td>
