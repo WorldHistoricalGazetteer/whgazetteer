@@ -1,6 +1,6 @@
 from django import template
 from django.template.defaultfilters import stringfilter
-import json, math
+import json, validators
 
 register = template.Library()
 
@@ -14,6 +14,10 @@ def readmore(txt,numchars):
     else:
         return txt[:numchars]+dots+link+txt[numchars:]+'<a href="#" class="ml-2 a_less hidden">less</a></span>'
 
+@register.filter
+def is_url(val):
+    return True if validators.url(val) else False
+    
 @register.filter
 def time_estimate(numrows):
     seconds = round(numrows/3)

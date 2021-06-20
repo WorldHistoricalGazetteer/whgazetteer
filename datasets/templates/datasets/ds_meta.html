@@ -12,6 +12,7 @@
   <script src="{% static 'js/easyprint.js' %}"></script>
   <script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>
   <script src="{% static 'js/spin.umd.js' %}"></script>
+  <script src="{% static 'js/clipboard.min.js' %}"></script>
   <link rel="stylesheet" href="{% static 'css/spin.css' %}"/>
   <link rel="stylesheet" href="//cdn.datatables.net/1.10.23/css/dataTables.bootstrap4.min.css">
   <script src="//cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
@@ -71,12 +72,25 @@
             <td><a href="http://whgazetteer.org/datasets/{{object.id}}">http://whgazetteer.org/datasets/{{object.id}}</a></td>
           </tr>
           <tr>
-            <td><b>Creator</b></td>
+            <td><b>Creator(s)</b></td>
             <td>{{ object.creator }}</td>
           </tr>
+          {% if object.contributors %}
           <tr>
             <td><b>Contributors</b></td>
-            <td>{{ object.contributors }}</td>
+            {% if object.contributors|is_url %}
+              <td><a href="{{ object.contributors }}" target="_blank">{{ object.contributors }}</a></td>
+            {% else %}
+              <td>{{ object.contributors }}</td>
+            {% endif %}
+          </tr>
+          {% endif %}
+          <tr>
+            <td class="align-top"><b>Citation</b> 
+              <a class="clippy" data-clipboard-target="#citation" rel="tooltip" title="copy to clipboard">{% fontawesome_icon 'clipboard' color='#336699' %}</a>
+            </td>
+            <td id="citation"><span>{% if object.citation %}{{ object.citation }}{% else %}constructed citation...{% endif %}</span>
+            </td>
           </tr>
         </table>
       </div>
@@ -155,6 +169,27 @@
 js for Summary, Reconciliation
 -->
 <script type="text/javascript">
+  var clipboard = new ClipboardJS('a');
+  clipboard.on('success', function(e) {
+      <!--console.info('Action:', e.action);-->
+      <!--console.info('Text:', e.text);-->
+      <!--console.info('Trigger:', e.trigger);-->
+      e.clearSelection();
+      
+      $(".clippy").tooltip('hide')
+        .attr('data-original-title', 'copied!')
+        .tooltip('show');
+  });
+  // copy citation
+  <!--$(".clippy").click(function(){-->
+    <!--cite = $("#citation")-->
+    <!--cite.focus();-->
+    <!--cite.select();-->
+    <!--cite.setSelectionRange(0, 99999)-->
+    <!--document.execCommand("copy");-->
+    <!--console.log('citation',cite)-->
+    <!--console.log($(this).attr('title'))-->
+  <!--})-->
   // show/hide geo constraint options
   $("#r_tgn").click(function(){console.log('tgn now');$("#geo_constraint").show(400)})
   

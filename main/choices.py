@@ -65,7 +65,7 @@ FEATURE_CLASSES = [
 FORMATS = [
     ('delimited', 'Delimited/Spreadsheet'),
     ('lpf', 'Linked Places v1.1'),
-    #('direct', 'direct to db import')
+    ('direct', 'direct to db import')
 ]
 
 LOG_CATEGORIES = [

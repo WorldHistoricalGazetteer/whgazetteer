@@ -83,7 +83,7 @@
             <!--<td>{form.creator }}</td>-->
           <!--</tr>-->
           <tr>
-            <td style="vertical-align:top;"><b>Creator</b> 
+            <td style="vertical-align:top;"><b>Creator(s)</b> 
               <a href="#" class="edit-creator">{% fontawesome_icon 'edit' color='#336699' %}</a>
             </td>
             <td>
@@ -98,7 +98,15 @@
             <td>
               <span class="form-contrib">{{ form.contributors.value }}</span>
               <span class="hidden editing-contrib">{{ form.contributors }}</span>
-              <span class="hidden editing-contrib">{{ form.contributors }}</span>
+            </td>
+          </tr>
+          <tr>
+            <td style="vertical-align:top;"><b>Citation</b> 
+              <a href="#" class="edit-citation">{% fontawesome_icon 'edit' color='#336699' %}</a>
+            </td>
+            <td>
+              <span class="form-citation">{{ form.citation.value }}</span>
+              <span class="hidden editing-citation">{{ form.citation }}</span>
             </td>
           </tr>
           <tr>
@@ -509,6 +517,11 @@ js for Summary, Reconciliation
   $(".edit-contrib").click(function() {
     $(".editing-contrib").toggleClass("hidden")
     $(".form-contrib").toggleClass("hidden")
+    $(".btn-ds").toggleClass("hidden")
+  })  
+  $(".edit-citation").click(function() {
+    $(".editing-citation").toggleClass("hidden")
+    $(".form-citation").toggleClass("hidden")
     $(".btn-ds").toggleClass("hidden")
   })  
   $(".edit-uri_base").click(function() {

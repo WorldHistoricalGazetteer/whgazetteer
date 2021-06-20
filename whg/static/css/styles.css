@@ -7,7 +7,7 @@ html, body {
   /*background-color: #fff5e6;*/
 }
 body {overflow-y: scroll;}
-
+pre { margin:0; background-color:#e0e0e0;}
 
 table {border-collapse:initial;}
 .navbar .container {

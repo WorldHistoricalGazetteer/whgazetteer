@@ -28,10 +28,10 @@ def ds_image_path(instance, filename):
 class Dataset(models.Model):
   #idx='whg'
   owner = models.ForeignKey(User,related_name='datasets', on_delete=models.CASCADE)
-  label = models.CharField(null=False, max_length=20, unique="True",
+  label = models.CharField(max_length=20, null=False, unique="True",
             error_messages={'unique': 'The dataset label entered is already in use, and must be unique. Try appending a version # or initials.'})
-  title = models.CharField(null=False, max_length=255)
-  description = models.CharField( null=False, max_length=2044)
+  title = models.CharField(max_length=255, null=False)
+  description = models.CharField(max_length=2044, null=False)
   webpage = models.URLField(null=True, blank=True)
   create_date = models.DateTimeField(null=True, auto_now_add=True)
   uri_base = models.URLField(null=True, blank=True)
@@ -43,10 +43,12 @@ class Dataset(models.Model):
   public = models.BooleanField(default=False)    
   ds_status = models.CharField(max_length=12, null=True, blank=True, choices=STATUS_DS)
 
-  # 3 added 20210619
+  # 4 added 20210619
   creator = models.CharField(max_length=500, null=True, blank=True)
   source = models.CharField(max_length=500, null=True, blank=True)
   contributors = models.CharField(max_length=500, null=True, blank=True)
+  # user-added; if absent, generated in browser
+  citation = models.CharField(max_length=2044, null=True, blank=True)
 
   # TODO: these are updated in both Dataset & DatasetFile  (??)
   datatype = models.CharField(max_length=12, null=False,choices=DATATYPES,

@@ -51,10 +51,12 @@ class DatasetDetailModelForm(forms.ModelForm):
     # file fields = ('file','rev','uri_base','format','dataset_id','delimiter',
     #   'status','accepted_date','header','numrows')
     fields = ('owner','creator','contributors','id','label','title','uri_base','description',
-              'datatype','numlinked','public','webpage','featured','image_file')
+              'citation','datatype','numlinked','public','webpage','featured','image_file')
     widgets = {
       'description': forms.Textarea(attrs={
         'rows':2,'cols': 40,'class':'textarea','placeholder':'Brief description'}),
+      'citation': forms.Textarea(attrs={
+        'rows':2,'cols': 40,'class':'textarea'}),
       'webpage': forms.TextInput(attrs={'size': 30}),
       'featured': forms.TextInput(attrs={'size': 4})
     }
