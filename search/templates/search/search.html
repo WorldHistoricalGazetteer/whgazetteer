@@ -28,123 +28,131 @@
 
 <div class="container">
   <div class="justify-content-center mt-2">
-  <div class="row">
-    <div id="search_left" class="col-sm-6">
-      <div id="search_panel">
-		<div id="search_type" class="form-group d-flex justify-content-center"> 
-		  <div class="form-check form-check-inline">
-			<input class="form-check-input hover" type="radio" name="class" id="r_place" value="place" rel="Enter place name"  checked="checked">
-			<label class="form-check-label" for="r_place">Places</label>
-		  </div>
-		  <div class="form-check form-check-inline">
-			<input class="form-check-input hover" type="radio" name="class" id="r_trace" value="trace" rel="Enter term or name">
-			<label class="form-check-label" for="r_trace">Traces</label>
-		  </div>
-		</div>          
-		<div id="search_input" class="input-group input-group-sm pb-2" >
-		  <label for="input_box">{% fontawesome_icon 'search' color='#336699'%}</label>
-		  <input id="input_box" class="" type="text" placeholder="Enter place name" autocomplete="false"> 
-		</div>
-		<div id="search_input_traces" class="input-group input-group-sm pb-2 hidden" >
-		  <label for="input_box_traces">{% fontawesome_icon 'search' color='#336699'%}</label>
-		  <input id="input_box_traces" class="typeahead" type="text" placeholder="subject term, e.g. 'empire'">
-		</div>
-		  <ul id="scope_tabs" class="nav nav-tabs small">
-			  <span class="ds-title ml-1 mr-3">Search
-			  <a id="search_help" class="pointer" data-toggle="popover" title="Search scope" data-html="true" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a>
-			  </span>
-			  <li class="nav-item">
-				<a class="nav-link" id="scope_idx" data-link="idx" href="#" role="tab">Index</a>
-			  </li>
-			  <li class="nav-item">
-				<a class="nav-link active" id="scope_db" data-link="db" href="#" role="tab">Database</a>
-			  </li>
-		  </ul>	
-		<div id="search_filters" class="tab-pane fade show active" role="tabpanel">
-		  <div class="small row">
-			<div id="filters_class" class="col-sm-6">
-			  <p class="mb-0">feature class(es) 
-				<!--<span class="ml-1 float-right">-->
-				<span class="ml-1">
-				  <span class="mr-1"><a id="check_toggle" href="#">clear all</a></span>
-				  <a id="filter_help" class="pointer" data-toggle="popover" title="Feature classes" data-content="" tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a>
-				</span>
-			  </p>
-			  <ul class="ul-left p-0 mb-0">
-			  <li class="li-flush"><input type="checkbox" value="A" checked> A&nbsp;administrative entities</li>
-			  <li class="li-flush"><input type="checkbox" value="P" checked> P&nbsp;cities, towns, hamlets...</li> 
-			  <li class="li-flush"><input type="checkbox" value="S" checked> S&nbsp;sites, buildings, complexes...</li> 
-			  <li class="li-flush"><input type="checkbox" value="R" checked> R&nbsp;roads, routes, rail...</li> 
-			  <li class="li-flush"><input type="checkbox" value="L" checked> L&nbsp;regions, landscape areas</li> 
-			  <li class="li-flush"><input type="checkbox" value="T" checked> T&nbsp;terrestrial landforms</li>
-			  <li class="li-flush"><input type="checkbox" value="H" checked> H&nbsp;water bodies</li>
-			  </ul>
-			</div>
-			<div id="filters_st" class="col-sm-6">
-			  <p class="mb-0">temporal ( default = all)
-				<span class="float-right"><a id="temporal_help" class="pointer" data-toggle="popover" title="Temporal filter" data-content="" tabindex="0" data-trigger="focus">
-				  {% fontawesome_icon 'question-circle' color='#336699' %}</a></span>
-			  </p>
-			  <div>
-				<label class="input-sm"><input id="input_start" type="text" value = "" size="12" placeholder="earliest year"></label>
-				<label class="input-sm ml-2"><input id="input_end" type="text" value = "" size="12" placeholder="latest year"></label>
-			  </div>
-			  <p class="mb-0">spatial
-				<span class="float-right">
-				<a id="spatial_help" class="pointer" data-toggle="popover" title="Spatial filter" data-content="" tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a></span>	  
-			  </p>
-			  <div>
-				<label><input id="input_area" type="text" size="30" placeholder="Region, country, study area"></label>
-				<input type="hidden" id="boundsobj">
-			  </div>
-			</div>
-		  </div>
-			  <!--<div id="div_ds_select" class="hidden mt-0">-->
-			  <div id="div_ds_select" class="mt-0">
-				<p class="mb-0">dataset
-				  <span class="float-right">
-				  <a id="dataset_help" class="pointer" data-toggle="popover" title="Dataset filter" data-content="" tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a></span>	  
-				</p>
-				<div>
-				  <select id="select_ds_search" name="ds" class="custom-select-sm small" style="width:auto;">
-				  <option value="0">Select dataset</option>
-				  <option disabled>___________</option>
-				  {% for ds in dslist %}
-					<option value="{{ ds.id }}">{{ ds.title }}</option>
-				  {% endfor %}
-				  </select>
+		<div class="row">
+			<div id="search_left" class="col-sm-6">
+				<div id="search_panel">
+			<div id="search_type" class="form-group d-flex justify-content-center"> 
+				<div class="form-check form-check-inline">
+				<input class="form-check-input hover" type="radio" name="class" id="r_place" value="place" rel="Enter place name"  checked="checked">
+				<label class="form-check-label" for="r_place">Places</label>
 				</div>
-			  </div> <!-- #div_ds_select -->
-		</div> <!-- #search_filters -->
-      </div><!-- #search_panel -->
-	  <div id="search_info" class="p-2">  
-		<p>Search in WHG</p>
-		<p>explanation of index vs. database, etc. with a picture</p>
-	  </div>
-	  <div id="traces_info" class="p-2 hidden">  
-		<p>Traces in WHG</p>
-		<p>explanation of traces w/link</p>
-	  </div>
-      <!-- separate div for full search results -->
-      <div id="type_filter" class="hidden">
-        <p class='allcap-heading half mb-0 pl-1'>PLACE TYPES (select to limit)
-          <span class="float-right mr-2"><a href="#" class="hide-filter">
-            close {% fontawesome_icon 'times-circle' color='#336699' %}</a></span>
-          <span class="float-right clear-filter hidden mr-2"><a href="#">restore all</span></a>
-        </p>
-        <ul class="list-inline"></ul>
-      </div>
-      <div id="result_list" class="hidden"></div>
-    </div>
-    <div id="search_right" class="col-sm-6">
-			<div id="map_options" class="p-1 small">draw bbox, etc.</div>
-      {% leaflet_map "map_search" callback="map_init" %}
-			<div id="result_extra" class="p-2">
-				<!--<p>#result_extra</p>-->
-				<!--<p>single db record detail if db search, otherwise?</p>-->
+				<div class="form-check form-check-inline">
+				<input class="form-check-input hover" type="radio" name="class" id="r_trace" value="trace" rel="Enter term or name">
+				<label class="form-check-label" for="r_trace">Traces</label>
+				</div>
+			</div>          
+			<div id="search_input" class="input-group input-group-sm pb-2" >
+				<label for="input_box">{% fontawesome_icon 'search' color='#336699'%}</label>
+				<input id="input_box" class="" type="text" placeholder="Enter place name" autocomplete="false"> 
 			</div>
-    </div> <!--#search_right -->
-  </div> <!-- .row -->
+			<div id="search_input_traces" class="input-group input-group-sm pb-2 hidden" >
+				<label for="input_box_traces">{% fontawesome_icon 'search' color='#336699'%}</label>
+				<input id="input_box_traces" class="typeahead" type="text" placeholder="subject term, e.g. 'empire'">
+			</div>
+				<ul id="scope_tabs" class="nav nav-tabs small">
+					<span class="ds-title ml-1 mr-3">Search
+					<a id="search_help" class="pointer" data-toggle="popover" title="Search scope" data-html="true" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a>
+					</span>
+					<li class="nav-item">
+					<a class="nav-link active" id="scope_idx" data-link="idx" href="#" role="tab">Index {%fontawesome_icon 'link'%}</a>
+					</li>
+					<li class="nav-item">
+					<a class="nav-link" id="scope_db" data-link="db" href="#" role="tab">Database {%fontawesome_icon 'database'%}</a> 
+					</li>
+				</ul>	
+			<div id="search_filters" class="tab-pane fade show active" role="tabpanel">
+				<div class="small row">
+				<div id="filters_class" class="col-sm-6">
+					<p class="mb-0">feature class(es) 
+					<!--<span class="ml-1 float-right">-->
+					<span class="ml-1">
+						<span class="mr-1"><a id="check_toggle" href="#">clear all</a></span>
+						<a id="filter_help" class="pointer" data-toggle="popover" title="Feature classes" data-content="" tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a>
+					</span>
+					</p>
+					<ul class="ul-left p-0 mb-0">
+					<li class="li-flush"><input type="checkbox" value="A" checked> A&nbsp;administrative entities</li>
+					<li class="li-flush"><input type="checkbox" value="P" checked> P&nbsp;cities, towns, hamlets...</li> 
+					<li class="li-flush"><input type="checkbox" value="S" checked> S&nbsp;sites, buildings, complexes...</li> 
+					<li class="li-flush"><input type="checkbox" value="R" checked> R&nbsp;roads, routes, rail...</li> 
+					<li class="li-flush"><input type="checkbox" value="L" checked> L&nbsp;regions, landscape areas</li> 
+					<li class="li-flush"><input type="checkbox" value="T" checked> T&nbsp;terrestrial landforms</li>
+					<li class="li-flush"><input type="checkbox" value="H" checked> H&nbsp;water bodies</li>
+					</ul>
+				</div>
+				<div id="filters_st" class="col-sm-6">
+					<p class="mb-0">temporal ( default = all)
+					<span class="float-right"><a id="temporal_help" class="pointer" data-toggle="popover" title="Temporal filter" data-content="" tabindex="0" data-trigger="focus">
+						{% fontawesome_icon 'question-circle' color='#336699' %}</a></span>
+					</p>
+					<div>
+					<label class="input-sm"><input id="input_start" type="text" value = "" size="12" placeholder="earliest year"></label>
+					<label class="input-sm ml-2"><input id="input_end" type="text" value = "" size="12" placeholder="latest year"></label>
+					</div>
+					<p class="mb-0">spatial
+					<span class="float-right">
+					<a id="spatial_help" class="pointer" data-toggle="popover" title="Spatial filter" data-content="" tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a></span>	  
+					</p>
+					<div>
+					<label><input id="input_area" type="text" size="30" placeholder="Region, country, study area"></label>
+					<input type="hidden" id="boundsobj">
+					</div>
+				</div>
+				</div>
+				{%comment%}
+				<div id="div_ds_select" class="mt-0">
+					<p class="mb-0">dataset
+						<span class="float-right">
+						<a id="dataset_help" class="pointer" data-toggle="popover" title="Dataset filter" data-content="" tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a></span>	  
+					</p>
+					<div>
+						<select id="select_ds_search" name="ds" class="custom-select-sm small" style="width:auto;">
+						<option value="0">Select dataset</option>
+						<option disabled>___________</option>
+						{% for ds in dslist %}
+						<option value="{{ ds.id }}">{{ ds.title }}</option>
+						{% endfor %}
+						</select>
+					</div>
+				</div> <!-- #div_ds_select -->{%endcomment%}
+			</div> <!-- #search_filters -->
+			</div><!-- #search_panel -->
+			<!--<div id="search_info" class="p-2">  -->
+				<!--<p>Search in WHG</p>-->
+				<!--<p>explanation of index vs. database, etc. with a picture</p>-->
+			<!--</div>-->
+			<!--<div id="traces_info" class="p-2 hidden">  -->
+				<!--<p>Traces in WHG</p>-->
+				<!--<p>explanation of traces w/link</p>-->
+			<!--</div>-->
+				<!-- separate div for full search results -->
+				<div id="type_filter" class="hidden">
+					<p class='allcap-heading half mb-0 pl-1'>PLACE TYPES (select to limit)
+						<span class="float-right mr-2"><a href="#" class="hide-filter">
+							close {% fontawesome_icon 'times-circle' color='#336699' %}</a></span>
+						<span class="float-right clear-filter hidden mr-2"><a href="#">restore all</span></a>
+					</p>
+					<ul class="list-inline"></ul>
+				</div>
+				<!--<div id="result_list" class="hidden"></div>-->
+			</div>
+			<div id="search_right" class="col-sm-6">
+				<div id="map_options" class="p-1 small">draw bbox, etc.</div>
+				{% leaflet_map "map_search" callback="map_init" %}
+				<!--<div id="result_extra" class="p-2"></div>-->
+			</div> <!--#search_right -->
+		</div> <!-- .row -->
+		<div id="search_info" class="p-2">  
+			<p>Search in WHG</p>
+			<p>explanation of index vs. database, etc. with a picture</p>
+		</div>
+		<div id="traces_info" class="p-2 hidden">  
+			<p>Traces in WHG</p>
+			<p>explanation of traces w/link</p>
+		</div>
+		<div id="result_list" class=""style="background-color:cornsilk;">
+			<p>the new result_list here, a fancy thing</p>
+		</div>
   </div>
 </div> <!-- .container -->
 
@@ -786,8 +794,8 @@
 
   spin_opts = { scale: .8, top: '70%', 'right':'30%'}
   function startSearchSpinner(){
-	window.spinner_search = new Spin.Spinner(spin_opts).spin();
-	$("#search_filters").append(spinner_search.el);   
+		window.spinner_search = new Spin.Spinner(spin_opts).spin();
+		$("#search_filters").append(spinner_search.el);   
   }
   /*
     *** searchPlacesIdx() *** from #input_box keyup 
@@ -839,30 +847,30 @@
     database search w/o autocomplete -> showResults()
   */
   function searchPlacesDb(){
-	startSearchSpinner()
-    fclasses = [];
-    $('#search_filters input:checked').each(function() {
-      fclasses.push($(this).val());
-    });
-	years = [Number($("#input_start").val()),Number($("#input_end").val())]
-	y = years.find(element => element != 0 );
-	ds_select = $("#select_ds_search").val()
-	dsid = ds_select!="0" ? parseInt(ds_select) : null
-	<!--console.log('params',{'fc':fclasses, "y":y, "dsid":dsid})-->
-	$.get("/search/db",{
-	  name: $('#input_box').val(), 
-	  name_contains: null, // if 'contains checked
-	  // break array nec. - WHY???
-	  fclasses: fclasses.join(','),
-	  year: !y?null:y,
-	  dsid: dsid,
-	  context: "search",
-		bounds: $("#boundsobj").val()
-	}, function(data) {
-	  <!--console.log('searchPlacesDb() sugs', data['suggestions'])-->
-	  showResults(data['suggestions'], doctype, "search")
-	  spinner_search.stop()
-	})
+		startSearchSpinner()
+			fclasses = [];
+			$('#search_filters input:checked').each(function() {
+				fclasses.push($(this).val());
+			});
+		years = [Number($("#input_start").val()),Number($("#input_end").val())]
+		y = years.find(element => element != 0 );
+		ds_select = $("#select_ds_search").val()
+		dsid = ds_select!="0" ? parseInt(ds_select) : null
+		<!--console.log('params',{'fc':fclasses, "y":y, "dsid":dsid})-->
+		$.get("/search/db",{
+			name: $('#input_box').val(), 
+			name_contains: null, // if 'contains checked
+			// break array nec. - WHY???
+			fclasses: fclasses.join(','),
+			year: !y?null:y,
+			dsid: dsid,
+			context: "search",
+			bounds: $("#boundsobj").val()
+		}, function(data) {
+			<!--console.log('searchPlacesDb() sugs', data['suggestions'])-->
+			showResults(data['suggestions'], doctype, "search")
+			spinner_search.stop()
+		})
   }
   /* 
     *** showResults() *** from searchPlacesIdx(), fetchTraceGeometry()
@@ -918,11 +926,11 @@
       })
     };
      
-	$("#result_list").show()
-	$("#search_info").hide()
-	$("#traces_info").hide()
-	titleMarkup = doctype=='trace'?'<p class="pl-1 mb-1 small strong">'+title+'</p>':''
-	let src=search_scope=='idx'?'INDEX':'DATABASE'
+		$("#result_list").show()
+		$("#search_info").hide()
+		$("#traces_info").hide()
+		titleMarkup = doctype=='trace'?'<p class="pl-1 mb-1 small strong">'+title+'</p>':''
+		let src=search_scope=='idx'?'INDEX':'DATABASE'
     $('#result_list').html(titleMarkup+
       "<p class='half allcap-heading mb-0 pl-1'>"+(doctype=='place'?src+' SEARCH RESULTS ('+data.length+
       ')<span class="float-right typefilter-link">'+
@@ -946,6 +954,7 @@
       $(this).addClass('active-filter')
       filter=$(this).data('type')
       result_div = document.getElementById("result_list")
+      <!--result_div = document.getElementById("results_table")-->
       results = result_div.getElementsByTagName("div")
       hide_ids=[]; show_ids = []
       for (i = 0; i < results.length; i++) {
@@ -1035,7 +1044,7 @@
       $(".modal-body").html('<iframe width="100%" height="100%" frameborder="0" scrolling="yes" '+
         'allowtransparency="true" src="'+url+'"></iframe>');
     });
-  }
+  } // end showResults()
  
   /*
     *** renderPlaces() *** from showResults()

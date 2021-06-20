@@ -169,27 +169,15 @@
 js for Summary, Reconciliation
 -->
 <script type="text/javascript">
+  // citation to clipboard
   var clipboard = new ClipboardJS('a');
   clipboard.on('success', function(e) {
-      <!--console.info('Action:', e.action);-->
-      <!--console.info('Text:', e.text);-->
-      <!--console.info('Trigger:', e.trigger);-->
       e.clearSelection();
       
       $(".clippy").tooltip('hide')
         .attr('data-original-title', 'copied!')
         .tooltip('show');
   });
-  // copy citation
-  <!--$(".clippy").click(function(){-->
-    <!--cite = $("#citation")-->
-    <!--cite.focus();-->
-    <!--cite.select();-->
-    <!--cite.setSelectionRange(0, 99999)-->
-    <!--document.execCommand("copy");-->
-    <!--console.log('citation',cite)-->
-    <!--console.log($(this).attr('title'))-->
-  <!--})-->
   // show/hide geo constraint options
   $("#r_tgn").click(function(){console.log('tgn now');$("#geo_constraint").show(400)})
   
