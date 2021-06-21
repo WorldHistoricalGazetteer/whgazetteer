@@ -70,7 +70,8 @@ label {vertical-align:top;}
 .checkbox-inline {margin-right:.3rem;}
 .dashedbox {border:1px dashed #ccc; border-radius:8px; }
 .fa-search, .fa-times {color:#999; }
-.half { font-size: .7em; margin-top:.6em;}
+/*.half { font-size: .7em; margin-top:.6em;}*/
+.half { font-size: .7em;}
 .h2em { height: 2em; }
 .h1em { height: 1em; }
 .hang {
@@ -325,7 +326,8 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
 .carousel-indicators .active {background-color:#993300;}
 /*.carousel-inner {background-color: #e4e4e4;}*/
 #map_select{width:70%;margin:auto;}
-.list-inline { padding-left: 4px;}
+#map_options {background-color: whitesmoke;}
+.list-inline { padding-left: 4px; margin-bottom:0;}
 .active-filter a {font-weight:bold; color:#993333 !important;}
 
 #search_input label { position:absolute; right: 120px; z-index:10;}
@@ -337,8 +339,9 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
   background-color: #fff;
   font-size: small;
   padding: 5px 0 5px 8px;
-  margin-top:8px;
-  box-shadow: 2px 2px #999;
+  width: 100%;
+  /*margin-top:8px;*/
+  /*box-shadow: 2px 2px #999;*/
 }
 
 #filters_opener {
@@ -418,26 +421,35 @@ input[type="text"] {
   height:100%;
 }
 #search_right {  position:relative; z-index: 0;}
-
+#search_lower {
+  margin-top: .3rem;
+  margin-right:auto;
+}
+#search_info, #traces_info { width: 100%; background-color:whitesmoke;}
 /*#map_search.leaflet-container { height: 65%;}*/
 /*#map_search {height: 100%;}*/
 #map_search {max-height: 90%;}
+
 #search_panel {
   background-color: #fff;
   padding: 5px;
   border: 1px solid #eee;
   border-radius: 8px;
   box-shadow: 2px 2px #999;
-  min-height: fit-content;
-  
+  height: 320px;
+  /*min-height: fit-content;*/
 }
+
+/* database tab */
+#scope_db {background-color:whitesmoke;}
 #result_extra { background-color: cornsilk; font-size:.7rem;}
 #result_extra p {margin: .5rem;}
-/*#options { padding:2px; display:none;}*/
-/*#searchbox { height: auto;}*/
-/*#search_input { border-bottom: 1px dashed #ddd;}*/
 
-#search_filters {position:relative;}
+#search_filters {
+  position:relative; 
+  /*height:205px;*/
+}
+/*#search_filters.tab-pane {border:none;}*/
 #search_filters p {
   font-size: .9rem;
   font-variant: small-caps;
@@ -463,7 +475,9 @@ input[type="text"] {
   background-color: #fff;
   margin-top:8px;
   max-height: 40vh;
-  overflow-y:scroll;
+  width:100%;
+  border: 1px solid #ddd;
+  overflow-y:auto;
   box-shadow: 2px 2px #999;
 }
 #search_type {

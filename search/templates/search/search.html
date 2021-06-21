@@ -50,14 +50,14 @@
 				<input id="input_box_traces" class="typeahead" type="text" placeholder="subject term, e.g. 'empire'">
 			</div>
 				<ul id="scope_tabs" class="nav nav-tabs small">
-					<span class="ds-title ml-1 mr-3">Search
+					{%comment%}<span class="ds-title ml-1 mr-3">Search
 					<a id="search_help" class="pointer" data-toggle="popover" title="Search scope" data-html="true" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a>
-					</span>
+					</span>{%endcomment%}
 					<li class="nav-item">
-					<a class="nav-link active" id="scope_idx" data-link="idx" href="#" role="tab">Index {%fontawesome_icon 'link'%}</a>
+					<a class="nav-link active" id="scope_idx" data-link="idx" href="#" role="tab">Search Index {%fontawesome_icon 'link'%}</a>
 					</li>
 					<li class="nav-item">
-					<a class="nav-link" id="scope_db" data-link="db" href="#" role="tab">Database {%fontawesome_icon 'database'%}</a> 
+					<a class="nav-link" id="scope_db" data-link="db" href="#" role="tab">Search Database {%fontawesome_icon 'database'%}</a> 
 					</li>
 				</ul>	
 			<div id="search_filters" class="tab-pane fade show active" role="tabpanel">
@@ -115,25 +115,17 @@
 						</select>
 					</div>
 				</div> <!-- #div_ds_select -->{%endcomment%}
-			</div> <!-- #search_filters -->
+			</div> <!-- #search_filters -->		
 			</div><!-- #search_panel -->
-			<!--<div id="search_info" class="p-2">  -->
-				<!--<p>Search in WHG</p>-->
-				<!--<p>explanation of index vs. database, etc. with a picture</p>-->
-			<!--</div>-->
-			<!--<div id="traces_info" class="p-2 hidden">  -->
-				<!--<p>Traces in WHG</p>-->
-				<!--<p>explanation of traces w/link</p>-->
-			<!--</div>-->
 				<!-- separate div for full search results -->
-				<div id="type_filter" class="hidden">
-					<p class='allcap-heading half mb-0 pl-1'>PLACE TYPES (select to limit)
-						<span class="float-right mr-2"><a href="#" class="hide-filter">
-							close {% fontawesome_icon 'times-circle' color='#336699' %}</a></span>
-						<span class="float-right clear-filter hidden mr-2"><a href="#">restore all</span></a>
-					</p>
-					<ul class="list-inline"></ul>
-				</div>
+				<!--<div id="type_filter" class="hidden">-->
+					<!--<p class='allcap-heading half mb-0 pl-1'>PLACE TYPES (select to limit)-->
+						<!--<span class="float-right mr-2"><a href="#" class="hide-filter">-->
+							<!--close { fontawesome_icon 'times-circle' color='#336699' %}</a></span>-->
+						<!--<span class="float-right clear-filter hidden mr-2"><a href="#">restore all</span></a>-->
+					<!--</p>-->
+					<!--<ul class="list-inline"></ul>-->
+				<!--</div>-->
 				<!--<div id="result_list" class="hidden"></div>-->
 			</div>
 			<div id="search_right" class="col-sm-6">
@@ -142,17 +134,27 @@
 				<!--<div id="result_extra" class="p-2"></div>-->
 			</div> <!--#search_right -->
 		</div> <!-- .row -->
-		<div id="search_info" class="p-2">  
-			<p>Search in WHG</p>
-			<p>explanation of index vs. database, etc. with a picture</p>
-		</div>
-		<div id="traces_info" class="p-2 hidden">  
-			<p>Traces in WHG</p>
-			<p>explanation of traces w/link</p>
-		</div>
-		<div id="result_list" class=""style="background-color:cornsilk;">
-			<p>the new result_list here, a fancy thing</p>
-		</div>
+		<div id="search_lower" class="row">
+			<div id="search_info" class="p-2">  
+				<h5>Search in WHG</h5>
+				<p>explanation of index vs. database, etc. with a picture</p>
+			</div>
+			<div id="traces_info" class="p-2 hidden">  
+				<p>Traces in WHG</p>
+				<p>explanation of traces w/link</p>
+			</div>
+			<div id="type_filter" class="hidden">
+				<p class='allcap-heading half mb-0 pl-1'>PLACE TYPES (select to limit)
+					<span class="float-right mr-2"><a href="#" class="hide-filter">
+						close {% fontawesome_icon 'times-circle' color='#336699' %}</a></span>
+					<span class="float-right clear-filter hidden mr-2"><a href="#">restore all</span></a>
+				</p>
+				<ul class="list-inline"></ul>
+			</div>				
+			<div id="result_list" class="">
+				<p>the new result_list here, a fancy thing</p>
+			</div>
+		</div> <!-- .row -->
   </div>
 </div> <!-- .container -->
 
@@ -187,8 +189,12 @@
 	src=search_scope=='db'?'DATABASE':'INDEX'
 	other = link == 'idx'?$("#scope_db"):$("#scope_idx")
 	$("#result_list").html('<p class="half allcap-heading mb-0 pl-1">'+src+ ' SEARCH RESULTS</p>')
+	if(other.data('link') == 'idx'){ 
+		$("#search_filters").css("background","whitesmoke")
+		$("#scope_db").css("border-bottom","1px solid whitesmoke")
+	} else {$("#search_filters").css("background","#fff")}
 	<!--console.log('data-link, other', link, other)-->
-	if(other.data('link') == 'idx'){ $("#div_ds_select").show()} else {$("#div_ds_select").hide()}
+	<!--if(other.data('link') == 'idx'){ $("#div_ds_select").show()} else {$("#div_ds_select").hide()}-->
 	other.removeClass('active')
 	$(this).addClass('active')
   })
@@ -291,9 +297,9 @@
 	// show filters, hide search_info and vice versa
     $("#link_filters").click(function(){
 	  if($("#search_filters").is(":visible")){
-		$("#search_info").show()
+		$("#search_info").fadeIn()
 	  } else {
-		$("#search_info").hide()
+		$("#search_info").fadeOut()
 	  }
 	  $("#search_filters").toggle(400)
     })
@@ -431,38 +437,34 @@
   //
   // radio button switch btwn place & trace search inputs
   $('input[type=radio][name=class]').change(function() {
-    console.log('changed class',$(this).val())
+    console.log('changed class', $(this).val())
     if ($(this).val() == 'place'){
-	  if(!$("#search_info").is(":visible")){
-		$("#traces_info").hide()
-		$("#search_info").show()
-		$("#scope_tabs").show()
-	  }
-	  <!--$(".carousel").carousel(0)-->
-	  $("#filters_opener").show()
-      $("#search_input").show()
-	  $("#search_filters").show()
-      $("#search_input_traces").hide()
-	  <!--$("#traces_info").hide()-->
-	  <!--$("#search_input").show()-->
+			if(!$("#search_info").is(":visible")){
+				$("#traces_info").hide()
+				$("#search_info").show()
+				$("#scope_tabs").show()
+			}
+			$("#filters_opener").show()
+			$("#search_input").show()
+			$("#search_filters").fadeIn()
+			$("#search_input_traces").hide()
     } else {
-	  if(!$("#traces_info").is(":visible")){
-		$("#search_info").hide()
-		$("#traces_info").show()
-		$("#scope_tabs").hide()
-	  }
-	  <!--$(".carousel").carousel(3)-->
-	  $("#filters_opener").hide()
-      $("#search_input").hide()
-      $("#search_filters").hide()
-      $("#search_input_traces").show()
-	  <!--$("#splash").hide()-->
-	  $('.nav-pills a[href="#pills-why"]').tab('show')
-	  <!--$("#traces_info").show()-->
-    }
-    $('#input_box').val('')
-    $('#input_box').attr("placeholder",this.getAttribute("rel"));
-    clearit()
+			console.log('viz?',$("#search_info").is(":visible"))
+			if(!$("#traces_info").is(":visible")){
+				$("#search_info").hide()
+				$("#traces_info").show()
+				$("#scope_tabs").hide()
+			}
+			$("#filters_opener").hide()
+			$("#search_input").hide()
+			$("#search_filters").hide()
+			$("#search_input_traces").show()
+			$('.nav-pills a[href="#pills-why"]').tab('show')
+		}
+		
+		$('#input_box').val('')
+		$('#input_box').attr("placeholder",this.getAttribute("rel"));
+		clearit()
   });
   // 
   function heat(dataset) {
@@ -744,6 +746,7 @@
     $("#result_list").hide()
     $("#type_filter").hide()
     $(".list-inline").html('')
+		<!--$("#search_info").fadeIn()-->
     <!--features.clearLayers()-->
     if(typeof(traces) !== "undefined") {traces.clearLayers(); mappy.setView([38, 10], 2.4)}
     if(typeof(features) !== "undefined") {features.clearLayers(); mappy.setView([38, 10], 2.4)}
@@ -863,7 +866,7 @@
 			// break array nec. - WHY???
 			fclasses: fclasses.join(','),
 			year: !y?null:y,
-			dsid: dsid,
+			dsid: null,
 			context: "search",
 			bounds: $("#boundsobj").val()
 		}, function(data) {
@@ -929,7 +932,7 @@
 		$("#result_list").show()
 		$("#search_info").hide()
 		$("#traces_info").hide()
-		titleMarkup = doctype=='trace'?'<p class="pl-1 mb-1 small strong">'+title+'</p>':''
+		titleMarkup = doctype=='trace'?'<p class="pl-1 mb-1 strong">'+title+'</p>':''
 		let src=search_scope=='idx'?'INDEX':'DATABASE'
     $('#result_list').html(titleMarkup+
       "<p class='half allcap-heading mb-0 pl-1'>"+(doctype=='place'?src+' SEARCH RESULTS ('+data.length+
@@ -952,9 +955,8 @@
       if(filterLayers != null){filterLayers.addTo(mappy)}
       $(".filter").removeClass('active-filter')
       $(this).addClass('active-filter')
-      filter=$(this).data('type')
+      filter = $(this).data('type')
       result_div = document.getElementById("result_list")
-      <!--result_div = document.getElementById("results_table")-->
       results = result_div.getElementsByTagName("div")
       hide_ids=[]; show_ids = []
       for (i = 0; i < results.length; i++) {
@@ -988,8 +990,13 @@
     })
     $(".clear-filter").on('click',function(e){
       filterLayers.addTo(mappy)
-	  mappy.fitBounds(features.getBounds())
+			mappy.fitBounds(features.getBounds())
       $(".filter").removeClass('active-filter')
+      for (i = 0; i < results.length; i++) {
+        _id = results[i].getAttribute('data-id')
+        console.log('results[i]',results[i])
+				results[i].style.display = "";
+      }			
       $(".clear-filter").hide()
     })
     $(".hide-filter").on('click',function(e){
