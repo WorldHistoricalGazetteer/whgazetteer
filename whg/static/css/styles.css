@@ -330,7 +330,7 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
 .list-inline { padding-left: 4px; margin-bottom:0;}
 .active-filter a {font-weight:bold; color:#993333 !important;}
 
-#search_input label { position:absolute; right: 120px; z-index:10;}
+#search_input label { position:absolute; right: 140px; z-index:10;}
 #search_input label, #search_input_traces label:hover { cursor:pointer;}
 #search_input_traces label { position:absolute; right: 120px; z-index:10;}
 
@@ -425,7 +425,12 @@ input[type="text"] {
   margin-top: .3rem;
   margin-right:auto;
 }
-#search_info, #traces_info { width: 100%; background-color:whitesmoke;}
+#search_info, #traces_info { 
+  width: 100%; 
+  /*background-color:whitesmoke;*/
+}
+#traces_info p {margin-bottom: 0;}
+
 /*#map_search.leaflet-container { height: 65%;}*/
 /*#map_search {height: 100%;}*/
 #map_search {max-height: 90%;}
@@ -438,6 +443,19 @@ input[type="text"] {
   box-shadow: 2px 2px #999;
   height: 320px;
   /*min-height: fit-content;*/
+}
+
+#results_table { min-width: 100%; }
+#results_table thead { 
+  background-color: #eee; 
+  font-size: small;
+  color:#993333; 
+  font-weight:600;
+}
+#results_table td, #results_table th { vertical-align:top; padding: 0 .2rem;}
+/*#results_table i { text-align: center;}*/
+#results_table tr:nth-child(even) {
+  background-color: whitesmoke;
 }
 
 /* database tab */

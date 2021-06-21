@@ -62,25 +62,25 @@
 				</ul>	
 			<div id="search_filters" class="tab-pane fade show active" role="tabpanel">
 				<div class="small row">
-				<div id="filters_class" class="col-sm-6">
-					<p class="mb-0">feature class(es) 
-					<!--<span class="ml-1 float-right">-->
-					<span class="ml-1">
-						<span class="mr-1"><a id="check_toggle" href="#">clear all</a></span>
-						<a id="filter_help" class="pointer" data-toggle="popover" title="Feature classes" data-content="" tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a>
-					</span>
-					</p>
-					<ul class="ul-left p-0 mb-0">
-					<li class="li-flush"><input type="checkbox" value="A" checked> A&nbsp;administrative entities</li>
-					<li class="li-flush"><input type="checkbox" value="P" checked> P&nbsp;cities, towns, hamlets...</li> 
-					<li class="li-flush"><input type="checkbox" value="S" checked> S&nbsp;sites, buildings, complexes...</li> 
-					<li class="li-flush"><input type="checkbox" value="R" checked> R&nbsp;roads, routes, rail...</li> 
-					<li class="li-flush"><input type="checkbox" value="L" checked> L&nbsp;regions, landscape areas</li> 
-					<li class="li-flush"><input type="checkbox" value="T" checked> T&nbsp;terrestrial landforms</li>
-					<li class="li-flush"><input type="checkbox" value="H" checked> H&nbsp;water bodies</li>
-					</ul>
-				</div>
-				<div id="filters_st" class="col-sm-6">
+					<div id="filters_class" class="col-sm-6">
+						<p class="mb-0">feature class(es) 
+						<!--<span class="ml-1 float-right">-->
+						<span class="ml-1">
+							<span class="mr-1"><a id="check_toggle" href="#">clear all</a></span>
+							<a id="filter_help" class="pointer" data-toggle="popover" title="Feature classes" data-content="" tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a>
+						</span>
+						</p>
+						<ul class="ul-left p-0 mb-0">
+						<li class="li-flush"><input type="checkbox" value="A" checked> A&nbsp;administrative entities</li>
+						<li class="li-flush"><input type="checkbox" value="P" checked> P&nbsp;cities, towns, hamlets...</li> 
+						<li class="li-flush"><input type="checkbox" value="S" checked> S&nbsp;sites, buildings, complexes...</li> 
+						<li class="li-flush"><input type="checkbox" value="R" checked> R&nbsp;roads, routes, rail...</li> 
+						<li class="li-flush"><input type="checkbox" value="L" checked> L&nbsp;regions, landscape areas</li> 
+						<li class="li-flush"><input type="checkbox" value="T" checked> T&nbsp;terrestrial landforms</li>
+						<li class="li-flush"><input type="checkbox" value="H" checked> H&nbsp;water bodies</li>
+						</ul>
+					</div>
+					<div id="filters_st" class="col-sm-6">
 					<p class="mb-0">temporal ( default = all)
 					<span class="float-right"><a id="temporal_help" class="pointer" data-toggle="popover" title="Temporal filter" data-content="" tabindex="0" data-trigger="focus">
 						{% fontawesome_icon 'question-circle' color='#336699' %}</a></span>
@@ -115,7 +115,11 @@
 						</select>
 					</div>
 				</div> <!-- #div_ds_select -->{%endcomment%}
-			</div> <!-- #search_filters -->		
+			</div> <!-- #search_filters -->	
+			<div id="traces_info" class="p-2 hidden">  
+				<p class="strong">Linked Traces in WHG</p>
+				<p class="small">Traces are an experimental feature in WHG</p>
+			</div>
 			</div><!-- #search_panel -->
 				<!-- separate div for full search results -->
 				<!--<div id="type_filter" class="hidden">-->
@@ -135,13 +139,16 @@
 			</div> <!--#search_right -->
 		</div> <!-- .row -->
 		<div id="search_lower" class="row">
-			<div id="search_info" class="p-2">  
-				<h5>Search in WHG</h5>
-				<p>explanation of index vs. database, etc. with a picture</p>
-			</div>
-			<div id="traces_info" class="p-2 hidden">  
-				<p>Traces in WHG</p>
-				<p>explanation of traces w/link</p>
+			<div id="search_info">
+				<div class="row p-2">
+				<div class="col-sm-6">
+					<p class="my-0 strong">Search in WHG</p>
+					<p class="my-0 small">Data uploaded to WHG is initially stored in a relational database. All records in datasets flagged as "public" are searchable here under the "Search Database" option above. Records in fully accessioned datasets have been added to a "union index," where they may be grouped with others if asserted by their creators as "closely matched," or stand alone until (possibly) matched in future additions.</p>
+				</div>
+				<div class="col-sm-6 pl-4">
+					<p>a figure?</p>
+				</div>
+				</div>
 			</div>
 			<div id="type_filter" class="hidden">
 				<p class='allcap-heading half mb-0 pl-1'>PLACE TYPES (select to limit)
@@ -152,6 +159,9 @@
 				<ul class="list-inline"></ul>
 			</div>				
 			<div id="result_list" class="">
+				<table id="result_table">
+				<th><td>field 1</td><td>field 2</td></th>
+				</table>
 				<p>the new result_list here, a fancy thing</p>
 			</div>
 		</div> <!-- .row -->
@@ -186,7 +196,7 @@
   $(".nav-link").click(function(){
 	let link = $(this).data('link')
 	search_scope = link
-	src=search_scope=='db'?'DATABASE':'INDEX'
+	src=search_scope=='db'?'DATABASE':'UNION INDEX'
 	other = link == 'idx'?$("#scope_db"):$("#scope_idx")
 	$("#result_list").html('<p class="half allcap-heading mb-0 pl-1">'+src+ ' SEARCH RESULTS</p>')
 	if(other.data('link') == 'idx'){ 
@@ -530,6 +540,8 @@
   addEventListener('map:init', function (e) {
     window.mappy = e.detail.map
     mappy.setMaxBounds(null)
+		mappy.options.zoomSnap = 0.5
+		mappy.setView(new L.LatLng(32, 12.6), 1);
 
 	// mapbox tokens 
 	var token_kg = '{{ mbtokenkg }}', 
@@ -767,7 +779,7 @@
     if (e.keyCode === 13) {
       // always hide search_info and traces_info on search
 	  $("#search_info").hide()
-	  $("#traces_info").hide()
+	  <!--$("#traces_info").hide()-->
 	  if (search_scope == 'idx'){
 		searchPlacesIdx()		
 	  } else {
@@ -894,6 +906,9 @@
       if(data.length ==0) {
         results_div += '<p class="small ml-2">No results, sorry.</p>'
       } else {
+				results_table ='<table id="results_table"><thead><tr><th>Title <small>(# linked records)</small></th> <th>Countries </th><th>Name variants</th><th>geom?</th> <th>Type(s)</th></tr></thead>'
+				<!--attestations+ccodes+dslink+geo+types+variants-->
+				console.log('result data', data)
         data.forEach(function(sug){
 					<!--console.log('sug', sug)-->
 					typesArr=typesArr.concat(sug.types)
@@ -904,9 +919,11 @@
               geoms.push(g)
             })
           }
-          <!--console.log('types Set',types)-->
-          results_div += sugLister(sug, doctype, scope)   
+          // adds a row to result_div that gets inserted into #result_list later
+          results_table += sugLister(sug, doctype, scope)   
+          <!--results_table += sugTableRow(sug, doctype, scope)   -->
         })
+				results_table += '</table>'
         <!--console.log('typesArr',typesArr)-->
         types = Array.from(new Set(typesArr));
         <!--console.log('types',types)-->
@@ -931,16 +948,18 @@
      
 		$("#result_list").show()
 		$("#search_info").hide()
-		$("#traces_info").hide()
+		<!--$("#traces_info").hide()-->
 		titleMarkup = doctype=='trace'?'<p class="pl-1 mb-1 strong">'+title+'</p>':''
-		let src=search_scope=='idx'?'INDEX':'DATABASE'
+		let src=search_scope=='idx'?'UNION INDEX':'DATABASE'
     $('#result_list').html(titleMarkup+
-      "<p class='half allcap-heading mb-0 pl-1'>"+(doctype=='place'?src+' SEARCH RESULTS ('+data.length+
+      "<p class='half allcap-heading mb-0 pl-1'>"+
+			(doctype=='place' ? src+' SEARCH RESULTS ('+data.length+
       ')<span class="float-right typefilter-link">'+
-      '<a href="#">filter by type {% fontawesome_icon 'filter' %}</a></span>':
+      '<a href="#">filter by type {% fontawesome_icon 'filter' %}</a></span>' :
       'PLACE ANNOTATIONS IN TRACE  ('+data.bodies.length+')')+'</p>'
-      +results_div
-    );    
+      <!-- +results_div -->
+      +results_table
+    );
 
     // empty the typeahead suggestions
     $(".tt-dataset").html('')
@@ -1125,35 +1144,56 @@
     
   }
   /*
+    *** sugTableRow() ***  from showResults()
+    formats search result item (sug)
+		doctype: [place|trace]; scope: [search|suggest]
+  */  
+  <!--function sugTableRow(sug, doctype, scope) {-->
+		
+	<!--}-->
+	
+  /*
     *** sugLister() ***  from showResults()
     formats search result item (sug)
   */  
   function sugLister(sug, doctype, scope) {
     <!--console.log(sug)-->
     if (doctype=='place') {
-	  linkcount = sug['ds'] ? '' : (parseInt(sug['linkcount']) +1)
-	  attestations = sug['ds'] ? '' : ' <i>' + linkcount + (linkcount>1?' linked attestations</i>; ':' attestation</i>; ')
-      variants = sug['variants'].length > 0 ? '<br/><i class="text-secondary"> var: '+
-        sug['variants'].sort().slice(0,6).join('; ')+'; </i> ...' : ''
+			linkcount = sug['ds'] ? '' : (parseInt(sug['linkcount']) +1)
+			attestations = sug['ds'] ? '' : ' <i>' + linkcount + (linkcount>1?' linked attestations</i>; ':' attestation</i>; ')
+			<!--variants = sug['variants'].length > 0 ? '<br/><i class="text-secondary"> var: '+-->
+			varcount = sug['variants'].length
+			variants = varcount > 0 ? sug['variants'].sort().slice(0,6) : ''
       <!--console.log(sug['variants'])-->
-      if (scope=='search'){
+			if (scope=='search'){
         <!--snippet = sug['snippet'].length > 0 ? sug['snippet']+'...' : ''-->
         ccodes = sug['ccodes'] != '' ? ' ['+sug['ccodes']+']' : ''
-        types = '<br/>('+sug['types']+')'
+        <!--types = '<br/>('+sug['types']+')'-->
+        types = sug['types']
         geo = sug['geom'].length > 0 ? ' {% fontawesome_icon 'globe' color='#666' %}' : ''
 		
-		// whgid if index search, else pid
-		identifier = sug['ds'] ? sug['pid'] : sug['whg_id']
-		// add dataset link if this is db search result
-		dslink = sug['ds'] ? ' dataset: '+
-		'<a class="pop-link pop-dataset" data-id='+sug['ds']['id']+' data-toggle="popover" title="Dataset Profile" data-content="" tabindex="0" rel="clickover">'+sug['ds']['title']+'</a> ('+identifier+')' : ''	
-		// link destination varies
-		link_class = sug['ds'] ? 'db-link' : 'place-link'
-		// dynamic search result 'card'
-		item = '<div class="search-row place-item" data-id="'+identifier+'" data-types="'+sug['types']+'"><a class="'+link_class+'" href="#" data-id="'+identifier+'"><b>'+sug['name']+'</b></a>'+attestations+ccodes+dslink+geo+types+variants+'</div>'		  		
-	  } else {
+				// whgid if index search, else pid
+				identifier = sug['ds'] ? sug['pid'] : sug['whg_id']
+				// add dataset link if this is db search result
+				dslink = sug['ds'] ? ' dataset: '+
+				'<a class="pop-link pop-dataset" data-id='+sug['ds']['id']+' data-toggle="popover" title="Dataset Profile" data-content="" tabindex="0" rel="clickover">'+sug['ds']['title']+'</a> ('+identifier+')' : ''	
+				// link destination varies
+				link_class = sug['ds'] ? 'db-link' : 'place-link'
+
+				// dynamic search result 'card' div
+				/*
+				item = '<div class="search-row place-item" data-id="'+identifier+'" data-types="'+sug['types']+'"><a class="'+link_class+'" href="#" data-id="'+identifier+'"><b>'+sug['name']+'</b></a>'+attestations+ccodes+dslink+geo+types+variants+'</div>'
+				*/
+				
+				variants = varcount > 6 ? variants +' ... <i>'+varcount+' total</i>' : variants
+				// table row alternate
+				item = '<tr class="search-row place-item" data-id="'+identifier+'" data-types="'+sug['types']+'">'+
+					'<td><a class="'+link_class+'" href="#" data-id="'+identifier+'"><b>'+sug['name']+'</a> <small>('+linkcount+')</small></td><td>'+ccodes+'</td><td>'+variants+'</td><td class="text-center">'+geo+'</td><td>'+types+'</td></tr>'
+				
+			} else if (scope=='suggest') {
+				// was used for autocomplete, now deprecated
         item = '<div class="sug_row sug-item">'+sug['name']+' '+variants+'</div>'
-      }
+			}
     } else if (doctype=='trace') {
       let pid = sug['place_id'] != null ? sug['place_id'] : ""
       <!-- make object array from idToFeature{}-->
@@ -1425,7 +1465,7 @@
     }
   }
   
-  // load place portal page from results_list item title links       
+  // load place portal page from result_list item title links       
   // TODO: links are nested so click produces 2 events
   $("#result_list").on('click', '.trace-link', function(e){
     whgid=$(this).data('id')
