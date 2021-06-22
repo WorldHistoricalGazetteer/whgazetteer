@@ -117,6 +117,9 @@
 					</div>
 				</div> <!-- #div_ds_select -->{%endcomment%}
 			</div> <!-- #search_filters -->	
+      <div id="result_filters" class="p-3 hidden">
+        <p class="allcap-heading half">RESULT FILTERS: </p>
+      </div>
 			<div id="traces_info" class="p-2 hidden">  
 				<p class="strong">Linked Traces in WHG</p>
 				<p class="small">Traces are an experimental feature in WHG. Briefly:</p>
@@ -481,6 +484,7 @@
 			}
 			$("#filters_opener").hide()
 			$("#search_input").hide()
+      $("#result_filters").hide()
 			$("#search_filters").hide()
 			$("#search_input_traces").show()
 			$('.nav-pills a[href="#pills-why"]').tab('show')
@@ -949,7 +953,8 @@
         if(scope=='search') {
 					<!--console.log('geoms from sugs, to renderPlaces()', geoms)-->
           renderPlaces(geoms)
-        }      
+        }
+        $("#result_filters").show()
       }
     } else if (doctype == 'trace') {
 			// data has features and bodies
@@ -962,6 +967,7 @@
         results_table += sugLister(bod, doctype, scope)
       })
       results_table += '</table>'
+      $("#result_filters").hide()
     };
      
 		$("#result_list").show()
