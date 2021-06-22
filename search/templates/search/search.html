@@ -235,6 +235,7 @@
   $(".nav-link").click(function(){
     let link = $(this).data('link')
     search_scope = link
+    localStorage.setItem('search_scope', search_scope)
     src = search_scope=='db'?'DATABASE':'UNION INDEX'
     other = link == 'idx'?$("#scope_db"):$("#scope_idx")
     $("#result_list").fadeOut()
@@ -959,12 +960,16 @@
     title:    
   */
   function showResults(data, doctype, scope='suggest', title){
-		<!--console.log('in showResults()')-->
+		console.log('in showResults()', previous)
     // always want result_list to show
     $("#result_list").show()
     var results_div = '';
     var results_table = '';
-    search_scope = $("li a.active").data('link')
+    <!--search_scope = $("li a.active").data('link')-->
+    search_scope = localStorage.getItem('search_scope')
+    // ensure db tab is selected
+    scope_id = search_scope=='db'?'db':'idx'
+    switchTab(scope_id)
     geoms=[]
     var types=[], typesArr = []
     <!--console.log(data.bodies.length+ ' bodies',data)-->
@@ -1229,12 +1234,9 @@
 			variants = varcount > 0 ? sug['variants'].sort().slice(0,6) : ''
       <!--console.log(sug['variants'])-->
 			if (scope=='search'){
-        <!--snippet = sug['snippet'].length > 0 ? sug['snippet']+'...' : ''-->
         ccodes = sug['ccodes'] != '' ? ' ['+sug['ccodes']+']' : ''
-        <!--types = '<br/>('+sug['types']+')'-->
         types = sug['types']
         geo = sug['geom'].length > 0 ? ' {% fontawesome_icon 'globe' color='#666' %}' : ''
-		
 				// whgid if index search, else pid
 				identifier = sug['ds'] ? sug['pid'] : sug['whg_id']
         dsid = sug['ds'] ? parseInt(sug['ds']['id']) : ''
