@@ -118,7 +118,13 @@
 			</div> <!-- #search_filters -->	
 			<div id="traces_info" class="p-2 hidden">  
 				<p class="strong">Linked Traces in WHG</p>
-				<p class="small">Traces are an experimental feature in WHG</p>
+				<p class="small">Traces are an experimental feature in WHG. Briefly:</p>
+				<ul class="small mb-0">
+					<li class="li-left-sm"><sr>Traces</sr> are material and non-material things in the world, e.g. objects, people, events, or concepts.</li>
+					<li class="li-left-sm"><sr>Trace data</sr> are linked open web resources describing or depicting such trace phenomena, e.g web pages, datasets.</li>
+					<li class="li-left-sm"><sr>Linked Traces</sr> are annotations of <i>trace data</i> with identifiers for places relevant to those phenomena, and attributes indicating how and when.</li>
+				</ul>
+				<p class="small mt-1">Trace examples in WHG can be viewed in two ways. Typing a search term into the box above (try 'empire' or 'Buddhist') returns matching Linked Trace datasets. Traces related to a given place appear on its Place Portal page, e.g. for <a href="{% url 'places:place-portal' id=12345979 %}">Istanbul</a>, or <a href="{% url 'places:place-portal' id=12877143 %}">Hetian (Khotan)</a>.</p>
 			</div>
 			</div><!-- #search_panel -->
 				<!-- separate div for full search results -->
@@ -143,7 +149,7 @@
 				<div class="row p-2">
 				<div class="col-sm-6">
 					<p class="my-0 strong">Search in WHG</p>
-					<p class="my-0 small">Data uploaded to WHG is initially stored in a relational database. All records in datasets flagged as "public" are searchable here under the "Search Database" option above. Records in fully accessioned datasets have been added to a "union index," where they may be grouped with others if asserted by their creators as "closely matched," or stand alone until (possibly) matched in future additions.</p>
+					<p class="my-0 small">Data uploaded to WHG is initially stored in a relational database. All records in datasets flagged as "public" are searchable here under the "Search Database" option above. Records in fully accessioned datasets have been added to a "union index," where they may be grouped with others if asserted by their creators as "closely matched," or stand alone until (possibly) matched in future additions. The default scope of search is the index.</p>
 				</div>
 				<div class="col-sm-6 pl-4">
 					<p>a figure?</p>
@@ -188,111 +194,114 @@
   window.area_objs = []
     
   $(".bblink").click(function(){
-	console.log('bbox for',$(this).data('id'))
-	feat = idToFeature[$(this).data('id')]
-	feat.addTo(mappy)
+    console.log('bbox for',$(this).data('id'))
+    feat = idToFeature[$(this).data('id')]
+    feat.addTo(mappy)
   })
   // search source faux tab actions
   $(".nav-link").click(function(){
-	let link = $(this).data('link')
-	search_scope = link
-	src=search_scope=='db'?'DATABASE':'UNION INDEX'
-	other = link == 'idx'?$("#scope_db"):$("#scope_idx")
-	$("#result_list").html('<p class="half allcap-heading mb-0 pl-1">'+src+ ' SEARCH RESULTS</p>')
-	if(other.data('link') == 'idx'){ 
-		$("#search_filters").css("background","whitesmoke")
-		$("#scope_db").css("border-bottom","1px solid whitesmoke")
-	} else {$("#search_filters").css("background","#fff")}
-	<!--console.log('data-link, other', link, other)-->
-	<!--if(other.data('link') == 'idx'){ $("#div_ds_select").show()} else {$("#div_ds_select").hide()}-->
-	other.removeClass('active')
-	$(this).addClass('active')
+    let link = $(this).data('link')
+    search_scope = link
+    src=search_scope=='db'?'DATABASE':'UNION INDEX'
+    other = link == 'idx'?$("#scope_db"):$("#scope_idx")
+    $("#result_list").html('<p class="half allcap-heading mb-0 pl-1">'+src+ ' SEARCH RESULTS</p>')
+    if(other.data('link') == 'idx'){ 
+      $("#search_filters").css("background","whitesmoke")
+      $("#scope_db").css("border-bottom","1px solid whitesmoke")
+    } else {$("#search_filters").css("background","#fff")}
+    <!--console.log('data-link, other', link, other)-->
+    <!--if(other.data('link') == 'idx'){ $("#div_ds_select").show()} else {$("#div_ds_select").hide()}-->
+    other.removeClass('active')
+    $(this).addClass('active')
   })
   // dataset dropdown
   $("#select_ds_search").change(function(){
-	console.log('ds chosen', $(this).val())
+	  console.log('ds chosen', $(this).val())
   })
   // radio $("#checkbox_div input:radio").click(function() {
   $(".filters-title input:radio").click(function(){
-	t = $(this)
-	console.log('clicked', $(this).val())
-	if($(this).val() == 'idx'){
-	  $("#div_ds_select").hide()
-	} else {
-	  $("#div_ds_select").show()
-	}
+    t = $(this)
+    console.log('clicked', $(this).val())
+    if($(this).val() == 'idx'){
+      $("#div_ds_select").hide()
+    } else {
+      $("#div_ds_select").show()
+    }
   })
   $(function(){
-	window.search_scope = $("li a.active").data('link')
-	// toggle all fclass checkboxes
-	$("#check_toggle").click(function(e){
-	  e.preventDefault()
-	  var state = $("#check_toggle").text()
-	  if(state == 'check all'){
-		$("input:checkbox").prop('checked', true);
-		$("#check_toggle").text('clear all');
-	  } else if( state == 'clear all'){
-		$("input:checkbox").prop('checked', false);
-		$("#check_toggle").text('check all');		
-	  }
-	})
-	
-	$( "#map_dataset" ).change(function() {
-	  if (!!gl.getLayer('heat_active')){
-		gl.removeLayer('heat_active')}
-	  heat($(this).val())
-	  console.log('heat() for',$(this).val())
-	});	
-	
-	$("[rel='tooltip']").tooltip();
-	$("[data-toggle=popover]").popover({html:true})  
-
-	// dynamic dataset info popover
-	var dspop = $(".pop-dataset").popover({
-	  trigger: 'focus',
-	  placement: 'right',
-	  html: true
-	}).on('show.bs.popover', function () {
-		$.ajax({
-		  url: '/api/datasets/',
-		  data: {id:$(this).data('id')},
-		  dataType: "JSON",
-		  async: false,
-		  success: function (data) {
-			ds=data.results[0]
-			console.log('ds',ds)
-			html='<p class="thin"><b>Title</b>: '+ds.title+'</p>'
-			html+='<p class="thin"><b>Description</b>: '+ds.description+'</p>'
-			html+='<p class="thin"><b>WHG Owner</b>: '+ds.owner+'</p>'
-			html+='<p class="thin"><b>Creator</b>: '+ds.creator+'</p>'
-			<!--if(ds.webpage){-->
-			  <!--html+='<p class="thin"><a href="'+ds.webpage+'" target="_blank">Web page</a></p>'-->
-			<!--}-->
-			dspop.attr('data-content', html);
-		  }
-	  });
-	})
-	
-	// popover content
-	$("#filter_help").attr(
-	  'data-content',"<p>Select one or more feature class (uses GeoNames single-letter codes)</p>"
-	)
-	$("#search_help").attr(
-	  'data-content',"<p class='mb-2'>Search of the WHG <b>index</b> is limited to fully accessioned (linked) datasets. Returns conflated sets of attestations.</p>"+
-	  "<p>Search of the WHG <b>database</b> includes datasets not yet indexed. Returns individual (non-conflated) attestations.</p>"
-	)
-	$("#db_help").attr(
-	  'data-content',"<p>Search of all public datasets, including those not yet indexed. Returns individual (non-conflated) attestations.</p>"
-	)
-	$("#temporal_help").attr(
-	  'data-content',"<p>NOTE: Records in our largest core datasets do not have temporal attributes, so the default is all periods. Nevertheless, limiting the timespan here may be useful for some queries</p>"
-	)
-	$("#spatial_help").attr(
-	  'data-content',"<p>Constrain search to the bounds of a UN global sub-region</a>, a country, or a user-created study area. Try entering 'south...'</p>"
-	) // <a href='https://unstats.un.org/unsd/methodology/m49/'></a>
-	$("#dataset_help").attr(
-	  'data-content',"<p>Constrain search to indexed places attested in a single public dataset.</p>"
-	) // [<a href='{ url 'public-lists'%}'>list</a>] Choosing a dataset will override spatial filtering.
+    search_scope = $("li a.active").data('link') // idx or db
+    search_class = $('input[name=class]').val() // place or trace
+    if(search_class == "trace") {$("#traces_info").show()}
+    
+    // toggle all fclass checkboxes
+    $("#check_toggle").click(function(e){
+      e.preventDefault()
+      var state = $("#check_toggle").text()
+      if(state == 'check all'){
+      $("input:checkbox").prop('checked', true);
+      $("#check_toggle").text('clear all');
+      } else if( state == 'clear all'){
+      $("input:checkbox").prop('checked', false);
+      $("#check_toggle").text('check all');		
+      }
+    })
+    
+    $( "#map_dataset" ).change(function() {
+      if (!!gl.getLayer('heat_active')){
+      gl.removeLayer('heat_active')}
+      heat($(this).val())
+      console.log('heat() for',$(this).val())
+    });	
+    
+    $("[rel='tooltip']").tooltip();
+    $("[data-toggle=popover]").popover({html:true})  
+  
+    // dynamic dataset info popover
+    var dspop = $(".pop-dataset").popover({
+      trigger: 'focus',
+      placement: 'right',
+      html: true
+    }).on('show.bs.popover', function () {
+      $.ajax({
+        url: '/api/datasets/',
+        data: {id:$(this).data('id')},
+        dataType: "JSON",
+        async: false,
+        success: function (data) {
+        ds=data.results[0]
+        console.log('ds',ds)
+        html='<p class="thin"><b>Title</b>: '+ds.title+'</p>'
+        html+='<p class="thin"><b>Description</b>: '+ds.description+'</p>'
+        html+='<p class="thin"><b>WHG Owner</b>: '+ds.owner+'</p>'
+        html+='<p class="thin"><b>Creator</b>: '+ds.creator+'</p>'
+        <!--if(ds.webpage){-->
+          <!--html+='<p class="thin"><a href="'+ds.webpage+'" target="_blank">Web page</a></p>'-->
+        <!--}-->
+        dspop.attr('data-content', html);
+        }
+      });
+    })
+    
+    // popover content
+    $("#filter_help").attr(
+      'data-content',"<p>Select one or more feature class (uses GeoNames single-letter codes)</p>"
+    )
+    $("#search_help").attr(
+      'data-content',"<p class='mb-2'>Search of the WHG <b>index</b> is limited to fully accessioned (linked) datasets. Returns conflated sets of attestations.</p>"+
+      "<p>Search of the WHG <b>database</b> includes datasets not yet indexed. Returns individual (non-conflated) attestations.</p>"
+    )
+    $("#db_help").attr(
+      'data-content',"<p>Search of all public datasets, including those not yet indexed. Returns individual (non-conflated) attestations.</p>"
+    )
+    $("#temporal_help").attr(
+      'data-content',"<p>NOTE: Records in our largest core datasets do not have temporal attributes, so the default is all periods. Nevertheless, limiting the timespan here may be useful for some queries</p>"
+    )
+    $("#spatial_help").attr(
+      'data-content',"<p>Constrain search to the bounds of a UN global sub-region</a>, a country, or a user-created study area. Try entering 'south...'</p>"
+    ) // <a href='https://unstats.un.org/unsd/methodology/m49/'></a>
+    $("#dataset_help").attr(
+      'data-content',"<p>Constrain search to indexed places attested in a single public dataset.</p>"
+    ) // [<a href='{ url 'public-lists'%}'>list</a>] Choosing a dataset will override spatial filtering.
     
     
     var idToFeature = {} // for feature lookup
@@ -314,106 +323,106 @@
 	  $("#search_filters").toggle(400)
     })
 
-	// 
-	$("label[for='input_box']").click(function(){
-	  console.log('clicked search')
-	  doctype = $("input[name='class']:checked").val()
-	  if(search_scope == 'idx'){
-		searchPlacesIdx()
-	  } else { searchPlacesDb()}	  
-	})	
-    //
-    // data type choice determines index searched
-    var suggester = new Bloodhound({
-        datumTokenizer: Bloodhound.tokenizers.whitespace,
-        queryTokenizer: Bloodhound.tokenizers.whitespace,
-        remote: {
-          wildcard: '%QUERY',
-          url: 'foofah',
-          prepare: function (query, settings) {
-           var doctype = $("input[name='class']:checked").val();
-           settings.url = '/search/index?doc_type='+doctype+'&scope=suggest&'+$.param({
-                qstr: query,
-                idx: doctype == 'place' ? 'whg' : 'trace'
-            });
-           return settings;
-         } 
-        }
-    });
-    function hh(element) {
-      el=element.toLowerCase()
-      return el.includes($("#input_box").val().toLowerCase());
-    }
-    $('.typeahead').typeahead({minLength:2,highlight:true}, {
-        name: 'suggester',
-        source: suggester,
-        display: 'name',
-        limit: 10,
-        templates: {
-          empty: ['<div class="small ml-2">','no results...','</div>'].join('\n'),
-          suggestion: function (data) {
-            doctype = $("input[name='class']:checked").val()
-            if(doctype == 'place'){
-              <!--console.log('variants',data.variants)-->
-              return data.variants.length>0 ? 
-                '<p class="tight-p tt-suggestion">' + data.name + '<br/><i class="tight-p">' + 
-                  data.variants.filter(hh).join(', ') + '<i></p>' : 
-                '<p class="tight-p">' + data.name + '</p>'
-            } else {
-              console.log('data',data)
-              return '<p rel="'+data._id+'">'+data.title+'</p>'
+    // 
+    $("label[for='input_box']").click(function(){
+      console.log('clicked search')
+      doctype = $("input[name='class']:checked").val()
+      if(search_scope == 'idx'){
+      searchPlacesIdx()
+      } else { searchPlacesDb()}	  
+    })	
+      //
+      // data type choice determines index searched
+      var suggester = new Bloodhound({
+          datumTokenizer: Bloodhound.tokenizers.whitespace,
+          queryTokenizer: Bloodhound.tokenizers.whitespace,
+          remote: {
+            wildcard: '%QUERY',
+            url: 'foofah',
+            prepare: function (query, settings) {
+             var doctype = $("input[name='class']:checked").val();
+             settings.url = '/search/index?doc_type='+doctype+'&scope=suggest&'+$.param({
+                  qstr: query,
+                  idx: doctype == 'place' ? 'whg' : 'trace'
+              });
+             return settings;
+           } 
+          }
+      });
+      function hh(element) {
+        el=element.toLowerCase()
+        return el.includes($("#input_box").val().toLowerCase());
+      }
+      $('.typeahead').typeahead({minLength:2,highlight:true}, {
+          name: 'suggester',
+          source: suggester,
+          display: 'name',
+          limit: 10,
+          templates: {
+            empty: ['<div class="small ml-2">','no results...','</div>'].join('\n'),
+            suggestion: function (data) {
+              doctype = $("input[name='class']:checked").val()
+              if(doctype == 'place'){
+                <!--console.log('variants',data.variants)-->
+                return data.variants.length>0 ? 
+                  '<p class="tight-p tt-suggestion">' + data.name + '<br/><i class="tight-p">' + 
+                    data.variants.filter(hh).join(', ') + '<i></p>' : 
+                  '<p class="tight-p">' + data.name + '</p>'
+              } else {
+                <!--console.log('data',data)-->
+                return '<p rel="'+data._id+'">'+data.title+'</p>'
+              }
             }
           }
+      })
+      .on('typeahead:selected', function (obj, datum) {
+        // fetchTraceGeom() -> [views.TraceGeomView() <- views.getGeomCollection()] -> showResults() -> sugLister
+        <!--console.log('trace typeahead clicked: datum',datum)-->
+        if(doctype=='trace'){
+          fetchTraceGeom(datum._id,0,datum.title)
         }
+      })
+      .on('typeahead:asyncrequest', function() {
+          $('.typeahead').addClass('input-loading');
+      })
+      .on('typeahead:asynccancel typeahead:asyncreceive', function() {
+          $('.typeahead').removeClass('input-loading');
+      });;
+    
+    // fetch area list
+    $.get("/api/area_list", function(data){
+      <!--console.log('initial areas for list',data)-->
+      for(var i=0;i<data.length;i++){
+      area_objs.push(data[i])
+      area_list.push(data[i]['title'])
+      }	  
     })
-    .on('typeahead:selected', function (obj, datum) {
-      // fetchTraceGeom() -> [views.TraceGeomView() <- views.getGeomCollection()] -> showResults() -> sugLister
-      console.log('trace typeahead clicked: datum',datum)
-      if(doctype=='trace'){
-        fetchTraceGeom(datum._id,0,datum.title)
+    
+    $( "#input_area" ).autocomplete({
+      source: area_list,
+      minLength: 2,
+      select: function( event, ui ) {
+      // build boundsobj, insert as hidden input val()
+      label = ui.item.label
+      obj = area_objs.find(o =>o.title==label)
+      areaid = obj.id
+      boundsobj = '{"type":["'+obj.type+'"],"id":["'+areaid+'"]}'
+      $("#boundsobj").val( boundsobj )
+      console.log( "boundsobj for view ", boundsobj);
+      
+      // fetch and render selected area
+      render_area(areaid)
       }
-    })
-    .on('typeahead:asyncrequest', function() {
-        $('.typeahead').addClass('input-loading');
-    })
-    .on('typeahead:asynccancel typeahead:asyncreceive', function() {
-        $('.typeahead').removeClass('input-loading');
-    });;
-	
-	// fetch area list
-	$.get("/api/area_list", function(data){
-	  <!--console.log('initial areas for list',data)-->
-	  for(var i=0;i<data.length;i++){
-		area_objs.push(data[i])
-		area_list.push(data[i]['title'])
-	  }	  
-	})
-	
-	$( "#input_area" ).autocomplete({
-	  source: area_list,
-	  minLength: 2,
-	  select: function( event, ui ) {
-		// build boundsobj, insert as hidden input val()
-		label = ui.item.label
-		obj = area_objs.find(o =>o.title==label)
-		areaid = obj.id
-		boundsobj = '{"type":["'+obj.type+'"],"id":["'+areaid+'"]}'
-		$("#boundsobj").val( boundsobj )
-		console.log( "boundsobj for view ", boundsobj);
-		
-		// fetch and render selected area
-		render_area(areaid)
-	  }
-	});
-	$("#input_area").on('keyup', function(e){
-		// resets stuff 
-	  if($('#input_area').val().length < 3) {
-		  $("#boundsobj").val('')
-			if(typeof arealayer !== 'undefined'){arealayer.removeFrom(mappy)}
-			mappy.setView([38, 10], 2.4)
-	  }
-	})
-  })
+    });
+    $("#input_area").on('keyup', function(e){
+      // resets stuff 
+      if($('#input_area').val().length < 3) {
+        $("#boundsobj").val('')
+        if(typeof arealayer !== 'undefined'){arealayer.removeFrom(mappy)}
+        mappy.setView([38, 10], 2.4)
+      }
+	  })
+  }) <!--  end onLoad() -->
  /*
 	*** render_area() ***
 	fetch and display an area (region/area/country)
@@ -459,7 +468,7 @@
 			$("#search_filters").fadeIn()
 			$("#search_input_traces").hide()
     } else {
-			console.log('viz?',$("#search_info").is(":visible"))
+			<!--console.log('viz?',$("#search_info").is(":visible"))-->
 			if(!$("#traces_info").is(":visible")){
 				$("#search_info").hide()
 				$("#traces_info").show()
@@ -745,7 +754,7 @@
 		  // TODO: some logic to provide padding if bounds too small
           mappy.fitBounds(bounds)
         }
-		console.log('searchResults from fetchTraceGeometry()')
+		    <!--console.log('searchResults from fetchTraceGeometry()')-->
         showResults(data,'trace','suggest',title)
     });
   }
@@ -899,6 +908,7 @@
   function showResults(data, doctype, scope='suggest', title){
 		<!--console.log('in showResults()')-->
     var results_div = '';
+    var results_table = '';
     geoms=[]
     var types=[], typesArr = []
     <!--console.log(data.bodies.length+ ' bodies',data)-->
@@ -939,25 +949,26 @@
 			// data has features and bodies
 			bodies = data.bodies
 			console.log('trace data',data)
-			<!--console.log('trace data bodies',data.bodies)-->
+      results_table = '<table id="results_table">'+'<thead><tr><th>Place</th><th>Relation [earliest, latest]</th></tr></thead>'			
+      <!--console.log('trace data bodies',data.bodies)-->
 			data.bodies.forEach(function(bod){ 
         // add a whg_id to bodies        
-				results_div += sugLister(bod, doctype, scope)
+        results_table += sugLister(bod, doctype, scope)
       })
+      results_table += '</table>'
     };
      
 		$("#result_list").show()
 		$("#search_info").hide()
 		<!--$("#traces_info").hide()-->
-		titleMarkup = doctype=='trace'?'<p class="pl-1 mb-1 strong">'+title+'</p>':''
+		titleMarkup = doctype=='trace'?'<p class="pl-1 mb-1 strong">'+title+'<small> :: a Linked Traces dataset ('+data.bodies.length+' related places)</small></p>':''
 		let src=search_scope=='idx'?'UNION INDEX':'DATABASE'
     $('#result_list').html(titleMarkup+
       "<p class='half allcap-heading mb-0 pl-1'>"+
 			(doctype=='place' ? src+' SEARCH RESULTS ('+data.length+
       ')<span class="float-right typefilter-link">'+
-      '<a href="#">filter by type {% fontawesome_icon 'filter' %}</a></span>' :
-      'PLACE ANNOTATIONS IN TRACE  ('+data.bodies.length+')')+'</p>'
-      <!-- +results_div -->
+      '<a href="#">filter by type {% fontawesome_icon 'filter' %}</a></span>' : '')
+      <!--'PLACE ANNOTATIONS IN TRACE DATASET ('+data.bodies.length+')')+'</p>'-->
       +results_table
     );
 
@@ -1143,14 +1154,6 @@
     }
     
   }
-  /*
-    *** sugTableRow() ***  from showResults()
-    formats search result item (sug)
-		doctype: [place|trace]; scope: [search|suggest]
-  */  
-  <!--function sugTableRow(sug, doctype, scope) {-->
-		
-	<!--}-->
 	
   /*
     *** sugLister() ***  from showResults()
@@ -1179,12 +1182,6 @@
 				'<a class="pop-link pop-dataset" data-id='+sug['ds']['id']+' data-toggle="popover" title="Dataset Profile" data-content="" tabindex="0" rel="clickover">'+sug['ds']['title']+'</a> ('+identifier+')' : ''	
 				// link destination varies
 				link_class = sug['ds'] ? 'db-link' : 'place-link'
-
-				// dynamic search result 'card' div
-				/*
-				item = '<div class="search-row place-item" data-id="'+identifier+'" data-types="'+sug['types']+'"><a class="'+link_class+'" href="#" data-id="'+identifier+'"><b>'+sug['name']+'</b></a>'+attestations+ccodes+dslink+geo+types+variants+'</div>'
-				*/
-				
 				variants = varcount > 6 ? variants +' ... <i>'+varcount+' total</i>' : variants
 				// table row alternate
 				item = '<tr class="search-row place-item" data-id="'+identifier+'" data-types="'+sug['types']+'">'+
@@ -1195,6 +1192,7 @@
         item = '<div class="sug_row sug-item">'+sug['name']+' '+variants+'</div>'
 			}
     } else if (doctype=='trace') {
+      console.log('sug',sug)
       let pid = sug['place_id'] != null ? sug['place_id'] : ""
       <!-- make object array from idToFeature{}-->
       if(pid in idToFeature){
@@ -1204,14 +1202,13 @@
         whgid = foo.length>0 ? foo[0].id : 'no foo'
         <!--console.log(foo.length>0?'woe'+foo[0].id:'no foo, mofo')-->
       }
-      item =  ('<div class="container"><div class="row sug_row trace-item" data-id='+whgid+'>'+
-              '<div class="col-sm-12 pl-0"><a href="#" class="trace-link" data-id="'+whgid+'">'+
-              sug.title+'</a> ('+parseRels(sug.relations)+')')
-      item += '</div>'
-      if("depiction" in sug){
-        item += '<div class="trace_detail"><img class="trace-img" src="'+sug['depiction']+'"/></div>'
-      }
-      item += '</div></div>' // trace-item, container
+      item = '<tr class="search-row trace-item" data-id="'+whgid+'">'+
+      '<td><a class="trace-link" href="#" data-id="'+whgid+'"><b>'+sug.title+'</a></td>'+'<td>'+parseRels(sug.relations)+'</td></tr>'
+      
+      <!--if("depiction" in sug){-->
+        <!--item += '<div class="trace_detail"><img class="trace-img" src="'+sug['depiction']+'"/></div>'-->
+      <!--}-->
+      <!--item += '</div></div>' // trace-item, container-->
     }
     return item
   }  
@@ -1470,7 +1467,7 @@
   $("#result_list").on('click', '.trace-link', function(e){
     whgid=$(this).data('id')
     console.log('whgid',whgid)
-    location.href = 'places/'+whgid+'/portal'
+    location.href = '/places/'+whgid+'/portal'
   });
   $("#result_list").on('click', '.place-link', function(e){
     whgid=$(this).data('id')
