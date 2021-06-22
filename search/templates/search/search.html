@@ -98,6 +98,7 @@
               <input type="hidden" id="boundsobj" />
             </div>
             <h2 id="dbicon" class="hidden">{% fontawesome_icon 'database' color='#999' %}</h2>
+            <span id="reset_link" class="mt-3 float-right hidden"><a href="javascript:resetSearch()">reset search</a></span>
 				  </div> <!-- #filters_st -->
 				</div> <!-- .row -->
 				{%comment%}
@@ -204,6 +205,31 @@
     feat.addTo(mappy)
   })
   
+  function switchTab(scope){
+    if(scope == 'db'){ 
+      $("#scope_idx").removeClass('active')
+      $("#scope_db").addClass('active')
+      $("#search_filters").css("background","whitesmoke")
+      $("#scope_db").css("border-bottom","1px solid whitesmoke")
+      $("#dbicon").fadeIn()
+    } else {
+      $("#scope_db").removeClass('active')
+      $("#scope_idx").addClass('active')
+      $("#search_filters").css("background","#fff")
+      $("#dbicon").hide()
+    }    
+  }
+  function resetSearch(){
+    localStorage.removeItem('last_results')
+    localStorage.removeItem('search_scope')
+    switchTab('idx')
+    $("#input_box").val('')
+    $("#result_list").hide()
+    $("#result_filters").hide()
+    $("#reset_link").hide()
+    $("#type_filter").hide()
+    $("#search_info").fadeIn()
+  }  
   // search source tab actions
   $(".nav-link").click(function(){
     let link = $(this).data('link')
@@ -241,6 +267,13 @@
     }
   })
   $(function(){
+    lslast=function(){
+      return JSON.parse(localStorage.getItem('last_results'))
+    }
+    lsscope=function(){
+      return localStorage.getItem('search_scope')
+    }
+    lskeys=Object.keys(localStorage)
     window.search_scope = $("li a.active").data('link') // idx or db
     window.search_class = $('input[name=class]').val() // place or trace
     if(search_class == "trace") {$("#traces_info").show()}
@@ -646,13 +679,16 @@
     L.control.layers(baseLayers,dataLayers).addTo(mappy);
     baseLayers["NE global"].addTo(mappy)
     
-    <!--if(localStorage.getItem('last_results') != null){-->
-    if(localStorage.getItem('last_results') != "undefined"){
+    if(localStorage.getItem('last_results') != null){
+    <!--if(localStorage.getItem('last_results') != "undefined"){-->
       previous = JSON.parse(localStorage.getItem('last_results'))	
+      console.log('got previous')
+      showResults(previous,'place','search')  
     }
-    if(document.referrer.match(/(place|dataset)/) && previous){
-      showResults(previous,'place','search')      
-    }
+    <!--if(document.referrer.match(/(place|dataset)/) && previous){-->
+    <!--if(previous){-->
+      <!--showResults(previous,'place','search')      -->
+    <!--}-->
   }, false);
   
   function cleanJson(text) {
@@ -923,6 +959,8 @@
   */
   function showResults(data, doctype, scope='suggest', title){
 		<!--console.log('in showResults()')-->
+    // always want result_list to show
+    $("#result_list").show()
     var results_div = '';
     var results_table = '';
     search_scope = $("li a.active").data('link')
@@ -979,6 +1017,7 @@
     };
      
 		$("#result_list").show()
+    $("#reset_link").show()
 		$("#search_info").hide()
 		<!--$("#traces_info").hide()-->
 		titleMarkup = doctype=='trace'?'<p class="pl-1 mb-1 strong">'+title+'<small> :: a Linked Traces dataset ('+data.bodies.length+' related places)</small></p>':''
