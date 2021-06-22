@@ -97,8 +97,8 @@
               <label><input id="input_area" type="text" size="30" placeholder="Region, country, study area" /></label>
               <input type="hidden" id="boundsobj" />
             </div>
-            <h2 id="dbicon" class="hidden">{% fontawesome_icon 'database' color='#999' %}</h2>
-            <span id="reset_link" class="mt-3 float-right hidden"><a href="javascript:resetSearch()">reset search</a></span>
+            <span id="dbicon" class="hidden">{% fontawesome_icon 'database' color='#999' %}</span>
+            <span id="reset_link" class="float-right hidden"><a href="javascript:resetSearch()">reset search</a></span>
 				  </div> <!-- #filters_st -->
 				</div> <!-- .row -->
 				{%comment%}
@@ -222,6 +222,7 @@
   function resetSearch(){
     localStorage.removeItem('last_results')
     localStorage.removeItem('search_scope')
+    $("#dbicon").hide()
     <!--switchTab('idx')-->
     <!--$("#input_box").val('')-->
     <!--$("#result_list").hide()-->
