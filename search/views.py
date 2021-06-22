@@ -101,7 +101,7 @@ def suggestionItem(s,doctype,scope):
         "name": h['title'],
         "variants":[n for n in h['suggest']['input'] if n != h['title']],
         "ccodes": h['ccodes'],
-        #"types": [t['label'] for t in h['types'] ],
+        "fclasses": h['fclasses'],
         "types": [t['sourceLabel'] or t['label'] for t in h['types'] ],
         "geom": makeGeom(h['place_id'],h['geoms'])
         #"snippet": s['snippet']['descriptions.value'][0] if s['snippet'] != '' else []
@@ -354,6 +354,7 @@ class SearchDatabaseView(View):
         "name": place.title,
         "variants": [n.jsonb['toponym'] for n in place.names.all()],
         "ccodes": place.ccodes,
+        "fclasses": place.fclasses,
         "types": [t.jsonb['sourceLabel'] or t.jsonb['sourceLabel'] for t in place.types.all()],
         "geom": dbsug_geoms(place.geoms.all())
       })

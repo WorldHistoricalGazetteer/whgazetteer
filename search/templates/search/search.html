@@ -118,7 +118,8 @@
 				</div> <!-- #div_ds_select -->{%endcomment%}
 			</div> <!-- #search_filters -->	
       <div id="result_filters" class="p-3 hidden">
-        <p class="allcap-heading half">RESULT FILTERS: </p>
+        <p class="allcap-heading half">RESULT FILTERS {% fontawesome_icon 'filter' %} <span class="typefilter-link ml-2"><a href="#">Type </a></span>
+        </p>        
       </div>
 			<div id="traces_info" class="p-2 hidden">  
 				<p class="strong">Linked Traces in WHG</p>
@@ -202,13 +203,16 @@
     feat = idToFeature[$(this).data('id')]
     feat.addTo(mappy)
   })
-  // search source faux tab actions
+  
+  // search source tab actions
   $(".nav-link").click(function(){
     let link = $(this).data('link')
     search_scope = link
-    src=search_scope=='db'?'DATABASE':'UNION INDEX'
+    src = search_scope=='db'?'DATABASE':'UNION INDEX'
     other = link == 'idx'?$("#scope_db"):$("#scope_idx")
-    $("#result_list").html('<p class="half allcap-heading mb-0 pl-1">'+src+ ' SEARCH RESULTS</p>')
+    $("#result_list").fadeOut()
+    $("#result_filters").hide()
+    <!--$("#result_list").html('<p class="half allcap-heading mb-0 pl-1">'+src+ ' SEARCH RESULTS</p>')-->
     if(other.data('link') == 'idx'){ 
       $("#search_filters").css("background","whitesmoke")
       $("#scope_db").css("border-bottom","1px solid whitesmoke")
@@ -237,8 +241,8 @@
     }
   })
   $(function(){
-    search_scope = $("li a.active").data('link') // idx or db
-    search_class = $('input[name=class]').val() // place or trace
+    window.search_scope = $("li a.active").data('link') // idx or db
+    window.search_class = $('input[name=class]').val() // place or trace
     if(search_class == "trace") {$("#traces_info").show()}
     
     // toggle all fclass checkboxes
@@ -339,63 +343,63 @@
       searchPlacesIdx()
       } else { searchPlacesDb()}	  
     })	
-      //
-      // data type choice determines index searched
-      var suggester = new Bloodhound({
-          datumTokenizer: Bloodhound.tokenizers.whitespace,
-          queryTokenizer: Bloodhound.tokenizers.whitespace,
-          remote: {
-            wildcard: '%QUERY',
-            url: 'foofah',
-            prepare: function (query, settings) {
-             var doctype = $("input[name='class']:checked").val();
-             settings.url = '/search/index?doc_type='+doctype+'&scope=suggest&'+$.param({
-                  qstr: query,
-                  idx: doctype == 'place' ? 'whg' : 'trace'
-              });
-             return settings;
-           } 
-          }
-      });
-      function hh(element) {
-        el=element.toLowerCase()
-        return el.includes($("#input_box").val().toLowerCase());
-      }
-      $('.typeahead').typeahead({minLength:2,highlight:true}, {
-          name: 'suggester',
-          source: suggester,
-          display: 'name',
-          limit: 10,
-          templates: {
-            empty: ['<div class="small ml-2">','no results...','</div>'].join('\n'),
-            suggestion: function (data) {
-              doctype = $("input[name='class']:checked").val()
-              if(doctype == 'place'){
-                <!--console.log('variants',data.variants)-->
-                return data.variants.length>0 ? 
-                  '<p class="tight-p tt-suggestion">' + data.name + '<br/><i class="tight-p">' + 
-                    data.variants.filter(hh).join(', ') + '<i></p>' : 
-                  '<p class="tight-p">' + data.name + '</p>'
-              } else {
-                <!--console.log('data',data)-->
-                return '<p rel="'+data._id+'">'+data.title+'</p>'
-              }
+    //
+    // data type choice determines index searched
+    var suggester = new Bloodhound({
+        datumTokenizer: Bloodhound.tokenizers.whitespace,
+        queryTokenizer: Bloodhound.tokenizers.whitespace,
+        remote: {
+          wildcard: '%QUERY',
+          url: 'foofah',
+          prepare: function (query, settings) {
+           var doctype = $("input[name='class']:checked").val();
+           settings.url = '/search/index?doc_type='+doctype+'&scope=suggest&'+$.param({
+                qstr: query,
+                idx: doctype == 'place' ? 'whg' : 'trace'
+            });
+           return settings;
+         } 
+        }
+    });
+    function hh(element) {
+      el=element.toLowerCase()
+      return el.includes($("#input_box").val().toLowerCase());
+    }
+    $('.typeahead').typeahead({minLength:2,highlight:true}, {
+        name: 'suggester',
+        source: suggester,
+        display: 'name',
+        limit: 10,
+        templates: {
+          empty: ['<div class="small ml-2">','no results...','</div>'].join('\n'),
+          suggestion: function (data) {
+            doctype = $("input[name='class']:checked").val()
+            if(doctype == 'place'){
+              <!--console.log('variants',data.variants)-->
+              return data.variants.length>0 ? 
+                '<p class="tight-p tt-suggestion">' + data.name + '<br/><i class="tight-p">' + 
+                  data.variants.filter(hh).join(', ') + '<i></p>' : 
+                '<p class="tight-p">' + data.name + '</p>'
+            } else {
+              <!--console.log('data',data)-->
+              return '<p rel="'+data._id+'">'+data.title+'</p>'
             }
           }
-      })
-      .on('typeahead:selected', function (obj, datum) {
-        // fetchTraceGeom() -> [views.TraceGeomView() <- views.getGeomCollection()] -> showResults() -> sugLister
-        <!--console.log('trace typeahead clicked: datum',datum)-->
-        if(doctype=='trace'){
-          fetchTraceGeom(datum._id,0,datum.title)
         }
-      })
-      .on('typeahead:asyncrequest', function() {
-          $('.typeahead').addClass('input-loading');
-      })
-      .on('typeahead:asynccancel typeahead:asyncreceive', function() {
-          $('.typeahead').removeClass('input-loading');
-      });;
+    })
+    .on('typeahead:selected', function (obj, datum) {
+      // fetchTraceGeom() -> [views.TraceGeomView() <- views.getGeomCollection()] -> showResults() -> sugLister
+      <!--console.log('trace typeahead clicked: datum',datum)-->
+      if(doctype=='trace'){
+        fetchTraceGeom(datum._id,0,datum.title)
+      }
+    })
+    .on('typeahead:asyncrequest', function() {
+        $('.typeahead').addClass('input-loading');
+    })
+    .on('typeahead:asynccancel typeahead:asyncreceive', function() {
+        $('.typeahead').removeClass('input-loading');
+    });
     
     // fetch area list
     $.get("/api/area_list", function(data){
@@ -561,55 +565,55 @@
 		mappy.options.zoomSnap = 0.5
 		mappy.setView(new L.LatLng(32, 12.6), 1);
 
-	// mapbox tokens 
-	var token_kg = '{{ mbtokenkg }}', 
-		token_whg = '{{ mbtokenwhg }}', 
-		token_mb = '{{ mbtokenmb }}';
+    // mapbox tokens 
+    var token_kg = '{{ mbtokenkg }}', 
+      token_whg = '{{ mbtokenwhg }}', 
+      token_mb = '{{ mbtokenmb }}';
 	
 	// style/tile urls
-	var mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}',
-		mbtiles_url = 'https://api.mapbox.com/v3/{id}/{z}/{x}/{y}.png',
-		ne_url = 'http://blog.whgazetteer.org/tiles/ne/{z}/{x}/{y}.png';
-	  
-    var satellite  = L.tileLayer(mbstyle_url, {
-	  id:'mapbox/satellite-streets-v11', 
-	  token:token_mb}),
-	osm  = L.tileLayer(mbstyle_url, {
-	  id:'mapbox/light-v10', 
-	  token:token_mb}),
-    ne_mb = L.tileLayer(mbtiles_url, {
-	  id:'kgeographer.ne_global', 
-	  token:token_kg})
+    var mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}',
+      mbtiles_url = 'https://api.mapbox.com/v3/{id}/{z}/{x}/{y}.png',
+      ne_url = 'http://blog.whgazetteer.org/tiles/ne/{z}/{x}/{y}.png';
+      
+      var satellite  = L.tileLayer(mbstyle_url, {
+      id:'mapbox/satellite-streets-v11', 
+      token:token_mb}),
+    osm  = L.tileLayer(mbstyle_url, {
+      id:'mapbox/light-v10', 
+      token:token_mb}),
+      ne_mb = L.tileLayer(mbtiles_url, {
+      id:'kgeographer.ne_global', 
+      token:token_kg})
 
-	// GL wrappers to display heatmaps
-	mb_terrain = L.mapboxGL({
-	  style:'mapbox://styles/kgeographer/ckhf6o8yf07fw19qhbrm7f2q7',
-	  accessToken:token_kg})
-
-	ne_global= L.mapboxGL({
-	  style:'mapbox://styles/kgeographer/ckidglq8l2nra19nzzbl995ue',
-	  accessToken:token_kg}).addTo(mappy)
+    // GL wrappers to display heatmaps
+    mb_terrain = L.mapboxGL({
+      style:'mapbox://styles/kgeographer/ckhf6o8yf07fw19qhbrm7f2q7',
+      accessToken:token_kg})
+  
+    ne_global= L.mapboxGL({
+      style:'mapbox://styles/kgeographer/ckidglq8l2nra19nzzbl995ue',
+      accessToken:token_kg}).addTo(mappy)
 	
 	
-	gl=ne_global.getMapboxMap().on('load',function(){
-	  gl.addSource('lugares', {
-			  "type": "geojson",
-			  <!--"data": "/media/data/lugares_13k.geojson"-->
-			  "data": "{{media_url}}data/lugares_13k.geojson"
-		  });	
-	  gl.addSource('owtrad', {
-			  "type": "geojson",
-			  "data": "/media/data/owtrad.geojson"
-		  });	
-	  gl.addSource('euratlas', {
-			  "type": "geojson",
-			  "data": "/media/data/euratlas_cities.geojson"
-		  });	
-	  gl.addSource('alturayya', {
-			  "type": "geojson",
-			  "data": "/media/data/al-turayya.geojson"
-		  });
-	})
+    gl=ne_global.getMapboxMap().on('load',function(){
+      gl.addSource('lugares', {
+          "type": "geojson",
+          <!--"data": "/media/data/lugares_13k.geojson"-->
+          "data": "{{media_url}}data/lugares_13k.geojson"
+        });	
+      gl.addSource('owtrad', {
+          "type": "geojson",
+          "data": "/media/data/owtrad.geojson"
+        });	
+      gl.addSource('euratlas', {
+          "type": "geojson",
+          "data": "/media/data/euratlas_cities.geojson"
+        });	
+      gl.addSource('alturayya', {
+          "type": "geojson",
+          "data": "/media/data/al-turayya.geojson"
+        });
+    })
 	
     var countryStyle = {
       "color": "#999",
@@ -641,13 +645,14 @@
     mappy.zoomControl.setPosition('topright')
     L.control.layers(baseLayers,dataLayers).addTo(mappy);
     baseLayers["NE global"].addTo(mappy)
-	<!--if(localStorage.getItem('last_results') != null){-->
-	if(localStorage.getItem('last_results') != "undefined"){
-	  previous = JSON.parse(localStorage.getItem('last_results'))	
-	}
-	if(document.referrer.indexOf('place') >= 0 && previous){
-	  showResults(previous,'place','search')
-	}
+    
+    <!--if(localStorage.getItem('last_results') != null){-->
+    if(localStorage.getItem('last_results') != "undefined"){
+      previous = JSON.parse(localStorage.getItem('last_results'))	
+    }
+    if(document.referrer.match(/(place|dataset)/) && previous){
+      showResults(previous,'place','search')      
+    }
   }, false);
   
   function cleanJson(text) {
@@ -862,16 +867,15 @@
         bounds: $("#boundsobj").val()
 		<!--,ds: $("#select_ds_search").val()-->
       }, function(data){
-		window.searchres=data['suggestions']
-		// store locally
-		localStorage.setItem('last_results',JSON.stringify(searchres))
+        window.searchres=data['suggestions']
+        // store locally
+        localStorage.setItem('last_results',JSON.stringify(searchres))
         // render to html
-		<!--console.log('get from that query',data['get'])-->
-		<!--console.log('results [data]',data)-->
-		if(doctype == 'place'){
-		  showResults(data['suggestions'],doctype,scope);
-		}
-    });
+        if(doctype == 'place'){
+          showResults(searchres,doctype,scope);
+        }
+      }
+    );
     $('.tt-menu').hide()
   }
 
@@ -900,16 +904,19 @@
 			context: "search",
 			bounds: $("#boundsobj").val()
 		}, function(data) {
-			<!--console.log('searchPlacesDb() sugs', data['suggestions'])-->
-			showResults(data['suggestions'], doctype, "search")
+      window.searchres=data['suggestions']
+      // store locally
+      localStorage.setItem('last_results',JSON.stringify(searchres))
+			showResults(searchres, doctype, "search")
 			spinner_search.stop()
 		})
   }
   /* 
-    *** showResults() *** from searchPlacesIdx(), fetchTraceGeometry()
+    *** showResults() *** 
+    from searchPlacesIdx(), searchPlacesDb(), fetchTraceGeometry()
     Builds results_div, renders to #result_list; builds geoms[] -> renderPlaces(geoms)
 
-    data: 
+    data: list of objects
     doctype ['place' | 'trace' ]
     scope: ['suggest' | 'search']
     title:    
@@ -918,6 +925,7 @@
 		<!--console.log('in showResults()')-->
     var results_div = '';
     var results_table = '';
+    search_scope = $("li a.active").data('link')
     geoms=[]
     var types=[], typesArr = []
     <!--console.log(data.bodies.length+ ' bodies',data)-->
@@ -926,9 +934,9 @@
       if(data.length ==0) {
         results_div += '<p class="small ml-2">No results, sorry.</p>'
       } else {
-				results_table ='<table id="results_table"><thead><tr><th>'+titlehead+'</th> <th>Countries </th><th>Name variants</th><th>geom?</th> <th>Type(s)</th></tr></thead>'
-				<!--attestations+ccodes+dslink+geo+types+variants-->
-				console.log('result data', data)
+				results_table ='<table id="results_table"><thead><tr><th>'+titlehead+'</th>'+(search_scope=='db'?'<th>Dataset</th>':'')
+        +'<th>Countries </th><th>Type(s)</th><th>Name variants</th><th>geom?</th> </tr></thead>'
+				<!--console.log('result data', data)-->
         data.forEach(function(sug){
 					<!--console.log('sug', sug)-->
 					typesArr=typesArr.concat(sug.types)
@@ -954,7 +962,7 @@
 					<!--console.log('geoms from sugs, to renderPlaces()', geoms)-->
           renderPlaces(geoms)
         }
-        $("#result_filters").show()
+        if(data.length > 10){$("#result_filters").show()}
       }
     } else if (doctype == 'trace') {
 			// data has features and bodies
@@ -977,9 +985,7 @@
 		let src=search_scope=='idx'?'UNION INDEX':'DATABASE'
     $('#result_list').html(titleMarkup+
       "<p class='half allcap-heading mb-0 pl-1'>"+
-			(doctype=='place' ? src+' SEARCH RESULTS ('+data.length+
-      ')<span class="float-right typefilter-link">'+
-      '<a href="#">filter by type {% fontawesome_icon 'filter' %}</a></span>' : '')
+			(doctype=='place' ? src+' SEARCH RESULTS ('+data.length+')' : '')
       <!--'PLACE ANNOTATIONS IN TRACE DATASET ('+data.bodies.length+')')+'</p>'-->
       +results_table
     );
@@ -999,12 +1005,14 @@
       $(this).addClass('active-filter')
       filter = $(this).data('type')
       result_div = document.getElementById("result_list")
-      results = result_div.getElementsByTagName("div")
+      <!--results = result_div.getElementsByTagName("div")-->
+      // now table rows
+      results = result_div.getElementsByTagName("tr")
       hide_ids=[]; show_ids = []
-      for (i = 0; i < results.length; i++) {
+      // skip header row
+      for (i = 1; i < results.length; i++) {
         types = results[i].getAttribute('data-types')
         _id = results[i].getAttribute('data-id')
-        <!--console.log('results[i]',results[i])-->
         if (types.indexOf(filter) > -1){
           results[i].style.display = "";
           show_ids.push(_id)
@@ -1189,15 +1197,18 @@
 		
 				// whgid if index search, else pid
 				identifier = sug['ds'] ? sug['pid'] : sug['whg_id']
+        dsid = sug['ds'] ? parseInt(sug['ds']['id']) : ''
 				// add dataset link if this is db search result
-				dslink = sug['ds'] ? ' dataset: '+
-				'<a class="pop-link pop-dataset" data-id='+sug['ds']['id']+' data-toggle="popover" title="Dataset Profile" data-content="" tabindex="0" rel="clickover">'+sug['ds']['title']+'</a> ('+identifier+')' : ''	
+				<!--dslink = sug['ds'] ? '<a class="pop-link pop-dataset" data-id='+sug['ds']['id']+' data-toggle="popover" title="Dataset Profile" data-content="" tabindex="0" rel="clickover">'+sug['ds']['title']+'</a>': ''	-->
+				dslink = sug['ds'] ? '<a href="#" class="ds-link" data-id='+dsid+'>'+sug['ds']['title']+'</a>': ''
 				// link destination varies
 				link_class = sug['ds'] ? 'db-link' : 'place-link'
 				variants = varcount > 6 ? variants +' ... <i>'+varcount+' total</i>' : variants
 				// table row alternate
 				item = '<tr class="search-row place-item" data-id="'+identifier+'" data-types="'+sug['types']+'">'+
-					'<td><a class="'+link_class+'" href="#" data-id="'+identifier+'"><b>'+sug['name']+'</a>'+linkcount+'</td><td>'+ccodes+'</td><td>'+variants+'</td><td class="text-center">'+geo+'</td><td>'+types+'</td></tr>'
+					'<td><a class="'+link_class+'" href="#" data-id="'+identifier+'"><b>'+sug['name']+'</a>'+linkcount+'</td>'+
+          (sug['ds'] ? '<td>'+dslink+'</td>' : '')
+          +'<td>'+ccodes+'</td><td>'+types+'</td><td>'+variants+'</td><td class="text-center">'+geo+'</td></tr>'
 				
 			} else if (scope=='suggest') {
 				// was used for autocomplete, now deprecated
@@ -1487,6 +1498,11 @@
     window.spinner = new Spin.Spinner().spin();
     $("#map_search").append(spinner.el);
     location.href = '/places/'+whgid+'/portal'
+  });
+  $("#result_list").on('click', '.ds-link', function(e){
+    dsid=$(this).data('id')
+    console.log('dsid',dsid)
+    window.open('/datasets/'+dsid, '_blank')
   });
   $("#result_list").on('click', '.db-link', function(e){
     pid=$(this).data('id')

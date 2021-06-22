@@ -76,7 +76,6 @@ urlpatterns = [
     path('<int:id>/log', views.DatasetLogView.as_view(), name='ds_log'),
 
     # public dataset displays: metadata, detail (browse?)
-    #path('<int:pk>/metadata', views.DatasetPublicView.as_view(), name='ds_meta'),
     path('<int:pk>', views.DatasetPublicView.as_view(), name='ds_meta'),
     path('<int:id>/places', views.DatasetPlacesView.as_view(), name='ds_places'),
     
