@@ -155,10 +155,10 @@
 				<div class="row p-2">
 				<div class="col-sm-6">
 					<p class="my-0 strong">Search in WHG</p>
-					<p class="my-0 small">Data uploaded to WHG is initially stored in a relational database. All records in datasets flagged as "public" are searchable here under the "Search Database" option above. Records in fully accessioned datasets have been added to a "union index," where they may be grouped with others if asserted by their creators as "closely matched," or stand alone until (possibly) matched in future additions. The default scope of search is the index.</p>
+					<p class="my-0 small">Data uploaded to WHG is initially stored in a relational database. All records in datasets flagged as "public" are searchable under the "Search Database" option above. Records in fully accessioned datasets have been added to a "union index," where they may be grouped with others if asserted by their creators as "closely matched," or stand alone until (possibly) matched in future additions. The default scope of search is the index.</p>
 				</div>
 				<div class="col-sm-6 pl-4">
-					<p>a figure?</p>
+					<img src="{% static 'images/search-pipeline.png'%}" style="width:100%; height:auto;" alt=""/>
 				</div>
 				</div>
 			</div>
@@ -221,7 +221,8 @@
   }
   function resetSearch(){
     localStorage.removeItem('last_results')
-    localStorage.removeItem('search_scope')
+    localStorage.setItem('search_scope', 'idx')
+    localStorage.removeItem('kept')
     $("#dbicon").hide()
     <!--switchTab('idx')-->
     <!--$("#input_box").val('')-->
@@ -270,6 +271,7 @@
     }
   })
   $(function(){
+    localStorage.setItem('search_scope', 'idx')
     lslast=function(){
       return JSON.parse(localStorage.getItem('last_results'))
     }
@@ -277,7 +279,7 @@
       return localStorage.getItem('search_scope')
     }
     lskeys=Object.keys(localStorage)
-    window.search_scope = $("li a.active").data('link') // idx or db
+    <!--window.search_scope = $("li a.active").data('link') // idx or db-->
     window.search_class = $('input[name=class]').val() // place or trace
     if(search_class == "trace") {$("#traces_info").show()}
     
@@ -375,7 +377,8 @@
     $("label[for='input_box']").click(function(){
       console.log('clicked search')
       doctype = $("input[name='class']:checked").val()
-      if(search_scope == 'idx'){
+      <!--if(search_scope == 'idx'){-->
+      if(lsscope() == 'idx'){
       searchPlacesIdx()
       } else { searchPlacesDb()}	  
     })	
@@ -685,8 +688,11 @@
     if(localStorage.getItem('last_results') != null){
     <!--if(localStorage.getItem('last_results') != "undefined"){-->
       previous = JSON.parse(localStorage.getItem('last_results'))	
+      kept = localStorage.getItem('kept')
       console.log('got previous')
-      showResults(previous,'place','search')  
+      if( kept && previous){
+        showResults(previous,'place','search')
+      }
     }
     <!--if(document.referrer.match(/(place|dataset)/) && previous){-->
     <!--if(previous){-->
@@ -842,7 +848,8 @@
       // always hide search_info and traces_info on search
 	  $("#search_info").hide()
 	  <!--$("#traces_info").hide()-->
-	  if (search_scope == 'idx'){
+	  <!--if (search_scope == 'idx'){-->
+	  if (lsscope() == 'idx'){
 		searchPlacesIdx()		
 	  } else {
 		searchPlacesDb()
@@ -1028,7 +1035,7 @@
 		$("#search_info").hide()
 		<!--$("#traces_info").hide()-->
 		titleMarkup = doctype=='trace'?'<p class="pl-1 mb-1 strong">'+title+'<small> :: a Linked Traces dataset ('+data.bodies.length+' related places)</small></p>':''
-		let src=search_scope=='idx'?'UNION INDEX':'DATABASE'
+		let src=lsscope()=='idx'?'UNION INDEX':'DATABASE'
     $('#result_list').html(titleMarkup+
       "<p class='half allcap-heading mb-0 pl-1'>"+
 			(doctype=='place' ? src+' SEARCH RESULTS ('+data.length+')' : '')
@@ -1536,6 +1543,8 @@
     location.href = '/places/'+whgid+'/portal'
   });
   $("#result_list").on('click', '.place-link', function(e){
+    // set kept variable in localStorage
+    localStorage.setItem('kept', true)
     whgid=$(this).data('id')
     console.log('whgid',whgid)
     window.spinner = new Spin.Spinner().spin();
@@ -1543,6 +1552,8 @@
     location.href = '/places/'+whgid+'/portal'
   });
   $("#result_list").on('click', '.ds-link', function(e){
+    // set kept variable in localStorage
+    localStorage.setItem('kept', true)
     dsid=$(this).data('id')
     console.log('dsid',dsid)
     window.open('/datasets/'+dsid, '_blank')

@@ -30,13 +30,22 @@
   <div class="d-flex">
     <div class="form-box col-sm-7 mt-2">
       <div id="coll_meta">
-        <p>Variants: {{ object.names.all }}</p>
-        <p>Geom: {{ object.geoms.all }}
-        {%comment%}<table>
+        <p>Record title:<br/>
+          {{object.title}}</p>
+        <p>Variants:<br/>
+          {% for n in object.names.all %}
+          {{n.jsonb.toponym }}; {% endfor %}
+        </p>
+        <!--<p>Geom: { object.geoms.all }}-->
+         {% for g in object.geoms.all %}
+          {{ g.jsonb|safe|json_script:object.id }}
+         {% endfor %}
+         
+        <table>
         <tr><td><b>Description</b></td><td>{{ object.description }}</td></tr>
-        <tr><td><b>Tags</b></td><td>{{ object.tags|join:', ' }}</td></tr>
-        <tr><td><b>Created</b></td><td>{{ object.create_date|date:"d M Y" }}</td></tr>
-        </table>{%endcomment%}
+        <!--<tr><td><b>Created</b></td><td>{ object.create_date|date:"d M Y" }}</td></tr>-->
+        </table>
+        
       </div>
       <hr/>
       {%comment%}{% for g in bboxes %}
@@ -47,7 +56,8 @@
           <span class="small float-right mr-2">{% fontawesome_icon 'download' color='#336699' %} <a href="" id="a_download_modal" data-dsid = {{ object.id }} data-toggle="modal" data-target="#downloadModal" title="download options"> download options</a></span>{%endcomment%}
         </p>
         <div id="ds_cards">
-          <p>Dataset: {{ ds.title }} ({{dataset.label}}/{{dataset.id}})</p>
+          <p>Title: {{ dataset.title }}</p>
+          <p>Label/ID: {{dataset.label}}/{{dataset.id}}</p>
         </div> <!-- #ds_cards -->        
       </div> <!-- #coll_dslist -->
     </div>
@@ -251,10 +261,12 @@
     mappy.setView(idToFeature[id]._latlng, mappy.getZoom() +2 )
   }
 
-  function cleanJson(text) {
+  function cleanJson(pid, text) {
     z=text.replace(/'/g,'\\"')
     y=z.replace(/point/,'Point')
-    return JSON.parse(JSON.parse(y))
+    geom = JSON.parse(y)
+    console.log('geom',geom)
+    return JSON.parse(geom)
   }
 
   styles = {
@@ -274,10 +286,12 @@
 
     window.gelems = $('script').filter(function() {
       <!--return this.id.match(/[0-9]/) && this.text != '"null"';-->
+      console.log('this.id',this.id)
       return this.id !='' && this.text != '"null"';
     });
     for (i=0;i<gelems.length;i++){
-      let t_geom = cleanJson(gelems[i].text)
+      let t_geom = cleanJson(gelems[i].id, gelems[i].text)
+      
       <!--t_geom['properties'] = {"id": gelems[i].id,"ds": t_geom.ds!=null?t_geom.ds:ds}-->
       geoms.push(t_geom)
     }
@@ -286,22 +300,24 @@
       <!--console.log('geom: ',geom)-->
       idToFeature = {} // for feature lookup
       features = L.geoJSON(geoms, {
-        onEachFeature: function(feature,layer) {
+        onEachFeature: function(feature, layer) {
           f=feature; l=layer;
-          identifier = f.properties.id;
-          <!--console.log('identifier, type',identifier,f.geometry.type)-->
+          <!--identifier = f.properties.id;-->
+          console.log('feature',f)
           if(f.type != 'Point'){
-            layer.setStyle(styles[f.geometry.type].default).bindPopup(
-              f.properties.title+' ('+identifier+')'
-            )
-            idToFeature[identifier] = layer
+            layer.setStyle(styles[f.geometry.type].default)
+            <!--.bindPopup(f.properties.title+' ('+identifier+')'-->
+            <!--)-->
+            <!--idToFeature[identifier] = layer-->
           }
         }
       }).addTo(map);
 
       <!--mappy.setView(features.getBounds().getCenter(),6)-->
+      // fitBounds(bounds, {padding: [50, 50]})
+      mappy.options.maxZoom = 5
       mappy.fitBounds(features.getBounds())
-      mappy.setZoom(mappy.getZoom()-1)
+      <!--mappy.setZoom(mappy.getZoom()-6)-->
     } else {
       console.log('no geometries, no feature')
     }
