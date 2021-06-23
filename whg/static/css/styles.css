@@ -429,7 +429,7 @@ input[type="text"] {
 }
 #search_info, #traces_info { 
   width: 100%; 
-  overflow-y:auto;
+  /*overflow-y:auto;*/
   /*background-color:whitesmoke;*/
 }
 #traces_info p {margin-bottom: 0;}
@@ -448,18 +448,44 @@ input[type="text"] {
   /*min-height: fit-content;*/
 }
 
+/* experiment */
+.tableFixHead {
+  overflow-y: auto;
+  /*height: 2rem;*/
+}
+.tableFixHead thead th {
+  position: sticky;
+  top: 0;
+}
+#results_table table {
+  border-collapse: collapse;
+  width: 100%;
+}
+#results_table th, td {
+  /*padding: 8px 16px;*/
+  min-width:90px;
+  padding: 3px 6px;
+  border: 1px solid #ccc;
+}
+#results_table th {
+  background: #eee;
+  font-size: .9rem;
+}
+/* experiment */
+
+
 #results_table { min-width: 100%; }
-#results_table thead { 
-  background-color: #eee; 
-  font-size: small;
-  color:#993333; 
-  font-weight:600;
-}
-#results_table td, #results_table th { vertical-align:top; padding: 0 .2rem;}
-/*#results_table i { text-align: center;}*/
-#results_table tr:nth-child(even) {
-  background-color: whitesmoke;
-}
+/*#results_table thead { */
+  /*background-color: #eee; */
+  /*font-size: small;*/
+  /*color:#993333; */
+  /*font-weight:600;*/
+/*}*/
+/*#results_table td, #results_table th { vertical-align:top; padding: 0 .2rem;}*/
+/*/*#results_table i { text-align: center;}*/*/
+/*#results_table tr:nth-child(even) {*/
+  /*background-color: whitesmoke;*/
+/*}*/
 
 /* database tab */
 #scope_db {background-color:whitesmoke;}
@@ -492,12 +518,12 @@ input[type="text"] {
 #select_ds_search { font-size: .7rem;}
 
 #result_list {
-  padding: 5px;
+  padding: 0 5px;
   background-color: #fff;
-  margin-top:8px;
+  margin-top: 4px;
   max-height: 40vh;
   width:100%;
-  border: 1px solid #ddd;
+  /*border: 1px solid #ddd;*/
   overflow-y:auto;
   box-shadow: 2px 2px #999;
 }

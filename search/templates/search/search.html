@@ -63,7 +63,8 @@
 			<div id="search_filters" class="tab-pane fade show active" role="tabpanel">
 				<div class="small row">
 					<div id="filters_class" class="col-sm-6">
-						<p class="mb-0">feature class(es) 
+						<p class="mb-0">place categories
+            <!--feature class(es) -->
 						<!--<span class="ml-1 float-right">-->
 						<span class="ml-1">
 							<span class="mr-1"><a id="check_toggle" href="#">clear all</a></span>
@@ -71,13 +72,13 @@
 						</span>
 						</p>
 						<ul class="ul-left p-0 mb-0">
-						<li class="li-flush"><input type="checkbox" value="A" checked> A&nbsp;administrative entities</li>
-						<li class="li-flush"><input type="checkbox" value="P" checked> P&nbsp;cities, towns, hamlets...</li> 
-						<li class="li-flush"><input type="checkbox" value="S" checked> S&nbsp;sites, buildings, complexes...</li> 
-						<li class="li-flush"><input type="checkbox" value="R" checked> R&nbsp;roads, routes, rail...</li> 
-						<li class="li-flush"><input type="checkbox" value="L" checked> L&nbsp;regions, landscape areas</li> 
-						<li class="li-flush"><input type="checkbox" value="T" checked> T&nbsp;terrestrial landforms</li>
-						<li class="li-flush"><input type="checkbox" value="H" checked> H&nbsp;water bodies</li>
+						<li class="li-flush"><input type="checkbox" value="A" checked> administrative entities <small>(A)</small></li>
+						<li class="li-flush"><input type="checkbox" value="P" checked> cities, towns, hamlets...<small>(P)</small></li> 
+						<li class="li-flush"><input type="checkbox" value="S" checked> sites, buildings, complexes...<small>(S)</small></li> 
+						<li class="li-flush"><input type="checkbox" value="R" checked> roads, routes, rail...<small>(R)</small></li> 
+						<li class="li-flush"><input type="checkbox" value="L" checked> regions, landscape areas <small>(L)</small></li> 
+						<li class="li-flush"><input type="checkbox" value="T" checked> terrestrial landforms <small>(T)</small></li>
+						<li class="li-flush"><input type="checkbox" value="H" checked> water bodies <small>(H)</small></li>
 						</ul>
 					</div>
 					<div id="filters_st" class="col-sm-6">
@@ -171,10 +172,6 @@
 				<ul class="list-inline"></ul>
 			</div>				
 			<div id="result_list" class="">
-				<table id="result_table">
-				<th><td>field 1</td><td>field 2</td></th>
-				</table>
-				<p>the new result_list here, a fancy thing</p>
 			</div>
 		</div> <!-- .row -->
   </div>
@@ -982,12 +979,12 @@
     var types=[], typesArr = []
     <!--console.log(data.bodies.length+ ' bodies',data)-->
     if (doctype == 'place'){
-      titlehead = search_scope=='db'?'Title':'Title <small>(# linked records)</small>'
+      titlehead = search_scope=='db'?'Title':'Title <small>(# linked records)</small> '
       if(data.length ==0) {
         results_div += '<p class="small ml-2">No results, sorry.</p>'
       } else {
-				results_table ='<table id="results_table"><thead><tr><th>'+titlehead+'</th>'+(search_scope=='db'?'<th>Dataset</th>':'')
-        +'<th>Countries </th><th>Type(s)</th><th>Name variants</th><th>geom?</th> </tr></thead>'
+				results_table ='<table id="results_table" class="tableFixHead"><thead><tr><th>'+titlehead+' <i class="fa fa-sort ml-1" aria-hidden="true"></i></th>'+(search_scope=='db'?'<th>Dataset</th>':'')
+        +'<th>Countries&nbsp;<i class="fa fa-sort small" aria-hidden="true"></i></th><th>Type(s)</th><th>Name variants</th><th>geom?</th> </tr></thead>'
 				<!--console.log('result data', data)-->
         data.forEach(function(sug){
 					<!--console.log('sug', sug)-->
@@ -1034,14 +1031,16 @@
     $("#reset_link").show()
 		$("#search_info").hide()
 		<!--$("#traces_info").hide()-->
+		let src = lsscope()=='idx'?'UNION INDEX':'DATABASE'
+    let elem = document.getElementById('result_list')
 		titleMarkup = doctype=='trace'?'<p class="pl-1 mb-1 strong">'+title+'<small> :: a Linked Traces dataset ('+data.bodies.length+' related places)</small></p>':''
-		let src=lsscope()=='idx'?'UNION INDEX':'DATABASE'
-    $('#result_list').html(titleMarkup+
-      "<p class='half allcap-heading mb-0 pl-1'>"+
+
+    titleMarkup += "<p class='half allcap-heading mb-0 pl-1'>"+
 			(doctype=='place' ? src+' SEARCH RESULTS ('+data.length+')' : '')
-      <!--'PLACE ANNOTATIONS IN TRACE DATASET ('+data.bodies.length+')')+'</p>'-->
-      +results_table
-    );
+      
+    elem.insertAdjacentHTML('beforebegin', titleMarkup)
+
+    $('#result_list').html(results_table)
 
     // empty the typeahead suggestions
     $(".tt-dataset").html('')
@@ -1106,7 +1105,7 @@
       $("#type_filter").hide(200)
     })
     $(".typefilter-link").on("click", function(e){
-      <!--e.preventDefault()-->
+      e.preventDefault()
       $("#type_filter").toggle(300)
     })    
     $(".trace-item").on('click',function(e){
@@ -1237,13 +1236,13 @@
     if (doctype=='place') {
 			linkcount = sug['ds'] ? '' : '<small> ('+(parseInt(sug['linkcount']) +1)+')</small>'
 			attestations = sug['ds'] ? '' : ' <i>' + linkcount + (linkcount>1?' linked attestations</i>; ':' attestation</i>; ')
-			<!--variants = sug['variants'].length > 0 ? '<br/><i class="text-secondary"> var: '+-->
-			varcount = sug['variants'].length
-			variants = varcount > 0 ? sug['variants'].sort().slice(0,6) : ''
+      <!--console.log('variants',sug['variants'])-->
+			vcount = sug['variants'].length
+			variants = vcount > 0 ? sug['variants'].sort().slice(0,6).join('; ') : ''
       <!--console.log(sug['variants'])-->
 			if (scope=='search'){
-        ccodes = sug['ccodes'] != '' ? ' ['+sug['ccodes']+']' : ''
-        types = sug['types']
+        ccodes = sug['ccodes'] != '' ? ' '+sug['ccodes']+' ' : ''
+        types = sug['types'].join('; ')
         geo = sug['geom'].length > 0 ? ' {% fontawesome_icon 'globe' color='#666' %}' : ''
 				// whgid if index search, else pid
 				identifier = sug['ds'] ? sug['pid'] : sug['whg_id']
@@ -1253,7 +1252,7 @@
 				dslink = sug['ds'] ? '<a href="#" class="ds-link" data-id='+dsid+'>'+sug['ds']['title']+'</a>': ''
 				// link destination varies
 				link_class = sug['ds'] ? 'db-link' : 'place-link'
-				variants = varcount > 6 ? variants +' ... <i>'+varcount+' total</i>' : variants
+				variants = vcount > 5 ? variants +' ... <i>'+vcount+' total</i>' : variants
 				// table row alternate
 				item = '<tr class="search-row place-item" data-id="'+identifier+'" data-types="'+sug['types']+'">'+
 					'<td><a class="'+link_class+'" href="#" data-id="'+identifier+'"><b>'+sug['name']+'</a>'+linkcount+'</td>'+
