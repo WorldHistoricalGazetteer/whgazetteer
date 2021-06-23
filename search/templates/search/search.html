@@ -16,6 +16,10 @@
   <script src="{% static 'js/typeahead.bundle.js' %}"></script>
   <script src="{% static 'js/spin.umd.js' %}"></script>
   
+  <script src="{% static 'leaf_bb/leaflet-control-boxzoom.js' %}"></script>
+  <link rel="stylesheet" href="{% static 'leaf_bb/leaflet-control-boxzoom.css' %}">
+
+
   <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.css' rel='stylesheet' />
   <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.js'></script>
   <script src="{% static 'js/leaflet-mapbox-gl.js' %}"></script>
@@ -146,7 +150,7 @@
 				<!--<div id="result_list" class="hidden"></div>-->
 			</div>
 			<div id="search_right" class="col-sm-6">
-				<div id="map_options" class="p-1 small">draw bbox, etc.</div>
+				<div id="map_options" class="p-1 small">Good luck!</div>
 				{% leaflet_map "map_search" callback="map_init" %}
 				<!--<div id="result_extra" class="p-2"></div>-->
 			</div> <!--#search_right -->
@@ -593,6 +597,23 @@
 	  }
 	});    
   }
+  function getFeaturesInView() {
+    filtfeats = [];
+    mappy.eachLayer( function(layer) {
+      if(layer instanceof L.CircleMarker) {
+        if(mappy.getBounds().contains(layer._latlng)) {
+          <!--filtfeats.push(layer.feature);-->
+          filtfeats.push(layer.feature.geometry.properties.whgid);
+        }
+      } else if (layer instanceof L.Path) {
+        if(mappy.getBounds().contains(layer._latlngs)) {
+          <!--filtfeats.push(layer.feature);-->
+          filtfeats.push(layer.feature.geometry.properties.whgid);
+        }        
+      }
+    });
+    return filtfeats;
+  }
   //
   // initializes map
   addEventListener('map:init', function (e) {
@@ -601,6 +622,20 @@
 		mappy.options.zoomSnap = 0.5
 		mappy.setView(new L.LatLng(32, 12.6), 1);
 
+    // change cursor on shift-key hold
+    //$('.leaflet-container').css('cursor','crosshair');
+    <!--mappy.on('keydown', function(e){-->
+      <!--console.log(e.code)-->
+      <!--if(e.key=='Shift'){-->
+        <!--$('.leaflet-container').css('cursor','crosshair');-->
+      <!--}-->
+    <!--})-->
+    <!--mappy.on('keyup', function(e){-->
+      <!--console.log(e.code)-->
+      <!--if(e.key=='Shift'){-->
+        <!--$('.leaflet-container').css('cursor','grab');-->
+      <!--}-->
+    <!--})-->
     // mapbox tokens 
     var token_kg = '{{ mbtokenkg }}', 
       token_whg = '{{ mbtokenwhg }}', 
@@ -681,6 +716,14 @@
     mappy.zoomControl.setPosition('topright')
     L.control.layers(baseLayers,dataLayers).addTo(mappy);
     baseLayers["NE global"].addTo(mappy)
+    
+    // TODO: whgid vs. pid for database search
+    L.Control.boxzoom({ position:'topleft' }).addTo(mappy);  
+    mappy.on('zoomend',function(e){
+      mapFilter(getFeaturesInView())
+      console.log('current whgids', getFeaturesInView())
+    })
+    
     
     if(localStorage.getItem('last_results') != null){
     <!--if(localStorage.getItem('last_results') != "undefined"){-->
@@ -1090,6 +1133,7 @@
       }
       
     })
+    
     $(".clear-filter").on('click',function(e){
       filterLayers.addTo(mappy)
 			mappy.fitBounds(features.getBounds())
@@ -1101,13 +1145,15 @@
       }			
       $(".clear-filter").hide()
     })
+    
     $(".hide-filter").on('click',function(e){
       $("#type_filter").hide(200)
     })
     $(".typefilter-link").on("click", function(e){
       e.preventDefault()
       $("#type_filter").toggle(300)
-    })    
+    })
+    
     $(".trace-item").on('click',function(e){
       // reset all markers to default
       traces.setStyle({"fillColor":"blue","radius":5})
@@ -1154,6 +1200,33 @@
         'allowtransparency="true" src="'+url+'"></iframe>');
     });
   } // end showResults()
+
+  /*
+    *** mapFilter() *** from mappy.on('endzoom')
+    filter result list to include results of getFeaturesInView()
+  */
+  mapFilter = function(ids){
+      $(".clear-filter").show()
+      if(filterLayers != null){filterLayers.addTo(mappy)}
+      $(".filter").removeClass('active-filter')
+      <!--$(this).addClass('active-filter')-->
+      <!--filter = $(this).data('type')-->
+      result_div = document.getElementById("result_list")
+      results = result_div.getElementsByTagName("tr")
+      hide_ids=[]; show_ids = []
+      // skip header row
+      for (i = 1; i < results.length; i++) {
+        <!--types = results[i].getAttribute('data-types')-->
+        _id = parseInt(results[i].getAttribute('data-id'))
+        if (ids.indexOf(_id) > -1){
+          results[i].style.display = "";
+          show_ids.push(_id)
+        } else {
+          results[i].style.display = "none";
+          hide_ids.push(_id)
+        }
+      }  
+  } 
  
   /*
     *** renderPlaces() *** from showResults()
