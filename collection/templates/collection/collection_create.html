@@ -30,7 +30,7 @@
     {% else %}Create Collection{% endif %}
   </h4>
   <div class="d-flex">
-    <div class="form-box mt-2 col-sm-4">
+    <div class="form-box mt-2 col-sm-5">
     <form id="collection_form" method="POST" action="#" enctype="multipart/form-data">
       {% csrf_token %}
       <input type="hidden" name="owner" value='{{ user.id }}'></input>
@@ -59,9 +59,9 @@
       <span title="back"><a href="{% url 'dashboard' %}">Cancel</a></span>
     </form>
     </div>
-    <div id="coll_builder" class="col-sm-8 p-2">
+    <div id="coll_builder" class="col-sm-7 p-2">
       <div class="row">
-        <div class="col-sm-7">
+        <div class="col-sm-12">
           <h5>Datasets</h5>
           <p>
             <span class="mr-2">
@@ -83,7 +83,7 @@
             <!--{ if action == 'update' %}-->
             {% for d in coll_dsset %}
               <div class="ds_card">
-                <p class="mb-0"><span class="ds_title">{{ d.title }}</span> <small>({{d.label}}/{{ d.id}})</small></p>
+                <p class="mb-0"><a href="{% url 'datasets:ds_summary' id=d.id %}"><span class="ds_title">{{ d.title }}</span></a> <small>({{d.label}}/{{ d.id}})</small></p>
                 <div class="ds_fields">
                   <p class="my-1"><b>Description</b>: {{ d.description|truncatechars:150 }}</p>
                   <p class="my-1"><b>Create date</b>: {{ d.create_date|date:"d M Y" }}</p>
@@ -94,13 +94,13 @@
               </div>
             {% endfor %}
             <!--{ endif %}-->
-          </div> <!-- #coll_panels -->
+          </div> <!-- #coll_dscards -->
         </div> <!-- .col-sm-8 -->
-        <div class="col-sm-5">{%comment%}
+        {%comment%}<div class="col-sm-5">
           <div id="mapdiv_coll" class="mt-2">
             {% leaflet_map "map_coll" %}
-          </div>{%endcomment%}
-      </div>
+          </div>
+      </div>{%endcomment%}
     </div> <!-- .row -->
   </div> <!-- d-flex -->
 </div> <!-- container -->
@@ -122,7 +122,7 @@
     dslist.push(d.id)
     $("#id_datasets [value=" + d.id + "]").attr("checked", "checked");
     card='<div class="ds_card">'
-        +'<p class="mb-0"><span class="ds_title">'+d.title+'</span> ('+d.label+'/'+d.id+')</p>'
+        +'<p class="mb-0"><a href="#"><span class="ds_title">'+d.title+'</span></a> ('+d.label+'/'+d.id+')</p>'
         +'<div class="ds_fields">'
           +'<p class="my-1"><b>Description</b>: '+d.description+'</p>'
           +'<p class="my-1"><b>Create date</b>: '+d.create_date+'</p>'
@@ -130,7 +130,7 @@
             +'<a href="javascript:{ removeDataset('+d.id+') }" class="float-right">'
               +'{% fontawesome_icon "minus-square" color="#336699" %} remove</a>'
           +'</p></div></div>'
-    $("#coll_panels").append(card)
+    $("#coll_dscards").append(card)
     <!--console.log(card)-->
   }
   // adds, displays single dataset
@@ -147,15 +147,17 @@
     // reset select
     $("#select_ds").val(0)
   }
-  <!--function removeDataset(dsid) {-->
-    <!--console.log('removed', dsid)-->
-    <!--$.ajax("/collections/remove-ds", {ds_id:dsid, coll_id:{{object.id}}},-->
-      <!--function(){-->
-        <!--console.log('huh?')-->
-    <!--});-->
+  function removeDataset(dsid) {
+    console.log('removed', dsid)
+    // remove_ds/<int:coll_id>/<int:ds_id>'
+    // '/datasets/{{ds.id}}/augmented/'+$(this).attr('ref')
+    $.ajax("/collections/remove_ds/{{object.id}}/"+dsid,
+      function(){
+        console.log('huh?')
+    });
     // reset select
-    <!--$("#select_ds").val(0)-->
-  <!--}-->
+    $("#select_ds").val(0)
+  }
   $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
     var target = $(e.target).attr("href") // activated tab
     area_type = $(e.target).attr("ref") // activated tab
