@@ -475,7 +475,7 @@
 	*** sortTable() ***
   col_idx == index of column to sort by
   */
-  function sortTable(col_idx) {
+  function sortTable(col_idx, order) {
     var table, rows, switching, i, x, y, shouldSwitch;
     table = document.getElementById("results_table");
     switching = true;
@@ -500,10 +500,17 @@
         <!--console.log('value', x.innerHTML.toLowerCase())-->
         <!--console.log('value', x.innerText.toLowerCase())-->
         <!--if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {-->
-        if (x.innerText.toLowerCase() > y.innerText.toLowerCase()) {
-          // If so, mark as a switch and break the loop:
-          shouldSwitch = true;
-          break;
+        if (order == 'asc'){
+          if (x.innerText.toLowerCase() > y.innerText.toLowerCase()) {
+            // If so, mark as a switch and break the loop:
+            shouldSwitch = true;
+            break;
+          }
+        } else {
+          if (x.innerText.toLowerCase() < y.innerText.toLowerCase()) {
+            shouldSwitch = true;
+            break;
+          }       
         }
       }
       if (shouldSwitch) {
@@ -1058,13 +1065,27 @@
     var types=[], typesArr = []
     <!--console.log(data.bodies.length+ ' bodies',data)-->
     if (doctype == 'place'){
-      titlehead = search_scope=='db'?'Title':'Title <small>(linked)</small> '
       if(data.length ==0) {
         results_div += '<p class="small ml-2">No results, sorry.</p>'
       } else {
-				results_table ='<table id="results_table" class="tableFixHead"><thead><tr><th>'+titlehead+' <i class="fa fa-sort ml-1" aria-hidden="true"></i></th>'+(search_scope=='db'?'<th>Dataset</th>':'')
-        +'<th>Countries&nbsp;<i class="fa fa-sort small" aria-hidden="true"></i></th><th>Type(s)</th><th>Name variants</th><th>geom?</th> </tr></thead>'
-				<!--console.log('result data', data)-->
+      
+results_table ='<table id="results_table" class="tableFixHead"><thead><tr>'
++'<th>Title <i class="fa fa-sort ml-1" data-id=0 ref=asc></i></th>'
++(search_scope=='idx'?'<th>Linked <i class="fa fa-sort ml-1" data-id=1 ref=desc></i></th>':'')
++'<th>Countries&nbsp;<i class="fa fa-sort small" data-id='
++(search_scope=='idx'?2:1)+' ref=asc></i></th>'
++(search_scope=='idx'?'':'<th>Dataset <i class="fa fa-sort ml-1" data-id=2 ref=asc></i></th>')
++'<th>Type(s)</th><th>Name variants</th><th>geom?</th> </tr></thead>'
+
+      <!--titlehead = search_scope=='db'?'Title':'Title (linked) '-->
+      <!--if(data.length ==0) {-->
+        <!--results_div += '<p class="small ml-2">No results, sorry.</p>'-->
+      <!--} else {-->
+				<!--results_table ='<table id="results_table" class="tableFixHead"><thead><tr><th>'+titlehead+' <i class="fa fa-sort ml-1" data-id=0></i></th>'-->
+        <!--+'<th>Countries&nbsp;<i class="fa fa-sort small" data-id=1 ></i></th>'-->
+        <!--+(search_scope=='db'?'<th>Dataset</th>':'')-->
+        <!--+'<th>Type(s)</th><th>Name variants</th><th>geom?</th> </tr></thead>'-->
+
         countadded = 0
         havegeom = 0
         data.forEach(function(sug){
@@ -1126,7 +1147,11 @@
     $("#result_title").fadeIn()
     
     $("#result_list").html(results_table)
-    
+
+    $(".fa-sort").on('click',function(){
+      fubar = $(this)
+      sortTable($(this).data('id'), $(this).attr('ref'))
+    })
     let headerbg = search_scope=='idx'?'#f1fff1':'#eee'
     $("#results_table th").css('background-color', headerbg )
 
@@ -1372,7 +1397,8 @@
   function sugLister(sug, doctype, scope) {
     <!--console.log(sug)-->
     if (doctype=='place') {
-			linkcount = sug['ds'] ? '' : '<small> ('+(parseInt(sug['linkcount']) +1)+')</small>'
+			<!--linkcount = sug['ds'] ? '' : ' ('+(parseInt(sug['linkcount']) +1)+')'-->
+			linkcount = parseInt(sug['linkcount']) +1
 			attestations = sug['ds'] ? '' : ' <i>' + linkcount + (linkcount>1?' linked attestations</i>; ':' attestation</i>; ')
       <!--console.log('variants',sug['variants'])-->
 			vcount = sug['variants'].length
@@ -1386,16 +1412,27 @@
 				identifier = sug['ds'] ? sug['pid'] : sug['whg_id']
         dsid = sug['ds'] ? parseInt(sug['ds']['id']) : ''
 				// add dataset link if this is db search result
-				<!--dslink = sug['ds'] ? '<a class="pop-link pop-dataset" data-id='+sug['ds']['id']+' data-toggle="popover" title="Dataset Profile" data-content="" tabindex="0" rel="clickover">'+sug['ds']['title']+'</a>': ''	-->
 				dslink = sug['ds'] ? '<a href="#" class="ds-link" data-id='+dsid+'>'+sug['ds']['title']+'</a>': ''
 				// link destination varies
 				link_class = sug['ds'] ? 'db-link' : 'place-link'
 				variants = vcount > 5 ? variants +' ... <i>'+vcount+' total</i>' : variants
-				// table row alternate
-				item = '<tr class="search-row place-item" data-id="'+identifier+'" data-types="'+sug['types']+'">'+
-					'<td><a class="'+link_class+'" href="#" data-id="'+identifier+'"><b>'+sug['name']+'</a>'+linkcount+'</td>'+
-          (sug['ds'] ? '<td>'+dslink+'</td>' : '')
-          +'<td>'+ccodes+'</td><td>'+types+'</td><td>'+variants+'</td><td class="text-center">'+geo+'</td></tr>'
+// table row
+item = '<tr class="search-row place-item" data-id="'+identifier+'" data-types="'+sug['types']+'">'
++'<td><a class="'+link_class+'" href="#" data-id="'+identifier+'"><b>'+sug['name']+'</a></td>'
++(sug['ds'] ? '': '<td>'+linkcount+'</td>')
++'<td>'+ccodes+'</td>'
++(sug['ds'] ? '<td>'+dslink+'</td>' : '')
++'<td>'+types+'</td>'
++'<td>'+variants+'</td>'
++'<td class="text-center">'+geo+'</td></tr>'
+				
+        <!--item = '<tr class="search-row place-item" data-id="'+identifier+'" data-types="'+sug['types']+'">'-->
+        <!--+'<td><a class="'+link_class+'" href="#" data-id="'+identifier+'"><b>'+sug['name']+'</a>'+linkcount+'</td>'-->
+        <!--+'<td>'+ccodes+'</td>'-->
+        <!--+(sug['ds'] ? '<td>'+dslink+'</td>' : '')-->
+        <!--+'<td>'+types+'</td>'-->
+        <!--+'<td>'+variants+'</td>'-->
+        <!--+'<td class="text-center">'+geo+'</td></tr>'-->
 				
 			} else if (scope=='suggest') {
 				// was used for autocomplete, now deprecated
