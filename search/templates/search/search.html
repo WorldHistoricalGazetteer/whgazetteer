@@ -1051,7 +1051,7 @@
     title:    
   */
   function showResults(data, doctype, scope='suggest', title){
-		console.log('showResults() in', data.length)
+		<!--console.log('showResults() in', data.length)-->
     // always want result_list to show
     $("#result_list").show()
     var results_div = '';
@@ -1068,23 +1068,13 @@
       if(data.length ==0) {
         results_div += '<p class="small ml-2">No results, sorry.</p>'
       } else {
-      
-results_table ='<table id="results_table" class="tableFixHead"><thead><tr>'
-+'<th>Title <i class="fa fa-sort ml-1" data-id=0 ref=asc></i></th>'
-+(search_scope=='idx'?'<th>Linked <i class="fa fa-sort ml-1" data-id=1 ref=desc></i></th>':'')
-+'<th>Countries&nbsp;<i class="fa fa-sort small" data-id='
-+(search_scope=='idx'?2:1)+' ref=asc></i></th>'
-+(search_scope=='idx'?'':'<th>Dataset <i class="fa fa-sort ml-1" data-id=2 ref=asc></i></th>')
-+'<th>Type(s)</th><th>Name variants</th><th>geom?</th> </tr></thead>'
-
-      <!--titlehead = search_scope=='db'?'Title':'Title (linked) '-->
-      <!--if(data.length ==0) {-->
-        <!--results_div += '<p class="small ml-2">No results, sorry.</p>'-->
-      <!--} else {-->
-				<!--results_table ='<table id="results_table" class="tableFixHead"><thead><tr><th>'+titlehead+' <i class="fa fa-sort ml-1" data-id=0></i></th>'-->
-        <!--+'<th>Countries&nbsp;<i class="fa fa-sort small" data-id=1 ></i></th>'-->
-        <!--+(search_scope=='db'?'<th>Dataset</th>':'')-->
-        <!--+'<th>Type(s)</th><th>Name variants</th><th>geom?</th> </tr></thead>'-->
+        results_table ='<table id="results_table" class="tableFixHead"><thead><tr>'
+        +'<th>Title <i class="fa fa-sort ml-1" data-id=0 ref=asc></i></th>'
+        +(search_scope=='idx'?'<th>Linked <i class="fa fa-sort ml-1" data-id=1 ref=desc></i></th>':'')
+        +'<th>Countries&nbsp;<i class="fa fa-sort small" data-id='
+        +(search_scope=='idx'?2:1)+' ref=asc></i></th>'
+        +(search_scope=='idx'?'':'<th>Dataset <i class="fa fa-sort ml-1" data-id=2 ref=asc></i></th>')
+        +'<th>Type(s)</th><th>Name variants</th><th>geom?</th> </tr></thead>'
 
         countadded = 0
         havegeom = 0
@@ -1105,7 +1095,7 @@ results_table ='<table id="results_table" class="tableFixHead"><thead><tr>'
           <!--results_table += sugTableRow(sug, doctype, scope)   -->
         })
 				results_table += '</table>'
-        console.log('showResults() countadded, havegeom',countadded, havegeom)
+        <!--console.log('showResults() countadded, havegeom',countadded, havegeom)-->
         types = Array.from(new Set(typesArr));
         <!--console.log('types',types)-->
         types.forEach(function(type){
@@ -1115,7 +1105,7 @@ results_table ='<table id="results_table" class="tableFixHead"><thead><tr>'
 					<!--console.log('geoms from sugs, to renderPlaces()', geoms)-->
           renderPlaces(geoms)
         }
-        if(data.length > 10){$("#result_filters").show()}
+        if(data.length > 8){$("#result_filters").show()}
       }
     } else if (doctype == 'trace') {
 			// data has features and bodies
@@ -1140,7 +1130,7 @@ results_table ='<table id="results_table" class="tableFixHead"><thead><tr>'
 		titleMarkup = doctype=='trace'?'<p class="pl-1 mb-1 strong">'+title+'<small> :: a Linked Traces dataset ('+data.bodies.length+' related places)</small></p>':''
     
     titleMarkup += (doctype=='place' ? src+' SEARCH RESULTS (<span id="rowcount">'+data.length+'</span>)<span class="ml-4">List includes records with no geometry, if any</span>' : '')
-    console.log('titleMarkup',titleMarkup)
+    <!--console.log('titleMarkup',titleMarkup)-->
     
     
     $("#result_title").html(titleMarkup)
@@ -1278,7 +1268,7 @@ results_table ='<table id="results_table" class="tableFixHead"><thead><tr>'
   // boxed_ids = features in bbox
   // need all ids on map and hide those not in bbox
   mapFilter = function(boxed_ids){
-    console.log('mapFilter() boxed_ids')
+    <!--console.log('mapFilter() boxed_ids')-->
     $(".clear-filter").show()
     if(filterLayers != null){filterLayers.addTo(mappy)}
     $(".filter").removeClass('active-filter')
@@ -1298,7 +1288,7 @@ results_table ='<table id="results_table" class="tableFixHead"><thead><tr>'
         results[i].style.display = ""
       }
     }
-    console.log('hidden in list)', hidethese)
+    <!--console.log('hidden in list)', hidethese)-->
     // omit header row
     $("#rowcount").html((results.length-1) - hidethese.length)
     // if any were hidden, show the zoom_extents link to restore
@@ -1747,20 +1737,3 @@ item = '<tr class="search-row place-item" data-id="'+identifier+'" data-types="'
   })
 </script>
 {% endblock %}
-
-	  {%comment%}
-	  <div id="" style="width=100%">
-		<div id="search_time" class="mt-1" style="background-color: #ffffcc;">
-		  <img src="{% static 'images/hist_static.png' %}" class="" alt=""/>
-		</div> <!-- #search_time -->
-		<div id="search_info" class="p-2 small" style="background-color: #eeeee0;">
-		  <p class="allcap-heading mb-0">SOMETHING HERE</p>
-		  {% for g in bboxes %}
-			{{ g|safe|json_script:g.properties.id }}
-		  {% endfor %}
-		  {% for ds in dslist %}
-			<a class="bblink" href="#" data-id={{ds.id}}>{{ds.title}}</a>;&nbsp; 
-		  {% endfor %}
-		</div> <!-- #search_info -->
-	  </div> <!-- below map -->
-	  {%endcomment%}

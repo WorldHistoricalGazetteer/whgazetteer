@@ -476,7 +476,7 @@ input[type="text"] {
 }
 /* experiment */
 
-.bbox-icon = {}
+.fa-sort {cursor: pointer;}
 /* database tab */
 #scope_db {background-color:whitesmoke;}
 #result_extra { background-color: cornsilk; font-size:.7rem;}
