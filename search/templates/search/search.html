@@ -43,6 +43,7 @@
 				<div class="form-check form-check-inline">
 				<input class="form-check-input hover" type="radio" name="class" id="r_trace" value="trace" rel="Enter term or name">
 				<label class="form-check-label" for="r_trace">Traces</label>
+        <a id="traces_help" class="pointer ml-1" data-toggle="popover" title="Traces in WHG are..." data-content="" tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a>
 				</div>
 			</div>          
 			<div id="search_input" class="input-group input-group-sm pb-2" >
@@ -58,7 +59,7 @@
 					<a id="search_help" class="pointer" data-toggle="popover" title="Search scope" data-html="true" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a>
 					</span>{%endcomment%}
 					<li class="nav-item">
-					<a class="nav-link active" id="scope_idx" data-link="idx" href="#" role="tab">Search Index {%fontawesome_icon 'link'%}</a>
+					<a class="nav-link active" id="scope_idx" data-link="idx" href="#" role="tab" style="background:#f1fff1;"> Search Index {%fontawesome_icon 'link'%}</a>
 					</li>
 					<li class="nav-item">
 					<a class="nav-link" id="scope_db" data-link="db" href="#" role="tab" style="background:whitesmoke;">Search Database {%fontawesome_icon 'database'%}</a> 
@@ -152,7 +153,7 @@
 			<div id="search_info">
 				<div class="row p-2">
 				<div class="col-sm-6">
-					<p class="my-0 strong">Search in WHG</p>
+					<p class="my-0 strong">Place Search in WHG</p>
 					<p class="my-0 small">Data uploaded to WHG is initially stored in a relational database. All records in datasets flagged as "public" are searchable under the "Search Database" option above. Records in fully accessioned datasets have been added to a "union index," where they may be grouped with others if asserted by their creators as "closely matched," or stand alone until (possibly) matched in future additions. The default scope of search is the index.</p>
 				</div>
 				<div class="col-sm-6 pl-4">
@@ -209,7 +210,7 @@
     } else {
       $("#scope_db").removeClass('active')
       $("#scope_idx").addClass('active')
-      $("#search_filters").css("background","#fff")
+      $("#search_filters").css("background","#f1fff1")
       $("#dbicon").hide()
     }    
   }
@@ -241,7 +242,7 @@
       $("#scope_db").css("border-bottom","1px solid whitesmoke")
       $("#dbicon").fadeIn()
     } else {
-      $("#search_filters").css("background","#fff")
+      $("#search_filters").css("background","#f1fff1")
       $("#dbicon").hide()
     }
     other.removeClass('active')
@@ -327,6 +328,9 @@
     // popover content
     $("#filter_help").attr(
       'data-content',"<p>Select one or more feature class (uses GeoNames single-letter codes)</p>"
+    )
+    $("#traces_help").attr(
+      'data-content',"<p>an experimental feature: annotations of external web resources that describe or depict historical objects, events, people or concepts, listing places related to them. Switch to learn more and search them.</p>"
     )
     $("#search_help").attr(
       'data-content',"<p class='mb-2'>Search of the WHG <b>index</b> is limited to fully accessioned (linked) datasets. Returns conflated sets of attestations.</p>"+

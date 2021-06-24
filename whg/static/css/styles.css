@@ -484,6 +484,7 @@ input[type="text"] {
 #dbicon {font-size:1.5rem;}
 #search_filters {
   position:relative; 
+  background-color: #f1fff1;
   /*height:205px;*/
 }
 /*#search_filters.tab-pane {border:none;}*/
