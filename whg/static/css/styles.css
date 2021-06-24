@@ -328,7 +328,7 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
 .carousel-indicators .active {background-color:#993300;}
 /*.carousel-inner {background-color: #e4e4e4;}*/
 #map_select{width:70%;margin:auto;}
-#map_options {background-color: whitesmoke;}
+#map_options {background-color: whitesmoke; height:1.5rem;}
 .list-inline { padding-left: 4px; margin-bottom:0;}
 .active-filter a {font-weight:bold; color:#993333 !important;}
 
@@ -693,8 +693,7 @@ em { color: #993333;}
 /**
   maps
 **/
-#map_app.leaflet-container { height: 550px;}
-#zoom_extents { display:none; font-size: 1.2rem;}
+#map_app.leaflet-container { height: 550px;}}
 .leaflet-bottom.leaflet-right {z-index:500;}
 
 /**
