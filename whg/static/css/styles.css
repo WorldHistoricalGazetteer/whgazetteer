@@ -7,7 +7,7 @@ html, body {
 body {overflow-y: scroll;}
 pre { margin:0; background-color:#e0e0e0;}
 
-table {border-collapse:initial;}
+/*table {border-collapse:initial;}*/
 .navbar .container {
   border-bottom: 1px solid #eee;
 }
@@ -448,7 +448,9 @@ input[type="text"] {
   /*min-height: fit-content;*/
 }
 
-/* experiment */
+#results_table { min-width: 100%; }
+
+/* experiment:search results table */
 .tableFixHead {
   overflow-y: auto;
   /*height: 2rem;*/
@@ -461,7 +463,8 @@ input[type="text"] {
   border-collapse: collapse;
   width: 100%;
 }
-#results_table th, td {
+/*table {border-collapse:initial;}*/
+#results_table th, #results_table td {
   /*padding: 8px 16px;*/
   min-width:90px;
   padding: 3px 6px;
@@ -472,20 +475,6 @@ input[type="text"] {
   font-size: .9rem;
 }
 /* experiment */
-
-
-#results_table { min-width: 100%; }
-/*#results_table thead { */
-  /*background-color: #eee; */
-  /*font-size: small;*/
-  /*color:#993333; */
-  /*font-weight:600;*/
-/*}*/
-/*#results_table td, #results_table th { vertical-align:top; padding: 0 .2rem;}*/
-/*/*#results_table i { text-align: center;}*/*/
-/*#results_table tr:nth-child(even) {*/
-  /*background-color: whitesmoke;*/
-/*}*/
 
 /* database tab */
 #scope_db {background-color:whitesmoke;}
@@ -800,12 +789,11 @@ em { color: #993333;}
 /**
   dataset tabs
 **/
-/*.ds-table { width:100%; border-collapse: separate; border-spacing: 1em .4em;}*/
-#ds_log { max-height: 450px; padding:4px;}
-#ds_comments { overflow-y:scroll; max-height:inherit; padding:4px;}
 .ds-table { width:100%; border-spacing: 1em .4em;}
 .ds-title { padding-top: 7px; font-weight:700; font-size: larger;}
 
+#ds_log { max-height: 450px; padding:4px;}
+#ds_comments { overflow-y:scroll; max-height:inherit; padding:4px;}
 #ds_details p { margin: .5rem 0 .2rem 0;}
 #ds_details td:nth-child(1) {width:20%;}
 #ds_details td:nth-child(3) {width:30%;}

@@ -348,16 +348,19 @@ class SearchDatabaseView(View):
     print('filtered qs length', len(filtered))
     for place in filtered:
       ds=place.dataset
-      suggestions.append({
-        "pid": place.id,
-        "ds": {"id":ds.id, "label": ds.label, "title": ds.title},
-        "name": place.title,
-        "variants": [n.jsonb['toponym'] for n in place.names.all()],
-        "ccodes": place.ccodes,
-        "fclasses": place.fclasses,
-        "types": [t.jsonb['sourceLabel'] or t.jsonb['sourceLabel'] for t in place.types.all()],
-        "geom": dbsug_geoms(place.geoms.all())
-      })
+      try:        
+        suggestions.append({
+          "pid": place.id,
+          "ds": {"id":ds.id, "label": ds.label, "title": ds.title},
+          "name": place.title,
+          "variants": [n.jsonb['toponym'] for n in place.names.all()],
+          "ccodes": place.ccodes,
+          "fclasses": place.fclasses,
+          "types": [t.jsonb['sourceLabel'] or t.jsonb['src_label'] for t in place.types.all()],
+          "geom": dbsug_geoms(place.geoms.all())
+        })
+      except:
+        print("db sugbuilder error:", place.id, sys.exc_info())
       
     result = {'get': request.GET, 'suggestions': suggestions}
     return JsonResponse(result, safe=False, json_dumps_params={'ensure_ascii':False})

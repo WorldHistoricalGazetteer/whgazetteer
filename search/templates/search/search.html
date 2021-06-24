@@ -58,10 +58,10 @@
 					<a id="search_help" class="pointer" data-toggle="popover" title="Search scope" data-html="true" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a>
 					</span>{%endcomment%}
 					<li class="nav-item">
-					<a class="nav-link active" id="scope_idx" data-link="idx" href="#" role="tab">Search Index {%fontawesome_icon 'link'%}</a>
+					<a class="nav-link" id="scope_idx" data-link="idx" href="#" role="tab">Search Index {%fontawesome_icon 'link'%}</a>
 					</li>
 					<li class="nav-item">
-					<a class="nav-link" id="scope_db" data-link="db" href="#" role="tab" style="background:whitesmoke;">Search Database {%fontawesome_icon 'database'%}</a> 
+					<a class="nav-link active" id="scope_db" data-link="db" href="#" role="tab" style="background:whitesmoke;">Search Database {%fontawesome_icon 'database'%}</a> 
 					</li>
 				</ul>	
 			<div id="search_filters" class="tab-pane fade show active" role="tabpanel">
@@ -138,16 +138,6 @@
 				<p class="small mt-1">Trace examples in WHG can be viewed in two ways. Typing a search term into the box above (try 'empire' or 'Buddhist') returns matching Linked Trace datasets. Traces related to a given place appear on its Place Portal page, e.g. for <a href="{% url 'places:place-portal' id=12345979 %}">Istanbul</a>, or <a href="{% url 'places:place-portal' id=12877143 %}">Hetian (Khotan)</a>.</p>
 			</div>
 			</div><!-- #search_panel -->
-				<!-- separate div for full search results -->
-				<!--<div id="type_filter" class="hidden">-->
-					<!--<p class='allcap-heading half mb-0 pl-1'>PLACE TYPES (select to limit)-->
-						<!--<span class="float-right mr-2"><a href="#" class="hide-filter">-->
-							<!--close { fontawesome_icon 'times-circle' color='#336699' %}</a></span>-->
-						<!--<span class="float-right clear-filter hidden mr-2"><a href="#">restore all</span></a>-->
-					<!--</p>-->
-					<!--<ul class="list-inline"></ul>-->
-				<!--</div>-->
-				<!--<div id="result_list" class="hidden"></div>-->
 			</div>
 			<div id="search_right" class="col-sm-6">
 				<div id="map_options" class="p-1 small">
@@ -241,7 +231,6 @@
     $("#result_list").fadeOut()
     $("#result_filters").hide()
     $("#type_filter").hide()
-    <!--$("#result_list").html('<p class="half allcap-heading mb-0 pl-1">'+src+ ' SEARCH RESULTS</p>')-->
     if(other.data('link') == 'idx'){ 
       $("#search_filters").css("background","whitesmoke")
       $("#scope_db").css("border-bottom","1px solid whitesmoke")
@@ -270,7 +259,8 @@
     }
   })
   $(function(){
-    localStorage.setItem('search_scope', 'idx')
+    <!--localStorage.setItem('search_scope', 'idx')-->
+    localStorage.setItem('search_scope', 'db')
     lslast=function(){
       return JSON.parse(localStorage.getItem('last_results'))
     }
@@ -595,22 +585,26 @@
 	  }
 	});    
   }
-  function getFeaturesInView() {
-    filtfeats = [];
+  //
+  function getFeaturesInView(scope) {
+    // scope == idx or db
+    filtered_layerids = [];
     mappy.eachLayer( function(layer) {
       if(layer instanceof L.CircleMarker) {
+        props=layer.feature.geometry.properties
         if(mappy.getBounds().contains(layer._latlng)) {
-          <!--filtfeats.push(layer.feature);-->
-          filtfeats.push(layer.feature.geometry.properties.whgid);
+          // db records have no whgid
+          filtered_layerids.push(scope=='idx'?props.whgid:props.pid);
         }
       } else if (layer instanceof L.Path) {
+        props=layer.feature.geometry.properties
         if(mappy.getBounds().contains(layer._latlngs)) {
-          <!--filtfeats.push(layer.feature);-->
-          filtfeats.push(layer.feature.geometry.properties.whgid);
-        }        
+          // db records have no whgid
+          filtered_layerids.push(scope=='idx'?props.whgid:props.pid);
+        }
       }
     });
-    return filtfeats;
+    return filtered_layerids;
   }
   //
   // initializes map
@@ -718,7 +712,7 @@
     // TODO: whgid vs. pid for database search
     L.Control.boxzoom({ position:'topleft' }).addTo(mappy);  
     mappy.on('zoomend',function(e){
-      mapFilter(getFeaturesInView())
+      mapFilter(getFeaturesInView(search_scope))
       <!--console.log('zoomend', getFeaturesInView().length)-->
     })
     
@@ -1006,7 +1000,7 @@
     title:    
   */
   function showResults(data, doctype, scope='suggest', title){
-		console.log('in showResults(), count', data.length)
+		console.log('showResults() in', data.length)
     // always want result_list to show
     $("#result_list").show()
     var results_div = '';
@@ -1046,7 +1040,7 @@
           <!--results_table += sugTableRow(sug, doctype, scope)   -->
         })
 				results_table += '</table>'
-        console.log('countadded, havegeom',countadded, havegeom)
+        console.log('showResults() countadded, havegeom',countadded, havegeom)
         types = Array.from(new Set(typesArr));
         <!--console.log('types',types)-->
         types.forEach(function(type){
@@ -1079,9 +1073,10 @@
 		let src = lsscope()=='idx'?'UNION INDEX':'DATABASE'
     let elem = document.getElementById('result_list')
 		titleMarkup = doctype=='trace'?'<p class="pl-1 mb-1 strong">'+title+'<small> :: a Linked Traces dataset ('+data.bodies.length+' related places)</small></p>':''
-
+    
+    // current table row count
     titleMarkup += "<p class='half allcap-heading mb-0 pl-1'>"+
-			(doctype=='place' ? src+' SEARCH RESULTS ('+data.length+')' : '')
+			(doctype=='place' ? src+' SEARCH RESULTS (<span id="rowcount">'+data.length+'</span>)' : '')
       
     elem.insertAdjacentHTML('beforebegin', titleMarkup)
 
@@ -1210,6 +1205,7 @@
   // boxed_ids = features in bbox
   // need all ids on map and hide those not in bbox
   mapFilter = function(boxed_ids){
+    console.log('mapFilter() boxed_ids')
     $(".clear-filter").show()
     if(filterLayers != null){filterLayers.addTo(mappy)}
     $(".filter").removeClass('active-filter')
@@ -1232,6 +1228,7 @@
       }
     }
     console.log('hidden in list)', hidethese)
+    $("#rowcount").html(results.length - hidethese.length)
     // if any were hidden, show the zoom_extents link to restore
     if(hidethese.length > 0){
       $("#clear_mapfilter").fadeIn()
