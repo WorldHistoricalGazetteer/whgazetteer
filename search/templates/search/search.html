@@ -32,7 +32,7 @@
 
 <div class="container">
   <div class="justify-content-center mt-2">
-		<div class="row">
+		<div id="search_top" class="row">
 			<div id="search_left" class="col-sm-6">
 				<div id="search_panel">
 			<div id="search_type" class="form-group d-flex justify-content-center"> 
@@ -58,10 +58,10 @@
 					<a id="search_help" class="pointer" data-toggle="popover" title="Search scope" data-html="true" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a>
 					</span>{%endcomment%}
 					<li class="nav-item">
-					<a class="nav-link" id="scope_idx" data-link="idx" href="#" role="tab">Search Index {%fontawesome_icon 'link'%}</a>
+					<a class="nav-link active" id="scope_idx" data-link="idx" href="#" role="tab">Search Index {%fontawesome_icon 'link'%}</a>
 					</li>
 					<li class="nav-item">
-					<a class="nav-link active" id="scope_db" data-link="db" href="#" role="tab" style="background:whitesmoke;">Search Database {%fontawesome_icon 'database'%}</a> 
+					<a class="nav-link" id="scope_db" data-link="db" href="#" role="tab" style="background:whitesmoke;">Search Database {%fontawesome_icon 'database'%}</a> 
 					</li>
 				</ul>	
 			<div id="search_filters" class="tab-pane fade show active" role="tabpanel">
@@ -167,9 +167,9 @@
 					<span class="float-right clear-filter hidden mr-2"><a href="#">restore all</span></a>
 				</p>
 				<ul class="list-inline"></ul>
-			</div>				
-			<div id="result_list" class="">
 			</div>
+      <div id='result_title' class='half allcap-heading mb-0 pl-1'></div>
+      <div id="result_list" class=""></div>
 		</div> <!-- .row -->
   </div>
 </div> <!-- .container -->
@@ -221,16 +221,21 @@
     $("#offer_mapfilter").hide()    
     location.reload()
   }  
-  // search source tab actions
+  // search scope tab actions
   $(".nav-link").click(function(){
     let link = $(this).data('link')
     search_scope = link
     localStorage.setItem('search_scope', search_scope)
     src = search_scope=='db'?'DATABASE':'UNION INDEX'
     other = link == 'idx'?$("#scope_db"):$("#scope_idx")
+
+    // disappear stuff from last search
+    $("#result_title").hide()
     $("#result_list").fadeOut()
     $("#result_filters").hide()
     $("#type_filter").hide()
+
+    // simulate tab styling
     if(other.data('link') == 'idx'){ 
       $("#search_filters").css("background","whitesmoke")
       $("#scope_db").css("border-bottom","1px solid whitesmoke")
@@ -239,8 +244,6 @@
       $("#search_filters").css("background","#fff")
       $("#dbicon").hide()
     }
-    <!--console.log('data-link, other', link, other)-->
-    <!--if(other.data('link') == 'idx'){ $("#div_ds_select").show()} else {$("#div_ds_select").hide()}-->
     other.removeClass('active')
     $(this).addClass('active')
   })
@@ -259,8 +262,8 @@
     }
   })
   $(function(){
-    <!--localStorage.setItem('search_scope', 'idx')-->
-    localStorage.setItem('search_scope', 'db')
+    localStorage.setItem('search_scope', 'idx')
+    <!--localStorage.setItem('search_scope', 'db')-->
     lslast=function(){
       return JSON.parse(localStorage.getItem('last_results'))
     }
@@ -354,12 +357,12 @@
 	
 	// show filters, hide search_info and vice versa
     $("#link_filters").click(function(){
-	  if($("#search_filters").is(":visible")){
-		$("#search_info").fadeIn()
-	  } else {
-		$("#search_info").fadeOut()
-	  }
-	  $("#search_filters").toggle(400)
+	    if($("#search_filters").is(":visible")){
+        $("#search_info").fadeIn()
+      } else {
+        $("#search_info").fadeOut()
+      }
+      $("#search_filters").toggle(400)
     })
 
     // 
@@ -614,20 +617,6 @@
 		mappy.options.zoomSnap = 0.5
 		mappy.setView(new L.LatLng(32, 12.6), 1);
 
-    // change cursor on shift-key hold
-    //$('.leaflet-container').css('cursor','crosshair');
-    <!--mappy.on('keydown', function(e){-->
-      <!--console.log(e.code)-->
-      <!--if(e.key=='Shift'){-->
-        <!--$('.leaflet-container').css('cursor','crosshair');-->
-      <!--}-->
-    <!--})-->
-    <!--mappy.on('keyup', function(e){-->
-      <!--console.log(e.code)-->
-      <!--if(e.key=='Shift'){-->
-        <!--$('.leaflet-container').css('cursor','grab');-->
-      <!--}-->
-    <!--})-->
     // mapbox tokens 
     var token_kg = '{{ mbtokenkg }}', 
       token_whg = '{{ mbtokenwhg }}', 
@@ -706,14 +695,21 @@
       <!--"Regions (UN)": regions-->
     }
     mappy.zoomControl.setPosition('topright')
+    bboxer = L.Control.boxzoom(
+      { position:'topleft', 
+        title:'Select tool, then draw rectangle to filter results',
+        enableShiftDrag: true
+        <!--,iconClasses:['bbox-icon']-->
+      })
+
+    // startup controls only
     L.control.layers(baseLayers,dataLayers).addTo(mappy);
     baseLayers["NE global"].addTo(mappy)
     
     // TODO: whgid vs. pid for database search
-    L.Control.boxzoom({ position:'topleft' }).addTo(mappy);  
+    <!--L.Control.boxzoom({ position:'topleft' }).addTo(mappy);  -->
     mappy.on('zoomend',function(e){
       mapFilter(getFeaturesInView(search_scope))
-      <!--console.log('zoomend', getFeaturesInView().length)-->
     })
     
     
@@ -1014,7 +1010,7 @@
     var types=[], typesArr = []
     <!--console.log(data.bodies.length+ ' bodies',data)-->
     if (doctype == 'place'){
-      titlehead = search_scope=='db'?'Title':'Title <small>(# linked records)</small> '
+      titlehead = search_scope=='db'?'Title':'Title <small>(linked)</small> '
       if(data.length ==0) {
         results_div += '<p class="small ml-2">No results, sorry.</p>'
       } else {
@@ -1074,13 +1070,17 @@
     let elem = document.getElementById('result_list')
 		titleMarkup = doctype=='trace'?'<p class="pl-1 mb-1 strong">'+title+'<small> :: a Linked Traces dataset ('+data.bodies.length+' related places)</small></p>':''
     
-    // current table row count
-    titleMarkup += "<p class='half allcap-heading mb-0 pl-1'>"+
-			(doctype=='place' ? src+' SEARCH RESULTS (<span id="rowcount">'+data.length+'</span>)' : '')
-      
-    elem.insertAdjacentHTML('beforebegin', titleMarkup)
-
-    $('#result_list').html(results_table)
+    titleMarkup += (doctype=='place' ? src+' SEARCH RESULTS (<span id="rowcount">'+data.length+'</span>)<span class="ml-4">List includes records with no geometry, if any</span>' : '')
+    console.log('titleMarkup',titleMarkup)
+    
+    
+    $("#result_title").html(titleMarkup)
+    $("#result_title").fadeIn()
+    
+    $("#result_list").html(results_table)
+    
+    let headerbg = search_scope=='idx'?'#f1fff1':'#eee'
+    $("#results_table th").css('background-color', headerbg )
 
     // empty the typeahead suggestions
     $(".tt-dataset").html('')
@@ -1209,8 +1209,6 @@
     $(".clear-filter").show()
     if(filterLayers != null){filterLayers.addTo(mappy)}
     $(".filter").removeClass('active-filter')
-    <!--$(this).addClass('active-filter')-->
-    <!--filter = $(this).data('type')-->
     // all mapped results ids
     allmapped = Object.keys(idToFeature).map(Number);
     hidethese = allmapped.filter(x => boxed_ids.indexOf(x) === -1);
@@ -1228,7 +1226,8 @@
       }
     }
     console.log('hidden in list)', hidethese)
-    $("#rowcount").html(results.length - hidethese.length)
+    // omit header row
+    $("#rowcount").html((results.length-1) - hidethese.length)
     // if any were hidden, show the zoom_extents link to restore
     if(hidethese.length > 0){
       $("#clear_mapfilter").fadeIn()
@@ -1250,8 +1249,10 @@
     idToArea = {}
     mappy.createPane('placePane');
     mappy.getPane('placePane').style.zIndex = 200;
-    stuff=L.layerGroup()
+    points=L.featureGroup()
+    paths=L.featureGroup()
     features = L.geoJSON(data, {
+      <!--pointToLayer: function (feature, latlng) {-->
       pointToLayer: function (feature, latlng) {
         count_features +=1;
 		// if feature has src key, it's from a database search
@@ -1263,6 +1264,7 @@
           idToFeature[identifier] = marker
           return marker
         }
+        layer.addTo(points)
       },
       onEachFeature: function(feature,layer) {
         f=feature; l=layer;
@@ -1295,8 +1297,16 @@
           foo[0].scrollIntoView()
           ele.scrollTop(ele.scrollTop() - scroll);
         })
+        layer.addTo(paths)
       }
     }).addTo(mappy);
+    <!--points.addTo(mappy)-->
+    <!--paths.addTo(mappy)-->
+
+    // conditionally add a bbox control
+    if (bboxer._map == undefined ){ bboxer.addTo(mappy); }
+    
+
     bounds = features.getBounds()
     <!--mappy.setView(bounds.getCenter(),5) -->
     if(geoms.length > 0 ){

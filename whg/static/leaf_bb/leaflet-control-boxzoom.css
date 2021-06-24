@@ -13,10 +13,11 @@
 }
 
 .with-background-image {
-    background-image:url(leaflet-control-boxzoom.svg);
+    /*background-image:url(leaflet-control-boxzoom.svg);*/
+    background-image:url(bounding-box.svg);
     background-repeat:no-repeat;
-    background-size:21px 21px; /* 25px image, 25px box; subtract 2px for padding on every side = 21px rendering height */
-    background-position:2px 2px;
+    background-size:17px 17px; /* 25px image, 25px box; subtract 2px for padding on every side = 21px rendering height */
+    background-position:3px 3px;
 }
 
 .leaflet-control-boxzoom.leaflet-control-boxzoom-active {

@@ -471,11 +471,12 @@ input[type="text"] {
   border: 1px solid #ccc;
 }
 #results_table th {
-  background: #eee;
+  background: #f1fff1;
   font-size: .9rem;
 }
 /* experiment */
 
+.bbox-icon = {}
 /* database tab */
 #scope_db {background-color:whitesmoke;}
 #result_extra { background-color: cornsilk; font-size:.7rem;}
