@@ -149,6 +149,7 @@
 			</div>
 		  </div>
 		</div>	  
+    <a href="" id="a_splash_modal" data-toggle="modal" data-target="#splashModal" title="">fire splash</a>
 	  </div> <!-- splash -->
     </div>
     <div id="home_map" class="col-sm-9">
@@ -170,6 +171,40 @@
   </div>
 </div> <!-- ext_site -->
 
+<div class="modal fade" id="splashModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-body container" >
+        <div id="splash_modeal_header" class="w-75 m-auto" style="background-color:whitesmoke; border-radius:12px; position:relative">
+          <h5 class="text-center"><strong>World Historical Gazetteer</strong></h5>
+          <h3 class="text-center"><strong>Version 2 is on the way!</h3>
+          <img id="splash_logo" src="{% static 'images/whg_logo_notext_400w.png' %}">
+        </div>
+        <div class="mt-2 w-75 m-auto p-2" style="border 1px solid #ccc;max-height:fit-content;">
+          <p>We have been hard at work making improvements to the WHG platform, and we're pleased to announce Version 2 will be released soon&mdash;the target date is <b>1 July 2021</b>. Here are a few of the new and upgraded features:</p>
+          <ul class="mb-3">
+            <li><reddish>Reconciliation to Wikidata 3x faster</reddish>. We now locally index ~3.5 million Wikidata place records.</li>
+            <li><reddish>Improved reconciliation review</reddish>. Track progress of review tasks.</li>
+            <li><reddish>Collections</reddish>. Link multiple datasets in a <b>collection</b> to logically group and present them.</li>
+            <li><reddish>Improved search</reddish>. Numerous new options and features&mdash;wait and see!</li>
+            <li><reddish>Improved upload functionality</reddish>. Validation catching and reporting errors more reliably. </li>
+            <li><reddish>And more!</reddish>...</li>
+            <!--<li><b></b>.</li>-->
+          </ul>
+          <button id="btn_done" type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Close</button>
+          <label class="checkbox-inline ml-3"><input id="not_again" type="checkbox" value=""> don't show again, please</label>
+        </div>
+      </div> <!-- .modal-body -->
+      <!--<div class="modal-footer">-->
+        <!--<div id="buttons_pre">-->
+          <!--<button id="btn_cancel" type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Close</button>-->
+        <!--</div>-->
+        <!--<button id="btn_done" type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Done</button>-->
+      <!--</div>-->
+    </div>
+  </div>
+</div>
+
 
 <script type="text/javascript">
   var filterLayers = null
@@ -177,39 +212,86 @@
   window.area_list = []
   window.area_objs = []
 
+  function setCookie(cname, cvalue, exdays) {
+    const d = new Date();
+    d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+    let expires = "expires="+d.toUTCString();
+    document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+  }
+  
+  function getCookie(cname) {
+    let name = cname + "=";
+    let ca = document.cookie.split(';');
+    for(let i = 0; i < ca.length; i++) {
+      let c = ca[i];
+      while (c.charAt(0) == ' ') {
+        c = c.substring(1);
+      }
+      if (c.indexOf(name) == 0) {
+        return c.substring(name.length, c.length);
+      }
+    }
+    return "";
+  }
+  
+  function checkCookie() {
+    let user = getCookie("username");
+    if (user != "") {
+      alert("Welcome again " + user);
+    } else {
+      user = prompt("Please enter your name:", "");
+      if (user != "" && user != null) {
+        setCookie("username", user, 365);
+      }
+    }
+  }   
+
+
   $(function(){
-	// toggle all fclass checkboxes
-	$("#check_toggle").click(function(e){
-	  e.preventDefault()
-	  var state = $("#check_toggle").text()
-	  if(state == 'check all'){
-		$("input:checkbox").prop('checked', true);
-		$("#check_toggle").text('clear all');
-	  } else if( state == 'clear all'){
-		$("input:checkbox").prop('checked', false);
-		$("#check_toggle").text('check all');		
-	  }
-	})
-	
-	$( "#map_dataset" ).change(function() {
-	  if (!!gl.getLayer('heat_active')){
-		gl.removeLayer('heat_active')}
-	  heat($(this).val())
-	  console.log('heat() for',$(this).val())
-	});	
-	
-	$(function(){
+    // splash modal nonsense
+    splashy = getCookie('not-again')
+    if (splashy != "true") {
+      $('#splashModal').modal('show');    
+    } 
+    $('#not_again').change(function(){
+      if(this.checked) {
+        setCookie('not-again', 'true', 24)
+        console.log(getCookie('not-again'))
+      }
+    })
+
+    // toggle all fclass checkboxes
+    $("#check_toggle").click(function(e){
+      e.preventDefault()
+      var state = $("#check_toggle").text()
+      if(state == 'check all'){
+      $("input:checkbox").prop('checked', true);
+      $("#check_toggle").text('clear all');
+      } else if( state == 'clear all'){
+      $("input:checkbox").prop('checked', false);
+      $("#check_toggle").text('check all');		
+      }
+    })
+    
+    $( "#map_dataset" ).change(function() {
+      if (!!gl.getLayer('heat_active')){
+      gl.removeLayer('heat_active')}
+      heat($(this).val())
+      console.log('heat() for',$(this).val())
+    });	
+    
+
 	  $("[rel='tooltip']").tooltip();
-	})	
-	// popover content
-	$("#filter_help").attr(
-	  'data-content',"<p>Select one or more GeoNames single-letter code:</p>"+
-	  "<p>A=administrative areas<br/> H=hydrological features<br/> L='landscape' elements, e.g. regions<br/> P=settlements (cities, towns, etc.)<br/>R='routes, roads, etc.' (various)<br/>S='sites' (various)<br/> T=topographical features</p>"
-	)
-	$("#spatial_help").attr(
-	  'data-content',"<p>Constrain search to the bounds of a <a href='http://apple.com'>UN global sub-region</a>, a country, or a user-created study area. Try entering 'north...'</p>"
-	)
-	
+
+    // popover content
+    $("#filter_help").attr(
+      'data-content',"<p>Select one or more GeoNames single-letter code:</p>"+
+      "<p>A=administrative areas<br/> H=hydrological features<br/> L='landscape' elements, e.g. regions<br/> P=settlements (cities, towns, etc.)<br/>R='routes, roads, etc.' (various)<br/>S='sites' (various)<br/> T=topographical features</p>"
+    )
+    $("#spatial_help").attr(
+      'data-content',"<p>Constrain search to the bounds of a <a href='http://apple.com'>UN global sub-region</a>, a country, or a user-created study area. Try entering 'north...'</p>"
+    )
+    
     $("[rel='tooltip']").tooltip();
     
     var idToFeature = {} // for feature lookup
@@ -234,12 +316,12 @@
 	
 
 
-	// 
-	$("label[for='input_box']").click(function(){
-	  console.log('clicked search')
-	  doctype = $("input[name='class']:checked").val()
-	  searchPlaces()
-	})	
+    // 
+    $("label[for='input_box']").click(function(){
+      console.log('clicked search')
+      doctype = $("input[name='class']:checked").val()
+      searchPlaces()
+    })	
     //
     // data type choice determines index searched
     var suggester = new Bloodhound({
@@ -298,40 +380,41 @@
         $('.typeahead').removeClass('input-loading');
     });;
 	
-	// fetch area list
-	$.get("/api/area_list", function(data){
-	  <!--console.log('initial areas for list',data)-->
-	  for(var i=0;i<data.length;i++){
-		area_objs.push(data[i])
-		area_list.push(data[i]['title'])
-	  }	  
-	})
+    // fetch area list
+    $.get("/api/area_list", function(data){
+      <!--console.log('initial areas for list',data)-->
+      for(var i=0;i<data.length;i++){
+      area_objs.push(data[i])
+      area_list.push(data[i]['title'])
+      }	  
+    })
 	
-	$( "#input_area" ).autocomplete({
-	  source: area_list,
-	  minLength: 2,
-	  select: function( event, ui ) {
-		// build boundsobj, insert as hidden input val()
-		label = ui.item.label
-		obj = area_objs.find(o =>o.title==label)
-		areaid = obj.id
-		boundsobj = '{"type":["'+obj.type+'"],"id":["'+areaid+'"]}'
-		$("#boundsobj").val( boundsobj )
-		console.log( "boundsobj for view ", boundsobj);
-		
-		// fetch and render selected area
-		render_area(areaid)
-	  }
-	});
-	$("#input_area").on('keyup', function(e){
-		// resets stuff 
-	  if($('#input_area').val().length < 3) {
-		  $("#boundsobj").val('')
-			if(typeof arealayer !== 'undefined'){arealayer.removeFrom(mappy)}
-			mappy.setView([38, 10], 2.4)
-	  }
-	})
-  })
+    $( "#input_area" ).autocomplete({
+      source: area_list,
+      minLength: 2,
+      select: function( event, ui ) {
+      // build boundsobj, insert as hidden input val()
+      label = ui.item.label
+      obj = area_objs.find(o =>o.title==label)
+      areaid = obj.id
+      boundsobj = '{"type":["'+obj.type+'"],"id":["'+areaid+'"]}'
+      $("#boundsobj").val( boundsobj )
+      console.log( "boundsobj for view ", boundsobj);
+      
+      // fetch and render selected area
+      render_area(areaid)
+      }
+    });
+    $("#input_area").on('keyup', function(e){
+      // resets stuff 
+      if($('#input_area').val().length < 3) {
+        $("#boundsobj").val('')
+        if(typeof arealayer !== 'undefined'){arealayer.removeFrom(mappy)}
+        mappy.setView([38, 10], 2.4)
+      }
+    })
+  }) // end onLoad()
+  
  /*
 	*** render_area() ***
 	fetch and display an area (region/area/country)

@@ -13,6 +13,13 @@ table {border-collapse:initial;}
 .navbar .container {
   border-bottom: 1px solid #eee;
 }
+#splash_logo {
+  height: 65px;
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+}
+reddish {color:#993333;}
 /**
   modals
 **/

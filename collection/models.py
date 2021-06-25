@@ -16,7 +16,7 @@ class Collection(models.Model):
   owner = models.ForeignKey(User,related_name='collections', on_delete=models.CASCADE)
   title = models.CharField(null=False, max_length=255)
   description = models.CharField( null=False, max_length=2044)
-  tags = ArrayField(models.CharField(max_length=50))
+  keywords = ArrayField(models.CharField(max_length=50))
   image_file = models.FileField(upload_to=user_directory_path)
   
   create_date = models.DateTimeField(null=True, auto_now_add=True)
