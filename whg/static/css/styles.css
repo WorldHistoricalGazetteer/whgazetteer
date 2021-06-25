@@ -50,7 +50,7 @@ label {vertical-align:top;}
 .p-block { display:block; }
 .red-head {color:#993300;}
 .rem1 {font-size: 1rem;}
-.scrolldiv {overflow-y:scroll;}
+.scrolldiv {overflow-y:auto;}
 .scroll100 {display:block; overflow-y:scroll; max-height:120px;}
 .scroll65 {display:block; overflow-y:scroll; max-height:65px;width:100%}
 .smaller {font-size: small;} /* smaller than bootstrap */
@@ -238,7 +238,7 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
   /*cursor: pointer;*/
   /*background-image: url('/static/images/right-arrow.png') right no-repeat;*/
 }
-.item-left p { margin:.5rem 0; font-size:.95rem;}
+.item-left p { margin:.5rem 0; font-size:.9rem;}
 #item_left_search {
   background-image: url('/static/images/search-map-50_425x80.png');
   background-color: #fff !important;

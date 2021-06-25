@@ -125,7 +125,10 @@
 				</div> <!-- #div_ds_select -->{%endcomment%}
 			</div> <!-- #search_filters -->	
       <div id="result_filters" class="p-3 hidden">
-        <p class="allcap-heading half">RESULT FILTERS {% fontawesome_icon 'filter' %} <span class="typefilter-link ml-2"><a href="#">Type </a></span>
+        <p class="allcap-heading half">RESULT FILTERS {% fontawesome_icon 'filter' %} 
+        <span class="typefilter-link ml-2"><a href="#">Type </a></span>
+        <span class="ml-2"><select id="type_list">
+        </select></span>
         </p>        
       </div>
 			<div id="traces_info" class="p-2 hidden">  
@@ -286,6 +289,17 @@
       } else if( state == 'clear all'){
       $("input:checkbox").prop('checked', false);
       $("#check_toggle").text('check all');		
+      }
+    })
+    
+    $("#type_list").change(function(){
+      term = $(this).val()
+      console.log('type selected:', term)
+      if(term != ""){
+        typeFilter(term)      
+      } else {
+        // reset
+        console.log('needs reset to all')
       }
     })
     
@@ -670,6 +684,7 @@
     window.mappy = e.detail.map
     mappy.setMaxBounds(null)
 		mappy.options.zoomSnap = 0.5
+		mappy.options.maxZoom = 6
 		mappy.setView(new L.LatLng(32, 12.6), 1);
 
     // mapbox tokens 
@@ -761,10 +776,13 @@
     L.control.layers(baseLayers,dataLayers).addTo(mappy);
     baseLayers["NE global"].addTo(mappy)
     
-    // TODO: whgid vs. pid for database search
-    <!--L.Control.boxzoom({ position:'topleft' }).addTo(mappy);  -->
+    // TODO: 
+    // sometimes results cause zoom, sometimes not (global)
+    // 
     mappy.on('zoomend',function(e){
-      mapFilter(getFeaturesInView(search_scope))
+      console.log('zoomend')
+      <!--mapFilter(getFeaturesInView(search_scope))-->
+      filterLayers.removeFrom(mappy)
     })
     
     
@@ -907,6 +925,7 @@
     $("#search_input").val('')
     $("#result_list").html('')
     $("#result_list").hide()
+    $("#result_title").hide()
     $("#type_filter").hide()
     $(".list-inline").html('')
 		<!--$("#search_info").fadeIn()-->
@@ -996,7 +1015,7 @@
         bounds: $("#boundsobj").val()
 		<!--,ds: $("#select_ds_search").val()-->
       }, function(data){
-        window.searchres=data['suggestions']
+        window.searchres=data['suggestions']        
         // store locally
         localStorage.setItem('last_results',JSON.stringify(searchres))
         // render to html
@@ -1078,6 +1097,7 @@
 
         countadded = 0
         havegeom = 0
+
         data.forEach(function(sug){
 					<!--console.log('sug', sug)-->
 					typesArr=typesArr.concat(sug.types)
@@ -1096,16 +1116,27 @@
         })
 				results_table += '</table>'
         <!--console.log('showResults() countadded, havegeom',countadded, havegeom)-->
+        
+        // list of distinct types
         types = Array.from(new Set(typesArr));
-        <!--console.log('types',types)-->
+        // into div
         types.forEach(function(type){
           $("#type_filter ul").append('<li class="filter list-inline-item" data-type="'+type+'"><a href="#">'+type+'</a></li>')
         })
+
+        // into select dropdown
+        $('#type_list').empty();
+        $('#type_list').append('<option value="0">Select place type</option>');
+        $.each(types, function(i, p) {
+          $('#type_list').append($('<option></option>').val(p).html(p));
+        });
+        
         if(scope=='search') {
 					<!--console.log('geoms from sugs, to renderPlaces()', geoms)-->
           renderPlaces(geoms)
         }
-        if(data.length > 8){$("#result_filters").show()}
+        <!--if(data.length > 8){$("#result_filters").show()}-->
+        if(data.length > 1){$("#result_filters").show()}
       }
     } else if (doctype == 'trace') {
 			// data has features and bodies
@@ -1147,53 +1178,7 @@
 
     // empty the typeahead suggestions
     $(".tt-dataset").html('')
-    
-    /* 
-      set events on new elements 
-    */
-    //
-    // filter results list by type (old school JS)
-    $(".filter").on('click',function(e){
-      $(".clear-filter").show()
-      if(filterLayers != null){filterLayers.addTo(mappy)}
-      $(".filter").removeClass('active-filter')
-      $(this).addClass('active-filter')
-      filter = $(this).data('type')
-      result_div = document.getElementById("result_list")
-      <!--results = result_div.getElementsByTagName("div")-->
-      // now table rows
-      results = result_div.getElementsByTagName("tr")
-      hide_ids=[]; show_ids = []
-      // skip header row
-      for (i = 1; i < results.length; i++) {
-        types = results[i].getAttribute('data-types')
-        _id = results[i].getAttribute('data-id')
-        if (types.indexOf(filter) > -1){
-          results[i].style.display = "";
-          show_ids.push(_id)
-        } else {
-          results[i].style.display = "none";
-          hide_ids.push(_id)
-        }
-      }
-      // filter map too
-      <!--console.log('filter these from map',_ids)-->
-      hide_these = $.map(hide_ids,function(i){
-        return idToFeature[i]
-      })
-      show_these = $.map(show_ids,function(i){
-        return idToFeature[i]
-      })
-      window.filterLayers = L.layerGroup(hide_these)
-      window.showLayers = L.featureGroup(show_these)
-      for(l in hide_these){hide_these[l].removeFrom(mappy)}
-      mappy.fitBounds(showLayers.getBounds(), {padding: [200, 0]})
-      if(showLayers.getLayers().length ==1){
-        mappy.setZoom(5)
-      }
-      
-    })
-    
+        
     $(".clear-filter").on('click',function(e){
       filterLayers.addTo(mappy)
 			mappy.fitBounds(features.getBounds())
@@ -1259,8 +1244,89 @@
       $(".modal-body").html('<iframe width="100%" height="100%" frameborder="0" scrolling="yes" '+
         'allowtransparency="true" src="'+url+'"></iframe>');
     });
+
+    /* 
+      set events on new elements 
+    */
+    // filter results list by type (old school JS)
+    $(".filter").on('click',function(e){
+      $(".clear-filter").show()
+      if(filterLayers != null){filterLayers.addTo(mappy)}
+      $(".filter").removeClass('active-filter')
+      $(this).addClass('active-filter')
+      filter = $(this).data('type')
+      result_div = document.getElementById("result_list")
+      <!--results = result_div.getElementsByTagName("div")-->
+      // now table rows
+      results = result_div.getElementsByTagName("tr")
+      hide_ids=[]; show_ids = []
+      // skip header row
+      for (i = 1; i < results.length; i++) {
+        types = results[i].getAttribute('data-types')
+        _id = results[i].getAttribute('data-id')
+        if (types.indexOf(filter) > -1){
+          results[i].style.display = "";
+          show_ids.push(_id)
+        } else {
+          results[i].style.display = "none";
+          hide_ids.push(_id)
+        }
+      }
+      // filter map too
+      <!--console.log('filter these from map',_ids)-->
+      hide_these = $.map(hide_ids,function(i){
+        return idToFeature[i]
+      })
+      show_these = $.map(show_ids,function(i){
+        return idToFeature[i]
+      })
+      window.filterLayers = L.layerGroup(hide_these)
+      window.showLayers = L.featureGroup(show_these)
+      for(l in hide_these){hide_these[l].removeFrom(mappy)}
+      mappy.fitBounds(showLayers.getBounds(), {padding: [200, 0]})
+      if(showLayers.getLayers().length ==1){
+        mappy.setZoom(5)
+      }
+      
+    })  
   } // end showResults()
 
+  /*
+    *** typeFilter() ***
+    filter result list on change #type_list select
+  */
+  typeFilter = function(term){
+    if(filterLayers != null){filterLayers.addTo(mappy)}
+    results = $("#result_list tr")
+    hide_ids=[]; show_ids = []
+    // skip header row
+    for (i = 1; i < results.length; i++) {
+      types = results[i].getAttribute('data-types')
+      _id = results[i].getAttribute('data-id')
+      if (types.indexOf(term) > -1){
+        console.log('SHOW',i,_id, term, types)
+        results[i].style.display = "";
+        show_ids.push(_id)
+      } else if (types.indexOf(term) == -1) {
+        <!--console.log('HIDE',i,_id, term, types)-->
+        results[i].style.display = "none";
+        <!--console.log('display',results[i].style.display)-->
+        hide_ids.push(_id)
+      }
+    }
+    // filter map too
+    hide_these = $.map(hide_ids,function(i){
+      return idToFeature[i]
+    })
+    show_these = $.map(show_ids,function(i){
+      return idToFeature[i]
+    })
+    window.filterLayers = L.layerGroup(hide_these)
+    filterLayers.removeFrom(mappy)
+    window.showLayers = L.featureGroup(show_these)
+    <!--for(l in hide_these){hide_these[l].removeFrom(mappy)}-->
+    mappy.fitBounds(showLayers.getBounds(), {padding: [200, 0]})
+  }
   /*
     *** mapFilter() *** from mappy.on('endzoom')
     filter result list to include results of getFeaturesInView()
