@@ -126,8 +126,8 @@
 			</div> <!-- #search_filters -->	
       <div id="result_filters" class="p-3 hidden">
         <p class="allcap-heading half">RESULT FILTERS {% fontawesome_icon 'filter' %} 
-        <span class="typefilter-link ml-2"><a href="#">Type </a></span>
-        <span class="ml-2"><select id="type_list">
+        <!--<span class="typefilter-link ml-2"><a href="#">Type </a></span>-->
+        <span class="ml-2"><select id="type_select">
         </select></span>
         </p>        
       </div>
@@ -203,7 +203,7 @@
     feat.addTo(mappy)
   })
   
-  function switchTab(scope){
+  switchTab = function(scope){
     if(scope == 'db'){ 
       $("#scope_idx").removeClass('active')
       $("#scope_db").addClass('active')
@@ -217,7 +217,7 @@
       $("#dbicon").hide()
     }    
   }
-  function resetSearch(){
+  resetSearch = function(){
     localStorage.removeItem('last_results')
     localStorage.setItem('search_scope', 'idx')
     localStorage.removeItem('kept')
@@ -265,6 +265,8 @@
       $("#div_ds_select").show()
     }
   })
+  
+  // on page load
   $(function(){
     localStorage.setItem('search_scope', 'idx')
     <!--localStorage.setItem('search_scope', 'db')-->
@@ -292,14 +294,14 @@
       }
     })
     
-    $("#type_list").change(function(){
+    $("#type_select").change(function(){
       term = $(this).val()
       console.log('type selected:', term)
-      if(term != ""){
+      if(term != "0"){
         typeFilter(term)      
       } else {
         // reset
-        console.log('needs reset to all')
+        $(".search-row").css('display','')
       }
     })
     
@@ -489,7 +491,7 @@
 	*** sortTable() ***
   col_idx == index of column to sort by
   */
-  function sortTable(col_idx, order) {
+  sortTable = function(col_idx, order) {
     var table, rows, switching, i, x, y, shouldSwitch;
     table = document.getElementById("results_table");
     switching = true;
@@ -539,31 +541,31 @@
 	*** render_area() ***
 	fetch and display an area (region/area/country)
   */
-  function render_area(areaid) {
-	$.ajax({
-		url: '/api/area/'+areaid
-	  }).done(function(data){
-		console.log('render_area()',data)
-		geom = {"type":"FeatureCollecton","features":[]}
-		geom['features'].push(data.geojson)
+  render_area = function(areaid) {
+    $.ajax({
+      url: '/api/area/'+areaid
+      }).done(function(data){
+      console.log('render_area()',data)
+      geom = {"type":"FeatureCollecton","features":[]}
+      geom['features'].push(data.geojson)
+  
+    // clear existing
+    if(typeof arealayer !== 'undefined'){arealayer.removeFrom(mappy)}
 
-		// clear existing
-		if(typeof arealayer !== 'undefined'){arealayer.removeFrom(mappy)}
-
-		// render new
-		arealayer = L.geoJSON(geom, {
-		  onEachFeature: function(feature,layer) {
-			f=feature; l=layer;
-			console.log('render_area() f,l',f,l)
-			l.setStyle({"color":"orange","weight":2,"fillOpacity":0})
-			idToArea[areaid] = l
-			<!--identifier = f.place_id;-->
-			popupOptions = {maxWidth: 200};
-			l.bindPopup(data.title, popupOptions);
-		  }
-		}).addTo(mappy)
-		mappy.fitBounds(arealayer.getBounds())
-	  })
+    // render new
+    arealayer = L.geoJSON(geom, {
+      onEachFeature: function(feature,layer) {
+      f=feature; l=layer;
+      console.log('render_area() f,l',f,l)
+      l.setStyle({"color":"orange","weight":2,"fillOpacity":0})
+      idToArea[areaid] = l
+      <!--identifier = f.place_id;-->
+      popupOptions = {maxWidth: 200};
+      l.bindPopup(data.title, popupOptions);
+      }
+    }).addTo(mappy)
+    mappy.fitBounds(arealayer.getBounds())
+    })
   }  
   //
   // radio button switch btwn place & trace search inputs
@@ -599,9 +601,9 @@
 		clearit()
   });
   // 
-  function heat(dataset) {
-	console.log('heat()',dataset)
-	ne_global.getMapboxMap().addLayer({
+  heat = function(dataset) {
+	  console.log('heat()',dataset)
+	  ne_global.getMapboxMap().addLayer({
 	  "id": "heat_active",
 	  "type": "heatmap",
 	  "source": dataset,
@@ -658,7 +660,7 @@
 	});    
   }
   //
-  function getFeaturesInView(scope) {
+  getFeaturesInView = function(scope) {
     // scope == idx or db
     filtered_layerids = [];
     mappy.eachLayer( function(layer) {
@@ -672,7 +674,12 @@
         props=layer.feature.geometry.properties
         if(mappy.getBounds().contains(layer._latlngs)) {
           // db records have no whgid
-          filtered_layerids.push(scope=='idx'?props.whgid:props.pid);
+          try {
+            filtered_layerids.push(scope=='idx'?props.whgid:props.pid);
+          } catch (error) {
+            console.log('props',props)
+            console.log('error',error)
+          }
         }
       }
     });
@@ -781,8 +788,8 @@
     // 
     mappy.on('zoomend',function(e){
       console.log('zoomend')
-      <!--mapFilter(getFeaturesInView(search_scope))-->
-      filterLayers.removeFrom(mappy)
+      mapFilter(getFeaturesInView(search_scope))
+      <!--filterLayers.removeFrom(mappy)-->
     })
     
     
@@ -801,23 +808,23 @@
     <!--}-->
   }, false);
   
-  function cleanJson(text) {
+  cleanJson = function(text) {
     z=text.replace(/'/g,'\\"')
     y=z.replace(/point/,'Point')
     return JSON.parse(JSON.parse(y))
   }
 
   styles_bbox = {
-	"MultiPolygon": {
-	  "default":{fillOpacity: 0.3, opacity: 1, color: "#000", weight: 1, fillColor:"#ff9999"},
-	  "focus":{fillOpacity: 0.3, opacity: 1, color: "red", weight: 2, fillColor:"#ff9999"}},
-	"Polygon": {
-	  "default":{fillOpacity: 0.3, opacity: .5, color: "#666", weight: 1, fillColor:"#ff9999"},
-	  "focus":{fillOpacity: 0.3, opacity: .5, color: "red", weight: 2, fillColor:"#ff9999"}}
+    "MultiPolygon": {
+      "default":{fillOpacity: 0.3, opacity: 1, color: "#000", weight: 1, fillColor:"#ff9999"},
+      "focus":{fillOpacity: 0.3, opacity: 1, color: "red", weight: 2, fillColor:"#ff9999"}},
+    "Polygon": {
+      "default":{fillOpacity: 0.3, opacity: .5, color: "#666", weight: 1, fillColor:"#ff9999"},
+      "focus":{fillOpacity: 0.3, opacity: .5, color: "red", weight: 2, fillColor:"#ff9999"}}
   }
 
   //  triggerEvent(window, 'map:init', {id: id, map: map, options: options});
-  function map_init (map_search, options) {
+  map_init = function(map_search, options) {
 		<!--console.log('options', options)-->
 		window.geoms = []
 		window.gelems = $('script').filter(function() {
@@ -858,7 +865,7 @@
 		<!--}-->
   } // end map_init
   
-  function filly(counter) {
+  filly = function(counter) {
     if (counter == 0)
       return "blue"
     else if (counter == 1)
@@ -871,7 +878,7 @@
       return "yellow"
   }
 
-  function fetchTraceGeom(trace_id,counter,title) {
+  fetchTraceGeom = function(trace_id,counter,title) {
     <!-- get trace GeoJSON (includes features[] and bodies[] ) -->
     if(typeof(traces) !== "undefined") {traces.clearLayers();}
     if(typeof(features) !== "undefined") {features.clearLayers();}
@@ -979,7 +986,7 @@
   })
 
   spin_opts = { scale: .8, top: '70%', 'right':'30%'}
-  function startSearchSpinner(){
+  startSearchSpinner = function(){
 		window.spinner_search = new Spin.Spinner(spin_opts).spin();
 		$("#search_filters").append(spinner_search.el);   
   }
@@ -1031,7 +1038,7 @@
     *** searchPlacesDb() *** from #input_box keyup 
     database search w/o autocomplete -> showResults()
   */
-  function searchPlacesDb(){
+  searchPlacesDb = function(){
 		startSearchSpinner()
 			fclasses = [];
 			$('#search_filters input:checked').each(function() {
@@ -1069,7 +1076,7 @@
     scope: ['suggest' | 'search']
     title:    
   */
-  function showResults(data, doctype, scope='suggest', title){
+  showResults = function(data, doctype, scope='suggest', title){
 		<!--console.log('showResults() in', data.length)-->
     // always want result_list to show
     $("#result_list").show()
@@ -1120,15 +1127,16 @@
         // list of distinct types
         types = Array.from(new Set(typesArr));
         // into div
-        types.forEach(function(type){
-          $("#type_filter ul").append('<li class="filter list-inline-item" data-type="'+type+'"><a href="#">'+type+'</a></li>')
-        })
+        <!--types.forEach(function(type){-->
+          <!--$("#type_filter ul").append('<li class="filter list-inline-item" data-type="'+type+'"><a href="#">'+type+'</a></li>')-->
+        <!--})-->
 
+        // TODO: on zoomend, any geoms in viewport are added to result_list
         // into select dropdown
-        $('#type_list').empty();
-        $('#type_list').append('<option value="0">Select place type</option>');
+        $('#type_select').empty();
+        $('#type_select').append('<option value="0">Select place type</option>');
         $.each(types, function(i, p) {
-          $('#type_list').append($('<option></option>').val(p).html(p));
+          $('#type_select').append($('<option></option>').val(p).html(p));
         });
         
         if(scope=='search') {
@@ -1293,7 +1301,7 @@
 
   /*
     *** typeFilter() ***
-    filter result list on change #type_list select
+    filter result list on change #type_select 
   */
   typeFilter = function(term){
     if(filterLayers != null){filterLayers.addTo(mappy)}
@@ -1333,32 +1341,89 @@
   */
   // boxed_ids = features in bbox
   // need all ids on map and hide those not in bbox
+  <!--mapFilter = function(boxed_ids){-->
+    <!--<!--console.log('mapFilter() boxed_ids')-->-->
+    <!--$(".clear-filter").show()-->
+    <!--if(filterLayers != null){filterLayers.addTo(mappy)}-->
+    <!--$(".filter").removeClass('active-filter')-->
+    <!--// all mapped results ids-->
+    <!--allmapped = Object.keys(idToFeature).map(Number);-->
+    <!--hidethese = allmapped.filter(x => boxed_ids.indexOf(x) === -1);-->
+    <!--// list result rows-->
+    <!--result_div = document.getElementById("result_list")-->
+    <!--results = result_div.getElementsByTagName("tr")-->
+    <!--// for each result row, if its id is in hidethese, hide it-->
+    <!--// skip header row-->
+    <!--for (i = 1; i < results.length; i++) {-->
+      <!--_id = parseInt(results[i].getAttribute('data-id'))-->
+      <!--if (hidethese.indexOf(_id) > -1){-->
+        <!--results[i].style.display = "none";-->
+      <!--} else {-->
+        <!--results[i].style.display = ""-->
+      <!--}-->
+    <!--}-->
+    <!--<!--console.log('hidden in list)', hidethese)-->-->
+    <!--// omit header row-->
+    <!--$("#rowcount").html((results.length-1) - hidethese.length)-->
+    <!--// if any were hidden, show the zoom_extents link to restore-->
+    <!--if(hidethese.length > 0){-->
+      <!--$("#clear_mapfilter").fadeIn()-->
+    <!--} else { $("#clear_mapfilter").fadeOut()}-->
+  <!--}-->
+ 
+  // TODO: 
+  // 1) remove all map layers, add back those in view
+  // 2) remove result_list rows, don't just hide them
+  //    
   mapFilter = function(boxed_ids){
-    <!--console.log('mapFilter() boxed_ids')-->
     $(".clear-filter").show()
     if(filterLayers != null){filterLayers.addTo(mappy)}
-    $(".filter").removeClass('active-filter')
-    // all mapped results ids
-    allmapped = Object.keys(idToFeature).map(Number);
-    hidethese = allmapped.filter(x => boxed_ids.indexOf(x) === -1);
-    // list result rows
-    result_div = document.getElementById("result_list")
-    results = result_div.getElementsByTagName("tr")
-    // for each result row, if its id is in hidethese, hide it
-    // skip header row
-    for (i = 1; i < results.length; i++) {
-      _id = parseInt(results[i].getAttribute('data-id'))
-      if (hidethese.indexOf(_id) > -1){
-        results[i].style.display = "none";
-      } else {
-        results[i].style.display = ""
+    
+    ids_boxed=boxed_ids
+    // arrays of mappable results
+    ids_all = Object.keys(idToFeature).map(Number);
+    ids_hide = ids_all.filter(x => ids_boxed.indexOf(x) === -1);
+    ids_show = ids_all.filter(x => ids_boxed.indexOf(x) > -1);
+    
+    // filter features/layers
+    features.clearLayers();
+    farray.forEach(function(l){
+      var gprops = l.feature.geometry.properties
+      if(gprops){
+        _id = search_scope == 'idx'?gprops.whgid:gprops.pid
+        // if feature in bbox, add its layer back
+        if(ids_show.indexOf(_id) > -1){
+          features.addLayer(idToFeature[gprops.whgid])
+        }
       }
-    }
+    });
+    
+    // filter result rows
+    <!--results = $("#result_list tr")-->
+    <!--// for each result row, if its id is in hidethese, hide it-->
+    <!--// skip header row-->
+    <!--for (i = 1; i < results.length; i++) {-->
+      <!--_id = parseInt(results[i].getAttribute('data-id'))-->
+      <!--if (ids_hide.indexOf(_id) > -1){-->
+        <!--results[i].style.display = "none";-->
+      <!--} else {-->
+        <!--results[i].style.display = ""-->
+      <!--}-->
+    <!--}-->
+    results = $("#results_table tr")
+    results.each(function(){
+      if(ids_hide.indexOf($(this).data('id')) > -1){
+        $(this).remove();
+      }
+    });
+    // rebuild #type_select
+    
+    
     <!--console.log('hidden in list)', hidethese)-->
     // omit header row
-    $("#rowcount").html((results.length-1) - hidethese.length)
+    $("#rowcount").html((results.length-1) - ids_hide.length)
     // if any were hidden, show the zoom_extents link to restore
-    if(hidethese.length > 0){
+    if(ids_hide.length > 0){
       $("#clear_mapfilter").fadeIn()
     } else { $("#clear_mapfilter").fadeOut()}
   }
@@ -1371,16 +1436,16 @@
     if(typeof(features)!=='undefined'){ features.clearLayers() }
     if(typeof(traces)!=='undefined'){ traces.clearLayers() }
     
-    data = {"type":"FeatureCollection","features":geoms}
+    featcoll = {"type":"FeatureCollection","features":geoms}
     <!--console.log('geodata prior to render',data)-->
     var count_features = 0
     idToFeature = {}
     idToArea = {}
     mappy.createPane('placePane');
     mappy.getPane('placePane').style.zIndex = 200;
-    points=L.featureGroup()
-    paths=L.featureGroup()
-    features = L.geoJSON(data, {
+    <!--window.fgroup=L.featureGroup()-->
+    window.farray = []
+    features = L.geoJSON(featcoll, {
       <!--pointToLayer: function (feature, latlng) {-->
       pointToLayer: function (feature, latlng) {
         count_features +=1;
@@ -1393,7 +1458,6 @@
           idToFeature[identifier] = marker
           return marker
         }
-        layer.addTo(points)
       },
       onEachFeature: function(feature,layer) {
         f=feature; l=layer;
@@ -1426,16 +1490,14 @@
           foo[0].scrollIntoView()
           ele.scrollTop(ele.scrollTop() - scroll);
         })
-        layer.addTo(paths)
+        // why? all already in features
+        farray.push(layer)
       }
     }).addTo(mappy);
-    <!--points.addTo(mappy)-->
-    <!--paths.addTo(mappy)-->
 
     // conditionally add a bbox control
     if (bboxer._map == undefined ){ bboxer.addTo(mappy); }
     
-
     bounds = features.getBounds()
     <!--mappy.setView(bounds.getCenter(),5) -->
     if(geoms.length > 0 ){
