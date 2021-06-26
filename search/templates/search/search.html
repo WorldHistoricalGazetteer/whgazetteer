@@ -213,15 +213,15 @@
           map markers
         else clear stuff: last_results, keep
     */
-    <!--search_scope = ls('search_scope')?ls('search_scope'):'idx'-->
-    <!--previous = ls('last_results')-->
-    <!--kept = ls('keep')-->
-    <!--if(document.referrer.match(/(place|dataset)/) && previous && kept){-->
-      <!--showResults(previous,'place','search')-->
-    <!--} else {-->
-      <!--localStorage.removeItem('keep')-->
-      <!--localStorage.removeItem('last_results')-->
-    <!--}-->
+    search_scope = ls('search_scope')?ls('search_scope'):'idx'
+    previous = ls('last_results')
+    kept = ls('keep')
+    if(document.referrer.match(/(place|dataset)/) && previous && kept){
+      showResults(previous,'place','search')
+    } else {
+      localStorage.removeItem('keep')
+      localStorage.removeItem('last_results')
+    }
     
     <!--localStorage.setItem('search_scope', 'idx')-->
     window.search_scope = $("li a.active").data('scope') // idx or db
@@ -337,8 +337,8 @@
       console.log('clicked search')
       doctype = $("input[name='class']:checked").val()
       <!--if(search_scope == 'idx'){-->
-      if(lsscope() == 'idx'){
-      searchPlacesIdx()
+      if(searchScope() == 'idx'){
+        searchPlacesIdx()
       } else { searchPlacesDb()}	  
     })	
     //
@@ -1720,8 +1720,8 @@
   });
   // TODO handle db case
   $("#result_div").on('click', '.place-link', function(e){
-    // set kept variable in localStorage
-    localStorage.setItem('kept', true)
+    // set keep variable in localStorage
+    localStorage.setItem('keep', true)
     localStorage.setItem('search_scope', searchScope())
     whgid=$(this).data('id')
     console.log('whgid',whgid)
@@ -1807,8 +1807,9 @@
     $(".list-inline").html('')
     <!--features.clearLayers()-->
     if(typeof(traces) !== "undefined") {traces.clearLayers(); mappy.setView([38, 10], 2.4)}
-    if(typeof(features) !== "undefined") {features.clearLayers(); mappy.setView([38, 10], 2.4)}
+    if(features && !shownLayers) {features.clearLayers(); mappy.setView([38, 10], 2.4)}
   }
+  
   objLength = function(obj){
     return Object.keys(obj).length
   }
@@ -1834,7 +1835,7 @@
   resetSearch = function(){
     localStorage.removeItem('last_results')
     localStorage.setItem('search_scope', 'idx')
-    localStorage.removeItem('kept')
+    localStorage.removeItem('keep')
     $("#dbicon").hide()
     $("#offer_mapfilter").hide()    
     location.reload()
