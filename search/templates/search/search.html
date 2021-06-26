@@ -59,10 +59,10 @@
 					<a id="search_help" class="pointer" data-toggle="popover" title="Search scope" data-html="true" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a>
 					</span>{%endcomment%}
 					<li class="nav-item">
-					<a class="nav-link active" id="scope_idx" data-link="idx" href="#" role="tab" style="background:#f1fff1;"> Search Index {%fontawesome_icon 'link'%}</a>
+					<a class="nav-link active" id="a_idx" data-scope="idx" href="#" role="tab" style="background:#f1fff1;"> Search Index {%fontawesome_icon 'link'%}</a>
 					</li>
 					<li class="nav-item">
-					<a class="nav-link" id="scope_db" data-link="db" href="#" role="tab" style="background:whitesmoke;">Search Database {%fontawesome_icon 'database'%}</a> 
+					<a class="nav-link" id="a_db" data-scope="db" href="#" role="tab" style="background:whitesmoke;">Search Database {%fontawesome_icon 'database'%}</a> 
 					</li>
 				</ul>	
 			<div id="search_filters" class="tab-pane fade show active" role="tabpanel">
@@ -148,7 +148,8 @@
         <span id="offer_mapfilter" class="hidden">Draw a bounding box to filter result list</span>
         <span id="clear_mapfilter" class="hidden float-right"><a href="javascript:mappy.fitBounds( features.getBounds())">clear map filter</a></span>
         </div>
-				{% leaflet_map "map_search" callback="map_init" %}
+				<!--{ leaflet_map "map_search" callback="map_init" %}-->
+				{% leaflet_map "map_search" %}
 				<!--<div id="result_extra" class="p-2"></div>-->
 			</div> <!--#search_right -->
 		</div> <!-- .row -->
@@ -173,7 +174,7 @@
 				<ul class="list-inline"></ul>
 			</div>
       <div id='result_title' class='half allcap-heading mb-0 pl-1'></div>
-      <div id="result_list" class=""></div>
+      <div id="result_div" class=""></div>
 		</div> <!-- .row -->
   </div>
 </div> <!-- .container -->
@@ -192,92 +193,38 @@
 
 
 <script type="text/javascript">
-  var filterLayers = null
+  /* _TOP */
+  var initial_layers = null
+  var filtered_layers = null
+  var shown_layers = null
+  var searchres = null
+  
   window.idToArea = {}
   window.area_list = []
   window.area_objs = []
-    
-  $(".bblink").click(function(){
-    console.log('bbox for',$(this).data('id'))
-    feat = idToFeature[$(this).data('id')]
-    feat.addTo(mappy)
-  })
-  
-  switchTab = function(scope){
-    if(scope == 'db'){ 
-      $("#scope_idx").removeClass('active')
-      $("#scope_db").addClass('active')
-      $("#search_filters").css("background","whitesmoke")
-      $("#scope_db").css("border-bottom","1px solid whitesmoke")
-      $("#dbicon").fadeIn()
-    } else {
-      $("#scope_db").removeClass('active')
-      $("#scope_idx").addClass('active')
-      $("#search_filters").css("background","#f1fff1")
-      $("#dbicon").hide()
-    }    
-  }
-  resetSearch = function(){
-    localStorage.removeItem('last_results')
-    localStorage.setItem('search_scope', 'idx')
-    localStorage.removeItem('kept')
-    $("#dbicon").hide()
-    $("#offer_mapfilter").hide()    
-    location.reload()
-  }  
-  // search scope tab actions
-  $(".nav-link").click(function(){
-    let link = $(this).data('link')
-    search_scope = link
-    localStorage.setItem('search_scope', search_scope)
-    src = search_scope=='db'?'DATABASE':'UNION INDEX'
-    other = link == 'idx'?$("#scope_db"):$("#scope_idx")
-
-    // disappear stuff from last search
-    $("#result_title").hide()
-    $("#result_list").fadeOut()
-    $("#result_filters").hide()
-    $("#type_filter").hide()
-
-    // simulate tab styling
-    if(other.data('link') == 'idx'){ 
-      $("#search_filters").css("background","whitesmoke")
-      $("#scope_db").css("border-bottom","1px solid whitesmoke")
-      $("#dbicon").fadeIn()
-    } else {
-      $("#search_filters").css("background","#f1fff1")
-      $("#dbicon").hide()
-    }
-    other.removeClass('active')
-    $(this).addClass('active')
-  })
-  // dataset dropdown
-  $("#select_ds_search").change(function(){
-	  console.log('ds chosen', $(this).val())
-  })
-  // radio $("#checkbox_div input:radio").click(function() {
-  $(".filters-title input:radio").click(function(){
-    t = $(this)
-    console.log('clicked', $(this).val())
-    if($(this).val() == 'idx'){
-      $("#div_ds_select").hide()
-    } else {
-      $("#div_ds_select").show()
-    }
-  })
-  
+      
   // on page load
   $(function(){
-    localStorage.setItem('search_scope', 'idx')
-    <!--localStorage.setItem('search_scope', 'db')-->
-    lslast=function(){
-      return JSON.parse(localStorage.getItem('last_results'))
-    }
-    lsscope=function(){
-      return localStorage.getItem('search_scope')
-    }
-    lskeys=Object.keys(localStorage)
-    <!--window.search_scope = $("li a.active").data('link') // idx or db-->
+    /*  if referrer is a place portal, place page, or dataset page,
+        restore last state: 
+          class (place|trace)
+          scope (idx|db)
+          result_list
+          map markers
+        else clear stuff: last_results, keep
+    */
+    <!--search_scope = ls('search_scope')?ls('search_scope'):'idx'-->
+    <!--previous = ls('last_results')-->
+    <!--kept = ls('keep')-->
+    <!--if(document.referrer.match(/(place|dataset)/) && previous && kept){-->
+      <!--showResults(previous,'place','search')-->
+    <!--} else {-->
+      <!--localStorage.removeItem('keep')-->
+      <!--localStorage.removeItem('last_results')-->
+    <!--}-->
+    
+    <!--localStorage.setItem('search_scope', 'idx')-->
+    window.search_scope = $("li a.active").data('scope') // idx or db
     window.search_class = $('input[name=class]').val() // place or trace
     if(search_class == "trace") {$("#traces_info").show()}
     
@@ -372,18 +319,18 @@
     var searchoption = null;
 	
 	// clear map, inputs, results
-    clearit()
+    <!--clearit()-->
     $("#type_filter").hide();
 	
-	// show filters, hide search_info and vice versa
-    $("#link_filters").click(function(){
-	    if($("#search_filters").is(":visible")){
-        $("#search_info").fadeIn()
-      } else {
-        $("#search_info").fadeOut()
-      }
-      $("#search_filters").toggle(400)
-    })
+	<!--// show filters, hide search_info and vice versa-->
+    <!--$("#link_filters").click(function(){-->
+	    <!--if($("#search_filters").is(":visible")){-->
+        <!--$("#search_info").fadeIn()-->
+      <!--} else {-->
+        <!--$("#search_info").fadeOut()-->
+      <!--}-->
+      <!--$("#search_filters").toggle(400)-->
+    <!--})-->
 
     // 
     $("label[for='input_box']").click(function(){
@@ -487,13 +434,78 @@
 	  })
   }) <!--  end onLoad() -->
 
+  /* _STATE */
+  searchClass = function(){
+    return $("input[name=class]:checked").val()
+  }
+  searchScope = function(){
+    return !ls('search_scope')?$(".nav-link.active").data('scope'):ls('search_scope')
+  }
+  currentRows = function(){
+    return $("#result_table tbody tr")
+  }
+  currentLayers = function(){
+    return initial_layers == null?null:initial_layers
+  }
+  ls = function(key){
+    return key==null?Object.keys(localStorage):localStorage.getItem(key)
+  }
+  lastResult = function(){
+    return searchres == null?null:searchres
+  }
+  /* end STATE*/
+  
+  hideAllRows = function(){
+    currentRows().each(function(r){
+      currentRows()[r].style.display='none'
+    })
+  }
+  showAllRows = function(){
+    currentRows().each(function(r){
+      currentRows()[r].style.display=''
+    })
+  }
+  // hide rows with data-id in 'ids'
+  hideRows = function(ids){
+    rows = currentRows() // does not include header
+    for (i = 0; i < rows.length; i++) {
+      _id = parseInt(rows[i].getAttribute('data-id'))
+      if (ids.indexOf(_id) > -1){
+        rows[i].style.display = "none";
+  }}}
+  visibleFeaturesIds = function() {
+    scope = searchScope()  // idx or db
+    filtered_layerids = [];
+    mappy.eachLayer( function(layer) {
+      if(layer instanceof L.CircleMarker) {
+        props=layer.feature.geometry.properties
+        if(mappy.getBounds().contains(layer._latlng)) {
+          // db records have no whgid
+          filtered_layerids.push(scope=='idx'?props.whgid:props.pid);
+        }
+      } else if (layer instanceof L.Path) {
+        props=layer.feature.geometry.properties
+        if(mappy.getBounds().contains(layer._latlngs)) {
+          // db records have no whgid
+          try {
+            filtered_layerids.push(scope=='idx'?props.whgid:props.pid);
+          } catch (error) {
+            console.log('props',props)
+            console.log('error',error)
+          }
+        }
+      }
+    });
+    return filtered_layerids;
+  }  
+  
  /*
 	*** sortTable() ***
   col_idx == index of column to sort by
   */
   sortTable = function(col_idx, order) {
     var table, rows, switching, i, x, y, shouldSwitch;
-    table = document.getElementById("results_table");
+    table = document.getElementById("result_table");
     switching = true;
     /* Make a loop that will continue until
     no switching has been done: */
@@ -567,39 +579,6 @@
     mappy.fitBounds(arealayer.getBounds())
     })
   }  
-  //
-  // radio button switch btwn place & trace search inputs
-  $('input[type=radio][name=class]').change(function() {
-    console.log('changed class', $(this).val())
-    if ($(this).val() == 'place'){
-			if(!$("#search_info").is(":visible")){
-				$("#traces_info").hide()
-				$("#search_info").show()
-				$("#scope_tabs").show()
-			}
-			$("#filters_opener").show()
-			$("#search_input").show()
-			$("#search_filters").fadeIn()
-			$("#search_input_traces").hide()
-    } else {
-			<!--console.log('viz?',$("#search_info").is(":visible"))-->
-			if(!$("#traces_info").is(":visible")){
-				$("#search_info").hide()
-				$("#traces_info").show()
-				$("#scope_tabs").hide()
-			}
-			$("#filters_opener").hide()
-			$("#search_input").hide()
-      $("#result_filters").hide()
-			$("#search_filters").hide()
-			$("#search_input_traces").show()
-			$('.nav-pills a[href="#pills-why"]').tab('show')
-		}
-		
-		$('#input_box').val('')
-		$('#input_box').attr("placeholder",this.getAttribute("rel"));
-		clearit()
-  });
   // 
   heat = function(dataset) {
 	  console.log('heat()',dataset)
@@ -658,32 +637,6 @@
 		],
 	  }
 	});    
-  }
-  //
-  getFeaturesInView = function(scope) {
-    // scope == idx or db
-    filtered_layerids = [];
-    mappy.eachLayer( function(layer) {
-      if(layer instanceof L.CircleMarker) {
-        props=layer.feature.geometry.properties
-        if(mappy.getBounds().contains(layer._latlng)) {
-          // db records have no whgid
-          filtered_layerids.push(scope=='idx'?props.whgid:props.pid);
-        }
-      } else if (layer instanceof L.Path) {
-        props=layer.feature.geometry.properties
-        if(mappy.getBounds().contains(layer._latlngs)) {
-          // db records have no whgid
-          try {
-            filtered_layerids.push(scope=='idx'?props.whgid:props.pid);
-          } catch (error) {
-            console.log('props',props)
-            console.log('error',error)
-          }
-        }
-      }
-    });
-    return filtered_layerids;
   }
   //
   // initializes map
@@ -788,25 +741,21 @@
     // 
     mappy.on('zoomend',function(e){
       console.log('zoomend')
-      mapFilter(getFeaturesInView(search_scope))
-      <!--filterLayers.removeFrom(mappy)-->
+      mapFilter(visibleFeaturesIds(search_scope))
+      <!--filtered_layers.removeFrom(mappy)-->
     })
     
     
-    if(localStorage.getItem('last_results') != null){
-    <!--if(localStorage.getItem('last_results') != "undefined"){-->
-      previous = JSON.parse(localStorage.getItem('last_results'))	
-      kept = localStorage.getItem('kept')
+    if(ls('last_results') != null){
+      kept = ls('keep')
+      previous = JSON.parse(ls('last_results'))	
       console.log('got previous')
       if( kept && previous){
         showResults(previous,'place','search')
       }
+      localStorage.setItem('keep', false)
     }
-    <!--if(document.referrer.match(/(place|dataset)/) && previous){-->
-    <!--if(previous){-->
-      <!--showResults(previous,'place','search')      -->
-    <!--}-->
-  }, false);
+  }, false); <!-- addEventListener() -->
   
   cleanJson = function(text) {
     z=text.replace(/'/g,'\\"')
@@ -824,46 +773,6 @@
   }
 
   //  triggerEvent(window, 'map:init', {id: id, map: map, options: options});
-  map_init = function(map_search, options) {
-		<!--console.log('options', options)-->
-		window.geoms = []
-		window.gelems = $('script').filter(function() {
-			<!--return this.id.match(/[0-9]/) && this.text != '"null"';-->
-			return this.id !='' && this.text != '"null"';
-		});
-		for (i=0;i<gelems.length;i++){
-			let t_geom = cleanJson(gelems[i].text)
-			<!--t_geom['properties'] = {"id": gelems[i].id,"ds": t_geom.ds!=null?t_geom.ds:ds}-->
-			geoms.push(t_geom)
-		}
-
-		if (geoms.length > 0) {
-			console.log('geom: ',geom)
-			idToFeature = {} // for feature lookup
-			bboxes = L.layerGroup()
-			features = L.geoJSON(geoms, {
-			onEachFeature: function(feature,layer) {
-				f=feature; l=layer;
-				bboxes.addLayer(l)
-				identifier = f.properties.id;
-				<!--console.log('identifier, type',identifier,f.geometry.type)-->
-				if(f.type != 'Point'){
-				layer.setStyle(styles_bbox[f.geometry.type].default).bindPopup(
-					f.properties.title+' ('+identifier+')'
-				)
-				idToFeature[identifier] = layer
-				}
-			}
-			})<!--.addTo(mappy);-->
-	
-			<!--mappy.setView(features.getBounds().getCenter(),6)-->
-			mappy.fitBounds(features.getBounds())
-			mappy.setZoom(mappy.getZoom()-1)
-		} 
-		<!--else {-->
-			<!--console.log('no geometries, no feature')-->
-		<!--}-->
-  } // end map_init
   
   filly = function(counter) {
     if (counter == 0)
@@ -927,75 +836,13 @@
   }
 
   // clear results, type filter
-  clearit = function(){
-    <!--console.log('clearit() called')-->
-    $("#search_input").val('')
-    $("#result_list").html('')
-    $("#result_list").hide()
-    $("#result_title").hide()
-    $("#type_filter").hide()
-    $(".list-inline").html('')
-		<!--$("#search_info").fadeIn()-->
-    <!--features.clearLayers()-->
-    if(typeof(traces) !== "undefined") {traces.clearLayers(); mappy.setView([38, 10], 2.4)}
-    if(typeof(features) !== "undefined") {features.clearLayers(); mappy.setView([38, 10], 2.4)}
-    
-  }  
-  /*
-  // catch Enter key press for places
-  // traces are handled in .typeahead function
-  // disabled typeahead: removed class .typeahead from #input_box
-  */
-  $("#input_box").on('keyup', function(e){
-    // resets page 
-    if($('#input_box').val().length < 3) {
-      clearit()
-    }
-    doctype = $("input[name='class']:checked").val()
-    <!--if (e.keyCode === 13 && doctype == 'place') {-->
-    if (e.keyCode === 13) {
-      // always hide search_info and traces_info on search
-	  $("#search_info").hide()
-	  <!--$("#traces_info").hide()-->
-	  <!--if (search_scope == 'idx'){-->
-	  if (lsscope() == 'idx'){
-		searchPlacesIdx()		
-	  } else {
-		searchPlacesDb()
-	  }
-    } 
-  })
-  // hack: typeahead disabled for place
-  // only valid if doctype has been changed
-  $(".typeahead").on('keyup', function(e){
-    <!--if($('#input_box').val().length < 3) {-->
-      <!--clearit()-->
-    <!--}-->
-    doctype = $("input[name='class']:checked").val()
-    if (e.keyCode === 13) {
-      searchPlacesIdx()
-    } 
-  })
-
-  // acts on suggest items (.tt-selectable)
-  $("#search_input").on('click','.tt-selectable', function(e) {
-    if(doctype == 'place') {
-      console.log('clicked place suggestion',$(this))
-      searchPlacesIdx()    
-    } 
-  })
-
-  spin_opts = { scale: .8, top: '70%', 'right':'30%'}
-  startSearchSpinner = function(){
-		window.spinner_search = new Spin.Spinner(spin_opts).spin();
-		$("#search_filters").append(spinner_search.el);   
-  }
   /*
     *** searchPlacesIdx() *** from #input_box keyup 
     index search w/o autocomplete -> showResults()
 	handles traces also !?
   */
   searchPlacesIdx = function (){
+    console.log('searchPlacesIdx()',search_scope)
     window.doctype = $("input[name='class']:checked").val();
     // get filter values: fclasses, start, end, ??
     var fclasses = [];
@@ -1025,6 +872,7 @@
         window.searchres=data['suggestions']        
         // store locally
         localStorage.setItem('last_results',JSON.stringify(searchres))
+        <!--localStorage.setItem('last_results',searchres)-->
         // render to html
         if(doctype == 'place'){
           showResults(searchres,doctype,scope);
@@ -1039,6 +887,7 @@
     database search w/o autocomplete -> showResults()
   */
   searchPlacesDb = function(){
+    console.log('searchPlacesDb()',search_scope)
 		startSearchSpinner()
 			fclasses = [];
 			$('#search_filters input:checked').each(function() {
@@ -1062,6 +911,7 @@
       window.searchres=data['suggestions']
       // store locally
       localStorage.setItem('last_results',JSON.stringify(searchres))
+      <!--localStorage.setItem('last_results',searchres)-->
 			showResults(searchres, doctype, "search")
 			spinner_search.stop()
 		})
@@ -1069,7 +919,7 @@
   /* 
     *** showResults() *** 
     from searchPlacesIdx(), searchPlacesDb(), fetchTraceGeometry()
-    Builds results_div, renders to #result_list; builds geoms[] -> renderPlaces(geoms)
+    Builds results_div, renders to #result_div; builds geoms[] -> renderPlaces(geoms)
 
     data: list of objects
     doctype ['place' | 'trace' ]
@@ -1077,13 +927,13 @@
     title:    
   */
   showResults = function(data, doctype, scope='suggest', title){
-		<!--console.log('showResults() in', data.length)-->
-    // always want result_list to show
-    $("#result_list").show()
+		console.log('showResults() data length', data.length)
+    // always want result_div to show
+    $("#result_div").show()
     var results_div = '';
-    var results_table = '';
-    <!--search_scope = $("li a.active").data('link')-->
-    search_scope = localStorage.getItem('search_scope')
+    var result_table = '';
+    <!--search_scope = ls('search_scope')-->
+    search_scope = searchScope()
     // ensure db tab is selected
     scope_id = search_scope=='db'?'db':'idx'
     switchTab(scope_id)
@@ -1094,7 +944,7 @@
       if(data.length ==0) {
         results_div += '<p class="small ml-2">No results, sorry.</p>'
       } else {
-        results_table ='<table id="results_table" class="tableFixHead"><thead><tr>'
+        result_table ='<table id="result_table" class="tableFixHead"><thead><tr>'
         +'<th>Title <i class="fa fa-sort ml-1" data-id=0 ref=asc></i></th>'
         +(search_scope=='idx'?'<th>Linked <i class="fa fa-sort ml-1" data-id=1 ref=desc></i></th>':'')
         +'<th>Countries&nbsp;<i class="fa fa-sort small" data-id='
@@ -1116,12 +966,12 @@
               geoms.push(g)
             })
           }
-          // adds a row to result_div that gets inserted into #result_list later
-          results_table += sugLister(sug, doctype, scope)
+          // adds a row to result_div that gets inserted into #result_div later
+          result_table += sugLister(sug, doctype, scope)
           countadded +=1
-          <!--results_table += sugTableRow(sug, doctype, scope)   -->
+          <!--result_table += sugTableRow(sug, doctype, scope)   -->
         })
-				results_table += '</table>'
+				result_table += '</table>'
         <!--console.log('showResults() countadded, havegeom',countadded, havegeom)-->
         
         // list of distinct types
@@ -1131,7 +981,7 @@
           <!--$("#type_filter ul").append('<li class="filter list-inline-item" data-type="'+type+'"><a href="#">'+type+'</a></li>')-->
         <!--})-->
 
-        // TODO: on zoomend, any geoms in viewport are added to result_list
+        // TODO: on zoomend, any geoms in viewport are added to result_div
         // into select dropdown
         $('#type_select').empty();
         $('#type_select').append('<option value="0">Select place type</option>');
@@ -1150,22 +1000,22 @@
 			// data has features and bodies
 			bodies = data.bodies
 			console.log('trace data',data)
-      results_table = '<table id="results_table">'+'<thead><tr><th>Place</th><th>Relation [earliest, latest]</th></tr></thead>'			
+      result_table = '<table id="result_table">'+'<thead><tr><th>Place</th><th>Relation [earliest, latest]</th></tr></thead>'			
       <!--console.log('trace data bodies',data.bodies)-->
 			data.bodies.forEach(function(bod){ 
         // add a whg_id to bodies        
-        results_table += sugLister(bod, doctype, scope)
+        result_table += sugLister(bod, doctype, scope)
       })
-      results_table += '</table>'
+      result_table += '</table>'
       $("#result_filters").hide()
     };
     $("#offer_mapfilter").fadeIn()
-		$("#result_list").show()
+		$("#result_div").show()
     $("#reset_link").show()
 		$("#search_info").hide()
 		<!--$("#traces_info").hide()-->
-		let src = lsscope()=='idx'?'UNION INDEX':'DATABASE'
-    let elem = document.getElementById('result_list')
+		let src = ls('scope')=='idx'?'UNION INDEX':'DATABASE'
+    let elem = document.getElementById('result_div')
 		titleMarkup = doctype=='trace'?'<p class="pl-1 mb-1 strong">'+title+'<small> :: a Linked Traces dataset ('+data.bodies.length+' related places)</small></p>':''
     
     titleMarkup += (doctype=='place' ? src+' SEARCH RESULTS (<span id="rowcount">'+data.length+'</span>)<span class="ml-4">List includes records with no geometry, if any</span>' : '')
@@ -1175,20 +1025,21 @@
     $("#result_title").html(titleMarkup)
     $("#result_title").fadeIn()
     
-    $("#result_list").html(results_table)
+    $("#result_div").html(result_table)
 
     $(".fa-sort").on('click',function(){
       fubar = $(this)
       sortTable($(this).data('id'), $(this).attr('ref'))
     })
+    
     let headerbg = search_scope=='idx'?'#f1fff1':'#eee'
-    $("#results_table th").css('background-color', headerbg )
+    $("#result_table th").css('background-color', headerbg )
 
     // empty the typeahead suggestions
     $(".tt-dataset").html('')
         
     $(".clear-filter").on('click',function(e){
-      filterLayers.addTo(mappy)
+      filtered_layers.addTo(mappy)
 			mappy.fitBounds(features.getBounds())
       $(".filter").removeClass('active-filter')
       for (i = 0; i < results.length; i++) {
@@ -1259,11 +1110,11 @@
     // filter results list by type (old school JS)
     $(".filter").on('click',function(e){
       $(".clear-filter").show()
-      if(filterLayers != null){filterLayers.addTo(mappy)}
+      if(filtered_layers != null){filtered_layers.addTo(mappy)}
       $(".filter").removeClass('active-filter')
       $(this).addClass('active-filter')
       filter = $(this).data('type')
-      result_div = document.getElementById("result_list")
+      result_div = document.getElementById("result_div")
       <!--results = result_div.getElementsByTagName("div")-->
       // now table rows
       results = result_div.getElementsByTagName("tr")
@@ -1288,11 +1139,11 @@
       show_these = $.map(show_ids,function(i){
         return idToFeature[i]
       })
-      window.filterLayers = L.layerGroup(hide_these)
-      window.showLayers = L.featureGroup(show_these)
+      window.filtered_layers = L.layerGroup(hide_these)
+      window.shown_layers = L.featureGroup(show_these)
       for(l in hide_these){hide_these[l].removeFrom(mappy)}
-      mappy.fitBounds(showLayers.getBounds(), {padding: [200, 0]})
-      if(showLayers.getLayers().length ==1){
+      mappy.fitBounds(shown_layers.getBounds(), {padding: [200, 0]})
+      if(shown_layers.getLayers().length ==1){
         mappy.setZoom(5)
       }
       
@@ -1304,8 +1155,8 @@
     filter result list on change #type_select 
   */
   typeFilter = function(term){
-    if(filterLayers != null){filterLayers.addTo(mappy)}
-    results = $("#result_list tr")
+    if(filtered_layers != null){filtered_layers.addTo(mappy)}
+    results = $("#result_div tr")
     hide_ids=[]; show_ids = []
     // skip header row
     for (i = 1; i < results.length; i++) {
@@ -1329,55 +1180,22 @@
     show_these = $.map(show_ids,function(i){
       return idToFeature[i]
     })
-    window.filterLayers = L.layerGroup(hide_these)
-    filterLayers.removeFrom(mappy)
-    window.showLayers = L.featureGroup(show_these)
+    window.filtered_layers = L.layerGroup(hide_these)
+    filtered_layers.removeFrom(mappy)
+    window.shown_layers = L.featureGroup(show_these)
     <!--for(l in hide_these){hide_these[l].removeFrom(mappy)}-->
-    mappy.fitBounds(showLayers.getBounds(), {padding: [200, 0]})
+    mappy.fitBounds(shown_layers.getBounds(), {padding: [200, 0]})
   }
   /*
-    *** mapFilter() *** from mappy.on('endzoom')
-    filter result list to include results of getFeaturesInView()
+    *** mapFilter() ***
+    filter result list on zoomend 
+    TODO: 
+    1) remove all map layers, add back those in view
+    2) remove result_div rows, don't just hide them    
   */
-  // boxed_ids = features in bbox
-  // need all ids on map and hide those not in bbox
-  <!--mapFilter = function(boxed_ids){-->
-    <!--<!--console.log('mapFilter() boxed_ids')-->-->
-    <!--$(".clear-filter").show()-->
-    <!--if(filterLayers != null){filterLayers.addTo(mappy)}-->
-    <!--$(".filter").removeClass('active-filter')-->
-    <!--// all mapped results ids-->
-    <!--allmapped = Object.keys(idToFeature).map(Number);-->
-    <!--hidethese = allmapped.filter(x => boxed_ids.indexOf(x) === -1);-->
-    <!--// list result rows-->
-    <!--result_div = document.getElementById("result_list")-->
-    <!--results = result_div.getElementsByTagName("tr")-->
-    <!--// for each result row, if its id is in hidethese, hide it-->
-    <!--// skip header row-->
-    <!--for (i = 1; i < results.length; i++) {-->
-      <!--_id = parseInt(results[i].getAttribute('data-id'))-->
-      <!--if (hidethese.indexOf(_id) > -1){-->
-        <!--results[i].style.display = "none";-->
-      <!--} else {-->
-        <!--results[i].style.display = ""-->
-      <!--}-->
-    <!--}-->
-    <!--<!--console.log('hidden in list)', hidethese)-->-->
-    <!--// omit header row-->
-    <!--$("#rowcount").html((results.length-1) - hidethese.length)-->
-    <!--// if any were hidden, show the zoom_extents link to restore-->
-    <!--if(hidethese.length > 0){-->
-      <!--$("#clear_mapfilter").fadeIn()-->
-    <!--} else { $("#clear_mapfilter").fadeOut()}-->
-  <!--}-->
- 
-  // TODO: 
-  // 1) remove all map layers, add back those in view
-  // 2) remove result_list rows, don't just hide them
-  //    
   mapFilter = function(boxed_ids){
     $(".clear-filter").show()
-    if(filterLayers != null){filterLayers.addTo(mappy)}
+    if(filtered_layers != null){filtered_layers.addTo(mappy)}
     
     ids_boxed=boxed_ids
     // arrays of mappable results
@@ -1387,7 +1205,7 @@
     
     // filter features/layers
     features.clearLayers();
-    farray.forEach(function(l){
+    currentLayers().forEach(function(l){
       var gprops = l.feature.geometry.properties
       if(gprops){
         _id = search_scope == 'idx'?gprops.whgid:gprops.pid
@@ -1398,25 +1216,28 @@
       }
     });
     
-    // filter result rows
-    <!--results = $("#result_list tr")-->
-    <!--// for each result row, if its id is in hidethese, hide it-->
-    <!--// skip header row-->
-    <!--for (i = 1; i < results.length; i++) {-->
-      <!--_id = parseInt(results[i].getAttribute('data-id'))-->
-      <!--if (ids_hide.indexOf(_id) > -1){-->
-        <!--results[i].style.display = "none";-->
-      <!--} else {-->
-        <!--results[i].style.display = ""-->
-      <!--}-->
-    <!--}-->
-    results = $("#results_table tr")
-    results.each(function(){
-      if(ids_hide.indexOf($(this).data('id')) > -1){
-        $(this).remove();
+    // hide result rows not in bbox
+    results = $("#result_div tr")
+    // for each result row, if its id is in hidethese, hide it
+    // skip header row
+    for (i = 1; i < results.length; i++) {
+      _id = parseInt(results[i].getAttribute('data-id'))
+      if (ids_hide.indexOf(_id) > -1){
+        results[i].style.display = "none";
+      } else {
+        results[i].style.display = ""
       }
-    });
-    // rebuild #type_select
+    }
+    
+    // remove result rows not in bbox
+    <!--results = $("#result_table tr")-->
+    <!--results.each(function(){-->
+      <!--if(ids_hide.indexOf($(this).data('id')) > -1){-->
+        <!--$(this).remove();-->
+      <!--}-->
+    <!--});-->
+    
+    // TODO: rebuild #type_select
     
     
     <!--console.log('hidden in list)', hidethese)-->
@@ -1427,10 +1248,11 @@
       $("#clear_mapfilter").fadeIn()
     } else { $("#clear_mapfilter").fadeOut()}
   }
- 
+
   /*
-    *** renderPlaces() *** from showResults()
-    render geometries from search results to map
+    *** renderPlaces() *** 
+    from showResults()
+    renders geometries from search results to map
   */
   renderPlaces = function(geoms) {
     if(typeof(features)!=='undefined'){ features.clearLayers() }
@@ -1444,7 +1266,7 @@
     mappy.createPane('placePane');
     mappy.getPane('placePane').style.zIndex = 200;
     <!--window.fgroup=L.featureGroup()-->
-    window.farray = []
+    window.initial_layers = []
     features = L.geoJSON(featcoll, {
       <!--pointToLayer: function (feature, latlng) {-->
       pointToLayer: function (feature, latlng) {
@@ -1478,9 +1300,9 @@
         <!--layer.bindTooltip(feature.properties.title,{"permanent":true});-->
         layer.on('click',function(e){
           scroll = 20
-          ele = $("#result_list")
+          ele = $("#result_div")
           $(".search-row").css('background-color','#fff')
-          <!--divtop = $('#result_list').offset().top-->
+          <!--divtop = $('#result_div').offset().top-->
 					
           fid = search_scope=='idx'?this.feature.geometry.properties.whgid:this.feature.geometry.properties.pid
 					
@@ -1491,7 +1313,7 @@
           ele.scrollTop(ele.scrollTop() - scroll);
         })
         // why? all already in features
-        farray.push(layer)
+        initial_layers.push(layer)
       }
     }).addTo(mappy);
 
@@ -1505,9 +1327,7 @@
       if(mappy.getZoom() > 5){ mappy.setZoom(5)}
       <!--mappy.setView(bounds.getCenter(),)-->
     }
-    
   }
-	
   /*
     *** sugLister() ***  from showResults()
     formats search result item (sug)
@@ -1531,26 +1351,20 @@
         dsid = sug['ds'] ? parseInt(sug['ds']['id']) : ''
 				// add dataset link if this is db search result
 				dslink = sug['ds'] ? '<a href="#" class="ds-link" data-id='+dsid+'>'+sug['ds']['title']+'</a>': ''
+
 				// link destination varies
 				link_class = sug['ds'] ? 'db-link' : 'place-link'
 				variants = vcount > 5 ? variants +' ... <i>'+vcount+' total</i>' : variants
-// table row
-item = '<tr class="search-row place-item" data-id="'+identifier+'" data-types="'+sug['types']+'">'
-+'<td><a class="'+link_class+'" href="#" data-id="'+identifier+'"><b>'+sug['name']+'</a></td>'
-+(sug['ds'] ? '': '<td>'+linkcount+'</td>')
-+'<td>'+ccodes+'</td>'
-+(sug['ds'] ? '<td>'+dslink+'</td>' : '')
-+'<td>'+types+'</td>'
-+'<td>'+variants+'</td>'
-+'<td class="text-center">'+geo+'</td></tr>'
-				
-        <!--item = '<tr class="search-row place-item" data-id="'+identifier+'" data-types="'+sug['types']+'">'-->
-        <!--+'<td><a class="'+link_class+'" href="#" data-id="'+identifier+'"><b>'+sug['name']+'</a>'+linkcount+'</td>'-->
-        <!--+'<td>'+ccodes+'</td>'-->
-        <!--+(sug['ds'] ? '<td>'+dslink+'</td>' : '')-->
-        <!--+'<td>'+types+'</td>'-->
-        <!--+'<td>'+variants+'</td>'-->
-        <!--+'<td class="text-center">'+geo+'</td></tr>'-->
+
+        // table row
+        item = '<tr class="search-row place-item" data-id="'+identifier+'" data-types="'+sug['types']+'">'
+        +'<td><a class="'+link_class+'" href="#" data-id="'+identifier+'"><b>'+sug['name']+'</a></td>'
+        +(sug['ds'] ? '': '<td>'+linkcount+'</td>')
+        +'<td>'+ccodes+'</td>'
+        +(sug['ds'] ? '<td>'+dslink+'</td>' : '')
+        +'<td>'+types+'</td>'
+        +'<td>'+variants+'</td>'
+        +'<td class="text-center">'+geo+'</td></tr>'
 				
 			} else if (scope=='suggest') {
 				// was used for autocomplete, now deprecated
@@ -1827,41 +1641,250 @@ item = '<tr class="search-row place-item" data-id="'+identifier+'" data-types="'
     }
   }
   
-  // load place portal page from result_list item title links       
+  /* _LISTENERS */ 
+  /*
+  // catch Enter key press for places
+  // traces are handled in .typeahead function
+  // disabled typeahead: removed class .typeahead from #input_box
+  */
+  $("#input_box").on('keyup', function(e){
+    // resets page 
+    if($('#input_box').val().length < 3) {
+      clearit()
+    }
+    doctype = $("input[name='class']:checked").val()
+    <!--if (e.keyCode === 13 && doctype == 'place') {-->
+    if (e.keyCode === 13) {
+      // always hide search_info and traces_info on search
+	  $("#search_info").hide()
+	  <!--$("#traces_info").hide()-->
+	  <!--if (search_scope == 'idx'){-->
+	  if (searchScope() == 'idx'){
+        searchPlacesIdx()		
+      } else {
+        searchPlacesDb()
+      }
+    } 
+  })
+  // hack: typeahead disabled for place
+  // only valid if doctype has been changed
+  $(".typeahead").on('keyup', function(e){
+    <!--if($('#input_box').val().length < 3) {-->
+      <!--clearit()-->
+    <!--}-->
+    doctype = $("input[name='class']:checked").val()
+    if (e.keyCode === 13) {
+      searchPlacesIdx()
+    } 
+  })
+
+  // acts on suggest items (.tt-selectable)
+  $("#search_input").on('click','.tt-selectable', function(e) {
+    if(doctype == 'place') {
+      console.log('clicked place suggestion',$(this))
+      searchPlacesIdx()    
+    } 
+  })
+
+  // search scope tab actions
+  $(".nav-link").click(function(){
+    scope = $(this).data('scope')
+    // TODO: avoid localStorage?
+    localStorage.setItem('search_scope', scope)
+    other = scope=='idx' ? $("#a_db") : $("#a_idx")
+
+    // disappear stuff from last search
+    $("#result_title").hide()
+    $("#result_div").fadeOut()
+    $("#result_filters").hide()
+    $("#type_filter").hide()
+
+    // simulate tab styling
+    if(other.data('scope') == 'idx'){ 
+      $("#search_filters").css("background","whitesmoke")
+      $("#scope_db").css("border-bottom","1px solid whitesmoke")
+      $("#dbicon").fadeIn()
+    } else {
+      $("#search_filters").css("background","#f1fff1")
+      $("#dbicon").hide()
+    }
+    other.removeClass('active')
+    $(this).addClass('active')
+  })
+  // load place portal page from result_div item title links       
   // TODO: links are nested so click produces 2 events
-  $("#result_list").on('click', '.trace-link', function(e){
+  $("#result_div").on('click', '.trace-link', function(e){
     whgid=$(this).data('id')
     console.log('whgid',whgid)
     location.href = '/places/'+whgid+'/portal'
   });
-  $("#result_list").on('click', '.place-link', function(e){
+  // TODO handle db case
+  $("#result_div").on('click', '.place-link', function(e){
     // set kept variable in localStorage
     localStorage.setItem('kept', true)
+    localStorage.setItem('search_scope', searchScope())
     whgid=$(this).data('id')
     console.log('whgid',whgid)
     window.spinner = new Spin.Spinner().spin();
     $("#map_search").append(spinner.el);
     location.href = '/places/'+whgid+'/portal'
   });
-  $("#result_list").on('click', '.ds-link', function(e){
+  $("#result_div").on('click', '.ds-link', function(e){
     // set kept variable in localStorage
-    localStorage.setItem('kept', true)
+    localStorage.setItem('keep', true)
     dsid=$(this).data('id')
     console.log('dsid',dsid)
     window.open('/datasets/'+dsid, '_blank')
   });
-  $("#result_list").on('click', '.db-link', function(e){
+  $("#result_div").on('click', '.db-link', function(e){
     pid=$(this).data('id')
     console.log('pid', pid)
     window.spinner = new Spin.Spinner().spin();
     $("#map_search").append(spinner.el);
     location.href = '/places/'+pid+'/detail'
   });
-  
   $('label.btn').click(function(){
     $(".autosuggest").html('')
     $('#search_input').val('')
     $('#search_input').attr("placeholder",this.getAttribute("rel"));
   })
+  // radio button switch btwn place & trace search inputs
+  $('input[type=radio][name=class]').change(function() {
+    console.log('changed class', $(this).val())
+    if ($(this).val() == 'place'){
+			if(!$("#search_info").is(":visible")){
+        $("#search_info").fadeIn()
+				$("#scope_tabs").show()
+			}
+      $("#traces_info").hide()
+			$("#filters_opener").show()
+			$("#search_input").show()
+			$("#search_filters").fadeIn()
+			$("#search_input_traces").hide()
+    } else { // 
+      $("#search_info").fadeOut(400)
+			if(!$("#traces_info").is(":visible")){
+				$("#traces_info").show()
+			}
+      $("#scope_tabs").hide()
+			$("#filters_opener").hide()
+			$("#search_input").hide()
+      $("#result_filters").hide()
+			$("#search_filters").hide()
+      // then show stuff
+			$("#search_input_traces").show()
+			$('.nav-pills a[href="#pills-why"]').tab('show')
+		}
+		
+		$('#input_box').val('')
+		$('#input_box').attr("placeholder",this.getAttribute("rel"));
+		clearit()
+  });
+  // dataset dropdown
+  $("#select_ds_search").change(function(){
+	  console.log('ds chosen', $(this).val())
+  })
+  // radio $("#checkbox_div input:radio").click(function() {
+  $(".filters-title input:radio").click(function(){
+    t = $(this)
+    console.log('clicked', $(this).val())
+    if($(this).val() == 'idx'){
+      $("#div_ds_select").hide()
+    } else {
+      $("#div_ds_select").show()
+    }
+  })
+  
+  /* UTILITY FUNCTIONS */
+  // restores page w/o refresh
+  clearit = function(){
+    console.log('clearit() called by',clearit.caller)
+    $("#search_input").val('')
+    $("#result_div").html('')
+    $("#result_div").hide()
+    $("#result_title").hide()
+    $("#type_filter").hide()
+    $(".list-inline").html('')
+    <!--features.clearLayers()-->
+    if(typeof(traces) !== "undefined") {traces.clearLayers(); mappy.setView([38, 10], 2.4)}
+    if(typeof(features) !== "undefined") {features.clearLayers(); mappy.setView([38, 10], 2.4)}
+  }
+  objLength = function(obj){
+    return Object.keys(obj).length
+  }
+  spin_opts = { scale: .8, top: '70%', 'right':'30%'}
+  startSearchSpinner = function(){
+		window.spinner_search = new Spin.Spinner(spin_opts).spin();
+		$("#search_filters").append(spinner_search.el);   
+  }
+  switchTab = function(scope){
+    if(scope == 'db'){ 
+      $("#scope_idx").removeClass('active')
+      $("#scope_db").addClass('active')
+      $("#search_filters").css("background","whitesmoke")
+      $("#scope_db").css("border-bottom","1px solid whitesmoke")
+      $("#dbicon").fadeIn()
+    } else {
+      $("#scope_db").removeClass('active')
+      $("#scope_idx").addClass('active')
+      $("#search_filters").css("background","#f1fff1")
+      $("#dbicon").hide()
+    }    
+  }
+  resetSearch = function(){
+    localStorage.removeItem('last_results')
+    localStorage.setItem('search_scope', 'idx')
+    localStorage.removeItem('kept')
+    $("#dbicon").hide()
+    $("#offer_mapfilter").hide()    
+    location.reload()
+  }
 </script>
 {% endblock %}
+
+<!-- DEPRECATED -->
+<!--map_init = function(map_search, options) {-->
+  <!--<!--console.log('options', options)-->-->
+  <!--window.geoms = []-->
+  <!--window.gelems = $('script').filter(function() {-->
+    <!--<!--return this.id.match(/[0-9]/) && this.text != '"null"';-->-->
+    <!--return this.id !='' && this.text != '"null"';-->
+  <!--});-->
+  <!--for (i=0;i<gelems.length;i++){-->
+    <!--let t_geom = cleanJson(gelems[i].text)-->
+    <!--<!--t_geom['properties'] = {"id": gelems[i].id,"ds": t_geom.ds!=null?t_geom.ds:ds}-->-->
+    <!--geoms.push(t_geom)-->
+  <!--}-->
+
+  <!--if (geoms.length > 0) {-->
+    <!--console.log('geom: ',geom)-->
+    <!--idToFeature = {} // for feature lookup-->
+    <!--bboxes = L.layerGroup()-->
+    <!--features = L.geoJSON(geoms, {-->
+    <!--onEachFeature: function(feature,layer) {-->
+      <!--f=feature; l=layer;-->
+      <!--bboxes.addLayer(l)-->
+      <!--identifier = f.properties.id;-->
+      <!--<!--console.log('identifier, type',identifier,f.geometry.type)-->-->
+      <!--if(f.type != 'Point'){-->
+      <!--layer.setStyle(styles_bbox[f.geometry.type].default).bindPopup(-->
+        <!--f.properties.title+' ('+identifier+')'-->
+      <!--)-->
+      <!--idToFeature[identifier] = layer-->
+      <!--}-->
+    <!--}-->
+    <!--})<!--.addTo(mappy);-->-->
+
+    <!--<!--mappy.setView(features.getBounds().getCenter(),6)-->-->
+    <!--mappy.fitBounds(features.getBounds())-->
+    <!--mappy.setZoom(mappy.getZoom()-1)-->
+  <!--} -->
+<!--} // end map_init-->
+
+<!--// ?-->
+<!--$(".bblink").click(function(){-->
+  <!--console.log('bbox for',$(this).data('id'))-->
+  <!--feat = idToFeature[$(this).data('id')]-->
+  <!--feat.addTo(mappy)-->
+<!--})-->
+
