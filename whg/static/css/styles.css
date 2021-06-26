@@ -687,6 +687,9 @@ em { color: #993333;}
 #map_app.leaflet-container { height: 550px;}}
 .leaflet-bottom.leaflet-right {z-index:500;}
 
+.leaflet-touch.leaflet-control-layers-toggle {width:30px !important; height:30px !important;}
+.leaflet-retina.leaflet-control-layers-toggle {background-size:20px !important; background-size:20px !important;}
+
 /**
   recon
 **/
