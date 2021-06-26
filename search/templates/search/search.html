@@ -202,7 +202,51 @@
   window.idToArea = {}
   window.area_list = []
   window.area_objs = []
-      
+
+  /* _STATE */
+  state = function(){
+    stateobj={
+      'class':searchClass(), 'scope':searchScope(),
+      'rowcount':currentRows()?currentRows().length:0,
+      'lyrcount':currentLayers()?currentLayers().length:0, 
+      'lskeys':ls(), 
+      'lastresults':lastResult()?lastResult().length:0
+    }
+    console.log(stateobj)
+  }
+  searchClass = function(){
+    return $("input[name=class]:checked").val()
+  }
+  searchScope = function(){
+    return !ls('search_scope')?$(".nav-link.active").data('scope'):ls('search_scope')
+  }
+  currentRows = function(){
+    return $("#result_table tbody tr")
+  }
+  currentLayers = function(){
+    return initial_layers == null?null:initial_layers
+  }
+  ls = function(key){
+    keys=Object.keys(localStorage)
+    mykeys = $.grep(keys, function(v) {
+      return v.indexOf('mapbox') === -1;})
+    return key==null?mykeys:localStorage.getItem(key)
+  }
+  lastResult = function(){
+    return searchres == null?null:searchres
+  }
+  /* end STATE*/
+  
+  hideAllRows = function(){
+    currentRows().each(function(r){
+      currentRows()[r].style.display='none'
+    })
+  }
+  showAllRows = function(){
+    currentRows().each(function(r){
+      currentRows()[r].style.display=''
+    })
+  }      
   // on page load
   $(function(){
     /*  if referrer is a place portal, place page, or dataset page,
@@ -216,6 +260,7 @@
     search_scope = ls('search_scope')?ls('search_scope'):'idx'
     previous = ls('last_results')
     kept = ls('keep')
+    console.log(state())
     if(document.referrer.match(/(place|dataset)/) && previous && kept){
       showResults(previous,'place','search')
     } else {
@@ -434,37 +479,6 @@
 	  })
   }) <!--  end onLoad() -->
 
-  /* _STATE */
-  searchClass = function(){
-    return $("input[name=class]:checked").val()
-  }
-  searchScope = function(){
-    return !ls('search_scope')?$(".nav-link.active").data('scope'):ls('search_scope')
-  }
-  currentRows = function(){
-    return $("#result_table tbody tr")
-  }
-  currentLayers = function(){
-    return initial_layers == null?null:initial_layers
-  }
-  ls = function(key){
-    return key==null?Object.keys(localStorage):localStorage.getItem(key)
-  }
-  lastResult = function(){
-    return searchres == null?null:searchres
-  }
-  /* end STATE*/
-  
-  hideAllRows = function(){
-    currentRows().each(function(r){
-      currentRows()[r].style.display='none'
-    })
-  }
-  showAllRows = function(){
-    currentRows().each(function(r){
-      currentRows()[r].style.display=''
-    })
-  }
   // hide rows with data-id in 'ids'
   hideRows = function(ids){
     rows = currentRows() // does not include header
@@ -842,7 +856,7 @@
 	handles traces also !?
   */
   searchPlacesIdx = function (){
-    console.log('searchPlacesIdx()',search_scope)
+    <!--console.log('searchPlacesIdx()',search_scope)-->
     window.doctype = $("input[name='class']:checked").val();
     // get filter values: fclasses, start, end, ??
     var fclasses = [];
@@ -887,7 +901,7 @@
     database search w/o autocomplete -> showResults()
   */
   searchPlacesDb = function(){
-    console.log('searchPlacesDb()',search_scope)
+    <!--console.log('searchPlacesDb()',search_scope)-->
 		startSearchSpinner()
 			fclasses = [];
 			$('#search_filters input:checked').each(function() {
@@ -927,7 +941,7 @@
     title:    
   */
   showResults = function(data, doctype, scope='suggest', title){
-		console.log('showResults() data length', data.length)
+		<!--console.log('showResults() data length', data.length)-->
     // always want result_div to show
     $("#result_div").show()
     var results_div = '';
@@ -1803,11 +1817,12 @@
     $("#result_div").html('')
     $("#result_div").hide()
     $("#result_title").hide()
+    $("#result_filters").hide()
     $("#type_filter").hide()
     $(".list-inline").html('')
     <!--features.clearLayers()-->
-    if(typeof(traces) !== "undefined") {traces.clearLayers(); mappy.setView([38, 10], 2.4)}
-    if(features && !shownLayers) {features.clearLayers(); mappy.setView([38, 10], 2.4)}
+    if(typeof(traces) !== "undefined") {traces.clearLayers(); mappy.setView([38, 10], 0)}
+    if(features && !shown_layers) {features.clearLayers(); mappy.setView([38, 10], 0)}
   }
   
   objLength = function(obj){
