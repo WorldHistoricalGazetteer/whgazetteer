@@ -263,9 +263,8 @@ class SearchView(View):
 class SearchDatabaseView(View):
   @staticmethod
   def get(request):
-    pagesize = 50
+    pagesize = 200
     print('SearchDatabaseView() request',request.GET)
-    #print('SearchDatabaseView() bounds',request.GET.get('bounds'))
     """
       args in request.GET:
         [string] name: query string
@@ -290,7 +289,7 @@ class SearchDatabaseView(View):
       area = Area.objects.get(id = bounds['id'][0])
       print('bounds area', area)
       ga = GEOSGeometry(json.dumps(area.geojson))
-
+      #print('bounds geometry', ga[:200])
       # test values
       #bounds = None
       #name='vilnius'
@@ -304,15 +303,13 @@ class SearchDatabaseView(View):
     print('seach db params:', {'name':name,'name_contains':name_contains,'fclasses':fclasses,'bounds':bounds,'ds':ds})
     
     qs = Place.objects.filter(dataset__public=True)
-    #qsg = PlaceGeom.objects.all(); print(qsg.count())
-    ##qsg = qsg.filter(jsonb__intersects=geom_area)
-    #qsg = qsg.filter(geom__within=ga)
     
     if bounds:
-      #qs = qs.filter(geoms__geom__within=ga)      
-      qs = qs.filter(geoms__geom__intersects=ga)      
+      #print('bounds geometry', ga[:200])
+      qs = qs.filter(geoms__geom__within=ga)      
+      #qs = qs.filter(geoms__geom__intersects=ga)      
     qs = qs.filter(fclasses__overlap=fclasses) if fclasses else qs
-    qs = qs.filter(minmax__0__lte=year,minmax__1__gte=year) if year else qs
+    #qs = qs.filter(minmax__0__lte=year,minmax__1__gte=year) if year else qs
     
     if name_contains:
       print( 'name_contains exists',name_contains)
@@ -323,7 +320,7 @@ class SearchDatabaseView(View):
 
     qs = qs.filter(dataset=ds.label) if ds else qs
     #qs = qs.filter(ccodes__overlap=cc) if cc else qs
-      
+    count = len(qs)
 
     #filtered = qs[:pagesize] if pagesize and pagesize < 200 else qs[:20]
     filtered = qs[:pagesize]
@@ -345,6 +342,7 @@ class SearchDatabaseView(View):
       
     # mimics suggestion items from SearchView (index)
     suggestions = []
+    print('qs length', count)
     print('filtered qs length', len(filtered))
     for place in filtered:
       ds=place.dataset
@@ -362,7 +360,7 @@ class SearchDatabaseView(View):
       except:
         print("db sugbuilder error:", place.id, sys.exc_info())
       
-    result = {'get': request.GET, 'suggestions': suggestions}
+    result = {'get': request.GET, 'count': count, 'suggestions': suggestions}
     return JsonResponse(result, safe=False, json_dumps_params={'ensure_ascii':False})
   
 '''

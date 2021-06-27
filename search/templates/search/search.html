@@ -94,11 +94,11 @@
               <label class="input-sm"><input id="input_start" type="text" value = "" size="12" placeholder="earliest year"></label>
               <label class="input-sm ml-2"><input id="input_end" type="text" value = "" size="12" placeholder="latest year"></label>
             </div>
+            <div id="filter_spatial">
             <p class="mb-0">spatial
               <span class="float-right">
               <a id="spatial_help" class="pointer" data-toggle="popover" title="Spatial filter" data-content="" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a></span>	  
             </p>
-            <div>
               <label><input id="input_area" type="text" size="30" placeholder="Region, country, study area" /></label>
               <input type="hidden" id="boundsobj" />
             </div>
@@ -1681,9 +1681,11 @@
     if(other.data('scope') == 'idx'){ 
       $("#search_filters").css("background","whitesmoke")
       $("#scope_db").css("border-bottom","1px solid whitesmoke")
+      $("#filter_spatial").hide()
       $("#dbicon").fadeIn()
     } else {
       $("#search_filters").css("background","#f1fff1")
+      $("#filter_spatial").show()
       $("#dbicon").hide()
     }
     other.removeClass('active')
@@ -1807,11 +1809,13 @@
       $("#search_filters").css("background","whitesmoke")
       $("#scope_db").css("border-bottom","1px solid whitesmoke")
       $("#dbicon").fadeIn()
+      $("#filter_spatial").hide()
     } else {
       $("#scope_db").removeClass('active')
       $("#scope_idx").addClass('active')
       $("#search_filters").css("background","#f1fff1")
       $("#dbicon").hide()
+      $("#filter_spatial").show()
     }    
   }
   resetSearch = function(){
@@ -1819,6 +1823,7 @@
     localStorage.setItem('search_scope', 'idx')
     localStorage.removeItem('keep')
     $("#dbicon").hide()
+    $("#filter_spatial").show()
     $("#offer_mapfilter").hide()    
     location.reload()
   }
