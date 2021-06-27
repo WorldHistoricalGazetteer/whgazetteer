@@ -197,6 +197,7 @@
   var filtered_layers = null
   var shown_layers = null
   var searchres = null
+  var features = null
   
   window.idToArea = {}
   window.area_list = []
@@ -213,6 +214,9 @@
     }
     console.log(stateobj)
   }
+  typeSelect = function(){
+    return $("#type_select").val()
+  }
   searchClass = function(){
     return $("input[name=class]:checked").val()
   }
@@ -223,7 +227,8 @@
     return $("#result_table tbody tr")
   }
   currentLayers = function(){
-    return initial_layers == null?null:initial_layers
+    return features?L.featureGroup(features._layers):null
+    <!--return initialLayers == null?null:initialLayers-->
   }
   ls = function(key){
     keys=Object.keys(localStorage)
@@ -245,7 +250,12 @@
     currentRows().each(function(r){
       currentRows()[r].style.display=''
     })
-  }      
+  }
+  restoreInitialLayers = function(){
+    // show any hidden markers
+    for(l in hide_these){hide_these[l].addTo(mappy)}
+    mappy.fitBounds(initialLayers.getBounds())
+  }
   // on page load
   $(function(){
     /*  if referrer is a place portal, place page, or dataset page,
@@ -259,7 +269,7 @@
     search_scope = ls('search_scope')?ls('search_scope'):'idx'
     previous = ls('last_results')
     kept = ls('keep')
-    console.log(state())
+    state()
     if(document.referrer.match(/(place|dataset)/) && previous && kept){
       showResults(previous,'place','search')
     } else {
@@ -291,7 +301,8 @@
       if(term != "0"){
         typeFilter(term)      
       } else {
-        // 
+        // restore layers, show rows
+        restoreInitialLayers()
         $(".search-row").css('display','')
       }
     })
@@ -754,7 +765,7 @@
     // 
     mappy.on('zoomend',function(e){
       console.log('zoomend')
-      mapFilter(visibleFeaturesIds(search_scope))
+      <!--mapFilter(visibleFeaturesIds(search_scope))-->
       <!--filtered_layers.removeFrom(mappy)-->
     })
     
@@ -1051,25 +1062,6 @@
     // empty the typeahead suggestions
     $(".tt-dataset").html('')
         
-    $(".clear-filter").on('click',function(e){
-      filtered_layers.addTo(mappy)
-			mappy.fitBounds(features.getBounds())
-      $(".filter").removeClass('active-filter')
-      for (i = 0; i < results.length; i++) {
-        _id = results[i].getAttribute('data-id')
-        console.log('results[i]',results[i])
-				results[i].style.display = "";
-      }			
-      $(".clear-filter").hide()
-    })
-    
-    $(".hide-filter").on('click',function(e){
-      $("#type_filter").hide(200)
-    })
-    $(".typefilter-link").on("click", function(e){
-      e.preventDefault()
-      $("#type_filter").toggle(300)
-    })
     
     $(".trace-item").on('click',function(e){
       // reset all markers to default
@@ -1117,50 +1109,6 @@
         'allowtransparency="true" src="'+url+'"></iframe>');
     });
 
-    /* 
-      set events on new elements 
-    */
-    // filter results list by type (old school JS)
-    $(".filter").on('click',function(e){
-      $(".clear-filter").show()
-      if(filtered_layers != null){filtered_layers.addTo(mappy)}
-      $(".filter").removeClass('active-filter')
-      $(this).addClass('active-filter')
-      filter = $(this).data('type')
-      result_div = document.getElementById("result_div")
-      <!--results = result_div.getElementsByTagName("div")-->
-      // now table rows
-      results = result_div.getElementsByTagName("tr")
-      hide_ids=[]; show_ids = []
-      // skip header row
-      for (i = 1; i < results.length; i++) {
-        types = results[i].getAttribute('data-types')
-        _id = results[i].getAttribute('data-id')
-        if (types.indexOf(filter) > -1){
-          results[i].style.display = "";
-          show_ids.push(_id)
-        } else {
-          results[i].style.display = "none";
-          hide_ids.push(_id)
-        }
-      }
-      // filter map too
-      <!--console.log('filter these from map',_ids)-->
-      hide_these = $.map(hide_ids,function(i){
-        return idToFeature[i]
-      })
-      show_these = $.map(show_ids,function(i){
-        return idToFeature[i]
-      })
-      window.filtered_layers = L.layerGroup(hide_these)
-      window.shown_layers = L.featureGroup(show_these)
-      for(l in hide_these){hide_these[l].removeFrom(mappy)}
-      mappy.fitBounds(shown_layers.getBounds(), {padding: [200, 0]})
-      if(shown_layers.getLayers().length ==1){
-        mappy.setZoom(5)
-      }
-      
-    })  
   } // end showResults()
 
   /*
@@ -1168,7 +1116,11 @@
     filter result list on change #type_select 
   */
   typeFilter = function(term){
-    if(filtered_layers != null){filtered_layers.addTo(mappy)}
+    <!--if(filtered_layers != null){-->
+      <!--filtered_layers.addTo(mappy)-->
+    <!--}-->
+    // first restore any filtered layers
+    <!--mappy.addLayer(initialLayers)-->
     results = $("#result_div tr")
     hide_ids=[]; show_ids = []
     // skip header row
@@ -1182,7 +1134,6 @@
       } else if (types.indexOf(term) == -1) {
         <!--console.log('HIDE',i,_id, term, types)-->
         results[i].style.display = "none";
-        <!--console.log('display',results[i].style.display)-->
         hide_ids.push(_id)
       }
     }
@@ -1193,11 +1144,13 @@
     show_these = $.map(show_ids,function(i){
       return idToFeature[i]
     })
-    window.filtered_layers = L.layerGroup(hide_these)
-    filtered_layers.removeFrom(mappy)
+    console.log('hide_these',hide_these)
+    console.log('show_these',show_these)
+    
     window.shown_layers = L.featureGroup(show_these)
-    <!--for(l in hide_these){hide_these[l].removeFrom(mappy)}-->
-    mappy.fitBounds(shown_layers.getBounds(), {padding: [200, 0]})
+    for(l in hide_these){hide_these[l].removeFrom(mappy)}
+    for(l in show_these){show_these[l].addTo(mappy)}
+    mappy.fitBounds(shown_layers.getBounds())
   }
   /*
     *** mapFilter() ***
@@ -1268,7 +1221,7 @@
     renders geometries from search results to map
   */
   renderPlaces = function(geoms) {
-    if(typeof(features)!=='undefined'){ features.clearLayers() }
+    if(features){ features.clearLayers() }
     if(typeof(traces)!=='undefined'){ traces.clearLayers() }
     
     featcoll = {"type":"FeatureCollection","features":geoms}
@@ -1279,7 +1232,8 @@
     mappy.createPane('placePane');
     mappy.getPane('placePane').style.zIndex = 200;
     <!--window.fgroup=L.featureGroup()-->
-    window.initial_layers = []
+    <!--window.initialLayers = new L.layerGroup()-->
+    initialLayers = new L.featureGroup()
     features = L.geoJSON(featcoll, {
       <!--pointToLayer: function (feature, latlng) {-->
       pointToLayer: function (feature, latlng) {
@@ -1325,10 +1279,10 @@
           foo[0].scrollIntoView()
           ele.scrollTop(ele.scrollTop() - scroll);
         })
-        // why? all already in features
-        initial_layers.push(layer)
+        // 
+        initialLayers.addLayer(layer)
       }
-    }).addTo(mappy);
+    }).addTo(mappy); <!-- adds features L.geoJSON -->
 
     // conditionally add a bbox control
     if (bboxer._map == undefined ){ bboxer.addTo(mappy); }
@@ -1811,7 +1765,7 @@
   /* UTILITY FUNCTIONS */
   // restores page w/o refresh
   clearit = function(){
-    console.log('clearit() called by',clearit.caller)
+    <!--console.log('clearit() called by',clearit.caller)-->
     $("#search_input").val('')
     $("#result_div").html('')
     $("#result_div").hide()
@@ -1903,3 +1857,62 @@
   <!--feat.addTo(mappy)-->
 <!--})-->
 
+  <!--// filter results list by type (old school JS)-->
+  <!--$(".filter").on('click',function(e){-->
+    <!--$(".clear-filter").show()-->
+    <!--if(filtered_layers != null){filtered_layers.addTo(mappy)}-->
+    <!--$(".filter").removeClass('active-filter')-->
+    <!--$(this).addClass('active-filter')-->
+    <!--filter = $(this).data('type')-->
+    <!--result_div = document.getElementById("result_div")-->
+    <!--<!--results = result_div.getElementsByTagName("div")-->-->
+    <!--// now table rows-->
+    <!--results = result_div.getElementsByTagName("tr")-->
+    <!--hide_ids=[]; show_ids = []-->
+    <!--// skip header row-->
+    <!--for (i = 1; i < results.length; i++) {-->
+      <!--types = results[i].getAttribute('data-types')-->
+      <!--_id = results[i].getAttribute('data-id')-->
+      <!--if (types.indexOf(filter) > -1){-->
+        <!--results[i].style.display = "";-->
+        <!--show_ids.push(_id)-->
+      <!--} else {-->
+        <!--results[i].style.display = "none";-->
+        <!--hide_ids.push(_id)-->
+      <!--}-->
+    <!--}-->
+    <!--// filter map too-->
+    <!--<!--console.log('filter these from map',_ids)-->-->
+    <!--hide_these = $.map(hide_ids,function(i){-->
+      <!--return idToFeature[i]-->
+    <!--})-->
+    <!--show_these = $.map(show_ids,function(i){-->
+      <!--return idToFeature[i]-->
+    <!--})-->
+    <!--window.filtered_layers = L.layerGroup(hide_these)-->
+    <!--window.shown_layers = L.featureGroup(show_these)-->
+    <!--for(l in hide_these){hide_these[l].removeFrom(mappy)}-->
+    <!--mappy.fitBounds(shown_layers.getBounds(), {padding: [200, 0]})-->
+    <!--if(shown_layers.getLayers().length ==1){-->
+      <!--mappy.setZoom(5)-->
+    <!--}-->
+    
+  <!--}) --> 
+  <!--$(".clear-filter").on('click',function(e){-->
+    <!--filtered_layers.addTo(mappy)-->
+    <!--mappy.fitBounds(features.getBounds())-->
+    <!--$(".filter").removeClass('active-filter')-->
+    <!--for (i = 0; i < results.length; i++) {-->
+      <!--_id = results[i].getAttribute('data-id')-->
+      <!--console.log('results[i]',results[i])-->
+      <!--results[i].style.display = "";-->
+    <!--}			-->
+    <!--$(".clear-filter").hide()-->
+  <!--})    -->
+  <!--$(".hide-filter").on('click',function(e){-->
+    <!--$("#type_filter").hide(200)-->
+  <!--})-->
+  <!--$(".typefilter-link").on("click", function(e){-->
+    <!--e.preventDefault()-->
+    <!--$("#type_filter").toggle(300)-->
+  <!--})-->
