@@ -493,6 +493,11 @@ input[type="text"] {
   font-variant: small-caps;
   color: #993333;
 }
+#reset_link {
+  position:absolute;
+  right: 10px;
+  bottom:5px;
+}
 .filters-title {
   display:block;
   /*margin:auto;*/

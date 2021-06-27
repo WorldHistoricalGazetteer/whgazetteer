@@ -128,6 +128,8 @@
         <!--<span class="typefilter-link ml-2"><a href="#">Type </a></span>-->
         <span class="ml-2"><select id="type_select">
         </select></span>
+        <span class="ml-2"><select id="cc_select">
+        </select></span>
         </p>        
       </div>
 			<div id="traces_info" class="p-2 hidden">  
@@ -216,6 +218,9 @@
   }
   typeSelect = function(){
     return $("#type_select").val()
+  }
+  ccSelect = function(){
+    return $("#cc_select").val()
   }
   searchClass = function(){
     return $("input[name=class]:checked").val()
@@ -311,7 +316,20 @@
         $("option").eq(0).text('Restore all')
         typeFilter(term)      
       } else {
-        $("option").eq(0).text('Select place type')
+        $("option").eq(0).text('Place type')
+        // restore layers, show rows
+        restoreInitialLayers()
+        $(".search-row").css('display','')
+      }
+    })
+    $("#cc_select").change(function(){
+      cc = $(this).val()
+      console.log('cc selected:', cc)
+      if(cc != "0"){
+        $("#cc_select option").eq(0).text('Restore all')
+        ccFilter(cc)
+      } else {
+        $("#cc_select option").eq(0).text('Modern country bounds')
         // restore layers, show rows
         restoreInitialLayers()
         $(".search-row").css('display','')
@@ -730,14 +748,21 @@
     };
 
     <!--countries = new L.GeoJSON.AJAX("/media/data/countries_simplified.json",-->
+    // build a hash for cc_select
+    cchash = new Object
     countries = new L.GeoJSON.AJAX("/media/data/countries_noantarctica.json",
       {style:countryStyle,
         onEachFeature: function (feature, layer) {
+          cc = feature.properties.iso
+          label = feature.properties.gnlabel
+          <!--console.log(cc, label)-->
+          cchash[cc] = label
           popupOptions = {maxWidth: 200};
             layer.bindPopup(feature.properties.gnlabel, popupOptions);
           }
     });
 
+    
     var baseLayers = {
       "NE global": ne_global,
 	  "Terrain": mb_terrain,
@@ -770,7 +795,7 @@
       <!--filtered_layers.removeFrom(mappy)-->
     })
     
-    
+
     if(ls('last_results') != null){
       kept = ls('keep')
       previous = JSON.parse(ls('last_results'))	
@@ -787,6 +812,14 @@
     y=z.replace(/point/,'Point')
     return JSON.parse(JSON.parse(y))
   }
+
+  <!--chash = new Object;-->
+  <!--$.each(countries._layers, function(k,v){-->
+    <!--cc = v.feature.properties.iso-->
+    <!--label = v.feature.properties.gnlabel-->
+    <!--cchash[cc] = label-->
+    <!--console.log(cc,label)-->
+  <!--})-->
 
   styles_bbox = {
     "MultiPolygon": {
@@ -811,6 +844,7 @@
     else 
       return "yellow"
   }
+
 
   fetchTraceGeom = function(trace_id,counter,title) {
     <!-- get trace GeoJSON (includes features[] and bodies[] ) -->
@@ -963,7 +997,7 @@
     <!--scope_id = search_scope=='idx'?'idx':'idx'-->
     switchTab(search_scope)
     geoms=[]
-    var types=[], typesArr = []
+    var types=[], typesArr = [], ccArr = []
     <!--console.log(data.bodies.length+ ' bodies',data)-->
     if (doctype == 'place'){
       if(data.length ==0) {
@@ -983,6 +1017,8 @@
         data.forEach(function(sug){
 					<!--console.log('sug', sug)-->
 					typesArr=typesArr.concat(sug.types)
+					ccArr=ccArr.concat(sug.ccodes)
+          
           if(!!sug.geom) {
             havegeom +=1
             sug.geom.forEach(function(g){
@@ -1001,17 +1037,21 @@
         
         // list of distinct types
         types = Array.from(new Set(typesArr));
-        // into div
-        <!--types.forEach(function(type){-->
-          <!--$("#type_filter ul").append('<li class="filter list-inline-item" data-type="'+type+'"><a href="#">'+type+'</a></li>')-->
-        <!--})-->
-
         // TODO: on zoomend, any geoms in viewport are added to result_div
         // into select dropdown
         $('#type_select').empty();
-        $('#type_select').append('<option value="0">Select place type</option>');
+        $('#type_select').append('<option value="0">Place type</option>');
         $.each(types, function(i, p) {
           $('#type_select').append($('<option></option>').val(p).html(p));
+        });
+
+        countries = Array.from(new Set(ccArr));
+        $('#cc_select').empty();
+        $('#cc_select').append('<option value="0">Modern country bounds</option>');
+        $.each(countries, function(i, p) {
+          // look up country name, least we can do!
+          cName = cchash[p]
+          $('#cc_select').append($('<option></option>').val(p).html(cName+' ('+p+')'));
         });
         
         if(scope=='search') {
@@ -1113,19 +1153,48 @@
   } // end showResults()
 
   /*
-    *** typeFilter() ***
-    filter result list on change #type_select 
+    *** ccFilter() ***
+    filter result list on change #cc_select 
   */
-  typeFilter = function(term){
-    <!--if(filtered_layers != null){-->
-      <!--filtered_layers.addTo(mappy)-->
-    <!--}-->
-    // first restore any filtered layers
-    <!--mappy.addLayer(initialLayers)-->
+  ccFilter = function(cc){
     results = $("#result_div tr")
     hide_ids=[]; show_ids = []
     // skip header row
     for (i = 1; i < results.length; i++) {
+      ccodes = results[i].getAttribute('data-ccodes')
+      _id = results[i].getAttribute('data-id')
+      if (ccodes.indexOf(cc) > -1){
+        console.log('SHOW',i,_id, cc, ccodes)
+        results[i].style.display = "";
+        show_ids.push(_id)
+      } else if (ccodes.indexOf(cc) == -1) {
+        results[i].style.display = "none";
+        hide_ids.push(_id)
+      }
+    }
+    // filter map too
+    hide_these = $.map(hide_ids,function(i){
+      return idToFeature[i]
+    })
+    show_these = $.map(show_ids,function(i){
+      return idToFeature[i]
+    })
+    console.log('hide_these',hide_these)
+    console.log('show_these',show_these)
+    
+    window.shown_layers = L.featureGroup(show_these)
+    for(l in hide_these){hide_these[l].removeFrom(mappy)}
+    for(l in show_these){show_these[l].addTo(mappy)}
+    mappy.fitBounds(shown_layers.getBounds())
+  }
+  /*
+    *** typeFilter() ***
+    filter result list on change #type_select 
+  */
+  typeFilter = function(term){
+    results = $("#result_div tbody tr")
+    hide_ids=[]; show_ids = []
+    for (i = 0; i < results.length; i++) {
       types = results[i].getAttribute('data-types')
       _id = results[i].getAttribute('data-id')
       if (types.indexOf(term) > -1){
@@ -1184,10 +1253,9 @@
     });
     
     // hide result rows not in bbox
-    results = $("#result_div tr")
+    results = $("#result_div tbody tr")
     // for each result row, if its id is in hidethese, hide it
-    // skip header row
-    for (i = 1; i < results.length; i++) {
+    for (i = 0; i < results.length; i++) {
       _id = parseInt(results[i].getAttribute('data-id'))
       if (ids_hide.indexOf(_id) > -1){
         results[i].style.display = "none";
@@ -1325,7 +1393,10 @@
 				variants = vcount > 5 ? variants +' ... <i>'+vcount+' total</i>' : variants
 
         // table row
-        item = '<tr class="search-row place-item" data-id="'+identifier+'" data-types="'+sug['types']+'">'
+        item = '<tr class="search-row place-item" data-id="'+identifier
+        +'" data-types="'+sug['types']
+        +'" data-ccodes="'+ccodes
+        +'">'
         +'<td><a class="'+link_class+'" href="#" data-id="'+identifier+'"><b>'+sug['name']+'</a></td>'
         +(sug['ds'] ? '': '<td>'+linkcount+'</td>')
         +'<td>'+ccodes+'</td>'
@@ -1584,13 +1655,17 @@
   // map feature styles
   styles = {
     'marker_default': {
+      radius:6,
       fillColor: "#ff0000",
       color:"#666",
       weight:1,
       fillOpacity:0.5,
       opacity:0.5},
     'marker_highlight': {
-      radius:10,fillOpacity:1,fillColor:"yellow",color:"#000"
+      radius:10,
+      fillOpacity:1,
+      fillColor:"yellow",
+      color:"#000"
     },
     'line_default':{
       weight:3,
@@ -1822,8 +1897,8 @@
     localStorage.removeItem('last_results')
     localStorage.setItem('search_scope', 'idx')
     localStorage.removeItem('keep')
-    $("#dbicon").hide()
-    $("#filter_spatial").show()
+    <!--$("#dbicon").hide()-->
+    <!--$("#filter_spatial").show()-->
     $("#offer_mapfilter").hide()    
     location.reload()
   }
