@@ -1044,7 +1044,7 @@
     
     titleMarkup += (doctype=='place' ? src+' SEARCH RESULTS (<span id="rowcount">'+data.length+'</span>)<span class="ml-4">List includes records with no geometry, if any</span>' : '')
     <!--console.log('titleMarkup',titleMarkup)-->
-    
+  
     
     $("#result_title").html(titleMarkup)
     $("#result_title").fadeIn()
@@ -1774,8 +1774,10 @@
     $("#type_filter").hide()
     $(".list-inline").html('')
     <!--features.clearLayers()-->
+    <!--geoms = features?features-->
     if(typeof(traces) !== "undefined") {traces.clearLayers(); mappy.setView([38, 10], 0)}
-    if(features && !shown_layers) {features.clearLayers(); mappy.setView([38, 10], 0)}
+    <!--if(features && !shown_layers) {features.clearLayers(); mappy.setView([38, 10], 0)}-->
+    if(features) {features.clearLayers(); mappy.setView([38, 10], 0)}
   }
   
   objLength = function(obj){
