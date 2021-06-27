@@ -123,7 +123,7 @@
 					</div>
 				</div> <!-- #div_ds_select -->{%endcomment%}
 			</div> <!-- #search_filters -->	
-      <div id="result_filters" class="p-3 hidden">
+      <div id="result_filters" class="py-3 pl-1 hidden">
         <p class="allcap-heading half">RESULT FILTERS {% fontawesome_icon 'filter' %} 
         <!--<span class="typefilter-link ml-2"><a href="#">Type </a></span>-->
         <span class="ml-2"><select id="type_select">
@@ -1758,6 +1758,7 @@
       $("#scope_db").css("border-bottom","1px solid whitesmoke")
       $("#filter_spatial").hide()
       $("#dbicon").fadeIn()
+      $("#input_area").val('')
     } else {
       $("#search_filters").css("background","#f1fff1")
       $("#filter_spatial").show()
@@ -1885,6 +1886,7 @@
       $("#scope_db").css("border-bottom","1px solid whitesmoke")
       $("#dbicon").fadeIn()
       $("#filter_spatial").hide()
+      $("#input_area").val('')
     } else {
       $("#scope_db").removeClass('active')
       $("#scope_idx").addClass('active')
