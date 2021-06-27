@@ -1038,7 +1038,7 @@
     $("#reset_link").show()
 		$("#search_info").hide()
 		<!--$("#traces_info").hide()-->
-		let src = ls('scope')=='idx'?'UNION INDEX':'DATABASE'
+		let src = search_scope=='idx'?'UNION INDEX':'DATABASE'
     let elem = document.getElementById('result_div')
 		titleMarkup = doctype=='trace'?'<p class="pl-1 mb-1 strong">'+title+'<small> :: a Linked Traces dataset ('+data.bodies.length+' related places)</small></p>':''
     
