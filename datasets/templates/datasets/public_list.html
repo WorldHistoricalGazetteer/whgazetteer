@@ -38,7 +38,7 @@
                     <td>{{ ds.id }}/<b>{{ ds.label }}</b>
                     <br/><mark>{{ ds.ds_status }}</mark>
                     </td>
-                    <td><a href="{% url 'datasets:ds_detail' ds.id %}">{{ ds.title }}</a></td>
+                    <td><a href="{% url 'datasets:ds_meta' ds.id %}">{{ ds.title }}</a></td>
                     <td>{{ ds.numrows }}</td>
                     <td class="w-50">{{ ds.description }}</td>
                     <td>{% if ds.webpage %}<a href="{{ ds.webpage }}" target="_blank">link 
