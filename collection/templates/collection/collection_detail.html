@@ -87,31 +87,46 @@
   </div> <!-- d-flex -->
   <div class="modal fade" id="downloadModal" tabindex="-1" aria-labelledby="downloadModalLabel" aria-hidden="true">
     <div class="modal-dialog">
-      <div class="modal-content modal-narrow">
+      <div class="modal-content modal-85">
         <div class="modal-header">
-          <h5 class="modal-title" id="downloadModalLabel">{% fontawesome_icon 'download' color='#336699' %} Download options for <span class="text-danger">{{ object.title }}</span></h5>
-          <!--<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">X</button>-->
+          <h5 class="modal-title" id="downloadModalLabel">{% fontawesome_icon 'download' color='#336699' %} Download options for the <span class="text-danger">{{ object.title }}</span> collection</h5>
         </div>
         <div class="modal-body container">
         <form id="download_collection_form" method="POST" action="#" enctype="multipart/form-data">
         {% csrf_token %}
+          <div class="dl-blurb">
+            <p class="mb-1">Data uploaded as Linked Places format (LPF) are available only in that format. Data uploaded as LP-TSV (delimited text files or spreadsheets) can be downloaded as either <sr>LPF</sr> or <sr>LP-TSV</sr>. Downloads totaling more than {n} records will be queued, and a notification email sent when completed.
+            </p>
+            <div id="dl_licensing"><p><sr>IMPORTANT LICENSING INFORMATION</sr>: Datasets made public in WHG by their creators is available under the Creative Commons Attribution 4.0 International (CC BY 4.0) License. It can be freely shared, re-used, and adapted, but ""you <b>must</b> give appropriate credit, provide a link to the license, and indicate if changes were made." Please see <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">CC-BY-4.0 details</a>; and <a href="{% url 'licensing' %}"target="_blank">WHG policy.</a> Citations are provided below. <b>By clicking download on this form, you are agreeing to those terms</b>.
+            </p></div>
+          </div>{{ object.total_rows }}
           <div class="row">
-            <div class="col-sm-6 modal-col scroll-div">
-              <p class="modal-col-head p-1">Datasets</p>
-              <ul class="ul-left p-1">
-              {% for d in ds_list %} 
-                <li class="li-flush"><input type="checkbox" value="{{d.id}}" checked> {{ d.title }} ({{ d.id }}) <span class="float-right">{{d.numrows}} rows</span></li>
-              {% endfor %}
-              </ul>
+            <div class="col-sm-8 pr-0 scroll-div">
+              <p class="modal-col-head p-1 mb-2">Datasets</p>
+              <table class="dl-table small"><thead><tr><th></th><th>Title</th><th>Rows</th><th>Formats</th></tr></thead>
+              <tbody>{% for d in ds_list %}<tr class="align-top">
+                <td class="px-1"><input type="checkbox" value="{{d.id}}" checked></td>
+                <td>{{ d.title }} <a class="small"href="">cite <i class="fa fa-copy" data-id={{d.id}}></i></a></td>
+                <td>{{d.numrows}}</td>
+                <td>{% if d.format == 'delimited' %}
+            <div class="form-check form-check-inline mr-1">
+              <input class="form-check-input hover" type="radio" name="format" id="r_lp-tsv" value="lp-tsv" checked="checked">
+              <label class="form-check-label" for="r_lp-tsv">LP-TSV</label>
+            </div>                
+            <div class="form-check form-check-inline mx-0">
+              <input class="form-check-input hover" type="radio" name="format" id="r_lpf" value="lpf">
+              <label class="form-check-label" for="r_lpf">LPF</label>
             </div>
-            <div class="col-sm-6 modal-col">
-              <p class="modal-col-head p-1">File Format</p>
-              <div class="p-1">
-              <p><label><input type="radio" name="dl_format" id="lpf" checked> Linked Places format</label>  
-              <p><label><input type="radio" name="dl_format" id="lptsv"> LP-TSV</label>
-              <hr/>
-              <p><b>Linked Places format</b> is JSON-based, valid GeoJSON with temporal extensions</p>
-              <p class="mt-2"><b>LP-TSV downloads</b> are tab-separated text files.</p>
+                  {%else%}LPF{% endif %}
+                </td>
+              </tr>{% endfor %}</tbody>
+              </table>
+            </div>
+            <div class="col-sm-4">
+              <p class="modal-col-head p-1 mb-2">File Formats</p>
+              <div class="p-1 small">
+              <p class="my-1"><sr>Linked Places format (LPF)</sr> is JSON-based, valid GeoJSON and valid JSON-LD (rdf) with temporal extensions</p>
+              <p class="my-1"><sr>LP-TSV downloads</sr> are tab-separated text files.</p>
               </div>
             </div>
           </div>

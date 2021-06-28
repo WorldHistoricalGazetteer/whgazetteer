@@ -124,8 +124,8 @@ ul.no-bullets {
   /*max-width: 75%; */
   margin:auto;
 }
-.modal-narrow { 
-  max-width: 60%;
+.modal-85 { 
+  max-width: 85%;
   height: fit-content;
 }
 .modal-footer{justify-content:flex-start;}
@@ -635,9 +635,24 @@ em { color: #993333;}
   background-color: rgb(255 253 248);
   cursor: pointer;
 }
+.dl-table { width: 100%; }
+.dl-table th {
+  /*background-color: #eee;*/
+  color: #993333;
+  /*max-width: 200px;*/
+  font-size: .7rem;
+  font-weight: 600;
+  vertical-align:bottom;
+  border-bottom: 1px solid #999;
+  }
+#dl_licensing {
+  padding: 4px;
+  border: 1px solid #ccc;
+  margin-bottom: .5rem;
+}
+.dl-blurb p {font-size:.8rem; margin-bottom: .3rem;}
 .ds-card p{ margin-bottom: .3rem;}
 .ds_title { font-weight:600; color:#993333;}
-/*.ds_fields { border-top: 1px solid #ccc;}*/
 .ds_fields p { font-size: .8rem;}
 
 /**
