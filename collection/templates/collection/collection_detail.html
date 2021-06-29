@@ -92,32 +92,42 @@
           <h5 class="modal-title" id="downloadModalLabel">{% fontawesome_icon 'download' color='#336699' %} Download options for the <span class="text-danger">{{ object.title }}</span> collection</h5>
         </div>
         <div class="modal-body container">
-        <form id="download_collection_form" method="POST" action="#" enctype="multipart/form-data">
-        {% csrf_token %}
+        <!--<form id="download_collection_form" action="" method="GET" enctype="multipart/form-data">-->
+        <!--<form id="download_collection_form" action="" method="get">-->
+        <!--{ csrf_token %}-->
           <div class="dl-blurb">
             <p class="mb-1">Data uploaded as Linked Places format (LPF) are available only in that format. Data uploaded as LP-TSV (delimited text files or spreadsheets) can be downloaded as either <sr>LPF</sr> or <sr>LP-TSV</sr>. Downloads totaling more than {n} records will be queued, and a notification email sent when completed.
             </p>
-            <div id="dl_licensing"><p><sr>IMPORTANT LICENSING INFORMATION</sr>: Datasets made public in WHG by their creators is available under the Creative Commons Attribution 4.0 International (CC BY 4.0) License. It can be freely shared, re-used, and adapted, but ""you <b>must</b> give appropriate credit, provide a link to the license, and indicate if changes were made." Please see <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">CC-BY-4.0 details</a>; and <a href="{% url 'licensing' %}"target="_blank">WHG policy.</a> Citations are provided below. <b>By clicking download on this form, you are agreeing to those terms</b>.
+            <div id="dl_licensing"><p><sr>IMPORTANT LICENSING INFORMATION</sr>: Data made public in WHG by its creators are available under the Creative Commons Attribution 4.0 International (CC BY 4.0) License. They can be freely shared, re-used, and adapted, but "you <b>must</b> give appropriate credit, provide a link to the license, and indicate if changes were made." Please see <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">CC-BY-4.0 details</a>; and <a href="{% url 'licensing' %}"target="_blank">WHG policy.</a> Citations are provided below. <b>By clicking download on this form, you are agreeing to those terms</b>.
             </p></div>
-          </div>{{ object.total_rows }}
+          </div>
           <div class="row">
             <div class="col-sm-8 pr-0 scroll-div">
-              <p class="modal-col-head p-1 mb-2">Datasets</p>
-              <table class="dl-table small"><thead><tr><th></th><th>Title</th><th>Rows</th><th>Formats</th></tr></thead>
+              <p class="modal-col-head p-1 mb-2">Datasets <small>({{ object.rowcount }} total rows)</small></p>
+              <table class="dl-table small"><thead><tr><th>Title</th><th>Rows</th><th>Formats</th><th></th></tr></thead>
               <tbody>{% for d in ds_list %}<tr class="align-top">
-                <td class="px-1"><input type="checkbox" value="{{d.id}}" checked></td>
                 <td>{{ d.title }} <a class="small"href="">cite <i class="fa fa-copy" data-id={{d.id}}></i></a></td>
                 <td>{{d.numrows}}</td>
                 <td>{% if d.format == 'delimited' %}
-            <div class="form-check form-check-inline mr-1">
-              <input class="form-check-input hover" type="radio" name="format" id="r_lp-tsv" value="lp-tsv" checked="checked">
-              <label class="form-check-label" for="r_lp-tsv">LP-TSV</label>
-            </div>                
-            <div class="form-check form-check-inline mx-0">
-              <input class="form-check-input hover" type="radio" name="format" id="r_lpf" value="lpf">
-              <label class="form-check-label" for="r_lpf">LPF</label>
-            </div>
-                  {%else%}LPF{% endif %}
+                  <div class="form-check form-check-inline mr-1">
+                    <input class="form-check-input hover" type="radio" name="format" value="tsv" checked="checked">
+                    <label class="form-check-label" for="r_lp-tsv">LP-TSV</label>
+                  </div>                
+                  <div class="form-check form-check-inline mx-0">
+                    <input class="form-check-input hover" type="radio" name="format" value="lpf">
+                    <label class="form-check-label" for="r_lpf">LPF</label>
+                  </div>
+                  {%else%}LPF
+                    <input type="hidden" name="format" value="lpf">
+                  {% endif %}
+                </td>
+                <td class="px-1">
+                  {% if d.format == 'lpf' %}
+                  <a class="a-dl" data-id={{d.id}} data-format="lpf">
+                  {% else %} 
+                  <a class="a-dl" data-id={{d.id}} data-format="tsv">
+                  {% endif %}
+                  <i class="fa fa-download" title="Download"></i></a>
                 </td>
               </tr>{% endfor %}</tbody>
               </table>
@@ -130,11 +140,10 @@
               </div>
             </div>
           </div>
-        </form>
+        <!--</form>-->
         </div> <!-- .modal-body -->
         <div class="modal-footer">
-          <button type="button" id="b_download" class="btn btn-sm btn-primary">Download</button>
-          <button type="button" class="btn btn-sm btn-secondary btn-cancel" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-sm btn-secondary btn-cancel" data-bs-dismiss="modal">Close</button>
         </div>
       </div>
     </div>
@@ -142,7 +151,32 @@
 </div> <!-- container -->
 
 <script type="text/javascript">
+
+  function startDownloadSpinner(){
+    window.spinner_dl = new Spin.Spinner().spin();
+    <!--$("#coll_dslist").append(spinner_dl.el);   -->
+    $(".dl-table").append(spinner_dl.el);   
+  }  
+
   $(function(){
+
+    // ajax this to get before/after spinner
+    $(".a-dl").click(function(e){
+      e.preventDefault()
+      startDownloadSpinner()
+      // if file was tsv, get user choice
+      format = $(this).data('format') == 'tsv'?$("input[name=format]:checked").val():'lpf'
+      urly = "/datasets/"+$(this).data('id')+"/augmented/"+format
+      console.log('url',urly)
+      location.href = urly
+      $.ajax({
+        type: 'GET',
+        url: urly
+        }).done(function() {
+          spinner_dl.stop();
+        })
+    })
+
     <!--area_type = 'ccodes' // default-->
     $( ".textarea" ).each(function(index) {
       if ( ["None","null"].includes( $(this).val() ) ) {
@@ -201,19 +235,7 @@
       )
     }
   );
-
-  $("#b_download").click(function(){
-    var dsids = [];
-    $('.modal-body input:checked').each(function() {
-      dsids.push($(this).val());
-    });
-    console.log('download datasets:', dsids)
-  })
   
-  function startDownloadSpinner(){
-    window.spinner_dl = new Spin.Spinner().spin();
-    $("#ds_cards").append(spinner_dl.el);   
-  }  
 
   $(".btn-cancel").click(function(){$("#downloadModal").modal('hide') })
   
@@ -341,62 +363,6 @@
       console.log('no geometries, no feature')
     }
   } // end map_init  
-
-  <!--function renderMap(geom, tab){-->
-    <!--// call the map being rendered 'mappo'-->
-    <!--console.log('geom in renderMap()', geom)-->
-    <!--mappo = tab=='browse' ? mappy : mappyr-->
-    <!--if (geom.features.length==0) {-->
-      <!--console.log('no features in renderMap() call')-->
-    <!--} else {-->
-      <!--// clear existing if any-->
-      <!--if(typeof(features)!=='undefined'){-->
-        <!--mappo.removeLayer(features)-->
-      <!--}-->
-      <!--idToFeature = {}  // for feature lookup-->
-      <!--<!--L.geoJson({ object_list|geojsonfeature|safe}}).addTo(map);-->-->
-      <!--features = L.geoJSON(geom, {-->
-      <!--// feature here is a geometry-->
-      <!--// TODO: LPF should allow single geometry, not only GeometryCollection-->
-        <!--pointToLayer: function (feature, latlng) {-->
-          <!--matchid = feature.place_id-->
-          <!--<!--console.log('feature',feature)-->-->
-          <!--marker = L.circleMarker(latlng,styles.Point.default).bindPopup(feature.title+-->
-            <!--'<br>pid: <a href="'+window.location.origin+'/api/db?id='+matchid+'" target="_blank">'+-->
-            <!--matchid+'</a>');-->
-          <!--idToFeature[matchid] = marker-->
-          <!--return marker-->
-        <!--}-->
-        <!--,onEachFeature: function(feature,layer) {-->
-          <!--f=feature; l=layer;-->
-          <!--<!--console.log('f,l',feature,layer)-->-->
-          <!--identifier = f.place_id;-->
-          <!--if(f.type != 'Point'){-->
-            <!--layer.setStyle(styles[f.type].default).bindPopup(-->
-              <!--f.title+'<br>pid: <a href="'+-->
-              <!--window.location.origin+'/api/db?id='+-->
-              <!--identifier+'" target="_blank">'+identifier+'</a>'-->
-            <!--)-->
-            <!--idToFeature[identifier] = layer-->
-          <!--}-->
-        <!--}-->
-      <!--}).addTo(mappo);-->
-    <!--}-->
-    <!--<!--highlightFeature(pid)-->-->
-    <!--mappo.fitBounds(features.getBounds())-->
-    <!--mappo.on('zoomend', function() {-->
-      <!--var currentZoom = mappo.getZoom();-->
-      <!--<!--console.log('on zoomend', currentZoom)-->-->
-      <!--var myRadius = currentZoom*(1); //or whatever ratio you prefer-->
-      <!--var myWeight = currentZoom*(1/5); //or whatever ratio you prefer-->
-      <!--features.setStyle({radius: myRadius, weight: myWeight});-->
-      <!--opt = Object.values(idToFeature)[0].options-->
-      <!--foptions = { ...opt };-->
-      <!--<!--console.log('zoomend() idToFeature',opt)-->-->
-    <!--});-->
-    <!--opt = Object.values(idToFeature)[0].options-->
-    <!--foptions = { ...opt };-->
-  <!--}-->
 
 </script>
 

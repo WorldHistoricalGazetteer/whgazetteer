@@ -654,7 +654,7 @@ em { color: #993333;}
 .ds-card p{ margin-bottom: .3rem;}
 .ds_title { font-weight:600; color:#993333;}
 .ds_fields p { font-size: .8rem;}
-
+.fa-download { cursor: pointer; color:#336699;}
 /**
   place portal
 **/

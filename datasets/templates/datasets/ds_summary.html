@@ -156,7 +156,7 @@
         <p> <i>Current data file</i>
           {% if current_file.format == 'delimited' %}
           {% if ds.owner.id == user.id or user.is_superuser%}
-          <span class="float-right mr-2">
+          <span class="float-right mr-2 hidden">
             <a href="#" id="a_update_modal" data-dsid = {{ ds.id }} data-toggle="modal" data-target="#updateModal">update</a>
             <span class="help-matches" data-id="updates">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
           </span>
@@ -256,7 +256,7 @@
             <p class="ds-card-header">Downloads</p>
             <p class="m-0 pl-2 pr-2">
               {% if ds.id > 2 %} <!-- exclude black, dplace, which have no upload files -->
-                <a href="{% url 'datasets:dl-file' ds.id %}" ref="current">Current data file</a>
+                <a href="{% url 'datasets:dl-file' ds.id %}" ref="current">Latest data file</a>
                 <br/>
               {% endif %}
               {% if links_added > 0 or geoms_added > 0 %}Augmented dataset: {% endif %}
@@ -364,16 +364,17 @@ js for Summary, Reconciliation
     $("#drftable_list").append(spinner_table.el);   
   }
 
-  $("#ds_downloads a").click(function(e){
-    urly='/datasets/{{ds.id}}/augmented/'+$(this).attr('ref')
-    startDownloadSpinner()
-    $.ajax({
-            type: 'GET',
-            url: urly
-        }).done(function() {
-            spinner_dl.stop();
-        })
-  })
+  <!--$("#ds_downloads a").click(function(e){-->
+    <!--console.log('js ajax fired by click')-->
+    <!--urly='/datasets/{{ds.id}}/augmented/'+$(this).attr('ref')-->
+    <!--startDownloadSpinner()-->
+    <!--$.ajax({-->
+            <!--type: 'GET',-->
+            <!--url: urly-->
+        <!--}).done(function() {-->
+            <!--spinner_dl.stop();-->
+        <!--})-->
+  <!--})-->
   
   $("#btn_startrecon").click(function(e){
     startReconSpinner()

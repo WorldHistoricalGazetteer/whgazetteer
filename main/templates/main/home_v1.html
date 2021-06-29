@@ -340,26 +340,26 @@
 	$.ajax({
 		url: '/api/area/'+areaid
 	  }).done(function(data){
-		console.log('render_area()',data)
-		geom = {"type":"FeatureCollecton","features":[]}
-		geom['features'].push(data.geojson)
-
-		// clear existing
-		if(typeof arealayer !== 'undefined'){arealayer.removeFrom(mappy)}
-
-		// render new
-		arealayer = L.geoJSON(geom, {
-		  onEachFeature: function(feature,layer) {
-			f=feature; l=layer;
-			console.log('render_area() f,l',f,l)
-			l.setStyle({"color":"orange","weight":2,"fillOpacity":0})
-			idToArea[areaid] = l
-			<!--identifier = f.place_id;-->
-			popupOptions = {maxWidth: 200};
-			l.bindPopup(data.title, popupOptions);
-		  }
-		}).addTo(mappy)
-		mappy.fitBounds(arealayer.getBounds())
+      console.log('render_area()',data)
+      geom = {"type":"FeatureCollecton","features":[]}
+      geom['features'].push(data.geojson)
+  
+      // clear existing
+      if(typeof arealayer !== 'undefined'){arealayer.removeFrom(mappy)}
+  
+      // render new
+      arealayer = L.geoJSON(geom, {
+        onEachFeature: function(feature,layer) {
+        f=feature; l=layer;
+        console.log('render_area() f,l',f,l)
+        l.setStyle({"color":"orange","weight":2,"fillOpacity":0})
+        idToArea[areaid] = l
+        <!--identifier = f.place_id;-->
+        popupOptions = {maxWidth: 200};
+        l.bindPopup(data.title, popupOptions);
+        }
+      }).addTo(mappy)
+		  mappy.fitBounds(arealayer.getBounds())
 	  })
   }  
   //

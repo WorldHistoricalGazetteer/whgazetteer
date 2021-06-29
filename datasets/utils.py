@@ -67,6 +67,7 @@ def download_gis(request, *args, **kwargs):
 def download_augmented(request, *args, **kwargs):
   from django.db import connection
   print('download_augmented kwargs',kwargs)
+  print('download_augmented request',request)
   user = request.user.username
   ds=get_object_or_404(Dataset,pk=kwargs['id'])
   dslabel = ds.label
@@ -77,17 +78,17 @@ def download_augmented(request, *args, **kwargs):
   req_format = kwargs['format']
   if req_format is not None:
     print('download format',req_format)
-    #qs = qs.filter(title__icontains=query)
 
   features=ds.places.all().order_by('id')
 
   print('download_augmented() file format', fileobj.format)
   print('download_augmented() req. format', req_format)
   
-  if fileobj.format == 'delimited' and req_format == 'tsv':
-    print('getting tsv file')
+  if fileobj.format == 'delimited' and req_format in ['tsv', 'delimited']:
+    print('making a tsv file')
     # make file name
     fn = 'media/user_'+user+'/'+ds.label+'_aug_'+date+'.tsv'
+
     def augLinks(linklist):
       aug_links = []
       for l in linklist:

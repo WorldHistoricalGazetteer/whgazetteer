@@ -36,6 +36,12 @@ class Collection(models.Model):
     # TODO: gang up indiv & ds places
     dses = self.datasets.all()
     return Place.objects.filter(dataset__in=dses).distinct()
+
+  @property
+  def rowcount(self):
+    dses = self.datasets.all()
+    counts = [ds.places.count() for ds in dses]
+    return sum(counts)
   
   def __str__(self):
     return '%s:%s' % (self.id, self.title)

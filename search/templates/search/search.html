@@ -358,16 +358,16 @@
         dataType: "JSON",
         async: false,
         success: function (data) {
-        ds=data.results[0]
-        console.log('ds',ds)
-        html='<p class="thin"><b>Title</b>: '+ds.title+'</p>'
-        html+='<p class="thin"><b>Description</b>: '+ds.description+'</p>'
-        html+='<p class="thin"><b>WHG Owner</b>: '+ds.owner+'</p>'
-        html+='<p class="thin"><b>Creator</b>: '+ds.creator+'</p>'
-        <!--if(ds.webpage){-->
-          <!--html+='<p class="thin"><a href="'+ds.webpage+'" target="_blank">Web page</a></p>'-->
-        <!--}-->
-        dspop.attr('data-content', html);
+          ds=data.results[0]
+          console.log('ds',ds)
+          html='<p class="thin"><b>Title</b>: '+ds.title+'</p>'
+          html+='<p class="thin"><b>Description</b>: '+ds.description+'</p>'
+          html+='<p class="thin"><b>WHG Owner</b>: '+ds.owner+'</p>'
+          html+='<p class="thin"><b>Creator</b>: '+ds.creator+'</p>'
+          <!--if(ds.webpage){-->
+            <!--html+='<p class="thin"><a href="'+ds.webpage+'" target="_blank">Web page</a></p>'-->
+          <!--}-->
+          dspop.attr('data-content', html);
         }
       });
     })

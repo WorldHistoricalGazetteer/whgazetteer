@@ -24,25 +24,33 @@
 
 {% block content %}
 <div class="container">
-  <h5 class="mt-3">
-    <span class="text-secondary">WHG Collection:</span> <b>{{ object.title }}</b>
+  <h5 class="mt-3 ">
+    <b>{{ object.title }}</b><small class="text-secondary ml-3">a WHG Collection:</small>
   </h5>
   <div class="d-flex">
-    <div class="form-box col-sm-5 mt-2">
+    <div id="coll_map" class="col-sm-7 mt-2 pl-0">
       <div id="coll_meta">
         <table>
         <tr><td><b>Description</b></td><td>{{ object.description|readmore:200|safe }}</td></tr>
         <tr><td><b>Keywords</b></td><td>{{ object.keywords|join:', ' }}</td></tr>
-        <tr><td><b>Creator</b></td><td>{{ object.creator }}</td></tr>
+        {% if object.webpage %}
+        <tr><td><b>Webpage</b></td><td>
+          <a href="{{object.webpage }}" target="_blank">link {% fontawesome_icon 'external-link' color='#336699' %}</a>
+        </td></tr>
+        {% endif %}
+        <tr><td><b>Creator(s)</b></td><td>{{ object.creator }}</td></tr>
         <tr><td><b>Contact</b></td><td>{{ object.contact }}</td></tr>
-        <!--<tr><td><b>Created</b></td><td>{ object.create_date|date:"d M Y" }}</td></tr>-->
         </table>
+      </div>      
+      <div id="mapdiv_coll" class="">
+        {% leaflet_map "map_coll" callback="map_init" %}
       </div>
-      <hr/>
+    </div> <!-- .row -->
+    <div  id="coll_dslist" class="col-sm-5 mt-2">
       {% for g in bboxes %}
         {{ g|safe|json_script:g.properties.id }}
       {% endfor %}
-      <div id="coll_dslist">
+      <div>
         <h5>Datasets<span class="small float-right mr-2">{% fontawesome_icon 'download' color='#336699' %} <a href="" id="a_download_modal" data-dsid = {{ object.id }} data-toggle="modal" data-target="#downloadModal" title="download options"> download options</a></span></h5>
         <!-- fields: id, label, title, description, creator, create_date, webpage, numrows, datatype -->
         <div id="ds_cards">
@@ -74,42 +82,51 @@
             <!--{ d.bounds }}-->
           {% endfor %}
         </div> <!-- #ds_cards -->        
-      </div> <!-- #coll_dslist -->
-    </div>
-    <div id="coll_map" class="col-sm-7 mt-2">
-      <div id="mapdiv_coll" class="">
-        {% leaflet_map "map_coll" callback="map_init" %}
-      </div>
-      <!--<div>{ bboxes }}</div>-->
-    </div> <!-- .row -->
+      </div> 
+    </div><!-- #coll_dslist -->
   </div> <!-- d-flex -->
   <div class="modal fade" id="downloadModal" tabindex="-1" aria-labelledby="downloadModalLabel" aria-hidden="true">
     <div class="modal-dialog">
-      <div class="modal-content modal-narrow">
+      <div class="modal-content modal-85">
         <div class="modal-header">
-          <h5 class="modal-title" id="downloadModalLabel">{% fontawesome_icon 'download' color='#336699' %} Download options for <span class="text-danger">{{ object.title }}</span></h5>
-          <!--<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">X</button>-->
+          <h5 class="modal-title" id="downloadModalLabel">{% fontawesome_icon 'download' color='#336699' %} Download options for the <span class="text-danger">{{ object.title }}</span> collection</h5>
         </div>
         <div class="modal-body container">
         <form id="download_collection_form" method="POST" action="#" enctype="multipart/form-data">
         {% csrf_token %}
+          <div class="dl-blurb">
+            <p class="mb-1">Data uploaded as Linked Places format (LPF) are available only in that format. Data uploaded as LP-TSV (delimited text files or spreadsheets) can be downloaded as either <sr>LPF</sr> or <sr>LP-TSV</sr>. Downloads totaling more than {n} records will be queued, and a notification email sent when completed.
+            </p>
+            <div id="dl_licensing"><p><sr>IMPORTANT LICENSING INFORMATION</sr>: Data made public in WHG by its creators are available under the Creative Commons Attribution 4.0 International (CC BY 4.0) License. They can be freely shared, re-used, and adapted, but "you <b>must</b> give appropriate credit, provide a link to the license, and indicate if changes were made." Please see <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">CC-BY-4.0 details</a>; and <a href="{% url 'licensing' %}"target="_blank">WHG policy.</a> Citations are provided below. <b>By clicking download on this form, you are agreeing to those terms</b>.
+            </p></div>
+          </div>
           <div class="row">
-            <div class="col-sm-6 modal-col scroll-div">
-              <p class="modal-col-head p-1">Datasets</p>
-              <ul class="ul-left p-1">
-              {% for d in ds_list %} 
-                <li class="li-flush"><input type="checkbox" value="{{d.id}}" checked> {{ d.title }} ({{ d.id }}) <span class="float-right">{{d.numrows}} rows</span></li>
-              {% endfor %}
-              </ul>
+            <div class="col-sm-8 pr-0 scroll-div">
+              <p class="modal-col-head p-1 mb-2">Datasets <small>({{ object.rowcount }} total rows)</small></p>
+              <table class="dl-table small"><thead><tr><th></th><th>Title</th><th>Rows</th><th>Formats</th></tr></thead>
+              <tbody>{% for d in ds_list %}<tr class="align-top">
+                <td class="px-1"><input type="checkbox" value="{{d.id}}" checked></td>
+                <td>{{ d.title }} <a class="small"href="">cite <i class="fa fa-copy" data-id={{d.id}}></i></a></td>
+                <td>{{d.numrows}}</td>
+                <td>{% if d.format == 'delimited' %}
+            <div class="form-check form-check-inline mr-1">
+              <input class="form-check-input hover" type="radio" name="format" id="r_lp-tsv" value="lp-tsv" checked="checked">
+              <label class="form-check-label" for="r_lp-tsv">LP-TSV</label>
+            </div>                
+            <div class="form-check form-check-inline mx-0">
+              <input class="form-check-input hover" type="radio" name="format" id="r_lpf" value="lpf">
+              <label class="form-check-label" for="r_lpf">LPF</label>
             </div>
-            <div class="col-sm-6 modal-col">
-              <p class="modal-col-head p-1">File Format</p>
-              <div class="p-1">
-              <p><label><input type="radio" name="dl_format" id="lpf" checked> Linked Places format</label>  
-              <p><label><input type="radio" name="dl_format" id="lptsv"> LP-TSV</label>
-              <hr/>
-              <p><b>Linked Places format</b> is JSON-based, valid GeoJSON with temporal extensions</p>
-              <p class="mt-2"><b>LP-TSV downloads</b> are tab-separated text files.</p>
+                  {%else%}LPF{% endif %}
+                </td>
+              </tr>{% endfor %}</tbody>
+              </table>
+            </div>
+            <div class="col-sm-4">
+              <p class="modal-col-head p-1 mb-2">File Formats</p>
+              <div class="p-1 small">
+              <p class="my-1"><sr>Linked Places format (LPF)</sr> is JSON-based, valid GeoJSON and valid JSON-LD (rdf) with temporal extensions</p>
+              <p class="my-1"><sr>LP-TSV downloads</sr> are tab-separated text files.</p>
               </div>
             </div>
           </div>
@@ -261,22 +278,7 @@
       "Satellite": satellite
     };
 
-    layerGroup = L.control.layers(baseLayers).addTo(mappy);
-    
-    <!--$.get("/api/geoms", {ds: "{{ ds.label }}", f: "{{ filter }}" },-->
-      <!--function(data){-->
-        <!--<!--console.log('feature count:',data.count)-->-->
-        <!--geom = {"type":"FeatureCollection","features":data.results}-->
-        <!--if(geom.features.length >= 15000) {-->
-          <!--$(".toomany").html('for performance reasons, mapping only the first 15,000 features - sorry!')-->
-        <!--}-->
-        <!--if(geom.features.length <= 15000) {-->
-          <!--renderMap(geom,'browse')-->
-        <!--} else {-->
-          <!--$(".toomany").html('too many features to map (> '+geom.features.length+'), sorry!')-->
-        <!--}-->
-    <!--})    -->
-    <!--baseLayers['OpenStreetMap'].addTo(mappy)-->
+    layerGroup = L.control.layers(baseLayers).addTo(mappy);    
   }, false);
 
 
