@@ -247,9 +247,9 @@
             </table>
           </div>
           <div id="ds_access" class="pt-0 px-0 ds-card">
-            <p class="ds-card-header">Access</p>
+            <p class="ds-card-header">Collaboration</p>
             <p class="m-0 pl-2 pr-2">
-              Metadata edits, dataset updates, and initiation of reconciliation tasks may only be performed by the dataset contributor ("owner" in WHG). Collaborators added by the owner under the "Sharing" tab can view the dataset and perform review of reconciliation tasks.</p>
+              Metadata edits and the initiation of reconciliation tasks can be performed only by the dataset contributor ("owner" in WHG) and designated "co-owners." Registered users designated as "member" can perform review of reconciliation tasks. These roles can be assigned under the "Collaborators" tab.</p>
           </div>
           {% if user.is_superuser or user in owners %}
           <div id="ds_downloads" class="pt-0 px-0 ds-card">

@@ -177,7 +177,7 @@
         })
     })
 
-    <!--area_type = 'ccodes' // default-->
+
     $( ".textarea" ).each(function(index) {
       if ( ["None","null"].includes( $(this).val() ) ) {
         $(this).val('')
@@ -236,7 +236,6 @@
     }
   );
   
-
   $(".btn-cancel").click(function(){$("#downloadModal").modal('hide') })
   
   function showMore() {
@@ -245,7 +244,6 @@
   } 
   
   $(".dl-links a").click(function(e){
-    <!--e.preventDefault()-->
     urly='/datasets/'+$(this).data('id')+'/augmented/'+$(this).attr('ref')
     console.log('urly',urly)
     startDownloadSpinner()

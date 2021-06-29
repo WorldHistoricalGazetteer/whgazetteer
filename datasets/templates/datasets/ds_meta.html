@@ -87,7 +87,7 @@
           {% endif %}
           <tr>
             <td class="align-top"><b>Citation</b> 
-              <a class="clippy" data-clipboard-target="#citation" rel="tooltip" title="copy to clipboard">{% fontawesome_icon 'clipboard' color='#336699' %}</a>
+              <a id="a_clipcite" class="clippy" data-clipboard-target="#citation" rel="tooltip" title="copy to clipboard">{% fontawesome_icon 'clipboard' color='#336699' %}</a>
             </td>
             <td id="citation"><span>{% if object.citation %}{{ object.citation }}{% else %}constructed citation...{% endif %}</span>
             </td>
@@ -98,10 +98,11 @@
         <div id="ds_info">
           <div id="ds_access" class="pt-0 px-0 ds-card">
             <p class="ds-card-header">Access</p>
-            <p class="mx-0 mb-1 px-2">Datasets in World Historical Gazetteer flagged "public" by contributors are open access, and may be downloaded under the <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">Creative Commons Attribution 4.0 International (CC BY 4.0) License</a>. This means you are free to:</p>
-            <ul>
+            <p>Datasets in World Historical Gazetteer flagged "public" by contributors are open access, and may be downloaded under the <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">Creative Commons Attribution 4.0 International (CC BY 4.0) License</a>. This means you are free to:</p>
+            <ul class="mb-1">
             <li class="li-left"><b>Share</b> — copy and redistribute the material in any medium or format</li>
             <li class="li-left"><b>Adapt</b> — remix, transform, and build upon the material for any purpose, even commercially.</li></ul>
+            <p>You <b>must</b> give appropriate credit, provide a link to the CC-BY-4.0 license <a id="a_cliplic"class="clippy" data-clipboard-text="https://creativecommons.org/licenses/by/4.0/" rel="tooltip" title="copy to clipboard">{% fontawesome_icon 'clipboard' color='#336699' %}</a>, and indicate if changes were made.</p>
           </div>
           <div id="ds_downloads" class="pt-0 px-0 ds-card">
             <p class="ds-card-header">Downloads</p>
@@ -124,60 +125,43 @@
       </form>
     </div> <!-- summary -->
   </div> <!-- .tab-content -->
-  <div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="updateModalLabel">
-            Update <span class="text-danger">{{ ds.label }}</span> dataset <small>(<i>{{ current_file.format }} file only</i>)</small>
-          </h5>
-        </div>
-        <div class="modal-body">
-          <div class="form-group">
-            <form id="newfileform" method="POST" action="#" enctype="multipart/form-data">
-              {% csrf_token %}
-              <div id="loadfile">
-                <p><input type="file" id="newfile"></p>
-                <button id="btn_upload" type="submit" class="btn btn-primary btn-sm hidden">Upload</button>
-              </div>
-              <div id="update_spinner"></div>
-              <div id="results_text" class="mb-2 small ds-card">
-                <p>Uploaded data will be compared with existing data, and results reported here.</p>
-                  <p>You may then proceed, or cancel this operation with no changes made.</p>
-                <!--{ if links_added > 0 or geoms_added > 0 %}-->
-                <!--<p>This dataset has been augmented with { links_added }} links and { geoms_added }} geometries-->
-                <!--via reconciliation tasks. </p>-->
-                <!--{ endif %}-->
-              </div>          
-            </form>
-          </div> <!-- .form-group -->
-        </div> <!-- .modal-body -->      
-        <div class="modal-footer">
-          <div id="buttons_pre">
-            <button id="btn_cancel" type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Cancel</button>
-            <button id="btn_update" type="button" data-dsid={{ds.id}} class="btn btn-primary btn-sm hidden">
-              Proceed</button>
-          </div>
-          <button id="btn_done" type="button" class="btn btn-secondary btn-sm hidden" data-dismiss="modal">Done</button>
-        </div>
-      </div>
-    </div>
-  </div>
 </div>
 
 <!--
 js for Summary, Reconciliation
 -->
 <script type="text/javascript">
-  // citation to clipboard
-  var clipboard = new ClipboardJS('a');
-  clipboard.on('success', function(e) {
-      e.clearSelection();
-      
-      $(".clippy").tooltip('hide')
-        .attr('data-original-title', 'copied!')
-        .tooltip('show');
+
+  // TODO: this is redundant to href in the link!?
+  // without it, file/save dialog doesn't appear.
+  $("#ds_downloads a").click(function(e){
+    urly='/datasets/{{object.id}}/augmented/'+$(this).attr('ref')
+    startDownloadSpinner()
+    $.ajax({
+            type: 'GET',
+            url: urly
+        }).done(function() {
+            spinner_dl.stop();
+        })
+  })
+  
+  // TODO: one function for these
+  var clip_cite = new ClipboardJS('#a_clipcite');
+  <!--clipboard.on('success', function(e) {-->
+  clip_cite.on('success', function(e) {
+    e.clearSelection();
+    $("#a_clipcite").tooltip('hide')
+      .attr('data-original-title', 'copied!')
+      .tooltip('show');
   });
+  var clip_lic = new ClipboardJS('#a_cliplic');
+  clip_lic.on('success', function(e) {
+    e.clearSelection();
+    $("#a_cliplic").tooltip('hide')
+      .attr('data-original-title', 'copied!')
+      .tooltip('show');
+  });
+
   // show/hide geo constraint options
   $("#r_tgn").click(function(){console.log('tgn now');$("#geo_constraint").show(400)})
   
@@ -220,17 +204,6 @@ js for Summary, Reconciliation
     $("#drftable_list").append(spinner_table.el);   
   }
 
-  $("#ds_downloads a").click(function(e){
-    urly='/datasets/{{object.id}}/augmented/'+$(this).attr('ref')
-    startDownloadSpinner()
-    $.ajax({
-            type: 'GET',
-            url: urly
-        }).done(function() {
-            spinner_dl.stop();
-        })
-  })
-  
   $("#btn_startrecon").click(function(e){
     startReconSpinner()
   })

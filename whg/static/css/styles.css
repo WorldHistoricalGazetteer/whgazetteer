@@ -25,15 +25,14 @@ label {vertical-align:top;}
 .bg-light { background-color: #fff !important; }
 .border-red { border:2px dotted red;}
 .checkbox-inline {margin-right:.3rem;}
+.clippy {cursor:pointer;}
 .dashedbox {border:1px dashed #ccc; border-radius:8px; }
 .fa-search, .fa-times {color:#999; }
 /*.half { font-size: .7em; margin-top:.6em;}*/
 .half { font-size: .7em;}
 .h2em { height: 2em; }
 .h1em { height: 1em; }
-.hang {
-  padding-left: .2rem ;
-  text-indent: -.2rem;} 
+.hang {  padding-left: .2rem ;  text-indent: -.2rem;} 
 .hidden {display:none;}
 .hidden-imp {display:none !important;}
 .hover {cursor:pointer;}
@@ -857,7 +856,9 @@ em { color: #993333;}
 
 /**
   dataset browse
-**/
+**/ 
+/*class="mx-0 mb-1 px-2"*/
+#ds_access p {margin: .2rem 0; padding: 0 .5rem;}
 #status_select { padding: 4px; }
 #status_filter { text-align: center; }
 #browse_legend {background:#e0e0e0;}
