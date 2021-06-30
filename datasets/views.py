@@ -1766,9 +1766,9 @@ class DashboardView(LoginRequiredMixin, ListView):
   template_name = 'datasets/dashboard.html'
 
   def get_queryset(self):
-    # 
+    # groups.filter(name__in=['beta', 'admins', 'whg_team']).exists()
     me = self.request.user
-    if me.is_superuser:
+    if me.is_superuser or 'whg_team' in [g.name for g in me.groups.all()]:
       print('in get_queryset() if',me)
       return Dataset.objects.all().order_by('ds_status','-core','-id')
     else:
@@ -1797,7 +1797,7 @@ class DashboardView(LoginRequiredMixin, ListView):
 
     context['viewable'] = ['uploaded','inserted','reconciling','review_hits','reviewed','review_whg','indexed']
     
-    context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False
+    context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins', 'whg_team']).exists() else False
     # TODO: user place collections
     #print('DashboardView context:', context)
     return context
