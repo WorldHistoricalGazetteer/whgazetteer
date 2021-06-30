@@ -172,7 +172,9 @@
             <tr>
               <td><b>File</b></td>
               <td>
-                <span class="display-field">{{ current_file.file }}</span>
+                <span class="display-field"> 
+                <a href="{% url 'datasets:dl-file' ds.id %}" ref="current" download>{{ current_file.file }} {% fontawesome_icon 'download' color='#336699'%}</a> ({{filesize}} mb)
+                </span>
               </td>
             </tr>
             <tr>
@@ -248,29 +250,32 @@
           </div>
           <div id="ds_access" class="pt-0 px-0 ds-card">
             <p class="ds-card-header">Collaboration</p>
-            <p class="m-0 pl-2 pr-2">
-              Metadata edits and the initiation of reconciliation tasks can be performed only by the dataset contributor ("owner" in WHG) and designated "co-owners." Registered users designated as "member" can perform review of reconciliation tasks. These roles can be assigned under the "Collaborators" tab.</p>
+            <p class="m-0 pl-2 pr-2">This screen, and the tasks made available here, are initially accessible only to the dataset "owner" - the user who created the record by uploading a dataset file. Dataset owners can then grant "co-owner" and/or "member" permissions to other registered users under the <a href="{% url 'datasets:ds_collab' ds.id %}">Collaborators</a> tab.</p>
           </div>
           {% if user.is_superuser or user in owners %}
           <div id="ds_downloads" class="pt-0 px-0 ds-card">
             <p class="ds-card-header">Downloads</p>
             <p class="m-0 pl-2 pr-2">
-              {% if ds.id > 2 %} <!-- exclude black, dplace, which have no upload files -->
-                <a href="{% url 'datasets:dl-file' ds.id %}" ref="current">Latest data file</a>
-                <br/>
+              <!--{ if links_added > 0 or geoms_added > 0 %} (augmented){ endif %}-->
+              {% if ds.numrows <= 20000 %}
+                  <!--<a href="{ url 'datasets:dl-aug' id=ds.id format='lpf' %}" ref="lpf">Linked Places format</a>-->
+                  <a href="#" ref="lpf">Linked Places format</a> 
+                    {% if links_added > 0 or geoms_added > 0 %} (augmented){% endif %}<span id="file_lpf" class="ml-1"></span>
+                {% if links_added > 0 or geoms_added > 0 and current_file.format == 'delimited' %}<br/>
+                  <!--<a href="{ url 'datasets:dl-aug' id=ds.id format='tsv' %}" ref="tsv">TSV</a>-->
+                  <a href="#" ref="tsv">LP-TSV</a> (augmented)<span id="file_tsv" class="ml-1"></span>
+                {% endif %}
+              {% else %}  
+                <span class="red-head"><br/>Download of augmented datasets larger than 20,000 rows not supported right now.</span>
               {% endif %}
-              {% if links_added > 0 or geoms_added > 0 %}Augmented dataset: {% endif %}
-                {% if ds.numrows <= 30000 %}
-                    <a href="{% url 'datasets:dl-aug' id=ds.id format='lpf' %}" ref="lpf">Linked Places format</a>
-                  {% if current_file.format == 'delimited' %}
-                    | <a href="{% url 'datasets:dl-aug' id=ds.id format='tsv' %}" ref="tsv">TSV</a>
-                  {% endif %}
-                {% else %}  
-                  <span class="red-head"><br/>Sorry, download of augmented datasets larger than 5000 rows not supported right now; too slow :^(</span>
-                {% endif %}  
+              <!-- media/user_whgadmin/curacao_wdaligned_aug_20210629_214215.json -->
             </p>
           </div>
           {% endif %}
+          <div id="dl_files" class="pt-0 px-0 ds-card hidden">
+          <p class="ds-card-header">Downloads</p>
+          <p id="dl_result"><a href="/media/user_whgadmin/curacao_wdaligned_aug_20210629_214215.json" download>save file</a></p>
+          </div>
         </div> <!-- ds_info -->
       </div> <!-- ds_details -->
       </div> <!-- row -->
@@ -322,9 +327,57 @@
 js for Summary, Reconciliation
 -->
 <script type="text/javascript">
+  const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
   // activate all tooltips
   $("[rel='tooltip']").tooltip();
+
+  dl = function(dsid, format){
+    console.log('dl()',dsid, format)
+    // 2, 'lpf'
+    console.time('dl')
+    <!--urly='/datasets/'+dsid+'/augmented/'+format-->
+    urly='/datasets/986/augmented/lpf'
+    startDownloadSpinner()
+    $.ajax({
+        type: 'POST',
+        url: urly,
+        headers: {'X-CSRFToken': csrftoken},
+        mode: 'same-origin'
+      }).done(function(result) {
+        console.log('result',result)
+        spinner_dl.stop();
+        console.timeEnd('dl')  
+      }) 
+  }
+
+  dater = function(){
+    const date = new Date(Date.now());
+    return date.toISOString().substring(0,10)
+  }
   
+  
+  // builds file, saves to user folder, returns data w/o displaying, creates download link
+  $("#ds_downloads a").click(function(e){
+    e.preventDefault()
+    console.time({{ds.label}})
+    format = $(this).attr('ref')
+    console.log('building '+format+' file')
+    urly='/datasets/{{ds.id}}/augmented/'+format
+    startDownloadSpinner()
+    $.ajax({
+        type: 'GET',
+        url: urly
+      }).done(function(response) {
+        spinner_dl.stop();
+        now = Date.now()
+        link = '[ <a href="'+response.filename+'" title="downloaded: '+dater()+
+                  '" download><span class="dl-save">save</span></a> ]'
+        el = format=='lpf'?$("#file_lpf"):$("#file_tsv")
+        el.html(link)
+        console.timeEnd({{ds.label}})  
+      })
+  })
+    
   $("#a_update_modal").on('click', function(e){
     console.log('clicked update')
     if('{{ current_file.format }}' != 'delimited'){ 
@@ -348,22 +401,6 @@ js for Summary, Reconciliation
     $("#ds_downloads").append(spinner_dl.el);   
   }
 
-  // TODO: redundant to url in link
-  // file/save dialog won't appear without it
-  $("#ds_downloads a").click(function(e){
-    console.log('js ajax fired by click')
-    console.time('big dl')
-    urly='/datasets/{{ds.id}}/augmented/'+$(this).attr('ref')
-    startDownloadSpinner()
-    $.ajax({
-        type: 'GET',
-        url: urly
-      }).done(function() {
-        spinner_dl.stop();
-        console.timeEnd('big dl')  
-      })
-  })
-  
   // parse & prettify ds_update() results
   function updateText(data){
     html = 'Update changes: <br/>' + 

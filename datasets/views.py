@@ -2102,9 +2102,9 @@ def match_undo(request, ds, tid, pid):
   #return redirect('/datasets/'+str(ds)+'/review/'+tid+'/pass1')
 
 """ 
-draft views for dataset detail refactor 
+
 """
-#
+# ds_summary
 class DatasetSummaryView(LoginRequiredMixin, UpdateView):
   login_url = '/accounts/login/'
   redirect_field_name = 'redirect_to'
@@ -2116,8 +2116,7 @@ class DatasetSummaryView(LoginRequiredMixin, UpdateView):
   def get_success_url(self):
     id_ = self.kwargs.get("id")
     user = self.request.user
-    print('messages:', messages.get_messages(self.kwargs))
-    #return '/datasets/'+str(id_)+'/detail'
+    #print('messages:', messages.get_messages(self.kwargs))
     return '/datasets/'+str(id_)+'/summary'
 
   # Dataset has been edited, form submitted
@@ -2186,45 +2185,25 @@ class DatasetSummaryView(LoginRequiredMixin, UpdateView):
 
     # build context for rendering dataset.html
     me = self.request.user
-    #area_types=['ccodes','copied','drawn']
-
-    #userareas = Area.objects.all().filter(type__in=area_types).values('id','title').order_by('-created')
-    #context['area_list'] = userareas if me.username == 'whgadmin' else userareas.filter(owner=me)
-  
-    #predefined = Area.objects.all().filter(type='predefined').values('id','title')
     placeset = Place.objects.filter(dataset=ds.label)
-    #ds_tasks = TaskResult.objects.all().filter(task_args = [id_], status='SUCCESS')
     
-    #context['region_list'] = predefined    
     context['updates'] = {}
     context['ds'] = ds
-    #context['log'] = ds.log.filter(category='dataset').order_by('-timestamp')
-    #context['comments'] = Comment.objects.filter(place_id__dataset=ds).order_by('-created')
+    context['collaborators'] = ds.collabs.all()
+    context['owners'] = ds.owners
+
     # latest file
     context['current_file'] = file
     context['format'] = file.format
     context['numrows'] = file.numrows
-    context['collaborators'] = ds.collabs.all()
-    context['owners'] = ds.owners
-    #context['tasks'] = ds_tasks
+    context['filesize'] = round(file.file.size/1000000, 1)
+    
     # initial (non-task)
+    context['num_names'] = PlaceName.objects.filter(place_id__in = placeset).count()
     context['num_links'] = PlaceLink.objects.filter(
       place_id__in = placeset, task_id = None).count()
-    context['num_names'] = PlaceName.objects.filter(place_id__in = placeset).count()
     context['num_geoms'] = PlaceGeom.objects.filter(
       place_id__in = placeset, task_id = None).count()
-
-    # others
-    #context['num_descriptions'] = PlaceDescription.objects.filter(
-      #place_id__in = placeset, task_id = None).count()
-    #context['num_types'] = PlaceType.objects.filter(
-      #place_id__in = placeset).count()
-    #context['num_when'] = PlaceWhen.objects.filter(
-      #place_id__in = placeset).count()
-    #context['num_related'] = PlaceRelated.objects.filter(
-      #place_id__in = placeset).count()
-    #context['num_depictions'] = PlaceDepiction.objects.filter(
-      #place_id__in = placeset).count()
 
     # augmentations (has task_id)
     context['links_added'] = PlaceLink.objects.filter(
@@ -2232,14 +2211,7 @@ class DatasetSummaryView(LoginRequiredMixin, UpdateView):
     context['geoms_added'] = PlaceGeom.objects.filter(
       place_id__in = placeset, task_id__contains = '-').count()
 
-    # names, descriptions not currently retrieved from recon matches
-    #context['names_added'] = PlaceName.objects.filter(
-      #place_id__in = placeset, task_id__contains = '-').count()
-    #context['descriptions_added'] = PlaceDescription.objects.filter(
-      #place_id__in = placeset, task_id__contains = '-').count()
-
     context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False
-    #print('context["tasks"] from DatasetSummaryView', context['tasks'])
 
     return context
 

@@ -85,7 +85,11 @@ class Dataset(models.Model):
     gc=GeometryCollection(tuple(pg_geoms))
     
     return json.loads(gc.envelope.geojson)
-    
+
+  @property
+  def filesize(self):
+    return self.files.all().order_by('id')[0].file.size
+  
   @property
   def tasks(self):
     from django_celery_results.models import TaskResult

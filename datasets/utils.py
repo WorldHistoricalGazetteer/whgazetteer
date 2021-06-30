@@ -1,6 +1,6 @@
 #from django.core import serializers
 from django.contrib.gis.geos import GEOSGeometry
-from django.http import FileResponse, JsonResponse
+from django.http import FileResponse, JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import View
 
@@ -60,9 +60,9 @@ def download_gis(request, *args, **kwargs):
   response = FileResponse(open(fn, 'rb'),content_type='text/json')
   response['Content-Disposition'] = 'attachment; filename="mydata.geojson"'
 
-  return response
   #return HttpResponse(content='download_gis: '+fn)
-
+  return response
+#
 # returns file in original format w/any new geoms, links
 def download_augmented(request, *args, **kwargs):
   from django.db import connection
@@ -85,6 +85,8 @@ def download_augmented(request, *args, **kwargs):
   print('download_augmented() req. format', req_format)
   
   if fileobj.format == 'delimited' and req_format in ['tsv', 'delimited']:
+    # get header
+    header = ds.files.all().order_by('id')[0].header
     print('making a tsv file')
     # make file name
     fn = 'media/user_'+user+'/'+ds.label+'_aug_'+date+'.tsv'
@@ -106,12 +108,15 @@ def download_augmented(request, *args, **kwargs):
           gobj['new'].append({"id":g.jsonb['citation']['id'],"coordinates":g.jsonb['coordinates']})
       return gobj
 
+    # TODO: return valid LP-TSV, incl. geowkt where applic.
     with open(fn, 'w', newline='', encoding='utf-8') as csvfile:
       writer = csv.writer(csvfile, delimiter='\t', quotechar='', quoting=csv.QUOTE_NONE)
       writer.writerow(['id','whg_pid','title','ccodes','lon','lat','added','matches'])
+      #writer.writerow(header)
       for f in features:
         geoms = f.geoms.all()
         gobj = augGeom(geoms)
+        #print('gobj',f.id, gobj)
         row = [str(f.src_id),
                str(f.id),
                f.title,
@@ -123,7 +128,7 @@ def download_augmented(request, *args, **kwargs):
                ]
         writer.writerow(row)
         #print(row)
-    response = FileResponse(open(fn, 'rb'),content_type='text/csv')
+    response = FileResponse(open(fn, 'rb'), content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="'+os.path.basename(fn)+'"'
 
     return response
@@ -132,7 +137,8 @@ def download_augmented(request, *args, **kwargs):
     # make file name
     fn = 'media/user_'+user+'/'+ds.label+'_aug_'+date+'.json'
     result={"type":"FeatureCollection","features":[],
-            "@context": "https://raw.githubusercontent.com/LinkedPasts/linked-places/master/linkedplaces-context-v1.1.jsonld"}
+            "@context": "https://raw.githubusercontent.com/LinkedPasts/linked-places/master/linkedplaces-context-v1.1.jsonld",
+            "filename": fn}
     print('augmented lpf template', result)
     with open(fn, 'w', encoding='utf-8') as outfile:
       with connection.cursor() as cursor:
@@ -206,12 +212,15 @@ def download_augmented(request, *args, **kwargs):
           result['features'].append(row[0])
         outfile.write(json.dumps(result,indent=2))
         #outfile.write(json.dumps(result))
+        
     # response is reopened file
     response = FileResponse(open(fn, 'rb'), content_type='text/json')
+    #response = HttpResponse(open(fn, 'rb'), content_type='text/json')
     response['Content-Disposition'] = 'attachment; filename="'+os.path.basename(fn)+'"'
 
     return response
-
+#
+# experiment (deprecated?)
 def download_augmented_slow(request, *args, **kwargs):
   print('download_augmented kwargs',kwargs)
   user = request.user.username
@@ -301,24 +310,26 @@ def download_augmented_slow(request, *args, **kwargs):
 
     # response is reopened file
     response = FileResponse(open(fn, 'rb'), content_type='text/json')
-    response['Content-Disposition'] = 'attachment; filename="'+os.path.basename(fn)+'"'
+    #response['Content-Disposition'] = 'attachment; filename="'+os.path.basename(fn)+'"'
+    response['Content-Disposition'] = 'filename="'+os.path.basename(fn)+'"'
 
     return response
-
+# *** /end DOWNLOAD FILES
 
 def get_encoding_excel(fn):
-      fin = codecs.open(fn, 'r')
-      fin.close()
-      return fin.encoding
+  fin = codecs.open(fn, 'r')
+  fin.close()
+  return fin.encoding
 
 def get_encoding_delim(fn):
   with open(fn, 'rb') as f:
-  #with codecs.open(fn, mode='r', encoding="utf-8") as f:
     rawdata = f.read()
   return detect(rawdata)['encoding']
 
+def groom_files(user):
+  return 'groomed files for ' + user
 
-# ***
+  # ***
 # format validation errors for display
 # ***
 def parse_errors_tsv(errors):
@@ -580,7 +591,10 @@ def flatten(l):
         yield sub
     else:
       yield el
-      
+
+def format_size(num):
+  return round(num/1000000, 2)
+
 #*# test loads
 #from django.shortcuts import get_object_or_404
 #from places.models import Place
@@ -645,20 +659,6 @@ def makeCoords(lonstr,latstr):
   #lat = float(latstr) if latstr != '' else ''
   coords = [] if (lonstr == ''  or latstr == '') else [lon,lat]
   return coords
-
-#def ccodesFromGeom(geom):
-  #if len(geom['coordinates']) == 0:
-    #return []
-  #else: 
-    #print('ccodesFromGeom() geom',geom)
-    #g = GEOSGeometry(str(geom))
-    #if geom['type'] != 'GeometryCollection':
-      #qs = Country.objects.filter(mpoly__intersects=g)
-    #else:
-      ## just hull them all
-      #qs = Country.objects.filter(mpoly__intersects=g.convex_hull)    
-    #ccodes = [c.iso for c in qs]
-    #return ccodes
 
 # might be GeometryCollection or singleton
 def ccodesFromGeom(geom):
