@@ -6,7 +6,7 @@ from django.conf.urls.static import static
 from django.conf import settings
 
 from . import views
-from datasets.utils import download_file, download_augmented, download_gis, UpdateCountsView
+from datasets.utils import download_file, download_augmented, download_gis, UpdateCountsView, progress_view
 
 # dataset actions
 app_name='datasets'
@@ -64,6 +64,9 @@ urlpatterns = [
     
     # refresh reconciliation counts (ds.id from $.get)
     path('updatecounts/', UpdateCountsView.as_view(), name='update_counts'),
+    
+    # initiate downloads via task in utils
+    path('progressive/<int:pk>/<str:format>', progress_view, name='progressive'),    
     
     #
     # refactored tabs to individual views, templates

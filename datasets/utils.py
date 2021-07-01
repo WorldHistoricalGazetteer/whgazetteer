@@ -1,11 +1,13 @@
 #from django.core import serializers
 from django.contrib.gis.geos import GEOSGeometry
 from django.http import FileResponse, JsonResponse, HttpResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
 from django.views.generic import View
 
 import codecs, csv, datetime, sys, openpyxl, os, pprint, re, time
 import simplejson as json
+from celery import task, shared_task
+from celery_progress.backend import ProgressRecorder
 from chardet import detect
 from django_celery_results.models import TaskResult
 from frictionless import validate as fvalidate
@@ -37,34 +39,24 @@ def download_file(request, *args, **kwargs):
   response['Content-Disposition'] = 'attachment; filename="'+fileobj.file.name+'"'
 
   return response
-# TODO: crude, only properties are ids
-def download_gis(request, *args, **kwargs):
-  print('download_gis kwargs',kwargs)
-  user = request.user.username
-  ds=get_object_or_404(Dataset,pk=kwargs['id'])
-  date=maketime()
-  # make file name
-  fn = 'media/user_'+user+'/'+ds.label+'_aug_'+date+'.json'
-  # open it for write
-  fout = codecs.open(fn,'w','utf8')
 
-  # build a flat FeatureCollection 
-  features=PlaceGeom.objects.filter(place_id__in=ds.placeids).values_list('jsonb','place_id','src_id')
-  fcoll = {"type":"FeatureCollection","features":[]}
-  for f in features:
-    feat={"type":"Feature","properties":{"pid":f[1],"src_id":f[2]},"geometry":f[0]}
-    fcoll['features'].append(feat)
-  fout.write(json.dumps(fcoll))
-  fout.close()
-  # response is reopened file and content type
-  response = FileResponse(open(fn, 'rb'),content_type='text/json')
-  response['Content-Disposition'] = 'attachment; filename="mydata.geojson"'
-
-  #return HttpResponse(content='download_gis: '+fn)
-  return response
+# initiates a task needing a progress bar
+#def progress_view(request, *args, **kwargs):
+  #print('progress_view()') 
+  #print('request',request.GET)
+  #print('args, kwargs', args, kwargs)
+  #pk = kwargs['pk']
+  ##format = kwargs['format']
+  #result = download_augmented.delay(10)
+  #print('started download') 
+  #return redirect(request, '/datasets/'+str(pk)+'/summary',context={'task_id': result.task_id})
+  #return render(request, 'display_progress.html', context={'task_id': result.task_id})
 #
 # returns file in original format w/any new geoms, links
+#@shared_task
+
 def download_augmented(request, *args, **kwargs):
+  progress_recorder = ProgressRecorder(self)
   from django.db import connection
   print('download_augmented kwargs',kwargs)
   print('download_augmented request',request)
@@ -78,7 +70,7 @@ def download_augmented(request, *args, **kwargs):
   req_format = kwargs['format']
   if req_format is not None:
     print('download format',req_format)
-
+  
   features=ds.places.all().order_by('id')
 
   print('download_augmented() file format', fileobj.format)
@@ -127,7 +119,7 @@ def download_augmented(request, *args, **kwargs):
                str(augLinks(f.links.all()))
                ]
         writer.writerow(row)
-        #print(row)
+        #progress_recorder.set_progress(i + 1, len(features), description="tsv progress")
     response = FileResponse(open(fn, 'rb'), content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="'+os.path.basename(fn)+'"'
 
@@ -210,6 +202,7 @@ def download_augmented(request, *args, **kwargs):
           if g['type'] != 'GeometryCollection' and g['coordinates'] == []:
             row[0].pop('geometry')
           result['features'].append(row[0])
+          #progress_recorder.set_progress(i + 1, len(features), description="lpf progress")
         outfile.write(json.dumps(result,indent=2))
         #outfile.write(json.dumps(result))
         
@@ -314,6 +307,33 @@ def download_augmented_slow(request, *args, **kwargs):
     response['Content-Disposition'] = 'filename="'+os.path.basename(fn)+'"'
 
     return response
+
+# TODO: crude, only properties are ids
+def download_gis(request, *args, **kwargs):
+  print('download_gis kwargs',kwargs)
+  user = request.user.username
+  ds=get_object_or_404(Dataset,pk=kwargs['id'])
+  date=maketime()
+  # make file name
+  fn = 'media/user_'+user+'/'+ds.label+'_aug_'+date+'.json'
+  # open it for write
+  fout = codecs.open(fn,'w','utf8')
+
+  # build a flat FeatureCollection 
+  features=PlaceGeom.objects.filter(place_id__in=ds.placeids).values_list('jsonb','place_id','src_id')
+  fcoll = {"type":"FeatureCollection","features":[]}
+  for f in features:
+    feat={"type":"Feature","properties":{"pid":f[1],"src_id":f[2]},"geometry":f[0]}
+    fcoll['features'].append(feat)
+  fout.write(json.dumps(fcoll))
+  fout.close()
+  # response is reopened file and content type
+  response = FileResponse(open(fn, 'rb'),content_type='text/json')
+  response['Content-Disposition'] = 'attachment; filename="mydata.geojson"'
+
+  #return HttpResponse(content='download_gis: '+fn)
+  return response
+
 # *** /end DOWNLOAD FILES
 
 def get_encoding_excel(fn):

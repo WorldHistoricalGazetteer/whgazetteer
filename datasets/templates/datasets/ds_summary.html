@@ -16,6 +16,8 @@
   <link rel="stylesheet" href="//cdn.datatables.net/1.10.23/css/dataTables.bootstrap4.min.css">
   <script src="//cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
   <script src="//cdn.datatables.net/1.10.23/js/dataTables.bootstrap4.min.js"></script>
+  
+  <script src="{% static 'celery_progress/celery_progress.js' %}"></script>
 {% endblock %}
 
 {% block title %}<title>Dataset::{{ ds.label }}</title>{% endblock %}
@@ -260,6 +262,7 @@
               {% if ds.numrows <= 20000 %}
                   <!--<a href="{ url 'datasets:dl-aug' id=ds.id format='lpf' %}" ref="lpf">Linked Places format</a>-->
                   <a href="#" ref="lpf">Linked Places format</a> 
+                  <!--<a href="{ url 'datasets:progressive' pk=ds.id format='lpf' %}" ref="lpf">Linked Places format</a> -->
                     {% if links_added > 0 or geoms_added > 0 %} (augmented){% endif %}<span id="file_lpf" class="ml-1"></span>
                 {% if links_added > 0 or geoms_added > 0 and current_file.format == 'delimited' %}<br/>
                   <!--<a href="{ url 'datasets:dl-aug' id=ds.id format='tsv' %}" ref="tsv">TSV</a>-->
@@ -270,12 +273,12 @@
               {% endif %}
               <!-- media/user_whgadmin/curacao_wdaligned_aug_20210629_214215.json -->
             </p>
-          </div>
+          </div> <!-- ds_downloads -->
           {% endif %}
-          <div id="dl_files" class="pt-0 px-0 ds-card hidden">
-          <p class="ds-card-header">Downloads</p>
-          <p id="dl_result"><a href="/media/user_whgadmin/curacao_wdaligned_aug_20210629_214215.json" download>save file</a></p>
+          <div class='progress-wrapper'>
+            <div id='progress-bar' class='progress-bar' style="background-color: #68a9ef; width: 0%;">&nbsp;</div>
           </div>
+          <div id="progress-bar-message">Waiting for progress to start...</div>       
         </div> <!-- ds_info -->
       </div> <!-- ds_details -->
       </div> <!-- row -->
@@ -331,25 +334,6 @@ js for Summary, Reconciliation
   // activate all tooltips
   $("[rel='tooltip']").tooltip();
 
-  dl = function(dsid, format){
-    console.log('dl()',dsid, format)
-    // 2, 'lpf'
-    console.time('dl')
-    <!--urly='/datasets/'+dsid+'/augmented/'+format-->
-    urly='/datasets/986/augmented/lpf'
-    startDownloadSpinner()
-    $.ajax({
-        type: 'POST',
-        url: urly,
-        headers: {'X-CSRFToken': csrftoken},
-        mode: 'same-origin'
-      }).done(function(result) {
-        console.log('result',result)
-        spinner_dl.stop();
-        console.timeEnd('dl')  
-      }) 
-  }
-
   dater = function(){
     const date = new Date(Date.now());
     return date.toISOString().substring(0,10)
@@ -359,7 +343,7 @@ js for Summary, Reconciliation
   // builds file, saves to user folder, returns data w/o displaying, creates download link
   $("#ds_downloads a").click(function(e){
     e.preventDefault()
-    console.time({{ds.label}})
+    console.time('dl')
     format = $(this).attr('ref')
     console.log('building '+format+' file')
     urly='/datasets/{{ds.id}}/augmented/'+format
@@ -374,10 +358,23 @@ js for Summary, Reconciliation
                   '" download><span class="dl-save">save</span></a> ]'
         el = format=='lpf'?$("#file_lpf"):$("#file_tsv")
         el.html(link)
-        console.timeEnd({{ds.label}})  
+        console.timeEnd('dl')  
       })
   })
-    
+
+  <!--function customResult(resultElement, result) {-->
+    <!--$("#progress-bar-message").html(-->
+      <!--$('<p>').text('Sum of all seconds is ' + result)-->
+    <!--);-->
+  <!--}    -->
+  <!--$(function(){-->
+    <!--// celery_progress-->
+    <!--<!--var progressUrl = "{ url 'celery_progress:task_status' task_id %}";-->-->
+    <!--CeleryProgressBar.initProgressBar(progressUrl, {-->
+      <!--onResult: customResult,-->
+    <!--})  -->
+  <!--}-->
+  
   $("#a_update_modal").on('click', function(e){
     console.log('clicked update')
     if('{{ current_file.format }}' != 'delimited'){ 

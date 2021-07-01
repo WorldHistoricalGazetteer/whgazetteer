@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     # 3rd party
     'bootstrap_modal_forms',
     'captcha',
+    'celery_progress',
     'django_celery_results',
     'django_extensions',
     'django_filters',
