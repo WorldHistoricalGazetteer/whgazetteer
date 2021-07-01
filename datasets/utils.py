@@ -56,7 +56,7 @@ def download_file(request, *args, **kwargs):
 #@shared_task
 
 def download_augmented(request, *args, **kwargs):
-  progress_recorder = ProgressRecorder(self)
+  #progress_recorder = ProgressRecorder(self)
   from django.db import connection
   print('download_augmented kwargs',kwargs)
   print('download_augmented request',request)
