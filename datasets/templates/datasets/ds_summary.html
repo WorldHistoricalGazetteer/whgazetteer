@@ -261,12 +261,12 @@
               <!--{ if links_added > 0 or geoms_added > 0 %} (augmented){ endif %}-->
               {% if ds.numrows <= 20000 %}
                   <!--<a href="{ url 'datasets:dl-aug' id=ds.id format='lpf' %}" ref="lpf">Linked Places format</a>-->
-                  <a href="#" ref="lpf">Linked Places format</a> 
+                  <a class="a-dl" href="#" ref="lpf">Linked Places format (ajax)</a> 
                   <!--<a href="{ url 'datasets:progressive' pk=ds.id format='lpf' %}" ref="lpf">Linked Places format</a> -->
                     {% if links_added > 0 or geoms_added > 0 %} (augmented){% endif %}<span id="file_lpf" class="ml-1"></span>
                 {% if links_added > 0 or geoms_added > 0 and current_file.format == 'delimited' %}<br/>
-                  <!--<a href="{ url 'datasets:dl-aug' id=ds.id format='tsv' %}" ref="tsv">TSV</a>-->
-                  <a href="#" ref="tsv">LP-TSV</a> (augmented)<span id="file_tsv" class="ml-1"></span>
+                  <a href="{% url 'datasets:dl-aug' id=ds.id format='tsv' %}" ref="tsv">LP-TSV (augmented)</a>
+                  <!--<a class="a-dl" href="#" ref="tsv">LP-TSV (ajax)</a> (augmented)<span id="file_tsv" class="ml-1"></span>-->
                 {% endif %}
               {% else %}  
                 <span class="red-head"><br/>Download of augmented datasets larger than 20,000 rows not supported right now.</span>
@@ -339,9 +339,10 @@ js for Summary, Reconciliation
     return date.toISOString().substring(0,10)
   }
   
-  
+  clearEl = function(el){ el.html('')}
   // builds file, saves to user folder, returns data w/o displaying, creates download link
-  $("#ds_downloads a").click(function(e){
+  // download link
+  $(".a-dl").click(function(e){
     e.preventDefault()
     console.time('dl')
     format = $(this).attr('ref')
@@ -354,12 +355,18 @@ js for Summary, Reconciliation
       }).done(function(response) {
         spinner_dl.stop();
         now = Date.now()
-        link = '[ <a href="'+response.filename+'" title="downloaded: '+dater()+
-                  '" download><span class="dl-save">save</span></a> ]'
+        console.log('response',response)
+        link = '[ <span class="dl-save"><a href="'+response.filename+'" title="downloaded: '+dater()+
+                  '" download>save</a></span> ]'
         el = format=='lpf'?$("#file_lpf"):$("#file_tsv")
         el.html(link)
-        console.timeEnd('dl')  
+        console.timeEnd('dl')
+        $(".dl-save a")[0].click()
+        <!--setTimeout(clearEl(el), 1000)-->
       })
+      <!--el.html('')-->
+        // open file/save dialog
+      <!--$("#file_lpf a")[0].click()-->
   })
 
   <!--function customResult(resultElement, result) {-->

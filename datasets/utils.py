@@ -40,21 +40,6 @@ def download_file(request, *args, **kwargs):
 
   return response
 
-# initiates a task needing a progress bar
-#def progress_view(request, *args, **kwargs):
-  #print('progress_view()') 
-  #print('request',request.GET)
-  #print('args, kwargs', args, kwargs)
-  #pk = kwargs['pk']
-  ##format = kwargs['format']
-  #result = download_augmented.delay(10)
-  #print('started download') 
-  #return redirect(request, '/datasets/'+str(pk)+'/summary',context={'task_id': result.task_id})
-  #return render(request, 'display_progress.html', context={'task_id': result.task_id})
-#
-# returns file in original format w/any new geoms, links
-#@shared_task
-
 def download_augmented(request, *args, **kwargs):
   #progress_recorder = ProgressRecorder(self)
   from django.db import connection
@@ -130,7 +115,7 @@ def download_augmented(request, *args, **kwargs):
     fn = 'media/user_'+user+'/'+ds.label+'_aug_'+date+'.json'
     result={"type":"FeatureCollection","features":[],
             "@context": "https://raw.githubusercontent.com/LinkedPasts/linked-places/master/linkedplaces-context-v1.1.jsonld",
-            "filename": fn}
+            "filename": "/"+fn}
     print('augmented lpf template', result)
     with open(fn, 'w', encoding='utf-8') as outfile:
       with connection.cursor() as cursor:
