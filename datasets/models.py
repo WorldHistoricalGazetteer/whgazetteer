@@ -87,8 +87,10 @@ class Dataset(models.Model):
     return json.loads(gc.envelope.geojson)
 
   @property
-  def filesize(self):
-    return self.files.all().order_by('id')[0].file.size
+  def file(self):
+    # returns model instance
+    file = self.files.all().order_by('id')[0]
+    return file 
   
   @property
   def tasks(self):

@@ -2165,9 +2165,9 @@ class DatasetSummaryView(LoginRequiredMixin, UpdateView):
     # coming from DatasetCreateView(),
     # insert to db immediately (file.df_status == format_ok) 
     # most recent data file
-    file = ds.files.all().order_by('-rev')[0]
-    print('file.df_status',file.df_status)
+    file = ds.file
     if file.df_status == 'format_ok':
+      #print('file.df_status',file.df_status)      
       print('format_ok , inserting dataset '+str(id_))
       if file.format == 'delimited':
         result = ds_insert_tsv(self.request, id_)
@@ -2192,11 +2192,12 @@ class DatasetSummaryView(LoginRequiredMixin, UpdateView):
     context['collaborators'] = ds.collabs.all()
     context['owners'] = ds.owners
 
-    # latest file
-    context['current_file'] = file
-    context['format'] = file.format
-    context['numrows'] = file.numrows
-    context['filesize'] = round(file.file.size/1000000, 1)
+    # excludes datasets uploaded directly (1 & 2)
+    if file.file:
+      context['current_file'] = file
+      context['format'] = file.format
+      context['numrows'] = file.numrows
+      context['filesize'] = round(file.file.size/1000000, 1)
     
     # initial (non-task)
     context['num_names'] = PlaceName.objects.filter(place_id__in = placeset).count()
