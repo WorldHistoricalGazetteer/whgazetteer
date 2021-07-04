@@ -257,9 +257,34 @@
           {% if user.is_superuser or user in owners %}
             <!-- new -->          
             <div id="ds_downloads_ajax" class="pt-0 px-0 ds-card">
-              <p class="ds-card-header">Downloads (augmented) {% fontawesome_icon 'download'%}</p>
-              <p class="m-0 pl-2 pr-2">new stuff here</p>
+              <p class="ds-card-header" style="background:cornsilk;">Downloads (augmented) {% fontawesome_icon 'download'%}</p>
+              {% if links_added > 0 or geoms_added > 0 %} <!-- dataset is augmented-->
+                <p class="m-0 px-2">
+                  {% if ds.numrows <= 20000 %}
+                    <a class="a-dl" href="#" ref="lpf">Linked Places format</a> <sr>(OLD ajax)</sr><span id="file_lpf" class="ml-1"></span>
+                    {% if current_file.format == 'delimited' %}<br/>
+                        <a class="a-dl-celery" href="#" ref="tsv">LP-TSV</a> <sr>(NEW ajax::celery)</sr>
+                        <span id="file_tsv" class="ml-1"></span>
+                        <span id="tid" class="ml-1 strong text-danger"></span>
+                    {% endif %}
+                  {% else %}  
+                    <span class="red-head"><br/>Download of augmented datasets larger than 20,000 rows is not supported right now.</span>
+                  {% endif %}
+                </p>
+              {% else %} <!-- hasn't been augmented yet-->
+                <p class="m-0 px-2"><i>Dataset is not yet augmented</i></p>
+                {% if current_file.format == 'delimited' %}
+                  <p class="m-0 px-2">Linked Places format conversion (not augmented)</p>
+                {% endif %}
+              {% endif %}
+              <div class='progress-wrapper w-25' style="line-height:75%;">
+                <div id='progress-bar' class='progress-bar' style="background-color: #68a9ef; width: 0%;">&nbsp;</div>
+                <!--<div id='progress-bar' class='progress-bar' style="width: 20%;">&nbsp;</div>-->
+              </div>
+              <div id="progress-bar-message" class="hidden">Waiting for progress to start...</div>
+              <div id="celery-result">#celery-result</div>
             </div> <!-- ds_downloads_ajax -->
+            
             <!-- old -->                      
             <div id="ds_downloads" class="pt-0 px-0 ds-card">
               <p class="ds-card-header">Downloads (augmented)</p>
@@ -347,8 +372,60 @@ js for Summary, Reconciliation
     return date.toISOString().substring(0,10)
   }
   
-  clearEl = function(el){ el.html('')}
+  clearEl = function(el){ 
+    $("#progress-bar").fadeOut()
+    el.html('')
+  }
   // builds file, saves to user folder, returns data w/o displaying, creates download link
+  function customResult(resultElement, result) {
+    console.log('celery result',result)
+    console.log('celery resultElement',resultElement)
+    spinner_dl.stop()
+    fn = result.filename
+    link = '[ <span class="dl-save"><a href="/'+fn+'" title="downloaded: '+dater()+
+              '" download>save</a></span> ]'    
+    $( resultElement ).append(
+      $('<p>').html('LP-TSV written to ' + link)
+    );
+    $(".dl-save a")[0].click()
+    setTimeout(clearEl($("#celery-result")), 1000)
+  }    
+  
+  // -> views_dl.downloader()
+  $(".a-dl-celery").click(function(e){
+    e.preventDefault()
+    <!--startDownloadSpinner()-->
+    console.log('sending post')
+    console.time('dl')
+    format = $(this).attr('ref')
+    dsid = '{{ ds.id }}'
+    console.log('send to downloader()')
+    urly='/datasets/dlcelery/'
+    window.task_id = 'dummy-123-49506-fubar-29384'
+    $.ajax({
+        type: 'POST',
+        url: urly,
+        <!--beforeSend: function(){spinner_dl.stop()},-->
+        data: {
+          "format":format, 
+          "dsid":dsid, 
+          "csrfmiddlewaretoken":"{{ csrf_token }}"},
+        datatype:'json',
+        success:function(response){
+          startDownloadSpinner()
+          console.log('got task_id',response)
+          $("#tid").html(response.task_id)
+          task_id = response.task_id
+          var progressUrl = "/celery-progress/"+task_id+"/";
+          CeleryProgressBar.initProgressBar(progressUrl,
+            { pollingInterval: 1000,
+              onResult: customResult,
+              <!--progressBarElement: "tid"-->
+            }
+          )
+        }
+      })
+  })  
   // download link
   $(".a-dl").click(function(e){
     e.preventDefault()
@@ -377,18 +454,6 @@ js for Summary, Reconciliation
       <!--$("#file_lpf a")[0].click()-->
   })
 
-  <!--function customResult(resultElement, result) {-->
-    <!--$("#progress-bar-message").html(-->
-      <!--$('<p>').text('Sum of all seconds is ' + result)-->
-    <!--);-->
-  <!--}    -->
-  <!--$(function(){-->
-    <!--// celery_progress-->
-    <!--<!--var progressUrl = "{ url 'celery_progress:task_status' task_id %}";-->-->
-    <!--CeleryProgressBar.initProgressBar(progressUrl, {-->
-      <!--onResult: customResult,-->
-    <!--})  -->
-  <!--}-->
   
   $("#a_update_modal").on('click', function(e){
     console.log('clicked update')

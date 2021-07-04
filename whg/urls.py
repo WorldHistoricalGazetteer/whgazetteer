@@ -1,18 +1,12 @@
-from django.contrib import admin
-from django.urls import path, re_path, include
 from django.conf.urls import url
 from django.conf.urls.static import static
 from django.conf import settings
+from django.contrib import admin
+from django.urls import path, re_path, include
+from django.views.generic.base import TemplateView
 
 from main import views
 from datasets.views import DashboardView, PublicListsView
-
-from django.views.generic.base import TemplateView
-from django.conf import settings
-from django.contrib import admin
-from django.urls import include, path
-
-
 
 app_name='main'
 urlpatterns = [
@@ -54,7 +48,8 @@ urlpatterns = [
     #path('accounts/', include('accounts.urls')),
     path('admin/', admin.site.urls),
     path('captcha/', include('captcha.urls')),
-    #re_path(r'^celery-progress/', include('celery_progress.urls')),  # the endpoint is configurable
+    
+    re_path(r'^celery-progress/', include('celery_progress.urls')),  # the endpoint is configurable
 
 ] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
 

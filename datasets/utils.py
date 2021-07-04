@@ -6,8 +6,8 @@ from django.views.generic import View
 
 import codecs, csv, datetime, sys, openpyxl, os, pprint, re, time
 import simplejson as json
-from celery import task, shared_task
-from celery_progress.backend import ProgressRecorder
+#from celery import task, shared_task
+#from celery_progress.backend import ProgressRecorder
 from chardet import detect
 from django_celery_results.models import TaskResult
 from frictionless import validate as fvalidate
@@ -19,6 +19,7 @@ from areas.models import Country
 from datasets.models import Dataset, DatasetUser, Hit
 from datasets.static.hashes import aat, parents, aat_q
 from datasets.static.hashes import aliases as al
+#from datasets.tasks import make_download
 from main.models import Log
 from places.models import PlaceGeom
 pp = pprint.PrettyPrinter(indent=1)
@@ -33,7 +34,8 @@ pp = pprint.PrettyPrinter(indent=1)
 def downloader(request, *args, **kwargs):
   print('request.user', request.user)
   print('kwargs', kwargs)
-
+  from datasets.tasks import make_download
+  # *should* be the only case...
   if request.method == 'POST' and request.is_ajax:
     print('ajax == True')
     print('request.POST (ajax)', request.POST)
@@ -50,30 +52,30 @@ def downloader(request, *args, **kwargs):
     
   elif request.method == 'POST' and not request.is_ajax:
     print('request.POST (not ajax)', request.POST)
-    # Get form instance
-    form = DownloadForm(request.POST)
-    #print('cleaned_data', form.cleaned_data)
-    if form.is_valid():
-      # Retrieve URL from form data
-      dsid = form.cleaned_data['dsid']
-      format = form.cleaned_data['format']
-      # Create Task
-      download_task = make_download.delay({"username":request.user.username},
-        dsid=dsid,
-        format=format,
-      )
-      # Get ID
-      task_id = download_task.task_id
-      return render(request, 'datasets/dl.html', {'form': form, 'task_id': task_id})
-    else:
-      print('form is not valid', form.cleaned_data)
+    ## Get form instance
+    #form = DownloadForm(request.POST)
+    ##print('cleaned_data', form.cleaned_data)
+    #if form.is_valid():
+      ## Retrieve URL from form data
+      #dsid = form.cleaned_data['dsid']
+      #format = form.cleaned_data['format']
+      ## Create Task
+      #download_task = make_download.delay({"username":request.user.username},
+        #dsid=dsid,
+        #format=format,
+      #)
+      ## Get ID
+      #task_id = download_task.task_id
+      #return render(request, 'datasets/dl.html', {'form': form, 'task_id': task_id})
+    #else:
+      #print('form is not valid', form.cleaned_data)
 
   elif request.method == 'GET':
     print('request.GET', request.GET)
-    # Get form instance
-    form = DownloadForm()
-    # Return demo view
-    return render(request, 'datasets/dl.html', {'form': form})
+    ## Get form instance
+    #form = DownloadForm()
+    ## Return demo view
+    #return render(request, 'datasets/dl.html', {'form': form})
 
 
 """ works (marginally, 3 July; being superceded """
@@ -700,13 +702,16 @@ def maketime():
   ts = time.time()
   sttime = datetime.datetime.fromtimestamp(ts).strftime('%Y%m%d_%H%M%S')
   return sttime
+#
 def myprojects(me):
   return DatasetUser.objects.filter(user_id_id=me.id).values_list('dataset_id_id')
+#
 def parsejson(value,key):
   """returns value for given key"""
   print('parsejson() value',value)
   obj = json.loads(value.replace("'",'"'))
   return obj[key]
+#
 def makeCoords(lonstr,latstr):
   #print(type(lonstr),latstr)
   lon = float(lonstr) if lonstr not in ['','nan'] else ''
@@ -733,7 +738,7 @@ def ccodesFromGeom(geom):
     ccodes = [c.iso for c in qs]
     return ccodes
     #print(ccodes)
-
+#
 def elapsed(delta):
   minutes, seconds = divmod(delta.seconds, 60)
   return '{:02}:{:02}'.format(int(minutes), int(seconds))

@@ -1,15 +1,16 @@
 # celery reconciliation tasks [align_tgn(), align_wdlocal(), align_idx(), align_whg] and related functions
 from __future__ import absolute_import, unicode_literals
-from celery.decorators import task # this is @task decorator
+#from celery.decorators import task # this is @task decorator
+from celery import task # this is @task decorator
 from django_celery_results.models import TaskResult
-from django.conf import settings
+#from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
-from django.contrib.gis.geos import Polygon, Point, LineString
+#from django.contrib.gis.geos import Polygon, Point, LineString
 
-import  datetime, itertools, json, re, sys #, codecs, time, csv, random, os
+import  datetime, itertools, json, re, sys, codecs, csv, time, csv# random, os
 from copy import deepcopy
 from itertools import chain
 #from pprint import pprint
@@ -17,9 +18,11 @@ from areas.models import Area
 from datasets.models import Dataset, Hit
 from datasets.static.hashes.parents import ccodes as cchash
 from datasets.static.hashes.qtypes import qtypes
-from datasets.utils import *
 from elastic.es_utils import makeDoc, build_qobj, profileHit
-from places.models import Place
+#from datasets.task_utils import *
+from datasets.utils import maketime, HitRecord, bestParent, post_recon_update, getQ, parse_wkt, hully, elapsed
+
+#from places.models import Place
 ##
 from elasticsearch import Elasticsearch
 es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
@@ -93,11 +96,6 @@ def make_download(request, *args, **kwargs):
     # if ajax, just 
     completed_message = {"msg":"tsv written", "filename":fn, "rows":len(features), "header":header}
     return completed_message
-  
-    #response = {"dsid": ds.id, "format": ds.format, "rows": len(features)}
-    #response = FileResponse(ContentFile(open(fn, 'rb')), content_type='text/csv')
-    #response = FileResponse(open(fn, 'rb'), content_type='text/csv')
-    #response['Content-Disposition'] = 'attachment; filename="'+os.path.basename(fn)+'"'
 
 
 @task(name="task_emailer")
@@ -113,7 +111,7 @@ def task_emailer(tid, dslabel, username, email, counthit, totalhits):
       fail_msg = task.result['exc_message']
       text_content="Greetings "+username+"! Unfortunately, your "+tasklabel+" reconciliation task has completed with status: "+ \
         task.status+". \nError: "+fail_msg+"\nWHG staff have been notified. We will troubleshoot the issue and get back to you."
-      html_content_fail="<h3>Greetings, "+username+"</h3> <p>Unfortunately, your <b>"+tasklabel+"</b> reconciliation task for the <b>"+ds.label+"</b> dataset has completed with status: "+ task.status+".</p><p>Error: "+fail_msg+". WHG staff have been notified. We will troubleshoot the issue and get back to you soon.</p>"
+      html_content_fail="<h3>Greetings, "+username+"</h3> <p>Unfortunately, your <b>"+tasklabel+"</b> reconciliation task for the <b>"+dslabel+"</b> dataset has completed with status: "+ task.status+".</p><p>Error: "+fail_msg+". WHG staff have been notified. We will troubleshoot the issue and get back to you soon.</p>"
     else:
       text_content="Greetings "+username+"! Your "+tasklabel+" reconciliation task has completed with status: "+ \
         task.status+". \n"+str(counthit)+" records got a total of "+str(totalhits)+" hits.\nRefresh the dataset page and view results on the 'Reconciliation' tab."
@@ -383,8 +381,8 @@ def normalize(h, auth, language=None):
 
       # countries
       rec.ccodes = [
-        ccodes[0][c]['gnlabel'] for c in ccodes[0] \
-          if ccodes[0][c]['wdid'] in h['claims']['P17']
+        cchash[0][c]['gnlabel'] for c in cchash[0] \
+          if cchash[0][c]['wdid'] in h['claims']['P17']
       ]
       
       # include en + native lang if not en
