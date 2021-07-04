@@ -25,6 +25,81 @@ from elasticsearch import Elasticsearch
 es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 ##
 
+""" 
+  called by utils.downloader()
+  builds download file, retrieved via ajax JS in dl_summary.html 
+"""
+@task(name="make_download")  
+def make_download(request, *args, **kwargs):
+  user = request['username']
+  req_format = kwargs['format']
+  dsid = kwargs['dsid']
+  
+  ds=Dataset.objects.get(pk=dsid)
+  dslabel = ds.label
+  features=ds.places.all().order_by('id')
+
+  date=maketime()
+  print("tasks.make_download()", {"format": req_format, "ds": dsid})
+  
+  if ds.format == 'delimited' and req_format in ['tsv', 'delimited']:
+    print('making a tsv file')
+    #header_og = ds.files.all().order_by('id')[0].header
+    # make file name
+    fn = 'media/downloads/'+user+'_'+dslabel+'_'+date+'.tsv'
+
+    # gather link augments
+    def augLinks(linklist):
+      aug_links = []
+      for l in linklist:
+        aug_links.append(l.jsonb['identifier'])
+      return ';'.join(aug_links)
+    
+    # gather geometry augments
+    # TODO: account for geowkt case 
+    def augGeom(qs_geoms):
+      gobj = {'new':[]}
+      for g in qs_geoms:
+        if not g.task_id:
+          # it's an original
+          gobj['lonlat'] = g.jsonb['coordinates']
+        else:
+          # it's an aug/add
+          gobj['new'].append({"id":g.jsonb['citation']['id'],"coordinates":g.jsonb['coordinates']})
+      return gobj
+
+    # open file, write rows with csv
+    with open(fn, 'w', newline='', encoding='utf-8') as csvfile:
+      writer = csv.writer(csvfile, delimiter='\t', quotechar='', quoting=csv.QUOTE_NONE)
+      # TODO: use header_og to make proper LP-TSV
+      header = ['id','whg_pid','title','ccodes','lon','lat','added','matches']
+      writer.writerow(header)
+      for f in features:
+        geoms = f.geoms.all()
+        gobj = augGeom(geoms)
+        #print('gobj',f.id, gobj)
+        row = [str(f.src_id),
+               str(f.id),
+               f.title,
+               ';'.join(f.ccodes),
+               gobj['lonlat'][0] if 'lonlat' in gobj else None,
+               gobj['lonlat'][1] if 'lonlat' in gobj else None,
+               gobj['new'] if 'new' in gobj else None,
+               str(augLinks(f.links.all()))
+               ]
+        writer.writerow(row)
+        #progress_recorder.set_progress(i + 1, len(features), description="tsv progress")
+    print('file complete:', fn)
+    # if ajax, just 
+    completed_message = {"msg":"tsv written", "filename":fn, "rows":len(features), "header":header}
+    return completed_message
+  
+    #response = {"dsid": ds.id, "format": ds.format, "rows": len(features)}
+    #response = FileResponse(ContentFile(open(fn, 'rb')), content_type='text/csv')
+    #response = FileResponse(open(fn, 'rb'), content_type='text/csv')
+    #response['Content-Disposition'] = 'attachment; filename="'+os.path.basename(fn)+'"'
+
+
 @task(name="task_emailer")
 def task_emailer(tid, dslabel, username, email, counthit, totalhits):
   print('emailer tid, dslabel, username, email, counthit, totalhits',tid, dslabel, username, email, counthit, totalhits)
