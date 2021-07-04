@@ -1,10 +1,13 @@
-# celery reconciliation tasks [align_tgn(), align_wdlocal(), align_idx(), align_whg] and related functions
+# celery tasks for reconciliation and downloads
+# align_tgn(), align_wdlocal(), align_idx(), align_whg, make_download
 from __future__ import absolute_import, unicode_literals
 #from celery.decorators import task # this is @task decorator
 from celery import task # this is @task decorator
+#from celery_progress.backend import ProgressRecorder
 from django_celery_results.models import TaskResult
 #from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
+from django.db import connection
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
@@ -34,6 +37,8 @@ es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 """
 @task(name="make_download")  
 def make_download(request, *args, **kwargs):
+#def make_download(self, *args, **kwargs):
+  #progress_recorder = ProgressRecorder(self) #accessed?
   user = request['username']
   req_format = kwargs['format']
   dsid = kwargs['dsid']
@@ -77,7 +82,9 @@ def make_download(request, *args, **kwargs):
       # TODO: use header_og to make proper LP-TSV
       header = ['id','whg_pid','title','ccodes','lon','lat','added','matches']
       writer.writerow(header)
+      counter = 0
       for f in features:
+        counter +=1
         geoms = f.geoms.all()
         gobj = augGeom(geoms)
         #print('gobj',f.id, gobj)
@@ -91,12 +98,107 @@ def make_download(request, *args, **kwargs):
                str(augLinks(f.links.all()))
                ]
         writer.writerow(row)
-        #progress_recorder.set_progress(i + 1, len(features), description="tsv progress")
-    print('file complete:', fn)
-    # if ajax, just 
+        #progress_recorder.set_progress(counter + 1, len(features), description="tsv progress")
+    print('tsv file complete:', fn)
+
+    # for ajax, just a report
     completed_message = {"msg":"tsv written", "filename":fn, "rows":len(features), "header":header}
     return completed_message
+  
+  else:
+    print('building lpf file')
+    # make file name
+    fn = 'media/downloads/'+user+'_'+dslabel+'_'+date+'.json'
+    url_prefix='http://whgazetteer.org/api/place/'
+    result={"type":"FeatureCollection","features":[],
+            "@context": "https://raw.githubusercontent.com/LinkedPasts/linked-places/master/linkedplaces-context-v1.1.jsonld",
+            "filename": "/"+fn}
+    #print('augmented lpf template', result)
+    # TODO: should be a better django-ish method
+    with open(fn, 'w', encoding='utf-8') as outfile:
+      with connection.cursor() as cursor:
+        cursor.execute("""with namings as 
+          (select place_id, jsonb_agg(jsonb) as names from place_name pn 
+          where place_id in (select id from places where dataset = '{ds}')
+          group by place_id ),
+          placetypes as 
+          (select place_id, jsonb_agg(jsonb) as "types" from place_type pt 
+          where place_id in (select id from places where dataset = '{ds}')
+          group by place_id ),
+          placelinks as 
+          (select place_id, jsonb_agg(jsonb) as links from place_link pl 
+          where place_id in (select id from places where dataset = '{ds}')
+          group by place_id ),
+          geometry as 
+          (select place_id, jsonb_agg(jsonb) as geoms from place_geom pg 
+          where place_id in (select id from places where dataset = '{ds}')
+          group by place_id ),
+          placewhens as
+          (select place_id, jsonb as whenobj from place_when pw 
+          where place_id in (select id from places where dataset = '{ds}')),
+          placerelated as
+          (select place_id, jsonb_agg(jsonb) as rels from place_related pr 
+          where place_id in (select id from places where dataset = '{ds}')
+          group by place_id ),
+          descriptions as
+          (select place_id, jsonb_agg(jsonb) as descrips from place_description pdes 
+          where place_id in (select id from places where dataset = '{ds}')
+          group by place_id ),
+          depictions as
+          (select place_id, jsonb_agg(jsonb) as depicts from place_depiction pdep 
+          where place_id in (select id from places where dataset = '{ds}')
+          group by place_id )	
+          select jsonb_build_object(
+            'type','Feature',
+            '@id', p.src_id,
+            'properties', jsonb_build_object(
+                'pid', '{urlpre}'||p.id,
+                'title', p.title),
+            'names', n.names,
+            'types', coalesce(pt.types, '[]'),
+            'links', coalesce(pl.links, '[]'),
+            'geometry', case when g.geoms is not null 
+                then jsonb_build_object(
+                'type','GeometryCollection',
+                'geometries', g.geoms)
+                else jsonb_build_object(
+                'type','Point','coordinates','{a}'::char[])
+                end,
+            'when', pw.whenobj,
+            'relations',coalesce(pr.rels, '[]'),
+            'descriptions',coalesce(pdes.descrips, '[]'),
+            'depictions',coalesce(pdep.depicts, '[]')
+          ) from places p 
+          left join namings n on p.id = n.place_id
+          left join placetypes pt on p.id = pt.place_id
+          left join placelinks pl on p.id = pl.place_id
+          left join geometry g on p.id = g.place_id
+          left join placewhens pw on p.id = pw.place_id
+          left join placerelated pr on p.id = pr.place_id
+          left join descriptions pdes on p.id = pdes.place_id
+          left join depictions pdep on p.id = pdep.place_id
+          where dataset = '{ds}'        
+        """.format(urlpre=url_prefix, ds=dslabel, a='{}'))
+        for row in cursor:
+          g = row[0]['geometry']
+          # get rid of empty/unknown geometry
+          if g['type'] != 'GeometryCollection' and g['coordinates'] == []:
+            row[0].pop('geometry')
+          result['features'].append(row[0])
+          #progress_recorder.set_progress(i + 1, len(features), description="lpf progress")
+        outfile.write(json.dumps(result,indent=2))
+    print('tsv file complete:', fn)
 
+    # for ajax, just a report
+    completed_message = {"msg":"tsv written", "filename":fn, "rows":len(features)}
+    return completed_message
+        
+    ## response is reopened file
+    #response = FileResponse(open(fn, 'rb'), content_type='text/json')
+    ##response = HttpResponse(open(fn, 'rb'), content_type='text/json')
+    #response['Content-Disposition'] = 'attachment; filename="'+os.path.basename(fn)+'"'
+
+    #return response
 
 @task(name="task_emailer")
 def task_emailer(tid, dslabel, username, email, counthit, totalhits):

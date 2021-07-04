@@ -650,7 +650,6 @@ em { color: #993333;}
   margin-bottom: .5rem;
 }
 .dl-blurb p {font-size:.8rem; margin-bottom: .3rem;}
-.ds-card p{ margin-bottom: .3rem;}
 .ds_title { font-weight:600; color:#993333;}
 .ds_fields p { font-size: .8rem;}
 .fa-download { cursor: pointer; color:#336699;}
@@ -834,6 +833,8 @@ em { color: #993333;}
   /*overflow-y:scroll;*/
   box-shadow: 1px 1px #eee;}
 .ds-card-header {display:block; background-color:#eee; margin:0; padding-left:8px; font-weight:700;}
+.ds-card p { margin:0 0 .3rem 0; padding: 0 .5rem;}
+
 #ds_stats th { font-weight:400; font-style: italic; }
 #browse { width:100% !important; height:auto !important; }
 #ds_form .row {padding-right:4px;}

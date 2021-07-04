@@ -49,7 +49,7 @@
       <form id="ds_form" method="POST" action="#" enctype="multipart/form-data">
       {% csrf_token %}
       <div class="row">
-      <div id="ds_details" class="col-sm-8 small">
+      <div id="ds_details" class="col-sm-7 small">
       {% if object.owner.id == user.id or user.is_superuser %}
         <span class="float-right">
           Delete dataset <a href="{% url 'datasets:dataset-delete' ds.id %}" class="" title="Delete dataset" rel="tooltip">{% fontawesome_icon 'trash' color='#ff0000' %}</a></span>
@@ -225,7 +225,7 @@
         <input type="hidden" name="header" value="{{ current_file.header }}">
         <input type="hidden" name="numrows" value="{{ current_file.numrows }}">
       </div>
-      <div class="col-sm-4 small">
+      <div class="col-sm-5 small">
         <div id="ds_info">
           <div id="ds_stats" class="ds-card">
             <table style="width:100%">
@@ -250,46 +250,49 @@
                 <td class="text-secondary">n/a</td></tr>{% endif %}
             </table>
           </div>
-          <div id="ds_access" class="pt-0 px-0 ds-card hidden">
+          <div id="ds_access" class="pt-0 px-0 ds-card">
             <p class="ds-card-header">Collaboration</p>
             <p class="m-0 pl-2 pr-2">This screen, and the tasks made available here, are initially accessible only to the dataset "owner" - the user who created the record by uploading a dataset file. Dataset owners can then grant "co-owner" and/or "member" permissions to other registered users under the <a href="{% url 'datasets:ds_collab' ds.id %}">Collaborators</a> tab.</p>
           </div>
           {% if user.is_superuser or user in owners %}
             <!-- new -->          
             <div id="ds_downloads_ajax" class="pt-0 px-0 ds-card">
-              <p class="ds-card-header" style="background:cornsilk;">Downloads (augmented) {% fontawesome_icon 'download'%}</p>
+              <p class="ds-card-header">
+                Downloads (augmented data) {% fontawesome_icon 'download'%}
+                <span id='progress-bar' class='progress-bar' style="background-color: #68a9ef; width: 0%; line-height:.5rem;">&nbsp;</span>
+              </p>
               {% if links_added > 0 or geoms_added > 0 %} <!-- dataset is augmented-->
-                <p class="m-0 px-2">
-                  {% if ds.numrows <= 20000 %}
-                    <a class="a-dl" href="#" ref="lpf">Linked Places format</a> <sr>(OLD ajax)</sr><span id="file_lpf" class="ml-1"></span>
-                    {% if current_file.format == 'delimited' %}<br/>
-                        <a class="a-dl-celery" href="#" ref="tsv">LP-TSV</a> <sr>(NEW ajax::celery)</sr>
-                        <span id="file_tsv" class="ml-1"></span>
-                        <span id="tid" class="ml-1 strong text-danger"></span>
-                    {% else %}
-                      <br/><i>LP-TSV conversion not possible. <a id="conversion_help" class="pointer" data-toggle="popover" title="LPF download options" data-content="<p>Data initially loaded as Linked Places format (LPF) has one to many relations that can't be converted to simple TSV files.</p>" tabindex="0" data-trigger="focus" data-original-title="">
-              <i title="" class="fa fa-question-circle" style="color:#336699;"></i></a>
-                      <br/>new ajax call for LPF will go here</i>
-                    {% endif %}
-                  {% else %}  
-                    <span class="red-head"><br/>Download of augmented datasets larger than 20,000 rows is not supported right now.</span>
+                {% if ds.numrows <= 20000 %}
+                  <!--<p>-->
+                    <!--<a class="a-dl" href="#" ref="lpf">Linked Places format</a> <sr>(OLD ajax)</sr>-->
+                      <!--<span id="file_lpf" class="ml-1"></span></p>-->
+                  <p>
+                    <a class="a-dl-celery" href="#" ref="lpf">Linked Places format</a> <!--<sr>(NEW ajax::celery)</sr>-->
+                      <span id="file_lpf" class="ml-1"></span></p>
+                  {% if current_file.format == 'delimited' %}
+                    <p><a class="a-dl-celery" href="#" ref="tsv">LP-TSV</a> <sr>(NEW ajax::celery)</sr>
+                        <span id="file_tsv" class="ml-1"></span></p>
+                  {% else %}
+                    <p class="mt-2"><i>LP-TSV conversion is not possible for this LPF dataset. <a id="conversion_help" class="pointer" data-toggle="popover" title="LPF download options" data-content="<p>Data initially loaded in Linked Places format (LPF) has one&#8209;to&#8209;many relations that can't be converted to simple TSV files.</p>" tabindex="0" data-trigger="focus" data-original-title=""><i title="" class="fa fa-question-circle" style="color:#336699;"></i></a></i></p>
                   {% endif %}
-                </p>
+                {% else %}  
+                  <span class="red-head"><br/>Download of augmented datasets larger than 20,000 rows is not supported right now.</span>
+                {% endif %}
               {% else %} <!-- hasn't been augmented yet-->
-                <p class="m-0 px-2"><i>Dataset is not yet augmented</i></p>
+                <p><i>Dataset is not yet augmented</i></p>
                 {% if current_file.format == 'delimited' %}
-                  <p class="m-0 px-2">Linked Places format conversion (not augmented)</p>
+                  <p>Linked Places format conversion (not augmented)</p>
                 {% endif %}
               {% endif %}
-              <div class='progress-wrapper w-25' style="line-height:75%;">
-                <div id='progress-bar' class='progress-bar' style="background-color: #68a9ef; width: 0%;">&nbsp;</div>
-                <!--<div id='progress-bar' class='progress-bar' style="width: 20%;">&nbsp;</div>-->
-              </div>
+              <!--<div class='progress-wrapper w-25' style="line-height:75%;">-->
+                <!--<div id='progress-bar' class='progress-bar' style="background-color: #68a9ef; width: 0%;">&nbsp;</div>-->
+              <!--</div>-->
               <div id="progress-bar-message" class="hidden">Waiting for progress to start...</div>
               <div id="celery-result"></div>
             </div> <!-- ds_downloads_ajax -->
             
-            <!-- old -->                      
+            <!-- old -->  
+            {% comment %}
             <div id="ds_downloads" class="pt-0 px-0 ds-card">
               <p class="ds-card-header">Downloads (augmented)</p>
               {% if links_added > 0 or geoms_added > 0 %} <!-- dataset is augmented-->
@@ -311,6 +314,7 @@
                 {% endif %}
               {% endif %}
             </div> <!-- ds_downloads -->
+            {% endcomment %}
           {% endif %} <!-- owner or superuser -->
           <!--<div class='progress-wrapper'>-->
             <!--<div id='progress-bar' class='progress-bar' style="background-color: #68a9ef; width: 0%;">&nbsp;</div>-->
@@ -392,7 +396,7 @@ js for Summary, Reconciliation
       $('<p>').html(link)
     );
     $(".dl-save a")[0].click()
-    <!--setTimeout(clearEl($("#celery-result")), 1000)-->
+    setTimeout(clearEl($("#celery-result")), 1000)
   }    
   
   // -> views_dl.downloader()

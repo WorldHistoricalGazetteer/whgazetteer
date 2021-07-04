@@ -1,13 +1,12 @@
 #from django.core import serializers
 from django.contrib.gis.geos import GEOSGeometry
 from django.http import FileResponse, JsonResponse, HttpResponse
-from django.shortcuts import get_object_or_404, render, redirect
+from django.shortcuts import get_object_or_404, render #, redirect
 from django.views.generic import View
 
 import codecs, csv, datetime, sys, openpyxl, os, pprint, re, time
 import simplejson as json
 #from celery import task, shared_task
-#from celery_progress.backend import ProgressRecorder
 from chardet import detect
 from django_celery_results.models import TaskResult
 from frictionless import validate as fvalidate
@@ -80,7 +79,6 @@ def downloader(request, *args, **kwargs):
 
 """ works (marginally, 3 July; being superceded """
 def download_augmented(request, *args, **kwargs):
-  #progress_recorder = ProgressRecorder(self)
   from django.db import connection
   print('download_augmented kwargs',kwargs)
   print('download_augmented request',request)
