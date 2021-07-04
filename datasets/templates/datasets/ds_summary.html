@@ -266,6 +266,10 @@
                         <a class="a-dl-celery" href="#" ref="tsv">LP-TSV</a> <sr>(NEW ajax::celery)</sr>
                         <span id="file_tsv" class="ml-1"></span>
                         <span id="tid" class="ml-1 strong text-danger"></span>
+                    {% else %}
+                      <br/><i>LP-TSV conversion not possible. <a id="conversion_help" class="pointer" data-toggle="popover" title="LPF download options" data-content="<p>Data initially loaded as Linked Places format (LPF) has one to many relations that can't be converted to simple TSV files.</p>" tabindex="0" data-trigger="focus" data-original-title="">
+              <i title="" class="fa fa-question-circle" style="color:#336699;"></i></a>
+                      <br/>new ajax call for LPF will go here</i>
                     {% endif %}
                   {% else %}  
                     <span class="red-head"><br/>Download of augmented datasets larger than 20,000 rows is not supported right now.</span>
