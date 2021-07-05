@@ -344,7 +344,6 @@
 js for Summary, Reconciliation
 -->
 <script type="text/javascript">
-  const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
   // activate all tooltips
   $("[rel='tooltip']").tooltip();
 
@@ -383,11 +382,9 @@ js for Summary, Reconciliation
     dsid = '{{ ds.id }}'
     console.log('send to downloader()')
     urly='/datasets/dlcelery/'
-    window.task_id = 'dummy-123-49506-fubar-29384'
     $.ajax({
         type: 'POST',
         url: urly,
-        <!--beforeSend: function(){spinner_dl.stop()},-->
         data: {
           "format":format, 
           "dsid":dsid, 
@@ -400,41 +397,14 @@ js for Summary, Reconciliation
           task_id = response.task_id
           var progressUrl = "/celery-progress/"+task_id+"/";
           CeleryProgressBar.initProgressBar(progressUrl,
-            { pollingInterval: 1000,
+            { pollingInterval: 500,
               onResult: customResult,
             }
           )
         }
       })
   })  
-  // download link
-  $(".a-dl").click(function(e){
-    e.preventDefault()
-    console.time('dl')
-    format = $(this).attr('ref')
-    console.log('building '+format+' file')
-    urly='/datasets/{{ds.id}}/augmented/'+format
-    startDownloadSpinner()
-    $.ajax({
-        type: 'GET',
-        url: urly
-      }).done(function(response) {
-        spinner_dl.stop();
-        now = Date.now()
-        console.log('response',response)
-        link = '[ <span class="dl-save"><a href="'+response.filename+'" title="downloaded: '+dater()+
-                  '" download>save</a></span> ]'
-        el = format=='lpf'?$("#file_lpf"):$("#file_tsv")
-        el.html(link)
-        console.timeEnd('dl')
-        $(".dl-save a")[0].click()
-        <!--setTimeout(clearEl(el), 1000)-->
-      })
-      <!--el.html('')-->
-        // open file/save dialog
-      <!--$("#file_lpf a")[0].click()-->
-  })
-
+ 
   
   $("#a_update_modal").on('click', function(e){
     console.log('clicked update')
@@ -573,6 +543,72 @@ js for Summary, Reconciliation
     })
   })
   
+  $('.vocab').on('click', function(e) {
+    console.log('id',$(this).data('id'))
+  });  
+  
+  function minmaxer(timespans){
+    <!--console.log('got to minmax()',JSON.stringify(timespans))-->
+    starts=[]; ends=[]
+    for (t in timespans){
+      // gets 'in', 'earliest' or 'latest'
+      starts.push(Object.values(timespans[t].start)[0])
+      ends.push(!!timespans[t].end ? Object.values(timespans[t].end)[0] : -1)
+    } 
+    <!--console.log('starts',starts,'ends',ends)-->
+    minmax=[Math.max.apply(null, starts),Math.max.apply(null, ends)]
+    return minmax
+  }
+  
+  $(function(){
+    var progressUrl = "{% url 'celery_progress:task_status' task_id %}";
+    CeleryProgressBar.initProgressBar(progressUrl)
+  
+    if('{{ status }}' == 'updating'){
+      console.log('{{ status }}','{{ context }}')
+      $("#ds_info").addClass('hidden')
+      $("#ds_updating").removeClass('hidden')
+      $("#div_file").toggleClass('border-red')
+      $(".update-msg").removeClass('hidden')
+    }
+    
+    window.dslabel = "{{ ds.label }}"
+    // Change hash for page-reload
+    $('.nav-tabs a').on('shown.bs.tab', function (e) {
+      window.location.hash = e.target.hash;
+      if(e.target.hash=="#reconciliation"){
+        updateTotals('{{ ds.id }}')
+      }
+      if(e.target.hash=="#browse"){
+        mappy.invalidateSize();
+        <!--startTableSpinner()-->
+        $("html,body").scrollTop(0)
+        if(typeof(features) != 'undefined'){
+          mappy.fitBounds(features.getBounds())        
+        }
+      }
+      if(e.target.hash=="#addtask"){
+        mappyr.invalidateSize();
+        $("html,body").scrollTop(0)
+      }
+    })
+        
+    $(".selector").dialog({
+      resizable: false,
+      autoOpen: false,
+      height: 500,
+      width: 700,
+      title: "WHG Help",
+      modal: true,
+      buttons: { 'Close': function() {console.log('close dialog'); $(this).dialog('close');} },
+      open: function(event, ui) {
+        $('#helpme').load('/media/help/'+page+'.html')
+      },
+      show: {effect: "fade",duration: 400 },
+      hide: {effect: "fade",duration: 400 }
+    });
+  })
+  
   // TODO: refactor this ugly nonsense
   $(".edit-title").click(function() {
     $(".editing-title").toggleClass("hidden")
@@ -623,73 +659,6 @@ js for Summary, Reconciliation
     $(".editing-image").toggleClass("hidden")
     $(".form-image").toggleClass("hidden")
     $(".btn-ds").toggleClass("hidden")
-  })  
-  
-  $(function(){
-    if('{{ status }}' == 'updating'){
-      console.log('{{ status }}','{{ context }}')
-      $("#ds_info").addClass('hidden')
-      $("#ds_updating").removeClass('hidden')
-      $("#div_file").toggleClass('border-red')
-      $(".update-msg").removeClass('hidden')
-    }
-    
-    window.dslabel = "{{ ds.label }}"
-    // Change hash for page-reload
-    $('.nav-tabs a').on('shown.bs.tab', function (e) {
-      window.location.hash = e.target.hash;
-      if(e.target.hash=="#reconciliation"){
-        updateTotals('{{ ds.id }}')
-      }
-      if(e.target.hash=="#browse"){
-        mappy.invalidateSize();
-        <!--startTableSpinner()-->
-        $("html,body").scrollTop(0)
-        if(typeof(features) != 'undefined'){
-          mappy.fitBounds(features.getBounds())        
-        }
-      }
-      if(e.target.hash=="#addtask"){
-        mappyr.invalidateSize();
-        $("html,body").scrollTop(0)
-      }
-    })
-        
-    $(".selector").dialog({
-      resizable: false,
-      autoOpen: false,
-      height: 500,
-      width: 700,
-      title: "WHG Help",
-      modal: true,
-      buttons: { 'Close': function() {console.log('close dialog'); $(this).dialog('close');} },
-      open: function(event, ui) {
-        $('#helpme').load('/media/help/'+page+'.html')
-      },
-      show: {effect: "fade",duration: 400 },
-      hide: {effect: "fade",duration: 400 }
-    });
-  })
-</script>
-<script  type="text/javascript">
-  $("[rel='tooltip']").tooltip();
-  $('.vocab').on('click', function(e) {
-    console.log('id',$(this).data('id'))
-  });  
-  
-  function minmaxer(timespans){
-    <!--console.log('got to minmax()',JSON.stringify(timespans))-->
-    starts=[]; ends=[]
-    for (t in timespans){
-      // gets 'in', 'earliest' or 'latest'
-      starts.push(Object.values(timespans[t].start)[0])
-      ends.push(!!timespans[t].end ? Object.values(timespans[t].end)[0] : -1)
-    } 
-    <!--console.log('starts',starts,'ends',ends)-->
-    minmax=[Math.max.apply(null, starts),Math.max.apply(null, ends)]
-    return minmax
-  }
-
-  // TODO: better parsing here
+  })    
 </script>
 {% endblock %}

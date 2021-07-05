@@ -47,6 +47,8 @@ def downloader(request, *args, **kwargs):
     print('handed off to Celery', download_task.task_id)
     # return task_id
     obj={'task_id':download_task.task_id}
+    
+    #return render(request, 'datasets/ds_meta.html', context=context)
     return HttpResponse(json.dumps(obj), content_type='application/json')    
     
   elif request.method == 'POST' and not request.is_ajax:

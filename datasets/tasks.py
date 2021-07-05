@@ -3,7 +3,7 @@
 from __future__ import absolute_import, unicode_literals
 #from celery.decorators import task # this is @task decorator
 from celery import task # this is @task decorator
-#from celery_progress.backend import ProgressRecorder
+from celery_progress.backend import ProgressRecorder
 from django_celery_results.models import TaskResult
 #from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
