@@ -1,51 +1,61 @@
 # datasets.urls
 
 from django.urls import path#, include
-from django.conf.urls import url
+#from django.conf.urls import url
 from django.conf.urls.static import static
 from django.conf import settings
 
 from . import views
-from datasets.utils import download_file, download_augmented, download_gis, UpdateCountsView, downloader
+from datasets.utils import download_file, UpdateCountsView, downloader, download_augmented #, download_gis
 
 # dataset actions
 app_name='datasets'
 urlpatterns = [
-
-  # TESTS: initiate downloads via celery task
-  path('dlfunction/<int:pk>/<str:format>', downloader, name='dl_url'),
-  path('dlcelery/', downloader, name='dl_celery'),
-
-  # class-based, not yet tried
-  #path('dlclass/<int:pk>/<str:format>', views_dl.DownloadStartView, name='dl_class'),
   
-  # download augmented dataset
-  path('<int:id>/augmented/<str:format>', download_augmented, name="dl-aug"), # 
-
-  # TODO: single download url w/format variable
-  # download latest file, as uploaded
-  path('<int:id>/file/', download_file, name="dl-file"), # 
-  
+  ## BASICS: create, delete, insert data
   path('create/', views.DatasetCreateView.as_view(), name='dataset-create'),
-
-  # upload excel
-  path('xl/', views.xl_upload, name='xl-upload'),
-  
-  path('compare/', views.ds_compare, name='dataset-compare'),
-  path('update/', views.ds_update, name='dataset-update'),
-  
   path('<int:id>/delete', views.DatasetDeleteView.as_view(), name='dataset-delete'),
 
-
-  # download flattened geojson data
-  path('<int:id>/gis/', download_gis, name="dl-gis"), # 
-
-  # insert validated delimited (csv for short) file data to db
+  # insert validated delimited file data to db (csv, tsv, spreadsheet)
   path('<int:pk>/insert_tsv/', views.ds_insert_tsv, name="ds_insert_tsv"),
 
   # insert validated lpf file data to db
   path('<int:pk>/insert_lpf/', views.ds_insert_lpf, name="ds_insert_lpf"),
+    
+  # upload excel
+  path('xl/', views.xl_upload, name='xl-upload'),
+  
+  ## MANAGE/VIEW
+  # dataset owner pages (tabs); names correspond to template names
+  path('<int:id>/summary', views.DatasetSummaryView.as_view(), name='ds_summary'),
+  path('<int:id>/browse', views.DatasetBrowseView.as_view(), name='ds_browse'),
+  path('<int:id>/reconcile', views.DatasetReconcileView.as_view(), name='ds_reconcile'),
+  path('<int:id>/collab', views.DatasetCollabView.as_view(), name='ds_collab'),
+  path('<int:id>/addtask', views.DatasetAddTaskView.as_view(), name='ds_addtask'),
+  path('<int:id>/log', views.DatasetLogView.as_view(), name='ds_log'),
 
+  # public dataset pages (tabs): metadata, browse
+  path('<int:pk>', views.DatasetPublicView.as_view(), name='ds_meta'),
+  path('<int:id>/places', views.DatasetPlacesView.as_view(), name='ds_places'),
+  
+  ## DOWNLOADS
+  # download latest file, as uploaded
+  path('<int:id>/file/', download_file, name="dl-file"), # 
+
+  # initiate downloads of augmented datasets via celery task (called from ajax)
+  path('dlcelery/', downloader, name='dl_celery'),
+  
+  path('<int:id>/augmented/<str:format>', download_augmented, name="dl-aug"), # 
+  ## DEPRECATED download augmented dataset 
+  # download flattened geojson data
+  #path('<int:id>/gis/', download_gis, name="dl-gis"), # 
+  ##
+  
+  ## UPDATES (in progress)
+  path('compare/', views.ds_compare, name='dataset-compare'),
+  path('update/', views.ds_update, name='dataset-update'),
+
+  ## RECONCILIATION/REVIEW
   # initiate reconciliation
   path('<int:pk>/recon/', views.ds_recon, name="ds_recon"), # form submit
 
@@ -60,36 +70,20 @@ urlpatterns = [
 
   # delete TaskResult & associated hits
   path('task-delete/<str:tid>/<str:scope>', views.task_delete, name="task-delete"),
-  
-  # add DatasetUser collaborator
-  path('collab-add/<int:dsid>/<str:v>', views.collab_add, name="collab-add"),
-  
-  # delete DatasetUser collaborator
-  path('collab-delete/<int:uid>/<int:dsid>/<str:v>', views.collab_delete, name="collab-delete"),
-  
+
   # undo last save in review
   path('match-undo/<int:ds>/<str:tid>/<int:pid>', views.match_undo, name="match-undo"),
   
   # refresh reconciliation counts (ds.id from $.get)
   path('updatecounts/', UpdateCountsView.as_view(), name='update_counts'),
   
-  # initiate downloads via task in utils
-  #path('progressive/<int:pk>/<str:format>', progress_view, name='progressive'),    
+  ## COLLABORATORS
+  # add DatasetUser collaborator
+  path('collab-add/<int:dsid>/<str:v>', views.collab_add, name="collab-add"),
   
-  #
-  # refactored tabs to individual views, templates
-  # 
-  path('<int:id>/summary', views.DatasetSummaryView.as_view(), name='ds_summary'),
-  path('<int:id>/browse', views.DatasetBrowseView.as_view(), name='ds_browse'),
-  path('<int:id>/reconcile', views.DatasetReconcileView.as_view(), name='ds_reconcile'),
-  path('<int:id>/collab', views.DatasetCollabView.as_view(), name='ds_collab'),
-  path('<int:id>/addtask', views.DatasetAddTaskView.as_view(), name='ds_addtask'),
-  path('<int:id>/log', views.DatasetLogView.as_view(), name='ds_log'),
-
-  # public dataset displays: metadata, detail (browse?)
-  path('<int:pk>', views.DatasetPublicView.as_view(), name='ds_meta'),
-  path('<int:id>/places', views.DatasetPlacesView.as_view(), name='ds_places'),
-    
+  # delete DatasetUser collaborator
+  path('collab-delete/<int:uid>/<int:dsid>/<str:v>', views.collab_delete, name="collab-delete"),  
+  
 
 ] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
 

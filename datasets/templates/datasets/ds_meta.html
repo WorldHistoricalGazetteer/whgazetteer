@@ -17,15 +17,14 @@
   <link rel="stylesheet" href="//cdn.datatables.net/1.10.23/css/dataTables.bootstrap4.min.css">
   <script src="//cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
   <script src="//cdn.datatables.net/1.10.23/js/dataTables.bootstrap4.min.js"></script>
+  <script src="{% static 'celery_progress/celery_progress.js' %}"></script>
 {% endblock %}
 
 {% block title %}<title>Dataset::{{ ds.label }}</title>{% endblock %}
 
 {% block content %}
 <div id="dataset_content" class="container mt-1 px-1">
-  <!--{ include 'datasets/ds_tabs.html' %}-->
-  <!--<span class="ds-title ml-1 mr-3">{{ object.title }}</span>-->
-
+  <p class="small"><a href="{% url 'public-lists' %}">{% fontawesome_icon 'arrow-left' color='#336699' %} public dataset list</a> / {{ object.title }}</p>
   <ul id="dataset_tabs" class="nav nav-tabs" role="tablist">
       {%comment%}<span class="ds-title ml-1 mr-3"><small class="text-secondary">Dataset:</small></span>{%endcomment%}
       <li class="nav-item">
@@ -41,7 +40,7 @@
       <form id="ds_form" method="POST" action="#" enctype="multipart/form-data">
       {% csrf_token %}
       <div class="row">
-      <div id="ds_details" class="col-sm-8 small">
+      <div id="ds_details" class="col-sm-7 small">
         <table class="ds-table">
           <tr>
             <td><b>Title</b></td>
@@ -94,7 +93,7 @@
           </tr>
         </table>
       </div>
-      <div class="col-sm-4 small">
+      <div class="col-sm-5 small">
         <div id="ds_info">
           <div id="ds_access" class="pt-0 px-0 ds-card">
             <p class="ds-card-header">Access</p>
@@ -105,18 +104,43 @@
             <p>You <b>must</b> give appropriate credit, provide a link to the CC-BY-4.0 license <a id="a_cliplic"class="clippy" data-clipboard-text="https://creativecommons.org/licenses/by/4.0/" rel="tooltip" title="copy to clipboard">{% fontawesome_icon 'clipboard' color='#336699' %}</a>, and indicate if changes were made.</p>
           </div>
           <div id="ds_downloads" class="pt-0 px-0 ds-card">
-            <p class="ds-card-header">Downloads</p>
+            <p class="ds-card-header pt-1"> Downloads (augmented data) 
+              <span id='progress-bar' class='progress-bar' style="background-color: #68a9ef; width: 0%; line-height:.5rem;">&nbsp;</span></p>
+            {% if links_added > 0 or geoms_added > 0 or object.core %} <!-- dataset is augmented -->
+              {% if object.numrows <= 20000 %}
+                <p><a class="a-dl-celery" href="#" ref="lpf">Linked Places format {% fontawesome_icon 'download'%}</a>
+                    <span id="file_lpf" class="ml-1"></span></p>
+                {% if current_file.format == 'delimited' %}
+                  <p><a class="a-dl-celery" href="#" ref="tsv">LP-TSV {% fontawesome_icon 'download'%}</a>
+                      <span id="file_tsv" class="ml-1"></span></p>
+                {% else %}
+                  <p class="mt-2"><i>LP-TSV conversion is not possible for this LPF dataset. <a id="conversion_help" class="pointer" data-toggle="popover" title="LPF download options" data-content="<p>Data initially loaded in Linked Places format (LPF) has one&#8209;to&#8209;many relations that can't be converted to simple TSV files.</p>" tabindex="0" data-trigger="focus" data-original-title=""><i title="" class="fa fa-question-circle" style="color:#336699;"></i></a></i></p>
+                {% endif %}
+              {% else %}  
+                <span class="red-head"><br/>Download of augmented datasets larger than 20,000 rows is not supported right now.</span>
+              {% endif %}
+            {% else %} <!-- hasn't been augmented yet-->
+              <p><i>Dataset is not yet augmented</i></p>
+              {% if current_file.format == 'delimited' %}
+                <p>Linked Places format conversion (not augmented)</p>
+              {% endif %}
+            {% endif %}
+            <div id="progress-bar-message" class="hidden">Waiting for progress to start...</div>
+            <div id="celery-result"></div>
+
+            {% comment %}
             <p class="m-0 pl-2 pr-2">
               {% if links_added > 0 or geoms_added > 0 %}Augmented dataset: {% endif %}
-                {% if object.numrows <= 5000 %}
+                {% if object.numrows <= 20000 %}
                     <a href="{% url 'datasets:dl-aug' id=object.id format='lpf' %}" ref="lpf">Linked Places format</a>
                   {% if current_file.format == 'delimited' %}
                     | <a href="{% url 'datasets:dl-aug' id=object.id format='tsv' %}" ref="tsv">TSV</a>
                   {% endif %}
                 {% else %}  
-                  <span class="red-head"><br/>Sorry, download of augmented datasets larger than 5000 rows not supported right now; too slow :^(</span>
+                  <span class="red-head"><br/>Download of augmented datasets larger than 20,000 rows not supported right now.</span>
                 {% endif %}  
             </p>
+            {% endcomment %}
           </div>
           <!--{ endif %}-->
         </div> <!-- ds_info -->
@@ -127,23 +151,67 @@
   </div> <!-- .tab-content -->
 </div>
 
-<!--
-js for Summary, Reconciliation
--->
 <script type="text/javascript">
 
-  // TODO: this is redundant to href in the link!?
-  // without it, file/save dialog doesn't appear.
-  $("#ds_downloads a").click(function(e){
-    urly='/datasets/{{object.id}}/augmented/'+$(this).attr('ref')
-    startDownloadSpinner()
+  dater = function(){
+    const date = new Date(Date.now());
+    return date.toISOString().substring(0,10)
+  }
+  
+  clearEl = function(el){ 
+    $("#progress-bar").fadeOut()
+    el.html('')
+  }
+  
+  // post-download actions
+  function customResult(resultElement, result) {
+    console.log('celery result',result)
+    console.log('celery resultElement',resultElement)
+    spinner_dl.stop()
+    fn = result.filename
+    link = '[ <span class="dl-save"><a href="/'+fn+'" title="downloaded: '+dater()+
+              '" download>save</a></span> ]'    
+    $( resultElement ).append(
+      $('<p>').html(link)
+    );
+    $(".dl-save a")[0].click()
+    setTimeout(clearEl($("#celery-result")), 1000)
+  }    
+  
+  // -> views_dl.downloader()
+  $(".a-dl-celery").click(function(e){
+    e.preventDefault()
+    <!--startDownloadSpinner()-->
+    console.log('sending post')
+    console.time('dl')
+    format = $(this).attr('ref')
+    dsid = '{{ object.id }}'
+    console.log('send to downloader()')
+    urly='/datasets/dlcelery/'
+    window.task_id = 'dummy-123-49506-fubar-29384'
     $.ajax({
-            type: 'GET',
-            url: urly
-        }).done(function() {
-            spinner_dl.stop();
-        })
-  })
+        type: 'POST',
+        url: urly,
+        <!--beforeSend: function(){spinner_dl.stop()},-->
+        data: {
+          "format":format, 
+          "dsid":dsid, 
+          "csrfmiddlewaretoken":"{{ csrf_token }}"},
+        datatype:'json',
+        success:function(response){
+          startDownloadSpinner()
+          console.log('got task_id',response)
+          <!--$("#tid").html(response.task_id)-->
+          task_id = response.task_id
+          var progressUrl = "/celery-progress/"+task_id+"/";
+          CeleryProgressBar.initProgressBar(progressUrl,
+            { pollingInterval: 1000,
+              onResult: customResult,
+            }
+          )
+        }
+      })
+  })  
   
   // TODO: one function for these
   var clip_cite = new ClipboardJS('#a_clipcite');

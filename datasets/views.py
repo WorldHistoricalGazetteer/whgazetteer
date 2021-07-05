@@ -2054,11 +2054,17 @@ class DatasetPublicView(DetailView):
     #id_ = self.kwargs.get("pk")
     print('self, kwargs',self, self.kwargs)
 
-    #qs = Dataset.objects.filter(collection_id = id_)
+    ds = get_object_or_404(Dataset, id = self.kwargs['pk'])
+    file = ds.file
     ##coll_set = [cd.dataset for cd in qs]
 
     #context['ds_list'] = [cd.dataset for cd in qs]
     context['foo'] = 'bar'
+    if file.file:
+      context['current_file'] = file
+      context['format'] = file.format
+      context['numrows'] = file.numrows
+      context['filesize'] = round(file.file.size/1000000, 1)    
     return context
 
 """

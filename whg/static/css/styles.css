@@ -856,9 +856,10 @@ em { color: #993333;}
 }
 
 /**
-  dataset browse, metadata
+  dataset browse, metadata, misc
 **/ 
-#ds_access p {margin: .2rem 0; padding: 0 .5rem;}
+#ds_list p {font-size:.9rem;}
+#ds_access p {padding: .2rem .5rem;}
 #status_select { padding: 4px; }
 #status_filter { text-align: center; }
 #browse_legend {background:#e0e0e0;}

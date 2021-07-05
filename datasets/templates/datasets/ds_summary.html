@@ -261,18 +261,15 @@
           {% if user.is_superuser or user in owners %}
             <!-- new -->          
             <div id="ds_downloads" class="pt-0 px-0 ds-card">
-              <p class="ds-card-header">
-                Downloads (augmented data) 
+              <p class="ds-card-header pt-1"> Downloads (augmented data) 
                 <span id='progress-bar' class='progress-bar' style="background-color: #68a9ef; width: 0%; line-height:.5rem;">&nbsp;</span>
               </p>
               {% if links_added > 0 or geoms_added > 0 %} <!-- dataset is augmented-->
                 {% if ds.numrows <= 20000 %}
-                  <!--<p>-->
-                    <!--<a class="a-dl" href="#" ref="lpf">Linked Places format</a> <sr>(OLD ajax)</sr>-->
-                      <!--<span id="file_lpf" class="ml-1"></span></p>-->
                   <p>
                     <a class="a-dl-celery" href="#" ref="lpf">Linked Places format {% fontawesome_icon 'download'%}</a>
-                      <span id="file_lpf" class="ml-1"></span></p>
+                      <span id="file_lpf" class="ml-1"></span>
+                  </p>
                   {% if current_file.format == 'delimited' %}
                     <p><a class="a-dl-celery" href="#" ref="tsv">LP-TSV {% fontawesome_icon 'download'%}</a>
                         <span id="file_tsv" class="ml-1"></span></p>
@@ -360,7 +357,8 @@ js for Summary, Reconciliation
     $("#progress-bar").fadeOut()
     el.html('')
   }
-  // builds file, saves to user folder, returns data w/o displaying, creates download link
+
+  // post-download actions
   function customResult(resultElement, result) {
     console.log('celery result',result)
     console.log('celery resultElement',resultElement)
