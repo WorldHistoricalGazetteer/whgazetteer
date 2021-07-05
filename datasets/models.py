@@ -79,6 +79,22 @@ class Dataset(models.Model):
   #coll = get_object_or_404(Collection,pk=3)
 
   @property
+  def last_modified(self):
+    last=self.log.all().order_by('-timestamp')[0].timestamp
+    #last=ds.log.all().order_by('-timestamp')[0].timestamp
+    return last.strftime("%d %b %Y")
+    
+  @property
+  def minmax(self):
+    # temporal is sparse
+    timespans = [p.minmax for p in self.places.all() \
+                 if p.minmax and len(p.minmax) == 2]
+    earliest = min([t[0] for t in timespans]) if len(timespans)>0 else None
+    latest = max([t[1] for t in timespans]) if len(timespans)>0 else None
+    minmax = [earliest,latest] if earliest and latest else None
+    return minmax
+  
+  @property
   def bounds(self):
     pg_geoms=PlaceGeom.objects.values_list('geom',flat=True).filter(place__dataset=self.label)
     #pg_geoms=PlaceGeom.objects.values_list('geom',flat=True).filter(place__dataset='croniken')

@@ -13,9 +13,6 @@
   <script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>
   <script src="{% static 'js/spin.umd.js' %}"></script>
   <link rel="stylesheet" href="{% static 'css/spin.css' %}"/>
-  <!--<link rel="stylesheet" href="//cdn.datatables.net/1.10.23/css/dataTables.bootstrap4.min.css">-->
-  <!--<script src="//cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>-->
-  <!--<script src="//cdn.datatables.net/1.10.23/js/dataTables.bootstrap4.min.js"></script>-->
   <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.10.24/b-1.7.0/b-colvis-1.7.0/b-html5-1.7.0/cr-1.5.3/fh-3.1.8/sc-2.0.3/sp-1.2.2/sl-1.3.3/datatables.min.css"/>
 
   <script type="text/javascript" src="https://cdn.datatables.net/v/dt/dt-1.10.24/b-1.7.0/b-colvis-1.7.0/b-html5-1.7.0/cr-1.5.3/fh-3.1.8/sc-2.0.3/sp-1.2.2/sl-1.3.3/datatables.min.js"></script>
@@ -26,7 +23,7 @@
 
 {% block content %}
 <div id="dataset_content" class="container mt-1 px-1">
-
+  <p class="small"><a href="{% url 'public-lists' %}">{% fontawesome_icon 'arrow-left' color='#336699' %} public dataset list</a> / {{ object.title }}</p>
   <ul id="dataset_tabs" class="nav nav-tabs" role="tablist">
       <span class="ds-title ml-1 mr-3">{{ object.title }}</span>
       <li class="nav-item">

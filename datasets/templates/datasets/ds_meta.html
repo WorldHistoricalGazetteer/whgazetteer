@@ -59,7 +59,17 @@
           <tr>
             <td><b># Records</b></td>
             <td>{{ object.numrows }}</td>
-          </tr>          
+          </tr>
+          {% if object.minmax%}
+          <tr>
+            <td><b>Temporal coverage</b></td>
+            <td>earliest: {{ object.minmax.0 }}; latest: {{ object.minmax.1 }}</td>
+          </tr>
+          {% endif %}
+          <tr>
+            <td><b>Last modified</b></td>
+            <td>{{ object.last_modified }}</td>
+          </tr>
           {% if object.webpage %} 
           <tr>
             <td><b>Webpage</b></td>
@@ -125,6 +135,7 @@
                 <p>Linked Places format conversion (not augmented)</p>
               {% endif %}
             {% endif %}
+            
             <div id="progress-bar-message" class="hidden">Waiting for progress to start...</div>
             <div id="celery-result"></div>
 

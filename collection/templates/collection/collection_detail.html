@@ -61,6 +61,7 @@
                 <li class=""><b>Title</b>: 
                   <a class="ds_title" href="{% url 'datasets:ds_meta' d.id %}">{{ d.title }}</a></li>
                 <li class=""><b>Description</b>: {{ d.description|readmore:200|safe }}</li>
+                <li class=""><b>Temporal coverage</b>: {{ d.minmax.0 }} / {{ d.minmax.1 }}</li>
                 <li class=""><b>Created</b>: {{ d.create_date|date:"d M Y" }}</li>
                 <li class="">
                   <b>Number of records</b>: {{ d.numrows }}
@@ -351,6 +352,7 @@
             )
             idToFeature[identifier] = layer
           }
+          
         }
       }).addTo(map);
 

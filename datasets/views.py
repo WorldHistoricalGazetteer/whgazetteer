@@ -2058,13 +2058,20 @@ class DatasetPublicView(DetailView):
     file = ds.file
     ##coll_set = [cd.dataset for cd in qs]
 
+    placeset = ds.places.all()
+    
     #context['ds_list'] = [cd.dataset for cd in qs]
     context['foo'] = 'bar'
     if file.file:
       context['current_file'] = file
       context['format'] = file.format
       context['numrows'] = file.numrows
-      context['filesize'] = round(file.file.size/1000000, 1)    
+      context['filesize'] = round(file.file.size/1000000, 1)
+
+      context['links_added'] = PlaceLink.objects.filter(
+        place_id__in = placeset, task_id__contains = '-').count()
+      context['geoms_added'] = PlaceGeom.objects.filter(
+        place_id__in = placeset, task_id__contains = '-').count()      
     return context
 
 """
@@ -2191,7 +2198,8 @@ class DatasetSummaryView(LoginRequiredMixin, UpdateView):
 
     # build context for rendering dataset.html
     me = self.request.user
-    placeset = Place.objects.filter(dataset=ds.label)
+    #placeset = Place.objects.filter(dataset=ds.label)
+    placeset = ds.places.all()
     
     context['updates'] = {}
     context['ds'] = ds

@@ -51,33 +51,13 @@ def downloader(request, *args, **kwargs):
     
   elif request.method == 'POST' and not request.is_ajax:
     print('request.POST (not ajax)', request.POST)
-    ## Get form instance
-    #form = DownloadForm(request.POST)
-    ##print('cleaned_data', form.cleaned_data)
-    #if form.is_valid():
-      ## Retrieve URL from form data
-      #dsid = form.cleaned_data['dsid']
-      #format = form.cleaned_data['format']
-      ## Create Task
-      #download_task = make_download.delay({"username":request.user.username},
-        #dsid=dsid,
-        #format=format,
-      #)
-      ## Get ID
-      #task_id = download_task.task_id
-      #return render(request, 'datasets/dl.html', {'form': form, 'task_id': task_id})
-    #else:
-      #print('form is not valid', form.cleaned_data)
+
 
   elif request.method == 'GET':
     print('request.GET', request.GET)
-    ## Get form instance
-    #form = DownloadForm()
-    ## Return demo view
-    #return render(request, 'datasets/dl.html', {'form': form})
 
 
-""" works (marginally, 3 July; being superceded """
+""" deprecatING (still used from collection download modal ) """
 def download_augmented(request, *args, **kwargs):
   from django.db import connection
   print('download_augmented kwargs',kwargs)

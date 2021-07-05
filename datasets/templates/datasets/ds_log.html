@@ -44,32 +44,37 @@
   
   <div class="tab-content">
     <div id="log" class="tab-pane fade show active" role="tabpanel" aria-labelledby="log-tab">
-      <div id="ds_log" class="mt-2 row">
-        <div class="col-sm-4">
+      <div class="mt-2 row">
+        <div id="ds_log" class="col-sm-5">
           <h4>Dataset Log</h4>
-          <ul class="ul-flush">
-            {% for l in log %}
-              <li class="li-flush">{{l.logtype}} ({% if l.subtype %}{{l.subtype}}{% elif l.note %}{{l.note}}{%endif%}), {{l.timestamp|date:"Y-m-d" }}</li> 
-            {% endfor %}
-          </ul>
+          <table class="table table-striped">
+          <thead><th>action</th><th>note</th><th>date</th></thead>
+          {% for l in log %}
+            <tr>
+              <td>{{l.logtype}}</td>
+              <td>{% if l.subtype %}{{l.subtype}}{% elif l.note %}{{l.note}}{%endif%}</td>
+              <td>{{l.timestamp|date:"Y-m-d" }}</td>
+            </tr>
+          {%endfor%}
+          </table>
         </div>
-        <div id="ds_comments" class="col-sm-8 small">
+        <div id="ds_comments" class="col-sm-7">
           <h4>Comments</h4>
-            <table class="table table-striped">
-              <thead class="strong">
-                <th>created (utc)</th>
-                <th>place_id</th>
-                <th>tag</th>
-                <th>note</th>
-                <th>user</th>
-              </thead>
-              <tbody> 
-                {% for c in comments %}
-                <tr><td>{{c.created|date:"Y-m-d"}}</td><td>{{c.place_id.id}}</td>
-                  <td>{{c.tag}}</td><td>{{c.note}}</td><td>{{c.user}}</td></tr>
-                {% endfor %}
-              </tbody>
-            </table>
+          <table class="table table-striped">
+            <thead>
+              <th>created (utc)</th>
+              <th>place_id</th>
+              <th>tag</th>
+              <th>note</th>
+              <th>user</th>
+            </thead>
+            <tbody> 
+              {% for c in comments %}
+              <tr><td>{{c.created|date:"Y-m-d"}}</td><td>{{c.place_id.id}}</td>
+                <td>{{c.tag}}</td><td>{{c.note}}</td><td>{{c.user}}</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
         </div>
       </div> <!-- ds_log -->
     </div>    
@@ -80,28 +85,10 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="updateModalLabel">
-            Update <span class="text-danger">{{ ds.label }}</span> dataset <small>(<i>{{ current_file.format }} file only</i>)</small>
+            
           </h5>
         </div>
         <div class="modal-body">
-          <div class="form-group">
-            <form id="newfileform" method="POST" action="#" enctype="multipart/form-data">
-              {% csrf_token %}
-              <div id="loadfile">
-                <p><input type="file" id="newfile"></p>
-                <button id="btn_upload" type="submit" class="btn btn-primary btn-sm hidden">Upload</button>
-              </div>
-              <div id="update_spinner"></div>
-              <div id="results_text" class="mb-2 small ds-card">
-                <p>Uploaded data will be compared with existing data, and results reported here.</p>
-                  <p>You may then proceed, or cancel this operation with no changes made.</p>
-                <!--{ if links_added > 0 or geoms_added > 0 %}-->
-                <!--<p>This dataset has been augmented with { links_added }} links and { geoms_added }} geometries-->
-                <!--via reconciliation tasks. </p>-->
-                <!--{ endif %}-->
-              </div>          
-            </form>
-          </div> <!-- .form-group -->
         </div> <!-- .modal-body -->      
         <div class="modal-footer">
           <div id="buttons_pre">
@@ -326,21 +313,7 @@ js for Summary, Reconciliation
       $("#div_file").toggleClass('border-red')
       $(".update-msg").removeClass('hidden')
     }
-    
-    // manage url
-    <!--var url = document.location.toString();-->
-    <!--<!--console.log('url, context on load',url,"{{context}}".length)-->-->
-    <!--if (url.match('#')) {-->
-      <!--tab = url.split('#')[1]-->
-      <!--$('.nav-tabs a[href="#' + tab+ '"]').tab('show');-->
-    <!--} else if ("{{context}}".length > 0){-->
-      <!--taburl = location.protocol+'//'+location.host+'/datasets/'+'{{ds.id}}'+'/reconcile'-->
-      <!--$('.nav-tabs a[href="#reconciliation"]').tab('show');-->
-      <!--location.href=taburl-->
-    <!--}-->
-    //***
-    // Browse onload
-    //***
+
     spinner_map = new Spin.Spinner().spin();
     $("#map").append(spinner_map.el);
     

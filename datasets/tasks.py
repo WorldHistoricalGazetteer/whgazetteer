@@ -24,6 +24,7 @@ from datasets.static.hashes.qtypes import qtypes
 from elastic.es_utils import makeDoc, build_qobj, profileHit
 #from datasets.task_utils import *
 from datasets.utils import maketime, HitRecord, bestParent, post_recon_update, getQ, parse_wkt, hully, elapsed
+from main.models import Log
 
 #from places.models import Place
 ##
@@ -101,7 +102,15 @@ def make_download(request, *args, **kwargs):
         #progress_recorder.set_progress(counter + 1, len(features), description="tsv progress")
     print('tsv file complete:', fn)
 
-    # for ajax, just a report
+    Log.objects.create(
+      # category, logtype, "timestamp", subtype, note, dataset_id, user_id
+      category = 'dataset',
+      logtype = 'ds_download',
+      note = {"format":req_format, "user":user},
+      dataset_id = dsid,
+      user_id = ds.owner.id
+    ) 
+    # for ajax, just report filename
     completed_message = {"msg":"tsv written", "filename":fn, "rows":len(features), "header":header}
     return completed_message
   
@@ -188,17 +197,20 @@ def make_download(request, *args, **kwargs):
           #progress_recorder.set_progress(i + 1, len(features), description="lpf progress")
         outfile.write(json.dumps(result,indent=2))
     print('tsv file complete:', fn)
-
-    # for ajax, just a report
+    
+    Log.objects.create(
+      # category, logtype, "timestamp", subtype, note, dataset_id, user_id
+      category = 'dataset',
+      logtype = 'ds_download',
+      note = {"format":req_format, "user":user},
+      dataset_id = dsid,
+      user_id = ds.owner.id
+    ) 
+    
+    # for ajax, just report filename
     completed_message = {"msg":"tsv written", "filename":fn, "rows":len(features)}
     return completed_message
-        
-    ## response is reopened file
-    #response = FileResponse(open(fn, 'rb'), content_type='text/json')
-    ##response = HttpResponse(open(fn, 'rb'), content_type='text/json')
-    #response['Content-Disposition'] = 'attachment; filename="'+os.path.basename(fn)+'"'
 
-    #return response
 
 @task(name="task_emailer")
 def task_emailer(tid, dslabel, username, email, counthit, totalhits):
