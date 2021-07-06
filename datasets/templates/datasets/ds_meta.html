@@ -98,7 +98,7 @@
             <td class="align-top"><b>Citation</b> 
               <a id="a_clipcite" class="clippy" data-clipboard-target="#citation" rel="tooltip" title="copy to clipboard">{% fontawesome_icon 'clipboard' color='#336699' %}</a>
             </td>
-            <td id="citation"><span>{% if object.citation %}{{ object.citation }}{% else %}constructed citation...{% endif %}</span>
+            <td id="citation"><span>{% if object.citation %}{{ object.citation }}{% else %}{{object.title}}. ({{ object.last_modified|slice:"7:"  }}). [Data file]. Retrieved from http://whgazetteer.org/datasets/{{object.id}}, {% now "DATE_FORMAT" %}{% endif %}</span>
             </td>
           </tr>
         </table>

@@ -38,7 +38,7 @@ es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 """
 @task(name="make_download")  
 def make_download(request, *args, **kwargs):
-#def make_download(self, *args, **kwargs):
+  # TODO: integrate progress_recorder for better progress bar in GUI
   #progress_recorder = ProgressRecorder(self) #accessed?
   user = request['username']
   req_format = kwargs['format']
@@ -53,7 +53,7 @@ def make_download(request, *args, **kwargs):
   
   if ds.format == 'delimited' and req_format in ['tsv', 'delimited']:
     print('making a tsv file')
-    #header_og = ds.files.all().order_by('id')[0].header
+    #header_og = ds.file.header
     # make file name
     fn = 'media/downloads/'+user+'_'+dslabel+'_'+date+'.tsv'
 

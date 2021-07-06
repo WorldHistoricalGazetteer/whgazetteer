@@ -561,8 +561,8 @@ js for Summary, Reconciliation
   }
   
   $(function(){
-    var progressUrl = "{% url 'celery_progress:task_status' task_id %}";
-    CeleryProgressBar.initProgressBar(progressUrl)
+    <!--var progressUrl = "{ url 'celery_progress:task_status' task_id %}";-->
+    <!--CeleryProgressBar.initProgressBar(progressUrl)-->
   
     if('{{ status }}' == 'updating'){
       console.log('{{ status }}','{{ context }}')
