@@ -1,9 +1,8 @@
 # celery tasks for reconciliation and downloads
 # align_tgn(), align_wdlocal(), align_idx(), align_whg, make_download
 from __future__ import absolute_import, unicode_literals
-#from celery.decorators import task # this is @task decorator
 from celery import task # this is @task decorator
-from celery_progress.backend import ProgressRecorder
+#from celery_progress.backend import ProgressRecorder
 from django_celery_results.models import TaskResult
 #from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
@@ -53,8 +52,7 @@ def make_download(request, *args, **kwargs):
   
   if ds.format == 'delimited' and req_format in ['tsv', 'delimited']:
     print('making a tsv file')
-    #header_og = ds.file.header
-    # make file name
+    # name new file
     fn = 'media/downloads/'+user+'_'+dslabel+'_'+date+'.tsv'
 
     # gather link augments
@@ -82,6 +80,8 @@ def make_download(request, *args, **kwargs):
       writer = csv.writer(csvfile, delimiter='\t', quotechar='', quoting=csv.QUOTE_NONE)
       # TODO: use header_og to make proper LP-TSV
       header = ['id','whg_pid','title','ccodes','lon','lat','added','matches']
+      
+      header = ['id', 'title', 'title_source', 'start', 'end', 'title_uri', 'ccodes', 'variants', 'types', 'aat_types', 'matches', 'parent_name', 'geowkt', 'geo_source', 'geo_id', 'description', 'pid']
       writer.writerow(header)
       counter = 0
       for f in features:

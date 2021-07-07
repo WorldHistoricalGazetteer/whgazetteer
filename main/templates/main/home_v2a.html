@@ -65,7 +65,7 @@
 			  <div class="row">
 				<div class="col-sm-9">
 				  <p class="mb-0 featured-title"><a href="{% url 'collection:collection-detail' featured_coll.0.id %}">{{ featured_coll.0.title}}</a></p>
-					<p class="coll-description scrolldiv">{{ featured_coll.0.description }}</p>
+					<p class="coll-description scrolldiv">{{ featured_coll.0.description|safe }}</p>
 				</div>
 				<div class="col-sm-3"><img src="{{ imgc0 }}" height=150 width=150 /></div>
 				<span class="col-bottom cb-coll">collection</span>

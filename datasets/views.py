@@ -2022,7 +2022,7 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
       
       # data will be written on load of dataset.html w/dsobj.status = 'format_ok'
       #return redirect('/datasets/'+str(dsobj.id)+'/detail')
-      return redirect('/datasets/'+str(dsobj.id)+'/ds_summary')
+      return redirect('/datasets/'+str(dsobj.id)+'/summary')
 
     else:
       context['action'] = 'errors'
@@ -2184,10 +2184,13 @@ class DatasetSummaryView(LoginRequiredMixin, UpdateView):
       print('format_ok , inserting dataset '+str(id_))
       if file.format == 'delimited':
         result = ds_insert_tsv(self.request, id_)
+        print('tsv result',result)
       else:
         result = ds_insert_lpf(self.request,id_)
+        print('lpf result',result)
       print('ds_insert_xxx() result',result)
       ds.numrows = result['numrows']
+      #ds.numrows = result['count']
       ds.numlinked = result['numlinked']
       ds.total_links = result['total_links']
       ds.ds_status = 'uploaded'
