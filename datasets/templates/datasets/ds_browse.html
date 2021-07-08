@@ -648,7 +648,7 @@
         });
         $('.exttab').on('click', function(e) {
           e.preventDefault();
-          id=$(this).data('id')
+          id=$(this).data('id').toString()
           console.log('id',id)
           var re = /(http|dbp|gn|tgn|wd|loc|viaf|aat):(.*?)$/;
           url=id.match(re)[1]=='http' ? id : base_urls[id.match(re)[1]]+id.match(re)[2]

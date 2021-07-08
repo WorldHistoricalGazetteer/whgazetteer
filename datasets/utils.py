@@ -20,7 +20,7 @@ from datasets.static.hashes import aat, parents, aat_q
 from datasets.static.hashes import aliases as al
 #from datasets.tasks import make_download
 from main.models import Log
-from places.models import PlaceGeom
+from places.models import PlaceGeom, Type
 pp = pprint.PrettyPrinter(indent=1)
 
 # ***

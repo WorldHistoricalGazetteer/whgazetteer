@@ -1634,7 +1634,7 @@ def ds_insert_tsv(request, pk):
           if 0 <= i < len(aat_types) and aat_types[i] !='':
             aatobj = aat_lookup(aat_types[i])
             typeobj['label'] = aatobj['label'] 
-            typeobj['identifier'] = aat_types[i]
+            typeobj['identifier'] = "aat:"+str(aat_types[i])
             fclass_list.append(aatobj['fclass'])
           else:
             typeobj['label'] = ''
