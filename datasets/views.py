@@ -1613,25 +1613,44 @@ def ds_insert_tsv(request, pk):
       #
       # PlaceType()
       #
+      # use db for lookup
+      #types = ['point','promontory']
+      #types = ['rock']
+      ##aat_types = ['300386846']
+      #aat_types = []
+      #objs['PlaceType']=[]
+      #newpl = Place.objects.get(pk=6602079)
+      #src_id=1215
+      
       if len(types) > 0:
         fclass_list=[]
         for i,t in enumerate(types):
-          aatnum='aat:'+aat_types[i] if len(aat_types) >= len(types) and aat_types[i] !='' else None
+          print('i,t',i,t)
+          typeobj = {"sourceLabel": t}
+          if 0 <= i < len(aat_types) and aat_types[i] !='':
+            aatobj = aat_lookup(aat_types[i])
+            typeobj['label'] = aatobj['label'] 
+            typeobj['identifier'] = aat_types[i]
+            fclass_list.append(aatobj['fclass'])
+          print('typeobj', typeobj)
+
+            #"label": aatobj['label'] or ''}          
+          aatnum='aat:'+aat_types[i] if len(aat_types) >= len(types) \
+            and aat_types[i] !='' else None
           if aatnum:
-            fclass_list.append(get_object_or_404(Type,aat_id=int(aatnum[4:])).fclass)
+            aatobj = aat_lookup(aatnum[4:])
+            fclass_list.append(aatobj['fclass'])
           objs['PlaceType'].append(
             PlaceType(
               place=newpl,
               src_id = src_id,
-              jsonb={ "identifier":aatnum if aatnum else '',
-                      "sourceLabel":t,
-                      "label":aat_lookup(int(aatnum[4:])) if aatnum else ''
-                    }
+              jsonb=typeobj
           ))
-      # add fclasses to new Place
+        # add fclasses to new Place
         newpl.fclasses = fclass_list
-        newpl.save()
-      
+        
+        newpl.save()          
+        
       #
       # PlaceGeom()
       # 

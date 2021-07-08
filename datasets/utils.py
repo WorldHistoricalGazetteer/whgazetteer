@@ -599,14 +599,15 @@ class HitRecord(object):
     import json
     return json.loads(json.dumps(self.__dict__,indent=2))
 
-
-def aat_lookup(id):
+# null fclass: 300239103, 300056006, 300155846
+# refactored to use Type model in db
+def aat_lookup(aid):
   try:
-    label = aat.types[id]['term_full']
-    return label
+    typeobj = get_object_or_404(Type, aat_id=aid)
+    return {"label": typeobj.term, "fclass":typeobj.fclass or None}
   except:
-    print(id,' broke it')
-    print("error:", sys.exc_info())        
+    print(str(aid)+' broke aat_lookup()', sys.exc_info())
+    return {"label": None, "fclass":None}
 
 u='https://catalogue.bnf.fr/ark:/12148/cb193409'
 def aliasIt(url):
