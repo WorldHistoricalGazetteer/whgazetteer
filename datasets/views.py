@@ -1572,7 +1572,8 @@ def ds_insert_tsv(request, pk):
         if 'description' in header else ''
       
       # create new Place object
-      # TODO: generate fclasses
+      # referenced in related records
+      # fclasses added below
       newpl = Place(
         src_id = src_id,
         dataset = ds,
@@ -1582,6 +1583,7 @@ def ds_insert_tsv(request, pk):
         timespans = [datesobj['minmax']] # list of lists
       )
       newpl.save()
+      
       countrows += 1
   
       #** build associated objects and add to arrays **#
@@ -1614,13 +1616,15 @@ def ds_insert_tsv(request, pk):
       # PlaceType()
       #
       # use db for lookup
-      #types = ['point','promontory']
+      #from places.models import PlaceType
+      ##types = ['point','promontory']
       #types = ['rock']
       ##aat_types = ['300386846']
       #aat_types = []
       #objs['PlaceType']=[]
-      #newpl = Place.objects.get(pk=6602079)
-      #src_id=1215
+      #newpl = Place.objects.get(pk=6469499)
+      ##newpl = Place.objects.get(pk=6469500)
+      #src_id=1215 # 1164
       
       if len(types) > 0:
         fclass_list=[]
@@ -1632,6 +1636,9 @@ def ds_insert_tsv(request, pk):
             typeobj['label'] = aatobj['label'] 
             typeobj['identifier'] = aat_types[i]
             fclass_list.append(aatobj['fclass'])
+          else:
+            typeobj['label'] = ''
+            typeobj['identifier'] = ''
           print('typeobj', typeobj)
 
             #"label": aatobj['label'] or ''}          
@@ -1644,12 +1651,12 @@ def ds_insert_tsv(request, pk):
             PlaceType(
               place=newpl,
               src_id = src_id,
-              jsonb=typeobj
-          ))
+              jsonb=typeobj)
+          )
         # add fclasses to new Place
         newpl.fclasses = fclass_list
-        
         newpl.save()          
+        print(objs['PlaceType'][0].__dict__)
         
       #
       # PlaceGeom()
@@ -1662,7 +1669,6 @@ def ds_insert_tsv(request, pk):
             jsonb=geojson,
             geom=GEOSGeometry(json.dumps(geojson))
         ))
-          
       #
       # PlaceWhen()
       # via parsedates_tsv(): {"timespans":[{start{}, end{}}]}
@@ -1674,8 +1680,6 @@ def ds_insert_tsv(request, pk):
             #jsonb=datesobj['timespans']          
             jsonb=datesobj         
         ))
-    
-        
       #
       # PlaceLink() - all are closeMatch
       #
@@ -1702,7 +1706,6 @@ def ds_insert_tsv(request, pk):
               "relationTo": parent_id,
               "label": parent_name}
         ))
-
       #
       # PlaceDescription()
       # @id, value, lang
