@@ -18,7 +18,7 @@ from areas.models import Country
 from datasets.models import Dataset, DatasetUser, Hit
 from datasets.static.hashes import aat, parents, aat_q
 from datasets.static.hashes import aliases as al
-#from datasets.tasks import make_download
+from datasets.tasks import make_download
 from main.models import Log
 from places.models import PlaceGeom, Type
 pp = pprint.PrettyPrinter(indent=1)
@@ -33,7 +33,7 @@ pp = pprint.PrettyPrinter(indent=1)
 def downloader(request, *args, **kwargs):
   print('request.user', request.user)
   print('kwargs', kwargs)
-  from datasets.tasks import make_download
+  #from datasets.tasks import make_download
   # *should* be the only case...
   if request.method == 'POST' and request.is_ajax:
     print('ajax == True')
