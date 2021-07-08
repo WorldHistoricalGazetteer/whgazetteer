@@ -47,9 +47,9 @@ def make_download(request, *args, **kwargs):
   dsid = kwargs['dsid']
 
   # test values
-  #user = 'whgadmin'
+  #username = 'SomeUser'
   #req_format = 'tsv'
-  #dsid = 1035  
+  #dsid = 929  
   
   ds=Dataset.objects.get(pk=dsid)
   dslabel = ds.label
@@ -76,10 +76,10 @@ def make_download(request, *args, **kwargs):
     csvfile = open(fn, 'w', newline='', encoding='utf-8')
     writer = csv.writer(csvfile, delimiter='\t', quotechar='', quoting=csv.QUOTE_NONE)    
 
-    # if no geo columns in file, add lon/lat
+    # if no geo columns in file, add lon/lat * geowkt (why not, no harm)
     no_geom = False if len(set(['lon','lat','geowkt']) & set(header)) > 0 else True
     if no_geom:
-      newheader.extend(['lon','lat'])
+      newheader.extend(['lon','lat','geowkt'])
     # make distinct and write 
     newheader = list(set(newheader)); print(newheader)
     # TODO: better order?
@@ -114,11 +114,13 @@ def make_download(request, *args, **kwargs):
       if geoms.count() > 0:
         geowkt= newrow['geowkt'] if 'geowkt' in newrow else None
         lonlat= [newrow['lon'],newrow['lat']] if len(set(newrow.keys())&set(['lon','lat'])) ==2 else None
-        if not geowkt and not lonlat:
+        # lon/lat may be empty
+        if not geowkt and (not lonlat or None in lonlat):
           # get first db geometry & add to newrow dict
           g=geoms[0]
-          newrow['geowkt']=g.wkt
-          if g.jsonb['type'].lower == "point":
+          newheader.extend(['geowkt'])
+          newrow['geowkt']=g.geom.wkt
+          if g.jsonb['type'].lower() == "point":
             newrow['lon'] = g.geom.coords[0]
             newrow['lat'] = g.geom.coords[1]
       #print(newrow)
