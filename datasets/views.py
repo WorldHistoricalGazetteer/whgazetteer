@@ -1369,18 +1369,18 @@ def ds_insert_lpf(request, pk):
           ))
 
       # PlaceType: place,src_id,task_id,jsonb:{identifier,label,src_label}
-      #try:        
+      # in lpf, identifier may or may not be aat:
       if 'types' in feat.keys():
         fclass_list = []
         for t in feat['types']:
-          if 'identifier' in t.keys() and t['identifier'][:4] == 'aat:' \
-             and int(t['identifier'][4:]) in Type.objects.values_list('aat_id',flat=True):
-            fc = get_object_or_404(Type, aat_id=int(t['identifier'][4:])).fclass \
-              if t['identifier'][:4] == 'aat:' else None
-            fclass_list.append(fc)
+          # if identifier is aat:, look up an fclass for it
+          if 'identifier' in t.keys() and is_aat(t['identifier']):
+            aatstuff = aat_lookup(t['identifier'][-9:])
+            fclass_list.append(aatstuff['fclass'])
           else:
             fc = None
           print('from feat[types]:',t)
+          # if identifier
           objs['PlaceTypes'].append(PlaceType(
             place=newpl,
             src_id=newpl.src_id,

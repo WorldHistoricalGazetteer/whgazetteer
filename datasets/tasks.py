@@ -12,10 +12,12 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
 #from django.contrib.gis.geos import Polygon, Point, LineString
 
-import  datetime, itertools, json, re, sys, codecs, csv, time, csv# random, os
+import codecs, csv, datetime, itertools, re, sys, time
+import pandas as pd
+import simplejson as json
 from copy import deepcopy
 from itertools import chain
-#from pprint import pprint
+
 from areas.models import Area
 from datasets.models import Dataset, Hit
 from datasets.static.hashes.parents import ccodes as cchash
@@ -33,91 +35,109 @@ es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 
 """ 
   called by utils.downloader()
-  builds download file, retrieved via ajax JS in dl_summary.html 
+  builds download file, retrieved via ajax JS in ds_summary.html, ds_meta.html, collection_detail.html (modal)
 """
 @task(name="make_download")  
 def make_download(request, *args, **kwargs):
   # TODO: integrate progress_recorder for better progress bar in GUI
   #progress_recorder = ProgressRecorder(self) #accessed?
-  user = request['username']
+  username = request['username']
+  userid = request['userid']
   req_format = kwargs['format']
   dsid = kwargs['dsid']
+
+  # test values
+  #user = 'whgadmin'
+  #req_format = 'tsv'
+  #dsid = 1035  
   
   ds=Dataset.objects.get(pk=dsid)
   dslabel = ds.label
-  features=ds.places.all().order_by('id')
+  places=ds.places.all()
 
   date=maketime()
+  
   print("tasks.make_download()", {"format": req_format, "ds": dsid})
   
   if ds.format == 'delimited' and req_format in ['tsv', 'delimited']:
-    print('making a tsv file')
-    # name new file
-    fn = 'media/downloads/'+user+'_'+dslabel+'_'+date+'.tsv'
-
-    # gather link augments
-    def augLinks(linklist):
-      aug_links = []
-      for l in linklist:
-        aug_links.append(l.jsonb['identifier'])
-      return ';'.join(aug_links)
+    print('making an augmented tsv file')
+    # latest dataset file
+    dsf = ds.file
+    # pandas dataframe
+    df = pd.read_csv('media/'+dsf.file.name, delimiter='\t',dtype={'id':'str','aat_types':'str'})
+    # copy existing header to newheader for write
+    header = list(df)
+    newheader = deepcopy(header)
+    # all exports should have these, empty or not
+    newheader.extend(['matches', 'geo_id', 'geo_source'])
     
-    # gather geometry augments
-    # TODO: account for geowkt case 
-    def augGeom(qs_geoms):
-      gobj = {'new':[]}
-      for g in qs_geoms:
-        if not g.task_id:
-          # it's an original
-          gobj['lonlat'] = g.jsonb['coordinates']
-        else:
-          # it's an aug/add
-          gobj['new'].append({"id":g.jsonb['citation']['id'],"coordinates":g.jsonb['coordinates']})
-      return gobj
+    # name and open csv file for writer
+    fn = 'media/downloads/'+username+'_'+dslabel+'_'+date+'.tsv'
+    csvfile = open(fn, 'w', newline='', encoding='utf-8')
+    writer = csv.writer(csvfile, delimiter='\t', quotechar='', quoting=csv.QUOTE_NONE)    
 
-    # open file, write rows with csv
-    with open(fn, 'w', newline='', encoding='utf-8') as csvfile:
-      writer = csv.writer(csvfile, delimiter='\t', quotechar='', quoting=csv.QUOTE_NONE)
-      # TODO: use header_og to make proper LP-TSV
-      header = ['id','whg_pid','title','ccodes','lon','lat','added','matches']
+    # if no geo columns in file, add lon/lat
+    no_geom = False if len(set(['lon','lat','geowkt']) & set(header)) > 0 else True
+    if no_geom:
+      newheader.extend(['lon','lat'])
+    # make distinct and write 
+    newheader = list(set(newheader)); print(newheader)
+    # TODO: better order?
+    writer.writerow(newheader)
+    # missing columns
+    missing=list(set(newheader)-set(list(df))); print('missing',missing)
+    
+    for i, row in df.iterrows():
+      dfrow = df.loc[i,:]
+      # get db record
+      p = places.get(src_id = dfrow['id'])
+
+      # df row to newrow json object
+      rowjs = json.loads(dfrow.to_json())
+      newrow = deepcopy(rowjs)
+
+      # add missing keys from newheader, if any
+      for m in missing:
+        newrow[m] = ''
+      # newrow now has all keys -> fill with db values as req.
       
-      header = ['id', 'title', 'title_source', 'start', 'end', 'title_uri', 'ccodes', 'variants', 'types', 'aat_types', 'matches', 'parent_name', 'geowkt', 'geo_source', 'geo_id', 'description', 'pid']
-      writer.writerow(header)
-      counter = 0
-      for f in features:
-        counter +=1
-        geoms = f.geoms.all()
-        gobj = augGeom(geoms)
-        #print('gobj',f.id, gobj)
-        row = [str(f.src_id),
-               str(f.id),
-               f.title,
-               ';'.join(f.ccodes),
-               gobj['lonlat'][0] if 'lonlat' in gobj else None,
-               gobj['lonlat'][1] if 'lonlat' in gobj else None,
-               gobj['new'] if 'new' in gobj else None,
-               str(augLinks(f.links.all()))
-               ]
-        writer.writerow(row)
-        #progress_recorder.set_progress(counter + 1, len(features), description="tsv progress")
-    print('tsv file complete:', fn)
+      # LINKS (matches)
+      # get all distinct matches in db as string
+      links = (';').join(list(set([l.jsonb['identifier'] for l in p.links.all()])))
+      # replace whatever was in file
+      newrow['matches'] = links
+          
+      # GEOMETRY
+      # if db has >0 geom and row has none, add lon/lat and geowkt 
+      # otherwise, don't bother
+      geoms = p.geoms.all()
+      if geoms.count() > 0:
+        geowkt= newrow['geowkt'] if 'geowkt' in newrow else None
+        lonlat= [newrow['lon'],newrow['lat']] if len(set(newrow.keys())&set(['lon','lat'])) ==2 else None
+        if not geowkt and not lonlat:
+          # get first db geometry & add to newrow dict
+          g=geoms[0]
+          newrow['geowkt']=g.wkt
+          if g.jsonb['type'].lower == "point":
+            newrow['lon'] = g.geom.coords[0]
+            newrow['lat'] = g.geom.coords[1]
+      #print(newrow)
+      
+      # match newrow order to newheader already written      
+      index_map = {v: i for i, v in enumerate(newheader)}
+      ordered_row = sorted(newrow.items(), key=lambda pair: index_map[pair[0]])
 
-    Log.objects.create(
-      # category, logtype, "timestamp", subtype, note, dataset_id, user_id
-      category = 'dataset',
-      logtype = 'ds_download',
-      note = {"format":req_format, "user":user},
-      dataset_id = dsid,
-      user_id = ds.owner.id
-    ) 
-    # for ajax, just report filename
-    completed_message = {"msg":"tsv written", "filename":fn, "rows":len(features), "header":header}
-    return completed_message
+      #progress_recorder.set_progress(counter + 1, len(features), description="tsv progress")
+      
+      # write it
+      csvrow = [o[1] for o in ordered_row]
+      writer.writerow(csvrow)      
+    csvfile.close()
   
   else:
-    print('building lpf file')
+    print('building augmented lpf file')
     # make file name
-    fn = 'media/downloads/'+user+'_'+dslabel+'_'+date+'.json'
+    fn = 'media/downloads/'+username+'_'+dslabel+'_'+date+'.json'
     url_prefix='http://whgazetteer.org/api/place/'
     result={"type":"FeatureCollection","features":[],
             "@context": "https://raw.githubusercontent.com/LinkedPasts/linked-places/master/linkedplaces-context-v1.1.jsonld",
@@ -189,27 +209,28 @@ def make_download(request, *args, **kwargs):
           where dataset = '{ds}'        
         """.format(urlpre=url_prefix, ds=dslabel, a='{}'))
         for row in cursor:
+          #print('row in make_download lpf', type(row))
           g = row[0]['geometry']
           # get rid of empty/unknown geometry
           if g['type'] != 'GeometryCollection' and g['coordinates'] == []:
             row[0].pop('geometry')
           result['features'].append(row[0])
           #progress_recorder.set_progress(i + 1, len(features), description="lpf progress")
-        outfile.write(json.dumps(result,indent=2))
+        outfile.write(json.dumps(result,indent=2).replace('null','""'))
     print('tsv file complete:', fn)
     
-    Log.objects.create(
-      # category, logtype, "timestamp", subtype, note, dataset_id, user_id
-      category = 'dataset',
-      logtype = 'ds_download',
-      note = {"format":req_format, "user":user},
-      dataset_id = dsid,
-      user_id = ds.owner.id
-    ) 
-    
-    # for ajax, just report filename
-    completed_message = {"msg":"tsv written", "filename":fn, "rows":len(features)}
-    return completed_message
+  Log.objects.create(
+    # category, logtype, "timestamp", subtype, note, dataset_id, user_id
+    category = 'dataset',
+    logtype = 'ds_download',
+    note = {"format":req_format, "username":username},
+    dataset_id = dsid,
+    user_id = userid
+  ) 
+  
+  # for ajax, just report filename
+  completed_message = {"msg":"tsv written", "filename":fn, "rows":len(places)}
+  return completed_message
 
 
 @task(name="task_emailer")

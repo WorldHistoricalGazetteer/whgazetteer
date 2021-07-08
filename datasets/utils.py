@@ -18,7 +18,7 @@ from areas.models import Country
 from datasets.models import Dataset, DatasetUser, Hit
 from datasets.static.hashes import aat, parents, aat_q
 from datasets.static.hashes import aliases as al
-from datasets.tasks import make_download
+#from datasets.tasks import make_download
 from main.models import Log
 from places.models import PlaceGeom, Type
 pp = pprint.PrettyPrinter(indent=1)
@@ -31,16 +31,18 @@ pp = pprint.PrettyPrinter(indent=1)
 
 # initiate celery tasks
 def downloader(request, *args, **kwargs):
+  user = request.user
   print('request.user', request.user)
   print('kwargs', kwargs)
-  #from datasets.tasks import make_download
-  # *should* be the only case...
+  from datasets.tasks import make_download
+  # POST *should* be the only case...
   if request.method == 'POST' and request.is_ajax:
     print('ajax == True')
     print('request.POST (ajax)', request.POST)
     dsid=request.POST['dsid']
     format=request.POST['format']
-    download_task = make_download.delay({"username":request.user.username},
+    download_task = make_download.delay(
+      {"username":user.username, "userid":user.id},
       dsid=dsid,
       format=format,
     )
@@ -426,8 +428,11 @@ def timespansReduce(tsl):
   for ts in tsl:
     s = ts['start'][list(ts['start'].keys())[0]]
     s_yr=s[:5] if s[0] == '-' else s[:4]
-    e = ts['end'][list(ts['end'].keys())[0]] \
-            if 'end' in ts else s
+    #e = ts['end'][list(ts['end'].keys())[0]] \
+            #if 'end' in ts else s
+    # lpf imports from tsv exports can have '' in end
+    end = ts['end'][list(ts['end'].keys())[0]] if 'end' in ts else None # no end
+    e = end if end and end != '' else s
     e_yr=e[:5] if e[0] == '-' else e[:4]
     result.append([int(s_yr), int(e_yr)])
     #s = int(ts['start'][list(ts['start'].keys())[0]])
@@ -446,7 +451,10 @@ def parsedates_lpf(feat):
   # gather all when elements
   # global when?
   if 'when' in feat and 'timespans' in feat['when']:
-    intervals += timespansReduce(feat['when']['timespans']) 
+    try:
+      intervals += timespansReduce(feat['when']['timespans']) 
+    except:
+      print('parsedates_lpf hung on', feat['@id'])
     
   # which feat keys might have a when?
   possible_keys = list(set(feat.keys() & \
@@ -598,6 +606,9 @@ class HitRecord(object):
   def toJSON(self):
     import json
     return json.loads(json.dumps(self.__dict__,indent=2))
+
+def is_aat(string):
+  return True if string.startswith('aat') or 'aat/' in string else False
 
 # null fclass: 300239103, 300056006, 300155846
 # refactored to use Type model in db
