@@ -38,10 +38,19 @@
               {% for g in context.groups %}{{g}}{% if not forloop.last %}; {% endif %}{% endfor %}
             </td></tr>
           {% endif %}
+          {% if context.owned|length > 0 %}
+          <tr><td class="float-right pr-3 strong">Owner</td>
+          <td>{% for ds in context.owned %}<b><a href="{% url 'datasets:ds_summary' ds.0 %}">{{ds.1}}</a></b> ({{ds.0}}, {{ds.2}})<br/> {% endfor %} </td>
+          </tr>{% endif %}
+          {% if context.collabs|length > 0 %}
+          <tr><td class="float-right pr-3 strong">Member</td>
+          <td>{% for ds in context.collabs %}<b>{{ds.1}}</b> ({{ds.0}}, {{ds.2}})<br/> {% endfor %} </td>
+          </tr>{% endif %}
         </tbody>
       </table>
     </div> <!-- view_profile -->
     <div id="edit_profile" class="hidden">
+      {{context}}
       <table>
         <tbody>
           <tr><td class="float-right pr-3 strong">Username</td><td>{{ user_form.username.value }}</td></tr>
@@ -52,8 +61,7 @@
           <tr>
             <td class="float-right pr-3 strong">Email</td>
             <td>{{ user_form.email }}</td></tr>
-          <tr><td class="float-right pr-3 strong">Affiliations</td><td>{{ profile_form.affiliation }}</td></tr>
-          <!--<tr><td class="float-right pr-3 strong">Web page</td><td>{ profile_form.web_page }}</td></tr>-->
+          <tr><td class="float-right pr-3 strong">Affiliation</td><td>{{ profile_form.affiliation }}</td></tr>
         </tbody>
       </table>
       <div>

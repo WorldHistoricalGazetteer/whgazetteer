@@ -47,9 +47,9 @@
       <form id="sharing_form" method="POST" action="{% url 'datasets:collab-add' dsid=ds.id v='2' %}" enctype="multipart/form-data">
       {% csrf_token %}
       <div></div>
-        {% if messages %}<div>{% for message in messages %}
-          <i style="display:block;" class="mb-2">{{ message }}</i>
-        {%endfor%}</div>{% endif %}
+        <!--{ if messages %}<div>{ for message in messages %}-->
+          <!--<i style="display:block;" class="mb-2">{{ message }}</i>-->
+        <!--{endfor%}</div>{ endif %}-->
       <div class="sharing-box my-3 w-50">
         <div class="sharing-header mb-0">Collaborators</div>
         <p class="mb-1 px-2">Collaborators are assigned per dataset. Members can view its contents and metadata, and perform review of reconciliation task results.

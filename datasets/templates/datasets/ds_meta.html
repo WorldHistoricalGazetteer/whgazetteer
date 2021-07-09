@@ -66,6 +66,12 @@
             <td>earliest: {{ object.minmax.0 }}; latest: {{ object.minmax.1 }}</td>
           </tr>
           {% endif %}
+          {% if object.source%}
+          <tr>
+            <td><b>Source(s)</b></td>
+            <td>{{ object.source }}</td>
+          </tr>
+          {% endif %}
           <tr>
             <td><b>Last modified</b></td>
             <td>{{ object.last_modified }}</td>

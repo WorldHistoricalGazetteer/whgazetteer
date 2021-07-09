@@ -64,17 +64,15 @@
               <span class="hidden editing-title">{{ form.title }}</span>
             </td>
           </tr>
-          {% if ds.webpage %}
           <tr>
             <td style="vertical-align:top;"><b>Webpage</b> 
               <a href="#" class="edit-webpage">{% fontawesome_icon 'edit' color='#336699' %}</a>
             </td>
             <td>
-              <span class="form-webpage">{{ form.webpage.value }}</span>
+              <span class="form-webpage">{{ form.webpage.value|default_if_none:"&mdash;" }}</span>
               <span class="hidden editing-webpage">{{ form.webpage }}</span>&nbsp;
             </td>
           </tr>
-          {% endif %}
           <tr>
             <td style="vertical-align:top;"><b>Description</b> 
               <a href="#" class="edit-description">{% fontawesome_icon 'edit' color='#336699' %}</a>
@@ -102,8 +100,8 @@
               <a href="#" class="edit-source">{% fontawesome_icon 'edit' color='#336699' %}</a>
             </td>
             <td>
-              <span class="form-source">{{ form.source.value }}</span>
-              <span class="hidden editing-aource">{{ form.source }}</span>
+              <span class="form-source">{{ form.source.value|default_if_none:"&mdash;" }}</span>
+              <span class="hidden editing-source">{{ form.source }}</span>
             </td>
           </tr>
           <tr>
@@ -111,7 +109,7 @@
               <a href="#" class="edit-contrib">{% fontawesome_icon 'edit' color='#336699' %}</a>
             </td>
             <td>
-              <span class="form-contrib">{{ form.contributors.value }}</span>
+              <span class="form-contrib">{{ form.contributors.value|default_if_none:"&mdash;" }}</span>
               <span class="hidden editing-contrib">{{ form.contributors }}</span>
             </td>
           </tr>
@@ -120,7 +118,7 @@
               <a href="#" class="edit-citation">{% fontawesome_icon 'edit' color='#336699' %}</a>
             </td>
             <td>
-              <span class="form-citation">{{ form.citation.value }}</span>
+              <span class="form-citation">{{ form.citation.value|default_if_none:"&mdash;" }}</span>
               <span class="hidden editing-citation">{{ form.citation }}</span>
             </td>
           </tr>
@@ -152,7 +150,7 @@
                 <a href="#" class="edit-featured">{% fontawesome_icon 'edit' color='#336699' %}</a>
               </td>
               <td>
-                <span class="form-featured">{{ form.featured.value }}</span>
+                <span class="form-featured">{{ form.featured.value|default_if_none:"&mdash;" }}</span>
                 <span class="hidden editing-featured">{{ form.featured }}</span>
               </td>
             </tr>
@@ -161,7 +159,7 @@
                 <a href="#" class="edit-image">{% fontawesome_icon 'edit' color='#336699' %}</a>
               </td>
               <td>
-                <span class="form-image">{{ form.image_file.value }}</span>
+                <span class="form-image">{{ form.image_file.value}}</span>
                 <span class="hidden editing-image">{{ form.image_file }}</span>
               </td>
             </tr>

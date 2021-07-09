@@ -7,6 +7,7 @@ from django import forms
 from django.shortcuts import render, redirect, get_object_or_404
 
 from accounts.forms import UserModelForm, ProfileModelForm, LoginForm
+from datasets.models import Dataset, DatasetUser
 
 @login_required
 @transaction.atomic
@@ -31,7 +32,11 @@ def update_profile(request):
     profile_form = ProfileModelForm(instance=request.user.profile)
     id_ = request.user.id
     u = get_object_or_404(User, id=id_)
-    context['projects'] = 'datasets I own or collaborate on'
+    owned = [[ds.id, ds.title, 'owner'] for ds in Dataset.objects.filter(owner = u).order_by('title')]
+    collabs = [[dc.dataset_id.id, dc.dataset_id.title, dc.role] for dc in DatasetUser.objects.filter(user_id_id = id_)]
+    #owned.extend(collabs)
+    context['owned'] = owned
+    context['collabs'] = collabs
     context['comments'] = 'get comments associated with projects I own'
     context['groups'] = u.groups.values_list('name',flat=True)
 

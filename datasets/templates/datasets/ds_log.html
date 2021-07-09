@@ -45,8 +45,9 @@
   <div class="tab-content">
     <div id="log" class="tab-pane fade show active" role="tabpanel" aria-labelledby="log-tab">
       <div class="mt-2 row">
-        <div id="ds_log" class="col-sm-5">
+        <div id="ds_log" class="col-sm-5" >
           <h4>Dataset Log</h4>
+          <div id="ds_log_table" style="overflow-y:scroll; height:90%">
           <table class="table table-striped">
           <thead><th>action</th><th>note</th><th>date</th></thead>
           {% for l in log %}
@@ -57,6 +58,7 @@
             </tr>
           {%endfor%}
           </table>
+          </div>
         </div>
         <div id="ds_comments" class="col-sm-7">
           <h4>Comments</h4>
