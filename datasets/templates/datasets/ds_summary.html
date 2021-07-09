@@ -98,6 +98,15 @@
             </td>
           </tr>
           <tr>
+            <td style="vertical-align:top;"><b>Source(s)</b> 
+              <a href="#" class="edit-source">{% fontawesome_icon 'edit' color='#336699' %}</a>
+            </td>
+            <td>
+              <span class="form-source">{{ form.source.value }}</span>
+              <span class="hidden editing-aource">{{ form.source }}</span>
+            </td>
+          </tr>
+          <tr>
             <td style="vertical-align:top;"><b>Contributors</b> 
               <a href="#" class="edit-contrib">{% fontawesome_icon 'edit' color='#336699' %}</a>
             </td>
@@ -219,7 +228,8 @@
             </table>
             <input class="btn btn-primary btn-sm hidden btn-file" type="submit" value="Upload" />
           </div> <!-- div_file -->
-          <input type="hidden" name="datatype" value="{{ current_file.datatype }}">
+          <input type="hidden" name="datatype" value=
+            {% if current_file %}"{{ current_file.datatype }}"{%else%}"place"{%endif%}>
           <input type="hidden" name="rev" value="{{ current_file.rev }}">
           <input type="hidden" name="format" value="{{ current_file.format }}">
           <input type="hidden" name="delimiter" value="{{ current_file.delimiter }}">
@@ -633,6 +643,11 @@ js for Summary, Reconciliation
   $(".edit-creator").click(function() {
     $(".editing-creator").toggleClass("hidden")
     $(".form-creator").toggleClass("hidden")
+    $(".btn-ds").toggleClass("hidden")
+  })  
+  $(".edit-source").click(function() {
+    $(".editing-source").toggleClass("hidden")
+    $(".form-source").toggleClass("hidden")
     $(".btn-ds").toggleClass("hidden")
   })  
   $(".edit-contrib").click(function() {

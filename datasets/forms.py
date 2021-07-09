@@ -50,7 +50,7 @@ class DatasetDetailModelForm(forms.ModelForm):
     model = Dataset
     # file fields = ('file','rev','uri_base','format','dataset_id','delimiter',
     #   'status','accepted_date','header','numrows')
-    fields = ('owner','creator','contributors','id','label','title','uri_base','description',
+    fields = ('owner','creator','contributors','source','id','label','title','uri_base','description',
               'citation','datatype','numlinked','public','webpage','featured','image_file')
     widgets = {
       'description': forms.Textarea(attrs={
@@ -58,6 +58,7 @@ class DatasetDetailModelForm(forms.ModelForm):
       'citation': forms.Textarea(attrs={
         'rows':2,'cols': 55,'class':'textarea'}),
       'creator': forms.TextInput(attrs={'size': 50}),
+      'source': forms.TextInput(attrs={'size': 50}),
       'contributors': forms.TextInput(attrs={'size': 50}),
       'webpage': forms.TextInput(attrs={'size': 50}),
       'uri_base': forms.TextInput(attrs={'size': 50}),
@@ -76,7 +77,7 @@ class DatasetDetailModelForm(forms.ModelForm):
   def __init__(self, *args, **kwargs):
     super(DatasetDetailModelForm, self).__init__(*args, **kwargs)
     for field in self.fields.values():
-      field.error_messages = {'required':'The field fubar {fieldname} is required'.format(
+      field.error_messages = {'required':'The field {fieldname} is required'.format(
                   fieldname=field.label)}    
 
 class DatasetCreateModelForm(forms.ModelForm):
@@ -85,16 +86,17 @@ class DatasetCreateModelForm(forms.ModelForm):
     # file fields = ('file','rev','uri_base','format','dataset_id','delimiter',
     #   'status','accepted_date','header','numrows')
     fields = ('owner','id','title','label','datatype','description','uri_base','public',\
-              'creator','contributors','webpage','image_file','featured')
+              'creator','contributors','source','webpage','image_file','featured')
     widgets = {
       'description': forms.Textarea(attrs={
         'rows':2,'cols': 55,'class':'textarea','placeholder':'Brief description'})
       ,'uri_base': forms.URLInput(attrs={
-        'placeholder':'Leave blank unless record IDs are URIs','size':40})
-      ,'title': forms.TextInput(attrs={'size': 40})
-      ,'creator': forms.TextInput(attrs={'size': 40})
+        'placeholder':'Leave blank unless record IDs are URIs','size':50})
+      ,'title': forms.TextInput(attrs={'size': 50})
+      ,'creator': forms.TextInput(attrs={'size': 50})
+      ,'source': forms.TextInput(attrs={'size': 50})
       ,'featured': forms.TextInput(attrs={'size': 4})
-      ,'webpage': forms.URLInput(attrs={'size': 40,'placeholder':'Project home page, if any'})
+      ,'webpage': forms.URLInput(attrs={'size': 50,'placeholder':'Project home page, if any'})
     }
   
   # fields used to create new DatasetFile record from form

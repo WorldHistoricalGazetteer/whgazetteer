@@ -8,7 +8,7 @@ from django.db import models
 from django.db.models import Q
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
-from django.urls import reverse
+#from django.urls import reverse
 #from django.shortcuts import get_object_or_404
 
 from elastic.es_utils import escount_ds
