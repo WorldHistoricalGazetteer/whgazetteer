@@ -9,11 +9,6 @@
   {% leaflet_js %}
   {% leaflet_css %}
   
-  <!--<script src="{% static 'js/tags/bootstrap-tagsinput.js' %}"></script>-->
-  <!--<script src="{% static 'js/tags/bloodhound.js' %}"></script>-->
-  <!--<link rel="stylesheet" href="{% static 'js/tags/bootstrap-tagsinput.css' %}"/>-->
-  <!--<link rel="stylesheet" href="{% static 'js/tags/bootstrap-tagsinput-typeahead.css' %}"/>-->
-  
   <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.css' rel='stylesheet' />
   <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.js'></script>
   <script src="{% static 'js/leaflet-mapbox-gl.js' %}"></script>
@@ -56,7 +51,8 @@
       <div id="collection_options"></div> <!-- collection_options -->
       <p id="referrer"></p>
       <input class="btn-sm btn-primary mt-2" type="submit" value="Save" />
-      <span title="back"><a href="{% url 'dashboard' %}">Cancel</a></span>
+      <!--<span title="back"><a href="{ url 'dashboard' %}">Cancel</a></span>-->
+      <span title="back"><a href="/dashboard#collectionlist">Cancel</a></span>
     </form>
     </div>
     <div id="coll_builder" class="col-sm-7 p-2">
@@ -79,7 +75,7 @@
           {% fontawesome_icon 'plus-square' color='#336699' %} add</a></p>
           <!-- id, label, title, description, creator, create_date, webpage, numrows, datatype -->
           <div id="coll_dscards">
-            {% if coll_dsset|length == 0 %}<p class="font-italic smaller">None yet...</p>{% endif %}
+            {% if coll_dsset|length == 0 %}<p id="noneyet" class="font-italic smaller">None yet...</p>{% endif %}
             <!--{ if action == 'update' %}-->
             {% for d in coll_dsset %}
               <div class="ds_card">
@@ -87,8 +83,9 @@
                 <div class="ds_fields">
                   <p class="my-1"><b>Description</b>: {{ d.description|truncatechars:150 }}</p>
                   <p class="my-1"><b>Create date</b>: {{ d.create_date|date:"d M Y" }}</p>
-                  <p class="my-1"><b># rows</b>: {{ d.numrows }} 
-                    <a href="{% url 'collection:remove-ds' ds_id=d.id coll_id=object.id %}" class="float-right">{% fontawesome_icon 'minus-square' color='#336699' %} remove</a>
+                  <p class="my-1"><b># rows</b>: {{ d.numrows }}
+                  
+                  <a href="{% url 'collection:remove-ds' ds_id=d.id coll_id=object.id %}" class="float-right">{% fontawesome_icon 'minus-square' color='#336699' %} remove</a>
                   </p>
                 </div>
               </div>
@@ -96,11 +93,6 @@
             <!--{ endif %}-->
           </div> <!-- #coll_dscards -->
         </div> <!-- .col-sm-8 -->
-        {%comment%}<div class="col-sm-5">
-          <div id="mapdiv_coll" class="mt-2">
-            {% leaflet_map "map_coll" %}
-          </div>
-      </div>{%endcomment%}
     </div> <!-- .row -->
   </div> <!-- d-flex -->
 </div> <!-- container -->
@@ -121,13 +113,14 @@
     console.log('listing this:', d.title)
     dslist.push(d.id)
     $("#id_datasets [value=" + d.id + "]").attr("checked", "checked");
-    card='<div class="ds_card">'
+    card='<div class="ds_card" id="card_'+d.id+'">'
         +'<p class="mb-0"><a href="#"><span class="ds_title">'+d.title+'</span></a> ('+d.label+'/'+d.id+')</p>'
         +'<div class="ds_fields">'
           +'<p class="my-1"><b>Description</b>: '+d.description+'</p>'
           +'<p class="my-1"><b>Create date</b>: '+d.create_date+'</p>'
           +'<p class="my-1"><b># rows</b>: '+d.numrows 
             +'<a href="javascript:{ removeDataset('+d.id+') }" class="float-right">'
+            <!--+'<a href="javascript:{ clearDataset('+d.id+') }" class="float-right">'-->
               +'{% fontawesome_icon "minus-square" color="#336699" %} remove</a>'
           +'</p></div></div>'
     $("#coll_dscards").append(card)
@@ -147,14 +140,25 @@
     // reset select
     $("#select_ds").val(0)
   }
+  function clearDataset(dsid){
+    console.log('clear card for ds', dsid)
+    $("#card_"+dsid).remove()
+  }
   function removeDataset(dsid) {
-    console.log('removed', dsid)
-    // remove_ds/<int:coll_id>/<int:ds_id>'
-    // '/datasets/{{ds.id}}/augmented/'+$(this).attr('ref')
-    $.ajax("/collections/remove_ds/{{object.id}}/"+dsid,
-      function(){
-        console.log('huh?')
-    });
+    if("{{ action }}" == 'update') {
+      console.log('removing ' + dsid + 'from collection '+ "{{object.id}}")
+      $.ajax("/collections/remove_ds/{{object.id}}/"+dsid,
+        function(result){
+          console.log('removeDataset() result', result)
+      });
+    } else {
+      $("#id_datasets [value=" + dsid + "]").prop("checked", false);
+      let idx = dslist.indexOf(dsid)
+      delete dslist[idx]
+      card = "#card_"+dsid
+      $(card).remove()
+      console.log('removed '+dsid+' from dslist[] and dom')
+    }
     // reset select
     $("#select_ds").val(0)
   }

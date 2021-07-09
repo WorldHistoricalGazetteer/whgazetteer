@@ -2,7 +2,7 @@
 
 from django.conf import settings
 from django.http import JsonResponse, HttpResponseRedirect
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.views.generic import (View, CreateView, UpdateView, DetailView, DeleteView )
 
@@ -32,6 +32,7 @@ def remove_dataset(request, *args, **kwargs):
   #print('kwargs', kwargs)
   coll = Collection.objects.get(id=kwargs['coll_id'])
   ds = Dataset.objects.get(id=kwargs['ds_id'])
+  print('remove_dataset(): coll, ds', coll, ds)
   coll.datasets.remove(ds)
   
   return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
@@ -48,13 +49,6 @@ class CollectionCreateView(CreateView):
   # 
   def get_form_kwargs(self, **kwargs):
     kwargs = super(CollectionCreateView, self).get_form_kwargs()
-    #redirect = self.request.GET.get('next')+'#addtask' if 'next' in self.request.GET else ''
-    #print('GET in CollectionCreate()',self.request.GET)
-    ##print('redirect',redirect)
-    #if redirect != '':
-      #self.success_url = redirect
-    #else:
-      #self.success_url = '/dashboard'
     return kwargs
 
   def form_invalid(self,form):

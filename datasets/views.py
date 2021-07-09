@@ -1466,8 +1466,6 @@ def ds_insert_lpf(request, pk):
           "numlinked":countlinked,
           "total_links":total_links})
 
-
-
 """
 ds_insert_tsv(pk)
 insert tsv into database
@@ -1793,8 +1791,8 @@ class DashboardView(LoginRequiredMixin, ListView):
     print('in get_context',me)
 
     types_ok=['ccodes','copied','drawn']
-    # returns owned and permissioned datasets (rw) + black and dplace (ro)
-    context['shared_list'] = Dataset.objects.filter(Q(id__in=myprojects(me)) | Q(id__lt=3) ).order_by('-id')
+    # returns owned and shared datasets (rw)
+    context['shared_list'] = Dataset.objects.filter(id__in=myprojects(me)).order_by('-id')
 
     context['public_list'] = Dataset.objects.filter(public=True).order_by('-numrows')
         
@@ -1804,7 +1802,8 @@ class DashboardView(LoginRequiredMixin, ListView):
 
     # list collections
     collection_list = Collection.objects.all().order_by('create_date')
-    context['collections'] = collection_list if me.is_superuser else collection_list.filter(owner=me)
+    context['collections'] = collection_list if me.is_superuser else \
+      collection_list.filter(owner=me)
 
     context['viewable'] = ['uploaded','inserted','reconciling','review_hits','reviewed','review_whg','indexed']
     

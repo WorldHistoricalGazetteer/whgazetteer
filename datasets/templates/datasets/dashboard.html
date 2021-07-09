@@ -27,11 +27,11 @@
       <li class="nav-item">
         <a class="nav-link active" id="mydslist-tab" data-toggle="tab" href="#mydslist" role="tab" aria-controls="dslist" aria-selected="true">Datasets</a>
       </li>
-      {% if beta_or_better or user.is_superuser %}
+      <!--{ if beta_or_better or user.is_superuser %}-->
       <li class="nav-item">
         <a class="nav-link" id="collectionlist-tab" data-toggle="tab" href="#collectionlist" role="tab" aria-controls="collectionlist" aria-selected="false">Collections</a>
       </li>
-      {% endif %}
+      <!--{ endif %}-->
       <li class="nav-item">
         <a class="nav-link" id="arealist-tab" data-toggle="tab" href="#arealist" role="tab" aria-controls="arealist" aria-selected="false">Study Areas</a>
       </li>
@@ -208,6 +208,15 @@
   <script>
     $(function(){ 
       $("[rel='tooltip']").tooltip();
+
+      // manage url
+      var url = document.location.toString();
+      if (url.match('#')) {
+        tab = url.split('#')[1]
+        $('.nav-tabs a[href="#' + tab+ '"]').tab('show');
+        history.pushState("", document.title, window.location.pathname);
+      }
+      
     })
     
     $(".fa-sort").on('click',function(){
