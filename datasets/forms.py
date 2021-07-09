@@ -54,10 +54,13 @@ class DatasetDetailModelForm(forms.ModelForm):
               'citation','datatype','numlinked','public','webpage','featured','image_file')
     widgets = {
       'description': forms.Textarea(attrs={
-        'rows':2,'cols': 40,'class':'textarea','placeholder':'Brief description'}),
+        'rows':2,'cols': 55,'class':'textarea','placeholder':'Brief description'}),
       'citation': forms.Textarea(attrs={
-        'rows':2,'cols': 40,'class':'textarea'}),
-      'webpage': forms.TextInput(attrs={'size': 30}),
+        'rows':2,'cols': 55,'class':'textarea'}),
+      'creator': forms.TextInput(attrs={'size': 50}),
+      'contributors': forms.TextInput(attrs={'size': 50}),
+      'webpage': forms.TextInput(attrs={'size': 50}),
+      'uri_base': forms.TextInput(attrs={'size': 50}),
       'featured': forms.TextInput(attrs={'size': 4})
     }
   
@@ -85,7 +88,7 @@ class DatasetCreateModelForm(forms.ModelForm):
               'creator','contributors','webpage','image_file','featured')
     widgets = {
       'description': forms.Textarea(attrs={
-        'rows':2,'cols': 39,'class':'textarea','placeholder':'Brief description'})
+        'rows':2,'cols': 55,'class':'textarea','placeholder':'Brief description'})
       ,'uri_base': forms.URLInput(attrs={
         'placeholder':'Leave blank unless record IDs are URIs','size':40})
       ,'title': forms.TextInput(attrs={'size': 40})

@@ -3,21 +3,21 @@
 {% block content %}
 
 <div class="container">
+  <div class="d-flex justify-content-center mt-3">
   <form id="profile_form" method="POST" action="{% url 'account_profile' %}" enctype="multipart/form-data">
   {% csrf_token %}
   {{ user_form.errors }}
   {{ profile_form.errors }}
   {{ user_form.non_field_errors }}
   {{ profile_form.non_field_errors }}
-  <div class="d-flex justify-content-center mt-3">
-    <h3><span class="red-head">{{ user.username }}</span> profile <span class="small ml-2"><a id="edit_link" href="#">edit {% fontawesome_icon 'edit' color='#336699' %}</a></span></h3>
-  </div>
+  <h3 class="text-center"><span class="red-head">{{ user.username }}</span> profile <span class="small ml-2"><a id="edit_link" href="#">edit {% fontawesome_icon 'edit' color='#336699' %}</a></span></h3>
+  <!--</div>-->
   <!-- non-changeable fields -->
   <span class="hidden">{{ user_form.username }}</span>
   <span class="hidden">{{ user_form.password }}</span>
   <span class="hidden">{{ profile_form.name }}</span>
   <span class="hidden">{{ profile_form.user_type }}</span>
-  <div class="px-5 profile">
+  <div class="profile px-5">
     <div id="view_profile">
       <table>
         <tbody>
@@ -25,10 +25,12 @@
           <tr>
             <td class="float-right pr-3 strong">Name</td>
             <td>{% if user.profile.user_type == 'individual' %}{{ user_form.first_name.value }} {{ user_form.last_name.value }}
-                {% else %} {{ profile_form.name.value }} {% endif %}</td></tr>
+                {% else %} {{ profile_form.name.value }} {% endif %}</td>
+          </tr>
           <tr>
             <td class="float-right pr-3 strong">Email</td>
-            <td>{{ user_form.email.value }}</td></tr>
+            <td>{{ user_form.email.value }}</td>
+          </tr>
           <tr><td class="float-right pr-3 strong">Affiliation</td><td>{{ profile_form.affiliation.value }}</td></tr>
           <!--<tr><td class="float-right pr-3 strong">Web page</td><td>{ profile_form.web_page.value }}</td></tr>-->
           {% if context.groups|length > 0 %}
@@ -36,9 +38,9 @@
               {% for g in context.groups %}{{g}}{% if not forloop.last %}; {% endif %}{% endfor %}
             </td></tr>
           {% endif %}
-        <tbody>
+        </tbody>
       </table>
-    </div>
+    </div> <!-- view_profile -->
     <div id="edit_profile" class="hidden">
       <table>
         <tbody>
@@ -52,20 +54,21 @@
             <td>{{ user_form.email }}</td></tr>
           <tr><td class="float-right pr-3 strong">Affiliations</td><td>{{ profile_form.affiliation }}</td></tr>
           <!--<tr><td class="float-right pr-3 strong">Web page</td><td>{ profile_form.web_page }}</td></tr>-->
-        <tbody>
+        </tbody>
       </table>
       <div>
-      <input class="btn btn-primary btn-sm ml-3 mt-3" type="submit" value="Save" />
-      <span class="ml-2" style="vertical-align:bottom;"><a href="{% url 'account_profile' %}">Cancel</a></span>
+        <input class="btn btn-primary btn-sm ml-3 mt-3" type="submit" value="Save" />
+        <span class="ml-2" style="vertical-align:bottom;"><a href="{% url 'account_profile' %}">Cancel</a></span>
       </div>
-    </div>
+    </div> <!-- #editProfile -->
     <div>
     </div>
     <!--{ if messages %}-->
       <!--<span class="text-success strong"> { for message in messages %}{{ message }}{ endfor %}</span>-->
     <!--{ endif %}-->
-  </div>
+  </div> <!-- .profile -->
   </form>
+  </div>
 </div>
 <script type="text/javascript">
   $("#edit_link").click(function(){

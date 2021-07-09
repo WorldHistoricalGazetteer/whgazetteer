@@ -60,13 +60,21 @@
               <a href="#" class="edit-title">{% fontawesome_icon 'edit' color='#336699' %}</a>
             </td>
             <td>
-              <span class="form-title h6 strong">{{ form.title.value }}
-                {% if ds.webpage %}(<a href="{{ ds.webpage }}" target="_blank">webpage</a> <a href="#" class="edit-webpage">{% fontawesome_icon 'edit' color='#336699' %}</a>){% endif %}
-              </span>
-              <span class="hidden editing-title">{{ form.title }}</span>&nbsp;
+              <span class="form-title h6 strong">{{ form.title.value }}</span>
+              <span class="hidden editing-title">{{ form.title }}</span>
+            </td>
+          </tr>
+          {% if ds.webpage %}
+          <tr>
+            <td style="vertical-align:top;"><b>Webpage</b> 
+              <a href="#" class="edit-webpage">{% fontawesome_icon 'edit' color='#336699' %}</a>
+            </td>
+            <td>
+              <span class="form-webpage">{{ form.webpage.value }}</span>
               <span class="hidden editing-webpage">{{ form.webpage }}</span>&nbsp;
             </td>
           </tr>
+          {% endif %}
           <tr>
             <td style="vertical-align:top;"><b>Description</b> 
               <a href="#" class="edit-description">{% fontawesome_icon 'edit' color='#336699' %}</a>
@@ -80,10 +88,6 @@
             <td><b>ID / label</b></td>
             <td>{{ ds.id }} / {{ ds.label }}</td>
           </tr>
-          <!--<tr>-->
-            <!--<td><b>Creator</b></td>-->
-            <!--<td>{form.creator }}</td>-->
-          <!--</tr>-->
           <tr>
             <td style="vertical-align:top;"><b>Creator(s)</b> 
               <a href="#" class="edit-creator">{% fontawesome_icon 'edit' color='#336699' %}</a>
@@ -610,6 +614,7 @@ js for Summary, Reconciliation
   })
   
   // TODO: refactor this ugly nonsense
+  // also, button is hidden on 2nd click
   $(".edit-title").click(function() {
     $(".editing-title").toggleClass("hidden")
     $(".form-title").toggleClass("hidden")
