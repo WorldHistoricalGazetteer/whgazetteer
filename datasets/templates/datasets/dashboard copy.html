@@ -1,24 +1,13 @@
 <!-- datasets/dashboard.html -->
 {% extends "main/base.html" %}
 {% block title %}<title>WHG::Dashboard</title>{% endblock %}
-{% block extra_head %}
-{% block mycss %} 
-  <style>
-    .fa-sort {cursor:pointer;}
-    #mydslist {position:relative !important;}
-    #dataset_list {position:relative !important; height:75vh !important }
-    .list-box {overflow-y:auto  !important; max-height:100%;}
-  </style>
-{% endblock mycss %}
-{% endblock%}
-
 
 {% block content %}
   {% load static %}
   {% load fontawesome %}
   {% load mathfilters %}
   {% load dataset_extras %}
-  
+
   <div class="container pt-3">
     <!--{ if messages %}<div>{ for message in messages %}-->
           <!--<i style="display:block;" class="text-danger ml-4 mb-2">{ message }}</i>-->
@@ -35,9 +24,9 @@
       <li class="nav-item">
         <a class="nav-link" id="arealist-tab" data-toggle="tab" href="#arealist" role="tab" aria-controls="arealist" aria-selected="false">Study Areas</a>
       </li>
-      <li class="nav-item">
-        <a class="nav-link" id="publiclist-tab" data-toggle="tab" href="#publiclist" role="tab" aria-controls="publiclist" aria-selected="false">Public Datasets</a>
-      </li>
+      <!--<li class="nav-item">-->
+        <!--<a class="nav-link" id="publiclist-tab" data-toggle="tab" href="#publiclist" role="tab" aria-controls="publiclist" aria-selected="false">Public Datasets</a>-->
+      <!--</li>-->
     </ul>
     <div class="tab-content">
       <div id="mydslist" class="tab-pane fade show active" role="tabpanel" aria-labelledby="mydslist-tab">
@@ -48,18 +37,17 @@
             <h6 class="mb-0">My Datasets</h6>
             {% if dataset_list|length == 0 %}<p class="smaller"><i>None yet...</i></p>
             {% else %}
-            <table id="table_ds" class="table table-striped">
+            <table class="table table-striped">
               <thead class="small strong">
                 <th>id</th>
-                <th>name <i class="fa fa-sort ml-1" data-id=1 ref=asc></i></th>
-                <th>label <i class="fa fa-sort ml-1" data-id=2 ref=asc></i></th>
-                <th>created <i class="fa fa-sort ml-1" data-id=3 title="UTC"></i></th>
+                <th>name</th>
+                <th>label</th>
+                <th>created (utc)</th>
                 <th>format</th>
                 <th># rows</th>
-                <th>status <i class="fa fa-sort ml-1" data-id=6 ref=asc></i></th>
-                <!--{ if user.is_superuser %}-->
-                {% if beta_or_better %}
-                <th>owner <i class="fa fa-sort ml-1" data-id=7 ref=asc></i></th>{% endif %}
+                <th>status</th>
+                {% if user.is_superuser %}
+                <th>owner</th>{% endif %}
               </thead>
               <tbody>
                 {% for d in dataset_list %}
@@ -71,13 +59,12 @@
                     <td>{% if d.core == True %}
                           {{ d.label }} <span class="corerow"> (core)</span>
                         {% else %}{{ d.label }}{% endif %}</td>
-                    <td class="small">{{ d.create_date|date:"Y-m-d, H:i" }}</td>
+                    <td class="small">{{ d.create_date|date:"d M Y, H:i" }}</td>
                     <td>{{ d.format }}</td>
                     <td>{{ d.numrows }}</td>
                     <td>{{ d.ds_status }}</td>
-                    <!--{ if user.is_superuser %}-->
-                    {% if beta_or_better %}
-                    <td>{{ d.owner|truncatechars:20 }}</td>
+                    {% if user.is_superuser %}
+                    <td>{{ d.owner }}</td>
                     {% endif %}
                   </tr>
                 {% endfor %}
@@ -92,7 +79,6 @@
                 <th>name</th>
                 <th>label</th>
                 <th>created (utc)</th>
-                <!--<th>type</th>-->
                 <th># rows</th>
                 <th>status</th>
                 <th>owner</th>
@@ -107,7 +93,7 @@
                           {{ d.label }} <span class="corerow"> (core)</span>
                         {% else %}{{ d.label }}{% endif %}</td>
                     <!--<td class="small">{ d.create_date|date:"d-M-Y, H:i (e)" }}</td>-->
-                    <td class="small">{ d.create_date|date:"d M Y, H:i" }}</td>
+                    <td class="small">{{ d.create_date|date:"d M Y, H:i" }}</td>
                     <!--<td>{ d.datatype }}</td>-->
                     <td>{{ d.numrows }}</td>
                     <td>{{ d.ds_status }}</td>
@@ -171,95 +157,44 @@
           </div>
         </div>
       </div>
-      <div id="publiclist" class="tab-pane fade " role="tabpanel" aria-labelledby="publiclist-tab">
-        <p class="mb-1 ml-1">These data are flagged as public in WHG. If marked as <mark>indexed</mark>, records are fully searchable from the home page and Index API. If marked as <mark>accessioning</mark>, records are partially indexed. Those not yet indexed are accessible through the Database API. <a href="{% url 'usingapi' %}">API docs</a></p>      
-        <div id="public_list" class="mt-1 ml-0">
-          <div class="list-box">
-            <table class="table table-striped small">
-              <thead>
-                  <th>id/label</th>
-                  <th>title</th>
-                  <th># rows</th>
-                  <th class="w-50">description</th>
-                  <th>webpage</th>
-                  <th>owner</th>
-              </thead>
-              <tbody>
-                {% for ds in public_list %}
-                  <tr class="place-row">
-                    <td>{{ ds.id }}/<b>{{ ds.label }}</b>
-                    <br/><mark>{{ ds.ds_status }}</mark>
-                    </td>
-                    <td>{{ ds.title }}</td>
-                    <td>{{ ds.numrows }}</td>
-                    <td class="w-50">{{ ds.description }}</td>
-                    <td>{% if ds.webpage %}<a href="{{ ds.webpage }}" target="_blank">link 
-                    {% fontawesome_icon 'external-link' %}</a>{%endif%}</td>
-                    <td>{{ ds.owner }}</td>
-                  </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+      <!--<div id="publiclist" class="tab-pane fade " role="tabpanel" aria-labelledby="publiclist-tab">-->
+        <!--<p class="mb-1 ml-1">These data are flagged as public in WHG. If marked as <mark>indexed</mark>, records are fully searchable from the home page and Index API. If marked as <mark>accessioning</mark>, records are partially indexed. Those not yet indexed are accessible through the Database API. <a href="{% url 'usingapi' %}">API docs</a></p>      -->
+        <!--<div id="public_list" class="mt-1 ml-0">-->
+          <!--<div class="list-box">-->
+            <!--<table class="table table-striped small">-->
+              <!--<thead>-->
+                  <!--<th>id/label</th>-->
+                  <!--<th>title</th>-->
+                  <!--<th># rows</th>-->
+                  <!--<th class="w-50">description</th>-->
+                  <!--<th>webpage</th>-->
+                  <!--<th>owner</th>-->
+              <!--</thead>-->
+              <!--<tbody>-->
+                <!--{% for ds in public_list %}-->
+                  <!--<tr class="place-row">-->
+                    <!--<td>{{ ds.id }}/<b>{{ ds.label }}</b>-->
+                    <!--<br/><mark>{{ ds.ds_status }}</mark>-->
+                    <!--</td>-->
+                    <!--<td>{{ ds.title }}</td>-->
+                    <!--<td>{{ ds.numrows }}</td>-->
+                    <!--<td class="w-50">{{ ds.description }}</td>-->
+                    <!--<td>{% if ds.webpage %}<a href="{{ ds.webpage }}" target="_blank">link -->
+                    <!--{% fontawesome_icon 'external-link' %}</a>{%endif%}</td>-->
+                    <!--<td>{{ ds.owner }}</td>-->
+                  <!--</tr>-->
+                <!--{% endfor %}-->
+              <!--</tbody>-->
+            <!--</table>-->
+          <!--</div>-->
+        <!--</div>-->
+      <!--</div>-->
     </div>    
   </div>
   <script>
-    $(function(){ 
-      $("[rel='tooltip']").tooltip();
+    $("[rel='tooltip']").tooltip();
+    $(function(){
+        <!--alert('{{ msg }}')-->
     })
-    
-    $(".fa-sort").on('click',function(){
-      sortTable($(this).data('id'), $(this).attr('ref'))
-    })
-    
-    sortTable = function(col_idx, order) {
-      var table, rows, switching, i, x, y, shouldSwitch;
-      table = document.getElementById("table_ds");
-      switching = true;
-      /* Make a loop that will continue until
-      no switching has been done: */
-      while (switching) {
-        // Start by saying: no switching is done:
-        switching = false;
-        rows = table.rows;
-        /* Loop through all table rows (except the
-        first, which contains table headers): */
-        for (i = 1; i < (rows.length - 1); i++) {
-          // Start by saying there should be no switching:
-          shouldSwitch = false;
-          /* Get the two elements you want to compare,
-          one from current row and one from the next: */
-          <!--x = rows[i].getElementsByTagName("TD")[0];-->
-          <!--y = rows[i + 1].getElementsByTagName("TD")[0];-->
-          x = rows[i].getElementsByTagName("TD")[col_idx];
-          y = rows[i + 1].getElementsByTagName("TD")[col_idx];
-          // Check if the two rows should switch place:
-          <!--console.log('value', x.innerHTML.toLowerCase())-->
-          <!--console.log('value', x.innerText.toLowerCase())-->
-          <!--if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {-->
-          if (order == 'asc'){
-            if (x.innerText.toLowerCase() > y.innerText.toLowerCase()) {
-              // If so, mark as a switch and break the loop:
-              shouldSwitch = true;
-              break;
-            }
-          } else {
-            if (x.innerText.toLowerCase() < y.innerText.toLowerCase()) {
-              shouldSwitch = true;
-              break;
-            }       
-          }
-        }
-        if (shouldSwitch) {
-          /* If a switch has been marked, make the switch
-          and mark that a switch has been done: */
-          rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-          switching = true;
-        }
-      }
-    }
-
   </script>
 {% endblock %}
