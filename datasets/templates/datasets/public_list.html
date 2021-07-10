@@ -1,7 +1,17 @@
 <!-- datasets/dashboard.html -->
 {% extends "main/base.html" %}
 {% block title %}<title>WHG::Datasets</title>{% endblock %}
-
+{% block extra_head %}
+{% block morecss %}
+  <style>
+    .fa-sort {cursor:pointer;}
+    <!--#dslist {position:relative !important;}-->
+    <!--#public_list {position:relative !important; height:75vh !important }-->
+    #public_list {position:relative !important; height:62vh !important }
+    .list-box {overflow-y:auto  !important; max-height:100%;}
+  </style>
+{% endblock%}
+{% endblock %}
 {% block content %}
   {% load static %}
   {% load fontawesome %}
@@ -18,31 +28,31 @@
       </li>
     </ul>
     <div class="tab-content">
-      <div id="ds_list" class="tab-pane fade show active" role="tabpanel" aria-labelledby="dslist-tab">
+      <div id="dslist" class="tab-pane fade show active" role="tabpanel" aria-labelledby="dslist-tab">
         <p class="mb-1">These datasets flagged as <sr>public</sr> in WHG include <sr>a growing set of historical contributions</sr>, as well as several in a non-historical "core." They can be browsed on their linked pages, explored in context of the entire repository on the <a href="{% url 'search-page' %}">Search page</a>, and accessed programmatically with our <a href="{% url 'usingapi' %}">Index and Database APIs</a>.</p> 
         <p>All such public data are made available under a <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">Creative Commons Attribution 4.0 International (CC BY 4.0) License</a>, requirements of which appear alongside download links on all Dataset and Collection pages.</p> 
         <div id="public_list" class="mt-1 ml-0">
           <div class="list-box">
-            <table class="table table-striped small">
+            <table id="public_dslist" class="table table-striped small">
               <thead>
-                  <th>id/label</th>
-                  <th>title</th>
+                  <!--<th>label (id) <i class="fa fa-sort ml-1" data-id=0 ref=asc></i></th>-->
+                  <th>title <i class="fa fa-sort ml-1" data-id=0 ref=asc></i></th>
                   <th># rows</th>
                   <th class="w-50">description</th>
-                  <th>webpage</th>
-                  <th>contributor</th>
+                  <!--<th>webpage</th>-->
+                  <th>contributor <i class="fa fa-sort ml-1" data-id=3 ref=asc></i></th>
               </thead>
               <tbody>
                 {% for ds in dataset_list %}
                   <tr class="place-row">
-                    <td>{{ ds.id }}/<b>{{ ds.label }}</b>
-                    <br/><mark>{{ ds.ds_status }}</mark>
+                    <!--<td><b>{ ds.label }}</b> ({{ ds.id }})-->
+                    <!--<br/><mark>{ ds.ds_status }}</mark>-->
                     </td>
                     <td><a href="{% url 'datasets:ds_meta' ds.id %}">{{ ds.title }}</a></td>
-                    <td>{{ ds.numrows }}</td>
+                    <td>{{ ds.numrows|floatformat:"0" }}</td>
                     <td class="w-50">{{ ds.description }}</td>
-                    <td>{% if ds.webpage %}<a href="{{ ds.webpage }}" target="_blank">link 
-                    {% fontawesome_icon 'external-link' %}</a>{%endif%}</td>
+                    <!--<td>{ if ds.webpage %}<a href="{{ ds.webpage }}" target="_blank">link -->
+                    <!--{ fontawesome_icon 'external-link' %}</a>{endif%}</td>-->
                     <td>{{ ds.owner }}</td>
                   </tr>
                 {% endfor %}
@@ -84,5 +94,53 @@
     $(function(){
         <!--alert('{{ msg }}')-->
     })
+    $(".fa-sort").on('click',function(){
+      table_id =$(this).closest('table').prop('id') // parent table id
+      console.log('table_id',table_id)
+      sortTable($(this).data('id'), $(this).attr('ref'), table_id)
+    })
+    
+    sortTable = function(col_idx, order, table_id) {
+      var table, rows, switching, i, x, y, shouldSwitch;
+      <!--table = document.getElementById("table_ds");-->
+      table = document.getElementById(table_id);
+      switching = true;
+      /* Make a loop that will continue until
+      no switching has been done: */
+      while (switching) {
+        // Start by saying: no switching is done:
+        switching = false;
+        rows = table.rows;
+        /* Loop through all table rows (except the
+        first, which contains table headers): */
+        for (i = 1; i < (rows.length - 1); i++) {
+          // Start by saying there should be no switching:
+          shouldSwitch = false;
+          /* Get the two elements you want to compare,
+          one from current row and one from the next: */
+          x = rows[i].getElementsByTagName("TD")[col_idx];
+          y = rows[i + 1].getElementsByTagName("TD")[col_idx];
+          // Check if the two rows should switch place:
+          if (order == 'asc'){
+            if (x.innerText.toLowerCase() > y.innerText.toLowerCase()) {
+              // If so, mark as a switch and break the loop:
+              shouldSwitch = true;
+              break;
+            }
+          } else {
+            if (x.innerText.toLowerCase() < y.innerText.toLowerCase()) {
+              shouldSwitch = true;
+              break;
+            }       
+          }
+        }
+        if (shouldSwitch) {
+          /* If a switch has been marked, make the switch
+          and mark that a switch has been done: */
+          rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+          switching = true;
+        }
+      }
+    }
   </script>
 {% endblock %}

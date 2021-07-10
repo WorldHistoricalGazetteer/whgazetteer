@@ -5,7 +5,7 @@
 {% block mycss %} 
   <style>
     .fa-sort {cursor:pointer;}
-    #mydslist, #arealist {position:relative !important;}
+    <!--#mydslist, #arealist {position:relative !important;}-->
     #dataset_list, #area_list {position:relative !important; height:75vh !important }
     .list-box {overflow-y:auto  !important; max-height:100%;}
   </style>
@@ -35,9 +35,9 @@
       <li class="nav-item">
         <a class="nav-link" id="arealist-tab" data-toggle="tab" href="#arealist" role="tab" aria-controls="arealist" aria-selected="false">Study Areas</a>
       </li>
-      <li class="nav-item">
-        <a class="nav-link" id="publiclist-tab" data-toggle="tab" href="#publiclist" role="tab" aria-controls="publiclist" aria-selected="false">Public Datasets</a>
-      </li>
+      <!--<li class="nav-item">-->
+        <!--<a class="nav-link" id="publiclist-tab" data-toggle="tab" href="#publiclist" role="tab" aria-controls="publiclist" aria-selected="false">Public Datasets</a>-->
+      <!--</li>-->
     </ul>
     <div class="tab-content">
       <div id="mydslist" class="tab-pane fade show active" role="tabpanel" aria-labelledby="mydslist-tab">
@@ -171,6 +171,7 @@
           </div>
         </div>
       </div>
+      {%comment%}
       <div id="publiclist" class="tab-pane fade " role="tabpanel" aria-labelledby="publiclist-tab">
         <p class="mb-1 ml-1">These data are flagged as public in WHG. If marked as <mark>indexed</mark>, records are fully searchable from the home page and Index API. If marked as <mark>accessioning</mark>, records are partially indexed. Those not yet indexed are accessible through the Database API. <a href="{% url 'usingapi' %}">API docs</a></p>      
         <div id="public_list" class="mt-1 ml-0">
@@ -203,6 +204,7 @@
           </div>
         </div>
       </div>
+      {% endcomment %}
     </div>    
   </div>
   <script>

@@ -858,6 +858,11 @@ em { color: #993333;}
 /**
   dataset browse, metadata, misc
 **/ 
+#public_dslist th {
+  min-width:100px;
+  padding: 3px 6px;
+  /*border: 1px solid #ccc;*/
+}
 #ds_list p {font-size:.9rem;}
 #ds_access p {padding: .2rem .5rem;}
 #status_select { padding: 4px; }
