@@ -75,7 +75,7 @@ th.sticky {
   z-index: 10;
   background-color: #fdf5e6;}
 .tight-p { margin-top:0; margin-bottom:0;}
-.tooltip { z-index: 600; }
+.tooltip { z-index: 1051; }
 .top { vertical-align: top;}
 .v-mid {vertical-align: super;}
 

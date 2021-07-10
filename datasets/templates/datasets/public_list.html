@@ -61,7 +61,7 @@
                     <td style="font-size:.8rem !important;"><a href="{% url 'datasets:ds_meta' ds.id %}">{{ ds.title }}</a></td>
                     <td>{{ ds.numrows|floatformat:"0" }}</td>
                     <td class="w-50">{{ ds.description|readmore:200|safe }}</td>
-                    <td>{{ ds.last_modified }}</td>
+                    <td>{{ ds.last_modified_iso }}</td>
                     <td>{{ ds.owner }}</td>
                     <td><b>{% if ds.core %}C{%else%}H{%endif%}<b></td>
                   </tr>

@@ -79,11 +79,14 @@ class Dataset(models.Model):
   #coll = get_object_or_404(Collection,pk=3)
 
   @property
-  def last_modified(self):
+  def last_modified_iso(self):
     last=self.log.all().order_by('-timestamp')[0].timestamp
-    #return last.strftime("%d %b %Y")
-    # sortable in table?
-    return last.strftime("%Y-%m %d")
+    return last.strftime("%Y-%m-%d")
+  
+  @property
+  def last_modified_text(self):
+    last=self.log.all().order_by('-timestamp')[0].timestamp
+    return last.strftime("%d %b %Y")
     
   @property
   def minmax(self):

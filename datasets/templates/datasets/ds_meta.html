@@ -104,8 +104,7 @@
             <td class="align-top"><b>Citation</b> 
               <a id="a_clipcite" class="clippy" data-clipboard-target="#citation" rel="tooltip" title="copy to clipboard">{% fontawesome_icon 'clipboard' color='#336699' %}</a>
             </td>
-            <td id="citation"><span>{% if object.citation %}{{ object.citation }}{% else %}{{object.title}}. ({{ object.last_modified|slice:"7:"  }}). [Data file]. Retrieved from http://whgazetteer.org/datasets/{{object.id}}, {% now "DATE_FORMAT" %}{% endif %}</span>
-            </td>
+            <td id="citation"><span>{% if object.citation %}{{ object.citation }}{% else %}{{object.creator}}. {{object.title}}. [Data file, last modified {{ object.last_modified_text}}]. Retrieved from http://whgazetteer.org/datasets/{{object.id}}, {% now 'd M Y' %}{% endif %}</td>
           </tr>
         </table>
       </div>
@@ -117,7 +116,7 @@
             <ul class="mb-1">
             <li class="li-left"><b>Share</b> — copy and redistribute the material in any medium or format</li>
             <li class="li-left"><b>Adapt</b> — remix, transform, and build upon the material for any purpose, even commercially.</li></ul>
-            <p>You <b>must</b> give appropriate credit, provide a link to the CC-BY-4.0 license <a id="a_cliplic"class="clippy" data-clipboard-text="https://creativecommons.org/licenses/by/4.0/" rel="tooltip" title="copy to clipboard">{% fontawesome_icon 'clipboard' color='#336699' %}</a>, and indicate if changes were made.</p>
+            <p>You <b>must</b> give appropriate credit, provide a link to the CC-BY-4.0 license <a id="a_cliplic" class="clippy" data-clipboard-text="https://creativecommons.org/licenses/by/4.0/" rel="tooltip" title="copy to clipboard">{% fontawesome_icon 'clipboard' color='#336699' %}</a>, and indicate if changes were made.</p>
           </div>
           <div id="ds_downloads" class="pt-0 px-0 ds-card">
             <p class="ds-card-header pt-1"> Downloads (augmented data) 
@@ -144,20 +143,6 @@
             
             <div id="progress-bar-message" class="hidden">Waiting for progress to start...</div>
             <div id="celery-result"></div>
-
-            {% comment %}
-            <p class="m-0 pl-2 pr-2">
-              {% if links_added > 0 or geoms_added > 0 %}Augmented dataset: {% endif %}
-                {% if object.numrows <= 20000 %}
-                    <a href="{% url 'datasets:dl-aug' id=object.id format='lpf' %}" ref="lpf">Linked Places format</a>
-                  {% if current_file.format == 'delimited' %}
-                    | <a href="{% url 'datasets:dl-aug' id=object.id format='tsv' %}" ref="tsv">TSV</a>
-                  {% endif %}
-                {% else %}  
-                  <span class="red-head"><br/>Download of augmented datasets larger than 20,000 rows not supported right now.</span>
-                {% endif %}  
-            </p>
-            {% endcomment %}
           </div>
           <!--{ endif %}-->
         </div> <!-- ds_info -->
@@ -169,6 +154,25 @@
 </div>
 
 <script type="text/javascript">
+
+  // TODO: one function for these
+  var clip_cite = new ClipboardJS('#a_clipcite');
+  <!--clipboard.on('success', function(e) {-->
+  clip_cite.on('success', function(e) {
+    e.clearSelection();
+    $("#a_clipcite").tooltip('hide')
+      .attr('data-original-title', 'copied!')
+      .tooltip('show');
+  });
+
+  var clip_lic = new ClipboardJS('#a_cliplic');
+  clip_lic.on('success', function(e) {
+    e.clearSelection();
+    $("#a_cliplic").tooltip('hide')
+      .attr('data-original-title', 'copied!')
+      .tooltip('show');
+  });
+
 
   dater = function(){
     const date = new Date(Date.now());
@@ -230,23 +234,6 @@
       })
   })  
   
-  // TODO: one function for these
-  var clip_cite = new ClipboardJS('#a_clipcite');
-  <!--clipboard.on('success', function(e) {-->
-  clip_cite.on('success', function(e) {
-    e.clearSelection();
-    $("#a_clipcite").tooltip('hide')
-      .attr('data-original-title', 'copied!')
-      .tooltip('show');
-  });
-  var clip_lic = new ClipboardJS('#a_cliplic');
-  clip_lic.on('success', function(e) {
-    e.clearSelection();
-    $("#a_cliplic").tooltip('hide')
-      .attr('data-original-title', 'copied!')
-      .tooltip('show');
-  });
-
 
   function startDownloadSpinner(){
     window.spinner_dl = new Spin.Spinner().spin();
