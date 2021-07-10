@@ -5,8 +5,8 @@
 {% block mycss %} 
   <style>
     .fa-sort {cursor:pointer;}
-    #mydslist {position:relative !important;}
-    #dataset_list {position:relative !important; height:75vh !important }
+    #mydslist, #arealist {position:relative !important;}
+    #dataset_list, #area_list {position:relative !important; height:75vh !important }
     .list-box {overflow-y:auto  !important; max-height:100%;}
   </style>
 {% endblock mycss %}
@@ -125,7 +125,7 @@
           {% fontawesome_icon 'plus-square' color='#336699' %} create new</a></p>  
         <div id="collection_list" class="mt-1 ml-0">
           <div class="list-box">
-            <table class="table table-striped">
+            <table id="table_collections"class="table table-striped">
               <thead class="small">
                   <th>id</th>
                   <th>title</th>
@@ -150,11 +150,11 @@
           {% fontawesome_icon 'plus-square' color='#336699' %} create new</a></p>  
         <div id="area_list" class="mt-1 ml-0">
           <div class="list-box">
-            <table class="table table-striped">
+            <table id="table_areas" class="table table-striped">
               <thead class="small">
                   <th>id</th>
-                  <th>title</th>
-                  <th>type</th>
+                  <th>title <i class="fa fa-sort ml-1" data-id=1 ref=asc></i></th>
+                  <th>type <i class="fa fa-sort ml-1" data-id=2 ref=asc></i></th>
                   <th>ccodes</th>
               </thead>
               <tbody>
@@ -220,12 +220,15 @@
     })
     
     $(".fa-sort").on('click',function(){
-      sortTable($(this).data('id'), $(this).attr('ref'))
+      table_id =$(this).closest('table').prop('id') // parent table id
+      console.log('table_id',table_id)
+      sortTable($(this).data('id'), $(this).attr('ref'), table_id)
     })
     
-    sortTable = function(col_idx, order) {
+    sortTable = function(col_idx, order, table_id) {
       var table, rows, switching, i, x, y, shouldSwitch;
-      table = document.getElementById("table_ds");
+      <!--table = document.getElementById("table_ds");-->
+      table = document.getElementById(table_id);
       switching = true;
       /* Make a loop that will continue until
       no switching has been done: */
