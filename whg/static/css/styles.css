@@ -145,9 +145,11 @@ ul.no-bullets {
   color: #993333;
 }
 .modal-col p, .modal-col li { margin-bottom: 0; font-size: .8rem;}
+
 /**
   dialogs
 **/
+/* help modal window */
 /*.selector {  margin: auto; background-color: #fff;}*/
 #helpme {
   padding:12px;

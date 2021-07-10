@@ -1,0 +1,23 @@
+<html>
+<body>
+<div>
+    <a href=""></a><!-- avoids scroll to the bottom anchor-->
+    <h4>Making a WHG dataset public</h4>
+    <p><i>NOTE: foo foo la la</i></p>
+    <p></p>
+    <p></p>
+    <ul>
+      <li>li 1</li>
+      <li>li 2</li>
+    </ul>
+    <p>Furthermore, ...</p></div>
+</body>
+</html>
+<script type="text/javascript">
+    $(function(){
+        $(".replace-content").click(function(){
+            console.log('loaded reconciliation help',$(this).data('id'))
+            $('#helpme').load('/media/help/'+$(this).data('id')+'.html');
+        })
+    })
+</script>    
