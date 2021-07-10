@@ -39,7 +39,7 @@ class Dataset(models.Model):
   featured = models.IntegerField(null=True, blank=True)
   bbox = geomodels.PolygonField(null=True, blank=True, srid=4326)
 
-  core = models.BooleanField(default=False)    
+  core = models.BooleanField(default=False) # non-historical
   public = models.BooleanField(default=False)    
   ds_status = models.CharField(max_length=12, null=True, blank=True, choices=STATUS_DS)
 
@@ -81,8 +81,9 @@ class Dataset(models.Model):
   @property
   def last_modified(self):
     last=self.log.all().order_by('-timestamp')[0].timestamp
-    #last=ds.log.all().order_by('-timestamp')[0].timestamp
-    return last.strftime("%d %b %Y")
+    #return last.strftime("%d %b %Y")
+    # sortable in table?
+    return last.strftime("%Y-%m %d")
     
   @property
   def minmax(self):

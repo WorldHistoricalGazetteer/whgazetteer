@@ -64,6 +64,16 @@ sr { font-weight: bold; color: #993333;}
 .texttop {vertical-align: text-top !important;}
 .textsub {vertical-align: sub !important;}
 .textcenter {text-align:center;}
+/*table th {*/
+  /*position: sticky;*/
+  /*top: 0;*/
+  /*z-index: 10;*/
+  /*background-color: #fdf5e6;}*/
+th.sticky {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: #fdf5e6;}
 .tight-p { margin-top:0; margin-bottom:0;}
 .tooltip { z-index: 600; }
 .top { vertical-align: top;}
@@ -960,7 +970,7 @@ em { color: #993333;}
   border: 1px solid #ccc;
   min-height: 100px;
   background-color: oldlace;
-  padding:12px;
+  padding: 0 12px;
   /* border-radius: 16px; */
   box-shadow: 3px 3px #eee;
 }

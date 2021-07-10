@@ -4,11 +4,16 @@
 {% block extra_head %}
 {% block morecss %}
   <style>
+    .th-mini {width:10% !important;}
     .fa-sort {cursor:pointer;}
-    <!--#dslist {position:relative !important;}-->
-    <!--#public_list {position:relative !important; height:75vh !important }-->
-    #public_list {position:relative !important; height:62vh !important }
+    #public_list {position:relative !important; height:62vh !important;}
+    <!--#public_dstable { table-layout:fixed;}-->
     .list-box {overflow-y:auto  !important; max-height:100%;}
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background-color: #fdf5e6;
   </style>
 {% endblock%}
 {% endblock %}
@@ -28,32 +33,39 @@
       </li>
     </ul>
     <div class="tab-content">
-      <div id="dslist" class="tab-pane fade show active" role="tabpanel" aria-labelledby="dslist-tab">
+      <div id="ds_list" class="tab-pane fade show active" role="tabpanel" aria-labelledby="dslist-tab">
         <p class="mb-1">These datasets flagged as <sr>public</sr> in WHG include <sr>a growing set of historical contributions</sr>, as well as several in a non-historical "core." They can be browsed on their linked pages, explored in context of the entire repository on the <a href="{% url 'search-page' %}">Search page</a>, and accessed programmatically with our <a href="{% url 'usingapi' %}">Index and Database APIs</a>.</p> 
-        <p>All such public data are made available under a <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">Creative Commons Attribution 4.0 International (CC BY 4.0) License</a>, requirements of which appear alongside download links on all Dataset and Collection pages.</p> 
+        <p>All such public data are made available under a <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">Creative Commons Attribution 4.0 International (CC BY 4.0) License</a>, requirements of which appear alongside download links on all Dataset and Collection pages <span class="float-right px-2" style="background:aliceblue;"><b>H</b> = Historical; <b>C</b> = Core (non-historical)</span></p> 
         <div id="public_list" class="mt-1 ml-0">
           <div class="list-box">
-            <table id="public_dslist" class="table table-striped small">
+            <table id="public_dstable" class="table table-striped small">
+              <colgroup>
+                <col>
+                <col style="width:60px !important">
+                <col style="width:45% !important">
+                <col style="width:100px !important">
+                <col style="width:100px !important">
+                <col style="width:60px !important">
+              </colgroup>
               <thead>
-                  <!--<th>label (id) <i class="fa fa-sort ml-1" data-id=0 ref=asc></i></th>-->
-                  <th>title <i class="fa fa-sort ml-1" data-id=0 ref=asc></i></th>
-                  <th># rows</th>
-                  <th class="w-50">description</th>
-                  <!--<th>webpage</th>-->
-                  <th>contributor <i class="fa fa-sort ml-1" data-id=3 ref=asc></i></th>
+                  <th>title <i class="fa fa-sort ml-1" data-id=1 ref=asc></i></th>
+                  <th>rows</th>
+                  <th>description</th>
+                  <th>modified <i class="fa fa-sort ml-1" data-id=3></th>
+                  <th>contributor <i class="fa fa-sort ml-1" data-id=4 ref=asc></i></th>
+                  <th class="th-mini">type<i class="fa fa-sort ml-1" data-id=5></i></th>
               </thead>
               <tbody>
                 {% for ds in dataset_list %}
                   <tr class="place-row">
-                    <!--<td><b>{ ds.label }}</b> ({{ ds.id }})-->
-                    <!--<br/><mark>{ ds.ds_status }}</mark>-->
-                    </td>
                     <td><a href="{% url 'datasets:ds_meta' ds.id %}">{{ ds.title }}</a></td>
                     <td>{{ ds.numrows|floatformat:"0" }}</td>
-                    <td class="w-50">{{ ds.description }}</td>
+                    <td class="w-50">{{ ds.description|readmore:200|safe }}</td>
                     <!--<td>{ if ds.webpage %}<a href="{{ ds.webpage }}" target="_blank">link -->
                     <!--{ fontawesome_icon 'external-link' %}</a>{endif%}</td>-->
+                    <td>{{ ds.last_modified }}</td>
                     <td>{{ ds.owner }}</td>
+                    <td><b>{% if ds.core %}C{%else%}H{%endif%}<b></td>
                   </tr>
                 {% endfor %}
               </tbody>
@@ -65,7 +77,7 @@
         <p class="mb-1 ml-1">These collections of datasets are flagged as "public" in WHG. Most are downloadable from their linked page. Public data contained therein are made available under a <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">Creative Commons Attribution 4.0 International (CC BY 4.0) License</a>.</p>
         <div id="collection_list" class="mt-1 ml-0">
           <div class="list-box">
-            <table class="table table-striped">
+            <table id="public_collectionlist"class="table table-striped">
               <thead class="small">
                   <th>id</th>
                   <th>title</th>

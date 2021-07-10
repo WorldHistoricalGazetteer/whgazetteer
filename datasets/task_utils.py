@@ -2,8 +2,8 @@
 # b/c of an import looping problems
 # TODO: called only from tasks.py?
 
-#maketime, HitRecord, bestParent, post_recon_update, getQ, parse_wkt, hully, elapsed
-def maketime():
+#makeNow, HitRecord, bestParent, post_recon_update, getQ, parse_wkt, hully, elapsed
+def makeNow():
   ts = time.time()
   sttime = datetime.datetime.fromtimestamp(ts).strftime('%Y%m%d_%H%M%S')
   return sttime

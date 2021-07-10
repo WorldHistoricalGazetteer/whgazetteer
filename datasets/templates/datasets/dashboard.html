@@ -5,7 +5,11 @@
 {% block mycss %} 
   <style>
     .fa-sort {cursor:pointer;}
-    <!--#mydslist, #arealist {position:relative !important;}-->
+    #table_ds th, #table_areas th {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background-color: #fdf5e6;}
     #dataset_list, #area_list {position:relative !important; height:75vh !important }
     .list-box {overflow-y:auto  !important; max-height:100%;}
   </style>
@@ -20,14 +24,10 @@
   {% load dataset_extras %}
   
   <div class="container pt-3">
-    <!--{ if messages %}<div>{ for message in messages %}-->
-          <!--<i style="display:block;" class="text-danger ml-4 mb-2">{ message }}</i>-->
-    <!--{ endfor%}</div>{ endif %}-->
     <ul id="api_tabs" class="nav nav-tabs" role="tablist">
       <li class="nav-item">
         <a class="nav-link active" id="mydslist-tab" data-toggle="tab" href="#mydslist" role="tab" aria-controls="dslist" aria-selected="true">Datasets</a>
       </li>
-      <!--{ if beta_or_better or user.is_superuser %}-->
       <li class="nav-item">
         <a class="nav-link" id="collectionlist-tab" data-toggle="tab" href="#collectionlist" role="tab" aria-controls="collectionlist" aria-selected="false">Collections</a>
       </li>
@@ -45,7 +45,7 @@
           {% fontawesome_icon 'plus-square' color='#336699' %} add new</a></p>
         <div id="dataset_list" class="mt-1">
           <div class="list-box">
-            <h6 class="mb-0">My Datasets</h6>
+            <h6 class="my-2">My Datasets</h6>
             {% if dataset_list|length == 0 %}<p class="smaller"><i>None yet...</i></p>
             {% else %}
             <table id="table_ds" class="table table-striped">

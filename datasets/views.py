@@ -1828,7 +1828,7 @@ class PublicListsView(ListView):
   def get_queryset(self):
     # original qs
     qs = super().get_queryset() 
-    return qs.filter(public = True).order_by('ds_status','-core','-id')
+    return qs.filter(public = True).order_by('core','title')
   
   def get_context_data(self, *args, **kwargs):
     context = super(PublicListsView, self).get_context_data(*args, **kwargs)

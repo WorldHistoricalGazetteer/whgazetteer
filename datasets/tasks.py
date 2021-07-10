@@ -24,7 +24,7 @@ from datasets.static.hashes.parents import ccodes as cchash
 from datasets.static.hashes.qtypes import qtypes
 from elastic.es_utils import makeDoc, build_qobj, profileHit
 #from datasets.task_utils import *
-from datasets.utils import maketime, HitRecord, bestParent, post_recon_update, getQ, parse_wkt, hully, elapsed
+from datasets.utils import makeNow, HitRecord, bestParent, post_recon_update, getQ, parse_wkt, hully, elapsed
 from main.models import Log
 
 #from places.models import Place
@@ -55,7 +55,7 @@ def make_download(request, *args, **kwargs):
   dslabel = ds.label
   places=ds.places.all()
 
-  date=maketime()
+  date=makeNow()
   
   print("tasks.make_download()", {"format": req_format, "ds": dsid})
   

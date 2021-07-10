@@ -71,7 +71,7 @@ def download_augmented(request, *args, **kwargs):
   dslabel = ds.label
   url_prefix='http://whgazetteer.org/api/place/'
   fileobj = ds.files.all().order_by('-rev')[0]
-  date=maketime()
+  date=makeNow()
 
   req_format = kwargs['format']
   if req_format is not None:
@@ -239,7 +239,7 @@ def download_augmented_slow(request, *args, **kwargs):
   user = request.user.username
   ds=get_object_or_404(Dataset,pk=kwargs['id'])
   fileobj = ds.files.all().order_by('-rev')[0]
-  date=maketime()
+  date=makeNow()
 
   req_format = kwargs['format']
   if req_format is not None:
@@ -333,7 +333,7 @@ def download_gis(request, *args, **kwargs):
   print('download_gis kwargs',kwargs)
   user = request.user.username
   ds=get_object_or_404(Dataset,pk=kwargs['id'])
-  date=maketime()
+  date=makeNow()
   # make file name
   fn = 'media/user_'+user+'/'+ds.label+'_aug_'+date+'.json'
   # open it for write
@@ -689,8 +689,13 @@ def parse_wkt(g):
   #print('wkt, feature',g, feature)
   return feature
 
-#
-def maketime():
+# from timestamp
+def makeDate(ts, form):
+  expr = ts.strftime("%Y-%m-%d") if form == 'iso' \
+    else ts.strftime("%d-%b-%Y")
+  return expr
+# 
+def makeNow():
   ts = time.time()
   sttime = datetime.datetime.fromtimestamp(ts).strftime('%Y%m%d_%H%M%S')
   return sttime
