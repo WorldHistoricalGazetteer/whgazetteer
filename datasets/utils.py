@@ -81,7 +81,7 @@ def download_augmented(request, *args, **kwargs):
 
   print('download_augmented() file format', fileobj.format)
   print('download_augmented() req. format', req_format)
-  
+  start = datetime.datetime.now()
   if fileobj.format == 'delimited' and req_format in ['tsv', 'delimited']:
     # get header
     header = ds.files.all().order_by('id')[0].header
@@ -128,7 +128,8 @@ def download_augmented(request, *args, **kwargs):
         #progress_recorder.set_progress(i + 1, len(features), description="tsv progress")
     response = FileResponse(open(fn, 'rb'), content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="'+os.path.basename(fn)+'"'
-
+    end = datetime.datetime.now()
+    print('elapsed tsv', end-start)
     return response
   else:
     print('building lpf file')
@@ -212,9 +213,10 @@ def download_augmented(request, *args, **kwargs):
         outfile.write(json.dumps(result,indent=2))
         #outfile.write(json.dumps(result))
         
+    end = datetime.datetime.now()
+    print('elapsed lpf', end-start)    
     # response is reopened file
     response = FileResponse(open(fn, 'rb'), content_type='text/json')
-    #response = HttpResponse(open(fn, 'rb'), content_type='text/json')
     response['Content-Disposition'] = 'attachment; filename="'+os.path.basename(fn)+'"'
 
     return response

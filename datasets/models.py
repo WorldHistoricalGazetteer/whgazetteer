@@ -113,6 +113,20 @@ class Dataset(models.Model):
     return file 
   
   @property
+  def dl_est(self):
+    file = self.files.all().order_by('id')[0]
+    size = int(file.file.size/1000000) # seconds +/-
+    min, sec = divmod(size,60)
+    if min < 1:
+      result = "+/- %02d sec" % (sec)
+    elif sec >=10:
+      result = "+/- %02d min %02d sec" % (min, sec)
+    else:
+      result = "+/- %02d min" % (min) 
+    #print("est. %02d min %02d sec" % (min, sec))
+    return result
+  
+  @property
   def tasks(self):
     from django_celery_results.models import TaskResult
     return TaskResult.objects.all().filter(task_args = '['+str(self.id)+']',task_name__startswith='align')

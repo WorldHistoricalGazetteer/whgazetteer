@@ -4,6 +4,7 @@
 {% load fontawesome %}
 {% load geojson_tags %}
 {% load leaflet_tags %}
+{% load mathfilters %}
 {% load static %}
 {% block title %}<title>WHG::Collection</title>{% endblock %}
 {% block extra_head %}
@@ -94,7 +95,7 @@
           <h5 class="modal-title" id="downloadModalLabel">{% fontawesome_icon 'download' color='#336699' %} Download options for the <span class="text-danger">{{ object.title }}</span> collection</h5>
         </div>
         <div class="modal-body container">
-<a href="" rel="tooltip" title="show me"><small class="text-secondary ml-3">hover</small></a>          <div class="dl-blurb">
+          <div class="dl-blurb">
             <p class="mb-1">Data uploaded as Linked Places format (LPF) are available only in that format. Data uploaded as LP-TSV (delimited text files or spreadsheets) can be downloaded as either <sr>LPF</sr> or <sr>LP-TSV</sr>. 
             <!--Downloads totaling more than {n} records will be queued, and a notification email sent when completed.-->
             </p>
@@ -107,7 +108,7 @@
               <table class="dl-table small"><thead><tr><th>Title</th><th>Rows</th><th>Formats</th><th></th></tr></thead>
               <tbody>{% for d in ds_list %}<tr class="align-top">
                 <td>{{ d.title }}&nbsp;
-                  <a id="cite_{{d.id}}" class="clippy" aria-label="{% if d.citation %}{{ d.citation }}{% else %}{{d.title}}. [Data file, last modified {{ d.last_modified_text}}]. Retrieved from http://whgazetteer.org/datasets/{{d.id}}, {% now 'd M Y' %}{% endif %}" rel="tooltip" title="copy to clipboard">{% fontawesome_icon 'clipboard' color='#336699' %}</a>
+                  <a id="cite_{{d.id}}" class="clippy" aria-label="{% if d.citation %}{{ d.citation }}{% else %}{{d.title}}. [Data file, last modified {{ d.last_modified_text}}]. Retrieved from http://whgazetteer.org/datasets/{{d.id}}, {% now 'd M Y' %}{% endif %}" rel="tooltip" title="copy to clipboard">{% fontawesome_icon 'clipboard' color='#336699' %}</a> <span class="ml-2">({{d.dl_est}})</span>
                 </td>
                 <td>{{d.numrows}}</td>
                 <td>{% if d.format == 'delimited' %}
@@ -170,34 +171,6 @@
       .tooltip('show');
   });
 
-  <!--clip_cite.on('success', function(e) {-->
-    <!--e.clearSelection();-->
-    <!--$("#a_clipcite").tooltip('hide')-->
-      <!--.attr('data-original-title', 'copied!')-->
-      <!--.tooltip('show');-->
-  <!--});-->
-  
-  <!--clip_cite.on('success', function(e) {-->
-    <!--console.info('Action:', e.action);-->
-    <!--console.info('Text:', e.text);-->
-    <!--console.info('Trigger:', e.trigger);-->
-
-    <!--e.clearSelection();-->
-  <!--});-->
-  <!--clipboard.on('success', function(e) {-->
-  <!--clip_cite.on('success', function(e) {-->
-    <!--e.clearSelection();-->
-    <!--$("#a_clipcite").tooltip('hide')-->
-      <!--.attr('data-original-title', 'copied!')-->
-      <!--.tooltip('show');-->
-  <!--});-->
-  
-  <!--clip_cite = new ClipboardJS('.clippy', {-->
-    <!--text: function(trigger) {-->
-        <!--return trigger.getAttribute('aria-label');-->
-    <!--},-->
-    <!--container: document.getElementById('downloadModal')-->
-  <!--});-->
   
   function startDownloadSpinner(){
     window.spinner_dl = new Spin.Spinner().spin();
@@ -293,6 +266,7 @@
   $(".dl-links a").click(function(e){
     urly='/datasets/'+$(this).data('id')+'/augmented/'+$(this).attr('ref')
     console.log('urly',urly)
+    console.time('dl')
     startDownloadSpinner()
     $.ajax({
           type: 'GET',

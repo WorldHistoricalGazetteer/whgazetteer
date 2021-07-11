@@ -778,6 +778,7 @@ em { color: #993333;}
   color: firebrick;
 }
 .accession-div-row { border-bottom:1px dotted lightgrey; padding-left:6px;}
+.auth-table {border-spacing:6px; border-collapse:separate; margin:-6px;)
 .auth-match {
   border-bottom: 1px dashed lightgrey; 
   border-left: 1px dashed lightgrey; 
