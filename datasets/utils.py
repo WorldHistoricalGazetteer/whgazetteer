@@ -87,7 +87,8 @@ def download_augmented(request, *args, **kwargs):
     header = ds.files.all().order_by('id')[0].header
     print('making a tsv file')
     # make file name
-    fn = 'media/user_'+user+'/'+ds.label+'_aug_'+date+'.tsv'
+    #fn = 'media/user_'+user+'/'+ds.label+'_aug_'+date+'.tsv'
+    fn = 'media/downloads/'+username+'_'+dslabel+'_'+date+'.tsv'
 
     def augLinks(linklist):
       aug_links = []
@@ -134,7 +135,7 @@ def download_augmented(request, *args, **kwargs):
   else:
     print('building lpf file')
     # make file name
-    fn = 'media/user_'+user+'/'+ds.label+'_aug_'+date+'.json'
+    fn = 'media/downloads/'+username+'_'+dslabel+'_'+date+'.tsv'
     result={"type":"FeatureCollection","features":[],
             "@context": "https://raw.githubusercontent.com/LinkedPasts/linked-places/master/linkedplaces-context-v1.1.jsonld",
             "filename": "/"+fn}
