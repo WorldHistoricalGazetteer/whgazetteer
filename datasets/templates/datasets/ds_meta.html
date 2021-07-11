@@ -24,7 +24,9 @@
 
 {% block content %}
 <div id="dataset_content" class="container mt-1 px-1">
-  <p class="small"><a href="{% url 'public-lists' %}">{% fontawesome_icon 'arrow-left' color='#336699' %} public dataset list</a> / {{ object.title }}</p>
+  {% with last=request.META.HTTP_REFERER %}
+  <p class="small"><a href="{{ last }}">{% fontawesome_icon 'arrow-left' color='#336699' %} back </a> / {{ object.title }}</p> 
+  {% endwith %}
   <ul id="dataset_tabs" class="nav nav-tabs" role="tablist">
       {%comment%}<span class="ds-title ml-1 mr-3"><small class="text-secondary">Dataset:</small></span>{%endcomment%}
       <li class="nav-item">
@@ -62,7 +64,7 @@
           </tr>
           {% if object.minmax%}
           <tr>
-            <td><b>Temporal coverage</b></td>
+            <td><b>Timespan</b></td>
             <td>earliest: {{ object.minmax.0 }}; latest: {{ object.minmax.1 }}</td>
           </tr>
           {% endif %}
@@ -74,7 +76,7 @@
           {% endif %}
           <tr>
             <td><b>Last modified</b></td>
-            <td>{{ object.last_modified }}</td>
+            <td>{{ object.last_modified_text }}</td>
           </tr>
           {% if object.webpage %} 
           <tr>
