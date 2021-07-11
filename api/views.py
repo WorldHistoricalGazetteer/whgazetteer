@@ -367,7 +367,8 @@ class SearchAPIView(generics.ListAPIView):
         
       filtered = qs[:pagesize] if pagesize and pagesize < 200 else qs[:20]
 
-      serial = LPFSerializer if context else SearchDatabaseSerializer
+      #serial = LPFSerializer if context else SearchDatabaseSerializer
+      serial = LPFSerializer
       serializer = serial(filtered, many=True, context={'request': self.request})
       
       serialized_data = serializer.data

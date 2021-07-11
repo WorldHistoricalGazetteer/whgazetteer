@@ -252,7 +252,7 @@ class AreaSerializer(serializers.HyperlinkedModelSerializer):
     fields = ('title', 'type', 'geojson')
 
 
-
+# TODO: what is this???
 class SearchDatabaseSerializer(serializers.HyperlinkedModelSerializer):
 
   class Meta:
@@ -307,3 +307,6 @@ class LPFSerializer(serializers.HyperlinkedModelSerializer):
     fields = ('url','type','properties','geometry','names', 'types','links'
                   ,'related','whens', 'descriptions', 'depictions','minmax'
             )
+    #fields = ('url','properties','geometry','names', 'types','links'
+                  #,'related','whens', 'descriptions', 'depictions','minmax'
+            #)

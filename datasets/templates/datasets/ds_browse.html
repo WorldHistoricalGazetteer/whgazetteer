@@ -424,6 +424,7 @@
   // dual purpose for browse and recon
   function renderMap(geom, tab){
     // call the map being rendered 'mappo'
+    console.log('in renderMap()')
     mappo = tab=='browse' ? mappy : mappyr
     if (geom.features.length==0) {
       console.log('no features in renderMap() call')
@@ -440,8 +441,15 @@
           matchid = feature.place_id
           <!--console.log('feature',feature)-->
           marker = L.circleMarker(latlng,styles.Point.default).bindPopup(feature.title+
-            '<br>pid: <a href="'+window.location.origin+'/api/db?id='+matchid+'" target="_blank">'+
-            matchid+'</a>');
+            <!--'<br>pid: <a href="'+window.location.origin+'/api/db?id='+matchid+'" target="_blank">'+matchid+'</a>'-->
+            '<br>pid: <a href="javascript:getPlace('+matchid+')">'+matchid+'</a>'
+            );
+          <!--marker = L.circleMarker(latlng,styles.Point.default).bindPopup(feature.title+-->
+            <!--'<br>pid: <a href="'+window.location.origin+'/api/db?id='+matchid+'" target="_blank">'+matchid+'</a>'-->
+            <!-- better -->
+            <!--'<br>pid: <a href="javascript:getPlace('+matchid+')">'+matchid+'</a>'-->
+            <!--'<br/>wtf?'-->
+            <!--);-->
           idToFeature[matchid] = marker
           return marker
         }
@@ -450,11 +458,10 @@
           <!--console.log('f,l',feature,layer)-->
           identifier = f.place_id;
           if(f.type != 'Point'){
-            layer.setStyle(styles[f.type].default).bindPopup(
-              f.title+'<br>pid: <a href="'+
-              window.location.origin+'/api/db?id='+
-              identifier+'" target="_blank">'+identifier+'</a>'
-            )
+            layer.setStyle(styles[f.type].default).bindPopup(f.title+
+            <!--'<br>pid: <a href="'+window.location.origin+'/api/db?id='+identifier+'" target="_blank">'+identifier+'</a>'-->
+            '<br>pid: <a href="javascript:getPlace('+matchid+')">'+matchid+'</a>'
+            );
             idToFeature[identifier] = layer
           }
         }
@@ -529,7 +536,7 @@
     for (t in data.types) {
       str = ''
       var type = data.types[t]
-      console.log('type',type)
+      <!--console.log('type',type)-->
       if('sourceLabels' in type){
         srclabels = type.sourceLabels
         for(l in srclabels){
