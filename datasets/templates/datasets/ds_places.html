@@ -322,9 +322,10 @@
     }    
   }
   
-
   // initiate map, fetch data -> renderMap()
   addEventListener('map:init', function (e) {
+    console.log('map:init begin')
+    startMapSpinner()
     var token_mb = '{{ mbtokenmb }}',
       token_kg = '{{ mbtokenkg }}',
       mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}';
@@ -373,45 +374,6 @@
     }
   }, false);
   
-  // builds link for external place record
-  function url_extplace(identifier) {
-    // abbreviate links not in aliases.base_urls
-    if(identifier.startsWith('http')) {
-      let tag = identifier.replace(/.+\/\/|www.|\..+/g, '')
-      link = '<a href="'+identifier+'" target="_blank">'+tag+'{% fontawesome_icon 'external-link' color='#336699' %},  </a>'          
-    } else {
-    link = '<a href="" class="ext" data-target="#ext_site">'+identifier+'&nbsp;{% fontawesome_icon 'external-link' color='#336699' %}</a>, '    
-    }
-    return link
-  }
-  
-  // builds link for external placetype record
-  function url_exttype(type) {
-    link = ' <a href="#" class="exttab" data-id='+type.identifier+
-      '>('+type.label+' {% fontawesome_icon 'external-link' color='#336699' %})</a>'
-    return link
-  }
-  
-  styles = {
-    "Point": {
-      "default": {radius: 1, fillColor:"#ff9900", fillOpacity: 0.8, stroke: false},
-      "focus": {radius:8, fillColor:"#ffff00",fillOpacity:1, stroke:true, weight:1,color:"#000"}},
-    "MultiPoint": {
-      "default": {radius: 1, fillColor:"#ff9900", fillOpacity: 0.8, stroke: false},
-      "focus": {radius:8, fillColor:"#ffff00",fillOpacity:1, stroke:true, weight:1,color:"#000"}},
-    "LineString": {
-      "default":{opacity: 1, weight: 1, color: "#336699"},
-      "focus":{opacity: 1, weight: 2, color: "blue"}},
-    "MultiLineString": {
-      "default":{opacity: 1, weight: 1, color: "#336699"},
-      "focus":{opacity: 1, weight: 2, color: "blue"}},
-    "MultiPolygon": {
-      "default":{fillOpacity: 0.3, opacity: 1, color: "#000", weight: 1, fillColor:"#ff9999"},
-      "focus":{fillOpacity: 0.3, opacity: 1, color: "red", weight: 2, fillColor:"#ff9999"}},
-    "Polygon": {
-      "default":{fillOpacity: 0.3, opacity: .5, color: "#666", weight: 1, fillColor:"#ff9999"},
-      "focus":{fillOpacity: 0.3, opacity: .5, color: "red", weight: 2, fillColor:"#ff9999"}}
-  }
   // dual purpose for browse and recon
   function renderMap(geom, tab){
     // call the map being rendered 'mappo'
@@ -431,8 +393,9 @@
           matchid = feature.place_id
           <!--console.log('feature',feature)-->
           marker = L.circleMarker(latlng,styles.Point.default).bindPopup(feature.title+
-            '<br>pid: <a href="'+window.location.origin+'/api/db?id='+matchid+'" target="_blank">'+
-            matchid+'</a>');
+            <!--'<br>pid: <a href="'+window.location.origin+'/api/db?id='+matchid+'" target="_blank">'+matchid+'</a>'-->
+            '<br>pid: <a href="javascript:getPlace('+matchid+')">'+matchid+'</a>'
+            );
           idToFeature[matchid] = marker
           return marker
         }
@@ -450,6 +413,7 @@
           }
         }
       }).addTo(mappo);
+      spinner_map.stop()
     }
     <!--highlightFeature(pid)-->
     mappo.fitBounds(features.getBounds())
@@ -466,18 +430,40 @@
     opt = Object.values(idToFeature)[0].options
     foptions = { ...opt };
   }
-  
-  function minmaxer(timespans){
-    <!--console.log('got to minmax()',JSON.stringify(timespans))-->
-    starts=[]; ends=[]
-    for (t in timespans){
-      // gets 'in', 'earliest' or 'latest'
-      starts.push(Object.values(timespans[t].start)[0])
-      ends.push(!!timespans[t].end ? Object.values(timespans[t].end)[0] : -1)
-    } 
-    <!--console.log('starts',starts,'ends',ends)-->
-    minmax=[Math.max.apply(null, starts),Math.max.apply(null, ends)]
-    return minmax
+
+  function getPlace(pid){
+    <!--console.log('getPlace()', pid)-->
+    $.ajax({
+      url: "/api/place/"+pid,
+      }).done(function( data ) {
+        $("#detail").html(parsePlace(data))
+        spinner_detail.stop()
+        // events on detail items
+        $('.ext').on('click', function(e) {
+          e.preventDefault();
+          str=$(this).text()
+          <!--console.log('str (identifier)',str)-->
+          // URL identifiers can be 'http*' or an authority prefix
+          if(str.substring(0,4).toLowerCase() == 'http'){
+            url = str
+          } else {
+            var re = /(http|bnf|cerl|dbp|gn|gnd|gov|loc|pl|tgn|viaf|wd|wdlocal|whg|wp):(.*?)$/;
+            url=base_urls[str.match(re)[1]]+str.match(re)[2] 
+            console.log('url',url)
+          }
+          window.open(url, '_blank');
+        });
+        $('.exttab').on('click', function(e) {
+          e.preventDefault();
+          id=$(this).data('id')
+          console.log('id',id)
+          var re = /(http|dbp|gn|tgn|wd|loc|viaf|aat):(.*?)$/;
+          url=id.match(re)[1]=='http' ? id : base_urls[id.match(re)[1]]+id.match(re)[2]
+          console.log('url',url)
+          window.open(url,'_blank')
+        });
+    });
+    <!--spinner_detail.stop()-->
   }
 
   // single column
@@ -613,41 +599,59 @@
     descrip += '</div>'
     return descrip
   }
-
-  function getPlace(pid){
-    <!--console.log('getPlace()', pid)-->
-    $.ajax({
-      url: "/api/place/"+pid,
-      }).done(function( data ) {
-        $("#detail").html(parsePlace(data))
-        spinner_detail.stop()
-        // events on detail items
-        $('.ext').on('click', function(e) {
-          e.preventDefault();
-          str=$(this).text()
-          <!--console.log('str (identifier)',str)-->
-          // URL identifiers can be 'http*' or an authority prefix
-          if(str.substring(0,4).toLowerCase() == 'http'){
-            url = str
-          } else {
-            var re = /(http|bnf|cerl|dbp|gn|gnd|gov|loc|pl|tgn|viaf|wd|wdlocal|whg|wp):(.*?)$/;
-            url=base_urls[str.match(re)[1]]+str.match(re)[2] 
-            console.log('url',url)
-          }
-          window.open(url, '_blank');
-        });
-        $('.exttab').on('click', function(e) {
-          e.preventDefault();
-          id=$(this).data('id')
-          console.log('id',id)
-          var re = /(http|dbp|gn|tgn|wd|loc|viaf|aat):(.*?)$/;
-          url=id.match(re)[1]=='http' ? id : base_urls[id.match(re)[1]]+id.match(re)[2]
-          console.log('url',url)
-          window.open(url,'_blank')
-        });
-    });
-    <!--spinner_detail.stop()-->
+  // builds link for external place record
+  function url_extplace(identifier) {
+    // abbreviate links not in aliases.base_urls
+    if(identifier.startsWith('http')) {
+      let tag = identifier.replace(/.+\/\/|www.|\..+/g, '')
+      link = '<a href="'+identifier+'" target="_blank">'+tag+'{% fontawesome_icon 'external-link' color='#336699' %},  </a>'          
+    } else {
+    link = '<a href="" class="ext" data-target="#ext_site">'+identifier+'&nbsp;{% fontawesome_icon 'external-link' color='#336699' %}</a>, '    
+    }
+    return link
   }
+  
+  // builds link for external placetype record
+  function url_exttype(type) {
+    link = ' <a href="#" class="exttab" data-id='+type.identifier+
+      '>('+type.label+' {% fontawesome_icon 'external-link' color='#336699' %})</a>'
+    return link
+  }
+  
+  styles = {
+    "Point": {
+      "default": {radius: 1, fillColor:"#ff9900", fillOpacity: 0.8, stroke: false},
+      "focus": {radius:8, fillColor:"#ffff00",fillOpacity:1, stroke:true, weight:1,color:"#000"}},
+    "MultiPoint": {
+      "default": {radius: 1, fillColor:"#ff9900", fillOpacity: 0.8, stroke: false},
+      "focus": {radius:8, fillColor:"#ffff00",fillOpacity:1, stroke:true, weight:1,color:"#000"}},
+    "LineString": {
+      "default":{opacity: 1, weight: 1, color: "#336699"},
+      "focus":{opacity: 1, weight: 2, color: "blue"}},
+    "MultiLineString": {
+      "default":{opacity: 1, weight: 1, color: "#336699"},
+      "focus":{opacity: 1, weight: 2, color: "blue"}},
+    "MultiPolygon": {
+      "default":{fillOpacity: 0.3, opacity: 1, color: "#000", weight: 1, fillColor:"#ff9999"},
+      "focus":{fillOpacity: 0.3, opacity: 1, color: "red", weight: 2, fillColor:"#ff9999"}},
+    "Polygon": {
+      "default":{fillOpacity: 0.3, opacity: .5, color: "#666", weight: 1, fillColor:"#ff9999"},
+      "focus":{fillOpacity: 0.3, opacity: .5, color: "red", weight: 2, fillColor:"#ff9999"}}
+  }
+  
+  function minmaxer(timespans){
+    <!--console.log('got to minmax()',JSON.stringify(timespans))-->
+    starts=[]; ends=[]
+    for (t in timespans){
+      // gets 'in', 'earliest' or 'latest'
+      starts.push(Object.values(timespans[t].start)[0])
+      ends.push(!!timespans[t].end ? Object.values(timespans[t].end)[0] : -1)
+    } 
+    <!--console.log('starts',starts,'ends',ends)-->
+    minmax=[Math.max.apply(null, starts),Math.max.apply(null, ends)]
+    return minmax
+  }
+
 </script>
 {% endblock %}
 
