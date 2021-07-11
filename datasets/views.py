@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.gis.geos import GEOSGeometry
 from django.core.files import File
-from django.core.mail import send_mail, EmailMultiAlternatives
+from django.core.mail import send_mail
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.forms import modelformset_factory
@@ -1880,7 +1880,7 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
       for chunk in data['file'].chunks():
         os.write(tempf, chunk)
     except:
-      raise Exception("Problem with the input file %s" % request.FILES['file'])
+      raise Exception("Problem with the input file %s" % file)
     finally:
       os.close(tempf)
 
@@ -1901,9 +1901,9 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
         encoding = fin.encoding
       print('encoding in DatasetCreate()', encoding)
     else:
-      context['format'] = 'unknown'
       context['action'] = 'errors'
       context['errors'] = ["Not a valid file type; must be one of [.csv, .tsv, .xlsx, .ods, .json]"]
+      context['format'] = 'unknown'
       os.remove(tempfn)
       return self.render_to_response(self.get_context_data(form=form, context=context))
 
@@ -2049,6 +2049,8 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
       # validation result has no 'errors' !?
       # return with message and email admin
       context['action'] = 'broken'
+      emailer('failed WHG validation','DatasetCreateView() reports validation result had no "errors" value.\n\n'+
+              'This is for user '+user.username+', and dataset '+data['label'])
 
       return self.render_to_response(
         self.get_context_data(
