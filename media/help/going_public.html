@@ -3,21 +3,28 @@
 <div>
     <a href=""></a><!-- avoids scroll to the bottom anchor-->
     <h4>Making a WHG dataset public</h4>
-    <p><i>NOTE: foo foo la la</i></p>
-    <p></p>
-    <p></p>
-    <ul>
-      <li>li 1</li>
-      <li>li 2</li>
-    </ul>
-    <p>Furthermore, ...</p></div>
+    <p>Uploaded datasets are initially "private"&mdash;their records are held indefinitely in the WHG database, visible only to you (the "owner"), to collaborators you designate, and to the WHG team. Private place records cannot be viewed by others, and will not be returned in any WHG search functions, until the dataset has been made public. There are two levels of publication, <sr>database-level</sr> and <sr>index-level</sr>, as indicated in the figure below.</p>
+    <h6>Database level</h6>
+    <p>A dataset can be made public any time after uploading, although we strongly encourage that it first be augmented via reconciliation to Wikidata and/or Getty TGN first. This ensures it has as much location and concordance information as can be readily found.</p>
+    <h6>Index level</h6>
+    <p>Accessioning to the WHG union index is a further step, which links your individual records with records from other datasets for the same places. This process groups records for the same (or "closely matched") places, effectively linking multiple attestations and the projects that contributed them.</p>
+    <p class="larger">If you are ready to make your dataset public, and/or begin the <b>accessioning</b> step, <a href="#" class="feedback">please let us know with this contact form</a>.
+    <p><img src="/static/images/search-pipeline.jpg" style="width:100%; height:auto;" alt=""/></p>
 </body>
 </html>
 <script type="text/javascript">
-    $(function(){
-        $(".replace-content").click(function(){
-            console.log('loaded reconciliation help',$(this).data('id'))
-            $('#helpme').load('/media/help/'+$(this).data('id')+'.html');
-        })
-    })
+  $(function(){
+      $(".replace-content").click(function(){
+          console.log('loaded reconciliation help',$(this).data('id'))
+          $('#helpme').load('/media/help/'+$(this).data('id')+'.html');
+      })
+  })
+  $(".feedback").click(function(e){
+  e.preventDefault()
+  console.log(clicked)
+  url=window.location.href="/contact?from="+clicked
+  window.location.href=url
+  console.log('gwine to contact form, from clicked',url)
+  })  
+
 </script>    

@@ -366,6 +366,13 @@
     const date = new Date(Date.now());
     return date.toISOString().substring(0,10)
   }
+
+  $(".feedback").click(function(){
+  console.log(clicked)
+  url=window.location.href="/contact?from="+clicked
+  window.location.href=url
+  console.log('gwine to contact form, from clicked',url)
+  })  
   
   clearEl = function(el){ 
     $("#progress-bar").fadeOut()
@@ -588,8 +595,8 @@
     $(".selector").dialog({
       resizable: false,
       autoOpen: false,
-      height: 500,
-      width: 700,
+      height: $(window).height() * 0.9,
+      width: $(window).width() * 0.8,
       title: "WHG Help",
       modal: true,
       buttons: { 'Close': function() {console.log('close dialog'); $(this).dialog('close');} },
@@ -629,20 +636,20 @@
       }
     })
         
-    $(".selector").dialog({
-      resizable: false,
-      autoOpen: false,
-      height: 500,
-      width: 700,
-      title: "WHG Help",
-      modal: true,
-      buttons: { 'Close': function() {console.log('close dialog'); $(this).dialog('close');} },
-      open: function(event, ui) {
-        $('#helpme').load('/media/help/'+page+'.html')
-      },
-      show: {effect: "fade",duration: 400 },
-      hide: {effect: "fade",duration: 400 }
-    });
+    <!--$(".selector").dialog({-->
+      <!--resizable: false,-->
+      <!--autoOpen: false,-->
+      <!--height: 500,-->
+      <!--width: 700,-->
+      <!--title: "WHG Help",-->
+      <!--modal: true,-->
+      <!--buttons: { 'Close': function() {console.log('close dialog'); $(this).dialog('close');} },-->
+      <!--open: function(event, ui) {-->
+        <!--$('#helpme').load('/media/help/'+page+'.html')-->
+      <!--},-->
+      <!--show: {effect: "fade",duration: 400 },-->
+      <!--hide: {effect: "fade",duration: 400 }-->
+    <!--});-->
   })
   
   // TODO: refactor this ugly nonsense

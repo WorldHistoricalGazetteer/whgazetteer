@@ -8,6 +8,12 @@ from bootstrap_modal_forms.forms import BSModalForm
 from captcha.fields import CaptchaField
 
 class ContactForm(forms.Form):
+    name = forms.CharField(
+        widget=forms.TextInput(attrs={'size': 50}),
+        required=True)
+    username = forms.CharField(
+        widget=forms.TextInput(attrs={'size': 50}),
+        required=True)
     from_email = forms.EmailField(
         widget=forms.EmailInput(attrs={'size': 50}),
         required=True,

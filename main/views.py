@@ -91,19 +91,24 @@ def contactView(request):
         form = ContactForm(request.POST)
         if form.is_valid():
             human = True
+            name = form.cleaned_data['name']
+            username = form.cleaned_data['username'] # hidden input
             subject = form.cleaned_data['subject']
             from_email = form.cleaned_data['from_email']
-            message = from_email+' says: \n'+form.cleaned_data['message']
+            message = name +' ('+username+'; '+from_email+'), on the subject of '+subject+' says: \n\n'+form.cleaned_data['message']
             subject_reply = "WHG message received"
-            message_reply = 'We received your message concerning "'+subject+'" and will respond soon.\n\n regards,\nThe WHG project team'
+            message_reply = '\nWe received your message concerning "'+subject+'" and will respond soon.\n\n regards,\nThe WHG project team'
             try:
-                send_mail(subject, message, from_email, ["karl.geog@gmail.com"])
-                send_mail(subject_reply, message_reply, 'whg@pitt.edu', [from_email])
+                send_mail(subject, message, from_email, ["karl@kgeographer.org"])
+                send_mail(subject_reply, message_reply, 'karl@kgeographer.org', [from_email])
             except BadHeaderError:
                 return HttpResponse('Invalid header found.')
             return redirect('/success?return='+sending_url if sending_url else '/')
             # return redirect(sending_url)
-    return render(request, "main/contact.html", {'form': form})
+        else:
+            print('not valid, why?')
+                
+    return render(request, "main/contact.html", {'form': form, 'user': request.user})
 
 
 def contactSuccessView(request, *args, **kwargs):
