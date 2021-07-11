@@ -1901,13 +1901,15 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
         encoding = fin.encoding
       print('encoding in DatasetCreate()', encoding)
     else:
-      context['errors'] = "Not a valid file type; must be one of [.csv, .tsv, .xlsx, .ods, .json]"
+      context['format'] = 'unknown'
+      context['action'] = 'errors'
+      context['errors'] = ["Not a valid file type; must be one of [.csv, .tsv, .xlsx, .ods, .json]"]
+      os.remove(tempfn)
       return self.render_to_response(self.get_context_data(form=form, context=context))
 
     # it's csv, tsv, spreadsheet, or json...
     # if utf8, get extension and validate
     # TODO: disabled utf-8 check here 9 March
-    #if encoding and encoding.lower().startswith('utf-8'):
     ext = mthash_plus.mimetypes[mimetype]
     print('DatasetCreateView() extension', ext)
     if ext == 'json':
@@ -1924,7 +1926,7 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
       except:
         sys.exit()
     elif ext in ['xlsx', 'ods']:
-      print('spreadsheet, use pandas')
+      # use pandas to read_excel, save as .tsv then proceed
       import pandas as pd
       
       # open new file for tsv write
@@ -1948,19 +1950,18 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
       
       print('to validate_tsv(newfn):', newfn)
       # validate it...
-      result = validate_tsv(newfn, 'tsv')
-    #else:
-      ## return form with error
-      #context['action'] = "errors"
-      #context['errors'] = ["Dataset file encoding must be UTF-8; this file is <b>"+encoding+'</b>.']
-      #return self.render_to_response(self.get_context_data(form=form, context=context))
+      try:
+        result = validate_tsv(newfn, 'tsv')
+      except:
+        sys.exit()
     
     print('validation complete, still in DatasetCreateView')
     
     # validated -> create Dataset, DatasetFile, Log instances, 
     # advance to dataset_detail 
     # else present form again with errors
-    if len(result['errors']) == 0:
+    #if len(result['errors']) == 0:
+    if 'errors' in result and len(result['errors']) == 0:
       context['status'] = 'format_ok'
       
       print('validated, no errors; result:', result)      
@@ -2041,11 +2042,21 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
         numrows = result['count']
       )
       
-      # data will be written on load of dataset.html w/dsobj.status = 'format_ok'
-      #return redirect('/datasets/'+str(dsobj.id)+'/detail')
+      # data is written to db on load of ds_summary.html when context['status']= 'format_ok'
       return redirect('/datasets/'+str(dsobj.id)+'/summary')
 
+    elif 'errors' not in result:
+      # validation result has no 'errors' !?
+      # return with message and email admin
+      context['action'] = 'broken'
+
+      return self.render_to_response(
+        self.get_context_data(
+          form=form, context=context
+      ))
+
     else:
+      # validation errors -> return with errors or ??
       context['action'] = 'errors'
       context['format'] = result['format']
       context['errors'] = parse_errors_lpf(result['errors']) \

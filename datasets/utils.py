@@ -66,7 +66,7 @@ def download_augmented(request, *args, **kwargs):
   from django.db import connection
   print('download_augmented kwargs',kwargs)
   print('download_augmented request',request)
-  user = request.user.username
+  username = request.user.username
   ds=get_object_or_404(Dataset,pk=kwargs['id'])
   dslabel = ds.label
   url_prefix='http://whgazetteer.org/api/place/'

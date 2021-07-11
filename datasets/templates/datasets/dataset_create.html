@@ -124,7 +124,7 @@
         <h5>{% fontawesome_icon 'exclamation-circle' color="#993333" %} This file has one or more problems:</h5>
         <ul>
         {% for e in context.errors %}
-          <li>{% if context.format == 'delimited' %}
+          <li>{% if context.format == 'delimited' or context.format == 'unknown' %}
                 {{ e|safe }}
               {% else %}
                 <b>row #{{ e.row }}</b>: {{ e.msg }}; <b>path</b>: {{ e.path }}
@@ -132,6 +132,10 @@
         {% endfor %}
         </ul>
         <p>After making corrections, try reloading the file</p><hr/>
+      {% elif context.action == 'broken' %}
+        <h5>{% fontawesome_icon 'exclamation-circle' color="#993333" %} 
+          Uh oh! Something has gone wrong during format validation, and the problem could not be determined.
+        </h5><p>An email has been sent to WHG staff, and we will look into it and get back to you soon. You can double-check your file formatting and try again, or wait for our response.</p>
       {% else %}
         <div class="smallish">
           <p class="mb-0"><b>Sample data</b></p>

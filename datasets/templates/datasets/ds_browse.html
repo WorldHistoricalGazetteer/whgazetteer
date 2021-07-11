@@ -460,7 +460,7 @@
           if(f.type != 'Point'){
             layer.setStyle(styles[f.type].default).bindPopup(f.title+
             <!--'<br>pid: <a href="'+window.location.origin+'/api/db?id='+identifier+'" target="_blank">'+identifier+'</a>'-->
-            '<br>pid: <a href="javascript:getPlace('+matchid+')">'+matchid+'</a>'
+            '<br>pid: <a href="javascript:getPlace('+identifier+')">'+identifier+'</a>'
             );
             idToFeature[identifier] = layer
           }
