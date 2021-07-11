@@ -1314,6 +1314,7 @@ def ds_insert_lpf(request, pk):
     #print('0th feature',jdata['features'][0])
     
     for feat in jdata['features']:
+      print('feat', feat)
       # create Place, save to get id, then build associated records for each
       objs = {"PlaceNames":[], "PlaceTypes":[], "PlaceGeoms":[], "PlaceWhens":[],
               "PlaceLinks":[], "PlaceRelated":[], "PlaceDescriptions":[],
@@ -1322,11 +1323,12 @@ def ds_insert_lpf(request, pk):
 
       # build attributes for new Place instance
       title=re.sub('\(.*?\)', '', feat['properties']['title'])
-      
+      print('title', title)
       # geometry
       #if 'geometry' in feat.keys():
         #geojson = feat['geometry'] # GeometryCollection :^(
       geojson = feat['geometry'] if 'geometry' in feat.keys() else None
+      print('geojson',geojson)
       
       # ccodes  
       if 'ccodes' not in feat['properties'].keys():
@@ -1337,11 +1339,13 @@ def ds_insert_lpf(request, pk):
           ccodes = []
       else:
         ccodes = feat['properties']['ccodes']
+      print('ccodes',ccodes)
       
       # temporal
       # send entire feat for time summary
       # (minmax and intervals[])
       datesobj=parsedates_lpf(feat)
+      print('datesobj',datesobj)
       
       # TODO: compute fclasses
       newpl = Place(
@@ -1353,8 +1357,8 @@ def ds_insert_lpf(request, pk):
         minmax = datesobj['minmax'],
         timespans = datesobj['intervals']
       )
-      print('new place: ',newpl.title)
       newpl.save()
+      print('new place: ',newpl.title)
 
       # PlaceName: place,src_id,toponym,task_id,jsonb:{toponym, lang,citation,when{}}
       # TODO: adjust for 'ethnic', 'demonym'
@@ -1367,7 +1371,7 @@ def ds_insert_lpf(request, pk):
             toponym=n['toponym'].split(', ')[0],
             jsonb=n
           ))
-
+      print('PlaceNames', objs['PlaceNames'])
       # PlaceType: place,src_id,task_id,jsonb:{identifier,label,src_label}
       # in lpf, identifier may or may not be aat:
       if 'types' in feat.keys():
@@ -1376,9 +1380,8 @@ def ds_insert_lpf(request, pk):
           # if identifier is aat:, look up an fclass for it
           if 'identifier' in t.keys() and is_aat(t['identifier']):
             aatstuff = aat_lookup(t['identifier'][-9:])
-            fclass_list.append(aatstuff['fclass'])
-          else:
-            fc = None
+            fc = aatstuff['fclass']
+            fclass_list.append(fc)
           print('from feat[types]:',t)
           # if identifier
           objs['PlaceTypes'].append(PlaceType(
@@ -1389,14 +1392,14 @@ def ds_insert_lpf(request, pk):
           ))
         newpl.fclasses = fclass_list
         newpl.save()
-      
+        print('PlaceTypes', objs['PlaceTypes'])      
       # PlaceWhen: place,src_id,task_id,minmax,jsonb:{timespans[],periods[],label,duration}
       if 'when' in feat.keys() and feat['when'] != {}:
         objs['PlaceWhens'].append(PlaceWhen(
           place=newpl,
           src_id=newpl.src_id,
           jsonb=feat['when']))
-
+        print('PlaceWhens', objs['PlaceWhens']) 
       # PlaceGeom: place,src_id,task_id,jsonb:{type,coordinates[],when{},geo_wkt,src}
       #if 'geometry' in feat.keys() and feat['geometry']['type']=='GeometryCollection':
       if geojson and geojson['type']=='GeometryCollection':
@@ -1412,7 +1415,8 @@ def ds_insert_lpf(request, pk):
           place=newpl,
           src_id=newpl.src_id,
           jsonb=geojson))
-        
+      print('PlaceGeoms', objs['PlaceGeoms'])  
+      
       # PlaceLink: place,src_id,task_id,jsonb:{type,identifier}
       if 'links' in feat.keys() and len(feat['links'])>0:
         countlinked +=1 # record has *any* links
@@ -1425,24 +1429,26 @@ def ds_insert_lpf(request, pk):
             # alias uri base for known authorities
             jsonb={"type":l['type'], "identifier": aliasIt(l['identifier'].rstrip('/'))}
           ))
-
+      print('PlaceLinks', objs['PlaceLinks'])
       # PlaceRelated: place,src_id,task_id,jsonb{relationType,relationTo,label,when{}}
       if 'relations' in feat.keys():
         for r in feat['relations']:
           objs['PlaceRelated'].append(PlaceRelated(
             place=newpl,src_id=newpl.src_id,jsonb=r))
-
+      print('PlaceRelated', objs['PlaceRelated'])
       # PlaceDescription: place,src_id,task_id,jsonb{@id,value,lang}
       if 'descriptions' in feat.keys():
         for des in feat['descriptions']:
           objs['PlaceDescriptions'].append(PlaceDescription(
             place=newpl,src_id=newpl.src_id,jsonb=des))
+      print('PlaceDescriptions', objs['PlaceDescriptions'])
 
       # PlaceDepiction: place,src_id,task_id,jsonb{@id,title,license}
       if 'depictions' in feat.keys():
         for dep in feat['depictions']:
           objs['PlaceDepictions'].append(PlaceDepiction(
             place=newpl,src_id=newpl.src_id,jsonb=dep))
+      print('PlaceDepictions', objs['PlaceDepictions'])
 
       #
       # create related objects 
@@ -1500,7 +1506,7 @@ def ds_insert_tsv(request, pk):
     # strip BOM character if exists
     header[0] = header[0][1:] if '\ufeff' in header[0] else header[0]
     #header = header if type(header) = list else 
-    print('header', header)
+    #print('header', header)
   
     objs = {"PlaceName":[], "PlaceType":[], "PlaceGeom":[], "PlaceWhen":[],
             "PlaceLink":[], "PlaceRelated":[], "PlaceDescription":[]}
@@ -1627,7 +1633,7 @@ def ds_insert_tsv(request, pk):
       if len(types) > 0:
         fclass_list=[]
         for i,t in enumerate(types):
-          print('i,t',i,t)
+          #print('i,t',i,t)
           typeobj = {"sourceLabel": t}
           if 0 <= i < len(aat_types) and aat_types[i] !='':
             aatobj = aat_lookup(aat_types[i])
@@ -1637,7 +1643,7 @@ def ds_insert_tsv(request, pk):
           else:
             typeobj['label'] = ''
             typeobj['identifier'] = ''
-          print('typeobj', typeobj)
+          #print('typeobj', typeobj)
 
             #"label": aatobj['label'] or ''}          
           aatnum='aat:'+aat_types[i] if len(aat_types) >= len(types) \
@@ -2041,8 +2047,47 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
         header = result['columns'] if "columns" in result.keys() else [],
         numrows = result['count']
       )
+            
+      # insert experiment
+      # TODO: seems to workneeds testing
+      newfile = dsobj.file
+      print('inserting dataset from DatasetCreateView() '+str(dsobj.id))
+      if newfile.format == 'delimited':
+        try:
+          result = ds_insert_tsv(self.request, dsobj.id)
+        except:
+          print('ds_insert_tsv error')
+          context['action'] = 'broken'
+          emailer('failed WHG insert','DatasetCreateView() reports ds_insert_tsv failed.\n\n'+
+          'User is '+user.username+', and dataset '+data['label'])
+          return self.render_to_response(
+            self.get_context_data(
+              form=form, context=context
+          ))          
+      else:
+        try:
+          result = ds_insert_lpf(self.request, dsobj.id)  
+        except:
+          print('ds_insert_lpf error')
+          context['action'] = 'broken'
+          emailer('failed WHG insert','DatasetCreateView() reports ds_insert_lpf failed.\n\n'+
+          'User is '+user.username+', and dataset '+data['label'])
+          return self.render_to_response(
+            self.get_context_data(
+              form=form, context=context
+          ))          
+          
+      print('ds_insert_'+ext+'() result',result)
+      dsobj.numrows = result['numrows']
+      dsobj.numlinked = result['numlinked']
+      dsobj.total_links = result['total_links']
+      dsobj.ds_status = 'uploaded'
+      newfile.df_status = 'uploaded'
+      newfile.numrows = result['numrows']
+      dsobj.save()
+      newfile.save()
+      # end insert experiment
       
-      # data is written to db on load of ds_summary.html when context['status']= 'format_ok'
       return redirect('/datasets/'+str(dsobj.id)+'/summary')
 
     elif 'errors' not in result:
@@ -2209,29 +2254,29 @@ class DatasetSummaryView(LoginRequiredMixin, UpdateView):
     ds = get_object_or_404(Dataset, id=id_)
     # print('ds',ds.label)
     
+    """ TRYING THIS INSERT ACTION IN DatasetCreateView()"""
     # coming from DatasetCreateView(),
     # insert to db immediately (file.df_status == format_ok) 
     # most recent data file
     file = ds.file
-    if file.df_status == 'format_ok':
-      #print('file.df_status',file.df_status)      
-      print('format_ok , inserting dataset '+str(id_))
-      if file.format == 'delimited':
-        result = ds_insert_tsv(self.request, id_)
-        print('tsv result',result)
-      else:
-        result = ds_insert_lpf(self.request,id_)
-        print('lpf result',result)
-      print('ds_insert_xxx() result',result)
-      ds.numrows = result['numrows']
-      #ds.numrows = result['count']
-      ds.numlinked = result['numlinked']
-      ds.total_links = result['total_links']
-      ds.ds_status = 'uploaded'
-      file.df_status = 'uploaded'
-      file.numrows = result['numrows']
-      ds.save()
-      file.save()
+    #if file.df_status == 'format_ok':
+      #print('format_ok , inserting dataset '+str(id_))
+      #if file.format == 'delimited':
+        #result = ds_insert_tsv(self.request, id_)
+        #print('tsv result',result)
+      #else:
+        #result = ds_insert_lpf(self.request, id_)
+        #print('lpf result',result)
+      #print('ds_insert_xxx() result',result)
+      #ds.numrows = result['numrows']
+      ##ds.numrows = result['count']
+      #ds.numlinked = result['numlinked']
+      #ds.total_links = result['total_links']
+      #ds.ds_status = 'uploaded'
+      #file.df_status = 'uploaded'
+      #file.numrows = result['numrows']
+      #ds.save()
+      #file.save()
 
     # build context for rendering dataset.html
     me = self.request.user

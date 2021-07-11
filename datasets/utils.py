@@ -449,7 +449,6 @@ def timespansReduce(tsl):
 # TODO: replicate outcome of parsedates_tsv()
 #
 def parsedates_lpf(feat):
-  print('feat.when in parsedates_lpf()',feat['when'])
   intervals=[]
   # gather all when elements
   # global when?
@@ -623,7 +622,7 @@ def aat_lookup(aid):
     print(str(aid)+' broke aat_lookup()', sys.exc_info())
     return {"label": None, "fclass":None}
 
-u='https://catalogue.bnf.fr/ark:/12148/cb193409'
+#u='https://catalogue.bnf.fr/ark:/12148/cb193409'
 def aliasIt(url):
   r1=re.compile(r"\/(?:.(?!\/))+$")
   id=re.search(r1,url)

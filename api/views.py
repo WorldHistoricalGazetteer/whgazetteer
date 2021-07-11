@@ -611,7 +611,7 @@ class PlaceTableViewSet(viewsets.ModelViewSet):
     ds: dataset
   """
   def get_queryset(self):
-    print('PlaceViewSet.get_queryset()',self.request.GET)
+    #print('PlaceTableViewSet.get_queryset()',self.request.GET)
     ds = get_object_or_404(Dataset, label=self.request.GET.get('ds'))
     qs = ds.places.all()
     query = self.request.GET.get('q')
