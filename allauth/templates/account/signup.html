@@ -8,7 +8,7 @@
   <div class="container">
     <div class="d-flex justify-content-center mt-3">
       <div>
-        <h2>{% trans "Register" %}</h2>
+        <h3>{% trans "Register" %}</h3>
         
         <p>{% blocktrans %}Already have an account? Please <a href="{{ login_url }}">log in</a>.{% endblocktrans %}</p>
         
@@ -19,7 +19,7 @@
           <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
           {% endif %}
           <input type="hidden" name="user_type" value = "individual" />
-          <table>
+          <table class="auth-table">
             <tr>
               <td class="">Username* </td>
               <td><input type="text" name="username" id="id_username" minlength="1" maxlength="150" required />
