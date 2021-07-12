@@ -50,7 +50,7 @@
       <hr/>
       <div id="collection_options"></div> <!-- collection_options -->
       <p id="referrer"></p>
-      <input class="btn-sm btn-primary mt-2" type="submit" value="Save" />
+      <input id="btn_coll_submit" class="btn-sm btn-primary mt-2" type="submit" value="Save" />
       <!--<span title="back"><a href="{ url 'dashboard' %}">Cancel</a></span>-->
       <span title="back"><a href="/dashboard#collectionlist">Cancel</a></span>
     </form>
@@ -108,7 +108,12 @@
     });
     $("#id_geojson").attr("placeholder","generated from country codes")
   })
-  
+  $("#btn_coll_submit").click(function(){
+    // at least two datasets selected?
+    if(dslist.length < 2) {
+      alert('Collections must contain at least 2 datasets!')
+    }
+  })
   function listDataset(d) {
     console.log('listing this:', d.title)
     dslist.push(d.id)

@@ -105,10 +105,14 @@
           <div class="row">
             <div class="col-sm-8 pr-0 scroll-div">
               <p class="modal-col-head p-1 mb-2">Datasets <small>({{ object.rowcount }} total rows)</small></p>
-              <table class="dl-table small"><thead><tr><th>Title</th><th>Rows</th><th>Formats</th><th></th></tr></thead>
-              <tbody>{% for d in ds_list %}<tr class="align-top">
+              <table class="dl-table small">
+              <thead><tr><th>Title</th><th>Rows</th><th>Formats</th><th></th></tr></thead>
+              <tbody>
+              {% for d in ds_list %}
+                <tr class="align-top">
                 <td>{{ d.title }}&nbsp;
-                  <a id="cite_{{d.id}}" class="clippy" aria-label="{% if d.citation %}{{ d.citation }}{% else %}{{d.title}}. [Data file, last modified {{ d.last_modified_text}}]. Retrieved from http://whgazetteer.org/datasets/{{d.id}}, {% now 'd M Y' %}{% endif %}" rel="tooltip" title="copy to clipboard">{% fontawesome_icon 'clipboard' color='#336699' %}</a> <span class="ml-2">({{d.dl_est}})</span>
+                  <a id="cite_{{d.id}}" class="clippy" aria-label="{% if d.citation %}{{ d.citation }}{% else %}{{d.title}}. [Data file, last modified {{ d.last_modified_text}}]. Retrieved from http://whgazetteer.org/datasets/{{d.id}}, {% now 'd M Y' %}{% endif %}" rel="tooltip" title="copy to clipboard">{% fontawesome_icon 'clipboard' color='#336699' %}</a><br/>
+                  <span class="ml-2 small" style="disply:block"><i>est. download time: {{d.dl_est}}</i></span>
                 </td>
                 <td>{{d.numrows}}</td>
                 <td>{% if d.format == 'delimited' %}
@@ -132,7 +136,19 @@
                   {% endif %}
                   <i class="fa fa-download" title="Download"></i></a>
                 </td>
-              </tr>{% endfor %}</tbody>
+                </tr>
+              {% endfor %}
+              <!-- DEFER -->{%comment%}
+              {% if ds_list|length > 1 %}
+                <tr>
+                  <td><span class="float-right mr-3">Download all</span></td>
+                  <td>{{ object.rowcount }}</td>
+                  <td>LPF</td>
+                  <td><a class="a-dl" data-id={{d.id}} data-format="lpf-all">
+                    <i class="fa fa-download" title="Download all"></i></a></td>
+                </tr>
+              {% endif %}{%endcomment%}
+              </tbody>
               </table>
             </div>
             <div class="col-sm-4">

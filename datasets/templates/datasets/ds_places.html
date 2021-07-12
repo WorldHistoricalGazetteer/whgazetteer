@@ -23,7 +23,9 @@
 
 {% block content %}
 <div id="dataset_content" class="container mt-1 px-1">
-  <p class="small"><a href="{% url 'public-lists' %}">{% fontawesome_icon 'arrow-left' color='#336699' %} public dataset list</a> / {{ object.title }}</p>
+  {% with last=request.META.HTTP_REFERER %}
+    <p class="small"><a href="{{ last }}">{% fontawesome_icon 'arrow-left' color='#336699' %} back </a> / {{ object.title }}</p> 
+  {% endwith %}  
   <ul id="dataset_tabs" class="nav nav-tabs" role="tablist">
       <span class="ds-title ml-1 mr-3">{{ object.title }}</span>
       <li class="nav-item">
@@ -523,28 +525,16 @@
     //
     // LINKS
     // 
-    descrip += '<p class="mb-0"><b>Links</b>: <i>original: </i>'
+    descrip += '<p class="mb-0"><b>Links</b>: '
     close_count = added_count = related_count = 0
-    html_close = html_added = html_related = ''
+    html = ''
     if (data.links.length > 0) {
       links=data.links
       links_arr = onlyUnique(data.links)
-      <!--console.log('distinct data.links',links_arr)-->
+      console.log('distinct data.links',links_arr)
       for (l in links_arr) {
-        <!--if (links_arr[l].type.substring(0,5) == 'close') {-->
-          <!--close_count += 1-->
-          <!--html_close+=url_extplace(links_arr[l].identifier)-->
-        <!--}-->
-        if (links_arr[l].aug == true) {
-          added_count +=1
-          html_added += url_extplace(links_arr[l].identifier)
-        } else {
-          close_count +=1
-          html_close+=url_extplace(links_arr[l].identifier)
-        }
+        descrip += url_extplace(links_arr[l].identifier)
       }
-      descrip += close_count > 0 ? html_close : 'none; '
-      descrip += added_count > 0 ? '<i>added</i>: '+html_added : '<i>added</i>: none'
     } else { descrip += "<i class='small'>no links established yet</i>" }
     descrip += '</p>'
 
