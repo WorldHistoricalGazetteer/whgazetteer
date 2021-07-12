@@ -21,5 +21,7 @@ urlpatterns = [
 
     # detail is the public view
     path('<int:pk>/detail', views.CollectionDetailView.as_view(), name='collection-detail'),
+    # adding browse tab
+    path('<int:id>/places', views.CollectionPlacesView.as_view(), name='collection-places'),
 
 ] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)

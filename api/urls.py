@@ -35,13 +35,17 @@ urlpatterns = [
 
     # use: drf table in ds_browse  :: PlaceSerializer
     path('placetable/', views.PlaceTableViewSet.as_view({'get':'list'}), name='place-table'), 
-    #path('placetable/', views.PlaceTableViewSet, name='place-table'), 
-
-    # use: map in ds_browse :: PlaceGeomSerializer
-    path('geoms/', views.GeomViewSet.as_view({'get':'list'}),name='geom-list'),    
+    path('placetable_coll/', views.PlaceTableCollViewSet.as_view({'get':'list'}), name='place-table-coll'), 
 
     # TODO: place/<str:dslabel>/<str:src_id>
     path('place/<str:dslabel>/<str:src_id>/', views.PlaceDetailSourceAPIView.as_view(),name='place-detail-src'),        
+
+    # 
+    # *** GEOMETRY ***
+    # 
+    # use: map in ds_browse :: PlaceGeomSerializer
+    path('geoms/', views.GeomViewSet.as_view({'get':'list'}),name='geom-list'),    
+
     
     # 
     # *** AREAS ***

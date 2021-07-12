@@ -2314,7 +2314,7 @@ class DatasetSummaryView(LoginRequiredMixin, UpdateView):
 
 
 """ public dataset browse table """
-class DatasetPlacesView(LoginRequiredMixin, DetailView):
+class DatasetPlacesView(DetailView):
   login_url = '/accounts/login/'
   redirect_field_name = 'redirect_to'
   
@@ -2337,19 +2337,19 @@ class DatasetPlacesView(LoginRequiredMixin, DetailView):
     context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
     context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
 
-    print('DatasetDetailView get_context_data() kwargs:',self.kwargs)
-    print('DatasetDetailView get_context_data() request.user',self.request.user)
+    print('DatasetPlacesView get_context_data() kwargs:',self.kwargs)
+    print('DatasetPlacesView get_context_data() request.user',self.request.user)
     id_ = self.kwargs.get("id")
 
     ds = get_object_or_404(Dataset, id=id_)
-    me = self.request.user
-    ds_tasks = [t.task_name[6:] for t in ds.tasks.all()]
+    #me = self.request.user
+    #ds_tasks = [t.task_name[6:] for t in ds.tasks.all()]
     #placeset = Place.objects.filter(dataset=ds.label)
     context['updates'] = {}
     context['ds'] = ds
-    context['tgntask'] = 'tgn' in ds_tasks
-    context['whgtask'] = len(set(['whg','idx']) & set(ds_tasks)) > 0
-    context['wdtask'] = len(set(['wd','wdlocal']) & set(ds_tasks)) > 0
+    #context['tgntask'] = 'tgn' in ds_tasks
+    #context['whgtask'] = len(set(['whg','idx']) & set(ds_tasks)) > 0
+    #context['wdtask'] = len(set(['wd','wdlocal']) & set(ds_tasks)) > 0
     context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False
 
     return context

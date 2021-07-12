@@ -13,7 +13,7 @@ from elasticsearch import Elasticsearch
 from rest_framework import filters
 from rest_framework import generics
 from rest_framework import permissions
-from rest_framework import status
+#from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import api_view
@@ -24,8 +24,9 @@ from rest_framework.reverse import reverse
 from rest_framework.views import APIView
 import simplejson as json
 from accounts.permissions import IsOwnerOrReadOnly
-from api.serializers import (UserSerializer, DatasetSerializer, PlaceSerializer, PlaceTableSerializer, PlaceGeomSerializer, AreaSerializer, FeatureSerializer, LPFSerializer, SearchDatabaseSerializer)
+from api.serializers import (UserSerializer, DatasetSerializer, PlaceSerializer, PlaceTableSerializer, PlaceGeomSerializer, AreaSerializer, FeatureSerializer, LPFSerializer)#, SearchDatabaseSerializer)
 from areas.models import Area
+from collection.models import Collection
 from datasets.models import Dataset
 from datasets.tasks import get_bounds_filter
 from places.models import Place, PlaceGeom
@@ -584,7 +585,9 @@ class PlaceDetailSourceAPIView(generics.RetrieveAPIView):
 
 """ 
     /api/geoms {ds:{{ ds.label }}} 
+    /api/geoms {coll:{{ coll.id }}} 
     in dataset.html#browse for all geoms if < 15k
+    TODO: this needs refactor (make collection.geometries @property?)
 """
 class GeomViewSet(viewsets.ModelViewSet):
   queryset = PlaceGeom.objects.all()
@@ -593,13 +596,20 @@ class GeomViewSet(viewsets.ModelViewSet):
   permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
 
   def get_queryset(self):
-    dslabel = self.request.GET.get('ds')
-    dsPlaceIds = Place.objects.values('id').filter(dataset = dslabel)
-    qs = PlaceGeom.objects.filter(place_id__in=dsPlaceIds)
+    # PlaceGeom objects do not have dataset id or label :^(
+    if 'ds' in self.request.GET:
+      dslabel = self.request.GET.get('ds')
+      dsPlaceIds = Place.objects.values('id').filter(dataset = dslabel)
+      qs = PlaceGeom.objects.filter(place_id__in=dsPlaceIds)
+    elif 'coll' in self.request.GET:
+      cid = self.request.GET.get('coll')
+      coll = Collection.objects.get(id=cid)
+      collPlaceIds = [p.id for p in coll.places.all()]
+      qs = PlaceGeom.objects.filter(place_id__in=collPlaceIds)
     return qs
 
 """
-    populates drf table in dataset.detail#browse
+    populates drf table in ds_browse.html
 """
 class PlaceTableViewSet(viewsets.ModelViewSet):
   #queryset = Place.objects.all().order_by('title')
@@ -614,6 +624,37 @@ class PlaceTableViewSet(viewsets.ModelViewSet):
     #print('PlaceTableViewSet.get_queryset()',self.request.GET)
     ds = get_object_or_404(Dataset, label=self.request.GET.get('ds'))
     qs = ds.places.all()
+    query = self.request.GET.get('q')
+    if query is not None:
+      qs = qs.filter(title__istartswith=query)
+    return qs
+
+  def get_permissions(self):
+    """
+    Instantiates and returns the list of permissions that this view requires.
+    """
+    if self.action in ['list','retrieve']:
+      print(self.action)
+      permission_classes = [permissions.AllowAny]
+    else:
+      permission_classes = [permissions.IsAdminUser]
+    return [permission() for permission in permission_classes]
+
+"""
+    populates drf table in collection.collection_places.html
+"""
+class PlaceTableCollViewSet(viewsets.ModelViewSet):
+  serializer_class = PlaceTableSerializer
+  permission_classes = (permissions.IsAuthenticatedOrReadOnly)
+
+  """
+    q: query string
+    coll: collection
+  """
+  def get_queryset(self):
+    print('PlaceTableCollViewSet request[id]',self.request.GET['id'])
+    coll = get_object_or_404(Collection, id=self.request.GET.get('id'))
+    qs = coll.places.all()
     query = self.request.GET.get('q')
     #ds = self.request.GET.get('ds')
     #if ds is not None:

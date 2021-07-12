@@ -19,20 +19,17 @@
 
 {% endblock %}
 
-{% block title %}<title>Dataset::{{ ds.label }}</title>{% endblock %}
+{% block title %}<title>Collection::{{ object.title }}</title>{% endblock %}
 
 {% block content %}
 <div id="dataset_content" class="container mt-1 px-1">
-  {% with last=request.META.HTTP_REFERER %}
-    <p class="small"><a href="{{ last }}">{% fontawesome_icon 'arrow-left' color='#336699' %} back </a> / {{ object.title }}</p> 
-  {% endwith %}  
   <ul id="dataset_tabs" class="nav nav-tabs" role="tablist">
-      <span class="ds-title ml-1 mr-3">{{ object.title }}</span>
+      <!--<span class="ds-title ml-1 mr-3">{ object.title }}</span>-->
       <li class="nav-item">
-          <a class="nav-link" id="summary-tab" data-link="summary" href="{% url 'datasets:ds_meta' pk=object.id %}" role="tab">Summary</a>
+          <a class="nav-link" id="summary-tab" data-link="summary" href="{% url 'collection:collection-detail' pk=object.id %}" role="tab">Collection Summary</a>
       </li>
       <li class="nav-item">
-          <a class="nav-link active" id="browse-tab" href="#" role="tab">Browse</a>
+          <a class="nav-link active" id="browse-tab" href="#" role="tab">Browse Data: <sr>{{object.title}}</sr> collection</a> 
       </li>
   </ul>
   <div class="tab-content">
@@ -84,7 +81,7 @@
     </div> <!-- browse -->
   </div> <!-- .tab-content -->
 
-  <div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
+  <div class="modal fade" id="" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
@@ -128,7 +125,6 @@
   }
   //*
   
-  
   function filterColumn (i, v) {
     // clear then search
     table
@@ -151,7 +147,6 @@
   // table events
   // TODO: use datatables methods?
   function setRowEvents(){
-
     $("#placetable tbody tr").click(function() {
       t=$(this)
       console.log('clicked', t)
@@ -188,7 +183,7 @@
     wdtask = false
     tgntask = false
     whgtask = false
-    
+   
     startTableSpinner()
     startDetailSpinner()
     
@@ -202,7 +197,8 @@
       "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"
       ,serverSide: true
       ,ajax: {
-        url: "/api/placetable/?format=datatables&ds={{ ds.label }}"
+        <!--url: "/api/placetable/?format=datatables&ds={ ds.label }}"-->
+        url: "/api/placetable_coll/?format=datatables&id={{ object.id }}"
       }
       ,scrollY: 400
       ,select: true
@@ -334,8 +330,9 @@
     }).addTo(mappy)
     
     
-    // get dataset features -> renderMap() if < 15,000
-    $.get("/api/geoms", {ds: "{{ ds.label }}", f: "{{ filter }}" },
+    // get collection features -> renderMap() if < 15,000
+    <!--$.get("/api/geoms", {ds: "{{ ds.label }}", f: "{{ filter }}" },-->
+    $.get("/api/geoms", {coll: "{{ object.id }}", f: "{{ filter }}" },
       function(data){
         <!--console.log('feature count:',data.count)-->
         geom = {"type":"FeatureCollection","features":data.results}
