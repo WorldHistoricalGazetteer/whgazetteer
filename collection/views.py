@@ -96,14 +96,6 @@ class CollectionDetailView(DetailView):
     id_ = self.kwargs.get("pk")
     print('self, kwargs',self, self.kwargs)
 
-    #qs = CollectionDataset.objects.filter(collection_id = id_)
-
-    #g_list =[g.jsonb for g in place.geoms.all()]
-    ## make everything a simple polygon hull for spatial filter
-    #qobj['geom'] = hully(g_list)
-    #GeometryCollection([GEOSGeometry(json.dumps(g)) for g in g_list])
-
-    #datasets = [cd.dataset for cd in qs]
     datasets = self.object.datasets.all()
     
     # compute bounding boxes
@@ -137,7 +129,7 @@ class CollectionPlacesView(DetailView):
   login_url = '/accounts/login/'
   redirect_field_name = 'redirect_to'
   
-  model = Dataset
+  model = Collection
   template_name = 'collection/collection_places.html'
 
   def get_success_url(self):
@@ -159,7 +151,11 @@ class CollectionPlacesView(DetailView):
     id_ = self.kwargs.get("id")
 
     coll = get_object_or_404(Collection, id=id_)
+    datasets = [{"id":ds.id,"label":ds.label,"title":ds.title, "geotypes":ds.geotypes} \
+                for ds in coll.datasets.all()]
+    
     #placeset = Place.objects.filter(dataset=ds.label)
+    context['ds_list'] = datasets
     context['updates'] = {}
     context['coll'] = coll
     context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False

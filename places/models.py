@@ -36,6 +36,9 @@ class Place(models.Model):
     def __str__(self):
         return '%s:%s' % (self.id, self.title)
 
+    @property
+    def dsid(self):
+        return self.dataset.id
     
     @property
     def countries(self):

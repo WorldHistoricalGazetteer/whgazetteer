@@ -34,7 +34,6 @@
         <a class="nav-link" id="browse-tab" href="{% url 'collection:collection-places' id=object.id %}" role="tab">Browse Data</a>
     </li>
   </ul>
-  <!--<div class="tab-content">-->
   <div class="d-flex tab-content">
     <div id="summary" class="tab-pane fade show active" role="tabpanel" aria-labelledby="summary-tab">
     <div class="row">
@@ -58,6 +57,7 @@
       </div>
     </div> <!-- .row -->
     <div  id="coll_dslist" class="col-sm-5 mt-2">
+      <!-- dataset bboxes to js ('gelems') -->
       {% for g in bboxes %}
         {{ g|safe|json_script:g.properties.id }}
       {% endfor %}
@@ -319,16 +319,13 @@
         ne_url = 'http://blog.whgazetteer.org/tiles/ne/{z}/{x}/{y}.png';
       
     var satellite  = L.tileLayer(mbstyle_url, {
-      id:'mapbox/satellite-streets-v11', 
-      token:token_mb}),
+      id:'mapbox/satellite-streets-v11', token:token_mb}),
     osm  = L.tileLayer(mbstyle_url, {
-      id:'mapbox/light-v10', 
-      token:token_mb}),
+      id:'mapbox/light-v10', token:token_mb}),
     ne_mb = L.tileLayer(mbtiles_url, {
-      id:'kgeographer.ne_global', 
-      token:token_kg})
+      id:'kgeographer.ne_global', token:token_kg})
 
-    // GL wrappers to display heatmaps
+    // GL wrappers can display heatmaps
     mb_terrain = L.mapboxGL({
       style:'mapbox://styles/kgeographer/ckhf6o8yf07fw19qhbrm7f2q7',
       accessToken:token_kg})
@@ -341,7 +338,6 @@
     var baseLayers = {
       "NE global": ne_global,
       "Terrain": mb_terrain,
-      <!--"NE self": ne,-->
       "OpenStreetMap": osm,      
       "Satellite": satellite
     };
@@ -375,13 +371,13 @@
     <!--window.geom = {"type":"FeatureCollecton","features":[]}-->
     window.geoms = []
 
+    // geometry pushed from template
+    // dataset bounding boxes in this case
     window.gelems = $('script').filter(function() {
-      <!--return this.id.match(/[0-9]/) && this.text != '"null"';-->
       return this.id !='' && this.text != '"null"';
     });
     for (i=0;i<gelems.length;i++){
       let t_geom = cleanJson(gelems[i].text)
-      <!--t_geom['properties'] = {"id": gelems[i].id,"ds": t_geom.ds!=null?t_geom.ds:ds}-->
       geoms.push(t_geom)
     }
 
@@ -392,7 +388,6 @@
         onEachFeature: function(feature,layer) {
           f=feature; l=layer;
           identifier = f.properties.id;
-          <!--console.log('identifier, type',identifier,f.geometry.type)-->
           if(f.type != 'Point'){
             layer.setStyle(styles[f.geometry.type].default).bindPopup(
               f.properties.title+' ('+identifier+')'

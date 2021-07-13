@@ -877,7 +877,7 @@ em { color: #993333;}
 }
 #ds_list p {font-size:.9rem;}
 #ds_access p {padding: .2rem .5rem;}
-#status_select { padding: 4px; }
+#status_select, #ds_select { padding: 4px; }
 #status_filter { text-align: center; }
 #browse_legend {background:#e0e0e0;}
 /*#file_lpf, #file_tsv */

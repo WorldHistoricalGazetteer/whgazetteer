@@ -168,13 +168,12 @@ class PlaceSerializer(serializers.ModelSerializer):
             )
 
 class PlaceTableSerializer(serializers.ModelSerializer):
-  geo = serializers.SerializerMethodField('has_geom')    
-  def has_geom(self, place):
+  dataset = DatasetSerializer()
+  
+  geo = serializers.SerializerMethodField()    
+  def get_geo(self, place):
     return '<i class="fa fa-globe"></i>' if place.geom_count > 0 else "-"
-  # empty: &#9744;  checked: &#9745; x: &#9746;
-  # <i class="fa fa-square-o" aria-hidden="true"></i>
-  # <i class="fa fa-check-square-o" aria-hidden="true"></i>
-  # <i class="fa fa-window-close-o" aria-hidden="true"></i>
+
 
   revwd = serializers.SerializerMethodField('rev_wd')    
   def rev_wd(self, place):
@@ -212,15 +211,16 @@ class PlaceTableSerializer(serializers.ModelSerializer):
       val = '<i>deferred</i>'
     return val    
     
-    #return '<i>no hits</i>' if not place.hashits_whg else '<i class="fa fa-check-square-o" aria-hidden="true"></i>' if place.review_whg == 1 else '&#9744;'
 
   class Meta:
     model = Place
-    fields = ('url','id', 'title', 'src_id', 
+    fields =  ('url','id', 'title', 'src_id', 
                   'ccodes', 'geo', 'minmax', 
                   'revwhg', 'revwd', 'revtgn',
                   'review_whg', 'review_wd', 'review_tgn'
+                  ,'dataset', 'dataset_id'
                   )
+
 
 """ used by: DownloadGeomsAPIView() """
 class FeatureSerializer(GeoFeatureModelSerializer):
