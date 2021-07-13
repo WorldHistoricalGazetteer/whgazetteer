@@ -9,14 +9,18 @@
   {% leaflet_js %}
   {% leaflet_css %}
   <script src="{% static 'js/aliases.js' %}"></script>
-  <script src="{% static 'js/easyprint.js' %}"></script>
+  <!--<script src="{ static 'js/leaflet-heat.js' %}"></script>-->
   <script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>
-  <script src="{% static 'js/spin.umd.js' %}"></script>
   <link rel="stylesheet" href="{% static 'css/spin.css' %}"/>
   <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.10.24/b-1.7.0/b-colvis-1.7.0/b-html5-1.7.0/cr-1.5.3/fh-3.1.8/sc-2.0.3/sp-1.2.2/sl-1.3.3/datatables.min.css"/>
 
   <script type="text/javascript" src="https://cdn.datatables.net/v/dt/dt-1.10.24/b-1.7.0/b-colvis-1.7.0/b-html5-1.7.0/cr-1.5.3/fh-3.1.8/sc-2.0.3/sp-1.2.2/sl-1.3.3/datatables.min.js"></script>
 
+  <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.css' rel='stylesheet' />
+  <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.js'></script>
+  <script src="{% static 'js/leaflet-mapbox-gl.js' %}"></script>
+
+  <script src="{% static 'js/spin.umd.js' %}"></script>
 {% endblock %}
 
 {% block title %}<title>Collection::{{ object.title }}</title>{% endblock %}
@@ -149,9 +153,9 @@
   function setRowEvents(){
     $("#placetable tbody tr").click(function() {
       t=$(this)
-      console.log('clicked', t)
       // get id
       pid=$(this)[0].cells[0].textContent
+      console.log('clicked', pid)
       
       // highlight this row, clear others
       var selected = $(this).hasClass("highlight-row");
@@ -298,11 +302,74 @@
       }
     }    
   }
+
+  function heat(dataset) {
+	  console.log('heat()',dataset)
+	  if (!!gl.getLayer('heat_active')){
+		  gl.removeLayer('heat_active')
+    }
+	  ne_global.getMapboxMap().addLayer({
+      "id": "heat_active",
+      "type": "heatmap",
+      "source": dataset,
+      "maxzoom": 9,
+      "paint": {
+        // Increase the heatmap weight based on frequency and property magnitude
+      "heatmap-weight": [
+        "interpolate",
+        ["linear"],
+        ["get", "mag"],
+        0, 0,
+        6, 1
+      ],
+      // Increase the heatmap color weight weight by zoom level
+      // heatmap-intensity is a multiplier on top of heatmap-weight
+      "heatmap-intensity": [
+        "interpolate",
+        ["linear"],
+        ["zoom"],
+        0, 1,
+        9, 3
+      ],
+      // Color ramp for heatmap.  Domain is 0 (low) to 1 (high).
+      // Begin color ramp at 0-stop with a 0-transparancy color
+      // to create a blur-like effect.
+      "heatmap-color": [
+        "interpolate",
+        ["linear"],
+        ["heatmap-density"],
+        0, "rgba(33,102,172,0)",
+        0.2, "rgb(103,169,207)",
+        0.4, "rgb(209,229,240)",
+        0.6, "rgb(253,219,199)",
+        0.8, "rgb(239,138,98)",
+        1, "rgb(178,24,43)"
+      ],
+      // Adjust the heatmap radius by zoom level
+      "heatmap-radius": [
+        "interpolate",
+        ["linear"],
+        ["zoom"],
+        0, 2,
+        9, 20
+      ],
+      // Transition from heatmap to circle layer by zoom level
+      "heatmap-opacity": [
+        "interpolate",
+        ["linear"],
+        ["zoom"],
+        7, 1,
+        9, 0
+      ],
+      }
+    });    
+  }
   
   // initiate map, fetch data -> renderMap()
   addEventListener('map:init', function (e) {
+    window.mappy = e.detail.map
     console.log('map:init begin')
-    startMapSpinner()
+    <!--startMapSpinner()-->
     var token_mb = '{{ mbtokenmb }}',
       token_kg = '{{ mbtokenkg }}',
       mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}';
@@ -310,58 +377,91 @@
     var satellite  = L.tileLayer(mbstyle_url, {id:'mapbox/satellite-streets-v11', token:token_mb})
     var osm  = L.tileLayer(mbstyle_url, {id:'mapbox/light-v10', token:token_mb})
 
-    var baseLayers = {
+    ne_global= L.mapboxGL({
+      style:'mapbox://styles/kgeographer/ckidglq8l2nra19nzzbl995ue',
+      accessToken:token_kg}).addTo(mappy)
+
+    gl=ne_global.getMapboxMap().on('load',function(){
+      gl.addSource('lugares', {
+          "type": "geojson",
+          "data": "{{media_url}}data/lugares_13k.geojson"
+        });	
+    })
+    
+    baseLayers = {
+      "NE global": ne_global,
       "OSM": osm,
       "Satellite": satellite
     };
+
     <!--startMapSpinner()-->
-    // call it mappy (a harmless artifact of earlier version)
-    window.mappy = e.detail.map
+    
     mappy.setMaxBounds(null)
     L.control.layers(baseLayers).addTo(mappy);
-    baseLayers['OSM'].addTo(mappy)
+    baseLayers['NE global'].addTo(mappy)
+    <!--baseLayers['OSM'].addTo(mappy)-->
+
+    <!--var printer = L.easyPrint({-->
+      <!--tileLayer: osm,-->
+      <!--sizeModes: ['Current'],-->
+      <!--filename: 'myMap',-->
+      <!--exportOnly: true,-->
+      <!--hideControlContainer: true-->
+    <!--}).addTo(mappy)-->
     
-    var printer = L.easyPrint({
-      tileLayer: osm,
-      sizeModes: ['Current'],
-      filename: 'myMap',
-      exportOnly: true,
-      hideControlContainer: true
-    }).addTo(mappy)
-    
-    
+    // leaflet.heat
+    <!--$.get("/api/geoms", {coll: "{{ object.id }}", f: "{{ filter }}" },-->
+      <!--function(data){-->
+        <!--coords = []-->
+        <!--r=data.results-->
+        <!--coords = r.map(function (p) { -->
+          <!--return [p['coordinates'][1], p['coordinates'][0]]; });-->
+        <!--heat = L.heatLayer(coords, {-->
+          <!--radius: 10,-->
+          <!--blur: 5,-->
+          <!--gradient: {0.4: 'blue', 0.65: 'lime', 1: 'red'}-->
+          <!--<!--gradient: {0.4: '#99ccff', 0.65: '#ccffcc', 1: '#ffb3b3'}-->-->
+          <!--<!--minOpacity: 0.2-->-->
+          <!--}).addTo(mappy);-->
+      <!--})-->
+
     // get collection features -> renderMap() if < 15,000
-    <!--$.get("/api/geoms", {ds: "{{ ds.label }}", f: "{{ filter }}" },-->
-    $.get("/api/geoms", {coll: "{{ object.id }}", f: "{{ filter }}" },
-      function(data){
-        <!--console.log('feature count:',data.count)-->
-        geom = {"type":"FeatureCollection","features":data.results}
-        if(geom.features.length >= 15000) {
-          $(".toomany").html('for performance reasons, mapping only the first 15,000 features - sorry!')
-        }
-        if(geom.features.length <= 15000) {
-          renderMap(geom,'browse')
-        } else {
-          $(".toomany").html('too many features to map (> '+geom.features.length+'), sorry!')
-        }
-    })
-    <!--spinner_map.stop()-->
+    // getting only points here
+    <!--$.get("/api/geoms", {coll: "{{ object.id }}", f: "{{ filter }}" },-->
+      <!--function(data){-->
+        <!--<!--console.log('feature count:',data.count)-->-->
+        <!--geom = {"type":"FeatureCollection","features":data.results}-->
+        <!--if(geom.features.length >= 15000) {-->
+          <!--$(".toomany").html('for performance reasons, mapping only the first 15,000 features - sorry!')-->
+        <!--}-->
+        <!--if(geom.features.length <= 15000) {-->
+          <!--renderMap(geom,'browse')-->
+        <!--} else {-->
+          <!--$(".toomany").html('too many features to map (> '+geom.features.length+'), sorry!')-->
+        <!--}-->
+      <!--spinner_map.stop()-->
+    <!--})-->
+    
 
     function manualPrint () {
         printer.printMap('CurrentSize', 'MyManualPrint')
     }
   }, false);
   
+  function map_init (home_map, options) {
+    mappy.setView([38, 10], 1)
+    // empty features[]
+    geom = {"type":"FeatureCollecton","features":[]}
+  } // end map_init
+
   // dual purpose for browse and recon
   function renderMap(geom, tab){
-    // call the map being rendered 'mappo'
-    mappo = tab=='browse' ? mappy : mappyr
     if (geom.features.length==0) {
       console.log('no features in renderMap() call')
     } else {
       // clear existing if any
       if(typeof(features)!=='undefined'){
-        mappo.removeLayer(features)
+        mappy.removeLayer(features)
       }
       idToFeature = {}  // for feature lookup
       features = L.geoJSON(geom, {
@@ -390,13 +490,13 @@
             idToFeature[identifier] = layer
           }
         }
-      }).addTo(mappo);
+      }).addTo(mappy);
       spinner_map.stop()
     }
     <!--highlightFeature(pid)-->
-    mappo.fitBounds(features.getBounds())
-    mappo.on('zoomend', function() {
-      var currentZoom = mappo.getZoom();
+    mappy.fitBounds(features.getBounds())
+    mappy.on('zoomend', function() {
+      var currentZoom = mappy.getZoom();
       <!--console.log('on zoomend', currentZoom)-->
       var myRadius = currentZoom*(1); //or whatever ratio you prefer
       var myWeight = currentZoom*(1/5); //or whatever ratio you prefer
@@ -441,7 +541,6 @@
           window.open(url,'_blank')
         });
     });
-    <!--spinner_detail.stop()-->
   }
 
   // single column

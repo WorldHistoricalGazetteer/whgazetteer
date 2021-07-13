@@ -152,7 +152,8 @@ class CollectionPlacesView(DetailView):
     context = super(CollectionPlacesView, self).get_context_data(*args, **kwargs)
     context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
     context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
-
+    context['media_url'] = settings.MEDIA_URL
+    
     print('CollectionPlacesView get_context_data() kwargs:',self.kwargs)
     print('CollectionPlacesView get_context_data() request.user',self.request.user)
     id_ = self.kwargs.get("id")

@@ -1666,6 +1666,7 @@ def ds_insert_tsv(request, pk):
       # PlaceGeom()
       # 
       if geojson:
+        #geotypes=[]
         objs['PlaceGeom'].append(
           PlaceGeom(
             place=newpl,
@@ -1746,28 +1747,19 @@ def ds_insert_tsv(request, pk):
     # backfill some dataset counts
     #print('ds record pre-update:', ds.__dict__)
     print('rows,linked,links:', countrows, countlinked, total_links)
-  
-    # write some summary attributes
-    #ds.numrows = countrows
-    #ds.numlinked = countlinked
-    #ds.total_links = countlinks
-    #ds.save()
-
-    #dsf.df_status = 'uploaded'
-    #dsf.numrows = countrows
-    #dsf.save()
     
-    #print('ds record post-update:', ds.__dict__)
-  
   else:
     print('insert_tsv skipped, already in')
     # message to user
     messages.add_message(request, messages.INFO, 'data is uploaded, but problem displaying dataset page')
     return redirect('/dashboard')    
   
+  # TODO: generate geotypes, add to file instance
   return({"numrows":countrows,
           "numlinked":countlinked,
-          "total_links":total_links})  
+          "total_links":total_links,
+          #"geotypes":geotypes
+          })  
 
 """
 DashboardView()
@@ -2049,7 +2041,7 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
       )
             
       # insert experiment
-      # TODO: seems to workneeds testing
+      # TODO: seems to work; needs testing
       newfile = dsobj.file
       print('inserting dataset from DatasetCreateView() '+str(dsobj.id))
       if newfile.format == 'delimited':
@@ -2078,12 +2070,14 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
           ))          
           
       print('ds_insert_'+ext+'() result',result)
+      # from insert
       dsobj.numrows = result['numrows']
       dsobj.numlinked = result['numlinked']
       dsobj.total_links = result['total_links']
       dsobj.ds_status = 'uploaded'
       newfile.df_status = 'uploaded'
       newfile.numrows = result['numrows']
+      #newfile.geotypes = result['geotypes']
       dsobj.save()
       newfile.save()
       # end insert experiment

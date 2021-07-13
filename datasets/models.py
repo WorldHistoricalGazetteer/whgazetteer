@@ -43,6 +43,7 @@ class Dataset(models.Model):
   public = models.BooleanField(default=False)    
   ds_status = models.CharField(max_length=12, null=True, blank=True, choices=STATUS_DS)
 
+
   # 4 added 20210619
   creator = models.CharField(max_length=500, null=True, blank=True)
   source = models.CharField(max_length=500, null=True, blank=True)
@@ -78,6 +79,25 @@ class Dataset(models.Model):
   #user = get_object_or_404(User, pk=14)
   #coll = get_object_or_404(Collection,pk=3)
 
+  # provide basis for rendering big polygon datasets to map or not
+  @property
+  def geotypes(self):
+    # TODO: this is nasty
+    #gtypes = [g['type'] for g in self.geometries]
+    #ds8=Dataset.objects.get(pk=8)
+    #ds9=Dataset.objects.get(pk=9)
+    #dsx=Dataset.objects.get(pk=1064)
+    gobj = {'poly':0, 'string':0, 'point':0}
+    gtypes = [g['type'] for g in self.geometries]
+    for t in gtypes:
+      if 'poly' in t.lower():
+        gobj['poly']+=1
+      elif 'string' in t.lower():
+        gobj['string']+=1
+      elif 'point' in t.lower():
+        gobj['point']+=1
+    return gobj
+    
   @property
   def last_modified_iso(self):
     last=self.log.all().order_by('-timestamp')[0].timestamp
@@ -235,6 +255,8 @@ class DatasetFile(models.Model):
   upload_date = models.DateTimeField(null=True, auto_now_add=True)
   header = ArrayField(models.CharField(max_length=30), null=True, blank=True)
   numrows = models.IntegerField(null=True, blank=True)
+  # TODO: generate geotypes, add to file instance
+  #geotypes = JSONField(blank=True, null=True)
 
   #def __str__(self):
     #return 'file_'+str(self.rev)

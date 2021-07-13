@@ -605,7 +605,7 @@ class GeomViewSet(viewsets.ModelViewSet):
       cid = self.request.GET.get('coll')
       coll = Collection.objects.get(id=cid)
       collPlaceIds = [p.id for p in coll.places.all()]
-      qs = PlaceGeom.objects.filter(place_id__in=collPlaceIds)
+      qs = PlaceGeom.objects.filter(place_id__in=collPlaceIds,jsonb__type='Point')
     return qs
 
 """
