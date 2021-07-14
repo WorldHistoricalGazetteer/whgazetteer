@@ -42,8 +42,7 @@
         <div class="container mt-3 pl-0">
           <div class="row">
             <div id="drftable_detail" class="col-sm-5">
-              {{ filter }}
-              <div class="toomany"></div>
+              <div class="toomany hidden"></div>
               <div id="mapdiv_browse" style="position:relative">
                   {% leaflet_map "map_browse" %}
               </div>
@@ -166,7 +165,7 @@
       highlightFeature(pid)
 
       // fetch its detail
-      getPlace(pid)
+      getPlace(pid, 'clicked')
       
     }) 
         
@@ -175,7 +174,9 @@
     // highlight first row, fetch detail, but don't zoomTo() it
     $("#placetable tbody").find('tr').eq(0).addClass('highlight-row')
 
-    getPlace(pid)
+    // fetch place details for 1st row
+    // 
+    getPlace(pid, 'row0')
   }
 
   function buildSelect(){
@@ -279,7 +280,7 @@
   $("[rel='tooltip']").tooltip();
   
   // [ greenish, redish]
-  heatramps = [
+  var heatramps = [
     ["interpolate",["linear"],["heatmap-density"],
     0,"rgba(237,248,251,0)",0.2,"rgb(204,236,230)",0.4,"rgb(153,216,201)",0.6,
     "rgb(102,194,164)",0.8,"rgb(44,162,95)",1,"rgb(0,109,44)"],
@@ -422,23 +423,26 @@
     <!--baseLayers['NE global'].addTo(mappy)-->
     baseLayers['OSM'].addTo(mappy)
     
+    polygons = L.featureGroup().addTo(mappy)
     // fetch collection features -> renderMap() if < 15,000
-    // getting only points here
-    <!--$.get("/api/geoms", {coll: "{ object.id }}", f: "{ filter }}" },-->
+    // getting only points and multipoints here
+    // polygons will be fetched on click of a table row
+    var rowcount = "{{ object.rowcount }}"
+    if( rowcount >= 15000) {
+      $(".toomany").html('for performance reasons, mapping only the first 15,000 features - sorry!').fadeIn(500)
+    } else if(rowcount > 1000){
+        console.log('count > 1000, .toomany should appear')
+        $(".toomany").html('rendering '+rowcount+' features, just a few moments...').fadeIn(500)
+    }
+    console.log('toomany html', $(".toomany").html())
     $.get("/api/geoms", {coll: "{{ object.id }}"},
       function(data){
-        <!--console.log('feature count:',data.count)-->
+        console.log('success: data.count:',data.count)
         geom = {"type":"FeatureCollection","features":data.results}
-        if(geom.features.length >= 15000) {
-          $(".toomany").html('for performance reasons, mapping only the first 15,000 features - sorry!')
-        }
-        if(geom.features.length <= 15000) {
-          renderMap(geom,'browse')
-        } else {
-          $(".toomany").html('too many features to map (> '+geom.features.length+'), sorry!')
-        }
-      <!--spinner_map.stop()-->
-    })
+        renderMap(geom,'browse')
+        $(".toomany").fadeOut(1200)
+      }
+    )
     
     function manualPrint() {
         printer.printMap('CurrentSize', 'MyManualPrint')
@@ -447,7 +451,9 @@
   
   // 
   function renderMap(geom){
-    if (geom.features.length==0) {
+    console.log('renderMap()')
+    let count = geom.features.length
+    if (count==0) {
       console.log('no features in renderMap() call')
     } else {
       // clear existing if any
@@ -463,7 +469,7 @@
           <!--console.log('feature',feature)-->
           marker = L.circleMarker(latlng,styles.Point.default).bindPopup(feature.title+
             <!--'<br>pid: <a href="'+window.location.origin+'/api/db?id='+matchid+'" target="_blank">'+matchid+'</a>'-->
-            '<br>pid: <a href="javascript:getPlace('+matchid+')">'+matchid+'</a>'
+            '<br>pid: <a href="javascript:getPlace('+matchid+',"popup")">'+matchid+'</a>'
             );
           idToFeature[matchid] = marker
           return marker
@@ -474,7 +480,7 @@
           identifier = f.place_id;
           if(f.type != 'Point'){
             layer.setStyle(styles[f.type].default).bindPopup(f.title+
-            '<br>pid: <a href="javascript:getPlace('+matchid+')">'+matchid+'</a>'
+            '<br>pid: <a href="javascript:getPlace('+matchid+',"popup")">'+matchid+'</a>'
             )
             idToFeature[identifier] = layer
           }
@@ -483,6 +489,7 @@
       // defer adding 
       }).addTo(mappy);
       spinner_map.stop()
+      $(".toomany").fadeOut()
     }
     <!--highlightFeature(pid)-->
     <!--mappy.fitBounds(features.getBounds())-->
@@ -502,15 +509,20 @@
     foptions = { ...opt };
   }
 
-  function getPlace(pid){
-    <!--console.log('getPlace()', pid)-->
+  function getPlace(pid, from){
+    // from = ['row0'|'clicked'|'popup']
+    <!--console.trace('getPlace()')-->
     $.ajax({
       url: "/api/place/"+pid,
       }).done(function( data ) {
+        // if geom is polygon, make feature & add to map if not initial table.draw()
         gfoo = data.geoms[0]
-        if(gfoo.type.toLowerCase().search('poly') > 0){
-          console.log("clicked a polygon layer, add to map why don't you?")
-          L.geoJSON(gfoo).addTo(mappy);
+        if(from != 'row0' && gfoo.type.toLowerCase().search('poly') > 0){
+          console.log("polygon, add to map")
+          polygons.clearLayers() // one at a time
+          let feat = L.geoJSON(gfoo);
+          polygons.addLayer(feat)
+          mappy.fitBounds(feat.getBounds())
         }
         $("#detail").html(parsePlace(data))
         spinner_detail.stop()
