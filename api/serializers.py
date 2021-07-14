@@ -172,7 +172,10 @@ class PlaceTableSerializer(serializers.ModelSerializer):
   
   geo = serializers.SerializerMethodField()    
   def get_geo(self, place):
-    return '<i class="fa fa-globe"></i>' if place.geom_count > 0 else "-"
+    gtype = place.geoms.all()[0].jsonb['type'].lower()
+    fn="point" if 'point' in gtype else "polygon" if 'poly' in gtype else "linestring"
+    #return '<i class="fa fa-globe"></i>' if place.geom_count > 0 else "-""{% static 'images/Wikidata-logo-en.svg'%}"
+    return '<img src="/static/images/geo_'+fn+'.svg" width=12/>' if place.geom_count > 0 else "-"
 
 
   revwd = serializers.SerializerMethodField('rev_wd')    

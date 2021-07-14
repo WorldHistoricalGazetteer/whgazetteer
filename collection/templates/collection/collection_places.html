@@ -42,7 +42,7 @@
         <div class="container mt-3 pl-0">
           <div class="row">
             <div id="drftable_detail" class="col-sm-5">
-              <div class="toomany hidden"></div>
+              <div class="toomany hidden text-danger"></div>
               <div id="mapdiv_browse" style="position:relative">
                   {% leaflet_map "map_browse" %}
               </div>
@@ -173,9 +173,7 @@
     pid = parseInt(row.cells[0].textContent)
     // highlight first row, fetch detail, but don't zoomTo() it
     $("#placetable tbody").find('tr').eq(0).addClass('highlight-row')
-
     // fetch place details for 1st row
-    // 
     getPlace(pid, 'row0')
   }
 
@@ -468,8 +466,7 @@
           matchid = feature.place_id
           <!--console.log('feature',feature)-->
           marker = L.circleMarker(latlng,styles.Point.default).bindPopup(feature.title+
-            <!--'<br>pid: <a href="'+window.location.origin+'/api/db?id='+matchid+'" target="_blank">'+matchid+'</a>'-->
-            '<br>pid: <a href="javascript:getPlace('+matchid+',"popup")">'+matchid+'</a>'
+            '<br>pid: <a href="javascript:getPlace('+matchid+')">'+matchid+'</a>'
             );
           idToFeature[matchid] = marker
           return marker
@@ -480,7 +477,7 @@
           identifier = f.place_id;
           if(f.type != 'Point'){
             layer.setStyle(styles[f.type].default).bindPopup(f.title+
-            '<br>pid: <a href="javascript:getPlace('+matchid+',"popup")">'+matchid+'</a>'
+            '<br>pid: <a href="javascript:getPlace('+matchid+')">'+matchid+'</a>'
             )
             idToFeature[identifier] = layer
           }
@@ -517,9 +514,9 @@
       }).done(function( data ) {
         // if geom is polygon, make feature & add to map if not initial table.draw()
         gfoo = data.geoms[0]
+        polygons.clearLayers() // always clear
         if(from != 'row0' && gfoo.type.toLowerCase().search('poly') > 0){
           console.log("polygon, add to map")
-          polygons.clearLayers() // one at a time
           let feat = L.geoJSON(gfoo);
           polygons.addLayer(feat)
           mappy.fitBounds(feat.getBounds())
