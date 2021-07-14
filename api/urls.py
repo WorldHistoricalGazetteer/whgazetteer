@@ -30,8 +30,7 @@ urlpatterns = [
         
     # use: single place for ds_browse:: PlaceSerializer
     # also search.html if search scope = 'db'
-    path('place/<int:pk>/', views.PlaceDetailAPIView.as_view(),
-         name='place-detail'),    
+    path('place/<int:pk>/', views.PlaceDetailAPIView.as_view(), name='place-detail'),    
 
     # use: drf table in ds_browse  :: PlaceSerializer
     path('placetable/', views.PlaceTableViewSet.as_view({'get':'list'}), name='place-table'), 
@@ -43,8 +42,11 @@ urlpatterns = [
     # 
     # *** GEOMETRY ***
     # 
-    # use: map in ds_browse :: PlaceGeomSerializer
-    path('geoms/', views.GeomViewSet.as_view({'get':'list'}),name='geom-list'),    
+    # use: map in ds_browse, ds_places, collection_places :: PlaceGeomSerializer
+    path('geoms/', views.GeomViewSet.as_view({'get':'list'}), name='geom-list'),
+    # use: heatmap sources for collection_places.html
+    #path('geojson/', views.GeoJSONViewSet.as_view(), name='geojson'),    
+    #path('geojson/<int:id>/', views.GeoJSONAPIView.as_view(), name='geojson'),    
 
     
     # 

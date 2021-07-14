@@ -110,27 +110,6 @@
 </div>
 
 <script type="text/javascript">
-  // spinners
-  spin_opts = { scale: .5, top: '50%'}
-  function startTableSpinner(){
-    window.spinner_table = new Spin.Spinner(spin_opts).spin();
-    $("#drftable_list").append(spinner_table.el);   
-  }
-  function startFilterSpinner(){
-    window.spinner_filter = new Spin.Spinner(spin_opts).spin();
-    $("#status_filter").append(spinner_filter.el);   
-  }
-  function startDetailSpinner(){
-    window.spinner_detail = new Spin.Spinner(spin_opts).spin();
-    $("#row_detail").append(spinner_detail.el);   
-  }
-  function startMapSpinner(){
-    console.log('startMapSpinner()')
-    window.spinner_map = new Spin.Spinner(spin_opts).spin();
-    $("#map_browse").append(spinner_map.el);   
-  }
-  //*
-  
   function filterColumn (i, v) {
     // clear then search
     console.log('i,v', i,v)
@@ -199,10 +178,6 @@
     getPlace(pid)
   }
 
-  function cleanJson(text) {
-    return JSON.parse(JSON.parse(y))
-  }
-
   function buildSelect(){
     select = '<label>Datasets: <select name="status" aria-controls="placetable" id="ds_select" class="datatables_length">'+
     '<option value="99" selected="selected">All</option>'
@@ -216,17 +191,20 @@
   $(function(){
     window.ds_list = JSON.parse(document.getElementById('ds_list').textContent);
     console.log('ds_list', ds_list)
+
+    // TODO: remove these artifacts of table used for review
     localStorage.setItem('filter', '99')
     wdtask = "{{wdtask}}" == "True"?true:false
     tgntask = "{{tgntask}}" == "True"?true:false
     whgtask = "{{whgtask}}" == "True"?true:false
-    
-    <!--buildSelect()   -->
-    
+
+    // start spinners, some collections take time    
+    startMapSpinner()
     startTableSpinner()
     startDetailSpinner()
     
     window.filter = "{{ filter }}"
+    // initialize table
     // task columns are inoperable in this public view
     table = $('#placetable').DataTable({
       dom: "<'row'<'col-sm-12 col-md-3'l><'#ds_filter.col-sm-12 col-md-5'>"+
@@ -237,8 +215,10 @@
       ,ajax: {
         url: "/api/placetable_coll/?format=datatables&id={{ object.id }}"
       }
-      ,scrollY: 400
+      ,scrollY: 350
       ,select: true
+      <!--,lengthMenu: [ [10, 25, 50, -1], [10, 25, 50, "All"] ]-->
+      ,LengthMenu: [10, 25, 50, 100]
       ,columns: 
       [
           {"data": "id"},
@@ -298,6 +278,26 @@
   // activate all tooltips
   $("[rel='tooltip']").tooltip();
   
+  // [ greenish, redish]
+  heatramps = [
+    ["interpolate",["linear"],["heatmap-density"],
+    0,"rgba(237,248,251,0)",0.2,"rgb(204,236,230)",0.4,"rgb(153,216,201)",0.6,
+    "rgb(102,194,164)",0.8,"rgb(44,162,95)",1,"rgb(0,109,44)"],
+
+    ["interpolate",["linear"],["heatmap-density"],
+    0,'rgba(254,240,217,0)',0.2,'rgb(253,212,158)',0.4,'rgb(253,187,132)',0.6,
+    'rgb(252,141,89)',0.8,'rgb(227,74,51)',1,'rgb(179,0,0)'],
+    
+    ["interpolate",["linear"],["heatmap-density"],
+    0,'rgba(246,239,247,0)',0.2,'rgb(208,209,230)',0.4,'rgb(166,189,219)',0.6,
+    'rgb(103,169,207)',0.8,'rgb(28,144,153)',1,'rgb(1,108,89)'],
+    
+    ["interpolate",["linear"],["heatmap-density"],
+    0,'rgba(237,248,251,0)',0.2,'rgb(191,211,230)',0.4,'rgb(158,188,218)',0.6,
+    'rgb(140,150,198)',0.8,'rgb(136,86,167)',1,'rgb(129,15,124)'],    
+  ]
+    
+  <!--]-->
   // generic 
   function zoomTo(pid) {
     console.log('zoomTo()',pid)
@@ -332,113 +332,99 @@
         
         last = [feat, ftype]
       } else {
+        // not in idToFeature means it's a polygon; fetch it
+        
         features.setStyle(foptions)
       }
     }    
   }
 
-  function heat(dataset) {
-	  console.log('heat()',dataset)
-	  if (!!gl.getLayer('heat_active')){
-		  gl.removeLayer('heat_active')
-    }
+  // render heatmap layer
+  function heat(dataset, ramp) {
+	  console.log('heat('+dataset+', '+ramp+')')
+	  <!--if (!!gl.getLayer('heat_active')){-->
+		  <!--gl.removeLayer('heat_active')-->
+    <!--}-->
 	  ne_global.getMapboxMap().addLayer({
-      "id": "heat_active",
+      "id": "heat_"+dataset,
       "type": "heatmap",
       "source": dataset,
       "maxzoom": 9,
       "paint": {
-        // Increase the heatmap weight based on frequency and property magnitude
-      "heatmap-weight": [
-        "interpolate",
-        ["linear"],
-        ["get", "mag"],
-        0, 0,
-        6, 1
-      ],
-      // Increase the heatmap color weight weight by zoom level
-      // heatmap-intensity is a multiplier on top of heatmap-weight
-      "heatmap-intensity": [
-        "interpolate",
-        ["linear"],
-        ["zoom"],
-        0, 1,
-        9, 3
-      ],
-      // Color ramp for heatmap.  Domain is 0 (low) to 1 (high).
-      // Begin color ramp at 0-stop with a 0-transparancy color
-      // to create a blur-like effect.
-      "heatmap-color": [
-        "interpolate",
-        ["linear"],
-        ["heatmap-density"],
-        0, "rgba(33,102,172,0)",
-        0.2, "rgb(103,169,207)",
-        0.4, "rgb(209,229,240)",
-        0.6, "rgb(253,219,199)",
-        0.8, "rgb(239,138,98)",
-        1, "rgb(178,24,43)"
-      ],
-      // Adjust the heatmap radius by zoom level
-      "heatmap-radius": [
-        "interpolate",
-        ["linear"],
-        ["zoom"],
-        0, 2,
-        9, 20
-      ],
-      // Transition from heatmap to circle layer by zoom level
-      "heatmap-opacity": [
-        "interpolate",
-        ["linear"],
-        ["zoom"],
-        7, 1,
-        9, 0
-      ],
+          // Increase the heatmap weight based on frequency and property magnitude
+        "heatmap-weight": ["interpolate", ["linear"], ["get", "mag"], 0, 0, 6, 1 ],
+        // Increase the heatmap color weight weight by zoom level
+        // heatmap-intensity is a multiplier on top of heatmap-weight
+        "heatmap-intensity": ["interpolate", ["linear"],["zoom"], 0, 1, 9, 3 ],
+        // Color ramp for heatmap.  Domain is 0 (low) to 1 (high).
+        // Begin color ramp at 0-stop with a 0-transparancy color
+        // to create a blur-like effect.
+        "heatmap-color": heatramps[ramp],
+        // Adjust the heatmap radius by zoom level
+        "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 0, 2, 9, 20 ],
+        // Transition from heatmap to circle layer by zoom level
+        "heatmap-opacity": ["interpolate", ["linear"], ["zoom"], 7, 1, 9, 0 ],
       }
     });    
   }
   
+  // add heatmap source for each dataset unless it's a polygon layer
+  function addHeatSources(ds_list){
+    heatsources=[]
+    for(d in ds_list){
+      ds = ds_list[d]
+      if(ds.geotypes['poly'] < 200){
+        gl.addSource(ds.label, {
+          'type': 'geojson',
+          'data': '/datasets/'+ds.id+'/geojson'
+        });
+        heatsources.push(ds.label)
+        // different color ramps by index
+        heat(ds.label, d)
+      }
+    }
+    spinner_map.stop()
+  }
   // initiate map, fetch data -> renderMap()
   addEventListener('map:init', function (e) {
     window.mappy = e.detail.map
+    mappy.options.zoomSnap = 0.3
+    mappy.options.maxZoom = 12
+    mappy.setView(new L.LatLng(32, 12.6), 1);
+
     <!--console.log('map:init begin')-->
-    <!--startMapSpinner()-->
     var token_mb = '{{ mbtokenmb }}',
       token_kg = '{{ mbtokenkg }}',
       mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}';
       
-    var satellite  = L.tileLayer(mbstyle_url, {id:'mapbox/satellite-streets-v11', token:token_mb})
-    var osm  = L.tileLayer(mbstyle_url, {id:'mapbox/light-v10', token:token_mb})
-
     // gl base can have heat overlays
     ne_global= L.mapboxGL({
       style:'mapbox://styles/kgeographer/ckidglq8l2nra19nzzbl995ue',
-      accessToken:token_kg}).addTo(mappy)
+      <!--accessToken:token_kg}).addTo(mappy)-->
+      accessToken:token_kg})
 
-    gl=ne_global.getMapboxMap().on('load',function(){
-      gl.addSource('lugares', {
-          "type": "geojson",
-          "data": "{{media_url}}data/lugares_13k.geojson"
-        });	
-    })
+    <!--gl=ne_global.getMapboxMap().on('load',function(){-->
+      <!--addHeatSources(ds_list)-->
+    <!--})-->
+
+    var satellite  = L.tileLayer(mbstyle_url, {id:'mapbox/satellite-streets-v11', token:token_mb})
+    var osm  = L.tileLayer(mbstyle_url, {id:'mapbox/light-v10', token:token_mb})
     
     baseLayers = {
-      "NE global": ne_global,
       "OSM": osm,
+      "NE global": ne_global,
       "Satellite": satellite
     };
-
-    <!--startMapSpinner()-->
     
     mappy.setMaxBounds(null)
     L.control.layers(baseLayers).addTo(mappy);
-    baseLayers['NE global'].addTo(mappy)
-    <!--baseLayers['OSM'].addTo(mappy)-->
+    
+    <!--baseLayers['NE global'].addTo(mappy)-->
+    baseLayers['OSM'].addTo(mappy)
     
     // fetch collection features -> renderMap() if < 15,000
     // getting only points here
-    <!--$.get("/api/geoms", {coll: "{{ object.id }}", f: "{{ filter }}" },-->
+    <!--$.get("/api/geoms", {coll: "{ object.id }}", f: "{ filter }}" },-->
     $.get("/api/geoms", {coll: "{{ object.id }}"},
       function(data){
         <!--console.log('feature count:',data.count)-->
@@ -454,8 +440,7 @@
       <!--spinner_map.stop()-->
     })
     
-
-    function manualPrint () {
+    function manualPrint() {
         printer.printMap('CurrentSize', 'MyManualPrint')
     }
   }, false);
@@ -488,29 +473,31 @@
           <!--console.log('f,l',feature,layer)-->
           identifier = f.place_id;
           if(f.type != 'Point'){
-            layer.setStyle(styles[f.type].default).bindPopup(
-              f.title+'<br>pid: <a href="'+
-              window.location.origin+'/api/db?id='+
-              identifier+'" target="_blank">'+identifier+'</a>'
+            layer.setStyle(styles[f.type].default).bindPopup(f.title+
+            '<br>pid: <a href="javascript:getPlace('+matchid+')">'+matchid+'</a>'
             )
             idToFeature[identifier] = layer
           }
         }
+      <!--});-->
+      // defer adding 
       }).addTo(mappy);
-      <!--spinner_map.stop()-->
+      spinner_map.stop()
     }
     <!--highlightFeature(pid)-->
-    mappy.fitBounds(features.getBounds())
+    <!--mappy.fitBounds(features.getBounds())-->
     mappy.on('zoomend', function() {
       var currentZoom = mappy.getZoom();
       <!--console.log('on zoomend', currentZoom)-->
       var myRadius = currentZoom*(1); //or whatever ratio you prefer
       var myWeight = currentZoom*(1/5); //or whatever ratio you prefer
       features.setStyle({radius: myRadius, weight: myWeight});
-      opt = Object.values(idToFeature)[0].options
-      foptions = { ...opt };
+      
+      <!--opt = Object.values(idToFeature)[0].options-->
+      <!--foptions = { ...opt };-->
       <!--console.log('zoomend() idToFeature',opt)-->
     });
+    // grabs layer options for first feature; used when highlighting selected 
     opt = Object.values(idToFeature)[0].options
     foptions = { ...opt };
   }
@@ -520,6 +507,11 @@
     $.ajax({
       url: "/api/place/"+pid,
       }).done(function( data ) {
+        gfoo = data.geoms[0]
+        if(gfoo.type.toLowerCase().search('poly') > 0){
+          console.log("clicked a polygon layer, add to map why don't you?")
+          L.geoJSON(gfoo).addTo(mappy);
+        }
         $("#detail").html(parsePlace(data))
         spinner_detail.stop()
         // events on detail items
@@ -722,6 +714,28 @@
     minmax=[Math.max.apply(null, starts),Math.max.apply(null, ends)]
     return minmax
   }
+
+  // spinners
+  spin_opts = { scale: .5, top: '50%'}
+  function startTableSpinner(){
+    window.spinner_table = new Spin.Spinner(spin_opts).spin();
+    $("#drftable_list").append(spinner_table.el);   
+  }
+  function startFilterSpinner(){
+    window.spinner_filter = new Spin.Spinner(spin_opts).spin();
+    $("#status_filter").append(spinner_filter.el);   
+  }
+  function startDetailSpinner(){
+    window.spinner_detail = new Spin.Spinner(spin_opts).spin();
+    $("#row_detail").append(spinner_detail.el);   
+  }
+  function startMapSpinner(){
+    console.log('startMapSpinner()')
+    window.spinner_map = new Spin.Spinner(spin_opts).spin();
+    $("#map_browse").append(spinner_map.el);   
+  }
+  //*
+  
 
 </script>
 {% endblock %}

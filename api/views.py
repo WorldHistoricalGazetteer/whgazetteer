@@ -519,21 +519,6 @@ class UserDetail(generics.RetrieveAPIView):
   queryset = User.objects.all()
   serializer_class = UserSerializer
 
-""" 
-    /api/dataset/<int:ds>/geom/ 
-"""
-class DownloadGeomsAPIView(generics.ListAPIView):
-  # use: dataset/<int:ds>/geom/
-  queryset = PlaceGeom.objects.all()
-  serializer_class = FeatureSerializer
-  permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
-
-  def get_queryset(self, format=None, *args, **kwargs):
-    ds = get_object_or_404(Dataset,pk=self.kwargs['ds'])
-    qs = PlaceGeom.objects.all().filter(place_id__in=ds.placeids)
-    #print('qs',qs)
-    return qs
-
 """
   API 'home page' (not implemented)
 """
@@ -584,9 +569,9 @@ class PlaceDetailSourceAPIView(generics.RetrieveAPIView):
 
 
 """ 
-    /api/geoms {ds:{{ ds.label }}} 
-    /api/geoms {coll:{{ coll.id }}} 
-    in dataset.html#browse for all geoms if < 15k
+    /api/geoms?ds={{ ds.label }}} 
+    /api/geoms?coll={{ coll.id }}} 
+    in ds_browse and ds_places for all geoms if < 15k
     TODO: this needs refactor (make collection.geometries @property?)
 """
 class GeomViewSet(viewsets.ModelViewSet):
@@ -605,7 +590,37 @@ class GeomViewSet(viewsets.ModelViewSet):
       cid = self.request.GET.get('coll')
       coll = Collection.objects.get(id=cid)
       collPlaceIds = [p.id for p in coll.places.all()]
-      qs = PlaceGeom.objects.filter(place_id__in=collPlaceIds,jsonb__type='Point')
+      # leaves out polygons and linestrings
+      qs = PlaceGeom.objects.filter(
+        place_id__in=collPlaceIds,
+        jsonb__type__icontains='Point')
+    return qs
+
+""" 
+    /api/geojson/{{ ds.id }}
+"""
+#class GeoJSONViewSet(viewsets.ModelViewSet):
+class GeoJSONAPIView(generics.ListAPIView):
+  # use: api/geojson
+  queryset = PlaceGeom.objects.all()
+  #serializer_class = GeoJsonSerializer
+  serializer_class = FeatureSerializer
+  permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+  
+  def get_queryset(self, format=None, *args, **kwargs):
+    print('GeoJSONViewSet',self.request.GET)
+    print('GeoJSONViewSet args, kwargs',args, kwargs)
+    if 'ds' in self.request.GET:
+      dsid = self.request.GET.get('ds')
+      dslabel = get_object_or_404(Dataset, pk=dsid).label
+      dsPlaceIds = Place.objects.values('id').filter(dataset = dslabel)
+      qs = PlaceGeom.objects.filter(place_id__in=dsPlaceIds)
+    elif 'coll' in self.request.GET:
+      cid = self.request.GET.get('coll')
+      coll = Collection.objects.get(id=cid)
+      collPlaceIds = [p.id for p in coll.places.all()]
+      qs = PlaceGeom.objects.filter(place_id__in=collPlaceIds,jsonb__type='Point')    
+    #print('qs',qs)
     return qs
 
 """

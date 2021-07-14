@@ -9,7 +9,7 @@ from main.choices import DATATYPES
 from places.models import *
 
 import json, geojson
-from edtf import parse_edtf
+#from edtf import parse_edtf
 from shapely.geometry import shape
 
 # TODO: these are updated in both Dataset & DatasetFile  (??)
@@ -222,11 +222,12 @@ class PlaceTableSerializer(serializers.ModelSerializer):
                   )
 
 
-""" used by: DownloadGeomsAPIView() """
+""" used by: api.views.GeoJSONViewSet() """
 class FeatureSerializer(GeoFeatureModelSerializer):
-  geom = GeometrySerializerMethodField('get_geom')
+  print('FeatureSerializer')
+  geom = GeometrySerializerMethodField()
   def get_geom(self, obj):
-    print('obj',obj.__dict__)
+    #print('obj',obj.__dict__)
     s=json.dumps(obj.jsonb)
     g1 = geojson.loads(s)
     g2 = shape(g1)
@@ -243,7 +244,8 @@ class FeatureSerializer(GeoFeatureModelSerializer):
     model = PlaceGeom
     geo_field = 'geom'
     id_field = False
-    fields = ('place_id','src_id','title')
+    #fields = ('place_id','src_id','title')
+    fields = ('place_id','src_id','title','geom')
 
 """ uses: AreaViewset()"""
 class AreaSerializer(serializers.HyperlinkedModelSerializer):

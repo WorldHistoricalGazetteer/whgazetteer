@@ -332,15 +332,16 @@ def download_augmented_slow(request, *args, **kwargs):
     return response
 
 # TODO: crude, only properties are ids
-def download_gis(request, *args, **kwargs):
+def fetch_geojson(request, *args, **kwargs):
   print('download_gis kwargs',kwargs)
-  user = request.user.username
-  ds=get_object_or_404(Dataset,pk=kwargs['id'])
-  date=makeNow()
+  #user = request.user.username
+  dsid=kwargs['dsid']
+  ds=get_object_or_404(Dataset,pk=dsid)
+  #date=makeNow()
   # make file name
-  fn = 'media/user_'+user+'/'+ds.label+'_aug_'+date+'.json'
+  #fn = 'media/user_'+user+'/'+ds.label+'_aug_'+date+'.json'
   # open it for write
-  fout = codecs.open(fn,'w','utf8')
+  #fout = codecs.open(fn,'w','utf8')
 
   # build a flat FeatureCollection 
   features=PlaceGeom.objects.filter(place_id__in=ds.placeids).values_list('jsonb','place_id','src_id')
@@ -348,14 +349,14 @@ def download_gis(request, *args, **kwargs):
   for f in features:
     feat={"type":"Feature","properties":{"pid":f[1],"src_id":f[2]},"geometry":f[0]}
     fcoll['features'].append(feat)
-  fout.write(json.dumps(fcoll))
-  fout.close()
+  #fout.write(json.dumps(fcoll))
+  #fout.close()
   # response is reopened file and content type
-  response = FileResponse(open(fn, 'rb'),content_type='text/json')
-  response['Content-Disposition'] = 'attachment; filename="mydata.geojson"'
-
+  #response = FileResponse(open(fn, 'rb'),content_type='text/json')
+  #response['Content-Disposition'] = 'attachment; filename="mydata.geojson"'
+  return JsonResponse(fcoll, safe=False,json_dumps_params={'ensure_ascii':False,'indent':2})
   #return HttpResponse(content='download_gis: '+fn)
-  return response
+  #return response
 
 # *** /end DOWNLOAD FILES
 

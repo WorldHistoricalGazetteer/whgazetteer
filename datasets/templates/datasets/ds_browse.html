@@ -445,12 +445,6 @@
             <!--'<br>pid: <a href="'+window.location.origin+'/api/db?id='+matchid+'" target="_blank">'+matchid+'</a>'-->
             '<br>pid: <a href="javascript:getPlace('+matchid+')">'+matchid+'</a>'
             );
-          <!--marker = L.circleMarker(latlng,styles.Point.default).bindPopup(feature.title+-->
-            <!--'<br>pid: <a href="'+window.location.origin+'/api/db?id='+matchid+'" target="_blank">'+matchid+'</a>'-->
-            <!-- better -->
-            <!--'<br>pid: <a href="javascript:getPlace('+matchid+')">'+matchid+'</a>'-->
-            <!--'<br/>wtf?'-->
-            <!--);-->
           idToFeature[matchid] = marker
           return marker
         }
