@@ -46,6 +46,7 @@
           <div class="row">
             <div id="drftable_detail" class="col-sm-5">
               <div class="toomany hidden text-danger"></div>
+              <div id="#ds_filter"></div>
               <div id="mapdiv_browse" style="position:relative">
                   {% leaflet_map "map_browse" %}
               </div>
@@ -55,13 +56,6 @@
             </div> <!-- drftable_detail -->
             <div id="drftable_list" class="col-sm-7">
               <table id="placetable" class="table table-striped table-bordered" style="width:100%">
-                <!--<colgroup>-->
-                  <!--<col style="width:10% !important">-->
-                  <!--<col style="width:10% !important">-->
-                  <!--<col style="width:45% !important">-->
-                  <!--<col style="width:10% !important">-->
-                  <!--<col style="width:40% !important">-->
-                <!--</colgroup>-->
                 <thead>
                   <tr>
                     <th>pid</th>
@@ -193,8 +187,8 @@
     select = '<label>Datasets: <select name="status" aria-controls="placetable" id="ds_select" class="datatables_length">'+
     '<option value="-1" selected="selected">All</option>'
     for(let ds of ds_list){
-      select += '<option value="'+ds.id+'" rel="tooltip" title="'+ds.title+'">'+ds.title.substring(0,24)+'...</option>'
-      <!--select += '<option value="'+ds.id+'" selected="selected">'+ds.label+'</option>'-->
+      <!--select += '<option value="'+ds.id+'" rel="tooltip" title="'+ds.title+'">'+ds.title.substring(0,24)+'...</option>'-->
+      select += '<option value="'+ds.id+'" selected="selected">'+ds.title+'</option>'
     }
     select +='</select></label>'
     return select
@@ -218,11 +212,16 @@
     window.filter = "{{ filter }}"
     // initialize table
     // task columns are inoperable in this public view
+    // <'#ds_filter.col-sm-12 col-md-5'>
     table = $('#placetable').DataTable({
-      dom: "<'row'<'col-sm-12 col-md-3'l><'#ds_filter.col-sm-12 col-md-5'>"+
+      <!--dom: "<'row'<'col-sm-12 col-md-3'l><'#ds_filter.col-sm-12 col-md-5'>"+-->
+      <!--"<'col-sm-12 col-md-4'f>>" +-->
+      <!--"<'row'<'col-sm-12'tr>>" +-->
+      <!--"<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"-->
+      dom: "<'row'<'#ds_filter.col-sm-12 col-md-8'>"+
       "<'col-sm-12 col-md-4'f>>" +
       "<'row'<'col-sm-12'tr>>" +
-      "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"
+      "<'row mt-1'<'col-sm-12 col-md-3'l><'col-sm-12 col-md-2'i><'col-sm-12 col-md-7'p>>"
       ,serverSide: true
       ,ajax: {
         url: "/api/placetable_coll/?format=datatables&id={{ object.id }}"

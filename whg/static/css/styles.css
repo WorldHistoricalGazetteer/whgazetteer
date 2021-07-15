@@ -618,6 +618,7 @@ em { color: #993333;}
 /**
   collections
 **/
+#placetable_filter input {font-size:smaller;}
 #collection_form p { margin-bottom: .3rem;}
 #coll_meta {
   background-color: oldlace;
