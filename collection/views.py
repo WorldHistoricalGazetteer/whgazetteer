@@ -103,11 +103,6 @@ class CollectionDetailView(DetailView):
       {"type":"Feature",
        "properties": {"id":ds.id, "label": ds.label, "title": ds.title},
        "geometry":ds.bounds} for ds in datasets]
-    ##from shapely.geometry import shape
-    #for ds in datasets:
-      #dsgeom = [g for g in ds.geometries.all()]
-      #hull = hully(dsgeom)
-      #bboxes.append(hull)
 
     context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
     context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
@@ -117,12 +112,6 @@ class CollectionDetailView(DetailView):
     context['bboxes'] = bboxes
     return context
 
-  #def get_object(self):
-    #id_ = self.kwargs.get("id")
-    #return get_object_or_404(Collection, id=id_)
-
-  #def get_success_url(self):
-    #return reverse('dashboard')
     
 """ public collection browse table """
 class CollectionPlacesView(DetailView):

@@ -16,6 +16,9 @@
 
   <script type="text/javascript" src="https://cdn.datatables.net/v/dt/dt-1.10.24/b-1.7.0/b-colvis-1.7.0/b-html5-1.7.0/cr-1.5.3/fh-3.1.8/sc-2.0.3/sp-1.2.2/sl-1.3.3/datatables.min.js"></script>
 
+  <!--<script src="https://unpkg.com/maplibre-gl@1.15.2/dist/maplibre-gl.js"></script>-->
+  <!--<link href="https://unpkg.com/maplibre-gl@1.15.2/dist/maplibre-gl.css" rel="stylesheet" />-->
+
   <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.css' rel='stylesheet' />
   <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.js'></script>
   <script src="{% static 'js/leaflet-mapbox-gl.js' %}"></script>
@@ -73,7 +76,7 @@
                     <th>tgn <a rel="tooltip" data-html="true" title="&#x25a2; not reviewed<br/><i class='fa fa-check-square-o'></i> reviewed" class="pointer text-danger strong">?</a></th>
                     <th>whg <a rel="tooltip" data-html="true" title="&#x25a2; not reviewed<br/><i class='fa fa-check-square-o'></i> reviewed )" class="pointer text-danger strong">?</a></th>
                     <th class="hidden">dataset_id</th>
-                    <th>ds</th>
+                    <!--<th>ds</th>-->
                   </tr>
                 </thead>
               </table>
@@ -190,8 +193,8 @@
     select = '<label>Datasets: <select name="status" aria-controls="placetable" id="ds_select" class="datatables_length">'+
     '<option value="-1" selected="selected">All</option>'
     for(let ds of ds_list){
-      <!--select += '<option value="'+ds.id+'" selected="selected">'+ds.title.substring(0,18)+'...</option>'-->
-      select += '<option value="'+ds.id+'" selected="selected">'+ds.label+'...</option>'
+      select += '<option value="'+ds.id+'" rel="tooltip" title="'+ds.title+'">'+ds.title.substring(0,24)+'...</option>'
+      <!--select += '<option value="'+ds.id+'" selected="selected">'+ds.label+'</option>'-->
     }
     select +='</select></label>'
     return select
@@ -245,7 +248,7 @@
           {"data": "revwhg", "visible": whgtask?true:false, 
             "orderable":false},
           {"data": "dataset.id", "name":"dataset.id", "searchable":true},
-          {"data": "dataset.label", "name":"dataset.label"}
+          <!--{"data": "dataset.label", "name":"dataset.label"}-->
       ]
       ,columnDefs:[
         { className: "browse-task-col", "targets": [8,9,10] },
