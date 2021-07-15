@@ -52,6 +52,13 @@
             </div> <!-- drftable_detail -->
             <div id="drftable_list" class="col-sm-7">
               <table id="placetable" class="table table-striped table-bordered" style="width:100%">
+                <!--<colgroup>-->
+                  <!--<col style="width:10% !important">-->
+                  <!--<col style="width:10% !important">-->
+                  <!--<col style="width:45% !important">-->
+                  <!--<col style="width:10% !important">-->
+                  <!--<col style="width:40% !important">-->
+                <!--</colgroup>-->
                 <thead>
                   <tr>
                     <th>pid</th>
@@ -66,6 +73,7 @@
                     <th>tgn <a rel="tooltip" data-html="true" title="&#x25a2; not reviewed<br/><i class='fa fa-check-square-o'></i> reviewed" class="pointer text-danger strong">?</a></th>
                     <th>whg <a rel="tooltip" data-html="true" title="&#x25a2; not reviewed<br/><i class='fa fa-check-square-o'></i> reviewed )" class="pointer text-danger strong">?</a></th>
                     <th class="hidden">dataset_id</th>
+                    <th>ds</th>
                   </tr>
                 </thead>
               </table>
@@ -133,11 +141,11 @@
   // TODO: use datatables methods?
   function setRowEvents(){
     $("#ds_select").change(function(e){
+      // filter table
       val = $(this).val()
       localStorage.setItem('filter', val)
       console.log(val)
-      <!--if(val == '99'){-->
-      if(val == 99){
+      if(val == -1){
         // clear search
         startFilterSpinner()
         clearFilters()
@@ -145,7 +153,8 @@
         clearFilters()
         filterColumn(11, val)
       }
-      <!--spinner_filter.stop()-->
+      // also filter map
+      filterMap(val)
     })
     $("#placetable tbody tr").click(function() {
       t=$(this)
@@ -179,9 +188,10 @@
 
   function buildSelect(){
     select = '<label>Datasets: <select name="status" aria-controls="placetable" id="ds_select" class="datatables_length">'+
-    '<option value="99" selected="selected">All</option>'
+    '<option value="-1" selected="selected">All</option>'
     for(let ds of ds_list){
-      select += '<option value="'+ds.id+'" selected="selected">'+ds.label+'</option>'
+      <!--select += '<option value="'+ds.id+'" selected="selected">'+ds.title.substring(0,18)+'...</option>'-->
+      select += '<option value="'+ds.id+'" selected="selected">'+ds.label+'...</option>'
     }
     select +='</select></label>'
     return select
@@ -192,7 +202,7 @@
     console.log('ds_list', ds_list)
 
     // TODO: remove these artifacts of table used for review
-    localStorage.setItem('filter', '99')
+    localStorage.setItem('filter', '-1')
     wdtask = "{{wdtask}}" == "True"?true:false
     tgntask = "{{tgntask}}" == "True"?true:false
     whgtask = "{{whgtask}}" == "True"?true:false
@@ -224,7 +234,7 @@
           {"data": "src_id"},
           {"data": "title"},
           {"data": "ccodes"},
-          {"data": "geo"},
+          {"title": "geom", "data": "geo"},
           {"data": "review_wd"},
           {"data": "review_tgn"},
           {"data": "review_whg"},
@@ -234,7 +244,8 @@
             "orderable":false},
           {"data": "revwhg", "visible": whgtask?true:false, 
             "orderable":false},
-          {"data": "dataset.id", "name":"dataset.id", "searchable":true}
+          {"data": "dataset.id", "name":"dataset.id", "searchable":true},
+          {"data": "dataset.label", "name":"dataset.label"}
       ]
       ,columnDefs:[
         { className: "browse-task-col", "targets": [8,9,10] },
@@ -384,11 +395,35 @@
     }
     spinner_map.stop()
   }
+  
+  // show/hide dataset markers from dropdown
+  // TODO: this seems inefficient but works
+  function filterMap(key){
+    let mlg = mapLayerGroups
+    if(key == "-1"){
+      // all
+      mlg.forEach(function(l){mappy.addLayer(l)})
+      mappy.setView(new L.LatLng(32, 12.6), 1);
+    } else {
+      mlg.forEach(function(l,i){
+        if(i != key){
+          mappy.removeLayer(l)
+        } else {
+          mappy.addLayer(l)
+          console.log('l',l,'i',i)
+          mappy.fitBounds(l.getBounds())
+        }
+      })
+    }
+  }
+
   // initiate map, fetch data -> renderMap()
   addEventListener('map:init', function (e) {
     window.mappy = e.detail.map
     mappy.options.zoomSnap = 0.3
+    mappy.options.zoomDelta = 0.3
     mappy.options.maxZoom = 12
+    mappy.options.zoomControl = true
     mappy.setView(new L.LatLng(32, 12.6), 1);
 
     <!--console.log('map:init begin')-->
@@ -454,37 +489,65 @@
     if (count==0) {
       console.log('no features in renderMap() call')
     } else {
-      // clear existing if any
+    
+      // colors per dataset; 3 max so far
+      dsids = []
+      geom.features.forEach(function(f){dsids.push(f.ds)})
+      dsids = dsids.filter((e, i) => dsids.indexOf(e) === i);
+      dscolors = {}
+      colors = ["#f03b20", "#ef8a62", "#762a83", "#1a9850"] // red, orange, purple, green
+      for(d in dsids){
+        dscolors[dsids[d]] = colors[d]
+      }
+      // clear existing features if any
       if(typeof(features)!=='undefined'){
         mappy.removeLayer(features)
       }
       idToFeature = {}  // for feature lookup
+      mapLayerGroups = []
       features = L.geoJSON(geom, {
       // feature here is a geometry
       // TODO: LPF should allow single geometry, not only GeometryCollection
         pointToLayer: function (feature, latlng) {
           matchid = feature.place_id
           <!--console.log('feature',feature)-->
-          marker = L.circleMarker(latlng,styles.Point.default).bindPopup(feature.title+
+          <!--marker = L.circleMarker(latlng,styles.Point.default).bindPopup(feature.title+-->
+          marker = L.circleMarker(latlng,{
+            radius: 2, fillColor:dscolors[feature.ds], 
+            fillOpacity: 0.8, stroke: false}).bindPopup(feature.title+
             '<br>pid: <a href="javascript:getPlace('+matchid+')">'+matchid+'</a>'
             );
           idToFeature[matchid] = marker
           return marker
         }
-        ,onEachFeature: function(feature,layer) {
+        ,onEachFeature: function(feature, layer) {
           f=feature; l=layer;
           <!--console.log('f,l',feature,layer)-->
-          identifier = f.place_id;
-          if(f.type != 'Point'){
-            layer.setStyle(styles[f.type].default).bindPopup(f.title+
+          // create and populate layerGroup per dataset
+          var lg = mapLayerGroups[feature.ds];
+          if (lg === undefined) {
+            <!--lg = new L.layerGroup();-->
+            lg = new L.featureGroup();
+            lg.addTo(mappy);
+            mapLayerGroups[feature.ds] = lg;
+          }
+          //add the layer to the group
+          lg.addLayer(layer);
+
+          identifier = feature.place_id;
+          // .toLowerCase().search('poly')
+          if(f.type.toLowerCase() != 'Point'){
+            <!--layer.setStyle(styles[f.type].default).bindPopup(f.title+-->
+            layer.setStyle({radius: 2, fillColor:dscolors[feature.ds], 
+              fillOpacity: 0.6, stroke: false}).bindPopup(f.title+
             '<br>pid: <a href="javascript:getPlace('+matchid+')">'+matchid+'</a>'
             )
             idToFeature[identifier] = layer
           }
         }
-      <!--});-->
+      });
       // defer adding 
-      }).addTo(mappy);
+      <!--}).addTo(mappy);-->
       spinner_map.stop()
       $(".toomany").fadeOut()
     }
@@ -692,7 +755,7 @@
   
   styles = {
     "Point": {
-      "default": {radius: 1, fillColor:"#ff9900", fillOpacity: 0.8, stroke: false},
+      "default": {radius: 2, fillColor:"#ff9900", fillOpacity: 0.8, stroke: false},
       "focus": {radius:8, fillColor:"#ffff00",fillOpacity:1, stroke:true, weight:1,color:"#000"}},
     "MultiPoint": {
       "default": {radius: 1, fillColor:"#ff9900", fillOpacity: 0.8, stroke: false},

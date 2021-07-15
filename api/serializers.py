@@ -108,6 +108,10 @@ class PlaceLinkSerializer(serializers.ModelSerializer):
 class PlaceGeomSerializer(serializers.ModelSerializer):
   # json: type, geowkt, coordinates, when{}
   #title = serializers.ReadOnlyField(source='title')
+  ds = serializers.SerializerMethodField()
+  def get_ds(self, obj):
+    return obj.place.dataset.id
+  
   type = serializers.ReadOnlyField(source='jsonb.type')
   geowkt = serializers.ReadOnlyField(source='jsonb.geowkt')
   coordinates = serializers.ReadOnlyField(source='jsonb.coordinates')
@@ -116,7 +120,8 @@ class PlaceGeomSerializer(serializers.ModelSerializer):
 
   class Meta:
     model = PlaceGeom
-    fields = ('place_id','src_id','type', 'geowkt', 'coordinates', 'geom_src', 'citation', 'when','title')
+    fields = ('place_id','src_id','type', 'geowkt', 'coordinates', 
+              'geom_src', 'citation', 'when','title', 'ds')
 
 class PlaceTypeSerializer(serializers.ModelSerializer):
   # json: identifier, label, sourceLabel OR sourceLabels[{}], when{}
@@ -172,10 +177,12 @@ class PlaceTableSerializer(serializers.ModelSerializer):
   
   geo = serializers.SerializerMethodField()    
   def get_geo(self, place):
-    gtype = place.geoms.all()[0].jsonb['type'].lower()
-    fn="point" if 'point' in gtype else "polygon" if 'poly' in gtype else "linestring"
-    #return '<i class="fa fa-globe"></i>' if place.geom_count > 0 else "-""{% static 'images/Wikidata-logo-en.svg'%}"
-    return '<img src="/static/images/geo_'+fn+'.svg" width=12/>' if place.geom_count > 0 else "-"
+    if place.geom_count > 0:
+      gtype = place.geoms.all()[0].jsonb['type'].lower()
+      fn="point" if 'point' in gtype else "polygon" if 'poly' in gtype else "linestring"
+      return '<img src="/static/images/geo_'+fn+'.svg" width=12/>'
+    else:
+      return '&mdash;'
 
 
   revwd = serializers.SerializerMethodField('rev_wd')    

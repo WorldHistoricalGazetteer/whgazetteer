@@ -76,6 +76,8 @@ th.sticky {
   background-color: #fdf5e6;}
 .tight-p { margin-top:0; margin-bottom:0;}
 .tooltip { z-index: 1051; }
+.toomany {position:absolute; top:110px; left:60px; 
+  z-index:500; font-weight:600;} /*collection, dataset? maps*/
 .top { vertical-align: top;}
 .v-mid {vertical-align: super;}
 
@@ -308,6 +310,14 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
   font-size: .7rem;
   padding-left: 0.3rem;
   padding-right: 0.3rem;
+}
+.col-bottom-right {
+  position: absolute;
+  bottom: 0;
+  right:0;
+  /*background-color: beige;*/
+  font-size: .7rem;
+  padding: 0 0.3rem;
 }
 .cb-coll {background-color: #f8f2cc;}
 .cb-dataset {background-color: #e0f3eb; }

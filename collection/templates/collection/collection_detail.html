@@ -49,7 +49,7 @@
         </td></tr>
         {% endif %}
         <tr><td><b>Creator(s)</b></td><td>{{ object.creator }}</td></tr>
-        <tr><td><b>Contact</b></td><td>{{ object.contact }}</td></tr>
+        <tr><td><b>Contact</b></td><td>{{ object.contact|url_it|safe }}</td></tr>
         </table>
       </div>      
       <div id="mapdiv_coll" class="">

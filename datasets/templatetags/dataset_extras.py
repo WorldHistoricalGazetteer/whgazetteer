@@ -1,8 +1,19 @@
 from django import template
 from django.template.defaultfilters import stringfilter
-import json, validators
+import json, re, validators
 
 register = template.Library()
+
+@register.filter
+def url_it(val):
+    #val = 'foofah, http://fu.bar/kfsfdn-34934-skdf'
+    #val = 'foofah (http://fu.bar/kfsfdn-34934-skdf)'
+    #val = 'Satch Jones, Esq.'
+    #del result
+    r1 = '((http|ftp|https)://([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?)'
+    reg = re.search(r1, val)
+    return val.replace(reg.group(1),'<a href="'+reg.group(1)+'" target="_blank">link</>') \
+            if reg else val
 
 @register.filter
 def readmore(txt,numchars):

@@ -110,7 +110,7 @@
   })
   $("#btn_coll_submit").click(function(){
     // at least two datasets selected?
-    if(dslist.length < 2) {
+    if('{{action}}' == 'create' and dslist.length < 2) {
       alert('Collections must contain at least 2 datasets!')
     }
   })
