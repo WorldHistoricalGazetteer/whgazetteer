@@ -6,6 +6,7 @@ updates: 2.2.10 (20200211); 2.2.8(20191204); 2.2.4 (20190819); 2.1.7 (?); 2.1.2 
 """
 
 import os
+from celery.schedules import crontab
 
 #
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -17,7 +18,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
+  'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.gis',
@@ -66,7 +67,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'django.contrib.sessions.middleware.SessionMiddleware',
+  'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -92,57 +93,63 @@ CELERY_TIMEZONE = TIME_ZONE
 # trying to throw error if no worker available
 CELERY_TASK_EAGER_PROPAGATES = True
 
+CELERY_BEAT_SCHEDULE = {
+  'task01': {
+      'task': 'datasets.tasks.testy','schedule': crontab(minute='*/2')
+    }}
+
+
 CAPTCHA_NOISE_FUNCTIONS = (
-    #'captcha.helpers.noise_arcs',
+  #'captcha.helpers.noise_arcs',
     'captcha.helpers.noise_dots',)
 
 # replacement section from drf-datatables
 # https://django-rest-framework-datatables.readthedocs.io/en/latest/
 REST_FRAMEWORK = {
-    'DEFAULT_RENDERER_CLASSES': (
-        'rest_framework.renderers.JSONRenderer',
+  'DEFAULT_RENDERER_CLASSES': (
+      'rest_framework.renderers.JSONRenderer',
         #'api.views.PrettyJsonRenderer',
         #'rest_framework.renderers.BrowsableAPIRenderer',
         'rest_framework_datatables.renderers.DatatablesRenderer',
-    ),
+        ),
     'DEFAULT_FILTER_BACKENDS': (
-        'rest_framework_datatables.filters.DatatablesFilterBackend',
+      'rest_framework_datatables.filters.DatatablesFilterBackend',
         #'django_filters.rest_framework.DjangoFilterBackend'
-    ),
+        ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework_datatables.pagination.DatatablesPageNumberPagination',
     'PAGE_SIZE': 15000,
     #'PAGE_SIZE': 20,
 }
 
 TEMPLATES = [
-    {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+  {
+      'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            os.path.join(BASE_DIR, 'main/templates'),
+          os.path.join(BASE_DIR, 'main/templates'),
             os.path.join(BASE_DIR, 'templates')
-        ],
+            ],
         'APP_DIRS': True,
         'OPTIONS': {
-            'debug': True,
+          'debug': True,
             'context_processors': [
-                'django.contrib.auth.context_processors.auth',
+              'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.debug',
                 'django.template.context_processors.media',
                 'django.template.context_processors.request',
-            ],
+                ],
             'builtins': [
-                'whg.builtins',
+              'whg.builtins',
             ]
+            },
         },
-    },
 ]
 
 WSGI_APPLICATION = 'whg.wsgi.application'
 
 
 LEAFLET_CONFIG = {
-    'TILES':[],
+  'TILES':[],
     'DEFAULT_CENTER': (35.0, 13.0),
     'DEFAULT_ZOOM': 1,
     'MIN_ZOOM': 1,
@@ -164,8 +171,8 @@ LOGOUT_REDIRECT_URL='/'
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        # 'ENGINE': 'django.db.backends.postgresql',
+  'default': {
+      # 'ENGINE': 'django.db.backends.postgresql',
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'whg',
         'USER':'',
@@ -197,28 +204,28 @@ ACCOUNT_FORMS = {'signup': 'allauth.account.forms.WHGRegisterForm',}
 URL_FRONT = 'http://localhost:8000/'
 
 #SOCIALACCOUNT_PROVIDERS = {
-    ## For each OAuth based provider, either add a ``SocialApp``
-    ## (``socialaccount`` app) containing the required client
-    ## credentials, or list them here:
-    #'github': {
-        #'APP': {
-            #'client_id': '123',
-            #'secret': '456',
-            #'key': ''
-        #}
-    #},
-    #'orcid': {
-            ## Base domain of the API. Default value: 'orcid.org', for the production API
-            #'BASE_DOMAIN':'sandbox.orcid.org',  # for the sandbox API
-            ## Member API or Public API? Default: False (for the public API)
-            #'MEMBER_API': True,  # for the member API
-    #}}
+  ## For each OAuth based provider, either add a ``SocialApp``
+  ## (``socialaccount`` app) containing the required client
+  ## credentials, or list them here:
+  #'github': {
+    #'APP': {
+      #'client_id': '123',
+      #'secret': '456',
+      #'key': ''
+    #}
+  #},
+  #'orcid': {
+      ## Base domain of the API. Default value: 'orcid.org', for the production API
+      #'BASE_DOMAIN':'sandbox.orcid.org',  # for the sandbox API
+      ## Member API or Public API? Default: False (for the public API)
+      #'MEMBER_API': True,  # for the member API
+  #}}
 # /././././././.
 # end django-allauth
 # /././././././.
 
 AUTHENTICATION_BACKENDS = (
-    'django.contrib.auth.backends.ModelBackend', # default
+  'django.contrib.auth.backends.ModelBackend', # default
     'guardian.backends.ObjectPermissionBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
 )
@@ -226,7 +233,7 @@ AUTHENTICATION_BACKENDS = (
 # Password validation
 # https://docs.djangoproject.com/en/2.0/ref/settings/#auth-password-validators
 AUTH_PASSWORD_VALIDATORS = [
-    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator', },
+  {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator', },
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',},
     {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',},
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',},
@@ -254,12 +261,12 @@ MEDIA_URL = '/media/'
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'datasets/static/'),
+  os.path.join(BASE_DIR, 'datasets/static/'),
     os.path.join(BASE_DIR, 'main/static/'),
     os.path.join(BASE_DIR, 'whg/static/'),
 ]
 
 try:
-    from .local_settings import *
+  from .local_settings import *
 except ImportError:
-    pass
+  pass

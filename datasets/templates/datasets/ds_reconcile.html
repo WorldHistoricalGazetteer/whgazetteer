@@ -58,11 +58,9 @@
           {% endif %}
         </h6>
         {% if user.is_superuser or user in owners or user in collaborators %}
-          <div id="ready" class="row hidden">
-          <div class="col-sm-6">
-          <p class="my-0">All potential matches to <span id="authtag"></span> have been reviewed, so the dataset <i><b>may</b></i> be ready for accessioning to the WHG index.</p></div> 
-          <div class="col-sm-6 pt-2>
-          <p class="my-0">If you would like to proceed, please <a class="btn btn-success btn-sm text-light py-0" href="{% url 'contact' %}">contact our editorial team.</a></p></div>
+          <div id="ready" class="hidden pl-2">
+            <p class="my-0">All potential matches to <span id="authtag"></span> have been reviewed, so the dataset may be ready for accessioning to the WHG index.</p>
+            <p class="my-0">If you would like to proceed, please <a class="btn btn-success btn-sm text-light py-0" href="{% url 'contact' %}">contact our editorial team.</a></p>
           </div>
         {% if tasks|length < 1 %}<i id="none_yet">None yet...</i>{% endif %}
         {% if messages %}<div>

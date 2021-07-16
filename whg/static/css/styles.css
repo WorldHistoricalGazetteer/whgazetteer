@@ -1217,6 +1217,9 @@ span.edit-row {
   width: 1px;
 }
 
-/*ui-menu,ui-widget ui-widget-content ui-autocomplete ui-front*/
+/* help modal content */
 .ui-widget,
-.ui-widget-content {z-index: 9999 !important; font-family: 'Raleway', sans-serif; font-size:.8rem;}
+.ui-widget-content {
+  z-index: 9999 !important; 
+  font-family: 'Raleway', 
+  sans-serif; font-size:.9rem;}

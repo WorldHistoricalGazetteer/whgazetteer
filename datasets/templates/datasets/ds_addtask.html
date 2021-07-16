@@ -73,12 +73,13 @@
               </div>
               <hr/>
             {% endif %}
+            <!--ds.recon_status: {ds.recon_status}}-->
             <!-- if there's an active align_idx task, stop -->
             {% if ds.recon_status.idx %}
               <p>Accessioning has begun for this dataset. Initiating another reconciliation task would disrupt the workflow in progress. If you would like to stop the accessioning step and roll back the workflow, please <a href="#" class="feedback">contact the editorial team</a>.</p>
             {% else %} <!-- offer tasks -->
               <p class="font-weight-bold mb-0">Name authority source</p>
-              <p class="small">Your task will enter a queue and email notification sent when completed.</p>
+              <p class="small">Your task will enter a queue and and an email notification sent when completed.</p>
               <div class="form-check">
                 <label class="form-check-label" for="r_tgn">
                   <input type="radio" class="form-check-input" id="r_tgn"
@@ -160,13 +161,22 @@
             {% leaflet_map "map_recon" %}
           </div>
           {% endif %}
+          {% if not ds.recon_status.idx %}
           <div>
-            <p>OPTIONS</p>
-            <p><span id="q_accept" class="ml-3 small">
+            <p class="allcap-heading small mb-0">OPTIONS</p>
+            <p><span id="q_accept" class="small">
               <input id="accept_geom" name="geom" type="checkbox" checked="checked"/> accept geometries in matches
             <span class="help-matches" data-id="accept-geometry">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
             </span></p>
+            {%comment%}
+            {% if ds.q_count > 0 %}
+            <p><span id="q_accept" class="small">
+              <input id="accept_geom" name="geom" type="checkbox" checked="checked"/> skip records 
+            <span class="help-matches" data-id="accept-geometry">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
+            {% endif %}
+            {%endcomment%}
           </div>
+          {% endif %}
         </div> <!-- recon_result -->
       </div> <!-- row -->
       {% else %}

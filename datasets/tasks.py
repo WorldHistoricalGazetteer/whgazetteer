@@ -33,6 +33,10 @@ from elasticsearch import Elasticsearch
 es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 ##
 
+@task(name="testy")
+def testy():
+  print("I'm testy...who wouldn't be?")
+
 """ 
   called by utils.downloader()
   builds download file, retrieved via ajax JS in ds_summary.html, ds_meta.html, collection_detail.html (modal)

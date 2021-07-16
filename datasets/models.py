@@ -14,7 +14,7 @@ from django.dispatch import receiver
 from django_celery_results.models import TaskResult
 from elastic.es_utils import escount_ds
 from main.choices import *
-from places.models import Place, PlaceGeom
+from places.models import Place, PlaceGeom, PlaceLink
 import simplejson as json
 
 def user_directory_path(instance, filename):
@@ -80,6 +80,12 @@ class Dataset(models.Model):
   #user = get_object_or_404(User, pk=14)
   #coll = get_object_or_404(Collection,pk=3)
 
+  # how many wikidata links?
+  @property
+  def q_count(self):
+    placeids = Place.objects.filter(dataset=self.label).values_list('id', flat=True)
+    return PlaceLink.objects.filter(place_id__in=placeids, jsonb__icontains='Q').count()
+    
   # provide basis for rendering big polygon datasets to map or not
   @property
   def geotypes(self):
