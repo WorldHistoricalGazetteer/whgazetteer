@@ -9,16 +9,16 @@ def coll_image_path(instance, filename):
   # upload to MEDIA_ROOT/collections/<id>_<filename>
   return 'collections/{0}_{1}'.format(instance.id, filename)
 
-#def coll_image_path(instance, filename):
-  ## upload to MEDIA_ROOT/user_<username>/<filename>
-  #return 'user_{0}/{1}'.format(instance.owner.username, filename)
+def user_directory_path(instance, filename):
+  # upload to MEDIA_ROOT/user_<username>/<filename>
+  return 'user_{0}/{1}'.format(instance.owner.username, filename)
 
 class Collection(models.Model):
   owner = models.ForeignKey(User,related_name='collections', on_delete=models.CASCADE)
   title = models.CharField(null=False, max_length=255)
   description = models.CharField( null=False, max_length=2044)
   keywords = ArrayField(models.CharField(max_length=50))
-  image_file = models.FileField(upload_to=user_directory_path)
+  image_file = models.FileField(upload_to=coll_image_path)
 
   # 3 new fields, 20210619
   creator = models.CharField(null=True, blank=True, max_length=500)

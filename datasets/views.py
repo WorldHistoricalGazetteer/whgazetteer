@@ -1637,16 +1637,16 @@ def ds_insert_tsv(request, pk):
       countrows += 1
 
 
-        description = r[header.index('description')] \
-          if 'description' in header else ''
+      #description = r[header.index('description')] \
+          #if 'description' in header else ''
 
-        # create new Place object
-        # TODO: generate fclasses
-        newpl = Place(
-          src_id = src_id,
-          toponym = title,
-          jsonb={"toponym": title, "citations": [{"id":title_uri,"label":title_source}]}
-      ))
+      ## create new Place object
+      ## TODO: generate fclasses
+      #newpl = Place(
+        #src_id = src_id,
+        #toponym = title,
+        #jsonb={"toponym": title, "citations": [{"id":title_uri,"label":title_source}]}
+      #))
       # variants if any; assume same source as title toponym
       if len(variants) > 0:
         for v in variants:
