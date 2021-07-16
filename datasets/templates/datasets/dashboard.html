@@ -2,7 +2,7 @@
 {% extends "main/base.html" %}
 {% block title %}<title>WHG::Dashboard</title>{% endblock %}
 {% block extra_head %}
-{% block mycss %} 
+{% block mycss %}
   <style>
     .fa-sort {cursor:pointer;}
     #table_ds th, #table_areas th {
@@ -22,7 +22,7 @@
   {% load fontawesome %}
   {% load mathfilters %}
   {% load dataset_extras %}
-  
+
   <div class="container pt-3">
     <ul id="api_tabs" class="nav nav-tabs" role="tablist">
       <li class="nav-item">
@@ -115,14 +115,14 @@
                   </tr>
                 {% endfor %}
               </tbody>
-            </table>            
+            </table>
             {% endif %}
           </div>
-        </div>        
+        </div>
       </div>
       <div id="collectionlist" class="tab-pane fade " role="tabpanel" aria-labelledby="collectionlist-tab">
         <p class="mb-1 ml-1"><a href="{% url 'collection:collection-create' %}" class="">
-          {% fontawesome_icon 'plus-square' color='#336699' %} create new</a></p>  
+          {% fontawesome_icon 'plus-square' color='#336699' %} create new</a></p>
         <div id="collection_list" class="mt-1 ml-0">
           <div class="list-box">
             <table id="table_collections"class="table table-striped">
@@ -147,7 +147,7 @@
       </div>
       <div id="arealist" class="tab-pane fade " role="tabpanel" aria-labelledby="arealist-tab">
         <p class="mb-1 ml-1"><a href="{% url 'areas:area-create' %}" class="">
-          {% fontawesome_icon 'plus-square' color='#336699' %} create new</a></p>  
+          {% fontawesome_icon 'plus-square' color='#336699' %} create new</a></p>
         <div id="area_list" class="mt-1 ml-0">
           <div class="list-box">
             <table id="table_areas" class="table table-striped">
@@ -173,7 +173,7 @@
       </div>
       {%comment%}
       <div id="publiclist" class="tab-pane fade " role="tabpanel" aria-labelledby="publiclist-tab">
-        <p class="mb-1 ml-1">These data are flagged as public in WHG. If marked as <mark>indexed</mark>, records are fully searchable from the home page and Index API. If marked as <mark>accessioning</mark>, records are partially indexed. Those not yet indexed are accessible through the Database API. <a href="{% url 'usingapi' %}">API docs</a></p>      
+        <p class="mb-1 ml-1">These data are flagged as public in WHG. If marked as <mark>indexed</mark>, records are fully searchable from the home page and Index API. If marked as <mark>accessioning</mark>, records are partially indexed. Those not yet indexed are accessible through the Database API. <a href="{% url 'usingapi' %}">API docs</a></p>
         <div id="public_list" class="mt-1 ml-0">
           <div class="list-box">
             <table class="table table-striped small">
@@ -194,7 +194,7 @@
                     <td>{{ ds.title }}</td>
                     <td>{{ ds.numrows }}</td>
                     <td class="w-50">{{ ds.description }}</td>
-                    <td>{% if ds.webpage %}<a href="{{ ds.webpage }}" target="_blank">link 
+                    <td>{% if ds.webpage %}<a href="{{ ds.webpage }}" target="_blank">link
                     {% fontawesome_icon 'external-link' %}</a>{%endif%}</td>
                     <td>{{ ds.owner }}</td>
                   </tr>
@@ -205,10 +205,10 @@
         </div>
       </div>
       {% endcomment %}
-    </div>    
+    </div>
   </div>
   <script>
-    $(function(){ 
+    $(function(){
       $("[rel='tooltip']").tooltip();
 
       // manage url
@@ -218,15 +218,15 @@
         $('.nav-tabs a[href="#' + tab+ '"]').tab('show');
         history.pushState("", document.title, window.location.pathname);
       }
-      
+
     })
-    
+
     $(".fa-sort").on('click',function(){
       table_id =$(this).closest('table').prop('id') // parent table id
       console.log('table_id',table_id)
       sortTable($(this).data('id'), $(this).attr('ref'), table_id)
     })
-    
+
     sortTable = function(col_idx, order, table_id) {
       var table, rows, switching, i, x, y, shouldSwitch;
       <!--table = document.getElementById("table_ds");-->
@@ -263,7 +263,7 @@
             if (x.innerText.toLowerCase() < y.innerText.toLowerCase()) {
               shouldSwitch = true;
               break;
-            }       
+            }
           }
         }
         if (shouldSwitch) {

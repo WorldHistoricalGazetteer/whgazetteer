@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="//cdn.datatables.net/1.10.23/css/dataTables.bootstrap4.min.css">
   <script src="//cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
   <script src="//cdn.datatables.net/1.10.23/js/dataTables.bootstrap4.min.js"></script>
-  
+
   <script src="{% static 'celery_progress/celery_progress.js' %}"></script>
 {% endblock %}
 
@@ -56,7 +56,7 @@
       {% endif %}
         <table class="ds-table">
           <tr>
-            <td><b>Title</b> 
+            <td><b>Title</b>
               <a href="#" class="edit-title">{% fontawesome_icon 'edit' color='#336699' %}</a>
             </td>
             <td>
@@ -65,7 +65,7 @@
             </td>
           </tr>
           <tr>
-            <td style="vertical-align:top;"><b>Webpage</b> 
+            <td style="vertical-align:top;"><b>Webpage</b>
               <a href="#" class="edit-webpage">{% fontawesome_icon 'edit' color='#336699' %}</a>
             </td>
             <td>
@@ -74,7 +74,7 @@
             </td>
           </tr>
           <tr>
-            <td style="vertical-align:top;"><b>Description</b> 
+            <td style="vertical-align:top;"><b>Description</b>
               <a href="#" class="edit-description">{% fontawesome_icon 'edit' color='#336699' %}</a>
             </td>
             <td>
@@ -87,7 +87,7 @@
             <td>{{ ds.id }} / {{ ds.label }}</td>
           </tr>
           <tr>
-            <td style="vertical-align:top;"><b>Creator(s)</b> 
+            <td style="vertical-align:top;"><b>Creator(s)</b>
               <a href="#" class="edit-creator">{% fontawesome_icon 'edit' color='#336699' %}</a>
             </td>
             <td>
@@ -96,7 +96,7 @@
             </td>
           </tr>
           <tr>
-            <td style="vertical-align:top;"><b>Source(s)</b> 
+            <td style="vertical-align:top;"><b>Source(s)</b>
               <a href="#" class="edit-source">{% fontawesome_icon 'edit' color='#336699' %}</a>
             </td>
             <td>
@@ -105,7 +105,7 @@
             </td>
           </tr>
           <tr>
-            <td style="vertical-align:top;"><b>Contributors</b> 
+            <td style="vertical-align:top;"><b>Contributors</b>
               <a href="#" class="edit-contrib">{% fontawesome_icon 'edit' color='#336699' %}</a>
             </td>
             <td>
@@ -114,7 +114,7 @@
             </td>
           </tr>
           <tr>
-            <td style="vertical-align:top;"><b>Citation</b> 
+            <td style="vertical-align:top;"><b>Citation</b>
               <a href="#" class="edit-citation">{% fontawesome_icon 'edit' color='#336699' %}</a>
             </td>
             <td>
@@ -123,7 +123,7 @@
             </td>
           </tr>
           <tr>
-            <td style="vertical-align:top;"><b>Public?</b> 
+            <td style="vertical-align:top;"><b>Public?</b>
               <!--<a href="#" class="edit-public">{ fontawesome_icon 'edit' color='#336699' %}</a>-->
             </td>
             <td>
@@ -149,7 +149,7 @@
           </tr>
           {% if user.is_superuser or user.is_admin %}
             <tr>
-              <td style="vertical-align:top;"><b>Featured rank</b> 
+              <td style="vertical-align:top;"><b>Featured rank</b>
                 <a href="#" class="edit-featured">{% fontawesome_icon 'edit' color='#336699' %}</a>
               </td>
               <td>
@@ -158,7 +158,7 @@
               </td>
             </tr>
             <tr>
-              <td style="vertical-align:top;"><b>Image</b> 
+              <td style="vertical-align:top;"><b>Image</b>
                 <a href="#" class="edit-image">{% fontawesome_icon 'edit' color='#336699' %}</a>
               </td>
               <td>
@@ -178,7 +178,7 @@
               <span class="help-matches" data-id="updates">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
             </span>
             {% endif %}
-            {% endif %}        
+            {% endif %}
           </p>
           <div id="div_file">
             <table id="file_metadata" class="ds-table table-striped">
@@ -189,7 +189,7 @@
               <tr>
                 <td><b>File</b></td>
                 <td>
-                  <span class="display-field"> 
+                  <span class="display-field">
                   <a href="{% url 'datasets:dl-file' ds.id %}" ref="current" download>{{ current_file.file }} {% fontawesome_icon 'download' color='#336699'%}</a> ({{filesize}} mb)
                   </span>
                 </td>
@@ -210,7 +210,7 @@
                 <td><b>Format</b></td>
                 <td>
                   <span class="display-field">
-                    {{ current_file.format }} 
+                    {{ current_file.format }}
                     <!--{ if ds.format == 'delimited' %}({ ds.delimiter }}){endif%}-->
                   </span>
                   <span class="update-field hidden">{{ form.format }}</span>
@@ -258,15 +258,11 @@
               <tr>
                 <td><b>Links</b></td><td>{{ num_links }}</td>
                 <td><span class="text-white bg-success">&nbsp;{{ links_added }}&nbsp;</span></td></tr>
-              {% if ds.unreviewed|length > 0 %}<tr class="text-danger">{%else%}<tr>{%endif%}
-                <td class="pt-3"><b>Unreviewed hits (total)</b></td>
-                <td class="pt-3">{{ ds.unreviewed|length }}</td> 
-                <td class="pt-3 text-secondary">n/a</td></tr>
-              {% if ds.unindexed > 0 %} 
+              {% if ds.unindexed > 0 %}
                 <tr class="text-danger">
-                <td><b>Unindexed records</b></td>
-                <td>{{ ds.unindexed }}</td> 
-                <td class="text-secondary">n/a</td></tr>{% endif %}
+                <td class="pt-3"><b>Unindexed records</b></td>
+                <td class="pt-3">{{ ds.unindexed }}</td>
+                <td class="pt-3 text-secondary">n/a</td></tr>{% endif %}
             </table>
           </div>
           <div id="ds_access" class="pt-0 px-0 ds-card">
@@ -274,9 +270,9 @@
             <p class="m-0 pl-2 pr-2">This screen and the tasks made available here are initially accessible only to the dataset "owner" - the user who created the record by uploading a dataset file. Dataset owners can then grant "co-owner" and/or "member" permissions to other registered users under the <a href="{% url 'datasets:ds_collab' ds.id %}">Collaborators</a> tab.</p>
           </div>
           {% if user.is_superuser or user in owners %}
-            <!-- new -->          
+            <!-- new -->
             <div id="ds_downloads" class="pt-0 px-0 ds-card">
-              <p class="ds-card-header pt-1"> Downloads (augmented data) 
+              <p class="ds-card-header pt-1"> Downloads (augmented data)
                 <span id='progress-bar' class='progress-bar' style="background-color: #68a9ef; width: 0%; line-height:.5rem;">&nbsp;</span>
               </p>
               {% if links_added > 0 or geoms_added > 0 %} <!-- dataset is augmented-->
@@ -291,7 +287,7 @@
                   {% else %}
                     <p class="mt-2"><i>LP-TSV conversion is not possible for this LPF dataset. <a id="conversion_help" class="pointer" data-toggle="popover" title="LPF download options" data-content="<p>Data initially loaded in Linked Places format (LPF) has one&#8209;to&#8209;many relations that can't be converted to simple TSV files.</p>" tabindex="0" data-trigger="focus" data-original-title=""><i title="" class="fa fa-question-circle" style="color:#336699;"></i></a></i></p>
                   {% endif %}
-                {% else %}  
+                {% else %}
                   <span class="red-head"><br/>Download of augmented datasets larger than 20,000 rows is not supported right now.</span>
                 {% endif %}
               {% else %} <!-- hasn't been augmented yet-->
@@ -338,10 +334,10 @@
                 <!--<p>This dataset has been augmented with { links_added }} links and { geoms_added }} geometries-->
                 <!--via reconciliation tasks. </p>-->
                 <!--{ endif %}-->
-              </div>          
+              </div>
             </form>
           </div> <!-- .form-group -->
-        </div> <!-- .modal-body -->      
+        </div> <!-- .modal-body -->
         <div class="modal-footer">
           <div id="buttons_pre">
             <button id="btn_cancel" type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Cancel</button>
@@ -360,7 +356,7 @@
 <script type="text/javascript">
   // activate all tooltips
   $("[rel='tooltip']").tooltip();
-  $("[data-toggle=popover]").popover({html:true})  
+  $("[data-toggle=popover]").popover({html:true})
 
   dater = function(){
     const date = new Date(Date.now());
@@ -372,9 +368,9 @@
   url=window.location.href="/contact?from="+clicked
   window.location.href=url
   console.log('gwine to contact form, from clicked',url)
-  })  
-  
-  clearEl = function(el){ 
+  })
+
+  clearEl = function(el){
     $("#progress-bar").fadeOut()
     el.html('')
   }
@@ -386,14 +382,14 @@
     spinner_dl.stop()
     fn = result.filename
     link = '[ <span class="dl-save"><a href="/'+fn+'" title="downloaded: '+dater()+
-              '" download>save</a></span> ]'    
+              '" download>save</a></span> ]'
     $( resultElement ).append(
       $('<p>').html(link)
     );
     $(".dl-save a")[0].click()
     setTimeout(clearEl($("#celery-result")), 1000)
-  }    
-  
+  }
+
   // -> views_dl.downloader()
   $(".a-dl-celery").click(function(e){
     e.preventDefault()
@@ -408,8 +404,8 @@
         type: 'POST',
         url: urly,
         data: {
-          "format":format, 
-          "dsid":dsid, 
+          "format":format,
+          "dsid":dsid,
           "csrfmiddlewaretoken":"{{ csrf_token }}"},
         datatype:'json',
         success:function(response){
@@ -425,12 +421,12 @@
           )
         }
       })
-  })  
- 
-  
+  })
+
+
   $("#a_update_modal").on('click', function(e){
     console.log('clicked update')
-    if('{{ current_file.format }}' != 'delimited'){ 
+    if('{{ current_file.format }}' != 'delimited'){
         alert('Sorry, update is available for delimited files right now. Soon...')
       }
   })
@@ -438,25 +434,25 @@
   $("#newfile").on("change", function() {
     $("#btn_upload").removeClass('hidden')
   });
-  
+
   $("#btn_done").on('click', function(){ location.reload(); })
   $("#btn_cancel").on('click', function(){ location.reload(); })
-  
+
   function startUpdateSpinner(){
     window.spinner_update = new Spin.Spinner().spin();
-    $("#update_spinner").append(spinner_update.el);   
+    $("#update_spinner").append(spinner_update.el);
   }
   function startDownloadSpinner(){
     window.spinner_dl = new Spin.Spinner().spin();
-    $("#ds_downloads").append(spinner_dl.el);   
+    $("#ds_downloads").append(spinner_dl.el);
   }
 
   // parse & prettify ds_update() results
   function updateText(data){
-    html = 'Update changes: <br/>' + 
-           'Added '+data["new_count"]+' rows <br/>'+ 
-           'Deleted '+data["del_count"]+' rows <br/>'+ 
-           'Updated '+data["update_count"]+' rows <br/>'+ 
+    html = 'Update changes: <br/>' +
+           'Added '+data["new_count"]+' rows <br/>'+
+           'Deleted '+data["del_count"]+' rows <br/>'+
+           'Updated '+data["update_count"]+' rows <br/>'+
            'in database'
     html += data['indexed'] == false?'.':' and in WHG index.'
     return html
@@ -472,7 +468,7 @@
     formData.append('keepl', $("#preserve_links").length ? $('#preserve_links')[0].checked : "true");
     formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
     formData.append('compare_data',JSON.stringify(compare_data));
-    
+
     $.ajax({
       type: 'POST',
       enctype: 'multipart/form-data',
@@ -492,7 +488,7 @@
       }
     })
   })
-  
+
   // parse & prettify ds_compare() results
   function comparisonText(data) {
       stats = data['compare_result']
@@ -527,7 +523,7 @@
     formData.append('dsid', '{{ ds.id }}');
     formData.append('format', '{{ current_file.format }}');
     formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
-    
+
     <!--console.log(fileName,fileSize)-->
     $.ajax({
       type: 'POST',
@@ -553,7 +549,7 @@
           html = '<b>Current file</b>: <br/><i>'+data['filename_cur']+'</i><br/>'
           html += '<b>New file</b>: <br/><i>'+data['filename_new']+'</i><br/>'
           html += '<b>New temp file</b>: <br/><i>'+data['tempfn']+'</i><br/>'
-          html += '<b>Validation result</b>: <br/><i>' + 
+          html += '<b>Validation result</b>: <br/><i>' +
             (data['validation_result']['errors'].length <1?'format valid':data['validation_result']['errors'])+'</i><hr/>'
           html += comparisonText(data)
           $("#btn_update").removeClass('hidden')
@@ -564,11 +560,11 @@
       }
     })
   })
-  
+
   $('.vocab').on('click', function(e) {
     console.log('id',$(this).data('id'))
-  });  
-  
+  });
+
   function minmaxer(timespans){
     <!--console.log('got to minmax()',JSON.stringify(timespans))-->
     starts=[]; ends=[]
@@ -576,12 +572,12 @@
       // gets 'in', 'earliest' or 'latest'
       starts.push(Object.values(timespans[t].start)[0])
       ends.push(!!timespans[t].end ? Object.values(timespans[t].end)[0] : -1)
-    } 
+    }
     <!--console.log('starts',starts,'ends',ends)-->
     minmax=[Math.max.apply(null, starts),Math.max.apply(null, ends)]
     return minmax
   }
-  
+
   $(function(){
     <!--var progressUrl = "{ url 'celery_progress:task_status' task_id %}";-->
     <!--CeleryProgressBar.initProgressBar(progressUrl)-->
@@ -614,7 +610,7 @@
       $("#div_file").toggleClass('border-red')
       $(".update-msg").removeClass('hidden')
     }
-    
+
     window.dslabel = "{{ ds.label }}"
     // Change hash for page-reload
     $('.nav-tabs a').on('shown.bs.tab', function (e) {
@@ -627,7 +623,7 @@
         <!--startTableSpinner()-->
         $("html,body").scrollTop(0)
         if(typeof(features) != 'undefined'){
-          mappy.fitBounds(features.getBounds())        
+          mappy.fitBounds(features.getBounds())
         }
       }
       if(e.target.hash=="#addtask"){
@@ -635,7 +631,7 @@
         $("html,body").scrollTop(0)
       }
     })
-        
+
     <!--$(".selector").dialog({-->
       <!--resizable: false,-->
       <!--autoOpen: false,-->
@@ -651,7 +647,7 @@
       <!--hide: {effect: "fade",duration: 400 }-->
     <!--});-->
   })
-  
+
   // TODO: refactor this ugly nonsense
   // also, button is hidden on 2nd click
   $(".edit-title").click(function() {
@@ -663,51 +659,51 @@
     $(".editing-description").toggleClass("hidden")
     $(".form-description").toggleClass("hidden")
     $(".btn-ds").toggleClass("hidden")
-  })  
+  })
   $(".edit-public").click(function() {
     $(".editing-public").toggleClass("hidden")
     $(".form-public").toggleClass("hidden")
     $(".btn-ds").toggleClass("hidden")
-  })  
+  })
   $(".edit-creator").click(function() {
     $(".editing-creator").toggleClass("hidden")
     $(".form-creator").toggleClass("hidden")
     $(".btn-ds").toggleClass("hidden")
-  })  
+  })
   $(".edit-source").click(function() {
     $(".editing-source").toggleClass("hidden")
     $(".form-source").toggleClass("hidden")
     $(".btn-ds").toggleClass("hidden")
-  })  
+  })
   $(".edit-contrib").click(function() {
     $(".editing-contrib").toggleClass("hidden")
     $(".form-contrib").toggleClass("hidden")
     $(".btn-ds").toggleClass("hidden")
-  })  
+  })
   $(".edit-citation").click(function() {
     $(".editing-citation").toggleClass("hidden")
     $(".form-citation").toggleClass("hidden")
     $(".btn-ds").toggleClass("hidden")
-  })  
+  })
   $(".edit-uri_base").click(function() {
     $(".editing-uri_base").toggleClass("hidden")
     $(".form-uri_base").toggleClass("hidden")
     $(".btn-ds").toggleClass("hidden")
-  })  
+  })
   $(".edit-webpage").click(function() {
     $(".editing-webpage").toggleClass("hidden")
     $(".form-webpage").toggleClass("hidden")
     $(".btn-ds").toggleClass("hidden")
-  })  
+  })
   $(".edit-featured").click(function() {
     $(".editing-featured").toggleClass("hidden")
     $(".form-featured").toggleClass("hidden")
     $(".btn-ds").toggleClass("hidden")
-  })  
+  })
   $(".edit-image").click(function() {
     $(".editing-image").toggleClass("hidden")
     $(".form-image").toggleClass("hidden")
     $(".btn-ds").toggleClass("hidden")
-  })    
+  })
 </script>
 {% endblock %}

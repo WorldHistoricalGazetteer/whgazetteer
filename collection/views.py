@@ -34,19 +34,19 @@ def remove_dataset(request, *args, **kwargs):
   ds = Dataset.objects.get(id=kwargs['ds_id'])
   print('remove_dataset(): coll, ds', coll, ds)
   coll.datasets.remove(ds)
-  
+
   return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-  
+
 # TODO: merge create and update views (templates are the same)
 class CollectionCreateView(CreateView):
   #print('CollectionCreateView()')
   form_class = CollectionModelForm
   template_name = 'collection/collection_create.html'
   queryset = Collection.objects.all()
-  
+
   def get_success_url(self):
-    return reverse('dashboard')  
-  # 
+    return reverse('dashboard')
+  #
   def get_form_kwargs(self, **kwargs):
     kwargs = super(CollectionCreateView, self).get_form_kwargs()
     return kwargs
@@ -97,7 +97,7 @@ class CollectionDetailView(DetailView):
     print('self, kwargs',self, self.kwargs)
 
     datasets = self.object.datasets.all()
-    
+
     # compute bounding boxes
     bboxes = [
       {"type":"Feature",
@@ -112,12 +112,12 @@ class CollectionDetailView(DetailView):
     context['bboxes'] = bboxes
     return context
 
-    
+
 """ public collection browse table """
 class CollectionPlacesView(DetailView):
   login_url = '/accounts/login/'
   redirect_field_name = 'redirect_to'
-  
+
   model = Collection
   template_name = 'collection/collection_places.html'
 
@@ -128,13 +128,13 @@ class CollectionPlacesView(DetailView):
   def get_object(self):
     id_ = self.kwargs.get("id")
     return get_object_or_404(Collection, id=id_)
-  
+
   def get_context_data(self, *args, **kwargs):
     context = super(CollectionPlacesView, self).get_context_data(*args, **kwargs)
     context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
     context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
     context['media_url'] = settings.MEDIA_URL
-    
+
     print('CollectionPlacesView get_context_data() kwargs:',self.kwargs)
     print('CollectionPlacesView get_context_data() request.user',self.request.user)
     id_ = self.kwargs.get("id")
@@ -142,7 +142,7 @@ class CollectionPlacesView(DetailView):
     coll = get_object_or_404(Collection, id=id_)
     datasets = [{"id":ds.id,"label":ds.label,"title":ds.title, "geotypes":ds.geotypes} \
                 for ds in coll.datasets.all()]
-    
+
     #placeset = Place.objects.filter(dataset=ds.label)
     context['ds_list'] = datasets
     context['updates'] = {}
@@ -165,7 +165,7 @@ class CollectionDeleteView(DeleteView):
 # detail & update
 #
 class CollectionUpdateView(UpdateView):
-  #print('CollectionUpdateView()')    
+  #print('CollectionUpdateView()')
   form_class = CollectionModelForm
   template_name = 'collection/collection_create.html'
   success_url = '/dashboard'
@@ -200,4 +200,3 @@ class CollectionUpdateView(UpdateView):
     context['create_date'] = self.object.create_date.strftime("%Y-%m-%d")
     context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
     return context
-

@@ -7,12 +7,12 @@ updates: 2.2.10 (20200211); 2.2.8(20191204); 2.2.4 (20190819); 2.1.7 (?); 2.1.2 
 
 import os
 
-# 
+#
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 # https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
-# 
+#
 
 #
 
@@ -72,7 +72,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    'django.middleware.locale.LocaleMiddleware',  
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.security.SecurityMiddleware',
 ]
 
@@ -149,7 +149,7 @@ LEAFLET_CONFIG = {
     'MAX_ZOOM': 14,
     'RESET_VIEW': False,
     #'MAX_BOUNDS_VISCOSITY': 0,
-    'ATTRIBUTION_PREFIX': 
+    'ATTRIBUTION_PREFIX':
     "Tiles &copy; <a href='http://mapbox.com/' target='_blank'>MapBox</a> | "+
     "<a href='http://creativecommons.org/licenses/by-nc/3.0/deed.en_US' target='_blank'> CC-BY-NC 3.0</a>"
 }
@@ -181,7 +181,7 @@ DATABASES = {
 # /././././././.
 # start django-allauth
 # /././././././.
-SITE_ID = 1 
+SITE_ID = 1
 
 ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS =1
 ACCOUNT_EMAIL_REQUIRED = True
@@ -190,7 +190,7 @@ ACCOUNT_LOGIN_ATTEMPTS_LIMIT = 5
 ACCOUNT_LOGIN_ATTEMPTS_TIMEOUT = 86400 # 1 day in seconds
 
 ACCOUNT_LOGOUT_REDIRECT_URL ='/'
-LOGIN_REDIRECT_URL = '/accounts/email/' # default to /accounts/profile 
+LOGIN_REDIRECT_URL = '/accounts/email/' # default to /accounts/profile
 
 ACCOUNT_FORMS = {'signup': 'allauth.account.forms.WHGRegisterForm',}
 
@@ -254,8 +254,9 @@ MEDIA_URL = '/media/'
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'whg/static/'),
     os.path.join(BASE_DIR, 'datasets/static/'),
+    os.path.join(BASE_DIR, 'main/static/'),
+    os.path.join(BASE_DIR, 'whg/static/'),
 ]
 
 try:

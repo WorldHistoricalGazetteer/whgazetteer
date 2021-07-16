@@ -38,12 +38,12 @@
     <span class="half float-right mr-2"><i>task id</i>: {{ task_id }}</span>
   </h5>
   {% if nohits and passnum == 'def' %}
-      <p>No unreviewed hits remaining in "deferred" queue</p>
+      <p>No unreviewed records remaining in "deferred" queue</p>
       <p><a href="{% url 'datasets:ds_reconcile' id=ds_id %}">return to task list</a></p>    
-  {% elif nohits %}
-    <div>
-      <p>No unreviewed hits for this pass!</p>
-      <p><a href="{% url 'datasets:ds_reconcile' id=ds_id %}">return to task list</a></p>
+  {% elif nohits and authority != 'idx' %}
+    <div class="mt-3">
+      <p>All records in this dataset for this task have been reviewed, so the dataset is eligible for accessioning to the WHG index.</p> <p>If you would like to begin that process, please <a href="{% url 'contact' %}">contact the editorial team</a>.</p>
+      <p><a class="btn btn-sm btn-secondary" href="{% url 'datasets:ds_reconcile' id=ds_id %}">Return to task list</a></p>
     </div>
   {% else %}
     <form id="form_related" method="POST" action="" >

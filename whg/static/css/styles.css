@@ -2,7 +2,7 @@ html, body {
   margin: 0;
   padding: 0;
   height: 100%;
-  font-family:  'Raleway', sans-serif; 
+  font-family:  'Raleway', sans-serif;
 }
 body {overflow-y: scroll;}
 pre { margin:0; background-color:#e0e0e0;}
@@ -32,7 +32,7 @@ label {vertical-align:top;}
 .half { font-size: .7em;}
 .h2em { height: 2em; }
 .h1em { height: 1em; }
-.hang {  padding-left: .2rem ;  text-indent: -.2rem;} 
+.hang {  padding-left: .2rem ;  text-indent: -.2rem;}
 .hidden {display:none;}
 .hidden-imp {display:none !important;}
 .hover {cursor:pointer;}
@@ -76,14 +76,14 @@ th.sticky {
   background-color: #fdf5e6;}
 .tight-p { margin-top:0; margin-bottom:0;}
 .tooltip { z-index: 1051; }
-.toomany {position:absolute; top:110px; left:60px; 
+.toomany {position:absolute; top:110px; left:60px;
   z-index:500; font-weight:600;} /*collection, dataset? maps*/
 .top { vertical-align: top;}
 .v-mid {vertical-align: super;}
 
 /* lists */
 .li-left {margin-left: -1rem;}
-.li-left-sm {margin-left: -1.5rem;} 
+.li-left-sm {margin-left: -1.5rem;}
 ul.no-bullets {
   list-style-type: none;
   margin: 0;
@@ -123,19 +123,19 @@ ul.no-bullets {
 /**
   modals
 **/
-.modal-dialog { position: relative; overflow: hidden; max-width: 90%; height: 90%; max-height: 90%; } 
-.modal-form { position: relative; overflow: hidden; max-width: fit-content !important; max-height: 100%; } 
+.modal-dialog { position: relative; overflow: hidden; max-width: 90%; height: 90%; max-height: 90%; }
+.modal-form { position: relative; overflow: hidden; max-width: fit-content !important; max-height: 100%; }
 .modal-ext-content { height: 90%; overflow-y:scroll; background-color:#fff;}
 /*.modal-form-content { */
-.modal-content { 
-  height: 90%; 
-  overflow-y:scroll; 
-  background-color:#fff; 
+.modal-content {
+  height: 90%;
+  overflow-y:scroll;
+  background-color:#fff;
   /*width: fit-content !important; */
   /*max-width: 75%; */
   margin:auto;
 }
-.modal-85 { 
+.modal-85 {
   max-width: 85%;
   height: fit-content;
 }
@@ -193,7 +193,7 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
 }
 .title {
   width: 100%;
-  font-family:  'Raleway', sans-serif; 
+  font-family:  'Raleway', sans-serif;
   font-size: 3rem;
   font-weight: 600;
   color: #004080;
@@ -257,17 +257,17 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
   background-color: #fff !important;
   font-weight:600;
 }
-.link-spanner { 
-  position:absolute; 
+.link-spanner {
+  position:absolute;
   width:100%;
   height:100%;
   top:0;
   left: 0;
   z-index: 1;
-  /* fixes overlap error in IE7/8, 
+  /* fixes overlap error in IE7/8,
      make sure you have an empty gif */
   background-image: url('/static/images/empty.gif');
-} 
+}
 .home-icon { margin:0; padding:12px 0 0 0; text-align:center; }
 .imghelper {display: inline-block; height: 100%; vertical-align:middle;}
 .featured-title { font-size: .9rem;}
@@ -286,7 +286,7 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
   height: 180px;
   border-radius: 6px;
   border: 1px solid #ddd;
-  padding: .4rem;  
+  padding: .4rem;
   position: relative;
   font-size: .8rem;
 }
@@ -342,8 +342,8 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
 .navactive {color:#000 !important; font-weight:bold;}
 .carousel-indicators {position:relative; bottom:0; margin-bottom:.5rem;font-size:smaller;}
 .carousel-indicators li {
-  background-color:#ccc; 
-  color:#fff; 
+  background-color:#ccc;
+  color:#fff;
   text-indent:unset;
   width:30px; height:auto;text-align:center; }
 .carousel-indicators .active {background-color:#993300;}
@@ -398,7 +398,7 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
   margin:auto  !important;
 }
 /*#input_box_traces { width:100%;}*/
-.input-loading {    
+.input-loading {
     background-color: #ffffff;
     background-image: url("http://loadinggif.com/images/image-selection/3.gif");
     background-size: 22px 22px;
@@ -416,8 +416,8 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
 .btn-default:focus, .btn-default.focus {
     box-shadow:none;
 }
-#trace_detail { 
-  display:none; 
+#trace_detail {
+  display:none;
   max-height:300px;
   overflow:scroll;
 }
@@ -437,7 +437,7 @@ input[type="text"] {
 }
 
 #search_left {
-  z-index:500; 
+  z-index:500;
   margin:0; padding:5px;
   border: 1px solid #ddd;
   border-radius: 8px;
@@ -448,8 +448,8 @@ input[type="text"] {
   margin-top: .3rem;
   margin-right:auto;
 }
-#search_info, #traces_info { 
-  width: 100%; 
+#search_info, #traces_info {
+  width: 100%;
   /*overflow-y:auto;*/
   /*background-color:whitesmoke;*/
 }
@@ -504,7 +504,7 @@ input[type="text"] {
 #result_extra p {margin: .5rem;}
 #dbicon {font-size:1.5rem;}
 #search_filters {
-  position:relative; 
+  position:relative;
   background-color: #f1fff1;
   /*height:205px;*/
 }
@@ -590,7 +590,7 @@ input[type="text"] {
 }
 
 em { color: #993333;}
-.sug_row { 
+.sug_row {
   background-color: #fff;
 }
 .sug_row:hover {
@@ -604,7 +604,7 @@ em { color: #993333;}
 
 .active-card {background-color: #f9ebeb !important;}
 .trace-detail { display:none; margin-left: -14px; margin-top:2px;}
-.col-content { 
+.col-content {
   background-color: white; padding:4px;
   border-top: #ddd 1px solid;
   border-left: #ddd 1px solid;
@@ -761,7 +761,7 @@ em { color: #993333;}
 
 #review_nav {
   background-color: #eee;
-} 
+}
 
 #review_list {
   max-height: 75vh;
@@ -778,7 +778,7 @@ em { color: #993333;}
 /*}*/
 .pagination-accession {
   background-color: #efe0e0;
-} 
+}
 
 
 /* end */
@@ -790,12 +790,12 @@ em { color: #993333;}
 }
 .accession-div-row { border-bottom:1px dotted lightgrey; padding-left:6px;}
 .auth-match {
-  border-bottom: 1px dashed lightgrey; 
-  border-left: 1px dashed lightgrey; 
+  border-bottom: 1px dashed lightgrey;
+  border-left: 1px dashed lightgrey;
   padding-bottom: .5rem;}
 .auth-match p {font-size: small; margin: .3rem 0;}
 .globeflash {
-  padding-top:2px; padding-bottom:7px; padding-right:3px; 
+  padding-top:2px; padding-bottom:7px; padding-right:3px;
   background-color:gold;
 }
 .help {vertical-align:text-top;}
@@ -861,7 +861,7 @@ em { color: #993333;}
 #ds_stats th { font-weight:400; font-style: italic; }
 #browse { width:100% !important; height:auto !important; }
 #ds_form .row {padding-right:4px;}
-#update_button { 
+#update_button {
   text-align: center;
   border: 1px solid #ddd;
   margin-top: 6px;
@@ -877,10 +877,16 @@ em { color: #993333;}
 .radiodiv input[type="radio"] {
   vertical-align: middle;
 }
-
+/**
+  dataset reconcile
+**/
+#ready { font-size:1rem;
+  background-color:#b1d8b836;
+  padding:.3rem; margin-bottom:.5rem;}
+#readt p {margin-bottom:0;}
 /**
   dataset browse, metadata, misc
-**/ 
+**/
 #public_dslist th {
   min-width:100px;
   padding: 3px 6px;
@@ -911,11 +917,11 @@ em { color: #993333;}
 }
 .odd, .even { line-height:.5rem; cursor:pointer;}
 .highlight-row {background-color: #ffff66 !important;}
-.rowhover { 
+.rowhover {
   background-color: #ffff66 !important;
   /*color: white;*/
 }
-#drftable_fields p { margin-bottom: .5rem;} 
+#drftable_fields p { margin-bottom: .5rem;}
 #placetable td {line-height:normal;}
 #placetable_info, #placetable_paginate { font-size: smaller;}
 
@@ -993,23 +999,23 @@ em { color: #993333;}
   padding: 0;
   box-shadow: 1px 1px #eee;
 }
-.sharing-header { 
-  display:block; 
-  background-color: #ECF0F1; 
+.sharing-header {
+  display:block;
+  background-color: #ECF0F1;
   padding: 0 0 2px 4px;
   border-bottom: 1px solid #D6D7D9;
 }
 /*.sharing-input { width:40%; }*/
-.sharing-input input { 
+.sharing-input input {
   padding: 2px 10px;
   font-size:smaller;
   height: fit-content;
 }
 .sharing-input button {
-  padding: 2px 6px; 
-  font-size: .8rem; 
+  padding: 2px 6px;
+  font-size: .8rem;
   margin-right: 3px;
-  background-color:#666; 
+  background-color:#666;
   color:#fff;}
 .task-box {
   border: 1px solid #ccc;
@@ -1075,8 +1081,8 @@ span.edit-row {
 #credits p {margin-left: 1px;}
 .docs-header {}
 .docs-subhead1 {
-  color:#993300; 
-  display:inline-block; 
+  color:#993300;
+  display:inline-block;
   width:100%;
   background-color:#eaeaea;
   font-weight:800;
@@ -1212,5 +1218,5 @@ span.edit-row {
 }
 
 /*ui-menu,ui-widget ui-widget-content ui-autocomplete ui-front*/
-.ui-widget, 
+.ui-widget,
 .ui-widget-content {z-index: 9999 !important; font-family: 'Raleway', sans-serif; font-size:.8rem;}

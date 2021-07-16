@@ -11,6 +11,7 @@ from django.dispatch import receiver
 #from django.urls import reverse
 #from django.shortcuts import get_object_or_404
 
+from django_celery_results.models import TaskResult
 from elastic.es_utils import escount_ds
 from main.choices import *
 from places.models import Place, PlaceGeom
@@ -148,8 +149,8 @@ class Dataset(models.Model):
   
   @property
   def tasks(self):
-    from django_celery_results.models import TaskResult
-    return TaskResult.objects.all().filter(task_args = '['+str(self.id)+']',task_name__startswith='align')
+    #from django_celery_results.models import TaskResult
+    return TaskResult.objects.filter(task_args = '['+str(self.id)+']',task_name__startswith='align')
 
   # used in ds_compare()
   @property
@@ -168,6 +169,7 @@ class Dataset(models.Model):
   @property
   def taskstats(self):
     def distinctPlaces(task):
+      # counts of distinct place records remaining to review fo reach pass
       p_hits0 = Hit.objects.filter(task_id=t.task_id,query_pass='pass0', reviewed=False).values("place_id").distinct().count()
       p_hits1 = Hit.objects.filter(task_id=t.task_id,query_pass='pass1', reviewed=False).values("place_id").distinct().count()
       p_hits2 = Hit.objects.filter(task_id=t.task_id,query_pass='pass2', reviewed=False).values("place_id").distinct().count()
@@ -197,16 +199,36 @@ class Dataset(models.Model):
 
   # count of unreviewed hits
   @property
-  def unreviewed(self):
+  def unreviewed_hitcount(self):
     unrev=Hit.objects.all().filter(dataset_id=self.id, reviewed=False).count()
     return unrev
-  
   # count of unindexed places
   @property
   def unindexed(self):
     unidxed=self.places.filter(indexed=False).count()
     return unidxed
 
+  # count of reviewed places
+  @property
+  def reviewed_places(self):
+    result = {}
+    result['rev_wd'] = self.places.filter(review_wd = 1).count()
+    result['rev_tgn'] = self.places.filter(review_tgn = 1).count()
+    result['rev_whg'] = self.places.filter(review_whg = 1).count()
+    return result
+
+  # status of each recon task type
+  @property
+  def recon_status(self):
+    tasks = TaskResult.objects.filter(
+      task_args = '['+str(self.id)+']',
+      task_name__startswith='align',
+      status='SUCCESS')
+    result = {}
+    for t in tasks:
+      result[t.task_name[6:]] = Hit.objects.filter(task_id=t.task_id,reviewed=False).values("place_id").distinct().count()
+
+    return result
   # list of dataset place_id values
   @property
   def placeids(self):

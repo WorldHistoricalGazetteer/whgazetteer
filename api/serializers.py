@@ -36,10 +36,11 @@ class DatasetSerializer(serializers.HyperlinkedModelSerializer):
     model = Dataset
     fields = ('id', 'place_count', 'owner', 'label', 'title', 'description','datatype', 'ds_status', 'create_date', 'public', 'core','creator','webpage')
     extra_kwargs = {
-          'created_by': { 'read_only': True }}        
+          'created_by': { 'read_only': True }}
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
   datasets = serializers.HyperlinkedRelatedField(
+      #many=True, view_name='dataset-detail', read_only=True)
       many=True, view_name='ds_summary', read_only=True)
 
   class Meta:
@@ -97,7 +98,7 @@ class PlaceLinkSerializer(serializers.ModelSerializer):
   aug = serializers.SerializerMethodField('augmented')
   def augmented(self, obj):
     return True if obj.task_id is not None else False
-  
+
   type = serializers.ReadOnlyField(source='jsonb.type')
   identifier = serializers.ReadOnlyField(source='jsonb.identifier')
 
@@ -111,7 +112,7 @@ class PlaceGeomSerializer(serializers.ModelSerializer):
   ds = serializers.SerializerMethodField()
   def get_ds(self, obj):
     return obj.place.dataset.id
-  
+
   type = serializers.ReadOnlyField(source='jsonb.type')
   geowkt = serializers.ReadOnlyField(source='jsonb.geowkt')
   coordinates = serializers.ReadOnlyField(source='jsonb.coordinates')
@@ -120,7 +121,7 @@ class PlaceGeomSerializer(serializers.ModelSerializer):
 
   class Meta:
     model = PlaceGeom
-    fields = ('place_id','src_id','type', 'geowkt', 'coordinates', 
+    fields = ('place_id','src_id','type', 'geowkt', 'coordinates',
               'geom_src', 'citation', 'when','title', 'ds')
 
 class PlaceTypeSerializer(serializers.ModelSerializer):
@@ -146,8 +147,8 @@ class PlaceNameSerializer(serializers.ModelSerializer):
     model = PlaceName
     fields = ('toponym','when','citation')
 
-""" 
-    direct representation of normalized records in database 
+"""
+    direct representation of normalized records in database
     used in multiple views
 """
 class PlaceSerializer(serializers.ModelSerializer):
@@ -161,21 +162,21 @@ class PlaceSerializer(serializers.ModelSerializer):
   descriptions = PlaceDescriptionSerializer(many=True, read_only=True)
   depictions = PlaceDepictionSerializer(many=True, read_only=True)
 
-  geo = serializers.SerializerMethodField('has_geom')    
+  geo = serializers.SerializerMethodField('has_geom')
   def has_geom(self,place):
     return '<i class="fa fa-globe"></i>' if place.geom_count > 0 else "-"
 
   class Meta:
     model = Place
     fields = ('url','id', 'title', 'src_id', 'dataset','ccodes', 'fclasses',
-              'names','types','geoms','links','related', 'whens', 
+              'names','types','geoms','links','related', 'whens',
               'descriptions', 'depictions', 'geo','minmax'
             )
 
 class PlaceTableSerializer(serializers.ModelSerializer):
   dataset = DatasetSerializer()
-  
-  geo = serializers.SerializerMethodField()    
+
+  geo = serializers.SerializerMethodField()
   def get_geo(self, place):
     if place.geom_count > 0:
       gtype = place.geoms.all()[0].jsonb['type'].lower()
@@ -185,47 +186,47 @@ class PlaceTableSerializer(serializers.ModelSerializer):
       return '&mdash;'
 
 
-  revwd = serializers.SerializerMethodField('rev_wd')    
+  revwd = serializers.SerializerMethodField('rev_wd')
   def rev_wd(self, place):
-    if not place.hashits_wd:
-      val = '<i>no hits</i>'
-    elif place.review_wd == 1:
+    if place.review_wd == 1:
       val = '<i class="fa fa-check-square-o"></i>'
+    elif not place.hashits_wd:
+        val = '<i>no hits</i>'
     elif place.review_wd == 0:
       val = '&#9744;'
     else:
       val = '<i>deferred</i>'
     return val
 
-  revtgn = serializers.SerializerMethodField('rev_tgn')    
+  revtgn = serializers.SerializerMethodField('rev_tgn')
   def rev_tgn(self, place):
-    if not place.hashits_tgn:
-      val = '<i>no hits</i>'
-    elif place.review_tgn == 1:
+    if place.review_tgn == 1:
       val = '<i class="fa fa-check-square-o"></i>'
+    elif not place.hashits_tgn:
+      val = '<i>no hits</i>'
     elif place.review_tgn == 0:
       val = '&#9744;'
     else:
       val = '<i>deferred</i>'
     return val
 
-  revwhg = serializers.SerializerMethodField('rev_whg')    
+  revwhg = serializers.SerializerMethodField('rev_whg')
   def rev_whg(self, place):
-    if not place.hashits_whg:
-      val = '<i>no hits</i>'
-    elif place.review_whg == 1:
+    if place.review_whg == 1:
       val = '<i class="fa fa-check-square-o"></i>'
+    elif not place.hashits_whg:
+      val = '<i>no hits</i>'
     elif place.review_whg == 0:
       val = '&#9744;'
     else:
       val = '<i>deferred</i>'
-    return val    
-    
+    return val
+
 
   class Meta:
     model = Place
-    fields =  ('url','id', 'title', 'src_id', 
-                  'ccodes', 'geo', 'minmax', 
+    fields =  ('url','id', 'title', 'src_id',
+                  'ccodes', 'geo', 'minmax',
                   'revwhg', 'revwd', 'revtgn',
                   'review_whg', 'review_wd', 'review_tgn'
                   ,'dataset', 'dataset_id'
@@ -246,7 +247,7 @@ class FeatureSerializer(GeoFeatureModelSerializer):
     return GEOSGeometry(g2.wkt)
 
   #
-  title = serializers.SerializerMethodField('get_title')    
+  title = serializers.SerializerMethodField('get_title')
   def get_title(self, obj):
     return obj.place.title
 

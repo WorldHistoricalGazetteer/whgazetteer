@@ -3,7 +3,7 @@
 from django.conf import settings
 from django.core.mail import send_mail, BadHeaderError
 from django.http import HttpResponse
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404, redirect #, render_to_response
 from django.urls import reverse_lazy
 from django.views.generic.base import TemplateView
 from collection.models import Collection
@@ -18,6 +18,9 @@ es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 from random import shuffle
 # import requests
 
+def custom_error_view(request, exception=None):
+    print('error request',request.GET.__dict__)
+    return render(request, "main/500.html", {'error':'fubar'})
 
 class Home(TemplateView):
     template_name = 'main/home_v1.html'

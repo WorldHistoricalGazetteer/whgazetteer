@@ -23,11 +23,10 @@ urlpatterns = [
 
     # curricula
     path('asian_history/', TemplateView.as_view(template_name="curricula/asian_history.html"), name="curric-asian"),
-    
-    
+
+
     path('modal/', TemplateView.as_view(template_name="main/modal.html"), name="dynamic-modal"),
 ]
 #] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
 if settings.DEBUG is True:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-

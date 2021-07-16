@@ -11,7 +11,7 @@ from datasets.utils import download_file, UpdateCountsView, downloader, download
 # dataset actions
 app_name='datasets'
 urlpatterns = [
-  
+
   ## BASICS: create, delete, insert data
   path('create/', views.DatasetCreateView.as_view(), name='dataset-create'),
   path('<int:id>/delete', views.DatasetDeleteView.as_view(), name='dataset-delete'),
@@ -21,10 +21,10 @@ urlpatterns = [
 
   # insert validated lpf file data to db
   path('<int:pk>/insert_lpf/', views.ds_insert_lpf, name="ds_insert_lpf"),
-    
+
   # upload excel
   path('xl/', views.xl_upload, name='xl-upload'),
-  
+
   ## MANAGE/VIEW
   # dataset owner pages (tabs); names correspond to template names
   path('<int:id>/summary', views.DatasetSummaryView.as_view(), name='ds_summary'),
@@ -37,20 +37,20 @@ urlpatterns = [
   # public dataset pages (tabs): metadata, browse
   path('<int:pk>', views.DatasetPublicView.as_view(), name='ds_meta'),
   path('<int:id>/places', views.DatasetPlacesView.as_view(), name='ds_places'),
-  
+
   ## DOWNLOADS
   # download latest file, as uploaded
-  path('<int:id>/file/', download_file, name="dl-file"), # 
+  path('<int:id>/file/', download_file, name="dl-file"), #
 
   # initiate downloads of augmented datasets via celery task (called from ajax)
   path('dlcelery/', downloader, name='dl_celery'),
-  
-  path('<int:id>/augmented/<str:format>', download_augmented, name="dl-aug"), # 
-  ## DEPRECATED download augmented dataset 
+
+  path('<int:id>/augmented/<str:format>', download_augmented, name="dl-aug"), #
+  ## DEPRECATED download augmented dataset
   # download flattened geojson data
-  #path('<int:id>/gis/', download_gis, name="dl-gis"), # 
+  #path('<int:id>/gis/', download_gis, name="dl-gis"), #
   ##
-  
+
   ## UPDATES (in progress)
   path('compare/', views.ds_compare, name='dataset-compare'),
   path('update/', views.ds_update, name='dataset-update'),
@@ -61,7 +61,7 @@ urlpatterns = [
 
   # review, validate hits
   path('<int:pk>/review/<str:tid>/<str:passnum>', views.review, name="review"),
-  
+
   # accept any unreviewed wikidata pass0 hits from given task
   path('wd_pass0/<str:tid>', views.write_wd_pass0, name="wd_pass0"),
 
@@ -73,23 +73,22 @@ urlpatterns = [
 
   # undo last save in review
   path('match-undo/<int:ds>/<str:tid>/<int:pid>', views.match_undo, name="match-undo"),
-  
+
   # refresh reconciliation counts (ds.id from $.get)
   path('updatecounts/', UpdateCountsView.as_view(), name='update_counts'),
-  
+
   ## COLLABORATORS
   # add DatasetUser collaborator
   path('collab-add/<int:dsid>/<str:v>', views.collab_add, name="collab-add"),
-  
+
   # delete DatasetUser collaborator
-  path('collab-delete/<int:uid>/<int:dsid>/<str:v>', views.collab_delete, name="collab-delete"), 
-  
+  path('collab-delete/<int:uid>/<int:dsid>/<str:v>', views.collab_delete, name="collab-delete"),
+
   ## GEOMETRY
   path('<int:dsid>/geojson/', fetch_geojson, name="geojson"),
-  
+
 
 ] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
 
-# list places in a dataset; for physical geog layers
-#path('<str:label>/places/', views.ds_list, name='ds_list'),
 
+#path('<int:id>/detail', views.DatasetDetailView.as_view(), name='dataset-detail'),

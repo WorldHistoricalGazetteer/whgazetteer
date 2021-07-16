@@ -398,7 +398,7 @@ def normalize(h, auth, language=None):
       h['src_id'], 
       h['title']
     )
-    print('"rec" HitRecord',rec)
+    #print('"rec" HitRecord',rec)
     rec.score = hit['_score']
     rec.passnum = hit['pass'][:5]
     
@@ -448,7 +448,7 @@ def normalize(h, auth, language=None):
           #links.append('closeMatch: '+l)
       #  place_id, dataset, src_id, title
       rec = HitRecord(-1, 'wd', h['place']['value'][31:], h['placeLabel']['value'])
-      print('"rec" HitRecord',rec)      
+      #print('"rec" HitRecord',rec)      
       rec.variants = []
       rec.types = h['types']['value'] if 'types' in h.keys() else []
       rec.ccodes = [h['countryLabel']['value']]
@@ -462,14 +462,14 @@ def normalize(h, auth, language=None):
   elif auth == 'wdlocal':
     # hit['_source'] keys(): ['id', 'type', 'modified', 'descriptions', 'claims', 'sitelinks', 'variants', 'minmax', 'types', 'location'] 
     try:
-      print('h in normalize',h)
+      #print('h in normalize',h)
       # TODO: do it in index?
       variants=h['variants']
       title = wdTitle(variants, language)
 
       #  place_id, dataset, src_id, title
       rec = HitRecord(-1, 'wd', h['id'], title)
-      print('"rec" HitRecord',rec)
+      #print('"rec" HitRecord',rec)
       
       # list of variant@lang (excldes chosen title)
       #variants= [{'lang': 'ru', 'names': ['Toamasina', 'Туамасина']},{'lang': 'ja', 'names': ['タマタヴ', 'トゥアマシナ']}]
@@ -495,7 +495,6 @@ def normalize(h, auth, language=None):
         set(h['claims'].keys()) & set(qlinks.keys()))
       if len(hlinks) > 0:
         for l in hlinks:
-          #links.append('closeMatch: '+qlinks[l]+':'+str(h['claims'][l][0]))
           links.append(qlinks[l]+':'+str(h['claims'][l][0]))
 
       # add en and FIRST {language} wikipedia sitelink OR first sitelink
@@ -503,10 +502,12 @@ def normalize(h, auth, language=None):
       wplinks += [l['title'] for l in h['sitelinks'] if l['lang'] == 'en']
       if language != 'en':
         wplinks += [l['title'] for l in h['sitelinks'] if l['lang'] == language]
-      if len(wplinks) == 0 and len(h['sitelinks']) > 0:
-        wplinks += [h['sitelinks'][0]['title']]
+      # TODO: non-English wp pages do not resolve well
+      #if len(wplinks) == 0 and len(h['sitelinks']) > 0:
+        #wplinks += [h['sitelinks'][0]['title']]
+        #wplinks += [h['sitelinks'][0]['title']+'@'+h['sitelinks'][0]['lang']]
         
-      links += ['primaryTopicOf: wp:'+l for l in set(wplinks)]
+      links += ['wp:'+l for l in set(wplinks)]
 
       rec.links = links
       #print('rec.links',rec.links)
@@ -534,7 +535,7 @@ def normalize(h, auth, language=None):
     except:
       # TODO: log error
       print("normalize(wdlocal) error:", h['id'], sys.exc_info())
-      print('h in normalize', h)
+      #print('h in normalize', h)
 
   elif auth == 'tgn':
     rec = HitRecord(-1, 'tgn', h['tgnid'], h['title'])
@@ -555,8 +556,8 @@ def normalize(h, auth, language=None):
       rec.geoms=[]
     rec.minmax = []
     rec.links = []
-    print(rec)
-  print('normalized hit record',rec.toJSON())
+    #print(rec)
+  #print('normalized hit record',rec.toJSON())
   # TODO: raise any errors
   return rec.toJSON()
 
@@ -676,7 +677,7 @@ def es_lookup_tgn(qobj, *args, **kwargs):
       hit['pass'] = 'pass1'
       result_obj['hits'].append(hit)
   elif len(hits1) == 0:
-    print('q1 no result:)',q1)
+    #print('q1 no result:)',q1)
     # /\/\/\/\/\/
     # pass2: revert to qbase{} (drops geom)
     # /\/\/\/\/\/  
@@ -692,7 +693,7 @@ def es_lookup_tgn(qobj, *args, **kwargs):
         hit['pass'] = 'pass2'
         result_obj['hits'].append(hit)
     elif len(hits2) == 0:
-      print('q2 no result:)',q2)
+      #print('q2 no result:)',q2)
       # /\/\/\/\/\/
       # pass3: revert to qbare{} (drops placetype)
       # /\/\/\/\/\/  
@@ -710,7 +711,7 @@ def es_lookup_tgn(qobj, *args, **kwargs):
           result_obj['hits'].append(hit)
       else:
         # no hit at all, name & bounds only
-        print('q3 no result:)',q3)
+        #print('q3 no result:)',q3)
         result_obj['missed'] = qobj['place_id']
   result_obj['hit_count'] = hit_count
   return result_obj
@@ -724,7 +725,6 @@ parse, write Hit records for review
 @task(name="align_tgn")
 def align_tgn(pk, *args, **kwargs):
   task_id = align_tgn.request.id
-  print('task_id', task_id)
   ds = get_object_or_404(Dataset, id=pk)
   user = get_object_or_404(User, pk=kwargs['user'])
   bounds = kwargs['bounds']
@@ -735,15 +735,16 @@ def align_tgn(pk, *args, **kwargs):
   [count_hit, count_nohit, total_hits, count_p1, count_p2, count_p3] = [0,0,0,0,0,0]
   start = datetime.datetime.now()
 
-  # queryset depends 'scope', indirectly on 'prior' in ds_addtask.html
+  # queryset depends 'scope'
   qs = ds.places.all() if scope == 'all' else \
-    ds.places.all().filter(Q(review_tgn=None) | Q(review_tgn = 0))
+    ds.places.filter(~Q(review_tgn = 1))
 
   for place in qs:
-    #place=get_object_or_404(Place,id=131735) # Caledonian Canal (ne)
-
+    #place=get_object_or_404(Place,id=131735)
     # build query object
-    qobj = {"place_id":place.id,"src_id":place.src_id,"title":place.title}
+    qobj = {"place_id":place.id,
+            "src_id":place.src_id,
+            "title":place.title}
     [variants,geoms,types,ccodes,parents]=[[],[],[],[],[]]
 
     # ccodes (2-letter iso codes)
@@ -992,7 +993,7 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
       hit['pass'] = 'pass0'
       result_obj['hits'].append(hit)
   elif len(hits0) == 0:
-    print('q0 (no hits)', qobj)
+    #print('q0 (no hits)', qobj)
     # /\/\/\/\/\/
     # pass1 (q1): 
     # must[name, placetype]; spatial filter
@@ -1014,7 +1015,7 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
       # /\/\/\/\/\/
       # pass2: remove type, add fclasses
       # /\/\/\/\/\/  
-      print('q1: no hits',q1)
+      #print('q1: no hits',q1)
       try:
         res2 = es.search(index="wd", body = q2)
         hits2 = res2['hits']['hits']
@@ -1029,7 +1030,7 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
           result_obj['hits'].append(hit)
       elif len(hits2) == 0:
         result_obj['missed'] = str(qobj['place_id']) + ': ' + qobj['title']
-        print('q2: no hits',q2)
+        #print('q2: no hits',q2)
   result_obj['hit_count'] = hit_count
   return result_obj
 
@@ -1062,31 +1063,24 @@ parse, write Hit records for review
 def align_wdlocal(pk, **kwargs):
   task_id = align_wdlocal.request.id
   ds = get_object_or_404(Dataset, id=pk)
-  print('kwargs from align_wdlocal() task', kwargs)
-  #bounds = {'type': ['userarea'], 'id': ['0']}
   user = get_object_or_404(User, pk=kwargs['user'])
   bounds = kwargs['bounds']
   scope = kwargs['scope']
+  print('kwargs from align_wdlocal() task', kwargs)
+  #bounds = {'type': ['userarea'], 'id': ['0']}
   language = kwargs['lang']
-  start = datetime.datetime.now()
   hit_parade = {"summary": {}, "hits": []}
   [nohits,wdlocal_es_errors,features] = [[],[],[]]
   [count_hit, count_nohit, total_hits, count_p0, count_p1, count_p2] = [0,0,0,0,0,0]
+  start = datetime.datetime.now()
 
   # queryset depends on 'scope'
-  # new logic
   qs = ds.places.all() if scope == 'all' else \
-    ds.places.filter(Q(review_wd=None) | Q(review_wd = 0))
-  print('qs', qs)
-
-  #pids = Hit.objects.filter(dataset_id=pk, authority ='wd',reviewed=False).values_list('place_id',flat=True)
-    
-  #if scope == 'unreviewed':
-    #qs = ds.places.filter(id__in=pids)
-  #elif scope == 'all':
-    #qs = ds.places.all()
-
+    ds.places.filter(~Q(review_wd = 1))
+  
+  print('wtf? scope, count',scope,qs.count())
   for place in qs:
+    print('review_wd',place.review_wd)
     #place = get_object_or_404(Place, pk=6596036)
     # build query object
     qobj = {"place_id":place.id,
@@ -1156,7 +1150,7 @@ def align_wdlocal(pk, **kwargs):
       count_hit +=1
       total_hits += len(result_obj['hits'])
       for hit in result_obj['hits']:
-        print('pre-write hit', hit)
+        #print('pre-write hit', hit)
         if hit['pass'] == 'pass0': 
           count_p0+=1 
         if hit['pass'] == 'pass1': 
@@ -1262,8 +1256,6 @@ def es_lookup_idx(qobj, *args, **kwargs):
     countries_match = {"terms": {"ccodes":qobj["countries"]}}
     #print("countries_match", countries_match)
   
-
-
   """
   prepare queries from qobj
   """  
@@ -1444,9 +1436,9 @@ def align_idx(pk, *args, **kwargs):
   whg_id = maxID(es,idx)
 
   # write new seed/parents for inspection
-  wd = "/Users/karlg/Documents/repos/_whgazetteer/_scratch/"
-  fn1 = "new-parents_"+str(ds.id)+".txt"
-  fout1 = codecs.open(wd+fn1, mode="w", encoding="utf8")
+  #wd = "/Users/karlg/Documents/repos/_whgazetteer/_scratch/"
+  #fn1 = "new-parents_"+str(ds.id)+".txt"
+  #fout1 = codecs.open(wd+fn1, mode="w", encoding="utf8")
   
   #bounds = {'type': ['userarea'], 'id': ['0']}
   bounds = kwargs['bounds']
@@ -1463,13 +1455,10 @@ def align_idx(pk, *args, **kwargs):
   
   """
   for each place, create qobj and run es_lookup_idx(qobj)
-  parse results: 
-    if hits, write Hit instances for review
-    if no hits, write new parent doc in index
+  if hits: write Hit instances for review
+  if no hits: write new parent doc in index
   """
   for p in qs:
-    # 6595825:Marienborch (3)
-    # 6595826:Eluinghen (2) 6595829:Thorun (2x2) 
     qobj = build_qobj(p)
     
     result_obj = es_lookup_idx(qobj, bounds=bounds)
@@ -1486,7 +1475,7 @@ def align_idx(pk, *args, **kwargs):
     # got some hits, format json & write to db
     elif len(result_obj['hits']) > 0:
       count_hit +=1  # this record got >=1 hits
-      # place/task status 0 (unreviewed hits)
+      # place/task status 0 (has unreviewed hits)
       p.review_whg = 0
       p.save()
       
@@ -1495,15 +1484,12 @@ def align_idx(pk, *args, **kwargs):
       #total_hits += result_obj['hit_count']
       total_hits += result_obj['total_hits']
       
-      """ 
-      imported some align_idx_testy.py code below 
-      """
       parents = [profileHit(h) for h in hits \
                 if h['_source']['relation']['name']=='parent']
       children = [profileHit(h) for h in hits \
                 if h['_source']['relation']['name']=='child']
       """ *** """
-      p0 = 'pass0' in [p['pass'] for p in parents]
+      p0 = len(set(['pass0a','pass0b'])&set([p['pass'] for p in parents])) >0
       p1 = 'pass1' in [p['pass'] for p in parents]
       if p0:
         count_p0 += 1
@@ -1581,9 +1567,9 @@ def align_idx(pk, *args, **kwargs):
         #print(json.dumps(jsonic,indent=2))
   
   # write new index seed/parent docs for inspection
-  fout1.write(json.dumps(new_seeds, indent=2))
-  fout1.close()
-  print(str(len(new_seeds)) + ' new index seeds written to '+ fn1)
+  #fout1.write(json.dumps(new_seeds, indent=2))
+  #fout1.close()
+  #print(str(len(new_seeds)) + ' new index seeds written to '+ fn1)
   
   end = datetime.datetime.now()
   
@@ -1611,7 +1597,8 @@ def align_idx(pk, *args, **kwargs):
     count_hit,
     total_hits
   )    
-  print('elapsed time in minutes:',int((end - start)/60))
+  print('elapsed time:', elapsed(end-start))
+
 
   return hit_parade['summary']
 

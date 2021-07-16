@@ -6,7 +6,7 @@ class CollectionModelForm(forms.ModelForm):
     # ** trying to return to referrer
     next = forms.CharField(required=False)
     # **
-    
+
     class Meta:
         model = Collection
         fields = ('id','owner','title','description', 'creator', 'contact', \
@@ -27,4 +27,3 @@ class CollectionModelForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(CollectionModelForm, self).__init__(*args, **kwargs)
-
