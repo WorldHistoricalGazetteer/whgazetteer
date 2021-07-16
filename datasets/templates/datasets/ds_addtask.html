@@ -145,10 +145,10 @@
                   <hr/>
                   <button type="submit" id="btn_startrecon" class="btn btn-primary">Start</button>
                   <span title="back"><a id="cancel_taskadd" href="#">Cancel</a></span>
-                  <span id="q_accept" class="ml-3 small">
-                    <input id="accept_geom" name="geom" type="checkbox" checked="checked"/> accept geometries in matches
-                <span class="help-matches" data-id="accept-geometry">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
-                  </span>
+                  <!--<span id="q_accept" class="ml-3 small">-->
+                    <!--<input id="accept_geom" name="geom" type="checkbox" checked="checked"/> accept geometries in matches-->
+                <!--<span class="help-matches" data-id="accept-geometry">{% fontawesome_icon 'question-circle' color='#993333' %}</span>-->
+                  <!--</span>-->
                 </div>
               </div> <!-- #addtask_lower -->
             {% endif %} <!-- ds.ds_status != 'accessioning' -->
@@ -160,11 +160,13 @@
             {% leaflet_map "map_recon" %}
           </div>
           {% endif %}
-          <!--<div>-->
-            <!--<p> ds status: {{ ds.ds_status }}-->
-            <!--<p>unindexed: {{ds.unindexed}}</p>-->
-            <!--<p>remaining: {{ remain_to_review }}</p>-->
-          <!--</div>-->
+          <div>
+            <p>OPTIONS</p>
+            <p><span id="q_accept" class="ml-3 small">
+              <input id="accept_geom" name="geom" type="checkbox" checked="checked"/> accept geometries in matches
+            <span class="help-matches" data-id="accept-geometry">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
+            </span></p>
+          </div>
         </div> <!-- recon_result -->
       </div> <!-- row -->
       {% else %}

@@ -1,6 +1,14 @@
 # THESE ARE DUPLICATED FROM utils.py
 # b/c of an import looping problems
 # TODO: called only from tasks.py?
+import time
+
+def TestScheduler():
+  import time
+  for i in range(0,29):
+    starttime = time()
+    print("test")
+    time.sleep(1.0 - ((time() - starttime) % 1.0))
 
 #makeNow, HitRecord, bestParent, post_recon_update, getQ, parse_wkt, hully, elapsed
 def makeNow():

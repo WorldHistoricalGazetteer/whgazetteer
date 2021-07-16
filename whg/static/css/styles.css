@@ -55,7 +55,7 @@ label {vertical-align:top;}
 .smaller {font-size: small;} /* smaller than bootstrap */
 .smallish {font-size: .9rem;} /* smaller than bootstrap */
 .status {color:#fff; box-shadow: 2px 2px #eee; border:1px dashed #ccc;}
-.step-links {vertical-align: middle; float:right;}
+.step-links {vertical-align: middle; width:300px; margin-left: 2rem; font-size: .9rem;}
 .strikethrough {text-decoration: line-through;}
 .strong { font-weight: bold;}
 sr { font-weight: bold; color: #993333;}
