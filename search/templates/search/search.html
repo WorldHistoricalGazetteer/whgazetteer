@@ -9,6 +9,7 @@
   {% leaflet_js %}
   {% leaflet_css %}
 	<script src="{% static 'js/aliases.js' %}"></script>
+  <script src="{% static 'js/parents.js' %}"></script>
   <script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>
   <link rel="stylesheet" href="//cdn.datatables.net/1.10.16/css/dataTables.bootstrap4.min.css">
   <link rel="stylesheet" href="{% static 'css/typeahead.css' %}">
@@ -781,7 +782,8 @@
       if( kept == "true" && previous){
         showResults(previous,'place','search')
       }
-      localStorage.setItem('keep', false)
+      // don't stop keeping after one nav away
+      <!--localStorage.setItem('keep', false)-->
     }
   }, false); <!-- addEventListener() -->
   
