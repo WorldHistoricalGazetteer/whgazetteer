@@ -1099,15 +1099,20 @@
     
     // highlight map marker from list
     $(".search-row").on('click',function(e){
+      console.log('search-row click;')
 			// identifier either a whgid (index search) or pid (db search)
       layerid = $(this).data('id')
       f = idToFeature[layerid]
-			
+      // set all to white
+      $(".search-row").css('background-color','#fff')
+      // then highlight this one
+			$(this).css('background-color','#f4f4d7')
 			// fetch record detail and put it in #result_extra
-			if(search_scope == 'db'){
-				let pid = layerid
-				getPlace(pid)
-			}
+			<!--if(search_scope == 'db'){-->
+        <!--console.log('search-row click; scope db; running getPlace() - why?')-->
+				<!--let pid = layerid-->
+				<!--getPlace(pid)-->
+			<!--}-->
       // set all layers to default style
       for (i in idToFeature){
         type = idToFeature[i].feature.geometry.type
@@ -1310,17 +1315,19 @@
           layer.setStyle(['LineString','MultiLineString'].indexOf(feature.type)>-1 ? styles.line_default:styles.pgon_default)
           idToFeature[identifier] = layer
         }
-        layer.bindPopup(feature.properties.title+popup_link);
-        <!--layer.bindTooltip(feature.properties.title,{"permanent":true});-->
+        <!--layer.bindPopup(feature.properties.title+popup_link);-->
+        layer.bindPopup(feature.properties.title);
+
+        // find row in results and highlight it
         layer.on('click',function(e){
           scroll = 20
           ele = $("#result_div")
+          // set all to white background
           $(".search-row").css('background-color','#fff')
-          <!--divtop = $('#result_div').offset().top-->
 					
           fid = search_scope=='idx'?this.feature.geometry.properties.whgid:this.feature.geometry.properties.pid
-					
-          foo=$("div.place-item").find('[data-id="'+fid+'"]').closest('.search-row')
+					console.log('fid of clicked layer', fid)
+          foo=$("tr.place-item").find('[data-id="'+fid+'"]').closest('.search-row')
           foo.css('background-color','#f4f4d7')
           <!--foo[0].scrollIntoView({behavior:'smooth'})-->
           foo[0].scrollIntoView()
@@ -1455,7 +1462,7 @@
 		return link
 	}
 	
-	// from parserPlace() builds link for external placetype record
+	// from parsePlace() builds link for external placetype record
 	function url_exttype(type) {
 		link = ' <a href="#" class="exttab" data-id='+type.identifier+
 			'>('+type.label+' {% fontawesome_icon 'external-link' color='#336699' %})</a>'
@@ -1596,10 +1603,11 @@
 	}
 	// put a place record in #result_extra
 	function getPlace(pid){
-		<!--console.log('getPlace()', pid)-->
+		<!--console.log('getPlace() - why???', pid)-->
 		$.ajax({
 			url: "/api/place/"+pid,
 			}).done(function( data ) {
+        console.log('getPlace() - why???', pid)
 				$("#result_extra").html(parsePlace(data))
 				<!--spinner_detail.stop()-->
 				// events on detail items
