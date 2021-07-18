@@ -67,7 +67,8 @@
 				  <p class="mb-0 featured-title"><a href="{% url 'collection:collection-detail' featured_coll.0.id %}">{{ featured_coll.0.title}}</a></p>
 					<p class="coll-description scrolldiv">{{ featured_coll.0.description|safe }}</p>
 				</div>
-				<div class="col-sm-3"><img src="{{ imgc0 }}" height=150 width=150 /></div>
+				<div class="col-sm-3"><a href="#" class="pop">
+          <img class="thumbnail" src="{{ imgc0 }}" alt="Detail from <a href='https://www.davidrumsey.com/luna/servlet/s/rp56bh' target='_blank'>'Carte De Hollande Et D&#39;utrecht' (Covens et Mortier, 1750)</a>" height=150 width=150 /></a></div>
 				<span class="col-bottom cb-coll">collection <sr>(in-progress)</sr></span>
 				<!--<span class="col-bottom-right cb-coll bg-info text-light">in-progress</span>-->
 			  </div>
@@ -109,12 +110,37 @@
 		</div> <!-- content_right -->
 	  </div> <!-- col-sm-7 -->
 	</div> <!-- content -->
+  <div class="modal fade" id="image_modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header"><span id="header_text"></span>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span></button>
+        </div>      
+        <div class="modal-body">
+          <!--<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>-->
+          <img src="" class="imagepreview" style="width:100%; height:100%;" >
+        </div>
+      </div>
+    </div>
+  </div> 
 </div>
 
 <script type="text/javascript">
-
-  $(function(){
-		$("[rel='tooltip']").tooltip();
-	})
+$(function(){
+  $("[rel='tooltip']").tooltip();
+  // modal for images
+  $('.pop').on('click', function() {
+    url = $(this).find('img').attr('src')
+    txt = $(this).find('img').attr('alt')
+    re=/(.png|.jpg|.jpeg|.gif|.tif)/g
+    ext=url.match(re)[0]
+    url = url.replace(ext,'_full'+ext)
+    console.log('img url', url, txt)
+    $("#header_text").html(txt)
+    $('.imagepreview').attr('src', url);
+    $('#image_modal').modal('show');   
+  });	
+})
 </script>
 {% endblock %}
