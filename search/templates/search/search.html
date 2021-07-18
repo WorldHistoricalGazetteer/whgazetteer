@@ -61,11 +61,12 @@
 					<li class="nav-item">
 					<a class="nav-link active" id="a_idx" data-scope="idx" href="#" role="tab" style="background:#f1fff1;"> Search Index {%fontawesome_icon 'link'%}</a>
 					</li>
-					<li class="nav-item">
+					<li class="nav-item ml-1">
 					<a class="nav-link" id="a_db" data-scope="db" href="#" role="tab" style="background:whitesmoke;">Search Database {%fontawesome_icon 'database'%}</a> 
 					</li>
 				</ul>	
 			<div id="search_filters" class="tab-pane fade show active" role="tabpanel">
+				<span class="filter-header">pre-filters</span>
 				<div class="small row">
 					<div id="filters_class" class="col-sm-6">
 						<p class="mb-0">place categories
@@ -104,27 +105,17 @@
               <input type="hidden" id="boundsobj" />
             </div>
             <span id="dbicon" class="hidden">{% fontawesome_icon 'database' color='#999' %}</span>
-            <span id="reset_link" class="float-right hidden"><a href="javascript:resetSearch()">reset search</a></span>
+            <div class="float-right pt-4">
+              <span id="reset_filters" class="hidden">
+                <a class="mr-3" href="javascript:clearMapFilter()">reset filters</a></span>
+              <span id="reset_search" class="hidden">
+                <a href="javascript:resetSearch()">reset search</a></span>
+            </div>
+            <!--<span id="reset_link" class="float-right hidden"><a href="javascript:resetSearch()">reset search</a></span>-->
 				  </div> <!-- #filters_st -->
 				</div> <!-- .row -->
-				{%comment%}
-				<div id="div_ds_select" class="mt-0">
-					<p class="mb-0">dataset
-						<span class="float-right">
-						<a id="dataset_help" class="pointer" data-toggle="popover" title="Dataset filter" data-content="" tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a></span>	  
-					</p>
-					<div>
-						<select id="select_ds_search" name="ds" class="custom-select-sm small" style="width:auto;">
-						<option value="0">Select dataset</option>
-						<option disabled>___________</option>
-						{% for ds in dslist %}
-						<option value="{{ ds.id }}">{{ ds.title }}</option>
-						{% endfor %}
-						</select>
-					</div>
-				</div> <!-- #div_ds_select -->{%endcomment%}
 			</div> <!-- #search_filters -->	
-      <div id="result_filters" class="py-3 pl-1 hidden">
+      <div id="result_filters" class="pt-2 pl-1 hidden">
         <p class="allcap-heading half">RESULT FILTERS {% fontawesome_icon 'filter' %} 
         <!--<span class="typefilter-link ml-2"><a href="#">Type </a></span>-->
         <span class="ml-2"><select id="type_select">
@@ -193,7 +184,6 @@
   </div>
 </div> <!-- ext_site -->
 
-
 <script type="text/javascript">
   /* _TOP */
   var initial_layers = null
@@ -247,21 +237,6 @@
   }
   /* end STATE*/
   
-  hideAllRows = function(){
-    currentRows().each(function(r){
-      currentRows()[r].style.display='none'
-    })
-  }
-  showAllRows = function(){
-    currentRows().each(function(r){
-      currentRows()[r].style.display=''
-    })
-  }
-  restoreInitialLayers = function(){
-    // show any hidden markers
-    for(l in hide_these){hide_these[l].addTo(mappy)}
-    mappy.fitBounds(initialLayers.getBounds())
-  }
   // _LOAD
   $(function(){
     /*  if referrer is a place portal, place page, or dataset page,
@@ -315,12 +290,16 @@
       if(term != "0"){
         <!--$(this).text('Restore all')-->
         $("option").eq(0).text('Restore all')
-        typeFilter(term)      
+        typeFilter(term)
+        // show clear filters span
+        $("#reset_filters").fadeIn()
       } else {
         $("option").eq(0).text('Place type')
         // restore layers, show rows
         restoreInitialLayers()
         $(".search-row").css('display','')
+        // hide clear filters span
+        $("#reset_filters").fadeOut()
       }
     })
     $("#cc_select").change(function(){
@@ -329,11 +308,15 @@
       if(cc != "0"){
         $("#cc_select option").eq(0).text('Restore all')
         ccFilter(cc)
+        // show clear filters span
+        $("#reset_filters").fadeIn()
       } else {
         $("#cc_select option").eq(0).text('Modern country bounds')
         // restore layers, show rows
         restoreInitialLayers()
         $(".search-row").css('display','')
+        // hide clear filters span
+        $("#reset_filters").fadeOut()
       }
     })
     
@@ -508,6 +491,22 @@
       }
 	  })
   }) <!--  end onLoad() -->
+  
+  hideAllRows = function(){
+    currentRows().each(function(r){
+      currentRows()[r].style.display='none'
+    })
+  }
+  showAllRows = function(){
+    currentRows().each(function(r){
+      currentRows()[r].style.display=''
+    })
+  }
+  restoreInitialLayers = function(){
+    // show any hidden markers
+    for(l in hide_these){hide_these[l].addTo(mappy)}
+    mappy.fitBounds(initialLayers.getBounds())
+  }
 
   // hide rows with data-id in 'ids'
   hideRows = function(ids){
@@ -517,22 +516,30 @@
       if (ids.indexOf(_id) > -1){
         rows[i].style.display = "none";
   }}}
+
+  // generates visible_layers[], visible_layerids[]
   visibleFeaturesIds = function() {
+    <!--console.trace()-->
     scope = searchScope()  // idx or db
-    filtered_layerids = [];
+    visible_layerids = [];
+    visible_layers=[]
     mappy.eachLayer( function(layer) {
+      <!--console.log('layer', layer)-->
       if(layer instanceof L.CircleMarker) {
         props=layer.feature.geometry.properties
+        <!--console.log('props in visibleFeaturesIds',props)-->
         if(mappy.getBounds().contains(layer._latlng)) {
           // db records have no whgid
-          filtered_layerids.push(scope=='idx'?props.whgid:props.pid);
+          visible_layerids.push(scope=='idx'?props.whgid:props.pid);
+          visible_layers.push(layer)
         }
       } else if (layer instanceof L.Path) {
         props=layer.feature.geometry.properties
         if(mappy.getBounds().contains(layer._latlngs)) {
+          visible_layers.push(layer)
           // db records have no whgid
           try {
-            filtered_layerids.push(scope=='idx'?props.whgid:props.pid);
+            visible_layerids.push(scope=='idx'?props.whgid:props.pid);
           } catch (error) {
             console.log('props',props)
             console.log('error',error)
@@ -540,9 +547,178 @@
         }
       }
     });
-    return filtered_layerids;
-  }  
+    return visible_layerids;
+  } 
   
+  /*
+    *** ccFilter() ***
+    filter result list on change #cc_select 
+  */
+  ccFilter = function(cc){
+    results = $("#result_div tr")
+    hide_ids=[]; show_ids = []
+    // skip header row
+    for (i = 1; i < results.length; i++) {
+      ccodes = results[i].getAttribute('data-ccodes')
+      _id = results[i].getAttribute('data-id')
+      if (ccodes.indexOf(cc) > -1){
+        <!--console.log('SHOW',i,_id, cc, ccodes)-->
+        results[i].style.display = "";
+        show_ids.push(_id)
+      } else if (ccodes.indexOf(cc) == -1) {
+        results[i].style.display = "none";
+        hide_ids.push(_id)
+      }
+    }
+    // filter map too
+    hide_these = $.map(hide_ids,function(i){
+      return idToFeature[i]
+    })
+    show_these = $.map(show_ids,function(i){
+      return idToFeature[i]
+    })
+    console.log('hide_these cnt=',hide_these.length)
+    console.log('show_these cnt=',show_these.length)
+    
+    window.shown_layers = L.featureGroup(show_these)
+    for(l in hide_these){hide_these[l].removeFrom(mappy)}
+    for(l in show_these){show_these[l].addTo(mappy)}
+    mappy.fitBounds(shown_layers.getBounds())
+  }
+  /*
+    *** typeFilter() ***
+    filter result list on change #type_select 
+  */
+  typeFilter = function(term){
+    results = $("#result_div tbody tr")
+    hide_ids=[]; show_ids = []
+    for (i = 0; i < results.length; i++) {
+      types = results[i].getAttribute('data-types')
+      _id = results[i].getAttribute('data-id')
+      if (types.indexOf(term) > -1){
+        console.log('SHOW',i,_id, term, types)
+        results[i].style.display = "";
+        show_ids.push(_id)
+      } else if (types.indexOf(term) == -1) {
+        <!--console.log('HIDE',i,_id, term, types)-->
+        results[i].style.display = "none";
+        hide_ids.push(_id)
+      }
+    }
+    // filter map too
+    hide_these = $.map(hide_ids,function(i){
+      return idToFeature[i]
+    })
+    show_these = $.map(show_ids,function(i){
+      return idToFeature[i]
+    })
+    console.log('hide_these',hide_these)
+    console.log('show_these',show_these)
+    
+    window.shown_layers = L.featureGroup(show_these)
+    for(l in hide_these){hide_these[l].removeFrom(mappy)}
+    for(l in show_these){show_these[l].addTo(mappy)}
+    mappy.fitBounds(shown_layers.getBounds())
+  }
+  /*
+    *** mapFilter() ***
+    filter result list on zoomend 
+    TODO: 
+    1) remove all map layers, add back those in view
+    2) remove result_div rows, don't just hide them    
+  */
+  mapFilter = function(boxed_ids){
+    $(".clear-filter").show()
+    
+    <!--if(filtered_layers != null){filtered_layers.addTo(mappy)}-->
+    
+    ids_boxed=boxed_ids
+    // arrays of mappable results
+    ids_all = Object.keys(idToFeature).map(Number);
+    ids_hide = ids_all.filter(x => ids_boxed.indexOf(x) === -1);
+    ids_show = ids_all.filter(x => ids_boxed.indexOf(x) > -1);
+    
+    // filter features/layers
+    features.clearLayers();
+    currentLayers().forEach(function(l){
+      var gprops = l.feature.geometry.properties
+      if(gprops){
+        _id = search_scope == 'idx'?gprops.whgid:gprops.pid
+        // if feature in bbox, add its layer back
+        if(ids_show.indexOf(_id) > -1){
+          features.addLayer(idToFeature[gprops.whgid])
+        }
+      }
+    });
+    
+    // hide result rows not in bbox
+    results = $("#result_div tbody tr")
+    // for each result row, if its id is in hidethese, hide it
+    for (i = 0; i < results.length; i++) {
+      _id = parseInt(results[i].getAttribute('data-id'))
+      if (ids_hide.indexOf(_id) > -1){
+        results[i].style.display = "none";
+      } else {
+        results[i].style.display = ""
+      }
+    }
+    
+    // remove result rows not in bbox
+    <!--results = $("#result_table tr")-->
+    <!--results.each(function(){-->
+      <!--if(ids_hide.indexOf($(this).data('id')) > -1){-->
+        <!--$(this).remove();-->
+      <!--}-->
+    <!--});-->
+    
+    // TODO: rebuild #type_select
+    
+    
+    <!--console.log('hidden in list)', hidethese)-->
+    // omit header row
+    $("#rowcount").html((results.length-1) - ids_hide.length)
+    // if any were hidden, show the zoom_extents link to restore
+    if(ids_hide.length > 0){
+      $("#clear_mapfilter").fadeIn()
+    } else { $("#clear_mapfilter").fadeOut()}
+  }
+
+  resetSelects = function(){
+    $("#cc_select").val(0)
+    $("#cc_select option").eq(0).text('Modern country bounds')
+    $("#type_select").val(0)
+    $("#type_select option").eq(0).text('Place type')     
+  }
+  /*
+    *** clearMapFilter() ***
+    restores all search result features
+  */
+  clearMapFilter = function(){
+    // display all result rows 
+    <!--console.log('need to restore all', ids_all)-->
+    for (i = 0; i < results.length; i++) {
+      results[i].style.display = ""
+    }
+    // restore all map layers
+    <!--console.log('ids_all',ids_all)-->
+    <!--$.each(ids_all, function(i){-->
+    $.each(hide_these, function(i){
+    <!--$.each(idToFeature, function(i){-->
+      <!--features.addLayer(idToFeature[hide_these[i]])-->
+      mappy.addLayer(hide_these[i])
+    })
+    mappy.fitBounds(features.getBounds())
+    // hide link, reset selects, recalc # rows 
+    $("#reset_filters").hide()
+    resetSelects()
+    <!--$("#cc_select").val(0)-->
+    <!--$("#cc_select option").eq(0).text('Modern country bounds')-->
+    <!--$("#type_select").val(0)-->
+    <!--$("#type_select option").eq(0).text('Place type') -->
+    $("#rowcount").html((results.length))
+    
+  }
+    
  /*
 	*** sortTable() ***
   col_idx == index of column to sort by
@@ -771,6 +947,8 @@
     mappy.on('zoomend',function(e){
       console.log('zoomend')
       <!--mapFilter(visibleFeaturesIds(search_scope))-->
+      visibleFeaturesIds(search_scope)
+      ids_all = Object.keys(idToFeature).map(Number);
       <!--filtered_layers.removeFrom(mappy)-->
     })
     
@@ -1054,19 +1232,23 @@
       result_table += '</table>'
       $("#result_filters").hide()
     };
-    $("#offer_mapfilter").fadeIn()
-		$("#result_div").show()
-    $("#reset_link").show()
-		$("#search_info").hide()
+
+    if(data.length > 3 || mappy.getZoom() < 5){
+      $("#offer_mapfilter").fadeIn()
+      if (bboxer._map == undefined ){ bboxer.addTo(mappy); }
+    }
+    $("#result_div").show()
+    $("#reset_search").show()
+    $("#search_info").hide()
+    
 		<!--$("#traces_info").hide()-->
 		let src = search_scope=='idx'?'UNION INDEX':'DATABASE'
     let elem = document.getElementById('result_div')
-		titleMarkup = doctype=='trace'?'<p class="pl-1 mb-1 strong">'+title+'<small> :: a Linked Traces dataset ('+data.bodies.length+' related places)</small></p>':''
     
+		titleMarkup = doctype=='trace'?'<p class="pl-1 mb-1 strong">'+title+'<small> :: a Linked Traces dataset ('+data.bodies.length+' related places)</small></p>':''
     titleMarkup += (doctype=='place' ? src+' SEARCH RESULTS (<span id="rowcount">'+data.length+'</span>)<span class="ml-4">List includes records with no geometry, if any</span>' : '')
     <!--console.log('titleMarkup',titleMarkup)-->
   
-    
     $("#result_title").html(titleMarkup)
     $("#result_title").fadeIn()
     
@@ -1138,138 +1320,6 @@
   } // end showResults()
 
   /*
-    *** ccFilter() ***
-    filter result list on change #cc_select 
-  */
-  ccFilter = function(cc){
-    results = $("#result_div tr")
-    hide_ids=[]; show_ids = []
-    // skip header row
-    for (i = 1; i < results.length; i++) {
-      ccodes = results[i].getAttribute('data-ccodes')
-      _id = results[i].getAttribute('data-id')
-      if (ccodes.indexOf(cc) > -1){
-        console.log('SHOW',i,_id, cc, ccodes)
-        results[i].style.display = "";
-        show_ids.push(_id)
-      } else if (ccodes.indexOf(cc) == -1) {
-        results[i].style.display = "none";
-        hide_ids.push(_id)
-      }
-    }
-    // filter map too
-    hide_these = $.map(hide_ids,function(i){
-      return idToFeature[i]
-    })
-    show_these = $.map(show_ids,function(i){
-      return idToFeature[i]
-    })
-    console.log('hide_these',hide_these)
-    console.log('show_these',show_these)
-    
-    window.shown_layers = L.featureGroup(show_these)
-    for(l in hide_these){hide_these[l].removeFrom(mappy)}
-    for(l in show_these){show_these[l].addTo(mappy)}
-    mappy.fitBounds(shown_layers.getBounds())
-  }
-  /*
-    *** typeFilter() ***
-    filter result list on change #type_select 
-  */
-  typeFilter = function(term){
-    results = $("#result_div tbody tr")
-    hide_ids=[]; show_ids = []
-    for (i = 0; i < results.length; i++) {
-      types = results[i].getAttribute('data-types')
-      _id = results[i].getAttribute('data-id')
-      if (types.indexOf(term) > -1){
-        console.log('SHOW',i,_id, term, types)
-        results[i].style.display = "";
-        show_ids.push(_id)
-      } else if (types.indexOf(term) == -1) {
-        <!--console.log('HIDE',i,_id, term, types)-->
-        results[i].style.display = "none";
-        hide_ids.push(_id)
-      }
-    }
-    // filter map too
-    hide_these = $.map(hide_ids,function(i){
-      return idToFeature[i]
-    })
-    show_these = $.map(show_ids,function(i){
-      return idToFeature[i]
-    })
-    console.log('hide_these',hide_these)
-    console.log('show_these',show_these)
-    
-    window.shown_layers = L.featureGroup(show_these)
-    for(l in hide_these){hide_these[l].removeFrom(mappy)}
-    for(l in show_these){show_these[l].addTo(mappy)}
-    mappy.fitBounds(shown_layers.getBounds())
-  }
-  /*
-    *** mapFilter() ***
-    filter result list on zoomend 
-    TODO: 
-    1) remove all map layers, add back those in view
-    2) remove result_div rows, don't just hide them    
-  */
-  mapFilter = function(boxed_ids){
-    $(".clear-filter").show()
-    if(filtered_layers != null){filtered_layers.addTo(mappy)}
-    
-    ids_boxed=boxed_ids
-    // arrays of mappable results
-    ids_all = Object.keys(idToFeature).map(Number);
-    ids_hide = ids_all.filter(x => ids_boxed.indexOf(x) === -1);
-    ids_show = ids_all.filter(x => ids_boxed.indexOf(x) > -1);
-    
-    // filter features/layers
-    features.clearLayers();
-    currentLayers().forEach(function(l){
-      var gprops = l.feature.geometry.properties
-      if(gprops){
-        _id = search_scope == 'idx'?gprops.whgid:gprops.pid
-        // if feature in bbox, add its layer back
-        if(ids_show.indexOf(_id) > -1){
-          features.addLayer(idToFeature[gprops.whgid])
-        }
-      }
-    });
-    
-    // hide result rows not in bbox
-    results = $("#result_div tbody tr")
-    // for each result row, if its id is in hidethese, hide it
-    for (i = 0; i < results.length; i++) {
-      _id = parseInt(results[i].getAttribute('data-id'))
-      if (ids_hide.indexOf(_id) > -1){
-        results[i].style.display = "none";
-      } else {
-        results[i].style.display = ""
-      }
-    }
-    
-    // remove result rows not in bbox
-    <!--results = $("#result_table tr")-->
-    <!--results.each(function(){-->
-      <!--if(ids_hide.indexOf($(this).data('id')) > -1){-->
-        <!--$(this).remove();-->
-      <!--}-->
-    <!--});-->
-    
-    // TODO: rebuild #type_select
-    
-    
-    <!--console.log('hidden in list)', hidethese)-->
-    // omit header row
-    $("#rowcount").html((results.length-1) - ids_hide.length)
-    // if any were hidden, show the zoom_extents link to restore
-    if(ids_hide.length > 0){
-      $("#clear_mapfilter").fadeIn()
-    } else { $("#clear_mapfilter").fadeOut()}
-  }
-
-  /*
     *** renderPlaces() *** 
     from showResults()
     renders geometries from search results to map
@@ -1285,14 +1335,12 @@
     idToArea = {}
     mappy.createPane('placePane');
     mappy.getPane('placePane').style.zIndex = 200;
-    <!--window.fgroup=L.featureGroup()-->
-    <!--window.initialLayers = new L.layerGroup()-->
+
     initialLayers = new L.featureGroup()
     features = L.geoJSON(featcoll, {
-      <!--pointToLayer: function (feature, latlng) {-->
       pointToLayer: function (feature, latlng) {
         count_features +=1;
-		// if feature has src key, it's from a database search
+		    // if feature has src key, it's from a database search
         identifier = feature.src?feature.properties.pid:feature.properties.whgid;
         if(feature.type=='Point'){
           marker = L.circleMarker(latlng, styles.marker_default)

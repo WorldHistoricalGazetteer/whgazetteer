@@ -343,6 +343,8 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
 /**
   search
 **/
+.filter-header {font-size:.7rem; margin:0; 
+  border-bottom: 1px solid lightgrey; display:block;}
 .v2hideme a {color: #fff}
 .v2hideme a:hover {color: #fff}
 .alt-label {font-weight:bold; color:#990000;display:block;position:absolute;top:100px;left:75px;background-color:beige;}
