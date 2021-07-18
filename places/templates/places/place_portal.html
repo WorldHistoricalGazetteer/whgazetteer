@@ -26,7 +26,9 @@
 {% endblock %}
 {% block content %}
 <div class="container">
-  <div id="place_title"><h4>{{ title }}</h4>
+  <div id="place_title">
+  <h4><span class="mr-1 text-muted smaller">
+  <a href="javascript:window.history.go(-1);" class="history1">return to search results</a></span>{{ title }}</h4>
 </div>
   <div id="place_tabset">
     <ul class="nav nav-tabs" id="myTab">
@@ -216,10 +218,13 @@
   }
       
   $(function() {
-    // zap 'keep' if nav away
-    $('a').click(function() {
+    // zap 'keep' if nav away *except history link*
+    $('a').show().filter(':not(.history1)').click(function(){
       localStorage.removeItem('keep')
     })
+    <!--$('a').click(function() {-->
+      <!--localStorage.removeItem('keep')-->
+    <!--})-->
     var isVisible = false;
     var hideAllPopovers = function() {
        $('.pop-dataset').each(function() {
