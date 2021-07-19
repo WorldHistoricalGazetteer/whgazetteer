@@ -139,8 +139,7 @@
 			<div id="search_right" class="col-sm-6">
 				<div id="map_options" class="p-1 small">
         <span id="offer_mapfilter" class="hidden">Draw a bounding box to filter result list</span>
-        <!--<span id="offer_mapfilter" class="float-right">{ request.META.HTTP_REFERER }}</span>-->
-        <!--<span id="offer_mapfilter" class="float-right">{ request.META.HTTP_REFERER }}</span>-->
+        <span class="float-right">{{ request.META.HTTP_REFERER }}</span>
         <span id="clear_mapfilter" class="hidden float-right"><a href="javascript:mappy.fitBounds( features.getBounds())">clear map filter</a></span>
         </div>
 				<!--{ leaflet_map "map_search" callback="map_init" %}-->
@@ -149,6 +148,7 @@
 			</div> <!--#search_right -->
 		</div> <!-- .row -->
 		<div id="search_lower" class="row">
+      <!--{ if not "search" in request.META.HTTP_REFERER %}-->
 			<div id="search_info">
 				<div class="row p-2">
 				<div class="col-sm-6">
@@ -160,6 +160,7 @@
 				</div>
 				</div>
 			</div>
+      <!--{ endif %}-->
 			<div id="type_filter" class="hidden">
 				<p class='allcap-heading half mb-0 pl-1'>PLACE TYPES (select to limit)
 					<span class="float-right mr-2"><a href="#" class="hide-filter">
@@ -207,7 +208,7 @@
       'lskeys':ls(), 
       'lastresults':lastResult()?lastResult().length:0
     }
-    console.log(stateobj)
+    <!--console.log(stateobj)-->
   }
   typeSelect = function(){
     return $("#type_select").val()
@@ -241,14 +242,12 @@
   
   // _LOAD
   $(function(){
-    /*  if referrer is a place portal, place page, or dataset page,
-        restore last state: 
-          class (place|trace)
-          scope (idx|db)
-          result_list
-          map markers
-        else clear stuff: last_results, keep
+    /*  if referer is search.html, it's returning from
+        viewing a place portal or place detail page
     */
+    if(localStorage['keep'] == 'true'){
+      $("#search_info").remove()
+    }
     search_scope = ls('search_scope')?ls('search_scope'):'idx'
     previous = ls('last_results')
     kept = ls('keep')
@@ -306,7 +305,7 @@
     })
     $("#cc_select").change(function(){
       cc = $(this).val()
-      console.log('cc selected:', cc)
+      <!--console.log('cc selected:', cc)-->
       if(cc != "0"){
         $("#cc_select option").eq(0).text('Restore all')
         ccFilter(cc)
@@ -322,12 +321,12 @@
       }
     })
     
-    $( "#map_dataset" ).change(function() {
-      if (!!gl.getLayer('heat_active')){
-      gl.removeLayer('heat_active')}
-      heat($(this).val())
-      console.log('heat() for',$(this).val())
-    });	
+    <!--$( "#map_dataset" ).change(function() {-->
+      <!--if (!!gl.getLayer('heat_active')){-->
+      <!--gl.removeLayer('heat_active')}-->
+      <!--heat($(this).val())-->
+      <!--console.log('heat() for',$(this).val())-->
+    <!--});	-->
     
     $("[rel='tooltip']").tooltip();
     $("[data-toggle=popover]").popover({html:true})  
@@ -573,14 +572,15 @@
       }
     }
     // filter map too
+    // layers to hide or show
     hide_these = $.map(hide_ids,function(i){
       return idToFeature[i]
     })
     show_these = $.map(show_ids,function(i){
       return idToFeature[i]
     })
-    console.log('hide_these cnt=',hide_these.length)
-    console.log('show_these cnt=',show_these.length)
+    <!--console.log('hide_these cnt=',hide_these.length)-->
+    <!--console.log('show_these cnt=',show_these.length)-->
     
     window.shown_layers = L.featureGroup(show_these)
     for(l in hide_these){hide_these[l].removeFrom(mappy)}
@@ -614,8 +614,8 @@
     show_these = $.map(show_ids,function(i){
       return idToFeature[i]
     })
-    console.log('hide_these',hide_these)
-    console.log('show_these',show_these)
+    <!--console.log('hide_these cnt=',hide_these.length)-->
+    <!--console.log('show_these cnt=',show_these.length)-->
     
     window.shown_layers = L.featureGroup(show_these)
     for(l in hide_these){hide_these[l].removeFrom(mappy)}
@@ -944,15 +944,46 @@
     baseLayers["NE global"].addTo(mappy)
     
     // TODO: 
-    // sometimes results cause zoom, sometimes not (global)
-    // 
+    // much is duplicated here from typeFilter() and ccFilter()
+    // a big combinatorial state challenge
     mappy.on('zoomend',function(e){
-      ev = e
-      console.log('zoomend')
-      <!--mapFilter(visibleFeaturesIds(search_scope))-->
-      visibleFeaturesIds(search_scope)
-      ids_all = Object.keys(idToFeature).map(Number);
-      <!--filtered_layers.removeFrom(mappy)-->
+      // the result list
+      results = $("#result_div tbody tr")
+      // get layer ids      
+      all_ids = Object.keys(idToFeature).map(Number)
+      show_ids = visibleFeaturesIds(search_scope)
+      hide_ids = all_ids.filter(value=>!show_ids.includes(value))
+      // get leaflet layers themselves
+      hide_these = $.map(hide_ids,function(i){
+        return idToFeature[i]
+      })
+      show_these = $.map(show_ids,function(i){
+        return idToFeature[i]
+      })
+
+      window.shown_layers = L.featureGroup(show_these)
+      for(l in hide_these){hide_these[l].removeFrom(mappy)}
+      for(l in show_these){show_these[l].addTo(mappy)}
+      <!--mappy.fitBounds(shown_layers.getBounds())      -->
+      
+      // hide rows for hidden map layers
+      for (i = 0; i < results.length; i++) {
+        _id = Number(results[i].getAttribute('data-id'))
+        if (hide_ids.indexOf(_id) > -1){
+          results[i].style.display = "none";
+        } else if (show_ids.indexOf(_id) > -1) {
+          results[i].style.display = "";
+        }
+      }
+      // recalc visible rows total
+      $("#rowcount").html((results.length) - hide_ids.length)
+      // zoomend filtered, show 'reset filters' link
+      if(show_ids.length < all_ids.length){
+        $("#reset_filters").fadeIn()
+      } else {$("#reset_filters").hide()}
+      
+      console.log('zoomend visible: '+show_ids+'; all: '+all_ids)
+      console.log('zoomend hide these '+ hide_ids)
     })
     
 
@@ -1750,7 +1781,7 @@
   })
   // 
   $("label[for='input_box']").click(function(){
-    console.log('clicked search')
+    <!--console.log('clicked search')-->
     doctype = $("input[name='class']:checked").val()
     <!--scopeAtThisInstant = $(".nav-link.active").data('scope')-->
     if( searchScope() == 'idx'){
@@ -1877,9 +1908,9 @@
 		clearit()
   });
   // dataset dropdown
-  $("#select_ds_search").change(function(){
-	  console.log('ds chosen', $(this).val())
-  })
+  <!--$("#select_ds_search").change(function(){-->
+	  <!--console.log('ds chosen', $(this).val())-->
+  <!--})-->
   // radio $("#checkbox_div input:radio").click(function() {
   $(".filters-title input:radio").click(function(){
     t = $(this)
