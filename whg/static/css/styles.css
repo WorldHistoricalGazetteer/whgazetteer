@@ -1104,17 +1104,20 @@ span.edit-row {
   padding: .4rem;}
 
 #guide_content .subhead { display:block; background-color:#eee; padding-left:4px; margin-left:-4px; margin-bottom:.2rem;}
-#guide_pages .subhead { padding-left:4px; font-size:1.2rem;}
 #guide_content .answer { padding-left:4px;}
-#guide_pages h5 { font-size:1.1rem !important; margin-bottom:0;}
-#guide_pages h6 { margin-bottom:0;}
+
+#guide_tab_content p {font-size:.9rem; margin: 0 0 .2rem 0;}
+#guide_pages .subhead { padding-left:4px; font-size:1.2rem;}
+#guide_pages h5 { font-size:1.1rem !important; margin: .5rem 0 0 0; font-weight:600;}
+#guide_pages h6 { margin-bottom:0; font-weight: 600;}
+#guide_pages .nav-link { padding:.2rem .4rem; background-color:#eee; margin-right:.3rem;}
+#guide_pages .nav-link.active { background-color:#336699;}
+#guide_pages .tab-pane { border:none; padding-left:0;}
+
 #guide_overview .nav-link { padding:.2rem .4rem; background-color:#eee; margin-right:.3rem;}
 #guide_overview .nav-link.active { background-color:#336699;}
 #guide_overview .tab-pane { border:none; padding-left:0;}
 
-#guide_pages .nav-link { padding:.2rem .4rem; background-color:#eee; margin-right:.3rem;}
-#guide_pages .nav-link.active { background-color:#336699;}
-#guide_pages .tab-pane { border:none; padding-left:0;}
 
 .contributing {padding:6px; font-size:.9rem; background-color:#f7f7f7;}
 #pills-tabContent,  #pills-pagesContent {height:calc(100vh - 350px) !important; overflow-y:scroll !important;}
