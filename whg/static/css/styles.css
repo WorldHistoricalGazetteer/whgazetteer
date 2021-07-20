@@ -409,7 +409,7 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
 /*#input_box_traces { width:100%;}*/
 .input-loading {
     background-color: #ffffff;
-    background-image: url("http://loadinggif.com/images/image-selection/3.gif");
+    /*background-image: url("http://loadinggif.com/images/image-selection/3.gif");*/
     background-size: 22px 22px;
     background-position:right center;
     background-repeat: no-repeat;

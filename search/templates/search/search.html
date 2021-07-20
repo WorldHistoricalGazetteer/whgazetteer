@@ -947,43 +947,49 @@
     // much is duplicated here from typeFilter() and ccFilter()
     // a big combinatorial state challenge
     mappy.on('zoomend',function(e){
-      // the result list
-      results = $("#result_div tbody tr")
-      // get layer ids      
-      all_ids = Object.keys(idToFeature).map(Number)
-      show_ids = visibleFeaturesIds(search_scope)
-      hide_ids = all_ids.filter(value=>!show_ids.includes(value))
-      // get leaflet layers themselves
-      hide_these = $.map(hide_ids,function(i){
-        return idToFeature[i]
-      })
-      show_these = $.map(show_ids,function(i){
-        return idToFeature[i]
-      })
-
-      window.shown_layers = L.featureGroup(show_these)
-      for(l in hide_these){hide_these[l].removeFrom(mappy)}
-      for(l in show_these){show_these[l].addTo(mappy)}
-      <!--mappy.fitBounds(shown_layers.getBounds())      -->
-      
-      // hide rows for hidden map layers
-      for (i = 0; i < results.length; i++) {
-        _id = Number(results[i].getAttribute('data-id'))
-        if (hide_ids.indexOf(_id) > -1){
-          results[i].style.display = "none";
-        } else if (show_ids.indexOf(_id) > -1) {
-          results[i].style.display = "";
+      /*  none of this should happens if not places and no features
+          (apart from countries or areas have loaded)
+      */
+      if(typeof idToFeature != 'undefined' && searchClass()=='place'){      // the result list
+        results = $("#result_div tbody tr")
+        // get layer ids      
+        all_ids = Object.keys(idToFeature).map(Number)
+        show_ids = visibleFeaturesIds(search_scope)
+        hide_ids = all_ids.filter(value=>!show_ids.includes(value))
+        // get leaflet layers themselves
+        hide_these = $.map(hide_ids,function(i){
+          return idToFeature[i]
+        })
+        show_these = $.map(show_ids,function(i){
+          return idToFeature[i]
+        })
+  
+        window.shown_layers = L.featureGroup(show_these)
+        for(l in hide_these){hide_these[l].removeFrom(mappy)}
+        for(l in show_these){show_these[l].addTo(mappy)}
+        <!--mappy.fitBounds(shown_layers.getBounds())      -->
+        
+        // hide rows for hidden map layers
+        for (i = 0; i < results.length; i++) {
+          _id = Number(results[i].getAttribute('data-id'))
+          if (hide_ids.indexOf(_id) > -1){
+            results[i].style.display = "none";
+          } else if (show_ids.indexOf(_id) > -1) {
+            results[i].style.display = "";
+          }
         }
+        // recalc visible rows total
+        $("#rowcount").html((results.length) - hide_ids.length)
+        // zoomend filtered, show 'reset filters' link
+        if(show_ids.length < all_ids.length){
+          $("#reset_filters").fadeIn()
+        } else {$("#reset_filters").hide()}
+        
+        console.log('zoomend visible: '+show_ids+'; all: '+all_ids)
+        console.log('zoomend hide these '+ hide_ids)
+      } else {
+        console.log('no zoomend action here')
       }
-      // recalc visible rows total
-      $("#rowcount").html((results.length) - hide_ids.length)
-      // zoomend filtered, show 'reset filters' link
-      if(show_ids.length < all_ids.length){
-        $("#reset_filters").fadeIn()
-      } else {$("#reset_filters").hide()}
-      
-      console.log('zoomend visible: '+show_ids+'; all: '+all_ids)
-      console.log('zoomend hide these '+ hide_ids)
     })
     
 
@@ -1041,7 +1047,7 @@
   fetchTraceGeom = function(trace_id,counter,title) {
     <!-- get trace GeoJSON (includes features[] and bodies[] ) -->
     if(typeof(traces) !== "undefined") {traces.clearLayers();}
-    if(typeof(features) !== "undefined") {features.clearLayers();}
+    if(features) {features.clearLayers();}
     $.get("/search/tracegeom",{idx: 'traces', search: trace_id, doc_type: 'trace'},
       function(data){
         <!--console.log('bodies in this trace',data.bodies)-->
@@ -1320,27 +1326,35 @@
       console.log('search-row click;')
 			// identifier either a whgid (index search) or pid (db search)
       layerid = $(this).data('id')
-      f = idToFeature[layerid]
-      // set all to white
-      $(".search-row").css('background-color','#fff')
-      // then highlight this one
-			$(this).css('background-color','#f4f4d7')
-			// fetch record detail and put it in #result_extra
-			<!--if(search_scope == 'db'){-->
-        <!--console.log('search-row click; scope db; running getPlace() - why?')-->
-				<!--let pid = layerid-->
-				<!--getPlace(pid)-->
-			<!--}-->
-      // set all layers to default style
-      for (i in idToFeature){
-        type = idToFeature[i].feature.geometry.type
-        idToFeature[i].setStyle(type=='Point'?styles.marker_default:styles.line_default)
+      
+      f = $(this).data('id') !='none'?idToFeature[layerid]:null
+      // if there's a feature, highlight it
+      if(f){
+        // set all to white
+        $(".search-row").css('background-color','#fff')
+        // then highlight this one
+        $(this).css('background-color','#f4f4d7')
+        // fetch record detail and put it in #result_extra
+        <!--if(search_scope == 'db'){-->
+          <!--console.log('search-row click; scope db; running getPlace() - why?')-->
+          <!--let pid = layerid-->
+          <!--getPlace(pid)-->
+        <!--}-->
+        // set all layers to default style
+        for (i in idToFeature){
+          type = idToFeature[i].feature.geometry.type
+          idToFeature[i].setStyle(type=='Point'?styles.marker_default:styles.line_default)
+        }
+        // raise z-index
+        f.bringToFront().setStyle(f.feature.geometry.type=='Point'?styles.marker_highlight:styles.line_highlight)
+        // get a centroid
+        center = f.feature.geometry.type=='Point' ? f._latlng : f.getCenter(f._latlngs)
+        mappy.panTo(center)
+      } else {
+        clickedrow = $(this)
+        console.log(clickedrow)
+        <!--$(this).html('no geometry for this place yet...')-->
       }
-      // raise z-index
-      f.bringToFront().setStyle(f.feature.geometry.type=='Point'?styles.marker_highlight:styles.line_highlight)
-      // get a centroid
-      center = f.feature.geometry.type=='Point' ? f._latlng : f.getCenter(f._latlngs)
-      mappy.panTo(center)
     })
     // open a modal for external page
     $('.ext').on('click', function(e) {
@@ -1486,11 +1500,10 @@
         whgid=idToFeature[pid].feature.properties['whg_id']
       } else {
         foo=itf_new.filter(function(f){return f.feature.feature.properties['place_id']==pid})
-        whgid = foo.length>0 ? foo[0].id : 'no foo'
-        <!--console.log(foo.length>0?'woe'+foo[0].id:'no foo, mofo')-->
+        whgid = foo.length>0 ? foo[0].id : 'none'
       }
       item = '<tr class="search-row trace-item" data-id="'+whgid+'">'+
-      '<td><a class="trace-link" href="#" data-id="'+whgid+'"><b>'+sug.title+'</a></td>'+'<td>'+parseRels(sug.relations)+'</td></tr>'
+      '<td><a class="trace-link" href="#" data-id="'+whgid+'"><b>'+sug.title+'</a>'+(whgid=='none'?' (<sr>no geometry yet</sr>)':'')+'</td>'+'<td>'+parseRels(sug.relations)+'</td></tr>'
       
       <!--if("depiction" in sug){-->
         <!--item += '<div class="trace_detail"><img class="trace-img" src="'+sug['depiction']+'"/></div>'-->
