@@ -22,6 +22,18 @@ def custom_error_view(request, exception=None):
     print('error request',request.GET.__dict__)
     return render(request, "main/500.html", {'error':'fubar'})
 
+# experiment with MapLibre
+class LibreView(TemplateView):
+    template_name = 'main/libre.html'
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(LibreView, self).get_context_data(*args, **kwargs)
+        context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
+        context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
+        context['mbtokenwhg'] = settings.MAPBOX_TOKEN_WHG
+        context['media_url'] = settings.MEDIA_URL
+        return context
+
 class Home(TemplateView):
     template_name = 'main/home_v1.html'
 

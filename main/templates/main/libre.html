@@ -1,0 +1,413 @@
+<!-- datasets/home.html -->
+{% extends "main/base.html" %}
+{% load leaflet_tags %}
+{% load fontawesome %}
+{% load static %}
+
+{% block title %}<title>WHG v1.3</title>{% endblock %}
+{% block extra_head %}
+  {% leaflet_js %}
+  {% leaflet_css %}
+  <script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>
+  <link rel="stylesheet" href="//cdn.datatables.net/1.10.16/css/dataTables.bootstrap4.min.css">
+  <link rel="stylesheet" href="{% static 'css/typeahead.css' %}">
+  <script src="{% static 'js/leaflet.ajax.min.js' %}"></script>
+  <script src="{% static 'js/typeahead.bundle.js' %}"></script>
+  <script src="{% static 'js/spin.umd.js' %}"></script>
+  
+  <!--<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.css' rel='stylesheet' />-->
+  <!--<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.js'></script>-->
+  <!--<script src="{ static 'js/leaflet-mapbox-gl.js' %}"></script>-->
+
+  <script src="https://unpkg.com/maplibre-gl@1.15.2/dist/maplibre-gl.js"></script>
+  <link href="https://unpkg.com/maplibre-gl@1.15.2/dist/maplibre-gl.css" rel="stylesheet" />
+
+  <style>
+    <!--body { margin: 0; padding: 0; }-->
+    #map { position: absolute; top: 20px; bottom: 0; width: 100%; }
+  </style>
+{% endblock %}
+
+{% block content %}
+{% load static %}
+
+<div class="container">
+  <div class="justify-content-center mt-2">
+    <p></p>
+    <div id="map"></div>
+  </div>
+</div>
+
+<script type="text/javascript">
+  <!--style: 'mapbox://styles/kgeographer/ckidglq8l2nra19nzzbl995ue'',-->
+
+var map = new maplibregl.Map({
+  container: 'map', // container id
+  style: 'https://api.maptiler.com/maps/streets/style.json?key=CFBcq3jm5GrydhVk8tMR',
+  center: [-67.5042, 1.1046], // starting position [lng, lat]
+  zoom: 3 // starting zoom
+});
+
+<!--dsid=9, dslabel = 'lugares13k_rel'-->
+function renderData(dsid, dslabel){
+  // clear any data layers and 'places' source
+  if(!!map.getLayer('gl_active_point')){
+    map.removeLayer('gl_active_point')
+    map.removeLayer('gl_active_poly')
+    map.removeSource('places')
+  }
+  <!--if(typeof(map.getSource('places')) != 'undefined'){-->
+    <!--console.log('supposed to remove source here')-->
+    <!--<!--map.removeSource('places')-->-->
+  <!--}-->
+  // fetch data
+  $.get('/datasets/'+dsid+'/geojson', function(data){
+    // get bounds w/turf
+    envelope = turf.envelope(data)
+    console.log(envelope)
+    
+    // add data to source
+    <!--map.getSource('places').load(data)-->
+    
+
+    map.addSource('places', {
+        'type': 'geojson',
+        'data': data
+    })
+    
+    // render to map
+    map.addLayer({
+      'id': 'gl_active_poly',
+      'type': 'fill',
+      'source': 'places',
+      'paint': {
+        'fill-color': '#ddd',
+        'fill-opacity': 0.2,
+        'fill-outline-color': 'black'
+      },
+      'filter': ['==', '$type', 'Polygon']
+    });
+     
+    map.addLayer({
+      'id': 'gl_active_point',
+      'type': 'circle',
+      'source': 'places',
+      'paint': {
+        'circle-color': '#B42222',
+        "circle-radius": [
+          "interpolate", ["linear"], ["zoom"],
+          // zoom is 5 (or less) -> circle radius will be 1px
+          3, 1,
+          // zoom is 10 (or greater) -> circle radius will be 5px
+          8, 8
+        ]
+      },
+      'filter': ['==', '$type', 'Point']
+      <!--'filter': ['==', '$type', 'MultiPoint']-->
+    });  
+    
+    map.fitBounds(envelope.bbox)
+    
+  })  
+}
+
+map.on('click', 'gl_active_point', function (e) {
+  console.log('place:', e.features[0])
+  var coordinates = e.features[0].geometry.coordinates.slice();
+  var pid = e.features[0].properties.pid;
+  var src_id = e.features[0].properties.src_id;
+   
+  <!--// Ensure that if the map is zoomed out such that multiple-->
+  <!--// copies of the feature are visible, the popup appears-->
+  <!--// over the copy being pointed to.-->
+  while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+  coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+  }
+   
+  new maplibregl.Popup()
+  .setLngLat(coordinates)
+  .setHTML('pid: '+pid+'; src_id: ' +src_id)
+  .addTo(map);
+});
+
+// Change the cursor to a pointer when the mouse is over the places layer.
+map.on('mouseenter', 'gl_active_point', function () {
+map.getCanvas().style.cursor = 'pointer';
+});
+ 
+// Change it back to a pointer when it leaves.
+map.on('mouseleave', 'gl_active_point', function () {
+map.getCanvas().style.cursor = '';
+});
+
+map.on('zoomend', function(){
+  console.log('zoomend')
+})
+
+
+  
+  $(function(){
+    $( "#map_dataset" ).change(function() {
+      if (!!gl.getLayer('heat_active')){
+      gl.removeLayer('heat_active')}
+      heat($(this).val())
+      console.log('heat() for',$(this).val())
+    });	
+    
+
+    
+    var idToFeature = {} // for feature lookup
+	
+	// clear map, inputs, results
+	
+    // fetch area list
+    <!--$.get("/api/area_list", function(data){-->
+      <!--<!--console.log('initial areas for list',data)-->-->
+      <!--for(var i=0;i<data.length;i++){-->
+      <!--area_objs.push(data[i])-->
+      <!--area_list.push(data[i]['title'])-->
+      <!--}	  -->
+    <!--})-->
+	
+  }) // end onLoad()
+  
+ /*
+	*** render_area() ***
+	fetch and display an area (region/area/country)
+  */
+  function render_area(areaid) {
+	$.ajax({
+		url: '/api/area/'+areaid
+	  }).done(function(data){
+      console.log('render_area()',data)
+      geom = {"type":"FeatureCollecton","features":[]}
+      geom['features'].push(data.geojson)
+  
+      // clear existing
+      if(typeof arealayer !== 'undefined'){arealayer.removeFrom(mappy)}
+  
+      // render new
+      arealayer = L.geoJSON(geom, {
+        onEachFeature: function(feature,layer) {
+        f=feature; l=layer;
+        console.log('render_area() f,l',f,l)
+        l.setStyle({"color":"orange","weight":2,"fillOpacity":0})
+        idToArea[areaid] = l
+        <!--identifier = f.place_id;-->
+        popupOptions = {maxWidth: 200};
+        l.bindPopup(data.title, popupOptions);
+        }
+      }).addTo(mappy)
+		  mappy.fitBounds(arealayer.getBounds())
+	  })
+  }  
+  //
+  //
+  // initializes map
+  addEventListener('map:init', function (e) {
+    window.mappy = e.detail.map
+    mappy.setMaxBounds(null)
+
+	// mapbox tokens 
+	var token_kg = '{{ mbtokenkg }}', 
+		token_whg = '{{ mbtokenwhg }}', 
+		token_mb = '{{ mbtokenmb }}';
+	
+	// style/tile urls
+	var mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}',
+		mbtiles_url = 'https://api.mapbox.com/v3/{id}/{z}/{x}/{y}.png',
+		ne_url = 'http://blog.whgazetteer.org/tiles/ne/{z}/{x}/{y}.png';
+	  
+	ne_options = {mapMinZoom: 0, mapMaxZoom: 7, opacity: 1.0, tms: false, mapExtent:[-180.00000000, -85.05112878, 179.99652662, 85.05112878]}
+
+    var satellite  = L.tileLayer(mbstyle_url, {
+	  id:'mapbox/satellite-streets-v11', 
+	  token:token_mb}),
+	osm  = L.tileLayer(mbstyle_url, {
+	  id:'mapbox/light-v10', 
+	  token:token_mb}),
+	ne = L.tileLayer(ne_url, ne_options);
+    var ne_mb = L.tileLayer(mbtiles_url, {
+	  id:'kgeographer.ne_global', 
+	  token:token_kg})
+
+	// GL wrapper to display heatmaps
+
+	<!--terrain-->
+	mb_terrain = L.mapboxGL({
+	  style:'mapbox://styles/kgeographer/ckhf6o8yf07fw19qhbrm7f2q7',
+	  accessToken:token_kg})
+
+	<!--natural earth global-->
+	<!--mb_terrain = L.mapboxGL({-->
+	ne_global= L.mapboxGL({
+	  style:'mapbox://styles/kgeographer/ckidglq8l2nra19nzzbl995ue',
+	  accessToken:token_kg}).addTo(mappy)
+	
+	
+	gl=ne_global.getMapboxMap().on('load',function(){
+	  gl.addSource('lugares', {
+			  "type": "geojson",
+			  <!--"data": "/media/data/lugares_13k.geojson"-->
+			  "data": "{{media_url}}data/lugares_13k.geojson"
+		  });	
+	  gl.addSource('owtrad', {
+			  "type": "geojson",
+			  "data": "media/data/owtrad.geojson"
+		  });	
+	  gl.addSource('euratlas', {
+			  "type": "geojson",
+			  "data": "media/data/euratlas_cities.geojson"
+		  });	
+	  gl.addSource('alturayya', {
+			  "type": "geojson",
+			  "data": "media/data/al-turayya.geojson"
+		  });
+	})
+	
+    var countryStyle = {
+      "color": "#999",
+      "weight": 1,
+      "opacity": 0.4,
+      "fillOpacity": 0
+    };
+
+    countries = new L.GeoJSON.AJAX("/media/data/countries_simplified.json",
+      {style:countryStyle,
+        onEachFeature: function (feature, layer) {
+          popupOptions = {maxWidth: 200};
+            layer.bindPopup(feature.properties.gnlabel, popupOptions);
+          }
+    });
+
+    var baseLayers = {
+      "NE global": ne_global,
+	    "Terrain": mb_terrain,
+      "OpenStreetMap": osm,      
+      "Satellite": satellite
+    };
+    var dataLayers = {
+      "Countries": countries,
+      <!--"Regions (UN)": regions-->
+    }
+    mappy.zoomControl.setPosition('topright')
+    L.control.layers(baseLayers,dataLayers).addTo(mappy);
+    baseLayers["NE global"].addTo(mappy)
+    
+	if(localStorage.getItem('last_results') != null){
+	  previous = JSON.parse(localStorage.getItem('last_results'))	
+	}
+	if(document.referrer.indexOf('place') >= 0 && previous){
+	  showResults(previous,'place','search')
+	}
+  }, false);
+
+  function map_init (home_map, options) {
+    mappy.setView([38, 10], 2.4)
+    // empty features[]
+    geom = {"type":"FeatureCollecton","features":[]}
+  } // end map_init
+  
+  function filly(counter) {
+    if (counter == 0)
+      return "blue"
+    else if (counter == 1)
+      return "orange"
+    else if (counter == 2)
+      return "purple"
+    else if (counter == 3)
+      return "greenyellow"
+    else 
+      return "yellow"
+  }
+ 
+  /*
+    *** renderPlaces() *** from showResults()
+    render geometries from search results to map
+  */
+  renderPlaces = function(geoms) {
+    if(typeof(features)!=='undefined'){ features.clearLayers() }
+    if(typeof(traces)!=='undefined'){ traces.clearLayers() }
+    
+    data = {"type":"FeatureCollection","features":geoms}
+    <!--console.log('geodata prior to render',data)-->
+    var count_features = 0
+    idToFeature = {}
+    idToArea = {}
+    mappy.createPane('placePane');
+    mappy.getPane('placePane').style.zIndex = 200;
+    stuff=L.layerGroup()
+    features = L.geoJSON(data, {
+      pointToLayer: function (feature, latlng) {
+        count_features +=1;
+        identifier = feature.properties.whgid;
+        if(feature.type=='Point'){
+          marker = L.circleMarker(latlng, styles.marker_default)
+          <!--.bindPopup(feature.properties.title+' (whg id:<a href="/places/'+identifier+'/portal">+identifier+</a>)');-->
+          // add to array for selection
+          idToFeature[identifier] = marker
+          return marker
+        }
+      },
+      onEachFeature: function(feature,layer) {
+        f=feature; l=layer;
+        identifier = feature.properties.whgid;
+        if(feature.type != 'Point'){
+          layer.setStyle(['LineString','MultiLineString'].indexOf(feature.type)>-1 ? styles.line_default:styles.pgon_default)
+          idToFeature[identifier] = layer
+        }
+        layer.bindPopup(feature.properties.title+' (whg id:<a href="/places/'+identifier+'/portal">'+identifier+'</a>)');
+        <!--layer.bindTooltip(feature.properties.title,{"permanent":true});-->
+        layer.on('click',function(e){
+          scroll = 20
+          ele = $("#result_list")
+          $(".search-row").css('background-color','#fff')
+          <!--divtop = $('#result_list').offset().top-->
+          fid = this.feature.geometry.properties.whgid
+          foo=$("div.place-item").find('[data-id="'+fid+'"]').closest('.search-row')
+          foo.css('background-color','#f4f4d7')
+          <!--foo[0].scrollIntoView({behavior:'smooth'})-->
+          foo[0].scrollIntoView()
+          ele.scrollTop(ele.scrollTop() - scroll);
+        })
+      }
+    }).addTo(mappy);
+    bounds = features.getBounds()
+    <!--mappy.setView(bounds.getCenter(),5) -->
+    if(geoms.length > 0 ){
+      mappy.fitBounds(bounds)
+      if(mappy.getZoom() > 5){ mappy.setZoom(5)}
+      <!--mappy.setView(bounds.getCenter(),)-->
+    }
+    
+  }
+  // map feature styles
+  styles = {
+    'marker_default': {
+      fillColor: "#ff0000",
+      color:"#666",
+      weight:1,
+      fillOpacity:0.5,
+      opacity:0.5},
+    'marker_highlight': {
+      radius:10,fillOpacity:1,fillColor:"yellow",color:"#000"
+    },
+    'line_default':{
+      weight:3,
+      opacity:1,
+      color: "#00ccff"
+    },
+    'line_highlight':{weight: 4, color:"yellow"},
+    'pgon_default':{
+      fillColor: "#ff0000",
+      color:"#fff",
+      weight:2,
+      fillOpacity:0.1,
+      opacity:1},
+    'pgon_highlight':{
+      fillOpacity:1,fillColor:"yellow",color:"#000"
+    }
+  }
+ 
+</script>
+{% endblock %}

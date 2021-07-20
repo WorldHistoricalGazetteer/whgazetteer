@@ -14,9 +14,10 @@ handler500 = 'main.views.custom_error_view'
 
 urlpatterns = [
     #path('', views.Home.as_view(), name="home"),
-    #path('', views.Home.as_view(), name="home2beta"),
     path('', views.Home2a.as_view(), name="home"),
-
+    
+    path('libre/', views.LibreView.as_view(), name='libre'),
+    
     # apps
     path('search/', include('search.urls')),
     path('maps/', include('maps.urls')),
@@ -53,6 +54,7 @@ urlpatterns = [
     path('captcha/', include('captcha.urls')),
 
     re_path(r'^celery-progress/', include('celery_progress.urls')),  # the endpoint is configurable
+    
 
 ] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
 
