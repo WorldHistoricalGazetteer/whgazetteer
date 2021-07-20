@@ -24,7 +24,8 @@
 
   <style>
     <!--body { margin: 0; padding: 0; }-->
-    #map { position: absolute; top: 20px; bottom: 0; width: 100%; }
+    #map { position: absolute; top: 35px; bottom: 20px; width: 90%; }
+    #map_select { position:absolute; top: 0;}
   </style>
 {% endblock %}
 
@@ -33,7 +34,20 @@
 
 <div class="container">
   <div class="justify-content-center mt-2">
-    <p></p>
+      <div id="map_select">
+      <select id="map_dataset" name="region" class="custom-select-sm">
+        <option value="0">Display dataset</option>
+        <option value=9>HGIS de las Indias (lugares)</option>
+        <option value=637>Old World Trade (OWTRAD)</option>
+        <option value=636>Euratlas Cities</option>
+        <option value=635>al-Thurayya (11c Islam)</option>
+        <option value=652>Pleiades </option>
+        <option value=1035>Atlas of Mutual Heritage</option>
+        <option value=986>Curacao</option>
+        <option value=985>Croniken</option>
+      </select>
+      <!--<p class="v2hideme"><a href="{ url 'home2beta' %}">v2beta1</a></p>-->
+      </div>
     <div id="map"></div>
   </div>
 </div>
@@ -41,15 +55,22 @@
 <script type="text/javascript">
   <!--style: 'mapbox://styles/kgeographer/ckidglq8l2nra19nzzbl995ue'',-->
 
+$( "#map_dataset" ).change(function() {
+  renderData($(this).val())
+});	
+
 var map = new maplibregl.Map({
   container: 'map', // container id
   style: 'https://api.maptiler.com/maps/streets/style.json?key=CFBcq3jm5GrydhVk8tMR',
-  center: [-67.5042, 1.1046], // starting position [lng, lat]
-  zoom: 3 // starting zoom
+  center: [15, 35], // starting position [lng, lat]
+  zoom: 1.1, // starting zoom
+  minZoom: 1.0,
+  maxZoom: 18
 });
 
 <!--dsid=9, dslabel = 'lugares13k_rel'-->
 function renderData(dsid, dslabel){
+  startMapSpinner()
   // clear any data layers and 'places' source
   if(!!map.getLayer('gl_active_point')){
     map.removeLayer('gl_active_point')
@@ -95,11 +116,7 @@ function renderData(dsid, dslabel){
       'paint': {
         'circle-color': '#B42222',
         "circle-radius": [
-          "interpolate", ["linear"], ["zoom"],
-          // zoom is 5 (or less) -> circle radius will be 1px
-          3, 1,
-          // zoom is 10 (or greater) -> circle radius will be 5px
-          8, 8
+          "interpolate", ["linear"], ["zoom"], 1, 2, 18, 8
         ]
       },
       'filter': ['==', '$type', 'Point']
@@ -107,6 +124,7 @@ function renderData(dsid, dslabel){
     });  
     
     map.fitBounds(envelope.bbox)
+    spinner_map.stop()
     
   })  
 }
@@ -144,30 +162,16 @@ map.on('zoomend', function(){
   console.log('zoomend')
 })
 
+  spin_opts = { scale: .5, top: '50%'}
+  function startMapSpinner(){
+    console.log('startMapSpinner()')
+    window.spinner_map = new Spin.Spinner(spin_opts).spin();
+    $("#map").append(spinner_map.el);   
+  }
 
-  
   $(function(){
-    $( "#map_dataset" ).change(function() {
-      if (!!gl.getLayer('heat_active')){
-      gl.removeLayer('heat_active')}
-      heat($(this).val())
-      console.log('heat() for',$(this).val())
-    });	
-    
-
-    
+    $(".navbar").hide()
     var idToFeature = {} // for feature lookup
-	
-	// clear map, inputs, results
-	
-    // fetch area list
-    <!--$.get("/api/area_list", function(data){-->
-      <!--<!--console.log('initial areas for list',data)-->-->
-      <!--for(var i=0;i<data.length;i++){-->
-      <!--area_objs.push(data[i])-->
-      <!--area_list.push(data[i]['title'])-->
-      <!--}	  -->
-    <!--})-->
 	
   }) // end onLoad()
   
