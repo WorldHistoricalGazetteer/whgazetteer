@@ -245,6 +245,9 @@
     /*  if referer is search.html, it's returning from
         viewing a place portal or place detail page
     */
+    /*  always set class radio to places */
+    $('#r_place').prop('checked',true)
+    
     if(localStorage['keep'] == 'true'){
       $("#search_info").remove()
     }
@@ -1493,7 +1496,7 @@
         item = '<div class="sug_row sug-item">'+sug['name']+' '+variants+'</div>'
 			}
     } else if (doctype=='trace') {
-      console.log('sug',sug)
+      <!--console.log('sug',sug)-->
       let pid = sug['place_id'] != null ? sug['place_id'] : ""
       <!-- make object array from idToFeature{}-->
       if(pid in idToFeature){
