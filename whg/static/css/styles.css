@@ -49,7 +49,7 @@ label {vertical-align:top;}
 .p-block { display:block; }
 .red-head {color:#993300;}
 .rem1 {font-size: 1rem;}
-.scrolldiv {overflow-y:auto;}
+.scrolldiv {overflow-y:auto; display:block;}
 .scroll100 {display:block; overflow-y:scroll; max-height:120px;}
 .scroll65 {display:block; overflow-y:scroll; max-height:65px;width:100%}
 .smaller {font-size: small;} /* smaller than bootstrap */
@@ -289,14 +289,13 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
   font-size: .9rem;
 }
 .item-right {
-  /*min-height: 200px;*/
-  /*max-height: 200px;*/
   height: 180px;
   border-radius: 6px;
   border: 1px solid #ddd;
   padding: .4rem;
   position: relative;
   font-size: .8rem;
+  overflow-y:auto;
 }
 .item-right-top img { max-width: 100%; float:right}
 .item-right img { max-height: 100%; float:right;}
@@ -336,7 +335,7 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
 
 .wrapper-left { overflow: auto; }
 .wrapper-left b { color: #336699;}
-.wrapper-right { overflow-x: hidden; }
+/*.wrapper-right { overflow-x: hidden; }*/
 
 #search_time { position: relative; }
 #search_time img { max-width: 100%;}
