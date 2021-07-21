@@ -220,7 +220,8 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
 }
 .home-header {
   background: #336699;
-  text-align:center;
+  /*text-align:center;*/
+  padding-left: .5rem;
   color: #eee;
   line-height: 2rem;
   border-radius: 4px;
