@@ -20,6 +20,9 @@
   <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.css' rel='stylesheet' />
   <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.js'></script>
   <script src="{% static 'js/leaflet-mapbox-gl.js' %}"></script>
+  
+  <style>table tr td:nth-child(1) {font-weight:600;}
+  </style>
 {% endblock %}
 
 {% block content %}
@@ -32,35 +35,38 @@
   </h4>
   <div class="d-flex">
     <div class="form-box col-sm-7 mt-2">
-      <div id="coll_meta">
-        <p>Record title:<br/>
-          {{object.title}}</p>
-        <p>Variants:<br/>
-          {% for n in object.names.all %}
-          {{n.jsonb.toponym }}; {% endfor %}
+      <div id="coll_meta" class="bg-light">
+        <table>
+          <tr><td>Record title:</td><td>{{ object.title }}</td></tr>
+          <tr><td>Variants:</td><td>{% for n in object.names.all %}
+          <i>{{n.jsonb.toponym }};</i> {% endfor %}</td></tr>
+          {% if object.description %}
+          <tr><td><b>Description</b></td><td>{{ object.description }}</td></tr>
+          {% endif %}
+          <tr><td>Type(s):</td><td>{% for t in object.types.all %}
+          {{t.jsonb.sourceLabel }}{%if t.label %} ({{ t.label }});{% endif %} {% endfor %}</td></tr>
+          <tr><td></td><td></td></tr>
+        </table>          
         </p>
-        <!--<p>Geom: { object.geoms.all }}-->
-         {% for g in object.geoms.all %}
-          {{ g.jsonb|safe|json_script:object.id }}
-         {% endfor %}
+        <!-- send geometry to javascript -->
+        {% for g in object.geoms.all %}
+         {{ g.jsonb|safe|json_script:object.id }}
+        {% endfor %}
          
         <table>
-        <tr><td><b>Description</b></td><td>{{ object.description }}</td></tr>
-        <!--<tr><td><b>Created</b></td><td>{ object.create_date|date:"d M Y" }}</td></tr>-->
         </table>
-        
       </div>
       <hr/>
-      {%comment%}{% for g in bboxes %}
-        {{ g|safe|json_script:g.properties.id }}
-      {% endfor %}{%endcomment%}
-      <div id="coll_dslist">
-        <p class="larger">Dataset details{%comment%}
-          <span class="small float-right mr-2">{% fontawesome_icon 'download' color='#336699' %} <a href="" id="a_download_modal" data-dsid = {{ object.id }} data-toggle="modal" data-target="#downloadModal" title="download options"> download options</a></span>{%endcomment%}
-        </p>
+      <div id="coll_dslist" class="">
+        <p class="larger strong mb-0">Dataset details</p>
+        {%comment%}
+          <span class="small float-right mr-2">{% fontawesome_icon 'download' color='#336699' %} <a href="" id="a_download_modal" data-dsid = {{ object.id }} data-toggle="modal" data-target="#downloadModal" title="download options"> download options</a></span>
+        {%endcomment%}
         <div id="ds_cards">
-          <p>Title: {{ dataset.title }}</p>
-          <p>Label/ID: {{dataset.label}}/{{dataset.id}}</p>
+          <table>
+          <tr><td>Title:</td><td></td> <td>{{ dataset.title }}</td></tr>
+          <tr><td>Label/ID:</td><td> </td><td>{{dataset.label}}/{{dataset.id}}</td></tr>
+          </table>
         </div> <!-- #ds_cards -->        
       </div> <!-- #coll_dslist -->
     </div>
