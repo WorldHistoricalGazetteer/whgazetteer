@@ -602,16 +602,16 @@ class GeomViewSet(viewsets.ModelViewSet):
 #class GeoJSONViewSet(viewsets.ModelViewSet):
 class GeoJSONAPIView(generics.ListAPIView):
   # use: api/geojson
-  queryset = PlaceGeom.objects.all()
+  #queryset = PlaceGeom.objects.all()
   #serializer_class = GeoJsonSerializer
   serializer_class = FeatureSerializer
   permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
   
   def get_queryset(self, format=None, *args, **kwargs):
-    print('GeoJSONViewSet',self.request.GET)
+    print('GeoJSONViewSet request.GET',self.request.GET)
     print('GeoJSONViewSet args, kwargs',args, kwargs)
-    if 'ds' in self.request.GET:
-      dsid = self.request.GET.get('ds')
+    if 'id' in self.request.GET:
+      dsid = self.request.GET.get('id')
       dslabel = get_object_or_404(Dataset, pk=dsid).label
       dsPlaceIds = Place.objects.values('id').filter(dataset = dslabel)
       qs = PlaceGeom.objects.filter(place_id__in=dsPlaceIds)

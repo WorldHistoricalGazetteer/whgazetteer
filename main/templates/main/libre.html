@@ -34,9 +34,11 @@
 
 <div class="container">
   <div class="justify-content-center mt-2">
-      <div id="map_select">
+      <div id="map_select"><span  style="display:inline-block">
       <select id="map_dataset" name="region" class="custom-select-sm">
         <option value="0">Display dataset</option>
+        <!--<option value='croniken_og_json'>Croniken</option>-->
+        <option value=985>Croniken</option>
         <option value=9>HGIS de las Indias (lugares)</option>
         <option value=637>Old World Trade (OWTRAD)</option>
         <option value=636>Euratlas Cities</option>
@@ -44,8 +46,14 @@
         <option value=652>Pleiades </option>
         <option value=1035>Atlas of Mutual Heritage</option>
         <option value=986>Curacao</option>
-        <option value=985>Croniken</option>
-      </select>
+      </select></span>
+      <span style="display:inline-block">
+      <ul>
+        <li style="display:inline"><a class="f" href="#" data-pid=6595921 data-coords=[22.0331,55.0335]>feature 1</a></li>
+        <li style="display:inline"><a class="f" href="#" data-pid=6595945 data-coords=[24.1878,56.4063]>feature 2</a></li>
+      </ul>
+      <!-- hightlightFeature(6595921,[ 22.0330810546875,55.03353169388018]) -->
+      </span>
       <!--<p class="v2hideme"><a href="{ url 'home2beta' %}">v2beta1</a></p>-->
       </div>
     <div id="map"></div>
@@ -53,7 +61,17 @@
 </div>
 
 <script type="text/javascript">
-  <!--style: 'mapbox://styles/kgeographer/ckidglq8l2nra19nzzbl995ue'',-->
+
+$(".f").click(function(){
+  pid=$(this).data('pid')
+  coords=$(this).data('coords')
+  console.log('pid, coords',pid, coords)
+  highlightFeature(pid, coords)
+})
+
+var token_kg = '{{ mbtokenkg }}', 
+  token_whg = '{{ mbtokenwhg }}', 
+  token_mb = '{{ mbtokenmb }}';
 
 $( "#map_dataset" ).change(function() {
   renderData($(this).val())
@@ -61,15 +79,89 @@ $( "#map_dataset" ).change(function() {
 
 var map = new maplibregl.Map({
   container: 'map', // container id
-  style: 'https://api.maptiler.com/maps/streets/style.json?key=CFBcq3jm5GrydhVk8tMR',
+  style: 'mapbox://styles/kgeographer/ckidglq8l2nra19nzzbl995ue',
   center: [15, 35], // starting position [lng, lat]
   zoom: 1.1, // starting zoom
   minZoom: 1.0,
-  maxZoom: 18
+  maxZoom: 18,
+  <!--accessToken: 'pk.eyJ1Ijoia2dlb2dyYXBoZXIiLCJhIjoiUmVralBPcyJ9.mJegAI1R6KR21x_CVVTlqw'-->
+  accessToken: token_kg
 });
 
-<!--dsid=9, dslabel = 'lugares13k_rel'-->
-function renderData(dsid, dslabel){
+map.on('load', function() {
+  hilited = null
+  
+  map.addSource('empty', {
+    type: 'geojson',
+    data: { type: 'FeatureCollection', features: [] }
+  });
+  
+  const zIndex2 = map.addLayer({
+    id: 'z-index-2',
+    type: 'symbol',
+    source: 'empty'
+  });
+  
+  const zIndex1 = map.addLayer({
+    id: 'z-index-1',
+    type: 'symbol',
+    source: 'empty'
+  }, 'z-index-2'); // place this layer below zIndex2
+  
+  renderData(985)
+})
+<!--const polygons = map.addLayer({-->
+  <!--id: 'my-polygons',-->
+  <!--type: 'symbol',-->
+  <!--source: myPolygons-->
+<!--}, 'z-index-1'); // place the polygons on the bottom-->
+
+<!--const points = map.addLayer({-->
+  <!--id: 'my-real-points',-->
+  <!--type: 'symbol',-->
+  <!--source: myPoints-->
+<!--}, 'z-index-2'); // place the points above the polygons-->
+
+function highlightFeature(pid, coords){
+  console.log('pid, coords',pid, coords)
+  // remove previous
+  if(hilited){hilited.remove()}
+  
+  hilited = new maplibregl.Marker().setLngLat(coords).addTo(map);
+  
+  map.setPaintProperty(
+    'gl_active_point', 'circle-radius', 
+      { 'property':'pid',
+        'type':'categorical',
+        'stops':[[pid, 12]]}
+  );
+  map.setPaintProperty(
+    'gl_active_point', 'circle-color', 
+      { 'property':'pid',
+        'default':'#B42222',
+        'type':'categorical',
+        'stops':[[pid,'yellow']]}
+  );
+
+  map.setPaintProperty(
+    'gl_active_point', 'circle-opacity', 
+      { 'property':'pid',
+        'default': 0.5,
+        'type':'categorical',
+        'stops':[[pid,1]]}
+  );
+  // also set z-index and zoom
+  
+}
+<!--paint: {-->
+    <!--'circle-radius': 3,-->
+    <!--'circle-color': '#223b53',-->
+    <!--'circle-stroke-color': 'white',-->
+    <!--'circle-stroke-width': 1,-->
+    <!--'circle-opacity': 0.5-->
+  <!--}-->
+function renderData(dsid){
+<!--function renderData(dslabel){-->
   startMapSpinner()
   // clear any data layers and 'places' source
   if(!!map.getLayer('gl_active_point')){
@@ -77,26 +169,23 @@ function renderData(dsid, dslabel){
     map.removeLayer('gl_active_poly')
     map.removeSource('places')
   }
-  <!--if(typeof(map.getSource('places')) != 'undefined'){-->
-    <!--console.log('supposed to remove source here')-->
-    <!--<!--map.removeSource('places')-->-->
-  <!--}-->
   // fetch data
+  
+  <!--$.get('/api/geojson/', {id: dsid}, function(data){ // much slower-->
   $.get('/datasets/'+dsid+'/geojson', function(data){
+    console.log('data', data)
     // get bounds w/turf
     envelope = turf.envelope(data)
     console.log(envelope)
     
-    // add data to source
-    <!--map.getSource('places').load(data)-->
-    
-
+    // add source 'places' w/retrieved data
     map.addSource('places', {
         'type': 'geojson',
         'data': data
     })
     
     // render to map
+     
     map.addLayer({
       'id': 'gl_active_poly',
       'type': 'fill',
@@ -107,8 +196,8 @@ function renderData(dsid, dslabel){
         'fill-outline-color': 'black'
       },
       'filter': ['==', '$type', 'Polygon']
-    });
-     
+    }, 'z-index-1');
+    
     map.addLayer({
       'id': 'gl_active_point',
       'type': 'circle',
@@ -116,24 +205,29 @@ function renderData(dsid, dslabel){
       'paint': {
         'circle-color': '#B42222',
         "circle-radius": [
-          "interpolate", ["linear"], ["zoom"], 1, 2, 18, 8
+          "interpolate", ["linear"], 
+            ["zoom"], 1, 2, 18, 8
         ]
       },
       'filter': ['==', '$type', 'Point']
-      <!--'filter': ['==', '$type', 'MultiPoint']-->
-    });  
+    }, 'z-index-2');  
+
     
     map.fitBounds(envelope.bbox)
     spinner_map.stop()
     
-  })  
+  })  // get
 }
 
 map.on('click', 'gl_active_point', function (e) {
   console.log('place:', e.features[0])
+  place=e.features[0]
   var coordinates = e.features[0].geometry.coordinates.slice();
   var pid = e.features[0].properties.pid;
+  var title = e.features[0].properties.title;
   var src_id = e.features[0].properties.src_id;
+  var minmax = e.features[0].properties.minmax;
+  var fc = e.features[0].properties.fclasses;
    
   <!--// Ensure that if the map is zoomed out such that multiple-->
   <!--// copies of the feature are visible, the popup appears-->
@@ -144,186 +238,182 @@ map.on('click', 'gl_active_point', function (e) {
    
   new maplibregl.Popup()
   .setLngLat(coordinates)
-  .setHTML('pid: '+pid+'; src_id: ' +src_id)
+  .setHTML(title+'<br/>(pid: '+pid+'; src_id: ' +src_id+')<br/>'+minmax+'; '+fc)
   .addTo(map);
 });
 
 // Change the cursor to a pointer when the mouse is over the places layer.
 map.on('mouseenter', 'gl_active_point', function () {
-map.getCanvas().style.cursor = 'pointer';
+  map.getCanvas().style.cursor = 'pointer';
 });
  
 // Change it back to a pointer when it leaves.
 map.on('mouseleave', 'gl_active_point', function () {
-map.getCanvas().style.cursor = '';
+  map.getCanvas().style.cursor = '';
 });
 
 map.on('zoomend', function(){
   console.log('zoomend')
 })
 
-  spin_opts = { scale: .5, top: '50%'}
-  function startMapSpinner(){
-    console.log('startMapSpinner()')
-    window.spinner_map = new Spin.Spinner(spin_opts).spin();
-    $("#map").append(spinner_map.el);   
-  }
+spin_opts = { scale: .5, top: '50%'}
+function startMapSpinner(){
+  console.log('startMapSpinner()')
+  window.spinner_map = new Spin.Spinner(spin_opts).spin();
+  $("#map").append(spinner_map.el);   
+}
 
-  $(function(){
-    $(".navbar").hide()
-    var idToFeature = {} // for feature lookup
-	
-  }) // end onLoad()
+$(function(){
+  $(".navbar").hide()
+  var idToFeature = {} // for feature lookup
+}) // end onLoad()
   
  /*
 	*** render_area() ***
 	fetch and display an area (region/area/country)
   */
   function render_area(areaid) {
-	$.ajax({
-		url: '/api/area/'+areaid
-	  }).done(function(data){
-      console.log('render_area()',data)
-      geom = {"type":"FeatureCollecton","features":[]}
-      geom['features'].push(data.geojson)
-  
-      // clear existing
-      if(typeof arealayer !== 'undefined'){arealayer.removeFrom(mappy)}
-  
-      // render new
-      arealayer = L.geoJSON(geom, {
-        onEachFeature: function(feature,layer) {
-        f=feature; l=layer;
-        console.log('render_area() f,l',f,l)
-        l.setStyle({"color":"orange","weight":2,"fillOpacity":0})
-        idToArea[areaid] = l
-        <!--identifier = f.place_id;-->
-        popupOptions = {maxWidth: 200};
-        l.bindPopup(data.title, popupOptions);
-        }
-      }).addTo(mappy)
-		  mappy.fitBounds(arealayer.getBounds())
-	  })
+    $.ajax({
+      url: '/api/area/'+areaid
+      }).done(function(data){
+        console.log('render_area()',data)
+        geom = {"type":"FeatureCollecton","features":[]}
+        geom['features'].push(data.geojson)
+    
+        // clear existing
+        if(typeof arealayer !== 'undefined'){arealayer.removeFrom(mappy)}
+    
+        // render new
+        arealayer = L.geoJSON(geom, {
+          onEachFeature: function(feature,layer) {
+          f=feature; l=layer;
+          console.log('render_area() f,l',f,l)
+          l.setStyle({"color":"orange","weight":2,"fillOpacity":0})
+          idToArea[areaid] = l
+          <!--identifier = f.place_id;-->
+          popupOptions = {maxWidth: 200};
+          l.bindPopup(data.title, popupOptions);
+          }
+        }).addTo(mappy)
+        mappy.fitBounds(arealayer.getBounds())
+      })
   }  
   //
   //
   // initializes map
-  addEventListener('map:init', function (e) {
-    window.mappy = e.detail.map
-    mappy.setMaxBounds(null)
+  <!--addEventListener('map:init', function (e) {-->
+    <!--window.mappy = e.detail.map-->
+    <!--mappy.setMaxBounds(null)-->
 
 	// mapbox tokens 
-	var token_kg = '{{ mbtokenkg }}', 
-		token_whg = '{{ mbtokenwhg }}', 
-		token_mb = '{{ mbtokenmb }}';
 	
 	// style/tile urls
-	var mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}',
-		mbtiles_url = 'https://api.mapbox.com/v3/{id}/{z}/{x}/{y}.png',
-		ne_url = 'http://blog.whgazetteer.org/tiles/ne/{z}/{x}/{y}.png';
+	<!--var mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}',-->
+		<!--mbtiles_url = 'https://api.mapbox.com/v3/{id}/{z}/{x}/{y}.png',-->
+		<!--ne_url = 'http://blog.whgazetteer.org/tiles/ne/{z}/{x}/{y}.png';-->
 	  
-	ne_options = {mapMinZoom: 0, mapMaxZoom: 7, opacity: 1.0, tms: false, mapExtent:[-180.00000000, -85.05112878, 179.99652662, 85.05112878]}
+	<!--ne_options = {mapMinZoom: 0, mapMaxZoom: 7, opacity: 1.0, tms: false, mapExtent:[-180.00000000, -85.05112878, 179.99652662, 85.05112878]}-->
 
-    var satellite  = L.tileLayer(mbstyle_url, {
-	  id:'mapbox/satellite-streets-v11', 
-	  token:token_mb}),
-	osm  = L.tileLayer(mbstyle_url, {
-	  id:'mapbox/light-v10', 
-	  token:token_mb}),
-	ne = L.tileLayer(ne_url, ne_options);
-    var ne_mb = L.tileLayer(mbtiles_url, {
-	  id:'kgeographer.ne_global', 
-	  token:token_kg})
+    <!--var satellite  = L.tileLayer(mbstyle_url, {-->
+	  <!--id:'mapbox/satellite-streets-v11', -->
+	  <!--token:token_mb}),-->
+	<!--osm  = L.tileLayer(mbstyle_url, {-->
+	  <!--id:'mapbox/light-v10', -->
+	  <!--token:token_mb}),-->
+	<!--ne = L.tileLayer(ne_url, ne_options);-->
+    <!--var ne_mb = L.tileLayer(mbtiles_url, {-->
+	  <!--id:'kgeographer.ne_global', -->
+	  <!--token:token_kg})-->
 
-	// GL wrapper to display heatmaps
+	<!--// GL wrapper to display heatmaps-->
 
-	<!--terrain-->
-	mb_terrain = L.mapboxGL({
-	  style:'mapbox://styles/kgeographer/ckhf6o8yf07fw19qhbrm7f2q7',
-	  accessToken:token_kg})
-
-	<!--natural earth global-->
+	<!--<!--terrain-->-->
 	<!--mb_terrain = L.mapboxGL({-->
-	ne_global= L.mapboxGL({
-	  style:'mapbox://styles/kgeographer/ckidglq8l2nra19nzzbl995ue',
-	  accessToken:token_kg}).addTo(mappy)
-	
-	
-	gl=ne_global.getMapboxMap().on('load',function(){
-	  gl.addSource('lugares', {
-			  "type": "geojson",
-			  <!--"data": "/media/data/lugares_13k.geojson"-->
-			  "data": "{{media_url}}data/lugares_13k.geojson"
-		  });	
-	  gl.addSource('owtrad', {
-			  "type": "geojson",
-			  "data": "media/data/owtrad.geojson"
-		  });	
-	  gl.addSource('euratlas', {
-			  "type": "geojson",
-			  "data": "media/data/euratlas_cities.geojson"
-		  });	
-	  gl.addSource('alturayya', {
-			  "type": "geojson",
-			  "data": "media/data/al-turayya.geojson"
-		  });
-	})
-	
-    var countryStyle = {
-      "color": "#999",
-      "weight": 1,
-      "opacity": 0.4,
-      "fillOpacity": 0
-    };
+	  <!--style:'mapbox://styles/kgeographer/ckhf6o8yf07fw19qhbrm7f2q7',-->
+	  <!--accessToken:token_kg})-->
 
-    countries = new L.GeoJSON.AJAX("/media/data/countries_simplified.json",
-      {style:countryStyle,
-        onEachFeature: function (feature, layer) {
-          popupOptions = {maxWidth: 200};
-            layer.bindPopup(feature.properties.gnlabel, popupOptions);
-          }
-    });
+	<!--<!--natural earth global-->-->
+	<!--<!--mb_terrain = L.mapboxGL({-->-->
+	<!--ne_global= L.mapboxGL({-->
+	  <!--style:'mapbox://styles/kgeographer/ckidglq8l2nra19nzzbl995ue',-->
+	  <!--accessToken:token_kg}).addTo(mappy)-->
+	
+	
+	<!--gl=ne_global.getMapboxMap().on('load',function(){-->
+	  <!--gl.addSource('lugares', {-->
+			  <!--"type": "geojson",-->
+			  <!--<!--"data": "/media/data/lugares_13k.geojson"-->-->
+			  <!--"data": "{{media_url}}data/lugares_13k.geojson"-->
+		  <!--});	-->
+	  <!--gl.addSource('owtrad', {-->
+			  <!--"type": "geojson",-->
+			  <!--"data": "media/data/owtrad.geojson"-->
+		  <!--});	-->
+	  <!--gl.addSource('euratlas', {-->
+			  <!--"type": "geojson",-->
+			  <!--"data": "media/data/euratlas_cities.geojson"-->
+		  <!--});	-->
+	  <!--gl.addSource('alturayya', {-->
+			  <!--"type": "geojson",-->
+			  <!--"data": "media/data/al-turayya.geojson"-->
+		  <!--});-->
+	<!--})-->
+	
+    <!--var countryStyle = {-->
+      <!--"color": "#999",-->
+      <!--"weight": 1,-->
+      <!--"opacity": 0.4,-->
+      <!--"fillOpacity": 0-->
+    <!--};-->
 
-    var baseLayers = {
-      "NE global": ne_global,
-	    "Terrain": mb_terrain,
-      "OpenStreetMap": osm,      
-      "Satellite": satellite
-    };
-    var dataLayers = {
-      "Countries": countries,
-      <!--"Regions (UN)": regions-->
-    }
-    mappy.zoomControl.setPosition('topright')
-    L.control.layers(baseLayers,dataLayers).addTo(mappy);
-    baseLayers["NE global"].addTo(mappy)
+    <!--countries = new L.GeoJSON.AJAX("/media/data/countries_simplified.json",-->
+      <!--{style:countryStyle,-->
+        <!--onEachFeature: function (feature, layer) {-->
+          <!--popupOptions = {maxWidth: 200};-->
+            <!--layer.bindPopup(feature.properties.gnlabel, popupOptions);-->
+          <!--}-->
+    <!--});-->
+
+    <!--var baseLayers = {-->
+      <!--"NE global": ne_global,-->
+	    <!--"Terrain": mb_terrain,-->
+      <!--"OpenStreetMap": osm,      -->
+      <!--"Satellite": satellite-->
+    <!--};-->
+    <!--var dataLayers = {-->
+      <!--"Countries": countries,-->
+      <!--<!--"Regions (UN)": regions-->-->
+    <!--}-->
+    <!--mappy.zoomControl.setPosition('topright')-->
+    <!--L.control.layers(baseLayers,dataLayers).addTo(mappy);-->
+    <!--baseLayers["NE global"].addTo(mappy)-->
     
-	if(localStorage.getItem('last_results') != null){
-	  previous = JSON.parse(localStorage.getItem('last_results'))	
-	}
-	if(document.referrer.indexOf('place') >= 0 && previous){
-	  showResults(previous,'place','search')
-	}
-  }, false);
+	<!--if(localStorage.getItem('last_results') != null){-->
+	  <!--previous = JSON.parse(localStorage.getItem('last_results'))	-->
+	<!--}-->
+	<!--if(document.referrer.indexOf('place') >= 0 && previous){-->
+	  <!--showResults(previous,'place','search')-->
+	<!--}-->
+  <!--}, false);-->
 
-  function map_init (home_map, options) {
-    mappy.setView([38, 10], 2.4)
-    // empty features[]
-    geom = {"type":"FeatureCollecton","features":[]}
-  } // end map_init
+  <!--function map_init (home_map, options) {-->
+    <!--mappy.setView([38, 10], 2.4)-->
+    <!--// empty features[]-->
+    <!--geom = {"type":"FeatureCollecton","features":[]}-->
+  <!--} // end map_init-->
   
-  function filly(counter) {
-    if (counter == 0)
-      return "blue"
-    else if (counter == 1)
-      return "orange"
-    else if (counter == 2)
-      return "purple"
-    else if (counter == 3)
-      return "greenyellow"
-    else 
-      return "yellow"
-  }
+  <!--function filly(counter) {-->
+    <!--if (counter == 0)-->
+      <!--return "blue"-->
+    <!--else if (counter == 1)-->
+      <!--return "orange"-->
+    <!--else if (counter == 2)-->
+      <!--return "purple"-->
+    <!--else if (counter == 3)-->
+      <!--return "greenyellow"-->
+    <!--else -->
+      <!--return "yellow"-->
+  <!--}-->
  
   /*
     *** renderPlaces() *** from showResults()

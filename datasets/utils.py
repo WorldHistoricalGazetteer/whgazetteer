@@ -331,7 +331,7 @@ def download_augmented_slow(request, *args, **kwargs):
 
     return response
 
-# TODO: crude, only properties are ids
+# TODO:
 def fetch_geojson(request, *args, **kwargs):
   print('download_gis kwargs',kwargs)
   #user = request.user.username
@@ -343,11 +343,14 @@ def fetch_geojson(request, *args, **kwargs):
   # open it for write
   #fout = codecs.open(fn,'w','utf8')
 
-  # build a flat FeatureCollection 
-  features=PlaceGeom.objects.filter(place_id__in=ds.placeids).values_list('jsonb','place_id','src_id')
+  # build a fast FeatureCollection 
+  features=PlaceGeom.objects.filter(place_id__in=ds.placeids).values_list(
+    'jsonb','place_id','src_id','place__title','place__minmax', 'place__fclasses')
   fcoll = {"type":"FeatureCollection","features":[]}
   for f in features:
-    feat={"type":"Feature","properties":{"pid":f[1],"src_id":f[2]},"geometry":f[0]}
+    feat={"type":"Feature",
+          "properties":{"pid":f[1],"src_id":f[2],"title":f[3],"minmax":f[4],"fclasses":f[5]},
+          "geometry":f[0]}
     fcoll['features'].append(feat)
   #fout.write(json.dumps(fcoll))
   #fout.close()

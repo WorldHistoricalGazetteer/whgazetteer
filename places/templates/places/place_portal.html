@@ -500,23 +500,21 @@
     mappy.createPane('tracePane');
     mappy.getPane('tracePane').style.zIndex = 200;
     traceLayers = new L.layerGroup().addTo(mappy)
-    var attrib_mb = 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
-            '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-            'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-      token_mb = '{{ mbtokenmb }}',
-      token_kg = '{{ mbtokenkg }}',
-      mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}';
+    
+    token_mb = '{{ mbtokenmb }}',
+    <!--token_kg = '{ mbtokenkg }}',-->
+    mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}';
       
-    var satellite  = L.tileLayer(mbstyle_url, {id:'mapbox/satellite-streets-v11', token:token_mb, attribution:attrib_mb})
-    var osm  = L.tileLayer(mbstyle_url, {id:'mapbox/light-v10', token:token_mb, attribution:attrib_mb});
+    var satellite  = L.tileLayer(mbstyle_url, {id:'mapbox/satellite-streets-v11', token:token_mb})
+    var osm  = L.tileLayer(mbstyle_url, {id:'mapbox/light-v10', token:token_mb});
 
     var pleiades = L.mapboxGL({
       style:'mapbox://styles/kgeographer/ckc21ai6n5ozq1io64x91hndl',
-      accessToken:token_kg})
+      accessToken:'{{ mbtokenkg }}'})
 
     ne_global= L.mapboxGL({
       style:'mapbox://styles/kgeographer/ckidglq8l2nra19nzzbl995ue',
-      accessToken:token_kg})
+      accessToken:'{{ mbtokenkg }}'})
       
     var watershedStyle = {
       "fillColor": "#993333",
