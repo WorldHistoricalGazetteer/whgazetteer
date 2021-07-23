@@ -79,8 +79,9 @@ $( "#map_dataset" ).change(function() {
 
 var map = new maplibregl.Map({
   container: 'map', // container id
-  style: 'mapbox://styles/kgeographer/ckidglq8l2nra19nzzbl995ue',
-  center: [15, 35], // starting position [lng, lat]
+  style: 'mapbox://styles/mapbox/light-v10',
+  <!--style: 'mapbox://styles/kgeographer/ckidglq8l2nra19nzzbl995ue',-->
+  <!--center: [15, 35], // starting position [lng, lat]-->
   zoom: 1.1, // starting zoom
   minZoom: 1.0,
   maxZoom: 18,
@@ -108,7 +109,7 @@ map.on('load', function() {
     source: 'empty'
   }, 'z-index-2'); // place this layer below zIndex2
   
-  renderData(985)
+  renderData(636)
 })
 <!--const polygons = map.addLayer({-->
   <!--id: 'my-polygons',-->
@@ -125,10 +126,13 @@ map.on('load', function() {
 function highlightFeature(pid, coords){
   console.log('pid, coords',pid, coords)
   // remove previous
-  if(hilited){hilited.remove()}
+  <!--if(hilited){hilited.remove()}-->
   
-  hilited = new maplibregl.Marker().setLngLat(coords).addTo(map);
+  <!--hilited = new maplibregl.Marker().setLngLat(coords).addTo(map);-->
   
+  <!--'circle-stroke-color': 'black',-->
+  <!--'circle-stroke-width': 1,-->
+
   map.setPaintProperty(
     'gl_active_point', 'circle-radius', 
       { 'property':'pid',
@@ -136,21 +140,35 @@ function highlightFeature(pid, coords){
         'stops':[[pid, 12]]}
   );
   map.setPaintProperty(
+    'gl_active_point', 'circle-stroke-color', 
+      { 'property':'pid',
+        'type':'categorical',
+        'stops':[[pid, '#666']]}
+  );
+  map.setPaintProperty(
+    'gl_active_point', 'circle-stroke-width', 
+      { 'property':'pid',
+        'type':'categorical',
+        'stops':[[pid, 1]]}
+  );
+  map.setPaintProperty(
     'gl_active_point', 'circle-color', 
       { 'property':'pid',
-        'default':'#B42222',
+        'default':'#ff9900',
         'type':'categorical',
-        'stops':[[pid,'yellow']]}
+        'stops':[[pid,'red']]}
   );
 
-  map.setPaintProperty(
-    'gl_active_point', 'circle-opacity', 
-      { 'property':'pid',
-        'default': 0.5,
-        'type':'categorical',
-        'stops':[[pid,1]]}
-  );
+  <!--map.setPaintProperty(-->
+    <!--'gl_active_point', 'circle-opacity', -->
+      <!--{ 'property':'pid',-->
+        <!--'default': 0.5,-->
+        <!--'type':'categorical',-->
+        <!--'stops':[[pid,1]]}-->
+  <!--);-->
   // also set z-index and zoom
+    // zoom to feature
+  map.flyTo({'center': coords, 'zoom': 10})
   
 }
 <!--paint: {-->
@@ -203,11 +221,15 @@ function renderData(dsid){
       'type': 'circle',
       'source': 'places',
       'paint': {
-        'circle-color': '#B42222',
-        "circle-radius": [
-          "interpolate", ["linear"], 
-            ["zoom"], 1, 2, 18, 8
-        ]
+        'circle-color': '#ff9900',
+        'circle-radius': {
+          stops: [[1, 2], [2, 3], [3, 4], [16, 20]]
+        }        
+        <!--"circle-radius": [-->
+        <!--<!--"interpolate", ["linear"],-->-->
+          <!--"interpolate", ['exponential', 0.5],-->
+            <!--["zoom"], 1, 1, 12, 8 -->
+        <!--]-->
       },
       'filter': ['==', '$type', 'Point']
     }, 'z-index-2');  
@@ -220,7 +242,7 @@ function renderData(dsid){
 }
 
 map.on('click', 'gl_active_point', function (e) {
-  console.log('place:', e.features[0])
+  <!--console.log('place:', e.features[0])-->
   place=e.features[0]
   var coordinates = e.features[0].geometry.coordinates.slice();
   var pid = e.features[0].properties.pid;
@@ -233,9 +255,13 @@ map.on('click', 'gl_active_point', function (e) {
   <!--// copies of the feature are visible, the popup appears-->
   <!--// over the copy being pointed to.-->
   while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-  coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+    coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
   }
-   
+  
+  // highlight row
+  console.log('highlight row & fetch data', pid, coordinates)
+    
+  // popup
   new maplibregl.Popup()
   .setLngLat(coordinates)
   .setHTML(title+'<br/>(pid: '+pid+'; src_id: ' +src_id+')<br/>'+minmax+'; '+fc)
