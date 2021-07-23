@@ -289,7 +289,7 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
   font-size: .9rem;
 }
 .item-right {
-  height: 180px;
+  /*height: 180px;*/
   border-radius: 6px;
   border: 1px solid #ddd;
   padding: .4rem;

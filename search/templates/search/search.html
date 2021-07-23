@@ -139,7 +139,7 @@
 			<div id="search_right" class="col-sm-6">
 				<div id="map_options" class="p-1 small">
         <span id="offer_mapfilter" class="hidden">Draw a bounding box to filter result list</span>
-        <span class="float-right">{{ request.META.HTTP_REFERER }}</span>
+        <!--<span class="float-right">{ request.META.HTTP_REFERER }}</span>-->
         <span id="clear_mapfilter" class="hidden float-right"><a href="javascript:mappy.fitBounds( features.getBounds())">clear map filter</a></span>
         </div>
 				<!--{ leaflet_map "map_search" callback="map_init" %}-->
