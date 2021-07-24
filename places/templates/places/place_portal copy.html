@@ -27,216 +27,196 @@
 {% block content %}
 <div class="container">
   <div id="place_title">
-    <span class="mr-1 text-muted smaller"> <a href="javascript:window.history.go(-1);" class="history1">return to search results</a></span>
-    <h4>{{ title }}</h4>
-  </div>
-  <div id="place_content" class="tab-content">
-    <div class="row pt-1">
-      <div id="place_home_l" class="col-sm-6">
-        {% for rec in payload %}
-        <div id="card_{{ rec.place_id }}" class="col-content small mt-1">
-          <!-- 'core' array of dataset labels is context from view; color-code core -->
-          {% if core|haskey:rec.dataset.label %}
-            <div class="core-header">
-          {% else %}<div class="attest-header">{% endif %}
-            <b>{{ rec.title }}</b>
-            <span class="ml-2">[
-              pid: <a href="/api/place/{{rec.place_id}}/" target="_blank">{{rec.place_id}}</a>; 
-              {% if not rec.purl|startswith:'http://whgaz' %}
-              src_id: <a href="{{rec.purl}}" target="_blank">{{ rec.src_id }}</a>;{% else %}src_id: {{ rec.src_id }}; {% endif %}
-              dataset: <a class="pop-link pop-dataset" data-id={{rec.dataset.id}} data-toggle="popover" title="Dataset Profile" data-content="" tabindex="0" rel="clickover">{{rec.dataset.label}}</a>
-              {% if rec.dataset.webpage %} <a href="{{ rec.dataset.webpage }}" target="_blank">{% fontawesome_icon 'external-link' color='#336699' %}</a>{%endif%}
-              </span>]
-              <!-- <a href="#" rel="tooltip" class="ttip" title="{rec.dataset.name}}" >{rec.dataset.label}}</a>-->
-            <span class="float-right">
-              {% if rec.geoms|length > 0 %}
-                <span class="ml-2">
-                <a href="#" class="flash-geo ttip" data-id="{{ rec.place_id }}" title="flash map marker">{% fontawesome_icon 'map-marker' %}</a>
-              </span>{% endif %}
-              <!--<button type="button" data-id="{{ rec.place_id }}" class="create-comment btn btn-sm ml-2">-->
-              <a href="#" data-id="{{ rec.place_id }}" class="create-comment ml-2">
-                {% fontawesome_icon 'edit' color='#336699' %}
-              <!--</button>-->
-              </a>
-            </span>
-          </div>
-          <div class="attest-element scroll65"><b>Variants</b>: 
-            {% for name in rec.names|dictsort:"label" %}
-              <i>{{name.label}}</i>
-              {% if name.when %}
-                ({% for t in name.when.timespans|sortts %}
-                  <!--TODO: not necessarily 'in'-->
-                  {{ t.start.in }}-{{ t.end.in }}
-                {% if not forloop.last %}; {% endif %}
-                {% endfor %})
-              {% endif %}
-              {% if not forloop.last %}; {% endif %}
-            {% endfor %}
-          </div>
-          <div class="attest-element"><b>Types</b>: 
-            {% for type in rec.types %}
-              <i>{{ type.label }}
-                {% if type.when %}
-                  {% for t in type.when.timespans|sortts %}
-                    {{ t.start.in }}-{{ t.end.in }}
-                    {% if not forloop.last %}| {% endif %}
-                  {% endfor %}
-                {% endif %}</i>
-              {% if not forloop.last %}<i>;</i> {% endif %}
-            {% endfor %}
-          </div>
-          {% if rec.links|length > 0 %}
-            <div class="attest-element"><b>Links  </b>: 
-            {% for link in rec.links %}
-              {% if link.identifier|slice:"0:2" == rec.dataset.label|slice:"0:2" %}<span><i>none</i></span>
-              {% elif link.identifier|slice:"0:3" not in 'loc, via' %}
-                <a href="" class="mr-2 ext" data-toggle="modal" data-target="#ext_site">{{ link.identifier }} {% fontawesome_icon 'external-link' color='#336699' %}</a>
-                {% if not forloop.last %}{% endif %}
-              {% else %}
-                <a href="" class="mr-2 ext">{{ link.identifier }} {% fontawesome_icon 'external-link' color='#336699' %}</a>
-              {% endif %}
-            {% endfor %}
-            </div>
-          {% endif %}
-          {% if rec.related|length > 0 %}
-            <div class="attest-element"><b>Related</b>:<i>
-                {% for rel in rec.related %}
-                  {% if rel.relationType == 'gvp:broaderPartitive'%}
-                    <b>within</b>{% endif %}
-                  {{ rel.label }} 
-                  {% if rel.when %}
-                    {{ rel.when|json_script:rec.place_id }}
-                    ({{ rel.when.timespans|first|parsedict:"start"|parsedict:"in" }}/{{ rel.when.timespans|first|parsedict:"end"|parsedict:"in" }})
+  <h4><span class="mr-1 text-muted smaller">
+  <a href="javascript:window.history.go(-1);" class="history1">return to search results</a></span>{{ title }}</h4>
+</div>
+  <div id="place_tabset">
+    <ul class="nav nav-tabs" id="myTab">
+      <li class="nav-item">
+        <a class="nav-link active" data-toggle="tab" href="#place_core" selected>Attestations</a>
+      </li>
+      <!--<li class="nav-item">-->
+        <!--<a class="nav-link disabled" data-toggle="tab" href="#related_matches" selected>Related</a>-->
+      <!--</li>-->
+    </ul>
+    <div id="place_content" class="tab-content">
+      <div id="place_core" class="tab-pane fade show active" >
+        <div class="row pt-1">
+          <div id="place_home_l" class="col-sm-6">
+            {% for rec in payload %}
+            <div id="card_{{ rec.place_id }}" class="col-content small mt-1">
+              <!-- 'core' array of dataset labels is context from view; color-code core -->
+              {% if core|haskey:rec.dataset.label %}
+                <div class="core-header">
+              {% else %}<div class="attest-header">{% endif %}
+                <b>{{ rec.title }}</b>
+                <span class="ml-2">[
+                  pid: <a href="/api/place/{{rec.place_id}}/" target="_blank">{{rec.place_id}}</a>; 
+                  {% if not rec.purl|startswith:'http://whgaz' %}
+                  src_id: <a href="{{rec.purl}}" target="_blank">{{ rec.src_id }}</a>;{% else %}src_id: {{ rec.src_id }}; {% endif %}
+                  dataset: <a class="pop-link pop-dataset" data-id={{rec.dataset.id}} data-toggle="popover" title="Dataset Profile" data-content="" tabindex="0" rel="clickover">{{rec.dataset.label}}</a>
+                  {% if rec.dataset.webpage %} <a href="{{ rec.dataset.webpage }}" target="_blank">{% fontawesome_icon 'external-link' color='#336699' %}</a>{%endif%}
+                  </span>]
+                  <!-- <a href="#" rel="tooltip" class="ttip" title="{rec.dataset.name}}" >{rec.dataset.label}}</a>-->
+                <span class="float-right">
+                  {% if rec.geoms|length > 0 %}
+                    <span class="ml-2">
+                    <a href="#" class="flash-geo ttip" data-id="{{ rec.place_id }}" title="flash map marker">{% fontawesome_icon 'map-marker' %}</a>
+                  </span>{% endif %}
+                  <!--<button type="button" data-id="{{ rec.place_id }}" class="create-comment btn btn-sm ml-2">-->
+                  <a href="#" data-id="{{ rec.place_id }}" class="create-comment ml-2">
+                    {% fontawesome_icon 'edit' color='#336699' %}
+                  <!--</button>-->
+                  </a>
+                </span>
+              </div>
+              <div class="attest-element scroll65"><b>Variants</b>: 
+                {% for name in rec.names|dictsort:"label" %}
+                  <i>{{name.label}}</i>
+                  {% if name.when %}
+                    ({% for t in name.when.timespans|sortts %}
+                      <!--TODO: not necessarily 'in'-->
+                      {{ t.start.in }}-{{ t.end.in }}
+                    {% if not forloop.last %}; {% endif %}
+                    {% endfor %})
                   {% endif %}
-                  {% if not forloop.last %}| {% endif %}
-                {% endfor %}</i>
-            </div>
-          {% endif %}              
-          {% if rec.timespans|length > 0 %}
-            <div class="attest-element attesttime">
-              <b>When</b>:
-              {% if rec.timespans|length > 0 %}
-                {% for t in rec.timespans %}
-                  {{t}}{% if not forloop.last %}; {% endif %}
-                {% endfor %}                    
+                  {% if not forloop.last %}; {% endif %}
+                {% endfor %}
+              </div>
+              <div class="attest-element"><b>Types</b>: 
+                {% for type in rec.types %}
+                  <i>{{ type.label }}
+                    {% if type.when %}
+                      {% for t in type.when.timespans|sortts %}
+                        {{ t.start.in }}-{{ t.end.in }}
+                        {% if not forloop.last %}| {% endif %}
+                      {% endfor %}
+                    {% endif %}</i>
+                  {% if not forloop.last %}<i>;</i> {% endif %}
+                {% endfor %}
+              </div>
+              {% if rec.links|length > 0 %}
+                <div class="attest-element"><b>Links</b>: 
+                {% for link in rec.links %}
+                  {% if link.identifier|slice:"0:2" == rec.dataset.label|slice:"0:2" %}<span><i>none</i></span>
+                  {% elif link.identifier|slice:"0:3" not in 'loc,via' %}
+                    <a href="" class="mr-2 ext" data-toggle="modal" data-target="#ext_site">{{ link.identifier }} {% fontawesome_icon 'external-link' color='#336699' %}</a>
+                    {% if not forloop.last %}{% endif %}
+                  {% else %}
+                    <a href="" class="mr-2 ext">{{ link.identifier }} {% fontawesome_icon 'external-link' color='#336699' %}</a>
+                  {% endif %}
+                {% endfor %}
+                </div>
               {% endif %}
+              {% if rec.related|length > 0 %}
+                <div class="attest-element"><b>Related</b>:<i>
+                    {% for rel in rec.related %}
+                      {% if rel.relationType == 'gvp:broaderPartitive'%}
+                        <b>within</b>{% endif %}
+                      {{ rel.label }} 
+                      {% if rel.when %}
+                        {{ rel.when|json_script:rec.place_id }}
+                        ({{ rel.when.timespans|first|parsedict:"start"|parsedict:"in" }}/{{ rel.when.timespans|first|parsedict:"end"|parsedict:"in" }})
+                      {% endif %}
+                      {% if not forloop.last %}| {% endif %}
+                    {% endfor %}</i>
+                </div>
+              {% endif %}              
+              {% if rec.timespans|length > 0 %}
+                <div class="attest-element attesttime">
+                  <b>When</b>:
+                  {% if rec.timespans|length > 0 %}
+                    {% for t in rec.timespans %}
+                      {{t}}{% if not forloop.last %}; {% endif %}
+                    {% endfor %}                    
+                  {% endif %}
+                </div>
+              {% endif %}
+              <!-- geoms into $('script') elements-->
+              {% if rec.geoms|length > 0 %}
+                {% for g in rec.geoms %}
+                  {{ g|json_script:rec.place_id }}
+                {% endfor %}
+              {% endif %}
+              <!--{ if rec.descriptions and rec.descriptions|length > 0 %}-->
+                <!--<div class="attest-element">-->
+                  <!--<div><b>Descriptions</b>: { for desc in rec.descriptions %}<i>{desc.value}}</i>-->
+                    <!--{ if not forloop.last %}; { endif %}{ endfor %}</div>-->
+                <!--</div>-->
+              <!--{ endif %}-->
             </div>
-          {% endif %}
-          <!-- geoms into $('script') elements-->
-          {% if rec.geoms|length > 0 %}
-            {% for g in rec.geoms %}
-              {{ g|json_script:rec.place_id }}
-            {% endfor %}
-          {% endif %}
-          <!--{ if rec.descriptions and rec.descriptions|length > 0 %}-->
-            <!--<div class="attest-element">-->
-              <!--<div><b>Descriptions</b>: { for desc in rec.descriptions %}<i>{desc.value}}</i>-->
-                <!--{ if not forloop.last %}; { endif %}{ endfor %}</div>-->
-            <!--</div>-->
-          <!--{ endif %}-->
+            {% endfor %} <!-- rec in payload-->
+          </div> <!-- place_home_l-->
+          <div id="place_home_r" class="col-sm-6">
+            <div id="place_temporal" class="col-content small">
+              <p class="mb-0 allcap-heading">TEMPORAL ATTESTATIONS</p>
+              <div id="histogram_sum"></div>
+            </div>
+            <div id="place_map" class="col-content small">
+                <p class="mb-0 allcap-heading">GEOGRAPHY <span class="nogeo text-danger"></span>
+                    <span class="float-right">nearby places (300 max) <input id="fetch-context" type="checkbox"/></span>
+                      <!--{# fontawesome_icon 'search-plus'#} -->
+                </p>
+                <div id="map">{% leaflet_map "map" callback="map_init" %}</div>
+            </div>
+            <div id="place_traces" class="col-content small mt-1">
+              <p class="mb-0 allcap-heading">TRACES (related persons, events, works, objects)
+                <span id="clear_traces" class="float-right hidden">
+                <a href="#" class="trace-geo">clear trace markers</a></span>
+              </p>
+              <div id="trace_list">
+              {% if traces|length > 0 %}
+                <ul>
+                {% for t in traces %}
+                  <li><b>{{ t.target.type }}</b> {{ t.body.relations }}; 
+                    {% if t.bodycount > 1 %} {% fontawesome_icon 'globe' color='#336699' %} 
+                      <a href="#" data-ctr={{ forloop.counter0 }} data-id={{t.trace_id}} class="trace-geo ml-1">
+                         show trace places</a>
+                    {% endif %}
+                     <br/><a href="{{t.target.id}}" target="_blank">{{ t.target.title }}</a>
+                    {% if t.target.depiction %}
+                    <a href="#" data-toggle="tooltip" data-html="true" data-trigger="click" data-container="#place_traces"data-boundary="viewport" title="<img class='trace-img' src='{{ t.target.depiction }}'/>" class="ml-1 tip" data-placement="auto" style="z-index:10000 !important;">{% fontawesome_icon 'image' color='#336699' %}</a>                      
+                    {% endif %}
+                  </li>
+                {% endfor %}
+                </ul>
+              {% else %}
+                <i>None yet</i>
+              {% endif %}
+              </div>
+            </div>
+          </div> <!-- place_home_r -->
+        </div> <!-- row -->          
+      </div> <!-- place_core -->
+      <div id="related_matches" class="tab-pane fade" >
+        <div class="container pt-2">
+          <h5>Related place records from elsewhere</h5>
         </div>
-        {% endfor %} <!-- rec in payload-->
-      </div> <!-- place_home_l-->
-      <div id="place_home_r" class="col-sm-6">
-        <p><a href="" class="a_modal" data-pid="90329" data-toggle="modal" data-target="#modal_place" title="place detail">place in a modal</a></p>
-        <div id="place_temporal" class="col-content small">
-          <p class="mb-0 allcap-heading">TEMPORAL ATTESTATIONS</p>
-          <div id="histogram_sum"></div>
+      </div>
+      <div id="place_discussion" class="tab-pane fade">
+        <div class="container pt-2">
+          <h5>Discussion</h5>
         </div>
-        <div id="place_map" class="col-content small">
-          <p class="mb-0 allcap-heading">GEOGRAPHY <span class="nogeo text-danger"></span>
-              <span class="float-right">nearby places (300 max) <input id="fetch-context" type="checkbox"/></span>
-          </p>
-          <div id="map">{% leaflet_map "map" callback="map_init" %}</div>
-        </div>
-        <div id="place_traces" class="col-content small mt-1">
-          <p class="mb-0 allcap-heading">TRACES (related persons, events, works, objects)
-            <span id="clear_traces" class="float-right hidden">
-            <a href="#" class="trace-geo">clear trace markers</a></span>
-          </p>
-          <div id="trace_list">
-          {% if traces|length > 0 %}
-            <ul>
-            {% for t in traces %}
-              <li><b>{{ t.target.type }}</b> {{ t.body.relations }}; 
-                {% if t.bodycount > 1 %} {% fontawesome_icon 'globe' color='#336699' %} 
-                  <a href="#" data-ctr={{ forloop.counter0 }} data-id={{t.trace_id}} class="trace-geo ml-1">
-                     show trace places</a>
-                {% endif %}
-                 <br/><a href="{{t.target.id}}" target="_blank">{{ t.target.title }}</a>
-                {% if t.target.depiction %}
-                <a href="#" data-toggle="tooltip" data-html="true" data-trigger="click" data-container="#place_traces"data-boundary="viewport" title="<img class='trace-img' src='{{ t.target.depiction }}'/>" class="ml-1 tip" data-placement="auto" style="z-index:10000 !important;">{% fontawesome_icon 'image' color='#336699' %}</a>                      
-                {% endif %}
-              </li>
-            {% endfor %}
-            </ul>
-          {% else %}
-            <i>None yet</i>
-          {% endif %}
-          </div>
-        </div>
-      </div> <!-- place_home_r -->
-    </div> <!-- row -->          
-  </div> <!-- place_content -->
+      </div> <!-- place_discussion -->
+    </div> <!-- place_content -->
+  </div> <!-- place_tabset -->
 </div> <!-- top container -->
 
 
-<div id="modal_place" class="modal fade" tabindex="-1" role="dialog" >
+<div id="modal" class="modal fade" tabindex="-1" role="dialog" >
   <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <!--<div class="modal-header">-->
-        <!--<h5 class="modal-title" id="exampleModalLabel"></h5>-->
-        <!--<button type="button" class="close" data-dismiss="modal" aria-label="Close">-->
-          <!--<span aria-hidden="true">&times;</span>-->
-        <!--</button>      -->
-      <!--</div>-->
-      <div class="modal-body"></div>
-      <div class="modal-footer">
-        <!--<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>-->
-      </div>
-    </div>
+    <div class="modal-content modal-form"></div>
   </div>
 </div>
 
 <script type="text/javascript">
-
-  $('.a_modal').on('click',function(){
-    startModalSpinner()
-    var pid = $(this).data('pid')
-    $('.modal-body').load('/places/'+pid+'/modal',function(){
-      <!--$('#modal_place').modal('show');-->
-      spinner_modal.stop()
-    });
-  });
-  <!--$('#modal_place').on('shown.bs.modal', function(){-->
-    <!--setTimeout(function() {-->
-      <!--map.invalidateSize();-->
-    <!--}, 1);-->
-  <!--});-->
-  <!--$('#modal_place').on('show.bs.modal', function (event) {-->
-    <!--spinner_modal.stop()-->
-    <!--var link = $(event.relatedTarget) // Button that triggered the modal-->
-    <!--var pid = link.data('pid') // Extract info from data-* attributes-->
-    <!--msg='load place_detail, pid:'+ pid-->
-    <!--console.log(msg)-->
-    <!--// If necessary, you could initiate an AJAX request here (and then do the updating in a callback).-->
-    <!--// Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.-->
-    <!--var modal = $(this)-->
-    <!--<!--modal.find('.modal-title').text('New message to ' + recipient)-->-->
-    <!--modal.find('#place_detail').html(msg)-->
-  <!--})-->
   //
   // for loading rivers, watersheds, ecoregions
   function startMapitSpinner(){
     window.spinner_mapit = new Spin.Spinner().spin();
     $("#map").append(spinner_mapit.el);   
   }
-  spin_opts = { scale: .5, top: '50%'}
-  function startModalSpinner(){
-    window.spinner_modal = new Spin.Spinner({top: '40%'}).spin();
-    $("#modal_place").append(spinner_modal.el);   
-  }
-
+      
   $(function() {
     // zap 'keep' if nav away *except history link*
     $('a').show().filter(':not(.history1)').click(function(){

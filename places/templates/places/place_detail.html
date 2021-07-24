@@ -9,7 +9,7 @@
 {% block extra_head %}
   {% leaflet_js %}
   {% leaflet_css %}
-  
+
   <script src="{% static 'js/tags/bootstrap-tagsinput.js' %}"></script>
   <script src="{% static 'js/tags/bloodhound.js' %}"></script>
   <script src="{% static 'js/clipboard.min.js' %}"></script>
@@ -17,11 +17,11 @@
   <link rel="stylesheet" href="{% static 'js/tags/bootstrap-tagsinput.css' %}"/>
   <link rel="stylesheet" href="{% static 'js/tags/bootstrap-tagsinput-typeahead.css' %}"/>
   <link rel="stylesheet" href="{% static 'css/spin.css' %}"/>
-  
+
   <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.css' rel='stylesheet' />
   <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.js'></script>
   <script src="{% static 'js/leaflet-mapbox-gl.js' %}"></script>
-  
+
   <style>table tr td:nth-child(1) {font-weight:600;}
   </style>
 {% endblock %}
@@ -30,12 +30,14 @@
 <div class="container">
   <span class="mr-1 text-muted smaller">
   <a href="javascript:window.history.go(-1);">return to search results</a></span>
-  
+
   <h4 class="mt-3">
     <span class="text-danger">{{ object.title }}</span> <small class="text-secondary ml-2">({{ dataset.title}})</small>
   </h4>
+  <!--<div class="d-flex row">-->
   <div class="d-flex">
-    <div class="form-box col-sm-7 mt-2">
+    <!--<div class="col-sm-7 form-box mt-2">-->
+    <div class="col-sm-7 form-box mt-2 mr-2">
       <div class="bg-light p-2">
         <table class="w-100">
           <colgroup><col style="width:150px;"></col><col></col></colgroup>
@@ -65,15 +67,12 @@
         </table>          
         <!-- send geometry to javascript -->
         {% for g in object.geoms.all %}
-         {{ g.jsonb|safe|json_script:object.id }}
+          {{ g.jsonb|safe|json_script:object.id }}
         {% endfor %}
       </div>
       <hr/>
       <div id="coll_dslist" class="">
         <p class="larger strong mb-0">Dataset details</p>
-        {%comment%}
-          <span class="small float-right mr-2">{% fontawesome_icon 'download' color='#336699' %} <a href="" id="a_download_modal" data-dsid = {{ object.id }} data-toggle="modal" data-target="#downloadModal" title="download options"> download options</a></span>
-        {%endcomment%}
         <div id="ds_cards">
           <table class="w-75">
           <colgroup><col style="width:150px;"></col><col></col></colgroup>
@@ -87,43 +86,38 @@
         </div> <!-- #ds_cards -->        
       </div> <!-- #coll_dslist -->
     </div>
-    <div id="coll_map" class="col-sm-5 mt-2">
-      <div id="mapdiv_coll" class="">
-        {% leaflet_map "map_coll" callback="map_init" %}
-      </div>
-    </div> <!-- .row -->
+    <div id="map" class="col-sm-5 mt-2">
+      {% leaflet_map "map" callback="map_init" %}
+    </div> <!-- #map -->
   </div> <!-- d-flex -->
+  {%comment%}
   <div class="modal fade" id="downloadModal" tabindex="-1" aria-labelledby="downloadModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content modal-75">
         <div class="modal-header">
           <h5 class="modal-title" id="downloadModalLabel">{% fontawesome_icon 'download' color='#336699' %} Download options for <span class="text-danger">{{ object.title }}</span></h5>
-          <!--<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">X</button>-->
         </div>
         <div class="modal-body container">
-          <form id="download_collection_form" method="POST" action="#" enctype="multipart/form-data">
-          {% csrf_token %}
-            <div class="row">
-              <div class="col-sm-6 modal-col scroll-div">
-                <p class="modal-col-head p-1">Datasets</p>
-                <ul class="ul-left p-1">
-                {% for d in ds_list %} 
-                  <li class="li-flush"><input type="checkbox" value="{{d.id}}" checked> {{ d.title }} ({{ d.id }}) <span class="float-right">{{d.numrows}} rows</span></li>
-                {% endfor %}
-                </ul>
+          <div class="row">
+            <div class="col-sm-6 modal-col scroll-div">
+              <p class="modal-col-head p-1">Datasets</p>
+              <ul class="ul-left p-1">
+              {% for d in ds_list %} 
+                <li class="li-flush"><input type="checkbox" value="{{d.id}}" checked> {{ d.title }} ({{ d.id }}) <span class="float-right">{{d.numrows}} rows</span></li>
+              {% endfor %}
+              </ul>
+            </div>
+            <div class="col-sm-6 modal-col">
+              <p class="modal-col-head p-1">File Format</p>
+              <div class="p-1">
+              <p><label><input type="radio" name="dl_format" id="lpf" checked> Linked Places format</label>  
+              <p><label><input type="radio" name="dl_format" id="lptsv"> LP-TSV</label>
+              <hr/>
+              <p><b>Linked Places format</b> is JSON-based, valid GeoJSON with temporal extensions</p>
+              <p class="mt-2"><b>LP-TSV downloads</b> are tab-separated text files.</p>
               </div>
-              <div class="col-sm-6 modal-col">
-                <p class="modal-col-head p-1">File Format</p>
-                <div class="p-1">
-                <p><label><input type="radio" name="dl_format" id="lpf" checked> Linked Places format</label>  
-                <p><label><input type="radio" name="dl_format" id="lptsv"> LP-TSV</label>
-                <hr/>
-                <p><b>Linked Places format</b> is JSON-based, valid GeoJSON with temporal extensions</p>
-                <p class="mt-2"><b>LP-TSV downloads</b> are tab-separated text files.</p>
-                </div>
-              </div>
-            </div> <!-- .row -->
-          </form>
+            </div>
+          </div> <!-- .row -->
         </div> <!-- .modal-body -->
         <div class="modal-footer">
           <button type="button" id="b_download" class="btn btn-sm btn-primary">Download</button>
@@ -132,6 +126,7 @@
       </div>
     </div>
   </div>
+  {%endcomment%}
 </div> <!-- container -->
 
 <script type="text/javascript">
@@ -181,22 +176,22 @@
   })
 
   $( ".ds_card" ).hover(function() {
-      <!--console.log($(this))-->
-      let id = $(this).data('id')
-      feat = idToFeature[id]
-      <!--console.log('feat',feat)-->
-      ogfill = "#ff9999"
-      feat.setStyle(
-        {fillColor: 'yellow', color: 'red', fillOpacity: 0.3}
-      )
-    },
-    function() {
-      let id = $(this).data('id')
-      feat = idToFeature[id]
-      feat.setStyle(
-        {fillColor: ogfill, color: '#333', fillOpacity: 0.3 }
-      )
-    }
+    <!--console.log($(this))-->
+    let id = $(this).data('id')
+    feat = idToFeature[id]
+    <!--console.log('feat',feat)-->
+    ogfill = "#ff9999"
+    feat.setStyle(
+      {fillColor: 'yellow', color: 'red', fillOpacity: 0.3}
+    )
+  },
+  function() {
+    let id = $(this).data('id')
+    feat = idToFeature[id]
+    feat.setStyle(
+      {fillColor: ogfill, color: '#333', fillOpacity: 0.3 }
+    )
+  }
   );
 
   $("#b_download").click(function(){
@@ -206,30 +201,30 @@
     });
     console.log('download datasets:', dsids)
   })
-  
+
   function startDownloadSpinner(){
     window.spinner_dl = new Spin.Spinner().spin();
     $("#ds_cards").append(spinner_dl.el);   
   }  
 
   $(".btn-cancel").click(function(){$("#downloadModal").modal('hide') })
-  
+
   function showMore() {
     foo = $(this)
     console.log('foo',foo)
   } 
-  
+
   $(".dl-links a").click(function(e){
     <!--e.preventDefault()-->
     urly='/datasets/'+$(this).data('id')+'/augmented/'+$(this).attr('ref')
     console.log('urly',urly)
     startDownloadSpinner()
     $.ajax({
-          type: 'GET',
-          url: urly
-        }).done(function() {
-            spinner_dl.stop();
-        })
+      type: 'GET',
+      url: urly
+    }).done(function() {
+      spinner_dl.stop();
+    })
   })
 
   // expose leaflet map for events, call it 'mappy'
@@ -239,14 +234,14 @@
 
     // mapbox tokens 
     var token_kg = '{{ mbtokenkg }}', 
-        token_whg = '{{ mbtokenwhg }}', 
-        token_mb = '{{ mbtokenmb }}';
-    
+      token_whg = '{{ mbtokenwhg }}', 
+      token_mb = '{{ mbtokenmb }}';
+
     // style/tile urls
     var mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}',
-        mbtiles_url = 'https://api.mapbox.com/v3/{id}/{z}/{x}/{y}.png',
-        ne_url = 'http://blog.whgazetteer.org/tiles/ne/{z}/{x}/{y}.png';
-      
+      mbtiles_url = 'https://api.mapbox.com/v3/{id}/{z}/{x}/{y}.png',
+      ne_url = 'http://blog.whgazetteer.org/tiles/ne/{z}/{x}/{y}.png';
+
     var satellite  = L.tileLayer(mbstyle_url, {
       id:'mapbox/satellite-streets-v11', 
       token:token_mb}),
@@ -276,7 +271,7 @@
     };
 
     layerGroup = L.control.layers(baseLayers).addTo(mappy);
-    
+
     <!--$.get("/api/geoms", {ds: "{{ ds.label }}", f: "{{ filter }}" },-->
       <!--function(data){-->
         <!--<!--console.log('feature count:',data.count)-->-->
@@ -315,7 +310,7 @@
       "focus":{fillOpacity: 0.3, opacity: .5, color: "red", weight: 2, fillColor:"#ff9999"}}
   }
 
-   // initialize, render map w/settings.LEAFLET_CONFIG
+    // initialize, render map w/settings.LEAFLET_CONFIG
   function map_init(map, options) {
     // console.log('in map_init()')
     <!--window.geom = {"type":"FeatureCollecton","features":[]}-->
@@ -328,7 +323,7 @@
     });
     for (i=0;i<gelems.length;i++){
       let t_geom = cleanJson(gelems[i].id, gelems[i].text)
-      
+
       <!--t_geom['properties'] = {"id": gelems[i].id,"ds": t_geom.ds!=null?t_geom.ds:ds}-->
       geoms.push(t_geom)
     }

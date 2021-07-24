@@ -1,710 +1,367 @@
-<!-- places/place_modal.html -->
-<!--{ extends "main/base.html" }-->
-{% load fontawesome %}
-{% load static %}
+<!-- places/place_detail.html -->
+{% extends "main/base_modal.html" %}
 {% load dataset_extras %}
+{% load fontawesome %}
+{% load geojson_tags %}
 {% load leaflet_tags %}
-
-{% block title %}<title>Place::{{ place.title }}</title>{% endblock %}
+{% load static %}
+{% block title %}<title>WHG::Place</title>{% endblock %}
 {% block extra_head %}
   {% leaflet_js %}
   {% leaflet_css %}
-  <!--<script src = "https://d3js.org/d3.v4.min.js"></script>-->
-  <script src="{% static 'js/d3.v4.min.js' %}"></script>
-  <script src="{% static 'js/aliases.js' %}"></script>
-  <script src="{% static 'js/leaflet.ajax.min.js' %}"></script>
-  <script src="{% static 'js/jquery.bootstrap.modal.forms.min.js' %}"></script>
-  <!--TODO: load local, only what's needed-->
-  <!-- spinners stuff -->
+  
+  <script src="{% static 'js/tags/bootstrap-tagsinput.js' %}"></script>
+  <script src="{% static 'js/tags/bloodhound.js' %}"></script>
+  <script src="{% static 'js/clipboard.min.js' %}"></script>
   <script src="{% static 'js/spin.umd.js' %}"></script>
+  
+  <link rel="stylesheet" href="{% static 'js/tags/bootstrap-tagsinput.css' %}"/>
+  <link rel="stylesheet" href="{% static 'js/tags/bootstrap-tagsinput-typeahead.css' %}"/>
   <link rel="stylesheet" href="{% static 'css/spin.css' %}"/>
   
   <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.css' rel='stylesheet' />
   <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.js'></script>
   <script src="{% static 'js/leaflet-mapbox-gl.js' %}"></script>
-  <script src="{% static 'js/bootstrapx-clickover.js' %}"></script>
+  <!--<script src="https://unpkg.com/maplibre-gl@1.15.2/dist/maplibre-gl.js"></script>-->
+  <!--<link href="https://unpkg.com/maplibre-gl@1.15.2/dist/maplibre-gl.css" rel="stylesheet" />-->
   
+  <style>table tr td:nth-child(1) {font-weight:600;}
+  </style>
 {% endblock %}
+
 {% block content %}
 <div class="container">
-  <div id="place_title"><h4>{{ title }}</h4></div>
-  <div id="place_tabset">
-    <ul class="nav nav-tabs" id="myTab">
-      <li class="nav-item">
-        <a class="nav-link active" data-toggle="tab" href="#place_core" selected>Attestations</a>
-      </li>
-      <!--<li class="nav-item">-->
-        <!--<a class="nav-link disabled" data-toggle="tab" href="#related_matches" selected>Related</a>-->
-      <!--</li>-->
-    </ul>
-    <div id="place_content" class="tab-content">
-      <div id="place_core" class="tab-pane fade show active" >
-        <div class="row pt-1">
-          <div id="place_home_l" class="col-sm-6">
-            {% for rec in payload %}
-            <div id="card_{{ rec.place_id }}" class="col-content small mt-1">
-              <!-- 'core' array of dataset labels is context from view; color-code core -->
-              {% if core|haskey:rec.dataset.label %}<div class="core-header">{% else %}<div class="attest-header">{% endif %}
-                <b>{{ rec.title }}</b>
-                <span class="ml-2">
-                  [pid: <a href="/api/place/{{rec.place_id}}/" target="_blank">{{rec.place_id}}</a>; 
-                  dataset: <a class="pop-link pop-dataset" data-id={{rec.dataset.id}} data-toggle="popover" title="Dataset Profile" data-content="" tabindex="0" rel="clickover">{{rec.dataset.label}}</a>
-                  {% if rec.dataset.webpage %} <a href="{{ rec.dataset.webpage }}" target="_blank">{% fontawesome_icon 'external-link' color='#336699' %}</a>{%endif%}
-                  </span>]
-                  <!-- <a href="#" rel="tooltip" class="ttip" title="{{rec.dataset.name}}" >{rec.dataset.label}}</a>-->
-                <span class="float-right">
-                  {% if rec.geoms|length > 0 %}
-                    <span class="ml-2">
-                    <a href="#" class="flash-geo ttip" data-id="{{ rec.place_id }}" title="flash map marker">{% fontawesome_icon 'map-marker' %}</a>
-                  </span>{% endif %}
-                  <!--<button type="button" data-id="{{ rec.place_id }}" class="create-comment btn btn-sm ml-2">-->
-                  <a href="#" data-id="{{ rec.place_id }}" class="create-comment ml-2">
-                    {% fontawesome_icon 'edit' color='#336699' %}
-                  <!--</button>-->
-                  </a>
-                </span>
-              </div>
-              <div class="attest-element scroll65"><b>Variants</b>: 
-                {% for name in rec.names|dictsort:"toponym" %}
-                  <i>{{name.toponym}}</i>
-                  {% if name.when %}
-                    {{ name|json_script:rec.place_id }}
-                    ({% for t in name.when.timespans|sortts %}
-                      {{ t.start.in }}-{{ t.end.in }}
-                    {% if not forloop.last %}| {% endif %}
-                    {%endfor%})
-                  {% endif %}
-                  {% if not forloop.last %}; {% endif %}
-                {% endfor %}
-              </div>
-              <div class="attest-element"><b>Types</b>: 
-                {% for type in rec.types %}<i>{{type.sourceLabel}}</i>
-                {% if not forloop.last %}<i>;</i> {% endif %}{% endfor %}
-              </div>
-              <!-- put geoms into script -->
-              {% if rec.geoms|length > 0 %}
-                {% for g in rec.geoms %}
-                  {{ g|json_script:rec.place_id }}
-                {% endfor %}
-              {% endif %}
-              <!-- TODO: display loc and viaf links? -->
-              {% if rec.links|length > 0 %}
-                <div class="attest-element"><b>Links</b>: 
-                {% for link in rec.links %}
-                  {% if link.identifier|slice:"0:2" == rec.dataset.label|slice:"0:2" %}<span><i>none</i></span>
-                  {% elif link.identifier|slice:"0:3" not in 'loc,via' %}
-                    <a href="" class="mr-2 ext" data-toggle="modal" data-target="#ext_site">{{ link.identifier }} {% fontawesome_icon 'external-link' color='#336699' %}</a>
-                    {% if not forloop.last %}{% endif %}
-                  {% else %}
-                    <a href="" class="mr-2 ext">{{ link.identifier }} {% fontawesome_icon 'external-link' color='#336699' %}</a>
-                  {% endif %}
-                {% endfor %}
-                </div>
-              {% endif %}
-              {% if rec.related|length > 0 %}
-                <div id="place_related" class="attest-element"><b>Related</b>:
-                    <i>Within {% for rel in rec.related %}
-                    {{ rel.label }} 
-                    {% if rel.when %}
-                      {{ rel.when|json_script:rec.place_id }}
-                      ({{ rel.when.timespans|first|parsedict:"start"|parsedict:"in" }}/{{ rel.when.timespans|first|parsedict:"end"|parsedict:"in" }})
-                    {% endif %}
-                    {% if not forloop.last %}| {% endif %}
-                    {% endfor %}</i>
-                </div>
-              {% endif %}
-              <!--{ if rec.descriptions and rec.descriptions|length > 0 %}-->
-                <!--<div class="attest-element">-->
-                  <!--<div><b>Descriptions</b>: { for desc in rec.descriptions %}<i>{desc.value}}</i>-->
-                    <!--{ if not forloop.last %}; { endif %}{ endfor %}</div>-->
-                <!--</div>-->
-              <!--{ endif %}-->
-              
-              {% if rec.whens|length > 0 %}
-                <div class="attest-element attesttime"><b>Temporal</b>:
-                  <!-- aggregate into telems javascript object-->
-                  {% for w in rec.whens %}
-                    {{ w|json_script:rec.place_id }}
-                  {% endfor %}
-                  {% if rec.timespans|length > 0 %}
-                    {% for t in rec.timespans %}
-                      {{t}} {% if not forloop.last %}| {% endif %}
-                    {% endfor %}                    
-                  {% endif %}
-                </div>
-              {% endif %}
-            </div>
-            {% endfor %} <!-- rec in payload-->
-          </div> <!-- place_home_l-->
-          <div id="place_home_r" class="col-sm-6">
-            <div id="place_temporal" class="col-content small">
-              <p class="mb-0 allcap-heading">TEMPORAL ATTESTATIONS</p>
-              <div id="histogram_sum"></div>
-            </div>
-            <div id="place_map" class="col-content small">map was here
-            </div>
-            <div id="place_traces" class="col-content small mt-1">
-              <p class="mb-0 allcap-heading">TRACES (related persons, events, works, objects)
-                <span id="clear_traces" class="float-right hidden">
-                <a href="#" class="trace-geo">clear trace markers</a></span>
-              </p>
-              <div id="trace_list">
-              {% if traces|length > 0 %}
-                <ul>
-                {% for t in traces %}
-                  <li><b>{{ t.target.type }}</b> {{ t.body.relations }}; 
-                    {% if t.bodycount > 1 %} {% fontawesome_icon 'globe' color='#336699' %} 
-                      <a href="#" data-ctr={{ forloop.counter0 }} data-id={{t.trace_id}} class="trace-geo ml-1">
-                         show trace places</a>
-                    {% endif %}
-                     <br/><a href="{{t.target.id}}" target="_blank">{{ t.target.title }}</a>
-                    {% if t.target.depiction %}
-                    <a href="#" data-toggle="tooltip" data-html="true" data-trigger="click" data-container="#place_traces"data-boundary="viewport" title="<img class='trace-img' src='{{ t.target.depiction }}'/>" class="ml-1 tip" data-placement="auto" style="z-index:10000 !important;">{% fontawesome_icon 'image' color='#336699' %}</a>                      
-                    {% endif %}
-                  </li>
-                {% endfor %}
-                </ul>
-              {% else %}
-                <i>None yet</i>
-              {% endif %}
-              </div>
-            </div>
-          </div> <!-- place_home_r -->
-        </div> <!-- row -->          
-      </div> <!-- place_core -->
-      <div id="related_matches" class="tab-pane fade" >
-        <div class="container pt-2">
-          <h5>Related place records from elsewhere</h5>
-        </div>
+  <h4 class="mt-3">
+    <span class="text-danger">{{ object.title }}</span> <small class="text-secondary ml-2">({{ dataset.title}})</small>
+    <span class="float-right"><button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Close</button></span>
+  </h4>
+  <div class="d-flex">
+    <div class="col-sm-7 form-box mt-2 mr-2">
+      <div class="bg-light p-2">
+        <table class="w-100">
+          <colgroup><col style="width:150px;"></col><col></col></colgroup>
+          <tr><td>Record title:</td><td>{{ object.title }}</td></tr>
+          <tr><td>WHG identifier:</td><td>{{ object.id }} (<a href="/api/db/?id={{object.id}}" target="_blank">Linked Places record</a>)</td></tr>
+          <tr><td>Source identifier:</td>
+            <td>{{ object.src_id }} {%if not 'whg' in dataset.uri_base %} <a href="{{dataset.uri_base}}{{object.id}}" target="_blank">complete source record {% fontawesome_icon 'external-link' color='#336699' %}</a>{%endif%}</td>
+          </tr>
+          <tr><td>Variants:</td><td>{% for n in object.names.all %}
+          <i>{{n.jsonb.toponym }};</i> {% endfor %}</td></tr>
+          {% if object.description %}
+          <tr><td><b>Description</b></td><td>{{ object.description }}</td></tr>{% endif %}
+          {% if object.minmax %}
+          <tr><td>Earliest/Latest:</td><td>{{object.minmax.0}} / {{object.minmax.1}} </td></tr>{% endif %}
+          <tr><td>Type(s):</td><td>{% for t in object.types.all %}
+          {{t.jsonb.sourceLabel }}{%if t.label %} ({{ t.label }}) {% endif %}; {% endfor %}</td></tr>
+          <tr><td>Linked records in WHG:</td>
+            <td>{% if object.links|length > 0 %}{% for l in object.links.all %}{{l}}; {%endfor%}{%else%}<i>none yet{%endif%}
+            </td></tr>
+          {% if object.geoms %}
+          <tr>
+            <td><b>Coordinates</b>
+              <span style="opacity:0;position:absolute;z-index:-1" id="pgeom">{% for g in object.geoms.all %}{{g.jsonb.coordinates}}{%endfor%}</span>
+            </td>
+            <td><a id="a_clipgeom" class="clippy" data-clipboard-target="#pgeom" rel="tooltip" title="copy to clipboard">copy to clipboard {% fontawesome_icon 'clipboard' color='#336699' %}</a></td>
+          </tr>
+            <!--{ for g in object.geoms.all %}-->
+              <!--{ g.jsonb|json_script:object.id }}-->
+            <!--{ endfor %}        -->
+          {% endif %}
+        </table>          
       </div>
-      <div id="place_discussion" class="tab-pane fade">
-        <div class="container pt-2">
-          <h5>Discussion</h5>
-        </div>
-      </div> <!-- place_discussion -->
-    </div> <!-- place_content -->
-  </div> <!-- place_tabset -->
-</div> <!-- top container -->
-
-
-<div id="modal" class="modal fade" tabindex="-1" role="dialog" >
-  <div class="modal-dialog" role="document">
-    <div class="modal-content modal-form"></div>
-  </div>
-</div>
+      <hr/>
+      <div id="coll_dslist" class="">
+        <p class="larger strong mb-0">Dataset details</p>
+        {%comment%}
+          <span class="small float-right mr-2">{% fontawesome_icon 'download' color='#336699' %} <a href="" id="a_download_modal" data-dsid = {{ object.id }} data-toggle="modal" data-target="#downloadModal" title="download options"> download options</a></span>
+        {%endcomment%}
+        <div id="ds_cards">
+          <table class="w-75">
+          <colgroup><col style="width:150px;"></col><col></col></colgroup>
+          <tr><td>Title:</td><td></td> <td><a href="{% url 'datasets:ds_meta' dataset.id %}">{{ dataset.title }}</a></td></tr>
+          {% if dataset.minmax %}
+          <tr><td>Earliest/Latest:</td><td> </td><td>{{dataset.minmax.0}} / {{dataset.minmax.1}} </td></tr>{% endif %}
+          <tr><td>Creator(s):</td><td> </td><td>{{dataset.creator}}</td></tr>
+          <tr><td>Last modified:</td><td> </td><td>{{dataset.last_modified_text}}</td></tr>
+          <tr><td>:</td><td> </td><td></td></tr>
+          </table>
+        </div> <!-- #ds_cards -->        
+      </div> <!-- #coll_dslist -->
+    </div>
+    <div id="mapdiv" class="col-sm-5 mt-2"></div>
+  </div> <!-- d-flex -->
+</div> <!-- container -->
 
 <script type="text/javascript">
-  //
-  // for loading rivers, watersheds, ecoregions
-  function startMapitSpinner(){
-    window.spinner_mapit = new Spin.Spinner().spin();
-    $("#map").append(spinner_mapit.el);   
-  }
-      
-  $(function() {
-    var isVisible = false;
-  
-    var hideAllPopovers = function() {
-       $('.pop-dataset').each(function() {
-            $(this).popover('hide');
-        });  
-    };
-  
-    var dspop = $(".pop-dataset").popover({
-      trigger: 'focus',
-      placement: 'right',
-      html: true
-    }).on('show.bs.popover', function () {
-        $.ajax({
-          url: '/api/datasets/',
-          data: {id:$(this).data('id')},
-          dataType: "JSON",
-          async: false,
-          success: function (data) {
-            ds=data.results[0]
-            console.log('ds',ds)
-            html='<p class="thin"><b>Title</b>: '+ds.title+'</p>'
-            html+='<p class="thin"><b>Description</b>: '+ds.description+'</p>'
-            html+='<p class="thin"><b>WHG Owner</b>: '+ds.owner+'</p>'
-            html+='<p class="thin"><b>Creator</b>: '+ds.creator+'</p>'
-            <!--if(ds.webpage){-->
-              <!--html+='<p class="thin"><a href="'+ds.webpage+'" target="_blank">Web page</a></p>'-->
-            <!--}-->
-            dspop.attr('data-content', html);
-          }
-      });
-    })
-    
-    //
-    // telems looks like: { 81011:[{"start":{},"end":{}}, ...], ... }
-    window.telems = $('script').filter(function() {
-      return this.id.match(/[0-9]/) && this.text != '"null"' && this.text.includes('timespans');
-    });
-    
-    time_object = parseTelems(telems)[0]
-    <!--intervals = time_object.intervals-->
-    intervals = parseTelems(telems)[1]
-    <!--console.log('intervals, time_object',intervals,time_object)-->
-    var min = Math.min.apply(null, intervals.map(function(row){ return Math.min.apply(Math, row); }));
-    var max = Math.max.apply(null, intervals.map(function(row){ return Math.max.apply(Math, row); }));
-    minmax=[min,max]
 
-    <!--console.log('min/max',minmax)-->
-    // feed to tvis_summary()
-    histogram_data(intervals,minmax)
+  // leaflet map into modal
+  function modalMap(){
+    mapmodal = L.map('mapdiv').setView([0, 0], 2);
+    var token_mb = '{{ mbtokenmb }}'
+
+    mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}';
     
-    $(".create-comment").each(function () {
-      var recpk = $(this).data('id');
-      uribase="/comment/"+recpk
-      next='?next='+"{% url 'places:place-portal' id=whg_id %}"
-      $(this).modalForm({formURL: uribase+next});
-    });
+    osm  = L.tileLayer(mbstyle_url, {
+      id:'mapbox/light-v10', 
+      token:token_mb}).addTo(mapmodal)
+  
+    geom = {"type":"FeatureCollecton","features":[]}
     
-    var trace_count = 0
-    $("[rel='tooltip']").tooltip();
-    $('a[data-toggle="tooltip"]').tooltip({
-      animated: 'fade',
-      placement: 'bottom',
-      html: true
-    });
-    // toggle nearby places
-    $('input#fetch-context').prop('checked',false)
-    $('input#fetch-context').click(function(){
-      if($(this).is(':checked')) {
-        fetchContext(boundsPolygon(mappy.getBounds()))
-      } else {
-        nearby.removeFrom(mappy)
+    // script includes geometry from calling portal page 
+    // filter to this pid
+    window.pgeoms = $('script').filter(function() {
+      return this.id == '{{ object.id }}' 
+        && this.text != '"null"' 
+        && this.text.includes('coordinates');
+    });  
+    
+    if(pgeoms.length >0){
+      for (i=0;i<pgeoms.length;i++){
+        let g = JSON.parse(pgeoms[i].text)
+        g['properties'] = {"id": pgeoms[i].id}
+        geom['features'].push(g)
       }
+      layers = []
+      features = L.geoJSON(geom, {
+        onEachFeature: function(feature, layer) {
+          f=feature; l=layer;
+          layers.push(layer)
+          <!--console.log('feature',f)-->
+          if(f.type != 'Point'){
+            layer.setStyle(styles[f.geometry.type].default)
+          }
+        }
+      }).addTo(mapmodal);  
+    } 
+    zoomTo(layers[0])
+    <!--mapmodal.fitBounds(features.getBounds(), -->
+      <!--{padding: [200, 200] })-->
+  }
+  
+  <!--renderMap(geom)-->
+   
+  function zoomTo(lyr) {
+    console.log('zoomTo()',lyr)
+    <!--l = idToFeature[pid]-->
+    ftype=lyr.feature.geometry.type
+    <!--console.log('zoomTo() pid, ftype',pid, ftype)-->
+    if (ftype=='Point'){
+       mapmodal.setView(lyr._latlng, 7 )
+    } else {
+      mapmodal.fitBounds(lyr.getBounds(), {padding:[100,100]})
+    }
+  }
+
+  $("[rel='tooltip']").tooltip();
+
+  var clip_geom = new ClipboardJS('#a_clipgeom');
+  clip_geom.on('success', function(e) {
+    e.clearSelection();
+    $("#a_clipgeom").tooltip('hide')
+      .attr('data-original-title', 'copied!')
+      .tooltip('show');
+  });
+    // activate all tooltips
+
+  $(function(){
+    modalMap()
+    <!--area_type = 'ccodes' // default-->
+    $( ".textarea" ).each(function(index) {
+      if ( ["None","null"].includes( $(this).val() ) ) {
+        $(this).val('')
+      }
+    });
+    $("#id_geojson").attr("placeholder","generated from country codes")
+
+    $(".a_more").click(function(e){
+      clicked = $(this)
+      clicked.hide()
+      clicked.parent().find("#dots").hide()
+      clicked.next().removeClass('hidden')
+      <!--clicked.css("display","contents")-->
+      <!--$(this).hide()-->
+      console.log('clicked',clicked)  
+      <!--clicked.removeClass('hidden')-->
     })
-    $("#clear_traces").click(function(){
-      traceLayers.clearLayers()
-    })
-    // load trace geometry
-    $(".trace-geo").click(function(e){
-      e.preventDefault()
-      // traces never fetched
-      fetchTraceGeom($(this).data('id'),$(this).data('ctr'))
-      $("#clear_traces").show()
-    })
+
+  })
+  $(".ds_card").on('click',function(e){
+    // set all layers to default style
+    for (i in idToFeature){
+      idToFeature[i].setStyle(styles['Polygon']['default'])
+    }
+    dsid = $(this).data('id')
+    l = idToFeature[dsid]
+    // raise z-index
+    l.bringToFront().setStyle(styles['Polygon']['focus'])
+    // get a centroid
+    mappy.fitBounds(l.getBounds().pad(0.5))
+  })
+
+  $( ".ds_card" ).hover(function() {
+      <!--console.log($(this))-->
+      let id = $(this).data('id')
+      feat = idToFeature[id]
+      <!--console.log('feat',feat)-->
+      ogfill = "#ff9999"
+      feat.setStyle(
+        {fillColor: 'yellow', color: 'red', fillOpacity: 0.3}
+      )
+    },
+    function() {
+      let id = $(this).data('id')
+      feat = idToFeature[id]
+      feat.setStyle(
+        {fillColor: ogfill, color: '#333', fillOpacity: 0.3 }
+      )
+    }
+  );
+
+  $("#b_download").click(function(){
+    var dsids = [];
+    $('.modal-body input:checked').each(function() {
+      dsids.push($(this).val());
+    });
+    console.log('download datasets:', dsids)
   })
   
-  function range(start, stop, step) {
-    var a = [start], b = start;
-    while (b < stop) {
-        a.push(b += step || 1);
-    }
-    return a;
-  }
-  function parseTelems(telems){
-    let ts_obj = {}
-    let ts_arr = []
-    let ts_intervals = []
-    function pushy(ts){
-      for (var j=0; j < ts.length; j++) {
-        ts_arr.push( ts[j] );
-      }
-    }
-    // TODO: test if its a when or a geometry/name/relation/type with a when
-    for (i=0;i<telems.length;i++){
-      id=telems[i].id
-      obj = JSON.parse(telems[i].text)
-      // either {when: timespans:[]} or {timespans:[]}
-      <!--console.log('obj',obj)-->
-      if (Object.keys(obj).includes('when')) {
-        if (Object.keys(obj['when']).includes('timespans')) {
-          ts_obj[id] = obj.when.timespans
-          pushy(obj.when.timespans)
-        }
-      } else if (Object.keys(obj).includes('timespans')){
-        ts_obj[id] = obj.timespans
-        pushy(obj.timespans)
-      }
-    }
-    // distinct union of intervals for all children
-    for (var i = 0; i < ts_arr.length; i++){
-      for (var j = 0; j < ts_arr[i].length; j++){
-        if (ts_intervals.indexOf(ts_arr[i][j]) === -1){
-          ts_intervals.push(ts_arr[i][j])
-    }}};
+  function startDownloadSpinner(){
+    window.spinner_dl = new Spin.Spinner().spin();
+    $("#ds_cards").append(spinner_dl.el);   
+  }  
 
-    intervals=ts_intervals.map(ts => [ Number(ts.start.in), !ts.end?Number(ts.start.in)+9:Number(ts.end.in) ])
+  $(".btn-cancel").click(function(){$("#downloadModal").modal('hide') })
+  
+  function showMore() {
+    foo = $(this)
+    console.log('foo',foo)
+  } 
+  
+  $(".dl-links a").click(function(e){
+    <!--e.preventDefault()-->
+    urly='/datasets/'+$(this).data('id')+'/augmented/'+$(this).attr('ref')
+    console.log('urly',urly)
+    startDownloadSpinner()
+    $.ajax({
+          type: 'GET',
+          url: urly
+        }).done(function() {
+            spinner_dl.stop();
+        })
+  })
+
+  // expose leaflet map for events, call it 'mappy'
+  window.addEventListener('modalmap:init', function (e) {
+    console.log('fired modalmap:init')
+    window.mapmodal = e.detail.map
+    mapmodal.setMaxBounds(null)
+
     
-    return [ts_obj,intervals]  <!--console.log(ts_arr)-->
-  }
-  function intersects(a,b){
-    min = (a[0] < b[0] ? a : b)
-    max = (min == a ? b : a)
-    return !(min[1] < max[1])
-  }
-  function histogram_data(intervals,minmax){
-    <!--step = Number(((minmax[1]-minmax[0])/200).toPrecision(4))-->
-    <!--console.log('hist data:minmax,intervals',minmax,intervals)-->
-    step = Number(((minmax[1]-minmax[0])/200))
-    bins = range(minmax[0],minmax[1],step)
-    hist_array = Array.apply(null, Array(bins.length)).map(Number.prototype.valueOf,0);
-    labels=bins.map(function(d){return Math.round(d)})
-    for (b=0; b<bins.length; b++){
-      bin = Array(bins[b],bins[b+1])
-      for (i in intervals){
-        if (intersects(bin,intervals[i])){
-          hist_array[b] +=1
-        }
-      }
-    }
-    <!--data=hist_array.map(function(d,i){return {"bin":i,"count":d}})-->
-    data=hist_array.map(function(d,i){return {"bin":labels[i],"count":d}})
-    // now visualize it
-    <!--console.log(data)-->
-    histogram(data,labels)
-  }
-    
-  function histogram(data,labels){
-    // exit if no data 
-    if (data[0].bin == "Infinity"){ $("#histogram_sum").html('<i>None yet</i>'); return; }
-    data=data.slice(0,199)
-    var margin = {top: 0, right: 10, bottom: 0, left: 10},
-      width = 500, height = 30,  padding_h = 20,  padding_w = 30;
+    // style/tile urls
+    var mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}',
+        mbtiles_url = 'https://api.mapbox.com/v3/{id}/{z}/{x}/{y}.png',
+        ne_url = 'http://blog.whgazetteer.org/tiles/ne/{z}/{x}/{y}.png';
       
-    // set the ranges
-    window.xScale = d3.scaleLinear()
-      .range([0, width])
-    window.yScale = d3.scaleLinear()
-      .range([height, 0]);
-  
-    <!--xScale.domain(data.map(function(d) { return d.bin; }));-->
-    xScale.domain(minmax);
-    yScale.domain([0, d3.max(data, function(d) { return d.count; })]);
+    var satellite  = L.tileLayer(mbstyle_url, {
+      id:'mapbox/satellite-streets-v11', 
+      token:token_mb}),
+    osm  = L.tileLayer(mbstyle_url, {
+      id:'mapbox/light-v10', 
+      token:token_mb}),
+    ne_mb = L.tileLayer(mbtiles_url, {
+      id:'kgeographer.ne_global', 
+      token:token_kg})
+
+    // GL wrappers to display heatmaps
+    mb_terrain = L.mapboxGL({
+      style:'mapbox://styles/kgeographer/ckhf6o8yf07fw19qhbrm7f2q7',
+      accessToken:token_kg})
+
+    ne_global= L.mapboxGL({
+      style:'mapbox://styles/kgeographer/ckidglq8l2nra19nzzbl995ue',
+      accessToken:token_kg}).addTo(mapmodal)
+
+
+    var baseLayers = {
+      "NE global": ne_global,
+      "Terrain": mb_terrain,
+      <!--"NE self": ne,-->
+      "OpenStreetMap": osm,      
+      "Satellite": satellite
+    };
+
+    layerGroup = L.control.layers(baseLayers).addTo(mapmodal);
     
-    window.svg_hist = d3.select("#histogram_sum").append("svg")
-      .attr("width", '100%')
-      .attr("height", height+padding_h)
-      
-      .attr('viewBox','0 0 '+Math.min(width,height+padding_h)+' '+Math.min(width,height+padding_h))
-      .attr('preserveAspectRatio','xMinYMin')
-      
-      .append("g")
-      .attr("transform","translate(" + margin.left + "," + margin.top + ")")
-  
-    window.axisB = d3.axisBottom(xScale)
-      .tickValues(labels.filter(function(d,i){return !(i%20)}))
-      .tickFormat(d3.format("d"));
+  }, false);
 
-    var axisL = d3.axisLeft(yScale)
-  
-    svg_hist.selectAll(".bar")
-      .data(data)
-    .enter().append("rect")
-      .attr("class", "bar")
-      .attr("x", function(d) { return xScale(d.bin); })
-      <!--.attr("width", function(d) { return xScale(d.x1) - xScale(d.x0) -1 ; })-->
-      .attr("width", 2)
-      .attr("y", function(d) { return yScale(d.count); })
-      .attr("height", function(d) { return height - yScale(d.count); });
-  
-    var xAxis = svg_hist.append("g")
-      .attr("id","xaxis")
-      .attr("transform", "translate(0," + height + ")")
-      .call(axisB)
-  
-    <!--var yAxis = svg_hist.append("g")-->
-      <!--.attr("id","yaxis")-->
-      <!--.call(axisL);-->
-  }
 
-  function filly(counter) {
-    if (counter == 0)
-      return "blue"
-    else if (counter == 1)
-      return "green"
-    else if (counter == 2)
-      return "purple"
-    else if (counter == 3)
-      return "red"
-    else 
-      return "black"
-  }
-  function fetchTraceGeom(trace_id,counter) {
-    <!--console.log('fetchTraceGeom():',trace_id)-->
-    $.get("/search/tracegeom",{idx: 'traces', search: trace_id, doc_type: 'trace'},
-      function(data){
-        <!--console.log(data.features.length,'mappable geoms in this trace')-->
-        <!--mappy.createPane('tracePane');-->
-        <!--mappy.getPane('tracePane').style.zIndex = 200;-->
-        traces = L.geoJSON(data, {
-          pane: 'tracePane',
-          pointToLayer: function (feature, latlng) {
-            identifier = feature.properties.whg_id
-            <!--console.log(feature,identifier)-->
-            marker = L.circleMarker(latlng,
-              {
-                radius: 5, fillOpacity: 0.8, opacity: 1, weight: 1,
-                color: "#fff", fillColor: filly(counter)
-              }
-            ).bindPopup('pid:'+identifier+'<br/><b>'+
-              '<a href="/places/'+identifier+'/portal">'+feature.properties.title+"</b></a>");
-            idToFeature[identifier] = marker
-            return marker
-          },
-          onEachFeature: function(feature,layer){
-            layer.addTo(traceLayers)
-          }
-        }).addTo(mappy);
-        mappy.fitBounds(traces.getBounds())
-    });
-  }
-    
-  // for ES query
-  function fetchContext(bbox){
-    startMapitSpinner()
-    context={"type":"FeatureCollection","features":[]}
-    $.get("/search/context",{idx: 'whg', search: bbox, doc_type: 'place'},
-      function(data){
-        <!--console.log('a hit:',data['hits'][0])-->
-        <!--console.log('a geom in a hit:',data['hits'][0].geoms[0])-->
-        for(i in data['hits']){
-          title = data['hits'][i]['title']
-          whg_id = data['hits'][i]['whg_id']
-          geoms=data['hits'][i]['geoms']
-          <!--console.log(geoms)-->
-          for(j in geoms) {
-            context["features"].push(
-              { "type":"Feature",
-                "properties":{
-                  "id":whg_id,
-                  "title":title,
-                  "ds":'whg'
-                },
-                "geometry":geoms[j]
-              }
-            )
-          }
-        }
-        // TODO: fix panes z-index
-        mappy.createPane('contextPane');
-        mappy.getPane('contextPane').style.zIndex = 100;
-        nearby = L.geoJSON(context, {
-          pane: 'contextPane',
-          pointToLayer: function (feature, latlng) {
-            marker = L.circleMarker(latlng,
-              {
-                radius: 5, fillOpacity: 0.6, opacity: 1, weight: 1,
-                color: "#fff", fillColor: fill(feature.properties.ds)
-              }
-            ).bindPopup('<a href="/places/'+feature.properties.id+'/portal">'+feature.properties.title+'</a>');
-         
-            idToFeature[feature.properties.id] = marker
-            return marker
-          }
-        }).addTo(mappy);
-        spinner_mapit.stop()
-    });
-  }
-
-  function boundsPolygon(bounds){
-    ne=bounds._northEast
-    sw=bounds._southWest
-
-    var latlngs=[[ne['lat'],ne['lng']], [sw['lat'],ne['lng']],
-      [sw['lat'],sw['lng']],[ne['lat'],sw['lng']]]
-    var geom = {"type": "Polygon", 
-      "coordinates": [[
-        [ne['lng'],ne['lat']],[ne['lng'],sw['lat']],[sw['lng'],sw['lat']],
-        [sw['lng'],ne['lat']],[ne['lng'],ne['lat']]
-      ]]
-    }
-    // display bbox
-    <!--feature={"type":"Feature","properties":{"id":"fooid"},"geometry":geom}-->
-    <!--var polygon = L.polygon(latlngs, {color: 'red'}).addTo(mappy)-->
-    <!--console.log(JSON.stringify(geom["coordinates"]))-->
-    return JSON.stringify(geom["coordinates"])
-  }
-  
-  <!--window.addEventListener('map:init', function (e) {-->
-    <!--window.mappy = e.detail.map-->
-    <!--mappy.createPane('tracePane');-->
-    <!--mappy.getPane('tracePane').style.zIndex = 200;-->
-    <!--traceLayers = new L.layerGroup().addTo(mappy)-->
-    <!--var attrib_mb = 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +-->
-            <!--'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +-->
-            <!--'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',-->
-      <!--attrib_awmc = 'Tiles and Data &copy; 2013 <a href="http://www.awmc.unc.edu" target="_blank">AWMC</a>',-->
-      <!--token_mb = 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw',-->
-      <!--token_kg = 'pk.eyJ1Ijoia2dlb2dyYXBoZXIiLCJhIjoiUmVralBPcyJ9.mJegAI1R6KR21x_CVVTlqw',-->
-      <!--mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}';-->
-      
-    <!--<!--var mbtiles_url = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={token}';-->-->
-    <!--<!--var awmc = L.tileLayer(mbtiles_url, {id:'isawnyu.map-knmctlkh', token:token_kg, attribution:attrib_awmc})-->-->
-    <!--var satellite  = L.tileLayer(mbstyle_url, {id:'mapbox/satellite-streets-v11', token:token_mb, attribution:attrib_mb})-->
-    <!--var osm  = L.tileLayer(mbstyle_url, {id:'mapbox/light-v10', token:token_mb, attribution:attrib_mb});-->
-
-    <!--var pleiades = L.mapboxGL({-->
-      <!--style:'mapbox://styles/kgeographer/ckc21ai6n5ozq1io64x91hndl',-->
-      <!--accessToken:token_kg})-->
-
-    <!--var watershedStyle = {-->
-      <!--"fillColor": "#993333",-->
-      <!--"color": "#fff",-->
-      <!--"weight": 1,-->
-      <!--"opacity": 0.7,-->
-      <!--"fillOpacity": 0.1-->
-    <!--};-->
-    
-    <!--function random_rgba() {-->
-        <!--var o = Math.round, ra = Math.random, s = 255;-->
-        <!--tup = [o(ra()*s), o(ra()*s), o(ra()*s)]-->
-        
-        <!--const rgbToHex = (r,g,b) => '#' + [r,g,b].map(x => {-->
-          <!--const hex = x.toString(16)-->
-          <!--return hex.length === 1 ? '0' + hex : hex-->
-        <!--}).join('')-->
-          
-        <!--return rgbToHex(tup[0],tup[1],tup[2])-->
-    <!--}-->
-  
-    <!--var riverStyle = {-->
-      <!--"color": "#336699",-->
-      <!--"weight": 1-->
-    <!--};-->
-    <!--var popupOptions = {}-->
-    
-    <!--rivers = new L.GeoJSON.AJAX("/datasets/ne_rivers982/places",-->
-      <!--{style:riverStyle,-->
-        <!--onEachFeature: function (feature, layer) {-->
-          <!--popupOptions = {maxWidth: 200};-->
-            <!--layer.bindPopup(feature.properties.name+" ("+feature.properties.src_id+")", popupOptions);-->
-          <!--}-->
-      <!--});-->
-    <!--watersheds = new L.GeoJSON.AJAX("/datasets/wri_watersheds/places",-->
-      <!--{ style:watershedStyle,-->
-        <!--onEachFeature: function (feature, layer) {-->
-        <!--layer.setStyle({"fillColor":random_rgba()})-->
-          <!--popupOptions = {maxWidth: 200};-->
-            <!--layer.bindPopup(feature.properties.name+" ("+feature.properties.src_id+")", popupOptions);-->
-        <!--}-->
-      <!--})-->
-    <!--ecoregions = new L.GeoJSON.AJAX("/datasets/tnc_ecoregions/places",-->
-      <!--{ style: {-->
-          <!--color: "#fff",-->
-          <!--<!--fillColor:random_rgba(),-->-->
-          <!--weight: 1,-->
-          <!--opacity: 0.7,-->
-          <!--fillOpacity: 0.3},-->
-        <!--onEachFeature: function (feature, layer) {-->
-          <!--layer.setStyle({"fillColor":random_rgba()})-->
-          <!--<!--console.log('feature',feature)-->-->
-          <!--popupOptions = {maxWidth: 200};-->
-            <!--layer.bindPopup(feature.properties.name+" ("+feature.properties.src_id+")", popupOptions);-->
-        <!--}-->
-      <!--})-->
-    <!--<!--rivers.addTo(mappy)-->-->
-
-    <!--var baseLayers = {-->
-      <!--"Pleiades Terrain": pleiades,-->
-      <!--"OSM": osm,-->
-      <!--"Satellite": satellite-->
-    <!--};-->
-    <!--var dataLayers = {-->
-      <!--"Rivers": rivers,-->
-      <!--"Watersheds": watersheds,-->
-      <!--"Ecoregions": ecoregions-->
-    <!--}-->
-    <!--L.control.layers(baseLayers,dataLayers).addTo(mappy);-->
-    <!--baseLayers['OSM'].addTo(mappy)-->
-  <!--}, false);-->
-
-  <!--function getClose() {-->
-    <!--mappy.setZoom(mappy.getZoom()+2)-->
-    <!--mappy.fitBounds(features.getBounds().pad(3))-->
+  <!--function zoomTo(id) {-->
+    <!--mapmodal.setView(idToFeature[id]._latlng, mapmodal.getZoom() +2 )-->
   <!--}-->
-  function fill(foo) {
-    if (foo == 'tgn')
-      return "#ff7800"
-    else if (foo == 'whg')
-      return "#ff3300"
-    else
-      return "#7AFF7A"
+
+  function cleanJson(pid, text) {
+    z=text.replace(/'/g,'\\"')
+    y=z.replace(/point/,'Point')
+    geom = JSON.parse(y)
+    console.log('geom',geom)
+    return JSON.parse(geom)
   }
-  function renderMap(geom){
-    <!--clear out the previous if any-->
-    if(typeof(features) != 'undefined'){
-      mappy.removeLayer(features)
+
+  styles = {
+    "MultiPolygon": {
+      "default":{fillOpacity: 0.3, opacity: 1, color: "#000", weight: 1, fillColor:"#ff9999"},
+      "focus":{fillOpacity: 0.3, opacity: 1, color: "red", weight: 2, fillColor:"#ff9999"}},
+    "Polygon": {
+      "default":{fillOpacity: 0.3, opacity: .5, color: "#666", weight: 1, fillColor:"#ff9999"},
+      "focus":{fillOpacity: 0.3, opacity: .5, color: "red", weight: 2, fillColor:"#ff9999"}}
+  }
+
+   // initialize, render map w/settings.LEAFLET_CONFIG
+  function modalmap_init(map, options) {
+    <!--window.geom = {"type":"FeatureCollecton","features":[]}-->
+    window.mappo = map
+    console.log('in modalmap_init()', map)
+    window.geoms = []
+
+    window.gelems = $('script').filter(function() {
+      <!--return this.id.match(/[0-9]/) && this.text != '"null"';-->
+      console.log('this.id',this.id)
+      return this.id !='' && this.text != '"null"';
+    });
+    for (i=0;i<gelems.length;i++){
+      let t_geom = cleanJson(gelems[i].id, gelems[i].text)
+      
+      <!--t_geom['properties'] = {"id": gelems[i].id,"ds": t_geom.ds!=null?t_geom.ds:ds}-->
+      geoms.push(t_geom)
     }
-    <!--console.log('renderMap(geom)',geom)-->
-    idToFeature = {}  // for feature lookup
-    mappy.createPane('mainPane');
-    mappy.getPane('mainPane').style.zIndex = 400;
-    features = L.geoJSON(geom, {
-      pane: 'mainPane',
-      pointToLayer: function (feature, latlng) {
-        console.log(latlng)
-        ll = latlng
-        <!--identifier = 'whg:'+feature.properties.id-->
-        identifier = feature.properties.id
-        marker = L.circleMarker(latlng,
-          {
-            radius: 8, fillOpacity: 0.8, opacity: 1, weight: 1,
-            color: "#000", fillColor: fill(feature.properties.dataset)
+
+    if (geoms.length > 0) {
+      <!--console.log('geom: ',geom)-->
+      idToFeature = {} // for feature lookup
+      features = L.geoJSON(geoms, {
+        onEachFeature: function(feature, layer) {
+          f=feature; l=layer;
+          <!--identifier = f.properties.id;-->
+          console.log('feature',f)
+          if(f.type != 'Point'){
+            layer.setStyle(styles[f.geometry.type].default)
+            <!--.bindPopup(f.properties.title+' ('+identifier+')'-->
+            <!--)-->
+            <!--idToFeature[identifier] = layer-->
           }
-        ).bindPopup('pid: <b>'+identifier+'</b><br/>['+latlng['lat']+', '+latlng['lng']+']'
-          +('when' in feature?'<br/>('+
-          feature.when.timespans[0].start.in+
-          ('end' in feature.when.timespans[0]?'/'+feature.when.timespans[0].end.in:'/-')+')':''));
-     
-        idToFeature[feature.properties.id] = marker
-        return marker
-      }
-    }).addTo(mappy);
-    
-    // TODO: better zoomto choices
-    if (geom['features'].length > 0){
-      center=features.getBounds().getCenter()
-      mappy.setView(center, 5)    
+        }
+      }).addTo(map);
+
+      <!--mappy.setView(features.getBounds().getCenter(),6)-->
+      // fitBounds(bounds, {padding: [50, 50]})
+      mappy.options.maxZoom = 5
+      mappy.fitBounds(features.getBounds())
+      <!--mappy.setZoom(mappy.getZoom()-6)-->
     } else {
-      $(".nogeo").html('no geometry yet!')
+      console.log('no geometries, no feature')
     }
-  }
+  } // end map_init  
 
-  // initialize, render map w/settings.LEAFLET_CONFIG
-  <!--function map_init (map, options) {-->
-    <!--<!--console.log('in map_init()')-->-->
-    <!--geom = {"type":"FeatureCollecton","features":[]}-->
-    <!--// gather geom script from html body-->
-    <!--window.gelems = $('script').filter(function() {-->
-      <!--return this.id.match(/[0-9]/) && this.text != '"null"' && this.text.includes('coordinates');-->
-    <!--});-->
-
-    <!--// -->
-    <!--for (i=0;i<gelems.length;i++){-->
-      <!--<!--let t_geom = cleanJson(gelems[i].text)-->-->
-      <!--let g = JSON.parse(gelems[i].text)-->
-      <!--g['properties'] = {"id": gelems[i].id}-->
-      <!--geom['features'].push(g)-->
-    <!--}-->
-    <!--renderMap(geom)-->
-  <!--} // end map_init-->
-  
-  <!--var fopt = null;-->
-  <!--$('.flash-geo').mouseover(function(e){-->
-    <!--e.preventDefault()-->
-    <!--feature = idToFeature[$(this).data('id')]-->
-    <!--feature.bringToFront().setStyle({fillColor:"red",fillOpacity: 1})-->
-    <!--window.fopt = feature.options-->
-  <!--})-->
-  <!--$('.flash-geo').mouseleave(function(e){-->
-    <!--e.preventDefault()-->
-    <!--feature = idToFeature[$(this).data('id')]-->
-    <!--feature.setStyle({fillColor:"#7AFF7A"})-->
-  <!--})-->
-  
-  $('.ext').on('click', function(e) {
-    e.preventDefault();
-    str=$(this).text()
-    console.log('str',str)
-    var re = /(http|dbp|gn|tgn|wd|loc|viaf|aat):(.*?)$/;
-    url=str.match(re)[1]=='http' ? str : base_urls[str.match(re)[1]]+str.match(re)[2]
-    window.open(url,'_blank')
-  });
 </script>
-<script src="{% static 'js/jquery.bootstrap.modal.forms.min.js' %}"></script>
-{% endblock %}
 
+{% endblock %}
