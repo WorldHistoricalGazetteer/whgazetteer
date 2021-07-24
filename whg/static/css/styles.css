@@ -50,8 +50,8 @@ label {vertical-align:top;}
 .red-head {color:#993300;}
 .rem1 {font-size: 1rem;}
 .scrolldiv {overflow-y:auto; display:block;}
-.scroll100 {display:block; overflow-y:scroll; max-height:120px;}
-.scroll65 {display:block; overflow-y:scroll; max-height:65px;width:100%}
+.scroll100 {display:block; overflow-y:auto; max-height:120px;}
+.scroll65 {display:block; overflow-y:auto; max-height:65px;width:100%}
 .smaller {font-size: small;} /* smaller than bootstrap */
 .smallish {font-size: .9rem;} /* smaller than bootstrap */
 .status {color:#fff; box-shadow: 2px 2px #eee; border:1px dashed #ccc;}
@@ -135,7 +135,7 @@ ul.no-bullets {
 /*.modal-form-content { */
 .modal-content {
   height: 90%;
-  overflow-y:scroll;
+  overflow-y:auto;
   background-color:#fff;
   /*width: fit-content !important; */
   /*max-width: 75%; */
