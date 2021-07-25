@@ -398,18 +398,16 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
   border-radius: 4px;
   outline: none;
 }
-#input_box_traces { width:55%; left:110px;}
-.tt-menu { left:110px !important;}
+#input_box_traces { width:100%; left:10px;}
+.tt-menu { left:10px !important;}
 /*.tt-input {position: absolute;}*/
 .typeahead {position: absolute;}
 .twitter-typeahead {
   width:90% !important;
   margin:auto  !important;
 }
-/*#input_box_traces { width:100%;}*/
 .input-loading {
     background-color: #ffffff;
-    /*background-image: url("http://loadinggif.com/images/image-selection/3.gif");*/
     background-size: 22px 22px;
     background-position:right center;
     background-repeat: no-repeat;
