@@ -199,21 +199,20 @@
       <!--clicked.removeClass('hidden')-->
     })
 
-    <!--console.log('scripts', $('script'))-->
+    // temporal data from template json_script
     window.pminmax = $('script').filter(function() {
       return this.id == '{{ object.id }}' 
         && this.text 
         && this.text.includes('mm');
     });  
-    
     window.pts = $('script').filter(function() {
       return this.id == '{{ object.id }}' 
         && this.text
         && this.text.includes('ts');
     });  
     
-
-    if(pminmax.length >0 && pts.length >0){
+    // don't try to make a histogram if no temporal data
+    if(pminmax.length >0 && pts.length >0 ){
       allts = JSON.parse(pts[0].text)['ts']
       minmax = JSON.parse(pminmax[0].text)['mm']
       console.log('allts', allts)      
@@ -225,22 +224,12 @@
       $("#place_temporal").hide()
     }
       
-    // set up , initiate histograpm
-    <!--console.log('obj ts', "{ timespans }}")-->
-    <!--allts = "{ object.timespans }}" != "none" ? { object.timespans }} : null-->
-    <!--minmax = "{ object.minmax }}" != "none" ? { object.timespans }} : null-->
-    
-    <!--if(allts && minmax){-->
-      <!--// feed to tvis_summary()-->
-      <!--histogram_data(allts, minmax)        -->
-    <!--} else {-->
-      <!--$("#place_temporal").hide()-->
-    <!--}-->
     // generate, populate map
     modalMap()
 
   }) // end onload()
 
+  // helpers for histogram_data()
   function range(start, stop, step) {
     var a = [start], b = start;
     while (b < stop) {
@@ -270,8 +259,7 @@
     }
     data=hist_array.map(function(d,i){return {"bin":labels[i],"count":d}})
     
-    // now visualize it
-    <!--console.log('prepped histogram data', data)-->
+    // visualize it
     histogram(data,labels)
             
   }
@@ -281,7 +269,6 @@
     if (data[0].bin == "Infinity"){ $("#histogram").html('<i>None yet</i>'); return; }
     data=data.slice(0,200)
     curwidth =  $("#histogram").width()
-    <!--var margin = {top: 0, right: 10, bottom: 0, left: 10},-->
     
     var margin = {top: 0, right: 10, bottom: 0, left: 10},
       width = 400, height = 30,  padding_h = 20,  padding_w = 30;
@@ -295,7 +282,7 @@
     xScale.domain(minmax);
     yScale.domain([0, d3.max(data, function(d) { return d.count; })]);
 
-    // TODO: make width scale    
+    // TODO: responsive scaling of svg width
     window.svg_hist = d3.select("#histogram").append("svg")
       .attr("width", '100%')
       .attr("height", height+padding_h)

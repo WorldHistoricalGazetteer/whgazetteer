@@ -462,6 +462,7 @@ input[type="text"] {
   /*overflow-y:auto;*/
   /*background-color:whitesmoke;*/
 }
+#search_info_blurb {font-size:.8rem; margin-bottom:0;}
 #traces_info p {margin-bottom: 0;}
 
 /*#map_search.leaflet-container { height: 65%;}*/
