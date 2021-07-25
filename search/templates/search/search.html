@@ -45,26 +45,28 @@
 				<label class="form-check-label" for="r_trace">Traces</label>
         <a id="traces_help" class="pointer ml-1" data-toggle="popover" title="Traces in WHG are..." data-content="" tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a>
 				</div>
-			</div>          
+			</div>
+      
 			<div id="search_input" class="input-group input-group-sm pb-2" >
-				<label for="input_box">{% fontawesome_icon 'search' color='#336699'%}</label>
+				<!--<label for="input_box">{ fontawesome_icon 'search' color='#336699'%}</label>-->
 				<input id="input_box" class="" type="text" placeholder="Enter place name" autocomplete="false"> 
 			</div>
 			<div id="search_input_traces" class="input-group input-group-sm pb-2 hidden" >
-				<label for="input_box_traces">{% fontawesome_icon 'search' color='#336699'%}</label>
+				<!--<label for="input_box_traces">{ fontawesome_icon 'search' color='#336699'%}</label>-->
 				<input id="input_box_traces" class="typeahead" type="text" placeholder="subject term, e.g. 'empire'">
 			</div>
-				<ul id="scope_tabs" class="nav nav-tabs small">
-					{%comment%}<span class="ds-title ml-1 mr-3">Search
-					<a id="search_help" class="pointer" data-toggle="popover" title="Search scope" data-html="true" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a>
-					</span>{%endcomment%}
-					<li class="nav-item">
-					<a class="nav-link active" id="a_idx" data-scope="idx" href="#" role="tab" style="background:#f1fff1;"> Search Index {%fontawesome_icon 'link'%}</a>
-					</li>
-					<li class="nav-item ml-1">
-					<a class="nav-link" id="a_db" data-scope="db" href="#" role="tab" style="background:whitesmoke;">Search Database {%fontawesome_icon 'database'%}</a> 
-					</li>
-				</ul>	
+      
+      <ul id="scope_tabs" class="nav nav-tabs small">
+        {%comment%}<span class="ds-title ml-1 mr-3">Search
+        <a id="search_help" class="pointer" data-toggle="popover" title="Search scope" data-html="true" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a>
+        </span>{%endcomment%}
+        <li class="nav-item">
+        <a class="nav-link active" id="a_idx" data-scope="idx" href="#" role="tab" style="background:#f1fff1;"> Search Index {%fontawesome_icon 'link'%}</a>
+        </li>
+        <li class="nav-item ml-1">
+        <a class="nav-link" id="a_db" data-scope="db" href="#" role="tab" style="background:whitesmoke;">Search Database {%fontawesome_icon 'database'%}</a> 
+        </li>
+      </ul>	
 			<div id="search_filters" class="tab-pane fade show active" role="tabpanel">
 				<span class="filter-header">pre-filters</span>
 				<div class="small row">
