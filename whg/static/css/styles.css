@@ -465,6 +465,7 @@ input[type="text"] {
 #search_info_blurb {font-size:.8rem; margin-bottom:0;}
 #traces_info p {margin-bottom: 0;}
 
+#search_resets {position:absolute; bottom:0;}
 /*#map_search.leaflet-container { height: 65%;}*/
 /*#map_search {height: 100%;}*/
 #map_search {max-height: 90%;}

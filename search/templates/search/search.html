@@ -105,11 +105,11 @@
               <input type="hidden" id="boundsobj" />
             </div>
             <span id="dbicon" class="hidden">{% fontawesome_icon 'database' color='#999' %}</span>
-            <div class="float-right pt-4">
-              <span id="reset_filters" class="hidden">
-                <a class="mr-3" href="javascript:clearMapFilter()">reset filters</a></span>
+            <div id="search_resets" class="float-right pt-4">
               <span id="reset_search" class="hidden">
                 <a href="javascript:resetSearch()">reset search</a></span>
+              <span id="reset_filters" class="hidden">
+                <a class="ml-3" href="javascript:clearMapFilter()">reset filters</a></span>
             </div>
             <!--<span id="reset_link" class="float-right hidden"><a href="javascript:resetSearch()">reset search</a></span>-->
 				  </div> <!-- #filters_st -->
@@ -117,7 +117,6 @@
 			</div> <!-- #search_filters -->	
       <div id="result_filters" class="pt-2 pl-1 hidden">
         <p class="half pl-2 mr-1">result filters {% fontawesome_icon 'filter' %} 
-        <!--<span class="typefilter-link ml-2"><a href="#">Type </a></span>-->
         <span class="ml-2"><select id="type_select">
         </select></span>
         <span class="ml-2"><select id="cc_select">
@@ -311,8 +310,8 @@
     })
     $("#cc_select").change(function(){
       cc = $(this).val()
-      <!--console.log('cc selected:', cc)-->
       if(cc != "0"){
+        <!--console.log('cc selected:', cc)-->
         $("#cc_select option").eq(0).text('Restore all')
         ccFilter(cc)
         // show clear filters span
@@ -565,10 +564,10 @@
     results = $("#result_div tbody tr")
     <!--results = $("#result_div tbody tr:visible")-->
     hide_ids=[]; show_ids = []
-    // skip header row
-    for (i = 1; i < results.length; i++) {
+    for (i = 0; i < results.length; i++) {
       ccodes = results[i].getAttribute('data-ccodes')
       _id = results[i].getAttribute('data-id')
+
       if (ccodes.indexOf(cc) > -1){
         <!--console.log('SHOW',i,_id, cc, ccodes)-->
         results[i].style.display = "";
@@ -578,6 +577,9 @@
         hide_ids.push(_id)
       }
     }
+    console.log('hide_ids',hide_ids)
+    console.log('show_ids',show_ids)
+
     // filter map too
     // layers to hide or show
     hide_these = $.map(hide_ids,function(i){
@@ -600,7 +602,6 @@
   */
   typeFilter = function(term){
     results = $("#result_div tbody tr")
-    <!--results = $("#result_div tbody tr:visible")-->
     hide_ids=[]; show_ids = []
     for (i = 0; i < results.length; i++) {
       types = results[i].getAttribute('data-types')
@@ -1281,7 +1282,7 @@
       $("#result_filters").hide()
     };
 
-    if(data.length > 3 || mappy.getZoom() < 5){
+    if(search_class == 'place' && (data.length > 3 || mappy.getZoom() < 5)){
       $("#offer_mapfilter").fadeIn()
       if (bboxer._map == undefined ){ bboxer.addTo(mappy); }
     }
@@ -1294,7 +1295,7 @@
     let elem = document.getElementById('result_div')
     
 		titleMarkup = doctype=='trace'?'<p class="pl-1 mb-1 strong">'+title+'<small> :: a Linked Traces dataset ('+data.bodies.length+' related places)</small></p>':''
-    titleMarkup += (doctype=='place' ? src+' SEARCH RESULTS (<span id="rowcount">'+data.length+'</span>)<span class="ml-4">List includes records with no geometry, if any</span>' : '')
+    titleMarkup += (doctype=='place' ? src+' SEARCH RESULTS (<span id="rowcount">'+data.length+'</span>)<span class="ml-4">List may include records with no geometry</span>' : '')
     <!--console.log('titleMarkup',titleMarkup)-->
   
     $("#result_title").html(titleMarkup)
@@ -1445,7 +1446,7 @@
     }).addTo(mappy); <!-- adds features L.geoJSON -->
 
     // conditionally add a bbox control
-    if (bboxer._map == undefined ){ bboxer.addTo(mappy); }
+    if (bboxer._map == undefined && search_class == 'place'){ bboxer.addTo(mappy); }
     
     bounds = features.getBounds()
     <!--mappy.setView(bounds.getCenter(),5) -->
@@ -1900,6 +1901,7 @@
   $('input[type=radio][name=class]').change(function() {
     console.log('changed class', $(this).val())
     if ($(this).val() == 'place'){
+      search_class = 'place'
 			if(!$("#search_info").is(":visible")){
         $("#search_info").fadeIn()
 				$("#scope_tabs").show()
@@ -1910,6 +1912,7 @@
 			$("#search_filters").fadeIn()
 			$("#search_input_traces").hide()
     } else { // 
+      search_class = 'trace'
       $("#search_info").fadeOut(400)
 			if(!$("#traces_info").is(":visible")){
 				$("#traces_info").show()
