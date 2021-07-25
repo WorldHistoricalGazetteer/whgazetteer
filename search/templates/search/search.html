@@ -47,13 +47,15 @@
 				</div>
 			</div>
       
-			<div id="search_input" class="input-group input-group-sm pb-2" >
+			<div id="search_input" class="d-input input-group input-group-sm pb-2 justify-content-center" >
 				<!--<label for="input_box">{ fontawesome_icon 'search' color='#336699'%}</label>-->
-				<input id="input_box" class="" type="text" placeholder="Enter place name" autocomplete="false"> 
+				<input id="input_box" class="" type="text" placeholder="Enter place name" autocomplete="false">
+        <button class="b-input">{% fontawesome_icon 'search' color='#336699'%}</button>
 			</div>
-			<div id="search_input_traces" class="input-group input-group-sm pb-2 hidden" >
+			<div id="search_input_traces" class="d-input input-group input-group-sm pb-2 justify-content-center hidden" >
 				<!--<label for="input_box_traces">{ fontawesome_icon 'search' color='#336699'%}</label>-->
 				<input id="input_box_traces" class="typeahead" type="text" placeholder="subject term, e.g. 'empire'">
+        <button class="b-input">{% fontawesome_icon 'search' color='#336699'%}</button>
 			</div>
       
       <ul id="scope_tabs" class="nav nav-tabs small">

@@ -388,7 +388,7 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
   vertical-align:top;
   position:relative;
   display: inline-block;
-  width: 50%;
+  width: 100%;
   height: 24px;
   margin: auto;
   padding: 4px 6px;
@@ -479,6 +479,13 @@ input[type="text"] {
   height: 320px;
   /*min-height: fit-content;*/
 }
+.d-input {position:relative; width:60%; margin:auto}
+.b-input {
+  position:absolute; 
+  top:0; 
+  right:0;
+  height:24px;
+  border:none;}
 
 #result_table { min-width: 100%; }
 
