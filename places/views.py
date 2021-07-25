@@ -203,6 +203,8 @@ class PlaceDetailView(DetailView):
     me = self.request.user
     #placeset = Place.objects.filter(dataset=ds.label
     
+    context['timespans'] = {'ts':place.timespans or None}
+    context['minmax'] = {'mm':place.minmax or None}
     context['dataset'] = ds
     context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False
 

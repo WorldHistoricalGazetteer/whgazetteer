@@ -48,11 +48,14 @@
           </tr>
           <tr><td>Variants:</td><td>{% for n in object.names.all %}
           <i>{{n.jsonb.toponym }};</i> {% endfor %}</td></tr>
+          
           {% if object.description %}
           <tr><td><b>Description</b></td><td>{{ object.description }}</td></tr>{% endif %}
           <tr>
             <td>Earliest/Latest:</td>
             {% if object.minmax %}
+              {{ minmax|json_script:object.id }}
+              {{ timespans|json_script:object.id }}
               <span id="ptimespans" style="opacity:0;position:absolute;z-index:-1">{{ object.timespans }}</span>
             <td>{{object.minmax.0}} / {{object.minmax.1}}</td>
           </tr>
@@ -131,7 +134,7 @@
     if(pgeoms.length >0){
       for (i=0;i<pgeoms.length;i++){
         let g = JSON.parse(pgeoms[i].text)
-        console.log(JSON.parse(pgeoms[i].text))
+        <!--console.log(JSON.parse(pgeoms[i].text))-->
         g['properties'] = {"id": pgeoms[i].id}
         geom['features'].push(g)
       }
@@ -154,7 +157,7 @@
   <!--renderMap(geom)-->
    
   function zoomTo(lyr) {
-    console.log('zoomTo()',lyr)
+    <!--console.log('zoomTo()',lyr)-->
     <!--l = idToFeature[pid]-->
     ftype=lyr.feature.geometry.type
     <!--console.log('zoomTo() pid, ftype',pid, ftype)-->
@@ -196,12 +199,46 @@
       <!--clicked.removeClass('hidden')-->
     })
 
-    // set up , initiate histograpm
-    allts = {{ object.timespans }}
-    minmax = {{ object.minmax }}
+    <!--console.log('scripts', $('script'))-->
+    window.pminmax = $('script').filter(function() {
+      return this.id == '{{ object.id }}' 
+        && this.text 
+        && this.text.includes('mm');
+    });  
+    
+    window.pts = $('script').filter(function() {
+      return this.id == '{{ object.id }}' 
+        && this.text
+        && this.text.includes('ts');
+    });  
+    
 
-    // feed to tvis_summary()
-    histogram_data(allts, minmax)    
+    if(pminmax.length >0 && pts.length >0){
+      allts = JSON.parse(pts[0].text)['ts']
+      minmax = JSON.parse(pminmax[0].text)['mm']
+      console.log('allts', allts)      
+      console.log('minmax', minmax) 
+      
+      // feed to tvis_summary()
+      histogram_data(allts, minmax)        
+    } else {
+      $("#place_temporal").hide()
+    }
+      
+    // set up , initiate histograpm
+    <!--console.log('obj ts', "{ timespans }}")-->
+    <!--allts = "{ object.timespans }}" != "none" ? { object.timespans }} : null-->
+    <!--minmax = "{ object.minmax }}" != "none" ? { object.timespans }} : null-->
+    
+    <!--if(allts && minmax){-->
+      <!--// feed to tvis_summary()-->
+      <!--histogram_data(allts, minmax)        -->
+    <!--} else {-->
+      <!--$("#place_temporal").hide()-->
+    <!--}-->
+    // generate, populate map
+    modalMap()
+
   }) // end onload()
 
   function range(start, stop, step) {
@@ -236,10 +273,7 @@
     // now visualize it
     <!--console.log('prepped histogram data', data)-->
     histogram(data,labels)
-    
-    // generate, populate map
-    modalMap()
-        
+            
   }
     
   function histogram(data,labels){
