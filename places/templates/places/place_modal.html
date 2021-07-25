@@ -25,7 +25,22 @@
   <!--<script src="https://unpkg.com/maplibre-gl@1.15.2/dist/maplibre-gl.js"></script>-->
   <!--<link href="https://unpkg.com/maplibre-gl@1.15.2/dist/maplibre-gl.css" rel="stylesheet" />-->
   
-  <style>table tr td:nth-child(1) {font-weight:600;}
+  <style>
+    table tr td:nth-child(1) {font-weight:600;}
+    .svg-container {
+        display: inline-block;
+        position: relative;
+        width: 100%;
+        padding-bottom: 100%;
+        vertical-align: top;
+        overflow: hidden;
+    }
+    .svg-content {
+        display: inline-block;
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
   </style>
 {% endblock %}
 
@@ -56,24 +71,28 @@
             <td>{{object.minmax.0}} / {{object.minmax.1}}</td>
           </tr>
           {% endif %}
+          
           <tr><td>Type(s):</td><td>{% for t in object.types.all %}
           {{t.jsonb.sourceLabel }}{%if t.label %} ({{ t.label }}) {% endif %}; {% endfor %}</td></tr>
+          
           <tr><td>Linked records in WHG:</td>
             <td>{% if object.links|length > 0 %}{% for l in object.links.all %}{{l}}; {%endfor%}{%else%}<i>none yet{%endif%}
             </td></tr>
+            
           {% if object.geoms %}
           <tr>
-            <td><b>Coordinates:</b>
+            <td><b>Locations ({{object.geoms.all|length}}):</b>
               <span id="pgeom" style="opacity:0;position:absolute;z-index:-1">{% for g in object.geoms.all %}{{g.jsonb.coordinates}}{%endfor%}</span>
             </td>
             <td>
-            <a id="a_clipgeom" class="clippy" data-clipboard-target="#pgeom" rel="tooltip" title="copy to clipboard">copy to clipboard {% fontawesome_icon 'clipboard' color='#336699' %}</a></td>
+            <a id="a_clipgeom" class="clippy" data-clipboard-target="#pgeom" rel="tooltip" title="copy to clipboard">copy coordinates to clipboard {% fontawesome_icon 'clipboard' color='#336699' %}</a></td>
           </tr>
           {% endif %}
         </table>
         <div id="place_temporal" class="col-content small">
           <p class="mb-0 allcap-heading">TEMPORAL ATTESTATIONS</p>
-        <div id="histogram_modal"></div>
+          <!--<div id="histogram_modal" class="svg-container"></div>-->
+          <div id="histogram_modal" class=""></div>
         </div>
       </div>
       <hr/>
@@ -193,12 +212,6 @@
     // set up , initiate histograpm
     allts = {{ object.timespans }}
     minmax = {{ object.minmax }}
-    <!--console.log('minmax', minmax)-->
-    <!--console.log('ts', allts)-->
-
-    <!--var min = Math.min.apply(null, allts.map(function(row){ return Math.min.apply(Math, row); }));-->
-    <!--var max = Math.max.apply(null, allts.map(function(row){ return Math.max.apply(Math, row); }));-->
-    <!--minmax=[min,max]-->
 
     // feed to tvis_summary()
     histogram_data(allts, minmax)    
@@ -240,10 +253,10 @@
     window.yScale = d3.scaleLinear()
       .range([height, 0]);
   
-    <!--xScale.domain(data.map(function(d) { return d.bin; }));-->
     xScale.domain(minmax);
     yScale.domain([0, d3.max(data, function(d) { return d.count; })]);
-    
+
+    // TODO: make width scale    
     window.svg_hist = d3.select("#histogram_modal").append("svg")
       .attr("width", '100%')
       .attr("height", height+padding_h)
