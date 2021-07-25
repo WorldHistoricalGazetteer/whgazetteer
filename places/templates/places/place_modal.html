@@ -43,14 +43,19 @@
           <tr><td>Record title:</td><td>{{ object.title }}</td></tr>
           <tr><td>WHG identifier:</td><td>{{ object.id }} (<a href="/api/db/?id={{object.id}}" target="_blank">Linked Places record</a>)</td></tr>
           <tr><td>Source identifier:</td>
-            <td>{{ object.src_id }} {%if not 'whg' in dataset.uri_base %} <a href="{{dataset.uri_base}}{{object.id}}" target="_blank">complete source record {% fontawesome_icon 'external-link' color='#336699' %}</a>{%endif%}</td>
+            <td>{{ object.src_id }} {%if not 'whg' in dataset.uri_base %} <a href="{{dataset.uri_base}}{{object.id}}" target="_blank">source record {% fontawesome_icon 'external-link' color='#336699' %}</a>{%endif%}</td>
           </tr>
           <tr><td>Variants:</td><td>{% for n in object.names.all %}
           <i>{{n.jsonb.toponym }};</i> {% endfor %}</td></tr>
           {% if object.description %}
           <tr><td><b>Description</b></td><td>{{ object.description }}</td></tr>{% endif %}
-          {% if object.minmax %}
-          <tr><td>Earliest/Latest:</td><td>{{object.minmax.0}} / {{object.minmax.1}} </td></tr>{% endif %}
+          <tr>
+            <td>Earliest/Latest:</td>
+            {% if object.minmax %}
+              <span id="ptimespans" style="opacity:0;position:absolute;z-index:-1">{{ object.timespans }}</span>
+            <td>{{object.minmax.0}} / {{object.minmax.1}}</td>
+          </tr>
+          {% endif %}
           <tr><td>Type(s):</td><td>{% for t in object.types.all %}
           {{t.jsonb.sourceLabel }}{%if t.label %} ({{ t.label }}) {% endif %}; {% endfor %}</td></tr>
           <tr><td>Linked records in WHG:</td>
@@ -58,23 +63,22 @@
             </td></tr>
           {% if object.geoms %}
           <tr>
-            <td><b>Coordinates</b>
-              <span style="opacity:0;position:absolute;z-index:-1" id="pgeom">{% for g in object.geoms.all %}{{g.jsonb.coordinates}}{%endfor%}</span>
+            <td><b>Coordinates:</b>
+              <span id="pgeom" style="opacity:0;position:absolute;z-index:-1">{% for g in object.geoms.all %}{{g.jsonb.coordinates}}{%endfor%}</span>
             </td>
-            <td><a id="a_clipgeom" class="clippy" data-clipboard-target="#pgeom" rel="tooltip" title="copy to clipboard">copy to clipboard {% fontawesome_icon 'clipboard' color='#336699' %}</a></td>
+            <td>
+            <a id="a_clipgeom" class="clippy" data-clipboard-target="#pgeom" rel="tooltip" title="copy to clipboard">copy to clipboard {% fontawesome_icon 'clipboard' color='#336699' %}</a></td>
           </tr>
-            <!--{ for g in object.geoms.all %}-->
-              <!--{ g.jsonb|json_script:object.id }}-->
-            <!--{ endfor %}        -->
           {% endif %}
-        </table>          
+        </table>
+        <div id="place_temporal" class="col-content small">
+          <p class="mb-0 allcap-heading">TEMPORAL ATTESTATIONS</p>
+        <div id="histogram_modal"></div>
+        </div>
       </div>
       <hr/>
       <div id="coll_dslist" class="">
         <p class="larger strong mb-0">Dataset details</p>
-        {%comment%}
-          <span class="small float-right mr-2">{% fontawesome_icon 'download' color='#336699' %} <a href="" id="a_download_modal" data-dsid = {{ object.id }} data-toggle="modal" data-target="#downloadModal" title="download options"> download options</a></span>
-        {%endcomment%}
         <div id="ds_cards">
           <table class="w-75">
           <colgroup><col style="width:150px;"></col><col></col></colgroup>
@@ -87,6 +91,7 @@
         </div> <!-- #ds_cards -->        
       </div> <!-- #coll_dslist -->
     </div>
+    <!--<div class="col-sm-5 mt-2">-->
     <div id="mapdiv" class="col-sm-5 mt-2"></div>
   </div> <!-- d-flex -->
 </div> <!-- container -->
@@ -163,7 +168,9 @@
     // activate all tooltips
 
   $(function(){
+    // generate, populate map
     modalMap()
+    
     <!--area_type = 'ccodes' // default-->
     $( ".textarea" ).each(function(index) {
       if ( ["None","null"].includes( $(this).val() ) ) {
@@ -183,7 +190,92 @@
       <!--clicked.removeClass('hidden')-->
     })
 
-  })
+    // set up , initiate histograpm
+    allts = {{ object.timespans }}
+    minmax = {{ object.minmax }}
+    <!--console.log('minmax', minmax)-->
+    <!--console.log('ts', allts)-->
+
+    <!--var min = Math.min.apply(null, allts.map(function(row){ return Math.min.apply(Math, row); }));-->
+    <!--var max = Math.max.apply(null, allts.map(function(row){ return Math.max.apply(Math, row); }));-->
+    <!--minmax=[min,max]-->
+
+    // feed to tvis_summary()
+    histogram_data(allts, minmax)    
+  }) // end onload()
+
+  // generate temporal data -> histogram()
+  function histogram_data(intervals, minmax){
+    step = Number(((minmax[1]-minmax[0])/200))
+    bins = range(minmax[0],minmax[1],step)
+    hist_array = Array.apply(null, Array(bins.length)).map(Number.prototype.valueOf,0);
+    labels=bins.map(function(d){return Math.round(d)})
+    for (b=0; b<bins.length; b++){
+      bin = Array(bins[b],bins[b+1])
+      for (i in intervals){
+        if (intersects(bin,intervals[i])){
+          hist_array[b] +=1
+        }
+      }
+    }
+    data=hist_array.map(function(d,i){return {"bin":labels[i],"count":d}})
+    // now visualize it
+    <!--console.log('prepped histogram data', data)-->
+    histogram(data,labels)
+  }
+    
+  function histogram(data,labels){
+    // exit if no data 
+    if (data[0].bin == "Infinity"){ $("#histogram_modal").html('<i>None yet</i>'); return; }
+    data=data.slice(0,200)
+    curwidth =  $("#histogram_modal").width()
+    <!--var margin = {top: 0, right: 10, bottom: 0, left: 10},-->
+    
+    var margin = {top: 0, right: 10, bottom: 0, left: 10},
+      width = 400, height = 30,  padding_h = 20,  padding_w = 30;
+      
+    // set the ranges
+    window.xScale = d3.scaleLinear()
+      .range([0, width])
+    window.yScale = d3.scaleLinear()
+      .range([height, 0]);
+  
+    <!--xScale.domain(data.map(function(d) { return d.bin; }));-->
+    xScale.domain(minmax);
+    yScale.domain([0, d3.max(data, function(d) { return d.count; })]);
+    
+    window.svg_hist = d3.select("#histogram_modal").append("svg")
+      .attr("width", '100%')
+      .attr("height", height+padding_h)
+      
+      .attr('viewBox','0 0 '+Math.min(width, height+padding_h)+' '+Math.min(width,height+padding_h))
+      .attr('preserveAspectRatio','xMinYMin')
+      
+      .append("g")
+      .attr("transform","translate(" + margin.left + "," + margin.top + ")")
+  
+    window.axisB = d3.axisBottom(xScale)
+      .tickValues(labels.filter(function(d,i){return !(i%20)}))
+      .tickFormat(d3.format("d"));
+
+    var axisL = d3.axisLeft(yScale)
+  
+    svg_hist.selectAll(".bar")
+      .data(data)
+    .enter().append("rect")
+      .attr("class", "bar")
+      .attr("x", function(d) { return xScale(d.bin); })
+      <!--.attr("width", function(d) { return xScale(d.x1) - xScale(d.x0) -1 ; })-->
+      .attr("width", 2)
+      .attr("y", function(d) { return yScale(d.count); })
+      .attr("height", function(d) { return height - yScale(d.count); });
+  
+    var xAxis = svg_hist.append("g")
+      .attr("id","xaxis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(axisB)
+  }
+
   $(".ds_card").on('click',function(e){
     // set all layers to default style
     for (i in idToFeature){

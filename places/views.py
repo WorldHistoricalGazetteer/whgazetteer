@@ -95,6 +95,7 @@ class PlacePortalView(DetailView):
     for place in qs:
       ds = get_object_or_404(Dataset,id=place.dataset.id)
       # temporally scoped attributes
+      #names = attribListFromSet('names',place.names.all()[:4])
       names = attribListFromSet('names',place.names.all())
       types = attribListFromSet('types',place.types.all())
       
