@@ -800,9 +800,10 @@ em { color: #993333;}
 /* end */
 
 #select_pass {
-  margin-left: 40px;
+  /*margin-left: 40px;*/
   font-weight: bold;
   color: firebrick;
+  font-size: .7rem;
 }
 .accession-div-row { border-bottom:1px dotted lightgrey; padding-left:6px;}
 .auth-match {

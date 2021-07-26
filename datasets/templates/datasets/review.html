@@ -15,15 +15,16 @@
 {% endblock %}
 {% block content %}
 <div class="container">
-  <h5 class="mb-2 mt-3">
-  {% if authority == 'idx' %}Accessioning
-  {%else%}
-  Reconciliation{%endif%} Review 
-  {% if deferred is True %} 
-    (<span class="text-danger">"deferred"</span>)
-  {% endif %}
-    <span class="help" data-id="accessioning">{% fontawesome_icon 'question-circle' color='#993333' %}</span> 
-    <span class="small ml-3"> <i>dataset</i>: <a href="{% url 'datasets:ds_reconcile' id=ds_id %}"> {{ ds_label }}</a>
+  <div class="row">
+  <div class="col-sm-4">
+    <!--<h5 class="mb-2 mt-3">-->
+    <h5 class="">
+    {% if authority == 'idx' %}Accessioning{%else%}Reconciliation{%endif%} Review 
+    {% if deferred is True %}{{ deferred }}<!--(<span class="text-danger">"deferred"</span>) -->{% endif %}
+</h5>
+  </div> <!-- col 4-->
+  <div class="col-sm-8">
+    <span class="small">
     {% if deferred is False %}
       <select id="select_pass" name="pass" class="custom-select-sm mr-2" style="width:auto;">
         {% if count_pass0 > 0 %}
@@ -33,10 +34,12 @@
         {% if count_pass2 > 0 %}
           <option value="pass2">PASS 2&nbsp;</option>{% endif %}
       </select>
-    {% endif %}
+    {% endif %} 
     </span>
-    <span class="half float-right mr-2"><i>task id</i>: {{ task_id }}</span>
-  </h5>
+    <span class="help-matches" data-id="review">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
+    <span class="half float-right mr-2"><i>task id</i>: {{ task_id|truncatechars:10 }}...</span>
+  </div> <!-- col 8 -->
+  </div> <!-- .row -->
   {% if nohits and passnum == 'def' %}
       <p>No unreviewed records remaining in "deferred" queue</p>
       <p><a href="{% url 'datasets:ds_reconcile' id=ds_id %}">return to task list</a></p>    
@@ -54,15 +57,14 @@
     <div class="container">
       <div id="review_nav" class="pagination row justify-content-center">
         <div class="col-sm-4 pl-1">
-          <a id="undo" class="small hidden-imp" href="" data-url="{% url 'datasets:match-undo' ds=ds_id tid=task_id pid=999 %}">
-              Undo last save {% fontawesome_icon 'undo' color='#336699' %}</a>
+          <span>dataset: <a href="{% url 'datasets:ds_reconcile' id=ds_id %}"> {{ ds_label }}</a></span>
         </div>
         <div class="col-sm-8">
-        <span><button type="submit" id="btn_save" class="button-sm">Save</button>
-          {% if deferred is False %}
-          <a id="defer_link" rel="tooltip" title="flag for separate review" class="small" href="{% url 'places:defer-review' pid=record.id auth=authority last=records.paginator.num_pages %}">defer</a>
-          {% endif %}
-        <span class="step-links">
+          <span><button type="submit" id="btn_save" class="button-sm">Save</button>
+            {% if deferred is False %}
+            <a id="defer_link" rel="tooltip" title="flag for separate review" class="small" href="{% url 'places:defer-review' pid=record.id auth=authority last=records.paginator.num_pages %}">defer</a>
+            {% endif %}
+          <span class="step-links">
             {% if records.has_previous %}
                 <a href="?page=1">&laquo; first</a>&nbsp;&nbsp;
                 <a href="?page={{ records.previous_page_number }}">previous</a>
@@ -74,7 +76,11 @@
                 <a href="?page={{ records.next_page_number }}">next</a>&nbsp;&nbsp;
                 <a href="?page={{ records.paginator.num_pages }}">last &raquo;</a>
             {% endif %}
-        </span>
+          </span>
+          <span class="float-right">
+            <a id="undo" class="small hidden-imp" href="" data-url="{% url 'datasets:match-undo' ds=ds_id tid=task_id pid=999 %}">
+              Undo last save {% fontawesome_icon 'undo' color='#336699' %}</a>
+          </span>
         </div>
       </div> <!-- #review_nav-->
       <div class="row mt-2">
@@ -154,7 +160,7 @@
                     </span>
                   {% endif %}
                   <span class="inline">{{ form.match }}</span>
-                  <span class="help-matches" data-id="matches">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
+                  <!--<span class="help-matches" data-id="matches">{ fontawesome_icon 'question-circle' color='#993333' %}</span>-->
                   {% if authority == 'idx' %}
                     <button type="button" 
                       data-id="{{ form.json.value|get:"place_id" }}" 
@@ -249,10 +255,12 @@
     $('.selector').dialog('open');
   })
   $(".selector").dialog({
-    resizable: false,
+    resizable: true,
     autoOpen: false,
-    height: 600,
-    width: 700,
+    <!--height: 600,-->
+    <!--width: 800,-->
+    width: $(window).width() * 0.8, 
+    height: $(window).height() * 0.9,
     title: "WHG Help",
     modal: true,
     buttons: {
