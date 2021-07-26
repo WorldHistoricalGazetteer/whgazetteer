@@ -55,7 +55,7 @@
 			<div id="search_input_traces" class="d-input input-group input-group-sm pb-2 justify-content-center hidden" >
 				<!--<label for="input_box_traces">{ fontawesome_icon 'search' color='#336699'%}</label>-->
 				<input id="input_box_traces" class="typeahead" type="text" placeholder="subject term, e.g. 'empire'">
-        <button class="b-input">{% fontawesome_icon 'search' color='#336699'%}</button>
+        <!--<button class="b-input">{ fontawesome_icon 'search' color='#336699'%}</button>-->
 			</div>
       
       <ul id="scope_tabs" class="nav nav-tabs small">
@@ -1806,7 +1806,8 @@
       } 
   })
   // 
-  $("label[for='input_box']").click(function(){
+  <!--$("label[for='input_box']").click(function(){-->
+  $(".b-input").click(function(){
     <!--console.log('clicked search')-->
     doctype = $("input[name='class']:checked").val()
     <!--scopeAtThisInstant = $(".nav-link.active").data('scope')-->

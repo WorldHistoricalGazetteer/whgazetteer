@@ -403,7 +403,7 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
 /*.tt-input {position: absolute;}*/
 .typeahead {position: absolute;}
 .twitter-typeahead {
-  width:90% !important;
+  width:95% !important;
   margin:auto  !important;
 }
 .input-loading {
@@ -480,9 +480,9 @@ input[type="text"] {
 .d-input {position:relative; width:60%; margin:auto}
 .b-input {
   position:absolute; 
-  top:0; 
-  right:0;
-  height:24px;
+  top:1px; 
+  right:1px;
+  height:22px;
   border:none;}
 
 #result_table { min-width: 100%; }
