@@ -32,7 +32,7 @@
           <a class="nav-link" id="browse-tab" href="{% url 'datasets:ds_browse' id=ds.id %}" role="tab" aria-controls="browse" aria-selected="false">Browse</a>
       </li>
       <li class="nav-item">
-          <a class="nav-link active" id="reconciliation-tab" href="#" role="tab" aria-controls="reconciliation" aria-selected="true">Reconciliation</a>
+          <a class="nav-link active" id="reconciliation-tab" href="#" role="tab" aria-controls="reconciliation" aria-selected="true">Linking</a>
       </li>
       <li id="addtask_li" class="nav-item hidden">
           <a class="nav-link" id="addtask-tab" href="" role="tab" aria-controls="addtask" aria-selected="false">Add task</a>
@@ -57,6 +57,7 @@
             </span>
           {% endif %}
         </h6>
+        <p>Linking in WHG is the activity of matching records from one dataset with "close matches" in another, in a method called <sr>reconciliation</sr> or <sr>alignment</sr>. It can also accomplish geocoding of place names for many records that are missing location. Reconciliation tasks can be performed against our local <sr>Wikidata</sr> or <sr>Getty TGN</sr> indexes. Fully accessioning data to WHG involves the further step of reconciling against our "union index."</p>
         {% if user.is_superuser or user in owners or user in collaborators %}
           <div id="ready" class="hidden pl-2">
             <p class="my-0">All potential matches to <span id="authtag"></span> have been reviewed, so the dataset may be ready for accessioning to the WHG index.</p>
