@@ -59,7 +59,7 @@
               <span id="ptimespans" style="opacity:0;position:absolute;z-index:-1">{{ object.timespans }}</span>
             <td>{{object.minmax.0}} / {{object.minmax.1}}</td>
           </tr>
-          {% endif %}
+          {% else %}<td><i>no associated temporal info</i></td>{% endif %}
           
           <tr><td>Type(s):</td><td>{% for t in object.types.all %}
           {{t.jsonb.sourceLabel }}{%if t.label %} ({{ t.label }}) {% endif %}; {% endfor %}</td></tr>
@@ -82,6 +82,17 @@
             <a id="a_clipgeom" class="clippy" data-clipboard-target="#pgeom" rel="tooltip" title="copy to clipboard">copy coordinates to clipboard {% fontawesome_icon 'clipboard' color='#336699' %}</a></td>
           </tr>
           {% endif %}
+          
+          {% if object.related %}
+            <tr><td>Related:</td>
+              <td>
+                {% for r in object.related.all %}
+                  <i>part of</i>: {{ r.jsonb.label }} {% if r.jsonb.when %} {{r.jsonb.when.timespans }} {% endif %}
+                {%endfor%}
+              </td>
+            </tr>
+          {% endif %}
+          
         </table>
         <div id="place_temporal" class="col-content small">
           <p class="mb-0 allcap-heading">TEMPORAL ATTESTATIONS</p>
@@ -105,7 +116,7 @@
       </div> <!-- #coll_dslist -->
     </div>
     <!--<div class="col-sm-5 mt-2">-->
-    <div id="mapdiv" class="col-sm-5 mt-2"></div>
+    <div id="mapdiv" class="col-sm-5 mt-2" style="max-height:400px"></div>
   </div> <!-- d-flex -->
 </div> <!-- container -->
 
@@ -146,7 +157,7 @@
           <!--console.log('feature',f)-->
           if(f.type != 'Point'){
             console.log('f.type',f.type)
-            layer.setStyle(styles[f.geometry.type].default)
+            layer.setStyle(styles[f.type].default)
           }
         }
       }).addTo(mappo);  
