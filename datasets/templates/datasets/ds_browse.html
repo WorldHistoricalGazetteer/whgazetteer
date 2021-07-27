@@ -179,7 +179,7 @@
   $("[rel='tooltip']").tooltip();
 
   // gl map
-  var map = new maplibregl.Map({
+  mappy = new maplibregl.Map({
     container: 'map', // container id
     style: 'mapbox://styles/mapbox/light-v10',
     center: [9.2, 33],
@@ -187,7 +187,181 @@
     minZoom: 0.1,
     maxZoom: 18,
     accessToken: '{{ mbtokenmb }}'
-  });  
+  });
+
+  mappy.on('load', function(){
+    hilited = null
+    mappy.addSource('empty', {
+      type: 'geojson',
+      data: { type: 'FeatureCollection', features: [] }
+    });
+    
+    const zIndex2 = mappy.addLayer({
+      id: 'z-index-2',
+      type: 'symbol',
+      source: 'empty'
+    });
+    
+    const zIndex1 = mappy.addLayer({
+      id: 'z-index-1',
+      type: 'symbol',
+      source: 'empty'
+    }, 'z-index-2'); // place this layer below zIndex2
+
+    renderData({{ ds.id }})
+  });
+
+  function renderData(dsid){
+    startMapSpinner()
+    // clear any data layers and 'places' source
+    if(!!mappy.getLayer('gl_active_point')){
+      mappy.removeLayer('gl_active_point')
+      mappy.removeLayer('gl_active_poly')
+      mappy.removeSource('places')
+    }
+    // fetch data
+    
+    <!--$.get('/api/geojson/', {id: dsid}, function(data){ // much slower-->
+    $.get('/datasets/'+dsid+'/geojson', function(data){
+      features = data.features
+      console.log('data', data)
+      // get bounds w/turf
+      envelope = turf.envelope(data)
+      <!--console.log(envelope)-->
+      
+      // add source 'places' w/retrieved data
+      mappy.addSource('places', {
+          'type': 'geojson',
+          'data': data
+      })
+      
+      // render to map
+       
+      mappy.addLayer({
+        'id': 'gl_active_poly',
+        'type': 'fill',
+        'source': 'places',
+        'paint': {
+          'fill-color': '#ddd',
+          'fill-opacity': 0.2,
+          'fill-outline-color': 'black'
+        },
+        'filter': ['==', '$type', 'Polygon']
+      }, 'z-index-1');
+      
+      mappy.addLayer({
+        'id': 'gl_active_point',
+        'type': 'circle',
+        'source': 'places',
+        'paint': {
+          'circle-color': '#ff9900',
+          'circle-radius': {
+            stops: [[1, 2], [3, 3], [16, 20]]
+          }        
+        },
+        'filter': ['==', '$type', 'Point']
+      }, 'z-index-2');  
+        
+      mappy.fitBounds(envelope.bbox)
+      spinner_map.stop()
+      
+    })
+  }
+
+  function highlightFeatureGL(pid, coords){
+    console.log('highlightFeatureGL()')
+    console.log('pid, coords',pid, coords)
+      // remove previous
+    <!--if(hilited){hilited.remove()}-->
+    
+    <!--hilited = new maplibregl.Marker().setLngLat(coords).addTo(map);-->
+    
+    <!--'circle-stroke-color': 'black',-->
+    <!--'circle-stroke-width': 1,-->
+  
+    mappy.setPaintProperty(
+      'gl_active_point', 'circle-radius', 
+        { 'property':'pid',
+          'type':'categorical',
+          'stops':[[pid, 12]]}
+    );
+    mappy.setPaintProperty(
+      'gl_active_point', 'circle-stroke-color', 
+        { 'property':'pid',
+          'type':'categorical',
+          'stops':[[pid, '#666']]}
+    );
+    mappy.setPaintProperty(
+      'gl_active_point', 'circle-stroke-width', 
+        { 'property':'pid',
+          'type':'categorical',
+          'stops':[[pid, 1]]}
+    );
+    mappy.setPaintProperty(
+      'gl_active_point', 'circle-color', 
+        { 'property':'pid',
+          'default':'#ff9900',
+          'type':'categorical',
+          'stops':[[pid,'red']]}
+    );
+  
+    <!--mappy.setPaintProperty(-->
+      <!--'gl_active_point', 'circle-opacity', -->
+        <!--{ 'property':'pid',-->
+          <!--'default': 0.5,-->
+          <!--'type':'categorical',-->
+          <!--'stops':[[pid,1]]}-->
+    <!--);-->
+    // also set z-index and zoom
+    
+      // zoom to feature
+    flycoords = typeof(coords[0]) == 'number'?coords:coords[0]
+    mappy.flyTo({'center': flycoords, 'zoom': 9})
+    
+  }
+
+  mappy.on('click', 'gl_active_point', function (e) {
+    <!--console.log('place:', e.features[0])-->
+    place=e.features[0]
+    var coordinates = e.features[0].geometry.coordinates.slice();
+    var pid = e.features[0].properties.pid;
+    var title = e.features[0].properties.title;
+    var src_id = e.features[0].properties.src_id;
+    var minmax = e.features[0].properties.minmax;
+    var fc = e.features[0].properties.fclasses;
+     
+    <!--// Ensure that if the map is zoomed out such that multiple-->
+    <!--// copies of the feature are visible, the popup appears-->
+    <!--// over the copy being pointed to.-->
+    while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+      coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+    }
+    
+    // highlight row
+    console.log('highlight row & fetch data', pid, coordinates)
+      
+    // popup
+    new maplibregl.Popup()
+      .setLngLat(coordinates)
+      .setHTML(title+'<br/>(pid: '+pid+'; src_id: ' +src_id+')<br/>'+minmax+'; '+fc)
+      .addTo(mappy);
+  });
+  // Change the cursor to a pointer when the mouse is over the places layer.
+  mappy.on('mouseenter', 'gl_active_point', function () {
+    mappy.getCanvas().style.cursor = 'pointer';
+  });
+   
+  // Change it back to a pointer when it leaves.
+  mappy.on('mouseleave', 'gl_active_point', function () {
+    mappy.getCanvas().style.cursor = '';
+  });
+
+  $(".f").click(function(){
+    pid=$(this).data('pid')
+    coords=$(this).data('coords')
+    console.log('pid, coords',pid, coords)
+    highlightFeatureGL(pid, coords)
+  })
   // generic 
   function zoomTo(pid) {
     console.log('zoomTo()',pid)
@@ -248,9 +422,14 @@
 
     $("#placetable tbody tr").click(function() {
       t=$(this)
-      console.log('clicked', t)
       // get id
-      pid=$(this)[0].cells[0].textContent
+      pid = Number($(this)[0].cells[0].textContent)
+      console.log('clicked pid, text', pid, t)
+
+      // gl need coordinates
+      place=features.find((o) => { return o.properties.pid === pid })
+      console.log('place', place)
+      coords=place.geometry.coordinates
       
       // highlight this row, clear others
       var selected = $(this).hasClass("highlight-row");
@@ -261,7 +440,8 @@
         $(this).addClass("highlight-row");
 
       // highlight marker, zoomTo()
-      highlightFeature(pid)
+      <!--highlightFeature(pid)-->
+      highlightFeatureGL(pid, coords)
 
       // fetch its detail
       getPlace(pid)
@@ -620,7 +800,7 @@
   }
 
   function getPlace(pid){
-    console.log('getPlace()', pid)
+    <!--console.log('getPlace()', pid)-->
     $.ajax({
       url: "/api/place/"+pid,
       }).done(function( data ) {
@@ -669,9 +849,9 @@
     $("#row_detail").append(spinner_detail.el);   
   }
   function startMapSpinner(){
-    console.log('startMapSpinner()')
+    <!--console.log('startMapSpinner()')-->
     window.spinner_map = new Spin.Spinner(spin_opts).spin();
-    $("#map_browse").append(spinner_map.el);   
+    $("#map").append(spinner_map.el);   
   }
   //*
   
