@@ -189,7 +189,6 @@ class PlaceTableSerializer(serializers.ModelSerializer):
     else:
       return '&mdash;'
 
-
   revwd = serializers.SerializerMethodField('rev_wd')
   def rev_wd(self, place):
     if place.review_wd == 1:
@@ -225,8 +224,7 @@ class PlaceTableSerializer(serializers.ModelSerializer):
     else:
       val = '<i>deferred</i>'
     return val
-
-
+  
   class Meta:
     model = Place
     fields =  ('url','id', 'title', 'src_id',
