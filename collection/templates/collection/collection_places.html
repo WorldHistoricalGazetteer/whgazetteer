@@ -325,7 +325,8 @@
         });
         sources.push(ds.label)
         // different color ramps by index
-        heat(ds.label, d)
+        <!--heat(ds.label, d)-->
+        notHeat(ds.label, d)
       }
     }
     spinner_map.stop()
@@ -494,7 +495,40 @@
     0,'rgba(237,248,251,0)',0.2,'rgb(191,211,230)',0.4,'rgb(158,188,218)',0.6,
     'rgb(140,150,198)',0.8,'rgb(136,86,167)',1,'rgb(129,15,124)'],    
   ]
+  
+  colors=['#ff9900','red','green','blue']
+  function notHeat(dslabel, i){
+    <!--mappy.addSource('places', {-->
+        <!--'type': 'geojson',-->
+        <!--'data': data-->
+    <!--})  -->
+    mappy.addLayer({
+      'id': 'gl_'+dslabel+'_poly',
+      'type': 'fill',
+      <!--'source': 'places',-->
+      'source': dslabel,
+      'paint': {
+        'fill-color': '#ddd',
+        'fill-opacity': 0.2,
+        'fill-outline-color': 'black'
+      },
+      'filter': ['==', '$type', 'Polygon']
+    }, 'z-index-1');
     
+    mappy.addLayer({
+      'id': 'gl_'+dslabel+'_point',
+      'type': 'circle',
+      <!--'source': 'places',-->
+      'source': dslabel,
+      'paint': {
+        'circle-color': colors[i],
+        'circle-radius': {
+          stops: [[1, 2], [3, 3], [16, 20]]
+        }        
+      },
+      'filter': ['==', '$type', 'Point']
+    }, 'z-index-2');  
+  }
   <!--]-->
   // render heatmap layer
   function heat(dataset, ramp) {
