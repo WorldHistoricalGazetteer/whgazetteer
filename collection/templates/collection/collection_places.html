@@ -168,7 +168,7 @@
         $(this).addClass("highlight-row");
 
       // highlight marker, zoomTo()
-      highlightFeature(pid)
+      highlightFeatureGL(pid)
 
       // fetch its detail
       getPlace(pid, 'clicked')
@@ -310,9 +310,26 @@
       source: 'empty'
     }, 'z-index-2'); // place this layer below zIndex2
 
-    renderData({{ ds.id }})
+    addSources(ds_list)
+    <!--renderData({{ ds.id }})-->
   });
 
+  function addSources(ds_list){
+    sources=[]
+    for(d in ds_list){
+      ds = ds_list[d]
+      if(ds.geotypes['poly'] < 200){
+        mappy.addSource(ds.label, {
+          'type': 'geojson',
+          'data': '/datasets/'+ds.id+'/geojson'
+        });
+        sources.push(ds.label)
+        // different color ramps by index
+        heat(ds.label, d)
+      }
+    }
+    spinner_map.stop()
+  }
   function renderData(dsid){
     startMapSpinner()
     // clear any data layers and 'places' source
@@ -323,12 +340,11 @@
     }
     // fetch data
     
-    <!--$.get('/api/geojson/', {id: dsid}, function(data){ // much slower-->
-    $.get('/datasets/'+dsid+'/geojson', function(data){
+    $.get("/api/geoms", {coll: "{{ object.id }}"},function(data){
       features = data.features
       console.log('data', data)
       // get bounds w/turf
-      envelope = turf.envelope(data)
+      <!--envelope = turf.envelope(data)-->
       <!--console.log(envelope)-->
       
       // add source 'places' w/retrieved data
@@ -338,7 +354,6 @@
       })
       
       // render to map
-       
       mappy.addLayer({
         'id': 'gl_active_poly',
         'type': 'fill',
@@ -364,7 +379,7 @@
         'filter': ['==', '$type', 'Point']
       }, 'z-index-2');  
         
-      mappy.fitBounds(envelope.bbox)
+      <!--mappy.fitBounds(envelope.bbox)-->
       spinner_map.stop()
       
     })
@@ -487,7 +502,8 @@
 	  <!--if (!!gl.getLayer('heat_active')){-->
 		  <!--gl.removeLayer('heat_active')-->
     <!--}-->
-	  ne_global.getMapboxMap().addLayer({
+	  <!--ne_global.getMapboxMap().addLayer({-->
+	  mappy.addLayer({
       "id": "heat_"+dataset,
       "type": "heatmap",
       "source": dataset,
@@ -803,8 +819,8 @@
     <!--mappy.setView(new L.LatLng(32, 12.6), 1);-->
 
     <!--<!--console.log('map:init begin')-->-->
-    <!--var token_mb = '{{ mbtokenmb }}',-->
-      <!--token_kg = '{{ mbtokenkg }}',-->
+    <!--var token_mb = '{ mbtokenmb }}',-->
+      <!--token_kg = '{ mbtokenkg }}',-->
       <!--mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}';-->
       
     <!--// gl base can have heat overlays-->
@@ -836,7 +852,7 @@
     <!--// fetch collection features -> renderMap() if < 15,000-->
     <!--// getting only points and multipoints here-->
     <!--// polygons will be fetched on click of a table row-->
-    <!--var rowcount = "{{ object.rowcount }}"-->
+    <!--var rowcount = "{ object.rowcount }}"-->
     <!--if( rowcount >= 15000) {-->
       <!--$(".toomany").html('for performance reasons, mapping only the first 15,000 features - sorry!').fadeIn(500)-->
     <!--} else if(rowcount > 1000){-->
@@ -844,8 +860,7 @@
         <!--$(".toomany").html('rendering '+rowcount+' features, just a few moments...').fadeIn(500)-->
     <!--}-->
     <!--console.log('toomany html', $(".toomany").html())-->
-    <!--$.get("/api/geoms", {coll: "{{ object.id }}"},-->
-      <!--function(data){-->
+    <!--$.get("/api/geoms", {coll: "{{ object.id }}"},function(data){-->
         <!--console.log('success: data.count:',data.count)-->
         <!--geom = {"type":"FeatureCollection","features":data.results}-->
         <!--renderMap(geom,'browse')-->
