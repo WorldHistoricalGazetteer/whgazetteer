@@ -36,7 +36,7 @@
           <a class="nav-link active" id="browse-tab" data-toggle="tab" href="#" role="tab" aria-controls="browse" aria-selected="false">Browse</a>
       </li>
       <li class="nav-item">
-          <a class="nav-link" id="reconciliation-tab" href="{% url 'datasets:ds_reconcile' id=ds.id %}" role="tab" aria-controls="reconciliation" aria-selected="false">Reconciliation</a>
+          <a class="nav-link" id="reconciliation-tab" href="{% url 'datasets:ds_reconcile' id=ds.id %}" role="tab" aria-controls="reconciliation" aria-selected="false">Linking</a>
       </li>
       <li class="nav-item">
           <a class="nav-link" id="sharing-tab" href="{% url 'datasets:ds_collab' id=ds.id %}" role="tab" aria-controls="sharing" aria-selected="false">Collaborators</a>
@@ -96,27 +96,6 @@
 </div>
 
 <script type="text/javascript">
-  // spinners
-  spin_opts = { scale: .5, top: '50%'}
-  function startTableSpinner(){
-    window.spinner_table = new Spin.Spinner(spin_opts).spin();
-    $("#drftable_list").append(spinner_table.el);   
-  }
-  function startFilterSpinner(){
-    window.spinner_filter = new Spin.Spinner(spin_opts).spin();
-    $("#status_filter").append(spinner_filter.el);   
-  }
-  function startDetailSpinner(){
-    window.spinner_detail = new Spin.Spinner(spin_opts).spin();
-    $("#row_detail").append(spinner_detail.el);   
-  }
-  function startMapSpinner(){
-    console.log('startMapSpinner()')
-    window.spinner_map = new Spin.Spinner(spin_opts).spin();
-    $("#map_browse").append(spinner_map.el);   
-  }
-  //*
-  
   
   function filterColumn (i, v) {
     // clear then search
@@ -370,7 +349,7 @@
     
     
     // get dataset features -> renderMap() if < 15,000
-    $.get("/api/geoms", {ds: "{{ ds.label }}", f: "{{ filter }}" },
+    $.get("/api/geoms", {ds: "{{ ds.label }}"},
       function(data){
         <!--console.log('feature count:',data.count)-->
         geom = {"type":"FeatureCollection","features":data.results}
@@ -429,17 +408,17 @@
       "default":{fillOpacity: 0.3, opacity: .5, color: "#666", weight: 1, fillColor:"#ff9999"},
       "focus":{fillOpacity: 0.3, opacity: .5, color: "red", weight: 2, fillColor:"#ff9999"}}
   }
-  // dual purpose for browse and recon
-  function renderMap(geom, tab){
+  // 
+  function renderMap(geom){
     // call the map being rendered 'mappo'
-    console.log('in renderMap()')
-    mappo = tab=='browse' ? mappy : mappyr
+    console.log('in renderMap()', geom)
+    <!--mappo = tab=='browse' ? mappy : mappyr-->
     if (geom.features.length==0) {
       console.log('no features in renderMap() call')
     } else {
       // clear existing if any
       if(typeof(features)!=='undefined'){
-        mappo.removeLayer(features)
+        mappy.removeLayer(features)
       }
       idToFeature = {}  // for feature lookup
       features = L.geoJSON(geom, {
@@ -467,12 +446,12 @@
             idToFeature[identifier] = layer
           }
         }
-      }).addTo(mappo);
+      }).addTo(mappy);
     }
     <!--highlightFeature(pid)-->
-    mappo.fitBounds(features.getBounds())
-    mappo.on('zoomend', function() {
-      var currentZoom = mappo.getZoom();
+    mappy.fitBounds(features.getBounds())
+    mappy.on('zoomend', function() {
+      var currentZoom = mappy.getZoom();
       <!--console.log('on zoomend', currentZoom)-->
       var myRadius = currentZoom*(1); //or whatever ratio you prefer
       var myWeight = currentZoom*(1/5); //or whatever ratio you prefer
@@ -633,7 +612,7 @@
   }
 
   function getPlace(pid){
-    <!--console.log('getPlace()', pid)-->
+    console.log('getPlace()', pid)
     $.ajax({
       url: "/api/place/"+pid,
       }).done(function( data ) {
@@ -667,6 +646,28 @@
     });
     <!--spinner_detail.stop()-->
   }
+  // spinners
+  spin_opts = { scale: .5, top: '50%'}
+  function startTableSpinner(){
+    window.spinner_table = new Spin.Spinner(spin_opts).spin();
+    $("#drftable_list").append(spinner_table.el);   
+  }
+  function startFilterSpinner(){
+    window.spinner_filter = new Spin.Spinner(spin_opts).spin();
+    $("#status_filter").append(spinner_filter.el);   
+  }
+  function startDetailSpinner(){
+    window.spinner_detail = new Spin.Spinner(spin_opts).spin();
+    $("#row_detail").append(spinner_detail.el);   
+  }
+  function startMapSpinner(){
+    console.log('startMapSpinner()')
+    window.spinner_map = new Spin.Spinner(spin_opts).spin();
+    $("#map_browse").append(spinner_map.el);   
+  }
+  //*
+  
+  
 </script>
 {% endblock %}
 
