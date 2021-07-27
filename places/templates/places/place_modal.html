@@ -25,23 +25,23 @@
   <!--<script src="https://unpkg.com/maplibre-gl@1.15.2/dist/maplibre-gl.js"></script>-->
   <!--<link href="https://unpkg.com/maplibre-gl@1.15.2/dist/maplibre-gl.css" rel="stylesheet" />-->
   
-  <style>
-    table tr td:nth-child(1) {font-weight:600;}
-    .svg-container {
-        display: inline-block;
-        position: relative;
-        width: 100%;
-        padding-bottom: 100%;
-        vertical-align: top;
-        overflow: hidden;
-    }
-    .svg-content {
-        display: inline-block;
-        position: absolute;
-        top: 0;
-        left: 0;
-    }
-  </style>
+  <!--<style>-->
+    <!--table tr td:nth-child(1) {font-weight:600;}-->
+    <!--.svg-container {-->
+        <!--display: inline-block;-->
+        <!--position: relative;-->
+        <!--width: 100%;-->
+        <!--padding-bottom: 10%;-->
+        <!--vertical-align: top;-->
+        <!--overflow: hidden;-->
+    <!--}-->
+    <!--.svg-content {-->
+        <!--display: inline-block;-->
+        <!--position: absolute;-->
+        <!--top: 0;-->
+        <!--left: 0;-->
+    <!--}-->
+  <!--</style>-->
 {% endblock %}
 
 {% block content %}
@@ -92,7 +92,7 @@
         <div id="place_temporal" class="col-content small">
           <p class="mb-0 allcap-heading">TEMPORAL ATTESTATIONS</p>
           <!--<div id="histogram_modal" class="svg-container"></div>-->
-          <div id="histogram_modal" class=""></div>
+          <div id="histogram_modal"></div>
         </div>
       </div>
       <hr/>
@@ -257,13 +257,17 @@
     yScale.domain([0, d3.max(data, function(d) { return d.count; })]);
 
     // TODO: make width scale    
-    window.svg_hist = d3.select("#histogram_modal").append("svg")
+    window.svg_hist = d3.select("#histogram_modal")
+      .append("svg")
       .attr("width", '100%')
       .attr("height", height+padding_h)
-      
-      .attr('viewBox','0 0 '+Math.min(width, height+padding_h)+' '+Math.min(width,height+padding_h))
       .attr('preserveAspectRatio','xMinYMin')
-      
+      .attr('viewBox','0 0 '+Math.min(width,height+padding_h)+' '+Math.min(width,height+padding_h))
+
+      <!--.attr('preserveAspectRatio','xMinYMin meet')-->
+      <!--.attr('viewBox','0 0 530 60')-->
+      <!--.classed("svg-content", true)-->
+            
       .append("g")
       .attr("transform","translate(" + margin.left + "," + margin.top + ")")
   
