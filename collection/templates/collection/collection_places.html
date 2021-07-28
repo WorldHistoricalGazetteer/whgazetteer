@@ -159,14 +159,12 @@
       pid=$(this)[0].cells[0].textContent
       <!--console.log('clicked row pid', pid)-->
       
-      coords = feats.find(function(f){return f.properties.pid==pid}).geometry.coordinates
+      coords = allfeats.find(function(f){return f.properties.pid==pid}).geometry.coordinates
       console.log('pid, coords', pid, coords)
 
       // fetch its detail
       getPlace(pid, 'clicked')
 
-      return
-      
       // highlight this row, clear others
       var selected = $(this).hasClass("highlight-row");
       $("#placetable tr").removeClass("highlight-row");
@@ -202,7 +200,7 @@
   }
   
   $(function(){
-    <!--feats = []-->
+    allfeats = null
     <!--window.layer_list = []-->
     window.layer_list = getLoadedLayers()    
     window.ds_list = JSON.parse(document.getElementById('ds_list').textContent);
@@ -308,8 +306,12 @@
     //[1, 2, 3].map(function (i) { return i * i });
     for(l in dslabels){
       z = mappy.querySourceFeatures(dslabels[l])
-      console.log('z',z)
+      <!--z = mappy.queryRenderedFeatures(dslabels[l])-->
+      <!--console.log('z',z)-->
       feats = feats.concat(z)
+    }
+    if(!allfeats){
+      allfeats = feats
     }
     <!--console.log('feats', feats)-->
     <!--console.log('style.load (on idle)', mappy.querySourceFeatures('croniken_og_json'))-->
@@ -369,7 +371,7 @@
         // popup
         new maplibregl.Popup()
           .setLngLat(coordinates)
-          .setHTML(title+'<br/>(pid: '+pid+'; src_id: ' +src_id+')<br/>'+minmax+'; '+fc)
+          .setHTML(title+'<br/>(pid: '+pid+'; src_id: ' +src_id+')<br/>'+minmax+'; '+fc+'<br/>'+coordinates)
           .addTo(mappy);
       });
     }
@@ -469,31 +471,31 @@
     <!--'circle-stroke-color': 'black',-->
     <!--'circle-stroke-width': 1,-->
   
-    mappy.setPaintProperty(
-      'gl_active_point', 'circle-radius', 
-        { 'property':'pid',
-          'type':'categorical',
-          'stops':[[pid, 12]]}
-    );
-    mappy.setPaintProperty(
-      'gl_active_point', 'circle-stroke-color', 
-        { 'property':'pid',
-          'type':'categorical',
-          'stops':[[pid, '#666']]}
-    );
-    mappy.setPaintProperty(
-      'gl_active_point', 'circle-stroke-width', 
-        { 'property':'pid',
-          'type':'categorical',
-          'stops':[[pid, 1]]}
-    );
-    mappy.setPaintProperty(
-      'gl_active_point', 'circle-color', 
-        { 'property':'pid',
-          'default':'#ff9900',
-          'type':'categorical',
-          'stops':[[pid,'red']]}
-    );
+    <!--mappy.setPaintProperty(-->
+      <!--'gl_active_point', 'circle-radius', -->
+        <!--{ 'property':'pid',-->
+          <!--'type':'categorical',-->
+          <!--'stops':[[pid, 12]]}-->
+    <!--);-->
+    <!--mappy.setPaintProperty(-->
+      <!--'gl_active_point', 'circle-stroke-color', -->
+        <!--{ 'property':'pid',-->
+          <!--'type':'categorical',-->
+          <!--'stops':[[pid, '#666']]}-->
+    <!--);-->
+    <!--mappy.setPaintProperty(-->
+      <!--'gl_active_point', 'circle-stroke-width', -->
+        <!--{ 'property':'pid',-->
+          <!--'type':'categorical',-->
+          <!--'stops':[[pid, 1]]}-->
+    <!--);-->
+    <!--mappy.setPaintProperty(-->
+      <!--'gl_active_point', 'circle-color', -->
+        <!--{ 'property':'pid',-->
+          <!--'default':'#ff9900',-->
+          <!--'type':'categorical',-->
+          <!--'stops':[[pid,'red']]}-->
+    <!--);-->
   
     <!--mappy.setPaintProperty(-->
       <!--'gl_active_point', 'circle-opacity', -->
@@ -629,6 +631,7 @@
     if(key == -1){
       for(l in layer_list){
         mappy.setLayoutProperty(layer_list[l],'visibility','visible')
+        mappy.flyTo({'center': [9.2, 33], 'zoom':0.2})
       }      
     } else {
       relevant = layer_list.filter(l => l.indexOf(key) !=-1)
@@ -638,11 +641,11 @@
       }
       for(l in relevant){
         mappy.setLayoutProperty(relevant[l],'visibility','visible')
-      }    
+      }
+      bounds = ds_list.find((o) => { return o['label'] === key }).bbox
+      console.log('bounds',bounds)
+      mappy.fitBounds(turf.envelope(bounds).bbox)
     }
-    bounds = ds_list.find((o) => { return o['label'] === key }).bbox
-    console.log('bounds',bounds)
-    mappy.fitBounds(turf.envelope(bounds).bbox)
   }
 
   function getPlace(pid, from){
