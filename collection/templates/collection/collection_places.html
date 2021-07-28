@@ -158,11 +158,9 @@
       t=$(this)
       // get id
       pid=$(this)[0].cells[0].textContent
-      console.log('clicked', pid)
+      console.log('clicked row', pid)
       
-      features = mappy.queryRenderedFeatures();
-      
-      place=features.find((o) => { return o.properties.pid === pid })
+      place=features.find((o) => { return o.properties.pid === Number(pid) })
       console.log('place', place)
       coords=place.geometry.coordinates
       
@@ -321,7 +319,6 @@
     }, 'z-index-2'); // place this layer below zIndex2
 
     addSources(ds_list)
-
     <!--console.log('map loaded, ds_list',ds_list)-->
 
     layer_list = getLoadedLayers(ds_list)
@@ -359,9 +356,7 @@
           .setHTML(title+'<br/>(pid: '+pid+'; src_id: ' +src_id+')<br/>'+minmax+'; '+fc)
           .addTo(mappy);
       });
-
     }
-
   });
 
   function getLoadedLayers(ds_list){
@@ -373,7 +368,7 @@
     }
     return layers
   }
-  geom = null
+  
   function addSources(ds_list){
     sources=[]
     for(d in ds_list){

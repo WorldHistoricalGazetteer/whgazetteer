@@ -6,7 +6,7 @@ from django.conf.urls.static import static
 from django.conf import settings
 
 from . import views
-from datasets.utils import download_file, UpdateCountsView, downloader, download_augmented, fetch_geojson
+from datasets.utils import download_file, UpdateCountsView, downloader, download_augmented, fetch_geojson_ds
 
 # dataset actions
 app_name='datasets'
@@ -85,7 +85,7 @@ urlpatterns = [
   path('collab-delete/<int:uid>/<int:dsid>/<str:v>', views.collab_delete, name="collab-delete"),
 
   ## GEOMETRY
-  path('<int:dsid>/geojson/', fetch_geojson, name="geojson"),
+  path('<int:dsid>/geojson/', fetch_geojson_ds, name="geojson"),
 
 
 ] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)

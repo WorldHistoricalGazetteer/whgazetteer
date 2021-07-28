@@ -32,6 +32,7 @@ urlpatterns = [
     # also search.html if search scope = 'db'
     path('place/<int:pk>/', views.PlaceDetailAPIView.as_view(), name='place-detail'),    
 
+    # places in a dataset
     # use: drf table in ds_browse  :: PlaceSerializer
     path('placetable/', views.PlaceTableViewSet.as_view({'get':'list'}), name='place-table'), 
     path('placetable_coll/', views.PlaceTableCollViewSet.as_view({'get':'list'}), name='place-table-coll'), 

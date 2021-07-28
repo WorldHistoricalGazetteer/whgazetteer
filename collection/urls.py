@@ -18,7 +18,7 @@ urlpatterns = [
     
     path('list_ds/', views.ListDatasetView.as_view(), name='list-ds'),
     path('remove_ds/<int:coll_id>/<int:ds_id>', views.remove_dataset, name='remove-ds'),
-
+    
     # detail is the public view
     path('<int:pk>/detail', views.CollectionDetailView.as_view(), name='collection-detail'),
     # adding browse tab

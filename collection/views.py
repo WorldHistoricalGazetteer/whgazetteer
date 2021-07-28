@@ -6,9 +6,31 @@ from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.views.generic import (View, CreateView, UpdateView, DetailView, DeleteView )
 
-from datasets.utils import hully
+#from datasets.utils import hully
 from .forms import CollectionModelForm
 from .models import *
+from places.models import PlaceGeom
+
+# gl map needs this
+def fetch_geojson_coll(request, *args, **kwargs):
+  print('download_gis kwargs',kwargs)
+  id_=kwargs['id']
+  coll=get_object_or_404(Collection, id=id_)
+  pids = [p.id for p in coll.places.all()]
+  
+  # build a fast FeatureCollection 
+  features=PlaceGeom.objects.filter(place_id__in=pids).values_list(
+    'jsonb','place_id','src_id','place__title','place__minmax', 
+    'place__fclasses', 'place__dataset_id', 'place__dataset__label')
+  fcoll = {"type":"FeatureCollection","features":[]}
+  for f in features:
+    feat={"type":"Feature",
+          "properties":{"pid":f[1],"src_id":f[2],"title":f[3],"minmax":f[4],
+                        "fclasses":f[5], "dsid":f[6], "dslabel":f[7]
+                        },
+          "geometry":f[0]}
+    fcoll['features'].append(feat)
+  return JsonResponse(fcoll, safe=False,json_dumps_params={'ensure_ascii':False,'indent':2})
 
 # returns json for display
 class ListDatasetView(View):
@@ -113,7 +135,7 @@ class CollectionDetailView(DetailView):
     return context
 
 
-""" public collection browse table """
+""" public collection page; returns dataset info only """
 class CollectionPlacesView(DetailView):
   login_url = '/accounts/login/'
   redirect_field_name = 'redirect_to'
@@ -146,7 +168,8 @@ class CollectionPlacesView(DetailView):
                 for ds in coll.datasets.all()]
     #bboxes = [{"id":ds['id'], "geometry":ds['bounds']} for ds in datasets]
 
-    #placeset = Place.objects.filter(dataset=ds.label)
+    placeset = coll.places.all()
+    context['places'] = placeset
     context['ds_list'] = datasets
     #context['bboxes'] = bboxes
     context['updates'] = {}
@@ -204,3 +227,4 @@ class CollectionUpdateView(UpdateView):
     context['create_date'] = self.object.create_date.strftime("%Y-%m-%d")
     context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
     return context
+

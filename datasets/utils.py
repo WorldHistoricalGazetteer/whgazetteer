@@ -331,17 +331,11 @@ def download_augmented_slow(request, *args, **kwargs):
 
     return response
 
-# TODO:
-def fetch_geojson(request, *args, **kwargs):
+# 
+def fetch_geojson_ds(request, *args, **kwargs):
   print('download_gis kwargs',kwargs)
-  #user = request.user.username
   dsid=kwargs['dsid']
   ds=get_object_or_404(Dataset,pk=dsid)
-  #date=makeNow()
-  # make file name
-  #fn = 'media/user_'+user+'/'+ds.label+'_aug_'+date+'.json'
-  # open it for write
-  #fout = codecs.open(fn,'w','utf8')
 
   # build a fast FeatureCollection 
   features=PlaceGeom.objects.filter(place_id__in=ds.placeids).values_list(
@@ -352,14 +346,7 @@ def fetch_geojson(request, *args, **kwargs):
           "properties":{"pid":f[1],"src_id":f[2],"title":f[3],"minmax":f[4],"fclasses":f[5]},
           "geometry":f[0]}
     fcoll['features'].append(feat)
-  #fout.write(json.dumps(fcoll))
-  #fout.close()
-  # response is reopened file and content type
-  #response = FileResponse(open(fn, 'rb'),content_type='text/json')
-  #response['Content-Disposition'] = 'attachment; filename="mydata.geojson"'
   return JsonResponse(fcoll, safe=False,json_dumps_params={'ensure_ascii':False,'indent':2})
-  #return HttpResponse(content='download_gis: '+fn)
-  #return response
 
 # *** /end DOWNLOAD FILES
 
