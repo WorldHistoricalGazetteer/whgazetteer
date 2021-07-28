@@ -138,13 +138,17 @@ class CollectionPlacesView(DetailView):
     print('CollectionPlacesView get_context_data() kwargs:',self.kwargs)
     print('CollectionPlacesView get_context_data() request.user',self.request.user)
     id_ = self.kwargs.get("id")
+    # compute bounding boxes
 
     coll = get_object_or_404(Collection, id=id_)
-    datasets = [{"id":ds.id,"label":ds.label,"title":ds.title, "geotypes":ds.geotypes} \
+    datasets = [{"id":ds.id,"label":ds.label,"title":ds.title, \
+                 "geotypes":ds.geotypes, "bbox": ds.bounds} \
                 for ds in coll.datasets.all()]
+    #bboxes = [{"id":ds['id'], "geometry":ds['bounds']} for ds in datasets]
 
     #placeset = Place.objects.filter(dataset=ds.label)
     context['ds_list'] = datasets
+    #context['bboxes'] = bboxes
     context['updates'] = {}
     context['coll'] = coll
     context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False

@@ -40,6 +40,7 @@
       </li>
   </ul>
   {{ ds_list|json_script:"ds_list" }}
+  {{ bboxes|json_script:"bboxes" }}
   <div class="tab-content">
     <div id="browse" class="tab-pane fade show active" role="tabpanel" aria-labelledby="browse-tab">
         <div class="container mt-3 pl-0">
@@ -114,6 +115,7 @@
 </div>
 
 <script type="text/javascript">
+
   function filterColumn (i, v) {
     // clear then search
     console.log('i,v', i,v)
@@ -141,7 +143,6 @@
       // filter table
       val = $(this).val()
       localStorage.setItem('filter', val)
-      console.log(val)
       if(val == -1){
         // clear search
         startFilterSpinner()
@@ -159,6 +160,12 @@
       pid=$(this)[0].cells[0].textContent
       console.log('clicked', pid)
       
+      features = mappy.queryRenderedFeatures();
+      
+      place=features.find((o) => { return o.properties.pid === pid })
+      console.log('place', place)
+      coords=place.geometry.coordinates
+      
       // highlight this row, clear others
       var selected = $(this).hasClass("highlight-row");
       $("#placetable tr").removeClass("highlight-row");
@@ -168,7 +175,7 @@
         $(this).addClass("highlight-row");
 
       // highlight marker, zoomTo()
-      highlightFeatureGL(pid)
+      highlightFeatureGL(pid, coords)
 
       // fetch its detail
       getPlace(pid, 'clicked')
@@ -188,16 +195,19 @@
     '<option value="-1" selected="selected">All</option>'
     for(let ds of ds_list){
       <!--select += '<option value="'+ds.id+'" rel="tooltip" title="'+ds.title+'">'+ds.title.substring(0,24)+'...</option>'-->
-      select += '<option value="'+ds.id+'" selected="selected">'+ds.title+'</option>'
+      select += '<option value="'+ds.label+'" selected="selected">'+
+        ds.title+'</option>'
     }
     select +='</select></label>'
     return select
   }
   
   $(function(){
+    <!--window.layer_list = []-->
+    window.layer_list = getLoadedLayers()    
     window.ds_list = JSON.parse(document.getElementById('ds_list').textContent);
-    console.log('ds_list', ds_list)
-
+    window.bboxes = JSON.parse(document.getElementById('bboxes').textContent);
+    <!--console.log('ds_list', ds_list)-->
     // TODO: remove these artifacts of table used for review
     localStorage.setItem('filter', '-1')
     wdtask = "{{wdtask}}" == "True"?true:false
@@ -240,8 +250,8 @@
             "orderable":false},
           {"data": "revwhg", "visible": whgtask?true:false, 
             "orderable":false},
-          {"data": "dataset.id", "name":"dataset.id", "searchable":true},
-          <!--{"data": "dataset.label", "name":"dataset.label"}-->
+          <!--{"data": "dataset.id", "name":"dataset.id", "searchable":true},-->
+          {"data": "dataset.label", "name":"dataset.label"}
       ]
       ,columnDefs:[
         { className: "browse-task-col", "targets": [8,9,10] },
@@ -311,9 +321,59 @@
     }, 'z-index-2'); // place this layer below zIndex2
 
     addSources(ds_list)
-    <!--renderData({{ ds.id }})-->
+
+    <!--console.log('map loaded, ds_list',ds_list)-->
+
+    layer_list = getLoadedLayers(ds_list)
+    
+    for (l in layer_list){
+      mappy.on('mouseenter', layer_list[l], function () {
+        mappy.getCanvas().style.cursor = 'pointer';
+      });
+       
+      // Change it back to a pointer when it leaves.
+      mappy.on('mouseleave', layer_list[l], function () {
+        mappy.getCanvas().style.cursor = '';
+      });
+
+      mappy.on('click', layer_list[l], function (e) {
+        <!--console.log('place:', e.features[0])-->
+        place=e.features[0]
+        var coordinates = e.features[0].geometry.coordinates.slice();
+        var pid = e.features[0].properties.pid;
+        var title = e.features[0].properties.title;
+        var src_id = e.features[0].properties.src_id;
+        var minmax = e.features[0].properties.minmax;
+        var fc = e.features[0].properties.fclasses;
+         
+        while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+          coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+        }
+        
+        // highlight row
+        <!--console.log('highlight row & fetch data', pid, coordinates)-->
+          
+        // popup
+        new maplibregl.Popup()
+          .setLngLat(coordinates)
+          .setHTML(title+'<br/>(pid: '+pid+'; src_id: ' +src_id+')<br/>'+minmax+'; '+fc)
+          .addTo(mappy);
+      });
+
+    }
+
   });
 
+  function getLoadedLayers(ds_list){
+    layers=[]
+    for(d in ds_list){
+      l = ds_list[d]['label']
+      layers.push('gl_'+l+'_point')
+      layers.push('gl_'+l+'_poly')
+    }
+    return layers
+  }
+  geom = null
   function addSources(ds_list){
     sources=[]
     for(d in ds_list){
@@ -331,6 +391,7 @@
     }
     spinner_map.stop()
   }
+  
   function renderData(dsid){
     startMapSpinner()
     // clear any data layers and 'places' source
@@ -448,9 +509,6 @@
     var minmax = e.features[0].properties.minmax;
     var fc = e.features[0].properties.fclasses;
      
-    <!--// Ensure that if the map is zoomed out such that multiple-->
-    <!--// copies of the feature are visible, the popup appears-->
-    <!--// over the copy being pointed to.-->
     while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
       coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
     }
@@ -465,15 +523,7 @@
       .addTo(mappy);
   });
   // Change the cursor to a pointer when the mouse is over the places layer.
-  mappy.on('mouseenter', 'gl_active_point', function () {
-    mappy.getCanvas().style.cursor = 'pointer';
-  });
-   
-  // Change it back to a pointer when it leaves.
-  mappy.on('mouseleave', 'gl_active_point', function () {
-    mappy.getCanvas().style.cursor = '';
-  });
-
+  <!--mappy.on('mouseenter', 'gl_active_point', function () {-->
   // activate all tooltips
   $("[rel='tooltip']").tooltip();
   
@@ -497,6 +547,7 @@
   ]
   
   colors=['#ff9900','red','green','blue']
+
   function notHeat(dslabel, i){
     <!--mappy.addSource('places', {-->
         <!--'type': 'geojson',-->
@@ -507,6 +558,7 @@
       'type': 'fill',
       <!--'source': 'places',-->
       'source': dslabel,
+      'visibility': 'visible',
       'paint': {
         'fill-color': '#ddd',
         'fill-opacity': 0.2,
@@ -520,6 +572,7 @@
       'type': 'circle',
       <!--'source': 'places',-->
       'source': dslabel,
+      'visibility': 'visible',      
       'paint': {
         'circle-color': colors[i],
         'circle-radius': {
@@ -581,22 +634,24 @@
   // show/hide dataset markers from dropdown
   // TODO: this seems inefficient but works
   function filterMap(key){
-    let mlg = mapLayerGroups
-    if(key == "-1"){
-      // all
-      mlg.forEach(function(l){mappy.addLayer(l)})
-      mappy.setView(new L.LatLng(32, 12.6), 1);
+    console.log('filter on ds', key)
+    if(key == -1){
+      for(l in layer_list){
+        mappy.setLayoutProperty(layer_list[l],'visibility','visible')
+      }      
     } else {
-      mlg.forEach(function(l,i){
-        if(i != key){
-          mappy.removeLayer(l)
-        } else {
-          mappy.addLayer(l)
-          console.log('l',l,'i',i)
-          mappy.fitBounds(l.getBounds())
-        }
-      })
+      relevant = layer_list.filter(l => l.indexOf(key) !=-1)
+      others = layer_list.filter(l => !relevant.includes(l))
+      for(l in others){
+        mappy.setLayoutProperty(others[l],'visibility','none')
+      }
+      for(l in relevant){
+        mappy.setLayoutProperty(relevant[l],'visibility','visible')
+      }    
     }
+    bounds = ds_list.find((o) => { return o['label'] === key }).bbox
+    console.log('bounds',bounds)
+    mappy.fitBounds(turf.envelope(bounds).bbox)
   }
 
   function getPlace(pid, from){
@@ -832,7 +887,7 @@
     $("#row_detail").append(spinner_detail.el);   
   }
   function startMapSpinner(){
-    console.log('startMapSpinner()')
+    <!--console.log('startMapSpinner()')-->
     window.spinner_map = new Spin.Spinner(spin_opts).spin();
     $("#map_browse").append(spinner_map.el);   
   }
