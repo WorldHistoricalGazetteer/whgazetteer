@@ -120,12 +120,11 @@
     // clear then search
     console.log('i,v', i,v)
     table
-    .columns([7,8])
     .search( '' )
     .columns( i )
     .search( v )
     .draw();
-    $("#status_select").val(localStorage.getItem('filter'))
+    $("#ds_select").val(localStorage.getItem('filter'))
   }    
   function clearFilters() {
     // clear
@@ -133,7 +132,7 @@
     .columns([5,6,7,11])
     .search( '' )
     .draw();
-    $("#status_select").val('99')
+    $("#ds_select").val('-1')
   }    
   
   // table events
@@ -158,11 +157,15 @@
       t=$(this)
       // get id
       pid=$(this)[0].cells[0].textContent
-      console.log('clicked row', pid)
+      <!--console.log('clicked row pid', pid)-->
       
-      place=features.find((o) => { return o.properties.pid === Number(pid) })
-      console.log('place', place)
-      coords=place.geometry.coordinates
+      coords = feats.find(function(f){return f.properties.pid==pid}).geometry.coordinates
+      console.log('pid, coords', pid, coords)
+
+      // fetch its detail
+      getPlace(pid, 'clicked')
+
+      return
       
       // highlight this row, clear others
       var selected = $(this).hasClass("highlight-row");
@@ -175,8 +178,6 @@
       // highlight marker, zoomTo()
       highlightFeatureGL(pid, coords)
 
-      // fetch its detail
-      getPlace(pid, 'clicked')
       
     }) 
         
@@ -201,10 +202,10 @@
   }
   
   $(function(){
+    <!--feats = []-->
     <!--window.layer_list = []-->
     window.layer_list = getLoadedLayers()    
     window.ds_list = JSON.parse(document.getElementById('ds_list').textContent);
-    window.bboxes = JSON.parse(document.getElementById('bboxes').textContent);
     <!--console.log('ds_list', ds_list)-->
     // TODO: remove these artifacts of table used for review
     localStorage.setItem('filter', '-1')
@@ -299,6 +300,21 @@
     accessToken: '{{ mbtokenmb }}'
   });
 
+  mappy.on('idle', function() {
+    dslabels = []
+    feats = []
+    for(d in ds_list){dslabels.push(ds_list[d]['label'])}
+    console.log('dslabels',dslabels)
+    //[1, 2, 3].map(function (i) { return i * i });
+    for(l in dslabels){
+      z = mappy.querySourceFeatures(dslabels[l])
+      console.log('z',z)
+      feats = feats.concat(z)
+    }
+    <!--console.log('feats', feats)-->
+    <!--console.log('style.load (on idle)', mappy.querySourceFeatures('croniken_og_json'))-->
+  });
+  
   mappy.on('load', function(){
     hilited = null
     mappy.addSource('empty', {
@@ -517,29 +533,9 @@
       .setHTML(title+'<br/>(pid: '+pid+'; src_id: ' +src_id+')<br/>'+minmax+'; '+fc)
       .addTo(mappy);
   });
-  // Change the cursor to a pointer when the mouse is over the places layer.
-  <!--mappy.on('mouseenter', 'gl_active_point', function () {-->
+
   // activate all tooltips
   $("[rel='tooltip']").tooltip();
-  
-  // [ greenish, redish]
-  var heatramps = [
-    ["interpolate",["linear"],["heatmap-density"],
-    0,"rgba(237,248,251,0)",0.2,"rgb(204,236,230)",0.4,"rgb(153,216,201)",0.6,
-    "rgb(102,194,164)",0.8,"rgb(44,162,95)",1,"rgb(0,109,44)"],
-
-    ["interpolate",["linear"],["heatmap-density"],
-    0,'rgba(254,240,217,0)',0.2,'rgb(253,212,158)',0.4,'rgb(253,187,132)',0.6,
-    'rgb(252,141,89)',0.8,'rgb(227,74,51)',1,'rgb(179,0,0)'],
-    
-    ["interpolate",["linear"],["heatmap-density"],
-    0,'rgba(246,239,247,0)',0.2,'rgb(208,209,230)',0.4,'rgb(166,189,219)',0.6,
-    'rgb(103,169,207)',0.8,'rgb(28,144,153)',1,'rgb(1,108,89)'],
-    
-    ["interpolate",["linear"],["heatmap-density"],
-    0,'rgba(237,248,251,0)',0.2,'rgb(191,211,230)',0.4,'rgb(158,188,218)',0.6,
-    'rgb(140,150,198)',0.8,'rgb(136,86,167)',1,'rgb(129,15,124)'],    
-  ]
   
   colors=['#ff9900','red','green','blue']
 
@@ -832,7 +828,26 @@
       '>('+type.label+' {% fontawesome_icon 'external-link' color='#336699' %})</a>'
     return link
   }
-  
+
+  // [ greenish, redish]
+  var heatramps = [
+    ["interpolate",["linear"],["heatmap-density"],
+    0,"rgba(237,248,251,0)",0.2,"rgb(204,236,230)",0.4,"rgb(153,216,201)",0.6,
+    "rgb(102,194,164)",0.8,"rgb(44,162,95)",1,"rgb(0,109,44)"],
+
+    ["interpolate",["linear"],["heatmap-density"],
+    0,'rgba(254,240,217,0)',0.2,'rgb(253,212,158)',0.4,'rgb(253,187,132)',0.6,
+    'rgb(252,141,89)',0.8,'rgb(227,74,51)',1,'rgb(179,0,0)'],
+    
+    ["interpolate",["linear"],["heatmap-density"],
+    0,'rgba(246,239,247,0)',0.2,'rgb(208,209,230)',0.4,'rgb(166,189,219)',0.6,
+    'rgb(103,169,207)',0.8,'rgb(28,144,153)',1,'rgb(1,108,89)'],
+    
+    ["interpolate",["linear"],["heatmap-density"],
+    0,'rgba(237,248,251,0)',0.2,'rgb(191,211,230)',0.4,'rgb(158,188,218)',0.6,
+    'rgb(140,150,198)',0.8,'rgb(136,86,167)',1,'rgb(129,15,124)'],    
+  ]
+    
   styles = {
     "Point": {
       "default": {radius: 2, fillColor:"#ff9900", fillOpacity: 0.8, stroke: false},

@@ -23,5 +23,7 @@ urlpatterns = [
     path('<int:pk>/detail', views.CollectionDetailView.as_view(), name='collection-detail'),
     # adding browse tab
     path('<int:id>/places', views.CollectionPlacesView.as_view(), name='collection-places'),
+    
+    path('<int:id>/geojson/', views.fetch_geojson_coll, name="geojson-coll"),
 
 ] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)

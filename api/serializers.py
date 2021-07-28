@@ -189,6 +189,14 @@ class PlaceTableSerializer(serializers.ModelSerializer):
     else:
       return '&mdash;'
 
+  #geom = serializers.SerializerMethodField()
+  #def get_geom(self, place):
+    #if place.geom_count > 0:
+      #gtype = place.geoms.all()[0].jsonb['type'].lower()
+      #return 
+    #else:
+      #return None
+
   revwd = serializers.SerializerMethodField('rev_wd')
   def rev_wd(self, place):
     if place.review_wd == 1:
