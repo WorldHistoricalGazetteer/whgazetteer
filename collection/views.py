@@ -163,8 +163,9 @@ class CollectionPlacesView(DetailView):
     # compute bounding boxes
 
     coll = get_object_or_404(Collection, id=id_)
+    # "geotypes":ds.geotypes, 
     datasets = [{"id":ds.id,"label":ds.label,"title":ds.title, \
-                 "geotypes":ds.geotypes, "bbox": ds.bounds} \
+                 "bbox": ds.bounds } \
                 for ds in coll.datasets.all()]
     #bboxes = [{"id":ds['id'], "geometry":ds['bounds']} for ds in datasets]
 

@@ -393,12 +393,14 @@
     sources=[]
     for(d in ds_list){
       ds = ds_list[d]
-      countpoly=ds.geotypes['poly']
+      <!--countpoly=ds.geotypes['poly']-->
       // render regardless of number, but warn
-      if( countpoly > 1000){
-        $(".toomany").html(countpoly+' multipolygon features in '+ds.label+'...please wait').fadeIn()
-        startMapSpinner()
-      }
+      <!--if( countpoly > 1000){-->
+        <!--$(".toomany").html(countpoly+' multipolygon features in '+ds.label+'...please wait').fadeIn()-->
+        <!--startMapSpinner()-->
+      <!--}-->
+      $(".toomany").html('please wait...').show()
+      startMapSpinner()
       mappy.addSource(ds.label, {
         'type': 'geojson',
         'data': '/datasets/'+ds.id+'/geojson'
