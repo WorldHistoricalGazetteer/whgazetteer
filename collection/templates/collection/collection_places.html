@@ -46,7 +46,7 @@
         <div class="container mt-3 pl-0">
           <div class="row">
             <div id="drftable_detail" class="col-sm-5">
-              <div class="toomany hidden text-danger"></div>
+              <div class="toomany hidden text-danger small"></div>
               <div id="#ds_filter"></div>
               <div id="map" style="height:300px;">
                   <!--{ leaflet_map "map_browse" %}-->
@@ -142,6 +142,7 @@
       // filter table
       val = $(this).val()
       localStorage.setItem('filter', val)
+      <!--startMapSpinner()-->
       if(val == -1){
         // clear search
         startFilterSpinner()
@@ -176,7 +177,6 @@
       // highlight marker, zoomTo()
       highlightFeatureGL(pid, coords)
 
-      
     }) 
         
     row = $("#drftable_list table tbody")[0].rows[0]
@@ -212,7 +212,7 @@
     whgtask = "{{whgtask}}" == "True"?true:false
 
     // start spinners, some collections take time    
-    startMapSpinner()
+    <!--startMapSpinner()-->
     startTableSpinner()
     startDetailSpinner()
     
@@ -299,6 +299,8 @@
   });
 
   mappy.on('idle', function() {
+    spinner_map.stop()
+    $(".toomany").html('').hide()
     dslabels = []
     feats = []
     for(d in ds_list){dslabels.push(ds_list[d]['label'])}
@@ -391,75 +393,25 @@
     sources=[]
     for(d in ds_list){
       ds = ds_list[d]
-      if(ds.geotypes['poly'] < 200){
-        mappy.addSource(ds.label, {
-          'type': 'geojson',
-          'data': '/datasets/'+ds.id+'/geojson'
-        });
-        sources.push(ds.label)
-        // different color ramps by index
-        <!--heat(ds.label, d)-->
-        notHeat(ds.label, d)
+      countpoly=ds.geotypes['poly']
+      // render regardless of number, but warn
+      if( countpoly > 1000){
+        $(".toomany").html(countpoly+' multipolygon features in '+ds.label+'...please wait').fadeIn()
+        startMapSpinner()
       }
+      mappy.addSource(ds.label, {
+        'type': 'geojson',
+        'data': '/datasets/'+ds.id+'/geojson'
+      });
+      sources.push(ds.label)
+      // different color ramps by index
+      <!--heat(ds.label, d)-->
+      notHeat(ds.label, d)
+      <!--}-->
     }
     spinner_map.stop()
   }
   
-  function renderData(dsid){
-    startMapSpinner()
-    // clear any data layers and 'places' source
-    if(!!mappy.getLayer('gl_active_point')){
-      mappy.removeLayer('gl_active_point')
-      mappy.removeLayer('gl_active_poly')
-      mappy.removeSource('places')
-    }
-    // fetch data
-    
-    $.get("/api/geoms", {coll: "{{ object.id }}"},function(data){
-      features = data.features
-      console.log('data', data)
-      // get bounds w/turf
-      <!--envelope = turf.envelope(data)-->
-      <!--console.log(envelope)-->
-      
-      // add source 'places' w/retrieved data
-      mappy.addSource('places', {
-          'type': 'geojson',
-          'data': data
-      })
-      
-      // render to map
-      mappy.addLayer({
-        'id': 'gl_active_poly',
-        'type': 'fill',
-        'source': 'places',
-        'paint': {
-          'fill-color': '#ddd',
-          'fill-opacity': 0.2,
-          'fill-outline-color': 'black'
-        },
-        'filter': ['==', '$type', 'Polygon']
-      }, 'z-index-1');
-      
-      mappy.addLayer({
-        'id': 'gl_active_point',
-        'type': 'circle',
-        'source': 'places',
-        'paint': {
-          'circle-color': '#ff9900',
-          'circle-radius': {
-            stops: [[1, 2], [3, 3], [16, 20]]
-          }        
-        },
-        'filter': ['==', '$type', 'Point']
-      }, 'z-index-2');  
-        
-      <!--mappy.fitBounds(envelope.bbox)-->
-      spinner_map.stop()
-      
-    })
-  }
-
   function highlightFeatureGL(pid, coords){
     console.log('highlightFeatureGL()')
     console.log('pid, coords',pid, coords)
@@ -542,14 +494,11 @@
   colors=['#ff9900','red','green','blue']
 
   function notHeat(dslabel, i){
-    <!--mappy.addSource('places', {-->
-        <!--'type': 'geojson',-->
-        <!--'data': data-->
-    <!--})  -->
+    console.log('notHeat() adding for', dslabel)
+    startMapSpinner()
     mappy.addLayer({
       'id': 'gl_'+dslabel+'_poly',
       'type': 'fill',
-      <!--'source': 'places',-->
       'source': dslabel,
       'visibility': 'visible',
       'paint': {
@@ -563,7 +512,6 @@
     mappy.addLayer({
       'id': 'gl_'+dslabel+'_point',
       'type': 'circle',
-      <!--'source': 'places',-->
       'source': dslabel,
       'visibility': 'visible',      
       'paint': {
@@ -575,7 +523,7 @@
       'filter': ['==', '$type', 'Point']
     }, 'z-index-2');  
   }
-  <!--]-->
+
   // render heatmap layer
   function heat(dataset, ramp) {
 	  console.log('heat('+dataset+', '+ramp+')')
@@ -886,7 +834,7 @@
   }
 
   // spinners
-  spin_opts = { scale: .5, top: '50%'}
+  spin_opts = { scale: .5, top: '60%'}
   function startTableSpinner(){
     window.spinner_table = new Spin.Spinner(spin_opts).spin();
     $("#drftable_list").append(spinner_table.el);   
@@ -902,7 +850,8 @@
   function startMapSpinner(){
     <!--console.log('startMapSpinner()')-->
     window.spinner_map = new Spin.Spinner(spin_opts).spin();
-    $("#map_browse").append(spinner_map.el);   
+    <!--$("#map").append(spinner_map.el);   -->
+    $(".toomany").append(spinner_map.el);   
   }
   //*
   
@@ -1100,5 +1049,60 @@
         <!--features.setStyle(foptions)-->
       <!--}-->
     <!--}    -->
+  <!--}-->
+
+  <!--function renderData(dsid){-->
+    <!--startMapSpinner()-->
+    <!--// clear any data layers and 'places' source-->
+    <!--if(!!mappy.getLayer('gl_active_point')){-->
+      <!--mappy.removeLayer('gl_active_point')-->
+      <!--mappy.removeLayer('gl_active_poly')-->
+      <!--mappy.removeSource('places')-->
+    <!--}-->
+    <!--// fetch data-->
+    
+    <!--$.get("/api/geoms", {coll: "{{ object.id }}"},function(data){-->
+      <!--features = data.features-->
+      <!--console.log('data', data)-->
+      <!--// get bounds w/turf-->
+      <!--<!--envelope = turf.envelope(data)-->-->
+      <!--<!--console.log(envelope)-->-->
+      
+      <!--// add source 'places' w/retrieved data-->
+      <!--mappy.addSource('places', {-->
+          <!--'type': 'geojson',-->
+          <!--'data': data-->
+      <!--})-->
+      
+      <!--// render to map-->
+      <!--mappy.addLayer({-->
+        <!--'id': 'gl_active_poly',-->
+        <!--'type': 'fill',-->
+        <!--'source': 'places',-->
+        <!--'paint': {-->
+          <!--'fill-color': '#ddd',-->
+          <!--'fill-opacity': 0.2,-->
+          <!--'fill-outline-color': 'black'-->
+        <!--},-->
+        <!--'filter': ['==', '$type', 'Polygon']-->
+      <!--}, 'z-index-1');-->
+      
+      <!--mappy.addLayer({-->
+        <!--'id': 'gl_active_point',-->
+        <!--'type': 'circle',-->
+        <!--'source': 'places',-->
+        <!--'paint': {-->
+          <!--'circle-color': '#ff9900',-->
+          <!--'circle-radius': {-->
+            <!--stops: [[1, 2], [3, 3], [16, 20]]-->
+          <!--}        -->
+        <!--},-->
+        <!--'filter': ['==', '$type', 'Point']-->
+      <!--}, 'z-index-2');  -->
+        
+      <!--<!--mappy.fitBounds(envelope.bbox)-->-->
+      <!--spinner_map.stop()-->
+      
+    <!--})-->
   <!--}-->
 

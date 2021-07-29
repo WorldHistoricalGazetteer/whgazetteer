@@ -82,8 +82,11 @@ th.sticky {
 .thumbnail:hover {opacity: 0.7;}  
 .tight-p { margin-top:0; margin-bottom:0;}
 .tooltip { z-index: 1051; }
-.toomany {position:absolute; top:110px; left:60px;
-  z-index:500; font-weight:600;} /*collection, dataset? maps*/
+.toomany {position:absolute; top:80px; left:60px;
+  z-index:500; font-weight:600; height:45px; 
+  vertical-align:top; 
+  /*background:#e0e0e0;*/
+} 
 .top { vertical-align: top;}
 .v-mid {vertical-align: super;}
 
