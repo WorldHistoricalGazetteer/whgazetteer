@@ -160,8 +160,9 @@
       pid=$(this)[0].cells[0].textContent
       <!--console.log('clicked row pid', pid)-->
       
-      coords = allfeats.find(function(f){return f.properties.pid==pid}).geometry.coordinates
-      console.log('pid, coords', pid, coords)
+      geom = allfeats.find(function(f){return f.properties.pid==pid}).geometry
+      coords = geom.coordinates
+      console.log('pid, geom, coords', pid,geom, coords)
 
       // fetch its detail
       getPlace(pid, 'clicked')
@@ -175,7 +176,8 @@
         $(this).addClass("highlight-row");
 
       // highlight marker, zoomTo()
-      highlightFeatureGL(pid, coords)
+      <!--highlightFeatureGL(pid, coords)-->
+      highlightFeatureGL(pid, geom, coords)
 
     }) 
         
@@ -399,7 +401,7 @@
         <!--$(".toomany").html(countpoly+' multipolygon features in '+ds.label+'...please wait').fadeIn()-->
         <!--startMapSpinner()-->
       <!--}-->
-      $(".toomany").html('please wait...').show()
+      $(".toomany").html('please wait...rendering polygons').show()
       startMapSpinner()
       mappy.addSource(ds.label, {
         'type': 'geojson',
@@ -414,9 +416,9 @@
     spinner_map.stop()
   }
   
-  function highlightFeatureGL(pid, coords){
+  function highlightFeatureGL(pid, geom, coords){
     console.log('highlightFeatureGL()')
-    console.log('pid, coords',pid, coords)
+    console.log('pid, geom, coords',pid, geom, coords)
       // remove previous
     <!--if(hilited){hilited.remove()}-->
     
@@ -460,9 +462,19 @@
     <!--);-->
     // also set z-index and zoom
     
-      // zoom to feature
-    flycoords = typeof(coords[0]) == 'number'?coords:coords[0]
-    mappy.flyTo({'center': flycoords, 'zoom': 9})
+    // zoom to feature
+    console.log('geom')
+    if(geom.type.toLowerCase() == 'point'){
+      flycoords = typeof(coords[0]) == 'number'?coords:coords[0]
+      mappy.flyTo({'center': flycoords, 'zoom': 9})
+    } else {
+      bbox=turf.envelope(geom).bbox
+      mappy.fitBounds(bbox)      
+    }
+    <!--flycoords = typeof(coords[0]) == 'number'?coords:coords[0]-->
+    <!--flycoords = typeof(coords[0]) == 'number'?coords:coords[0][0]-->
+    <!--console.log('flycoords', flycoords)-->
+    <!--mappy.flyTo({'center': flycoords, 'zoom': 9})-->
     
   }
 
