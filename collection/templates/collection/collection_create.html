@@ -22,7 +22,7 @@
     <a href="{% url 'collection:collection-delete' object.id %}" class="float-right"
       title="Delete collection" rel="tooltip" style="margin-top:-2px;">
       {% fontawesome_icon 'trash' color='#336699' %}</a>
-    {% else %}Create Collection{% endif %}
+    {% else %}Create Collection{% endif %} context: {{ context }}
   </h4>
   <div class="d-flex">
     <div class="form-box mt-2 col-sm-5">
@@ -110,7 +110,7 @@
   })
   $("#btn_coll_submit").click(function(){
     // at least two datasets selected?
-    if('{{action}}' == 'create' and dslist.length < 2) {
+    if('{{action}}' == 'create' && dslist.length < 2) {
       alert('Collections must contain at least 2 datasets!')
     }
   })

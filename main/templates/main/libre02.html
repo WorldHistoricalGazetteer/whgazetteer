@@ -93,24 +93,60 @@ var map = new maplibregl.Map({
 map.on('load', function() {
   hilited = null
   
-  map.addSource('empty', {
-    type: 'geojson',
-    data: { type: 'FeatureCollection', features: [] }
-  });
+  <!--map.addSource('empty', {-->
+    <!--type: 'geojson',-->
+    <!--data: { type: 'FeatureCollection', features: [] }-->
+  <!--});-->
   
-  const zIndex2 = map.addLayer({
-    id: 'z-index-2',
-    type: 'symbol',
-    source: 'empty'
-  });
+  <!--const zIndex2 = map.addLayer({-->
+    <!--id: 'z-index-2',-->
+    <!--type: 'symbol',-->
+    <!--source: 'empty'-->
+  <!--});-->
   
-  const zIndex1 = map.addLayer({
-    id: 'z-index-1',
-    type: 'symbol',
-    source: 'empty'
-  }, 'z-index-2'); // place this layer below zIndex2
-  
-  renderData(636)
+  <!--const zIndex1 = map.addLayer({-->
+    <!--id: 'z-index-1',-->
+    <!--type: 'symbol',-->
+    <!--source: 'empty'-->
+  <!--}, 'z-index-2'); // place this layer below zIndex2-->
+
+  map.addSource('places', {
+      'type': 'geojson',
+      <!--'data': data-->
+      'data': '/Users/karlg/Documents/Repos/_whgazetteer/_scratch/croniken.json'
+  })
+    
+    // render to map
+    
+   map.addLayer({
+     'id': 'gl_active_poly',
+     'type': 'fill',
+     'source': 'places',
+     'paint': {
+       'fill-color': '#ddd',
+       'fill-opacity': 0.2,
+       'fill-outline-color': 'black'
+     },
+     'filter': ['==', '$type', 'Polygon']
+   <!--}, 'z-index-1');-->
+   });
+   
+   map.addLayer({
+     'id': 'gl_active_point',
+     'type': 'circle',
+     'source': 'places',
+     'paint': {
+       'circle-color': '#ff9900',
+       'circle-radius': {
+         stops: [[1, 2], [3, 3], [16, 20]]
+       }        
+     },
+     'filter': ['==', '$type', 'Point']
+   <!--}, 'z-index-2');    -->
+   });    
+
+  <!--renderData(636)-->
+  <!--renderFile()-->
   <!--renderData(8)-->
 })
 <!--const polygons = map.addLayer({-->
@@ -180,6 +216,54 @@ function highlightFeature(pid, coords){
     <!--'circle-stroke-width': 1,-->
     <!--'circle-opacity': 0.5-->
   <!--}-->
+function renderFile() {
+    startMapSpinner()
+    map.addSource('places', {
+        'type': 'geojson',
+        <!--'data': data-->
+        'data': '/Users/karlg/Documents/Repos/_whgazetteer/_scratch/territorios.json'
+    })
+    
+    // render to map
+     
+    map.addLayer({
+      'id': 'gl_active_poly',
+      'type': 'fill',
+      'source': 'places',
+      'paint': {
+        'fill-color': '#ddd',
+        'fill-opacity': 0.2,
+        'fill-outline-color': 'black'
+      },
+      'filter': ['==', '$type', 'Polygon']
+    }, 'z-index-1');
+    
+    map.addLayer({
+      'id': 'gl_active_point',
+      'type': 'circle',
+      'source': 'places',
+      'paint': {
+        'circle-color': '#ff9900',
+        'circle-radius': {
+          stops: [[1, 2], [3, 3], [16, 20]]
+        }        
+        <!--"circle-radius": [-->
+        <!--<!--"interpolate", ["linear"],-->-->
+          <!--"interpolate", ['exponential', 0.5],-->
+            <!--["zoom"], 1, 1, 12, 8 -->
+        <!--]-->
+      },
+      'filter': ['==', '$type', 'Point']
+    }, 'z-index-2');  
+
+    
+    <!--map.fitBounds(envelope.bbox)-->
+
+}
+map.on('idle', function(){
+  console.log('idle')
+  <!--spinner_map.stop()-->
+})
 function renderData(dsid){
 <!--function renderData(dslabel){-->
   startMapSpinner()
@@ -289,7 +373,7 @@ spin_opts = { scale: .5, top: '50%'}
 function startMapSpinner(){
   console.log('startMapSpinner()')
   window.spinner_map = new Spin.Spinner(spin_opts).spin();
-  $("#map_select").append(spinner_map.el);   
+  $("#map").append(spinner_map.el);   
 }
 
 $(function(){

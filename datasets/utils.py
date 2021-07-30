@@ -346,7 +346,10 @@ def fetch_geojson_ds(request, *args, **kwargs):
           "properties":{"pid":f[1],"src_id":f[2],"title":f[3],"minmax":f[4],"fclasses":f[5]},
           "geometry":f[0]}
     fcoll['features'].append(feat)
-  return JsonResponse(fcoll, safe=False,json_dumps_params={'ensure_ascii':False,'indent':2})
+  #fout.write(json.dumps(fcoll))
+  #fout.close()
+  #return JsonResponse(fcoll, safe=False,json_dumps_params={'ensure_ascii':False,'indent':2})
+  return JsonResponse(fcoll, safe=False,json_dumps_params={'ensure_ascii':False})
 
 # *** /end DOWNLOAD FILES
 

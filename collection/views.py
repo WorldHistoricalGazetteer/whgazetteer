@@ -61,7 +61,7 @@ def remove_dataset(request, *args, **kwargs):
 
 # TODO: merge create and update views (templates are the same)
 class CollectionCreateView(CreateView):
-  #print('CollectionCreateView()')
+  print('CollectionCreateView()')
   form_class = CollectionModelForm
   template_name = 'collection/collection_create.html'
   queryset = Collection.objects.all()
@@ -165,8 +165,7 @@ class CollectionPlacesView(DetailView):
     coll = get_object_or_404(Collection, id=id_)
     # "geotypes":ds.geotypes, 
     datasets = [{"id":ds.id,"label":ds.label,"title":ds.title, \
-                 "bbox": ds.bounds } \
-                for ds in coll.datasets.all()]
+                 "bbox": ds.bounds } for ds in coll.datasets.all()]
     #bboxes = [{"id":ds['id'], "geometry":ds['bounds']} for ds in datasets]
 
     placeset = coll.places.all()

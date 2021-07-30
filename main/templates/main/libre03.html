@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Add multiple geometries from one GeoJSON source</title>
+<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+<link href="https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.js"></script>
+<style>
+body { margin: 0; padding: 0; }
+#map { position: absolute; top: 0; bottom: 0; width: 100%; }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<script>
+  mapboxgl.accessToken = 'pk.eyJ1Ijoia2dlb2dyYXBoZXIiLCJhIjoiUmVralBPcyJ9.mJegAI1R6KR21x_CVVTlqw';
+  var map = new mapboxgl.Map({
+      container: 'map',
+        style: 'mapbox://styles/mapbox/outdoors-v11',
+        center: [-59.5325643645366, 6.664136432952944],
+        zoom: 1.8
+        });
+
+  map.on('load', function () {
+      map.addSource('national-park', {
+          'type': 'geojson',
+          'data': '/media/data/territorios.json'
+      });
+
+        map.addLayer({
+          'id': 'park-boundary',
+            'type': 'fill',
+            'source': 'national-park',
+            'paint': {
+              'fill-color': '#888888',
+                'fill-opacity': 0.4
+                },
+            'filter': ['==', '$type', 'Polygon']
+            });
+
+        map.addLayer({
+          'id': 'park-volcanoes',
+            'type': 'circle',
+            'source': 'national-park',
+            'paint': {
+              'circle-radius': 6,
+                'circle-color': '#B42222'
+                },
+            'filter': ['==', '$type', 'Point']
+            });
+        });
+</script>
+
+</body>
+</html>
