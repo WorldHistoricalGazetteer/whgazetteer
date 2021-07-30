@@ -343,7 +343,8 @@ def fetch_geojson_ds(request, *args, **kwargs):
   fcoll = {"type":"FeatureCollection","features":[]}
   for f in features:
     feat={"type":"Feature",
-          "properties":{"pid":f[1],"src_id":f[2],"title":f[3],"minmax":f[4],"fclasses":f[5]},
+          "properties":{"pid":f[1],"src_id":f[2],"title":f[3],
+                        "minmax":f[4],"fclasses":f[5], "ds":ds.label},
           "geometry":f[0]}
     fcoll['features'].append(feat)
   #fout.write(json.dumps(fcoll))

@@ -204,6 +204,7 @@
   
   $(function(){
     allfeats = null
+    featcounts = null
     <!--window.layer_list = []-->
     window.layer_list = getLoadedLayers()    
     window.ds_list = JSON.parse(document.getElementById('ds_list').textContent);
@@ -308,10 +309,14 @@
     if(!allfeats){
       dslabels = []
       feats = []
-      for(d in ds_list){dslabels.push(ds_list[d]['label'])}
+      featcounts = []
+      for(d in ds_list){
+        dslabels.push(ds_list[d]['label'])
+      }
       console.log('dslabels',dslabels)
       for(l in dslabels){
         z = mappy.querySourceFeatures(dslabels[l])
+        featcounts[dslabels[l]] = z.length
         feats = feats.concat(z)
       }
       allfeats = feats
@@ -343,38 +348,40 @@
     layer_list = getLoadedLayers(ds_list)
     
     for (l in layer_list){
-      mappy.on('mouseenter', layer_list[l], function () {
-        mappy.getCanvas().style.cursor = 'pointer';
-      });
-       
-      // Change it back to a pointer when it leaves.
-      mappy.on('mouseleave', layer_list[l], function () {
-        mappy.getCanvas().style.cursor = '';
-      });
-
-      mappy.on('click', layer_list[l], function (e) {
-        <!--console.log('place:', e.features[0])-->
-        place=e.features[0]
-        var coordinates = e.features[0].geometry.coordinates.slice();
-        var pid = e.features[0].properties.pid;
-        var title = e.features[0].properties.title;
-        var src_id = e.features[0].properties.src_id;
-        var minmax = e.features[0].properties.minmax;
-        var fc = e.features[0].properties.fclasses;
+      if(layer_list[l].indexOf('point') != -1){
+        mappy.on('mouseenter', layer_list[l], function () {
+          mappy.getCanvas().style.cursor = 'pointer';
+        });
          
-        while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-          coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
-        }
-        
-        // highlight row
-        <!--console.log('highlight row & fetch data', pid, coordinates)-->
+        // Change it back to a pointer when it leaves.
+        mappy.on('mouseleave', layer_list[l], function () {
+          mappy.getCanvas().style.cursor = '';
+        });
+  
+        mappy.on('click', layer_list[l], function (e) {
+          <!--console.log('place:', e.features[0])-->
+          place=e.features[0]
+          var coordinates = e.features[0].geometry.coordinates.slice();
+          var pid = e.features[0].properties.pid;
+          var title = e.features[0].properties.title;
+          var src_id = e.features[0].properties.src_id;
+          var minmax = e.features[0].properties.minmax;
+          var fc = e.features[0].properties.fclasses;
+           
+          while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+            coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+          }
           
-        // popup
-        new maplibregl.Popup()
-          .setLngLat(coordinates)
-          .setHTML(title+'<br/>(pid: '+pid+'; src_id: ' +src_id+')<br/>'+minmax+'; '+fc+'<br/>'+coordinates)
-          .addTo(mappy);
-      });
+          // highlight row
+          <!--console.log('highlight row & fetch data', pid, coordinates)-->
+            
+          // popup
+          new maplibregl.Popup()
+            .setLngLat(coordinates)
+            .setHTML(title+'<br/>(pid: '+pid+'; src_id: ' +src_id+')<br/>'+minmax+'; '+fc+'<br/>'+coordinates)
+            .addTo(mappy);
+        })
+      }
     }
   });
 
@@ -387,11 +394,30 @@
     }
     return layers
   }
-  
+
+  <!--dsdata = null-->
   function addSources(ds_list){
     sources=[]
     for(d in ds_list){
       ds = ds_list[d]
+      console.log('now', ds.label)
+      $.getJSON('/datasets/'+ds.id+'/geojson')
+        .done(function(dsdata) {
+          mappy.addSource(ds.label, {
+            'type': 'geojson',
+            'data': dsdata
+          });
+          console.log('added dsdata', ds.label, dsdata)
+          sources.push(ds.label)
+          renderSourceLayers(ds.label, d)
+      })
+    }
+  }    
+  function addSourcesOG(ds_list){
+    sources=[]
+    for(d in ds_list){
+      ds = ds_list[d]
+      console.log('ds.label',ds.label)
       $(".toomany").html('please wait...rendering polygons').show()
       startMapSpinner()
       mappy.addSource(ds.label, {
@@ -406,8 +432,9 @@
   }
   
   // TODO: better colors
-  colors=['#ff9900','red','green','blue', 'purple',
+  colors_point=['#ff9900','red','green','blue', 'purple',
     '#ff9900','red','green','blue', 'purple']
+  colors_poly=['#eee','aliceblue']
   // render dataset/geometry layers
   // 
   function renderSourceLayers(dslabel, i){
@@ -419,7 +446,7 @@
       'source': dslabel,
       'visibility': 'visible',
       'paint': {
-        'fill-color': '#ddd',
+        'fill-color': 'rgba(245,245,245, 0.5)',
         'fill-opacity': 0.2,
         'fill-outline-color': 'black'
       },
@@ -432,20 +459,27 @@
       'source': dslabel,
       'visibility': 'visible',      
       'paint': {
-        'circle-color': colors[i],
+        'circle-color': colors_point[i],
         'circle-radius': {
           stops: [[1, 2], [3, 3], [16, 20]]
         }        
       },
       'filter': ['==', '$type', 'Point']
     }, 'z-index-2');  
+    
   }
 
+  function layerColors(){
+    obj={}
+    for(l in layer_list){
+      obj[layer_list[l]] = mappy.getLayer(layer_list[l]).getPaintProperty('circle-color')
+    }
+  }
   // hightlight selected in row  
   function highlightFeatureGL(pid, geom, coords, src){
     console.log('highlightFeatureGL()')
     console.log('pid, geom, coords', pid, geom, coords. src)
-
+    
     //mappy.getLayer(layer_list[4]).getPaintProperty('circle-color')
     mappy.setPaintProperty(
       'gl_'+src+'_point', 'circle-radius', 
@@ -468,11 +502,10 @@
     mappy.setPaintProperty(
       'gl_'+src+'_point', 'circle-color', 
         { 'property':'pid',
-          <!--'default':'#ff9900',-->
+          'default': 'grey',
           'type':'categorical',
-          'stops':[[Number(pid),'red']]}
+          'stops':[[Number(pid), 'yellow']]}
     );
-  
     mappy.setPaintProperty(
       'gl_'+src+'_point', 'circle-opacity', 
         { 'property':'pid',
@@ -480,6 +513,27 @@
           'type':'categorical',
           'stops':[[Number(pid),1]]}
     );
+    mappy.setPaintProperty(
+      'gl_'+src+'_poly', 'fill-outline-color', 
+        { 'property':'pid',
+          'default': 'grey',
+          'type':'categorical',
+          'stops':[[Number(pid), 'red']]}
+    );
+    mappy.setPaintProperty(
+      'gl_'+src+'_poly', 'fill-color', 
+        { 'property':'pid',
+          'default': "rgba(255,255,255,0.0)",
+          'type':'categorical',
+          'stops':[[Number(pid), 'red']]}
+    );
+    <!--mappy.setPaintProperty(-->
+      <!--'gl_'+src+'_poly', 'fill-outline-width', -->
+        <!--{ 'property':'pid',-->
+          <!--'default': 1,-->
+          <!--'type':'categorical',-->
+          <!--'stops':[[Number(pid), 2]]}-->
+    <!--);-->
     // also set z-index and zoom
     
     // zoom to feature
