@@ -1602,12 +1602,16 @@ def ds_insert_lpf(request, pk):
               objs['PlaceGeoms'].append(PlaceGeom(
                 place=newpl,
                 src_id=newpl.src_id,
-                jsonb=g))
+                jsonb=g
+                ,geom=GEOSGeometry(json.dumps(g))
+              ))
           elif geojson:
             objs['PlaceGeoms'].append(PlaceGeom(
               place=newpl,
               src_id=newpl.src_id,
-              jsonb=geojson))
+              jsonb=geojson
+              ,geom=GEOSGeometry(json.dumps(geojson))
+            ))
             
           # PlaceLink: place,src_id,task_id,jsonb:{type,identifier}
           if 'links' in feat.keys() and len(feat['links'])>0:
@@ -2152,6 +2156,7 @@ def ds_insert_tsv(request, pk):
               place=newpl,
               src_id = src_id,
               jsonb=geojson
+              ,geom=GEOSGeometry(json.dumps(geojson))
           ))
             
         #
@@ -2258,7 +2263,8 @@ class DashboardView(LoginRequiredMixin, ListView):
     me = self.request.user
     if me.is_superuser or 'whg_team' in [g.name for g in me.groups.all()]:
       print('in get_queryset() if',me)
-      return Dataset.objects.all().order_by('ds_status','-core','-id')
+      #return Dataset.objects.all().order_by('ds_status','-core','-id')
+      return Dataset.objects.all().order_by('-create_date')
     else:
       #return Dataset.objects.filter( Q(id__in=myprojects(me)) | Q(owner=me) | Q(id__lt=3)).order_by('-id')
       return Dataset.objects.filter( Q(owner=me) ).order_by('-id')

@@ -86,25 +86,6 @@ class Dataset(models.Model):
     placeids = Place.objects.filter(dataset=self.label).values_list('id', flat=True)
     return PlaceLink.objects.filter(place_id__in=placeids, jsonb__icontains='Q').count()
     
-  # provide basis for rendering big polygon datasets to map or not
-  #@property
-  #def geotypes(self):
-    ## TODO: this is nasty
-    ##gtypes = [g['type'] for g in self.geometries]
-    ##ds8=Dataset.objects.get(pk=8)
-    ##ds9=Dataset.objects.get(pk=9)
-    ##dsx=Dataset.objects.get(pk=1064)
-    #gobj = {'poly':0, 'string':0, 'point':0}
-    #gtypes = [g['type'] for g in self.geometries]
-    #for t in gtypes:
-      #if 'poly' in t.lower():
-        #gobj['poly']+=1
-      #elif 'string' in t.lower():
-        #gobj['string']+=1
-      #elif 'point' in t.lower():
-        #gobj['point']+=1
-    #return gobj
-    
   @property
   def last_modified_iso(self):
     last=self.log.all().order_by('-timestamp')[0].timestamp

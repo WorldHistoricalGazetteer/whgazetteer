@@ -378,7 +378,7 @@
           // popup
           new maplibregl.Popup()
             .setLngLat(coordinates)
-            .setHTML(title+'<br/>(pid: '+pid+'; src_id: ' +src_id+')<br/>'+minmax+'; '+fc+'<br/>'+coordinates)
+            .setHTML(title+'<br/>(pid: '+pid+'; src_id: ' +src_id+')<br/>'+minmax+'; '+fc)
             .addTo(mappy);
         })
       }
@@ -396,7 +396,7 @@
   }
 
   <!--dsdata = null-->
-  function addSources(ds_list){
+  function addSourcesFubar(ds_list){
     sources=[]
     for(d in ds_list){
       ds = ds_list[d]
@@ -413,7 +413,7 @@
       })
     }
   }    
-  function addSourcesOG(ds_list){
+  function addSources(ds_list){
     sources=[]
     for(d in ds_list){
       ds = ds_list[d]
@@ -461,7 +461,7 @@
       'paint': {
         'circle-color': colors_point[i],
         'circle-radius': {
-          stops: [[1, 2], [3, 3], [16, 20]]
+          stops: [[1, 2], [3, 3], [16, 12]]
         }        
       },
       'filter': ['==', '$type', 'Point']
