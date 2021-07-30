@@ -1674,7 +1674,7 @@ def ds_insert_lpf(request, pk):
       return HttpResponseServerError()
       
   else:
-    print('insert_lpf skipped, already in')    
+    print('insert_ skipped, already in')    
     messages.add_message(request, messages.INFO, 'data is uploaded, but problem displaying dataset page')
     return redirect('/dashboard')    
 
@@ -2906,140 +2906,22 @@ def match_undo(request, ds, tid, pid):
   #return redirect('/datasets/'+str(ds)+'/review/'+tid+'/pass1')
 
 """
-modified, broke things
+modified, broke things?
 """
 # ds_summary
-#class DatasetSummaryView(LoginRequiredMixin, UpdateView):
-  #login_url = '/accounts/login/'
-  #redirect_field_name = 'redirect_to'
-
-  #form_class = DatasetDetailModelForm
-
-  #template_name = 'datasets/ds_summary.html'
-
-  #def get_success_url(self):
-    #id_ = self.kwargs.get("id")
-    #user = self.request.user
-    ##print('messages:', messages.get_messages(self.kwargs))
-    #return '/datasets/'+str(id_)+'/summary'
-
-  ## Dataset has been edited, form submitted
-  #def form_valid(self, form):
-    #data=form.cleaned_data
-    #ds = get_object_or_404(Dataset,pk=self.kwargs.get("id"))
-    #dsid = ds.id
-    #user = self.request.user
-    #file=data['file']
-    #filerev = ds.files.all().order_by('-rev')[0].rev
-    #print('DatasetDetailViewDev kwargs',self.kwargs)
-    #print('DatasetDetailViewDev form_valid() data->', data)
-    #if data["file"] == None:
-      #print('data["file"] == None')
-      ## no file, updating dataset only
-      #ds.title = data['title']
-      #ds.description = data['description']
-      #ds.uri_base = data['uri_base']
-      #ds.save()
-    #return super().form_valid(form)
-
-  #def form_invalid(self, form):
-    #print('kwargs',self.kwargs)
-    #context = {}
-    #print('form not valid', form.errors)
-    #print('cleaned_data', form.cleaned_data)
-    #context['errors'] = form.errors
-    #return super().form_invalid(form)
-
-  #def get_object(self):
-    #id_ = self.kwargs.get("id")
-    #return get_object_or_404(Dataset, id=id_)
-
-  #def get_context_data(self, *args, **kwargs):
-    #context = super(DatasetSummaryView, self).get_context_data(*args, **kwargs)
-    ##context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
-    ##context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
-
-    #print('DatasetSummaryView get_context_data() kwargs:',self.kwargs)
-    #print('DatasetSummaryView get_context_data() request.user',self.request.user)
-    #id_ = self.kwargs.get("id")
-    ##bounds = self.kwargs.get("bounds")
-    #ds = get_object_or_404(Dataset, id=id_)
-    ## print('ds',ds.label)
-
-    #""" TRIED THIS INSERT ACTION IN DatasetCreateView()"""
-    ## coming from DatasetCreateView(),
-    ## insert to db immediately (file.df_status == format_ok)
-    ## most recent data file
-    #file = ds.file
-    #if file.df_status == 'format_ok':
-      #print('format_ok , inserting dataset '+str(id_))
-      #if file.format == 'delimited':
-        #result = ds_insert_tsv(self.request, id_)
-        #print('tsv result',result)
-      #else:
-        #result = ds_insert_lpf(self.request, id_)
-        #print('lpf result',result)
-      #print('ds_insert_xxx() result',result)
-      #ds.numrows = result['numrows']
-      ##ds.numrows = result['count']
-      #ds.numlinked = result['numlinked']
-      #ds.total_links = result['total_links']
-      #ds.ds_status = 'uploaded'
-      #file.df_status = 'uploaded'
-      #file.numrows = result['numrows']
-      #ds.save()
-      #file.save()
-
-
-    ## build context for rendering dataset.html
-    #me = self.request.user
-    ##placeset = Place.objects.filter(dataset=ds.label)
-    #placeset = ds.places.all()
-
-    #context['updates'] = {}
-    #context['ds'] = ds
-    #context['collaborators'] = ds.collabs.all()
-    #context['owners'] = ds.owners
-
-    ## excludes datasets uploaded directly (1 & 2)
-    #if file.file:
-      #context['current_file'] = file
-      #context['format'] = file.format
-      #context['numrows'] = file.numrows
-      #context['filesize'] = round(file.file.size/1000000, 1)
-
-    ## initial (non-task)
-    #context['num_names'] = PlaceName.objects.filter(place_id__in = placeset).count()
-    #context['num_links'] = PlaceLink.objects.filter(
-      #place_id__in = placeset, task_id = None).count()
-    #context['num_geoms'] = PlaceGeom.objects.filter(
-      #place_id__in = placeset, task_id = None).count()
-
-    ## augmentations (has task_id)
-    #context['links_added'] = PlaceLink.objects.filter(
-      #place_id__in = placeset, task_id__contains = '-').count()
-    #context['geoms_added'] = PlaceGeom.objects.filter(
-      #place_id__in = placeset, task_id__contains = '-').count()
-
-    #context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False
-
-    #print('context from DatasetSummaryView', context)
-    #return context
-
-""" *** from server 29 July; trying to restore broken inserts ***"""
 class DatasetSummaryView(LoginRequiredMixin, UpdateView):
   login_url = '/accounts/login/'
   redirect_field_name = 'redirect_to'
-  
+
   form_class = DatasetDetailModelForm
-  
+
   template_name = 'datasets/ds_summary.html'
-  
-  #def get_success_url(self):
-    #id_ = self.kwargs.get("id")
-    #user = self.request.user
+
+  def get_success_url(self):
+    id_ = self.kwargs.get("id")
+    user = self.request.user
     #print('messages:', messages.get_messages(self.kwargs))
-    #return '/datasets/'+str(id_)+'/summary'
+    return '/datasets/'+str(id_)+'/summary'
 
   # Dataset has been edited, form submitted
   def form_valid(self, form):
@@ -3059,7 +2941,7 @@ class DatasetSummaryView(LoginRequiredMixin, UpdateView):
       ds.uri_base = data['uri_base']
       ds.save()
     return super().form_valid(form)
-  
+
   def form_invalid(self, form):
     print('kwargs',self.kwargs)
     context = {}
@@ -3067,11 +2949,11 @@ class DatasetSummaryView(LoginRequiredMixin, UpdateView):
     print('cleaned_data', form.cleaned_data)
     context['errors'] = form.errors
     return super().form_invalid(form)
-    
+
   def get_object(self):
     id_ = self.kwargs.get("id")
     return get_object_or_404(Dataset, id=id_)
-  
+
   def get_context_data(self, *args, **kwargs):
     context = super(DatasetSummaryView, self).get_context_data(*args, **kwargs)
     #context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
@@ -3083,20 +2965,23 @@ class DatasetSummaryView(LoginRequiredMixin, UpdateView):
     #bounds = self.kwargs.get("bounds")
     ds = get_object_or_404(Dataset, id=id_)
     # print('ds',ds.label)
-    
+
+    """ TRIED THIS INSERT ACTION IN DatasetCreateView()"""
     # coming from DatasetCreateView(),
-    # insert to db immediately (file.df_status == format_ok) 
+    # insert to db immediately (file.df_status == format_ok)
     # most recent data file
-    file = ds.files.all().order_by('-rev')[0]
-    print('file.df_status',file.df_status)
+    file = ds.file
     if file.df_status == 'format_ok':
-      print('format_ok, attempting to insert dataset '+str(id_))
+      print('format_ok , inserting dataset '+str(id_))
       if file.format == 'delimited':
         result = ds_insert_tsv(self.request, id_)
+        print('tsv result',result)
       else:
-        result = ds_insert_lpf(self.request,id_)
+        result = ds_insert_lpf(self.request, id_)
+        print('lpf result',result)
       print('ds_insert_xxx() result',result)
       ds.numrows = result['numrows']
+      #ds.numrows = result['count']
       ds.numlinked = result['numlinked']
       ds.total_links = result['total_links']
       ds.ds_status = 'uploaded'
@@ -3105,29 +2990,28 @@ class DatasetSummaryView(LoginRequiredMixin, UpdateView):
       ds.save()
       file.save()
 
-      #ds.delete()
-      #print('insert failed, dataset deleted')
-      #context['inserted'] = False
-        #response = redirect('/datasets/create')
-        #return response
 
     # build context for rendering dataset.html
     me = self.request.user
-  
-    placeset = Place.objects.filter(dataset=ds.label)
-    
+    #placeset = Place.objects.filter(dataset=ds.label)
+    placeset = ds.places.all()
+
     context['updates'] = {}
     context['ds'] = ds
-    # latest file
-    context['current_file'] = file
-    context['format'] = file.format
-    context['numrows'] = file.numrows
     context['collaborators'] = ds.collabs.all()
     context['owners'] = ds.owners
+
+    # excludes datasets uploaded directly (1 & 2)
+    if file.file:
+      context['current_file'] = file
+      context['format'] = file.format
+      context['numrows'] = file.numrows
+      context['filesize'] = round(file.file.size/1000000, 1)
+
     # initial (non-task)
+    context['num_names'] = PlaceName.objects.filter(place_id__in = placeset).count()
     context['num_links'] = PlaceLink.objects.filter(
       place_id__in = placeset, task_id = None).count()
-    context['num_names'] = PlaceName.objects.filter(place_id__in = placeset).count()
     context['num_geoms'] = PlaceGeom.objects.filter(
       place_id__in = placeset, task_id = None).count()
 
@@ -3141,6 +3025,122 @@ class DatasetSummaryView(LoginRequiredMixin, UpdateView):
 
     print('context from DatasetSummaryView', context)
     return context
+
+""" *** from server 29 July; trying to restore broken inserts ***"""
+#class DatasetSummaryView(LoginRequiredMixin, UpdateView):
+  #login_url = '/accounts/login/'
+  #redirect_field_name = 'redirect_to'
+  
+  #form_class = DatasetDetailModelForm
+  
+  #template_name = 'datasets/ds_summary.html'
+  
+  ##def get_success_url(self):
+    ##id_ = self.kwargs.get("id")
+    ##user = self.request.user
+    ##print('messages:', messages.get_messages(self.kwargs))
+    ##return '/datasets/'+str(id_)+'/summary'
+
+  ## Dataset has been edited, form submitted
+  #def form_valid(self, form):
+    #data=form.cleaned_data
+    #ds = get_object_or_404(Dataset,pk=self.kwargs.get("id"))
+    #dsid = ds.id
+    #user = self.request.user
+    #file=data['file']
+    #filerev = ds.files.all().order_by('-rev')[0].rev
+    #print('DatasetDetailViewDev kwargs',self.kwargs)
+    #print('DatasetDetailViewDev form_valid() data->', data)
+    #if data["file"] == None:
+      #print('data["file"] == None')
+      ## no file, updating dataset only
+      #ds.title = data['title']
+      #ds.description = data['description']
+      #ds.uri_base = data['uri_base']
+      #ds.save()
+    #return super().form_valid(form)
+  
+  #def form_invalid(self, form):
+    #print('kwargs',self.kwargs)
+    #context = {}
+    #print('form not valid', form.errors)
+    #print('cleaned_data', form.cleaned_data)
+    #context['errors'] = form.errors
+    #return super().form_invalid(form)
+    
+  #def get_object(self):
+    #id_ = self.kwargs.get("id")
+    #return get_object_or_404(Dataset, id=id_)
+  
+  #def get_context_data(self, *args, **kwargs):
+    #context = super(DatasetSummaryView, self).get_context_data(*args, **kwargs)
+    ##context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
+    ##context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
+
+    #print('DatasetSummaryView get_context_data() kwargs:',self.kwargs)
+    #print('DatasetSummaryView get_context_data() request.user',self.request.user)
+    #id_ = self.kwargs.get("id")
+    ##bounds = self.kwargs.get("bounds")
+    #ds = get_object_or_404(Dataset, id=id_)
+    ## print('ds',ds.label)
+    
+    ## coming from DatasetCreateView(),
+    ## insert to db immediately (file.df_status == format_ok) 
+    ## most recent data file
+    #file = ds.files.all().order_by('-rev')[0]
+    #print('file.df_status',file.df_status)
+    #if file.df_status == 'format_ok':
+      #print('format_ok, attempting to insert dataset '+str(id_))
+      #if file.format == 'delimited':
+        #result = ds_insert_tsv(self.request, id_)
+      #else:
+        #result = ds_insert_lpf(self.request,id_)
+      #print('ds_insert_xxx() result',result)
+      #ds.numrows = result['numrows']
+      #ds.numlinked = result['numlinked']
+      #ds.total_links = result['total_links']
+      #ds.ds_status = 'uploaded'
+      #file.df_status = 'uploaded'
+      #file.numrows = result['numrows']
+      #ds.save()
+      #file.save()
+
+      ##ds.delete()
+      ##print('insert failed, dataset deleted')
+      ##context['inserted'] = False
+        ##response = redirect('/datasets/create')
+        ##return response
+
+    ## build context for rendering dataset.html
+    #me = self.request.user
+  
+    #placeset = Place.objects.filter(dataset=ds.label)
+    
+    #context['updates'] = {}
+    #context['ds'] = ds
+    ## latest file
+    #context['current_file'] = file
+    #context['format'] = file.format
+    #context['numrows'] = file.numrows
+    #context['collaborators'] = ds.collabs.all()
+    #context['owners'] = ds.owners
+    ## initial (non-task)
+    #context['num_links'] = PlaceLink.objects.filter(
+      #place_id__in = placeset, task_id = None).count()
+    #context['num_names'] = PlaceName.objects.filter(place_id__in = placeset).count()
+    #context['num_geoms'] = PlaceGeom.objects.filter(
+      #place_id__in = placeset, task_id = None).count()
+
+    ## augmentations (has task_id)
+    #context['links_added'] = PlaceLink.objects.filter(
+      #place_id__in = placeset, task_id__contains = '-').count()
+    #context['geoms_added'] = PlaceGeom.objects.filter(
+      #place_id__in = placeset, task_id__contains = '-').count()
+
+    #context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False
+
+    #print('context from DatasetSummaryView', context)
+    #return context
 
 
 """ public dataset browse table """
