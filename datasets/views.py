@@ -2,6 +2,7 @@
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry
 from django.core.files import File
 from django.core.mail import send_mail
@@ -2266,6 +2267,8 @@ class DashboardView(LoginRequiredMixin, ListView):
       #return Dataset.objects.all().order_by('ds_status','-core','-id')
       return Dataset.objects.all().order_by('-create_date')
     else:
+      #dsids = [g.dataset_id_id for g in me.ds_collab.all()]
+      #return Dataset.objects.filter(id__in=dsids)
       #return Dataset.objects.filter( Q(id__in=myprojects(me)) | Q(owner=me) | Q(id__lt=3)).order_by('-id')
       return Dataset.objects.filter( Q(owner=me) ).order_by('-id')
 
@@ -2277,7 +2280,7 @@ class DashboardView(LoginRequiredMixin, ListView):
 
     types_ok=['ccodes','copied','drawn']
     # returns owned and shared datasets (rw)
-    context['shared_list'] = Dataset.objects.filter(id__in=myprojects(me)).order_by('-id')
+    context['shared_list'] = Dataset.objects.filter(id__in=myprojects(me)).order_by('-create_date')
 
     context['public_list'] = Dataset.objects.filter(public=True).order_by('-numrows')
 
@@ -2895,6 +2898,20 @@ class DatasetDeleteView(DeleteView):
   def get_success_url(self):
     self.delete_complete()
     return reverse('dashboard')
+
+#
+# fetch places in specified dataset 
+# 
+def ds_list(request, label):
+  print('in ds_list() for',label)
+  qs = Place.objects.all().filter(dataset=label)
+  geoms=[]
+  for p in qs.all():
+    feat={"type":"Feature",
+          "properties":{"src_id":p.src_id,"name":p.title},
+              "geometry":p.geoms.first().jsonb}
+    geoms.append(feat)
+  return JsonResponse(geoms,safe=False)
 
 
 """ undo last review mtch action"""

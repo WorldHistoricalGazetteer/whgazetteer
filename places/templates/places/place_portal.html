@@ -420,59 +420,6 @@
       <!--.attr("id","yaxis")-->
       <!--.call(axisL);-->
   }
-    
-  <!--function histogram(data,labels){-->
-    <!--// exit if no data -->
-    <!--if (data[0].bin == "Infinity"){ $("#histogram_sum").html('<i>None yet</i>'); return; }-->
-    <!--data=data.slice(0,200)-->
-    <!--var margin = {top: 0, right: 10, bottom: 0, left: 10}-->
-    <!--var width = 500, height = 30,  padding_h = 20,  padding_w = 30;-->
-      
-    <!--// set the ranges-->
-    <!--window.xScale = d3.scaleLinear()-->
-      <!--.range([0, width])-->
-    <!--window.yScale = d3.scaleLinear()-->
-      <!--.range([height, 0]);-->
-  
-    <!--<!--xScale.domain(data.map(function(d) { return d.bin; }));-->-->
-    <!--xScale.domain(minmax);-->
-    <!--yScale.domain([0, d3.max(data, function(d) { return d.count; })]);-->
-    
-    <!--window.svg_hist = d3.select("#histogram_sum").append("svg")-->
-      <!--.attr("width", '100%')-->
-      <!--.attr("height", height+padding_h)-->
-      
-      <!--.attr('viewBox','0 0 '+Math.min(width,height+padding_h)+' '+Math.min(width,height+padding_h))-->
-      <!--.attr('preserveAspectRatio','xMinYMin')-->
-      
-      <!--.append("g")-->
-      <!--.attr("transform","translate(" + margin.left + "," + margin.top + ")")-->
-  
-    <!--window.axisB = d3.axisBottom(xScale)-->
-      <!--.tickValues(labels.filter(function(d,i){return !(i%20)}))-->
-      <!--.tickFormat(d3.format("d"));-->
-
-    <!--var axisL = d3.axisLeft(yScale)-->
-  
-    <!--svg_hist.selectAll(".bar")-->
-      <!--.data(data)-->
-    <!--.enter().append("rect")-->
-      <!--.attr("class", "bar")-->
-      <!--.attr("x", function(d) { return xScale(d.bin); })-->
-      <!--<!--.attr("width", function(d) { return xScale(d.x1) - xScale(d.x0) -1 ; })-->-->
-      <!--.attr("width", 2)-->
-      <!--.attr("y", function(d) { return yScale(d.count); })-->
-      <!--.attr("height", function(d) { return height - yScale(d.count); });-->
-  
-    <!--var xAxis = svg_hist.append("g")-->
-      <!--.attr("id","xaxis")-->
-      <!--.attr("transform", "translate(0," + height + ")")-->
-      <!--.call(axisB)-->
-  
-    <!--<!--var yAxis = svg_hist.append("g")-->-->
-      <!--<!--.attr("id","yaxis")-->-->
-      <!--<!--.call(axisL);-->-->
-  <!--}-->
 
   function filly(counter) {
     if (counter == 0)
@@ -522,13 +469,14 @@
     context={"type":"FeatureCollection","features":[]}
     $.get("/search/context",{idx: 'whg', search: bbox, doc_type: 'place'},
       function(data){
-        <!--console.log('a hit:',data['hits'][0])-->
+        <!--console.log('data:',data)-->
+        console.log('a hit:',data['hits'][0])
         <!--console.log('a geom in a hit:',data['hits'][0].geoms[0])-->
         for(i in data['hits']){
           title = data['hits'][i]['title']
           whg_id = data['hits'][i]['whg_id']
           geoms=data['hits'][i]['geoms']
-          <!--console.log(geoms)-->
+          console.log(geoms)
           for(j in geoms) {
             context["features"].push(
               { "type":"Feature",
@@ -537,7 +485,7 @@
                   "title":title,
                   "ds":'whg'
                 },
-                "geometry":geoms[j]
+                "geometry":geoms[j]['location']
               }
             )
           }

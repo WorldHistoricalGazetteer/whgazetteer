@@ -87,6 +87,9 @@ urlpatterns = [
   ## GEOMETRY
   path('<int:dsid>/geojson/', fetch_geojson_ds, name="geojson"),
 
+  # list places in a dataset; for physical geog layers
+  path('<str:label>/places/', views.ds_list, name='ds_list'),
+
 
 ] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
 

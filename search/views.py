@@ -381,15 +381,19 @@ def contextSearch(idx,doctype,q):
       count_hits +=1
       if idx.startswith("whg"):
         # why normalize here?
-        # result_obj["hits"].append(hit["_source"])
-        result_obj["hits"].append(normalize(hit["_source"],idx))
+        result_obj["hits"].append(hit['_source'])
+        #result_obj["hits"].append(hit["_source"], idx)
+        #result_obj["hits"].append(normalize(hit["_source"], idx))
+        #result_obj["hits"].append(normalize(hit, idx))
       else:
         # this is traces
         result_obj["hits"].append(hit["_source"]['body'])
   result_obj["count"] = count_hits
+  print('context result object', result_obj['hits'][:300])
   # returns 'bodies' for TraceGeomView()
   # {id, title, relation, when, whg_id}
   return result_obj
+
 class FeatureContextView(View):
   @staticmethod
   def get(request):
