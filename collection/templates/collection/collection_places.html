@@ -161,9 +161,9 @@
       ds_src=table.row(thisy.index()).data().dataset.label
       console.log('clicked row pid', pid, ds_src)
       
-      geom = allfeats.find(function(f){return f.properties.pid==pid}).geometry
+      geom = all_feats.find(function(f){return f.properties.pid==pid}).geometry
       coords = geom.coordinates
-      console.log('pid, geom, coords', pid,geom, coords)
+      console.log('pid, geom, coords', pid, geom, coords)
 
       // fetch its detail
       getPlace(pid, 'clicked')
@@ -203,12 +203,10 @@
   }
   
   $(function(){
-    allfeats = null
-    featcounts = null
-    <!--window.layer_list = []-->
-    window.layer_list = getLoadedLayers()    
     window.ds_list = JSON.parse(document.getElementById('ds_list').textContent);
+    window.layer_list = getLoadedLayers()    
     <!--console.log('ds_list', ds_list)-->
+
     // TODO: remove these artifacts of table used for review
     localStorage.setItem('filter', '-1')
     wdtask = "{{wdtask}}" == "True"?true:false
@@ -216,7 +214,7 @@
     whgtask = "{{whgtask}}" == "True"?true:false
 
     // start spinners, some collections take time    
-    <!--startMapSpinner()-->
+    startMapSpinner()
     startTableSpinner()
     startDetailSpinner()
     
@@ -302,27 +300,19 @@
     accessToken: '{{ mbtokenmb }}'
   });
 
-  mappy.on('idle', function() {
-    spinner_map.stop()
-    $(".toomany").html('').hide()
-    // gather all features after initial load
-    if(!allfeats){
-      dslabels = []
-      feats = []
-      featcounts = []
-      for(d in ds_list){
-        dslabels.push(ds_list[d]['label'])
-      }
-      console.log('dslabels',dslabels)
-      for(l in dslabels){
-        z = mappy.querySourceFeatures(dslabels[l])
-        featcounts[dslabels[l]] = z.length
-        feats = feats.concat(z)
-      }
-      allfeats = feats
-    }
-  });
+  <!--mappy.on('idle', function() {-->
+    <!--console.log('on idle, supposedly finished rendering')-->
+    <!--<!--console.log('loaded', mappy.loaded())-->-->
+  <!--});-->
   
+  // TODO: add a 'big' boolean to ds_list based on count of polygons
+  mappy.on('sourcedata', function(e) {
+    if(e.sourceId == 'territorios892' && e.isSourceLoaded){
+      console.log('big data supposedly finished', e.sourceId)
+      spinner_map.stop()
+      $(".toomany").html('').hide()      
+    }
+  });  
   mappy.on('load', function(){
     hilited = null
     mappy.addSource('empty', {
@@ -394,42 +384,23 @@
     }
     return layers
   }
-
-  <!--dsdata = null-->
-  function addSourcesFubar(ds_list){
-    sources=[]
-    for(d in ds_list){
-      ds = ds_list[d]
-      console.log('now', ds.label)
+  
+  function addSources(ds_list){
+    all_feats = []
+      $(".toomany").html('please wait...rendering polygons').show()
+      startMapSpinner()
+      ds_list.forEach(function(ds,i){
       $.getJSON('/datasets/'+ds.id+'/geojson')
         .done(function(dsdata) {
           mappy.addSource(ds.label, {
             'type': 'geojson',
             'data': dsdata
           });
-          console.log('added dsdata', ds.label, dsdata)
-          sources.push(ds.label)
-          renderSourceLayers(ds.label, d)
+          all_feats = all_feats.concat(dsdata.features)
+          renderSourceLayers(ds.label, i)
       })
-    }
-  }    
-  function addSources(ds_list){
-    sources=[]
-    for(d in ds_list){
-      ds = ds_list[d]
-      console.log('ds.label',ds.label)
-      $(".toomany").html('please wait...rendering polygons').show()
-      startMapSpinner()
-      mappy.addSource(ds.label, {
-        'type': 'geojson',
-        'data': '/datasets/'+ds.id+'/geojson'
-      });
-      sources.push(ds.label)
-      <!--heat(ds.label, d)-->
-      renderSourceLayers(ds.label, d)
-    }
-    spinner_map.stop()
-  }
+    })
+  } 
   
   // TODO: better colors
   colors_point=['#ff9900','red','green','blue', 'purple',
@@ -438,7 +409,6 @@
   // render dataset/geometry layers
   // 
   function renderSourceLayers(dslabel, i){
-    <!--console.log('renderSourceLayers() adding for', dslabel)-->
     startMapSpinner()
     mappy.addLayer({
       'id': 'gl_'+dslabel+'_poly',
@@ -465,8 +435,7 @@
         }        
       },
       'filter': ['==', '$type', 'Point']
-    }, 'z-index-2');  
-    
+    }, 'z-index-2');
   }
 
   function layerColors(){
@@ -908,251 +877,3 @@
 
 </script>
 {% endblock %}
-
-
-  <!--// initiate map, fetch data -> renderMap()-->
-  <!--addEventListener('map:init', function (e) {-->
-    <!--window.mappy = e.detail.map-->
-    <!--mappy.options.zoomSnap = 0.3-->
-    <!--mappy.options.zoomDelta = 0.3-->
-    <!--mappy.options.maxZoom = 12-->
-    <!--mappy.options.zoomControl = true-->
-    <!--mappy.setView(new L.LatLng(32, 12.6), 1);-->
-
-    <!--<!--console.log('map:init begin')-->-->
-    <!--var token_mb = '{ mbtokenmb }}',-->
-      <!--token_kg = '{ mbtokenkg }}',-->
-      <!--mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}';-->
-      
-    <!--// gl base can have heat overlays-->
-    <!--ne_global= L.mapboxGL({-->
-      <!--style:'mapbox://styles/kgeographer/ckidglq8l2nra19nzzbl995ue',-->
-      <!--<!--accessToken:token_kg}).addTo(mappy)-->-->
-      <!--accessToken:token_kg})-->
-
-    <!--<!--gl=ne_global.getMapboxMap().on('load',function(){-->-->
-      <!--<!--addHeatSources(ds_list)-->-->
-    <!--<!--})-->-->
-
-    <!--var satellite  = L.tileLayer(mbstyle_url, {id:'mapbox/satellite-streets-v11', token:token_mb})-->
-    <!--var osm  = L.tileLayer(mbstyle_url, {id:'mapbox/light-v10', token:token_mb})-->
-    
-    <!--baseLayers = {-->
-      <!--"OSM": osm,-->
-      <!--"NE global": ne_global,-->
-      <!--"Satellite": satellite-->
-    <!--};-->
-    
-    <!--mappy.setMaxBounds(null)-->
-    <!--L.control.layers(baseLayers).addTo(mappy);-->
-    
-    <!--<!--baseLayers['NE global'].addTo(mappy)-->-->
-    <!--baseLayers['OSM'].addTo(mappy)-->
-    
-    <!--polygons = L.featureGroup().addTo(mappy)-->
-    <!--// fetch collection features -> renderMap() if < 15,000-->
-    <!--// getting only points and multipoints here-->
-    <!--// polygons will be fetched on click of a table row-->
-    <!--var rowcount = "{ object.rowcount }}"-->
-    <!--if( rowcount >= 15000) {-->
-      <!--$(".toomany").html('for performance reasons, mapping only the first 15,000 features - sorry!').fadeIn(500)-->
-    <!--} else if(rowcount > 1000){-->
-        <!--console.log('count > 1000, .toomany should appear')-->
-        <!--$(".toomany").html('rendering '+rowcount+' features, just a few moments...').fadeIn(500)-->
-    <!--}-->
-    <!--console.log('toomany html', $(".toomany").html())-->
-    <!--$.get("/api/geoms", {coll: "{{ object.id }}"},function(data){-->
-        <!--console.log('success: data.count:',data.count)-->
-        <!--geom = {"type":"FeatureCollection","features":data.results}-->
-        <!--renderMap(geom,'browse')-->
-        <!--$(".toomany").fadeOut(1200)-->
-      <!--}-->
-    <!--)-->
-    
-    <!--function manualPrint() {-->
-        <!--printer.printMap('CurrentSize', 'MyManualPrint')-->
-    <!--}-->
-  <!--}, false);-->
-  
-  <!--// -->
-  <!--function renderMap(geom){-->
-    <!--console.log('renderMap()')-->
-    <!--let count = geom.features.length-->
-    <!--if (count==0) {-->
-      <!--console.log('no features in renderMap() call')-->
-    <!--} else {-->
-    
-      <!--// colors per dataset; 3 max so far-->
-      <!--dsids = []-->
-      <!--geom.features.forEach(function(f){dsids.push(f.ds)})-->
-      <!--dsids = dsids.filter((e, i) => dsids.indexOf(e) === i);-->
-      <!--dscolors = {}-->
-      <!--colors = ["#f03b20", "#ef8a62", "#762a83", "#1a9850"] // red, orange, purple, green-->
-      <!--for(d in dsids){-->
-        <!--dscolors[dsids[d]] = colors[d]-->
-      <!--}-->
-      <!--// clear existing features if any-->
-      <!--if(typeof(features)!=='undefined'){-->
-        <!--mappy.removeLayer(features)-->
-      <!--}-->
-      <!--idToFeature = {}  // for feature lookup-->
-      <!--mapLayerGroups = []-->
-      <!--features = L.geoJSON(geom, {-->
-      <!--// feature here is a geometry-->
-      <!--// TODO: LPF should allow single geometry, not only GeometryCollection-->
-        <!--pointToLayer: function (feature, latlng) {-->
-          <!--matchid = feature.place_id-->
-          <!--<!--console.log('feature',feature)-->-->
-          <!--<!--marker = L.circleMarker(latlng,styles.Point.default).bindPopup(feature.title+-->-->
-          <!--marker = L.circleMarker(latlng,{-->
-            <!--radius: 2, fillColor:dscolors[feature.ds], -->
-            <!--fillOpacity: 0.8, stroke: false}).bindPopup(feature.title+-->
-            <!--'<br>pid: <a href="javascript:getPlace('+matchid+')">'+matchid+'</a>'-->
-            <!--);-->
-          <!--idToFeature[matchid] = marker-->
-          <!--return marker-->
-        <!--}-->
-        <!--,onEachFeature: function(feature, layer) {-->
-          <!--f=feature; l=layer;-->
-          <!--<!--console.log('f,l',feature,layer)-->-->
-          <!--// create and populate layerGroup per dataset-->
-          <!--var lg = mapLayerGroups[feature.ds];-->
-          <!--if (lg === undefined) {-->
-            <!--<!--lg = new L.layerGroup();-->-->
-            <!--lg = new L.featureGroup();-->
-            <!--lg.addTo(mappy);-->
-            <!--mapLayerGroups[feature.ds] = lg;-->
-          <!--}-->
-          <!--//add the layer to the group-->
-          <!--lg.addLayer(layer);-->
-
-          <!--identifier = feature.place_id;-->
-          <!--// .toLowerCase().search('poly')-->
-          <!--if(f.type.toLowerCase() != 'Point'){-->
-            <!--<!--layer.setStyle(styles[f.type].default).bindPopup(f.title+-->-->
-            <!--layer.setStyle({radius: 2, fillColor:dscolors[feature.ds], -->
-              <!--fillOpacity: 0.6, stroke: false}).bindPopup(f.title+-->
-            <!--'<br>pid: <a href="javascript:getPlace('+matchid+')">'+matchid+'</a>'-->
-            <!--)-->
-            <!--idToFeature[identifier] = layer-->
-          <!--}-->
-        <!--}-->
-      <!--});-->
-      <!--// defer adding -->
-      <!--<!--}).addTo(mappy);-->-->
-      <!--spinner_map.stop()-->
-      <!--$(".toomany").fadeOut()-->
-    <!--}-->
-    <!--<!--highlightFeature(pid)-->-->
-    <!--<!--mappy.fitBounds(features.getBounds())-->-->
-    <!--mappy.on('zoomend', function() {-->
-      <!--var currentZoom = mappy.getZoom();-->
-      <!--<!--console.log('on zoomend', currentZoom)-->-->
-      <!--var myRadius = currentZoom*(1); //or whatever ratio you prefer-->
-      <!--var myWeight = currentZoom*(1/5); //or whatever ratio you prefer-->
-      <!--features.setStyle({radius: myRadius, weight: myWeight});-->
-      
-      <!--<!--opt = Object.values(idToFeature)[0].options-->-->
-      <!--<!--foptions = { ...opt };-->-->
-      <!--<!--console.log('zoomend() idToFeature',opt)-->-->
-    <!--});-->
-    <!--// grabs layer options for first feature; used when highlighting selected -->
-    <!--opt = Object.values(idToFeature)[0].options-->
-    <!--foptions = { ...opt };-->
-  <!--}-->
-  <!--// generic -->
-  <!--function zoomTo(pid) {-->
-    <!--console.log('zoomTo()',pid)-->
-    <!--l = idToFeature[pid]-->
-    <!--ftype=l.feature.geometry.type-->
-    <!--<!--console.log('zoomTo() pid, ftype',pid, ftype)-->-->
-    <!--if (ftype=='Point'){-->
-       <!--mappy.setView(l._latlng, 7 )-->
-    <!--} else {-->
-      <!--mappy.fitBounds(l.getBounds(), {padding:[100,100]})-->
-    <!--}-->
-  <!--}-->
-
-  <!--// highlight on select in table-->
-  <!--function highlightFeature(pid){-->
-    <!--console.log('highlightFeature()', pid)-->
-    <!--if(typeof(idToFeature) != 'undefined'){-->
-      <!--if(pid in idToFeature){-->
-        <!--feat = idToFeature[pid]-->
-        <!--ftype = feat.feature.geometry.type-->
-        
-        <!--// reset style of last if there is a last-->
-        <!--if(typeof(last)!='undefined'){-->
-          <!--last[0].setStyle(styles[last[1]].default)-->
-        <!--}-->
-
-        <!--// highlight this one-->
-        <!--feat.setStyle(styles[ftype].focus)-->
-        <!--feat.bringToFront()-->
-        
-        <!--zoomTo(pid)-->
-        
-        <!--last = [feat, ftype]-->
-      <!--} else {-->
-        <!--// not in idToFeature means it's a polygon; fetch it-->
-        
-        <!--features.setStyle(foptions)-->
-      <!--}-->
-    <!--}    -->
-  <!--}-->
-
-  <!--function renderData(dsid){-->
-    <!--startMapSpinner()-->
-    <!--// clear any data layers and 'places' source-->
-    <!--if(!!mappy.getLayer('gl_active_point')){-->
-      <!--mappy.removeLayer('gl_active_point')-->
-      <!--mappy.removeLayer('gl_active_poly')-->
-      <!--mappy.removeSource('places')-->
-    <!--}-->
-    <!--// fetch data-->
-    
-    <!--$.get("/api/geoms", {coll: "{{ object.id }}"},function(data){-->
-      <!--features = data.features-->
-      <!--console.log('data', data)-->
-      <!--// get bounds w/turf-->
-      <!--<!--envelope = turf.envelope(data)-->-->
-      <!--<!--console.log(envelope)-->-->
-      
-      <!--// add source 'places' w/retrieved data-->
-      <!--mappy.addSource('places', {-->
-          <!--'type': 'geojson',-->
-          <!--'data': data-->
-      <!--})-->
-      
-      <!--// render to map-->
-      <!--mappy.addLayer({-->
-        <!--'id': 'gl_active_poly',-->
-        <!--'type': 'fill',-->
-        <!--'source': 'places',-->
-        <!--'paint': {-->
-          <!--'fill-color': '#ddd',-->
-          <!--'fill-opacity': 0.2,-->
-          <!--'fill-outline-color': 'black'-->
-        <!--},-->
-        <!--'filter': ['==', '$type', 'Polygon']-->
-      <!--}, 'z-index-1');-->
-      
-      <!--mappy.addLayer({-->
-        <!--'id': 'gl_active_point',-->
-        <!--'type': 'circle',-->
-        <!--'source': 'places',-->
-        <!--'paint': {-->
-          <!--'circle-color': '#ff9900',-->
-          <!--'circle-radius': {-->
-            <!--stops: [[1, 2], [3, 3], [16, 20]]-->
-          <!--}        -->
-        <!--},-->
-        <!--'filter': ['==', '$type', 'Point']-->
-      <!--}, 'z-index-2');  -->
-        
-      <!--<!--mappy.fitBounds(envelope.bbox)-->-->
-      <!--spinner_map.stop()-->
-      
-    <!--})-->
-  <!--}-->
-
