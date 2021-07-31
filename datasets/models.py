@@ -124,7 +124,11 @@ class Dataset(models.Model):
   @property
   def dl_est(self):
     file = self.files.all().order_by('id')[0]
-    size = int(file.file.size/1000000) # seconds +/-
+    if file.file:
+      size = int(file.file.size/1000000) # seconds +/-
+    else:
+      # substitute record count for *rough* estimate
+      size = self.places.count()/1000
     min, sec = divmod(size,60)
     if min < 1:
       result = "%02d sec" % (sec)

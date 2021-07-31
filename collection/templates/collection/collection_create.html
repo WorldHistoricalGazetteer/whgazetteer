@@ -34,7 +34,7 @@
       <p>Creator<br/>{{ form.creator }}
       <p>Contact<br/>{{ form.contact }}
       <p>Webpage URL<br/>{{ form.webpage }}
-      <p>Keywords<br/>{{ form.keywords }}
+      <p>Keywords (comma-separated)<br/>{{ form.keywords }}
       <p>Public?: {{ form.public }}</p>
       {% if action == 'update' %}
         <p>Create date: {{ create_date }}</p>
@@ -76,7 +76,7 @@
           </p>
           <!-- id, label, title, description, creator, create_date, webpage, numrows, datatype -->
           <div id="coll_dscards">
-            {% if coll_dsset|length == 0 %}<p id="noneyet" class="font-italic smaller">None yet...</p>{% endif %}
+            {% if coll_dsset|length == 0 %}<p id="msg" class="font-italic smaller">None yet...</p>{% endif %}
             <!--{ if action == 'update' %}-->
             {% for d in coll_dsset %}
               <div class="ds_card">
@@ -109,11 +109,11 @@
     });
     $("#id_geojson").attr("placeholder","generated from country codes")
   })
-  $("#btn_coll_submit").click(function(){
+  $("#btn_coll_submit").click(function(e){
     // at least two datasets selected?
     if('{{action}}' == 'create' && dslist.length < 2) {
-      alert('Collections must contain at least 2 datasets!')
-      
+      e.preventDefault()
+      $("#msg").html('<h6>Collections must contain at least 2 datasets!</h6>').addClass('strong-red').show()
     }
   })
   function listDataset(d) {
@@ -146,6 +146,7 @@
     });
     // reset select
     $("#select_ds").val(0)
+    $("#msg").html('').hide()
   }
   function clearDataset(dsid){
     console.log('clear card for ds', dsid)
