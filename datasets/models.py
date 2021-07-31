@@ -98,11 +98,12 @@ class Dataset(models.Model):
     
   @property
   def minmax(self):
-    # temporal is sparse
+    # TODO: temporal is sparse, sometimes [None, None]
     timespans = [p.minmax for p in self.places.all() \
-                 if p.minmax and len(p.minmax) == 2]
-    earliest = min([t[0] for t in timespans]) if len(timespans)>0 else None
-    latest = max([t[1] for t in timespans]) if len(timespans)>0 else None
+                 if p.minmax and len(p.minmax) == 2 and p.minmax[0]]
+    #print('ds; timespans as model property', self.label, timespans)
+    earliest = min([t[0] for t in timespans]) if len(timespans) > 0 else None
+    latest = max([t[1] for t in timespans]) if len(timespans) > 0 else None
     minmax = [earliest,latest] if earliest and latest else None
     return minmax
   

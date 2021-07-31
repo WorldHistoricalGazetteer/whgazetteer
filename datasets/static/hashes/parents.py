@@ -1,5 +1,5 @@
 ccodes = {
-"":{"gnlabel":"unspecified"},
+"":{"wdid":"", "gnlabel":"unspecified"},
 "CX":	{"wdid": "Q31063", "tgnid": -1, "gnlabel": "Christmas Island", "tgnlabel": "", "geonameid": 2078138},
 "BV":	{"wdid": "Q23408", "tgnid": -1, "gnlabel": "Bouvet Island", "tgnlabel": "", "geonameid": 3371123},
 "BQ":	{"wdid": "Q25396", "tgnid": -1, "gnlabel": "Bonaire, Saint Eustatius and Saba ", "tgnlabel": "", "geonameid": 7626844},

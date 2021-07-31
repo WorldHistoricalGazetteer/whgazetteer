@@ -34,7 +34,8 @@
         <a class="nav-link" id="browse-tab" href="{% url 'collection:collection-places' id=object.id %}" role="tab">Browse Data</a>
     </li>
   </ul>
-  <div class="d-flex tab-content">
+  <!--<div class="d-flex tab-content">-->
+  <div class="tab-content">
     <div id="summary" class="tab-pane fade show active" role="tabpanel" aria-labelledby="summary-tab">
     <div class="row">
     <div id="coll_map" class="col-sm-7 mt-2 pl-0">
@@ -48,8 +49,12 @@
           <a href="{{object.webpage }}" target="_blank">link {% fontawesome_icon 'external-link' color='#336699' %}</a>
         </td></tr>
         {% endif %}
-        <tr><td><b>Creator(s)</b></td><td>{{ object.creator }}</td></tr>
-        <tr><td><b>Contact</b></td><td>{{ object.contact|url_it|safe }}</td></tr>
+        {% if object.contact %}
+          <tr><td><b>Creator(s)</b></td><td>{{ object.creator }}</td></tr>
+        {% endif %}
+        {% if object.contact %}
+          <tr><td><b>Contact</b></td><td>{{ object.contact|url_it|safe }}</td></tr>
+        {% endif %}
         </table>
       </div>      
       <div id="mapdiv_coll" class="">

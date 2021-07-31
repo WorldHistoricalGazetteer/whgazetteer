@@ -72,7 +72,8 @@
               </select>
             </span>
             <a href="javascript:{ addDataset() }" class="">
-          {% fontawesome_icon 'plus-square' color='#336699' %} add</a></p>
+              {% fontawesome_icon 'plus-square' color='#336699' %} add</a>
+          </p>
           <!-- id, label, title, description, creator, create_date, webpage, numrows, datatype -->
           <div id="coll_dscards">
             {% if coll_dsset|length == 0 %}<p id="noneyet" class="font-italic smaller">None yet...</p>{% endif %}
@@ -112,6 +113,7 @@
     // at least two datasets selected?
     if('{{action}}' == 'create' && dslist.length < 2) {
       alert('Collections must contain at least 2 datasets!')
+      
     }
   })
   function listDataset(d) {
