@@ -204,6 +204,7 @@
   
   $(function(){
     window.ds_list = JSON.parse(document.getElementById('ds_list').textContent);
+    source_list = ds_list.map(function(d){ return d.label})
     window.layer_list = getLoadedLayers()    
     <!--console.log('ds_list', ds_list)-->
 
@@ -232,6 +233,7 @@
       }
       ,scrollY: 350
       ,select: true
+      ,order: [[2, 'asc']]
       ,LengthMenu: [10, 25, 50, 100]
       ,columns: 
       [
@@ -300,19 +302,25 @@
     accessToken: '{{ mbtokenmb }}'
   });
 
-  <!--mappy.on('idle', function() {-->
-    <!--console.log('on idle, supposedly finished rendering')-->
-    <!--<!--console.log('loaded', mappy.loaded())-->-->
-  <!--});-->
-  
-  // TODO: add a 'big' boolean to ds_list based on count of polygons
+  <!--mappy.on('idle', function(e) {-->
+    <!--console.log('idle e', e.target.painter.currentStencilSource)-->
+  <!--})-->
+  // TODO: add a 'big?' boolean to ds_list based on count of polygons
   mappy.on('sourcedata', function(e) {
-    if(e.sourceId == 'territorios892' && e.isSourceLoaded){
-      console.log('big data supposedly finished', e.sourceId)
-      spinner_map.stop()
-      $(".toomany").html('').hide()      
+    <!--console.log('source_list', source_list)-->
+    if(source_list.includes('territorios892')){
+      // big polygons
+      if(e.sourceId == 'territorios892' && e.isSourceLoaded){
+        console.log('big data finished', e.sourceId)
+        spinner_map.stop()
+        $(".toomany").html('').hide()      
+      }
+    } else {
+        spinner_map.stop()
+        $(".toomany").html('').hide()
     }
-  });  
+  });
+  
   mappy.on('load', function(){
     hilited = null
     mappy.addSource('empty', {
@@ -338,6 +346,7 @@
     layer_list = getLoadedLayers(ds_list)
     
     for (l in layer_list){
+      // TODO: allow clicking on polygons, denied here
       if(layer_list[l].indexOf('point') != -1){
         mappy.on('mouseenter', layer_list[l], function () {
           mappy.getCanvas().style.cursor = 'pointer';
@@ -387,9 +396,10 @@
   
   function addSources(ds_list){
     all_feats = []
-      $(".toomany").html('please wait...rendering polygons').show()
-      startMapSpinner()
-      ds_list.forEach(function(ds,i){
+    source_list = []
+    $(".toomany").html('please wait...rendering many polygons').show()
+    startMapSpinner()
+    ds_list.forEach(function(ds,i){
       $.getJSON('/datasets/'+ds.id+'/geojson')
         .done(function(dsdata) {
           mappy.addSource(ds.label, {
@@ -399,6 +409,7 @@
           all_feats = all_feats.concat(dsdata.features)
           renderSourceLayers(ds.label, i)
       })
+      source_list.push(ds.label)
     })
   } 
   
@@ -512,7 +523,7 @@
       mappy.flyTo({'center': flycoords, 'zoom': 9})
     } else {
       bbox=turf.envelope(geom).bbox
-      mappy.fitBounds(bbox)      
+      mappy.fitBounds(bbox, { padding: 30})      
     }    
   }
 

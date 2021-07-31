@@ -671,9 +671,6 @@ class PlaceTableCollViewSet(viewsets.ModelViewSet):
     coll = get_object_or_404(Collection, id=self.request.GET.get('id'))
     qs = coll.places.all()
     query = self.request.GET.get('q')
-    #ds = self.request.GET.get('ds')
-    #if ds is not None:
-      #qs = qs.filter(dataset = ds).order_by('src_id')
     if query is not None:
       qs = qs.filter(title__istartswith=query)
     return qs
