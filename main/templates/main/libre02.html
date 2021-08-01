@@ -70,8 +70,7 @@ $(".f").click(function(){
   highlightFeature(pid, coords)
 })
 
-var token_kg = '{{ mbtokenkg }}', 
-  token_whg = '{{ mbtokenwhg }}', 
+var token_whg = '{{ mbtokenwhg }}', 
   token_mb = '{{ mbtokenmb }}';
 
 $( "#map_dataset" ).change(function() {
@@ -87,7 +86,6 @@ var map = new maplibregl.Map({
   minZoom: 1.0,
   maxZoom: 18,
   <!--accessToken: 'pk.eyJ1Ijoia2dlb2dyYXBoZXIiLCJhIjoiUmVralBPcyJ9.mJegAI1R6KR21x_CVVTlqw'-->
-  accessToken: token_kg
 });
 
 map.on('load', function() {
@@ -413,121 +411,6 @@ $(function(){
   }  
   //
   //
-  // initializes map
-  <!--addEventListener('map:init', function (e) {-->
-    <!--window.mappy = e.detail.map-->
-    <!--mappy.setMaxBounds(null)-->
-
-	// mapbox tokens 
-	
-	// style/tile urls
-	<!--var mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}',-->
-		<!--mbtiles_url = 'https://api.mapbox.com/v3/{id}/{z}/{x}/{y}.png',-->
-		<!--ne_url = 'http://blog.whgazetteer.org/tiles/ne/{z}/{x}/{y}.png';-->
-	  
-	<!--ne_options = {mapMinZoom: 0, mapMaxZoom: 7, opacity: 1.0, tms: false, mapExtent:[-180.00000000, -85.05112878, 179.99652662, 85.05112878]}-->
-
-    <!--var satellite  = L.tileLayer(mbstyle_url, {-->
-	  <!--id:'mapbox/satellite-streets-v11', -->
-	  <!--token:token_mb}),-->
-	<!--osm  = L.tileLayer(mbstyle_url, {-->
-	  <!--id:'mapbox/light-v10', -->
-	  <!--token:token_mb}),-->
-	<!--ne = L.tileLayer(ne_url, ne_options);-->
-    <!--var ne_mb = L.tileLayer(mbtiles_url, {-->
-	  <!--id:'kgeographer.ne_global', -->
-	  <!--token:token_kg})-->
-
-	<!--// GL wrapper to display heatmaps-->
-
-	<!--<!--terrain-->-->
-	<!--mb_terrain = L.mapboxGL({-->
-	  <!--style:'mapbox://styles/kgeographer/ckhf6o8yf07fw19qhbrm7f2q7',-->
-	  <!--accessToken:token_kg})-->
-
-	<!--<!--natural earth global-->-->
-	<!--<!--mb_terrain = L.mapboxGL({-->-->
-	<!--ne_global= L.mapboxGL({-->
-	  <!--style:'mapbox://styles/kgeographer/ckidglq8l2nra19nzzbl995ue',-->
-	  <!--accessToken:token_kg}).addTo(mappy)-->
-	
-	
-	<!--gl=ne_global.getMapboxMap().on('load',function(){-->
-	  <!--gl.addSource('lugares', {-->
-			  <!--"type": "geojson",-->
-			  <!--<!--"data": "/media/data/lugares_13k.geojson"-->-->
-			  <!--"data": "{{media_url}}data/lugares_13k.geojson"-->
-		  <!--});	-->
-	  <!--gl.addSource('owtrad', {-->
-			  <!--"type": "geojson",-->
-			  <!--"data": "media/data/owtrad.geojson"-->
-		  <!--});	-->
-	  <!--gl.addSource('euratlas', {-->
-			  <!--"type": "geojson",-->
-			  <!--"data": "media/data/euratlas_cities.geojson"-->
-		  <!--});	-->
-	  <!--gl.addSource('alturayya', {-->
-			  <!--"type": "geojson",-->
-			  <!--"data": "media/data/al-turayya.geojson"-->
-		  <!--});-->
-	<!--})-->
-	
-    <!--var countryStyle = {-->
-      <!--"color": "#999",-->
-      <!--"weight": 1,-->
-      <!--"opacity": 0.4,-->
-      <!--"fillOpacity": 0-->
-    <!--};-->
-
-    <!--countries = new L.GeoJSON.AJAX("/media/data/countries_simplified.json",-->
-      <!--{style:countryStyle,-->
-        <!--onEachFeature: function (feature, layer) {-->
-          <!--popupOptions = {maxWidth: 200};-->
-            <!--layer.bindPopup(feature.properties.gnlabel, popupOptions);-->
-          <!--}-->
-    <!--});-->
-
-    <!--var baseLayers = {-->
-      <!--"NE global": ne_global,-->
-	    <!--"Terrain": mb_terrain,-->
-      <!--"OpenStreetMap": osm,      -->
-      <!--"Satellite": satellite-->
-    <!--};-->
-    <!--var dataLayers = {-->
-      <!--"Countries": countries,-->
-      <!--<!--"Regions (UN)": regions-->-->
-    <!--}-->
-    <!--mappy.zoomControl.setPosition('topright')-->
-    <!--L.control.layers(baseLayers,dataLayers).addTo(mappy);-->
-    <!--baseLayers["NE global"].addTo(mappy)-->
-    
-	<!--if(localStorage.getItem('last_results') != null){-->
-	  <!--previous = JSON.parse(localStorage.getItem('last_results'))	-->
-	<!--}-->
-	<!--if(document.referrer.indexOf('place') >= 0 && previous){-->
-	  <!--showResults(previous,'place','search')-->
-	<!--}-->
-  <!--}, false);-->
-
-  <!--function map_init (home_map, options) {-->
-    <!--mappy.setView([38, 10], 2.4)-->
-    <!--// empty features[]-->
-    <!--geom = {"type":"FeatureCollecton","features":[]}-->
-  <!--} // end map_init-->
-  
-  <!--function filly(counter) {-->
-    <!--if (counter == 0)-->
-      <!--return "blue"-->
-    <!--else if (counter == 1)-->
-      <!--return "orange"-->
-    <!--else if (counter == 2)-->
-      <!--return "purple"-->
-    <!--else if (counter == 3)-->
-      <!--return "greenyellow"-->
-    <!--else -->
-      <!--return "yellow"-->
-  <!--}-->
- 
   /*
     *** renderPlaces() *** from showResults()
     render geometries from search results to map

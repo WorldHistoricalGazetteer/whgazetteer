@@ -411,16 +411,16 @@
       token:token_mb}),
     ne_mb = L.tileLayer(mbtiles_url, {
       id:'kgeographer.ne_global', 
-      token:token_kg})
+      token:token_whg})
 
     // GL wrappers to display heatmaps
     mb_terrain = L.mapboxGL({
       style:'mapbox://styles/kgeographer/ckhf6o8yf07fw19qhbrm7f2q7',
-      accessToken:token_kg})
+      accessToken:token_whg})
 
     ne_global= L.mapboxGL({
       style:'mapbox://styles/kgeographer/ckidglq8l2nra19nzzbl995ue',
-      accessToken:token_kg}).addTo(mapmodal)
+      accessToken:token_whg}).addTo(mapmodal)
 
 
     var baseLayers = {

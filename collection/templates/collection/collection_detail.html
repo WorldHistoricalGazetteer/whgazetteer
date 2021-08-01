@@ -316,8 +316,7 @@
     mappy.setMaxBounds(null)
 
     // mapbox tokens 
-    var token_kg = '{{ mbtokenkg }}', 
-        token_whg = '{{ mbtokenwhg }}', 
+    var token_whg = '{{ mbtokenwhg }}', 
         token_mb = '{{ mbtokenmb }}';
     
     // style/tile urls
@@ -330,16 +329,16 @@
     osm  = L.tileLayer(mbstyle_url, {
       id:'mapbox/light-v10', token:token_mb}),
     ne_mb = L.tileLayer(mbtiles_url, {
-      id:'kgeographer.ne_global', token:token_kg})
+      id:'kgeographer.ne_global', token:token_whg})
 
     // GL wrappers can display heatmaps
     mb_terrain = L.mapboxGL({
       style:'mapbox://styles/kgeographer/ckhf6o8yf07fw19qhbrm7f2q7',
-      accessToken:token_kg})
+      accessToken:token_whg})
 
     ne_global= L.mapboxGL({
       style:'mapbox://styles/kgeographer/ckidglq8l2nra19nzzbl995ue',
-      accessToken:token_kg}).addTo(mappy)
+      accessToken:token_whg}).addTo(mappy)
 
 
     var baseLayers = {
