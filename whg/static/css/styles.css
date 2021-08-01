@@ -659,7 +659,8 @@ em { color: #993333;}
    border-top: 0;
 }
 #coll_dslist {
-  height: fit-content;
+  /*height: fit-content;*/
+  position: relative;
   /*border: 1px solid lightgray;*/
   /*background-color: oldlace;*/
   padding:0 8px 0 8px;
@@ -667,7 +668,12 @@ em { color: #993333;}
   /*box-shadow: 3px 3px #eee;*/
   font-size: .8rem;
 }
-#coll_dscards { overflow-y: auto; }
+#coll_dscards { 
+  position:absolute;
+  max-height: 95%;
+  overflow-y: auto; 
+}
+
 .ds_card {
   padding: .2rem;
   border: 1px dashed #999;
