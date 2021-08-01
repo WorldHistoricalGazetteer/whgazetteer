@@ -520,7 +520,7 @@
     console.log('geom')
     if(geom.type.toLowerCase() == 'point'){
       flycoords = typeof(coords[0]) == 'number'?coords:coords[0]
-      mappy.flyTo({'center': flycoords, 'zoom': 9})
+      mappy.flyTo({'center': flycoords, 'zoom': 7})
     } else {
       bbox=turf.envelope(geom).bbox
       mappy.fitBounds(bbox, { padding: 30})      
