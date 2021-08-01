@@ -35,7 +35,15 @@
       <p>Contact<br/>{{ form.contact }}
       <p>Webpage URL<br/>{{ form.webpage }}
       <p>Keywords (comma-separated)<br/>{{ form.keywords }}
-      <p>Public?: {{ form.public }}</p>
+
+      <p>Public?:
+        {% if form.public.value == True %}
+          {{ form.public.value }}
+        {% else %}<br/>
+          <a href="#"><span class="help-matches" data-id="going_public_coll">Details on making a collection public. {% fontawesome_icon 'question-circle' color='#336699' %}</span></a>
+        {% endif %}      
+      </p>
+      
       {% if action == 'update' %}
         <p>Create date: {{ create_date }}</p>
       {% endif %}
@@ -96,6 +104,7 @@
         </div> <!-- .col-sm-8 -->
     </div> <!-- .row -->
   </div> <!-- d-flex -->
+  <div class="selector py-3"><div id="helpme"></div></div>
 </div> <!-- container -->
 
 <script type="text/javascript">
@@ -107,8 +116,31 @@
         $(this).val('')
       }
     });
+
     $("#id_geojson").attr("placeholder","generated from country codes")
+    
+    // help modals
+    $(".help-matches").click(function(){
+      page=$(this).data('id')
+      console.log('help:', page)
+      $('.selector').dialog('open');
+    })
+    $(".selector").dialog({
+      resizable: false,
+      autoOpen: false,
+      height: $(window).height() * 0.9,
+      width: $(window).width() * 0.8,
+      title: "WHG Help",
+      modal: true,
+      buttons: { 'Close': function() {console.log('close dialog'); $(this).dialog('close');} },
+      open: function(event, ui) {
+        $('#helpme').load('/media/help/'+page+'.html')
+      },
+      show: {effect: "fade",duration: 400 },
+      hide: {effect: "fade",duration: 400 }
+    });
   })
+  
   $("#btn_coll_submit").click(function(e){
     // at least two datasets selected?
     if('{{action}}' == 'create' && dslist.length < 2) {
@@ -162,9 +194,11 @@
     } else {
       $("#id_datasets [value=" + dsid + "]").prop("checked", false);
       let idx = dslist.indexOf(dsid)
-      delete dslist[idx]
+      dslist.splice(idx, dslist.length);
+      <!--delete dslist[idx]-->
       card = "#card_"+dsid
       $(card).remove()
+      if(dslist.length == 0 ){ $("#msg").html('None yet...').show()}
       console.log('removed '+dsid+' from dslist[] and dom')
     }
     // reset select

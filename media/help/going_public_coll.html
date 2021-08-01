@@ -1,0 +1,24 @@
+<html>
+<body>
+<div>
+    <a href=""></a><!-- avoids scroll to the bottom anchor-->
+    <h4>Making a WHG collection public</h4>
+    <p>By definition, a new collection can only contain datasets already designated "public." However, new collections are initially "private"&mdash;that is, visible only to you (the "owner") and to the WHG team. Before a collection goes public, the WHG editorial team will do a quick review to ensure the metadata is sufficient, and that the public screens displaying its contents are performing properly.
+    <p class="larger">If you are ready to make your collection public, <a href="#" class="feedback">please let us know with this contact form</a>.
+</body>
+</html>
+<script type="text/javascript">
+  $(function(){
+      $(".replace-content").click(function(){
+          $('#helpme').load('/media/help/'+$(this).data('id')+'.html');
+      })
+  })
+  $(".feedback").click(function(e){
+    e.preventDefault()
+    console.log(clicked)
+    url=window.location.href="/contact?from="+clicked
+    window.location.href=url
+    console.log('gwine to contact form, from clicked',url)
+  })  
+
+</script>    

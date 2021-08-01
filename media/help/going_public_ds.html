@@ -15,16 +15,15 @@
 <script type="text/javascript">
   $(function(){
       $(".replace-content").click(function(){
-          console.log('loaded reconciliation help',$(this).data('id'))
           $('#helpme').load('/media/help/'+$(this).data('id')+'.html');
       })
   })
   $(".feedback").click(function(e){
-  e.preventDefault()
-  console.log(clicked)
-  url=window.location.href="/contact?from="+clicked
-  window.location.href=url
-  console.log('gwine to contact form, from clicked',url)
+    e.preventDefault()
+    console.log(clicked)
+    url=window.location.href="/contact?from="+clicked
+    window.location.href=url
+    console.log('gwine to contact form, from clicked',url)
   })  
 
 </script>    

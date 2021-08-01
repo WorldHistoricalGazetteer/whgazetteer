@@ -129,14 +129,18 @@
               <thead class="small">
                   <th>id</th>
                   <th>title</th>
+                  <th></th>
                   <th>created</th>
               </thead>
               <tbody>
                 {% for c in collections %}
                   <tr class="place-row">
                     <td>{{ c.id }}</td>
-                    <td><a href="{% url 'collection:collection-update' c.id %}">{{ c.title }}</a></td>
-                    <!--<td>{ c.title }}</td>-->
+                    <td>{{ c.title }}</td>
+                    <td>
+                      <a href="{% url 'collection:collection-detail' c.id %}">view</a>&nbsp;
+                      <a href="{% url 'collection:collection-update' c.id %}">edit</a>
+                    </td>
                     <td>{{ c.create_date }}</td>
                   </tr>
                 {% endfor %}
