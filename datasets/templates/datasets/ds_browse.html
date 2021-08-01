@@ -53,7 +53,6 @@
               {{ filter }}
               <div class="toomany"></div>
               <div id="map" style="height:300px;">
-                  <!--{ leaflet_map "map_browse" %}-->
               </div>
               <div id="row_detail">
                 <div id="detail" class="small"></div>
@@ -102,7 +101,7 @@
     wdtask = "{{wdtask}}" == "True"?true:false
     tgntask = "{{tgntask}}" == "True"?true:false
     whgtask = "{{whgtask}}" == "True"?true:false
-    <!--console.log('tgntask, wdtask, whgtask',tgntask, wdtask, whgtask)-->
+
     buildSelect()
     
     startTableSpinner()
@@ -174,8 +173,8 @@
       show: {effect: "fade",duration: 400 },
       hide: {effect: "fade",duration: 400 }
     });
-  })    
-  //** end onload()
+  })  //** end onload()
+  
   // activate all tooltips
   $("[rel='tooltip']").tooltip();
 
@@ -190,6 +189,7 @@
     accessToken: '{{ mbtokenmb }}'
   });
 
+  // initial blanks for z-index
   mappy.on('load', function(){
     hilited = null
     mappy.addSource('empty', {
@@ -212,6 +212,7 @@
     renderData({{ ds.id }})
   });
 
+  // fetch and render
   function renderData(dsid){
     startMapSpinner()
     // clear any data layers and 'places' source
@@ -257,34 +258,28 @@
         'paint': {
           'circle-color': '#ff9900',
           'circle-radius': {
-            stops: [[1, 2], [3, 3], [16, 20]]
+            stops: [[1, 2], [3, 3], [16, 10]]
           }        
         },
         'filter': ['==', '$type', 'Point']
       }, 'z-index-2');  
         
-      mappy.fitBounds(envelope.bbox)
+      mappy.fitBounds(envelope.bbox, {padding: 30})
       spinner_map.stop()
-      
     })
   }
 
+  // called by table row click
   function highlightFeatureGL(pid, coords){
     console.log('highlightFeatureGL()')
     console.log('pid, coords',pid, coords)
-      // remove previous
-    <!--if(hilited){hilited.remove()}-->
-    
-    <!--hilited = new maplibregl.Marker().setLngLat(coords).addTo(map);-->
-    
-    <!--'circle-stroke-color': 'black',-->
-    <!--'circle-stroke-width': 1,-->
-  
+    // TODO:  remove previous  
     mappy.setPaintProperty(
       'gl_active_point', 'circle-radius', 
         { 'property':'pid',
           'type':'categorical',
-          'stops':[[pid, 12]]}
+          'default': 3,
+          'stops':[[pid, 8]]}
     );
     mappy.setPaintProperty(
       'gl_active_point', 'circle-stroke-color', 
@@ -306,21 +301,13 @@
           'stops':[[pid,'red']]}
     );
   
-    <!--mappy.setPaintProperty(-->
-      <!--'gl_active_point', 'circle-opacity', -->
-        <!--{ 'property':'pid',-->
-          <!--'default': 0.5,-->
-          <!--'type':'categorical',-->
-          <!--'stops':[[pid,1]]}-->
-    <!--);-->
-    // also set z-index and zoom
-    
       // zoom to feature
     flycoords = typeof(coords[0]) == 'number'?coords:coords[0]
     mappy.flyTo({'center': flycoords, 'zoom': 9})
     
   }
 
+  // all this for a popup
   mappy.on('click', 'gl_active_point', function (e) {
     <!--console.log('place:', e.features[0])-->
     place=e.features[0]
@@ -339,30 +326,26 @@
     }
     
     // highlight row
-    console.log('highlight row & fetch data', pid, coordinates)
+    console.log('made popup', pid, coordinates)
       
     // popup
     new maplibregl.Popup()
       .setLngLat(coordinates)
-      .setHTML(title+'<br/>(pid: '+pid+'; src_id: ' +src_id+')<br/>'+minmax+'; '+fc)
+      .setHTML('<b>'+title+'</b><br/>'+
+              '<a href="javascript:getPlace('+pid+')">fetch info</a><br/>'+
+              'start, end: '+minmax)
       .addTo(mappy);
   });
+  
   // Change the cursor to a pointer when the mouse is over the places layer.
   mappy.on('mouseenter', 'gl_active_point', function () {
     mappy.getCanvas().style.cursor = 'pointer';
   });
-   
   // Change it back to a pointer when it leaves.
   mappy.on('mouseleave', 'gl_active_point', function () {
     mappy.getCanvas().style.cursor = '';
   });
-
-  $(".f").click(function(){
-    pid=$(this).data('pid')
-    coords=$(this).data('coords')
-    console.log('pid, coords',pid, coords)
-    highlightFeatureGL(pid, coords)
-  })
+  
   // generic 
   function zoomTo(pid) {
     console.log('zoomTo()',pid)
@@ -425,7 +408,7 @@
       t=$(this)
       // get id
       pid = Number($(this)[0].cells[0].textContent)
-      console.log('clicked pid, text', pid, t)
+      <!--console.log('clicked pid, text', pid, t)-->
 
       // gl need coordinates
       place=features.find((o) => { return o.properties.pid === pid })
@@ -441,7 +424,6 @@
         $(this).addClass("highlight-row");
 
       // highlight marker, zoomTo()
-      <!--highlightFeature(pid)-->
       highlightFeatureGL(pid, coords)
 
       // fetch its detail

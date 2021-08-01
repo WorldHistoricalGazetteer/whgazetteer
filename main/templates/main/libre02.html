@@ -136,7 +136,7 @@ map.on('load', function() {
      'paint': {
        'circle-color': '#ff9900',
        'circle-radius': {
-         stops: [[1, 2], [3, 3], [16, 20]]
+         stops: [[1, 2], [3, 3], [16, 10]]
        }        
      },
      'filter': ['==', '$type', 'Point']
@@ -243,7 +243,7 @@ function renderFile() {
       'paint': {
         'circle-color': '#ff9900',
         'circle-radius': {
-          stops: [[1, 2], [3, 3], [16, 20]]
+          stops: [[1, 2], [3, 3], [16, 10]]
         }        
         <!--"circle-radius": [-->
         <!--<!--"interpolate", ["linear"],-->-->
@@ -308,7 +308,7 @@ function renderData(dsid){
       'paint': {
         'circle-color': '#ff9900',
         'circle-radius': {
-          stops: [[1, 2], [3, 3], [16, 20]]
+          stops: [[1, 2], [3, 3], [16, 10]]
         }        
         <!--"circle-radius": [-->
         <!--<!--"interpolate", ["linear"],-->-->
@@ -349,7 +349,9 @@ map.on('click', 'gl_active_point', function (e) {
   // popup
   new maplibregl.Popup()
   .setLngLat(coordinates)
-  .setHTML(title+'<br/>(pid: '+pid+'; src_id: ' +src_id+')<br/>'+minmax+'; '+fc)
+  .setHTML('<b>'+title+'</b><br/>'+
+              '<a href="javascript:getPlace('+pid+')">fetch info</a><br/>'+
+              'start, end: '+minmax)
   .addTo(map);
 });
 

@@ -377,7 +377,9 @@
           // popup
           new maplibregl.Popup()
             .setLngLat(coordinates)
-            .setHTML(title+'<br/>(pid: '+pid+'; src_id: ' +src_id+')<br/>'+minmax+'; '+fc)
+            .setHTML('<b>'+title+'</b><br/>'+
+              '<a href="javascript:getPlace('+pid+')">fetch info</a><br/>'+
+              'start, end: '+minmax)
             .addTo(mappy);
         })
       }
@@ -442,7 +444,7 @@
       'paint': {
         'circle-color': colors_point[i],
         'circle-radius': {
-          stops: [[1, 2], [3, 3], [16, 12]]
+          stops: [[1, 2], [3, 3], [16, 10]]
         }        
       },
       'filter': ['==', '$type', 'Point']
@@ -465,7 +467,8 @@
       'gl_'+src+'_point', 'circle-radius', 
         { 'property':'pid',
           'type':'categorical',
-          'stops':[[Number(pid), 12]]}
+          'default': 3,
+          'stops':[[Number(pid), 8]]}
     );
     mappy.setPaintProperty(
       'gl_'+src+'_point', 'circle-stroke-color', 
@@ -547,7 +550,9 @@
     // popup
     new maplibregl.Popup()
       .setLngLat(coordinates)
-      .setHTML(title+'<br/>(pid: '+pid+'; src_id: ' +src_id+')<br/>'+minmax+'; '+fc)
+      .setHTML('<b>'+title+'</b><br/>'+
+              '<a href="javascript:getPlace('+pid+')">fetch info</a><br/>'+
+              'start, end: '+minmax)
       .addTo(mappy);
   });
 

@@ -15,7 +15,11 @@
   <link rel="stylesheet" href="{% static 'css/spin.css' %}"/>
   <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.10.24/b-1.7.0/b-colvis-1.7.0/b-html5-1.7.0/cr-1.5.3/fh-3.1.8/sc-2.0.3/sp-1.2.2/sl-1.3.3/datatables.min.css"/>
 
-  <script type="text/javascript" src="https://cdn.datatables.net/v/dt/dt-1.10.24/b-1.7.0/b-colvis-1.7.0/b-html5-1.7.0/cr-1.5.3/fh-3.1.8/sc-2.0.3/sp-1.2.2/sl-1.3.3/datatables.min.js"></script>
+  <script type="text/javascript" src="https://cdn.datatables.net/v/dt/dt-1.10.24/b-1.7.0/b-colvis-1.7.0/b-html5-1.7.0/cr-1.5.3/fh-3.1.8/sc-2.0.3/sp-1.2.2/sl-1.3.3/datatables.min.js">
+  </script>
+
+  <script src="https://unpkg.com/maplibre-gl@1.15.2/dist/maplibre-gl.js"></script>
+  <link href="https://unpkg.com/maplibre-gl@1.15.2/dist/maplibre-gl.css" rel="stylesheet" />
 
 {% endblock %}
 
@@ -42,9 +46,10 @@
             <div id="drftable_detail" class="col-sm-5">
               {{ filter }}
               <div class="toomany"></div>
-              <div id="mapdiv_browse" style="position:relative">
-                  {% leaflet_map "map_browse" %}
-              </div>
+              <div id="map" style="height:300px;"></div>
+              <!--<div id="mapdiv_browse" style="position:relative">-->
+                  <!--{ leaflet_map "map_browse" %}-->
+              <!--</div>-->
               <div id="row_detail">
                 <div id="detail" class="small"></div>
               </div>
@@ -107,26 +112,6 @@
 </div>
 
 <script type="text/javascript">
-  // spinners
-  spin_opts = { scale: .5, top: '50%'}
-  function startTableSpinner(){
-    window.spinner_table = new Spin.Spinner(spin_opts).spin();
-    $("#drftable_list").append(spinner_table.el);   
-  }
-  function startFilterSpinner(){
-    window.spinner_filter = new Spin.Spinner(spin_opts).spin();
-    $("#status_filter").append(spinner_filter.el);   
-  }
-  function startDetailSpinner(){
-    window.spinner_detail = new Spin.Spinner(spin_opts).spin();
-    $("#row_detail").append(spinner_detail.el);   
-  }
-  function startMapSpinner(){
-    console.log('startMapSpinner()')
-    window.spinner_map = new Spin.Spinner(spin_opts).spin();
-    $("#map_browse").append(spinner_map.el);   
-  }
-  //*
   
   
   function filterColumn (i, v) {
@@ -154,9 +139,13 @@
 
     $("#placetable tbody tr").click(function() {
       t=$(this)
-      console.log('clicked', t)
       // get id
-      pid=$(this)[0].cells[0].textContent
+      pid=Number($(this)[0].cells[0].textContent)
+
+      // gl need coordinates
+      place=features.find((o) => { return o.properties.pid === pid })
+      console.log('place', place)
+      coords=place.geometry.coordinates
       
       // highlight this row, clear others
       var selected = $(this).hasClass("highlight-row");
@@ -167,7 +156,7 @@
         $(this).addClass("highlight-row");
 
       // highlight marker, zoomTo()
-      highlightFeature(pid)
+      highlightFeatureGL(pid, coords)
 
       // fetch its detail
       getPlace(pid)
@@ -258,11 +247,180 @@
       show: {effect: "fade",duration: 400 },
       hide: {effect: "fade",duration: 400 }
     });
-    //**
-  }) 
+  }) //** end onload()
 
   // activate all tooltips
   $("[rel='tooltip']").tooltip();
+
+  // gl map
+  mappy = new maplibregl.Map({
+    container: 'map', // container id
+    style: 'mapbox://styles/mapbox/light-v10',
+    center: [9.2, 33],
+    zoom: 0.2, // starting zoom
+    minZoom: 0.1,
+    maxZoom: 18,
+    accessToken: '{{ mbtokenmb }}'
+  });
+  
+  // initial blanks for z-index
+  mappy.on('load', function(){
+    hilited = null
+    mappy.addSource('empty', {
+      type: 'geojson',
+      data: { type: 'FeatureCollection', features: [] }
+    });
+    
+    const zIndex2 = mappy.addLayer({
+      id: 'z-index-2',
+      type: 'symbol',
+      source: 'empty'
+    });
+    
+    const zIndex1 = mappy.addLayer({
+      id: 'z-index-1',
+      type: 'symbol',
+      source: 'empty'
+    }, 'z-index-2'); // place this layer below zIndex2
+
+    renderData({{ ds.id }})
+  });
+  
+  // fetch and render
+  function renderData(dsid){
+    startMapSpinner()
+    // clear any data layers and 'places' source
+    if(!!mappy.getLayer('gl_active_point')){
+      mappy.removeLayer('gl_active_point')
+      mappy.removeLayer('gl_active_poly')
+      mappy.removeSource('places')
+    }
+    // fetch data
+    
+    <!--$.get('/api/geojson/', {id: dsid}, function(data){ // much slower-->
+    $.get('/datasets/'+dsid+'/geojson', function(data){
+      features = data.features
+      console.log('data', data)
+      // get bounds w/turf
+      envelope = turf.envelope(data)
+      <!--console.log(envelope)-->
+      
+      // add source 'places' w/retrieved data
+      mappy.addSource('places', {
+          'type': 'geojson',
+          'data': data
+      })
+      
+      // render to map
+       
+      mappy.addLayer({
+        'id': 'gl_active_poly',
+        'type': 'fill',
+        'source': 'places',
+        'paint': {
+          'fill-color': '#ddd',
+          'fill-opacity': 0.2,
+          'fill-outline-color': 'black'
+        },
+        'filter': ['==', '$type', 'Polygon']
+      }, 'z-index-1');
+      
+      mappy.addLayer({
+        'id': 'gl_active_point',
+        'type': 'circle',
+        'source': 'places',
+        'paint': {
+          'circle-color': '#ff9900',
+          'circle-radius': {
+            stops: [[1, 2], [3, 3], [9, 4], [16, 8]]
+          }        
+        },
+        'filter': ['==', '$type', 'Point']
+      }, 'z-index-2');  
+        
+      mappy.fitBounds(envelope.bbox, {padding: 30})
+      spinner_map.stop()
+      
+    })
+  }
+
+  // called by table row click
+  function highlightFeatureGL(pid, coords){
+    console.log('highlightFeatureGL()')
+    console.log('pid, coords',pid, coords)
+    // TODO:  remove previous  
+    mappy.setPaintProperty(
+      'gl_active_point', 'circle-radius', 
+        { 'property':'pid',
+          'type':'categorical',
+          'default': 3,
+          'stops':[[pid, 8]]}
+    );
+    mappy.setPaintProperty(
+      'gl_active_point', 'circle-stroke-color', 
+        { 'property':'pid',
+          'type':'categorical',
+          'stops':[[pid, '#666']]}
+    );
+    mappy.setPaintProperty(
+      'gl_active_point', 'circle-stroke-width', 
+        { 'property':'pid',
+          'type':'categorical',
+          'stops':[[pid, 1]]}
+    );
+    mappy.setPaintProperty(
+      'gl_active_point', 'circle-color', 
+        { 'property':'pid',
+          'default':'#ff9900',
+          'type':'categorical',
+          'stops':[[pid,'red']]}
+    );
+  
+      // zoom to feature
+    flycoords = typeof(coords[0]) == 'number'?coords:coords[0]
+    mappy.flyTo({'center': flycoords, 'zoom': 9})
+    
+  }
+
+  // all this for a popup
+  mappy.on('click', 'gl_active_point', function (e) {
+    <!--console.log('place:', e.features[0])-->
+    place=e.features[0]
+    var coordinates = e.features[0].geometry.coordinates.slice();
+    var pid = e.features[0].properties.pid;
+    var title = e.features[0].properties.title;
+    var src_id = e.features[0].properties.src_id;
+    var minmax = e.features[0].properties.minmax;
+    var fc = e.features[0].properties.fclasses;
+     
+    <!--// Ensure that if the map is zoomed out such that multiple-->
+    <!--// copies of the feature are visible, the popup appears-->
+    <!--// over the copy being pointed to.-->
+    while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+      coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+    }
+    
+    // highlight row
+    console.log('made popup', pid, coordinates)
+      
+    // popup
+    new maplibregl.Popup()
+      .setLngLat(coordinates)
+      .setHTML('<b>'+title+'</b><br/>'+
+              '<a href="javascript:getPlace('+pid+')">fetch info</a><br/>'+
+              'start, end: '+minmax)
+      .addTo(mappy);
+  });
+  
+  // Change the cursor to a pointer when the mouse is over the places layer.
+  mappy.on('mouseenter', 'gl_active_point', function () {
+    mappy.getCanvas().style.cursor = 'pointer';
+  });
+  // Change it back to a pointer when it leaves.
+  mappy.on('mouseleave', 'gl_active_point', function () {
+    mappy.getCanvas().style.cursor = '';
+  });
+
   
   // generic 
   function zoomTo(pid) {
@@ -620,6 +778,27 @@
     minmax=[Math.max.apply(null, starts),Math.max.apply(null, ends)]
     return minmax
   }
+
+  // spinners
+  spin_opts = { scale: .5, top: '50%'}
+  function startTableSpinner(){
+    window.spinner_table = new Spin.Spinner(spin_opts).spin();
+    $("#drftable_list").append(spinner_table.el);   
+  }
+  function startFilterSpinner(){
+    window.spinner_filter = new Spin.Spinner(spin_opts).spin();
+    $("#status_filter").append(spinner_filter.el);   
+  }
+  function startDetailSpinner(){
+    window.spinner_detail = new Spin.Spinner(spin_opts).spin();
+    $("#row_detail").append(spinner_detail.el);   
+  }
+  function startMapSpinner(){
+    console.log('startMapSpinner()')
+    window.spinner_map = new Spin.Spinner(spin_opts).spin();
+    $("#map_browse").append(spinner_map.el);   
+  }
+  //*
 
 </script>
 {% endblock %}
