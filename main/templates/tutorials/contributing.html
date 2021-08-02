@@ -1,31 +1,44 @@
 {% extends "main/base.html" %}
 {% block title %}<title>WHG::Contributing</title>{% endblock %}
-
+{% block extra_head %}
+<style>
+  #contrib_content {position:absolute;  overflow-y:auto;}
+  .tute-section p {margin-bottom:.2rem;}
+</style>
+{% endblock%}
 {% block content %}
 {% load static %}
 
-  <div class="container">
+  <div class="container" style="position:relative;">
     <div class="d-flex justify-content-center mt-3">
       <h3>Contributing to World Historical Gazetteer</h3>
     </div>
-    <div id="contrib_content" class="mx-5">
-      <div class="lead">There are three ways to contribute to World Historical Gazetteer:
-	  <ol><li>upload a dataset and make it public;</li>
-	  <li>take the further step of accessioning the dataset to our <i>union index</i>;</li> 
-	  <li>help align others' data with Wikidata and the WHG index.</li>
-	  </ol></div>
-      <div class="tute-section">
-        <h4 class="p-1">1. Upload a dataset and make it public</h4>
-        <div class="p-1">
-		  <p>Lorem ipsum</p>
-		  <p>Lorem ipsum rendundantum</p>
-        <h4 class="p-1">2. Accession a dataset to the WHG <i>union index</i></h4>
-		  <p>Lorem ipsum</p>
-		  <p>Lorem ipsum rendundantum</p>
-        <h4 class="p-1">3. Help with alignment of other public datasets</h4>
-		  <p>Lorem ipsum</p>
-		  <p>Lorem ipsum rendundantum</p>
+    <div id="" class="mx-5">
+      <!--<div class="larger w-75 mx-auto">-->
+      <div class="larger">
+        There are several ways you can contribute to World Historical Gazetteer:
+        <ol class="mb-0"><li>upload a dataset, augment it with links and locations, then make it public;</li>
+        <li>take the further step of accessioning the dataset to our <i>union index</i>;</li> 
+        <li>help align others' data with Wikidata and the WHG index;</li>
+        <li>contribute to the platform's open-source software development.</li>
+        </ol>
       </div>
+      <div class="tute-section">
+        <div class="p-1 mb-3">
+          <h4 class="p-1">1. Upload a dataset and make it public</h4>
+          <p>If you have developed place records drawn from historical sources, it will be helpful to the broad community of people studying the past from any number of disciplines and perspectives if you add them (or partial summaries of them) to a global, freely available resource like World Historical Gazetteer. To the extent others studying overlapping regions and periods of interest do the same, all will ultimately benefit.</p>
+          <p>If your work with place data is not complete, but in progress, augmenting your records with coordinates and concordances pulled from other sources&mdash;external, like Wikidata, and Getty TGN and ultimately WHG's internal "union index"&mdash; can make it more completely mappable and amenable to spatial and network analyses. Once your dataset is "in shape" to your satisfaction, you can make it public on WHG, accessible to others as published Linked Open Data via our search functions and our APIs.</p>
+          <h4 class="p-1">2. Accession a dataset to the WHG <i>union index</i></h4>
+          <p>After a dataset has been upload, augmented, and flagged as public, it is visible and searchable in WHG, <b>but its records are not explicitly linked to others' records for the same places</b>. Accessioning the dataset accomplishes this, in a high speed index where each record will be linked to others <b>asserted to be a "close match"</b> either explicitly by dataset creators, or implicitly by virtue of shared links. For example, several records for <i>Byzantium</i>, <i>Constantinople</i>, and <i>Istanbul</i> will be grouped in the index because they each have been asserted to be a close match with a Wikidata or TGN record for the place. The result is a growing "graph" for that place, including attestations from multiple sources referenceing it at different periods. The WHG <a href="{% url 'places:place-portal' 12345979 %}" target="_blank">portal page for Istanbul</a> is but one example illustrates this effect.</p>
+          <p>Accessioning is essentially another reconciliation task&mdash;this time to the WHG index&mdash;with some special considerations. WHG staff will guide and assist contributors through the process.</p>
+          <h4 class="p-1">3. Help with alignment of other public datasets</h4>
+          <p>There are a number of public datasets WHG staff has begun uploading, extending, and accessioning with the involvement (yet) of their creators. The tasks of reconciliation and review can be time-consuming for larger datasets, so it will be helpful to get "the crowd," or maybe more accurately "a community of interest" involved in helping out. Going forward, we will be making specific appeals for this kind of help in social media outlets and mailing lists.</p>
+          <p>Examples of the above include: the China Historical GIS "TGAZ" gazetteer; a dataset drawn from the Bregel Historical Atlas of Central Asia; and the partially accessioned Pleiades, Old World Trade and Euratlas datasets.</p>
+          <h4 class="p-1">4. Assist in software development</h4>
+          <p>The WHG platform is <a href="{% url 'system' %}" target="_blank">an open source development project</a>. It has been a solo effort of <a href="http://kgeographer.org" target="blank">Karl Grossner</a> to date, but that is not a sustainable situation! There are several opportunities for developers with various skills to help improve and add to the platform, without the need for engagement with <a href="https://github.com/WorldHistoricalGazetteer/whgazetteer" target="_blank">the entire codebase</a>. </p>
+          <p>The WHG back-end uses Django, PostgreSQL, and Elasticsearch, and its front-end is framework-free at the moment, using several Javascript libraries including MapLibreGL, Leaflet, Bootstrap, and JQuery. Maps are a nice discrete piece that could use attention.</p>
+        </div>
+        <p style="min-height:30px;">&nbsp;</p>
     </div>
   </div>
 {% endblock %}

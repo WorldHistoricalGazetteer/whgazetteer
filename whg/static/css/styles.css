@@ -1120,7 +1120,7 @@ span.edit-row {
   margin-bottom:0;}
 
 .docs-subhead2 {color:#993300;font-weight:800;margin-bottom:0;font-size:.9rem; }
-.tute-section h4 { background-color: #eeeee0; font-size:1.2rem;font-weight:bold;}
+.tute-section h4 { background-color: #eeeee0; font-size:1.2rem;font-weight:bold;margin-top:.5rem;}
 #api_content td, #api_content th {
   padding: .4rem;}
 

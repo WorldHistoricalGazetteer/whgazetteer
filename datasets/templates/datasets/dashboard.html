@@ -107,7 +107,7 @@
                           {{ d.label }} <span class="corerow"> (core)</span>
                         {% else %}{{ d.label }}{% endif %}</td>
                     <!--<td class="small">{ d.create_date|date:"d-M-Y, H:i (e)" }}</td>-->
-                    <td class="small">{ d.create_date|date:"d M Y, H:i" }}</td>
+                    <td class="small">{{ d.create_date|date:"d M Y, H:i" }}</td>
                     <!--<td>{ d.datatype }}</td>-->
                     <td>{{ d.numrows }}</td>
                     <td>{{ d.ds_status }}</td>

@@ -11,7 +11,20 @@
         <h3>{% trans "Register" %}</h3>
         
         <p>{% blocktrans %}Already have an account? Please <a href="{{ login_url }}">log in</a>.{% endblocktrans %}</p>
-        
+        {% if form.errors %}
+          {% for field in form %}
+              {% for error in field.errors %}
+                  <div class="alert alert-error">
+                      <strong>{{ error|escape }}</strong>
+                  </div>
+              {% endfor %}
+          {% endfor %}
+          {% for error in form.non_field_errors %}
+              <div class="alert alert-error">
+                  <strong>{{ error|escape }}</strong>
+              </div>
+          {% endfor %}
+        {% endif %}
         <form class="signup" id="signup_form" method="post" action="{% url 'account_signup' %}">
           {% csrf_token %}
           <!--{ form.as_p }}-->

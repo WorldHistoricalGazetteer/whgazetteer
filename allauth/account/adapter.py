@@ -103,8 +103,8 @@ class DefaultAccountAdapter(object):
     Renders an e-mail to `email`.  `template_prefix` identifies the
     e-mail that is to be sent, e.g. "account/email/email_confirmation"
     """
-    #print('render_mail() template_prefix', template_prefix)
-    #print('render_mail() context', context)
+    print('render_mail() template_prefix', template_prefix)
+    print('render_mail() context', context)
     to = [email] if isinstance(email, str) else email
     subject = render_to_string("{0}_subject.txt".format(template_prefix), context)
     # remove superfluous line breaks

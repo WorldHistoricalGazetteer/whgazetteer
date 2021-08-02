@@ -14,12 +14,12 @@
       <div id="traces#Intro" class="tute-section">
         <h4 class="p-1">In Brief</h4>
         <div class="p-1">
-          <p>Our conception of traces and trace data was developed in collaboration with Rainer Simon of the Pelagios project, and follows on from work he did in developing the <a href="http://peripleo.pelagios.org" target="_blank">Peripleo</a> pilot web application. In that project, annotations of web records for ancient coins and inscriptions were annotated for ther findspots, or locales. There seems to be broad interest in extending the kinds of records that may be annotated with places, to include events, people, and other kinds of material objects, including works of all kinds.</p>
+          <p>Our conception of traces and trace data was developed in collaboration with Rainer Simon of the Pelagios project, and follows on from work he did in developing the original <a href="http://peripleo.pelagios.org" target="_blank">Peripleo</a> pilot web application. In that project, annotations of web records describing ancient coins, coin hoards, and inscriptions were annotated with URIs for their findspots, or locales. There is an increasing interest in extending the kinds of records that may be annotated with places, to include events, people, and other kinds of material objects, including works of all kinds.</p>
           <p>We in the WHG project have a particular interest in annotating records concerning geographic movement, including individual journeys and expeditions, and flows of all kinds.</p>
-          <p><a href="#" class="popimg"><img src="{% static 'images/traces_april2020.png' %}" height=300 align="right" /></a>We are using the following vocabulary:</p>
+          <p><a href="#" class="popimg"><img src="{% static 'images/traces_May2021.png' %}" height=300 align="right" /></a>We are using the following vocabulary:</p>
           <ul>
-            <li>A <span class="strong red-head">trace</span> is any historical entity&mdash;something that existed or happened in the past.</li>
-            <li><span class="strong red-head">Trace data</span> is a web resource with a permanent URI that describes a trace in some way. These include datasets, texts, images, etc.</li>
+            <li>A <sr>trace</sr> is any historical entity&mdash;something that existed or happened in the past.</li>
+            <li><span class="strong red-head">Trace data</span> is a web resource with a permanent URI that describes a trace in some way. These include datasets, texts, images, even Wikipedia pages.</li>
             <li><span class="strong red-head">Trace annotations</span> for WHG are records linking one or more <span class="strong red-head">trace data</span> resource (the "target") with one or more web-accessible records for places (the "body").</li>
           </ul>
           <p>
@@ -29,7 +29,7 @@
           <p>The <a href="https://github.com/LinkedPasts/linked-traces-format" target="_blank">Linked Traces format</a> used in WHG so far is a work in progress. It is not so much a format as it is an implementation pattern of the <a href="https://www.w3.org/TR/annotation-model/" target="_blank">W3C Web Annotation model</a> and <a href="https://www.w3.org/TR/annotation-vocab/" target="_blank">vocabulary</a>. We have been collaborating in a small working group to enumerate what patterns may be broadly useful, and in the meantime have created a template for our own use.</p>
           <p>The distinctive features of our approach and our annotation pattern include:</p>
           <ul>
-            <li>We are typically annotating a single web-accessible resource describing a trace phenomenon (the <b>target</b>)  with identifiers for multiple places relevant to it (the <b>bodies</b>). Our intent is to represent connection between places in this way&mdash;for example, via journeys and routes, or being part of an empire or alliance.</li>
+            <li>We are typically annotating a single web-accessible resource describing a trace phenomenon (the <b>target</b>)  with identifiers for multiple places relevant to it (the <b>bodies</b>). Our intent is to represent connection between places in this way&mdash;for example, as waypoints on journeys and historical routes, or being part of an empire or alliance.</li>
             <li>For each place (<b>body</b>) we want to capture the relation between the trace and the place, and the time period it was related.</li>
           </ul>
           <p>What follows is a partial Linked Traces record now indexed in our system. It annotates a dataset, "<a href="https://doi.org/10.7910/DVN/AMPGMW" target="_blank">Hernán Cortes and the Conquest of the Aztec Empire</a>", with 82 places involved in that event.</p>
@@ -72,15 +72,18 @@
   </div>
   <div class="modal fade" id="imagemodal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
   <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-      </div>
+    <div class="modal-content" style="position:relative">
+      <!--style="position:relative"-->
+      <!--<div class="modal-header"><button type="button" class="btn btn-default" data-dismiss="modal">Close</button></div>-->
       <div class="modal-body">
-        <img src="" id="imagepreview" style="width: 600px;" >
+        <img src="" id="imagepreview" style="width: 800px; height:100%" >
+        <span style="position:absolute; top:12; right:12;">
+        <button class="btn btn-sm btn-primary" data-dismiss="modal" type="button">Close</button></span>
+      <!--<button type="button" class="btn btn-sm btn-default" data-dismiss="modal">Close</button>-->
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-      </div>
+      <!--<div class="modal-footer">-->
+      <!--<button type="button" class="btn btn-sm btn-default" data-dismiss="modal">Close</button>-->
+      <!--</div>-->
     </div>
   </div>  
   <script type="text/javascript">
