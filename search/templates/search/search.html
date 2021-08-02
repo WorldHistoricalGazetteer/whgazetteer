@@ -218,6 +218,9 @@
     }
     <!--console.log(stateobj)-->
   }
+  bboxerActive = function(){
+    return bboxer.active
+  }
   typeSelect = function(){
     return $("#type_select").val()
   }
@@ -538,11 +541,15 @@
     mappy.eachLayer( function(layer) {
       <!--console.log('layer', layer)-->
       if(layer instanceof L.CircleMarker) {
-        props=layer.feature.geometry.properties
-        <!--console.log('props in visibleFeaturesIds',props)-->
+        props=search_class=='place'?layer.feature.geometry.properties:layer.feature.properties
         if(mappy.getBounds().contains(layer._latlng)) {
           // db records have no whgid
-          visible_layerids.push(scope=='idx'?props.whgid:props.pid);
+          // trace records have props.whg_id
+          if(search_class=='trace'){
+            visible_layerids.push(Number(props.whg_id))
+          } else {
+            visible_layerids.push(scope=='idx'?props.whgid:props.pid);          
+          }
           visible_layers.push(layer)
         }
       } else if (layer instanceof L.Path) {
@@ -761,14 +768,9 @@
         shouldSwitch = false;
         /* Get the two elements you want to compare,
         one from current row and one from the next: */
-        <!--x = rows[i].getElementsByTagName("TD")[0];-->
-        <!--y = rows[i + 1].getElementsByTagName("TD")[0];-->
         x = rows[i].getElementsByTagName("TD")[col_idx];
         y = rows[i + 1].getElementsByTagName("TD")[col_idx];
         // Check if the two rows should switch place:
-        <!--console.log('value', x.innerHTML.toLowerCase())-->
-        <!--console.log('value', x.innerText.toLowerCase())-->
-        <!--if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {-->
         if (order == 'asc'){
           if (x.innerText.toLowerCase() > y.innerText.toLowerCase()) {
             // If so, mark as a switch and break the loop:
@@ -956,7 +958,7 @@
         enableShiftDrag: true
         <!--,iconClasses:['bbox-icon']-->
       })
-
+    
     // startup controls only
     L.control.layers(baseLayers,dataLayers).addTo(mappy);
     baseLayers["NE global"].addTo(mappy)
@@ -1006,8 +1008,28 @@
         
         <!--console.log('zoomend visible: '+show_ids+'; all: '+all_ids)-->
         <!--console.log('zoomend hide these '+ hide_ids)-->
-      } else {
-        console.log('no zoomend action here')
+      } else if (searchClass()=='trace' && bboxer.map ) {
+        <!--console.log('need to filter result list here')-->
+        results = $("#result_div tbody tr")
+        <!--results = $("#result_div tbody tr").filter(function(i){return $( this ).attr( "data-id" ) != "none"}) -->
+        
+        all_ids = Object.keys(idToFeature).map(Number)
+
+        show_ids = visibleFeaturesIds(search_scope)
+        hide_ids = all_ids.filter(value=>!show_ids.includes(value))
+        for (i = 0; i < results.length; i++) {
+          _id = Number(results[i].getAttribute('data-id'))
+          <!--if (isNaN(_id) || hide_ids.indexOf(_id) > -1 ){-->
+          if (hide_ids.indexOf(_id) > -1 ){
+            results[i].style.display = "none";
+          } else if (show_ids.indexOf(_id) > -1 ) {
+            results[i].style.display = "";
+          }
+        }
+        sortTable(2, 'asc')
+        <!--if(search_class=='trace'){-->
+          <!--$("#result_title p").append('<span id="filter_msg" class="ml-3 larger">results without geometry filtered</span>')        -->
+        <!--}-->
       }
     })
     
@@ -1279,10 +1301,11 @@
         if(data.length > 1){$("#result_filters").show()}
       }
     } else if (doctype == 'trace') {
+      bboxer.addTo(mappy)
 			// data has features and bodies
 			bodies = data.bodies
 			console.log('trace data',data)
-      result_table = '<table id="result_table">'+'<thead><tr><th>Place</th><th>Relation [earliest, latest]</th></tr></thead>'			
+      result_table = '<table id="result_table">'+'<thead><tr><th>Place</th><th>Relation [earliest, latest]</th><th>geom?</th></tr></thead>'			
       <!--console.log('trace data bodies',data.bodies)-->
 			data.bodies.forEach(function(bod){ 
         // add a whg_id to bodies        
@@ -1292,7 +1315,7 @@
       $("#result_filters").hide()
     };
 
-    if(search_class == 'place' && (data.length > 3 || mappy.getZoom() < 5)){
+    if(search_class == 'place' && search_scope == 'idx' && (data.length > 3 || mappy.getZoom() < 5)){
       $("#offer_mapfilter").fadeIn()
       if (bboxer._map == undefined ){ bboxer.addTo(mappy); }
     }
@@ -1304,7 +1327,7 @@
 		let src = search_scope=='idx'?'UNION INDEX':'DATABASE'
     let elem = document.getElementById('result_div')
     
-		titleMarkup = doctype=='trace'?'<p class="pl-1 mb-1 strong">'+title+'<small> :: a Linked Traces dataset ('+data.bodies.length+' related places)</small></p>':''
+		titleMarkup = doctype=='trace'?'<p class="pl-1 mb-1 strong">'+title+' :: a Linked Traces dataset ('+data.bodies.length+' related places) <span class="ml-2">Places with geometry listed first</span></p>':''
     titleMarkup += (doctype=='place' ? src+' SEARCH RESULTS (<span id="rowcount">'+data.length+'</span>)<span class="ml-4">List may include records with no geometry</span>' : '')
     <!--console.log('titleMarkup',titleMarkup)-->
   
@@ -1456,7 +1479,7 @@
     }).addTo(mappy); <!-- adds features L.geoJSON -->
 
     // conditionally add a bbox control
-    if (bboxer._map == undefined && search_class == 'place'){ bboxer.addTo(mappy); }
+    <!--if (bboxer._map == undefined && search_class == 'place'){ bboxer.addTo(mappy); }-->
     
     bounds = features.getBounds()
     <!--mappy.setView(bounds.getCenter(),5) -->
@@ -1525,7 +1548,9 @@
         whgid = foo.length>0 ? foo[0].id : 'none'
       }
       item = '<tr class="search-row trace-item" data-id="'+whgid+'">'+
-      '<td><a class="trace-link" href="#" data-id="'+whgid+'"><b>'+sug.title+'</a>'+(whgid=='none'?' (<sr>no geometry yet</sr>)':'')+'</td>'+'<td>'+parseRels(sug.relations)+'</td></tr>'
+      '<td><a class="trace-link" href="#" data-id="'+whgid+'"><b>'+sug.title+'</a>'+(whgid=='none'?' (<sr>no geometry yet</sr>)':'')+'</td>'+'<td>'+parseRels(sug.relations)+'</td><td>'+
+      (whgid=='none'?'&mdash;':'<i class="fa fa-globe"></i>')
+      +'</td></tr>'
       
       <!--if("depiction" in sug){-->
         <!--item += '<div class="trace_detail"><img class="trace-img" src="'+sug['depiction']+'"/></div>'-->
