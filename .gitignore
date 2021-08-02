@@ -11,6 +11,9 @@ media/datasets/
 media/downloads/
 media/user*
 
+*/migrations/0*.py
+*/*/migrations/0*.py
+
 sent_emails/
 
 .DS_Store
