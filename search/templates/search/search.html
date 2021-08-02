@@ -93,7 +93,8 @@
 					</div>
 					<div id="filters_st" class="col-sm-6">
             <p class="mb-0">temporal ( default = all )
-            <span class="float-right"><a id="temporal_help" class="pointer" data-toggle="popover" title="Temporal filter" data-content="" tabindex="0" data-trigger="focus">
+            <span class="float-right">
+              <a id="temporal_help" class="pointer" data-toggle="popover" title="Temporal filter" data-content="" tabindex="0" data-trigger="focus">
               {% fontawesome_icon 'question-circle' color='#336699' %}</a></span>
             </p>
             <div>
@@ -103,7 +104,8 @@
             <div id="filter_spatial">
             <p class="mb-0">spatial
               <span class="float-right">
-              <a id="spatial_help" class="pointer" data-toggle="popover" title="Spatial filter" data-content="" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a></span>	  
+              <a id="spatial_help" class="pointer" data-toggle="popover" title="Spatial filter" data-content="" tabindex="0" data-trigger="focus">
+              {% fontawesome_icon 'question-circle' color='#336699' %}</a></span>	  
             </p>
               <label><input id="input_area" type="text" size="30" placeholder="Region, country, study area" /></label>
               <input type="hidden" id="boundsobj" />
@@ -620,6 +622,7 @@
         hide_ids.push(_id)
       }
     }
+    console.log('show_ids', show_ids)
     // filter map too
     hide_these = $.map(hide_ids,function(i){
       return idToFeature[i]
@@ -627,13 +630,16 @@
     show_these = $.map(show_ids,function(i){
       return idToFeature[i]
     })
-    <!--console.log('hide_these cnt=',hide_these.length)-->
-    <!--console.log('show_these cnt=',show_these.length)-->
+    console.log('show_these', show_these)
     
-    window.shown_layers = L.featureGroup(show_these)
+    shown_layers = L.featureGroup(show_these)
+    console.log('shown_layers', shown_layers._layers)
     for(l in hide_these){hide_these[l].removeFrom(mappy)}
     for(l in show_these){show_these[l].addTo(mappy)}
-    mappy.fitBounds(shown_layers.getBounds())
+    <!--return-->
+    // this does a zoom, triggering mappy.on('zoomend')
+    mappy.fitBounds(shown_layers.getBounds(), {padding:[100,100]})
+    <!--mappy.fitBounds(shown_layers.getBounds())-->
   }
   /*
     *** mapFilter() ***
@@ -959,10 +965,11 @@
     // much is duplicated here from typeFilter() and ccFilter()
     // a big combinatorial state challenge
     mappy.on('zoomend',function(e){
-      /*  none of this should happens if not places and no features
+      /*  none of this should happen if not places and no features
           (apart from countries or areas have loaded)
       */
-      if(typeof idToFeature != 'undefined' && searchClass()=='place'){      // the result list
+      <!--if(typeof idToFeature != 'undefined' && searchClass()=='place'){      // the result list-->
+      if(typeof idToFeature != 'undefined' && searchClass()=='place' && search_scope == 'idx'){      // the result list
         results = $("#result_div tbody tr")
         // get layer ids      
         all_ids = Object.keys(idToFeature).map(Number)
@@ -1335,9 +1342,9 @@
     
     // highlight map marker from list
     $(".search-row").on('click',function(e){
-      console.log('search-row click;')
 			// identifier either a whgid (index search) or pid (db search)
       layerid = $(this).data('id')
+      console.log('search-row click', layerid)
       
       f = $(this).data('id') !='none'?idToFeature[layerid]:null
       // if there's a feature, highlight it
@@ -1481,8 +1488,11 @@
 				identifier = sug['ds'] ? sug['pid'] : sug['whg_id']
         dsid = sug['ds'] ? parseInt(sug['ds']['id']) : ''
 				// add dataset link if this is db search result
-				dslink = sug['ds'] ? '<a href="#" class="ds-link" data-id='+dsid+'>'+sug['ds']['title']+'</a>': ''
-
+        if(sug['ds']){
+          dslink = dsid != 394 ? '<a href="#" class="ds-link" data-id='+dsid+'>'+sug['ds']['title']+'</a>': sug['ds']['title']
+        } else {
+          dslink = ''
+        }
 				// link destination varies
 				link_class = sug['ds'] ? 'db-link' : 'place-link'
 				variants = vcount > 5 ? variants +' ... <i>'+vcount+' total</i>' : variants
