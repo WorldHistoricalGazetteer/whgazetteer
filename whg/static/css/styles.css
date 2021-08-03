@@ -670,7 +670,7 @@ em { color: #993333;}
 }
 #coll_dscards { 
   position:absolute;
-  max-height: 95%;
+  /*max-height: 95%;*/
   overflow-y: auto; 
 }
 
