@@ -121,9 +121,10 @@
             <p>You <b>must</b> give appropriate credit, provide a link to the CC-BY-4.0 license <a id="a_cliplic" class="clippy" data-clipboard-text="https://creativecommons.org/licenses/by/4.0/" rel="tooltip" title="copy to clipboard">{% fontawesome_icon 'clipboard' color='#336699' %}</a>, and indicate if changes were made.</p>
           </div>
           <div id="ds_downloads" class="pt-0 px-0 ds-card">
-            <p class="ds-card-header pt-1"> Downloads (augmented data) 
+            <p class="ds-card-header pt-1"> Downloads 
               <span id='progress-bar' class='progress-bar' style="background-color: #68a9ef; width: 0%; line-height:.5rem;">&nbsp;</span></p>
-            {% if links_added > 0 or geoms_added > 0 or object.core %} <!-- dataset is augmented -->
+            <!-- dataset needn't be augmented for public page -->
+            <!-- they don't have access to original file -->
               {% if object.numrows <= 20000 %}
                 <p><a class="a-dl-celery" href="#" ref="lpf">Linked Places format {% fontawesome_icon 'download'%}</a>
                     <span id="file_lpf" class="ml-1"></span></p>
@@ -136,13 +137,6 @@
               {% else %}  
                 <span class="red-head"><br/>Download of augmented datasets larger than 20,000 rows is not supported right now.</span>
               {% endif %}
-            {% else %} <!-- hasn't been augmented yet-->
-              <p><i>Dataset is not yet augmented</i></p>
-              {% if current_file.format == 'delimited' %}
-                <p>Linked Places format conversion (not augmented)</p>
-              {% endif %}
-            {% endif %}
-            
             <div id="progress-bar-message" class="hidden">Waiting for progress to start...</div>
             <div id="celery-result"></div>
           </div>
