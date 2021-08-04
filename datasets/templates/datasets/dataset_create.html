@@ -35,7 +35,7 @@
     {% if insert_error %}<p>error on insert</p>{% endif %}
     <!-- content -->
     <div id="content_create" class="row mx-1">
-      <div id="create_form" class="form-box mt-2 col-sm-5" >
+      <div id="create_form" class="form-box mt-2 col-md-7 col-lg-5" >
         <table class="ds-table">
           <tr>
             <td><b>Title *</b></td>
@@ -76,16 +76,6 @@
             <td>{{ form.public }}</td>
           </tr>
           <tr><td class="my-0 small"><i><b>* = required</b></i></td><td></td></tr>
-          {% if user.is_superuser or user.is_admin %}
-            <tr style="border-top:1px solid gainsboro;">
-              <td style="vertical-align:top; padding-top:3px;"><b>Featured rank</b></td>
-              <td style="vertical-align:top; padding-top:3px;">{{ form.featured }} </td>
-            </tr>
-            <tr>
-              <td style="vertical-align:top;"><b>Image</b></td>
-              <td>{{ form.image_file }}</td>
-            </tr>
-          {% endif %}
         </table>
         <hr/><!--<p class="my-0 ml-3">initial file</p>-->
         <table id="file_metadata" class="ds-table table-striped">
@@ -102,6 +92,18 @@
             <td><a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">CC BY 4.0</a></td>
           </tr>
         </table>
+        {% if user.is_superuser or user.is_admin %}
+        <table class="mt-2" style="background-color:aliceblue;">
+          <tr style="">
+            <td style="vertical-align:top; padding-top:3px;"><b>Featured rank</b></td>
+            <td style="vertical-align:top; padding-top:3px;">{{ form.featured }} </td>
+          </tr>
+          <tr>
+            <td style="vertical-align:top;"><b>Image</b></td>
+            <td>{{ form.image_file }}</td>
+          </tr>
+        </table>
+        {% endif %}
         <!-- status, format, delimiter, numrows, header  -->
         <input type="hidden" name="owner" value='{{ user.id }}'></input>
         <input type="hidden" name="datatype" value="place"></input>
@@ -120,7 +122,7 @@
         {% endif %}
       </div>
     </form>
-  <div class="mt-2 col-sm-7" id="create_review">
+  <div class="mt-2 col-md-5 col-lg-7" id="create_review">
       {% if context.action == 'errors' %}
         <h5>{% fontawesome_icon 'exclamation-circle' color="#993333" %} This file has one or more problems:</h5>
         <ul>

@@ -20,6 +20,11 @@ pre { margin:0; background-color:#e0e0e0;}
 @media screen and (max-width: 1000px) {
   #search_left {height:fit-content;}
   #search_panel {height:fit-content !important;}
+  /*#create_form input {max-width: 250px;}*/
+}
+@media screen and (max-width: 1200px) {
+  #create_form input {max-width: 250px;}
+  #create_form textarea {max-width: 250px;}
 }
 
 
