@@ -20,7 +20,7 @@ urlpatterns = [
     
     # apps
     path('search/', include('search.urls')),
-    path('maps/', include('maps.urls')),
+    #path('maps/', include('maps.urls')),
     path('datasets/', include('datasets.urls')),
     path('areas/', include('areas.urls')),
     path('collections/', include('collection.urls')),

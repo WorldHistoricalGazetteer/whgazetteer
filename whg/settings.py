@@ -60,7 +60,7 @@ INSTALLED_APPS = [
     'collection.apps.CollectionConfig',
     'datasets.apps.DatasetsConfig',
     'main.apps.MainConfig',
-    'maps.apps.MapsConfig',
+    #'maps.apps.MapsConfig',
     'places.apps.PlacesConfig',
     'search.apps.SearchConfig',
     'traces.apps.TracesConfig'

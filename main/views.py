@@ -64,6 +64,7 @@ class Home2a(TemplateView):
         context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
         context['mbtokenwhg'] = settings.MAPBOX_TOKEN_WHG
         context['media_url'] = settings.MEDIA_URL
+        context['base_dir'] = settings.BASE_DIR
         return context
 
 

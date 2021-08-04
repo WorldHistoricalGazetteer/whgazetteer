@@ -14,6 +14,7 @@ WHG is aggregating attestations of historical place references contributed by re
 - Dataset and Collection maps now using MapLibreGL, for fast rendering of large datasets
 - Reliablity and error reporting for upload functions improved
 - Rewritten documentation; new tutorial on LP-TSV creation and new sample lesson plan
+- SSL (https) enabled
 - Formation of an editorial team has begun
 - Redesigned home page
 - Code refactoring and cleanup
