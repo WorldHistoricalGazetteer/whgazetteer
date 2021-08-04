@@ -6,6 +6,8 @@ _tests/
 _testdata/
 
 datasets/static/_older/
+static/_older/
+
 media/data/
 media/datasets/
 media/downloads/

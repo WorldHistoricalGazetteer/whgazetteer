@@ -56,7 +56,7 @@ INSTALLED_APPS = [
     'accounts.apps.AccountsConfig',
     'api.apps.ApiConfig',
     'areas.apps.AreasConfig',
-    # collections is reserved in python
+    # "collections" is reserved in python
     'collection.apps.CollectionConfig',
     'datasets.apps.DatasetsConfig',
     'main.apps.MainConfig',
@@ -172,13 +172,13 @@ LOGOUT_REDIRECT_URL='/'
 
 DATABASES = {
   'default': {
-      # 'ENGINE': 'django.db.backends.postgresql',
-        'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'whg',
-        'USER':'',
-        'PASSWORD':'',
-        'HOST':'localhost',
-        'PORT':'5432',
+    # 'ENGINE': 'django.db.backends.postgresql',
+      'ENGINE': 'django.contrib.gis.db.backends.postgis',
+      'NAME': 'whg',
+      'USER':'',
+      'PASSWORD':'',
+      'HOST':'localhost',
+      'PORT':'5432',
     }
 }
 

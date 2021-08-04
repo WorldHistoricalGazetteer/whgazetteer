@@ -2,9 +2,21 @@
 
 This is the repository for the World Historical Gazetteer (WHG) web platform and API. The project is based at the University of Pittsburgh's [World History Center (WHC)](https://www.worldhistory.pitt.edu/). It has been substantially funded by a US National Endownment for the Humanities (NEH) grant and in-kind support from WHC.
 
-WHG is aggregating attestations of historical place references contributed by researchers. [Version 1](http://whgazetteer.org) was launched on 27 July 2020 and incremental updates are ongoing. There is substantial information about WHG in its [Site Guide](http://whgazetteer.org/tutorials/guide/) and [Tutorials](http://whgazetteer.org/tutorials/). Announcements and discussion about the project is also available on [our blog website](http://blog.whgazetteer.org) and via our Twitter feed, [@WHGazetteer](https://twitter.com/WHGazetteer).
+WHG is aggregating attestations of historical place references contributed by researchers. Version 1 was launched on 27 July 2020 and [Version 2](http://whgazetteer.org) released on 4 August 2021. Incremental updates are ongoing. There is substantial information about the purposes and uses of WHG in its [Site Guide](http://whgazetteer.org/tutorials/guide/) and [Tutorials](http://whgazetteer.org/tutorials/). Announcements and discussion about the project is also available on [our blog website](http://blog.whgazetteer.org) and via our Twitter feed, [@WHGazetteer](https://twitter.com/WHGazetteer).
 
 ### Change log
+
+#### v2.0 (4 Aug 2021)
+
+- New "Collection" feature added, with two early examples: "Dutch History" and "HGIS de las Indias"
+- Revamped search functionality: option to search database as well as index; filter results by type, country, map bounding box; return to results from place pages
+- Public views for datasets, collections, and individual records
+- Dataset and Collection maps now using MapLibreGL, for fast rendering of large datasets
+- Reliablity and error reporting for upload functions improved
+- Rewritten documentation; new tutorial on LP-TSV creation and new sample lesson plan
+- Formation of an editorial team has begun
+- Redesigned home page
+- Code refactoring and cleanup
 
 #### v1.21 (11 May 2021)
 
