@@ -120,7 +120,7 @@ pathspec==0.8.1
 petl==1.6.8
 pexpect==4.6.0
 pickleshare==0.7.5
-Pillow==8.1.1
+Pillow>=8.2.0
 pipdeptree==1.0.0
 pout==0.7.9
 pprint==0.1
