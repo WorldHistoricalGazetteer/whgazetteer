@@ -7,6 +7,22 @@ html, body {
 body {overflow-y: scroll;}
 pre { margin:0; background-color:#e0e0e0;}
 
+/* responsiveness */
+
+@media screen and (max-width: 1000px) {
+  /*.container { margin: 1em 2em;  }*/
+  .container { max-width: 95%;  }
+  #search_info {display:none;}
+  #search_resets {position:relative !important; padding-top:0 !important;}
+  #dropdown_filters {display:flex;}
+}
+
+@media screen and (max-width: 1000px) {
+  #search_left {height:fit-content;}
+  #search_panel {height:fit-content !important;}
+}
+
+
 /*table {border-collapse:initial;}*/
 .navbar .container {
   border-bottom: 1px solid #eee;
@@ -478,8 +494,10 @@ input[type="text"] {
   border-radius: 8px;
   box-shadow: 2px 2px #999;
   height: 320px;
-  /*min-height: fit-content;*/
 }
+/* @ height: fit-content;*/
+
+
 .d-input {position:relative; width:60%; margin:auto}
 .b-input {
   position:absolute; 

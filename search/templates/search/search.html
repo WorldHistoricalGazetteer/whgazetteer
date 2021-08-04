@@ -8,7 +8,7 @@
 {% block extra_head %}
   {% leaflet_js %}
   {% leaflet_css %}
-	<script src="{% static 'js/aliases.js' %}"></script>
+  <script src="{% static 'js/aliases.js' %}"></script>
   <script src="{% static 'js/parents.js' %}"></script>
   <script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>
   <link rel="stylesheet" href="//cdn.datatables.net/1.10.16/css/dataTables.bootstrap4.min.css">
@@ -16,7 +16,7 @@
   <script src="{% static 'js/leaflet.ajax.min.js' %}"></script>
   <script src="{% static 'js/typeahead.bundle.js' %}"></script>
   <script src="{% static 'js/spin.umd.js' %}"></script>
-  
+
   <script src="{% static 'leaf_bb/leaflet-control-boxzoom.js' %}"></script>
   <link rel="stylesheet" href="{% static 'leaf_bb/leaflet-control-boxzoom.css' %}">
 
@@ -32,32 +32,32 @@
 
 <div class="container">
   <div class="justify-content-center mt-2">
-		<div id="search_top" class="row">
-			<div id="search_left" class="col-sm-6">
-				<div id="search_panel">
-			<div id="search_type" class="form-group d-flex justify-content-center"> 
-				<div class="form-check form-check-inline">
-				<input class="form-check-input hover" type="radio" name="class" id="r_place" value="place" rel="Enter place name"  checked="checked">
-				<label class="form-check-label" for="r_place">Places</label>
-				</div>
-				<div class="form-check form-check-inline">
-				<input class="form-check-input hover" type="radio" name="class" id="r_trace" value="trace" rel="Enter term or name">
-				<label class="form-check-label" for="r_trace">Traces</label>
+    <div id="search_top" class="row">
+      <div id="search_left" class="col-sm-6">
+        <div id="search_panel">
+      <div id="search_type" class="form-group d-flex justify-content-center"> 
+        <div class="form-check form-check-inline">
+        <input class="form-check-input hover" type="radio" name="class" id="r_place" value="place" rel="Enter place name"  checked="checked">
+        <label class="form-check-label" for="r_place">Places</label>
+        </div>
+        <div class="form-check form-check-inline">
+        <input class="form-check-input hover" type="radio" name="class" id="r_trace" value="trace" rel="Enter term or name">
+        <label class="form-check-label" for="r_trace">Traces</label>
         <a id="traces_help" class="pointer ml-1" data-toggle="popover" title="Traces in WHG are..." data-content="" tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a>
-				</div>
-			</div>
-      
-			<div id="search_input" class="d-input input-group input-group-sm pb-2 justify-content-center" >
-				<!--<label for="input_box">{ fontawesome_icon 'search' color='#336699'%}</label>-->
-				<input id="input_box" class="" type="text" placeholder="Enter place name" autocomplete="false">
+        </div>
+      </div>
+
+      <div id="search_input" class="d-input input-group input-group-sm pb-2 justify-content-center" >
+        <!--<label for="input_box">{ fontawesome_icon 'search' color='#336699'%}</label>-->
+        <input id="input_box" class="" type="text" placeholder="Enter place name" autocomplete="false">
         <button class="b-input">{% fontawesome_icon 'search' color='#336699'%}</button>
-			</div>
-			<div id="search_input_traces" class="d-input input-group input-group-sm pb-2 justify-content-center hidden" >
-				<!--<label for="input_box_traces">{ fontawesome_icon 'search' color='#336699'%}</label>-->
-				<input id="input_box_traces" class="typeahead" type="text" placeholder="subject term, e.g. 'empire'">
+      </div>
+      <div id="search_input_traces" class="d-input input-group input-group-sm pb-2 justify-content-center hidden" >
+        <!--<label for="input_box_traces">{ fontawesome_icon 'search' color='#336699'%}</label>-->
+        <input id="input_box_traces" class="typeahead" type="text" placeholder="subject term, e.g. 'empire'">
         <!--<button class="b-input">{ fontawesome_icon 'search' color='#336699'%}</button>-->
-			</div>
-      
+      </div>
+
       <ul id="scope_tabs" class="nav nav-tabs small">
         {%comment%}<span class="ds-title ml-1 mr-3">Search
         <a id="search_help" class="pointer" data-toggle="popover" title="Search scope" data-html="true" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a>
@@ -69,29 +69,29 @@
         <a class="nav-link" id="a_db" data-scope="db" href="#" role="tab" style="background:whitesmoke;">Search Database {%fontawesome_icon 'database'%}</a> 
         </li>
       </ul>	
-			<div id="search_filters" class="tab-pane fade show active" role="tabpanel">
-				<span class="filter-header">pre-filters</span>
-				<div class="small row">
-					<div id="filters_class" class="col-sm-6">
-						<p class="mb-0">place categories
+      <div id="search_filters" class="tab-pane fade show active" role="tabpanel">
+        <span class="filter-header">pre-filters</span>
+        <div class="small row">
+          <div id="filters_class" class="col-md-12 col-lg-6">
+            <p class="mb-0">place categories
             <!--feature class(es) -->
-						<!--<span class="ml-1 float-right">-->
-						<span class="ml-1">
-							<span class="mr-1"><a id="check_toggle" href="#">clear all</a></span>
-							<a id="filter_help" class="pointer" data-toggle="popover" title="Feature classes" data-content="" tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a>
-						</span>
-						</p>
-						<ul class="ul-left p-0 mb-0">
-						<li class="li-flush"><input type="checkbox" value="A" checked> administrative entities <small>(A)</small></li>
-						<li class="li-flush"><input type="checkbox" value="P" checked> cities, towns, hamlets...<small>(P)</small></li> 
-						<li class="li-flush"><input type="checkbox" value="S" checked> sites, buildings, complexes...<small>(S)</small></li> 
-						<li class="li-flush"><input type="checkbox" value="R" checked> roads, routes, rail...<small>(R)</small></li> 
-						<li class="li-flush"><input type="checkbox" value="L" checked> regions, landscape areas <small>(L)</small></li> 
-						<li class="li-flush"><input type="checkbox" value="T" checked> terrestrial landforms <small>(T)</small></li>
-						<li class="li-flush"><input type="checkbox" value="H" checked> water bodies <small>(H)</small></li>
-						</ul>
-					</div>
-					<div id="filters_st" class="col-sm-6">
+            <!--<span class="ml-1 float-right">-->
+            <span class="ml-1">
+              <span class="mr-1"><a id="check_toggle" href="#">clear all</a></span>
+              <a id="filter_help" class="pointer" data-toggle="popover" title="Feature classes" data-content="" tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a>
+            </span>
+            </p>
+            <ul class="ul-left p-0 mb-0">
+            <li class="li-flush"><input type="checkbox" value="A" checked> administrative entities <small>(A)</small></li>
+            <li class="li-flush"><input type="checkbox" value="P" checked> cities, towns, hamlets...<small>(P)</small></li> 
+            <li class="li-flush"><input type="checkbox" value="S" checked> sites, buildings, complexes...<small>(S)</small></li> 
+            <li class="li-flush"><input type="checkbox" value="R" checked> roads, routes, rail...<small>(R)</small></li> 
+            <li class="li-flush"><input type="checkbox" value="L" checked> regions, landscape areas <small>(L)</small></li> 
+            <li class="li-flush"><input type="checkbox" value="T" checked> terrestrial landforms <small>(T)</small></li>
+            <li class="li-flush"><input type="checkbox" value="H" checked> water bodies <small>(H)</small></li>
+            </ul>
+          </div>
+          <div id="filters_st" class="col-md-12 col-lg-6">
             <p class="mb-0">temporal ( default = all )
             <span class="float-right">
               <a id="temporal_help" class="pointer" data-toggle="popover" title="Temporal filter" data-content="" tabindex="0" data-trigger="focus">
@@ -118,68 +118,68 @@
                 <a class="ml-3" href="javascript:clearMapFilter()">reset filters</a></span>
             </div>
             <!--<span id="reset_link" class="float-right hidden"><a href="javascript:resetSearch()">reset search</a></span>-->
-				  </div> <!-- #filters_st -->
-				</div> <!-- .row -->
-			</div> <!-- #search_filters -->	
+          </div> <!-- #filters_st -->
+        </div> <!-- .row -->
+      </div> <!-- #search_filters -->	
       <div id="result_filters" class="pt-2 pl-1 hidden">
         <p class="half pl-2 mr-1">result filters {% fontawesome_icon 'filter' %} 
-        <span class="ml-2"><select id="type_select">
-        </select></span>
-        <span class="ml-2"><select id="cc_select">
-        </select></span>
+        <span id="dropdown_filters">
+        <span class="ml-2"><select id="type_select"></select></span>
+        <span class="ml-2"><select id="cc_select"></select></span>
+        </span>
         </p>        
       </div>
-			<div id="traces_info" class="p-2 hidden">  
-				<p class="strong">Linked Traces in WHG</p>
-				<p class="small">Traces are an experimental feature in WHG. Briefly:</p>
-				<ul class="small mb-0">
-					<li class="li-left-sm"><sr>Traces</sr> are material and non-material things in the world, e.g. objects, people, events, or concepts.</li>
-					<li class="li-left-sm"><sr>Trace data</sr> are linked open web resources describing or depicting such trace phenomena, e.g web pages, datasets.</li>
-					<li class="li-left-sm"><sr>Linked Traces</sr> are annotations of <i>trace data</i> with identifiers for places relevant to those phenomena, and attributes indicating how and when.</li>
-				</ul>
-				<p class="small mt-1">Trace examples in WHG can be viewed in two ways. Typing a search term into the box above (try 'empire' or 'Buddhist') returns matching Linked Trace datasets. Traces related to a given place appear on its Place Portal page, e.g. for <a href="{% url 'places:place-portal' id=12345979 %}">Istanbul</a>, or <a href="{% url 'places:place-portal' id=12877143 %}">Hetian (Khotan)</a>.</p>
-			</div>
-			</div><!-- #search_panel -->
-			</div>
-			<div id="search_right" class="col-sm-6">
-				<div id="map_options" class="p-1 small">
+      <div id="traces_info" class="p-2 hidden">  
+        <p class="strong">Linked Traces in WHG</p>
+        <p class="small">Traces are an experimental feature in WHG. Briefly:</p>
+        <ul class="small mb-0">
+          <li class="li-left-sm"><sr>Traces</sr> are material and non-material things in the world, e.g. objects, people, events, or concepts.</li>
+          <li class="li-left-sm"><sr>Trace data</sr> are linked open web resources describing or depicting such trace phenomena, e.g web pages, datasets.</li>
+          <li class="li-left-sm"><sr>Linked Traces</sr> are annotations of <i>trace data</i> with identifiers for places relevant to those phenomena, and attributes indicating how and when.</li>
+        </ul>
+        <p class="small mt-1">Trace examples in WHG can be viewed in two ways. Typing a search term into the box above (try 'empire' or 'Buddhist') returns matching Linked Trace datasets. Traces related to a given place appear on its Place Portal page, e.g. for <a href="{% url 'places:place-portal' id=12345979 %}">Istanbul</a>, or <a href="{% url 'places:place-portal' id=12877143 %}">Hetian (Khotan)</a>.</p>
+      </div>
+      </div><!-- #search_panel -->
+      </div>
+      <div id="search_right" class="col-sm-6">
+        <div id="map_options" class="p-1 small">
         <span id="offer_mapfilter" class="hidden">Draw a bounding box to filter result list</span>
         <!--<span class="float-right">{ request.META.HTTP_REFERER }}</span>-->
         <span id="clear_mapfilter" class="hidden float-right"><a href="javascript:mappy.fitBounds( features.getBounds())">clear map filter</a></span>
         </div>
-				<!--{ leaflet_map "map_search" callback="map_init" %}-->
-				{% leaflet_map "map_search" %}
-				<!--<div id="result_extra" class="p-2"></div>-->
-			</div> <!--#search_right -->
-		</div> <!-- .row -->
-		<div id="search_lower" class="row">
+        <!--{ leaflet_map "map_search" callback="map_init" %}-->
+        {% leaflet_map "map_search" %}
+        <!--<div id="result_extra" class="p-2"></div>-->
+      </div> <!--#search_right -->
+    </div> <!-- .row -->
+    <div id="search_lower" class="row">
       <!--{ if not "search" in request.META.HTTP_REFERER %}-->
-			<div id="search_info">
-				<div class="row p-2">
-				<div class="col-sm-6">
-					<p class="my-0 strong">Place Search in WHG</p>
+      <div id="search_info">
+        <div class="row p-2">
+        <div class="col-sm-6">
+          <p class="my-0 strong">Place Search in WHG</p>
           <div id="search_info_blurb">
-					<p class="my-0">There are two data stores in WHG, which can be searched independently: a <sr>union index</sr> and a <sr>database</sr>. Data uploaded to WHG is initially stored in a relational database, and records from all datasets flagged as "public" are searchable with the "Search Database" option above. When a dataset is accessioned, its records are added to a union index, where place records asserted as "closely matched" are grouped. The default scope of search is the union index.</p>
+          <p class="my-0">There are two data stores in WHG, which can be searched independently: a <sr>union index</sr> and a <sr>database</sr>. Data uploaded to WHG is initially stored in a relational database, and records from all datasets flagged as "public" are searchable with the "Search Database" option above. When a dataset is accessioned, its records are added to a union index, where place records asserted as "closely matched" are grouped. The default scope of search is the union index.</p>
           </div>
-				</div>
-				<div class="col-sm-6 pl-4">
-					<!--<img src="{ static 'images/search-pipeline.jpg'%}" style="width:100%; height:auto;" alt=""/>-->
-					<img src="{% static 'images/search-figure.svg'%}" style="width:100%; height:auto;" alt=""/>
-				</div>
-				</div>
-			</div>
+        </div>
+        <div class="col-sm-6 pl-4">
+          <!--<img src="{ static 'images/search-pipeline.jpg'%}" style="width:100%; height:auto;" alt=""/>-->
+          <img src="{% static 'images/search-figure.svg'%}" style="width:100%; height:auto;" alt=""/>
+        </div>
+        </div>
+      </div>
       <!--{ endif %}-->
-			<div id="type_filter" class="hidden">
-				<p class='allcap-heading half mb-0 pl-1'>PLACE TYPES (select to limit)
-					<span class="float-right mr-2"><a href="#" class="hide-filter">
-						close {% fontawesome_icon 'times-circle' color='#336699' %}</a></span>
-					<span class="float-right clear-filter hidden mr-2"><a href="#">restore all</span></a>
-				</p>
-				<ul class="list-inline"></ul>
-			</div>
+      <div id="type_filter" class="hidden">
+        <p class='allcap-heading half mb-0 pl-1'>PLACE TYPES (select to limit)
+          <span class="float-right mr-2"><a href="#" class="hide-filter">
+            close {% fontawesome_icon 'times-circle' color='#336699' %}</a></span>
+          <span class="float-right clear-filter hidden mr-2"><a href="#">restore all</span></a>
+        </p>
+        <ul class="list-inline"></ul>
+      </div>
       <div id='result_title' class='half allcap-heading mb-0 pl-1'></div>
       <div id="result_div" class=""></div>
-		</div> <!-- .row -->
+    </div> <!-- .row -->
   </div>
 </div> <!-- .container -->
 
@@ -202,7 +202,7 @@
   var shown_layers = null
   var searchres = null
   var features = null
-  
+
   window.idToArea = {}
   window.area_list = []
   window.area_objs = []
@@ -250,15 +250,15 @@
     return searchres == null?null:searchres
   }
   /* end STATE*/
-  
+
   // _LOAD
   $(function(){
     /*  if referer is search.html, it's returning from
-        viewing a place portal or place detail page
+      viewing a place portal or place detail page
     */
     /*  always set class radio to places */
     $('#r_place').prop('checked',true)
-    
+
     if(localStorage['keep'] == 'true'){
       $("#search_info").remove()
     }
@@ -280,12 +280,12 @@
       localStorage.removeItem('keep')
       localStorage.removeItem('last_results')
     }
-    
+
     <!--localStorage.setItem('search_scope', 'idx')-->
     <!--window.search_scope = $("li a.active").data('scope') // idx or db-->
     window.search_class = $('input[name=class]').val() // place or trace
     if(search_class == "trace") {$("#traces_info").show()}
-    
+
     // toggle all fclass checkboxes
     $("#check_toggle").click(function(e){
       e.preventDefault()
@@ -298,7 +298,7 @@
       $("#check_toggle").text('check all');		
       }
     })
-    
+
     $("#type_select").change(function(){
       term = $(this).val()
       console.log('type selected:', term)
@@ -334,17 +334,17 @@
         $("#reset_filters").fadeOut()
       }
     })
-    
+
     <!--$( "#map_dataset" ).change(function() {-->
       <!--if (!!gl.getLayer('heat_active')){-->
       <!--gl.removeLayer('heat_active')}-->
       <!--heat($(this).val())-->
       <!--console.log('heat() for',$(this).val())-->
     <!--});	-->
-    
+
     $("[rel='tooltip']").tooltip();
     $("[data-toggle=popover]").popover({html:true})  
-  
+
     // dynamic dataset info popover
     var dspop = $(".pop-dataset").popover({
       trigger: 'focus',
@@ -370,7 +370,7 @@
         }
       });
     })
-    
+
     // popover content
     $("#filter_help").attr(
       'data-content',"<p>Select one or more feature class (uses GeoNames single-letter codes)</p>"
@@ -394,20 +394,20 @@
     $("#dataset_help").attr(
       'data-content',"<p>Constrain search to indexed places attested in a single public dataset.</p>"
     ) // [<a href='{ url 'public-lists'%}'>list</a>] Choosing a dataset will override spatial filtering.
-    
-    
+
+
     var idToFeature = {} // for feature lookup
     var itf_new = []
     var titles = {}
     var searchoption = null;
-	
-	// clear map, inputs, results
+
+  // clear map, inputs, results
     <!--clearit()-->
     $("#type_filter").hide();
-	
-	<!--// show filters, hide search_info and vice versa-->
+
+  <!--// show filters, hide search_info and vice versa-->
     <!--$("#link_filters").click(function(){-->
-	    <!--if($("#search_filters").is(":visible")){-->
+      <!--if($("#search_filters").is(":visible")){-->
         <!--$("#search_info").fadeIn()-->
       <!--} else {-->
         <!--$("#search_info").fadeOut()-->
@@ -417,46 +417,46 @@
 
     // data type choice determines index searched
     var suggester = new Bloodhound({
-        datumTokenizer: Bloodhound.tokenizers.whitespace,
-        queryTokenizer: Bloodhound.tokenizers.whitespace,
-        remote: {
-          wildcard: '%QUERY',
-          url: 'foofah',
-          prepare: function (query, settings) {
-           var doctype = $("input[name='class']:checked").val();
-           settings.url = '/search/index?doc_type='+doctype+'&scope=suggest&'+$.param({
-                qstr: query,
-                idx: doctype == 'place' ? 'whg' : 'trace'
-            });
-           return settings;
-         } 
-        }
+      datumTokenizer: Bloodhound.tokenizers.whitespace,
+      queryTokenizer: Bloodhound.tokenizers.whitespace,
+      remote: {
+        wildcard: '%QUERY',
+        url: 'foofah',
+        prepare: function (query, settings) {
+          var doctype = $("input[name='class']:checked").val();
+          settings.url = '/search/index?doc_type='+doctype+'&scope=suggest&'+$.param({
+            qstr: query,
+            idx: doctype == 'place' ? 'whg' : 'trace'
+          });
+          return settings;
+      } 
+      }
     });
     function hh(element) {
       el=element.toLowerCase()
       return el.includes($("#input_box").val().toLowerCase());
     }
     $('.typeahead').typeahead({minLength:2,highlight:true}, {
-        name: 'suggester',
-        source: suggester,
-        display: 'name',
-        limit: 10,
-        templates: {
-          empty: ['<div class="small ml-2">','no results...','</div>'].join('\n'),
-          suggestion: function (data) {
-            doctype = $("input[name='class']:checked").val()
-            if(doctype == 'place'){
-              <!--console.log('variants',data.variants)-->
-              return data.variants.length>0 ? 
-                '<p class="tight-p tt-suggestion">' + data.name + '<br/><i class="tight-p">' + 
-                  data.variants.filter(hh).join(', ') + '<i></p>' : 
-                '<p class="tight-p">' + data.name + '</p>'
-            } else {
-              <!--console.log('data',data)-->
-              return '<p rel="'+data._id+'">'+data.title+'</p>'
-            }
+      name: 'suggester',
+      source: suggester,
+      display: 'name',
+      limit: 10,
+      templates: {
+        empty: ['<div class="small ml-2">','no results...','</div>'].join('\n'),
+        suggestion: function (data) {
+          doctype = $("input[name='class']:checked").val()
+          if(doctype == 'place'){
+            <!--console.log('variants',data.variants)-->
+            return data.variants.length>0 ? 
+              '<p class="tight-p tt-suggestion">' + data.name + '<br/><i class="tight-p">' + 
+                data.variants.filter(hh).join(', ') + '<i></p>' : 
+              '<p class="tight-p">' + data.name + '</p>'
+          } else {
+            <!--console.log('data',data)-->
+            return '<p rel="'+data._id+'">'+data.title+'</p>'
           }
         }
+      }
     })
     .on('typeahead:selected', function (obj, datum) {
       // fetchTraceGeom() -> [views.TraceGeomView() <- views.getGeomCollection()] -> showResults() -> sugLister
@@ -466,12 +466,12 @@
       }
     })
     .on('typeahead:asyncrequest', function() {
-        $('.typeahead').addClass('input-loading');
+      $('.typeahead').addClass('input-loading');
     })
     .on('typeahead:asynccancel typeahead:asyncreceive', function() {
-        $('.typeahead').removeClass('input-loading');
+      $('.typeahead').removeClass('input-loading');
     });
-    
+
     // fetch area list
     $.get("/api/area_list", function(data){
       <!--console.log('initial areas for list',data)-->
@@ -480,7 +480,7 @@
       area_list.push(data[i]['title'])
       }	  
     })
-    
+
     $( "#input_area" ).autocomplete({
       source: area_list,
       minLength: 2,
@@ -492,7 +492,7 @@
       boundsobj = '{"type":["'+obj.type+'"],"id":["'+areaid+'"]}'
       $("#boundsobj").val( boundsobj )
       console.log( "boundsobj for view ", boundsobj);
-      
+
       // fetch and render selected area
       render_area(areaid)
       }
@@ -504,9 +504,9 @@
         if(typeof arealayer !== 'undefined'){arealayer.removeFrom(mappy)}
         mappy.setView([38, 10], 2.4)
       }
-	  })
+    })
   }) <!--  end onLoad() -->
-  
+
   hideAllRows = function(){
     currentRows().each(function(r){
       currentRows()[r].style.display='none'
@@ -568,7 +568,7 @@
     });
     return visible_layerids;
   } 
-  
+
   /*
     *** ccFilter() ***
     filter result list on change #cc_select 
@@ -603,7 +603,7 @@
     })
     <!--console.log('hide_these cnt=',hide_these.length)-->
     <!--console.log('show_these cnt=',show_these.length)-->
-    
+
     window.shown_layers = L.featureGroup(show_these)
     for(l in hide_these){hide_these[l].removeFrom(mappy)}
     for(l in show_these){show_these[l].addTo(mappy)}
@@ -638,7 +638,7 @@
       return idToFeature[i]
     })
     console.log('show_these', show_these)
-    
+
     shown_layers = L.featureGroup(show_these)
     console.log('shown_layers', shown_layers._layers)
     for(l in hide_these){hide_these[l].removeFrom(mappy)}
@@ -657,15 +657,15 @@
   */
   mapFilter = function(boxed_ids){
     $(".clear-filter").show()
-    
+
     <!--if(filtered_layers != null){filtered_layers.addTo(mappy)}-->
-    
+
     ids_boxed=boxed_ids
     // arrays of mappable results
     ids_all = Object.keys(idToFeature).map(Number);
     ids_hide = ids_all.filter(x => ids_boxed.indexOf(x) === -1);
     ids_show = ids_all.filter(x => ids_boxed.indexOf(x) > -1);
-    
+
     // filter features/layers
     features.clearLayers();
     currentLayers().forEach(function(l){
@@ -678,7 +678,7 @@
         }
       }
     });
-    
+
     // hide result rows not in bbox
     results = $("#result_div tbody tr")
     // for each result row, if its id is in hidethese, hide it
@@ -690,7 +690,7 @@
         results[i].style.display = ""
       }
     }
-    
+
     // remove result rows not in bbox
     <!--results = $("#result_table tr")-->
     <!--results.each(function(){-->
@@ -698,10 +698,10 @@
         <!--$(this).remove();-->
       <!--}-->
     <!--});-->
-    
+
     // TODO: rebuild #type_select
-    
-    
+
+
     <!--console.log('hidden in list)', hidethese)-->
     // omit header row
     $("#rowcount").html((results.length-1) - ids_hide.length)
@@ -744,11 +744,11 @@
     <!--$("#type_select").val(0)-->
     <!--$("#type_select option").eq(0).text('Place type') -->
     $("#rowcount").html((results.length))
-    
+
   }
-    
- /*
-	*** sortTable() ***
+
+/*
+  *** sortTable() ***
   col_idx == index of column to sort by
   */
   sortTable = function(col_idx, order) {
@@ -792,9 +792,9 @@
       }
     }
   }
- /*
-	*** render_area() ***
-	fetch and display an area (region/area/country)
+/*
+  *** render_area() ***
+  fetch and display an area (region/area/country)
   */
   render_area = function(areaid) {
     $.ajax({
@@ -803,7 +803,7 @@
       console.log('render_area()',data)
       geom = {"type":"FeatureCollecton","features":[]}
       geom['features'].push(data.geojson)
-  
+
     // clear existing
     if(typeof arealayer !== 'undefined'){arealayer.removeFrom(mappy)}
 
@@ -824,81 +824,81 @@
   }  
   // 
   heat = function(dataset) {
-	  console.log('heat()',dataset)
-	  ne_global.getMapboxMap().addLayer({
-	  "id": "heat_active",
-	  "type": "heatmap",
-	  "source": dataset,
-	  "maxzoom": 9,
-	  "paint": {
-		  // Increase the heatmap weight based on frequency and property magnitude
-		"heatmap-weight": [
-		  "interpolate",
-		  ["linear"],
-		  ["get", "mag"],
-		  0, 0,
-		  6, 1
-		],
-		// Increase the heatmap color weight weight by zoom level
-		// heatmap-intensity is a multiplier on top of heatmap-weight
-		"heatmap-intensity": [
-		  "interpolate",
-		  ["linear"],
-		  ["zoom"],
-		  0, 1,
-		  9, 3
-		],
-		// Color ramp for heatmap.  Domain is 0 (low) to 1 (high).
-		// Begin color ramp at 0-stop with a 0-transparancy color
-		// to create a blur-like effect.
-		"heatmap-color": [
-		  "interpolate",
-		  ["linear"],
-		  ["heatmap-density"],
-		  0, "rgba(33,102,172,0)",
-		  0.2, "rgb(103,169,207)",
-		  0.4, "rgb(209,229,240)",
-		  0.6, "rgb(253,219,199)",
-		  0.8, "rgb(239,138,98)",
-		  1, "rgb(178,24,43)"
-		],
-		// Adjust the heatmap radius by zoom level
-		"heatmap-radius": [
-		  "interpolate",
-		  ["linear"],
-		  ["zoom"],
-		  0, 2,
-		  9, 20
-		],
-		// Transition from heatmap to circle layer by zoom level
-		"heatmap-opacity": [
-		  "interpolate",
-		  ["linear"],
-		  ["zoom"],
-		  7, 1,
-		  9, 0
-		],
-	  }
-	});    
+    console.log('heat()',dataset)
+    ne_global.getMapboxMap().addLayer({
+    "id": "heat_active",
+    "type": "heatmap",
+    "source": dataset,
+    "maxzoom": 9,
+    "paint": {
+      // Increase the heatmap weight based on frequency and property magnitude
+    "heatmap-weight": [
+      "interpolate",
+      ["linear"],
+      ["get", "mag"],
+      0, 0,
+      6, 1
+    ],
+    // Increase the heatmap color weight weight by zoom level
+    // heatmap-intensity is a multiplier on top of heatmap-weight
+    "heatmap-intensity": [
+      "interpolate",
+      ["linear"],
+      ["zoom"],
+      0, 1,
+      9, 3
+    ],
+    // Color ramp for heatmap.  Domain is 0 (low) to 1 (high).
+    // Begin color ramp at 0-stop with a 0-transparancy color
+    // to create a blur-like effect.
+    "heatmap-color": [
+      "interpolate",
+      ["linear"],
+      ["heatmap-density"],
+      0, "rgba(33,102,172,0)",
+      0.2, "rgb(103,169,207)",
+      0.4, "rgb(209,229,240)",
+      0.6, "rgb(253,219,199)",
+      0.8, "rgb(239,138,98)",
+      1, "rgb(178,24,43)"
+    ],
+    // Adjust the heatmap radius by zoom level
+    "heatmap-radius": [
+      "interpolate",
+      ["linear"],
+      ["zoom"],
+      0, 2,
+      9, 20
+    ],
+    // Transition from heatmap to circle layer by zoom level
+    "heatmap-opacity": [
+      "interpolate",
+      ["linear"],
+      ["zoom"],
+      7, 1,
+      9, 0
+    ],
+    }
+  });    
   }
   //
   // initializes map
   addEventListener('map:init', function (e) {
     window.mappy = e.detail.map
     mappy.setMaxBounds(null)
-		mappy.options.zoomSnap = 0.5
-		mappy.options.maxZoom = 6
-		mappy.setView(new L.LatLng(32, 12.6), 1);
+    mappy.options.zoomSnap = 0.5
+    mappy.options.maxZoom = 6
+    mappy.setView(new L.LatLng(32, 12.6), 1);
 
     // mapbox tokens 
     var token_whg = '{{ mbtokenwhg }}', 
       token_mb = '{{ mbtokenmb }}';
-	
-	// style/tile urls
+
+  // style/tile urls
     var mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}',
       mbtiles_url = 'https://api.mapbox.com/v3/{id}/{z}/{x}/{y}.png',
       ne_url = 'http://blog.whgazetteer.org/tiles/ne/{z}/{x}/{y}.png';
-      
+
       var satellite  = L.tileLayer(mbstyle_url, {
       id:'mapbox/satellite-streets-v11', 
       token:token_mb}),
@@ -913,11 +913,11 @@
     mb_terrain = L.mapboxGL({
       style:'mapbox://styles/kgeographer/ckhf6o8yf07fw19qhbrm7f2q7',
       accessToken:token_whg})
-  
+
     ne_global= L.mapboxGL({
       style:'mapbox://styles/kgeographer/ckidglq8l2nra19nzzbl995ue',
       accessToken:token_whg}).addTo(mappy)
-		
+
     var countryStyle = {
       "color": "#999",
       "weight": 1,
@@ -940,10 +940,10 @@
           }
     });
 
-    
+
     var baseLayers = {
       "NE global": ne_global,
-	    "Terrain": mb_terrain,
+      "Terrain": mb_terrain,
       "OpenStreetMap": osm,      
       "Satellite": satellite
     };
@@ -958,17 +958,17 @@
         enableShiftDrag: true
         <!--,iconClasses:['bbox-icon']-->
       })
-    
+
     // startup controls only
     L.control.layers(baseLayers,dataLayers).addTo(mappy);
     baseLayers["NE global"].addTo(mappy)
-    
+
     // TODO: 
     // much is duplicated here from typeFilter() and ccFilter()
     // a big combinatorial state challenge
     mappy.on('zoomend',function(e){
       /*  none of this should happen if not places and no features
-          (apart from countries or areas have loaded)
+        (apart from countries or areas have loaded)
       */
       <!--if(typeof idToFeature != 'undefined' && searchClass()=='place'){      // the result list-->
       if(typeof idToFeature != 'undefined' && searchClass()=='place' && search_scope == 'idx'){      // the result list
@@ -984,12 +984,12 @@
         show_these = $.map(show_ids,function(i){
           return idToFeature[i]
         })
-  
+
         window.shown_layers = L.featureGroup(show_these)
         for(l in hide_these){hide_these[l].removeFrom(mappy)}
         for(l in show_these){show_these[l].addTo(mappy)}
         <!--mappy.fitBounds(shown_layers.getBounds())      -->
-        
+
         // hide rows for hidden map layers
         for (i = 0; i < results.length; i++) {
           _id = Number(results[i].getAttribute('data-id'))
@@ -1005,14 +1005,14 @@
         if(show_ids.length < all_ids.length){
           $("#reset_filters").fadeIn()
         } else {$("#reset_filters").hide()}
-        
+
         <!--console.log('zoomend visible: '+show_ids+'; all: '+all_ids)-->
         <!--console.log('zoomend hide these '+ hide_ids)-->
       } else if (searchClass()=='trace' && bboxer.map ) {
         <!--console.log('need to filter result list here')-->
         results = $("#result_div tbody tr")
         <!--results = $("#result_div tbody tr").filter(function(i){return $( this ).attr( "data-id" ) != "none"}) -->
-        
+
         all_ids = Object.keys(idToFeature).map(Number)
 
         show_ids = visibleFeaturesIds(search_scope)
@@ -1032,7 +1032,7 @@
         <!--}-->
       }
     })
-    
+
 
     if(ls('last_results') != null){
       kept = ls('keep')
@@ -1045,7 +1045,7 @@
       <!--localStorage.setItem('keep', false)-->
     }
   }, false); <!-- addEventListener() -->
-  
+
   cleanJson = function(text) {
     z=text.replace(/'/g,'\\"')
     y=z.replace(/point/,'Point')
@@ -1070,7 +1070,7 @@
   }
 
   //  triggerEvent(window, 'map:init', {id: id, map: map, options: options});
-  
+
   filly = function(counter) {
     if (counter == 0)
       return "blue"
@@ -1111,7 +1111,7 @@
               }
             ).bindPopup('whg:'+identifier+'<br/><b>'+
               '<a href="/places/'+identifier+'/portal">'+feature.properties.title+"</b></a>");
-            
+
             <!--console.log('marker feature?',marker)-->
             idToFeature[identifier] = marker
             itf_new.push({"id":identifier,"feature":marker})
@@ -1125,11 +1125,11 @@
           mappy.setView(bounds.getCenter(),5)
         } else {
           <!--mappy.fitBounds(bounds,{padding: [200, 0]})-->
-		  // TODO: some logic to provide padding if bounds too small
-          mappy.fitBounds(bounds)
-        }
-		    <!--console.log('searchResults from fetchTraceGeometry()')-->
-        showResults(data,'trace','suggest',title)
+      // TODO: some logic to provide padding if bounds too small
+        mappy.fitBounds(bounds)
+      }
+      <!--console.log('searchResults from fetchTraceGeometry()')-->
+      showResults(data,'trace','suggest',title)
     });
   }
 
@@ -1137,7 +1137,7 @@
   /*
     *** searchPlacesIdx() *** from #input_box keyup 
     index search w/o autocomplete -> showResults()
-	handles traces also !?
+  handles traces also !?
   */
   searchPlacesIdx = function (){
     <!--console.log('searchPlacesIdx()',search_scope)-->
@@ -1153,19 +1153,19 @@
     index = doctype =='place' ? 'whg' : 'traces'    
     // clear filters
     $(".list-inline").html('')
-	<!--console.log('bounds in js SearchPlacesIdx()',$("#boundsobj").val())-->
+  <!--console.log('bounds in js SearchPlacesIdx()',$("#boundsobj").val())-->
     $.get("/search/index",{
-        // qstr: $(".tt-input")[0].value,
-        // disabled typeahead
-        qstr: $('#input_box').val(), 
-        doc_type: doctype,
-        scope: scope,
-        idx: index,
-        fclasses: fclasses.join(','),
-        start: $("#input_start").val(),
-        end: $("#input_end").val(),
-        bounds: $("#boundsobj").val()
-		<!--,ds: $("#select_ds_search").val()-->
+      // qstr: $(".tt-input")[0].value,
+      // disabled typeahead
+      qstr: $('#input_box').val(), 
+      doc_type: doctype,
+      scope: scope,
+      idx: index,
+      fclasses: fclasses.join(','),
+      start: $("#input_start").val(),
+      end: $("#input_end").val(),
+      bounds: $("#boundsobj").val()
+    <!--,ds: $("#select_ds_search").val()-->
       }, function(data){
         window.searchres=data['suggestions']        
         // store locally
@@ -1186,33 +1186,33 @@
   */
   searchPlacesDb = function(){
     <!--console.log('searchPlacesDb()',search_scope)-->
-		startSearchSpinner()
-			fclasses = [];
-			$('#search_filters input:checked').each(function() {
-				fclasses.push($(this).val());
-			});
-		years = [Number($("#input_start").val()),Number($("#input_end").val())]
-		y = years.find(element => element != 0 );
-		ds_select = $("#select_ds_search").val()
-		dsid = ds_select!="0" ? parseInt(ds_select) : null
-		<!--console.log('params',{'fc':fclasses, "y":y, "dsid":dsid})-->
-		$.get("/search/db",{
-			name: $('#input_box').val(), 
-			name_contains: null, // if 'contains checked
-			// break array nec. - WHY???
-			fclasses: fclasses.join(','),
-			year: !y?null:y,
-			dsid: null,
-			context: "search",
-			bounds: $("#boundsobj").val()
-		}, function(data) {
+    startSearchSpinner()
+      fclasses = [];
+      $('#search_filters input:checked').each(function() {
+        fclasses.push($(this).val());
+      });
+    years = [Number($("#input_start").val()),Number($("#input_end").val())]
+    y = years.find(element => element != 0 );
+    ds_select = $("#select_ds_search").val()
+    dsid = ds_select!="0" ? parseInt(ds_select) : null
+    <!--console.log('params',{'fc':fclasses, "y":y, "dsid":dsid})-->
+    $.get("/search/db",{
+      name: $('#input_box').val(), 
+      name_contains: null, // if 'contains checked
+      // break array nec. - WHY???
+      fclasses: fclasses.join(','),
+      year: !y?null:y,
+      dsid: null,
+      context: "search",
+      bounds: $("#boundsobj").val()
+    }, function(data) {
       window.searchres=data['suggestions']
       // store locally
       localStorage.setItem('last_results',JSON.stringify(searchres))
       <!--localStorage.setItem('last_results',searchres)-->
-			showResults(searchres, doctype, "search")
-			spinner_search.stop()
-		})
+      showResults(searchres, doctype, "search")
+      spinner_search.stop()
+    })
   }
   /* 
     *** showResults() *** 
@@ -1225,7 +1225,7 @@
     title:    
   */
   showResults = function(data, doctype, scope='suggest', title){
-		<!--console.log('showResults() data length', data.length)-->
+    <!--console.log('showResults() data length', data.length)-->
     // always want result_div to show
     $("#result_div").show()
     var results_div = '';
@@ -1254,10 +1254,10 @@
         havegeom = 0
 
         data.forEach(function(sug){
-					<!--console.log('sug', sug)-->
-					typesArr=typesArr.concat(sug.types)
-					ccArr=ccArr.concat(sug.ccodes)
-          
+          <!--console.log('sug', sug)-->
+          typesArr=typesArr.concat(sug.types)
+          ccArr=ccArr.concat(sug.ccodes)
+
           if(!!sug.geom) {
             havegeom +=1
             sug.geom.forEach(function(g){
@@ -1271,9 +1271,9 @@
           countadded +=1
           <!--result_table += sugTableRow(sug, doctype, scope)   -->
         })
-				result_table += '</table>'
+        result_table += '</table>'
         <!--console.log('showResults() countadded, havegeom',countadded, havegeom)-->
-        
+
         // list of distinct types
         types = Array.from(new Set(typesArr));
         // TODO: on zoomend, any geoms in viewport are added to result_div
@@ -1292,9 +1292,9 @@
           cName = ccode_hash[p]['gnlabel']
           $('#cc_select').append($('<option></option>').val(p).html(cName+' ('+p+')'));
         });
-        
+
         if(scope=='search') {
-					<!--console.log('geoms from sugs, to renderPlaces()', geoms)-->
+          <!--console.log('geoms from sugs, to renderPlaces()', geoms)-->
           renderPlaces(geoms)
         }
         <!--if(data.length > 8){$("#result_filters").show()}-->
@@ -1302,12 +1302,12 @@
       }
     } else if (doctype == 'trace') {
       bboxer.addTo(mappy)
-			// data has features and bodies
-			bodies = data.bodies
-			console.log('trace data',data)
+      // data has features and bodies
+      bodies = data.bodies
+      console.log('trace data',data)
       result_table = '<table id="result_table">'+'<thead><tr><th>Place</th><th>Relation [earliest, latest]</th><th>geom?</th></tr></thead>'			
       <!--console.log('trace data bodies',data.bodies)-->
-			data.bodies.forEach(function(bod){ 
+      data.bodies.forEach(function(bod){ 
         // add a whg_id to bodies        
         result_table += sugLister(bod, doctype, scope)
       })
@@ -1322,32 +1322,32 @@
     $("#result_div").show()
     $("#reset_search").show()
     $("#search_info").hide()
-    
-		<!--$("#traces_info").hide()-->
-		let src = search_scope=='idx'?'UNION INDEX':'DATABASE'
+
+    <!--$("#traces_info").hide()-->
+    let src = search_scope=='idx'?'UNION INDEX':'DATABASE'
     let elem = document.getElementById('result_div')
-    
-		titleMarkup = doctype=='trace'?'<p class="pl-1 mb-1 strong">'+title+' :: a Linked Traces dataset ('+data.bodies.length+' related places) <span class="ml-2">Places with geometry listed first</span></p>':''
+
+    titleMarkup = doctype=='trace'?'<p class="pl-1 mb-1 strong">'+title+' :: a Linked Traces dataset ('+data.bodies.length+' related places) <span class="ml-2">Places with geometry listed first</span></p>':''
     titleMarkup += (doctype=='place' ? src+' SEARCH RESULTS (<span id="rowcount">'+data.length+'</span>)<span class="ml-4">List may include records with no geometry</span>' : '')
     <!--console.log('titleMarkup',titleMarkup)-->
-  
+
     $("#result_title").html(titleMarkup)
     $("#result_title").fadeIn()
-    
+
     $("#result_div").html(result_table)
 
     $(".fa-sort").on('click',function(){
       fubar = $(this)
       sortTable($(this).data('id'), $(this).attr('ref'))
     })
-    
+
     let headerbg = search_scope=='idx'?'#f1fff1':'#eee'
     $("#result_table th").css('background-color', headerbg )
 
     // empty the typeahead suggestions
     $(".tt-dataset").html('')
-        
-    
+
+
     $(".trace-item").on('click',function(e){
       // reset all markers to default
       traces.setStyle({"fillColor":"blue","radius":5})
@@ -1362,13 +1362,13 @@
         $(this).html(h)
       }
     })
-    
+
     // highlight map marker from list
     $(".search-row").on('click',function(e){
-			// identifier either a whgid (index search) or pid (db search)
+      // identifier either a whgid (index search) or pid (db search)
       layerid = $(this).data('id')
       console.log('search-row click', layerid)
-      
+
       f = $(this).data('id') !='none'?idToFeature[layerid]:null
       // if there's a feature, highlight it
       if(f){
@@ -1417,7 +1417,7 @@
   renderPlaces = function(geoms) {
     if(features){ features.clearLayers() }
     if(typeof(traces)!=='undefined'){ traces.clearLayers() }
-    
+
     featcoll = {"type":"FeatureCollection","features":geoms}
     <!--console.log('geodata prior to render',data)-->
     var count_features = 0
@@ -1430,7 +1430,7 @@
     features = L.geoJSON(featcoll, {
       pointToLayer: function (feature, latlng) {
         count_features +=1;
-		    // if feature has src key, it's from a database search
+        // if feature has src key, it's from a database search
         identifier = feature.src?feature.properties.pid:feature.properties.whgid;
         if(feature.type=='Point'){
           marker = L.circleMarker(latlng, styles.marker_default)
@@ -1443,14 +1443,14 @@
       onEachFeature: function(feature,layer) {
         f=feature; l=layer;
         <!--identifier = feature.properties.whgid;-->
-				// if feature has src key, it's from a database search; also, popup link differs
-				if(feature.src){
-					identifier = feature.properties.pid
-					popup_link = ' (<a href="/places/'+identifier+'/detail">place page</a>)'
-				} else {
-					identifier = feature.properties.whgid
-					popup_link = ' (<a href="/places/'+identifier+'/portal">place portal</a>)'
-				}
+        // if feature has src key, it's from a database search; also, popup link differs
+        if(feature.src){
+          identifier = feature.properties.pid
+          popup_link = ' (<a href="/places/'+identifier+'/detail">place page</a>)'
+        } else {
+          identifier = feature.properties.whgid
+          popup_link = ' (<a href="/places/'+identifier+'/portal">place portal</a>)'
+        }
         if(feature.type != 'Point'){
           layer.setStyle(['LineString','MultiLineString'].indexOf(feature.type)>-1 ? styles.line_default:styles.pgon_default)
           idToFeature[identifier] = layer
@@ -1464,9 +1464,9 @@
           ele = $("#result_div")
           // set all to white background
           $(".search-row").css('background-color','#fff')
-					
+
           fid = search_scope=='idx'?this.feature.geometry.properties.whgid:this.feature.geometry.properties.pid
-					console.log('fid of clicked layer', fid)
+          console.log('fid of clicked layer', fid)
           foo=$("tr.place-item").find('[data-id="'+fid+'"]').closest('.search-row')
           foo.css('background-color','#f4f4d7')
           <!--foo[0].scrollIntoView({behavior:'smooth'})-->
@@ -1480,7 +1480,7 @@
 
     // conditionally add a bbox control
     <!--if (bboxer._map == undefined && search_class == 'place'){ bboxer.addTo(mappy); }-->
-    
+
     bounds = features.getBounds()
     <!--mappy.setView(bounds.getCenter(),5) -->
     if(geoms.length > 0 ){
@@ -1496,29 +1496,29 @@
   function sugLister(sug, doctype, scope) {
     <!--console.log(sug)-->
     if (doctype=='place') {
-			<!--linkcount = sug['ds'] ? '' : ' ('+(parseInt(sug['linkcount']) +1)+')'-->
-			linkcount = parseInt(sug['linkcount']) +1
-			attestations = sug['ds'] ? '' : ' <i>' + linkcount + (linkcount>1?' linked attestations</i>; ':' attestation</i>; ')
+      <!--linkcount = sug['ds'] ? '' : ' ('+(parseInt(sug['linkcount']) +1)+')'-->
+      linkcount = parseInt(sug['linkcount']) +1
+      attestations = sug['ds'] ? '' : ' <i>' + linkcount + (linkcount>1?' linked attestations</i>; ':' attestation</i>; ')
       <!--console.log('variants',sug['variants'])-->
-			vcount = sug['variants'].length
-			variants = vcount > 0 ? sug['variants'].sort().slice(0,6).join('; ') : ''
+      vcount = sug['variants'].length
+      variants = vcount > 0 ? sug['variants'].sort().slice(0,6).join('; ') : ''
       <!--console.log(sug['variants'])-->
-			if (scope=='search'){
+      if (scope=='search'){
         ccodes = sug['ccodes'] != '' ? ' '+sug['ccodes']+' ' : ''
         types = sug['types'].join('; ')
         geo = sug['geom'].length > 0 ? ' {% fontawesome_icon 'globe' color='#666' %}' : ''
-				// whgid if index search, else pid
-				identifier = sug['ds'] ? sug['pid'] : sug['whg_id']
+        // whgid if index search, else pid
+        identifier = sug['ds'] ? sug['pid'] : sug['whg_id']
         dsid = sug['ds'] ? parseInt(sug['ds']['id']) : ''
-				// add dataset link if this is db search result
+        // add dataset link if this is db search result
         if(sug['ds']){
           dslink = dsid != 394 ? '<a href="#" class="ds-link" data-id='+dsid+'>'+sug['ds']['title']+'</a>': sug['ds']['title']
         } else {
           dslink = ''
         }
-				// link destination varies
-				link_class = sug['ds'] ? 'db-link' : 'place-link'
-				variants = vcount > 5 ? variants +' ... <i>'+vcount+' total</i>' : variants
+        // link destination varies
+        link_class = sug['ds'] ? 'db-link' : 'place-link'
+        variants = vcount > 5 ? variants +' ... <i>'+vcount+' total</i>' : variants
 
         // table row
         item = '<tr class="search-row place-item" data-id="'+identifier
@@ -1532,11 +1532,11 @@
         +'<td>'+types+'</td>'
         +'<td>'+variants+'</td>'
         +'<td class="text-center">'+geo+'</td></tr>'
-				
-			} else if (scope=='suggest') {
-				// was used for autocomplete, now deprecated
+
+      } else if (scope=='suggest') {
+        // was used for autocomplete, now deprecated
         item = '<div class="sug_row sug-item">'+sug['name']+' '+variants+'</div>'
-			}
+      }
     } else if (doctype=='trace') {
       <!--console.log('sug',sug)-->
       let pid = sug['place_id'] != null ? sug['place_id'] : ""
@@ -1551,7 +1551,7 @@
       '<td><a class="trace-link" href="#" data-id="'+whgid+'"><b>'+sug.title+'</a>'+(whgid=='none'?' (<sr>no geometry yet</sr>)':'')+'</td>'+'<td>'+parseRels(sug.relations)+'</td><td>'+
       (whgid=='none'?'&mdash;':'<i class="fa fa-globe"></i>')
       +'</td></tr>'
-      
+
       <!--if("depiction" in sug){-->
         <!--item += '<div class="trace_detail"><img class="trace-img" src="'+sug['depiction']+'"/></div>'-->
       <!--}-->
@@ -1563,27 +1563,27 @@
   // TODO: doesn't reach into when.timespans; Indias data malformed
   function parseRels(rels){
     html=''
-	timespans=[]; starts=[]; ends=[]
+  timespans=[]; starts=[]; ends=[]
     for(r in rels){
-	  html += rels[r].relation
-	  for(w in rels[r].when){
-	  timespans.push(rels[r].when[w])
-	}}
-	reg = /(-?\d{1,4})\D?/
-	for (t in timespans){
-	  // no 'in', 'earliest' or 'latest' here
-	  starts.push(Number(timespans[t].start.match(reg)[1]))
-	  ends.push(!!timespans[t].end ? Number(timespans[t].end.match(reg)[1]) : -1)
-	} 
-	<!--console.log('starts',starts,'ends',ends)-->
-	minmax=' ['+[starts.length>0?Math.max.apply(null, starts):'-',ends.length>0?Math.max.apply(null, ends):'-']+']'
-	if(!starts.length==0 && !ends.length==0){ html += minmax}
+    html += rels[r].relation
+    for(w in rels[r].when){
+    timespans.push(rels[r].when[w])
+  }}
+  reg = /(-?\d{1,4})\D?/
+  for (t in timespans){
+    // no 'in', 'earliest' or 'latest' here
+    starts.push(Number(timespans[t].start.match(reg)[1]))
+    ends.push(!!timespans[t].end ? Number(timespans[t].end.match(reg)[1]) : -1)
+  } 
+  <!--console.log('starts',starts,'ends',ends)-->
+  minmax=' ['+[starts.length>0?Math.max.apply(null, starts):'-',ends.length>0?Math.max.apply(null, ends):'-']+']'
+  if(!starts.length==0 && !ends.length==0){ html += minmax}
     return html
   }   
   // from sugLister()    
   // TODO: doesn't reach into when.timespans; Indias data malformed
   function parseWhen(when){
-	console.log('parseWhen()',when)
+  console.log('parseWhen()',when)
     html=''
     for (w in when){
       s = 'start' in when[w]?'start: '+when[w]['start']:'earliest: '+when[w]['earliest']
@@ -1594,193 +1594,193 @@
     return html
   }  
 
-	// from parserPlace() builds link for external place record
-	function url_extplace(identifier) {
-		// abbreviate links not in aliases.base_urls
-		if(identifier.startsWith('http')) {
-			let tag = identifier.replace(/.+\/\/|www.|\..+/g, '')
-			link = '<a href="'+identifier+'" target="_blank">'+tag+'{% fontawesome_icon 'external-link' color='#336699' %},  </a>'          
-		} else {
-		link = '<a href="" class="ext" data-target="#ext_site">'+identifier+'&nbsp;{% fontawesome_icon 'external-link' color='#336699' %}</a>, '    
-		}
-		return link
-	}
-	
-	// from parsePlace() builds link for external placetype record
-	function url_exttype(type) {
-		link = ' <a href="#" class="exttab" data-id='+type.identifier+
-			'>('+type.label+' {% fontawesome_icon 'external-link' color='#336699' %})</a>'
-		return link
-	}
-	
-	// parse most data from a Place object
-	function parsePlace(data) {
-		window.featdata = data
-		
-		function onlyUnique(array) { 
-			const map = new Map();
-			const result = [];
-			for (const item of array) {
-				if(!map.has(item.identifier)){
-						map.set(item.identifier, true);
-						result.push({
-								identifier: item.identifier,
-								type: item.type,
-								aug: item.aug
-						});
-				}
-			}
-			return(result)
-		}
-		<!--timespan_arr = []-->
-		//
-		// TITLE 
-		descrip = '<p><b>Title</b>: <span id="row_title" class="larger text-danger">'+data.title+'</span>'
-		//
-		// DATASET
-		descrip+='<p><b>Dataset</b>: '+data.dataset + ' ('+data.id+')'		
-		//
-		// NAME VARIANTS
-		descrip+='<p class="scroll65"><b>Variants</b>: '
-		for (n in data.names) {
-			let name = data.names[n]
-			descrip+= '<p>'+name.toponym !=''?name.toponym+'; ': ''
-		}
-		//
-		// TYPES
-		// may include sourceLabel:"" **OR** sourceLabels[{"label":"","lang":""},...]
-		descrip+='</p><p><b>Types</b>: '
-		typeids = ''
-		for (t in data.types) {
-			str = ''
-			var type = data.types[t]
-			if('sourceLabels' in type){
-				srclabels = type.sourceLabels
-				for(l in srclabels){
-					label = srclabels[l]['label']
-					str = label !='' ? label + '; ' : ''
-				}
-			} else if ('sourceLabel' in type) {
-				str = type.sourceLabel !='' ? type.sourceLabel + '; ' : ''
-			}
-			if(type.label!=''){ str += url_exttype(type) + ' ' }
-			typeids+=str
-		}
-		descrip += typeids.replace(/(; $)/g, "") +'</p>'
-		
-		//
-		// LINKS
-		// 
-		descrip += '<p class="mb-0"><b>Links</b>: <i>original: </i>'
-		close_count = added_count = related_count = 0
-		html_close = html_added = html_related = ''
-		if (data.links.length > 0) {
-			links=data.links
-			links_arr = onlyUnique(data.links)
-			<!--console.log('distinct data.links',links_arr)-->
-			for (l in links_arr) {
-				if (links_arr[l].aug == true) {
-					added_count +=1
-					html_added += url_extplace(links_arr[l].identifier)
-				} else {
-					close_count +=1
-					html_close+=url_extplace(links_arr[l].identifier)
-				}
-			}
-			descrip += close_count > 0 ? html_close : 'none; '
-			descrip += added_count > 0 ? '<i>added</i>: '+html_added : '<i>added</i>: none'
-		} else { descrip += "<i class='small'>no links established yet</i>" }
-		descrip += '</p>'
+  // from parserPlace() builds link for external place record
+  function url_extplace(identifier) {
+    // abbreviate links not in aliases.base_urls
+    if(identifier.startsWith('http')) {
+      let tag = identifier.replace(/.+\/\/|www.|\..+/g, '')
+      link = '<a href="'+identifier+'" target="_blank">'+tag+'{% fontawesome_icon 'external-link' color='#336699' %},  </a>'          
+    } else {
+    link = '<a href="" class="ext" data-target="#ext_site">'+identifier+'&nbsp;{% fontawesome_icon 'external-link' color='#336699' %}</a>, '    
+    }
+    return link
+  }
 
-		//
-		// RELATED
-		<!--right=''-->
-		if (data.related.length > 0) {
-			parent='<p class="mb-0"><b>Parent(s)</b>: '; 
-			related='<p class="mb-0"><b>Related</b>: ';
-			for (r in data.related){
-				rel = data.related[r]
-				<!--console.log('rel',rel)-->
-				if (rel.relation_type == 'gvp:broaderPartitive'){
-					parent += '<span class="h1em">'+rel.label
-					parent += 'when' in rel && !('timespans' in rel.when) ? 
-						', '+rel.when.start.in+'-'+rel.when.end.in : 
-						'when' in rel && ('timespans' in rel.when) ? ', '+
-							minmaxer(rel.when.timespans) : ''
-							<!--rel.when.timespans : ''-->
-					parent += '</span>; '
-				} 
-				else {
-					related += '<p class="h1em">'+rel.label+ ', '+rel.when.start.in+'-'+rel.when.end.in+'</p>'
-				}
-			}
-			descrip+=parent.length > 39 ? parent :''
-			descrip+=related.length > 37 ? related :''
-		}
-		//
-		// DESCRIPTIONS
-		// TODO: link description to identifier URI if present
-		if (data.descriptions.length > 0 ) {
-			<!--val = data.descriptions[0]['value'].substring(0,300)-->
-			val = data.descriptions[0]['value']
-			if(val != undefined){
-				descrip+='<p><b>Description</b>: '+(val.startsWith('http')?'<a href="'+val+'" target="_blank">Link</a>':val)
-				+' ... </p>'
-			}
-		}
-		//
-		// CCODES
-		//
-		<!--if (data.ccodes.length > 0) {-->
-		if (!!data.countries) {
-			<!--console.log('data.countries',data.countries)-->
-			descrip+='<p><b>Modern country bounds</b>: '+ data.countries.join(', ')+'</p>'
-		}
-		//
-		// MINMAX
-		//
-		if(data.minmax && data.minmax.length>0){
-			descrip += '<p><b>When</b>: earliest: '+data.minmax[0]+'; latest: '+data.minmax[1]    
-		}
-		descrip += '</div>'
-		return descrip
-	}
-	// put a place record in #result_extra
-	function getPlace(pid){
-		<!--console.log('getPlace() - why???', pid)-->
-		$.ajax({
-			url: "/api/place/"+pid,
-			}).done(function( data ) {
+  // from parsePlace() builds link for external placetype record
+  function url_exttype(type) {
+    link = ' <a href="#" class="exttab" data-id='+type.identifier+
+      '>('+type.label+' {% fontawesome_icon 'external-link' color='#336699' %})</a>'
+    return link
+  }
+
+  // parse most data from a Place object
+  function parsePlace(data) {
+    window.featdata = data
+
+    function onlyUnique(array) { 
+      const map = new Map();
+      const result = [];
+      for (const item of array) {
+        if(!map.has(item.identifier)){
+          map.set(item.identifier, true);
+          result.push({
+            identifier: item.identifier,
+            type: item.type,
+            aug: item.aug
+          });
+        }
+      }
+      return(result)
+    }
+    <!--timespan_arr = []-->
+    //
+    // TITLE 
+    descrip = '<p><b>Title</b>: <span id="row_title" class="larger text-danger">'+data.title+'</span>'
+    //
+    // DATASET
+    descrip+='<p><b>Dataset</b>: '+data.dataset + ' ('+data.id+')'		
+    //
+    // NAME VARIANTS
+    descrip+='<p class="scroll65"><b>Variants</b>: '
+    for (n in data.names) {
+      let name = data.names[n]
+      descrip+= '<p>'+name.toponym !=''?name.toponym+'; ': ''
+    }
+    //
+    // TYPES
+    // may include sourceLabel:"" **OR** sourceLabels[{"label":"","lang":""},...]
+    descrip+='</p><p><b>Types</b>: '
+    typeids = ''
+    for (t in data.types) {
+      str = ''
+      var type = data.types[t]
+      if('sourceLabels' in type){
+        srclabels = type.sourceLabels
+        for(l in srclabels){
+          label = srclabels[l]['label']
+          str = label !='' ? label + '; ' : ''
+        }
+      } else if ('sourceLabel' in type) {
+        str = type.sourceLabel !='' ? type.sourceLabel + '; ' : ''
+      }
+      if(type.label!=''){ str += url_exttype(type) + ' ' }
+      typeids+=str
+    }
+    descrip += typeids.replace(/(; $)/g, "") +'</p>'
+
+    //
+    // LINKS
+    // 
+    descrip += '<p class="mb-0"><b>Links</b>: <i>original: </i>'
+    close_count = added_count = related_count = 0
+    html_close = html_added = html_related = ''
+    if (data.links.length > 0) {
+      links=data.links
+      links_arr = onlyUnique(data.links)
+      <!--console.log('distinct data.links',links_arr)-->
+      for (l in links_arr) {
+        if (links_arr[l].aug == true) {
+          added_count +=1
+          html_added += url_extplace(links_arr[l].identifier)
+        } else {
+          close_count +=1
+          html_close+=url_extplace(links_arr[l].identifier)
+        }
+      }
+      descrip += close_count > 0 ? html_close : 'none; '
+      descrip += added_count > 0 ? '<i>added</i>: '+html_added : '<i>added</i>: none'
+    } else { descrip += "<i class='small'>no links established yet</i>" }
+    descrip += '</p>'
+
+    //
+    // RELATED
+    <!--right=''-->
+    if (data.related.length > 0) {
+      parent='<p class="mb-0"><b>Parent(s)</b>: '; 
+      related='<p class="mb-0"><b>Related</b>: ';
+      for (r in data.related){
+        rel = data.related[r]
+        <!--console.log('rel',rel)-->
+        if (rel.relation_type == 'gvp:broaderPartitive'){
+          parent += '<span class="h1em">'+rel.label
+          parent += 'when' in rel && !('timespans' in rel.when) ? 
+            ', '+rel.when.start.in+'-'+rel.when.end.in : 
+            'when' in rel && ('timespans' in rel.when) ? ', '+
+              minmaxer(rel.when.timespans) : ''
+              <!--rel.when.timespans : ''-->
+          parent += '</span>; '
+        } 
+        else {
+          related += '<p class="h1em">'+rel.label+ ', '+rel.when.start.in+'-'+rel.when.end.in+'</p>'
+        }
+      }
+      descrip+=parent.length > 39 ? parent :''
+      descrip+=related.length > 37 ? related :''
+    }
+    //
+    // DESCRIPTIONS
+    // TODO: link description to identifier URI if present
+    if (data.descriptions.length > 0 ) {
+      <!--val = data.descriptions[0]['value'].substring(0,300)-->
+      val = data.descriptions[0]['value']
+      if(val != undefined){
+        descrip+='<p><b>Description</b>: '+(val.startsWith('http')?'<a href="'+val+'" target="_blank">Link</a>':val)
+        +' ... </p>'
+      }
+    }
+    //
+    // CCODES
+    //
+    <!--if (data.ccodes.length > 0) {-->
+    if (!!data.countries) {
+      <!--console.log('data.countries',data.countries)-->
+      descrip+='<p><b>Modern country bounds</b>: '+ data.countries.join(', ')+'</p>'
+    }
+    //
+    // MINMAX
+    //
+    if(data.minmax && data.minmax.length>0){
+      descrip += '<p><b>When</b>: earliest: '+data.minmax[0]+'; latest: '+data.minmax[1]    
+    }
+    descrip += '</div>'
+    return descrip
+  }
+  // put a place record in #result_extra
+  function getPlace(pid){
+    <!--console.log('getPlace() - why???', pid)-->
+    $.ajax({
+      url: "/api/place/"+pid,
+      }).done(function( data ) {
         console.log('getPlace() - why???', pid)
-				$("#result_extra").html(parsePlace(data))
-				<!--spinner_detail.stop()-->
-				// events on detail items
-				$('.ext').on('click', function(e) {
-					e.preventDefault();
-					str=$(this).text()
-					<!--console.log('str (identifier)',str)-->
-					// URL identifiers can be 'http*' or an authority prefix
-					if(str.substring(0,4).toLowerCase() == 'http'){
-						url = str
-					} else {
-						var re = /(http|bnf|cerl|dbp|gn|gnd|gov|loc|pl|tgn|viaf|wd|wdlocal|whg|wp):(.*?)$/;
-						url=base_urls[str.match(re)[1]]+str.match(re)[2] 
-						console.log('url',url)
-					}
-					window.open(url, '_blank');
-				});
-				$('.exttab').on('click', function(e) {
-					e.preventDefault();
-					id=$(this).data('id')
-					console.log('id',id)
-					var re = /(http|dbp|gn|tgn|wd|loc|viaf|aat):(.*?)$/;
-					url=id.match(re)[1]=='http' ? id : base_urls[id.match(re)[1]]+id.match(re)[2]
-					console.log('url',url)
-					window.open(url,'_blank')
-				});
-		});
-		<!--spinner_detail.stop()-->
-	}
+        $("#result_extra").html(parsePlace(data))
+        <!--spinner_detail.stop()-->
+        // events on detail items
+        $('.ext').on('click', function(e) {
+          e.preventDefault();
+          str=$(this).text()
+          <!--console.log('str (identifier)',str)-->
+          // URL identifiers can be 'http*' or an authority prefix
+          if(str.substring(0,4).toLowerCase() == 'http'){
+            url = str
+          } else {
+            var re = /(http|bnf|cerl|dbp|gn|gnd|gov|loc|pl|tgn|viaf|wd|wdlocal|whg|wp):(.*?)$/;
+            url=base_urls[str.match(re)[1]]+str.match(re)[2] 
+            console.log('url',url)
+          }
+          window.open(url, '_blank');
+        });
+        $('.exttab').on('click', function(e) {
+          e.preventDefault();
+          id=$(this).data('id')
+          console.log('id',id)
+          var re = /(http|dbp|gn|tgn|wd|loc|viaf|aat):(.*?)$/;
+          url=id.match(re)[1]=='http' ? id : base_urls[id.match(re)[1]]+id.match(re)[2]
+          console.log('url',url)
+          window.open(url,'_blank')
+        });
+    });
+    <!--spinner_detail.stop()-->
+  }
 
   // map feature styles
   styles = {
@@ -1813,7 +1813,7 @@
       fillOpacity:1,fillColor:"yellow",color:"#000"
     }
   }
-  
+
   /* _LISTENERS */ 
   /*
   // catch Enter key press for places
@@ -1833,10 +1833,10 @@
       <!--$("#traces_info").hide()-->
       <!--if (search_scope == 'idx'){-->
       if (searchScope() == 'idx'){
-          searchPlacesIdx()		
-        } else {
-          searchPlacesDb()
-        }
+        searchPlacesIdx()		
+      } else {
+        searchPlacesDb()
+      }
       } 
   })
   // 
@@ -1941,38 +1941,38 @@
     console.log('changed class', $(this).val())
     if ($(this).val() == 'place'){
       search_class = 'place'
-			if(!$("#search_info").is(":visible")){
+      if(!$("#search_info").is(":visible")){
         $("#search_info").fadeIn()
-				$("#scope_tabs").show()
-			}
+        $("#scope_tabs").show()
+      }
       $("#traces_info").hide()
-			$("#filters_opener").show()
-			$("#search_input").show()
-			$("#search_filters").fadeIn()
-			$("#search_input_traces").hide()
+      $("#filters_opener").show()
+      $("#search_input").show()
+      $("#search_filters").fadeIn()
+      $("#search_input_traces").hide()
     } else { // 
       search_class = 'trace'
       $("#search_info").fadeOut(400)
-			if(!$("#traces_info").is(":visible")){
-				$("#traces_info").show()
-			}
+      if(!$("#traces_info").is(":visible")){
+        $("#traces_info").show()
+      }
       $("#scope_tabs").hide()
-			$("#filters_opener").hide()
-			$("#search_input").hide()
+      $("#filters_opener").hide()
+      $("#search_input").hide()
       $("#result_filters").hide()
-			$("#search_filters").hide()
+      $("#search_filters").hide()
       // then show stuff
-			$("#search_input_traces").show()
-			$('.nav-pills a[href="#pills-why"]').tab('show')
-		}
-		
-		$('#input_box').val('')
-		$('#input_box').attr("placeholder",this.getAttribute("rel"));
-		clearit()
+      $("#search_input_traces").show()
+      $('.nav-pills a[href="#pills-why"]').tab('show')
+    }
+
+    $('#input_box').val('')
+    $('#input_box').attr("placeholder",this.getAttribute("rel"));
+    clearit()
   });
   // dataset dropdown
   <!--$("#select_ds_search").change(function(){-->
-	  <!--console.log('ds chosen', $(this).val())-->
+    <!--console.log('ds chosen', $(this).val())-->
   <!--})-->
   // radio $("#checkbox_div input:radio").click(function() {
   $(".filters-title input:radio").click(function(){
@@ -1984,7 +1984,7 @@
       $("#div_ds_select").show()
     }
   })
-  
+
   /* UTILITY FUNCTIONS */
   // restores page w/o refresh
   clearit = function(){
@@ -2002,14 +2002,14 @@
     <!--if(features && !shown_layers) {features.clearLayers(); mappy.setView([38, 10], 0)}-->
     if(features) {features.clearLayers(); mappy.setView([38, 10], 0)}
   }
-  
+
   objLength = function(obj){
     return Object.keys(obj).length
   }
   spin_opts = { scale: .8, top: '70%', 'right':'30%'}
   startSearchSpinner = function(){
-		window.spinner_search = new Spin.Spinner(spin_opts).spin();
-		$("#search_filters").append(spinner_search.el);   
+    window.spinner_search = new Spin.Spinner(spin_opts).spin();
+    $("#search_filters").append(spinner_search.el);   
   }
   switchTab = function(scope){
     if(scope == 'db'){ 

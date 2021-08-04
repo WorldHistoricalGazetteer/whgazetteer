@@ -162,30 +162,43 @@ class DefaultAccountAdapter(object):
   # 'request': <WSGIRequest: POST '/accounts/password/reset/'>, 
   # 'username': 'fubar'}
 
-
-  # alternate send_mail()
+  #
+  # yet another alternate send_mail(), uses URL_FRONT
+  # works for v2 (dev.)
   def send_mail(self, template_prefix, email, context):
-    print('send_mail() context', context)
-    cwd = os.getcwd()
-    try:
-      prod = cwd.startswith('/home')
-      prod_origin = 'http://whgazetteer.org'
-      dev_origin = 'http://localhost:8000'
-      if 'key' in context: # it's activate an account
-        action = 'activate'
-        url_in = context['activate_url']
-      else: # it's reset password
-        action = 'password_reset'
-        url_in = context['password_reset_url']
-      url = url_in if not prod else url_in.replace(dev_origin, prod_origin)      
-      #print('url created in send_mail()', url)
-      context[action+'_url'] = url
-      #print('send_mail() context to render_mail() ->', context)
-      msg = self.render_mail(template_prefix, email, context)
-      msg.send()
+    print('context in send_mail()',context)
+    try: 
+        context['activate_url'] = settings.URL_FRONT + \
+                'accounts/confirm-email/' + context['key']
+        msg = self.render_mail(template_prefix, email, context)
+        msg.send()
     except:
-      print('send_mail() error')
-      raise
+        print('send_mail() error')
+        raise  
+      
+  # alternate send_mail()
+  #def send_mail(self, template_prefix, email, context):
+    #print('send_mail() context', context)
+    #cwd = os.getcwd()
+    #try:
+      #prod = cwd.startswith('/home')
+      #prod_origin = 'http://whgazetteer.org'
+      #dev_origin = 'http://localhost:8000'
+      #if 'key' in context: # it's activate an account
+        #action = 'activate'
+        #url_in = context['activate_url']
+      #else: # it's reset password
+        #action = 'password_reset'
+        #url_in = context['password_reset_url']
+      #url = url_in if not prod else url_in.replace(dev_origin, prod_origin)      
+      ##print('url created in send_mail()', url)
+      #context[action+'_url'] = url
+      ##print('send_mail() context to render_mail() ->', context)
+      #msg = self.render_mail(template_prefix, email, context)
+      #msg.send()
+    #except:
+      #print('send_mail() error')
+      #raise
 
   def get_signup_redirect_url(self, request):
     return resolve_url(app_settings.SIGNUP_REDIRECT_URL)
@@ -503,8 +516,11 @@ class DefaultAccountAdapter(object):
   def send_confirmation_mail(self, request, emailconfirmation, signup):
     current_site = get_current_site(request)
     activate_url = self.get_email_confirmation_url(request, emailconfirmation)
+    print('activate_url',activate_url)
+    print('current_site',current_site)
     ctx = {
           "user": emailconfirmation.email_address.user,
+            #"activate_url": activate_url,
             "activate_url": activate_url,
             "current_site": current_site,
             "key": emailconfirmation.key,

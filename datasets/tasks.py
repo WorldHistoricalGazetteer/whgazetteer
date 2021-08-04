@@ -1138,7 +1138,8 @@ def align_wdlocal(pk, **kwargs):
     else:
       qobj['authids'] = []
       
-    #
+    # TODO: ??? skip records that already have a Wikidata record in l_list
+    # they are returned as Pass 0 hits right now
     # run pass0-pass2 ES queries
     #print('qobj in align_wd_local()',qobj)
     result_obj = es_lookup_wdlocal(qobj, bounds=bounds)
