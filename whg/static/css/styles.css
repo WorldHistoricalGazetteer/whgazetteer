@@ -682,7 +682,7 @@ em { color: #993333;}
    border-top: 0;
 }
 #coll_dslist {
-  /*height: fit-content;*/
+  height: calc(100vh - 180px);
   position: relative;
   /*border: 1px solid lightgray;*/
   /*background-color: oldlace;*/
@@ -693,7 +693,7 @@ em { color: #993333;}
 }
 #coll_dscards { 
   position:absolute;
-  /*max-height: 95%;*/
+  max-height: 100%;
   overflow-y: auto; 
 }
 
@@ -1025,6 +1025,7 @@ em { color: #993333;}
 .tab-pane {
   padding: 3px 16px;
   background-color: white;
+  height: calc(100vh - 125px);
   /* min-height: 128px; */
   border-left: #dee2e6 1px solid;
   border-right: #dee2e6 1px solid;

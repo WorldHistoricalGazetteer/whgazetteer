@@ -248,7 +248,8 @@
     $('a').show().filter(':not(.history1)').click(function(){
       localStorage.removeItem('keep')
     })
-    if(localStorage.getItem('last_results') == "undefined"){
+    
+    if(!localStorage.getItem('last_results') || localStorage.getItem('last_results') == "undefined"){
       $("#backlink").hide()
     }
     <!--$('a').click(function() {-->

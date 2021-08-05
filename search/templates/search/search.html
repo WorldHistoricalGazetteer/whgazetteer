@@ -1026,10 +1026,9 @@
             results[i].style.display = "";
           }
         }
-        sortTable(2, 'asc')
-        <!--if(search_class=='trace'){-->
-          <!--$("#result_title p").append('<span id="filter_msg" class="ml-3 larger">results without geometry filtered</span>')        -->
-        <!--}-->
+        if(results.is(':visible')){
+          sortTable(2, 'asc')
+        }
       }
     })
 
