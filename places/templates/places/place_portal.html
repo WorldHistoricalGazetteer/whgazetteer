@@ -44,7 +44,7 @@
 {% block content %}
 <div class="container">
   <div id="place_title">
-    <span class="mr-1 text-muted smaller"> <a href="javascript:window.history.go(-1);" class="history1">return to search results</a></span>
+    <span id="backlink" class="mr-1 text-muted smaller"> <a href="javascript:window.history.go(-1);" class="history1">return to search results</a></span>
     <h4>{{ title }}</h4>
   </div>
   <div id="place_content" class="tab-content">
@@ -248,6 +248,9 @@
     $('a').show().filter(':not(.history1)').click(function(){
       localStorage.removeItem('keep')
     })
+    if(localStorage.getItem('last_results') == "undefined"){
+      $("#backlink").hide()
+    }
     <!--$('a').click(function() {-->
       <!--localStorage.removeItem('keep')-->
     <!--})-->
