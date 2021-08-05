@@ -28,8 +28,7 @@ AUTHORITY_BASEURI = {
 }
 
 COMMENT_TAGS = [
-    ('bad_link','Incorrect match/link'),
-    ('bad_type','Incorrect place type'),
+    ('misplaced','Record misplaced in this set'),
     ('typo','Typo'),
     ('other','Other'),
 ]

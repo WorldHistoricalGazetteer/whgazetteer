@@ -1183,7 +1183,7 @@ span.edit-row {
 **/
 .create-comment {
   padding: 0 2px;
-  background-color: white;
+  /*background-color: white;*/
   height: 20px;
   margin-bottom: 4px;
 }
