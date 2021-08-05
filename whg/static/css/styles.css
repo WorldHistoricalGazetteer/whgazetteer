@@ -1025,13 +1025,14 @@ em { color: #993333;}
 .tab-pane {
   padding: 3px 16px;
   background-color: white;
-  height: calc(100vh - 125px);
-  /* min-height: 128px; */
+  min-height: 128px; 
   border-left: #dee2e6 1px solid;
   border-right: #dee2e6 1px solid;
   border-bottom: #dee2e6 1px solid;
 }
-
+#summary.tab-pane {
+  height: calc(100vh - 125px);
+}
 .p-tight p {
   margin-bottom: .6rem;
 }
