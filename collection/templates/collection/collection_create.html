@@ -83,7 +83,7 @@
               {% fontawesome_icon 'plus-square' color='#336699' %} add</a>
           </p>
           <!-- id, label, title, description, creator, create_date, webpage, numrows, datatype -->
-          <div id="coll_dscards">
+          <div id="coll_dscards_create">
             {% if coll_dsset|length == 0 %}<p id="msg" class="font-italic smaller">None yet...</p>{% endif %}
             <!--{ if action == 'update' %}-->
             {% for d in coll_dsset %}
@@ -162,7 +162,7 @@
             <!--+'<a href="javascript:{ clearDataset('+d.id+') }" class="float-right">'-->
               +'{% fontawesome_icon "minus-square" color="#336699" %} remove</a>'
           +'</p></div></div>'
-    $("#coll_dscards").append(card)
+    $("#coll_dscards_create").append(card)
     <!--console.log(card)-->
   }
   // adds, displays single dataset

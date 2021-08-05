@@ -696,6 +696,10 @@ em { color: #993333;}
   max-height: 100%;
   overflow-y: auto; 
 }
+#coll_dscards_create { 
+  position:absolute;
+  overflow-y: auto; 
+}
 
 .ds_card {
   padding: .2rem;
