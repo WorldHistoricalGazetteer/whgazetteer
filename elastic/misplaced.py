@@ -9,7 +9,7 @@ def misplaced(pid, idx):
   pid = 81228; idx='whg_bak'
   doc = es.search(index=idx, body=esq_pid(pid))
   if len(doc['hits']['hits']) > 0
-  print(doc)
+    print(doc)
   
   
   

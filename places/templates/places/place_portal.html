@@ -68,15 +68,14 @@
               </span>]
               {%endcomment%}
               <!-- <a href="#" rel="tooltip" class="ttip" title="{rec.dataset.name}}" >{rec.dataset.label}}</a>-->
-            <span class="float-right">
-              <a href="" class="a_modal" data-pid="{{ rec.place_id }}" data-toggle="modal" data-target="#modal_place" title="place detail">full record</a>
+            <span class="float-right"><i>{{rec.place_id}}</i>
+              <a href="#" data-id="{{ rec.place_id }}" class="create-comment ml-2" rel="tooltip" title="create comment">
+                {% fontawesome_icon 'edit' color='#336699' %}</a>            
+              <a href="" class="a_modal ml-1" data-pid="{{ rec.place_id }}" data-toggle="modal" data-target="#modal_place" title="place detail">full record</a>
               {% if rec.geoms|length > 0 %}
                 <span class="ml-2">
                 <a href="#" class="flash-geo ttip" data-id="{{ rec.place_id }}" title="flash map marker">{% fontawesome_icon 'map-marker' %}</a>
                 </span>{% endif %}
-              <!--<button type="button" data-id="{{ rec.place_id }}" class="create-comment btn btn-sm ml-2">-->
-              <!--<a href="#" data-id="{ rec.place_id }}" class="create-comment ml-2">-->
-                <!--{ fontawesome_icon 'edit' color='#336699' %}</a>-->
             </span>
           </div>
           
@@ -218,6 +217,12 @@
     <div class="modal-content">
       <div class="modal-body"></div>
     </div>
+  </div>
+</div>
+
+<div id="modal" class="modal fade" tabindex="-1" role="dialog" >
+  <div class="modal-dialog" role="document">
+    <div class="modal-content modal-form"></div>
   </div>
 </div>
 

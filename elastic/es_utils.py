@@ -453,6 +453,18 @@ def esq_id(_id):
   return q
 
 # ***
+# query to get a parent by _id, with any children
+# ***
+def esq_parent(_id):
+  q = {"query":{"bool":{"should": [
+        {"parent_id": {"type": "child","id":_id}},
+        {"match":{"_id":_id}}
+      ]}}}
+  return q
+
+
+
+# ***
 # count of dataset docs in index
 # ***
 def escount_ds(idx,label):
