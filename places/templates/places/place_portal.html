@@ -68,7 +68,7 @@
               </span>]
               {%endcomment%}
               <!-- <a href="#" rel="tooltip" class="ttip" title="{rec.dataset.name}}" >{rec.dataset.label}}</a>-->
-            <span class="float-right">
+            <span class="float-right"><i>{{rec.place_id}}</i>
               <a href="#" data-id="{{ rec.place_id }}" class="create-comment ml-2" rel="tooltip" title="create comment">
                 {% fontawesome_icon 'edit' color='#336699' %}</a>            
               <a href="" class="a_modal ml-1" data-pid="{{ rec.place_id }}" data-toggle="modal" data-target="#modal_place" title="place detail">full record</a>
