@@ -210,7 +210,7 @@ class PlaceDetailView(DetailView):
 
     return context
 
-# TODO:
+# TODO:  tgn query very slow
 class PlaceModalView(DetailView):
   model = Place
 
@@ -235,9 +235,13 @@ class PlaceModalView(DetailView):
     print('PlaceModalView get_context_data() request.user',self.request.user)
     place = get_object_or_404(Place, pk=self.kwargs.get("id"))
     ds = place.dataset
+    dsobj = {"id":ds.id, "label":ds.label, 
+             "title":ds.title, "webpage":ds.webpage, 
+             "minmax":None if ds.core else ds.minmax, 
+             "creator":ds.creator, "last_modified":ds.last_modified_text} 
     #geomids = [geom.jsonb['properties']['id'] for geom in place.geoms.all()]
     #context['geoms'] = geoms
-    context['dataset'] = ds
+    context['dataset'] = dsobj
     context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False
 
     return context

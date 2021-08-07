@@ -115,7 +115,7 @@
           {% if rec.links|length > 0 %}
             <div class="attest-element"><b>Links  </b>: 
             {% for link in rec.links|slice:":2" %}
-              {% if link.identifier|slice:"0:2" == dataset.label|slice:"0:2" %}<span><i>none</i></span>
+              {% if link.identifier|slice:"0:2" == rec.dataset.label|slice:"0:2" %}<span><i>none</i></span>
               {% elif link.identifier|slice:"0:3" not in 'loc, via' %}
                 <a href="" class="mr-2 ext" data-toggle="modal" data-target="#ext_site">{{ link.identifier }} {% fontawesome_icon 'external-link' color='#336699' %}</a>
                 {% if not forloop.last %}{% endif %}
