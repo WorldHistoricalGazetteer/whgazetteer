@@ -145,7 +145,7 @@
                 {{ hidden }}
               {% endfor %}
               <div class="pl-2 pr-2 mb-1 matchbar">
-                <div class="match_radio custom-control custom-radio">
+                <div class="match_radio custom-control custom-radio"  data-id="{{ form.authrecord_id.value }}">
                   {% if form.json.value|get:"geoms"|length > 0 %}
                     <span class="mr-2 globeflash">
                     <!--{ if form.json.value|get:"geoms" != Null }-->
@@ -155,7 +155,7 @@
                         {% else %}
                           id="{{ form.authrecord_id.value }}"
                         {% endif %}
-                        href="javascript:{ zoomTo(+{{ form.authrecord_id.value }} ) }" title="Flash map marker">
+                        href='javascript:{ zoomTo("{{ form.authrecord_id.value }}") }' title="Flash map marker">
                         {% fontawesome_icon 'globe' color='#000' %}</a>
                     </span>
                   {% endif %}
@@ -171,7 +171,7 @@
                 </div>
               </div>
               {{ form.non_field_errors }}
-              <div class="auth-match bg-light pl-2 mt-0 mb-2">
+              <div class="auth-match pl-2 mt-0 mb-2">
                 <!-- push geometries to js -->
                 {% if form.json.value|get:"geoms"|length > 0 %}
                   {% for g in form.json.value|get:"geoms" %}
@@ -388,6 +388,7 @@
 
   // closer look
   function zoomTo(id) {
+    console.log('zoomTo', id)
     mappy.setView(idToFeature[id]._latlng, mappy.getZoom() +2 )
   }
 
@@ -439,8 +440,18 @@
               radius: 8, fillOpacity: 0.4, opacity: 1, weight: 1,
               color: "#333", fillColor: fill(feature.properties.ds)
             }
-          ).bindPopup(feature.properties.id);
-
+          ).bindPopup(matchid);
+          marker.on('click', function(){
+            console.log('clicked marker w/id',feature.properties.id)
+            // .matchbar background change, scroll to it
+            // first, background to #fff for all 
+            $('.match_radio').css('background','oldlace')
+            divy = $('.match_radio[data-id='+feature.properties.id)
+            divy.css('background','yellow')
+            console.log('divy top',divy.position().top)
+            $("#review_list").scrollTop(divy.position().top-80)
+            // $('[data-id=' + 'Q1630019' + ']')
+          })
           idToFeature[matchid] = marker
           return marker
         }
@@ -449,6 +460,10 @@
       <!--mappy.setView(features.getBounds().getCenter(),6)-->
       mappy.fitBounds(features.getBounds())
       mappy.setZoom(mappy.getZoom()-1)
+      mappy.on('popupclose',function(){
+        $('.match_radio').css('background','oldlace')
+        $("#review_list").scrollTop(0)
+      })
     } else {
       console.log('no geometries, no feature')
     }
