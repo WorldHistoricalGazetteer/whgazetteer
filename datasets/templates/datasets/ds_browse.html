@@ -235,7 +235,6 @@
       console.log('data', data)
       // get bounds w/turf
       envelope = turf.envelope(data)
-      <!--console.log(envelope)-->
       
       // add source 'places' w/retrieved data
       mappy.addSource('places', {
@@ -264,7 +263,6 @@
         'source': 'places',
         'paint': {
           'fill-color': '#ddd',
-          <!--'fill-color': 'red',-->
           'fill-opacity': 0.2,
           'fill-outline-color': 'black'
         },
@@ -291,10 +289,8 @@
 
   // called by table row click
   function highlightFeatureGL(pid, geom, coords){
-    <!--console.log('highlightFeatureGL('+pid+','+coords+')')-->
     console.log('pid, coords',pid, coords)
-    <!--geotype = features.find((o) => { return o.properties.pid === pid }).geometry.type-->
-    // TODO:  remove previous  
+    // TODO: 
     if(geom.type.includes('Point')){
       mappy.setPaintProperty(
         'gl_active_point', 'circle-radius', 
@@ -335,7 +331,7 @@
           { 'property':'pid',
             'default': "rgba(255,255,255,0.0)",
             'type':'categorical',
-            'stops':[[Number(pid), 'red']]}
+            'stops':[[Number(pid), 'rgba(255,0,0,1.0)']]}
       );     
     } else if(geom.type.includes('Line')) {
       mappy.setPaintProperty(
@@ -362,10 +358,7 @@
       bbox=turf.envelope(geom).bbox
       mappy.fitBounds(bbox, { padding: 30})      
     }      
-  
-    <!--flycoords = typeof(coords[0]) == 'number'?coords:coords[0]-->
-    <!--mappy.flyTo({'center': flycoords, 'zoom': 9})-->
-    
+      
   }
 
   // all this for a popup
@@ -469,9 +462,7 @@
       thisy=$(this)
       // get id
       pid=$(this)[0].cells[0].textContent
-      <!--ds_src=table.row(thisy.index()).data().dataset.label-->
-      <!--console.log('clicked pid, text', pid, t)-->
-
+      
       geom = features.find(function(f){return f.properties.pid==pid}).geometry
       coords = geom.coordinates
       
