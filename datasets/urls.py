@@ -6,7 +6,7 @@ from django.conf.urls.static import static
 from django.conf import settings
 
 from . import views
-from datasets.utils import download_file, UpdateCountsView, downloader, download_augmented, fetch_geojson_ds
+from datasets.utils import download_file, UpdateCountsView, download_augmented, fetch_geojson_ds, downloader
 
 # dataset actions
 app_name='datasets'
@@ -44,12 +44,9 @@ urlpatterns = [
 
   # initiate downloads of augmented datasets via celery task (called from ajax)
   path('dlcelery/', downloader, name='dl_celery'),
-
+  ## DEPRECATing download augmented dataset
   path('<int:id>/augmented/<str:format>', download_augmented, name="dl-aug"), #
-  ## DEPRECATED download augmented dataset
-  # download flattened geojson data
-  #path('<int:id>/gis/', download_gis, name="dl-gis"), #
-  ##
+
 
   ## UPDATES (in progress)
   path('compare/', views.ds_compare, name='dataset-compare'),

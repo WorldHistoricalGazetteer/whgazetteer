@@ -22,10 +22,12 @@
   <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.css' rel='stylesheet' />
   <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.js'></script>
   <script src="{% static 'js/leaflet-mapbox-gl.js' %}"></script>
+  <script src="{% static 'celery_progress/celery_progress.js' %}"></script>
 {% endblock %}
 
 {% block content %}
 <div class="container mt-1">
+  {% csrf_token %} <!-- for download function -->
   <ul id="collection_tabs" class="nav nav-tabs" role="tablist">
     <li class="nav-item">
         <a class="nav-link active" id="summary-tab" data-link="summary" href="" role="tab">Collection Summary</a>
@@ -133,41 +135,27 @@
                   <span class="ml-2 small" style="disply:block"><i>est. download time: {{d.dl_est}}</i></span>
                 </td>
                 <td>{{d.numrows}}</td>
-                <td>{% if d.format == 'delimited' %}
-                  <div class="form-check form-check-inline mr-1">
-                    <input class="form-check-input hover" type="radio" name="format" value="tsv" checked="checked">
-                    <label class="form-check-label" for="r_lp-tsv">LP-TSV</label>
-                  </div>                
-                  <div class="form-check form-check-inline mx-0">
+                <td> <!-- always offer lpf -->
+                  <div class="form-check form-check-inline">
                     <input class="form-check-input hover" type="radio" name="format" value="lpf">
                     <label class="form-check-label" for="r_lpf">LPF</label>
                   </div>
-                  {%else%}LPF
-                    <input type="hidden" name="format" value="lpf">
+                  {% if d.format == 'delimited' %}
+                  <div class="form-check form-check-inline ml-1">
+                    <input class="form-check-input hover" type="radio" name="format" value="tsv">
+                    <label class="form-check-label" for="r_lp-tsv">LP-TSV</label>
+                  </div>
                   {% endif %}
                 </td>
                 <td class="px-1">
-                  {% if d.format == 'lpf' %}
-                  <a class="a-dl" data-id={{d.id}} data-format="lpf">
-                  {% else %} 
-                  <a class="a-dl" data-id={{d.id}} data-format="tsv">
-                  {% endif %}
+                  <a class="a-dl" data-id={{d.id}}>
                   <i class="fa fa-download" title="Download"></i></a>
                 </td>
                 </tr>
               {% endfor %}
-              <!-- DEFER -->{%comment%}
-              {% if ds_list|length > 1 %}
-                <tr>
-                  <td><span class="float-right mr-3">Download all</span></td>
-                  <td>{{ object.rowcount }}</td>
-                  <td>LPF</td>
-                  <td><a class="a-dl" data-id={{d.id}} data-format="lpf-all">
-                    <i class="fa fa-download" title="Download all"></i></a></td>
-                </tr>
-              {% endif %}{%endcomment%}
               </tbody>
               </table>
+              <div id="celery-result"></div>
             </div>
             <div class="col-sm-4">
               <p class="modal-col-head p-1 mb-2">File Formats</p>
@@ -175,6 +163,8 @@
               <p class="my-1"><sr>Linked Places format (LPF)</sr> is JSON-based, valid GeoJSON and valid JSON-LD (rdf) with temporal extensions</p>
               <p class="my-1"><sr>LP-TSV downloads</sr> are tab-separated text files.</p>
               </div>
+              <div id="progress-bar-message" class="hidden">Waiting for progress to start...</div>
+              <span id='progress-bar' class='progress-bar' style="background-color: #68a9ef; width: 0%; line-height:.5rem;">&nbsp;</span>
             </div>
           </div>
         <!--</form>-->
@@ -214,24 +204,65 @@
 
   $(function(){
     $("[rel='tooltip']").tooltip();
-    // ajax this to get before/after spinner
+  
+
+    clearEl = function(el){
+      $("#progress-bar").fadeOut()
+      el.html('')
+    }
+    
+    dater = function(){
+      const date = new Date(Date.now());
+      return date.toISOString().substring(0,10)
+    }
+
+    // post-download actions
+    function customResult(resultElement, result) {
+      console.log('celery result',result)
+      console.log('celery resultElement',resultElement)
+      spinner_dl.stop()
+      fn = result.filename
+      link = '[ <span class="dl-save"><a href="/'+fn+'" title="downloaded: '+dater()+
+                '" download>save</a></span> ]'
+      $( resultElement ).append(
+        $('<p>').html(link)
+      );
+      $(".dl-save a")[0].click()
+      setTimeout(clearEl($("#celery-result")), 1000)
+    }
+
+    // celery task for downloads; helper functions above
     $(".a-dl").click(function(e){
       e.preventDefault()
-      startDownloadSpinner()
-      // if file was tsv, get user choice
-      format = $(this).data('format') == 'tsv'?$("input[name=format]:checked").val():'lpf'
-      urly = "/datasets/"+$(this).data('id')+"/augmented/"+format
-      console.log('url',urly)
-      location.href = urly
+      <!--startDownloadSpinner()-->
+      cell = $(this).closest('tr').find('td').eq(2)
+      format = cell.find('input[name="format"]:checked').val()
+      dsid = $(this).data('id')
+      <!--console.log('sending to downloader()', dsid, format)-->
+      urly='/datasets/dlcelery/'
       $.ajax({
-        type: 'GET',
-        url: urly
-        }).done(function() {
-          spinner_dl.stop();
+          type: 'POST',
+          url: urly,
+          data: {
+            "format":format,
+            "dsid":dsid,
+            "csrfmiddlewaretoken":"{{ csrf_token }}"},
+          datatype:'json',
+          success:function(response){
+            startDownloadSpinner()
+            <!--console.log('got task_id',response)-->
+            <!--$("#tid").html(response.task_id)-->
+            task_id = response.task_id
+            var progressUrl = "/celery-progress/"+task_id+"/";
+            CeleryProgressBar.initProgressBar(progressUrl,
+              { pollingInterval: 500,
+                onResult: customResult,
+              }
+            )
+          }
         })
     })
-
-
+    
     $( ".textarea" ).each(function(index) {
       if ( ["None","null"].includes( $(this).val() ) ) {
         $(this).val('')
@@ -284,6 +315,7 @@
     function() {
       let id = $(this).data('id')
       feat = idToFeature[id]
+      ogfill = "#ff9999"
       feat.setStyle(
         {fillColor: ogfill, color: '#333', fillOpacity: 0.3 }
       )

@@ -49,6 +49,7 @@ def downloader(request, *args, **kwargs):
     print('handed off to Celery', download_task.task_id)
     # return task_id
     obj={'task_id':download_task.task_id}
+    print('obj from downloader()', obj)
     
     #return render(request, 'datasets/ds_meta.html', context=context)
     return HttpResponse(json.dumps(obj), content_type='application/json')    
