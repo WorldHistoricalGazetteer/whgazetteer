@@ -93,7 +93,7 @@ def suggestionItem(s,doctype,scope):
       }
       #print('place sug item', item)
     else:
-      h = s['hit']
+      h = s['hit'] 
       item = {
         "whg_id": h['whg_id'] if 'whg_id' in h else '',
         "pid":h['place_id'],
