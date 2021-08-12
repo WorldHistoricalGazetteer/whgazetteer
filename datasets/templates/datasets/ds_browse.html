@@ -52,11 +52,13 @@
             <div id="drftable_detail" class="col-sm-5">
               {{ filter }}
               <div class="toomany"></div>
-              <div id="map" style="height:300px;">
-              </div>
+              <div id="map" style="height:300px;"></div>
+              <div><input style="width:100%;" id="slider" type="range" min= {{ds.minmax.0}} max= {{ds.minmax.1}} step="100" value="0"></div>
+              <div class="small" style="margin-top:-10px;border-bottom:1px dashed #ddd;">{{ds.minmax.0}}<span class="float-right">{{ds.minmax.1}}</div>
               <div id="row_detail">
                 <div id="detail" class="small"></div>
               </div>
+              min: {{ds.minmax.0}} max:{{ds.minmax.1}}
             </div> <!-- drftable_detail -->
             <div id="drftable_list" class="col-sm-7">
               <table id="placetable" class="table table-striped table-bordered" style="width:100%">
