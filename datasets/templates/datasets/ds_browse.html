@@ -59,9 +59,11 @@
               {{ filter }}
               <div class="toomany"></div>
               <div id="map" style="height:300px;"></div>
+              {%comment%}
               <div id="nouislider" class="my-2"></div>
               <!--<div><input style="width:100%;" id="slider" type="range" min= {ds.minmax.0}} max= {ds.minmax.1}} step="100" value="0"></div>-->
               <div class="small" style="margin-top:-10px;border-bottom:1px dashed #ddd;">{{ds.minmax.0}}<span class="float-right">{{ds.minmax.1}}</div>
+              {%endcomment%}
               <div id="row_detail">
                 <div id="detail" class="small"></div>
               </div>
@@ -104,7 +106,9 @@
 </div>
 
 <script type="text/javascript">
-  // slider experiment
+
+  
+  /* // slider experiment
   var html5Slider = document.getElementById('nouislider');
   
   noUiSlider.create(html5Slider, {
@@ -115,7 +119,7 @@
           'max': 40
       }
   });
-  
+  */
   
   $(function(){
     localStorage.setItem('filter', '99')
