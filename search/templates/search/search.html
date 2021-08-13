@@ -166,8 +166,9 @@
           <!--<img src="{ static 'images/search-pipeline.jpg'%}" style="width:100%; height:auto;" alt=""/>-->
           <img src="{% static 'images/search-figure.svg'%}" style="width:100%; height:auto;" alt=""/>
         </div>
-        </div>
-      </div>
+        </div> <!-- .row -->
+      </div> <!-- search_info -->
+      <div class="hidden">search params: {{ search_params }}</div>
       <!--{ endif %}-->
       <div id="type_filter" class="hidden">
         <p class='allcap-heading half mb-0 pl-1'>PLACE TYPES (select to limit)
@@ -1166,7 +1167,8 @@
       bounds: $("#boundsobj").val()
     <!--,ds: $("#select_ds_search").val()-->
       }, function(data){
-        window.searchres=data['suggestions']        
+        window.searchres = data['suggestions']
+        window.session = data['session']
         // store locally
         localStorage.setItem('last_results',JSON.stringify(searchres))
         <!--localStorage.setItem('last_results',searchres)-->

@@ -33,6 +33,7 @@ class SearchPageView(TemplateView):
     context['mbtokenwhg'] = settings.MAPBOX_TOKEN_WHG
     context['media_url'] = settings.MEDIA_URL
     context['dslist'] = dslist
+    context['search_params'] = self.request.session.get('search_params')
     #context['bboxes'] = bboxes
     return context
   
@@ -132,7 +133,7 @@ def suggester(doctype,q,scope,idx):
   suggestions = []
   
   if doctype=='place':
-    print('suggester/place q:',q)
+    #print('suggester/place q:',q)
     res = es.search(index=idx, doc_type='place', body=q)
     #res = es.search(index='whg,tgn', doc_type='place', body=q)
     if scope == 'suggest':
@@ -208,6 +209,19 @@ class SearchView(View):
     bounds = request.GET.get('bounds')
     #ds = request.GET.get('ds')
     
+    params = {
+      "qstr":qstr,
+      "doctype": doctype,
+      "scope": scope,
+      "idx": idx,
+      "fclasses": fclasses,
+      "start": start,
+      "end": end,
+      "bounds": bounds,
+    }
+    request.session["search_params"] = params 
+    print('search_params set', params)
+    
     if doctype == 'place':
       if scope == 'suggest':
         q = { "suggest":{"suggest":{"prefix":qstr,"completion":{"field":"suggest"}} } }
@@ -232,7 +246,7 @@ class SearchView(View):
           q['query']['bool']["filter"]=get_bounds_filter(bounds,'whg')
           
         # truncate, may include polygon coordinates
-        print('search must[]:',q['query']['bool']['must'])
+        #print('search must[]:',q['query']['bool']['must'])
 
     elif doctype == 'trace':
       q={ 
@@ -251,8 +265,9 @@ class SearchView(View):
     suggestions = suggester(doctype, q, scope, idx)
     suggestions = [ suggestionItem(s, doctype, scope) for s in suggestions]
     
+    # return query params for ??
     result = suggestions if doctype=='trace' else \
-      {'get': request.GET, 'suggestions': suggestions}
+      {'get': request.GET, 'suggestions': suggestions, 'session': params }
 
     return JsonResponse(result, safe=False)
       
