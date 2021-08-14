@@ -214,7 +214,7 @@
     accessToken: '{{ mbtokenmb }}'
   });
 
-  // initial blanks for z-index
+  // initialize blank layers for z-index
   mappy.on('load', function(){
     hilited = null
     mappy.addSource('empty', {
@@ -256,15 +256,15 @@
     
     <!--$.get('/api/geojson/', {id: dsid}, function(data){ // much slower-->
     $.get('/datasets/'+dsid+'/geojson', function(data){
-      features = data.features
-      console.log('data', data)
+      features = data.collection.features
+      console.log('data', data.collection)
       // get bounds w/turf
-      envelope = turf.envelope(data)
-      
+      envelope = turf.envelope(data.collection)
+      range = data.minmax
       // add source 'places' w/retrieved data
       mappy.addSource('places', {
           'type': 'geojson',
-          'data': data
+          'data': data.collection
       })
       
       // render to map
@@ -386,7 +386,8 @@
       
   }
 
-  // all this for a popup
+  // all this for a popup, on ONE layer
+  // TODO: repeat for lines and polygons
   mappy.on('click', 'gl_active_point', function (e) {
     <!--console.log('place:', e.features[0])-->
     place=e.features[0]
@@ -397,9 +398,9 @@
     var minmax = e.features[0].properties.minmax;
     var fc = e.features[0].properties.fclasses;
      
-    <!--// Ensure that if the map is zoomed out such that multiple-->
-    <!--// copies of the feature are visible, the popup appears-->
-    <!--// over the copy being pointed to.-->
+    /* Ensure that if the map is zoomed out such that multiple-->
+       copies of the feature are visible, the popup appears-->
+       over the copy being pointed to. */
     while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
       coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
     }
@@ -416,7 +417,7 @@
       .addTo(mappy);
   });
   
-  // Change the cursor to a pointer when the mouse is over the places layer.
+  // Change the cursor to a pointer when the mouse is over the point layer.
   mappy.on('mouseenter', 'gl_active_point', function () {
     mappy.getCanvas().style.cursor = 'pointer';
   });

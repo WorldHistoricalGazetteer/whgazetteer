@@ -341,17 +341,16 @@ def fetch_geojson_ds(request, *args, **kwargs):
   # build a fast FeatureCollection 
   features=PlaceGeom.objects.filter(place_id__in=ds.placeids).values_list(
     'jsonb','place_id','src_id','place__title','place__minmax', 'place__fclasses')
-  fcoll = {"type":"FeatureCollection","features":[]}
+  fcoll = {"type":"FeatureCollection","features":[], "minmax":ds.minmax}
   for f in features:
     feat={"type":"Feature",
           "properties":{"pid":f[1],"src_id":f[2],"title":f[3],
                         "minmax":f[4],"fclasses":f[5], "ds":ds.label},
           "geometry":f[0]}
     fcoll['features'].append(feat)
-  #fout.write(json.dumps(fcoll))
-  #fout.close()
-  #return JsonResponse(fcoll, safe=False,json_dumps_params={'ensure_ascii':False,'indent':2})
-  return JsonResponse(fcoll, safe=False,json_dumps_params={'ensure_ascii':False})
+  
+  result = {"minmax":ds.minmax, "collection":fcoll}
+  return JsonResponse(result, safe=False,json_dumps_params={'ensure_ascii':False})
 
 # *** /end DOWNLOAD FILES
 

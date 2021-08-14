@@ -406,9 +406,9 @@
         .done(function(dsdata) {
           mappy.addSource(ds.label, {
             'type': 'geojson',
-            'data': dsdata
+            'data': dsdata.collection
           });
-          all_feats = all_feats.concat(dsdata.features)
+          all_feats = all_feats.concat(dsdata.collection.features)
           renderSourceLayers(ds.label, i)
       })
       source_list.push(ds.label)
