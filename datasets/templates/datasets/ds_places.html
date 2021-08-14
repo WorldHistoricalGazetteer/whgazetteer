@@ -299,16 +299,16 @@
     
     <!--$.get('/api/geojson/', {id: dsid}, function(data){ // much slower-->
     $.get('/datasets/'+dsid+'/geojson', function(data){
-      features = data.features
-      console.log('data', data)
+      features = data.collection.features
+      console.log('data', data.collection)
       // get bounds w/turf
-      envelope = turf.envelope(data)
+      envelope = turf.envelope(data.collection)
       <!--console.log(envelope)-->
       
       // add source 'places' w/retrieved data
       mappy.addSource('places', {
           'type': 'geojson',
-          'data': data
+          'data': data.collection
       })
       
       // render to map
