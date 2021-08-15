@@ -138,14 +138,12 @@
   function setRowEvents(){
 
     $("#placetable tbody tr").click(function() {
-      t=$(this)
+      thisy=$(this)
       // get id
-      pid=Number($(this)[0].cells[0].textContent)
-
-      // gl need coordinates
-      place=features.find((o) => { return o.properties.pid === pid })
-      console.log('place', place)
-      coords=place.geometry.coordinates
+      pid=$(this)[0].cells[0].textContent
+      
+      geom = features.find(function(f){return f.properties.pid==pid}).geometry
+      coords = geom.coordinates
       
       // highlight this row, clear others
       var selected = $(this).hasClass("highlight-row");
@@ -156,12 +154,14 @@
         $(this).addClass("highlight-row");
 
       // highlight marker, zoomTo()
-      highlightFeatureGL(pid, coords)
+      <!--highlightFeatureGL(pid, coords)-->
+      highlightFeatureGL(pid, geom, coords)
 
       // fetch its detail
-      getPlace(pid)
+      <!--getPlace(pid)-->
       
     }) 
+
         
     row = $("#drftable_list table tbody")[0].rows[0]
     pid = parseInt(row.cells[0].textContent)
@@ -345,41 +345,77 @@
   }
 
   // called by table row click
-  function highlightFeatureGL(pid, coords){
-    console.log('highlightFeatureGL()')
+  function highlightFeatureGL(pid, geom, coords){
     console.log('pid, coords',pid, coords)
-    // TODO:  remove previous  
-    mappy.setPaintProperty(
-      'gl_active_point', 'circle-radius', 
-        { 'property':'pid',
-          'type':'categorical',
-          'default': 3,
-          'stops':[[pid, 8]]}
-    );
-    mappy.setPaintProperty(
-      'gl_active_point', 'circle-stroke-color', 
-        { 'property':'pid',
-          'type':'categorical',
-          'stops':[[pid, '#666']]}
-    );
-    mappy.setPaintProperty(
-      'gl_active_point', 'circle-stroke-width', 
-        { 'property':'pid',
-          'type':'categorical',
-          'stops':[[pid, 1]]}
-    );
-    mappy.setPaintProperty(
-      'gl_active_point', 'circle-color', 
-        { 'property':'pid',
-          'default':'#ff9900',
-          'type':'categorical',
-          'stops':[[pid,'red']]}
-    );
-  
-      // zoom to feature
-    flycoords = typeof(coords[0]) == 'number'?coords:coords[0]
-    mappy.flyTo({'center': flycoords, 'zoom': 9})
+    // TODO: 
+    if(geom.type.includes('Point')){
+      mappy.setPaintProperty(
+        'gl_active_point', 'circle-radius', 
+          { 'property':'pid',
+            'type':'categorical',
+            'default': 3,
+            'stops':[[pid, 8]]}
+      );
+      mappy.setPaintProperty(
+        'gl_active_point', 'circle-stroke-color', 
+          { 'property':'pid',
+            'type':'categorical',
+            'stops':[[pid, '#666']]}
+      );
+      mappy.setPaintProperty(
+        'gl_active_point', 'circle-stroke-width', 
+          { 'property':'pid',
+            'type':'categorical',
+            'stops':[[pid, 1]]}
+      );
+      mappy.setPaintProperty(
+        'gl_active_point', 'circle-color', 
+          { 'property':'pid',
+            'default':'#ff9900',
+            'type':'categorical',
+            'stops':[[pid,'red']]}
+      );
+    } else if (geom.type.includes('Polygon')) {
+      mappy.setPaintProperty(
+        'gl_active_poly', 'fill-outline-color', 
+          { 'property':'pid',
+            'default': 'grey',
+            'type':'categorical',
+            'stops':[[Number(pid), 'red']]}
+      );
+      mappy.setPaintProperty(
+        'gl_active_poly', 'fill-color', 
+          { 'property':'pid',
+            'default': "rgba(255,255,255,0.0)",
+            'type':'categorical',
+            'stops':[[Number(pid), 'rgba(255,0,0,1.0)']]}
+      );     
+    } else if(geom.type.includes('Line')) {
+      mappy.setPaintProperty(
+        'gl_active_line', 'line-color', 
+          { 'property':'pid',
+            'default': "lightgreen",
+            'type':'categorical',
+            'stops':[[Number(pid), 'green']]}
+      );           
+      mappy.setPaintProperty(
+        'gl_active_line', 'line-width', 
+          { 'property':'pid',
+            'default': 1,
+            'type':'categorical',
+            'stops':[[Number(pid), 2]]}
+      );           
+    }
     
+    // zoom to feature
+    if(geom.type.toLowerCase() == 'point'){
+      flycoords = typeof(coords[0]) == 'number'?coords:coords[0]
+      mappy.flyTo({'center': flycoords, 'zoom': 7})
+    } else {
+      bbox=turf.envelope(geom).bbox
+      mappy.fitBounds(bbox, { padding: 30})      
+    }      
+      
   }
 
   // all this for a popup

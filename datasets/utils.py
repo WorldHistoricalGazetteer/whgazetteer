@@ -345,7 +345,7 @@ def fetch_geojson_ds(request, *args, **kwargs):
   for f in features:
     feat={"type":"Feature",
           "properties":{"pid":f[1],"src_id":f[2],"title":f[3],
-                        "minmax":f[4],"fclasses":f[5], "ds":ds.label},
+                        "min":f[4][0],"max":f[4][1],"fclasses":f[5], "ds":ds.label},
           "geometry":f[0]}
     fcoll['features'].append(feat)
   
@@ -495,7 +495,6 @@ def parsedates_lpf(feat):
 # format ['coll' (FeatureCollection) | 'lines' (json-lines)]
 def validate_lpf(tempfn,format):
   #wd = '/Users/karlg/Documents/Repos/_whgazetteer/'
-  #schema = json.loads(codecs.open('datasets/static/validate/schema_lpf_v1.1.json','r','utf8').read())
   schema = json.loads(codecs.open('datasets/static/validate/schema_lpf_v1.2.json','r','utf8').read())
   # rename tempfn
   newfn = tempfn+'.jsonld'
