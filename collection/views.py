@@ -1,6 +1,7 @@
 # collection.views (collections)
 
 from django.conf import settings
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
@@ -9,6 +10,7 @@ from django.views.generic import (View, CreateView, UpdateView, DetailView, Dele
 #from datasets.utils import hully
 from .forms import CollectionModelForm
 from .models import *
+from main.models import Log
 from places.models import PlaceGeom
 
 # gl map needs this
@@ -60,13 +62,20 @@ def remove_dataset(request, *args, **kwargs):
   return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 # TODO: merge create and update views (templates are the same)
-class CollectionCreateView(CreateView):
+class CollectionCreateView(LoginRequiredMixin, CreateView):
   print('CollectionCreateView()')
   form_class = CollectionModelForm
   template_name = 'collection/collection_create.html'
   queryset = Collection.objects.all()
 
   def get_success_url(self):
+    Log.objects.create(
+      # category, logtype, "timestamp", subtype, note, dataset_id, user_id
+      category = 'collection',
+      logtype = 'create',
+      note = 'created collection id: '+str(self.object.id),
+      user_id = self.request.user.id
+    )    
     return reverse('dashboard')
   #
   def get_form_kwargs(self, **kwargs):
@@ -206,6 +215,13 @@ class CollectionUpdateView(UpdateView):
       print(form.cleaned_data)
       obj = form.save(commit=False)
       obj.save()
+      Log.objects.create(
+        # category, logtype, "timestamp", subtype, note, dataset_id, user_id
+        category = 'collection',
+        logtype = 'update',
+        note = 'collection id: '+ str(obj.id) + ' by '+ self.request.user.username,
+        user_id = self.request.user.id
+      )      
     else:
       print('form not valid', form.errors)
     return super().form_valid(form)

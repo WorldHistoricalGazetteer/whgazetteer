@@ -331,10 +331,12 @@ def download_augmented_slow(request, *args, **kwargs):
     response['Content-Disposition'] = 'filename="'+os.path.basename(fn)+'"'
 
     return response
+  # *** /end DOWNLOAD FILES
 
-# 
+# GeoJSON for all places in a dataset
+# feeds ds_browse (owner view); ds_places, collection_places (public)
 def fetch_geojson_ds(request, *args, **kwargs):
-  print('download_gis kwargs',kwargs)
+  print('fetch_geojson_ds kwargs',kwargs)
   dsid=kwargs['dsid']
   ds=get_object_or_404(Dataset,pk=dsid)
 
@@ -352,7 +354,36 @@ def fetch_geojson_ds(request, *args, **kwargs):
   result = {"minmax":ds.minmax, "collection":fcoll}
   return JsonResponse(result, safe=False,json_dumps_params={'ensure_ascii':False})
 
-# *** /end DOWNLOAD FILES
+# flatten for gl time-mapping
+# one feature per geometry w/min & max
+def fetch_geojson_flat(request, *args, **kwargs):
+  print('fetch_geojson_flat kwargs',kwargs)
+  dsid=kwargs['dsid']
+  ds=get_object_or_404(Dataset,pk=dsid)
+
+  #from places.models import PlaceGeom
+  #from datasets.models import Dataset
+  #ds= Dataset.objects.get(pk=1106)
+
+  fcoll = {"type":"FeatureCollection","features":[]}
+  
+  # build a FLAT FeatureCollection 
+  pgobjects=PlaceGeom.objects.filter(place_id__in=ds.placeids)
+  #pgobjects=PlaceGeom.objects.filter(place_id__in=ds.placeids).values_list(
+    #'jsonb','place_id','src_id','minmax','place__title','place__minmax', 'place__fclasses')
+  for pg in pgobjects:
+    geom = json.loads(pg.geom.geojson)
+    if geom['type'] != 'GeometryCollection':      
+      fcoll['features'].append({"type":"Feature",
+                  "geometry":geom,
+                  "properties":{
+                    "id":pg.place_id, "title":pg.place.title,
+                    "min":pg.minmax[0] if pg.minmax else None, 
+                    "max":pg.minmax[1] if pg.minmax else None }}
+      )
+    
+  result = {"minmax":ds.minmax, "collection":fcoll}
+  return JsonResponse(result, safe=False,json_dumps_params={'ensure_ascii':False})
 
 def get_encoding_excel(fn):
   fin = codecs.open(fn, 'r')

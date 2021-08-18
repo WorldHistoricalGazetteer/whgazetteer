@@ -6,7 +6,7 @@ from django.conf.urls.static import static
 from django.conf import settings
 
 from . import views
-from datasets.utils import download_file, UpdateCountsView, download_augmented, fetch_geojson_ds, downloader
+from datasets.utils import download_file, UpdateCountsView, download_augmented, fetch_geojson_ds, downloader, fetch_geojson_flat
 
 # dataset actions
 app_name='datasets'
@@ -83,6 +83,7 @@ urlpatterns = [
 
   ## GEOMETRY
   path('<int:dsid>/geojson/', fetch_geojson_ds, name="geojson"),
+  path('<int:dsid>/geojson_flat/', fetch_geojson_flat, name="geojson-flat"),
 
   # list places in a dataset; for physical geog layers
   path('<str:label>/places/', views.ds_list, name='ds_list'),

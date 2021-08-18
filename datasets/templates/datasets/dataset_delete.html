@@ -3,6 +3,9 @@
 {% block content %}
 
 <div class="container">
+  {% if not user in owners and not user.is_superuser %}
+    <p>Access to this page is limited to the dataset owner(s) and designated collaborators</p>
+  {% else %}
   <div class="row justify-content-center">
     <div class="col-md-4 mt-5">
       <form action='' method='POST'>{% csrf_token %}
@@ -26,6 +29,7 @@
       </form>
     </div>
   </div>
+  {% endif %}
 </div>
 
 </div>

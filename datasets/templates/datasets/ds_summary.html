@@ -24,7 +24,9 @@
 
 {% block content %}
 <div id="dataset_content" class="container mt-1 px-1">
-  <!--{ include 'datasets/ds_tabs.html' %}-->
+  {% if not user in owners or not user.is_superuser %}
+    <p>Access to this page is limited to the dataset owner and designated collaborators</p>
+  {% else %}
   <ul id="dataset_tabs" class="nav nav-tabs" role="tablist">
       <!--<span class="ds-title ml-1 mr-3">{ ds.title }}</span>-->
       <li class="nav-item">
@@ -349,6 +351,7 @@
   </div>
   <!-- .selector is div for modal help, can be placed anywhere-->
   <div class="selector py-3"><div id="helpme"></div></div>
+  {% endif %}
 </div>
 
 <script type="text/javascript">

@@ -307,11 +307,6 @@ def reverse(coords):
   fubar = [coords[1],coords[0]]
   return fubar
 
-def parseWhen(when):
-  print('when to parse',when)
-  timespan = 'parse me now'
-  return timespan
-
 def maxID(es,idx):
   q={"query": {"bool": {"must" : {"match_all" : {}} }},
        "sort": [{"whg_id": {"order": "desc"}}],

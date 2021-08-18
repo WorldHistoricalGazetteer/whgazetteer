@@ -17,6 +17,7 @@ urlpatterns = [
     path('', views.Home2a.as_view(), name="home"),
     
     path('libre/', views.LibreView.as_view(), name='libre'),
+    path('libre_ex/', views.LibreViewEx.as_view(), name='libre-ex'),
     
     # apps
     path('search/', include('search.urls')),
