@@ -4,7 +4,7 @@
 {% load fontawesome %}
 {% load static %}
 
-{% block title %}<title>WHG v2</title>{% endblock %}
+{% block title %}<title>WHG Search</title>{% endblock %}
 {% block extra_head %}
   {% leaflet_js %}
   {% leaflet_css %}
@@ -48,14 +48,11 @@
       </div>
 
       <div id="search_input" class="d-input input-group input-group-sm pb-2 justify-content-center" >
-        <!--<label for="input_box">{ fontawesome_icon 'search' color='#336699'%}</label>-->
         <input id="input_box" class="" type="text" placeholder="Enter place name" autocomplete="false">
         <button class="b-input">{% fontawesome_icon 'search' color='#336699'%}</button>
       </div>
       <div id="search_input_traces" class="d-input input-group input-group-sm pb-2 justify-content-center hidden" >
-        <!--<label for="input_box_traces">{ fontawesome_icon 'search' color='#336699'%}</label>-->
         <input id="input_box_traces" class="typeahead" type="text" placeholder="subject term, e.g. 'empire'">
-        <!--<button class="b-input">{ fontawesome_icon 'search' color='#336699'%}</button>-->
       </div>
 
       <ul id="scope_tabs" class="nav nav-tabs small">
@@ -74,8 +71,6 @@
         <div class="small row">
           <div id="filters_class" class="col-md-12 col-lg-6">
             <p class="mb-0">place categories
-            <!--feature class(es) -->
-            <!--<span class="ml-1 float-right">-->
             <span class="ml-1">
               <span class="mr-1"><a id="check_toggle" href="#">clear all</a></span>
               <a id="filter_help" class="pointer" data-toggle="popover" title="Feature classes" data-content="" tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a>
@@ -117,7 +112,6 @@
               <span id="reset_filters" class="hidden">
                 <a class="ml-3" href="javascript:clearMapFilter()">reset filters</a></span>
             </div>
-            <!--<span id="reset_link" class="float-right hidden"><a href="javascript:resetSearch()">reset search</a></span>-->
           </div> <!-- #filters_st -->
         </div> <!-- .row -->
       </div> <!-- #search_filters -->	
@@ -144,16 +138,12 @@
       <div id="search_right" class="col-sm-6">
         <div id="map_options" class="p-1 small">
         <span id="offer_mapfilter" class="hidden">Draw a bounding box to filter result list</span>
-        <!--<span class="float-right">{ request.META.HTTP_REFERER }}</span>-->
         <span id="clear_mapfilter" class="hidden float-right"><a href="javascript:mappy.fitBounds( features.getBounds())">clear map filter</a></span>
         </div>
-        <!--{ leaflet_map "map_search" callback="map_init" %}-->
         {% leaflet_map "map_search" %}
-        <!--<div id="result_extra" class="p-2"></div>-->
       </div> <!--#search_right -->
     </div> <!-- .row -->
     <div id="search_lower" class="row">
-      <!--{ if not "search" in request.META.HTTP_REFERER %}-->
       <div id="search_info">
         <div class="row p-2">
         <div class="col-sm-6">
@@ -163,14 +153,11 @@
           </div>
         </div>
         <div class="col-sm-6 pl-4">
-          <!--<img src="{ static 'images/search-pipeline.jpg'%}" style="width:100%; height:auto;" alt=""/>-->
           <img src="{% static 'images/search-figure.svg'%}" style="width:100%; height:auto;" alt=""/>
         </div>
         </div> <!-- .row -->
       </div> <!-- search_info -->
-      {% if user.is_superuser %}
-      <div>search params: {{ search_params }}</div>{% endif %}
-      <!--{ endif %}-->
+      {% if user.is_superuser %}<div>search params: {{ search_params }}</div>{% endif %}
       <div id="type_filter" class="hidden">
         <p class='allcap-heading half mb-0 pl-1'>PLACE TYPES (select to limit)
           <span class="float-right mr-2"><a href="#" class="hide-filter">
@@ -1317,7 +1304,8 @@
       $("#result_filters").hide()
     };
 
-    if(search_class == 'place' && search_scope == 'idx' && (data.length > 3 || mappy.getZoom() < 5)){
+    if(searchClass() == 'place' && searchScope() == 'idx' && (data.length > 3 || mappy.getZoom() < 5)){
+    <!--if(search_class() == 'place' && search_scope == 'idx' && (data.length > 3 || mappy.getZoom() < 5)){-->
       $("#offer_mapfilter").fadeIn()
       if (bboxer._map == undefined ){ bboxer.addTo(mappy); }
     }
