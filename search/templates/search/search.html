@@ -157,7 +157,9 @@
         </div>
         </div> <!-- .row -->
       </div> <!-- search_info -->
-      {% if user.is_superuser %}<div>search params: {{ search_params }}</div>{% endif %}
+      {% if user.is_superuser %}
+        <div>search params: {{ search_params }}</div>
+      {% endif %}
       <div id="type_filter" class="hidden">
         <p class='allcap-heading half mb-0 pl-1'>PLACE TYPES (select to limit)
           <span class="float-right mr-2"><a href="#" class="hide-filter">
