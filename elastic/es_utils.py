@@ -1,11 +1,29 @@
 # es_utils.py rev. Mar 2021; rev. Mar 2020; rev. 02 Oct 2019; rev 5 Mar 2019; created 7 Feb 2019;
 # misc elasticsearch supporting tasks 
 #from django.shortcuts import get_object_or_404
+from django.http import JsonResponse
 from places.models import Place
 #from datasets.tasks import ccDecode
 #from datasets.utils import hully
 from datasets.static.hashes.parents import ccodes as cchash
+from elasticsearch import Elasticsearch      
+es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 
+def fetch(request):
+  idx='whg'
+  if request.method == 'POST':
+    print('relocater() request.POST',request.POST)
+    pid=request.POST['pid'] 
+    user=request.user
+    place=Place.objects.get(pk=pid)
+    # pid = 81228
+    dbplace = {k:v for (k,v) in place.__dict__.items() if '_state' not in k}
+    res = es.search(index=idx, body=esq_pid(pid))
+    idxplace = res['hits']['hits']
+    result = {"dbplace":dbplace, "idxplace":idxplace}
+    return JsonResponse(result, safe=False)
+  
+    
 """
 addChild(place, parent_id)
 ?? needed?
