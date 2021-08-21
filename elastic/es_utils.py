@@ -19,8 +19,18 @@ def fetch(request):
     # pid = 81228
     dbplace = {k:v for (k,v) in place.__dict__.items() if '_state' not in k}
     res = es.search(index=idx, body=esq_pid(pid))
-    idxplace = res['hits']['hits']
-    result = {"dbplace":dbplace, "idxplace":idxplace}
+    whgid = res['hits']['hits'][0]['_id']
+    src = res['hits']['hits'][0]['_source']
+    idxplace = {"pid":pid,
+                "whgid":whgid, 
+                "title":src["title"],
+                "role":src["relation"]["name"],
+                "children":src["children"]
+                }
+    if "whg_id" in src:
+      res = es.search(index=idx, body=esq_parent(src["whg_id"]))
+      hits = res['hits']['hits']
+    result = {"dbplace":dbplace, "idxplace":idxplace, "all": hits}
     return JsonResponse(result, safe=False)
   
     

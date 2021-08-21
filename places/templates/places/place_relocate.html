@@ -94,6 +94,7 @@
         <!--$("#db_place").html(JSON.stringify(data))-->
         $("#db_place").html('<h5>db record</h5><pre>'+JSON.stringify(data.dbplace, null, 1)+'</pre>')
         $("#idx_place").html('<pre>'+JSON.stringify(data.idxplace, null, 1)+'</pre>')
+        $("#idx_place").append('<pre>'+JSON.stringify(data.all, null, 1)+'</pre>')
         <!--compare_data=data-->
       }
     })
