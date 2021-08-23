@@ -307,7 +307,7 @@ def review(request, pk, tid, passnum):
         # is this hit a match?
         if hits[x]['match'] not in ['none']:
           matches += 1
-          # if wd or tgn, write place_link, place_geom record(s) now
+          # if wd or tgn, write place_geom, place_link record(s) now
           # IF someone didn't just review it!
           if task.task_name[6:] in ['wdlocal','wd','tgn']:
             #print('task.task_name', task.task_name)
@@ -315,19 +315,20 @@ def review(request, pk, tid, passnum):
             # only if 'accept geometries' was checked
             if kwargs['aug_geom'] == 'on' and hasGeom \
                and tid not in place_post.geoms.all().values_list('task_id',flat=True):
-              geom = PlaceGeom.objects.create(
+              gtype = hits[x]['json']['geoms'][0]['type']
+              coords = hits[x]['json']['geoms'][0]['coordinates']
+              gobj = json.dumps({"type":gtype,"coordinates":coords})
+              PlaceGeom.objects.create(
                 place = place_post,
                 task_id = tid,
                 src_id = place.src_id,
+                geom = gobj,
                 jsonb = {
-                  "type":hits[x]['json']['geoms'][0]['type'],
+                  "type":gtype,
                   "citation":{"id":auth+':'+hits[x]['authrecord_id'],"label":authname},
-                  "coordinates":hits[x]['json']['geoms'][0]['coordinates']
+                  "coordinates":coords
                 }
               )
-              #print('created place_geom instance:', geom)
-            # TODO: why save here?
-            #ds.save()
 
             # create single PlaceLink for matched authority record
             # IF someone didn't just do it for this record
@@ -2728,7 +2729,7 @@ class DatasetReconcileView(LoginRequiredMixin, DetailView):
 
     # omits FAILURE and ARCHIVED
     ds_tasks = TaskResult.objects.all().filter(task_args = [id_], status='SUCCESS')
-    archived_tasks = TaskResult.objects.all().filter(task_args = [id_], status='ARCHIVED')
+    #archived_tasks = TaskResult.objects.all().filter(task_args = [id_], status='ARCHIVED')
 
     #context['region_list'] = predefined
     #context['updates'] = {}
