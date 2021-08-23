@@ -74,9 +74,9 @@
           </div>
         {% endif %}
         <ul id="collabs_list">
-          {% for c in collaborators %}
+          {% for c in collabs %} 
             <li>
-              {{ c|safe }}
+              {{ c|safe }} <!-- username, bold -->
               {% if user.is_superuser or user in owners %}
                 <span class="float-right mr-2">
                 <a href="{% url 'datasets:collab-delete' uid=c.user_id_id dsid=ds.id v='2' %}">

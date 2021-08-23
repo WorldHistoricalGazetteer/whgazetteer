@@ -527,6 +527,7 @@
   visibleFeaturesIds = function() {
     <!--console.trace()-->
     scope = searchScope()  // idx or db
+    search_class = searchClass()  // idx or db
     visible_layerids = [];
     visible_layers=[]
     mappy.eachLayer( function(layer) {

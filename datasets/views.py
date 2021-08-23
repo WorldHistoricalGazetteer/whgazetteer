@@ -2562,7 +2562,7 @@ class DatasetSummaryView(LoginRequiredMixin, UpdateView):
 
     context['updates'] = {}
     context['ds'] = ds
-    context['collaborators'] = ds.collabs.all()
+    context['collaborators'] = ds.collaborators.all()
     context['owners'] = ds.owners
 
     # excludes datasets uploaded directly (1 & 2)
@@ -2663,6 +2663,8 @@ class DatasetBrowseView(LoginRequiredMixin, DetailView):
 
     ds = get_object_or_404(Dataset, id=id_)
     me = self.request.user
+    context['collaborators'] = ds.collaborators.all()
+    context['owners'] = ds.owners
     #ds_tasks = [t.task_name[6:] for t in ds.tasks.all()]
     ds_tasks = [t.task_name[6:] for t in ds.tasks.filter(status='SUCCESS')]
     #placeset = Place.objects.filter(dataset=ds.label)
@@ -2733,7 +2735,7 @@ class DatasetReconcileView(LoginRequiredMixin, DetailView):
     context['ds'] = ds
     context['log'] = ds.log.filter(category='dataset').order_by('-timestamp')
     context['comments'] = Comment.objects.filter(place_id__dataset=ds).order_by('-created')
-    context['collaborators'] = ds.collabs.all()
+    context['collaborators'] = ds.collaborators.all()
     context['owners'] = ds.owners
     context['tasks'] = ds_tasks
 
@@ -2776,7 +2778,8 @@ class DatasetCollabView(LoginRequiredMixin, DetailView):
 
     context['ds'] = ds
 
-    context['collaborators'] = ds.collabs.all()
+    context['collabs'] = ds.collabs.all()
+    context['collaborators'] = ds.collaborators.all()
     context['owners'] = ds.owners
 
     context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False
