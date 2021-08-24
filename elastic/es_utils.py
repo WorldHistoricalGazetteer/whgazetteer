@@ -10,27 +10,51 @@ from elasticsearch import Elasticsearch
 es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 
 def fetch(request):
+  from places.models import Place
+  from django.contrib.auth.models import User
+  user = User.objects.get(pk=1)
   idx='whg'
   if request.method == 'POST':
-    print('relocater() request.POST',request.POST)
+    print('fetch() request.POST',request.POST)
     pid=request.POST['pid'] 
     user=request.user
     place=Place.objects.get(pk=pid)
-    # pid = 81228
-    dbplace = {k:v for (k,v) in place.__dict__.items() if '_state' not in k}
-    res = es.search(index=idx, body=esq_pid(pid))
-    whgid = res['hits']['hits'][0]['_id']
-    src = res['hits']['hits'][0]['_source']
-    idxplace = {"pid":pid,
-                "whgid":whgid, 
-                "title":src["title"],
-                "role":src["relation"]["name"],
-                "children":src["children"]
+    # pid = 81228 (parent), 81229 (child)
+
+    # database record
+    order_list = ['id','title','src_id','dataset_id','ccodes']
+    dbplace = {k:v for (k,v) in place.__dict__.items() if k in order_list}
+    dbplace['links'] = [l.jsonb['identifier'] for l in place.links.all()]
+    dbplace['names'] = [n.toponym for n in place.names.all()]
+    dbplace['geom count'] = place.geoms.count()
+    result = {'dbplace':dbplace}
+
+    # index record(s)
+    doc = es.search(index=idx, body=esq_pid(pid))['hits']['hits'][0]
+    src = doc['_source']
+    is_parent = 'whg_id' in doc['_source'].keys()
+    whgid = src['whg_id'] if is_parent else 'n/a'
+    idxplace = {'pid':pid,
+                'whgid':whgid, 
+                'title':src['title'],
+                'role':src['relation']['name'],
                 }
-    if "whg_id" in src:
-      res = es.search(index=idx, body=esq_parent(src["whg_id"]))
+    if is_parent:
+      # fetch and parse children
+      res = es.search(index=idx, body=esq_parent(whgid))
+      idxplace['children'] = res['hits']['hits']
+    else:
+      # fetch and parse siblings
+      idxplace['parent'] = {'pid':src['place_id'],
+                            'whgid': src['relation']['parent'], 
+                            'title':src['title'],
+                            'ccodes':src['ccodes']}
+      res = es.search(index=idx, body=esq_parent(src['relation']['parent']))
       hits = res['hits']['hits']
-    result = {"dbplace":dbplace, "idxplace":idxplace, "all": hits}
+      siblings = [{'pid':h['_source']['place_id']} for h in hits]
+      idxplace['siblings'] = siblings
+      
+    result['idxplace'] = idxplace
     return JsonResponse(result, safe=False)
   
     

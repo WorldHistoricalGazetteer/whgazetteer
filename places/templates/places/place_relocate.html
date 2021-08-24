@@ -12,20 +12,30 @@
   {% if not user.is_staff %}
     <p>Access to this page is limited to WHG staff</p>
   {% else %}
-  <h4 class="mt-3">Relocate place in index</h4>
+  <form id="relocate_form" method="POST" action="#" enctype="multipart/form-data">
+  {% csrf_token %}
+  <h4 class="mt-3">Relocate place in index 
+    <span class="small ml-3">
+    <input id="pid_input" class="small" name="pid" placeholder="Place id (pid)">
+    <button id="btn_fetch" type="submit" class="btn btn-primary btn-sm">Fetch record</button>
+    </span>
+  </h4>
   <!--<div class="d-flex row">-->
   <div class="row mx-0">
     <div id="relocate_left" class="form-box mt-2 col-sm-4">
-    <form id="relocate_form" method="POST" action="#" enctype="multipart/form-data">
-    {% csrf_token %}
-      Place id (pid): <input id="pid_input" name="pid">
-      <button id="btn_fetch" type="submit" class="btn btn-primary btn-sm">Fetch record</button>
+      <h5>database record</h5>
+      <!--Place id (pid): <input id="pid_input" name="pid">-->
+      <!--<button id="btn_fetch" type="submit" class="btn btn-primary btn-sm">Fetch record</button>-->
       <div id="db_place">fetch will display db record here for confirmation</div>
     </div>
-    <div id="relocate_right" class="col-sm-8 p-2">
-      <h5>Index record</h5>
+    <div id="relocate_center" class="col-sm-4 p-2 small">
+      <h5>index record</h5>
       <div id="idx_place">fetch will display index record here </div>
-    </div> <!-- .col-sm-8 -->
+    </div> <!-- .col-sm-4 -->
+    <div id="relocate_right" class="col-sm-4 p-2 small"">
+      <h5>actions</h5>
+      <div id="relocate_actions" style="background-color:aliceblue;">options will appear here</div>
+    </div> <!-- .col-sm-4 -->
   </div> <!-- row d-flex -->
   <div class="selector py-3"><div id="helpme"></div></div>
   {% endif %}
@@ -92,7 +102,8 @@
         <!--}-->
         <!--$("#loadfile").addClass('hidden')-->
         <!--$("#db_place").html(JSON.stringify(data))-->
-        $("#db_place").html('<h5>db record</h5><pre>'+JSON.stringify(data.dbplace, null, 1)+'</pre>')
+        $("#db_place").html('<pre>'+JSON.stringify(data.dbplace, null, 1)+'</pre>')
+        $("#relocate_center h5").append(" (a "+data.idxplace.role+")")
         $("#idx_place").html('<pre>'+JSON.stringify(data.idxplace, null, 1)+'</pre>')
         $("#idx_place").append('<pre>'+JSON.stringify(data.all, null, 1)+'</pre>')
         <!--compare_data=data-->
