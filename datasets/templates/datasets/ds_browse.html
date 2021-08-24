@@ -261,7 +261,7 @@
       features = data.collection.features
       if(features.length > 0){
         startMapSpinner()
-        console.log('data', data.collection)
+        <!--console.log('data', data.collection)-->
         // get bounds w/turf
         envelope = turf.envelope(data.collection)
         range = data.minmax
@@ -391,35 +391,58 @@
       
   }
 
-  // all this for a popup, on ONE layer
-  // TODO: repeat for lines and polygons
-  mappy.on('click', 'gl_active_point', function (e) {
-    <!--console.log('place:', e.features[0])-->
-    place=e.features[0]
-    var coordinates = e.features[0].geometry.coordinates.slice();
-    var pid = e.features[0].properties.pid;
-    var title = e.features[0].properties.title;
-    var src_id = e.features[0].properties.src_id;
-    var minmax = e.features[0].properties.minmax;
-    var fc = e.features[0].properties.fclasses;
-     
+  function popupMaker(place, lnglat){
+    console.log('lnglat', lnglat)
+    // lnglat is clicked point
+    var coordinates = [lnglat.lng, lnglat.lat];
+    var props = place.properties
+    var pid = props.pid;
+    var title = props.title;
+    var src_id = props.src_id;
+    var min = props.min;
+    var max = props.max;
+    var fc = props.fclasses;
+
     /* Ensure that if the map is zoomed out such that multiple-->
        copies of the feature are visible, the popup appears-->
        over the copy being pointed to. */
-    while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-      coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+    while (Math.abs(lnglat.lng - coordinates[0]) > 180) {
+      coordinates[0] += lnglat.lng > coordinates[0] ? 360 : -360;
     }
     
     // highlight row
-    console.log('made popup', pid, coordinates)
+    console.log('making popup', pid, coordinates)
       
     // popup
+    var html='<b>'+title+'</b><br/>'+'<a href="javascript:getPlace('+pid+')">fetch info</a>'
+    if(min != 'null'){
+      html+='<br/>earliest: '+min+'<br/>'+'latest: '+max
+    }
     new maplibregl.Popup()
       .setLngLat(coordinates)
-      .setHTML('<b>'+title+'</b><br/>'+
-              '<a href="javascript:getPlace('+pid+')">fetch info</a><br/>'+
-              'start, end: '+minmax)
+      .setHTML(html)
       .addTo(mappy);
+  
+  }
+  // all this for a popup, on ONE layer
+  // TODO: repeat for lines and polygons
+  mappy.on('click', 'gl_active_point', function (e) {
+    console.log('e.lngLat', e.lngLat)
+    <!--lng = e.lngLat.lng-->
+    lnglat = e.lngLat
+    <!--lngLat = e.lngLat-->
+    place=e.features[0]
+    <!--console.log('clicked point, lng', place, lng)-->
+    // 
+    popupMaker(place, lnglat)
+  });
+  
+  mappy.on('click', 'gl_active_line', function (e) {
+    lnglat = e.lngLat
+    place=e.features[0]
+    console.log('clicked line, lngLat', place, lnglat)
+    // 
+    popupMaker(place, lnglat)
   });
   
   // Change the cursor to a pointer when the mouse is over the point layer.
@@ -428,6 +451,14 @@
   });
   // Change it back to a pointer when it leaves.
   mappy.on('mouseleave', 'gl_active_point', function () {
+    mappy.getCanvas().style.cursor = '';
+  });
+  
+  mappy.on('mouseenter', 'gl_active_line', function () {
+    mappy.getCanvas().style.cursor = 'pointer';
+  });
+  // Change it back to a pointer when it leaves.
+  mappy.on('mouseleave', 'gl_active_line', function () {
     mappy.getCanvas().style.cursor = '';
   });
   
@@ -510,7 +541,7 @@
       highlightFeatureGL(pid, geom, coords)
 
       // fetch its detail
-      <!--getPlace(pid)-->
+      getPlace(pid)
       
     }) 
         
