@@ -105,7 +105,7 @@ def download_augmented(request, *args, **kwargs):
           gobj['lonlat'] = g.jsonb['coordinates']
         else:
           # it's an aug/add
-          gobj['new'].append({"id":g.jsonb['citation']['id'],"coordinates":g.jsonb['coordinates']})
+          gobj['new'].append({"id":g.jsonb['citation']['id'],"coordinates":g.jsonb['coordinates'][0]})
       return gobj
 
     # TODO: return valid LP-TSV, incl. geowkt where applic.

@@ -157,6 +157,7 @@ def indexMatch(pid, hit_pid=None):
 # dataset pk, celery task_id
 # responds to GET for display, POST if 'save' button submits
 """
+# .../datasets/835/review/b4cad8c9-0bcd-492f-83c6-be68bc6bdca4/pass2
 def review(request, pk, tid, passnum):
   ds = get_object_or_404(Dataset, id=pk)
   task = get_object_or_404(TaskResult, task_id=tid)
@@ -164,8 +165,8 @@ def review(request, pk, tid, passnum):
   authname = 'Wikidata' if auth == 'wd' else 'Getty TGN' \
     if auth == 'tgn' else 'WHG'
   kwargs=json.loads(task.task_kwargs.replace("'",'"'))
-  review_request = request.GET.__dict__ if request.method == 'GET' \
-    else request.POST.__dict__
+  #review_request = request.GET.__dict__ if request.method == 'GET' \
+    #else request.POST.__dict__
   #print('review() request', review_request)
   beta = 'beta' in list(request.user.groups.all().values_list('name',flat=True))
 
@@ -200,7 +201,8 @@ def review(request, pk, tid, passnum):
     # queue deferred from any pass
     hitplaces = Hit.objects.values('place_id').filter(task_id=tid, reviewed=False)
 
-  params = {'pk':pk,'tid':tid,'passnum':passnum,'auth':auth}
+  print('review() hitplaces', hitplaces)
+  #params = {'pk':pk,'tid':tid,'passnum':passnum,'auth':auth}
   #print('review() params', params)
   # separate review pages
   #hitplaces = Hit.objects.values('place_id').filter(task_id=tid, reviewed=False, query_pass=passnum)
@@ -219,7 +221,7 @@ def review(request, pk, tid, passnum):
   status = [2] if passnum == 'def' else [0,2]
   #status = [2] if passnum == 'def' else [0]
   #record_list = ds.places.order_by('id').filter(pk__in=hitplaces, **{lookup: status})
-  record_list = ds.places.order_by('id').filter(**{lookup: status},pk__in=hitplaces)
+  record_list = ds.places.order_by('id').filter(**{lookup: status}, pk__in=hitplaces)
 
   #if passnum != 'def' and hitplaces.count() >0:
 
@@ -307,7 +309,7 @@ def review(request, pk, tid, passnum):
         # is this hit a match?
         if hits[x]['match'] not in ['none']:
           matches += 1
-          # if wd or tgn, write place_link, place_geom record(s) now
+          # if wd or tgn, write place_geom, place_link record(s) now
           # IF someone didn't just review it!
           if task.task_name[6:] in ['wdlocal','wd','tgn']:
             #print('task.task_name', task.task_name)
@@ -315,19 +317,20 @@ def review(request, pk, tid, passnum):
             # only if 'accept geometries' was checked
             if kwargs['aug_geom'] == 'on' and hasGeom \
                and tid not in place_post.geoms.all().values_list('task_id',flat=True):
-              geom = PlaceGeom.objects.create(
+              gtype = hits[x]['json']['geoms'][0]['type']
+              coords = hits[x]['json']['geoms'][0]['coordinates']
+              gobj = json.dumps({"type":gtype,"coordinates":coords})
+              PlaceGeom.objects.create(
                 place = place_post,
                 task_id = tid,
                 src_id = place.src_id,
+                geom = gobj,
                 jsonb = {
-                  "type":hits[x]['json']['geoms'][0]['type'],
+                  "type":gtype,
                   "citation":{"id":auth+':'+hits[x]['authrecord_id'],"label":authname},
-                  "coordinates":hits[x]['json']['geoms'][0]['coordinates']
+                  "coordinates":coords
                 }
               )
-              #print('created place_geom instance:', geom)
-            # TODO: why save here?
-            #ds.save()
 
             # create single PlaceLink for matched authority record
             # IF someone didn't just do it for this record
@@ -383,6 +386,7 @@ def review(request, pk, tid, passnum):
             print('align_whg (non-accessioning) DOING NOTHING (YET)')
 
         # in any case, flag hit as reviewed...
+        print('hit '+str(hit.id)+' flagged reviewed')
         matchee = get_object_or_404(Hit, id=hit.id)
         matchee.reviewed = True
         matchee.save()
@@ -2455,17 +2459,35 @@ def ds_list(request, label):
   return JsonResponse(geoms,safe=False)
 
 
-""" undo last review mtch action"""
+""" 
+undo last review match action
+delete any geoms or links created
+reset flags for hit.reviewed and place.review_xxx
+"""
 def match_undo(request, ds, tid, pid):
   print('in match_undo() ds, task, pid:',ds,tid,pid)
-  # ds=1;tid='d6ad4289-cae6-476d-873c-a81fed4d6315';pid=81474
   # 81474, 81445 (2), 81417, 81420, 81436, 81442, 81469
+  from django_celery_results.models import TaskResult
+  
   geom_matches = PlaceGeom.objects.all().filter(task_id=tid, place_id=pid)
   link_matches = PlaceLink.objects.all().filter(task_id=tid, place_id=pid)
   geom_matches.delete()
   link_matches.delete()
+  
+  # reset place.review_xxx to 0
+  tasktype = TaskResult.objects.get(task_id=tid).task_name[6:]
+  place = Place.objects.filter(pk=pid)
+  # TODO: variable field name?
+  if tasktype.startswith('wd'):
+    place.update(review_wd = 0)
+  elif tasktype == 'tgn':
+    place.update(review_tgn = 0)
+  else:
+    place.update(review_whg = 0)
+    
   # match task_id, place_id in hits; set reviewed = false
   Hit.objects.filter(task_id=tid, place_id=pid).update(reviewed=False)
+  
   return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
   #return redirect('/datasets/'+str(ds)+'/review/'+tid+'/pass1')
 
@@ -2562,7 +2584,7 @@ class DatasetSummaryView(LoginRequiredMixin, UpdateView):
 
     context['updates'] = {}
     context['ds'] = ds
-    context['collaborators'] = ds.collabs.all()
+    context['collaborators'] = ds.collaborators.all()
     context['owners'] = ds.owners
 
     # excludes datasets uploaded directly (1 & 2)
@@ -2663,6 +2685,8 @@ class DatasetBrowseView(LoginRequiredMixin, DetailView):
 
     ds = get_object_or_404(Dataset, id=id_)
     me = self.request.user
+    context['collaborators'] = ds.collaborators.all()
+    context['owners'] = ds.owners
     #ds_tasks = [t.task_name[6:] for t in ds.tasks.all()]
     ds_tasks = [t.task_name[6:] for t in ds.tasks.filter(status='SUCCESS')]
     #placeset = Place.objects.filter(dataset=ds.label)
@@ -2726,14 +2750,14 @@ class DatasetReconcileView(LoginRequiredMixin, DetailView):
 
     # omits FAILURE and ARCHIVED
     ds_tasks = TaskResult.objects.all().filter(task_args = [id_], status='SUCCESS')
-    archived_tasks = TaskResult.objects.all().filter(task_args = [id_], status='ARCHIVED')
+    #archived_tasks = TaskResult.objects.all().filter(task_args = [id_], status='ARCHIVED')
 
     #context['region_list'] = predefined
     #context['updates'] = {}
     context['ds'] = ds
     context['log'] = ds.log.filter(category='dataset').order_by('-timestamp')
     context['comments'] = Comment.objects.filter(place_id__dataset=ds).order_by('-created')
-    context['collaborators'] = ds.collabs.all()
+    context['collaborators'] = ds.collaborators.all()
     context['owners'] = ds.owners
     context['tasks'] = ds_tasks
 
@@ -2776,7 +2800,8 @@ class DatasetCollabView(LoginRequiredMixin, DetailView):
 
     context['ds'] = ds
 
-    context['collaborators'] = ds.collabs.all()
+    context['collabs'] = ds.collabs.all()
+    context['collaborators'] = ds.collaborators.all()
     context['owners'] = ds.owners
 
     context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False

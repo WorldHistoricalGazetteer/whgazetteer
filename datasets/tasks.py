@@ -73,19 +73,20 @@ def make_download(request, *args, **kwargs):
     header = list(df)
     newheader = deepcopy(header)
     # all exports should have these, empty or not
-    newheader.extend(['matches', 'geo_id', 'geo_source'])
+    newheader = list(set(newheader+['lon','lat','matches','geo_id','geo_source','geowkt'])) 
+  
     
     # name and open csv file for writer
     fn = 'media/downloads/'+username+'_'+dslabel+'_'+date+'.tsv'
     csvfile = open(fn, 'w', newline='', encoding='utf-8')
     writer = csv.writer(csvfile, delimiter='\t', quotechar='', quoting=csv.QUOTE_NONE)    
 
-    # if no geo columns in file, add lon/lat * geowkt (why not, no harm)
-    no_geom = False if len(set(['lon','lat','geowkt']) & set(header)) > 0 else True
-    if no_geom:
-      newheader.extend(['lon','lat','geowkt'])
+    # if no geo columns in file, add lon/lat & geowkt (why not, no harm)
+    #no_geom = False if len(set(['lon','lat','geowkt']) & set(header)) > 0 else True
+    #if no_geom:
+      #newheader.extend(['lon','lat','geowkt'])
     # make distinct and write 
-    newheader = list(set(newheader)); print(newheader)
+    #newheader = list(set(newheader)); print(newheader)
     # TODO: better order?
     writer.writerow(newheader)
     # missing columns
@@ -117,16 +118,18 @@ def make_download(request, *args, **kwargs):
       geoms = p.geoms.all()
       if geoms.count() > 0:
         geowkt= newrow['geowkt'] if 'geowkt' in newrow else None
-        lonlat= [newrow['lon'],newrow['lat']] if len(set(newrow.keys())&set(['lon','lat'])) ==2 else None
+        
+        lonlat= [newrow['lon'],newrow['lat']] if \
+          len(set(newrow.keys())&set(['lon','lat']))==2 else None
         # lon/lat may be empty
-        if not geowkt and (not lonlat or None in lonlat):
+        if not geowkt and (not lonlat or None in lonlat or lonlat[0]==''):
           # get first db geometry & add to newrow dict
           g=geoms[0]
-          newheader.extend(['geowkt'])
+          #newheader.extend(['geowkt'])
           newrow['geowkt']=g.geom.wkt
-          if g.jsonb['type'].lower() == "point":
-            newrow['lon'] = g.geom.coords[0]
-            newrow['lat'] = g.geom.coords[1]
+          xy = g.geom.coords[0] if g.jsonb['type'] == 'MultiPoint' else g.geom.coords
+          newrow['lon'] = xy[0]
+          newrow['lat'] = xy[1]
       #print(newrow)
       
       # match newrow order to newheader already written      

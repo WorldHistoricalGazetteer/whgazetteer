@@ -32,7 +32,7 @@
 
 {% block content %}
 <div id="dataset_content" class="container mt-1 px-1">
-  {% if not user in owners and not user.is_superuser %}
+  {% if not user in owners and not user in collaborators and not user.is_superuser %}
     <p>Access to this page is limited to the dataset owner and designated collaborators</p>
   {% else %}
   <ul id="dataset_tabs" class="nav nav-tabs" role="tablist">
@@ -248,7 +248,6 @@
 
   // fetch and render
   function renderData(dsid){
-    startMapSpinner()
     // clear any data layers and 'places' source
     if(!!mappy.getLayer('gl_active_point')){
       mappy.removeLayer('gl_active_point')
@@ -260,58 +259,61 @@
     <!--$.get('/api/geojson/', {id: dsid}, function(data){ // much slower-->
     $.get('/datasets/'+dsid+'/geojson', function(data){
       features = data.collection.features
-      console.log('data', data.collection)
-      // get bounds w/turf
-      envelope = turf.envelope(data.collection)
-      range = data.minmax
-      // add source 'places' w/retrieved data
-      mappy.addSource('places', {
-          'type': 'geojson',
-          'data': data.collection
-      })
-      
-      // render to map
-      // lines, then polygons, then points
-      mappy.addLayer({
-        'id': 'gl_active_point',
-        'type': 'circle',
-        'source': 'places',
-        'paint': {
-          'circle-color': '#ff9900',
-          'circle-radius': {
-            stops: [[1, 2], [3, 3], [16, 10]]
-          }        
-        },
-        'filter': ['==', '$type', 'Point']
-      }, 'z-index-3');  
+      if(features.length > 0){
+        startMapSpinner()
+        console.log('data', data.collection)
+        // get bounds w/turf
+        envelope = turf.envelope(data.collection)
+        range = data.minmax
+        // add source 'places' w/retrieved data
+        mappy.addSource('places', {
+            'type': 'geojson',
+            'data': data.collection
+        })
         
-      mappy.addLayer({
-        'id': 'gl_active_poly',
-        'type': 'fill',
-        'source': 'places',
-        'paint': {
-          'fill-color': '#ddd',
-          'fill-opacity': 0.2,
-          'fill-outline-color': 'black'
-        },
-        'filter': ['==', '$type', 'Polygon']
-      }, 'z-index-2');
-      
-      mappy.addLayer({
-        'id': 'gl_active_line',
-        'type': 'line',
-        'source': 'places',
-        'paint': {
-          'line-color': 'lightgreen',
-          'line-width': {
-            stops: [[1, 1], [4, 2], [16, 4]]
-          }        
-        },
-        'filter': ['==', '$type', 'LineString']
-      }, 'z-index-1');  
+        // render to map
+        // lines, then polygons, then points
+        mappy.addLayer({
+          'id': 'gl_active_point',
+          'type': 'circle',
+          'source': 'places',
+          'paint': {
+            'circle-color': '#ff9900',
+            'circle-radius': {
+              stops: [[1, 2], [3, 3], [16, 10]]
+            }        
+          },
+          'filter': ['==', '$type', 'Point']
+        }, 'z-index-3');  
+          
+        mappy.addLayer({
+          'id': 'gl_active_poly',
+          'type': 'fill',
+          'source': 'places',
+          'paint': {
+            'fill-color': '#ddd',
+            'fill-opacity': 0.2,
+            'fill-outline-color': 'black'
+          },
+          'filter': ['==', '$type', 'Polygon']
+        }, 'z-index-2');
         
-      mappy.fitBounds(envelope.bbox, {padding: 30})
-      spinner_map.stop()
+        mappy.addLayer({
+          'id': 'gl_active_line',
+          'type': 'line',
+          'source': 'places',
+          'paint': {
+            'line-color': 'lightgreen',
+            'line-width': {
+              stops: [[1, 1], [4, 2], [16, 4]]
+            }        
+          },
+          'filter': ['==', '$type', 'LineString']
+        }, 'z-index-1');  
+          
+        mappy.fitBounds(envelope.bbox, {padding: 30})
+        spinner_map.stop()
+      }
     })
   }
 
