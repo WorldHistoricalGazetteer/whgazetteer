@@ -418,7 +418,7 @@
     if(min != 'null'){
       html+='<br/>earliest: '+min+'<br/>'+'latest: '+max
     }
-    new maplibregl.Popup()
+    poppy = new maplibregl.Popup()
       .setLngLat(coordinates)
       .setHTML(html)
       .addTo(mappy);
@@ -522,6 +522,8 @@
 
     $("#placetable tbody tr").click(function() {
       thisy=$(this)
+      // close popup if exists
+      poppy.remove()      
       // get id
       pid=$(this)[0].cells[0].textContent
       
