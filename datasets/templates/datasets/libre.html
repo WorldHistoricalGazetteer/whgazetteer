@@ -1,0 +1,470 @@
+<!-- datasets/home.html -->
+{% extends "main/base.html" %}
+{% load leaflet_tags %}
+{% load fontawesome %}
+{% load static %}
+
+{% block title %}<title>WHG timemap</title>{% endblock %}
+{% block extra_head %}
+  {% leaflet_js %}
+  {% leaflet_css %}
+  <script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>
+  <link rel="stylesheet" href="//cdn.datatables.net/1.10.16/css/dataTables.bootstrap4.min.css">
+  <link rel="stylesheet" href="{% static 'css/typeahead.css' %}">
+  <script src="{% static 'js/leaflet.ajax.min.js' %}"></script>
+  <script src="{% static 'js/typeahead.bundle.js' %}"></script>
+  <script src="{% static 'js/spin.umd.js' %}"></script>
+
+  <script src="{% static 'nouislider/nouislider.js' %}"></script>
+  <link rel="stylesheet" href="{% static 'nouislider/nouislider.min.css' %}"/>
+  
+  <script src="https://unpkg.com/maplibre-gl@1.15.2/dist/maplibre-gl.js"></script>
+  <link href="https://unpkg.com/maplibre-gl@1.15.2/dist/maplibre-gl.css" rel="stylesheet" />
+
+  <style>
+    body { margin: 0; padding: 0; }
+    #map { position: absolute; top: 60px; bottom: 20px; width: 90%; }
+    #map_select { position:absolute; top: 2px;}
+    .noUi-handle {height:18px !important; top: -4px !important;}
+    .noUi-horizontal {height:12px !important;}
+    .noUi-tooltip {
+        display: none;
+    }
+    .noUi-active .noUi-tooltip {
+        display: block;
+    }
+    .noUi-value {cursor: pointer;}
+    <!-- tooltips display above -->
+    <!--.noUi-tooltip {-->
+        <!--display: none;-->
+    <!--}-->
+    <!--.noUi-active .noUi-tooltip {-->
+        <!--display: block;-->
+    <!--}-->
+    .filter-group input[type='checkbox'] + label{
+      padding-left: 3px;
+      padding-right: 10px;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+{% load static %}
+
+<div class="container">
+  <div class="justify-content-center mt-2">
+      <div id="map_select" class="row py-1  ">
+        <div class="col-sm-4">
+          <select id="map_dataset" name="region" class="custom-select-sm">
+            <option value="0">Display dataset</option>
+            <option value=1106>Bregel</option>
+            <option value=1095>Croniken</option>
+            <option value=8>HGIS de las Indias (territorios)</option>
+            <option value=9>HGIS de las Indias (lugares)</option>
+            <option value=637>Old World Trade (OWTRAD)</option>
+            <option value=636>Euratlas Cities</option>
+            <option value=635>al-Thurayya (11c Islam)</option>
+            <option value=652>Pleiades </option>
+            <option value=1035>Atlas of Mutual Heritage</option>
+            <option value=986>Curacao</option>
+          </select>
+        </div>
+        <div class="col-sm-8 small pt-1">
+          <div id='nouislider'></div>
+          <div id='filter_group' class='filter-group'></div>
+          <!--<div class="small" style=""><span id="ts_start">-300<span id="ts_end" class="float-right">2000</div>-->
+        </div>
+      <!--<p class="v2hideme"><a href="{ url 'home2beta' %}">v2beta1</a></p>-->
+      </div>
+    <div id="map"></div>
+  </div>
+       {%comment%}
+        <span style="display:inline-block">
+        <ul>
+          <li style="display:inline"><a class="f" href="#" data-pid=6595921 data-coords=[22.0331,55.0335]>feature 1</a></li>
+          <li style="display:inline"><a class="f" href="#" data-pid=6595945 data-coords=[24.1878,56.4063]>feature 2</a></li>
+        </ul>
+        </span>
+        {%endcomment%}
+ </div>
+
+<script type="text/javascript">
+
+$(function(){
+  $(".navbar").hide()
+  var idToFeature = {} // for feature lookup
+
+  // slider experiment
+  /*
+  tsdiv = document.getElementById('nouislider');
+
+  tslider = noUiSlider.create(tsdiv, {
+    start: [2000],
+    connect: true,
+    tooltips: true,
+    <!--margin:100,-->
+    range: {
+        'min': -300,
+        'max': 2000
+    },
+    step: 100,
+    format: {
+      // 'to' the formatted value. Receives a number.
+      to: function (value) {
+          <!--return value + ',-';-->
+          return Math.round(value);
+      },
+      // 'from' the formatted value.
+      // Receives a string, should return a number.
+      from: function (value) {
+          return Number(value);
+      }
+    },     
+    pips: {
+      mode: 'steps',
+      density: 3
+      <!--format: {-->
+          <!--decimals: 0-->
+      <!--}-->
+    }  
+  });
+  
+  tsdiv.noUiSlider.on('set', function (values, handle) {
+    timeFilter(Number(values[0]))
+    console.log('values', values[0], typeof(values[0]))
+  })
+  */    
+
+}) // end onLoad()
+
+function timeFilter(val){
+  console.log('val',typeof(val), val)
+  if (typeof(val) == "object") {
+    filter = ["all", [">=", "min", val[0]], ["<=", "max", val[1]]]
+  } else if (typeof(val) == "number"){
+  // year=1400 minmax=[1300,1400]; minmax=[1450,2000]
+  // does minmax span include year in question?
+    filter = ["all", ["has", "min"], ["<=", "min", val], [">=", "max", val]]
+  }
+  map.setFilter('gl_active_point', filter)
+  <!--map.setFilter('gl_active_line', filter)-->
+  <!--map.setFilter('gl_active_poly', filter)-->
+}
+/*
+feats=map.queryRenderedFeatures()
+feats=mappy.queryRenderedFeatures()
+foo=feats.filter(function(obj) {return (obj.source === "bregel3")});
+layers=feats.filter(function(obj) {return (obj.layer.id === "gl_active_line")});
+lyr=feats.filter(function(obj) {return (obj.properties.pid === "6616870")});
+*/
+
+$(".f").click(function(){
+  pid=$(this).data('pid')
+  coords=$(this).data('coords')
+  console.log('pid, coords',pid, coords)
+  highlightFeature(pid, coords)
+})
+
+var token_whg = '{{ mbtokenwhg }}', 
+  token_mb = '{{ mbtokenmb }}';
+
+$( "#map_dataset" ).change(function() {
+  $("#filter_group").html('')
+  renderData($(this).val())
+});	
+
+var map = new maplibregl.Map({
+  container: 'map', // container id
+  style: 'mapbox://styles/mapbox/light-v10',
+  <!--style: 'mapbox://styles/kgeographer/ckidglq8l2nra19nzzbl995ue',-->
+  <!--center: [15, 35], // starting position [lng, lat]-->
+  zoom: 1.1, // starting zoom
+  minZoom: 1.0,
+  maxZoom: 18,
+  accessToken: token_whg
+});
+
+map.on('load', function() {
+  hilited = null
+
+  map.addSource('empty', {
+    type: 'geojson',
+    data: { type: 'FeatureCollection', features: [] }
+  });
+  
+  const zIndex3 = map.addLayer({
+    id: 'z-index-3',
+    type: 'symbol',
+    source: 'empty'
+  }); //top
+  
+  const zIndex2 = map.addLayer({
+    id: 'z-index-2',
+    type: 'symbol',
+    source: 'empty'
+  }, 'z-index-3'); // place this layer below zIndex3
+  
+  const zIndex1 = map.addLayer({
+    id: 'z-index-1',
+    type: 'symbol',
+    source: 'empty'
+  }, 'z-index-2'); // place this layer below zIndex2
+
+  $('#map_dataset>option:eq(1)').prop('selected', true);  
+  renderData(1106)
+})
+
+function highlightFeature(pid, coords){
+  console.log('pid, coords',pid, coords)
+  // remove previous
+  <!--if(hilited){hilited.remove()}-->
+  
+  <!--hilited = new maplibregl.Marker().setLngLat(coords).addTo(map);-->
+  
+  <!--'circle-stroke-color': 'black',-->
+  <!--'circle-stroke-width': 1,-->
+
+  map.setPaintProperty(
+    'gl_active_point', 'circle-radius', 
+      { 'property':'pid',
+        'type':'categorical',
+        'stops':[[pid, 12]]}
+  );
+  map.setPaintProperty(
+    'gl_active_point', 'circle-stroke-color', 
+      { 'property':'pid',
+        'type':'categorical',
+        'stops':[[pid, '#666']]}
+  );
+  map.setPaintProperty(
+    'gl_active_point', 'circle-stroke-width', 
+      { 'property':'pid',
+        'type':'categorical',
+        'stops':[[pid, 1]]}
+  );
+  map.setPaintProperty(
+    'gl_active_point', 'circle-color', 
+      { 'property':'pid',
+        'default':'#ff9900',
+        'type':'categorical',
+        'stops':[[pid,'red']]}
+  );
+
+  <!--map.setPaintProperty(-->
+    <!--'gl_active_point', 'circle-opacity', -->
+      <!--{ 'property':'pid',-->
+        <!--'default': 0.5,-->
+        <!--'type':'categorical',-->
+        <!--'stops':[[pid,1]]}-->
+  <!--);-->
+  // also set z-index and zoom
+    // zoom to feature
+  map.flyTo({'center': coords, 'zoom': 10})
+  
+}
+
+// Add checkbox and label elements for layer.
+function addCheckbox(layerID){
+  cbid = 'cb_'+layerID.substring(10)
+  count = map.queryRenderedFeatures({layers: [layerID]}).length
+  console.log('layer, count', layerID, count)
+  if(count > 0){
+    const filterGroup = $('#filter_group');
+    const input = document.createElement('input');
+    input.type = 'checkbox';
+    input.id = cbid;
+    input.checked = true;
+    <!--filterGroup.appendChild(input);-->
+    filterGroup.append(input);
+     
+    const label = document.createElement('label');
+    label.setAttribute('for', layerID);
+    label.textContent = layerID.substring(10);
+    <!--filterGroup.appendChild(label);-->
+    filterGroup.append(label);
+     
+    // When the checkbox changes, update the visibility of the layer.
+    input.addEventListener('change', (e) => {
+      map.setLayoutProperty(
+        layerID,
+        'visibility',
+        e.target.checked ? 'visible' : 'none'
+      );
+    });
+  } else{
+    
+  }
+}
+
+function renderData(dsid){
+<!--function renderData(dslabel){-->
+  startMapSpinner()
+  // clear any data layers and 'places' source
+  if(!!map.getLayer('gl_active_point')){
+    map.removeLayer('gl_active_point')
+    map.removeLayer('gl_active_line')
+    map.removeLayer('gl_active_poly')
+    map.removeSource('places')
+  }
+    
+  $.get('/datasets/'+dsid+'/geojson', function(data){
+    console.log('data.collection', data.collection)
+    // get bounds w/turf
+    envelope = turf.envelope(data.collection)
+    // collection-wide earliest/latest
+    range = data.minmax
+    
+    // add FeatureCollection source, call it 'places'
+    map.addSource('places', {
+        'type': 'geojson',
+        'data': data.collection
+    })
+    
+    /*for (const feature of data.collection.features) {
+      <!--const geom = feature.;-->
+      const layerID = `p-${type}`;
+      
+      if (!map.getLayer(layerID)) {
+        
+      }
+    */ 
+      
+    // render to map
+    map.addLayer({
+      'id': 'gl_active_line',
+      'type': 'line',
+      'source': 'places',
+      'paint': {
+        'line-color': 'lightgreen',
+        'line-width': {
+          stops: [[1, 1], [4, 2], [16, 4]]
+        }        
+      },
+      'filter': ['==', '$type', 'LineString']
+    }, 'z-index-1');
+    setTimeout(function() {
+    addCheckbox('gl_active_line')},1000)
+    
+    map.addLayer({
+      'id': 'gl_active_poly',
+      'type': 'fill',
+      'source': 'places',
+      'paint': {
+        <!--'fill-color': '#ddd',-->
+        'fill-color': 'pink',
+        'fill-opacity': 0.5,
+        'fill-outline-color': 'black'
+      },
+      'filter': ['==', '$type', 'Polygon']
+    }, 'z-index-2');
+    setTimeout(function() {
+    addCheckbox('gl_active_poly')},1000)
+    
+    map.addLayer({
+      'id': 'gl_active_point',
+      'type': 'circle',
+      'source': 'places',
+      'paint': {
+        'circle-color': '#ff9900',
+        'circle-radius': {
+          stops: [[1, 2], [3, 3], [16, 10]]
+        }        
+      },
+      'filter': ['==', '$type', 'Point']
+    }, 'z-index-2');  
+    setTimeout(function() {
+    addCheckbox('gl_active_point')},1000)
+    
+    map.fitBounds(envelope.bbox)
+    spinner_map.stop()
+    
+  })  // 
+}
+
+function popupMaker(place, lnglat){
+  console.log('lnglat', lnglat)
+  // lnglat is clicked point
+  var coordinates = [lnglat.lng, lnglat.lat];
+  var props = place.properties
+  var pid = props.pid;
+  var title = props.title;
+  var src_id = props.src_id;
+  var min = props.min;
+  var max = props.max;
+  var fc = props.fclasses;
+
+  /* Ensure that if the map is zoomed out such that multiple-->
+     copies of the feature are visible, the popup appears-->
+     over the copy being pointed to. */
+  while (Math.abs(lnglat.lng - coordinates[0]) > 180) {
+    coordinates[0] += lnglat.lng > coordinates[0] ? 360 : -360;
+  }
+  
+  // highlight row
+  console.log('making popup', pid, coordinates)
+    
+  // popup
+  var html='<b>'+title+'</b><br/>'+'<a href="javascript:getPlace('+pid+')">fetch info</a>'
+  if(min != 'null'){
+    html+='<br/>earliest: '+min+'<br/>'+'latest: '+max
+  }
+  poppy = new maplibregl.Popup()
+    .setLngLat(coordinates)
+    .setHTML(html)
+    .addTo(map);
+
+}
+// all this for a popup, on ONE layer
+// TODO: repeat for lines and polygons
+map.on('click', 'gl_active_point', function (e) {
+  console.log('e.lngLat', e.lngLat)
+  <!--lng = e.lngLat.lng-->
+  lnglat = e.lngLat
+  <!--lngLat = e.lngLat-->
+  place=e.features[0]
+  <!--console.log('clicked point, lng', place, lng)-->
+  // 
+  popupMaker(place, lnglat)
+});
+
+map.on('click', 'gl_active_line', function (e) {
+  lnglat = e.lngLat
+  place=e.features[0]
+  console.log('clicked line, lngLat', place, lnglat)
+  // 
+  popupMaker(place, lnglat)
+});
+
+// Change the cursor to a pointer when the mouse is over the point layer.
+map.on('mouseenter', 'gl_active_point', function () {
+  map.getCanvas().style.cursor = 'pointer';
+});
+// Change it back to a pointer when it leaves.
+map.on('mouseleave', 'gl_active_point', function () {
+  map.getCanvas().style.cursor = '';
+});
+
+map.on('mouseenter', 'gl_active_line', function () {
+  map.getCanvas().style.cursor = 'pointer';
+});
+// Change it back to a pointer when it leaves.
+map.on('mouseleave', 'gl_active_line', function () {
+  map.getCanvas().style.cursor = '';
+});
+  
+
+
+<!--map.on('zoomend', function(){-->
+  <!--console.log('zoomend')-->
+<!--})-->
+
+spin_opts = { scale: .5, top: '50%'}
+function startMapSpinner(){
+  <!--console.log('startMapSpinner()')-->
+  window.spinner_map = new Spin.Spinner(spin_opts).spin();
+  $("#map_select").append(spinner_map.el);   
+}
+
+  
+</script>
+{% endblock %}

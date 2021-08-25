@@ -24,7 +24,7 @@ def custom_error_view(request, exception=None):
 
 # experiment with MapLibre
 class LibreView(TemplateView):
-    template_name = 'main/_scratch/libre.html'
+    template_name = 'datasets/libre.html'
 
     def get_context_data(self, *args, **kwargs):
         context = super(LibreView, self).get_context_data(*args, **kwargs)
