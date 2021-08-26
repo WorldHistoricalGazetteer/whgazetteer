@@ -29,6 +29,10 @@ es-*.*
 # Wing IDE
 *.wp*
 
+# VS Code
+whg.code-workspace
+settings.json
+
 ### Django ###
 local_settings.py
 *.log
