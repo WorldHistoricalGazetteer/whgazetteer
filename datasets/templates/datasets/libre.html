@@ -1,10 +1,10 @@
-<!-- datasets/home.html -->
+<!-- datasets/libre.html -->
 {% extends "main/base.html" %}
 {% load leaflet_tags %}
 {% load fontawesome %}
 {% load static %}
 
-{% block title %}<title>WHG timemap</title>{% endblock %}
+{% block title %}<title>timemap</title>{% endblock %}
 {% block extra_head %}
 {% leaflet_js %}
 {% leaflet_css %}
@@ -84,7 +84,8 @@
       <div class="col-sm-4">
         <select id="map_dataset" name="region" class="custom-select-sm">
           <option value="0">Display dataset</option>
-          <option value=1106>Bregel</option>
+          <!-- <option value=1106>Bregel</option> -->
+          <option value=1109>Bregel polys</option>
           <option value=1095>Croniken</option>
           <option value=8>HGIS de las Indias (territorios)</option>
           <option value=9>HGIS de las Indias (lugares)</option>
@@ -177,6 +178,7 @@
     //map.setFilter('gl_active_line', filter)
     //map.setFilter('gl_active_poly', filter)
   }
+
   /*
   feats=map.queryRenderedFeatures()
   feats=mappy.queryRenderedFeatures()
@@ -184,13 +186,14 @@
   layers=feats.filter(function(obj) {return (obj.layer.id === "gl_active_line")});
   lyr=feats.filter(function(obj) {return (obj.properties.pid === "6616870")});
   */
-
+  
+  /*// feature highlighter
   $(".f").click(function () {
     pid = $(this).data('pid')
     coords = $(this).data('coords')
     console.log('pid, coords', pid, coords)
     highlightFeature(pid, coords)
-  })
+  }) */
 
   var token_whg = '{{ mbtokenwhg }}',
     token_mb = '{{ mbtokenmb }}';
@@ -207,7 +210,7 @@
     //center: [15, 35], // starting position [lng, lat]
     zoom: 1.1, // starting zoom
     minZoom: 1.0,
-    maxZoom: 18,
+    maxZoom: 8,
     accessToken: token_whg
   });
 
@@ -219,26 +222,32 @@
       data: { type: 'FeatureCollection', features: [] }
     });
 
+    const zIndex4 = map.addLayer({
+      id: 'z-index-4',
+      type: 'symbol',
+      source: 'empty'
+    }); //top
+
     const zIndex3 = map.addLayer({
       id: 'z-index-3',
       type: 'symbol',
       source: 'empty'
-    }); //top
+    }, 'z-index-4'); // below zIndex4
 
     const zIndex2 = map.addLayer({
       id: 'z-index-2',
       type: 'symbol',
       source: 'empty'
-    }, 'z-index-3'); // place this layer below zIndex3
+    }, 'z-index-3'); // below zIndex3
 
     const zIndex1 = map.addLayer({
       id: 'z-index-1',
       type: 'symbol',
       source: 'empty'
-    }, 'z-index-2'); // place this layer below zIndex2
+    }, 'z-index-2'); // below zIndex2
 
     $('#map_dataset>option:eq(1)').prop('selected', true);
-    renderData(1106)
+    renderData(1109) // bregel
   })
 
   function highlightFeature(pid, coords) {
@@ -372,7 +381,7 @@
         'type': 'line',
         'source': 'places',
         'paint': {
-          'line-color': 'lightgreen',
+          'line-color': '#adebad',
           'line-width': {
             stops: [[1, 1], [4, 2], [16, 4]]
           }
@@ -389,15 +398,31 @@
         'source': 'places',
         'paint': {
           //'fill-color': '#ddd',
-          'fill-color': 'pink',
+          'fill-color': '#ffcc80',
           'fill-opacity': 0.5,
-          //'fill-outline-color': 'black'
+          // 'fill-outline-color': '#666'
         },
         'filter': ['==', '$type', 'Polygon']
       }, 'z-index-2');
+
       setTimeout(function () {
         addCheckbox('gl_active_poly')
       }, 1000)
+
+      map.addLayer({
+        'id': 'outline',
+        'type': 'line',
+        'source': 'places',
+        'layout': {},
+        'paint': {
+          'line-color': '#666',
+          'line-width': 1,
+          'line-dasharray': [6,4],
+          'line-opacity': 0.5,
+          // 'line-gap-width': 2
+        },
+        'filter': ['==', '$type', 'Polygon']
+      }, 'z-index-3');
 
       map.addLayer({
         'id': 'gl_active_point',
@@ -410,7 +435,7 @@
           }
         },
         'filter': ['==', '$type', 'Point']
-      }, 'z-index-2');
+      }, 'z-index-4');
       setTimeout(function () {
         addCheckbox('gl_active_point')
       }, 1000)
@@ -422,7 +447,7 @@
   }
 
   function popupMaker(place, lnglat) {
-    console.log('lnglat', lnglat)
+    // console.log('lnglat', lnglat)
     // lnglat is clicked point
     var coordinates = [lnglat.lng, lnglat.lat];
     var props = place.properties
@@ -441,10 +466,11 @@
     }
 
     // highlight row
-    console.log('making popup', pid, coordinates)
+    // console.log('making popup', pid, coordinates)
 
     // popup
     var html = '<b>' + title + '</b><br/>' + '<a href="javascript:getPlace(' + pid + ')">fetch info</a>'
+    // add time if exists
     if (min != 'null') {
       html += '<br/>earliest: ' + min + '<br/>' + 'latest: ' + max
     }
@@ -452,12 +478,12 @@
       .setLngLat(coordinates)
       .setHTML(html)
       .addTo(map);
-
   }
+  
   // all this for a popup, on ONE layer
   // TODO: repeat for lines and polygons
   map.on('click', 'gl_active_point', function (e) {
-    console.log('e.lngLat', e.lngLat)
+    // console.log('e.lngLat', e.lngLat)
     lnglat = e.lngLat
     place = e.features[0]
     popupMaker(place, lnglat)
@@ -466,18 +492,18 @@
   map.on('click', 'gl_active_line', function (e) {
     lnglat = e.lngLat
     place = e.features[0]
-    console.log('clicked line, lngLat', place, lnglat)
+    // console.log('clicked line, lngLat', place, lnglat)
     popupMaker(place, lnglat)
   });
 
   map.on('click', 'gl_active_poly', function (e) {
     lnglat = e.lngLat
     place = e.features[0]
-    console.log('clicked polygon, lngLat', place, lnglat)
+    // console.log('clicked polygon, lngLat', place, lnglat)
     popupMaker(place, lnglat)
   });
 
-  // Change the cursor to a pointer when the mouse is over the point layer.
+  // pointer cursor when mouse is over a layer.
   map.on('mouseenter', 'gl_active_point', function () {
     map.getCanvas().style.cursor = 'pointer';
   });
@@ -501,8 +527,6 @@
   map.on('mouseleave', 'gl_active_poly', function () {
     map.getCanvas().style.cursor = '';
   });
-
-
 
   //map.on('zoomend', function(){
   //console.log('zoomend')

@@ -234,7 +234,7 @@
     center: [9.2, 33],
     zoom: 0.2, // starting zoom
     minZoom: 0.1,
-    maxZoom: 18,
+    maxZoom: 10,
     accessToken: '{{ mbtokenmb }}'
   });
 
@@ -264,7 +264,7 @@
       source: 'empty'
     }, 'z-index-2'); // place this layer below zIndex2
 
-    renderData({{ ds.id }})
+    renderData("{{ ds.id }}")
   });
 
   // fetch and render
@@ -277,12 +277,12 @@
     }
     // fetch data
     
-    <!--$.get('/api/geojson/', {id: dsid}, function(data){ // much slower-->
+    // $.get('/api/geojson/', {id: dsid}, function(data){ // much slower
     $.get('/datasets/'+dsid+'/geojson', function(data){
       features = data.collection.features
       if(features.length > 0){
         startMapSpinner()
-        <!--console.log('data', data.collection)-->
+        // console.log('data', data.collection)
         // get bounds w/turf
         envelope = turf.envelope(data.collection)
         range = data.minmax
@@ -340,7 +340,7 @@
 
   // called by table row click
   function highlightFeatureGL(pid, geom, coords){
-    console.log('pid, coords',pid, coords)
+    console.log('pid, coords',pid, coords);
     // TODO: 
     if(geom.type.includes('Point')){
       mappy.setPaintProperty(
@@ -348,26 +348,26 @@
           { 'property':'pid',
             'type':'categorical',
             'default': 3,
-            'stops':[[pid, 8]]}
+            'stops':[[Number(pid), 8]]}
       );
       mappy.setPaintProperty(
         'gl_active_point', 'circle-stroke-color', 
           { 'property':'pid',
             'type':'categorical',
-            'stops':[[pid, '#666']]}
+            'stops':[[Number(pid), '#666']]}
       );
       mappy.setPaintProperty(
         'gl_active_point', 'circle-stroke-width', 
           { 'property':'pid',
             'type':'categorical',
-            'stops':[[pid, 1]]}
+            'stops':[[Number(pid), 1]]}
       );
       mappy.setPaintProperty(
         'gl_active_point', 'circle-color', 
           { 'property':'pid',
             'default':'#ff9900',
             'type':'categorical',
-            'stops':[[pid,'red']]}
+            'stops':[[Number(pid),'red']]}
       );
     } else if (geom.type.includes('Polygon')) {
       mappy.setPaintProperty(
@@ -544,7 +544,7 @@
     $("#placetable tbody tr").click(function() {
       thisy=$(this)
       // close popup if exists
-      poppy.remove()      
+      if(typeof poppy != 'undefined'){poppy.remove()}
       // get id
       pid=$(this)[0].cells[0].textContent
       
