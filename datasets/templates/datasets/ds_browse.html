@@ -60,7 +60,6 @@
             <div id="drftable_detail" class="col-sm-5">
               <div class="toomany"></div>
               
-              <!-- toggle geometries for clarity -->
               {%comment%}
               <div id="filter_group" class="">Display&nbsp;
                 points: <input id="cb_point" class="gtype" data-g="point" type="checkbox" checked />&nbsp;
@@ -74,10 +73,10 @@
               <!-- time slider eventually -->
               {%comment%}
               <div id="nouislider" class="my-2"></div>
-              <!--<div><input style="width:100%;" id="slider" type="range" min= {ds.minmax.0}} max= {ds.minmax.1}} step="100" value="0"></div>-->
+              <!--<div><input style="width:100%;" id="slider" type="range" min= {ds.minmax.0}} max= {ds.minmax.1}} step="100" value="0"></div>
               <div class="small" style="margin-top:-10px;border-bottom:1px dashed #ddd;">
                 {{ds.minmax.0}}<span class="float-right">{{ds.minmax.1}}
-              </div>
+              </div>-->
               {%endcomment%}
               
               <div id="row_detail">
@@ -246,23 +245,29 @@
       data: { type: 'FeatureCollection', features: [] }
     });
     
+    const zIndex4 = mappy.addLayer({
+      id: 'z-index-4',
+      type: 'symbol',
+      source: 'empty'
+    }); //top
+
     const zIndex3 = mappy.addLayer({
       id: 'z-index-3',
       type: 'symbol',
       source: 'empty'
-    }); //top
-    
+    }, 'z-index-4'); // below zIndex4
+
     const zIndex2 = mappy.addLayer({
       id: 'z-index-2',
       type: 'symbol',
       source: 'empty'
-    }, 'z-index-3'); // place this layer below zIndex3
-    
+    }, 'z-index-3'); // below zIndex3
+
     const zIndex1 = mappy.addLayer({
       id: 'z-index-1',
       type: 'symbol',
       source: 'empty'
-    }, 'z-index-2'); // place this layer below zIndex2
+    }, 'z-index-2'); // below zIndex2
 
     renderData("{{ ds.id }}")
   });
@@ -293,33 +298,48 @@
         })
         
         // render to map
-        // lines, then polygons, then points
+        // z-index points:4, poly-outlines:3. poly:2, lines:1
         mappy.addLayer({
           'id': 'gl_active_point',
           'type': 'circle',
           'source': 'places',
           'paint': {
-            'circle-opacity': 0.7,
+            'circle-opacity': 1,
             'circle-color': '#ff9900',
             'circle-radius': {
               stops: [[1, 2], [3, 3], [16, 10]]
             }        
           },
           'filter': ['==', '$type', 'Point']
-        }, 'z-index-3');  
-          
+        }, 'z-index-4');  
+
+        // dashed outline for polygons
+        mappy.addLayer({
+          'id': 'outline',
+          'type': 'line',
+          'source': 'places',
+          'layout': {},
+          'paint': {
+            'line-color': '#999',
+            'line-width': 1,
+            'line-dasharray': [4,2],
+            'line-opacity': 0.5,
+          },
+          'filter': ['==', '$type', 'Polygon']
+        }, 'z-index-3');
+        
         mappy.addLayer({
           'id': 'gl_active_poly',
           'type': 'fill',
           'source': 'places',
           'paint': {
             'fill-color': '#ddd',
-            'fill-opacity': 0.2,
-            'fill-outline-color': 'black'
+            'fill-opacity': 0.3,
+            'fill-outline-color': '#666'
           },
           'filter': ['==', '$type', 'Polygon']
         }, 'z-index-2');
-        
+
         mappy.addLayer({
           'id': 'gl_active_line',
           'type': 'line',
@@ -373,6 +393,8 @@
             'stops':[[Number(pid),'red']]}
       );
     } else if (geom.type.includes('Polygon')) {
+      // fade points when polygon is highlighted
+      mappy.setPaintProperty('gl_active_point', 'circle-opacity', 0.4);
       mappy.setPaintProperty(
         'gl_active_poly', 'fill-outline-color', 
           { 'property':'pid',
@@ -385,10 +407,8 @@
           { 'property':'pid',
             'default': "rgba(255,255,255,0.0)",
             'type':'categorical',
-            'stops':[[Number(pid), 'rgba(255,0,0,1.0)']]}
+            'stops':[[Number(pid), 'rgba(0,128,0,1.0)']]}
       );     
-      // fade points when polygons display
-      mappy.setPaintProperty('gl_active_point', 'circle-opacity', 0.3);
 
     } else if(geom.type.includes('Line')) {
       mappy.setPaintProperty(
@@ -430,15 +450,15 @@
     var max = props.max;
     var fc = props.fclasses;
 
-    /* Ensure that if the map is zoomed out such that multiple-->
-       copies of the feature are visible, the popup appears-->
+    /* Ensure that if the map is zoomed out such that multiple
+       copies of the feature are visible, the popup appears
        over the copy being pointed to. */
     while (Math.abs(lnglat.lng - coordinates[0]) > 180) {
       coordinates[0] += lnglat.lng > coordinates[0] ? 360 : -360;
     }
     
     // highlight row
-    console.log('making popup', pid, coordinates)
+    // console.log('making popup', pid, coordinates)
       
     // popup
     var html='<b>'+title+'</b><br/>'+'<a href="javascript:getPlace('+pid+')">fetch info</a>'
@@ -454,12 +474,12 @@
   // all this for a popup, on ONE layer
   // TODO: repeat for lines and polygons
   mappy.on('click', 'gl_active_point', function (e) {
-    console.log('e.lngLat', e.lngLat)
-    <!--lng = e.lngLat.lng-->
+    // console.log('e.lngLat', e.lngLat)
+    //lng = e.lngLat.lng
     lnglat = e.lngLat
-    <!--lngLat = e.lngLat-->
+    //lngLat = e.lngLat
     place=e.features[0]
-    <!--console.log('clicked point, lng', place, lng)-->
+    //console.log('clicked point, lng', place, lng)
     // 
     popupMaker(place, lnglat)
   });
@@ -467,7 +487,7 @@
   mappy.on('click', 'gl_active_line', function (e) {
     lnglat = e.lngLat
     place=e.features[0]
-    console.log('clicked line, lngLat', place, lnglat)
+    // console.log('clicked line, lngLat', place, lnglat)
     // 
     popupMaker(place, lnglat)
   });
@@ -494,7 +514,7 @@
     console.log('zoomTo()',pid)
     l = idToFeature[pid]
     ftype=l.feature.geometry.type
-    <!--console.log('zoomTo() pid, ftype',pid, ftype)-->
+    //console.log('zoomTo() pid, ftype',pid, ftype)
     if (ftype=='Point'){
        mappy.setView(l._latlng, 7 )
     } else {
@@ -528,11 +548,11 @@
     $("#status_select").change(function(e){
       // clear search first
       console.log('search has val:',$("#placetable_filter input").val())
-      <!--$("#placetable_filter input").val('')-->
+      //$("#placetable_filter input").val('')
       if($("#placetable_filter input").val() != ''){
         $('#placetable').DataTable().search('').draw()
       }
-      <!--fnDraw()-->
+      //fnDraw()
       val = $(this).val()
       localStorage.setItem('filter', val)
       console.log(val)
@@ -544,7 +564,7 @@
         clearFilters()
         filterColumn(val[0], val[1])
       }
-      <!--spinner_filter.stop()-->
+      //spinner_filter.stop()
     })
 
     $("#placetable tbody tr").click(function() {
@@ -566,7 +586,7 @@
         $(this).addClass("highlight-row");
 
       // highlight marker, zoomTo()
-      <!--highlightFeatureGL(pid, coords)-->
+      //highlightFeatureGL(pid, coords)
       highlightFeatureGL(pid, geom, coords)
 
       // fetch its detail
@@ -646,7 +666,7 @@
       "OSM": osm,
       "Satellite": satellite
     };
-    <!--startMapSpinner()-->
+    //startMapSpinner()
     // call it mappy (a harmless artifact of earlier version)
     window.mappy = e.detail.map
     mappy.setMaxBounds(null)
@@ -665,7 +685,7 @@
     // get dataset features -> renderMap() if < 15,000
     $.get("/api/geoms", {ds: "{{ ds.label }}"},
       function(data){
-        <!--console.log('feature count:',data.count)-->
+        //console.log('feature count:',data.count)
         geom = {"type":"FeatureCollection","features":data.results}
         if(geom.features.length >= 15000) {
           $(".toomany").html('for performance reasons, mapping only the first 15,000 features - sorry!')
@@ -676,7 +696,7 @@
           $(".toomany").html('too many features to map (> '+geom.features.length+'), sorry!')
         }
     })
-    <!--spinner_map.stop()-->
+    //spinner_map.stop()
 
     function manualPrint () {
         printer.printMap('CurrentSize', 'MyManualPrint')
@@ -726,7 +746,7 @@
   function renderMap(geom){
     // call the map being rendered 'mappo'
     console.log('in renderMap()', geom)
-    <!--mappo = tab=='browse' ? mappy : mappyr-->
+    //mappo = tab=='browse' ? mappy : mappyr
     if (geom.features.length==0) {
       console.log('no features in renderMap() call')
     } else {
@@ -740,9 +760,9 @@
       // TODO: LPF should allow single geometry, not only GeometryCollection
         pointToLayer: function (feature, latlng) {
           matchid = feature.place_id
-          <!--console.log('feature',feature)-->
+          //console.log('feature',feature)
           marker = L.circleMarker(latlng,styles.Point.default).bindPopup(feature.title+
-            <!--'<br>pid: <a href="'+window.location.origin+'/api/db?id='+matchid+'" target="_blank">'+matchid+'</a>'-->
+            //'<br>pid: <a href="'+window.location.origin+'/api/db?id='+matchid+'" target="_blank">'+matchid+'</a>'
             '<br>pid: <a href="javascript:getPlace('+matchid+')">'+matchid+'</a>'
             );
           idToFeature[matchid] = marker
@@ -750,11 +770,11 @@
         }
         ,onEachFeature: function(feature,layer) {
           f=feature; l=layer;
-          <!--console.log('f,l',feature,layer)-->
+          //console.log('f,l',feature,layer)
           identifier = f.place_id;
           if(f.type != 'Point'){
             layer.setStyle(styles[f.type].default).bindPopup(f.title+
-            <!--'<br>pid: <a href="'+window.location.origin+'/api/db?id='+identifier+'" target="_blank">'+identifier+'</a>'-->
+            //'<br>pid: <a href="'+window.location.origin+'/api/db?id='+identifier+'" target="_blank">'+identifier+'</a>'
             '<br>pid: <a href="javascript:getPlace('+identifier+')">'+identifier+'</a>'
             );
             idToFeature[identifier] = layer
@@ -762,31 +782,31 @@
         }
       }).addTo(mappy);
     }
-    <!--highlightFeature(pid)-->
+    //highlightFeature(pid)
     mappy.fitBounds(features.getBounds())
     mappy.on('zoomend', function() {
       var currentZoom = mappy.getZoom();
-      <!--console.log('on zoomend', currentZoom)-->
+      //console.log('on zoomend', currentZoom)
       var myRadius = currentZoom*(1); //or whatever ratio you prefer
       var myWeight = currentZoom*(1/5); //or whatever ratio you prefer
       features.setStyle({radius: myRadius, weight: myWeight});
       opt = Object.values(idToFeature)[0].options
       foptions = { ...opt };
-      <!--console.log('zoomend() idToFeature',opt)-->
+      //console.log('zoomend() idToFeature',opt)
     });
     opt = Object.values(idToFeature)[0].options
     foptions = { ...opt };
   }
   
   function minmaxer(timespans){
-    <!--console.log('got to minmax()',JSON.stringify(timespans))-->
+    //console.log('got to minmax()',JSON.stringify(timespans))
     starts=[]; ends=[]
     for (t in timespans){
       // gets 'in', 'earliest' or 'latest'
       starts.push(Object.values(timespans[t].start)[0])
       ends.push(!!timespans[t].end ? Object.values(timespans[t].end)[0] : -1)
     } 
-    <!--console.log('starts',starts,'ends',ends)-->
+    //console.log('starts',starts,'ends',ends)
     minmax=[Math.max.apply(null, starts),Math.max.apply(null, ends)]
     return minmax
   }
@@ -794,7 +814,8 @@
   // single column
   function parsePlace(data) {
     window.featdata = data
-    
+    let cert = data.geoms[0].certainty
+
     function onlyUnique(array) { 
       const map = new Map();
       const result = [];
@@ -810,7 +831,7 @@
       }
       return(result)
     }
-    <!--timespan_arr = []-->
+    //timespan_arr = []
     //
     // TITLE 
     descrip = '<p><b>Title</b>: <span id="row_title" class="larger text-danger">'+data.title+'</span>'
@@ -831,7 +852,7 @@
     for (t in data.types) {
       str = ''
       var type = data.types[t]
-      <!--console.log('type',type)-->
+      //console.log('type',type)
       if('sourceLabels' in type){
         srclabels = type.sourceLabels
         for(l in srclabels){
@@ -855,9 +876,9 @@
     if (data.links.length > 0) {
       links=data.links
       links_arr = onlyUnique(data.links)
-      <!--console.log('distinct data.links',links_arr)-->
+      //console.log('distinct data.links',links_arr)
       for (l in links_arr) {
-        <!--console.log('link',links_arr[l])-->
+        //console.log('link',links_arr[l])
         if (links_arr[l].aug == true) {
           added_count +=1
           html_added += url_extplace(links_arr[l].identifier)
@@ -873,20 +894,20 @@
 
     //
     // RELATED
-    <!--right=''-->
+    //right=''
     if (data.related.length > 0) {
       parent='<p class="mb-0"><b>Parent(s)</b>: '; 
       related='<p class="mb-0"><b>Related</b>: ';
       for (r in data.related){
         rel = data.related[r]
-        <!--console.log('rel',rel)-->
+        //console.log('rel',rel)
         if (rel.relation_type == 'gvp:broaderPartitive'){
           parent += '<span class="small h1em">'+rel.label
           parent += 'when' in rel && !('timespans' in rel.when) ? 
             ', '+rel.when.start.in+'-'+rel.when.end.in : 
             'when' in rel && ('timespans' in rel.when) ? ', '+
               minmaxer(rel.when.timespans) : ''
-              <!--rel.when.timespans : ''-->
+              //rel.when.timespans : ''
           parent += '</span>; '
         } 
         else {
@@ -903,40 +924,46 @@
       val = data.descriptions[0]['value'].substring(0,300)
       descrip+='<p><b>Description</b>: '+(val.startsWith('http')?'<a href="'+val+'" target="_blank">Link</a>':val)
         +' ... </p>'
-        <!--'<br/><span class="small red-bold">('+data.descriptions[0]['identifier']+')</span>-->
+        //'<br/><span class="small red-bold">('+data.descriptions[0]['identifier']+')</span>
     }
     //
     // CCODES
     //
-    <!--if (data.ccodes.length > 0) {-->
+    //if (data.ccodes.length > 0) {
     if (!!data.countries) {
-      <!--console.log('data.countries',data.countries)-->
+      //console.log('data.countries',data.countries)
       descrip+='<p><b>Modern country bounds</b>: '+ data.countries.join(', ')+'</p>'
     }
     //
     // MINMAX
     //
-    <!--console.log('data.minmax',data.minmax)-->
+    //console.log('data.minmax',data.minmax)
     mm=data.minmax
     if(data.minmax && !(mm[0] == null && mm[1] == null)) {
       descrip += '<p><b>When</b>: earliest: '+data.minmax[0]+'; latest: '+data.minmax[1]    
+    }
+
+    console.log('cert', cert)
+    if(cert !='undefined'){
+      descrip += '<p><b>Location certainty</b>: '+cert+'</p>'
     }
     descrip += '</div>'
     return descrip
   }
 
   function getPlace(pid){
-    <!--console.log('getPlace()', pid)-->
+    //console.log('getPlace()', pid)
     $.ajax({
       url: "/api/place/"+pid,
       }).done(function( data ) {
+        console.log('place data', data)
         $("#detail").html(parsePlace(data))
         spinner_detail.stop()
         // events on detail items
         $('.ext').on('click', function(e) {
           e.preventDefault();
           str=$(this).text()
-          <!--console.log('str (identifier)',str)-->
+          //console.log('str (identifier)',str)
           // URL identifiers can be 'http*' or an authority prefix
           if(str.substring(0,4).toLowerCase() == 'http'){
             url = str
@@ -945,7 +972,7 @@
             url=base_urls[str.match(re)[1]]+str.match(re)[2] 
             console.log('url',encodeURI(url))
           }
-          <!--window.open(url, '_blank');-->
+          //window.open(url, '_blank');
           window.open(encodeURI(url), '_blank');
         });
         $('.exttab').on('click', function(e) {
@@ -958,7 +985,7 @@
           window.open(url,'_blank')
         });
     });
-    <!--spinner_detail.stop()-->
+    //spinner_detail.stop()
   }
   // spinners
   spin_opts = { scale: .5, top: '50%'}
@@ -975,7 +1002,7 @@
     $("#row_detail").append(spinner_detail.el);   
   }
   function startMapSpinner(){
-    <!--console.log('startMapSpinner()')-->
+    //console.log('startMapSpinner()')
     window.spinner_map = new Spin.Spinner(spin_opts).spin();
     $("#map").append(spinner_map.el);   
   }

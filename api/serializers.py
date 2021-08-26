@@ -121,11 +121,13 @@ class PlaceGeomSerializer(serializers.ModelSerializer):
   coordinates = serializers.ReadOnlyField(source='jsonb.coordinates')
   citation = serializers.ReadOnlyField(source='jsonb.citation')
   when = serializers.ReadOnlyField(source='jsonb.when')
+  certainty = serializers.ReadOnlyField(source='jsonb.certainty')
 
   class Meta:
     model = PlaceGeom
     fields = ('place_id','src_id','type', 'geowkt', 'coordinates',
-              'geom_src', 'citation', 'when', 'title', 'ds')
+              'geom_src', 'citation', 'when', 'title', 'ds',
+              'certainty')
               #'geom_src', 'citation', 'when',  'ds')
 
 class PlaceTypeSerializer(serializers.ModelSerializer):
@@ -188,14 +190,6 @@ class PlaceTableSerializer(serializers.ModelSerializer):
       return '<img src="/static/images/geo_'+fn+'.svg" width=12/>'
     else:
       return '&mdash;'
-
-  #geom = serializers.SerializerMethodField()
-  #def get_geom(self, place):
-    #if place.geom_count > 0:
-      #gtype = place.geoms.all()[0].jsonb['type'].lower()
-      #return 
-    #else:
-      #return None
 
   revwd = serializers.SerializerMethodField('rev_wd')
   def rev_wd(self, place):
