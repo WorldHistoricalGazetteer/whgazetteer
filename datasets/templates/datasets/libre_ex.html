@@ -1,0 +1,232 @@
+<!-- datasets/libre.html -->
+{% extends "main/base.html" %}
+{% load fontawesome %}
+{% load static %}
+
+{% block title %}<title>timemap</title>{% endblock %}
+{% block extra_head %}
+<script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>
+<script src="{% static 'js/spin.umd.js' %}"></script>
+
+<script src="{% static 'nouislider/nouislider.js' %}"></script>
+<link rel="stylesheet" href="{% static 'nouislider/nouislider.min.css' %}" />
+
+<link href="https://api.mapbox.com/mapbox-gl-js/v2.4.1/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.4.1/mapbox-gl.js"></script>
+
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+  }
+
+  #map {
+    position: absolute;
+    top: 60px;
+    bottom: 20px;
+    width: 90%;
+  }
+
+  #map_select {
+    position: absolute;
+    top: 2px;
+  }
+
+  .noUi-handle {
+    height: 18px !important;
+    top: -4px !important;
+  }
+
+  .noUi-horizontal {
+    height: 12px !important;
+  }
+
+  .noUi-tooltip {
+    display: none;
+  }
+
+  .noUi-active .noUi-tooltip {
+    display: block;
+  }
+
+  .noUi-value {
+    cursor: pointer;
+  }
+
+  /* tooltips display above
+    .noUi-tooltip {
+        display: none;
+    }
+    .noUi-active .noUi-tooltip {
+        display: block;
+    } */
+
+  .filter-group input[type='checkbox']+label {
+    padding-left: 3px;
+    padding-right: 10px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+{% load static %}
+
+<div class="container">
+  <div class="justify-content-center mt-2">
+    <div id="map_select" class="row py-1">
+      <div class="col-sm-4">
+      </div>
+      <div class="col-sm-8 small pt-1">
+        <div id='nouislider'></div>
+      </div>
+    </div>
+    <div id="map"></div>
+  </div>
+</div>
+
+<script type="text/javascript">
+
+  sample_collection = 
+  $(function () {
+    $(".navbar").hide()
+    var idToFeature = {} // for feature lookup
+
+    // slider experiment
+    
+    tsdiv = document.getElementById('nouislider');
+  
+    tslider = noUiSlider.create(tsdiv, {
+      start: [2000],
+      connect: true,
+      tooltips: true,
+      //margin:100,
+      range: {
+          'min': -300,
+          'max': 2000
+      },
+      step: 100,
+      format: {
+        // 'to' the formatted value. Receives a number.
+        to: function (value) {
+            //return value + ',-';
+            return Math.round(value);
+        },
+        // 'from' the formatted value.
+        // Receives a string, should return a number.
+        from: function (value) {
+            return Number(value);
+        }
+      },     
+      pips: {
+        mode: 'steps',
+        density: 3
+        // ,format: {
+        //   decimals: 0
+        // }
+      }  
+    });
+    
+    tsdiv.noUiSlider.on('set', function (values, handle) {
+      timeFilter(Number(values[0]))
+      console.log('values', values[0], typeof(values[0]))
+    })
+
+  }) // end onLoad()
+
+  function timeFilter(val) {
+    // val is integer year
+    filter = [ "all",
+      ['in', '$type', 'Polygon', 'Point'], 
+      ["has", "min"], 
+      ["<=", "min", val], 
+      [">=", "max", val]
+    ]
+    map.setFilter('point', filter)
+    map.setFilter('poly', filter)
+  }
+
+  var token_mb = 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw';
+  var map = new mapboxgl.Map({
+    container: 'map', 
+    style: 'mapbox://styles/mapbox/light-v10',
+    zoom: 1.1, 
+    minZoom: 3.0,
+    maxZoom: 8,
+    center: [71.7518, 40.3553],
+    accessToken: token_mb
+  });
+
+  // control z-index
+  map.on('load', function () {
+    map.addSource('empty', {
+      type: 'geojson',
+      data: { type: 'FeatureCollection', features: [] }
+    });
+
+    const zIndex2 = map.addLayer({
+      id: 'z-index-2',
+      type: 'symbol',
+      source: 'empty'
+    }); 
+
+    const zIndex1 = map.addLayer({
+      id: 'z-index-1',
+      type: 'symbol',
+      source: 'empty'
+    }, 'z-index-2'); // below zIndex2
+
+    renderData()
+  })
+
+  function renderData() {
+    startMapSpinner()
+
+    // add FeatureCollection source, call it 'places'
+    map.addSource('places', {
+      'type': 'geojson',
+      'data': '/media/data/bregel_collection_all.json'
+      // 'data': '/media/data/bregel4.json'
+    })
+
+    // render to map
+    map.addLayer({
+      'id': 'poly',
+      'type': 'fill',
+      'source': 'places',
+      'paint': {
+        'fill-color': '#ffcc80',
+        'fill-opacity': 0.5,
+      },
+      'filter': ['==', '$type', 'Polygon']
+    }, 'z-index-1');
+
+    map.addLayer({
+      'id': 'point',
+      'type': 'circle',
+      'source': 'places',
+      'paint': {
+        'circle-color': '#ff9900',
+        'circle-radius': {
+          stops: [[1, 2], [3, 3], [16, 10]]
+        }
+      },
+      'filter': ['==', '$type', 'Point']
+    }, 'z-index-2');
+
+    range = [-300, 2000]
+    // envelope = turf.envelope(sample_collection)
+    // map.fitBounds(envelope.bbox)
+    spinner_map.stop()
+
+  }
+
+  spin_opts = { scale: .5, top: '50%' }
+  function startMapSpinner() {
+    //console.log('startMapSpinner()')
+    window.spinner_map = new Spin.Spinner(spin_opts).spin();
+    $("#map_select").append(spinner_map.el);
+  }
+
+
+</script>
+{% endblock %}

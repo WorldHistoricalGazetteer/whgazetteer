@@ -99,7 +99,7 @@
       </div>
       <div class="col-sm-8 small pt-1">
         <div id='nouislider'></div>
-        <div id='filter_group' class='filter-group'></div>
+        <div id='filter_group' class='filter-group hidden'></div>
         <!--<div class="small" style=""><span id="ts_start">-300<span id="ts_end" class="float-right">2000</div>-->
       </div>
       <!--<p class="v2hideme"><a href="{ url 'home2beta' %}">v2beta1</a></p>-->
@@ -123,14 +123,14 @@
     var idToFeature = {} // for feature lookup
 
     // slider experiment
-    /*
+    
     tsdiv = document.getElementById('nouislider');
   
     tslider = noUiSlider.create(tsdiv, {
       start: [2000],
       connect: true,
       tooltips: true,
-      <!--margin:100,
+      //margin:100,
       range: {
           'min': -300,
           'max': 2000
@@ -139,7 +139,7 @@
       format: {
         // 'to' the formatted value. Receives a number.
         to: function (value) {
-            <!--return value + ',-';
+            //return value + ',-';
             return Math.round(value);
         },
         // 'from' the formatted value.
@@ -151,9 +151,9 @@
       pips: {
         mode: 'steps',
         density: 3
-        <!--format: {
-            <!--decimals: 0
-        <!--}
+        // ,format: {
+        //   decimals: 0
+        // }
       }  
     });
     
@@ -161,7 +161,6 @@
       timeFilter(Number(values[0]))
       console.log('values', values[0], typeof(values[0]))
     })
-    */
 
   }) // end onLoad()
 
@@ -174,9 +173,10 @@
       // does minmax span include year in question?
       filter = ["all", ["has", "min"], ["<=", "min", val], [">=", "max", val]]
     }
-    map.setFilter('gl_active_point', filter)
+    // map.setFilter('gl_active_point', filter)
     //map.setFilter('gl_active_line', filter)
-    //map.setFilter('gl_active_poly', filter)
+    map.setFilter('gl_active_poly', filter)
+    map.setFilter('outline', filter)
   }
 
   /*

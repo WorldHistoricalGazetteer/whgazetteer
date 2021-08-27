@@ -36,7 +36,7 @@ class LibreView(TemplateView):
 
 # experiment with MapLibre
 class LibreViewEx(TemplateView):
-    template_name = 'main/_scratch/libre03.html'
+    template_name = 'datasets/libre_ex.html'
 
     def get_context_data(self, *args, **kwargs):
         context = super(LibreViewEx, self).get_context_data(*args, **kwargs)
