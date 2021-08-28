@@ -347,7 +347,9 @@ def fetch_geojson_ds(request, *args, **kwargs):
   for f in features:
     feat={"type":"Feature",
           "properties":{"pid":f[1],"src_id":f[2],"title":f[3],
-                        "min":f[4][0],"max":f[4][1],"fclasses":f[5], "ds":ds.label},
+                        "min":f[4][0] if len(f[4])==2 else None,
+                        "max":f[4][1] if len(f[4])==2 else None,
+                        "fclasses":f[5], "ds":ds.label},
           "geometry":f[0]}
     fcoll['features'].append(feat)
   

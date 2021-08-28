@@ -49,7 +49,9 @@
   }
 
   .noUi-tooltip {
-    display: none;
+    display: block;
+    bottom: -220% !important;
+    padding: 3px;
   }
 
   .noUi-active .noUi-tooltip {
@@ -80,7 +82,7 @@
 
 <div class="container">
   <div class="justify-content-center mt-2">
-    <div id="map_select" class="row py-1  ">
+    <div id="map_select" class="row pt-1">
       <div class="col-sm-4">
         <select id="map_dataset" name="region" class="custom-select-sm">
           <option value="0">Display dataset</option>
@@ -118,24 +120,19 @@
 
 <script type="text/javascript">
 
-  $(function () {
-    $(".navbar").hide()
-    var idToFeature = {} // for feature lookup
-
-    // slider experiment
-    
+  function loadSlider(minmax){
     tsdiv = document.getElementById('nouislider');
   
     tslider = noUiSlider.create(tsdiv, {
       start: [2000],
       connect: true,
-      tooltips: true,
+      tooltips: [true],
       //margin:100,
       range: {
-          'min': -300,
-          'max': 2000
+          'min': minmax[0], //-300,
+          'max': minmax[1] //2000
       },
-      step: 100,
+      step: 10,
       format: {
         // 'to' the formatted value. Receives a number.
         to: function (value) {
@@ -148,52 +145,47 @@
             return Number(value);
         }
       },     
-      pips: {
+      /*,pips: {
         mode: 'steps',
         density: 3
         // ,format: {
         //   decimals: 0
         // }
-      }  
+      }  */
     });
     
     tsdiv.noUiSlider.on('set', function (values, handle) {
       timeFilter(Number(values[0]))
       console.log('values', values[0], typeof(values[0]))
     })
+  }
 
+  $(function () {
+    $(".navbar").hide()
+    var idToFeature = {} // for feature lookup
+
+    // slider experiment
+    
   }) // end onLoad()
 
   function timeFilter(val) {
     console.log('val', typeof (val), val)
-    if (typeof (val) == "object") {
-      filter = ["all", [">=", "min", val[0]], ["<=", "max", val[1]]]
-    } else if (typeof (val) == "number") {
-      // year=1400 minmax=[1300,1400]; minmax=[1450,2000]
-      // does minmax span include year in question?
-      filter = ["all", ["has", "min"], ["<=", "min", val], [">=", "max", val]]
-    }
-    // map.setFilter('gl_active_point', filter)
-    //map.setFilter('gl_active_line', filter)
-    map.setFilter('gl_active_poly', filter)
-    map.setFilter('outline', filter)
+    filterPoint = [ "all",
+      ["==", "$type", "Point"], 
+      ["has", "min"], 
+      ["<=", "min", val], 
+      [">=", "max", val]
+    ]
+    filterPoly = [ "all",
+      ["==", "$type", "Polygon"], 
+      ["has", "min"], 
+      ["<=", "min", val], 
+      [">=", "max", val]
+    ]
+    map.setFilter('gl_active_point', filterPoint)
+    map.setFilter('gl_active_poly', filterPoly)
+    map.setFilter('outline', filterPoly)
   }
-
-  /*
-  feats=map.queryRenderedFeatures()
-  feats=mappy.queryRenderedFeatures()
-  foo=feats.filter(function(obj) {return (obj.source === "bregel3")});
-  layers=feats.filter(function(obj) {return (obj.layer.id === "gl_active_line")});
-  lyr=feats.filter(function(obj) {return (obj.properties.pid === "6616870")});
-  */
-  
-  /*// feature highlighter
-  $(".f").click(function () {
-    pid = $(this).data('pid')
-    coords = $(this).data('coords')
-    console.log('pid, coords', pid, coords)
-    highlightFeature(pid, coords)
-  }) */
 
   var token_whg = '{{ mbtokenwhg }}',
     token_mb = '{{ mbtokenmb }}';
@@ -348,8 +340,9 @@
     // clear any data layers and 'places' source
     if (!!map.getLayer('gl_active_point')) {
       map.removeLayer('gl_active_point')
-      map.removeLayer('gl_active_line')
+      // map.removeLayer('gl_active_line')
       map.removeLayer('gl_active_poly')
+      map.removeLayer('outline')
       map.removeSource('places')
     }
 
@@ -357,8 +350,17 @@
       console.log('data.collection', data.collection)
       // get bounds w/turf
       envelope = turf.envelope(data.collection)
+
       // collection-wide earliest/latest
-      range = data.minmax
+      // range = data.minmax
+      duration = data.minmax[1] - data.minmax[0]
+      if(typeof tslider !== 'undefined'){
+        options = {range:{"min":data.minmax[0],"max":data.minmax[1]}}
+        options['step'] = Math.ceil(duration/24/100)*100 
+        tslider.updateOptions(options)
+      } else {
+        loadSlider(data.minmax)
+      }
 
       // add FeatureCollection source, call it 'places'
       map.addSource('places', {
@@ -366,16 +368,7 @@
         'data': data.collection
       })
 
-      /*for (const feature of data.collection.features) {
-        //const geom = feature.;
-        const layerID = `p-${type}`;
-        
-        if (!map.getLayer(layerID)) {
-          
-        }
-      */
-
-      // render to map
+      /*// render to map
       map.addLayer({
         'id': 'gl_active_line',
         'type': 'line',
@@ -391,7 +384,7 @@
       setTimeout(function () {
         addCheckbox('gl_active_line')
       }, 1000)
-
+      */
       map.addLayer({
         'id': 'gl_active_poly',
         'type': 'fill',
@@ -488,13 +481,13 @@
     place = e.features[0]
     popupMaker(place, lnglat)
   });
-
+  /*
   map.on('click', 'gl_active_line', function (e) {
     lnglat = e.lngLat
     place = e.features[0]
     // console.log('clicked line, lngLat', place, lnglat)
     popupMaker(place, lnglat)
-  });
+  });*/
 
   map.on('click', 'gl_active_poly', function (e) {
     lnglat = e.lngLat
@@ -511,7 +504,7 @@
   map.on('mouseleave', 'gl_active_point', function () {
     map.getCanvas().style.cursor = '';
   });
-
+  /*
   map.on('mouseenter', 'gl_active_line', function () {
     map.getCanvas().style.cursor = 'pointer';
   });
@@ -519,7 +512,7 @@
   map.on('mouseleave', 'gl_active_line', function () {
     map.getCanvas().style.cursor = '';
   });
-
+  */
   map.on('mouseenter', 'gl_active_poly', function () {
     map.getCanvas().style.cursor = 'pointer';
   });

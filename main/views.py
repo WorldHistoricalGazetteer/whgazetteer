@@ -34,17 +34,6 @@ class LibreView(TemplateView):
         context['media_url'] = settings.MEDIA_URL
         return context
 
-# experiment with MapLibre
-class LibreViewEx(TemplateView):
-    template_name = 'datasets/libre_ex.html'
-
-    def get_context_data(self, *args, **kwargs):
-        context = super(LibreViewEx, self).get_context_data(*args, **kwargs)
-        context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
-        context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
-        context['mbtokenwhg'] = settings.MAPBOX_TOKEN_WHG
-        context['media_url'] = settings.MEDIA_URL
-        return context
 
 class Home(TemplateView):
     template_name = 'main/home_v1.html'

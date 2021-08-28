@@ -865,9 +865,12 @@
       descrip += '<p><b>When</b>: earliest: '+data.minmax[0]+'; latest: '+data.minmax[1]    
     }
 
-    cert = data.geoms[0].certainty
-    if(cert != undefined ){
-      descrip += '<p><b>Location certainty</b>: '+cert+'</p>'
+    // if geom(s) and 'certainty', add it
+    if(data.geoms.length >0){
+      cert = data.geoms[0].certainty
+      if(cert != undefined ){
+        descrip += '<p><b>Location certainty</b>: '+cert+'</p>'
+      }
     }
     descrip += '</div>'
     return descrip
