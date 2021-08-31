@@ -508,15 +508,10 @@
         { 'property':'pid',
           'default': "rgba(255,255,255,0.0)",
           'type':'categorical',
-          'stops':[[Number(pid), 'red']]}
+          // 'stops':[[Number(pid), 'red']]}
+          'stops': [[Number(pid), 'rgba(0,128,0,1.0)']]
+        }
     );
-    <!--mappy.setPaintProperty(-->
-      <!--'gl_'+src+'_poly', 'fill-outline-width', -->
-        <!--{ 'property':'pid',-->
-          <!--'default': 1,-->
-          <!--'type':'categorical',-->
-          <!--'stops':[[Number(pid), 2]]}-->
-    <!--);-->
     // also set z-index and zoom
     
     // zoom to feature

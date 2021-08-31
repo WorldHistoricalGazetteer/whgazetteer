@@ -280,14 +280,12 @@
       mappy.removeLayer('gl_active_poly')
       mappy.removeSource('places')
     }
+
     // fetch data
-    
-    // $.get('/api/geojson/', {id: dsid}, function(data){ // much slower
     $.get('/datasets/'+dsid+'/geojson', function(data){
       features = data.collection.features
       if(features.length > 0){
         startMapSpinner()
-        // console.log('data', data.collection)
         // get bounds w/turf
         envelope = turf.envelope(data.collection)
         range = data.minmax
@@ -585,9 +583,8 @@
         $(this).removeClass( "rowhover" );
         $(this).addClass("highlight-row");
 
-      // highlight marker, zoomTo()
-      //highlightFeatureGL(pid, coords)
-      highlightFeatureGL(pid, geom, coords)
+        // highlight marker, zoomTo()
+        highlightFeatureGL(pid, geom, coords)
 
       // fetch its detail
       getPlace(pid)
@@ -627,82 +624,6 @@
     return select
   }
 
-  /*// highlight on select in table
-  function highlightFeature(pid){
-    console.log('highlightFeature()', pid)
-    if(typeof(idToFeature) != 'undefined'){
-      if(pid in idToFeature){
-        feat = idToFeature[pid]
-        ftype = feat.feature.geometry.type
-        
-        // reset style of last if there is a last
-        if(typeof(last)!='undefined'){
-          last[0].setStyle(styles[last[1]].default)
-        }
-
-        // highlight this one
-        feat.setStyle(styles[ftype].focus)
-        feat.bringToFront()
-        
-        zoomTo(pid)
-        
-        last = [feat, ftype]
-      } else {
-        features.setStyle(foptions)
-      }
-    }    
-  }
-  */
-  /* // initiate map, fetch data -> renderMap()
-  addEventListener('map:init', function (e) {
-    var token_mb = '{{ mbtokenmb }}',
-      token_whg = '{{ mbtokenwhg }}',
-      mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}';
-      
-    var satellite  = L.tileLayer(mbstyle_url, {id:'mapbox/satellite-streets-v11', token:token_mb})
-    var osm  = L.tileLayer(mbstyle_url, {id:'mapbox/light-v10', token:token_mb})
-
-    var baseLayers = {
-      "OSM": osm,
-      "Satellite": satellite
-    };
-    //startMapSpinner()
-    // call it mappy (a harmless artifact of earlier version)
-    window.mappy = e.detail.map
-    mappy.setMaxBounds(null)
-    L.control.layers(baseLayers).addTo(mappy);
-    baseLayers['OSM'].addTo(mappy)
-    
-    var printer = L.easyPrint({
-      tileLayer: osm,
-      sizeModes: ['Current'],
-      filename: 'myMap',
-      exportOnly: true,
-      hideControlContainer: true
-    }).addTo(mappy)
-    
-    
-    // get dataset features -> renderMap() if < 15,000
-    $.get("/api/geoms", {ds: "{{ ds.label }}"},
-      function(data){
-        //console.log('feature count:',data.count)
-        geom = {"type":"FeatureCollection","features":data.results}
-        if(geom.features.length >= 15000) {
-          $(".toomany").html('for performance reasons, mapping only the first 15,000 features - sorry!')
-        }
-        if(geom.features.length <= 15000) {
-          renderMap(geom,'browse')
-        } else {
-          $(".toomany").html('too many features to map (> '+geom.features.length+'), sorry!')
-        }
-    })
-    //spinner_map.stop()
-
-    function manualPrint () {
-        printer.printMap('CurrentSize', 'MyManualPrint')
-    }
-  }, false);
-  */
   // builds link for external place record
   function url_extplace(identifier) {
     // abbreviate links not in aliases.base_urls
@@ -934,84 +855,6 @@
     $("#map").append(spinner_map.el);   
   }
   //*
-  
-  /*
-  styles = {
-    "Point": {
-      "default": {radius: 1, fillColor:"#ff9900", fillOpacity: 0.8, stroke: false},
-      "focus": {radius:8, fillColor:"#ffff00",fillOpacity:1, stroke:true, weight:1,color:"#000"}},
-    "MultiPoint": {
-      "default": {radius: 1, fillColor:"#ff9900", fillOpacity: 0.8, stroke: false},
-      "focus": {radius:8, fillColor:"#ffff00",fillOpacity:1, stroke:true, weight:1,color:"#000"}},
-    "LineString": {
-      "default":{opacity: 1, weight: 1, color: "#336699"},
-      "focus":{opacity: 1, weight: 2, color: "blue"}},
-    "MultiLineString": {
-      "default":{opacity: 1, weight: 1, color: "#336699"},
-      "focus":{opacity: 1, weight: 2, color: "blue"}},
-    "MultiPolygon": {
-      "default":{fillOpacity: 0.3, opacity: 1, color: "#000", weight: 1, fillColor:"#ff9999"},
-      "focus":{fillOpacity: 0.3, opacity: 1, color: "red", weight: 2, fillColor:"#ff9999"}},
-    "Polygon": {
-      "default":{fillOpacity: 0.3, opacity: .5, color: "#666", weight: 1, fillColor:"#ff9999"},
-      "focus":{fillOpacity: 0.3, opacity: .5, color: "red", weight: 2, fillColor:"#ff9999"}}
-  }
-  // 
-  function renderMap(geom){
-    // call the map being rendered 'mappo'
-    console.log('in renderMap()', geom)
-    //mappo = tab=='browse' ? mappy : mappyr
-    if (geom.features.length==0) {
-      console.log('no features in renderMap() call')
-    } else {
-      // clear existing if any
-      if(typeof(features)!=='undefined'){
-        mappy.removeLayer(features)
-      }
-      idToFeature = {}  // for feature lookup
-      features = L.geoJSON(geom, {
-      // feature here is a geometry
-      // TODO: LPF should allow single geometry, not only GeometryCollection
-        pointToLayer: function (feature, latlng) {
-          matchid = feature.place_id
-          //console.log('feature',feature)
-          marker = L.circleMarker(latlng,styles.Point.default).bindPopup(feature.title+
-            //'<br>pid: <a href="'+window.location.origin+'/api/db?id='+matchid+'" target="_blank">'+matchid+'</a>'
-            '<br>pid: <a href="javascript:getPlace('+matchid+')">'+matchid+'</a>'
-            );
-          idToFeature[matchid] = marker
-          return marker
-        }
-        ,onEachFeature: function(feature,layer) {
-          f=feature; l=layer;
-          //console.log('f,l',feature,layer)
-          identifier = f.place_id;
-          if(f.type != 'Point'){
-            layer.setStyle(styles[f.type].default).bindPopup(f.title+
-            //'<br>pid: <a href="'+window.location.origin+'/api/db?id='+identifier+'" target="_blank">'+identifier+'</a>'
-            '<br>pid: <a href="javascript:getPlace('+identifier+')">'+identifier+'</a>'
-            );
-            idToFeature[identifier] = layer
-          }
-        }
-      }).addTo(mappy);
-    }
-    //highlightFeature(pid)
-    mappy.fitBounds(features.getBounds())
-    mappy.on('zoomend', function() {
-      var currentZoom = mappy.getZoom();
-      //console.log('on zoomend', currentZoom)
-      var myRadius = currentZoom*(1); //or whatever ratio you prefer
-      var myWeight = currentZoom*(1/5); //or whatever ratio you prefer
-      features.setStyle({radius: myRadius, weight: myWeight});
-      opt = Object.values(idToFeature)[0].options
-      foptions = { ...opt };
-      //console.log('zoomend() idToFeature',opt)
-    });
-    opt = Object.values(idToFeature)[0].options
-    foptions = { ...opt };
-  }
-  */
   
 </script>
 {% endblock %}

@@ -154,11 +154,10 @@
         $(this).addClass("highlight-row");
 
       // highlight marker, zoomTo()
-      <!--highlightFeatureGL(pid, coords)-->
       highlightFeatureGL(pid, geom, coords)
 
       // fetch its detail
-      <!--getPlace(pid)-->
+      getPlace(pid)
       
     }) 
 
@@ -195,6 +194,7 @@
       }
       ,scrollY: 400
       ,select: true
+      ,order: [[2, 'asc']]
       ,columns: 
       [
           {"data": "id"},
@@ -259,7 +259,7 @@
     center: [9.2, 33],
     zoom: 0.2, // starting zoom
     minZoom: 0.1,
-    maxZoom: 18,
+    maxZoom: 10,
     accessToken: '{{ mbtokenmb }}'
   });
   
@@ -271,11 +271,23 @@
       data: { type: 'FeatureCollection', features: [] }
     });
     
+    const zIndex4 = mappy.addLayer({
+      id: 'z-index-4',
+      type: 'symbol',
+      source: 'empty'
+    }); //top
+
+    const zIndex3 = mappy.addLayer({
+      id: 'z-index-3',
+      type: 'symbol',
+      source: 'empty'
+    }, 'z-index-4'); // below zIndex4
+    
     const zIndex2 = mappy.addLayer({
       id: 'z-index-2',
       type: 'symbol',
       source: 'empty'
-    });
+    }, 'z-index-3');
     
     const zIndex1 = mappy.addLayer({
       id: 'z-index-1',
@@ -283,7 +295,7 @@
       source: 'empty'
     }, 'z-index-2'); // place this layer below zIndex2
 
-    renderData({{ ds.id }})
+    renderData("{{ ds.id }}")
   });
   
   // fetch and render
@@ -295,16 +307,14 @@
       mappy.removeLayer('gl_active_poly')
       mappy.removeSource('places')
     }
+
     // fetch data
-    
-    <!--$.get('/api/geojson/', {id: dsid}, function(data){ // much slower-->
     $.get('/datasets/'+dsid+'/geojson', function(data){
       features = data.collection.features
       console.log('data', data.collection)
       // get bounds w/turf
       envelope = turf.envelope(data.collection)
-      <!--console.log(envelope)-->
-      
+      range = data.minmax
       // add source 'places' w/retrieved data
       mappy.addSource('places', {
           'type': 'geojson',
@@ -312,68 +322,98 @@
       })
       
       // render to map
-       
+      // z-index points:4, poly-outlines:3. poly:2, lines:1       
+      mappy.addLayer({
+        'id': 'gl_active_point',
+        'type': 'circle',
+        'source': 'places',
+        'paint': {
+          'circle-opacity': 1,
+          'circle-color': '#ff9900',
+          'circle-radius': {
+            stops: [[1, 2], [3, 3], [16, 10]]
+          }
+        },
+        'filter': ['==', '$type', 'Point']
+      }, 'z-index-4');
+
+              // dashed outline for polygons
+      mappy.addLayer({
+        'id': 'outline',
+        'type': 'line',
+        'source': 'places',
+        'layout': {},
+        'paint': {
+          'line-color': '#999',
+          'line-width': 1,
+          'line-dasharray': [4, 2],
+          'line-opacity': 0.5,
+        },
+        'filter': ['==', '$type', 'Polygon']
+      }, 'z-index-3');   
+
       mappy.addLayer({
         'id': 'gl_active_poly',
         'type': 'fill',
         'source': 'places',
         'paint': {
           'fill-color': '#ddd',
-          'fill-opacity': 0.2,
-          'fill-outline-color': 'black'
+          'fill-opacity': 0.3,
+          'fill-outline-color': '#666'
         },
         'filter': ['==', '$type', 'Polygon']
-      }, 'z-index-1');
+      }, 'z-index-2');
       
       mappy.addLayer({
-        'id': 'gl_active_point',
-        'type': 'circle',
+        'id': 'gl_active_line',
+        'type': 'line',
         'source': 'places',
         'paint': {
-          'circle-color': '#ff9900',
-          'circle-radius': {
-            stops: [[1, 2], [3, 3], [9, 4], [16, 8]]
-          }        
+          'line-color': 'lightgreen',
+          'line-width': {
+            stops: [[1, 1], [4, 2], [16, 4]]
+          }
         },
-        'filter': ['==', '$type', 'Point']
-      }, 'z-index-2');  
+        'filter': ['==', '$type', 'LineString']
+      }, 'z-index-1');
         
       mappy.fitBounds(envelope.bbox, {padding: 30})
       spinner_map.stop()
       
-    })
-  }
+    }) // get
+  } highlightFeatureGL
 
   // called by table row click
   function highlightFeatureGL(pid, geom, coords){
     console.log('pid, coords',pid, coords)
     // TODO: 
     if(geom.type.includes('Point')){
+      mappy.setPaintProperty('gl_active_point', 'circle-opacity', 1.0);
       mappy.setPaintProperty(
         'gl_active_point', 'circle-radius', 
           { 'property':'pid',
             'type':'categorical',
             'default': 3,
-            'stops':[[pid, 8]]}
+            'stops':[[Number(pid), 8]]}
       );
       mappy.setPaintProperty(
         'gl_active_point', 'circle-stroke-color', 
           { 'property':'pid',
             'type':'categorical',
-            'stops':[[pid, '#666']]}
+            'stops':[[Number(pid), '#666']]}
       );
       mappy.setPaintProperty(
         'gl_active_point', 'circle-stroke-width', 
           { 'property':'pid',
             'type':'categorical',
-            'stops':[[pid, 1]]}
+            'stops':[[Number(pid), 1]]}
       );
       mappy.setPaintProperty(
         'gl_active_point', 'circle-color', 
           { 'property':'pid',
             'default':'#ff9900',
             'type':'categorical',
-            'stops':[[pid,'red']]}
+            'stops':[[Number(pid),'red']]}
       );
     } else if (geom.type.includes('Polygon')) {
       mappy.setPaintProperty(
@@ -388,7 +428,8 @@
           { 'property':'pid',
             'default': "rgba(255,255,255,0.0)",
             'type':'categorical',
-            'stops':[[Number(pid), 'rgba(255,0,0,1.0)']]}
+            'stops': [[Number(pid), 'rgba(0,128,0,1.0)']]
+          }
       );     
     } else if(geom.type.includes('Line')) {
       mappy.setPaintProperty(
