@@ -85,6 +85,7 @@ ccodes = {
 "WF":	{"wdid": "Q35555", "tgnid": -1, "gnlabel": "Wallis and Futuna", "tgnlabel": "", "geonameid": 4034749},
 "GA":	{"wdid": "Q1000", "tgnid": 1000164, "gnlabel": "Gabon", "tgnlabel": "Gabon", "geonameid": 2400553},
 "GB":	{"wdid": "Q145", "tgnid": 7008591, "gnlabel": "United Kingdom", "tgnlabel": "United Kingdom", "geonameid": 2635167},
+"UK":	{"wdid": "Q145", "tgnid": 7008591, "gnlabel": "United Kingdom", "tgnlabel": "United Kingdom", "geonameid": 2635167},
 "GE":	{"wdid": "Q230", "tgnid": 7006653, "gnlabel": "Georgia", "tgnlabel": "Sakartvelo", "geonameid": 614540},
 "GH":	{"wdid": "Q117", "tgnid": 1000166, "gnlabel": "Ghana", "tgnlabel": "Ghana", "geonameid": 2300660},
 "SR":	{"wdid": "Q730", "tgnid": 7015386, "gnlabel": "Suriname", "tgnlabel": "Suriname", "geonameid": 3382998},
