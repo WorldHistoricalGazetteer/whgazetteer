@@ -202,10 +202,7 @@ def review(request, pk, tid, passnum):
     hitplaces = Hit.objects.values('place_id').filter(task_id=tid, reviewed=False)
 
   print('review() hitplaces', hitplaces)
-  #params = {'pk':pk,'tid':tid,'passnum':passnum,'auth':auth}
-  #print('review() params', params)
   # separate review pages
-  #hitplaces = Hit.objects.values('place_id').filter(task_id=tid, reviewed=False, query_pass=passnum)
   if auth in ['whg','idx']:
     #review_page = 'fubar.html'
     review_page = 'accession.html'

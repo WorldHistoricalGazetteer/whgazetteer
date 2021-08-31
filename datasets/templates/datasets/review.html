@@ -33,6 +33,8 @@
           <option value="pass1">PASS 1&nbsp;</option>{% endif %}
         {% if count_pass2 > 0 %}
           <option value="pass2">PASS 2&nbsp;</option>{% endif %}
+        {% if count_pass3 > 0 %}
+          <option value="pass3">PASS 3&nbsp;</option>{% endif %}
       </select>
     {% endif %} 
     </span>
@@ -121,13 +123,20 @@
             {% endif %}
             <p><strong>Place type(s)</strong>:
               {% for type in record.types.all %}
-                {{ type.jsonb.sourceLabel }} ({{ type.jsonb.label }}); 
+                {{ type.jsonb.sourceLabel }} ({{ type.jsonb.label.label }}); 
               {% endfor %}</p>
             {% if record.links.all|length > 0 %}
             <p><strong>Links</strong>: 
               {% for link in record.links.all %}
                 <a href="" class="mr-2 ext" data-toggle="modal" data-target="#ext_site">{{ link.jsonb.identifier }} {% fontawesome_icon 'external-link' color='#336699' %}</a>
               {% endfor %}</p>
+            {% endif %}
+            {% if record.minmax %}
+              {% if record.minmax.0 == record.minmax.1 %}
+              <p><strong>Attested year</strong>: {{record.minmax.0}}</p>
+              {% else %}
+              <p><strong>Eariest/latest:</strong>: {{record.minmax.0}} / {{record.minmax.1}}</p>
+              {% endif %}
             {% endif %}
           </div>
           <div id="map">
@@ -178,6 +187,7 @@
                     {{ g|safe|json_script:g.id }}
                   {% endfor %}
                 {% endif %}
+                <!-- {{ form.json.value }} -->
                 <p><strong>Title/Preferred</strong>: <span class="text-danger h6">{{ form.json.value|get:"title" }}</p>
                 {% if authority|startswith:'whg' %}
                   <p><strong>WHG place id</strong>: {{ form.json.value|get:"place_id" }}</p> 
@@ -205,12 +215,18 @@
                     {{ t|add:"; " }}
                   {% endfor %}</p>
                 {% else %}
+                  {% if form.json.value|get:"types"|length == 0 %}
+                  <i>none specified</i>
+                  {% else %}
                   {{ form.json.value|get:"types"}}
+                  {% endif %}
                 {% endif %}
-
+                
+                {%comment%}
                 {% if form.json.value|get:"countries"|length > 0 %} 
                 <p><strong>Countries</strong>: {{ form.json.value|get:"countries" }}</p>
                 {% endif %}
+                {%endcomment%}
 
                 {% if form.json.value|get:"links"|length > 0 %} 
                   <p><strong>Links</strong>: 
@@ -218,7 +234,15 @@
                     <a href="" class="mr-2 ext" data-toggle="modal" data-target="#ext_site">{{ link }} {% fontawesome_icon 'external-link' color='#336699' %}</a>
                   {% endfor %}
                 </p>{% endif %}
-                
+
+                {% if form.json.value|get:"parents" %}
+                  <p><strong>Parents</strong>: 
+                  {{ form.json.value|get:"parents" }}
+                {% elif form.json.value|get:"ccodes" %}
+                  <p><strong>Modern country</strong>:
+                    {{ form.json.value|get:"ccodes" }}
+                {% endif %}
+
                 {% if form.json.value|get:"minmax"|length > 0 %} 
                   <p><strong>Temporal attestations</strong>: 
                   {{ form.json.value|get:"minmax" }}</p>
@@ -227,9 +251,9 @@
                 {% if form.json.value|get:"descriptions"|length > 0 %} 
                 <!--{ if form.json.value|get:"descriptions" != null %} -->
                   <p class="mb-0"><strong>Description(s)</strong>:</p> 
-                  <div class="attest-element abbrev">
+                  <div class="attest-element abbrev small">
                   {% for d in form.json.value|get:"descriptions" %}
-                    <p>({{d.lang}}) {{ d.text }}</p>{% endfor %}
+                    ({{d.lang}}) {{ d.text }}{% endfor %}
                   </div>
                 {% endif %}                
               </div>
@@ -446,7 +470,7 @@
             // .matchbar background change, scroll to it
             // first, background to #fff for all 
             $('.match_radio').css('background','oldlace')
-            divy = $('.match_radio[data-id='+feature.properties.id)
+            divy = $('.match_radio[data-id='+feature.properties.id+']')
             divy.css('background','yellow')
             console.log('divy top',divy.position().top)
             $("#review_list").scrollTop(divy.position().top-80)
@@ -457,7 +481,7 @@
         }
       }).addTo(map);
 
-      <!--mappy.setView(features.getBounds().getCenter(),6)-->
+      //mappy.setView(features.getBounds().getCenter(),6)
       mappy.fitBounds(features.getBounds())
       mappy.setZoom(mappy.getZoom()-1)
       mappy.on('popupclose',function(){

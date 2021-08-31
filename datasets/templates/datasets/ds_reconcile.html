@@ -57,7 +57,9 @@
             </span>
           {% endif %}
         </h6>
+        {% if not messages %}
         <p>Linking in WHG is the activity of matching records from one dataset with "close matches" in another, in a method called <sr>reconciliation</sr> or <sr>alignment</sr>. It can also accomplish geocoding of place names for many records that are missing location. Reconciliation tasks can be performed against our local <sr>Wikidata</sr> or <sr>Getty TGN</sr> indexes. Fully accessioning data to WHG involves the further step of reconciling against our "union index."</p>
+        {% endif %}
         {% if user.is_superuser or user in owners or user in collaborators %}
           <div id="ready" class="hidden pl-2">
             <p class="my-0">All potential matches to <span id="authtag"></span> have been reviewed, so the dataset may be ready for accessioning to the WHG index.</p>
@@ -263,10 +265,10 @@
           tid = updates[u][0]
           counts = updates[u][1]
           task = updates[u][1]['task']
-          <!--console.log('updateTotals() counts', task, counts)-->
+          //console.log('updateTotals() counts', task, counts)
           
           // if all are reviewed, disable radio button
-          <!--radio_id = "#r_" + counts['task'].substring(6)-->
+          //radio_id = "#r_" + counts['task'].substring(6)
           
           if(counts['total'] == 0){
             console.log(task + ' task down to zero: ' + tid)
@@ -296,7 +298,7 @@
           })
           
           if (counts['deferred'] > 0) {
-            <!--console.log('got deferred',counts['deferred'] )-->
+            //console.log('got deferred',counts['deferred'] )
             $("#"+tid+'_def').html(counts['deferred']+$("#"+tid+'_def').html()) 
             $("#"+tid+'_def').removeClass('hidden')
           } else {

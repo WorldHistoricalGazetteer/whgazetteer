@@ -221,8 +221,8 @@
     })
 
     table.on( 'draw', function () {
-      <!--$("#status_filter").html(buildSelect());-->
-      <!--$("#status_select").val(localStorage.getItem('filter'))-->
+      //$("#status_filter").html(buildSelect());-->
+      //$("#status_select").val(localStorage.getItem('filter'))-->
       spinner_table.stop()
       setRowEvents();
     })
@@ -461,7 +461,7 @@
 
   // all this for a popup
   mappy.on('click', 'gl_active_point', function (e) {
-    <!--console.log('place:', e.features[0])-->
+    //console.log('place:', e.features[0])
     place=e.features[0]
     var coordinates = e.features[0].geometry.coordinates.slice();
     var pid = e.features[0].properties.pid;
@@ -470,9 +470,9 @@
     var minmax = e.features[0].properties.minmax;
     var fc = e.features[0].properties.fclasses;
      
-    <!--// Ensure that if the map is zoomed out such that multiple-->
-    <!--// copies of the feature are visible, the popup appears-->
-    <!--// over the copy being pointed to.-->
+    // Ensure that if the map is zoomed out such that multiple
+    // copies of the feature are visible, the popup appears
+    // over the copy being pointed to.
     while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
       coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
     }
@@ -504,7 +504,7 @@
     console.log('zoomTo()',pid)
     l = idToFeature[pid]
     ftype=l.feature.geometry.type
-    <!--console.log('zoomTo() pid, ftype',pid, ftype)-->
+    //console.log('zoomTo() pid, ftype',pid, ftype)
     if (ftype=='Point'){
        mappy.setView(l._latlng, 7 )
     } else {
@@ -553,7 +553,7 @@
       "OSM": osm,
       "Satellite": satellite
     };
-    <!--startMapSpinner()-->
+    //startMapSpinner()-->
     // call it mappy (a harmless artifact of earlier version)
     window.mappy = e.detail.map
     mappy.setMaxBounds(null)
@@ -572,7 +572,7 @@
     // get dataset features -> renderMap() if < 15,000
     $.get("/api/geoms", {ds: "{{ ds.label }}", f: "{{ filter }}" },
       function(data){
-        <!--console.log('feature count:',data.count)-->
+        //console.log('feature count:',data.count)-->
         geom = {"type":"FeatureCollection","features":data.results}
         if(geom.features.length >= 15000) {
           $(".toomany").html('for performance reasons, mapping only the first 15,000 features - sorry!')
@@ -583,7 +583,7 @@
           $(".toomany").html('too many features to map (> '+geom.features.length+'), sorry!')
         }
     })
-    <!--spinner_map.stop()-->
+    //spinner_map.stop()-->
 
     function manualPrint () {
         printer.printMap('CurrentSize', 'MyManualPrint')
@@ -607,9 +607,9 @@
       // TODO: LPF should allow single geometry, not only GeometryCollection
         pointToLayer: function (feature, latlng) {
           matchid = feature.place_id
-          <!--console.log('feature',feature)-->
+          //console.log('feature',feature)-->
           marker = L.circleMarker(latlng,styles.Point.default).bindPopup(feature.title+
-            <!--'<br>pid: <a href="'+window.location.origin+'/api/db?id='+matchid+'" target="_blank">'+matchid+'</a>'-->
+            //'<br>pid: <a href="'+window.location.origin+'/api/db?id='+matchid+'" target="_blank">'+matchid+'</a>'-->
             '<br>pid: <a href="javascript:getPlace('+matchid+')">'+matchid+'</a>'
             );
           idToFeature[matchid] = marker
@@ -617,7 +617,7 @@
         }
         ,onEachFeature: function(feature,layer) {
           f=feature; l=layer;
-          <!--console.log('f,l',feature,layer)-->
+          //console.log('f,l',feature,layer)-->
           identifier = f.place_id;
           if(f.type != 'Point'){
             layer.setStyle(styles[f.type].default).bindPopup(
@@ -631,24 +631,24 @@
       }).addTo(mappo);
       spinner_map.stop()
     }
-    <!--highlightFeature(pid)-->
+    //highlightFeature(pid)-->
     mappo.fitBounds(features.getBounds())
     mappo.on('zoomend', function() {
       var currentZoom = mappo.getZoom();
-      <!--console.log('on zoomend', currentZoom)-->
+      //console.log('on zoomend', currentZoom)-->
       var myRadius = currentZoom*(1); //or whatever ratio you prefer
       var myWeight = currentZoom*(1/5); //or whatever ratio you prefer
       features.setStyle({radius: myRadius, weight: myWeight});
       opt = Object.values(idToFeature)[0].options
       foptions = { ...opt };
-      <!--console.log('zoomend() idToFeature',opt)-->
+      //console.log('zoomend() idToFeature',opt)-->
     });
     opt = Object.values(idToFeature)[0].options
     foptions = { ...opt };
   }
 
   function getPlace(pid){
-    <!--console.log('getPlace()', pid)-->
+    //console.log('getPlace()', pid)-->
     $.ajax({
       url: "/api/place/"+pid,
       }).done(function( data ) {
@@ -658,7 +658,7 @@
         $('.ext').on('click', function(e) {
           e.preventDefault();
           str=$(this).text()
-          <!--console.log('str (identifier)',str)-->
+          //console.log('str (identifier)',str)-->
           // URL identifiers can be 'http*' or an authority prefix
           if(str.substring(0,4).toLowerCase() == 'http'){
             url = str
@@ -679,7 +679,7 @@
           window.open(url,'_blank')
         });
     });
-    <!--spinner_detail.stop()-->
+    //spinner_detail.stop()-->
   }
 
   // single column
@@ -701,7 +701,7 @@
       }
       return(result)
     }
-    <!--timespan_arr = []-->
+    //timespan_arr = []-->
     //
     // TITLE 
     descrip = '<p><b>Title</b>: <span id="row_title" class="larger text-danger">'+data.title+'</span>'
@@ -754,20 +754,20 @@
 
     //
     // RELATED
-    <!--right=''-->
+    //right=''-->
     if (data.related.length > 0) {
       parent='<p class="mb-0"><b>Parent(s)</b>: '; 
       related='<p class="mb-0"><b>Related</b>: ';
       for (r in data.related){
         rel = data.related[r]
-        <!--console.log('rel',rel)-->
+        //console.log('rel',rel)-->
         if (rel.relation_type == 'gvp:broaderPartitive'){
           parent += '<span class="small h1em">'+rel.label
           parent += 'when' in rel && !('timespans' in rel.when) ? 
             ', '+rel.when.start.in+'-'+rel.when.end.in : 
             'when' in rel && ('timespans' in rel.when) ? ', '+
               minmaxer(rel.when.timespans) : ''
-              <!--rel.when.timespans : ''-->
+              //rel.when.timespans : ''-->
           parent += '</span>; '
         } 
         else {
@@ -784,14 +784,14 @@
       val = data.descriptions[0]['value'].substring(0,300)
       descrip+='<p><b>Description</b>: '+(val.startsWith('http')?'<a href="'+val+'" target="_blank">Link</a>':val)
         +' ... </p>'
-        <!--'<br/><span class="small red-bold">('+data.descriptions[0]['identifier']+')</span>-->
+        //'<br/><span class="small red-bold">('+data.descriptions[0]['identifier']+')</span>-->
     }
     //
     // CCODES
     //
-    <!--if (data.ccodes.length > 0) {-->
+    //if (data.ccodes.length > 0) {-->
     if (!!data.countries) {
-      <!--console.log('data.countries',data.countries)-->
+      //console.log('data.countries',data.countries)-->
       descrip+='<p><b>Modern country bounds</b>: '+ data.countries.join(', ')+'</p>'
     }
     //
@@ -808,9 +808,9 @@
     // abbreviate links not in aliases.base_urls
     if(identifier.startsWith('http')) {
       let tag = identifier.replace(/.+\/\/|www.|\..+/g, '')
-      link = '<a href="'+identifier+'" target="_blank">'+tag+'{% fontawesome_icon 'external-link' color='#336699' %},  </a>'          
+      link = '<a href="'+identifier+'" target="_blank">'+tag+'{% fontawesome_icon 'external-link' color='#336699' %},  </a>';       
     } else {
-    link = '<a href="" class="ext" data-target="#ext_site">'+identifier+'&nbsp;{% fontawesome_icon 'external-link' color='#336699' %}</a>, '    
+      link = '<a href="" class="ext" data-target="#ext_site">'+identifier+'&nbsp;{% fontawesome_icon 'external-link' color='#336699' %}</a>, ';
     }
     return link
   }
@@ -844,14 +844,14 @@
   }
   
   function minmaxer(timespans){
-    <!--console.log('got to minmax()',JSON.stringify(timespans))-->
+    //console.log('got to minmax()',JSON.stringify(timespans))-->
     starts=[]; ends=[]
     for (t in timespans){
       // gets 'in', 'earliest' or 'latest'
       starts.push(Object.values(timespans[t].start)[0])
       ends.push(!!timespans[t].end ? Object.values(timespans[t].end)[0] : -1)
     } 
-    <!--console.log('starts',starts,'ends',ends)-->
+    //console.log('starts',starts,'ends',ends)-->
     minmax=[Math.max.apply(null, starts),Math.max.apply(null, ends)]
     return minmax
   }
