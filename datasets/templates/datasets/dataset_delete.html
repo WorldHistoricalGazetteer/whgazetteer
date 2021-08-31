@@ -1,4 +1,9 @@
 {% extends 'main/base.html' %}
+{% load static %}
+{% block extra_head %}
+  
+  <link rel="stylesheet" href="{% static 'css/spin.css' %}" />
+{% endblock %}
 
 {% block content %}
 
@@ -7,7 +12,7 @@
     <p>Access to this page is limited to the dataset owner(s) and designated collaborators</p>
   {% else %}
   <div class="row justify-content-center">
-    <div class="col-md-4 mt-5">
+    <div id="delete_warning" class="col-md-4 mt-5">
       <form action='' method='POST'>{% csrf_token %}
           <h3 class="text-danger">CAREFUL!!</h3>
           <p>This will destroy all <b>{{ object.numrows }}</b> place records in the dataset
@@ -23,7 +28,7 @@
             <p>You might want to perform an update to the dataset instead. <a href="{% url 'contact' %}">Contact us</a> if you would like help with that.</p>
           {% endif %}
           <p class="mt-4">
-            <input type='submit' value='Destroy' />
+            <input id="b_delete_ds" type='submit' value='Destroy' />
             <a href="javascript:history.back()">Cancel</a>
           </p>
       </form>
@@ -33,4 +38,14 @@
 </div>
 
 </div>
+<script type="text/javascript">
+  function startDeleteSpinner() {
+    window.spinner_delete = new Spin.Spinner().spin();
+    $("#delete_warning").append(spinner_delete.el);
+  }
+
+  $("#b_delete_ds").on('click', function () {
+    startDeleteSpinner()
+  })
+</script>
 {% endblock %}

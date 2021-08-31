@@ -32,6 +32,7 @@ es-*.*
 # VS Code
 whg.code-workspace
 .vscode/
+init_shell.py
 
 ### Django ###
 local_settings.py

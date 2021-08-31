@@ -2438,11 +2438,20 @@ class DatasetDeleteView(DeleteView):
 
   def get_object(self):
     id_ = self.kwargs.get("id")
-    return get_object_or_404(Dataset, id=id_)
+    ds = get_object_or_404(Dataset, id=id_)
+    return(ds)
+
+  def get_context_data(self, **kwargs):
+    context = super(DatasetDeleteView, self).get_context_data(**kwargs)
+    ds = get_object_or_404(Dataset, id=self.kwargs.get("id"))
+    context['owners'] = ds.owners
+    return context
+
 
   def get_success_url(self):
     self.delete_complete()
     return reverse('dashboard')
+
 
 #
 # fetch places in specified dataset 

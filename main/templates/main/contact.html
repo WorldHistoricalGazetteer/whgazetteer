@@ -13,7 +13,6 @@
       <p></p> 
       <form method="post">
         {% csrf_token %}
-        {{ user.username }}
         <table id="contact_form">
           <tr><td>Name</td><td>{{ form.name }}</td></tr>
           <tr><td>Email</td><td>{{ form.from_email }}</td></tr>
