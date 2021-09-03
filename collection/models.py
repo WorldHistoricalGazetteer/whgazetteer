@@ -34,7 +34,7 @@ class Collection(models.Model):
   datasets = models.ManyToManyField("datasets.Dataset")
 
   # tinymce field
-  content = HTMLField()
+  content = HTMLField(null=True, blank=True)
 
   def get_absolute_url(self):
     #return reverse('datasets:dashboard', kwargs={'id': self.id})

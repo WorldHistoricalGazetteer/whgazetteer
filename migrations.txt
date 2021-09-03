@@ -1,0 +1,144 @@
+in Home2a()
+FeatureSerializer
+CollectionCreateView()
+account
+ [X] 0001_initial
+ [X] 0002_email_max_length
+accounts
+ [X] 0001_initial
+ [X] 0002_auto_20191205_1752
+ [X] 0003_auto_20200310_1437
+ [X] 0004_auto_20210328_2355
+admin
+ [X] 0001_initial
+ [X] 0002_logentry_remove_auto_add
+ [X] 0003_logentry_add_action_flag_choices
+api
+ (no migrations)
+areas
+ [X] 0001_initial
+ [X] 0002_auto_20191206_1011
+ [X] 0003_auto_20200310_1437
+ [X] 0004_country
+auth
+ [X] 0001_initial
+ [X] 0002_alter_permission_name_max_length
+ [X] 0003_alter_user_email_max_length
+ [X] 0004_alter_user_username_opts
+ [X] 0005_alter_user_last_login_null
+ [X] 0006_require_contenttypes_0002
+ [X] 0007_alter_validators_add_error_messages
+ [X] 0008_alter_user_username_max_length
+ [X] 0009_alter_user_last_name_max_length
+ [X] 0010_alter_group_name_max_length
+ [X] 0011_update_proxy_permissions
+captcha
+ [X] 0001_initial
+celery_results
+ [X] 0001_initial
+ [X] 0002_add_task_name_args_kwargs
+ [X] 0003_auto_20181106_1101
+collection
+ [X] 0001_initial
+ [X] 0002_auto_20210331_0114
+ [X] 0003_auto_20210529_1903
+ [X] 0004_auto_20210601_1631
+ [X] 0005_collection_datasets
+ [X] 0006_auto_20210604_1846
+ [X] 0007_collection_featured
+ [X] 0008_auto_20210608_0335
+ [X] 0009_auto_20210619_1829
+ [X] 0002_auto_20210624_2335
+ [ ] 0010_merge_20210803_2342
+contenttypes
+ [X] 0001_initial
+ [X] 0002_remove_content_type_name
+datasets
+ [X] 0001_initial
+ [X] 0002_auto_20190219_0211
+ [X] 0003_auto_20190403_1601
+ [X] 0004_auto_20190715_1255
+ [X] 0005_auto_20190715_1301
+ [X] 0006_auto_20190829_1755
+ [X] 0007_auto_20191012_1509
+ [X] 0008_auto_20191023_1944
+ [X] 0009_auto_20200110_0037
+ [X] 0010_auto_20200111_1723
+ [X] 0011_auto_20200123_0023
+ [X] 0012_auto_20200123_2045
+ [X] 0013_auto_20200202_0026
+ [X] 0014_auto_20200214_1544
+ [X] 0015_dataset_uri_base
+ [X] 0016_auto_20200218_1600
+ [X] 0017_dataset_public
+ [X] 0018_auto_20200310_1437
+ [X] 0019_auto_20200413_2214
+ [X] 0020_auto_20200422_1317
+ [X] 0021_auto_20200714_2258
+ [X] 0022_auto_20210218_0107
+ [X] 0023_collection_collectiondataset_collectionplace
+ [X] 0024_auto_20210328_2344
+ [X] 0025_auto_20210330_1839
+ [X] 0026_auto_20210410_1618
+ [X] 0027_auto_20210424_1653
+ [X] 0028_dataset_collections
+ [X] 0029_remove_dataset_collections
+ [X] 0030_dataset_bbox
+ [X] 0031_auto_20210607_1937
+ [X] 0032_auto_20210608_0334
+ [X] 0033_auto_20210619_1829
+ [X] 0034_auto_20210620_0007
+guardian
+ [X] 0001_initial
+ [X] 0002_generic_permissions_index
+main
+ [X] 0001_initial
+ [X] 0002_auto_20190404_1629
+ [X] 0003_auto_20190404_1748
+ [X] 0004_auto_20190404_1754
+ [X] 0005_auto_20190404_1820
+ [X] 0006_auto_20190404_2309
+ [X] 0007_auto_20190405_0035
+ [X] 0008_auto_20190405_0037
+ [X] 0009_auto_20190406_1748
+ [X] 0010_log
+ [X] 0011_auto_20200310_2301
+ [X] 0012_log_subtype
+places
+ [X] 0001_initial
+ [X] 0002_auto_20190420_1807
+ [X] 0003_auto_20190630_1546
+ [X] 0004_auto_20190829_1800
+ [X] 0005_auto_20190916_1820
+ [X] 0006_place_indexed
+ [X] 0007_auto_20200422_1317
+ [X] 0008_auto_20200429_1608
+ [X] 0009_placetype_aat_id
+ [X] 0010_placetype_fclass
+ [X] 0011_place_fclasses
+ [X] 0012_type
+ [X] 0013_auto_20200516_2049
+ [X] 0014_auto_20200521_1408
+ [X] 0015_auto_20210424_1650
+ [X] 0016_auto_20210424_1736
+ [X] 0017_auto_20210424_1737
+ [X] 0018_auto_20210426_1831
+ [X] 0019_place_collections
+ [X] 0020_remove_place_collections
+ [X] 0021_placegeom_geom
+ [X] 0022_auto_20210619_1829
+ [X] 0019_auto_20210511_2355
+ [ ] 0023_merge_20210803_2342
+search
+ (no migrations)
+sessions
+ [X] 0001_initial
+sites
+ [X] 0001_initial
+ [X] 0002_alter_domain_unique
+socialaccount
+ [X] 0001_initial
+ [X] 0002_token_max_lengths
+ [X] 0003_extra_data_default_dict
+traces
+ [X] 0001_initial
