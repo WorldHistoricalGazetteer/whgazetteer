@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_datatables',
     'rest_framework_gis',
+    'tinymce',
 
     # project apps
     'accounts.apps.AccountsConfig',

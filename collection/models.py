@@ -4,6 +4,7 @@ from django.contrib.postgres.fields import ArrayField #,JSONField
 from django.urls import reverse
 from datasets.models import Dataset
 from places.models import Place
+from tinymce.models import HTMLField
 
 def coll_image_path(instance, filename):
   # upload to MEDIA_ROOT/collections/<id>_<filename>
@@ -31,6 +32,9 @@ class Collection(models.Model):
   featured = models.IntegerField(null=True, blank=True)
 
   datasets = models.ManyToManyField("datasets.Dataset")
+
+  # tinymce field
+  content = HTMLField()
 
   def get_absolute_url(self):
     #return reverse('datasets:dashboard', kwargs={'id': self.id})

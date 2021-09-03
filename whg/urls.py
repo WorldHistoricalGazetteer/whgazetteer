@@ -38,6 +38,7 @@ urlpatterns = [
     url(r'^credits/$', TemplateView.as_view(template_name="main/credits.html"), name="credits"),
     url(r'^system/$', TemplateView.as_view(template_name="main/system.html"), name="system"),
     url(r'^licensing/$', TemplateView.as_view(template_name="main/licensing.html"), name="licensing"),
+    path('tinymce/', include('tinymce.urls')),
 
     path('heat/', TemplateView.as_view(template_name="main/mb-heatmap.html"), name="heat"),
 
@@ -45,6 +46,7 @@ urlpatterns = [
     path('contact/', views.contactView, name='contact'),
     path('success/', views.contactSuccessView, name='success'),
     path('status/', views.statusView, name='status'),
+    
 
     # backend stuff
     path('api/', include('api.urls')),
