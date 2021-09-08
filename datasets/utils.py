@@ -345,12 +345,15 @@ def fetch_geojson_ds(request, *args, **kwargs):
     'jsonb','place_id','src_id','place__title','place__minmax', 'place__fclasses')
   fcoll = {"type":"FeatureCollection","features":[], "minmax":ds.minmax}
   for f in features:
+    # some places have no temporal scoping (dplace, geonames, etc.)
+    minmax = f[4] if f[4] and len(f[4]) == 2 else None
     feat={"type":"Feature",
           "properties":{"pid":f[1],"src_id":f[2],"title":f[3],
-                        "min":f[4][0] if len(f[4])==2 else None,
-                        "max":f[4][1] if len(f[4])==2 else None,
                         "fclasses":f[5], "ds":ds.label},
           "geometry":f[0]}
+    if minmax:
+      feat["properties"]["min"] = minmax[0]
+      feat["properties"]["max"] = minmax[1]    
     fcoll['features'].append(feat)
   
   result = {"minmax":ds.minmax, "collection":fcoll}
