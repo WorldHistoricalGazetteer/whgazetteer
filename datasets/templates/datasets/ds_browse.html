@@ -695,7 +695,7 @@
     for (t in data.types) {
       str = ''
       var type = data.types[t]
-      //console.log('type',type)
+      console.log('type',type)
       if('sourceLabels' in type){
         srclabels = type.sourceLabels
         for(l in srclabels){
@@ -705,7 +705,9 @@
       } else if ('sourceLabel' in type) {
         str = type.sourceLabel !='' ? type.sourceLabel + '; ' : ''
       }
-      if(type.label!=''){ str += url_exttype(type) + ' ' }
+      if(type.label!=''){ 
+        str += url_exttype(type) + ' ' 
+      }
       typeids+=str
     }
     descrip += typeids.replace(/(; $)/g, "") +'</p>'

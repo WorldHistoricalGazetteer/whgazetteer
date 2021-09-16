@@ -1929,7 +1929,7 @@ def ds_insert_tsv(request, pk):
           for v in variants:
             try:              
               haslang = re.search("@(.*)$", v.strip())
-              if len(v.strip() > 200):
+              if len(v.strip()) > 200:
                 print(v.strip())
                 pass
               else:
@@ -1945,7 +1945,8 @@ def ds_insert_tsv(request, pk):
                 
                 objs['PlaceName'].append(new_name)
             except:
-              print('error on variant for newpl.id', v)
+              print('error on variant', sys.exc_info())
+              print('error on variant for newpl.id', newpl.id, v)
   
         #
         # PlaceType()
@@ -2050,12 +2051,14 @@ def ds_insert_tsv(request, pk):
       #print('ds record pre-update:', ds.__dict__)
       print('rows,linked,links:', countrows, countlinked, total_links)
     except:
-      # drop the (empty) database
+      print('tsv insert failed', sys.exc_info())
+      # drop the (empty) dataset if insert wasn't complete
+      # DON'T DROP for test
       ds.delete()
       # email to user, admin
       subj = 'World Historical Gazetteer error followup'
       msg = 'Hello '+ user.username+', \n\nWe see your recent upload for the '+ds.label+' dataset failed, very sorry about that! We will look into why and get back to you within a day.\n\nRegards,\nThe WHG Team'
-      emailer(subj,msg,'admin@whgazetteer@gmail.com',[user.email, 'whgadmin@kgeographer.com'])
+      emailer(subj,msg,'whgazetteer@gmail.com',[user.email, 'karl@kgeographer.org'])
       
       # return message to 500.html
       messages.error(request, "Database insert failed, but we don't know why. The WHG team has been notified and will follow up by email to <b>"+user.username+'</b> ('+user.email+')')
@@ -2151,6 +2154,14 @@ class PublicListsView(ListView):
     #print('DashboardView context:', context)
     return context
 
+def failed_upload_notification(user, tempfn):
+    subj = 'World Historical Gazetteer error followup'
+    msg = 'Hello ' + user.username + \
+        ', \n\nWe see your recent upload failed -- very sorry about that! We will look into why and get back to you within a day.\n\nRegards,\nThe WHG Team\n\n\n['+tempfn+']'
+    emailer(subj, msg, 'whgazetteer@gmail.com',
+            [user.email, 'karl@kgeographer.org'])
+
+
 
 """
 DatasetCreateView()
@@ -2225,15 +2236,15 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
         result = validate_lpf(tempfn, 'coll')
       except:
         # email to user, admin
-        subj = 'World Historical Gazetteer error followup'
-        msg = 'Hello '+ user.username+', \n\nWe see your recent upload failed -- very sorry about that! We will look into why and get back to you within a day.\n\nRegards,\nThe WHG Team\n\n\n['+tempfn+']'
-        emailer(subj,msg,'admin@whgazetteer@gmail.com',[user.email, 'whgadmin@kgeographer.com'])
+        failed_upload_notification(user, tempfn)
+        # subj = 'World Historical Gazetteer error followup'
+        # msg = 'Hello '+ user.username+', \n\nWe see your recent upload failed -- very sorry about that! We will look into why and get back to you within a day.\n\nRegards,\nThe WHG Team\n\n\n['+tempfn+']'
+        # emailer(subj,msg,'whgazetteer@gmail.com',[user.email, 'karl@kgeographer.org'])
         
         # return message to 500.html
-        messages.error(None, "Database insert failed, but we don't know why. The WHG team has been notified and will follow up by email to <b>"+user.username+'</b> ('+user.email+')')
+        messages.error(None, "Database insert failed and we aren't sure why. The WHG team has been notified and will follow up by email to <b>"+user.username+'</b> ('+user.email+')')
         return HttpResponseServerError()
 
-        
     elif ext in ['csv', 'tsv']:
       try:
         # fvalidate() wants an extension
@@ -2241,33 +2252,46 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
         os.rename(tempfn, newfn)
         result = validate_tsv(newfn, ext)
       except:
-        sys.exit()
+        # email to user, admin
+        failed_upload_notification(user, tempfn)
+        messages.error(None, "Database insert failed and we aren't sure why. The WHG team has been notified and will follow up by email to <b>" +
+                       user.username+'</b> ('+user.email+')')
+        return HttpResponseServerError()
+
     elif ext in ['xlsx', 'ods']:
-      print('spreadsheet, use pandas')
-      import pandas as pd
-      
-      # open new file for tsv write
-      newfn = tempfn + '.tsv'
-      fout=codecs.open(newfn, 'w', encoding='utf8')
-      
-      # add ext to tempfn (pandas need this)
-      newtempfn = tempfn+'.'+ext
-      os.rename(tempfn, newtempfn)
-      print('renamed tempfn for pandas:', tempfn)
-      
-      # dataframe from spreadsheet
-      df = pd.read_excel(newtempfn, converters={
-        'id': str, 'start':str, 'end':str, 
-        'aat_types': str, 'lon': float, 'lat': float})
-      
-      # write it as tsv
-      table=df.to_csv(sep='\t', index=False).replace('\nan','')
-      fout.write(table)
-      fout.close()
-      
-      print('to validate_tsv(newfn):', newfn)
-      # validate it...
-      result = validate_tsv(newfn, 'tsv')
+      try:
+        print('spreadsheet, use pandas')
+        import pandas as pd
+        
+        # open new file for tsv write
+        newfn = tempfn + '.tsv'
+        fout=codecs.open(newfn, 'w', encoding='utf8')
+        
+        # add ext to tempfn (pandas need this)
+        newtempfn = tempfn+'.'+ext
+        os.rename(tempfn, newtempfn)
+        print('renamed tempfn for pandas:', tempfn)
+        
+        # dataframe from spreadsheet
+        df = pd.read_excel(newtempfn, converters={
+          'id': str, 'start':str, 'end':str, 
+          'aat_types': str, 'lon': float, 'lat': float})
+        
+        # write it as tsv
+        table=df.to_csv(sep='\t', index=False).replace('\nan','')
+        fout.write(table)
+        fout.close()
+        
+        print('to validate_tsv(newfn):', newfn)
+        # validate it...
+        result = validate_tsv(newfn, 'tsv')
+      except:
+        # email to user, admin
+        failed_upload_notification(user, newfn)
+        messages.error(None, "Database insert failed and we aren't sure why. The WHG team has been notified and will follow up by email to <b>" +
+                       user.username+'</b> ('+user.email+')')
+        return HttpResponseServerError()
+
     #else:
       ## return form with error
       #context['action'] = "errors"

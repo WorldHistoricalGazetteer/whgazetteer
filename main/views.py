@@ -19,7 +19,7 @@ from random import shuffle
 # import requests
 
 def custom_error_view(request, exception=None):
-    print('error request',request.GET.__dict__)
+    print('error request', request.GET.__dict__)
     return render(request, "main/500.html", {'error':'fubar'})
 
 # experiment with MapLibre
