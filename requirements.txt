@@ -36,7 +36,7 @@ datapackage==1.10.0
 debugpy==1.4.1
 decorator==4.3.0
 defusedxml==0.6.0
-Django==2.2.20
+Django==2.2.24
 django-allauth==0.44.0
 django-bootstrap-breadcrumbs==0.9.1
 django-bootstrap-modal-forms==1.4.1
