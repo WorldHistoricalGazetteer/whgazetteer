@@ -2235,12 +2235,12 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
       try:
         result = validate_lpf(tempfn, 'coll')
       except:
-        # email to user, admin
-        failed_upload_notification(user, tempfn)
         # subj = 'World Historical Gazetteer error followup'
         # msg = 'Hello '+ user.username+', \n\nWe see your recent upload failed -- very sorry about that! We will look into why and get back to you within a day.\n\nRegards,\nThe WHG Team\n\n\n['+tempfn+']'
         # emailer(subj,msg,'whgazetteer@gmail.com',[user.email, 'karl@kgeographer.org'])
         
+        # email to user, admin
+        failed_upload_notification(user, tempfn)
         # return message to 500.html
         messages.error(None, "Database insert failed and we aren't sure why. The WHG team has been notified and will follow up by email to <b>"+user.username+'</b> ('+user.email+')')
         return HttpResponseServerError()
