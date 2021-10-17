@@ -233,7 +233,8 @@
     center: [9.2, 33],
     zoom: 0.2, // starting zoom
     minZoom: 0.1,
-    maxZoom: 10,
+    // maxZoom: 10,
+    maxZoom: 18,
     accessToken: '{{ mbtokenmb }}'
   });
 
@@ -331,10 +332,14 @@
           'type': 'fill',
           'source': 'places',
           'paint': {
-            'fill-color': '#ddd',
+            'fill-color': 'red',
             'fill-opacity': 0.3,
-            'fill-outline-color': '#666'
+            'fill-outline-color': '#fff'
           },
+          //   'fill-color': '#ddd',
+          //   'fill-opacity': 0.3,
+          //   'fill-outline-color': '#666'
+          // },
           'filter': ['==', '$type', 'Polygon']
         }, 'z-index-2');
 
@@ -403,8 +408,10 @@
       mappy.setPaintProperty(
         'gl_active_poly', 'fill-color', 
           { 'property':'pid',
-            'default': "rgba(255,255,255,0.0)",
+            'default': "rgba(255,255,255,1.0)",
+            // 'default': "rgba(255,255,255,0.0)",
             'type':'categorical',
+            // 'type':'categorical',
             'stops':[[Number(pid), 'rgba(0,128,0,1.0)']]}
       );     
 
@@ -639,7 +646,7 @@
   // builds link for external placetype record
   function url_exttype(type) {
     link = ' <a href="#" class="exttab" data-id='+type.identifier+
-      '>('+type.label+' {% fontawesome_icon 'external-link' color='#336699' %})</a>'
+      '>('+type.label+' {% fontawesome_icon "external-link" color="#336699" %})</a>'
     return link
   }
   function minmaxer(timespans){

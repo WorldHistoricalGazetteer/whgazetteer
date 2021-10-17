@@ -2361,8 +2361,8 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
           for chunk in file.chunks():
             fout.write(chunk.decode("utf-8"))
         except:
-          print('error writing file')
-          sys.exit(sys.exc_info()[0])
+          print('error writing file; chunk'+str(chunk))
+          sys.exit(sys.exc_info())
           
       # if spreadsheet, copy newfn (tsv conversion)
       if ext in ['xlsx', 'ods']:
