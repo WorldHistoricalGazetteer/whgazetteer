@@ -87,6 +87,7 @@
         <select id="map_dataset" name="region" class="custom-select-sm">
           <option value="0">Display dataset</option>
           <!-- <option value=1106>Bregel</option> -->
+          <option value=1>All the world</option>
           <option value=1109>Bregel polys</option>
           <option value=1095>Croniken</option>
           <option value=8>HGIS de las Indias (territorios)</option>
@@ -97,6 +98,7 @@
           <option value=652>Pleiades </option>
           <option value=1035>Atlas of Mutual Heritage</option>
           <option value=986>Curacao</option>
+          <option value=1>DK Atlas</option>
         </select>
       </div>
       <div class="col-sm-8 small pt-1">
@@ -239,7 +241,8 @@
     }, 'z-index-2'); // below zIndex2
 
     $('#map_dataset>option:eq(1)').prop('selected', true);
-    renderData(1109) // bregel
+    // renderData(1109) // bregel
+    renderData(1) // DK
   })
 
   function highlightFeature(pid, coords) {

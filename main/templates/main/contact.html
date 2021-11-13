@@ -23,7 +23,11 @@
         <p>Please type characters in this image 
           <span class="ml-2">{{ form.captcha }} <a class="captcha smaller" href="#">refresh</a></span>
         </p>
-        <input type="hidden" name="username" value='{{ user.username }}'></input>
+        {% if user.is_authenticated %}
+        <input type="hidden" name="username" value='{{ user.username }}'>
+        {% else %}
+        <input type="hidden" name="username" value='Guest user'>
+        {% endif %}
         <div class="form-actions mt-2">
           <button class="submit-btn btn btn-primary" type="submit">Send</button>
           <span class="ml-2"><a href="javascript:history.back()">Cancel</a></span>

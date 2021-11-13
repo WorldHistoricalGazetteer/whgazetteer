@@ -336,10 +336,6 @@
             'fill-opacity': 0.3,
             'fill-outline-color': '#fff'
           },
-          //   'fill-color': '#ddd',
-          //   'fill-opacity': 0.3,
-          //   'fill-outline-color': '#666'
-          // },
           'filter': ['==', '$type', 'Polygon']
         }, 'z-index-2');
 
@@ -408,7 +404,7 @@
       mappy.setPaintProperty(
         'gl_active_poly', 'fill-color', 
           { 'property':'pid',
-            'default': "rgba(255,255,255,1.0)",
+            'default': "rgba(255,0,0, 0.4)",
             // 'default': "rgba(255,255,255,0.0)",
             'type':'categorical',
             // 'type':'categorical',
@@ -496,6 +492,14 @@
     // 
     popupMaker(place, lnglat)
   });
+
+  mappy.on('click', 'gl_active_poly', function (e) {
+    lnglat = e.lngLat
+    place=e.features[0]
+    // console.log('clicked line, lngLat', place, lnglat)
+    // 
+    popupMaker(place, lnglat)
+  });
   
   // Change the cursor to a pointer when the mouse is over the point layer.
   mappy.on('mouseenter', 'gl_active_point', function () {
@@ -511,6 +515,14 @@
   });
   // Change it back to a pointer when it leaves.
   mappy.on('mouseleave', 'gl_active_line', function () {
+    mappy.getCanvas().style.cursor = '';
+  });
+
+  mappy.on('mouseenter', 'gl_active_poly', function () {
+    mappy.getCanvas().style.cursor = 'pointer';
+  });
+  // Change it back to a pointer when it leaves.
+  mappy.on('mouseleave', 'gl_active_poly', function () {
     mappy.getCanvas().style.cursor = '';
   });
   
