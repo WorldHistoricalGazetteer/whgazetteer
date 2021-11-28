@@ -45,8 +45,8 @@ def testy():
 def make_download(request, *args, **kwargs):
   # TODO: integrate progress_recorder for better progress bar in GUI
   #progress_recorder = ProgressRecorder(self) #accessed?
-  username = request['username']
-  userid = request['userid']
+  username = request['username'] or "AnonymousUser"
+  userid = request['userid'] or User.objects.get(username="AnonymousUser").id
   req_format = kwargs['format']
   dsid = kwargs['dsid']
 
