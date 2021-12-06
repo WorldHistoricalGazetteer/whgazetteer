@@ -7,7 +7,7 @@ from main.choices import USERTYPES
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
     name = models.TextField(max_length=200, null=False, blank=False)
-    affiliation = models.TextField(max_length=200, blank=True)
+    affiliation = models.TextField(max_length=200, null=True, blank=True)
     web_page = models.URLField(null=True, blank=True)
     user_type = models.CharField(blank=False, null=False, max_length=10, choices=USERTYPES)
     

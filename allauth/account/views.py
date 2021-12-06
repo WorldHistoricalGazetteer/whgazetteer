@@ -252,8 +252,8 @@ class SignupView(
         # insert profile save here
         up = self.user.profile
         up.user_type = "individual"
-        up.affiliation = form.cleaned_data['affiliation']
-        #up.web_page = form.cleaned_data['web_page']
+        # up.affiliation = form.cleaned_data['affiliation']
+        # up.web_page = form.cleaned_data['web_page']
         up.save()
 
         try:

@@ -580,26 +580,18 @@
 
   function getPlace(pid, from){
     // from = ['row0'|'clicked'|'popup']
-    <!--console.trace('getPlace()')-->
+    // console.trace('getPlace()')
     $.ajax({
       url: "/api/place/"+pid,
       }).done(function( data ) {
         // if geom is polygon, make feature & add to map if not initial table.draw()
-        <!--gfoo = data.geoms[0]-->
-        <!--polygons.clearLayers() // always clear-->
-        <!--if(from != 'row0' && gfoo.type.toLowerCase().search('poly') > 0){-->
-          <!--console.log("polygon, add to map")-->
-          <!--let feat = L.geoJSON(gfoo);-->
-          <!--polygons.addLayer(feat)-->
-          <!--mappy.fitBounds(feat.getBounds())-->
-        <!--}-->
         $("#detail").html(parsePlace(data))
         spinner_detail.stop()
         // events on detail items
         $('.ext').on('click', function(e) {
           e.preventDefault();
           str=$(this).text()
-          <!--console.log('str (identifier)',str)-->
+          // console.log('str (identifier)',str)
           // URL identifiers can be 'http*' or an authority prefix
           if(str.substring(0,4).toLowerCase() == 'http'){
             url = str

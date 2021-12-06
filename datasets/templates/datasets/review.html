@@ -138,6 +138,10 @@
               <p><strong>Eariest/latest:</strong>: {{record.minmax.0}} / {{record.minmax.1}}</p>
               {% endif %}
             {% endif %}
+            {% if record.descriptions|length > 0 %}
+              <p><strong>Description</strong>: {{record.descriptions.0}}</p>
+            {% endif %}
+            {{ record.to_p}}
           </div>
           <div id="map">
             {% leaflet_map "map_review" callback="map_init" %}
@@ -429,7 +433,7 @@
     window.geom = {"type":"FeatureCollecton","features":[]}
 
     window.gelems = $('script').filter(function() {
-      <!--return this.id.match(/[0-9]/) && this.text != '"null"';-->
+      // return this.id.match(/[0-9]/) && this.text != '"null"';-->
       return this.id !='' && this.text != '"null"';
     });
     <!--console.log(gelems)-->

@@ -5,7 +5,7 @@ base_urls = {
     "dbp": "http://dbpedia.org/resource/",
     "dplace": "http://dplace.org/societies/",
     "gn": "http://www.geonames.org/",
-    "gnd": "http://d-nb.info/gnd/",
+    "gnd": "https://d-nb.info/gnd/",
     "gov": "http://gov.genealogy.net/",
     "loc": "http://id.loc.gov/authorities/subjects/",
     "pl": "https://pleiades.stoa.org/places/",

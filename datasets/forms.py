@@ -94,8 +94,14 @@ class DatasetCreateModelForm(forms.ModelForm):
                   'creator', 'contributors', 'source', 'webpage', 'image_file', 'featured')
         widgets = {
             'description': forms.Textarea(attrs={
-                'rows': 2, 'cols': 55, 'class': 'textarea', 'placeholder': 'Brief description'}), 'uri_base': forms.URLInput(attrs={
-                    'placeholder': 'Leave blank unless record IDs are URIs', 'size': 50}), 'title': forms.TextInput(attrs={'size': 50}), 'creator': forms.TextInput(attrs={'size': 50}), 'source': forms.TextInput(attrs={'size': 50}), 'featured': forms.TextInput(attrs={'size': 4}), 'webpage': forms.URLInput(attrs={'size': 50, 'placeholder': 'Project home page, if any'})
+                'rows': 2, 'cols': 45, 'class': 'textarea', 'placeholder': 'Brief description'}), 
+            'uri_base': forms.URLInput(attrs={
+                    'placeholder': 'Leave blank unless record IDs are URIs', 'size': 45}), 
+            'title': forms.TextInput(attrs={'size': 45}), 
+            'creator': forms.TextInput(attrs={'size': 45}), 
+            'source': forms.TextInput(attrs={'size': 45}), 
+            'featured': forms.TextInput(attrs={'size': 4}), 
+            'webpage': forms.URLInput(attrs={'size': 45, 'placeholder': 'Project home page, if any'})
         }
 
     # fields used to create new DatasetFile record from form

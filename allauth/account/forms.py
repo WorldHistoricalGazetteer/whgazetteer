@@ -428,7 +428,7 @@ class WHGRegisterForm(SignupForm):
 #class WHGRegisterForm(forms.Form):
     first_name = forms.CharField(max_length=30, label='First Name')
     last_name = forms.CharField(max_length=30, label='Last Name')
-    affiliation = forms.CharField(max_length=256, label='Affiliation')
+    #affiliation = forms.CharField(max_length=256, label='Affiliation')
     #web_page = forms.URLField(label='Web page')
     captcha = CaptchaField(label='foo')
     

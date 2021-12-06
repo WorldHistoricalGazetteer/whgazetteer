@@ -234,7 +234,7 @@
     zoom: 0.2, // starting zoom
     minZoom: 0.1,
     // maxZoom: 10,
-    maxZoom: 18,
+    maxZoom: 12,
     accessToken: '{{ mbtokenmb }}'
   });
 
@@ -650,7 +650,7 @@
       let tag = identifier.replace(/.+\/\/|www.|\..+/g, '')
       link = '<a href="'+identifier+'" target="_blank">'+tag+'{% fontawesome_icon 'external-link' color='#336699' %},  </a>'          
     } else {
-    link = '<a href="" class="ext" data-target="#ext_site">'+identifier+'&nbsp;{% fontawesome_icon 'external-link' color='#336699' %}</a>, '    
+    link = '<a href="" class="ext" data-target="#ext_site">'+identifier+'{% fontawesome_icon 'external-link' color='#336699' %}</a>, '    
     }
     return link
   }
@@ -740,7 +740,7 @@
     if (data.links.length > 0) {
       links=data.links
       links_arr = onlyUnique(data.links)
-      //console.log('distinct data.links',links_arr)
+      console.log('distinct data.links',links_arr)
       for (l in links_arr) {
         //console.log('link',links_arr[l])
         if (links_arr[l].aug == true) {
@@ -838,10 +838,10 @@
           } else {
             var re = /(http|bnf|cerl|dbp|gn|gnd|gov|loc|pl|tgn|viaf|wd|wdlocal|whg|wp):(.*?)$/;
             url=base_urls[str.match(re)[1]]+str.match(re)[2] 
-            console.log('url',encodeURI(url))
+            console.log('getPlace() url', url, encodeURI(url))
           }
-          //window.open(url, '_blank');
-          window.open(encodeURI(url), '_blank');
+          window.open(url, '_blank');
+          // window.open(encodeURI(url), '_blank');
         });
         $('.exttab').on('click', function(e) {
           e.preventDefault();
