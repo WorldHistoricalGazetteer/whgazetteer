@@ -257,9 +257,6 @@
     if(!localStorage.getItem('last_results') || localStorage.getItem('last_results') == "undefined"){
       $("#backlink").hide()
     }
-    <!--$('a').click(function() {-->
-      <!--localStorage.removeItem('keep')-->
-    <!--})-->
     var isVisible = false;
     var hideAllPopovers = function() {
        $('.pop-dataset').each(function() {
@@ -284,9 +281,6 @@
             html+='<p class="thin"><b>Description</b>: '+ds.description+'</p>'
             html+='<p class="thin"><b>WHG Owner</b>: '+ds.owner+'</p>'
             html+='<p class="thin"><b>Creator</b>: '+ds.creator+'</p>'
-            <!--if(ds.webpage){-->
-              <!--html+='<p class="thin"><a href="'+ds.webpage+'" target="_blank">Web page</a></p>'-->
-            <!--}-->
             dspop.attr('data-content', html);
           }
       });

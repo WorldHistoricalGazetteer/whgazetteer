@@ -38,16 +38,18 @@
       <div id="create_form" class="form-box mt-2 col-md-7 col-lg-5" >
         <table class="ds-table">
           <tr>
-            <td><b>Title *</b></td>
+            <td><b>Title &#x02733;</b></td>
             <td>{{ form.title }}</td>
           </tr>
           <tr>
-            <td><b>Label *</b> <a class="pop-link" id="label_help" data-toggle="popover" title="Dataset label" data-content="A short identifying label for your dataset; must be unique. Try using some portion of the dataset title, without spaces. Add version number suffix if you get a 'not unique' error." tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#993300' %}</a>
+            <td><b>Label &#x02733;</b> 
+              <a  id="label_help" class="pointer"data-toggle="popover" title="Dataset label" 
+                data-content="" tabindex=0 data-trigger="focus">{% fontawesome_icon 'question-circle' color='#993300' %}</a>
             </td>
             <td>{{ form.label }}</td>
           </tr>
           <tr>
-            <td style="vertical-align:top;"><b>Description *</b></td>
+            <td style="vertical-align:top;"><b>Description &#x02733;</b></td>
             <td><span class="editing-description">{{ form.description }}</span></td>
           </tr>
           <tr>
@@ -63,7 +65,9 @@
             <td>{{ form.contributors }}</td>
           </tr>
           <tr>
-            <td><b>URI base</b> <a class="pop-link" id="uribase_help" data-toggle="popover" title="URI base" data-content="If your records are published and each place has a landing page, enter the URI base prefix, e.g. <span class='ml-2'><i>http://mygaz.org/places/</i></span><br/>Otherwise leave blank, and they will be assigned a WHG base." tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#993300' %}</a>
+            <td><b>URI base</b> 
+              <a class="pointer" id="uribase_help" data-toggle="popover" title="URI base" 
+                data-content="" tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#993300' %}</a>
             </td>
             <td>{{ form.uri_base }}</td>
           </tr>
@@ -74,9 +78,9 @@
           <tr>
             <td><b>Public?</b></td>
             <td>{%if form.public == true%}Yes{%endif%}
-              <a href="#"><span class="help-matches" data-id="going_public_ds">Details on making a dataset public. {% fontawesome_icon 'question-circle' color='#336699' %}</span></a></td>
+              <a href="#"><span class="help-matches" data-id="going_public_ds">Making a dataset public. {% fontawesome_icon 'question-circle' color='#336699' %}</span></a></td>
           </tr>
-          <tr><td class="my-0 small"><i><b>* = required</b></i></td><td></td></tr>
+          <tr><td class="my-0 small">&#x02733;<i><b> required</b></i></td><td></td></tr>
         </table>
         <hr/><!--<p class="my-0 ml-3">initial file</p>-->
         <table id="file_metadata" class="ds-table table-striped">
@@ -143,13 +147,14 @@
       {% else %}
         <div class="smallish">
           <p class="mb-0"><b>Sample data</b></p>
+          <a class='btn btn-sm btn-primary' href="{% static 'files/lp7_100.tsv'%}" download>Linked Pasts 7 example dataset</button></a>
           <p class="mb-2">Some sample datasets are available from our GitHub repository. Download and open <a href="https://github.com/WorldHistoricalGazetteer/whgazetteer/raw/main/example_data/whg_example-data.zip" download>this zip file</a>, check its README.txt file, and try loading them from your local computer and reconciling them against the <a href="http://www.getty.edu/research/tools/vocabularies/tgn/" target="_blank">Getty Thesaurus of Geographic Names (TGN)</a> and/or <a href="https://www.wikidata.org/" target="_blank">Wikidata</a>. A spreadsheet template is included, which may aid in creating your own LP-TSV file.</p>
           <p class="mb-0"><b>Data formats</b></p>
           <p class="mb-2">There are two accepted upload formats: <a href="https://github.com/LinkedPasts/linked-places" target="_blank">Linked Places</a> (JSON-LD based, GeoJSON compatible, expressive), and <a href="https://github.com/LinkedPasts/linked-places/blob/master/tsv_0.3.md" target="_blank">LP-TSV</a>, a tabular format for relatively simpler records uploaded as either text files (.csv, .tsv), or spreadsheets (.xlsx, .ods). <a href="/tutorials/choosing" target="_blank">More information on making the choice</a>. <span class="strong"><i>NOTE: Encoding for all uploaded files must be unicode UTF-8</i>.</span></p>
           <div id="upload_spinner"></div>
           <p class="mb-0"><b>Validation Errors</b></p>
           <p class="mb-2">Uploaded files are validated for adherence to our format(s). In most cases, if there is a problem, an error message will explain, but the error-trapping is not yet perfect. If you are unable to upload a dataset successfully, please <a href="#" class="feedback">contact us</a>. We will gladly help sort out the issue quickly.</p>
-          <p class="mb-0"><b>Consultations welcome!</b></p>
+          <p class="mb-0"><b>Consultation requests welcome!</b></p>
           <p class="mb-1">If you are planning a data contribution to WHG, or want help exploring its usefulness or feasability for your project, please do <a href="#" class="feedback">contact us</a>.</p>
         </div>
       {% endif %}
@@ -159,7 +164,18 @@
 </div>
 
 <script type="text/javascript">
+
+
   $(function(){
+    // popover help
+    $("[data-toggle=popover]").popover({ html: true })
+    $("#label_help").attr(
+      'data-content', "A short identifying label for your dataset; must be unique. Try using some portion of the dataset title, without spaces. Add version number suffix if you get a 'not unique' error."
+    )
+    $("#uribase_help").attr(
+      'data-content', "If your records are published and each place has a landing page, enter the URI base prefix, e.g. <span class='ml-2'><i>http://mygaz.org/places/</i></span><br/>Otherwise leave blank, and they will be assigned a WHG base URI."
+    )
+  
     $('#id_format option[value="delimited"]').prop('selected',true)
     $('#id_datatype option[value="anno"]').prop('disabled',true)
     $('#id_datatype option[value="source"]').prop('disabled',true)
@@ -201,6 +217,7 @@
     show: {effect: "fade",duration: 400 },
     hide: {effect: "fade",duration: 400 }
   });
+  
 </script>
 
 {% endblock %}

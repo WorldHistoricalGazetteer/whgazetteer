@@ -73,7 +73,7 @@
             <p class="mb-0">place categories
             <span class="ml-1">
               <span class="mr-1"><a id="check_toggle" href="#">clear all</a></span>
-              <a id="filter_help" class="pointer" data-toggle="popover" title="Feature classes" data-content="" tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a>
+              <a id="filter_help" class="pointer" data-toggle="popover" title="Place categories" data-content="" tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a>
             </span>
             </p>
             <ul class="ul-left p-0 mb-0">
@@ -231,7 +231,6 @@
   }
   currentLayers = function(){
     return features?L.featureGroup(features._layers):null
-    <!--return initialLayers == null?null:initialLayers-->
   }
   ls = function(key){
     keys=Object.keys(localStorage)
@@ -261,21 +260,17 @@
     state()
     // remove 'keep' on any nav except place pages
     // $('span').show().filter(':not(.pears, .apples, .oranges, .etc)')
-    <!--$('a').filter(':not(.place-link) :not(.db-link)').click(function(){-->
     $('a').show().filter(':not(.place-link, .db-link)').click(function(){
       localStorage.removeItem('keep')
     })
     if(previous && kept=='true'){
       console.log('gonna show previous (last_results)')
-      <!--showResults(previous,'place','search')-->
     } else {
       $("#input_box").val('')
       localStorage.removeItem('keep')
       localStorage.removeItem('last_results')
     }
 
-    <!--localStorage.setItem('search_scope', 'idx')-->
-    <!--window.search_scope = $("li a.active").data('scope') // idx or db-->
     window.search_class = $('input[name=class]').val() // place or trace
     if(search_class == "trace") {$("#traces_info").show()}
 
@@ -296,7 +291,6 @@
       term = $(this).val()
       console.log('type selected:', term)
       if(term != "0"){
-        <!--$(this).text('Restore all')-->
         $("option").eq(0).text('Restore all')
         typeFilter(term)
         // show clear filters span
@@ -313,7 +307,6 @@
     $("#cc_select").change(function(){
       cc = $(this).val()
       if(cc != "0"){
-        <!--console.log('cc selected:', cc)-->
         $("#cc_select option").eq(0).text('Restore all')
         ccFilter(cc)
         // show clear filters span
@@ -327,13 +320,6 @@
         $("#reset_filters").fadeOut()
       }
     })
-
-    <!--$( "#map_dataset" ).change(function() {-->
-      <!--if (!!gl.getLayer('heat_active')){-->
-      <!--gl.removeLayer('heat_active')}-->
-      <!--heat($(this).val())-->
-      <!--console.log('heat() for',$(this).val())-->
-    <!--});	-->
 
     $("[rel='tooltip']").tooltip();
     $("[data-toggle=popover]").popover({html:true})  
@@ -356,9 +342,6 @@
           html+='<p class="thin"><b>Description</b>: '+ds.description+'</p>'
           html+='<p class="thin"><b>WHG Owner</b>: '+ds.owner+'</p>'
           html+='<p class="thin"><b>Creator</b>: '+ds.creator+'</p>'
-          <!--if(ds.webpage){-->
-            <!--html+='<p class="thin"><a href="'+ds.webpage+'" target="_blank">Web page</a></p>'-->
-          <!--}-->
           dspop.attr('data-content', html);
         }
       });
@@ -366,10 +349,10 @@
 
     // popover content
     $("#filter_help").attr(
-      'data-content',"<p>Select one or more feature class (uses GeoNames single-letter codes)</p>"
+      'data-content',"<p>Select one or more place type category (uses GeoNames feature class codes)</p>"
     )
     $("#traces_help").attr(
-      'data-content',"<p>an experimental feature: annotations of external web resources that describe or depict historical objects, events, people or concepts, listing places related to them. Switch to learn more and search them.</p>"
+      'data-content',"<p>An experimental feature: annotations of external web resources that describe or depict historical objects, events, people or concepts, listing places related to them. Switch to learn more and search them.</p>"
     )
     $("#search_help").attr(
       'data-content',"<p class='mb-2'>Search of the WHG <b>index</b> is limited to fully accessioned (linked) datasets. Returns conflated sets of attestations.</p>"+
@@ -395,18 +378,7 @@
     var searchoption = null;
 
   // clear map, inputs, results
-    <!--clearit()-->
     $("#type_filter").hide();
-
-  <!--// show filters, hide search_info and vice versa-->
-    <!--$("#link_filters").click(function(){-->
-      <!--if($("#search_filters").is(":visible")){-->
-        <!--$("#search_info").fadeIn()-->
-      <!--} else {-->
-        <!--$("#search_info").fadeOut()-->
-      <!--}-->
-      <!--$("#search_filters").toggle(400)-->
-    <!--})-->
 
     // data type choice determines index searched
     var suggester = new Bloodhound({
@@ -439,13 +411,13 @@
         suggestion: function (data) {
           doctype = $("input[name='class']:checked").val()
           if(doctype == 'place'){
-            <!--console.log('variants',data.variants)-->
+            // console.log('variants',data.variants)
             return data.variants.length>0 ? 
               '<p class="tight-p tt-suggestion">' + data.name + '<br/><i class="tight-p">' + 
                 data.variants.filter(hh).join(', ') + '<i></p>' : 
               '<p class="tight-p">' + data.name + '</p>'
           } else {
-            <!--console.log('data',data)-->
+            // console.log('data',data)-->
             return '<p rel="'+data._id+'">'+data.title+'</p>'
           }
         }
@@ -453,7 +425,7 @@
     })
     .on('typeahead:selected', function (obj, datum) {
       // fetchTraceGeom() -> [views.TraceGeomView() <- views.getGeomCollection()] -> showResults() -> sugLister
-      <!--console.log('trace typeahead clicked: datum',datum)-->
+      // console.log('trace typeahead clicked: datum',datum)-->
       if(doctype=='trace'){
         fetchTraceGeom(datum._id,0,datum.title)
       }
@@ -467,7 +439,7 @@
 
     // fetch area list
     $.get("/api/area_list", function(data){
-      <!--console.log('initial areas for list',data)-->
+      //console.log('initial areas for list',data)-->
       for(var i=0;i<data.length;i++){
       area_objs.push(data[i])
       area_list.push(data[i]['title'])
@@ -498,7 +470,7 @@
         mappy.setView([38, 10], 2.4)
       }
     })
-  }) <!--  end onLoad() -->
+  }) //  end onLoad() 
 
   hideAllRows = function(){
     currentRows().each(function(r){

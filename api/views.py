@@ -638,7 +638,8 @@ class PlaceTableViewSet(viewsets.ModelViewSet):
   def get_queryset(self):
     #print('PlaceTableViewSet.get_queryset()',self.request.GET)
     ds = get_object_or_404(Dataset, label=self.request.GET.get('ds'))
-    qs = ds.places.all()
+    qs = ds.places.all().order_by('place_id')
+    # qs = ds.places.all()
     query = self.request.GET.get('q')
     if query is not None:
       qs = qs.filter(title__istartswith=query)
