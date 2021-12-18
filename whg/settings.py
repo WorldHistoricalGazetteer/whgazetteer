@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     'main.apps.MainConfig',
     #'maps.apps.MapsConfig',
     'places.apps.PlacesConfig',
+    'resources.apps.ResourcesConfig',
     'search.apps.SearchConfig',
     'traces.apps.TracesConfig'
 ]

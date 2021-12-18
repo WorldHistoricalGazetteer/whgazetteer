@@ -38,6 +38,26 @@ DATATYPES = [
     ('anno', 'Traces')
 ]
 
+RESOURCE_TYPES = [
+    ('lessonplan', 'Lesson plan'),
+    ('syllabus', 'syllabus')
+]
+RESOURCE_FORMATS = [
+    ('pdf', 'PDF'),
+]
+RESOURCEFILE_ROLE = [
+    ('principal', 'Lesson plan'),
+    ('supporting', 'Supporting file')
+]
+STATUS_RESOURCEFILE = [
+    ('format_ok', 'Valid format'),
+    ('uploaded', 'File uploaded'),
+]
+STATUS_RESOURCE = [
+    ('uploaded', 'File uploaded'),
+    ('approved', 'Approved')
+]
+
 # geonames classes for api filter
 FEATURE_CLASSES = [
     ('A','Administrative divisions'),
