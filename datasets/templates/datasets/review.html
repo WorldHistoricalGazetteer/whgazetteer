@@ -138,10 +138,11 @@
               <p><strong>Eariest/latest:</strong>: {{record.minmax.0}} / {{record.minmax.1}}</p>
               {% endif %}
             {% endif %}
-            {% if record.descriptions|length > 0 %}
-              <p><strong>Description</strong>: {{record.descriptions.0}}</p>
+            {% if record.descriptions %}
+              {% for d in record.descriptions.all %}
+              <p><strong>Description</strong>: {{d.jsonb.value}}</p>
+              {%endfor%}
             {% endif %}
-            {{ record.to_p}}
           </div>
           <div id="map">
             {% leaflet_map "map_review" callback="map_init" %}
