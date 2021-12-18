@@ -2191,9 +2191,11 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
     file=self.request.FILES['file']
     filename = file.name
     mimetype = file.content_type
+       
     newfn, newtempfn = ['', '']
     print('form_valid() mimetype',mimetype)
     
+
     # open & write tempf to a temp location;
     # call it tempfn for reference
     tempf, tempfn = tempfile.mkstemp()
@@ -2201,7 +2203,7 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
       for chunk in data['file'].chunks():
         os.write(tempf, chunk)
     except:
-      raise Exception("Problem with the input file %s" % request.FILES['file'])
+      raise Exception("Problem with the input file %s" % self.request.FILES['file'])
     finally:
       os.close(tempf)
 
@@ -2242,7 +2244,8 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
         # email to user, admin
         failed_upload_notification(user, tempfn)
         # return message to 500.html
-        messages.error(None, "Database insert failed and we aren't sure why. The WHG team has been notified and will follow up by email to <b>"+user.username+'</b> ('+user.email+')')
+        messages.error(self.request, "Database insert failed and we aren't sure why. The WHG team has been notified and will follow up by email to <b>"+user.username+'</b> ('+user.email+')')
+        # messages.error(None, "Database insert failed and we aren't sure why. The WHG team has been notified and will follow up by email to <b>"+user.username+'</b> ('+user.email+')')
         return HttpResponseServerError()
 
     elif ext in ['csv', 'tsv']:
@@ -2254,7 +2257,8 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
       except:
         # email to user, admin
         failed_upload_notification(user, tempfn)
-        messages.error(None, "Database insert failed and we aren't sure why. The WHG team has been notified and will follow up by email to <b>" +
+        messages.error(self.request, "Database insert failed and we aren't sure why. The WHG team has been notified and will follow up by email to <b>" +
+        # messages.error(None, "Database insert failed and we aren't sure why. The WHG team has been notified and will follow up by email to <b>" +
                        user.username+'</b> ('+user.email+')')
         return HttpResponseServerError()
 
@@ -2288,7 +2292,8 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
       except:
         # email to user, admin
         failed_upload_notification(user, newfn)
-        messages.error(None, "Database insert failed and we aren't sure why. The WHG team has been notified and will follow up by email to <b>" +
+        messages.error(self.request, "Database insert failed and we aren't sure why. The WHG team has been notified and will follow up by email to <b>" +
+        # messages.error(None, "Database insert failed and we aren't sure why. The WHG team has been notified and will follow up by email to <b>" +
                        user.username+'</b> ('+user.email+')')
         return HttpResponseServerError()
 

@@ -6,7 +6,8 @@ from django.conf.urls.static import static
 from django.conf import settings
 
 from . import views
-from datasets.utils import download_file, UpdateCountsView, download_augmented, fetch_geojson_ds, downloader, fetch_geojson_flat
+from datasets.utils import download_file, UpdateCountsView, download_augmented, \
+  fetch_geojson_ds, downloader, fetch_geojson_flat, downloadLP7
 
 # dataset actions
 app_name='datasets'
@@ -39,6 +40,9 @@ urlpatterns = [
   path('<int:id>/places', views.DatasetPlacesView.as_view(), name='ds_places'),
 
   ## DOWNLOADS
+  # one-off for LP7
+  path('download_lp7/', downloadLP7, name='download_lp7'),
+
   # download latest file, as uploaded
   path('<int:id>/file/', download_file, name="dl-file"), #
 
@@ -46,7 +50,6 @@ urlpatterns = [
   path('dlcelery/', downloader, name='dl_celery'),
   ## DEPRECATing download augmented dataset
   path('<int:id>/augmented/<str:format>', download_augmented, name="dl-aug"), #
-
 
   ## UPDATES (in progress)
   path('compare/', views.ds_compare, name='dataset-compare'),

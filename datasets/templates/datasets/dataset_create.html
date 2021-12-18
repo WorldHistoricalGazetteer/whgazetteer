@@ -44,7 +44,7 @@
           <tr>
             <td><b>Label &#x02733;</b> 
               <a  id="label_help" class="pointer"data-toggle="popover" title="Dataset label" 
-                data-content="" tabindex=0 data-trigger="focus">{% fontawesome_icon 'question-circle' color='#993300' %}</a>
+                data-content="" tabindex=99 data-trigger="focus">{% fontawesome_icon 'question-circle' color='#993300' %}</a>
             </td>
             <td>{{ form.label }}</td>
           </tr>
@@ -67,7 +67,7 @@
           <tr>
             <td><b>URI base</b> 
               <a class="pointer" id="uribase_help" data-toggle="popover" title="URI base" 
-                data-content="" tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#993300' %}</a>
+                data-content="" tabindex=98 data-trigger="focus">{% fontawesome_icon 'question-circle' color='#993300' %}</a>
             </td>
             <td>{{ form.uri_base }}</td>
           </tr>
@@ -147,7 +147,10 @@
       {% else %}
         <div class="smallish">
           <p class="mb-0"><b>Sample data</b></p>
-          <a class='btn btn-sm btn-primary' href="{% static 'files/lp7_100.tsv'%}" download>Linked Pasts 7 example dataset</button></a>
+          {%comment%}
+          <a class='btn btn-sm btn-primary' href="{% url 'datasets:download_lp7'%}">Linked Pasts 7 example dataset</button></a>
+          {%endcomment%}
+          <a class='btn btn-sm btn-primary' href="{% static 'files/lp7_100.ods'%}" download>Linked Pasts 7 example dataset</button></a>
           <p class="mb-2">Some sample datasets are available from our GitHub repository. Download and open <a href="https://github.com/WorldHistoricalGazetteer/whgazetteer/raw/main/example_data/whg_example-data.zip" download>this zip file</a>, check its README.txt file, and try loading them from your local computer and reconciling them against the <a href="http://www.getty.edu/research/tools/vocabularies/tgn/" target="_blank">Getty Thesaurus of Geographic Names (TGN)</a> and/or <a href="https://www.wikidata.org/" target="_blank">Wikidata</a>. A spreadsheet template is included, which may aid in creating your own LP-TSV file.</p>
           <p class="mb-0"><b>Data formats</b></p>
           <p class="mb-2">There are two accepted upload formats: <a href="https://github.com/LinkedPasts/linked-places" target="_blank">Linked Places</a> (JSON-LD based, GeoJSON compatible, expressive), and <a href="https://github.com/LinkedPasts/linked-places/blob/master/tsv_0.3.md" target="_blank">LP-TSV</a>, a tabular format for relatively simpler records uploaded as either text files (.csv, .tsv), or spreadsheets (.xlsx, .ods). <a href="/tutorials/choosing" target="_blank">More information on making the choice</a>. <span class="strong"><i>NOTE: Encoding for all uploaded files must be unicode UTF-8</i>.</span></p>

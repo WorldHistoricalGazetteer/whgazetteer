@@ -1,4 +1,5 @@
 #from django.core import serializers
+from django.shortcuts import HttpResponse
 from django.contrib.gis.geos import GEOSGeometry
 from django.http import FileResponse, JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404, render #, redirect
@@ -28,6 +29,17 @@ pp = pprint.PrettyPrinter(indent=1)
 # ***
 # TODO: use DRF serializer? download_{format} methods on api.PlaceList() view?
 # https://stackoverflow.com/questions/38697529/how-to-return-generated-file-download-with-django-rest-framework
+
+# one-off download lp7 example tsv
+# forces text/plain content_type!?
+def downloadLP7(request):
+  file = open('static/files/lp7_100.tsv', 'r')  # Open the specified file
+  response = HttpResponse(file)  # Give file handle to HttpResponse object
+  # Set the header to tell the browser that this is a file
+  response['Content-Type'] = 'text/plain'
+  # This is a simple description of the file. Note that the writing is the fixed one
+  response['Content-Disposition'] = 'attachment;filename="lp7_100.tsv"'
+  return response
 
 # initiate celery tasks
 def downloader(request, *args, **kwargs):
