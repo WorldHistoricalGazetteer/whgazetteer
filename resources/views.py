@@ -38,10 +38,16 @@ class ResourceCreateView(LoginRequiredMixin, CreateView):
     context = {'form': form}
     return self.render_to_response(context=context)
 
+
   def form_valid(self, form):
     context = {}
     if form.is_valid():
       print('form is valid, cleaned_data', form.cleaned_data)
+    # TODO: handle multiple files
+    # https://docs.djangoproject.com/en/2.2/topics/http/file-uploads/
+    # files = self.request.FILES.getlist('files')
+    # for f in files:
+    #   handle_uploaded_file(f)
     else:
       print('form not valid', form.errors)
       context['errors'] = form.errors

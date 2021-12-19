@@ -16,7 +16,12 @@
     <span class="text-danger strong"> {% for message in messages %}{{ message }}{% endfor %}</span>
     {% endif %}{%endcomment%}
     <form id="ds_form" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
         {{ form.as_p }}
+        <div>
+        <input id="btn_upload" class="btn btn-primary btn-sm" type="submit" value="Upload" />
+        <span title="back"><a href="{% url 'dashboard' %}">Cancel</a></span>
+        </div>
     </form>
 </div>
 
