@@ -20,12 +20,12 @@ urlpatterns = [
     
     # apps
     path('search/', include('search.urls')),
-    #path('maps/', include('maps.urls')),
     path('datasets/', include('datasets.urls')),
     path('areas/', include('areas.urls')),
     path('collections/', include('collection.urls')),
     path('places/', include('places.urls')),
     path('tutorials/', include('main.urls')),
+    path('resources/', include('resources.urls')),
 
     path('dashboard/', DashboardView.as_view(), name='dashboard'),
     path('public_data/', PublicListsView.as_view(), name='public-lists'),

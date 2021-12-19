@@ -9,7 +9,7 @@ class ResourceModelForm(forms.ModelForm):
 
     class Meta:
         model = Resource
-        fields = ('id', 'create_date', 'pub_date', 'owner', 'title', 'type', 'description', 
+        fields = ('id', 'pub_date', 'owner', 'title', 'type', 'description', 
             'subjects', 'gradelevels', 'keywords', 'authors', 'contact', 'webpage', 
             'files', 'images', 'public', 'featured', 'status')
         widgets = {
@@ -20,10 +20,8 @@ class ResourceModelForm(forms.ModelForm):
             'description': forms.Textarea(attrs={
                 'rows': 3, 'cols': 49, 'class': 'textarea'
             }),
-            'files': forms.FileField(
-                widget=forms.ClearableFileInput(attrs={'multiple': True})),
-            'images': forms.FileField(
-                widget=forms.ClearableFileInput(attrs={'multiple': True}))
+            'files': forms.ClearableFileInput(attrs={'multiple': True}),
+            'images': forms.ClearableFileInput(attrs={'multiple': True})
         }
 
     def __init__(self, *args, **kwargs):

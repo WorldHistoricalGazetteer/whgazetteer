@@ -1,0 +1,23 @@
+<!-- resources/resource_create.html -->
+{% extends "main/base.html" %}
+{% block title %}<title>WHG::Create/Update</title>{% endblock %}
+
+{% block content %}
+{% load static %}
+{% load fontawesome %}
+{% load dataset_extras %}
+{% block extra_head %}
+
+{% endblock %}
+
+<div class="container">
+    <h4 class="mt-3">Create teaching resource</h4>
+    {%comment%}{% if messages %}
+    <span class="text-danger strong"> {% for message in messages %}{{ message }}{% endfor %}</span>
+    {% endif %}{%endcomment%}
+    <form id="ds_form" method="POST" enctype="multipart/form-data">
+        {{ form.as_p }}
+    </form>
+</div>
+
+{% endblock %}

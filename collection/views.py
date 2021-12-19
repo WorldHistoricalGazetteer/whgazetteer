@@ -63,7 +63,6 @@ def remove_dataset(request, *args, **kwargs):
 
 # TODO: merge create and update views (templates are the same)
 class CollectionCreateView(LoginRequiredMixin, CreateView):
-  print('in CollectionCreateView()')
   form_class = CollectionModelForm
   template_name = 'collection/collection_create.html'
   queryset = Collection.objects.all()
@@ -101,11 +100,7 @@ class CollectionCreateView(LoginRequiredMixin, CreateView):
     print('CollectionCreateView() user', user)
     context = super(CollectionCreateView, self).get_context_data(*args, **kwargs)
     context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
-    #_id = self.kwargs.get("id")
 
-    #qs = CollectionDataset.objects.filter(collection_id = _id)
-    #coll_set = [cd.dataset for cd in qs]
-    #datasets = Collection.objects.get(id=_id).dataset_set.all()
     datasets = []
     # owners create collections from their datasets
     ds_select = [obj for obj in Dataset.objects.all() if user in obj.owners or user.is_superuser]
@@ -143,7 +138,6 @@ class CollectionDetailView(DetailView):
     context['ds_list'] = datasets
     context['bboxes'] = bboxes
     return context
-
 
 """ browse all collection places """
 class CollectionPlacesView(DetailView):

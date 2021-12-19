@@ -14,9 +14,8 @@ from main.models import Log
 # create
 #
 class ResourceCreateView(LoginRequiredMixin, CreateView):
-  print('ResourceCreateView()')
   form_class = ResourceModelForm
-  template_name = 'collection/collection_create.html'
+  template_name = 'resources/resource_create.html'
   queryset = Resource.objects.all()
 
   def get_success_url(self):

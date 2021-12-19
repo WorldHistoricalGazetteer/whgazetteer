@@ -178,10 +178,9 @@
         </div>
       </div>
       {% if beta_or_better %}
-      {%comment%}
-      <p class="mb-1 ml-1"><a href="{% url 'resources:resource-create' %}" class="">
-          {% fontawesome_icon 'plus-square' color='#336699' %} create new</a></p>{%endcomment%}
       <div id="resourcelist" class="tab-pane fade " role="tabpanel" aria-labelledby="resourcelist-tab">
+        <p class="mb-1 ml-2"><a href="{% url 'resources:resource-create' %}" class="">
+          {% fontawesome_icon 'plus-square' color='#336699' %} create new</a></p>
         <div id="resource_list" class="mt-1 ml-0">
           <div class="list-box">
             <table class="table table-striped small">
