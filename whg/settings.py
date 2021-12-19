@@ -57,13 +57,11 @@ INSTALLED_APPS = [
     'accounts.apps.AccountsConfig',
     'api.apps.ApiConfig',
     'areas.apps.AreasConfig',
-    # "collections" is reserved in python
-    'collection.apps.CollectionConfig',
+    'collection.apps.CollectionConfig',  # "collections" reserved in python
     'datasets.apps.DatasetsConfig',
     'main.apps.MainConfig',
-    #'maps.apps.MapsConfig',
     'places.apps.PlacesConfig',
-    'resources.apps.ResourcesConfig',
+    'resources.apps.ResourcesConfig', # for teaching
     'search.apps.SearchConfig',
     'traces.apps.TracesConfig'
 ]

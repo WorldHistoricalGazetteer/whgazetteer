@@ -40,7 +40,8 @@ DATATYPES = [
 
 RESOURCE_TYPES = [
     ('lessonplan', 'Lesson plan'),
-    ('syllabus', 'syllabus')
+    ('syllabus', 'syllabus'),
+    ('other', 'other')
 ]
 RESOURCE_FORMATS = [
     ('pdf', 'PDF'),
@@ -55,7 +56,7 @@ STATUS_RESOURCEFILE = [
 ]
 STATUS_RESOURCE = [
     ('uploaded', 'File uploaded'),
-    ('approved', 'Approved')
+    ('published', 'Published')
 ]
 
 # geonames classes for api filter

@@ -59,7 +59,8 @@
           <p>Image: {{ form.image_file }}</p>
       {% endif %}
       <!-- hidden multicheckboxselect; filled programmatically by js:listDataset()-->
-      <div id="select_div" class="hidden">{{ form.datasets }}</div>
+      <div id="select_div">{{ form.datasets }}</div>
+      <!-- <div id="select_div" class="hidden">{{ form.datasets }}</div> -->
       <hr/>
       <div id="collection_options"></div> <!-- collection_options -->
       <p id="referrer"></p>
@@ -116,7 +117,6 @@
 <script type="text/javascript">
   $(function(){
     dslist=[]
-    <!--area_type = 'ccodes' // default-->
     $( ".textarea" ).each(function(index) {
       if ( ["None","null"].includes( $(this).val() ) ) {
         $(this).val('')
@@ -165,16 +165,14 @@
           +'<p class="my-1"><b>Create date</b>: '+d.create_date+'</p>'
           +'<p class="my-1"><b># rows</b>: '+d.numrows 
             +'<a href="javascript:{ removeDataset('+d.id+') }" class="float-right">'
-            <!--+'<a href="javascript:{ clearDataset('+d.id+') }" class="float-right">'-->
               +'{% fontawesome_icon "minus-square" color="#336699" %} remove</a>'
           +'</p></div></div>'
     $("#coll_dscards_create").append(card)
-    <!--console.log(card)-->
+    // console.log(card)
   }
   // adds, displays single dataset
   function addDataset() {
     console.log('selected', $("#select_ds").val())
-    <!--$.get("/collections/add_ds", {ds_id:$("#select_ds").val(), coll_id:{{object.id}}},-->
     $.get("/collections/list_ds", {ds_id:$("#select_ds").val()},
       function(data){
         // render to html
@@ -201,7 +199,6 @@
       $("#id_datasets [value=" + dsid + "]").prop("checked", false);
       let idx = dslist.indexOf(dsid)
       dslist.splice(idx, dslist.length);
-      <!--delete dslist[idx]-->
       card = "#card_"+dsid
       $(card).remove()
       if(dslist.length == 0 ){ $("#msg").html('None yet...').show()}
@@ -214,168 +211,3 @@
 
 {% endblock %}
 
-<!-- there is no map -->
-  <!--$('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {-->
-    <!--var target = $(e.target).attr("href") // activated tab-->
-    <!--area_type = $(e.target).attr("ref") // activated tab-->
-    <!--map_clear() // switch create modes? clear the deck-->
-    <!--// feed area type to hidden input-->
-    <!--$("input[name='type']").val(area_type)-->
-    <!--// console.log('tab id:',target);-->
-    <!--active = $("ul#area_tabs_ul a.active").attr("href")-->
-    <!--// TODO: better refactor -->
-    <!--if (target == '#areas_codes') {-->
-      <!--$("#id_geojson").attr("placeholder","generated from country codes")-->
-      <!--if ($(".leaflet-draw-toolbar").length > 0) {-->
-          <!--// console.log('remove drawControl')-->
-          <!--$(".leaflet-draw").remove()-->
-      <!--}-->
-    <!--} else if (target == '#areas_draw') {-->
-      <!--$("#id_geojson").attr("placeholder","generated from drawn shapes")-->
-      <!--if ($(".leaflet-draw").length == 0) {-->
-        <!--drawnItems = L.featureGroup().addTo(mappy)-->
-        <!--drawControls(drawnItems)-->
-        <!--mappy.on(L.Draw.Event.CREATED, function (event) {-->
-          <!--window.drawnlayer = event.layer;-->
-          <!--console.log('drawnlayer',drawnlayer)-->
-          <!--drawnItems.addLayer(drawnlayer);-->
-          <!--drawnItems.addTo(mappy)-->
-          <!--<!--$("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON()))-->-->
-          <!--$("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON().features[0].geometry))-->
-        <!--});-->
-        <!--mappy.on(L.Draw.Event.EDITED, function (event) {-->
-          <!--<!--$("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON()))-->-->
-          <!--$("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON().features[0].geometry))-->
-          <!--console.log('you changed it')-->
-        <!--});-->
-        <!--mappy.on(L.Draw.Event.DELETED, function (event) {-->
-          <!--<!--$("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON()))-->-->
-          <!--$("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON().features[0].geometry))-->
-          <!--<!--drawnItems.addTo(mappy)-->-->
-          <!--console.log('you deleted something')-->
-        <!--})-->
-      <!--}-->
-    <!--}-->
-  <!--});-->
-  // expose leaflet map for events, call it 'mappy'
-  <!--window.addEventListener('map:init', function (e) {-->
-    <!--console.log('map:init(), w.action:', '{{ action }}')-->
-    <!--window.mappy = e.detail.map-->
-    <!--var attrib_mb = 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +-->
-            <!--'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +-->
-            <!--'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',-->
-      <!--token_mb = '{{ mbtokenmb }}',-->
-      <!--mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}';-->
-      
-
-    <!--var satellite  = L.tileLayer(mbstyle_url, {id:'mapbox/satellite-streets-v11', token:token_mb});-->
-    <!--var osm  = L.tileLayer(mbstyle_url, {id:'mapbox/light-v10', token:token_mb});-->
-  
-    <!--drawnItems = L.featureGroup().addTo(mappy)-->
-
-    <!--var baseLayers = {-->
-      <!--"OSM": osm,-->
-      <!--"Satellite": satellite-->
-    <!--};-->
-    <!--var overlays = {"Drawn features": drawnItems}-->
-
-    <!--layerGroup = L.control.layers(baseLayers,overlays).addTo(mappy);-->
-    <!--baseLayers['OSM'].addTo(mappy)-->
-  <!--}, false);-->
-
-
-  <!--function zoomTo(id) {-->
-    <!--mappy.setView(idToFeature[id]._latlng, mappy.getZoom() +2 )-->
-  <!--}-->
-
-  <!--function cleanJson(text) {-->
-    <!--z=text.replace(/'/g,'\\"')-->
-    <!--y=z.replace(/point/,'Point')-->
-    <!--return JSON.parse(JSON.parse(y))-->
-  <!--}-->
-
-   <!--// initialize, render map w/settings.LEAFLET_CONFIG-->
-  <!--function map_init (map, options) {-->
-    <!--// edit/update drawn area-->
-    <!--if('{{ action }}' == 'update' && '{{ form.type.value }}' == 'drawn'){-->
-      <!--// TODO: -->
-      <!--$('a[href="#areas_draw"]').tab('show');-->
-      <!--$('a[href="#areas_codes"]').addClass('disabled').css("cursor","default")-->
-      <!--<!--}-->-->
-      <!--// load existing data for editing-->
-      <!--<!--editItems = L.featureGroup()-->-->
-      <!--lgeojson = L.geoJson(JSON.parse($("textarea#id_geojson").val()), {-->
-        <!--onEachFeature: function (feature, layer) {-->
-          <!--drawnItems.addLayer(layer);-->
-        <!--}-->
-      <!--}).addTo(mappy)-->
-      <!--mappy.fitBounds(lgeojson.getBounds())-->
-      <!--<!--console.log('geom on init',lgeojson)-->-->
-
-      <!--drawControls(drawnItems)-->
-    <!--} else if('{{ action }}' == 'update' && '{{ form.type.value }}' == 'ccodes') {-->
-      <!--$('a[href="#areas_draw"]').addClass('disabled').css("cursor","default")-->
-      <!--map_render()-->
-    <!--}-->
-  <!--}  -->
-  <!--function map_render() {-->
-    <!--console.log('in map_render()')-->
-    <!--ccodes = $("input#id_ccodes").val()-->
-    <!--window.geoj = $("textarea#id_geojson")-->
-    <!--window.geom = {"type":"FeatureCollection","features":[]}-->
-    <!--window.buffer = $("input#buffer_km").val()-->
-    <!--// console.clear()-->
-
-    <!--var country_url = "/media/data/countries_simplified.json"-->
-    <!--// clear geoJSON-->
-    <!--if (Object.keys(mappy._layers).length > 2 ) {-->
-      <!--cc_layer.clearLayers()-->
-      <!--hull_layer.clearLayers()-->
-    <!--}-->
-    <!--if (ccodes != '') {-->
-      <!--// TODO: test csv format-->
-      <!--ccode_arr = ccodes.toUpperCase().split(",")-->
-      <!--// console.log(ccode_arr)-->
-      <!--fetch(country_url)-->
-        <!--.then(function(resp) {-->
-          <!--return resp.json();-->
-        <!--})-->
-        <!--.then(function(data) {-->
-          <!--// console.log('fetched data', data)-->
-          <!--window.cc_layer = L.geoJson(data, {-->
-            <!--filter: function(feature, layer) {-->
-              <!--return ccode_arr.includes(feature.properties.iso) ;-->
-            <!--},-->
-            <!--onEachFeature: function onEachFeature(feature, layer) {-->
-              <!--// console.log('feature:', JSON.stringify(feature))-->
-              <!--geom['features'].push(feature)-->
-              <!--var props = feature.properties;-->
-              <!--var content = `<p>${props.iso}</p><p>${props.gnlabel}</p>`;-->
-              <!--layer.bindPopup(content);-->
-          <!--}}).addTo(mappy);-->
-        <!--})-->
-        <!--.then(function(){-->
-          <!--hull = turf.buffer(turf.convex(geom),buffer,{units:'kilometers'})-->
-          <!--// hull_mp = turf.multiPolygon(hull.geometry.coordinates)-->
-          <!--// geoj.val(JSON.stringify(hull_mp.geometry))-->
-          <!--geoj.val(JSON.stringify(hull.geometry))-->
-          <!--hull_layer = L.geoJSON(hull, {-->
-            <!--style: function (feature) {-->
-              <!--return {color: '#ff8c00'}; }-->
-          <!--}).addTo(mappy);-->
-          <!--mappy.fitBounds(hull_layer.getBounds())-->
-        <!--})-->
-    <!--} else {-->
-      <!--// alert('Need some comma-delimited 2-letter country codes')-->
-    <!--}-->
-  <!--}-->
-
-  <!--function map_clear() {-->
-    <!--if(typeof cc_layer != "undefined"){cc_layer.remove()}-->
-    <!--if(typeof hull_layer != "undefined"){hull_layer.remove()}-->
-    <!--$("input#id_ccodes").val(null)-->
-    <!--if('{{ action }}' == "create"){-->
-      <!--$("textarea#id_geojson").val(null)-->
-    <!--}-->
-    <!--$("#buffer_km").val(null)-->
-  <!--}-->
