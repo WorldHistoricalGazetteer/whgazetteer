@@ -45,13 +45,14 @@
   <header>
     <nav class="navbar navbar-expand-lg navbar-light">
       <div class="container">
-        <a class="navbar-brand" href="{% url 'home' %}">
+        <a class="navbar-brand mr-0" href="{% url 'home' %}">
           <img src="{% static 'images/whg_logo_38h.png'%}" class="d-inline-block align-bottom" height=38 width=50 alt=""/>
 		</a>
 		<div class="smallish d-none d-lg-block pt-2">
 		  <span id="version_badge" class="badge badge-warning">v2.0</span>
 		  <span id="beta_links">
-			<a href="{% url 'main:tute-guide' %}">guide</a> | <a href="#" class="feedback">contact us</a> |
+			{%comment%}<a href="{% url 'main:tute-guide' %}">guide</a> | {%endcomment%}
+			<a href="#" class="feedback">contact us</a> |
 			<a href="https://twitter.com/whgazetteer" target="_blank"><img src="{% static 'images/twitter30h.png'%}" height=14></a>
 		  </span>
 		</div>
@@ -63,11 +64,14 @@
             <li class="nav-item">
               <a class="nav-link" href="{% url 'search-page' %}">Search</a>
             </li>
+			<li class="nav-item">
+				<a class="nav-link" href="{ url 'teaching-page' %}">Teaching</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="{% url 'main:tutorials' %}">Help</a>
+			</li>
             <li class="nav-item">
               <a class="nav-link" href="{% url 'usingapi' %}">API</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'main:tutorials' %}">Tutorials</a>
             </li>
 			<li class="nav-item dropdown">
 			  <a class="nav-link dropdown-toggle" href="#" id="aboutDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
