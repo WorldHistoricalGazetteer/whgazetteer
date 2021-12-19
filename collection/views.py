@@ -63,7 +63,7 @@ def remove_dataset(request, *args, **kwargs):
 
 # TODO: merge create and update views (templates are the same)
 class CollectionCreateView(LoginRequiredMixin, CreateView):
-  print('CollectionCreateView()')
+  print('in CollectionCreateView()')
   form_class = CollectionModelForm
   template_name = 'collection/collection_create.html'
   queryset = Collection.objects.all()
@@ -97,11 +97,11 @@ class CollectionCreateView(LoginRequiredMixin, CreateView):
     return super().form_valid(form)
 
   def get_context_data(self, *args, **kwargs):
+    user = self.request.user
+    print('CollectionCreateView() user', user)
     context = super(CollectionCreateView, self).get_context_data(*args, **kwargs)
     context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
-    user = self.request.user
     #_id = self.kwargs.get("id")
-    print('CollectionCreate() user', user)
 
     #qs = CollectionDataset.objects.filter(collection_id = _id)
     #coll_set = [cd.dataset for cd in qs]
@@ -117,6 +117,7 @@ class CollectionCreateView(LoginRequiredMixin, CreateView):
     return context
 
 
+""" list collection datasets, bboxes on a map """
 class CollectionDetailView(DetailView):
   template_name = 'collection/collection_detail.html'
 
@@ -125,7 +126,7 @@ class CollectionDetailView(DetailView):
   def get_context_data(self, **kwargs):
     context = super(CollectionDetailView, self).get_context_data(**kwargs)
     id_ = self.kwargs.get("pk")
-    print('self, kwargs',self, self.kwargs)
+    print('CollectionDetailView(), kwargs',self, self.kwargs)
 
     datasets = self.object.datasets.all()
 
@@ -144,7 +145,7 @@ class CollectionDetailView(DetailView):
     return context
 
 
-""" public collection page; returns dataset info only """
+""" browse all collection places """
 class CollectionPlacesView(DetailView):
   login_url = '/accounts/login/'
   redirect_field_name = 'redirect_to'
@@ -201,7 +202,6 @@ class CollectionDeleteView(DeleteView):
 # detail & update
 #
 class CollectionUpdateView(UpdateView):
-  #print('CollectionUpdateView()')
   form_class = CollectionModelForm
   template_name = 'collection/collection_create.html'
   success_url = '/dashboard'

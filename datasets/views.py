@@ -40,6 +40,7 @@ from elastic.es_utils import makeDoc,deleteFromIndex, replaceInIndex
 from main.choices import AUTHORITY_BASEURI
 from main.models import Log, Comment
 from places.models import *
+from resources.models import Resource
 
 
 """used for Celery down notice"""
@@ -2118,9 +2119,16 @@ class DashboardView(LoginRequiredMixin, ListView):
     context['collections'] = collection_list if me.is_superuser else \
       collection_list.filter(owner=me)
 
+    # list teaching resources
+    resource_list = Resource.objects.all().order_by('create_date')
+    context['resources'] = resource_list if me.is_superuser else \
+      resource_list.filter(owner=me)
+
     context['viewable'] = ['uploaded','inserted','reconciling','review_hits','reviewed','review_whg','indexed']
 
     context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins', 'whg_team']).exists() else False
+    # TODO: assigning users to 'teacher' group
+    context['teacher'] = True if self.request.user.groups.filter(name__in=['teacher']).exists() else False
     # TODO: user place collections
     #print('DashboardView context:', context)
     return context

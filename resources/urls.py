@@ -11,24 +11,19 @@ app_name = 'resources'
 
 urlpatterns = [
 
-    path('create/', views.CollectionCreateView.as_view(), name='collection-create'),
+    path('create/', views.ResourceCreateView.as_view(), name='resource-create'),
     # create handles create and update
-    path('<int:id>/update', views.CollectionUpdateView.as_view(),
-         name='collection-update'),
-    path('<int:id>/delete', views.CollectionDeleteView.as_view(),
-         name='collection-delete'),
-
-    path('list_ds/', views.ListDatasetView.as_view(), name='list-ds'),
-    path('remove_ds/<int:coll_id>/<int:ds_id>',
-         views.remove_dataset, name='remove-ds'),
-
+    path('<int:id>/update', views.ResourceUpdateView.as_view(),
+         name='resource-update'),
+    path('<int:id>/delete', views.ResourceDeleteView.as_view(),
+         name='resource-delete'),
     # detail is the public view
-    path('<int:pk>/detail', views.CollectionDetailView.as_view(),
-         name='collection-detail'),
-    # adding browse tab
-    path('<int:id>/places', views.CollectionPlacesView.as_view(),
-         name='collection-places'),
+    path('<int:pk>/detail', views.ResourceDetailView.as_view(),
+         name='resource-detail'),
 
-    path('<int:id>/geojson/', views.fetch_geojson_coll, name="geojson-coll"),
+    # path('list_ds/', views.ListDatasetView.as_view(), name='list-ds'),
+    # path('remove_ds/<int:coll_id>/<int:ds_id>',
+    #      views.remove_dataset, name='remove-ds'),
+
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

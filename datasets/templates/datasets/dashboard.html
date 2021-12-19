@@ -35,9 +35,11 @@
       <li class="nav-item">
         <a class="nav-link" id="arealist-tab" data-toggle="tab" href="#arealist" role="tab" aria-controls="arealist" aria-selected="false">Study Areas</a>
       </li>
-      <!--<li class="nav-item">-->
-        <!--<a class="nav-link" id="publiclist-tab" data-toggle="tab" href="#publiclist" role="tab" aria-controls="publiclist" aria-selected="false">Public Datasets</a>-->
-      <!--</li>-->
+      {% if beta_or_better %}
+      <li class="nav-item">
+        <a class="nav-link" id="resourcelist-tab" data-toggle="tab" href="#resourcelist" role="tab" aria-controls="resourcelist" aria-selected="false">Teaching resources</a>
+      </li>
+      {% endif %}
     </ul>
     <div class="tab-content">
       <div id="mydslist" class="tab-pane fade show active" role="tabpanel" aria-labelledby="mydslist-tab">
@@ -175,32 +177,35 @@
           </div>
         </div>
       </div>
+      {% if beta_or_better %}
       {%comment%}
-      <div id="publiclist" class="tab-pane fade " role="tabpanel" aria-labelledby="publiclist-tab">
-        <p class="mb-1 ml-1">These data are flagged as public in WHG. If marked as <mark>indexed</mark>, records are fully searchable from the home page and Index API. If marked as <mark>accessioning</mark>, records are partially indexed. Those not yet indexed are accessible through the Database API. <a href="{% url 'usingapi' %}">API docs</a></p>
-        <div id="public_list" class="mt-1 ml-0">
+      <p class="mb-1 ml-1"><a href="{% url 'resources:resource-create' %}" class="">
+          {% fontawesome_icon 'plus-square' color='#336699' %} create new</a></p>{%endcomment%}
+      <div id="resourcelist" class="tab-pane fade " role="tabpanel" aria-labelledby="resourcelist-tab">
+        <div id="resource_list" class="mt-1 ml-0">
           <div class="list-box">
             <table class="table table-striped small">
               <thead>
-                  <th>id/label</th>
+                  <th>id</th>
                   <th>title</th>
-                  <th># rows</th>
+                  <th>authors</th>
                   <th class="w-50">description</th>
-                  <th>webpage</th>
+                  <th>created</th>
+                  <th>published</th>
                   <th>owner</th>
               </thead>
               <tbody>
-                {% for ds in public_list %}
+                {% for r in resource_list %}
                   <tr class="place-row">
-                    <td>{{ ds.id }}/<b>{{ ds.label }}</b>
-                    <br/><mark>{{ ds.ds_status }}</mark>
+                    <td>{{ r.id }}</b>
+                    <br/><mark>{{ r.status }}</mark>
                     </td>
-                    <td>{{ ds.title }}</td>
-                    <td>{{ ds.numrows }}</td>
-                    <td class="w-50">{{ ds.description }}</td>
-                    <td>{% if ds.webpage %}<a href="{{ ds.webpage }}" target="_blank">link
-                    {% fontawesome_icon 'external-link' %}</a>{%endif%}</td>
-                    <td>{{ ds.owner }}</td>
+                    <td>{{r.title }}</td>
+                    <td>{{ r.authors }}</td>
+                    <td class="w-50">{{ r.description }}</td>
+                    <td>{{ r.create_date }}</td>
+                    <td>{{ r.pub_date }}</td>
+                    <td>{{ r.owner }}</td>
                   </tr>
                 {% endfor %}
               </tbody>
@@ -208,7 +213,7 @@
           </div>
         </div>
       </div>
-      {% endcomment %}
+      {% endif %}
     </div>
   </div>
   <script>
