@@ -66,6 +66,11 @@ class Home2a(TemplateView):
         context['mbtokenwhg'] = settings.MAPBOX_TOKEN_WHG
         context['media_url'] = settings.MEDIA_URL
         context['base_dir'] = settings.BASE_DIR
+        context['beta_or_better'] = True if self.request.user.groups.filter(
+            name__in=['beta', 'admins']).exists() else False
+        context['teacher'] = True if self.request.user.groups.filter(
+            name__in=['teacher']).exists() else False
+
         return context
 
 

@@ -3,14 +3,17 @@
 from django.urls import path
 from django.conf.urls.static import static
 from django.conf import settings
+from django.views.generic.base import TemplateView
 
 from . import views
 
 # area actions
 app_name = 'resources'
+# prefix is teaching/
 
 urlpatterns = [
 
+    # resources/
     path('create/', views.ResourceCreateView.as_view(), name='resource-create'),
     # create handles create and update
     path('<int:id>/update', views.ResourceUpdateView.as_view(),
@@ -20,6 +23,12 @@ urlpatterns = [
     # detail is the public view
     path('<int:pk>/detail', views.ResourceDetailView.as_view(),
          name='resource-detail'),
+
+    # teaching/
+    path('', TemplateView.as_view(template_name="resources/teaching.html"), name="teaching-page"),
+    path('asian_history/', TemplateView.as_view(
+        template_name="resources/asian_history.html"), name="lesson-asian"),
+
 
     # path('list_ds/', views.ListDatasetView.as_view(), name='list-ds'),
     # path('remove_ds/<int:coll_id>/<int:ds_id>',

@@ -1,0 +1,36 @@
+{% extends "main/base.html" %}
+{% block title %}<title>WHG::Asian History Curriculum</title>{% endblock %}
+
+{% block content %}
+{% load static %}
+
+  <div class="container">
+    <div class="d-flex justify-content-center mt-3">
+      <h3>Exploring the Changing Names of Cities</h3>
+    </div>
+    <div id="contrib_content" class="mx-5">
+      <div class="row">
+        <div class="col-sm-9 p-2">
+          <p>The team behind the World Historical Gazetteer (WHG) has created <a href="{% static 'files/WHG_Asian_History_Lesson.pdf' %}" target="_blank">a sample lesson plan</a> for using the website. This lesson introduces the WHG with a regional focus on Asia. It directs students to start thinking about the concept of place name changes with the example of Istanbul and Constantinople.</p> 
+          
+          <p>It explains the reason behind this name change. Students are then directed to explore other instances of name changes across Asia via the WHG and to use additional resources to determine when and why these changes happened.</p> 
+          
+          <p>Students then use the WHG to examine what else you can learn about a place via the website (different names, nearby cities, environmental features, and traces of historical phenomena) as well as how many places across the globe have been named the same way.</p> 
+          
+          <p>Finally, the lesson plan offers supplemental activities to do depending on how much time can be given to exploring the WHG in class as well as ideas for homework exercises. </p>
+        </div>
+        <div class="col-sm-3 p-2">
+          <a href="{% static 'files/WHG_Asian_History_Lesson.pdf' %}" target="_blank"><img src="{% static 'images/tutes/curric_asian01.png' %}" width=250 /></a>
+        </div>
+      </div>
+    </div>
+  </div> 
+  <script type="text/javascript">
+    $(".popimg").on("click", function() {
+      imagelink = $(".popimg img").attr('src')
+      console.log('imagelink',imagelink)
+      $('#imagepreview').attr('src', imagelink); 
+      $('#imagemodal').modal('show');
+    });
+  </script>    
+{% endblock %}

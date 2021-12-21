@@ -64,9 +64,11 @@
             <li class="nav-item">
               <a class="nav-link" href="{% url 'search-page' %}">Search</a>
             </li>
+			{% if user.is_staff %}
 			<li class="nav-item">
-				<a class="nav-link" href="{ url 'teaching-page' %}">Teaching</a>
+				<a class="nav-link" href="{% url 'resources:teaching-page' %}">Teaching</a>
 			</li>
+			{% endif %}
 			<li class="nav-item">
 				<a class="nav-link" href="{% url 'main:tutorials' %}">Help</a>
 			</li>

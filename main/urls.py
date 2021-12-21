@@ -21,8 +21,10 @@ urlpatterns = [
     path('traces/', TemplateView.as_view(template_name="tutorials/traces.html"), name="tute-traces"),
     path('create_lptsv/', TemplateView.as_view(template_name="tutorials/create_lptsv.html"), name="tute-lptsv"),
 
-    # curricula
-    path('asian_history/', TemplateView.as_view(template_name="curricula/asian_history.html"), name="curric-asian"),
+    # teaching resources
+    path('teaching/', TemplateView.as_view(template_name="teaching/teaching.html"), name="teaching"),
+    path('asian_history/', TemplateView.as_view(
+        template_name="teaching/asian_history.html"), name="curric-asian"),
 
 
     path('modal/', TemplateView.as_view(template_name="main/modal.html"), name="dynamic-modal"),

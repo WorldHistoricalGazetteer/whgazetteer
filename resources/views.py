@@ -62,7 +62,6 @@ class ResourceCreateView(LoginRequiredMixin, CreateView):
     print('ResourceCreate() user', user)
 
     context['action'] = 'create'
-
     return context
 
 #
