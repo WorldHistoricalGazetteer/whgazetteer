@@ -1,0 +1,62 @@
+{% extends "main/base.html" %}
+{% block title %}<title>WHG::Teaching</title>{% endblock %}
+
+{% block content %}
+  {% load fontawesome %}
+  {% load static %}
+  {% block extra_head %}
+    <style>
+      .fill-tan {background-color: blanchedalmond; }
+      .fill-grey {background-color:gainsboro; }
+      .bordered {outline: gainsboro 2px dashed; border-radius: 5%;}
+    </style>
+  {% endblock %}
+
+  <main role="main" style="height: calc(100vh - 220px);">
+    <section class="text-center">
+      <div class="container mb-1">
+        <h3>Teaching with World Historical Gazetteer</h3>
+      </div>
+    </section>
+    <div class="container mb-1" style="height: 90%">
+      <!-- <div id="teaching_top" class="row h-50" style=""> -->
+      <div id="teaching_top" class="row" style="height: fit-content;">
+        <div class="col-sm-8 h-100" style="overflow:auto">
+          <div>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis eget dapibus velit. Praesent tincidunt egestas lobortis.
+        Nullam vel justo quis tortor ultrices rutrum vitae quis augue. In mauris ex, fringilla id aliquam et, maximus sit amet
+        purus. In posuere ex eget purus aliquam, sit amet pellentesque massa porta. Orci varius natoque penatibus et magnis dis
+        parturient montes, nascetur ridiculus mus. Aenean gravida at dui et dapibus. Sed vel blandit sapien. Pellentesque est
+        ligula, euismod ut nibh at, facilisis vulputate dui.</p>
+          </div>
+        </div>
+        <div class="col-sm-4 h-100">
+          <div class="fill-grey p-2" style="height: fit-content;">
+            <img height=200px;>image</>
+          </div>
+        </div>
+      </div> <!-- .row -->
+      <!-- <div id="teaching_bottom" class="row mt-2" style="height: 50vh;"> -->
+      <div id="teaching_bottom" class="row h-75 mt-2">
+        <div class="col-sm-4">
+          <div class="fill-grey bordered h-100 p-3">
+            <h4>essay/article</h4>
+            <p>
+              In ac enim lacus. Pellentesque ut pretium augue. Vivamus aliquam ipsum a mi accumsan, ut aliquam enim pretium. Maecenas
+              sit amet felis vitae massa tincidunt suscipit in et purus. Duis accumsan, ante eget euismod elementum, neque diam
+              suscipit urna, efficitur fermentum lorem lorem vel orci. Curabitur pretium dolor nec eros mollis, ut feugiat lectus
+              vestibulum. Fusce faucibus, mauris eget molestie sagittis, enim lectus vestibulum metus, placerat pharetra nunc eros vel
+              risus.
+            </p>
+          </div>
+        </div>
+        <div class="col-sm-8">
+          <div class="fill-tan h-100 p-2">
+            <h4>resources</h4>
+          </div> <!-- .row -->
+      </div>
+    </div>
+  </main>
+
+{% endblock %}
+

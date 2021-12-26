@@ -2,57 +2,93 @@
 {% block title %}<title>WHG::Teaching</title>{% endblock %}
 
 {% block content %}
-{% load fontawesome %}
-{% load static %}
-{% block extra_head %}
-<style>
-  .fill-tan {background-color: blanchedalmond; }
-  .fill-grey {background-color:gainsboro; }
-  .bordered {outline: gainsboro 2px dashed; border-radius: 5%;}
-</style>
-{% endblock %}
+    {% load fontawesome %}
+    {% load static %}
+    {% block extra_head %}
+    <style>
+        .fill-tan {background-color: blanchedalmond; }
+        .fill-grey {background-color:gainsboro; }
+        .bordered {outline: gainsboro 2px dashed; border-radius: 5%;}
+        .card {float:left; margin-right:.5rem; margin-bottom:.5rem; width: 32%;}
+    </style>
+    {% endblock %}
 
-<main role="main" style="height: calc(100vh - 90px);">
-  <section class="text-center">
-    <div class="container mb-1">
-      <h3>Teaching with World Historical Gazetteer</h3>
+    <div class="container-fluid pt-2 container-md">
+			<div class="">
+					<h1>My First Bootstrap Page</h1>
+					<p>This is some text.</p>
+			</div>
+			<div class="card">
+				<div style="background-color:antiquewhite; height:10px;"></div>
+				<img src="" width="100%" height="50px" style="background-color: honeydew;" />
+				<div class="px-2 pt-1">
+					<h5>title</h5>
+					<p class="small">Short summary...Phasellus convallis aliquam venenatis. Quisque nec lacus pulvinar odio semper varius quis vel dui. Etiam volutpat
+					iaculis magna, a accumsan erat gravida sit amet. Ut tincidunt libero sit amet convallis egestas. </p>
+					<div class="d-flex justify-content-between align-items-center">
+						<div class="btn-group">
+								<a href="{% url 'main:tute-guide' %}" class="btn btn-sm btn-outline-secondary" role="button">View</a>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="card">
+				<div style="background-color:antiquewhite; height:10px;"></div>
+				<img src="" width="100%" height="50px" style="background-color: honeydew;" />
+				<div class="px-2 pt-1">
+					<h5>title</h5>
+					<p class="small">Short summary...Phasellus convallis aliquam venenatis. Quisque nec lacus pulvinar odio semper varius quis vel dui. Etiam volutpat
+					iaculis magna, a accumsan erat gravida sit amet. Ut tincidunt libero sit amet convallis egestas. </p>
+					<div class="d-flex justify-content-between align-items-center">
+						<div class="btn-group">
+								<a href="{% url 'main:tute-guide' %}" class="btn btn-sm btn-outline-secondary" role="button">View</a>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="card">
+				<div style="background-color:antiquewhite; height:10px;"></div>
+				<img src="" width="100%" height="50px" style="background-color: honeydew;" />
+				<div class="px-2 pt-1">
+					<h5>title</h5>
+					<p class="small">Short summary...Phasellus convallis aliquam venenatis. Quisque nec lacus pulvinar odio semper varius quis vel dui. Etiam volutpat
+					iaculis magna, a accumsan erat gravida sit amet. Ut tincidunt libero sit amet convallis egestas. </p>
+					<div class="d-flex justify-content-between align-items-center">
+						<div class="btn-group">
+								<a href="{% url 'main:tute-guide' %}" class="btn btn-sm btn-outline-secondary" role="button">View</a>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="card">
+				<div style="background-color:antiquewhite; height:10px;"></div>
+				<img src="" width="100%" height="50px" style="background-color: honeydew;" />
+				<div class="px-2 pt-1">
+					<h5>title</h5>
+					<p class="small">Short summary...Phasellus convallis aliquam venenatis. Quisque nec lacus pulvinar odio semper varius quis vel dui. Etiam volutpat
+					iaculis magna, a accumsan erat gravida sit amet. Ut tincidunt libero sit amet convallis egestas. </p>
+					<div class="d-flex justify-content-between align-items-center">
+						<div class="btn-group">
+								<a href="{% url 'main:tute-guide' %}" class="btn btn-sm btn-outline-secondary" role="button">View</a>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="card">
+				<div style="background-color:antiquewhite; height:10px;"></div>
+				<img src="" width="100%" height="50px" style="background-color: honeydew;" />
+				<div class="px-2 pt-1">
+					<h5>title</h5>
+					<p class="small">Short summary...Phasellus convallis aliquam venenatis. Quisque nec lacus pulvinar odio semper varius quis vel dui. Etiam volutpat
+					iaculis magna, a accumsan erat gravida sit amet. Ut tincidunt libero sit amet convallis egestas. </p>
+					<div class="d-flex justify-content-between align-items-center">
+						<div class="btn-group">
+								<a href="{% url 'main:tute-guide' %}" class="btn btn-sm btn-outline-secondary" role="button">View</a>
+						</div>
+					</div>
+				</div>
+			</div>
+
     </div>
-  </section>
-  <div class="container mb-1" style="height: 90%">
-    <div id="teaching_top" class="row" style="height: 50vh;">
-      <div class="col-sm-8 h-100" style="overflow:auto">
-        <div>
-          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis eget dapibus velit. Praesent tincidunt egestas lobortis.
-      Nullam vel justo quis tortor ultrices rutrum vitae quis augue. In mauris ex, fringilla id aliquam et, maximus sit amet
-      purus. In posuere ex eget purus aliquam, sit amet pellentesque massa porta. Orci varius natoque penatibus et magnis dis
-      parturient montes, nascetur ridiculus mus. Aenean gravida at dui et dapibus. Sed vel blandit sapien. Pellentesque est
-      ligula, euismod ut nibh at, facilisis vulputate dui. Nunc iaculis interdum enim, vestibulum mattis nisi malesuada ac.
-      Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec ornare, tortor id hendrerit
-      dignissim, leo elit pellentesque massa, sed volutpat orci nibh at tortor. Nunc et est a sem consectetur tincidunt. Nulla
-      a mi posuere, mollis ipsum id, faucibus neque.</p>
-        </div>
-      </div>
-      <div class="col-sm-4 h-100">
-        <div class="fill-grey h-100 p-2">
-          <h4>image</h4>
-        </div>
-      </div>
-    </div> <!-- row -->
-    <div id="teaching_bottom" class="row h-50 mt-2">
-      <div class="col-sm-4">
-        <div class="fill-grey bordered h-100 p-3">
-          <h4>essay/article</h4>
-        </div>
-      </div>
-      <div class="col-sm-8">
-        <div class="fill-tan h-100 p-2">
-          <h4>resources</h4>
-        </div>
-    </div>
-  </div>
-
-
-</main>
-
 {% endblock %}
 
