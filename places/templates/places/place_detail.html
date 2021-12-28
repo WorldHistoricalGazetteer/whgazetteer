@@ -43,8 +43,11 @@
           <colgroup><col style="width:150px;"></col><col></col></colgroup>
           <tr><td>Record title:</td><td>{{ object.title }}</td></tr>
           <tr><td>WHG identifier:</td><td>{{ object.id }} (<a href="/api/db/?id={{object.id}}" target="_blank">Linked Places record</a>)</td></tr>
-          <tr><td>Source identifier:</td>
-            <td>{{ object.src_id }} {%if not 'whg' in dataset.uri_base %} <a href="{{dataset.uri_base}}{{object.id}}" target="_blank">source record {% fontawesome_icon 'external-link' color='#336699' %}</a>{%endif%}</td>
+          <tr><td>Source identifier:wtf</td>
+            <td>{{ object.src_id }} 
+              {% if not 'whg' in dataset.uri_base %} 
+                <a href="{{dataset.uri_base}}{{object.src_id}}" target="_blank">source record {% fontawesome_icon 'external-link' color='#336699' %}</a>
+              {% endif %}</td>
           </tr>
           <tr><td>Variants:</td><td>{% for n in object.names.all %}
           <i>{{n.jsonb.toponym }};</i> {% endfor %}</td></tr>
