@@ -6,6 +6,8 @@ from .models import Resource
 class ResourceModelForm(forms.ModelForm):
     keywords = SimpleArrayField(forms.CharField())
     gradelevels = SimpleArrayField(forms.CharField())
+    files = forms.FileField()
+    images = forms.FileField()
 
     class Meta:
         model = Resource
