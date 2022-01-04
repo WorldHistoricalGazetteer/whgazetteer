@@ -7,6 +7,7 @@ from django.views.generic.base import TemplateView
 
 from main import views
 from datasets.views import DashboardView, PublicListsView
+from resources.views import TeachingPortalView
 
 app_name='main'
 #handler404 = 'datasets.views.handler404',
@@ -26,6 +27,7 @@ urlpatterns = [
     path('places/', include('places.urls')),
     path('tutorials/', include('main.urls')),
     path('resources/', include('resources.urls')),
+    path('teaching/', TeachingPortalView.as_view(), name="teaching-page"),
 
     path('dashboard/', DashboardView.as_view(), name='dashboard'),
     path('public_data/', PublicListsView.as_view(), name='public-lists'),

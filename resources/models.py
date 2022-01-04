@@ -4,27 +4,9 @@ from django.contrib.auth.models import User
 from django.contrib.postgres.fields import ArrayField
 from main.choices import *
 
-def user_directory_path(instance, filename):
-  # upload to MEDIA_ROOT/user_<username>/<filename>
-  return 'user_{0}/{1}'.format(instance.owner.username, filename)
-
 def resource_file_path(instance, filename):
   # upload to MEDIA_ROOT/resources/<id>_<filename>
-  return 'resources/{0}_{1}'.format(instance.id, filename)
-
-class ResourceFile(models.Model):
-    file = models.FileField(upload_to=resource_file_path)
-
-    class Meta:
-        managed = True
-        db_table = 'resource_file'
-
-class ResourceImage(models.Model):
-    file = models.FileField(upload_to=resource_file_path)
-
-    class Meta:
-        managed = True
-        db_table = 'resource_image'
+  return 'resources/{0}'.format(filename)
 
 class Resource(models.Model):
   create_date = models.DateTimeField(null=True, auto_now_add=True)
@@ -42,21 +24,47 @@ class Resource(models.Model):
   contact = models.CharField(max_length=500, null=True, blank=True)
   webpage = models.URLField(null=True, blank=True)
 
-  files = models.ManyToManyField(ResourceFile)
-  images = models.ManyToManyField(ResourceImage)
+  # files = models.FileField(blank=True)
+  # images = models.ImageField(blank=True)
 
   public = models.BooleanField(default=False)
   featured = models.IntegerField(null=True, blank=True)
 
   # [uploaded | published]
   status = models.CharField(
-      max_length=12, null=True, blank=True, choices=STATUS_RESOURCE)
+      max_length=12, null=True, blank=True, choices=RESOURCE_STATUS, default='uploaded')
 
   def __str__(self):
-    return self.label
+    return self.title
     # return '%d: %s' % (self.id, self.label)
 
   class Meta:
     managed = True
     db_table = 'resources'
 
+
+class ResourceFile(models.Model):
+  resource = models.ForeignKey(Resource, default=None, on_delete=models.CASCADE)
+  file = models.FileField(upload_to=resource_file_path)
+  filetype = models.CharField(max_length=12, null=False, blank=False, 
+                              choices=RESOURCEFILE_ROLE, default='primary')
+
+  # def __str__(self):
+  #   return self.file
+
+  class Meta:
+    managed = True
+    db_table = 'resource_file'
+
+
+class ResourceImage(models.Model):
+  resource = models.ForeignKey(
+      Resource, default=None, on_delete=models.CASCADE)
+  image = models.FileField(upload_to=resource_file_path)
+
+  # def __str__(self):
+  #   return self.image
+
+  class Meta:
+      managed = True
+      db_table = 'resource_image'

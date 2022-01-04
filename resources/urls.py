@@ -9,7 +9,6 @@ from . import views
 
 # area actions
 app_name = 'resources'
-# prefix is teaching/
 
 urlpatterns = [
 
@@ -25,7 +24,7 @@ urlpatterns = [
          name='resource-detail'),
 
     # teaching/
-    path('', TemplateView.as_view(template_name="resources/teaching.html"), name="teaching-page"),
+    # path('', TemplateView.as_view(template_name="resources/teaching.html"), name="teaching-page"),
     path('asian_history/', TemplateView.as_view(
         template_name="resources/asian_history.html"), name="lesson-asian"),
 

@@ -1,0 +1,99 @@
+<!-- resources/resource_detail.html -->
+{% extends "main/base.html" %}
+{% load dataset_extras %}
+{% load fontawesome %}
+{% load geojson_tags %}
+{% load leaflet_tags %}
+{% load static %}
+{% block title %}<title>WHG::Resource</title>{% endblock %}
+{% block extra_head %}
+  {% leaflet_js %}
+  {% leaflet_css %}
+
+  <script src="{% static 'js/tags/bootstrap-tagsinput.js' %}"></script>
+  <script src="{% static 'js/tags/bloodhound.js' %}"></script>
+  <script src="{% static 'js/clipboard.min.js' %}"></script>
+  <script src="https://d3js.org/d3.v4.min.js"></script>
+  
+  <link rel="stylesheet" href="{% static 'js/tags/bootstrap-tagsinput.css' %}"/>
+  <link rel="stylesheet" href="{% static 'js/tags/bootstrap-tagsinput-typeahead.css' %}"/>
+  <link rel="stylesheet" href="{% static 'css/spin.css' %}"/>
+
+  <style>
+    #resource_table td {vertical-align: top;}
+    #resource_table td:first-child {font-weight: bolder;}
+  </style>
+{% endblock %}
+
+
+{% block content %}
+<div class="container">
+  <div class="small pl-1" style="background-color: honeydew;">
+    <a href="{% url 'resources:teaching-page' %}" >Teaching resources</a> > {{ object.title }}
+  </div>
+  <h4 class="mt-3">
+    <span class="text-danger">{{ object.title }}</span>
+  </h4>
+  <div class="d-flex">
+    <div class="col-sm-7 form-box mr-2">
+      <div class="bg-light p-2">
+        <table id="resource_table" class="w-100">
+          <colgroup><col style="width:150px;"></col><col></col></colgroup>
+          {%comment%}<tr><td>Title</td><td>{{ object.title }}</td></tr>{%endcomment%}
+          <tr>
+            <td>Resource type</td>
+            <td>{{ object.type }}</td>
+          </tr>
+          <tr><td>Published date</td>
+              <td>{{ object.pub_date|date:"d M Y" }}</td>
+          </tr>
+          <tr><td><b>Description</b></td><td>{{ object.description }}</td></tr>
+          <tr>
+            <td>Subjects</td>
+            <td>{{object.subjects}}</td>
+          </tr>
+          <tr>
+            <td>Grade levels</td>
+            <td>{{object.gradelevels|join:', '}}</td>
+          </tr>
+          <tr>
+            <td>Keywords</td>
+            <td>{{object.keywords|join:', '}}</td>
+          </tr>
+          <tr>
+            <td>Author(s)</td>
+            <td>{{object.authors}}</td>
+          </tr>
+        </table>
+      </div>
+      <hr/>
+      <div id="resource_files" class="col-content">
+        <p class="mb-0 allcap-heading">FILES</p>
+        {% for f in primary %}
+          <div id="" class="">
+            <b><a href="/media/{{f.file.name}}" target="_blank">
+              {% if object.type == 'Lesson plan' %}Lesson plan
+              {% elif object.type == 'Syllabus' %}Syllabus{% endif %}
+            </a></b>
+          </div>
+        {% endfor %}
+        {% if supporting|length > 0 %}
+          <p class="red-head mt-1 mb-0">Supporting files</p>
+          {% for s in supporting %}
+            <p class=my-0><a href="/media/{{f.file.name}}" target="_blank">{{ s.file.name|cut:"resources/" }}</a></p>
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+    <div id="resource images" class="col-sm-5">
+      {% for i in images %}
+      <img src="/media/{{ i.image.name }}" width=250 />
+      {% endfor %}
+    </div>
+  </div> <!-- d-flex -->
+</div> <!-- container -->
+
+<script type="text/javascript">
+</script>
+
+{% endblock %}

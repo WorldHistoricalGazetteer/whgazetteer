@@ -9,7 +9,8 @@
 			.fill-tan {background-color: blanchedalmond; }
 			.fill-grey {background-color:gainsboro; }
 			.fill-pale {background-color:rgb(238, 238, 238); }
-			.bordered {outline:brown 2px dashed; border-radius: 2%;}
+			.fill-blue {background-color:rgb(60, 136, 148); }
+			.bordered {outline:brown 1px dashed; border-radius: 2%;}
 			.card {float:left; margin-right:.1rem; margin-bottom:.5rem; width: 33%; height: 200px;}
 			.lesson-tagline {line-height: 1.1rem; font-size: small;}
 	</style>
@@ -24,26 +25,18 @@
 		<div id="teaching_top" class="row" style="height: fit-content;">
 			<div class="col-sm-8 h-100" style="overflow:auto">
 				<div>
-					<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis eget dapibus velit. Praesent tincidunt egestas
-						lobortis.
-						Nullam vel justo quis tortor ultrices rutrum vitae quis augue. In mauris ex, fringilla id aliquam et, maximus
-						sit amet
-						purus. In posuere ex eget purus aliquam, sit amet pellentesque massa porta. Orci varius natoque penatibus et
-						magnis dis
-						parturient montes, nascetur ridiculus mus. Aenean gravida at dui et dapibus. Sed vel blandit sapien.
-						Pellentesque est
-						ligula, euismod ut nibh at, facilisis vulputate dui.</p>
+					<p>{% lorem 85 w random %}</p>
 				</div>
 			</div>
 			<div class="col-sm-4 h-100">
-				<div class="fill-grey" style="height: fit-content;">
+				<div class="float-right" style="height: fit-content;">
 					<img src="{% static 'images/owt200.png' %}" height=200px; />
 				</div>
 			</div>
 		</div> <!-- .row -->
 		<div id="teaching_bottom" class="row h-75 mt-2">
 			<div class="col-sm-4" style="height: 85%;">
-				<div class="fill-tan bordered p-3">
+				<div class="fill-tan bordered p-2">
 					<div id="teaching_essay" style="height: 85%; overflow: auto;">
 					<h5 class="mb-0">Place in World History</h5>
 					<p class="font-italic my-1">Ruth Mostern</p>
@@ -56,34 +49,17 @@
 				</div>
 			</div>
 			<div class="col-sm-8 pr-0" style="height: 80%;">
-				<div class="fill-pale h-100 p-2" style="overflow-y: auto;">
-					<div class="card">
-						<div class="pl-2 small" width="100%" style="background-color: honeydew;" >Lesson Plan</div>
+				<div class="fill-pale h-100" style="overflow-y: auto;">
+					<div class="pl-2 small w-100 fill-blue text-white"; style="border-bottom: 1px solid lightgray;">TEACHING RESOURCES</div>
+					{% for r in resource_list %}
+					<div class="card mt-1">
+						<div class="pl-2 small" width="100%" style="background-color: honeydew;">{{ r.type }}</div>
 						<div class="px-2 pt-1">
-							<h6>What’s In A Name? Maritime Conquest and Place Name Changes</h6>
-							<p class="lesson-tagline">Exposes students to the historical patterns of place name changes based on maritime
-							conquest and colonization.</p>
+							<h6>{{ r.title }}</h6>
+							<p class="lesson-tagline">{{ r.description }}</p>
 						</div>
 					</div>
-					<div class="card">
-						<div class="pl-2 small" width="100%" style="background-color: honeydew;" >Lesson Plan</div>
-						<div class="px-2 pt-1">
-							<h6>Power and Possession: The Role of Place Names in Establishing Territorial Claims</h6>
-							<p class="lesson-tagline">Explores the relationship between claiming territory and 
-								naming places within that territory to establish ownership.</p>
-						</div>
-					</div>
-					<div class="card">
-						<div class="pl-2 small" width="100%" style="background-color: honeydew;" >Lesson Plan</div>
-						<div class="px-2 pt-1">
-							<h6>Katakana and Place Names</h6>
-							<p class="lesson-tagline">
-								Students will be able to identify foreign cities and countries in Katakana, 
-								and be able to ask and answer questions in Japanese to describe travel preferences.
-							</p>
-						</div>
-					</div>
-
+					{% endfor %}
 				</div>
 			</div>
 		</div>

@@ -182,6 +182,7 @@
         <p class="mb-1 ml-2"><a href="{% url 'resources:resource-create' %}" class="">
           {% fontawesome_icon 'plus-square' color='#336699' %} create new</a></p>
         <div id="resource_list" class="mt-1 ml-0">
+          resource_list: {{ resources }}
           <div class="list-box">
             <table class="table table-striped small">
               <thead>
@@ -194,14 +195,14 @@
                   <th>owner</th>
               </thead>
               <tbody>
-                {% for r in resource_list %}
+                {% for r in resources %}
                   <tr class="place-row">
                     <td>{{ r.id }}</b>
                     <br/><mark>{{ r.status }}</mark>
                     </td>
-                    <td>{{r.title }}</td>
+                    <td>{{r.title }}&nbsp;<a href="/resources/{{ r.id }}/detail">view</a></td>
                     <td>{{ r.authors }}</td>
-                    <td class="w-50">{{ r.description }}</td>
+                    <td class="w-25">{{ r.description }}</td>
                     <td>{{ r.create_date }}</td>
                     <td>{{ r.pub_date }}</td>
                     <td>{{ r.owner }}</td>

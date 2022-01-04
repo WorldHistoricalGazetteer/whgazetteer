@@ -5,10 +5,39 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.generic import (
     View, CreateView, FormView, UpdateView, DetailView, DeleteView)
+from django.views.generic.list import ListView
 
 from .forms import ResourceModelForm
 from .models import *
 from main.models import Log
+
+#
+# TeachingPortalView()
+# displays essay and gallery of resources
+#
+class TeachingPortalView(ListView):
+  redirect_field_name = 'redirect_to'
+
+  context_object_name = 'resource_list'
+  template_name = 'resources/teaching.html'
+  model = Resource
+
+  def get_queryset(self):
+    # original qs
+    qs = super().get_queryset()
+    return qs.order_by('pub_date', 'title')
+
+  def get_context_data(self, *args, **kwargs):
+    context = super(TeachingPortalView, self).get_context_data(*args, **kwargs)
+    context['beta_or_better'] = True if self.request.user.groups.filter(
+        name__in=['beta', 'admins']).exists() else False
+    return context
+
+
+def handle_resource_file(f):
+  with open('media/resources/'+f._name, 'wb+') as destination:
+    for chunk in f.chunks():
+      destination.write(chunk)
 
 #
 # create
@@ -19,14 +48,62 @@ class ResourceCreateView(LoginRequiredMixin, FormView):
 
   def get_success_url(self):
     Log.objects.create(
-        # category, logtype, "timestamp", subtype, note, dataset_id, user_id
         category='resource',
         logtype='create',
-        # note='created resource id: '+str(self.object.id),
         user_id=self.request.user.id
     )
     return reverse('dashboard')
   #
+  def get_form_kwargs(self, **kwargs):
+    kwargs = super(ResourceCreateView, self).get_form_kwargs()
+    return kwargs
+
+  def form_invalid(self, form):
+    print('form invalid...', form.errors.as_data())
+    print('form invalid, cleaned_data', form.cleaned_data)
+    context = {'form': form}
+    return self.render_to_response(context=context)
+
+  def form_valid(self, form):
+    context = {}
+    if form.is_valid():
+      print('form is valid, cleaned_data', form.cleaned_data)
+      form.save(commit=True)
+    else:
+      print('form not valid', form.errors)
+      context['errors'] = form.errors
+    return super().form_valid(form)
+
+  # def form_valid(self, form):
+  #   data = form.cleaned_data
+  #   print('data from resource create form', data)
+  #   context = {}
+  #   user = self.request.user
+  #   files = self.request.FILES.getlist('files')
+  #   images = self.request.FILES.getlist('images')
+  #   print('resources FILES[files]', files)
+  #   print('resources FILES[images]', images)
+
+    # save to media/resources
+    for f in files:
+      # handle_resource_file(f)
+      print('file', f, type(f))
+      ResourceFile.objects.create(
+        file = f
+      )
+      
+    for i in images:
+      # handle_resource_file(i)
+      print('image', i, type(i))  # Do something with each file.
+      ResourceImage.objects.create(
+        file=f
+      )
+
+    form.save(commit=True)
+
+    return redirect('/dashboard')
+
+    # create 
 
   # def post(self, request, *args, **kwargs):
   #   print('ResourceCreate() request', request)
@@ -44,38 +121,13 @@ class ResourceCreateView(LoginRequiredMixin, FormView):
   #     print('invalid form', form)
   #     return self.form_invalid(form)
 
-  def get_form_kwargs(self, **kwargs):
-    kwargs = super(ResourceCreateView, self).get_form_kwargs()
-    return kwargs
 
-  def form_invalid(self, form):
-    print('form invalid...', form.errors.as_data())
-    print('form invalid, cleaned_data', form.cleaned_data)
-    context = {'form': form}
-    return self.render_to_response(context=context)
 
-  def form_valid(self, form):
-    data = form.cleaned_data
-    print('data from resource create form', data)
-    context = {}
-    user = self.request.user
-    files = self.request.FILES.getlist('files')
-    images = self.request.FILES.getlist('images')
-    print('resources FILES[files]', files)
-    print('resources FILES[images]', images)
-
-    # for f in files:
-    #   print('file', f)  # Do something with each file.
-    # for i in images:
-    #   print('image', i)  # Do something with each file.
     # return self.form_valid(form)
     # return reverse('dashboard')
     # return self.render_to_response(context=context)
 
-
-    form.save(commit=True)
-
-    return redirect('/dashboard')
+    # saves a Resource object in resources table
 
     # TODO: handle multiple files
     # https://docs.djangoproject.com/en/2.2/topics/http/file-uploads/
@@ -150,6 +202,11 @@ class ResourceDetailView(DetailView):
     context = super(ResourceDetailView, self).get_context_data(**kwargs)
     id_ = self.kwargs.get("pk")
     print('ResourceDetailView(), kwargs', self, self.kwargs)
+
+    context['primary'] = ResourceFile.objects.filter(resource_id = id_, filetype = 'primary')
+    context['supporting'] = ResourceFile.objects.filter(
+        resource_id=id_, filetype = 'supporting')
+    context['images'] = ResourceImage.objects.filter(resource_id = id_)
 
     return context
 
