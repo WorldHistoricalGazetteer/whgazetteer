@@ -12,6 +12,7 @@ static/_older/
 media/data/
 media/datasets/
 media/downloads/
+media/resources/
 media/user*
 
 */migrations/0*.py

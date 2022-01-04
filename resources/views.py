@@ -14,7 +14,7 @@ from main.models import Log
 #
 # TeachingPortalView()
 # displays essay and gallery of resources
-#
+
 class TeachingPortalView(ListView):
   redirect_field_name = 'redirect_to'
 
@@ -25,7 +25,7 @@ class TeachingPortalView(ListView):
   def get_queryset(self):
     # original qs
     qs = super().get_queryset()
-    return qs.order_by('pub_date', 'title')
+    return qs.filter(public=True).order_by('pub_date', 'title')
 
   def get_context_data(self, *args, **kwargs):
     context = super(TeachingPortalView, self).get_context_data(*args, **kwargs)
