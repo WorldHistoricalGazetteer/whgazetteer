@@ -29,7 +29,7 @@
 {% block content %}
 <div class="container">
   <div class="small pl-1" style="background-color: honeydew;">
-    <a href="{% url 'resources:teaching-page' %}" >Teaching resources</a> > {{ object.title }}
+    <a href="{% url 'teaching-page' %}" >Teaching resources</a> > {{ object.title }}
   </div>
   <h4 class="mt-3">
     <span class="text-danger">{{ object.title }}</span>
@@ -87,7 +87,7 @@
     </div>
     <div id="resource images" class="col-sm-5">
       {% for i in images %}
-      <img src="/media/{{ i.image.name }}" width=250 />
+      <img src="/media/{{ i.image.name }}" width=100% />
       {% endfor %}
     </div>
   </div> <!-- d-flex -->

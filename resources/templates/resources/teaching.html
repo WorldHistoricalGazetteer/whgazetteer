@@ -55,7 +55,7 @@
 					<div class="card mt-1">
 						<div class="pl-2 small" width="100%" style="background-color: honeydew;">{{ r.type }}</div>
 						<div class="px-2 pt-1">
-							<h6>{{ r.title }}</h6>
+							<h6><a href="{% url 'resources:resource-detail' r.id %}" >{{ r.title }}</a></h6>
 							<p class="lesson-tagline">{{ r.description }}</p>
 						</div>
 					</div>
