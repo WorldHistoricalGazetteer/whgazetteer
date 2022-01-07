@@ -1,7 +1,7 @@
 # celery tasks for reconciliation and downloads
 # align_tgn(), align_wdlocal(), align_idx(), align_whg, make_download
 from __future__ import absolute_import, unicode_literals
-from celery import task # this is @task decorator
+from celery import task, shared_task # this is @task decorator
 #from celery_progress.backend import ProgressRecorder
 from django_celery_results.models import TaskResult
 #from django.conf import settings
@@ -10,7 +10,8 @@ from django.db import connection
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
-#from django.contrib.gis.geos import Polygon, Point, LineString
+
+# from django.contrib.gis.geos import Polygon, Point, LineString
 
 import codecs, csv, datetime, itertools, re, sys, time
 import pandas as pd
@@ -33,7 +34,8 @@ from elasticsearch import Elasticsearch
 es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 ##
 
-@task(name="testy")
+
+@shared_task(name="testy")
 def testy():
   print("I'm testy...who wouldn't be?")
 
