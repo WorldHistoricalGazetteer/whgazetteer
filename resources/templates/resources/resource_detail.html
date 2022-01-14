@@ -69,6 +69,8 @@
       <hr/>
       <div id="resource_files" class="col-content">
         <p class="mb-0 allcap-heading">FILES</p>
+        primary: {{primary}}
+        supporting: {{ supporting }}
         {% for f in primary %}
           <div id="" class="">
             <b><a href="/media/{{f.file.name}}" target="_blank">
@@ -80,7 +82,7 @@
         {% if supporting|length > 0 %}
           <p class="red-head mt-1 mb-0">Supporting files</p>
           {% for s in supporting %}
-            <p class=my-0><a href="/media/{{f.file.name}}" target="_blank">{{ s.file.name|cut:"resources/" }}</a></p>
+            <p class=my-0><a href="/media/{{s.file.name}}" target="_blank">{{ s.file.name|cut:"resources/" }}</a></p>
           {% endfor %}
         {% endif %}
       </div>
