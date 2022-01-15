@@ -13,9 +13,9 @@
 			.fill-grey {background-color:gainsboro; }
 			.resource-gallery {background-color:rgb(238, 238, 238); overflow:auto;}
 			.fill-blue {background-color:rgb(60, 136, 148); }
-			.teaching-essay {outline: rgb(60, 136, 148) 1px solid; box-shadow: 2px rgb(204, 204, 204);
+			.teaching-essay {outline: rgb(60, 136, 148) 1px solid; box-shadow: 3px 3px rgb(202, 202, 202);
 				border-radius: 4px; background-color: ivory; overflow-y: auto;}
-			.resource-card {float:left; margin-right:.1rem; margin-bottom:.5rem; 
+			.resource-card {float:left; margin-right:.1rem; 
 				width: 33%; height: 180px; overflow-y:auto; background-color: white;}
 			.resource-card-header {width:100%; background-color: honeydew;}
 			.resource-card-content h6 {font-size: .9rem;}
@@ -56,19 +56,21 @@
 				</div>
 			</div>
 			<div class="col-sm-8 pr-0" style="height: 80%;">
-				<div class="resource-gallery h-100 pl-1">
+				<div class="resource-gallery h-100">
 					<div class="pl-2 small w-100 fill-blue text-white"; style="border-bottom: 1px solid lightgray;">TEACHING RESOURCES</div>
-					{% for r in resource_list %}
-					<div class="resource-card mt-1">
-						<div class="pl-2 small resource-card-header">{{ r.type }}</div>
-						<div class="px-2 pt-1 resource-card-content">
-							{% with remainder=200|add:r.title_length %}
-							<h6><a href="{% url 'resources:resource-detail' r.id %}" >{{ r.title }}</a></h6>
-							<p class="resource-card-blurb">{{ r.description|trunc_it:remainder }} <i>{{r.description|length}} chars </i></p>
-							{%endwith%}
+					<div class="pl-1">
+						{% for r in resource_list %}
+						<div class="resource-card mt-1">
+							<div class="pl-2 small resource-card-header">{{ r.type }}</div>
+							<div class="px-2 pt-1 resource-card-content">
+								{% with remainder=200|add:r.title_length %}
+								<h6><a href="{% url 'resources:resource-detail' r.id %}" >{{ r.title }}</a></h6>
+								<p class="resource-card-blurb my-1">{{ r.description|trunc_it:remainder }} <i>{{r.description|length}} chars </i></p>
+								{%endwith%}
+							</div>
 						</div>
+						{% endfor %}
 					</div>
-					{% endfor %}
 				</div>
 			</div>
 		</div>
