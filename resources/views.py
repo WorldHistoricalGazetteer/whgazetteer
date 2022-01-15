@@ -25,7 +25,8 @@ class TeachingPortalView(ListView):
   def get_queryset(self):
     # original qs
     qs = super().get_queryset()
-    return qs.filter(public=True).order_by('pub_date', 'title')
+    # return qs.filter(public=True).order_by('pub_date', 'title')
+    return qs.filter(public=True).order_by('?')
 
   def get_context_data(self, *args, **kwargs):
     context = super(TeachingPortalView, self).get_context_data(*args, **kwargs)

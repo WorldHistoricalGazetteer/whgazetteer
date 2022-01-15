@@ -117,7 +117,7 @@
 
 <script type="text/javascript">
   $(function(){
-    <!--area_type = 'ccodes' // default-->
+    // area_type = 'ccodes' // default
     $( ".textarea" ).each(function(index) {
       if ( ["None","null"].includes( $(this).val() ) ) {
         $(this).val('')
@@ -151,18 +151,18 @@
           console.log('drawnlayer',drawnlayer)
           drawnItems.addLayer(drawnlayer);
           drawnItems.addTo(mappy)
-          <!--$("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON()))-->
+          // $("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON()))
           $("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON().features[0].geometry))
         });
         mappy.on(L.Draw.Event.EDITED, function (event) {
-          <!--$("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON()))-->
+          // $("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON()))
           $("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON().features[0].geometry))
           console.log('you changed it')
         });
         mappy.on(L.Draw.Event.DELETED, function (event) {
-          <!--$("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON()))-->
+          $("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON()))
           $("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON().features[0].geometry))
-          <!--drawnItems.addTo(mappy)-->
+          //drawnItems.addTo(mappy)
           console.log('you deleted something')
         })
       }
@@ -227,19 +227,15 @@
   function map_init (map, options) {
     // edit/update drawn area
     if('{{ action }}' == 'update' && '{{ form.type.value }}' == 'drawn'){
-      // TODO: 
       $('a[href="#areas_draw"]').tab('show');
       $('a[href="#areas_codes"]').addClass('disabled').css("cursor","default")
-      <!--}-->
       // load existing data for editing
-      <!--editItems = L.featureGroup()-->
       lgeojson = L.geoJson(JSON.parse($("textarea#id_geojson").val()), {
         onEachFeature: function (feature, layer) {
           drawnItems.addLayer(layer);
         }
       }).addTo(mappy)
       mappy.fitBounds(lgeojson.getBounds())
-      <!--console.log('geom on init',lgeojson)-->
 
       drawControls(drawnItems)
     } else if('{{ action }}' == 'update' && '{{ form.type.value }}' == 'ccodes') {
