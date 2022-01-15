@@ -34,6 +34,7 @@ class TeachingPortalView(ListView):
         name__in=['beta', 'admins']).exists() else False
     regions = list(Resource.objects.all().values_list('regions', flat=True))
     context['regions'] = [x for l in regions for x in l]
+    context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
     return context
 
 

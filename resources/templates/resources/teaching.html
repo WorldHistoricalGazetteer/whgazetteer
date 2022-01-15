@@ -3,6 +3,8 @@
 
 {% block content %}
 	{% load fontawesome %}
+	{% load geojson_tags %}
+	{% load leaflet_tags %}
 	{% load static %}
 	{% load dataset_extras %}
 	{% block extra_head %}
@@ -22,6 +24,11 @@
 			.resource-card-content h6 {font-size: .9rem;}
 			.resource-card-blurb {line-height: 1rem; font-size: small;}
 	</style>
+	{% leaflet_js %}
+	{% leaflet_css %}
+	<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.css' rel='stylesheet' />
+	<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.js'></script>
+	<script src="{% static 'js/leaflet-mapbox-gl.js' %}"></script>
 	{% endblock %}
 	<!-- <div class="container-fluid pt-2 container-md" style="height: 100vh"> -->
 	<div class="container-fluid pt-2 container-md" style="height: calc(100vh - 90px); ">
@@ -37,8 +44,8 @@
 				</div>
 			</div>
 			<div class="col-sm-4 h-100 pr-0">
-				<div class="float-right" style="height: fit-content;">
-					<img src="{% static 'images/owt200.png' %}" height=200px; />
+				<div id="mapdiv_resources" class="h-100">
+					{% leaflet_map "map_resources" callback="map_init" %}
 				</div>
 			</div>
 		</div> <!-- .row -->
@@ -81,6 +88,94 @@
 		<div id="essay_modal" class="selector py-3" style="font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;"></div>
 	</div>
 	<script type="text/javascript">
+		styles = {
+				"MultiPolygon": {
+					"default": { fillOpacity: 0.3, opacity: 1, color: "#000", weight: 1, fillColor: "#ff9999" },
+					"focus": { fillOpacity: 0.3, opacity: 1, color: "red", weight: 2, fillColor: "#ff9999" }
+				},
+				"Polygon": {
+					"default": { fillOpacity: 0.3, opacity: .5, color: "#666", weight: 1, fillColor: "#ff9999" },
+					"focus": { fillOpacity: 0.3, opacity: .5, color: "red", weight: 2, fillColor: "#ff9999" }
+				}
+			}
+		window.addEventListener('map:init', function (e) {
+			window.mappy = e.detail.map
+			mappy.setMaxBounds(null)
+
+			// mapbox tokens 
+			var token_whg = '{{ mbtokenwhg }}',
+				token_mb = '{{ mbtokenmb }}';
+			console.log('tokens', token_whg, token_mb)
+			// style/tile urls
+			var mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}',
+				mbtiles_url = 'https://api.mapbox.com/v3/{id}/{z}/{x}/{y}.png',
+				ne_url = 'http://blog.whgazetteer.org/tiles/ne/{z}/{x}/{y}.png';
+
+			var satellite = L.tileLayer(mbstyle_url, {
+				id: 'mapbox/satellite-streets-v11', token: token_mb
+			}),
+				osm = L.tileLayer(mbstyle_url, {
+					id: 'mapbox/light-v10', token: token_mb
+				}),
+				ne_mb = L.tileLayer(mbtiles_url, {
+					id: 'kgeographer.ne_global', token: token_whg
+				})
+
+			// GL wrappers can display heatmaps
+			// mb_terrain = L.mapboxGL({
+			// 	style: 'mapbox://styles/kgeographer/ckhf6o8yf07fw19qhbrm7f2q7',
+			// 	accessToken: token_whg
+			// })
+
+			// ne_global = L.mapboxGL({
+			// 	style: 'mapbox://styles/kgeographer/ckidglq8l2nra19nzzbl995ue',
+			// 	accessToken: token_whg
+			// }).addTo(mappy)
+
+
+			var baseLayers = {
+				// "NE global": ne_global,
+				// "Terrain": mb_terrain,
+				"OpenStreetMap": osm,
+				"Satellite": satellite
+			};
+
+			layerGroup = L.control.layers(baseLayers).addTo(mappy);
+		}, false);
+
+		function map_init(map, options) {
+    	// console.log('in map_init()')
+			$.ajax({
+				url: '/api/area_features/'
+			}).done(function (data) {
+				console.log('region data', data)
+				geom = { "type": "FeatureCollection", "features": data }
+				// geom['features'].push(data.geojson)
+				// console.log(geom)
+
+				// populate geoms
+				if (data.length > 0) {
+					idToFeature = { } // for feature lookup
+					features = L.geoJSON(data, {
+						onEachFeature: function (feature, layer) {
+							f = feature; l = layer;
+							identifier = f.properties.id;
+							if (f.type != 'Point') {
+								layer.setStyle(styles[f.geometry.type].default).bindPopup(
+									f.properties.title + ' (' + identifier + ')'
+								)
+								idToFeature[identifier] = layer
+							}
+						}
+					}).addTo(map);
+					mappy.fitBounds(features.getBounds())
+					mappy.setZoom(mappy.getZoom() - 1)
+				} else {
+					console.log('no geometries, no feature')
+				}
+			}) // end map_init  
+		}	
+		// resources
 		$(".resource-card-content").click(function(){
 			rid = $(this).data('id')
 			window.location.href = "/resources/"+rid+"/detail"
@@ -108,16 +203,6 @@
 			hide: { effect: "fade", duration: 400 }
 		});
 
-		fetch_regions = function () {
-			$.ajax({
-				url: '/api/area_features/'
-			}).done(function (data) {
-				// console.log('region data', data)
-				geom = { "type": "FeatureCollecton", "features": data }
-				// geom['features'].push(data.geojson)
-				console.log(geom)
-			});
-		}
 	</script>
 {% endblock %}
 
