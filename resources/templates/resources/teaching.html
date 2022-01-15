@@ -13,10 +13,11 @@
 			.fill-grey {background-color:gainsboro; }
 			.resource-gallery {background-color:rgb(238, 238, 238); overflow:auto;}
 			.fill-blue {background-color:rgb(60, 136, 148); }
-			.teaching-essay {outline: rgb(60, 136, 148) 1px solid; box-shadow: 3px 3px rgb(202, 202, 202);
+			.teaching-essay {outline: rgb(60, 136, 148) 1px solid; box-shadow: 4px 4px rgb(221, 221, 221);
 				border-radius: 4px; background-color: ivory; overflow-y: auto;}
 			.resource-card {float:left; margin-right:.1rem; 
 				width: 33%; height: 180px; overflow-y:auto; background-color: white;}
+			.resource-card:hover {cursor: pointer; opacity:0.8;}
 			.resource-card-header {width:100%; background-color: honeydew;}
 			.resource-card-content h6 {font-size: .9rem;}
 			.resource-card-blurb {line-height: 1rem; font-size: small;}
@@ -35,7 +36,7 @@
 					<p>{% lorem 85 w random %}</p>
 				</div>
 			</div>
-			<div class="col-sm-4 h-100">
+			<div class="col-sm-4 h-100 pr-0">
 				<div class="float-right" style="height: fit-content;">
 					<img src="{% static 'images/owt200.png' %}" height=200px; />
 				</div>
@@ -61,14 +62,16 @@
 					<div class="pl-1">
 						{% for r in resource_list %}
 						<div class="resource-card mt-1">
-							<div class="pl-2 small resource-card-header">{{ r.type }}</div>
-							<div class="px-2 pt-1 resource-card-content">
-								{% with remainder=200|add:r.title_length %}
-								<h6><a href="{% url 'resources:resource-detail' r.id %}" >{{ r.title }}</a></h6>
-								<p class="resource-card-blurb my-1">{{ r.description|trunc_it:remainder }} <i>{{r.description|length}} chars </i></p>
+							<div class="resource-card-header pl-2 small ">{{ r.type }}</div>
+							<div class="resource-card-content px-2 pt-1" data-id={{r.id}}>
+								{% with remainder=190|add:r.title_length %}
+								<h6><a href="{% url 'resources:resource-detail' r.id %}">{{ r.title }}</a></h6>
+								<p class="resource-card-blurb my-1">{{ r.description|trunc_it:remainder }} </p>
+								<!-- <i>{{r.description|length}} chars </i> -->
 								{%endwith%}
 							</div>
 						</div>
+						</a>
 						{% endfor %}
 					</div>
 				</div>
@@ -77,6 +80,10 @@
 		<div id="essay_modal" class="selector py-3" style="font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;"></div>
 	</div>
 	<script type="text/javascript">
+		$(".resource-card-content").click(function(){
+			rid = $(this).data('id')
+			window.location.href = "/resources/"+rid+"/detail"
+		})
 		$(".modal-link").click(function () {
 			page = $(this).data('id')
 			$('.selector').dialog('open');
