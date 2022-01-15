@@ -719,7 +719,7 @@ class AreaListView(View):
 class AreaListAllView(View):
   @staticmethod
   def get(request):
-    console.log('area_list() request',request)
+    print('area_list() request',request)
     user = request.user
     area_list = []
     #qs = Area.objects.all().filter(Q(type='predefined')| Q(owner=request.user)).values('id','title','type')
@@ -737,5 +737,14 @@ class AreaListAllView(View):
 """
 class AreaViewSet(viewsets.ModelViewSet):
   queryset = Area.objects.all().order_by('title')
+  serializer_class = AreaSerializer
+
+"""
+    regions/
+    in dataset.html#addtask
+"""
+class RegionViewSet(View):
+  queryset = Area.objects.filter(
+      description='UN Statistical Division Sub-Region').order_by('title')
   serializer_class = AreaSerializer
 

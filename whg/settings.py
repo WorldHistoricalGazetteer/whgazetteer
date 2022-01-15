@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'guardian',
     'leaflet',
     'mathfilters',
+    'multiselectfield',
     'rest_framework',
     'rest_framework_datatables',
     'rest_framework_gis',

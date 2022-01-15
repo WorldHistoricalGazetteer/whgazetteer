@@ -32,6 +32,8 @@ class TeachingPortalView(ListView):
     context = super(TeachingPortalView, self).get_context_data(*args, **kwargs)
     context['beta_or_better'] = True if self.request.user.groups.filter(
         name__in=['beta', 'admins']).exists() else False
+    regions = list(Resource.objects.all().values_list('regions', flat=True))
+    context['regions'] = [x for l in regions for x in l]
     return context
 
 

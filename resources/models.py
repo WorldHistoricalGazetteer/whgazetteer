@@ -4,6 +4,8 @@ from django.contrib.auth.models import User
 from django.contrib.postgres.fields import ArrayField
 from main.choices import *
 
+from multiselectfield import MultiSelectField
+
 def resource_file_path(instance, filename):
   # upload to MEDIA_ROOT/resources/<id>_<filename>
   return 'resources/{0}'.format(filename)
@@ -23,12 +25,11 @@ class Resource(models.Model):
   authors = models.CharField(max_length=500, null=False)
   contact = models.CharField(max_length=500, null=True, blank=True)
   webpage = models.URLField(null=True, blank=True)
-
-  # files = models.FileField(blank=True)
-  # images = models.ImageField(blank=True)
-
   public = models.BooleanField(default=False)
   featured = models.IntegerField(null=True, blank=True)
+
+  # test
+  regions = MultiSelectField(choices=REGIONS, null=True, blank=True)
 
   # [uploaded | published]
   status = models.CharField(

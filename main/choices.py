@@ -30,29 +30,13 @@ AUTHORITY_BASEURI = {
 COMMENT_TAGS = [
     ('misplaced','Record misplaced in this set'),
     ('typo','Typo'),
+    ('geom_error','Geometry error'),
     ('other','Other'),
 ]
 
 DATATYPES = [
     ('place', 'Places'),
     ('anno', 'Traces')
-]
-
-RESOURCE_TYPES = [
-    ('Lesson plan', 'Lesson plan'),
-    ('Syllabus', 'Syllabus'),
-    ('Other', 'Other')
-]
-RESOURCE_FORMATS = [
-    ('pdf', 'PDF'),
-]
-RESOURCE_STATUS = [
-    ('uploaded', 'File uploaded'),
-    ('published', 'Published')
-]
-RESOURCEFILE_ROLE = [
-    ('primary', 'Primary file'),
-    ('supporting', 'Supporting file')
 ]
 
 # geonames classes for api filter
@@ -109,6 +93,51 @@ PASSES = [
     ('pass1', 'Query pass 1'),
     ('pass2', 'Query pass 2'),
     ('pass3', 'Query pass 3'),
+]
+
+REGIONS = (
+    (72, 'Antarctica'),
+    (73, 'Asiatic Russia'),
+    (74, 'Australia/New Zealand'),
+    (75, 'Caribbean'),
+    (76, 'Central America'),
+    (77, 'Central Asia'),
+    (78, 'Eastern Africa'),
+    (79, 'Eastern Asia'),
+    (80, 'Eastern Europe'),
+    (81, 'European Russia'),
+    (82, 'Melanesia'),
+    (83, 'Micronesia'),
+    (84, 'Middle Africa'),
+    (85, 'Northern Africa'),
+    (86, 'Northern America'),
+    (87, 'Northern Europe'),
+    (88, 'Polynesia'),
+    (89, 'South America'),
+    (90, 'Southeastern Asia'),
+    (91, 'Southern Africa'),
+    (92, 'Southern Asia'),
+    (93, 'Southern Europe'),
+    (94, 'Western Africa'),
+    (95, 'Western Asia'),
+    (96, 'Western Europe')
+)
+
+RESOURCE_TYPES = [
+    ('Lesson plan', 'Lesson plan'),
+    ('Syllabus', 'Syllabus'),
+    ('Other', 'Other')
+]
+RESOURCE_FORMATS = [
+    ('pdf', 'PDF'),
+]
+RESOURCE_STATUS = [
+    ('uploaded', 'File uploaded'),
+    ('published', 'Published')
+]
+RESOURCEFILE_ROLE = [
+    ('primary', 'Primary file'),
+    ('supporting', 'Supporting file')
 ]
 
 STATUS_DS = [

@@ -58,7 +58,8 @@
 			</div>
 			<div class="col-sm-8 pr-0" style="height: 80%;">
 				<div class="resource-gallery h-100">
-					<div class="pl-2 small w-100 fill-blue text-white"; style="border-bottom: 1px solid lightgray;">TEACHING RESOURCES</div>
+					<div class="pl-2 small w-100 fill-blue text-white"; style="border-bottom: 1px solid lightgray;">
+						TEACHING RESOURCES regions: {{ regions }}</div>
 					<div class="pl-1">
 						{% for r in resource_list %}
 						<div class="resource-card mt-1">
@@ -106,6 +107,17 @@
 			show: { effect: "fade", duration: 400 },
 			hide: { effect: "fade", duration: 400 }
 		});
+
+		fetch_regions = function () {
+			$.ajax({
+				url: '/api/area_features/'
+			}).done(function (data) {
+				// console.log('region data', data)
+				geom = { "type": "FeatureCollecton", "features": data }
+				// geom['features'].push(data.geojson)
+				console.log(geom)
+			});
+		}
 	</script>
 {% endblock %}
 

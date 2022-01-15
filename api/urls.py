@@ -59,8 +59,10 @@ urlpatterns = [
     path('area_list/', views.AreaListView.as_view(),name='area-list'),    
     #path('area_list_all/', views.AreaListView.as_view(),name='area-list-all'),    
     # geojson for api
-    path('area_features/', views.AreaFeaturesView.as_view(),name='area-features'),    
-    
+    path('area_features/', views.AreaFeaturesView.as_view(),name='area-features'), 
+    # only UN regions, for teaching   
+    path('regions/', views.RegionViewSet, name='regions'),
+
     # 
     # *** USERS ***
     #   

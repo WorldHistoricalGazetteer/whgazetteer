@@ -761,8 +761,8 @@
 /*
   *** render_area() ***
   fetch and display an area (region/area/country)
-  */
-  render_area = function(areaid) {
+*/
+  ,render_area = function(areaid) {
     $.ajax({
       url: '/api/area/'+areaid
       }).done(function(data){
