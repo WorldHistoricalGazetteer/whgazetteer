@@ -38,6 +38,9 @@ class Resource(models.Model):
     return self.title
     # return '%d: %s' % (self.id, self.label)
 
+  def title_length(self):
+    return -len(self.title)
+
   class Meta:
     managed = True
     db_table = 'resources'

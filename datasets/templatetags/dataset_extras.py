@@ -1,8 +1,13 @@
 from django import template
 from django.template.defaultfilters import stringfilter
-import json, re, validators
+import json, re, validators, textwrap
 
 register = template.Library()
+
+# truncates at previous word break
+@register.filter
+def trunc_it(str, numchars):
+    return textwrap.shorten(str, width=numchars, placeholder="...")
 
 @register.filter
 def url_it(val):
@@ -11,7 +16,7 @@ def url_it(val):
     return val.replace(reg.group(1),'<a href="'+reg.group(1)+'" target="_blank">link <i class="fa fa-external-link"></i> </>') if reg else val
 
 @register.filter
-def readmore(txt,numchars):
+def readmore(txt, numchars):
     dots = '<span id="dots">...</span>'
     link = '<a href="#" class="a_more">more</a><span class="more hidden">'
     

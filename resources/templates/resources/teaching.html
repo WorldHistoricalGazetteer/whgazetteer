@@ -4,16 +4,19 @@
 {% block content %}
 	{% load fontawesome %}
 	{% load static %}
+	{% load dataset_extras %}
 	{% block extra_head %}
 	<style>
 			#teaching_essay {height: 85%; overflow: auto; }
+			#essay_modal {font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+				font-size: 1.2rem;}
 			.fill-grey {background-color:gainsboro; }
 			.resource-gallery {background-color:rgb(238, 238, 238); overflow:auto;}
 			.fill-blue {background-color:rgb(60, 136, 148); }
 			.teaching-essay {outline: rgb(60, 136, 148) 1px solid; box-shadow: 2px rgb(204, 204, 204);
-				border-radius: 4px;}
+				border-radius: 4px; background-color: ivory; overflow-y: auto;}
 			.resource-card {float:left; margin-right:.1rem; margin-bottom:.5rem; 
-				width: 33%; height: 200px; overflow-y:auto; background-color: white;}
+				width: 33%; height: 180px; overflow-y:auto; background-color: white;}
 			.resource-card-header {width:100%; background-color: honeydew;}
 			.resource-card-content h6 {font-size: .9rem;}
 			.resource-card-blurb {line-height: 1rem; font-size: small;}
@@ -39,16 +42,16 @@
 			</div>
 		</div> <!-- .row -->
 		<div id="teaching_bottom" class="row h-75 mt-2">
-			<div class="col-sm-4" style="height: 85%;">
-				<div class="teaching-essay p-2">
+			<div class="col-sm-4" style="height: 80%;">
+				<div class="teaching-essay p-2" style="height:fit-content;">
 					<div id="">
 					<h5 class="mb-0">Place in World History</h5>
 					<p class="font-italic my-1">Ruth Mostern</p>
-					<p>
-						In ac enim lacus. Pellentesque ut pretium augue. Vivamus aliquam ipsum a mi accumsan, ut aliquam enim pretium.
-						Maecenas sit amet felis vitae massa tincidunt suscipit in et purus. Duis accumsan, ante eget euismod elementum, neque
-						diam suscipit urna, efficitur fermentum lorem lorem vel orci.
-					</p>
+					<p>Spatial humanists and others have long recognized the enormous integrative potential of using place as common point of
+					reference for heterogeneous information. Given that the names and attributes of places vary over time and between
+					communities, and often in the context of conquest and oppression, ambitious development of linked, diverse, and
+					multilingual gazetteers is absolutely vital. 
+					<span class="modal-link" data-id="essay_rm"><a href="#" >more...</a></span></p>
 					</div>
 				</div>
 			</div>
@@ -59,14 +62,41 @@
 					<div class="resource-card mt-1">
 						<div class="pl-2 small resource-card-header">{{ r.type }}</div>
 						<div class="px-2 pt-1 resource-card-content">
+							{% with remainder=200|add:r.title_length %}
 							<h6><a href="{% url 'resources:resource-detail' r.id %}" >{{ r.title }}</a></h6>
-							<p class="resource-card-blurb">{{ r.description }}</p>
+							<p class="resource-card-blurb">{{ r.description|trunc_it:remainder }} <i>{{r.description|length}} chars </i></p>
+							{%endwith%}
 						</div>
 					</div>
 					{% endfor %}
 				</div>
 			</div>
 		</div>
+		<div id="essay_modal" class="selector py-3" style="font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;"></div>
 	</div>
+	<script type="text/javascript">
+		$(".modal-link").click(function () {
+			page = $(this).data('id')
+			$('.selector').dialog('open');
+		})
+		$(".selector").dialog({
+			resizable: true,
+			autoOpen: false,
+			width: $(window).width() * 0.5,
+			height: $(window).height() * 0.9,
+			title: "Teaching with World Historical Gazetteer",
+			modal: true,
+			buttons: {
+				'Close': function () {
+					$(this).dialog('close');
+				}
+			},
+			open: function (event, ui) {
+				$('.selector').load('/media/resources/'+page+'.html');
+			},
+			show: { effect: "fade", duration: 400 },
+			hide: { effect: "fade", duration: 400 }
+		});
+	</script>
 {% endblock %}
 

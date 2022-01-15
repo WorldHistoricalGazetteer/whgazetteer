@@ -21,7 +21,7 @@
     <h5 class="">
     {% if authority == 'idx' %}Accessioning{%else%}Reconciliation{%endif%} Review 
     {% if deferred is True %}{{ deferred }}<!--(<span class="text-danger">"deferred"</span>) -->{% endif %}
-</h5>
+  </h5>
   </div> <!-- col 4-->
   <div class="col-sm-8">
     <span class="small">
@@ -270,15 +270,17 @@
 
   {% endfor %} <!-- record in records -->
   {% endif %}
-  <div class="modal fade" tabindex="-1" role="dialog" id="modal">
-  <div class="modal-dialog modal-form" role="document">
-    <div class="modal-content"></div>
+  <!-- <div id="modal" class="modal fade" tabindex="-1" role="dialog" >
+    <div class="modal-dialog modal-form" role="document">
+      <div class="modal-content"></div>
+    </div>
+  </div> -->
+  <div class="selector py-3">
+    <!-- <div id="helpme" class="my-3"><div> -->
   </div>
-  <div class="selector py-3"><div id="helpme" class="my-3"><div></div>
 </div>
+
 <script type="text/javascript">
-  // capture pid for place just reviewed
-  // https://catalogue.bnf.fr/ark:/12148/cb11942741p
   $(".help-matches").click(function(){
     page=$(this).data('id')
     $('.selector').dialog('open');
@@ -286,8 +288,6 @@
   $(".selector").dialog({
     resizable: true,
     autoOpen: false,
-    <!--height: 600,-->
-    <!--width: 800,-->
     width: $(window).width() * 0.8, 
     height: $(window).height() * 0.9,
     title: "WHG Help",
