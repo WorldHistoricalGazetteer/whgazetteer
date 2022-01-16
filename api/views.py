@@ -477,7 +477,7 @@ class DatasetAPIView(LoginRequiredMixin, generics.ListAPIView):
     return qs
 
 """
-  /api/areas?
+  /api/area_features
 """
 # geojson feature for api
 class AreaFeaturesView(generics.ListAPIView):
@@ -486,19 +486,25 @@ class AreaFeaturesView(generics.ListAPIView):
   def get(self, format=None, *args, **kwargs):
     params=self.request.query_params  
     user = self.request.user
+    print('params', params)
     print('api/areas request',self.request)
     
     id_ = params.get('id', None)
     query = params.get('q', None)
+    un = 'un' in params.get('filter')
     
     areas = []
-    qs = Area.objects.all().filter((Q(type='predefined') | Q(owner=user))).values('id','title','type','description','geojson')
+    # qs = Area.objects.all().filter((Q(type='predefined') | Q(owner=user))).values('id','title','type','description','geojson')
+    qs = Area.objects.all().filter((Q(type='predefined'))).values('id','title','type','description','geojson')
     
     # filter for parameters
     if id_:
       qs=qs.filter(id=id_)
     if query:
       qs = qs.filter(title__icontains=query)
+    if un:
+      qs = qs.filter(description="UN Statistical Division Sub-Region")
+
       
     for a in qs:
       #area = {"id":a['id'],"title":a['title'],"type":a['type']}

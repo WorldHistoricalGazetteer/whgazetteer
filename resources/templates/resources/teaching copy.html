@@ -12,23 +12,14 @@
 		#teaching_essay {height: 85%; overflow: auto; }
 		#essay_modal {font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
 			font-size: 1.2rem;}
-		#main {
-      position: relative;
-      border: 1px solid black;
-      border-radius: 8px;
-      /* height: 100%; */
-      width: 100%;
-			overflow:hidden;
-    }
-		.leaflet-container, .leaflet-container-default {min-height: 220px !important; max-height: 230px !important;}
-		/* .leaflet-container-default {height: 250px !important;} */
+		#upper_right { height:250px; width:350px; background-color: lightcyan; float: right;}
+		/* .mapboxgl-map, .maplibregl-map { position:initial !important;} */
+		/* .leaflet-container, .leaflet-container-default, .leaflet-retina {width: 200px; height: 200px;} */
 		.fill-grey {background-color:gainsboro; }
 		.resource-gallery {background-color:rgb(238, 238, 238); overflow:auto;}
 		.fill-blue {background-color:rgb(60, 136, 148); }
-		#teaching_bottom {height:65%;}
-		#teaching_top {height:230px;}
 		.teaching-essay {outline: rgb(60, 136, 148) 1px solid; box-shadow: 4px 4px rgb(221, 221, 221);
-			border-radius: 4px; background-color: ivory; min-height:auto; overflow-y: auto;}
+			border-radius: 4px; background-color: ivory; overflow-y: auto;}
 		.resource-card {float:left; margin-right:.1rem; 
 			width: 33%; height: 180px; overflow-y:auto; background-color: white;}
 		.resource-card:hover {cursor: pointer; opacity:0.8;}
@@ -38,25 +29,31 @@
 	</style>
 	{% leaflet_js %}
 	{% leaflet_css %}
+	<script src="https://unpkg.com/maplibre-gl@1.15.2/dist/maplibre-gl.js"></script>
+	<link href="https://unpkg.com/maplibre-gl@1.15.2/dist/maplibre-gl.css" rel="stylesheet" />
+	<script src="{% static 'js/leaflet-mapbox-gl.js' %}"></script>
 	{% endblock %}
 
-	<div class="container pt-2 container-md" style="height: calc(100vh - 65px); ">
+	<div class="container-fluid pt-2 container-md" style="height: calc(100vh - 90px); ">
 		<section class="text-center">
 			<div class="container mb-1">
 				<h3>Teaching with World Historical Gazetteer</h3>
 			</div>
 		</section>
-		<div id="teaching_top" class="row">
-			<!-- <div class="container"> -->
-				<div class="row">
-					<div class="col-md-7">{% lorem 75 w random%}</div>
-					<div class="col-md-5">{% leaflet_map "main" %}</div>
+		<div id="teaching_top" class="row" style="height: fit-content;">
+			<div class="col-sm-7 h-100" style="overflow:auto">
+				<div>
+					<p>{% lorem 85 w random %}</p>
 				</div>
-			<!-- </div> -->
+			</div>
+			<div class="col-sm-5 pr-0 h-100">
+				<div id="map"></div>
+				<!-- <div id="upper_right">#upper_right <p>height:250px; width:350px; float:right;</p></div> -->
+			</div>
 		</div> <!-- .row -->
-		<div id="teaching_bottom" class="row mt-2">
+		<div id="teaching_bottom" class="row h-75 mt-2">
 			<div class="col-sm-4" style="height: 80%;">
-				<div class="teaching-essay p-2">
+				<div class="teaching-essay p-2" style="height:fit-content;">
 					<div id="">
 					<h5 class="mb-0">Place in World History</h5>
 					<p class="font-italic my-1">Ruth Mostern</p>
@@ -71,7 +68,7 @@
 			<div class="col-sm-8 pr-0" style="height: 80%;">
 				<div class="resource-gallery h-100">
 					<div class="pl-2 small w-100 fill-blue text-white"; style="border-bottom: 1px solid lightgray;">
-						TEACHING RESOURCES</div>
+						TEACHING RESOURCES regions: {{ regions }}</div>
 					<div class="pl-1">
 						{% for r in resource_list %}
 						<div class="resource-card mt-1">
@@ -93,51 +90,22 @@
 		<div id="essay_modal" class="selector py-3" style="font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;"></div>
 	</div>
 	<script type="text/javascript">
-		// var dataurl = '{% url "area-features" %}';
-		var dataurl = 'http://localhost:8000/api/area_features?filter=un';
+		var map = L.map('map').setView([51.505, -0.09], 13);
 
-					styles = {
-							"MultiPolygon": {
-								"default": { fillOpacity: 0.3, opacity: 1, color: "#000", weight: 1, fillColor: "#ff9999" },
-								"focus": { fillOpacity: 0.3, opacity: 1, color: "red", weight: 2, fillColor: "#ff9999" }
-							},
-							"Polygon": {
-								"default": { fillOpacity: 0.3, opacity: .5, color: "#666", weight: 1, fillColor: "#ff9999" },
-								"focus": { fillOpacity: 0.3, opacity: .5, color: "red", weight: 2, fillColor: "#ff9999" }
-							}
-						}
+		L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+			attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+		}).addTo(map);
 
-		window.addEventListener("map:init", function (event) {
-			map = event.detail.map;
-			L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-				attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-			}).addTo(map);
-
-			
-			fetch(dataurl)
-				.then(function (resp) {
-					return resp.json();
-				})
-				.then(function (data) {
-					console.log(data)
-					idToFeature = {}
-					L.geoJson(data, {
-						filter: function (feature, layer) {
-							return "{{ regions }}".includes(feature.properties.id);
-						},
-						onEachFeature: function onEachFeature(feature, layer) {
-							// console.log('feature:', feature)
-							identifier = feature.properties.id;
-							layer.setStyle({ fillOpacity: .1, opacity: .5, color: "#000", weight: 1, fillColor: "#ff9999" })
-							var props = feature.properties;
-							// var content = `<b>${props.title}</b><p>${props.description}</p>`;
-							var content = `<b>${props.title}</b>`;
-							idToFeature[identifier] = layer
-							layer.bindPopup(content);
-						}
-					}).addTo(map);
-				});
-		});
+		styles = {
+				"MultiPolygon": {
+					"default": { fillOpacity: 0.3, opacity: 1, color: "#000", weight: 1, fillColor: "#ff9999" },
+					"focus": { fillOpacity: 0.3, opacity: 1, color: "red", weight: 2, fillColor: "#ff9999" }
+				},
+				"Polygon": {
+					"default": { fillOpacity: 0.3, opacity: .5, color: "#666", weight: 1, fillColor: "#ff9999" },
+					"focus": { fillOpacity: 0.3, opacity: .5, color: "red", weight: 2, fillColor: "#ff9999" }
+				}
+			}
 		$(function () {})
 		// resources
 		$(".resource-card-content").click(function(){

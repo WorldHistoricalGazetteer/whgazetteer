@@ -302,12 +302,12 @@
     accessToken: '{{ mbtokenmb }}'
   });
 
-  <!--mappy.on('idle', function(e) {-->
-    <!--console.log('idle e', e.target.painter.currentStencilSource)-->
-  <!--})-->
+  // mappy.on('idle', function(e) {
+  //   console.log('idle e', e.target.painter.currentStencilSource)
+  // })
   // TODO: add a 'big?' boolean to ds_list based on count of polygons
   mappy.on('sourcedata', function(e) {
-    <!--console.log('source_list', source_list)-->
+    // console.log('source_list', source_list)
     if(source_list.includes('territorios892')){
       // big polygons
       if(e.sourceId == 'territorios892' && e.isSourceLoaded){
