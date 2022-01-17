@@ -41,6 +41,10 @@ class Resource(models.Model):
 
   def title_length(self):
     return -len(self.title)
+  
+  @property
+  def region_ids(self):
+    return self.regions
 
   class Meta:
     managed = True
