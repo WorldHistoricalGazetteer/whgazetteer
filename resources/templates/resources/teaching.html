@@ -28,6 +28,7 @@
 		.gallery-banner {border-bottom: 1px solid lightgray; 
 			background-color:rgb(60, 136, 148); color: white;}
 		.regions-ttlink {color:grey; font-size:.75rem; float:right; text-decoration-line: underline;}
+		.reset-link {float:right; display:none; color:white; text-decoration-line: underline;}
 		#region_label {font-family: 'Raleway', sans-serif !important; font-size:1rem; color: tomato;}
 		#teaching_bottom {height:65%;}
 		#teaching_top {height:230px;}
@@ -75,7 +76,9 @@
 			<div class="col-sm-8 pr-0" style="height: 80%;">
 				<div class="resource-gallery h-100">
 					<div class="gallery-banner pl-2 small w-100";>
-						TEACHING RESOURCES <span id="filtered_regions" class="float-right"></span></div>
+						TEACHING RESOURCES 
+						<span id="regions_reset" class="reset-link mr-2" style="cursor:pointer;">reset filter</span>
+					</div>
 					<div class="pl-1">
 						{% for r in resource_list %}
 						<div class="resource-card mt-1" data-regions="{{r.regions}}">
@@ -103,8 +106,16 @@
 	<script type="text/javascript">
 		$(function () {
 			$('[data-toggle="tooltip"]').tooltip()
+			$("#regions_reset").click(function(){
+				resetRegions()
+			})
 		})
 
+		function resetRegions(){
+			regions.setStyle({ fillColor: "#ff9999", color: "black" })
+			$('.resource-card').css('display', 'block')
+			$("#regions_reset").hide();
+		}
 		function filterResources(region){
 			var $el = $('.resource-card').filter(function () {
 				// console.log('this', $(this).data("regions"))
@@ -121,8 +132,7 @@
 			})
 			merged = [].concat.apply([], regiones);
 			unique = [...new Set(merged.map(item => item))];
-			// $("#filtered_regions").html(unique)
-			// console.log('merged', merged)
+			$("#regions_reset").show();
 		}
 
 		// var dataurl = '{% url "area-features" %}';
