@@ -25,6 +25,10 @@
 		.fill-grey {background-color:gainsboro; }
 		.resource-gallery {background-color:rgb(238, 238, 238); overflow:auto;}
 		.fill-blue {background-color:rgb(60, 136, 148); }
+		.gallery-banner {border-bottom: 1px solid lightgray; 
+			background-color:rgb(60, 136, 148); color: white;}
+		.regions-ttlink {color:grey; font-size:.75rem; float:right; text-decoration-line: underline;}
+		#region_label {font-family: 'Raleway', sans-serif !important; font-size:1rem; color: tomato;}
 		#teaching_bottom {height:65%;}
 		#teaching_top {height:230px;}
 		.teaching-essay {outline: rgb(60, 136, 148) 1px solid; box-shadow: 4px 4px rgb(221, 221, 221);
@@ -70,12 +74,16 @@
 			</div>
 			<div class="col-sm-8 pr-0" style="height: 80%;">
 				<div class="resource-gallery h-100">
-					<div class="pl-2 small w-100 fill-blue text-white"; style="border-bottom: 1px solid lightgray;">
-						TEACHING RESOURCES</div>
+					<div class="gallery-banner pl-2 small w-100";>
+						TEACHING RESOURCES <span id="filtered_regions" class="float-right"></span></div>
 					<div class="pl-1">
 						{% for r in resource_list %}
 						<div class="resource-card mt-1" data-regions="{{r.regions}}">
-							<div class="resource-card-header pl-2 small ">{{ r.type }} {%comment%}<i>{{r.regions}}</i>{%endcomment%}</div>
+							<div class="resource-card-header pl-2 small ">{{ r.type }}
+								<span class="regions-ttlink mr-1" data-toggle="tooltip" data-html="true" title="{{r.regions}}">
+									{% fontawesome_icon 'globe' %} regions</span>
+								{%comment%}<i>{{r.regions}}</i>{%endcomment%}
+							</div>
 							<div class="resource-card-content px-2 pt-1" data-id={{r.id}}>
 								{% with remainder=190|add:r.title_length %}
 								<h6><a href="{% url 'resources:resource-detail' r.id %}">{{ r.title }}</a></h6>
@@ -93,16 +101,28 @@
 		<div id="essay_modal" class="selector py-3" style="font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;"></div>
 	</div>
 	<script type="text/javascript">
+		$(function () {
+			$('[data-toggle="tooltip"]').tooltip()
+		})
 
 		function filterResources(region){
 			var $el = $('.resource-card').filter(function () {
-				console.log('this', $(this).data("regions"))
+				// console.log('this', $(this).data("regions"))
 				return (!$(this).data("regions").includes(region))
-			// })
-				// return ($(this).data("regions").includes(region))
+			}).css('display','none')
+			shown = $('.resource-card').filter(function(){
+				return $(this).is(":visible");
+			}) 
+			regiones = []
+			shown.each(function(){
+				regarr = $(this).attr('data-regions').split(', ')
+				// console.log('regset',regarr, typeof(regarr))
+				regiones.push(regarr)
 			})
-			// .css('display', 'none');
-			.fadeOut()	
+			merged = [].concat.apply([], regiones);
+			unique = [...new Set(merged.map(item => item))];
+			// $("#filtered_regions").html(unique)
+			// console.log('merged', merged)
 		}
 
 		// var dataurl = '{% url "area-features" %}';
@@ -133,7 +153,7 @@
 				.then(function (data) {
 					// console.log(data)
 					idToFeature = {}
-					var regions = L.geoJson(data, {
+					regions = L.geoJson(data, {
 						filter: function (feature, layer) {
 							return "{{ regions }}".includes(feature.properties.id);
 						},
@@ -145,16 +165,47 @@
 							// var content = `<b>${props.title}</b><p>${props.description}</p>`;
 							var content = `<b>${props.title}</b>`;
 							idToFeature[identifier] = layer
-							layer.bindPopup(content);
+							// layer.bindPopup(content);
+							layer.on('mouseover', function (e) {
+								$("#region_label").html(content);
+							});
+							layer.on('mouseout', function (e) {
+								$("#region_label").html("select region to filter")
+							});							
+							// layer.bindPopup(content);
 						}
 					}).addTo(map);
+					
+					L.Control.textbox = L.Control.extend({
+						onAdd: function (map) {
+
+							var textdiv = L.DomUtil.create('div');
+							textdiv.id = "region_label";
+							textdiv.innerHTML = "select region to filter"
+							return textdiv;
+						},
+
+						onRemove: function (map) {
+							// Nothing to do here
+						}
+					});
+					L.control.textbox = function (opts) { return new L.Control.textbox(opts); }
+					L.control.textbox({ position: 'topright' }).addTo(map);
+
 					regions.on('click', function(e){
-						console.log('layer', e.layer)
-						l=e.layer
-						l.setStyle({fillColor:'yellow'})
+						// console.log('layer', e.layer)
+						// show title in upper right
+						$("#region_label").html(e.layer.feature.properties.title)
+						// display all cards
+						$('.resource-card').css('display', 'block')
+						// default fill and outline for all regions
+						regions.setStyle({fillColor:"#ff9999", color:"black"})
+						// set fill for this to yellow
+						e.layer.setStyle({fillColor:'yellow', color:"red"})
+						// filter cards on region
 						filterResources(e.layer.feature.properties.title)
-						title=e.layer.feature.properties.title
-						console.log('clicked region:',title)
+						// title=e.layer.feature.properties.title
+						// console.log('clicked region:',title)
 					})
 				});
 		});
