@@ -1,8 +1,15 @@
 from django import template
+from django.contrib.auth.models import Group
 from django.template.defaultfilters import stringfilter
 import json, re, validators, textwrap
 
 register = template.Library()
+
+# test user in group
+# @register.filter
+# def has_group(user, group_name):
+#     group = Group.objects.get(name=group_name)
+#     return True if group in user.groups.all() else False
 
 # truncates at previous word break
 @register.filter

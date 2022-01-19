@@ -23,7 +23,7 @@
 		.leaflet-container, .leaflet-container-default {min-height: 220px !important; max-height: 230px !important;}
 		/* .leaflet-container-default {height: 250px !important;} */
 		.fill-grey {background-color:gainsboro; }
-		.resource-gallery {background-color:rgb(238, 238, 238); overflow:auto;}
+		.resource-gallery {background-color:rgb(238, 238, 238); overflow:auto; border-bottom: 1px solid gainsboro;}
 		.fill-blue {background-color:rgb(60, 136, 148); }
 		.gallery-banner {border-bottom: 1px solid lightgray; 
 			background-color:rgb(60, 136, 148); color: white;}
@@ -76,7 +76,7 @@
 			<div class="col-sm-8 pr-0" style="height: 80%;">
 				<div class="resource-gallery h-100">
 					<div class="gallery-banner pl-2 small w-100";>
-						TEACHING RESOURCES 
+						TEACHING RESOURCES ({{ resource_list|length }})
 						<span id="regions_reset" class="reset-link mr-2" style="cursor:pointer;">reset filter</span>
 					</div>
 					<div class="pl-1">
