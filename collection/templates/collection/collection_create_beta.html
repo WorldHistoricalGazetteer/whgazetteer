@@ -1,10 +1,10 @@
-<!-- collection/collection_create.html -->
+<!-- collection/collection_create_beta.html -->
 {% extends "main/base.html" %}
 {% load leaflet_tags %}
 {% load fontawesome %}
 {% load static %}
 {% load dataset_extras %}
-{% block title %}<title>WHG::Create/Update Collection</title>{% endblock %}
+{% block title %}<title>WHG::Create/Update Collection (beta)</title>{% endblock %}
 {% block extra_head %}
   {% leaflet_js %}
   {% leaflet_css %}
@@ -27,7 +27,7 @@
     <a href="{% url 'collection:collection-delete' object.id %}" class="float-right"
       title="Delete collection" rel="tooltip" style="margin-top:-2px;">
       {% fontawesome_icon 'trash' color='#336699' %}</a>
-    {% else %}Create Collection{% endif %}
+    {% else %}Create Collection{% endif %} <span class="red-head"> (beta)</span>
   </h4>
   <div class="d-flex">
     <div class="form-box mt-2 col-sm-5">

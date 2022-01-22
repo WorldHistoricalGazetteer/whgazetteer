@@ -69,7 +69,7 @@
           {"required": ["toponym"]},
           {"required": ["ethnonym"]}
         ],
-        "additionalProperties": false,
+        "additionalProperties": true,
         "properties": {
           "lang": {
             "$id": "#/properties/names/items/properties/lang",

@@ -766,7 +766,7 @@
         rel = data.related[r]
         //console.log('rel',rel)
         if (rel.relation_type == 'gvp:broaderPartitive'){
-          parent += '<span class="small h1em">'+rel.label
+          parent += '<span class="h1em">'+rel.label
           parent += 'when' in rel && !('timespans' in rel.when) ? 
             ', '+rel.when.start.in+'-'+rel.when.end.in : 
             'when' in rel && ('timespans' in rel.when) ? ', '+

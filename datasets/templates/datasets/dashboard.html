@@ -26,18 +26,22 @@
   <div class="container pt-3">
     <ul id="api_tabs" class="nav nav-tabs" role="tablist">
       <li class="nav-item">
-        <a class="nav-link active" id="mydslist-tab" data-toggle="tab" href="#mydslist" role="tab" aria-controls="dslist" aria-selected="true">Datasets</a>
+        <a class="nav-link active" id="mydslist-tab" data-toggle="tab" href="#mydslist" 
+          role="tab" aria-controls="dslist" aria-selected="true">Datasets</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" id="collectionlist-tab" data-toggle="tab" href="#collectionlist" role="tab" aria-controls="collectionlist" aria-selected="false">Collections</a>
+        <a class="nav-link" id="collectionlist-tab" data-toggle="tab" href="#collectionlist" 
+          role="tab" aria-controls="collectionlist" aria-selected="false">Collections</a>
       </li>
       <!--{ endif %}-->
       <li class="nav-item">
-        <a class="nav-link" id="arealist-tab" data-toggle="tab" href="#arealist" role="tab" aria-controls="arealist" aria-selected="false">Study Areas</a>
+        <a class="nav-link" id="arealist-tab" data-toggle="tab" href="#arealist" 
+          role="tab" aria-controls="arealist" aria-selected="false">Study Areas</a>
       </li>
       {% if beta_or_better %}
       <li class="nav-item">
-        <a class="nav-link" id="resourcelist-tab" data-toggle="tab" href="#resourcelist" role="tab" aria-controls="resourcelist" aria-selected="false">Teaching resources</a>
+        <a class="nav-link" id="resourcelist-tab" data-toggle="tab" href="#resourcelist" 
+          role="tab" aria-controls="resourcelist" aria-selected="false">Teaching resources</a>
       </li>
       {% endif %}
     </ul>
@@ -87,7 +91,7 @@
             </table>
             {% endif %}
             {% if shared_list|length > 0 and user.is_superuser is False %}<hr/>
-            <h6 class="mb-0">Shared with me and read-only core samples</h6>
+            <h6 class="mb-0">Shared with me</h6>
             <table class="table table-striped">
               <thead class="small strong">
                 <th>id</th>
@@ -124,8 +128,11 @@
       </div>
       <div id="collectionlist" class="tab-pane fade " role="tabpanel" aria-labelledby="collectionlist-tab">
         <p class="mb-1 ml-1"><a href="{% url 'collection:collection-create' %}" class="">
-          {% fontawesome_icon 'plus-square' color='#336699' %} create new</a></p>
-        <div id="collection_list" class="mt-1 ml-0">
+          {% fontawesome_icon 'plus-square' color='#336699' %} create new</a>
+        {% if beta_or_better %}
+          <span class="ml-3"><a href="{% url 'collection:collection-create-beta' %}" class="">new (beta)</a></span>
+        {% endif %}</p>
+          <div id="collection_list" class="mt-1 ml-0">
           <div class="list-box">
             <table id="table_collections"class="table table-striped">
               <thead class="small">

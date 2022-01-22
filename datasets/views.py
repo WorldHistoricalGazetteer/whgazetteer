@@ -1306,6 +1306,7 @@ def ds_insert_lpf(request, pk):
   # latest file
   dsf = ds.files.all().order_by('-rev')[0]
   uribase = ds.uri_base
+  print('new dataset, uri_base', ds.label, uribase)
 
   # TODO: lpf can get big; json-lines
   
@@ -1335,8 +1336,6 @@ def ds_insert_lpf(request, pk):
           title=re.sub('\(.*?\)', '', feat['properties']['title'])
           
           # geometry
-          #if 'geometry' in feat.keys():
-            #geojson = feat['geometry'] # GeometryCollection :^(
           geojson = feat['geometry'] if 'geometry' in feat.keys() else None
           
           # ccodes  
@@ -1357,7 +1356,7 @@ def ds_insert_lpf(request, pk):
           # TODO: compute fclasses
           newpl = Place(
             # strip uribase from @id
-            src_id=feat['@id'] if uribase == None else feat['@id'].replace(uribase,''),
+            src_id=feat['@id'] if uribase in ['', None] else feat['@id'].replace(uribase,''),
             dataset=ds,
             title=title,
             ccodes=ccodes,

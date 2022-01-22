@@ -543,8 +543,7 @@ def parsedates_lpf(feat):
 # format ['coll' (FeatureCollection) | 'lines' (json-lines)]
 def validate_lpf(tempfn,format):
   #wd = '/Users/karlg/Documents/Repos/_whgazetteer/'
-  schema = json.loads(codecs.open('datasets/static/validate/schema_lpf_v1.3.json','r','utf8').read())
-  # schema = json.loads(codecs.open('datasets/static/validate/schema_lpf_v1.2.json','r','utf8').read())
+  schema = json.loads(codecs.open('datasets/static/validate/schema_lpf_v1.2.json','r','utf8').read())
   # rename tempfn
   newfn = tempfn+'.jsonld'
   os.rename(tempfn,newfn)

@@ -61,7 +61,59 @@ def remove_dataset(request, *args, **kwargs):
 
   return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
-# TODO: merge create and update views (templates are the same)
+''' v2.1 beta: collections from places or datasets '''
+class CollectionCreateBetaView(LoginRequiredMixin, CreateView):
+  form_class = CollectionModelForm
+  template_name = 'collection/collection_create_beta.html'
+  queryset = Collection.objects.all()
+
+  def get_success_url(self):
+    Log.objects.create(
+      # category, logtype, "timestamp", subtype, note, dataset_id, user_id
+      category = 'collection',
+      logtype = 'create',
+      note = 'created collection id: '+str(self.object.id),
+      user_id = self.request.user.id
+    )    
+    return reverse('dashboard')
+  #
+  def get_form_kwargs(self, **kwargs):
+    kwargs = super(CollectionCreateBetaView, self).get_form_kwargs()
+    return kwargs
+
+  def form_invalid(self,form):
+    print('form invalid...',form.errors.as_data())
+    context = {'form': form}
+    return self.render_to_response(context=context)
+
+  def form_valid(self, form):
+    context={}
+    if form.is_valid():
+      print('form is valid, cleaned_data',form.cleaned_data)
+    else:
+      print('form not valid', form.errors)
+      context['errors'] = form.errors
+    return super().form_valid(form)
+
+  def get_context_data(self, *args, **kwargs):
+    user = self.request.user
+    print('CollectionCreateBetaView() user', user)
+    context = super(CollectionCreateBetaView, self).get_context_data(*args, **kwargs)
+    context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
+
+    datasets = []
+    # owners create collections from their datasets
+    ds_select = [obj for obj in Dataset.objects.all() if user in obj.owners or 
+      user in obj.collaborators or user.is_superuser]
+
+    context['action'] = 'create'
+    context['ds_select'] = ds_select
+    context['coll_dsset'] = datasets
+
+    return context
+
+
+""" v2 default """
 class CollectionCreateView(LoginRequiredMixin, CreateView):
   form_class = CollectionModelForm
   template_name = 'collection/collection_create.html'
@@ -103,7 +155,8 @@ class CollectionCreateView(LoginRequiredMixin, CreateView):
 
     datasets = []
     # owners create collections from their datasets
-    ds_select = [obj for obj in Dataset.objects.all() if user in obj.owners or user.is_superuser]
+    ds_select = [obj for obj in Dataset.objects.all() if user in obj.owners or 
+      user in obj.collaborators or user.is_superuser]
 
     context['action'] = 'create'
     context['ds_select'] = ds_select

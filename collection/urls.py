@@ -13,6 +13,8 @@ urlpatterns = [
 
     # create handles create and update
     path('create/', views.CollectionCreateView.as_view(), name='collection-create'),
+    path('createbeta/', views.CollectionCreateBetaView.as_view(), name='collection-create-beta'),
+
     path('<int:id>/update', views.CollectionUpdateView.as_view(), name='collection-update'),
     path('<int:id>/delete', views.CollectionDeleteView.as_view(), name='collection-delete'),
     
