@@ -60,6 +60,7 @@ class SpatialAPIView(generics.ListAPIView):
     nearby = params.get('nearby', None)
     lng = params.get('lng', None)
     lat = params.get('lat', None)
+    km = params.get('km', None)
     sw = params.get('sw', None)
     ne = params.get('ne', None)
     fc = params.get('fc', None)
@@ -74,27 +75,30 @@ class SpatialAPIView(generics.ListAPIView):
 
     # right combo of params?
     if not qtype:
-    # if all(v is None for v in [bbox, nearby]):
       return HttpResponse(content=b'<div style="margin:3rem; font-size: 1.2rem; border:1px solid gainsboro; padding:.5rem;">'+
         b'<p>Spatial query parameters must include either either <ul><li><b>?type=nearby</b> (with <b>&lng=</b> and <b>&lat=</b>) <i>or</i></li>'+
         b'<li><b>?type=bbox</b> (with <b>&sw=</b> and <b>&ne+</b>).</p></div')
     if qtype == 'nearby':
-      if not all(v for v in [lng, lat]):
-        return HttpResponse(content=b'<h3>A "nearby" spatial query requires "lng" and "lat" parameters</h3>')
+      if not all(v for v in [lng, lat, km]):
+        return HttpResponse(content=b'<div style="margin:3rem; font-size: 1.2rem; border:1px solid gainsboro; padding:.5rem;">'+
+          b'<p>A <b>nearby</b> spatial query requires <b>lng</b>, <b>lat</b>, and <b>km</b> parameters</p></div>')
       else:
         # do nearby query
-        print("do nearby query (lng, lat) "+lng+", "+lat)
-        return HttpResponse(content='nearby '+json.dumps(params))
-        # return HttpResponse(content=b'nearby')
+        xy = [float(lng), float(lat)]
+        msg = "do nearby query (lng, lat): "+str(xy)+' w/'+km+'km buffer'
+        # qs = ...
+        # return HttpResponse(content=msg)
     elif qtype == 'bbox':
       if not all(v for v in [sw, ne]):
-        return HttpResponse(content=b'<h3>A "bbox" spatial query requires "sw" (southwest) and "ne" (northeast) parameters</h3>')
+        return HttpResponse(content=b'<div style="margin:3rem; font-size: 1.2rem; border:1px solid gainsboro; padding:.5rem;">' +
+          b'<p>A <b>bbox</b> spatial query requires both <b>sw</b> and <b>ne</b> parameters</p></div>')
       else:
         # do bbox query
         bbox = [[float(sw.split(',')[0]), float(sw.split(',')[1])],
                   [float(ne.split(',')[0]), float(ne.split(',')[1])]]
-        msg="do bbox query (sw, ne) "+str(bbox)
-        return HttpResponse(content='bbox '+msg)
+        msg="do bbox query (sw, ne): "+str(bbox)
+        # qs = ...
+        # return HttpResponse(content=msg)
 
     if ds:
       print("limiting to dataset:", ds)
@@ -120,23 +124,24 @@ class SpatialAPIView(generics.ListAPIView):
         # qs = qs.filter(dataset=ds) if ds else qs
         # qs = qs.filter(ccodes__overlap=cc) if cc else qs
 
-      filtered = qs[:pagesize] if pagesize and pagesize < 200 else qs[:20]
+    filtered = qs[:pagesize] if pagesize and pagesize < 200 else qs[:20]
 
-      #serial = LPFSerializer if context else SearchDatabaseSerializer
-      serial = LPFSerializer
-      serializer = serial(filtered, many=True, context={
-                          'request': self.request})
+    #serial = LPFSerializer if context else SearchDatabaseSerializer
+    serial = LPFSerializer
+    serializer = serial(filtered, many=True, context={
+                        'request': self.request})
 
-      serialized_data = serializer.data
-      result = {"count": qs.count(),
-                "pagesize": len(filtered),
-                "parameters": params,
-                "note": err_note,
-                "type": "FeatureCollection",
-                "features": serialized_data
-                }
-      #print('place result',result)
-      return JsonResponse(result, safe=False, json_dumps_params={'ensure_ascii': False, 'indent': 2})
+    serialized_data = serializer.data
+    result = {
+              "count": qs.count(),
+              "pagesize": filtered.count(),
+              "parameters": params,
+              "note": err_note,
+              "type": "FeatureCollection",
+              "features": serialized_data
+              }
+    #print('place result',result)
+    return JsonResponse(result, safe=False, json_dumps_params={'ensure_ascii': False, 'indent': 2})
 
 
 """
