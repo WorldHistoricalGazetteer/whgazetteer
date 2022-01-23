@@ -44,6 +44,102 @@ class StandardResultsSetPagination(PageNumberPagination):
 #
 
 """
+nearby and bbox spatial db queries
+"""
+class SpatialAPIView(generics.ListAPIView):
+  renderer_classes = [JSONRenderer]
+  filter_backends = [filters.SearchFilter]
+  # search_fields = ['@title']
+
+  def get(self, format=None, *args, **kwargs):
+    params = self.request.query_params
+    print('SpatialAPIView() params', params)
+
+    qtype = params.get('type', None)
+    bbox = params.get('bbox', None)
+    nearby = params.get('nearby', None)
+    lng = params.get('lng', None)
+    lat = params.get('lat', None)
+    sw = params.get('sw', None)
+    ne = params.get('ne', None)
+    fc = params.get('fc', None)
+    fclasses = list(set([x.upper() for x in ','.join(fc)])) if fc else None
+    ds = params.get('dataset', None)
+    pagesize = params.get('pagesize', None)
+    year = params.get('year', None)
+    # ?
+    err_note = None
+
+    qs = Place.objects.filter(dataset__public=True)
+
+    # right combo of params?
+    if not qtype:
+    # if all(v is None for v in [bbox, nearby]):
+      return HttpResponse(content=b'<div style="margin:3rem; font-size: 1.2rem; border:1px solid gainsboro; padding:.5rem;">'+
+        b'<p>Spatial query parameters must include either either <ul><li><b>?type=nearby</b> (with <b>&lng=</b> and <b>&lat=</b>) <i>or</i></li>'+
+        b'<li><b>?type=bbox</b> (with <b>&sw=</b> and <b>&ne+</b>).</p></div')
+    if qtype == 'nearby':
+      if not all(v for v in [lng, lat]):
+        return HttpResponse(content=b'<h3>A "nearby" spatial query requires "lng" and "lat" parameters</h3>')
+      else:
+        # do nearby query
+        print("do nearby query (lng, lat) "+lng+", "+lat)
+        return HttpResponse(content='nearby '+json.dumps(params))
+        # return HttpResponse(content=b'nearby')
+    elif qtype == 'bbox':
+      if not all(v for v in [sw, ne]):
+        return HttpResponse(content=b'<h3>A "bbox" spatial query requires "sw" (southwest) and "ne" (northeast) parameters</h3>')
+      else:
+        # do bbox query
+        bbox = [[float(sw.split(',')[0]), float(sw.split(',')[1])],
+                  [float(ne.split(',')[0]), float(ne.split(',')[1])]]
+        msg="do bbox query (sw, ne) "+str(bbox)
+        return HttpResponse(content='bbox '+msg)
+
+    if ds:
+      print("limiting to dataset:", ds)
+    if fclasses:
+      print("limiting to feature classes:",fclasses)
+      # if id_:
+      #   qs = qs.filter(id=id_)
+      #   err_note = 'id given, other parameters ignored' if len(
+      #       params.keys()) > 1 else None
+      # else:
+      #   qs = qs.filter(minmax__0__lte=year,
+      #                  minmax__1__gte=year) if year else qs
+      #   qs = qs.filter(fclasses__overlap=fclasses) if fc else qs
+
+      #   #res=qs.filter(names__jsonb__toponym__icontains=name)
+
+      #   if name_contains:
+      #     qs = qs.filter(title__icontains=name_contains)
+      #   elif name and name != '':
+      #     #qs = qs.filter(title__istartswith=name)
+      #     qs = qs.filter(names__jsonb__toponym__icontains=name)
+
+        # qs = qs.filter(dataset=ds) if ds else qs
+        # qs = qs.filter(ccodes__overlap=cc) if cc else qs
+
+      filtered = qs[:pagesize] if pagesize and pagesize < 200 else qs[:20]
+
+      #serial = LPFSerializer if context else SearchDatabaseSerializer
+      serial = LPFSerializer
+      serializer = serial(filtered, many=True, context={
+                          'request': self.request})
+
+      serialized_data = serializer.data
+      result = {"count": qs.count(),
+                "pagesize": len(filtered),
+                "parameters": params,
+                "note": err_note,
+                "type": "FeatureCollection",
+                "features": serialized_data
+                }
+      #print('place result',result)
+      return JsonResponse(result, safe=False, json_dumps_params={'ensure_ascii': False, 'indent': 2})
+
+
+"""
   makeGeom(); called by collectionItem()
   format index locations as geojson
 """

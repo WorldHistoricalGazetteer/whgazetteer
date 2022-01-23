@@ -19,6 +19,8 @@ urlpatterns = [
     path('index/',views.IndexAPIView.as_view(),name='api-index-search'),
     # traces
     path('traces/',views.TracesAPIView.as_view(),name='traces-search'),
+    # spatial (nearby or bbox)
+    path('spatial/', views.SpatialAPIView.as_view(), name='api-spatial'),
 
     # *** DATASETS ***
 
@@ -38,7 +40,8 @@ urlpatterns = [
     path('placetable_coll/', views.PlaceTableCollViewSet.as_view({'get':'list'}), name='place-table-coll'), 
 
     # TODO: place/<str:dslabel>/<str:src_id>
-    path('place/<str:dslabel>/<str:src_id>/', views.PlaceDetailSourceAPIView.as_view(),name='place-detail-src'),        
+    path('place/<str:dslabel>/<str:src_id>/', views.PlaceDetailSourceAPIView.as_view(),name='place-detail-src'), 
+
 
     # 
     # *** GEOMETRY ***
