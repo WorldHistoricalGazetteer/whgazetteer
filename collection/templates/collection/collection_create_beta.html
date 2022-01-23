@@ -13,12 +13,14 @@
   <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.js'></script>
   <script src="{% static 'js/leaflet-mapbox-gl.js' %}"></script>
 
+  <style>
+    .coll-col { border-right: 1px dashed lightgray;;}
+  </style>
 {% endblock %}
 
 {% block content %}
 <div class="container">
   <!--owner or superuser: {{user.id}} {{object.owner.id}}-->
-  <p>action: {{ action }}</p>
   {% if action == 'update' and user.id != object.owner.id %}
     <p>Access to this page is limited to the collection owner(s). object: {{object.owner.id}}</p>
   {% else %}
@@ -30,7 +32,7 @@
     {% else %}Create Collection{% endif %} <span class="red-head"> (beta)</span>
   </h4>
   <div class="d-flex">
-    <div class="form-box mt-2 col-sm-5">
+    <div class="form-box mt-2 col-sm-4">
     <form id="collection_form" method="POST" action="#" enctype="multipart/form-data">
       {% csrf_token %}
       <input type="hidden" name="owner" value='{{ user.id }}'></input>
@@ -74,8 +76,9 @@
       <span title="back"><a href="/dashboard#collectionlist">Cancel</a></span>
     </form>
     </div>
-    <div id="coll_builder" class="col-sm-7 p-2">
+    <div id="coll_builder" class="coll-col col-sm-4 p-2">
       <div class="row">
+        {%comment%}
         <div class="col-sm-12">
           coll_dsset: {{ coll_dsset }}
           <h5>Datasets</h5>
@@ -113,8 +116,13 @@
             {% endfor %}
             <!--{ endif %}-->
           </div> <!-- #coll_dscards -->
-        </div> <!-- .col-sm-8 -->
-    </div> <!-- .row -->
+        </div> <!-- .col-sm-12 -->
+        {%endcomment%}
+      </div> <!-- .row -->
+    </div>
+    <div id="coll_right" class="coll-col col-sm-4 p-2">
+      <p></p>
+    </div>
   </div> <!-- d-flex -->
   <div class="selector py-3"><div id="helpme"></div></div>
   {% endif %}
