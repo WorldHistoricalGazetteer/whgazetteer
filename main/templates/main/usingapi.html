@@ -122,15 +122,20 @@
 				  </thead>
 				  <tbody>
 					<tr><td>type<sup>&#x02733;</sup></td><td>string</td><td><b>bbox</b> <i>or</i> <b>nearby</b> (required)</td></tr>
-					<tr><td>sw<sup>&#8224;</sup></td><td>decimal deg.</td><td>bbox southwest corner</td></tr>
-					<tr><td>ne<sup>&#8224;</sup></td><td>decimal deg.</td><td>bbox northeast corner</td></tr>
-					<tr><td>lon<sup>&#8225;</sup></td><td>decimal deg.</td><td>longitude (wgs84)</td></tr>
-					<tr><td>lat<sup>&#8225;</sup></td><td>decimal deg.</td><td>longitude (wgs84)</td></tr>
+					<tr><td>sw<sup>&#8224;</sup></td><td>decimal&nbsp;deg.</td><td>bbox southwest corner</td></tr>
+					<tr><td>ne<sup>&#8224;</sup></td><td>decimal&nbsp;deg.</td><td>bbox northeast corner</td></tr>
+					<tr><td>lon<sup>&#8225;</sup></td><td>decimal&nbsp;deg.</td><td>longitude (wgs84)</td></tr>
+					<tr><td>lat<sup>&#8225;</sup></td><td>decimal&nbsp;deg.</td><td>longitude (wgs84)</td></tr>
 					<tr><td>km<sup>&#8225;</sup></td><td>integer</td><td>buffer distance in km</td></tr>
 					<tr style="border-top: 2px solid lightgray;">
 						<td>dataset</td>
 						<td>string</td>
 						<td>dataset label</td>
+					</tr>
+					<tr>
+						<td>collection</td>
+						<td>integer</td>
+						<td>collection ID</td>
 					</tr>
 					<tr>
 						<td>fclass</td>
@@ -162,12 +167,16 @@
 				<div id="examples" class="">
 				  <p class="mb-0 strong">Examples</p>
 				  <p class="mb-0">Settlements & sites within a bounding box (feature classes 'P' and 'S')</p>
-				  <p><a href="{% url 'api-spatial' %}?type=bbox&sw=31.918,26.186&ne=32.918,27.186&fc=P,S" target="_blank">
+				  <p class="mb-1"><a href="{% url 'api-spatial' %}?type=bbox&sw=31.918,26.186&ne=32.918,27.186&fc=P,S" target="_blank">
 						/api/spatial/?type=bbox&sw=31.918,26.186&ne=32.918,27.186&fc=P,S
 				  </a></p>
 				  <p class="mb-0">Places in Old World Trade dataset within 100km of given point</p>
-				  <p><a href="{% url 'api-spatial' %}?type=nearby&lon=31.918&lat=26.186&km=100&dataset=owtrad" target="_blank">
+				  <p class=mb-1><a href="{% url 'api-spatial' %}?type=nearby&lon=31.918&lat=26.186&km=100&dataset=owtrad" target="_blank">
 						/api/spatial/?type=nearby&lon=31.918&lat=26.186&km=100&dataset=owtrad
+				  </a></p>
+				  <p class="mb-0">Settlements in HGIS de Las Indias collection within 10km of given point</p>
+				  <p class=mb-1><a href="{% url 'api-spatial' %}?type=nearby&lon=-98.3067&lat=19.1302&km=10&fc=P&collection=5" target="_blank">
+						/api/spatial/?type=nearby&lon=-98.3067&lat=19.1302&km=10&fc=P&collection=5
 				  </a></p>
 				</div>
 			  </div>

@@ -66,11 +66,16 @@ class SpatialAPIView(generics.ListAPIView):
     fc = params.get('fc', None)
     fclasses = list(set([x.upper() for x in ','.join(fc)])) if fc else None
     ds = params.get('dataset', None)
+    coll = params.get('collection', None)
     pagesize = params.get('pagesize', None)
     year = params.get('year', None)
     # ?
     err_note = None
-    qs = Place.objects.filter(dataset__public=True)
+
+    if not coll:
+      qs = Place.objects.filter(dataset__public=True)
+    else:
+      qs = Collection.objects.get(id=coll).places.all()
 
     # refine queryset w/any params received
     qs = qs.filter(dataset=ds) if ds else qs
