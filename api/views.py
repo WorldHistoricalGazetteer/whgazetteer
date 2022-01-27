@@ -120,8 +120,9 @@ class SpatialAPIView(generics.ListAPIView):
               "count": qs.count(),
               "pagesize": filtered.count(),
               "parameters": params,
-              "note": err_note,
+              "errors": err_note,
               "type": "FeatureCollection",
+              "context": "https://raw.githubusercontent.com/LinkedPasts/linked-places/master/linkedplaces-context-v1.1.jsonld",
               "features": serialized_data
               }
     #print('place result',result)

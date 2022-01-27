@@ -280,7 +280,8 @@ class SearchDatabaseSerializer(serializers.HyperlinkedModelSerializer):
             )
 
 """ used by SearchAPIView() from /api/db? """
-class LPFSerializer(serializers.ModelSerializer):
+class LPFSerializer(serializers.Serializer):
+# class LPFSerializer(serializers.ModelSerializer):
 # class LPFSerializer(serializers.HyperlinkedModelSerializer):
   names = PlaceNameSerializer(source="placename_set", many=True, read_only=True)
   types = PlaceTypeSerializer(many=True, read_only=True)
@@ -295,17 +296,21 @@ class LPFSerializer(serializers.ModelSerializer):
   def get_type(self, place):
     return "Feature"
 
+  uri = serializers.SerializerMethodField('get_uri')
+  def get_uri(self, place):
+    return "https://whgazetteer.org/api/place/" + str(place.id)
+
   properties = serializers.SerializerMethodField('get_properties')
   def get_properties(self,place):
     props = {
       "place_id":place.id,
-      "dataset":place.dataset.label,
+      "dataset_label":place.dataset.label,
       "src_id":place.src_id,
       "title":place.title,
       "ccodes":place.ccodes,
       "fclasses":place.fclasses,
-      "minmax":place.minmax
-      #"timespans":place.timespans
+      "minmax":place.minmax,
+      "timespans":place.timespans
     }
     return props
 
@@ -324,6 +329,6 @@ class LPFSerializer(serializers.ModelSerializer):
     # fields = ('type','properties','geometry','names', 'types','links'
     #               ,'related','whens', 'descriptions', 'depictions', 'minmax'
     #         )
-    fields = ('url','type','properties','geometry','names', 'types','links'
+    fields = ('uri','type','properties','geometry','names', 'types','links'
                   ,'related','whens', 'descriptions', 'depictions', 'minmax'
             )
