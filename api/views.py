@@ -1,7 +1,9 @@
 # api.views
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User, Group
-#from django.contrib.postgres import search
+from django.contrib.gis.geos import Polygon, Point
+# from django.contrib.postgres import search
+from django.contrib.gis.measure import D
 from django.core import serializers
 from django.db.models import Q
 from django.http import JsonResponse, HttpResponse#, FileResponse
@@ -56,11 +58,9 @@ class SpatialAPIView(generics.ListAPIView):
     print('SpatialAPIView() params', params)
 
     qtype = params.get('type', None)
-    bbox = params.get('bbox', None)
-    nearby = params.get('nearby', None)
-    lng = params.get('lng', None)
+    lon = params.get('lon', None)
     lat = params.get('lat', None)
-    km = params.get('km', None)
+    dist = params.get('km', None)
     sw = params.get('sw', None)
     ne = params.get('ne', None)
     fc = params.get('fc', None)
@@ -70,23 +70,31 @@ class SpatialAPIView(generics.ListAPIView):
     year = params.get('year', None)
     # ?
     err_note = None
-
     qs = Place.objects.filter(dataset__public=True)
 
-    # right combo of params?
+    # refine queryset w/any params received
+    qs = qs.filter(dataset=ds) if ds else qs
+    qs = qs.filter(fclasses__overlap=fclasses) if fclasses else qs
+    qs = qs.filter(minmax__0__lte=year, minmax__1__gte=year) if year else qs
+
+    # right params?
     if not qtype:
       return HttpResponse(content=b'<div style="margin:3rem; font-size: 1.2rem; border:1px solid gainsboro; padding:.5rem;">'+
         b'<p>Spatial query parameters must include either either <ul><li><b>?type=nearby</b> (with <b>&lng=</b> and <b>&lat=</b>) <i>or</i></li>'+
         b'<li><b>?type=bbox</b> (with <b>&sw=</b> and <b>&ne+</b>).</p></div')
     if qtype == 'nearby':
-      if not all(v for v in [lng, lat, km]):
+      if not all(v for v in [lon, lat, dist]):
         return HttpResponse(content=b'<div style="margin:3rem; font-size: 1.2rem; border:1px solid gainsboro; padding:.5rem;">'+
           b'<p>A <b>nearby</b> spatial query requires <b>lng</b>, <b>lat</b>, and <b>km</b> parameters</p></div>')
       else:
         # do nearby query
-        xy = [float(lng), float(lat)]
-        msg = "do nearby query (lng, lat): "+str(xy)+' w/'+km+'km buffer'
-        # qs = ...
+        pnt = Point(float(lon), float(lat))
+        # pnt = Point(xy[0], xy[1])
+        placeids = PlaceGeom.objects.filter(geom__distance_lte=(
+            pnt, D(km=int(dist)))).values_list('place_id')
+        qs = qs.filter(id__in=placeids)
+        msg = "nearby query (lon, lat): "+str(pnt.coords)+' w/'+dist+'km buffer'
+        print(msg)
         # return HttpResponse(content=msg)
     elif qtype == 'bbox':
       if not all(v for v in [sw, ne]):
@@ -94,43 +102,19 @@ class SpatialAPIView(generics.ListAPIView):
           b'<p>A <b>bbox</b> spatial query requires both <b>sw</b> and <b>ne</b> parameters</p></div>')
       else:
         # do bbox query
-        bbox = [[float(sw.split(',')[0]), float(sw.split(',')[1])],
-                  [float(ne.split(',')[0]), float(ne.split(',')[1])]]
+        bb = [float(sw.split(',')[0]), float(sw.split(',')[1]),
+                  float(ne.split(',')[0]), float(ne.split(',')[1])]
+        bbox = Polygon.from_bbox(bb) # [xmin, ymin, xmax, ymax]
+        placeids = PlaceGeom.objects.filter(geom__within=bbox).values_list('place_id')
+        qs = qs.filter(id__in=placeids)
         msg="do bbox query (sw, ne): "+str(bbox)
-        # qs = ...
-        # return HttpResponse(content=msg)
-
-    if ds:
-      print("limiting to dataset:", ds)
-    if fclasses:
-      print("limiting to feature classes:",fclasses)
-      # if id_:
-      #   qs = qs.filter(id=id_)
-      #   err_note = 'id given, other parameters ignored' if len(
-      #       params.keys()) > 1 else None
-      # else:
-      #   qs = qs.filter(minmax__0__lte=year,
-      #                  minmax__1__gte=year) if year else qs
-      #   qs = qs.filter(fclasses__overlap=fclasses) if fc else qs
-
-      #   #res=qs.filter(names__jsonb__toponym__icontains=name)
-
-      #   if name_contains:
-      #     qs = qs.filter(title__icontains=name_contains)
-      #   elif name and name != '':
-      #     #qs = qs.filter(title__istartswith=name)
-      #     qs = qs.filter(names__jsonb__toponym__icontains=name)
-
-        # qs = qs.filter(dataset=ds) if ds else qs
-        # qs = qs.filter(ccodes__overlap=cc) if cc else qs
+        print(msg)
 
     filtered = qs[:pagesize] if pagesize and pagesize < 200 else qs[:20]
 
-    #serial = LPFSerializer if context else SearchDatabaseSerializer
     serial = LPFSerializer
     serializer = serial(filtered, many=True, context={
                         'request': self.request})
-
     serialized_data = serializer.data
     result = {
               "count": qs.count(),
