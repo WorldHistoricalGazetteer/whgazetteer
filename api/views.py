@@ -3,7 +3,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User, Group
 from django.contrib.gis.geos import Polygon, Point
 # from django.contrib.postgres import search
-from django.contrib.gis.measure import D
+from django.contrib.gis.measure import D, Distance
 from django.core import serializers
 from django.db.models import Q
 from django.http import JsonResponse, HttpResponse#, FileResponse
@@ -93,11 +93,24 @@ class SpatialAPIView(generics.ListAPIView):
           b'<p>A <b>nearby</b> spatial query requires <b>lng</b>, <b>lat</b>, and <b>km</b> parameters</p></div>')
       else:
         # do nearby query
-        pnt = Point(float(lon), float(lat))
-        # pnt = Point(xy[0], xy[1])
-        placeids = PlaceGeom.objects.filter(geom__distance_lte=(
-            pnt, D(km=int(dist)))).values_list('place_id')
-        qs = qs.filter(id__in=placeids)
+        pnt = Point(float(lon), float(lat), srid=4326)
+
+        # filter for only POINTs
+        qs0 = PlaceGeom.objects.extra(
+            where=["geometrytype(geom) LIKE 'POINT'"])
+        qs1 = qs0.annotate(distance=Distance('geom', pnt))
+
+        # qs2 = qs1.filter(geom__distance_lte=(
+        #     pnt, D(km=dist))).order_by('distance')
+        # qs1 = qs0.annotate(distance=(Distance('geom', pnt)))
+        placeids = qs1.filter(geom__distance_lte=(pnt, D(km=dist))).order_by('distance').values_list('place_id')
+
+        # Works, but not ordered
+        # placeids = PlaceGeom.objects.filter(geom__distance_lte=(
+        #   pnt, D(km=int(dist))
+        # )).order_by('distance').values_list('place_id')
+
+        qs = qs1.filter(id__in=placeids)
         msg = "nearby query (lon, lat): "+str(pnt.coords)+' w/'+dist+'km buffer'
         print(msg)
         # return HttpResponse(content=msg)
