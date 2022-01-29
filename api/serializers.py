@@ -308,6 +308,34 @@ class PlaceGeomSerializer(serializers.ModelSerializer):
     data = [n['fields']['jsonb'] for n in full]
     return data
 
+  links = serializers.SerializerMethodField('get_links')
+  def get_links(self, placegeom):
+    full = json.loads(coreserializers.serialize(
+        "json", placegeom.place.links.all()))
+    data = [n['fields']['jsonb'] for n in full]
+    return data
+
+  whens = serializers.SerializerMethodField('get_whens')
+  def get_whens(self, placegeom):
+    full = json.loads(coreserializers.serialize(
+        "json", placegeom.place.whens.all()))
+    data = [n['fields']['jsonb'] for n in full]
+    return data
+
+  related = serializers.SerializerMethodField('get_related')
+  def get_related(self, placegeom):
+    full = json.loads(coreserializers.serialize(
+        "json", placegeom.place.related.all()))
+    data = [n['fields']['jsonb'] for n in full]
+    return data
+
+  descriptions = serializers.SerializerMethodField('get_descriptions')
+  def get_descriptions(self, placegeom):
+    full = json.loads(coreserializers.serialize(
+        "json", placegeom.place.descriptions.all()))
+    data = [n['fields']['jsonb'] for n in full]
+    return data
+
   # custom fields for LPF transform
   type = serializers.SerializerMethodField('get_type')
   def get_type(self, placegeom):
@@ -343,14 +371,14 @@ class PlaceGeomSerializer(serializers.ModelSerializer):
   class Meta:
     model = PlaceGeom
     fields = ('uri', 'type', 'properties', 'geometry', 'place'
-                ,'names','types'
-                # ,'links'
-                # ,'related','whens', 'descriptions', 'depictions', 'minmax'
+                ,'names','types','links'
+                ,'related','whens', 'descriptions'
+                # 'depictions', 'minmax'
             )
 
 """ used by 
     SearchAPIView() from /api/db? 
-    SpatialAPIView() bbox queries from /api/spatial?
+    bbox queries in SpatialAPIView() from /api/spatial?
 """
 class LPFSerializer(serializers.Serializer):
   names = PlaceNameSerializer(source="placename_set", many=True, read_only=True)

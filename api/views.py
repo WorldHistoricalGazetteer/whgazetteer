@@ -136,12 +136,12 @@ class SpatialAPIView(generics.ListAPIView):
         filtered = qs[:pagesize] if pagesize and pagesize < 200 else qs[:20]
 
     # serial = LPFSerializer
-    serial = PlaceGeomSerializer
+    serial = LPFSerializer if qtype == 'bbox' else PlaceGeomSerializer
     serializer = serial(filtered, many=True, context={
                         'request': self.request})
     serialized_data = serializer.data
     result = {
-              "count": qs.count(),
+              "count": qs2.count(),
               "pagesize": filtered.count(),
               "parameters": params,
               "errors": err_note,
