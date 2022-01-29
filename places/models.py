@@ -37,6 +37,24 @@ class Place(models.Model):
     return '%s:%s' % (self.id, self.title)
 
   @property
+  def repr_geom(self):
+    return self.geoms.all()[0].geom
+
+  @property
+  def geomtype(self):
+    return self.geoms.all()[0].geom.geom_type
+
+  @property
+  def repr_point(self):
+    g = self.geoms.all()[0].geom
+    gtype = str(type(g))
+    if 'MultiPolygon' in gtype:
+      return g.coords[0][0][0]
+    elif 'Point' in gtype:
+      return g.coords
+
+
+  @property
   def dsid(self):
     return self.dataset.id
 

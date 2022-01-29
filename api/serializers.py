@@ -2,6 +2,7 @@
 from django.contrib.auth.models import User, Group
 from django.contrib.gis.geos import GEOSGeometry, Point, Polygon, MultiPolygon, LineString, MultiLineString
 from rest_framework import serializers
+from django.core import serializers as coreserializers
 from rest_framework_gis.serializers import GeoFeatureModelSerializer, GeometrySerializerMethodField
 from datasets.models import Dataset
 from areas.models import Area
@@ -279,10 +280,79 @@ class SearchDatabaseSerializer(serializers.HyperlinkedModelSerializer):
                   ,'related','whens', 'descriptions', 'depictions','minmax'
             )
 
-""" used by SearchAPIView() from /api/db? """
+""" TEST TEST TEST TEST TEST TEST
+  used for nearby queries in SpatialAPIView() from /api/spatial? 
+  returns Place records via PlaceGeom
+"""
+class PlaceGeomSerializer(serializers.ModelSerializer):
+  # names = PlaceNameSerializer(source="placename_set", many=True, read_only=True)
+  # types = PlaceTypeSerializer(many=True, read_only=True)
+  # links = PlaceLinkSerializer(many=True, read_only=True)
+  # related = PlaceRelatedSerializer(many=True, read_only=True)
+  # whens = PlaceWhenSerializer(many=True, read_only=True)
+  # descriptions = PlaceDescriptionSerializer(many=True, read_only=True)
+  # depictions = PlaceDepictionSerializer(many=True, read_only=True)
+
+  names = serializers.SerializerMethodField('get_names')
+  def get_names(self, placegeom):
+    full = json.loads(coreserializers.serialize(
+        "json", placegeom.place.names.all()))
+    data = [n['fields']['jsonb'] for n in full]
+    print('name data', data)
+    return data
+
+  types = serializers.SerializerMethodField('get_types')
+  def get_types(self, placegeom):
+    full = json.loads(coreserializers.serialize(
+        "json", placegeom.place.types.all()))
+    data = [n['fields']['jsonb'] for n in full]
+    return data
+
+  # custom fields for LPF transform
+  type = serializers.SerializerMethodField('get_type')
+  def get_type(self, placegeom):
+    return "Feature"
+
+  uri = serializers.SerializerMethodField('get_uri')
+  def get_uri(self, placegeom):
+    return "https://whgazetteer.org/api/place/" + str(placegeom.place.id)
+
+  properties = serializers.SerializerMethodField('get_properties')
+  def get_properties(self, placegeom):
+    props = {
+      "place_id":placegeom.place.id,
+      "dataset_label": placegeom.place.dataset.label,
+      "src_id": placegeom.place.src_id,
+      "title": placegeom.place.title,
+      "ccodes": placegeom.place.ccodes,
+      "fclasses": placegeom.place.fclasses,
+      "minmax": placegeom.place.minmax,
+      "timespans": placegeom.place.timespans
+    }
+    return props
+
+  geometry = serializers.SerializerMethodField('get_geometry')
+  def get_geometry(self, placegeom):
+    return placegeom.jsonb
+    # gcoll = {"type":"GeometryCollection","geometries":[]}
+    # geoms = [g.jsonb for g in placegeom.geoms.all()]
+    # for g in geoms:
+    #   gcoll["geometries"].append(g)
+    # return gcoll
+
+  class Meta:
+    model = PlaceGeom
+    fields = ('uri', 'type', 'properties', 'geometry', 'place'
+                ,'names','types'
+                # ,'links'
+                # ,'related','whens', 'descriptions', 'depictions', 'minmax'
+            )
+
+""" used by 
+    SearchAPIView() from /api/db? 
+    SpatialAPIView() bbox queries from /api/spatial?
+"""
 class LPFSerializer(serializers.Serializer):
-# class LPFSerializer(serializers.ModelSerializer):
-# class LPFSerializer(serializers.HyperlinkedModelSerializer):
   names = PlaceNameSerializer(source="placename_set", many=True, read_only=True)
   types = PlaceTypeSerializer(many=True, read_only=True)
   links = PlaceLinkSerializer(many=True, read_only=True)

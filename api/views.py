@@ -3,7 +3,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User, Group
 from django.contrib.gis.geos import Polygon, Point
 # from django.contrib.postgres import search
-from django.contrib.gis.measure import D, Distance
+from django.contrib.gis.measure import D
+from django.contrib.gis.db.models.functions import Distance
 from django.core import serializers
 from django.db.models import Q
 from django.http import JsonResponse, HttpResponse#, FileResponse
@@ -73,7 +74,8 @@ class SpatialAPIView(generics.ListAPIView):
     err_note = None
 
     if not coll:
-      qs = Place.objects.filter(dataset__public=True)
+      qs = Place.objects.filter(
+          dataset__public=True, geoms__jsonb__type='Point')
     else:
       qs = Collection.objects.get(id=coll).places.all()
 
@@ -100,20 +102,23 @@ class SpatialAPIView(generics.ListAPIView):
             where=["geometrytype(geom) LIKE 'POINT'"])
         qs1 = qs0.annotate(distance=Distance('geom', pnt))
 
-        # qs2 = qs1.filter(geom__distance_lte=(
-        #     pnt, D(km=dist))).order_by('distance')
-        # qs1 = qs0.annotate(distance=(Distance('geom', pnt)))
-        placeids = qs1.filter(geom__distance_lte=(pnt, D(km=dist))).order_by('distance').values_list('place_id')
+        # for serializing PlaceGeoms
+        lon=-98.3067; lat=19.1302
+        pnt = Point(float(lon), float(lat), srid=4326)
+        dist=3
+        qs2 = qs1.filter(geom__distance_lte=(pnt, D(km=dist))).\
+            order_by('distance')
+        filtered = qs2[:pagesize] if pagesize and pagesize < 200 else qs2[:20]
 
-        # Works, but not ordered
-        # placeids = PlaceGeom.objects.filter(geom__distance_lte=(
-        #   pnt, D(km=int(dist))
-        # )).order_by('distance').values_list('place_id')
+        # for serializing Places
+        # placeids = qs1.filter(geom__distance_lte=(pnt, D(km=dist))).\
+        #     order_by('distance').values_list('place_id')
+        # qs = qs.filter(id__in=placeids)
 
-        qs = qs1.filter(id__in=placeids)
-        msg = "nearby query (lon, lat): "+str(pnt.coords)+' w/'+dist+'km buffer'
+        msg = "nearby query (lon, lat): "+str(pnt.coords)+' w/'+str(dist)+'km buffer'
         print(msg)
         # return HttpResponse(content=msg)
+
     elif qtype == 'bbox':
       if not all(v for v in [sw, ne]):
         return HttpResponse(content=b'<div style="margin:3rem; font-size: 1.2rem; border:1px solid gainsboro; padding:.5rem;">' +
@@ -128,9 +133,10 @@ class SpatialAPIView(generics.ListAPIView):
         msg="do bbox query (sw, ne): "+str(bbox)
         print(msg)
 
-    filtered = qs[:pagesize] if pagesize and pagesize < 200 else qs[:20]
+        filtered = qs[:pagesize] if pagesize and pagesize < 200 else qs[:20]
 
-    serial = LPFSerializer
+    # serial = LPFSerializer
+    serial = PlaceGeomSerializer
     serializer = serial(filtered, many=True, context={
                         'request': self.request})
     serialized_data = serializer.data
@@ -140,7 +146,7 @@ class SpatialAPIView(generics.ListAPIView):
               "parameters": params,
               "errors": err_note,
               "type": "FeatureCollection",
-              "context": "https://raw.githubusercontent.com/LinkedPasts/linked-places/master/linkedplaces-context-v1.1.jsonld",
+              "@context": "https://raw.githubusercontent.com/LinkedPasts/linked-places/master/linkedplaces-context-v1.1.jsonld",
               "features": serialized_data
               }
     #print('place result',result)
