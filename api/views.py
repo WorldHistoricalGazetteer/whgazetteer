@@ -69,79 +69,66 @@ class SpatialAPIView(generics.ListAPIView):
     ds = params.get('dataset', None)
     coll = params.get('collection', None)
     pagesize = params.get('pagesize', None)
-    year = params.get('year', None)
-    # ?
+    # year = params.get('year', None)
+
     err_note = None
 
-    if not coll:
-      qs = Place.objects.filter(
-          dataset__public=True, geoms__jsonb__type='Point')
-    else:
-      qs = Collection.objects.get(id=coll).places.all()
-
-    # refine queryset w/any params received
-    qs = qs.filter(dataset=ds) if ds else qs
-    qs = qs.filter(fclasses__overlap=fclasses) if fclasses else qs
-    qs = qs.filter(minmax__0__lte=year, minmax__1__gte=year) if year else qs
-
-    # right params?
     if not qtype:
-      return HttpResponse(content=b'<div style="margin:3rem; font-size: 1.2rem; border:1px solid gainsboro; padding:.5rem;">'+
-        b'<p>Spatial query parameters must include either either <ul><li><b>?type=nearby</b> (with <b>&lng=</b> and <b>&lat=</b>) <i>or</i></li>'+
+      return HttpResponse(content=b'<div style="margin:3rem; font-size: 1.2rem; border:1px solid gainsboro; padding:.5rem;">' +
+        b'<p>Spatial query parameters must include either either <ul><li><b>?type=nearby</b> (with <b>&lng=</b> and <b>&lat=</b>) <i>or</i></li>' +
         b'<li><b>?type=bbox</b> (with <b>&sw=</b> and <b>&ne+</b>).</p></div')
+
+    # uses PlaceGeom records and PlaceGeomSerializer
     if qtype == 'nearby':
       if not all(v for v in [lon, lat, dist]):
-        return HttpResponse(content=b'<div style="margin:3rem; font-size: 1.2rem; border:1px solid gainsboro; padding:.5rem;">'+
+        return HttpResponse(content=b'<div style="margin:3rem; font-size: 1.2rem; border:1px solid gainsboro; padding:.5rem;">' +
           b'<p>A <b>nearby</b> spatial query requires <b>lng</b>, <b>lat</b>, and <b>km</b> parameters</p></div>')
-      else:
-        # do nearby query
-        pnt = Point(float(lon), float(lat), srid=4326)
+      pnt = Point(float(lon), float(lat), srid=4326)
+      # PlaceGeom records, only points
+      qs = PlaceGeom.objects.extra(
+          where=["geometrytype(geom) LIKE 'POINT'"]). \
+            annotate(distance=Distance('geom', pnt)). \
+              filter(geom__distance_lte=(pnt, D(km=dist))).order_by('distance')
+      # filter on params
+      if coll:
+        collids = Collection.objects.get(id=coll).places.all().values_list('id',flat=True)
+        qs = qs.filter(place_id__in=collids)
+      qs = qs.filter(place__dataset=ds) if ds else qs
+      qs = qs.filter(place__fclasses__overlap=fclasses) if fclasses else qs
+      # qs = qs.filter(place__minmax__0__lte=year, place__minmax__1__gte=year) if year else qs
 
-        # filter for only POINTs
-        qs0 = PlaceGeom.objects.extra(
-            where=["geometrytype(geom) LIKE 'POINT'"])
-        qs1 = qs0.annotate(distance=Distance('geom', pnt))
+      msg = "nearby query (lon, lat): "+str(pnt.coords)+' w/'+str(dist)+'km buffer'
+      print(msg)
 
-        # for serializing PlaceGeoms
-        lon=-98.3067; lat=19.1302
-        pnt = Point(float(lon), float(lat), srid=4326)
-        dist=3
-        qs2 = qs1.filter(geom__distance_lte=(pnt, D(km=dist))).\
-            order_by('distance')
-        filtered = qs2[:pagesize] if pagesize and pagesize < 200 else qs2[:20]
-
-        # for serializing Places
-        # placeids = qs1.filter(geom__distance_lte=(pnt, D(km=dist))).\
-        #     order_by('distance').values_list('place_id')
-        # qs = qs.filter(id__in=placeids)
-
-        msg = "nearby query (lon, lat): "+str(pnt.coords)+' w/'+str(dist)+'km buffer'
-        print(msg)
-        # return HttpResponse(content=msg)
-
+    # uses Place records and LPFSerializer
     elif qtype == 'bbox':
       if not all(v for v in [sw, ne]):
         return HttpResponse(content=b'<div style="margin:3rem; font-size: 1.2rem; border:1px solid gainsboro; padding:.5rem;">' +
           b'<p>A <b>bbox</b> spatial query requires both <b>sw</b> and <b>ne</b> parameters</p></div>')
       else:
-        # do bbox query
+        qs = Place.objects.filter(dataset__public=True, geoms__jsonb__type='Point')
         bb = [float(sw.split(',')[0]), float(sw.split(',')[1]),
                   float(ne.split(',')[0]), float(ne.split(',')[1])]
         bbox = Polygon.from_bbox(bb) # [xmin, ymin, xmax, ymax]
         placeids = PlaceGeom.objects.filter(geom__within=bbox).values_list('place_id')
         qs = qs.filter(id__in=placeids)
-        msg="do bbox query (sw, ne): "+str(bbox)
+        # filter on params
+        if coll:
+          collids = Collection.objects.get(
+              id=coll).places.all().values_list('id', flat=True)
+          qs = qs.filter(id__in=collids)
+        qs = qs.filter(dataset=ds) if ds else qs
+        qs = qs.filter(fclasses__overlap=fclasses) if fclasses else qs
+
+        msg="bbox query (sw, ne): "+str(bbox)
         print(msg)
 
-        filtered = qs[:pagesize] if pagesize and pagesize < 200 else qs[:20]
-
-    # serial = LPFSerializer
+    filtered = qs[:pagesize] if pagesize and pagesize < 200 else qs[:20]
     serial = LPFSerializer if qtype == 'bbox' else PlaceGeomSerializer
-    serializer = serial(filtered, many=True, context={
-                        'request': self.request})
+    serializer = serial(filtered, many=True, context={'request': self.request})
     serialized_data = serializer.data
     result = {
-              "count": qs2.count(),
+              "count": qs.count(),
               "pagesize": filtered.count(),
               "parameters": params,
               "errors": err_note,
