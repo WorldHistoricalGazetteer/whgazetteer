@@ -151,30 +151,18 @@
 					</tr>
 				  </tbody>
 				</table>
-				<p class="mt-0 ml-2">&#x02733; always required; &nbsp;&nbsp;&#8224 required for <b>bbox</b>; &nbsp;&nbsp;&#8225; required for <b>nearby</b></p>
-			  <!-- <div id="traces" class="tab-pane fade" role="tabpanel" aria-labelledby="traces-tab">
-				<p class="mb-0">Search <span class="red-head strong">traces</span> (<b>whgazetteer.org/api/traces?</b>)</p>
-				<table class="table table-striped table-api">
-				  <thead>
-					<tr><th scope="col">parameter</th><th scope="col">value</th><th scope="col">notes</th></tr>
-				  </thead>
-				  <tbody>
-					<tr><td>q</td><td>string</td><td>search term or place </td></tr>
-					<tr><td>format</td><td>string</td><td>anno (default) or geojson</td></tr>
-				  </tbody>
-				</table> -->
-				<!-- traces -->
+				<p class="my-1 ml-2">&#x02733; always required; &nbsp;&nbsp;&#8224 required for <b>bbox</b>; &nbsp;&nbsp;&#8225; required for <b>nearby</b></p>
 				<div id="examples" class="">
 				  <p class="mb-0 strong">Examples</p>
 				  <p class="mb-0">Settlements & sites within a bounding box (feature classes 'P' and 'S')</p>
 				  <p class="mb-1"><a href="{% url 'api-spatial' %}?type=bbox&sw=31.918,26.186&ne=32.918,27.186&fc=P,S" target="_blank">
 						/api/spatial/?type=bbox&sw=31.918,26.186&ne=33.918,28.186&fc=P,S
 				  </a></p>
-				  <p class="mb-0">Places in Old World Trade dataset within 100km of given point</p>
+				  <p class="mb-0">Places in Old World Trade dataset within 100km of given point, ordered</p>
 				  <p class=mb-1><a href="{% url 'api-spatial' %}?type=nearby&lon=31.918&lat=26.186&km=100&dataset=owtrad" target="_blank">
 						/api/spatial/?type=nearby&lon=31.918&lat=26.186&km=100&dataset=owtrad
 				  </a></p>
-				  <p class="mb-0">Settlements in HGIS de Las Indias collection within 10km of given point</p>
+				  <p class="mb-0">Settlements in HGIS de Las Indias collection within 10km of given point, ordered</p>
 				  <p class=mb-1><a href="{% url 'api-spatial' %}?type=nearby&lon=-98.3067&lat=19.1302&km=10&fc=P&collection=5" target="_blank">
 						/api/spatial/?type=nearby&lon=-98.3067&lat=19.1302&km=10&fc=P&collection=5
 				  </a></p>

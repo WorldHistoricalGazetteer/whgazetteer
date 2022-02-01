@@ -82,7 +82,7 @@ label {vertical-align:top;}
 sr { font-weight: bold; color: #993333;}
 .strong-red { font-weight: bold; color: #993333;}
 .table td, .table th {padding: .5rem;}
-.table-api {line-height: 1rem; margin-bottom:0.25rem !important;}
+.table-api {line-height: 1rem; margin-bottom:0.25rem !important; border-bottom: 1px solid gainsboro;}
 .table-api th {background-color: honeydew; font-variant:small-caps; line-height: .7rem;}
 .texttop {vertical-align: text-top !important;}
 .textsub {vertical-align: sub !important;}
