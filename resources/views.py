@@ -26,7 +26,7 @@ class TeachingPortalView(ListView):
     # original qs
     qs = super().get_queryset()
     # return qs.filter(public=True).order_by('pub_date', 'title')
-    return qs.filter(public=True).order_by('?')
+    return qs.filter(public=True, featured__isnull=True).order_by('?')
 
   def get_context_data(self, *args, **kwargs):
     context = super(TeachingPortalView, self).get_context_data(*args, **kwargs)
@@ -35,6 +35,7 @@ class TeachingPortalView(ListView):
     regions = list(Resource.objects.all().values_list('regions', flat=True))
     context['regions'] = [x for l in regions for x in l]
     context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
+    context['featured'] = Resource.objects.filter(featured__isnull=False).order_by('featured')
     return context
 
 

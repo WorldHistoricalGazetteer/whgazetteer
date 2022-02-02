@@ -120,7 +120,8 @@ REGIONS = (
     (93, 'Southern Europe'),
     (94, 'Western Africa'),
     (95, 'Western Asia'),
-    (96, 'Western Europe')
+    (96, 'Western Europe'),
+    (99, 'Global')
 )
 
 RESOURCE_TYPES = [
