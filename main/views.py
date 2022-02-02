@@ -48,7 +48,8 @@ class Home(TemplateView):
 
 class Home2a(TemplateView):
     print('in Home2a()')
-    template_name = 'main/home_v2a.html'
+    # template_name = 'main/home_v2a.html'
+    template_name = 'main/home_v2b.html'
 
     def get_context_data(self, *args, **kwargs):
         context = super(Home2a, self).get_context_data(*args, **kwargs)

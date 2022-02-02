@@ -275,7 +275,7 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
 #list_all a {color:#cff8ff; !important; vertical-align:middle; text-decoration:underline; letter-spacing:0.04em;}
 .item-left {
   position: relative;
-  min-height: 74px;
+  min-height: 62px;
   /*background-color: rgb(248 253 255);*/
   background-color: rgb(255 253 248);
   border: 1px dotted #666;
@@ -284,7 +284,7 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
   /*cursor: pointer;*/
   /*background-image: url('/static/images/right-arrow.png') right no-repeat;*/
 }
-.item-left p { margin:.5rem 0; font-size:.9rem;}
+.item-left p { margin:.5rem 0; font-size:.85rem;}
 .item-left:hover {opacity:0.7;}
 #item_left_search {
   background-image: url('/static/images/search-map-50_425x80.png');

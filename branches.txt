@@ -1,7 +1,0 @@
-  attestation
-  coll21a
-* main
-  spatialapi
-  teach2
-  teach3
-  teaching

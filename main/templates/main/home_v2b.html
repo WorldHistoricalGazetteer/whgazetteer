@@ -1,0 +1,158 @@
+<!-- datasets/home.html -->
+<!--{ extends "main/base.html" %}-->
+{% extends "main/base_home.html" %}
+{% load fontawesome %}
+{% load static %}
+
+{% block title %}<title>WHG v2</title>{% endblock %}
+{% block extra_head %}
+  <script src="{% static 'js/spin.umd.js' %}"></script>  
+  <link rel="stylesheet" href="{% static 'css/spin.css' %}"/>
+{% endblock %}
+
+{% block content %}
+{% load static %}
+
+<div class="container mt-1" style="height: calc(100vh - 90px);">
+	<div id="banner" class="banner-bare w-100 my-1 p-2">
+		<div class="centered w-100">
+		  <span class="title mb-0"><img src="{% static 'images/whg_logo.svg'%}" class="d-inline-block align-bottom mr-2" height=80 width=80 alt=""/>World Historical Gazetteer</span>
+		  <span id="tagline" class="mx-auto" style="display:block">linking knowledge about the past via place</span>
+		</div>
+	</div>
+	<div id="content" class="row mx-0">
+	  <!--<div class="home-col-wrapper col-sm-5 h-100">-->
+	  <div class="home-col-wrapper col-sm-5">
+		<div id="content_left" class="d-flex flex-column p-2">
+		  <div class="home-header h5 w-100 mb-1"></div>
+		  <div class="wrapper-left">
+			<div class="item-left row mx-0 mb-1 pl-2" id="item_left_search">
+			  <div class="col-sm-2 home-icon"><img src="{% static 'images/001-binoculars.png'%}" class="" height=54 width=54 alt=""/><span class="helper"></span></div>
+			  <div class="col-sm-10 pt-3"><p class="pr-2 bigger">
+				<b>Explore</b> open access, historical place data
+				<!--<b>Explore</b> and download open access historical place data-->
+				<a href="{% url 'search-page' %}"><span class="link-spanner"></span></a></p></div>
+			</div><!-- .item-left -->
+			<div class="item-left row mx-0 mb-1 pl-2">
+			  <div class="col-sm-2 home-icon"><img src="{% static 'images/001-up-arrow.png'%}" class="" height=42 width=42 alt=""/></div>
+			  <div class="col-sm-10 pt-1"><p class="pr-2">
+				<!--<b>Upload and augment</b> your data with geometry and identifiers from Wikidata and Getty TGN-->
+				Upload and <b>extend</b> your data with geometry and identifiers from Wikidata and Getty TGN
+				<a href="{% url 'main:tute-walkthrough' %}"><span class="link-spanner"></span></a></p></div>
+			</div><!-- .item-left -->
+			<div class="item-left row mx-0 mb-1 pl-2">
+			  <div class="col-sm-2 home-icon"><img src="{% static 'images/003-browser.png'%}" class="" height=42 width=42 alt=""/></div>
+			  <div class="col-sm-10 pt-1"><p class="pr-2"><b>Contribute</b> your uploaded data to WHG by linking it to other places in our index<a href="{% url 'main:tute-contributing' %}"><span class="link-spanner"></span></a></p></div>
+			</div> <!-- .item-left -->
+			<div class="item-left row mx-0 mb-1 pl-2">
+			  <div class="col-sm-2 home-icon"><img src="{% static 'images/011-teaching.png'%}" class="" height=42 width=42 alt=""/></div>
+			  <div class="col-sm-10 pt-2"><p class="pr-2"><b>Teach</b> with WHG<a href="{% url 'teaching-page' %}"><span class="link-spanner"></span></a></p></div>
+			</div> <!-- .item-left --> 
+			<div class="item-left row mx-0 mb-1 pl-2">
+			  <div class="col-sm-2 home-icon"><img src="{% static 'images/008-collect.png'%}" class="" height=42 width=42 alt=""/></div>
+			  <div class="col-sm-10 pt-1"><p class="pr-2"><b>Create and share</b> your custom collection of datasets published in WHG<a href="{% url 'main:tute-collections' %}"><span class="link-spanner"></span></a></p></div>
+			</div> <!-- .item-left --> 
+			<div class="item-left row mx-0 mb-1 pl-2">
+			  <div class="col-sm-2 home-icon"><img src="{% static 'images/006-api-2.png'%}" class="" height=42 width=42 alt=""/></div>
+			  <!-- <div class="col-sm-10 pt-1"><p class="pr-2"><b>Integrate WHG data</b> with other systems using our application programming interface<a href="{% url 'usingapi' %}"><span class="link-spanner"></span></a></p></div> -->
+			  <div class="col-sm-10 pt-1"><p class="pr-2"><b>Integrate WHG data</b> using our application programming interface<a href="{% url 'usingapi' %}"><span class="link-spanner"></span></a></p></div>
+			</div> <!-- .item-left -->
+		  </div> <!-- wrapper-left-->
+		  {%comment%}
+		  <img src="{% static 'images/pelagioslogo_partner.svg'%}" height=60/>
+		  {%endcomment%}
+		</div> <!-- content_left-->
+	  </div> <!-- col-sm-5 -->
+	  <!--<div class="home-col-wrapper col-sm-7 h-100">-->
+	  <div class="home-col-wrapper col-sm-7">
+		<div id="content_right" class=" d-flex flex-column p-2">
+		  <div class="h5 w-100 home-header">Featured Datasets and Collections
+			<span id="list_all" class=""><a href="{% url 'public-lists' %}">list all</a></span>
+		  </div>
+		  <div class="wrapper-right">
+			<div class="item-right">
+        <span class="col-bottom cb-coll">collection <sr>(in-progress)</sr></span>
+			  {% with featured_coll.0.image_file.url as imgc0 %}
+				<div class="">
+				  <p class="mb-0 featured-title">
+            <a href="{% url 'collection:collection-detail' featured_coll.0.id %}">{{ featured_coll.0.title}}</a>
+          </p>
+					<p class="coll-description">
+            <a href="#" class="pop"><img class="thumbnail float-right pl-2" src="{{ imgc0 }}" alt="Detail from <a href='https://www.davidrumsey.com/luna/servlet/s/rp56bh' target='_blank'>'Carte De Hollande Et D&#39;utrecht' (Covens et Mortier, 1750)</a>" height=150 width=150 /></a>
+            {{ featured_coll.0.description|safe }}
+          </p>
+				</div>
+			  </div>
+			  {% endwith %}
+			</div> <!-- .item-right-top -->
+			<div class="row">
+      
+			  {% with featured_ds.0.image_file.url as imgd0 %}
+			  <div class="col-sm-6 pr-0">
+          <div class="item-right">
+            <span class="col-bottom cb-dataset">dataset</span>
+            <p class="my-0 featured-title">
+              <a href="{% url 'datasets:ds_meta' pk=featured_ds.0.id %}">{{featured_ds.0.title}}</a>
+            </p>
+            <p class="pr-0 coll-description">
+              <img class="pl-1 float-right" src="{{ imgd0 }}" width=75 />
+              {{ featured_ds.0.description|safe|truncatechars:250 }}
+            </p>
+          </div> <!-- .item-right -->
+			  </div> <!-- col-sm-6 -->
+			  {% endwith %}
+
+			  {% with featured_coll.1.image_file.url as imgc1 %}
+			  <div class="col-sm-6 pl-0">
+          <div class="item-right">
+            <span class="col-bottom cb-coll">collection</span>
+            <p class="my-0 featured-title">
+              <a href="{% url 'collection:collection-detail' featured_coll.1.id %}">{{featured_coll.1.title}}</a>
+            </p>
+            <p class="pr-0 coll-description">
+              <img class="pl-1 float-right"src="{{ imgc1 }}" />
+              {{ featured_coll.1.description|safe|truncatechars:250 }}</div>
+            </p>
+				  </div> <!-- .item-right -->
+			  </div> <!-- col-sm-6 -->
+			  {% endwith %}
+			  
+			</div> <!-- row -->
+		  </div> <!-- wrapper-right -->
+		</div> <!-- content_right -->
+	  </div> <!-- col-sm-7 -->
+	</div> <!-- content -->
+  <div class="modal fade" id="image_modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header"><span id="header_text"></span>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span></button>
+        </div>      
+        <div class="modal-body">
+          <!--<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>-->
+          <img src="" class="imagepreview" style="width:100%; height:100%;" >
+        </div>
+      </div>
+    </div>
+  </div> 
+</div>
+
+<script type="text/javascript">
+$(function(){
+  $("[rel='tooltip']").tooltip();
+  // modal for images
+  $('.pop').on('click', function() {
+    url = $(this).find('img').attr('src')
+    txt = $(this).find('img').attr('alt')
+    re=/(.png|.jpg|.jpeg|.gif|.tif)/g
+    ext=url.match(re)[0]
+    url = url.replace(ext,'_full'+ext)
+    console.log('img url', url, txt)
+    $("#header_text").html(txt)
+    $('.imagepreview').attr('src', url);
+    $('#image_modal').modal('show');   
+  });	
+})
+</script>
+{% endblock %}

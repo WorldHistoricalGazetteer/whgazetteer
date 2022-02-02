@@ -35,7 +35,7 @@
 		.teaching-essay {outline: rgb(60, 136, 148) 1px solid; box-shadow: 4px 4px rgb(221, 221, 221);
 			border-radius: 4px; background-color: ivory; min-height:auto; overflow-y: auto;}
 		.resource-card {float:left; margin-right:.1rem; 
-			width: 33%; height: 175px; overflow-y:auto; background-color: white;}
+			width: 33%; height: 180px; overflow-y:auto; background-color: white;}
 		.resource-card:hover {cursor: pointer; opacity:0.8;}
 		.resource-card-header {width:100%; background-color: honeydew;}
 		.resource-card-content h6 {font-size: .9rem;}
@@ -54,10 +54,10 @@
 		<div id="teaching_top" class="row">
 			<!-- <div class="container"> -->
 				<div class="row">
-					<div class="col-md-7" style="font-size: 1.3rem;">
-						<p>Place names&mdash;their origins, change over time, and reflections of identity&mdash;can provide a fascinating and revealing lens through which to explore history. Used with the interactive tools of digital history, the study of place names brings
-					new, deeper, and broader connections to our understanding of patterns of historical change.</p>
-					</div>
+					<div class="col-md-7" style="font-size:1.3rem;">
+						Place names&mdash;their origins, change over time, and reflections of identity&mdash;
+						can provide a fascinating and revealing lens through which to explore history. Used with the interactive tools of digital history, the study of place names brings
+					new, deeper, and broader connections to our understanding of patterns of historical change.</div>
 					<div class="col-md-5">{% leaflet_map "main" %}</div>
 				</div>
 			<!-- </div> -->
@@ -66,13 +66,17 @@
 			<div class="col-sm-4 px-0" style="height: 80%;">
 				<div class="teaching-essay p-2">
 					<div id="">
-					<h5 class="mb-0 strong">Place in World History</h5>
-					<p class="my-1">Ruth Mostern <span class="font-italic small ml-2">February 1, 2022</span></p>
-					<p class="mb-0" style="font-size:.85rem;">Most of us use the word place without thinking too much about what it means, but for historians, place can be a powerful concept. According to the geographer John Agnew, when we say that something is a place, we are invoking three ideas.  First, we are talking about something that has a <u>location</u>. A place exists somewhere on the surface of the earth. Second, we mean that it has a <u>locale</u>. A place is a location that is a setting for social relations. Third, we are referring to a <u>sense of place</u>, which means that some  people have had experiences that they associate with that location.  In other words, a place is a location in which memorable events have transpired. <span class="modal-link float-right mr-1" data-id="essay_rm"><a href="#" >more...</a></span></p>
+					<h5 class="mb-0">Place in World History</h5>
+					<p class="font-italic my-1">Ruth Mostern</p>
+					<p>Spatial humanists and others have long recognized the enormous integrative potential of using place as common point of
+					reference for heterogeneous information. Given that the names and attributes of places vary over time and between
+					communities, and often in the context of conquest and oppression, ambitious development of linked, diverse, and
+					multilingual gazetteers is absolutely vital. 
+					<span class="modal-link" data-id="essay_rm"><a href="#" >more...</a></span></p>
 					</div>
 				</div>
 			</div>
-			<div class="col-sm-8 pr-0" style="height: 85%;">
+			<div class="col-sm-8 pr-0" style="height: 80%;">
 				<div class="resource-gallery h-100">
 					<div class="gallery-banner pl-2 small w-100";>
 						TEACHING RESOURCES ({{ resource_list|length }})
@@ -135,7 +139,7 @@
 		}
 
 		// var dataurl = '{% url "area-features" %}';
-		var dataurl = 'https://whgazetteer.org/api/area_features?filter=un';
+		var dataurl = 'http://localhost:8000/api/area_features?filter=un';
 
 		styles = {
 				"MultiPolygon": {
