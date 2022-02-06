@@ -10,9 +10,9 @@ def attribListFromSet(attr,qs):
       obj={
         "label":item.jsonb['toponym'] if attr=='names' \
         else item.jsonb['sourceLabel'],
-        "timespans": [[int(t['start'][list(t['start'].keys())[0]]), \
-                         int(t['end'][list(t['end'].keys())[0]]) \
-                       if 'end' in t else \
+        "timespans": [[int(t['start'][list(t['start'].keys())[0]]),
+                       int(t['end'][list(t['end'].keys())[0]])
+                       if 'end' in t else
                        int(t['start'][list(t['start'].keys())[0]])] \
                         for t in item.jsonb['when']['timespans']]
             }

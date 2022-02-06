@@ -637,7 +637,7 @@ def parsePlace(place, attr):
       # TODO: index wants numbers, spec says strings
       # expect strings, including operators
       for t in when_ts:
-        x={"start": int(t['start'][list(t['start'])[0]]), \
+        x={"start": int(t['start'][list(t['start'])[0]]),
            "end": int(t['end'][list(t['end'])[0]]) }
         arr.append(x)
     else:

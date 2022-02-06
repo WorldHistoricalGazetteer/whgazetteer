@@ -426,8 +426,8 @@ def normalize(h, auth, language=None):
     rec.geoms = [{
       "type":h['geoms'][0]['location']['type'],
       "coordinates":h['geoms'][0]['location']['coordinates'],
-      "id":h['place_id'], \
-      "ds":"whg"}] \
+      "id":h['place_id'],
+        "ds":"whg"}] \
       if len(h['geoms'])>0 else []   
     
     rec.minmax = dict(sorted(h['minmax'].items(),reverse=True)) if len(h['minmax']) > 0 else []
@@ -554,8 +554,8 @@ def normalize(h, auth, language=None):
       rec.geoms = [{
         "type":"Point",
         "coordinates":h['location']['coordinates'],
-        "id":h['tgnid'], \
-        "ds":"tgn"}]
+        "id":h['tgnid'],
+          "ds":"tgn"}]
     else: 
       rec.geoms=[]
     rec.minmax = []

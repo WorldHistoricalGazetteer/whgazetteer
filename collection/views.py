@@ -221,7 +221,7 @@ class CollectionPlacesView(DetailView):
 
     coll = get_object_or_404(Collection, id=id_)
     # "geotypes":ds.geotypes, 
-    datasets = [{"id":ds.id,"label":ds.label,"title":ds.title, \
+    datasets = [{"id":ds.id,"label":ds.label,"title":ds.title,
                  "bbox": ds.bounds } for ds in coll.datasets.all()]
     #bboxes = [{"id":ds['id'], "geometry":ds['bounds']} for ds in datasets]
 
