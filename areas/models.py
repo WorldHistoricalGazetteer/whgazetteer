@@ -4,7 +4,8 @@ from django.contrib.auth.models import User
 from django.contrib.gis.db import models as geomodels
 from django.contrib.postgres.fields import JSONField, ArrayField
 from django.urls import reverse
-from djgeojson.fields import PolygonField
+# from django.contrib.gis.db import models as geomodels
+# from djgeojson.fields import PolygonField
 
 
 class Country(models.Model):
