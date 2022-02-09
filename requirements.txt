@@ -54,6 +54,7 @@ django-geojson==2.11.0
 django-guardian==2.3.0
 django-leaflet==0.24.0
 django-mathfilters==0.4.0
+django-multiselectfield==0.1.12
 django-ranged-response==0.2.0
 django-shapeshifter==18.9.23
 django-simple-captcha==0.5.13
@@ -91,6 +92,7 @@ idna==2.8
 ijson==3.1.2.post0
 importlib-metadata==0.23
 ipdb==0.11
+ipykernel==6.2.0
 ipython==7.26.0
 ipython-genutils==0.2.0
 iso8601==0.1.13
@@ -134,7 +136,8 @@ pep8==1.7.1
 petl==1.6.8
 pexpect==4.6.0
 pickleshare==0.7.5
-Pillow==8.3.2
+Pillow==9.0.0
+pip-check-reqs==2.3.2
 pip-search==0.0.10
 pipdeptree==1.0.0
 pout==0.7.9

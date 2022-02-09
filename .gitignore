@@ -21,6 +21,8 @@ media/user*
 sent_emails/
 
 .DS_Store
+.python-version
+.gitignore
 
 nohup.out
 dump.rdb
