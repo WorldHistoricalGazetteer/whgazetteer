@@ -55,19 +55,12 @@
           <!-- 'core' array of dataset labels is context from view; color-code core -->
           {% if core|haskey:rec.dataset.label %}
             <div class="core-header">
-          {% else %}<div class="attest-header">{% endif %}
+          {% else %}
+            <div class="attest-header">
+          {% endif %}
             <b>{{ rec.title }}</b>
             <span class="ml-2">
               from dataset: <a class="pop-link pop-dataset" data-id={{rec.dataset.id}} data-toggle="popover" title="Dataset Profile" data-content="" tabindex="0" rel="clickover">{{rec.dataset.label}}</a>
-              {%comment%}
-              pid: <a href="/api/place/{{rec.place_id}}/" target="_blank">{{rec.place_id}}</a>; 
-              {% if not rec.purl|startswith:'http://whgaz' %}
-              src_id: <a href="{{rec.purl}}" target="_blank">{{ rec.src_id }}</a>;{% else %}src_id: {{ rec.src_id }}; {% endif %}
-              dataset: <a class="pop-link pop-dataset" data-id={{rec.dataset.id}} data-toggle="popover" title="Dataset Profile" data-content="" tabindex="0" rel="clickover">{{rec.dataset.label}}</a>
-              {% if rec.dataset.webpage %} <a href="{{ rec.dataset.webpage }}" target="_blank">{% fontawesome_icon 'external-link' color='#336699' %}</a>{%endif%}
-              </span>]
-              {%endcomment%}
-              <!-- <a href="#" rel="tooltip" class="ttip" title="{rec.dataset.name}}" >{rec.dataset.label}}</a>-->
             <span class="float-right"><i>{{rec.place_id}}</i>
               <a href="#" data-id="{{ rec.place_id }}" class="create-comment ml-2" rel="tooltip" title="create comment">
                 {% fontawesome_icon 'edit' color='#336699' %}</a>            
@@ -111,22 +104,7 @@
             <div class="attest-element"><b>Links  </b>: {{rec.links|length}} linked records
             </div>
           {% endif %}
-          {%comment%}
-          {% if rec.links|length > 0 %}
-            <div class="attest-element"><b>Links  </b>: 
-            {% for link in rec.links|slice:":2" %}
-              {% if link.identifier|slice:"0:2" == dataset.label|slice:"0:2" %}<span><i>none</i></span>
-              {% elif link.identifier|slice:"0:3" not in 'loc, via' %}
-                <a href="" class="mr-2 ext" data-toggle="modal" data-target="#ext_site">{{ link.identifier }} {% fontawesome_icon 'external-link' color='#336699' %}</a>
-                {% if not forloop.last %}{% endif %}
-              {% else %}
-                <a href="" class="mr-2 ext">{{ link.identifier }} {% fontawesome_icon 'external-link' color='#336699' %}</a>
-              {% endif %}
-            {% endfor %}
-            </div>
-          {% endif %}
-          {%endcomment%}
-          
+
           {% if rec.related|length > 0 %}
             <div class="attest-element"><b>Related</b>:<i>
                 {% for rel in rec.related %}
@@ -229,6 +207,8 @@
 <script type="text/javascript">
 
   $('.a_modal').on('click',function(){
+      // remove modal header if there is one from a comment form
+    $(".modal-header").remove()
     startModalSpinner()
     var pid = $(this).data('pid')
     $('.modal-body').load('/places/'+pid+'/modal',function(){
@@ -263,7 +243,6 @@
             $(this).popover('hide');
         });  
     };
-  
     var dspop = $(".pop-dataset").popover({
       trigger: 'focus',
       placement: 'right',

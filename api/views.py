@@ -438,7 +438,7 @@ class SearchAPIView(generics.ListAPIView):
     # params
     print({"cc":cc,"fclasses":fclasses})
     
-    qs = Place.objects.filter(dataset__public=True)
+    qs = Place.objects.filter(Q(dataset__public=True) | Q(dataset__core=True))
 
     if all(v is None for v in [name,name_contains,id_]):
       # TODO: return a template with API instructions
@@ -448,6 +448,7 @@ class SearchAPIView(generics.ListAPIView):
       if id_:
         qs=qs.filter(id=id_)
         err_note = 'id given, other parameters ignored' if len(params.keys())>1 else None
+        print('qs', qs)
       else:
         qs = qs.filter(minmax__0__lte=year,minmax__1__gte=year) if year else qs
         qs = qs.filter(fclasses__overlap=fclasses) if fc else qs
@@ -554,7 +555,7 @@ class DatasetAPIView(LoginRequiredMixin, generics.ListAPIView):
     dslabel = params.get('label', None)
     query = params.get('q', None)
     
-    qs = Dataset.objects.filter(public=True).order_by('label')
+    qs = Dataset.objects.filter(Q(public=True) | Q(core=True)).order_by('label')
     
     if id_:
       qs = qs.filter(id = id_)

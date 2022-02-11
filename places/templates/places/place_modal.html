@@ -95,7 +95,7 @@
           <tr><td>Title:</td><td></td> <td>
               {% if dataset.label != 'tgn_filtered_01' %}
               <a href="{% url 'datasets:ds_meta' dataset.id %}">{{ dataset.title }}</a>
-              {% else %}<a href="https://www.getty.edu/research/tools/vocabularies/tgn/" target="_blank">{{ dataset.title }}{% endif %}
+              {% else %}<a href="https://www.getty.edu/research/tools/vocabularies/tgn/" target="_blank">{{ dataset.title }}</a>{% endif %}
           </td></tr>
           {% if dataset.minmax %}
             <tr><td>Earliest/Latest:</td><td> </td><td>{{dataset.minmax.0}} / {{dataset.minmax.1}} </td></tr>
