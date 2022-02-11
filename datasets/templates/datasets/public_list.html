@@ -51,19 +51,21 @@
                   <th>title <i class="fa fa-sort ml-1" data-id=0 ref=asc></i></th>
                   <th>rows</th>
                   <th>description</th>
-                  <th>modified <i class="fa fa-sort ml-1" data-id=3></th>
+                  <th>modified <i class="fa fa-sort ml-1" data-id=3 /></th>
                   <th>contributor <i class="fa fa-sort ml-1" data-id=4 ref=asc></i></th>
                   <th class="th-mini">type <i class="fa fa-sort ml-1" data-id=5></i></th>
               </thead>
               <tbody>
                 {% for ds in dataset_list %}
                   <tr class="place-row">
-                    <td style="font-size:.8rem !important;"><a href="{% url 'datasets:ds_meta' ds.id %}">{{ ds.title }}</a></td>
+                    <td style="font-size:.8rem !important;">
+                        <a href="{% url 'datasets:ds_meta' ds.id %}">{{ ds.title }}</a>
+                    </td>
                     <td>{{ ds.numrows|floatformat:"0" }}</td>
                     <td class="w-50">{{ ds.description|readmore:200|safe }}</td>
                     <td>{{ ds.last_modified_iso }}</td>
                     <td>{{ ds.owner }}</td>
-                    <td><b>{% if ds.core %}C{%else%}H{%endif%}<b></td>
+                    <td><b>{% if ds.core %}C{%else%}H{%endif%}</b></td>
                   </tr>
                 {% endfor %}
               </tbody>

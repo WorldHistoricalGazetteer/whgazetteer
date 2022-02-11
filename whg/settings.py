@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'django_extensions',
     'django_filters',
     'django_tables2',
-    #'djgeojson',
+    'djgeojson',
     'fontawesome',
     'guardian',
     'leaflet',

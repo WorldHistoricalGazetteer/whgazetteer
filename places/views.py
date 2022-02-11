@@ -235,7 +235,7 @@ class PlaceModalView(DetailView):
     print('PlaceModalView get_context_data() request.user',self.request.user)
     place = get_object_or_404(Place, pk=self.kwargs.get("id"))
     ds = place.dataset
-    dsobj = {"id":ds.id, "label":ds.label, 
+    dsobj = {"id":ds.id, "label":ds.label, "uri_base":ds.uri_base,
              "title":ds.title, "webpage":ds.webpage, 
              "minmax":None if ds.core else ds.minmax, 
              "creator":ds.creator, "last_modified":ds.last_modified_text} 
