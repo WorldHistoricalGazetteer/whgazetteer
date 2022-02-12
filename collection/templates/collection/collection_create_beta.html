@@ -78,6 +78,11 @@
     </div>
     <div id="coll_builder" class="coll-col col-sm-4 p-2">
       <div class="row">
+          <ul>
+          {% for p in coll_places %}
+            <li>{{ p.title }}</li>
+          {% endfor %}
+          </ul>
         {%comment%}
         <div class="col-sm-12">
           coll_dsset: {{ coll_dsset }}

@@ -12,6 +12,7 @@ from .forms import CollectionModelForm
 from .models import *
 from main.models import Log
 from places.models import PlaceGeom
+from itertools import chain
 
 # gl map needs this
 def fetch_geojson_coll(request, *args, **kwargs):
@@ -102,6 +103,7 @@ class CollectionCreateBetaView(LoginRequiredMixin, CreateView):
     context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
 
     datasets = []
+    places = []
     # owners create collections from their datasets
     ds_select = [obj for obj in Dataset.objects.all() if user in obj.owners or 
       user in obj.collaborators or user.is_superuser]
@@ -149,7 +151,6 @@ class CollectionCreateView(LoginRequiredMixin, CreateView):
 
   def get_context_data(self, *args, **kwargs):
     user = self.request.user
-    print('CollectionCreateView() user', user)
     context = super(CollectionCreateView, self).get_context_data(*args, **kwargs)
     context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
 
@@ -248,9 +249,9 @@ class CollectionDeleteView(DeleteView):
 #
 # detail & update
 #
-class CollectionUpdateView(UpdateView):
+class CollectionUpdateBetaView(UpdateView):
   form_class = CollectionModelForm
-  template_name = 'collection/collection_create.html'
+  template_name = 'collection/collection_create_beta.html'
   success_url = '/dashboard'
 
   def get_object(self):
@@ -274,6 +275,58 @@ class CollectionUpdateView(UpdateView):
     return super().form_valid(form)
 
   def get_context_data(self, *args, **kwargs):
+    context = super(CollectionUpdateBetaView, self).get_context_data(*args, **kwargs)
+    user = self.request.user
+    _id = self.kwargs.get("id")
+    print('CollectionUpdateView() kwargs', self.kwargs)
+
+    datasets = self.object.datasets.all()
+
+    # COLL: get places from datasets, then collection.places
+    qs_list = [d.places.all() for d in datasets]
+    # COLL: merge querysets
+    coll_places = list(chain(*qs_list))
+
+    # populates dropdown
+    ds_select = [obj for obj in Dataset.objects.all() if user in obj.owners or user.is_superuser]
+
+    context['action'] = 'update'
+    context['ds_select'] = ds_select
+    context['coll_dsset'] = datasets
+    # COLL: merged places (datasets only)
+    context['coll_places'] = coll_places
+
+    context['create_date'] = self.object.create_date.strftime("%Y-%m-%d")
+    context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
+    return context
+
+
+class CollectionUpdateView(UpdateView):
+  form_class = CollectionModelForm
+  template_name = 'collection/collection_create.html'
+  success_url = '/dashboard'
+
+  def get_object(self):
+    id_ = self.kwargs.get("id")
+    return get_object_or_404(Collection, id=id_)
+
+  def form_valid(self, form):
+    if form.is_valid():
+      print(form.cleaned_data)
+      obj = form.save(commit=False)
+      obj.save()
+      Log.objects.create(
+        # category, logtype, "timestamp", subtype, note, dataset_id, user_id
+        category = 'collection',
+        logtype = 'update',
+        note = 'collection id: '+ str(obj.id) + ' by '+ self.request.user.username,
+        user_id = self.request.user.id
+      )
+    else:
+      print('form not valid', form.errors)
+    return super().form_valid(form)
+
+  def get_context_data(self, *args, **kwargs):
     context = super(CollectionUpdateView, self).get_context_data(*args, **kwargs)
     user = self.request.user
     _id = self.kwargs.get("id")
@@ -287,6 +340,7 @@ class CollectionUpdateView(UpdateView):
     context['action'] = 'update'
     context['ds_select'] = ds_select
     context['coll_dsset'] = datasets
+
     context['create_date'] = self.object.create_date.strftime("%Y-%m-%d")
     context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
     return context

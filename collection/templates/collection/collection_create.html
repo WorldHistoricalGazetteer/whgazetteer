@@ -17,8 +17,6 @@
 
 {% block content %}
 <div class="container">
-  <!--owner or superuser: {{user.id}} {{object.owner.id}}-->
-  <p>action: {{ action }}</p>
   {% if action == 'update' and user.id != object.owner.id %}
     <p>Access to this page is limited to the collection owner(s). object: {{object.owner.id}}</p>
   {% else %}
@@ -111,7 +109,7 @@
                 </div>
               </div>
             {% endfor %}
-            <!--{ endif %}-->
+              <!--{ endif %}-->
           </div> <!-- #coll_dscards -->
         </div> <!-- .col-sm-8 -->
     </div> <!-- .row -->

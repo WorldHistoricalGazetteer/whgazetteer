@@ -16,6 +16,7 @@ urlpatterns = [
     path('createbeta/', views.CollectionCreateBetaView.as_view(), name='collection-create-beta'),
 
     path('<int:id>/update', views.CollectionUpdateView.as_view(), name='collection-update'),
+    path('<int:id>/updatebeta', views.CollectionUpdateBetaView.as_view(), name='collection-update-beta'),
     path('<int:id>/delete', views.CollectionDeleteView.as_view(), name='collection-delete'),
     
     path('list_ds/', views.ListDatasetView.as_view(), name='list-ds'),
