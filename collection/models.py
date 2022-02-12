@@ -32,6 +32,8 @@ class Collection(models.Model):
   featured = models.IntegerField(null=True, blank=True)
 
   datasets = models.ManyToManyField("datasets.Dataset")
+  # COLL: indiv places
+  places = models.ManyToManyField("places.Place")
 
   # tinymce field
   content = HTMLField(null=True, blank=True)
@@ -41,7 +43,7 @@ class Collection(models.Model):
     return reverse('datasets:dashboard')
 
   @property
-  def places(self):
+  def place_list(self):
     # TODO: gang up indiv & ds places
     dses = self.datasets.all()
     return Place.objects.filter(dataset__in=dses).distinct()

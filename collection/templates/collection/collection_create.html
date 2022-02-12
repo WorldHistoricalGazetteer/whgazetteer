@@ -64,7 +64,8 @@
           <p>Featured rank: {{ form.featured }}</p>
           <p>Image: {{ form.image_file }}</p>
       {% endif %}
-      <!-- hidden multicheckboxselect; filled programmatically by js:listDataset()-->
+      <!-- hidden CheckboxSelectMultiple w/owned, shared datasets;
+            checked programmatically by js:listDataset()-->
       <div id="select_div" class="hidden">{{ form.datasets }}</div>
       <hr/>
       <div id="collection_options"></div> <!-- collection_options -->
@@ -121,7 +122,7 @@
 
 <script type="text/javascript">
   $(function(){
-    dslist=[]
+    dslist=[] // holds ids of selected datasets
     $( ".textarea" ).each(function(index) {
       if ( ["None","null"].includes( $(this).val() ) ) {
         $(this).val('')
@@ -159,6 +160,7 @@
       $("#msg").html('<h6>Collections must contain at least 2 datasets!</h6>').addClass('strong-red').show()
     }
   })
+
   function listDataset(d) {
     console.log('listing this:', d.title)
     dslist.push(d.id)
@@ -175,6 +177,7 @@
     $("#coll_dscards_create").append(card)
     // console.log(card)
   }
+
   // adds, displays single dataset
   function addDataset() {
     console.log('selected', $("#select_ds").val())
