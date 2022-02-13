@@ -32,8 +32,8 @@
     {% else %}Create Collection{% endif %} <span class="red-head"> (beta)</span>
   </h4>
   <div class="d-flex">
-    <div class="form-box mt-2 col-sm-4">
-    <form id="collection_form" method="POST" action="#" enctype="multipart/form-data">
+    <div id="coll_form" class="form-box mt-2 col-sm-4">
+      <form id="collection_form" method="POST" action="#" enctype="multipart/form-data">
       {% csrf_token %}
       <input type="hidden" name="owner" value='{{ user.id }}'></input>
       <p>Title &#x02733;<br/>{{ form.title }}</p>
@@ -77,43 +77,71 @@
     </form>
     </div>
     <div id="coll_builder" class="coll-col col-sm-4 p-2">
-        <ul id="api_tabs" class="nav nav-tabs" role="tablist">
-          <li class="nav-item">
-            <a class="nav-link active" id="coll_dslist-tab" data-toggle="tab" href="#coll_dslist" role="tab" aria-controls="coll_dslist" aria-selected="true">Datasets</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" id="coll_placelist-tab" data-toggle="tab" href="#coll_placelist" role="tab" aria-controls="coll_placelist" aria-selected="false">Places</a>
-          </li>
-        </ul>
-        <div class="tab-content">
-            <div id="coll_dslist" class="tab-pane fade show active" role="tabpanel" aria-labelledby="coll_dslist-tab">
-            <p class="mb-0">par 1</p>
-            {% for d in coll_dsset %}
-              <div class="ds_card">
-                <p class="mb-0"><a href="{% url 'datasets:ds_summary' id=d.id %}"><span class="ds_title">{{ d.title }}</span></a> <small>({{d.label}}/{{ d.id}})</small></p>
-                <div class="ds_fields">
-                  <p class="my-1"><b>Description</b>: {{ d.description|truncatechars:150 }}</p>
-                  <p class="my-1"><b>Create date</b>: {{ d.create_date|date:"d M Y" }}</p>
-                  <p class="my-1"><b># rows</b>: {{ d.numrows }}
+			<ul id="api_tabs" class="nav nav-tabs" role="tablist">
+			  <li class="nav-item">
+			    <a class="nav-link active" id="coll_dslist-tab" data-toggle="tab" href="#coll_dslist" role="tab" aria-controls="coll_dslist" aria-selected="true" data-id="ds">Datasets</a>
+			  </li>
+			  <li class="nav-item">
+			    <a class="nav-link" id="coll_placelist-tab" data-toggle="tab" href="#coll_placelist" role="tab" aria-controls="coll_placelist" aria-selected="false" data-id="pl">Places</a>
+			  </li>
+			</ul>
+	    <div class="tab-content">
+		    <div id="coll_dslist" class="tab-pane fade show active" role="tabpanel" aria-labelledby="coll_dslist-tab">
+	        <p class="mt-2">
+	        <span class="mr-2">
+	          <select id="select_ds" name="ds" class="custom-select-sm" style="width:auto; min-width:150px;">
+	          <option value="0">Select dataset</option>
+	          <option disabled>___________</option>
+	          {% for ds in ds_select %}
+	            {% if ds not in coll_dsset %}
+	              <option value="{{ ds.id }}">{{ ds.title }}</option>
+	            {% endif %}
+	          {% endfor %}
+	          </select>
+	        </span>
+	        <a href="javascript:{ addDataset() }" class="">
+	          {% fontawesome_icon 'plus-square' color='#336699' %} add</a>
+	      </p>
+	        <!-- id, label, title, description, creator, create_date, webpage, numrows, datatype -->
+	        <div id="coll_dscards_create">
+		        {% if coll_dsset|length == 0 %}<p id="msg" class="font-italic smaller">None yet...</p>{% endif %}
+		        {% for d in coll_dsset %}
+		          <div class="ds_card">
+		            <p class="mb-0"><a href="{% url 'datasets:ds_summary' id=d.id %}"><span class="ds_title">{{ d.title }}</span></a> <small>({{d.label}}/{{ d.id}})</small></p>
+		            <div class="ds_fields">
+		              <p class="my-1"><b>Description</b>: {{ d.description|truncatechars:150 }}</p>
+		              <p class="my-1"><b>Create date</b>: {{ d.create_date|date:"d M Y" }}</p>
+		              <p class="my-1"><b># rows</b>: {{ d.numrows }}
 
-                  <a href="{% url 'collection:remove-ds' ds_id=d.id coll_id=object.id %}" class="float-right">{% fontawesome_icon 'minus-square' color='#336699' %} remove</a>
-                  </p>
-                </div>
-              </div>
+		              <a href="{% url 'collection:remove-ds' ds_id=d.id coll_id=object.id %}" class="float-right">{% fontawesome_icon 'minus-square' color='#336699' %} remove</a>
+		              </p>
+		            </div>
+		          </div>
+		        {% endfor %}
+	        </div> <!-- #coll_dscards_create -->
+		    </div>
+		    <div id="coll_placelist" class="tab-pane fade" role="tabpanel" aria-labelledby="coll_placelist-tab">
+			    <p class="mb-0"><i>Place records from collection datasets</i></p>
+          <ul>
+            {% for p in coll_places %}
+	            <li>{{ p.title }}</li>
             {% endfor %}
-            </div>
-            <div id="coll_placelist" class="tab-pane fade" role="tabpanel" aria-labelledby="coll_placelist-tab">
-                <p class="mb-0"></p>
-                <ul>
-                    {% for p in coll_places %}
-                    <li>{{ p.title }}</li>
-                    {% endfor %}
-                </ul>
-            </div>
-        </div> <!-- .tab-content -->
+          </ul>
+        </div>
+			</div> <!-- .tab-content -->
     </div>
     <div id="coll_right" class="coll-col col-sm-4 p-2">
-      <p></p>
+      <div id="coll_right_intro">
+	      <h6>Collections in WHG</h6>
+	      <p>What you need to know...</p>
+	      <p>Replaced by place-collection annotations for Places tab</p>
+      </div>
+	    <div id="coll_right_anno" class="hidden">
+	      <h6>Annotations</h6>
+		    <div class="w-100">
+			    <p>form for adding annotations to the coll-place relation</p>
+		    </div>
+	    </div>
     </div>
   </div> <!-- d-flex -->
   <div class="selector py-3"><div id="helpme"></div></div>
@@ -122,6 +150,17 @@
 
 <script type="text/javascript">
   $(function(){
+	  $(".nav-link").click(function(){
+			  var tab = $(this).data('id')
+			  console.log(tab)
+			  if(tab == 'ds'){
+					  $("#coll_right_anno").addClass('hidden')
+					  $("#coll_right_intro").removeClass('hidden')
+			  } else {
+					  $("#coll_right_anno").removeClass('hidden')
+					  $("#coll_right_intro").addClass('hidden')
+			  }
+	  })
     dslist=[]
     $( ".textarea" ).each(function(index) {
       if ( ["None","null"].includes( $(this).val() ) ) {
