@@ -51,7 +51,7 @@
           <a href="#"><span class="help-matches" data-id="going_public_coll">
             Making a collection public. {% fontawesome_icon 'question-circle' color='#336699' %}
           </span></a>
-        {% endif %}      
+        {% endif %}
       </p>
       <tr>
         <td class="my-0 small">&#x02733;<i><b> required</b></i></td>
@@ -77,35 +77,17 @@
     </form>
     </div>
     <div id="coll_builder" class="coll-col col-sm-4 p-2">
-      <div class="row">
-          <ul>
-          {% for p in coll_places %}
-            <li>{{ p.title }}</li>
-          {% endfor %}
-          </ul>
-        {%comment%}
-        <div class="col-sm-12">
-          coll_dsset: {{ coll_dsset }}
-          <h5>Datasets</h5>
-          <p>
-            <span class="mr-2">
-              <select id="select_ds" name="ds" class="custom-select-sm" style="width:auto; min-width:150px;">
-              <option value="0">Select dataset</option>
-              <option disabled>___________</option>
-              {% for ds in ds_select %}
-                {% if ds not in coll_dsset %}
-                  <option value="{{ ds.id }}">{{ ds.title }}</option>
-                {% endif %}
-              {% endfor %}
-              </select>
-            </span>
-            <a href="javascript:{ addDataset() }" class="">
-              {% fontawesome_icon 'plus-square' color='#336699' %} add</a>
-          </p>
-          <!-- id, label, title, description, creator, create_date, webpage, numrows, datatype -->
-          <div id="coll_dscards_create">
-            {% if coll_dsset|length == 0 %}<p id="msg" class="font-italic smaller">None yet...</p>{% endif %}
-            <!--{ if action == 'update' %}-->
+        <ul id="api_tabs" class="nav nav-tabs" role="tablist">
+          <li class="nav-item">
+            <a class="nav-link active" id="coll_dslist-tab" data-toggle="tab" href="#coll_dslist" role="tab" aria-controls="coll_dslist" aria-selected="true">Datasets</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="coll_placelist-tab" data-toggle="tab" href="#coll_placelist" role="tab" aria-controls="coll_placelist" aria-selected="false">Places</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+            <div id="coll_dslist" class="tab-pane fade show active" role="tabpanel" aria-labelledby="coll_dslist-tab">
+            <p class="mb-0">par 1</p>
             {% for d in coll_dsset %}
               <div class="ds_card">
                 <p class="mb-0"><a href="{% url 'datasets:ds_summary' id=d.id %}"><span class="ds_title">{{ d.title }}</span></a> <small>({{d.label}}/{{ d.id}})</small></p>
@@ -113,17 +95,22 @@
                   <p class="my-1"><b>Description</b>: {{ d.description|truncatechars:150 }}</p>
                   <p class="my-1"><b>Create date</b>: {{ d.create_date|date:"d M Y" }}</p>
                   <p class="my-1"><b># rows</b>: {{ d.numrows }}
-                  
+
                   <a href="{% url 'collection:remove-ds' ds_id=d.id coll_id=object.id %}" class="float-right">{% fontawesome_icon 'minus-square' color='#336699' %} remove</a>
                   </p>
                 </div>
               </div>
             {% endfor %}
-            <!--{ endif %}-->
-          </div> <!-- #coll_dscards -->
-        </div> <!-- .col-sm-12 -->
-        {%endcomment%}
-      </div> <!-- .row -->
+            </div>
+            <div id="coll_placelist" class="tab-pane fade" role="tabpanel" aria-labelledby="coll_placelist-tab">
+                <p class="mb-0"></p>
+                <ul>
+                    {% for p in coll_places %}
+                    <li>{{ p.title }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div> <!-- .tab-content -->
     </div>
     <div id="coll_right" class="coll-col col-sm-4 p-2">
       <p></p>
@@ -143,7 +130,7 @@
     });
 
     $("#id_geojson").attr("placeholder","generated from country codes")
-    
+
     // help modals
     $(".help-matches").click(function(){
       page=$(this).data('id')
@@ -182,7 +169,7 @@
         +'<div class="ds_fields">'
           +'<p class="my-1"><b>Description</b>: '+d.description+'</p>'
           +'<p class="my-1"><b>Create date</b>: '+d.create_date+'</p>'
-          +'<p class="my-1"><b># rows</b>: '+d.numrows 
+          +'<p class="my-1"><b># rows</b>: '+d.numrows
             +'<a href="javascript:{ removeDataset('+d.id+') }" class="float-right">'
               +'{% fontawesome_icon "minus-square" color="#336699" %} remove</a>'
           +'</p></div></div>'
