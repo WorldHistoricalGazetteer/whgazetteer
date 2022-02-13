@@ -1,6 +1,6 @@
 ## World Historical Gazetteer
 
-This is the repository for the World Historical Gazetteer (WHG) web platform and API. The project is based at the University of Pittsburgh's [World History Center (WHC)](https://www.worldhistory.pitt.edu/). It has been substantially funded by a US National Endownment for the Humanities (NEH) grant and in-kind support from WHC.
+This is the repository for the World Historical Gazetteer (WHG) web platform and API. The project is based at the University of Pittsburgh's [World History Center (WHC)](https://www.worldhistory.pitt.edu/). It has been substantially funded by a US National Endowment for the Humanities (NEH) grant and in-kind support from WHC. Version 2 development in 2021 was generously supported by the Royal Dutch Academy's [KNAW Humanities Cluster](https://www.knaw.nl/en).
 
 WHG is aggregating attestations of historical place references contributed by researchers. Version 1 was launched on 27 July 2020 and [Version 2](http://whgazetteer.org) released on 4 August 2021. Incremental updates are ongoing. There is substantial information about the purposes and uses of WHG in its [Site Guide](http://whgazetteer.org/tutorials/guide/) and [Tutorials](http://whgazetteer.org/tutorials/). Announcements and discussion about the project is also available on [our blog website](http://blog.whgazetteer.org) and via our Twitter feed, [@WHGazetteer](https://twitter.com/WHGazetteer).
 
