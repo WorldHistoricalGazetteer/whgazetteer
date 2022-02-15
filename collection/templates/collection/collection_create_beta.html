@@ -19,7 +19,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="container">
+<div class="container container-md" style="height: calc(100vh - 65px);">
   <!--owner or superuser: {{user.id}} {{object.owner.id}}-->
   {% if action == 'update' and user.id != object.owner.id %}
     <p>Access to this page is limited to the collection owner(s). object: {{object.owner.id}}</p>
@@ -31,7 +31,7 @@
       {% fontawesome_icon 'trash' color='#336699' %}</a>
     {% else %}Create Collection{% endif %} <span class="red-head"> (beta)</span>
   </h4>
-  <div class="d-flex">
+  <div class="d-flex h-100">
     <div id="coll_form" class="form-box mt-2 col-sm-4">
       <form id="collection_form" method="POST" action="#" enctype="multipart/form-data">
       {% csrf_token %}
@@ -62,9 +62,12 @@
       {% endif %}
       {% if action == 'update' and user.is_superuser or user.is_admin %}
         <hr class="my-1"/>
-          <p class="rem1">Editor options</p>
-          <p>Featured rank: {{ form.featured }}</p>
-          <p>Image: {{ form.image_file }}</p>
+	      <p class="rem1">Editor options
+		      <a href="#" class="show-hide" style="">&#8595;</a></p>
+	      <div id="editor_options" style="display: none">
+		      <p>Featured rank: {{ form.featured }}</p>
+		      <p>Image: {{ form.image_file }}</p>
+	      </div>
       {% endif %}
       <!-- hidden multicheckboxselect; filled programmatically by js:listDataset()-->
       <div id="select_div" class="hidden">{{ form.datasets }}</div>
@@ -76,17 +79,17 @@
       <span title="back"><a href="/dashboard#collectionlist">Cancel</a></span>
     </form>
     </div>
-    <div id="coll_builder" class="coll-col col-sm-4 p-2">
+    <div id="coll_builder" class="coll-col col-sm-4 p-2" style="height: 85%;">
 			<ul id="api_tabs" class="nav nav-tabs" role="tablist">
 			  <li class="nav-item">
-			    <a class="nav-link active" id="coll_dslist-tab" data-toggle="tab" href="#coll_dslist" role="tab" aria-controls="coll_dslist" aria-selected="true" data-id="ds">Datasets</a>
+			    <a class="nav-link" id="coll_dslist-tab" data-toggle="tab" href="#coll_dslist" role="tab" aria-controls="coll_dslist" aria-selected="true" data-id="ds">Datasets</a>
 			  </li>
 			  <li class="nav-item">
-			    <a class="nav-link" id="coll_placelist-tab" data-toggle="tab" href="#coll_placelist" role="tab" aria-controls="coll_placelist" aria-selected="false" data-id="pl">Places</a>
+			    <a class="nav-link active" id="coll_placelist-tab" data-toggle="tab" href="#coll_placelist" role="tab" aria-controls="coll_placelist" aria-selected="false" data-id="pl">Places</a>
 			  </li>
 			</ul>
-	    <div class="tab-content">
-		    <div id="coll_dslist" class="tab-pane fade show active" role="tabpanel" aria-labelledby="coll_dslist-tab">
+	    <div class="tab-content" style="height:95%; overflow:auto;">
+		    <div id="coll_dslist" class="tab-pane fade" role="tabpanel" aria-labelledby="coll_dslist-tab">
 	        <p class="mt-2">
 	        <span class="mr-2">
 	          <select id="select_ds" name="ds" class="custom-select-sm" style="width:auto; min-width:150px;">
@@ -120,26 +123,43 @@
 		        {% endfor %}
 	        </div> <!-- #coll_dscards_create -->
 		    </div>
-		    <div id="coll_placelist" class="tab-pane fade" role="tabpanel" aria-labelledby="coll_placelist-tab">
+		    <div id="coll_placelist" class="tab-pane fade show active" role="tabpanel" aria-labelledby="coll_placelist-tab">
 			    <p class="mb-0"><i>Place records from collection datasets</i></p>
           <ul>
             {% for p in coll_places %}
-	            <li>{{ p.title }}</li>
+	            <li><a href="#" >{{ p.title }}</a> ({{ p.id }}) {{ p.ccodes }}</li>
             {% endfor %}
           </ul>
         </div>
 			</div> <!-- .tab-content -->
     </div>
-    <div id="coll_right" class="coll-col col-sm-4 p-2">
-      <div id="coll_right_intro">
+    <div id="coll_right" class="coll-col col-sm-4 p-2" style="height: 85%;">
+      <div id="coll_right_intro" class="hidden">
 	      <h6>Collections in WHG</h6>
 	      <p>What you need to know...</p>
 	      <p>Replaced by place-collection annotations for Places tab</p>
       </div>
-	    <div id="coll_right_anno" class="hidden">
+	    <div id="coll_right_anno" class="" style="padding-top:38px;">
 	      <h6>Annotations</h6>
-		    <div class="w-100">
-			    <p>form for adding annotations to the coll-place relation</p>
+					<p class="larger red-bold"><b>Lambert Bay</b></p>
+			    <p>When {% fontawesome_icon 'question-circle' color='#336699' %}<br/>
+				    <input type="text" placeholder="start date"  style="width:80px"/>
+				    <input type="text" placeholder="end date" style="width:80px"/></p>
+			    <p>Relation {% fontawesome_icon 'question-circle' color='#336699' %}<br/>
+				    <select>
+					    <option value="-1">Relation type</option>
+					    <option value="0">Related locale</option>
+					    <option value="1">Waypoint</option>
+					    <option value="2">Battle site</option>
+				    </select>
+			    <p>Explanation:<br/><input type="textbox" /></p>
+			    </p>
+			    <p>Links: <a href="javascript:{ addDataset() }" class="">
+	          {% fontawesome_icon 'plus-square' color='#336699' %} add</a>
+				    <br/><a href="#">this page is related {% fontawesome_icon 'external-link' %}</a><br/>
+				    <!--<input type="text">-->
+			    </p>
+			    <input type="submit" value="Save" />
 		    </div>
 	    </div>
     </div>
@@ -149,6 +169,17 @@
 </div> <!-- container -->
 
 <script type="text/javascript">
+  $("#editor_options").hide();
+
+  $('.show-hide').click(function(e) {
+    $("#editor_options").slideToggle("fast");
+    var val = $(this).html() == "↑" ? "↓" : "↑";
+    {#var val = $(this).html() == "-" ? "+" : "-";#}
+    $(this).hide().html(val).fadeIn("fast");
+    {#$(this).hide().html(val).fadeIn("fast");#}
+    e.preventDefault();
+  });
+
   $(function(){
 	  $(".nav-link").click(function(){
 			  var tab = $(this).data('id')
