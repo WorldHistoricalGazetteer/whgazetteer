@@ -15,6 +15,11 @@
 
   <style>
     .coll-col { border-right: 1px dashed lightgray;;}
+    #coll_place_detail{
+	    border-bottom:dashed 1px grey;
+	    background-color: aliceblue;
+    }
+    #coll_place_detail p{ margin-bottom: 0;}
   </style>
 {% endblock %}
 
@@ -37,6 +42,9 @@
       {% csrf_token %}
       <input type="hidden" name="owner" value='{{ user.id }}'></input>
       <p>Title &#x02733;<br/>{{ form.title }}</p>
+      {% if action == 'update' %}
+        <p>Create date: {{ create_date }}</p>
+      {% endif %}
       <p><span class="top">Description &#x02733;</span><br/>{{ form.description }}</p>
       <!-- <p><span class="top">Description</span><br/>{{ form.content }}</p> -->
       <p>Creator<br/>{{ form.creator }}
@@ -57,9 +65,6 @@
         <td class="my-0 small">&#x02733;<i><b> required</b></i></td>
         <td></td>
       </tr>
-      {% if action == 'update' %}
-        <p>Create date: {{ create_date }}</p>
-      {% endif %}
       {% if action == 'update' and user.is_superuser or user.is_admin %}
         <hr class="my-1"/>
 	      <p class="rem1">Editor options
@@ -80,7 +85,7 @@
     </form>
     </div>
     <div id="coll_builder" class="coll-col col-sm-4 p-2" style="height: 85%;">
-			<ul id="api_tabs" class="nav nav-tabs" role="tablist">
+			<ul id="coll_tabs" class="nav nav-tabs" role="tablist">
 			  <li class="nav-item">
 			    <a class="nav-link" id="coll_dslist-tab" data-toggle="tab" href="#coll_dslist" role="tab" aria-controls="coll_dslist" aria-selected="true" data-id="ds">Datasets</a>
 			  </li>
@@ -127,7 +132,7 @@
 			    <p class="mb-0"><i>Place records from collection datasets</i></p>
           <ul>
             {% for p in coll_places %}
-	            <li><a href="#" >{{ p.title }}</a> ({{ p.id }}) {{ p.ccodes }}</li>
+	            <li><a class="coll-place" data-id={{ p.id }} href="#" >{{ p.title }}</a> ({{ p.id }}) {{ p.ccodes }}</li>
             {% endfor %}
           </ul>
         </div>
@@ -141,7 +146,7 @@
       </div>
 	    <div id="coll_right_anno" class="" style="padding-top:38px;">
 	      <h6>Annotations</h6>
-					<p class="larger red-bold"><b>Lambert Bay</b></p>
+		      <div id="coll_place_detail" class="mb-1"></div>
 			    <p>When {% fontawesome_icon 'question-circle' color='#336699' %}<br/>
 				    <input type="text" placeholder="start date"  style="width:80px"/>
 				    <input type="text" placeholder="end date" style="width:80px"/></p>
@@ -169,9 +174,9 @@
 </div> <!-- container -->
 
 <script type="text/javascript">
+	// show/hide editor-restricted options
   $("#editor_options").hide();
-
-  $('.show-hide').click(function(e) {
+	$('.show-hide').click(function(e) {
     $("#editor_options").slideToggle("fast");
     var val = $(this).html() == "↑" ? "↓" : "↑";
     {#var val = $(this).html() == "-" ? "+" : "-";#}
@@ -180,8 +185,224 @@
     e.preventDefault();
   });
 
+  // builds link for external place record
+  function url_extplace(identifier) {
+    // abbreviate links not in aliases.base_urls
+    if(identifier.startsWith('http')) {
+      let tag = identifier.replace(/.+\/\/|www.|\..+/g, '')
+      link = '<a href="'+identifier+'" target="_blank">'+tag+'{% fontawesome_icon 'external-link' color='#336699' %},  </a>'
+    } else {
+    link = '<a href="" class="ext" data-target="#ext_site">'+identifier+'{% fontawesome_icon 'external-link' color='#336699' %}</a>, '
+    }
+    return link
+  }
+
+  // builds link for external placetype record
+  function url_exttype(type) {
+    link = ' <a href="#" class="exttab" data-id='+type.identifier+
+      '>('+type.label+' {% fontawesome_icon "external-link" color="#336699" %})</a>'
+    return link
+  }
+  function minmaxer(timespans){
+    //console.log('got to minmax()',JSON.stringify(timespans))
+    starts=[]; ends=[]
+    for (t in timespans){
+      // gets 'in', 'earliest' or 'latest'
+      starts.push(Object.values(timespans[t].start)[0])
+      ends.push(!!timespans[t].end ? Object.values(timespans[t].end)[0] : -1)
+    }
+    //console.log('starts',starts,'ends',ends)
+    minmax=[Math.max.apply(null, starts),Math.max.apply(null, ends)]
+    return minmax
+  }
+
+  // return html for display
+  function parsePlace(data) {
+    window.featdata = data
+    function onlyUnique(array) {
+      const map = new Map();
+      const result = [];
+      for (const item of array) {
+        if(!map.has(item.identifier)){
+            map.set(item.identifier, true);
+            result.push({
+                identifier: item.identifier,
+                type: item.type,
+                aug: item.aug
+            });
+        }
+      }
+      return(result)
+    }
+    // TITLE
+    descrip = '<p><b>Title</b>: <span id="row_title" class="larger text-danger">'+data.title+'</span>'
+    // NAME VARIANTS
+    descrip+='<p class="scroll65"><b>Variants</b>: '
+    for (n in data.names) {
+      let name = data.names[n]
+      descrip+= '<p>'+name.toponym !=''?name.toponym+'; ': ''
+    }
+    // TYPES
+    // may include sourceLabel:"" **OR** sourceLabels[{"label":"","lang":""},...]
+    // console.log('data.types',data.types)
+    //{"label":"","identifier":"aat:___","sourceLabels":[{"label":" ","lang":"en"}]}
+    descrip+='</p><p><b>Types</b>: '
+    typeids = ''
+    for (t in data.types) {
+      str = ''
+      var type = data.types[t]
+      console.log('type',type)
+      if('sourceLabels' in type){
+        srclabels = type.sourceLabels
+        for(l in srclabels){
+          label = srclabels[l]['label']
+          str = label !='' ? label + '; ' : ''
+        }
+      } else if ('sourceLabel' in type) {
+        str = type.sourceLabel !='' ? type.sourceLabel + '; ' : ''
+      }
+      if(type.label!=''){
+        str += url_exttype(type) + ' '
+      }
+      typeids+=str
+    }
+    descrip += typeids.replace(/(; $)/g, "") +'</p>'
+
+    // LINKS
+    //
+    descrip += '<p class="mb-0"><b>Links</b>: <i>original: </i>'
+    close_count = added_count = related_count = 0
+    html_close = html_added = html_related = ''
+    if (data.links.length > 0) {
+      links=data.links
+      links_arr = onlyUnique(data.links)
+      console.log('distinct data.links',links_arr)
+      for (l in links_arr) {
+        //console.log('link',links_arr[l])
+        if (links_arr[l].aug == true) {
+          added_count +=1
+          html_added += url_extplace(links_arr[l].identifier)
+        } else {
+          close_count +=1
+          html_close+=url_extplace(links_arr[l].identifier)
+        }
+      }
+      descrip += close_count > 0 ? html_close : 'none; '
+      descrip += added_count > 0 ? '<i>added</i>: '+html_added : '<i>added</i>: none'
+    } else { descrip += "<i class='small'>no links established yet</i>" }
+    descrip += '</p>'
+
+    //
+    // RELATED
+    //right=''
+    if (data.related.length > 0) {
+      parent='<p class="mb-0"><b>Parent(s)</b>: ';
+      related='<p class="mb-0"><b>Related</b>: ';
+      for (r in data.related){
+        rel = data.related[r]
+        //console.log('rel',rel)
+        if (rel.relation_type == 'gvp:broaderPartitive'){
+          parent += '<span class="h1em">'+rel.label
+          parent += 'when' in rel && !('timespans' in rel.when) ?
+            ', '+rel.when.start.in+'-'+rel.when.end.in :
+            'when' in rel && ('timespans' in rel.when) ? ', '+
+              minmaxer(rel.when.timespans) : ''
+              //rel.when.timespans : ''
+          parent += '</span>; '
+        }
+        else {
+          related += '<p class="small h1em">'+rel.label+ ', '+rel.when.start.in+'-'+rel.when.end.in+'</p>'
+        }
+      }
+      descrip+=parent.length > 39 ? parent :''
+      descrip+=related.length > 37 ? related :''
+    }
+    //
+    // DESCRIPTIONS
+    // TODO: link description to identifier URI if present
+    if (data.descriptions.length > 0) {
+      val = data.descriptions[0]['value'].substring(0,300)
+      descrip+='<p><b>Description</b>: '+(val.startsWith('http')?'<a href="'+val+'" target="_blank">Link</a>':val)
+        +' ... </p>'
+        //'<br/><span class="small red-bold">('+data.descriptions[0]['identifier']+')</span>
+    }
+    //
+    // CCODES
+    //
+    //if (data.ccodes.length > 0) {
+    if (!!data.countries) {
+      //console.log('data.countries',data.countries)
+      descrip+='<p><b>Modern country bounds</b>: '+ data.countries.join(', ')+'</p>'
+    }
+    //
+    // MINMAX
+    //
+    //console.log('data.minmax',data.minmax)
+    mm=data.minmax
+    if(data.minmax && !(mm[0] == null && mm[1] == null)) {
+      descrip += '<p><b>When</b>: earliest: '+data.minmax[0]+'; latest: '+data.minmax[1]
+    }
+
+    // if geom(s) and 'certainty', add it
+    if(data.geoms.length >0){
+      cert = data.geoms[0].certainty
+      if(cert != undefined ){
+        descrip += '<p><b>Location certainty</b>: '+cert+'</p>'
+      }
+    }
+    descrip += '</div>'
+    return descrip
+  }
+	// fetch place to be annotated
+  function getPlace(pid){
+    //console.log('getPlace()', pid)
+    $.ajax({
+      url: "/api/place/"+pid,
+      }).done(function( data ) {
+        console.log('place data', data)
+        $("#coll_place_detail").html(parsePlace(data))
+        {#spinner_detail.stop()#}
+        // events on detail items
+        $('.ext').on('click', function(e) {
+          e.preventDefault();
+          str=$(this).text()
+          //console.log('str (identifier)',str)
+          // URL identifiers can be 'http*' or an authority prefix
+          if(str.substring(0,4).toLowerCase() == 'http'){
+            url = str
+          } else {
+            var re = /(http|bnf|cerl|dbp|gn|gnd|gov|loc|pl|tgn|viaf|wd|wdlocal|whg|wp):(.*?)$/;
+            url=base_urls[str.match(re)[1]]+str.match(re)[2]
+            console.log('getPlace() url', url, encodeURI(url))
+          }
+          window.open(url, '_blank');
+          // window.open(encodeURI(url), '_blank');
+        });
+        $('.exttab').on('click', function(e) {
+          e.preventDefault();
+          id=$(this).data('id').toString()
+          console.log('id',id)
+          var re = /(http|dbp|gn|tgn|wd|loc|viaf|aat):(.*?)$/;
+          url=id.match(re)[1]=='http' ? id : base_urls[id.match(re)[1]]+id.match(re)[2]
+          console.log('url',url)
+          window.open(url,'_blank')
+        });
+    });
+    //spinner_detail.stop()
+  }
+
   $(function(){
-	  $(".nav-link").click(function(){
+
+    $(".coll-place").click(function(){
+        console.log('fetch r/o place record', $(this).data('id'));
+        getPlace($(this).data('id'))
+    })
+		{#$("coll-place").click(function(){#}
+			{#e.preventDefault()#}
+		{#	console.log('fetch r/o place record', $(this).data('id'))#}
+		{#})#}
+
+    $(".nav-link").click(function(){
 			  var tab = $(this).data('id')
 			  console.log(tab)
 			  if(tab == 'ds'){
@@ -192,6 +413,7 @@
 					  $("#coll_right_intro").addClass('hidden')
 			  }
 	  })
+
     dslist=[]
     $( ".textarea" ).each(function(index) {
       if ( ["None","null"].includes( $(this).val() ) ) {
