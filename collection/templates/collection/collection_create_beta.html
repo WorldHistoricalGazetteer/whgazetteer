@@ -26,130 +26,152 @@
 {% block content %}
 <div class="container container-md" style="height: calc(100vh - 65px);">
   <!--owner or superuser: {{user.id}} {{object.owner.id}}-->
-  {% if action == 'update' and user.id != object.owner.id %}
-    <p>Access to this page is limited to the collection owner(s). object: {{object.owner.id}}</p>
+  {% if action == 'update' and user.id != object.owner.id and not user.is_superuser %}
+	  <p>Access to this page is limited to the collection owner, <b>{{ user.username }} ({{object.owner.id}})</b></p>
   {% else %}
-  <h4 class="mt-3">
-    {% if action == 'update' %}Update Collection: <span class="text-danger">"{{ form.title.value }}"</span>
+	  <h4 class="mt-3">
+    {% if action == 'update' %}
+	    Update Collection: <span class="text-danger">"{{ form.title.value }}"</span>
     <a href="{% url 'collection:collection-delete' object.id %}" class="float-right"
       title="Delete collection" rel="tooltip" style="margin-top:-2px;">
       {% fontawesome_icon 'trash' color='#336699' %}</a>
-    {% else %}Create Collection{% endif %} <span class="red-head"> (beta)</span>
-  </h4>
-  <div class="d-flex h-100">
-    <div id="coll_form" class="form-box mt-2 col-sm-4">
-      <form id="collection_form" method="POST" action="#" enctype="multipart/form-data">
-      {% csrf_token %}
-      <input type="hidden" name="owner" value='{{ user.id }}'></input>
-      <p>Title &#x02733;<br/>{{ form.title }}</p>
-      {% if action == 'update' %}
-        <p>Create date: {{ create_date }}</p>
-      {% endif %}
-      <p><span class="top">Description &#x02733;</span><br/>{{ form.description }}</p>
-      <!-- <p><span class="top">Description</span><br/>{{ form.content }}</p> -->
-      <p>Creator<br/>{{ form.creator }}
-      <p>Contact<br/>{{ form.contact }}
-      <p>Webpage URL<br/>{{ form.webpage }}
-      <p>Keywords (comma-separated) &#x02733;<br/>{{ form.keywords }}
+    {% else %}
+	    Create Collection
+    {% endif %} <span class="red-head"> (beta)</span>
+	  </h4>
+	  <div class="d-flex h-100">
+	    <div id="coll_form" class="form-box mt-2 coll-col col-sm-4" style="height: 85%;">
+	      <form id="collection_form" method="POST" action="#" enctype="multipart/form-data">
+	      {% csrf_token %}
+	      <input type="hidden" name="owner" value='{{ user.id }}'></input>
+		      <p>Title &#x02733;<span class="closer float-right"><<</span><br/>{{ form.title }}</p>
+	      {% if action == 'update' %}
+	        <p>Create date: {{ create_date }}</p>
+	      {% endif %}
+	      <p><span class="top">Description &#x02733;</span><br/>{{ form.description }}</p>
+	      <!-- <p><span class="top">Description</span><br/>{{ form.content }}</p> -->
+	      <p>Creator<br/>{{ form.creator }}
+	      <p>Contact<br/>{{ form.contact }}
+	      <p>Webpage URL<br/>{{ form.webpage }}
+	      <p>Keywords (comma-separated) &#x02733;<br/>{{ form.keywords }}
 
-      <p>Public?:
-        {% if form.public.value == True %}
-          {{ form.public.value }}
-        {% else %}
-          <a href="#"><span class="help-matches" data-id="going_public_coll">
-            Making a collection public. {% fontawesome_icon 'question-circle' color='#336699' %}
-          </span></a>
-        {% endif %}
-      </p>
-      <tr>
-        <td class="my-0 small">&#x02733;<i><b> required</b></i></td>
-        <td></td>
-      </tr>
-      {% if action == 'update' and user.is_superuser or user.is_admin %}
-        <hr class="my-1"/>
-	      <p class="rem1">Editor options
-		      <a href="#" class="show-hide" style="">&#8595;</a></p>
-	      <div id="editor_options" style="display: none">
-		      <p>Featured rank: {{ form.featured }}</p>
-		      <p>Image: {{ form.image_file }}</p>
-	      </div>
-      {% endif %}
-      <!-- hidden multicheckboxselect; filled programmatically by js:listDataset()-->
-      <div id="select_div" class="hidden">{{ form.datasets }}</div>
-      <hr/>
-      <div id="collection_options"></div> <!-- collection_options -->
-      <p id="referrer"></p>
-      <input id="btn_coll_submit" class="btn-sm btn-primary mt-2" type="submit" value="Save" />
-      <!--<span title="back"><a href="{ url 'dashboard' %}">Cancel</a></span>-->
-      <span title="back"><a href="/dashboard#collectionlist">Cancel</a></span>
-    </form>
-    </div>
-    <div id="coll_builder" class="coll-col col-sm-4 p-2" style="height: 85%;">
-			<ul id="coll_tabs" class="nav nav-tabs" role="tablist">
-			  <li class="nav-item">
-			    <a class="nav-link" id="coll_dslist-tab" data-toggle="tab" href="#coll_dslist" role="tab" aria-controls="coll_dslist" aria-selected="true" data-id="ds">Datasets</a>
-			  </li>
-			  <li class="nav-item">
-			    <a class="nav-link active" id="coll_placelist-tab" data-toggle="tab" href="#coll_placelist" role="tab" aria-controls="coll_placelist" aria-selected="false" data-id="pl">Places</a>
-			  </li>
-			</ul>
-	    <div class="tab-content" style="height:95%; overflow:auto;">
-		    <div id="coll_dslist" class="tab-pane fade" role="tabpanel" aria-labelledby="coll_dslist-tab">
-	        <p class="mt-2">
-	        <span class="mr-2">
-	          <select id="select_ds" name="ds" class="custom-select-sm" style="width:auto; min-width:150px;">
-	          <option value="0">Select dataset</option>
-	          <option disabled>___________</option>
-	          {% for ds in ds_select %}
-	            {% if ds not in coll_dsset %}
-	              <option value="{{ ds.id }}">{{ ds.title }}</option>
-	            {% endif %}
-	          {% endfor %}
-	          </select>
-	        </span>
-	        <a href="javascript:{ addDataset() }" class="">
-	          {% fontawesome_icon 'plus-square' color='#336699' %} add</a>
+	      <p>Public?:
+	        {% if form.public.value == True %}
+	          {{ form.public.value }}
+	        {% else %}
+	          <a href="#"><span class="help-matches" data-id="going_public_coll">
+	            Making a collection public. {% fontawesome_icon 'question-circle' color='#336699' %}
+	          </span></a>
+	        {% endif %}
 	      </p>
-	        <!-- id, label, title, description, creator, create_date, webpage, numrows, datatype -->
-	        <div id="coll_dscards_create">
-		        {% if coll_dsset|length == 0 %}<p id="msg" class="font-italic smaller">None yet...</p>{% endif %}
-		        {% for d in coll_dsset %}
-		          <div class="ds_card">
-		            <p class="mb-0"><a href="{% url 'datasets:ds_summary' id=d.id %}"><span class="ds_title">{{ d.title }}</span></a> <small>({{d.label}}/{{ d.id}})</small></p>
-		            <div class="ds_fields">
-		              <p class="my-1"><b>Description</b>: {{ d.description|truncatechars:150 }}</p>
-		              <p class="my-1"><b>Create date</b>: {{ d.create_date|date:"d M Y" }}</p>
-		              <p class="my-1"><b># rows</b>: {{ d.numrows }}
+	      <tr>
+	        <td class="my-0 small">&#x02733;<i><b> required</b></i></td>
+	        <td></td>
+	      </tr>
+	      {% if action == 'update' and user.is_superuser or user.is_admin %}
+	        <hr class="my-1"/>
+		      <p class="rem1">Editor options
+			      <a href="#" class="show-hide" style="">&#8595;</a></p>
+		      <div id="editor_options" style="display: none">
+			      <p>Featured rank: {{ form.featured }}</p>
+			      <p>Image: {{ form.image_file }}</p>
+		      </div>
+	      {% endif %}
+	      <!-- hidden multicheckboxselect; filled programmatically by js:listDataset()-->
+	      <div id="select_div" class="hidden">{{ form.datasets }}</div>
+	      <hr/>
+	      <div id="collection_options"></div> <!-- collection_options -->
+	      <p id="referrer"></p>
+	      <input id="btn_coll_submit" class="btn-sm btn-primary mt-2" type="submit" value="Save" />
+	      <!--<span title="back"><a href="{ url 'dashboard' %}">Cancel</a></span>-->
+	      <span title="back"><a href="/dashboard#collectionlist">Cancel</a></span>
+	    </form>
+	    </div>
+{#	    <div class="mt-2 coll-col col-sm-1" style="background-color: palegreen"> </div>#}
+	    <div id="coll_builder" class="coll-col col-sm-4 p-2" style="height: 85%;">
+				<ul id="coll_tabs" class="nav nav-tabs" role="tablist">
+				  <li class="nav-item">
+				    <a class="nav-link active" id="coll_dslist-tab" data-toggle="tab" href="#coll_dslist" role="tab" aria-controls="coll_dslist" aria-selected="true" data-id="ds">Datasets</a>
+				  </li>
+				  <li class="nav-item">
+				    <a class="nav-link" id="coll_placelist-tab" data-toggle="tab" href="#coll_placelist" role="tab" aria-controls="coll_placelist" aria-selected="false" data-id="pl">Places</a>
+				  </li>
+				</ul>
+		    <div class="tab-content" style="height:95%; overflow:auto;">
+			    <div id="coll_dslist" class="tab-pane fade show active" role="tabpanel" aria-labelledby="coll_dslist-tab">
+		        <p class="mt-2">
+		        <span class="mr-2 smaller">
+		          <select id="select_ds" name="ds" class="custom-select-sm">
+		          <option value="0">Select dataset</option>
+		          <option disabled>___________</option>
+		          {% for ds in ds_select %}
+		            {% if ds not in coll_dsset %}
+		              <option value="{{ ds.id }}">{{ ds.title }}</option>
+		            {% endif %}
+		          {% endfor %}
+		          </select>
+		        </span>
+		        <a href="javascript:{ addDataset() }" class="">
+		          {% fontawesome_icon 'plus-square' color='#336699' %} add</a>
+		      </p>
+		        <!-- id, label, title, description, creator, create_date, webpage, numrows, datatype -->
+		        <div id="coll_dscards_create">
+			        {% if coll_dsset|length == 0 %}<p id="msg" class="font-italic smaller">None yet...</p>{% endif %}
+			        {% for d in coll_dsset %}
+			          <div class="ds_card">
+			            <p class="mb-0"><a href="{% url 'datasets:ds_summary' id=d.id %}"><span class="ds_title">{{ d.title }}</span></a> <small>({{d.label}}/{{ d.id}})</small></p>
+			            <div class="ds_fields">
+			              <p class="my-1"><b>Description</b>: {{ d.description|truncatechars:150 }}</p>
+			              <p class="my-1"><b>Create date</b>: {{ d.create_date|date:"d M Y" }}</p>
+			              <p class="my-1"><b># rows</b>: {{ d.numrows }}
 
-		              <a href="{% url 'collection:remove-ds' ds_id=d.id coll_id=object.id %}" class="float-right">{% fontawesome_icon 'minus-square' color='#336699' %} remove</a>
-		              </p>
-		            </div>
-		          </div>
-		        {% endfor %}
-	        </div> <!-- #coll_dscards_create -->
-		    </div>
-		    <div id="coll_placelist" class="tab-pane fade show active" role="tabpanel" aria-labelledby="coll_placelist-tab">
-			    <p class="mb-0"><i>Place records from collection datasets</i></p>
-          <ul>
-            {% for p in coll_places %}
-	            <li><a class="coll-place" data-id={{ p.id }} href="#" >{{ p.title }}</a> ({{ p.id }}) {{ p.ccodes }}</li>
-            {% endfor %}
-          </ul>
-        </div>
-			</div> <!-- .tab-content -->
-    </div>
-    <div id="coll_right" class="coll-col col-sm-4 p-2" style="height: 85%;">
-      <div id="coll_right_intro" class="hidden">
-	      <h6>Collections in WHG</h6>
-	      <p>What you need to know...</p>
-	      <p>Replaced by place-collection annotations for Places tab</p>
-      </div>
-	    <div id="coll_right_anno" class="" style="padding-top:38px;">
-	      <h6>Annotations</h6>
-		      <div id="coll_place_detail" class="mb-1"></div>
+			              <a href="{% url 'collection:remove-ds' ds_id=d.id coll_id=object.id %}" class="float-right">{% fontawesome_icon 'minus-square' color='#336699' %} remove</a>
+			              </p>
+			            </div>
+			          </div>
+			        {% endfor %}
+		        </div> <!-- #coll_dscards_create -->
+			    </div>
+			    <div id="coll_placelist" class="tab-pane fade" role="tabpanel" aria-labelledby="coll_placelist-tab">
+				    {% if coll_places|length > 0 %}
+		          <ul>
+		            {% for p in coll_places %}
+			            <li><a class="coll-place" data-id={{ p.id }} href="#" >{{ p.title }}</a> ({{ p.id }}) {{ p.ccodes }}</li>
+		            {% endfor %}
+		          </ul>
+				    {% else %}
+					    <p class="mb-0"><i>None yet</i></p>
+				    {% endif %}
+	        </div>
+				</div> <!-- .tab-content -->
+	    </div>
+	    <div id="coll_right" class="coll-col col-sm-4 p-2" style="height: 85%;">
+	      <div id="coll_right_intro" class="">
+		      <h5>Collections in WHG</h5>
+		      <p>A <mark-b>collection</mark-b> is a set of existing WHG place records.</p>
+		      <p>Registered users can build a collection by</p>
+		      <ol class="mb-1 pl-4">
+			      <li>Filling the required fields in the "Create" form</li>
+			      <li>Adding one or more entire datasets for which they are the owner or a collaborator
+				      <br/> <b class="red-bold">and/or</b></li>
+			      <li>Adding individual place records from any public dataset, discovered by search or browsing</li>
+		      </ol>
+		      <p>Places added to a collection by either method (step #2 or step #3) appear in the list viewed under the "Places" tab.</p>
+		      <p>Optionally, each place in a collection can be annotated with information about its membership in the collection: </p>
+		      <ul class="mb-1 pl-4">
+			      <li>associated dates or temporal order</li>
+			      <li>one of the optional "relation tags" included in the collection metadata</li>
+			      <li>a free-text description of the relation</li>
+		      </ul>
+		      <p>[<i>figure</i>]</p>
+	      </div>
+		    <div id="coll_right_anno" class="hidden">
+		      <h6>Annotations</h6>
+			    <div id="coll_place_detail" class="mb-1"></div>
 			    <p>When {% fontawesome_icon 'question-circle' color='#336699' %}<br/>
 				    <input type="text" placeholder="start date"  style="width:80px"/>
-				    <input type="text" placeholder="end date" style="width:80px"/></p>
+				    <input type="text" placeholder="end date" style="width:80px"/>
+			    </p>
 			    <p>Relation {% fontawesome_icon 'question-circle' color='#336699' %}<br/>
 				    <select>
 					    <option value="-1">Relation type</option>
@@ -157,19 +179,18 @@
 					    <option value="1">Waypoint</option>
 					    <option value="2">Battle site</option>
 				    </select>
-			    <p>Explanation:<br/><input type="textbox" /></p>
+			      <p>Explanation:<br/><input type="textbox" /></p>
 			    </p>
 			    <p>Links: <a href="javascript:{ addDataset() }" class="">
 	          {% fontawesome_icon 'plus-square' color='#336699' %} add</a>
 				    <br/><a href="#">this page is related {% fontawesome_icon 'external-link' %}</a><br/>
-				    <!--<input type="text">-->
 			    </p>
 			    <input type="submit" value="Save" />
 		    </div>
 	    </div>
-    </div>
-  </div> <!-- d-flex -->
-  <div class="selector py-3"><div id="helpme"></div></div>
+    </div> <!-- d-flex -->
+	  {# help modal div #}
+		<div class="selector py-3"><div id="helpme"></div></div>
   {% endif %}
 </div> <!-- container -->
 
@@ -444,14 +465,15 @@
       hide: {effect: "fade",duration: 400 }
     });
   })
-  
-  $("#btn_coll_submit").click(function(e){
-    // at least two datasets selected?
-    if('{{action}}' == 'create' && dslist.length < 2) {
-      e.preventDefault()
-      $("#msg").html('<h6>Collections must contain at least 2 datasets!</h6>').addClass('strong-red').show()
-    }
-  })
+
+  // at least two datasets selected?
+  {#$("#btn_coll_submit").click(function(e){#}
+  {#  if('{{action}}' == 'create' && dslist.length < 2) {#}
+  {#    e.preventDefault()#}
+  {#    $("#msg").html('<h6>Collections must contain at least 2 datasets!</h6>').addClass('strong-red').show()#}
+  {#  }#}
+  {#})#}
+
   function listDataset(d) {
     console.log('listing this:', d.title)
     dslist.push(d.id)

@@ -40,6 +40,7 @@ input[type="radio"] {
 /**
   general use
 **/
+mark-b { background-color: aliceblue;}
 label {vertical-align:top;}
 .alert {padding: 0 1.25rem !important;}
 .arial {font-family: arial, san-serif;}
@@ -576,7 +577,6 @@ input[type="text"] {
 .filters-title label {margin-bottom:0; vertical-align:initial;}
 #filters_class { padding-right:.2rem;}
 #filters_st { padding-left:.2rem;}
-#select_ds_search { font-size: .7rem;}
 
 #result_div {
   padding: 0 5px;
@@ -662,6 +662,11 @@ em { color: #993333;}
 /**
   collections
 **/
+#select_ds {
+  font-size: .8rem;
+  min-width: 150px;
+  max-width: 90%;
+}
 #placetable_filter input {font-size:smaller;}
 #collection_form p { margin-bottom: .3rem;}
 #coll_meta {
@@ -684,6 +689,7 @@ em { color: #993333;}
    border-top: 0;
 }
 #coll_right { font-size: small;}
+#coll_right p { margin-bottom: .3rem;}
 #coll_right h6 { background-color: oldlace; padding-left: 2px;}
 #coll_placelist {
   font-size: .8rem;

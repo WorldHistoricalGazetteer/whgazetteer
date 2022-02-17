@@ -1130,7 +1130,7 @@
       start: $("#input_start").val(),
       end: $("#input_end").val(),
       bounds: $("#boundsobj").val()
-    <!--,ds: $("#select_ds_search").val()-->
+      {#ds: $("#select_ds_search").val()#}
       }, function(data){
         window.searchres = data['suggestions']
         window.session = data['session']
@@ -1159,7 +1159,7 @@
       });
     years = [Number($("#input_start").val()),Number($("#input_end").val())]
     y = years.find(element => element != 0 );
-    ds_select = $("#select_ds_search").val()
+    {#ds_select = $("#select_ds_search").val()#}
     dsid = ds_select!="0" ? parseInt(ds_select) : null
     <!--console.log('params',{'fc':fclasses, "y":y, "dsid":dsid})-->
     $.get("/search/db",{

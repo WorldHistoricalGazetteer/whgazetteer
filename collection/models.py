@@ -31,7 +31,7 @@ class Collection(models.Model):
   public = models.BooleanField(default=False)
   featured = models.IntegerField(null=True, blank=True)
 
-  datasets = models.ManyToManyField("datasets.Dataset")
+  datasets = models.ManyToManyField("datasets.Dataset", blank=True)
   # COLL: indiv places
   places = models.ManyToManyField("places.Place")
 
