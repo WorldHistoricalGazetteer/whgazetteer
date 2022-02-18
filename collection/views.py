@@ -3,7 +3,7 @@
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse, HttpResponseRedirect
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.generic import (View, CreateView, UpdateView, DetailView, DeleteView )
 
@@ -75,9 +75,10 @@ class CollectionCreateBetaView(LoginRequiredMixin, CreateView):
       logtype = 'create',
       note = 'created collection id: '+str(self.object.id),
       user_id = self.request.user.id
-    )    
-    return reverse('dashboard')
-  #
+    )
+    # return to update page after create
+    return reverse('collection:collection-update-beta', kwargs = {'id':self.object.id})
+
   def get_form_kwargs(self, **kwargs):
     kwargs = super(CollectionCreateBetaView, self).get_form_kwargs()
     return kwargs
