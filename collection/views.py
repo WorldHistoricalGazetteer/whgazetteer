@@ -14,7 +14,7 @@ from main.models import Log
 from places.models import PlaceGeom
 from itertools import chain
 
-# gl map needs this
+""" gl map needs this """
 def fetch_geojson_coll(request, *args, **kwargs):
   print('download_gis kwargs',kwargs)
   id_=kwargs['id']
@@ -35,7 +35,7 @@ def fetch_geojson_coll(request, *args, **kwargs):
     fcoll['features'].append(feat)
   return JsonResponse(fcoll, safe=False,json_dumps_params={'ensure_ascii':False,'indent':2})
 
-# returns json for display
+""" returns json for display """
 class ListDatasetView(View):
   @staticmethod
   def get(request):
@@ -62,7 +62,7 @@ def remove_dataset(request, *args, **kwargs):
 
   return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
-''' v2.1 beta: collections from places or datasets '''
+""" BETA: collections from places or datasets """
 class CollectionCreateBetaView(LoginRequiredMixin, CreateView):
   form_class = CollectionModelForm
   template_name = 'collection/collection_create_beta.html'
@@ -115,7 +115,6 @@ class CollectionCreateBetaView(LoginRequiredMixin, CreateView):
 
     return context
 
-
 """ v2 default """
 class CollectionCreateView(LoginRequiredMixin, CreateView):
   form_class = CollectionModelForm
@@ -166,8 +165,34 @@ class CollectionCreateView(LoginRequiredMixin, CreateView):
 
     return context
 
+""" BETA: public collection view, contents, bboxes on a map """
+class CollectionDetailBetaView(DetailView):
+  template_name = 'collection/collection_detail_beta.html'
 
-""" list collection datasets, bboxes on a map """
+  model = Collection
+
+  def get_context_data(self, **kwargs):
+    context = super(CollectionDetailBetaView, self).get_context_data(**kwargs)
+    id_ = self.kwargs.get("pk")
+    print('CollectionDetailView(), kwargs',self, self.kwargs)
+
+    datasets = self.object.datasets.all()
+
+    # compute bounding boxes
+    bboxes = [
+      {"type":"Feature",
+       "properties": {"id":ds.id, "label": ds.label, "title": ds.title},
+       "geometry":ds.bounds} for ds in datasets]
+
+    context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
+    context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
+    context['mbtokenwhg'] = settings.MAPBOX_TOKEN_WHG
+
+    context['ds_list'] = datasets
+    context['bboxes'] = bboxes
+    return context
+
+""" public collection view, datasets, bboxes on a map """
 class CollectionDetailView(DetailView):
   template_name = 'collection/collection_detail.html'
 
@@ -194,7 +219,51 @@ class CollectionDetailView(DetailView):
     context['bboxes'] = bboxes
     return context
 
-""" browse all collection places """
+""" BETA: browse collection *all* places """
+class CollectionPlacesBetaView(DetailView):
+  login_url = '/accounts/login/'
+  redirect_field_name = 'redirect_to'
+
+  model = Collection
+  template_name = 'collection/collection_places_beta.html'
+
+  def get_success_url(self):
+    id_ = self.kwargs.get("id")
+    return '/collections/'+str(id_)+'/places'
+
+  def get_object(self):
+    id_ = self.kwargs.get("id")
+    return get_object_or_404(Collection, id=id_)
+
+  def get_context_data(self, *args, **kwargs):
+    context = super(CollectionPlacesBetaView, self).get_context_data(*args, **kwargs)
+    context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
+    context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
+    context['media_url'] = settings.MEDIA_URL
+
+    print('CollectionPlacesView get_context_data() kwargs:',self.kwargs)
+    print('CollectionPlacesView get_context_data() request.user',self.request.user)
+    id_ = self.kwargs.get("id")
+    # compute bounding boxes
+
+    coll = get_object_or_404(Collection, id=id_)
+    # "geotypes":ds.geotypes, 
+    # datasets = [{"id":ds.id,"label":ds.label,"title":ds.title} for ds in coll.ds_list]
+                 # "bbox": ds.bounds } for ds in coll.datasets.all()]
+    #bboxes = [{"id":ds['id'], "geometry":ds['bounds']} for ds in datasets]
+
+    placeset = coll.places.all()
+    context['places'] = placeset
+    # context['places'] = placeset
+    context['ds_list'] = coll.ds_list
+    #context['bboxes'] = bboxes
+    context['updates'] = {}
+    context['coll'] = coll
+    context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False
+
+    return context
+
+""" browse collection dataset places """
 class CollectionPlacesView(DetailView):
   login_url = '/accounts/login/'
   redirect_field_name = 'redirect_to'
@@ -222,13 +291,14 @@ class CollectionPlacesView(DetailView):
     # compute bounding boxes
 
     coll = get_object_or_404(Collection, id=id_)
-    # "geotypes":ds.geotypes, 
+    # "geotypes":ds.geotypes,
     # datasets = [{"id":ds.id,"label":ds.label,"title":ds.title} for ds in coll.ds_list]
                  # "bbox": ds.bounds } for ds in coll.datasets.all()]
     #bboxes = [{"id":ds['id'], "geometry":ds['bounds']} for ds in datasets]
 
     placeset = coll.places.all()
     context['places'] = placeset
+    # context['places'] = placeset
     context['ds_list'] = coll.ds_list
     #context['bboxes'] = bboxes
     context['updates'] = {}
@@ -237,19 +307,7 @@ class CollectionPlacesView(DetailView):
 
     return context
 
-class CollectionDeleteView(DeleteView):
-  template_name = 'collection/collection_delete.html'
-
-  def get_object(self):
-    id_ = self.kwargs.get("id")
-    return get_object_or_404(Collection, id=id_)
-
-  def get_success_url(self):
-    return reverse('dashboard')
-
-#
-# detail & update
-#
+""" BETA: update collection """
 class CollectionUpdateBetaView(UpdateView):
   form_class = CollectionModelForm
   template_name = 'collection/collection_create_beta.html'
@@ -301,7 +359,7 @@ class CollectionUpdateBetaView(UpdateView):
     context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
     return context
 
-
+""" update collection """
 class CollectionUpdateView(UpdateView):
   form_class = CollectionModelForm
   template_name = 'collection/collection_create.html'
@@ -345,4 +403,14 @@ class CollectionUpdateView(UpdateView):
     context['create_date'] = self.object.create_date.strftime("%Y-%m-%d")
     context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
     return context
+
+class CollectionDeleteView(DeleteView):
+  template_name = 'collection/collection_delete.html'
+
+  def get_object(self):
+    id_ = self.kwargs.get("id")
+    return get_object_or_404(Collection, id=id_)
+
+  def get_success_url(self):
+    return reverse('dashboard')
 

@@ -148,9 +148,13 @@
                     <td>{{ c.title }}</td>
                     <td>
                       <a href="{% url 'collection:collection-detail' c.id %}">view</a>&nbsp;
+                        {% if beta_or_better %} |
+                            <a href="{% url 'collection:collection-detail-beta' c.id %}"><i> (beta)</i></a>
+	                          <span class="mx-2">||</span>
+                        {% endif %}
                       <a href="{% url 'collection:collection-update' c.id %}">edit</a>
                         {% if beta_or_better %} |
-                            <a href="{% url 'collection:collection-update-beta' c.id %}"><i>edit (beta)</i></a>
+                            <a href="{% url 'collection:collection-update-beta' c.id %}"><i> (beta)</i></a>
                         {% endif %}
                     </td>
                     <td>{{ c.create_date }}</td>
