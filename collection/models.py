@@ -33,7 +33,7 @@ class Collection(models.Model):
 
   datasets = models.ManyToManyField("datasets.Dataset", blank=True)
   # COLL: indiv places
-  places = models.ManyToManyField("places.Place")
+  places = models.ManyToManyField("places.Place", blank=True)
 
   # tinymce field
   content = HTMLField(null=True, blank=True)
@@ -43,10 +43,26 @@ class Collection(models.Model):
     return reverse('datasets:dashboard')
 
   @property
-  def place_list(self):
+  def places_ds(self):
     # TODO: gang up indiv & ds places
     dses = self.datasets.all()
-    return Place.objects.filter(dataset__in=dses).distinct()
+    return Place.objects.filter(dataset__in=dses)
+
+  @property
+  def places_all(self):
+    from itertools import chain
+    dses = self.datasets.all()
+    pd = Place.objects.filter(dataset__in=dses)
+    return pd.union(self.places.all())
+    # return list(chain(self.places.all(), pd))
+
+  @property
+  def ds_list(self):
+    dsc = [{"id":d.id, "label":d.label, "title":d.title} for d in self.datasets.all()]
+    # dsc = list(self.datasets.values_list('label', flat=True))
+    dsp = [{"id":p.dataset.id, "label":p.dataset.label, "title":p.dataset.title} for p in self.places.all()]
+    # dsp = [p.dataset.label for p in self.places.all()]
+    return list({ item['id'] : item for item in dsp+dsc}.values())
 
   @property
   def rowcount(self):
