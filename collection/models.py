@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Q
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import ArrayField #,JSONField
 from django.urls import reverse
@@ -44,17 +45,21 @@ class Collection(models.Model):
 
   @property
   def places_ds(self):
-    # TODO: gang up indiv & ds places
     dses = self.datasets.all()
     return Place.objects.filter(dataset__in=dses)
 
   @property
   def places_all(self):
-    from itertools import chain
-    dses = self.datasets.all()
-    pd = Place.objects.filter(dataset__in=dses)
-    return pd.union(self.places.all())
-    # return list(chain(self.places.all(), pd))
+    all = Place.objects.filter(Q(dataset__in=self.datasets.all()) | Q(id__in=self.places.all().values_list('id')))
+    # dses = self.datasets.all()
+    # pids = self.places.all().values_list('id')
+    # dses = coll.datasets.all()
+    # pd = Place.objects.filter(dataset__in=dses)
+    # pc = Place.objects.filter(id__in=self.places.values_list('id', flat=True))
+    # all = pd.union(pc)
+    # all = Place.objects.filter(Q(dataset__in=dses or id in self.places.values_list('id', flat=True)))
+    # all = pd.union(self.places.all())
+    return all
 
   @property
   def ds_list(self):

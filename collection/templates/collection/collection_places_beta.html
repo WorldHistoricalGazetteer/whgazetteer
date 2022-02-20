@@ -207,8 +207,7 @@
   $(function(){
     window.ds_list = JSON.parse(document.getElementById('ds_list').textContent);
     source_list = ds_list.map(function(d){ return d.label})
-    window.layer_list = getLoadedLayers()    
-    <!--console.log('ds_list', ds_list)-->
+    window.layer_list = getLoadedLayers()
 
     // TODO: remove these artifacts of table used for review
     localStorage.setItem('filter', '-1')
@@ -243,7 +242,7 @@
           {"data": "src_id"},
           {"data": "title"},
           {"data": "ccodes"},
-          {"title": "geom", "data": "geo"},
+          {"data": "geo", "title": "geom"},
           {"data": "review_wd"},
           {"data": "review_tgn"},
           {"data": "review_whg"},
@@ -419,6 +418,7 @@
 	          'data': fcoll
           })
 				  renderSourceLayers(label, i)
+				  source_list.push(label)
 			  })
         all_feats = colldata.features
 		  })

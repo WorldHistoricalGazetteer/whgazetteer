@@ -36,7 +36,8 @@ urlpatterns = [
 
     # places in a dataset
     # use: drf table in ds_browse  :: PlaceSerializer
-    path('placetable/', views.PlaceTableViewSet.as_view({'get':'list'}), name='place-table'), 
+    path('placetable/', views.PlaceTableViewSet.as_view({'get':'list'}), name='place-table'),
+    # places in a collection
     path('placetable_coll/', views.PlaceTableCollViewSet.as_view({'get':'list'}), name='place-table-coll'), 
 
     # TODO: place/<str:dslabel>/<str:src_id>
