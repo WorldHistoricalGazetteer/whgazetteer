@@ -127,6 +127,7 @@
     .draw();
     $("#ds_select").val(localStorage.getItem('filter'))
   }    
+
   function clearFilters() {
     // clear
     table
@@ -191,6 +192,7 @@
     getPlace(pid, 'row0')
   }
 
+  // dataset list dropdown
   function buildSelect(){
     select = '<label>Datasets: <select name="status" aria-controls="placetable" id="ds_select" class="datatables_length">'+
     '<option value="-1" selected="selected">All</option>'
@@ -289,7 +291,7 @@
       show: {effect: "fade",duration: 400 },
       hide: {effect: "fade",duration: 400 }
     });
-  })  //** end onload()
+  })  // onload()
 
   // gl map
   mappy = new maplibregl.Map({
@@ -340,8 +342,9 @@
       source: 'empty'
     }, 'z-index-2'); // place this layer below zIndex2
 
-    addSources(ds_list)
-    <!--console.log('map loaded, ds_list',ds_list)-->
+	  // fetch geodata
+    addPlaces(ds_list)
+    {#addSources(ds_list)#}
 
     layer_list = getLoadedLayers(ds_list)
     
@@ -396,18 +399,41 @@
     return layers
   }
 
-  {#function addPlaces(){#}
-	{##}
-  {#}#}
+  function addPlaces(ds_list){
+    console.log('addPlaces() for coll ', {{ object.id }})
+    {#all_feats = []#}
+    ds_labels = ds_list.map(function(ds){return ds.label})
+    console.log('dslabels', ds_labels)
+
+	  $.getJSON('/collections/'+{{ object.id }}+'/geojson')
+		  .done(function(colldata) {
+        console.log('colldata', colldata.features.slice(0,10))
+			  ds_labels.forEach(function(label, i){
+          fcoll = {
+            "type": "FeatureCollection",
+	          "features": colldata.features.filter(function(f){
+              return f.properties.dslabel == label;})
+          }
+          mappy.addSource(label, {
+            'type': 'geojson',
+	          'data': fcoll
+          })
+				  renderSourceLayers(label, i)
+			  })
+        all_feats = colldata.features
+		  })
+  }
+
   // TODO: this gets all places for all named datasets - BAD!
   function addSources(ds_list){
     all_feats = []
     source_list = []
     $(".toomany").html('please wait...rendering many polygons').show()
     startMapSpinner()
-    ds_list.forEach(function(ds,i){
+    ds_list.forEach(function(ds, i){
       $.getJSON('/datasets/'+ds.id+'/geojson')
         .done(function(dsdata) {
+					console.log('dsdata', dsdata.collection)
           mappy.addSource(ds.label, {
             'type': 'geojson',
             'data': dsdata.collection

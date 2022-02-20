@@ -16,15 +16,16 @@ from itertools import chain
 
 """ gl map needs this """
 def fetch_geojson_coll(request, *args, **kwargs):
-  print('download_gis kwargs',kwargs)
+  print('fetch_geojson_coll kwargs',kwargs)
   id_=kwargs['id']
   coll=get_object_or_404(Collection, id=id_)
-  pids = [p.id for p in coll.places.all()]
-  
-  # build a fast FeatureCollection 
+  pids = [p.id for p in coll.places_all]
+  # pids = [p.id for p in coll.places.all()]
+
+  # build FeatureCollection
   features=PlaceGeom.objects.filter(place_id__in=pids).values_list(
     'jsonb','place_id','src_id','place__title','place__minmax', 
-    'place__fclasses', 'place__dataset_id', 'place__dataset__label')
+    'place__fclasses', 'place__dataset__id', 'place__dataset__label')
   fcoll = {"type":"FeatureCollection","features":[]}
   for f in features:
     feat={"type":"Feature",
