@@ -41,7 +41,7 @@ class Collection(models.Model):
     return reverse('datasets:dashboard')
 
   @property
-  def places_ds(self):
+  def places(self):
     # TODO: gang up indiv & ds places
     dses = self.datasets.all()
     return Place.objects.filter(dataset__in=dses).distinct()
