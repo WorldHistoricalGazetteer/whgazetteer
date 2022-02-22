@@ -50,15 +50,9 @@ class Collection(models.Model):
 
   @property
   def places_all(self):
-    all = Place.objects.filter(Q(dataset__in=self.datasets.all()) | Q(id__in=self.places.all().values_list('id')))
-    # dses = self.datasets.all()
-    # pids = self.places.all().values_list('id')
-    # dses = coll.datasets.all()
-    # pd = Place.objects.filter(dataset__in=dses)
-    # pc = Place.objects.filter(id__in=self.places.values_list('id', flat=True))
-    # all = pd.union(pc)
-    # all = Place.objects.filter(Q(dataset__in=dses or id in self.places.values_list('id', flat=True)))
-    # all = pd.union(self.places.all())
+    all = Place.objects.filter(
+      Q(dataset__in=self.datasets.all()) | Q(id__in=self.places.all().values_list('id'))
+    )
     return all
 
   @property
