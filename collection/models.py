@@ -58,6 +58,17 @@ class Collection(models.Model):
     return all
 
   @property
+  def trace_places(self):
+    return [t.place for t in self.traces.all().order_by('id')]
+
+  @property
+  def trace_places(self):
+    all = Place.objects.filter(
+      Q(dataset__in=self.datasets.all()) | Q(id__in=self.traces.all().values_list('id'))
+    )
+    return all
+
+  @property
   def ds_list(self):
     dsc = [{"id":d.id, "label":d.label, "title":d.title} for d in self.datasets.all()]
     # dsc = list(self.datasets.values_list('label', flat=True))

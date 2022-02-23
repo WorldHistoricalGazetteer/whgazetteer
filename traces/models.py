@@ -22,7 +22,7 @@ class TraceAnnotation(models.Model):
     created = models.DateTimeField(null=True, auto_now_add=True)
 
     def __str__(self):
-        return '%s:%d' % (self.collection, self.place)
+        return '%s:%d' % (self.collection.id, self.place.id)
 
     class Meta:
         managed = True

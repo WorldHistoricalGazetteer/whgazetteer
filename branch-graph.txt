@@ -1,4 +1,5 @@
-* 1fbbc40 (HEAD -> colltraces, origin/coll, coll) pre collection.places refactor
+* 544da73 (HEAD -> colltraces, origin/colltraces) TraceAnnotation, Collection refactor
+* 1fbbc40 (origin/coll, coll) pre collection.places refactor
 * 9179439 collection places from datasets and indiv selection
 * f2a3b1b rendering collection places per dataset
 * e90f453 better dev env (beta tags)
