@@ -4,56 +4,41 @@ from django.contrib.postgres.fields import JSONField, ArrayField
 from django.core.validators import URLValidator
 from main.choices import TRACETYPES, TRACERELATIONS
 
-# FK dataset >> Dataset
-class Trace(models.Model):
+# annotates a collection (& its subject) with a place
+# FKs: Collection, Place
+class TraceAnnotation(models.Model):
     # auto id
-    title = models.CharField(max_length=255)
-    src_id = models.CharField(max_length=2044)
-    dataset = models.ForeignKey('datasets.Dataset', db_column='dataset',
-        to_field='label', related_name='traces', on_delete=models.CASCADE)
-    context = JSONField(blank=True, null=True)
-    uri = models.TextField(validators=[URLValidator()])
-    trace_type = models.CharField(max_length=20, default='Annotation')
-    creator = JSONField(blank=True, null=True)
+    src_id = models.CharField(max_length=2044, blank=True, null=True) # if exists
+    collection = models.ForeignKey('collection.Collection', db_column='collection',
+        related_name='traces', on_delete=models.CASCADE)
+    place = models.ForeignKey('places.Place', db_column='place',
+        related_name='places', on_delete=models.CASCADE)
+    # standard 'when' from LP format
+    when = JSONField(blank=True, null=True) # {timespans[[],...], periods[{name, uri}], label, duration}
+    sequence = models.IntegerField(blank=True, null=True)
+    trace_type = models.CharField(max_length=20, choices = TRACETYPES)
+    motivation = models.CharField(max_length=20, default='locating') # choices? locating, describing
+    creator = JSONField(blank=True, null=True) # {name, affiliation, orcid, webpage}
     created = models.DateTimeField(null=True, auto_now_add=True)
-    motivation = models.CharField(max_length=20)
 
     def __str__(self):
-        # return str(self.id)
-        return '%s:%d' % (self.dataset, self.id)
+        return '%s:%d' % (self.collection, self.place)
 
     class Meta:
         managed = True
-        db_table = 'traces'
+        db_table = 'trace_annotations'
         indexes = [
-            models.Index(fields=['dataset']),
+            models.Index(fields=['collection']),
+            models.Index(fields=['place']),
         ]
-# # defer,target_id,source,uri,title,trace_type,trace_datatype,description,format,language,selector_type,selector_value 
-# FK trace_id >> Trace
-class TraceTarget(models.Model):
-    # auto id
-    trace_id = models.ForeignKey(Trace, related_name='targets',
-        default=-1, on_delete=models.CASCADE)
-    uri = models.TextField(validators=[URLValidator()])
-    title = models.CharField(max_length=255)
-    types = ArrayField(models.CharField(max_length=30,choices=TRACETYPES), null=True, blank=True)
-    description = models.TextField()
+
+# lookup for relations, which are collection-specific
+class TraceRelation(models.Model):
+    # id is auto-generated
+    relation = models.CharField(max_length=255)
+    collection = models.ForeignKey('collection.Collection', db_column='collection',
+        to_field='id', related_name='relations', on_delete=models.CASCADE)
 
     class Meta:
         managed = True
-        db_table = 'trace_target'
-    
-# FK trace_id >> Trace
-class TraceBody(models.Model):    
-    # auto id
-    trace_id = models.ForeignKey(Trace, related_name='bodies',
-        default=-1, on_delete=models.CASCADE)
-    uri = models.TextField(validators=[URLValidator()])
-    title = models.CharField(max_length=255)
-    when = JSONField(blank=True, null=True)
-    relation = models.CharField(max_length=20, choices=TRACERELATIONS)
-    
-    class Meta:
-        managed = True
-        db_table = 'trace_body'
-    
+        db_table = 'trace_relations'

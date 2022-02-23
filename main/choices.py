@@ -177,6 +177,7 @@ TEAMROLES = [
 TRACERELATIONS = [
     ('subject','Subject'),
     ('waypoint','Waypoint'),
+    ('locale','Locale'),
     ('birthplace','Birth place'),
     ('deathplace','Death place'),
     ('resided','Resided'),
@@ -191,7 +192,8 @@ TRACETYPES = [
     ('dataset','Dataset'),
     ('event','Event'),
     ('journey','Journey'),
-    ('work','Work')
+    ('work','Work'),
+    ('concept','Concept')
 ]
 
 USERTYPES = [

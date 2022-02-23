@@ -2,6 +2,7 @@ from django.db import models
 from django.db.models import Q
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import ArrayField #,JSONField
+from django.core.validators import URLValidator
 from django.urls import reverse
 from datasets.models import Dataset
 from places.models import Place
@@ -20,6 +21,7 @@ class Collection(models.Model):
   title = models.CharField(null=False, max_length=255)
   description = models.CharField( null=False, max_length=2044)
   keywords = ArrayField(models.CharField(max_length=50))
+  # single representative image
   image_file = models.FileField(upload_to=coll_image_path)
 
   # 3 new fields, 20210619
@@ -36,7 +38,7 @@ class Collection(models.Model):
   # COLL: indiv places
   places = models.ManyToManyField("places.Place", blank=True)
 
-  # tinymce field
+  # tinymce field?
   content = HTMLField(null=True, blank=True)
 
   def get_absolute_url(self):
@@ -74,3 +76,19 @@ class Collection(models.Model):
 
   class Meta:
     db_table = 'collections'
+
+class CollectionImage(models.Model):
+  collection = models.ForeignKey(Collection, default=None,
+    on_delete=models.CASCADE, related_name='images')
+  image = models.FileField(upload_to=coll_image_path)
+  caption = models.CharField(null=True, blank=True, max_length=500)
+  uri = models.TextField(validators=[URLValidator()], null=True, blank=True)
+  license = models.CharField(null=True, blank=True, max_length=64)
+
+  def __str__(self):
+    cap = self.caption[:20]+('...' if len(self)>20 else '')
+    return '%s:%s' % (collection, cap)
+
+  class Meta:
+      managed = True
+      db_table = 'collection_image'
