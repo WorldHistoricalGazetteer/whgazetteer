@@ -253,9 +253,10 @@ class CollectionPlacesBetaView(DetailView):
                  # "bbox": ds.bounds } for ds in coll.datasets.all()]
     #bboxes = [{"id":ds['id'], "geometry":ds['bounds']} for ds in datasets]
 
-    placeset = coll.places.all()
-    context['places'] = placeset
+    # placeset = coll.places.all()
     # context['places'] = placeset
+
+    context['places'] = coll.trace_places_all
     context['ds_list'] = coll.ds_list
     #context['bboxes'] = bboxes
     context['updates'] = {}
@@ -343,9 +344,9 @@ class CollectionUpdateBetaView(UpdateView):
     datasets = self.object.datasets.all()
 
     # COLL: get places from datasets, then collection.places
-    qs_list = [d.places.all() for d in datasets]
+    # qs_list = [d.places.all() for d in datasets]
     # COLL: merge querysets
-    coll_places = list(chain(*qs_list))
+    # coll_places = list(chain(*qs_list))
 
     # populates dropdown
     ds_select = [obj for obj in Dataset.objects.all() if user in obj.owners or user.is_superuser]
@@ -353,11 +354,13 @@ class CollectionUpdateBetaView(UpdateView):
     context['action'] = 'update'
     context['ds_select'] = ds_select
     context['coll_dsset'] = datasets
-    # COLL: merged places (datasets only)
-    context['coll_places'] = coll_places
+    # COLL: merged places
+    # context['coll_places'] = coll_places
+    context['coll_places'] = self.object.trace_places_all
 
     context['create_date'] = self.object.create_date.strftime("%Y-%m-%d")
     context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
+
     return context
 
 """ update collection """

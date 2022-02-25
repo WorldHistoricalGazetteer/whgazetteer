@@ -62,9 +62,11 @@ class Collection(models.Model):
     return [t.place for t in self.traces.all().order_by('id')]
 
   @property
-  def trace_places(self):
+  def trace_places_all(self):
+    singletons = [t.place.id for t in self.traces.all()]
     all = Place.objects.filter(
-      Q(dataset__in=self.datasets.all()) | Q(id__in=self.traces.all().values_list('id'))
+      # Q(dataset__in=self.datasets.all()) | Q(id__in=self.traces.all().values_list('id'))
+      Q(dataset__in=self.datasets.all()) | Q(id__in=singletons)
     )
     return all
 
