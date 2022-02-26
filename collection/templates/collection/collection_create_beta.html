@@ -87,7 +87,6 @@
 	      <span title="back"><a href="/dashboard#collectionlist">Cancel</a></span>
 	    </form>
 	    </div>
-{#	    <div class="mt-2 coll-col col-sm-1" style="background-color: palegreen"> </div>#}
 	    <div id="coll_builder" class="coll-col col-sm-4 p-2" style="height: 85%;">
 				<ul id="coll_tabs" class="nav nav-tabs" role="tablist">
 				  <li class="nav-item">
@@ -166,26 +165,33 @@
 		      <p>[<i>figure</i>]</p>
 	      </div>
 		    <div id="coll_right_anno" class="hidden">
-		      <h6>Annotations</h6>
-			    <div id="coll_place_detail" class="mb-1"></div>
-			    <p>When {% fontawesome_icon 'question-circle' color='#336699' %}<br/>
-				    <input type="text" placeholder="start date"  style="width:80px"/>
-				    <input type="text" placeholder="end date" style="width:80px"/>
-			    </p>
-			    <p>Relation {% fontawesome_icon 'question-circle' color='#336699' %}<br/>
-				    <select>
-					    <option value="-1">Relation type</option>
-					    <option value="0">Related locale</option>
-					    <option value="1">Waypoint</option>
-					    <option value="2">Battle site</option>
-				    </select>
-			      <p>Explanation:<br/><input type="textbox" /></p>
-			    </p>
-			    <p>Links: <a href="javascript:{ addDataset() }" class="">
-	          {% fontawesome_icon 'plus-square' color='#336699' %} add</a>
-				    <br/><a href="#">this page is related {% fontawesome_icon 'external-link' %}</a><br/>
-			    </p>
+			    <form id="annotation_form" method="POST" action="{% url 'collection:collection-annotate' object.id %}" enctype="multipart/form-data">
+			    {% csrf_token %}
+				    <p><input type="text" name="collection" value="{{ object.id }}" placeholder="collection"/></p>
+						<p><input type="text" name="place" value="6469572" placeholder="place"/></p>
+						<p><input type="text" name="trace_type" value="event" placeholder="trace type"/></p>
+						<p><input type="text" name="motivation" value="locating" placeholder="motivation"/></p>
+{#		      <h6>Annotations</h6>#}
+{#			    <div id="coll_place_detail" class="mb-1"></div>#}
+{#			    <p>When {% fontawesome_icon 'question-circle' color='#336699' %}<br/>#}
+{#				    <input type="text" placeholder="start date"  style="width:80px"/>#}
+{#				    <input type="text" placeholder="end date" style="width:80px"/>#}
+{#			    </p>#}
+{#			    <p>Relation {% fontawesome_icon 'question-circle' color='#336699' %}<br/>#}
+{#				    <select>#}
+{#					    <option value="-1">Relation type</option>#}
+{#					    <option value="0">Related locale</option>#}
+{#					    <option value="1">Waypoint</option>#}
+{#					    <option value="2">Battle site</option>#}
+{#				    </select>#}
+{#			      <p>Explanation:<br/><input type="textbox" /></p>#}
+{#			    </p>#}
+{#			    <p>Links: <a href="javascript:{ addDataset() }" class="">#}
+{#	          {% fontawesome_icon 'plus-square' color='#336699' %} add</a>#}
+{#				    <br/><a href="#">this page is related {% fontawesome_icon 'external-link' %}</a><br/>#}
+{#			    </p>#}
 			    <input type="submit" value="Save" />
+			    </form>
 		    </div>
 	    </div>
     </div> <!-- d-flex -->

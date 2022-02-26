@@ -12,6 +12,7 @@ from .forms import CollectionModelForm
 from .models import *
 from main.models import Log
 from places.models import PlaceGeom
+from traces.forms import TraceAnnotationModelForm
 from itertools import chain
 
 """ gl map needs this """
@@ -309,7 +310,36 @@ class CollectionPlacesView(DetailView):
 
     return context
 
-""" BETA: update collection """
+""" BETA: annotate collection with place """
+# def annotate(request, cid, pid):
+def annotate(request, *args, **kwargs):
+  coll = get_object_or_404(Collection, id=kwargs.get('id'))
+  for k, v in request.POST.items():
+    print(k, v)
+  # print('annotate() collection id', coll)
+
+  return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+  # place = get_object_or_404(Place, id=pid)
+  # user = request.user
+  # print('annotate('+str(cid)+','+str(pid)+') by',user)
+  #
+  # if request.method == 'POST':
+  #   form = TraceAnnotationModelForm(request.POST)
+  #   if form.is_valid():
+  #     print('TraceAnnotation save() data', form.cleaned_data)
+  #     obj = form.save(commit=False)
+  #     obj.save()
+  #     Log.objects.create(
+  #       # category, logtype, "timestamp", subtype, note, dataset_id, user_id
+  #       category = 'collection',
+  #       logtype = 'annotation',
+  #       note = 'trace annotation: '+ str(obj.id) + '. collection ' + cid +\
+  #              'w/place: '+str(pid)+ 'by '+ user.username
+  #     )
+  #   else:
+  #     print('trace form not valid', form.errors)
+
+""" BETA: update collection *** function-based view*** """
 class CollectionUpdateBetaView(UpdateView):
   form_class = CollectionModelForm
   template_name = 'collection/collection_create_beta.html'
@@ -339,7 +369,7 @@ class CollectionUpdateBetaView(UpdateView):
     context = super(CollectionUpdateBetaView, self).get_context_data(*args, **kwargs)
     user = self.request.user
     _id = self.kwargs.get("id")
-    print('CollectionUpdateView() kwargs', self.kwargs)
+    print('CollectionUpdateBetaView() kwargs', self.kwargs)
 
     datasets = self.object.datasets.all()
 
@@ -354,6 +384,7 @@ class CollectionUpdateBetaView(UpdateView):
     context['action'] = 'update'
     context['ds_select'] = ds_select
     context['coll_dsset'] = datasets
+
     # COLL: merged places
     # context['coll_places'] = coll_places
     context['coll_places'] = self.object.trace_places_all

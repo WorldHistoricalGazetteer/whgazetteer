@@ -70,7 +70,8 @@ FORMATS = [
 
 LOG_CATEGORIES = [
     ('user','User'),
-    ('dataset','Dataset')
+    ('dataset','Dataset'),
+    ('collection','Collection')
 ]
 
 LOG_TYPES = [
@@ -78,9 +79,13 @@ LOG_TYPES = [
     ('ds_update','Update dataset'),
     ('ds_delete','Delete dataset'),
     ('ds_recon','Reconciliation task'),
-    ('area_create','Create dataset'),
-    ('area_update','Update dataset'),
-    ('area_delete','Delete dataset'),
+    ('area_create','Create area'),
+    ('area_update','Update area'),
+    ('area_delete','Delete area'),
+    ('collection_create','Create collection'),
+    ('collection_update','Update collection'),
+    ('collection_delete','Delete collection'),
+    ('annotation','Create/update annotation'),
 ]
 
 MATCHTYPES = [

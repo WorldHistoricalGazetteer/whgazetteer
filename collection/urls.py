@@ -18,6 +18,9 @@ urlpatterns = [
     path('<int:id>/update', views.CollectionUpdateView.as_view(), name='collection-update'),
     path('<int:id>/updatebeta', views.CollectionUpdateBetaView.as_view(), name='collection-update-beta'),
 
+    # function-based to process a trace annotation independent of
+    path('<int:id>/annotate', views.annotate, name="collection-annotate"),
+
     path('<int:id>/delete', views.CollectionDeleteView.as_view(), name='collection-delete'),
     
     path('list_ds/', views.ListDatasetView.as_view(), name='list-ds'),
