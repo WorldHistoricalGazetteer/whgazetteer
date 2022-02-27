@@ -314,21 +314,24 @@ class CollectionPlacesView(DetailView):
 # def annotate(request, cid, pid):
 def annotate(request, *args, **kwargs):
   coll = get_object_or_404(Collection, id=kwargs.get('id'))
+  cid = kwargs.get('id')
   for k, v in request.POST.items():
     print(k, v)
-  # print('annotate() collection id', coll)
+  form = TraceAnnotationModelForm(request.POST)
+  if form.is_valid():
+    pid = request.POST.get('place')
+    obj = form.save(commit=False)
+    obj.save()
+    context = {'id':cid, 'pid':pid}
+  else:
+    print('trace form not valid', form.errors)
 
-  return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-  # place = get_object_or_404(Place, id=pid)
-  # user = request.user
-  # print('annotate('+str(cid)+','+str(pid)+') by',user)
-  #
-  # if request.method == 'POST':
-  #   form = TraceAnnotationModelForm(request.POST)
-  #   if form.is_valid():
-  #     print('TraceAnnotation save() data', form.cleaned_data)
-  #     obj = form.save(commit=False)
-  #     obj.save()
+  # collections/38/updatebeta
+  return redirect('/collections/'+str(cid)+'/updatebeta')
+  # return render(request, 'collections/collection_create_beta.html', context)
+  # return render(request, 'collections/'+str(cid)+'/updatebeta', context)
+  # return HttpResponseRedirect(request.META.get('HTTP_REFERER'), context)
+
   #     Log.objects.create(
   #       # category, logtype, "timestamp", subtype, note, dataset_id, user_id
   #       category = 'collection',

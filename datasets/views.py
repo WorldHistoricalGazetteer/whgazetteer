@@ -205,7 +205,6 @@ def review(request, pk, tid, passnum):
   print('review() hitplaces', hitplaces)
   # separate review pages
   if auth in ['whg','idx']:
-    #review_page = 'fubar.html'
     review_page = 'accession.html'
   else:
     review_page = 'review.html'
@@ -408,7 +407,7 @@ def review(request, pk, tid, passnum):
       print('errors:',formset.errors)
     #except:
       #sys.exit(sys.exc_info())
-
+  print('review_page', review_page)
   return render(request, 'datasets/'+review_page, context=context)
 
 """

@@ -90,14 +90,14 @@
 	    <div id="coll_builder" class="coll-col col-sm-4 p-2" style="height: 85%;">
 				<ul id="coll_tabs" class="nav nav-tabs" role="tablist">
 				  <li class="nav-item">
-				    <a class="nav-link active" id="coll_dslist-tab" data-toggle="tab" href="#coll_dslist" role="tab" aria-controls="coll_dslist" aria-selected="true" data-id="ds">Datasets</a>
+				    <a class="nav-link" id="coll_dslist-tab" data-toggle="tab" href="#coll_dslist" role="tab" aria-controls="coll_dslist" aria-selected="true" data-id="ds">Datasets</a>
 				  </li>
 				  <li class="nav-item">
-				    <a class="nav-link" id="coll_placelist-tab" data-toggle="tab" href="#coll_placelist" role="tab" aria-controls="coll_placelist" aria-selected="false" data-id="pl">Places ({{ coll_places|length }})</a>
+				    <a class="nav-link active" id="coll_placelist-tab" data-toggle="tab" href="#coll_placelist" role="tab" aria-controls="coll_placelist" aria-selected="false" data-id="pl">Places ({{ coll_places|length }})</a>
 				  </li>
 				</ul>
 		    <div class="tab-content" style="height:95%; overflow:auto;">
-			    <div id="coll_dslist" class="tab-pane fade show active" role="tabpanel" aria-labelledby="coll_dslist-tab">
+			    <div id="coll_dslist" class="tab-pane fade" role="tabpanel" aria-labelledby="coll_dslist-tab">
 		        <p class="mt-2">
 		        <span class="mr-2 smaller">
 		          <select id="select_ds" name="ds" class="custom-select-sm">
@@ -131,7 +131,7 @@
 			        {% endfor %}
 		        </div> <!-- #coll_dscards_create -->
 			    </div>
-			    <div id="coll_placelist" class="tab-pane fade" role="tabpanel" aria-labelledby="coll_placelist-tab">
+			    <div id="coll_placelist" class="tab-pane fade show active" role="tabpanel" aria-labelledby="coll_placelist-tab">
 				    {% if coll_places|length > 0 %}
 		          <ul>
 		            {% for p in coll_places %}
@@ -145,7 +145,7 @@
 				</div> <!-- .tab-content -->
 	    </div>
 	    <div id="coll_right" class="coll-col col-sm-4 p-2" style="height: 85%;">
-	      <div id="coll_right_intro" class="">
+	      <div id="coll_right_intro" class="hidden">
 		      <h5>Collections in WHG</h5>
 		      <p>A <mark-b>collection</mark-b> is a set of existing WHG place records.</p>
 		      <p>Registered users can build a collection by</p>
@@ -164,15 +164,15 @@
 		      </ul>
 		      <p>[<i>figure</i>]</p>
 	      </div>
-		    <div id="coll_right_anno" class="hidden">
+		    <div id="coll_right_anno" class="">
 			    <form id="annotation_form" method="POST" action="{% url 'collection:collection-annotate' object.id %}" enctype="multipart/form-data">
 			    {% csrf_token %}
-				    <p><input type="text" name="collection" value="{{ object.id }}" placeholder="collection"/></p>
-						<p><input type="text" name="place" value="6469572" placeholder="place"/></p>
-						<p><input type="text" name="trace_type" value="event" placeholder="trace type"/></p>
-						<p><input type="text" name="motivation" value="locating" placeholder="motivation"/></p>
-{#		      <h6>Annotations</h6>#}
-{#			    <div id="coll_place_detail" class="mb-1"></div>#}
+		      <h6>Annotations pid: {{ context }}</h6>
+			    <div id="coll_place_detail" class="mb-1"></div>
+			    <p><input type="text" name="collection" value="{{ object.id }}" placeholder="collection"/></p>
+					<p><input id="pid" type="text" name="place" value="" placeholder="place (pid)"/></p>
+					<p><input type="text" name="trace_type" value="event" placeholder="trace type"/></p>
+					<p><input type="text" name="motivation" value="locating" placeholder="motivation"/></p>
 {#			    <p>When {% fontawesome_icon 'question-circle' color='#336699' %}<br/>#}
 {#				    <input type="text" placeholder="start date"  style="width:80px"/>#}
 {#				    <input type="text" placeholder="end date" style="width:80px"/>#}
@@ -211,7 +211,6 @@
     {#$(this).hide().html(val).fadeIn("fast");#}
     e.preventDefault();
   });
-
   // builds link for external place record
   function url_extplace(identifier) {
     // abbreviate links not in aliases.base_urls
@@ -223,7 +222,6 @@
     }
     return link
   }
-
   // builds link for external placetype record
   function url_exttype(type) {
     link = ' <a href="#" class="exttab" data-id='+type.identifier+
@@ -319,7 +317,6 @@
     } else { descrip += "<i class='small'>no links established yet</i>" }
     descrip += '</p>'
 
-    //
     // RELATED
     //right=''
     if (data.related.length > 0) {
@@ -344,7 +341,7 @@
       descrip+=parent.length > 39 ? parent :''
       descrip+=related.length > 37 ? related :''
     }
-    //
+
     // DESCRIPTIONS
     // TODO: link description to identifier URI if present
     if (data.descriptions.length > 0) {
@@ -353,7 +350,7 @@
         +' ... </p>'
         //'<br/><span class="small red-bold">('+data.descriptions[0]['identifier']+')</span>
     }
-    //
+
     // CCODES
     //
     //if (data.ccodes.length > 0) {
@@ -361,7 +358,7 @@
       //console.log('data.countries',data.countries)
       descrip+='<p><b>Modern country bounds</b>: '+ data.countries.join(', ')+'</p>'
     }
-    //
+
     // MINMAX
     //
     //console.log('data.minmax',data.minmax)
@@ -369,6 +366,10 @@
     if(data.minmax && !(mm[0] == null && mm[1] == null)) {
       descrip += '<p><b>When</b>: earliest: '+data.minmax[0]+'; latest: '+data.minmax[1]
     }
+
+    // TRACES
+	  traces=data.traces
+	  descrip += '<p><b>Trace annotations</b>: '+traces+'</p>'
 
     // if geom(s) and 'certainty', add it
     if(data.geoms.length >0){
@@ -419,10 +420,11 @@
   }
 
   $(function(){
-
+		console.log('pid', "{{ pid }}")
     $(".coll-place").click(function(){
         console.log('fetch r/o place record', $(this).data('id'));
         getPlace($(this).data('id'))
+		    $("#pid").val($(this).data('id'))
     })
 		{#$("coll-place").click(function(){#}
 			{#e.preventDefault()#}
