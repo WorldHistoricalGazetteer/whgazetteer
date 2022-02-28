@@ -15,6 +15,8 @@ class TraceAnnotation(models.Model):
         related_name='places', on_delete=models.CASCADE)
     # standard 'when' from LP format
     when = JSONField(blank=True, null=True) # {timespans[[],...], periods[{name, uri}], label, duration}
+    start = models.IntegerField(null=True, blank=True)
+    end = models.IntegerField(null=True, blank=True)
     sequence = models.IntegerField(blank=True, null=True)
     trace_type = models.CharField(max_length=20, choices = TRACETYPES)
     motivation = models.CharField(max_length=20, default='locating') # choices? locating, describing
