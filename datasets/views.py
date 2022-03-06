@@ -1590,7 +1590,7 @@ def ds_insert_tsv(request, pk):
         
         description = r[header.index('description')] \
           if 'description' in header else ''
-        print('description (src_id)', description)
+        # print('description (src_id)', description)
 
         # create new Place object
         # TODO: generate fclasses
