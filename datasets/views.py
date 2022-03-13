@@ -1524,6 +1524,9 @@ def ds_insert_tsv(request, pk):
       
       infile.seek(0)
       header = next(reader, None)
+      header = [col.lower() for col in header]
+      print('header.lower()',[col.lower() for col in header])
+
       # strip BOM character if exists
       header[0] = header[0][1:] if '\ufeff' in header[0] else header[0]
       #header = header if type(header) = list else 

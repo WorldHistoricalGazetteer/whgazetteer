@@ -14,24 +14,24 @@
   </component>
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
-      <excludeFolder url="file://$MODULE_DIR$/venv/3.10.2" />
-      <excludeFolder url="file://$MODULE_DIR$/.vscode" />
+      <excludeFolder url="file://$MODULE_DIR$/_testdata" />
+      <excludeFolder url="file://$MODULE_DIR$/datasets/static/_older" />
+      <excludeFolder url="file://$MODULE_DIR$/static" />
       <excludeFolder url="file://$MODULE_DIR$/_scratch" />
       <excludeFolder url="file://$MODULE_DIR$/_tests" />
-      <excludeFolder url="file://$MODULE_DIR$/static" />
-      <excludeFolder url="file://$MODULE_DIR$/datasets/static/_older" />
-      <excludeFolder url="file://$MODULE_DIR$/media/data" />
-      <excludeFolder url="file://$MODULE_DIR$/media/downloads" />
-      <excludeFolder url="file://$MODULE_DIR$/media/user_myname" />
-      <excludeFolder url="file://$MODULE_DIR$/media/user_SomeUser" />
-      <excludeFolder url="file://$MODULE_DIR$/media/user_whgadmin" />
-      <excludeFolder url="file://$MODULE_DIR$/_dumps" />
+      <excludeFolder url="file://$MODULE_DIR$/venv/3.10.2" />
+      <excludeFolder url="file://$MODULE_DIR$/.vscode" />
       <excludeFolder url="file://$MODULE_DIR$/_notes" />
-      <excludeFolder url="file://$MODULE_DIR$/_older" />
-      <excludeFolder url="file://$MODULE_DIR$/_testdata" />
       <excludeFolder url="file://$MODULE_DIR$/sent_emails" />
+      <excludeFolder url="file://$MODULE_DIR$/_older" />
+      <excludeFolder url="file://$MODULE_DIR$/media/downloads" />
+      <excludeFolder url="file://$MODULE_DIR$/media/data" />
+      <excludeFolder url="file://$MODULE_DIR$/media/user_whgadmin" />
+      <excludeFolder url="file://$MODULE_DIR$/media/user_SomeUser" />
+      <excludeFolder url="file://$MODULE_DIR$/media/user_myname" />
+      <excludeFolder url="file://$MODULE_DIR$/_dumps" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.7 (whg374)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.9 (whg397)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PackageRequirementsSettings">
