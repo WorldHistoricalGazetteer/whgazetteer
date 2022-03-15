@@ -2,7 +2,8 @@
 from django.conf import settings
 from django.contrib.postgres.fields import JSONField, ArrayField
 from django.contrib.gis.db import models as geomodels
-from django.contrib.gis.geos import GeometryCollection
+from django.contrib.gis.db.models import Collect, Extent
+from django.contrib.gis.geos import GeometryCollection, Polygon
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import Q
@@ -13,9 +14,11 @@ from django.dispatch import receiver
 
 from django_celery_results.models import TaskResult
 from elastic.es_utils import escount_ds
+from geojson import Feature
 from main.choices import *
 from places.models import Place, PlaceGeom, PlaceLink
 import simplejson as json
+from shapely.geometry import box, mapping
 
 def user_directory_path(instance, filename):
   # upload to MEDIA_ROOT/user_<username>/<filename>
@@ -70,16 +73,6 @@ class Dataset(models.Model):
   #def get_absolute_url(self):
     #return reverse('datasets:ds_summary', kwargs={'id': self.id})
 
-  # test    
-  #from datasets.models import Dataset, DatasetUser, Hit
-  #from django.contrib.auth.models import User
-  #from places.models import *
-  #from collection.models import *
-  #from django.shortcuts import get_object_or_404
-  #ds = get_object_or_404(Dataset, pk=1034)
-  #user = get_object_or_404(User, pk=14)
-  #coll = get_object_or_404(Collection,pk=3)
-
   # how many wikidata links?
   @property
   def q_count(self):
@@ -109,11 +102,25 @@ class Dataset(models.Model):
   
   @property
   def bounds(self):
-    pg_geoms=PlaceGeom.objects.values_list('geom',flat=True).filter(place__dataset=self.label)
-    #pg_geoms=PlaceGeom.objects.values_list('geom',flat=True).filter(place__dataset='croniken_og_json')
-    gc=GeometryCollection(tuple(pg_geoms))
-    
-    return json.loads(gc.envelope.geojson) if pg_geoms.count() > 0 else None
+    # pg_geoms=PlaceGeom.objects.values_list('geom',flat=True).filter(place__dataset=self.label)
+    dsgeoms = PlaceGeom.objects.filter(place__dataset=self.label)
+    # dsgeoms = PlaceGeom.objects.filter(place__dataset='croniken')
+    # env = dsgeoms.aggregate(Collect('geom'))['geom__collect'].envelope
+    extent = dsgeoms.aggregate(Extent('geom'))['geom__extent']
+    b=box(extent[0],extent[1],extent[2],extent[3])
+
+    # pg_geoms=PlaceGeom.objects.values_list('geom',flat=Trenvue).filter(place__dataset=self.label)
+    # pg_geoms=PlaceGeom.objects.values_list('geom',flat=True).filter(place__dataset='croniken')
+    # gc=GeometryCollection(tuple(pg_geoms))
+    # gc=GeometryCollection(tuple(gc2))
+    # feat= {"type":"Feature","properties":{"id":1101},"geometry":json.loads(json.dumps(mapping(b)))}
+    # feat= {"type":"Feature","properties":{"id":self.id},"geometry":json.loads(json.dumps(mapping(b)))}
+    # print('feat, count',feat, dsgeoms.count())
+    feat = Feature(geometry=mapping(b),properties={"id":self.id,"label":self.label,"title":self.title})
+    # print(feat)
+    return feat if dsgeoms.count() > 0 else None
+    # return json.loads(env.geojson) if dsgeoms.count() > 0 else None
+    # return json.loads(gc.envelope.geojson) if pg_geoms.count() > 0 else None
 
   @property
   def file(self):

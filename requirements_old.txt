@@ -90,7 +90,6 @@ geographiclib==1.52
 geojson==2.5.0
 geomet==0.3.0
 geopy==2.2.0
-goodtables==2.5.4
 h11==0.13.0
 humanize==4.0.0
 idna==2.10
@@ -157,7 +156,7 @@ prometheus-client==0.13.1
 promise==2.3
 prompt-toolkit==3.0.28
 psutil==5.9.0
-psycopg2==2.9.3
+psycopg2-binary==2.9.3
 ptyprocess==0.7.0
 pure-eval==0.2.2
 py==1.11.0

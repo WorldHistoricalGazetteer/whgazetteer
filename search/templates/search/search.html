@@ -1118,7 +1118,7 @@
     index = doctype =='place' ? 'whg' : 'traces'    
     // clear filters
     $(".list-inline").html('')
-  <!--console.log('bounds in js SearchPlacesIdx()',$("#boundsobj").val())-->
+    // console.log('bounds in js SearchPlacesIdx()',$("#boundsobj").val())-->
     $.get("/search/index",{
       // qstr: $(".tt-input")[0].value,
       // disabled typeahead
@@ -1130,13 +1130,13 @@
       start: $("#input_start").val(),
       end: $("#input_end").val(),
       bounds: $("#boundsobj").val()
-    <!--,ds: $("#select_ds_search").val()-->
+      //,ds: $("#select_ds_search").val()
       }, function(data){
         window.searchres = data['suggestions']
         window.session = data['session']
         // store locally
         localStorage.setItem('last_results',JSON.stringify(searchres))
-        <!--localStorage.setItem('last_results',searchres)-->
+        //localStorage.setItem('last_results',searchres)-->
         // render to html
         if(doctype == 'place'){
           showResults(searchres,doctype,scope);

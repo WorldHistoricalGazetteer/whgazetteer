@@ -179,10 +179,12 @@ class CollectionDetailView(DetailView):
     datasets = self.object.datasets.all()
 
     # compute bounding boxes
-    bboxes = [
-      {"type":"Feature",
-       "properties": {"id":ds.id, "label": ds.label, "title": ds.title},
-       "geometry":ds.bounds} for ds in datasets]
+    # bboxes = [
+    #   {"type":"Feature",
+    #    "properties": {"id":ds.id, "label": ds.label, "title": ds.title},
+    #    "geometry":ds.bounds} for ds in datasets]
+    bboxes = [ds.bounds for ds in datasets]
+
 
     context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
     context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB

@@ -303,10 +303,9 @@
   })
 
   $( ".ds_card" ).hover(function() {
-      <!--console.log($(this))-->
       let id = $(this).data('id')
       feat = idToFeature[id]
-      <!--console.log('feat',feat)-->
+      console.log('feat',feat)
       ogfill = "#ff9999"
       feat.setStyle(
         {fillColor: 'yellow', color: 'red', fillOpacity: 0.3}

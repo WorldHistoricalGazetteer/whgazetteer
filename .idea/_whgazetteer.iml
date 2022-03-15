@@ -31,7 +31,7 @@
       <excludeFolder url="file://$MODULE_DIR$/_testdata" />
       <excludeFolder url="file://$MODULE_DIR$/sent_emails" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.7 (whg374)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.9 (whg397)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PackageRequirementsSettings">
