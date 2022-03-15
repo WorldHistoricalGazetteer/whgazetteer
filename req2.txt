@@ -68,7 +68,7 @@ geojson==2.4.1
 geomet==0.2.0.post2
 geopy==1.17.0
 goodtables==2.5.2
-httpie==2.0.0
+httpie==3.1.0
 idna==2.8
 ijson==3.1.2.post0
 importlib-metadata==0.23
