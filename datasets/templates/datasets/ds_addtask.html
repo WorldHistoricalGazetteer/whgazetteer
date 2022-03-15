@@ -146,10 +146,6 @@
                   <hr/>
                   <button type="submit" id="btn_startrecon" class="btn btn-primary">Start</button>
                   <span title="back"><a id="cancel_taskadd" href="#">Cancel</a></span>
-                  <!--<span id="q_accept" class="ml-3 small">-->
-                    <!--<input id="accept_geom" name="geom" type="checkbox" checked="checked"/> accept geometries in matches-->
-                <!--<span class="help-matches" data-id="accept-geometry">{% fontawesome_icon 'question-circle' color='#993333' %}</span>-->
-                  <!--</span>-->
                 </div>
               </div> <!-- #addtask_lower -->
             {% endif %} <!-- ds.ds_status != 'accessioning' -->
@@ -250,10 +246,6 @@
   $("#btn_done").on('click', function(){ location.reload(); })
   $("#btn_cancel").on('click', function(){ location.reload(); })
 
-  // spinner  
-  <!--$("#btn_startrecon").click(function(e){-->
-    <!--startReconSpinner()-->
-  <!--})-->
 
   $(function(){
     <!--console.log('msg_wdlocal', JSON.parse("{ msg_wdlocal|safe }}"))-->

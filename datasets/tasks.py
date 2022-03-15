@@ -670,8 +670,7 @@ def es_lookup_tgn(qobj, *args, **kwargs):
   # /\/\/\/\/\/
   #print('q1',q1)
   try:
-    res1 = es.search(index="tgn_shape", body = q1)
-    #res1 = es.search(index="tgn", body = q1)
+    res1 = es.search(index="tgn", body = q1)
     hits1 = res1['hits']['hits']
   except:
     print('pass1 error:',sys.exc_info())
@@ -687,7 +686,7 @@ def es_lookup_tgn(qobj, *args, **kwargs):
     # /\/\/\/\/\/  
     q2 = qbase
     try:
-      res2 = es.search(index="tgn_shape", body = q2)
+      res2 = es.search(index="tgn", body = q2)
       hits2 = res2['hits']['hits']
     except:
       print('pass2 error:',sys.exc_info()) 
@@ -704,7 +703,7 @@ def es_lookup_tgn(qobj, *args, **kwargs):
       q3 = qbare
       #print('q3 (bare)',q3)
       try:
-        res3 = es.search(index="tgn_shape", body = q3)
+        res3 = es.search(index="tgn", body = q3)
         hits3 = res3['hits']['hits']
       except:
         print('pass3 error:',sys.exc_info())        

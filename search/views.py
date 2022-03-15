@@ -11,7 +11,7 @@ from api.serializers import SearchDatabaseSerializer
 from areas.models import Area
 from datasets.models import Dataset, Hit
 from datasets.tasks import normalize, get_bounds_filter
-from elasticsearch import Elasticsearch
+from elasticsearch7 import Elasticsearch
 from places.models import Place
 
     
@@ -129,12 +129,22 @@ def suggestionItem(s,doctype,scope):
 def suggester(doctype,q,scope,idx):
   # returns only parents; children retrieved into place portal
   print('suggester',doctype,q)
-  es = Elasticsearch([{'host': 'localhost', 'port': 9200, 'timeout':30, 'max_retries':10, 'retry_on_timeout':True}])
+  # add api key
+  # api_key=('DuSkVm8BZ5TMcIF99zOC','2rs8yN26QSC_uPr31R1KJg')
+  es = Elasticsearch([{'host': 'localhost',
+                       'port': 9200,
+                       'api_key': ('Qf6zj38BNORx7WIGwSUc', 'v-2FwWJuQ5u3rvOwy8Nw6g'),
+                       'timeout':30,
+                       'max_retries':10,
+                       'retry_on_timeout':True}])
   suggestions = []
   
   if doctype=='place':
     #print('suggester/place q:',q)
-    res = es.search(index=idx, doc_type='place', body=q)
+    # res = es.search(index=idx, doc_type='place', body=q)
+    # doc_type not present from 7.17 on
+    # body to be deprecated 'in 9.0'
+    res = es.search(index=idx, body=q)
     #res = es.search(index='whg,tgn', doc_type='place', body=q)
     if scope == 'suggest':
       sugs = res['suggest']['suggest'][0]['options']
@@ -171,7 +181,7 @@ def suggester(doctype,q,scope,idx):
     
   elif doctype == 'trace':
     print('suggester()/trace q:',q)
-    res = es.search(index='traces',doc_type='trace',body=q)
+    res = es.search(index='traces', body=q)
     hits = res['hits']['hits']
     #print('suggester()/trace hits',hits)
     if len(hits) > 0:
@@ -263,7 +273,7 @@ class SearchView(View):
       print('trace query:',q)
     
     suggestions = suggester(doctype, q, scope, idx)
-    suggestions = [ suggestionItem(s, doctype, scope) for s in suggestions]
+    suggestions = [suggestionItem(s, doctype, scope) for s in suggestions]
     
     # return query params for ??
     result = suggestions if doctype=='trace' else \
