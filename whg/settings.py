@@ -168,6 +168,9 @@ LOGIN_URL = '/accounts/login/'
 LOGIN_REDIRECT_URL='/accounts/login/'
 LOGOUT_REDIRECT_URL='/'
 
+GDAL_LIBRARY_PATH = '/Applications/Postgres.app/Contents/Versions/14/lib/libgdal.dylib'
+GEOS_LIBRARY_PATH = '/Applications/Postgres.app/Contents/Versions/14/lib/libgeos_c.dylib'
+
 # Database
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
 
@@ -179,7 +182,8 @@ DATABASES = {
       'USER':'',
       'PASSWORD':'',
       'HOST':'localhost',
-      'PORT':'5432',
+      # 'PORT':'5432',
+      'PORT':'5433',
     }
 }
 
@@ -252,7 +256,8 @@ USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+# disabled for new psycopg2 config
+# USE_TZ = True
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 MEDIA_URL = '/media/'
