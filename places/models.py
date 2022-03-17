@@ -6,6 +6,7 @@ from django.db import models
 
 from datasets.static.hashes.parents import ccodes as cc
 from main.choices import FEATURE_CLASSES, STATUS_REVIEW
+from traces.models import TraceAnnotation
 #from edtf import parse_edtf
 
 def yearPadder(y):
@@ -35,6 +36,10 @@ class Place(models.Model):
 
   def __str__(self):
     return '%s:%s' % (self.id, self.title)
+
+  @property
+  def traces(self):
+    return TraceAnnotation.objects.filter(place=self.id)
 
   @property
   def repr_geom(self):

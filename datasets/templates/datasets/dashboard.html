@@ -24,7 +24,7 @@
   {% load dataset_extras %}
 
   <div class="container pt-3">
-    <ul id="api_tabs" class="nav nav-tabs" role="tablist">
+    <ul id="dashboard_tabs" class="nav nav-tabs" role="tablist">
       <li class="nav-item">
         <a class="nav-link active" id="mydslist-tab" data-toggle="tab" href="#mydslist" 
           role="tab" aria-controls="dslist" aria-selected="true">Datasets</a>
@@ -148,7 +148,14 @@
                     <td>{{ c.title }}</td>
                     <td>
                       <a href="{% url 'collection:collection-detail' c.id %}">view</a>&nbsp;
+                        {% if beta_or_better %} |
+                            <a href="{% url 'collection:collection-detail-beta' c.id %}"><i> (beta)</i></a>
+	                          <span class="mx-2">||</span>
+                        {% endif %}
                       <a href="{% url 'collection:collection-update' c.id %}">edit</a>
+                        {% if beta_or_better %} |
+                            <a href="{% url 'collection:collection-update-beta' c.id %}"><i> (beta)</i></a>
+                        {% endif %}
                     </td>
                     <td>{{ c.create_date }}</td>
                   </tr>

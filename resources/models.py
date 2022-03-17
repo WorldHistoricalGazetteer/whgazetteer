@@ -66,8 +66,7 @@ class ResourceFile(models.Model):
 
 
 class ResourceImage(models.Model):
-  resource = models.ForeignKey(
-      Resource, default=None, on_delete=models.CASCADE)
+  resource = models.ForeignKey(Resource, default=None, on_delete=models.CASCADE)
   image = models.FileField(upload_to=resource_file_path)
 
   # def __str__(self):

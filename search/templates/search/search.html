@@ -15,7 +15,7 @@
   <link rel="stylesheet" href="{% static 'css/typeahead.css' %}">
   <script src="{% static 'js/leaflet.ajax.min.js' %}"></script>
   <script src="{% static 'js/typeahead.bundle.js' %}"></script>
-  
+
 
   <script src="{% static 'leaf_bb/leaflet-control-boxzoom.js' %}"></script>
   <link rel="stylesheet" href="{% static 'leaf_bb/leaflet-control-boxzoom.css' %}">
@@ -35,7 +35,7 @@
     <div id="search_top" class="row">
       <div id="search_left" class="col-sm-6">
         <div id="search_panel">
-      <div id="search_type" class="form-group d-flex justify-content-center"> 
+      <div id="search_type" class="form-group d-flex justify-content-center">
         <div class="form-check form-check-inline">
         <input class="form-check-input hover" type="radio" name="class" id="r_place" value="place" rel="Enter place name"  checked="checked">
         <label class="form-check-label" for="r_place">Places</label>
@@ -63,9 +63,9 @@
         <a class="nav-link active" id="a_idx" data-scope="idx" href="#" role="tab" style="background:#f1fff1;"> Search Index {%fontawesome_icon 'link'%}</a>
         </li>
         <li class="nav-item ml-1">
-        <a class="nav-link" id="a_db" data-scope="db" href="#" role="tab" style="background:whitesmoke;">Search Database {%fontawesome_icon 'database'%}</a> 
+        <a class="nav-link" id="a_db" data-scope="db" href="#" role="tab" style="background:whitesmoke;">Search Database {%fontawesome_icon 'database'%}</a>
         </li>
-      </ul>	
+      </ul>
       <div id="search_filters" class="tab-pane fade show active" role="tabpanel">
         <span class="filter-header">pre-filters</span>
         <div class="small row">
@@ -78,10 +78,10 @@
             </p>
             <ul class="ul-left p-0 mb-0">
             <li class="li-flush"><input type="checkbox" value="A" checked> administrative entities <small>(A)</small></li>
-            <li class="li-flush"><input type="checkbox" value="P" checked> cities, towns, hamlets...<small>(P)</small></li> 
-            <li class="li-flush"><input type="checkbox" value="S" checked> sites, buildings, complexes...<small>(S)</small></li> 
-            <li class="li-flush"><input type="checkbox" value="R" checked> roads, routes, rail...<small>(R)</small></li> 
-            <li class="li-flush"><input type="checkbox" value="L" checked> regions, landscape areas <small>(L)</small></li> 
+            <li class="li-flush"><input type="checkbox" value="P" checked> cities, towns, hamlets...<small>(P)</small></li>
+            <li class="li-flush"><input type="checkbox" value="S" checked> sites, buildings, complexes...<small>(S)</small></li>
+            <li class="li-flush"><input type="checkbox" value="R" checked> roads, routes, rail...<small>(R)</small></li>
+            <li class="li-flush"><input type="checkbox" value="L" checked> regions, landscape areas <small>(L)</small></li>
             <li class="li-flush"><input type="checkbox" value="T" checked> terrestrial landforms <small>(T)</small></li>
             <li class="li-flush"><input type="checkbox" value="H" checked> water bodies <small>(H)</small></li>
             </ul>
@@ -100,7 +100,7 @@
             <p class="mb-0">spatial
               <span class="float-right">
               <a id="spatial_help" class="pointer" data-toggle="popover" title="Spatial filter" data-content="" tabindex="0" data-trigger="focus">
-              {% fontawesome_icon 'question-circle' color='#336699' %}</a></span>	  
+              {% fontawesome_icon 'question-circle' color='#336699' %}</a></span>
             </p>
               <label><input id="input_area" type="text" size="30" placeholder="Region, country, study area" /></label>
               <input type="hidden" id="boundsobj" />
@@ -114,16 +114,16 @@
             </div>
           </div> <!-- #filters_st -->
         </div> <!-- .row -->
-      </div> <!-- #search_filters -->	
+      </div> <!-- #search_filters -->
       <div id="result_filters" class="pt-2 pl-1 hidden">
-        <p class="half pl-2 mr-1">result filters {% fontawesome_icon 'filter' %} 
+        <p class="half pl-2 mr-1">result filters {% fontawesome_icon 'filter' %}
         <span id="dropdown_filters">
         <span class="ml-2"><select id="type_select"></select></span>
         <span class="ml-2"><select id="cc_select"></select></span>
         </span>
-        </p>        
+        </p>
       </div>
-      <div id="traces_info" class="p-2 hidden">  
+      <div id="traces_info" class="p-2 hidden">
         <p class="strong">Linked Traces in WHG</p>
         <p class="small">Traces are an experimental feature in WHG. Briefly:</p>
         <ul class="small mb-0">
@@ -205,8 +205,8 @@
     stateobj={
       'class':searchClass(), 'scope':searchScope(),
       'rowcount':currentRows()?currentRows().length:0,
-      'lyrcount':currentLayers()?currentLayers().length:0, 
-      'lskeys':ls(), 
+      'lyrcount':currentLayers()?currentLayers().length:0,
+      'lskeys':ls(),
       'lastresults':lastResult()?lastResult().length:0
     }
     <!--console.log(stateobj)-->
@@ -283,7 +283,7 @@
       $("#check_toggle").text('clear all');
       } else if( state == 'clear all'){
       $("input:checkbox").prop('checked', false);
-      $("#check_toggle").text('check all');		
+      $("#check_toggle").text('check all');
       }
     })
 
@@ -322,7 +322,7 @@
     })
 
     $("[rel='tooltip']").tooltip();
-    $("[data-toggle=popover]").popover({html:true})  
+    $("[data-toggle=popover]").popover({html:true})
 
     // dynamic dataset info popover
     var dspop = $(".pop-dataset").popover({
@@ -394,7 +394,7 @@
             idx: doctype == 'place' ? 'whg' : 'trace'
           });
           return settings;
-      } 
+      }
       }
     });
     function hh(element) {
@@ -412,9 +412,9 @@
           doctype = $("input[name='class']:checked").val()
           if(doctype == 'place'){
             // console.log('variants',data.variants)
-            return data.variants.length>0 ? 
-              '<p class="tight-p tt-suggestion">' + data.name + '<br/><i class="tight-p">' + 
-                data.variants.filter(hh).join(', ') + '<i></p>' : 
+            return data.variants.length>0 ?
+              '<p class="tight-p tt-suggestion">' + data.name + '<br/><i class="tight-p">' +
+                data.variants.filter(hh).join(', ') + '<i></p>' :
               '<p class="tight-p">' + data.name + '</p>'
           } else {
             // console.log('data',data)-->
@@ -443,7 +443,7 @@
       for(var i=0;i<data.length;i++){
       area_objs.push(data[i])
       area_list.push(data[i]['title'])
-      }	  
+      }
     })
 
     $( "#input_area" ).autocomplete({
@@ -463,14 +463,14 @@
       }
     });
     $("#input_area").on('keyup', function(e){
-      // resets stuff 
+      // resets stuff
       if($('#input_area').val().length < 3) {
         $("#boundsobj").val('')
         if(typeof arealayer !== 'undefined'){arealayer.removeFrom(mappy)}
         mappy.setView([38, 10], 2.4)
       }
     })
-  }) //  end onLoad() 
+  }) //  end onLoad()
 
   hideAllRows = function(){
     currentRows().each(function(r){
@@ -514,7 +514,7 @@
           if(search_class=='trace'){
             visible_layerids.push(Number(props.whg_id))
           } else {
-            visible_layerids.push(scope=='idx'?props.whgid:props.pid);          
+            visible_layerids.push(scope=='idx'?props.whgid:props.pid);
           }
           visible_layers.push(layer)
         }
@@ -533,11 +533,11 @@
       }
     });
     return visible_layerids;
-  } 
+  }
 
   /*
     *** ccFilter() ***
-    filter result list on change #cc_select 
+    filter result list on change #cc_select
   */
   ccFilter = function(cc){
     results = $("#result_div tbody tr")
@@ -577,7 +577,7 @@
   }
   /*
     *** typeFilter() ***
-    filter result list on change #type_select 
+    filter result list on change #type_select
   */
   typeFilter = function(term){
     results = $("#result_div tbody tr")
@@ -616,10 +616,10 @@
   }
   /*
     *** mapFilter() ***
-    filter result list on zoomend 
-    TODO: 
+    filter result list on zoomend
+    TODO:
     1) remove all map layers, add back those in view
-    2) remove result_div rows, don't just hide them    
+    2) remove result_div rows, don't just hide them
   */
   mapFilter = function(boxed_ids){
     $(".clear-filter").show()
@@ -681,14 +681,14 @@
     $("#cc_select").val(0)
     $("#cc_select option").eq(0).text('Modern country bounds')
     $("#type_select").val(0)
-    $("#type_select option").eq(0).text('Place type')     
+    $("#type_select option").eq(0).text('Place type')
   }
   /*
     *** clearMapFilter() ***
     restores all search result features
   */
   clearMapFilter = function(){
-    // display all result rows 
+    // display all result rows
     <!--console.log('need to restore all', ids_all)-->
     for (i = 0; i < results.length; i++) {
       results[i].style.display = ""
@@ -702,7 +702,7 @@
       mappy.addLayer(hide_these[i])
     })
     mappy.fitBounds(features.getBounds())
-    // hide link, reset selects, recalc # rows 
+    // hide link, reset selects, recalc # rows
     $("#reset_filters").hide()
     resetSelects()
     <!--$("#cc_select").val(0)-->
@@ -747,7 +747,7 @@
           if (x.innerText.toLowerCase() < y.innerText.toLowerCase()) {
             shouldSwitch = true;
             break;
-          }       
+          }
         }
       }
       if (shouldSwitch) {
@@ -787,8 +787,8 @@
     }).addTo(mappy)
     mappy.fitBounds(arealayer.getBounds())
     })
-  }  
-  // 
+  }
+  //
   heat = function(dataset) {
     console.log('heat()',dataset)
     ne_global.getMapboxMap().addLayer({
@@ -845,7 +845,7 @@
       9, 0
     ],
     }
-  });    
+  });
   }
   //
   // initializes map
@@ -856,8 +856,8 @@
     mappy.options.maxZoom = 6
     mappy.setView(new L.LatLng(32, 12.6), 1);
 
-    // mapbox tokens 
-    var token_whg = '{{ mbtokenwhg }}', 
+    // mapbox tokens
+    var token_whg = '{{ mbtokenwhg }}',
       token_mb = '{{ mbtokenmb }}';
 
   // style/tile urls
@@ -866,13 +866,13 @@
       ne_url = 'http://blog.whgazetteer.org/tiles/ne/{z}/{x}/{y}.png';
 
       var satellite  = L.tileLayer(mbstyle_url, {
-      id:'mapbox/satellite-streets-v11', 
+      id:'mapbox/satellite-streets-v11',
       token:token_mb}),
     osm  = L.tileLayer(mbstyle_url, {
-      id:'mapbox/light-v10', 
+      id:'mapbox/light-v10',
       token:token_mb}),
       ne_mb = L.tileLayer(mbtiles_url, {
-      id:'kgeographer.ne_global', 
+      id:'kgeographer.ne_global',
       token:token_whg})
 
     // GL wrappers to display heatmaps
@@ -910,7 +910,7 @@
     var baseLayers = {
       "NE global": ne_global,
       "Terrain": mb_terrain,
-      "OpenStreetMap": osm,      
+      "OpenStreetMap": osm,
       "Satellite": satellite
     };
     var dataLayers = {
@@ -919,7 +919,7 @@
     }
     mappy.zoomControl.setPosition('topright')
     bboxer = L.Control.boxzoom(
-      { position:'topleft', 
+      { position:'topleft',
         title:'Select tool, then draw rectangle to filter results',
         enableShiftDrag: true
         <!--,iconClasses:['bbox-icon']-->
@@ -929,7 +929,7 @@
     L.control.layers(baseLayers,dataLayers).addTo(mappy);
     baseLayers["NE global"].addTo(mappy)
 
-    // TODO: 
+    // TODO:
     // much is duplicated here from typeFilter() and ccFilter()
     // a big combinatorial state challenge
     mappy.on('zoomend',function(e){
@@ -939,7 +939,7 @@
       <!--if(typeof idToFeature != 'undefined' && searchClass()=='place'){      // the result list-->
       if(typeof idToFeature != 'undefined' && searchClass()=='place' && search_scope == 'idx'){      // the result list
         results = $("#result_div tbody tr")
-        // get layer ids      
+        // get layer ids
         all_ids = Object.keys(idToFeature).map(Number)
         show_ids = visibleFeaturesIds(search_scope)
         hide_ids = all_ids.filter(value=>!show_ids.includes(value))
@@ -1001,7 +1001,7 @@
 
     if(ls('last_results') != null){
       kept = ls('keep')
-      previous = JSON.parse(ls('last_results'))	
+      previous = JSON.parse(ls('last_results'))
       console.log('got previous')
       if( kept == "true" && previous){
         showResults(previous,'place','search')
@@ -1045,7 +1045,7 @@
       return "purple"
     else if (counter == 3)
       return "greenyellow"
-    else 
+    else
       return "yellow"
   }
 
@@ -1100,7 +1100,7 @@
 
   // clear results, type filter
   /*
-    *** searchPlacesIdx() *** from #input_box keyup 
+    *** searchPlacesIdx() *** from #input_box keyup
     index search w/o autocomplete -> showResults()
   handles traces also !?
   */
@@ -1115,14 +1115,14 @@
     // hack disables typeahead
     scope = doctype =='place' ? 'search' : 'suggest'
     // end hack
-    index = doctype =='place' ? 'whg' : 'traces'    
+    index = doctype =='place' ? 'whg' : 'traces'
     // clear filters
     $(".list-inline").html('')
     // console.log('bounds in js SearchPlacesIdx()',$("#boundsobj").val())-->
     $.get("/search/index",{
       // qstr: $(".tt-input")[0].value,
       // disabled typeahead
-      qstr: $('#input_box').val(), 
+      qstr: $('#input_box').val(),
       doc_type: doctype,
       scope: scope,
       idx: index,
@@ -1146,8 +1146,8 @@
     $('.tt-menu').hide()
   }
 
-  /* 
-    *** searchPlacesDb() *** from #input_box keyup 
+  /*
+    *** searchPlacesDb() *** from #input_box keyup
     database search w/o autocomplete -> showResults()
   */
   searchPlacesDb = function(){
@@ -1159,11 +1159,11 @@
       });
     years = [Number($("#input_start").val()),Number($("#input_end").val())]
     y = years.find(element => element != 0 );
-    ds_select = $("#select_ds_search").val()
+    {#ds_select = $("#select_ds_search").val()#}
     dsid = ds_select!="0" ? parseInt(ds_select) : null
     <!--console.log('params',{'fc':fclasses, "y":y, "dsid":dsid})-->
     $.get("/search/db",{
-      name: $('#input_box').val(), 
+      name: $('#input_box').val(),
       name_contains: null, // if 'contains checked
       // break array nec. - WHY???
       fclasses: fclasses.join(','),
@@ -1180,15 +1180,15 @@
       spinner_search.stop()
     })
   }
-  /* 
-    *** showResults() *** 
+  /*
+    *** showResults() ***
     from searchPlacesIdx(), searchPlacesDb(), fetchTraceGeometry()
     Builds results_div, renders to #result_div; builds geoms[] -> renderPlaces(geoms)
 
     data: list of objects
     doctype ['place' | 'trace' ]
     scope: ['suggest' | 'search']
-    title:    
+    title:
   */
   showResults = function(data, doctype, scope='suggest', title){
     <!--console.log('showResults() data length', data.length)-->
@@ -1271,10 +1271,10 @@
       // data has features and bodies
       bodies = data.bodies
       console.log('trace data',data)
-      result_table = '<table id="result_table">'+'<thead><tr><th>Place</th><th>Relation [earliest, latest]</th><th>geom?</th></tr></thead>'			
+      result_table = '<table id="result_table">'+'<thead><tr><th>Place</th><th>Relation [earliest, latest]</th><th>geom?</th></tr></thead>'
       <!--console.log('trace data bodies',data.bodies)-->
-      data.bodies.forEach(function(bod){ 
-        // add a whg_id to bodies        
+      data.bodies.forEach(function(bod){
+        // add a whg_id to bodies
         result_table += sugLister(bod, doctype, scope)
       })
       result_table += '</table>'
@@ -1377,7 +1377,7 @@
   } // end showResults()
 
   /*
-    *** renderPlaces() *** 
+    *** renderPlaces() ***
     from showResults()
     renders geometries from search results to map
   */
@@ -1440,7 +1440,7 @@
           foo[0].scrollIntoView()
           ele.scrollTop(ele.scrollTop() - scroll);
         })
-        // 
+        //
         initialLayers.addLayer(layer)
       }
     }).addTo(mappy); <!-- adds features L.geoJSON -->
@@ -1459,7 +1459,7 @@
   /*
     *** sugLister() ***  from showResults()
     formats search result item (sug)
-  */  
+  */
   function sugLister(sug, doctype, scope) {
     <!--console.log(sug)-->
     if (doctype=='place') {
@@ -1525,8 +1525,8 @@
       <!--item += '</div></div>' // trace-item, container-->
     }
     return item
-  }  
-  // from sugLister()    
+  }
+  // from sugLister()
   // TODO: doesn't reach into when.timespans; Indias data malformed
   function parseRels(rels){
     html=''
@@ -1541,13 +1541,13 @@
     // no 'in', 'earliest' or 'latest' here
     starts.push(Number(timespans[t].start.match(reg)[1]))
     ends.push(!!timespans[t].end ? Number(timespans[t].end.match(reg)[1]) : -1)
-  } 
+  }
   <!--console.log('starts',starts,'ends',ends)-->
   minmax=' ['+[starts.length>0?Math.max.apply(null, starts):'-',ends.length>0?Math.max.apply(null, ends):'-']+']'
   if(!starts.length==0 && !ends.length==0){ html += minmax}
     return html
-  }   
-  // from sugLister()    
+  }
+  // from sugLister()
   // TODO: doesn't reach into when.timespans; Indias data malformed
   function parseWhen(when){
   console.log('parseWhen()',when)
@@ -1559,16 +1559,16 @@
       html+=w==when.length-1?'':'; '
     }
     return html
-  }  
+  }
 
   // from parserPlace() builds link for external place record
   function url_extplace(identifier) {
     // abbreviate links not in aliases.base_urls
     if(identifier.startsWith('http')) {
       let tag = identifier.replace(/.+\/\/|www.|\..+/g, '')
-      link = '<a href="'+identifier+'" target="_blank">'+tag+'{% fontawesome_icon 'external-link' color='#336699' %},  </a>'          
+      link = '<a href="'+identifier+'" target="_blank">'+tag+'{% fontawesome_icon 'external-link' color='#336699' %},  </a>'
     } else {
-    link = '<a href="" class="ext" data-target="#ext_site">'+identifier+'&nbsp;{% fontawesome_icon 'external-link' color='#336699' %}</a>, '    
+    link = '<a href="" class="ext" data-target="#ext_site">'+identifier+'&nbsp;{% fontawesome_icon 'external-link' color='#336699' %}</a>, '
     }
     return link
   }
@@ -1584,7 +1584,7 @@
   function parsePlace(data) {
     window.featdata = data
 
-    function onlyUnique(array) { 
+    function onlyUnique(array) {
       const map = new Map();
       const result = [];
       for (const item of array) {
@@ -1601,11 +1601,11 @@
     }
     <!--timespan_arr = []-->
     //
-    // TITLE 
+    // TITLE
     descrip = '<p><b>Title</b>: <span id="row_title" class="larger text-danger">'+data.title+'</span>'
     //
     // DATASET
-    descrip+='<p><b>Dataset</b>: '+data.dataset + ' ('+data.id+')'		
+    descrip+='<p><b>Dataset</b>: '+data.dataset + ' ('+data.id+')'
     //
     // NAME VARIANTS
     descrip+='<p class="scroll65"><b>Variants</b>: '
@@ -1637,7 +1637,7 @@
 
     //
     // LINKS
-    // 
+    //
     descrip += '<p class="mb-0"><b>Links</b>: <i>original: </i>'
     close_count = added_count = related_count = 0
     html_close = html_added = html_related = ''
@@ -1663,20 +1663,20 @@
     // RELATED
     <!--right=''-->
     if (data.related.length > 0) {
-      parent='<p class="mb-0"><b>Parent(s)</b>: '; 
+      parent='<p class="mb-0"><b>Parent(s)</b>: ';
       related='<p class="mb-0"><b>Related</b>: ';
       for (r in data.related){
         rel = data.related[r]
         <!--console.log('rel',rel)-->
         if (rel.relation_type == 'gvp:broaderPartitive'){
           parent += '<span class="h1em">'+rel.label
-          parent += 'when' in rel && !('timespans' in rel.when) ? 
-            ', '+rel.when.start.in+'-'+rel.when.end.in : 
+          parent += 'when' in rel && !('timespans' in rel.when) ?
+            ', '+rel.when.start.in+'-'+rel.when.end.in :
             'when' in rel && ('timespans' in rel.when) ? ', '+
               minmaxer(rel.when.timespans) : ''
               <!--rel.when.timespans : ''-->
           parent += '</span>; '
-        } 
+        }
         else {
           related += '<p class="h1em">'+rel.label+ ', '+rel.when.start.in+'-'+rel.when.end.in+'</p>'
         }
@@ -1707,7 +1707,7 @@
     // MINMAX
     //
     if(data.minmax && data.minmax.length>0){
-      descrip += '<p><b>When</b>: earliest: '+data.minmax[0]+'; latest: '+data.minmax[1]    
+      descrip += '<p><b>When</b>: earliest: '+data.minmax[0]+'; latest: '+data.minmax[1]
     }
     descrip += '</div>'
     return descrip
@@ -1731,7 +1731,7 @@
             url = str
           } else {
             var re = /(http|bnf|cerl|dbp|gn|gnd|gov|loc|pl|tgn|viaf|wd|wdlocal|whg|wp):(.*?)$/;
-            url=base_urls[str.match(re)[1]]+str.match(re)[2] 
+            url=base_urls[str.match(re)[1]]+str.match(re)[2]
             console.log('url',url)
           }
           window.open(url, '_blank');
@@ -1781,14 +1781,14 @@
     }
   }
 
-  /* _LISTENERS */ 
+  /* _LISTENERS */
   /*
   // catch Enter key press for places
   // traces are handled in .typeahead function
   // disabled typeahead: removed class .typeahead from #input_box
   */
   $("#input_box").on('keyup', function(e){
-    // resets page 
+    // resets page
     if($('#input_box').val().length < 3) {
       clearit()
     }
@@ -1800,13 +1800,13 @@
       <!--$("#traces_info").hide()-->
       <!--if (search_scope == 'idx'){-->
       if (searchScope() == 'idx'){
-        searchPlacesIdx()		
+        searchPlacesIdx()
       } else {
         searchPlacesDb()
       }
-      } 
+      }
   })
-  // 
+  //
   <!--$("label[for='input_box']").click(function(){-->
   $(".b-input").click(function(){
     <!--console.log('clicked search')-->
@@ -1814,8 +1814,8 @@
     <!--scopeAtThisInstant = $(".nav-link.active").data('scope')-->
     if( searchScope() == 'idx'){
       searchPlacesIdx()
-    } else { searchPlacesDb()}	  
-  })	
+    } else { searchPlacesDb()}
+  })
   //
   // hack: typeahead disabled for place
   // only valid if doctype has been changed
@@ -1826,15 +1826,15 @@
     doctype = $("input[name='class']:checked").val()
     if (e.keyCode === 13) {
       searchPlacesIdx()
-    } 
+    }
   })
 
   // acts on suggest items (.tt-selectable)
   $("#search_input").on('click','.tt-selectable', function(e) {
     if(doctype == 'place') {
       console.log('clicked place suggestion',$(this))
-      searchPlacesIdx()    
-    } 
+      searchPlacesIdx()
+    }
   })
 
   // search scope tab actions
@@ -1851,7 +1851,7 @@
     $("#type_filter").hide()
 
     // simulate tab styling
-    if(other.data('scope') == 'idx'){ 
+    if(other.data('scope') == 'idx'){
       $("#search_filters").css("background","whitesmoke")
       $("#scope_db").css("border-bottom","1px solid whitesmoke")
       $("#filter_spatial").hide()
@@ -1865,7 +1865,7 @@
     other.removeClass('active')
     $(this).addClass('active')
   })
-  // load place portal page from result_div item title links       
+  // load place portal page from result_div item title links
   // TODO: links are nested so click produces 2 events
   $("#result_div").on('click', '.trace-link', function(e){
     whgid=$(this).data('id')
@@ -1917,7 +1917,7 @@
       $("#search_input").show()
       $("#search_filters").fadeIn()
       $("#search_input_traces").hide()
-    } else { // 
+    } else { //
       search_class = 'trace'
       $("#search_info").fadeOut(400)
       if(!$("#traces_info").is(":visible")){
@@ -1976,10 +1976,10 @@
   spin_opts = { scale: .8, top: '70%', 'right':'30%'}
   startSearchSpinner = function(){
     window.spinner_search = new Spin.Spinner(spin_opts).spin();
-    $("#search_filters").append(spinner_search.el);   
+    $("#search_filters").append(spinner_search.el);
   }
   switchTab = function(scope){
-    if(scope == 'db'){ 
+    if(scope == 'db'){
       $("#scope_idx").removeClass('active')
       $("#scope_db").addClass('active')
       $("#search_filters").css("background","whitesmoke")
@@ -1993,7 +1993,7 @@
       $("#search_filters").css("background","#f1fff1")
       $("#dbicon").hide()
       $("#filter_spatial").show()
-    }    
+    }
   }
   resetSearch = function(){
     localStorage.removeItem('last_results')
@@ -2001,9 +2001,8 @@
     localStorage.removeItem('keep')
     <!--$("#dbicon").hide()-->
     <!--$("#filter_spatial").show()-->
-    $("#offer_mapfilter").hide()    
+    $("#offer_mapfilter").hide()
     location.reload()
   }
 </script>
 {% endblock %}
-

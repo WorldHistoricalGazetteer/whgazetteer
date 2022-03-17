@@ -75,7 +75,7 @@ docutils==0.18.1
 dparse==0.5.1
 edtf==4.0.1
 elastic-wikidata==1.0.1
-elasticsearch==7.8.1
+elasticsearch==7.17.1
 elasticsearch-dsl==7.4.0
 entrypoints==0.4
 envoy==0.0.3
@@ -85,7 +85,7 @@ ezodf==0.3.2
 flake8==4.0.1
 Flask==2.0.3
 flower==0.9.3
-frictionless==4.26.0
+frictionless==3.31.0
 geographiclib==1.52
 geojson==2.5.0
 geomet==0.3.0

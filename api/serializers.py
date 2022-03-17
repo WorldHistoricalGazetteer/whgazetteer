@@ -8,6 +8,7 @@ from datasets.models import Dataset
 from areas.models import Area
 from main.choices import DATATYPES
 from places.models import *
+from traces.models import TraceAnnotation
 
 import json, geojson
 #from edtf import parse_edtf
@@ -48,6 +49,12 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
     model = User
     fields = ['id', 'username', 'email', 'url', 'datasets']
     #fields = ('id','url', 'username', 'email', 'groups', 'datasets')
+
+class TraceAnnotationSerializer(serializers.ModelSerializer):
+  class Meta:
+    model = TraceAnnotation
+    fields = ('id', 'src_id', 'collection', 'trace_type', 'motivation',
+              'when', 'sequence', 'creator', 'created')
 
 class PlaceDepictionSerializer(serializers.ModelSerializer):
   # json: @id, title, license
@@ -169,6 +176,11 @@ class PlaceSerializer(serializers.ModelSerializer):
   descriptions = PlaceDescriptionSerializer(many=True, read_only=True)
   depictions = PlaceDepictionSerializer(many=True, read_only=True)
 
+  # traces = serializers.serialize("json", TraceAnnotation.objects.filter())
+  traces = serializers.SerializerMethodField('trace_anno')
+  def trace_anno(self, place):
+    return coreserializers.serialize("json", TraceAnnotation.objects.filter(place=place.id))
+
   geo = serializers.SerializerMethodField('has_geom')
   def has_geom(self,place):
     return '<i class="fa fa-globe"></i>' if place.geom_count > 0 else "-"
@@ -177,7 +189,7 @@ class PlaceSerializer(serializers.ModelSerializer):
     model = Place
     fields = ('url','id', 'title', 'src_id', 'dataset','ccodes', 'fclasses',
               'names','types','geoms','links','related', 'whens',
-              'descriptions', 'depictions', 'geo','minmax'
+              'descriptions', 'depictions', 'geo', 'minmax', 'traces'
             )
 
 class PlaceTableSerializer(serializers.ModelSerializer):

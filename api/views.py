@@ -773,10 +773,10 @@ class PlaceTableCollViewSet(viewsets.ModelViewSet):
     coll: collection
   """
   def get_queryset(self):
-    print('PlaceTableCollViewSet request[id]',self.request.GET['id'])
     coll = get_object_or_404(Collection, id=self.request.GET.get('id'))
-    qs = coll.places.all()
+    qs = coll.places_all
     query = self.request.GET.get('q')
+    print('queryset', qs)
     if query is not None:
       qs = qs.filter(title__istartswith=query)
     return qs
