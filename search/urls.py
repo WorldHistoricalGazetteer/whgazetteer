@@ -1,9 +1,9 @@
 # search/urls.py
 from django.urls import path #, include
-from django.conf.urls import url
 
 from search.views import (
-  SearchView, SearchPageView, FeatureContextView, TraceGeomView, SearchDatabaseView
+  SearchView, SearchPageView, FeatureContextView, TraceGeomView,
+  SearchDatabaseView, FeatureCountView
 )
 
 #app_name = "search"
@@ -13,6 +13,7 @@ urlpatterns = [
   path('index/', SearchView.as_view(), name='search'), # executes index search
   path('db/', SearchDatabaseView.as_view(), name='search-db'), # executes database search
   path('context/', FeatureContextView.as_view(), name='feature_context'), # place portal context
+  # path('count/', FeatureCountView.as_view(), name='feature_count'), # area feature counter
   path('tracegeom/', TraceGeomView.as_view(), name='trace_geom'), # trace features <- search & place portal
 
   path('db/', SearchDatabaseView.as_view(), name='search-db'), # executes database search

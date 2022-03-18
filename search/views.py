@@ -394,9 +394,10 @@ class SearchDatabaseView(View):
     return JsonResponse(result, safe=False, json_dumps_params={'ensure_ascii':False})
   
 '''
-  returns 300 index docs in current map viewport
+  returns 8000 index docs in current map viewport
+  OR if task == 'count': count of features in area
 '''
-def contextSearch(idx,doctype,q):
+def contextSearch(idx, doctype, q, task):
   print('context query', q)
   es = Elasticsearch([{'host': 'localhost',
                        'port': 9200,
@@ -406,9 +407,12 @@ def contextSearch(idx,doctype,q):
                        'retry_on_timeout':True}])
   count_hits=0
   result_obj = {"hits":[]}
-  # TODO: convert calling map(s) to MapLibre to handle large datasets
-  res = es.search(index=idx, body=q, size=8000)
-  # res = es.search(index=idx, body=q, size=300)
+  # TODO: convert calling map(s) to MapLibre.js to handle large datasets
+  if task == 'count':
+    res = es.count(index=idx, body=q)
+    return {'count': res['count']}
+  elif task == 'count':
+    res = es.search(index=idx, body=q, size=8000)
   hits = res['hits']['hits']
   # TODO: refactor this bit
   print('hits', len(hits))
@@ -423,9 +427,6 @@ def contextSearch(idx,doctype,q):
         # this is traces
         result_obj["hits"].append(hit["_source"]['body'])
   result_obj["count"] = count_hits
-  # print('context result object', result_obj['hits'][:300])
-  # returns 'bodies' for TraceGeomView()
-  # {id, title, relation, when, whg_id}
   return result_obj
 
 class FeatureContextView(View):
@@ -435,7 +436,39 @@ class FeatureContextView(View):
     """
     args in request.GET:
         [string] idx: index to be queried
-        [string] search: geometry to intersect
+        [string] extent: geometry to intersect
+        [string] doc_type: 'place' in this case
+        [string] task: 'features' or 'count'
+    """
+    idx = request.GET.get('idx')
+    extent = request.GET.get('extent') # coordinates string
+    doctype = request.GET.get('doc_type')
+    task = request.GET.get('task')
+    q_context_all = {"query": {
+      "bool": {
+        "must": [{"match_all":{}}],
+        "filter": { "geo_shape": {
+          "geoms.location": {
+            "shape": {
+              "type": "polygon",
+              "coordinates": json.loads(extent)
+            },
+            "relation": "within"
+          }
+        }}        
+      }    
+    }}
+    response = contextSearch(idx, doctype, q_context_all, task)
+    return JsonResponse(response, safe=False)
+
+class FeatureCountView(View):
+  @staticmethod
+  def get(request):
+    print('FeatureCountView GET:',request.GET)
+    """
+    args in request.GET:
+        [string] idx: index to be queried
+        [string] extent: geometry to intersect
         [string] doc_type: 'place' in this case
     """
     idx = request.GET.get('idx')
@@ -452,10 +485,10 @@ class FeatureContextView(View):
             },
             "relation": "within"
           }
-        }}        
-      }    
+        }}
+      }
     }}
-    features = contextSearch(idx, doctype, q_context_all)
+    featurecount = contextSearch(idx, doctype, q_context_all).count()
     return JsonResponse(features, safe=False)
 
 

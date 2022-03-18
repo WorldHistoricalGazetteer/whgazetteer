@@ -141,11 +141,11 @@
   function fetchContext(coords){
     {#startMapitSpinner()#}
     context={"type":"FeatureCollection","features":[]}
-      $.get("/search/context",{idx: 'whg', extent: coords, doc_type: 'place'},
+      $.get("/search/context",{idx: 'whg', extent: coords, doc_type: 'place', task: 'count'},
       function(data){
         <!--console.log('data:',data)-->
-        console.log('this many:', data['hits'].length)
-        $("#count_result mark").html(data['hits'].length)
+        console.log('this many:', data['count'])
+        $("#count_result mark").html(data['count'])
 
         {#for(i in data['hits']){#}
         {#  title = data['hits'][i]['title']#}
@@ -180,8 +180,8 @@
         {#    idToFeature[feature.properties.id] = marker#}
         {#    return marker#}
         {#  }#}
-        {#}).addTo(mappy);#}
-        {#spinner_mapit.stop()#}
+        {#.addTo(mappy);#}
+        {#spinner_mapit.extent=''stop()#}
     });
   }
 
