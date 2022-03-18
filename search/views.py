@@ -397,7 +397,7 @@ class SearchDatabaseView(View):
   returns 300 index docs in current map viewport
 '''
 def contextSearch(idx,doctype,q):
-  #print('context query',q)
+  print('context query', q)
   es = Elasticsearch([{'host': 'localhost',
                        'port': 9200,
                        'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
@@ -406,10 +406,12 @@ def contextSearch(idx,doctype,q):
                        'retry_on_timeout':True}])
   count_hits=0
   result_obj = {"hits":[]}
-  res = es.search(index=idx, body=q, size=300)
+  # TODO: convert calling map(s) to MapLibre to handle large datasets
+  res = es.search(index=idx, body=q, size=8000)
+  # res = es.search(index=idx, body=q, size=300)
   hits = res['hits']['hits']
   # TODO: refactor this bit
-  #print('hits',hits)
+  print('hits', len(hits))
   if len(hits) > 0:
     #print('contextSearch() hit0 _source: ',hits[0]["_source"])
     for hit in hits:
@@ -421,7 +423,7 @@ def contextSearch(idx,doctype,q):
         # this is traces
         result_obj["hits"].append(hit["_source"]['body'])
   result_obj["count"] = count_hits
-  print('context result object', result_obj['hits'][:300])
+  # print('context result object', result_obj['hits'][:300])
   # returns 'bodies' for TraceGeomView()
   # {id, title, relation, when, whg_id}
   return result_obj
@@ -437,17 +439,16 @@ class FeatureContextView(View):
         [string] doc_type: 'place' in this case
     """
     idx = request.GET.get('idx')
-    bbox = request.GET.get('search')
+    extent = request.GET.get('extent') # coordinates string
     doctype = request.GET.get('doc_type')
-    print('context request',idx,doctype)
-    q_context_all = {"query": { 
+    q_context_all = {"query": {
       "bool": {
         "must": [{"match_all":{}}],
         "filter": { "geo_shape": {
           "geoms.location": {
             "shape": {
               "type": "polygon",
-              "coordinates": json.loads(bbox)
+              "coordinates": json.loads(extent)
             },
             "relation": "within"
           }

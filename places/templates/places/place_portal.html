@@ -154,7 +154,7 @@
         </div>
         <div id="place_map" class="col-content small">
           <p class="mb-0 allcap-heading">GEOGRAPHY <span class="nogeo text-danger"></span>
-              <span class="float-right">nearby places (300 max) <input id="fetch-context" type="checkbox"/></span>
+              <span class="float-right">nearby places (8000 max) <input id="fetch-context" type="checkbox"/></span>
           </p>
           <div id="map">{% leaflet_map "map" callback="map_init" %}</div>
         </div>
@@ -271,8 +271,6 @@
     var min = Math.min.apply(null, allts.map(function(row){ return Math.min.apply(Math, row); }));
     var max = Math.max.apply(null, allts.map(function(row){ return Math.max.apply(Math, row); }));
     minmax=[min,max]
-    <!--console.log('allts',allts)-->
-    <!--console.log('minmax',minmax)-->
     // feed to tvis_summary()
     histogram_data(allts, minmax)
     
@@ -347,7 +345,6 @@
     // exit if no data 
     if (data[0].bin == "Infinity"){ $("#histogram_sum").html('<i>None yet</i>'); return; }
     data=data.slice(0,200)
-    <!--var margin = {top: 0, right: 10, bottom: 0, left: 10},-->
     var margin = {top: 0, right: 10, bottom: 0, left: 10};
     var width = 500, height = 30,  padding_h = 20,  padding_w = 30;
       
@@ -364,11 +361,6 @@
         
     window.svg_hist = d3.select("#histogram_sum")
       .append("svg")
-      <!--.attr("width", '100%')-->
-      <!--.attr("height", height+padding_h)-->
-      <!--.attr('preserveAspectRatio','xMinYMin')-->
-      <!--.attr('viewBox','0 0 '+Math.min(width,height+padding_h)+' '+Math.min(width,height+padding_h))-->
-
       .attr('preserveAspectRatio','xMinYMin meet')
       .attr('viewBox','0 0 530 60')
       .classed("svg-content", true)
@@ -388,7 +380,6 @@
     .enter().append("rect")
       .attr("class", "bar")
       .attr("x", function(d) { return xScale(d.bin); })
-      <!--.attr("width", function(d) { return xScale(d.x1) - xScale(d.x0) -1 ; })-->
       .attr("width", 2)
       .attr("y", function(d) { return yScale(d.count); })
       .attr("height", function(d) { return height - yScale(d.count); });
@@ -397,10 +388,6 @@
       .attr("id","xaxis")
       .attr("transform", "translate(0," + height + ")")
       .call(axisB)
-  
-    <!--var yAxis = svg_hist.append("g")-->
-      <!--.attr("id","yaxis")-->
-      <!--.call(axisL);-->
   }
 
   function filly(counter) {
@@ -416,20 +403,15 @@
       return "black"
   }
   function fetchTraceGeom(trace_id,counter) {
-    <!--console.log('fetchTraceGeom():',trace_id)-->
     $.get("/search/tracegeom",{idx: 'traces', search: trace_id, doc_type: 'trace'},
       function(data){
-        <!--console.log(data.features.length,'mappable geoms in this trace')-->
-        <!--mappy.createPane('tracePane');-->
-        <!--mappy.getPane('tracePane').style.zIndex = 200;-->
         traces = L.geoJSON(data, {
           pane: 'tracePane',
           pointToLayer: function (feature, latlng) {
             identifier = feature.properties.whg_id
-            <!--console.log(feature,identifier)-->
             marker = L.circleMarker(latlng,
               {
-                radius: 5, fillOpacity: 0.8, opacity: 1, weight: 1,
+                radius: 3, fillOpacity: 0.8, opacity: 1, weight: 1,
                 color: "#fff", fillColor: filly(counter)
               }
             ).bindPopup('pid:'+identifier+'<br/><b>'+
@@ -445,15 +427,14 @@
     });
   }
     
-  // ES query to retrieve 300 in map viewport bbox
-  function fetchContext(bbox){
+  // ES query to retrieve 8000 in map viewport bbox
+  function fetchContext(coords){
     startMapitSpinner()
     context={"type":"FeatureCollection","features":[]}
-    $.get("/search/context",{idx: 'whg', extent: bbox, doc_type: 'place'},
+    $.get("/search/context",{idx: 'whg', extent: coords, doc_type: 'place'},
       function(data){
         <!--console.log('data:',data)-->
-        console.log('a hit:',data['hits'][0])
-        <!--console.log('a geom in a hit:',data['hits'][0].geoms[0])-->
+        console.log('a hit:', data['hits'][0])
         for(i in data['hits']){
           title = data['hits'][i]['title']
           whg_id = data['hits'][i]['whg_id']
@@ -480,7 +461,7 @@
           pointToLayer: function (feature, latlng) {
             marker = L.circleMarker(latlng,
               {
-                radius: 5, fillOpacity: 0.6, opacity: 1, weight: 1,
+                radius: 3, fillOpacity: 0.6, opacity: 1, weight: 1,
                 color: "#fff", fillColor: fill(feature.properties.ds)
               }
             ).bindPopup('<a href="/places/'+feature.properties.id+'/portal">'+feature.properties.title+'</a>');
@@ -582,12 +563,10 @@
           fillOpacity: 0.3},
         onEachFeature: function (feature, layer) {
           layer.setStyle({"fillColor":random_rgba()})
-          <!--console.log('feature',feature)-->
           popupOptions = {maxWidth: 200};
             layer.bindPopup(feature.properties.name+" ("+feature.properties.src_id+")", popupOptions);
         }
       })
-    <!--rivers.addTo(mappy)-->
 
     var baseLayers = {
       <!--"Pleiades Terrain": pleiades,-->
@@ -605,8 +584,7 @@
   }, false);
 
   function getClose() {
-    mappy.setZoom(mappy.getZoom()+2)
-    <!--mappy.fitBounds(features.getBounds().pad(3))-->
+    mappy.setZoom(mappy.getZoom()+3)
   }
   function fill(foo) {
     if (foo == 'tgn')
@@ -628,19 +606,19 @@
     features = L.geoJSON(geom, {
       pane: 'mainPane',
       pointToLayer: function (feature, latlng) {
-        <!--console.log(latlng)-->
+        console.log('feature', feature.properties)
         ll = latlng
-        <!--identifier = 'whg:'+feature.properties.id-->
         identifier = feature.properties.id
+        {#title = feature.properties.title#}
         marker = L.circleMarker(latlng,
           {
             radius: 8, fillOpacity: 0.8, opacity: 1, weight: 1,
             color: "#000", fillColor: fill(feature.properties.dataset)
           }
-        ).bindPopup('pid: <b>'+identifier+'</b><br/>['+latlng['lat']+', '+latlng['lng']+']'
+        ).bindPopup('pid: <b>'+identifier+'</b><br/>lon/lat: ['+latlng['lng']+', '+latlng['lat']+']'
           +('when' in feature?'<br/>('+
           feature.when.timespans[0].start.in+
-          ('end' in feature.when.timespans[0]?'/'+feature.when.timespans[0].end.in:'/-')+')':''));
+          ('end' in feature.when.timespans[0]?'/'+feature.when.timespans[0].end.in:'/-')+')':''))
      
         idToFeature[feature.properties.id] = marker
         return marker
@@ -668,6 +646,7 @@
     // 
     for (i=0;i<gelems.length;i++){
       <!--let t_geom = cleanJson(gelems[i].text)-->
+        console.log(gelems[i])
       let g = JSON.parse(gelems[i].text)
       g['properties'] = {"id": gelems[i].id}
       geom['features'].push(g)

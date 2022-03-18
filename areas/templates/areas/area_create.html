@@ -62,7 +62,13 @@
 {% block content %}
 <div class="container">
   <h4 class="mt-3">
-    {% if action == 'update' %}Update Study Area <span class="text-danger">"{{ form.title.value }}"</span>
+    {% if action == 'update' %}
+        Update Study Area
+        <span class="text-danger">"{{ form.title.value }}"</span>
+        <span class="ml-3">
+            <a href="#" id="btn_counter" class="btn btn-sm btn-outline-secondary" role="button">Count indexed places</a>
+            <span id="count_result" class="ml-3 small"><mark>##</mark></span>
+        </span>
     <a href="{% url 'areas:area-delete' object.id %}" class="float-right"
       title="Delete area feature" rel="tooltip" style="margin-top:-2px;">
       {% fontawesome_icon 'trash' color='#336699' %}</a>
@@ -125,6 +131,59 @@
     });
     $("#id_geojson").attr("placeholder","generated from country codes")
   })
+    $("#btn_counter").click(function(){
+        console.log('go count index records in this area')
+        let coords=JSON.stringify(JSON.parse($("textarea#id_geojson").val()).coordinates)
+        console.log(coords)
+        fetchContext(coords)
+    })
+  // ES query to count...retrieve?
+  function fetchContext(coords){
+    {#startMapitSpinner()#}
+    context={"type":"FeatureCollection","features":[]}
+      $.get("/search/context",{idx: 'whg', extent: coords, doc_type: 'place'},
+      function(data){
+        <!--console.log('data:',data)-->
+        console.log('this many:', data['hits'].length)
+        $("#count_result mark").html(data['hits'].length)
+
+        {#for(i in data['hits']){#}
+        {#  title = data['hits'][i]['title']#}
+        {#  whg_id = data['hits'][i]['whg_id']#}
+        {#  geoms=data['hits'][i]['geoms']#}
+        {#  console.log(geoms)#}
+        {#  for(j in geoms) {#}
+        {#    context["features"].push(#}
+        {#      { "type":"Feature",#}
+        {#        "properties":{#}
+        {#          "id":whg_id,#}
+        {#          "title":title,#}
+        {#          "ds":'whg'#}
+        {#        },#}
+        {#        "geometry":geoms[j]['location']#}
+        {#      }#}
+        {#    )#}
+        {#  }#}
+
+        {#mappy.createPane('contextPane');#}
+        {#mappy.getPane('contextPane').style.zIndex = 100;#}
+        {#nearby = L.geoJSON(context, {#}
+        {#  pane: 'contextPane',#}
+        {#  pointToLayer: function (feature, latlng) {#}
+        {#    marker = L.circleMarker(latlng,#}
+        {#      {#}
+        {#        radius: 3, fillOpacity: 0.6, opacity: 1, weight: 1,#}
+        {#        color: "#fff", fillColor: fill(feature.properties.ds)#}
+        {#      }#}
+        {#    ).bindPopup('<a href="/places/'+feature.properties.id+'/portal">'+feature.properties.title+'</a>');#}
+        {##}
+        {#    idToFeature[feature.properties.id] = marker#}
+        {#    return marker#}
+        {#  }#}
+        {#}).addTo(mappy);#}
+        {#spinner_mapit.stop()#}
+    });
+  }
 
   $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
     var target = $(e.target).attr("href") // activated tab
