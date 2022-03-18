@@ -1,5 +1,5 @@
 # testing ES whg index updating
-
+from django.conf import settings
 from django.shortcuts import render, get_object_or_404
 import simplejson as json
 import codecs, tempfile, os, re, sys, math
@@ -7,9 +7,16 @@ import pandas as pd
 from places.models import *
 from datasets.models import Dataset, Hit, DatasetFile
 from datasets.utils import validate_lpf, validate_tsv
-from elasticsearch import Elasticsearch
+from elasticsearch7 import Elasticsearch
 from elastic.es_utils import makeDoc
-es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+es = Elasticsearch([{'host': 'localhost',
+                     'port': 9200,
+                     'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
+                     # 'api_key': ('Qf6zj38BNORx7WIGwSUc', 'v-2FwWJuQ5u3rvOwy8Nw6g'),
+                     'timeout': 30,
+                     'max_retries': 10,
+                     'retry_on_timeout': True
+                     }])
 idx='whg'
 
 dsid=586 # 'diamonds' current file: user_whgadmin/diamonds135_rev3_g6cvm1l.tsv
@@ -273,7 +280,7 @@ q_update = { "script": {
     "params":{"names": match_names, "id": str(place.id)}
   },
   "query": {"match":{"_id": parent_whgid}}}
-es.update_by_query(index=idx, doc_type='place', body=q_update, conflicts='proceed')
+es.update_by_query(index=idx, body=q_update, conflicts='proceed')
 
 # DELETE algorithm
 # for r in rows_delete:

@@ -4,7 +4,7 @@ from __future__ import absolute_import, unicode_literals
 from celery import task, shared_task # this is @task decorator
 #from celery_progress.backend import ProgressRecorder
 from django_celery_results.models import TaskResult
-#from django.conf import settings
+from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.db import connection
 from django.db.models import Q
@@ -30,10 +30,15 @@ from main.models import Log
 
 #from places.models import Place
 ##
-from elasticsearch import Elasticsearch
-es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+from elasticsearch7 import Elasticsearch
 ##
-
+es = Elasticsearch([{'host': 'localhost',
+                     'port': 9200,
+                     'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
+                     # 'api_key': ('Qf6zj38BNORx7WIGwSUc', 'v-2FwWJuQ5u3rvOwy8Nw6g'),
+                     'timeout': 30,
+                     'max_retries': 10,
+                     'retry_on_timeout': True}])
 
 @shared_task(name="testy")
 def testy():
@@ -870,8 +875,6 @@ def align_tgn(pk, *args, **kwargs):
 #from areas.models import Area
 #from places.models import Place
 #from datasets.tasks import get_bounds_filter
-#from elasticsearch import Elasticsearch
-#es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 
 """
 performs elasticsearch > wdlocal queries
@@ -1042,19 +1045,6 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
 # manage reconcile to local wikidata
 # ***
 # test stuff
-#from django.shortcuts import get_object_or_404
-#from datasets.models import Dataset
-#from datasets.static.hashes import aat, parents, aat_q
-#from datasets.utils import getQ, hully
-#from places.models import Place
-#place=get_object_or_404(Place, pk = 6591148) #6587009 Cherkasy, UA
-#bounds = {'type': ['userarea'], 'id': ['369']}
-#from copy import deepcopy
-#from elasticsearch import Elasticsearch
-#es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
-#
-#def is_beta_or_better(user):
-  #return user.groups.filter(name__in=['beta', 'admin']).exists()
 
 """
 manage align/reconcile to local wikidata index
@@ -1474,7 +1464,7 @@ def align_idx(pk, *args, **kwargs):
       print('create parent doc for', p)
       new_seeds.append(makeDoc(p))
       #new_parent = makeDoc(p)
-      #es.index(idx, new_parent, doc_type='place',id=whg_id+1)
+      #es.index(idx, new_parent,id=whg_id+1)
       
     # got some hits, format json & write to db
     elif len(result_obj['hits']) > 0:

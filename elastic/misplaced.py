@@ -19,8 +19,8 @@ misplaced(81228, 'whg')
 
 
 # parent and its children, by _id/whg_id (should be same)
-GET /whg/_search
-{"query":{"bool":{"should": [
-    {"parent_id": {"type": "child","id":"14159046"}},
-    {"match":{"_id":"14159046"}}
-]}}}
+# GET /whg/_search
+# {"query":{"bool":{"should": [
+#     {"parent_id": {"type": "child","id":"14159046"}},
+#     {"match":{"_id":"14159046"}}
+# ]}}}

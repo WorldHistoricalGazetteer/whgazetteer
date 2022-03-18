@@ -1161,7 +1161,6 @@
     y = years.find(element => element != 0 );
     {#ds_select = $("#select_ds_search").val()#}
     dsid = ds_select!="0" ? parseInt(ds_select) : null
-    <!--console.log('params',{'fc':fclasses, "y":y, "dsid":dsid})-->
     $.get("/search/db",{
       name: $('#input_box').val(),
       name_contains: null, // if 'contains checked
@@ -1175,7 +1174,6 @@
       window.searchres=data['suggestions']
       // store locally
       localStorage.setItem('last_results',JSON.stringify(searchres))
-      <!--localStorage.setItem('last_results',searchres)-->
       showResults(searchres, doctype, "search")
       spinner_search.stop()
     })
@@ -1203,7 +1201,6 @@
     switchTab(search_scope)
     geoms=[]
     var types=[], typesArr = [], ccArr = []
-    <!--console.log(data.bodies.length+ ' bodies',data)-->
     if (doctype == 'place'){
       if(data.length ==0) {
         results_div += '<p class="small ml-2">No results, sorry.</p>'
@@ -1235,10 +1232,10 @@
           // adds a row to result_div that gets inserted into #result_div later
           result_table += sugLister(sug, doctype, scope)
           countadded +=1
-          <!--result_table += sugTableRow(sug, doctype, scope)   -->
+          // result_table += sugTableRow(sug, doctype, scope)   -->
         })
         result_table += '</table>'
-        <!--console.log('showResults() countadded, havegeom',countadded, havegeom)-->
+        // console.log('showResults() countadded, havegeom',countadded, havegeom)-->
 
         // list of distinct types
         types = Array.from(new Set(typesArr));

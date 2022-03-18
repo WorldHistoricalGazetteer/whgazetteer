@@ -58,7 +58,7 @@ def indexDataset(pids=None):
         parent_obj['suggest']['input'].append(n['toponym']) 
       # index it
       try:
-        res = es.index(index=idx, doc_type='place', id=whg_id, body=json.dumps(parent_obj))
+        res = es.index(index=idx, id=whg_id, body=json.dumps(parent_obj))
         count_seeds +=1
       except:
         #print('failed indexing '+str(place.id), parent_obj)
@@ -78,7 +78,7 @@ def indexDataset(pids=None):
         child_obj['relation']={"name":"child","parent":pid}
         # index it
         try:
-          res = es.index(index=idx,doc_type='place',id=place.id,
+          res = es.index(index=idx,id=place.id,
                          routing=1,body=json.dumps(child_obj))
           count_kids +=1                
           print('added '+str(place.id) + ' as child of '+ place.title + ': '+str(pid))
@@ -97,7 +97,7 @@ def indexDataset(pids=None):
           "query": {"match":{"_id": pid}}
         }
         try:
-          es.update_by_query(index=idx, doc_type='place', body=q_update)
+          es.update_by_query(index=idx, body=q_update)
         except:
           print('failed updating '+place.title+'('+str(pid)+') from child '+str(place.id))
           print(count_kids-1)
@@ -115,9 +115,13 @@ def init():
   dataset = input('dataset: ')
   idx = 'whgtest' 
 
-  from elasticsearch import Elasticsearch
-  es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
-
+  from elasticsearch7 import Elasticsearch
+  es = Elasticsearch([{'host': 'localhost',
+                       'port': 9200,
+                       'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
+                       'timeout':30,
+                       'max_retries':10,
+                       'retry_on_timeout':True}])
   # zap dataset from index
   q_del = {"query": {"match": {"dataset": dataset}}}
   try:

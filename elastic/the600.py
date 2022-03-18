@@ -76,7 +76,7 @@ def add_black(pk, *args, **kwargs):
         parent_obj['suggest']['input'].append(n['toponym']) 
       #index it
       try:
-        res = es.index(index='whg', doc_type='place', id=str(whg_id), body=json.dumps(parent_obj))
+        res = es.index(index='whg', id=str(whg_id), body=json.dumps(parent_obj))
         count_seeds +=1
       except:
         print('failed indexing '+str(place.id), parent_obj)
@@ -108,7 +108,7 @@ def add_black(pk, *args, **kwargs):
         
         # index it
         try:
-          res = es.index(index='whg',doc_type='place',id=place.id,
+          res = es.index(index='whg',id=place.id,
                          routing=1,body=json.dumps(child_obj))
           count_kids +=1                
           print('adding '+place.title+'('+str(place.id) + ') as child of '+ str(parent_whgid))
@@ -122,7 +122,7 @@ def add_black(pk, *args, **kwargs):
           },
           "query": {"match":{"_id": parent_whgid}}}
         try:
-          es.update_by_query(index='whg', doc_type='place', body=q_update)
+          es.update_by_query(index='whg', body=q_update)
         except:
           err='failed updating '+str(parent_whgid)+' from child '+str(place.id)+'; index: '+str(count-1)
           print(err)

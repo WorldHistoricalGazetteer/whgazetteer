@@ -79,7 +79,7 @@ def demoteParents(demoted, winner_id, pid):
     # first update the 'winner' parent
     q=q_updatewinner(kids, names)
     try:
-      es.update(idx,winner_id,body=q,doc_type='place')
+      es.update(idx,winner_id,body=q)
     except:
       print('q_updatewinner failed (pid, winner_id)',pid,winner_id)
       sys.exit(sys.exc_info())
@@ -94,8 +94,8 @@ def demoteParents(demoted, winner_id, pid):
       newsrcd.pop('whg_id')
     # zap the old demoted, index the modified
     try:      
-      es.delete('whg', d, doc_type='place')
-      es.index(index='whg',doc_type='place',id=d,body=newsrcd,routing=1)
+      es.delete('whg', d)
+      es.index(index='whg',id=d,body=newsrcd,routing=1)
     except:
       print('reindex failed (pid, demoted)',pid,d)
       sys.exit(sys.exc_info())
@@ -269,10 +269,10 @@ hl1 = [
     #es.update(idx, int(d), q_demote)
     # Document mapping type name can't start with '_'
     
-    #es.update('whg', d, q_demote, doc_type='place')
+    #es.update('whg', d, q_demote)
     # '[place][14156468]: document missing'
     
     #es.update_by_query(idx, body=q_demote_ubq)
     # 
     
-#es.index(index='whg',doc_type='place',id=winner_id,body=src_w)
+#es.index(index='whg',id=winner_id,body=src_w)

@@ -1,5 +1,6 @@
 import sys, codecs, os, json
-from elasticsearch import Elasticsearch
+from django.conf import settings
+from elasticsearch7 import Elasticsearch
 es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 def index_traces():
   idx = 'traces03'
@@ -16,7 +17,7 @@ def index_traces():
     print(rec['id'])
     try:
       del rec['@context'] # not needed in index
-      es.index(index=idx,doc_type='trace',body=rec)
+      es.index(index=idx, doc_type='trace',body=rec)
       count +=1
     except:
       print(rec['id'], ' broke it')
@@ -26,14 +27,23 @@ def index_traces():
 def init():
   global es, idx
   from elasticsearch import Elasticsearch
-  es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+  es = Elasticsearch([{'host': 'localhost',
+                       'port': 9200,
+                       'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
+                       'timeout':30,
+                       'max_retries':10,
+                       'retry_on_timeout':True}])
   idx = 'traces03'
   wd = '/Users/karlg/Documents/Repos/_whgazetteer/es/'  
   mappings = codecs.open(wd+'mappings_traces03.json', 'r', 'utf8').read()
 
   from elasticsearch import Elasticsearch
-  es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
-
+  es = Elasticsearch([{'host': 'localhost',
+                       'port': 9200,
+                       'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
+                       'timeout':30,
+                       'max_retries':10,
+                       'retry_on_timeout':True}])
   # zap existing if exists, re-create
   try:
     es.indices.delete(idx)
@@ -54,9 +64,13 @@ def reorg_traces():
   file = wd+'trace_data/examples_whg_initial.json'
   import os, codecs, time, json
 
-  from elasticsearch import Elasticsearch
-  es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
-
+  from elasticsearch7 import Elasticsearch
+  es = Elasticsearch([{'host': 'localhost',
+                       'port': 9200,
+                       'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
+                       'timeout':30,
+                       'max_retries':10,
+                       'retry_on_timeout':True}])
   # read from file 
   fn = 'trace_data/traces_20200722.json'
   infile = codecs.open(file, 'r', 'utf8')

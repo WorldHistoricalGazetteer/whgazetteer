@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse
@@ -16,9 +17,15 @@ class TraceDetailView(DetailView):
     def get_object(self):
         id_ = self.kwargs.get("id")
         print('args',self.args,'kwargs:',self.kwargs)
-        es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+        es = Elasticsearch([{'host': 'localhost',
+                             'port': 9200,
+                             'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
+                             'timeout': 30,
+                             'max_retries': 10,
+                             'retry_on_timeout': True}])
         q = {"query":{"bool": {"must": [{"match":{"_id": id_}}]}}}
-        tid=es.search(index='traces', doc_type='trace', body=q)['hits']['hits'][0]['_source']['trace_id']
+        tid=es.search(index='traces', body=q)['hits']['hits'][0]['_source']['trace_id']
+        # tid=es.search(index='traces', doc_type='trace', body=q)['hits']['hits'][0]['_source']['trace_id']
         self.kwargs['tid'] = tid
         return get_object_or_404(Trace, id=tid)
 
@@ -28,7 +35,12 @@ class TraceDetailView(DetailView):
 
     def get_context_data(self, *args, **kwargs):
         context = super(TraceDetailView, self).get_context_data(*args, **kwargs)
-        es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+        es = Elasticsearch([{'host': 'localhost',
+                             'port': 9200,
+                             'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
+                             'timeout': 30,
+                             'max_retries': 10,
+                             'retry_on_timeout': True}])
         id_ = self.kwargs.get("id")
         pid = self.kwargs.get("pid")
         place = get_object_or_404(Place, id=pid)
@@ -39,7 +51,8 @@ class TraceDetailView(DetailView):
         ids = [pid]
         # get child record ids from index
         q = {"query": {"parent_id": {"type": "child","id":id_}}}
-        children = es.search(index='whg', doc_type='place', body=q)['hits']
+        children = es.search(index='whg', body=q)['hits']
+        # children = es.search(index='whg', body=q)['hits']
         for hit in children['hits']:
             ids.append(int(hit['_id']))
 
@@ -69,7 +82,8 @@ class TraceDetailView(DetailView):
 
         # get traces
         qt = {"query": {"bool": {"must": [{"match":{"body.whg_id": id_ }}]}}}
-        trace_hits = es.search(index='traces', doc_type='trace', body=qt)['hits']['hits']
+        trace_hits = es.search(index='traces', body=qt)['hits']['hits']
+        # trace_hits = es.search(index='traces', doc_type='trace', body=qt)['hits']['hits']
         # TODO: parse, process
         for h in trace_hits:
             #print('trace hit h',h)

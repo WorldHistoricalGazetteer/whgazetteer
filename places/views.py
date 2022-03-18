@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404
 from django.views.generic import DetailView
 
 from datetime import datetime
-from elasticsearch import Elasticsearch
+from elasticsearch7 import Elasticsearch
 import itertools, re
 
 from datasets.models import Dataset
@@ -56,20 +56,31 @@ class PlacePortalView(DetailView):
   def get_object(self):
     id_ = self.kwargs.get("id")
     print('args',self.args,'kwargs:',self.kwargs)
-    es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+    es = Elasticsearch([{'host': 'localhost',
+                         'port': 9200,
+                         'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
+                         'timeout': 30,
+                         'max_retries': 10,
+                         'retry_on_timeout': True
+                         }])
     q = {"query":{"bool": {"must": [{"match":{"_id": id_}}]}}}
-    pid=es.search(index='whg', doc_type='place', body=q)['hits']['hits'][0]['_source']['place_id']
+    pid=es.search(index='whg',body=q)['hits']['hits'][0]['_source']['place_id']
+    # pid=es.search(index='whg', body=q)['hits']['hits'][0]['_source']['place_id']
     self.kwargs['pid'] = pid
     return get_object_or_404(Place, id=pid)
 
-  
   def get_context_data(self, *args, **kwargs):
     print('get_context_data kwargs',self.kwargs)
     context = super(PlacePortalView, self).get_context_data(*args, **kwargs)
     context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
     context['mbtokenwhg'] = settings.MAPBOX_TOKEN_WHG
-    context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB    
-    es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+    context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
+    es = Elasticsearch([{'host': 'localhost',
+                         'port': 9200,
+                         'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
+                         'timeout': 30,
+                         'max_retries': 10,
+                         'retry_on_timeout': True}])
     id_ = self.kwargs.get("id")
     pid = self.kwargs.get("pid")
     place = get_object_or_404(Place, id=pid)
@@ -83,7 +94,7 @@ class PlacePortalView(DetailView):
     ids = [pid]
     # get child record ids from index
     q = {"query": {"parent_id": {"type": "child","id":id_}}}
-    children = es.search(index='whg', doc_type='place', body=q)['hits']
+    children = es.search(index='whg', body=q)['hits']
     for hit in children['hits']:
       #ids.append(int(hit['_id']))
       ids.append(int(hit['_source']['place_id']))

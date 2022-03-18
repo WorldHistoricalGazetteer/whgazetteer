@@ -5,7 +5,7 @@ from django.contrib.gis.geos import Polygon, Point
 # from django.contrib.postgres import search
 from django.contrib.gis.measure import D
 from django.contrib.gis.db.models.functions import Distance
-from django.core import serializers
+from django.conf import settings
 from django.db.models import Q
 from django.http import JsonResponse, HttpResponse#, FileResponse
 from django.shortcuts import get_object_or_404
@@ -230,13 +230,18 @@ def collectionItem(i,datatype,format):
 def collector(q,datatype,idx):
   # returns only parents
   #print('collector',doctype,q)
-  es = Elasticsearch([{'host': 'localhost', 'port': 9200, 'timeout':30, 'max_retries':10, 'retry_on_timeout':True}])
+  es = Elasticsearch([{'host': 'localhost',
+                       'port': 9200,
+                       'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
+                       'timeout':30,
+                       'max_retries':10,
+                       'retry_on_timeout':True}])
   items = []
   
   if datatype=='place':
     #print('collector/place q:',q)
     # TODO: trap errors
-    res = es.search(index=idx, doc_type='place', body=q)
+    res = es.search(index=idx, body=q)
     hits = res['hits']['hits']
     #print('collector()/place hits',hits)
     if len(hits) > 0:
@@ -268,8 +273,13 @@ def collector(q,datatype,idx):
   execute es.search, return post-processed results 
 """
 def bundler(q,whgid,idx):
-  es = Elasticsearch([{'host': 'localhost', 'port': 9200, 'timeout':30, 'max_retries':10, 'retry_on_timeout':True}])
-  res = es.search(index=idx, doc_type='place', body=q)
+  es = Elasticsearch([{'host': 'localhost',
+                       'port': 9200,
+                       'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
+                       'timeout':30,
+                       'max_retries':10,
+                       'retry_on_timeout':True}])
+  res = es.search(index=idx, body=q)
   hits = res['hits']['hits']
   bundle = []
   if len(hits) > 0:

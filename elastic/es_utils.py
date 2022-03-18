@@ -1,6 +1,7 @@
 # es_utils.py rev. Mar 2021; rev. Mar 2020; rev. 02 Oct 2019; rev 5 Mar 2019; created 7 Feb 2019;
 # misc elasticsearch supporting tasks 
 #from django.shortcuts import get_object_or_404
+from django.conf import settings
 from django.http import JsonResponse
 from places.models import Place
 #from datasets.tasks import ccDecode
@@ -111,7 +112,7 @@ def demoteParents(demoted, winner_id, pid):
     # first update the 'winner' parent
     q=q_updatewinner(kids, names)
     try:
-      es.update(idx,winner_id,body=q,doc_type='place')
+      es.update(idx,winner_id,body=q)
     except:
       print('q_updatewinner failed (pid, winner_id)',pid,winner_id)
       sys.exit(sys.exc_info())
@@ -126,8 +127,8 @@ def demoteParents(demoted, winner_id, pid):
       newsrcd.pop('whg_id')
     # zap the old demoted, index the modified
     try:      
-      es.delete('whg', d, doc_type='place')
-      es.index(index='whg',doc_type='place',id=d,body=newsrcd,routing=1)
+      es.delete('whg', d)
+      es.index(index='whg',id=d,body=newsrcd,routing=1)
     except:
       print('reindex failed (pid, demoted)',pid,d)
       sys.exit(sys.exc_info())
@@ -283,7 +284,7 @@ def indexSomeParents(es,idx,pids):
     print('parent_obj',parent_obj)
     #index it
     try:
-      res = es.index(index=idx, doc_type='place', id=str(whg_id), body=json.dumps(parent_obj))
+      res = es.index(index=idx, id=str(whg_id), body=json.dumps(parent_obj))
     except:
       print('failed indexing (as parent)'+str(pid),sys.exc_info())
       pass
@@ -343,7 +344,7 @@ def replaceInIndex(es,idx,pids):
         # delete the old
         es.delete_by_query(idx,body={"query":{"match":{"_id":doc['_id']}}})
         # index the new
-        es.index(index=idx,doc_type='place',id=doc['_id'],
+        es.index(index=idx,id=doc['_id'],
                  routing=1,body=json.dumps(newchild))
         repl_count +=1
       elif role == 'parent':
@@ -367,7 +368,7 @@ def replaceInIndex(es,idx,pids):
         # out with the old
         es.delete_by_query(idx,body=esq_id(doc['_id']))
         # in with the new
-        es.index(index=idx,doc_type='place',id=doc['_id'],
+        es.index(index=idx,id=doc['_id'],
                  routing=1,body=json.dumps(newparent))
 
         repl_count +=1
@@ -520,8 +521,13 @@ def esq_parent(_id):
 # count of dataset docs in index
 # ***
 def escount_ds(idx,label):
-  from elasticsearch import Elasticsearch
-  es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+  from elasticsearch7 import Elasticsearch
+  es = Elasticsearch([{'host': 'localhost',
+                       'port': 9200,
+                       'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
+                       'timeout':30,
+                       'max_retries':10,
+                       'retry_on_timeout':True}])
   q = {"query":{"match":{"dataset": label }}}
   res = es.search(index=idx,body=q)
 
@@ -559,8 +565,13 @@ def esInit(idx):
   import os, codecs
   os.chdir('/Users/karlg/Documents/Repos/_whgazetteer/')
 
-  from elasticsearch import Elasticsearch
-  es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+  from elasticsearch7 import Elasticsearch
+  es = Elasticsearch([{'host': 'localhost',
+                       'port': 9200,
+                       'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
+                       'timeout': 30,
+                       'max_retries': 10,
+                       'retry_on_timeout': True}])
   mappings = codecs.open('elastic/mappings/es_mappings_whg.json', 'r', 'utf8').read()
 
   # zap existing if exists, re-create

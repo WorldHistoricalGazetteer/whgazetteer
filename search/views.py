@@ -46,11 +46,16 @@ class LookupView(View):
         [string] idx: latest name for whg index
         [string] place_id: from a trace body
     """
-    es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+    es = Elasticsearch([{'host': 'localhost',
+                         'port': 9200,
+                         'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
+                         'timeout': 30,
+                         'max_retries': 10,
+                         'retry_on_timeout': True}])
     idx = request.GET.get('idx')
     pid = request.GET.get('place_id')
     q={"query": {"bool": {"must": [{"match":{"place_id": pid }}]}}}
-    res = es.search(index=idx, doc_type='place', body=q)
+    res = es.search(index=idx, body=q)
     hit = res['hits']['hits'][0]
     print('hit[_id] from search/lookup',hit['_id'])
     #print('LookupView pid',pid)
@@ -133,7 +138,7 @@ def suggester(doctype,q,scope,idx):
   # api_key=('DuSkVm8BZ5TMcIF99zOC','2rs8yN26QSC_uPr31R1KJg')
   es = Elasticsearch([{'host': 'localhost',
                        'port': 9200,
-                       'api_key': ('Qf6zj38BNORx7WIGwSUc', 'v-2FwWJuQ5u3rvOwy8Nw6g'),
+                       'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
                        'timeout':30,
                        'max_retries':10,
                        'retry_on_timeout':True}])
@@ -141,11 +146,11 @@ def suggester(doctype,q,scope,idx):
   
   if doctype=='place':
     #print('suggester/place q:',q)
-    # res = es.search(index=idx, doc_type='place', body=q)
+    # res = es.search(index=idx, body=q)
     # doc_type not present from 7.17 on
     # body to be deprecated 'in 9.0'
     res = es.search(index=idx, body=q)
-    #res = es.search(index='whg,tgn', doc_type='place', body=q)
+    #res = es.search(index='whg,tgn', body=q)
     if scope == 'suggest':
       sugs = res['suggest']['suggest'][0]['options']
       #print('suggester()/place sugs',sugs)
@@ -393,10 +398,15 @@ class SearchDatabaseView(View):
 '''
 def contextSearch(idx,doctype,q):
   #print('context query',q)
-  es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+  es = Elasticsearch([{'host': 'localhost',
+                       'port': 9200,
+                       'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
+                       'timeout':30,
+                       'max_retries':10,
+                       'retry_on_timeout':True}])
   count_hits=0
   result_obj = {"hits":[]}
-  res = es.search(index=idx, doc_type=doctype, body=q, size=300)
+  res = es.search(index=idx, body=q, size=300)
   hits = res['hits']['hits']
   # TODO: refactor this bit
   #print('hits',hits)
@@ -407,9 +417,6 @@ def contextSearch(idx,doctype,q):
       if idx.startswith("whg"):
         # why normalize here?
         result_obj["hits"].append(hit['_source'])
-        #result_obj["hits"].append(hit["_source"], idx)
-        #result_obj["hits"].append(normalize(hit["_source"], idx))
-        #result_obj["hits"].append(normalize(hit, idx))
       else:
         # this is traces
         result_obj["hits"].append(hit["_source"]['body'])
@@ -456,9 +463,15 @@ class FeatureContextView(View):
 '''
 def getGeomCollection(idx,doctype,q):
   # q includes list of place_ids from a trace record
-  es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+  es = Elasticsearch([{'host': 'localhost',
+                       'port': 9200,
+                       'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
+                       'timeout':30,
+                       'max_retries':10,
+                       'retry_on_timeout':True}])
   #try:
-  res = es.search(index='whg', doc_type='place', body=q, size=300)
+  res = es.search(index='whg', body=q, size=300)
+  # res = es.search(index='whg', body=q, size=300)
   #except:
     #print(sys.exc_info()[0])
   hits = res['hits']['hits']

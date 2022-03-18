@@ -20,8 +20,15 @@ from celery import current_app as celapp
 from chardet import detect
 import codecs, math, mimetypes, os, re, shutil, sys, tempfile
 import django_tables2 as tables
-from elasticsearch import Elasticsearch
-es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+from elasticsearch7 import Elasticsearch
+es = Elasticsearch([{'host': 'localhost',
+                     'port': 9200,
+                     'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
+                     # 'api_key': ('Qf6zj38BNORx7WIGwSUc', 'v-2FwWJuQ5u3rvOwy8Nw6g'),
+                     'timeout': 30,
+                     'max_retries': 10,
+                     'retry_on_timeout': True
+                     }])
 import pandas as pd
 import simplejson as json
 from pathlib import Path
@@ -69,8 +76,15 @@ def link_uri(auth,id):
 """
 def indexMatch(pid, hit_pid=None):
   print('indexMatch(): pid '+str(pid)+' w/hit_pid '+str(hit_pid))
-  from elasticsearch import Elasticsearch
-  es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+  from elasticsearch7 import Elasticsearch
+  es = Elasticsearch([{'host': 'localhost',
+                       'port': 9200,
+                       'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
+                       # 'api_key': ('Qf6zj38BNORx7WIGwSUc', 'v-2FwWJuQ5u3rvOwy8Nw6g'),
+                       'timeout': 30,
+                       'max_retries': 10,
+                       'retry_on_timeout': True
+                       }])
   idx='whg'
 
   if hit_pid == None:
@@ -92,7 +106,7 @@ def indexMatch(pid, hit_pid=None):
       parent_obj['suggest']['input'].append(place.title)
     #index it
     try:
-      res = es.index(index=idx, doc_type='place', id=str(whg_id), body=json.dumps(parent_obj))
+      res = es.index(index=idx, id=str(whg_id), body=json.dumps(parent_obj))
       place.indexed = True
       place.save()
     except:
@@ -122,7 +136,7 @@ def indexMatch(pid, hit_pid=None):
     # all or nothing; pass if error
     try:
       # index child
-      es.index(index=idx,doc_type='place',id=place.id,
+      es.index(index=idx,id=place.id,
                 routing=1,body=json.dumps(child_obj))
       #count_kids +=1
       print('added '+str(place.id) + ' as child of '+ str(hit_pid))
@@ -134,7 +148,7 @@ def indexMatch(pid, hit_pid=None):
           "params":{"names": match_names, "id": str(place.id)}
         },
         "query": {"match":{"_id": parent_whgid}}}
-      es.update_by_query(index=idx, doc_type='place', body=q_update, conflicts='proceed')
+      es.update_by_query(index=idx, body=q_update, conflicts='proceed')
       place.indexed = True
       place.save()
       print('indexed '+str(pid)+' as child of '+str(parent_whgid), child_obj)
@@ -522,13 +536,6 @@ called from dataset_detail>reconciliation tab
 accepts all pass0 whg matches, indexes new child doc for each
 if >1 match, compute parent winner and merge others as children
 """
-#from django.shortcuts import get_object_or_404
-#from datasets.models import Hit
-#from places.models import Place
-#from elastic.es_utils import makeDoc, topParent, demoteParents
-#from elasticsearch import Elasticsearch
-#es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
-#tid = 'afe74607-da91-4317-801d-09243bdea61b'
 def write_idx_pass0(request, tid):
   task = get_object_or_404(TaskResult,task_id=tid)
   kwargs=json.loads(task.task_kwargs.replace("'",'"'))
@@ -554,7 +561,7 @@ def write_idx_pass0(request, tid):
       names = list(set([n['toponym'] for n in doc['names']]))
       #print('index '+str(pid)+' as child of '+hset[0].json['whg_id'])
       # addChildren(pids[],parent)
-      # es.index(index='whg', doc_type='place', id=d ,body=newsrcd, routing=1)
+      # es.index(index='whg', id=d ,body=newsrcd, routing=1)
       chosen.append(parent_id)
       pass
     else:
@@ -1148,8 +1155,14 @@ def ds_update(request):
       # if dataset is indexed, update it there too
       # TODO: if new records, new recon task & accessioning tasks needed
       if compare_data['count_indexed'] > 0:
-        from elasticsearch import Elasticsearch
-        es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+        from elasticsearch7 import Elasticsearch
+        es = Elasticsearch([{'host': 'localhost',
+                             'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
+                             'timeout':30,
+                             'max_retries':10,
+                             'retry_on_timeout':True,
+                             'port': 9200
+                             }])
         idx='whg'
 
         result["indexed"] = True
