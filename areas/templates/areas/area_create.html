@@ -308,6 +308,7 @@
     window.geoj = $("textarea#id_geojson")
     window.geom = {"type":"FeatureCollection","features":[]}
     window.buffer = $("input#buffer_km").val()
+    $("#count_result mark").html('')
     // console.clear()
 
     var country_url = "/media/data/countries_simplified.json"

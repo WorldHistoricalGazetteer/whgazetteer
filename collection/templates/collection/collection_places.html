@@ -298,7 +298,7 @@
     center: [9.2, 33],
     zoom: 0.2, // starting zoom
     minZoom: 0.1,
-    maxZoom: 18,
+    maxZoom: 12,
     accessToken: '{{ mbtokenmb }}'
   });
 
@@ -327,7 +327,19 @@
       type: 'geojson',
       data: { type: 'FeatureCollection', features: [] }
     });
-    
+
+		const zIndex4 = mappy.addLayer({
+      id: 'z-index-4',
+      type: 'symbol',
+      source: 'empty'
+    }); //top
+
+    const zIndex3 = mappy.addLayer({
+      id: 'z-index-3',
+      type: 'symbol',
+      source: 'empty'
+    }, 'z-index-4'); // below zIndex4
+
     const zIndex2 = mappy.addLayer({
       id: 'z-index-2',
       type: 'symbol',
@@ -397,17 +409,17 @@
   }
 
   {#function addPlaces(){#}
-	{##}
-  {#}#}
+
   // TODO: this gets all places for all named datasets - BAD!
   function addSources(ds_list){
     all_feats = []
     source_list = []
     $(".toomany").html('please wait...rendering many polygons').show()
     startMapSpinner()
-    ds_list.forEach(function(ds,i){
+    ds_list.forEach(function(ds, i){
       $.getJSON('/datasets/'+ds.id+'/geojson')
         .done(function(dsdata) {
+          console.log('dsdata', ds.id, dsdata)
           mappy.addSource(ds.label, {
             'type': 'geojson',
             'data': dsdata.collection
@@ -423,9 +435,10 @@
   colors_point=['#ff9900','red','green','blue', 'purple',
     '#ff9900','red','green','blue', 'purple']
   colors_poly=['#eee','aliceblue']
+
   // render dataset/geometry layers
-  // 
   function renderSourceLayers(dslabel, i){
+    console.log('dslabel, i', dslabel, i)
     startMapSpinner()
     mappy.addLayer({
       'id': 'gl_'+dslabel+'_poly',
@@ -433,9 +446,9 @@
       'source': dslabel,
       'visibility': 'visible',
       'paint': {
-        'fill-color': 'rgba(245,245,245, 0.5)',
+        'fill-color': 'red',
         'fill-opacity': 0.2,
-        'fill-outline-color': 'black'
+        'fill-outline-color': '#000'
       },
       'filter': ['==', '$type', 'Polygon']
     }, 'z-index-1');
@@ -739,6 +752,7 @@
     descrip += '</div>'
     return descrip
   }
+
   // builds link for external place record
   function url_extplace(identifier) {
     // abbreviate links not in aliases.base_urls

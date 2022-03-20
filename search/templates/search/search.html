@@ -865,6 +865,8 @@
       mbtiles_url = 'https://api.mapbox.com/v3/{id}/{z}/{x}/{y}.png',
       ne_url = 'http://blog.whgazetteer.org/tiles/ne/{z}/{x}/{y}.png';
 
+    # https://api.mapbox.com/v3/kgeographer.ne_global/{z}/{x}/{y}.png?access_token=pk.eyJ1Ijoia2dlb2dyYXBoZXIiLCJhIjoiY2tyc2pka2w5MHVqZzJ2bzl3YWFxbnYxcyJ9.zV4zsIrKUZauiRqlwtmz2g
+
       var satellite  = L.tileLayer(mbstyle_url, {
       id:'mapbox/satellite-streets-v11',
       token:token_mb}),
@@ -899,8 +901,6 @@
         onEachFeature: function (feature, layer) {
           cc = feature.properties.iso
           label = feature.properties.gnlabel
-          <!--console.log(cc, label)-->
-          <!--cchash[cc] = label-->
           popupOptions = {maxWidth: 200};
             layer.bindPopup(feature.properties.gnlabel, popupOptions);
           }
