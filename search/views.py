@@ -411,7 +411,7 @@ def contextSearch(idx, doctype, q, task):
   if task == 'count':
     res = es.count(index=idx, body=q)
     return {'count': res['count']}
-  elif task == 'count':
+  elif task == 'features':
     res = es.search(index=idx, body=q, size=8000)
   hits = res['hits']['hits']
   # TODO: refactor this bit
@@ -460,37 +460,6 @@ class FeatureContextView(View):
     }}
     response = contextSearch(idx, doctype, q_context_all, task)
     return JsonResponse(response, safe=False)
-
-class FeatureCountView(View):
-  @staticmethod
-  def get(request):
-    print('FeatureCountView GET:',request.GET)
-    """
-    args in request.GET:
-        [string] idx: index to be queried
-        [string] extent: geometry to intersect
-        [string] doc_type: 'place' in this case
-    """
-    idx = request.GET.get('idx')
-    extent = request.GET.get('extent') # coordinates string
-    doctype = request.GET.get('doc_type')
-    q_context_all = {"query": {
-      "bool": {
-        "must": [{"match_all":{}}],
-        "filter": { "geo_shape": {
-          "geoms.location": {
-            "shape": {
-              "type": "polygon",
-              "coordinates": json.loads(extent)
-            },
-            "relation": "within"
-          }
-        }}
-      }
-    }}
-    featurecount = contextSearch(idx, doctype, q_context_all).count()
-    return JsonResponse(features, safe=False)
-
 
 ''' 
   Returns places in a trace body

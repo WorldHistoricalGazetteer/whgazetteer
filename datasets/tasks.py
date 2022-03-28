@@ -25,7 +25,7 @@ from datasets.static.hashes.parents import ccodes as cchash
 from datasets.static.hashes.qtypes import qtypes
 from elastic.es_utils import makeDoc, build_qobj, profileHit
 #from datasets.task_utils import *
-from datasets.utils import makeNow, HitRecord, bestParent, post_recon_update, getQ, parse_wkt, hully, elapsed
+from datasets.utils import bestParent, elapsed, getQ, HitRecord, hully, makeNow, parse_wkt, post_recon_update
 from main.models import Log
 
 #from places.models import Place
@@ -785,6 +785,7 @@ def align_tgn(pk, *args, **kwargs):
     # geoms
     if len(place.geoms.all()) > 0:
       g_list =[g.jsonb for g in place.geoms.all()]
+      print('g_list', g_list)
       # make everything a simple polygon hull for spatial filter
       qobj['geom'] = hully(g_list)
 
@@ -795,6 +796,7 @@ def align_tgn(pk, *args, **kwargs):
     if result_obj['hit_count'] == 0:
       count_nohit +=1
       nohits.append(result_obj['missed'])
+      print('no hits in align_tgn() for', place.id, place.title)
     else:
       # place/task status 0 (unreviewed hits)
       place.review_tgn = 0

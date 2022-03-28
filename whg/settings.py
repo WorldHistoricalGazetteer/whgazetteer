@@ -168,9 +168,14 @@ LOGIN_URL = '/accounts/login/'
 LOGIN_REDIRECT_URL='/accounts/login/'
 LOGOUT_REDIRECT_URL='/'
 
-GDAL_LIBRARY_PATH = '/Applications/Postgres.app/Contents/Versions/14/lib/libgdal.dylib'
-GEOS_LIBRARY_PATH = '/Applications/Postgres.app/Contents/Versions/14/lib/libgeos_c.dylib'
+GDAL_LIBRARY_PATH = '/opt/homebrew/Cellar/gdal/3.4.2_1/lib/libgdal.dylib'
+GEOS_LIBRARY_PATH = '/opt/homebrew/Cellar/geos/3.10.2/lib/libgeos_c.dylib'
+# GDAL_LIBRARY_PATH = '/Applications/Postgres.app/Contents/Versions/14/lib/libgdal.dylib'
+# GEOS_LIBRARY_PATH = '/Applications/Postgres.app/Contents/Versions/14/lib/libgeos_c.dylib'
+# GDAL_LIBRARY_PATH = '/Applications/QGIS-LTR.app/Contents/MacOS/lib/libgdal.dylib'
+# GEOS_LIBRARY_PATH = '/Applications/QGIS-LTR.app/Contents/MacOS/lib/libgeos_c.dylib'
 
+# #
 # Database
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
 

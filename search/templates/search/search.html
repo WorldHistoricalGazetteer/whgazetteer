@@ -865,8 +865,6 @@
       mbtiles_url = 'https://api.mapbox.com/v3/{id}/{z}/{x}/{y}.png',
       ne_url = 'http://blog.whgazetteer.org/tiles/ne/{z}/{x}/{y}.png';
 
-    # https://api.mapbox.com/v3/kgeographer.ne_global/{z}/{x}/{y}.png?access_token=pk.eyJ1Ijoia2dlb2dyYXBoZXIiLCJhIjoiY2tyc2pka2w5MHVqZzJ2bzl3YWFxbnYxcyJ9.zV4zsIrKUZauiRqlwtmz2g
-
       var satellite  = L.tileLayer(mbstyle_url, {
       id:'mapbox/satellite-streets-v11',
       token:token_mb}),
@@ -977,7 +975,7 @@
       } else if (searchClass()=='trace' && bboxer.map ) {
         <!--console.log('need to filter result list here')-->
         results = $("#result_div tbody tr")
-        <!--results = $("#result_div tbody tr").filter(function(i){return $( this ).attr( "data-id" ) != "none"}) -->
+        //results = $("#result_div tbody tr").filter(function(i){return $( this ).attr( "data-id" ) != "none"}) -->
 
         all_ids = Object.keys(idToFeature).map(Number)
 
@@ -985,7 +983,7 @@
         hide_ids = all_ids.filter(value=>!show_ids.includes(value))
         for (i = 0; i < results.length; i++) {
           _id = Number(results[i].getAttribute('data-id'))
-          <!--if (isNaN(_id) || hide_ids.indexOf(_id) > -1 ){-->
+          // if (isNaN(_id) || hide_ids.indexOf(_id) > -1 ){-->
           if (hide_ids.indexOf(_id) > -1 ){
             results[i].style.display = "none";
           } else if (show_ids.indexOf(_id) > -1 ) {
