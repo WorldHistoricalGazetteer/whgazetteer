@@ -662,7 +662,6 @@ def es_lookup_tgn(qobj, *args, **kwargs):
       "location": {
         "shape": {
           "type": location['type'],
-          #"coordinates" : location['coordinates']
           "coordinates" : location['coordinates']
         },
         "relation": "within" # within | intersects | contains

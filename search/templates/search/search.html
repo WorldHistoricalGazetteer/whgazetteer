@@ -1137,7 +1137,7 @@
         //localStorage.setItem('last_results',searchres)-->
         // render to html
         if(doctype == 'place'){
-          showResults(searchres,doctype,scope);
+          showResults(searchres, doctype, scope);
         }
       }
     );
@@ -1187,7 +1187,7 @@
     title:
   */
   showResults = function(data, doctype, scope='suggest', title){
-    <!--console.log('showResults() data length', data.length)-->
+    console.log('showResults() data length', data.length)
     // always want result_div to show
     $("#result_div").show()
     var results_div = '';
