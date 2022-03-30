@@ -72,9 +72,11 @@ def make_download(request, *args, **kwargs):
   
   if ds.format == 'delimited' and req_format in ['tsv', 'delimited']:
     print('making an augmented tsv file')
-    # latest dataset file
+
+    # get header as uploaded and create newheader w/any "missing" columns
+    # get latest dataset file
     dsf = ds.file
-    # pandas dataframe
+    # make pandas dataframe
     df = pd.read_csv('media/'+dsf.file.name, delimiter='\t',dtype={'id':'str','aat_types':'str'})
     # copy existing header to newheader for write
     header = list(df)
@@ -88,21 +90,16 @@ def make_download(request, *args, **kwargs):
     csvfile = open(fn, 'w', newline='', encoding='utf-8')
     writer = csv.writer(csvfile, delimiter='\t', quotechar='', quoting=csv.QUOTE_NONE)    
 
-    # if no geo columns in file, add lon/lat & geowkt (why not, no harm)
-    #no_geom = False if len(set(['lon','lat','geowkt']) & set(header)) > 0 else True
-    #if no_geom:
-      #newheader.extend(['lon','lat','geowkt'])
-    # make distinct and write 
-    #newheader = list(set(newheader)); print(newheader)
     # TODO: better order?
     writer.writerow(newheader)
-    # missing columns
+    # missing columns (were added to newheader)
     missing=list(set(newheader)-set(list(df))); print('missing',missing)
     
     for i, row in df.iterrows():
       dfrow = df.loc[i,:]
       # get db record
-      p = places.get(src_id = dfrow['id'])
+      # src_id is NOT distinct amongst all places!!
+      p = places.get(src_id = dfrow['id'], dataset = ds.label)
 
       # df row to newrow json object
       rowjs = json.loads(dfrow.to_json())
@@ -133,8 +130,10 @@ def make_download(request, *args, **kwargs):
           # get first db geometry & add to newrow dict
           g=geoms[0]
           #newheader.extend(['geowkt'])
-          newrow['geowkt']=g.geom.wkt
-          xy = g.geom.coords[0] if g.jsonb['type'] == 'MultiPoint' else g.geom.coords
+          newrow['geowkt']=g.geom.wkt if g.geom else ''
+          # there is always jsonb
+          # xy = g.geom.coords[0] if g.jsonb['type'] == 'MultiPoint' else g.geom.coords
+          xy = g.geom.coords[0] if g.jsonb['type'] == 'MultiPoint' else g.jsonb['coordinates']
           newrow['lon'] = xy[0]
           newrow['lat'] = xy[1]
       #print(newrow)
@@ -245,7 +244,7 @@ def make_download(request, *args, **kwargs):
   ) 
   
   # for ajax, just report filename
-  completed_message = {"msg":"tsv written", "filename":fn, "rows":len(places)}
+  completed_message = {"msg": req_format+" written", "filename":fn, "rows":len(places)}
   return completed_message
 
 
