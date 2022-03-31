@@ -135,7 +135,7 @@ def suggester(doctype,q,scope,idx):
   # returns only parents; children retrieved into place portal
   print('suggester',doctype,q)
   # add api key
-  # api_key=('DuSkVm8BZ5TMcIF99zOC','2rs8yN26QSC_uPr31R1KJg')
+  # api_key=('')
   es = Elasticsearch([{'host': 'localhost',
                        'port': 9200,
                        'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
@@ -513,7 +513,7 @@ class TraceGeomView(View):
     q_trace = {"query": {"bool": {"must": [{"match":{"_id": trace_id}}]}}}
     
     # using contextSearch() to get bodyids (i.e. place_ids)
-    bodies = contextSearch(idx, doctype, q_trace)['hits'][0]
+    bodies = contextSearch(idx, doctype, q_trace, 'features')['hits'][0]
     print('a body from TraceGeomView->contextSearch',bodies[0])
     
     bodyids = [b['place_id'] for b in bodies if b['place_id']]

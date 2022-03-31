@@ -476,7 +476,7 @@
   function fetchContext(bbox){
     startMapitSpinner()
     context={"type":"FeatureCollection","features":[]}
-    $.get("/search/context",{idx: 'whg', search: bbox, doc_type: 'place'},
+    $.get("/search/context",{idx: 'whg', search: bbox},
       function(data){
         <!--console.log('data:',data)-->
         console.log('a hit:',data['hits'][0])

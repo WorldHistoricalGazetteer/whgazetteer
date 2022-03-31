@@ -1339,11 +1339,6 @@
         // then highlight this one
         $(this).css('background-color','#f4f4d7')
         // fetch record detail and put it in #result_extra
-        <!--if(search_scope == 'db'){-->
-          <!--console.log('search-row click; scope db; running getPlace() - why?')-->
-          <!--let pid = layerid-->
-          <!--getPlace(pid)-->
-        <!--}-->
         // set all layers to default style
         for (i in idToFeature){
           type = idToFeature[i].feature.geometry.type
@@ -1357,7 +1352,6 @@
       } else {
         clickedrow = $(this)
         console.log(clickedrow)
-        <!--$(this).html('no geometry for this place yet...')-->
       }
     })
     // open a modal for external page
@@ -1715,7 +1709,6 @@
       }).done(function( data ) {
         console.log('getPlace() - why???', pid)
         $("#result_extra").html(parsePlace(data))
-        <!--spinner_detail.stop()-->
         // events on detail items
         $('.ext').on('click', function(e) {
           e.preventDefault();
@@ -1792,8 +1785,6 @@
       <!--console.log('search on <Enter>')-->
       // always hide search_info and traces_info on search
       $("#search_info").hide()
-      <!--$("#traces_info").hide()-->
-      <!--if (search_scope == 'idx'){-->
       if (searchScope() == 'idx'){
         searchPlacesIdx()
       } else {
@@ -1802,11 +1793,8 @@
       }
   })
   //
-  <!--$("label[for='input_box']").click(function(){-->
   $(".b-input").click(function(){
-    <!--console.log('clicked search')-->
     doctype = $("input[name='class']:checked").val()
-    <!--scopeAtThisInstant = $(".nav-link.active").data('scope')-->
     if( searchScope() == 'idx'){
       searchPlacesIdx()
     } else { searchPlacesDb()}
@@ -1958,10 +1946,7 @@
     $("#result_filters").hide()
     $("#type_filter").hide()
     $(".list-inline").html('')
-    <!--features.clearLayers()-->
-    <!--geoms = features?features-->
     if(typeof(traces) !== "undefined") {traces.clearLayers(); mappy.setView([38, 10], 0)}
-    <!--if(features && !shown_layers) {features.clearLayers(); mappy.setView([38, 10], 0)}-->
     if(features) {features.clearLayers(); mappy.setView([38, 10], 0)}
   }
 
@@ -1994,8 +1979,6 @@
     localStorage.removeItem('last_results')
     localStorage.setItem('search_scope', 'idx')
     localStorage.removeItem('keep')
-    <!--$("#dbicon").hide()-->
-    <!--$("#filter_spatial").show()-->
     $("#offer_mapfilter").hide()
     location.reload()
   }

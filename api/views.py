@@ -1,11 +1,12 @@
 # api.views
+
+from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User, Group
 from django.contrib.gis.geos import Polygon, Point
 # from django.contrib.postgres import search
 from django.contrib.gis.measure import D
 from django.contrib.gis.db.models.functions import Distance
-from django.conf import settings
 from django.db.models import Q
 from django.http import JsonResponse, HttpResponse#, FileResponse
 from django.shortcuts import get_object_or_404

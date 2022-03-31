@@ -468,7 +468,8 @@ def normalize(h, auth, language=None):
     except:
       print("normalize(wd) error:", h['place']['value'][31:], sys.exc_info())    
   elif auth == 'wdlocal':
-    # hit['_source'] keys(): ['id', 'type', 'modified', 'descriptions', 'claims', 'sitelinks', 'variants', 'minmax', 'types', 'location'] 
+    # hit['_source'] keys(): ['id', 'type', 'modified', 'descriptions', 'claims',
+    # 'sitelinks', 'variants', 'minmax', 'types', 'location']
     try:
       #print('h in normalize',h)
       # TODO: do it in index?

@@ -665,7 +665,7 @@
     <!-- get trace GeoJSON (includes features[] and bodies[] ) -->
     if(typeof(traces) !== "undefined") {traces.clearLayers();}
     if(typeof(features) !== "undefined") {features.clearLayers();}
-    $.get("/search/tracegeom",{idx: 'traces', search: trace_id, doc_type: 'trace'},
+    $.get("/search/tracegeom",{idx: 'traces', search: trace_id, doc_type: 'trace', task: 'features'},
       function(data){
         <!--console.log('bodies in this trace',data.bodies)-->
         <!--console.log('fetchTraceGeom() data',data)-->
