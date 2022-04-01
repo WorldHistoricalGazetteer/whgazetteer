@@ -582,6 +582,7 @@ def get_bounds_filter(bounds, idx):
   #areatype = bounds['type'][0]
   area = Area.objects.get(id = id)
   # 
+  # geofield = "geoms.location" if idx == 'whg' else "location"
   geofield = "geoms.location" if idx == 'whg' else "location"
   filter = { "geo_shape": {
     geofield: {
@@ -601,7 +602,7 @@ from align_tgn()
 
 """
 def es_lookup_tgn(qobj, *args, **kwargs):
-  #print('qobj',qobj)
+  print('es_lookup_tgn qobj',qobj)
   bounds = kwargs['bounds']
   hit_count = 0
 
@@ -658,15 +659,21 @@ def es_lookup_tgn(qobj, *args, **kwargs):
   if 'geom' in qobj.keys():
     location = qobj['geom']
     # always polygon returned from hully(g_list)
-    filter_within = { "geo_shape": {
-      "location": {
-        "shape": {
-          "type": location['type'],
-          "coordinates" : location['coordinates']
-        },
-        "relation": "within" # within | intersects | contains
+    filter_within = { "geo_polygon": {
+      "repr_point": {
+        "points": location['coordinates']
+        }
       }
-    }}    
+    }
+    # filter_within = { "geo_shape": {
+    #   "location": {
+    #     "shape": {
+    #       "type": location['type'],
+    #       "coordinates" : location['coordinates']
+    #     },
+    #     "relation": "within" # within | intersects | contains
+    #   }
+    # }}
     q1['query']['bool']['filter'].append(filter_within)
 
   # /\/\/\/\/\/

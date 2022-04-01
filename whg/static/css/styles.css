@@ -33,7 +33,7 @@ pre { margin:0; background-color:whitesmoke;}
   border-bottom: 1px solid #eee;
 }
 input[type="radio"] {
-  margin-top: -1px;
+  /*margin-top: -1px;*/
   vertical-align: middle;
 }
 

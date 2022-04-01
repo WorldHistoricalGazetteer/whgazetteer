@@ -81,9 +81,11 @@
               <p class="font-weight-bold mb-0">Name authority source</p>
               <p class="small">Your task will enter a queue and and an email notification sent when completed.</p>
               <div class="form-check">
-                <label class="form-check-label" for="r_tgn">
-                  <input type="radio" class="form-check-input" id="r_tgn"
-                    name="recon" value="tgn" checked>Getty TGN (tgn) <span class=" small font-italic ml-2">estimated time: {{ ds.numrows|time_estimate }}</span>
+                <label class="form-check-label text-secondary" for="r_tgn">
+                  <input type="radio" disabled class="form-check-input" id="r_tgn"
+                    name="recon" value="tgn" checked>Getty TGN (tgn)
+	                <mark class="small">temporarily unavailable</mark>
+	                {% comment %}<span class=" small font-italic ml-2">estimated time: {{ ds.numrows|time_estimate }}</span>{% endcomment %}
                 </label>
                 {% if msg_tgn %}
                 <div id="tgn_tasks" class="smaller hidden">
@@ -100,7 +102,7 @@
               <div class="form-check">
                 <label class="form-check-label" for="r_wdlocal">
                   <input type="radio" class="form-check-input r_wd" id="r_wdlocal" 
-                    name="recon" value="wdlocal" checked>Wikidata local (wdlocal) <span class="ml-2 font-italic small">estimated time: {{ ds.numrows|time_estimate }}</span>
+                    name="recon" value="wdlocal" checked>Wikidata (wdlocal) <span class="ml-2 font-italic small">estimated time: {{ ds.numrows|time_estimate }}</span>
                 </label>
                 {% if msg_wdlocal %}
                 <div id="wdlocal_tasks" class="smaller">
