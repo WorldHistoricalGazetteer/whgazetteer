@@ -20,7 +20,7 @@ media/user*
 
 sent_emails/
 
-.DS_Store
+*/.DS_Store
 .python-version
 
 nohup.out
