@@ -1128,7 +1128,7 @@
       start: $("#input_start").val(),
       end: $("#input_end").val(),
       bounds: $("#boundsobj").val()
-      //,ds: $("#select_ds_search").val()
+      {#ds: $("#select_ds_search").val()#}
       }, function(data){
         window.searchres = data['suggestions']
         window.session = data['session']

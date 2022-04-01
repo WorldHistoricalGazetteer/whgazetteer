@@ -75,8 +75,9 @@ docutils==0.18.1
 dparse==0.5.1
 edtf==4.0.1
 elastic-wikidata==1.0.1
-elasticsearch7==7.17.1
+elasticsearch==7.8.1
 elasticsearch-dsl==7.4.0
+elasticsearch7==7.17.1
 entrypoints==0.4
 envoy==0.0.3
 et-xmlfile==1.1.0

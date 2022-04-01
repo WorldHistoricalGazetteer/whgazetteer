@@ -1508,6 +1508,13 @@ def ds_insert_lpf(request, pk):
     messages.add_message(request, messages.INFO, 'data is uploaded, but problem displaying dataset page')
     return redirect('/dashboard')
 
+
+"""
+ds_insert_tsv(pk)
+insert tsv into database
+file is validated, dataset exists
+if insert fails anywhere, delete dataset + any related objects
+"""
 """ recovered from server 29 July """
 def ds_insert_tsv(request, pk):
   import csv, re

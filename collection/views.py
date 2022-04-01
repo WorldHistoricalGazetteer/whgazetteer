@@ -25,7 +25,7 @@ def fetch_geojson_coll(request, *args, **kwargs):
 
   # build FeatureCollection
   features=PlaceGeom.objects.filter(place_id__in=pids).values_list(
-    'jsonb','place_id','src_id','place__title','place__minmax', 
+    'jsonb','place_id','src_id','place__title','place__minmax',
     'place__fclasses', 'place__dataset__id', 'place__dataset__label')
   fcoll = {"type":"FeatureCollection","features":[]}
   for f in features:
@@ -108,7 +108,7 @@ class CollectionCreateBetaView(LoginRequiredMixin, CreateView):
     datasets = []
     places = []
     # owners create collections from their datasets
-    ds_select = [obj for obj in Dataset.objects.all() if user in obj.owners or 
+    ds_select = [obj for obj in Dataset.objects.all() if user in obj.owners or
       user in obj.collaborators or user.is_superuser]
 
     context['action'] = 'create'
@@ -130,7 +130,7 @@ class CollectionCreateView(LoginRequiredMixin, CreateView):
       logtype = 'create',
       note = 'created collection id: '+str(self.object.id),
       user_id = self.request.user.id
-    )    
+    )
     return reverse('dashboard')
   #
   def get_form_kwargs(self, **kwargs):
@@ -158,7 +158,7 @@ class CollectionCreateView(LoginRequiredMixin, CreateView):
 
     datasets = []
     # owners create collections from their datasets
-    ds_select = [obj for obj in Dataset.objects.all() if user in obj.owners or 
+    ds_select = [obj for obj in Dataset.objects.all() if user in obj.owners or
       user in obj.collaborators or user.is_superuser]
 
     context['action'] = 'create'
@@ -223,6 +223,7 @@ class CollectionDetailView(DetailView):
     context['bboxes'] = bboxes
     return context
 
+
 """ BETA: browse collection *all* places """
 class CollectionPlacesBetaView(DetailView):
   login_url = '/accounts/login/'
@@ -251,7 +252,7 @@ class CollectionPlacesBetaView(DetailView):
     # compute bounding boxes
 
     coll = get_object_or_404(Collection, id=id_)
-    # "geotypes":ds.geotypes, 
+    # "geotypes":ds.geotypes,
     # datasets = [{"id":ds.id,"label":ds.label,"title":ds.title} for ds in coll.ds_list]
                  # "bbox": ds.bounds } for ds in coll.datasets.all()]
     #bboxes = [{"id":ds['id'], "geometry":ds['bounds']} for ds in datasets]
@@ -297,17 +298,15 @@ class CollectionPlacesView(DetailView):
 
     coll = get_object_or_404(Collection, id=id_)
     # "geotypes":ds.geotypes,
-    datasets = [{"id":ds.id,"label":ds.label,"title":ds.title,"bbox": ds.bounds} for ds in coll.datasets.all()]
+    # datasets = [{"id":ds.id,"label":ds.label,"title":ds.title} for ds in coll.ds_list]
                  # "bbox": ds.bounds } for ds in coll.datasets.all()]
-    # TODO: too costly?
-    # bboxes = [{"id":ds.id, "geometry":ds.bounds} for ds in coll.ds_list]
+    #bboxes = [{"id":ds['id'], "geometry":ds['bounds']} for ds in datasets]
 
     placeset = coll.places.all()
     context['places'] = placeset
     # context['places'] = placeset
-    context['ds_list'] = datasets
-    # context['ds_list'] = coll.ds_list
-    # context['bboxes'] = bboxes
+    context['ds_list'] = coll.ds_list
+    #context['bboxes'] = bboxes
     context['updates'] = {}
     context['coll'] = coll
     context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False
@@ -367,7 +366,7 @@ class CollectionUpdateBetaView(UpdateView):
         logtype = 'update',
         note = 'collection id: '+ str(obj.id) + ' by '+ self.request.user.username,
         user_id = self.request.user.id
-      )      
+      )
     else:
       print('form not valid', form.errors)
     return super().form_valid(form)
@@ -455,4 +454,3 @@ class CollectionDeleteView(DeleteView):
 
   def get_success_url(self):
     return reverse('dashboard')
-
