@@ -1,0 +1,145 @@
+<!-- datasets/dashboard.html -->
+{% extends "main/base.html" %}
+{% block title %}<title>WHG::Dashboard</title>{% endblock %}
+{% block extra_head %}
+{% block mycss %}
+  <style>
+    .fa-sort {cursor:pointer;}
+    #table_ds th, #table_areas th {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background-color: #fdf5e6;}
+    #dataset_list, #area_list {position:relative !important; height:75vh !important }
+    .list-box {overflow-y:auto  !important; max-height:100%;}
+  </style>
+{% endblock mycss %}
+{% endblock%}
+
+
+{% block content %}
+  {% load static %}
+  {% load fontawesome %}
+  {% load mathfilters %}
+  {% load dataset_extras %}
+
+  <div class="container pt-3">
+    <ul id="dashboard_tabs" class="nav nav-tabs" role="tablist">
+      <li class="nav-item">
+        <a class="nav-link" id="mydslist-tab" href="{% url 'data-datasets' %}"
+           role="tab" aria-controls="dslist" aria-selected="true">Datasets</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="collectionlist-tab" href="{% url 'data-collections' %}"
+           role="tab" aria-controls="collectionlist" aria-selected="false">Collections</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link active" id="arealist-tab" data-link="arealist" data-toggle="tab"
+           role="tab" aria-controls="arealist" aria-selected="false">Study Areas</a>
+      </li>
+      {% if beta_or_better %}
+      <li class="nav-item">
+        <a class="nav-link" id="resourcelist-tab" href="{% url 'data-resources' %}"
+           role="tab" aria-controls="resourcelist" aria-selected="false">Teaching resources</a>
+      </li>
+      {% endif %}
+    </ul>
+    <div class="tab-content">
+      <div id="arealist" class="tab-pane fade show active" role="tabpanel" aria-labelledby="arealist-tab">
+        <p class="mb-1 ml-1"><a href="{% url 'areas:area-create' %}" class="">
+          {% fontawesome_icon 'plus-square' color='#336699' %} create new</a></p>
+        <div id="area_list" class="mt-1 ml-0">
+          <div class="list-box">
+            <table id="table_areas" class="table table-striped">
+              <thead class="small">
+                  <th>id</th>
+                  <th>title <i class="fa fa-sort ml-1" data-id=1 ref=asc></i></th>
+                  <th>type <i class="fa fa-sort ml-1" data-id=2 ref=asc></i></th>
+                  <th>ccodes</th>
+              </thead>
+              <tbody>
+                {% for a in area_list %}
+                  <tr class="place-row">
+                    <td>{{ a.id }}</td>
+                    <td><a href="{% url 'areas:area-update' a.id %}">{{ a.title }}</a></td>
+                    <td>{{ a.type }}</td>
+                    <td>{{ a.ccodes }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    $(function(){
+      $("[rel='tooltip']").tooltip();
+
+      // manage url
+      var url = document.location.toString();
+      if (url.match('#')) {
+        tab = url.split('#')[1]
+        $('.nav-tabs a[href="#' + tab+ '"]').tab('show');
+        history.pushState("", document.title, window.location.pathname);
+      }
+
+    })
+
+    $(".fa-sort").on('click',function(){
+      table_id =$(this).closest('table').prop('id') // parent table id
+      console.log('table_id',table_id)
+      sortTable($(this).data('id'), $(this).attr('ref'), table_id)
+    })
+
+    sortTable = function(col_idx, order, table_id) {
+      var table, rows, switching, i, x, y, shouldSwitch;
+      <!--table = document.getElementById("table_ds");-->
+      table = document.getElementById(table_id);
+      switching = true;
+      /* Make a loop that will continue until
+      no switching has been done: */
+      while (switching) {
+        // Start by saying: no switching is done:
+        switching = false;
+        rows = table.rows;
+        /* Loop through all table rows (except the
+        first, which contains table headers): */
+        for (i = 1; i < (rows.length - 1); i++) {
+          // Start by saying there should be no switching:
+          shouldSwitch = false;
+          /* Get the two elements you want to compare,
+          one from current row and one from the next: */
+          <!--x = rows[i].getElementsByTagName("TD")[0];-->
+          <!--y = rows[i + 1].getElementsByTagName("TD")[0];-->
+          x = rows[i].getElementsByTagName("TD")[col_idx];
+          y = rows[i + 1].getElementsByTagName("TD")[col_idx];
+          // Check if the two rows should switch place:
+          <!--console.log('value', x.innerHTML.toLowerCase())-->
+          <!--console.log('value', x.innerText.toLowerCase())-->
+          <!--if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {-->
+          if (order == 'asc'){
+            if (x.innerText.toLowerCase() > y.innerText.toLowerCase()) {
+              // If so, mark as a switch and break the loop:
+              shouldSwitch = true;
+              break;
+            }
+          } else {
+            if (x.innerText.toLowerCase() < y.innerText.toLowerCase()) {
+              shouldSwitch = true;
+              break;
+            }
+          }
+        }
+        if (shouldSwitch) {
+          /* If a switch has been marked, make the switch
+          and mark that a switch has been done: */
+          rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+          switching = true;
+        }
+      }
+    }
+
+  </script>
+{% endblock %}

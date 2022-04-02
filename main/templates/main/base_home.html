@@ -68,7 +68,7 @@
 				<a class="nav-link" href="{% url 'teaching-page' %}">Teaching</a>
 			</li>
 			<li class="nav-item">
-				<a class="nav-link" href="{% url 'main:tutorials' %}">Tutorials</a>
+				<a class="nav-link" href="{% url 'main:tutorials' %}">Guides</a>
 			</li>
 			<li class="nav-item">
 				<a class="nav-link" href="{% url 'usingapi' %}">API</a>
@@ -90,7 +90,8 @@
 			</li>
 			{% if user.is_authenticated %}
 			  <li class="nav-item">
-				<a class="nav-link" href="{% url 'dashboard' %}">Data</a>
+					<a class="nav-link" href="{% url 'data-datasets' %}">Data</a>
+{#					<a class="nav-link" href="{% url 'dashboard' %}">Data</a>#}
 			  </li>
   
 			  <li class="nav-item larger">

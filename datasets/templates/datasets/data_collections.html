@@ -1,0 +1,183 @@
+<!-- datasets/dashboard.html -->
+{% extends "main/base.html" %}
+{% block title %}<title>WHG::Dashboard</title>{% endblock %}
+{% block extra_head %}
+{% block mycss %}
+  <style>
+    .fa-sort {cursor:pointer;}
+    #table_ds th, #table_areas th {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background-color: #fdf5e6;}
+    #dataset_list, #area_list {position:relative !important; height:75vh !important }
+    .list-box {overflow-y:auto  !important; max-height:100%;}
+  </style>
+{% endblock mycss %}
+{% endblock%}
+
+
+{% block content %}
+  {% load static %}
+  {% load fontawesome %}
+  {% load mathfilters %}
+  {% load dataset_extras %}
+
+{#  <ul id="dataset_tabs" class="nav nav-tabs" role="tablist">#}
+{#      <span class="ds-title ml-1 mr-3">{{ ds.title }}</span>#}
+{#      <li class="nav-item">#}
+{#          <a class="nav-link" id="summary-tab" href="{% url 'datasets:ds_summary' id=ds.id %}" role="tab" #}
+{#             aria-controls="summary" aria-selected="false">Metadata</a>#}
+{#      </li>#}
+{#      <li class="nav-item">#}
+{#          <a class="nav-link active" id="browse-tab" data-toggle="tab" href="#" role="tab" #}
+{#             aria-controls="browse" aria-selected="false">Browse</a>#}
+{#      </li>#}
+{#      <li class="nav-item">#}
+{#          <a class="nav-link" id="reconciliation-tab" href="{% url 'datasets:ds_reconcile' id=ds.id %}" role="tab" #}
+{#             aria-controls="reconciliation" aria-selected="false">Linking</a>#}
+{#      </li>#}
+{#      <li class="nav-item">#}
+{#          <a class="nav-link" id="sharing-tab" href="{% url 'datasets:ds_collab' id=ds.id %}" role="tab" #}
+{#             aria-controls="sharing" aria-selected="false">Collaborators</a>#}
+{#      </li>#}
+{#      <li class="nav-item">#}
+{#          <a class="nav-link" id="log-tab" href="{% url 'datasets:ds_log' id=ds.id %}" role="tab" #}
+{#             aria-controls="log" aria-selected="true">Log & Comments</a>#}
+{#      </li>#}
+{#  </ul>  #}
+
+  <div class="container pt-3">
+    <ul id="dashboard_tabs" class="nav nav-tabs" role="tablist">
+      <li class="nav-item">
+        <a class="nav-link" id="mydslist-tab" href="{% url 'data-datasets' %}"
+           role="tab" aria-controls="dslist" aria-selected="true">Datasets</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link active" id="collectionlist-tab" data-link="collectionlist" data-toggle="tab"
+           role="tab" aria-controls="collectionlist" aria-selected="false">Collections</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="arealist-tab" href="{% url 'data-areas' %}"
+           role="tab" aria-controls="arealist" aria-selected="false">Study Areas</a>
+      </li>
+      {% if beta_or_better %}
+      <li class="nav-item">
+        <a class="nav-link" id="resourcelist-tab" href="{% url 'data-resources' %}"
+           role="tab" aria-controls="resourcelist" aria-selected="false">Teaching resources</a>
+      </li>
+      {% endif %}
+    </ul>
+    <div class="tab-content">
+      <div id="collectionlist" class="tab-pane fade show active" role="tabpanel"
+           aria-labelledby="collectionlist-tab">
+        <p class="mb-1 ml-1"><a href="{% url 'collection:collection-create' %}" class="">
+          {% fontawesome_icon 'plus-square' color='#336699' %} create new</a>
+        {% if beta_or_better %}
+          <span class="ml-3"><a href="{% url 'collection:collection-create-beta' %}" class="">new (beta)</a></span>
+        {% endif %}</p>
+          <div id="collection_list" class="mt-1 ml-0">
+          <div class="list-box">
+            <table id="table_collections"class="table table-striped">
+              <thead class="small">
+                  <th>id</th>
+                  <th>title</th>
+                  <th></th>
+                  <th>created</th>
+              </thead>
+              <tbody>
+                {% for c in collection_list %}
+                  <tr class="place-row">
+                    <td>{{ c.id }}</td>
+                    <td>{{ c.title }}</td>
+                    <td>
+                      <a href="{% url 'collection:collection-detail' c.id %}">view</a>&nbsp;
+                        {% if beta_or_better %} |
+                            <a href="{% url 'collection:collection-detail-beta' c.id %}"><i> (beta)</i></a>
+	                          <span class="mx-2">||</span>
+                        {% endif %}
+                      <a href="{% url 'collection:collection-update' c.id %}">edit</a>
+                        {% if beta_or_better %} |
+                            <a href="{% url 'collection:collection-update-beta' c.id %}"><i> (beta)</i></a>
+                        {% endif %}
+                    </td>
+                    <td>{{ c.create_date }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    $(function(){
+      $("[rel='tooltip']").tooltip();
+
+      // manage url
+      var url = document.location.toString();
+      if (url.match('#')) {
+        tab = url.split('#')[1]
+        $('.nav-tabs a[href="#' + tab+ '"]').tab('show');
+        history.pushState("", document.title, window.location.pathname);
+      }
+
+    })
+
+    $(".fa-sort").on('click',function(){
+      table_id =$(this).closest('table').prop('id') // parent table id
+      console.log('table_id',table_id)
+      sortTable($(this).data('id'), $(this).attr('ref'), table_id)
+    })
+
+    sortTable = function(col_idx, order, table_id) {
+      var table, rows, switching, i, x, y, shouldSwitch;
+      <!--table = document.getElementById("table_ds");-->
+      table = document.getElementById(table_id);
+      switching = true;
+      /* Make a loop that will continue until
+      no switching has been done: */
+      while (switching) {
+        // Start by saying: no switching is done:
+        switching = false;
+        rows = table.rows;
+        /* Loop through all table rows (except the
+        first, which contains table headers): */
+        for (i = 1; i < (rows.length - 1); i++) {
+          // Start by saying there should be no switching:
+          shouldSwitch = false;
+          /* Get the two elements you want to compare,
+          one from current row and one from the next: */
+          <!--x = rows[i].getElementsByTagName("TD")[0];-->
+          <!--y = rows[i + 1].getElementsByTagName("TD")[0];-->
+          x = rows[i].getElementsByTagName("TD")[col_idx];
+          y = rows[i + 1].getElementsByTagName("TD")[col_idx];
+          // Check if the two rows should switch place:
+          <!--console.log('value', x.innerHTML.toLowerCase())-->
+          <!--console.log('value', x.innerText.toLowerCase())-->
+          <!--if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {-->
+          if (order == 'asc'){
+            if (x.innerText.toLowerCase() > y.innerText.toLowerCase()) {
+              // If so, mark as a switch and break the loop:
+              shouldSwitch = true;
+              break;
+            }
+          } else {
+            if (x.innerText.toLowerCase() < y.innerText.toLowerCase()) {
+              shouldSwitch = true;
+              break;
+            }
+          }
+        }
+        if (shouldSwitch) {
+          /* If a switch has been marked, make the switch
+          and mark that a switch has been done: */
+          rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+          switching = true;
+        }
+      }
+    }
+
+  </script>
+{% endblock %}

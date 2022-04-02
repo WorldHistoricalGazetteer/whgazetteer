@@ -6,7 +6,7 @@ from django.urls import path, re_path, include
 from django.views.generic.base import TemplateView
 
 from main import views
-from datasets.views import DashboardView, PublicListsView
+from datasets.views import DashboardView, PublicListsView, DataListsView
 from resources.views import TeachingPortalView
 
 app_name='main'
@@ -30,6 +30,14 @@ urlpatterns = [
     path('teaching/', TeachingPortalView.as_view(), name="teaching-page"),
 
     path('dashboard/', DashboardView.as_view(), name='dashboard'),
+
+    ## "DASHBOARD" LIST VIEWS
+    # kwarg "type" = ['datasets', 'collections', 'areas', 'resources']
+    path('mydata/', DataListsView.as_view(), name='data-datasets'),
+    path('mycollections/', DataListsView.as_view(), name='data-collections'),
+    path('mystudyareas/', DataListsView.as_view(), name='data-areas'),
+    path('resourcelist/', DataListsView.as_view(), name='data-resources'),
+
     path('public_data/', PublicListsView.as_view(), name='public-lists'),
 
     # static content

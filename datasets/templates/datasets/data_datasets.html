@@ -26,28 +26,28 @@
   <div class="container pt-3">
     <ul id="dashboard_tabs" class="nav nav-tabs" role="tablist">
       <li class="nav-item">
-        <a class="nav-link active" id="mydslist-tab" data-toggle="tab" href="#mydslist" 
+        <a class="nav-link active" id="mydslist-tab" data-link="mydslist" data-toggle="tab"
           role="tab" aria-controls="dslist" aria-selected="true">Datasets</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" id="collectionlist-tab" data-toggle="tab" href="#collectionlist" 
-          role="tab" aria-controls="collectionlist" aria-selected="false">Collections</a>
+        <a class="nav-link" id="collectionlist-tab" href="{% url 'data-collections' %}"
+           role="tab" aria-controls="collectionlist" aria-selected="false">Collections</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" id="arealist-tab" data-toggle="tab" href="#arealist" 
-          role="tab" aria-controls="arealist" aria-selected="false">Study Areas</a>
+        <a class="nav-link" id="arealist-tab" href="{% url 'data-areas' %}"
+           role="tab" aria-controls="arealist" aria-selected="false">Study Areas</a>
       </li>
       {% if beta_or_better %}
       <li class="nav-item">
-        <a class="nav-link" id="resourcelist-tab" data-toggle="tab" href="#resourcelist" 
-          role="tab" aria-controls="resourcelist" aria-selected="false">Teaching resources</a>
+        <a class="nav-link" id="resourcelist-tab" href="{% url 'data-resources' %}"
+           role="tab" aria-controls="resourcelist" aria-selected="false">Teaching resources</a>
       </li>
       {% endif %}
     </ul>
     <div class="tab-content">
       <div id="mydslist" class="tab-pane fade show active" role="tabpanel" aria-labelledby="mydslist-tab">
         <p class="mb-1 ml-1"><a href="{% url 'datasets:dataset-create' %}" class="">
-          {% fontawesome_icon 'plus-square' color='#336699' %} add new</a></p>
+          {% fontawesome_icon 'plus-square' color='#336699' %} add new</a> </p>
         <div id="dataset_list" class="mt-1">
           <div class="list-box">
             <h6 class="my-2">My Datasets</h6>
@@ -125,107 +125,6 @@
           </div>
         </div>
       </div>
-      <div id="collectionlist" class="tab-pane fade " role="tabpanel" aria-labelledby="collectionlist-tab">
-        <p class="mb-1 ml-1"><a href="{% url 'collection:collection-create' %}" class="">
-          {% fontawesome_icon 'plus-square' color='#336699' %} create new</a>
-        {% if beta_or_better %}
-          <span class="ml-3"><a href="{% url 'collection:collection-create-beta' %}" class="">new (beta)</a></span>
-        {% endif %}</p>
-          <div id="collection_list" class="mt-1 ml-0">
-          <div class="list-box">
-            <table id="table_collections"class="table table-striped">
-              <thead class="small">
-                  <th>id</th>
-                  <th>title</th>
-                  <th></th>
-                  <th>created</th>
-              </thead>
-              <tbody>
-                {% for c in collections %}
-                  <tr class="place-row">
-                    <td>{{ c.id }}</td>
-                    <td>{{ c.title }}</td>
-                    <td>
-                      <a href="{% url 'collection:collection-detail' c.id %}">view</a>&nbsp;
-                        {% if beta_or_better %} |
-                            <a href="{% url 'collection:collection-detail-beta' c.id %}"><i> (beta)</i></a>
-	                          <span class="mx-2">||</span>
-                        {% endif %}
-                      <a href="{% url 'collection:collection-update' c.id %}">edit</a>
-                        {% if beta_or_better %} |
-                            <a href="{% url 'collection:collection-update-beta' c.id %}"><i> (beta)</i></a>
-                        {% endif %}
-                    </td>
-                    <td>{{ c.create_date }}</td>
-                  </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-      <div id="arealist" class="tab-pane fade " role="tabpanel" aria-labelledby="arealist-tab">
-        <p class="mb-1 ml-1"><a href="{% url 'areas:area-create' %}" class="">
-          {% fontawesome_icon 'plus-square' color='#336699' %} create new</a></p>
-        <div id="area_list" class="mt-1 ml-0">
-          <div class="list-box">
-            <table id="table_areas" class="table table-striped">
-              <thead class="small">
-                  <th>id</th>
-                  <th>title <i class="fa fa-sort ml-1" data-id=1 ref=asc></i></th>
-                  <th>type <i class="fa fa-sort ml-1" data-id=2 ref=asc></i></th>
-                  <th>ccodes</th>
-              </thead>
-              <tbody>
-                {% for a in area_list %}
-                  <tr class="place-row">
-                    <td>{{ a.id }}</td>
-                    <td><a href="{% url 'areas:area-update' a.id %}">{{ a.title }}</a></td>
-                    <td>{{ a.type }}</td>
-                    <td>{{ a.ccodes }}</td>
-                  </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-      {% if beta_or_better %}
-      <div id="resourcelist" class="tab-pane fade " role="tabpanel" aria-labelledby="resourcelist-tab">
-        <p class="mb-1 ml-2"><a href="{% url 'resources:resource-create' %}" class="">
-          {% fontawesome_icon 'plus-square' color='#336699' %} create new</a></p>
-        <div id="resource_list" class="mt-1 ml-0">
-          <div class="list-box">
-            <table class="table table-striped small">
-              <thead>
-                  <th>id</th>
-                  <th>title</th>
-                  <th>authors</th>
-                  <th class="w-50">description</th>
-                  <th>created</th>
-                  <th>published</th>
-                  <th>owner</th>
-              </thead>
-              <tbody>
-                {% for r in resources %}
-                  <tr class="place-row">
-                    <td>{{ r.id }}</b>
-                    <br/><mark>{{ r.status }}</mark>
-                    </td>
-                    <td>{{r.title }}&nbsp;<a href="/resources/{{ r.id }}/detail">view</a></td>
-                    <td>{{ r.authors }}</td>
-                    <td class="w-25">{{ r.description }}</td>
-                    <td>{{ r.create_date }}</td>
-                    <td>{{ r.pub_date }}</td>
-                    <td>{{ r.owner }}</td>
-                  </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-      {% endif %}
     </div>
   </div>
   <script>

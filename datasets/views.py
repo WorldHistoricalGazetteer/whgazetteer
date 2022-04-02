@@ -39,8 +39,10 @@ from datasets.forms import HitModelForm, DatasetDetailModelForm, DatasetCreateMo
 from datasets.models import Dataset, Hit, DatasetFile
 from datasets.static.hashes import mimetypes_plus as mthash_plus
 from datasets.static.hashes.parents import ccodes as cchash
+
 # NB these task names ARE in use; they are generated dynamically
 from datasets.tasks import align_wdlocal, align_idx, align_tgn, maxID
+
 from datasets.utils import *
 from elastic.es_utils import makeDoc,deleteFromIndex, replaceInIndex
 from main.choices import AUTHORITY_BASEURI
@@ -156,13 +158,6 @@ def indexMatch(pid, hit_pid=None):
       #count_fail += 1
       pass
       #sys.exit(sys.exc_info())
-
-
-
-#def isOwner(user):
-  #task = get_object_or_404(TaskResult, task_id=tid)
-  #kwargs=json.loads(task.task_kwargs.replace("'",'"'))
-  #return kwargs['owner'] == user.id
 
 
 """
@@ -681,8 +676,6 @@ def ds_recon(request, pk):
               'karl@kgeographer.org')
 
       return redirect('/datasets/'+str(ds.id)+'/reconcile')
-
-
 
 """
 # task_delete(tid, scope)
@@ -1780,8 +1773,77 @@ def ds_insert_tsv(request, pk):
           "total_links":total_links})
 
 """
+DataListsView()
+Returns lists for various data types
+"""
+class DataListsView(LoginRequiredMixin, ListView):
+  login_url = '/accounts/login/'
+  redirect_field_name = 'redirect_to'
+
+  # templates per list type
+  template_d = 'datasets/data_datasets.html'
+  template_c = 'datasets/data_collections.html'
+  template_a = 'datasets/data_areas.html'
+  template_r = 'datasets/data_resources.html'
+
+  # which template to use?
+  def get_template_names(self, *args, **kwargs):
+    print('self.request.path', self.request.path)
+    if self.request.path == reverse('data-datasets'):
+      return [self.template_d]
+    elif self.request.path == reverse('data-collections'):
+      return [self.template_c]
+    elif self.request.path == reverse('data-areas'):
+      return [self.template_a]
+    else:
+      return [self.template_r]
+
+  def get_queryset(self, **kwargs):
+    me = self.request.user
+    whgteam = me.is_superuser or 'whg_team' in [g.name for g in me.groups.all()]
+    teaching = 'teaching' in [g.name for g in me.groups.all()]
+    print('DataListsView() whgteam:' + str(whgteam) + ', teaching: ' + str(teaching))
+
+    if self.request.path == reverse('data-datasets'):
+      list = Dataset.objects.all().order_by('-create_date') if whgteam \
+        else Dataset.objects.filter( Q(owner=me) ).order_by('-id')
+      print('list:', list)
+      return list
+    elif self.request.path == reverse('data-collections'):
+      list = Collection.objects.all().order_by('create_date') if whgteam \
+        else Collection.objects.filter(owner=me).order_by('create_date')
+      print('list:', list)
+      return list
+    elif self.request.path == reverse('data-areas'):
+      print('areas...whgteam?', whgteam)
+      study_areas = ['ccodes', 'copied', 'drawn']       # only user study areas
+      list = Area.objects.all().filter(type__in=study_areas).order_by('created') if whgteam else \
+        Area.objects.all().filter(type__in=study_areas, owner=me).order_by('created')
+      print('list:', list)
+      return list
+    else:
+      print('resources...whgteam?', whgteam)
+      list = Resource.objects.all().order_by('create_date') if whgteam or teaching \
+        else Resource.objects.all().filter(owner=me).order_by('created')
+      print('list:', list)
+      return list
+
+  def get_context_data(self, *args, **kwargs):
+    me = self.request.user
+    context = super(DataListsView, self).get_context_data(*args, **kwargs)
+    print('in get_context', me)
+
+    context['viewable'] = ['uploaded', 'inserted', 'reconciling', 'review_hits', 'reviewed', 'review_whg', 'indexed']
+    context['beta_or_better'] = True if me.groups.filter(name__in=['beta', 'admins', 'whg_team']).exists() \
+      else False
+    # TODO: assign users to 'teacher' group
+    context['teacher'] = True if self.request.user.groups.filter(name__in=['teacher']).exists() else False
+    return context
+
+"""
+TODO: DEPRECATE
 DashboardView()
-list user datasets, study areas, collections
+list user datasets, study areas, collections, teaching resources
 """
 class DashboardView(LoginRequiredMixin, ListView):
   login_url = '/accounts/login/'
@@ -1791,16 +1853,11 @@ class DashboardView(LoginRequiredMixin, ListView):
   template_name = 'datasets/dashboard.html'
 
   def get_queryset(self):
-    # groups.filter(name__in=['beta', 'admins', 'whg_team']).exists()
     me = self.request.user
     if me.is_superuser or 'whg_team' in [g.name for g in me.groups.all()]:
       print('in get_queryset() if',me)
-      #return Dataset.objects.all().order_by('ds_status','-core','-id')
       return Dataset.objects.all().order_by('-create_date')
     else:
-      #dsids = [g.dataset_id_id for g in me.ds_collab.all()]
-      #return Dataset.objects.filter(id__in=dsids)
-      #return Dataset.objects.filter( Q(id__in=myprojects(me)) | Q(owner=me) | Q(id__lt=3)).order_by('-id')
       return Dataset.objects.filter( Q(owner=me) ).order_by('-id')
 
 
@@ -1810,7 +1867,7 @@ class DashboardView(LoginRequiredMixin, ListView):
     print('in get_context',me)
 
     types_ok=['ccodes','copied','drawn']
-    # returns owned and shared datasets (rw)
+    # returns co-owned and shared datasets (rw)
     context['shared_list'] = Dataset.objects.filter(id__in=myprojects(me)).order_by('-create_date')
 
     context['public_list'] = Dataset.objects.filter(public=True).order_by('-numrows')
@@ -1832,12 +1889,11 @@ class DashboardView(LoginRequiredMixin, ListView):
     context['viewable'] = ['uploaded','inserted','reconciling','review_hits','reviewed','review_whg','indexed']
 
     context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins', 'whg_team']).exists() else False
-    # TODO: assigning users to 'teacher' group
+    # TODO: assign users to 'teacher' group
     context['teacher'] = True if self.request.user.groups.filter(name__in=['teacher']).exists() else False
     # TODO: user place collections
     #print('DashboardView context:', context)
     return context
-
 
 """
 PublicListView()
@@ -1874,8 +1930,6 @@ def failed_upload_notification(user, tempfn):
         ', \n\nWe see your recent upload failed -- very sorry about that! We will look into why and get back to you within a day.\n\nRegards,\nThe WHG Team\n\n\n['+tempfn+']'
     emailer(subj, msg, 'whgazetteer@gmail.com',
             [user.email, 'karl@kgeographer.org'])
-
-
 
 """
 DatasetCreateView()
@@ -2128,7 +2182,6 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
     return context
 
 
-
 class DatasetPublicView(DetailView):
   template_name = 'datasets/ds_meta.html'
 
@@ -2192,7 +2245,6 @@ class DatasetDeleteView(DeleteView):
     self.delete_complete()
     return reverse('dashboard')
 
-
 #
 # fetch places in specified dataset
 #
@@ -2252,11 +2304,11 @@ class DatasetSummaryView(LoginRequiredMixin, UpdateView):
 
   template_name = 'datasets/ds_summary.html'
 
-  def get_success_url(self):
-    id_ = self.kwargs.get("id")
-    user = self.request.user
-    #print('messages:', messages.get_messages(self.kwargs))
-    return '/datasets/'+str(id_)+'/summary'
+  # def get_success_url(self):
+  #   id_ = self.kwargs.get("id")
+  #   user = self.request.user
+  #   print('kwargs', self.kwargs)
+  #   return '/datasets/'+str(id_)+'/summary'
 
   # Dataset has been edited, form submitted
   def form_valid(self, form):
@@ -2370,12 +2422,11 @@ class DatasetPlacesView(DetailView):
   model = Dataset
   template_name = 'datasets/ds_places.html'
 
-
-  def get_success_url(self):
-    id_ = self.kwargs.get("id")
-    user = self.request.user
-    print('messages:', messages.get_messages(self.kwargs))
-    return '/datasets/'+str(id_)+'/places'
+  # def get_success_url(self):
+  #   id_ = self.kwargs.get("id")
+  #   user = self.request.user
+  #   print('messages:', messages.get_messages(self.kwargs))
+  #   return '/datasets/'+str(id_)+'/places'
 
   def get_object(self):
     id_ = self.kwargs.get("id")
@@ -2449,25 +2500,6 @@ class DatasetBrowseView(LoginRequiredMixin, DetailView):
     return context
 
 
-#"""public view"""
-#class DatasetDetailView(DetailView):
-  #template_name = 'datasets/ds_detail.html'
-
-  #model = Dataset
-
-  #def get_context_data(self, **kwargs):
-    #context = super(DatasetDetailView, self).get_context_data(**kwargs)
-    #id_ = self.kwargs.get("pk")
-    #print('self, kwargs',self, self.kwargs)
-
-    ##qs = Dataset.objects.filter(collection_id = id_)
-    ###coll_set = [cd.dataset for cd in qs]
-
-
-    ##context['ds_list'] = [cd.dataset for cd in qs]
-    #context['links_added'] = 1
-    #context['geoms_added'] = 1
-    #return context
 #
 class DatasetReconcileView(LoginRequiredMixin, DetailView):
   login_url = '/accounts/login/'
