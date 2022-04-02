@@ -1499,7 +1499,7 @@ def ds_insert_lpf(request, pk):
   else:
     print('insert_ skipped, already in')
     messages.add_message(request, messages.INFO, 'data is uploaded, but problem displaying dataset page')
-    return redirect('/dashboard')
+    return redirect('/mydata')
 
 
 """
@@ -1766,7 +1766,7 @@ def ds_insert_tsv(request, pk):
   else:
     print('insert_tsv skipped, already in')
     messages.add_message(request, messages.INFO, 'data is uploaded, but problem displaying dataset page')
-    return redirect('/dashboard')
+    return redirect('/mydata')
 
   return({"numrows":countrows,
           "numlinked":countlinked,
@@ -1817,8 +1817,8 @@ class DataListsView(LoginRequiredMixin, ListView):
     elif self.request.path == reverse('data-areas'):
       print('areas...whgteam?', whgteam)
       study_areas = ['ccodes', 'copied', 'drawn']       # only user study areas
-      list = Area.objects.all().filter(type__in=study_areas).order_by('created') if whgteam else \
-        Area.objects.all().filter(type__in=study_areas, owner=me).order_by('created')
+      list = Area.objects.all().filter(type__in=study_areas).order_by('-id') if whgteam else \
+        Area.objects.all().filter(type__in=study_areas, owner=me).order_by('-id')
       print('list:', list)
       return list
     else:
@@ -2243,7 +2243,7 @@ class DatasetDeleteView(DeleteView):
 
   def get_success_url(self):
     self.delete_complete()
-    return reverse('dashboard')
+    return reverse('data-datasets')
 
 #
 # fetch places in specified dataset

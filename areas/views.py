@@ -21,7 +21,7 @@ class AreaCreateView(CreateView):
         if redirect != '':
             self.success_url = redirect
         else:
-            self.success_url = '/dashboard'
+            self.success_url = '/mystudyareas'
         return kwargs
     
     def form_invalid(self,form):
@@ -55,7 +55,7 @@ class AreaDeleteView(DeleteView):
         return get_object_or_404(Area, id=id_)
 
     def get_success_url(self):
-        return reverse('dashboard')
+        return reverse('data-areas')
 
 #
 # detail & update
@@ -63,7 +63,7 @@ class AreaDeleteView(DeleteView):
 class AreaUpdateView(UpdateView):
     form_class = AreaModelForm
     template_name = 'areas/area_create.html'
-    success_url = '/dashboard'
+    success_url = '/mystudyareas'
 
     def get_object(self):
         id_ = self.kwargs.get("id")

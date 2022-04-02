@@ -43,7 +43,7 @@ class Collection(models.Model):
 
   def get_absolute_url(self):
     #return reverse('datasets:dashboard', kwargs={'id': self.id})
-    return reverse('datasets:dashboard')
+    return reverse('data-collections')
 
   @property
   def places_ds(self):

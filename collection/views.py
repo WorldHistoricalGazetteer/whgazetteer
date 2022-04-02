@@ -131,7 +131,7 @@ class CollectionCreateView(LoginRequiredMixin, CreateView):
       note = 'created collection id: '+str(self.object.id),
       user_id = self.request.user.id
     )
-    return reverse('dashboard')
+    return reverse('data-collections')
   #
   def get_form_kwargs(self, **kwargs):
     kwargs = super(CollectionCreateView, self).get_form_kwargs()
@@ -158,7 +158,7 @@ class CollectionCreateView(LoginRequiredMixin, CreateView):
 
     datasets = []
     # owners create collections from their datasets
-    ds_select = [obj for obj in Dataset.objects.all() if user in obj.owners or
+    ds_select = [obj for obj in Dataset.objects.all().order_by('title') if user in obj.owners or
       user in obj.collaborators or user.is_superuser]
 
     context['action'] = 'create'
@@ -349,7 +349,7 @@ def annotate(request, *args, **kwargs):
 class CollectionUpdateBetaView(UpdateView):
   form_class = CollectionModelForm
   template_name = 'collection/collection_create_beta.html'
-  success_url = '/dashboard'
+  success_url = '/mycollections'
 
   def get_object(self):
     id_ = self.kwargs.get("id")
@@ -404,7 +404,7 @@ class CollectionUpdateBetaView(UpdateView):
 class CollectionUpdateView(UpdateView):
   form_class = CollectionModelForm
   template_name = 'collection/collection_create.html'
-  success_url = '/dashboard'
+  success_url = '/mycollections'
 
   def get_object(self):
     id_ = self.kwargs.get("id")
@@ -453,4 +453,4 @@ class CollectionDeleteView(DeleteView):
     return get_object_or_404(Collection, id=id_)
 
   def get_success_url(self):
-    return reverse('dashboard')
+    return reverse('data-collections')

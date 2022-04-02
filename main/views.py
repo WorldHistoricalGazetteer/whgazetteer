@@ -166,7 +166,7 @@ class CommentCreateView(BSModalCreateView):
         if redirect is not None:
             self.success_url = redirect
         else:
-            self.success_url = '/dashboard'
+            self.success_url = '/mydata'
         # print('cleaned_data in get_form_kwargs()',form.cleaned_data)
         if redirect:
             if 'initial' in kwargs.keys():

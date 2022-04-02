@@ -57,7 +57,7 @@ class ResourceCreateView(LoginRequiredMixin, FormView):
         logtype='create',
         user_id=self.request.user.id
     )
-    return reverse('dashboard')
+    return reverse('data-resources')
   #
   def get_form_kwargs(self, **kwargs):
     kwargs = super(ResourceCreateView, self).get_form_kwargs()
@@ -106,7 +106,7 @@ class ResourceCreateView(LoginRequiredMixin, FormView):
 
     form.save(commit=True)
 
-    return redirect('/dashboard')
+    return redirect('/myresources')
 
     # create 
 
@@ -161,7 +161,7 @@ class ResourceCreateView(LoginRequiredMixin, FormView):
 class ResourceUpdateView(UpdateView):
   form_class = ResourceModelForm
   template_name = 'resources/resource_create.html'
-  success_url = '/dashboard'
+  success_url = '/myresources'
 
   def get_object(self):
     id_ = self.kwargs.get("id")
@@ -226,4 +226,4 @@ class ResourceDeleteView(DeleteView):
     return get_object_or_404(Resource, id=id_)
 
   def get_success_url(self):
-    return reverse('dashboard')
+    return reverse('myresources')
