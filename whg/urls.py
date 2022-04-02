@@ -31,8 +31,7 @@ urlpatterns = [
 
     path('dashboard/', DashboardView.as_view(), name='dashboard'),
 
-    ## "DASHBOARD" LIST VIEWS
-    # kwarg "type" = ['datasets', 'collections', 'areas', 'resources']
+    ## DATA "DASHBOARD" LIST VIEWS
     path('mydata/', DataListsView.as_view(), name='data-datasets'),
     path('mycollections/', DataListsView.as_view(), name='data-collections'),
     path('mystudyareas/', DataListsView.as_view(), name='data-areas'),

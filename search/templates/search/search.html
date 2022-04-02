@@ -1452,13 +1452,11 @@
   function sugLister(sug, doctype, scope) {
     <!--console.log(sug)-->
     if (doctype=='place') {
-      <!--linkcount = sug['ds'] ? '' : ' ('+(parseInt(sug['linkcount']) +1)+')'-->
+      //linkcount = sug['ds'] ? '' : ' ('+(parseInt(sug['linkcount']) +1)+')'
       linkcount = parseInt(sug['linkcount']) +1
       attestations = sug['ds'] ? '' : ' <i>' + linkcount + (linkcount>1?' linked attestations</i>; ':' attestation</i>; ')
-      <!--console.log('variants',sug['variants'])-->
       vcount = sug['variants'].length
       variants = vcount > 0 ? sug['variants'].sort().slice(0,6).join('; ') : ''
-      <!--console.log(sug['variants'])-->
       if (scope=='search'){
         ccodes = sug['ccodes'] != '' ? ' '+sug['ccodes']+' ' : ''
         types = sug['types'].join('; ')
@@ -1494,9 +1492,9 @@
         item = '<div class="sug_row sug-item">'+sug['name']+' '+variants+'</div>'
       }
     } else if (doctype=='trace') {
-      <!--console.log('sug',sug)-->
+      // console.log('sug',sug)-->
       let pid = sug['place_id'] != null ? sug['place_id'] : ""
-      <!-- make object array from idToFeature{}-->
+      // make object array from idToFeature{}-->
       if(pid in idToFeature){
         whgid=idToFeature[pid].feature.properties['whg_id']
       } else {
@@ -1504,14 +1502,10 @@
         whgid = foo.length>0 ? foo[0].id : 'none'
       }
       item = '<tr class="search-row trace-item" data-id="'+whgid+'">'+
-      '<td><a class="trace-link" href="#" data-id="'+whgid+'"><b>'+sug.title+'</a>'+(whgid=='none'?' (<sr>no geometry yet</sr>)':'')+'</td>'+'<td>'+parseRels(sug.relations)+'</td><td>'+
+      '<td><a class="trace-link" href="#" data-id="'+whgid+'"><b>'+sug.title+'</a>'+
+		      (whgid=='none'?' (<sr>no geometry yet</sr>)':'')+'</td>'+'<td>'+parseRels(sug.relations)+'</td><td>'+
       (whgid=='none'?'&mdash;':'<i class="fa fa-globe"></i>')
       +'</td></tr>'
-
-      <!--if("depiction" in sug){-->
-        <!--item += '<div class="trace_detail"><img class="trace-img" src="'+sug['depiction']+'"/></div>'-->
-      <!--}-->
-      <!--item += '</div></div>' // trace-item, container-->
     }
     return item
   }

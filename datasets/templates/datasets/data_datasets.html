@@ -47,7 +47,18 @@
     <div class="tab-content">
       <div id="mydslist" class="tab-pane fade show active" role="tabpanel" aria-labelledby="mydslist-tab">
         <p class="mb-1 ml-1"><a href="{% url 'datasets:dataset-create' %}" class="">
-          {% fontawesome_icon 'plus-square' color='#336699' %} add new</a> </p>
+          {% fontawesome_icon 'plus-square' color='#336699' %} add new</a>
+          <span class="ml-2 float-right small">
+	          <select id="status_select">
+	          <option value="all">Filter status</option>
+	          <option value="uploaded">Uploaded</option>
+	          <option value="reconciling">Reconciling</option>
+{#	          <option value="wd_complete">Wikidata complete</option>#}
+	          <option value="accessioning">Accessioning</option>
+	          <option value="indexed">Indexed</option>
+            </select>
+          </span>
+        </p>
         <div id="dataset_list" class="mt-1">
           <div class="list-box">
             <h6 class="my-2">My Datasets</h6>
@@ -141,6 +152,29 @@
 
     })
 
+    $("#status_select").change(function() {
+        let term = $(this).val()
+		    console.log('select term', term)
+        statusFilter(term)
+    })
+
+    statusFilter = function(term) {
+        sel = $('#status_select').find(":selected").val()
+		    if (sel != 'all'){
+					$("#status_select option")[0].innerHTML='Show all'
+		    }
+        results = $("#table_ds tbody tr")
+        for (i = 0; i < results.length; i++) {
+            ds_status = results[i].cells[6].innerHTML
+				    {#console.log('ds_status', ds_status)#}
+            if (term == ds_status || term == 'all') {
+                results[i].style.display = "";
+            } else if (term != ds_status) {
+                results[i].style.display = "none";
+            }
+        }
+    }
+    // TODO: this sort algo is crude and slow
     $(".fa-sort").on('click',function(){
       table_id =$(this).closest('table').prop('id') // parent table id
       console.log('table_id',table_id)
@@ -149,7 +183,6 @@
 
     sortTable = function(col_idx, order, table_id) {
       var table, rows, switching, i, x, y, shouldSwitch;
-      <!--table = document.getElementById("table_ds");-->
       table = document.getElementById(table_id);
       switching = true;
       /* Make a loop that will continue until
@@ -161,18 +194,13 @@
         /* Loop through all table rows (except the
         first, which contains table headers): */
         for (i = 1; i < (rows.length - 1); i++) {
-          // Start by saying there should be no switching:
+          // no switching to start
           shouldSwitch = false;
-          /* Get the two elements you want to compare,
+          /* Get the two elements to compare,
           one from current row and one from the next: */
-          <!--x = rows[i].getElementsByTagName("TD")[0];-->
-          <!--y = rows[i + 1].getElementsByTagName("TD")[0];-->
           x = rows[i].getElementsByTagName("TD")[col_idx];
           y = rows[i + 1].getElementsByTagName("TD")[col_idx];
           // Check if the two rows should switch place:
-          <!--console.log('value', x.innerHTML.toLowerCase())-->
-          <!--console.log('value', x.innerText.toLowerCase())-->
-          <!--if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {-->
           if (order == 'asc'){
             if (x.innerText.toLowerCase() > y.innerText.toLowerCase()) {
               // If so, mark as a switch and break the loop:
