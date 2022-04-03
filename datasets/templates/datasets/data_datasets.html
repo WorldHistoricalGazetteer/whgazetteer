@@ -1,4 +1,5 @@
-<!-- datasets/dashboard.html -->
+{#  datasets/data_datasets.html #}
+
 {% extends "main/base.html" %}
 {% block title %}<title>WHG::Dashboard</title>{% endblock %}
 {% block extra_head %}
@@ -140,6 +141,7 @@
       </div>
     </div>
   </div>
+
   <script>
     $(function(){
       $("[rel='tooltip']").tooltip();
@@ -151,7 +153,6 @@
         $('.nav-tabs a[href="#' + tab+ '"]').tab('show');
         history.pushState("", document.title, window.location.pathname);
       }
-
     })
 
     $("#status_select").change(function() {
@@ -176,13 +177,14 @@
             }
         }
     }
-    // TODO: this sort algo is crude and slow
+
     $(".fa-sort").on('click',function(){
       table_id =$(this).closest('table').prop('id') // parent table id
       console.log('table_id',table_id)
       sortTable($(this).data('id'), $(this).attr('ref'), table_id)
     })
 
+    // TODO: this sort function is crude and slow
     sortTable = function(col_idx, order, table_id) {
       var table, rows, switching, i, x, y, shouldSwitch;
       table = document.getElementById(table_id);

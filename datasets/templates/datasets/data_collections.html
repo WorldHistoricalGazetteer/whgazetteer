@@ -1,4 +1,5 @@
-<!-- datasets/dashboard.html -->
+{#  datasets/data_collections.html #}
+
 {% extends "main/base.html" %}
 {% block title %}<title>WHG::Dashboard</title>{% endblock %}
 {% block extra_head %}
@@ -22,30 +23,6 @@
   {% load fontawesome %}
   {% load mathfilters %}
   {% load dataset_extras %}
-
-{#  <ul id="dataset_tabs" class="nav nav-tabs" role="tablist">#}
-{#      <span class="ds-title ml-1 mr-3">{{ ds.title }}</span>#}
-{#      <li class="nav-item">#}
-{#          <a class="nav-link" id="summary-tab" href="{% url 'datasets:ds_summary' id=ds.id %}" role="tab" #}
-{#             aria-controls="summary" aria-selected="false">Metadata</a>#}
-{#      </li>#}
-{#      <li class="nav-item">#}
-{#          <a class="nav-link active" id="browse-tab" data-toggle="tab" href="#" role="tab" #}
-{#             aria-controls="browse" aria-selected="false">Browse</a>#}
-{#      </li>#}
-{#      <li class="nav-item">#}
-{#          <a class="nav-link" id="reconciliation-tab" href="{% url 'datasets:ds_reconcile' id=ds.id %}" role="tab" #}
-{#             aria-controls="reconciliation" aria-selected="false">Linking</a>#}
-{#      </li>#}
-{#      <li class="nav-item">#}
-{#          <a class="nav-link" id="sharing-tab" href="{% url 'datasets:ds_collab' id=ds.id %}" role="tab" #}
-{#             aria-controls="sharing" aria-selected="false">Collaborators</a>#}
-{#      </li>#}
-{#      <li class="nav-item">#}
-{#          <a class="nav-link" id="log-tab" href="{% url 'datasets:ds_log' id=ds.id %}" role="tab" #}
-{#             aria-controls="log" aria-selected="true">Log & Comments</a>#}
-{#      </li>#}
-{#  </ul>  #}
 
   <div class="container pt-3">
     <ul id="dashboard_tabs" class="nav nav-tabs" role="tablist">
@@ -111,6 +88,7 @@
       </div>
     </div>
   </div>
+
   <script>
     $(function(){
       $("[rel='tooltip']").tooltip();
@@ -149,14 +127,9 @@
           shouldSwitch = false;
           /* Get the two elements you want to compare,
           one from current row and one from the next: */
-          <!--x = rows[i].getElementsByTagName("TD")[0];-->
-          <!--y = rows[i + 1].getElementsByTagName("TD")[0];-->
           x = rows[i].getElementsByTagName("TD")[col_idx];
           y = rows[i + 1].getElementsByTagName("TD")[col_idx];
           // Check if the two rows should switch place:
-          <!--console.log('value', x.innerHTML.toLowerCase())-->
-          <!--console.log('value', x.innerText.toLowerCase())-->
-          <!--if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {-->
           if (order == 'asc'){
             if (x.innerText.toLowerCase() > y.innerText.toLowerCase()) {
               // If so, mark as a switch and break the loop:

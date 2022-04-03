@@ -1,4 +1,5 @@
-<!-- datasets/dashboard.html -->
+{#  datasets/data_areas.html #}
+
 {% extends "main/base.html" %}
 {% block title %}<title>WHG::Dashboard</title>{% endblock %}
 {% block extra_head %}
@@ -95,7 +96,6 @@
 
     sortTable = function(col_idx, order, table_id) {
       var table, rows, switching, i, x, y, shouldSwitch;
-      <!--table = document.getElementById("table_ds");-->
       table = document.getElementById(table_id);
       switching = true;
       /* Make a loop that will continue until
@@ -111,14 +111,9 @@
           shouldSwitch = false;
           /* Get the two elements you want to compare,
           one from current row and one from the next: */
-          <!--x = rows[i].getElementsByTagName("TD")[0];-->
-          <!--y = rows[i + 1].getElementsByTagName("TD")[0];-->
           x = rows[i].getElementsByTagName("TD")[col_idx];
           y = rows[i + 1].getElementsByTagName("TD")[col_idx];
           // Check if the two rows should switch place:
-          <!--console.log('value', x.innerHTML.toLowerCase())-->
-          <!--console.log('value', x.innerText.toLowerCase())-->
-          <!--if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {-->
           if (order == 'asc'){
             if (x.innerText.toLowerCase() > y.innerText.toLowerCase()) {
               // If so, mark as a switch and break the loop:
