@@ -48,6 +48,7 @@
       <div id="mydslist" class="tab-pane fade show active" role="tabpanel" aria-labelledby="mydslist-tab">
         <p class="mb-1 ml-1"><a href="{% url 'datasets:dataset-create' %}" class="">
           {% fontawesome_icon 'plus-square' color='#336699' %} add new</a>
+	        {% if whgteam %}
           <span class="ml-2 float-right small">
 	          <select id="status_select">
 	          <option value="all">Filter status</option>
@@ -58,6 +59,7 @@
 	          <option value="indexed">Indexed</option>
             </select>
           </span>
+	        {% endif %}
         </p>
         <div id="dataset_list" class="mt-1">
           <div class="list-box">

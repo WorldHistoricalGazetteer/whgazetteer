@@ -1836,6 +1836,7 @@ class DataListsView(LoginRequiredMixin, ListView):
     context['viewable'] = ['uploaded', 'inserted', 'reconciling', 'review_hits', 'reviewed', 'review_whg', 'indexed']
     context['beta_or_better'] = True if me.groups.filter(name__in=['beta', 'admins', 'whg_team']).exists() \
       else False
+    context['whgteam'] = True if me.groups.filter(name__in=['admins', 'whg_team']).exists() else False
     # TODO: assign users to 'teacher' group
     context['teacher'] = True if self.request.user.groups.filter(name__in=['teacher']).exists() else False
     return context
