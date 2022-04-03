@@ -1168,7 +1168,7 @@ def align_wdlocal(pk, **kwargs):
           task_id = task_id,
           query_pass = hit['pass'],
           # prepare for consistent display in review screen
-          json = normalize(hit['_source'],'wdlocal',language),
+          json = normalize(hit['_source'], 'wdlocal', language),
           src_id = qobj['src_id'],
           score = hit['_score'],
           #geom = loc,

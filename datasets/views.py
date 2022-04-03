@@ -174,13 +174,7 @@ def review(request, pk, tid, passnum):
   authname = 'Wikidata' if auth == 'wd' else 'Getty TGN' \
     if auth == 'tgn' else 'WHG'
   kwargs=json.loads(task.task_kwargs.replace("'",'"'))
-  #review_request = request.GET.__dict__ if request.method == 'GET' \
-    #else request.POST.__dict__
-  #print('review() request', review_request)
   beta = 'beta' in list(request.user.groups.all().values_list('name',flat=True))
-
-  # try addin place list table in left column
-  #table = PlaceTable(ds.places.all())
 
   # filter place records by passnum for those with unreviewed hits on this task
   # if request passnum is complete, increment
@@ -312,6 +306,7 @@ def review(request, pk, tid, passnum):
       for x in range(len(hits)):
         hit = hits[x]['id']
         # is this hit a match?
+        print('json from match', hits[x]['json'])
         if hits[x]['match'] not in ['none']:
           matches += 1
           # if wd or tgn, write place_geom, place_link record(s) now

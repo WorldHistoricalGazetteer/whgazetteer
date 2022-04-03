@@ -762,7 +762,7 @@
   *** render_area() ***
   fetch and display an area (region/area/country)
 */
-  ,render_area = function(areaid) {
+  render_area = function(areaid) {
     $.ajax({
       url: '/api/area/'+areaid
       }).done(function(data){
@@ -1158,7 +1158,7 @@
     years = [Number($("#input_start").val()),Number($("#input_end").val())]
     y = years.find(element => element != 0 );
     {#ds_select = $("#select_ds_search").val()#}
-    dsid = ds_select!="0" ? parseInt(ds_select) : null
+    {#dsid = ds_select!="0" ? parseInt(ds_select) : null#}
     $.get("/search/db",{
       name: $('#input_box').val(),
       name_contains: null, // if 'contains checked
@@ -1387,10 +1387,10 @@
       pointToLayer: function (feature, latlng) {
         count_features +=1;
         // if feature has src key, it's from a database search
-        identifier = feature.src?feature.properties.pid:feature.properties.whgid;
-        if(feature.type=='Point'){
+        identifier = feature.src ? feature.properties.pid : feature.properties.whgid;
+				// all geometry added from wikidata matches is MultiPoint...for some reason
+        if(feature.type.indexOf('Point') > -1){
           marker = L.circleMarker(latlng, styles.marker_default)
-          <!--.bindPopup(feature.properties.title+' (whg id:<a href="/places/'+identifier+'/portal">+identifier+</a>)');-->
           // add to array for selection
           idToFeature[identifier] = marker
           return marker
