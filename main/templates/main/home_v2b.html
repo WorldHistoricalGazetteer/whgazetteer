@@ -148,7 +148,6 @@ $(function(){
     re=/(.png|.jpg|.jpeg|.gif|.tif)/g
     ext=url.match(re)[0]
     url = url.replace(ext,'_full'+ext)
-    console.log('img url', url, txt)
     $("#header_text").html(txt)
     $('.imagepreview').attr('src', url);
     $('#image_modal').modal('show');   

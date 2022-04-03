@@ -414,7 +414,8 @@
       return this.id !='' && this.text != '"null"';
     });
     for (i=0;i<gelems.length;i++){
-      let t_geom = cleanJson(gelems[i].text)
+      t_geom = cleanJson(gelems[i].text)
+	    console.dir('gelem text', gelems[i])
       geoms.push(t_geom)
     }
 
