@@ -44,7 +44,7 @@
 	    <div id="coll_form" class="form-box mt-2 coll-col col-sm-4" style="height: 85%;">
 	      <form id="collection_form" method="POST" action="#" enctype="multipart/form-data">
 	      {% csrf_token %}
-	      <input type="hidden" name="owner" value='{{ user.id }}'></input>
+	      <input type="hidden" name="owner" value='{{ user.id }}' />
 		      <p>Title &#x02733;<span class="closer float-right"><<</span><br/>{{ form.title }}</p>
 	      {% if action == 'update' %}
 	        <p>Create date: {{ create_date }}</p>
@@ -183,7 +183,6 @@
 						<p>Relation: <span class="float-right"><input type="text" name="relation" value="waypoint" placeholder="relation"/></span></p>
 			      <input type="submit" value="Save" />
 			    </div>
-		      </form>
 
 {#			    <p>When {% fontawesome_icon 'question-circle' color='#336699' %}<br/>#}
 {#				    <input type="text" placeholder="start date"  style="width:80px"/>#}
@@ -234,8 +233,9 @@
   }
   // builds link for external placetype record
   function url_exttype(type) {
+      console.dir(type)
     link = ' <a href="#" class="exttab" data-id='+type.identifier+
-      '>('+type.label+' {% fontawesome_icon "external-link" color="#336699" %})</a>'
+      '>('+type.label.label+' {% fontawesome_icon "external-link" color="#336699" %})</a>'
     return link
   }
 	// extent of timespan list
@@ -447,7 +447,6 @@
 		{#$("coll-place").click(function(){#}
 			{#e.preventDefault()#}
 		{#	console.log('fetch r/o place record', $(this).data('id'))#}
-		{#})#}
 
     $(".nav-link").click(function(){
 			  var tab = $(this).data('id')
@@ -498,7 +497,6 @@
   {#    e.preventDefault()#}
   {#    $("#msg").html('<h6>Collections must contain at least 2 datasets!</h6>').addClass('strong-red').show()#}
   {#  }#}
-  {#})#}
 
   function listDataset(d) {
     console.log('listing this:', d.title)
