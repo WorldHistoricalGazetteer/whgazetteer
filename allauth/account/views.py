@@ -138,7 +138,7 @@ class LoginView(
 ):
     form_class = LoginForm
     template_name = "account/login." + app_settings.TEMPLATE_EXTENSION
-    success_url = "/data-datasets" # KG mod
+    success_url = "/mydata"
     redirect_field_name = "next"
 
     @sensitive_post_parameters_m

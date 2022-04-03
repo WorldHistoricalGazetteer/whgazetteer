@@ -104,23 +104,12 @@ class Dataset(models.Model):
   def bounds(self):
     # pg_geoms=PlaceGeom.objects.values_list('geom',flat=True).filter(place__dataset=self.label)
     dsgeoms = PlaceGeom.objects.filter(place__dataset=self.label)
-    # dsgeoms = PlaceGeom.objects.filter(place__dataset='croniken')
-    # env = dsgeoms.aggregate(Collect('geom'))['geom__collect'].envelope
     extent = dsgeoms.aggregate(Extent('geom'))['geom__extent']
     b=box(extent[0],extent[1],extent[2],extent[3])
 
-    # pg_geoms=PlaceGeom.objects.values_list('geom',flat=Trenvue).filter(place__dataset=self.label)
-    # pg_geoms=PlaceGeom.objects.values_list('geom',flat=True).filter(place__dataset='croniken')
-    # gc=GeometryCollection(tuple(pg_geoms))
-    # gc=GeometryCollection(tuple(gc2))
-    # feat= {"type":"Feature","properties":{"id":1101},"geometry":json.loads(json.dumps(mapping(b)))}
-    # feat= {"type":"Feature","properties":{"id":self.id},"geometry":json.loads(json.dumps(mapping(b)))}
-    # print('feat, count',feat, dsgeoms.count())
     feat = Feature(geometry=mapping(b),properties={"id":self.id,"label":self.label,"title":self.title})
     # print(feat)
     return feat if dsgeoms.count() > 0 else None
-    # return json.loads(env.geojson) if dsgeoms.count() > 0 else None
-    # return json.loads(gc.envelope.geojson) if pg_geoms.count() > 0 else None
 
   @property
   def file(self):

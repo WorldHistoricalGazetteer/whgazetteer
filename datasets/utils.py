@@ -876,15 +876,8 @@ def hully(g_list):
 
   GeometryCollection._create_collection = new_create_collection
 
-
   """end hotfix """
-  # from django.contrib.gis.geos import GeometryCollection, GEOSGeometry, MultiPoint
 
-  # maybe mixed bag
-  #types = list(set([g['type'] for g in g_list]))
-
-      
-  # make a hull from any geometry
   # 1 point -> Point; 2 points -> LineString; >2 -> Polygon
   try:
     mp = [GEOSGeometry(json.dumps(g)) for g in g_list]

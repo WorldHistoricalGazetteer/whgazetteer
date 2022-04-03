@@ -319,7 +319,8 @@ def review(request, pk, tid, passnum):
                and tid not in place_post.geoms.all().values_list('task_id',flat=True):
               gtype = hits[x]['json']['geoms'][0]['type']
               coords = hits[x]['json']['geoms'][0]['coordinates']
-              gobj = json.dumps({"type":gtype,"coordinates":coords})
+              # TODO: build real postgis geom values
+              gobj = GEOSGeometry(json.dumps({"type":gtype,"coordinates":coords}))
               PlaceGeom.objects.create(
                 place = place_post,
                 task_id = tid,
@@ -419,13 +420,6 @@ called from dataset_detail>reconciliation tab
 accepts all pass0 wikidata matches, writes geoms and links
 
 """
-# TEST SETUP
-#from django.shortcuts import get_object_or_404
-#from datasets.models import Dataset, Hit
-#from places.models import Place, PlaceGeom, PlaceLink
-#from django_celery_results.models import TaskResult
-#import simplejson as json
-#tid = '4770d8a4-cd43-4e08-8542-fa57418d5f2e' # wdlocal, ds=985, croniken_og_json
 def write_wd_pass0(request, tid):
   task = get_object_or_404(TaskResult,task_id=tid)
   kwargs=json.loads(task.task_kwargs.replace("'",'"'))
@@ -439,6 +433,7 @@ def write_wd_pass0(request, tid):
     query_pass='pass0',
     reviewed=False
   )
+  print('writing '+str(len(hits))+' pass0 matched records for', ds.label)
   for h in hits:
     hasGeom = 'geoms' in h.json and len(h.json['geoms']) > 0
     hasLinks = 'links' in h.json and len(h.json['links']) > 0
@@ -451,18 +446,24 @@ def write_wd_pass0(request, tid):
     if hasGeom and kwargs['aug_geom'] == 'on' \
        and tid not in place.geoms.all().values_list('task_id',flat=True):
       for g in h.json['geoms']:
-        #place.geoms.all().values_list('task_id',flat=True)
-        geom = PlaceGeom.objects.create(
+        pg = PlaceGeom.objects.create(
           place = place,
           task_id = tid,
           src_id = place.src_id,
+          geom=GEOSGeometry(json.dumps({"type": g['type'], "coordinates": g['coordinates']})),
           jsonb = {
             "type":g['type'],
             "citation":{"id":auth+':'+h.authrecord_id,"label":authname},
             "coordinates":g['coordinates']
           }
         )
-      #print('created place_geom instance:', geom)
+      print('created place_geom instance in write_wd_pass0', pg)
+      # TODO: build real postgis geom values
+      # with connection.cursor() as cursor:
+      #   cursor.execute("UPDATE place_geoms SET geom = st_geomfromgeojson(jsonb) where ", [self.baz])
+      #   cursor.execute("SELECT foo FROM bar WHERE baz = %s", [self.baz])
+      #   row = cursor.fetchone()
+
     # LINKS
     link_counter = 0
     # add PlaceLink record for wikidata hit if not already there
