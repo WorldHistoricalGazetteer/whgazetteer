@@ -108,7 +108,7 @@ class CollectionCreateBetaView(LoginRequiredMixin, CreateView):
     datasets = []
     places = []
     # owners create collections from their datasets
-    ds_select = [obj for obj in Dataset.objects.all() if user in obj.owners or
+    ds_select = [obj for obj in Dataset.objects.all().order_by('title') if user in obj.owners or
       user in obj.collaborators or user.is_superuser]
 
     context['action'] = 'create'
@@ -385,7 +385,7 @@ class CollectionUpdateBetaView(UpdateView):
     # coll_places = list(chain(*qs_list))
 
     # populates dropdown
-    ds_select = [obj for obj in Dataset.objects.all() if user in obj.owners or user.is_superuser]
+    ds_select = [obj for obj in Dataset.objects.all().order_by('title') if user in obj.owners or user.is_superuser]
 
     context['action'] = 'update'
     context['ds_select'] = ds_select
@@ -435,7 +435,7 @@ class CollectionUpdateView(UpdateView):
     datasets = self.object.datasets.all()
 
     # populates dropdown
-    ds_select = [obj for obj in Dataset.objects.all() if user in obj.owners or user.is_superuser]
+    ds_select = [obj for obj in Dataset.objects.all().order_by('title') if user in obj.owners or user.is_superuser]
 
     context['action'] = 'update'
     context['ds_select'] = ds_select

@@ -60,7 +60,6 @@ class Collection(models.Model):
   @property
   def ds_list(self):
     dsc = [{"id":d.id, "label":d.label, "title":d.title} for d in self.datasets.all()]
-    # dsc = list(self.datasets.values_list('label', flat=True))
     dsp = [{"id":p.dataset.id, "label":p.dataset.label, "title":p.dataset.title} for p in self.places.all()]
     return list({ item['id'] : item for item in dsp+dsc}.values())
 
