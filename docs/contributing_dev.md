@@ -1,4 +1,4 @@
-## Contributing to World Historical Gazetteer: Software and Data Development
+## Contributing to World Historical Gazetteer: software and data development
 
 World Historical Gazetteer (WHG) is an open-source software  project and welcomes collaborators in its ongoing development. Technical Director Karl Grossner (@kgeographer) has been sole developer until now but he and the WHG project team are now actively inviting contributions in both **software development** and **data development**. If any of the following is of interest, please do not hesitate to get in touch  (karl@kgeographer.org)!
 
@@ -18,7 +18,7 @@ _Styling_. We are open to refreshing the appearance of the app.
 _Localization and internationalization_. WHG data and user base is global (visitors from 107 countries), but the site is entirely in English. WHG place records include name variants in many languages, but this variety is not explicit in the interface.
 
 
-####Elasticsearch
+#### Elasticsearch
 
 WHG maintains three indexes:
 - a "union index" where data contributions are linked by user actions;
@@ -27,7 +27,7 @@ WHG maintains three indexes:
 
 Python code is used to perform reconciliation of incoming records against all three, and to search the first. The algorithms for finding potential matches in all three could be improved.
 
-###Data development
+### Data development
 Contributors to WHG must upload data in [Linked Places format](https://github.com/LinkedPasts/linked-places-format) and its simpler "cousin" [LP-TSV](https://github.com/LinkedPasts/linked-places-format/blob/master/tsv_0.4.md). Contributors hold their project data in a variety formats, including  spreadsheets, relational databases, shapefiles, and RDF/XML, and data varies considerably in complexity. In each case, a transformation must be made from the contributor's format and structure to one of the Linked Places formats.
 
 This transformation can be relatively straightforward (copy/pasting columns from a spreadsheet into an LP-TSV template) or quite difficult. It almost always involves some information loss, which is natural and not a prohibitive factor, but decisions are not always simple. 
