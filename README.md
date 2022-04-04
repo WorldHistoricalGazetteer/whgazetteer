@@ -4,6 +4,10 @@ This is the repository for the World Historical Gazetteer (WHG) web platform and
 
 WHG is aggregating attestations of historical place references contributed by researchers. Version 1 was launched on 27 July 2020 and [Version 2](http://whgazetteer.org) released on 4 August 2021, with generous support from the Royal Dutch Academy's [KNAW Humanities Cluster](https://www.knaw.nl/en). Incremental updates are ongoing. There is substantial information about the purposes and uses of WHG in its [Site Guide](http://whgazetteer.org/tutorials/guide/) and [Tutorials](http://whgazetteer.org/tutorials/). Announcements and discussion about the project are available on [our blog website](http://blog.whgazetteer.org) and via our Twitter feed, [@WHGazetteer](https://twitter.com/WHGazetteer).
 
+### Contributing to software and data development
+
+WHG is an open-source project. Please see [this document](docs/contributing_dev.md) for an overview of how to participate in the several aspects of WHG development. Specific tasks in our long TODO queue will be added as GitHub issues soon. 
+
 ### Change log
 
 #### v2.0.1 (1 Feb 2022)
@@ -83,11 +87,12 @@ WHG is aggregating attestations of historical place references contributed by re
 - Django 2.2.10
 - Python 3.7.4
 - PostgreSQL 10
-- Elasticsearch 6.6
+- Elasticsearch 7.17
 - Nginx 1.14.0
 - Gunicorn 19.9.0
 - Celery 4.2.1
 - Bootstrap 4
 - JQuery 3.3.1
+- MapLibre.js
 - Leaflet 1.3.1
 
