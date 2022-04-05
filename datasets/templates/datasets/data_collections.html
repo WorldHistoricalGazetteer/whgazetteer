@@ -13,6 +13,11 @@
       background-color: #fdf5e6;}
     #dataset_list, #area_list {position:relative !important; height:75vh !important }
     .list-box {overflow-y:auto  !important; max-height:100%;}
+    #coll_types p {font-size: 0.9rem;}
+    #coll_types h5 {padding:2px; font-size:1rem;}
+    #dscoll_blurb h5 {background-color: #e6eefd !important;}
+    #placecoll_blurb h5 {background-color: #e6fdf5 !important;}
+    #regioncoll_blurb h5 {background-color: #f5e6fd !important;}
   </style>
 {% endblock mycss %}
 {% endblock%}
@@ -46,13 +51,40 @@
       {% endif %}
     </ul>
     <div class="tab-content">
-      <div id="collectionlist" class="tab-pane fade show active" role="tabpanel"
-           aria-labelledby="collectionlist-tab">
+      <div id="collectionlist" class="tab-pane fade show active" role="tabpanel" aria-labelledby="collectionlist-tab">
+        <div id="coll_types" class="row mt-2">
+	        <div id="dscoll_blurb" class="col-sm-4">
+		        <h5><b>Dataset</b> collections
+			        <span class="smaller float-right pr-2 pt-1">
+				        <a href="{% url 'collection:collection-create' %}">{% fontawesome_icon 'plus-square' color='#336699' %} new</a>
+			        </span>
+		        </h5>
+		        <p>A <b>Dataset Collection</b> is a set of public datasets&mdash;typically from multiple contributors, and linked to define a "focus domain" within World Historical Gazetteer. As with all collections, searches, downloads and API calls can be constrained to include only places in the collection's member datasets.</p>
+	        </div>
+	        <div id="placecoll_blurb" class="col-sm-4">
+		        <h5><b>Place</b> collections
+			        <span class="smaller float-right pr-2 pt-1">
+				        <a href="{% url 'collection:collection-create-beta' %}">{% fontawesome_icon 'plus-square' color='#336699' %} new</a>
+			        </span>
+		        </h5>
+		        <p>A <b>Place Collection</b> is an authored data publication. It can include all places from one or more datasets, as well as individual places from any public dataset discovered in WHG searches. Its place records can be annotated with information pertaining to its membership in the collection. <a href="">more...</a>
+			        {% comment %}<p>Metadata for collection itself will include an abstract, and can include any number of links to relevant web resources.</p>{% endcomment %}
+	        </div>
+	        <div id="regioncoll_blurb" class="col-sm-4">
+		        <h5><b>Region</b> collections
+			        <span class="smaller float-right pr-2 pt-1">
+				        <a href="">{% fontawesome_icon 'plus-square' color='#336699' %} new</a>
+			        </span>
+		        </h5>
+		        <p><b>Region collections</b> are composed of all public WHG place records that lie within any area defined in the WHG system. This includes "stock" regions, e.g. from the United Nations, or modern countries, public region features contributed by users, or one of a user's own <a href="">study areas</a> created on the fly. </p>
+	        </div>
+        </div>
+        {% comment %}
         <p class="mb-1 ml-1"><a href="{% url 'collection:collection-create' %}" class="">
           {% fontawesome_icon 'plus-square' color='#336699' %} create new</a>
         {% if beta_or_better %}
           <span class="ml-3"><a href="{% url 'collection:collection-create-beta' %}" class="">new (beta)</a></span>
-        {% endif %}</p>
+        {% endif %}</p>{% endcomment %}
           <div id="collection_list" class="mt-1 ml-0">
           <div class="list-box">
             <table id="table_collections"class="table table-striped">
@@ -60,6 +92,7 @@
                   <th>id</th>
                   <th>title</th>
                   <th></th>
+                  <th>type</th>
                   <th>created</th>
               </thead>
               <tbody>
@@ -78,6 +111,7 @@
                             <a href="{% url 'collection:collection-update-beta' c.id %}"><i> (beta)</i></a>
                         {% endif %}
                     </td>
+                    <td>{{ c.type }}</td>
                     <td>{{ c.create_date }}</td>
                   </tr>
                 {% endfor %}

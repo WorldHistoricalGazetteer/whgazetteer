@@ -5,6 +5,7 @@ from django.contrib.postgres.fields import ArrayField #,JSONField
 from django.core.validators import URLValidator
 from django.urls import reverse
 from datasets.models import Dataset
+from main.choices import COLLECTIONTYPES
 from places.models import Place
 from tinymce.models import HTMLField
 
@@ -28,6 +29,9 @@ class Collection(models.Model):
   creator = models.CharField(null=True, blank=True, max_length=500)
   contact = models.CharField(null=True, blank=True, max_length=500)
   webpage = models.URLField(null=True, blank=True)
+
+  # new field, 20220405
+  type = models.CharField(choices=COLLECTIONTYPES, max_length=12, default='dataset')
 
   image_file = models.FileField(upload_to=coll_image_path, blank=True, null=True)
   create_date = models.DateTimeField(null=True, auto_now_add=True)

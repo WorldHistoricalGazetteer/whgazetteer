@@ -11,14 +11,14 @@ Experienced Django developers could help with refining existing features and bui
 
 #### Front end
 
-_Mapping_. There are six maps in the WHG app. Most have been converted from Leaflet to MapLibre for faster rendering of large datasets, but a couple remain to be converted. Symbology is inconsistent between the maps, and many aspects of their appearance and functionality can be improved. Several new features have been mentioned or are on the drawing board. This work is almost 100% javascript, with ajax calls to internal APIs.
+_Mapping_. There are six maps in the WHG app. Most have been converted from Leaflet to MapLibre.js for faster rendering of large datasets, but a few remain to be converted. Symbology is inconsistent between the maps, and many aspects of their appearance and functionality can be improved. Several new features have been mentioned or are on the drawing board. This work is almost 100% javascript, with ajax calls to internal APIs.
 
 _Styling_. We are open to refreshing the appearance of the app.
 
 _Localization and internationalization_. WHG data and user base is global (visitors from 107 countries), but the site is entirely in English. WHG place records include name variants in many languages, but this variety is not explicit in the interface.
 
 
-####Elasticsearch
+#### Elasticsearch
 
 WHG maintains three indexes:
 - a "union index" where data contributions are linked by user actions;
@@ -27,7 +27,7 @@ WHG maintains three indexes:
 
 Python code is used to perform reconciliation of incoming records against all three, and to search the first. The algorithms for finding potential matches in all three could be improved.
 
-###Data development
+### Data development
 Contributors to WHG must upload data in [Linked Places format](https://github.com/LinkedPasts/linked-places-format) and its simpler "cousin" [LP-TSV](https://github.com/LinkedPasts/linked-places-format/blob/master/tsv_0.4.md). Contributors hold their project data in a variety formats, including  spreadsheets, relational databases, shapefiles, and RDF/XML, and data varies considerably in complexity. In each case, a transformation must be made from the contributor's format and structure to one of the Linked Places formats.
 
 This transformation can be relatively straightforward (copy/pasting columns from a spreadsheet into an LP-TSV template) or quite difficult. It almost always involves some information loss, which is natural and not a prohibitive factor, but decisions are not always simple. 

@@ -27,6 +27,12 @@ AUTHORITY_BASEURI = {
     'align_whg':'whg:'
 }
 
+COLLECTIONTYPES = [
+    ('dataset','Dataset collection'),
+    ('place','Place collection'),
+    ('region','Region collection')
+]
+
 COMMENT_TAGS = [
     ('misplaced','Record misplaced in this set'),
     ('typo','Typo'),
