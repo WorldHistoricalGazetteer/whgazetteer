@@ -18,6 +18,9 @@
     #dscoll_blurb h5 {background-color: #e6eefd !important;}
     #placecoll_blurb h5 {background-color: #e6fdf5 !important;}
     #regioncoll_blurb h5 {background-color: #f5e6fd !important;}
+    .dataset {background-color: #e6eefd}
+    .place {background-color: #e6fdf5}
+    .region {background-color: #f5e6fd}
   </style>
 {% endblock mycss %}
 {% endblock%}
@@ -59,7 +62,7 @@
 				        <a href="{% url 'collection:collection-create' %}">{% fontawesome_icon 'plus-square' color='#336699' %} new</a>
 			        </span>
 		        </h5>
-		        <p>A <b>Dataset Collection</b> is a set of public datasets&mdash;typically from multiple contributors, and linked to define a "focus domain" within World Historical Gazetteer. As with all collections, searches, downloads and API calls can be constrained to include only places in the collection's member datasets.</p>
+		        <p>A <b>Dataset Collection</b> is a set of public datasets, typically from multiple contributors and linked to define a "focus domain" within World Historical Gazetteer. As with all collections, searches, downloads and API calls can be constrained to include only places in the collection's member datasets.</p>
 	        </div>
 	        <div id="placecoll_blurb" class="col-sm-4">
 		        <h5><b>Place</b> collections
@@ -67,16 +70,16 @@
 				        <a href="{% url 'collection:collection-create-beta' %}">{% fontawesome_icon 'plus-square' color='#336699' %} new</a>
 			        </span>
 		        </h5>
-		        <p>A <b>Place Collection</b> is an authored data publication. It can include all places from one or more datasets, as well as individual places from any public dataset discovered in WHG searches. Its place records can be annotated with information pertaining to its membership in the collection. <a href="">more...</a>
+		        <p>A <b>Place Collection</b> is an authored data publication. It can include all places from one or more public dataset, as well as individual places discovered in WHG searches. Its place records can be annotated with information pertaining to its membership in the collection. <a href="">more...</a>
 			        {% comment %}<p>Metadata for collection itself will include an abstract, and can include any number of links to relevant web resources.</p>{% endcomment %}
 	        </div>
 	        <div id="regioncoll_blurb" class="col-sm-4">
-		        <h5><b>Region</b> collections
-			        <span class="smaller float-right pr-2 pt-1">
+		        <h5><span class="text-muted font-italic"><b>Region</b> collections (coming soon)</span>
+			        {% comment %}<span class="smaller float-right pr-2 pt-1">
 				        <a href="">{% fontawesome_icon 'plus-square' color='#336699' %} new</a>
-			        </span>
+			        </span>{% endcomment %}
 		        </h5>
-		        <p><b>Region collections</b> are composed of all public WHG place records that lie within any area defined in the WHG system. This includes "stock" regions, e.g. from the United Nations, or modern countries, public region features contributed by users, or one of a user's own <a href="">study areas</a> created on the fly. </p>
+		        <p><b>Region collections</b> are composed of all public WHG place records that lie within any area defined in the WHG system. This includes "stock" regions, e.g. from the United Nations, or modern countries, public region features contributed by users, or one of a user's own <a href="#" data-html="true" onClick='return false;' title="Can be created on the Study Areas tab of this page or in the course of starting a reconciliation task." rel="tooltip" class="ttip">study areas</a> created on the fly.</p>
 	        </div>
         </div>
         {% comment %}
@@ -90,28 +93,31 @@
             <table id="table_collections"class="table table-striped">
               <thead class="small">
                   <th>id</th>
+                  <th>type</th>
                   <th>title</th>
                   <th></th>
-                  <th>type</th>
                   <th>created</th>
               </thead>
               <tbody>
                 {% for c in collection_list %}
                   <tr class="place-row">
                     <td>{{ c.id }}</td>
+	                  <td><span class="{{ c.type }} p-1">{{ c.type }}</span></td>
                     <td>{{ c.title }}</td>
                     <td>
-                      <a href="{% url 'collection:collection-detail' c.id %}">view</a>&nbsp;
-                        {% if beta_or_better %} |
-                            <a href="{% url 'collection:collection-detail-beta' c.id %}"><i> (beta)</i></a>
-	                          <span class="mx-2">||</span>
-                        {% endif %}
-                      <a href="{% url 'collection:collection-update' c.id %}">edit</a>
-                        {% if beta_or_better %} |
-                            <a href="{% url 'collection:collection-update-beta' c.id %}"><i> (beta)</i></a>
-                        {% endif %}
+                      {# TODO: you can do better #}
+	                    {% if c.type == 'dataset' %}
+	                    <a href="{% url 'collection:collection-detail' c.id %}">view</a>&nbsp;
+	                    {% elif c.type == 'place' %}
+	                    <a href="{% url 'collection:collection-detail-beta' c.id %}">view</a>&nbsp;
+	                    {% endif %}
+	                    {% if c.type == 'dataset' %}
+	                    <a href="{% url 'collection:collection-update' c.id %}">edit</a>&nbsp;
+	                    {% elif c.type == 'place' %}
+	                    <a href="{% url 'collection:collection-update-beta' c.id %}">edit</a>&nbsp;
+	                    {% endif %}
+                      {# TODO: add regions #}
                     </td>
-                    <td>{{ c.type }}</td>
                     <td>{{ c.create_date }}</td>
                   </tr>
                 {% endfor %}

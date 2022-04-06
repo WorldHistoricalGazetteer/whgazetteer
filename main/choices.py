@@ -34,7 +34,7 @@ COLLECTIONTYPES = [
 ]
 
 COMMENT_TAGS = [
-    ('misplaced','Record misplaced in this set'),
+    ('misplaced','Record does not belong in this set'),
     ('typo','Typo'),
     ('geom_error','Geometry error'),
     ('other','Other'),
