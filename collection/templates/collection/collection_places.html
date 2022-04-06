@@ -36,7 +36,7 @@
           <a class="nav-link" id="summary-tab" data-link="summary" href="{% url 'collection:collection-detail' pk=object.id %}" role="tab">Collection Summary</a>
       </li>
       <li class="nav-item">
-          <a class="nav-link active" id="browse-tab" href="#" role="tab">Browse Data: <sr>{{object.title}}</sr></a>
+          <a class="nav-link active" id="browse-tab" href="#" role="tab">Browse: <sr>{{object.title}}</sr></a>
       </li>
   </ul>
   {{ ds_list|json_script:"ds_list" }}

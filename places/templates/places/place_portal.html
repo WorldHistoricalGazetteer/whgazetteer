@@ -24,7 +24,15 @@
   <script src="{% static 'js/bootstrapx-clickover.js' %}"></script>
   
   <style>
-    #addtocoll {text-align: right;}
+    #addtocoll {text-align: right; position:relative;}
+    #addtocoll_popup {position:absolute;
+	    top:3px; left:3px; width:200px;
+	    background-color: #fff;
+	    border: 1px solid #336699;
+	    z-index: 1000;
+	    box-shadow: 3px 3px #c3c3c3;
+	    border-radius: 10px;
+    }
     .svg-container {
       display: inline-block;
       position: relative;
@@ -52,7 +60,7 @@
     <div class="row pt-1">
       <div id="place_home_l" class="col-sm-6">
 	      <div id="addtocoll" class="hidden">
-		      <span class="small"><a href="#">add checked to collection</a></span>
+		      <span class="small"><a id="addchecked" href="#">add checked to place collection</a></span>
 	      </div>
         {% for rec in payload %}
         <div id="card_{{ rec.place_id }}" class="col-content small mt-1">
@@ -153,6 +161,12 @@
         {% endfor %} <!-- rec in payload-->
       </div> <!-- place_home_l-->
       <div id="place_home_r" class="col-sm-6">
+	      <div id="addtocoll_popup" class="p-2 hidden small">
+		      <ul>
+			      <li>my coll #1</li>
+			      <li>my coll #2</li>
+		      </ul>
+	      </div>
         <div id="place_temporal" class="col-content small">
           <p class="mb-0 allcap-heading">TEMPORAL ATTESTATIONS</p>
           <!--<div id="histogram_sum"></div>-->
@@ -210,14 +224,16 @@
 </div>
 
 <script type="text/javascript">
-
+	$("#addchecked").click(function(){
+      $("#addtocoll_popup").fadeIn()
+	})
 	$(".action:checkbox").click(function(){
 			if($(".action:checkbox:checked").length > 0) {
 				{#$("#addtocoll").removeClass('hidden')#}
 				$("#addtocoll").fadeIn()
 			} else {
         $("#addtocoll").fadeOut()
-        {#$("#addtocoll").addClass('hidden')#}
+        $("#addtocoll_popup").fadeOut()
 			}
 			checked_cards = []
 			$(".action:checkbox:checked").each(function() {

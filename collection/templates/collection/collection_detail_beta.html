@@ -30,10 +30,10 @@
   {% csrf_token %} <!-- for download function -->
   <ul id="collection_tabs" class="nav nav-tabs" role="tablist">
     <li class="nav-item">
-        <a class="nav-link active" id="summary-tab" data-link="summary" href="" role="tab">Collection Summary (B)</a>
+        <a class="nav-link active" id="summary-tab" data-link="summary" href="" role="tab">Collection Summary</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link" id="browse-tab" href="{% url 'collection:collection-places-beta' id=object.id %}" role="tab">Browse Data (B)</a>
+        <a class="nav-link" id="browse-tab" href="{% url 'collection:collection-places-beta' id=object.id %}" role="tab">Browse</a>
     </li>
   </ul>
   <!--<div class="d-flex tab-content">-->
