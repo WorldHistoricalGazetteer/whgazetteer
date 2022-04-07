@@ -10,6 +10,9 @@ from . import views
 app_name='collection'
 
 urlpatterns = [
+    # create new empty on the fly, returns new id in json
+    path('flash_create/', views.flash_collection_create, name="collection-create-flash"),
+    path('add_places/', views.add_places, name="collection-add-places"),
 
     # create handles create and update
     path('create/', views.CollectionCreateView.as_view(), name='collection-create'),

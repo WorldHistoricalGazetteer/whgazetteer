@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.http import JsonResponse,HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.views.generic import DetailView
@@ -7,6 +8,7 @@ from datetime import datetime
 from elasticsearch7 import Elasticsearch
 import itertools, re
 
+from collection.models import Collection
 from datasets.models import Dataset
 from places.models import Place
 from places.utils import attribListFromSet
@@ -45,13 +47,13 @@ def defer_review(request, pid, auth, last):
 class PlacePortalView(DetailView):
   template_name = 'places/place_portal.html'
 
-  # //
+  #
   # given index id (whg_id) returned by typeahead/suggest, 
   # get its db record (a parent);
   # build array of place_ids (parent + children);
   # iterate those to build payload;
   # create add'l context values from set
-  # //
+  #
 
   def get_object(self):
     id_ = self.kwargs.get("id")
@@ -83,7 +85,9 @@ class PlacePortalView(DetailView):
                          'retry_on_timeout': True}])
     id_ = self.kwargs.get("id")
     pid = self.kwargs.get("pid")
+    me = self.request.user
     place = get_object_or_404(Place, id=pid)
+    context['collections'] = Collection.objects.filter(owner=me, type='place')
     context['whg_id'] = id_
     context['payload'] = [] # parent and children if any
     context['traces'] = [] # 

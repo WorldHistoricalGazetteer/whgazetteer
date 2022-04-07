@@ -29,7 +29,7 @@
 	    top:3px; left:3px; width:200px;
 	    background-color: #fff;
 	    border: 1px solid #336699;
-	    z-index: 1000;
+	    z-index: 2000;
 	    box-shadow: 3px 3px #c3c3c3;
 	    border-radius: 10px;
     }
@@ -162,10 +162,22 @@
       </div> <!-- place_home_l-->
       <div id="place_home_r" class="col-sm-6">
 	      <div id="addtocoll_popup" class="p-2 hidden small">
-		      <ul>
-			      <li>my coll #1</li>
-			      <li>my coll #2</li>
+	        <div style="position:relative;">
+		        <div class="closer" style="position:absolute; top:-6px; right:-2px">X</div>
+	        </div>
+		      <ul id="my_collections" class="no-bullets">
+						{% for c in collections %}
+							<li><a class="a_addtocoll" href="#" ref="{{ c.id }}">{{ c.title }}</a></li>
+			      {% endfor %}
 		      </ul>
+	        <hr/>
+		      <p class="mb-0 ital">
+			      <a id="create_coll_link" href="#">{% fontawesome_icon 'plus-square' color='#336699' %} create new</a>
+		      </p>
+	        <p id="title_form" class="small hidden">
+	          <input id="title_input" type="text" placeholder="Collection title" width="20"/>
+		        <button id="b_create_coll" type="button">create</button>
+	        </p>
 	      </div>
         <div id="place_temporal" class="col-content small">
           <p class="mb-0 allcap-heading">TEMPORAL ATTESTATIONS</p>
@@ -224,6 +236,64 @@
 </div>
 
 <script type="text/javascript">
+	function add_to_collection(coll, pids){
+      var formData = new FormData()
+			formData.append('collection', coll)
+			formData.append('place_list', pids)
+			formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+			$.ajax({
+		      type: 'POST',
+		      enctype: 'multipart/form-data',
+		      url: '/collections/add_places/',
+		      processData: false,
+		      contentType: false,
+		      cache: false,
+		      data: formData,
+		      success:function(response){
+			      console.log('result:', response)
+		      }
+			})
+			// TODO: close popup, uncheck boxes, hide addchecked link
+
+	}
+	$(".closer").click(function(){
+			$("#addtocoll_popup").hide()
+	})
+	$(".a_addtocoll").click(function(){
+			coll = $(this).attr('ref')
+			pids = checked_cards
+			add_to_collection(coll, pids)
+			console.log('pids to coll', pids, coll)
+	})
+	$("#b_create_coll").click(function(){
+			let title = $("#title_input").val()
+			if(title != ''){
+        // create new place collection, return id
+				var formData = new FormData()
+				formData.append('title', title )
+				formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+		    $.ajax({
+		      type: 'POST',
+		      enctype: 'multipart/form-data',
+		      url: '/collections/flash_create/',
+		      processData: false,
+		      contentType: false,
+		      cache: false,
+		      data: formData,
+		      success:function(data){
+			      console.dir('new collection', data)
+						$("#my_collections").append('<li><a class="a_addtocoll" href="#" ref='+data.id+'>'+data.title+'</a></li>')
+		      }
+        })
+				$("#title_form").hide()
+			} else {
+					alert( 'Your new collection needs a title!' )
+			}
+	})
+	$("#create_coll_link").click(function(){
+			console.log('open title input')
+			$("#title_form").show()
+	})
 	$("#addchecked").click(function(){
       $("#addtocoll_popup").fadeIn()
 	})

@@ -10,10 +10,38 @@ from django.views.generic import (View, CreateView, UpdateView, DetailView, Dele
 #from datasets.utils import hully
 from .forms import CollectionModelForm
 from .models import *
+from collection.models import Collection
 from main.models import Log
 from places.models import PlaceGeom
 from traces.forms import TraceAnnotationModelForm
 from itertools import chain
+
+""" add list of >=1 places to collection """
+def add_places(request, *args, **kwargs):
+  if request.method == 'POST':
+    print('add_places request', request.POST)
+    coll = Collection.objects.get(id=request.POST['collection'])
+    place_list = [int(i) for i in request.POST['place_list'].split(',')]
+    for p in place_list:
+      coll.places.add(p)
+    return JsonResponse({'result': str(len(place_list))+' places added, we think'}, safe=False)
+
+""" create place collection on the fly
+    return id for adding place(s) to it 
+"""
+def flash_collection_create(request, *args, **kwargs):
+  print('flash_collection_create request', request)
+  print('flash_collection_create kwargs', kwargs)
+  if request.method == 'POST':
+    collobj = Collection.objects.create(
+      owner = request.user,
+      title = 'title',
+      type = 'place',
+      description = 'new collection'
+    )
+    collobj.save()
+    result = {"id": collobj.id, 'title': collobj.title}
+  return JsonResponse(result, safe=False)
 
 """ gl map needs this """
 def fetch_geojson_coll(request, *args, **kwargs):
@@ -215,7 +243,6 @@ class CollectionDetailView(DetailView):
     context['ds_list'] = datasets
     context['bboxes'] = bboxes
     return context
-
 
 """ BETA: browse collection *all* places """
 class CollectionPlacesBetaView(DetailView):

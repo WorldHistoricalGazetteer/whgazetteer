@@ -48,6 +48,7 @@ label {vertical-align:top;}
 .border-red { border:2px dotted red;}
 .checkbox-inline {margin-right:.3rem;}
 .clippy {cursor:pointer;}
+.closer {cursor:pointer; color:#336699;}
 .dashedbox {border:1px dashed #ccc; border-radius:8px; }
 .fa-search, .fa-times {color:#999; }
 /*.half { font-size: .7em; margin-top:.6em;}*/
