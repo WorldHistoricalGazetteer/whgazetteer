@@ -92,10 +92,14 @@ def remove_dataset(request, *args, **kwargs):
 
   return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
-""" BETA: collections from places or datasets """
-class CollectionCreateBetaView(LoginRequiredMixin, CreateView):
+""" PLACE COLLECTIONS """
+""" TODO: refactor to fewer views """
+""" collections from places and/or datasets 
+    uses place_collection_builder.html
+"""
+class PlaceCollectionCreateView(LoginRequiredMixin, CreateView):
   form_class = CollectionModelForm
-  template_name = 'collection/collection_create_beta.html'
+  template_name = 'collection/place_collection_builder.html'
   queryset = Collection.objects.all()
 
   def get_success_url(self):
@@ -107,10 +111,10 @@ class CollectionCreateBetaView(LoginRequiredMixin, CreateView):
       user_id = self.request.user.id
     )
     # return to update page after create
-    return reverse('collection:collection-update-beta', kwargs = {'id':self.object.id})
+    return reverse('collection:place-collection-update', kwargs = {'id':self.object.id})
 
   def get_form_kwargs(self, **kwargs):
-    kwargs = super(CollectionCreateBetaView, self).get_form_kwargs()
+    kwargs = super(PlaceCollectionCreateView, self).get_form_kwargs()
     return kwargs
 
   def form_invalid(self,form):
@@ -130,7 +134,7 @@ class CollectionCreateBetaView(LoginRequiredMixin, CreateView):
   def get_context_data(self, *args, **kwargs):
     user = self.request.user
     print('CollectionCreateBetaView() user', user)
-    context = super(CollectionCreateBetaView, self).get_context_data(*args, **kwargs)
+    context = super(PlaceCollectionCreateView, self).get_context_data(*args, **kwargs)
     context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
 
     datasets = []
@@ -145,64 +149,71 @@ class CollectionCreateBetaView(LoginRequiredMixin, CreateView):
 
     return context
 
-""" v2 default """
-class CollectionCreateView(LoginRequiredMixin, CreateView):
+""" update place collection 
+    uses place_collection_builder.html
+"""
+class PlaceCollectionUpdateView(UpdateView):
   form_class = CollectionModelForm
-  template_name = 'collection/collection_create.html'
-  queryset = Collection.objects.all()
+  template_name = 'collection/place_collection_builder.html'
+  success_url = '/mycollections'
 
-  def get_success_url(self):
-    Log.objects.create(
-      # category, logtype, "timestamp", subtype, note, dataset_id, user_id
-      category = 'collection',
-      logtype = 'create',
-      note = 'created collection id: '+str(self.object.id),
-      user_id = self.request.user.id
-    )
-    return reverse('data-collections')
-  #
-  def get_form_kwargs(self, **kwargs):
-    kwargs = super(CollectionCreateView, self).get_form_kwargs()
-    return kwargs
-
-  def form_invalid(self,form):
-    print('form invalid...',form.errors.as_data())
-    context = {'form': form}
-    return self.render_to_response(context=context)
+  def get_object(self):
+    id_ = self.kwargs.get("id")
+    return get_object_or_404(Collection, id=id_)
 
   def form_valid(self, form):
-    context={}
     if form.is_valid():
-      print('form is valid, cleaned_data',form.cleaned_data)
+      print(form.cleaned_data)
+      obj = form.save(commit=False)
+      obj.save()
+      Log.objects.create(
+        # category, logtype, "timestamp", subtype, note, dataset_id, user_id
+        category = 'collection',
+        logtype = 'update',
+        note = 'collection id: '+ str(obj.id) + ' by '+ self.request.user.username,
+        user_id = self.request.user.id
+      )
     else:
       print('form not valid', form.errors)
-      context['errors'] = form.errors
     return super().form_valid(form)
 
   def get_context_data(self, *args, **kwargs):
+    context = super(PlaceCollectionUpdateView, self).get_context_data(*args, **kwargs)
     user = self.request.user
-    context = super(CollectionCreateView, self).get_context_data(*args, **kwargs)
-    context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
+    _id = self.kwargs.get("id")
+    print('CollectionUpdateBetaView() kwargs', self.kwargs)
 
-    datasets = []
-    # owners create collections from their datasets
-    ds_select = [obj for obj in Dataset.objects.all().order_by('title') if user in obj.owners or
-      user in obj.collaborators or user.is_superuser]
+    datasets = self.object.datasets.all()
 
-    context['action'] = 'create'
+    # COLL: get places from datasets, then collection.places
+    # qs_list = [d.places.all() for d in datasets]
+    # COLL: merge querysets
+    # coll_places = list(chain(*qs_list))
+
+    # populates dropdown
+    ds_select = [obj for obj in Dataset.objects.all().order_by('title') if user in obj.owners or user.is_superuser]
+
+    context['action'] = 'update'
     context['ds_select'] = ds_select
     context['coll_dsset'] = datasets
 
+    # COLL: merged places
+    # context['coll_places'] = coll_places
+    context['coll_places'] = self.object.places_all
+
+    context['create_date'] = self.object.create_date.strftime("%Y-%m-%d")
+    context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
+
     return context
 
-""" BETA: public collection view, contents, bboxes on a map """
-class CollectionDetailBetaView(DetailView):
-  template_name = 'collection/collection_detail_beta.html'
+""" public collection view, contents, bboxes on a map """
+class PlaceCollectionSummaryView(DetailView):
+  template_name = 'collection/place_collection_summary.html'
 
   model = Collection
 
   def get_context_data(self, **kwargs):
-    context = super(CollectionDetailBetaView, self).get_context_data(**kwargs)
+    context = super(PlaceCollectionSummaryView, self).get_context_data(**kwargs)
     id_ = self.kwargs.get("pk")
     print('CollectionDetailView(), kwargs',self, self.kwargs)
 
@@ -219,38 +230,13 @@ class CollectionDetailBetaView(DetailView):
     context['bboxes'] = bboxes
     return context
 
-""" public collection view, datasets, bboxes on a map """
-class CollectionDetailView(DetailView):
-  template_name = 'collection/collection_detail.html'
-
-  model = Collection
-
-  def get_context_data(self, **kwargs):
-    context = super(CollectionDetailView, self).get_context_data(**kwargs)
-    id_ = self.kwargs.get("pk")
-    print('CollectionDetailView(), kwargs',self, self.kwargs)
-
-    datasets = self.object.datasets.all()
-
-    # gather bounding boxes
-    bboxes = [ds.bounds for ds in datasets]
-
-
-    context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
-    context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
-    context['mbtokenwhg'] = settings.MAPBOX_TOKEN_WHG
-
-    context['ds_list'] = datasets
-    context['bboxes'] = bboxes
-    return context
-
-""" BETA: browse collection *all* places """
-class CollectionPlacesBetaView(DetailView):
+""" browse collection *all* places """
+class PlaceCollectionBrowseView(DetailView):
   login_url = '/accounts/login/'
   redirect_field_name = 'redirect_to'
 
   model = Collection
-  template_name = 'collection/collection_places_beta.html'
+  template_name = 'collection/place_collection_browse.html'
 
   def get_success_url(self):
     id_ = self.kwargs.get("id")
@@ -261,7 +247,7 @@ class CollectionPlacesBetaView(DetailView):
     return get_object_or_404(Collection, id=id_)
 
   def get_context_data(self, *args, **kwargs):
-    context = super(CollectionPlacesBetaView, self).get_context_data(*args, **kwargs)
+    context = super(PlaceCollectionBrowseView, self).get_context_data(*args, **kwargs)
     context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
     context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
     context['media_url'] = settings.MEDIA_URL
@@ -289,13 +275,141 @@ class CollectionPlacesBetaView(DetailView):
 
     return context
 
-""" browse collection dataset places """
-class CollectionPlacesView(DetailView):
+
+""" DATASET COLLECTIONS """
+""" datasets only collection 
+    uses ds_collection_builder.html
+"""
+class DatasetCollectionCreateView(LoginRequiredMixin, CreateView):
+  form_class = CollectionModelForm
+  template_name = 'collection/ds_collection_builder.html'
+  queryset = Collection.objects.all()
+
+  def get_success_url(self):
+    Log.objects.create(
+      # category, logtype, "timestamp", subtype, note, dataset_id, user_id
+      category = 'collection',
+      logtype = 'create',
+      note = 'created collection id: '+str(self.object.id),
+      user_id = self.request.user.id
+    )
+    return reverse('data-collections')
+  #
+  def get_form_kwargs(self, **kwargs):
+    kwargs = super(DatasetCollectionCreateView, self).get_form_kwargs()
+    return kwargs
+
+  def form_invalid(self,form):
+    print('form invalid...',form.errors.as_data())
+    context = {'form': form}
+    return self.render_to_response(context=context)
+
+  def form_valid(self, form):
+    context={}
+    if form.is_valid():
+      print('form is valid, cleaned_data',form.cleaned_data)
+    else:
+      print('form not valid', form.errors)
+      context['errors'] = form.errors
+    return super().form_valid(form)
+
+  def get_context_data(self, *args, **kwargs):
+    user = self.request.user
+    context = super(DatasetCollectionCreateView, self).get_context_data(*args, **kwargs)
+    context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
+
+    datasets = []
+    # owners create collections from their datasets
+    ds_select = [obj for obj in Dataset.objects.all().order_by('title') if user in obj.owners or
+      user in obj.collaborators or user.is_superuser]
+
+    context['action'] = 'create'
+    context['ds_select'] = ds_select
+    context['coll_dsset'] = datasets
+
+    return context
+
+""" update dataset collection 
+    uses ds_collection_builder.html
+"""
+class DatasetCollectionUpdateView(UpdateView):
+  form_class = CollectionModelForm
+  template_name = 'collection/ds_collection_builder.html'
+  success_url = '/mycollections'
+
+  def get_object(self):
+    id_ = self.kwargs.get("id")
+    return get_object_or_404(Collection, id=id_)
+
+  def form_valid(self, form):
+    if form.is_valid():
+      print(form.cleaned_data)
+      obj = form.save(commit=False)
+      obj.save()
+      Log.objects.create(
+        # category, logtype, "timestamp", subtype, note, dataset_id, user_id
+        category = 'collection',
+        logtype = 'update',
+        note = 'collection id: '+ str(obj.id) + ' by '+ self.request.user.username,
+        user_id = self.request.user.id
+      )
+    else:
+      print('form not valid', form.errors)
+    return super().form_valid(form)
+
+  def get_context_data(self, *args, **kwargs):
+    context = super(DatasetCollectionUpdateView, self).get_context_data(*args, **kwargs)
+    user = self.request.user
+    _id = self.kwargs.get("id")
+    print('CollectionUpdateView() kwargs', self.kwargs)
+
+    datasets = self.object.datasets.all()
+
+    # populates dropdown
+    ds_select = [obj for obj in Dataset.objects.all().order_by('title') if user in obj.owners or user.is_superuser]
+
+    context['action'] = 'update'
+    context['ds_select'] = ds_select
+    context['coll_dsset'] = datasets
+
+    context['create_date'] = self.object.create_date.strftime("%Y-%m-%d")
+    context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
+    return context
+
+""" public collection view, datasets, bboxes on a map """
+class DatasetCollectionSummaryView(DetailView):
+  template_name = 'collection/ds_collection_summary.html'
+
+  model = Collection
+
+  def get_context_data(self, **kwargs):
+    context = super(DatasetCollectionSummaryView, self).get_context_data(**kwargs)
+    id_ = self.kwargs.get("pk")
+    print('CollectionDetailView(), kwargs',self, self.kwargs)
+
+    datasets = self.object.datasets.all()
+
+    # gather bounding boxes
+    bboxes = [ds.bounds for ds in datasets]
+
+
+    context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
+    context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
+    context['mbtokenwhg'] = settings.MAPBOX_TOKEN_WHG
+
+    context['ds_list'] = datasets
+    context['bboxes'] = bboxes
+    return context
+
+""" browse collection dataset places 
+    same for owner(s) and public
+"""
+class DatasetCollectionBrowseView(DetailView):
   login_url = '/accounts/login/'
   redirect_field_name = 'redirect_to'
 
   model = Collection
-  template_name = 'collection/collection_places.html'
+  template_name = 'collection/ds_collection_browse.html'
 
   def get_success_url(self):
     id_ = self.kwargs.get("id")
@@ -306,13 +420,13 @@ class CollectionPlacesView(DetailView):
     return get_object_or_404(Collection, id=id_)
 
   def get_context_data(self, *args, **kwargs):
-    context = super(CollectionPlacesView, self).get_context_data(*args, **kwargs)
+    context = super(DatasetCollectionBrowseView, self).get_context_data(*args, **kwargs)
     context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
     context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
     context['media_url'] = settings.MEDIA_URL
 
-    print('CollectionPlacesView get_context_data() kwargs:',self.kwargs)
-    print('CollectionPlacesView get_context_data() request.user',self.request.user)
+    print('DatasetCollectionBrowseView get_context_data() kwargs:',self.kwargs)
+    print('DatasetCollectionBrowseView get_context_data() request.user',self.request.user)
     id_ = self.kwargs.get("id")
     # compute bounding boxes
 
@@ -324,9 +438,7 @@ class CollectionPlacesView(DetailView):
 
     placeset = coll.places.all()
     context['places'] = placeset
-    # context['places'] = placeset
     context['ds_list'] = coll.ds_list
-    #context['bboxes'] = bboxes
     context['updates'] = {}
     context['coll'] = coll
     context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False
@@ -364,106 +476,6 @@ def annotate(request, *args, **kwargs):
   #     )
   #   else:
   #     print('trace form not valid', form.errors)
-
-""" BETA: update collection *** function-based view*** """
-class CollectionUpdateBetaView(UpdateView):
-  form_class = CollectionModelForm
-  template_name = 'collection/collection_create_beta.html'
-  success_url = '/mycollections'
-
-  def get_object(self):
-    id_ = self.kwargs.get("id")
-    return get_object_or_404(Collection, id=id_)
-
-  def form_valid(self, form):
-    if form.is_valid():
-      print(form.cleaned_data)
-      obj = form.save(commit=False)
-      obj.save()
-      Log.objects.create(
-        # category, logtype, "timestamp", subtype, note, dataset_id, user_id
-        category = 'collection',
-        logtype = 'update',
-        note = 'collection id: '+ str(obj.id) + ' by '+ self.request.user.username,
-        user_id = self.request.user.id
-      )
-    else:
-      print('form not valid', form.errors)
-    return super().form_valid(form)
-
-  def get_context_data(self, *args, **kwargs):
-    context = super(CollectionUpdateBetaView, self).get_context_data(*args, **kwargs)
-    user = self.request.user
-    _id = self.kwargs.get("id")
-    print('CollectionUpdateBetaView() kwargs', self.kwargs)
-
-    datasets = self.object.datasets.all()
-
-    # COLL: get places from datasets, then collection.places
-    # qs_list = [d.places.all() for d in datasets]
-    # COLL: merge querysets
-    # coll_places = list(chain(*qs_list))
-
-    # populates dropdown
-    ds_select = [obj for obj in Dataset.objects.all().order_by('title') if user in obj.owners or user.is_superuser]
-
-    context['action'] = 'update'
-    context['ds_select'] = ds_select
-    context['coll_dsset'] = datasets
-
-    # COLL: merged places
-    # context['coll_places'] = coll_places
-    context['coll_places'] = self.object.places_all
-
-    context['create_date'] = self.object.create_date.strftime("%Y-%m-%d")
-    context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
-
-    return context
-
-""" update collection """
-class CollectionUpdateView(UpdateView):
-  form_class = CollectionModelForm
-  template_name = 'collection/collection_create.html'
-  success_url = '/mycollections'
-
-  def get_object(self):
-    id_ = self.kwargs.get("id")
-    return get_object_or_404(Collection, id=id_)
-
-  def form_valid(self, form):
-    if form.is_valid():
-      print(form.cleaned_data)
-      obj = form.save(commit=False)
-      obj.save()
-      Log.objects.create(
-        # category, logtype, "timestamp", subtype, note, dataset_id, user_id
-        category = 'collection',
-        logtype = 'update',
-        note = 'collection id: '+ str(obj.id) + ' by '+ self.request.user.username,
-        user_id = self.request.user.id
-      )
-    else:
-      print('form not valid', form.errors)
-    return super().form_valid(form)
-
-  def get_context_data(self, *args, **kwargs):
-    context = super(CollectionUpdateView, self).get_context_data(*args, **kwargs)
-    user = self.request.user
-    _id = self.kwargs.get("id")
-    print('CollectionUpdateView() kwargs', self.kwargs)
-
-    datasets = self.object.datasets.all()
-
-    # populates dropdown
-    ds_select = [obj for obj in Dataset.objects.all().order_by('title') if user in obj.owners or user.is_superuser]
-
-    context['action'] = 'update'
-    context['ds_select'] = ds_select
-    context['coll_dsset'] = datasets
-
-    context['create_date'] = self.object.create_date.strftime("%Y-%m-%d")
-    context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
-    return context
 
 class CollectionDeleteView(DeleteView):
   template_name = 'collection/collection_delete.html'

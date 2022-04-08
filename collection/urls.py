@@ -10,16 +10,22 @@ from . import views
 app_name='collection'
 
 urlpatterns = [
-    # create new empty on the fly, returns new id in json
-    path('flash_create/', views.flash_collection_create, name="collection-create-flash"),
+
     path('add_places/', views.add_places, name="collection-add-places"),
 
-    # create handles create and update
-    path('create/', views.CollectionCreateView.as_view(), name='collection-create'),
-    path('createbeta/', views.CollectionCreateBetaView.as_view(), name='collection-create-beta'),
+    # DATASET collections (datasets only)
+    path('create_ds/', views.DatasetCollectionCreateView.as_view(), name='ds-collection-create'),
+    path('<int:id>/update_ds', views.DatasetCollectionUpdateView.as_view(), name='ds-collection-update'),
+    path('<int:pk>/summary_ds', views.DatasetCollectionSummaryView.as_view(), name='ds-collection-summary'),
+    path('<int:id>/browse_ds', views.DatasetCollectionBrowseView.as_view(), name='ds-collection-browse'),
 
-    path('<int:id>/update', views.CollectionUpdateView.as_view(), name='collection-update'),
-    path('<int:id>/updatebeta', views.CollectionUpdateBetaView.as_view(), name='collection-update-beta'),
+    # PLACE collections (datasets, indiv places, annotations, 'authored')
+    path('create_pl/', views.PlaceCollectionCreateView.as_view(), name='place-collection-create'),
+    path('<int:id>/update_pl', views.PlaceCollectionUpdateView.as_view(), name='place-collection-update'),
+    path('<int:pk>/summary_pl', views.PlaceCollectionSummaryView.as_view(), name='place-collection-summary'),
+    path('<int:id>/browse_pl', views.PlaceCollectionBrowseView.as_view(), name='place-collection-browse'),
+    # new empty place collection on the fly, returns new id in json
+    path('flash_create/', views.flash_collection_create, name="collection-create-flash"),
 
     # function-based to process a trace annotation independent of
     path('<int:id>/annotate', views.annotate, name="collection-annotate"),
@@ -28,14 +34,6 @@ urlpatterns = [
     
     path('list_ds/', views.ListDatasetView.as_view(), name='list-ds'),
     path('remove_ds/<int:coll_id>/<int:ds_id>', views.remove_dataset, name='remove-ds'),
-    
-    # detail is the public summary view
-    path('<int:pk>/detail', views.CollectionDetailView.as_view(), name='collection-detail'),
-    path('<int:pk>/detailbeta', views.CollectionDetailBetaView.as_view(), name='collection-detail-beta'),
-
-    # places is the browse tab
-    path('<int:id>/places', views.CollectionPlacesView.as_view(), name='collection-places'),
-    path('<int:id>/placesbeta', views.CollectionPlacesBetaView.as_view(), name='collection-places-beta'),
 
     path('<int:id>/geojson/', views.fetch_geojson_coll, name="geojson-coll"),
 

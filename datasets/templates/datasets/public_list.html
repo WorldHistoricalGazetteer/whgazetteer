@@ -88,7 +88,7 @@
                 {% for c in coll_list %}
                   <tr class="place-row">
                     <td>{{ c.id }}</td>
-                    <td><a href="{% url 'collection:collection-detail' c.id %}">{{ c.title }}</a></td>
+                    <td><a href="{% url 'collection:ds-collection-summary' c.id %}">{{ c.title }}</a></td>
                     <!--<td>{ c.title }}</td>-->
                     <td>{{ c.create_date }}</td>
                     <td>{{ c.owner }}</td>

@@ -85,6 +85,7 @@ def parsejson(value,key):
 
 @register.filter
 def join(value,delimit):
+    print('join', value, delimit)
     """joins list/array items"""
     if type(value[0]) == int:
         value=map(str,value)

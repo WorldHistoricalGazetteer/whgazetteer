@@ -70,7 +70,7 @@
 			  {% with featured_coll.0.image_file.url as imgc0 %}
 				<div class="">
 				  <p class="mb-0 featured-title">
-            <a href="{% url 'collection:collection-detail' featured_coll.0.id %}">{{ featured_coll.0.title}}</a>
+            <a href="{% url 'collection:ds-collection-summary' featured_coll.0.id %}">{{ featured_coll.0.title}}</a>
           </p>
 					<p class="coll-description">
             <a href="#" class="pop"><img class="thumbnail float-right pl-2" src="{{ imgc0 }}" alt="Detail from <a href='https://www.davidrumsey.com/luna/servlet/s/rp56bh' target='_blank'>'Carte De Hollande Et D&#39;utrecht' (Covens et Mortier, 1750)</a>" height=150 width=150 /></a>
@@ -102,7 +102,7 @@
           <div class="item-right">
             <span class="col-bottom cb-coll">collection</span>
             <p class="my-0 featured-title">
-              <a href="{% url 'collection:collection-detail' featured_coll.1.id %}">{{featured_coll.1.title}}</a>
+              <a href="{% url 'collection:ds-collection-summary' featured_coll.1.id %}">{{featured_coll.1.title}}</a>
             </p>
             <p class="pr-0 coll-description">
               <img class="pl-1 float-right"src="{{ imgc1 }}" />

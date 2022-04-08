@@ -23,7 +23,7 @@
   <!--<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.js'></script>-->
   <script src="{% static 'js/leaflet-mapbox-gl.js' %}"></script>
 
-
+  
 {% endblock %}
 
 {% block title %}<title>Collection::{{ object.title }}</title>{% endblock %}
@@ -33,7 +33,7 @@
   <ul id="dataset_tabs" class="nav nav-tabs" role="tablist">
       <!--<span class="ds-title ml-1 mr-3">{ object.title }}</span>-->
       <li class="nav-item">
-          <a class="nav-link" id="summary-tab" data-link="summary" href="{% url 'collection:collection-detail' pk=object.id %}" role="tab">Collection Summary</a>
+          <a class="nav-link" id="summary-tab" data-link="summary" href="{% url 'collection:place-collection-summary' pk=object.id %}" role="tab">Collection Summary</a>
       </li>
       <li class="nav-item">
           <a class="nav-link active" id="browse-tab" href="#" role="tab">Browse: <sr>{{object.title}}</sr></a>
@@ -101,7 +101,7 @@
           </h5>
         </div>
         <div class="modal-body">
-        </div> <!-- .modal-body -->
+        </div> <!-- .modal-body -->      
         <div class="modal-footer">
           <div id="buttons_pre">
             <button id="btn_cancel" type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Cancel</button>
@@ -126,7 +126,8 @@
     .search( v )
     .draw();
     $("#ds_select").val(localStorage.getItem('filter'))
-  }
+  }    
+
   function clearFilters() {
     // clear
     table
@@ -134,8 +135,8 @@
     .search( '' )
     .draw();
     $("#ds_select").val('-1')
-  }
-
+  }    
+  
   // table events
   // TODO: use datatables methods?
   function setRowEvents(){
@@ -161,7 +162,7 @@
       pid=$(this)[0].cells[0].textContent
       ds_src=table.row(thisy.index()).data().dataset.label
       console.log('clicked row pid', pid, ds_src)
-
+      
       geom = all_feats.find(function(f){return f.properties.pid==pid}).geometry
       coords = geom.coordinates
       console.log('pid, geom, coords', pid, geom, coords)
@@ -172,7 +173,7 @@
       // highlight this row, clear others
       var selected = $(this).hasClass("highlight-row");
       $("#placetable tr").removeClass("highlight-row");
-
+      
       if(!selected)
         $(this).removeClass( "rowhover" );
         $(this).addClass("highlight-row");
@@ -181,8 +182,8 @@
       <!--highlightFeatureGL(pid, coords)-->
       highlightFeatureGL(pid, geom, coords, ds_src)
 
-    })
-
+    }) 
+        
     row = $("#drftable_list table tbody")[0].rows[0]
     pid = parseInt(row.cells[0].textContent)
     // highlight first row, fetch detail, but don't zoomTo() it
@@ -191,6 +192,7 @@
     getPlace(pid, 'row0')
   }
 
+  // dataset list dropdown
   function buildSelect(){
     select = '<label>Datasets: <select name="status" aria-controls="placetable" id="ds_select" class="datatables_length">'+
     '<option value="-1" selected="selected">All</option>'
@@ -201,7 +203,7 @@
     select +='</select></label>'
     return select
   }
-
+  
   $(function(){
     window.ds_list = JSON.parse(document.getElementById('ds_list').textContent);
     source_list = ds_list.map(function(d){ return d.label})
@@ -213,11 +215,11 @@
     tgntask = "{{tgntask}}" == "True"?true:false
     whgtask = "{{whgtask}}" == "True"?true:false
 
-    // start spinners, some collections take time
+    // start spinners, some collections take time    
     startMapSpinner()
     startTableSpinner()
     startDetailSpinner()
-
+    
     window.filter = "{{ filter }}"
     // initialize table
     // task columns are inoperable in this public view
@@ -234,21 +236,21 @@
       ,select: true
       ,order: [[2, 'asc']]
       ,LengthMenu: [10, 25, 50, 100]
-      ,columns:
+      ,columns: 
       [
           {"data": "id"},
           {"data": "src_id"},
           {"data": "title"},
           {"data": "ccodes"},
-          {"title": "geom", "data": "geo"},
+          {"data": "geo", "title": "geom"},
           {"data": "review_wd"},
           {"data": "review_tgn"},
           {"data": "review_whg"},
-          {"data": "revwd", "visible": wdtask?true:false,
+          {"data": "revwd", "visible": wdtask?true:false, 
             "orderable":false},
-          {"data": "revtgn", "visible": tgntask?true:false,
+          {"data": "revtgn", "visible": tgntask?true:false, 
             "orderable":false},
-          {"data": "revwhg", "visible": whgtask?true:false,
+          {"data": "revwhg", "visible": whgtask?true:false, 
             "orderable":false},
           <!--{"data": "dataset.id", "name":"dataset.id", "searchable":true},-->
           {"data": "dataset.label", "name":"dataset.label"}
@@ -267,7 +269,7 @@
       spinner_table.stop()
       setRowEvents();
     })
-
+    
     // help popups
     $(".help-matches").click(function(){
       page=$(this).data('id')
@@ -288,7 +290,7 @@
       show: {effect: "fade",duration: 400 },
       hide: {effect: "fade",duration: 400 }
     });
-  })  //** end onload()
+  })  // onload()
 
   // gl map
   mappy = new maplibregl.Map({
@@ -297,7 +299,7 @@
     center: [9.2, 33],
     zoom: 0.2, // starting zoom
     minZoom: 0.1,
-    maxZoom: 12,
+    maxZoom: 18,
     accessToken: '{{ mbtokenmb }}'
   });
 
@@ -312,62 +314,51 @@
       if(e.sourceId == 'territorios892' && e.isSourceLoaded){
         console.log('big data finished', e.sourceId)
         spinner_map.stop()
-        $(".toomany").html('').hide()
+        $(".toomany").html('').hide()      
       }
     } else {
         spinner_map.stop()
         $(".toomany").html('').hide()
     }
   });
-
+  
   mappy.on('load', function(){
     hilited = null
     mappy.addSource('empty', {
       type: 'geojson',
       data: { type: 'FeatureCollection', features: [] }
     });
-
-		const zIndex4 = mappy.addLayer({
-      id: 'z-index-4',
-      type: 'symbol',
-      source: 'empty'
-    }); //top
-
-    const zIndex3 = mappy.addLayer({
-      id: 'z-index-3',
-      type: 'symbol',
-      source: 'empty'
-    }, 'z-index-4'); // below zIndex4
-
+    
     const zIndex2 = mappy.addLayer({
       id: 'z-index-2',
       type: 'symbol',
       source: 'empty'
     });
-
+    
     const zIndex1 = mappy.addLayer({
       id: 'z-index-1',
       type: 'symbol',
       source: 'empty'
     }, 'z-index-2'); // place this layer below zIndex2
 
-    addSources(ds_list)
-    <!--console.log('map loaded, ds_list',ds_list)-->
+	  // fetch geodata
+    addPlaces(ds_list)
+    {#addSources(ds_list)#}
 
     layer_list = getLoadedLayers(ds_list)
-
+    
     for (l in layer_list){
       // TODO: allow clicking on polygons, denied here
       if(layer_list[l].indexOf('point') != -1){
         mappy.on('mouseenter', layer_list[l], function () {
           mappy.getCanvas().style.cursor = 'pointer';
         });
-
+         
         // Change it back to a pointer when it leaves.
         mappy.on('mouseleave', layer_list[l], function () {
           mappy.getCanvas().style.cursor = '';
         });
-
+  
         mappy.on('click', layer_list[l], function (e) {
           <!--console.log('place:', e.features[0])-->
           place=e.features[0]
@@ -377,14 +368,14 @@
           var src_id = e.features[0].properties.src_id;
           var minmax = e.features[0].properties.minmax;
           var fc = e.features[0].properties.fclasses;
-
+           
           while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
             coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
           }
-
+          
           // highlight row
           <!--console.log('highlight row & fetch data', pid, coordinates)-->
-
+            
           // popup
           new maplibregl.Popup()
             .setLngLat(coordinates)
@@ -407,6 +398,32 @@
     return layers
   }
 
+  function addPlaces(ds_list){
+    console.log('addPlaces() for coll ', {{ object.id }})
+    {#all_feats = []#}
+    ds_labels = ds_list.map(function(ds){return ds.label})
+    console.log('dslabels', ds_labels)
+
+	  $.getJSON('/collections/'+{{ object.id }}+'/geojson')
+		  .done(function(colldata) {
+        console.log('colldata', colldata.features.slice(0,10))
+			  ds_labels.forEach(function(label, i){
+          fcoll = {
+            "type": "FeatureCollection",
+	          "features": colldata.features.filter(function(f){
+              return f.properties.dslabel == label;})
+          }
+          mappy.addSource(label, {
+            'type': 'geojson',
+	          'data': fcoll
+          })
+				  renderSourceLayers(label, i)
+				  source_list.push(label)
+			  })
+        all_feats = colldata.features
+		  })
+  }
+
   // TODO: this gets all places for all named datasets - BAD!
   function addSources(ds_list){
     all_feats = []
@@ -416,7 +433,7 @@
     ds_list.forEach(function(ds, i){
       $.getJSON('/datasets/'+ds.id+'/geojson')
         .done(function(dsdata) {
-          console.log('dsdata', ds.id, dsdata)
+					console.log('dsdata', dsdata.collection)
           mappy.addSource(ds.label, {
             'type': 'geojson',
             'data': dsdata.collection
@@ -426,16 +443,15 @@
       })
       source_list.push(ds.label)
     })
-  }
-
+  } 
+  
   // TODO: better colors
   colors_point=['#ff9900','red','green','blue', 'purple',
     '#ff9900','red','green','blue', 'purple']
   colors_poly=['#eee','aliceblue']
-
   // render dataset/geometry layers
+  // 
   function renderSourceLayers(dslabel, i){
-    console.log('dslabel, i', dslabel, i)
     startMapSpinner()
     mappy.addLayer({
       'id': 'gl_'+dslabel+'_poly',
@@ -443,23 +459,23 @@
       'source': dslabel,
       'visibility': 'visible',
       'paint': {
-        'fill-color': '#FFDBD3',
-        'fill-opacity': 0.5,
-        'fill-outline-color': '#000'
+        'fill-color': 'rgba(245,245,245, 0.5)',
+        'fill-opacity': 0.2,
+        'fill-outline-color': 'black'
       },
       'filter': ['==', '$type', 'Polygon']
     }, 'z-index-1');
-
+    
     mappy.addLayer({
       'id': 'gl_'+dslabel+'_point',
       'type': 'circle',
       'source': dslabel,
-      'visibility': 'visible',
+      'visibility': 'visible',      
       'paint': {
         'circle-color': colors_point[i],
         'circle-radius': {
           stops: [[1, 2], [3, 3], [16, 10]]
-        }
+        }        
       },
       'filter': ['==', '$type', 'Point']
     }, 'z-index-2');
@@ -471,54 +487,54 @@
       obj[layer_list[l]] = mappy.getLayer(layer_list[l]).getPaintProperty('circle-color')
     }
   }
-  // hightlight selected in row
+  // hightlight selected in row  
   function highlightFeatureGL(pid, geom, coords, src){
     console.log('highlightFeatureGL()')
     console.log('pid, geom, coords', pid, geom, coords. src)
-
+    
     //mappy.getLayer(layer_list[4]).getPaintProperty('circle-color')
     mappy.setPaintProperty(
-      'gl_'+src+'_point', 'circle-radius',
+      'gl_'+src+'_point', 'circle-radius', 
         { 'property':'pid',
           'type':'categorical',
           'default': 3,
           'stops':[[Number(pid), 8]]}
     );
     mappy.setPaintProperty(
-      'gl_'+src+'_point', 'circle-stroke-color',
+      'gl_'+src+'_point', 'circle-stroke-color', 
         { 'property':'pid',
           'type':'categorical',
           'stops':[[Number(pid), '#666']]}
     );
     mappy.setPaintProperty(
-      'gl_'+src+'_point', 'circle-stroke-width',
+      'gl_'+src+'_point', 'circle-stroke-width', 
         { 'property':'pid',
           'type':'categorical',
           'stops':[[Number(pid), 1]]}
     );
     mappy.setPaintProperty(
-      'gl_'+src+'_point', 'circle-color',
+      'gl_'+src+'_point', 'circle-color', 
         { 'property':'pid',
           'default': 'grey',
           'type':'categorical',
           'stops':[[Number(pid), 'yellow']]}
     );
     mappy.setPaintProperty(
-      'gl_'+src+'_point', 'circle-opacity',
+      'gl_'+src+'_point', 'circle-opacity', 
         { 'property':'pid',
           'default': 0.5,
           'type':'categorical',
           'stops':[[Number(pid),1]]}
     );
     mappy.setPaintProperty(
-      'gl_'+src+'_poly', 'fill-outline-color',
+      'gl_'+src+'_poly', 'fill-outline-color', 
         { 'property':'pid',
           'default': 'grey',
           'type':'categorical',
           'stops':[[Number(pid), 'red']]}
     );
     mappy.setPaintProperty(
-      'gl_'+src+'_poly', 'fill-color',
+      'gl_'+src+'_poly', 'fill-color', 
         { 'property':'pid',
           'default': "rgba(255,255,255,0.0)",
           'type':'categorical',
@@ -527,7 +543,7 @@
         }
     );
     // also set z-index and zoom
-
+    
     // zoom to feature
     console.log('geom')
     if(geom.type.toLowerCase() == 'point'){
@@ -535,8 +551,8 @@
       mappy.flyTo({'center': flycoords, 'zoom': 7})
     } else {
       bbox=turf.envelope(geom).bbox
-      mappy.fitBounds(bbox, { padding: 30})
-    }
+      mappy.fitBounds(bbox, { padding: 30})      
+    }    
   }
 
   mappy.on('click', 'gl_active_point', function (e) {
@@ -548,50 +564,14 @@
     var src_id = e.features[0].properties.src_id;
     var minmax = e.features[0].properties.minmax;
     var fc = e.features[0].properties.fclasses;
-
+     
     while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
       coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
     }
-
+    
     // highlight row
     console.log('highlight row & fetch data', pid, coordinates)
-
-    // popup
-    new maplibregl.Popup()
-      .setLngLat(coordinates)
-      .setHTML('<b>'+title+'</b><br/>'+
-              '<a href="javascript:getPlace('+pid+')">fetch info</a><br/>'+
-              'start, end: '+minmax)
-      .addTo(mappy);
-  });
-
-  // TODO; refactor feature clicking, like ds_browse.html
-  mappy.on('mouseenter', 'gl_afr_subregions_34_poly', function () {
-  mappy.getCanvas().style.cursor = 'pointer';
-  });
-  // Change it back to a pointer when it leaves.
-  mappy.on('mouseleave', 'gl_afr_subregions_34_poly', function () {
-    mappy.getCanvas().style.cursor = '';
-  });
-
-  mappy.on('click', 'gl_afr_subregions_34_poly', function (e) {
-    <!--console.log('place:', e.features[0])-->
-    place=e.features[0]
-	  props = place.properties
-    var coordinates = place.geometry.coordinates.slice()[0][0];
-    var pid = props.pid;
-    var title = props.title;
-    var src_id = props.src_id;
-    var minmax = [props.min, props.max];
-    var fc = props.fclasses;
-
-    while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-      coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
-    }
-
-    // highlight row
-    console.log('highlight row & fetch data', pid, coordinates)
-
+      
     // popup
     new maplibregl.Popup()
       .setLngLat(coordinates)
@@ -603,7 +583,7 @@
 
   // activate all tooltips
   $("[rel='tooltip']").tooltip();
-
+  
   // show/hide dataset markers from dropdown
   // TODO: this seems inefficient but works
   function filterMap(key){
@@ -612,7 +592,7 @@
       for(l in layer_list){
         mappy.setLayoutProperty(layer_list[l],'visibility','visible')
         mappy.flyTo({'center': [9.2, 33], 'zoom':0.2})
-      }
+      }      
     } else {
       relevant = layer_list.filter(l => l.indexOf(key) !=-1)
       others = layer_list.filter(l => !relevant.includes(l))
@@ -647,7 +627,7 @@
             url = str
           } else {
             var re = /(http|bnf|cerl|dbp|gn|gnd|gov|loc|pl|tgn|viaf|wd|wdlocal|whg|wp):(.*?)$/;
-            url=base_urls[str.match(re)[1]]+str.match(re)[2]
+            url=base_urls[str.match(re)[1]]+str.match(re)[2] 
             console.log('url',url)
           }
           window.open(url, '_blank');
@@ -667,8 +647,8 @@
   // single column
   function parsePlace(data) {
     window.featdata = data
-
-    function onlyUnique(array) {
+    
+    function onlyUnique(array) { 
       const map = new Map();
       const result = [];
       for (const item of array) {
@@ -685,7 +665,7 @@
     }
     <!--timespan_arr = []-->
     //
-    // TITLE
+    // TITLE 
     descrip = '<p><b>Title</b>: <span id="row_title" class="larger text-danger">'+data.title+'</span>'
     //
     // NAME VARIANTS
@@ -717,10 +697,10 @@
       typeids+=str
     }
     descrip += typeids.replace(/(; $)/g, "") +'</p>'
-
+    
     //
     // LINKS
-    //
+    // 
     descrip += '<p class="mb-0"><b>Links</b>: '
     close_count = added_count = related_count = 0
     html = ''
@@ -738,20 +718,20 @@
     // RELATED
     <!--right=''-->
     if (data.related.length > 0) {
-      parent='<p class="mb-0"><b>Parent(s)</b>: ';
+      parent='<p class="mb-0"><b>Parent(s)</b>: '; 
       related='<p class="mb-0"><b>Related</b>: ';
       for (r in data.related){
         rel = data.related[r]
         <!--console.log('rel',rel)-->
         if (rel.relation_type == 'gvp:broaderPartitive'){
           parent += '<span class="small h1em">'+rel.label
-          parent += 'when' in rel && !('timespans' in rel.when) ?
-            ', '+rel.when.start.in+'-'+rel.when.end.in :
+          parent += 'when' in rel && !('timespans' in rel.when) ? 
+            ', '+rel.when.start.in+'-'+rel.when.end.in : 
             'when' in rel && ('timespans' in rel.when) ? ', '+
               minmaxer(rel.when.timespans) : ''
               <!--rel.when.timespans : ''-->
           parent += '</span>; '
-        }
+        } 
         else {
           related += '<p class="small h1em">'+rel.label+ ', '+rel.when.start.in+'-'+rel.when.end.in+'</p>'
         }
@@ -780,24 +760,23 @@
     // MINMAX
     //
     if(data.minmax && data.minmax.length>0){
-      descrip += '<p><b>When</b>: earliest: '+data.minmax[0]+'; latest: '+data.minmax[1]
+      descrip += '<p><b>When</b>: earliest: '+data.minmax[0]+'; latest: '+data.minmax[1]    
     }
     descrip += '</div>'
     return descrip
   }
-
   // builds link for external place record
   function url_extplace(identifier) {
     // abbreviate links not in aliases.base_urls
     if(identifier.startsWith('http')) {
       let tag = identifier.replace(/.+\/\/|www.|\..+/g, '')
-      link = '<a href="'+identifier+'" target="_blank">'+tag+'{% fontawesome_icon 'external-link' color='#336699' %},  </a>'
+      link = '<a href="'+identifier+'" target="_blank">'+tag+'{% fontawesome_icon 'external-link' color='#336699' %},  </a>'          
     } else {
-    link = '<a href="" class="ext" data-target="#ext_site">'+identifier+'&nbsp;{% fontawesome_icon 'external-link' color='#336699' %}</a>, '
+    link = '<a href="" class="ext" data-target="#ext_site">'+identifier+'&nbsp;{% fontawesome_icon 'external-link' color='#336699' %}</a>, '    
     }
     return link
   }
-
+  
   // builds link for external placetype record
   function url_exttype(type) {
     link = ' <a href="#" class="exttab" data-id='+type.identifier+
@@ -832,9 +811,9 @@
         // Transition from heatmap to circle layer by zoom level
         "heatmap-opacity": ["interpolate", ["linear"], ["zoom"], 7, 1, 9, 0 ],
       }
-    });
+    });    
   }
-
+  
   // add heatmap source for each dataset unless it's a polygon layer
   function addHeatSources(ds_list){
     heatsources=[]
@@ -852,7 +831,7 @@
     }
     spinner_map.stop()
   }
-
+  
   // [ greenish, redish]
   var heatramps = [
     ["interpolate",["linear"],["heatmap-density"],
@@ -862,16 +841,16 @@
     ["interpolate",["linear"],["heatmap-density"],
     0,'rgba(254,240,217,0)',0.2,'rgb(253,212,158)',0.4,'rgb(253,187,132)',0.6,
     'rgb(252,141,89)',0.8,'rgb(227,74,51)',1,'rgb(179,0,0)'],
-
+    
     ["interpolate",["linear"],["heatmap-density"],
     0,'rgba(246,239,247,0)',0.2,'rgb(208,209,230)',0.4,'rgb(166,189,219)',0.6,
     'rgb(103,169,207)',0.8,'rgb(28,144,153)',1,'rgb(1,108,89)'],
-
+    
     ["interpolate",["linear"],["heatmap-density"],
     0,'rgba(237,248,251,0)',0.2,'rgb(191,211,230)',0.4,'rgb(158,188,218)',0.6,
-    'rgb(140,150,198)',0.8,'rgb(136,86,167)',1,'rgb(129,15,124)'],
+    'rgb(140,150,198)',0.8,'rgb(136,86,167)',1,'rgb(129,15,124)'],    
   ]
-
+    
   styles = {
     "Point": {
       "default": {radius: 2, fillColor:"#ff9900", fillOpacity: 0.8, stroke: false},
@@ -892,7 +871,7 @@
       "default":{fillOpacity: 0.3, opacity: .5, color: "#666", weight: 1, fillColor:"#ff9999"},
       "focus":{fillOpacity: 0.3, opacity: .5, color: "red", weight: 2, fillColor:"#ff9999"}}
   }
-
+  
   function minmaxer(timespans){
     <!--console.log('got to minmax()',JSON.stringify(timespans))-->
     starts=[]; ends=[]
@@ -900,7 +879,7 @@
       // gets 'in', 'earliest' or 'latest'
       starts.push(Object.values(timespans[t].start)[0])
       ends.push(!!timespans[t].end ? Object.values(timespans[t].end)[0] : -1)
-    }
+    } 
     <!--console.log('starts',starts,'ends',ends)-->
     minmax=[Math.max.apply(null, starts),Math.max.apply(null, ends)]
     return minmax
@@ -910,24 +889,24 @@
   spin_opts = { scale: .5, top: '60%'}
   function startTableSpinner(){
     window.spinner_table = new Spin.Spinner(spin_opts).spin();
-    $("#drftable_list").append(spinner_table.el);
+    $("#drftable_list").append(spinner_table.el);   
   }
   function startFilterSpinner(){
     window.spinner_filter = new Spin.Spinner(spin_opts).spin();
-    $("#status_filter").append(spinner_filter.el);
+    $("#status_filter").append(spinner_filter.el);   
   }
   function startDetailSpinner(){
     window.spinner_detail = new Spin.Spinner(spin_opts).spin();
-    $("#row_detail").append(spinner_detail.el);
+    $("#row_detail").append(spinner_detail.el);   
   }
   function startMapSpinner(){
     <!--console.log('startMapSpinner()')-->
     window.spinner_map = new Spin.Spinner(spin_opts).spin();
     <!--$("#map").append(spinner_map.el);   -->
-    $(".toomany").append(spinner_map.el);
+    $(".toomany").append(spinner_map.el);   
   }
   //*
-
+  
 
 </script>
 {% endblock %}
