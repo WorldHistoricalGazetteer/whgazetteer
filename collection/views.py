@@ -37,7 +37,8 @@ def flash_collection_create(request, *args, **kwargs):
       owner = request.user,
       title = 'title',
       type = 'place',
-      description = 'new collection'
+      description = 'new collection',
+      keywords = '{replace, these, please}'
     )
     collobj.save()
     result = {"id": collobj.id, 'title': collobj.title}
@@ -162,6 +163,7 @@ class PlaceCollectionUpdateView(UpdateView):
     return get_object_or_404(Collection, id=id_)
 
   def form_valid(self, form):
+    print('referrer', self.request.META.get('HTTP_REFERER'))
     if form.is_valid():
       print(form.cleaned_data)
       obj = form.save(commit=False)
@@ -266,7 +268,7 @@ class PlaceCollectionBrowseView(DetailView):
     # placeset = coll.places.all()
     # context['places'] = placeset
 
-    context['places'] = coll.trace_places_all
+    context['places'] = coll.places.all()
     context['ds_list'] = coll.ds_list
     #context['bboxes'] = bboxes
     context['updates'] = {}

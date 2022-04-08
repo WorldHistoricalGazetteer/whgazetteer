@@ -32,12 +32,12 @@
   {% else %}
 	  <h4 class="mt-3">
     {% if action == 'update' %}
-	    Place Collection Builder: <span class="text-danger">"{{ form.title.value }}"</span>
+	    Collection Builder: <span class="text-danger">"{{ form.title.value }}"</span>
     <a href="{% url 'collection:collection-delete' object.id %}" class="float-right"
       title="Delete collection" rel="tooltip" style="margin-top:-2px;">
       {% fontawesome_icon 'trash' color='#336699' %}</a>
     {% else %}
-	    Place Collection Builder
+	    Collection Builder foo
     {% endif %} <span class="red-head"> </span>
 	  </h4>
 	  <div class="d-flex h-100">
@@ -45,6 +45,7 @@
 	      <form id="collection_form" method="POST" action="#" enctype="multipart/form-data">
 	      {% csrf_token %}
 	      <input type="hidden" name="owner" value='{{ user.id }}' />
+	      <input type="hidden" name="type" value='place' />
 		      <p>Title &#x02733;<span class="closer float-right"><<</span><br/>{{ form.title }}</p>
 	      {% if action == 'update' %}
 	        <p>Create date: {{ create_date }}</p>
@@ -80,11 +81,13 @@
 	      {% endif %}
 	      <div id="select_div" class="hidden">{{ form.datasets }}</div>
 	      <hr/>
-	      <div id="collection_options"></div> <!-- collection_options -->
-	      <p id="referrer"></p>
-	      <input id="btn_coll_submit" class="btn-sm btn-primary mt-2" type="submit" value="Save" />
-	      <!--<span title="back"><a href="{ url 'dashboard' %}">Cancel</a></span>-->
-	      <span title="back"><a href="/mycollections">Cancel</a></span>
+	      <div id="collection_options"></div>
+		      <p id="referrer"></p>
+	      <div class="float-right">
+		      <span title="back"><a href="/mycollections">Cancel</a></span>
+		      <input id="btn_coll_submit" class="btn-sm btn-primary mt-2" type="submit" value="Save & exit" />
+		      <input id="btn_coll_update" class="btn-sm btn-info mt-2" type="button" value="Update" />
+	      </div>
 	    </form>
 	    </div>
 	    <div id="coll_builder" class="coll-col col-sm-4 p-2" style="height: 85%;">
@@ -110,8 +113,13 @@
 		          {% endfor %}
 		          </select>
 		        </span>
-		        <a href="javascript:{ addDataset() }" class="">
-		          {% fontawesome_icon 'plus-square' color='#336699' %} add</a>
+		        {% if action == 'create' %}
+			        <a href="javascript:{ addDataset('create') }" class="">
+			          {% fontawesome_icon 'plus-square' color='#336699' %} add</a>
+		        {% else %}
+			        <a href="javascript:{ addDataset('update') }" class="">
+			          {% fontawesome_icon 'plus-square' color='#336699' %} add</a>
+		        {% endif %}
 		      </p>
 		        <!-- id, label, title, description, creator, create_date, webpage, numrows, datatype -->
 		        <div id="coll_dscards_create">
@@ -166,7 +174,7 @@
 	      </div>
 		    <div id="coll_right_anno" class="">
 		      <h6>Annotations</h6>
-			    <div id="coll_place_detail" class="mb-1"></div>
+			    <div id="coll_place_detail" class="mb-1">Select a place record to annotate it</div>
 			    <div id="anno_detail" class="mb-1"></div>
 {#		      <form id="annotation_form" method="POST" action="{% url 'collection:collection-annotate' object.id %}" enctype="multipart/form-data">#}
 		      {% csrf_token %}
@@ -209,6 +217,9 @@
 </div> <!-- container -->
 
 <script type="text/javascript">
+	$("#btn_coll_update").click(function(){
+      console.log('save & return')
+	})
 	// show/hide editor-restricted options
   $("#editor_options").hide();
 	$('.show-hide').click(function(e) {
@@ -514,7 +525,7 @@
     // console.log(card)
   }
   // adds, displays single dataset
-  function addDataset() {
+  function addDataset(action) {
     console.log('selected', $("#select_ds").val())
     $.get("/collections/list_ds", {ds_id:$("#select_ds").val()},
       function(data){
@@ -527,6 +538,7 @@
     $("#select_ds").val(0)
     $("#msg").html('').hide()
   }
+
   function clearDataset(dsid){
     console.log('clear card for ds', dsid)
     $("#card_"+dsid).remove()
