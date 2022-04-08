@@ -413,7 +413,7 @@ class CollectionUpdateBetaView(UpdateView):
 
     # COLL: merged places
     # context['coll_places'] = coll_places
-    context['coll_places'] = self.object.trace_places_all
+    context['coll_places'] = self.object.places_all
 
     context['create_date'] = self.object.create_date.strftime("%Y-%m-%d")
     context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB

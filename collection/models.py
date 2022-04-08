@@ -73,17 +73,17 @@ class Collection(models.Model):
     counts = [ds.places.count() for ds in dses]
     return sum(counts)
 
-  @property
-  def trace_places(self):
-    return [t.place for t in self.traces.all().order_by('id')]
-
-  @property
-  def trace_places_all(self):
-    singletons = [t.place.id for t in self.traces.all()]
-    all = Place.objects.filter(
-      Q(dataset__in=self.datasets.all()) | Q(id__in=singletons)
-    )
-    return all
+  # @property
+  # def trace_places(self):
+  #   return [t.place for t in self.traces.all().order_by('id')]
+  #
+  # @property
+  # def trace_places_all(self):
+  #   singletons = [t.place.id for t in self.traces.all()]
+  #   all = Place.objects.filter(
+  #     Q(dataset__in=self.datasets.all()) | Q(id__in=singletons)
+  #   )
+  #   return all
 
   def __str__(self):
     return '%s:%s' % (self.id, self.title)

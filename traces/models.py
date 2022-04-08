@@ -10,7 +10,7 @@ class TraceAnnotation(models.Model):
     # auto id
     src_id = models.CharField(max_length=2044, blank=True, null=True) # if exists
     collection = models.ForeignKey('collection.Collection', db_column='collection',
-        related_name='traces', on_delete=models.CASCADE)
+        related_name='collections', on_delete=models.CASCADE)
     place = models.ForeignKey('places.Place', db_column='place',
         related_name='places', on_delete=models.CASCADE)
     # standard 'when' from LP format
