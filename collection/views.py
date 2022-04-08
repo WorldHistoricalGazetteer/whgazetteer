@@ -127,6 +127,7 @@ class PlaceCollectionCreateView(LoginRequiredMixin, CreateView):
     context={}
     if form.is_valid():
       print('form is valid, cleaned_data',form.cleaned_data)
+      print('referrer', self.request.META.get('HTTP_REFERER'))
     else:
       print('form not valid', form.errors)
       context['errors'] = form.errors
@@ -183,7 +184,7 @@ class PlaceCollectionUpdateView(UpdateView):
     context = super(PlaceCollectionUpdateView, self).get_context_data(*args, **kwargs)
     user = self.request.user
     _id = self.kwargs.get("id")
-    print('CollectionUpdateBetaView() kwargs', self.kwargs)
+    print('PlaceCollectionUpdateView() kwargs', self.kwargs)
 
     datasets = self.object.datasets.all()
 

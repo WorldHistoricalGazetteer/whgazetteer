@@ -1803,25 +1803,25 @@ class DataListsView(LoginRequiredMixin, ListView):
     if self.request.path == reverse('data-datasets'):
       list = Dataset.objects.all().order_by('-create_date') if whgteam \
         else Dataset.objects.filter( Q(owner=me) ).order_by('-id')
-      print('list:', list)
+      # print('list:', list)
       return list
     elif self.request.path == reverse('data-collections'):
       list = Collection.objects.all().order_by('create_date') if whgteam \
         else Collection.objects.filter(owner=me).order_by('create_date')
-      print('list:', list)
+      # print('list:', list)
       return list
     elif self.request.path == reverse('data-areas'):
       print('areas...whgteam?', whgteam)
       study_areas = ['ccodes', 'copied', 'drawn']       # only user study areas
       list = Area.objects.all().filter(type__in=study_areas).order_by('-id') if whgteam else \
         Area.objects.all().filter(type__in=study_areas, owner=me).order_by('-id')
-      print('list:', list)
+      # print('list:', list)
       return list
     else:
       print('resources...whgteam?', whgteam)
       list = Resource.objects.all().order_by('create_date') if whgteam or teaching \
         else Resource.objects.all().filter(owner=me).order_by('created')
-      print('list:', list)
+      # print('list:', list)
       return list
 
   def get_context_data(self, *args, **kwargs):
