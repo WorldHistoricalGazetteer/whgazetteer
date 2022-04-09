@@ -10,7 +10,7 @@ from django.views.generic import (View, CreateView, UpdateView, DetailView, Dele
 #from datasets.utils import hully
 from .forms import CollectionModelForm
 from .models import *
-from collection.models import Collection
+from collection.models import Collection, CollectionImage
 from main.models import Log
 from places.models import PlaceGeom
 from traces.forms import TraceAnnotationModelForm
@@ -93,6 +93,10 @@ def remove_dataset(request, *args, **kwargs):
 
   return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
+# from django.forms.models import inlineformset_factory
+# CollectionImageFormset = inlineformset_factory(
+#     Collection, CollectionImage, fields=('image','caption','uri','license')
+# )
 """ PLACE COLLECTIONS """
 """ TODO: refactor to fewer views """
 """ collections from places and/or datasets 

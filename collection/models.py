@@ -38,8 +38,8 @@ class Collection(models.Model):
   public = models.BooleanField(default=False)
   featured = models.IntegerField(null=True, blank=True)
 
+  # collections can comprise >=0 datasets, >=1 places
   datasets = models.ManyToManyField("datasets.Dataset", blank=True)
-  # COLL: indiv places
   places = models.ManyToManyField("places.Place", blank=True)
 
   # tinymce field?
