@@ -152,7 +152,7 @@
               <span class="hidden editing-uri_base">{{ form.uri_base }}</span>
             </td>
           </tr>
-          {% if user.is_superuser or user.is_admin %}
+          {% if user.is_superuser %}
             <tr>
               <td style="vertical-align:top;"><b>Featured rank</b>
                 <a href="#" class="edit-featured">{% fontawesome_icon 'edit' color='#336699' %}</a>

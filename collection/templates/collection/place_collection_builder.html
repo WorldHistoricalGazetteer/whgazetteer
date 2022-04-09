@@ -26,8 +26,7 @@
 
 {% block content %}
 <div class="container container-md" style="height: calc(100vh - 65px);">
-  <!--owner or superuser: {{user.id}} {{object.owner.id}}-->
-  {% if action == 'update' and user.id != object.owner.id and not user.is_superuser %}
+  {% if action == 'update' and user.id != object.owner.id and not user.is_superuser and not user in whgteam %}
 	  <p>Access to this page is limited to the collection owner, <b>{{ user.username }} ({{object.owner.id}})</b></p>
   {% else %}
 	  <h4 class="mt-3">
@@ -37,7 +36,7 @@
       title="Delete collection" rel="tooltip" style="margin-top:-2px;">
       {% fontawesome_icon 'trash' color='#336699' %}</a>
     {% else %}
-	    Collection Builder foo
+	    Collection Builder
     {% endif %} <span class="red-head"> </span>
 	  </h4>
 	  <div class="d-flex h-100">
@@ -70,7 +69,7 @@
 	        <td class="my-0 small">&#x02733;<i><b> required</b></i></td>
 	        <td></td>
 	      </tr>
-	      {% if action == 'update' and user.is_superuser or user.is_admin %}
+	      {% if action == 'update' and user.is_superuser %}
 	        <hr class="my-1"/>
 		      <p class="rem1">Editor options
 			      <a href="#" class="show-hide" style="">&#8595;</a></p>

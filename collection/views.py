@@ -206,6 +206,7 @@ class PlaceCollectionUpdateView(UpdateView):
 
     context['create_date'] = self.object.create_date.strftime("%Y-%m-%d")
     context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
+    context['whgteam'] = User.objects.filter(groups__name='whg_team')
 
     return context
 
@@ -228,6 +229,7 @@ class PlaceCollectionSummaryView(DetailView):
     context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
     context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
     context['mbtokenwhg'] = settings.MAPBOX_TOKEN_WHG
+    context['whgteam'] = User.objects.filter(groups__name='whg_team')
 
     context['ds_list'] = datasets
     context['bboxes'] = bboxes
@@ -320,6 +322,7 @@ class DatasetCollectionCreateView(LoginRequiredMixin, CreateView):
     user = self.request.user
     context = super(DatasetCollectionCreateView, self).get_context_data(*args, **kwargs)
     context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
+    context['whgteam'] = User.objects.filter(groups__name='whg_team')
 
     datasets = []
     # owners create collections from their datasets
@@ -377,6 +380,8 @@ class DatasetCollectionUpdateView(UpdateView):
 
     context['create_date'] = self.object.create_date.strftime("%Y-%m-%d")
     context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
+    context['whgteam'] = User.objects.filter(groups__name='whg_team')
+
     return context
 
 """ public collection view, datasets, bboxes on a map """
@@ -395,10 +400,10 @@ class DatasetCollectionSummaryView(DetailView):
     # gather bounding boxes
     bboxes = [ds.bounds for ds in datasets]
 
-
     context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
     context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
     context['mbtokenwhg'] = settings.MAPBOX_TOKEN_WHG
+    context['whgteam'] = User.objects.filter(groups__name='whg_team')
 
     context['ds_list'] = datasets
     context['bboxes'] = bboxes

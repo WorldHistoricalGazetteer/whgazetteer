@@ -27,6 +27,13 @@
 
 {% block content %}
 <div class="container mt-1">
+	{% if user.is_superuser or user in whgteam %}
+	<div>
+		<span class="float-right mr-2 pt-2">
+			<a href="{% url 'collection:place-collection-update' object.id %}" >{% fontawesome_icon 'gear' color='#336699' %}</a>
+		</span>
+	</div>
+	{% endif %}
   {% csrf_token %} <!-- for download function -->
   <ul id="collection_tabs" class="nav nav-tabs" role="tablist">
     <li class="nav-item">
