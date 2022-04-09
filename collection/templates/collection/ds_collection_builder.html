@@ -21,10 +21,14 @@
 	  <p>Access to this page is limited to the collection owner(s); Owner is <mark>{{object.owner.username}}</mark></p>
   {% else %}
   <h4 class="mt-3">
-    {% if action == 'update' %}Update Dataset Collection: <span class="text-danger">"{{ form.title.value }}"</span>
-    <a href="{% url 'collection:collection-delete' object.id %}" class="float-right"
-      title="Delete collection" rel="tooltip" style="margin-top:-2px;">
-      {% fontawesome_icon 'trash' color='#336699' %}</a>
+    {% if action == 'update' %}Update Dataset Collection:
+	    <span class="text-danger">"{{ form.title.value }}"</span>
+	    <span class="float-right small">
+		    <a href="{% url 'collection:ds-collection-summary' object.id %}">
+			    {% fontawesome_icon 'eye' color='#336699' %}</a>&nbsp;
+		    <a href="{% url 'collection:collection-delete' object.id %}"
+	      title="Delete collection" rel="tooltip" style="margin-top:-2px;">
+		    {% fontawesome_icon 'trash' color='#336699' %}</a></span>
     {% else %}Create Dataset Collection{% endif %}
   </h4>
   <div class="d-flex">
@@ -32,6 +36,7 @@
     <form id="collection_form" method="POST" action="#" enctype="multipart/form-data">
       {% csrf_token %}
       <input type="hidden" name="owner" value='{{ user.id }}'></input>
+      <input type="hidden" name="type" value='dataset'></input>
       <p>Title &#x02733;<br/>{{ form.title }}</p>
       <p><span class="top">Description &#x02733;</span><br/>{{ form.description }}</p>
       <!-- <p><span class="top">Description</span><br/>{{ form.content }}</p> -->
@@ -39,15 +44,14 @@
       <p>Contact<br/>{{ form.contact }}
       <p>Webpage URL<br/>{{ form.webpage }}
       <p>Keywords (comma-separated) &#x02733;<br/>{{ form.keywords }}
-
-      <p>Public?:
-        {% if form.public.value == True %}
-          {{ form.public.value }}
-        {% else %}
-          <a href="#"><span class="help-matches" data-id="going_public_coll">
-            Making a collection public. {% fontawesome_icon 'question-circle' color='#336699' %}
-          </span></a>
-        {% endif %}      
+	    <p>Image: <i>{{ form.image_file}}</i></p>
+      <p>
+	      {% if form.public.value == True %}
+		      <label for="Public">Public:</label>
+							{{ form.public }}
+	      {% elif action == "update" %}Not yet public, see:
+		      <a href="#"><span class="help-matches" data-id="going_public_coll">making a collection public {% fontawesome_icon 'question-circle' color='#336699' %}</span></a>
+	      {% endif %}
       </p>
       <tr>
         <td class="my-0 small">&#x02733;<i><b> required</b></i></td>

@@ -93,10 +93,10 @@ def remove_dataset(request, *args, **kwargs):
 
   return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
-# from django.forms.models import inlineformset_factory
-# CollectionImageFormset = inlineformset_factory(
-#     Collection, CollectionImage, fields=('image','caption','uri','license')
-# )
+from django.forms.models import inlineformset_factory
+CollectionImageFormset = inlineformset_factory(
+    Collection, CollectionImage, fields=('image','caption','uri','license'), extra=1
+)
 """ PLACE COLLECTIONS """
 """ TODO: refactor to fewer views """
 """ collections from places and/or datasets 
@@ -106,6 +106,52 @@ class PlaceCollectionCreateView(LoginRequiredMixin, CreateView):
   form_class = CollectionModelForm
   template_name = 'collection/place_collection_builder.html'
   queryset = Collection.objects.all()
+
+  def get_form_kwargs(self, **kwargs):
+    kwargs = super(PlaceCollectionCreateView, self).get_form_kwargs()
+    return kwargs
+
+  def get_context_data(self, *args, **kwargs):
+    user = self.request.user
+    print('PlaceCollectionCreateView() user', user)
+    context = super(PlaceCollectionCreateView, self).get_context_data(*args, **kwargs)
+    context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
+
+    datasets = []
+    # add images
+    if self.request.POST:
+      context["images"] = CollectionImageFormset(self.request.POST)
+    else:
+      context["images"] = CollectionImageFormset()
+
+    # owners create collections from their datasets
+    ds_select = [obj for obj in Dataset.objects.all().order_by('title') if user in obj.owners or
+                 user in obj.collaborators or user.is_superuser]
+
+    context['action'] = 'create'
+    context['ds_select'] = ds_select
+    context['coll_dsset'] = datasets
+
+    return context
+
+  def form_valid(self, form):
+    context = self.get_context_data()
+    images = context['images']
+    self.object = form.save()
+    if images.is_valid():
+      images.instance = self.object
+      images.save()
+
+    print('form is valid, cleaned_data',form.cleaned_data)
+    print('referrer', self.request.META.get('HTTP_REFERER'))
+    return super().form_valid(form)
+
+  def form_invalid(self,form):
+    context = self.get_context_data()
+    context['errors'] = form.errors
+    print('form invalid...',form.errors.as_data())
+    context = {'form': form}
+    return self.render_to_response(context=context)
 
   def get_success_url(self):
     Log.objects.create(
@@ -118,42 +164,6 @@ class PlaceCollectionCreateView(LoginRequiredMixin, CreateView):
     # return to update page after create
     return reverse('collection:place-collection-update', kwargs = {'id':self.object.id})
 
-  def get_form_kwargs(self, **kwargs):
-    kwargs = super(PlaceCollectionCreateView, self).get_form_kwargs()
-    return kwargs
-
-  def form_invalid(self,form):
-    print('form invalid...',form.errors.as_data())
-    context = {'form': form}
-    return self.render_to_response(context=context)
-
-  def form_valid(self, form):
-    context={}
-    if form.is_valid():
-      print('form is valid, cleaned_data',form.cleaned_data)
-      print('referrer', self.request.META.get('HTTP_REFERER'))
-    else:
-      print('form not valid', form.errors)
-      context['errors'] = form.errors
-    return super().form_valid(form)
-
-  def get_context_data(self, *args, **kwargs):
-    user = self.request.user
-    print('CollectionCreateBetaView() user', user)
-    context = super(PlaceCollectionCreateView, self).get_context_data(*args, **kwargs)
-    context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
-
-    datasets = []
-    places = []
-    # owners create collections from their datasets
-    ds_select = [obj for obj in Dataset.objects.all().order_by('title') if user in obj.owners or
-      user in obj.collaborators or user.is_superuser]
-
-    context['action'] = 'create'
-    context['ds_select'] = ds_select
-    context['coll_dsset'] = datasets
-
-    return context
 
 """ update place collection 
     uses place_collection_builder.html
@@ -166,6 +176,10 @@ class PlaceCollectionUpdateView(UpdateView):
   def get_object(self):
     id_ = self.kwargs.get("id")
     return get_object_or_404(Collection, id=id_)
+
+  def get_success_url(self):
+    id_ = self.kwargs.get("id")
+    return '/collections/'+str(id_)+'/summary_p'
 
   def form_valid(self, form):
     print('referrer', self.request.META.get('HTTP_REFERER'))
@@ -315,11 +329,7 @@ class DatasetCollectionCreateView(LoginRequiredMixin, CreateView):
 
   def form_valid(self, form):
     context={}
-    if form.is_valid():
-      print('form is valid, cleaned_data',form.cleaned_data)
-    else:
-      print('form not valid', form.errors)
-      context['errors'] = form.errors
+    print('form is valid, cleaned_data',form.cleaned_data)
     return super().form_valid(form)
 
   def get_context_data(self, *args, **kwargs):
@@ -350,6 +360,10 @@ class DatasetCollectionUpdateView(UpdateView):
   def get_object(self):
     id_ = self.kwargs.get("id")
     return get_object_or_404(Collection, id=id_)
+
+  def get_success_url(self):
+    id_ = self.kwargs.get("id")
+    return '/collections/'+str(id_)+'/summary_ds'
 
   def form_valid(self, form):
     if form.is_valid():
