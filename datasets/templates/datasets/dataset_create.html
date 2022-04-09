@@ -15,28 +15,26 @@
   {%comment%}{% if messages %}
     <span class="text-danger strong"> {% for message in messages %}{{ message }}{% endfor %}</span>
   {% endif %}{%endcomment%}
-  <form id="ds_form" method="POST" enctype="multipart/form-data">
-    {% csrf_token %}
-    <!-- errors -->
-    {% if form.errors %}
-      {% for field in form %}
-          {% for error in field.errors %}
-              <div class="alert alert-danger my-0">
-                  <strong>{{ error|escape }}</strong>
-              </div>
-          {% endfor %}
-      {% endfor %}
-      {% for error in form.non_field_errors %}
-          <div class="alert alert-danger">
-              <strong>{{ error|escape }}</strong>
-          </div>
-      {% endfor %}
-    {% endif %}
-    {% if insert_error %}<p>error on insert</p>{% endif %}
-    <!-- content -->
     <div id="content_create" class="row mx-1">
       <div id="create_form" class="form-box mt-2 col-md-7 col-lg-5" >
-        <table class="ds-table">
+			  <form id="ds_form" method="POST" enctype="multipart/form-data">
+		    {% csrf_token %}
+		    {% if form.errors %}
+		      {% for field in form %}
+		          {% for error in field.errors %}
+		              <div class="alert alert-danger my-0">
+		                  <strong>{{ error|escape }}</strong>
+		              </div>
+		          {% endfor %}
+		      {% endfor %}
+		      {% for error in form.non_field_errors %}
+		          <div class="alert alert-danger">
+		              <strong>{{ error|escape }}</strong>
+		          </div>
+		      {% endfor %}
+		    {% endif %}
+		    {% if insert_error %}<p>error on insert</p>{% endif %}
+	      <table class="ds-table">
           <tr>
             <td><b>Title &#x02733;</b></td>
             <td>{{ form.title }}</td>
@@ -98,7 +96,7 @@
           </tr>
         </table>
         {% if user.is_superuser %}
-        <table class="mt-2" style="background-color:aliceblue;">
+          <table class="mt-2" style="background-color:aliceblue;">
           <tr style="">
             <td style="vertical-align:top; padding-top:3px;"><b>Featured rank</b></td>
             <td style="vertical-align:top; padding-top:3px;">{{ form.featured }} </td>
@@ -123,10 +121,10 @@
         <!-- upload button initially & if it's not yet ok -->
         {% if status != 'format_ok' %}
         <input id="btn_upload" class="btn btn-primary btn-sm" type="submit" value="Upload" />
-        <span title="back"><a href="{% url 'dashboard' %}">Cancel</a></span>
+        <span title="back"><a href="{% url 'data-datasets' %}">Cancel</a></span>
         {% endif %}
+		    </form>
       </div>
-    </form>
   <div class="mt-2 col-md-5 col-lg-7" id="create_review">
       {% if context.action == 'errors' %}
         <h5>{% fontawesome_icon 'exclamation-circle' color="#993333" %} This file has one or more problems:</h5>

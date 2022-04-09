@@ -22,8 +22,6 @@
     #coll_place_detail {min-height: 80px;}
     #coll_place_detail p{ margin-bottom: 0}
     #anno_div input {height: 1.5rem; font-size:.8rem;}
-    .form-group {margin-bottom: .5rem !important;}
-    .form-group label {margin-bottom:0 !important;}
   </style>
 {% endblock %}
 
@@ -43,44 +41,36 @@
     {% endif %} <span class="red-head"> </span>
 	  </h4>
 	  <div class="d-flex h-100">
-	    <div id="coll_form" class="form-box mt-2 col-lg-4" style="height: 85%;">
-	      <form id="collection_form" class="" method="POST" action="#" enctype="multipart/form-data">
-	        {% csrf_token %}
-		      <input type="hidden" name="owner" value='{{ user.id }}' />
-		      <input type="hidden" name="type" value='place' />
-					<div class="form-group">
-						<label for="Title">Title &#x02733;</label>
-						{{ form.title }}
-					</div>
-					<div class="form-group">
-						<label for="Description">Description &#x02733;</label>
-						{{ form.description }}
-					</div>
-					<div class="form-group">
-						<label for="Keywords">Keywords &#x02733;</label>
-						{{ form.keywords }}
-					</div>
-					<div class="form-group">
-						<label for="Web page">Web page</label>
-						{{ form.webpage }}
-					</div>
-					<div class="form-group">
-						{% if form.public.value == True %}
-							<label for="Public">Public?</label>
-							{{ form.public }}
-						{% elif action == "update" %}Not public, see:
-							<a href="#"><span class="help-matches" data-id="going_public_coll">making a collection public {% fontawesome_icon 'question-circle' color='#336699' %}</span></a>
-						{% endif %}
-					</div>
+	    <div id="coll_form" class="form-box mt-2 coll-col col-sm-4" style="height: 85%;">
+	      <form id="collection_form" class="h-100" method="POST" action="#" enctype="multipart/form-data">
+	      {% csrf_token %}
+	      <input type="hidden" name="owner" value='{{ user.id }}' />
+	      <input type="hidden" name="type" value='place' />
+		      <p>Title &#x02733;<br/>{{ form.title }}</p>
+	      {% if action == 'update' %}
+	        <p>Create date: {{ create_date }}</p>
+	      {% endif %}
+	      <p><span class="top">Description &#x02733;</span><br/>{{ form.description }}</p>
+	      <!-- <p><span class="top">Description</span><br/>{{ form.content }}</p> -->
+	      <p>Creator<br/>{{ form.creator }}
+	      <p>Contact<br/>{{ form.contact }}
+	      <p>Webpage URL<br/>{{ form.webpage }}
+	      <p>Keywords (comma-separated) &#x02733;<br/>{{ form.keywords }}
 
-	      </form>
+	      <p>
+	        {% if form.public.value == True %}
+	          Public: {{ form.public.value }}
+	        {% else %}
+	          <a href="#"><span class="help-matches" data-id="going_public_coll">
+	            Making a collection public. {% fontawesome_icon 'question-circle' color='#336699' %}
+	          </span></a>
+	        {% endif %}
+	      </p>
 	      <tr>
 	        <td class="my-0 small">&#x02733;<i><b> required</b></i></td>
 	        <td>
 		        {% if action == 'update' and user.is_superuser %}
-			        <a class="float-right" href="#">
-				        editor options {% fontawesome_icon 'gear' color='#336699' %}
-			        </a>
+			        <a href="#">{% fontawesome_icon 'gear' color='#336699' %}</a>
 		        {% endif %}
 	        </td>
 	      </tr>
@@ -97,8 +87,8 @@
 		      <span class="text-danger">delete</span>
 		      <span title="back"class="float-right">
 			      <a href="/mycollections">Cancel</a>
-			      <input id="btn_coll_submit" class="btn-sm btn-primary mt-2 ml-2" type="submit" value="Save & exit" />
-{#			      <input id="btn_coll_update" class="btn-sm btn-info mt-2" type="button" value="Update" />#}
+			      <input id="btn_coll_submit" class="btn-sm btn-primary mt-2" type="submit" value="Save & exit" />
+			      <input id="btn_coll_update" class="btn-sm btn-info mt-2" type="button" value="Update" />
 		      </span>
 	      </div>
 	    </form>
