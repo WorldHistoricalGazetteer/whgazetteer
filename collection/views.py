@@ -179,7 +179,7 @@ class PlaceCollectionUpdateView(UpdateView):
 
   def get_success_url(self):
     id_ = self.kwargs.get("id")
-    return '/collections/'+str(id_)+'/summary_p'
+    return '/collections/'+str(id_)+'/summary_pl'
 
   def form_valid(self, form):
     print('referrer', self.request.META.get('HTTP_REFERER'))
@@ -385,7 +385,7 @@ class DatasetCollectionUpdateView(UpdateView):
     context = super(DatasetCollectionUpdateView, self).get_context_data(*args, **kwargs)
     user = self.request.user
     _id = self.kwargs.get("id")
-    print('CollectionUpdateView() kwargs', self.kwargs)
+    print('DatasetCollectionUpdateView() kwargs', self.kwargs)
 
     datasets = self.object.datasets.all()
 

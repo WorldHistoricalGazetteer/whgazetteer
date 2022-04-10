@@ -32,71 +32,64 @@
   {% if action == 'update' and user.id != object.owner.id and not user.is_superuser and not user in whgteam %}
 	  <p>Access to this page is limited to the collection owner, <b>{{ user.username }} ({{object.owner.id}})</b></p>
   {% else %}
-	  <h4 class="mt-3">
-    {% if action == 'update' %}Collection Builder:
-	    <span class="text-danger">"{{ form.title.value }}"</span>
-			<span class="float-right small">
-	    <a href="{% url 'collection:place-collection-summary' object.id %}">
-		    {% fontawesome_icon 'eye' color='#336699' %}</a>&nbsp;
-	    <a href="{% url 'collection:collection-delete' object.id %}"
-      title="Delete collection" rel="tooltip" style="margin-top:-2px;">
-	    {% fontawesome_icon 'trash' color='#336699' %}</a></span>
-    {% else %}
-	    Collection Builder
-    {% endif %} <span class="red-head"> </span>
-	  </h4>
+	  <h5 class="mt-3">
+	    {% if action == 'update' %}Collection Builder:
+		    <span class="text-danger">"{{ form.title.value }}"</span>
+				<span class="float-right small">
+		    <a href="{% url 'collection:place-collection-summary' object.id %}">
+			    {% fontawesome_icon 'eye' color='#336699' %}</a>&nbsp;
+		    <a href="{% url 'collection:collection-delete' object.id %}"
+	      title="Delete collection" rel="tooltip" style="margin-top:-2px;">
+		    {% fontawesome_icon 'trash' color='#336699' %}</a></span>
+	    {% else %}
+		    Collection Builder
+	    {% endif %} <span class="red-head"> </span>
+	  </h5>
 	  <div class="d-flex h-100">
-	    <div id="coll_form" class="form-box mt-2 col-lg-4" style="height: 85%;">
-	      <form id="collection_form" class="" method="POST" action="#" enctype="multipart/form-data">
-	        {% csrf_token %}
-		      <input type="hidden" name="owner" value='{{ user.id }}' />
-		      <input type="hidden" name="type" value='place' />
-					<div class="form-group">
-						<label for="Title">Title &#x02733;</label>
-						{{ form.title }}
-					</div>
-					<div class="form-group">
-						<label for="Description">Description &#x02733;</label>
-						{{ form.description }}
-					</div>
-					<div class="form-group">
-						<label for="Keywords">Keywords &#x02733;</label>
-						{{ form.keywords }}
-					</div>
-					<div class="form-group">
-						<label for="Web page">Web page</label>
-						{{ form.webpage }}
-					</div>
-					<div class="form-group">
-						<label for="Image">Image</label><br/>
-						{{ form.image_file }}
-					</div>
-					<div class="form-group">
-						{% if form.public.value == True %}
-							<label for="Public">Public:</label>
-							{{ form.public }}
-						{% elif action == "update" %}Not yet public, see:
-							<a href="#"><span class="help-matches" data-id="going_public_coll">making a collection public {% fontawesome_icon 'question-circle' color='#336699' %}</span></a>
-						{% endif %}
-					</div>
-	      <hr/>
-	        <div>
-		        {% for form in images %}
-			        <p>Image file: {{ form.image }}</p>
-			        <p>Caption:{{ form.caption }}</p>
-		        {% endfor %}
-	        </div>
-	      </form>
-	      <tr>
-	        <td class="my-0 small">&#x02733;<i><b> required</b></i></td>
-	        <td>
-		        {% if action == 'update' and user.is_superuser %}
-			        <a class="float-right" href="#">
-				        editor options {% fontawesome_icon 'gear' color='#336699' %}
-			        </a>
-		        {% endif %}
-	        </td>
-	      </tr>
+	    <div id="coll_form" class="col-sm-4 form-box mt-2 " style="height: 85%;">
+	      <form id="collection_form" method="POST" action="#" enctype="multipart/form-data">
+        {% csrf_token %}
+	      <input type="hidden" name="owner" value='{{ user.id }}' />
+	      <input type="hidden" name="type" value='place' />
+				<div class="form-group">
+					<label for="Title">Title &#x02733;</label>
+					{{ form.title }}
+				</div>
+				<div class="form-group">
+					<label for="Description">Description &#x02733;</label>
+					{{ form.description }}
+				</div>
+				<div class="form-group">
+					<label for="Keywords">Keywords &#x02733;</label>
+					{{ form.keywords }}
+				</div>
+				<div class="form-group">
+					<label for="Web page">Web page</label>
+					{{ form.webpage }}
+				</div>
+				<div class="form-group">
+					<label for="Image">Image</label><br/>
+					{{ form.image_file }}
+				</div>
+				<div class="form-group">
+					{% if form.public.value == True %}
+						<label for="Public">Public:</label>
+						{{ form.public }}
+					{% elif action == "update" %}Not yet public, see:
+						<a href="#"><span class="help-matches" data-id="going_public_coll">making a collection public {% fontawesome_icon 'question-circle' color='#336699' %}</span></a>
+					{% endif %}
+				</div>
+        <hr/>
+        <tr>
+        <td class="my-0 small">&#x02733;<i><b> required</b></i></td>
+        <td>
+	        {% if action == 'update' and user.is_superuser %}
+		        <a class="float-right" href="#">
+			        editor options {% fontawesome_icon 'gear' color='#336699' %}
+		        </a>
+	        {% endif %}
+        </td>
+      </tr>
 
 	      <div id="editor_options" class="hidden">
 		      <p>Featured rank: {{ form.featured }}</p>
@@ -105,17 +98,16 @@
 	      <div id="select_div" class="hidden">{{ form.datasets }}</div>
 	      <hr/>
 	      <div id="collection_options"></div>
-		      <p id="referrer"></p>
+		    <p id="referrer"></p>
 	      <div>
 		      <span class="text-danger">delete</span>
 		      <span title="back"class="float-right">
 			      <a href="/mycollections">Cancel</a>
-			      <input id="btn_coll_submit" class="btn-sm btn-primary mt-2 ml-2" type="submit" value="Save & exit" />
-{#			      <input id="btn_coll_update" class="btn-sm btn-info mt-2" type="button" value="Update" />#}
+			      <input id="btn_coll_submit" class="btn-sm btn-primary mt-2 ml-2" type="submit" value="Save" />
 		      </span>
 	      </div>
-	    </form>
-	    </div>
+	      </form>
+	    </div> <!-- #coll_form -->
 	    <div id="coll_builder" class="coll-col col-sm-4 p-2" style="height: 85%;">
 				<ul id="coll_tabs" class="nav nav-tabs" role="tablist">
 				  <li class="nav-item">
@@ -177,7 +169,7 @@
 				    {% endif %}
 	        </div>
 				</div> <!-- .tab-content -->
-	    </div>
+	    </div> <!-- #coll_builder -->
 	    <div id="coll_right" class="coll-col col-sm-4 p-2" style="height: 85%;">
 	      <div id="coll_right_intro" class="hidden">
 		      <h5>Collections in WHG</h5>
@@ -222,26 +214,8 @@
 						</table>
 			      <input type="submit" value="Save" />
 			    </div>
-
-{#			    <p>When {% fontawesome_icon 'question-circle' color='#336699' %}<br/>#}
-{#				    <input type="text" placeholder="start date"  style="width:80px"/>#}
-{#				    <input type="text" placeholder="end date" style="width:80px"/>#}
-{#			    </p>#}
-{#			    <p>Relation {% fontawesome_icon 'question-circle' color='#336699' %}<br/>#}
-{#				    <select>#}
-{#					    <option value="-1">Relation type</option>#}
-{#					    <option value="0">Related locale</option>#}
-{#					    <option value="1">Waypoint</option>#}
-{#					    <option value="2">Battle site</option>#}
-{#				    </select>#}
-{#			      <p>Explanation:<br/><input type="textbox" /></p>#}
-{#			    </p>#}
-{#			    <p>Links: <a href="javascript:{ addDataset() }" class="">#}
-{#	          {% fontawesome_icon 'plus-square' color='#336699' %} add</a>#}
-{#				    <br/><a href="#">this page is related {% fontawesome_icon 'external-link' %}</a><br/>#}
-{#			    </p>#}
 		    </div>
-	    </div>
+	    </div> <!-- # coll_right -->
     </div> <!-- d-flex -->
 	  {# help modal div #}
 		<div class="selector py-3"><div id="helpme"></div></div>

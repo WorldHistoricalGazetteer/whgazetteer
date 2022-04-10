@@ -30,6 +30,14 @@
 
 {% block content %}
 <div id="dataset_content" class="container mt-1 px-1">
+	{% if user.id == object.owner.id or user.is_superuser or user in whgteam %}
+	<div>
+		<span class="float-right mr-2 pt-2">
+			<a href="{% url 'collection:place-collection-update' object.id %}" >
+				{% fontawesome_icon 'gear' color='#336699' %}</a>
+		</span>
+	</div>
+	{% endif %}
   <ul id="dataset_tabs" class="nav nav-tabs" role="tablist">
       <!--<span class="ds-title ml-1 mr-3">{ object.title }}</span>-->
       <li class="nav-item">

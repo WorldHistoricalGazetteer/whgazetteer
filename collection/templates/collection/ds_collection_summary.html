@@ -27,10 +27,11 @@
 
 {% block content %}
 <div class="container mt-1">
-	{% if user.is_superuser  or user in whgteam %}
+	{% if user.id == object.owner.id or user.is_superuser or user in whgteam %}
 	<div>
 		<span class="float-right mr-2 pt-2">
-			<a href="{% url 'collection:ds-collection-update' object.id %}" >{% fontawesome_icon 'gear' color='#336699' %}</a>
+			<a href="{% url 'collection:ds-collection-update' object.id %}" >
+				{% fontawesome_icon 'gear' color='#336699' %}</a>
 		</span>
 	</div>
 	{% endif %}
@@ -40,7 +41,7 @@
         <a class="nav-link active" id="summary-tab" data-link="summary" href="" role="tab">Collection Summary</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link" id="browse-tab" href="{% url 'collection:place-collection-browse' id=object.id %}" role="tab">Browse</a>
+        <a class="nav-link" id="browse-tab" href="{% url 'collection:ds-collection-browse' id=object.id %}" role="tab">Browse</a>
     </li>
   </ul>
   <div class="tab-content">
