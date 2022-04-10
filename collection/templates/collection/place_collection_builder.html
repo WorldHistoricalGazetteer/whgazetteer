@@ -17,13 +17,22 @@
     .coll-col { border-right: 1px dashed lightgray;;}
     #coll_place_detail{
 	    border-bottom:dashed 1px grey;
-	    background-color: aliceblue;
+	    padding-bottom: .3rem;
+	    {#background-color: aliceblue;#}
     }
     #coll_place_detail {min-height: 80px;}
     #coll_place_detail p{ margin-bottom: 0}
     #anno_div input {height: 1.5rem; font-size:.8rem;}
     .form-group {margin-bottom: .5rem !important;}
     .form-group label {margin-bottom:0 !important;}
+    .col-place-card {
+	    border: #c3c3c3 1px dashed;
+	    margin-bottom: 3px;
+	    background-color: aliceblue;
+	    padding-left: 2px;
+    }
+    #coll_placelist {padding: 3px;}
+    }
   </style>
 {% endblock %}
 
@@ -164,11 +173,19 @@
 			    </div>
 			    <div id="coll_placelist" class="tab-pane fade show active" role="tabpanel" aria-labelledby="coll_placelist-tab">
 				    {% if coll_places|length > 0 %}
-		          <ul>
-		            {% for p in coll_places %}
-			            <li><a class="coll-place" data-id={{ p.id }} href="#" >{{ p.title }}</a> ({{ p.id }}) {{ p.ccodes }}</li>
-		            {% endfor %}
-		          </ul>
+				      {% for p in coll_places %}
+					      <div class="col-place-card" data-id="{{ p.id }}">
+						      <p><b>{{ p.title }}</b>
+							      <i>pid: (<a class="coll-place" data-pid={{ p.id }} href="#" >{{ p.id }}</a>)</i> {{ p.ccodes }}
+						        <span class="float-right mr-1">
+							        <a class="mark-place" href="#" data-pid="{{ p.id }}" data-col="{{ object.id }}">
+								        <i class="fas fa-minus-circle" style="color:lightcoral;"></i></a>
+							        <a class="anno-place" href="#" data-pid="{{ p.id }}">
+								        <i class="far fa-edit"></i></a>
+						        </span>
+					        </p>
+					      </div>
+					    {% endfor %}
 				    {% else %}
 					    <p class="mb-0"><i>None yet</i></p>
 				    {% endif %}
@@ -198,12 +215,12 @@
 		    <div id="coll_right_anno" class="">
 		      <h6>Annotations</h6>
 			    <div id="coll_place_detail" class="mb-1">
-				    Select a place record from list on the left to annotate it
+				    <p class="mt-3">Select a place record from list on the left to annotate it</p>
 			    </div>
-			    <div id="anno_detail" class="mb-1"></div>
+			    <div id="anno_detail" class="mb-1 pt-2"></div>
 {#		      <form id="annotation_form" method="POST" action="{% url 'collection:collection-annotate' object.id %}" enctype="multipart/form-data">#}
 		      {% csrf_token %}
-			    <div id="anno_div" class="mb-1 hidden">
+			    <div id="anno_div" class="mb-1 pt-2 hidden">
 				    <input type="hidden" name="collection" value="{{ object.id }}" placeholder="collection"/>
 						<input id="pid" type="hidden" name="place" value="" placeholder="place (pid)"/>
 						<table>
@@ -228,6 +245,51 @@
 </div> <!-- container -->
 
 <script type="text/javascript">
+	// do something with place name (modal popup?)
+	$(".coll-place").click(function() {
+      console.log('place record', $(this).data('pid'));
+  })
+	// fetch r/o place record to annotation panel
+  $(".anno-place").click(function(){
+      console.log('fetch r/o place record', $(this).data('pid'));
+      getPlace($(this).data('pid'))
+	    $("#pid").val($(this).data('pid'))
+  })
+	// restore place
+
+	// mark/unmark place for removal from collection
+	$(".mark-place").click(function(){
+    pid = $(this).data('pid')
+		col = $(this).data('col')
+    console.log('mark ' + pid + ' in ' + col)
+		{#card = $(".col-place-card[data-id="+pid+"]")#}
+		if(remove_these.indexOf(pid)>-1){
+      // unmark it
+			card = $(".col-place-card[data-id="+pid+"]")
+			card.css('opacity', 1.0)
+			$(".col-place-card[data-id="+pid+"] i.fa-plus-circle")
+		    .addClass('fa-minus-circle')
+		    .removeClass('fa-plus-circle')
+		    .css('color','lightcoral')
+			$(card[0]).find('.restore-place').addClass('remove-place')
+				.removeClass('restore-place')
+			idx = remove_these.indexOf(pid)
+			remove_these.splice(idx,1)
+		} else {
+      // mark for removal
+			card = $(".col-place-card[data-id="+pid+"]")
+			card.css('opacity', 0.5)
+			$(".col-place-card[data-id="+pid+"] i.fa-minus-circle")
+		    .addClass('fa-plus-circle')
+		    .removeClass('fa-minus-circle')
+		    .css('color','green')
+			$(card[0]).find('.remove-place').addClass('restore-place')
+				.removeClass('remove-place')
+			remove_these.push(pid)
+		}
+    console.log('remove_these:', remove_these)
+	})
+
 	$("#btn_coll_update").click(function(){
       console.log('save & return')
 	})
@@ -460,15 +522,7 @@
 
   $(function(){
 		console.log('pid', "{{ pid }}")
-    $(".coll-place").click(function(){
-        console.log('fetch r/o place record', $(this).data('id'));
-        getPlace($(this).data('id'))
-		    $("#pid").val($(this).data('id'))
-    })
-		{#$("coll-place").click(function(){#}
-			{#e.preventDefault()#}
-		{#	console.log('fetch r/o place record', $(this).data('id'))#}
-
+	  window.remove_these = []
     $(".nav-link").click(function(){
 			  var tab = $(this).data('id')
 			  console.log(tab)

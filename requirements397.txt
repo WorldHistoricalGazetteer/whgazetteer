@@ -86,6 +86,7 @@ ezodf==0.3.2
 flake8==4.0.1
 Flask==2.0.3
 flower==0.9.3
+fontawesomfree==6.1.1
 frictionless==3.31.0
 geographiclib==1.52
 geojson==2.5.0

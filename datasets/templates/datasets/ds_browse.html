@@ -593,10 +593,20 @@
       if(typeof poppy != 'undefined'){poppy.remove()}
       // get id
       pid=$(this)[0].cells[0].textContent
-      
-      geom = features.find(function(f){return f.properties.pid==pid}).geometry
-      coords = geom.coordinates
-      
+
+	    // looks only at geometry features
+	    feat = features.find(function(f){
+          return f.properties.pid==pid})
+	    {#console.log('feat', feat)#}
+
+	    if(feat){
+	      geom = feat.geometry
+	      coords = geom.coordinates
+
+        // highlight marker, zoomTo()
+        highlightFeatureGL(pid, geom, coords)
+	    }
+
       // highlight this row, clear others
       var selected = $(this).hasClass("highlight-row");
       $("#placetable tr").removeClass("highlight-row");
@@ -604,9 +614,6 @@
       if(!selected)
         $(this).removeClass( "rowhover" );
         $(this).addClass("highlight-row");
-
-        // highlight marker, zoomTo()
-        highlightFeatureGL(pid, geom, coords)
 
       // fetch its detail
       getPlace(pid)
@@ -827,7 +834,7 @@
     $.ajax({
       url: "/api/place/"+pid,
       }).done(function( data ) {
-        console.log('place data', data)
+        {#console.log('place data', data)#}
         $("#detail").html(parsePlace(data))
         spinner_detail.stop()
         // events on detail items
