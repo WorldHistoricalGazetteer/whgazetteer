@@ -11,6 +11,11 @@ register = template.Library()
 #     group = Group.objects.get(name=group_name)
 #     return True if group in user.groups.all() else False
 
+@register.filter
+def remove(str, tozap):
+    print('remove string', str, type(str))
+    return str.replace(tozap, '')
+
 # truncates at previous word break
 @register.filter
 def trunc_it(str, numchars):

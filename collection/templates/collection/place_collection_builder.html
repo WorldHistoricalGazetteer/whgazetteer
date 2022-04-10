@@ -68,8 +68,13 @@
 					{{ form.webpage }}
 				</div>
 				<div class="form-group">
-					<label for="Image">Image</label><br/>
-					{{ form.image_file }}
+					<label for="Image">Image
+						{% if form.image_file %}
+							(<a href="javascript:$('#img_chooser').show()">change</a>)
+						{% endif %}
+					</label><br/>
+					<a href="/media/{{ form.image_file.value }}">{{ object.image_file.url|remove:'/media/collections/' }}</a>
+					<span id="img_chooser" class="hidden">{{ form.image_file }}</span>
 				</div>
 				<div class="form-group">
 					{% if form.public.value == True %}

@@ -22,7 +22,7 @@ class CollectionModelForm(forms.ModelForm):
             'description': forms.Textarea(attrs={
                 'rows':3,'cols': 49,'class':'textarea'
             }),
-            'image_file':forms.ClearableFileInput(),
+            'image_file':forms.FileInput(),
             'datasets': forms.CheckboxSelectMultiple,
             'featured': forms.TextInput(attrs={'size': 3}),
             'content': TinyMCE(attrs={'cols': 40, 'rows': 6})
