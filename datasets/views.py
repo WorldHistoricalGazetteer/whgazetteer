@@ -1994,7 +1994,6 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
 
     # it's csv, tsv, spreadsheet, or json...
     # if utf8, get extension and validate
-    # TODO: disabled utf-8 check here 9 March
     #if encoding and encoding.lower().startswith('utf-8'):
     ext = mthash_plus.mimetypes[mimetype]
     print('DatasetCreateView() extension', ext)
