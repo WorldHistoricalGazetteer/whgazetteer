@@ -26,7 +26,8 @@ class TraceAnnotation(models.Model):
     start = models.IntegerField(null=True, blank=True)
     end = models.IntegerField(null=True, blank=True)
     sequence = models.IntegerField(blank=True, null=True)
-    trace_type = models.CharField(max_length=20, choices = TRACETYPES)
+    trace_type = models.CharField(max_length=20, default='place')
+    # trace_type = models.CharField(max_length=20, choices = TRACETYPES)
     motivation = models.CharField(max_length=20, default='locating') # choices? locating, describing
     creator = JSONField(blank=True, null=True) # {name, affiliation, orcid, webpage}
     created = models.DateTimeField(null=True, auto_now_add=True)

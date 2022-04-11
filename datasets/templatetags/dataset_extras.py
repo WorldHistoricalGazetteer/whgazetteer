@@ -97,6 +97,14 @@ def join(value,delimit):
     return delimit.join(value)
 
 @register.filter
+def split(value,delimit):
+    print('split', value, delimit)
+    """split string to list"""
+    # if type(value[0]) == int:
+    #     value=map(str,value)
+    return value.split(delimit)
+
+@register.filter
 def parsedict(value,key):
     """returns value for given key"""
     #print('parsedict value, key',value,key)

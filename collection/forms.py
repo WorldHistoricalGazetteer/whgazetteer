@@ -12,10 +12,11 @@ class CollectionModelForm(forms.ModelForm):
     class Meta:
         model = Collection
         fields = ('id','owner','title','type','description','keywords','rel_keywords','image_file',
-                  'datasets','places','creator','contact','content','webpage','public','featured' )
+                  'datasets','creator','contact','content','webpage','public','featured' )
         widgets = {
             'title': forms.TextInput(attrs={'size': 50}),
             'keywords': forms.TextInput(attrs={'size': 50}),
+            'rel_keywords': forms.TextInput(attrs={'size': 50}),
             'creator': forms.TextInput(attrs={'size': 50}),
             'contact': forms.TextInput(attrs={'size': 50}),
             'webpage': forms.TextInput(attrs={'size': 50}),

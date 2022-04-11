@@ -211,12 +211,17 @@ class PlaceCollectionUpdateView(UpdateView):
     # COLL: merge querysets
     # coll_places = list(chain(*qs_list))
 
+    form_anno = TraceAnnotationModelForm(self.request.GET or None)
+    # anno_form = TraceAnnotationModelForm(self.request.GET or None, prefix="sch")
     # populates dropdown
     ds_select = [obj for obj in Dataset.objects.all().order_by('title') if user in obj.owners or user.is_superuser]
 
     context['action'] = 'update'
     context['ds_select'] = ds_select
     context['coll_dsset'] = datasets
+
+    # test: send single anno form to template
+    context['form_anno'] = form_anno
 
     # COLL: merged places
     # context['coll_places'] = coll_places
@@ -488,7 +493,7 @@ def annotate(request, *args, **kwargs):
     print('trace form not valid', form.errors)
 
   # collections/38/updatebeta
-  return redirect('/collections/'+str(cid)+'/updatebeta')
+  return redirect('/collections/'+str(cid)+'/update_pl')
   # return render(request, 'collections/collection_create_beta.html', context)
   # return render(request, 'collections/'+str(cid)+'/updatebeta', context)
   # return HttpResponseRedirect(request.META.get('HTTP_REFERER'), context)
