@@ -225,8 +225,8 @@
 			    <div id="anno_detail" class="mb-1 pt-2"></div>
 		      <form id="annotation_form" method="POST" action="{% url 'collection:collection-annotate' object.id %}" enctype="multipart/form-data">
 		      {% csrf_token %}
-{#			    <div id="anno_div" class="mb-1 pt-2 hidden">#}
-			    <div id="anno_div" class="mb-1 pt-2 ">
+			    <div id="anno_div" class="mb-1 pt-2 hidden">
+{#			    <div id="anno_div" class="mb-1 pt-2 ">#}
 				    <input name="collection" value="{{ object.id }}" placeholder="collection"/>
 {#				    <input type="hidden" name="collection" value="{{ object.id }}" placeholder="collection"/>#}
 						<input id="pid" name="place" value="" placeholder="place (pid)"/>
@@ -361,6 +361,9 @@
   // return html for display
   function parsePlace(data) {
     window.featdata = data
+	  {#traces = JSON.parse(data.traces).find(function(t){return t.fields.collection = "{{ object.id }}"})#}
+	  {#console.log('has trace for this collection', traces)#}
+
     function onlyUnique(array) {
       const map = new Map();
       const result = [];
@@ -484,15 +487,15 @@
       descrip += '<p><b>When</b>: earliest: '+data.minmax[0]+'; latest: '+data.minmax[1]
     }
 
-    // TRACES)
-	  traces=JSON.parse(data.traces)
-	  console.log('traces.length', traces.length)
-	  if(traces.length == 0){
+    // TRACES
+	  trace=JSON.parse(data.traces).find(function(t){return t.fields.collection = "{{ object.id }}"})
+	  console.log('got trace:', trace)
+	  if(!trace){
       // no annotations yet, make form visible
 		  $("#anno_detail").hide()
       $("#anno_div").fadeIn()
 	  } else {
-	    $("#anno_detail").html('<p><b>Trace annotation</b>: '+traces[0].fields+'</p>')
+	    $("#anno_detail").html('<p><b>Trace annotation</b>: '+trace.fields+'</p>')
 	  }
 
     // if geom(s) and 'certainty', add it
