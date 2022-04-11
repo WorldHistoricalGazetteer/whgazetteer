@@ -7,7 +7,7 @@ class TraceAnnotationModelForm(forms.ModelForm):
 
 	class Meta:
 		model = TraceAnnotation
-		fields = ('id', 'src_id', 'collection', 'place', 'start', 'end', 'when', 'sequence', 'trace_type',
+		fields = ('id', 'src_id', 'collection', 'place', 'note', 'start', 'end', 'when', 'sequence', 'trace_type',
 		          'motivation', 'creator')
 		# widgets = {
 		# 	'title': forms.TextInput(attrs={'size': 50}),

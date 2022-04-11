@@ -8,13 +8,21 @@ from main.choices import TRACETYPES, TRACERELATIONS
 # FKs: Collection, Place
 class TraceAnnotation(models.Model):
     # auto id
-    src_id = models.CharField(max_length=2044, blank=True, null=True) # if exists
     collection = models.ForeignKey('collection.Collection', db_column='collection',
         related_name='collections', on_delete=models.CASCADE)
     place = models.ForeignKey('places.Place', db_column='place',
         related_name='places', on_delete=models.CASCADE)
+    src_id = models.CharField(max_length=2044, blank=True, null=True) # if exists
+
+    # optional free text note
+    note = models.CharField(max_length=2044, blank=True, null=True)
+
+    # choices will come from Collection relations
+    relation = ArrayField(models.CharField(max_length=30), blank=True, null=True)
+
     # standard 'when' from LP format
     when = JSONField(blank=True, null=True) # {timespans[[],...], periods[{name, uri}], label, duration}
+
     start = models.IntegerField(null=True, blank=True)
     end = models.IntegerField(null=True, blank=True)
     sequence = models.IntegerField(blank=True, null=True)

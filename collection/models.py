@@ -22,6 +22,10 @@ class Collection(models.Model):
   title = models.CharField(null=False, max_length=255)
   description = models.CharField( null=False, max_length=2044)
   keywords = ArrayField(models.CharField(max_length=50), null=True)
+
+  # per-collection relation keyword choices, e.g. waypoint, birthplace, battle site
+  rel_keywords = ArrayField(models.CharField(max_length=30), null=True)
+
   # single representative image
   image_file = models.FileField(upload_to=coll_image_path)
 
