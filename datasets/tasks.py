@@ -1417,7 +1417,7 @@ def es_lookup_idx(qobj, *args, **kwargs):
   #ds_hits[p.id] = hitobjlist
   # no more need for hitobjlist
   
-  # index docs back to align_idx() for Hit writing
+  # return index docs to align_idx() for Hit writing
   return result_obj
 
 """

@@ -33,6 +33,7 @@ urlpatterns = [
     path('<int:id>/delete', views.CollectionDeleteView.as_view(), name='collection-delete'),
     
     path('list_ds/', views.ListDatasetView.as_view(), name='list-ds'),
+    path('add_ds/<int:coll_id>/<int:ds_id>', views.add_dataset, name='add-ds'),
     path('remove_ds/<int:coll_id>/<int:ds_id>', views.remove_dataset, name='remove-ds'),
 
     path('<int:id>/geojson/', views.fetch_geojson_coll, name="geojson-coll"),

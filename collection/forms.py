@@ -20,9 +20,7 @@ class CollectionModelForm(forms.ModelForm):
             'creator': forms.TextInput(attrs={'size': 50}),
             'contact': forms.TextInput(attrs={'size': 50}),
             'webpage': forms.TextInput(attrs={'size': 50}),
-            'description': forms.Textarea(attrs={
-                'rows':3,'cols': 49,'class':'textarea'
-            }),
+            'description': forms.Textarea(attrs={'rows':2,'cols': 49,'class':'textarea'}),
             'image_file':forms.FileInput(),
             'datasets': forms.CheckboxSelectMultiple,
             'featured': forms.TextInput(attrs={'size': 3}),

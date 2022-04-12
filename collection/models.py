@@ -26,9 +26,6 @@ class Collection(models.Model):
   # per-collection relation keyword choices, e.g. waypoint, birthplace, battle site
   rel_keywords = ArrayField(models.CharField(max_length=30), null=True)
 
-  # single representative image
-  image_file = models.FileField(upload_to=coll_image_path)
-
   # 3 new fields, 20210619
   creator = models.CharField(null=True, blank=True, max_length=500)
   contact = models.CharField(null=True, blank=True, max_length=500)
@@ -37,6 +34,7 @@ class Collection(models.Model):
   # new field, 20220405
   type = models.CharField(choices=COLLECTIONTYPES, max_length=12, default='dataset')
 
+  # single representative image
   image_file = models.FileField(upload_to=coll_image_path, blank=True, null=True)
   create_date = models.DateTimeField(null=True, auto_now_add=True)
   public = models.BooleanField(default=False)
@@ -95,6 +93,22 @@ class Collection(models.Model):
   class Meta:
     db_table = 'collections'
 
+class CollectionLink(models.Model):
+  collection = models.ForeignKey(Collection, default=None,
+    on_delete=models.CASCADE, related_name='links')
+  label = models.CharField(null=True, blank=True, max_length=200)
+  uri = models.TextField(validators=[URLValidator()])
+  link_type = models.CharField(default='page', max_length=10, choices=[('page','web page'), ('image','image'),('pdf','pdf')])
+  license = models.CharField(null=True, blank=True, max_length=64)
+
+  def __str__(self):
+    cap = self.label[:20]+('...' if len(self)>20 else '')
+    return '%s:%s' % (self.id, cap)
+
+  class Meta:
+      managed = True
+      db_table = 'collection_link'
+
 class CollectionImage(models.Model):
   collection = models.ForeignKey(Collection, default=None,
     on_delete=models.CASCADE, related_name='images')
@@ -105,7 +119,7 @@ class CollectionImage(models.Model):
 
   def __str__(self):
     cap = self.caption[:20]+('...' if len(self)>20 else '')
-    return '%s:%s' % (collection, cap)
+    return '%s:%s' % (self.id, cap)
 
   class Meta:
       managed = True

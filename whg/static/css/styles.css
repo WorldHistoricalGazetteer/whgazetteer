@@ -718,7 +718,7 @@ em { color: #993333;}
   max-width: 95%;
 }
 #coll_dscards_create { 
-  position:absolute;
+  /*position:absolute;*/
   overflow-y: auto; 
 }
 

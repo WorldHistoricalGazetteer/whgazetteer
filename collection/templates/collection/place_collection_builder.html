@@ -22,6 +22,7 @@
     }
     #coll_place_detail {min-height: 80px;}
     #coll_place_detail p{ margin-bottom: 0}
+    #coll_right_anno {margin-top:42px;}
     #anno_div table td {padding-top: 3px; padding-bottom: 3px;}
     #anno_div input {height: 1.5rem; font-size:.8rem;}
     .form-group {margin-bottom: .5rem !important;}
@@ -52,10 +53,10 @@
 	      title="Delete collection" rel="tooltip" style="margin-top:-2px;">
 		    {% fontawesome_icon 'trash' color='#336699' %}</a></span>
 	    {% else %}
-		    Collection Builder
+		    Collection Builder: {new}
 	    {% endif %} <span class="red-head"> </span>
 	  </h5>
-	  <div class="d-flex h-100">
+	  <div class="d-flex">
 	    <div id="coll_form" class="col-sm-4 form-box mt-2 " style="height: 85%;">
 	      <form id="collection_form" method="POST" action="#" enctype="multipart/form-data">
         {% csrf_token %}
@@ -70,123 +71,136 @@
 					{{ form.description }}
 				</div>
 				<div class="form-group">
-					<label for="Keywords">Keywords &#x02733;</label>
+					<label for="Keywords">Keywords &#x02733; <i>(comma-delimited)</i></label>
 					{{ form.keywords }}
 				</div>
 				<div class="form-group">
-					<label for="Relation options">Relation options</label>
+					<label for="Relation options">Relation options <i>(comma-delimited)</i></label>
 					{{ form.rel_keywords }}
 				</div>
 				<div class="form-group">
 					<label for="Web page">Web page</label>
 					{{ form.webpage }}
 				</div>
-				<div class="form-group">
-					<label for="Image">Image
-						{% if form.image_file %}
-							(<a href="javascript:$('#img_chooser').show()">change</a>)
-						{% endif %}
-					</label><br/>
-					<a href="/media/{{ form.image_file.value }}">{{ object.image_file.url|remove:'/media/collections/' }}</a>
-					<span id="img_chooser" class="hidden">{{ form.image_file }}</span>
+				{# single image #}
+	      <div class="form-group">
+					<label for="Image">Image</label>
+{#	        {% if not form.image_file.value %}null{% else %}empty string{% endif %}#}
+	        <span id="img_chooser_create">{{ form.image_file }}</span>
+		      <p>file: {{ form.image_file.value }}</p>
+{#					{% if action == 'create' %} {# create, no image yet #}
+{#						<span id="img_chooser_create">{{ form.image_file }}</span>#}
+{#					{% elif not form.image_file.value %} {# update & there's an image #}
+{#						{% fontawesome_icon 'photo' color='#336699' %}#}
+{#						<a href="/media/{{ form.image_file.value }}">{{ object.image_file.url|remove:'/media/collections/' }}</a>#}
+{#						(<a href="javascript:$('#img_chooser').toggle()">change</a>)#}
+{#					{% else %} {# update and there's no image yet #}
+{#						<span id="img_chooser" class="hidden">{{ form.image_file }}</span>#}
+{#					{% endif %}#}
 				</div>
-				<div class="form-group">
+				{# 1 or more links #}
+{#	      <div class="form-group">#}
+{#					<label for="Links">Links</label>#}
+{#					{{ images_form.as_p }}#}
+{#				</div>#}
+				<div id="d_public" class="form-group">
 					{% if form.public.value == True %}
 						<label for="Public">Public:</label>
 						{{ form.public }}
-					{% elif action == "update" %}Not yet public, see:
+					{% elif action == "update" %}Not public...see:
 						<a href="#"><span class="help-matches" data-id="going_public_coll">making a collection public {% fontawesome_icon 'question-circle' color='#336699' %}</span></a>
 					{% endif %}
 				</div>
-        <hr/>
         <tr>
-        <td class="my-0 small">&#x02733;<i><b> required</b></i></td>
-        <td>
-	        {% if action == 'update' and user.is_superuser %}
-		        <a class="float-right" href="#">
-			        editor options {% fontawesome_icon 'gear' color='#336699' %}
-		        </a>
-	        {% endif %}
-        </td>
-      </tr>
-
+	        <td class="my-0 small">&#x02733;<i><b> required</b></i></td>
+	        <td>
+		        {% if action == 'update' and user.is_superuser %}
+			        <a class="float-right" href="#">
+				        editor options {% fontawesome_icon 'gear' color='#336699' %}
+			        </a>
+		        {% endif %}
+	        </td>
+        </tr>
+	      <hr/>
 	      <div id="editor_options" class="hidden">
 		      <p>Featured rank: {{ form.featured }}</p>
 		      <p>Image: {{ form.image_file }}</p>
 	      </div>
 	      <div id="select_div" class="hidden">{{ form.datasets }}</div>
-	      <hr/>
 	      <div id="collection_options"></div>
 		    <p id="referrer"></p>
-	      <div>
-		      <span class="text-danger">delete</span>
+	      <div id="d_buttons">
 		      <span title="back"class="float-right">
+			      {% if action == 'update' %}
+			      <span class="text-danger mr-5">
+				      <a href="{% url 'collection:collection-delete' object.id %}"
+					      title="Delete collection" rel="tooltip" style="margin-top:-2px;">
+						    {% fontawesome_icon 'trash' color='red' %} delete</a>
+			      </span>
+			      {% endif %}
 			      <a href="/mycollections">Cancel</a>
 			      <input id="btn_coll_submit" class="btn-sm btn-primary mt-2 ml-2" type="submit" value="Save" />
 		      </span>
 	      </div>
 	      </form>
 	    </div> <!-- #coll_form -->
-	    <div id="coll_builder" class="coll-col col-sm-4 p-2" style="height: 85%;">
+	    <div id="coll_builder" class="col-sm-4 p-2" style="height: 85%;">
 				<ul id="coll_tabs" class="nav nav-tabs" role="tablist">
 				  <li class="nav-item">
-				    <a class="nav-link" id="coll_dslist-tab" data-toggle="tab" href="#coll_dslist" role="tab" aria-controls="coll_dslist" aria-selected="true" data-id="ds">Datasets</a>
+				    <a class="nav-link active" id="coll_dslist-tab" data-toggle="tab" href="#coll_dslist" role="tab" aria-controls="coll_dslist" aria-selected="true" data-id="ds">Datasets</a>
 				  </li>
 				  <li class="nav-item">
-				    <a class="nav-link active" id="coll_placelist-tab" data-toggle="tab" href="#coll_placelist" role="tab" aria-controls="coll_placelist" aria-selected="false" data-id="pl">Places ({{ coll_places|length }})</a>
+				    <a class="nav-link" id="coll_placelist-tab" data-toggle="tab" href="#coll_placelist" role="tab" aria-controls="coll_placelist" aria-selected="false" data-id="pl">Places ({{ coll_places|length }})</a>
 				  </li>
 				</ul>
 		    <div class="tab-content" style="height:95%; overflow:auto;">
-			    <div id="coll_dslist" class="tab-pane fade" role="tabpanel" aria-labelledby="coll_dslist-tab">
+			    <div id="coll_dslist" class="tab-pane fade show active" role="tabpanel" aria-labelledby="coll_dslist-tab">
 		        <p class="mt-2">
-		        <span class="mr-2 smaller">
-		          <select id="select_ds" name="ds" class="custom-select-sm">
-		          <option value="0">Select dataset</option>
-		          <option disabled>___________</option>
-		          {% for ds in ds_select %}
-		            {% if ds not in coll_dsset %}
-		              <option value="{{ ds.id }}">{{ ds.title }}</option>
-		            {% endif %}
-		          {% endfor %}
-		          </select>
-		        </span>
-		        {% if action == 'create' %}
-			        <a href="javascript:{ addDataset('create') }" class="">
-			          {% fontawesome_icon 'plus-square' color='#336699' %} add</a>
-		        {% else %}
-			        <a href="javascript:{ addDataset('update') }" class="">
-			          {% fontawesome_icon 'plus-square' color='#336699' %} add</a>
-		        {% endif %}
-		      </p>
+			        <span class="mr-2 smaller">
+			          <select id="select_ds" name="ds" class="custom-select-sm">
+			          <option value="0">Select dataset</option>
+			          <option disabled>___________</option>
+			          {% for ds in ds_select %}
+			            {% if ds not in coll_dsset %}
+			              <option value="{{ ds.id }}">{{ ds.title }}</option>
+			            {% endif %}
+			          {% endfor %}
+			          </select>
+			        </span>
+		        </p>
 		        <!-- id, label, title, description, creator, create_date, webpage, numrows, datatype -->
 		        <div id="coll_dscards_create">
 			        {% if coll_dsset|length == 0 %}<p id="msg" class="font-italic smaller">None yet...</p>{% endif %}
 			        {% for d in coll_dsset %}
-			          <div class="ds_card">
-			            <p class="mb-0"><a href="{% url 'datasets:ds_summary' id=d.id %}"><span class="ds_title">{{ d.title }}</span></a> <small>({{d.label}}/{{ d.id}})</small></p>
+			          <div class="ds_card w-100">
+			            <p class="mb-0">
+				            <a href="{% url 'datasets:ds_summary' id=d.id %}"><span class="ds_title">{{ d.title }}</span></a>
+				            <small>({{d.label}}/{{ d.id}})</small>
+			            </p>
 			            <div class="ds_fields">
 			              <p class="my-1"><b>Description</b>: {{ d.description|truncatechars:150 }}</p>
 			              <p class="my-1"><b>Create date</b>: {{ d.create_date|date:"d M Y" }}</p>
 			              <p class="my-1"><b># rows</b>: {{ d.numrows }}
 
-			              <a href="{% url 'collection:remove-ds' ds_id=d.id coll_id=object.id %}" class="float-right">{% fontawesome_icon 'minus-square' color='#336699' %} remove</a>
+			              <a href="{% url 'collection:remove-ds' ds_id=d.id coll_id=object.id %}" class="float-right">
+				              {% fontawesome_icon 'minus' color='#336699' %} remove</a>
 			              </p>
 			            </div>
 			          </div>
 			        {% endfor %}
 		        </div> <!-- #coll_dscards_create -->
 			    </div>
-			    <div id="coll_placelist" class="tab-pane fade show active" role="tabpanel" aria-labelledby="coll_placelist-tab">
+			    <div id="coll_placelist" class="tab-pane fade" role="tabpanel" aria-labelledby="coll_placelist-tab">
 				    {% if coll_places|length > 0 %}
 				      {% for p in coll_places %}
 					      <div class="col-place-card" data-id="{{ p.id }}">
-						      <p><b>{{ p.title }}</b>
-							      <i>pid: (<a class="coll-place" data-pid={{ p.id }} href="#" >{{ p.id }}</a>)</i> {{ p.ccodes }}
+						      <p><b>{{ p.title }}</b> {{ p.ccodes }}
+							      <i>pid: (<a class="coll-place" data-pid={{ p.id }} href="#" >{{ p.id }}</a>)</i>
 						        <span class="float-right mr-1">
 							        <a class="mark-place" href="#" data-pid="{{ p.id }}" data-col="{{ object.id }}">
-								        <i class="fas fa-minus-circle" style="color:lightcoral;"></i></a>
+								        {% fontawesome_icon 'minus-square' color='#ff8080' %}</a>
 							        <a class="anno-place" href="#" data-pid="{{ p.id }}">
-								        <i class="far fa-edit"></i></a>
+								        {% fontawesome_icon 'edit' color='#336699' %}</a>
 						        </span>
 					        </p>
 					      </div>
@@ -197,7 +211,7 @@
 	        </div>
 				</div> <!-- .tab-content -->
 	    </div> <!-- #coll_builder -->
-	    <div id="coll_right" class="coll-col col-sm-4 p-2" style="height: 85%;">
+	    <div id="coll_right" class="col-sm-4 p-2" style="height: 85%;">
 	      <div id="coll_right_intro" class="hidden">
 		      <h5>Collections in WHG</h5>
 		      <p>A <mark-b>collection</mark-b> is a set of existing WHG place records.</p>
@@ -220,45 +234,39 @@
 		    <div id="coll_right_anno" class="">
 		      <h6>Annotations</h6>
 			    <div id="coll_place_detail" class="mb-1">
+				    {% if action == 'update' %}
 				    <p class="mt-3">Select a place record from list on the left to annotate it</p>
+				    {% endif %}
 			    </div>
-			    <div id="anno_detail" class="mb-1 pt-2"></div>
-		      <form id="annotation_form" method="POST" action="{% url 'collection:collection-annotate' object.id %}" enctype="multipart/form-data">
-		      {% csrf_token %}
-			    <div id="anno_div" class="mb-1 pt-2 hidden">
-{#			    <div id="anno_div" class="mb-1 pt-2 ">#}
-				    <input name="collection" value="{{ object.id }}" placeholder="collection"/>
-{#				    <input type="hidden" name="collection" value="{{ object.id }}" placeholder="collection"/>#}
-						<input id="pid" name="place" value="" placeholder="place (pid)"/>
-						<input name="trace_type" type="hidden" value="place" />
-						<input name="motivation" type="hidden" value="locating" />
-{#						<input id="pid" type="hidden" name="place" value="" placeholder="place (pid)"/>#}
-						<table>
-{#							<tr>#}
-{#								<td>Type</td>#}
-{#								<td>{{ form_anno.trace_type }}</td>#}
-{#							</tr>#}
-							<tr>
-								<td>Relation:</td>
-								<td>
-									<select name="relation">
-											<option value="">Relation keyword</option>
-										{% for rel in form.rel_keywords.value|split:',' %}
-											<option value="rel">{{ rel }}</option>
-										{% endfor %}
-									</select>
-								</td>
-{#							<td>{{ form_anno.relation }}</td>#}
-							</tr>
-							<tr><td>Start/End:</td><td>{{ form_anno.start }}/{{ form_anno.end }}</td></tr>
-							<tr><td>Sequence:</td><td>{{ form_anno.sequence }}</td></tr>
-							<tr><td>Notes:</td><td>{{ form_anno.note }}</td></tr>
-{#							<tr><td>Motivation</td>#}
-{#								<td></td>#}
-{#							</tr>#}
-					</table>
-			      <input type="submit" value="Save" />
-			    </div>
+					{# if create, annotation not possible #}
+		      {% if action == 'update' %}
+			      <div id="anno_detail" class="mb-1 pt-2"></div>
+			      <form id="annotation_form" method="POST" action="{% url 'collection:collection-annotate' object.id %}" enctype="multipart/form-data">
+			      {% csrf_token %}
+				    <div id="anno_div" class="mb-1 pt-2 hidden">
+					    <input name="collection" value="{{ object.id }}" placeholder="collection"/>
+							<input id="pid" name="place" value="" placeholder="place (pid)"/>
+							<input name="trace_type" type="hidden" value="place" />
+							<input name="motivation" type="hidden" value="locating" />
+							<table>
+								<tr>
+									<td>Relation:</td>
+									<td>
+										<select name="relation">
+												<option value="">Relation keyword</option>
+											{% for rel in form.rel_keywords.value|split:',' %}
+												<option value={{ rel }}>{{ rel }}</option>
+											{% endfor %}
+										</select>
+									</td>
+								</tr>
+								<tr><td>Start/End:</td><td>{{ form_anno.start }}/{{ form_anno.end }}</td></tr>
+								<tr><td>Sequence:</td><td>{{ form_anno.sequence }}</td></tr>
+								<tr><td>Notes:</td><td>{{ form_anno.note }}</td></tr>
+							</table>
+				      <input type="submit" value="Save" />
+				    </div>
+		      {% endif %}
 		    </div>
 	    </div> <!-- # coll_right -->
     </div> <!-- d-flex -->
@@ -326,7 +334,8 @@
     {#$(this).hide().html(val).fadeIn("fast");#}
     e.preventDefault();
   });
-  // builds link for external place record
+
+	// builds link for external place record
   function url_extplace(identifier) {
     // abbreviate links not in aliases.base_urls
     if(identifier.startsWith('http')) {
@@ -337,13 +346,15 @@
     }
     return link
   }
-  // builds link for external placetype record
+
+	// builds link for external placetype record
   function url_exttype(type) {
       console.dir(type)
     link = ' <a href="#" class="exttab" data-id='+type.identifier+
       '>('+type.label.label+' {% fontawesome_icon "external-link" color="#336699" %})</a>'
     return link
   }
+
 	// extent of timespan list
   function minmaxer(timespans){
     //console.log('got to minmax()',JSON.stringify(timespans))
@@ -549,6 +560,7 @@
   $(function(){
 		console.log('pid', "{{ pid }}")
 	  window.remove_these = []
+
     $(".nav-link").click(function(){
 			  var tab = $(this).data('id')
 			  console.log(tab)
@@ -576,6 +588,7 @@
       console.log('help:', page)
       $('.selector').dialog('open');
     })
+
     $(".selector").dialog({
       resizable: false,
       autoOpen: false,
@@ -599,30 +612,50 @@
   {#    $("#msg").html('<h6>Collections must contain at least 2 datasets!</h6>').addClass('strong-red').show()#}
   {#  }#}
 
+	$("#select_ds").change(function(){
+    console.log('selected from list', $(this).val())
+		addDataset('create')
+	})
   function listDataset(d) {
     console.log('listing this:', d.title)
     dslist.push(d.id)
     $("#id_datasets [value=" + d.id + "]").attr("checked", "checked");
+    coll_id={{ object.id }}
     card='<div class="ds_card" id="card_'+d.id+'">'
         +'<p class="mb-0"><a href="#"><span class="ds_title">'+d.title+'</span></a> ('+d.label+'/'+d.id+')</p>'
         +'<div class="ds_fields">'
           +'<p class="my-1"><b>Description</b>: '+d.description+'</p>'
-          +'<p class="my-1"><b>Create date</b>: '+d.create_date+'</p>'
-          +'<p class="my-1"><b># rows</b>: '+d.numrows
-            +'<a href="javascript:{ removeDataset('+d.id+') }" class="float-right">'
+          +'<p class="my-1"><b>Create date</b>: '+d.create_date.slice(0,10)+'; <b># rows</b>: '+d.numrows+'</p>'
+          +'<p class="my-1"><a href="javascript:{ removeDataset('+d.id+') }">'
               +'{% fontawesome_icon "minus-square" color="#336699" %} remove</a>'
-          +'</p></div></div>'
+		          +'<span class="float-right"><a id="a_addplaces" href="javascript:{addPlaces('+d.id+')}">add places</a></span'
+		      +'</p></div></div>'
+		$("a_addplaces").click(function(){
+		  thisy = $(this)
+		  console.log('thisy', thisy)
+		})
     $("#coll_dscards_create").append(card)
     // console.log(card)
   }
-  // adds, displays single dataset
+	// adds all dataset places to placelist
+	function addPlaces(dsid){
+		url = "/collections/add_ds/"+"{{ object.id }}"+"/"+dsid
+		console.log('adding dataset w/o save',dsid, {{ object.id }}, url)
+		document.location.href = url
+		{#url = "{% url 'collection:add-ds' ds_id="+dsid+" coll_id=456 %}"#}
+		{#document.location.href = url.replace('123', dsid).replace('456',{{ object.id }})#}
+		{#)#}
+		{#$("#collection_form").submit('remain')#}
+	}
+  // lists dataset on dropdown select
   function addDataset(action) {
     console.log('selected', $("#select_ds").val())
+
     $.get("/collections/list_ds", {ds_id:$("#select_ds").val()},
       function(data){
         // render to html
         listDataset(data)
-        console.log('ds to list:',data)
+        {#console.log('ds to list:',data)#}
         // append ds.id to form
     });
     // reset select
@@ -635,13 +668,13 @@
     $("#card_"+dsid).remove()
   }
   function removeDataset(dsid) {
-    if("{{ action }}" == 'update') {
+    {#if("{{ action }}" == 'update') {#}
       console.log('removing ' + dsid + 'from collection '+ "{{object.id}}")
-      $.ajax("/collections/remove_ds/{{object.id}}/"+dsid,
-        function(result){
-          console.log('removeDataset() result', result)
-      });
-    } else {
+    {#  $.ajax("/collections/remove_ds/{{object.id}}/"+dsid,#}
+    {#    function(result){#}
+    {#      console.log('removeDataset() result', result)#}
+    {#  });#}
+    {# else #}
       $("#id_datasets [value=" + dsid + "]").prop("checked", false);
       let idx = dslist.indexOf(dsid)
       dslist.splice(idx, dslist.length);
@@ -649,7 +682,7 @@
       $(card).remove()
       if(dslist.length == 0 ){ $("#msg").html('None yet...').show()}
       console.log('removed '+dsid+' from dslist[] and dom')
-    }
+    {# } #}
     // reset select
     $("#select_ds").val(0)
   }

@@ -78,10 +78,22 @@ class ListDatasetView(View):
       "id": ds.id,
       "label": ds.label,
       "title": ds.title,
+      "create_date": ds.create_date,
       "description": ds.description[:100]+'...',
       "numrows": ds.places.count()
     }
     return JsonResponse(result, safe=False)
+
+# adds dataset to collection, refreshes page
+def add_dataset(request, *args, **kwargs):
+  print('add_dataset() kwargs', kwargs)
+  coll = Collection.objects.get(id=kwargs['coll_id'])
+  ds = Dataset.objects.get(id=kwargs['ds_id'])
+  print('add_dataset(): coll, ds', coll, ds)
+  coll.datasets.add(ds)
+  # coll.datasets.remove(ds)
+
+  return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 # removes dataset from collection, refreshes page
 def remove_dataset(request, *args, **kwargs):
@@ -96,6 +108,10 @@ def remove_dataset(request, *args, **kwargs):
 from django.forms.models import inlineformset_factory
 CollectionImageFormset = inlineformset_factory(
     Collection, CollectionImage, fields=('image','caption','uri','license'), extra=1
+)
+from django.forms.models import inlineformset_factory
+CollectionLinkFormset = inlineformset_factory(
+    Collection, CollectionLink, fields=('uri','label','link_type'), extra=1
 )
 """ PLACE COLLECTIONS """
 """ TODO: refactor to fewer views """
@@ -118,11 +134,13 @@ class PlaceCollectionCreateView(LoginRequiredMixin, CreateView):
     context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
 
     datasets = []
-    # add images
+    # add 1 or more links, images (?)
     if self.request.POST:
-      context["images"] = CollectionImageFormset(self.request.POST)
+      context["links_form"] = CollectionLinkFormset(self.request.POST)
+      context["images_form"] = CollectionImageFormset(self.request.POST)
     else:
-      context["images"] = CollectionImageFormset()
+      context["links_form"] = CollectionLinkFormset()
+      context["images_form"] = CollectionImageFormset()
 
     # owners create collections from their datasets
     ds_select = [obj for obj in Dataset.objects.all().order_by('title') if user in obj.owners or
@@ -136,11 +154,11 @@ class PlaceCollectionCreateView(LoginRequiredMixin, CreateView):
 
   def form_valid(self, form):
     context = self.get_context_data()
-    images = context['images']
+    # images = context['images']
     self.object = form.save()
-    if images.is_valid():
-      images.instance = self.object
-      images.save()
+    # if images.is_valid():
+    #   images.instance = self.object
+    #   images.save()
 
     print('form is valid, cleaned_data',form.cleaned_data)
     print('referrer', self.request.META.get('HTTP_REFERER'))
@@ -183,6 +201,7 @@ class PlaceCollectionUpdateView(UpdateView):
 
   def form_valid(self, form):
     print('referrer', self.request.META.get('HTTP_REFERER'))
+    print('update kwargs', self.kwargs)
     if form.is_valid():
       print(form.cleaned_data)
       obj = form.save(commit=False)
@@ -492,21 +511,7 @@ def annotate(request, *args, **kwargs):
   else:
     print('trace form not valid', form.errors)
 
-  # collections/38/updatebeta
   return redirect('/collections/'+str(cid)+'/update_pl')
-  # return render(request, 'collections/collection_create_beta.html', context)
-  # return render(request, 'collections/'+str(cid)+'/updatebeta', context)
-  # return HttpResponseRedirect(request.META.get('HTTP_REFERER'), context)
-
-  #     Log.objects.create(
-  #       # category, logtype, "timestamp", subtype, note, dataset_id, user_id
-  #       category = 'collection',
-  #       logtype = 'annotation',
-  #       note = 'trace annotation: '+ str(obj.id) + '. collection ' + cid +\
-  #              'w/place: '+str(pid)+ 'by '+ user.username
-  #     )
-  #   else:
-  #     print('trace form not valid', form.errors)
 
 class CollectionDeleteView(DeleteView):
   template_name = 'collection/collection_delete.html'
