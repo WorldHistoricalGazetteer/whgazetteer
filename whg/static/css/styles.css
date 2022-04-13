@@ -722,7 +722,7 @@ em { color: #993333;}
   overflow-y: auto; 
 }
 
-.ds_card {
+.ds_card, .place-card {
   padding: .2rem;
   border: 1px dashed #999;
   border-radius: 8px;

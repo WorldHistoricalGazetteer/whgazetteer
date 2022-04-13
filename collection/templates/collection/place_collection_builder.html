@@ -86,17 +86,18 @@
 	      <div class="form-group">
 					<label for="Image">Image</label>
 {#	        {% if not form.image_file.value %}null{% else %}empty string{% endif %}#}
-	        <span id="img_chooser_create">{{ form.image_file }}</span>
-		      <p>file: {{ form.image_file.value }}</p>
-{#					{% if action == 'create' %} {# create, no image yet #}
-{#						<span id="img_chooser_create">{{ form.image_file }}</span>#}
-{#					{% elif not form.image_file.value %} {# update & there's an image #}
-{#						{% fontawesome_icon 'photo' color='#336699' %}#}
-{#						<a href="/media/{{ form.image_file.value }}">{{ object.image_file.url|remove:'/media/collections/' }}</a>#}
-{#						(<a href="javascript:$('#img_chooser').toggle()">change</a>)#}
-{#					{% else %} {# update and there's no image yet #}
-{#						<span id="img_chooser" class="hidden">{{ form.image_file }}</span>#}
-{#					{% endif %}#}
+{#	        <span id="img_chooser_create">{{ form.image_file }}</span>#}
+{#		      <p>file: {{ form.image_file.value }}</p>#}
+					{% if action == 'create' %} {# create, no image yet #}
+						<span id="img_chooser_create">{{ form.image_file }}</span>
+					{% elif form.image_file.value %} {# update & there's an image #}
+						{% fontawesome_icon 'photo' color='#336699' %}
+						<a href="/media/{{ form.image_file.value }}">{{ object.image_file.url|remove:'/media/collections/' }}</a>
+						(<a href="javascript:$('#img_chooser').toggle()">change</a>)
+					{% else %} {# update and there's no image yet #}
+						<span id="img_chooser_update" >{{ form.image_file }}</span>
+					{% endif %}
+	        <span id="img_chooser" class="hidden">{{ form.image_file }}</span>
 				</div>
 				{# 1 or more links #}
 {#	      <div class="form-group">#}
@@ -147,14 +148,14 @@
 	    <div id="coll_builder" class="col-sm-4 p-2" style="height: 85%;">
 				<ul id="coll_tabs" class="nav nav-tabs" role="tablist">
 				  <li class="nav-item">
-				    <a class="nav-link active" id="coll_dslist-tab" data-toggle="tab" href="#coll_dslist" role="tab" aria-controls="coll_dslist" aria-selected="true" data-id="ds">Datasets</a>
+				    <a class="nav-link" id="coll_dslist-tab" data-toggle="tab" href="#coll_dslist" role="tab" aria-controls="coll_dslist" aria-selected="true" data-id="ds">Datasets</a>
 				  </li>
 				  <li class="nav-item">
-				    <a class="nav-link" id="coll_placelist-tab" data-toggle="tab" href="#coll_placelist" role="tab" aria-controls="coll_placelist" aria-selected="false" data-id="pl">Places ({{ coll_places|length }})</a>
+				    <a class="nav-link active" id="coll_placelist-tab" data-toggle="tab" href="#coll_placelist" role="tab" aria-controls="coll_placelist" aria-selected="false" data-id="pl">Places ({{ coll_places|length }})</a>
 				  </li>
 				</ul>
 		    <div class="tab-content" style="height:95%; overflow:auto;">
-			    <div id="coll_dslist" class="tab-pane fade show active" role="tabpanel" aria-labelledby="coll_dslist-tab">
+			    <div id="coll_dslist" class="tab-pane fade" role="tabpanel" aria-labelledby="coll_dslist-tab">
 		        <p class="mt-2">
 			        <span class="mr-2 smaller">
 			          <select id="select_ds" name="ds" class="custom-select-sm">
@@ -190,7 +191,7 @@
 			        {% endfor %}
 		        </div> <!-- #coll_dscards_create -->
 			    </div>
-			    <div id="coll_placelist" class="tab-pane fade" role="tabpanel" aria-labelledby="coll_placelist-tab">
+			    <div id="coll_placelist" class="tab-pane fade show active" role="tabpanel" aria-labelledby="coll_placelist-tab">
 				    {% if coll_places|length > 0 %}
 				      {% for p in coll_places %}
 					      <div class="col-place-card" data-id="{{ p.id }}">

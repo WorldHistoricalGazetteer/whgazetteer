@@ -264,7 +264,7 @@ class PlaceCollectionSummaryView(DetailView):
     print('CollectionDetailView(), kwargs',self, self.kwargs)
 
     datasets = self.object.datasets.all()
-
+    places = self.object.places.all().order_by('title')
     # gather bounding boxes
     bboxes = [ds.bounds for ds in datasets]
 
@@ -273,6 +273,7 @@ class PlaceCollectionSummaryView(DetailView):
     context['mbtokenwhg'] = settings.MAPBOX_TOKEN_WHG
     context['whgteam'] = User.objects.filter(groups__name='whg_team')
 
+    context['place_list'] = places
     context['ds_list'] = datasets
     context['bboxes'] = bboxes
     return context
