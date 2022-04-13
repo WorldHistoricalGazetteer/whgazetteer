@@ -39,12 +39,13 @@
 	</div>
 	{% endif %}
   <ul id="dataset_tabs" class="nav nav-tabs" role="tablist">
+      <!--<span class="ds-title ml-1 mr-3">{ object.title }}</span>-->
       <li class="nav-item">
-          <a class="nav-link active" id="browse-tab" href="#" role="tab"><sr>{{object.title}}</sr></a>
+          <a class="nav-link" id="summary-tab" data-link="summary" href="{% url 'collection:place-collection-summary' pk=object.id %}" role="tab">Collection Summary</a>
       </li>
-      {% comment %}<li class="nav-item">
-          <a class="nav-link" id="summary-tab" data-link="summary" href="{% url 'collection:place-collection-summary' pk=object.id %}" role="tab">summary</a>
-      </li>{% endcomment %}
+      <li class="nav-item">
+          <a class="nav-link active" id="browse-tab" href="#" role="tab">Browse: <sr>{{object.title}}</sr> places</a>
+      </li>
   </ul>
   {{ ds_list|json_script:"ds_list" }}
   {{ bboxes|json_script:"bboxes" }}
@@ -52,43 +53,17 @@
     <div id="browse" class="tab-pane fade show active" role="tabpanel" aria-labelledby="browse-tab">
         <div class="container mt-3 pl-0">
           <div class="row">
-            <div id="drftable_detail" class="col-sm-8">
+            <div id="drftable_detail" class="col-sm-5">
               <div class="toomany hidden text-danger small"></div>
-				      <div id="coll_meta">
-				        <div class="row">
-					        <div class="col-sm-7">
-						        <table>
-						        <tr><td><b>Title</b></td><td class="larger strong">{{ object.title }}</td></tr>
-						        <tr><td><b>Description</b></td><td>{{ object.description|readmore:200|safe }}</td></tr>
-						        <tr><td><b>Keywords</b></td><td>{{ object.keywords|join:', ' }}</td></tr>
-						        {% if object.webpage %}
-						        <tr><td><b>Webpage</b></td><td>
-						          <a href="{{object.webpage }}" target="_blank">link {% fontawesome_icon 'external-link' color='#336699' %}</a>
-						        </td></tr>
-						        {% endif %}
-						        {% if object.creator %}
-						          <tr><td><b>Creator(s)</b></td><td>{{ object.creator }}</td></tr>
-						        {% endif %}
-						        {% if object.contact %}
-						          <tr><td><b>Contact</b></td><td>{{ object.contact|url_it|safe }}</td></tr>
-						        {% endif %}
-						        </table>
-					        </div>
-					        <div class="col-sm-5 ">
-						        <img src="/media/{{ object.image_file.name }}" width="200" align="right"/>
-					        </div>
-				        </div>
-				      </div>
-              <div class="row pl-4">
-	              <div class="col-sm-8" style="padding:0 !important;">
-	                <div id="map" style="height:300px;"></div>
-	              </div>
-	              <div id="row_detail" class="col-sm-4">
-	                <div id="detail" class="small pl-2"></div>
-	              </div>
+              <div id="#ds_filter"></div>
+              <div id="map" style="height:300px;">
+                  <!--{ leaflet_map "map_browse" %}-->
+              </div>
+              <div id="row_detail">
+                <div id="detail" class="small"></div>
               </div>
             </div> <!-- drftable_detail -->
-            <div id="drftable_list" class="col-sm-4">
+            <div id="drftable_list" class="col-sm-7">
 	            {{ coll_places|slice:":10"}}
               <table id="placetable" class="table table-striped table-bordered" style="width:100%">
                 <thead>
@@ -98,13 +73,13 @@
                     <th>title</th>
                     <th>ccodes</th>
                     <th>geo</th>
-{#                    <th class="hidden">revwd</th>#}
-{#                    <th class="hidden">revtgn</th>#}
-{#                    <th class="hidden">revwhg</th>#}
-{#                    <th>wikidata <a rel="tooltip" data-html="true" title="&#x25a2; not reviewed<br/><i class='fa fa-check-square-o'></i> reviewed" class="pointer text-danger strong">?</a></th>#}
-{#                    <th>tgn <a rel="tooltip" data-html="true" title="&#x25a2; not reviewed<br/><i class='fa fa-check-square-o'></i> reviewed" class="pointer text-danger strong">?</a></th>#}
-{#                    <th>whg <a rel="tooltip" data-html="true" title="&#x25a2; not reviewed<br/><i class='fa fa-check-square-o'></i> reviewed )" class="pointer text-danger strong">?</a></th>#}
-{#                    <th class="hidden">dataset_id</th>#}
+                    <th class="hidden">revwd</th>
+                    <th class="hidden">revtgn</th>
+                    <th class="hidden">revwhg</th>
+                    <th>wikidata <a rel="tooltip" data-html="true" title="&#x25a2; not reviewed<br/><i class='fa fa-check-square-o'></i> reviewed" class="pointer text-danger strong">?</a></th>
+                    <th>tgn <a rel="tooltip" data-html="true" title="&#x25a2; not reviewed<br/><i class='fa fa-check-square-o'></i> reviewed" class="pointer text-danger strong">?</a></th>
+                    <th>whg <a rel="tooltip" data-html="true" title="&#x25a2; not reviewed<br/><i class='fa fa-check-square-o'></i> reviewed )" class="pointer text-danger strong">?</a></th>
+                    <th class="hidden">dataset_id</th>
                     <!--<th>ds</th>-->
                   </tr>
                 </thead>
@@ -177,7 +152,7 @@
       // filter table
       val = $(this).val()
       localStorage.setItem('filter', val)
-      {#startMapSpinner()#}
+      <!--startMapSpinner()-->
       if(val == -1){
         // clear search
         startFilterSpinner()
@@ -238,7 +213,6 @@
   }
   
   $(function(){
-		var token_whg = '{{ mbtokenwhg }}', token_mb = '{{ mbtokenmb }}';
     window.ds_list = JSON.parse(document.getElementById('ds_list').textContent);
     source_list = ds_list.map(function(d){ return d.label})
     window.layer_list = getLoadedLayers()
@@ -258,8 +232,8 @@
     // initialize table
     // task columns are inoperable in this public view
     table = $('#placetable').DataTable({
-      {#dom: "<'row'<'#ds_filter.col-sm-12 col-md-8 pr-0'>"+#}
-      dom: "<'row'<'pl-3'f>>" +
+      dom: "<'row'<'#ds_filter.col-sm-12 col-md-8 pr-0'>"+
+      "<'col-sm-12 col-md-4 pl-0'f>>" +
       "<'row'<'col-sm-12'tr>>" +
       "<'row mt-1'<'col-sm-12 col-md-3'l><'col-sm-12 col-md-2'i><'col-sm-12 col-md-7'p>>"
       ,serverSide: true
@@ -273,10 +247,10 @@
       ,columns: 
       [
           {"data": "id"},
-          {"data": "src_id", "visible": false},
+          {"data": "src_id"},
           {"data": "title"},
           {"data": "ccodes"},
-          {"data": "geo", "title": "geom", "visible": false},
+          {"data": "geo", "title": "geom"},
           {"data": "review_wd"},
           {"data": "review_tgn"},
           {"data": "review_whg"},
@@ -329,14 +303,12 @@
   // gl map
   mappy = new maplibregl.Map({
     container: 'map', // container id
-	  {#style:'mapbox://styles/mapbox/light-v10',#}
-    {#accessToken: '{{ mbtokenmb }}',#}
-	  style:'mapbox://styles/kgeographer/ckidglq8l2nra19nzzbl995ue',
-	  accessToken: '{{ mbtokenwhg }}',
+    style: 'mapbox://styles/mapbox/light-v10',
     center: [9.2, 33],
     zoom: 0.2, // starting zoom
     minZoom: 0.1,
     maxZoom: 18,
+    accessToken: '{{ mbtokenmb }}'
   });
 
   // mappy.on('idle', function(e) {
@@ -508,15 +480,10 @@
       'source': dslabel,
       'visibility': 'visible',      
       'paint': {
-        'circle-color': "crimson",
-        {#'circle-color': colors_point[i],#}
-	      'circle-stroke-width': 1,
-	      'circle-stroke-color': "#000000",
-	      'circle-opacity':0.3,
+        'circle-color': colors_point[i],
         'circle-radius': {
-          stops: [[3, 3], [16, 10]]
-          {#stops: [[1, 2], [3, 3], [16, 10]]#}
-        }
+          stops: [[1, 2], [3, 3], [16, 10]]
+        }        
       },
       'filter': ['==', '$type', 'Point']
     }, 'z-index-2');
@@ -707,18 +674,7 @@
     <!--timespan_arr = []-->
     //
     // TITLE 
-    descrip = '<p><span id="row_title" class="larger text-danger"><b>'+data.title+'</b></span>'
-
-	  //
-	  // TRACES
-		//
-	  if(JSON.parse(data.traces).length >0) {
-      trace = JSON.parse(data.traces).find(function(t){return t.fields.collection = "{{ object.id }}"})
-		  descrip +="<p><b>Relation</b>: "+JSON.parse(trace.fields.relation)[0]+"</p>"
-			descrip +='<p style="display:block; bacground-color:#eoeoeo;"><b>Notes</b>:</p>'+
-					'<p>'+trace.fields.note+'</p><hr/>'
-	  }
-
+    descrip = '<p><b>Title</b>: <span id="row_title" class="larger text-danger">'+data.title+'</span>'
     //
     // NAME VARIANTS
     descrip+='<p class="scroll65"><b>Variants</b>: '
@@ -749,7 +705,7 @@
       typeids+=str
     }
     descrip += typeids.replace(/(; $)/g, "") +'</p>'
-
+    
     //
     // LINKS
     // 
@@ -791,7 +747,6 @@
       descrip+=parent.length > 39 ? parent :''
       descrip+=related.length > 37 ? related :''
     }
-
     //
     // DESCRIPTIONS
     // TODO: link description to identifier URI if present
@@ -799,6 +754,7 @@
       val = data.descriptions[0]['value'].substring(0,300)
       descrip+='<p><b>Description</b>: '+(val.startsWith('http')?'<a href="'+val+'" target="_blank">Link</a>':val)
         +' ... </p>'
+        <!--'<br/><span class="small red-bold">('+data.descriptions[0]['identifier']+')</span>-->
     }
     //
     // CCODES

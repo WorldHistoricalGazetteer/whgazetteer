@@ -298,6 +298,7 @@ class PlaceCollectionBrowseView(DetailView):
     context = super(PlaceCollectionBrowseView, self).get_context_data(*args, **kwargs)
     context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
     context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
+    context['mbtokenwhg'] = settings.MAPBOX_TOKEN_WHG
     context['media_url'] = settings.MEDIA_URL
 
     print('CollectionPlacesView get_context_data() kwargs:',self.kwargs)
