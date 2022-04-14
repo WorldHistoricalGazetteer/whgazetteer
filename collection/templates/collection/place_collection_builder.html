@@ -281,12 +281,14 @@
 	$(".coll-place").click(function() {
       console.log('place record', $(this).data('pid'));
   })
+
 	// fetch r/o place record to annotation panel
   $(".anno-place").click(function(){
       console.log('fetch r/o place record', $(this).data('pid'));
       getPlace($(this).data('pid'))
 	    $("#pid").val($(this).data('pid'))
   })
+
 	// restore place
 
 	// mark/unmark place for removal from collection
@@ -617,6 +619,7 @@
     console.log('selected from list', $(this).val())
 		addDataset('create')
 	})
+	//
   function listDataset(d) {
     console.log('listing this:', d.title)
     dslist.push(d.id)
@@ -638,9 +641,11 @@
     $("#coll_dscards_create").append(card)
     // console.log(card)
   }
+
 	// adds all dataset places to placelist
 	function addPlaces(dsid){
 		url = "/collections/add_ds/"+"{{ object.id }}"+"/"+dsid
+		// collection.views.add_dataset
 		console.log('adding dataset w/o save',dsid, {{ object.id }}, url)
 		document.location.href = url
 		{#url = "{% url 'collection:add-ds' ds_id="+dsid+" coll_id=456 %}"#}
@@ -648,6 +653,7 @@
 		{#)#}
 		{#$("#collection_form").submit('remain')#}
 	}
+
   // lists dataset on dropdown select
   function addDataset(action) {
     console.log('selected', $("#select_ds").val())
@@ -668,6 +674,7 @@
     console.log('clear card for ds', dsid)
     $("#card_"+dsid).remove()
   }
+
   function removeDataset(dsid) {
     {#if("{{ action }}" == 'update') {#}
       console.log('removing ' + dsid + 'from collection '+ "{{object.id}}")
@@ -687,6 +694,7 @@
     // reset select
     $("#select_ds").val(0)
   }
+
 </script>
 
 {% endblock %}
