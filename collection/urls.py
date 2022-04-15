@@ -5,6 +5,7 @@ from django.conf.urls.static import static
 from django.conf import settings
 
 from . import views
+from traces.views import get_form
 
 # area actions
 app_name='collection'
@@ -29,6 +30,7 @@ urlpatterns = [
 
     # function-based to process a trace annotation independent of
     path('<int:id>/annotate', views.annotate, name="collection-annotate"),
+    path('annoform/', get_form, name="get_form"),
 
     path('<int:id>/delete', views.CollectionDeleteView.as_view(), name='collection-delete'),
     

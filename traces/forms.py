@@ -4,23 +4,33 @@ from django.db import models
 from .models import TraceAnnotation
 
 class TraceAnnotationModelForm(forms.ModelForm):
-
 	class Meta:
 		model = TraceAnnotation
-		fields = ('id', 'src_id', 'collection', 'place', 'note', 'start', 'end', 'when',
-		          'relation', 'sequence', 'trace_type', 'motivation', 'creator')
+		# fields = '__all__'
+		fields = ('id', 'note', 'relation', 'start', 'end', 'sequence', 'trace_type', 'motivation',
+		          'creator', 'collection','place')
 		widgets = {
-			# 'trace_type': forms.Select(),
-			'note': forms.Textarea(attrs={
-				'rows': 2, 'cols': 25, 'class': 'textarea'
-			}),
-			'start': forms.TextInput(attrs={'size': 12}),
-			'end': forms.TextInput(attrs={'size': 12}),
-			'relation': forms.TextInput(attrs={'size': 20}),
-			'sequence': forms.TextInput(attrs={'size': 2}),
-			# 'relation': forms.Select()
+			# 'collection': forms.TextInput(attrs={'size': 4}),
+			'collection': forms.TextInput(attrs={'size': 4}),
+			'place': forms.TextInput(attrs={'size': 16})
 		}
-		# 	'title': forms.TextInput(attrs={'size': 50}),
+
+	# class Meta:
+	# 	model = TraceAnnotation
+	# 	fields = ('id', 'src_id', 'collection', 'place', 'note', 'start', 'end', 'when',
+	# 	          'relation', 'sequence', 'trace_type', 'motivation', 'creator')
+	# 	widgets = {
+	# 		# 'trace_type': forms.Select(),
+	# 		'note': forms.Textarea(attrs={
+	# 			'rows': 2, 'cols': 25, 'class': 'textarea'
+	# 		}),
+	# 		'start': forms.TextInput(attrs={'size': 12}),
+	# 		'end': forms.TextInput(attrs={'size': 12}),
+	# 		'relation': forms.TextInput(attrs={'size': 20}),
+	# 		'sequence': forms.TextInput(attrs={'size': 2}),
+	# 		# 'relation': forms.Select()
+	# 	}
+	# 	# 	'title': forms.TextInput(attrs={'size': 50}),
 		# 	'keywords': forms.TextInput(attrs={'size': 50}),
 		# 	'creator': forms.TextInput(attrs={'size': 50}),
 		# 	'contact': forms.TextInput(attrs={'size': 50}),

@@ -178,10 +178,12 @@ class PlaceSerializer(serializers.ModelSerializer):
 
   # traces = serializers.serialize("json", TraceAnnotation.objects.filter())
   traces = serializers.SerializerMethodField('trace_anno')
+
   def trace_anno(self, place):
     return coreserializers.serialize("json", TraceAnnotation.objects.filter(place=place.id))
 
   geo = serializers.SerializerMethodField('has_geom')
+
   def has_geom(self,place):
     return '<i class="fa fa-globe"></i>' if place.geom_count > 0 else "-"
 

@@ -2300,12 +2300,6 @@ class DatasetSummaryView(LoginRequiredMixin, UpdateView):
 
   template_name = 'datasets/ds_summary.html'
 
-  # def get_success_url(self):
-  #   id_ = self.kwargs.get("id")
-  #   user = self.request.user
-  #   print('kwargs', self.kwargs)
-  #   return '/datasets/'+str(id_)+'/summary'
-
   # Dataset has been edited, form submitted
   def form_valid(self, form):
     data=form.cleaned_data
@@ -2339,8 +2333,6 @@ class DatasetSummaryView(LoginRequiredMixin, UpdateView):
 
   def get_context_data(self, *args, **kwargs):
     context = super(DatasetSummaryView, self).get_context_data(*args, **kwargs)
-    #context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
-    #context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
 
     print('DatasetSummaryView get_context_data() kwargs:',self.kwargs)
     print('DatasetSummaryView get_context_data() request.user',self.request.user)

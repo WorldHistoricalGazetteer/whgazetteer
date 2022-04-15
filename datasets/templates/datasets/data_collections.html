@@ -103,7 +103,7 @@
 	                    {% if c.type == 'dataset' %}
 	                      <a href="{% url 'collection:ds-collection-summary' c.id %}">view</a>&nbsp;
 	                    {% elif c.type == 'place' %}
-	                      <a href="{% url 'collection:place-collection-summary' c.id %}">view</a>&nbsp;
+	                      <a href="{% url 'collection:place-collection-browse' c.id %}">view</a>&nbsp;
 	                    {% endif %}
 	                    {% if c.type == 'dataset' %}
 	                      <a href="{% url 'collection:ds-collection-update' c.id %}">edit</a>&nbsp;

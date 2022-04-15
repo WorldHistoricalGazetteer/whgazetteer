@@ -14,6 +14,7 @@ from collection.models import Collection, CollectionImage
 from main.models import Log
 from places.models import PlaceGeom
 from traces.forms import TraceAnnotationModelForm
+from traces.models import TraceAnnotation
 from itertools import chain
 
 """ add list of >=1 places to collection """
@@ -23,6 +24,17 @@ def add_places(request, *args, **kwargs):
     coll = Collection.objects.get(id=request.POST['collection'])
     place_list = [int(i) for i in request.POST['place_list'].split(',')]
     for p in place_list:
+      place = Place.objects.get(id=p)
+      t = TraceAnnotation.objects.create(
+        place = place,
+        src_id = place.src_id,
+        collection = request.POST['collection'],
+        # collection = coll,
+        motivation = 'locating',
+        # creator = 1,
+        creator = request.user.id,
+        trace_type = 'place'
+      )
       coll.places.add(p)
     return JsonResponse({'result': str(len(place_list))+' places added, we think'}, safe=False)
 
@@ -197,7 +209,7 @@ class PlaceCollectionUpdateView(UpdateView):
 
   def get_success_url(self):
     id_ = self.kwargs.get("id")
-    return '/collections/'+str(id_)+'/summary_pl'
+    return '/collections/'+str(id_)+'/browse_pl'
 
   def form_valid(self, form):
     print('referrer', self.request.META.get('HTTP_REFERER'))
@@ -500,15 +512,16 @@ class DatasetCollectionBrowseView(DetailView):
 """ BETA: annotate collection with place """
 # def annotate(request, cid, pid):
 def annotate(request, *args, **kwargs):
-  coll = get_object_or_404(Collection, id=kwargs.get('id'))
   cid = kwargs.get('id')
+  pid = request.POST.get('place')
+  # anno = get_object_or_404(TraceAnnotation, pk=)
+  # coll = get_object_or_404(Collection, id=cid)
   for k, v in request.POST.items():
-    print(k, v)
+    print('annotate POST.item', k, v)
   form = TraceAnnotationModelForm(request.POST)
   if form.is_valid():
     pid = request.POST.get('place')
-    obj = form.save(commit=False)
-    obj.save()
+    form.save(commit=False)
     context = {'id':cid, 'pid':pid}
   else:
     print('trace form not valid', form.errors)

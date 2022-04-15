@@ -44,8 +44,8 @@
 	  <p>Access to this page is limited to the collection owner, <b>{{ user.username }} ({{object.owner.id}})</b></p>
   {% else %}
 	  <h5 class="mt-3">
-	    {% if action == 'update' %}Collection Builder:
-		    <span class="text-danger">"{{ form.title.value }}"</span>
+		  {% if action == 'update' %}<spam class="text-secondary">Collection Builder:</spam>
+		    <span class="text-bold">{{ form.title.value }}</span>
 				<span class="float-right small">
 		    <a href="{% url 'collection:place-collection-browse' object.id %}">
 			    {% fontawesome_icon 'eye' color='#336699' %}</a>&nbsp;
@@ -244,6 +244,7 @@
 			      <div id="anno_detail" class="mb-1 pt-2"></div>
 			      <form id="annotation_form" method="POST" action="{% url 'collection:collection-annotate' object.id %}" enctype="multipart/form-data">
 			      {% csrf_token %}
+{#				    <div id="anno_div" class="mb-1 pt-2">#}
 				    <div id="anno_div" class="mb-1 pt-2 hidden">
 					    <input name="collection" value="{{ object.id }}" placeholder="collection"/>
 							<input id="pid" name="place" value="" placeholder="place (pid)"/>
@@ -255,9 +256,11 @@
 									<td>
 										<select name="relation">
 												<option value="">Relation keyword</option>
+											{% if form.rel_keywords.value %}
 											{% for rel in form.rel_keywords.value|split:',' %}
 												<option value={{ rel }}>{{ rel }}</option>
 											{% endfor %}
+											{% endif %}
 										</select>
 									</td>
 								</tr>
@@ -267,6 +270,7 @@
 							</table>
 				      <input type="submit" value="Save" />
 				    </div>
+			      </form>
 		      {% endif %}
 		    </div>
 	    </div> <!-- # coll_right -->
@@ -284,9 +288,10 @@
 
 	// fetch r/o place record to annotation panel
   $(".anno-place").click(function(){
-      console.log('fetch r/o place record', $(this).data('pid'));
-      getPlace($(this).data('pid'))
-	    $("#pid").val($(this).data('pid'))
+      console.log('fetch traceanno form for', $(this).data('pid'));
+      {#getPlace($(this).data('pid'))#}
+      getAnno($(this).data('pid'))
+	    {#$("#pid").val($(this).data('pid'))#}
   })
 
 	// restore place
@@ -352,7 +357,7 @@
 
 	// builds link for external placetype record
   function url_exttype(type) {
-      console.dir(type)
+    {#console.dir(type)#}
     link = ' <a href="#" class="exttab" data-id='+type.identifier+
       '>('+type.label.label+' {% fontawesome_icon "external-link" color="#336699" %})</a>'
     return link
@@ -375,8 +380,13 @@
   // return html for display
   function parsePlace(data) {
     window.featdata = data
-	  {#traces = JSON.parse(data.traces).find(function(t){return t.fields.collection = "{{ object.id }}"})#}
-	  {#console.log('has trace for this collection', traces)#}
+	  trace = JSON.parse(data.traces).find(function(t){return t.fields.collection = "{{ object.id }}"})
+	  if(trace){
+      console.log('has trace for this collection', trace.fields)
+		  $("#anno_detail").html(JSON.stringify(trace.fields))
+	  } else {
+      console.log('no trace for this collection')
+	  }
 
     function onlyUnique(array) {
       const map = new Map();
@@ -410,7 +420,7 @@
     for (t in data.types) {
       str = ''
       var type = data.types[t]
-      console.log('type',type)
+      {#console.log('type',type)#}
       if('sourceLabels' in type){
         srclabels = type.sourceLabels
         for(l in srclabels){
@@ -435,7 +445,7 @@
     if (data.links.length > 0) {
       links=data.links
       links_arr = onlyUnique(data.links)
-      console.log('distinct data.links',links_arr)
+      {#console.log('distinct data.links',links_arr)#}
       for (l in links_arr) {
         //console.log('link',links_arr[l])
         if (links_arr[l].aug == true) {
@@ -502,15 +512,16 @@
     }
 
     // TRACES
-	  trace=JSON.parse(data.traces).find(function(t){return t.fields.collection = "{{ object.id }}"})
-	  console.log('got trace:', trace)
-	  if(!trace){
-      // no annotations yet, make form visible
-		  $("#anno_detail").hide()
-      $("#anno_div").fadeIn()
-	  } else {
-	    $("#anno_detail").html('<p><b>Trace annotation</b>: '+trace.fields+'</p>')
-	  }
+	  trace=JSON.parse(data.traces).find(function(t){
+          return t.fields.collection = "{{ object.id }}"})
+	  {#console.log('got trace:', trace)#}
+	  {#if(!trace){#}
+    {#  // no annotations yet, make form visible#}
+		{#  $("#anno_detail").hide()#}
+    {#  $("#anno_div").fadeIn()#}
+	  {# else #}
+	  {#  $("#anno_detail").html('<p><b>Trace annotation</b>: '+trace.fields+'</p>')#}
+	  {# } #}
 
     // if geom(s) and 'certainty', add it
     if(data.geoms.length >0){
@@ -522,13 +533,14 @@
     descrip += '</div>'
     return descrip
   }
-	// fetch place to be annotated
+
+  // fetch place to be annotated, pass to parsePlace()
+	// api.views.PlaceDetailAPIView()
   function getPlace(pid){
-    //console.log('getPlace()', pid)
     $.ajax({
       url: "/api/place/"+pid,
       }).done(function( data ) {
-        console.log('place data', data)
+        console.log('getPlace('+pid+')', data);
         $("#coll_place_detail").html(parsePlace(data))
         {#spinner_detail.stop()#}
         // events on detail items
@@ -560,8 +572,21 @@
     //spinner_detail.stop()
   }
 
+  function getAnno(pid){
+    let coll_id = "{{ object.id }}"
+		const url = "/collections/annoform/?c="+'{{ object.id }}'+"&p="+pid
+    fetch(url)
+      .then(function (response) {
+          console.log('response',response)
+        return response.json();
+      })
+      .then(function (data) {
+          console.log('data',data)
+        const formContainer = document.querySelector("#anno_detail");
+        formContainer.innerHTML = data.form;
+      });
+  }
   $(function(){
-		console.log('pid', "{{ pid }}")
 	  window.remove_these = []
 
     $(".nav-link").click(function(){
