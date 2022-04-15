@@ -9,19 +9,22 @@ from elasticsearch import Elasticsearch
 import simplejson as json
 
 from .models import *
+from collection.models import Collection
 from places.models import Place
 from .forms import *
 from datasets.models import Dataset
 #
 from django.http import JsonResponse
 from django.template.loader import render_to_string
+from django.views.decorators.csrf import csrf_exempt
 
-
+@csrf_exempt
 def get_form(request):
     print('get_form() request.GET', request.GET)
     pid = request.GET['p']
     cid = request.GET['c']
     place = Place.objects.get(id=pid)
+    coll = Collection.objects.get(id=cid)
     existing = TraceAnnotation.objects.filter(place=pid, collection=cid)
     if existing.count() > 0:
         form = TraceAnnotationModelForm(instance=existing[0])
@@ -29,7 +32,8 @@ def get_form(request):
         form = TraceAnnotationModelForm()
     context = {
         "form": form,
-        "place": place
+        "place": place,
+        "collection": coll
     }
     template = render_to_string('../templates/traceanno_form.html', context=context)
     return JsonResponse({"form": template})

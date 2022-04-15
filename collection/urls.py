@@ -3,6 +3,7 @@
 from django.urls import path
 from django.conf.urls.static import static
 from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
 
 from . import views
 from traces.views import get_form
@@ -29,7 +30,7 @@ urlpatterns = [
     path('flash_create/', views.flash_collection_create, name="collection-create-flash"),
 
     # function-based to process a trace annotation independent of
-    path('<int:id>/annotate', views.annotate, name="collection-annotate"),
+    path('<int:id>/annotate', csrf_exempt(views.annotate), name="collection-annotate"),
     path('annoform/', get_form, name="get_form"),
 
     path('<int:id>/delete', views.CollectionDeleteView.as_view(), name='collection-delete'),

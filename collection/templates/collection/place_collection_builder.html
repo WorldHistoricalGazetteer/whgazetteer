@@ -234,44 +234,44 @@
 	      </div>
 		    <div id="coll_right_anno" class="">
 		      <h6>Annotations</h6>
-			    <div id="coll_place_detail" class="mb-1">
+			    <div id="annotator" class="mb-1">
 				    {% if action == 'update' %}
 				    <p class="mt-3">Select a place record from list on the left to annotate it</p>
 				    {% endif %}
 			    </div>
 					{# if create, annotation not possible #}
-		      {% if action == 'update' %}
-			      <div id="anno_detail" class="mb-1 pt-2"></div>
-			      <form id="annotation_form" method="POST" action="{% url 'collection:collection-annotate' object.id %}" enctype="multipart/form-data">
-			      {% csrf_token %}
+{#		      {% if action == 'update' %}#}
+{#			      <div id="anno_detail" class="mb-1 pt-2"></div>#}
+{#		      {% endif %}#}
+{#			      <form id="annotation_form" method="POST" action="{% url 'collection:collection-annotate' object.id %}" enctype="multipart/form-data">#}
+{#			      {% csrf_token %}#}
 {#				    <div id="anno_div" class="mb-1 pt-2">#}
-				    <div id="anno_div" class="mb-1 pt-2 hidden">
-					    <input name="collection" value="{{ object.id }}" placeholder="collection"/>
-							<input id="pid" name="place" value="" placeholder="place (pid)"/>
-							<input name="trace_type" type="hidden" value="place" />
-							<input name="motivation" type="hidden" value="locating" />
-							<table>
-								<tr>
-									<td>Relation:</td>
-									<td>
-										<select name="relation">
-												<option value="">Relation keyword</option>
-											{% if form.rel_keywords.value %}
-											{% for rel in form.rel_keywords.value|split:',' %}
-												<option value={{ rel }}>{{ rel }}</option>
-											{% endfor %}
-											{% endif %}
-										</select>
-									</td>
-								</tr>
-								<tr><td>Start/End:</td><td>{{ form_anno.start }}/{{ form_anno.end }}</td></tr>
-								<tr><td>Sequence:</td><td>{{ form_anno.sequence }}</td></tr>
-								<tr><td>Notes:</td><td>{{ form_anno.note }}</td></tr>
-							</table>
-				      <input type="submit" value="Save" />
-				    </div>
-			      </form>
-		      {% endif %}
+{#				    <div id="anno_div" class="mb-1 pt-2 hidden">#}
+{#					    <input name="collection" value="{{ object.id }}" placeholder="collection"/>#}
+{#							<input id="pid" name="place" value="" placeholder="place (pid)"/>#}
+{#							<input name="trace_type" type="hidden" value="place" />#}
+{#							<input name="motivation" type="hidden" value="locating" />#}
+{#							<table>#}
+{#								<tr>#}
+{#									<td>Relation:</td>#}
+{#									<td>#}
+{#										<select name="relation">#}
+{#												<option value="">Relation keyword</option>#}
+{#											{% if form.rel_keywords.value %}#}
+{#											{% for rel in form.rel_keywords.value|split:',' %}#}
+{#												<option value={{ rel }}>{{ rel }}</option>#}
+{#											{% endfor %}#}
+{#											{% endif %}#}
+{#										</select>#}
+{#									</td>#}
+{#								</tr>#}
+{#								<tr><td>Start/End:</td><td>{{ form_anno.start }}/{{ form_anno.end }}</td></tr>#}
+{#								<tr><td>Sequence:</td><td>{{ form_anno.sequence }}</td></tr>#}
+{#								<tr><td>Notes:</td><td>{{ form_anno.note }}</td></tr>#}
+{#							</table>#}
+{#				      <input type="submit" value="Save" />#}
+{#				    </div>#}
+{#			      </form>#}
 		    </div>
 	    </div> <!-- # coll_right -->
     </div> <!-- d-flex -->
@@ -582,7 +582,7 @@
       })
       .then(function (data) {
         console.log('data',data)
-        const formContainer = document.querySelector("#anno_detail");
+        const formContainer = document.querySelector("#annotator");
         formContainer.innerHTML = data.form;
       });
   }

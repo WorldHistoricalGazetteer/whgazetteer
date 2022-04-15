@@ -1,7 +1,31 @@
-{#<!DOCTYPE html>#}
-{#<html>#}
-"title": {{ place.title }}<hr/>
-<form action="." method="POST">
-    {{ form }}
+<!-- context keys: place, collection -->
+<p><rb>Title</rb>: {{ place.title }}</p>
+<p><rb>Variants</rb>: {% for n in place.names.all %}{{ n }}; {% endfor %}</p>
+
+<hr/>
+<form id="anno_form" action="{% url 'collection:collection-annotate' collection.id %}" method="POST">
+	{% csrf_token %}
+	<input type="hidden" name="place" value="{{ place.id }}"/>
+	<input type="hidden" name="collection" value="{{ collection.id }}"/>
+	<input type="hidden" name="motivation" value="locating"/>
+{#	<p>trace relation.value: {{ form.relation.value }}</p>#}
+	<p>Relation: <select id="select_relation" name="relation">
+		<option value="-1">Select relation</option>
+		{% for rel in collection.rel_keywords %}
+			{% if form.relation.value %}
+				<option value='{{ form.relation.value }}' selected="selected">{{ form.relation.value }}</option>
+			{% else %}
+				<option value='{{ rel }}'>{{ rel }}</option>
+			{% endif %}
+		{% endfor %}
+	</select></p>
+{#	<p>Place: <input name="place" value="{{ place.id }}" placeholder=""/></p>#}
+{#	<p>Note: <input name="note" value="{{ form.note }}" /></p>#}
+	<div class="form-group">
+		<label for="Note">Notes:</label>
+		{{ form.note }}
+	</div>
+{#	<p>Note: {{ form.note }}</p>#}
+	<button type="submit" class="button button-sm">Save</button>
 </form>
 {#</html>#}
