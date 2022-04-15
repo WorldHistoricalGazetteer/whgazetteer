@@ -581,7 +581,7 @@
         return response.json();
       })
       .then(function (data) {
-          console.log('data',data)
+        console.log('data',data)
         const formContainer = document.querySelector("#anno_detail");
         formContainer.innerHTML = data.form;
       });

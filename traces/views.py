@@ -21,10 +21,15 @@ def get_form(request):
     print('get_form() request.GET', request.GET)
     pid = request.GET['p']
     cid = request.GET['c']
-    existing = TraceAnnotation.objects.filter(place=pid,collection=cid)
-    form = TraceAnnotationModelForm(instance=existing[0])
+    place = Place.objects.get(id=pid)
+    existing = TraceAnnotation.objects.filter(place=pid, collection=cid)
+    if existing.count() > 0:
+        form = TraceAnnotationModelForm(instance=existing[0])
+    else:
+        form = TraceAnnotationModelForm()
     context = {
         "form": form,
+        "place": place
     }
     template = render_to_string('../templates/traceanno_form.html', context=context)
     return JsonResponse({"form": template})
