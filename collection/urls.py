@@ -6,7 +6,7 @@ from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 
 from . import views
-from traces.views import get_form
+from traces.views import get_form, annotate
 
 # area actions
 app_name='collection'
@@ -29,8 +29,8 @@ urlpatterns = [
     # new empty place collection on the fly, returns new id in json
     path('flash_create/', views.flash_collection_create, name="collection-create-flash"),
 
-    # function-based to process a trace annotation independent of
-    path('<int:id>/annotate', csrf_exempt(views.annotate), name="collection-annotate"),
+    # function-based views to process a trace annotation
+    path('<int:id>/annotate', csrf_exempt(annotate), name="collection-annotate"),
     path('annoform/', get_form, name="get_form"),
 
     path('<int:id>/delete', views.CollectionDeleteView.as_view(), name='collection-delete'),

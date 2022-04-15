@@ -1,14 +1,14 @@
 <!-- context keys: place, collection -->
 <p><rb>Title</rb>: {{ place.title }}</p>
 <p><rb>Variants</rb>: {% for n in place.names.all %}{{ n }}; {% endfor %}</p>
-
+<p>existing? {{ existing }}</p>
 <hr/>
 <form id="anno_form" action="{% url 'collection:collection-annotate' collection.id %}" method="POST">
-	{% csrf_token %}
 	<input type="hidden" name="place" value="{{ place.id }}"/>
 	<input type="hidden" name="collection" value="{{ collection.id }}"/>
 	<input type="hidden" name="motivation" value="locating"/>
 {#	<p>trace relation.value: {{ form.relation.value }}</p>#}
+	rel_keywords: {{ collection.rel_keywords }}
 	<p>Relation: <select id="select_relation" name="relation">
 		<option value="-1">Select relation</option>
 		{% for rel in collection.rel_keywords %}
@@ -19,8 +19,6 @@
 			{% endif %}
 		{% endfor %}
 	</select></p>
-{#	<p>Place: <input name="place" value="{{ place.id }}" placeholder=""/></p>#}
-{#	<p>Note: <input name="note" value="{{ form.note }}" /></p>#}
 	<div class="form-group">
 		<label for="Note">Notes:</label>
 		{{ form.note }}

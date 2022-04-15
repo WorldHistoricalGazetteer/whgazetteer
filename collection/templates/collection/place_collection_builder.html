@@ -239,39 +239,6 @@
 				    <p class="mt-3">Select a place record from list on the left to annotate it</p>
 				    {% endif %}
 			    </div>
-					{# if create, annotation not possible #}
-{#		      {% if action == 'update' %}#}
-{#			      <div id="anno_detail" class="mb-1 pt-2"></div>#}
-{#		      {% endif %}#}
-{#			      <form id="annotation_form" method="POST" action="{% url 'collection:collection-annotate' object.id %}" enctype="multipart/form-data">#}
-{#			      {% csrf_token %}#}
-{#				    <div id="anno_div" class="mb-1 pt-2">#}
-{#				    <div id="anno_div" class="mb-1 pt-2 hidden">#}
-{#					    <input name="collection" value="{{ object.id }}" placeholder="collection"/>#}
-{#							<input id="pid" name="place" value="" placeholder="place (pid)"/>#}
-{#							<input name="trace_type" type="hidden" value="place" />#}
-{#							<input name="motivation" type="hidden" value="locating" />#}
-{#							<table>#}
-{#								<tr>#}
-{#									<td>Relation:</td>#}
-{#									<td>#}
-{#										<select name="relation">#}
-{#												<option value="">Relation keyword</option>#}
-{#											{% if form.rel_keywords.value %}#}
-{#											{% for rel in form.rel_keywords.value|split:',' %}#}
-{#												<option value={{ rel }}>{{ rel }}</option>#}
-{#											{% endfor %}#}
-{#											{% endif %}#}
-{#										</select>#}
-{#									</td>#}
-{#								</tr>#}
-{#								<tr><td>Start/End:</td><td>{{ form_anno.start }}/{{ form_anno.end }}</td></tr>#}
-{#								<tr><td>Sequence:</td><td>{{ form_anno.sequence }}</td></tr>#}
-{#								<tr><td>Notes:</td><td>{{ form_anno.note }}</td></tr>#}
-{#							</table>#}
-{#				      <input type="submit" value="Save" />#}
-{#				    </div>#}
-{#			      </form>#}
 		    </div>
 	    </div> <!-- # coll_right -->
     </div> <!-- d-flex -->
@@ -534,46 +501,10 @@
     return descrip
   }
 
-  // fetch place to be annotated, pass to parsePlace()
-	// api.views.PlaceDetailAPIView()
-  function getPlace(pid){
-    $.ajax({
-      url: "/api/place/"+pid,
-      }).done(function( data ) {
-        console.log('getPlace('+pid+')', data);
-        $("#coll_place_detail").html(parsePlace(data))
-        {#spinner_detail.stop()#}
-        // events on detail items
-        $('.ext').on('click', function(e) {
-          e.preventDefault();
-          str=$(this).text()
-          //console.log('str (identifier)',str)
-          // URL identifiers can be 'http*' or an authority prefix
-          if(str.substring(0,4).toLowerCase() == 'http'){
-            url = str
-          } else {
-            var re = /(http|bnf|cerl|dbp|gn|gnd|gov|loc|pl|tgn|viaf|wd|wdlocal|whg|wp):(.*?)$/;
-            url=base_urls[str.match(re)[1]]+str.match(re)[2]
-            console.log('getPlace() url', url, encodeURI(url))
-          }
-          window.open(url, '_blank');
-          // window.open(encodeURI(url), '_blank');
-        });
-        $('.exttab').on('click', function(e) {
-          e.preventDefault();
-          id=$(this).data('id').toString()
-          console.log('id',id)
-          var re = /(http|dbp|gn|tgn|wd|loc|viaf|aat):(.*?)$/;
-          url=id.match(re)[1]=='http' ? id : base_urls[id.match(re)[1]]+id.match(re)[2]
-          console.log('url',url)
-          window.open(url,'_blank')
-        });
-    });
-    //spinner_detail.stop()
-  }
-
   function getAnno(pid){
     let coll_id = "{{ object.id }}"
+	  // traces.views.get_form()
+	  // returns TraceAnnotationForm; w/instance if trace_annotation record exists, else empty
 		const url = "/collections/annoform/?c="+'{{ object.id }}'+"&p="+pid
     fetch(url)
       .then(function (response) {

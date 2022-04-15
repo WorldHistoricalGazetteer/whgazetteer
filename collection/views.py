@@ -509,25 +509,6 @@ class DatasetCollectionBrowseView(DetailView):
 
     return context
 
-""" BETA: annotate collection with place """
-# def annotate(request, cid, pid):
-def annotate(request, *args, **kwargs):
-  cid = kwargs.get('id')
-  pid = request.POST.get('place')
-  # anno = get_object_or_404(TraceAnnotation, pk=)
-  # coll = get_object_or_404(Collection, id=cid)
-  for k, v in request.POST.items():
-    print('annotate POST.item', k, v)
-  form = TraceAnnotationModelForm(request.POST)
-  if form.is_valid():
-    pid = request.POST.get('place')
-    form.save(commit=False)
-    context = {'id':cid, 'pid':pid}
-  else:
-    print('trace form not valid', form.errors)
-
-  return redirect('/collections/'+str(cid)+'/update_pl')
-
 class CollectionDeleteView(DeleteView):
   template_name = 'collection/collection_delete.html'
 
