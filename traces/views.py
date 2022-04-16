@@ -21,21 +21,39 @@ from django.views.decorators.csrf import csrf_exempt
 """ BETA: annotate collection with place """
 # def annotate(request, cid, pid):
 def annotate(request, *args, **kwargs):
+  print('request.POST',request.POST.items())
+  print('kwargs',kwargs)
   cid = kwargs.get('id')
   pid = request.POST.get('place')
-  # anno = get_object_or_404(TraceAnnotation, pk=)
-  # coll = get_object_or_404(Collection, id=cid)
+  anno_id = request.POST.get('anno_id')
+  coll = get_object_or_404(Collection, id=cid)
   for k, v in request.POST.items():
     print('annotate POST.item', k, v)
-  form = TraceAnnotationModelForm(request.POST)
-  if form.is_valid():
-    print('annotate() form valid')
-    pid = request.POST.get('place')
-    form.save()
-    # form.save(commit=False)
-    context = {'id':cid, 'pid':pid}
+
+  if anno_id:
+    # form with instance
+    traceanno = TraceAnnotation.objects.get(id=anno_id)
+    form = TraceAnnotationModelForm(request.POST, instance = traceanno)
+    # form = TraceAnnotationModelForm(request.POST)
   else:
+    form = TraceAnnotationModelForm(request.POST)
+  # print('form.cleaned_fields', form.cleaned_fields)
+
+  if form.is_valid():
+    form.save()
+  else:
+    # new empty form
     print('trace form not valid', form.errors)
+
+
+  # if form.is_valid():
+  #   print('annotate() form valid')
+  #   # pid = request.POST.get('place')
+  #   form.save()
+  #   # form.save(commit=False)
+  #   context = {'id':cid, 'pid':pid}
+  # else:
+
 
   return redirect('/collections/'+str(cid)+'/update_pl')
 
@@ -50,10 +68,10 @@ def get_form(request):
 
     # is there a trace_annotation record already?
     existing = TraceAnnotation.objects.filter(place=pid, collection=cid)
-    if existing.count() > 0:
-        form = TraceAnnotationModelForm(instance=existing[0])
+    if existing:
+      form = TraceAnnotationModelForm(instance=existing[0])
     else:
-        form = TraceAnnotationModelForm()
+      form = TraceAnnotationModelForm()
     context = {
         "form": form,
         "place": place,

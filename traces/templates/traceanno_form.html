@@ -1,14 +1,20 @@
 <!-- context keys: place, collection -->
-<p><rb>Title</rb>: {{ place.title }}</p>
-<p><rb>Variants</rb>: {% for n in place.names.all %}{{ n }}; {% endfor %}</p>
-<p>existing? {{ existing }}</p>
+<div style="background-color: aliceblue">
+	<p><rb>Title</rb>: {{ place.title }}</p>
+	<p><rb>Variants</rb>: {% for n in place.names.all %}{{ n }}; {% endfor %}</p>
+</div>
+{#<p>existing? {{ existing }}</p>#}
 <hr/>
+<!-- submits to traces.views.annotate() -->
 <form id="anno_form" action="{% url 'collection:collection-annotate' collection.id %}" method="POST">
 	<input type="hidden" name="place" value="{{ place.id }}"/>
 	<input type="hidden" name="collection" value="{{ collection.id }}"/>
 	<input type="hidden" name="motivation" value="locating"/>
+	{% if existing %}
+		anno_id: <input type="text" name="anno_id" value={{ existing }} />
+	{% endif %}
 {#	<p>trace relation.value: {{ form.relation.value }}</p>#}
-	rel_keywords: {{ collection.rel_keywords }}
+{#	rel_keywords: {{ collection.rel_keywords }}#}
 	<p>Relation: <select id="select_relation" name="relation">
 		<option value="-1">Select relation</option>
 		{% for rel in collection.rel_keywords %}

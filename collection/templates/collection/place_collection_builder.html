@@ -255,7 +255,7 @@
 
 	// fetch r/o place record to annotation panel
   $(".anno-place").click(function(){
-      console.log('fetch traceanno form for', $(this).data('pid'));
+      {#console.log('fetch traceanno form for', $(this).data('pid'));#}
       {#getPlace($(this).data('pid'))#}
       getAnno($(this).data('pid'))
 	    {#$("#pid").val($(this).data('pid'))#}
@@ -508,11 +508,11 @@
 		const url = "/collections/annoform/?c="+'{{ object.id }}'+"&p="+pid
     fetch(url)
       .then(function (response) {
-          console.log('response',response)
+          {#console.log('response',response)#}
         return response.json();
       })
       .then(function (data) {
-        console.log('data',data)
+        {#console.log('data',data)#}
         const formContainer = document.querySelector("#annotator");
         formContainer.innerHTML = data.form;
       });
