@@ -5,13 +5,15 @@ from .models import TraceAnnotation
 
 # date validator
 def iso8601_dates(value):
-	entered = value
-	if value.length < 3:
+	print('date value', value)
+	if value and len(value) < 3:
 		raise forms.ValidationError("We're ISO8601 here!")
 
 class TraceAnnotationModelForm(forms.ModelForm):
-	start = forms.CharField(validators=[iso8601_dates])
-	end = forms.CharField(validators=[iso8601_dates])
+	# start = forms.CharField(widget=forms.TextInput(attrs={'size': 11}))
+	# end = forms.CharField(widget=forms.TextInput(attrs={'size': 11}))
+	# start = forms.CharField(validators=[iso8601_dates], widget=forms.TextInput(attrs={'size': 11}))
+	# end = forms.CharField(validators=[iso8601_dates], widget=forms.TextInput(attrs={'size': 11}))
 
 	class Meta:
 		model = TraceAnnotation

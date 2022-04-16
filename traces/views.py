@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.contrib import messages
 from django.forms.models import modelform_factory
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render, redirect
@@ -43,6 +44,7 @@ def annotate(request, *args, **kwargs):
     form.save()
   else:
     # new empty form
+    messages.error(request, "Error")
     print('trace form not valid', form.errors)
 
 

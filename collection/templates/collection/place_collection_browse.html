@@ -58,9 +58,16 @@
 				        <div class="row">
 					        <div class="col-sm-7">
 						        <table>
-						        <tr><td><b>Title</b></td><td class="larger strong">{{ object.title }}</td></tr>
+						        <tr><td class="align-middle"><b>Title</b></td><td class="larger strong">{{ object.title }}</td></tr>
 						        <tr><td><b>Description</b></td><td>{{ object.description|readmore:200|safe }}</td></tr>
 						        <tr><td><b>Keywords</b></td><td>{{ object.keywords|join:', ' }}</td></tr>
+						        <tr>
+							        <td><b>Essay</b></td>
+							        <td>
+								        <a href="/media/{{ object.file }}"> {% fontawesome_icon 'file-pdf-o' %}
+								        {{ object.file.name|filename }}</a>
+							        </td>
+						        </tr>
 						        {% if object.webpage %}
 						        <tr><td><b>Webpage</b></td><td>
 						          <a href="{{object.webpage }}" target="_blank">link {% fontawesome_icon 'external-link' color='#336699' %}</a>
@@ -165,22 +172,22 @@
   // table events
   // TODO: use datatables methods?
   function setRowEvents(){
-    $("#ds_select").change(function(e){
-      // filter table
-      val = $(this).val()
-      localStorage.setItem('filter', val)
+    {#$("#ds_select").change(function(e){#}
+    {#  // filter table#}
+    {#  val = $(this).val()#}
+    {#  localStorage.setItem('filter', val)#}
       {#startMapSpinner()#}
-      if(val == -1){
-        // clear search
-        startFilterSpinner()
-        clearFilters()
-      } else {
-        clearFilters()
-        filterColumn(11, val)
-      }
-      // also filter map
-      filterMap(val)
-    })
+    {#  if(val == -1){#}
+    {#    // clear search#}
+    {#    startFilterSpinner()#}
+    {#    clearFilters()#}
+    {#  } else {#}
+    {#    clearFilters()#}
+    {#    filterColumn(11, val)#}
+    {#  }#}
+    {#  // also filter map#}
+    {#  filterMap(val)#}
+    {# }) #}
     $("#placetable tbody tr").click(function() {
       thisy=$(this)
       // get id
@@ -707,8 +714,7 @@
 	  if(JSON.parse(data.traces).length >0) {
       trace = JSON.parse(data.traces).find(function(t){return t.fields.collection = "{{ object.id }}"})
 		  descrip +="<p><b>Relation</b>: "+JSON.parse(trace.fields.relation)[0]+"</p>"
-			descrip +='<p style="display:block; bacground-color:#eoeoeo;"><b>Notes</b>:</p>'+
-					'<p>'+trace.fields.note+'</p><hr/>'
+			descrip +='<p><b>Notes</b>: '+ trace.fields.note+'</p><hr/>'
 	  }
 
     //

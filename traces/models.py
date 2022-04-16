@@ -19,8 +19,8 @@ class TraceAnnotation(models.Model):
     # choices will come from Collection relations; 20220416: only one for now
     relation = ArrayField(models.CharField(max_length=30), blank=True, null=True)
 
-    start = models.CharField(max_length=11, null=True, blank=True) # ISO8601 date, incl. '-'
-    end = models.CharField(max_length=11, null=True, blank=True) # ISO8601 date, incl. '-'
+    start = models.CharField(max_length=11, blank=True, null=True) # ISO8601 date, incl. '-'
+    end = models.CharField(max_length=11, blank=True, null=True) # ISO8601 date, incl. '-'
     sequence = models.IntegerField(blank=True, null=True)
     anno_type = models.CharField(max_length=20, default='place', blank=True, null=True)
     motivation = models.CharField(max_length=20, default='locating') # choices? locating, describing

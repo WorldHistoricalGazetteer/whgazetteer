@@ -219,6 +219,9 @@
 							        <a class="anno-place" href="#" data-pid="{{ p.id }}">
 								        {% fontawesome_icon 'edit' color='#336699' %}</a>
 						        </span>
+							      {% if p.traces %}
+							        <br/><i>annotated</i>
+							      {% endif %}
 					        </p>
 					      </div>
 					    {% endfor %}
@@ -249,6 +252,9 @@
 		      <p>[<i>figure</i>]</p>
 	      </div>
 		    <div id="coll_right_anno" class="">
+		      {% if messages %}
+    <span class="text-danger strong"> {% for message in messages %}{{ message }}{% endfor %}</span>
+    {% endif %}
 		      <h6>Annotations</h6>
 			    <div id="annotator" class="mb-1">
 				    {% if action == 'update' %}

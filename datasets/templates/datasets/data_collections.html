@@ -87,7 +87,7 @@
             <table id="table_collections"class="table table-striped">
               <thead class="small">
                   <th>id</th>
-                  <th>type</th>
+                  <th>class</th>
                   <th>title</th>
                   <th></th>
                   <th>created</th>
@@ -96,18 +96,18 @@
                 {% for c in collection_list %}
                   <tr class="place-row">
                     <td>{{ c.id }}</td>
-	                  <td><span class="{{ c.type }} p-1">{{ c.type }}</span></td>
+	                  <td><span class="{{ c.collection_class }} p-1">{{ c.collection_class }}</span></td>
                     <td>{{ c.title }}</td>
                     <td>
                       {# TODO: you can do better #}
-	                    {% if c.type == 'dataset' %}
+	                    {% if c.collection_class == 'dataset' %}
 	                      <a href="{% url 'collection:ds-collection-summary' c.id %}">view</a>&nbsp;
-	                    {% elif c.type == 'place' %}
+	                    {% elif c.collection_class == 'place' %}
 	                      <a href="{% url 'collection:place-collection-browse' c.id %}">view</a>&nbsp;
 	                    {% endif %}
-	                    {% if c.type == 'dataset' %}
+	                    {% if c.collection_class == 'dataset' %}
 	                      <a href="{% url 'collection:ds-collection-update' c.id %}">edit</a>&nbsp;
-	                    {% elif c.type == 'place' %}
+	                    {% elif c.collection_class == 'place' %}
 	                      <a href="{% url 'collection:place-collection-update' c.id %}">edit</a>&nbsp;
 	                    {% endif %}
                       {# TODO: add regions #}
