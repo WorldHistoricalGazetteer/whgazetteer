@@ -21,14 +21,14 @@ from django.views.decorators.csrf import csrf_exempt
 """ BETA: annotate collection with place """
 # def annotate(request, cid, pid):
 def annotate(request, *args, **kwargs):
-  print('request.POST',request.POST.items())
-  print('kwargs',kwargs)
+  # print('request.POST',request.POST.items())
+  print('traces.annotate() kwargs',kwargs)
   cid = kwargs.get('id')
   pid = request.POST.get('place')
   anno_id = request.POST.get('anno_id')
   coll = get_object_or_404(Collection, id=cid)
-  for k, v in request.POST.items():
-    print('annotate POST.item', k, v)
+  # for k, v in request.POST.items():
+  #   print('annotate POST.item', k, v)
 
   if anno_id:
     # form with instance

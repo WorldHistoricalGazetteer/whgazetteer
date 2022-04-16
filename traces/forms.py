@@ -3,18 +3,28 @@ from django import forms
 from django.db import models
 from .models import TraceAnnotation
 
+# date validator
+def iso8601_dates(value):
+	entered = value
+	if value.length < 3:
+		raise forms.ValidationError("We're ISO8601 here!")
+
 class TraceAnnotationModelForm(forms.ModelForm):
+	start = forms.CharField(validators=[iso8601_dates])
+	end = forms.CharField(validators=[iso8601_dates])
+
 	class Meta:
 		model = TraceAnnotation
-		# fields = '__all__'
-		fields = ('id', 'note', 'relation', 'start', 'end', 'sequence', 'trace_type', 'motivation',
+		fields = ('id', 'note', 'relation', 'start', 'end', 'sequence', 'anno_type', 'motivation',
 		          'creator', 'collection','place')
 		widgets = {
 			# 'collection': forms.TextInput(attrs={'size': 4}),
 			'note': forms.Textarea(attrs={'rows':2,'cols': 30,'class':'textarea'}),
 			'collection': forms.TextInput(attrs={'size': 4}),
 			'place': forms.TextInput(attrs={'size': 16}),
-			'relation': forms.Select()
+			'relation': forms.Select(),
+			'start': forms.TextInput(attrs={'size': 11}),
+			'end': forms.TextInput(attrs={'size': 11})
 		}
 
 	# class Meta:

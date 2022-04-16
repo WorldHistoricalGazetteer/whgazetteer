@@ -53,7 +53,7 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
 class TraceAnnotationSerializer(serializers.ModelSerializer):
   class Meta:
     model = TraceAnnotation
-    fields = ('id', 'src_id', 'collection', 'trace_type', 'motivation',
+    fields = ('id', 'src_id', 'collection', 'anno_type', 'motivation',
               'when', 'sequence', 'creator', 'created')
 
 class PlaceDepictionSerializer(serializers.ModelSerializer):

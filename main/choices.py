@@ -27,10 +27,17 @@ AUTHORITY_BASEURI = {
     'align_whg':'whg:'
 }
 
-COLLECTIONTYPES = [
+COLLECTIONCLASSES = [
     ('dataset','Dataset collection'),
     ('place','Place collection'),
     ('region','Region collection')
+]
+
+COLLECTIONTYPES = [
+    ('event','Event'),
+    ('person','Person'),
+    ('work','Work'),
+    ('theme','Theme'),
 ]
 
 COMMENT_TAGS = [
@@ -43,6 +50,11 @@ COMMENT_TAGS = [
 DATATYPES = [
     ('place', 'Places'),
     ('anno', 'Traces')
+]
+
+ERAS = [
+    ('ce', 'CE'),
+    ('bce', 'BCE'),
 ]
 
 # geonames classes for api filter

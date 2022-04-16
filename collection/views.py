@@ -28,12 +28,11 @@ def add_places(request, *args, **kwargs):
       t = TraceAnnotation.objects.create(
         place = place,
         src_id = place.src_id,
-        collection = request.POST['collection'],
-        # collection = coll,
+        collection = coll,
         motivation = 'locating',
         # creator = 1,
         creator = request.user.id,
-        trace_type = 'place'
+        anno_type = 'place'
       )
       coll.places.add(p)
     return JsonResponse({'result': str(len(place_list))+' places added, we think'}, safe=False)

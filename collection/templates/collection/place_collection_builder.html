@@ -61,10 +61,14 @@
 	      <form id="collection_form" method="POST" action="#" enctype="multipart/form-data">
         {% csrf_token %}
 	      <input type="hidden" name="owner" value='{{ user.id }}' />
-	      <input type="hidden" name="type" value='place' />
+	      <input type="hidden" name="collection_class" value='place' />
 				<div class="form-group">
 					<label for="Title">Title &#x02733;</label>
 					{{ form.title }}
+				</div>
+				<div class="form-group">
+					<label for="Type">Type &#x02733;</label>
+					{{ form.type }}
 				</div>
 				<div class="form-group">
 					<label for="Description">Description &#x02733;</label>
@@ -82,22 +86,34 @@
 					<label for="Web page">Web page</label>
 					{{ form.webpage }}
 				</div>
-				{# single image #}
+				{# single image for now (20220416 #}
 	      <div class="form-group">
 					<label for="Image">Image</label>
-{#	        {% if not form.image_file.value %}null{% else %}empty string{% endif %}#}
-{#	        <span id="img_chooser_create">{{ form.image_file }}</span>#}
-{#		      <p>file: {{ form.image_file.value }}</p>#}
 					{% if action == 'create' %} {# create, no image yet #}
 						<span id="img_chooser_create">{{ form.image_file }}</span>
 					{% elif form.image_file.value %} {# update & there's an image #}
 						{% fontawesome_icon 'photo' color='#336699' %}
-						<a href="/media/{{ form.image_file.value }}">{{ object.image_file.url|remove:'/media/collections/' }}</a>
+						<a href="/media/{{ object.id }}/{{ form.image_file.value }}">
+							{{ object.image_file.url|remove:'/media/collections/' }}
+						</a>
 						(<a href="javascript:$('#img_chooser').toggle()">change</a>)
 					{% else %} {# update and there's no image yet #}
 						<span id="img_chooser_update" >{{ form.image_file }}</span>
 					{% endif %}
 	        <span id="img_chooser" class="hidden">{{ form.image_file }}</span>
+				</div>
+	      <div class="form-group">
+					<label for="File">File</label>
+					{% if action == 'create' %} {# create, no file yet #}
+						<span id="file_chooser_create">{{ form.file }}</span>
+					{% elif form.file.value %} {# update & there's an file #}
+						{% fontawesome_icon 'file-pdf' color='#336699' %}
+						<a href="/media/{{ form.file.value }}">{{ object.file.url|remove:'/media/collections/' }}</a>
+						(<a href="javascript:$('#file_chooser').toggle()">change</a>)
+					{% else %} {# update and there's no image yet #}
+						<span id="file_chooser_update" >{{ form.file }}</span>
+					{% endif %}
+	        <span id="file_chooser" class="hidden">{{ form.file }}</span>
 				</div>
 				{# 1 or more links #}
 {#	      <div class="form-group">#}

@@ -5,13 +5,13 @@ from django.contrib.postgres.fields import ArrayField #,JSONField
 from django.core.validators import URLValidator
 from django.urls import reverse
 from datasets.models import Dataset
-from main.choices import COLLECTIONTYPES
+from main.choices import COLLECTIONCLASSES, COLLECTIONTYPES
 from places.models import Place
 from tinymce.models import HTMLField
 
-def coll_image_path(instance, filename):
-  # upload to MEDIA_ROOT/collections/<id>_<filename>
-  return 'collections/{0}_{1}'.format(instance.id, filename)
+def collection_path(instance, filename):
+  # upload to MEDIA_ROOT/collections/<coll id>/<filename>
+  return 'collections/{0}/{1}'.format(instance.id, filename)
 
 def user_directory_path(instance, filename):
   # upload to MEDIA_ROOT/user_<username>/<filename>
@@ -31,11 +31,15 @@ class Collection(models.Model):
   contact = models.CharField(null=True, blank=True, max_length=500)
   webpage = models.URLField(null=True, blank=True)
 
-  # new field, 20220405
-  type = models.CharField(choices=COLLECTIONTYPES, max_length=12, default='dataset')
+  # modified, 20220416
+  collection_class = models.CharField(choices=COLLECTIONCLASSES, max_length=12, default='dataset')
+  type = models.CharField(choices=COLLECTIONTYPES, max_length=12)
 
   # single representative image
-  image_file = models.FileField(upload_to=coll_image_path, blank=True, null=True)
+  image_file = models.FileField(upload_to=collection_path, blank=True, null=True)
+  # single pdf file
+  file = models.FileField(upload_to=collection_path, blank=True, null=True)
+
   create_date = models.DateTimeField(null=True, auto_now_add=True)
   public = models.BooleanField(default=False)
   featured = models.IntegerField(null=True, blank=True)
@@ -75,18 +79,6 @@ class Collection(models.Model):
     counts = [ds.places.count() for ds in dses]
     return sum(counts)
 
-  # @property
-  # def trace_places(self):
-  #   return [t.place for t in self.traces.all().order_by('id')]
-  #
-  # @property
-  # def trace_places_all(self):
-  #   singletons = [t.place.id for t in self.traces.all()]
-  #   all = Place.objects.filter(
-  #     Q(dataset__in=self.datasets.all()) | Q(id__in=singletons)
-  #   )
-  #   return all
-
   def __str__(self):
     return '%s:%s' % (self.id, self.title)
 
@@ -112,7 +104,7 @@ class CollectionLink(models.Model):
 class CollectionImage(models.Model):
   collection = models.ForeignKey(Collection, default=None,
     on_delete=models.CASCADE, related_name='images')
-  image = models.FileField(upload_to=coll_image_path)
+  image = models.FileField(upload_to=collection_path)
   caption = models.CharField(null=True, blank=True, max_length=500)
   uri = models.TextField(validators=[URLValidator()], null=True, blank=True)
   license = models.CharField(null=True, blank=True, max_length=64)

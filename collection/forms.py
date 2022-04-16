@@ -11,10 +11,11 @@ class CollectionModelForm(forms.ModelForm):
 
     class Meta:
         model = Collection
-        fields = ('id','owner','title','type','description','keywords','rel_keywords','image_file',
-                  'datasets','creator','contact','content','webpage','public','featured' )
+        fields = ('id','owner','title','collection_class','type', 'description','keywords','rel_keywords',
+                  'image_file','file','datasets','creator','contact','content','webpage','public','featured' )
         widgets = {
             'title': forms.TextInput(attrs={'size': 50}),
+            'type': forms.Select(),
             'keywords': forms.TextInput(attrs={'size': 50}),
             'rel_keywords': forms.TextInput(attrs={'size': 50}),
             'creator': forms.TextInput(attrs={'size': 50}),
@@ -22,6 +23,7 @@ class CollectionModelForm(forms.ModelForm):
             'webpage': forms.TextInput(attrs={'size': 50}),
             'description': forms.Textarea(attrs={'rows':2,'cols': 49,'class':'textarea'}),
             'image_file':forms.FileInput(),
+            'file':forms.FileInput(),
             'datasets': forms.CheckboxSelectMultiple,
             'featured': forms.TextInput(attrs={'size': 3}),
             'content': TinyMCE(attrs={'cols': 40, 'rows': 6})

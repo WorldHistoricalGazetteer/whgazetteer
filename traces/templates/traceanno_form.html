@@ -13,6 +13,7 @@
 	{% if existing %}
 		anno_id: <input type="text" name="anno_id" value={{ existing }} />
 	{% endif %}
+	<p>collection relations:{% for rel in collection.rel_keywords %} {{ rel }}{% endfor %}</p>
 {#	<p>trace relation.value: {{ form.relation.value }}</p>#}
 {#	rel_keywords: {{ collection.rel_keywords }}#}
 	<p>Relation: <select id="select_relation" name="relation">
@@ -25,6 +26,10 @@
 			{% endif %}
 		{% endfor %}
 	</select></p>
+	<div class="form-group">
+		<label for="Note">Start/End:</label>
+		{{ form.start }} / {{ form.end }}
+	</div>
 	<div class="form-group">
 		<label for="Note">Notes:</label>
 		{{ form.note }}
