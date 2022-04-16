@@ -40,7 +40,7 @@ class Collection(models.Model):
   # single pdf file
   file = models.FileField(upload_to=collection_path, blank=True, null=True)
 
-  create_date = models.DateTimeField(null=True, auto_now_add=True)
+  created = models.DateTimeField(null=True, auto_now_add=True)
   public = models.BooleanField(default=False)
   featured = models.IntegerField(null=True, blank=True)
 

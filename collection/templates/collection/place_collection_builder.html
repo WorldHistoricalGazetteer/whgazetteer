@@ -93,7 +93,7 @@
 						<span id="img_chooser_create">{{ form.image_file }}</span>
 					{% elif form.image_file.value %} {# update & there's an image #}
 						{% fontawesome_icon 'photo' color='#336699' %}
-						<a href="/media/{{ object.id }}/{{ form.image_file.value }}">
+						<a href="/media/{{ form.image_file.value }}">
 							{{ object.image_file.url|remove:'/media/collections/' }}
 						</a>
 						(<a href="javascript:$('#img_chooser').toggle()">change</a>)

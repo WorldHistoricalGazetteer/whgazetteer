@@ -16,7 +16,7 @@ class TraceAnnotationModelForm(forms.ModelForm):
 	class Meta:
 		model = TraceAnnotation
 		fields = ('id', 'note', 'relation', 'start', 'end', 'sequence', 'anno_type', 'motivation',
-		          'creator', 'collection','place')
+		          'owner', 'collection','place')
 		widgets = {
 			# 'collection': forms.TextInput(attrs={'size': 4}),
 			'note': forms.Textarea(attrs={'rows':2,'cols': 30,'class':'textarea'}),

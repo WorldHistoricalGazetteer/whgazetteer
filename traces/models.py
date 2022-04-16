@@ -7,8 +7,6 @@ from main.choices import ERAS, TRACETYPES, TRACERELATIONS
 # annotates a collection (& its subject) with a place
 # FKs: Collection, Place
 class TraceAnnotation(models.Model):
-    creator = models.ForeignKey(User, related_name='annotations', on_delete=models.CASCADE)
-    create_date = models.DateTimeField(auto_now_add=True, blank=True)
     collection = models.ForeignKey('collection.Collection', db_column='collection',
         related_name='collections', on_delete=models.CASCADE)
     place = models.ForeignKey('places.Place', db_column='place',
@@ -26,6 +24,10 @@ class TraceAnnotation(models.Model):
     sequence = models.IntegerField(blank=True, null=True)
     anno_type = models.CharField(max_length=20, default='place', blank=True, null=True)
     motivation = models.CharField(max_length=20, default='locating') # choices? locating, describing
+    # creator = JSONField(blank=True, null=True)  # {name, affiliation, orcid, webpage}
+    owner = models.ForeignKey(User, related_name='annotations', on_delete=models.CASCADE)
+    created = models.DateTimeField(auto_now_add=True, null=False, blank=True)
+
     # standard 'when' from LP format; 20220416: not in use
     when = JSONField(blank=True, null=True) # {timespans[[],...], periods[{name, uri}], label, duration}
 

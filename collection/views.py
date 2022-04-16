@@ -257,7 +257,7 @@ class PlaceCollectionUpdateView(UpdateView):
     # context['coll_places'] = coll_places
     context['coll_places'] = self.object.places_all
 
-    context['create_date'] = self.object.create_date.strftime("%Y-%m-%d")
+    context['created'] = self.object.created.strftime("%Y-%m-%d")
     context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
     context['whgteam'] = User.objects.filter(groups__name='whg_team')
 
@@ -433,7 +433,7 @@ class DatasetCollectionUpdateView(UpdateView):
     context['ds_select'] = ds_select
     context['coll_dsset'] = datasets
 
-    context['create_date'] = self.object.create_date.strftime("%Y-%m-%d")
+    context['created'] = self.object.created.strftime("%Y-%m-%d")
     context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
     context['whgteam'] = User.objects.filter(groups__name='whg_team')
 

@@ -90,7 +90,7 @@
                     <td>{{ c.id }}</td>
                     <td><a href="{% url 'collection:ds-collection-summary' c.id %}">{{ c.title }}</a></td>
                     <!--<td>{ c.title }}</td>-->
-                    <td>{{ c.create_date }}</td>
+                    <td>{{ c.created }}</td>
                     <td>{{ c.owner }}</td>
                   </tr>
                 {% endfor %}

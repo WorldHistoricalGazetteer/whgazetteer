@@ -1806,8 +1806,8 @@ class DataListsView(LoginRequiredMixin, ListView):
       # print('list:', list)
       return list
     elif self.request.path == reverse('data-collections'):
-      list = Collection.objects.all().order_by('create_date') if whgteam \
-        else Collection.objects.filter(owner=me).order_by('create_date')
+      list = Collection.objects.all().order_by('created') if whgteam \
+        else Collection.objects.filter(owner=me).order_by('created')
       # print('list:', list)
       return list
     elif self.request.path == reverse('data-areas'):
