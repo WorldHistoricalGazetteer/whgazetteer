@@ -46,77 +46,80 @@
   </ul>
   <div class="tab-content">
     <div id="summary" class="tab-pane fade show active" role="tabpanel" aria-labelledby="summary-tab">
-    <div class="row">
-    <div id="coll_map" class="col-sm-7 mt-2 pl-0">
-      <div id="coll_meta">
-        <table>
-        <tr><td><b>Title</b></td><td class="larger strong">{{ object.title }}</td></tr>
-        <tr><td><b>Description</b></td><td>{{ object.description|readmore:200|safe }}</td></tr>
-        <tr><td><b>Keywords</b></td><td>{{ object.keywords|join:', ' }}</td></tr>
-{#        <tr><td><b>Image</b></td><td>{{ object.image_file }}</td></tr>#}
-        <tr><td><b>Image</b></td><td><img src="/media/{{ object.image_file.name }}" width="200"/></td></tr>
-        {% if object.webpage %}
-        <tr><td><b>Webpage</b></td><td>
-          <a href="{{object.webpage }}" target="_blank">link {% fontawesome_icon 'external-link' color='#336699' %}</a>
-        </td></tr>
-        {% endif %}
-        {% if object.contact %}
-          <tr><td><b>Creator(s)</b></td><td>{{ object.creator }}</td></tr>
-        {% endif %}
-        {% if object.contact %}
-          <tr><td><b>Contact</b></td><td>{{ object.contact|url_it|safe }}</td></tr>
-        {% endif %}
-        </table>
-      </div>      
-      <div id="mapdiv_coll" class="">
-        {% leaflet_map "map_coll" callback="map_init" %}
-      </div>
-    </div> <!-- .row -->
-    <div  id="coll_dslist" class="col-sm-5 mt-2">
-      <!-- dataset bboxes to js ('gelems') -->
-      {% for g in bboxes %}
-        {{ g|safe|json_script:g.properties.id }}
-      {% endfor %}
-      <div>
-        <h5>Datasets ({{ds_list|length}})<span class="small float-right mr-2">
-          {% fontawesome_icon 'download' color='#336699' %} <a href="" id="a_download_modal" data-dsid = {{ object.id }} data-toggle="modal" data-target="#downloadModal" title="download options"> download options</a></span>
-        </h5>
-        <!-- fields: id, label, title, description, creator, create_date, webpage, numrows, datatype -->
-        <div id="coll_dscards">
-          {% for d in ds_list %} 
-            <div class="ds_card" data-id={{d.id}}>
-              <div class="ds_fields">
-                <ul class="no-bullets">
-                <li class=""><b>Title</b>: 
-                  <a class="ds_title" href="{% url 'datasets:ds_meta' d.id %}">{{ d.title }}</a> (<i>{{d.id}}</i>)</li>
-                <li class=""><b>Description</b>: {{ d.description|readmore:200|safe }}</li>
-                <li class=""><b>Temporal coverage</b>: {{ d.minmax.0 }} / {{ d.minmax.1 }}</li>
-                <li class=""><b>Created</b>: {{ d.create_date|date:"d M Y" }}</li>
-                <li class="">
-                  <b>Number of records</b>: {{ d.numrows }}
-                  <span class="dl-links float-right mr-2">
-                  {%comment%}<select placeholder="Select format">
-                    <option disabled selected class="text-secondary"value="">Select format</option>
-                    <option value="lpf">Linked Places (LPF)</option>
-                    <option value="gis">simplified LPF</option>
-                    <option value="tsv">simplified TSV</option>
-                  </select> {% fontawesome_icon 'download' color='#336699' %}
-                  
-                  {% fontawesome_icon 'download' color='#336699' %}&nbsp;&nbsp;<a href="{% url 'datasets:dl-aug' id=d.id format='lpf' %}" data-id={{d.id}} ref="lpf" title="Linked Places format">lp</a>&nbsp;&nbsp;<a href="" data-id={{d.id}} ref="gis" title="tab-delimited text">tsv</a>{%endcomment%}
-                  
-                  </span>
-                </li>
-                </ul>
-              </div>
-            </div>
-            <!--{ d.bounds }}-->
-          {% endfor %}
-        </div> <!-- #ds_cards -->        
-      </div> 
-    </div><!-- #coll_dslist -->
-    </div> <!-- .row -->
+	    <div class="row">
+	    <div id="coll_left" class="col-sm-7 mt-2">
+	      <div id="coll_meta" class="row">
+	        <div class="col-sm-8 pl-1">
+		        <table>
+		        <tr><td><b>Title</b></td><td class="larger strong">{{ object.title }}</td></tr>
+		        <tr><td><b>Description</b></td><td>{{ object.description|readmore:200|safe }}</td></tr>
+		        <tr><td><b>Keywords</b></td><td>{{ object.keywords|join:', ' }}</td></tr>
+		        {% if object.webpage %}
+		        <tr><td><b>Webpage</b></td><td>
+		          <a href="{{object.webpage }}" target="_blank">link {% fontawesome_icon 'external-link' color='#336699' %}</a>
+		        </td></tr>
+		        {% endif %}
+		        {% if object.contact %}
+		          <tr><td><b>Creator(s)</b></td><td>{{ object.creator }}</td></tr>
+		        {% endif %}
+		        {% if object.contact %}
+		          <tr><td><b>Contact</b></td><td>{{ object.contact|url_it|safe }}</td></tr>
+		        {% endif %}
+		        </table>
+	        </div>
+	        <div class="col-sm-4">
+		        <img src="/media/{{ object.image_file.name }}" width="200"/>
+					</div>
+	      </div> <!-- #coll_meta -->
+	      <div id="mapdiv_coll" class="">
+	        {% leaflet_map "map_coll" callback="map_init" %}
+	      </div>
+	    </div> <!-- #coll_left -->
+	    <div  id="coll_dslist" class="col-sm-5 mt-2">
+	      <!-- dataset bboxes to js ('gelems') -->
+	      {% for g in bboxes %}
+	        {{ g|safe|json_script:g.properties.id }}
+	      {% endfor %}
+	      <div>
+	        <h5>Datasets ({{ds_list|length}})<span class="small float-right mr-2">
+	          {% fontawesome_icon 'download' color='#336699' %} <a href="" id="a_download_modal" data-dsid = {{ object.id }} data-toggle="modal" data-target="#downloadModal" title="download options"> download options</a></span>
+	        </h5>
+	        <!-- fields: id, label, title, description, creator, create_date, webpage, numrows, datatype -->
+	        <div id="coll_dscards">
+	          {% for d in ds_list %}
+	            <div class="ds_card" data-id={{d.id}}>
+	              <div class="ds_fields">
+	                <ul class="no-bullets">
+	                <li class=""><b>Title</b>:
+	                  <a class="ds_title" href="{% url 'datasets:ds_meta' d.id %}">{{ d.title }}</a> (<i>{{d.id}}</i>)</li>
+	                <li class=""><b>Description</b>: {{ d.description|readmore:200|safe }}</li>
+	                <li class=""><b>Temporal coverage</b>: {{ d.minmax.0 }} / {{ d.minmax.1 }}</li>
+	                <li class=""><b>Created</b>: {{ d.create_date|date:"d M Y" }}</li>
+	                <li class="">
+	                  <b>Number of records</b>: {{ d.numrows }}
+	                  <span class="dl-links float-right mr-2">
+	                  {%comment%}<select placeholder="Select format">
+	                    <option disabled selected class="text-secondary"value="">Select format</option>
+	                    <option value="lpf">Linked Places (LPF)</option>
+	                    <option value="gis">simplified LPF</option>
+	                    <option value="tsv">simplified TSV</option>
+	                  </select> {% fontawesome_icon 'download' color='#336699' %}
+
+	                  {% fontawesome_icon 'download' color='#336699' %}&nbsp;&nbsp;<a href="{% url 'datasets:dl-aug' id=d.id format='lpf' %}" data-id={{d.id}} ref="lpf" title="Linked Places format">lp</a>&nbsp;&nbsp;<a href="" data-id={{d.id}} ref="gis" title="tab-delimited text">tsv</a>{%endcomment%}
+
+	                  </span>
+	                </li>
+	                </ul>
+	              </div>
+	            </div>
+	            <!--{ d.bounds }}-->
+	          {% endfor %}
+	        </div> <!-- #ds_cards -->
+	      </div>
+	    </div><!-- #coll_dslist -->
+      </div> <!-- .row -->
     </div> <!-- #summary -->
-  </div> <!-- d-flex -->
+  </div> <!-- .tab-content -->
   <div class="modal fade" id="downloadModal" tabindex="-1" aria-labelledby="downloadModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content modal-85">

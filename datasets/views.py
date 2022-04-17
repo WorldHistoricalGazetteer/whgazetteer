@@ -1914,7 +1914,7 @@ class PublicListsView(ListView):
 
     # public datasets available as dataset_list
     # public collections
-    context['coll_list'] = Collection.objects.filter(public=True).order_by('create_date')
+    context['coll_list'] = Collection.objects.filter(public=True).order_by('created')
     context['viewable'] = ['uploaded','inserted','reconciling','review_hits','reviewed','review_whg','indexed']
 
     context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False

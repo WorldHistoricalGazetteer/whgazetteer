@@ -29,103 +29,94 @@
 {% block title %}<title>Collection::{{ object.title }}</title>{% endblock %}
 
 {% block content %}
-<div id="dataset_content" class="container mt-1 px-1">
-	{% if user.id == object.owner.id or user.is_superuser or user in whgteam %}
-	<div>
-		<span class="float-right mr-2 pt-2">
-			<a href="{% url 'collection:place-collection-update' object.id %}" >
-				{% fontawesome_icon 'gear' color='#336699' %}</a>
-		</span>
-	</div>
-	{% endif %}
-  <ul id="dataset_tabs" class="nav nav-tabs" role="tablist">
-      <li class="nav-item">
-          <a class="nav-link active" id="browse-tab" href="#" role="tab"><sr>{{object.title}}</sr></a>
-      </li>
-      {% comment %}<li class="nav-item">
-          <a class="nav-link" id="summary-tab" data-link="summary" href="{% url 'collection:place-collection-summary' pk=object.id %}" role="tab">summary</a>
-      </li>{% endcomment %}
-  </ul>
+<div id="collection_content" class="container mt-1 px-1">
+	<div id="collection_title">
+		<h3><sr>{{object.title}}</sr> <span class="half ital text-secondary"> a WHG place collection by {{ user.username }}</span>
+		{% if user.id == object.owner.id or user.is_superuser or user in whgteam %}
+			<span class="float-right small mr-2 pt-2">
+				<a href="{% url 'collection:place-collection-update' object.id %}" >
+					{% fontawesome_icon 'gear' color='#336699' %}</a>
+			</span>
+		{% endif %}
+		</h3>
+	</div> <!-- #collection_title -->
   {{ ds_list|json_script:"ds_list" }}
   {{ bboxes|json_script:"bboxes" }}
-  <div class="tab-content">
-    <div id="browse" class="tab-pane fade show active" role="tabpanel" aria-labelledby="browse-tab">
-        <div class="container mt-3 pl-0">
-          <div class="row">
-            <div id="drftable_detail" class="col-sm-8">
-              <div class="toomany hidden text-danger small"></div>
-				      <div id="coll_meta">
-				        <div class="row">
-					        <div class="col-sm-7">
-						        <table>
-						        <tr><td class="align-middle"><b>Title</b></td><td class="larger strong">{{ object.title }}</td></tr>
-						        <tr><td><b>Description</b></td><td>{{ object.description|readmore:200|safe }}</td></tr>
-						        <tr><td><b>Keywords</b></td><td>{{ object.keywords|join:', ' }}</td></tr>
-						        <tr>
-							        <td><b>Essay</b></td>
-							        <td>
-								        <a href="/media/{{ object.file }}"> {% fontawesome_icon 'file-pdf-o' %}
-								        {{ object.file.name|filename }}</a>
-							        </td>
-						        </tr>
-						        {% if object.webpage %}
-						        <tr><td><b>Webpage</b></td><td>
-						          <a href="{{object.webpage }}" target="_blank">link {% fontawesome_icon 'external-link' color='#336699' %}</a>
-						        </td></tr>
-						        {% endif %}
-						        {% if object.creator %}
-						          <tr><td><b>Creator(s)</b></td><td>{{ object.creator }}</td></tr>
-						        {% endif %}
-						        {% if object.contact %}
-						          <tr><td><b>Contact</b></td><td>{{ object.contact|url_it|safe }}</td></tr>
-						        {% endif %}
-						        </table>
-					        </div>
-					        <div class="col-sm-5 ">
-						        <img src="/media/{{ object.image_file.name }}" width="200" align="right"/>
-					        </div>
-				        </div>
-				      </div>
-              <div class="row pl-4">
-	              <div class="col-sm-8" style="padding:0 !important;">
-	                <div id="map" style="height:300px;"></div>
-	              </div>
-	              <div id="row_detail" class="col-sm-4">
-	                <div id="detail" class="small pl-2"></div>
-	              </div>
-              </div>
-            </div> <!-- drftable_detail -->
-            <div id="drftable_list" class="col-sm-4">
-	            {{ coll_places|slice:":10"}}
-              <table id="placetable" class="table table-striped table-bordered" style="width:100%">
-                <thead>
-                  <tr>
-                    <th>pid</th>
-                    <th>src_id</th>
-                    <th>title</th>
-                    <th>ccodes</th>
-                    <th>geo</th>
-                  </tr>
-                </thead>
-              </table>
-            </div>
+  <div class="container mt-3 pl-0">
+    <div class="row">
+      <div id="drftable_detail" class="col-sm-8">
+        <div class="toomany hidden text-danger small"></div>
+	      <div id="coll_meta">
+	        <div class="row">
+		        <div class="col-sm-8">
+		          <p class="mb-1">{{ object.description|readmore:400|safe }}</p>
+			        <table>
+{#			        <tr><td class="align-middle"><b>Title</b></td><td class="larger strong">{{ object.title }}</td></tr>#}
+{#			        <tr><td><b>Description</b></td><td>{{ object.description|readmore:200|safe }}</td></tr>#}
+			        <tr><td><b>Keywords</b></td><td>{{ object.keywords|join:', ' }}</td></tr>
+			        <tr>
+				        <td><b>Essay</b></td>
+				        <td>
+					        <a href="/media/{{ object.file }}"> {% fontawesome_icon 'file-pdf-o' %}
+					        {{ object.file.name|filename }}</a>
+				        </td>
+			        </tr>
+			        {% if object.webpage %}
+			        <tr><td><b>Webpage</b></td><td>
+			          <a href="{{object.webpage }}" target="_blank">link {% fontawesome_icon 'external-link' color='#336699' %}</a>
+			        </td></tr>
+			        {% endif %}
+			        {% if object.creator %}
+			          <tr><td><b>Creator(s)</b></td><td>{{ object.creator }}</td></tr>
+			        {% endif %}
+			        {% if object.contact %}
+			          <tr><td><b>Contact</b></td><td>{{ object.contact|url_it|safe }}</td></tr>
+			        {% endif %}
+			        </table>
+		        </div>
+		        <div class="col-sm-4">
+			        <img src="/media/{{ object.image_file.name }}" width="200" align="right"/>
+		        </div>
+	        </div>
+	      </div>
+        <div class="row pl-4">
+          <div class="col-sm-8" style="padding:0 !important;">
+            <div id="map" style="height:300px;"></div>
+          </div>
+          <div id="row_detail" class="col-sm-4">
+            <div id="detail" class="small pl-2"></div>
           </div>
         </div>
-      <div id="ext_site" class="modal fade" role="dialog">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span></button>
-            </div>
-            <div id="ext_content" class="modal-body">foo</div>
-          </div>
-        </div>
-      </div> <!-- ext_site -->
-    </div> <!-- browse -->
-  </div> <!-- .tab-content -->
-
-  <div class="modal fade" id="" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
+      </div> <!-- drftable_detail -->
+      <div id="drftable_list" class="col-sm-4">
+        {{ coll_places|slice:":10"}}
+        <table id="placetable" class="table table-striped table-bordered" style="width:100%">
+          <thead>
+            <tr>
+              <th>pid</th>
+              <th>src_id</th>
+              <th>title</th>
+              <th>ccodes</th>
+              <th>geo</th>
+            </tr>
+          </thead>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div id="ext_site" class="modal fade" role="dialog">
+	    <div class="modal-dialog">
+	      <div class="modal-content">
+	        <div class="modal-header">
+	          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+	            <span aria-hidden="true">&times;</span></button>
+	        </div>
+	        <div id="ext_content" class="modal-body">foo</div>
+	      </div>
+	    </div>
+	  </div> <!-- ext_site -->
+</div> <!-- .#collection_content -->
+<div class="modal fade" id="" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
@@ -145,10 +136,8 @@
       </div>
     </div>
   </div>
-</div>
 
 <script type="text/javascript">
-
   function filterColumn (i, v) {
     // clear then search
     console.log('i,v', i,v)
