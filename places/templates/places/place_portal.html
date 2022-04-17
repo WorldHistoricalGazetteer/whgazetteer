@@ -62,8 +62,10 @@
 {#	      <div id="addtocoll" class="hidden">#}
 	      <div class="small allcap-heading">
 		      ATTESTATIONS TO DATE
-		      <span id="addtocoll" class="float-right mr-1 hidden"><a id="addchecked" href="#">
-			      add to collection {% fontawesome_icon 'plus' %}</a></span>
+		      <span id="added_flash" class="hidden float-right">Added to collection!</span>
+		      <span id="addtocoll" class="float-right mr-1 hidden">
+			      <a id="addchecked" href="#">add to collection {% fontawesome_icon 'plus' %}</a>
+		      </span>
 	      </div>
         {% for rec in payload %}
         <div id="card_{{ rec.place_id }}" class="col-content small mt-1">
@@ -254,12 +256,12 @@
 		      cache: false,
 		      data: formData,
 		      success:function(response){
-			      console.log('result:', response)
 			      if(response.status == 'dupe'){
               alert('That record is already in the collection')
 				      $("input.action").prop('checked',false)
 			      } else {
-				      console.log(response.msg)
+				      $("#added_flash").fadeIn().delay(2000).fadeOut()
+				      console.log('added! gimmee feedback', response.msg)
 			      }
 		      }
 			})
