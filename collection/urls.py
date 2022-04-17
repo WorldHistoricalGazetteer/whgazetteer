@@ -14,6 +14,7 @@ app_name='collection'
 urlpatterns = [
 
     path('add_places/', views.add_places, name="collection-add-places"),
+    path('remove_places/', views.remove_places, name="collection-remove-places"),
 
     # DATASET collections (datasets only)
     path('create_ds/', views.DatasetCollectionCreateView.as_view(), name='ds-collection-create'),

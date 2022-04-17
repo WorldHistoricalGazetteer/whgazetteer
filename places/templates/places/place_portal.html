@@ -316,7 +316,7 @@
       {#console.log($(this))#}
 	})
   $(".a_modal").on('click',function(){
-      // remove modal header if there is one from a comment form
+    // remove modal header if there is one from a comment form
     $(".modal-header").remove()
     $(".modal-footer").remove()
     startModalSpinner()
@@ -596,10 +596,6 @@
         [sw['lng'],ne['lat']],[ne['lng'],ne['lat']]
       ]]
     }
-    // display bbox
-    <!--feature={"type":"Feature","properties":{"id":"fooid"},"geometry":geom}-->
-    <!--var polygon = L.polygon(latlngs, {color: 'red'}).addTo(mappy)-->
-    <!--console.log(JSON.stringify(geom["coordinates"]))-->
     return JSON.stringify(geom["coordinates"])
   }
   
@@ -679,7 +675,6 @@
       })
 
     var baseLayers = {
-      <!--"Pleiades Terrain": pleiades,-->
       "OpenStreetMap": osm,
       "NE Terrain": ne_global,
       "Satellite": satellite

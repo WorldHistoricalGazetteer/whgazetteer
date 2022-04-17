@@ -38,6 +38,21 @@ def add_places(request, *args, **kwargs):
       coll.places.add(p)
     return JsonResponse({'result': str(len(place_list))+' places added, we think'}, safe=False)
 
+def remove_places(request, *args, **kwargs):
+  if request.method == 'POST':
+    print('remove_places request', request.POST)
+    coll = Collection.objects.get(id=request.POST['collection'])
+    place_list = [int(i) for i in request.POST['place_list'].split(',')]
+    print('place_list to remove', place_list)
+    # remove from collections_places
+    for p in place_list:
+      place = Place.objects.get(id=p)
+      coll.places.remove(p)
+      # remove trace_anotations record if exists
+      if place.traces:
+        TraceAnnotation.objects.filter(collection=coll, place__in=place_list).delete()
+    return JsonResponse({'result': str(len(place_list))+' places removed, we think'}, safe=False)
+
 """ create place collection on the fly
     return id for adding place(s) to it 
 """

@@ -169,6 +169,9 @@
 				  <li class="nav-item">
 				    <a class="nav-link active" id="coll_placelist-tab" data-toggle="tab" href="#coll_placelist" role="tab" aria-controls="coll_placelist" aria-selected="false" data-id="pl">Places ({{ coll_places|length }})</a>
 				  </li>
+					<span class="small" style="position:absolute; right:1rem; top:1.5rem;">
+						<a id="a_remove" href="#"></a>
+					</span>
 				</ul>
 		    <div class="tab-content" style="height:95%; overflow:auto;">
 			    <div id="coll_dslist" class="tab-pane fade" role="tabpanel" aria-labelledby="coll_dslist-tab">
@@ -277,14 +280,41 @@
 
 	// fetch r/o place record to annotation panel
   $(".anno-place").click(function(){
-      {#console.log('fetch traceanno form for', $(this).data('pid'));#}
-      {#getPlace($(this).data('pid'))#}
       getAnno($(this).data('pid'))
-	    {#$("#pid").val($(this).data('pid'))#}
   })
 
-	// restore place
-
+	function remove_from_collection(coll, pids) {
+      var formData = new FormData()
+      formData.append('collection', coll)
+      formData.append('place_list', pids)
+      formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+      // collection.views.remove_places()
+      $.ajax({
+          type: 'POST',
+          enctype: 'multipart/form-data',
+          url: '/collections/remove_places/',
+          processData: false,
+          contentType: false,
+          cache: false,
+          data: formData,
+          success: function (response) {
+              console.log('result:', response)
+          }
+      })
+			// remove card from dom & hide link
+			$(".col-place-card").each(function(index) {
+        if ( remove_these.includes( $(this).data('id') ) ) {
+          $(this).remove()
+        }
+      })
+			remove_these = [];
+      $("#a_remove").html('')
+  }
+	// remove place(s) from collection
+	$("#a_remove").click(function(){
+		coll = '{{ object.id }}'
+    remove_from_collection(coll, remove_these)
+	})
 	// mark/unmark place for removal from collection
 	$(".mark-place").click(function(){
     pid = $(this).data('pid')
@@ -303,6 +333,8 @@
 				.removeClass('restore-place')
 			idx = remove_these.indexOf(pid)
 			remove_these.splice(idx,1)
+			$("#a_remove").html('remove '+remove_these.length)
+			if(remove_these.length == 0){$("#a_remove").html('')}
 		} else {
       // mark for removal
 			card = $(".col-place-card[data-id="+pid+"]")
@@ -314,6 +346,7 @@
 			$(card[0]).find('.remove-place').addClass('restore-place')
 				.removeClass('remove-place')
 			remove_these.push(pid)
+			$("#a_remove").html('remove '+remove_these.length)
 		}
     console.log('remove_these:', remove_these)
 	})
