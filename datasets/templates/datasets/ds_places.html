@@ -63,12 +63,12 @@
                     <th>title</th>
                     <th>ccodes</th>
                     <th>geo</th>
-                    <th class="hidden">revwd</th>
-                    <th class="hidden">revtgn</th>
-                    <th class="hidden">revwhg</th>
-                    <th>wikidata <a rel="tooltip" data-html="true" title="&#x25a2; not reviewed<br/><i class='fa fa-check-square-o'></i> reviewed" class="pointer text-danger strong">?</a></th>
-                    <th>tgn <a rel="tooltip" data-html="true" title="&#x25a2; not reviewed<br/><i class='fa fa-check-square-o'></i> reviewed" class="pointer text-danger strong">?</a></th>
-                    <th>whg <a rel="tooltip" data-html="true" title="&#x25a2; not reviewed<br/><i class='fa fa-check-square-o'></i> reviewed )" class="pointer text-danger strong">?</a></th>
+{#                    <th class="hidden">revwd</th>#}
+{#                    <th class="hidden">revtgn</th>#}
+{#                    <th class="hidden">revwhg</th>#}
+{#                    <th>wikidata <a rel="tooltip" data-html="true" title="&#x25a2; not reviewed<br/><i class='fa fa-check-square-o'></i> reviewed" class="pointer text-danger strong">?</a></th>#}
+{#                    <th>tgn <a rel="tooltip" data-html="true" title="&#x25a2; not reviewed<br/><i class='fa fa-check-square-o'></i> reviewed" class="pointer text-danger strong">?</a></th>#}
+{#                    <th>whg <a rel="tooltip" data-html="true" title="&#x25a2; not reviewed<br/><i class='fa fa-check-square-o'></i> reviewed )" class="pointer text-danger strong">?</a></th>#}
                   </tr>
                 </thead>
               </table>
@@ -112,8 +112,7 @@
 </div>
 
 <script type="text/javascript">
-  
-  
+
   function filterColumn (i, v) {
     // clear then search
     table
@@ -136,7 +135,6 @@
   // table events
   // TODO: use datatables methods?
   function setRowEvents(){
-
     $("#placetable tbody tr").click(function() {
       thisy=$(this)
       // get id
@@ -170,7 +168,6 @@
     getPlace(pid)
   }
 
-
   $(function(){
     localStorage.setItem('filter', '99')
     wdtask = false
@@ -202,21 +199,23 @@
           {"data": "title"},
           {"data": "ccodes"},
           {"data": "geo"},
-          {"data": "review_wd"},
-          {"data": "review_tgn"},
-          {"data": "review_whg"},
-          {"data": "revwd", "visible": wdtask?true:false, 
-            "orderable":false},
-          {"data": "revtgn", "visible": tgntask?true:false, 
-            "orderable":false},
-          {"data": "revwhg", "visible": whgtask?true:false, 
-            "orderable":false}
+          {#{"data": "review_wd"},#}
+          {#{"data": "review_tgn"},#}
+          {#{"data": "review_whg"},#}
+          {#{"data": "revwd", "visible": wdtask?true:false, #}
+          {#  "orderable":false},#}
+          {#{"data": "revtgn", "visible": tgntask?true:false, #}
+          {#  "orderable":false},#}
+          {#{"data": "revwhg", "visible": whgtask?true:false, #}
+          {#  "orderable":false}#}
       ]
       ,columnDefs:[
-        { className: "browse-task-col", "targets": [8,9,10] },
-        { orderable: false, "targets": [4,5,6,7]},
-        { searchable: false, "targets": [0,1,3,4,8,9,10]}
-        ,{ visible: false, "targets": [5,6,7]}
+        {#{ className: "browse-task-col", "targets": [8,9,10] },#}
+        { orderable: false, "targets": [4]},
+        { orderable: false, "targets": [4]},
+        {#{ searchable: false, "targets": [0,1,3,4,8,9,10]}#}
+        { searchable: false, "targets": [0,1,3,4]}
+        {#,{ visible: false, "targets": [5,6,7]}#}
       ]
     })
 
