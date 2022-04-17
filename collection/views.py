@@ -31,7 +31,8 @@ def add_places(request, *args, **kwargs):
         collection = coll,
         motivation = 'locating',
         # creator = 1,
-        creator = request.user.id,
+        owner = request.user,
+        # owner = request.user.id,
         anno_type = 'place'
       )
       coll.places.add(p)

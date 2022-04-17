@@ -31,7 +31,8 @@
 {% block content %}
 <div id="collection_content" class="container mt-1 px-1">
 	<div id="collection_title">
-		<h3><sr>{{object.title}}</sr> <span class="half ital text-secondary"> a WHG place collection by {{ user.username }}</span>
+		<h3><sr>{{object.title}}</sr>
+			<span class="half ital text-secondary"> a place collection by {{ object.owner.first_name }} {{ object.owner.last_name }}</span>
 		{% if user.id == object.owner.id or user.is_superuser or user in whgteam %}
 			<span class="float-right small mr-2 pt-2">
 				<a href="{% url 'collection:place-collection-update' object.id %}" >
@@ -51,27 +52,28 @@
 		        <div class="col-sm-8">
 		          <p class="mb-1">{{ object.description|readmore:400|safe }}</p>
 			        <table>
-{#			        <tr><td class="align-middle"><b>Title</b></td><td class="larger strong">{{ object.title }}</td></tr>#}
-{#			        <tr><td><b>Description</b></td><td>{{ object.description|readmore:200|safe }}</td></tr>#}
 			        <tr><td><b>Keywords</b></td><td>{{ object.keywords|join:', ' }}</td></tr>
-			        <tr>
-				        <td><b>Essay</b></td>
-				        <td>
-					        <a href="/media/{{ object.file }}"> {% fontawesome_icon 'file-pdf-o' %}
-					        {{ object.file.name|filename }}</a>
-				        </td>
-			        </tr>
+			        {% if object.file %}
+				        <tr>
+					        <td><b>Essay</b></td>
+					        <td>
+						        <a href="/media/{{ object.file }}" target="_blank"> {% fontawesome_icon 'file-pdf-o' %}
+						        {{ object.file.name|filename }}</a>
+					        </td>
+				        </tr>
+			        {% endif %}
 			        {% if object.webpage %}
-			        <tr><td><b>Webpage</b></td><td>
-			          <a href="{{object.webpage }}" target="_blank">link {% fontawesome_icon 'external-link' color='#336699' %}</a>
-			        </td></tr>
+				        <tr><td><b>Webpage</b></td><td>
+				          <a href="{{object.webpage }}" target="_blank">link {% fontawesome_icon 'external-link' color='#336699' %}</a>
+				        </td></tr>
 			        {% endif %}
-			        {% if object.creator %}
-			          <tr><td><b>Creator(s)</b></td><td>{{ object.creator }}</td></tr>
-			        {% endif %}
+{#			        {% if object.creator %}#}
+{#			          <tr><td><b>Creator(s)</b></td><td>{{ object.creator }}</td></tr>#}
+{#			        {% endif %}#}
 			        {% if object.contact %}
 			          <tr><td><b>Contact</b></td><td>{{ object.contact|url_it|safe }}</td></tr>
 			        {% endif %}
+			          <tr><td><b>Created</b></td><td>{{ object.created }}</td></tr>
 			        </table>
 		        </div>
 		        <div class="col-sm-4">
@@ -577,7 +579,7 @@
     console.log('geom')
     if(geom.type.toLowerCase() == 'point'){
       flycoords = typeof(coords[0]) == 'number'?coords:coords[0]
-      mappy.flyTo({'center': flycoords, 'zoom': 7})
+      mappy.flyTo({'center': flycoords, 'zoom': 6})
     } else {
       bbox=turf.envelope(geom).bbox
       mappy.fitBounds(bbox, { padding: 30})      
@@ -703,7 +705,10 @@
 	  if(JSON.parse(data.traces).length >0) {
       trace = JSON.parse(data.traces).find(function(t){return t.fields.collection = "{{ object.id }}"})
 		  descrip +="<p><b>Relation</b>: "+JSON.parse(trace.fields.relation)[0]+"</p>"
-			descrip +='<p><b>Notes</b>: '+ trace.fields.note+'</p><hr/>'
+			descrip +='<p><b>Notes</b>: '+ trace.fields.note+'</p>'
+		  if(trace.fields.start){
+				descrip +='<p><b>Start/End</b>: '+ trace.fields.start+'/'+trace.fields.end+'</p><hr/>'
+		  }
 	  }
 
     //
