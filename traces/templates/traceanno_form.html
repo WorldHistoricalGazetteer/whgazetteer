@@ -12,20 +12,16 @@
 	<input type="hidden" name="collection" value="{{ collection.id }}"/>
 	<input type="hidden" name="motivation" value="locating"/>
 	{% if existing %}
-		anno_id: <input type="text" name="anno_id" value={{ existing }} />
+		<input type="hidden" name="anno_id" value={{ existing }} />
 	{% endif %}
 	<table>
 		<tr>
 			<td>Relation:</td>
 			<td>
 				<select id="select_relation" name="relation">
-					<option value="-1">Select relation</option>
+					<option value="" selected >Select relation</option>
 					{% for rel in collection.rel_keywords %}
-						{% if form.relation.value %}
-							<option value='{{ form.relation.value }}' selected="selected">{{ form.relation.value }}</option>
-						{% else %}
-							<option value='{{ rel }}'>{{ rel }}</option>
-						{% endif %}
+						<option value='{{ rel }}' {% if rel == form.relation.value %}selected{% endif %}>{{ rel }}</option>
 					{% endfor %}
 				</select>
 			</td>

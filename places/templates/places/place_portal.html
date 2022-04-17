@@ -59,7 +59,8 @@
   <div id="place_content" class="tab-content">
     <div class="row pt-1">
       <div id="place_home_l" class="col-sm-6">
-	      <div id="addtocoll" class="hidden">
+{#	      <div id="addtocoll" class="hidden">#}
+	      <div id="addtocoll" >
 		      <span class="small"><a id="addchecked" href="#">add checked to place collection</a></span>
 	      </div>
         {% for rec in payload %}
@@ -254,9 +255,10 @@
 			      console.log('result:', response)
 		      }
 			})
-			// TODO: uncheck boxes, notify of success
+			// TODO: notify of success
 			$("#addtocoll").hide()
 			$("#addtocoll_popup").hide()
+			$("input.action").prop('checked',false)
 
 	}
 	$(".closer").click(function(){
