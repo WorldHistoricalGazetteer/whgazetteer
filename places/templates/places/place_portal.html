@@ -24,14 +24,14 @@
   <script src="{% static 'js/bootstrapx-clickover.js' %}"></script>
   
   <style>
-    #addtocoll {text-align: right; position:relative;}
+    #addtocoll {padding-left:0.3rem;}
     #addtocoll_popup {position:absolute;
 	    top:3px; left:3px; width:200px;
 	    background-color: #fff;
 	    border: 1px solid #336699;
 	    z-index: 2000;
 	    box-shadow: 3px 3px #c3c3c3;
-	    border-radius: 10px;
+	    {#border-radius: 10px;#}
     }
     .svg-container {
       display: inline-block;
@@ -60,8 +60,10 @@
     <div class="row pt-1">
       <div id="place_home_l" class="col-sm-6">
 {#	      <div id="addtocoll" class="hidden">#}
-	      <div id="addtocoll" >
-		      <span class="small"><a id="addchecked" href="#">add checked to place collection</a></span>
+	      <div class="small allcap-heading">
+		      ATTESTATIONS TO DATE
+		      <span id="addtocoll" class="float-right mr-1 hidden"><a id="addchecked" href="#">
+			      add to collection {% fontawesome_icon 'plus' %}</a></span>
 	      </div>
         {% for rec in payload %}
         <div id="card_{{ rec.place_id }}" class="col-content small mt-1">
@@ -82,7 +84,7 @@
               {% if rec.geoms|length > 0 %}
                 <a href="#" class="flash-geo ttip" data-id="{{ rec.place_id }}" title="flash map marker">{% fontawesome_icon 'map-marker' %}</a>
               {% endif %}
-              <input type="checkbox" class="action ml-2" data-id="{{ rec.place_id }}" />
+              <input type="radio" name="r_anno" class="action ml-2" data-id="{{ rec.place_id }}" />
             </span>
           </span>
         </div>
@@ -242,7 +244,7 @@
 			formData.append('collection', coll)
 			formData.append('place_list', pids)
 			formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
-      // collection.views.add_places()
+      {# collection.views.add_places() #}
 			$.ajax({
 		      type: 'POST',
 		      enctype: 'multipart/form-data',
@@ -253,6 +255,12 @@
 		      data: formData,
 		      success:function(response){
 			      console.log('result:', response)
+			      if(response.status == 'dupe'){
+              alert('That record is already in the collection')
+				      $("input.action").prop('checked',false)
+			      } else {
+				      console.log(response.msg)
+			      }
 		      }
 			})
 			// TODO: notify of success
@@ -302,21 +310,25 @@
 	$("#addchecked").click(function(){
       $("#addtocoll_popup").fadeIn()
 	})
-	$(".action:checkbox").click(function(){
-			if($(".action:checkbox:checked").length > 0) {
+	{# single pid for place portal; adapt for multi-select elsewhere #}
+	$(".action:radio").click(function(){
+			pid = $('input[name="r_anno"]:checked').data('id');
+			console.log('checked radio for pid:', pid)
+			{#if($(".action:checkbox:checked").length > 0) {#}
 				{#$("#addtocoll").removeClass('hidden')#}
-				$("#addtocoll").fadeIn()
-			} else {
-        $("#addtocoll").fadeOut()
-        $("#addtocoll_popup").fadeOut()
-			}
+			$("#addtocoll").fadeIn()
+			{# } else {#}
+      {#  $("#addtocoll").fadeOut()#}
+      {#  $("#addtocoll_popup").fadeOut()#}
+			{# }#}
 			checked_cards = []
-			$(".action:checkbox:checked").each(function() {
-					checked_cards.push($(this).data("id"))
+			{#$(".action:checkbox:checked").each(function() {#}
+			checked_cards.push($(this).data("id"))
 					{#console.log('checked ids:', checked_cards);#}
-			});
+			{# });#}
       {#console.log($(this))#}
 	})
+
   $(".a_modal").on('click',function(){
     // remove modal header if there is one from a comment form
     $(".modal-header").remove()
@@ -457,7 +469,7 @@
     // exit if no data 
     if (data[0].bin == "Infinity"){ $("#histogram_sum").html('<i>None yet</i>'); return; }
     data=data.slice(0,200)
-    var margin = {top: 0, right: 10, bottom: 0, left: 10};
+    var margin = {top: 0, right: 10, bottom: 0, left: 12};
     var width = 500, height = 30,  padding_h = 20,  padding_w = 30;
       
     // set the ranges

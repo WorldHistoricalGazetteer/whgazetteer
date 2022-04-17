@@ -20,23 +20,29 @@ from itertools import chain
 """ add list of >=1 places to collection """
 def add_places(request, *args, **kwargs):
   if request.method == 'POST':
+    status, msg = ['','']
     print('add_places request', request.POST)
     coll = Collection.objects.get(id=request.POST['collection'])
     place_list = [int(i) for i in request.POST['place_list'].split(',')]
     for p in place_list:
       place = Place.objects.get(id=p)
-      t = TraceAnnotation.objects.create(
-        place = place,
-        src_id = place.src_id,
-        collection = coll,
-        motivation = 'locating',
-        # creator = 1,
-        owner = request.user,
-        # owner = request.user.id,
-        anno_type = 'place'
-      )
-      coll.places.add(p)
-    return JsonResponse({'result': str(len(place_list))+' places added, we think'}, safe=False)
+      gotplace = TraceAnnotation.objects.filter(collection=coll, place=place)
+      if not gotplace:
+        t = TraceAnnotation.objects.create(
+          place = place,
+          src_id = place.src_id,
+          collection = coll,
+          motivation = 'locating',
+          owner = request.user,
+          anno_type = 'place'
+        )
+        coll.places.add(p)
+        status = 'ok'
+        msg = 'place #'+str(place.id)+' added to collection'
+      else:
+        status = 'dupe'
+        msg = 'that place is already in the collection'
+    return JsonResponse({'status': status, 'msg': msg}, safe=False)
 
 def remove_places(request, *args, **kwargs):
   if request.method == 'POST':
