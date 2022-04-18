@@ -271,9 +271,6 @@
 			$("input.action").prop('checked',false)
 
 	}
-	$(".closer").click(function(){
-			$("#addtocoll_popup").hide()
-	})
 	$(".a_addtocoll").click(function(){
 			coll = $(this).attr('ref')
 			pids = checked_cards
@@ -304,6 +301,9 @@
 			} else {
 					alert( 'Your new collection needs a title!' )
 			}
+	})
+	$(".closer").click(function(){
+			$("#addtocoll_popup").hide()
 	})
 	$("#create_coll_link").click(function(){
 			console.log('open title input')

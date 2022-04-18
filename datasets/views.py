@@ -2410,12 +2410,6 @@ class DatasetPlacesView(DetailView):
   model = Dataset
   template_name = 'datasets/ds_places.html'
 
-  # def get_success_url(self):
-  #   id_ = self.kwargs.get("id")
-  #   user = self.request.user
-  #   print('messages:', messages.get_messages(self.kwargs))
-  #   return '/datasets/'+str(id_)+'/places'
-
   def get_object(self):
     id_ = self.kwargs.get("id")
     return get_object_or_404(Dataset, id=id_)
@@ -2430,9 +2424,10 @@ class DatasetPlacesView(DetailView):
     id_ = self.kwargs.get("id")
 
     ds = get_object_or_404(Dataset, id=id_)
-    #me = self.request.user
+    me = self.request.user
     #ds_tasks = [t.task_name[6:] for t in ds.tasks.all()]
     #placeset = Place.objects.filter(dataset=ds.label)
+    context['collections'] = Collection.objects.filter(owner=me, collection_class='place')
     context['updates'] = {}
     context['ds'] = ds
     #context['tgntask'] = 'tgn' in ds_tasks
