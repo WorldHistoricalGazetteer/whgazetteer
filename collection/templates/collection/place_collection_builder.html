@@ -31,6 +31,7 @@
 	    border: #c3c3c3 1px dashed;
 	    margin-bottom: 3px;
 	    background-color: aliceblue;
+	    {#background-color: white;#}
 	    padding-left: 2px;
     }
     #coll_placelist {
@@ -233,9 +234,9 @@
 							        <a class="anno-place" href="#" data-pid="{{ p.id }}">
 								        {% fontawesome_icon 'edit' color='#336699' %}</a>
 						        </span>
-							      {% if p.traces %}
+							      {% comment %}{% if p.traces %}
 							        <br/><i>annotated</i>
-							      {% endif %}
+							      {% endif %}{% endcomment %}
 					        </p>
 					      </div>
 					    {% endfor %}
