@@ -21,6 +21,9 @@
   <script src="https://unpkg.com/maplibre-gl@1.15.2/dist/maplibre-gl.js"></script>
   <link href="https://unpkg.com/maplibre-gl@1.15.2/dist/maplibre-gl.css" rel="stylesheet" />
 
+	<style>
+		#actions {padding-top:0.2rem;}
+	</style>
 {% endblock %}
 
 {% block title %}<title>Dataset::{{ ds.label }}</title>{% endblock %}
@@ -51,9 +54,6 @@
               {{ filter }}
               <div class="toomany"></div>
               <div id="map" style="height:300px;"></div>
-              <!--<div id="mapdiv_browse" style="position:relative">-->
-                  <!--{ leaflet_map "map_browse" %}-->
-              <!--</div>-->
               <div id="row_detail">
                 <div id="detail" class="small"></div>
               </div>
@@ -135,15 +135,27 @@
   // TODO: use datatables methods?
   function setRowEvents(){
     $("#placetable tbody tr").click(function() {
+      {#if(checked_rows.length == 0){#}
+      {#  $("#a_addtocoll").fadeOut()#}
+      {# }#}
       thisy=$(this)
-	    chkbox = thisy[0].cells[5].firstChild
-			if(chkbox.checked){
-        checked_rows.push(Number(chkbox.attributes[3].value))
-				console.log('adding checked_rows', checked_rows)
-			}
       // get id
       pid=$(this)[0].cells[0].textContent
-      
+			// is checkbox checked?
+	    // if not, ensure row pid is not in checked_rows
+	    chkbox = thisy[0].cells[5].firstChild
+			if(chkbox.checked){
+        checked_rows.push(pid)
+				$("#a_addtocoll").fadeIn()
+				console.log('adding checked_rows', checked_rows)
+			} else {
+        const index = checked_rows.indexOf(pid);
+        if (index > -1) {
+            checked_rows.splice(index, 1)
+        }
+        console.log( pid + ' removed from checked_rows[]', checked_rows)
+      }
+
       geom = features.find(function(f){return f.properties.pid==pid}).geometry
       coords = geom.coordinates
       
@@ -185,7 +197,8 @@
     wdtask = false
     tgntask = false
     whgtask = false
-    
+
+
     startTableSpinner()
     startDetailSpinner()
     
@@ -193,10 +206,11 @@
     window.filter = "{{ filter }}"
     // task columns are inoperable in this public view
     table = $('#placetable').DataTable({
-      dom: "<'row'<'col-sm-12 col-md-5'l><'#status_filter.col-sm-12 col-md-2'>"+
-      "<'col-sm-12 col-md-5'f>>" +
-      "<'row'<'col-sm-12'tr>>" +
-      "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"
+      dom:  "<'row'<'col-sm-12 col-md-3'l>"+
+		          "<'#actions.col-sm-12 col-md-5'>"+
+              "<'col-sm-12 col-md-4'f>>" +
+            "<'row'<'col-sm-12'tr>>" +
+            "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"
       ,serverSide: true
       ,ajax: {
         url: "/api/placetable/?format=datatables&ds={{ ds.label }}"
@@ -225,6 +239,9 @@
     table.on( 'draw', function () {
       //$("#status_filter").html(buildSelect());-->
       //$("#status_select").val(localStorage.getItem('filter'))-->
+      addtocoll_text = '<span id="a_addtocoll" class="float-right hidden">'+
+		      '<a href="#">add to collection <i class="fa fa-plus"></i></a></span>'
+	    $("#actions").html(addtocoll_text)
       spinner_table.stop()
       setRowEvents();
     })
