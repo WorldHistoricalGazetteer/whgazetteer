@@ -206,6 +206,10 @@ class PlaceTableSerializer(serializers.ModelSerializer):
     else:
       return '&mdash;'
 
+  chk = serializers.SerializerMethodField()
+  def get_chk(self, place):
+    return '<input type="checkbox" name="addme" class="table-chk" data-id="'+str(place.id)+'"/>'
+
   revwd = serializers.SerializerMethodField('rev_wd')
   def rev_wd(self, place):
     if place.review_wd == 1:
@@ -248,7 +252,7 @@ class PlaceTableSerializer(serializers.ModelSerializer):
                   'ccodes', 'geo', 'minmax',
                   'revwhg', 'revwd', 'revtgn',
                   'review_whg', 'review_wd', 'review_tgn'
-                  ,'dataset', 'dataset_id'
+                  ,'dataset', 'dataset_id', 'chk'
                   )
 
 
