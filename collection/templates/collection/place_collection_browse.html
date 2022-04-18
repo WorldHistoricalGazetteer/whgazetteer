@@ -35,7 +35,7 @@
 			<span class="half ital text-secondary"> a place collection by {{ object.owner.first_name }} {{ object.owner.last_name }}</span>
 		{% if user.id == object.owner.id or user.is_superuser or user in whgteam %}
 			<span class="float-right smallish mr-2 pt-2">
-				<a href="{% url 'collection:place-collection-update' object.id %}" >edit 
+				<a href="{% url 'collection:place-collection-update' object.id %}" >edit
 					{% fontawesome_icon 'gear' color='#336699' %}</a>
 			</span>
 		{% endif %}

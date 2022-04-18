@@ -22,7 +22,7 @@
     }
     #coll_place_detail {min-height: 80px;}
     #coll_place_detail p{ margin-bottom: 0}
-    #coll_right_anno {margin-top:42px;}
+    #coll_right_anno, #coll_right_intro {margin-top:42px;}
     #anno_div table td {padding-top: 3px; padding-bottom: 3px;}
     #anno_div input {height: 1.5rem; font-size:.8rem;}
     .form-group {margin-bottom: .5rem !important;}
@@ -33,7 +33,17 @@
 	    background-color: aliceblue;
 	    padding-left: 2px;
     }
-    #coll_placelist {padding: 3px;}
+    #coll_placelist {
+	    padding: 3px;
+	    position: absolute;
+	    height: 100%;
+	    width: 100%;
+	    overflow-y:scroll;
+    }
+    #builder_content {
+	    position:absolute;
+	    width: 95%;
+	    height: 92%;
     }
   </style>
 {% endblock %}
@@ -56,8 +66,8 @@
 		    Collection Builder: {new}
 	    {% endif %} <span class="red-head"> </span>
 	  </h5>
-	  <div class="d-flex">
-	    <div id="coll_form" class="col-sm-4 form-box mt-2 " style="height: 85%;">
+	  <div class="d-flex" style="height:90%;">
+	    <div id="coll_form" class="col-sm-4 form-box mt-2 " style="height: auto;">
 	      <form id="collection_form" method="POST" action="#" enctype="multipart/form-data">
         {% csrf_token %}
 	      <input type="hidden" name="owner" value='{{ user.id }}' />
@@ -161,7 +171,7 @@
 	      </div>
 	      </form>
 	    </div> <!-- #coll_form -->
-	    <div id="coll_builder" class="col-sm-4 p-2" style="height: 85%;">
+	    <div id="coll_builder" class="col-sm-4 p-2" style="height: auto;">
 				<ul id="coll_tabs" class="nav nav-tabs" role="tablist">
 				  <li class="nav-item">
 				    <a class="nav-link" id="coll_dslist-tab" data-toggle="tab" href="#coll_dslist" role="tab" aria-controls="coll_dslist" aria-selected="true" data-id="ds">Datasets</a>
@@ -173,7 +183,8 @@
 						<a id="a_remove" href="#"></a>
 					</span>
 				</ul>
-		    <div class="tab-content" style="height:95%; overflow:auto;">
+{#		    <div class="tab-content" style="height:95%; overflow:auto;">#}
+		    <div id="builder_content" class="tab-content">
 			    <div id="coll_dslist" class="tab-pane fade" role="tabpanel" aria-labelledby="coll_dslist-tab">
 		        <p class="mt-2">
 			        <span class="mr-2 smaller">
@@ -234,16 +245,16 @@
 	        </div>
 				</div> <!-- .tab-content -->
 	    </div> <!-- #coll_builder -->
-	    <div id="coll_right" class="col-sm-4 p-2" style="height: 85%;">
+	    <div id="coll_right" class="col-sm-4 p-2" style="height: auto;">
 	      <div id="coll_right_intro" class="hidden">
 		      <h5>Collections in WHG</h5>
 		      <p>A <mark-b>collection</mark-b> is a set of existing WHG place records.</p>
 		      <p>Registered users can build a collection by</p>
 		      <ol class="mb-1 pl-4">
 			      <li>Filling the required fields in the "Create" form</li>
-			      <li>Adding one or more entire datasets for which they are the owner or a collaborator
+			      <li>Adding individual place records from any public dataset, discovered by search or browsing
 				      <br/> <b class="red-bold">and/or</b></li>
-			      <li>Adding individual place records from any public dataset, discovered by search or browsing</li>
+			      <li>Adding one or more entire datasets for which they are the owner or a collaborator</li>
 		      </ol>
 		      <p>Places added to a collection by either method (step #2 or step #3) appear in the list viewed under the "Places" tab.</p>
 		      <p>Optionally, each place in a collection can be annotated with information about its membership in the collection: </p>
