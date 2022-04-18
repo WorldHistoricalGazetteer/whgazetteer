@@ -23,6 +23,14 @@
 
 	<style>
 		#actions {padding-top:0.2rem;}
+    #addtocoll_popup {position:absolute;
+	    top:30px; right:180px; width:170px;
+	    background-color: #fff;
+	    border: 1px solid #336699;
+	    z-index: 2000;
+	    box-shadow: 3px 3px #c3c3c3;
+	    {#display: none;#}
+    }
 	</style>
 {% endblock %}
 
@@ -33,10 +41,9 @@
   {% with last=request.META.HTTP_REFERER %}
     <p class="small"><a href="{{ last }}">{% fontawesome_icon 'arrow-left' color='#336699' %} back </a> / {{ object.title }}</p> 
   {% endwith %}
-	<div style="position:absolute; right:50px;"><span id="added_flash" class=" float-right">Added to collection!</span>
-  <span id="addtocoll" class="float-right mr-1 ">
-    <a id="addchecked" href="#">add to collection {% fontawesome_icon 'plus' %}</a>
-  </span></div>
+	<div style="position:absolute; right:50px;">
+		<span id="added_flash" class="hidden float-right">Added to collection!</span>
+	</div>
   <ul id="dataset_tabs" class="nav nav-tabs" role="tablist">
       <span class="ds-title ml-1 mr-3">{{ object.title }}</span>
       <li class="nav-item">
@@ -59,6 +66,24 @@
               </div>
             </div> <!-- drftable_detail -->
             <div id="drftable_list" class="col-sm-7">
+	            <div id="addtocoll_popup" class="p-2 small hidden">
+				        <div style="position:relative;">
+					        <div class="closer" style="position:absolute; top:-6px; right:-2px">X</div>
+				        </div>
+					      <ul id="my_collections" class="no-bullets">
+									{% for c in collections %}
+										<li><a class="a_addtocoll" href="#" ref="{{ c.id }}">{{ c.title }}</a></li>
+						      {% endfor %}
+					      </ul>
+				        <hr/>
+					      <p class="mb-0 ital">
+						      <a id="create_coll_link" href="#">{% fontawesome_icon 'plus-square' color='#336699' %} create new</a>
+					      </p>
+				        <p id="title_form" class="small hidden">
+				          <input id="title_input" type="text" placeholder="Collection title" width="20"/>
+					        <button id="b_create_coll" type="button">create</button>
+				        </p>
+				      </div>
               <table id="placetable" class="table table-striped table-bordered" style="width:100%">
                 <thead>
                   <tr>
@@ -130,7 +155,7 @@
     .draw();
     $("#status_select").val('99')
   }    
-  
+
   // table events
   // TODO: use datatables methods?
   function setRowEvents(){
@@ -146,12 +171,16 @@
 	    chkbox = thisy[0].cells[5].firstChild
 			if(chkbox.checked){
         checked_rows.push(pid)
-				$("#a_addtocoll").fadeIn()
+				$("#addtocoll").fadeIn()
 				console.log('adding checked_rows', checked_rows)
 			} else {
         const index = checked_rows.indexOf(pid);
         if (index > -1) {
-            checked_rows.splice(index, 1)
+          checked_rows.splice(index, 1)
+	        if(checked_rows.length == 0 ){
+            $("#addtocoll").fadeOut()
+		        $("#addtocoll_popup").hide()
+          }
         }
         console.log( pid + ' removed from checked_rows[]', checked_rows)
       }
@@ -239,10 +268,18 @@
     table.on( 'draw', function () {
       //$("#status_filter").html(buildSelect());-->
       //$("#status_select").val(localStorage.getItem('filter'))-->
-      addtocoll_text = '<span id="a_addtocoll" class="float-right hidden">'+
-		      '<a href="#">add to collection <i class="fa fa-plus"></i></a></span>'
+      addtocoll_text = '<span id="addtocoll" class="float-right hidden">'+
+		      '<a id="addchecked" href="#">add to collection <i class="fa fa-plus"></i></a></span>'
 	    $("#actions").html(addtocoll_text)
       spinner_table.stop()
+	    // event listeners in #actions
+		  $("#addchecked").click(function(){
+		    console.log('clicked the motherfucker')
+		    $("#addtocoll_popup").fadeIn()
+		  })
+		  $(".closer").click(function(){
+				$("#addtocoll_popup").hide()
+			})
       setRowEvents();
     })
     
