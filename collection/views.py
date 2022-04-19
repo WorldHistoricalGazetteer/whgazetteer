@@ -17,14 +17,32 @@ from traces.forms import TraceAnnotationModelForm
 from traces.models import TraceAnnotation
 from itertools import chain
 
-""" add collection_link record """
-def add_link(request, *args, **kwargs):
-  coll = Collection.objects.get(id=request.POST['collection'])
+""" create collection_link record """
+def create_link(request, *args, **kwargs):
   if request.method == 'POST':
-    print('adding a collection_link now for', coll)
-    status="foo"
-    msg = "bar"
-    return JsonResponse({'status': status, 'msg': msg}, safe=False)
+    status, msg = ['','']
+    print('add_places request', request.POST)
+    coll = Collection.objects.get(id=request.POST['collection'])
+    uri = request.POST['uri']
+    label = request.POST['label']
+    link_type = request.POST['link_type']
+    gotlink = CollectionLink.objects.filter(uri=uri, collection=coll)
+    if not gotlink:
+      try:
+        cl=CollectionLink.objects.create(
+          collection = coll,
+          uri = uri,
+          label = label,
+          link_type = link_type
+        )
+        result = {'uri': cl.uri, 'label': cl.label, 'link_type':cl.link_type}
+        status="ok"
+      except:
+        status = "failed"
+        result = "CollectionLink *not* created...why?"
+    else:
+      result = 'dupe'
+    return JsonResponse({'status': status, 'result': result}, safe=False)
 
 """ add list of >=1 places to collection """
 def add_places(request, *args, **kwargs):
@@ -146,34 +164,6 @@ def remove_dataset(request, *args, **kwargs):
   coll.datasets.remove(ds)
 
   return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-
-class CollectionLinkCreateView(LoginRequiredMixin, CreateView):
-  form_class = CollectionLinkForm
-  template_name = 'collection/place_collection_builder.html'
-
-  def form_valid(self, form):
-    self.object = form.save()
-    # new_link = form.save(commit=False)
-    print('CollectionLink form ok')
-    return super().form_valid(form)
-
-  def form_invalid(self, form):
-    context = self.get_context_data()
-    context['errors'] = form.errors
-    print('form invalid...', form.errors.as_data())
-    context = {'form': form}
-    return self.render_to_response(context=context)
-
-  def get_context_data(self, **kwargs):
-    context = super(CollectionLinkCreateView, self).get_context_data(**kwargs)
-
-  def get_success_url(self):
-    context = self.get_context_data()
-    coll_id = self.object.collection.id
-    # return self.render_to_response(context=context)
-    return reverse('collection:place-collection-update', kwargs={'id': coll_id})
-    # return JsonResponse({'status': 'ok', 'msg': 'whaddayaknow'}, safe=False)
-
 
 
 from django.forms.models import inlineformset_factory
@@ -309,6 +299,7 @@ class PlaceCollectionUpdateView(UpdateView):
     context['action'] = 'update'
     context['ds_select'] = ds_select
     context['coll_dsset'] = datasets
+    context['links'] = CollectionLink.objects.filter(collection=self.object.id)
 
     # test: send single anno form to template
     context['form_anno'] = form_anno

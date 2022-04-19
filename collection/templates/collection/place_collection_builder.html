@@ -1,4 +1,4 @@
-<!-- collection/collection_create_beta.html -->
+<!-- collection/place_collection_builder.html -->
 {% extends "main/base.html" %}
 {% load leaflet_tags %}
 {% load fontawesome %}
@@ -14,7 +14,7 @@
   <script src="{% static 'js/leaflet-mapbox-gl.js' %}"></script>
 
   <style>
-    #div_linkform {
+    #linkform_popup {
 	    position:absolute;
 			background-color: whitesmoke;
 	    border: 1px solid grey;
@@ -72,17 +72,18 @@
 		  {% if action == 'update' %}<spam class="text-secondary">Collection Builder:</spam>
 		    <span class="text-bold">{{ form.title.value }}</span>
 				<span class="float-right small">
-		    <a href="{% url 'collection:place-collection-browse' object.id %}">
-			    {% fontawesome_icon 'eye' color='#336699' %}</a>&nbsp;
-		    <a href="{% url 'collection:collection-delete' object.id %}"
-	      title="Delete collection" rel="tooltip" style="margin-top:-2px;">
-		    {% fontawesome_icon 'trash' color='#336699' %}</a></span>
+			    <a href="{% url 'collection:place-collection-browse' object.id %}">
+				    view&nbsp;&nbsp;{% fontawesome_icon 'eye' color='#336699' %}</a>&nbsp;
+			    <a href="{% url 'collection:collection-delete' object.id %}"
+		      title="Delete collection" rel="tooltip" style="margin-top:-2px;">
+			    {% fontawesome_icon 'trash' color='#336699' %}</a>
+				</span>
 	    {% else %}
 		    Collection Builder: {new}
 	    {% endif %} <span class="red-head"> </span>
 	  </h5>
 	  <div class="d-flex" style="height:90%;">
-	    <div id="coll_form" class="col-sm-4 form-box mt-2 " style="height: auto;">
+	    <div id="coll_form" class="col-sm-4 form-box mt-2 pb-2" style="height: fit-content;">
 	      <form id="collection_form" method="POST" action="#" enctype="multipart/form-data">
         {% csrf_token %}
 	      <input type="hidden" name="owner" value='{{ user.id }}' />
@@ -107,10 +108,10 @@
 					<label for="Relation options">Relation options <i>(comma-delimited)</i></label>
 					{{ form.rel_keywords }}
 				</div>
-				<div class="form-group">
+				{% comment %}<div class="form-group">
 					<label for="Web page">Web page</label>
 					{{ form.webpage }}
-				</div>
+				</div>{% endcomment %}
 				{# single image for now (20220416 #}
 	      <div class="form-group">
 					<label for="Image">Image</label>
@@ -140,59 +141,64 @@
 					{% endif %}
 	        <span id="file_chooser" class="hidden">{{ form.file }}</span>
 				</div>
-				<p><a href="#" id="a_addlink">Add link</a></p>
-	      <div id="d_public" class="form-group">
-					{% if form.public.value == True %}
-						<label for="Public">Public:</label>
-						{{ form.public }}
-					{% elif action == "update" %}Not public...see:
-						<a href="#"><span class="help-matches" data-id="going_public_coll">making a collection public {% fontawesome_icon 'question-circle' color='#336699' %}</span></a>
+				<div>Links
+					{% if links|length < 3 %}
+						(<a href="#" id="a_addlink">add</a>)
+					{% else %}(3 maximum) {% endif %}:<br/>
+{#					<ul id="linklist" class="mb-0">#}
+{#					<ul id="linklist" class="no-bullets">#}
+					{% if links|length > 0 %}
+						{% for l in links %}
+							<a href="{{ l.uri }}" target="_blank">{{ l.label }}</a> ({{ l.link_type }});
+						{% endfor %}
 					{% endif %}
+{#	        </ul>#}
 				</div>
+	      <hr class="my-1"/>
         <tr>
 	        <td class="my-0 small">&#x02733;<i><b> required</b></i></td>
 	        <td>
 		        {% if action == 'update' and user.is_superuser %}
-			        <a class="float-right" href="#">
+			        <a class="float-right show-hide" href="#">
 				        editor options {% fontawesome_icon 'gear' color='#336699' %}
 			        </a>
 		        {% endif %}
 	        </td>
         </tr>
-	      <hr/>
 	      <div id="editor_options" class="hidden">
 		      <p>Featured rank: {{ form.featured }}</p>
-		      <p>Image: {{ form.image_file }}</p>
+{#		      <p>Image: {{ form.image_file }}</p>#}
 	      </div>
 	      <div id="select_div" class="hidden">{{ form.datasets }}</div>
 	      <div id="collection_options"></div>
-		    <p id="referrer"></p>
-	      <div id="d_buttons">
-		      <span title="back"class="float-right">
-			      {% if action == 'update' %}
-			      <span class="text-danger mr-5">
-				      <a href="{% url 'collection:collection-delete' object.id %}"
-					      title="Delete collection" rel="tooltip" style="margin-top:-2px;">
-						    {% fontawesome_icon 'trash' color='red' %} delete</a>
-			      </span>
-			      {% endif %}
-			      <a href="/mycollections">Cancel</a>
-			      <input id="btn_coll_submit" class="btn-sm btn-primary mt-2 ml-2" type="submit" value="Save" />
-		      </span>
+	      <div id="d_public">
+					{% if form.public.value == True %}
+						Public: {{ form.public }}
+					{% elif action == "update" %}
+						<a href="#"><span class="help-matches" data-id="going_public_coll">
+							{% fontawesome_icon 'question-circle' color='#336699' %} making a collection public </span></a>
+					{% endif %}
+				</div>
+	      <div id="d_buttons" class="" style="">
+          <span class="float-right">
+		      <a href="/mycollections">Cancel</a>
+		      <input id="btn_coll_submit" class="btn-sm btn-primary mt-2 ml-2" type="submit" value="Save" />
+          </span>
 	      </div>
 	      </form>
 		    {# 1 or more links #}
 	      {% if action == "update" %}
-		      <div id="div_linkform">
-		        <form action="/collections/{{ object.id }}/create_link/" method="post">
+		      <div id="linkform_popup">
+		        <form action="#" method="post">
 		        {% csrf_token %}
 		        <input type="hidden" name="collection" value="{{ object.id }}">
+		        <div class="closer" style="position:absolute; top:7px; right:7px;">X</div>
 		        <table class="mb-2">
-			        <tr><td>URI: </td><td><input name="uri" value="{{ links_form.uri }}" /></td></tr>
-			        <tr><td>Label: </td><td><input name="label" value="{{ links_form.label }}" /></td></tr>
-			        <tr><td>Type: </td><td><input name="link_type" value="{{ links_form.link_type }}" /></td></tr>
+			        <tr><td>URI*: </td><td><input id="l_uri" name="uri" value="{{ links_form.uri }}" /></td></tr>
+			        <tr><td>Label*: </td><td><input id="l_label" name="label" value="{{ links_form.label }}" /></td></tr>
+			        <tr><td>Type*: </td><td><input id="l_linktype" name="link_type" value="{{ links_form.link_type }}" /></td></tr>
 		        </table>
-		        <button type="submit">Save</button>
+		        <button id="b_createlink" type="button">Save</button>
 	          </form>
 					</div>
 	      {% endif %}
@@ -310,15 +316,52 @@
 </div> <!-- container -->
 
 <script type="text/javascript">
+	function create_collection_link(){
+      var formData = new FormData()
+			formData.append('collection', '{{ object.id }}')
+			formData.append('uri', $("#l_uri").val())
+			formData.append('label',$("#l_label").val() )
+			formData.append('link_type',$("#l_linktype").val() )
+			formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+			$.ajax({
+		      type: 'POST',
+		      enctype: 'multipart/form-data',
+		      url: '/collections/create_link/',
+		      processData: false,
+		      contentType: false,
+		      cache: false,
+		      data: formData,
+		      success:function(response){
+			      if(response.result == 'dupe'){
+              alert('That url is already linked to this collection!')
+				      {#$("input.action").prop('checked',false)#}
+			      } else {
+							// TODO: list in gui
+				      linky = response.result
+				      $("#linklist").append('<a href="'+linky.uri+
+						      '" target="_blank">'+linky.label+'</a> ('+linky.link_type+'); ')
+				      $("#added_flash").fadeIn().delay(2000).fadeOut()
+				      console.log('added! gimmee feedback', response.result)
+			      }
+		      }
+			})
+			{#$("#addtocoll").hide()#}
+			$("#linkform_popup").hide()
+	}
 
 	$("#a_addlink").click(function(){
-    $("#div_linkform").fadeIn()
+    $("#linkform_popup").fadeIn()
+	})
+	$("#b_createlink").click(function(){
+    create_collection_link()
 	})
 	// do something with place name (modal popup?)
 	$(".coll-place").click(function() {
       console.log('place record', $(this).data('pid'));
   })
-
+	$(".closer").click(function(){
+			$("#div_linkform").fadeOut()
+	})
 	// fetch r/o place record to annotation panel
   $(".anno-place").click(function(){
       getAnno($(this).data('pid'))

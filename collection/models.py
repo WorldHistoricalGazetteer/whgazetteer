@@ -94,7 +94,7 @@ class CollectionLink(models.Model):
   license = models.CharField(null=True, blank=True, max_length=64)
 
   def __str__(self):
-    cap = self.label[:20]+('...' if len(self)>20 else '')
+    cap = self.label[:20]+('...' if len(self.label)>20 else '')
     return '%s:%s' % (self.id, cap)
 
   class Meta:

@@ -246,7 +246,6 @@
 			formData.append('collection', coll)
 			formData.append('place_list', pids)
 			formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
-      {# collection.views.add_places() #}
 			$.ajax({
 		      type: 'POST',
 		      enctype: 'multipart/form-data',

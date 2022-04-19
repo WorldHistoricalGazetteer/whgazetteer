@@ -15,7 +15,7 @@ urlpatterns = [
 
     path('add_places/', views.add_places, name="collection-add-places"),
     path('remove_places/', views.remove_places, name="collection-remove-places"),
-    path('add_link/', views.add_link, name="collection-add-link"),
+    path('create_link/', views.create_link, name="collection-create-link"),
 
     # DATASET collections (datasets only)
     path('create_ds/', views.DatasetCollectionCreateView.as_view(), name='ds-collection-create'),
@@ -30,8 +30,8 @@ urlpatterns = [
     path('<int:id>/browse_pl', views.PlaceCollectionBrowseView.as_view(), name='place-collection-browse'),
     # new empty place collection on the fly, returns new id in json
     path('flash_create/', views.flash_collection_create, name="collection-create-flash"),
-    # new CollectionLink
-    path('<int:id>/create_link/', views.CollectionLinkCreateView.as_view(), name='place-collection-link'),
+    # # new CollectionLink
+    # path('<int:id>/create_link/', views.CollectionLinkCreateView.as_view(), name='place-collection-link'),
 
     # function-based views to process a trace annotation
     path('<int:id>/annotate', csrf_exempt(annotate), name="collection-annotate"),
