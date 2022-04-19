@@ -77,7 +77,7 @@
 			        </table>
 		        </div>
 		        <div class="col-sm-4">
-			        <img src="/media/{{ object.image_file.name }}" width="200" align="right"/>
+			        <img class="img-vertical" src="/media/{{ object.image_file.name }}" width="220px" />
 		        </div>
 	        </div>
 	      </div>
@@ -427,14 +427,14 @@
   }
 
   function addPlaces(ds_list){
-    console.log('addPlaces() for collection #', {{ object.id }})
+    {#console.log('addPlaces() for collection #', {{ object.id }})#}
     {#all_feats = []#}
     ds_labels = ds_list.map(function(ds){return ds.label})
     {#console.log('dslabels', ds_labels)#}
 
 	  $.getJSON('/collections/'+'{{ object.id }}'+'/geojson')
 	  .done(function(colldata) {
-      console.log('colldata', colldata)
+      {#console.log('colldata', colldata)#}
 
       mappy.addSource('all', {
         'type': 'geojson',
@@ -508,7 +508,7 @@
   // 
   {#function renderSourceLayers(dslabel, i){#}
   function renderSourceLayers(dslabel){
-    console.log('dslabel in renderSourceLayers() is', dslabel)
+    {#console.log('dslabel in renderSourceLayers() is', dslabel)#}
     startMapSpinner()
     mappy.addLayer({
       'id': 'gl_'+dslabel+'_poly',
@@ -709,6 +709,12 @@
     });
   }
 
+  function toggleLinks() {
+      label = $("#togglelinks").text()
+		  console.log('fucking', label)
+      $("#togglelinks").text(label == 'Show' ? 'Hide' : 'Show');
+      $('#p_links').toggle()
+  }
   // single column
   function parsePlace(data) {
     window.featdata = data
@@ -741,27 +747,30 @@
 		  descrip +="<p><b>Relation</b>: "+JSON.parse(trace.fields.relation)[0]+"</p>"
 			descrip +='<p><b>Notes</b>: '+ trace.fields.note+'</p>'
 		  if(trace.fields.start){
-				descrip +='<p><b>Start/End</b>: '+ trace.fields.start+'/'+trace.fields.end+'</p><hr/>'
+				descrip +='<p><b>Start/End</b>: '+ trace.fields.start+'/'+trace.fields.end+'</p>'
 		  }
+      descrip += '<hr/>'
 	  }
 
     //
     // NAME VARIANTS
-    descrip+='<p class="scroll65"><b>Variants</b>: '
+    descrip+='<p class="scroll65"><b>Name variants</b>: '
     for (n in data.names) {
       let name = data.names[n]
       descrip+= '<p>'+name.toponym !=''?name.toponym+'; ': ''
     }
+
     //
     // TYPES
     // may include sourceLabel:"" **OR** sourceLabels[{"label":"","lang":""},...]
     // console.log('data.types',data.types)
     //{"label":"","identifier":"aat:___","sourceLabels":[{"label":" ","lang":"en"}]}
-    descrip+='</p><p><b>Types</b>: '
+    descrip+='</p><p><b>Place type</b>: '
     typeids = ''
     for (t in data.types) {
       str = ''
       var type = data.types[t]
+	    {#console.log('types', type)#}
       if('sourceLabels' in type){
         srclabels = type.sourceLabels
         for(l in srclabels){
@@ -771,25 +780,34 @@
       } else if ('sourceLabel' in type) {
         str = type.sourceLabel !='' ? type.sourceLabel + '; ' : ''
       }
-      if(type.label!=''){ str += url_exttype(type) + ' ' }
+      {#if(type.label!=''){ str += url_exttype(type) + ' ' }#}
       typeids+=str
     }
     descrip += typeids.replace(/(; $)/g, "") +'</p>'
 
     //
+    // MINMAX
+    //
+    if(data.minmax && data.minmax.length>0){
+      descrip += '<p><b>When</b>: earliest: '+data.minmax[0]+'; latest: '+data.minmax[1]
+    }
+
+    //
     // LINKS
-    // 
-    descrip += '<p class="mb-0"><b>Links</b>: '
-    close_count = added_count = related_count = 0
-    html = ''
-    if (data.links.length > 0) {
+    //
+	  if (data.links.length > 0) {
+	    {#descrip += '<p class="mb-0"><b>External links ('+data.links.length+') </b><a href="javascript:{toggle_links()}">show</a> '#}
+	    descrip += '<p class="mb-0"><b>External links ('+data.links.length+') </b><a href="#" onclick="toggleLinks()" id="togglelinks">Show</a>'
+		  descrip += '<br/><span id="p_links" class="hidden">'
+	    close_count = added_count = related_count = 0
+	    html = ''
       links=data.links
       links_arr = onlyUnique(data.links)
-      <!--console.log('distinct data.links',links_arr)-->
       for (l in links_arr) {
         descrip += url_extplace(links_arr[l].identifier)
       }
-    } else { descrip += "<i class='small'>no links established yet</i>" }
+      descrip += '</span>'
+    }
     descrip += '</p>'
 
     //
@@ -833,12 +851,6 @@
     if (!!data.countries) {
       <!--console.log('data.countries',data.countries)-->
       descrip+='<p><b>Modern country bounds</b>: '+ data.countries.join(', ')+'</p>'
-    }
-    //
-    // MINMAX
-    //
-    if(data.minmax && data.minmax.length>0){
-      descrip += '<p><b>When</b>: earliest: '+data.minmax[0]+'; latest: '+data.minmax[1]    
     }
     descrip += '</div>'
     return descrip

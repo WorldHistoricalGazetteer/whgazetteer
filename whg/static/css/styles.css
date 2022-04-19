@@ -65,6 +65,11 @@ label {vertical-align:top;}
 .hidden-imp {display:none !important;}
 .hover {cursor:pointer;}
 .i-blk {display:inline-block;}
+.img-vertical {
+  position:relative;
+  top: 50%;
+  transform: translateY(-50%);
+}
 .ital {font-style: italic;}
 .larger {font-size: larger;}
 /*.more {display: none;}*/
