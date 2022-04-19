@@ -8,7 +8,7 @@ from django.urls import reverse
 from django.views.generic import (View, CreateView, UpdateView, DetailView, DeleteView )
 
 #from datasets.utils import hully
-from .forms import CollectionModelForm
+from .forms import CollectionModelForm, CollectionLinkForm
 from .models import *
 from collection.models import Collection, CollectionImage
 from main.models import Log
@@ -16,6 +16,15 @@ from places.models import PlaceGeom
 from traces.forms import TraceAnnotationModelForm
 from traces.models import TraceAnnotation
 from itertools import chain
+
+""" add collection_link record """
+def add_link(request, *args, **kwargs):
+  coll = Collection.objects.get(id=request.POST['collection'])
+  if request.method == 'POST':
+    print('adding a collection_link now for', coll)
+    status="foo"
+    msg = "bar"
+    return JsonResponse({'status': status, 'msg': msg}, safe=False)
 
 """ add list of >=1 places to collection """
 def add_places(request, *args, **kwargs):
@@ -138,13 +147,42 @@ def remove_dataset(request, *args, **kwargs):
 
   return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
+class CollectionLinkCreateView(LoginRequiredMixin, CreateView):
+  form_class = CollectionLinkForm
+  template_name = 'collection/place_collection_builder.html'
+
+  def form_valid(self, form):
+    self.object = form.save()
+    # new_link = form.save(commit=False)
+    print('CollectionLink form ok')
+    return super().form_valid(form)
+
+  def form_invalid(self, form):
+    context = self.get_context_data()
+    context['errors'] = form.errors
+    print('form invalid...', form.errors.as_data())
+    context = {'form': form}
+    return self.render_to_response(context=context)
+
+  def get_context_data(self, **kwargs):
+    context = super(CollectionLinkCreateView, self).get_context_data(**kwargs)
+
+  def get_success_url(self):
+    context = self.get_context_data()
+    coll_id = self.object.collection.id
+    # return self.render_to_response(context=context)
+    return reverse('collection:place-collection-update', kwargs={'id': coll_id})
+    # return JsonResponse({'status': 'ok', 'msg': 'whaddayaknow'}, safe=False)
+
+
+
 from django.forms.models import inlineformset_factory
 CollectionImageFormset = inlineformset_factory(
     Collection, CollectionImage, fields=('image','caption','uri','license'), extra=1
 )
 from django.forms.models import inlineformset_factory
 CollectionLinkFormset = inlineformset_factory(
-    Collection, CollectionLink, fields=('uri','label','link_type'), extra=1
+    Collection, CollectionLink, fields=('uri','label','link_type'), extra=2
 )
 """ PLACE COLLECTIONS """
 """ TODO: refactor to fewer views """
@@ -163,7 +201,7 @@ class PlaceCollectionCreateView(LoginRequiredMixin, CreateView):
   def get_context_data(self, *args, **kwargs):
     user = self.request.user
     print('PlaceCollectionCreateView() user', user)
-    context = super(PlaceCollectionCreateView, self).get_context_data(*args, **kwargs)
+    context = super(PlaceCollectionCreateView, self).get_context_data(**kwargs)
     context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
 
     datasets = []

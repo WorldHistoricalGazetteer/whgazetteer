@@ -14,6 +14,20 @@
   <script src="{% static 'js/leaflet-mapbox-gl.js' %}"></script>
 
   <style>
+    #div_linkform {
+	    position:absolute;
+			background-color: whitesmoke;
+	    border: 1px solid grey;
+	    box-shadow: gainsboro 4px 4px;
+	    border-radius: 6px;
+	    padding: 15px;
+	    height: 150px;
+	    width: 250px;
+	    bottom: 100px;
+	    left: 70px;
+	    z-index: 1000;
+	    display:none;
+    }
     .coll-col { border-right: 1px dashed lightgray;;}
     #coll_place_detail{
 	    border-bottom:dashed 1px grey;
@@ -126,12 +140,8 @@
 					{% endif %}
 	        <span id="file_chooser" class="hidden">{{ form.file }}</span>
 				</div>
-				{# 1 or more links #}
-{#	      <div class="form-group">#}
-{#					<label for="Links">Links</label>#}
-{#					{{ images_form.as_p }}#}
-{#				</div>#}
-				<div id="d_public" class="form-group">
+				<p><a href="#" id="a_addlink">Add link</a></p>
+	      <div id="d_public" class="form-group">
 					{% if form.public.value == True %}
 						<label for="Public">Public:</label>
 						{{ form.public }}
@@ -171,6 +181,21 @@
 		      </span>
 	      </div>
 	      </form>
+		    {# 1 or more links #}
+	      {% if action == "update" %}
+		      <div id="div_linkform">
+		        <form action="/collections/{{ object.id }}/create_link/" method="post">
+		        {% csrf_token %}
+		        <input type="hidden" name="collection" value="{{ object.id }}">
+		        <table class="mb-2">
+			        <tr><td>URI: </td><td><input name="uri" value="{{ links_form.uri }}" /></td></tr>
+			        <tr><td>Label: </td><td><input name="label" value="{{ links_form.label }}" /></td></tr>
+			        <tr><td>Type: </td><td><input name="link_type" value="{{ links_form.link_type }}" /></td></tr>
+		        </table>
+		        <button type="submit">Save</button>
+	          </form>
+					</div>
+	      {% endif %}
 	    </div> <!-- #coll_form -->
 	    <div id="coll_builder" class="col-sm-4 p-2" style="height: auto;">
 				<ul id="coll_tabs" class="nav nav-tabs" role="tablist">
@@ -285,6 +310,10 @@
 </div> <!-- container -->
 
 <script type="text/javascript">
+
+	$("#a_addlink").click(function(){
+    $("#div_linkform").fadeIn()
+	})
 	// do something with place name (modal popup?)
 	$(".coll-place").click(function() {
       console.log('place record', $(this).data('pid'));

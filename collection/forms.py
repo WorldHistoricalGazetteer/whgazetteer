@@ -1,8 +1,21 @@
 from django import forms
 from django.db import models
-from .models import Collection
+from .models import Collection, CollectionLink
 
 from tinymce.widgets import TinyMCE
+
+class CollectionLinkForm(forms.ModelForm):
+    class Meta:
+        model = CollectionLink
+        fields = ('collection', 'uri', 'label', 'link_type')
+        widgets = {
+            'uri': forms.URLInput,
+            'label': forms.TextInput(attrs={'size': 50}),
+            'link_type': forms.Select()
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(CollectionLinkForm, self).__init__(*args, **kwargs)
 
 class CollectionModelForm(forms.ModelForm):
     # ** trying to return to referrer

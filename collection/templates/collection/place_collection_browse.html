@@ -711,7 +711,7 @@
 
   function toggleLinks() {
       label = $("#togglelinks").text()
-		  console.log('fucking', label)
+		  {#console.log('fucking', label)#}
       $("#togglelinks").text(label == 'Show' ? 'Hide' : 'Show');
       $('#p_links').toggle()
   }
@@ -744,10 +744,10 @@
 		//
 	  if(JSON.parse(data.traces).length >0) {
       trace = JSON.parse(data.traces).find(function(t){return t.fields.collection = "{{ object.id }}"})
-		  descrip +="<p><b>Relation</b>: "+JSON.parse(trace.fields.relation)[0]+"</p>"
-			descrip +='<p><b>Notes</b>: '+ trace.fields.note+'</p>'
+		  descrip +="<p><b><u>Relation</u></b>: "+JSON.parse(trace.fields.relation)[0]+"</p>"
+			descrip +='<p><b><u>Notes</u></b>: '+ trace.fields.note+'</p>'
 		  if(trace.fields.start){
-				descrip +='<p><b>Start/End</b>: '+ trace.fields.start+'/'+trace.fields.end+'</p>'
+				descrip +='<p><b><u>Start/End</u></b>: '+ trace.fields.start+'/'+trace.fields.end+'</p>'
 		  }
       descrip += '<hr/>'
 	  }
