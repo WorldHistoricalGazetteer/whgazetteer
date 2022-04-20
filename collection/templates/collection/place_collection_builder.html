@@ -59,6 +59,7 @@
 	    position:absolute;
 	    width: 95%;
 	    height: 92%;
+	    {#max-height: 92%;#}
     }
   </style>
 {% endblock %}
@@ -89,13 +90,13 @@
 	      <input type="hidden" name="owner" value='{{ user.id }}' />
 	      <input type="hidden" name="collection_class" value='place' />
 				<div class="form-group">
-					<label for="Title">Title &#x02733;</label>
+					<label for="Title">Title &#x02733;</label><br/>
 					{{ form.title }}
 				</div>
-				<div class="form-group">
-					<label for="Type">Type &#x02733;</label>
-					{{ form.type }}
-				</div>
+{#				<div class="form-group">#}
+{#					<label for="Type">Type &#x02733;</label>#}
+{#					{{ form.type }}#}
+{#				</div>#}
 				<div class="form-group">
 					<label for="Description">Description &#x02733;</label>
 					{{ form.description }}
@@ -141,19 +142,20 @@
 					{% endif %}
 	        <span id="file_chooser" class="hidden">{{ form.file }}</span>
 				</div>
+	      {% if action == 'update' %}
 				<div>Links
 					{% if links|length < 3 %}
 						(<a href="#" id="a_addlink">add</a>)
 					{% else %}(3 maximum) {% endif %}:<br/>
-{#					<ul id="linklist" class="mb-0">#}
-{#					<ul id="linklist" class="no-bullets">#}
+					<span id="linklist">
 					{% if links|length > 0 %}
 						{% for l in links %}
 							<a href="{{ l.uri }}" target="_blank">{{ l.label }}</a> ({{ l.link_type }});
 						{% endfor %}
 					{% endif %}
-{#	        </ul>#}
+					</span>
 				</div>
+	      {% endif %}
 	      <hr class="my-1"/>
         <tr>
 	        <td class="my-0 small">&#x02733;<i><b> required</b></i></td>
@@ -233,7 +235,12 @@
 		        </p>
 		        <!-- id, label, title, description, creator, create_date, webpage, numrows, datatype -->
 		        <div id="coll_dscards_create">
-			        {% if coll_dsset|length == 0 %}<p id="msg" class="font-italic smaller">None yet...</p>{% endif %}
+			        {% if coll_dsset|length == 0 %}
+				        <p id="msg" class="font-italic smaller">None yet...</p>
+				        {% if action == 'create' %}
+				        <p>Please fill out the form on the left to create a new collection.</p>
+				        {% endif %}
+			        {% endif %}
 			        {% for d in coll_dsset %}
 			          <div class="ds_card w-100">
 			            <p class="mb-0">
@@ -273,10 +280,14 @@
 					    {% endfor %}
 				    {% else %}
 					    <p class="mb-0"><i>None yet</i></p>
+					    {% if action == 'create' %}
+				        <p>First fill out the form on the left to create a new collection. Then places can be added from Search results and Browse screens.</p>
+				        {% endif %}
 				    {% endif %}
 	        </div>
 				</div> <!-- .tab-content -->
-	    </div> <!-- #coll_builder -->
+	    </div> <!-- # coll_builder -->
+	    {% if action == 'update' %}
 	    <div id="coll_right" class="col-sm-4 p-2" style="height: auto;">
 	      <div id="coll_right_intro" class="hidden">
 		      <h5>Collections in WHG</h5>
@@ -299,7 +310,7 @@
 	      </div>
 		    <div id="coll_right_anno" class="">
 		      {% if messages %}
-    <span class="text-danger strong"> {% for message in messages %}{{ message }}{% endfor %}</span>
+{#    <span class="text-danger strong"> {% for message in messages %}{{ message }}{% endfor %}</span>#}
     {% endif %}
 		      <h6>Annotations</h6>
 			    <div id="annotator" class="mb-1">
@@ -309,6 +320,7 @@
 			    </div>
 		    </div>
 	    </div> <!-- # coll_right -->
+	    {% endif %}
     </div> <!-- d-flex -->
 	  {# help modal div #}
 		<div class="selector py-3"><div id="helpme"></div></div>

@@ -197,6 +197,13 @@ class PlaceSerializer(serializers.ModelSerializer):
 class PlaceTableSerializer(serializers.ModelSerializer):
   dataset = DatasetSerializer()
 
+  ds = serializers.SerializerMethodField()
+  def get_ds(self, place):
+    cell_value = '<a class="pop-link pop-dataset" data-id='+str(place.dataset.id)+\
+          ' data-toggle="popover" title="Dataset Profile" data-content=""'+\
+          ' tabindex="0" rel="clickover">'+place.dataset.label+'</a>'
+    return cell_value
+
   geo = serializers.SerializerMethodField()
   def get_geo(self, place):
     if place.geom_count > 0:
@@ -252,7 +259,7 @@ class PlaceTableSerializer(serializers.ModelSerializer):
                   'ccodes', 'geo', 'minmax',
                   'revwhg', 'revwd', 'revtgn',
                   'review_whg', 'review_wd', 'review_tgn'
-                  ,'dataset', 'dataset_id', 'chk'
+                  ,'ds', 'dataset', 'dataset_id', 'chk'
                   )
 
 

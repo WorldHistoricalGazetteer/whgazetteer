@@ -17,6 +17,9 @@ def user_directory_path(instance, filename):
   # upload to MEDIA_ROOT/user_<username>/<filename>
   return 'user_{0}/{1}'.format(instance.owner.username, filename)
 
+def default_relations():
+  return 'locale'.split(', ')
+
 class Collection(models.Model):
   owner = models.ForeignKey(User,related_name='collections', on_delete=models.CASCADE)
   title = models.CharField(null=False, max_length=255)
@@ -24,7 +27,8 @@ class Collection(models.Model):
   keywords = ArrayField(models.CharField(max_length=50), null=True)
 
   # per-collection relation keyword choices, e.g. waypoint, birthplace, battle site
-  rel_keywords = ArrayField(models.CharField(max_length=30), null=True)
+  # need default or it errors for some reason
+  rel_keywords = ArrayField(models.CharField(max_length=30), blank=True, default=default_relations)
 
   # 3 new fields, 20210619
   creator = models.CharField(null=True, blank=True, max_length=500)
@@ -33,7 +37,7 @@ class Collection(models.Model):
 
   # modified, 20220416
   collection_class = models.CharField(choices=COLLECTIONCLASSES, max_length=12, default='dataset')
-  type = models.CharField(choices=COLLECTIONTYPES, max_length=12)
+  # type = models.CharField(choices=COLLECTIONTYPES, max_length=12, null=True, blank=True)
 
   # single representative image
   image_file = models.FileField(upload_to=collection_path, blank=True, null=True)
@@ -41,6 +45,7 @@ class Collection(models.Model):
   file = models.FileField(upload_to=collection_path, blank=True, null=True)
 
   created = models.DateTimeField(null=True, auto_now_add=True)
+  # modified = models.DateTimeField(null=True)
   public = models.BooleanField(default=False)
   featured = models.IntegerField(null=True, blank=True)
 

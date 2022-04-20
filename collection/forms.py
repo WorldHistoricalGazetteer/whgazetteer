@@ -24,17 +24,16 @@ class CollectionModelForm(forms.ModelForm):
 
     class Meta:
         model = Collection
-        fields = ('id','owner','title','collection_class','type', 'description','keywords','rel_keywords',
+        fields = ('id','owner','title','collection_class','description','keywords','rel_keywords',
                   'image_file','file','datasets','creator','contact','content','webpage','public','featured' )
         widgets = {
-            'title': forms.TextInput(attrs={'size': 50}),
-            'type': forms.Select(),
-            'keywords': forms.TextInput(attrs={'size': 50}),
-            'rel_keywords': forms.TextInput(attrs={'size': 50}),
-            'creator': forms.TextInput(attrs={'size': 50}),
-            'contact': forms.TextInput(attrs={'size': 50}),
-            'webpage': forms.TextInput(attrs={'size': 50}),
-            'description': forms.Textarea(attrs={'rows':2,'cols': 49,'class':'textarea'}),
+            'title': forms.TextInput(attrs={'size': 45}),
+            'keywords': forms.TextInput(attrs={'size': 45}),
+            'rel_keywords': forms.TextInput(attrs={'size': 45}),
+            'creator': forms.TextInput(attrs={'size': 45}),
+            'contact': forms.TextInput(attrs={'size': 45}),
+            'webpage': forms.TextInput(attrs={'size': 45}),
+            'description': forms.Textarea(attrs={'rows':2,'cols': 45,'class':'textarea'}),
             'image_file':forms.FileInput(),
             'file':forms.FileInput(),
             'datasets': forms.CheckboxSelectMultiple,

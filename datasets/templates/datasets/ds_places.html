@@ -195,8 +195,14 @@
 		      cache: false,
 		      data: formData,
 		      success:function(data){
-			      console.dir('new collection', data)
-						$("#my_collections").append('<li><a class="a_addtocoll" href="#" ref='+data.id+'>'+data.title+'</a></li>')
+			      el = $('<li><a class="a_addtocoll" href="#" ref='+data.id+'>'+data.title+'</a></li>')
+			      el.click(function(){
+							coll = data.id
+							pids = checked_cards
+							add_to_collection(coll, pids)
+							console.log('pids to coll', pids, coll)
+			      })
+						$("#my_collections").append(el)
 		      }
         })
 				$("#title_form").hide()

@@ -90,15 +90,15 @@ def remove_places(request, *args, **kwargs):
     return id for adding place(s) to it 
 """
 def flash_collection_create(request, *args, **kwargs):
-  print('flash_collection_create request', request)
+  print('flash_collection_create request.POST', request.POST)
   print('flash_collection_create kwargs', kwargs)
   if request.method == 'POST':
     collobj = Collection.objects.create(
       owner = request.user,
-      title = 'title',
-      type = 'place',
+      title = request.POST['title'],
+      collection_class = 'place',
       description = 'new collection',
-      keywords = '{replace, these, please}'
+      # keywords = '{replace, these, please}'
     )
     collobj.save()
     result = {"id": collobj.id, 'title': collobj.title}
@@ -221,6 +221,16 @@ class PlaceCollectionCreateView(LoginRequiredMixin, CreateView):
     #   images.instance = self.object
     #   images.save()
 
+    # write log entry
+    # Log.objects.create(
+    #   # category, logtype, "timestamp", subtype, dataset_id, user_id
+    #   category='collection',
+    #   logtype='coll_create',
+    #   subtype='place',
+    #   coll_id=self.object.id,
+    #   user_id=self.request.user.id
+    # )
+
     print('form is valid, cleaned_data',form.cleaned_data)
     print('referrer', self.request.META.get('HTTP_REFERER'))
     return super().form_valid(form)
@@ -242,7 +252,6 @@ class PlaceCollectionCreateView(LoginRequiredMixin, CreateView):
     )
     # return to update page after create
     return reverse('collection:place-collection-update', kwargs = {'id':self.object.id})
-
 
 """ update place collection 
     uses place_collection_builder.html
@@ -377,12 +386,12 @@ class PlaceCollectionBrowseView(DetailView):
     # placeset = coll.places.all()
     # context['places'] = placeset
 
-    context['places'] = coll.places.all()
-    context['ds_list'] = coll.ds_list
-    #context['bboxes'] = bboxes
-    context['updates'] = {}
-    context['coll'] = coll
     context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False
+    context['coll'] = coll
+    context['ds_list'] = coll.ds_list
+    context['links'] = coll.links.all()
+    context['places'] = coll.places.all()
+    context['updates'] = {}
 
     return context
 

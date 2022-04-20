@@ -271,18 +271,23 @@
 
 	}
 	$(".a_addtocoll").click(function(){
+      console.log('clicked', $(this))
+      thisy = $(this)
 			coll = $(this).attr('ref')
 			pids = checked_cards
 			add_to_collection(coll, pids)
 			console.log('pids to coll', pids, coll)
 	})
+	function addNew(el){
+
+	}
 	$("#b_create_coll").click(function(){
 			let title = $("#title_input").val()
 			if(title != ''){
         // create new place collection, return id
 				var formData = new FormData()
-				formData.append('title', title )
 				formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+				formData.append('title', title )
 		    $.ajax({
 		      type: 'POST',
 		      enctype: 'multipart/form-data',
@@ -292,8 +297,15 @@
 		      cache: false,
 		      data: formData,
 		      success:function(data){
-			      console.dir('new collection', data)
-						$("#my_collections").append('<li><a class="a_addtocoll" href="#" ref='+data.id+'>'+data.title+'</a></li>')
+			      console.log('new collection', data)
+			      el = $('<li><a class="a_addtocoll" href="#" ref='+data.id+'>'+data.title+'</a></li>')
+			      el.click(function(){
+							coll = data.id
+							pids = checked_cards
+							add_to_collection(coll, pids)
+							console.log('pids to coll', pids, coll)
+			      })
+						$("#my_collections").append(el)
 		      }
         })
 				$("#title_form").hide()

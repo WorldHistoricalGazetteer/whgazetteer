@@ -23,7 +23,9 @@
   <!--<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.js'></script>-->
   <script src="{% static 'js/leaflet-mapbox-gl.js' %}"></script>
 
-  
+  <style>
+    input {max-width: -moz-available;}
+  </style>
 {% endblock %}
 
 {% block title %}<title>Collection::{{ object.title }}</title>{% endblock %}
@@ -52,7 +54,9 @@
 		        <div class="col-sm-8">
 		          <p class="mb-1">{{ object.description|readmore:400|safe }}</p>
 			        <table>
-			        <tr><td><b>Keywords</b></td><td>{{ object.keywords|join:', ' }}</td></tr>
+			        {% if object.keywords %}
+			          <tr><td><b>Keywords</b></td><td>{{ object.keywords|join:', ' }}</td></tr>
+			        {% endif %}
 			        {% if object.file %}
 				        <tr>
 					        <td><b>Essay</b></td>
@@ -67,13 +71,19 @@
 				          <a href="{{object.webpage }}" target="_blank">link {% fontawesome_icon 'external-link' color='#336699' %}</a>
 				        </td></tr>
 			        {% endif %}
-{#			        {% if object.creator %}#}
-{#			          <tr><td><b>Creator(s)</b></td><td>{{ object.creator }}</td></tr>#}
-{#			        {% endif %}#}
 			        {% if object.contact %}
 			          <tr><td><b>Contact</b></td><td>{{ object.contact|url_it|safe }}</td></tr>
 			        {% endif %}
 			          <tr><td><b>Created</b></td><td>{{ object.created }}</td></tr>
+		          {% if links|length > 0 %}
+			          <tr><td>Links: </td>
+			          <td>
+				          {% for l in links %}
+					          <a href="{{ l.uri }}" target="_blank">{{ l.label }}</a> ( a {{ l.link_type }});
+				          {% endfor %}
+			          </td>
+		            </tr>
+		          {% endif %}
 			        </table>
 		        </div>
 		        <div class="col-sm-4">
@@ -96,10 +106,9 @@
           <thead>
             <tr>
               <th>pid</th>
-              <th>src_id</th>
               <th>title</th>
-              <th>ccodes</th>
-              <th>geo</th>
+              <th>country</th>
+              <th>dataset</th>
             </tr>
           </thead>
         </table>
@@ -245,16 +254,41 @@
     startMapSpinner()
     startTableSpinner()
     startDetailSpinner()
-    
+
+    var hideAllPopovers = function() {
+       $('.pop-dataset').each(function() {
+            $(this).popover('hide');
+        });
+    };
+    var dspop = $(".pop-dataset").popover({
+      trigger: 'focus',
+      placement: 'right',
+      html: true
+    }).on('show.bs.popover', function () {
+        $.ajax({
+          url: '/api/datasets/',
+          data: {id:$(this).data('id')},
+          dataType: "JSON",
+          async: false,
+          success: function (data) {
+            ds=data.results[0]
+            console.log('ds',ds)
+            html='<p class="thin"><b>Title</b>: '+ds.title+'</p>'
+            html+='<p class="thin"><b>Description</b>: '+ds.description+'</p>'
+            html+='<p class="thin"><b>WHG Owner</b>: '+ds.owner+'</p>'
+            html+='<p class="thin"><b>Creator</b>: '+ds.creator+'</p>'
+            dspop.attr('data-content', html);
+          }
+      });
+    })
+
     window.filter = "{{ filter }}"
     // initialize table
     // task columns are inoperable in this public view
     table = $('#placetable').DataTable({
-      {#dom: "<'row'<'#ds_filter.col-sm-12 col-md-8 pr-0'>"+#}
       dom: "<'row'<'pl-3'f>>" +
       "<'row'<'col-sm-12'tr>>" +
-      {#"<'row mt-1'<'col-sm-12 col-md-3'l><'col-sm-12 col-md-2'i><'col-sm-12 col-md-7'p>>"#}
-      "<'row mt-1'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'p>>"
+      "<'row mt-1'<'col-sm-12 col-md-5'l><'col-sm-12 col-md-7'p>>"
       ,serverSide: true
       ,ajax: {
         url: "/api/placetable_coll/?format=datatables&id={{ object.id }}"
@@ -266,27 +300,15 @@
       ,columns: 
       [
           {"data": "id"},
-          {"data": "src_id", "visible": false},
           {"data": "title"},
           {"data": "ccodes"},
-          {"data": "geo", "title": "geom", "visible": false},
-          {"data": "review_wd"},
-          {"data": "review_tgn"},
-          {"data": "review_whg"},
-          {"data": "revwd", "visible": wdtask?true:false, 
-            "orderable":false},
-          {"data": "revtgn", "visible": tgntask?true:false, 
-            "orderable":false},
-          {"data": "revwhg", "visible": whgtask?true:false, 
-            "orderable":false},
-          <!--{"data": "dataset.id", "name":"dataset.id", "searchable":true},-->
-          {"data": "dataset.label", "name":"dataset.label"}
+          {"data": "dataset.label", "name":"dataset.label"},
       ]
       ,columnDefs:[
-        { className: "browse-task-col", "targets": [8,9,10] },
-        { orderable: false, "targets": [4,5,6,7]},
-        { searchable: false, "targets": [0,1,3,4,8,9,10]}
-        ,{ visible: false, "targets": [5,6,7,11]}
+        {#{ className: "browse-task-col", "targets": [8,9,10] },#}
+        {#{ orderable: false, "targets": [4,5,6,7]},#}
+        {#,{ visible: false, "targets": [1,4,5,6,7,11]}#}
+        { searchable: false, "targets": [2,3]}
       ]
     })
 
@@ -317,6 +339,25 @@
       show: {effect: "fade",duration: 400 },
       hide: {effect: "fade",duration: 400 }
     });
+
+    $(".a_more").click(function(e){
+      clicked = $(this)
+      clicked.hide()
+      clicked.parent().find("#dots").hide()
+      clicked.next().show()
+      $(".a_less").show()
+      console.log('clicked',clicked)
+    })
+    $(".a_less").click(function(e){
+      clicked = $(this)
+      console.log('this clicked',clicked)
+      console.log('parent',parent)
+      clicked.hide() // hide 'less' link
+      $(".more").hide() // hide the extra text again
+      $("#dots").show() // show dots again
+      $(".a_more").show() // show more link again
+    })
+
   })  // onload()
 
   // gl map
@@ -328,7 +369,7 @@
     center: [9.2, 33],
     zoom: 0.2, // starting zoom
     minZoom: 0.1,
-    maxZoom: 18,
+    maxZoom: 11,
   });
 
   // mappy.on('idle', function(e) {
@@ -443,7 +484,7 @@
 		  renderSourceLayers('all')
 		  source_list.push('all')
 
-		  var bounds = new maplibregl.LngLatBounds();
+		  bounds = new maplibregl.LngLatBounds();
 
       all_feats = colldata.features
 
@@ -744,8 +785,12 @@
 		//
 	  if(JSON.parse(data.traces).length >0) {
       trace = JSON.parse(data.traces).find(function(t){return t.fields.collection = "{{ object.id }}"})
-		  descrip +="<p><b><u>Relation</u></b>: "+JSON.parse(trace.fields.relation)[0]+"</p>"
-			descrip +='<p><b><u>Notes</u></b>: '+ trace.fields.note+'</p>'
+		  if(trace.fields.relation) {
+          descrip += "<p><b><u>Relation</u></b>: " + JSON.parse(trace.fields.relation)[0] + "</p>"
+      }
+      const tracenote = trace.fields.note ?? '<i>none yet</i>'
+			descrip +='<p><b><u>Notes</u></b>: '+ tracenote +'</p>'
+			{#descrip +='<p><b><u>Notes</u></b>: '+ trace.fields.note || 'foo' +'</p>'#}
 		  if(trace.fields.start){
 				descrip +='<p><b><u>Start/End</u></b>: '+ trace.fields.start+'/'+trace.fields.end+'</p>'
 		  }
