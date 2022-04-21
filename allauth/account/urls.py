@@ -1,7 +1,7 @@
 from django.urls import path, re_path
 
 from . import views
-from accounts.views import update_profile
+from accounts.views import update_profile, create_group
 
 # prefix is 'accounts/' not account/
 urlpatterns = [
@@ -10,7 +10,8 @@ urlpatterns = [
     path("login/", views.login, name="account_login"),
     #path("logout/", views.logout, name="account_logout"),
     path("logout/", views.logout, {'next': '/'}, name="account_logout"),
-        
+
+    path('create_group/', create_group, name='create-group'),
     path("profile/", update_profile, name="account_profile"),
     path(
         "password/change/",
