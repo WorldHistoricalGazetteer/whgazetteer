@@ -50,9 +50,12 @@
           <img src="{% static 'images/whg_logo_38h.png'%}" class="d-inline-block align-bottom" height=38 width=50 alt=""/>
 		</a>
 		<div class="smallish d-none d-lg-block pt-2">
-		  <span id="version_badge" class="badge badge-warning">v2.0</span>
+		  <span id="version_badge" class="badge badge-warning" >v2.1 beta</span>
+			<a href="#">
+				<span id="whatsnew_badge" class="badge badge-success help-matches" data-id="whatsnew21">What's New?</span>
+			</a>
 		  <span id="beta_links">
-			{%comment%}<a href="{% url 'main:tute-guide' %}">guide</a> | {%endcomment%}
+			<a href="{% url 'main:tute-guide' %}">guide</a> |
 			<a href="#" class="feedback">contact us</a> |
 			<a href="https://twitter.com/whgazetteer" target="_blank"><img src="{% static 'images/twitter30h.png'%}" height=14></a>
 		  </span>
@@ -117,9 +120,31 @@
       </div>
     </nav>
   </header>
+  <div class="selector py-3"><div id="helpme"></div></div>
   {% block content %}
   {% endblock %}
 <script type="text/javascript">
+  // help modals
+  $(".help-matches").click(function(){
+    page=$(this).data('id')
+    console.log('help:', page)
+    $('.selector').dialog('open');
+  })
+  $(".selector").dialog({
+    resizable: false,
+    autoOpen: false,
+    height: $(window).height() * 0.9,
+    width: $(window).width() * 0.8,
+    title: "WHG Help",
+    modal: true,
+    buttons: { 'Close': function() {console.log('close dialog'); $(this).dialog('close');} },
+    open: function(event, ui) {
+      $('#helpme').load('/media/help/'+page+'.html')
+    },
+    show: {effect: "fade",duration: 400 },
+    hide: {effect: "fade",duration: 400 }
+  });
+
 	$(function(){
 	  language = window.navigator.language.substr(0,2)
 	  <!--abouts = ['/about/','/community/','/system/','/licensing/','/credits/']-->

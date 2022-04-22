@@ -450,11 +450,13 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
     background-position:right center;
     background-repeat: no-repeat;
 }
-/*.navbar-brand {padding:0; }*/
+
 #version_badge {
   font-size: 1rem;
   margin: 6px 0 0 15px;
 }
+#whatsnew_badge { font-size: 0.8rem;}
+
 #beta_links { margin: 6px 0 0 8px;}
 
 .btn-default:not(:disabled):not(.disabled):active:focus,
