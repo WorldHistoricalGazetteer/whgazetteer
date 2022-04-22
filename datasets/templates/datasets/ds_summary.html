@@ -541,10 +541,8 @@
         if('failed' in data){
           errors = data['failed']['errors']
           html = '<b class="text-danger">Data validation issue(s):</b> <ul class="ul-flush">'
-          <!--html+=JSON.stringify(data['failed']['errors'])-->
           var i = 0; i < 9; i++
           for(var i=0; i<errors.length; i++){
-            <!--html += '<p>'+errors[i]['message']+'</p>'-->
             html += '<li class="li-flush">'+errors[i]+'</li>'
           }
           html+='</ul><p>Please correct and try again</p>'

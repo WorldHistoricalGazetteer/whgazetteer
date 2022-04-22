@@ -265,18 +265,17 @@
           tid = updates[u][0]
           counts = updates[u][1]
           task = updates[u][1]['task']
-          //console.log('updateTotals() counts', task, counts)
+          console.log('updateTotals() counts', task, counts)
           
           // if all are reviewed, disable radio button
           //radio_id = "#r_" + counts['task'].substring(6)
           
-          if(counts['total'] == 0){
+          if(counts['total'] == 0 && task == 'align_wdlocal' ){
             console.log(task + ' task down to zero: ' + tid)
             $('.'+task).css('border', '2px dashed darkseagreen')
             $("#authtag").html(task=='align_tgn'?'Getty TGN':'Wikidata')
             $("#ready").removeClass("hidden")
             $('#'+task).addClass("hidden")
-            <!--$('#del_'+task).addClass("hidden")-->
           }
           
           $("#"+tid+'_0').html(counts['pass0'])

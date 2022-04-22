@@ -65,12 +65,12 @@
 		        <p>A <b>Dataset Collection</b> is a set of public datasets, typically from multiple contributors and linked to define a "focus domain" within World Historical Gazetteer. As with all collections, searches, downloads and API calls can be constrained to include only places in the collection's member datasets.</p>
 	        </div>
 	        <div id="placecoll_blurb" class="col-sm-4">
-		        <h5><b>Place</b> collections
+		        <h5><b>Place</b> collections <span class="badge badge-warning px-2">beta</span>
 			        <span class="smaller float-right pr-2 pt-1">
 				        <a href="{% url 'collection:place-collection-create' %}">{% fontawesome_icon 'plus-square' color='#336699' %} new</a>
 			        </span>
 		        </h5>
-		        <p>A <b>Place Collection</b> is an authored data publication. It can include all places from one or more public dataset, as well as individual places discovered in WHG searches. Any of its place records can be annotated with information pertaining to its membership in the collection.
+		        <p>A <b>Place Collection</b> is an authored data publication. It can include all places from one or more public dataset, as well as individual places discovered in WHG search results and browse screens. Any of its place records can be annotated with information pertaining to its membership in the collection. <a href="{% url 'main:tute-place_collections' %}">Guide {% fontawesome_icon 'question-circle' color='#336699' %}</a>
 			        {% comment %}<a href="">more...</a> <p>Metadata for collection itself will include an abstract, and can include any number of links to relevant web resources.</p>{% endcomment %}
 	        </div>
 	        <div id="regioncoll_blurb" class="col-sm-4">
@@ -79,15 +79,17 @@
 				        <a href="">{% fontawesome_icon 'plus-square' color='#336699' %} new</a>
 			        </span>{% endcomment %}
 		        </h5>
-		        <p><b>Region collections</b> are composed of all public WHG place records that lie within any area defined in the WHG system. This includes "stock" regions, e.g. from the United Nations, or modern countries, public region features contributed by users, or one of a user's own <a href="#" data-html="true" onClick='return false;' title="Can be created on the Study Areas tab of this page or in the course of starting a reconciliation task." rel="tooltip" class="ttip">study areas</a> created on the fly.</p>
+		        <p><b>Region collections</b> are composed of all public WHG place records that lie within any area defined in the WHG system. This includes "standard" regions, e.g. from the United Nations, or modern countries, region features within  contributed datasets, or users' own study areas
+			        {% comment %}<a href="#" data-html="true" onClick='return false;' title="Can be created on the Study Areas tab of this page or in the course of starting a reconciliation task." rel="tooltip" class="ttip">study areas</a> {% endcomment %}
+			        created on the fly.</p>
 	        </div>
         </div>
-          <div id="collection_list" class="mt-1 ml-0">
+        <div id="collection_list" class="mt-1 ml-0">
           <div class="list-box">
             <table id="table_collections"class="table table-striped">
               <thead class="small">
                   <th>id</th>
-                  <th>class</th>
+                  <th>type</th>
                   <th>title</th>
                   <th></th>
                   <th>created</th>

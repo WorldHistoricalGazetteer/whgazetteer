@@ -1,4 +1,5 @@
 {% load i18n staticfiles %}
+{% load dataset_extras %}
 <!DOCTYPE html>
 {% load fontawesome %}
 <html lang="en">
@@ -35,95 +36,103 @@
   <!-- Add additional CSS in static -->
   {% load static %}
   {% fontawesome_stylesheet %}
-{#	<link href="{% static 'fontawesomefree/css/all.min.css' %}" rel="stylesheet" type="text/css">#}
   <link rel="stylesheet" href="{% static 'css/styles.css' %}">
   <link rel="shortcut icon" type="image/png" href="{% static 'images/favicon.ico' %}"/>
-
   <!-- some pages will want more -->
   {% block extra_head %}{% endblock %}
 </head>
 <body>
   <header>
-    <nav class="navbar navbar-expand-lg navbar-light">
-      <div class="container">
-        <a class="navbar-brand mr-0" href="{% url 'home' %}">
-          <img src="{% static 'images/whg_logo_38h.png'%}" class="d-inline-block align-bottom" height=38 width=50 alt=""/>
+  <nav class="navbar navbar-expand-lg navbar-light">
+  <div class="container">
+    <a class="navbar-brand mr-0" href="{% url 'home' %}">
+      <img src="{% static 'images/whg_logo_38h.png'%}" class="d-inline-block align-bottom" height=38 width=50 alt=""/>
 		</a>
 		<div class="smallish d-none d-lg-block pt-2">
 		  <span id="version_badge" class="badge badge-warning" >v2.1 beta</span>
 			<a href="#">
-				<span id="whatsnew_badge" class="badge badge-success help-matches" data-id="whatsnew21">What's New?</span>
+				<span id="whatsnew_badge" class="badge badge-success help-matches" data-id="whatsnew21">What's New</span>
 			</a>
 		  <span id="beta_links">
-			<a href="{% url 'main:tute-guide' %}">guide</a> |
-			<a href="#" class="feedback">contact us</a> |
-			<a href="https://twitter.com/whgazetteer" target="_blank"><img src="{% static 'images/twitter30h.png'%}" height=14></a>
+				<a href="{% url 'main:tute-guide' %}">guide</a> |
+				<a href="#" class="feedback">contact us</a> |
+				<a href="https://twitter.com/whgazetteer" target="_blank">
+					<img src="{% static 'images/twitter30h.png'%}" height=14></a>
 		  </span>
 		</div>
+    <!-- responsive nav -->
 		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
 		  <span class="navbar-toggler-icon"></span>
-		</button>		
-        <div class="collapse navbar-collapse pt-1" id="navbarNavAltMarkup">
-          <div class="navbar-nav ml-auto pt-2 smallish">
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'search-page' %}">Search</a>
-            </li>
-			<li class="nav-item">
-				<a class="nav-link" href="{% url 'teaching-page' %}">Teaching</a>
-			</li>
-			<li class="nav-item">
-				<a class="nav-link" href="{% url 'main:tutorials' %}">Guides</a>
-			</li>
-			<li class="nav-item">
-				<a class="nav-link" href="{% url 'usingapi' %}">API</a>
-			</li>
-			<li class="nav-item dropdown">
-			  <a class="nav-link dropdown-toggle" href="#" id="aboutDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-				About
-			  </a>
-			  <div class="dropdown-menu smallish" aria-labelledby="aboutDropdown">
-				<a class="dropdown-item" href="{% url 'about' %}">Introduction</a>
-				<!--<a class="dropdown-item" href="{ url 'community' %}">Communities</a>-->
-				<a class="dropdown-item" href="{% url 'system' %}">System details</a>
-				<a class="dropdown-item" href="{% url 'licensing' %}">Licensing, Terms</a>
-				<a class="dropdown-item" href="{% url 'credits' %}">Credits & Contacts</a>
-				<div class="dropdown-divider"></div>
-				<a class="dropdown-item" href="http://blog.whgazetteer.org" target="_blank">
-				  News {% fontawesome_icon 'external-link' %}</a>
-			  </div>
-			</li>
-			{% if user.is_authenticated %}
-			  <li class="nav-item">
-					<a class="nav-link" href="{% url 'data-datasets' %}">Data</a>
-{#					<a class="nav-link" href="{% url 'dashboard' %}">Data</a>#}
-			  </li>
-  
-			  <li class="nav-item larger">
-				<a class="nav-link" rel="tooltip" title="{{ user }} profile" href="{% url 'account_profile' %}">{% fontawesome_icon 'user-circle' color='#336699' %}</a>
-			  </li>
-			  <li class="nav-item">
-				<a class="nav-link `ml-5" href="javascript:{document.getElementById('logout').submit()}">Logout</a>
-				<form id="logout" method="post" action="{% url 'account_logout' %}">
+		</button>
+    <div class="collapse navbar-collapse pt-1" id="navbarNavAltMarkup">
+      <div class="navbar-nav ml-auto pt-2 smallish">
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'search-page' %}">Search</a>
+        </li>
+				<li class="nav-item">
+					<a class="nav-link" href="{% url 'teaching-page' %}">Teaching</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" href="{% url 'main:tutorials' %}">Guides</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" href="{% url 'usingapi' %}">API</a>
+				</li>
+				<li class="nav-item dropdown">
+				  <a class="nav-link dropdown-toggle" href="#" id="aboutDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+					About
+				  </a>
+				  <div class="dropdown-menu smallish" aria-labelledby="aboutDropdown">
+					<a class="dropdown-item" href="{% url 'about' %}">Introduction</a>
+					<!--<a class="dropdown-item" href="{ url 'community' %}">Communities</a>-->
+					<a class="dropdown-item" href="{% url 'system' %}">System details</a>
+					<a class="dropdown-item" href="{% url 'licensing' %}">Licensing, Terms</a>
+					<a class="dropdown-item" href="{% url 'credits' %}">Credits & Contacts</a>
+					<div class="dropdown-divider"></div>
+					<a class="dropdown-item" href="http://blog.whgazetteer.org" target="_blank">
+					  News {% fontawesome_icon 'external-link' %}</a>
+				  </div>
+				</li>
+				{% if user.is_authenticated %}
+					<li class="nav-item dropdown">
+					  <a class="nav-link dropdown-toggle" href="#" id="dataDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+						Data
+					  </a>
+					  <div class="dropdown-menu smallish" aria-labelledby="dataDropdown">
+						<a class="dropdown-item" href="{% url 'data-datasets' %}">Datasets</a>
+						<a class="dropdown-item" href="{% url 'data-collections' %}">Collections</a>
+						<a class="dropdown-item" href="{% url 'data-areas' %}">Study Areas</a>
+					  {% if user|has_group:'whg_team' or user|has_group:'teaching' %}
+							<a class="dropdown-item" href="{% url 'data-resources' %}">Teaching Resources</a>
+					  {% endif %}
+					  </div>
+					</li>
+				  <li class="nav-item larger">
+					<a class="nav-link" rel="tooltip" title="{{ user }} profile" href="{% url 'account_profile' %}">{% fontawesome_icon 'user-circle' color='#336699' %}</a>
+				  </li>
+				  <li class="nav-item">
+					<a class="nav-link `ml-5" href="javascript:{document.getElementById('logout').submit()}">Logout</a>
+					<form id="logout" method="post" action="{% url 'account_logout' %}">
 				  {% csrf_token %}</form>
 			  </li>
-            {% else %}
-			  <li class="nav-item">
-				<a class="nav-link ml-5" href="{% url 'account_signup' %}">Register</a>
-				<!--<a class="nav-link ml-5" href="{ url 'register' %}">Register</a>-->
-			  </li>
-			  <li class="nav-item">
-				<a class="nav-link" href="{% url 'account_login' %}">Login</a>
-			  </li>
-            {% endif %}
-          </div>
-        </div>
+        {% else %}
+				  <li class="nav-item">
+						<a class="nav-link ml-5" href="{% url 'account_signup' %}">Register</a>
+				  </li>
+				  <li class="nav-item">
+						<a class="nav-link" href="{% url 'account_login' %}">Login</a>
+				  </li>
+        {% endif %}
+      </div>
+      </div>
       </div>
     </nav>
   </header>
   <div class="selector py-3"><div id="helpme"></div></div>
   {% block content %}
   {% endblock %}
-<script type="text/javascript">
+
+  <script type="text/javascript">
   // help modals
   $(".help-matches").click(function(){
     page=$(this).data('id')

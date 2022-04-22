@@ -30,6 +30,10 @@ def filename(val):
     nameonly = re.match(R"^.*\/(.*)\.", val)
     return nameonly.group(1)
 
+@register.filter()
+def has_group(user, group_name):
+    return user.groups.filter(name=group_name).exists()
+
 @register.filter
 def haskey(objlist, arg):
     """True if any obj in objlist has key arg"""

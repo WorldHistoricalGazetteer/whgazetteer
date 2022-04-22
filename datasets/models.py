@@ -9,7 +9,7 @@ from django.db import models
 from django.db.models import Q
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
-#from django.urls import reverse
+from django.urls import reverse
 #from django.shortcuts import get_object_or_404
 
 from django_celery_results.models import TaskResult
@@ -70,8 +70,8 @@ class Dataset(models.Model):
     return self.label
     # return '%d: %s' % (self.id, self.label)
 
-  #def get_absolute_url(self):
-    #return reverse('datasets:ds_summary', kwargs={'id': self.id})
+  def get_absolute_url(self):
+    return reverse('datasets:ds_summary', kwargs={'id': self.id})
 
   # how many wikidata links?
   @property

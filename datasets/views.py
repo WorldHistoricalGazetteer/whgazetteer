@@ -2091,8 +2091,8 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
       try:
         dsobj.save()
       except:
-        args['form'] = form
-        return render(request,'datasets/dataset_create.html', args)
+        # self.args['form'] = form
+        return render(self.request,'datasets/dataset_create.html', self.args)
 
       #
       # create user directory if necessary
@@ -2308,8 +2308,8 @@ class DatasetSummaryView(LoginRequiredMixin, UpdateView):
     user = self.request.user
     file=data['file']
     filerev = ds.files.all().order_by('-rev')[0].rev
-    print('DatasetDetailViewDev kwargs',self.kwargs)
-    print('DatasetDetailViewDev form_valid() data->', data)
+    print('DatasetSummaryView kwargs',self.kwargs)
+    print('DatasetSummaryView form_valid() data->', data)
     if data["file"] == None:
       print('data["file"] == None')
       # no file, updating dataset only
