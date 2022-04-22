@@ -28,7 +28,8 @@ class Collection(models.Model):
 
   # per-collection relation keyword choices, e.g. waypoint, birthplace, battle site
   # need default or it errors for some reason
-  rel_keywords = ArrayField(models.CharField(max_length=30), blank=True, default=default_relations)
+  rel_keywords = ArrayField(models.CharField(max_length=30), blank=True)
+  # rel_keywords = ArrayField(models.CharField(max_length=30), blank=True, default=default_relations)
 
   # 3 new fields, 20210619
   creator = models.CharField(null=True, blank=True, max_length=500)

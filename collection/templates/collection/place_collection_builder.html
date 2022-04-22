@@ -48,10 +48,10 @@
 	    {#background-color: white;#}
 	    padding-left: 2px;
     }
-    #coll_placelist {
+    #coll_placelist, #coll_dslist {
 	    padding: 3px;
 	    position: absolute;
-	    height: 100%;
+	    max-height: 100%;
 	    width: 100%;
 	    overflow-y:scroll;
     }
@@ -94,20 +94,16 @@
 					<label for="Title">Title &#x02733;</label><br/>
 					{{ form.title }}
 				</div>
-{#				<div class="form-group">#}
-{#					<label for="Type">Type &#x02733;</label>#}
-{#					{{ form.type }}#}
-{#				</div>#}
 				<div class="form-group">
 					<label for="Description">Description &#x02733;</label>
 					{{ form.description }}
 				</div>
 				<div class="form-group">
-					<label for="Keywords">Keywords &#x02733; <i>(comma-delimited)</i></label>
+					<label for="Collection keywords">Collection keywords &#x02733;</label>
 					{{ form.keywords }}
 				</div>
 				<div class="form-group">
-					<label for="Relation options">Relation options <i>(comma-delimited)</i></label>
+					<label for="Annotation keywords">Annotation keywords</label>
 					{{ form.rel_keywords }}
 				</div>
 				{% comment %}<div class="form-group">
@@ -209,18 +205,17 @@
 	    <div id="coll_builder" class="col-sm-4 p-2" style="height: auto;">
 				<ul id="coll_tabs" class="nav nav-tabs" role="tablist">
 				  <li class="nav-item">
-				    <a class="nav-link" id="coll_dslist-tab" data-toggle="tab" href="#coll_dslist" role="tab" aria-controls="coll_dslist" aria-selected="true" data-id="ds">Datasets</a>
+				    <a class="nav-link active" id="coll_dslist-tab" data-toggle="tab" href="#coll_dslist" role="tab" aria-controls="coll_dslist" aria-selected="true" data-id="ds">Datasets</a>
 				  </li>
 				  <li class="nav-item">
-				    <a class="nav-link active" id="coll_placelist-tab" data-toggle="tab" href="#coll_placelist" role="tab" aria-controls="coll_placelist" aria-selected="false" data-id="pl">Places ({{ coll_places|length }})</a>
+				    <a class="nav-link " id="coll_placelist-tab" data-toggle="tab" href="#coll_placelist" role="tab" aria-controls="coll_placelist" aria-selected="false" data-id="pl">Places ({{ coll_places|length }})</a>
 				  </li>
 					<span class="small" style="position:absolute; right:1rem; top:1.5rem;">
 						<a id="a_remove" href="#"></a>
 					</span>
 				</ul>
-{#		    <div class="tab-content" style="height:95%; overflow:auto;">#}
 		    <div id="builder_content" class="tab-content">
-			    <div id="coll_dslist" class="tab-pane fade" role="tabpanel" aria-labelledby="coll_dslist-tab">
+			    <div id="coll_dslist" class="tab-pane fade show active" role="tabpanel" aria-labelledby="coll_dslist-tab">
 		        <p class="mt-2">
 			        <span class="mr-2 smaller">
 			          <select id="select_ds" name="ds" class="custom-select-sm">
@@ -236,11 +231,9 @@
 		        </p>
 		        <!-- id, label, title, description, creator, create_date, webpage, numrows, datatype -->
 		        <div id="coll_dscards_create">
+			        <p>The select dropdown above lists datasets you "own" or have been made a collaborator on.</p>
 			        {% if coll_dsset|length == 0 %}
-				        <p id="msg" class="font-italic smaller">None yet...</p>
-				        {% if action == 'create' %}
-				        <p>Please fill out the form on the left to create a new collection.</p>
-				        {% endif %}
+				        <p id="further_explanation">Once selected, you can choose to "add all places" from it and they will appear on your collection's place list. Note that very large datasets (more than a few thousand rows) may present issues in managing annotations and in the display of the collection.</p>
 			        {% endif %}
 			        {% for d in coll_dsset %}
 			          <div class="ds_card w-100">
@@ -252,7 +245,6 @@
 			              <p class="my-1"><b>Description</b>: {{ d.description|truncatechars:150 }}</p>
 			              <p class="my-1"><b>Create date</b>: {{ d.create_date|date:"d M Y" }}</p>
 			              <p class="my-1"><b># rows</b>: {{ d.numrows }}
-
 			              <a href="{% url 'collection:remove-ds' ds_id=d.id coll_id=object.id %}" class="float-right">
 				              {% fontawesome_icon 'minus' color='#336699' %} remove</a>
 			              </p>
@@ -261,7 +253,7 @@
 			        {% endfor %}
 		        </div> <!-- #coll_dscards_create -->
 			    </div>
-			    <div id="coll_placelist" class="tab-pane fade show active" role="tabpanel" aria-labelledby="coll_placelist-tab">
+			    <div id="coll_placelist" class="tab-pane fade" role="tabpanel" aria-labelledby="coll_placelist-tab">
 				    {% if coll_places|length > 0 %}
 				      {% for p in coll_places %}
 					      <div class="col-place-card" data-id="{{ p.id }}">
@@ -280,10 +272,21 @@
 					      </div>
 					    {% endfor %}
 				    {% else %}
-					    <p class="mb-0"><i>None yet</i></p>
+					    {% if action == 'update' %}
+{#					      <p class="mb-0"><i>None yet</i></p>#}
+						    <p class="larger mb-0 strong">How to add places</p>
+						    <ul>
+							    <li><sr>From a Place Portal page</sr>. Use the Search page to find the place you're looking for, navigate to its "Portal Page" and choose <i>one</i> of the attestations found there.</li>
+						      <li><sr>From a public dataset's Browse page</sr>. Find a dataset of interest on the Public Datasets list, select the "Browse" tab, then select any number of records. A popup form will offer a list of your collections they can be added to.</li>
+							    <li><sr>From one or more of your own datasets.</sr>. You can add <b>all</b> of the places from any of your own datasets. Further instructions are found on Datasets tab to the left of this one.</li>
+						    </ul>
+					    {% endif %}
 					    {% if action == 'create' %}
-				        <p>First fill out the form on the left to create a new collection. Then places can be added from Search results and Browse screens.</p>
-				        {% endif %}
+						    <h5 style="display:block;">Welcome</h5>
+						    <p>To create a new Place Collection, first fill out the required fields in the form on the left. and press <b>Save</b>. All information can be edited afterwards.</p>
+						    <p>Afterwards you can begin adding places.</p>
+						    <p>The "Annotation keywords" field is for terms that will be your own vocabulary for the relation between a given place and the collection theme or topic. For example, relevant annotation keywords for a collection about a journey might include "waypoint" and extended stay." For lives of individuals, "birthplace" and "resided" might be appropriate. The choice is yours.</p>
+			        {% endif %}
 				    {% endif %}
 	        </div>
 				</div> <!-- .tab-content -->
@@ -309,17 +312,16 @@
 		      </ul>
 		      <p>[<i>figure</i>]</p>
 	      </div>
-		    <div id="coll_right_anno" class="">
-		      {% if messages %}
-{#    <span class="text-danger strong"> {% for message in messages %}{{ message }}{% endfor %}</span>#}
-    {% endif %}
+{#				{% if coll_places|length > 0 %}#}
+		    <div id="coll_right_anno" class="hidden">
 		      <h6>Annotations</h6>
 			    <div id="annotator" class="mb-1">
 				    {% if action == 'update' %}
 				    <p class="mt-3">Select a place record from list on the left to annotate it</p>
 				    {% endif %}
 			    </div>
-		    </div>
+		    </div> <!-- coll_right_anno -->
+{#	      {% endif %}#}
 	    </div> <!-- # coll_right -->
 	    {% endif %}
     </div> <!-- d-flex -->
@@ -677,10 +679,13 @@
 			  console.log(tab)
 			  if(tab == 'ds'){
 					  $("#coll_right_anno").addClass('hidden')
-					  $("#coll_right_intro").removeClass('hidden')
+					  {#$("#coll_right_intro").removeClass('hidden')#}
 			  } else {
-					  $("#coll_right_anno").removeClass('hidden')
-					  $("#coll_right_intro").addClass('hidden')
+					  console.log('show anno header if there are place cards')
+					  if($("#coll_placelist").children(".col-place-card").length > 0){
+              $("#coll_right_anno").removeClass('hidden')
+					  }
+					  {#$("#coll_right_intro").addClass('hidden')#}
 			  }
 	  })
 
@@ -725,11 +730,17 @@
 
 	$("#select_ds").change(function(){
     console.log('selected from list', $(this).val())
+		$("further_explanation").hide()
+		{#if($("a.active").data('id') == 'pl' ){#}
+		if($("a.active").data('id') == 'pl' && '{{ place_list }}'){
+      $("#col_right_anno").fadeIn()
+				console.log('active', $("a.active").data('id'),'{{ place_list|length }}' )
+		}
 		addDataset('create')
 	})
 	//
   function listDataset(d) {
-    console.log('listing this:', d.title)
+    {#console.log('listing this:', d.title)#}
     dslist.push(d.id)
     $("#id_datasets [value=" + d.id + "]").attr("checked", "checked");
     coll_id={{ object.id }}
@@ -740,9 +751,10 @@
           +'<p class="my-1"><b>Create date</b>: '+d.create_date.slice(0,10)+'; <b># rows</b>: '+d.numrows+'</p>'
           +'<p class="my-1"><a href="javascript:{ removeDataset('+d.id+') }">'
               +'{% fontawesome_icon "minus-square" color="#336699" %} remove</a>'
-		          +'<span class="float-right"><a id="a_addplaces" href="javascript:{addPlaces('+d.id+')}">add places</a></span'
+		          +'<span class="float-right"><a class="a_addplaces" href="javascript:{addPlaces('+d.id+')}">add all '
+		          +d.numrows+' places</a></span'
 		      +'</p></div></div>'
-		$("a_addplaces").click(function(){
+		$(".a_addplaces").click(function(){
 		  thisy = $(this)
 		  console.log('thisy', thisy)
 		})
@@ -754,7 +766,7 @@
 	function addPlaces(dsid){
 		url = "/collections/add_ds/"+"{{ object.id }}"+"/"+dsid
 		// collection.views.add_dataset
-		console.log('adding dataset w/o save',dsid, {{ object.id }}, url)
+		{#console.log('adding dataset w/o save',dsid, {{ object.id }}, url)#}
 		document.location.href = url
 		{#url = "{% url 'collection:add-ds' ds_id="+dsid+" coll_id=456 %}"#}
 		{#document.location.href = url.replace('123', dsid).replace('456',{{ object.id }})#}
@@ -764,7 +776,7 @@
 
   // lists dataset on dropdown select
   function addDataset(action) {
-    console.log('selected', $("#select_ds").val())
+    {#console.log('selected', $("#select_ds").val())#}
 
     $.get("/collections/list_ds", {ds_id:$("#select_ds").val()},
       function(data){

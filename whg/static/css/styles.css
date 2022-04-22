@@ -707,9 +707,10 @@ em { color: #993333;}
 #coll_placelist {
   font-size: .8rem;
 }
-#coll_placelist ul { padding-left: .25rem;}
+#coll_placelist ul { padding-left: 1rem;}
 #coll_dslist {
-  height: calc(100vh - 180px);
+  max-height: 100%;
+  /*height: calc(100vh - 180px);*/
   position: relative;
   /*border: 1px solid lightgray;*/
   /*background-color: oldlace;*/
