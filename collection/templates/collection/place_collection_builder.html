@@ -39,7 +39,7 @@
     #coll_right_anno, #coll_right_intro {margin-top:42px;}
     #anno_div table td {padding-top: 3px; padding-bottom: 3px;}
     #anno_div input {height: 1.5rem; font-size:.8rem;}
-    .form-group {margin-bottom: .5rem !important;}
+    .form-group {margin-bottom: 4px !important;}
     .form-group label {margin-bottom:0 !important;}
     .col-place-card {
 	    border: #c3c3c3 1px dashed;
@@ -112,7 +112,7 @@
 				</div>{% endcomment %}
 				{# single image for now (20220416 #}
 	      <div class="form-group">
-					<label for="Image">Image</label>
+					<label for="Image">Image</label><br/>
 					{% if action == 'create' %} {# create, no image yet #}
 						<span id="img_chooser_create">{{ form.image_file }}</span>
 					{% elif form.image_file.value %} {# update & there's an image #}
@@ -127,7 +127,7 @@
 	        <span id="img_chooser" class="hidden">{{ form.image_file }}</span>
 				</div>
 	      <div class="form-group">
-					<label for="File">File</label>
+					<label for="File">File</label><br/>
 					{% if action == 'create' %} {# create, no file yet #}
 						<span id="file_chooser_create">{{ form.file }}</span>
 					{% elif form.file.value %} {# update & there's an file #}
@@ -142,12 +142,16 @@
 	      {% if action == 'update' %}
 				<div>Links
 					{% if links|length < 3 %}
-						(<a href="#" id="a_addlink">add</a>)
-					{% else %}(3 maximum) {% endif %}:<br/>
+						<a href="#" id="a_addlink">
+							<button type="button" style="border-width: thin;">Add</button>
+{#							<span class="btn btn-sm btn-secondary">Add</span>#}
+						</a>
+					{% else %}(3 maximum) {% endif %}<br/>
 					<span id="linklist">
 					{% if links|length > 0 %}
 						{% for l in links %}
-							<a href="{{ l.uri }}" target="_blank">{{ l.label }}</a> ({{ l.link_type }});
+							{{ l.get_link_type_display|safe }} <a href="{{ l.uri }}" target="_blank">{{ l.label }}</a>
+								[ <a href="#" class="a_removelink" data-id={{ l.id }}><i>remove</i></a> ]<br/>
 						{% endfor %}
 					{% endif %}
 					</span>
@@ -181,7 +185,11 @@
 	      <div id="d_buttons" class="" style="">
           <span class="float-right">
 		      <a href="/mycollections">Cancel</a>
-		      <input id="btn_coll_submit" class="btn-sm btn-primary mt-2 ml-2" type="submit" value="Save" />
+          {% if action == create %}
+	          <input id="btn_coll_submit" class="btn-sm btn-primary mt-2 ml-2" type="submit" value="Save" />
+          {% else %}
+	          <input id="btn_coll_submit" class="btn-sm btn-primary mt-2 ml-2" type="submit" value="Update" />
+          {% endif %}
           </span>
 	      </div>
 	      </form>
@@ -205,17 +213,17 @@
 	    <div id="coll_builder" class="col-sm-4 p-2" style="height: auto;">
 				<ul id="coll_tabs" class="nav nav-tabs" role="tablist">
 				  <li class="nav-item">
-				    <a class="nav-link active" id="coll_dslist-tab" data-toggle="tab" href="#coll_dslist" role="tab" aria-controls="coll_dslist" aria-selected="true" data-id="ds">Datasets</a>
+				    <a class="nav-link" id="coll_dslist-tab" data-toggle="tab" href="#coll_dslist" role="tab" aria-controls="coll_dslist" aria-selected="true" data-id="ds">Datasets</a>
 				  </li>
 				  <li class="nav-item">
-				    <a class="nav-link " id="coll_placelist-tab" data-toggle="tab" href="#coll_placelist" role="tab" aria-controls="coll_placelist" aria-selected="false" data-id="pl">Places ({{ coll_places|length }})</a>
+				    <a class="nav-link active" id="coll_placelist-tab" data-toggle="tab" href="#coll_placelist" role="tab" aria-controls="coll_placelist" aria-selected="false" data-id="pl">Places ({{ coll_places|length }})</a>
 				  </li>
 					<span class="small" style="position:absolute; right:1rem; top:1.5rem;">
 						<a id="a_remove" href="#"></a>
 					</span>
 				</ul>
 		    <div id="builder_content" class="tab-content">
-			    <div id="coll_dslist" class="tab-pane fade show active" role="tabpanel" aria-labelledby="coll_dslist-tab">
+			    <div id="coll_dslist" class="tab-pane fade" role="tabpanel" aria-labelledby="coll_dslist-tab">
 		        <p class="mt-2">
 			        <span class="mr-2 smaller">
 			          <select id="select_ds" name="ds" class="custom-select-sm">
@@ -253,7 +261,7 @@
 			        {% endfor %}
 		        </div> <!-- #coll_dscards_create -->
 			    </div>
-			    <div id="coll_placelist" class="tab-pane fade" role="tabpanel" aria-labelledby="coll_placelist-tab">
+			    <div id="coll_placelist" class="tab-pane fade show active" role="tabpanel" aria-labelledby="coll_placelist-tab">
 				    {% if coll_places|length > 0 %}
 				      {% for p in coll_places %}
 					      <div class="col-place-card" data-id="{{ p.id }}">
@@ -317,7 +325,7 @@
 		      <h6>Annotations</h6>
 			    <div id="annotator" class="mb-1">
 				    {% if action == 'update' %}
-				    <p class="mt-3">Select a place record from list on the left to annotate it</p>
+				    <p class="mt-3">Select a place record from list on the left to annotate it {% fontawesome_icon 'edit' color='#336699' %}</p>
 				    {% endif %}
 			    </div>
 		    </div> <!-- coll_right_anno -->
@@ -354,18 +362,24 @@
 							// TODO: list in gui
 				      linky = response.result
 				      $("#linklist").append('<a href="'+linky.uri+
-						      '" target="_blank">'+linky.label+'</a> ('+linky.link_type+'); ')
+						      '" target="_blank">'+linky.label+'</a> ('+linky.link_icon+
+						      '<i title class="fa fa-minus-square-o"></i> ); ')
 				      $("#added_flash").fadeIn().delay(2000).fadeOut()
 				      console.log('added! gimmee feedback', response.result)
 			      }
 		      }
 			})
 			{#$("#addtocoll").hide()#}
+			$("#linkform_popup input").val('')
 			$("#linkform_popup").hide()
 	}
 
 	$("#a_addlink").click(function(){
     $("#linkform_popup").fadeIn()
+	})
+	$(".a_removelink").click(function(){
+    console.log('removing link',$(this).data('id'))
+		remove_collection_link()
 	})
 	$("#b_createlink").click(function(){
     create_collection_link()
@@ -375,7 +389,7 @@
       console.log('place record', $(this).data('pid'));
   })
 	$(".closer").click(function(){
-			$("#div_linkform").fadeOut()
+			$("#linkform_popup").fadeOut()
 	})
 	// fetch r/o place record to annotation panel
   $(".anno-place").click(function(){

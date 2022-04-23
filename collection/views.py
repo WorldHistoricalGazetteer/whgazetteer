@@ -17,11 +17,20 @@ from traces.forms import TraceAnnotationModelForm
 from traces.models import TraceAnnotation
 from itertools import chain
 
+def remove_link(request, *args, **kwargs):
+  if request.method == 'POST':
+    id_ = request.POST['id']
+    print('remove_link request', request.POST)
+    link = CollectionLink.objects.get(id=id_)
+    link.delete()
+    result="CollectionLink id #"+str(id_)+" removed"
+    return JsonResponse({'status': 'ok', 'result': result}, safe=False)
+
 """ create collection_link record """
 def create_link(request, *args, **kwargs):
   if request.method == 'POST':
     status, msg = ['','']
-    print('add_places request', request.POST)
+    print('create_link() request', request.POST)
     coll = Collection.objects.get(id=request.POST['collection'])
     uri = request.POST['uri']
     label = request.POST['label']
@@ -35,7 +44,9 @@ def create_link(request, *args, **kwargs):
           label = label,
           link_type = link_type
         )
-        result = {'uri': cl.uri, 'label': cl.label, 'link_type':cl.link_type}
+        result = {'uri': cl.uri, 'label': cl.label,
+                  'link_type':cl.link_type,
+                  'link_icon':cl.get_link_type_display()}
         status="ok"
       except:
         status = "failed"

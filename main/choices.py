@@ -86,6 +86,13 @@ FORMATS = [
     #('direct', 'direct to db import')
 ]
 
+LINKTYPES = [
+    # ('page','web page'),
+    ('page',"<i title class='fa fa-window-maximize'></i>"),
+    ('image',"<i title class='fa fa-file-image-o'></i>"),
+    ('pdf',"<i title class='fa fa-file-pdf-o'></i>")
+]
+
 LOG_CATEGORIES = [
     ('user','User'),
     ('dataset','Dataset'),

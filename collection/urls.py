@@ -16,6 +16,7 @@ urlpatterns = [
     path('add_places/', views.add_places, name="collection-add-places"),
     path('remove_places/', views.remove_places, name="collection-remove-places"),
     path('create_link/', views.create_link, name="collection-create-link"),
+    path('remove_link/', views.remove_link, name="collection-remove-link"),
 
     # DATASET collections (datasets only)
     path('create_ds/', views.DatasetCollectionCreateView.as_view(), name='ds-collection-create'),

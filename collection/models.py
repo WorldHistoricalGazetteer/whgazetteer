@@ -5,7 +5,7 @@ from django.contrib.postgres.fields import ArrayField #,JSONField
 from django.core.validators import URLValidator
 from django.urls import reverse
 from datasets.models import Dataset
-from main.choices import COLLECTIONCLASSES, COLLECTIONTYPES
+from main.choices import COLLECTIONCLASSES, LINKTYPES
 from places.models import Place
 from tinymce.models import HTMLField
 
@@ -96,7 +96,7 @@ class CollectionLink(models.Model):
     on_delete=models.CASCADE, related_name='links')
   label = models.CharField(null=True, blank=True, max_length=200)
   uri = models.TextField(validators=[URLValidator()])
-  link_type = models.CharField(default='page', max_length=10, choices=[('page','web page'), ('image','image'),('pdf','pdf')])
+  link_type = models.CharField(default='page', max_length=10, choices=LINKTYPES)
   license = models.CharField(null=True, blank=True, max_length=64)
 
   def __str__(self):
