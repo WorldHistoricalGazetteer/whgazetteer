@@ -24,7 +24,7 @@
   <script src="{% static 'js/leaflet-mapbox-gl.js' %}"></script>
 
   <style>
-    input {max-width: -moz-available;}
+		.red-head-anno {font-size: smaller; color: #993333;}
   </style>
 {% endblock %}
 
@@ -87,7 +87,11 @@
 			        </table>
 		        </div>
 		        <div class="col-sm-4">
+			        {% if object.image_file %}
 			        <img class="img-vertical" src="/media/{{ object.image_file.name }}" width="220px" />
+			        {% else %}
+			        <span><i>image here</i></span>
+			        {% endif %}
 		        </div>
 	        </div>
 	      </div>
@@ -239,6 +243,9 @@
   }
   
   $(function(){
+	  function toggleNames(){
+      $("#more_names").toggle()
+	  }
 		var token_whg = '{{ mbtokenwhg }}', token_mb = '{{ mbtokenmb }}';
     window.ds_list = JSON.parse(document.getElementById('ds_list').textContent);
     source_list = ds_list.map(function(d){ return d.label})
@@ -519,28 +526,6 @@
 
   }
 
-  // this gets all places for all named datasets - BAD!
-  {#function addSources(ds_list){#}
-  {#  all_feats = []#}
-  {#  source_list = []#}
-  {#  $(".toomany").html('please wait...rendering many polygons').show()#}
-  {#  startMapSpinner()#}
-  {#  ds_list.forEach(function(ds, i){#}
-  {#    $.getJSON('/datasets/'+ds.id+'/geojson')#}
-  {#      .done(function(dsdata) {#}
-	{#				console.log('dsdata', dsdata.collection)#}
-  {#        mappy.addSource(ds.label, {#}
-  {#          'type': 'geojson',#}
-  {#          'data': dsdata.collection#}
-  {#        });#}
-  {#        all_feats = all_feats.concat(dsdata.collection.features)#}
-  {#        renderSourceLayers(ds.label, i)#}
-  {#    })#}
-  {#    source_list.push(ds.label)#}
-  {#  })#}
-  {# } #}
-  {##}
-
   // TODO: better colors
   colors_point=['#ff9900','red','green','blue', 'purple',
     '#ff9900','red','green','blue', 'purple']
@@ -592,7 +577,8 @@
       obj[layer_list[l]] = mappy.getLayer(layer_list[l]).getPaintProperty('circle-color')
     }
   }
-  // hightlight selected in row  
+
+  // hightlight selected in row
   function highlightFeatureGL(pid, geom, coords, src){
     console.log('highlightFeatureGL()')
     console.log('pid, geom, coords', pid, geom, coords. src)
@@ -752,14 +738,20 @@
 
   function toggleLinks() {
       label = $("#togglelinks").text()
-		  {#console.log('fucking', label)#}
       $("#togglelinks").text(label == 'Show' ? 'Hide' : 'Show');
       $('#p_links').toggle()
   }
+  function toggleNames() {
+      label = $("#togglenames").text()
+      $("#togglenames").text(label == 'More' ? 'Less' : 'More');
+      $('#s_names').toggle()
+  }
+
   // single column
   function parsePlace(data) {
     window.featdata = data
-    
+    console.log('data', data)
+
     function onlyUnique(array) { 
       const map = new Map();
       const result = [];
@@ -775,66 +767,83 @@
       }
       return(result)
     }
-    <!--timespan_arr = []-->
-    //
-    // TITLE 
+
+    // TITLE
     descrip = '<p><span id="row_title" class="larger text-danger"><b>'+data.title+'</b></span>'
 
 	  //
 	  // TRACES
 		//
-	  if(JSON.parse(data.traces).length >0) {
-      trace = JSON.parse(data.traces).find(function(t){return t.fields.collection = "{{ object.id }}"})
-		  if(trace.fields.relation) {
-          descrip += "<p><b><u>Relation</u></b>: " + JSON.parse(trace.fields.relation)[0] + "</p>"
+	  descrip += '<div class="red-head-anno">ANNOTATION</div>'
+	  if(JSON.parse(data.traces).length > 0) {
+      trace = JSON.parse(data.traces).find(function (t) {
+        return t.fields.collection = "{{ object.id }}"
+      })
+      blank = trace.fields.relation == null && trace.fields.note == null && trace.fields.start == null
+      if (blank) {
+        descrip += '<i>none yet</i>'
+      } else {
+        if (trace.fields.relation) {
+            descrip += "<p><b><u>Relation</u></b>: " + JSON.parse(trace.fields.relation)[0] + "</p>"
+        }
+        if (trace.fields.note) {
+            descrip += '<p><b><u>Notes</u></b>: ' + trace.fields.note + '</p>'
+        }
+        if (trace.fields.start) {
+            descrip += '<p><b><u>Start/End</u></b>: ' + trace.fields.start + '/' + trace.fields.end + '</p>'
+        }
       }
-      const tracenote = trace.fields.note ?? '<i>none yet</i>'
-			descrip +='<p><b><u>Notes</u></b>: '+ tracenote +'</p>'
-			{#descrip +='<p><b><u>Notes</u></b>: '+ trace.fields.note || 'foo' +'</p>'#}
-		  if(trace.fields.start){
-				descrip +='<p><b><u>Start/End</u></b>: '+ trace.fields.start+'/'+trace.fields.end+'</p>'
-		  }
-      descrip += '<hr/>'
-	  }
-
+    }
+		descrip += '<hr/><div class="red-head-anno">PLACE RECORD</div>'
     //
     // NAME VARIANTS
-    descrip+='<p class="scroll65"><b>Name variants</b>: '
-    for (n in data.names) {
+	  // display first 5
+    descrip+='<p class="scroll100"><b><u>Name variants</u></b>: '
+    for (n in data.names.slice(0,5)) {
       let name = data.names[n]
-      descrip+= '<p>'+name.toponym !=''?name.toponym+'; ': ''
+      descrip+= name.toponym !=''?name.toponym+'; ': ''
     }
-
+    // if > 5 add link and toggle-able span
+    if(data.names.length > 5) {
+			descrip += ' <a href="#" onclick="toggleNames()" id="togglenames">More</a> <span id="s_names" class="mb-0 hidden">'
+	    for(n in data.names.slice(6,)){
+				let name = data.names[n]
+        descrip += name.toponym !=''?name.toponym+'; ': ''
+	    }
+      descrip += '</span>'
+    }
+    descrip += '</p>'
     //
     // TYPES
     // may include sourceLabel:"" **OR** sourceLabels[{"label":"","lang":""},...]
     // console.log('data.types',data.types)
     //{"label":"","identifier":"aat:___","sourceLabels":[{"label":" ","lang":"en"}]}
-    descrip+='</p><p><b>Place type</b>: '
-    typeids = ''
-    for (t in data.types) {
-      str = ''
-      var type = data.types[t]
-	    {#console.log('types', type)#}
-      if('sourceLabels' in type){
-        srclabels = type.sourceLabels
-        for(l in srclabels){
-          label = srclabels[l]['label']
-          str = label !='' ? label + '; ' : ''
-        }
-      } else if ('sourceLabel' in type) {
-        str = type.sourceLabel !='' ? type.sourceLabel + '; ' : ''
+	  if(data.types && data.types.length>0) {
+      descrip += '</p><p><b><u>Place type</u></b>: '
+      typeids = ''
+      for (t in data.types) {
+          str = ''
+          var type = data.types[t]
+          {#console.log('types', type)#}
+          if ('sourceLabels' in type) {
+              srclabels = type.sourceLabels
+              for (l in srclabels) {
+                  label = srclabels[l]['label']
+                  str = label != '' ? label + '; ' : ''
+              }
+          } else if ('sourceLabel' in type) {
+              str = type.sourceLabel != '' ? type.sourceLabel + '; ' : ''
+          }
+          {#if(type.label!=''){ str += url_exttype(type) + ' ' }#}
+          typeids += str
       }
-      {#if(type.label!=''){ str += url_exttype(type) + ' ' }#}
-      typeids+=str
+      descrip += typeids.replace(/(; $)/g, "") + '</p>'
     }
-    descrip += typeids.replace(/(; $)/g, "") +'</p>'
-
     //
     // MINMAX
     //
     if(data.minmax && data.minmax.length>0){
-      descrip += '<p><b>When</b>: earliest: '+data.minmax[0]+'; latest: '+data.minmax[1]
+      descrip += '<p><b><u>When</u></b>: earliest: '+data.minmax[0]+'; latest: '+data.minmax[1]
     }
 
     //
@@ -842,7 +851,7 @@
     //
 	  if (data.links.length > 0) {
 	    {#descrip += '<p class="mb-0"><b>External links ('+data.links.length+') </b><a href="javascript:{toggle_links()}">show</a> '#}
-	    descrip += '<p class="mb-0"><b>External links ('+data.links.length+') </b><a href="#" onclick="toggleLinks()" id="togglelinks">Show</a>'
+	    descrip += '<p class="mb-0"><b><u>External links</u> ('+data.links.length+') </b><a href="#" onclick="toggleLinks()" id="togglelinks">Show</a>'
 		  descrip += '<br/><span id="p_links" class="hidden">'
 	    close_count = added_count = related_count = 0
 	    html = ''
@@ -857,20 +866,17 @@
 
     //
     // RELATED
-    <!--right=''-->
     if (data.related.length > 0) {
-      parent='<p class="mb-0"><b>Parent(s)</b>: '; 
-      related='<p class="mb-0"><b>Related</b>: ';
+      parent='<p class="mb-0"><b><u>Parent(s)</u></b>: ';
+      related='<p class="mb-0"><b><u>Related</u></b>: ';
       for (r in data.related){
         rel = data.related[r]
-        <!--console.log('rel',rel)-->
         if (rel.relation_type == 'gvp:broaderPartitive'){
           parent += '<span class="small h1em">'+rel.label
           parent += 'when' in rel && !('timespans' in rel.when) ? 
             ', '+rel.when.start.in+'-'+rel.when.end.in : 
             'when' in rel && ('timespans' in rel.when) ? ', '+
               minmaxer(rel.when.timespans) : ''
-              <!--rel.when.timespans : ''-->
           parent += '</span>; '
         } 
         else {
@@ -886,7 +892,7 @@
     // TODO: link description to identifier URI if present
     if (data.descriptions.length > 0) {
       val = data.descriptions[0]['value'].substring(0,300)
-      descrip+='<p><b>Description</b>: '+(val.startsWith('http')?'<a href="'+val+'" target="_blank">Link</a>':val)
+      descrip+='<p><b><u>Description</u></b>: '+(val.startsWith('http')?'<a href="'+val+'" target="_blank">Link</a>':val)
         +' ... </p>'
     }
     //
@@ -895,7 +901,7 @@
     <!--if (data.ccodes.length > 0) {-->
     if (!!data.countries) {
       <!--console.log('data.countries',data.countries)-->
-      descrip+='<p><b>Modern country bounds</b>: '+ data.countries.join(', ')+'</p>'
+      descrip+='<p><b><u>Modern country</u></b>: '+ data.countries.join(', ')+'</p>'
     }
     descrip += '</div>'
     return descrip
