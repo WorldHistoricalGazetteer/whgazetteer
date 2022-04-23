@@ -246,11 +246,11 @@
     // celery task for downloads; helper functions above
     $(".a-dl").click(function(e){
       e.preventDefault()
-      <!--startDownloadSpinner()-->
+      // startDownloadSpinner()
       cell = $(this).closest('tr').find('td').eq(2)
       format = cell.find('input[name="format"]:checked').val()
       dsid = $(this).data('id')
-      <!--console.log('sending to downloader()', dsid, format)-->
+      // console.log('sending to downloader()', dsid, format)
       urly='/datasets/dlcelery/'
       $.ajax({
           type: 'POST',
@@ -262,8 +262,6 @@
           datatype:'json',
           success:function(response){
             startDownloadSpinner()
-            <!--console.log('got task_id',response)-->
-            <!--$("#tid").html(response.task_id)-->
             task_id = response.task_id
             var progressUrl = "/celery-progress/"+task_id+"/";
             CeleryProgressBar.initProgressBar(progressUrl,

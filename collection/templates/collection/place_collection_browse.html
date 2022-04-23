@@ -8,6 +8,7 @@
 {% block extra_head %}
   {% leaflet_js %}
   {% leaflet_css %}
+	<script src="{% static 'js/clipboard.min.js' %}"></script>
   <script src="{% static 'js/aliases.js' %}"></script>
   <!--<script src="{ static 'js/leaflet-heat.js' %}"></script>-->
   <script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>
@@ -17,6 +18,8 @@
   <script type="text/javascript" src="https://cdn.datatables.net/v/dt/dt-1.10.24/b-1.7.0/b-colvis-1.7.0/b-html5-1.7.0/cr-1.5.3/fh-3.1.8/sc-2.0.3/sp-1.2.2/sl-1.3.3/datatables.min.js"></script>
 
   <script src="https://unpkg.com/maplibre-gl@1.15.2/dist/maplibre-gl.js"></script>
+	<script src="{% static 'celery_progress/celery_progress.js' %}"></script>
+
   <link href="https://unpkg.com/maplibre-gl@1.15.2/dist/maplibre-gl.css" rel="stylesheet" />
 
   <!--<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.css' rel='stylesheet' />-->
@@ -37,6 +40,8 @@
 			<span class="half ital text-secondary"> a place collection by {{ object.owner.first_name }} {{ object.owner.last_name }}</span>
 		{% if user.id == object.owner.id or user.is_superuser or user in whgteam %}
 			<span class="float-right smallish mr-2 pt-2">
+				{% fontawesome_icon 'download' color='#336699' %}
+				<a href="" id="a_download_modal" class="mr-2" data-collid = {{ object.id }} data-toggle="modal" data-target="#downloadModal" title="download options"> download options</a>
 				<a href="{% url 'collection:place-collection-update' object.id %}" >edit
 					{% fontawesome_icon 'gear' color='#336699' %}</a>
 			</span>
@@ -131,28 +136,118 @@
 	    </div>
 	  </div> <!-- ext_site -->
 </div> <!-- .#collection_content -->
-<div class="modal fade" id="" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="updateModalLabel">
-          </h5>
+
+<div id="downloadModal" class="modal fade" tabindex="-1" aria-labelledby="downloadModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content modal-85">
+      <div class="modal-header">
+        <h5 class="modal-title" id="downloadModalLabel">{% fontawesome_icon 'download' color='#336699' %} Download options for the <span class="text-danger">{{ object.title }}</span> collection</h5>
+      </div>
+      <div class="modal-body container">
+        <div class="dl-blurb">
+          <p class="mb-1">Data uploaded as Linked Places format (LPF) are available only in that format. Data uploaded as LP-TSV (delimited text files or spreadsheets) can be downloaded as either <sr>LPF</sr> or <sr>LP-TSV</sr>.
+          <!--Downloads totaling more than {n} records will be queued, and a notification email sent when completed.-->
+          </p>
+          <div id="dl_licensing"><p><sr>IMPORTANT LICENSING INFORMATION</sr>: Data made public in WHG by its creators are available under the Creative Commons Attribution 4.0 International (CC BY 4.0) License. They can be freely shared, re-used, and adapted, but "you <b>must</b> give appropriate credit, provide a link to the license, and indicate if changes were made." Please see <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">CC-BY-4.0 details</a>; and <a href="{% url 'licensing' %}"target="_blank">WHG policy.</a> Citations are provided below. <b>By clicking download on this form, you are agreeing to those terms</b>.
+          </p></div>
         </div>
-        <div class="modal-body">
-        </div> <!-- .modal-body -->      
-        <div class="modal-footer">
-          <div id="buttons_pre">
-            <button id="btn_cancel" type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Cancel</button>
-            <button id="btn_update" type="button" data-dsid={{ds.id}} class="btn btn-primary btn-sm hidden">
-              Proceed</button>
+        <div class="row">
+          <div class="col-sm-8 pr-0 scroll-div">
+            <p class="modal-col-head p-1 mb-2">Datasets <small>({{ object.rowcount }} total rows)</small></p>
+            <table class="dl-table small">
+            <thead><tr><th>Title</th><th>Rows</th><th>Formats</th><th></th></tr></thead>
+            <tbody>
+            {% for d in ds_list %}
+              <tr class="align-top">
+              <td>{{ d.title }}&nbsp;
+                <a id="cite_{{d.id}}" class="clippy" aria-label="{% if d.citation %}{{ d.citation }}{% else %}{{d.title}}. [Data file, last modified {{ d.last_modified_text}}]. Retrieved from http://whgazetteer.org/datasets/{{d.id}}, {% now 'd M Y' %}{% endif %}" rel="tooltip" title="copy to clipboard">{% fontawesome_icon 'clipboard' color='#336699' %}</a><br/>
+                <span class="ml-2 small" style="disply:block"><i>est. download time: {{d.dl_est}}</i></span>
+              </td>
+              <td>{{d.numrows}}</td>
+              <td> <!-- always offer lpf -->
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input hover" type="radio" name="format" value="lpf">
+                  <label class="form-check-label" for="r_lpf">LPF</label>
+                </div>
+                {% if d.format == 'delimited' %}
+                <div class="form-check form-check-inline ml-1">
+                  <input class="form-check-input hover" type="radio" name="format" value="tsv">
+                  <label class="form-check-label" for="r_lp-tsv">LP-TSV</label>
+                </div>
+                {% endif %}
+              </td>
+              <td class="px-1">
+                <a class="a-dl" data-id={{d.id}}>
+                <i class="fa fa-download" title="Download"></i></a>
+              </td>
+              </tr>
+            {% endfor %}
+            </tbody>
+            </table>
+            <div id="celery-result"></div>
           </div>
-          <button id="btn_done" type="button" class="btn btn-secondary btn-sm hidden" data-dismiss="modal">Done</button>
+          <div class="col-sm-4">
+            <p class="modal-col-head p-1 mb-2">File Formats</p>
+            <div class="p-1 small">
+            <p class="my-1"><sr>Linked Places format (LPF)</sr> is JSON-based, valid GeoJSON and valid JSON-LD (rdf) with temporal extensions</p>
+            <p class="my-1"><sr>LP-TSV downloads</sr> are tab-separated text files.</p>
+            </div>
+            <div id="progress-bar-message" class="hidden">Waiting for progress to start...</div>
+            <span id='progress-bar' class='progress-bar' style="background-color: #68a9ef; width: 0%; line-height:.5rem;">&nbsp;</span>
+          </div>
         </div>
+      <!--</form>-->
+      </div> <!-- .modal-body -->
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-secondary btn-cancel" data-bs-dismiss="modal">Close</button>
       </div>
     </div>
   </div>
+{# not used?? #}
+{#<div class="modal fade" id="" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">#}
+{#  <div class="modal-dialog" role="document">#}
+{#    <div class="modal-content">#}
+{#      <div class="modal-header">#}
+{#        <h5 class="modal-title" id="updateModalLabel">#}
+{#        </h5>#}
+{#      </div>#}
+{#      <div class="modal-body">#}
+{#      </div> <!-- .modal-body -->#}
+{#      <div class="modal-footer">#}
+{#        <div id="buttons_pre">#}
+{#          <button id="btn_cancel" type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Cancel</button>#}
+{#          <button id="btn_update" type="button" data-dsid={{ds.id}} class="btn btn-primary btn-sm hidden">#}
+{#            Proceed</button>#}
+{#        </div>#}
+{#        <button id="btn_done" type="button" class="btn btn-secondary btn-sm hidden" data-dismiss="modal">Done</button>#}
+{#      </div>#}
+{#    </div>#}
+{#  </div>#}
+{#</div>#}
+
+
+</div>
+
 
 <script type="text/javascript">
+
+  var clip_cite = new ClipboardJS('.clippy', {
+    text: function(trigger) {
+      return trigger.getAttribute('aria-label');
+    },
+    container: document.getElementById('downloadModal')
+  });
+
+  clip_cite.on('success', function(e) {
+    eobj=e
+    el=$("#"+e.trigger.getAttribute("id"))
+    console.log('el',el)
+    e.clearSelection();
+    el.tooltip('hide')
+      .attr('data-original-title', 'copied!')
+      .tooltip('show');
+  });
+
   function filterColumn (i, v) {
     // clear then search
     console.log('i,v', i,v)
@@ -241,8 +336,71 @@
     select +='</select></label>'
     return select
   }
-  
+  function startDownloadSpinner(){
+    window.spinner_dl = new Spin.Spinner().spin();
+    <!--$("#coll_dslist").append(spinner_dl.el);   -->
+    $(".dl-table").append(spinner_dl.el);
+  }
+
   $(function(){
+
+    $(".btn-cancel").click(function(){$("#downloadModal").modal('hide') })
+		  
+    clearEl = function(el){
+      $("#progress-bar").fadeOut()
+      el.html('')
+    }
+
+    dater = function(){
+      const date = new Date(Date.now());
+      return date.toISOString().substring(0,10)
+    }
+
+		// called from a-dl click()
+    function customResult(resultElement, result) {
+      console.log('celery result',result)
+      console.log('celery resultElement',resultElement)
+      spinner_dl.stop()
+      fn = result.filename
+      link = '[ <span class="dl-save"><a href="/'+fn+'" title="downloaded: '+dater()+
+                '" download>save</a></span> ]'
+      $( resultElement ).append(
+        $('<p>').html(link)
+      );
+      $(".dl-save a")[0].click()
+      setTimeout(clearEl($("#celery-result")), 1000)
+    }
+
+    // celery task for downloads; helper functions above
+    $(".a-dl").click(function(e){
+      e.preventDefault()
+      // startDownloadSpinner()
+      cell = $(this).closest('tr').find('td').eq(2)
+      format = cell.find('input[name="format"]:checked').val()
+      dsid = $(this).data('id')
+      // console.log('sending to downloader()', dsid, format)
+      urly='/datasets/dlcelery/'
+      $.ajax({
+          type: 'POST',
+          url: urly,
+          data: {
+            "format":format,
+            "dsid":dsid,
+            "csrfmiddlewaretoken":"{{ csrf_token }}"},
+          datatype:'json',
+          success:function(response){
+            startDownloadSpinner()
+            task_id = response.task_id
+            var progressUrl = "/celery-progress/"+task_id+"/";
+            CeleryProgressBar.initProgressBar(progressUrl,
+              { pollingInterval: 500,
+                onResult: customResult,
+              }
+            )
+          }
+        })
+    })
+
 	  function toggleNames(){
       $("#more_names").toggle()
 	  }
