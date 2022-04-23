@@ -17,14 +17,13 @@ from traces.forms import TraceAnnotationModelForm
 from traces.models import TraceAnnotation
 from itertools import chain
 
+# removes dataset from collection, refreshes page
 def remove_link(request, *args, **kwargs):
-  if request.method == 'POST':
-    id_ = request.POST['id']
-    print('remove_link request', request.POST)
-    link = CollectionLink.objects.get(id=id_)
-    link.delete()
-    result="CollectionLink id #"+str(id_)+" removed"
-    return JsonResponse({'status': 'ok', 'result': result}, safe=False)
+  #print('kwargs', kwargs)
+  link = CollectionLink.objects.get(id=kwargs['id'])
+  print('remove_link()', link)
+  link.delete()
+  return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 """ create collection_link record """
 def create_link(request, *args, **kwargs):

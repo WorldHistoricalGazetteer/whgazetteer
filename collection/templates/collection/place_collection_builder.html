@@ -23,8 +23,8 @@
 	    padding: 15px;
 	    height: 150px;
 	    width: 250px;
-	    bottom: 100px;
-	    left: 70px;
+	    bottom: 50px;
+	    left: 110px;
 	    z-index: 1000;
 	    display:none;
     }
@@ -61,6 +61,9 @@
 	    height: 92%;
 	    {#max-height: 92%;#}
     }
+    {##btn_coll_submit {#}
+	  {#  padding: unset;#}
+    {#}#}
   </style>
 {% endblock %}
 
@@ -78,7 +81,7 @@
 				    view&nbsp;&nbsp;{% fontawesome_icon 'eye' color='#336699' %}</a>&nbsp;
 			    <a href="{% url 'collection:collection-delete' object.id %}"
 		      title="Delete collection" rel="tooltip" style="margin-top:-2px;">
-			    {% fontawesome_icon 'trash' color='#336699' %}</a>
+			    {% fontawesome_icon 'trash' color='crimson' %}</a>
 				</span>
 	    {% else %}
 		    Place Collection Builder: {<span class="red-head">new</span>}
@@ -142,7 +145,7 @@
 	      {% if action == 'update' %}
 				<div>Links
 					{% if links|length < 3 %}
-						<a href="#" id="a_addlink">
+						<a href="#" id="a_linkpopup">
 							<button type="button" style="border-width: thin;">Add</button>
 {#							<span class="btn btn-sm btn-secondary">Add</span>#}
 						</a>
@@ -151,7 +154,8 @@
 					{% if links|length > 0 %}
 						{% for l in links %}
 							{{ l.get_link_type_display|safe }} <a href="{{ l.uri }}" target="_blank">{{ l.label }}</a>
-								[ <a href="#" class="a_removelink" data-id={{ l.id }}><i>remove</i></a> ]<br/>
+							{# {% url 'collection:remove-link' link_id=l.id %} #}
+								[ <a href="{% url 'collection:remove-link' id=l.id %}" class="a_removelink"><i>remove</i></a> ]<br/>
 						{% endfor %}
 					{% endif %}
 					</span>
@@ -185,6 +189,7 @@
 	      <div id="d_buttons" class="" style="">
           <span class="float-right">
 		      <a href="/mycollections">Cancel</a>
+          {# TODO: convert to bootstrap buttons for styling #}
           {% if action == create %}
 	          <input id="btn_coll_submit" class="btn-sm btn-primary mt-2 ml-2" type="submit" value="Save" />
           {% else %}
@@ -195,7 +200,7 @@
 	      </form>
 		    {# 1 or more links #}
 	      {% if action == "update" %}
-		      <div id="linkform_popup">
+		      <div id="linkform_popup" class="pop">
 		        <form action="#" method="post">
 		        {% csrf_token %}
 		        <input type="hidden" name="collection" value="{{ object.id }}">
@@ -320,8 +325,9 @@
 		      </ul>
 		      <p>[<i>figure</i>]</p>
 	      </div>
-{#				{% if coll_places|length > 0 %}#}
-		    <div id="coll_right_anno" class="hidden">
+				{% if coll_places|length > 0 %}
+		    <div id="coll_right_anno" >
+{#		    <div id="coll_right_anno" class="hidden">#}
 		      <h6>Annotations</h6>
 			    <div id="annotator" class="mb-1">
 				    {% if action == 'update' %}
@@ -329,7 +335,7 @@
 				    {% endif %}
 			    </div>
 		    </div> <!-- coll_right_anno -->
-{#	      {% endif %}#}
+	      {% endif %}
 	    </div> <!-- # coll_right -->
 	    {% endif %}
     </div> <!-- d-flex -->
@@ -339,6 +345,7 @@
 </div> <!-- container -->
 
 <script type="text/javascript">
+
 	function create_collection_link(){
       var formData = new FormData()
 			formData.append('collection', '{{ object.id }}')
@@ -374,22 +381,21 @@
 			$("#linkform_popup").hide()
 	}
 
-	$("#a_addlink").click(function(){
+	$("#a_linkpopup").click(function(){
     $("#linkform_popup").fadeIn()
 	})
-	$(".a_removelink").click(function(){
-    console.log('removing link',$(this).data('id'))
-		remove_collection_link()
-	})
+
 	$("#b_createlink").click(function(){
     create_collection_link()
 	})
+
 	// do something with place name (modal popup?)
 	$(".coll-place").click(function() {
       console.log('place record', $(this).data('pid'));
   })
 	$(".closer").click(function(){
-			$("#linkform_popup").fadeOut()
+			{#$("#linkform_popup").fadeOut()#}
+			$(".pop").fadeOut()
 	})
 	// fetch r/o place record to annotation panel
   $(".anno-place").click(function(){
@@ -685,9 +691,10 @@
         formContainer.innerHTML = data.form;
       });
   }
+
   $(function(){
 	  window.remove_these = []
-
+		$("[rel='tooltip']").tooltip();
     $(".nav-link").click(function(){
 			  var tab = $(this).data('id')
 			  console.log(tab)
@@ -734,13 +741,6 @@
       hide: {effect: "fade",duration: 400 }
     });
   })
-
-  // at least two datasets selected?
-  {#$("#btn_coll_submit").click(function(e){#}
-  {#  if('{{action}}' == 'create' && dslist.length < 2) {#}
-  {#    e.preventDefault()#}
-  {#    $("#msg").html('<h6>Collections must contain at least 2 datasets!</h6>').addClass('strong-red').show()#}
-  {#  }#}
 
 	$("#select_ds").change(function(){
     console.log('selected from list', $(this).val())
