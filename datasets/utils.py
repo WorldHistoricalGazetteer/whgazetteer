@@ -41,24 +41,27 @@ def downloadLP7(request):
   response['Content-Disposition'] = 'attachment;filename="lp7_100.tsv"'
   return response
 
-# initiate celery tasks
+# initiate celery tasks for dataset downloads
+# TODO: add download Collection capability Apr 2022
+
 def downloader(request, *args, **kwargs):
   user = request.user
   print('request.user', request.user)
-  print('kwargs', kwargs)
+  print('downloader() request.POST', request.POST)
+  dsid = request.POST.get('dsid') or None
+  collid = request.POST.get('collid') or None
   from datasets.tasks import make_download
   # POST *should* be the only case...
   if request.method == 'POST' and request.is_ajax:
     print('ajax == True')
-    print('request.POST (ajax)', request.POST)
-    dsid=request.POST['dsid']
     format=request.POST['format']
     download_task = make_download.delay(
       {"username":user.username, "userid":user.id},
       dsid=dsid,
+      collid=collid,
       format=format,
     )
-    print('handed off to Celery', download_task.task_id)
+    print('task to Celery', download_task.task_id)
     # return task_id
     obj={'task_id':download_task.task_id}
     print('obj from downloader()', obj)

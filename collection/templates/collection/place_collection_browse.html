@@ -153,7 +153,10 @@
         </div>
         <div class="row">
           <div class="col-sm-8 pr-0 scroll-div">
-            <p class="modal-col-head p-1 mb-2">Datasets <small>({{ object.rowcount }} total rows)</small></p>
+            <p class="modal-col-head p-1 mb-2">Collection <small>({{ object.places_all.count }} total rows)</small></p>
+            <p><a href="#" class="a-dl" data-collid={{ object.id }}>
+	            <i class="fa fa-download" title="Download"></i> download entire collection</a></p>
+            <p class="modal-col-head p-1 mb-2">By Dataset<small></small></p>
             <table class="dl-table small">
             <thead><tr><th>Title</th><th>Rows</th><th>Formats</th><th></th></tr></thead>
             <tbody>
@@ -169,21 +172,23 @@
                   <input class="form-check-input hover" type="radio" name="format" value="lpf">
                   <label class="form-check-label" for="r_lpf">LPF</label>
                 </div>
-                {% if d.format == 'delimited' %}
-                <div class="form-check form-check-inline ml-1">
-                  <input class="form-check-input hover" type="radio" name="format" value="tsv">
-                  <label class="form-check-label" for="r_lp-tsv">LP-TSV</label>
-                </div>
-                {% endif %}
+{#                {% if d.format == 'delimited' %}#}
+{#                <div class="form-check form-check-inline ml-1">#}
+{#                  <input class="form-check-input hover" type="radio" name="format" value="tsv">#}
+{#                  <label class="form-check-label" for="r_lp-tsv">LP-TSV</label>#}
+{#                </div>#}
+{#                {% endif %}#}
               </td>
               <td class="px-1">
-                <a class="a-dl" data-id={{d.id}}>
-                <i class="fa fa-download" title="Download"></i></a>
+                <a class="a-dl" data-id={{d.id}} data-collid={{ object.id }}>
+                  <i class="fa fa-download" title="Download"></i>
+                </a>
               </td>
               </tr>
             {% endfor %}
             </tbody>
             </table>
+            <div id=""></div>
             <div id="celery-result"></div>
           </div>
           <div class="col-sm-4">
@@ -203,29 +208,6 @@
       </div>
     </div>
   </div>
-{# not used?? #}
-{#<div class="modal fade" id="" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">#}
-{#  <div class="modal-dialog" role="document">#}
-{#    <div class="modal-content">#}
-{#      <div class="modal-header">#}
-{#        <h5 class="modal-title" id="updateModalLabel">#}
-{#        </h5>#}
-{#      </div>#}
-{#      <div class="modal-body">#}
-{#      </div> <!-- .modal-body -->#}
-{#      <div class="modal-footer">#}
-{#        <div id="buttons_pre">#}
-{#          <button id="btn_cancel" type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Cancel</button>#}
-{#          <button id="btn_update" type="button" data-dsid={{ds.id}} class="btn btn-primary btn-sm hidden">#}
-{#            Proceed</button>#}
-{#        </div>#}
-{#        <button id="btn_done" type="button" class="btn btn-secondary btn-sm hidden" data-dismiss="modal">Done</button>#}
-{#      </div>#}
-{#    </div>#}
-{#  </div>#}
-{#</div>#}
-
-
 </div>
 
 
@@ -345,7 +327,7 @@
   $(function(){
 
     $(".btn-cancel").click(function(){$("#downloadModal").modal('hide') })
-		  
+
     clearEl = function(el){
       $("#progress-bar").fadeOut()
       el.html('')
@@ -372,39 +354,41 @@
     }
 
     // celery task for downloads; helper functions above
-    $(".a-dl").click(function(e){
-      e.preventDefault()
-      // startDownloadSpinner()
-      cell = $(this).closest('tr').find('td').eq(2)
-      format = cell.find('input[name="format"]:checked').val()
-      dsid = $(this).data('id')
-      // console.log('sending to downloader()', dsid, format)
-      urly='/datasets/dlcelery/'
-      $.ajax({
-          type: 'POST',
-          url: urly,
-          data: {
-            "format":format,
-            "dsid":dsid,
-            "csrfmiddlewaretoken":"{{ csrf_token }}"},
-          datatype:'json',
-          success:function(response){
-            startDownloadSpinner()
-            task_id = response.task_id
-            var progressUrl = "/celery-progress/"+task_id+"/";
-            CeleryProgressBar.initProgressBar(progressUrl,
-              { pollingInterval: 500,
-                onResult: customResult,
-              }
-            )
-          }
-        })
-    })
-
+	  // TODO: tune this for place collections
 	  function toggleNames(){
       $("#more_names").toggle()
 	  }
-		var token_whg = '{{ mbtokenwhg }}', token_mb = '{{ mbtokenmb }}';
+
+      $(".a-dl").click(function(e){
+          e.preventDefault()
+          // startDownloadSpinner()
+          dsid = $(this).data('id')
+          collid = $(this).data('collid')
+          console.log('collid, dsid', collid, dsid)
+          urly='/datasets/dlcelery/'
+          $.ajax({
+              type: 'POST',
+              url: urly,
+              data: {
+                  "format":'lpf',
+                  "dsid":dsid,
+                  "collid":collid,
+                  "csrfmiddlewaretoken":"{{ csrf_token }}"},
+              datatype:'json',
+              success:function(response){
+                  startDownloadSpinner()
+                  task_id = response.task_id
+                  var progressUrl = "/celery-progress/"+task_id+"/";
+                  CeleryProgressBar.initProgressBar(progressUrl,
+                      { pollingInterval: 500,
+                          onResult: customResult,
+                      }
+                  )
+              }
+          })
+      })
+
+    var token_whg = '{{ mbtokenwhg }}', token_mb = '{{ mbtokenmb }}';
     window.ds_list = JSON.parse(document.getElementById('ds_list').textContent);
     source_list = ds_list.map(function(d){ return d.label})
     window.layer_list = getLoadedLayers()
