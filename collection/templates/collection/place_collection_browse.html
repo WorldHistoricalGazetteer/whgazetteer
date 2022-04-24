@@ -28,6 +28,13 @@
 
   <style>
 		.red-head-anno {font-size: smaller; color: #993333;}
+		{#.img-responsive {#}
+		{#	max-width: 100%;#}
+		{#	height: auto;#}
+		{#  position:relative;#}
+		{#  top: 50%;#}
+		{#  transform: translateY(-50%);#}
+		{# }#}
   </style>
 {% endblock %}
 
@@ -37,7 +44,7 @@
 <div id="collection_content" class="container mt-1 px-1">
 	<div id="collection_title">
 		<h3><sr>{{object.title}}</sr>
-			<span class="half ital text-secondary"> a place collection by {{ object.owner.first_name }} {{ object.owner.last_name }}</span>
+			<span class="half ital text-secondary"> a place collection by {{ object.owner.first_name }} {{ object.owner.last_name }} <span class="badge badge-warning ml-3">BETA</span></span>
 		{% if user.id == object.owner.id or user.is_superuser or user in whgteam %}
 			<span class="float-right smallish mr-2 pt-2">
 				{% fontawesome_icon 'download' color='#336699' %}
@@ -93,7 +100,8 @@
 		        </div>
 		        <div class="col-sm-4">
 			        {% if object.image_file %}
-			        <img class="img-vertical" src="/media/{{ object.image_file.name }}" width="220px" />
+			        <img class="img-responsive" src="/media/{{ object.image_file.name }}" width="220px" />
+{#			        <img class="img-vertical" src="/media/{{ object.image_file.name }}" width="220px" />#}
 			        {% else %}
 			        <span><i>image here</i></span>
 			        {% endif %}
@@ -932,7 +940,8 @@
             descrip += '<p><b><u>Notes</u></b>: ' + trace.fields.note + '</p>'
         }
         if (trace.fields.start) {
-            descrip += '<p><b><u>Start/End</u></b>: ' + trace.fields.start + '/' + trace.fields.end + '</p>'
+            descrip += '<p><b><u>Start/End</u></b>: ' + (trace.fields.start ?? "") + '/' +
+                (trace.fields.end ?? '') + '</p>'
         }
       }
     }

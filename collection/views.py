@@ -71,7 +71,8 @@ def add_places(request, *args, **kwargs):
           collection = coll,
           motivation = 'locating',
           owner = request.user,
-          anno_type = 'place'
+          anno_type = 'place',
+          saved = 0
         )
         coll.places.add(p)
         status = 'ok'
@@ -269,7 +270,7 @@ class PlaceCollectionCreateView(LoginRequiredMixin, CreateView):
 class PlaceCollectionUpdateView(UpdateView):
   form_class = CollectionModelForm
   template_name = 'collection/place_collection_builder.html'
-  success_url = '/mycollections'
+  # success_url = '/mycollections'
 
   def get_object(self):
     id_ = self.kwargs.get("id")
@@ -277,7 +278,7 @@ class PlaceCollectionUpdateView(UpdateView):
 
   def get_success_url(self):
     id_ = self.kwargs.get("id")
-    return '/collections/'+str(id_)+'/browse_pl'
+    return '/collections/'+str(id_)+'/update_pl'
 
   def form_valid(self, form):
     print('referrer', self.request.META.get('HTTP_REFERER'))
@@ -322,10 +323,15 @@ class PlaceCollectionUpdateView(UpdateView):
 
     # test: send single anno form to template
     context['form_anno'] = form_anno
-
-    # COLL: merged places
-    # context['coll_places'] = coll_places
     context['coll_places'] = self.object.places_all
+
+    # all traces for all places in collection
+    # tlist = [t for sublist in [p.traces for p in self.places_all] for t in sublist]
+    c = Collection.objects.get(id=109)
+    p_all = c.places_all
+    clist = [t.collection_id for sublist in [p.traces for p in p_all] for t in sublist]
+    pgood = p_all.filter(id__in=clist)
+
 
     context['created'] = self.object.created.strftime("%Y-%m-%d")
     context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB

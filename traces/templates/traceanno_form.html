@@ -1,12 +1,17 @@
 <!-- context keys: place, collection -->
-<div style="background-color: aliceblue">
-	<p><rb>Title</rb>: {{ place.title }}</p>
-	<p><rb>Variants</rb>: {% for n in place.names.all %}{{ n }}; {% endfor %}</p>
+<div style="background-color: #fafafa; padding:2px;">
+	<p><sr>Title</sr>: {{ place.title }}</p>
+	<p><sr>Variants</sr>: {% for n in place.names.all %}
+		{% if n.toponym != place.title %}
+		{{ n.toponym }};
+		{% endif %}
+	{% endfor %}</p>
 </div>
 {#<p>existing? {{ existing }}</p>#}
 <hr/>
 <!-- submits to traces.views.annotate() -->
 <form id="anno_form" action="{% url 'collection:collection-annotate' collection.id %}" method="POST">
+{#<form id="anno_form" action="" method="POST">#}
 	<input type="hidden" name="owner" value="{{ collection.owner_id }}"/>
 	<input type="hidden" name="place" value="{{ place.id }}"/>
 	<input type="hidden" name="collection" value="{{ collection.id }}"/>
@@ -29,6 +34,8 @@
 		<tr><td>Start/End:</td><td>{{ form.start }} / {{ form.end }}</td></tr>
 		<tr><td class="align-top">Notes:</td><td>{{ form.note }}</td></tr>
 	</table>
-	<button type="submit" class="button button-sm">Save</button>
+{#	<button id="b_anno_submit" type="button" onclick=saveAnno() class="button button-sm">Save</button>#}
+	<button id="b_anno_submit" type="submit" class="button button-sm">Save</button>
 </form>
+
 {#</html>#}

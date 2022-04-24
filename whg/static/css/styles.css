@@ -70,6 +70,13 @@ label {vertical-align:top;}
   top: 50%;
   transform: translateY(-50%);
 }
+.img-responsive {
+  max-width: 100%;
+  height: auto;
+  position:relative;
+  top: 50%;
+  transform: translateY(-50%);
+}
 .ital {font-style: italic;}
 .larger {font-size: larger;}
 /*.more {display: none;}*/

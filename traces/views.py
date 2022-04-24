@@ -22,21 +22,27 @@ from django.views.decorators.csrf import csrf_exempt
 """ BETA: annotate collection with place """
 # def annotate(request, cid, pid):
 def annotate(request, *args, **kwargs):
-  # print('request.POST',request.POST.items())
+  print('request.POST',request.POST)
   print('traces.annotate() kwargs',kwargs)
   cid = kwargs.get('id')
   pid = request.POST.get('place')
   anno_id = request.POST.get('anno_id')
+  saved = request.POST.get('saved')
   coll = get_object_or_404(Collection, id=cid)
   # for k, v in request.POST.items():
   #   print('annotate POST.item', k, v)
+  context = {}
 
   if anno_id:
     # form with instance
+    print('has anno_id')
     traceanno = TraceAnnotation.objects.get(id=anno_id)
     form = TraceAnnotationModelForm(request.POST, instance = traceanno)
+    traceanno.saved = True
+    traceanno.save()
     # form = TraceAnnotationModelForm(request.POST)
   else:
+    print('no anno_id')
     form = TraceAnnotationModelForm(request.POST)
   # print('form.cleaned_fields', form.cleaned_fields)
 
@@ -47,16 +53,7 @@ def annotate(request, *args, **kwargs):
     messages.error(request, "Error")
     print('trace form not valid', form.errors)
 
-
-  # if form.is_valid():
-  #   print('annotate() form valid')
-  #   # pid = request.POST.get('place')
-  #   form.save()
-  #   # form.save(commit=False)
-  #   context = {'id':cid, 'pid':pid}
-  # else:
-
-
+  # return JsonResponse({'status': 'ok', 'msg': msg}, safe=False)
   return redirect('/collections/'+str(cid)+'/update_pl')
 
 @csrf_exempt

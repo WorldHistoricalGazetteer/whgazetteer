@@ -28,8 +28,15 @@ class TraceAnnotation(models.Model):
     owner = models.ForeignKey(User, related_name='annotations', on_delete=models.CASCADE)
     created = models.DateTimeField(auto_now_add=True, null=False, blank=True)
 
+    # kluge-ness
+    saved = models.BooleanField(default=False)
+
     # standard 'when' from LP format; 20220416: not in use
     when = JSONField(blank=True, null=True) # {timespans[[],...], periods[{name, uri}], label, duration}
+
+    @property
+    def blank(self):
+        return not self.relation and not self.note and not self.start and not self.end
 
     def __str__(self):
         return '%s:%d' % (self.collection.id, self.place.id)

@@ -36,22 +36,27 @@
     }
     #coll_place_detail {min-height: 80px;}
     #coll_place_detail p{ margin-bottom: 0}
-    #coll_right_anno, #coll_right_intro {margin-top:42px;}
+    #coll_right_anno, #coll_right_intro {
+	    {#margin-top:42px;#}
+    }
     #anno_div table td {padding-top: 3px; padding-bottom: 3px;}
     #anno_div input {height: 1.5rem; font-size:.8rem;}
+    {##annotator {background-color: #fafafa;}#}
     .form-group {margin-bottom: 4px !important;}
     .form-group label {margin-bottom:0 !important;}
     .col-place-card {
 	    border: #c3c3c3 1px dashed;
 	    margin-bottom: 3px;
-	    background-color: aliceblue;
+	    background-color: #fafafa;
 	    {#background-color: white;#}
 	    padding-left: 2px;
     }
+    .card-highlight {border: 1px solid #993333; background-color: lightyellow;}
     #coll_placelist, #coll_dslist {
 	    padding: 3px;
 	    position: absolute;
 	    max-height: 100%;
+	    min-height: auto;
 	    width: 100%;
 	    overflow-y:scroll;
     }
@@ -59,11 +64,20 @@
 	    position:absolute;
 	    width: 95%;
 	    height: 92%;
+	    border-left: 1px solid gainsboro;
+	    border-right: 1px solid gainsboro;
+	    border-bottom: 1px solid gainsboro;
+	    background-color: #fdf5e6;
 	    {#max-height: 92%;#}
     }
-    {##btn_coll_submit {#}
-	  {#  padding: unset;#}
-    {#}#}
+		#coll_tabs {
+			{#margin-right: 2px;#}
+			background-color: #fdf5e6;
+			border-top: 1px solid gainsboro;
+			border-left: 1px solid gainsboro;
+			border-right: 1px solid gainsboro;
+			border-radius: 8px 8px 0 0;
+		}
   </style>
 {% endblock %}
 
@@ -109,58 +123,53 @@
 					<label for="Annotation keywords">Annotation keywords</label>
 					{{ form.rel_keywords }}
 				</div>
-				{% comment %}<div class="form-group">
-					<label for="Web page">Web page</label>
-					{{ form.webpage }}
-				</div>{% endcomment %}
-				{# single image for now (20220416 #}
-	      <div class="form-group">
-					<label for="Image">Image</label><br/>
-					{% if action == 'create' %} {# create, no image yet #}
-						<span id="img_chooser_create">{{ form.image_file }}</span>
-					{% elif form.image_file.value %} {# update & there's an image #}
-						{% fontawesome_icon 'photo' color='#336699' %}
-						<a href="/media/{{ form.image_file.value }}">
-							{{ object.image_file.url|remove:'/media/collections/' }}
-						</a>
-						(<a href="javascript:$('#img_chooser').toggle()">change</a>)
-					{% else %} {# update and there's no image yet #}
-						<span id="img_chooser_update" >{{ form.image_file }}</span>
-					{% endif %}
-	        <span id="img_chooser" class="hidden">{{ form.image_file }}</span>
-				</div>
-	      <div class="form-group">
-					<label for="File">File</label><br/>
-					{% if action == 'create' %} {# create, no file yet #}
-						<span id="file_chooser_create">{{ form.file }}</span>
-					{% elif form.file.value %} {# update & there's an file #}
-						{% fontawesome_icon 'file-pdf' color='#336699' %}
-						<a href="/media/{{ form.file.value }}">{{ object.file.url|remove:'/media/collections/' }}</a>
-						(<a href="javascript:$('#file_chooser').toggle()">change</a>)
-					{% else %} {# update and there's no image yet #}
-						<span id="file_chooser_update" >{{ form.file }}</span>
-					{% endif %}
-	        <span id="file_chooser" class="hidden">{{ form.file }}</span>
-				</div>
 	      {% if action == 'update' %}
-				<div>Links
-					{% if links|length < 3 %}
-						<a href="#" id="a_linkpopup">
-							<button type="button" style="border-width: thin;">Add</button>
-{#							<span class="btn btn-sm btn-secondary">Add</span>#}
-						</a>
-					{% else %}(3 maximum) {% endif %}<br/>
-					<span id="linklist">
-					{% if links|length > 0 %}
-						{% for l in links %}
-							{{ l.get_link_type_display|safe }} <a href="{{ l.uri }}" target="_blank">{{ l.label }}</a>
-							{# {% url 'collection:remove-link' link_id=l.id %} #}
-								[ <a href="{% url 'collection:remove-link' id=l.id %}" class="a_removelink"><i>remove</i></a> ]<br/>
-						{% endfor %}
-					{% endif %}
-					</span>
-				</div>
-	      {% endif %}
+					{# single image for now (20220416 #}
+		      <div class="form-group">
+						<label for="Image">Image</label><br/>
+						{% if action == 'create' %} {# create, no image yet #}
+							<span id="img_chooser_create">{{ form.image_file }}</span>
+						{% elif form.image_file.value %} {# update & there's an image #}
+							{% fontawesome_icon 'photo' color='#336699' %}
+							<a href="/media/{{ form.image_file.value }}">
+								{{ object.image_file.url|remove:'/media/collections/' }}
+							</a>
+							(<a href="javascript:$('#img_chooser').toggle()">change</a>)
+						{% else %} {# update and there's no image yet #}
+							<span id="img_chooser_update" >{{ form.image_file }}</span>
+						{% endif %}
+		        <span id="img_chooser" class="hidden">{{ form.image_file }}</span>
+					</div>
+		      <div class="form-group">
+						<label for="File">File</label><br/>
+						{% if action == 'create' %} {# create, no file yet #}
+							<span id="file_chooser_create">{{ form.file }}</span>
+						{% elif form.file.value %} {# update & there's an file #}
+							{% fontawesome_icon 'file-pdf' color='#336699' %}
+							<a href="/media/{{ form.file.value }}">{{ object.file.url|remove:'/media/collections/' }}</a>
+							(<a href="javascript:$('#file_chooser').toggle()">change</a>)
+						{% else %} {# update and there's no image yet #}
+							<span id="file_chooser_update" >{{ form.file }}</span>
+						{% endif %}
+		        <span id="file_chooser" class="hidden">{{ form.file }}</span>
+					</div>
+					<div>Links
+						{% if links|length < 3 %}
+							<a href="#" id="a_linkpopup">
+								<button type="button" style="border-width: thin;">Add</button>
+	{#							<span class="btn btn-sm btn-secondary">Add</span>#}
+							</a>
+						{% else %}(3 maximum) {% endif %}<br/>
+						<span id="linklist">
+						{% if links|length > 0 %}
+							{% for l in links %}
+								{{ l.get_link_type_display|safe }} <a href="{{ l.uri }}" target="_blank">{{ l.label }}</a>
+								{# {% url 'collection:remove-link' link_id=l.id %} #}
+									[ <a href="{% url 'collection:remove-link' id=l.id %}" class="a_removelink"><i>remove</i></a> ]<br/>
+							{% endfor %}
+						{% endif %}
+						</span>
+					</div>{% endif %} {# action == 'update' #}
 	      <hr class="my-1"/>
         <tr>
 	        <td class="my-0 small">&#x02733;<i><b> required</b></i></td>
@@ -190,9 +199,11 @@
           <span class="float-right">
 		      <a href="/mycollections">Cancel</a>
           {# TODO: convert to bootstrap buttons for styling #}
-          {% if action == create %}
+          {% if action == 'create' %}
 	          <input id="btn_coll_submit" class="btn-sm btn-primary mt-2 ml-2" type="submit" value="Save" />
           {% else %}
+{#	          <a href="{% url 'collection:place-collection-browse' object.id %}">#}
+	          <input id="btn_exit" class="btn-sm btn-info mt-2 ml-2" onclick="goBrowse()" type="button" value="Exit & View" />
 	          <input id="btn_coll_submit" class="btn-sm btn-primary mt-2 ml-2" type="submit" value="Update" />
           {% endif %}
           </span>
@@ -216,12 +227,19 @@
 	      {% endif %}
 	    </div> <!-- #coll_form -->
 	    <div id="coll_builder" class="col-sm-4 p-2" style="height: auto;">
+{#			<div id-"builder_container">#}
 				<ul id="coll_tabs" class="nav nav-tabs" role="tablist">
+					{% if action == 'update' %}
+					  <li class="nav-item">
+					    <a class="nav-link" id="coll_dslist-tab" data-toggle="tab" href="#coll_dslist" role="tab" aria-controls="coll_dslist" data-id="ds">Datasets</a>
+					  </li>
+					{% else %}
+					  <li class="nav-item disabled">
+							<a class="nav-link" id="coll_dslist-tab"  style="color:grey !important;" href="#coll_dslist" >Datasets</a>
+					  </li>
+					{% endif %}
 				  <li class="nav-item">
-				    <a class="nav-link" id="coll_dslist-tab" data-toggle="tab" href="#coll_dslist" role="tab" aria-controls="coll_dslist" aria-selected="true" data-id="ds">Datasets</a>
-				  </li>
-				  <li class="nav-item">
-				    <a class="nav-link active" id="coll_placelist-tab" data-toggle="tab" href="#coll_placelist" role="tab" aria-controls="coll_placelist" aria-selected="false" data-id="pl">Places ({{ coll_places|length }})</a>
+				    <a class="nav-link active" id="coll_placelist-tab" data-toggle="tab" href="#coll_placelist" role="tab" aria-controls="coll_placelist" data-id="pl">Places ({{ coll_places|length }})</a>
 				  </li>
 					<span class="small" style="position:absolute; right:1rem; top:1.5rem;">
 						<a id="a_remove" href="#"></a>
@@ -278,15 +296,19 @@
 							        <a class="anno-place" href="#" data-pid="{{ p.id }}">
 								        {% fontawesome_icon 'edit' color='#336699' %}</a>
 						        </span>
-							      {% comment %}{% if p.traces %}
-							        <br/><i>annotated</i>
-							      {% endif %}{% endcomment %}
+							      {% if p.traces %}
+								      <br/>
+								      {% for t in p.traces %}
+									      {% if t.collection.id == object.id and t.saved %}
+									      <i>annotated</i>
+									      {% endif %}
+								      {% endfor %}
+							      {% endif %}
 					        </p>
 					      </div>
 					    {% endfor %}
 				    {% else %}
 					    {% if action == 'update' %}
-{#					      <p class="mb-0"><i>None yet</i></p>#}
 						    <p class="larger mb-0 strong">How to add places</p>
 						    <ul>
 							    <li><sr>From a Place Portal page</sr>. Use the Search page to find the place you're looking for, navigate to its "Portal Page" and choose <i>one</i> of the attestations found there.</li>
@@ -297,13 +319,15 @@
 					    {% if action == 'create' %}
 						    <h5 style="display:block;">Welcome</h5>
 						    <p>To create a new Place Collection, first fill out the required fields in the form on the left. and press <b>Save</b>. All information can be edited afterwards.</p>
-						    <p>Afterwards you can begin adding places.</p>
-						    <p>The "Annotation keywords" field is for terms that will be your own vocabulary for the relation between a given place and the collection theme or topic. For example, relevant annotation keywords for a collection about a journey might include "waypoint" and extended stay." For lives of individuals, "birthplace" and "resided" might be appropriate. The choice is yours.</p>
+						    <p>Afterwards you can begin adding places, and add an image, a file and up to three links.</p>
+						    <p>"Annotation keywords" are terms that will be your own vocabulary for relations between a given place and the collection theme or topic. For example, relevant annotation keywords for a collection about a journey might include "waypoint" and "extended stay." For lives of individuals, "birthplace" and "resided" might be appropriate. The choice is yours.</p>
 			        {% endif %}
 				    {% endif %}
 	        </div>
 				</div> <!-- .tab-content -->
+{#			</div>#}
 	    </div> <!-- # coll_builder -->
+
 	    {% if action == 'update' %}
 	    <div id="coll_right" class="col-sm-4 p-2" style="height: auto;">
 	      <div id="coll_right_intro" class="hidden">
@@ -327,7 +351,6 @@
 	      </div>
 				{% if coll_places|length > 0 %}
 		    <div id="coll_right_anno" >
-{#		    <div id="coll_right_anno" class="hidden">#}
 		      <h6>Annotations</h6>
 			    <div id="annotator" class="mb-1">
 				    {% if action == 'update' %}
@@ -345,6 +368,18 @@
 </div> <!-- container -->
 
 <script type="text/javascript">
+	function saveAnno(){
+    console.log('going ajax dammit')
+	}
+
+	function goBrowse(){
+    window.location = '/collections/{{ object.id }}/browse_pl'
+	}
+	function saveExit(){
+    console.log('saveExit(callback)')
+    $.when($("#collection_form").submit()).done(function(){goBrowse()})
+	}
+
 	function create_collection_link(){
       var formData = new FormData()
 			formData.append('collection', '{{ object.id }}')
@@ -398,7 +433,11 @@
 	})
 	// fetch r/o place record to annotation panel
   $(".anno-place").click(function(){
-      getAnno($(this).data('pid'))
+    $(".col-place-card").removeClass('card-highlight')
+    let pid = $(this).data('pid')
+		card=$("div[class*=col-place-card]")
+            .filter("div[data-id="+pid+"]").addClass('card-highlight')
+	  getAnno($(this).data('pid'))
   })
 
 	function remove_from_collection(coll, pids) {
@@ -681,11 +720,10 @@
 		const url = "/collections/annoform/?c="+'{{ object.id }}'+"&p="+pid
     fetch(url)
       .then(function (response) {
-          {#console.log('response',response)#}
         return response.json();
       })
       .then(function (data) {
-        {#console.log('data',data)#}
+        {#console.log('data',data.form)#}
         const formContainer = document.querySelector("#annotator");
         formContainer.innerHTML = data.form;
       });
