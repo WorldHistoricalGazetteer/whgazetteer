@@ -57,7 +57,7 @@
 	    max-height: 75%;
 	    width: 350px;
 	    top: 0;
-	    right: 0;
+	    right: 3px;
 	    z-index: 1000;
 	    overflow-y: scroll;
 	    background-color: cornsilk;
@@ -106,7 +106,6 @@
             </span>
           </span>
         </div>
-          
         <div class="attest-element scroll65"><b>Variants</b>:
           {% for name in rec.names|slice:":4"|dictsort:"label" %}
             <i>{{name.label}}</i>
@@ -121,7 +120,6 @@
           {% endfor %}
           {% if rec.names|length > 4 %}...{{rec.names|length|add:"-4"}} more{% endif %}
         </div>
-
           <div class="attest-element"><b>Types</b>: 
             {% for type in rec.types %}
               <i>{{ type.label }}
@@ -136,7 +134,7 @@
           </div>
 
           {% if rec.links|length > 0 %}
-            <div class="attest-element"><b>Links  </b>: {{rec.links|length}} linked records
+            <div class="attest-element"><b>Links  </b>: {{rec.links|length}} linked records {{ rec.links }}
             </div>
           {% endif %}
 
@@ -225,7 +223,9 @@
 		              <a href="{% url 'collection:place-collection-browse' c.id %}" target="_blank">
 			              <b>{{ c.title }}</b></a>, a collection of <sr>{{ c.places_all.count }}</sr> places
 {#			            href='javascript:{ zoomTo("{{ form.authrecord_id.value }}") }'#}
-			              [<a href='javascript:{ showCollectionDescription("{{ c.description }}", "{{ c.title }}") }' class="a_cdescription">description</a>,
+			              {{ c.title|json_script:"c_title" }}
+			              {{ c.description|json_script:"c_description" }}
+			              [<a href='javascript:{ showCollectionDescription()}' class="a_cdescription">description</a>,
 			              <a href="#" class="coll-geo" data-id="{{ c.id }}">places</a>]
 		            {% else %}
 		              <a href="{% url 'collection:ds-collection-browse' c.id %}" target="_blank">
@@ -261,10 +261,15 @@
 </div>
 
 <script type="text/javascript">
-	function showCollectionDescription(content, title){
+	{#function showCollectionDescription(content, title){#}
+	function showCollectionDescription(){
+    const title = JSON.parse($("#c_title").text());
+    const descrip = JSON.parse($("#c_description").text());
+    console.log('descrip',descrip)
+    console.log('title',title)
     $("#coll_popup").fadeIn()
     $("#coll_title").html(title)
-    $("#coll_popup_content").html('<p>'+content+'</p>')
+    $("#coll_popup_content").html('<p>'+descrip+'</p>')
 	}
 	{#$(".a_cdescription").click(function(){#}
   {#  console.log('display description of ',$(this).data('id'))#}
