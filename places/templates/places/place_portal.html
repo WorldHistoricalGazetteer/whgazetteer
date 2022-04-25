@@ -192,7 +192,7 @@
         </div>
         <div id="place_map" class="col-content small">
           <p class="mb-0 allcap-heading">GEOGRAPHY <span class="nogeo text-danger"></span>
-              <span class="float-right">nearby places (8000 max) <input id="fetch-context" type="checkbox"/></span>
+              <span id="fetch_context" class="float-right">nearby places (8000 max) <input id="fetch-context" type="checkbox"/></span>
           </p>
           <div id="map">{% leaflet_map "map" callback="map_init" %}</div>
         </div>
@@ -200,10 +200,6 @@
           <p class="mb-0 allcap-heading">IN COLLECTIONS
             <span id="clear_markers" class="float-right hidden"><a href="#">clear markers</a> </span>
           </p>
-{#          <p class="mb-0 allcap-heading">TRACES (related persons, events, works, objects)#}
-{#            <span id="clear_traces" class="float-right hidden">#}
-{#            <a href="#" class="trace-geo">clear trace markers</a></span>#}
-{#          </p>#}
           <div id="collection_list">
           {% if collections|length > 0 %}
             <ul>
@@ -470,6 +466,7 @@
 	    // center on place record again
       mappy.setView(center, 5)
 	    $("#clear_markers").fadeOut()
+	    $("#fetch_context").show()
     })
 
 		$(".clear-markers").click(function(){
@@ -479,6 +476,9 @@
     // load collection geometry (# within reason)
     $(".coll-geo").click(function(e){
       e.preventDefault()
+	    // TODO: why does context fail when collection places are displayed
+	    // in any case, hide the checkbox
+	    $("#fetch_context").hide()
       fetchCollectionGeom($(this).data('id'), 3)
       $("#clear_markers").fadeIn()
     })
