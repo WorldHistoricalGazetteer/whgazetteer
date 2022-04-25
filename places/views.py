@@ -87,7 +87,7 @@ class PlacePortalView(DetailView):
     pid = self.kwargs.get("pid")
     me = self.request.user
     place = get_object_or_404(Place, id=pid)
-    # context['collections'] = Collection.objects.filter(owner=me, collection_class='place')
+    context['my_collections'] = Collection.objects.filter(owner=me, collection_class='place')
     context['whg_id'] = id_
     context['payload'] = [] # parent and children if any
     context['traces'] = [] # 

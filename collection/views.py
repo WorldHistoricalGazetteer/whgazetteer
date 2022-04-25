@@ -76,7 +76,7 @@ def add_places(request, *args, **kwargs):
         )
         coll.places.add(p)
         status = 'ok'
-        msg = 'place #'+str(place.id)+' added to collection'
+        msg = str(place.title)+' added to "'+coll.title+'"'
       else:
         status = 'dupe'
         msg = 'that place is already in the collection'

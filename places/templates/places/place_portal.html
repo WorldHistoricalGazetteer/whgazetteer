@@ -62,7 +62,7 @@
 {#	      <div id="addtocoll" class="hidden">#}
 	      <div class="small allcap-heading">
 		      ATTESTATIONS TO DATE
-		      <span id="added_flash" class="hidden float-right">Added to collection!</span>
+		      <span id="added_flash" class="float-right"></span>
 		      <span id="addtocoll" class="float-right mr-1 hidden">
 			      <a id="addchecked" href="#">add to collection {% fontawesome_icon 'plus' %}</a>
 		      </span>
@@ -172,7 +172,7 @@
 		        <div class="closer" style="position:absolute; top:-6px; right:-2px">X</div>
 	        </div>
 		      <ul id="my_collections" class="no-bullets">
-						{% for c in collections %}
+						{% for c in my_collections %}
 							<li><a class="a_addtocoll" href="#" ref="{{ c.id }}">{{ c.title }}</a></li>
 			      {% endfor %}
 		      </ul>
@@ -286,7 +286,8 @@
               alert('That record is already in the collection')
 				      $("input.action").prop('checked',false)
 			      } else {
-				      $("#added_flash").fadeIn().delay(2000).fadeOut()
+			        $("#added_flash").html(response.msg).show().delay(3000).fadeOut()
+			        {#$("#added_flash").show().delay(3000).fadeOut()#}
 				      console.log('added! gimmee feedback', response.msg)
 			      }
 		      }
@@ -305,9 +306,6 @@
 			add_to_collection(coll, pids)
 			console.log('pids to coll', pids, coll)
 	})
-	function addNew(el){
-
-	}
 	$("#b_create_coll").click(function(){
 			let title = $("#title_input").val()
 			if(title != ''){
