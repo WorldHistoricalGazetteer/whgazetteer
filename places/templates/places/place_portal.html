@@ -205,26 +205,47 @@
 {#            <span id="clear_traces" class="float-right hidden">#}
 {#            <a href="#" class="trace-geo">clear trace markers</a></span>#}
 {#          </p>#}
-          <div id="trace_list">
-          {% if traces|length > 0 %}
+          <div id="collection_list">
+          {% if collections|length > 0 %}
             <ul>
-            {% for t in traces %}
-              <li><b>{{ t.target.type }}</b> {{ t.body.relations }}; 
-                {% if t.bodycount > 1 %} {% fontawesome_icon 'globe' color='#336699' %} 
-                  <a href="#" data-ctr={{ forloop.counter0 }} data-id={{t.trace_id}} class="trace-geo ml-1">
-                     show trace places</a>
-                {% endif %}
-                 <br/><a href="{{t.target.id}}" target="_blank">{{ t.target.title }}</a>
-                {% if t.target.depiction %}
-                <a href="#" data-toggle="tooltip" data-html="true" data-trigger="click" data-container="#place_traces"data-boundary="viewport" title="<img class='trace-img' src='{{ t.target.depiction }}'/>" class="ml-1 tip" data-placement="auto" style="z-index:10000 !important;">{% fontawesome_icon 'image' color='#336699' %}</a>                      
-                {% endif %}
+            {% for c in collections %}
+	            {% with c.collection_class as cclass %}
+	            <li>
+		            {% if cclass == 'place' %}
+		              <a href="{% url 'collection:place-collection-browse' c.id %}"><b>{{ c.title }}</b></a>
+		              ({{ c.id }})
+		            {% else %}
+		              <a href="{% url 'collection:ds-collection-browse' c.id %}"><b>{{ c.title }}</b></a>
+		              ({{ c.id }})
+	              {% endif %}, a {{ cclass }} collection
               </li>
+	            {% endwith %}
             {% endfor %}
             </ul>
           {% else %}
             <i>None yet</i>
           {% endif %}
           </div>
+{#	        <div id="trace_list">#}
+{#          {% if traces|length > 0 %}#}
+{#            <ul>#}
+{#            {% for t in traces %}#}
+{#              <li><b>{{ t.target.type }}</b> {{ t.body.relations }}; #}
+{#                {% if t.bodycount > 1 %} {% fontawesome_icon 'globe' color='#336699' %} #}
+{#                  <a href="#" data-ctr={{ forloop.counter0 }} data-id={{t.trace_id}} class="trace-geo ml-1">#}
+{#                     show trace places</a>#}
+{#                {% endif %}#}
+{#                 <br/><a href="{{t.target.id}}" target="_blank">{{ t.target.title }}</a>#}
+{#                {% if t.target.depiction %}#}
+{#                <a href="#" data-toggle="tooltip" data-html="true" data-trigger="click" data-container="#place_traces"data-boundary="viewport" title="<img class='trace-img' src='{{ t.target.depiction }}'/>" class="ml-1 tip" data-placement="auto" style="z-index:10000 !important;">{% fontawesome_icon 'image' color='#336699' %}</a>                      #}
+{#                {% endif %}#}
+{#              </li>#}
+{#            {% endfor %}#}
+{#            </ul>#}
+{#          {% else %}#}
+{#            <i>None yet</i>#}
+{#          {% endif %}#}
+{#          </div>#}
         </div>
       </div> <!-- place_home_r -->
     </div> <!-- row -->          
@@ -581,7 +602,7 @@
           title = data['hits'][i]['title']
           whg_id = data['hits'][i]['whg_id']
           geoms=data['hits'][i]['geoms']
-          console.log(geoms)
+          {#console.log(geoms)#}
           for(j in geoms) {
             context["features"].push(
               { "type":"Feature",
