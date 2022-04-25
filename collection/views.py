@@ -89,9 +89,17 @@ def remove_places(request, *args, **kwargs):
     place_list = [int(i) for i in request.POST['place_list'].split(',')]
     print('place_list to remove', place_list)
     # remove from collections_places
-    for p in place_list:
-      place = Place.objects.get(id=p)
-      coll.places.remove(p)
+    for pid in place_list:
+      place = Place.objects.get(id=pid)
+      print('wtf is going on?',place)
+      if place in coll.places.all():
+        print('collection place', place)
+        coll.places.remove(place)
+      elif place in coll.places_all:
+        print('pid to omitted:',place.id)
+        coll.omitted.append(place.id)
+        coll.save()
+      # 6596043 Burana
       # remove trace_anotations record if exists
       if place.traces:
         TraceAnnotation.objects.filter(collection=coll, place__in=place_list).delete()

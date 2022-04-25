@@ -26,6 +26,10 @@ class Collection(models.Model):
   description = models.CharField( null=False, max_length=2044)
   keywords = ArrayField(models.CharField(max_length=50), null=True)
 
+  # array of place ids "removed" by user from the collection
+  # filtered in collection.places_all and can't be annotated
+  omitted = ArrayField(models.IntegerField(blank=True, null=True))
+
   # per-collection relation keyword choices, e.g. waypoint, birthplace, battle site
   # need default or it errors for some reason
   rel_keywords = ArrayField(models.CharField(max_length=30), blank=True)
@@ -71,7 +75,7 @@ class Collection(models.Model):
     all = Place.objects.filter(
       Q(dataset__in=self.datasets.all()) | Q(id__in=self.places.all().values_list('id'))
     )
-    return all
+    return all.exclude(id__in=self.omitted)
 
   @property
   def ds_list(self):

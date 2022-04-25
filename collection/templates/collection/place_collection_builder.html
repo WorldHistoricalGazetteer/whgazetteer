@@ -291,7 +291,7 @@
 						      <p><b>{{ p.title }}</b> {{ p.ccodes }}
 							      <i>pid: (<a class="coll-place" data-pid={{ p.id }} href="#" >{{ p.id }}</a>)</i>
 						        <span class="float-right mr-1">
-							        <a class="mark-place" href="#" data-pid="{{ p.id }}" data-col="{{ object.id }}">
+							        <a class="mark-place" href="#" title="Remove from collection" rel="tooltip" data-pid="{{ p.id }}" data-col="{{ object.id }}">
 								        {% fontawesome_icon 'minus-square' color='#ff8080' %}</a>
 							        <a class="anno-place" href="#" data-pid="{{ p.id }}">
 								        {% fontawesome_icon 'edit' color='#336699' %}</a>
@@ -368,6 +368,9 @@
 </div> <!-- container -->
 
 <script type="text/javascript">
+	$(".mark-place").mouseleave(function(){
+    $(this).tooltip('hide');
+	})
 	function saveAnno(){
     console.log('going ajax dammit')
 	}
@@ -464,6 +467,9 @@
           $(this).remove()
         }
       })
+			// update count in tab
+			newcount = $(".col-place-card").length
+			$("#coll_placelist-tab").text('Places ('+newcount+')')
 			remove_these = [];
       $("#a_remove").html('')
   }
