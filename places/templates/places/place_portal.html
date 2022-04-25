@@ -77,8 +77,9 @@
           {% endif %}
           <b>{{ rec.title }}</b>
           <span class="ml-2">
-            dataset: <a class="pop-link pop-dataset" data-id={{rec.dataset.id}} data-toggle="popover" title="Dataset Profile" data-content="" tabindex="0" rel="clickover">{{rec.dataset.label}}</a>
-          <span class="float-right">{% comment %}<i>{{rec.place_id}}</i>{% endcomment %}
+            dataset: <a class="pop-link pop-dataset" data-id={{rec.dataset.id}} data-toggle="popover" title="Dataset Profile" data-content="" tabindex="0" rel="clickover">
+	              {{rec.dataset.name|truncatechars:25}}</a>
+          <span class="float-right">
             <a href="#" data-id="{{ rec.place_id }}" class="create-comment mr-2" rel="tooltip" title="create comment">
               {% fontawesome_icon 'edit' color='#336699' %}</a>pid:
             <a href="" class="a_modal" data-pid="{{ rec.place_id }}" data-toggle="modal" data-target="#modal_place" title="full record">{{ rec.place_id }}</a>
@@ -196,10 +197,14 @@
           <div id="map">{% leaflet_map "map" callback="map_init" %}</div>
         </div>
         <div id="place_traces" class="col-content small mt-1">
-          <p class="mb-0 allcap-heading">TRACES (related persons, events, works, objects)
-            <span id="clear_traces" class="float-right hidden">
-            <a href="#" class="trace-geo">clear trace markers</a></span>
+          <p class="mb-0 allcap-heading">IN COLLECTIONS
+{#            <span id="clear_traces" class="float-right hidden">#}
+{#            <a href="#" class="trace-geo">clear trace markers</a></span>#}
           </p>
+{#          <p class="mb-0 allcap-heading">TRACES (related persons, events, works, objects)#}
+{#            <span id="clear_traces" class="float-right hidden">#}
+{#            <a href="#" class="trace-geo">clear trace markers</a></span>#}
+{#          </p>#}
           <div id="trace_list">
           {% if traces|length > 0 %}
             <ul>
@@ -703,7 +708,7 @@
 
     var baseLayers = {
       "OpenStreetMap": osm,
-      "NE Terrain": ne_global,
+      "Terrain": ne_global,
       "Satellite": satellite
     };
     var dataLayers = {
