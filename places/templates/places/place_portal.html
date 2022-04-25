@@ -198,8 +198,7 @@
         </div>
         <div id="place_traces" class="col-content small mt-1">
           <p class="mb-0 allcap-heading">IN COLLECTIONS
-{#            <span id="clear_traces" class="float-right hidden">#}
-{#            <a href="#" class="trace-geo">clear trace markers</a></span>#}
+            <span id="clear_markers" class="float-right hidden"><a href="#">clear markers</a> </span>
           </p>
 {#          <p class="mb-0 allcap-heading">TRACES (related persons, events, works, objects)#}
 {#            <span id="clear_traces" class="float-right hidden">#}
@@ -212,12 +211,15 @@
 	            {% with c.collection_class as cclass %}
 	            <li>
 		            {% if cclass == 'place' %}
-		              <a href="{% url 'collection:place-collection-browse' c.id %}"><b>{{ c.title }}</b></a>
-		              ({{ c.id }})
+		              <a href="{% url 'collection:place-collection-browse' c.id %}" target="_blank">
+			              <b>{{ c.title }}</b></a>, a collection of <sr>{{ c.places_all.count }}</sr> places
+			              [<a href="#" class="a_cdescription" data-id="{{ c.id }}">description</a>,
+			              <a href="#" class="coll-geo" data-id="{{ c.id }}">places</a>]
 		            {% else %}
-		              <a href="{% url 'collection:ds-collection-browse' c.id %}"><b>{{ c.title }}</b></a>
-		              ({{ c.id }})
-	              {% endif %}, a {{ cclass }} collection
+		              <a href="{% url 'collection:ds-collection-browse' c.id %}" target="_blank">
+			              <b>{{ c.title }}</b></a>
+			            , a collection of all <sr>{{ c.places_all.count }})</sr> places in {{ c.datasets.count }} datasets
+	              {% endif %}
               </li>
 	            {% endwith %}
             {% endfor %}
@@ -267,6 +269,9 @@
 </div>
 
 <script type="text/javascript">
+	$(".a_cdescription").click(function(){
+    console.log('display description of ',$(this).data('id'))
+	})
 	function add_to_collection(coll, pids){
       var formData = new FormData()
 			formData.append('collection', coll)
@@ -460,98 +465,24 @@
         nearby.removeFrom(mappy)
       }
     })
-    $("#clear_traces").click(function(){
+    $("#clear_markers").click(function(){
       traceLayers.clearLayers()
+	    // center on place record again
+      mappy.setView(center, 5)
+	    $("#clear_markers").fadeOut()
     })
-    // load trace geometry
-    $(".trace-geo").click(function(e){
+
+		$(".clear-markers").click(function(){
+      console.log('clear markers, toot sweet')
+		})
+
+    // load collection geometry (# within reason)
+    $(".coll-geo").click(function(e){
       e.preventDefault()
-      // traces never fetched
-      fetchTraceGeom($(this).data('id'),$(this).data('ctr'))
-      $("#clear_traces").show()
+      fetchCollectionGeom($(this).data('id'), 3)
+      $("#clear_markers").fadeIn()
     })
-  })
-  
-  function range(start, stop, step) {
-    var a = [start], b = start;
-    while (b < stop) {
-        a.push(b += step || 1);
-    }
-    return a;
-  }
-  function intersects(a,b){
-    min = (a[0] < b[0] ? a : b)
-    max = (min == a ? b : a)
-    return !(min[1] < max[1])
-  }
-  
-  function histogram_data(intervals,minmax){
-    step = Number(((minmax[1]-minmax[0])/200))
-    bins = range(minmax[0],minmax[1],step)
-    hist_array = Array.apply(null, Array(bins.length)).map(Number.prototype.valueOf,0);
-    labels=bins.map(function(d){return Math.round(d)})
-    for (b=0; b<bins.length; b++){
-      bin = Array(bins[b],bins[b+1])
-      for (i in intervals){
-        if (intersects(bin,intervals[i])){
-          hist_array[b] +=1
-        }
-      }
-    }
-    data=hist_array.map(function(d,i){return {"bin":labels[i],"count":d}})
-    // now visualize it
-    <!--console.log(data)-->
-    histogram(data,labels)
-  }
-
-  function histogram(data,labels){
-    // exit if no data 
-    if (data[0].bin == "Infinity"){ $("#histogram_sum").html('<i>None yet</i>'); return; }
-    data=data.slice(0,200)
-    var margin = {top: 0, right: 10, bottom: 0, left: 12};
-    var width = 500, height = 30,  padding_h = 20,  padding_w = 30;
-      
-    // set the ranges
-    window.xScale = d3.scaleLinear()
-      .range([0, width])
-    window.yScale = d3.scaleLinear()
-      .range([height, 0]);
-  
-    <!--xScale.domain(data.map(function(d) { return d.bin; }));-->
-    xScale.domain(minmax);
-    yScale.domain([0, d3.max(data, function(d) { return d.count; })]);
-    
-        
-    window.svg_hist = d3.select("#histogram_sum")
-      .append("svg")
-      .attr('preserveAspectRatio','xMinYMin meet')
-      .attr('viewBox','0 0 530 60')
-      .classed("svg-content", true)
-      
-      .append("g")
-      .attr("transform","translate(" + margin.left + "," + margin.top + ")")
-  
-  
-    window.axisB = d3.axisBottom(xScale)
-      .tickValues(labels.filter(function(d,i){return !(i%20)}))
-      .tickFormat(d3.format("d"));
-
-    var axisL = d3.axisLeft(yScale)
-  
-    svg_hist.selectAll(".bar")
-      .data(data)
-    .enter().append("rect")
-      .attr("class", "bar")
-      .attr("x", function(d) { return xScale(d.bin); })
-      .attr("width", 2)
-      .attr("y", function(d) { return yScale(d.count); })
-      .attr("height", function(d) { return height - yScale(d.count); });
-  
-    var xAxis = svg_hist.append("g")
-      .attr("id","xaxis")
-      .attr("transform", "translate(0," + height + ")")
-      .call(axisB)
-  }
+  }) // jquery on load
 
   function filly(counter) {
     if (counter == 0)
@@ -565,6 +496,35 @@
     else 
       return "black"
   }
+  // database fetch (collection may include non-indexed datasets)
+  function fetchCollectionGeom(coll_id,counter) {
+    counter= 3
+    $.get("/search/collgeom",{coll_id: coll_id},
+      function(data){
+        console.log('collection places', data)
+        cplaces = L.geoJSON(data, {
+          pane: 'tracePane',
+          pointToLayer: function (feature, latlng) {
+            identifier = feature.properties.pid
+            marker = L.circleMarker(latlng,
+              {
+                radius: 5, fillOpacity: 0.3, opacity: 1, weight: 1,
+                color: "#fff", fillColor: filly(counter)
+              }
+            ).bindPopup('pid:'+identifier+'<br/><b>'+
+              '<a href="/places/'+identifier+'/portal">'+feature.properties.title+"</b></a>");
+            idToFeature[identifier] = marker
+            return marker
+          },
+          onEachFeature: function(feature,layer){
+            layer.addTo(traceLayers)
+          }
+        }).addTo(mappy);
+        mappy.fitBounds(cplaces.getBounds())
+    });
+  }
+
+	// TODO: retire this
   function fetchTraceGeom(trace_id,counter) {
     $.get("/search/tracegeom",{idx: 'traces', search: trace_id, doc_type: 'trace'},
       function(data){
@@ -589,8 +549,9 @@
         mappy.fitBounds(traces.getBounds())
     });
   }
-    
+
   // ES query to retrieve 800 in map viewport bbox
+	// TODO: closest, not random in box
   function fetchContext(coords){
     startMapitSpinner()
     context={"type":"FeatureCollection","features":[]}
@@ -834,6 +795,90 @@
     url=str.match(re)[1]=='http' ? str : base_urls[str.match(re)[1]]+str.match(re)[2]
     window.open(url,'_blank')
   });
+
+	// histogram stuff
+  function range(start, stop, step) {
+    var a = [start], b = start;
+    while (b < stop) {
+        a.push(b += step || 1);
+    }
+    return a;
+  }
+  function intersects(a,b){
+    min = (a[0] < b[0] ? a : b)
+    max = (min == a ? b : a)
+    return !(min[1] < max[1])
+  }
+
+  function histogram_data(intervals,minmax){
+    step = Number(((minmax[1]-minmax[0])/200))
+    bins = range(minmax[0],minmax[1],step)
+    hist_array = Array.apply(null, Array(bins.length)).map(Number.prototype.valueOf,0);
+    labels=bins.map(function(d){return Math.round(d)})
+    for (b=0; b<bins.length; b++){
+      bin = Array(bins[b],bins[b+1])
+      for (i in intervals){
+        if (intersects(bin,intervals[i])){
+          hist_array[b] +=1
+        }
+      }
+    }
+    data=hist_array.map(function(d,i){return {"bin":labels[i],"count":d}})
+    // now visualize it
+    <!--console.log(data)-->
+    histogram(data,labels)
+  }
+
+  function histogram(data,labels){
+    // exit if no data
+    if (data[0].bin == "Infinity"){ $("#histogram_sum").html('<i>None yet</i>'); return; }
+    data=data.slice(0,200)
+    var margin = {top: 0, right: 10, bottom: 0, left: 12};
+    var width = 500, height = 30,  padding_h = 20,  padding_w = 30;
+
+    // set the ranges
+    window.xScale = d3.scaleLinear()
+      .range([0, width])
+    window.yScale = d3.scaleLinear()
+      .range([height, 0]);
+
+    <!--xScale.domain(data.map(function(d) { return d.bin; }));-->
+    xScale.domain(minmax);
+    yScale.domain([0, d3.max(data, function(d) { return d.count; })]);
+
+
+    window.svg_hist = d3.select("#histogram_sum")
+      .append("svg")
+      .attr('preserveAspectRatio','xMinYMin meet')
+      .attr('viewBox','0 0 530 60')
+      .classed("svg-content", true)
+
+      .append("g")
+      .attr("transform","translate(" + margin.left + "," + margin.top + ")")
+
+
+    window.axisB = d3.axisBottom(xScale)
+      .tickValues(labels.filter(function(d,i){return !(i%20)}))
+      .tickFormat(d3.format("d"));
+
+    var axisL = d3.axisLeft(yScale)
+
+    svg_hist.selectAll(".bar")
+      .data(data)
+    .enter().append("rect")
+      .attr("class", "bar")
+      .attr("x", function(d) { return xScale(d.bin); })
+      .attr("width", 2)
+      .attr("y", function(d) { return yScale(d.count); })
+      .attr("height", function(d) { return height - yScale(d.count); });
+
+    var xAxis = svg_hist.append("g")
+      .attr("id","xaxis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(axisB)
+  }
+
+
 </script>
 <script src="{% static 'js/jquery.bootstrap.modal.forms.min.js' %}"></script>
 {% endblock %}
