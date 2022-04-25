@@ -1,4 +1,7 @@
 <!-- context keys: place, collection -->
+{% load fontawesome %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns" crossorigin="anonymous"></script>
+
 <div style="background-color: #fafafa; padding:2px;">
 	<p><sr>Title</sr>: {{ place.title }}</p>
 	<p><sr>Variants</sr>: {% for n in place.names.all %}
@@ -31,11 +34,17 @@
 				</select>
 			</td>
 		</tr>
-		<tr><td>Start/End:</td><td>{{ form.start }} / {{ form.end }}</td></tr>
+		<tr><td>Start/End:</td>
+			<td>{{ form.start }} / {{ form.end }}
+			<a href="#" class="" rel="tooltip" data-html="true" title="Month and day optional.<br/>For BCE, prefix with '-'">
+				{% fontawesome_icon 'question-circle' %}
+			</a>
+			</td></tr>
 		<tr><td class="align-top">Notes:</td><td>{{ form.note }}</td></tr>
 	</table>
 {#	<button id="b_anno_submit" type="button" onclick=saveAnno() class="button button-sm">Save</button>#}
 	<button id="b_anno_submit" type="submit" class="button button-sm">Save</button>
 </form>
-
+<script type="application/javascript">
+</script>
 {#</html>#}

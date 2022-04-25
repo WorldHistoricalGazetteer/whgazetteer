@@ -25,8 +25,8 @@ class TraceAnnotationModelForm(forms.ModelForm):
 			'collection': forms.TextInput(attrs={'size': 4}),
 			'place': forms.TextInput(attrs={'size': 16}),
 			'relation': forms.Select(),
-			'start': forms.TextInput(attrs={'size': 11}),
-			'end': forms.TextInput(attrs={'size': 11})
+			'start': forms.TextInput(attrs={'size': 11, 'placeholder':'yyyy-mm-dd'}),
+			'end': forms.TextInput(attrs={'size': 11, 'placeholder':'yyyy-mm-dd'})
 		}
 
 	# class Meta:

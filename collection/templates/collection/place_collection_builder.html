@@ -293,7 +293,7 @@
 						        <span class="float-right mr-1">
 							        <a class="mark-place" href="#" title="Remove from collection" rel="tooltip" data-pid="{{ p.id }}" data-col="{{ object.id }}">
 								        {% fontawesome_icon 'minus-square' color='#ff8080' %}</a>
-							        <a class="anno-place" href="#" data-pid="{{ p.id }}">
+							        <a class="anno-place" href="#" title="Annotate place" rel="tooltip" data-pid="{{ p.id }}">
 								        {% fontawesome_icon 'edit' color='#336699' %}</a>
 						        </span>
 							      {% if p.traces %}
@@ -436,6 +436,7 @@
 	})
 	// fetch r/o place record to annotation panel
   $(".anno-place").click(function(){
+    $(this).tooltip('hide');
     $(".col-place-card").removeClass('card-highlight')
     let pid = $(this).data('pid')
 		card=$("div[class*=col-place-card]")
@@ -732,6 +733,10 @@
         {#console.log('data',data.form)#}
         const formContainer = document.querySelector("#annotator");
         formContainer.innerHTML = data.form;
+        $("[rel='tooltip']").tooltip();
+        {#$(".mark-place").mouseleave(function(){#}
+        {#  $(this).tooltip('hide');#}
+				{#})#}
       });
   }
 
