@@ -780,6 +780,7 @@ em { color: #993333;}
 #place_home_l {
   height: calc(100vh - 150px);
   overflow-y: auto;
+  position:relative;
 }
 #place_home_l tr, #place_home_l th {
   line-height: .2rem;

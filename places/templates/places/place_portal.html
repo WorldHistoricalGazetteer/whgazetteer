@@ -47,6 +47,22 @@
         top: 0;
         left: 0;
     }
+    #coll_popup {
+	    position:absolute;
+			{#background-color: whitesmoke;#}
+	    border: 1px solid grey;
+	    box-shadow: gainsboro 4px 4px;
+	    border-radius: 6px;
+	    padding: 15px;
+	    max-height: 75%;
+	    width: 350px;
+	    top: 0;
+	    right: 0;
+	    z-index: 1000;
+	    overflow-y: scroll;
+	    background-color: cornsilk;
+	    {#display:none;#}
+    }
   </style>
   
 {% endblock %}
@@ -59,7 +75,6 @@
   <div id="place_content" class="tab-content">
     <div class="row pt-1">
       <div id="place_home_l" class="col-sm-6">
-{#	      <div id="addtocoll" class="hidden">#}
 	      <div class="small allcap-heading">
 		      ATTESTATIONS TO DATE
 		      <span id="added_flash" class="float-right"></span>
@@ -87,7 +102,7 @@
               {% if rec.geoms|length > 0 %}
                 <a href="#" class="flash-geo ttip" data-id="{{ rec.place_id }}" title="flash map marker">{% fontawesome_icon 'map-marker' %}</a>
               {% endif %}
-              <input type="radio" name="r_anno" class="action ml-2" data-id="{{ rec.place_id }}" />
+              <input type="radio" name="r_anno" rel="tooltip" title="add to a collection" class="action ml-2" data-id="{{ rec.place_id }}" />
             </span>
           </span>
         </div>
@@ -157,14 +172,14 @@
               {{ g|json_script:rec.place_id }}
             {% endfor %}
           {% endif %}
-          <!--{ if rec.descriptions and rec.descriptions|length > 0 %}-->
-            <!--<div class="attest-element">-->
-              <!--<div><b>Descriptions</b>: { for desc in rec.descriptions %}<i>{desc.value}}</i>-->
-                <!--{ if not forloop.last %}; { endif %}{ endfor %}</div>-->
-            <!--</div>-->
-          <!--{ endif %}-->
         </div>
         {% endfor %} <!-- rec in payload-->
+        <!-- popup -->
+	      <div id="coll_popup" class="hidden">
+		      <div class="closer" style="position:absolute; top:-3px; right:7px;">x</div>
+		      <h5 id="coll_title"></h5>
+		      <div id="coll_popup_content" class="smaller"></div>
+	      </div>
       </div> <!-- place_home_l-->
       <div id="place_home_r" class="col-sm-6">
 	      <div id="addtocoll_popup" class="p-2 hidden small">
@@ -209,7 +224,8 @@
 		            {% if cclass == 'place' %}
 		              <a href="{% url 'collection:place-collection-browse' c.id %}" target="_blank">
 			              <b>{{ c.title }}</b></a>, a collection of <sr>{{ c.places_all.count }}</sr> places
-			              [<a href="#" class="a_cdescription" data-id="{{ c.id }}">description</a>,
+{#			            href='javascript:{ zoomTo("{{ form.authrecord_id.value }}") }'#}
+			              [<a href='javascript:{ showCollectionDescription("{{ c.description }}", "{{ c.title }}") }' class="a_cdescription">description</a>,
 			              <a href="#" class="coll-geo" data-id="{{ c.id }}">places</a>]
 		            {% else %}
 		              <a href="{% url 'collection:ds-collection-browse' c.id %}" target="_blank">
@@ -224,26 +240,6 @@
             <i>None yet</i>
           {% endif %}
           </div>
-{#	        <div id="trace_list">#}
-{#          {% if traces|length > 0 %}#}
-{#            <ul>#}
-{#            {% for t in traces %}#}
-{#              <li><b>{{ t.target.type }}</b> {{ t.body.relations }}; #}
-{#                {% if t.bodycount > 1 %} {% fontawesome_icon 'globe' color='#336699' %} #}
-{#                  <a href="#" data-ctr={{ forloop.counter0 }} data-id={{t.trace_id}} class="trace-geo ml-1">#}
-{#                     show trace places</a>#}
-{#                {% endif %}#}
-{#                 <br/><a href="{{t.target.id}}" target="_blank">{{ t.target.title }}</a>#}
-{#                {% if t.target.depiction %}#}
-{#                <a href="#" data-toggle="tooltip" data-html="true" data-trigger="click" data-container="#place_traces"data-boundary="viewport" title="<img class='trace-img' src='{{ t.target.depiction }}'/>" class="ml-1 tip" data-placement="auto" style="z-index:10000 !important;">{% fontawesome_icon 'image' color='#336699' %}</a>                      #}
-{#                {% endif %}#}
-{#              </li>#}
-{#            {% endfor %}#}
-{#            </ul>#}
-{#          {% else %}#}
-{#            <i>None yet</i>#}
-{#          {% endif %}#}
-{#          </div>#}
         </div>
       </div> <!-- place_home_r -->
     </div> <!-- row -->          
@@ -265,9 +261,15 @@
 </div>
 
 <script type="text/javascript">
-	$(".a_cdescription").click(function(){
-    console.log('display description of ',$(this).data('id'))
-	})
+	function showCollectionDescription(content, title){
+    $("#coll_popup").fadeIn()
+    $("#coll_title").html(title)
+    $("#coll_popup_content").html('<p>'+content+'</p>')
+	}
+	{#$(".a_cdescription").click(function(){#}
+  {#  console.log('display description of ',$(this).data('id'))#}
+	{#	$("#coll_description").html().show()#}
+	{# })#}
 	function add_to_collection(coll, pids){
       var formData = new FormData()
 			formData.append('collection', coll)
@@ -339,7 +341,8 @@
 			}
 	})
 	$(".closer").click(function(){
-			$("#addtocoll_popup").hide()
+      $(this).parent().hide()
+			{#$("#addtocoll_popup").hide()#}
 	})
 	$("#create_coll_link").click(function(){
 			console.log('open title input')
@@ -446,6 +449,11 @@
     var trace_count = 0
     $("[rel='tooltip']").tooltip();
     $('a[data-toggle="tooltip"]').tooltip({
+      animated: 'fade',
+      placement: 'bottom',
+      html: true
+    });
+    $('input[data-toggle="tooltip"]').tooltip({
       animated: 'fade',
       placement: 'bottom',
       html: true
