@@ -164,38 +164,40 @@
             <p class="modal-col-head p-1 mb-2">Collection <small>({{ object.places_all.count }} total rows)</small></p>
             <p><a href="#" class="a-dl" data-collid={{ object.id }}>
 	            <i class="fa fa-download" title="Download"></i> download entire collection</a></p>
-            <p class="modal-col-head p-1 mb-2">By Dataset<small></small></p>
+            <p class="modal-col-head p-1 mb-2">Datasets represented <small>w/citations</small></p>
+	          <p>
+		          {% for d in ds_list %}
+			          {{ d.title }}&nbsp;
+	                <a id="cite_{{d.id}}" class="clippy" aria-label="{% if d.citation %}{{ d.citation }}{% else %}{{d.title}}. [Data file (partial), Retrieved from {{ url_front}}collections/{{object.id}}/browse_pl, {% now 'd M Y' %}{% endif %}" rel="tooltip" title="copy to clipboard"> citation: {% fontawesome_icon 'clipboard' color='#336699' %}</a><br/>
+		          {% endfor %}
+	          </p>
+            {% comment %}
             <table class="dl-table small">
-            <thead><tr><th>Title</th><th>Rows</th><th>Formats</th><th></th></tr></thead>
-            <tbody>
-            {% for d in ds_list %}
-              <tr class="align-top">
-              <td>{{ d.title }}&nbsp;
-                <a id="cite_{{d.id}}" class="clippy" aria-label="{% if d.citation %}{{ d.citation }}{% else %}{{d.title}}. [Data file, last modified {{ d.last_modified_text}}]. Retrieved from http://whgazetteer.org/datasets/{{d.id}}, {% now 'd M Y' %}{% endif %}" rel="tooltip" title="copy to clipboard">{% fontawesome_icon 'clipboard' color='#336699' %}</a><br/>
-                <span class="ml-2 small" style="disply:block"><i>est. download time: {{d.dl_est}}</i></span>
-              </td>
-              <td>{{d.numrows}}</td>
-              <td> <!-- always offer lpf -->
-                <div class="form-check form-check-inline">
-                  <input class="form-check-input hover" type="radio" name="format" value="lpf">
-                  <label class="form-check-label" for="r_lpf">LPF</label>
-                </div>
-{#                {% if d.format == 'delimited' %}#}
-{#                <div class="form-check form-check-inline ml-1">#}
-{#                  <input class="form-check-input hover" type="radio" name="format" value="tsv">#}
-{#                  <label class="form-check-label" for="r_lp-tsv">LP-TSV</label>#}
-{#                </div>#}
-{#                {% endif %}#}
-              </td>
-              <td class="px-1">
-                <a class="a-dl" data-id={{d.id}} data-collid={{ object.id }}>
-                  <i class="fa fa-download" title="Download"></i>
-                </a>
-              </td>
-              </tr>
-            {% endfor %}
-            </tbody>
+              <thead><tr><th>Title</th><th>Rows</th><th>Formats</th><th></th></tr></thead>
+              <tbody>{{ ds_counter }}
+		            {% for d in ds_list %}
+	              <tr class="align-top">
+	              <td>{{ d.title }}&nbsp;
+	                <a id="cite_{{d.id}}" class="clippy" aria-label="{% if d.citation %}{{ d.citation }}{% else %}{{d.title}}. [Data file, last modified {{ d.last_modified_text}}]. Retrieved from http://whgazetteer.org/datasets/{{d.id}}, {% now 'd M Y' %}{% endif %}" rel="tooltip" title="copy to clipboard">{% fontawesome_icon 'clipboard' color='#336699' %}</a>
+									{#<br/><span class="ml-2 small" style="disply:block"><i>est. download time: {{d.dl_est}}</i></span>#}
+	              </td>
+	              <td>{{d.numrows}}</td>
+	              <td> <!-- always offer lpf -->
+	                <div class="form-check form-check-inline">
+	                  <input class="form-check-input hover" type="radio" name="format" value="lpf">
+	                  <label class="form-check-label" for="r_lpf">LPF</label>
+	                </div>
+	              </td>
+	              <td class="px-1">
+	                <a class="a-dl" data-id={{d.id}} data-collid={{ object.id }}>
+	                  <i class="fa fa-download" title="Download"></i>
+	                </a>
+	              </td>
+	              </tr>
+	              {% endfor %}
+              </tbody>
             </table>
+            {% endcomment %}
             <div id=""></div>
             <div id="celery-result"></div>
           </div>
@@ -261,22 +263,6 @@
   // table events
   // TODO: use datatables methods?
   function setRowEvents(){
-    {#$("#ds_select").change(function(e){#}
-    {#  // filter table#}
-    {#  val = $(this).val()#}
-    {#  localStorage.setItem('filter', val)#}
-      {#startMapSpinner()#}
-    {#  if(val == -1){#}
-    {#    // clear search#}
-    {#    startFilterSpinner()#}
-    {#    clearFilters()#}
-    {#  } else {#}
-    {#    clearFilters()#}
-    {#    filterColumn(11, val)#}
-    {#  }#}
-    {#  // also filter map#}
-    {#  filterMap(val)#}
-    {# }) #}
     $("#placetable tbody tr").click(function() {
       thisy=$(this)
       // get id
@@ -632,8 +618,8 @@
 
 	  $.getJSON('/collections/'+'{{ object.id }}'+'/geojson')
 	  .done(function(colldata) {
-      {#console.log('colldata', colldata)#}
-
+      console.log('colldata', colldata)
+			fcoll = colldata
       mappy.addSource('all', {
         'type': 'geojson',
         'data': colldata
@@ -641,17 +627,14 @@
 		  renderSourceLayers('all')
 		  source_list.push('all')
 
-		  bounds = new maplibregl.LngLatBounds();
+		  {#bounds = new maplibregl.LngLatBounds();#}
 
       all_feats = colldata.features
+			cnt=0
+			mappy.fitBounds(turf.bbox(colldata), { padding: 20 });
 
-			colldata.features.forEach(function(feature) {
-			    bounds.extend(feature.geometry.coordinates);
-			});
+	  });
 
-			mappy.fitBounds(bounds, { padding: 20 });
-
-	   })
 
 
 	  // unused remains from dataset collection mapping

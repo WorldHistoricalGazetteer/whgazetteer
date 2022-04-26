@@ -413,9 +413,11 @@ class PlaceCollectionBrowseView(DetailView):
     context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False
     context['coll'] = coll
     context['ds_list'] = coll.ds_list
+    context['ds_counter'] = coll.ds_counter
     context['links'] = coll.links.all()
     context['places'] = coll.places.all()
     context['updates'] = {}
+    context['url_front'] = settings.URL_FRONT
 
     return context
 

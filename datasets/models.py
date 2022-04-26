@@ -81,12 +81,18 @@ class Dataset(models.Model):
     
   @property
   def last_modified_iso(self):
-    last=self.log.all().order_by('-timestamp')[0].timestamp
+    if self.log.count() > 0:
+      last=self.log.all().order_by('-timestamp')[0].timestamp
+    else:
+      last=self.create_date
     return last.strftime("%Y-%m-%d")
   
   @property
   def last_modified_text(self):
-    last=self.log.all().order_by('-timestamp')[0].timestamp
+    if self.log.count() > 0:
+      last=self.log.all().order_by('-timestamp')[0].timestamp
+    else:
+      last = self.create_date
     return last.strftime("%d %b %Y")
     
   @property
