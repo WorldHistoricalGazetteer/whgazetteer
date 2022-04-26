@@ -40,27 +40,30 @@
 		.resource-card-header {width:100%; background-color: honeydew;}
 		.resource-card-content h6 {font-size: .9rem;}
 		.resource-card-blurb {line-height: 1rem; font-size: small;}
+		#badge_link { font-size:1rem; position:absolute; right:10px; z-index:100;}
 	</style>
 	{% leaflet_js %}
 	{% leaflet_css %}
 	{% endblock %}
 
-	<div class="container pt-2 container-md" style="height: calc(100vh - 65px); ">
+	<div class="container pt-2 container-md" style="height: calc(100vh - 65px); position:relative;">
+		<a id="badge_link" href="{% url 'main:tute-place_collections' %}">
+				<span id="badgenew" class="badge badge-warning p-2"><b>NEW! Place Collections</b></span>
+		</a>
 		<section class="text-center">
-			<div class="container mb-1">
-				<h3>Teaching with World Historical Gazetteer</h3>
+			<div class="container mb-1" style="position:relative">
+				<h3>Teaching with World Historical Gazetteer
+				</h3>
 			</div>
 		</section>
 		<div id="teaching_top" class="row">
-			<!-- <div class="container"> -->
-				<div class="row">
-					<div class="col-md-7" style="font-size: 1.3rem;">
-						<p>Place names&mdash;their origins, change over time, and reflections of identity&mdash;can provide a fascinating and revealing lens through which to explore history. Used with the interactive tools of digital history, the study of place names brings
-					new, deeper, and broader connections to our understanding of patterns of historical change.</p>
-					</div>
-					<div class="col-md-5">{% leaflet_map "main" %}</div>
+			<div class="row">
+				<div class="col-md-7" style="font-size: 1.3rem;">
+					<p>Place names&mdash;their origins, change over time, and reflections of identity&mdash;can provide a fascinating and revealing lens through which to explore history. Used with the interactive tools of digital history, the study of place names brings
+				new, deeper, and broader connections to our understanding of patterns of historical change.</p>
 				</div>
-			<!-- </div> -->
+				<div class="col-md-5">{% leaflet_map "main" %}</div>
+			</div>
 		</div> <!-- .row -->
 		<div id="teaching_bottom" class="row mt-2">
 			<div class="col-sm-4 px-0" style="height: 80%;">
@@ -79,34 +82,35 @@
 						<span id="regions_reset" class="reset-link mr-2" style="cursor:pointer;">reset filter</span>
 					</div>
 					<div class="pl-1">
-						<!-- list featured first, 1n 1,2,3 order -->
+						{# this pins featured cards #}
 						{% for r in featured %}
-						<div class="resource-card mt-1" data-regions="{{r.regions}}">
-							<div class="resource-card-header pl-2 small ">{{ r.type }}
-								<span class="regions-ttlink mr-1" data-toggle="tooltip" data-html="true" title="{{r.regions}}">
-									{% fontawesome_icon 'globe' %} regions</span>
+							<div class="resource-card mt-1" data-regions="{{r.regions}}">
+								<div class="resource-card-header pl-2 small ">{{ r.type }}
+									<span class="regions-ttlink mr-1" data-toggle="tooltip" data-html="true" title="{{r.regions}}">
+										{% fontawesome_icon 'globe' %} regions</span>
+								</div>
+								<div class="resource-card-content px-2 pt-1" data-id={{r.id}}>
+									{% with remainder=190|add:r.title_length %}
+									<h6><a href="{% url 'resources:resource-detail' r.id %}">{{ r.title }}</a></h6>
+									<p class="resource-card-blurb my-1">{{ r.description|trunc_it:remainder }} </p>
+									{%endwith%}
+								</div>
 							</div>
-							<div class="resource-card-content px-2 pt-1" data-id={{r.id}}>
-								{% with remainder=190|add:r.title_length %}
-								<h6><a href="{% url 'resources:resource-detail' r.id %}">{{ r.title }}</a></h6>
-								<p class="resource-card-blurb my-1">{{ r.description|trunc_it:remainder }} </p>
-								{%endwith%}
-							</div>
-						</div>
 						{% endfor %}
+						{# the rest #}
 						{% for r in resource_list %}
-						<div class="resource-card mt-1" data-regions="{{r.regions}}">
-							<div class="resource-card-header pl-2 small ">{{ r.type }}
-								<span class="regions-ttlink mr-1" data-toggle="tooltip" data-html="true" title="{{r.regions}}">
-									{% fontawesome_icon 'globe' %} regions</span>
+							<div class="resource-card mt-1" data-regions="{{r.regions}}">
+								<div class="resource-card-header pl-2 small ">{{ r.type }}
+									<span class="regions-ttlink mr-1" data-toggle="tooltip" data-html="true" title="{{r.regions}}">
+										{% fontawesome_icon 'globe' %} regions</span>
+								</div>
+								<div class="resource-card-content px-2 pt-1" data-id={{r.id}}>
+									{% with remainder=190|add:r.title_length %}
+									<h6><a href="{% url 'resources:resource-detail' r.id %}">{{ r.title }}</a></h6>
+									<p class="resource-card-blurb my-1">{{ r.description|trunc_it:remainder }} </p>
+									{%endwith%}
+								</div>
 							</div>
-							<div class="resource-card-content px-2 pt-1" data-id={{r.id}}>
-								{% with remainder=190|add:r.title_length %}
-								<h6><a href="{% url 'resources:resource-detail' r.id %}">{{ r.title }}</a></h6>
-								<p class="resource-card-blurb my-1">{{ r.description|trunc_it:remainder }} </p>
-								{%endwith%}
-							</div>
-						</div>
 						{% endfor %}
 					</div>
 				</div>

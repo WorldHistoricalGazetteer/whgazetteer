@@ -2,12 +2,29 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User, Group
 from django.contrib import auth, messages
 from django.db import transaction
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
 from django import forms
 from django.shortcuts import render, redirect, get_object_or_404
 
 from accounts.forms import UserModelForm, ProfileModelForm, LoginForm
 from datasets.models import Dataset, DatasetUser
+
+def create_group(request, *args, **kwargs):
+  # must be member of group_leaders
+  result = {"status": "", "id": "", 'name': ""}
+  if request.method == 'POST':
+    group_name = request.POST['group_name']
+    if group_name in Group.objects.all().values_list('name', flat=True):
+      result['status'] = "dupe"
+    else:
+      newgroup = Group.objects.create(
+        name = group_name
+      )
+      newgroup.user_set.add(request.user)
+      result = {"status": "ok", "id": newgroup.id, 'name': newgroup.name}
+
+  return JsonResponse(result, safe=False)
+
 
 @login_required
 @transaction.atomic
@@ -34,11 +51,15 @@ def update_profile(request):
     u = get_object_or_404(User, id=id_)
     owned = [[ds.id, ds.title, 'owner'] for ds in Dataset.objects.filter(owner = u).order_by('title')]
     collabs = [[dc.dataset_id.id, dc.dataset_id.title, dc.role] for dc in DatasetUser.objects.filter(user_id_id = id_)]
+    # groups = u.groups.values_list('name', flat=True)
+    groups = u.groups.all()
+    group_leader = 'group_leaders' in  u.groups.values_list('name', flat=True) # True or False
     #owned.extend(collabs)
     context['owned'] = owned
     context['collabs'] = collabs
     context['comments'] = 'get comments associated with projects I own'
-    context['groups'] = u.groups.values_list('name',flat=True)
+    context['groups'] = groups
+    context['group_leader'] = group_leader
 
   return render(request, 'accounts/profile.html', {
       'user_form': user_form,

@@ -1,0 +1,65 @@
+{% extends "main/base.html" %}
+{% block title %}<title>WHG::Walkthrough</title>{% endblock %}
+{% block extra_head %}
+<style>
+	#content .lead {font-size: 1.1rem;}
+</style>
+{% endblock %}
+{% block content %}
+{% load static %}
+
+  <div class="container">
+    <div class="d-flex justify-content-center mt-3">
+      <h3>Creating and Publishing a Place Collection <span class="badge badge-warning ml-3">BETA</span></h3>
+    </div>
+    <div id="content" class="mx-5">
+      <p class="lead">A Place Collection is a set of place records found in publicly accessible datasets within WHG. Place records can be added to a collection individually, in groups, or from entire datasets. Each record in the collection can optionally be annotated with relevant start and end dates, a relation keyword, and notes&mdash;all serving to explain the place's membership in the collection. The collection record itself can include an abstract, keywords, an image, an accompanying essay in PDF format, and up to three links to relevant web resources. Its data can be downloaded for further use. As such, a WHG Place Collection is an authored data publication. A collection can be flagged as public by WHG staff following a cursory editorial review.</p>
+	    <p><mark>The Place Collection feature is currently in beta release. It is (or should be) fully functional as it stands, but is not yet complete. The initial use cases driving its development are pedagogical, but we anticipate several more, leading to many enhancements and extensions. Please <a href="#" class="feedback">let us know</a> of your experience with it and of any ideas for making it more useful and usable. And of course bug reports are <i>very</i> helpful.</mark></p>
+      <p class="lead">Take the following steps to build a Place Collection in WHG, then optionally make it public.</p>
+      <div id="" class="tute-section">
+        <h4 class="p-1">A. Create a new empty collection. There are three ways to do this:</h4>
+        <div class="p-1">
+          <ol>
+	          <li>From the Home screen, select Data > Collections from the top menu, click the <b>"+ new"</b> link, then fill in the Title, Description, and Collection keywords fields and save. Note that all of these can be edited at any time.</li>
+	          <li>Following a Search, selecting a result takes you to its 'Place Portal' page. Select one of the attestations appearing there and a link, <b>"add to collection"</b> appears. Clicking that opens a popup list of collections you have access to if any, and the option to create a new one simply by giving it a provisional title.
+	          <li>On the Browse screen of a public dataset, the <b>"select"</b> column on the right presents check boxes for choosing additions to a collection. Upon selecting one, a <b>"add to collection"</b> link appears, offering a popup with both a list of your existing collections, and a link to create a new one as above.</li>
+            </li>
+		      </ol>
+        </div>
+        <div class="p-1">
+          <h4 class="p-1">B. Add records</h4>
+          <p>Places can be added to a collection from the locations described in A2 and A3 above, and from the Collection Builder screen.
+          <ol>
+            <li>Following a Search (A2), from the resulting Place Portal screen, a single attestation can be added to a collection chosen from the offered popup list.</li>
+            <li>From a public dataset Browse screen (A3), any number of places can be selected, then added to a collection chosen from the offered popup list.</li>
+	          <li>Once a collection has been created, both <b>View</b> and <b>Edit ("Collection Builder")</b> screens for it become available from your Collections list. The center portion of the Collection Builder has tabs for listing places (added as above) and for adding entire datasets. The dropdown list of datasets includes all that you have access to as owner or collaborator. Adding a dataset to a collection adds all of its records to the place list. Afterwards, records on the place list can be selectively removed from the collection. Note that adding a large dataset will make managing a place list difficult. It may be much more efficient to selectively add records as in <b>B2</b> above.</li>
+          </ol>
+					{# <a href="{% url 'main:tute-guide'%}" target="_blank">Site Guide</a></p>#}
+        </div>
+        <div class="p-1">
+          <h4 class="p-1">C. Enhance and augment</h4>
+          <p>The Collection Builder screen (accessed with the <b>"edit"</b> link on your Collections list) offers the means to (1) enhance the collection overall with metadata and related material, and (2) annotate any of the place records in your collection.</p>
+          <ol>
+            <li>Collection are enhanced by adding:
+	            <ul>
+		            <li>A single paragraph abstract (description)</li>
+		            <li>One or more collection keywords (to be used in future collection search capability)</li>
+		            <li>One or more annotation keywords; this is your vocabulary for terms expressing the relation of a given place to the collection, e.g. "waypoint" for a journey, "birthplace" for a person, etc.</li>
+		            <li>An image</li>
+		            <li>A file in PDF format, e.g. an essay explaining the collection.</li>
+		            <li>Up to three links to external web resources.</li>
+	            </ul>
+            </li>
+            <li>Annotations allow you to explain a place's placement in the collection.
+	            <ul><li>Any place record can optionally be annotated with relevant dates, a note, and a relation keyword chosen from <b><i>your</i> vocabulary</b> entered in the collection's <b>"Annotation keywords"</b> field. Like all collection metadata, these can be modified at any time. Annotations appear in the <b>"View Collection"</b> screen, when selecting any place from the list appearing there.</li></ul>
+            </li>
+          </ol>
+        </div>
+        <div class="p-1">
+          <h4 class="p-1">D. Publish it</h4>
+	        <p>At present, collections are visible only to their creators until flagged as public by WHG staff. WHG staff are able to view and monitor the progress of collection building, in order to help should questions arise. A permissions system for sharing view and edit/build capability will be available soon&mdash;similar to that in place now for datasets. When you feel your collection is in shape to be made public, <a href="#" class="feedback">let WHG staff know</a>, and following a cursory review we will flag it as such. A gallery for presentation of collections will be available soon. In the meantime it will be listed on the <b>"Public Collections"</b> page and appear on the home page on an rotating basis.</p>
+        </div>
+      </div> <!--  -->
+    </div> <!-- contrib_content -->
+  </div> <!-- container -->
+{% endblock %}

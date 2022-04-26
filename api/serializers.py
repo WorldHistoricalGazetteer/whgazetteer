@@ -53,7 +53,7 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
 class TraceAnnotationSerializer(serializers.ModelSerializer):
   class Meta:
     model = TraceAnnotation
-    fields = ('id', 'src_id', 'collection', 'trace_type', 'motivation',
+    fields = ('id', 'src_id', 'collection', 'anno_type', 'motivation',
               'when', 'sequence', 'creator', 'created')
 
 class PlaceDepictionSerializer(serializers.ModelSerializer):
@@ -178,10 +178,12 @@ class PlaceSerializer(serializers.ModelSerializer):
 
   # traces = serializers.serialize("json", TraceAnnotation.objects.filter())
   traces = serializers.SerializerMethodField('trace_anno')
+
   def trace_anno(self, place):
     return coreserializers.serialize("json", TraceAnnotation.objects.filter(place=place.id))
 
   geo = serializers.SerializerMethodField('has_geom')
+
   def has_geom(self,place):
     return '<i class="fa fa-globe"></i>' if place.geom_count > 0 else "-"
 
@@ -195,6 +197,13 @@ class PlaceSerializer(serializers.ModelSerializer):
 class PlaceTableSerializer(serializers.ModelSerializer):
   dataset = DatasetSerializer()
 
+  ds = serializers.SerializerMethodField()
+  def get_ds(self, place):
+    cell_value = '<a class="pop-link pop-dataset" data-id='+str(place.dataset.id)+\
+          ' data-toggle="popover" title="Dataset Profile" data-content=""'+\
+          ' tabindex="0" rel="clickover">'+place.dataset.label+'</a>'
+    return cell_value
+
   geo = serializers.SerializerMethodField()
   def get_geo(self, place):
     if place.geom_count > 0:
@@ -203,6 +212,10 @@ class PlaceTableSerializer(serializers.ModelSerializer):
       return '<img src="/static/images/geo_'+fn+'.svg" width=12/>'
     else:
       return '&mdash;'
+
+  chk = serializers.SerializerMethodField()
+  def get_chk(self, place):
+    return '<input type="checkbox" name="addme" class="table-chk" data-id="'+str(place.id)+'"/>'
 
   revwd = serializers.SerializerMethodField('rev_wd')
   def rev_wd(self, place):
@@ -246,7 +259,7 @@ class PlaceTableSerializer(serializers.ModelSerializer):
                   'ccodes', 'geo', 'minmax',
                   'revwhg', 'revwd', 'revtgn',
                   'review_whg', 'review_wd', 'review_tgn'
-                  ,'dataset', 'dataset_id'
+                  ,'ds', 'dataset', 'dataset_id', 'chk'
                   )
 
 

@@ -9,10 +9,11 @@ from django.views.generic.base import TemplateView
 import simplejson as json, sys
 from api.serializers import SearchDatabaseSerializer
 from areas.models import Area
+from collection.models import Collection
 from datasets.models import Dataset, Hit
 from datasets.tasks import normalize, get_bounds_filter
 from elasticsearch7 import Elasticsearch
-from places.models import Place
+from places.models import Place, PlaceGeom
 
     
 class SearchPageView(TemplateView):
@@ -497,6 +498,27 @@ def getGeomCollection(idx,doctype,q):
   #print(str(len(collection['features']))+' features')  
   return collection
 
+class CollectionGeomView(View):
+  @staticmethod
+  def get(request):
+    #print('CollectionGeomView GET:',request.GET)
+    """
+    args in request.GET:
+        [string] coll_id: collection to be queried
+    """
+    coll_id = request.GET.get('coll_id')
+    coll = Collection.objects.get(id=coll_id)
+    pids = [p.id for p in coll.places_all]
+    placegeoms = PlaceGeom.objects.filter(place_id__in=pids)
+    features = [{"type":"Feature",
+                 "geometry":pg.jsonb,
+                 "properties":{"pid":pg.place_id, "title":pg.title}
+                 } for pg in placegeoms]
+    fcoll = {"type":"FeatureCollection", "features": features}
+    print('len(fc["features"])',len(fcoll['features']))
+    
+    return JsonResponse(fcoll, safe=False,json_dumps_params={'ensure_ascii':False,'indent':2})
+
 class TraceGeomView(View):
   @staticmethod
   def get(request):
@@ -511,20 +533,20 @@ class TraceGeomView(View):
     trace_id = request.GET.get('search')
     doctype = request.GET.get('doc_type')
     q_trace = {"query": {"bool": {"must": [{"match":{"_id": trace_id}}]}}}
-    
+
     # using contextSearch() to get bodyids (i.e. place_ids)
     bodies = contextSearch(idx, doctype, q_trace, 'features')['hits'][0]
     print('a body from TraceGeomView->contextSearch',bodies[0])
-    
+
     bodyids = [b['place_id'] for b in bodies if b['place_id']]
     print('len(bodyids)',len(bodyids))
     q_geom={"query": {"bool": {"must": [{"terms":{"place_id": bodyids}}]}}}
     geoms = getGeomCollection(idx,doctype,q_geom)
     print('len(geoms["features"])',len(geoms['features']))
     geoms['bodies'] = bodies
-    
+
     return JsonResponse(geoms, safe=False,json_dumps_params={'ensure_ascii':False,'indent':2})
-    #return JsonResponse(geoms, safe=False)      
+    #return JsonResponse(geoms, safe=False)
 
 
 def home(request):

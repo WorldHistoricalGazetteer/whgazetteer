@@ -21,6 +21,23 @@
   <script src="https://unpkg.com/maplibre-gl@1.15.2/dist/maplibre-gl.js"></script>
   <link href="https://unpkg.com/maplibre-gl@1.15.2/dist/maplibre-gl.css" rel="stylesheet" />
 
+	<style>
+		#actions {padding-top:0.2rem;}
+    #addtocoll_popup {
+	    font-size: 0.8rem;
+	    position:absolute;
+	    top:16px; right:195px; width:170px;
+	    background-color: #fff;
+	    border: 1px solid #336699;
+	    z-index: 2000;
+	    box-shadow: 3px 3px #c3c3c3;
+	    {#display: none;#}
+    }
+    #dataset_tabs { position: relative;}
+    #selection_status { position: absolute; top:10px; right:10px; display:none;}
+    .dataTables_scroll {border-right: 1px solid gainsboro;}
+    {#.dataTables_scrollHead, .dataTables_scrollBody {width:99% !important;}#}
+	</style>
 {% endblock %}
 
 {% block title %}<title>Dataset::{{ ds.label }}</title>{% endblock %}
@@ -29,15 +46,43 @@
 <div id="dataset_content" class="container mt-1 px-1">
   {% with last=request.META.HTTP_REFERER %}
     <p class="small"><a href="{{ last }}">{% fontawesome_icon 'arrow-left' color='#336699' %} back </a> / {{ object.title }}</p> 
-  {% endwith %}  
+  {% endwith %}
   <ul id="dataset_tabs" class="nav nav-tabs" role="tablist">
-      <span class="ds-title ml-1 mr-3">{{ object.title }}</span>
+			<span class="ds-title ml-1 mr-3">{{ object.title }}</span>
       <li class="nav-item">
           <a class="nav-link" id="summary-tab" data-link="summary" href="{% url 'datasets:ds_meta' pk=object.id %}" role="tab">Summary</a>
       </li>
       <li class="nav-item">
           <a class="nav-link active" id="browse-tab" href="#" role="tab">Browse</a>
       </li>
+	    <div id="addtocoll_popup" class="p-2 hidden">
+        <div style="position:relative;">
+	        <div class="closer" style="position:absolute; top:-6px; right:-2px">x</div>
+        </div>
+	      <ul id="my_collections" class="no-bullets">
+					{% for c in collections %}
+						<li><a class="a_addtocoll" href="#" ref="{{ c.id }}">{{ c.title }}</a></li>
+		      {% endfor %}
+	      </ul>
+        <hr/>
+	      <p class="mb-0 ital">
+		      <a id="create_coll_link" href="#">{% fontawesome_icon 'plus-square' color='#336699' %} create new</a>
+	      </p>
+        <p id="title_form" class="small hidden">
+          <input id="title_input" type="text" placeholder="Collection title" width="20"/>
+	        <button id="b_create_coll" type="button">create</button>
+        </p>
+      </div>
+      <span id="added_flash" class="mr-2 hidden" style="background-color: yellow; position:absolute; top:10px; right:10px;"> added! </span>
+      <div id="selection_status" style="position:absolute; right:20px;">
+	      <span id="actions">
+		      <span id="addtocoll" class="float-right ">
+{#            <span id="added_flash" class="mr-2 hidden" style="background-color: yellow;">added!</span>#}
+			      <a id="addchecked" href="#">add<mark id="sel_count"></mark>to collection <i class="fa fa-plus"></i></a>
+		      </span>
+	      </span>
+{#			    Added to collection!#}
+	    </div>
   </ul>
   <div class="tab-content">
     <div id="browse" class="tab-pane fade show active" role="tabpanel" aria-labelledby="browse-tab">
@@ -47,9 +92,6 @@
               {{ filter }}
               <div class="toomany"></div>
               <div id="map" style="height:300px;"></div>
-              <!--<div id="mapdiv_browse" style="position:relative">-->
-                  <!--{ leaflet_map "map_browse" %}-->
-              <!--</div>-->
               <div id="row_detail">
                 <div id="detail" class="small"></div>
               </div>
@@ -63,12 +105,8 @@
                     <th>title</th>
                     <th>ccodes</th>
                     <th>geo</th>
-                    <th class="hidden">revwd</th>
-                    <th class="hidden">revtgn</th>
-                    <th class="hidden">revwhg</th>
-                    <th>wikidata <a rel="tooltip" data-html="true" title="&#x25a2; not reviewed<br/><i class='fa fa-check-square-o'></i> reviewed" class="pointer text-danger strong">?</a></th>
-                    <th>tgn <a rel="tooltip" data-html="true" title="&#x25a2; not reviewed<br/><i class='fa fa-check-square-o'></i> reviewed" class="pointer text-danger strong">?</a></th>
-                    <th>whg <a rel="tooltip" data-html="true" title="&#x25a2; not reviewed<br/><i class='fa fa-check-square-o'></i> reviewed )" class="pointer text-danger strong">?</a></th>
+	                  <th>select <a href="#" rel="tooltip" title="add one or more rows to a collection">
+		                  {% fontawesome_icon 'question-circle' color='#993333' %}</a></th>
                   </tr>
                 </thead>
               </table>
@@ -112,8 +150,96 @@
 </div>
 
 <script type="text/javascript">
-  
-  
+	$("#create_coll_link").click(function(){
+			console.log('open title input')
+			$("#title_form").show()
+	})
+
+	function resetSearch(){
+    var e = $.Event('keyup')
+    e.which(13)
+		$("#placetable_filter input").trigger(e)
+	}
+	function add_to_collection(coll, pids){
+      console.log('add_to_collection()')
+      var formData = new FormData()
+			formData.append('collection', coll)
+			formData.append('place_list', pids)
+			formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+      {# collection.views.add_places() #}
+			$.ajax({
+		      type: 'POST',
+		      enctype: 'multipart/form-data',
+		      url: '/collections/add_places/',
+		      processData: false,
+		      contentType: false,
+		      cache: false,
+		      data: formData,
+		      success:function(response){
+            var dupes = response.msg.dupes
+            var added = response.msg.added
+			      if(dupes.length > 0){
+              let msg = dupes.length+' records '+(dupes.length>1?'were':"was")+' already in the collection: ['+ dupes
+				      if(added.length > 0){
+                msg += ']; '+added.length+' '+(added.length>1?'were':"was")+' added'
+				      }
+              alert(msg)
+			      } else {
+              // notify success & clear checks and list
+				      $("#added_flash").fadeIn().delay(2000).fadeOut()
+				      checked_rows = []
+			      }
+			      // uncheck everything regardless
+						$(".table-chk").prop('checked',false)
+		      }
+			})
+			// TODO: notify of success
+			console.log('add_to_collection() completed')
+			{#$("#addtocoll").hide()#}
+			$("#addtocoll_popup").hide()
+			$("#sel_count").html('')
+			$("#selection_status").css('display','none')
+			{#$("input.action").prop('checked',false)#}
+			{#resetSearch()#}
+	}
+	$(".a_addtocoll").click(function(){
+			coll = $(this).attr('ref')
+			pids = checked_rows
+			add_to_collection(coll, pids)
+			{#console.log('pids to coll', pids, coll)#}
+	})
+	$("#b_create_coll").click(function(){
+			let title = $("#title_input").val()
+			if(title != ''){
+        // create new place collection, return id
+				var formData = new FormData()
+				formData.append('title', title )
+				formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+		    $.ajax({
+		      type: 'POST',
+		      enctype: 'multipart/form-data',
+		      url: '/collections/flash_create/',
+		      processData: false,
+		      contentType: false,
+		      cache: false,
+		      data: formData,
+		      success:function(data){
+			      el = $('<li><a class="a_addtocoll" href="#" ref='+data.id+'>'+data.title+'</a></li>')
+			      el.click(function(){
+							coll = data.id
+							pids = checked_rows
+							add_to_collection(coll, pids)
+							console.log('pids to coll', pids, coll)
+			      })
+						$("#my_collections").append(el)
+		      }
+        })
+				$("#title_form").hide()
+			} else {
+					alert( 'Your new collection needs a title!' )
+			}
+	})
+
   function filterColumn (i, v) {
     // clear then search
     table
@@ -132,16 +258,36 @@
     .draw();
     $("#status_select").val('99')
   }    
-  
+
   // table events
   // TODO: use datatables methods?
   function setRowEvents(){
-
     $("#placetable tbody tr").click(function() {
       thisy=$(this)
       // get id
       pid=$(this)[0].cells[0].textContent
-      
+			// is checkbox checked?
+	    // if not, ensure row pid is not in checked_rows
+	    chkbox = thisy[0].cells[5].firstChild
+			if(chkbox.checked){
+				console.log('chkbox.checked')
+        checked_rows.push(pid)
+				$("#selection_status").fadeIn()
+				{#$("#addtocoll").fadeIn()#}
+				console.log('checked_rows', checked_rows)
+				$("#sel_count").html(' '+checked_rows.length+' ')
+			} else {
+        const index = checked_rows.indexOf(pid);
+        if (index > -1) {
+          checked_rows.splice(index, 1)
+	        if(checked_rows.length == 0 ){
+            $("#addtocoll").fadeOut()
+		        $("#addtocoll_popup").hide()
+          }
+        }
+        console.log( pid + ' removed from checked_rows[]', checked_rows)
+      }
+
       geom = features.find(function(f){return f.properties.pid==pid}).geometry
       coords = geom.coordinates
       
@@ -161,7 +307,6 @@
       
     }) 
 
-        
     row = $("#drftable_list table tbody")[0].rows[0]
     pid = parseInt(row.cells[0].textContent)
     // highlight first row, fetch detail, but don't zoomTo() it
@@ -170,13 +315,21 @@
     getPlace(pid)
   }
 
+  $(".table-chk").click(function(e){
+    e.preventDefault()
+    console.log('adding', $(this).data('id'))
+	  {#checked_rows.push($(this).data('id'))#}
+	  {#console.log('checked_rows',checked_rows)#}
+  })
 
   $(function(){
+    checked_rows = []
     localStorage.setItem('filter', '99')
     wdtask = false
     tgntask = false
     whgtask = false
-    
+
+
     startTableSpinner()
     startDetailSpinner()
     
@@ -184,10 +337,12 @@
     window.filter = "{{ filter }}"
     // task columns are inoperable in this public view
     table = $('#placetable').DataTable({
-      dom: "<'row'<'col-sm-12 col-md-5'l><'#status_filter.col-sm-12 col-md-2'>"+
-      "<'col-sm-12 col-md-5'f>>" +
-      "<'row'<'col-sm-12'tr>>" +
-      "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"
+      dom:  "<'row'<'col-sm-12 col-md-4'l>"+
+		          "<'col-sm-12 col-md-2'>"+
+		          {#"<'#actions.col-sm-12 col-md-4'>"+#}
+              "<'col-sm-12 col-md-6'f>>" +
+            "<'row'<'col-sm-12'tr>>" +
+            "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"
       ,serverSide: true
       ,ajax: {
         url: "/api/placetable/?format=datatables&ds={{ ds.label }}"
@@ -202,28 +357,36 @@
           {"data": "title"},
           {"data": "ccodes"},
           {"data": "geo"},
-          {"data": "review_wd"},
-          {"data": "review_tgn"},
-          {"data": "review_whg"},
-          {"data": "revwd", "visible": wdtask?true:false, 
-            "orderable":false},
-          {"data": "revtgn", "visible": tgntask?true:false, 
-            "orderable":false},
-          {"data": "revwhg", "visible": whgtask?true:false, 
-            "orderable":false}
+          {"data": "chk"},
       ]
       ,columnDefs:[
-        { className: "browse-task-col", "targets": [8,9,10] },
-        { orderable: false, "targets": [4,5,6,7]},
-        { searchable: false, "targets": [0,1,3,4,8,9,10]}
-        ,{ visible: false, "targets": [5,6,7]}
+        {#{ className: "browse-task-col", "targets": [8,9,10] },#}
+        { orderable: false, "targets": [4, 5]},
+        {#{ searchable: false, "targets": [0,1,3,4,8,9,10]}#}
+        { searchable: false, "targets": [0,1,3,4,5]}
+        {#,{ visible: false, "targets": [5,6,7]}#}
       ]
     })
 
+	  $("#addchecked").click(function(){
+	    console.log('clicked #addchecked')
+	    $("#addtocoll_popup").fadeIn()
+    })
+
+	  $(".closer").click(function(){
+			$("#addtocoll_popup").hide()
+		 })
     table.on( 'draw', function () {
-      //$("#status_filter").html(buildSelect());-->
-      //$("#status_select").val(localStorage.getItem('filter'))-->
+      console.log('table drawn')
       spinner_table.stop()
+	    // recheck inputs in checked_rows
+	    if(checked_rows.length > 0){
+        for (i in checked_rows){
+          $('[data-id='+checked_rows[i]+']').prop('checked',true)
+        }
+        // make sure selection_status is visible
+				$("#selection_status").show()
+	    }
       setRowEvents();
     })
     
@@ -311,7 +474,7 @@
     // fetch data
     $.get('/datasets/'+dsid+'/geojson', function(data){
       features = data.collection.features
-      console.log('data', data.collection)
+      {#console.log('data', data.collection)#}
       // get bounds w/turf
       envelope = turf.envelope(data.collection)
       range = data.minmax
@@ -385,7 +548,7 @@
 
   // called by table row click
   function highlightFeatureGL(pid, geom, coords){
-    console.log('pid, coords',pid, coords)
+    {#console.log('pid, coords',pid, coords)#}
     // TODO: 
     if(geom.type.includes('Point')){
       mappy.setPaintProperty('gl_active_point', 'circle-opacity', 1.0);
@@ -745,7 +908,7 @@
     if (data.links.length > 0) {
       links=data.links
       links_arr = onlyUnique(data.links)
-      console.log('distinct data.links',links_arr)
+      {#console.log('distinct data.links',links_arr)#}
       for (l in links_arr) {
         descrip += url_extplace(links_arr[l].identifier)
       }

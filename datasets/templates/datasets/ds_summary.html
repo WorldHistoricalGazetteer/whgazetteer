@@ -152,7 +152,7 @@
               <span class="hidden editing-uri_base">{{ form.uri_base }}</span>
             </td>
           </tr>
-          {% if user.is_superuser or user.is_admin %}
+          {% if user.is_superuser %}
             <tr>
               <td style="vertical-align:top;"><b>Featured rank</b>
                 <a href="#" class="edit-featured">{% fontawesome_icon 'edit' color='#336699' %}</a>
@@ -178,7 +178,8 @@
           <p> <i>Current data file</i>
             {% if current_file.format == 'delimited' %}
             {% if ds.owner.id == user.id or user.is_superuser%}
-            <span class="float-right mr-2 hidden">
+{#            <span class="float-right mr-2 hidden">#}
+            <span class="float-right mr-2">
               <a href="#" id="a_update_modal" data-dsid = {{ ds.id }} data-toggle="modal" data-target="#updateModal">update</a>
               <span class="help-matches" data-id="updates">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
             </span>
@@ -397,7 +398,7 @@
   // -> views_dl.downloader()
   $(".a-dl-celery").click(function(e){
     e.preventDefault()
-    <!--startDownloadSpinner()-->
+    // startDownloadSpinner()
     console.log('sending post')
     console.time('dl')
     format = $(this).attr('ref')
@@ -415,7 +416,6 @@
         success:function(response){
           startDownloadSpinner()
           console.log('got task_id',response)
-          <!--$("#tid").html(response.task_id)-->
           task_id = response.task_id
           var progressUrl = "/celery-progress/"+task_id+"/";
           CeleryProgressBar.initProgressBar(progressUrl,
@@ -497,7 +497,6 @@
   function comparisonText(data) {
       stats = data['compare_result']
       keepg = data['keepg']; keepl = data['keepl'];
-      <!--keepers_note='Keep existing: geometry? <b>'+keepg+'</b>; links? <b>'+keepl+'</b>';-->
       html = 'This action would perform these WHG <i>database</i> updates:<br/><ul style="padding:0;list-style: inside;">'
       html += '<li>Replace <b>'+stats['count_replace']+'</b> place records having same IDs </li>'
       html += stats['rows_add'].length >0?'<li>Add records (<b>'+stats['rows_add'].join(', ')+'</b>)</li>':''
@@ -542,10 +541,8 @@
         if('failed' in data){
           errors = data['failed']['errors']
           html = '<b class="text-danger">Data validation issue(s):</b> <ul class="ul-flush">'
-          <!--html+=JSON.stringify(data['failed']['errors'])-->
           var i = 0; i < 9; i++
           for(var i=0; i<errors.length; i++){
-            <!--html += '<p>'+errors[i]['message']+'</p>'-->
             html += '<li class="li-flush">'+errors[i]+'</li>'
           }
           html+='</ul><p>Please correct and try again</p>'
@@ -583,9 +580,6 @@
   }
 
   $(function(){
-    <!--var progressUrl = "{ url 'celery_progress:task_status' task_id %}";-->
-    <!--CeleryProgressBar.initProgressBar(progressUrl)-->
-
     // help modals
     $(".help-matches").click(function(){
       page=$(this).data('id')
@@ -635,21 +629,6 @@
         $("html,body").scrollTop(0)
       }
     })
-
-    <!--$(".selector").dialog({-->
-      <!--resizable: false,-->
-      <!--autoOpen: false,-->
-      <!--height: 500,-->
-      <!--width: 700,-->
-      <!--title: "WHG Help",-->
-      <!--modal: true,-->
-      <!--buttons: { 'Close': function() {console.log('close dialog'); $(this).dialog('close');} },-->
-      <!--open: function(event, ui) {-->
-        <!--$('#helpme').load('/media/help/'+page+'.html')-->
-      <!--},-->
-      <!--show: {effect: "fade",duration: 400 },-->
-      <!--hide: {effect: "fade",duration: 400 }-->
-    <!--});-->
   })
 
   // TODO: refactor this ugly nonsense

@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django_celery_results',
     'django_extensions',
     'django_filters',
+    'django_resized',
     'django_tables2',
     'djgeojson',
     'fontawesome',
@@ -103,6 +104,13 @@ CELERY_BEAT_SCHEDULE = {
 CAPTCHA_NOISE_FUNCTIONS = (
   #'captcha.helpers.noise_arcs',
     'captcha.helpers.noise_dots',)
+
+DJANGORESIZED_DEFAULT_SIZE = [1000, 800]
+DJANGORESIZED_DEFAULT_QUALITY = 75
+DJANGORESIZED_DEFAULT_KEEP_META = True
+DJANGORESIZED_DEFAULT_FORCE_FORMAT = 'JPEG'
+DJANGORESIZED_DEFAULT_FORMAT_EXTENSIONS = {'JPEG': ".jpg"}
+DJANGORESIZED_DEFAULT_NORMALIZE_ROTATION = True
 
 # replacement section from drf-datatables
 # https://django-rest-framework-datatables.readthedocs.io/en/latest/

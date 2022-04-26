@@ -24,6 +24,15 @@
   <script src="{% static 'js/bootstrapx-clickover.js' %}"></script>
   
   <style>
+    #addtocoll {padding-left:0.3rem;}
+    #addtocoll_popup {position:absolute;
+	    top:3px; left:3px; width:200px;
+	    background-color: #fff;
+	    border: 1px solid #336699;
+	    z-index: 2000;
+	    box-shadow: 3px 3px #c3c3c3;
+	    {#border-radius: 10px;#}
+    }
     .svg-container {
       display: inline-block;
       position: relative;
@@ -38,6 +47,22 @@
         top: 0;
         left: 0;
     }
+    #coll_popup {
+	    position:absolute;
+			{#background-color: whitesmoke;#}
+	    border: 1px solid grey;
+	    box-shadow: gainsboro 4px 4px;
+	    border-radius: 6px;
+	    padding: 15px;
+	    max-height: 75%;
+	    width: 350px;
+	    top: 0;
+	    right: 3px;
+	    z-index: 1000;
+	    overflow-y: scroll;
+	    background-color: cornsilk;
+	    {#display:none;#}
+    }
   </style>
   
 {% endblock %}
@@ -50,6 +75,13 @@
   <div id="place_content" class="tab-content">
     <div class="row pt-1">
       <div id="place_home_l" class="col-sm-6">
+	      <div class="small allcap-heading">
+		      ATTESTATIONS TO DATE
+		      <span id="added_flash" class="float-right"></span>
+		      <span id="addtocoll" class="float-right mr-1 hidden">
+			      <a id="addchecked" href="#">add to collection {% fontawesome_icon 'plus' %}</a>
+		      </span>
+	      </div>
         {% for rec in payload %}
         <div id="card_{{ rec.place_id }}" class="col-content small mt-1">
           <!-- 'core' array of dataset labels is context from view; color-code core -->
@@ -58,35 +90,36 @@
           {% else %}
             <div class="attest-header">
           {% endif %}
-            <b>{{ rec.title }}</b>
+          <b>{{ rec.title }}</b>
+          <span class="ml-2">
+            dataset: <a class="pop-link pop-dataset" data-id={{rec.dataset.id}} data-toggle="popover" title="Dataset Profile" data-content="" tabindex="0" rel="clickover">
+	              {{rec.dataset.name|truncatechars:25}}</a>
+          <span class="float-right">
+            <a href="#" data-id="{{ rec.place_id }}" class="create-comment mr-2" rel="tooltip" title="create comment">
+              {% fontawesome_icon 'edit' color='#336699' %}</a>pid:
+            <a href="" class="a_modal" data-pid="{{ rec.place_id }}" data-toggle="modal" data-target="#modal_place" title="full record">{{ rec.place_id }}</a>
             <span class="ml-2">
-              from dataset: <a class="pop-link pop-dataset" data-id={{rec.dataset.id}} data-toggle="popover" title="Dataset Profile" data-content="" tabindex="0" rel="clickover">{{rec.dataset.label}}</a>
-            <span class="float-right"><i>{{rec.place_id}}</i>
-              <a href="#" data-id="{{ rec.place_id }}" class="create-comment ml-2" rel="tooltip" title="create comment">
-                {% fontawesome_icon 'edit' color='#336699' %}</a>            
-              <a href="" class="a_modal ml-1" data-pid="{{ rec.place_id }}" data-toggle="modal" data-target="#modal_place" title="place detail">full record</a>
               {% if rec.geoms|length > 0 %}
-                <span class="ml-2">
                 <a href="#" class="flash-geo ttip" data-id="{{ rec.place_id }}" title="flash map marker">{% fontawesome_icon 'map-marker' %}</a>
-                </span>{% endif %}
-            </span>
-          </div>
-          
-          <div class="attest-element scroll65"><b>Variants</b>: 
-            {% for name in rec.names|slice:":4"|dictsort:"label" %}
-              <i>{{name.label}}</i>
-              {% if name.when %}
-                ({% for t in name.when.timespans|sortts %}
-                  <!--TODO: not necessarily 'in'-->
-                  {{ t.start.in }}-{{ t.end.in }}
-                {% if not forloop.last %}; {% endif %}
-                {% endfor %})
               {% endif %}
+              <input type="radio" name="r_anno" rel="tooltip" title="add to a collection" class="action ml-2" data-id="{{ rec.place_id }}" />
+            </span>
+          </span>
+        </div>
+        <div class="attest-element scroll65"><b>Variants</b>:
+          {% for name in rec.names|slice:":4"|dictsort:"label" %}
+            <i>{{name.label}}</i>
+            {% if name.when %}
+              ({% for t in name.when.timespans|sortts %}
+                <!--TODO: not necessarily 'in'-->
+                {{ t.start.in }}-{{ t.end.in }}
               {% if not forloop.last %}; {% endif %}
-            {% endfor %}
-            {% if rec.names|length > 4 %}...{{rec.names|length|add:"-4"}} more{% endif %}
-          </div>
-          
+              {% endfor %})
+            {% endif %}
+            {% if not forloop.last %}; {% endif %}
+          {% endfor %}
+          {% if rec.names|length > 4 %}...{{rec.names|length|add:"-4"}} more{% endif %}
+        </div>
           <div class="attest-element"><b>Types</b>: 
             {% for type in rec.types %}
               <i>{{ type.label }}
@@ -101,7 +134,7 @@
           </div>
 
           {% if rec.links|length > 0 %}
-            <div class="attest-element"><b>Links  </b>: {{rec.links|length}} linked records
+            <div class="attest-element"><b>Links  </b>: {{rec.links|length}} linked records {{ rec.links }}
             </div>
           {% endif %}
 
@@ -137,16 +170,32 @@
               {{ g|json_script:rec.place_id }}
             {% endfor %}
           {% endif %}
-          <!--{ if rec.descriptions and rec.descriptions|length > 0 %}-->
-            <!--<div class="attest-element">-->
-              <!--<div><b>Descriptions</b>: { for desc in rec.descriptions %}<i>{desc.value}}</i>-->
-                <!--{ if not forloop.last %}; { endif %}{ endfor %}</div>-->
-            <!--</div>-->
-          <!--{ endif %}-->
         </div>
         {% endfor %} <!-- rec in payload-->
+        <!-- popup -->
+	      <div id="coll_popup" class="hidden">
+		      <div class="closer" style="position:absolute; top:-3px; right:7px;">x</div>
+		      <h5 id="coll_title"></h5>
+		      <div id="coll_popup_content" class="smaller"></div>
+	      </div>
       </div> <!-- place_home_l-->
       <div id="place_home_r" class="col-sm-6">
+	      <div id="addtocoll_popup" class="p-2 hidden small">
+		      <div class="closer" style="position:absolute; top:0; right:4px">X</div>
+		      <ul id="my_collections" class="no-bullets">
+						{% for c in my_collections %}
+							<li><a class="a_addtocoll" href="#" ref="{{ c.id }}">{{ c.title }}</a></li>
+			      {% endfor %}
+		      </ul>
+	        <hr/>
+		      <p class="mb-0 ital">
+			      <a id="create_coll_link" href="#">{% fontawesome_icon 'plus-square' color='#336699' %} create new</a>
+		      </p>
+	        <p id="title_form" class="small hidden">
+	          <input id="title_input" type="text" placeholder="Collection title" width="20"/>
+		        <button id="b_create_coll" type="button">create</button>
+	        </p>
+	      </div>
         <div id="place_temporal" class="col-content small">
           <p class="mb-0 allcap-heading">TEMPORAL ATTESTATIONS</p>
           <!--<div id="histogram_sum"></div>-->
@@ -154,29 +203,35 @@
         </div>
         <div id="place_map" class="col-content small">
           <p class="mb-0 allcap-heading">GEOGRAPHY <span class="nogeo text-danger"></span>
-              <span class="float-right">nearby places (8000 max) <input id="fetch-context" type="checkbox"/></span>
+              <span id="fetch_context" class="float-right">nearby places (8000 max) <input id="fetch-context" type="checkbox"/></span>
           </p>
           <div id="map">{% leaflet_map "map" callback="map_init" %}</div>
         </div>
         <div id="place_traces" class="col-content small mt-1">
-          <p class="mb-0 allcap-heading">TRACES (related persons, events, works, objects)
-            <span id="clear_traces" class="float-right hidden">
-            <a href="#" class="trace-geo">clear trace markers</a></span>
+          <p class="mb-0 allcap-heading">IN COLLECTIONS
+            <span id="clear_markers" class="float-right hidden"><a href="#">clear markers</a> </span>
           </p>
-          <div id="trace_list">
-          {% if traces|length > 0 %}
+          <div id="collection_list">
+          {% if collections|length > 0 %}
             <ul>
-            {% for t in traces %}
-              <li><b>{{ t.target.type }}</b> {{ t.body.relations }}; 
-                {% if t.bodycount > 1 %} {% fontawesome_icon 'globe' color='#336699' %} 
-                  <a href="#" data-ctr={{ forloop.counter0 }} data-id={{t.trace_id}} class="trace-geo ml-1">
-                     show trace places</a>
-                {% endif %}
-                 <br/><a href="{{t.target.id}}" target="_blank">{{ t.target.title }}</a>
-                {% if t.target.depiction %}
-                <a href="#" data-toggle="tooltip" data-html="true" data-trigger="click" data-container="#place_traces"data-boundary="viewport" title="<img class='trace-img' src='{{ t.target.depiction }}'/>" class="ml-1 tip" data-placement="auto" style="z-index:10000 !important;">{% fontawesome_icon 'image' color='#336699' %}</a>                      
-                {% endif %}
+            {% for c in collections %}
+	            {% with c.collection_class as cclass %}
+	            <li>
+		            {% if cclass == 'place' %}
+		              <a href="{% url 'collection:place-collection-browse' c.id %}" target="_blank">
+			              <b>{{ c.title }}</b></a>, a collection of <sr>{{ c.places_all.count }}</sr> places
+{#			            href='javascript:{ zoomTo("{{ form.authrecord_id.value }}") }'#}
+			              {{ c.title|json_script:"c_title" }}
+			              {{ c.description|json_script:"c_description" }}
+			              [<a href='javascript:{ showCollectionDescription()}' class="a_cdescription">description</a>,
+			              <a href="#" class="coll-geo" data-id="{{ c.id }}">places</a>]
+		            {% else %}
+		              <a href="{% url 'collection:ds-collection-browse' c.id %}" target="_blank">
+			              <b>{{ c.title }}</b></a>
+			            , a collection of all <sr>{{ c.places_all.count }})</sr> places in {{ c.datasets.count }} datasets
+	              {% endif %}
               </li>
+	            {% endwith %}
             {% endfor %}
             </ul>
           {% else %}
@@ -188,7 +243,6 @@
     </div> <!-- row -->          
   </div> <!-- place_content -->
 </div> <!-- top container -->
-
 
 <div id="modal_place" class="modal fade" tabindex="-1" role="dialog" >
   <div class="modal-dialog" role="document">
@@ -206,9 +260,123 @@
 
 <script type="text/javascript">
 
-  $('.a_modal').on('click',function(){
-      // remove modal header if there is one from a comment form
+	function showCollectionDescription(){
+    const title = JSON.parse($("#c_title").text());
+    const descrip = JSON.parse($("#c_description").text());
+    console.log('descrip',descrip)
+    console.log('title',title)
+    $("#coll_popup").fadeIn()
+    $("#coll_title").html(title)
+    $("#coll_popup_content").html('<p>'+descrip+'</p>')
+	}
+	{#$(".a_cdescription").click(function(){#}
+  {#  console.log('display description of ',$(this).data('id'))#}
+	{#	$("#coll_description").html().show()#}
+	{# })#}
+	function add_to_collection(coll, pids){
+      var formData = new FormData()
+			formData.append('collection', coll)
+			formData.append('place_list', pids)
+			formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+			$.ajax({
+		      type: 'POST',
+		      enctype: 'multipart/form-data',
+		      url: '/collections/add_places/',
+		      processData: false,
+		      contentType: false,
+		      cache: false,
+		      data: formData,
+		      success:function(response){
+			      if(response.status == 'dupe'){
+              alert('That record is already in the collection')
+				      $("input.action").prop('checked',false)
+			      } else {
+			        $("#added_flash").html(response.msg).show().delay(3000).fadeOut()
+			        {#$("#added_flash").show().delay(3000).fadeOut()#}
+				      console.log('added! gimmee feedback', response.msg)
+			      }
+		      }
+			})
+			// TODO: notify of success
+			$("#addtocoll").hide()
+			$("#addtocoll_popup").hide()
+			$("input.action").prop('checked',false)
+
+	}
+	$(".a_addtocoll").click(function(){
+      console.log('clicked', $(this))
+      thisy = $(this)
+			coll = $(this).attr('ref')
+			pids = checked_cards
+			add_to_collection(coll, pids)
+			console.log('pids to coll', pids, coll)
+	})
+	$("#b_create_coll").click(function(){
+			let title = $("#title_input").val()
+			if(title != ''){
+        // create new place collection, return id
+				var formData = new FormData()
+				formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+				formData.append('title', title )
+		    $.ajax({
+		      type: 'POST',
+		      enctype: 'multipart/form-data',
+		      url: '/collections/flash_create/',
+		      processData: false,
+		      contentType: false,
+		      cache: false,
+		      data: formData,
+		      success:function(data){
+			      console.log('new collection', data)
+			      el = $('<li><a class="a_addtocoll" href="#" ref='+data.id+'>'+data.title+'</a></li>')
+			      el.click(function(){
+							coll = data.id
+							pids = checked_cards
+							add_to_collection(coll, pids)
+							console.log('pids to coll', pids, coll)
+			      })
+						$("#my_collections").append(el)
+		      }
+        })
+				$("#title_form").hide()
+			} else {
+					alert( 'Your new collection needs a title!' )
+			}
+	})
+	$(".closer").click(function(){
+      $(this).parent().hide()
+			{#$("#addtocoll_popup").hide()#}
+	})
+	$("#create_coll_link").click(function(){
+			console.log('open title input')
+			$("#title_form").show()
+	})
+	$("#addchecked").click(function(){
+      $("#addtocoll_popup").fadeIn()
+	})
+	{# single pid for place portal; adapt for multi-select elsewhere #}
+	$(".action:radio").click(function(){
+			pid = $('input[name="r_anno"]:checked').data('id');
+			console.log('checked radio for pid:', pid)
+			{#if($(".action:checkbox:checked").length > 0) {#}
+				{#$("#addtocoll").removeClass('hidden')#}
+			$("#addtocoll").fadeIn()
+			{# } else {#}
+      {#  $("#addtocoll").fadeOut()#}
+      {#  $("#addtocoll_popup").fadeOut()#}
+			{# }#}
+			checked_cards = []
+			{#$(".action:checkbox:checked").each(function() {#}
+			checked_cards.push($(this).data("id"))
+					{#console.log('checked ids:', checked_cards);#}
+			{# });#}
+      {#console.log($(this))#}
+	})
+
+  $(".a_modal").on('click',function(){
+    // remove modal header if there is one from a comment form
     $(".modal-header").remove()
+    $(".modal-footer").remove()
     startModalSpinner()
     var pid = $(this).data('pid')
     $('.modal-body').load('/places/'+pid+'/modal',function(){
@@ -288,6 +456,11 @@
       placement: 'bottom',
       html: true
     });
+    $('input[data-toggle="tooltip"]').tooltip({
+      animated: 'fade',
+      placement: 'bottom',
+      html: true
+    });
     // toggle nearby places
     $('input#fetch-context').prop('checked',false)
     $('input#fetch-context').click(function(){
@@ -297,98 +470,28 @@
         nearby.removeFrom(mappy)
       }
     })
-    $("#clear_traces").click(function(){
+    $("#clear_markers").click(function(){
       traceLayers.clearLayers()
+	    // center on place record again
+      mappy.setView(center, 5)
+	    $("#clear_markers").fadeOut()
+	    $("#fetch_context").show()
     })
-    // load trace geometry
-    $(".trace-geo").click(function(e){
+
+		$(".clear-markers").click(function(){
+      console.log('clear markers, toot sweet')
+		})
+
+    // load collection geometry (# within reason)
+    $(".coll-geo").click(function(e){
       e.preventDefault()
-      // traces never fetched
-      fetchTraceGeom($(this).data('id'),$(this).data('ctr'))
-      $("#clear_traces").show()
+	    // TODO: why does context fail when collection places are displayed
+	    // in any case, hide the checkbox
+	    $("#fetch_context").hide()
+      fetchCollectionGeom($(this).data('id'), 3)
+      $("#clear_markers").fadeIn()
     })
-  })
-  
-  function range(start, stop, step) {
-    var a = [start], b = start;
-    while (b < stop) {
-        a.push(b += step || 1);
-    }
-    return a;
-  }
-  function intersects(a,b){
-    min = (a[0] < b[0] ? a : b)
-    max = (min == a ? b : a)
-    return !(min[1] < max[1])
-  }
-  
-  function histogram_data(intervals,minmax){
-    step = Number(((minmax[1]-minmax[0])/200))
-    bins = range(minmax[0],minmax[1],step)
-    hist_array = Array.apply(null, Array(bins.length)).map(Number.prototype.valueOf,0);
-    labels=bins.map(function(d){return Math.round(d)})
-    for (b=0; b<bins.length; b++){
-      bin = Array(bins[b],bins[b+1])
-      for (i in intervals){
-        if (intersects(bin,intervals[i])){
-          hist_array[b] +=1
-        }
-      }
-    }
-    data=hist_array.map(function(d,i){return {"bin":labels[i],"count":d}})
-    // now visualize it
-    <!--console.log(data)-->
-    histogram(data,labels)
-  }
-
-  function histogram(data,labels){
-    // exit if no data 
-    if (data[0].bin == "Infinity"){ $("#histogram_sum").html('<i>None yet</i>'); return; }
-    data=data.slice(0,200)
-    var margin = {top: 0, right: 10, bottom: 0, left: 10};
-    var width = 500, height = 30,  padding_h = 20,  padding_w = 30;
-      
-    // set the ranges
-    window.xScale = d3.scaleLinear()
-      .range([0, width])
-    window.yScale = d3.scaleLinear()
-      .range([height, 0]);
-  
-    <!--xScale.domain(data.map(function(d) { return d.bin; }));-->
-    xScale.domain(minmax);
-    yScale.domain([0, d3.max(data, function(d) { return d.count; })]);
-    
-        
-    window.svg_hist = d3.select("#histogram_sum")
-      .append("svg")
-      .attr('preserveAspectRatio','xMinYMin meet')
-      .attr('viewBox','0 0 530 60')
-      .classed("svg-content", true)
-      
-      .append("g")
-      .attr("transform","translate(" + margin.left + "," + margin.top + ")")
-  
-  
-    window.axisB = d3.axisBottom(xScale)
-      .tickValues(labels.filter(function(d,i){return !(i%20)}))
-      .tickFormat(d3.format("d"));
-
-    var axisL = d3.axisLeft(yScale)
-  
-    svg_hist.selectAll(".bar")
-      .data(data)
-    .enter().append("rect")
-      .attr("class", "bar")
-      .attr("x", function(d) { return xScale(d.bin); })
-      .attr("width", 2)
-      .attr("y", function(d) { return yScale(d.count); })
-      .attr("height", function(d) { return height - yScale(d.count); });
-  
-    var xAxis = svg_hist.append("g")
-      .attr("id","xaxis")
-      .attr("transform", "translate(0," + height + ")")
-      .call(axisB)
-  }
+  }) // jquery on load
 
   function filly(counter) {
     if (counter == 0)
@@ -402,6 +505,35 @@
     else 
       return "black"
   }
+  // database fetch (collection may include non-indexed datasets)
+  function fetchCollectionGeom(coll_id,counter) {
+    counter= 3
+    $.get("/search/collgeom",{coll_id: coll_id},
+      function(data){
+        console.log('collection places', data)
+        cplaces = L.geoJSON(data, {
+          pane: 'tracePane',
+          pointToLayer: function (feature, latlng) {
+            identifier = feature.properties.pid
+            marker = L.circleMarker(latlng,
+              {
+                radius: 5, fillOpacity: 0.3, opacity: 1, weight: 1,
+                color: "#fff", fillColor: filly(counter)
+              }
+            ).bindPopup('pid:'+identifier+'<br/><b>'+
+              '<a href="/places/'+identifier+'/portal">'+feature.properties.title+"</b></a>");
+            idToFeature[identifier] = marker
+            return marker
+          },
+          onEachFeature: function(feature,layer){
+            layer.addTo(traceLayers)
+          }
+        }).addTo(mappy);
+        mappy.fitBounds(cplaces.getBounds())
+    });
+  }
+
+	// TODO: retire this
   function fetchTraceGeom(trace_id,counter) {
     $.get("/search/tracegeom",{idx: 'traces', search: trace_id, doc_type: 'trace'},
       function(data){
@@ -426,8 +558,9 @@
         mappy.fitBounds(traces.getBounds())
     });
   }
-    
+
   // ES query to retrieve 800 in map viewport bbox
+	// TODO: closest, not random in box
   function fetchContext(coords){
     startMapitSpinner()
     context={"type":"FeatureCollection","features":[]}
@@ -439,7 +572,7 @@
           title = data['hits'][i]['title']
           whg_id = data['hits'][i]['whg_id']
           geoms=data['hits'][i]['geoms']
-          console.log(geoms)
+          {#console.log(geoms)#}
           for(j in geoms) {
             context["features"].push(
               { "type":"Feature",
@@ -486,10 +619,6 @@
         [sw['lng'],ne['lat']],[ne['lng'],ne['lat']]
       ]]
     }
-    // display bbox
-    <!--feature={"type":"Feature","properties":{"id":"fooid"},"geometry":geom}-->
-    <!--var polygon = L.polygon(latlngs, {color: 'red'}).addTo(mappy)-->
-    <!--console.log(JSON.stringify(geom["coordinates"]))-->
     return JSON.stringify(geom["coordinates"])
   }
   
@@ -569,9 +698,8 @@
       })
 
     var baseLayers = {
-      <!--"Pleiades Terrain": pleiades,-->
       "OpenStreetMap": osm,
-      "NE Terrain": ne_global,
+      "Terrain": ne_global,
       "Satellite": satellite
     };
     var dataLayers = {
@@ -606,7 +734,7 @@
     features = L.geoJSON(geom, {
       pane: 'mainPane',
       pointToLayer: function (feature, latlng) {
-        console.log('feature', feature.properties)
+        {#console.log('feature', feature.properties)#}
         ll = latlng
         identifier = feature.properties.id
         {#title = feature.properties.title#}
@@ -646,7 +774,7 @@
     // 
     for (i=0;i<gelems.length;i++){
       <!--let t_geom = cleanJson(gelems[i].text)-->
-        console.log(gelems[i])
+        {#console.log(gelems[i])#}
       let g = JSON.parse(gelems[i].text)
       g['properties'] = {"id": gelems[i].id}
       geom['features'].push(g)
@@ -676,6 +804,90 @@
     url=str.match(re)[1]=='http' ? str : base_urls[str.match(re)[1]]+str.match(re)[2]
     window.open(url,'_blank')
   });
+
+	// histogram stuff
+  function range(start, stop, step) {
+    var a = [start], b = start;
+    while (b < stop) {
+        a.push(b += step || 1);
+    }
+    return a;
+  }
+  function intersects(a,b){
+    min = (a[0] < b[0] ? a : b)
+    max = (min == a ? b : a)
+    return !(min[1] < max[1])
+  }
+
+  function histogram_data(intervals,minmax){
+    step = Number(((minmax[1]-minmax[0])/200))
+    bins = range(minmax[0],minmax[1],step)
+    hist_array = Array.apply(null, Array(bins.length)).map(Number.prototype.valueOf,0);
+    labels=bins.map(function(d){return Math.round(d)})
+    for (b=0; b<bins.length; b++){
+      bin = Array(bins[b],bins[b+1])
+      for (i in intervals){
+        if (intersects(bin,intervals[i])){
+          hist_array[b] +=1
+        }
+      }
+    }
+    data=hist_array.map(function(d,i){return {"bin":labels[i],"count":d}})
+    // now visualize it
+    <!--console.log(data)-->
+    histogram(data,labels)
+  }
+
+  function histogram(data,labels){
+    // exit if no data
+    if (data[0].bin == "Infinity"){ $("#histogram_sum").html('<i>None yet</i>'); return; }
+    data=data.slice(0,200)
+    var margin = {top: 0, right: 10, bottom: 0, left: 12};
+    var width = 500, height = 30,  padding_h = 20,  padding_w = 30;
+
+    // set the ranges
+    window.xScale = d3.scaleLinear()
+      .range([0, width])
+    window.yScale = d3.scaleLinear()
+      .range([height, 0]);
+
+    <!--xScale.domain(data.map(function(d) { return d.bin; }));-->
+    xScale.domain(minmax);
+    yScale.domain([0, d3.max(data, function(d) { return d.count; })]);
+
+
+    window.svg_hist = d3.select("#histogram_sum")
+      .append("svg")
+      .attr('preserveAspectRatio','xMinYMin meet')
+      .attr('viewBox','0 0 530 60')
+      .classed("svg-content", true)
+
+      .append("g")
+      .attr("transform","translate(" + margin.left + "," + margin.top + ")")
+
+
+    window.axisB = d3.axisBottom(xScale)
+      .tickValues(labels.filter(function(d,i){return !(i%20)}))
+      .tickFormat(d3.format("d"));
+
+    var axisL = d3.axisLeft(yScale)
+
+    svg_hist.selectAll(".bar")
+      .data(data)
+    .enter().append("rect")
+      .attr("class", "bar")
+      .attr("x", function(d) { return xScale(d.bin); })
+      .attr("width", 2)
+      .attr("y", function(d) { return yScale(d.count); })
+      .attr("height", function(d) { return height - yScale(d.count); });
+
+    var xAxis = svg_hist.append("g")
+      .attr("id","xaxis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(axisB)
+  }
+
+
 </script>
 <script src="{% static 'js/jquery.bootstrap.modal.forms.min.js' %}"></script>
 {% endblock %}

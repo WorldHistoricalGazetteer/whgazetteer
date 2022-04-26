@@ -9,7 +9,7 @@ from django.db import models
 from django.db.models import Q
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
-#from django.urls import reverse
+from django.urls import reverse
 #from django.shortcuts import get_object_or_404
 
 from django_celery_results.models import TaskResult
@@ -70,8 +70,8 @@ class Dataset(models.Model):
     return self.label
     # return '%d: %s' % (self.id, self.label)
 
-  #def get_absolute_url(self):
-    #return reverse('datasets:ds_summary', kwargs={'id': self.id})
+  def get_absolute_url(self):
+    return reverse('datasets:ds_summary', kwargs={'id': self.id})
 
   # how many wikidata links?
   @property
@@ -81,12 +81,18 @@ class Dataset(models.Model):
     
   @property
   def last_modified_iso(self):
-    last=self.log.all().order_by('-timestamp')[0].timestamp
+    if self.log.count() > 0:
+      last=self.log.all().order_by('-timestamp')[0].timestamp
+    else:
+      last=self.create_date
     return last.strftime("%Y-%m-%d")
   
   @property
   def last_modified_text(self):
-    last=self.log.all().order_by('-timestamp')[0].timestamp
+    if self.log.count() > 0:
+      last=self.log.all().order_by('-timestamp')[0].timestamp
+    else:
+      last = self.create_date
     return last.strftime("%d %b %Y")
     
   @property
@@ -236,7 +242,8 @@ class Dataset(models.Model):
   def collaborators(self):
     ## includes roles: member, owner
     team = DatasetUser.objects.filter(dataset_id_id = self.id).values_list('user_id_id')
-    teamusers = User.objects.filter(id__in=team)
+    # members of whg_team group are collaborators on all datasets
+    teamusers = User.objects.filter(id__in=team) | User.objects.filter(groups__name='whg_team')
     return teamusers
 
   @property

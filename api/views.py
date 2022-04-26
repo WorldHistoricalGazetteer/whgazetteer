@@ -656,11 +656,11 @@ class PrettyJsonRenderer(JSONRenderer):
 #
 """
     place/<int:pk>/
-    in dataset.html#browse
+    uses: dataset.html#browse; collection.place_collection_builder.html
     "published record by place_id"
 """
 class PlaceDetailAPIView(generics.RetrieveAPIView):
-  """  single database place record by id  """
+  """  returns single serialized database place record by id  """
   queryset = Place.objects.all()
   serializer_class = PlaceSerializer
   renderer_classes = [PrettyJsonRenderer]

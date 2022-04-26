@@ -1,0 +1,55 @@
+{% extends "main/base.html" %}
+{% block title %}<title>WHG::Walkthrough</title>{% endblock %}
+
+{% block content %}
+{% load static %}
+
+  <div class="container">
+    <div class="d-flex justify-content-center mt-3">
+      <h3>Title</h3>
+    </div>
+    <div id="contrib_content" class="mx-5">
+      <p class="lead">A "lead" text line</p>
+      <div id="" class="tute-section">
+        <h4 class="p-1">Part 1</h4>
+        <div class="p-1">
+          <ul>
+            <li>item 1</li>
+            <li>item 2</li>
+            <li>Download and open the sample datasets .zip file.</li>
+            <li>heading for sub-list
+              <ul>
+                <li>sub list item 1</li>
+                <li>item 2</li>
+				      </ul>
+            <li>Do something</li>
+              <ul><li>1-tem sublist</li></ul>
+            </li>
+		      </ul>
+          <p class="mb-0">Blah, blah, a list:</p>
+          <ul>
+            <li>step 1</li>
+            <li>step 2</li>
+          </ul>
+        </div>
+        <div class="p-1">
+          <h4 class="p-1">Part 2</h4>
+          <p>blah blah...a url and a list <a href="{% url 'main:tute-guide'%}" target="_blank">Site Guide</a>)</p>
+          <ul>
+            <li>point 1</li>
+            <li>point 2</li>
+          </ul>
+        </div>
+        <div class="p-1">
+          <h4 class="p-1">Part 3</h4>
+          <p>Something lorem ipsum</p>
+          <ul>
+            <li>item 1</li>
+            <li>item 2</li>
+          </ul>
+          <p>yada yada...<br/><mark>a highlighted note</mark></p>
+        </div>
+      </div> <!--  -->
+    </div> <!-- contrib_content -->
+  </div> <!-- container -->
+{% endblock %}

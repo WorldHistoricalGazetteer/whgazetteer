@@ -39,7 +39,7 @@
         <div id="public_list" class="mt-1 ml-0">
           <div class="list-box">
             <table id="public_dstable" class="table table-striped small">
-              <colgroup>
+`              <colgroup>
                 <col>
                 <col style="width:60px !important">
                 <col style="width:45% !important">
@@ -47,7 +47,7 @@
                 <col style="width:100px !important">
                 <col style="width:60px !important">
               </colgroup>
-              <thead>
+`              <thead>
                   <th>title <i class="fa fa-sort ml-1" data-id=0 ref=asc></i></th>
                   <th>rows</th>
                   <th>description</th>
@@ -88,9 +88,9 @@
                 {% for c in coll_list %}
                   <tr class="place-row">
                     <td>{{ c.id }}</td>
-                    <td><a href="{% url 'collection:collection-detail' c.id %}">{{ c.title }}</a></td>
+                    <td><a href="{% url 'collection:ds-collection-summary' c.id %}">{{ c.title }}</a></td>
                     <!--<td>{ c.title }}</td>-->
-                    <td>{{ c.create_date }}</td>
+                    <td>{{ c.created }}</td>
                     <td>{{ c.owner }}</td>
                   </tr>
                 {% endfor %}

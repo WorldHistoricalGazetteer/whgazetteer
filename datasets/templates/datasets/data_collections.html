@@ -1,7 +1,7 @@
 {#  datasets/data_collections.html #}
 
 {% extends "main/base.html" %}
-{% block title %}<title>WHG::Dashboard</title>{% endblock %}
+{% block title %}<title>WHG::My collections</title>{% endblock %}
 {% block extra_head %}
 {% block mycss %}
   <style>
@@ -13,6 +13,14 @@
       background-color: #fdf5e6;}
     #dataset_list, #area_list {position:relative !important; height:75vh !important }
     .list-box {overflow-y:auto  !important; max-height:100%;}
+    #coll_types p {font-size: 0.9rem;}
+    #coll_types h5 {padding:2px; font-size:1rem;}
+    #dscoll_blurb h5 {background-color: #e6eefd !important;}
+    #placecoll_blurb h5 {background-color: #e6fdf5 !important;}
+    #regioncoll_blurb h5 {background-color: #f5e6fd !important;}
+    .dataset {background-color: #e6eefd}
+    .place {background-color: #e6fdf5}
+    .region {background-color: #f5e6fd}
   </style>
 {% endblock mycss %}
 {% endblock%}
@@ -46,18 +54,42 @@
       {% endif %}
     </ul>
     <div class="tab-content">
-      <div id="collectionlist" class="tab-pane fade show active" role="tabpanel"
-           aria-labelledby="collectionlist-tab">
-        <p class="mb-1 ml-1"><a href="{% url 'collection:collection-create' %}" class="">
-          {% fontawesome_icon 'plus-square' color='#336699' %} create new</a>
-        {% if beta_or_better %}
-          <span class="ml-3"><a href="{% url 'collection:collection-create-beta' %}" class="">new (beta)</a></span>
-        {% endif %}</p>
-          <div id="collection_list" class="mt-1 ml-0">
+      <div id="collectionlist" class="tab-pane fade show active" role="tabpanel" aria-labelledby="collectionlist-tab">
+        <div id="coll_types" class="row mt-2">
+	        <div id="dscoll_blurb" class="col-sm-4">
+		        <h5><b>Dataset</b> collections
+			        <span class="smaller float-right pr-2 pt-1">
+				        <a href="{% url 'collection:ds-collection-create' %}">{% fontawesome_icon 'plus-square' color='#336699' %} new</a>
+			        </span>
+		        </h5>
+		        <p>A <b>Dataset Collection</b> is a set of public datasets, typically from multiple contributors and linked to define a "focus domain" within World Historical Gazetteer. As with all collections, searches, downloads and API calls can be constrained to include only places in the collection's member datasets.</p>
+	        </div>
+	        <div id="placecoll_blurb" class="col-sm-4">
+		        <h5><b>Place</b> collections <span class="badge badge-warning px-2">beta</span>
+			        <span class="smaller float-right pr-2 pt-1">
+				        <a href="{% url 'collection:place-collection-create' %}">{% fontawesome_icon 'plus-square' color='#336699' %} new</a>
+			        </span>
+		        </h5>
+		        <p>A <b>Place Collection</b> is an authored data publication. It can include all places from one or more public dataset, as well as individual places discovered in WHG search results and browse screens. Any of its place records can be annotated with information pertaining to its membership in the collection. <a href="{% url 'main:tute-place_collections' %}">Guide {% fontawesome_icon 'question-circle' color='#336699' %}</a>
+			        {% comment %}<a href="">more...</a> <p>Metadata for collection itself will include an abstract, and can include any number of links to relevant web resources.</p>{% endcomment %}
+	        </div>
+	        <div id="regioncoll_blurb" class="col-sm-4">
+		        <h5 class="text-center"><span class="text-muted font-italic"><b>Region</b> collections (coming soon)</span>
+			        {% comment %}<span class="smaller float-right pr-2 pt-1">
+				        <a href="">{% fontawesome_icon 'plus-square' color='#336699' %} new</a>
+			        </span>{% endcomment %}
+		        </h5>
+		        <p><b>Region collections</b> are composed of all public WHG place records that lie within any area defined in the WHG system. This includes "standard" regions, e.g. from the United Nations, or modern countries, region features within  contributed datasets, or users' own study areas
+			        {% comment %}<a href="#" data-html="true" onClick='return false;' title="Can be created on the Study Areas tab of this page or in the course of starting a reconciliation task." rel="tooltip" class="ttip">study areas</a> {% endcomment %}
+			        created on the fly.</p>
+	        </div>
+        </div>
+        <div id="collection_list" class="mt-1 ml-0">
           <div class="list-box">
             <table id="table_collections"class="table table-striped">
               <thead class="small">
                   <th>id</th>
+                  <th>type</th>
                   <th>title</th>
                   <th></th>
                   <th>created</th>
@@ -66,19 +98,23 @@
                 {% for c in collection_list %}
                   <tr class="place-row">
                     <td>{{ c.id }}</td>
+	                  <td><span class="{{ c.collection_class }} p-1">{{ c.collection_class }}</span></td>
                     <td>{{ c.title }}</td>
                     <td>
-                      <a href="{% url 'collection:collection-detail' c.id %}">view</a>&nbsp;
-                        {% if beta_or_better %} |
-                            <a href="{% url 'collection:collection-detail-beta' c.id %}"><i> (beta)</i></a>
-	                          <span class="mx-2">||</span>
-                        {% endif %}
-                      <a href="{% url 'collection:collection-update' c.id %}">edit</a>
-                        {% if beta_or_better %} |
-                            <a href="{% url 'collection:collection-update-beta' c.id %}"><i> (beta)</i></a>
-                        {% endif %}
+                      {# TODO: you can do better #}
+	                    {% if c.collection_class == 'dataset' %}
+	                      <a href="{% url 'collection:ds-collection-summary' c.id %}">view</a>&nbsp;
+	                    {% elif c.collection_class == 'place' %}
+	                      <a href="{% url 'collection:place-collection-browse' c.id %}">view</a>&nbsp;
+	                    {% endif %}
+	                    {% if c.collection_class == 'dataset' %}
+	                      <a href="{% url 'collection:ds-collection-update' c.id %}">edit</a>&nbsp;
+	                    {% elif c.collection_class == 'place' %}
+	                      <a href="{% url 'collection:place-collection-update' c.id %}">edit</a>&nbsp;
+	                    {% endif %}
+                      {# TODO: add regions #}
                     </td>
-                    <td>{{ c.create_date }}</td>
+                    <td>{{ c.created }}</td>
                   </tr>
                 {% endfor %}
               </tbody>

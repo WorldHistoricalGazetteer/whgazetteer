@@ -1803,25 +1803,25 @@ class DataListsView(LoginRequiredMixin, ListView):
     if self.request.path == reverse('data-datasets'):
       list = Dataset.objects.all().order_by('-create_date') if whgteam \
         else Dataset.objects.filter( Q(owner=me) ).order_by('-id')
-      print('list:', list)
+      # print('list:', list)
       return list
     elif self.request.path == reverse('data-collections'):
-      list = Collection.objects.all().order_by('create_date') if whgteam \
-        else Collection.objects.filter(owner=me).order_by('create_date')
-      print('list:', list)
+      list = Collection.objects.all().order_by('created') if whgteam \
+        else Collection.objects.filter(owner=me).order_by('created')
+      # print('list:', list)
       return list
     elif self.request.path == reverse('data-areas'):
       print('areas...whgteam?', whgteam)
       study_areas = ['ccodes', 'copied', 'drawn']       # only user study areas
       list = Area.objects.all().filter(type__in=study_areas).order_by('-id') if whgteam else \
         Area.objects.all().filter(type__in=study_areas, owner=me).order_by('-id')
-      print('list:', list)
+      # print('list:', list)
       return list
     else:
       print('resources...whgteam?', whgteam)
       list = Resource.objects.all().order_by('create_date') if whgteam or teaching \
         else Resource.objects.all().filter(owner=me).order_by('created')
-      print('list:', list)
+      # print('list:', list)
       return list
 
   def get_context_data(self, *args, **kwargs):
@@ -1914,7 +1914,7 @@ class PublicListsView(ListView):
 
     # public datasets available as dataset_list
     # public collections
-    context['coll_list'] = Collection.objects.filter(public=True).order_by('create_date')
+    context['coll_list'] = Collection.objects.filter(public=True).order_by('created')
     context['viewable'] = ['uploaded','inserted','reconciling','review_hits','reviewed','review_whg','indexed']
 
     context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False
@@ -1994,7 +1994,6 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
 
     # it's csv, tsv, spreadsheet, or json...
     # if utf8, get extension and validate
-    # TODO: disabled utf-8 check here 9 March
     #if encoding and encoding.lower().startswith('utf-8'):
     ext = mthash_plus.mimetypes[mimetype]
     print('DatasetCreateView() extension', ext)
@@ -2092,8 +2091,8 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
       try:
         dsobj.save()
       except:
-        args['form'] = form
-        return render(request,'datasets/dataset_create.html', args)
+        # self.args['form'] = form
+        return render(self.request,'datasets/dataset_create.html', self.args)
 
       #
       # create user directory if necessary
@@ -2301,12 +2300,6 @@ class DatasetSummaryView(LoginRequiredMixin, UpdateView):
 
   template_name = 'datasets/ds_summary.html'
 
-  # def get_success_url(self):
-  #   id_ = self.kwargs.get("id")
-  #   user = self.request.user
-  #   print('kwargs', self.kwargs)
-  #   return '/datasets/'+str(id_)+'/summary'
-
   # Dataset has been edited, form submitted
   def form_valid(self, form):
     data=form.cleaned_data
@@ -2315,8 +2308,8 @@ class DatasetSummaryView(LoginRequiredMixin, UpdateView):
     user = self.request.user
     file=data['file']
     filerev = ds.files.all().order_by('-rev')[0].rev
-    print('DatasetDetailViewDev kwargs',self.kwargs)
-    print('DatasetDetailViewDev form_valid() data->', data)
+    print('DatasetSummaryView kwargs',self.kwargs)
+    print('DatasetSummaryView form_valid() data->', data)
     if data["file"] == None:
       print('data["file"] == None')
       # no file, updating dataset only
@@ -2340,8 +2333,6 @@ class DatasetSummaryView(LoginRequiredMixin, UpdateView):
 
   def get_context_data(self, *args, **kwargs):
     context = super(DatasetSummaryView, self).get_context_data(*args, **kwargs)
-    #context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
-    #context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
 
     print('DatasetSummaryView get_context_data() kwargs:',self.kwargs)
     print('DatasetSummaryView get_context_data() request.user',self.request.user)
@@ -2419,12 +2410,6 @@ class DatasetPlacesView(DetailView):
   model = Dataset
   template_name = 'datasets/ds_places.html'
 
-  # def get_success_url(self):
-  #   id_ = self.kwargs.get("id")
-  #   user = self.request.user
-  #   print('messages:', messages.get_messages(self.kwargs))
-  #   return '/datasets/'+str(id_)+'/places'
-
   def get_object(self):
     id_ = self.kwargs.get("id")
     return get_object_or_404(Dataset, id=id_)
@@ -2439,9 +2424,10 @@ class DatasetPlacesView(DetailView):
     id_ = self.kwargs.get("id")
 
     ds = get_object_or_404(Dataset, id=id_)
-    #me = self.request.user
+    me = self.request.user
     #ds_tasks = [t.task_name[6:] for t in ds.tasks.all()]
     #placeset = Place.objects.filter(dataset=ds.label)
+    context['collections'] = Collection.objects.filter(owner=me, collection_class='place')
     context['updates'] = {}
     context['ds'] = ds
     #context['tgntask'] = 'tgn' in ds_tasks

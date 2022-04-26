@@ -27,8 +27,21 @@ AUTHORITY_BASEURI = {
     'align_whg':'whg:'
 }
 
+COLLECTIONCLASSES = [
+    ('dataset','Dataset collection'),
+    ('place','Place collection'),
+    ('region','Region collection')
+]
+
+COLLECTIONTYPES = [
+    ('event','Event'),
+    ('person','Person'),
+    ('work','Work'),
+    ('theme','Theme'),
+]
+
 COMMENT_TAGS = [
-    ('misplaced','Record misplaced in this set'),
+    ('misplaced','Record does not belong in this set'),
     ('typo','Typo'),
     ('geom_error','Geometry error'),
     ('other','Other'),
@@ -37,6 +50,11 @@ COMMENT_TAGS = [
 DATATYPES = [
     ('place', 'Places'),
     ('anno', 'Traces')
+]
+
+ERAS = [
+    ('ce', 'CE'),
+    ('bce', 'BCE'),
 ]
 
 # geonames classes for api filter
@@ -66,6 +84,13 @@ FORMATS = [
     ('delimited', 'Delimited/Spreadsheet'),
     ('lpf', 'Linked Places v1.2'),
     #('direct', 'direct to db import')
+]
+
+LINKTYPES = [
+    # ('page','web page'),
+    ('page',"<i title class='fa fa-window-maximize'></i>"),
+    ('image',"<i title class='fa fa-file-image-o'></i>"),
+    ('pdf',"<i title class='fa fa-file-pdf-o'></i>")
 ]
 
 LOG_CATEGORIES = [

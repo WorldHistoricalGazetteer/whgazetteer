@@ -1,0 +1,50 @@
+<!-- context keys: place, collection -->
+{% load fontawesome %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns" crossorigin="anonymous"></script>
+
+<div style="background-color: #fafafa; padding:2px;">
+	<p><sr>Title</sr>: {{ place.title }}</p>
+	<p><sr>Variants</sr>: {% for n in place.names.all %}
+		{% if n.toponym != place.title %}
+		{{ n.toponym }};
+		{% endif %}
+	{% endfor %}</p>
+</div>
+{#<p>existing? {{ existing }}</p>#}
+<hr/>
+<!-- submits to traces.views.annotate() -->
+<form id="anno_form" action="{% url 'collection:collection-annotate' collection.id %}" method="POST">
+{#<form id="anno_form" action="" method="POST">#}
+	<input type="hidden" name="owner" value="{{ collection.owner_id }}"/>
+	<input type="hidden" name="place" value="{{ place.id }}"/>
+	<input type="hidden" name="collection" value="{{ collection.id }}"/>
+	<input type="hidden" name="motivation" value="locating"/>
+	{% if existing %}
+		<input type="hidden" name="anno_id" value={{ existing }} />
+	{% endif %}
+	<table>
+		<tr>
+			<td>Relation:</td>
+			<td>
+				<select id="select_relation" name="relation">
+					<option value="" selected >Select relation</option>
+					{% for rel in collection.rel_keywords %}
+						<option value='{{ rel }}' {% if rel == form.relation.value %}selected{% endif %}>{{ rel }}</option>
+					{% endfor %}
+				</select>
+			</td>
+		</tr>
+		<tr><td>Start/End:</td>
+			<td>{{ form.start }} / {{ form.end }}
+			<a href="#" class="" rel="tooltip" data-html="true" title="Month and day optional.<br/>For BCE, prefix with '-'">
+				{% fontawesome_icon 'question-circle' %}
+			</a>
+			</td></tr>
+		<tr><td class="align-top">Notes:</td><td>{{ form.note }}</td></tr>
+	</table>
+{#	<button id="b_anno_submit" type="button" onclick=saveAnno() class="button button-sm">Save</button>#}
+	<button id="b_anno_submit" type="submit" class="button button-sm">Save</button>
+</form>
+<script type="application/javascript">
+</script>
+{#</html>#}

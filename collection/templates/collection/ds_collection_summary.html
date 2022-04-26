@@ -27,87 +27,99 @@
 
 {% block content %}
 <div class="container mt-1">
+	{% if user.id == object.owner.id or user.is_superuser or user in whgteam %}
+	<div>
+		<span class="float-right mr-2 pt-2">
+			<a href="{% url 'collection:ds-collection-update' object.id %}" >
+				{% fontawesome_icon 'gear' color='#336699' %}</a>
+		</span>
+	</div>
+	{% endif %}
   {% csrf_token %} <!-- for download function -->
   <ul id="collection_tabs" class="nav nav-tabs" role="tablist">
     <li class="nav-item">
         <a class="nav-link active" id="summary-tab" data-link="summary" href="" role="tab">Collection Summary</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link" id="browse-tab" href="{% url 'collection:collection-places' id=object.id %}" role="tab">Browse Data</a>
+        <a class="nav-link" id="browse-tab" href="{% url 'collection:ds-collection-browse' id=object.id %}" role="tab">Browse</a>
     </li>
   </ul>
-  <!--<div class="d-flex tab-content">-->
   <div class="tab-content">
     <div id="summary" class="tab-pane fade show active" role="tabpanel" aria-labelledby="summary-tab">
-    <div class="row">
-    <div id="coll_map" class="col-sm-7 mt-2 pl-0">
-      <div id="coll_meta">
-        <table>
-        <tr><td><b>Title</b></td><td class="larger strong">{{ object.title }}</td></tr>
-        <tr><td><b>Description</b></td><td>{{ object.description|readmore:200|safe }}</td></tr>
-        <tr><td><b>Keywords</b></td><td>{{ object.keywords|join:', ' }}</td></tr>
-        {% if object.webpage %}
-        <tr><td><b>Webpage</b></td><td>
-          <a href="{{object.webpage }}" target="_blank">link {% fontawesome_icon 'external-link' color='#336699' %}</a>
-        </td></tr>
-        {% endif %}
-        {% if object.contact %}
-          <tr><td><b>Creator(s)</b></td><td>{{ object.creator }}</td></tr>
-        {% endif %}
-        {% if object.contact %}
-          <tr><td><b>Contact</b></td><td>{{ object.contact|url_it|safe }}</td></tr>
-        {% endif %}
-        </table>
-      </div>      
-      <div id="mapdiv_coll" class="">
-        {% leaflet_map "map_coll" callback="map_init" %}
-      </div>
-    </div> <!-- .row -->
-    <div  id="coll_dslist" class="col-sm-5 mt-2">
-      <!-- dataset bboxes to js ('gelems') -->
-      {% for g in bboxes %}
-        {{ g|safe|json_script:g.properties.id }}
-      {% endfor %}
-      <div>
-        <h5>Datasets ({{ds_list|length}})<span class="small float-right mr-2">
-          {% fontawesome_icon 'download' color='#336699' %} <a href="" id="a_download_modal" data-dsid = {{ object.id }} data-toggle="modal" data-target="#downloadModal" title="download options"> download options</a></span>
-        </h5>
-        <!-- fields: id, label, title, description, creator, create_date, webpage, numrows, datatype -->
-        <div id="coll_dscards">
-          {% for d in ds_list %} 
-            <div class="ds_card" data-id={{d.id}}>
-              <div class="ds_fields">
-                <ul class="no-bullets">
-                <li class=""><b>Title</b>: 
-                  <a class="ds_title" href="{% url 'datasets:ds_meta' d.id %}">{{ d.title }}</a> (<i>{{d.id}}</i>)</li>
-                <li class=""><b>Description</b>: {{ d.description|readmore:200|safe }}</li>
-                <li class=""><b>Temporal coverage</b>: {{ d.minmax.0 }} / {{ d.minmax.1 }}</li>
-                <li class=""><b>Created</b>: {{ d.create_date|date:"d M Y" }}</li>
-                <li class="">
-                  <b>Number of records</b>: {{ d.numrows }}
-                  <span class="dl-links float-right mr-2">
-                  {%comment%}<select placeholder="Select format">
-                    <option disabled selected class="text-secondary"value="">Select format</option>
-                    <option value="lpf">Linked Places (LPF)</option>
-                    <option value="gis">simplified LPF</option>
-                    <option value="tsv">simplified TSV</option>
-                  </select> {% fontawesome_icon 'download' color='#336699' %}
-                  
-                  {% fontawesome_icon 'download' color='#336699' %}&nbsp;&nbsp;<a href="{% url 'datasets:dl-aug' id=d.id format='lpf' %}" data-id={{d.id}} ref="lpf" title="Linked Places format">lp</a>&nbsp;&nbsp;<a href="" data-id={{d.id}} ref="gis" title="tab-delimited text">tsv</a>{%endcomment%}
-                  
-                  </span>
-                </li>
-                </ul>
-              </div>
-            </div>
-            <!--{ d.bounds }}-->
-          {% endfor %}
-        </div> <!-- #ds_cards -->        
-      </div> 
-    </div><!-- #coll_dslist -->
-    </div> <!-- .row -->
+	    <div class="row">
+	    <div id="coll_left" class="col-sm-7 mt-2">
+	      <div id="coll_meta" class="row">
+	        <div class="col-sm-8 pl-1">
+		        <table>
+		        <tr><td><b>Title</b></td><td class="larger strong">{{ object.title }}</td></tr>
+		        <tr><td><b>Description</b></td><td>{{ object.description|readmore:200|safe }}</td></tr>
+		        <tr><td><b>Keywords</b></td><td>{{ object.keywords|join:', ' }}</td></tr>
+		        {% if object.webpage %}
+		        <tr><td><b>Webpage</b></td><td>
+		          <a href="{{object.webpage }}" target="_blank">link {% fontawesome_icon 'external-link' color='#336699' %}</a>
+		        </td></tr>
+		        {% endif %}
+		        {% if object.contact %}
+		          <tr><td><b>Creator(s)</b></td><td>{{ object.creator }}</td></tr>
+		        {% endif %}
+		        {% if object.contact %}
+		          <tr><td><b>Contact</b></td><td>{{ object.contact|url_it|safe }}</td></tr>
+		        {% endif %}
+		        </table>
+	        </div>
+	        <div class="col-sm-4">
+		        <img src="/media/{{ object.image_file.name }}" width="200"/>
+					</div>
+	      </div> <!-- #coll_meta -->
+	      <div id="mapdiv_coll" class="">
+	        {% leaflet_map "map_coll" callback="map_init" %}
+	      </div>
+	    </div> <!-- #coll_left -->
+	    <div  id="coll_dslist" class="col-sm-5 mt-2">
+	      <!-- dataset bboxes to js ('gelems') -->
+	      {% for g in bboxes %}
+	        {{ g|safe|json_script:g.properties.id }}
+	      {% endfor %}
+	      <div>
+	        <h5>Datasets ({{ds_list|length}})<span class="small float-right mr-2">
+	          {% fontawesome_icon 'download' color='#336699' %} <a href="" id="a_download_modal" data-dsid = {{ object.id }} data-toggle="modal" data-target="#downloadModal" title="download options"> download options</a></span>
+	        </h5>
+	        <!-- fields: id, label, title, description, creator, create_date, webpage, numrows, datatype -->
+	        <div id="coll_dscards">
+	          {% for d in ds_list %}
+	            <div class="ds_card" data-id={{d.id}}>
+	              <div class="ds_fields">
+	                <ul class="no-bullets">
+	                <li class=""><b>Title</b>:
+	                  <a class="ds_title" href="{% url 'datasets:ds_meta' d.id %}">{{ d.title }}</a> (<i>{{d.id}}</i>)</li>
+	                <li class=""><b>Description</b>: {{ d.description|readmore:200|safe }}</li>
+	                <li class=""><b>Temporal coverage</b>: {{ d.minmax.0 }} / {{ d.minmax.1 }}</li>
+	                <li class=""><b>Created</b>: {{ d.create_date|date:"d M Y" }}</li>
+	                <li class="">
+	                  <b>Number of records</b>: {{ d.numrows }}
+	                  <span class="dl-links float-right mr-2">
+	                  {%comment%}<select placeholder="Select format">
+	                    <option disabled selected class="text-secondary"value="">Select format</option>
+	                    <option value="lpf">Linked Places (LPF)</option>
+	                    <option value="gis">simplified LPF</option>
+	                    <option value="tsv">simplified TSV</option>
+	                  </select> {% fontawesome_icon 'download' color='#336699' %}
+
+	                  {% fontawesome_icon 'download' color='#336699' %}&nbsp;&nbsp;<a href="{% url 'datasets:dl-aug' id=d.id format='lpf' %}" data-id={{d.id}} ref="lpf" title="Linked Places format">lp</a>&nbsp;&nbsp;<a href="" data-id={{d.id}} ref="gis" title="tab-delimited text">tsv</a>{%endcomment%}
+
+	                  </span>
+	                </li>
+	                </ul>
+	              </div>
+	            </div>
+	            <!--{ d.bounds }}-->
+	          {% endfor %}
+	        </div> <!-- #ds_cards -->
+	      </div>
+	    </div><!-- #coll_dslist -->
+      </div> <!-- .row -->
     </div> <!-- #summary -->
-  </div> <!-- d-flex -->
+  </div> <!-- .tab-content -->
   <div class="modal fade" id="downloadModal" tabindex="-1" aria-labelledby="downloadModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content modal-85">
@@ -188,7 +200,7 @@
   clip_cite.on('success', function(e) {
     eobj=e
     el=$("#"+e.trigger.getAttribute("id"))
-    console.log('el',el)
+    {#console.log('el',el)#}
     e.clearSelection();
     el.tooltip('hide')
       .attr('data-original-title', 'copied!')
@@ -218,8 +230,8 @@
 
     // post-download actions
     function customResult(resultElement, result) {
-      console.log('celery result',result)
-      console.log('celery resultElement',resultElement)
+      {#console.log('celery result',result)#}
+      {#console.log('celery resultElement',resultElement)#}
       spinner_dl.stop()
       fn = result.filename
       link = '[ <span class="dl-save"><a href="/'+fn+'" title="downloaded: '+dater()+
@@ -234,11 +246,11 @@
     // celery task for downloads; helper functions above
     $(".a-dl").click(function(e){
       e.preventDefault()
-      <!--startDownloadSpinner()-->
+      // startDownloadSpinner()
       cell = $(this).closest('tr').find('td').eq(2)
       format = cell.find('input[name="format"]:checked').val()
       dsid = $(this).data('id')
-      <!--console.log('sending to downloader()', dsid, format)-->
+      // console.log('sending to downloader()', dsid, format)
       urly='/datasets/dlcelery/'
       $.ajax({
           type: 'POST',
@@ -250,8 +262,6 @@
           datatype:'json',
           success:function(response){
             startDownloadSpinner()
-            <!--console.log('got task_id',response)-->
-            <!--$("#tid").html(response.task_id)-->
             task_id = response.task_id
             var progressUrl = "/celery-progress/"+task_id+"/";
             CeleryProgressBar.initProgressBar(progressUrl,
@@ -276,12 +286,12 @@
       clicked.parent().find("#dots").hide()
       clicked.next().show()
       $(".a_less").show()
-      console.log('clicked',clicked)  
+      {#console.log('clicked',clicked)  #}
     })
     $(".a_less").click(function(e){
       clicked = $(this)
-      console.log('this clicked',clicked)  
-      console.log('parent',parent)  
+      {#console.log('this clicked',clicked)  #}
+      {#console.log('parent',parent)  #}
       clicked.hide() // hide 'less' link
       $(".more").hide() // hide the extra text again
       $("#dots").show() // show dots again
@@ -305,7 +315,7 @@
   $( ".ds_card" ).hover(function() {
       let id = $(this).data('id')
       feat = idToFeature[id]
-      console.log('feat',feat)
+      {#console.log('feat',feat)#}
       ogfill = "#ff9999"
       feat.setStyle(
         {fillColor: 'yellow', color: 'red', fillOpacity: 0.3}
@@ -325,12 +335,12 @@
   
   function showMore() {
     foo = $(this)
-    console.log('foo',foo)
+    {#console.log('foo',foo)#}
   } 
   
   $(".dl-links a").click(function(e){
     urly='/datasets/'+$(this).data('id')+'/augmented/'+$(this).attr('ref')
-    console.log('urly',urly)
+    {#console.log('urly',urly)#}
     console.time('dl')
     startDownloadSpinner()
     $.ajax({

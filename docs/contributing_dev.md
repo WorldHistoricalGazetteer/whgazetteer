@@ -11,7 +11,7 @@ Experienced Django developers could help with refining existing features and bui
 
 #### Front end
 
-_Mapping_. There are six maps in the WHG app. Most have been converted from Leaflet to MapLibre for faster rendering of large datasets, but a couple remain to be converted. Symbology is inconsistent between the maps, and many aspects of their appearance and functionality can be improved. Several new features have been mentioned or are on the drawing board. This work is almost 100% javascript, with ajax calls to internal APIs.
+_Mapping_. There are six maps in the WHG app. Most have been converted from Leaflet to MapLibre.js for faster rendering of large datasets, but a few remain to be converted. Symbology is inconsistent between the maps, and many aspects of their appearance and functionality can be improved. Several new features have been mentioned or are on the drawing board. This work is almost 100% javascript, with ajax calls to internal APIs.
 
 _Styling_. We are open to refreshing the appearance of the app.
 

@@ -18,6 +18,10 @@
   <script src="//cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
   <script src="//cdn.datatables.net/1.10.23/js/dataTables.bootstrap4.min.js"></script>
   <script src="{% static 'celery_progress/celery_progress.js' %}"></script>
+
+	<style>
+		#summary {height: auto !important;}
+	</style>
 {% endblock %}
 
 {% block title %}<title>Dataset::{{ ds.label }}</title>{% endblock %}

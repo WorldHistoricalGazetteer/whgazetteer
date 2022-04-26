@@ -1,0 +1,44 @@
+<html>
+<head>
+	<style>
+		#whatsnew_content p {margin-top:0; margin-bottom:0.3rem}
+	</style>
+</head>
+<body>
+<div id="whatsnew_content">
+    <a href=""></a><!-- avoids scroll to the bottom anchor-->
+    <h4>What's new in v2.1 beta</h4>
+		<img src="/static/images/whg_logo.svg" style="float:right;" height=100 width=100 />
+    <div style="">Version 2.1 of World Historical Gazetteer extends the existing Collection feature. Previously a WHG Collection could consist only of 2 or more entire public datasets. Users can now create collections not only from entire datasets but from individual place records discovered in the Search and Browse screens. We differentiate these now as <sr>Dataset Collections</sr> (the initial option) and <sr>Place Collections</sr>, which are new.</div>
+		<p>Also, a number of "under the hood" improvements have been made to improve reliability of the system, and to improve communication and workflows for data contributors.</p>
+    <h5>Place Collections</h5>
+    <p>Place Collections are authored works&mdash;sets of places that are related in some way according to the collection's author/creator. Our initial use case is for teaching in historical subjects at secondary- and college-levels. Students might be assigned to create a Place Collection as a product of research on a given topic or one of their choosing within a broad theme.  </p>
+		<img src="/static/images/whg_logo.svg" style="float:right;" height=100 width=100 />
+		<ul>
+			<li>a set of place records from any public contributed dataset, selected from the WHG index and/or database</li>
+			<li>optional annotations on each place record, describing briefly why it is part of the collection</li>
+			<li>an image that illustrates the collection topic</li>
+			<li>an essay, uploaded as a PDF file</li>
+			<li>up to three links to supporting external web resources</li>
+			<li>descriptive keywords</li>
+		</ul>
+		<p>This <a href="#">guide to creating and publishing Place Collections</a> explains the workflow in detail.</p>
+		<p>We welcome feedback on the new Place Collections feature&mdash;<a href="#" class="feedback">Please get in touch with this contact form</a>.
+</div>
+</body>
+</html>
+<script type="text/javascript">
+  $(function(){
+      $(".replace-content").click(function(){
+          $('#helpme').load('/media/help/'+$(this).data('id')+'.html');
+      })
+  })
+  $(".feedback").click(function(e){
+    e.preventDefault()
+    console.log(clicked)
+    url=window.location.href="/contact?from="+clicked
+    window.location.href=url
+    console.log('gwine to contact form, from clicked',url)
+  })  
+
+</script>    

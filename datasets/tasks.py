@@ -20,6 +20,7 @@ from copy import deepcopy
 from itertools import chain
 
 from areas.models import Area
+from collection.models import Collection
 from datasets.models import Dataset, Hit
 from datasets.static.hashes.parents import ccodes as cchash
 from datasets.static.hashes.qtypes import qtypes
@@ -46,7 +47,8 @@ def testy():
 
 """ 
   called by utils.downloader()
-  builds download file, retrieved via ajax JS in ds_summary.html, ds_meta.html, collection_detail.html (modal)
+  builds download file, retrieved via ajax JS in ds_summary.html, ds_meta.html,
+  collection_detail.html (modal), place_collection_browse.html (modal)
 """
 @task(name="make_download")  
 def make_download(request, *args, **kwargs):
@@ -55,196 +57,250 @@ def make_download(request, *args, **kwargs):
   username = request['username'] or "AnonymousUser"
   userid = request['userid'] or User.objects.get(username="AnonymousUser").id
   req_format = kwargs['format']
-  dsid = kwargs['dsid']
-
+  dsid = kwargs['dsid'] or None
+  collid = kwargs['collid'] or None
+  print('make_download() dsid, collid', dsid, collid)
   # test values
   #username = 'SomeUser'
   #req_format = 'tsv'
   #dsid = 929  
-  
-  ds=Dataset.objects.get(pk=dsid)
-  dslabel = ds.label
-  places=ds.places.all()
 
-  date=makeNow()
-  
-  print("tasks.make_download()", {"format": req_format, "ds": dsid})
-  
-  if ds.format == 'delimited' and req_format in ['tsv', 'delimited']:
-    print('making an augmented tsv file')
+  date = makeNow()
 
-    # get header as uploaded and create newheader w/any "missing" columns
-    # get latest dataset file
-    dsf = ds.file
-    # make pandas dataframe
-    df = pd.read_csv('media/'+dsf.file.name, delimiter='\t',dtype={'id':'str','aat_types':'str'})
-    # copy existing header to newheader for write
-    header = list(df)
-    newheader = deepcopy(header)
-    # all exports should have these, empty or not
-    newheader = list(set(newheader+['lon','lat','matches','geo_id','geo_source','geowkt'])) 
-  
-    
-    # name and open csv file for writer
-    fn = 'media/downloads/'+username+'_'+dslabel+'_'+date+'.tsv'
-    csvfile = open(fn, 'w', newline='', encoding='utf-8')
-    writer = csv.writer(csvfile, delimiter='\t', quotechar='', quoting=csv.QUOTE_NONE)    
+  if collid and not dsid:
+    print('entire collection', collid)
+    coll=Collection.objects.get(id=collid)
+    colltitle = coll.title
+    qs = coll.places.all()
+    req_format = 'lpf'
+    fn = 'media/downloads/'+username+'_'+collid+'_'+date+'.json'
+    outfile= open(fn, 'w', encoding='utf-8')
+    features = []
+    for p in qs:
+      rec = {"type":"Feature",
+             "properties":{"id":p.id,"src_id":p.src_id,"title":p.title,"ccodes":p.ccodes},
+             "geometry":{"type":"GeometryCollection",
+                         "geometries":[g.jsonb for g in p.geoms.all()]},
+             "names": [n.jsonb for n in p.names.all()],
+             "types": [t.jsonb for t in p.types.all()],
+             "links": [l.jsonb for l in p.links.all()],
+             "whens": [w.jsonb for w in p.whens.all()],
+      }
+      features.append(rec)
 
-    # TODO: better order?
-    writer.writerow(newheader)
-    # missing columns (were added to newheader)
-    missing=list(set(newheader)-set(list(df))); print('missing',missing)
-    
-    for i, row in df.iterrows():
-      dfrow = df.loc[i,:]
-      # get db record
-      # src_id is NOT distinct amongst all places!!
-      p = places.get(src_id = dfrow['id'], dataset = ds.label)
+    count = str(len(qs))
+    print('download file for '+count+' places in '+colltitle)
+    result = {"type": "FeatureCollection", "features": features,
+              "@context": "https://raw.githubusercontent.com/LinkedPasts/linked-places/master/linkedplaces-context-v1.1.jsonld",
+              "filename": "/" + fn}
+    outfile.write(json.dumps(result,indent=2).replace('null','""'))
+    # TODO: Log object has dataset_id, no collection_id
+  elif dsid:
+    ds=Dataset.objects.get(pk=dsid)
+    dslabel = ds.label
+    if collid:
+      coll = Collection.objects.get(id=collid)
+      qs=coll.places.filter(dataset=ds)
+      print('collection places from dataset', collid, dsid)
+    else:
+      qs=ds.places.all()
+    count = str(len(qs))
 
-      # df row to newrow json object
-      rowjs = json.loads(dfrow.to_json())
-      newrow = deepcopy(rowjs)
+    print("tasks.make_download()", {"format": req_format, "ds": dsid})
 
-      # add missing keys from newheader, if any
-      for m in missing:
-        newrow[m] = ''
-      # newrow now has all keys -> fill with db values as req.
-      
-      # LINKS (matches)
-      # get all distinct matches in db as string
-      links = (';').join(list(set([l.jsonb['identifier'] for l in p.links.all()])))
-      # replace whatever was in file
-      newrow['matches'] = links
-          
-      # GEOMETRY
-      # if db has >0 geom and row has none, add lon/lat and geowkt 
-      # otherwise, don't bother
-      geoms = p.geoms.all()
-      if geoms.count() > 0:
-        geowkt= newrow['geowkt'] if 'geowkt' in newrow else None
-        
-        lonlat= [newrow['lon'],newrow['lat']] if \
-          len(set(newrow.keys())&set(['lon','lat']))==2 else None
-        # lon/lat may be empty
-        if not geowkt and (not lonlat or None in lonlat or lonlat[0]==''):
-          # get first db geometry & add to newrow dict
-          g=geoms[0]
-          #newheader.extend(['geowkt'])
-          newrow['geowkt']=g.geom.wkt if g.geom else ''
-          # there is always jsonb
-          # xy = g.geom.coords[0] if g.jsonb['type'] == 'MultiPoint' else g.geom.coords
-          xy = g.geom.coords[0] if g.jsonb['type'] == 'MultiPoint' else g.jsonb['coordinates']
-          newrow['lon'] = xy[0]
-          newrow['lat'] = xy[1]
-      #print(newrow)
-      
-      # match newrow order to newheader already written      
-      index_map = {v: i for i, v in enumerate(newheader)}
-      ordered_row = sorted(newrow.items(), key=lambda pair: index_map[pair[0]])
+    if ds.format == 'delimited' and req_format in ['tsv', 'delimited']:
+      print('making an augmented tsv file')
 
-      #progress_recorder.set_progress(counter + 1, len(features), description="tsv progress")
-      
-      # write it
-      csvrow = [o[1] for o in ordered_row]
-      writer.writerow(csvrow)      
-    csvfile.close()
-  
-  else:
-    print('building augmented lpf file')
-    # make file name
-    fn = 'media/downloads/'+username+'_'+dslabel+'_'+date+'.json'
-    url_prefix='http://whgazetteer.org/api/place/'
-    result={"type":"FeatureCollection","features":[],
-            "@context": "https://raw.githubusercontent.com/LinkedPasts/linked-places/master/linkedplaces-context-v1.1.jsonld",
-            "filename": "/"+fn}
-    #print('augmented lpf template', result)
-    # TODO: should be a better django-ish method
-    with open(fn, 'w', encoding='utf-8') as outfile:
-      with connection.cursor() as cursor:
-        cursor.execute("""with namings as 
-          (select place_id, jsonb_agg(jsonb) as names from place_name pn 
-          where place_id in (select id from places where dataset = '{ds}')
-          group by place_id ),
-          placetypes as 
-          (select place_id, jsonb_agg(jsonb) as "types" from place_type pt 
-          where place_id in (select id from places where dataset = '{ds}')
-          group by place_id ),
-          placelinks as 
-          (select place_id, jsonb_agg(jsonb) as links from place_link pl 
-          where place_id in (select id from places where dataset = '{ds}')
-          group by place_id ),
-          geometry as 
-          (select place_id, jsonb_agg(jsonb) as geoms from place_geom pg 
-          where place_id in (select id from places where dataset = '{ds}')
-          group by place_id ),
-          placewhens as
-          (select place_id, jsonb as whenobj from place_when pw 
-          where place_id in (select id from places where dataset = '{ds}')),
-          placerelated as
-          (select place_id, jsonb_agg(jsonb) as rels from place_related pr 
-          where place_id in (select id from places where dataset = '{ds}')
-          group by place_id ),
-          descriptions as
-          (select place_id, jsonb_agg(jsonb) as descrips from place_description pdes 
-          where place_id in (select id from places where dataset = '{ds}')
-          group by place_id ),
-          depictions as
-          (select place_id, jsonb_agg(jsonb) as depicts from place_depiction pdep 
-          where place_id in (select id from places where dataset = '{ds}')
-          group by place_id )	
-          select jsonb_build_object(
-            'type','Feature',
-            '@id', p.src_id,
-            'properties', jsonb_build_object(
-                'pid', '{urlpre}'||p.id,
-                'title', p.title),
-            'names', n.names,
-            'types', coalesce(pt.types, '[]'),
-            'links', coalesce(pl.links, '[]'),
-            'geometry', case when g.geoms is not null 
-                then jsonb_build_object(
-                'type','GeometryCollection',
-                'geometries', g.geoms)
-                else jsonb_build_object(
-                'type','Point','coordinates','{a}'::char[])
-                end,
-            'when', pw.whenobj,
-            'relations',coalesce(pr.rels, '[]'),
-            'descriptions',coalesce(pdes.descrips, '[]'),
-            'depictions',coalesce(pdep.depicts, '[]')
-          ) from places p 
-          left join namings n on p.id = n.place_id
-          left join placetypes pt on p.id = pt.place_id
-          left join placelinks pl on p.id = pl.place_id
-          left join geometry g on p.id = g.place_id
-          left join placewhens pw on p.id = pw.place_id
-          left join placerelated pr on p.id = pr.place_id
-          left join descriptions pdes on p.id = pdes.place_id
-          left join depictions pdep on p.id = pdep.place_id
-          where dataset = '{ds}'        
-        """.format(urlpre=url_prefix, ds=dslabel, a='{}'))
-        for row in cursor:
-          #print('row in make_download lpf', type(row))
-          g = row[0]['geometry']
-          # get rid of empty/unknown geometry
-          if g['type'] != 'GeometryCollection' and g['coordinates'] == []:
-            row[0].pop('geometry')
-          result['features'].append(row[0])
-          #progress_recorder.set_progress(i + 1, len(features), description="lpf progress")
-        outfile.write(json.dumps(result,indent=2).replace('null','""'))
-    print('tsv file complete:', fn)
-    
-  Log.objects.create(
-    # category, logtype, "timestamp", subtype, note, dataset_id, user_id
-    category = 'dataset',
-    logtype = 'ds_download',
-    note = {"format":req_format, "username":username},
-    dataset_id = dsid,
-    user_id = userid
-  ) 
+      # get header as uploaded and create newheader w/any "missing" columns
+      # get latest dataset file
+      dsf = ds.file
+      # make pandas dataframe
+      df = pd.read_csv('media/'+dsf.file.name, delimiter='\t',dtype={'id':'str','aat_types':'str'})
+      # copy existing header to newheader for write
+      header = list(df)
+      newheader = deepcopy(header)
+      # all exports should have these, empty or not
+      newheader = list(set(newheader+['lon','lat','matches','geo_id','geo_source','geowkt']))
+
+
+      # name and open csv file for writer
+      fn = 'media/downloads/'+username+'_'+dslabel+'_'+date+'.tsv'
+      csvfile = open(fn, 'w', newline='', encoding='utf-8')
+      writer = csv.writer(csvfile, delimiter='\t', quotechar='', quoting=csv.QUOTE_NONE)
+
+      # TODO: better order?
+      writer.writerow(newheader)
+      # missing columns (were added to newheader)
+      missing=list(set(newheader)-set(list(df))); print('missing',missing)
+
+      for i, row in df.iterrows():
+        dfrow = df.loc[i,:]
+        # get db record
+        # src_id is NOT distinct amongst all places!!
+        p = places.get(src_id = dfrow['id'], dataset = ds.label)
+
+        # df row to newrow json object
+        rowjs = json.loads(dfrow.to_json())
+        newrow = deepcopy(rowjs)
+
+        # add missing keys from newheader, if any
+        for m in missing:
+          newrow[m] = ''
+        # newrow now has all keys -> fill with db values as req.
+
+        # LINKS (matches)
+        # get all distinct matches in db as string
+        links = (';').join(list(set([l.jsonb['identifier'] for l in p.links.all()])))
+        # replace whatever was in file
+        newrow['matches'] = links
+
+        # GEOMETRY
+        # if db has >0 geom and row has none, add lon/lat and geowkt
+        # otherwise, don't bother
+        geoms = p.geoms.all()
+        if geoms.count() > 0:
+          geowkt= newrow['geowkt'] if 'geowkt' in newrow else None
+
+          lonlat= [newrow['lon'],newrow['lat']] if \
+            len(set(newrow.keys())&set(['lon','lat']))==2 else None
+          # lon/lat may be empty
+          if not geowkt and (not lonlat or None in lonlat or lonlat[0]==''):
+            # get first db geometry & add to newrow dict
+            g=geoms[0]
+            #newheader.extend(['geowkt'])
+            newrow['geowkt']=g.geom.wkt if g.geom else ''
+            # there is always jsonb
+            # xy = g.geom.coords[0] if g.jsonb['type'] == 'MultiPoint' else g.geom.coords
+            xy = g.geom.coords[0] if g.jsonb['type'] == 'MultiPoint' else g.jsonb['coordinates']
+            newrow['lon'] = xy[0]
+            newrow['lat'] = xy[1]
+        #print(newrow)
+
+        # match newrow order to newheader already written
+        index_map = {v: i for i, v in enumerate(newheader)}
+        ordered_row = sorted(newrow.items(), key=lambda pair: index_map[pair[0]])
+
+        #progress_recorder.set_progress(counter + 1, len(features), description="tsv progress")
+
+        # write it
+        csvrow = [o[1] for o in ordered_row]
+        writer.writerow(csvrow)
+      csvfile.close()
+    else:
+      print('building lpf file')
+      # make file name
+      fn = 'media/downloads/'+username+'_'+dslabel+'_'+date+'.json'
+      url_prefix='http://whgazetteer.org/api/place/'
+
+      outfile = open(fn, 'w', encoding='utf-8')
+      features = []
+      for p in qs:
+        rec = {"type": "Feature",
+               "properties": {"id": p.id, "src_id": p.src_id, "title": p.title, "ccodes": p.ccodes},
+               "geometry": {"type": "GeometryCollection",
+                            "geometries": [g.jsonb for g in p.geoms.all()]},
+               "names": [n.jsonb for n in p.names.all()],
+               "types": [t.jsonb for t in p.types.all()],
+               "links": [l.jsonb for l in p.links.all()],
+               "whens": [w.jsonb for w in p.whens.all()],
+               }
+        features.append(rec)
+
+      count = str(len(qs))
+      print('download file for ' + count + ' places')
+
+      result={"type":"FeatureCollection","features":features,
+              "@context": "https://raw.githubusercontent.com/LinkedPasts/linked-places/master/linkedplaces-context-v1.1.jsonld",
+              "filename": "/"+fn}
+
+      outfile.write(json.dumps(result, indent=2).replace('null', '""'))
+      # TODO: should be a better django-ish method
+      # with open(fn, 'w', encoding='utf-8') as outfile:
+      #   with connection.cursor() as cursor:
+      #     cursor.execute("""with namings as
+      #       (select place_id, jsonb_agg(jsonb) as names from place_name pn
+      #       where place_id in (select id from places where dataset = '{ds}')
+      #       group by place_id ),
+      #       placetypes as
+      #       (select place_id, jsonb_agg(jsonb) as "types" from place_type pt
+      #       where place_id in (select id from places where dataset = '{ds}')
+      #       group by place_id ),
+      #       placelinks as
+      #       (select place_id, jsonb_agg(jsonb) as links from place_link pl
+      #       where place_id in (select id from places where dataset = '{ds}')
+      #       group by place_id ),
+      #       geometry as
+      #       (select place_id, jsonb_agg(jsonb) as geoms from place_geom pg
+      #       where place_id in (select id from places where dataset = '{ds}')
+      #       group by place_id ),
+      #       placewhens as
+      #       (select place_id, jsonb as whenobj from place_when pw
+      #       where place_id in (select id from places where dataset = '{ds}')),
+      #       placerelated as
+      #       (select place_id, jsonb_agg(jsonb) as rels from place_related pr
+      #       where place_id in (select id from places where dataset = '{ds}')
+      #       group by place_id ),
+      #       descriptions as
+      #       (select place_id, jsonb_agg(jsonb) as descrips from place_description pdes
+      #       where place_id in (select id from places where dataset = '{ds}')
+      #       group by place_id ),
+      #       depictions as
+      #       (select place_id, jsonb_agg(jsonb) as depicts from place_depiction pdep
+      #       where place_id in (select id from places where dataset = '{ds}')
+      #       group by place_id )
+      #       select jsonb_build_object(
+      #         'type','Feature',
+      #         '@id', p.src_id,
+      #         'properties', jsonb_build_object(
+      #             'pid', '{urlpre}'||p.id,
+      #             'title', p.title),
+      #         'names', n.names,
+      #         'types', coalesce(pt.types, '[]'),
+      #         'links', coalesce(pl.links, '[]'),
+      #         'geometry', case when g.geoms is not null
+      #             then jsonb_build_object(
+      #             'type','GeometryCollection',
+      #             'geometries', g.geoms)
+      #             else jsonb_build_object(
+      #             'type','Point','coordinates','{a}'::char[])
+      #             end,
+      #         'when', pw.whenobj,
+      #         'relations',coalesce(pr.rels, '[]'),
+      #         'descriptions',coalesce(pdes.descrips, '[]'),
+      #         'depictions',coalesce(pdep.depicts, '[]')
+      #       ) from places p
+      #       left join namings n on p.id = n.place_id
+      #       left join placetypes pt on p.id = pt.place_id
+      #       left join placelinks pl on p.id = pl.place_id
+      #       left join geometry g on p.id = g.place_id
+      #       left join placewhens pw on p.id = pw.place_id
+      #       left join placerelated pr on p.id = pr.place_id
+      #       left join descriptions pdes on p.id = pdes.place_id
+      #       left join depictions pdep on p.id = pdep.place_id
+      #       where dataset = '{ds}'
+      #     """.format(urlpre=url_prefix, ds=dslabel, a='{}'))
+      #     for row in cursor:
+      #       #print('row in make_download lpf', type(row))
+      #       g = row[0]['geometry']
+      #       # get rid of empty/unknown geometry
+      #       if g['type'] != 'GeometryCollection' and g['coordinates'] == []:
+      #         row[0].pop('geometry')
+      #       result['features'].append(row[0])
+      #       #progress_recorder.set_progress(i + 1, len(features), description="lpf progress")
+      #     outfile.write(json.dumps(result,indent=2).replace('null','""'))
+      # print('lpf file complete:', fn)
+
+    Log.objects.create(
+      # category, logtype, "timestamp", subtype, note, dataset_id, user_id
+      category = 'dataset',
+      logtype = 'ds_download',
+      note = {"format":req_format, "username":username},
+      dataset_id = dsid,
+      user_id = userid
+    )
   
   # for ajax, just report filename
-  completed_message = {"msg": req_format+" written", "filename":fn, "rows":len(places)}
+  completed_message = {"msg": req_format+" written", "filename":fn, "rows":count}
   return completed_message
 
 
@@ -1417,7 +1473,7 @@ def es_lookup_idx(qobj, *args, **kwargs):
   #ds_hits[p.id] = hitobjlist
   # no more need for hitobjlist
   
-  # index docs back to align_idx() for Hit writing
+  # return index docs to align_idx() for Hit writing
   return result_obj
 
 """

@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.http import JsonResponse,HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.views.generic import DetailView
@@ -7,6 +8,7 @@ from datetime import datetime
 from elasticsearch7 import Elasticsearch
 import itertools, re
 
+from collection.models import Collection
 from datasets.models import Dataset
 from places.models import Place
 from places.utils import attribListFromSet
@@ -45,13 +47,13 @@ def defer_review(request, pid, auth, last):
 class PlacePortalView(DetailView):
   template_name = 'places/place_portal.html'
 
-  # //
+  #
   # given index id (whg_id) returned by typeahead/suggest, 
   # get its db record (a parent);
   # build array of place_ids (parent + children);
   # iterate those to build payload;
   # create add'l context values from set
-  # //
+  #
 
   def get_object(self):
     id_ = self.kwargs.get("id")
@@ -83,7 +85,9 @@ class PlacePortalView(DetailView):
                          'retry_on_timeout': True}])
     id_ = self.kwargs.get("id")
     pid = self.kwargs.get("pid")
+    me = self.request.user
     place = get_object_or_404(Place, id=pid)
+    context['my_collections'] = Collection.objects.filter(owner=me, collection_class='place')
     context['whg_id'] = id_
     context['payload'] = [] # parent and children if any
     context['traces'] = [] # 
@@ -101,15 +105,27 @@ class PlacePortalView(DetailView):
 
     # database records for parent + children into 'payload'
     qs=Place.objects.filter(id__in=ids).order_by('-whens__minmax')
+    # TODO: better way of arriving at title
     context['title'] = qs.first().title
 
+    collections = []
+    annotations = []
+    # qs is all attestations for a place in the index
     for place in qs:
-      ds = get_object_or_404(Dataset,id=place.dataset.id)
+      ds = Dataset.objects.get(id=place.dataset.id)
+      # ds = get_object_or_404(Dataset,id=place.dataset.id)
       # temporally scoped attributes
-      #names = attribListFromSet('names',place.names.all()[:4])
       names = attribListFromSet('names',place.names.all())
       types = attribListFromSet('types',place.types.all())
-      
+
+      # collections, not traces 20220425
+      # get traces, collections for this attestation
+      attest_traces = list(place.traces.all())
+      attest_collections = [t.collection for t in attest_traces]
+      # add to global list
+      annotations = annotations + attest_traces
+      collections = list(set(collections + attest_collections))
+
       geoms = [geom.jsonb for geom in place.geoms.all()]
       related = [rel.jsonb for rel in place.related.all()]
       
@@ -121,7 +137,8 @@ class PlacePortalView(DetailView):
       
       record = {
         "whg_id":id_,
-        "dataset":{"id":ds.id,"label":ds.label,"name":ds.title,"webpage":ds.webpage},
+        "dataset":{"id":ds.id,"label": ds.label,
+                   "name":ds.title,"webpage":ds.webpage},
         "place_id":place.id,
         "src_id":place.src_id, 
         "purl":ds.uri_base+str(place.id) if 'whgaz' in ds.uri_base else ds.uri_base+place.src_id,
@@ -139,49 +156,46 @@ class PlacePortalView(DetailView):
       }
       context['payload'].append(record)
 
+    # collections & trace annotations from all attestations
+    context['collections'] = collections
+    context['annotations'] = annotations
 
-    #TODO: compute global minmax for payload
-    #print('payload',context['payload'])
-    #print('whens',record['whens'])
-    
-    def mm_trace(tsarr):
-      if tsarr==[]:
-        return ''
-      else:
-        #print('mm_trace() tsarr',tsarr)
-        # TODO: not only simple years here; sorts string years?
-        starts = sorted( [t['start'] for t in tsarr] )
-        ends = sorted( [t['end'] for t in tsarr] )
-        mm = [min(starts), max(ends)]
-        mm = sorted(list(set([min(starts), max(ends)])))
-        return '('+str(mm[0])+('/'+str(mm[1]) if len(mm)>1 else '')+')'  
-    
-    # get traces for this index parent and its children
-    #print('ids',ids)
-    qt = {"query": {"bool": {"must": [  {"terms":{"body.place_id": ids }}]}}}
-    trace_hits = es.search(index='traces', doc_type='trace', body=qt)['hits']['hits']
-    # for each hit, get target and aggregate body relation/when
-    for h in trace_hits:
-      #print('trace hit h',h)
-      # filter bodies for place_id
-      bods=[b for b in h['_source']['body'] if b['place_id'] in ids]
-      # agg "relation (start/end)" of bodies
-      #print('bods',bods)
-      # {'id': 'http://whgazetteer.org/place/174101', 'title': 'Santiago de Cuba', 'place_id': 174101, 'relations': [{'when': [{'end': '1519-02-10', 'start': '1519-02-10'}], 'relation': 'waypoint'}]}
-      bod = {
-        "id": bods[0]['id'],
-        "title": bods[0]['title'],
-        "place_id": bods[0]['place_id'],
-        "relations": [x['relations'][0]['relation'] +' '+mm_trace(x['relations'][0]['when']) for x in bods]
-      }      
-      context['traces'].append({
-        'trace_id':h['_id'],
-        'target':h['_source']['target'][0] if type(h['_source']['target']) == list else h['_source']['target'],
-        'body': bod,
-        'bodycount':len(h['_source']['body'])
-      })
-    
     return context
+    # TODO: retire this trace implementation (replaced by collections)
+    # def mm_trace(tsarr):
+    #   if tsarr==[]:
+    #     return ''
+    #   else:
+    #     #print('mm_trace() tsarr',tsarr)
+    #     # TODO: not only simple years here; sorts string years?
+    #     starts = sorted( [t['start'] for t in tsarr] )
+    #     ends = sorted( [t['end'] for t in tsarr] )
+    #     mm = [min(starts), max(ends)]
+    #     mm = sorted(list(set([min(starts), max(ends)])))
+    #     return '('+str(mm[0])+('/'+str(mm[1]) if len(mm)>1 else '')+')'
+    #
+    # # get traces for this index parent and its children
+    # #print('ids',ids)
+    # qt = {"query": {"bool": {"must": [  {"terms":{"body.place_id": ids }}]}}}
+    # trace_hits = es.search(index='traces', doc_type='trace', body=qt)['hits']['hits']
+    # # for each hit, get target and aggregate body relation/when
+    # for h in trace_hits:
+    #   # filter bodies for place_id
+    #   bods=[b for b in h['_source']['body'] if b['place_id'] in ids]
+    #   bod = {
+    #     "id": bods[0]['id'],
+    #     "title": bods[0]['title'],
+    #     "place_id": bods[0]['place_id'],
+    #     "relations": [x['relations'][0]['relation'] +' '+mm_trace(x['relations'][0]['when']) for x in bods]
+    #   }
+      # context['traces'].append({
+      #   'trace_id':h['_id'],
+      #   'target':h['_source']['target'][0] if type(h['_source']['target']) == list else h['_source']['target'],
+      #   'body': bod,
+      #   'bodycount':len(h['_source']['body'])
+      # })
+    
+
 
 
 class PlaceDetailView(DetailView):
