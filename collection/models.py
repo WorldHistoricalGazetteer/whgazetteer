@@ -19,6 +19,9 @@ def user_directory_path(instance, filename):
 
 def default_relations():
   return 'locale'.split(', ')
+# needed b/c collection place_list filters on it
+def default_omitted():
+  return '{}'
 
 class Collection(models.Model):
   owner = models.ForeignKey(User,related_name='collections', on_delete=models.CASCADE)
@@ -28,11 +31,11 @@ class Collection(models.Model):
 
   # array of place ids "removed" by user from the collection
   # filtered in collection.places_all and can't be annotated
-  omitted = ArrayField(models.IntegerField(blank=True, null=True))
+  omitted = ArrayField(models.IntegerField(), blank=True, default=default_omitted)
 
   # per-collection relation keyword choices, e.g. waypoint, birthplace, battle site
   # need default or it errors for some reason
-  rel_keywords = ArrayField(models.CharField(max_length=30), blank=True)
+  rel_keywords = ArrayField(models.CharField(max_length=30), blank=True, null=True)
   # rel_keywords = ArrayField(models.CharField(max_length=30), blank=True, default=default_relations)
 
   # 3 new fields, 20210619

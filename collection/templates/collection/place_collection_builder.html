@@ -290,12 +290,22 @@
 					      <div class="col-place-card" data-id="{{ p.id }}">
 						      <p><b>{{ p.title }}</b> {{ p.ccodes }}
 							      <i>pid: (<a class="coll-place" data-pid={{ p.id }} href="#" >{{ p.id }}</a>)</i>
+						        {# candidate for biggest kluge ever; tooltip breaks for single place!? #}
+						        {% if coll_places|length > 1 %}
 						        <span class="float-right mr-1">
 							        <a class="mark-place" href="#" title="Remove from collection" rel="tooltip" data-pid="{{ p.id }}" data-col="{{ object.id }}">
 								        {% fontawesome_icon 'minus-square' color='#ff8080' %}</a>
 							        <a class="anno-place" href="#" title="Annotate place" rel="tooltip" data-pid="{{ p.id }}">
 								        {% fontawesome_icon 'edit' color='#336699' %}</a>
 						        </span>
+						        {% else %}
+						        <span class="float-right mr-1">
+							        <a class="mark-place" href="#" title="Remove from collection" data-pid="{{ p.id }}" data-col="{{ object.id }}">
+								        {% fontawesome_icon 'minus-square' color='#ff8080' %}</a>
+							        <a class="anno-place" href="#" title="Annotate place" data-pid="{{ p.id }}">
+								        {% fontawesome_icon 'edit' color='#336699' %}</a>
+						        </span>
+						        {% endif %}
 							      {% if p.traces %}
 								      <br/>
 								      {% for t in p.traces %}
@@ -368,9 +378,9 @@
 </div> <!-- container -->
 
 <script type="text/javascript">
-	$(".mark-place").mouseleave(function(){
-    $(this).tooltip('hide');
-	})
+	{#$(".mark-place").mouseleave(function(){#}
+  {#  $(this).tooltip('hide');#}
+	{# })#}
 	function saveAnno(){
     console.log('going ajax dammit')
 	}

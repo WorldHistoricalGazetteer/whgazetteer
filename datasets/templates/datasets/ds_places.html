@@ -150,6 +150,10 @@
 </div>
 
 <script type="text/javascript">
+	$("#create_coll_link").click(function(){
+			console.log('open title input')
+			$("#title_form").show()
+	})
 
 	function resetSearch(){
     var e = $.Event('keyup')
@@ -223,7 +227,7 @@
 			      el = $('<li><a class="a_addtocoll" href="#" ref='+data.id+'>'+data.title+'</a></li>')
 			      el.click(function(){
 							coll = data.id
-							pids = checked_cards
+							pids = checked_rows
 							add_to_collection(coll, pids)
 							console.log('pids to coll', pids, coll)
 			      })

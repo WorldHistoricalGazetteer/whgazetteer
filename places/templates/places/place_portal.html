@@ -181,9 +181,7 @@
       </div> <!-- place_home_l-->
       <div id="place_home_r" class="col-sm-6">
 	      <div id="addtocoll_popup" class="p-2 hidden small">
-	        <div style="position:relative;">
-		        <div class="closer" style="position:absolute; top:-6px; right:-2px">X</div>
-	        </div>
+		      <div class="closer" style="position:absolute; top:0; right:4px">X</div>
 		      <ul id="my_collections" class="no-bullets">
 						{% for c in my_collections %}
 							<li><a class="a_addtocoll" href="#" ref="{{ c.id }}">{{ c.title }}</a></li>
@@ -261,7 +259,7 @@
 </div>
 
 <script type="text/javascript">
-	{#function showCollectionDescription(content, title){#}
+
 	function showCollectionDescription(){
     const title = JSON.parse($("#c_title").text());
     const descrip = JSON.parse($("#c_description").text());
