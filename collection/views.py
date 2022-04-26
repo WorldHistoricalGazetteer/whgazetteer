@@ -331,7 +331,7 @@ class PlaceCollectionUpdateView(UpdateView):
 
     # test: send single anno form to template
     context['form_anno'] = form_anno
-    context['coll_places'] = self.object.places_all
+    context['coll_places'] = self.object.places_all.order_by('title')
 
     # all traces for all places in collection
     # tlist = [t for sublist in [p.traces for p in self.places_all] for t in sublist]

@@ -378,18 +378,16 @@
 </div> <!-- container -->
 
 <script type="text/javascript">
-	{#$(".mark-place").mouseleave(function(){#}
-  {#  $(this).tooltip('hide');#}
-	{# })#}
+
 	function saveAnno(){
-    console.log('going ajax dammit')
+    {#console.log('going ajax dammit')#}
 	}
 
 	function goBrowse(){
     window.location = '/collections/{{ object.id }}/browse_pl'
 	}
 	function saveExit(){
-    console.log('saveExit(callback)')
+    {#console.log('saveExit(callback)')#}
     $.when($("#collection_form").submit()).done(function(){goBrowse()})
 	}
 
@@ -419,7 +417,7 @@
 						      '" target="_blank">'+linky.label+'</a> ('+linky.link_icon+
 						      '<i title class="fa fa-minus-square-o"></i> ); ')
 				      $("#added_flash").fadeIn().delay(2000).fadeOut()
-				      console.log('added! gimmee feedback', response.result)
+				      {#console.log('added! gimmee feedback', response.result)#}
 			      }
 		      }
 			})
@@ -438,7 +436,7 @@
 
 	// do something with place name (modal popup?)
 	$(".coll-place").click(function() {
-      console.log('place record', $(this).data('pid'));
+      {#console.log('place record', $(this).data('pid'));#}
   })
 	$(".closer").click(function(){
 			{#$("#linkform_popup").fadeOut()#}
@@ -469,7 +467,7 @@
           cache: false,
           data: formData,
           success: function (response) {
-              console.log('result:', response)
+              {#console.log('result:', response)#}
           }
       })
 			// remove card from dom & hide link
@@ -493,7 +491,7 @@
 	$(".mark-place").click(function(){
     pid = $(this).data('pid')
 		col = $(this).data('col')
-    console.log('mark ' + pid + ' in ' + col)
+    {#console.log('mark ' + pid + ' in ' + col)#}
 		{#card = $(".col-place-card[data-id="+pid+"]")#}
 		if(remove_these.indexOf(pid)>-1){
       // unmark it
@@ -522,11 +520,11 @@
 			remove_these.push(pid)
 			$("#a_remove").html('remove '+remove_these.length)
 		}
-    console.log('remove_these:', remove_these)
+    {#console.log('remove_these:', remove_these)#}
 	})
 
 	$("#btn_coll_update").click(function(){
-      console.log('save & return')
+      {#console.log('save & return')#}
 	})
 	// show/hide editor-restricted options
   $("#editor_options").hide();
@@ -578,10 +576,10 @@
     window.featdata = data
 	  trace = JSON.parse(data.traces).find(function(t){return t.fields.collection = "{{ object.id }}"})
 	  if(trace){
-      console.log('has trace for this collection', trace.fields)
+      {#console.log('has trace for this collection', trace.fields)#}
 		  $("#anno_detail").html(JSON.stringify(trace.fields))
 	  } else {
-      console.log('no trace for this collection')
+      {#console.log('no trace for this collection')#}
 	  }
 
     function onlyUnique(array) {
@@ -755,12 +753,12 @@
 		$("[rel='tooltip']").tooltip();
     $(".nav-link").click(function(){
 			  var tab = $(this).data('id')
-			  console.log(tab)
+			  {#console.log(tab)#}
 			  if(tab == 'ds'){
 					  $("#coll_right_anno").addClass('hidden')
 					  {#$("#coll_right_intro").removeClass('hidden')#}
 			  } else {
-					  console.log('show anno header if there are place cards')
+					  {#console.log('show anno header if there are place cards')#}
 					  if($("#coll_placelist").children(".col-place-card").length > 0){
               $("#coll_right_anno").removeClass('hidden')
 					  }
@@ -780,7 +778,7 @@
     // help modals
     $(".help-matches").click(function(){
       page=$(this).data('id')
-      console.log('help:', page)
+      {#console.log('help:', page)#}
       $('.selector').dialog('open');
     })
 
@@ -801,12 +799,12 @@
   })
 
 	$("#select_ds").change(function(){
-    console.log('selected from list', $(this).val())
+    {#console.log('selected from list', $(this).val())#}
 		$("further_explanation").hide()
 		{#if($("a.active").data('id') == 'pl' ){#}
 		if($("a.active").data('id') == 'pl' && '{{ place_list }}'){
       $("#col_right_anno").fadeIn()
-				console.log('active', $("a.active").data('id'),'{{ place_list|length }}' )
+				{#console.log('active', $("a.active").data('id'),'{{ place_list|length }}' )#}
 		}
 		addDataset('create')
 	})
@@ -828,7 +826,7 @@
 		      +'</p></div></div>'
 		$(".a_addplaces").click(function(){
 		  thisy = $(this)
-		  console.log('thisy', thisy)
+		  {#console.log('thisy', thisy)#}
 		})
     $("#coll_dscards_create").append(card)
     // console.log(card)
@@ -836,7 +834,7 @@
 
 	// adds all dataset places to placelist
 	function addPlaces(dsid){
-		url = "/collections/add_ds/"+"{{ object.id }}"+"/"+dsid
+		let url = "/collections/add_ds/"+"{{ object.id }}"+"/"+dsid
 		// collection.views.add_dataset
 		{#console.log('adding dataset w/o save',dsid, {{ object.id }}, url)#}
 		document.location.href = url
@@ -863,26 +861,19 @@
   }
 
   function clearDataset(dsid){
-    console.log('clear card for ds', dsid)
+    {#console.log('clear card for ds', dsid)#}
     $("#card_"+dsid).remove()
   }
 
   function removeDataset(dsid) {
-    {#if("{{ action }}" == 'update') {#}
-      console.log('removing ' + dsid + 'from collection '+ "{{object.id}}")
-    {#  $.ajax("/collections/remove_ds/{{object.id}}/"+dsid,#}
-    {#    function(result){#}
-    {#      console.log('removeDataset() result', result)#}
-    {#  });#}
-    {# else #}
-      $("#id_datasets [value=" + dsid + "]").prop("checked", false);
-      let idx = dslist.indexOf(dsid)
-      dslist.splice(idx, dslist.length);
-      card = "#card_"+dsid
-      $(card).remove()
-      if(dslist.length == 0 ){ $("#msg").html('None yet...').show()}
-      console.log('removed '+dsid+' from dslist[] and dom')
-    {# } #}
+    {#console.log('removing ' + dsid + 'from collection '+ "{{object.id}}")#}
+    $("#id_datasets [value=" + dsid + "]").prop("checked", false);
+    let idx = dslist.indexOf(dsid)
+    dslist.splice(idx, dslist.length);
+    card = "#card_"+dsid
+    $(card).remove()
+    if(dslist.length == 0 ){ $("#msg").html('None yet...').show()}
+    {#console.log('removed '+dsid+' from dslist[] and dom')#}
     // reset select
     $("#select_ds").val(0)
   }

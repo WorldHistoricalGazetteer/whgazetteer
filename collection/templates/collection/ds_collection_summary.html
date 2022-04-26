@@ -200,7 +200,7 @@
   clip_cite.on('success', function(e) {
     eobj=e
     el=$("#"+e.trigger.getAttribute("id"))
-    console.log('el',el)
+    {#console.log('el',el)#}
     e.clearSelection();
     el.tooltip('hide')
       .attr('data-original-title', 'copied!')
@@ -230,8 +230,8 @@
 
     // post-download actions
     function customResult(resultElement, result) {
-      console.log('celery result',result)
-      console.log('celery resultElement',resultElement)
+      {#console.log('celery result',result)#}
+      {#console.log('celery resultElement',resultElement)#}
       spinner_dl.stop()
       fn = result.filename
       link = '[ <span class="dl-save"><a href="/'+fn+'" title="downloaded: '+dater()+
@@ -286,12 +286,12 @@
       clicked.parent().find("#dots").hide()
       clicked.next().show()
       $(".a_less").show()
-      console.log('clicked',clicked)  
+      {#console.log('clicked',clicked)  #}
     })
     $(".a_less").click(function(e){
       clicked = $(this)
-      console.log('this clicked',clicked)  
-      console.log('parent',parent)  
+      {#console.log('this clicked',clicked)  #}
+      {#console.log('parent',parent)  #}
       clicked.hide() // hide 'less' link
       $(".more").hide() // hide the extra text again
       $("#dots").show() // show dots again
@@ -315,7 +315,7 @@
   $( ".ds_card" ).hover(function() {
       let id = $(this).data('id')
       feat = idToFeature[id]
-      console.log('feat',feat)
+      {#console.log('feat',feat)#}
       ogfill = "#ff9999"
       feat.setStyle(
         {fillColor: 'yellow', color: 'red', fillOpacity: 0.3}
@@ -335,12 +335,12 @@
   
   function showMore() {
     foo = $(this)
-    console.log('foo',foo)
+    {#console.log('foo',foo)#}
   } 
   
   $(".dl-links a").click(function(e){
     urly='/datasets/'+$(this).data('id')+'/augmented/'+$(this).attr('ref')
-    console.log('urly',urly)
+    {#console.log('urly',urly)#}
     console.time('dl')
     startDownloadSpinner()
     $.ajax({

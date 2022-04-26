@@ -97,7 +97,6 @@
 	      <div id="collection_options"></div> <!-- collection_options -->
 	      <p id="referrer"></p>
 	      <div>
-{#		      <span class="text-danger">delete</span>#}
 		      <span title="back"class="float-right">
 			      <a href="/mycollections">Cancel</a>
 		        <input id="btn_coll_submit" class="btn-sm btn-primary mt-2" type="submit" value="Save" />
@@ -159,7 +158,7 @@
     // help modals
     $(".help-matches").click(function(){
       page=$(this).data('id')
-      console.log('help:', page)
+      {#console.log('help:', page)#}
       $('.selector').dialog('open');
     })
     $(".selector").dialog({
@@ -187,7 +186,7 @@
   })
 
   function listDataset(d) {
-    console.log('listing this:', d.title)
+    {#console.log('listing this:', d.title)#}
     dslist.push(d.id)
     $("#id_datasets [value=" + d.id + "]").attr("checked", "checked");
     card='<div class="ds_card" id="card_'+d.id+'">'
@@ -205,12 +204,12 @@
 
   // adds, displays single dataset
   function addDataset() {
-    console.log('selected', $("#select_ds").val())
+    {#console.log('selected', $("#select_ds").val())#}
     $.get("/collections/list_ds", {ds_id:$("#select_ds").val()},
       function(data){
         // render to html
         listDataset(data)
-        console.log('ds to list:',data)
+        {#console.log('ds to list:',data)#}
         // append ds.id to form
     });
     // reset select
@@ -218,15 +217,15 @@
     $("#msg").html('').hide()
   }
   function clearDataset(dsid){
-    console.log('clear card for ds', dsid)
+    {#console.log('clear card for ds', dsid)#}
     $("#card_"+dsid).remove()
   }
   function removeDataset(dsid) {
     if("{{ action }}" == 'update') {
-      console.log('removing ' + dsid + 'from collection '+ "{{object.id}}")
+      {#console.log('removing ' + dsid + 'from collection '+ "{{object.id}}")#}
       $.ajax("/collections/remove_ds/{{object.id}}/"+dsid,
         function(result){
-          console.log('removeDataset() result', result)
+          {#console.log('removeDataset() result', result)#}
       });
     } else {
       $("#id_datasets [value=" + dsid + "]").prop("checked", false);
@@ -235,7 +234,7 @@
       card = "#card_"+dsid
       $(card).remove()
       if(dslist.length == 0 ){ $("#msg").html('None yet...').show()}
-      console.log('removed '+dsid+' from dslist[] and dom')
+      {#console.log('removed '+dsid+' from dslist[] and dom')#}
     }
     // reset select
     $("#select_ds").val(0)

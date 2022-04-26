@@ -28,13 +28,7 @@
 
   <style>
 		.red-head-anno {font-size: smaller; color: #993333;}
-		{#.img-responsive {#}
-		{#	max-width: 100%;#}
-		{#	height: auto;#}
-		{#  position:relative;#}
-		{#  top: 50%;#}
-		{#  transform: translateY(-50%);#}
-		{# }#}
+
   </style>
 {% endblock %}
 
@@ -171,33 +165,6 @@
 	                <a id="cite_{{d.id}}" class="clippy" aria-label="{% if d.citation %}{{ d.citation }}{% else %}{{d.title}}. [Data file (partial), Retrieved from {{ url_front}}collections/{{object.id}}/browse_pl, {% now 'd M Y' %}{% endif %}" rel="tooltip" title="copy to clipboard"> citation: {% fontawesome_icon 'clipboard' color='#336699' %}</a><br/>
 		          {% endfor %}
 	          </p>
-            {% comment %}
-            <table class="dl-table small">
-              <thead><tr><th>Title</th><th>Rows</th><th>Formats</th><th></th></tr></thead>
-              <tbody>{{ ds_counter }}
-		            {% for d in ds_list %}
-	              <tr class="align-top">
-	              <td>{{ d.title }}&nbsp;
-	                <a id="cite_{{d.id}}" class="clippy" aria-label="{% if d.citation %}{{ d.citation }}{% else %}{{d.title}}. [Data file, last modified {{ d.last_modified_text}}]. Retrieved from http://whgazetteer.org/datasets/{{d.id}}, {% now 'd M Y' %}{% endif %}" rel="tooltip" title="copy to clipboard">{% fontawesome_icon 'clipboard' color='#336699' %}</a>
-									{#<br/><span class="ml-2 small" style="disply:block"><i>est. download time: {{d.dl_est}}</i></span>#}
-	              </td>
-	              <td>{{d.numrows}}</td>
-	              <td> <!-- always offer lpf -->
-	                <div class="form-check form-check-inline">
-	                  <input class="form-check-input hover" type="radio" name="format" value="lpf">
-	                  <label class="form-check-label" for="r_lpf">LPF</label>
-	                </div>
-	              </td>
-	              <td class="px-1">
-	                <a class="a-dl" data-id={{d.id}} data-collid={{ object.id }}>
-	                  <i class="fa fa-download" title="Download"></i>
-	                </a>
-	              </td>
-	              </tr>
-	              {% endfor %}
-              </tbody>
-            </table>
-            {% endcomment %}
             <div id=""></div>
             <div id="celery-result"></div>
           </div>
@@ -220,7 +187,6 @@
   </div>
 </div>
 
-
 <script type="text/javascript">
 
   var clip_cite = new ClipboardJS('.clippy', {
@@ -233,7 +199,7 @@
   clip_cite.on('success', function(e) {
     eobj=e
     el=$("#"+e.trigger.getAttribute("id"))
-    console.log('el',el)
+    {#console.log('el',el)#}
     e.clearSelection();
     el.tooltip('hide')
       .attr('data-original-title', 'copied!')
@@ -242,7 +208,7 @@
 
   function filterColumn (i, v) {
     // clear then search
-    console.log('i,v', i,v)
+    {#console.log('i,v', i,v)#}
     table
     .search( '' )
     .columns( i )
@@ -268,11 +234,11 @@
       // get id
       pid=$(this)[0].cells[0].textContent
       ds_src=table.row(thisy.index()).data().dataset.label
-      console.log('clicked row pid', pid, ds_src)
+      {#console.log('clicked row pid', pid, ds_src)#}
       
       geom = all_feats.find(function(f){return f.properties.pid==pid}).geometry
       coords = geom.coordinates
-      console.log('pid, geom, coords', pid, geom, coords)
+      {#console.log('pid, geom, coords', pid, geom, coords)#}
 
       // fetch its detail
       getPlace(pid, 'clicked')
@@ -334,8 +300,8 @@
 
 		// called from a-dl click()
     function customResult(resultElement, result) {
-      console.log('celery result',result)
-      console.log('celery resultElement',resultElement)
+      {#console.log('celery result',result)#}
+      {#console.log('celery resultElement',resultElement)#}
       spinner_dl.stop()
       fn = result.filename
       link = '[ <span class="dl-save"><a href="/'+fn+'" title="downloaded: '+dater()+
@@ -358,7 +324,7 @@
           // startDownloadSpinner()
           dsid = $(this).data('id')
           collid = $(this).data('collid')
-          console.log('collid, dsid', collid, dsid)
+          {#console.log('collid, dsid', collid, dsid)#}
           urly='/datasets/dlcelery/'
           $.ajax({
               type: 'POST',
@@ -415,7 +381,7 @@
           async: false,
           success: function (data) {
             ds=data.results[0]
-            console.log('ds',ds)
+            {#console.log('ds',ds)#}
             html='<p class="thin"><b>Title</b>: '+ds.title+'</p>'
             html+='<p class="thin"><b>Description</b>: '+ds.description+'</p>'
             html+='<p class="thin"><b>WHG Owner</b>: '+ds.owner+'</p>'
@@ -465,7 +431,7 @@
     // help popups
     $(".help-matches").click(function(){
       page=$(this).data('id')
-      console.log('help:', page)
+      {#console.log('help:', page)#}
       $('.selector').dialog('open');
     })
     $(".selector").dialog({
@@ -489,12 +455,12 @@
       clicked.parent().find("#dots").hide()
       clicked.next().show()
       $(".a_less").show()
-      console.log('clicked',clicked)
+      {#console.log('clicked',clicked)#}
     })
     $(".a_less").click(function(e){
       clicked = $(this)
-      console.log('this clicked',clicked)
-      console.log('parent',parent)
+      {#console.log('this clicked',clicked)#}
+      {#console.log('parent',parent)#}
       clicked.hide() // hide 'less' link
       $(".more").hide() // hide the extra text again
       $("#dots").show() // show dots again
@@ -524,7 +490,7 @@
     if(source_list.includes('territorios892')){
       // big polygons
       if(e.sourceId == 'territorios892' && e.isSourceLoaded){
-        console.log('big data finished', e.sourceId)
+        {#console.log('big data finished', e.sourceId)#}
         spinner_map.stop()
         $(".toomany").html('').hide()      
       }
@@ -584,10 +550,7 @@
           while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
             coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
           }
-          
-          // highlight row
-          <!--console.log('highlight row & fetch data', pid, coordinates)-->
-            
+
           // popup
           new maplibregl.Popup()
             .setLngLat(coordinates)
@@ -618,7 +581,7 @@
 
 	  $.getJSON('/collections/'+'{{ object.id }}'+'/geojson')
 	  .done(function(colldata) {
-      console.log('colldata', colldata)
+      {#console.log('colldata', colldata)#}
 			fcoll = colldata
       mappy.addSource('all', {
         'type': 'geojson',
@@ -713,8 +676,8 @@
 
   // hightlight selected in row
   function highlightFeatureGL(pid, geom, coords, src){
-    console.log('highlightFeatureGL()')
-    console.log('pid, geom, coords', pid, geom, coords. src)
+    {#console.log('highlightFeatureGL()')#}
+    {#console.log('pid, geom, coords', pid, geom, coords. src)#}
     
     //mappy.getLayer(layer_list[4]).getPaintProperty('circle-color')
     mappy.setPaintProperty(
@@ -769,7 +732,7 @@
     // also set z-index and zoom
     
     // zoom to feature
-    console.log('geom')
+    {#console.log('geom')#}
     if(geom.type.toLowerCase() == 'point'){
       flycoords = typeof(coords[0]) == 'number'?coords:coords[0]
       mappy.flyTo({'center': flycoords, 'zoom': 6})
@@ -780,7 +743,7 @@
   }
 
   mappy.on('click', 'gl_active_point', function (e) {
-    <!--console.log('place:', e.features[0])-->
+    //console.log('place:', e.features[0])
     place=e.features[0]
     var coordinates = e.features[0].geometry.coordinates.slice();
     var pid = e.features[0].properties.pid;
@@ -794,7 +757,7 @@
     }
     
     // highlight row
-    console.log('highlight row & fetch data', pid, coordinates)
+    {#console.log('highlight row & fetch data', pid, coordinates)#}
       
     // popup
     new maplibregl.Popup()
@@ -807,31 +770,6 @@
 
   // activate all tooltips
   $("[rel='tooltip']").tooltip();
-  
-  // show/hide dataset markers from dropdown
-  // not in use
-  // TODO: this seems inefficient but works
-  {#function filterMap(key){#}
-  {#  console.log('filter on ds', key)#}
-  {#  if(key == -1){#}
-  {#    for(l in layer_list){#}
-  {#      mappy.setLayoutProperty(layer_list[l],'visibility','visible')#}
-  {#      mappy.flyTo({'center': [9.2, 33], 'zoom':0.2})#}
-  {#    }      #}
-  {#  } else {#}
-  {#    relevant = layer_list.filter(l => l.indexOf(key) !=-1)#}
-  {#    others = layer_list.filter(l => !relevant.includes(l))#}
-  {#    for(l in others){#}
-  {#      mappy.setLayoutProperty(others[l],'visibility','none')#}
-  {#    }#}
-  {#    for(l in relevant){#}
-  {#      mappy.setLayoutProperty(relevant[l],'visibility','visible')#}
-  {#    }#}
-  {#    bounds = ds_list.find((o) => { return o['label'] === key }).bbox#}
-  {#    console.log('bounds',bounds)#}
-  {#    mappy.fitBounds(turf.envelope(bounds).bbox)#}
-  {#  }#}
-  {# }#}
 
   function getPlace(pid, from){
     // from = ['row0'|'clicked'|'popup']
@@ -853,17 +791,17 @@
           } else {
             var re = /(http|bnf|cerl|dbp|gn|gnd|gov|loc|pl|tgn|viaf|wd|wdlocal|whg|wp):(.*?)$/;
             url=base_urls[str.match(re)[1]]+str.match(re)[2] 
-            console.log('url',url)
+            {#console.log('url',url)#}
           }
           window.open(url, '_blank');
         });
         $('.exttab').on('click', function(e) {
           e.preventDefault();
           id=$(this).data('id')
-          console.log('id',id)
+          {#console.log('id',id)#}
           var re = /(http|dbp|gn|tgn|wd|loc|viaf|aat):(.*?)$/;
           url=id.match(re)[1]=='http' ? id : base_urls[id.match(re)[1]]+id.match(re)[2]
-          console.log('url',url)
+          {#console.log('url',url)#}
           window.open(url,'_blank')
         });
     });
@@ -883,7 +821,7 @@
   // single column
   function parsePlace(data) {
     window.featdata = data
-    console.log('data', data)
+    {#console.log('data', data)#}
 
     function onlyUnique(array) { 
       const map = new Map();
@@ -1062,7 +1000,7 @@
 
   // render heatmap layer
   function heat(dataset, ramp) {
-	  console.log('heat('+dataset+', '+ramp+')')
+	  {#console.log('heat('+dataset+', '+ramp+')')#}
 	  <!--if (!!gl.getLayer('heat_active')){-->
 		  <!--gl.removeLayer('heat_active')-->
     <!--}-->

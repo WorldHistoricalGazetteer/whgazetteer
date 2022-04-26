@@ -127,7 +127,7 @@
 
   function filterColumn (i, v) {
     // clear then search
-    console.log('i,v', i,v)
+    {#console.log('i,v', i,v)#}
     table
     .search( '' )
     .columns( i )
@@ -168,11 +168,11 @@
       // get id
       pid=$(this)[0].cells[0].textContent
       ds_src=table.row(thisy.index()).data().dataset.label
-      console.log('clicked row pid', pid, ds_src)
+      {#console.log('clicked row pid', pid, ds_src)#}
 
       geom = all_feats.find(function(f){return f.properties.pid==pid}).geometry
       coords = geom.coordinates
-      console.log('pid, geom, coords', pid, geom, coords)
+      {#console.log('pid, geom, coords', pid, geom, coords)#}
 
       // fetch its detail
       getPlace(pid, 'clicked')
@@ -279,7 +279,7 @@
     // help popups
     $(".help-matches").click(function(){
       page=$(this).data('id')
-      console.log('help:', page)
+      {#console.log('help:', page)#}
       $('.selector').dialog('open');
     })
     $(".selector").dialog({
@@ -318,7 +318,7 @@
     if(source_list.includes('territorios892')){
       // big polygons
       if(e.sourceId == 'territorios892' && e.isSourceLoaded){
-        console.log('big data finished', e.sourceId)
+        {#console.log('big data finished', e.sourceId)#}
         spinner_map.stop()
         $(".toomany").html('').hide()
       }
@@ -360,7 +360,7 @@
     }, 'z-index-2'); // place this layer below zIndex2
 
     addSources(ds_list)
-    <!--console.log('map loaded, ds_list',ds_list)-->
+    // console.log('map loaded, ds_list',ds_list)-->
 
     layer_list = getLoadedLayers(ds_list)
 
@@ -377,7 +377,7 @@
         });
 
         mappy.on('click', layer_list[l], function (e) {
-          <!--console.log('place:', e.features[0])-->
+          //console.log('place:', e.features[0])-->
           place=e.features[0]
           var coordinates = e.features[0].geometry.coordinates.slice();
           var pid = e.features[0].properties.pid;
@@ -391,7 +391,7 @@
           }
 
           // highlight row
-          <!--console.log('highlight row & fetch data', pid, coordinates)-->
+          //console.log('highlight row & fetch data', pid, coordinates)-->
 
           // popup
           new maplibregl.Popup()
@@ -424,7 +424,7 @@
     ds_list.forEach(function(ds, i){
       $.getJSON('/datasets/'+ds.id+'/geojson')
         .done(function(dsdata) {
-          console.log('dsdata', ds.id, dsdata)
+          {#console.log('dsdata', ds.id, dsdata)#}
           mappy.addSource(ds.label, {
             'type': 'geojson',
             'data': dsdata.collection
@@ -443,7 +443,7 @@
 
   // render dataset/geometry layers
   function renderSourceLayers(dslabel, i){
-    console.log('dslabel, i', dslabel, i)
+    {#console.log('dslabel, i', dslabel, i)#}
     startMapSpinner()
     mappy.addLayer({
       'id': 'gl_'+dslabel+'_poly',
@@ -481,8 +481,8 @@
   }
   // hightlight selected in row
   function highlightFeatureGL(pid, geom, coords, src){
-    console.log('highlightFeatureGL()')
-    console.log('pid, geom, coords', pid, geom, coords. src)
+    {#console.log('highlightFeatureGL()')#}
+    {#console.log('pid, geom, coords', pid, geom, coords. src)#}
 
     //mappy.getLayer(layer_list[4]).getPaintProperty('circle-color')
     mappy.setPaintProperty(
@@ -537,7 +537,7 @@
     // also set z-index and zoom
 
     // zoom to feature
-    console.log('geom')
+    {#console.log('geom')#}
     if(geom.type.toLowerCase() == 'point'){
       flycoords = typeof(coords[0]) == 'number'?coords:coords[0]
       mappy.flyTo({'center': flycoords, 'zoom': 7})
@@ -562,7 +562,7 @@
     }
 
     // highlight row
-    console.log('highlight row & fetch data', pid, coordinates)
+    {#console.log('highlight row & fetch data', pid, coordinates)#}
 
     // popup
     new maplibregl.Popup()
@@ -598,7 +598,7 @@
     }
 
     // highlight row
-    console.log('highlight row & fetch data', pid, coordinates)
+    {#console.log('highlight row & fetch data', pid, coordinates)#}
 
     // popup
     new maplibregl.Popup()
@@ -615,7 +615,7 @@
   // show/hide dataset markers from dropdown
   // TODO: this seems inefficient but works
   function filterMap(key){
-    console.log('filter on ds', key)
+    {#console.log('filter on ds', key)#}
     if(key == -1){
       for(l in layer_list){
         mappy.setLayoutProperty(layer_list[l],'visibility','visible')
@@ -631,7 +631,7 @@
         mappy.setLayoutProperty(relevant[l],'visibility','visible')
       }
       bounds = ds_list.find((o) => { return o['label'] === key }).bbox
-      console.log('bounds',bounds)
+      {#console.log('bounds',bounds)#}
       mappy.fitBounds(turf.envelope(bounds).bbox)
     }
   }
@@ -656,17 +656,17 @@
           } else {
             var re = /(http|bnf|cerl|dbp|gn|gnd|gov|loc|pl|tgn|viaf|wd|wdlocal|whg|wp):(.*?)$/;
             url=base_urls[str.match(re)[1]]+str.match(re)[2]
-            console.log('url',url)
+            {#console.log('url',url)#}
           }
           window.open(url, '_blank');
         });
         $('.exttab').on('click', function(e) {
           e.preventDefault();
           id=$(this).data('id')
-          console.log('id',id)
+          {#console.log('id',id)#}
           var re = /(http|dbp|gn|tgn|wd|loc|viaf|aat):(.*?)$/;
           url=id.match(re)[1]=='http' ? id : base_urls[id.match(re)[1]]+id.match(re)[2]
-          console.log('url',url)
+          {#console.log('url',url)#}
           window.open(url,'_blank')
         });
     });
@@ -774,14 +774,12 @@
       val = data.descriptions[0]['value'].substring(0,300)
       descrip+='<p><b>Description</b>: '+(val.startsWith('http')?'<a href="'+val+'" target="_blank">Link</a>':val)
         +' ... </p>'
-        <!--'<br/><span class="small red-bold">('+data.descriptions[0]['identifier']+')</span>-->
+
     }
     //
     // CCODES
     //
-    <!--if (data.ccodes.length > 0) {-->
     if (!!data.countries) {
-      <!--console.log('data.countries',data.countries)-->
       descrip+='<p><b>Modern country bounds</b>: '+ data.countries.join(', ')+'</p>'
     }
     //
@@ -815,11 +813,7 @@
 
   // render heatmap layer
   function heat(dataset, ramp) {
-	  console.log('heat('+dataset+', '+ramp+')')
-	  <!--if (!!gl.getLayer('heat_active')){-->
-		  <!--gl.removeLayer('heat_active')-->
-    <!--}-->
-	  <!--ne_global.getMapboxMap().addLayer({-->
+	  {#console.log('heat('+dataset+', '+ramp+')')#}
 	  mappy.addLayer({
       "id": "heat_"+dataset,
       "type": "heatmap",

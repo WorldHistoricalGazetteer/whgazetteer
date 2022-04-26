@@ -1010,6 +1010,7 @@ em { color: #993333;}
   margin-bottom: 0;
 }
 
+.dataTables_scrollBody, .dataTables_scrollHead {border-right: 1px solid gainsboro;}
 #drftable_list {
   padding-right: 0 !important;
   font-size: .8rem;
