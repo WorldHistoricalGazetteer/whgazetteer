@@ -83,12 +83,7 @@ def add_places(request, *args, **kwargs):
       msg = {"added": added, "dupes": dupes}
     return JsonResponse({'status': status, 'msg': msg}, safe=False)
 
-
-# status = 'ok'
-# msg = str(place.title) + ' added to "' + coll.title + '"'
-
-
-
+""" remove list of >=1 places from collection """
 def remove_places(request, *args, **kwargs):
   if request.method == 'POST':
     print('remove_places request', request.POST)
@@ -98,7 +93,6 @@ def remove_places(request, *args, **kwargs):
     # remove from collections_places
     for pid in place_list:
       place = Place.objects.get(id=pid)
-      print('wtf is going on?',place)
       if place in coll.places.all():
         print('collection place', place)
         coll.places.remove(place)
@@ -106,8 +100,6 @@ def remove_places(request, *args, **kwargs):
         print('pid to omitted:',place.id)
         coll.omitted.append(place.id)
         coll.save()
-      # 6596043 Burana
-      # remove trace_anotations record if exists
       if place.traces:
         TraceAnnotation.objects.filter(collection=coll, place__in=place_list).delete()
     return JsonResponse({'result': str(len(place_list))+' places removed, we think'}, safe=False)
