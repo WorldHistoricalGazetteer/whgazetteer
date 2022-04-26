@@ -710,7 +710,12 @@ em { color: #993333;}
 }
 #coll_right { font-size: small;}
 #coll_right p { margin-bottom: .3rem;}
-#coll_right h6 { background-color: oldlace; padding-left: 2px;}
+#coll_right h6 {
+  background-color: oldlace;
+  padding: 4px;
+  border-radius: 6px 6px 0 0;
+  box-shadow: 2px 2px gainsboro;
+}
 #coll_placelist {
   font-size: .8rem;
 }
