@@ -46,7 +46,6 @@ INSTALLED_APPS = [
     'django_tables2',
     'djgeojson',
     'fontawesome',
-    # 'fontawesomefree',
     'guardian',
     'leaflet',
     'mathfilters',

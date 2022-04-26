@@ -5,7 +5,7 @@ from django.contrib.postgres.fields import ArrayField #,JSONField
 from django.core.validators import URLValidator
 from django.urls import reverse
 from datasets.models import Dataset
-from main.choices import COLLECTIONCLASSES, LINKTYPES
+from main.choices import COLLECTIONCLASSES, LINKTYPES, TEAMROLES
 from places.models import Place
 from django_resized import ResizedImageField
 from tinymce.models import HTMLField
@@ -143,6 +143,22 @@ class CollectionLink(models.Model):
       managed = True
       db_table = 'collection_link'
 
+class CollectionUser(models.Model):
+  collection = models.ForeignKey(Collection, related_name='collabs',
+                                   default=-1, on_delete=models.CASCADE)
+  user = models.ForeignKey(User, related_name='coll_collab',
+                                default=-1, on_delete=models.CASCADE)
+  role = models.CharField(max_length=20, null=False, choices=TEAMROLES)
+
+  def __str__(self):
+    username = self.user_id.username
+    return '<b>' + username + '</b> (' + self.role + ')'
+
+  class Meta:
+    managed = True
+    db_table = 'collection_user'
+
+""" not in use @v2.1; single image only """
 class CollectionImage(models.Model):
   collection = models.ForeignKey(Collection, default=None,
     on_delete=models.CASCADE, related_name='images')

@@ -40,7 +40,8 @@
 	      <form id="collection_form" method="POST" action="#" enctype="multipart/form-data">
 	      {% csrf_token %}
 	      <input type="hidden" name="owner" value='{{ user.id }}'></input>
-	      <input type="hidden" name="type" value='dataset'></input>
+{#	      <input type="hidden" name="type" value='dataset'></input>#}
+	      <input type="hidden" name="collection_class" value='dataset'></input>
 				<div class="form-group">
 					<label for="Title">Title &#x02733;</label><br/>
 					{{ form.title }}
@@ -59,11 +60,12 @@
 				</div>
 				<div class="form-group">
 					<label for="Image">Image
-						{% if form.image_file %}
-							(<a href="javascript:$('#img_chooser').show()">change</a>)
+						{% if form.image_file.value %}
+					<a href="/media/{{ form.image_file.value }}">{{ object.image_file.url|remove:'/media/collections/' }}</a> (<a href="javascript:$('#img_chooser').show()">change</a>)
+						{% else %}
+							{{ form.image_file }}
 						{% endif %}
 					</label><br/>
-					<a href="/media/{{ form.image_file.value }}">{{ object.image_file.url|remove:'/media/collections/' }}</a>
 					<span id="img_chooser" class="hidden">{{ form.image_file }}</span>
 				</div>
 				<div class="form-group">
