@@ -172,15 +172,21 @@
 		      cache: false,
 		      data: formData,
 		      success:function(response){
-			      if(response.status == 'dupe'){
-              alert('That record is already in the collection')
-				      $("input.action").prop('checked',false)
+            var dupes = response.msg.dupes
+            var added = response.msg.added
+			      if(dupes.length > 0){
+              let msg = dupes.length+' records '+(dupes.length>1?'were':"was")+' already in the collection: ['+ dupes
+				      if(added.length > 0){
+                msg += ']; '+added.length+' '+(added.length>1?'were':"was")+' added'
+				      }
+              alert(msg)
 			      } else {
               // notify success & clear checks and list
 				      $("#added_flash").fadeIn().delay(2000).fadeOut()
 				      checked_rows = []
-				      $(".table-chk").prop('checked',false)
 			      }
+			      // uncheck everything regardless
+						$(".table-chk").prop('checked',false)
 		      }
 			})
 			// TODO: notify of success

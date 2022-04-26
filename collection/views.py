@@ -58,6 +58,8 @@ def create_link(request, *args, **kwargs):
 def add_places(request, *args, **kwargs):
   if request.method == 'POST':
     status, msg = ['','']
+    dupes = []
+    added = []
     print('add_places request', request.POST)
     coll = Collection.objects.get(id=request.POST['collection'])
     place_list = [int(i) for i in request.POST['place_list'].split(',')]
@@ -75,12 +77,17 @@ def add_places(request, *args, **kwargs):
           saved = 0
         )
         coll.places.add(p)
-        status = 'ok'
-        msg = str(place.title)+' added to "'+coll.title+'"'
+        added.append(p)
       else:
-        status = 'dupe'
-        msg = 'that place is already in the collection'
+        dupes.append(place.title)
+      msg = {"added": added, "dupes": dupes}
     return JsonResponse({'status': status, 'msg': msg}, safe=False)
+
+
+# status = 'ok'
+# msg = str(place.title) + ' added to "' + coll.title + '"'
+
+
 
 def remove_places(request, *args, **kwargs):
   if request.method == 'POST':
