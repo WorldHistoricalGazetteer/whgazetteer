@@ -7,8 +7,15 @@ from django.urls import reverse
 from datasets.models import Dataset
 from main.choices import COLLECTIONCLASSES, LINKTYPES
 from places.models import Place
+from django_resized import ResizedImageField
 from tinymce.models import HTMLField
 
+""" for images """
+from io import BytesIO
+import sys
+from PIL import Image
+from django.core.files.uploadedfile import InMemoryUploadedFile
+""" end """
 def collection_path(instance, filename):
   # upload to MEDIA_ROOT/collections/<coll id>/<filename>
   return 'collections/{0}/{1}'.format(instance.id, filename)
@@ -48,7 +55,9 @@ class Collection(models.Model):
   # type = models.CharField(choices=COLLECTIONTYPES, max_length=12, null=True, blank=True)
 
   # single representative image
-  image_file = models.FileField(upload_to=collection_path, blank=True, null=True)
+  # image_file = models.FileField(upload_to=collection_path, blank=True, null=True)
+  # image_file = models.ImageField(upload_to=collection_path, blank=True, null=True)
+  image_file = ResizedImageField(size=[800, 800], upload_to=collection_path, blank=True, null=True)
   # single pdf file
   file = models.FileField(upload_to=collection_path, blank=True, null=True)
 
@@ -67,6 +76,26 @@ class Collection(models.Model):
   def get_absolute_url(self):
     #return reverse('datasets:dashboard', kwargs={'id': self.id})
     return reverse('data-collections')
+
+  # def save(self):
+  #   # Opening the uploaded image
+  #   print('in Collection.save()')
+  #   im = Image.open(self.image_file).convert('RGB')
+  #
+  #   output = BytesIO()
+  #
+  #   # Resize/modify the image
+  #   im = im.resize((200, 200))
+  #
+  #   # after modifications, save it to the output
+  #   im.save(output, format='JPEG', quality=90, upload_to=collection_path)
+  #   output.seek(0)
+  #
+  #   # change the imagefield value to be the newley modifed image value
+  #   self.image = InMemoryUploadedFile(output, 'ImageField', "%s.jpg" % self.image_file.name.split('.')[0], 'image/jpeg',
+  #                                     sys.getsizeof(output), None)
+  #
+  #   super(Collection, self).save()
 
   @property
   def places_ds(self):

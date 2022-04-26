@@ -291,7 +291,25 @@ class PlaceCollectionUpdateView(UpdateView):
     print('referrer', self.request.META.get('HTTP_REFERER'))
     print('update kwargs', self.kwargs)
     if form.is_valid():
-      print(form.cleaned_data)
+      print('cleaned_data', form.cleaned_data)
+
+      # from PIL import Image
+      #
+      # image_file = form.cleaned_data.get('image_file')
+      # # print(type(image_file))
+      # image = Image.open(image_file)
+      # w, h = image.size
+      # print('image size', w, h)
+
+
+      #
+      # image = image.resize((w / 2, h / 2), Image.ANTIALIAS)
+      #
+      # image_file = StringIO.StringIO()
+      # image.save(image_file, 'JPEG', quality=90)
+      #
+      # image_field.file = image_file
+
       obj = form.save(commit=False)
       obj.save()
       Log.objects.create(
