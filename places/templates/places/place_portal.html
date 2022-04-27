@@ -134,7 +134,10 @@
           </div>
 
           {% if rec.links|length > 0 %}
-            <div class="attest-element"><b>Links  </b>: {{rec.links|length}} linked records {{ rec.links }}
+            <div class="attest-element"><b>Links</b>: {{rec.links|length}} linked records
+	            {% for l in rec.links %}
+	              <a href="#" class="ext">{{ l.identifier }}</a>;
+              {% endfor %}
             </div>
           {% endif %}
 
@@ -432,7 +435,6 @@
           }
       });
     })
-    
 
     allts = {{ allts }}
     
@@ -800,7 +802,7 @@
     e.preventDefault();
     str=$(this).text()
     console.log('str',str)
-    var re = /(http|dbp|gn|tgn|wd|loc|viaf|aat):(.*?)$/;
+    var re = /(http|dbp|gn|tgn|wd|loc|viaf|aat|wp):(.*?)$/;
     url=str.match(re)[1]=='http' ? str : base_urls[str.match(re)[1]]+str.match(re)[2]
     window.open(url,'_blank')
   });
