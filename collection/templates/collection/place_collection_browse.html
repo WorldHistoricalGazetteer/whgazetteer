@@ -37,7 +37,7 @@
 {% block content %}
 <div id="collection_content" class="container mt-1 px-1">
 	<div id="collection_title">
-		<h3><sr>{{object.title}}</sr>
+		<h5><sr>{{object.title}}</sr>
 			<span class="half ital text-secondary"> a place collection by {{ object.owner.first_name }} {{ object.owner.last_name }} <span class="badge badge-warning ml-3">BETA</span></span>
 		{% if user.id == object.owner.id or user.is_superuser or user in whgteam %}
 			<span class="float-right smallish mr-2 pt-2">
@@ -47,7 +47,7 @@
 					{% fontawesome_icon 'gear' color='#336699' %}</a>
 			</span>
 		{% endif %}
-		</h3>
+		</h5>
 	</div> <!-- #collection_title -->
   {{ ds_list|json_script:"ds_list" }}
   {{ bboxes|json_script:"bboxes" }}

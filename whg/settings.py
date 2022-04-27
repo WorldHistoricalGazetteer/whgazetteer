@@ -8,14 +8,9 @@ updates: 2.2.10 (20200211); 2.2.8(20191204); 2.2.4 (20190819); 2.1.7 (?); 2.1.2 
 import os
 from celery.schedules import crontab
 
-#
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
 # https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
-#
-
-#
 
 INSTALLED_APPS = [
   'django.contrib.admin',
@@ -176,24 +171,6 @@ LOGIN_URL = '/accounts/login/'
 LOGIN_REDIRECT_URL='/accounts/login/'
 LOGOUT_REDIRECT_URL='/'
 
-# Database
-# https://docs.djangoproject.com/en/2.0/ref/settings/#databases
-
-DATABASES = {
-  'default': {
-      # 'ENGINE': 'django.db.backends.postgresql',
-      'ENGINE': 'django.contrib.gis.db.backends.postgis',
-      'NAME': 'whg',
-      'USER':'',
-      'PASSWORD':'',
-      'HOST':'localhost',
-      # 'PORT':'5432',
-      'PORT':'5433',
-    }
-}
-
-# not implemented
-# DATABASE_ROUTERS = ('whg.dbrouters.MyDBRouter',)
 
 # /././././././.
 # start django-allauth
@@ -210,8 +187,6 @@ ACCOUNT_LOGOUT_REDIRECT_URL ='/'
 LOGIN_REDIRECT_URL = '/accounts/email/' # default to /accounts/profile
 
 ACCOUNT_FORMS = {'signup': 'allauth.account.forms.WHGRegisterForm',}
-
-#URL_FRONT = 'http://localhost:8000/'
 
 #SOCIALACCOUNT_PROVIDERS = {
   ## For each OAuth based provider, either add a ``SocialApp``

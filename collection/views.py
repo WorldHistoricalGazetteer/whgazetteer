@@ -314,11 +314,6 @@ class PlaceCollectionUpdateView(UpdateView):
 
     datasets = self.object.datasets.all()
 
-    # COLL: get places from datasets, then collection.places
-    # qs_list = [d.places.all() for d in datasets]
-    # COLL: merge querysets
-    # coll_places = list(chain(*qs_list))
-
     form_anno = TraceAnnotationModelForm(self.request.GET or None)
     # anno_form = TraceAnnotationModelForm(self.request.GET or None, prefix="sch")
     # populates dropdown
@@ -335,11 +330,12 @@ class PlaceCollectionUpdateView(UpdateView):
 
     # all traces for all places in collection
     # tlist = [t for sublist in [p.traces for p in self.places_all] for t in sublist]
-    c = Collection.objects.get(id=109)
-    p_all = c.places_all
-    clist = [t.collection_id for sublist in [p.traces for p in p_all] for t in sublist]
-    pgood = p_all.filter(id__in=clist)
 
+    # wtf is this
+    # c = Collection.objects.get(id=109)
+    # p_all = c.places_all
+    # clist = [t.collection_id for sublist in [p.traces for p in p_all] for t in sublist]
+    # pgood = p_all.filter(id__in=clist)
 
     context['created'] = self.object.created.strftime("%Y-%m-%d")
     context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB

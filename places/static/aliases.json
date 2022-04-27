@@ -6,5 +6,6 @@
     "wwf": "https://www.worldwildlife.org/ecoregions/",
     "whg": "/api/places/",
     "dplace": "http://dplace.org/societies/",
-    "indias": ""
+    "indias": "",
+    "wp": "https://en.wikipedia.org/wiki/"
 }
