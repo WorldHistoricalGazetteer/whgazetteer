@@ -78,6 +78,7 @@
 				</div>
 			  </div> <!-- place_db -->
 			  <div id="place_idx" class="tab-pane fade" role="tabpanel" aria-labelledby="placeidx-tab">
+				  <div id="disabled" style="position:absolute; top:200px; min-height: 400px; min-width:400px; color:#993333; opacity: 80%;"><h3>Access to the index API is temporarily disabled. Back soon!</h3></div>
 				<p class="mb-0">
 				  Search <span class="red-head strong">union index</span> (<b>whgazetteer.org/api/index?</b>). Returns GeoJSON.</p>
 				<!--<p class="smaller my-0"><i>using these parameters</i></p>-->
@@ -101,6 +102,7 @@
 				  </tbody>
 				</table>
 
+			  {% comment %}
 				<div id="examples">
 				  <p class="mb-0 strong">Examples</p>
 				  <p class="mb-0">Sites named Abydos: one in Turkey, two in Egypt. Two have two attestations each.</p>
@@ -110,6 +112,7 @@
 				  <p class="mb-0">Settlements and sites in N. Africa w/part of any name variant starting with "aby."</p>
 				  <p><a href="{% url 'api-index-search' %}?name_startswith=aby&fclass=p,s&area=85" target="_blank">/api/index/?name_startswith=aby&fclass=p,s&area=85</a>
 				</div>
+				{% endcomment %}
 			  </div> <!-- place_idx -->
 			  <div id="spatial" class="tab-pane fade" role="tabpanel" aria-labelledby="spatial-tab">
 				<p class="mb-0"><span class="red-head strong">Spatial queries</span> (<b>whgazetteer.org/api/spatial?</b>)</p>

@@ -13,7 +13,7 @@ from django.shortcuts import get_object_or_404
 from django.views.generic import View
 #from django.views.decorators.csrf import csrf_exempt
 from django_filters.rest_framework import DjangoFilterBackend
-from elasticsearch import Elasticsearch
+from elasticsearch7 import Elasticsearch
 from rest_framework import filters
 from rest_framework import generics
 from rest_framework import permissions
@@ -238,7 +238,7 @@ def collector(q,datatype,idx):
                        'max_retries':10,
                        'retry_on_timeout':True}])
   items = []
-  
+
   if datatype=='place':
     #print('collector/place q:',q)
     # TODO: trap errors
@@ -785,7 +785,7 @@ class PlaceTableCollViewSet(viewsets.ModelViewSet):
   """
   def get_queryset(self):
     coll = get_object_or_404(Collection, id=self.request.GET.get('id'))
-    qs = coll.places_all
+    qs = coll.places_all.order_by('title')
     query = self.request.GET.get('q')
     print('queryset', qs)
     if query is not None:

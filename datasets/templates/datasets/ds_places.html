@@ -55,6 +55,7 @@
       <li class="nav-item">
           <a class="nav-link active" id="browse-tab" href="#" role="tab">Browse</a>
       </li>
+      {% if collections %}
 	    <div id="addtocoll_popup" class="p-2 hidden">
         <div style="position:relative;">
 	        <div class="closer" style="position:absolute; top:-6px; right:-2px">x</div>
@@ -73,6 +74,7 @@
 	        <button id="b_create_coll" type="button">create</button>
         </p>
       </div>
+      {% endif %}
       <span id="added_flash" class="mr-2 hidden" style="background-color: yellow; position:absolute; top:10px; right:10px;"> added! </span>
       <div id="selection_status" style="position:absolute; right:20px;">
 	      <span id="actions">
@@ -268,25 +270,27 @@
       pid=$(this)[0].cells[0].textContent
 			// is checkbox checked?
 	    // if not, ensure row pid is not in checked_rows
-	    chkbox = thisy[0].cells[5].firstChild
-			if(chkbox.checked){
-				console.log('chkbox.checked')
-        checked_rows.push(pid)
-				$("#selection_status").fadeIn()
-				{#$("#addtocoll").fadeIn()#}
-				console.log('checked_rows', checked_rows)
-				$("#sel_count").html(' '+checked_rows.length+' ')
-			} else {
-        const index = checked_rows.indexOf(pid);
-        if (index > -1) {
-          checked_rows.splice(index, 1)
-	        if(checked_rows.length == 0 ){
-            $("#addtocoll").fadeOut()
-		        $("#addtocoll_popup").hide()
-          }
+	    if ({{ loggedin }} == true) {
+            chkbox = thisy[0].cells[5].firstChild
+            if (chkbox.checked) {
+                console.log('chkbox.checked')
+                checked_rows.push(pid)
+                $("#selection_status").fadeIn()
+                {#$("#addtocoll").fadeIn()#}
+                console.log('checked_rows', checked_rows)
+                $("#sel_count").html(' ' + checked_rows.length + ' ')
+            } else {
+                const index = checked_rows.indexOf(pid);
+                if (index > -1) {
+                    checked_rows.splice(index, 1)
+                    if (checked_rows.length == 0) {
+                        $("#addtocoll").fadeOut()
+                        $("#addtocoll_popup").hide()
+                    }
+                }
+                console.log(pid + ' removed from checked_rows[]', checked_rows)
+            }
         }
-        console.log( pid + ' removed from checked_rows[]', checked_rows)
-      }
 
       geom = features.find(function(f){return f.properties.pid==pid}).geometry
       coords = geom.coordinates
@@ -332,7 +336,11 @@
 
     startTableSpinner()
     startDetailSpinner()
-    
+
+
+	  loggedin = {{ loggedin }}
+	  check_column = loggedin == true ? {"data": "chk"} : {"data": "chk", "visible": false}
+
     window.dslabel = "{{ ds.label }}"
     window.filter = "{{ filter }}"
     // task columns are inoperable in this public view
@@ -357,14 +365,15 @@
           {"data": "title"},
           {"data": "ccodes"},
           {"data": "geo"},
-          {"data": "chk"},
+		      check_column,
+          {#{"data": "chk"},#}
       ]
       ,columnDefs:[
         {#{ className: "browse-task-col", "targets": [8,9,10] },#}
         { orderable: false, "targets": [4, 5]},
         {#{ searchable: false, "targets": [0,1,3,4,8,9,10]}#}
         { searchable: false, "targets": [0,1,3,4,5]}
-        {#,{ visible: false, "targets": [5,6,7]}#}
+        {#, {visible: false, "targets": [5]}#}
       ]
     })
 

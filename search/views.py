@@ -163,12 +163,6 @@ def suggester(doctype,q,scope,idx):
       return suggestions      
     elif scope == 'search':
       hits = res['hits']['hits']
-      #print('suggester()/place hits',hits)
-      # identify distinct parents
-      #parents = [h for h in hits if 'whg_id' in h['_source']]
-      #children = [h for h in hits if 'whg_id' not in h['_source']]
-      #parent_ids = [p['_source']['whg_id'] for p in parents]
-      #kid_parents = [int(c['_source']['relation']['parent']) for c in children]
       if len(hits) > 0:
         for h in hits:
           #snippet = h['highlight'] if 'highlight' in h else ''
