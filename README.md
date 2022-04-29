@@ -10,6 +10,10 @@ WHG is an open-source project. Please see [this document](docs/contributing_dev.
 
 ### Change log
 
+#### v2.1-beta (27 April 2022)
+
+- New "Place Collection" feature, added to existing "Dataset Collection" capability. Place Collections can be composed of individual place records from one or more datasets (or entire datasets) related to each other in some way. Each record can be annotated to explain its inclusion, and the collection itself can include images, links, and an uploaded file.
+
 #### v2.0.1 (1 Feb 2022)
 
 - added 'Teaching' section of the site. Eight lesson plans included to start, primarily high school level
