@@ -7,7 +7,7 @@ base_urls = {
     "gn": "http://www.geonames.org/",
     "gnd": "https://d-nb.info/gnd/",
     "gov": "http://gov.genealogy.net/",
-    "loc": "http://id.loc.gov/authorities/subjects/",
+    "loc": "http://id.loc.gov/authorities/names/",
     "pl": "https://pleiades.stoa.org/places/",
     "tgn": "http://vocab.getty.edu/page/tgn/",
     "viaf": "http://viaf.org/viaf/",

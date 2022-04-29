@@ -133,6 +133,7 @@ def suggestionItem(s,doctype,scope):
   actually performs es search, places (whg) or traces
 """
 def suggester(doctype,q,scope,idx):
+  print('key', settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY)
   # returns only parents; children retrieved into place portal
   print('suggester',doctype,q)
   # add api key
@@ -143,6 +144,8 @@ def suggester(doctype,q,scope,idx):
                        'timeout':30,
                        'max_retries':10,
                        'retry_on_timeout':True}])
+  print('suggester es connector',es)
+
   suggestions = []
   
   if doctype=='place':

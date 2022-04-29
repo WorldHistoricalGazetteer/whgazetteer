@@ -36,6 +36,14 @@ from datasets.tasks import get_bounds_filter
 from places.models import Place, PlaceGeom
 from search.views import getGeomCollection
 
+# es = Elasticsearch([{'host': 'localhost',
+#                      'port': 9200,
+#                      'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
+#                      'timeout': 30,
+#                      'max_retries': 10,
+#                      'retry_on_timeout': True}])
+
+
 class StandardResultsSetPagination(PageNumberPagination):
   page_size = 10
   page_size_query_param = 'page_size'
@@ -273,13 +281,16 @@ def collector(q,datatype,idx):
   bundler();  called by IndexAPIView, case api/index?whgid=
   execute es.search, return post-processed results 
 """
-def bundler(q,whgid,idx):
+def bundler(q, whgid, idx):
+  print('key', settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY)
   es = Elasticsearch([{'host': 'localhost',
                        'port': 9200,
                        'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
+                       'http_auth': ('elastic', settings.ES_REST_PWD),
                        'timeout':30,
                        'max_retries':10,
                        'retry_on_timeout':True}])
+  print('bundler es connector', es)
   res = es.search(index=idx, body=q)
   hits = res['hits']['hits']
   bundle = []
@@ -339,8 +350,9 @@ class TracesAPIView(View):
   based on search.views.SearchView(View)
 """
 class IndexAPIView(View):
-  @staticmethod
-  def get(request):
+  # @staticmethod
+  def get(self, request):
+    print('key', settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY)
     params=request.GET
     print('IndexAPIView request params',params)
     """

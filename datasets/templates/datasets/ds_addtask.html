@@ -144,13 +144,18 @@
                     </span></p>
                   </div>
                 </div>
-                <div class="bottom">
-                  <hr/>
-                  <button type="submit" id="btn_startrecon" class="btn btn-primary">Start</button>
-                  <span title="back"><a id="cancel_taskadd" href="#">Cancel</a></span>
-                </div>
+{#                <div class="bottom">#}
+{#                  <hr/>#}
+{#                  <button type="submit" id="btn_startrecon" class="btn btn-primary">Start</button>#}
+{#                  <span title="back"><a id="cancel_taskadd" href="#">Cancel</a></span>#}
+{#                </div>#}
               </div> <!-- #addtask_lower -->
             {% endif %} <!-- ds.ds_status != 'accessioning' -->
+            <div class="bottom">
+              <hr/>
+              <button type="submit" id="btn_startrecon" class="btn btn-primary">Start</button>
+              <span title="back"><a id="cancel_taskadd" href="#">Cancel</a></span>
+            </div>
           {% endif %} <!-- ds.unindexed -->
         </div> <!-- recon_form -->
         <div id="recon_result" class="col-md-6 p-tight py-2 dashedbox">
