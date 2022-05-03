@@ -28,10 +28,10 @@
 			<!--<span class="text-danger"><b>NOTE:</b> Only the example links are confirmed to work right now.</span>.-->
 			<ul id="api_tabs" class="nav nav-tabs" role="tablist">
 			  <li class="nav-item">
-				<a class="nav-link active" id="placedb-tab" data-toggle="tab" href="#place_db" role="tab" aria-controls="place_db" aria-selected="true">Places (database)</a>
+				<a class="nav-link" id="placedb-tab" data-toggle="tab" href="#place_db" role="tab" aria-controls="place_db" aria-selected="true">Places (database)</a>
 			  </li>
 			  <li class="nav-item">
-				<a class="nav-link" id="placeidx-tab" data-toggle="tab" href="#place_idx" role="tab" aria-controls="place_idx" aria-selected="false">Places (index)</a>
+				<a class="nav-link active" id="placeidx-tab" data-toggle="tab" href="#place_idx" role="tab" aria-controls="place_idx" aria-selected="false">Places (index)</a>
 			  </li>
 			  <li class="nav-item">
 				<a class="nav-link" id="spatial-tab" data-toggle="tab" href="#spatial" role="tab" aria-controls="spatial" aria-selected="false">Spatial</a>
@@ -47,7 +47,7 @@
 			  </li>
 			</ul>
 			<div class="tab-content">
-			  <div id="place_db" class="tab-pane fade show active" role="tabpanel" aria-labelledby="placedb-tab">
+			  <div id="place_db" class="tab-pane fade" role="tabpanel" aria-labelledby="placedb-tab">
 				<p class="mb-0">
 				  Search <span class="red-head strong">public database records</span> (<b>whgazetteer.org/api/db?</b>)</p>
 				<table class="table table-striped table-api">
@@ -77,7 +77,8 @@
 
 				</div>
 			  </div> <!-- place_db -->
-			  <div id="place_idx" class="tab-pane fade" role="tabpanel" aria-labelledby="placeidx-tab">
+			  <div id="place_idx" class="tab-pane fade show active" role="tabpanel" aria-labelledby="placeidx-tab">
+{#				  <div id="disabled" style="position:absolute; top:200px; min-height: 400px; min-width:400px; color:#993333; opacity: 80%;"><h3>Access to the index API is temporarily disabled. Back soon!</h3></div>#}
 				<p class="mb-0">
 				  Search <span class="red-head strong">union index</span> (<b>whgazetteer.org/api/index?</b>). Returns GeoJSON.</p>
 				<!--<p class="smaller my-0"><i>using these parameters</i></p>-->
@@ -92,7 +93,7 @@
 					<tr><td>dataset</td><td>string</td><td>dataset label</td></tr>
 					<tr><td>ccode</td><td>string</td><td>1 or more 2-letter ISO codes, comma separate</td></tr>
 					<tr>
-					  <td>fclass</td><td>string</td><td>1-letter GeoNames feature category <a href="#" data-html="true" onClick='return false;' title="A=administrative; H=hydrological; L=landscape; P=settlements;<br/> S='sites';<br/> T=topographical" rel="tooltip"> {% fontawesome_icon 'question-circle' color='#993333' %}</a>; >=1)</i>; </span></td>
+					  <td>fclass</td><td>string</td><td>1-letter GeoNames feature category <a href="#" data-html="true" onClick='return false;' title="A=administrative; H=hydrological; L=landscape; P=settlements;<br/> S='sites';<br/> T=topographical" rel="tooltip"> {% fontawesome_icon 'question-circle' color='#993333' %}</a>; >=1)</i>; </td>
 					</tr>
 					<tr>
 					  <td>year</td><td>integer</td><td>within any timespan of linked records;<br/>use '-' for BCE dates, to -9999</td>
@@ -104,12 +105,15 @@
 				<div id="examples">
 				  <p class="mb-0 strong">Examples</p>
 				  <p class="mb-0">Sites named Abydos: one in Turkey, two in Egypt. Two have two attestations each.</p>
-				  <p><a href="https://whgazetteer.org/api/index/?name=abydos&fclass=s" target="_blank">/api/index/?name=abydos&fclass=s</a></p>
+				  <p><a href="{{ settings.URL_FRONT }}/api/index/?name=abydos&fclass=s" target="_blank">/api/index/?name=abydos&fclass=s</a></p>
+
 				  <p class="mb-0">Index record linking the two database records for Abydos, EG asserted as matches.</p>
-				  <p><a href="https://whgazetteer.org/api/index/?whgid=12608007" target="_blank">/api/index/?whgid=12608007</a></p>
-				  <p class="mb-0">Settlements and sites in N. Africa w/part of any name variant starting with "aby."</p>
-				  <p><a href="{% url 'api-index-search' %}?name_startswith=aby&fclass=p,s&area=85" target="_blank">/api/index/?name_startswith=aby&fclass=p,s&area=85</a>
+					<p><a href="{{ settings.URL_FRONT }}/api/index/?whgid=12608007" target="_blank">/api/index/?whgid=12608007</a></p>
+
+					<p class="mb-0">Settlements and sites in N. Africa w/part of any name variant starting with "aby."</p>
+				  <p><a href="{{ settings.URL_FRONT }}/api/index/?name_startswith=aby&fclass=p,s&area=85" target="_blank">/api/index/?name_startswith=aby&fclass=p,s&area=85</a>
 				</div>
+
 			  </div> <!-- place_idx -->
 			  <div id="spatial" class="tab-pane fade" role="tabpanel" aria-labelledby="spatial-tab">
 				<p class="mb-0"><span class="red-head strong">Spatial queries</span> (<b>whgazetteer.org/api/spatial?</b>)</p>

@@ -88,8 +88,11 @@
                 {% for c in coll_list %}
                   <tr class="place-row">
                     <td>{{ c.id }}</td>
+	                  {% if c.collection_class == 'dataset' %}
                     <td><a href="{% url 'collection:ds-collection-summary' c.id %}">{{ c.title }}</a></td>
-                    <!--<td>{ c.title }}</td>-->
+	                  {% else %}
+		                  <td><a href="{% url 'collection:place-collection-browse' c.id %}">{{ c.title }}</a></td>
+	                  {% endif %}
                     <td>{{ c.created }}</td>
                     <td>{{ c.owner }}</td>
                   </tr>

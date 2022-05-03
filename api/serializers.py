@@ -252,7 +252,14 @@ class PlaceTableSerializer(serializers.ModelSerializer):
     else:
       val = '<i>deferred</i>'
     return val
-  
+
+  # dataset_title = serializers.SerializerMethodField('dataset_title')
+  # def dataset_title(self, place):
+  #   html = '<a class ="pop-link pop-dataset" data-id='+self.dataset+' data-toggle="popover" '+\
+  #          'title="Dataset Profile" data-content="" tabindex="0" rel="clickover" >'+ \
+  #           self.dataset_title[:25]+'</a>'
+  #   return html
+
   class Meta:
     model = Place
     fields =  ('url','id', 'title', 'src_id',

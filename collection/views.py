@@ -292,7 +292,6 @@ class PlaceCollectionUpdateView(UpdateView):
     print('update kwargs', self.kwargs)
     if form.is_valid():
       print('cleaned_data', form.cleaned_data)
-
       obj = form.save(commit=False)
       obj.save()
       Log.objects.create(
@@ -327,15 +326,6 @@ class PlaceCollectionUpdateView(UpdateView):
     # test: send single anno form to template
     context['form_anno'] = form_anno
     context['coll_places'] = self.object.places_all.order_by('title')
-
-    # all traces for all places in collection
-    # tlist = [t for sublist in [p.traces for p in self.places_all] for t in sublist]
-
-    # wtf is this
-    # c = Collection.objects.get(id=109)
-    # p_all = c.places_all
-    # clist = [t.collection_id for sublist in [p.traces for p in p_all] for t in sublist]
-    # pgood = p_all.filter(id__in=clist)
 
     context['created'] = self.object.created.strftime("%Y-%m-%d")
     context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
@@ -411,7 +401,7 @@ class PlaceCollectionBrowseView(DetailView):
     context['ds_list'] = coll.ds_list
     context['ds_counter'] = coll.ds_counter
     context['links'] = coll.links.all()
-    context['places'] = coll.places.all()
+    context['places'] = coll.places.all().order_by('title')
     context['updates'] = {}
     context['url_front'] = settings.URL_FRONT
 

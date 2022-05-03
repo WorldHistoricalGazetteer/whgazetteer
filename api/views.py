@@ -13,7 +13,7 @@ from django.shortcuts import get_object_or_404
 from django.views.generic import View
 #from django.views.decorators.csrf import csrf_exempt
 from django_filters.rest_framework import DjangoFilterBackend
-from elasticsearch import Elasticsearch
+from elasticsearch7 import Elasticsearch
 from rest_framework import filters
 from rest_framework import generics
 from rest_framework import permissions
@@ -35,6 +35,14 @@ from datasets.models import Dataset
 from datasets.tasks import get_bounds_filter
 from places.models import Place, PlaceGeom
 from search.views import getGeomCollection
+
+# es = Elasticsearch([{'host': 'localhost',
+#                      'port': 9200,
+#                      'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
+#                      'timeout': 30,
+#                      'max_retries': 10,
+#                      'retry_on_timeout': True}])
+
 
 class StandardResultsSetPagination(PageNumberPagination):
   page_size = 10
@@ -238,7 +246,7 @@ def collector(q,datatype,idx):
                        'max_retries':10,
                        'retry_on_timeout':True}])
   items = []
-  
+
   if datatype=='place':
     #print('collector/place q:',q)
     # TODO: trap errors
@@ -273,13 +281,16 @@ def collector(q,datatype,idx):
   bundler();  called by IndexAPIView, case api/index?whgid=
   execute es.search, return post-processed results 
 """
-def bundler(q,whgid,idx):
+def bundler(q, whgid, idx):
+  print('key', settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY)
   es = Elasticsearch([{'host': 'localhost',
                        'port': 9200,
                        'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
+                       'http_auth': ('elastic', settings.ES_REST_PWD),
                        'timeout':30,
                        'max_retries':10,
                        'retry_on_timeout':True}])
+  print('bundler es connector', es)
   res = es.search(index=idx, body=q)
   hits = res['hits']['hits']
   bundle = []
@@ -339,8 +350,9 @@ class TracesAPIView(View):
   based on search.views.SearchView(View)
 """
 class IndexAPIView(View):
-  @staticmethod
-  def get(request):
+  # @staticmethod
+  def get(self, request):
+    print('key', settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY)
     params=request.GET
     print('IndexAPIView request params',params)
     """
@@ -785,7 +797,7 @@ class PlaceTableCollViewSet(viewsets.ModelViewSet):
   """
   def get_queryset(self):
     coll = get_object_or_404(Collection, id=self.request.GET.get('id'))
-    qs = coll.places_all
+    qs = coll.places_all.order_by('title')
     query = self.request.GET.get('q')
     print('queryset', qs)
     if query is not None:

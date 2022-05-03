@@ -16,7 +16,7 @@ WHG is an open-source project. Please see [this document](docs/contributing_dev.
 
 #### v2.0.1 (1 Feb 2022)
 
-- added 'Teaching' section of the site. Eight lesson plans included to start, primarily high school level
+- Added 'Teaching' section of the site. Eight lesson plans included to start, primarily high school level
 #### v2.0 (4 Aug 2021)
 
 - New "Collection" feature added, with two early examples: "Dutch History" and "HGIS de las Indias"

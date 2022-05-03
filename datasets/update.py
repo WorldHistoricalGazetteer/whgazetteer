@@ -12,7 +12,6 @@ from elastic.es_utils import makeDoc
 es = Elasticsearch([{'host': 'localhost',
                      'port': 9200,
                      'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
-                     # 'api_key': ('Qf6zj38BNORx7WIGwSUc', 'v-2FwWJuQ5u3rvOwy8Nw6g'),
                      'timeout': 30,
                      'max_retries': 10,
                      'retry_on_timeout': True

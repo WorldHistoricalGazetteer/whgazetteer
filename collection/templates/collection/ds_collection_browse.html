@@ -471,6 +471,8 @@
       },
       'filter': ['==', '$type', 'Point']
     }, 'z-index-2');
+		fcoll= {"type":"FeatureCollection", "features": all_feats}
+    mappy.fitBounds(turf.bbox(fcoll), { padding: 20 });
   }
 
   function layerColors(){

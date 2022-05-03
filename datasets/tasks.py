@@ -32,11 +32,11 @@ from main.models import Log
 #from places.models import Place
 ##
 from elasticsearch7 import Elasticsearch
-##
+
+## global for all es connections in this file?
 es = Elasticsearch([{'host': 'localhost',
                      'port': 9200,
                      'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
-                     # 'api_key': ('Qf6zj38BNORx7WIGwSUc', 'v-2FwWJuQ5u3rvOwy8Nw6g'),
                      'timeout': 30,
                      'max_retries': 10,
                      'retry_on_timeout': True}])
@@ -1292,7 +1292,7 @@ def es_lookup_idx(qobj, *args, **kwargs):
   linklist = deepcopy(links)
   has_fclasses = len(qobj["fclasses"]) > 0
 
-  # PREP SPATIAL CONSTRAINTS
+  # prep spatial constraints
   has_bounds = bounds["id"] != ["0"]
   has_geom = "geom" in qobj.keys()
   has_countries = len(qobj["countries"]) > 0
@@ -1316,7 +1316,9 @@ def es_lookup_idx(qobj, *args, **kwargs):
   
   """
   prepare queries from qobj
-  """  
+  """
+  # q0 is matching concordance identifiers, boosted by name matches
+  # TODO: are scores used?
   q0 = {
     "query": {"bool": { "must": [
       {"terms": {"links.identifier": linklist }},
@@ -1325,6 +1327,8 @@ def es_lookup_idx(qobj, *args, **kwargs):
         {"terms": {"searchy": variants}}]}}     
     ]
   }}}
+
+  # build q1 from qbase + spatial context, fclasses if any
   qbase = {"size": 100,"query": { 
     "bool": {
       "must": [
@@ -1341,8 +1345,8 @@ def es_lookup_idx(qobj, *args, **kwargs):
       "filter": []
     }
   }}
+
   # ADD SPATIAL
-  # has_geom
   if has_geom:
     qbase["query"]["bool"]["filter"].append(shape_filter)
     
@@ -1375,6 +1379,7 @@ def es_lookup_idx(qobj, *args, **kwargs):
   except:
     print("q0a, ES error:", q0, sys.exc_info())
   if len(hits0a) > 0:
+    # >=1 matching identifies
     result_obj['hit_count'] += len(hits0a)
     for h in hits0a:
       # add full hit to result
@@ -1397,17 +1402,19 @@ def es_lookup_idx(qobj, *args, **kwargs):
         hitobj["parent"] = relation["parent"]
       # add profile to hitlist
       hitobjlist.append(hitobj)
-    #print(str(len(hitlist))+" hits @ q0a")
+    print(str(len(hitobjlist))+" hits @ q0a")
     _ids = [h['_id'] for h in hitobjlist]
     for hobj in hitobjlist:
       for l in hobj['links']:
         linklist.append(l) if l not in linklist else linklist
+
     # if new links, crawl again
     if len(set(linklist)-set(links)) > 0:
       try:
+        print('q0 at 0b search, new link identifiers?', q0)
         result0b = es.search(index=idx, body=q0)
         hits0b = result0b["hits"]["hits"]
-        #print('len(hits0b)',len(hits0b))      
+        print('len(hits0b)',len(hits0b))
       except:
         print("q0b, ES error:", sys.exc_info())
       # add new results if any to hitobjlist and result_obj["hits"]
@@ -1437,7 +1444,9 @@ def es_lookup_idx(qobj, *args, **kwargs):
       
   #   
   # /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-  # pass1, whether hits from pass0 or not
+  # run pass1 whether pass0 had hits or not
+  # q0 only found identifier matches
+  # now get other potential hits in normal manner
   # /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
   try:
     result1 = es.search(index=idx, body=q1)
@@ -1447,8 +1456,10 @@ def es_lookup_idx(qobj, *args, **kwargs):
     h["pass"] = "pass1"
 
   result_obj['hit_count'] += len(hits1)
-  # filter out _ids found in pass0
+
   for h in hits1:
+    # filter out _ids found in pass0
+    # any hit on identifiers will also turn up here based on context
     if h['_id'] not in _ids:
       _ids.append(h['_id'])
       relation = h["_source"]["relation"]
@@ -1494,9 +1505,9 @@ def align_idx(pk, *args, **kwargs):
   whg_id = maxID(es,idx)
 
   # write new seed/parents for inspection
-  #wd = "/Users/karlg/Documents/repos/_whgazetteer/_scratch/"
-  #fn1 = "new-parents_"+str(ds.id)+".txt"
-  #fout1 = codecs.open(wd+fn1, mode="w", encoding="utf8")
+  wd = "/Users/karlg/Documents/repos/_whgazetteer/_scratch/accessioning/"
+  fn1 = "new-parents_"+str(ds.id)+".txt"
+  fout1 = codecs.open(wd+fn1, mode="w", encoding="utf8")
   
   #bounds = {'type': ['userarea'], 'id': ['0']}
   bounds = kwargs['bounds']
@@ -1525,12 +1536,12 @@ def align_idx(pk, *args, **kwargs):
     # no hits on any pass
     if len(result_obj['hits']) == 0:
       # create new parent (write to file for now)
-      print('create parent doc for', p)
+      print('no hits, any pass', p)
       new_seeds.append(makeDoc(p))
       #new_parent = makeDoc(p)
       #es.index(idx, new_parent,id=whg_id+1)
       
-    # got some hits, format json & write to db
+    # got some hits, format json & write to db as for align_wdlocal, etc.
     elif len(result_obj['hits']) > 0:
       count_hit +=1  # this record got >=1 hits
       # place/task status 0 (has unreviewed hits)
@@ -1541,13 +1552,15 @@ def align_idx(pk, *args, **kwargs):
       [count_kids,count_errors] = [0,0]
       #total_hits += result_obj['hit_count']
       total_hits += result_obj['total_hits']
-      
+
+      # separate parents and children
       parents = [profileHit(h) for h in hits \
                 if h['_source']['relation']['name']=='parent']
       children = [profileHit(h) for h in hits \
                 if h['_source']['relation']['name']=='child']
+
       """ *** """
-      p0 = len(set(['pass0a','pass0b'])&set([p['pass'] for p in parents])) >0
+      p0 = len(set(['pass0a','pass0b']) & set([p['pass'] for p in parents])) > 0
       p1 = 'pass1' in [p['pass'] for p in parents]
       if p0:
         count_p0 += 1
@@ -1556,14 +1569,17 @@ def align_idx(pk, *args, **kwargs):
 
       def uniq_geom(lst):
         for _, grp in itertools.groupby(lst, lambda d: (d['coordinates'])):
-          yield list(grp)[0]      
+          yield list(grp)[0]
+
       # if there are any
       for par in parents:
-        # children of *this* parent, if any
+        # any children of *this* parent in this result?
         kids = [c for c in children if c['_id'] in par['children']] or None
         # merge values into hit.json object
         # profile keys ['_id', 'pid', 'title', 'role', 'dataset', 'parent', 'children', 'links', 'countries', 'variants', 'geoms']
+        # boost parent score if kids
         score = par['score']+sum([k['score'] for k in kids]) if kids else par['score']
+        #
         hitobj = {
           'whg_id': par['_id'],
           'score': score,
@@ -1590,7 +1606,13 @@ def align_idx(pk, *args, **kwargs):
           hitobj['links'].extend(list(chain.from_iterable([k['links'] for k in kids])))
           
           # components: 
-          hitobj['sources'].extend([{'dslabel':k['dataset'],'pid':k['pid'],'variants':k['variants'],'types':k['types'],'minmax':k['minmax'],'pass':k['pass'][:5]} for k in kids])
+          hitobj['sources'].extend(
+            [{'dslabel':k['dataset'],
+              'pid':k['pid'],
+              'variants':k['variants'],
+              'types':k['types'],
+              'minmax':k['minmax'],
+              'pass':k['pass'][:5]} for k in kids])
         
         hitobj['titles'] = ', '.join(list(dict.fromkeys(hitobj['titles'])))
         
@@ -1619,15 +1641,14 @@ def align_idx(pk, *args, **kwargs):
           reviewed = False,
           matched = False,
           json = hitobj
-          
         )
         new.save()
         #print(json.dumps(jsonic,indent=2))
   
   # write new index seed/parent docs for inspection
-  #fout1.write(json.dumps(new_seeds, indent=2))
-  #fout1.close()
-  #print(str(len(new_seeds)) + ' new index seeds written to '+ fn1)
+  fout1.write(json.dumps(new_seeds, indent=2))
+  fout1.close()
+  print(str(len(new_seeds)) + ' new index seeds written to '+ fn1)
   
   end = datetime.datetime.now()
   

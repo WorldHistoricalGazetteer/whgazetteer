@@ -111,7 +111,7 @@
           </div>
         </div>
       </div> <!-- drftable_detail -->
-      <div id="drftable_list" class="col-sm-4">
+      <div id="drftable_list" class="col-sm-4 pl-0">
         {{ coll_places|slice:":10"}}
         <table id="placetable" class="table table-striped table-bordered" style="width:100%">
           <thead>
@@ -319,7 +319,7 @@
       $("#more_names").toggle()
 	  }
 
-      $(".a-dl").click(function(e){
+    $(".a-dl").click(function(e){
           e.preventDefault()
           // startDownloadSpinner()
           dsid = $(this).data('id')
@@ -402,16 +402,17 @@
       ,ajax: {
         url: "/api/placetable_coll/?format=datatables&id={{ object.id }}"
       }
-      ,scrollY: 350
+      ,scrollY: 430
       ,select: true
-      ,order: [[2, 'asc']]
+      ,order: [[1, 'asc']]
       ,LengthMenu: [10, 25, 50, 100]
       ,columns: 
       [
           {"data": "id"},
           {"data": "title"},
           {"data": "ccodes"},
-          {"data": "dataset.label", "name":"dataset.label"},
+          {"data": "dataset.title"},
+          {#{"data": "dataset.label", "name":"dataset.label"},#}
       ]
       ,columnDefs:[
         {#{ className: "browse-task-col", "targets": [8,9,10] },#}
@@ -597,29 +598,6 @@
 			mappy.fitBounds(turf.bbox(colldata), { padding: 20 });
 
 	  });
-
-
-
-	  // unused remains from dataset collection mapping
-	  {#$.getJSON('/collections/'+'{{ object.id }}'+'/geojson')#}
-		{#  .done(function(colldata) {#}
-    {#    console.log('colldata', colldata.features.slice(0,10))#}
-		{#	  ds_labels.forEach(function(label, i){#}
-    {#      fcoll = {#}
-    {#        "type": "FeatureCollection",#}
-	  {#        "features": colldata.features.filter(function(f){#}
-    {#          return f.properties.dslabel == label;})#}
-    {#      }#}
-    {#      mappy.addSource(label, {#}
-    {#        'type': 'geojson',#}
-	  {#        'data': fcoll#}
-    {#      })#}
-		{#		  renderSourceLayers(label, i)#}
-		{#		  source_list.push(label)#}
-		{#	  })#}
-    {#    all_feats = colldata.features#}
-		{#  })#}
-
   }
 
   // TODO: better colors
@@ -939,8 +917,10 @@
     //
     // RELATED
     if (data.related.length > 0) {
+      // TODO: this needs better logic; so far only relations are parents but LPF allows for others
       parent='<p class="mb-0"><b><u>Parent(s)</u></b>: ';
-      related='<p class="mb-0"><b><u>Related</u></b>: ';
+      {#related='<p class="mb-0"><b><u>Related</u></b>: ';#}
+      //
       for (r in data.related){
         rel = data.related[r]
         if (rel.relation_type == 'gvp:broaderPartitive'){
@@ -955,8 +935,9 @@
           related += '<p class="small h1em">'+rel.label+ ', '+rel.when.start.in+'-'+rel.when.end.in+'</p>'
         }
       }
+
       descrip+=parent.length > 39 ? parent :''
-      descrip+=related.length > 37 ? related :''
+      {#descrip+=related.length > 37 ? related :''#}
     }
 
     //
