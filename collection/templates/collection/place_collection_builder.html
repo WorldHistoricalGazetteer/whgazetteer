@@ -52,7 +52,7 @@
 	    padding-left: 2px;
     }
     .card-highlight {border: 1px solid #993333; background-color: lightyellow;}
-    #coll_placelist, #coll_dslist {
+		#coll_placelist, #coll_dslist {
 	    padding: 3px;
 	    position: absolute;
 	    max-height: 100%;
@@ -70,7 +70,7 @@
 	    background-color: #fdf5e6;
 	    {#max-height: 92%;#}
     }
-		#coll_tabs {
+    #coll_tabs {
 			{#margin-right: 2px;#}
 			background-color: #fdf5e6;
 			border-top: 1px solid gainsboro;
@@ -105,6 +105,11 @@
 	    <div id="coll_form" class="col-sm-4 form-box mt-2 pb-2" style="height: fit-content;">
 	      <form id="collection_form" method="POST" action="#" enctype="multipart/form-data">
         {% csrf_token %}
+	      {% if action == 'create' %}
+	        <input type="hidden" name="owner" value='{{ user.id }}' />
+	      {% else %}
+		      <input type="hidden" name="owner" value='{{ form.owner }}' />
+	      {% endif %}
 	      <input type="hidden" name="owner" value='{{ user.id }}' />
 	      <input type="hidden" name="collection_class" value='place' />
 				<div class="form-group">
