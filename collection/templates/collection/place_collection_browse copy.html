@@ -465,11 +465,9 @@
         $(".toomany").html('').hide()
     }
   });
-
-  //
+  
   mappy.on('load', function(){
     hilited = null
-	  // initiate layers for z-index
     mappy.addSource('empty', {
       type: 'geojson',
       data: { type: 'FeatureCollection', features: [] }
@@ -500,8 +498,7 @@
     }, 'z-index-2'); // place this layer below zIndex2
 
 	  // fetch geodata
-	  {#renderData("{{ coll.id }}")#}
-    addPlaces()
+    addPlaces(ds_list)
     {#addSources(ds_list)#}
 
     layer_list = getLoadedLayers(ds_list)
@@ -555,87 +552,26 @@
     return layers
   }
 
-  function addPlaces(){
+  function addPlaces(ds_list){
     {#console.log('addPlaces() for collection #', {{ object.id }})#}
     {#all_feats = []#}
-    {#ds_labels = ds_list.map(function(ds){return ds.label})#}
+    ds_labels = ds_list.map(function(ds){return ds.label})
     {#console.log('dslabels', ds_labels)#}
 
-		// fetch all places in collection
 	  $.getJSON('/collections/'+'{{ object.id }}'+'/geojson')
 	  .done(function(colldata) {
-      all_feats = colldata.features
       {#console.log('colldata', colldata)#}
 			fcoll = colldata
-
-			{#envelope = turf.envelope(colldata.collection)#}
-
-      mappy.addSource('places', {
+      mappy.addSource('all', {
         'type': 'geojson',
         'data': colldata
       })
-      // render to map
-      // z-index points:4, poly-outlines:3. poly:2, lines:1
-      mappy.addLayer({
-        'id': 'gl_active_point',
-        'type': 'circle',
-        'source': 'places',
-        'paint': {
-          'circle-opacity': 1,
-          'circle-color': '#ff9900',
-          'circle-radius': {
-            stops: [[1, 2], [3, 3], [16, 10]]
-          }
-        },
-        'filter': ['==', '$type', 'Point']
-      }, 'z-index-4');
-
-	    // dashed outline for polygons
-      mappy.addLayer({
-        'id': 'outline',
-        'type': 'line',
-        'source': 'places',
-        'layout': {},
-        'paint': {
-          'line-color': '#999',
-          'line-width': 1,
-          'line-dasharray': [4, 2],
-          'line-opacity': 0.5,
-        },
-        'filter': ['==', '$type', 'Polygon']
-      }, 'z-index-3');
-
-      mappy.addLayer({
-        'id': 'gl_active_poly',
-        'type': 'fill',
-        'source': 'places',
-        'paint': {
-          'fill-color': '#ddd',
-          'fill-opacity': 0.3,
-          'fill-outline-color': '#666'
-        },
-        'filter': ['==', '$type', 'Polygon']
-      }, 'z-index-2');
-
-      mappy.addLayer({
-        'id': 'gl_active_line',
-        'type': 'line',
-        'source': 'places',
-        'paint': {
-          'line-color': 'lightgreen',
-          'line-width': {
-            stops: [[1, 1], [4, 2], [16, 4]]
-          }
-        },
-        'filter': ['==', '$type', 'LineString']
-      }, 'z-index-1');
-
-		  {#renderSourceLayers('all')#}
+		  renderSourceLayers('all')
 		  source_list.push('all')
 
+      all_feats = colldata.features
 			cnt=0
 			mappy.fitBounds(turf.bbox(colldata), { padding: 20 });
-			{#mappy.fitBounds(envelope.bbox, {padding: 30})#}
 
 	  });
   }

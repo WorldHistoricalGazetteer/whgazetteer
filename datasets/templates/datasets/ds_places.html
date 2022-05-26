@@ -496,6 +496,7 @@
       // get bounds w/turf
       envelope = turf.envelope(data.collection)
       range = data.minmax
+
       // add source 'places' w/retrieved data
       mappy.addSource('places', {
           'type': 'geojson',
@@ -518,7 +519,7 @@
         'filter': ['==', '$type', 'Point']
       }, 'z-index-4');
 
-              // dashed outline for polygons
+	    // dashed outline for polygons
       mappy.addLayer({
         'id': 'outline',
         'type': 'line',

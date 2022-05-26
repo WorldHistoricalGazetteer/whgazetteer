@@ -100,7 +100,7 @@ def suggestionItem(s,doctype,scope):
       }
       #print('place sug item', item)
     else:
-      h = s['hit'] 
+      h = s['hit']
       item = {
         "whg_id": h['whg_id'] if 'whg_id' in h else '',
         "pid":h['place_id'],
@@ -109,7 +109,9 @@ def suggestionItem(s,doctype,scope):
         "variants":[n for n in h['suggest']['input'] if n != h['title']],
         "ccodes": h['ccodes'],
         "fclasses": h['fclasses'],
-        "types": [t['sourceLabel'] or t['label'] for t in h['types'] ],
+        # "types": [t['sourceLabel'] or t['label'] for t in h['types'] ],
+        # "types": [t['src_label'] or t['label'] for t in h['types'] ],
+        "types": [t['label'] for t in h['types'] ],
         "geom": makeGeom(h['place_id'],h['geoms'])
         #"snippet": s['snippet']['descriptions.value'][0] if s['snippet'] != '' else []
       }

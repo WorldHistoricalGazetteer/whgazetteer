@@ -348,7 +348,7 @@
           'type': 'line',
           'source': 'places',
           'paint': {
-            'line-color': 'lightgreen',
+            'line-color': 'lightblue',
             'line-width': {
               stops: [[1, 1], [4, 2], [16, 4]]
             }        
@@ -419,9 +419,9 @@
       mappy.setPaintProperty(
         'gl_active_line', 'line-color', 
           { 'property':'pid',
-            'default': "lightgreen",
+            'default': "lightblue",
             'type':'categorical',
-            'stops':[[Number(pid), 'green']]}
+            'stops':[[Number(pid), 'blue']]}
       );           
       mappy.setPaintProperty(
         'gl_active_line', 'line-width', 

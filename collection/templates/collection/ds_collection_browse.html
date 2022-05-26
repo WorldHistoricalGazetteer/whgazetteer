@@ -330,6 +330,8 @@
 
   mappy.on('load', function(){
     hilited = null
+
+	  // initialize empty layers for z-index ordering
     mappy.addSource('empty', {
       type: 'geojson',
       data: { type: 'FeatureCollection', features: [] }
@@ -351,7 +353,7 @@
       id: 'z-index-2',
       type: 'symbol',
       source: 'empty'
-    });
+    }, 'z-index-3'); // below zIndex3
 
     const zIndex1 = mappy.addLayer({
       id: 'z-index-1',
@@ -359,14 +361,14 @@
       source: 'empty'
     }, 'z-index-2'); // place this layer below zIndex2
 
+		// generate sources, layers from sources, render them
     addSources(ds_list)
-    // console.log('map loaded, ds_list',ds_list)-->
 
+    // set mouseenter and click events (popup) for map markers
     layer_list = getLoadedLayers(ds_list)
-
     for (l in layer_list){
-      // TODO: allow clicking on polygons, denied here
-      if(layer_list[l].indexOf('point') != -1){
+      // TODO: allow clicking on polygons and linestrings, denied here
+      //if(layer_list[l].indexOf('point') != -1){
         mappy.on('mouseenter', layer_list[l], function () {
           mappy.getCanvas().style.cursor = 'pointer';
         });
@@ -375,15 +377,26 @@
         mappy.on('mouseleave', layer_list[l], function () {
           mappy.getCanvas().style.cursor = '';
         });
-
+				// differentiate circle, fill, line
         mappy.on('click', layer_list[l], function (e) {
-          //console.log('place:', e.features[0])-->
+          ftype = e.features[0].layer.type
+          geom = e.features[0].geometry
+          coords = e.features[0].geometry.coordinates
           place=e.features[0]
-          var coordinates = e.features[0].geometry.coordinates.slice();
+	        if(ftype == 'point'){
+            var coordinates = e.features[0].geometry.coordinates.slice();
+	         } else if (ftype == 'line'){
+            segment=turf.lineString(coords[Math.round(coords.length/2)])
+            len = turf.length(segment)
+						var coordinates = turf.along(segment, len/2).geometry.coordinates
+	         } else {
+            var coordinates = turf.centroid(e.features[0].geometry).geometry.coordinates
+	        }
           var pid = e.features[0].properties.pid;
           var title = e.features[0].properties.title;
           var src_id = e.features[0].properties.src_id;
-          var minmax = e.features[0].properties.minmax;
+          var min = e.features[0].properties.min;
+          var max = e.features[0].properties.max;
           var fc = e.features[0].properties.fclasses;
 
           while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
@@ -394,14 +407,17 @@
           //console.log('highlight row & fetch data', pid, coordinates)-->
 
           // popup
+	        html = '<b>'+title+'</b><br/>'+
+              '<a href="javascript:getPlace('+pid+')">fetch info</a><br/>'
+	        if (min){
+            html += 'start: '+min+', end:'+ max ?? ''
+	        }
           new maplibregl.Popup()
             .setLngLat(coordinates)
-            .setHTML('<b>'+title+'</b><br/>'+
-              '<a href="javascript:getPlace('+pid+')">fetch info</a><br/>'+
-              'start, end: '+minmax)
+            .setHTML(html)
             .addTo(mappy);
         })
-      }
+      //}
     }
   });
 
@@ -411,11 +427,13 @@
       l = ds_list[d]['label']
       layers.push('gl_'+l+'_point')
       layers.push('gl_'+l+'_poly')
+      layers.push('gl_'+l+'_line')
     }
     return layers
   }
 
-  // TODO: this gets all places for all named datasets - BAD!
+  // for each dataset, fetch places, create map source, append features to all_feats[] (why?),
+  // pass to renderSourceLayers() to add up to 3 layers to map per source type (point, poly, line)
   function addSources(ds_list){
     all_feats = []
     source_list = []
@@ -471,6 +489,20 @@
       },
       'filter': ['==', '$type', 'Point']
     }, 'z-index-2');
+
+    mappy.addLayer({
+      'id': 'gl_'+dslabel+'_line',
+      'type': 'line',
+      'source': dslabel,
+      'paint': {
+        'line-color': 'blue',
+        'line-width': {
+          stops: [[1, 2], [4, 2], [16, 4]]
+        }
+      },
+      'filter': ['==', '$type', 'LineString']
+    }, 'z-index-3');
+
 		fcoll= {"type":"FeatureCollection", "features": all_feats}
     mappy.fitBounds(turf.bbox(fcoll), { padding: 20 });
   }
@@ -509,7 +541,7 @@
     mappy.setPaintProperty(
       'gl_'+src+'_point', 'circle-color',
         { 'property':'pid',
-          'default': 'grey',
+          'default': 'scarlet',
           'type':'categorical',
           'stops':[[Number(pid), 'yellow']]}
     );
@@ -523,7 +555,7 @@
     mappy.setPaintProperty(
       'gl_'+src+'_poly', 'fill-outline-color',
         { 'property':'pid',
-          'default': 'grey',
+          {#'default': 'grey',#}
           'type':'categorical',
           'stops':[[Number(pid), 'red']]}
     );
@@ -549,67 +581,41 @@
     }
   }
 
-  mappy.on('click', 'gl_active_point', function (e) {
-    <!--console.log('place:', e.features[0])-->
-    place=e.features[0]
-    var coordinates = e.features[0].geometry.coordinates.slice();
-    var pid = e.features[0].properties.pid;
-    var title = e.features[0].properties.title;
-    var src_id = e.features[0].properties.src_id;
-    var minmax = e.features[0].properties.minmax;
-    var fc = e.features[0].properties.fclasses;
-
-    while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-      coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
-    }
-
-    // highlight row
-    {#console.log('highlight row & fetch data', pid, coordinates)#}
-
-    // popup
-    new maplibregl.Popup()
-      .setLngLat(coordinates)
-      .setHTML('<b>'+title+'</b><br/>'+
-              '<a href="javascript:getPlace('+pid+')">fetch info</a><br/>'+
-              'start, end: '+minmax)
-      .addTo(mappy);
-  });
-
   // TODO; refactor feature clicking, like ds_browse.html
-  mappy.on('mouseenter', 'gl_afr_subregions_34_poly', function () {
-  mappy.getCanvas().style.cursor = 'pointer';
-  });
-  // Change it back to a pointer when it leaves.
-  mappy.on('mouseleave', 'gl_afr_subregions_34_poly', function () {
-    mappy.getCanvas().style.cursor = '';
-  });
-
-  mappy.on('click', 'gl_afr_subregions_34_poly', function (e) {
-    <!--console.log('place:', e.features[0])-->
-    place=e.features[0]
-	  props = place.properties
-    var coordinates = place.geometry.coordinates.slice()[0][0];
-    var pid = props.pid;
-    var title = props.title;
-    var src_id = props.src_id;
-    var minmax = [props.min, props.max];
-    var fc = props.fclasses;
-
-    while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-      coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
-    }
-
-    // highlight row
+  {#mappy.on('mouseenter', 'gl_afr_subregions_34_poly', function () {#}
+  {#  mappy.getCanvas().style.cursor = 'pointer';#}
+  {# });#}
+  {#// Change it back to a pointer when it leaves.#}
+  {#mappy.on('mouseleave', 'gl_afr_subregions_34_poly', function () {#}
+  {#  mappy.getCanvas().style.cursor = '';#}
+  {# });#}
+	{##}
+  {#mappy.on('click', 'gl_afr_subregions_34_poly', function (e) {#}
+  {#  <!--console.log('place:', e.features[0])-->#}
+  {#  place=e.features[0]#}
+	{#  props = place.properties#}
+  {#  var coordinates = place.geometry.coordinates.slice()[0][0];#}
+  {#  var pid = props.pid;#}
+  {#  var title = props.title;#}
+  {#  var src_id = props.src_id;#}
+  {#  var minmax = [props.min, props.max];#}
+  {#  var fc = props.fclasses;#}
+	{##}
+  {#  while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {#}
+  {#    coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;#}
+  {#  }#}
+	{##}
+  {#  // highlight row#}
     {#console.log('highlight row & fetch data', pid, coordinates)#}
-
-    // popup
-    new maplibregl.Popup()
-      .setLngLat(coordinates)
-      .setHTML('<b>'+title+'</b><br/>'+
-              '<a href="javascript:getPlace('+pid+')">fetch info</a><br/>'+
-              'start, end: '+minmax)
-      .addTo(mappy);
-  });
+	{##}
+  {#  // popup#}
+  {#  new maplibregl.Popup()#}
+  {#    .setLngLat(coordinates)#}
+  {#    .setHTML('<b>'+title+'</b><br/>'+#}
+  {#            '<a href="javascript:getPlace('+pid+')">fetch info</a><br/>'+#}
+  {#            'start, end: '+minmax)#}
+  {#    .addTo(mappy);#}
+  {# });#}
 
   // activate all tooltips
   $("[rel='tooltip']").tooltip();
