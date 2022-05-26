@@ -77,26 +77,6 @@ class Collection(models.Model):
     #return reverse('datasets:dashboard', kwargs={'id': self.id})
     return reverse('data-collections')
 
-  # def save(self):
-  #   # Opening the uploaded image
-  #   print('in Collection.save()')
-  #   im = Image.open(self.image_file).convert('RGB')
-  #
-  #   output = BytesIO()
-  #
-  #   # Resize/modify the image
-  #   im = im.resize((200, 200))
-  #
-  #   # after modifications, save it to the output
-  #   im.save(output, format='JPEG', quality=90, upload_to=collection_path)
-  #   output.seek(0)
-  #
-  #   # change the imagefield value to be the newley modifed image value
-  #   self.image = InMemoryUploadedFile(output, 'ImageField', "%s.jpg" % self.image_file.name.split('.')[0], 'image/jpeg',
-  #                                     sys.getsizeof(output), None)
-  #
-  #   super(Collection, self).save()
-
   @property
   def places_ds(self):
     dses = self.datasets.all()
@@ -111,10 +91,11 @@ class Collection(models.Model):
 
   @property
   def ds_list(self):
-    dsc = [{"id":d.id, "label":d.label,
+    dsc = [{"id":d.id, "label":d.label, "bounds": d.bounds,
             "title":d.title, "modified": d.last_modified_text} for d in self.datasets.all()]
-    dsp = [{"id":p.dataset.id, "label":p.dataset.label, "title":p.dataset.title,
-            "modified": p.dataset.last_modified_text} for p in self.places.all()]
+    dsp = [{"id":p.dataset.id, "label":p.dataset.label, "title":p.dataset.title, "bounds": p.dataset.bounds
+            ,"modified": p.dataset.last_modified_text
+            } for p in self.places.all()]
     return list({ item['id'] : item for item in dsp+dsc}.values())
 
   @property
@@ -129,8 +110,8 @@ class Collection(models.Model):
   @property
   def rowcount(self):
     dses = self.datasets.all()
-    counts = [ds.places.count() for ds in dses]
-    return sum(counts)
+    ds_counts = [ds.places.count() for ds in dses]
+    return sum(ds_counts) + self.places.count()
 
   def __str__(self):
     return '%s:%s' % (self.id, self.title)

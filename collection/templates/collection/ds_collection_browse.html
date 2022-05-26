@@ -151,7 +151,7 @@
       // filter table
       val = $(this).val()
       localStorage.setItem('filter', val)
-      <!--startMapSpinner()-->
+      startMapSpinner()
       if(val == -1){
         // clear search
         startFilterSpinner()
@@ -617,7 +617,7 @@
   // show/hide dataset markers from dropdown
   // TODO: this seems inefficient but works
   function filterMap(key){
-    {#console.log('filter on ds', key)#}
+    console.log('filter on ds', key)
     if(key == -1){
       for(l in layer_list){
         mappy.setLayoutProperty(layer_list[l],'visibility','visible')
@@ -632,8 +632,7 @@
       for(l in relevant){
         mappy.setLayoutProperty(relevant[l],'visibility','visible')
       }
-      bounds = ds_list.find((o) => { return o['label'] === key }).bbox
-      {#console.log('bounds',bounds)#}
+      bounds = ds_list.find((o) => { return o['label'] === key }).bounds
       mappy.fitBounds(turf.envelope(bounds).bbox)
     }
   }

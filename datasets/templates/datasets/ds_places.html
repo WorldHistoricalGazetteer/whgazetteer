@@ -55,26 +55,26 @@
       <li class="nav-item">
           <a class="nav-link active" id="browse-tab" href="#" role="tab">Browse</a>
       </li>
-      {% if collections %}
-	    <div id="addtocoll_popup" class="p-2 hidden">
-        <div style="position:relative;">
-	        <div class="closer" style="position:absolute; top:-6px; right:-2px">x</div>
-        </div>
-	      <ul id="my_collections" class="no-bullets">
-					{% for c in collections %}
-						<li><a class="a_addtocoll" href="#" ref="{{ c.id }}">{{ c.title }}</a></li>
-		      {% endfor %}
-	      </ul>
-        <hr/>
-	      <p class="mb-0 ital">
-		      <a id="create_coll_link" href="#">{% fontawesome_icon 'plus-square' color='#336699' %} create new</a>
-	      </p>
-        <p id="title_form" class="small hidden">
-          <input id="title_input" type="text" placeholder="Collection title" width="20"/>
-	        <button id="b_create_coll" type="button">create</button>
-        </p>
-      </div>
-      {% endif %}
+{#      {% if collections %}#}
+		    <div id="addtocoll_popup" class="p-2 hidden">
+	        <div style="position:relative;">
+		        <div class="closer" style="position:absolute; top:-6px; right:-2px">x</div>
+	        </div>
+		      <ul id="my_collections" class="no-bullets">
+						{% for c in collections %}
+							<li><a class="a_addtocoll" href="#" ref="{{ c.id }}">{{ c.title }}</a></li>
+			      {% endfor %}
+		      </ul>
+	        <hr/>
+		      <p class="mb-0 ital">
+			      <a id="create_coll_link" href="#">{% fontawesome_icon 'plus-square' color='#336699' %} create new</a>
+		      </p>
+	        <p id="title_form" class="small hidden">
+	          <input id="title_input" type="text" placeholder="Collection title" width="20"/>
+		        <button id="b_create_coll" type="button">create</button>
+	        </p>
+	      </div>
+{#      {% endif %}#}
       <span id="added_flash" class="mr-2 hidden" style="background-color: yellow; position:absolute; top:10px; right:10px;"> added! </span>
       <div id="selection_status" style="position:absolute; right:20px;">
 	      <span id="actions">
@@ -94,6 +94,11 @@
               {{ filter }}
               <div class="toomany"></div>
               <div id="map" style="height:300px;"></div>
+	            {% if beta_or_better %}
+		            <div class="small">
+			            <span class=""><a href="#" id="clearlines">clear lines</a></span>
+		            </div>
+	            {% endif %}
               <div id="row_detail">
                 <div id="detail" class="small"></div>
               </div>
@@ -152,6 +157,10 @@
 </div>
 
 <script type="text/javascript">
+	$("#clearlines").click(function(){
+    mappy.removeLayer('gl_active_poly')
+    mappy.removeLayer('outline')
+	})
 	$("#create_coll_link").click(function(){
 			console.log('open title input')
 			$("#title_form").show()

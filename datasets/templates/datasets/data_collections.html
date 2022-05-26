@@ -92,7 +92,10 @@
                   <th>type</th>
                   <th>title</th>
                   <th></th>
+                  <th>count</th>
                   <th>created</th>
+                  <th>owner</th>
+                  <th>public?</th>
               </thead>
               <tbody>
                 {% for c in collection_list %}
@@ -114,7 +117,11 @@
 	                    {% endif %}
                       {# TODO: add regions #}
                     </td>
-                    <td>{{ c.created }}</td>
+                    <td>{{ c.rowcount }}</td>
+										<td class="small">{{ c.created|date:"Y-m-d, H:i" }}</td>
+	                  {#<td>{{ c.created }}</td>#}
+                    <td>{{ c.owner }}</td>
+                    <td>{% if c.public %}yes{% endif %}</td>
                   </tr>
                 {% endfor %}
               </tbody>

@@ -65,9 +65,17 @@ class DatasetDetailModelForm(forms.ModelForm):
             'source': forms.TextInput(attrs={'size': 50}),
             'contributors': forms.TextInput(attrs={'size': 50}),
             'webpage': forms.TextInput(attrs={'size': 50}),
-            'uri_base': forms.TextInput(attrs={'size': 50}),
+            # 'uri_base': forms.TextInput(attrs={'size': 50}),
+            'uri_base': forms.URLInput(attrs={'size': 50}),
             'featured': forms.TextInput(attrs={'size': 4})
         }
+
+    def clean_label(self):
+        label = self.cleaned_data['label']
+        if ' ' in label:
+            print("there's a space goddamit")
+            raise forms.ValidationError('label cannot contain any space')
+        return label
 
     file = forms.FileField(required=False)
     uri_base = forms.URLField(
@@ -97,12 +105,19 @@ class DatasetCreateModelForm(forms.ModelForm):
                 'rows': 2, 'cols': 45, 'class': 'textarea', 'placeholder': 'Brief description'}), 
             'uri_base': forms.URLInput(attrs={
                     'placeholder': 'Leave blank unless record IDs are URIs', 'size': 45}), 
-            'title': forms.TextInput(attrs={'size': 45}), 
-            'creator': forms.TextInput(attrs={'size': 45}), 
+            'title': forms.TextInput(attrs={'size': 45}),
+            'label': forms.TextInput(attrs={'placeholder': '20 char max; no spaces','size': 22}),
+            'creator': forms.TextInput(attrs={'size': 45}),
             'source': forms.TextInput(attrs={'size': 45}), 
             'featured': forms.TextInput(attrs={'size': 4}), 
             'webpage': forms.URLInput(attrs={'size': 45, 'placeholder': 'Project home page, if any'})
         }
+
+    def clean_label(self):
+        label = self.cleaned_data['label']
+        if ' ' in label:
+            raise forms.ValidationError('Label cannot contain any spaces; replace with underscores (_)')
+        return label
 
     # fields used to create new DatasetFile record from form
     # uri_base = forms.URLField(widget=forms.URLInput(

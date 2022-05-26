@@ -2081,8 +2081,9 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
       dsobj = form.save(commit=False)
       dsobj.ds_status = 'format_ok'
       dsobj.numrows = result['count']
+      clean_label=form.cleaned_data['label'].replace(' ','_')
       if not form.cleaned_data['uri_base']:
-        dsobj.uri_base = 'http://whgazetteer.org/places/'+form.cleaned_data['label']+'/'
+        dsobj.uri_base = 'https://whgazetteer.org/places/'+form.cleaned_data['label']+'/'
 
       # links will be counted later on insert
       dsobj.numlinked = 0

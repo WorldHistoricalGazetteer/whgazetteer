@@ -383,10 +383,29 @@
 </div> <!-- container -->
 
 <script type="text/javascript">
+	/* scroll #coll_placelist to last selected */
 
-	function saveAnno(){
-    {#console.log('going ajax dammit')#}
-	}
+  $(".anno-place").click(function(){
+    $(this).tooltip('hide');
+    $(".col-place-card").removeClass('card-highlight')
+    let pid = $(this).data('pid')
+		card=$("div[class*=col-place-card]")
+            .filter("div[data-id="+pid+"]").addClass('card-highlight')
+	  // position of clicked card
+	  cardtop = card.offset().top
+	  sessionStorage.setItem('cardtop', cardtop)
+	  // position of list scroller
+	  scrolltop = $("#coll_placelist").scrollTop()
+	  sessionStorage.setItem('scrolltop', scrolltop)
+	  // permanent position of list on page
+	  listtop = $("#coll_placelist").offset().top
+	  offset = cardtop+scrolltop-listtop
+	  sessionStorage.setItem('offset', offset)
+	  console.log('offset',offset)
+	  console.log('cardtop, scrolltop, listtop',
+			  cardtop, scrolltop, listtop )
+	  getAnno($(this).data('pid'))
+  })
 
 	function goBrowse(){
     window.location = '/collections/{{ object.id }}/browse_pl'
@@ -448,14 +467,6 @@
 			$(".pop").fadeOut()
 	})
 	// fetch r/o place record to annotation panel
-  $(".anno-place").click(function(){
-    $(this).tooltip('hide');
-    $(".col-place-card").removeClass('card-highlight')
-    let pid = $(this).data('pid')
-		card=$("div[class*=col-place-card]")
-            .filter("div[data-id="+pid+"]").addClass('card-highlight')
-	  getAnno($(this).data('pid'))
-  })
 
 	function remove_from_collection(coll, pids) {
       var formData = new FormData()
@@ -749,11 +760,14 @@
         $("[rel='tooltip']").tooltip();
         {#$(".mark-place").mouseleave(function(){#}
         {#  $(this).tooltip('hide');#}
-				{#})#}
-      });
+				})
   }
 
   $(function(){
+    // scroll to place w/last saved annotation
+    offset = sessionStorage.getItem('offset')
+		$("#coll_placelist").scrollTop(offset)
+
 	  window.remove_these = []
 		$("[rel='tooltip']").tooltip();
     $(".nav-link").click(function(){
