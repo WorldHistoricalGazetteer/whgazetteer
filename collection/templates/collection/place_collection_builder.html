@@ -108,10 +108,10 @@
 	      {% if action == 'create' %}
 	        <input type="hidden" name="owner" value='{{ user.id }}' />
 	      {% else %}
-		      <input type="hidden" name="owner" value='{{ form.owner }}' />
+		      <input type="hidden" name="owner" value='{{ form.owner.value }}' />
 	      {% endif %}
-	      <input type="hidden" name="owner" value='{{ user.id }}' />
 	      <input type="hidden" name="collection_class" value='place' />
+	      action: {{ action }}, owner: {{ form.owner.value }}
 				<div class="form-group">
 					<label for="Title">Title &#x02733;</label><br/>
 					{{ form.title }}
