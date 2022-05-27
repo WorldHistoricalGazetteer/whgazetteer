@@ -504,6 +504,8 @@
         });
 
         mappy.on('click', layer_list[l], function (e) {
+          clicked=e.features
+	        console.log('e features', clicked)
 					ftype = e.features[0].layer.type
 	        gtype = e.features[0].geometry.type
           geom = e.features[0].geometry
@@ -535,6 +537,8 @@
           while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
             coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
           }
+					// highlight
+	        highlightFeatureGL(pid, geom, coords, 'places')
 
           // popup
           new maplibregl.Popup()
@@ -543,6 +547,8 @@
               '<a href="javascript:getPlace('+pid+')">fetch info</a><br/>'+
               'start, end: '+minmax)
             .addTo(mappy);
+
+          mappy.setCenter(coordinates)
         })
       }
 
@@ -603,7 +609,7 @@
         'type': 'fill',
         'source': 'places',
         'paint': {
-          'fill-color': '#ddd',
+          'fill-color': 'pink',
           'fill-opacity': 0.3,
           'fill-outline-color': '#666'
         },
@@ -690,15 +696,24 @@
         { 'property':'pid',
           'default': 'grey',
           'type':'categorical',
-          'stops':[[Number(pid), 'red']]}
+          'stops':[[Number(pid), 'black']]}
     );
     mappy.setPaintProperty(
       'gl_active_poly', 'fill-color',
         { 'property':'pid',
-          'default': "rgba(255,255,255,0.0)",
+          {#'default': "rgba(255,255,255,0.0)",#}
+          'default': "pink",
           'type':'categorical',
-          // 'stops':[[Number(pid), 'red']]}
-          'stops': [[Number(pid), 'rgba(0,128,0,1.0)']]
+          'stops':[[Number(pid), 'pink']]
+          //'stops': [[Number(pid), 'rgba(0,128,0,1.0)']]
+        }
+    );
+    mappy.setPaintProperty(
+      'gl_active_poly', 'fill-opacity',
+        { 'property':'pid',
+          'default': 0.3,
+          'type':'categorical',
+          'stops':[[Number(pid), 0.6]]
         }
     );
     // also set z-index and zoom
