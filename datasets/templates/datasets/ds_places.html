@@ -477,6 +477,63 @@
     }, 'z-index-2'); // place this layer below zIndex2
 
     renderData("{{ ds.id }}")
+
+	  layer_list=['outline','gl_active_point','gl_active_line','gl_active_poly']
+
+    // popup generating events per layer
+	  // TODO: polygons?
+    for (l in layer_list){
+      mappy.on('mouseenter', layer_list[l], function () {
+        mappy.getCanvas().style.cursor = 'pointer';
+      });
+
+      // Change it back to a pointer when it leaves.
+      mappy.on('mouseleave', layer_list[l], function () {
+        mappy.getCanvas().style.cursor = '';
+      });
+
+      mappy.on('click', layer_list[l], function (e) {
+				ftype = e.features[0].layer.type
+        gtype = e.features[0].geometry.type
+        geom = e.features[0].geometry
+        coords = e.features[0].geometry.coordinates
+        place=e.features[0]
+        {#console.log('geom, coords', geom, coords)#}
+        if(ftype == 'point'){
+          var coordinates = geom.coordinates.slice();
+         } else if (ftype == 'line'){
+          // could be simple linestring
+	        if(gtype=='LineString'){
+            len = Math.round(geom.coordinates.length/2)
+		        var coordinates = geom.coordinates[len]
+	        } else {
+            // MultiLineString
+            segment=turf.lineString(coords[Math.round(coords.length/2)])
+            len = turf.length(segment)
+						var coordinates = turf.along(segment, len/2).geometry.coordinates
+	        }
+         } else {
+          var coordinates = turf.centroid(geom).geometry.coordinates
+        }
+        var pid = e.features[0].properties.pid;
+        var title = e.features[0].properties.title;
+        var src_id = e.features[0].properties.src_id;
+        var minmax = e.features[0].properties.minmax;
+        var fc = e.features[0].properties.fclasses;
+
+        while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+          coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+        }
+
+        // popup
+        new maplibregl.Popup()
+          .setLngLat(coordinates)
+          .setHTML('<b>'+title+'</b><br/>'+
+            '<a href="javascript:getPlace('+pid+')">fetch info</a><br/>'+
+            'start, end: '+minmax)
+          .addTo(mappy);
+      })
+    }
   });
   
   // fetch and render
@@ -551,7 +608,7 @@
         'type': 'line',
         'source': 'places',
         'paint': {
-          'line-color': 'lightgreen',
+          'line-color': '#336699',
           'line-width': {
             stops: [[1, 1], [4, 2], [16, 4]]
           }
@@ -642,43 +699,43 @@
   }
 
   // all this for a popup
-  mappy.on('click', 'gl_active_point', function (e) {
-    //console.log('place:', e.features[0])
-    place=e.features[0]
-    var coordinates = e.features[0].geometry.coordinates.slice();
-    var pid = e.features[0].properties.pid;
-    var title = e.features[0].properties.title;
-    var src_id = e.features[0].properties.src_id;
-    var minmax = e.features[0].properties.minmax;
-    var fc = e.features[0].properties.fclasses;
-     
-    // Ensure that if the map is zoomed out such that multiple
-    // copies of the feature are visible, the popup appears
-    // over the copy being pointed to.
-    while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-      coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
-    }
-    
-    // highlight row
-    console.log('made popup', pid, coordinates)
-      
-    // popup
-    new maplibregl.Popup()
-      .setLngLat(coordinates)
-      .setHTML('<b>'+title+'</b><br/>'+
-              '<a href="javascript:getPlace('+pid+')">fetch info</a><br/>'+
-              'start, end: '+minmax)
-      .addTo(mappy);
-  });
+  {#mappy.on('click', 'gl_active_point', function (e) {#}
+  {#  //console.log('place:', e.features[0])#}
+  {#  place=e.features[0]#}
+  {#  var coordinates = e.features[0].geometry.coordinates.slice();#}
+  {#  var pid = e.features[0].properties.pid;#}
+  {#  var title = e.features[0].properties.title;#}
+  {#  var src_id = e.features[0].properties.src_id;#}
+  {#  var minmax = e.features[0].properties.minmax;#}
+  {#  var fc = e.features[0].properties.fclasses;#}
+  {#   #}
+  {#  // Ensure that if the map is zoomed out such that multiple#}
+  {#  // copies of the feature are visible, the popup appears#}
+  {#  // over the copy being pointed to.#}
+  {#  while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {#}
+  {#    coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;#}
+  {#  }#}
+  {#  #}
+  {#  // highlight row#}
+  {#  console.log('made popup', pid, coordinates)#}
+  {#    #}
+  {#  // popup#}
+  {#  new maplibregl.Popup()#}
+  {#    .setLngLat(coordinates)#}
+  {#    .setHTML('<b>'+title+'</b><br/>'+#}
+  {#            '<a href="javascript:getPlace('+pid+')">fetch info</a><br/>'+#}
+  {#            'start, end: '+minmax)#}
+  {#    .addTo(mappy);#}
+  {# });#}
   
   // Change the cursor to a pointer when the mouse is over the places layer.
-  mappy.on('mouseenter', 'gl_active_point', function () {
-    mappy.getCanvas().style.cursor = 'pointer';
-  });
-  // Change it back to a pointer when it leaves.
-  mappy.on('mouseleave', 'gl_active_point', function () {
-    mappy.getCanvas().style.cursor = '';
-  });
+  {#mappy.on('mouseenter', 'gl_active_point', function () {#}
+  {#  mappy.getCanvas().style.cursor = 'pointer';#}
+  {# });#}
+  {#// Change it back to a pointer when it leaves.#}
+  {#mappy.on('mouseleave', 'gl_active_point', function () {#}
+  {#  mappy.getCanvas().style.cursor = '';#}
+  {# });#}
 
   
   // generic 

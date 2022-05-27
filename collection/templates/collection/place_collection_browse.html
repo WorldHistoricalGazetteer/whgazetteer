@@ -450,22 +450,6 @@
     maxZoom: 11,
   });
 
-  // TODO: add a 'big?' boolean to ds_list based on count of polygons
-  {#mappy.on('sourcedata', function(e) {#}
-  {#  // console.log('source_list', source_list)#}
-  {#  if(source_list.includes('territorios892')){#}
-  {#    // big polygons#}
-  {#    if(e.sourceId == 'territorios892' && e.isSourceLoaded){#}
-        {#console.log('big data finished', e.sourceId)#}
-  {#      spinner_map.stop()#}
-  {#      $(".toomany").html('').hide()      #}
-  {#    }#}
-  {#  } else {#}
-  {#      spinner_map.stop()#}
-  {#      $(".toomany").html('').hide()#}
-  {#  }#}
-  {# });#}
-
   //
   mappy.on('load', function(){
     hilited = null
@@ -520,9 +504,28 @@
         });
 
         mappy.on('click', layer_list[l], function (e) {
-          <!--console.log('place:', e.features[0])-->
+					ftype = e.features[0].layer.type
+	        gtype = e.features[0].geometry.type
+          geom = e.features[0].geometry
+          coords = e.features[0].geometry.coordinates
           place=e.features[0]
-          var coordinates = e.features[0].geometry.coordinates.slice();
+	        {#console.log('geom, coords', geom, coords)#}
+	        if(ftype == 'point'){
+            var coordinates = geom.coordinates.slice();
+	         } else if (ftype == 'line'){
+            // could be simple linestring
+		        if(gtype=='LineString'){
+              len = Math.round(geom.coordinates.length/2)
+			        var coordinates = geom.coordinates[len]
+		        } else {
+              // MultiLineString
+	            segment=turf.lineString(coords[Math.round(coords.length/2)])
+	            len = turf.length(segment)
+							var coordinates = turf.along(segment, len/2).geometry.coordinates
+		        }
+	         } else {
+            var coordinates = turf.centroid(geom).geometry.coordinates
+	        }
           var pid = e.features[0].properties.pid;
           var title = e.features[0].properties.title;
           var src_id = e.features[0].properties.src_id;
@@ -542,19 +545,8 @@
             .addTo(mappy);
         })
       }
-    {# }#}
-  });
 
-  {#function getLoadedLayers(ds_list){#}
-  {#  layers=[]#}
-  {#  for(d in ds_list){#}
-  {#    l = ds_list[d]['label']#}
-  {#    layers.push('gl_'+l+'_point')#}
-  {#    layers.push('gl_'+l+'_poly')#}
-  {#    layers.push('gl_'+l+'_line')#}
-  {#  }#}
-  {#  return layers#}
-  {# }#}
+  });
 
   function addPlaces(){
     startMapSpinner()
@@ -564,19 +556,12 @@
       mappy.removeLayer('gl_active_poly')
       mappy.removeSource('places')
     }
-    {#console.log('addPlaces() for collection #', {{ object.id }})#}
-    {#all_feats = []#}
-    {#ds_labels = ds_list.map(function(ds){return ds.label})#}
-    {#console.log('dslabels', ds_labels)#}
-
 		// fetch all places in collection
 	  $.getJSON('/collections/'+'{{ object.id }}'+'/geojson')
 	  .done(function(colldata) {
       all_feats = colldata.features
-      {#console.log('colldata', colldata)#}
-			fcoll = colldata
 
-			{#envelope = turf.envelope(colldata.collection)#}
+			fcoll = colldata
 
       mappy.addSource('places', {
         'type': 'geojson',
@@ -727,42 +712,6 @@
       mappy.fitBounds(bbox, { padding: 30})      
     }    
   }
-
-  // map feature popup
-  {#mappy.on('click', 'gl_actIve_point', function (e) {#}
-  {#  console.log('place:', e.features[0])#}
-  {#  place=e.features[0]#}
-  {#  var coordinates = e.features[0].geometry.coordinates.slice();#}
-  {#  var pid = e.features[0].properties.pid;#}
-  {#  var title = e.features[0].properties.title;#}
-  {#  var src_id = e.features[0].properties.src_id;#}
-  {#  var minmax = e.features[0].properties.minmax;#}
-  {#  var fc = e.features[0].properties.fclasses;#}
-  {#   #}
-  {#  while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {#}
-  {#    coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;#}
-  {#  }#}
-  {#  #}
-  {#  // highlight row#}
-    {#console.log('highlight row & fetch data', pid, coordinates)#}
-  {#    #}
-  {#  // popup#}
-  {#  new maplibregl.Popup()#}
-  {#    .setLngLat(coordinates)#}
-  {#    .setHTML('<b>'+title+'</b><br/>'+#}
-  {#            '<a href="javascript:getPlace('+pid+')">fetch info</a><br/>'+#}
-  {#            'start, end: '+minmax)#}
-  {#    .addTo(mappy);#}
-  {# });#}
-
-  // Change the cursor to a pointer when the mouse is over the places layer.
-  mappy.on('mouseenter', 'gl_active_point', function () {
-    mappy.getCanvas().style.cursor = 'pointer';
-  });
-  // Change it back to a pointer when it leaves.
-  mappy.on('mouseleave', 'gl_active_point', function () {
-    mappy.getCanvas().style.cursor = '';
-  });
 
   // activate all tooltips
   $("[rel='tooltip']").tooltip();
@@ -1120,39 +1069,5 @@
     <!--$("#map").append(spinner_map.el);   -->
     $(".toomany").append(spinner_map.el);   
   }
-  //*
-  
-  {#function filterColumn (i, v) {#}
-  {#  // clear then search#}
-    {#console.log('i,v', i,v)#}
-  {#  table#}
-  {#  .search( '' )#}
-  {#  .columns( i )#}
-  {#  .search( v )#}
-  {#  .draw();#}
-  {#  $("#ds_select").val(localStorage.getItem('filter'))#}
-  {# }    #}
-
-  {#function clearFilters() {#}
-  {#  // clear#}
-  {#  table#}
-  {#  .columns([5,6,7,11])#}
-  {#  .search( '' )#}
-  {#  .draw();#}
-  {#  $("#ds_select").val('-1')#}
-  {# }    #}
-
-
-  // dataset list dropdown
-  {#function buildSelect(){#}
-  {#  select = '<label>Datasets: <select name="status" aria-controls="placetable" id="ds_select" class="datatables_length">'+#}
-  {#  '<option value="-1" selected="selected">All</option>'#}
-  {#  for(let ds of ds_list){#}
-  {#    select += '<option value="'+ds.label+'" selected="selected">'+#}
-  {#      ds.title+'</option>'#}
-  {#  }#}
-  {#  select +='</select></label>'#}
-  {#  return select#}
-  {# }#}
-</script>
+ </script>
 {% endblock %}

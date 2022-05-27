@@ -48,8 +48,8 @@
 	    border: #c3c3c3 1px dashed;
 	    margin-bottom: 3px;
 	    background-color: #fafafa;
-	    {#background-color: white;#}
 	    padding-left: 2px;
+	    cursor: pointer;
     }
     .card-highlight {border: 1px solid #993333; background-color: lightyellow;}
 		#coll_placelist, #coll_dslist {
@@ -300,8 +300,8 @@
 						        <span class="float-right mr-1">
 							        <a class="mark-place" href="#" title="Remove from collection" rel="tooltip" data-pid="{{ p.id }}" data-col="{{ object.id }}">
 								        {% fontawesome_icon 'minus-square' color='#ff8080' %}</a>
-							        <a class="anno-place" href="#" title="Annotate place" rel="tooltip" data-pid="{{ p.id }}">
-								        {% fontawesome_icon 'edit' color='#336699' %}</a>
+							        {% comment %}<a class="anno-place" href="#" title="Annotate place" rel="tooltip" data-pid="{{ p.id }}">
+								        {% fontawesome_icon 'edit' color='#336699' %}</a>{% endcomment %}
 						        </span>
 						        {% else %}
 						        <span class="float-right mr-1">
@@ -369,7 +369,7 @@
 		      <h6>Annotations</h6>
 			    <div id="annotator" class="mb-1">
 				    {% if action == 'update' %}
-				    <p class="mt-3">Select a place record from list on the left to annotate it {% fontawesome_icon 'edit' color='#336699' %}</p>
+				    <p class="mt-3">Select a place record from list on the left to annotate it.</p>
 				    {% endif %}
 			    </div>
 		    </div> <!-- coll_right_anno -->
@@ -385,12 +385,15 @@
 <script type="text/javascript">
 	/* scroll #coll_placelist to last selected */
 
-  $(".anno-place").click(function(){
-    $(this).tooltip('hide');
+  {#$(".anno-place").click(function(){#}
+  $(".col-place-card").click(function(){
+		// clear highlights
     $(".col-place-card").removeClass('card-highlight')
+	  $(this).addClass('card-highlight')
+	  // get pid
     let pid = $(this).data('pid')
-		card=$("div[class*=col-place-card]")
-            .filter("div[data-id="+pid+"]").addClass('card-highlight')
+	  // highlight this one
+		card=$(this).addClass('card-highlight')
 	  // position of clicked card
 	  cardtop = card.offset().top
 	  sessionStorage.setItem('cardtop', cardtop)
@@ -404,8 +407,29 @@
 	  console.log('offset',offset)
 	  console.log('cardtop, scrolltop, listtop',
 			  cardtop, scrolltop, listtop )
-	  getAnno($(this).data('pid'))
+	  getAnno($(this).data('id'))
   })
+  {#$(".anno-place").click(function(){#}
+  {#  $(this).tooltip('hide');#}
+  {#  $(".col-place-card").removeClass('card-highlight')#}
+  {#  let pid = $(this).data('pid')#}
+	{#	card=$("div[class*=col-place-card]")#}
+  {#          .filter("div[data-id="+pid+"]").addClass('card-highlight')#}
+	{#  // position of clicked card#}
+	{#  cardtop = card.offset().top#}
+	{#  sessionStorage.setItem('cardtop', cardtop)#}
+	{#  // position of list scroller#}
+	{#  scrolltop = $("#coll_placelist").scrollTop()#}
+	{#  sessionStorage.setItem('scrolltop', scrolltop)#}
+	{#  // permanent position of list on page#}
+	{#  listtop = $("#coll_placelist").offset().top#}
+	{#  offset = cardtop+scrolltop-listtop#}
+	{#  sessionStorage.setItem('offset', offset)#}
+	{#  console.log('offset',offset)#}
+	{#  console.log('cardtop, scrolltop, listtop',#}
+	{#		  cardtop, scrolltop, listtop )#}
+	{#  getAnno($(this).data('pid'))#}
+  {# })#}
 
 	function goBrowse(){
     window.location = '/collections/{{ object.id }}/browse_pl'
