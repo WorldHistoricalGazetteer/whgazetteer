@@ -548,6 +548,9 @@
               'start, end: '+minmax)
             .addTo(mappy);
 
+					// TODO: fit bounds if not point
+	        {#bbox=turf.envelope(geom).bbox#}
+	        {#mappy.fitBounds(bbox, { padding: 30})#}
           mappy.setCenter(coordinates)
         })
       }
