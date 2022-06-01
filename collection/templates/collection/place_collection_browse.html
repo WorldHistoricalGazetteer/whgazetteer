@@ -188,6 +188,37 @@
 </div>
 
 <script type="text/javascript">
+  function showMore(){
+    clicked = $(this)
+	  $(".more").show()
+    console.log('clicked $this',clicked)
+    {#clicked.hide()#}
+    $(".a_more").hide()
+    {#clicked.parent().find("#dots").hide()#}
+    $("#dots").hide()
+    clicked.next().show()
+    $(".a_less").show()
+  }
+  function showLess(){
+    clicked = $(this)
+    console.log('clicked less',clicked)
+    clicked.hide() // hide 'less' link
+    $(".more").hide() // hide the extra text again
+    $("#dots").show() // show dots again
+    $(".a_more").show() // show more link again
+  }
+  {#$(".a_more").onclick = showMore#}
+  {#$(".a_less").onclick = showLess#}
+	// truncate
+	function readMore(text, numchars) {
+    dots = '<span id="dots">...</span>'
+		link = '<a href="#" class="a_more" onclick="showMore()">more</a><span class="more hidden">'
+    if(text.length < numchars){
+      return text
+    } else {
+      return text.slice(0,numchars) + dots + link + text.slice(numchars,) + ' <a href="#" class="ml-2 a_less hidden" onclick="showLess()">less</a></span>'
+    }
+	}
 
   var clip_cite = new ClipboardJS('.clippy', {
     text: function(trigger) {
@@ -417,23 +448,20 @@
       hide: {effect: "fade",duration: 400 }
     });
 
-    $(".a_more").click(function(e){
+    // for collection description only
+    $(".a_more_descrip").click(function(){
       clicked = $(this)
       clicked.hide()
-      clicked.parent().find("#dots").hide()
+      clicked.parent().find("#dots_descrip").hide()
       clicked.next().show()
-      $(".a_less").show()
-      {#console.log('clicked',clicked)#}
+      $(".a_less_descrip").show()
     })
-
-	  $(".a_less").click(function(e){
+    $(".a_less_descrip").click(function(){
       clicked = $(this)
-      {#console.log('this clicked',clicked)#}
-      {#console.log('parent',parent)#}
       clicked.hide() // hide 'less' link
-      $(".more").hide() // hide the extra text again
-      $("#dots").show() // show dots again
-      $(".a_more").show() // show more link again
+      $(".more_descrip").hide() // hide the extra text again
+      $("#dots_descrip").show() // show dots again
+      $(".a_more_descrip").show() // show more link again
     })
 
   })  // jquery onload()
@@ -657,8 +685,8 @@
 
   // hightlight selected in row
   function highlightFeatureGL(pid, geom, coords, src){
-    console.log('highlightFeatureGL()')
-    console.log('pid, geom, coords', pid, geom, coords. src)
+    {#console.log('highlightFeatureGL()')#}
+    {#console.log('pid, geom, coords', pid, geom, coords. src)#}
     
     //mappy.getLayer(layer_list[4]).getPaintProperty('circle-color')
     mappy.setPaintProperty(
@@ -821,9 +849,10 @@
             descrip += "<p><b><u>Relation</u></b>: " + JSON.parse(trace.fields.relation)[0] + "</p>"
         }
         if (trace.fields.note) {
+            // turn find & format embedded markdown link syntax
 		        linkish = trace.fields.note.replace(/\[(.*)\]\((.*)\)/gim,'<a href="$2" target="_blank">$1</a>')
-            {#descrip += '<p><b><u>Notes</u></b>: ' + trace.fields.note + '</p>'#}
-            descrip += '<p><b><u>Notes</u></b>: ' + linkish + '</p>'
+            descrip += '<p><b><u>Notes</u></b>: ' + readMore(linkish, 250) + '</p>'
+		        // TODO: attach events to links
         }
         if (trace.fields.start) {
             descrip += '<p><b><u>Start/End</u></b>: ' + (trace.fields.start ?? "") + '/' +
@@ -944,6 +973,8 @@
       descrip+='<p><b><u>Modern country</u></b>: '+ data.countries.join(', ')+'</p>'
     }
     descrip += '</div>'
+		//
+
     return descrip
   }
 

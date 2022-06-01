@@ -76,13 +76,13 @@ def parsejson(value,key):
 
 @register.filter
 def readmore(txt, numchars):
-    dots = '<span id="dots">...</span>'
-    link = '<a href="#" class="a_more">more</a><span class="more hidden">'
+    dots = '<span id="dots_descrip">...</span>'
+    link = '<a href="#" class="a_more_descrip">more</a><span class="more_descrip hidden">'
 
     if len(txt) <= numchars:
         return txt
     else:
-        return txt[:numchars] + dots + link + txt[numchars:] + ' <a href="#" class="ml-2 a_less hidden">less</a></span>'
+        return txt[:numchars] + dots + link + txt[numchars:] + ' <a href="#" class="ml-2 a_less_descrip hidden">less</a></span>'
 
 @register.filter
 def remove(str, tozap):
