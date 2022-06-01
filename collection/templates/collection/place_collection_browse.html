@@ -207,16 +207,18 @@
     $("#dots").show() // show dots again
     $(".a_more").show() // show more link again
   }
-  {#$(".a_more").onclick = showMore#}
-  {#$(".a_less").onclick = showLess#}
-	// truncate
-	function readMore(text, numchars) {
+
+	// TODO: this is a mess, refactor or add 1-to-many annotation link field
+  // truncate anno note, looking for embedded links
+	function readMore(text, numchars, innerlink) {
     dots = '<span id="dots">...</span>'
 		link = '<a href="#" class="a_more" onclick="showMore()">more</a><span class="more hidden">'
     if(text.length < numchars){
-      return text
+      {#return text + innerlink != ''?innerlink:''#}
+      return innerlink != '' ? text + innerlink : text
     } else {
-      return text.slice(0,numchars) + dots + link + text.slice(numchars,) + ' <a href="#" class="ml-2 a_less hidden" onclick="showLess()">less</a></span>'
+      return text.slice(0,numchars) + dots + link + text.slice(numchars,) + innerlink+
+		      ' <a href="#" class="ml-2 a_less hidden" onclick="showLess()">less</a></span>'
     }
 	}
 
@@ -849,10 +851,19 @@
             descrip += "<p><b><u>Relation</u></b>: " + JSON.parse(trace.fields.relation)[0] + "</p>"
         }
         if (trace.fields.note) {
-            // turn find & format embedded markdown link syntax
+            // find & format embedded markdown link syntax
 		        linkish = trace.fields.note.replace(/\[(.*)\]\((.*)\)/gim,'<a href="$2" target="_blank">$1</a>')
-            descrip += '<p><b><u>Notes</u></b>: ' + readMore(linkish, 250) + '</p>'
-		        // TODO: attach events to links
+		        // index of link, -1 is none
+		        linkindex = linkish.search(/<a href/gim)
+		        if(linkindex == -1){
+              // no links, truncate if > 250 chars
+              descrip += '<p><b><u>Notes</u></b>: ' + readMore(linkish, 250) + '</p>'
+		        } else {
+              // has a link, get initial text
+			        text = linkish.slice(0, linkindex)
+			        innerlink = linkish.slice(linkindex,)
+			        descrip += '<p><b><u>Notes</u></b>: ' + readMore(text, 250, innerlink) + '</p>'
+		        }
         }
         if (trace.fields.start) {
             descrip += '<p><b><u>Start/End</u></b>: ' + (trace.fields.start ?? "") + '/' +
