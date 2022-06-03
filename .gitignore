@@ -9,10 +9,12 @@ _testdata/
 datasets/static/_older/
 static/_older/
 
-# tracking collections
+# leave server versions intact
+media/collections/
 media/data/
 media/datasets/
 media/downloads/
+media/resources/
 media/user*
 
 */migrations/0*.py
