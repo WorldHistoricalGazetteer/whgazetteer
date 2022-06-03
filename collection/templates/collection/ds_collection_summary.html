@@ -98,21 +98,11 @@
 	                <li class="">
 	                  <b>Number of records</b>: {{ d.numrows }}
 	                  <span class="dl-links float-right mr-2">
-	                  {%comment%}<select placeholder="Select format">
-	                    <option disabled selected class="text-secondary"value="">Select format</option>
-	                    <option value="lpf">Linked Places (LPF)</option>
-	                    <option value="gis">simplified LPF</option>
-	                    <option value="tsv">simplified TSV</option>
-	                  </select> {% fontawesome_icon 'download' color='#336699' %}
-
-	                  {% fontawesome_icon 'download' color='#336699' %}&nbsp;&nbsp;<a href="{% url 'datasets:dl-aug' id=d.id format='lpf' %}" data-id={{d.id}} ref="lpf" title="Linked Places format">lp</a>&nbsp;&nbsp;<a href="" data-id={{d.id}} ref="gis" title="tab-delimited text">tsv</a>{%endcomment%}
-
 	                  </span>
 	                </li>
 	                </ul>
 	              </div>
 	            </div>
-	            <!--{ d.bounds }}-->
 	          {% endfor %}
 	        </div> <!-- #ds_cards -->
 	      </div>
@@ -280,22 +270,24 @@
     });
     $("#id_geojson").attr("placeholder","generated from country codes")
 
-    $(".a_more").click(function(e){
+    $(".a_more_descrip").click(function(e){
+    {#$(".a_more").click(function(e){#}
       clicked = $(this)
       clicked.hide()
       clicked.parent().find("#dots").hide()
       clicked.next().show()
-      $(".a_less").show()
+      $(".a_less_descrip").show()
       {#console.log('clicked',clicked)  #}
     })
-    $(".a_less").click(function(e){
+    $(".a_less_descrip").click(function(e){
+    {#$(".a_less").click(function(e){#}
       clicked = $(this)
       {#console.log('this clicked',clicked)  #}
       {#console.log('parent',parent)  #}
       clicked.hide() // hide 'less' link
-      $(".more").hide() // hide the extra text again
+      $(".more_descrip").hide() // hide the extra text again
       $("#dots").show() // show dots again
-      $(".a_more").show() // show more link again
+      $(".a_more_descrip").show() // show more link again
     })
 
   })

@@ -369,6 +369,7 @@ class IndexAPIView(View):
     cc = request.GET.get('ccode')
     ccodes=[x.upper() for x in cc.split(',')] if cc else None
     year = request.GET.get('year')
+    pagesize = params.get('pagesize', None)
     area = request.GET.get('area')
     idx = 'whg'
     
@@ -426,7 +427,11 @@ class IndexAPIView(View):
         collection = [ collectionItem(s,'place', None) for s in collection]
       
         # result object
-        result = {'type':'FeatureCollection','count': len(collection), 'features':collection}
+        # result = {'type':'FeatureCollection','count': len(collection), 'features':collection}
+        result = {'type':'FeatureCollection',
+                  'count': len(collection),
+                  'pagesize': pagesize,
+                  'features':collection[:int(pagesize)] if pagesize else collection}
 
     
     # to client
