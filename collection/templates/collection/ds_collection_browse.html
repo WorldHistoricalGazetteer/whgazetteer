@@ -163,6 +163,7 @@
       // also filter map
       filterMap(val)
     })
+
     $("#placetable tbody tr").click(function() {
       thisy=$(this)
       // get id
@@ -200,7 +201,7 @@
   }
 
   function buildSelect(){
-    select = '<label>Datasets: <select name="status" aria-controls="placetable" id="ds_select" class="datatables_length">'+
+    select = '<label>Datasets: <select id="ds_select">'+
     '<option value="-1" selected="selected">All</option>'
     for(let ds of ds_list){
       select += '<option value="'+ds.label+'" selected="selected">'+
@@ -581,42 +582,6 @@
     }
   }
 
-  // TODO; refactor feature clicking, like ds_browse.html
-  {#mappy.on('mouseenter', 'gl_afr_subregions_34_poly', function () {#}
-  {#  mappy.getCanvas().style.cursor = 'pointer';#}
-  {# });#}
-  {#// Change it back to a pointer when it leaves.#}
-  {#mappy.on('mouseleave', 'gl_afr_subregions_34_poly', function () {#}
-  {#  mappy.getCanvas().style.cursor = '';#}
-  {# });#}
-	{##}
-  {#mappy.on('click', 'gl_afr_subregions_34_poly', function (e) {#}
-  {#  <!--console.log('place:', e.features[0])-->#}
-  {#  place=e.features[0]#}
-	{#  props = place.properties#}
-  {#  var coordinates = place.geometry.coordinates.slice()[0][0];#}
-  {#  var pid = props.pid;#}
-  {#  var title = props.title;#}
-  {#  var src_id = props.src_id;#}
-  {#  var minmax = [props.min, props.max];#}
-  {#  var fc = props.fclasses;#}
-	{##}
-  {#  while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {#}
-  {#    coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;#}
-  {#  }#}
-	{##}
-  {#  // highlight row#}
-    {#console.log('highlight row & fetch data', pid, coordinates)#}
-	{##}
-  {#  // popup#}
-  {#  new maplibregl.Popup()#}
-  {#    .setLngLat(coordinates)#}
-  {#    .setHTML('<b>'+title+'</b><br/>'+#}
-  {#            '<a href="javascript:getPlace('+pid+')">fetch info</a><br/>'+#}
-  {#            'start, end: '+minmax)#}
-  {#    .addTo(mappy);#}
-  {# });#}
-
   // activate all tooltips
   $("[rel='tooltip']").tooltip();
 
@@ -627,7 +592,8 @@
     if(key == -1){
       for(l in layer_list){
         mappy.setLayoutProperty(layer_list[l],'visibility','visible')
-        mappy.flyTo({'center': [9.2, 33], 'zoom':0.2})
+	      mappy.fitBounds(turf.bbox(fcoll), { padding: 20 });
+        {#mappy.flyTo({'center': [9.2, 33], 'zoom':0.2})#}
       }
     } else {
       relevant = layer_list.filter(l => l.indexOf(key) !=-1)
