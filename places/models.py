@@ -4,6 +4,7 @@ from django.contrib.gis.db import models as geomodels
 from django.contrib.postgres.fields import JSONField, ArrayField
 from django.db import models
 
+# from datasets.models import Dataset
 from datasets.static.hashes.parents import ccodes as cc
 from main.choices import FEATURE_CLASSES, STATUS_REVIEW
 from traces.models import TraceAnnotation
@@ -38,38 +39,24 @@ class Place(models.Model):
     return '%s:%s' % (self.id, self.title)
 
   @property
-  def traces(self):
-    return TraceAnnotation.objects.filter(place=self.id)
-
-  @property
-  def repr_geom(self):
-    return self.geoms.all()[0].geom
-
-  @property
-  def geomtype(self):
-    return self.geoms.all()[0].geom.geom_type
-
-  @property
-  def repr_point(self):
-    g = self.geoms.all()[0].geom
-    gtype = str(type(g))
-    if 'MultiPolygon' in gtype:
-      return g.coords[0][0][0]
-    elif 'Point' in gtype:
-      return g.coords
-
-
-  @property
-  def dsid(self):
-    return self.dataset.id
+  def authids(self):
+    return [i.jsonb['identifier'] for i in self.links.all()]
 
   @property
   def countries(self):
     return [cc[0][x]['gnlabel'] for x in self.ccodes]
 
   @property
+  def dsid(self):
+    return self.dataset.id
+
+  @property
   def geom_count(self):
     return self.geoms.count()
+
+  @property
+  def geomtype(self):
+    return self.geoms.all()[0].geom.geom_type
 
   @property
   def hashits_wd(self):
@@ -84,8 +71,25 @@ class Place(models.Model):
     return self.hit_set.filter(authority='tgn').count()>0
 
   @property
-  def authids(self):
-    return [i.jsonb['identifier'] for i in self.links.all()]
+  def public(self):
+    return self.dataset.public
+
+  @property
+  def repr_geom(self):
+    return self.geoms.all()[0].geom
+
+  @property
+  def repr_point(self):
+    g = self.geoms.all()[0].geom
+    gtype = str(type(g))
+    if 'MultiPolygon' in gtype:
+      return g.coords[0][0][0]
+    elif 'Point' in gtype:
+      return g.coords
+
+  @property
+  def traces(self):
+    return TraceAnnotation.objects.filter(place=self.id)
 
   class Meta:
     managed = True

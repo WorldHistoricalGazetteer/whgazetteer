@@ -65,9 +65,11 @@
     {% if action == 'update' %}
         Update Study Area
         <span class="text-danger">"{{ form.title.value }}"</span>
-        <span class="ml-3">
+        <span class="ml-3 half">(<mark>{{ object.count_public }}</mark> places from public datasets lie within this area)
+	          {% comment %}
             <a href="#" id="btn_counter" class="btn btn-sm btn-outline-secondary" role="button">Count indexed places</a>
             <span id="count_result" class="ml-3 small"><mark>##</mark></span>
+            {% endcomment %}
         </span>
     <a href="{% url 'areas:area-delete' object.id %}" class="float-right"
       title="Delete area feature" rel="tooltip" style="margin-top:-2px;">
@@ -108,7 +110,7 @@
           <div id="areas_draw" class="tab-pane fade in">
             <p>Use map controls to draw/edit bounding box or polygon</p></div>
         </div>
-        <p class="mt-2">GeoJSON<br/>{{ form.geojson }}</p>
+	      <p class="mt-2">GeoJSON<br/>{{ form.geojson }}</p>
       </div> <!-- area_options -->
       <p id="referrer"></p>
       <input class="btn-sm btn-primary mt-2" type="submit" value="Save" />
@@ -131,59 +133,23 @@
     });
     $("#id_geojson").attr("placeholder","generated from country codes")
   })
-    $("#btn_counter").click(function(){
-        console.log('go count index records in this area')
-        let coords=JSON.stringify(JSON.parse($("textarea#id_geojson").val()).coordinates)
-        console.log(coords)
-        fetchContext(coords)
-    })
+    {#$("#btn_counter").click(function(){#}
+    {#    console.log('go count index records in this area')#}
+    {#    let coords=JSON.stringify(JSON.parse($("textarea#id_geojson").val()).coordinates)#}
+    {#    console.log(coords)#}
+    {#    fetchContext(coords)#}
+    {# })#}
   // ES query to count...retrieve?
-  function fetchContext(coords){
+  {#function fetchCount(coords){#}
     {#startMapitSpinner()#}
-    context={"type":"FeatureCollection","features":[]}
-      $.get("/search/context",{idx: 'whg', extent: coords, task: 'count'},
-      function(data){
-        <!--console.log('data:',data)-->
-        console.log('this many:', data['count'])
-        $("#count_result mark").html(data['count'])
-
-        {#for(i in data['hits']){#}
-        {#  title = data['hits'][i]['title']#}
-        {#  whg_id = data['hits'][i]['whg_id']#}
-        {#  geoms=data['hits'][i]['geoms']#}
-        {#  console.log(geoms)#}
-        {#  for(j in geoms) {#}
-        {#    context["features"].push(#}
-        {#      { "type":"Feature",#}
-        {#        "properties":{#}
-        {#          "id":whg_id,#}
-        {#          "title":title,#}
-        {#          "ds":'whg'#}
-        {#        },#}
-        {#        "geometry":geoms[j]['location']#}
-        {#      }#}
-        {#    )#}
-        {#  }#}
-
-        {#mappy.createPane('contextPane');#}
-        {#mappy.getPane('contextPane').style.zIndex = 100;#}
-        {#nearby = L.geoJSON(context, {#}
-        {#  pane: 'contextPane',#}
-        {#  pointToLayer: function (feature, latlng) {#}
-        {#    marker = L.circleMarker(latlng,#}
-        {#      {#}
-        {#        radius: 3, fillOpacity: 0.6, opacity: 1, weight: 1,#}
-        {#        color: "#fff", fillColor: fill(feature.properties.ds)#}
-        {#      }#}
-        {#    ).bindPopup('<a href="/places/'+feature.properties.id+'/portal">'+feature.properties.title+'</a>');#}
-        {##}
-        {#    idToFeature[feature.properties.id] = marker#}
-        {#    return marker#}
-        {#  }#}
-        {#.addTo(mappy);#}
-        {#spinner_mapit.extent=''stop()#}
-    });
-  }
+  {#  context={"type":"FeatureCollection","features":[]}#}
+  {#    $.get("/search/context",{idx: 'whg', extent: coords, task: 'count'},#}
+  {#    function(data){#}
+  {#      <!--console.log('data:',data)-->#}
+  {#      console.log('this many:', data['count'])#}
+  {#      $("#count_result mark").html(data['count'])#}
+  {#  });#}
+  {# }#}
 
   $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
     var target = $(e.target).attr("href") // activated tab
@@ -201,10 +167,12 @@
           $(".leaflet-draw").remove()
       }
     } else if (target == '#areas_draw') {
+      console.log('line 170',$(".leaflet-draw").length)
       $("#id_geojson").attr("placeholder","generated from drawn shapes")
       if ($(".leaflet-draw").length == 0) {
-        drawnItems = L.featureGroup().addTo(mappy)
+        {#drawnItems = L.featureGroup().addTo(mappy)#}
         drawControls(drawnItems)
+	      console.log('feature0', drawnItems.toGeoJSON().features[0])
         mappy.on(L.Draw.Event.CREATED, function (event) {
           window.drawnlayer = event.layer;
           console.log('drawnlayer',drawnlayer)
@@ -259,6 +227,7 @@
     var satellite  = L.tileLayer(mbstyle_url, {id:'mapbox/satellite-streets-v11', token:token_mb, attribution:attrib_mb});
     var osm  = L.tileLayer(mbstyle_url, {id:'mapbox/light-v10', token:token_mb, attribution:attrib_mb});
   
+    {#ccodeItems = L.featureGroup().addTo(mappy)#}
     drawnItems = L.featureGroup().addTo(mappy)
 
     var baseLayers = {
@@ -271,7 +240,6 @@
     baseLayers['OSM'].addTo(mappy)
   }, false);
 
-
   function zoomTo(id) {
     mappy.setView(idToFeature[id]._latlng, mappy.getZoom() +2 )
   }
@@ -283,25 +251,67 @@
   }
 
    // initialize, render map w/settings.LEAFLET_CONFIG
-  function map_init (map, options) {
-    // edit/update drawn area
-    if('{{ action }}' == 'update' && '{{ form.type.value }}' == 'drawn'){
-      $('a[href="#areas_draw"]').tab('show');
-      $('a[href="#areas_codes"]').addClass('disabled').css("cursor","default")
-      // load existing data for editing
-      lgeojson = L.geoJson(JSON.parse($("textarea#id_geojson").val()), {
-        onEachFeature: function (feature, layer) {
-          drawnItems.addLayer(layer);
-        }
-      }).addTo(mappy)
-      mappy.fitBounds(lgeojson.getBounds())
+  {#function map_init (map, options) {#}
+  {#  // edit/update drawn area#}
+  {#  if('{{ action }}' == 'update' && '{{ form.type.value }}' == 'drawn'){#}
+  {#    $('a[href="#areas_draw"]').tab('show');#}
+  {#    $('a[href="#areas_codes"]').addClass('disabled').css("cursor","default")#}
+  {#    // load existing data for editing#}
+      {#lgeojson = L.geoJson(JSON.parse($("textarea#id_geojson").val()), {#}
+  {#    lgeojson = L.geoJson(JSON.parse($("textarea#id_geojson").val()), {#}
+  {#      onEachFeature: function (feature, layer) {#}
+  {#        drawnItems.addLayer(layer);#}
+  {#      }#}
+  {#    }).addTo(mappy)#}
+  {#    mappy.fitBounds(lgeojson.getBounds())#}
+	{##}
+  {#    drawControls(drawnItems)#}
+  {#  } else if('{{ action }}' == 'update' && '{{ form.type.value }}' == 'ccodes') {#}
+  {#    $('a[href="#areas_draw"]').addClass('disabled').css("cursor","default")#}
+  {#    map_render()#}
+  {#  }#}
+  {# }  #}
 
-      drawControls(drawnItems)
-    } else if('{{ action }}' == 'update' && '{{ form.type.value }}' == 'ccodes') {
-      $('a[href="#areas_draw"]').addClass('disabled').css("cursor","default")
-      map_render()
-    }
-  }  
+  function map_init (map, options) {
+    // whether drawn or ccodes, load existing data
+    if('{{ action }}' == 'update') {
+      // existing
+      areageom = JSON.parse('{{ form.geojson.value|safe }}')
+
+	    // if area was drawn
+			if('{{ form.type.value }}' == 'drawn'){
+        console.log('was drawn')
+	      // load existing for editing
+	      lgeojson = L.geoJson(areageom, {
+	        onEachFeature: function (feature, layer) {
+	          drawnItems.addLayer(layer);
+	        }
+	      }).addTo(mappy)
+	      mappy.fitBounds(lgeojson.getBounds())
+        {#drawControls(drawnItems)#}
+
+	      $('a[href="#areas_draw"]').tab('show');
+        $('a[href="#areas_codes"]').addClass('disabled').css("cursor","default")
+
+			} else if('{{ form.type.value }}' == 'ccodes') {
+        console.log('was ccodes-generated')
+	      window.geom = {"type":"FeatureCollection","features":[]}
+        window.buffer = $("input#buffer_km").val()
+	      cc_layer = L.geoJson(areageom, {
+            onEachFeature: function onEachFeature(feature, layer) {
+              geom['features'].push(feature)
+              {#var props = feature.properties;#}
+              {#var content = `<p>${props.iso}</p><p>${props.gnlabel}</p>`;#}
+              {#layer.bindPopup(content);#}
+          }
+        }).addTo(mappy)
+	      mappy.fitBounds(cc_layer.getBounds())
+				// disable draw tab
+        $('a[href="#areas_draw"]').addClass('disabled').css("cursor","default")
+        {#map_render()#}
+      }
+  }}
+
   function map_render() {
     console.log('in map_render()')
     ccodes = $("input#id_ccodes").val()
@@ -344,6 +354,7 @@
           // hull_mp = turf.multiPolygon(hull.geometry.coordinates)
           // geoj.val(JSON.stringify(hull_mp.geometry))
           geoj.val(JSON.stringify(hull.geometry))
+	        console.log('geoj', geoj.val())
           hull_layer = L.geoJSON(hull, {
             style: function (feature) {
               return {color: '#ff8c00'}; }
@@ -351,7 +362,7 @@
           mappy.fitBounds(hull_layer.getBounds())
         })
     } else {
-      // alert('Need some comma-delimited 2-letter country codes')
+      alert('Need one or more comma-delimited 2-letter country codes')
     }
   }
 
@@ -368,22 +379,3 @@
 
 {% endblock %}
 
-      <!--drawnItems.addTo(mappy)-->
-      <!--mappy.on(L.Draw.Event.CREATED, function (event) {-->
-        <!--window.drawnlayer = event.layer;-->
-        <!--<!--console.log('drawnlayer',drawnlayer)-->-->
-        <!--drawnItems.addLayer(drawnlayer);-->
-        <!--console.log('drawn',JSON.stringify(drawnItems.toGeoJSON().features[0].geometry))-->
-        <!--drawnItems.addTo(mappy)-->
-        <!--<!--$("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON()))-->-->
-        <!--<!--$("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON().features[0].geometry))-->-->
-      <!--});-->
-      <!--mappy.on(L.Draw.Event.EDITED, function (event) {-->
-        <!--$("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON()))-->
-        <!--console.log('you changed it')-->
-      <!--});-->
-      <!--mappy.on(L.Draw.Event.DELETED, function (event) {-->
-        <!--$("textarea#id_geojson").val(JSON.stringify(drawnItems.toGeoJSON()))-->
-        <!--<!--drawnItems.addTo(mappy)-->-->
-        <!--console.log('you deleted something')-->
-      <!--});-->

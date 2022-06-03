@@ -4,6 +4,12 @@ from django.contrib.auth.models import User
 from django.contrib.gis.db import models as geomodels
 from django.contrib.postgres.fields import JSONField, ArrayField
 from django.urls import reverse
+
+from datasets.models import Dataset
+from places.models import PlaceGeom
+from django.contrib.gis.geos import GEOSGeometry
+
+import json
 # from django.contrib.gis.db import models as geomodels
 # from djgeojson.fields import PolygonField
 
@@ -46,6 +52,13 @@ class Area(models.Model):
 
     def get_absolute_url(self):
         return reverse('areas:area-update', kwargs={'id': self.id})
+
+    @property
+    def count_public(self):
+        ds_public = Dataset.objects.filter(public=True)
+        areageom = GEOSGeometry(json.dumps(self.geojson))
+        places = PlaceGeom.objects.filter(geom__within=areageom, place__dataset__in=ds_public)
+        return places.count()
 
     class Meta:
         managed = True
