@@ -173,12 +173,15 @@ def add_dataset(request, *args, **kwargs):
 
   return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
-# removes dataset from collection, refreshes page
+# removes dataset from collection & clean up "omitted"; refreshes page
 def remove_dataset(request, *args, **kwargs):
-  #print('kwargs', kwargs)
   coll = Collection.objects.get(id=kwargs['coll_id'])
   ds = Dataset.objects.get(id=kwargs['ds_id'])
   print('remove_dataset(): coll, ds', coll, ds)
+  # remove any "omitted" from ds being removed
+  remove_these = list(set(list(ds.placeids)) & set(coll.omitted) )
+  coll.omitted = list(set(coll.omitted)-set(remove_these))
+  coll.save()
   coll.datasets.remove(ds)
 
   return HttpResponseRedirect(request.META.get('HTTP_REFERER'))

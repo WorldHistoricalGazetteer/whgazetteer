@@ -528,7 +528,8 @@
     remove_from_collection(coll, remove_these)
 	})
 	// mark/unmark place for removal from collection
-	$(".mark-place").click(function(){
+	$(".mark-place").click(function(e){
+    e.stopPropagation()
     pid = $(this).data('pid')
 		col = $(this).data('col')
     {#console.log('mark ' + pid + ' in ' + col)#}
