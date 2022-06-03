@@ -15,6 +15,7 @@ class AreaCreateView(CreateView):
     # if called from reconciliation addtask, return there
     def get_form_kwargs(self, **kwargs):
         kwargs = super(AreaCreateView, self).get_form_kwargs()
+        print('kwargs', kwargs)
         redirect = self.request.GET.get('next')+'#addtask' if 'next' in self.request.GET else ''
         print('GET in AreaCreate()',self.request.GET)
         #print('redirect',redirect)
@@ -63,7 +64,7 @@ class AreaDeleteView(DeleteView):
 class AreaUpdateView(UpdateView):
     form_class = AreaModelForm
     template_name = 'areas/area_create.html'
-    success_url = '/mystudyareas'
+    # success_url = '/mystudyareas'
 
     def get_object(self):
         id_ = self.kwargs.get("id")
