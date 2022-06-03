@@ -93,10 +93,13 @@
               <input type="hidden" name="place_id" value="{{ record.id }}" />
               <span>
                 <h4 class="text-danger">{{ record.title }}
-                  <span class="float-right">
-                    <button type="button" data-id="{{ record.id }}" class="create-comment btn"
-                      data-src='record'> {% fontawesome_icon 'edit' color='#336699' %}</button>
+                  <span class="float-right create-comment-review btn" data-id="{{ record.id }}"
+                      data-src='record'>add note {% fontawesome_icon 'edit' color='#336699' %}
                   </span>
+{#                  <span class="float-right">#}
+{#                    <button type="button" data-id="{{ record.id }}" class="create-comment btn small"#}
+{#                      data-src='record'>add note {% fontawesome_icon 'edit' color='#336699' %}</button>#}
+{#                  </span>#}
                 </h4>
               </span>
             </div>
@@ -174,11 +177,10 @@
                     </span>
                   {% endif %}
                   <span class="inline">{{ form.match }}</span>
-                  <!--<span class="help-matches" data-id="matches">{ fontawesome_icon 'question-circle' color='#993333' %}</span>-->
                   {% if authority == 'idx' %}
                     <button type="button" 
                       data-id="{{ form.json.value|get:"place_id" }}" 
-                      class="create-comment btn btn-sm" style="background-color:oldlace;">
+                      class="create-comment-review btn btn-sm" style="background-color:oldlace;">
                     {% fontawesome_icon 'edit' color='#336699' %}</button>
                   {% endif %}
                   </span>
@@ -270,13 +272,13 @@
 
   {% endfor %} <!-- record in records -->
   {% endif %}
-  <!-- <div id="modal" class="modal fade" tabindex="-1" role="dialog" >
+  <div id="modal" class="modal fade" tabindex="-1" role="dialog" >
     <div class="modal-dialog modal-form" role="document">
       <div class="modal-content"></div>
     </div>
-  </div> -->
+  </div>
   <div class="selector py-3">
-    <!-- <div id="helpme" class="my-3"><div> -->
+     <div id="helpme" class="my-3"><div>
   </div>
 </div>
 
@@ -349,7 +351,7 @@
     z=window.location.href
     $('#passnum_dynamic').html('<b>'+z.slice(-6)+'</b>')
     
-    $(".create-comment").each(function () {
+    $(".create-comment-review").each(function () {
       var recpk = $(this).data('id');
       uribase="/comment/"+recpk
       next='?next='+"{% url 'datasets:review' pk=ds_id tid=task_id passnum=passnum %}"

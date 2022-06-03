@@ -95,8 +95,8 @@
             dataset: <a class="pop-link pop-dataset" data-id={{rec.dataset.id}} data-toggle="popover" title="Dataset Profile" data-content="" tabindex="0" rel="clickover">
 	              {{rec.dataset.name|truncatechars:25}}</a>
           <span class="float-right">
-            <a href="#" data-id="{{ rec.place_id }}" class="create-comment mr-2" rel="tooltip" title="create comment">
-              {% fontawesome_icon 'edit' color='#336699' %}</a>pid:
+            <a href="#" data-id="{{ rec.place_id }}" class="create-comment mr-2" rel="tooltip" title="create note">
+              issue? {% fontawesome_icon 'edit' color='#336699' %}</a>pid:
             <a href="" class="a_modal" data-pid="{{ rec.place_id }}" data-toggle="modal" data-target="#modal_place" title="full record">{{ rec.place_id }}</a>
             <span class="ml-2">
               {% if rec.geoms|length > 0 %}

@@ -3,7 +3,7 @@ from django.db import models
 from django.utils.safestring import mark_safe
 
 from main.models import Comment
-from main.choices import COMMENT_TAGS
+from main.choices import COMMENT_TAGS, COMMENT_TAGS_REVIEW
 from bootstrap_modal_forms.forms import BSModalForm
 from captcha.fields import CaptchaField
 
@@ -25,14 +25,12 @@ class ContactForm(forms.Form):
     captcha = CaptchaField()
 
 class CommentModalForm(BSModalForm):
-    
     class Meta:
         model = Comment
-        # fields: user, place_id, tag, note, created
+        # all fields: user, place_id, tag, note, created
         fields = ['tag', 'note','place_id']
         hidden_fields = ['created']
         exclude = ['user','place_id']
-        #exclude = ['user']
         widgets = {
             'place_id': forms.TextInput(),
             'tag': forms.RadioSelect(choices=COMMENT_TAGS,attrs={'class':'no-bullet'}),
@@ -41,6 +39,7 @@ class CommentModalForm(BSModalForm):
         }
         
     def __init__(self, *args, **kwargs):
-        #self._user = kwargs.pop('user')
         super(CommentModalForm, self).__init__(*args, **kwargs)  
         self.fields['tag'].label = "Issue"
+        if 'review' in kwargs['initial']['next']:
+            self.fields['tag'].choices = COMMENT_TAGS_REVIEW

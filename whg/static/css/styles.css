@@ -131,6 +131,7 @@ th.sticky {
 } 
 .top { vertical-align: top;}
 .v-mid {vertical-align: super;}
+.z-2000 {z-index:2000;}
 
 /* lists */
 .li-left {margin-left: -1rem;}
@@ -1228,6 +1229,11 @@ span.edit-row {
   /*background-color: white;*/
   height: 20px;
   margin-bottom: 4px;
+}
+.create-comment-review {
+  color: #336699;
+  font-size: small;
+  padding-top: 8px;
 }
 #review_hitlist {
   height:calc(100vh - 180px);
