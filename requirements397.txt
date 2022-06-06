@@ -102,7 +102,7 @@ importlib-metadata==4.11.3
 iniconfig==1.1.1
 ipdb==0.13.9
 ipykernel==6.2.0
-ipython==7.26.0
+ipython==7.31.1
 ipython-genutils==0.2.0
 iso8601==0.1.13
 isodate==0.6.1
