@@ -334,8 +334,7 @@ def task_emailer(tid, dslabel, username, email, counthit, totalhits):
   msg = EmailMultiAlternatives(
     subject, 
     text_content, 
-    from_email, 
-    #[email,'karl.geog@gmail.com'] if task.status=='SUCCESS' else [email,'karl.geog@gmail.com'])
+    from_email,
     [email])
   msg.bcc = ['karl@kgeographer.com']
   msg.attach_alternative(html_content_success if task and task.status == 'SUCCESS' else html_content_fail, "text/html")

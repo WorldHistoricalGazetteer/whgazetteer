@@ -364,7 +364,7 @@
 
   // called by table row click
   function highlightFeatureGL(pid, geom, coords){
-    console.log('pid, coords',pid, coords);
+    {#console.log('pid, coords',pid, coords);#}
     // TODO: 
     if(geom.type.includes('Point')){
       // restore full opacity in case it was dimmed
@@ -724,7 +724,7 @@
     for (t in data.types) {
       str = ''
       var type = data.types[t]
-      console.log('type',type)
+      {#console.log('type',type)#}
       if('sourceLabels' in type){
         srclabels = type.sourceLabels
         for(l in srclabels){
