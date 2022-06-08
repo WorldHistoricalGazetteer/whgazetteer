@@ -5,7 +5,8 @@ from celery import task, shared_task # this is @task decorator
 #from celery_progress.backend import ProgressRecorder
 from django_celery_results.models import TaskResult
 from django.conf import settings
-from django.core.mail import EmailMultiAlternatives
+from django.core import mail
+from django.core.mail import EmailMultiAlternatives, EmailMessage
 from django.db import connection
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
@@ -214,81 +215,6 @@ def make_download(request, *args, **kwargs):
               "filename": "/"+fn}
 
       outfile.write(json.dumps(result, indent=2).replace('null', '""'))
-      # TODO: should be a better django-ish method
-      # with open(fn, 'w', encoding='utf-8') as outfile:
-      #   with connection.cursor() as cursor:
-      #     cursor.execute("""with namings as
-      #       (select place_id, jsonb_agg(jsonb) as names from place_name pn
-      #       where place_id in (select id from places where dataset = '{ds}')
-      #       group by place_id ),
-      #       placetypes as
-      #       (select place_id, jsonb_agg(jsonb) as "types" from place_type pt
-      #       where place_id in (select id from places where dataset = '{ds}')
-      #       group by place_id ),
-      #       placelinks as
-      #       (select place_id, jsonb_agg(jsonb) as links from place_link pl
-      #       where place_id in (select id from places where dataset = '{ds}')
-      #       group by place_id ),
-      #       geometry as
-      #       (select place_id, jsonb_agg(jsonb) as geoms from place_geom pg
-      #       where place_id in (select id from places where dataset = '{ds}')
-      #       group by place_id ),
-      #       placewhens as
-      #       (select place_id, jsonb as whenobj from place_when pw
-      #       where place_id in (select id from places where dataset = '{ds}')),
-      #       placerelated as
-      #       (select place_id, jsonb_agg(jsonb) as rels from place_related pr
-      #       where place_id in (select id from places where dataset = '{ds}')
-      #       group by place_id ),
-      #       descriptions as
-      #       (select place_id, jsonb_agg(jsonb) as descrips from place_description pdes
-      #       where place_id in (select id from places where dataset = '{ds}')
-      #       group by place_id ),
-      #       depictions as
-      #       (select place_id, jsonb_agg(jsonb) as depicts from place_depiction pdep
-      #       where place_id in (select id from places where dataset = '{ds}')
-      #       group by place_id )
-      #       select jsonb_build_object(
-      #         'type','Feature',
-      #         '@id', p.src_id,
-      #         'properties', jsonb_build_object(
-      #             'pid', '{urlpre}'||p.id,
-      #             'title', p.title),
-      #         'names', n.names,
-      #         'types', coalesce(pt.types, '[]'),
-      #         'links', coalesce(pl.links, '[]'),
-      #         'geometry', case when g.geoms is not null
-      #             then jsonb_build_object(
-      #             'type','GeometryCollection',
-      #             'geometries', g.geoms)
-      #             else jsonb_build_object(
-      #             'type','Point','coordinates','{a}'::char[])
-      #             end,
-      #         'when', pw.whenobj,
-      #         'relations',coalesce(pr.rels, '[]'),
-      #         'descriptions',coalesce(pdes.descrips, '[]'),
-      #         'depictions',coalesce(pdep.depicts, '[]')
-      #       ) from places p
-      #       left join namings n on p.id = n.place_id
-      #       left join placetypes pt on p.id = pt.place_id
-      #       left join placelinks pl on p.id = pl.place_id
-      #       left join geometry g on p.id = g.place_id
-      #       left join placewhens pw on p.id = pw.place_id
-      #       left join placerelated pr on p.id = pr.place_id
-      #       left join descriptions pdes on p.id = pdes.place_id
-      #       left join depictions pdep on p.id = pdep.place_id
-      #       where dataset = '{ds}'
-      #     """.format(urlpre=url_prefix, ds=dslabel, a='{}'))
-      #     for row in cursor:
-      #       #print('row in make_download lpf', type(row))
-      #       g = row[0]['geometry']
-      #       # get rid of empty/unknown geometry
-      #       if g['type'] != 'GeometryCollection' and g['coordinates'] == []:
-      #         row[0].pop('geometry')
-      #       result['features'].append(row[0])
-      #       #progress_recorder.set_progress(i + 1, len(features), description="lpf progress")
-      #     outfile.write(json.dumps(result,indent=2).replace('null','""'))
-      # print('lpf file complete:', fn)
 
     Log.objects.create(
       # category, logtype, "timestamp", subtype, note, dataset_id, user_id
@@ -329,16 +255,35 @@ def task_emailer(tid, dslabel, username, email, counthit, totalhits):
       str(counthit)+" records got a total of "+str(totalhits)+" hits.\nRefresh the dataset page and view results on the 'Reconciliation' tab."
     html_content_success="<h3>Greetings, "+username+"</h3> <p>Your reconciliation task for the <b>"+dslabel+"</b> dataset has completed. "+str(counthit)+" records got a total of "+str(totalhits)+" hits.</p>" + \
       "<p>View results on the 'Reconciliation' tab (you may have to refresh the page).</p>"
-    
-  subject, from_email = 'WHG reconciliation result', 'whgazetteer@gmail.com'
+
+  subject, from_email = 'WHG reconciliation result', 'whg@kgeographer.org'
+  conn = mail.get_connection(
+    host=settings.EMAIL_HOST,
+    user=settings.EMAIL_HOST_USER,
+    use_ssl=settings.EMAIL_USE_SSL,
+    password=settings.EMAIL_HOST_PASSWORD,
+    port=settings.EMAIL_PORT
+  )
+  # msg=EmailMessage(
   msg = EmailMultiAlternatives(
-    subject, 
-    text_content, 
+    subject,
+    text_content,
     from_email,
-    [email])
-  msg.bcc = ['karl@kgeographer.com']
+    [email],
+    connection=conn
+  )
+  msg.bcc = ['karl@kgeographer.org']
   msg.attach_alternative(html_content_success if task and task.status == 'SUCCESS' else html_content_fail, "text/html")
   msg.send(fail_silently=False)
+
+  # msg = EmailMultiAlternatives(
+  #   subject,
+  #   text_content,
+  #   from_email,
+  #   [email])
+  # msg.bcc = ['karl@kgeographer.com']
+  # msg.attach_alternative(html_content_success if task and task.status == 'SUCCESS' else html_content_fail, "text/html")
+  # msg.send(fail_silently=False)
   
 # test task for uptimerobot
 @task(name="testAdd")
@@ -378,7 +323,6 @@ def maxID(es,idx):
        }
   try:
     res = es.search(index=idx, body=q)
-    #maxy = int(res['hits']['hits'][0]['_id'])
     maxy = int(res['hits']['hits'][0]['_source']['whg_id'])
   except:
       maxy = 12345677
@@ -1518,7 +1462,8 @@ def align_idx(pk, *args, **kwargs):
   new_seeds = []  
   start = datetime.datetime.now()
     
-  # limit scope if some are already indexed (choice in #addtask screen)
+  # limit scope if some are already indexed
+  # TODO: scope = 'all' should be not possible for align_idx
   qs = ds.places.all() if scope == 'all' else ds.places.filter(indexed=False)
   
   """
@@ -1532,27 +1477,28 @@ def align_idx(pk, *args, **kwargs):
     result_obj = es_lookup_idx(qobj, bounds=bounds)
     
     # PARSE RESULTS
-    # no hits on any pass
+    # no hits on any pass, it's a new seed/parent
     if len(result_obj['hits']) == 0:
-      # create new parent (write to file for now)
-      print('no hits, any pass', p)
-      new_seeds.append(makeDoc(p))
-      #new_parent = makeDoc(p)
-      #es.index(idx, new_parent,id=whg_id+1)
+      # create new parent (write to file for inspection)
+      whg_id +=1
+      doc = makeDoc(p)
+      doc['relation']['name'] = 'parent'
+      print("seed", whg_id, doc)
+      new_seeds.append(doc)
+      es.index(idx, doc, id=whg_id)
       
     # got some hits, format json & write to db as for align_wdlocal, etc.
     elif len(result_obj['hits']) > 0:
       count_hit +=1  # this record got >=1 hits
-      # place/task status 0 (has unreviewed hits)
+      # set place/task status to 0 (has unreviewed hits)
       p.review_whg = 0
       p.save()
       
       hits = result_obj['hits']
       [count_kids,count_errors] = [0,0]
-      #total_hits += result_obj['hit_count']
       total_hits += result_obj['total_hits']
 
-      # separate parents and children
+      # identify parents and children
       parents = [profileHit(h) for h in hits \
                 if h['_source']['relation']['name']=='parent']
       children = [profileHit(h) for h in hits \
@@ -1581,17 +1527,18 @@ def align_idx(pk, *args, **kwargs):
         #
         hitobj = {
           'whg_id': par['_id'],
+          'pid': par['pid'],
           'score': score,
           'titles': [par['title']],
           'countries': par['countries'],
           'geoms': list(uniq_geom(par['geoms'])),
           'links': par['links'],
-          'children': par['children'],
           'sources': [
             {'dslabel': par['dataset'], 
              'pid': par['pid'],
              'variants': par['variants'],
              'types': par['types'],
+             'children': par['children'],
              'minmax': par['minmax'],
              'pass': par['pass'][:5]
              }]
@@ -1604,7 +1551,7 @@ def align_idx(pk, *args, **kwargs):
           hitobj['geoms'].extend(list(chain.from_iterable([k['geoms'] for k in kids])))
           hitobj['links'].extend(list(chain.from_iterable([k['links'] for k in kids])))
           
-          # components: 
+          # add kids to parent in sources
           hitobj['sources'].extend(
             [{'dslabel':k['dataset'],
               'pid':k['pid'],
@@ -1622,18 +1569,16 @@ def align_idx(pk, *args, **kwargs):
         
         passes = list(set([s['pass'] for s in hitobj['sources']]))
         new = Hit(
-          #/ task
           task_id = task_id,
           authority = 'whg',
           
-          #/ incoming place
+          # incoming place
           dataset = ds,
           place = p, 
           src_id = p.src_id,
           
-          #/ candidate parent, might have children
+          # candidate parent, might have children
           authrecord_id = par['_id'],
-          #query_pass = par['pass'][:5], #
           query_pass = ', '.join(passes), #
           score = hitobj['score'],
           geom = hitobj['geoms'],

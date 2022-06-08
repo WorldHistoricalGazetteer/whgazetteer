@@ -7,8 +7,14 @@ from places.models import Place
 #from datasets.tasks import ccDecode
 #from datasets.utils import hully
 from datasets.static.hashes.parents import ccodes as cchash
-from elasticsearch import Elasticsearch      
-es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+from elasticsearch7 import Elasticsearch
+es = Elasticsearch([{'host': 'localhost',
+                     'port': 9200,
+                     'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
+                     'timeout': 30,
+                     'max_retries': 10,
+                     'retry_on_timeout': True
+                     }])
 
 def fetch(request):
   from places.models import Place
@@ -58,13 +64,28 @@ def fetch(request):
     result['idxplace'] = idxplace
     return JsonResponse(result, safe=False)
   
-    
+def esq_addchild(_id):
+  q = {"query":{"bool":{"should": [
+        {"parent_id": {"type": "child","id":_id}},
+        {"match":{"_id":_id}}
+      ]}}}
+  return q
 """
 addChild(place, parent_id)
 ?? needed?
 """
 def addChild(place, parent_id):
-  print('adding', place, 'as child of', parent_id)
+  childobj = makeDoc(place)
+  childobj['relation']['name'] = 'child'
+  childobj['relation']['parent'] = str(parent_id)
+
+  # modify parent:
+  parent = es.search(index='whg', body=esq_addchild(parent_id))['hits']['hits'][0]
+  # - add place.id to children;
+  # - add names.toponym to searchy if absent
+
+  print('adding place doc', childobj, 'as child of', parent_id)
+
   
 """
 demoteParents(demoted, winner_id, pid)

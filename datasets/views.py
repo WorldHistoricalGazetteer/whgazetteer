@@ -44,7 +44,7 @@ from datasets.static.hashes.parents import ccodes as cchash
 from datasets.tasks import align_wdlocal, align_idx, align_tgn, maxID
 
 from datasets.utils import *
-from elastic.es_utils import makeDoc,deleteFromIndex, replaceInIndex
+from elastic.es_utils import makeDoc,deleteFromIndex, replaceInIndex, addChild
 from main.choices import AUTHORITY_BASEURI
 from main.models import Log, Comment
 from places.models import *
@@ -86,58 +86,52 @@ def indexMatch(pid, hit_pid=None):
                        'retry_on_timeout': True
                        }])
   idx='whg'
-
+  place = get_object_or_404(Place, id=pid)
+  new_obj = makeDoc(place)
   if hit_pid == None:
     print('making '+str(pid)+' a parent')
-    # TODO:
+    # next whg_id
     whg_id=maxID(es,idx) +1
-    place=get_object_or_404(Place,id=pid)
-    print('new whg_id',whg_id)
-    #parent_obj = makeDoc(place,'none')
-    parent_obj = makeDoc(place)
-    parent_obj['relation']={"name":"parent"}
+    new_obj['relation']={"name":"parent"}
     # parents get an incremented _id & whg_id
-    parent_obj['whg_id']=whg_id
+    new_obj['whg_id']=whg_id
     # add its own names to the suggest field
-    for n in parent_obj['names']:
-      parent_obj['suggest']['input'].append(n['toponym'])
+    for n in new_obj['names']:
+      new_obj['suggest']['input'].append(n['toponym'])
     # add its title
-    if place.title not in parent_obj['suggest']['input']:
-      parent_obj['suggest']['input'].append(place.title)
+    if place.title not in new_obj['suggest']['input']:
+      new_obj['suggest']['input'].append(place.title)
     #index it
     try:
-      res = es.index(index=idx, id=str(whg_id), body=json.dumps(parent_obj))
+      res = es.index(index=idx, id=str(whg_id), body=json.dumps(new_obj))
       place.indexed = True
       place.save()
     except:
-      #print('failed indexing '+str(place.id), parent_obj)
       print('failed indexing (as parent)'+str(pid))
       pass
     print('created parent:',pid,place.title)
   else:
-    # get _id of hit
-    q_hit_pid={"query": {"bool": {"must": [{"match":{"place_id": hit_pid}}]}}}
-    res = es.search(index=idx, body=q_hit_pid)
+    # get hit record in index
+    q_hit={"query": {"bool": {"must": [{"match":{"place_id": hit_pid}}]}}}
+    res = es.search(index=idx, body=q_hit)
 
     # if hit is a child, get _id of its parent; this will be a sibling
     # if hit is a parent, get its _id, this will be a child
-    if res['hits']['hits'][0]['_source']['relation']['name'] == 'child':
-      parent_whgid = res['hits']['hits'][0]['_source']['relation']['parent']
+    hit = res['hits']['hits'][0]
+    if hit['_source']['relation']['name'] == 'child':
+      parent_whgid = hit['_source']['relation']['parent']
     else:
-      parent_whgid = res['hits']['hits'][0]['_id'] #; print(parent_whgid)
+      parent_whgid = hit['_id']
 
-    # get db record of place, mine its names, make an index doc
-    place=get_object_or_404(Place,id=pid)
+    # mine new place for its names, make an index doc
     match_names = [p.toponym for p in place.names.all()]
-    #child_obj = makeDoc(place,'none')
-    child_obj = makeDoc(place)
-    child_obj['relation']={"name":"child","parent":parent_whgid}
+    new_obj['relation']={"name":"child","parent":parent_whgid}
 
     # all or nothing; pass if error
     try:
       # index child
-      es.index(index=idx,id=place.id,
-                routing=1,body=json.dumps(child_obj))
+      es.index(index=idx, id=place.id,
+                routing=1, body=json.dumps(new_obj))
       #count_kids +=1
       print('added '+str(place.id) + ' as child of '+ str(hit_pid))
 
@@ -151,9 +145,9 @@ def indexMatch(pid, hit_pid=None):
       es.update_by_query(index=idx, body=q_update, conflicts='proceed')
       place.indexed = True
       place.save()
-      print('indexed '+str(pid)+' as child of '+str(parent_whgid), child_obj)
+      print('indexed '+str(pid)+' as child of '+str(parent_whgid), new_obj)
     except:
-      print('failed indexing '+str(pid)+' as child of '+str(parent_whgid), child_obj)
+      print('failed indexing '+str(pid)+' as child of '+str(parent_whgid), new_obj)
       #count_fail += 1
       pass
       #sys.exit(sys.exc_info())
@@ -203,7 +197,7 @@ def review(request, pk, tid, passnum):
     # queue deferred from any pass
     hitplaces = Hit.objects.values('place_id').filter(task_id=tid, reviewed=False)
 
-  print('review() hitplaces', hitplaces)
+  # print('review() hitplaces', hitplaces)
   # separate review pages
   if auth in ['whg','idx']:
     review_page = 'accession.html'
@@ -213,15 +207,12 @@ def review(request, pk, tid, passnum):
   # record_list is all unreviewed or only deferred
   review_field = 'review_whg' if auth in ['whg','idx'] else \
     'review_wd' if auth.startswith('wd') else 'review_tgn'
-  #lookup = '__'.join([review_field, 'exact'])
   lookup = '__'.join([review_field, 'in'])
   # 2 is deferred; 0 is unreviewed
   status = [2] if passnum == 'def' else [0,2]
   #status = [2] if passnum == 'def' else [0]
   #record_list = ds.places.order_by('id').filter(pk__in=hitplaces, **{lookup: status})
   record_list = ds.places.order_by('id').filter(**{lookup: status}, pk__in=hitplaces)
-
-  #if passnum != 'def' and hitplaces.count() >0:
 
   # no records left for pass (or in deferred queue)
   if len(record_list) == 0:
@@ -248,10 +239,8 @@ def review(request, pk, tid, passnum):
     raw_hits = Hit.objects.filter(place_id=placeid, task_id=tid, query_pass=passnum).order_by('-score')
   else:
     raw_hits = Hit.objects.filter(place_id=placeid, task_id=tid).order_by('-score')
-  #print('raw_hits for '+str(records[0]), raw_hits)
   # convert ccodes to names
   countries = []
-  #for r in records[0].ccodes:
   for r in place.ccodes:
     #print('r',r.upper())
     try:
@@ -292,6 +281,9 @@ def review(request, pk, tid, passnum):
   context['formset'] = formset
   method = request.method
 
+  def findParent(sources):
+    print('findParent() from ', sources)
+    return 'dunno yet'
   # GET: just display; POST: process match/no match choices
   if method == 'GET':
     print('review() GET, just rendering next')
@@ -305,8 +297,8 @@ def review(request, pk, tid, passnum):
       for x in range(len(hits)):
         hit = hits[x]['id']
         # is this hit a match?
-        print('json from match', hits[x]['json'])
         if hits[x]['match'] not in ['none']:
+          print('json of matched hit/cluster', hits[x]['json'])
           matches += 1
           # if wd or tgn, write place_geom, place_link record(s) now
           # IF someone didn't just review it!
@@ -373,12 +365,12 @@ def review(request, pk, tid, passnum):
                   ds.save()
           # else: accessioning to whg index
           elif task.task_name == 'align_idx':
-            print('indexing '+place_post.__str__()+' in some relation to hit: '+
-                  str(hits[x]['id']))
-            # match is to parent doc in the index
+            hit_parent_pid = str(hits[x]['json']['pid'])
+            print('indexing '+place_post.__str__()+
+                  ' as child to pid: '+ hit_parent_pid)
             # index as child
             # TODO: write database PlaceLink records for incoming & matched
-            #indexMatch(placeid, hits[x]['json']['place_id'])
+            indexMatch(place_post.id, hit_parent_pid )
             place_post.indexed = True
             place_post.save()
           # informational lookup on whg index
@@ -386,7 +378,7 @@ def review(request, pk, tid, passnum):
             print('align_whg (non-accessioning) DOING NOTHING (YET)')
 
         # in any case, flag hit as reviewed...
-        print('hit '+str(hit.id)+' flagged reviewed')
+        print('hit # '+str(hit.id)+' flagged reviewed')
         matchee = get_object_or_404(Hit, id=hit.id)
         matchee.reviewed = True
         matchee.save()
@@ -395,9 +387,9 @@ def review(request, pk, tid, passnum):
       if matches == 0 and task.task_name == 'align_idx':
         # index as new parent/seed
         print('indexing '+place_post.__str__()+' as new parent/seed')
-        #indexMatch(placeid, None)
-        #place_post.indexed = True
-        #place_post.save()
+        indexMatch(placeid, None)
+        place_post.indexed = True
+        place_post.save()
 
       # set review_field status
       setattr(place_post, review_field, 1)
@@ -408,8 +400,6 @@ def review(request, pk, tid, passnum):
       print('formset is NOT valid')
       print('formset data:',formset.data)
       print('errors:',formset.errors)
-    #except:
-      #sys.exit(sys.exc_info())
   print('review_page', review_page)
   return render(request, 'datasets/'+review_page, context=context)
 
@@ -595,31 +585,22 @@ def ds_recon(request, pk):
   context = {"dataset": ds.title}
 
   if request.method == 'GET':
-    #print('recon request.GET:',request.GET)
     print('ds_recon() GET')
   elif request.method == 'POST' and request.POST:
     print('ds_recon() request.POST:',request.POST)
     auth = request.POST['recon']
     language = request.LANGUAGE_CODE
-    # a90d2c4f-a4b6-49bc-acf9-84b295305c63
     # previous task of this type? bool
     previous = ds.tasks.filter(task_name='align_'+auth,status='SUCCESS')
     prior = request.POST['prior'] if 'prior' in request.POST else 'na'
     if previous.count() > 0:
-      # get its id
+      # get its id and archive it
       tid = previous.first().task_id
-      #hadhits = Hit.objects.filter(task_id=tid,reviewed=True).count() > 0
-      # delete it, keep/zap links + geoms per value of prior
-      #if hadhits:
       task_archive(tid, prior)
       # submit only unreviewed if previous
       scope = 'unreviewed'
       print('recon(): archived previous task')
-      #else:
-        #task_delete(tid)
-        #scope = 'all'
-        #print('recon(): deleted previous task')
-      print('recon(): links+geoms were '+ ('kept' if prior=='keep' else 'zapped'))
+      print('ds_recon(): links & geoms were '+ ('kept' if prior=='keep' else 'zapped'))
     else:
       # no existing task, submit all rows
       print('ds_recon(): no previous, submitting all')
@@ -646,7 +627,7 @@ def ds_recon(request, pk):
       return redirect('/datasets/'+str(ds.id)+'/reconcile')
 
     # initiate celery/redis task
-    # 'func' == align_[wdlocal | tgn | idx | whg ]
+    # 'func' == align_[wdlocal | tgn | idx ]
     try:
       result = func.delay(
         ds.id,

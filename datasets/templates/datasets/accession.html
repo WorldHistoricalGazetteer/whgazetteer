@@ -147,7 +147,6 @@
               <div class="match_radio custom-control custom-radio">
                 {% if form.json.value|get:"geoms"|length > 0 %}
                   <span class="mr-2 globeflash">
-                  <!--{ if form.json.value|get:"geoms" != Null }-->
                     <a class="geolink" rel="tooltip" 
                       {% if ds_label == 'tgn_filtered_01' or authority == 'whg' or authority == 'idx'%}
                         id="{{ form.json.value|get:"place_id" }}" 
@@ -161,26 +160,29 @@
                 <span class="inline">{{ form.match }}</span>
                 <span class="help" data-id="matches">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
                 {% if form.json.value|get:"sources" %}
-                <span class="float-right mr-1 mt-1 smaller">{{ form.json.value|get:"whg_id" }}&nbsp;&nbsp;{{ form.json.value|get:"sources"|length }} linked records {% fontawesome_icon 'link' %}</span>
+                <span class="float-right mr-1 mt-1 smaller">
+	                {{ form.json.value|get:"whg_id" }}&nbsp;&nbsp;{{ form.json.value|get:"sources"|length }} linked records {% fontawesome_icon 'link' %}</span>
                 {% endif %}
-                {% if authority == 'whg' %}
+                {% comment %}
+                {% if authority == 'idx' %}
                   <button type="button" 
                     data-id="{{ form.json.value|get:"place_id" }}" 
                     class="create-comment btn btn-sm" style="background-color:oldlace;">
                   {% fontawesome_icon 'edit' color='#336699' %}</button>
                 {% endif %}
+                {% endcomment %}
                 </span>
               </div>
             </div>
             {{ form.non_field_errors }}
             <div class="auth-match bg-light pl-2 mt-0 mb-2">
-              <!-- pull geometries to js -->
+              <!-- push geometries to js -->
               {% if form.json.value|get:"geoms"|length > 0 %}
                 {% for g in form.json.value|get:"geoms" %}
                   {{ g|safe|json_script:g.id }}
                 {% endfor %}
               {% endif %}
-              <!--<p>{ form.json.value }}</p>-->
+{#              <p>{{ form.json.value }}</p>#}
               <p><strong>Title(s)</strong>: <span class="text-danger h6">{{ form.json.value|get:"titles" }}</p>
               <!--<p><strong>WHG index id</strong>: { form.json.value|get:"whg_id" }}</p> -->
               <!--<p>{ form.query_pass.value }}</p>-->
@@ -198,7 +200,8 @@
                 </p>
                 <p></p>
                 </div>
-              {% endfor %}</p> 
+              {% endfor %}
+	            </p>
 
               {% if form.json.value|get:"links"|length > 0 %} 
                 <p><strong>All concordances</strong>: 
@@ -206,21 +209,12 @@
                   <a href="" class="mr-2 ext" data-toggle="modal" data-target="#ext_site">{{ link }} {% fontawesome_icon 'external-link' color='#336699' %}</a>
                 {% endfor %}
               </p>{% endif %}
-              
-              
+
               {% if form.json.value|get:"minmax"|length > 0 %} 
                 <p><strong>Temporal attestations</strong>: 
                 {{ form.json.value|get:"minmax" }}</p>
               {% endif %}
-              
-              <!--{ if form.json.value|get:"descriptions"|length > 0 %} -->
-                <!--<p class="mb-0"><strong>Description(s)</strong>:</p> -->
-                <!--<div>-->
-                <!--{ for d in form.json.value|get:"descriptions" %}-->
-                  <!--<p>({d.lang}}) { d.text }}</p>{ endfor %}-->
-                <!--</div>-->
-              <!--{ endif %}-->
-              
+
             </div>
           {% endfor %}
         </div> <!-- review_list -->
