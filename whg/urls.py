@@ -25,6 +25,7 @@ urlpatterns = [
     path('areas/', include('areas.urls')),
     path('collections/', include('collection.urls')),
     path('places/', include('places.urls')),
+    path('elastic/', include('elastic.urls')),
     path('tutorials/', include('main.urls')),
     path('resources/', include('resources.urls')),
     path('teaching/', TeachingPortalView.as_view(), name="teaching-page"),

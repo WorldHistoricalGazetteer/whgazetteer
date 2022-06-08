@@ -1,11 +1,10 @@
-# es_utils.py rev. Mar 2021; rev. Mar 2020; rev. 02 Oct 2019; rev 5 Mar 2019; created 7 Feb 2019;
-# misc elasticsearch supporting tasks 
-#from django.shortcuts import get_object_or_404
+# es_utils.py; created 2019-02-07;
+# misc elasticsearch supporting tasks
+# revs: 2021-03; 2020-03; 2019-10-01; 2019-03-05;
+
 from django.conf import settings
 from django.http import JsonResponse
 from places.models import Place
-#from datasets.tasks import ccDecode
-#from datasets.utils import hully
 from datasets.static.hashes.parents import ccodes as cchash
 from elasticsearch7 import Elasticsearch
 es = Elasticsearch([{'host': 'localhost',
@@ -16,6 +15,9 @@ es = Elasticsearch([{'host': 'localhost',
                      'retry_on_timeout': True
                      }])
 
+# given pid, gets db and index records
+# called by: places/place_relocate.html
+# NOT IN USE
 def fetch(request):
   from places.models import Place
   from django.contrib.auth.models import User
@@ -23,7 +25,7 @@ def fetch(request):
   idx='whg'
   if request.method == 'POST':
     print('fetch() request.POST',request.POST)
-    pid=request.POST['pid'] 
+    pid=request.POST['pid']
     user=request.user
     place=Place.objects.get(pk=pid)
     # pid = 81228 (parent), 81229 (child)
@@ -42,7 +44,7 @@ def fetch(request):
     is_parent = 'whg_id' in doc['_source'].keys()
     whgid = src['whg_id'] if is_parent else 'n/a'
     idxplace = {'pid':pid,
-                'whgid':whgid, 
+                'whgid':whgid,
                 'title':src['title'],
                 'role':src['relation']['name'],
                 }
@@ -53,40 +55,37 @@ def fetch(request):
     else:
       # fetch and parse siblings
       idxplace['parent'] = {'pid':src['place_id'],
-                            'whgid': src['relation']['parent'], 
+                            'whgid': src['relation']['parent'],
                             'title':src['title'],
                             'ccodes':src['ccodes']}
       res = es.search(index=idx, body=esq_parent(src['relation']['parent']))
       hits = res['hits']['hits']
       siblings = [{'pid':h['_source']['place_id']} for h in hits]
       idxplace['siblings'] = siblings
-      
+
     result['idxplace'] = idxplace
     return JsonResponse(result, safe=False)
-  
-def esq_addchild(_id):
-  q = {"query":{"bool":{"should": [
-        {"parent_id": {"type": "child","id":_id}},
-        {"match":{"_id":_id}}
-      ]}}}
-  return q
-"""
-addChild(place, parent_id)
-?? needed?
-"""
-def addChild(place, parent_id):
-  childobj = makeDoc(place)
-  childobj['relation']['name'] = 'child'
-  childobj['relation']['parent'] = str(parent_id)
 
-  # modify parent:
-  parent = es.search(index='whg', body=esq_addchild(parent_id))['hits']['hits'][0]
-  # - add place.id to children;
-  # - add names.toponym to searchy if absent
+# def esq_addchild(_id):
+#   q = {"query":{"bool":{"should": [
+#         {"parent_id": {"type": "child","id":_id}},
+#         {"match":{"_id":_id}}
+#       ]}}}
+#   return q
 
-  print('adding place doc', childobj, 'as child of', parent_id)
+# def addChild(place, parent_id):
+#   childobj = makeDoc(place)
+#   childobj['relation']['name'] = 'child'
+#   childobj['relation']['parent'] = str(parent_id)
+#
+#   # modify parent:
+#   parent = es.search(index='whg', body=esq_addchild(parent_id))['hits']['hits'][0]
+#   # - add place.id to children;
+#   # - add names.toponym to searchy if absent
+#
+#   print('adding place doc', childobj, 'as child of', parent_id)
 
-  
+
 """
 demoteParents(demoted, winner_id, pid)
 makes each of demoted[] (and its children if any)
@@ -98,27 +97,27 @@ def demoteParents(demoted, winner_id, pid):
   #newparent_id = winner_id
   print('demoteParents()',demoted, winner_id, pid)
   #qget = """{"query": {"bool": {"must": [{"match":{"_id": "%s" }}]}}}"""
-  
+
   # updates 'winner' with children & names from demoted
   def q_updatewinner(kids, names):
-    return {"script":{
-	"source": """ctx._source.children.addAll(params.newkids);
-	ctx._source.suggest.input.addAll(params.names);
-	ctx._source.searchy.addAll(params.names);
-    """,
-	"lang": "painless",
-	"params":{
-		"newkids": kids,
-		"names": names }
-    }}
+    pass
+  return {"script":{
+    "source": """ctx._source.children.addAll(params.newkids);
+      ctx._source.suggest.input.addAll(params.names);
+      ctx._source.searchy.addAll(params.names);""",
+    "lang": "painless",
+    "params":{
+      "newkids": kids,
+      "names": names }
+  }}
 
   for d in demoted:
     # get the demoted doc, its names and kids if any
     #d = demoted[0]
     #d = '14156468'
     #winner_id = '14156467'
-    qget = """{"query": {"bool": {"must": [{"match":{"_id": "%s" }}]}}}"""    
-    try:      
+    qget = """{"query": {"bool": {"must": [{"match":{"_id": "%s" }}]}}}"""
+    try:
       qget = qget % (d)
       doc = es.search(index='whg', body=qget)['hits']['hits'][0]
     except:
@@ -129,7 +128,7 @@ def demoteParents(demoted, winner_id, pid):
     # add this doc b/c it's now a kid
     kids.append(doc['_id'])
     names = list(set(srcd['suggest']['input']))
-    
+
     # first update the 'winner' parent
     q=q_updatewinner(kids, names)
     try:
@@ -147,7 +146,7 @@ def demoteParents(demoted, winner_id, pid):
     if 'whg_id' in newsrcd:
       newsrcd.pop('whg_id')
     # zap the old demoted, index the modified
-    try:      
+    try:
       es.delete('whg', d)
       es.index(index='whg',id=d,body=newsrcd,routing=1)
     except:
@@ -280,7 +279,7 @@ def profileHit(hit):
 # index docs given place_id list
 # ***
 # TODO:
-def indexSomeParents(es,idx,pids):
+def indexSomeParents(es, idx, pids):
   from datasets.tasks import maxID
   from django.shortcuts import get_object_or_404
   from places.models import Place
@@ -403,13 +402,13 @@ def replaceInIndex(es,idx,pids):
 # ***
 # delete docs given place_id array
 # if parent, promotes a child if any
-# if child, removes references to in parent (children[], suggest.input[])
+# if child, removes references to it in parent (children[], suggest.input[])
 # TODO: confirm suggest.input[] is not distinct
 #  i.e. what if variant was also contributed by parent or another child?
 #
-#from elasticsearch import Elasticsearch      
-#es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
-def deleteFromIndex(es,idx,pids):
+# from elasticsearch import Elasticsearch
+# es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+def deleteFromIndex(es, idx, pids):
   delthese=[]
   # 
   for pid in pids:

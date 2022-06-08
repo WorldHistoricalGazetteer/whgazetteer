@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'areas.apps.AreasConfig',
     'collection.apps.CollectionConfig',  # "collections" reserved in python
     'datasets.apps.DatasetsConfig',
+    'elastic.apps.ElasticConfig',
     'main.apps.MainConfig',
     'places.apps.PlacesConfig',
     'resources.apps.ResourcesConfig', # for teaching

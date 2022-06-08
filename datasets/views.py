@@ -44,7 +44,7 @@ from datasets.static.hashes.parents import ccodes as cchash
 from datasets.tasks import align_wdlocal, align_idx, align_tgn, maxID
 
 from datasets.utils import *
-from elastic.es_utils import makeDoc,deleteFromIndex, replaceInIndex, addChild
+from elastic.es_utils import makeDoc,deleteFromIndex, replaceInIndex #, addChild
 from main.choices import AUTHORITY_BASEURI
 from main.models import Log, Comment
 from places.models import *
