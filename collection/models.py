@@ -57,7 +57,7 @@ class Collection(models.Model):
   # single representative image
   # image_file = models.FileField(upload_to=collection_path, blank=True, null=True)
   # image_file = models.ImageField(upload_to=collection_path, blank=True, null=True)
-  image_file = ResizedImageField(size=[800, 800], upload_to=collection_path, blank=True, null=True)
+  image_file = ResizedImageField(size=[800, 600], upload_to=collection_path, blank=True, null=True)
   # single pdf file
   file = models.FileField(upload_to=collection_path, blank=True, null=True)
 

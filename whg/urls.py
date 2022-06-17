@@ -14,8 +14,7 @@ app_name='main'
 handler500 = 'main.views.custom_error_view'
 
 urlpatterns = [
-    #path('', views.Home.as_view(), name="home"),
-    path('', views.Home2a.as_view(), name="home"),
+    path('', views.Home2b.as_view(), name="home"),
     
     path('libre/', views.LibreView.as_view(), name='libre'),
     

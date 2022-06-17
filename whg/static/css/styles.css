@@ -72,10 +72,12 @@ label {vertical-align:top;}
 }
 .img-responsive {
   max-width: 100%;
+  max-height: 100%;
   height: auto;
+  width: auto;
   position:relative;
   top: 50%;
-  transform: translateY(-50%);
+  transform: translate(50%, -50%);
 }
 .ital {font-style: italic;}
 .larger {font-size: larger;}

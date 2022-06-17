@@ -28,7 +28,7 @@
 
   <style>
 		.red-head-anno {font-size: smaller; color: #993333;}
-
+		.modal-custom {max-width: inherit;}
   </style>
 {% endblock %}
 
@@ -92,10 +92,14 @@
 		          {% endif %}
 			        </table>
 		        </div>
-		        <div class="col-sm-4">
+{##}
+{#            <a href="#" class="pop"><img class="thumbnail float-right pl-2" src="{{ imgc0 }}" alt="Detail from <a href='https://www.davidrumsey.com/luna/servlet/s/rp56bh' target='_blank'>'Carte De Hollande Et D&#39;utrecht' (Covens et Mortier, 1750)</a>" height=150 width=150 /></a>#}
+
+		        <div class="col-sm-4" style="max-height: 200px;">
 			        {% if object.image_file %}
-			        <img class="img-responsive" src="/media/{{ object.image_file.name }}" width="220px" />
-{#			        <img class="img-vertical" src="/media/{{ object.image_file.name }}" width="220px" />#}
+				        <a href="#" class="pop">
+			        <img class="img-responsive thumbnail" src="/media/{{ object.image_file.name }}" width="220px" />
+				        </a>
 			        {% else %}
 			        <span><i>image here</i></span>
 			        {% endif %}
@@ -187,7 +191,34 @@
   </div>
 </div>
 
+<div id="imageModal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog d-flex modal-custom">
+    <div class="modal-content flex-shrink-1 mx-auto h-auto w-auto ">
+      <div class="modal-header"><span id="header_text"></span>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <img src="" class="imagepreview" style="max-height: 600px;">
+      </div>
+    </div>
+  </div>
+</div>
+
 <script type="text/javascript">
+
+  $('.pop').on('click', function() {
+    url = $(this).find('img').attr('src')
+    txt = $(this).find('img').attr('alt')
+    re=/(.png|.jpg|.jpeg|.gif|.tif)/g
+    {#ext=url.match(re)[0]#}
+    {#url = url.replace(ext,'_full'+ext)#}
+	  console.log('url', url)
+    $("#header_text").html(txt)
+    $('.imagepreview').attr('src', url);
+    $('#imageModal').modal('show');
+  });
+
   function showMore(){
     clicked = $(this)
 	  $(".more").show()
