@@ -1421,6 +1421,7 @@ def es_lookup_idx(qobj, *args, **kwargs):
       if "parent" in relation.keys():
         hitobj["parent"] = relation["parent"]
       if hitobj['_id'] not in [h['_id'] for h in hitobjlist]:
+        # result_obj["hits"].append(hitobj)
         result_obj["hits"].append(h)
         hitobjlist.append(hitobj)
       result_obj['total_hits'] = len(result_obj["hits"])

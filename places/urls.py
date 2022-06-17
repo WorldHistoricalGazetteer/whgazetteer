@@ -23,10 +23,10 @@ urlpatterns = [
     
     path('defer/<int:pid>/<str:auth>/<str:last>', views.defer_review, name='defer-review'),
     
-    # page to manage indexed place relocation
-    path('relocate/', TemplateView.as_view(template_name='places/place_relocate.html'), name='place-relocate'),
-    # gets db and index records for pid
-    path('fetch/', fetch, name='place-fetch'),
+    # # page to manage indexed place relocation
+    # path('relocate/', TemplateView.as_view(template_name='places/place_relocate.html'), name='place-relocate'),
+    # # gets db and index records for pid
+    # path('fetch/', fetch, name='place-fetch'),
     
     # ??
     path('<int:id>/full', views.PlaceFullView.as_view(), name='place-full'),

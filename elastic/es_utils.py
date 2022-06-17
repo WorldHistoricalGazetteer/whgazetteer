@@ -14,10 +14,11 @@ es = Elasticsearch([{'host': 'localhost',
                      'max_retries': 10,
                      'retry_on_timeout': True
                      }])
-
+from copy import deepcopy
+import sys
 # given pid, gets db and index records
-# called by: places/place_relocate.html
-# NOT IN USE
+# called by: elastic/index_admin.html
+#
 def fetch(request):
   from places.models import Place
   from django.contrib.auth.models import User
@@ -35,6 +36,7 @@ def fetch(request):
     dbplace = {k:v for (k,v) in place.__dict__.items() if k in order_list}
     dbplace['links'] = [l.jsonb['identifier'] for l in place.links.all()]
     dbplace['names'] = [n.toponym for n in place.names.all()]
+    dbplace['timespans'] = place.timespans or None
     dbplace['geom count'] = place.geoms.count()
     result = {'dbplace':dbplace}
 
@@ -50,22 +52,111 @@ def fetch(request):
                 }
     if is_parent:
       # fetch and parse children
-      res = es.search(index=idx, body=esq_parent(whgid))
+      res = es.search(index=idx, body=esq_children(whgid))
       idxplace['children'] = res['hits']['hits']
     else:
-      # fetch and parse siblings
-      idxplace['parent'] = {'pid':src['place_id'],
-                            'whgid': src['relation']['parent'],
-                            'title':src['title'],
-                            'ccodes':src['ccodes']}
-      res = es.search(index=idx, body=esq_parent(src['relation']['parent']))
+      idx_altparents = []
+      # fetch and parse children of parent (siblings)
+      res_parent = es.search(index=idx, body=esq_id(src['relation']['parent']))
+      parent_pid = res_parent['hits']['hits'][0]['_source']['place_id']
+      # print('res_parent', res_parent)
+      res = es.search(index=idx, body=esq_children(src['relation']['parent']))
       hits = res['hits']['hits']
       siblings = [{'pid':h['_source']['place_id']} for h in hits]
-      idxplace['siblings'] = siblings
+      # idxplace['siblings'] = siblings
+      idxplace['parent'] = {'whgid': src['relation']['parent'],
+                            'pid': parent_pid,
+                            'title':src['title'],
+                            'children': siblings,
+                            'ccodes':src['ccodes']}
 
+      # get alternate parents, omitting parent_pid
+      result['altparents'] = alt_parents(place, src['relation']['parent'])
     result['idxplace'] = idxplace
     return JsonResponse(result, safe=False)
 
+# basic search for alternate parents
+def alt_parents(place, parent_pid):
+  # place=Place.objects.get(id=request.POST['pid'])
+  qobj = build_qobj(place)
+  variants = list(set(qobj["variants"]))
+  links = list(set(qobj["links"]))
+  linklist = deepcopy(links)
+  has_fclasses = len(qobj["fclasses"]) > 0
+  has_geom = "geom" in qobj.keys()
+
+  # empty result object
+  result_obj = {
+    'place_id': qobj['place_id'],
+    'title': qobj['title'],
+    'hits':[], 'missed':-1, 'total_hits':0,
+    'hit_count': 0
+  }
+  qbase = {"size": 100,"query": {
+    "bool": {
+      "must": [
+        # must share a variant (strict match)
+        {"terms": {"names.toponym": variants}},
+        {"exists": {"field": "whg_id"}}
+      ],
+      "should": [
+        # bool::should adds to score
+        {"terms": {"links.identifier": links }}
+        ,{"terms": {"types.identifier": qobj["placetypes"]}}
+      ],
+      # spatial filters added according to what"s available
+      "filter": []
+    }
+  }}
+  # augment base
+  if has_geom:
+    # qobj["geom"] is always a polygon hull
+    shape_filter = { "geo_shape": {
+      "geoms.location": {
+        "shape": {
+          "type": qobj["geom"]["type"],
+          "coordinates" : qobj["geom"]["coordinates"]},
+        "relation": "intersects" }
+    }}
+    qbase["query"]["bool"]["filter"].append(shape_filter)
+  if has_fclasses:
+    qbase["query"]["bool"]["must"].append(
+    {"terms": {"fclasses": qobj["fclasses"]}})
+  # grab a copy
+  q1 = qbase
+
+  try:
+    result1 = es.search(index='whg', body=q1)
+    hits1 = result1["hits"]["hits"]
+  except:
+    print("q1, ES error:", q1, sys.exc_info())
+
+  if len(hits1) > 0:
+    for h in hits1:
+      relation = h["_source"]["relation"]
+      h["pass"] = "pass1"
+      hitobj = {
+        "_id": h['_id'],
+        "pid": h["_source"]['place_id'],
+        "title": h["_source"]['title'],
+        "dataset": h["_source"]['dataset'],
+        "pass": "pass1",
+        "links": [l["identifier"] \
+                  for l in h["_source"]["links"]],
+        "role": relation["name"],
+        "children": h["_source"]["children"]
+      }
+      if "parent" in relation.keys():
+        hitobj["parent"] = relation["parent"]
+      # omit current parent
+      if h['_id'] != parent_pid:
+        result_obj["hits"].append(hitobj)
+      result_obj['total_hits'] = len(result_obj["hits"])
+  else:
+    result_obj['total_hits'] = 0
+  return result_obj
+
+  #
 # def esq_addchild(_id):
 #   q = {"query":{"bool":{"should": [
 #         {"parent_id": {"type": "child","id":_id}},
@@ -311,6 +402,7 @@ def indexSomeParents(es, idx, pids):
     print('created parent:',idx,pid,place.title)    
 
 # ***
+
 # replace docs in index given place_id list
 # ***
 def replaceInIndex(es,idx,pids):
@@ -505,7 +597,7 @@ def deleteFromIndex(es, idx, pids):
 def fetch_pids(dslabel):
   pids=[]
   esq_ds = {"size":10000, "query":{"match":{"dataset": dslabel}}}
-  res = es.search(index=idx, body=esq_ds)
+  res = es.search(index='whg', body=esq_ds)
   docs = res['hits']['hits']
   for d in docs:
     pids.append(d['_source']['place_id'])
@@ -526,16 +618,14 @@ def esq_id(_id):
   return q
 
 # ***
-# query to get a parent by _id, with any children
+# query to get children or siblings
 # ***
-def esq_parent(_id):
+def esq_children(_id):
   q = {"query":{"bool":{"should": [
         {"parent_id": {"type": "child","id":_id}},
         {"match":{"_id":_id}}
       ]}}}
   return q
-
-
 
 # ***
 # count of dataset docs in index
@@ -576,7 +666,6 @@ def confirm(prompt=None, resp=False):
       return True
     if ans == 'n' or ans == 'N':
       return False
-
 
 # ***
 # create an index

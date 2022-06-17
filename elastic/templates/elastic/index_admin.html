@@ -3,46 +3,108 @@
 {% load fontawesome %}
 {% load static %}
 {% load dataset_extras %}
-{% block title %}<title>WHG::Relocate place</title>{% endblock %}
+{% block title %}<title>WHG::Index admin</title>{% endblock %}
 {% block extra_head %}
+	<link rel="stylesheet" href="{% static 'css/b4vtabs.min.css' %}"/>
+	<style>
+		#admin_center .tab-pane {border:none !important;}.
+	</style>
 {% endblock %}
 
 {% block content %}
 <div class="container">
-  {% if not user.is_staff %}
-    <p>Access to this page is limited to WHG staff</p>
-  {% else %}
-  <form id="relocate_form" method="POST" action="#" enctype="multipart/form-data">
+  {% if user.is_staff %}
+  <form id="fetch_form" method="POST" action="#" enctype="multipart/form-data">
   {% csrf_token %}
   <h4 class="mt-3">Index admin tasks</h4>
-  <div>
-    <span class="">
-    <input id="pid_input" class="small" name="pid" placeholder="Place id (pid)">
-    <button id="btn_fetch_place" type="submit" class="btn btn-primary btn-sm">Fetch record</button>
-    </span>
-    <span class="ml-3">
-    <input id="ds_input" class="small" name="dsid" placeholder="Dataset id (dsid)">
-    <button id="btn_fetch_ds" type="submit" class="btn btn-primary btn-sm">Fetch Dataset</button>
-    </span>
+  <div class="row mb-5">
+	  <div class="col-sm-2" id="admin_left">
+			<ul class="nav nav-tabs left-tabs">
+			  <li class="nav-item">
+			    <a class="nav-link" href="#tab-panel-1" data-toggle="tab">Delete dataset</a>
+			  </li>
+			  <li class="nav-item">
+			    <a class="nav-link active" href="#tab-panel-2" data-toggle="tab">Reorganize parent/child</a>
+			  </li>
+			  <li class="nav-item">
+			    <!-- use the title attribute to show a tooltip with the full long name
+			         in case the tab is trucated-->
+			    <a
+			      class="nav-link"
+			      href="#tab-panel-3"
+			      title="More Description Here"
+			      data-toggle="tab"
+			      >Tab 3</a
+			    >
+			  </li>
+			</ul>
+	  </div>
+	  <div class="col-sm-10 tab-content" id="admin_center">
+			<div class="tab-pane container" id="tab-panel-1">
+		    <p>Remove all records of a dataset. <mark>es_utils.deleteFromIndex()</mark></p>
+		    <input id="ds_input" class="small" name="dsid" placeholder="Dataset id (dsid)">
+		    <button id="btn_fetch_ds" type="submit" class="btn btn-primary btn-sm">Fetch Dataset</button>
+			  <ul>
+				  <li>if parent</li>
+					  <ul>
+						  <li>if len(children) == 1, promote it to childless parent</li>
+						  <li>if len(children >1, promote one to parent, update sibling parent id</li>
+					  </ul>
+				  <li>if child</li>
+				  <li>
+					  <ul>
+						  <li>remove its id from parent children[] list</li>
+						  <li>remove <b>first instance of</b> each of its names from parent searchy[] list</li>
+					  </ul>
+				  </li>
+			  </ul>
+			</div>
+		  <div class="tab-pane container active" id="tab-panel-2">
+{#		    <p>Promote child to parent or relocate to alternate parent</p>#}
+			  <div>
+				  <span class="">
+				    <input id="pid_input" class="small" name="pid" placeholder="Enter place_id (pid)">
+				    <button type="button" data-id='fetch' class="b_action btn btn-primary btn-sm">Fetch record</button>
+			    </span>
+				  {# show action buttons after fetch #}
+				  <span id="child_actions" class="hidden ml-2">Child actions:
+				    <button type="button" data-id='promote' class="b_action btn btn-secondary btn-sm">Promote to parent</button>
+				    <button type="button" data-id='relocate' class="b_action btn btn-secondary btn-sm ml-2">Relocate to</button>
+					  <input type="text" id="newparent" name="newparent" placeholder="new parent pid"/>
+			    </span>
+				  <span id="parent_actions" class="hidden ml-2">Parent actions:
+				    <button type="button" data-id='' class="b_action btn btn-secondary btn-sm ml-2">Demote</button>
+					  <input type="text" id="newparent" name="newparent" placeholder="new parent pid"/> (elevate a child if any)
+			    </span>
+			  </div>
+			  <div class="row mx-0 pt-2">
+			    <div id="panel_2_left" class="col-sm-6 pl-0 small">
+			      <h5>index record [<mark id="record_role">role</mark>]
+{#				      <span class="float-right small">#}
+{#					      <a href="#" class="a_action hidden" data-id="showdb">show db record</a>#}
+{#				      </span>#}
+			      </h5>
+			      <div id="idx_place">fetch will display index record here </div>
+			    </div>
+			    <div id="panel_2_right" class="form-box mt-2 col-sm-6 hidden">
+{#				    <div id="db_record">#}
+{#			      <h5>database record</h5>#}
+{#			      <div id="db_place">fetch will display db record here for confirmation</div>#}
+{#				    </div>#}
+				    <div id="">
+			      <h5>alternate parents if any</h5>
+			      <div id="altparents"></div>
+				    </div>
+			    </div>
+			  </div> <!-- row d-flex -->
+		  </div>
+	  </div>
+	  <div class="col-sm-3"></div>
   </div>
-  <!--<div class="d-flex row">-->
-  <div class="row mx-0">
-    <div id="relocate_left" class="form-box mt-2 col-sm-4">
-      <h5>database record</h5>
-      <!--Place id (pid): <input id="pid_input" name="pid">-->
-      <!--<button id="btn_fetch" type="submit" class="btn btn-primary btn-sm">Fetch record</button>-->
-      <div id="db_place">fetch will display db record here for confirmation</div>
-    </div>
-    <div id="relocate_center" class="col-sm-4 p-2 small">
-      <h5>index record</h5>
-      <div id="idx_place">fetch will display index record here </div>
-    </div> <!-- .col-sm-4 -->
-    <div id="relocate_right" class="col-sm-4 p-2 small"">
-      <h5>actions</h5>
-      <div id="relocate_actions" style="background-color:aliceblue;">options will appear here</div>
-    </div> <!-- .col-sm-4 -->
-  </div> <!-- row d-flex -->
+
   <div class="selector py-3"><div id="helpme"></div></div>
+  {% else %}
+    <p>Access to this page is limited to WHG staff</p>
   {% endif %}
 </div> <!-- container -->
 
@@ -67,61 +129,73 @@
       show: {effect: "fade",duration: 400 },
       hide: {effect: "fade",duration: 400 }
     });
+    $(".a_action").click(function(){
+      let action = $(this).data('id')
+      if(action == 'showdb'){
+        $("#panel_2_right").show()
+      } else if(action == 'altparents'){
+				$("#panel_2_right").show()
+      }
+    })
   })
 
-  $(document).on('submit', '#relocate_form', function(e){
-    e.preventDefault()
-    var formData = new FormData();
+  {#$(document).on('submit', '#fetch_form', function(e){#}
+  $(".b_action").click(function(){
+    {#e.preventDefault()#}
+		// which button was clicked?
+	  var action = $(this).data('id')
+	  var newparent = $('#newparent').val()
+    let formData = new FormData();
+    {#formData['pid']=$('#pid_input').val();#}
     formData.append('pid', $('#pid_input').val());
     formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
-
+    {#formData['csrfmiddlewaretoken']="{{ csrf_token }}";#}
+	  view_url = '/elastic/'+action+'/'
+    console.log('formData, url', formData, view_url)
+	  if(action == 'relocate'){
+      if(newparent == ''){
+        alert('need a whg_id for new parent')
+	      return
+      } else {
+				formData.append('new_parent', $('#newparent').val());
+      }
+	  } else if (action == 'promote'){
+      alert('pulling this pid out of parent.children[], changing its relation["name"] to parent')
+		  return
+	  }
+	  // btn_promote
+	  // btn_relocate
+	  // btn_fetch
     $.ajax({
       type: 'POST',
       enctype: 'multipart/form-data',
-      url: '/places/fetch/',
+      url: view_url,
       processData: false,
       contentType: false,
       cache: false,
       data: formData,
       success:function(data){
         console.log('data returned',data)
-        <!--if('failed' in data){-->
-          <!--errors = data['failed']['errors']-->
-          <!--html = '<b class="text-danger">Data validation issue(s):</b> <ul class="ul-flush">'-->
-          <!--<!--html+=JSON.stringify(data['failed']['errors'])-->-->
-          <!--var i = 0; i < 9; i++-->
-          <!--for(var i=0; i<errors.length; i++){-->
-            <!--<!--html += '<p>'+errors[i]['message']+'</p>'-->-->
-            <!--html += '<li class="li-flush">'+errors[i]+'</li>'-->
-          <!--}-->
-          <!--html+='</ul><p>Please correct and try again</p>'-->
-        <!--} else {-->
-          <!--html = '<b>Current file</b>: <br/><i>'+data['filename_cur']+'</i><br/>'-->
-          <!--html += '<b>New file</b>: <br/><i>'+data['filename_new']+'</i><br/>'-->
-          <!--html += '<b>New temp file</b>: <br/><i>'+data['tempfn']+'</i><br/>'-->
-          <!--html += '<b>Validation result</b>: <br/><i>' +-->
-            <!--(data['validation_result']['errors'].length <1?'format valid':data['validation_result']['errors'])+'</i><hr/>'-->
-          <!--html += comparisonText(data)-->
-          <!--$("#btn_update").removeClass('hidden')-->
-        <!--}-->
-        <!--$("#loadfile").addClass('hidden')-->
-        <!--$("#db_place").html(JSON.stringify(data))-->
-        $("#db_place").html('<pre>'+JSON.stringify(data.dbplace, null, 1)+'</pre>')
-        $("#relocate_center h5").append(" (a "+data.idxplace.role+")")
+	      role = data.idxplace.role
+        {#$("#db_place").html('<pre>'+JSON.stringify(data.dbplace, null, 1)+'</pre>')#}
+        $("#record_role").html(role)
         $("#idx_place").html('<pre>'+JSON.stringify(data.idxplace, null, 1)+'</pre>')
         $("#idx_place").append('<pre>'+JSON.stringify(data.all, null, 1)+'</pre>')
-        <!--compare_data=data-->
+	      if(data.idxplace.role == 'child') {
+          $("#altparents").html('<pre>'+JSON.stringify(data.altparents, null, 1)+'</pre>')
+          $("#parent_actions").hide()
+          $("#child_actions").show()
+		      $("#panel_2_right").show()
+         } else {
+          $("#child_actions").hide()
+          $("#parent_actions").show()
+	      }
+	      // display links
+	      $(".a_action").show()
       }
-    })
+     })
   })
-  
-  <!--$("#btn_submit").click(function(e){-->
-    <!--// at least two datasets selected?-->
-    <!--if('{{action}}' == 'create' && dslist.length < 2) {-->
-      <!--e.preventDefault()-->
-      <!--$("#msg").html('<h6>Collections must contain at least 2 datasets!</h6>').addClass('strong-red').show()-->
-    <!--}-->
-  <!--})-->
+
 </script>
 
 {% endblock %}

@@ -8,7 +8,7 @@ from django.views.generic.base import TemplateView
 
 from . import views
 
-# area actions
+# actions
 app_name='main'
 urlpatterns = [
 

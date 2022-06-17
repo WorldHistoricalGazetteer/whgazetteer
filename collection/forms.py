@@ -34,7 +34,7 @@ class CollectionModelForm(forms.ModelForm):
             'contact': forms.TextInput(attrs={'size': 45}),
             'webpage': forms.TextInput(attrs={'size': 45}),
             'description': forms.Textarea(attrs={'rows':3,'cols': 45,'class':'textarea',
-                'placeholder':'A single paragraph is best here. Note that a PDF file of any length can be uploaded as well.'}),
+                'placeholder':'A single paragraph. Note that a PDF file of any length can be uploaded later as well.'}),
             'image_file':forms.FileInput(),
             'file':forms.FileInput(),
             'datasets': forms.CheckboxSelectMultiple,

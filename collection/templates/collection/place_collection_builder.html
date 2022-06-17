@@ -58,7 +58,7 @@
 	    max-height: 100%;
 	    min-height: auto;
 	    width: 100%;
-	    overflow-y:scroll;
+	    overflow-y:auto;
     }
     #builder_content {
 	    position:absolute;
@@ -111,7 +111,7 @@
 		      <input type="hidden" name="owner" value='{{ form.owner.value }}' />
 	      {% endif %}
 	      <input type="hidden" name="collection_class" value='place' />
-	      action: {{ action }}, owner: {{ form.owner.value }}
+	      {% comment %}action: {{ action }}, owner: {{ form.owner.value }}{% endcomment %}
 				<div class="form-group">
 					<label for="Title">Title &#x02733;</label><br/>
 					{{ form.title }}
@@ -307,8 +307,8 @@
 						        <span class="float-right mr-1">
 							        <a class="mark-place" href="#" title="Remove from collection" data-pid="{{ p.id }}" data-col="{{ object.id }}">
 								        {% fontawesome_icon 'minus-square' color='#ff8080' %}</a>
-							        <a class="anno-place" href="#" title="Annotate place" data-pid="{{ p.id }}">
-								        {% fontawesome_icon 'edit' color='#336699' %}</a>
+							        {% comment %}<a class="anno-place" href="#" title="Annotate place" data-pid="{{ p.id }}">
+								        {% fontawesome_icon 'edit' color='#336699' %}</a>{% endcomment %}
 						        </span>
 						        {% endif %}
 							      {% if p.traces %}
