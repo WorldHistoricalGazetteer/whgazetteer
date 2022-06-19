@@ -137,7 +137,7 @@
 						{% elif form.image_file.value %} {# update & there's an image #}
 							{% fontawesome_icon 'photo' color='#336699' %}
 							<a href="/media/{{ form.image_file.value }}">
-								{{ object.image_file.url|remove:'/media/collections/' }}
+								{{ object.image_file.url|remove:'/media/collections/'|truncatechars:30 }}
 							</a>
 							(<a href="javascript:$('#img_chooser').toggle()">change</a>)
 						{% else %} {# update and there's no image yet #}
@@ -208,8 +208,8 @@
 	          <input id="btn_coll_submit" class="btn-sm btn-primary mt-2 ml-2" type="submit" value="Save" />
           {% else %}
 {#	          <a href="{% url 'collection:place-collection-browse' object.id %}">#}
-	          <input id="btn_exit" class="btn-sm btn-info mt-2 ml-2" onclick="goBrowse()" type="button" value="Exit & View" />
-	          <input id="btn_coll_submit" class="btn-sm btn-primary mt-2 ml-2" type="submit" value="Update" />
+	          <input id="btn_exit" class="btn-sm btn-primary mt-2 ml-2" onclick="saveExit()" type="button" value="Save & Exit" />
+	          <input id="btn_coll_submit" class="btn-sm btn-info mt-2 ml-2" type="submit" value="Save" />
           {% endif %}
           </span>
 	      </div>
@@ -436,7 +436,8 @@
 	}
 	function saveExit(){
     {#console.log('saveExit(callback)')#}
-    $.when($("#collection_form").submit()).done(function(){goBrowse()})
+    $.when($("#collection_form").submit()).then(function(){goBrowse()})
+    {#$("#collection_form").submit().done(function(){goBrowse()})#}
 	}
 
 	function create_collection_link(){

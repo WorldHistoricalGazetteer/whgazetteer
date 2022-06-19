@@ -225,8 +225,9 @@ class PlaceCollectionCreateView(LoginRequiredMixin, CreateView):
       context["images_form"] = CollectionImageFormset()
 
     # owners create collections from their datasets
-    ds_select = [obj for obj in Dataset.objects.all().order_by('title') if user in obj.owners or
-                 user in obj.collaborators or user.is_superuser]
+    ds_select = [obj for obj in Dataset.objects.all().order_by('title') if user in obj.owners or user.is_superuser]
+    if not user.is_superuser:
+      ds_select.insert(len(ds_select)-1, Dataset.objects.get(label='owt10'))
 
     context['action'] = 'create'
     context['ds_select'] = ds_select
@@ -320,6 +321,8 @@ class PlaceCollectionUpdateView(UpdateView):
     # anno_form = TraceAnnotationModelForm(self.request.GET or None, prefix="sch")
     # populates dropdown
     ds_select = [obj for obj in Dataset.objects.all().order_by('title') if user in obj.owners or user.is_superuser]
+    if not user.is_superuser:
+      ds_select.insert(len(ds_select)-1, Dataset.objects.get(label='owt10'))
 
     context['action'] = 'update'
     context['ds_select'] = ds_select

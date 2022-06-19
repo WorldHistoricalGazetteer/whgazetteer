@@ -178,7 +178,6 @@ class PlaceSerializer(serializers.ModelSerializer):
 
   # traces = serializers.serialize("json", TraceAnnotation.objects.filter())
   traces = serializers.SerializerMethodField('trace_anno')
-
   def trace_anno(self, place):
     return coreserializers.serialize("json", TraceAnnotation.objects.filter(place=place.id))
 

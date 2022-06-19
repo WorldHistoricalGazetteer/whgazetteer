@@ -80,7 +80,7 @@
 			        {% if object.contact %}
 			          <tr><td><b>Contact</b></td><td>{{ object.contact|url_it|safe }}</td></tr>
 			        {% endif %}
-			          <tr><td><b>Created</b></td><td>{{ object.created }}</td></tr>
+			          <tr><td><b>Created</b></td><td>{{ object.created|date:"d M Y" }}</td></tr>
 		          {% if links|length > 0 %}
 			          <tr><td>Links: </td>
 			          <td>
@@ -92,9 +92,6 @@
 		          {% endif %}
 			        </table>
 		        </div>
-{##}
-{#            <a href="#" class="pop"><img class="thumbnail float-right pl-2" src="{{ imgc0 }}" alt="Detail from <a href='https://www.davidrumsey.com/luna/servlet/s/rp56bh' target='_blank'>'Carte De Hollande Et D&#39;utrecht' (Covens et Mortier, 1750)</a>" height=150 width=150 /></a>#}
-
 		        <div class="col-sm-4" style="max-height: 200px;">
 			        {% if object.image_file %}
 				        <a href="#" class="pop">
@@ -206,7 +203,7 @@
 </div>
 
 <script type="text/javascript">
-
+	// image modal
   $('.pop').on('click', function() {
     url = $(this).find('img').attr('src')
     txt = $(this).find('img').attr('alt')
@@ -241,7 +238,7 @@
 
 	// TODO: this is a mess, refactor or add 1-to-many annotation link field
   // truncate anno note, looking for embedded links
-	function readMore(text, numchars, innerlink) {
+	function readMore(text, numchars, innerlink='') {
     dots = '<span id="dots">...</span>'
 		link = '<a href="#" class="a_more" onclick="showMore()">more</a><span class="more hidden">'
     if(text.length < numchars){
@@ -382,13 +379,7 @@
     {#source_list = ds_list.map(function(d){ return d.label})#}
     {#window.layer_list = getLoadedLayers()#}
 
-    // TODO: remove these artifacts of table used for review
-    localStorage.setItem('filter', '-1')
-    wdtask = "{{wdtask}}" == "True"?true:false
-    tgntask = "{{tgntask}}" == "True"?true:false
-    whgtask = "{{whgtask}}" == "True"?true:false
-
-    // start spinners, some collections take time    
+    // start spinners, some collections take time
     startMapSpinner()
     startTableSpinner()
     startDetailSpinner()
@@ -445,7 +436,6 @@
           {#{"data": "dataset.label", "name":"dataset.label"},#}
       ]
       ,columnDefs:[
-        {#{ className: "browse-task-col", "targets": [8,9,10] },#}
         {#{ orderable: false, "targets": [4,5,6,7]},#}
         {#,{ visible: false, "targets": [1,4,5,6,7,11]}#}
         { searchable: false, "targets": [2,3]}
@@ -453,10 +443,9 @@
     })
 
     table.on( 'draw', function () {
-      {#$("#ds_filter").html(buildSelect());#}
-      {#$("#ds_select").val(localStorage.getItem('filter'))#}
       spinner_table.stop()
       setRowEvents();
+      {#$("#drftable_list table tbody")[0].rows[0].click()#}
     })
     
     // help popups
@@ -605,8 +594,12 @@
           new maplibregl.Popup()
             .setLngLat(coordinates)
             .setHTML('<b>'+title+'</b><br/>'+
-              '<a href="javascript:getPlace('+pid+')">fetch info</a><br/>'+
+              '<a href="javascript:getPlace('+pid+',\'popup\')">fetch info</a><br/>'+
               'start, end: '+minmax)
+	          .on('close', function(){
+              $("#placetable_filter input").val('').keyup()
+		          mappy.fitBounds(turf.bbox(fcoll), { padding: 20 });
+	          })
             .addTo(mappy);
 
 					// TODO: fit bounds if not point
@@ -715,7 +708,12 @@
       obj[layer_list[l]] = mappy.getLayer(layer_list[l]).getPaintProperty('circle-color')
     }
   }
-
+	// return markers to default
+	function unHighlightFeatures(){
+      mappy.setPaintProperty('gl_active_point', 'circle-color', '#ff9900');
+      mappy.setPaintProperty('gl_active_point', 'circle-radius', 6);
+      mappy.setPaintProperty('gl_active_point', 'circle-stroke-width', 0);
+	}
   // hightlight selected in row
   function highlightFeatureGL(pid, geom, coords, src){
     {#console.log('highlightFeatureGL()')#}
@@ -797,12 +795,17 @@
 
   function getPlace(pid, from){
     // from = ['row0'|'clicked'|'popup']
-    // console.trace('getPlace()')
+    {#console.log('getPlace()', pid, from)#}
     $.ajax({
+	    // TODO: need to filter for collection
       url: "/api/place/"+pid,
       }).done(function( data ) {
         // if geom is polygon, make feature & add to map if not initial table.draw()
         $("#detail").html(parsePlace(data))
+		    // TODO: usability? filter table on 'fetch info' from marker popup but not on initial load
+		    if(from=="popup"){
+          $("#placetable_filter input").val(data.title).keyup()
+		    }
         spinner_detail.stop()
         // events on detail items
         $('.ext').on('click', function(e) {
@@ -872,8 +875,9 @@
 	  descrip += '<div class="red-head-anno">ANNOTATION</div>'
 	  if(JSON.parse(data.traces).length > 0) {
       trace = JSON.parse(data.traces).find(function (t) {
-        return t.fields.collection = "{{ object.id }}"
+        return t.fields.collection == "{{ object.id }}"
       })
+		  console.log('wtf, trace, object.id', trace,"{{ object.id }}" )
       blank = trace.fields.relation == null && trace.fields.note == null && trace.fields.start == null
       if (blank) {
         descrip += '<i>none yet</i>'
@@ -884,6 +888,7 @@
         if (trace.fields.note) {
             // find & format embedded markdown link syntax
 		        linkish = trace.fields.note.replace(/\[(.*)\]\((.*)\)/gim,'<a href="$2" target="_blank">$1</a>')
+		        console.log('linkish', linkish)
 		        // index of link, -1 is none
 		        linkindex = linkish.search(/<a href/gim)
 		        if(linkindex == -1){

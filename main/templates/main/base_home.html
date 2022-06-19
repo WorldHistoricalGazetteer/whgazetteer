@@ -99,10 +99,11 @@
 						Data
 					  </a>
 					  <div class="dropdown-menu smallish" aria-labelledby="dataDropdown">
-						<a class="dropdown-item" href="{% url 'data-datasets' %}">Datasets</a>
-						<a class="dropdown-item" href="{% url 'data-collections' %}">Collections</a>
-						<a class="dropdown-item" href="{% url 'data-areas' %}">Study Areas</a>
-					  {% if user|has_group:'whg_team' or user|has_group:'teaching' %}
+						<a class="dropdown-item" href="{% url 'data-datasets' %}">My datasets</a>
+						<a class="dropdown-item" href="{% url 'data-collections' %}">My collections</a>
+						<a class="dropdown-item" href="{% url 'data-areas' %}">My study areas</a>
+						<a class="dropdown-item" href="{% url 'public-lists' %}">Public data</a>
+						  {% if user|has_group:'whg_team' or user|has_group:'teaching' %}
 							<a class="dropdown-item" href="{% url 'data-resources' %}">Teaching Resources</a>
 					  {% endif %}
 					  </div>
