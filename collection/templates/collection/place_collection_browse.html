@@ -690,7 +690,7 @@
 		  source_list = ['places']
 
 			cnt=0
-			mappy.fitBounds(turf.bbox(colldata), { padding: 20 });
+			{#mappy.fitBounds(turf.bbox(colldata), { padding: 20 });#}
 			{#mappy.fitBounds(envelope.bbox, {padding: 30})#}
 
 	  });
@@ -877,7 +877,7 @@
       trace = JSON.parse(data.traces).find(function (t) {
         return t.fields.collection == "{{ object.id }}"
       })
-		  console.log('wtf, trace, object.id', trace,"{{ object.id }}" )
+		  {#console.log('wtf, trace, object.id', trace,"{{ object.id }}" )#}
       blank = trace.fields.relation == null && trace.fields.note == null && trace.fields.start == null
       if (blank) {
         descrip += '<i>none yet</i>'
@@ -888,7 +888,7 @@
         if (trace.fields.note) {
             // find & format embedded markdown link syntax
 		        linkish = trace.fields.note.replace(/\[(.*)\]\((.*)\)/gim,'<a href="$2" target="_blank">$1</a>')
-		        console.log('linkish', linkish)
+		        {#console.log('linkish', linkish)#}
 		        // index of link, -1 is none
 		        linkindex = linkish.search(/<a href/gim)
 		        if(linkindex == -1){

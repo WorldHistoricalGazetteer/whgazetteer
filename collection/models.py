@@ -93,7 +93,7 @@ class Collection(models.Model):
   def ds_list(self):
     dsc = [{"id":d.id, "label":d.label, "bounds": d.bounds,
             "title":d.title, "modified": d.last_modified_text} for d in self.datasets.all()]
-    dsp = [{"id":p.dataset.id, "label":p.dataset.label, "title":p.dataset.title, "bounds": p.dataset.bounds
+    dsp = [{"id":p.dataset.id, "label":p.dataset.label, "title":p.dataset.title #, "bounds": p.dataset.bounds
             ,"modified": p.dataset.last_modified_text
             } for p in self.places.all()]
     return list({ item['id'] : item for item in dsp+dsc}.values())

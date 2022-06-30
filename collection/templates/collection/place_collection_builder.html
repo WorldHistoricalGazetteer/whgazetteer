@@ -207,9 +207,8 @@
           {% if action == 'create' %}
 	          <input id="btn_coll_submit" class="btn-sm btn-primary mt-2 ml-2" type="submit" value="Save" />
           {% else %}
-{#	          <a href="{% url 'collection:place-collection-browse' object.id %}">#}
-	          <input id="btn_exit" class="btn-sm btn-primary mt-2 ml-2" onclick="saveExit()" type="button" value="Save & Exit" />
-	          <input id="btn_coll_submit" class="btn-sm btn-info mt-2 ml-2" type="submit" value="Save" />
+	          <input id="btn_coll_submit" name="display" class="btn-sm btn-primary mt-2 ml-2" type="submit" value="Save & Exit" />
+	          <input id="btn_coll_submit" name="update" class="btn-sm btn-info mt-2 ml-2" type="submit" value="Update" />
           {% endif %}
           </span>
 	      </div>
@@ -436,8 +435,8 @@
 	}
 	function saveExit(){
     {#console.log('saveExit(callback)')#}
-    $.when($("#collection_form").submit()).then(function(){goBrowse()})
-    {#$("#collection_form").submit().done(function(){goBrowse()})#}
+    {#$.when($("#collection_form").submit()).then(function(){goBrowse()})#}
+    $("#collection_form").submit()
 	}
 
 	function create_collection_link(){

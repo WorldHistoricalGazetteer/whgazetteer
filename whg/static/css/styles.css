@@ -75,8 +75,9 @@ label {vertical-align:top;}
   max-height: 100%;
   height: auto;
   width: auto;
-  position:relative;
+  position:absolute;
   top: 50%;
+  right: 50%;
   transform: translate(50%, -50%);
 }
 .ital {font-style: italic;}

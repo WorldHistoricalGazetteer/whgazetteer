@@ -124,7 +124,7 @@ def flash_collection_create(request, *args, **kwargs):
 
 """ gl map needs this """
 def fetch_geojson_coll(request, *args, **kwargs):
-  print('fetch_geojson_coll kwargs',kwargs)
+  # print('fetch_geojson_coll kwargs',kwargs)
   id_=kwargs['id']
   coll=get_object_or_404(Collection, id=id_)
   pids = [p.id for p in coll.places_all]
@@ -142,7 +142,7 @@ def fetch_geojson_coll(request, *args, **kwargs):
                         },
           "geometry":f[0]}
     fcoll['features'].append(feat)
-  return JsonResponse(fcoll, safe=False,json_dumps_params={'ensure_ascii':False,'indent':2})
+  return JsonResponse(fcoll, safe=False, json_dumps_params={'ensure_ascii':False,'indent':2})
 
 """ returns json for display """
 class ListDatasetView(View):
@@ -287,13 +287,14 @@ class PlaceCollectionUpdateView(UpdateView):
     id_ = self.kwargs.get("id")
     return get_object_or_404(Collection, id=id_)
 
-  def get_success_url(self):
-    id_ = self.kwargs.get("id")
-    return '/collections/'+str(id_)+'/update_pl'
+  # def get_success_url(self):
+  #   id_ = self.kwargs.get("id")
+  #   return redirect('/collections/'+str(id_)+'/update_pl')
 
   def form_valid(self, form):
     print('referrer', self.request.META.get('HTTP_REFERER'))
     print('update kwargs', self.kwargs)
+    id_ = self.kwargs.get("id")
     if form.is_valid():
       print('cleaned_data', form.cleaned_data)
       obj = form.save(commit=False)
@@ -307,7 +308,11 @@ class PlaceCollectionUpdateView(UpdateView):
       )
     else:
       print('form not valid', form.errors)
-    return super().form_valid(form)
+    if 'update' in self.request.POST:
+      return redirect('/collections/' + str(id_) + '/update_pl')
+    else:
+      return redirect('/collections/' + str(id_) + '/browse_pl')
+    # return super().form_valid(form)
 
   def get_context_data(self, *args, **kwargs):
     context = super(PlaceCollectionUpdateView, self).get_context_data(*args, **kwargs)
@@ -388,19 +393,9 @@ class PlaceCollectionBrowseView(DetailView):
     context['mbtokenwhg'] = settings.MAPBOX_TOKEN_WHG
     context['media_url'] = settings.MEDIA_URL
 
-    print('CollectionPlacesView get_context_data() kwargs:',self.kwargs)
-    print('CollectionPlacesView get_context_data() request.user',self.request.user)
     id_ = self.kwargs.get("id")
-    # compute bounding boxes
 
     coll = get_object_or_404(Collection, id=id_)
-    # "geotypes":ds.geotypes,
-    # datasets = [{"id":ds.id,"label":ds.label,"title":ds.title} for ds in coll.ds_list]
-                 # "bbox": ds.bounds } for ds in coll.datasets.all()]
-    #bboxes = [{"id":ds['id'], "geometry":ds['bounds']} for ds in datasets]
-
-    # placeset = coll.places.all()
-    # context['places'] = placeset
 
     context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False
     context['coll'] = coll
