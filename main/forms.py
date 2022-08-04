@@ -33,7 +33,7 @@ class CommentModalForm(BSModalForm):
         exclude = ['user','place_id']
         widgets = {
             'place_id': forms.TextInput(),
-            'tag': forms.RadioSelect(choices=COMMENT_TAGS,attrs={'class':'no-bullet'}),
+            'tag': forms.RadioSelect(choices=COMMENT_TAGS, attrs={'class':'no-bullet'}),
             'note': forms.Textarea(attrs={
                 'rows':2,'cols': 40,'class':'textarea'})
         }
@@ -41,5 +41,5 @@ class CommentModalForm(BSModalForm):
     def __init__(self, *args, **kwargs):
         super(CommentModalForm, self).__init__(*args, **kwargs)  
         self.fields['tag'].label = "Issue"
-        if 'review' in kwargs['initial']['next']:
+        if '/def' in kwargs['initial']['next']:
             self.fields['tag'].choices = COMMENT_TAGS_REVIEW

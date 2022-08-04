@@ -161,6 +161,10 @@ def indexMatch(pid, hit_pid=None):
 """
 # .../datasets/835/review/b4cad8c9-0bcd-492f-83c6-be68bc6bdca4/pass2
 def review(request, pk, tid, passnum):
+  pid = None
+  if 'pid' in request.GET:
+    pid = request.GET['pid']
+    print('request.GET["pid"]', pid)
   ds = get_object_or_404(Dataset, id=pk)
   task = get_object_or_404(TaskResult, task_id=tid)
   auth = task.task_name[6:].replace('local','')
@@ -209,9 +213,9 @@ def review(request, pk, tid, passnum):
     'review_wd' if auth.startswith('wd') else 'review_tgn'
   lookup = '__'.join([review_field, 'in'])
   # 2 is deferred; 0 is unreviewed
-  status = [2] if passnum == 'def' else [0,2]
-  #status = [2] if passnum == 'def' else [0]
-  #record_list = ds.places.order_by('id').filter(pk__in=hitplaces, **{lookup: status})
+  # status = [2] if passnum == 'def' else [0,2]
+  # by default, don't return deferred
+  status = [2] if passnum == 'def' else [0]
   record_list = ds.places.order_by('id').filter(**{lookup: status}, pk__in=hitplaces)
 
   # no records left for pass (or in deferred queue)
@@ -228,17 +232,28 @@ def review(request, pk, tid, passnum):
   # manage pagination & urls
   # gets next place record as records[0]
   paginator = Paginator(record_list, 1)
-  page = 1 if not request.GET.get('page') else \
-    request.GET.get('page')
+
+  # if 'pid' in request.GET, bypass per-pass sequential loading
+  if pid:
+    print('pid in URI, just show that', pid)
+    # get its index and add 1 to get page
+    page = (*record_list,).index(Place.objects.get(id=pid)) +1
+    print('pagenum', page)
+  else:
+    # default action, sequence of all pages for the pass
+    page = 1 if not request.GET.get('page') else \
+      request.GET.get('page')
   records = paginator.get_page(page)
   count = len(record_list)
+
+  # get hits for this record
   placeid = records[0].id
   place = get_object_or_404(Place, id=placeid)
-  #print('reviewing '+str(count)+' hits for place', records[0])
   if passnum.startswith('pass'):
     raw_hits = Hit.objects.filter(place_id=placeid, task_id=tid, query_pass=passnum).order_by('-score')
   else:
     raw_hits = Hit.objects.filter(place_id=placeid, task_id=tid).order_by('-score')
+
   # convert ccodes to names
   countries = []
   for r in place.ccodes:
@@ -680,6 +695,7 @@ def task_delete(request, tid, scope="foo"):
       p.review_wd = None
     else:
       p.review_tgn = None
+    p.defer_comments.delete()
     p.save()
 
   # zap task record & its hits
@@ -711,6 +727,7 @@ def task_archive(tid, prior):
 
   # reset Place.review_{auth} to null
   for p in places:
+    p.defer_comments.delete()
     if auth in ['whg','idx'] and p.review_whg != 1:
       p.review_whg = None
     elif auth.startswith('wd') and p.review_wd !=1:
@@ -2255,6 +2272,8 @@ def match_undo(request, ds, tid, pid):
   # reset place.review_xxx to 0
   tasktype = TaskResult.objects.get(task_id=tid).task_name[6:]
   place = Place.objects.filter(pk=pid)
+  # remove any defer comments
+  place.defer_comments.delete()
   # TODO: variable field name?
   if tasktype.startswith('wd'):
     place.update(review_wd = 0)

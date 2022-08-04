@@ -62,6 +62,9 @@ urlpatterns = [
   # review, validate hits
   path('<int:pk>/review/<str:tid>/<str:passnum>', views.review, name="review"),
 
+  # direct load of deferred place to review screen
+  path('<int:pk>/review/<str:tid>/<str:pid>', views.review, name="review"),
+
   # accept any unreviewed wikidata pass0 hits from given task
   path('wd_pass0/<str:tid>', views.write_wd_pass0, name="wd_pass0"),
 

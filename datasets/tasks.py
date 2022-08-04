@@ -138,7 +138,7 @@ def make_download(request, *args, **kwargs):
         dfrow = df.loc[i,:]
         # get db record
         # src_id is NOT distinct amongst all places!!
-        p = places.get(src_id = dfrow['id'], dataset = ds.label)
+        p = qs.get(src_id = dfrow['id'], dataset = ds.label)
 
         # df row to newrow json object
         rowjs = json.loads(dfrow.to_json())
@@ -210,9 +210,11 @@ def make_download(request, *args, **kwargs):
       count = str(len(qs))
       print('download file for ' + count + ' places')
 
-      result={"type":"FeatureCollection","features":features,
+      result={"type":"FeatureCollection",
               "@context": "https://raw.githubusercontent.com/LinkedPasts/linked-places/master/linkedplaces-context-v1.1.jsonld",
-              "filename": "/"+fn}
+              "filename": "/"+fn,
+              "decription": ds.description,
+              "features":features}
 
       outfile.write(json.dumps(result, indent=2).replace('null', '""'))
 

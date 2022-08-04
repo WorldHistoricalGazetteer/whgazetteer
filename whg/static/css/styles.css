@@ -1233,7 +1233,7 @@ span.edit-row {
   height: 20px;
   margin-bottom: 4px;
 }
-.create-comment-review {
+.create-comment-review, .view-comments{
   color: #336699;
   font-size: small;
   padding-top: 8px;

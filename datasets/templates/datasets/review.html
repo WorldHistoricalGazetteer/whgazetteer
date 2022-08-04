@@ -20,7 +20,7 @@
     <!--<h5 class="mb-2 mt-3">-->
     <h5 class="">
     {% if authority == 'idx' %}Accessioning{%else%}Reconciliation{%endif%} Review 
-    {% if deferred is True %}{{ deferred }}<!--(<span class="text-danger">"deferred"</span>) -->{% endif %}
+    {% if deferred is True %}<span class="text-danger ml-2">(deferred)</span>{% endif %}
   </h5>
   </div> <!-- col 4-->
   <div class="col-sm-8">
@@ -93,15 +93,18 @@
               <input type="hidden" name="place_id" value="{{ record.id }}" />
               <span>
                 <h4 class="text-danger">{{ record.title }}
+	                {% if record.comment_set.count == 0 %}
                   <span class="float-right create-comment-review btn" data-id="{{ record.id }}"
                       data-src='record'>add note {% fontawesome_icon 'edit' color='#336699' %}
                   </span>
-{#                  <span class="float-right">#}
-{#                    <button type="button" data-id="{{ record.id }}" class="create-comment btn small"#}
-{#                      data-src='record'>add note {% fontawesome_icon 'edit' color='#336699' %}</button>#}
-{#                  </span>#}
+	                {% elif record.comment_set.count > 0 %}
+		                <span class="float-right view-comments btn">show note(s) {% fontawesome_icon 'edit' color='#336699' %}</span>
+	                {% endif %}
                 </h4>
               </span>
+	            <div id="record_notes" class="hidden p-1" style="background-color: oldlace;">
+		            {% for r in record.defer_comments %}{{ r.note }}{% endfor %}
+	            </div>
             </div>
             {% for g in record.geoms.all %}
               {{ g.jsonb|safe|json_script:record.id }}
@@ -336,28 +339,36 @@
     console.log('undo url:',url)
     document.location.href = url
   })
+
+  // on each page load...
   $(function(){
-    // on each page load...
     current_place = $('input[name=place_id]').val()
     console.log('lastPlace:',sessionStorage.lastPlace)
     console.log('current place:', $('input[name=place_id]').val())
     // show undo link if there is a lastPlace & it's not the current place
     if((sessionStorage.lastPlace && sessionStorage.lastPlace != current_place)){
-      $("#undo").removeClass('hidden-imp')}
+      $("#undo").removeClass('hidden-imp')
+    }
     // set pass dropdown as next set with any reviewed=False rows
     $( "#select_pass" ).val("{{ passnum }}")
-    // defaults to string 'None' - no idea why
-    $('.textarea').html('')
+
     z=window.location.href
     $('#passnum_dynamic').html('<b>'+z.slice(-6)+'</b>')
-    
+
+    // defaults to string 'None' - no idea why
+    $('.textarea').html('')
+
     $(".create-comment-review").each(function () {
       var recpk = $(this).data('id');
       uribase="/comment/"+recpk
       next='?next='+"{% url 'datasets:review' pk=ds_id tid=task_id passnum=passnum %}"
       $(this).modalForm({formURL: uribase+next});
     });
-    
+
+    $(".view-comments").click(function(){
+        $("#record_notes").toggle(300)
+    })
+
     $("[rel='tooltip']").tooltip();
   })
             
@@ -381,7 +392,6 @@
     L.control.layers(baseLayers).addTo(mappy);
     baseLayers['OSM'].addTo(mappy)
   }, false);
-
 
   //
   $( "#select_pass" ).change(function() {

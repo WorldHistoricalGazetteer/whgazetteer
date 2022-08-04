@@ -91,6 +91,10 @@ class Place(models.Model):
   def traces(self):
     return TraceAnnotation.objects.filter(place=self.id)
 
+  @property
+  def defer_comments(self):
+    return self.comment_set.filter(tag='defer')
+
   class Meta:
     managed = True
     db_table = 'places'

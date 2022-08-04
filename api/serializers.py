@@ -193,6 +193,7 @@ class PlaceSerializer(serializers.ModelSerializer):
               'descriptions', 'depictions', 'geo', 'minmax', 'traces'
             )
 
+# returns default and computed columns for owner ds browse table (ds_browse.html)
 class PlaceTableSerializer(serializers.ModelSerializer):
   dataset = DatasetSerializer()
 
@@ -218,6 +219,7 @@ class PlaceTableSerializer(serializers.ModelSerializer):
 
   revwd = serializers.SerializerMethodField('rev_wd')
   def rev_wd(self, place):
+    tasks_wd = place.dataset.tasks.filter(task_name='align_wdlocal', status='SUCCESS')
     if place.review_wd == 1:
       val = '<i class="fa fa-check-square-o"></i>'
     elif not place.hashits_wd:
@@ -225,7 +227,26 @@ class PlaceTableSerializer(serializers.ModelSerializer):
     elif place.review_wd == 0:
       val = '&#9744;'
     else:
-      val = '<i>deferred</i>'
+      # direct link to deferred record
+      val = '<a href="/datasets/'+str(place.dataset.id)+'/review/'+\
+            tasks_wd[0].task_id+'/def?pid='+str(place.id)+'"><i>deferred</i></a>' \
+            if len(tasks_wd) > 0 else '<i>deferred</i>'
+    return val
+
+  revwhg = serializers.SerializerMethodField('rev_whg')
+  def rev_whg(self, place):
+    tasks_whg = place.dataset.tasks.filter(task_name='align_idx', status='SUCCESS')
+    if place.review_whg == 1:
+      val = '<i class="fa fa-check-square-o"></i>'
+    elif not place.hashits_whg:
+      val = '<i>no hits</i>'
+    elif place.review_whg == 0:
+      val = '&#9744;'
+    else:
+      # direct link to deferred record
+      val = '<a href="/datasets/' + str(place.dataset.id) + '/review/' + \
+          tasks_whg[0].task_id + '/def?pid=' + str(place.id) + '"><i>deferred</i></a>' \
+      if len(tasks_whg) > 0 else '<i>deferred</i>'
     return val
 
   revtgn = serializers.SerializerMethodField('rev_tgn')
@@ -239,25 +260,6 @@ class PlaceTableSerializer(serializers.ModelSerializer):
     else:
       val = '<i>deferred</i>'
     return val
-
-  revwhg = serializers.SerializerMethodField('rev_whg')
-  def rev_whg(self, place):
-    if place.review_whg == 1:
-      val = '<i class="fa fa-check-square-o"></i>'
-    elif not place.hashits_whg:
-      val = '<i>no hits</i>'
-    elif place.review_whg == 0:
-      val = '&#9744;'
-    else:
-      val = '<i>deferred</i>'
-    return val
-
-  # dataset_title = serializers.SerializerMethodField('dataset_title')
-  # def dataset_title(self, place):
-  #   html = '<a class ="pop-link pop-dataset" data-id='+self.dataset+' data-toggle="popover" '+\
-  #          'title="Dataset Profile" data-content="" tabindex="0" rel="clickover" >'+ \
-  #           self.dataset_title[:25]+'</a>'
-  #   return html
 
   class Meta:
     model = Place
