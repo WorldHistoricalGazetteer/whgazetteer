@@ -319,16 +319,6 @@ class SearchDatabaseView(View):
       area = Area.objects.get(id = bounds['id'][0])
       print('bounds area', area)
       ga = GEOSGeometry(json.dumps(area.geojson))
-      #print('bounds geometry', ga[:200])
-      # test values
-      #bounds = None
-      #name='vilnius'
-      #name_contains=None
-      #year=None
-      #area = Area.objects.get(id = 360)
-      #ga = GEOSGeometry(json.dumps(area.geojson))
-      #ds=None
-      #pagesize=30
     
     print('seach db params:', {'name':name,'name_contains':name_contains,'fclasses':fclasses,'bounds':bounds,'ds':ds})
     

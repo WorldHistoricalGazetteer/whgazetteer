@@ -36,21 +36,6 @@
       <div id="search_left" class="col-sm-6">
         <div id="search_panel">
 
-      {# no more traces in this framing #}
-      {% comment %}
-      <div id="search_type" class="form-group d-flex justify-content-center">
-        <div class="form-check form-check-inline">
-	        <input class="form-check-input hover" type="radio" name="class" id="r_place" value="place" rel="Enter place name"  checked="checked">
-	        <label class="form-check-label" for="r_place">Places</label>
-        </div>
-        <div class="form-check form-check-inline">
-	        <input class="form-check-input hover" type="radio" name="class" id="r_trace" value="trace" rel="Enter term or name">
-	        <label class="form-check-label" for="r_trace">Traces</label>
-	        <a id="traces_help" class="pointer ml-1" data-toggle="popover" title="Traces in WHG are..." data-content="" tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a>
-        </div>
-      </div>
-			{% endcomment %}
-
       <div id="search_input" class="d-input input-group input-group-sm pb-2 justify-content-center" >
         <input id="input_box" class="" type="text" placeholder="Enter place name" autocomplete="false">
         <button class="b-input">{% fontawesome_icon 'search' color='#336699'%}</button>
