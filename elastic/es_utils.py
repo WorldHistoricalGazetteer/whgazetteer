@@ -490,6 +490,19 @@ def replaceInIndex(es,idx,pids):
       pass
   print('replaceInIndex() count:',repl_count)
 
+# wrapper to delete all docs for dataset from the whg index
+def deleteDatasetFromIndex(idx, dsid):
+  print('deleteDatasetFromIndex() handoff to deleteFromIndex()')
+  from datasets.models import Dataset
+  from elasticsearch7 import Elasticsearch
+  ds = Dataset.objects.get(id=dsid)
+  es = Elasticsearch([{'host': 'localhost',
+                       'port': 9200,
+                       'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
+                       'timeout': 30,
+                       'max_retries': 10,
+                       'retry_on_timeout': True}])
+  deleteFromIndex(es, 'whg', ds.placeids)
 
 # ***
 # delete docs given place_id array
@@ -516,9 +529,9 @@ def deleteFromIndex(es, idx, pids):
       searchy = list(set([item for item in src['searchy'] if type(item) != list])) 
       # role-dependent action
       if role == 'parent':
-        # convert to integers
-        # kids = ['5991423', '85196', '83140', '82439']
+        # has children?
         kids = [int(x) for x in src['children']]
+        # get new parent possibilities
         eligible = list(set(kids)-set(pids)) # not slated for deletion
         if len(eligible) == 0:
           # add to array for deletion
@@ -529,9 +542,9 @@ def deleteFromIndex(es, idx, pids):
           # TODO: can we make a logical choice?
           newparent = eligible[0]
           newkids = eligible.pop(0)
-          # get its index record and update it:
+          # get newparent index record and update it:
           # make it a parent, give it a whg_id - _id, 
-          # update its sugs and searchy
+          # update its suggest[] and searchy[] arrays (probably redundant)
           # update its children with newkids
           qget = {"query": {"bool": {"must": [{"match":{"place_id": newparent }}]}}}
           res = es.search(index=idx, body=qget)
@@ -554,7 +567,7 @@ def deleteFromIndex(es, idx, pids):
             try:
               es.update_by_query(index=idx,body=q_update)
             except:
-              print('aw shit',sys.exit(sys.exc_info()))
+              print('update of new parent failed',sys.exit(sys.exc_info()))
             # parent status transfered to 'eligible' child, add to list
             print('parent w/kids '+hit['_source']['title'],pid+' transferred resp to: '+parent+'; tagged for deletion')
             delthese.append(pid)
@@ -569,7 +582,7 @@ def deleteFromIndex(es, idx, pids):
         psearchy = list(set([item for item in psrc['searchy'] if type(item) != list]))
         # is parent slated for deletion? (walking dead)
         zombie = psrc['place_id'] in pids
-        if not zombie: # skip zombies here; picked up above with if role == 'parent':
+        if not zombie: # skip zombies; picked up above with if role == 'parent':
           # remove this id from children and remove its variants (sugs) from suggest.input and searchy
           newsugs = list(set(psugs)-set(sugs))
           newsearchy = list(set(psearchy)-set(searchy))
@@ -579,13 +592,13 @@ def deleteFromIndex(es, idx, pids):
             "lang": "painless",
             "params":{"val": str(pid), "sugs": newsugs, "searchy": newsearchy }
             },
-                      "query": {"match":{"_id": parent }}
+              "query": {"match":{"_id": parent }}
             }
           try:
             es.update_by_query(index=idx,body=q_update)
             print('child '+psrc['title'],str(pid)+' excised from parent: '+parent+'; tagged for deletion')
           except:
-            print('aw shit',sys.exit(sys.exc_info()))
+            print('update of parent losing child failed',sys.exit(sys.exc_info()))
         # child's presence in parent removed, add to delthese[]
         delthese.append(pid)  
   es.delete_by_query(idx,body={"query": {"terms": {"place_id": delthese}}})

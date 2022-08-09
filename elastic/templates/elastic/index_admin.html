@@ -21,10 +21,10 @@
 	  <div class="col-sm-2" id="admin_left">
 			<ul class="nav nav-tabs left-tabs">
 			  <li class="nav-item">
-			    <a class="nav-link" href="#tab-panel-1" data-toggle="tab">Delete dataset</a>
+			    <a class="nav-link active" href="#tab-panel-1" data-toggle="tab">Delete dataset</a>
 			  </li>
 			  <li class="nav-item">
-			    <a class="nav-link active" href="#tab-panel-2" data-toggle="tab">Reorganize parent/child</a>
+			    <a class="nav-link" href="#tab-panel-2" data-toggle="tab">Reorganize parent/child</a>
 			  </li>
 			  <li class="nav-item">
 			    <!-- use the title attribute to show a tooltip with the full long name
@@ -40,7 +40,7 @@
 			</ul>
 	  </div>
 	  <div class="col-sm-10 tab-content" id="admin_center">
-			<div class="tab-pane container" id="tab-panel-1">
+			<div class="tab-pane container active" id="tab-panel-1">
 		    <p>Remove all records of a dataset. <mark>es_utils.deleteFromIndex()</mark></p>
 		    <input id="ds_input" class="small" name="dsid" placeholder="Dataset id (dsid)">
 		    <button id="btn_fetch_ds" type="submit" class="btn btn-primary btn-sm">Fetch Dataset</button>
@@ -59,7 +59,7 @@
 				  </li>
 			  </ul>
 			</div>
-		  <div class="tab-pane container active" id="tab-panel-2">
+		  <div class="tab-pane container" id="tab-panel-2">
 {#		    <p>Promote child to parent or relocate to alternate parent</p>#}
 			  <div>
 				  <span class="">

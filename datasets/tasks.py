@@ -1448,9 +1448,9 @@ def align_idx(pk, *args, **kwargs):
   idx = 'whg'
   user = get_object_or_404(User, id=kwargs['user'])
   # get last index identifier (used for _id)
-  whg_id = maxID(es,idx)
+  whg_id = maxID(es, idx)
 
-  # write new seed/parents for inspection
+  # open file for writing new seed/parents for inspection
   wd = "/Users/karlg/Documents/repos/_whgazetteer/_scratch/accessioning/"
   fn1 = "new-parents_"+str(ds.id)+".txt"
   fout1 = codecs.open(wd+fn1, mode="w", encoding="utf8")

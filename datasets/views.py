@@ -283,11 +283,8 @@ def review(request, pk, tid, passnum):
     'count_pass2': cnt_pass2,
     'count_pass3': cnt_pass3,
     'deferred': True if passnum =='def' else False,
-
   }
 
-  # Hit model fields = ['task_id','authority','dataset','place_id',
-  #     'query_pass','src_id','authrecord_id','json','geom' ]
   HitFormset = modelformset_factory(
     Hit,
     fields = ('id','authority','authrecord_id','query_pass','score','json'),
@@ -296,9 +293,10 @@ def review(request, pk, tid, passnum):
   context['formset'] = formset
   method = request.method
 
-  def findParent(sources):
-    print('findParent() from ', sources)
-    return 'dunno yet'
+  # def findParent(sources):
+  #   print('findParent() from ', sources)
+  #   return 'dunno yet'
+
   # GET: just display; POST: process match/no match choices
   if method == 'GET':
     print('review() GET, just rendering next')
@@ -380,11 +378,12 @@ def review(request, pk, tid, passnum):
                   ds.save()
           # else: accessioning to whg index
           elif task.task_name == 'align_idx':
+            # hitobj pid is always a parent, kids are in 'sources'
             hit_parent_pid = str(hits[x]['json']['pid'])
             print('indexing '+place_post.__str__()+
                   ' as child to pid: '+ hit_parent_pid)
             # index as child
-            # TODO: write database PlaceLink records for incoming & matched
+            # TODO: write database PlaceLink records for incoming <> matched
             indexMatch(place_post.id, hit_parent_pid )
             place_post.indexed = True
             place_post.save()
@@ -2221,7 +2220,7 @@ class DatasetDeleteView(DeleteView):
     dataset_file_delete(ds)
     if ds.ds_status == 'indexed':
       pids=list(ds.placeids)
-      deleteFromIndex(es,'whg',pids)
+      deleteFromIndex(es, 'whg', pids)
 
   def get_object(self):
     id_ = self.kwargs.get("id")
