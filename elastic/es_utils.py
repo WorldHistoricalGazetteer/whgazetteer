@@ -515,8 +515,9 @@ def deleteDatasetFromIndex(idx, dsid):
 # es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 def deleteFromIndex(es, idx, pids):
   delthese=[]
-  # 
   for pid in pids:
+    # get its database record
+    place = Place.objects.get(id=pid)
     # get its index document
     res = es.search(index=idx, body=esq_pid(pid))
     hits=res['hits']['hits']
@@ -600,7 +601,16 @@ def deleteFromIndex(es, idx, pids):
           except:
             print('update of parent losing child failed',sys.exit(sys.exc_info()))
         # child's presence in parent removed, add to delthese[]
-        delthese.append(pid)  
+        delthese.append(pid)
+      # ex. deleted 2: [6713134, 6713135]
+      # DB ACTIONS
+      # remove indexed flag;
+      place.indexed = False
+      # delete previous hits from whg task
+      place.hit_set.filter(authority='whg').delete()
+      # reset review_whg status to null
+      place.review_whg = None
+      place.save()
   es.delete_by_query(idx,body={"query": {"terms": {"place_id": delthese}}})
   print('deleted '+str(len(delthese))+': '+str(delthese))
 

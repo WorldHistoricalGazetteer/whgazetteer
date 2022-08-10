@@ -112,16 +112,6 @@
         </span>
         </p>
       </div>
-      <div id="traces_info" class="p-2 hidden">
-        <p class="strong">Linked Traces in WHG</p>
-        <p class="small">Traces are an experimental feature in WHG. Briefly:</p>
-        <ul class="small mb-0">
-          <li class="li-left-sm"><sr>Traces</sr> are material and non-material things in the world, e.g. objects, people, events, or concepts.</li>
-          <li class="li-left-sm"><sr>Trace data</sr> are linked open web resources describing or depicting such trace phenomena, e.g web pages, datasets.</li>
-          <li class="li-left-sm"><sr>Linked Traces</sr> are annotations of <i>trace data</i> with identifiers for places relevant to those phenomena, and attributes indicating how and when.</li>
-        </ul>
-        <p class="small mt-1">Trace examples in WHG can be viewed in two ways. Typing a search term into the box above (try 'empire' or 'Buddhist') returns matching Linked Trace datasets. Traces related to a given place appear on its Place Portal page, e.g. for <a href="{% url 'places:place-portal' id=12345979 %}">Istanbul</a>, or <a href="{% url 'places:place-portal' id=12877143 %}">Hetian (Khotan)</a>.</p>
-      </div>
       </div><!-- #search_panel -->
       </div>
       <div id="search_right" class="col-sm-6">
@@ -1094,9 +1084,8 @@
   handles traces also !?
   */
   searchPlacesIdx = function (){
-    <!--console.log('searchPlacesIdx()',search_scope)-->
+    //console.log('searchPlacesIdx()',search_scope)
     window.doctype = 'place';
-    {#window.doctype = $("input[name='class']:checked").val();#}
     // get filter values: fclasses, start, end, ??
     var fclasses = [];
     $('#search_filters input:checked').each(function() {
@@ -1187,12 +1176,11 @@
     <!--search_scope = ls('search_scope')-->
     search_scope = searchScope()
     // ensure correct tab is selected
-    <!--scope_id = search_scope=='idx'?'idx':'idx'-->
     switchTab(search_scope)
     geoms=[]
     var types=[], typesArr = [], ccArr = []
     if (doctype == 'place'){
-      if(data.length ==0) {
+      if(data.length == 0) {
         results_div += '<p class="small ml-2">No results, sorry.</p>'
       } else {
         result_table ='<table id="result_table" class="tableFixHead"><thead><tr>'
@@ -1207,7 +1195,6 @@
         havegeom = 0
 
         data.forEach(function(sug){
-          <!--console.log('sug', sug)-->
           typesArr=typesArr.concat(sug.types)
           ccArr=ccArr.concat(sug.ccodes)
 
@@ -1247,10 +1234,9 @@
         });
 
         if(scope=='search') {
-          <!--console.log('geoms from sugs, to renderPlaces()', geoms)-->
+          // console.log('geoms from sugs, to renderPlaces()', geoms)
           renderPlaces(geoms)
         }
-        <!--if(data.length > 8){$("#result_filters").show()}-->
         if(data.length > 1){$("#result_filters").show()}
       }
     } else if (doctype == 'trace') {
@@ -1269,7 +1255,6 @@
     };
 
     if(searchClass() == 'place' && searchScope() == 'idx' && (data.length > 3 || mappy.getZoom() < 5)){
-    <!--if(search_class() == 'place' && search_scope == 'idx' && (data.length > 3 || mappy.getZoom() < 5)){-->
       $("#offer_mapfilter").fadeIn()
       if (bboxer._map == undefined ){ bboxer.addTo(mappy); }
     }
@@ -1277,13 +1262,13 @@
     $("#reset_search").show()
     $("#search_info").hide()
 
-    <!--$("#traces_info").hide()-->
+    // $("#traces_info").hide()
     let src = search_scope=='idx'?'UNION INDEX':'DATABASE'
     let elem = document.getElementById('result_div')
 
     titleMarkup = doctype=='trace'?'<p class="pl-1 mb-1 strong">'+title+' :: a Linked Traces dataset ('+data.bodies.length+' related places) <span class="ml-2">Places with geometry listed first</span></p>':''
     titleMarkup += (doctype=='place' ? src+' SEARCH RESULTS (<span id="rowcount">'+data.length+'</span>)<span class="ml-4">List may include records with no geometry</span>' : '')
-    <!--console.log('titleMarkup',titleMarkup)-->
+    // console.log('titleMarkup',titleMarkup)
 
     $("#result_title").html(titleMarkup)
     $("#result_title").fadeIn()
@@ -1414,10 +1399,9 @@
           $(".search-row").css('background-color','#fff')
 
           fid = search_scope=='idx'?this.feature.geometry.properties.whgid:this.feature.geometry.properties.pid
-          console.log('fid of clicked layer', fid)
+          {#console.log('fid of clicked layer', fid)#}
           foo=$("tr.place-item").find('[data-id="'+fid+'"]').closest('.search-row')
           foo.css('background-color','#f4f4d7')
-          <!--foo[0].scrollIntoView({behavior:'smooth'})-->
           foo[0].scrollIntoView()
           ele.scrollTop(ele.scrollTop() - scroll);
         })
@@ -1426,15 +1410,10 @@
       }
     }).addTo(mappy); <!-- adds features L.geoJSON -->
 
-    // conditionally add a bbox control
-    <!--if (bboxer._map == undefined && search_class == 'place'){ bboxer.addTo(mappy); }-->
-
     bounds = features.getBounds()
-    <!--mappy.setView(bounds.getCenter(),5) -->
     if(geoms.length > 0 ){
       mappy.fitBounds(bounds)
       if(mappy.getZoom() > 5){ mappy.setZoom(5)}
-      <!--mappy.setView(bounds.getCenter(),)-->
     }
   }
   /*
@@ -1444,7 +1423,7 @@
   function sugLister(sug, doctype, scope) {
     <!--console.log(sug)-->
     if (doctype=='place') {
-      //linkcount = sug['ds'] ? '' : ' ('+(parseInt(sug['linkcount']) +1)+')'
+			// this is count of children[]; add 1 to include self
       linkcount = parseInt(sug['linkcount']) +1
       attestations = sug['ds'] ? '' : ' <i>' + linkcount + (linkcount>1?' linked attestations</i>; ':' attestation</i>; ')
       vcount = sug['variants'].length

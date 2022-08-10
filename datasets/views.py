@@ -44,7 +44,7 @@ from datasets.static.hashes.parents import ccodes as cchash
 from datasets.tasks import align_wdlocal, align_idx, align_tgn, maxID
 
 from datasets.utils import *
-from elastic.es_utils import makeDoc,deleteFromIndex, replaceInIndex #, addChild
+from elastic.es_utils import makeDoc, deleteFromIndex, replaceInIndex, deleteDatasetFromIndex
 from main.choices import AUTHORITY_BASEURI
 from main.models import Log, Comment
 from places.models import *
@@ -705,6 +705,11 @@ def task_delete(request, tid, scope="foo"):
     placegeoms.delete()
   elif scope == 'geoms':
     placegeoms.delete()
+
+  # delete dataset from index
+  # undoes any acceessioning work
+  if auth in ['whg', 'idx']:
+    deleteDatasetFromIndex('whg', dsid)
 
   return redirect('/datasets/'+dsid+'/reconcile')
 

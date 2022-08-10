@@ -138,8 +138,6 @@ def suggester(doctype,q,scope,idx):
   print('key', settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY)
   # returns only parents; children retrieved into place portal
   print('suggester',doctype,q)
-  # add api key
-  # api_key=('')
   es = Elasticsearch([{'host': 'localhost',
                        'port': 9200,
                        'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
@@ -170,18 +168,15 @@ def suggester(doctype,q,scope,idx):
       hits = res['hits']['hits']
       if len(hits) > 0:
         for h in hits:
-          #snippet = h['highlight'] if 'highlight' in h else ''
           suggestions.append(
             {"_id": h['_id'],
-             #"linkcount":len(h['_source']['links']),
-             "linkcount":len(h['_source']['children']),
+             "linkcount":len(set(h['_source']['children'])),
              "hit": h['_source'],
-             #"snippet":snippet
             }
           )
       sortedsugs = sorted(suggestions, key=lambda x: x['linkcount'], reverse=True)
       # TODO: there may be parents and children
-      #print('SUGGESTIONS from suggester()',type(suggestions), sortedsugs)
+      # print('SUGGESTIONS from suggester()',type(suggestions), sortedsugs)
       return sortedsugs
     
   elif doctype == 'trace':
@@ -254,14 +249,9 @@ class SearchView(View):
           q['query']['bool']['must'].append({"terms": {"fclasses": fclasses.split(',')}})
         if start:
           q['query']['bool']['must'].append({"range":{"timespans":{"gte" :start,"lte":end if end else 2005}}})
-        #if ds and ds != "0":
-          #q['query']['bool']['must'].append({"match": {"dataset": ds}})
         if bounds:
           bounds=json.loads(bounds)
           q['query']['bool']["filter"]=get_bounds_filter(bounds,'whg')
-          
-        # truncate, may include polygon coordinates
-        #print('search must[]:',q['query']['bool']['must'])
 
     elif doctype == 'trace':
       q={ 
