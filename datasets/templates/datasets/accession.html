@@ -12,6 +12,7 @@
   <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.css' rel='stylesheet' />
   <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.js'></script>
   <script src="{% static 'js/leaflet-mapbox-gl.js' %}"></script>
+	<style>.automatch {background-color: plum}</style>
 {% endblock %}
 {% block content %}
 <div class="container">
@@ -50,8 +51,8 @@
     <!-- there is only one; if last, do nothing -->
     <div class="container">
       <div id="review_nav" class="row pagination justify-content-center">
-        <div class="col-sm-4 pl-1">
-          <a id="undo" class="small hidden-imp" href="" data-url="{% url 'datasets:match-undo' ds=ds_id tid=task_id pid=999 %}">Undo last save {% fontawesome_icon 'undo' color='#336699' %}</a>
+        <div class="col-sm-4 pl-1">{% comment %}
+          <a id="undo" class="small hidden-imp" href="" data-url="{% url 'datasets:match-undo' ds=ds_id tid=task_id pid=999 %}">Undo last save {% fontawesome_icon 'undo' color='#336699' %}</a>{% endcomment %}
         </div>
         <div class="col-sm-8">
         <span>
@@ -73,6 +74,7 @@
                 <a href="?page={{ records.next_page_number }}">next</a>&nbsp;&nbsp;
                 <a href="?page={{ records.paginator.num_pages }}">last &raquo;</a>
             {% endif %}
+	          <span class="float-right mr-2">passes: {{ passes }}; length: {{ formset|length }}</span>
         </span>
         </div>
       </div>
@@ -134,16 +136,12 @@
         </div>
         <!--available: ['whg_id', 'place_id', 'src_id', 'title', 'dataset', 'variants', 'types', 'ccodes', 'parents', 'descriptions', 'geoms', 'timespans', 'links']-->
         <div id="review_list" class="col-sm-8 pr-0">
-          <!--<p>formset length: { formset|length }}</p>-->
           {% for form in formset %}
             <input type="hidden" name="id" value='{{ form.id.value }}'></input>
             <input type="hidden" name="authrecord_id" value='{{ form.authrecord_id.value }}'></input>
             <input type="hidden" name="score" value='{{ form.score.value }}'></input>
             <input type="hidden" name="query_pass" value='{{ form.query_pass.value }}'></input>
-            {% for hidden in form.hidden_fields %}
-              {{ hidden }}
-            {% endfor %}
-            <div class="pl-2 pr-2 mb-1 matchbar">
+            <div class="pl-2 pr-2 mb-1 matchbar ">
               <div class="match_radio custom-control custom-radio">
                 {% if form.json.value|get:"geoms"|length > 0 %}
                   <span class="mr-2 globeflash">
@@ -159,8 +157,14 @@
                 {% endif %}
                 <span class="inline">{{ form.match }}</span>
                 <span class="help" data-id="matches">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
+
                 {% if form.json.value|get:"sources" %}
+{#                <span class="ml-2">{{ form.json.value }}</span>#}
+{#                <span class="ml-2">pass {{ passes }}</span>#}
                 <span class="float-right mr-1 mt-1 smaller">
+									{% if form.query_pass.value == 'pass0' %}
+										<span class="bg-warning p-1">automatched</span>
+									{% endif %}
 	                {{ form.json.value|get:"whg_id" }}&nbsp;&nbsp;{{ form.json.value|get:"sources"|length }} linked records {% fontawesome_icon 'link' %}</span>
                 {% endif %}
                 {% comment %}
@@ -183,11 +187,11 @@
                 {% endfor %}
               {% endif %}
 {#              <p>{{ form.json.value }}</p>#}
-              <p><strong>Title(s)</strong>: <span class="text-danger h6">{{ form.json.value|get:"titles" }}</p>
+	            <p><strong>Title(s)</strong>: <span class="text-danger h6">{{ form.json.value|get:"titles" }}</span></p>
               <!--<p><strong>WHG index id</strong>: { form.json.value|get:"whg_id" }}</p> -->
-              <!--<p>{ form.query_pass.value }}</p>-->
-              {% if form.json.value|get:"countries"|length > 0 %} 
+              {% if form.json.value|get:"countries"|length > 0 %}
               <p><strong>Countries</strong>: {{ form.json.value|get:"countries" }}</p>
+              <p><strong>Pass(es)</strong>: {{ form.query_pass.value }}</p>
               {% endif %}
 
               <p class="mb-0"><strong>Linked records ({{ form.json.value|get:"sources"|length }})</strong>:
@@ -208,13 +212,14 @@
                 {% for link in form.json.value|get:"links" %}
                   <a href="" class="mr-2 ext" data-toggle="modal" data-target="#ext_site">{{ link }} {% fontawesome_icon 'external-link' color='#336699' %}</a>
                 {% endfor %}
-              </p>{% endif %}
+                </p>
+              {% endif %}
 
               {% if form.json.value|get:"minmax"|length > 0 %} 
                 <p><strong>Temporal attestations</strong>: 
                 {{ form.json.value|get:"minmax" }}</p>
               {% endif %}
-
+{#							<p>{{ form.json.value }}</p>#}
             </div>
           {% endfor %}
         </div> <!-- review_list -->

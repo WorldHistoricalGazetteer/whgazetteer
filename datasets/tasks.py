@@ -1324,7 +1324,7 @@ def es_lookup_idx(qobj, *args, **kwargs):
   except:
     print("q0a, ES error:", q0, sys.exc_info())
   if len(hits0a) > 0:
-    # >=1 matching identifies
+    # >=1 matching identifier
     result_obj['hit_count'] += len(hits0a)
     for h in hits0a:
       # add full hit to result
@@ -1488,7 +1488,8 @@ def align_idx(pk, *args, **kwargs):
       doc['relation']['name'] = 'parent'
       print("seed", whg_id, doc)
       new_seeds.append(doc)
-      es.index(idx, doc, id=whg_id)
+      res = es.index(index=idx, id=str(whg_id), document=json.dumps(doc))
+      # es.index(idx, doc, id=whg_id)
       
     # got some hits, format json & write to db as for align_wdlocal, etc.
     elif len(result_obj['hits']) > 0:
@@ -1562,15 +1563,17 @@ def align_idx(pk, *args, **kwargs):
               'types':k['types'],
               'minmax':k['minmax'],
               'pass':k['pass'][:5]} for k in kids])
-        
+
+        passes = list(set([s['pass'] for s in hitobj['sources']]))
+        hitobj['passes'] = passes
+
         hitobj['titles'] = ', '.join(list(dict.fromkeys(hitobj['titles'])))
         
         if hitobj['links']:
           hitobj['links'] = list(dict.fromkeys(hitobj['links']))
   
         hitobj['countries'] = ', '.join(list(dict.fromkeys(hitobj['countries'])))
-        
-        passes = list(set([s['pass'] for s in hitobj['sources']]))
+
         new = Hit(
           task_id = task_id,
           authority = 'whg',

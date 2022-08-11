@@ -60,11 +60,13 @@
         {% if not messages %}
         <p>Linking in WHG is the activity of matching records from one dataset with "close matches" in another, in a method called <sr>reconciliation</sr> or <sr>alignment</sr>. It can also accomplish geocoding of place names for many records that are missing location. Reconciliation tasks can be performed against our local <sr>Wikidata</sr> or <sr>Getty TGN</sr> indexes. Fully accessioning data to WHG involves the further step of reconciling against our "union index."</p>
         {% endif %}
-        {% if user.is_superuser or user in owners or user in collaborators %}
-          <div id="ready" class="hidden pl-2">
-            <p class="my-0">All potential matches to <span id="authtag"></span> have been reviewed, so the dataset may be ready for accessioning to the WHG index.</p>
-            <p class="my-0">If you would like to proceed, please <a class="btn btn-success btn-sm text-light py-0" href="{% url 'contact' %}">contact our editorial team.</a></p>
-          </div>
+        {% if user in owners or user in collaborators or user.is_superuser %}
+	        {% if not ds.ds_status == 'accessioning' %}
+	          <div id="ready" class="hidden pl-2">
+	            <p class="my-0">All potential matches to <span id="authtag"></span> have been reviewed, so the dataset may be ready for accessioning to the WHG index.</p>
+	            <p class="my-0">If you would like to proceed, please <a class="btn btn-success btn-sm text-light py-0" href="{% url 'contact' %}">contact our editorial team.</a></p>
+	          </div>
+	        {% endif %}
           {% if tasks|length < 1 %}<i id="none_yet">None yet...</i>{% endif %}
           {% if messages %}<div>
             {% for message in messages %}
@@ -91,18 +93,19 @@
                   </div>
                   <div class="col-sm-6">
                     <p><b>Result</b>: {{ t.result|get:"got_hits"|safe }} of the {{ t.result|get:"count"|safe }} records submitted got total of <b>{{ t.result|get:"total_hits"|safe }}</b> hits</p>
-                    <!--{ t.result }}-->
+{#                    {{ t.result }}#}
                     <p class="mb-0 ital">Remaining to review:</p>
                     <span id="spinner"></span>
+{#                    {% if t.task_name == 'align_idx'%}#}
+{#	                    <ul>#}
+{#	                    #}
+{#	                    </ul>#}
+{#                    {% endif %}#}
                     <ul>
                       {% if t.result|get:"pass0" > 0 %}
                         <li id="pass0_{{t.task_id}}" class="li-left">Pass 0 (matched links): 
                         <span class="mx-2 strong" id='{{t.task_id}}_0'>nn</span> 
-                          <!--{ if beta_or_better %}-->
-                            <!--<a href="{ url 'datasets:review2' pk=ds.id tid=t.task_id %}">review</i></a>-->
-                          <!--{ else %}-->
-                            <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass0' %}">review</i></a>
-                          <!--{ endif %}-->
+                            <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass0' %}">review</a>
                          <span class="pass0auto">
                           {% if t.task_name == 'align_idx'%}
                           | <a href="{% url 'datasets:idx_pass0' tid=t.task_id %}">auto-accept</a>  
@@ -114,7 +117,11 @@
                       {% endif %}
                       
                       {% if t.result|get:"pass1" > 0 %}
-                        <li class="li-left">Pass 1: 
+	                      {% if t.task_name == 'align_idx'%}
+                          <li class="li-left">All (less deferred):
+                        {% else %}
+                          <li class="li-left">Pass 1:
+                        {% endif %}
                         <span class="strong mx-2" id='{{t.task_id}}_1'>nn</span>
                           <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass1' %}">review</a>
                         </li>

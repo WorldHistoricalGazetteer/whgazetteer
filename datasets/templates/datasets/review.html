@@ -156,6 +156,7 @@
         </div>
         <!--available: ['whg_id', 'place_id', 'src_id', 'title', 'dataset', 'variants', 'types', 'ccodes', 'parents', 'descriptions', 'geoms', 'timespans', 'links']-->
         <div id="review_list" class="col-sm-8 pr-0">
+          {% if passes %}<p>passes: {{ passes }}; length: {{ formset|length }}</p>{% endif %}
             {% for form in formset %}
               <input type="hidden" name="id" value='{{ form.id.value }}'></input>
               <input type="hidden" name="authrecord_id" value='{{ form.authrecord_id.value }}'></input>

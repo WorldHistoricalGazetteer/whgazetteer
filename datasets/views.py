@@ -87,8 +87,21 @@ def indexMatch(pid, hit_pid=None):
                        }])
   idx='whg'
   place = get_object_or_404(Place, id=pid)
-  new_obj = makeDoc(place)
-  if hit_pid == None:
+
+  # is this place already indexed (e.g. by pass0 automatch)?
+  q_place = {"query": {"bool": {"must": [{"match": {"place_id": pid}}]}}}
+  res = es.search(index=idx, body=q_place)
+  if res['hits']['total']['value'] == 0:
+    # not indexed, make a new doc
+    new_obj = makeDoc(place)
+    p_hits = None
+  else:
+    # it's indexed, get parent
+    p_hits = res['hits']['hits']
+    place_parent = p_hits[0]['_source']['relation']['parent']
+
+  if hit_pid == None and not p_hits:
+    # there was no match and place is not already indexed
     print('making '+str(pid)+' a parent')
     # next whg_id
     whg_id=maxID(es,idx) +1
@@ -111,13 +124,21 @@ def indexMatch(pid, hit_pid=None):
       pass
     print('created parent:',pid,place.title)
   else:
+    #
     # get hit record in index
-    q_hit={"query": {"bool": {"must": [{"match":{"place_id": hit_pid}}]}}}
+    q_hit = {"query": {"bool": {"must": [{"match": {"place_id": hit_pid}}]}}}
     res = es.search(index=idx, body=q_hit)
+    hit = res['hits']['hits'][0]
+
+    # see if new place (pid) is already indexed (i.e. due to prior automatch)
+    q_place = {"query": {"bool": {"must": [{"match": {"place_id": pid}}]}}}
+    res = es.search(index=idx, body=q_place)
+    if len(res['hits']['hits']) >0:
+      # it's already in, (almost) certainly a child...of what?
+      place_hit = res['hits']['hits'][0]
 
     # if hit is a child, get _id of its parent; this will be a sibling
     # if hit is a parent, get its _id, this will be a child
-    hit = res['hits']['hits'][0]
     if hit['_source']['relation']['name'] == 'child':
       parent_whgid = hit['_source']['relation']['parent']
     else:
@@ -130,8 +151,7 @@ def indexMatch(pid, hit_pid=None):
     # all or nothing; pass if error
     try:
       # index child
-      es.index(index=idx, id=place.id,
-                routing=1, body=json.dumps(new_obj))
+      es.index(index=idx, id=place.id, routing=1, body=json.dumps(new_obj))
       #count_kids +=1
       print('added '+str(place.id) + ' as child of '+ str(hit_pid))
 
@@ -212,7 +232,7 @@ def review(request, pk, tid, passnum):
   review_field = 'review_whg' if auth in ['whg','idx'] else \
     'review_wd' if auth.startswith('wd') else 'review_tgn'
   lookup = '__'.join([review_field, 'in'])
-  # 2 is deferred; 0 is unreviewed
+  # 2 is deferred; 0 is unreviewed; NULL is no hits
   # status = [2] if passnum == 'def' else [0,2]
   # by default, don't return deferred
   status = [2] if passnum == 'def' else [0]
@@ -249,15 +269,20 @@ def review(request, pk, tid, passnum):
   # get hits for this record
   placeid = records[0].id
   place = get_object_or_404(Place, id=placeid)
-  if passnum.startswith('pass'):
+  if passnum.startswith('pass') and auth not in ['whg','idx']:
+    # list only for this pass
     raw_hits = Hit.objects.filter(place_id=placeid, task_id=tid, query_pass=passnum).order_by('-score')
   else:
+    # if accessioning (auth in ['whg','idx']), get all regardless of pass
     raw_hits = Hit.objects.filter(place_id=placeid, task_id=tid).order_by('-score')
+
+  # get pass contents for all of a place's hits
+  passes = list(set([item for sublist in [[s['pass'] for s in h.json['sources']] for h in raw_hits]
+                     for item in sublist])) if auth in ['whg','idx'] else None
 
   # convert ccodes to names
   countries = []
   for r in place.ccodes:
-    #print('r',r.upper())
     try:
       countries.append(cchash[0][r.upper()]['gnlabel']+
         ' ('+cchash[0][r.upper()]['tgnlabel']+')')
@@ -271,6 +296,7 @@ def review(request, pk, tid, passnum):
   context = {
     'ds_id': pk, 'ds_label': ds.label, 'task_id': tid,
     'hit_list': raw_hits,
+    'passes':passes,
     'authority': task.task_name[6:8] if auth=='wdlocal' else task.task_name[6:],
     'records': records,
     'countries': countries,
@@ -297,11 +323,11 @@ def review(request, pk, tid, passnum):
   #   print('findParent() from ', sources)
   #   return 'dunno yet'
 
-  # GET: just display; POST: process match/no match choices
+  # GET: just displaying
   if method == 'GET':
     print('review() GET, just rendering next')
   else:
-    # process review choices
+    # POST: process match/no match choices
     place_post = get_object_or_404(Place,pk=request.POST['place_id'])
     if formset.is_valid():
       hits = formset.cleaned_data
@@ -379,6 +405,10 @@ def review(request, pk, tid, passnum):
           # else: accessioning to whg index
           elif task.task_name == 'align_idx':
             # hitobj pid is always a parent, kids are in 'sources'
+            # has the place_post been indexed already, e.g. automatched in this task?
+            # if so, this matched hit should become its sibling, despite it being a parent
+            # if not, index place_post as child to hit_parent
+
             hit_parent_pid = str(hits[x]['json']['pid'])
             print('indexing '+place_post.__str__()+
                   ' as child to pid: '+ hit_parent_pid)
@@ -592,6 +622,7 @@ def write_idx_pass0(request, tid):
 # params: pk (dataset id), auth, region, userarea, geom, scope
 # each align_{auth} task runs matching es_lookup_{auth}() and writes Hit instances
 """
+
 def ds_recon(request, pk):
   ds = get_object_or_404(Dataset, id=pk)
   # TODO: handle multipolygons from "#area_load" and "#area_draw"
@@ -604,7 +635,7 @@ def ds_recon(request, pk):
     print('ds_recon() request.POST:',request.POST)
     auth = request.POST['recon']
     language = request.LANGUAGE_CODE
-    # previous task of this type? bool
+    # previous task of this type?
     previous = ds.tasks.filter(task_name='align_'+auth,status='SUCCESS')
     prior = request.POST['prior'] if 'prior' in request.POST else 'na'
     if previous.count() > 0:
@@ -2275,16 +2306,19 @@ def match_undo(request, ds, tid, pid):
 
   # reset place.review_xxx to 0
   tasktype = TaskResult.objects.get(task_id=tid).task_name[6:]
-  place = Place.objects.filter(pk=pid)
+  place = Place.objects.get(pk=pid)
   # remove any defer comments
   place.defer_comments.delete()
   # TODO: variable field name?
   if tasktype.startswith('wd'):
-    place.update(review_wd = 0)
+    # place.update(review_wd = 0)
+    place.review_wd = 0
   elif tasktype == 'tgn':
-    place.update(review_tgn = 0)
+    # place.update(review_tgn = 0)
+    place.review_tgn = 0
   else:
-    place.update(review_whg = 0)
+    # place.update(review_whg = 0)
+    place.review_whg = 0
 
   # match task_id, place_id in hits; set reviewed = false
   Hit.objects.filter(task_id=tid, place_id=pid).update(reviewed=False)
