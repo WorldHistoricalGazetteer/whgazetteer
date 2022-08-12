@@ -1124,6 +1124,7 @@ class UpdateCountsView(View):
     #   taskhits = Hit.objects.filter(task_id=t.task_id, reviewed=False)
     for t in ds.tasks.filter(status='SUCCESS'):
       taskhits = Hit.objects.filter(task_id=t.task_id, reviewed=False)
+      # taskhits = Hit.objects.filter(task_id=t.task_id, reviewed=True)
       pcounts = placecounter(taskhits)
       # ids of all unreviewed places
       pids = list(set(taskhits.all().values_list("place_id",flat=True)))

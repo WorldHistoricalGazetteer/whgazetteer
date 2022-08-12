@@ -2554,7 +2554,8 @@ class DatasetReconcileView(LoginRequiredMixin, DetailView):
     me = self.request.user
 
     # omits FAILURE and ARCHIVED
-    ds_tasks = TaskResult.objects.all().filter(task_args = [id_], status='SUCCESS')
+    ds_tasks = ds.tasks.filter(status='SUCCESS')
+    # ds_tasks = TaskResult.objects.all().filter(task_args = [id_], status='SUCCESS')
     #archived_tasks = TaskResult.objects.all().filter(task_args = [id_], status='ARCHIVED')
 
     #context['region_list'] = predefined

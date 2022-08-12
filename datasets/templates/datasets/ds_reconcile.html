@@ -58,7 +58,7 @@
           {% endif %}
         </h6>
         {% if not messages %}
-        <p>Linking in WHG is the activity of matching records from one dataset with "close matches" in another, in a method called <sr>reconciliation</sr> or <sr>alignment</sr>. It can also accomplish geocoding of place names for many records that are missing location. Reconciliation tasks can be performed against our local <sr>Wikidata</sr> or <sr>Getty TGN</sr> indexes. Fully accessioning data to WHG involves the further step of reconciling against our "union index."</p>
+        <p>Linking in WHG is the activity of matching records from one dataset with "close matches" in another, in a method called <sr>reconciliation</sr> or <sr>alignment</sr>. It can also accomplish geocoding of place names for many records that are missing location. Reconciliation tasks can be performed against our local <sr>Wikidata</sr> index. Fully accessioning data to WHG involves the further step of reconciling against our "union index."</p>
         {% endif %}
         {% if user in owners or user in collaborators or user.is_superuser %}
 	        {% if not ds.ds_status == 'accessioning' %}
@@ -78,6 +78,7 @@
           {% for t in tasks %}
             {% if t.status == 'SUCCESS' %}
               <div class="task-box mb-2 {{t.task_name}}">
+{#              <p>{{ t.task_name }}</p>#}
                 <div class="row ">
                   <div class="col-sm-4">
                     <p><b>Task</b>: {{ t.task_name }} <span class="small">
@@ -94,7 +95,8 @@
                   <div class="col-sm-6">
                     <p><b>Result</b>: {{ t.result|get:"got_hits"|safe }} of the {{ t.result|get:"count"|safe }} records submitted got total of <b>{{ t.result|get:"total_hits"|safe }}</b> hits</p>
 {#                    {{ t.result }}#}
-                    <p class="mb-0 ital">Remaining to review:</p>
+                    <p class="mb-0">Remaining to review: <span id="{{t.task_id}}_remaining">nn</span></p>
+{#                    <p class="mb-0 ital">Remaining to review: </p>#}
                     <span id="spinner"></span>
 {#                    {% if t.task_name == 'align_idx'%}#}
 {#	                    <ul>#}
@@ -102,7 +104,7 @@
 {#	                    </ul>#}
 {#                    {% endif %}#}
                     <ul>
-                      {% if t.result|get:"pass0" > 0 %}
+                      {% if t.result|get:"pass0" > 0 and t.task_name != "align_idx" %}
                         <li id="pass0_{{t.task_id}}" class="li-left">Pass 0 (matched links): 
                         <span class="mx-2 strong" id='{{t.task_id}}_0'>nn</span> 
                             <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass0' %}">review</a>
@@ -285,8 +287,16 @@
             $('#'+task).addClass("hidden")
           }
           
+          $("#"+tid+'_remaining').html(counts['total'])
           $("#"+tid+'_0').html(counts['pass0'])
-          $("#"+tid+'_1').html(counts['pass1'])
+	        running_count = (counts['total']-counts['deferred'])
+          if(task=='align_idx'){
+            $("#"+tid+'_1').html(counts['total']-counts['deferred'])
+          } else {
+            $("#"+tid+'_1').html(counts['pass1'])
+          }
+          {#$("#"+tid+'_1').html(counts['total']-counts['deferred']?task=='align_idx':counts['pass1'])#}
+          {#$("#"+tid+'_1').html(counts['pass1'])#}
           $("#"+tid+'_2').html(counts['pass2'])
           $("#"+tid+'_3').html(counts['pass3'])
           
@@ -294,7 +304,7 @@
           // hide 'auto-accept' if it's pass0
           Object.keys(counts).forEach(function(key) {
             if(key.startsWith('pass') && counts[key] == 0){
-              <!--console.log('foo:', "#"+tid+'_'+key.slice(-1))-->
+              // console.log('foo:', "#"+tid+'_'+key.slice(-1))
               $("#"+tid+'_'+key.slice(-1)).next().addClass('hidden')
               if(key == 'pass0'){
                 foo = "#pass0_"+tid+" .pass0auto"
@@ -305,7 +315,7 @@
           
           if (counts['deferred'] > 0) {
             //console.log('got deferred',counts['deferred'] )
-            $("#"+tid+'_def').html(counts['deferred']+$("#"+tid+'_def').html()) 
+            $("#"+tid+'_def').html(counts['deferred']+$("#"+tid+'_def').html())
             $("#"+tid+'_def').removeClass('hidden')
           } else {
             $("#"+tid+'_def').html('none') 
