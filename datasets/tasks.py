@@ -1486,6 +1486,7 @@ def align_idx(pk, *args, **kwargs):
       whg_id +=1
       doc = makeDoc(p)
       doc['relation']['name'] = 'parent'
+      doc['whg_id'] = whg_id
       print("seed", whg_id, doc)
       new_seeds.append(doc)
       res = es.index(index=idx, id=str(whg_id), document=json.dumps(doc))
