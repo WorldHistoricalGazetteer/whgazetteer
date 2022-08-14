@@ -103,11 +103,9 @@ def indexMatch(pid, hit_pid=None):
   if hit_pid == None and not p_hits:
     # there was no match and place is not already indexed
     print('making '+str(pid)+' a parent')
+    # next whg_id
+    whg_id=maxID(es,idx) +1
     new_obj['relation']={"name":"parent"}
-
-    # increment whg_id
-    whg_id = maxID(es, idx) + 1
-    print('whg_id at :109', whg_id)
     # parents get an incremented _id & whg_id
     new_obj['whg_id']=whg_id
     # add its own names to the suggest field
@@ -126,6 +124,7 @@ def indexMatch(pid, hit_pid=None):
       pass
     print('created parent:',pid,place.title)
   else:
+    #
     # get hit record in index
     q_hit = {"query": {"bool": {"must": [{"match": {"place_id": hit_pid}}]}}}
     res = es.search(index=idx, body=q_hit)
@@ -216,8 +215,7 @@ def review(request, pk, tid, passnum):
     hitplaces = Hit.objects.values('place_id').filter(
       task_id=tid,
       reviewed=False,
-      query_pass=passnum
-    )
+      query_pass=passnum)
     # remove any deferred
   else:
     # queue deferred from any pass
@@ -286,10 +284,14 @@ def review(request, pk, tid, passnum):
   countries = []
   for r in place.ccodes:
     try:
-      countries.append(cchash[0][r.upper()]['gnlabel']+' ('+cchash[0][r.upper()]['tgnlabel']+')')
+      countries.append(cchash[0][r.upper()]['gnlabel']+
+        ' ('+cchash[0][r.upper()]['tgnlabel']+')')
     except:
       pass
 
+
+  # TODO: if auth in ['whg','idx], group children within parents
+  #print('records[0] in review()',records[0].__dict__)
   # prep some context
   context = {
     'ds_id': pk, 'ds_label': ds.label, 'task_id': tid,
@@ -311,23 +313,28 @@ def review(request, pk, tid, passnum):
 
   HitFormset = modelformset_factory(
     Hit,
-    fields = ('id','authority','authrecord_id','query_pass','score','json'),
+    fields = ('id', 'authority', 'authrecord_id', 'query_pass', 'score', 'json'),
+    # fields = ('authority','authrecord_id','query_pass','score','json'),
     form=HitModelForm, extra=0)
   formset = HitFormset(request.POST or None, queryset=raw_hits)
   context['formset'] = formset
   method = request.method
 
+  # def findParent(sources):
+  #   print('findParent() from ', sources)
+  #   return 'dunno yet'
+
   # GET: just displaying
   if method == 'GET':
     print('review() GET, just rendering next')
   else:
-    # POST: process match/no match choices made by save in {review_page} (review or accession)
+    print('formset id', formset.data['id'])
+    # POST: process match/no match choices
     place_post = get_object_or_404(Place,pk=request.POST['place_id'])
     if formset.is_valid():
       hits = formset.cleaned_data
       #print('hits (formset.cleaned_data)',hits)
       matches = 0
-      # are any of the listed hits matches?
       for x in range(len(hits)):
         hit = hits[x]['id']
         # is this hit a match?
@@ -397,11 +404,12 @@ def review(request, pk, tid, passnum):
                   ds.numlinked = ds.numlinked +1 if ds.numlinked else 1
                   ds.total_links = ds.total_links +1
                   ds.save()
-          # else: this is accessioning to whg index
+          # else: accessioning to whg index
           elif task.task_name == 'align_idx':
             # hitobj pid is always a parent, kids are in 'sources'
-
-            #
+            # has the place_post been indexed already, e.g. automatched in this task?
+            # if so, this matched hit should become its sibling, despite it being a parent
+            # if not, index place_post as child to hit_parent
             hit_parent_pid = str(hits[x]['json']['pid'])
             print('indexing '+place_post.__str__()+
                   ' as child to pid: '+ hit_parent_pid)
@@ -413,17 +421,20 @@ def review(request, pk, tid, passnum):
           # informational lookup on whg index
           elif task.task_name == 'align_whg':
             print('align_whg (non-accessioning) DOING NOTHING (YET)')
-        else: # not a match; if accessioning, index place_post as seed
-          if task.task_name == 'align_idx':
-            print('indexing unmatched record as seed:', place_post.id)
-            indexMatch(place_post.id)
-            place_post.indexed = True
-            place_post.save()
+
         # in any case, flag hit as reviewed...
-        hitobj = get_object_or_404(Hit, id=hit.id)
-        hitobj.reviewed = True
-        hitobj.save()
-        print('hit # '+str(hitobj.id)+' flagged reviewed')
+        print('hit # '+str(hit.id)+' flagged reviewed')
+        matchee = get_object_or_404(Hit, id=hit.id)
+        matchee.reviewed = True
+        matchee.save()
+
+      # no matches for align_idx > index as parent
+      if matches == 0 and task.task_name == 'align_idx':
+        # index as new parent/seed
+        print('indexing '+place_post.__str__()+' as new parent/seed')
+        indexMatch(placeid, None)
+        place_post.indexed = True
+        place_post.save()
 
       # set review_field status
       setattr(place_post, review_field, 1)
@@ -431,9 +442,10 @@ def review(request, pk, tid, passnum):
 
       return redirect('/datasets/'+str(pk)+'/review/'+tid+'/'+passnum+'?page='+str(int(page)))
     else:
-      print('formset is NOT valid. errors:',formset.errors)
+      print('formset is NOT valid')
       print('formset data:',formset.data)
-  # print('review_page', review_page)
+      print('errors:',formset.errors)
+  print('review_page', review_page)
   return render(request, 'datasets/'+review_page, context=context)
 
 """
@@ -624,7 +636,7 @@ def ds_recon(request, pk):
     print('ds_recon() request.POST:',request.POST)
     auth = request.POST['recon']
     language = request.LANGUAGE_CODE
-    # previous task of this type?
+    # previous successful task of this type?
     previous = ds.tasks.filter(task_name='align_'+auth,status='SUCCESS')
     prior = request.POST['prior'] if 'prior' in request.POST else 'na'
     if previous.count() > 0:
@@ -641,6 +653,7 @@ def ds_recon(request, pk):
       scope = 'all'
 
     print('ds_recon() scope', scope)
+    # sys.exit()
     # which task? wdlocal, tgn, idx, whg (future)
     func = eval('align_'+auth)
 
@@ -730,10 +743,6 @@ def task_delete(request, tid, scope="foo"):
   # undoes any acceessioning work
   if auth in ['whg', 'idx']:
     deleteDatasetFromIndex('whg', dsid)
-  # set status back to reconciling
-  ds=Dataset.objects.get(id=dsid)
-  ds.ds_status = 'reconciling'
-  ds.save()
 
   return redirect('/datasets/'+dsid+'/reconcile')
 

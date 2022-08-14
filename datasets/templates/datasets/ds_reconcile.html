@@ -118,17 +118,30 @@
                          </li>
                       {% endif %}
                       
+{#                      {% if t.result|get:"pass1" > 0 %}#}
+{#	                      {% if t.task_name == 'align_idx'%}#}
+{#                          <li class="li-left">All (less deferred):#}
+{#                        {% else %}#}
+{#                          <li class="li-left">Pass 1:#}
+{#                        {% endif %}#}
+{#                        <span class="strong mx-2" id='{{t.task_id}}_1'>nn</span>#}
+{#                          <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass1' %}">review</a>#}
+{#                        </li>#}
+{#                      {% endif %}#}
+
                       {% if t.result|get:"pass1" > 0 %}
 	                      {% if t.task_name == 'align_idx'%}
-                          <li class="li-left">All (less deferred):
+                          <li class="li-left">Passes 0, 1:
+                          <span class="strong mx-2" id='{{t.task_id}}_1'>nn</span>
+                          <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='0and1' %}">review</a>
                         {% else %}
                           <li class="li-left">Pass 1:
-                        {% endif %}
-                        <span class="strong mx-2" id='{{t.task_id}}_1'>nn</span>
+                          <span class="strong mx-2" id='{{t.task_id}}_1'>nn</span>
                           <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass1' %}">review</a>
+                        {% endif %}
                         </li>
                       {% endif %}
-                      
+
                       {% if t.result|get:"pass2" > 0 %}
                         <li class="li-left">Pass 2: 
                         <span class="strong mx-2" id='{{t.task_id}}_2'>nn</span> 
