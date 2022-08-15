@@ -72,8 +72,8 @@ def link_uri(auth,id):
 
 """
 # from datasets.views.review()
-# indexes a db record upon match reviewing align_idx hits
-# if close or exact -> if match is parent -> make child else if match is child -> make sibling
+# indexes a db record upon a single hit match in align_idx review
+# new record becomes child in the matched hit group 
 """
 def indexMatch(pid, hit_pid=None):
   print('indexMatch(): pid '+str(pid)+' w/hit_pid '+str(hit_pid))
@@ -177,6 +177,280 @@ def indexMatch(pid, hit_pid=None):
       #count_fail += 1
       pass
       #sys.exit(sys.exc_info())
+
+"""
+# from datasets.views.review()
+# indexes a db record upon multiple hit matches in align_idx review
+# a LOT has to happen: 
+  - pick a single 'winner' among the matched hits (max score)
+  - make new record its child
+  - demote all non-winners in index from parent to child
+    - whg_id and children[] ids (if any) added to winner
+    - name variants added to winner's searchy[] and suggest.item[] lists
+"""
+def indexMultiMatch(pid, matchlist):
+  print('indexMultuMatch(): pid '+str(pid)+' matches '+str(matchlist))
+  from elasticsearch7 import Elasticsearch, ElasticsearchException, RequestError
+  es = Elasticsearch([{'host': 'localhost',
+                       'port': 9200,
+                       'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
+                       'timeout': 30,
+                       'max_retries': 10,
+                       'retry_on_timeout': True
+                       }])
+  idx='whg'
+  place = Place.objects.get(id=pid)
+  from elastic.es_utils import makeDoc
+  new_obj = makeDoc(place)
+
+  # bins for new values going to winner
+  addnames = []
+  addkids = [str(pid)]
+
+  # max score is winner
+  winner = max(matchlist, key=lambda x: x['score'])
+  # this is multimatch so there is at least one demoted (list of whg_ids)
+  demoted = [str(i['whg_id']) for i in matchlist if not (i['whg_id'] == winner['whg_id'])]
+  # demoted = [str(i['pid']) for i in matchlist if not (i['pid'] == winner['pid'])]
+
+  # complete doc for new record
+  new_obj['relation'] = {"name": "child", "parent": winner['whg_id']}
+  # copy its toponyms into addnames[]
+  for n in new_obj['names']:
+    addnames.append(n['toponym'])
+  if place.title not in addnames:
+      addnames.append(place.title)
+
+  # generate script used to update winner w/kids and names
+  # from new record and any kids of 'other' matched parents
+  def q_updatewinner(addkids, addnames):
+    return {"script":{
+      "source": """ctx._source.children.addAll(params.newkids);
+      ctx._source.suggest.input.addAll(params.names);
+      ctx._source.searchy.addAll(params.names);
+      """,
+      "lang": "painless",
+      "params":{
+        "newkids": addkids,
+        "names": addnames }
+    }}
+
+  # index the new record as child of winner
+  try:
+    es.index(index=idx, id=str(pid), routing=1, body=json.dumps(new_obj))
+  except RequestError as rq:
+    print('Error: ', rq.error, rq.info)
+
+  # demote others
+  for _id in demoted:
+    print('find & demote whg_id', _id)
+    # get index record stuff, to be altered then re-indexed
+    # ES won't allow altering parent/child relations directly
+    q_demote = {"query": {"bool": {"must": [{"match": {"whg_id": _id}}]}}}
+    res = es.search(body=q_demote, index=idx)
+    srcd = res['hits']['hits'][0]['_source']
+    # add names in suggest to names[]
+    sugs = srcd['suggest']['input']
+    for sug in sugs:
+      addnames.append(sug)
+    addnames = list(set(addnames))
+    # _id of demoted (a whg_id) belongs in winner's children[]
+    addkids.append(srcd['whg_id'])
+
+    haskids = len(srcd['children']) > 0
+    # if demoted record has kids, add to addkids[] list
+    # for 'adoption' by topdog later
+    if haskids:
+      morekids = srcd['children']
+      for kid in morekids:
+        addkids.append(str(kid))
+
+    # update the 'winner' parent
+    q=q_updatewinner(addkids, addnames)
+    try:
+      es.update(idx, winner['whg_id'], body=q)
+    except RequestError as rq:
+      print('q_updatewinner failed (whg_id)', winner['whg_id'])
+      print('Error: ', rq.error, rq.info)
+
+    from copy import deepcopy
+    newsrcd = deepcopy(srcd)
+    # update it to reflect demotion
+    newsrcd['relation'] = {"name":"child", "parent":_id}
+    newsrcd['children'] = []
+    if 'whg_id' in newsrcd:
+      newsrcd.pop('whg_id')
+
+    # zap the demoted, reindex with same _id and modified doc (newsrcd)
+    try:
+      es.delete('whg', _id)
+      es.index(index='whg', id=_id, body=newsrcd, routing=1)
+    except RequestError as rq:
+      print('reindex failed (demoted)',d)
+      print('Error: ', rq.error, rq.info)
+
+    # re-assign parent for kids of all/any demoted parents
+    if len(addkids) > 0:
+      for kid in addkids:
+        q_adopt = {"script": {
+          "source": "ctx._source.relation.parent = params.new_parent); ",
+          "lang": "painless",
+          "params": {
+            "new_parent": winner['whg_id']
+          }
+        }, "query": {"match": {"place_id": kid}}}
+        es.update_by_query(index=idx, body=q_adopt, conflicts='proceed')
+
+    # testing: topdog whg_id = '14158663'; newkids = ['5545349']
+
+    # update topdog with kid(s) + grandkid(s) and variants from new kid + demoted
+    # NB this needs to be a graph one day
+    # add new doc pid to kids
+    # kids += pid
+    # newkids = list(set(kids)) # only unique
+    # q_topdog = {"script": {
+    #   "source": """
+    #     ctx._source.searchy.addAll(params.variants);
+    #     ctx._source.children.addAll(params.newkids);
+    #     ctx._source.suggest.input.addAll(params.variants);""",
+    #   "lang": "painless",
+    #   "params": {
+    #     "newkids": newkids,
+    #     "variants": variants
+    #   }
+    # }, "query": {"match": {"whg_id": topdog['whg_id']}}}
+    # try:
+    #   es.update_by_query(index=idx, body=q_topdog, conflicts='proceed')
+    # except RequestError as rq:
+    #   print('Error: ', rq.error, rq.info)
+    # make this (now former) parent a child of topdog
+    # q_demote = {"script": {
+    #   "source": "ctx._source.relation = params.rel; ctx._source.relation.remove('whg_id')",
+    #   "lang": "painless",
+    #   "params": {
+    #              "rel": {"name": "child", "parent": topdog['whg_id']}
+    #              }
+    #   }, "query": {"match": {"place_id": pid}}}
+    # try:
+    #   es.update_by_query(index=idx, body=q_demote, routing=None, conflicts='proceed')
+    # except RequestError as rq:
+    #   print('Error: ', rq.error, rq.info)
+
+  # tests
+  # whg_id 14158663 children now includes 6713134 and 5545349, from owt10 and tgn respectively
+  # Antakya search returns 2 rows, not 3; top hit w/4 links
+  # hah! good luck
+  # return
+
+  # q_update = {"script": {
+  #   "source": "ctx._source.whg_id = params._id; \
+  #     ctx._source.relation.name = 'parent'; \
+  #     ctx._source.relation.remove('parent'); \
+  #     ctx._source.children.addAll(params.newkids); \
+  #     ctx._source.suggest.input.addAll(params.sugs); \
+  #     ctx._source.searchy.addAll(params.sugs);",
+  #   "lang": "painless",
+  #   "params": {"_id": _id, "newkids": newkids, "sugs": sugs}
+  # },
+  #   "query": {"match": {"place_id": newparent}}
+  # }
+  # multiple parents are matched
+  # the one with more [children? links? high score?] becomes topdog
+  # others 'demoted' to children of topdog
+  #   - add their place_id to topdog's children[]
+  #   - add their names to topdog's searchy[] and suggest[]; ensure distinct
+  #   - drop whg_id property from demoted
+
+  # # is this place already indexed (e.g. by pass0 automatch)?
+  # q_place = {"query": {"bool": {"must": [{"match": {"place_id": pid}}]}}}
+  # res = es.search(index=idx, body=q_place)
+  # if res['hits']['total']['value'] == 0:
+  #   # not indexed, make a new doc
+  #   new_obj = makeDoc(place)
+  #   p_hits = None
+  # else:
+  #   # it's indexed, get parent
+  #   p_hits = res['hits']['hits']
+  #   place_parent = p_hits[0]['_source']['relation']['parent']
+  #
+  # if hit_pid == None and not p_hits:
+  #   # there was no match and place is not already indexed
+  #   print('making '+str(pid)+' a parent')
+  #   new_obj['relation']={"name":"parent"}
+  #
+  #   # increment whg_id
+  #   print('maxID at :109', maxID(es, idx))
+  #   whg_id = maxID(es, idx) + 1
+  #   print('whg_id at :111', whg_id)
+  #   # parents get an incremented _id & whg_id
+  #   new_obj['whg_id']=whg_id
+  #   print('new_obj', new_obj)
+  #   # sys.exit()
+  #
+  #   # add its own names to the suggest field
+  #   for n in new_obj['names']:
+  #     new_obj['suggest']['input'].append(n['toponym'])
+  #   # add its title
+  #   if place.title not in new_obj['suggest']['input']:
+  #     new_obj['suggest']['input'].append(place.title)
+  #   #index it
+  #   try:
+  #     # res = es.index(index=idx, body=json.dumps(new_obj))
+  #     res = es.index(index=idx, id=str(whg_id), body=json.dumps(new_obj))
+  #     place.indexed = True
+  #     place.save()
+  #   except:
+  #     print('failed indexing (as parent)'+str(pid))
+  #     pass
+  #   print('created parent:',pid,place.title)
+  # else:
+  #   # get hit record in index
+  #   q_hit = {"query": {"bool": {"must": [{"match": {"place_id": hit_pid}}]}}}
+  #   res = es.search(index=idx, body=q_hit)
+  #   hit = res['hits']['hits'][0]
+  #
+  #   # see if new place (pid) is already indexed (i.e. due to prior automatch)
+  #   q_place = {"query": {"bool": {"must": [{"match": {"place_id": pid}}]}}}
+  #   res = es.search(index=idx, body=q_place)
+  #   if len(res['hits']['hits']) >0:
+  #     # it's already in, (almost) certainly a child...of what?
+  #     place_hit = res['hits']['hits'][0]
+  #
+  #   # if hit is a child, get _id of its parent; this will be a sibling
+  #   # if hit is a parent, get its _id, this will be a child
+  #   if hit['_source']['relation']['name'] == 'child':
+  #     parent_whgid = hit['_source']['relation']['parent']
+  #   else:
+  #     parent_whgid = hit['_id']
+  #
+  #   # mine new place for its names, make an index doc
+  #   match_names = [p.toponym for p in place.names.all()]
+  #   new_obj['relation']={"name":"child","parent":parent_whgid}
+  #
+  #   # all or nothing; pass if error
+  #   try:
+  #     # index child
+  #     es.index(index=idx, id=place.id, routing=1, body=json.dumps(new_obj))
+  #     #count_kids +=1
+  #     print('added '+str(place.id) + ' as child of '+ str(hit_pid))
+  #
+  #     # add child's names to parent's searchy & suggest.input[] fields
+  #     q_update = { "script": {
+  #         "source": "ctx._source.suggest.input.addAll(params.names); ctx._source.children.add(params.id); ctx._source.searchy.addAll(params.names)",
+  #         "lang": "painless",
+  #         "params":{"names": match_names, "id": str(place.id)}
+  #       },
+  #       "query": {"match":{"_id": parent_whgid}}}
+  #     es.update_by_query(index=idx, body=q_update, conflicts='proceed')
+  #     place.indexed = True
+  #     place.save()
+  #     print('indexed '+str(pid)+' as child of '+str(parent_whgid), new_obj)
+  #   except:
+  #     print('failed indexing '+str(pid)+' as child of '+str(parent_whgid), new_obj)
+  #     #count_fail += 1
+  #     pass
+  #     #sys.exit(sys.exc_info())
+
 
 """ REFACTOR for accessioning """
 def review(request, pk, tid, passnum):
@@ -405,7 +679,10 @@ def review(request, pk, tid, passnum):
                   ds.save()
           # else: this is accessioning to whg index, add to matched[]
           elif task.task_name == 'align_idx':
-            matched.append(str(hits[x]['json']['pid']))
+            matched.append({'whg_id':hits[x]['json']['whg_id'],
+                            'pid':hits[x]['json']['pid'],
+                            'score':hits[x]['json']['score'],
+                            'links':len(hits[x]['json']['links'])})
           # (future) informational lookup on whg index
           elif task.task_name == 'align_whg':
             # future option?
@@ -430,8 +707,9 @@ def review(request, pk, tid, passnum):
         indexMatch(str(place_post.id), matched[0])
         place_post.indexed = True
         place_post.save()
-      elif len(matched > 1):
-        print('multiple matches, what to do?', str(matched))
+      elif len(matched) > 1:
+        # print('multiple matches, what to do?', matched)
+        indexMultiMatch(place_post.id, matched)
       # set review_field status
       setattr(place_post, review_field, 1)
       place_post.save()

@@ -154,7 +154,7 @@
                 <span class="help" data-id="matches">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
                 {% if form.json.value|get:"sources" %}
                 <span class="float-right mr-1 mt-1 smaller">
-                  {{ form.json.value|get:"pass" }}
+{#                  {{ form.json.value|get:"pass" }}#}
 	                {{ form.json.value|get:"whg_id" }}&nbsp;&nbsp;{{ form.json.value|get:"sources"|length }} linked records {% fontawesome_icon 'link' %}
                 </span>
                 {% endif %}

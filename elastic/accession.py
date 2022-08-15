@@ -3,8 +3,14 @@
 
 from copy import deepcopy
 from elastic.es_utils import *
-from elasticsearch import Elasticsearch      
-es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+from elasticsearch7 import Elasticsearch, RequestError
+es = Elasticsearch([{'host': 'localhost',
+                     'port': 9200,
+                     'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
+                     'timeout': 30,
+                     'max_retries': 10,
+                     'retry_on_timeout': True
+                     }])
 idx='whg'
 # use by datasets.align_whg_testy(), eventually: 
 # align_idx(dsid)
@@ -28,6 +34,20 @@ idx='whg'
 #       append all to profiles[]
 #       processProfiles(pid, profiles)
 
+#update 14158663 children to ["81403","13041394"]
+# qfix = {"script": {
+#   "source": "ctx._source.children = params.kids; ctx._source.relation.remove('whg_id')",
+#   "lang": "painless",
+#   "params": {
+#     "kids": ["81403","13041394"]
+#   }
+# }, "query": {"match": {"whg_id": 14158663}}}
+# try:
+#   es.update_by_query(index=idx, body=qfix, conflicts='proceed')
+# except RequestError as rq:
+#   print('Error: ', rq.error, rq.info)
+
+
 # used in accessioning, not grooming
 def addChild(place, parent_id):
   print('adding', place, 'as child of', parent_id)
@@ -39,37 +59,39 @@ def addChild(place, parent_id):
   #add _id to parent children[]
   #add variants to parent searchy[]
 
-def demoteParents(demoted, winner_id, pid):
-  #demoted = ['14156468']
-  #newparent_id = winner_id
-  print('demoteParents()',demoted, winner_id, pid)
-  #qget = """{"query": {"bool": {"must": [{"match":{"_id": "%s" }}]}}}"""
+def demoteParents(demoted, winner_id):
+  # demoted = ['14090523'] (whg_ids)
+  # winner_id '14158663' (whg_id)
+  print('demoteParents()',demoted, winner_id)
   
   # updates 'winner' with children & names from demoted
   def q_updatewinner(kids, names):
     return {"script":{
-	"source": """ctx._source.children.addAll(params.newkids);
-	ctx._source.suggest.input.addAll(params.names);
-	ctx._source.searchy.addAll(params.names);
-    """,
-	"lang": "painless",
-	"params":{
-		"newkids": kids,
-		"names": names }
+      "source": """ctx._source.children.addAll(params.newkids);
+      ctx._source.suggest.input.addAll(params.names);
+      ctx._source.searchy.addAll(params.names);
+      """,
+      "lang": "painless",
+      "params":{
+        "newkids": kids,
+        "names": names }
     }}
 
   for d in demoted:
-    # get the demoted doc, its names and kids if any
     #d = demoted[0]
-    #d = '14156468'
-    #winner_id = '14156467'
+    # test 20220815
+    #d = '14090523' (TGN Antakya, pid 545349)
+    #winner_id = '14158663' (Black Antioch, pid 81401)
+
+    # get the demoted doc, its names and kids if any
     qget = """{"query": {"bool": {"must": [{"match":{"_id": "%s" }}]}}}"""    
     try:      
       qget = qget % (d)
       doc = es.search(index='whg', body=qget)['hits']['hits'][0]
-    except:
-      print('failed getting winner; winner_id, pid',winner_id, pid)
-      sys.exit(sys.exc_info())
+    except RequestError as rq:
+      print('failed getting winner; winner_id, pid',winner_id)
+      print('Error: ', rq.error, rq.info)
+
     srcd = doc['_source']
     kids = srcd['children']
     # add this doc b/c it's now a kid
@@ -80,9 +102,9 @@ def demoteParents(demoted, winner_id, pid):
     q=q_updatewinner(kids, names)
     try:
       es.update(idx,winner_id,body=q)
-    except:
-      print('q_updatewinner failed (pid, winner_id)',pid,winner_id)
-      sys.exit(sys.exc_info())
+    except RequestError as rq:
+      print('q_updatewinner failed (winner_id)',winner_id)
+      print('Error: ', rq.error, rq.info)
 
     # then modify copy of demoted,
     # delete the old, index the new
@@ -96,10 +118,9 @@ def demoteParents(demoted, winner_id, pid):
     try:      
       es.delete('whg', d)
       es.index(index='whg',id=d,body=newsrcd,routing=1)
-    except:
-      print('reindex failed (pid, demoted)',pid,d)
-      sys.exit(sys.exc_info())
-
+    except RequestError as rq:
+      print('reindex failed (demoted)',d)
+      print('Error: ', rq.error, rq.info)
 
 def topParent(parents, form):
   #print('topParent():', parents)   
