@@ -205,17 +205,16 @@ def indexMultiMatch(pid, matchlist):
 
   # bins for new values going to winner
   addnames = []
-  addkids = [str(pid)]
+  addkids = [str(pid)] # pid will also be the new record's _id
 
   # max score is winner
-  winner = max(matchlist, key=lambda x: x['score'])
+  winner = max(matchlist, key=lambda x: x['score']) # 14158663
   # this is multimatch so there is at least one demoted (list of whg_ids)
-  demoted = [str(i['whg_id']) for i in matchlist if not (i['whg_id'] == winner['whg_id'])]
-  # demoted = [str(i['pid']) for i in matchlist if not (i['pid'] == winner['pid'])]
+  demoted = [str(i['whg_id']) for i in matchlist if not (i['whg_id'] == winner['whg_id'])] # ['14090523']
 
   # complete doc for new record
   new_obj['relation'] = {"name": "child", "parent": winner['whg_id']}
-  # copy its toponyms into addnames[]
+  # copy its toponyms into addnames[] for adding to winner later
   for n in new_obj['names']:
     addnames.append(n['toponym'])
   if place.title not in addnames:
@@ -255,7 +254,7 @@ def indexMultiMatch(pid, matchlist):
       addnames.append(sug)
     addnames = list(set(addnames))
     # _id of demoted (a whg_id) belongs in winner's children[]
-    addkids.append(srcd['whg_id'])
+    # addkids.append(str(srcd['whg_id']))
 
     haskids = len(srcd['children']) > 0
     # if demoted record has kids, add to addkids[] list
@@ -266,7 +265,7 @@ def indexMultiMatch(pid, matchlist):
         addkids.append(str(kid))
 
     # update the 'winner' parent
-    q=q_updatewinner(addkids, addnames)
+    q=q_updatewinner(list(set(addkids)), list(set(addnames))) # ensure only unique
     try:
       es.update(idx, winner['whg_id'], body=q)
     except RequestError as rq:
@@ -276,7 +275,7 @@ def indexMultiMatch(pid, matchlist):
     from copy import deepcopy
     newsrcd = deepcopy(srcd)
     # update it to reflect demotion
-    newsrcd['relation'] = {"name":"child", "parent":_id}
+    newsrcd['relation'] = {"name":"child", "parent":winner['whg_id']}
     newsrcd['children'] = []
     if 'whg_id' in newsrcd:
       newsrcd.pop('whg_id')
