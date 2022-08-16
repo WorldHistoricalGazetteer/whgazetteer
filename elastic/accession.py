@@ -12,16 +12,17 @@ es = Elasticsearch([{'host': 'localhost',
                      'retry_on_timeout': True
                      }])
 idx='whg'
-
-# ensure searchy values are unique
-qfix = {"script": {
-  "source": "ctx._source.searchy = HashSet(ctx._source.searchy)",
-  "lang": "painless"
-}, "query": {"match": {"whg_id": 14158663}}}
-try:
-  es.update_by_query(index=idx, body=qfix, conflicts='proceed')
-except RequestError as rq:
-  print('Error: ', rq.error, rq.info)
+# owt10 places
+ #/'Memphis',
+ # 'Dzhukuchak',
+ #/'Barskon',
+ #/'Barskoon',
+ #/ 'Chong-Kyzylsu',
+ # 'Santash',
+ # 'Burana',
+ #/ 'Fderik',
+ #/ 'Antakya',
+ # 'Al Madain'
 
 #update 14158663 children
 # correct: ["81403","13041394","6713134","14090523"]
@@ -30,7 +31,7 @@ qfix = {"script": {
   "source": "ctx._source.children = params.kids; ctx._source.relation.remove('whg_id')",
   "lang": "painless",
   "params": {
-    "kids": ["81403","13041394","6713134","14090523"]
+    "kids": ["81403","13041394"]
   }
 }, "query": {"match": {"whg_id": 14158663}}}
 try:
@@ -38,6 +39,55 @@ try:
 except RequestError as rq:
   print('Error: ', rq.error, rq.info)
 
+# restore 14090523 after task delete
+try:
+  es.delete('whg', '14090523')
+  es.index(index='whg', id='14090523', body=srcd, routing=1)
+except RequestError as rq:
+  print('reindex failed (demoted)')
+  print('Error: ', rq.error, rq.info)
+
+srcd={'types': [{'identifier': '300008389',
+   'sourceLabel': 'inhabited place',
+   'label': 'cities'},
+  {'identifier': '300008347',
+   'sourceLabel': 'archaeological site',
+   'label': 'inhabited places'},
+  {'identifier': '300000810',
+   'sourceLabel': 'city',
+   'label': 'archaeological sites'}],
+ 'searchy': ['Hatay', 'Antakyé', 'Antakya', 'Antakiyah'],
+ 'src_id': '7594295',
+ 'minmax': [],
+ 'suggest': {'input': ['Hatay', 'Antakyé', 'Antakya', 'Antakiyah']},
+ 'title': 'Antakya',
+ 'geoms': [{'geowkt': 'POINT(36.1167 36.2333)',
+   'location': {'coordinates': [36.1167, 36.2333], 'type': 'Point'}}],
+ 'uri': 'http://whgazetteer.org/api/places/5545349',
+ 'descriptions': [],
+ 'relation': {'name': 'parent'},
+ 'names': [{'toponym': 'Hatay',
+   'citation': {'id': 'http://vocab.getty.edu/page/tgn/7594295',
+    'label': 'Getty TGN Dec 2017'}},
+  {'toponym': 'Antakyé',
+   'citation': {'id': 'http://vocab.getty.edu/page/tgn/7594295',
+    'label': 'Getty TGN Dec 2017'}},
+  {'toponym': 'Antakya',
+   'citation': {'id': 'http://vocab.getty.edu/page/tgn/7594295',
+    'label': 'Getty TGN Dec 2017'}},
+  {'toponym': 'Antakiyah',
+   'citation': {'id': 'http://vocab.getty.edu/page/tgn/7594295',
+    'label': 'Getty TGN Dec 2017'}}],
+ 'depictions': [],
+ 'children': [],
+ 'ccodes': ['TR'],
+ 'fclasses': ['P', 'S'],
+ 'links': [{'identifier': 'tgn:7594295', 'type': 'closeMatch'}],
+ 'timespans': [],
+ 'relations': [],
+ 'dataset': 'tgn_filtered_01',
+ 'place_id': 5545349,
+ 'whg_id': 14090523}
 
 # align_idx(dsid)
 #   for place in ds.places.all()

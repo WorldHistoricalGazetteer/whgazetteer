@@ -550,7 +550,7 @@ def review(request, pk, tid, passnum):
         # sys.exit()
       elif len(matched) == 1:
         print('one accession match, make record '+str(place_post.id)+' child of hit ' + str(matched[0]))
-        indexMatch(str(place_post.id), matched[0])
+        indexMatch(str(place_post.id), matched[0]['pid'])
         place_post.indexed = True
         place_post.save()
       elif len(matched) > 1:

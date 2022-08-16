@@ -1487,6 +1487,10 @@ def align_idx(pk, *args, **kwargs):
       doc = makeDoc(p)
       doc['relation']['name'] = 'parent'
       doc['whg_id'] = whg_id
+      # get names for search fields
+      names = [p.toponym for p in p.names.all()]
+      doc['searchy'] = names
+      doc['suggest']['input'] = names
       print("seed", whg_id, doc)
       new_seeds.append(doc)
       res = es.index(index=idx, id=str(whg_id), document=json.dumps(doc))
