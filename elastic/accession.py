@@ -1,5 +1,5 @@
-# functions for grooming, accessioning a dataset
-# 22 Mar 2021
+# testfunctions related to accessioning a dataset
+# 16 Aug 2022
 
 from copy import deepcopy
 from elastic.es_utils import *
@@ -12,7 +12,33 @@ es = Elasticsearch([{'host': 'localhost',
                      'retry_on_timeout': True
                      }])
 idx='whg'
-# use by datasets.align_whg_testy(), eventually: 
+
+# ensure searchy values are unique
+qfix = {"script": {
+  "source": "ctx._source.searchy = HashSet(ctx._source.searchy)",
+  "lang": "painless"
+}, "query": {"match": {"whg_id": 14158663}}}
+try:
+  es.update_by_query(index=idx, body=qfix, conflicts='proceed')
+except RequestError as rq:
+  print('Error: ', rq.error, rq.info)
+
+#update 14158663 children
+# correct: ["81403","13041394","6713134","14090523"]
+# or return to previous: ["81403","13041394"]
+qfix = {"script": {
+  "source": "ctx._source.children = params.kids; ctx._source.relation.remove('whg_id')",
+  "lang": "painless",
+  "params": {
+    "kids": ["81403","13041394","6713134","14090523"]
+  }
+}, "query": {"match": {"whg_id": 14158663}}}
+try:
+  es.update_by_query(index=idx, body=qfix, conflicts='proceed')
+except RequestError as rq:
+  print('Error: ', rq.error, rq.info)
+
+
 # align_idx(dsid)
 #   for place in ds.places.all()
 #     build_qobj(pid)
@@ -34,18 +60,7 @@ idx='whg'
 #       append all to profiles[]
 #       processProfiles(pid, profiles)
 
-#update 14158663 children to ["81403","13041394"]
-# qfix = {"script": {
-#   "source": "ctx._source.children = params.kids; ctx._source.relation.remove('whg_id')",
-#   "lang": "painless",
-#   "params": {
-#     "kids": ["81403","13041394"]
-#   }
-# }, "query": {"match": {"whg_id": 14158663}}}
-# try:
-#   es.update_by_query(index=idx, body=qfix, conflicts='proceed')
-# except RequestError as rq:
-#   print('Error: ', rq.error, rq.info)
+
 
 
 # used in accessioning, not grooming
