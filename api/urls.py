@@ -17,10 +17,10 @@ urlpatterns = [
     path('db/',views.SearchAPIView.as_view(),name='api-search'),
     # index docs
     path('index/',views.IndexAPIView.as_view(),name='api-index-search'),
-    # traces
-    path('traces/',views.TracesAPIView.as_view(),name='traces-search'),
     # spatial (nearby or bbox)
     path('spatial/', views.SpatialAPIView.as_view(), name='api-spatial'),
+    # traces (deprecated)
+    # path('traces/', views.TracesAPIView.as_view(), name='traces-search'),
 
     # *** DATASETS ***
 
@@ -50,7 +50,6 @@ urlpatterns = [
     # use: map in ds_browse, ds_places, collection_places :: PlaceGeomSerializer
     path('geoms/', views.GeomViewSet.as_view({'get':'list'}), name='geom-list'),
     # use: heatmap sources for collection_places.html
-    #path('geojson/', views.GeoJSONViewSet.as_view(), name='geojson'),    
     path('geojson/', views.GeoJSONAPIView.as_view(), name='geojson'),    
 
     
@@ -60,12 +59,11 @@ urlpatterns = [
     # use: single area in dataset.html#addtask
     path('area/<int:pk>/', views.AreaViewSet.as_view({'get': 'retrieve'}),name='area-detail'),
     # returns list of simple objects (id, title) for home>autocomplete
-    path('area_list/', views.AreaListView.as_view(),name='area-list'),    
-    #path('area_list_all/', views.AreaListView.as_view(),name='area-list-all'),    
+    path('area_list/', views.AreaListView.as_view(),name='area-list'),
     # geojson for api
     path('area_features/', views.AreaFeaturesView.as_view(),name='area-features'), 
     
-    # only UN regions, for teaching   
+    # only UN regions, for teaching
     path('regions/', views.RegionViewSet, name='regions'),
 
     # 

@@ -32,6 +32,7 @@ urlpatterns = [
     path('dashboard/', DashboardView.as_view(), name='dashboard'),
 
     ## DATA "DASHBOARD" LIST VIEWS
+    # reverse name is parameter to DataListsView()
     path('mydata/', DataListsView.as_view(), name='data-datasets'),
     path('mycollections/', DataListsView.as_view(), name='data-collections'),
     path('mystudyareas/', DataListsView.as_view(), name='data-areas'),
@@ -40,16 +41,13 @@ urlpatterns = [
     path('public_data/', PublicListsView.as_view(), name='public-lists'),
 
     # static content
-    url(r'^contributing/$', TemplateView.as_view(template_name="main/contributing.html"), name="contributing"),
-    url(r'^usingapi/$', TemplateView.as_view(template_name="main/usingapi.html"), name="usingapi"),
-    url(r'^community/$', TemplateView.as_view(template_name="main/community.html"), name="community"),
-    url(r'^about/$', TemplateView.as_view(template_name="main/about.html"), name="about"),
-    url(r'^credits/$', TemplateView.as_view(template_name="main/credits.html"), name="credits"),
-    url(r'^system/$', TemplateView.as_view(template_name="main/system.html"), name="system"),
-    url(r'^licensing/$', TemplateView.as_view(template_name="main/licensing.html"), name="licensing"),
+    path('about/', TemplateView.as_view(template_name="main/about.html"), name="about"),
+    path('contributing/', TemplateView.as_view(template_name="main/contributing.html"), name="contributing"),
+    path('credits/', TemplateView.as_view(template_name="main/credits.html"), name="credits"),
+    path('licensing/', TemplateView.as_view(template_name="main/licensing.html"), name="licensing"),
+    path('system/', TemplateView.as_view(template_name="main/system.html"), name="system"),
+    path('usingapi/', TemplateView.as_view(template_name="main/usingapi.html"), name="usingapi"),
     path('tinymce/', include('tinymce.urls')),
-
-    path('heat/', TemplateView.as_view(template_name="main/mb-heatmap.html"), name="heat"),
 
     path('comment/<int:rec_id>', views.CommentCreateView.as_view(), name='comment-create'),
     path('contact/', views.contactView, name='contact'),

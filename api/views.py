@@ -577,7 +577,7 @@ class DatasetAPIView(LoginRequiredMixin, generics.ListAPIView):
   renderer_classes = [JSONRenderer]
 
   def get_queryset(self, format=None, *args, **kwargs):
-    params=self.request.query_params  
+    params=self.request.query_params
     print('api/datasets params',params)
     id_ = params.get('id', None)
     dslabel = params.get('label', None)
@@ -599,7 +599,7 @@ class DatasetAPIView(LoginRequiredMixin, generics.ListAPIView):
               #"features":serialized_data
               "features":qs
               }
-    print('ds result',result,type(result))
+    print('ds result', result,type(result))
     return qs
 
 """
@@ -620,7 +620,6 @@ class AreaFeaturesView(generics.ListAPIView):
     filter = params.get('filter', None)
     
     areas = []
-    # qs = Area.objects.all().filter((Q(type='predefined') | Q(owner=user))).values('id','title','type','description','geojson')
     qs = Area.objects.all().filter((Q(type='predefined'))).values('id','title','type','description','geojson')
     
     # filter for parameters
@@ -633,7 +632,6 @@ class AreaFeaturesView(generics.ListAPIView):
 
       
     for a in qs:
-      #area = {"id":a['id'],"title":a['title'],"type":a['type']}
       feat = {
         "type":"Feature",
         "properties":{"id":a['id'],"title":a['title'],"type":a['type'],"description":a['description']},
@@ -657,9 +655,8 @@ class UserDetail(generics.RetrieveAPIView):
 @api_view(['GET'])
 def api_root(request, format=None):
   return Response({
-      #'users': reverse('user-list', request=request, format=format),
-        'datasets': reverse('dataset-list', request=request, format=format)
-    })
+    'datasets': reverse('dataset-list', request=request, format=format)
+  })
 
 
 class PrettyJsonRenderer(JSONRenderer):    

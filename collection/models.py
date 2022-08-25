@@ -108,6 +108,15 @@ class Collection(models.Model):
     return dict(all)
 
   @property
+  def last_modified_iso(self):
+    # TODO: log entries for collections
+    # if self.log.count() > 0:
+    #   last=self.log.all().order_by('-timestamp')[0].timestamp
+    # else:
+    #   last=self.created
+    return self.created.strftime("%Y-%m-%d")
+
+  @property
   def rowcount(self):
     dses = self.datasets.all()
     ds_counts = [ds.places.count() for ds in dses]

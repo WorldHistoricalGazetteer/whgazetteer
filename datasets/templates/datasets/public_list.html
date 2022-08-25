@@ -13,7 +13,10 @@
       position: sticky;
       top: 0;
       z-index: 10;
-      background-color: #fdf5e6;
+      background-color: #fdf5e6;}
+    .dataset {background-color: #e6eefd}
+    .place {background-color: #e6fdf5}
+    .region {background-color: #f5e6fd}
   </style>
 {% endblock%}
 {% endblock %}
@@ -74,13 +77,15 @@
         </div>
       </div>
       <div id="coll_list" class="tab-pane fade " role="tabpanel" aria-labelledby="colllist-tab">
-        <p class="mb-1 ml-1">These collections of datasets are flagged as "public" in WHG. Most are downloadable from their linked page. Public data contained therein are made available under a <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">Creative Commons Attribution 4.0 International (CC BY 4.0) License</a>.</p>
+        <p class="mb-1 ml-1">These dataset and place collections have been flagged "public" in WHG. Most are downloadable from their linked page. Public data contained therein are made available under a <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">Creative Commons Attribution 4.0 International (CC BY 4.0) License</a>.</p>
         <div id="collection_list" class="mt-1 ml-0">
           <div class="list-box">
             <table id="public_collectionlist"class="table table-striped">
               <thead class="small">
                   <th>id</th>
+                  <th>type</th>
                   <th>title</th>
+                  <th>count</th>
                   <th>created</th>
                   <th>creator</th>
               </thead>
@@ -88,12 +93,15 @@
                 {% for c in coll_list %}
                   <tr class="place-row">
                     <td>{{ c.id }}</td>
+                    <td><span class="{{ c.collection_class }} p-1">{{ c.collection_class }}</span></td>
 	                  {% if c.collection_class == 'dataset' %}
                     <td><a href="{% url 'collection:ds-collection-summary' c.id %}">{{ c.title }}</a></td>
 	                  {% else %}
 		                  <td><a href="{% url 'collection:place-collection-browse' c.id %}">{{ c.title }}</a></td>
 	                  {% endif %}
-                    <td>{{ c.created }}</td>
+                    <td>{{ c.rowcount }}</td>
+{#                    <td>{{ c.created }}</td>#}
+                    <td>{{ c.last_modified_iso  }}</td>
                     <td>{{ c.owner }}</td>
                   </tr>
                 {% endfor %}
