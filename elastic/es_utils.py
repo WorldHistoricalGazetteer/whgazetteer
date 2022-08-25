@@ -502,7 +502,7 @@ def deleteDatasetFromIndex(idx, dsid):
                        'timeout': 30,
                        'max_retries': 10,
                        'retry_on_timeout': True}])
-  deleteFromIndex(es, 'whg', ds.placeids)
+  deletePlacesFromIndex(es, 'whg', ds.placeids)
 
 # ***
 # delete docs given place_id array
@@ -513,7 +513,7 @@ def deleteDatasetFromIndex(idx, dsid):
 #
 # from elasticsearch import Elasticsearch
 # es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
-def deleteFromIndex(es, idx, pids):
+def deletePlacesFromIndex(es, idx, pids):
   delthese=[]
   for pid in pids:
     # get its database record

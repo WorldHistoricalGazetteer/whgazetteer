@@ -44,7 +44,7 @@ from datasets.static.hashes.parents import ccodes as cchash
 from datasets.tasks import align_wdlocal, align_idx, align_tgn, maxID
 
 from datasets.utils import *
-from elastic.es_utils import makeDoc, deleteFromIndex, replaceInIndex, deleteDatasetFromIndex
+from elastic.es_utils import makeDoc, deletePlacesFromIndex, replaceInIndex, deleteDatasetFromIndex
 from main.choices import AUTHORITY_BASEURI
 from main.models import Log, Comment
 from places.models import *
@@ -2381,7 +2381,7 @@ class DatasetDeleteView(DeleteView):
     dataset_file_delete(ds)
     if ds.ds_status == 'indexed':
       pids=list(ds.placeids)
-      deleteFromIndex(es, 'whg', pids)
+      deletePlacesFromIndex(es, 'whg', pids)
 
   def get_object(self):
     id_ = self.kwargs.get("id")

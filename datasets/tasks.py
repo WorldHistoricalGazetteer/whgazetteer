@@ -1438,7 +1438,6 @@ def es_lookup_idx(qobj, *args, **kwargs):
 # gets result_obj per Place
 # writes union Hit records to db for review
 # OR writes seed parent to whg index
-# TODO: dry-run option (no index writes)
 """
 @task(name="align_idx")
 def align_idx(pk, *args, **kwargs):
@@ -1494,6 +1493,8 @@ def align_idx(pk, *args, **kwargs):
       print("seed", whg_id, doc)
       new_seeds.append(doc)
       res = es.index(index=idx, id=str(whg_id), document=json.dumps(doc))
+      p.indexed = True
+      p.save()
       # es.index(idx, doc, id=whg_id)
       
     # got some hits, format json & write to db as for align_wdlocal, etc.

@@ -60,7 +60,7 @@
           {% else %}
             <input type="hidden" name="ds" value="{{ ds.id }}">
             <input type="hidden" name="wd_lang" value="">
-            <!-- -->
+
             {% if user.is_superuser %}
               <div class="form-check text-danger mt-2">
                 <label class="form-check-label" for="r_whg">
@@ -144,11 +144,6 @@
                     </span></p>
                   </div>
                 </div>
-{#                <div class="bottom">#}
-{#                  <hr/>#}
-{#                  <button type="submit" id="btn_startrecon" class="btn btn-primary">Start</button>#}
-{#                  <span title="back"><a id="cancel_taskadd" href="#">Cancel</a></span>#}
-{#                </div>#}
               </div> <!-- #addtask_lower -->
             {% endif %} <!-- ds.ds_status != 'accessioning' -->
             <div class="bottom">
@@ -233,6 +228,7 @@
 </div>
 
 <script type="text/javascript">
+
   // show/hide geo constraint options
   $("#r_tgn").click(function(){
     <!--console.log('tgn now');-->
@@ -263,6 +259,7 @@
     console.log('msgs',msgs)
     if("{{ msg_wdlocal.type }}" == 'done'){
       $("#r_wdlocal").attr('disabled',true)
+	    $("#r_whg").prop('checked','true')
     }
     if("{{ msg_tgn.type }}" == 'done'){
       $("#r_tgn").attr('disabled',true)

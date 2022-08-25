@@ -93,7 +93,15 @@
                     </p>
                   </div>
                   <div class="col-sm-6">
-                    <p><b>Result</b>: {{ t.result|get:"got_hits"|safe }} of the {{ t.result|get:"count"|safe }} records submitted got total of <b>{{ t.result|get:"total_hits"|safe }}</b> hits</p>
+                    <p>
+	                    <b>Result</b>: {{ t.result|get:"got_hits"|safe }} of {{ t.result|get:"count"|safe }}
+	                      records submitted got <b>{{ t.result|get:"total_hits"|safe }}</b> hits in total
+	                    {% if t.task_name == 'align_idx' %}
+		                    {% with gothits=t.result|get:"got_hits" %}
+		                    ; {{ t.result|get:"count"|subtract:gothits}} were indexed
+		                    {% endwith %}
+	                    {% endif %}
+                    </p>
 {#                    {{ t.result }}#}
                     <p class="mb-0">Remaining to review: <span id="{{t.task_id}}_remaining">nn</span></p>
 {#                    <p class="mb-0 ital">Remaining to review: </p>#}

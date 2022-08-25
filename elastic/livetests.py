@@ -1,0 +1,52 @@
+# tests for Elasticsearch operations
+# can't run with manage.py test; must use existing database
+from django.test import TestCase
+
+from elasticsearch7 import Elasticsearch
+from django.conf import settings
+from django.db.models import Q
+from datasets.models import Dataset, Hit
+idx = 'whg'
+dslabel = 'owt10'
+from elastic.es_utils import deleteDatasetFromIndex
+es = Elasticsearch([{'host': 'localhost',
+                     'port': 9200,
+                     'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
+                     'timeout': 30,
+                     'max_retries': 10,
+                     'retry_on_timeout': True}])
+
+"""
+  requires task and indexed owt10 test dataset
+"""
+
+def test_remove_dataset_from_index(dslabel):
+  ds = Dataset.objects.get(label=dslabel)
+  placeids = list(ds.placeids)
+
+  # run function
+  deleteDatasetFromIndex(idx, ds.id)
+
+  """are ds place.review_whg values all unreviewed"""
+  unreviewed = ds.places.filter(review_whg = 1).count() == 0
+  # == ds.places.count()
+  """if current align_idx task.status == 'SUCCESS' are all hit.reviewed values False?"""
+  # latest align_idx task
+  taskid = ds.tasks.get(task_name='align_idx').task_id
+  hits_cleared = Hit.objects.filter(task_id = taskid, reviewed = True).count() == 0
+
+  q = { "query": {"bool": {
+          "should": [
+              {"match": {"dataset": ds.label}},
+              {"terms": {"place_id": placeids}},
+              {"terms": {"children": placeids}}]
+  }}}
+  res = es.search(index=idx, body=q)
+  """is it gone from index?"""
+  zapped = res['hits']['total']['value'] == 0; print('zapped?:', zapped)
+
+  print({'zapped': zapped, 'unreviewed': unreviewed, 'hits_cleared': hits_cleared})
+
+
+def test_something_that_will_fail(self):
+    self.assertTrue(False)
