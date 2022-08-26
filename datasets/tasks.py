@@ -1436,7 +1436,7 @@ def es_lookup_idx(qobj, *args, **kwargs):
 """
 # align/accession to whg index
 # gets result_obj per Place
-# writes union Hit records to db for review
+# writes 'union' Hit records to db for review
 # OR writes seed parent to whg index
 """
 @task(name="align_idx")

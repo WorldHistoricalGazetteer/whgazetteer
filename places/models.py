@@ -47,6 +47,10 @@ class Place(models.Model):
     return [cc[0][x]['gnlabel'] for x in self.ccodes]
 
   @property
+  def defer_comments(self):
+    return self.comment_set.filter(tag='defer')
+
+  @property
   def dsid(self):
     return self.dataset.id
 
@@ -90,10 +94,6 @@ class Place(models.Model):
   @property
   def traces(self):
     return TraceAnnotation.objects.filter(place=self.id)
-
-  @property
-  def defer_comments(self):
-    return self.comment_set.filter(tag='defer')
 
   class Meta:
     managed = True

@@ -63,8 +63,6 @@ class Dataset(models.Model):
   # these are back-filled
   numlinked = models.IntegerField(null=True, blank=True)
   total_links = models.IntegerField(null=True, blank=True)
-  
-  #collections = models.ManyToManyField("collection.Collection")
 
   def __str__(self):
     return self.label
@@ -73,39 +71,6 @@ class Dataset(models.Model):
   def get_absolute_url(self):
     return reverse('datasets:ds_summary', kwargs={'id': self.id})
 
-  # how many wikidata links?
-  @property
-  def q_count(self):
-    placeids = Place.objects.filter(dataset=self.label).values_list('id', flat=True)
-    return PlaceLink.objects.filter(place_id__in=placeids, jsonb__icontains='Q').count()
-    
-  @property
-  def last_modified_iso(self):
-    if self.log.count() > 0:
-      last=self.log.all().order_by('-timestamp')[0].timestamp
-    else:
-      last=self.create_date
-    return last.strftime("%Y-%m-%d")
-  
-  @property
-  def last_modified_text(self):
-    if self.log.count() > 0:
-      last=self.log.all().order_by('-timestamp')[0].timestamp
-    else:
-      last = self.create_date
-    return last.strftime("%d %b %Y")
-    
-  @property
-  def minmax(self):
-    # TODO: temporal is sparse, sometimes [None, None]
-    timespans = [p.minmax for p in self.places.all() \
-                 if p.minmax and len(p.minmax) == 2 and p.minmax[0]]
-    #print('ds; timespans as model property', self.label, timespans)
-    earliest = min([t[0] for t in timespans]) if len(timespans) > 0 else None
-    latest = max([t[1] for t in timespans]) if len(timespans) > 0 else None
-    minmax = [earliest,latest] if earliest and latest else None
-    return minmax
-  
   @property
   def bounds(self):
     # pg_geoms=PlaceGeom.objects.values_list('geom',flat=True).filter(place__dataset=self.label)
@@ -118,33 +83,113 @@ class Dataset(models.Model):
     return feat if dsgeoms.count() > 0 else None
 
   @property
-  def file(self):
-    # returns model instance for latest file
-    file = self.files.all().order_by('id')[0]
-    return file 
-  
+  def collaborators(self):
+    ## includes roles: member, owner
+    team = DatasetUser.objects.filter(dataset_id_id = self.id).values_list('user_id_id')
+    # members of whg_team group are collaborators on all datasets
+    teamusers = User.objects.filter(id__in=team) | User.objects.filter(groups__name='whg_team')
+    return teamusers
+
   @property
   def dl_est(self):
     file = self.files.all().order_by('id')[0]
     if file.file:
-      size = int(file.file.size/1000000) # seconds +/-
+      size = int(file.file.size / 1000000)  # seconds +/-
     else:
       # substitute record count for *rough* estimate
-      size = self.places.count()/1000
-    min, sec = divmod(size,60)
+      size = self.places.count() / 1000
+    min, sec = divmod(size, 60)
     if min < 1:
       result = "%02d sec" % (sec)
-    elif sec >=10:
+    elif sec >= 10:
       result = "%02d min %02d sec" % (min, sec)
     else:
-      result = "%02d min" % (min) 
-    #print("est. %02d min %02d sec" % (min, sec))
+      result = "%02d min" % (min)
+      # print("est. %02d min %02d sec" % (min, sec))
     return result
-  
+
   @property
-  def tasks(self):
-    #from django_celery_results.models import TaskResult
-    return TaskResult.objects.filter(task_args = '['+str(self.id)+']',task_name__startswith='align')
+  def file(self):
+    # returns model instance for latest file
+    file = self.files.all().order_by('id')[0]
+    return file
+
+  @property
+  def format(self):
+    return self.files.first().format
+
+  # list of dataset geometries
+  @property
+  def geometries(self):
+    g_list = PlaceGeom.objects.filter(place_id__in=self.placeids).values_list('jsonb', flat=True)
+    return g_list
+
+  @property
+  def last_modified_iso(self):
+    if self.log.count() > 0:
+      last = self.log.all().order_by('-timestamp')[0].timestamp
+    else:
+      last = self.create_date
+    return last.strftime("%Y-%m-%d")
+
+  @property
+  def last_modified_text(self):
+    if self.log.count() > 0:
+      last = self.log.all().order_by('-timestamp')[0].timestamp
+    else:
+      last = self.create_date
+    return last.strftime("%d %b %Y")
+
+  @property
+  def minmax(self):
+    # TODO: temporal is sparse, sometimes [None, None]
+    timespans = [p.minmax for p in self.places.all() \
+                 if p.minmax and len(p.minmax) == 2 and p.minmax[0]]
+    # print('ds; timespans as model property', self.label, timespans)
+    earliest = min([t[0] for t in timespans]) if len(timespans) > 0 else None
+    latest = max([t[1] for t in timespans]) if len(timespans) > 0 else None
+    minmax = [earliest, latest] if earliest and latest else None
+    return minmax
+
+  @property
+  def owners(self):
+    du_owner_ids = list(self.collabs.filter(role = 'owner').values_list('user_id_id',flat=True))
+    du_owner_ids.append(self.owner.id)
+    ds_owners = User.objects.filter(id__in=du_owner_ids)
+    return ds_owners
+
+  # list of dataset place_id values
+  @property
+  def placeids(self):
+    return Place.objects.filter(dataset=self.label).values_list('id', flat=True)
+
+  # how many wikidata links?
+  @property
+  def q_count(self):
+    placeids = Place.objects.filter(dataset=self.label).values_list('id', flat=True)
+    return PlaceLink.objects.filter(place_id__in=placeids, jsonb__icontains='Q').count()
+
+  # status of each recon task type
+  @property
+  def recon_status(self):
+    tasks = TaskResult.objects.filter(
+      task_args = '['+str(self.id)+']',
+      task_name__startswith='align',
+      status='SUCCESS')
+    result = {}
+    for t in tasks:
+      result[t.task_name[6:]] = Hit.objects.filter(task_id=t.task_id,reviewed=False).values("place_id").distinct().count()
+
+    return result
+
+  # count of reviewed places
+  @property
+  def reviewed_places(self):
+    result = {}
+    result['rev_wd'] = self.places.filter(review_wd = 1).count()
+    result['rev_tgn'] = self.places.filter(review_tgn = 1).count()
+    result['rev_whg'] = self.places.filter(review_whg = 1).count()
+    return result
 
   # used in ds_compare()
   @property
@@ -158,7 +203,12 @@ class Dataset(models.Model):
 
     result = {"submissions":submissions,"idxcount":idxcount}
     return result
-  
+
+  @property
+  def tasks(self):
+    #from django_celery_results.models import TaskResult
+    return TaskResult.objects.filter(task_args = '['+str(self.id)+']',task_name__startswith='align')
+
   # tasks stats
   @property
   def taskstats(self):
@@ -191,67 +241,17 @@ class Dataset(models.Model):
     #print(result)
     return result
 
+  @property
+  def unindexed(self):
+    unidxed=self.places.filter(indexed=False).count()
+    return unidxed
   # count of unreviewed hits
+
   @property
   def unreviewed_hitcount(self):
     unrev=Hit.objects.all().filter(dataset_id=self.id, reviewed=False).count()
     return unrev
   # count of unindexed places
-  @property
-  def unindexed(self):
-    unidxed=self.places.filter(indexed=False).count()
-    return unidxed
-
-  # count of reviewed places
-  @property
-  def reviewed_places(self):
-    result = {}
-    result['rev_wd'] = self.places.filter(review_wd = 1).count()
-    result['rev_tgn'] = self.places.filter(review_tgn = 1).count()
-    result['rev_whg'] = self.places.filter(review_whg = 1).count()
-    return result
-
-  # status of each recon task type
-  @property
-  def recon_status(self):
-    tasks = TaskResult.objects.filter(
-      task_args = '['+str(self.id)+']',
-      task_name__startswith='align',
-      status='SUCCESS')
-    result = {}
-    for t in tasks:
-      result[t.task_name[6:]] = Hit.objects.filter(task_id=t.task_id,reviewed=False).values("place_id").distinct().count()
-
-    return result
-  # list of dataset place_id values
-  @property
-  def placeids(self):
-    return Place.objects.filter(dataset=self.label).values_list('id', flat=True)
-
-  # list of dataset geometries
-  @property
-  def geometries(self):
-    g_list = PlaceGeom.objects.filter(place_id__in=self.placeids).values_list('jsonb', flat=True)
-    return g_list
-
-  @property
-  def format(self):
-    return self.files.first().format
-
-  @property
-  def collaborators(self):
-    ## includes roles: member, owner
-    team = DatasetUser.objects.filter(dataset_id_id = self.id).values_list('user_id_id')
-    # members of whg_team group are collaborators on all datasets
-    teamusers = User.objects.filter(id__in=team) | User.objects.filter(groups__name='whg_team')
-    return teamusers
-
-  @property
-  def owners(self):
-    du_owner_ids = list(self.collabs.filter(role = 'owner').values_list('user_id_id',flat=True))
-    du_owner_ids.append(self.owner.id)
-    ds_owners = User.objects.filter(id__in=du_owner_ids)
-    return ds_owners
 
   class Meta:
     managed = True
@@ -274,9 +274,6 @@ class DatasetFile(models.Model):
   numrows = models.IntegerField(null=True, blank=True)
   # TODO: generate geotypes, add to file instance
   #geotypes = JSONField(blank=True, null=True)
-
-  #def __str__(self):
-    #return 'file_'+str(self.rev)
 
   class Meta:
     managed = True

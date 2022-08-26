@@ -6,7 +6,7 @@ from django.urls import path, re_path, include
 from django.views.generic.base import TemplateView
 
 from main import views
-from datasets.views import DashboardView, PublicListsView, DataListsView
+from datasets.views import PublicListsView, DataListsView
 from resources.views import TeachingPortalView
 
 app_name='main'
@@ -29,7 +29,8 @@ urlpatterns = [
     path('resources/', include('resources.urls')),
     path('teaching/', TeachingPortalView.as_view(), name="teaching-page"),
 
-    path('dashboard/', DashboardView.as_view(), name='dashboard'),
+    # DEPRECATED
+    # path('dashboard/', DashboardView.as_view(), name='dashboard'),
 
     ## DATA "DASHBOARD" LIST VIEWS
     # reverse name is parameter to DataListsView()

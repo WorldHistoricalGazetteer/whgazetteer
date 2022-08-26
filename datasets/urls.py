@@ -68,8 +68,8 @@ urlpatterns = [
   # accept any unreviewed wikidata pass0 hits from given task
   path('wd_pass0/<str:tid>', views.write_wd_pass0, name="wd_pass0"),
 
-  # accept any unreviewed whg pass0 hits; create & index child docs
-  path('idx_pass0/<str:tid>', views.write_idx_pass0, name="idx_pass0"),
+  # DEPRECATED accept any unreviewed whg pass0 hits; create & index child docs
+  # path('idx_pass0/<str:tid>', views.write_idx_pass0, name="idx_pass0"),
 
   # delete TaskResult & associated hits
   path('task-delete/<str:tid>/<str:scope>', views.task_delete, name="task-delete"),
