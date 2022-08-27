@@ -16,6 +16,9 @@
   <link rel="stylesheet" href="//cdn.datatables.net/1.10.23/css/dataTables.bootstrap4.min.css">
   <script src="//cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
   <script src="//cdn.datatables.net/1.10.23/js/dataTables.bootstrap4.min.js"></script>
+	<style>
+		#error_closer {padding: 0 .75rem !important;}
+	</style>
 {% endblock %}
 
 {% block title %}<title>Dataset::{{ ds.label }}</title>{% endblock %}
@@ -67,6 +70,16 @@
                   <input type="radio" class="form-check-input" id="r_whg"
                     name="recon" value="idx">WHG (accession/reconcile) 
                 </label>
+								{% for message in messages %}
+								<div class="container-fluid p-0">
+								  <div class="alert {{ message.tags }} alert-dismissible" role="alert" >
+								    <button type="button" id="error_closer" class="close" data-dismiss="alert" aria-label="Close">
+								      <span aria-hidden="True">&times;</span>
+								    </button>
+								    {{ message }}
+								  </div>
+								</div>
+								{% endfor %}
                 <div id="wd_lang" class="hidden">
                   Preferred label language: <input class="input-sm col-xs-2"type="text" name="lang">
                 </div>
@@ -80,12 +93,12 @@
             {% else %} <!-- offer tasks -->
               <p class="font-weight-bold mb-0">Name authority source</p>
               <p class="small">Your task will enter a queue and and an email notification sent when completed.</p>
+	            {% comment %}
               <div class="form-check">
                 <label class="form-check-label text-secondary" for="r_tgn">
                   <input type="radio" disabled class="form-check-input" id="r_tgn"
                     name="recon" value="tgn" checked>Getty TGN (tgn)
 	                <mark class="small">temporarily unavailable</mark>
-	                {% comment %}<span class=" small font-italic ml-2">estimated time: {{ ds.numrows|time_estimate }}</span>{% endcomment %}
                 </label>
                 {% if msg_tgn %}
                 <div id="tgn_tasks" class="smaller hidden">
@@ -99,6 +112,7 @@
                 </div>
                 {% endif %}
               </div>
+              {% endcomment %}
               <div class="form-check">
                 <label class="form-check-label" for="r_wdlocal">
                   <input type="radio" class="form-check-input r_wd" id="r_wdlocal" 

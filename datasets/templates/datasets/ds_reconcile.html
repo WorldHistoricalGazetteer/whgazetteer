@@ -51,14 +51,16 @@
         <h6 class="">Reconciliation Tasks 
           <span class="small help-matches" data-id="reconciliation">
             {% fontawesome_icon 'question-circle' color='#993333' %}</span>
+{#          {% if ds.unindexed > %}#}
           {% if user.is_superuser or user in owners %}
             <span class="ml-4 small">
             <a id="addtask_link" href="{% url 'datasets:ds_addtask' id=ds.id %}">Add new task {% fontawesome_icon 'plus-square' color='#336699' %}</a>
             </span>
+{#          {% endif %}#}
           {% endif %}
         </h6>
         {% if not messages %}
-        <p>Linking in WHG is the activity of matching records from one dataset with "close matches" in another, in a method called <sr>reconciliation</sr> or <sr>alignment</sr>. It can also accomplish geocoding of place names for many records that are missing location. Reconciliation tasks can be performed against our local <sr>Wikidata</sr> index. Fully accessioning data to WHG involves the further step of reconciling against our "union index."</p>
+	        <p>Linking in WHG is the activity of matching records from one dataset with "close matches" in another, in a method called <sr>reconciliation</sr> or <sr>alignment</sr>. It can also accomplish geocoding of place names for many records that are missing location. Reconciliation tasks can be performed against our local <sr>Wikidata</sr> index. Fully accessioning data to WHG involves the further step of reconciling against our "union index."</p>
         {% endif %}
         {% if user in owners or user in collaborators or user.is_superuser %}
 	        {% if not ds.ds_status == 'accessioning' %}
@@ -78,19 +80,20 @@
           {% for t in tasks %}
             {% if t.status == 'SUCCESS' %}
               <div class="task-box mb-2 {{t.task_name}}">
-{#              <p>{{ t.task_name }}</p>#}
                 <div class="row ">
                   <div class="col-sm-4">
                     <p><b>Task</b>: {{ t.task_name }} <span class="small">
                       ({{ t.date_done|date:"d-M-Y, H:i (e)" }}; elapsed: {{ t.result|get:"elapsed"|safe }})</span>
                     </p>
                     <p><b>ID</b>: {{ t.task_id }}</p>
+	                  {% if t.task_name != 'align_idx' or user|has_group:'admins' %}
                     <p id="{{ t.task_name }}" class="small">
                        <a class="confirm-del-all" data-id={{t.task_id}} href="{% url 'datasets:task-delete' tid=t.task_id scope='task' %}">
                          Delete task & hits, clear matches {% fontawesome_icon 'trash' color='#ff0000' %}</a><br/>
                          <a class="confirm-del-geoms" href="{% url 'datasets:task-delete' tid=t.task_id scope='geoms'%}">
                         Delete geometries added so far</a>
                     </p>
+	                  {% endif %}
                   </div>
                   <div class="col-sm-6">
                     <p>
@@ -98,19 +101,12 @@
 	                      records submitted got <b>{{ t.result|get:"total_hits"|safe }}</b> hits in total
 	                    {% if t.task_name == 'align_idx' %}
 		                    {% with gothits=t.result|get:"got_hits" %}
-		                    ; {{ t.result|get:"count"|subtract:gothits}} were indexed
+		                    ; {{ t.result|get:"count"|subtract:gothits}} indexed immediately
 		                    {% endwith %}
 	                    {% endif %}
                     </p>
-{#                    {{ t.result }}#}
                     <p class="mb-0">Remaining to review: <span id="{{t.task_id}}_remaining">nn</span></p>
-{#                    <p class="mb-0 ital">Remaining to review: </p>#}
                     <span id="spinner"></span>
-{#                    {% if t.task_name == 'align_idx'%}#}
-{#	                    <ul>#}
-{#	                    #}
-{#	                    </ul>#}
-{#                    {% endif %}#}
                     <ul>
                       {% if t.result|get:"pass0" > 0 and t.task_name != "align_idx" %}
                         <li id="pass0_{{t.task_id}}" class="li-left">Pass 0 (matched links): 
@@ -125,18 +121,6 @@
                          <span class="help-matches" data-id="auto-match">{% fontawesome_icon 'question-circle' color='#993333' %}</span></span>
                          </li>
                       {% endif %}
-                      
-{#                      {% if t.result|get:"pass1" > 0 %}#}
-{#	                      {% if t.task_name == 'align_idx'%}#}
-{#                          <li class="li-left">All (less deferred):#}
-{#                        {% else %}#}
-{#                          <li class="li-left">Pass 1:#}
-{#                        {% endif %}#}
-{#                        <span class="strong mx-2" id='{{t.task_id}}_1'>nn</span>#}
-{#                          <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass1' %}">review</a>#}
-{#                        </li>#}
-{#                      {% endif %}#}
-
                       {% if t.result|get:"pass1" > 0 %}
 	                      {% if t.task_name == 'align_idx'%}
                           <li class="li-left">Passes 0, 1:
@@ -211,11 +195,7 @@
               <div id="results_text" class="mb-2 small ds-card">
                 <p>Uploaded data will be compared with existing data, and results reported here.</p>
                   <p>You may then proceed, or cancel this operation with no changes made.</p>
-                <!--{ if links_added > 0 or geoms_added > 0 %}-->
-                <!--<p>This dataset has been augmented with { links_added }} links and { geoms_added }} geometries-->
-                <!--via reconciliation tasks. </p>-->
-                <!--{ endif %}-->
-              </div>          
+              </div>
             </form>
           </div> <!-- .form-group -->
         </div> <!-- .modal-body -->      
@@ -234,7 +214,7 @@
       </div>
     </div>
   </div>
-</div>
+</div></div>
 
 <script type="text/javascript">
 
@@ -288,6 +268,7 @@
   })
   // updates recon task card totals 
   function updateTotals(dsid){
+    console.log("admin? {{ user|has_group:'admin' }}")
     $.get("/datasets/updatecounts",{ds_id: dsid},
       function(data){
         updates=Object.entries(data)

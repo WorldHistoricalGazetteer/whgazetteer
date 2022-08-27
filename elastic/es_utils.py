@@ -599,6 +599,7 @@ def deletePlacesFromIndex(es, idx, pids):
             es.update_by_query(index=idx,body=q_update)
             print('child '+psrc['title'],str(pid)+' excised from parent: '+parent+'; tagged for deletion')
           except:
+            pass
             print('update of parent losing child failed',sys.exit(sys.exc_info()))
         # child's presence in parent removed, add to delthese[]
         delthese.append(pid)

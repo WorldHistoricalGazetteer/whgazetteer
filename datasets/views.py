@@ -10,7 +10,7 @@ from django.http import HttpResponseServerError, JsonResponse, HttpResponse, Htt
 from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse
 from django.views.generic import (CreateView, ListView, UpdateView, DeleteView, DetailView)
-# NB!!! mistakenly shows as unused but IT IS USED!
+# NB!!! shows as unused but IT IS USED!
 from django_celery_results.models import TaskResult
 
 # from django.contrib.auth.models import User
@@ -170,9 +170,7 @@ def indexMatch(pid, hit_pid=None):
         },
         "query": {"match":{"_id": parent_whgid}}}
       es.update_by_query(index=idx, body=q_update, conflicts='proceed')
-      place.indexed = True
-      place.save()
-      print('indexed '+str(pid)+' as child of '+str(parent_whgid), new_obj)
+      print('indexed? ', place.indexed)
     except:
       print('failed indexing '+str(pid)+' as child of '+str(parent_whgid), new_obj)
       pass
@@ -453,7 +451,7 @@ def review(request, pk, tid, passnum):
     if formset.is_valid():
       hits = formset.cleaned_data
       matches = 0
-      matched = [] # for accession
+      matched_for_idx = [] # for accession
       # are any of the listed hits matches?
       for x in range(len(hits)):
         hit = hits[x]['id']
@@ -503,7 +501,6 @@ def review(request, pk, tid, passnum):
             # create multiple PlaceLink records (e.g. Wikidata)
             # TODO: filter duplicates
             if 'links' in hits[x]['json']:
-              #print('json links', hits[x]['json']['links'])
               for l in hits[x]['json']['links']:
                 #print('l in links',l)
                 authid = re.search("\: ?(.*?)$", l).group(1)
@@ -526,10 +523,12 @@ def review(request, pk, tid, passnum):
                   ds.save()
           # this is accessioning to whg index, add to matched[]
           elif task.task_name == 'align_idx':
-            matched.append({'whg_id':hits[x]['json']['whg_id'],
+            if 'links' in hits[x]['json']:
+              links_count = len(hits[x]['json'])
+            matched_for_idx.append({'whg_id':hits[x]['json']['whg_id'],
                             'pid':hits[x]['json']['pid'],
                             'score':hits[x]['json']['score'],
-                            'links':len(hits[x]['json']['links'])})
+                            'links': links_count})
           # TODO: (?) informational lookup on whg index
           elif task.task_name == 'align_whg':
             print('align_whg (non-accessioning) DOING NOTHING (YET)')
@@ -540,27 +539,38 @@ def review(request, pk, tid, passnum):
         print('hit # '+str(hitobj.id)+' flagged reviewed')
 
       # handle accessioning match results
-      if len(matched) == 0 and task.task_name == 'align_idx':
+      if len(matched_for_idx) == 0 and task.task_name == 'align_idx':
         # no matches during accession, index as seed (parent
         print('no accession matches, index '+str(place_post.id)+' as seed (parent)')
         print('maxID() in review()', maxID(es,'whg'))
         indexMatch(str(place_post.id))
-      elif len(matched) == 1:
-        print('one accession match, make record '+str(place_post.id)+' child of hit ' + str(matched[0]))
-        indexMatch(str(place_post.id), matched[0]['pid'])
         place_post.indexed = True
         place_post.save()
-      elif len(matched) > 1:
-        indexMultiMatch(place_post.id, matched)
-      # set review_whg = 1, indexed = True
+      elif len(matched_for_idx) == 1:
+        print('one accession match, make record '+str(place_post.id)+' child of hit ' + str(matched_for_idx[0]))
+        indexMatch(str(place_post.id), matched_for_idx[0]['pid'])
+        place_post.indexed = True
+        place_post.save()
+      elif len(matched_for_idx) > 1:
+        indexMultiMatch(place_post.id, matched_for_idx)
+        place_post.indexed = True
+        place_post.save()
+
+      if ds.unindexed == 0:
+        setattr(ds, 'ds_status', 'indexed')
+        ds.save()
+
+      # set review_whg = 1
+      print('review_field', review_field)
       setattr(place_post, review_field, 1)
-      place_post.indexed = True
       place_post.save()
 
       return redirect('/datasets/'+str(pk)+'/review/'+tid+'/'+passnum+'?page='+str(int(page)))
     else:
       print('formset is NOT valid. errors:',formset.errors)
       print('formset data:',formset.data)
+
+    #
 
   return render(request, 'datasets/'+review_page, context=context)
 
@@ -673,6 +683,9 @@ def write_wd_pass0(request, tid):
 """
 def ds_recon(request, pk):
   ds = get_object_or_404(Dataset, id=pk)
+  if ds.public == False:
+    messages.add_message(request, messages.ERROR, """Dataset must be public before indexing!""")
+    return redirect('/datasets/' + str(ds.id) + '/addtask')
   # TODO: handle multipolygons from "#area_load" and "#area_draw"
   user = request.user
   context = {"dataset": ds.title}

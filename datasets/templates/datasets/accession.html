@@ -29,7 +29,7 @@
   </h5>
   {% if nohits %}
     <div>
-      <p>No unreviewed hits for this reconciliation task!</p>
+      <p>No unreviewed hits for this accessioning task! {{ authority }}</p>
       <p><a href="{% url 'datasets:ds_summary' id=ds_id %}">return to dataset summary page</a></p>
     </div>
   {% else %}
@@ -185,16 +185,18 @@
               {% endif %}
 
               <p class="mb-0"><strong>Linked records ({{ form.json.value|get:"sources"|length }})</strong>:
-              {% for src in form.json.value|get:"sources" %}
-                <div class="accession-div-row">
-                <p><a class="pop-link pop-dataset" data-label={{src.dslabel}} data-toggle="popover" title="Dataset Profile" data-content="" tabindex="0" rel="clickover">{{ src.dslabel }}</a> (<a href="/api/place/{{src.pid}}/" target="_blank">{{ src.pid }}</a>): <i>variants</i>: <b>{{ src.variants|join:", " }}</b>
-                {% if src.types|length > 0 %}; <i>type(s)</i>: <b>{{ src.types|join:","}}</b>
-                {% endif %}
-                {% if src.minmax %}; <i>earliest/latest</i>:<b> {{ src.minmax|join:"/"}}</b>{% endif %} <i class="text-muted">{{ src.pass }}</i>: 
-                </p>
-                <p></p>
-                </div>
-              {% endfor %}</p> 
+	              {% for src in form.json.value|get:"sources" %}
+	                <div class="accession-div-row">
+	                <p><a class="pop-link pop-dataset" data-label={{src.dslabel}} data-toggle="popover" title="Dataset Profile" data-content="" tabindex="0" rel="clickover">{{ src.dslabel }}</a> (<a href="/api/place/{{src.pid}}/" target="_blank">{{ src.pid }}</a>):
+	                {% if src.types|length > 0 %}<i>variants</i>: <b>{{ src.variants|join:", " }}</b>{% endif %}
+	                {% if src.types|length > 0 %}; <i>type(s)</i>: <b>{{ src.types|join:","}}</b>{% endif %}
+{#	                {% if src.minmax %}; <i>earliest/latest</i>:<b> {{ src.minmax|join:"/"}}</b>{% endif %}#}
+		                <i class="text-muted">{{ src.pass }}</i>:
+	                </p>
+	                <p></p>
+	                </div>
+	              {% endfor %}
+	            </p>
 
               {% if form.json.value|get:"links"|length > 0 %} 
                 <p><strong>All concordances</strong>: 

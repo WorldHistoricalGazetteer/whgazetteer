@@ -9,6 +9,7 @@ from django.core import mail
 from django.core.mail import EmailMultiAlternatives, EmailMessage
 from django.db import connection
 from django.db.models import Q
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
 

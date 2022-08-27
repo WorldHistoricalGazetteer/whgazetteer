@@ -7,7 +7,7 @@ from django.conf import settings
 from django.db.models import Q
 from datasets.models import Dataset, Hit
 idx = 'whg'
-dslabel = 'owt10'
+dslabel = 'owt10b'
 from elastic.es_utils import deleteDatasetFromIndex
 es = Elasticsearch([{'host': 'localhost',
                      'port': 9200,

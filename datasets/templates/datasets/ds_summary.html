@@ -265,11 +265,15 @@
               <tr>
                 <td><b>Links</b></td><td>{{ num_links }}</td>
                 <td><span class="text-white bg-success">&nbsp;{{ links_added }}&nbsp;</span></td></tr>
-              {% if ds.unindexed > 0 %}
+	              {% if ds.unindexed > 0 %}
                 <tr class="text-danger">
-                <td class="pt-3"><b>Unindexed records</b></td>
-                <td class="pt-3">{{ ds.unindexed }}</td>
-                <td class="pt-3 text-secondary">n/a</td></tr>{% endif %}
+	                <td class="pt-3"><b>Unindexed records</b></td>
+	                <td class="pt-3">{{ ds.unindexed }}</td>
+	                <td class="pt-3 text-secondary">n/a</td>
+                </tr>
+	              {% else %}
+		              <tr class="text-danger"><td><b>Dataset is fully indexed!</b></td></tr>
+	              {% endif %}
             </table>
           </div>
           <div id="ds_access" class="pt-0 px-0 ds-card">
