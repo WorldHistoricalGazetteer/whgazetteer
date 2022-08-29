@@ -42,7 +42,7 @@
 {#			  <form id="fetch_form" method="POST" action={% url 'elastic:remove-dataset' %} enctype="multipart/form-data">#}
 			  <form id="fetch_form" method="POST" action="#" enctype="multipart/form-data">
 			  {% csrf_token %}
-		    <p>Remove all records of a dataset. <mark>es_utils.removeFromIndex()</mark></p>
+		    <p>Remove all records of a dataset. <mark>es_utils.removeDatasetFromIndex()</mark></p>
 		    <input id="ds_input" class="small" name="dsid" placeholder="Dataset id (dsid)">
 		    <button id="btn_remove" type="button" class="btn btn-primary btn-sm">Remove Dataset</button>
 {#		    <button id="btn_fetch_ds" type="submit" class="btn btn-primary btn-sm">Fetch Dataset</button>#}

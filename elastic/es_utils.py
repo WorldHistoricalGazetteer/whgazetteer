@@ -430,17 +430,17 @@ def replaceInIndex(es,idx,pids):
 def removeDatasetFromIndex(request, *args, **kwargs):
   print('removeDatasetFromIndex() hands pids to removePlacesFromIndex()')
   print('args, kwargs',args, kwargs)
-  # from datasets.models import Dataset
-  # from elasticsearch7 import Elasticsearch
-  # ds = Dataset.objects.get(id=dsid)
-  # es = Elasticsearch([{'host': 'localhost',
-  #                      'port': 9200,
-  #                      'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
-  #                      'timeout': 30,
-  #                      'max_retries': 10,
-  #                      'retry_on_timeout': True}])
-  # removePlacesFromIndex(es, 'whg', ds.placeids)
-  return JsonResponse({'msg':'okay already, lunchtime?'})
+  from datasets.models import Dataset
+  from elasticsearch7 import Elasticsearch
+  ds = Dataset.objects.get(id = kwargs['dsid'])
+  es = Elasticsearch([{'host': 'localhost',
+                       'port': 9200,
+                       'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
+                       'timeout': 30,
+                       'max_retries': 10,
+                       'retry_on_timeout': True}])
+  removePlacesFromIndex(es, 'whg', ds.placeids)
+  return JsonResponse({'msg':'task passed to removePlacesFromIndex('+str(ds.id)+')'})
 
 #
 # delete docs given place_id list
