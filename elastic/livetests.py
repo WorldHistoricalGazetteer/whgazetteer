@@ -39,14 +39,19 @@ def test_remove_dataset_from_index(dslabel):
           "should": [
               {"match": {"dataset": ds.label}},
               {"terms": {"place_id": placeids}},
-              {"terms": {"children": placeids}}]
+              {"terms": {"children": placeids}}
+          ]
   }}}
+ #
   res = es.search(index=idx, body=q)
   """is it gone from index?"""
   zapped = res['hits']['total']['value'] == 0; print('zapped?:', zapped)
 
   print({'zapped': zapped, 'unreviewed': unreviewed, 'hits_cleared': hits_cleared})
 
+
+# for h in res['hits']['hits']:
+#     print(h['_source']['children'])
 
 def test_something_that_will_fail(self):
     self.assertTrue(False)

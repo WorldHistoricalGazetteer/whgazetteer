@@ -1,4 +1,4 @@
-# testfunctions related to accessioning a dataset
+# test functions related to accessioning a dataset
 # 16 Aug 2022
 
 from copy import deepcopy

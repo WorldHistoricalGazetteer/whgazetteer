@@ -10,19 +10,14 @@
   {% leaflet_css %}
   <script src="{% static 'js/aliases.js' %}"></script>
   <script src="{% static 'js/easyprint.js' %}"></script>
-  <script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>
-  
-  <link rel="stylesheet" href="{% static 'css/spin.css' %}"/>
-  <link rel="stylesheet" href="//cdn.datatables.net/1.10.23/css/dataTables.bootstrap4.min.css">
-  <script src="//cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
-  <script src="//cdn.datatables.net/1.10.23/js/dataTables.bootstrap4.min.js"></script>
+  <script src="{% static 'css/spin.css' %}"></script>
+{#  <script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>#}
 {% endblock %}
 
 {% block title %}<title>Dataset::{{ ds.label }}</title>{% endblock %}
 
 {% block content %}
 <div id="dataset_content" class="container mt-1 px-1">
-  <!--{ include 'datasets/ds_tabs.html' %}-->
   <ul id="dataset_tabs" class="nav nav-tabs" role="tablist">
       <span class="ds-title ml-1 mr-3">{{ ds.title }}</span>
       <li class="nav-item">
@@ -44,31 +39,35 @@
           <a class="nav-link" id="log-tab" data-link="log" href="{% url 'datasets:ds_log' id=ds.id %}" role="tab" aria-controls="log" aria-selected="false">Log & Comments</a>
       </li>
   </ul>
-
   <div class="tab-content">
     <div id="reconciliation" class="tab-pane fade show active " role="tabpanel" aria-labelledby="reconciliation-tab">
       <div id="ds_tasks" class="small">
         <h6 class="">Reconciliation Tasks 
           <span class="small help-matches" data-id="reconciliation">
-            {% fontawesome_icon 'question-circle' color='#993333' %}</span>
-{#          {% if ds.unindexed > %}#}
+            {% fontawesome_icon 'question-circle' color='#993333' %}
+          </span>
           {% if user.is_superuser or user in owners %}
             <span class="ml-4 small">
             <a id="addtask_link" href="{% url 'datasets:ds_addtask' id=ds.id %}">Add new task {% fontawesome_icon 'plus-square' color='#336699' %}</a>
             </span>
-{#          {% endif %}#}
           {% endif %}
         </h6>
         {% if not messages %}
 	        <p>Linking in WHG is the activity of matching records from one dataset with "close matches" in another, in a method called <sr>reconciliation</sr> or <sr>alignment</sr>. It can also accomplish geocoding of place names for many records that are missing location. Reconciliation tasks can be performed against our local <sr>Wikidata</sr> index. Fully accessioning data to WHG involves the further step of reconciling against our "union index."</p>
         {% endif %}
         {% if user in owners or user in collaborators or user.is_superuser %}
+	        {% if ds.ds_status == 'indexed' %}
+		        <div id="ready" class="hidden pl-2">
+	            <p class="my-0">This dataset has been fully indexed</p>
+		        </div>
+	        {% endif %}
 	        {% if not ds.ds_status == 'accessioning' %}
 	          <div id="ready" class="hidden pl-2">
 	            <p class="my-0">All potential matches to <span id="authtag"></span> have been reviewed, so the dataset may be ready for accessioning to the WHG index.</p>
 	            <p class="my-0">If you would like to proceed, please <a class="btn btn-success btn-sm text-light py-0" href="{% url 'contact' %}">contact our editorial team.</a></p>
 	          </div>
 	        {% endif %}
+
           {% if tasks|length < 1 %}<i id="none_yet">None yet...</i>{% endif %}
           {% if messages %}<div>
             {% for message in messages %}
@@ -87,21 +86,22 @@
                     </p>
                     <p><b>ID</b>: {{ t.task_id }}</p>
 	                  {% if t.task_name != 'align_idx' or user|has_group:'admins' %}
-                    <p id="{{ t.task_name }}" class="small">
-                       <a class="confirm-del-all" data-id={{t.task_id}} href="{% url 'datasets:task-delete' tid=t.task_id scope='task' %}">
-                         Delete task & hits, clear matches {% fontawesome_icon 'trash' color='#ff0000' %}</a><br/>
-                         <a class="confirm-del-geoms" href="{% url 'datasets:task-delete' tid=t.task_id scope='geoms'%}">
-                        Delete geometries added so far</a>
-                    </p>
+                      <p id="{{ t.task_name }}" class="small">
+                      <a class="confirm-del-all" data-id={{t.task_id}} href="{% url 'datasets:task-delete' tid=t.task_id scope='task' %}">Delete task & hits, clear matches {% fontawesome_icon 'trash' color='#ff0000' %}
+                      </a><br/>
+                      <a class="confirm-del-geoms" href="{% url 'datasets:task-delete' tid=t.task_id scope='geoms'%}">
+                        Delete geometries added so far
+                      </a>
+	                    </p>
 	                  {% endif %}
                   </div>
                   <div class="col-sm-6">
                     <p>
-	                    <b>Result</b>: {{ t.result|get:"got_hits"|safe }} of {{ t.result|get:"count"|safe }}
-	                      records submitted got <b>{{ t.result|get:"total_hits"|safe }}</b> hits in total
+	                    <b>Result</b>: {{ t.result|get:"got_hits"|safe }} of the {{ t.result|get:"count"|safe }}
+	                      records got <b>{{ t.result|get:"total_hits"|safe }}</b> hits in total
 	                    {% if t.task_name == 'align_idx' %}
 		                    {% with gothits=t.result|get:"got_hits" %}
-		                    ; {{ t.result|get:"count"|subtract:gothits}} indexed immediately
+		                    ; {{ t.result|get:"count"|subtract:gothits}} were indexed automatically
 		                    {% endwith %}
 	                    {% endif %}
                     </p>
@@ -208,16 +208,16 @@
           <button id="btn_done" type="button" class="btn btn-secondary btn-sm hidden" data-dismiss="modal">Done</button>
         </div>
         <div class="selector py-3">
-          <div id="helpme" class="my-0">
-          <div>
+          <div id="helpme" class="my-0"><div>
         </div>
       </div>
-    </div>
+        </div>
+      </div>
+		</div>
   </div>
-</div></div>
+</div> <!-- #dataset_content -->
 
 <script type="text/javascript">
-
   // activate all tooltips
   $("[rel='tooltip']").tooltip();
 
@@ -247,7 +247,7 @@
     // generic help load
     $(".help-matches").click(function(){
       page=$(this).data('id')
-      console.log('help:', page)
+      {#console.log('help:', page)#}
       $('.selector').dialog('open');
     })
     
@@ -266,7 +266,7 @@
       hide: {effect: "fade",duration: 400 }
     });
   })
-  // updates recon task card totals 
+  // updates task card totals
   function updateTotals(dsid){
     console.log("admin? {{ user|has_group:'admin' }}")
     $.get("/datasets/updatecounts",{ds_id: dsid},
@@ -279,14 +279,13 @@
           console.log('updateTotals() counts', task, counts)
           
           // if all are reviewed, disable radio button
-          //radio_id = "#r_" + counts['task'].substring(6)
-          
-          if(counts['total'] == 0 && task == 'align_wdlocal' ){
-            console.log(task + ' task down to zero: ' + tid)
+          if(counts['total'] == 0 ){
             $('.'+task).css('border', '2px dashed darkseagreen')
-            $("#authtag").html(task=='align_tgn'?'Getty TGN':'Wikidata')
-            $("#ready").removeClass("hidden")
-            $('#'+task).addClass("hidden")
+	          if(task == 'align_wdlocal'){
+	            $("#authtag").html(task=='align_tgn'?'Getty TGN':'Wikidata')
+	            $("#ready").removeClass("hidden")
+	            $('#'+task).addClass("hidden")
+	          }
           }
           
           $("#"+tid+'_remaining').html(counts['total'])
@@ -297,8 +296,6 @@
           } else {
             $("#"+tid+'_1').html(counts['pass1'])
           }
-          {#$("#"+tid+'_1').html(counts['total']-counts['deferred']?task=='align_idx':counts['pass1'])#}
-          {#$("#"+tid+'_1').html(counts['pass1'])#}
           $("#"+tid+'_2').html(counts['pass2'])
           $("#"+tid+'_3').html(counts['pass3'])
           
@@ -337,5 +334,4 @@
     return confirm('DANGER! Destroys task, its hits, and clears matches confirmed in Review step...'+id);
   })
 </script>
-
 {% endblock %}

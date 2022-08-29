@@ -1449,7 +1449,18 @@ def align_idx(pk, *args, **kwargs):
   user = get_object_or_404(User, id=kwargs['user'])
   # get last index identifier (used for _id)
   whg_id = maxID(es, idx)
-
+  """
+  kwargs: {'ds': 1231, 'dslabel': 'owt10b', 'owner': 14, 'user': 1, 
+    'bounds': {'type': ['userarea'], 'id': ['0']}, 'aug_geom': 'on', 
+    'scope': 'all', 'lang': 'en'}
+  """
+  """
+    {'csrfmiddlewaretoken': ['Z3vg1TOlJRNTYSErmyNYuuaoTYMmk8235pMea2nXHtxvpfmvmdqPsqRHeefFqt2u'], 
+    'ds': ['1231'], 
+    'wd_lang': [''], 
+    'recon': ['idx'], 
+    'lang': ['']}>
+  """
   # open file for writing new seed/parents for inspection
   wd = "/Users/karlg/Documents/repos/_whgazetteer/_scratch/accessioning/"
   fn1 = "new-parents_"+str(ds.id)+".txt"
@@ -1467,7 +1478,8 @@ def align_idx(pk, *args, **kwargs):
     
   # limit scope if some are already indexed
   # TODO: scope = 'all' should be not possible for align_idx
-  qs = ds.places.all() if scope == 'all' else ds.places.filter(indexed=False)
+  qs = ds.places.all() if scope == 'all' else ds.places.filter(indexed=False) \
+    if scope == 'unindexed' else ds.places.filter(review_wd != 1)
   
   """
   for each place, create qobj and run es_lookup_idx(qobj)
@@ -1529,6 +1541,8 @@ def align_idx(pk, *args, **kwargs):
 
       # if there are any
       for par in parents:
+        # 20220828 test
+        print('parent minmax', par['minmax'])
         # any children of *this* parent in this result?
         kids = [c for c in children if c['_id'] in par['children']] or None
         # merge values into hit.json object

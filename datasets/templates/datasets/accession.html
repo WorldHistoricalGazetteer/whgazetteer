@@ -16,16 +16,15 @@
 {% block content %}
 <div class="container">
   <h5 class="mb-2 mt-3">
-  {% if authority == 'idx' %}Accessioning
-  {%else%}
-  Reconciliation{%endif%} Review 
-  {% if deferred is True %} 
-    (<span class="text-danger">"deferred"</span>)
-  {% endif %}
-    <span class="help" data-id="accessioning">{% fontawesome_icon 'question-circle' color='#993333' %}</span> 
-    <span class="small ml-3"> <i>dataset</i>: <a href="{% url 'datasets:ds_reconcile' id=ds_id %}"> {{ ds_label }}</a>
-    </span>
-    <span class="half float-right mr-2"><i>task id</i>: {{ task_id }}</span>
+	  {% if authority == 'idx' %}Accessioning{%else%}Reconciliation{%endif%} Review
+	  {% if deferred is True %}
+	    (<span class="text-danger">"deferred"</span>)
+	  {% endif %}
+	  <span class="help" data-id="accessioning">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
+	  <span class="small ml-3"> <i>dataset</i>:
+		  <a href="{% url 'datasets:ds_reconcile' id=ds_id %}"> {{ ds_label }}</a>
+	  </span>
+	  <span class="half float-right mr-2"><i>task id</i>: {{ task_id }}</span>
   </h5>
   {% if nohits %}
     <div>
@@ -41,8 +40,10 @@
     <div class="container">
       <div id="review_nav" class="row pagination justify-content-center">
 
-        <div class="col-sm-4 pl-1">{% comment %}
-          <a id="undo" class="small hidden-imp" href="" data-url="{% url 'datasets:match-undo' ds=ds_id tid=task_id pid=999 %}">Undo last save {% fontawesome_icon 'undo' color='#336699' %}</a>{% endcomment %}
+        <div class="col-sm-4 pl-1">
+	        {% comment %} TODO: undo an accessioning match?
+            <a id="undo" class="small hidden-imp" href="" data-url="{% url 'datasets:match-undo' ds=ds_id tid=task_id pid=999 %}">Undo last save {% fontawesome_icon 'undo' color='#336699' %}</a>
+           {% endcomment %}
         </div>
 
         <div class="col-sm-8">
@@ -65,13 +66,12 @@
                 <a href="?page={{ records.next_page_number }}">next</a>&nbsp;&nbsp;
                 <a href="?page={{ records.paginator.num_pages }}">last &raquo;</a>
             {% endif %}
-        </span>
+          </span>
         </div>
       </div>
       <div class="row mt-2">
         <div id="review_record" class="col-sm-4 pl-0 small">
-          <div class="bg-secondary font-weight-bold pl-2 text-light">
-            {{ dataset_label }}</div>
+          <div class="bg-secondary font-weight-bold pl-2 text-light">{{ dataset_label }}</div>
           <div id="place_record" class="mb-2">
             <div>
               <input type="hidden" name="place_id" value="{{ record.id }}" />
@@ -126,7 +126,6 @@
         </div>
         <!--available: ['whg_id', 'place_id', 'src_id', 'title', 'dataset', 'variants', 'types', 'ccodes', 'parents', 'descriptions', 'geoms', 'timespans', 'links']-->
         <div id="review_list" class="col-sm-8 pr-0">
-          <!--<p>formset length: { formset|length }}</p>-->
           {% for form in formset %}
             <input type="hidden" name="id" value='{{ form.id.value }}'></input>
             <input type="hidden" name="authrecord_id" value='{{ form.authrecord_id.value }}'></input>
@@ -154,21 +153,13 @@
                 <span class="help" data-id="matches">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
                 {% if form.json.value|get:"sources" %}
                 <span class="float-right mr-1 mt-1 smaller">
-{#                  {{ form.json.value|get:"pass" }}#}
 	                {{ form.json.value|get:"whg_id" }}&nbsp;&nbsp;{{ form.json.value|get:"sources"|length }} linked records {% fontawesome_icon 'link' %}
                 </span>
                 {% endif %}
-                {% comment %}{% if authority == 'idx' %}
-                  <button type="button" 
-                    data-id="{{ form.json.value|get:"place_id" }}" 
-                    class="create-comment btn btn-sm" style="background-color:oldlace;">
-                  {% fontawesome_icon 'edit' color='#336699' %}</button>
-                {% endif %}{% endcomment %}
                 </span>
               </div>
             </div>
             {{ form.non_field_errors }}
-{#	          {{ form.json.value }}#}
             <div class="auth-match bg-light pl-2 mt-0 mb-2">
               <!-- pull geometries to js -->
               {% if form.json.value|get:"geoms"|length > 0 %}
@@ -176,21 +167,20 @@
                   {{ g|safe|json_script:g.id }}
                 {% endfor %}
               {% endif %}
-              <!--<p>{ form.json.value }}</p>-->
               <p><strong>Title(s)</strong>: <span class="text-danger h6">{{ form.json.value|get:"titles" }}</p>
-              <!--<p><strong>WHG index id</strong>: { form.json.value|get:"whg_id" }}</p> -->
-              <!--<p>{ form.query_pass.value }}</p>-->
-              {% if form.json.value|get:"countries"|length > 0 %} 
-              <p><strong>Countries</strong>: {{ form.json.value|get:"countries" }}</p>
+              {% if form.json.value|get:"countries"|length > 0 %}
+                <p><strong>Countries</strong>: {{ form.json.value|get:"countries" }}</p>
               {% endif %}
 
               <p class="mb-0"><strong>Linked records ({{ form.json.value|get:"sources"|length }})</strong>:
 	              {% for src in form.json.value|get:"sources" %}
 	                <div class="accession-div-row">
-	                <p><a class="pop-link pop-dataset" data-label={{src.dslabel}} data-toggle="popover" title="Dataset Profile" data-content="" tabindex="0" rel="clickover">{{ src.dslabel }}</a> (<a href="/api/place/{{src.pid}}/" target="_blank">{{ src.pid }}</a>):
-	                {% if src.types|length > 0 %}<i>variants</i>: <b>{{ src.variants|join:", " }}</b>{% endif %}
-	                {% if src.types|length > 0 %}; <i>type(s)</i>: <b>{{ src.types|join:","}}</b>{% endif %}
-{#	                {% if src.minmax %}; <i>earliest/latest</i>:<b> {{ src.minmax|join:"/"}}</b>{% endif %}#}
+	                <p>
+		                <a class="pop-link pop-dataset" data-label={{src.dslabel}} data-toggle="popover" title="Dataset Profile" data-content="" tabindex="0" rel="clickover">{{ src.dslabel }}</a> (<a href="/api/place/{{src.pid}}/" target="_blank">{{ src.pid }}</a>):
+		                {% if src.types|length > 0 %}<i>variants</i>: <b>{{ src.variants|join:", " }}</b>{% endif %}
+		                {% if src.types|length > 0 %}; <i>type(s)</i>: <b>{{ src.types|join:","}}</b>{% endif %}
+										{# index has some nulls in minmax #}
+		                {% if src.minmax and src.minmax.first != None %}; <i>earliest/latest</i>:<b> {{ src.minmax|join:"/"}}</b>{% endif %}
 		                <i class="text-muted">{{ src.pass }}</i>:
 	                </p>
 	                <p></p>

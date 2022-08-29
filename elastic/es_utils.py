@@ -177,72 +177,6 @@ def alt_parents(place, parent_pid):
 #   print('adding place doc', childobj, 'as child of', parent_id)
 
 
-"""
-demoteParents(demoted, winner_id, pid)
-makes each of demoted[] (and its children if any)
-a child of winner_id
-
-"""
-def demoteParents(demoted, winner_id, pid):
-  #demoted = ['14156468']
-  #newparent_id = winner_id
-  print('demoteParents()',demoted, winner_id, pid)
-  #qget = """{"query": {"bool": {"must": [{"match":{"_id": "%s" }}]}}}"""
-
-  # updates 'winner' with children & names from demoted
-  def q_updatewinner(kids, names):
-    pass
-  return {"script":{
-    "source": """ctx._source.children.addAll(params.newkids);
-      ctx._source.suggest.input.addAll(params.names);
-      ctx._source.searchy.addAll(params.names);""",
-    "lang": "painless",
-    "params":{
-      "newkids": kids,
-      "names": names }
-  }}
-
-  for d in demoted:
-    # get the demoted doc, its names and kids if any
-    #d = demoted[0]
-    #d = '14156468'
-    #winner_id = '14156467'
-    qget = """{"query": {"bool": {"must": [{"match":{"_id": "%s" }}]}}}"""
-    try:
-      qget = qget % (d)
-      doc = es.search(index='whg', body=qget)['hits']['hits'][0]
-    except:
-      print('failed getting winner; winner_id, pid',winner_id, pid)
-      sys.exit(sys.exc_info())
-    srcd = doc['_source']
-    kids = srcd['children']
-    # add this doc b/c it's now a kid
-    kids.append(doc['_id'])
-    names = list(set(srcd['suggest']['input']))
-
-    # first update the 'winner' parent
-    q=q_updatewinner(kids, names)
-    try:
-      es.update(idx,winner_id,body=q)
-    except:
-      print('q_updatewinner failed (pid, winner_id)',pid,winner_id)
-      sys.exit(sys.exc_info())
-
-    # then modify copy of demoted,
-    # delete the old, index the new
-    # --------------
-    newsrcd = deepcopy(srcd)
-    newsrcd['relation'] = {"name":"child","parent":winner_id}
-    newsrcd['children'] = []
-    if 'whg_id' in newsrcd:
-      newsrcd.pop('whg_id')
-    # zap the old demoted, index the modified
-    try:
-      es.delete('whg', d)
-      es.index(index='whg',id=d,body=newsrcd,routing=1)
-    except:
-      print('reindex failed (pid, demoted)',pid,d)
-      sys.exit(sys.exc_info())
 
 """
 topParent(parents, form)
@@ -490,7 +424,8 @@ def replaceInIndex(es,idx,pids):
       pass
   print('replaceInIndex() count:',repl_count)
 
-# wrapper to delete all docs for dataset from the whg index
+# wrapper for deletePlacesFromIndex()
+# delete all docs for dataset from the whg index
 def deleteDatasetFromIndex(idx, dsid):
   print('deleteDatasetFromIndex() handoff to deleteFromIndex()')
   from datasets.models import Dataset
@@ -504,15 +439,14 @@ def deleteDatasetFromIndex(idx, dsid):
                        'retry_on_timeout': True}])
   deletePlacesFromIndex(es, 'whg', ds.placeids)
 
-# ***
+#
 # delete docs given place_id array
 # if parent, promotes a child if any
 # if child, removes references to it in parent (children[], suggest.input[])
 # TODO: confirm suggest.input[] is not distinct
 #  i.e. what if variant was also contributed by parent or another child?
 #
-# from elasticsearch import Elasticsearch
-# es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+
 def deletePlacesFromIndex(es, idx, pids):
   delthese=[]
   for pid in pids:
@@ -521,6 +455,7 @@ def deletePlacesFromIndex(es, idx, pids):
     # get its index document
     res = es.search(index=idx, body=esq_pid(pid))
     hits=res['hits']['hits']
+    print(hits)
     # is it in the index?
     if len(hits) > 0:
       doc = hits[0]
@@ -788,3 +723,69 @@ def parsePlace(place, attr):
       arr.append(obj.jsonb)
   return arr
 
+""" DEPRECATED
+demoteParents(demoted, winner_id, pid)
+makes each of demoted[] (and its children if any)
+a child of winner_id
+
+# """
+# def demoteParents(demoted, winner_id, pid):
+#   #demoted = ['14156468']
+#   #newparent_id = winner_id
+#   print('demoteParents()',demoted, winner_id, pid)
+#   #qget = """{"query": {"bool": {"must": [{"match":{"_id": "%s" }}]}}}"""
+#
+#   # updates 'winner' with children & names from demoted
+#   def q_updatewinner(kids, names):
+#     pass
+#   return {"script":{
+#     "source": """ctx._source.children.addAll(params.newkids);
+#       ctx._source.suggest.input.addAll(params.names);
+#       ctx._source.searchy.addAll(params.names);""",
+#     "lang": "painless",
+#     "params":{
+#       "newkids": kids,
+#       "names": names }
+#   }}
+#
+#   for d in demoted:
+#     # get the demoted doc, its names and kids if any
+#     #d = demoted[0]
+#     #d = '14156468'
+#     #winner_id = '14156467'
+#     qget = """{"query": {"bool": {"must": [{"match":{"_id": "%s" }}]}}}"""
+#     try:
+#       qget = qget % (d)
+#       doc = es.search(index='whg', body=qget)['hits']['hits'][0]
+#     except:
+#       print('failed getting winner; winner_id, pid',winner_id, pid)
+#       sys.exit(sys.exc_info())
+#     srcd = doc['_source']
+#     kids = srcd['children']
+#     # add this doc b/c it's now a kid
+#     kids.append(doc['_id'])
+#     names = list(set(srcd['suggest']['input']))
+#
+#     # first update the 'winner' parent
+#     q=q_updatewinner(kids, names)
+#     try:
+#       es.update(idx,winner_id,body=q)
+#     except:
+#       print('q_updatewinner failed (pid, winner_id)',pid,winner_id)
+#       sys.exit(sys.exc_info())
+#
+#     # then modify copy of demoted,
+#     # delete the old, index the new
+#     # --------------
+#     newsrcd = deepcopy(srcd)
+#     newsrcd['relation'] = {"name":"child","parent":winner_id}
+#     newsrcd['children'] = []
+#     if 'whg_id' in newsrcd:
+#       newsrcd.pop('whg_id')
+#     # zap the old demoted, index the modified
+#     try:
+#       es.delete('whg', d)
+#       es.index(index='whg',id=d,body=newsrcd,routing=1)
+#     except:
+#       print('reindex failed (pid, demoted)',pid,d)
+#       sys.exit(sys.exc_info())

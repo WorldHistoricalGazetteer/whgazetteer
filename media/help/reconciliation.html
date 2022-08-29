@@ -1,21 +1,22 @@
 <html>
 <body>
 <div>
-    <a href=""></a><!-- avoids scroll to the bottom anchor-->
+    <a href=""></a><!-- prevents scroll to the bottom anchor-->
     <h4>Reconciliation Services</h4>
-    <p>Reconciliation is a two-step process of (a) <b>querying authorities</b>: identifying potential matches between places referenced in your uploaded attestation records and places found in modern place name authority resource like Wikidata (wd) and/or Getty Thesaurus of Geographic Names (tgn); and (b) <b>reviewing hits</b> (potential matches) returned, accepting those which are valid.<p>
+    <p>Reconciliation is a two-step process of (1) <b>querying an authority resource</b>: identifying potential matches between places referenced in your uploaded attestation records and places found in a place name authority resource; and (2) <b>reviewing hits</b> (potential matches) returned, accepting those which are valid.<p>
+		<p>World Historical Gazetteer (WHG) supports reconciliation to Wikidata, and as a final accessioning step, the growing WHG "union index."</p>
     <h5>Querying Authorities</h5>
-    <p>For each dataset record, the authority is queried in multiple passes, numbered 'PASS 0', 'PASS 1', and so on. PASS 0 simply asks if any records in the authority share one or more links (identifiers) with the presented user record. If any do, they can be semi-automatically matched if the user chooses. PASS 1 sends the most complete "query object" that can be derived from the record, i.e. includes name variants, place types, location, etc. If there are no hits, the query is relaxed in a PASS 2, which typically sends only name variants and provided location information if any (geometry, country code, user-defined study area).</p>
+    <p>For each dataset record, the authority is queried in multiple passes, numbered 'PASS 0', 'PASS 1', and so on. PASS 0 simply asks if any records in the authority share one or more links (identifiers) with the presented user record. Those that do can be semi-automatically matched if the user chooses. PASS 1 sends the most complete "query object" that can be derived from the contributed record, i.e. includes name variants, place types, location, etc. For the Wikidata reconciliation, if there are no hits, the query is relaxed in a PASS 2, which typically sends only name variants and provided location information if any (geometry, country code, user-defined study area).</p>
     <p>Each authority has its own data structure and capabilities, so the reconciliation algorithms are tailored for each. When initiating a reconciliation task, you can choose whether or not to accept the authority's geometry when asserting a match in the subsequent review step (the default is "yes").</p>
     <i>Wikidata</i>
     <p>WHG maintains an indexed copy of about 3.6 million Wikidata records of places.</p>
-    <i>Getty TGN</i>
-    <p>WHG maintains an indexed copy of the 2.5 million TGN records obtained in a download in Spring, 2018.</p>
+		<i>WHG union index</i>
+		<p>The WHG index is where attestation records for the same place are linked with each other, making it a "union index." It was initially seeded with about 1.8 million records, including 1.6 million from the Getty Thesaurus of Geographic Names (TGN). Therefore, the accessioning (indexing) step effectively reconciles to TGN as well.</p>
     <h5>Reviewing Hits</h5>
     <p>The Reconciliation Review page presents those records from the uploaded dataset that received any hits, one by one, on the left side of the screen. On the right are the hits&mdash;prospective matches&mdash; returned. A map on the left side shows markers for both, if any. Markers for the uploaded record are green; those from the hits are orange. At the top of each hit is a "match bar," which contains:</p>
     <ul>
-      <li>A globe icon; hovering over it highlights its marker in the map.</li>
-      <li>A set of buttons for asserting a match (or no match) for that hit with the dataset record.</li>
+      <li>A globe icon; hovering over it highlights its marker(s) in the map.</li>
+      <li>A set of buttons for asserting a match (or no match) for that hit with the dataset record. In some cases there are multiple matches.</li>
     </ul>
     <p>A link for a help screen further explaining the review process is provided as well</p>
   </div>

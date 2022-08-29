@@ -1,7 +1,6 @@
 # datasets.urls
 
-from django.urls import path#, include
-#from django.conf.urls import url
+from django.urls import path
 from django.conf.urls.static import static
 from django.conf import settings
 
@@ -68,9 +67,6 @@ urlpatterns = [
   # accept any unreviewed wikidata pass0 hits from given task
   path('wd_pass0/<str:tid>', views.write_wd_pass0, name="wd_pass0"),
 
-  # DEPRECATED accept any unreviewed whg pass0 hits; create & index child docs
-  # path('idx_pass0/<str:tid>', views.write_idx_pass0, name="idx_pass0"),
-
   # delete TaskResult & associated hits
   path('task-delete/<str:tid>/<str:scope>', views.task_delete, name="task-delete"),
 
@@ -97,5 +93,3 @@ urlpatterns = [
 
 ] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
 
-
-#path('<int:id>/detail', views.DatasetDetailView.as_view(), name='dataset-detail'),

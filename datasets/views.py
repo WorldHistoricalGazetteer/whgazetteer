@@ -2,20 +2,19 @@
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.models import User
+from django.contrib.gis.geos import GEOSGeometry
 from django.core.mail import send_mail
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.forms import modelformset_factory
-from django.http import HttpResponseServerError, JsonResponse, HttpResponse, HttpResponseRedirect
-from django.shortcuts import get_object_or_404, render, redirect
+from django.http import HttpResponseServerError, HttpResponseRedirect, JsonResponse, HttpResponse
+from django.shortcuts import redirect, get_object_or_404, render
 from django.urls import reverse
 from django.views.generic import (CreateView, ListView, UpdateView, DeleteView, DetailView)
 # NB!!! shows as unused but IT IS USED!
 from django_celery_results.models import TaskResult
 
-# from django.contrib.auth.models import User
-# from django.contrib.gis.geos import GEOSGeometry
-# from django.core.files import File
 
 # external
 from celery import current_app as celapp
@@ -52,7 +51,7 @@ from resources.models import Resource
 
 
 """
-  used for Celery down notice
+  email a Celery down notice
   to ['whgazetteer@gmail.com','karl@kgeographer.org'],
 """
 def emailer(subj, msg, from_addr, to_addr):
@@ -62,6 +61,7 @@ def emailer(subj, msg, from_addr, to_addr):
       fail_silently=False,
   )
 
+""" check Celery process is running before initiating reconciliation task """
 def celeryUp():
   response = celapp.control.ping(timeout=1.0)
   return len(response)>0
@@ -73,9 +73,9 @@ def link_uri(auth,id):
   return uri
 
 """
-# from datasets.views.review()
-# indexes a db record upon a single hit match in align_idx review
-# new record becomes child in the matched hit group 
+  from datasets.views.review()
+  indexes a db record upon a single hit match in align_idx review
+  new record becomes child in the matched hit group 
 """
 def indexMatch(pid, hit_pid=None):
   print('indexMatch(): pid '+str(pid)+' w/hit_pid '+str(hit_pid))
@@ -176,14 +176,14 @@ def indexMatch(pid, hit_pid=None):
       pass
 
 """
-# from datasets.views.review()
-# indexes a db record given multiple hit matches in align_idx review
-# a LOT has to happen (see _notes/accession-psudocode.txt): 
-  - pick a single 'winner' among the matched hits (max score)
-  - make new record its child
-  - demote all non-winners in index from parent to child
-    - whg_id and children[] ids (if any) added to winner
-    - name variants added to winner's searchy[] and suggest.item[] lists
+  from datasets.views.review()
+  indexes a db record given multiple hit matches in align_idx review
+  a LOT has to happen (see _notes/accession-psudocode.txt): 
+    - pick a single 'winner' among the matched hits (max score)
+    - make new record its child
+    - demote all non-winners in index from parent to child
+      - whg_id and children[] ids (if any) added to winner
+      - name variants added to winner's searchy[] and suggest.item[] lists
 """
 def indexMultiMatch(pid, matchlist):
   print('indexMultiMatch(): pid '+str(pid)+' matches '+str(matchlist))
@@ -297,7 +297,10 @@ def indexMultiMatch(pid, matchlist):
         }, "query": {"match": {"place_id": kid}}}
         es.update_by_query(index=idx, body=q_adopt, conflicts='proceed')
 
-""" refactored accessioning case (align_idx) """
+""" 
+  GET   returns review.html for Wikidata, or accession.html for accessioning
+  POST  for each record that got hits, process user matching decisions 
+"""
 def review(request, pk, tid, passnum):
   pid = None
   if 'pid' in request.GET:
@@ -574,12 +577,10 @@ def review(request, pk, tid, passnum):
 
   return render(request, 'datasets/'+review_page, context=context)
 
-
 """
-write_wd_pass0(taskid)
-called from dataset_detail>reconciliation tab
-accepts all pass0 wikidata matches, writes geoms and links
-
+  write_wd_pass0(taskid)
+  called from dataset_detail>reconciliation tab
+  accepts all pass0 wikidata matches, writes geoms and links
 """
 def write_wd_pass0(request, tid):
   task = get_object_or_404(TaskResult,task_id=tid)
@@ -674,12 +675,12 @@ def write_wd_pass0(request, tid):
   return HttpResponseRedirect(referer)
 
 """
-# ds_recon(pk)
-# initiates & monitors Celery tasks against Elasticsearch indexes
-# i.e. align_[wdlocal | idx | tgn ] in tasks.py
-# url: datasets/{ds.id}/reconcile ('ds_reconcile'; from ds_addtask.html)
-# params: pk (dataset id), auth, region, userarea, geom, scope
-# each align_{auth} task runs matching es_lookup_{auth}() and writes Hit instances
+  ds_recon(pk)
+  initiates & monitors Celery tasks against Elasticsearch indexes
+  i.e. align_[wdlocal | idx | tgn ] in tasks.py
+  url: datasets/{ds.id}/reconcile ('ds_reconcile'; from ds_addtask.html)
+  params: pk (dataset id), auth, region, userarea, geom, scope
+  each align_{auth} task runs matching es_lookup_{auth}() and writes Hit instances
 """
 def ds_recon(request, pk):
   ds = get_object_or_404(Dataset, id=pk)
@@ -696,17 +697,21 @@ def ds_recon(request, pk):
     print('ds_recon() request.POST:',request.POST)
     auth = request.POST['recon']
     language = request.LANGUAGE_CODE
-    # previous task of this type?
+    # previous successful task of this type?
+    #   wdlocal? archive previous, scope = unreviewed
+    #   idx? scope = unindexed
     previous = ds.tasks.filter(task_name='align_'+auth,status='SUCCESS')
     prior = request.POST['prior'] if 'prior' in request.POST else 'na'
     if previous.count() > 0:
-      # get its id and archive it
-      tid = previous.first().task_id
-      task_archive(tid, prior)
-      # submit only unreviewed if previous
-      scope = 'unreviewed'
-      print('recon(): archived previous task')
-      print('ds_recon(): links & geoms were '+ ('kept' if prior=='keep' else 'zapped'))
+      if auth == 'idx':
+        scope = "unindexed"
+      else:
+        # get its id and archive it
+        tid = previous.first().task_id
+        task_archive(tid, prior)
+        scope = 'unreviewed'
+        print('recon(): archived previous task')
+        print('ds_recon(): links & geoms were '+ ('kept' if prior=='keep' else 'zapped'))
     else:
       # no existing task, submit all rows
       print('ds_recon(): no previous, submitting all')
@@ -735,6 +740,7 @@ def ds_recon(request, pk):
         The system administrator has been notified.""")
       return redirect('/datasets/'+str(ds.id)+'/reconcile')
 
+    # sys.exit()
     # initiate celery/redis task
     # NB 'func' resolves to align_wdlocal() or align_idx() or align_tgn()
     try:
@@ -1957,10 +1963,10 @@ def failed_upload_notification(user, tempfn):
             [user.email, 'karl@kgeographer.org'])
 
 """
-DatasetCreateView()
-initial create
-upload file, validate format, create DatasetFile instance,
-redirect to dataset.html for db insert if context['format_ok']
+  DatasetCreateView()
+  initial create
+  upload file, validate format, create DatasetFile instance,
+  redirect to dataset.html for db insert if context['format_ok']
 """
 class DatasetCreateView(LoginRequiredMixin, CreateView):
   login_url = '/accounts/login/'
@@ -2196,7 +2202,9 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
     #context['action'] = 'create'
     return context
 
-
+"""
+  returns public dataset 'mets' (summary) page
+"""
 class DatasetPublicView(DetailView):
   template_name = 'datasets/ds_meta.html'
 
@@ -2204,17 +2212,13 @@ class DatasetPublicView(DetailView):
 
   def get_context_data(self, **kwargs):
     context = super(DatasetPublicView, self).get_context_data(**kwargs)
-    #id_ = self.kwargs.get("pk")
     print('self, kwargs',self, self.kwargs)
 
     ds = get_object_or_404(Dataset, id = self.kwargs['pk'])
     file = ds.file
-    ##coll_set = [cd.dataset for cd in qs]
 
     placeset = ds.places.all()
 
-    #context['ds_list'] = [cd.dataset for cd in qs]
-    context['foo'] = 'bar'
     if file.file:
       context['current_file'] = file
       context['format'] = file.format
@@ -2228,12 +2232,12 @@ class DatasetPublicView(DetailView):
     return context
 
 """
-# load page for confirm ok on delete
-# delete dataset, with CASCADE to DatasetFile, places, place_name, etc
-# also deletes from index if indexed (fails silently if not)
-# also removes dataset_file records
-# TODO: delete other stuff: disk files; archive??
+  loads page for confirm ok on delete
+    - delete dataset, with CASCADE to DatasetFile, places, place_name, etc
+    - also deletes from index if indexed (fails silently if not)
+    - also removes dataset_file records
 """
+# TODO: delete other stuff: disk files; archive??
 class DatasetDeleteView(DeleteView):
   template_name = 'datasets/dataset_delete.html'
 
@@ -2259,9 +2263,10 @@ class DatasetDeleteView(DeleteView):
     self.delete_complete()
     return reverse('data-datasets')
 
-#
-# fetch places in specified dataset
-#
+"""
+  fetch places in specified dataset
+  utility used for place collections
+"""
 def ds_list(request, label):
   print('in ds_list() for',label)
   qs = Place.objects.all().filter(dataset=label)
@@ -2275,12 +2280,11 @@ def ds_list(request, label):
 
 """
   undo last review match action
-  delete any geoms or links created
-  reset flags for hit.reviewed and place.review_xxx
+  - delete any geoms or links created
+  - reset flags for hit.reviewed and place.review_xxx
 """
 def match_undo(request, ds, tid, pid):
-  print('in match_undo() ds, task, pid:',ds,tid,pid)
-  # 81474, 81445 (2), 81417, 81420, 81436, 81442, 81469
+  print('in match_undo() ds, task, pid:', ds, tid, pid)
   from django_celery_results.models import TaskResult
 
   geom_matches = PlaceGeom.objects.all().filter(task_id=tid, place_id=pid)
@@ -2307,7 +2311,7 @@ def match_undo(request, ds, tid, pid):
   return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 """
-  display dataset metadata, status for ds owner
+  returns dataset owner metadata page
 """
 class DatasetSummaryView(LoginRequiredMixin, UpdateView):
   login_url = '/accounts/login/'
@@ -2354,14 +2358,12 @@ class DatasetSummaryView(LoginRequiredMixin, UpdateView):
     print('DatasetSummaryView get_context_data() kwargs:',self.kwargs)
     print('DatasetSummaryView get_context_data() request.user',self.request.user)
     id_ = self.kwargs.get("id")
-    #bounds = self.kwargs.get("bounds")
     ds = get_object_or_404(Dataset, id=id_)
-    # print('ds',ds.label)
 
     """
-      # when coming from DatasetCreateView(),
-      # insert to db immediately (file.df_status == format_ok)
-      # most recent data file
+      when coming from DatasetCreateView() (file.df_status == format_ok)
+      runs ds_insert_tsv() or ds_insert_lpf()
+      using most recent dataset file
     """
     file = ds.file
     if file.df_status == 'format_ok':
@@ -2374,7 +2376,6 @@ class DatasetSummaryView(LoginRequiredMixin, UpdateView):
         print('lpf result',result)
       print('ds_insert_xxx() result',result)
       ds.numrows = result['numrows']
-      #ds.numrows = result['count']
       ds.numlinked = result['numlinked']
       ds.total_links = result['total_links']
       ds.ds_status = 'uploaded'
@@ -2384,7 +2385,7 @@ class DatasetSummaryView(LoginRequiredMixin, UpdateView):
       file.save()
 
 
-    # build context for rendering dataset.html
+    # build context for rendering ds_summary.html
     me = self.request.user
     placeset = ds.places.all()
 
@@ -2418,43 +2419,9 @@ class DatasetSummaryView(LoginRequiredMixin, UpdateView):
     print('context from DatasetSummaryView', context)
     return context
 
-
-""" public dataset browse table """
-class DatasetPlacesView(DetailView):
-  login_url = '/accounts/login/'
-  redirect_field_name = 'redirect_to'
-
-  model = Dataset
-  template_name = 'datasets/ds_places.html'
-
-  def get_object(self):
-    id_ = self.kwargs.get("id")
-    return get_object_or_404(Dataset, id=id_)
-
-  def get_context_data(self, *args, **kwargs):
-    context = super(DatasetPlacesView, self).get_context_data(*args, **kwargs)
-    context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
-    context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
-
-    print('DatasetPlacesView get_context_data() kwargs:',self.kwargs)
-    print('DatasetPlacesView get_context_data() request.user',self.request.user)
-    id_ = self.kwargs.get("id")
-
-    ds = get_object_or_404(Dataset, id=id_)
-    me = self.request.user
-
-    if not me.is_anonymous:
-      context['collections'] = Collection.objects.filter(owner=me, collection_class='place')
-
-    context['loggedin'] = 'true' if not me.is_anonymous else 'false'
-
-    context['updates'] = {}
-    context['ds'] = ds
-    context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False
-
-    return context
-
-""" data owner browse table """
+""" 
+  returns dataset owner browse table 
+"""
 class DatasetBrowseView(LoginRequiredMixin, DetailView):
   login_url = '/accounts/login/'
   redirect_field_name = 'redirect_to'
@@ -2496,7 +2463,46 @@ class DatasetBrowseView(LoginRequiredMixin, DetailView):
 
     return context
 
-#
+""" 
+  returns public dataset browse table 
+"""
+class DatasetPlacesView(DetailView):
+  login_url = '/accounts/login/'
+  redirect_field_name = 'redirect_to'
+
+  model = Dataset
+  template_name = 'datasets/ds_places.html'
+
+  def get_object(self):
+    id_ = self.kwargs.get("id")
+    return get_object_or_404(Dataset, id=id_)
+
+  def get_context_data(self, *args, **kwargs):
+    context = super(DatasetPlacesView, self).get_context_data(*args, **kwargs)
+    context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
+    context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
+
+    print('DatasetPlacesView get_context_data() kwargs:',self.kwargs)
+    print('DatasetPlacesView get_context_data() request.user',self.request.user)
+    id_ = self.kwargs.get("id")
+
+    ds = get_object_or_404(Dataset, id=id_)
+    me = self.request.user
+
+    if not me.is_anonymous:
+      context['collections'] = Collection.objects.filter(owner=me, collection_class='place')
+
+    context['loggedin'] = 'true' if not me.is_anonymous else 'false'
+
+    context['updates'] = {}
+    context['ds'] = ds
+    context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False
+
+    return context
+
+"""
+  returns dataset owner "Linking" tab listing reconciliation tasks
+"""
 class DatasetReconcileView(LoginRequiredMixin, DetailView):
   login_url = '/accounts/login/'
   redirect_field_name = 'redirect_to'
@@ -2536,7 +2542,10 @@ class DatasetReconcileView(LoginRequiredMixin, DetailView):
     context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False
 
     return context
-#
+
+"""
+  returns dataset owner "Collaborators" tab
+"""
 class DatasetCollabView(LoginRequiredMixin, DetailView):
   login_url = '/accounts/login/'
   redirect_field_name = 'redirect_to'
@@ -2575,7 +2584,9 @@ class DatasetCollabView(LoginRequiredMixin, DetailView):
 
     return context
 
-#
+""" 
+  returns add (reconciliation) task page 
+"""
 class DatasetAddTaskView(LoginRequiredMixin, DetailView):
   login_url = '/accounts/login/'
   redirect_field_name = 'redirect_to'
@@ -2665,11 +2676,11 @@ class DatasetAddTaskView(LoginRequiredMixin, DetailView):
     context['remain_to_review'] = remaining
     context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False
 
-    #print('context["tasks"] from DatasetAddTaskView', context['tasks'])
-
     return context
 
-#
+"""
+  returns dataset owner "Log & Comments" tab
+"""
 class DatasetLogView(LoginRequiredMixin, DetailView):
   login_url = '/accounts/login/'
   redirect_field_name = 'redirect_to'

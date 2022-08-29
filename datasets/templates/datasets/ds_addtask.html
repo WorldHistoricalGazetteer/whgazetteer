@@ -50,6 +50,7 @@
   
   <div class="tab-content">
     <div id="addtask" class="tab-pane fade show active" role="tabpanel" aria-labelledby="addtask-tab">
+{#      <form action="{% url 'datasets:ds_recon' ds.id %}" method="POST">#}
       <form action="{% url 'datasets:ds_recon' ds.id %}" method="POST">
       {% csrf_token %}
       {% if user.is_superuser or user in owners %}
@@ -86,33 +87,14 @@
               </div>
               <hr/>
             {% endif %}
-            <!--ds.recon_status: {ds.recon_status}}-->
             <!-- if there's an active align_idx task, stop -->
-            {% if ds.recon_status.idx %}
-              <p>Accessioning has begun for this dataset. Initiating another reconciliation task would disrupt the workflow in progress. If you would like to stop the accessioning step and roll back the workflow, please <a href="#" class="feedback">contact the editorial team</a>.</p>
-            {% else %} <!-- offer tasks -->
+{#            {% if ds.recon_status.idx %}#}
+              <p>Accessioning has begun for this dataset. Initiating another reconciliation task would disrupt
+	              the workflow in progress. If you would like to stop the accessioning step and roll back the workflow,
+	              please <a href="#" class="feedback">contact the editorial team</a>.</p>
+{#            {% else %} <!-- offer tasks -->#}
               <p class="font-weight-bold mb-0">Name authority source</p>
               <p class="small">Your task will enter a queue and and an email notification sent when completed.</p>
-	            {% comment %}
-              <div class="form-check">
-                <label class="form-check-label text-secondary" for="r_tgn">
-                  <input type="radio" disabled class="form-check-input" id="r_tgn"
-                    name="recon" value="tgn" checked>Getty TGN (tgn)
-	                <mark class="small">temporarily unavailable</mark>
-                </label>
-                {% if msg_tgn %}
-                <div id="tgn_tasks" class="smaller hidden">
-                  <div class="mt-0 mb-2 smaller radiodiv">
-                  {{ msg_tgn.msg|safe }}
-                  {% if msg_tgn.type == 'inprogress' %}
-                  <label class="mb-0"><input id="r_keep_tgn" type="radio" name="prior" value="keep"> keep prior match results</label>
-                  <label class="mb-0"><input type="radio" name="prior" value="zap"> delete any prior match results</label>
-                  {% endif %}
-                  </div>            
-                </div>
-                {% endif %}
-              </div>
-              {% endcomment %}
               <div class="form-check">
                 <label class="form-check-label" for="r_wdlocal">
                   <input type="radio" class="form-check-input r_wd" id="r_wdlocal" 
@@ -158,8 +140,8 @@
                     </span></p>
                   </div>
                 </div>
-              </div> <!-- #addtask_lower -->
-            {% endif %} <!-- ds.ds_status != 'accessioning' -->
+              </div>
+{#            {% endif %} <!-- ds.ds_status != 'accessioning' -->#}
             <div class="bottom">
               <hr/>
               <button type="submit" id="btn_startrecon" class="btn btn-primary">Start</button>
@@ -488,3 +470,24 @@
   
 </script>
 {% endblock %}
+	            {% comment %}
+	            // TGN discontinued
+              <div class="form-check">
+                <label class="form-check-label text-secondary" for="r_tgn">
+                  <input type="radio" disabled class="form-check-input" id="r_tgn"
+                    name="recon" value="tgn" checked>Getty TGN (tgn)
+	                <mark class="small">temporarily unavailable</mark>
+                </label>
+                {% if msg_tgn %}
+                <div id="tgn_tasks" class="smaller hidden">
+                  <div class="mt-0 mb-2 smaller radiodiv">
+                  {{ msg_tgn.msg|safe }}
+                  {% if msg_tgn.type == 'inprogress' %}
+                  <label class="mb-0"><input id="r_keep_tgn" type="radio" name="prior" value="keep"> keep prior match results</label>
+                  <label class="mb-0"><input type="radio" name="prior" value="zap"> delete any prior match results</label>
+                  {% endif %}
+                  </div>
+                </div>
+                {% endif %}
+              </div>
+              {% endcomment %}

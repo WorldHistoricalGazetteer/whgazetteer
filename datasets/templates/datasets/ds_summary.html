@@ -10,12 +10,12 @@
   {% leaflet_css %}
   <script src="{% static 'js/aliases.js' %}"></script>
   <script src="{% static 'js/easyprint.js' %}"></script>
-  <script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>
-  
+{#  <script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>#}
+{#  <script src="//cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>#}
+{#  <script src="//cdn.datatables.net/1.10.23/js/dataTables.bootstrap4.min.js"></script>#}
+
   <link rel="stylesheet" href="{% static 'css/spin.css' %}"/>
   <link rel="stylesheet" href="//cdn.datatables.net/1.10.23/css/dataTables.bootstrap4.min.css">
-  <script src="//cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
-  <script src="//cdn.datatables.net/1.10.23/js/dataTables.bootstrap4.min.js"></script>
 
   <script src="{% static 'celery_progress/celery_progress.js' %}"></script>
 {% endblock %}
@@ -27,6 +27,7 @@
   {% if not user in owners and not user in collaborators and not user.is_superuser %}
     <p>Access to this page is limited to the dataset owner and designated collaborators</p>
   {% else %}
+  {# all tabs, but only content for summary #}
   <ul id="dataset_tabs" class="nav nav-tabs" role="tablist">
       <li class="nav-item">
           <a class="nav-link active" id="summary-tab" data-link="summary" href=""
@@ -129,11 +130,11 @@
             </td>
           </tr>
           <tr>
-            <td style="vertical-align:top;"><b>Public?</b>
-            </td>
+            <td style="vertical-align:top;"><b>Public?</b></td>
             <td>
               <span class="form-public">
-              {% if form.public.value == True %}{{ form.public.value }}
+              {% if form.public.value == True %}
+	              {{ form.public.value }}</span>
               {% else %}
                 <a href="#"><span class="help-matches" data-id="going_public_ds">Details on making a dataset public. {% fontawesome_icon 'question-circle' color='#336699' %}</span></a>
               {% endif %}
@@ -178,12 +179,13 @@
           <p> <i>Current data file</i>
             {% if current_file.format == 'delimited' %}
             {% if ds.owner.id == user.id or user.is_superuser%}
-	          {% comment %}
+						{% comment %}
+	          {# TODO: test, expose update functionality #}
             <span class="float-right mr-2">
               <a href="#" id="a_update_modal" data-dsid = {{ ds.id }} data-toggle="modal" data-target="#updateModal">update</a>
               <span class="help-matches" data-id="updates">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
             </span>
-            {% endcomment %}
+						{% endcomment %}
             {% endif %}
             {% endif %}
           </p>
@@ -218,7 +220,6 @@
                 <td>
                   <span class="display-field">
                     {{ current_file.format }}
-                    <!--{ if ds.format == 'delimited' %}({ ds.delimiter }}){endif%}-->
                   </span>
                   <span class="update-field hidden">{{ form.format }}</span>
                 </td>
@@ -255,7 +256,6 @@
         <div id="ds_info">
           <div id="ds_stats" class="ds-card">
             <table style="width:100%">
-              <!--<tr><td class="pb-3"><b>Status</b></td><td class="pb-3">{ ds.ds_status }}</td><td class="pb-3"></td></tr>-->
               <tr><th></th><th class="pb-1 text-secondary">count</th><th class="pb-1 text-secondary">added</th></tr>
               <tr><td><b>Records</b></td><td>{{ ds.numrows }}</td><td class="text-secondary">n/a</td></tr>
               <tr><td><b>Name variants</b></td><td>{{ num_names }}</td><td class="text-secondary">n/a</td></tr>
@@ -285,7 +285,8 @@
               <p class="ds-card-header pt-1"> Downloads
                 <span id='progress-bar' class='progress-bar' style="background-color: #68a9ef; width: 0%; line-height:.5rem;">&nbsp;</span>
               </p>
-              <!-- if length <= 20k -->
+              {# TODO: review download size cases #}
+	            <!-- if length <= 20k -->
               {% if ds.numrows <= 20000 %}
                 <!-- lptsv originally -->
                 {% if current_file.format == 'delimited' %} 
@@ -400,7 +401,7 @@
     setTimeout(clearEl($("#celery-result")), 1000)
   }
 
-  // -> views_dl.downloader()
+  // views_dl.downloader()
   $(".a-dl-celery").click(function(e){
     e.preventDefault()
     // startDownloadSpinner()
@@ -439,6 +440,7 @@
         alert('Sorry, update is available only for delimited files right now. Soon...')
       }
   })
+
   // show upload button after file selected
   $("#newfile").on("change", function() {
     $("#btn_upload").removeClass('hidden')
@@ -532,7 +534,6 @@
     formData.append('format', '{{ current_file.format }}');
     formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
 
-    <!--console.log(fileName,fileSize)-->
     $.ajax({
       type: 'POST',
       enctype: 'multipart/form-data',
@@ -572,14 +573,12 @@
   });
 
   function minmaxer(timespans){
-    <!--console.log('got to minmax()',JSON.stringify(timespans))-->
     starts=[]; ends=[]
     for (t in timespans){
       // gets 'in', 'earliest' or 'latest'
       starts.push(Object.values(timespans[t].start)[0])
       ends.push(!!timespans[t].end ? Object.values(timespans[t].end)[0] : -1)
     }
-    <!--console.log('starts',starts,'ends',ends)-->
     minmax=[Math.max.apply(null, starts),Math.max.apply(null, ends)]
     return minmax
   }
