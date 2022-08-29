@@ -43,7 +43,7 @@ from datasets.static.hashes.parents import ccodes as cchash
 from datasets.tasks import align_wdlocal, align_idx, align_tgn, maxID
 
 from datasets.utils import *
-from elastic.es_utils import makeDoc, deletePlacesFromIndex, replaceInIndex, deleteDatasetFromIndex
+from elastic.es_utils import makeDoc, removePlacesFromIndex, replaceInIndex, removeDatasetFromIndex
 from main.choices import AUTHORITY_BASEURI
 from main.models import Log, Comment
 from places.models import *
@@ -779,8 +779,10 @@ def task_delete(request, tid, scope="foo"):
   tr = get_object_or_404(TaskResult, task_id=tid)
   dsid = tr.task_args[1:-1]
   ds=get_object_or_404(Dataset,pk=dsid)
-  auth = tr.task_name[6:]
+  auth = tr.task_name[6:] # wdlocal, idx
+  # only the places that had hit(s) in this task
   places = Place.objects.filter(id__in=[h.place_id for h in hits])
+  # links and geometry added by a task have the task_id
   placelinks = PlaceLink.objects.all().filter(task_id=tid)
   placegeoms = PlaceGeom.objects.all().filter(task_id=tid)
   print('task_delete()',{'tid':tr,'dsid':dsid,'auth':auth})
@@ -797,6 +799,7 @@ def task_delete(request, tid, scope="foo"):
     p.save()
 
   # zap task record & its hits
+  # or only geoms if that was the choice
   if scope == 'task':
     tr.delete()
     hits.delete()
@@ -2246,7 +2249,7 @@ class DatasetDeleteView(DeleteView):
     dataset_file_delete(ds)
     if ds.ds_status == 'indexed':
       pids=list(ds.placeids)
-      deletePlacesFromIndex(es, 'whg', pids)
+      removePlacesFromIndex(es, 'whg', pids)
 
   def get_object(self):
     id_ = self.kwargs.get("id")

@@ -424,30 +424,33 @@ def replaceInIndex(es,idx,pids):
       pass
   print('replaceInIndex() count:',repl_count)
 
-# wrapper for deletePlacesFromIndex()
+# wrapper for removePlacesFromIndex()
 # delete all docs for dataset from the whg index
-def deleteDatasetFromIndex(idx, dsid):
-  print('deleteDatasetFromIndex() handoff to deleteFromIndex()')
-  from datasets.models import Dataset
-  from elasticsearch7 import Elasticsearch
-  ds = Dataset.objects.get(id=dsid)
-  es = Elasticsearch([{'host': 'localhost',
-                       'port': 9200,
-                       'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
-                       'timeout': 30,
-                       'max_retries': 10,
-                       'retry_on_timeout': True}])
-  deletePlacesFromIndex(es, 'whg', ds.placeids)
+# def removeDatasetFromIndex(idx, dsid):
+def removeDatasetFromIndex(request, *args, **kwargs):
+  print('removeDatasetFromIndex() hands pids to removePlacesFromIndex()')
+  print('args, kwargs',args, kwargs)
+  # from datasets.models import Dataset
+  # from elasticsearch7 import Elasticsearch
+  # ds = Dataset.objects.get(id=dsid)
+  # es = Elasticsearch([{'host': 'localhost',
+  #                      'port': 9200,
+  #                      'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
+  #                      'timeout': 30,
+  #                      'max_retries': 10,
+  #                      'retry_on_timeout': True}])
+  # removePlacesFromIndex(es, 'whg', ds.placeids)
+  return JsonResponse({'msg':'okay already, lunchtime?'})
 
 #
-# delete docs given place_id array
+# delete docs given place_id list
 # if parent, promotes a child if any
 # if child, removes references to it in parent (children[], suggest.input[])
 # TODO: confirm suggest.input[] is not distinct
 #  i.e. what if variant was also contributed by parent or another child?
 #
 
-def deletePlacesFromIndex(es, idx, pids):
+def removePlacesFromIndex(es, idx, pids):
   delthese=[]
   for pid in pids:
     # get its database record

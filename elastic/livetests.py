@@ -30,10 +30,11 @@ def test_remove_dataset_from_index(dslabel):
   """are ds place.review_whg values all unreviewed"""
   unreviewed = ds.places.filter(review_whg = 1).count() == 0
   # == ds.places.count()
+
   """if current align_idx task.status == 'SUCCESS' are all hit.reviewed values False?"""
-  # latest align_idx task
-  taskid = ds.tasks.get(task_name='align_idx').task_id
-  hits_cleared = Hit.objects.filter(task_id = taskid, reviewed = True).count() == 0
+  # latest align_idx task maybe already removed
+  # taskid = ds.tasks.get(task_name='align_idx').task_id
+  # hits_cleared = Hit.objects.filter(task_id = taskid, reviewed = True).count() == 0
 
   q = { "query": {"bool": {
           "should": [
@@ -47,7 +48,10 @@ def test_remove_dataset_from_index(dslabel):
   """is it gone from index?"""
   zapped = res['hits']['total']['value'] == 0; print('zapped?:', zapped)
 
-  print({'zapped': zapped, 'unreviewed': unreviewed, 'hits_cleared': hits_cleared})
+  print({'zapped': zapped,
+         'unreviewed': unreviewed,
+         # 'hits_cleared': hits_cleared
+         })
 
 
 # for h in res['hits']['hits']:
