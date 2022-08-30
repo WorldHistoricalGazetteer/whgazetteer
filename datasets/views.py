@@ -2643,7 +2643,7 @@ class DatasetAddTaskView(LoginRequiredMixin, DetailView):
       To begin the step of accessioning to the WHG index, please <a href="%s">contact our editorial team</a>"""
     for i in ds.taskstats.items():
       auth = i[0][6:]
-      if len(i[1]) > 0:
+      if len(i[1]) > 0: # there's a SUCCESS task
         tid = i[1][0]['tid']
         remaining = i[1][0]['total']
         hadhits = gothits[tid]

@@ -1462,9 +1462,9 @@ def align_idx(pk, *args, **kwargs):
     'lang': ['']}>
   """
   # open file for writing new seed/parents for inspection
-  wd = "/Users/karlg/Documents/repos/_whgazetteer/_scratch/accessioning/"
-  fn1 = "new-parents_"+str(ds.id)+".txt"
-  fout1 = codecs.open(wd+fn1, mode="w", encoding="utf8")
+  # wd = "/Users/karlg/Documents/repos/_whgazetteer/_scratch/accessioning/"
+  # fn1 = "new-parents_"+str(ds.id)+".txt"
+  # fout1 = codecs.open(wd+fn1, mode="w", encoding="utf8")
   
   #bounds = {'type': ['userarea'], 'id': ['0']}
   bounds = kwargs['bounds']
@@ -1617,9 +1617,9 @@ def align_idx(pk, *args, **kwargs):
         #print(json.dumps(jsonic,indent=2))
   
   # write new index seed/parent docs for inspection
-  fout1.write(json.dumps(new_seeds, indent=2))
-  fout1.close()
-  print(str(len(new_seeds)) + ' new index seeds written to '+ fn1)
+  # fout1.write(json.dumps(new_seeds, indent=2))
+  # fout1.close()
+  # print(str(len(new_seeds)) + ' new index seeds written to '+ fn1)
   
   end = datetime.datetime.now()
   

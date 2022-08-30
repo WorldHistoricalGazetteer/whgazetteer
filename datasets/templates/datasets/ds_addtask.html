@@ -25,7 +25,6 @@
 
 {% block content %}
 <div id="dataset_content" class="container mt-1 px-1">
-
   <ul id="dataset_tabs" class="nav nav-tabs" role="tablist">
       <span class="ds-title ml-1 mr-3">{{ ds.title }}</span>
       <li class="nav-item">
@@ -50,13 +49,13 @@
   
   <div class="tab-content">
     <div id="addtask" class="tab-pane fade show active" role="tabpanel" aria-labelledby="addtask-tab">
-{#      <form action="{% url 'datasets:ds_recon' ds.id %}" method="POST">#}
       <form action="{% url 'datasets:ds_recon' ds.id %}" method="POST">
       {% csrf_token %}
+      <!-- only ds owner or superuser can run tasks -->
       {% if user.is_superuser or user in owners %}
-      <div class="row"> <!-- page-wide -->
+      <div class="row"  > <!-- page-wide -->
         <div id="recon_form" class="col-md-6">
-          <!-- already indexed, running more tasks makes no sense -->
+          <!-- if already indexed, running more tasks makes no sense -->
           {% if ds.unindexed == 0 %}
             <div>
               <p class="mt-3 text-danger">This dataset is completely indexed. Perhaps you want to update it?</p>
@@ -65,6 +64,7 @@
             <input type="hidden" name="ds" value="{{ ds.id }}">
             <input type="hidden" name="wd_lang" value="">
 
+	          {# whg accession option if superuser #}
             {% if user.is_superuser %}
               <div class="form-check text-danger mt-2">
                 <label class="form-check-label" for="r_whg">
@@ -72,14 +72,14 @@
                     name="recon" value="idx">WHG (accession/reconcile) 
                 </label>
 								{% for message in messages %}
-								<div class="container-fluid p-0">
-								  <div class="alert {{ message.tags }} alert-dismissible" role="alert" >
-								    <button type="button" id="error_closer" class="close" data-dismiss="alert" aria-label="Close">
-								      <span aria-hidden="True">&times;</span>
-								    </button>
-								    {{ message }}
-								  </div>
-								</div>
+									<div class="container-fluid p-0">
+									  <div class="alert {{ message.tags }} alert-dismissible" role="alert" >
+									    <button type="button" id="error_closer" class="close" data-dismiss="alert" aria-label="Close">
+									      <span aria-hidden="True">&times;</span>
+									    </button>
+									    {{ message }}
+									  </div>
+									</div>
 								{% endfor %}
                 <div id="wd_lang" class="hidden">
                   Preferred label language: <input class="input-sm col-xs-2"type="text" name="lang">
@@ -87,20 +87,23 @@
               </div>
               <hr/>
             {% endif %}
-            <!-- if there's an active align_idx task, stop -->
-{#            {% if ds.recon_status.idx %}#}
-              <p>Accessioning has begun for this dataset. Initiating another reconciliation task would disrupt
+
+
+            {% if ds.recon_status.idx %}
+              <p>Accessioning has begun for this dataset. Initiating another reconciliation task could disrupt
 	              the workflow in progress. If you would like to stop the accessioning step and roll back the workflow,
 	              please <a href="#" class="feedback">contact the editorial team</a>.</p>
-{#            {% else %} <!-- offer tasks -->#}
-              <p class="font-weight-bold mb-0">Name authority source</p>
-              <p class="small">Your task will enter a queue and and an email notification sent when completed.</p>
-              <div class="form-check">
-                <label class="form-check-label" for="r_wdlocal">
-                  <input type="radio" class="form-check-input r_wd" id="r_wdlocal" 
-                    name="recon" value="wdlocal" checked>Wikidata (wdlocal) <span class="ml-2 font-italic small">estimated time: {{ ds.numrows|time_estimate }}</span>
-                </label>
-                {% if msg_wdlocal %}
+            {% endif %}
+            <p class="font-weight-bold mb-0">Name authority source</p>
+            <p class="small">Your task will enter a queue and and an email notification sent when completed.</p>
+
+            {# Wikidata #}
+            <div class="form-check">
+              <label class="form-check-label" for="r_wdlocal">
+                <input type="radio" class="form-check-input r_wd" id="r_wdlocal"
+                  name="recon" value="wdlocal" checked>Wikidata (wdlocal) <span class="ml-2 font-italic small">estimated time: {{ ds.numrows|time_estimate }}</span>
+              </label>
+              {% if msg_wdlocal %}
                 <div id="wdlocal_tasks" class="smaller">
                   <div class="mt-0 smaller radiodiv">
                   {{ msg_wdlocal.msg|safe }}
@@ -110,38 +113,39 @@
                   {% endif %}
                   </div>
                 </div>
-                {% endif %}
-              </div>
-              <div id="addtask_lower">
-                <div id="geo_constraint" class="mt-2">
-                  <hr/>
-                  <div class="mb-2">
-                    <p class="font-weight-bold">Geographic bounds <span class="help-matches" data-id="geo_bounds">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
-                    </p>
-                    <p>
-                      <select id="select_region" name="region" class="custom-select-sm" style="width:auto;">
-                        <option value="0">Select pre-defined region</option>
-                        <option disabled>___________</option>
-                        {% for r in region_list %}
-                          <option value="{{ r.id }}">{{ r.title }}</option>
-                        {% endfor %}
-                      </select><span class="ml-2"><b>or...</b></span></p>
-                    <p>
-                      <select id="select_userarea" name="userarea" class="custom-select-sm" style="width:auto;">
-                        <option value="0" selected="selected">Select user-defined study area</option>
-                        <option disabled>___________</option>
-                        {% for a in area_list %}
-                            <option value="{{ a.id }}">{{ a.title }}</option>
-                        {% endfor %}
-                        <option value="create">{ new }</option>
-                      </select>
-                    <span class="ml-2 small">
-                      <a href="{% url 'areas:area-create' %}?next=/datasets/{{ds.id}}/addtask">create user area</a>
-                    </span></p>
-                  </div>
+              {% endif %}
+            </div>
+            {# geo bounds: regions, study areas #}
+            <div id="addtask_lower">
+              <div id="geo_constraint" class="mt-2">
+                <hr/>
+                <div class="mb-2">
+                  <p class="font-weight-bold">Geographic bounds <span class="help-matches" data-id="geo_bounds">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
+                  </p>
+                  <p>
+                    <select id="select_region" name="region" class="custom-select-sm" style="width:auto;">
+                      <option value="0">Select pre-defined region</option>
+                      <option disabled>___________</option>
+                      {% for r in region_list %}
+                        <option value="{{ r.id }}">{{ r.title }}</option>
+                      {% endfor %}
+                    </select><span class="ml-2"><b>or...</b></span></p>
+                  <p>
+                    <select id="select_userarea" name="userarea" class="custom-select-sm" style="width:auto;">
+                      <option value="0" selected="selected">Select user-defined study area</option>
+                      <option disabled>___________</option>
+                      {% for a in area_list %}
+                          <option value="{{ a.id }}">{{ a.title }}</option>
+                      {% endfor %}
+                      <option value="create">{ new }</option>
+                    </select>
+                  <span class="ml-2 small">
+                    <a href="{% url 'areas:area-create' %}?next=/datasets/{{ds.id}}/addtask">create user area</a>
+                  </span></p>
                 </div>
               </div>
-{#            {% endif %} <!-- ds.ds_status != 'accessioning' -->#}
+            </div>
+						{# buttons #}
             <div class="bottom">
               <hr/>
               <button type="submit" id="btn_startrecon" class="btn btn-primary">Start</button>
@@ -149,6 +153,8 @@
             </div>
           {% endif %} <!-- ds.unindexed -->
         </div> <!-- recon_form -->
+
+        {# map column right #}
         <div id="recon_result" class="col-md-6 p-tight py-2 dashedbox">
           {% if request.method == 'GET' %}
           <div id="mapdiv_recon" class="mt-2">
@@ -174,10 +180,10 @@
         </div> <!-- recon_result -->
       </div> <!-- row -->
       {% else %}
-      <div><p class="pl-3 text-danger"><b>Sorry, reconciliation tasks can only be initiated by the dataset owner.</b></p></div>
+        <div><p class="pl-3 text-danger"><b>Sorry, reconciliation tasks can only be initiated by the dataset owner.</b></p></div>
       {% endif %}
       </form>
-        <div class="selector py-3"><div id="helpme"></div></div>
+      <div class="selector py-3"><div id="helpme"></div></div>
       </div> <!-- .row -->
     </div> <!-- #addtask -->
   </div> <!-- .tab-content -->
@@ -224,7 +230,6 @@
 </div>
 
 <script type="text/javascript">
-
   // show/hide geo constraint options
   $("#r_tgn").click(function(){
     <!--console.log('tgn now');-->
@@ -247,10 +252,7 @@
 
 
   $(function(){
-    <!--console.log('msg_wdlocal', JSON.parse("{ msg_wdlocal|safe }}"))-->
-    <!--console.log('msg_wdlocal', "{{ msg_wdlocal.type }}")-->
-    <!--console.log('msg_tgn', "{{ msg_tgn.type }}")-->
-    <!--console.log('msg_whg', "{{ msg_whg.type }}")-->
+
     msgs = ["{{ msg_wdlocal.type }}","{{ msg_tgn.type }}","{{ msg_whg.type }}"]
     console.log('msgs',msgs)
     if("{{ msg_wdlocal.type }}" == 'done'){
@@ -260,12 +262,12 @@
     if("{{ msg_tgn.type }}" == 'done'){
       $("#r_tgn").attr('disabled',true)
     }
-
     found = msgs.slice(0,2).some(r=> ['none','unreviewed','inprogress'].includes(r))
-    <!--if(msgs.slice(0,2).includes("done") && !msgs.slice(0,2).includes("inprogress")){-->
+
     if(msgs.slice(0,2).includes("done") && !found){
       $("#addtask_lower").addClass("hidden")
     }
+
     // set default 
     $("#r_keep_wd").attr('checked', true)
     

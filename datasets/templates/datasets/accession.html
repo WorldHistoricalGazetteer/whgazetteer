@@ -177,7 +177,7 @@
 	                <div class="accession-div-row">
 	                <p>
 		                <a class="pop-link pop-dataset" data-label={{src.dslabel}} data-toggle="popover" title="Dataset Profile" data-content="" tabindex="0" rel="clickover">{{ src.dslabel }}</a> (<a href="/api/place/{{src.pid}}/" target="_blank">{{ src.pid }}</a>):
-		                {% if src.types|length > 0 %}<i>variants</i>: <b>{{ src.variants|join:", " }}</b>{% endif %}
+		                {% if src.variants|length > 0 %}<i>variants</i>: <b>{{ src.variants|join:", " }}</b>{% endif %}
 		                {% if src.types|length > 0 %}; <i>type(s)</i>: <b>{{ src.types|join:","}}</b>{% endif %}
 										{# index has some nulls in minmax #}
 		                {% if src.minmax and src.minmax.first != None %}; <i>earliest/latest</i>:<b> {{ src.minmax|join:"/"}}</b>{% endif %}
