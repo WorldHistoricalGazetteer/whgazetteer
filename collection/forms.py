@@ -25,7 +25,7 @@ class CollectionModelForm(forms.ModelForm):
     class Meta:
         model = Collection
         fields = ('id','owner','title','collection_class','description','keywords','rel_keywords',
-                  'image_file','file','datasets','creator','contact','content','webpage','public','featured' )
+                  'image_file','file','datasets','creator','contact','webpage','public','featured' )
         widgets = {
             'title': forms.TextInput(attrs={'size': 45}),
             'keywords': forms.TextInput(attrs={'size': 45, 'placeholder':'comma-delimited'}),
@@ -39,7 +39,7 @@ class CollectionModelForm(forms.ModelForm):
             'file':forms.FileInput(),
             'datasets': forms.CheckboxSelectMultiple,
             'featured': forms.TextInput(attrs={'size': 3}),
-            'content': TinyMCE(attrs={'cols': 40, 'rows': 6})
+            # 'content': TinyMCE(attrs={'cols': 40, 'rows': 6})
         }
 
     def __init__(self, *args, **kwargs):
