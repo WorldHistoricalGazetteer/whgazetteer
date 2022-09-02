@@ -27,10 +27,14 @@ class DatasetViewSet(viewsets.ModelViewSet):
 
   def get_queryset(self):
     """Retrieve recipes for authenticated user."""
+    # print('request', self.request)
     queryset = self.queryset
-    return queryset.filter(
-      user=self.request.user
+    result = queryset.filter(
+      # user=self.request.user
+      owner=self.request.user
     ).order_by('-id').distinct()
+    # print('result', result)
+    return result
 
   def get_serializer_class(self):
       """Return the serializer class for request."""

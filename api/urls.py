@@ -31,8 +31,10 @@ urlpatterns = [
     # *** DATASETS ***
 
     # use: filter public datasets by id, label, term
-    path('datasets/', views.DatasetAPIView.as_view(), name='dataset-list'),
-    
+    # 2022-09 name conflict with new remote api
+    # path('datasets/', views.DatasetAPIView.as_view(), name='dataset-list'),
+    path('datasets/', views.DatasetAPIView.as_view(), name='ds-list'),
+
 
     # *** PLACES ***
         
