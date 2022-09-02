@@ -656,7 +656,7 @@ class UserDetail(generics.RetrieveAPIView):
 def api_root(request, format=None):
   return Response({
     # 'datasets': reverse('dataset-list', request=request, format=format)
-    'datasets': reverse('ds-list', request=request, format=format)
+    'datasets': reverse('api:ds-list', request=request, format=format)
   })
 
 

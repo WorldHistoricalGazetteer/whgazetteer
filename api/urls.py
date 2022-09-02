@@ -10,8 +10,8 @@ from api import remoteviews
 from rest_framework.routers import DefaultRouter
 router = DefaultRouter()
 router.register('ds', remoteviews.DatasetViewSet)
-router.register('pl', remoteviews.PlaceViewSet)
 router.register('coll', remoteviews.CollectionViewSet)
+router.register('pl', remoteviews.PlaceViewSet)
 
 """ END new remote"""
 
