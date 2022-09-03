@@ -15,7 +15,7 @@ from datasets.models import Dataset
 from places.models import Place
 from collection.models import Collection
 
-from api.remoteserializers import  (
+from remote.serializers import  (
 	DatasetRemoteSerializer, DatasetRemoteDetailSerializer, PlaceRemoteSerializer, CollectionRemoteSerializer
 )
 

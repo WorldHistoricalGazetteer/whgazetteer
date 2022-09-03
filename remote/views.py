@@ -14,7 +14,7 @@ from rest_framework.response import Response
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 
-from api.remoteserializers import *
+from remote.serializers import *
 
 
 class DatasetViewSet(viewsets.ModelViewSet):

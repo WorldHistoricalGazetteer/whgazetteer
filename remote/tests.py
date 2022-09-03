@@ -15,14 +15,14 @@ from datasets.models import Dataset
 from places.models import Place
 from collection.models import Collection
 
-from api.remoteserializers import  (
+from remote.serializers import  (
 	DatasetRemoteSerializer, DatasetRemoteDetailSerializer, PlaceRemoteSerializer, CollectionRemoteSerializer
 )
 
 DATASETS_URL = reverse('remote:dataset-list')
 def dataset_detail_url(dataset_id):
 	"""Create and return a dataset detail URL."""
-	return reverse('api:dataset-detail', args=[dataset_id])
+	return reverse('remote:dataset-detail', args=[dataset_id])
 
 COLLECTIONS_URL = reverse('remote:collection-list')
 def collection_detail_url(collection_id):

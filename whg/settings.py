@@ -61,7 +61,7 @@ INSTALLED_APPS = [
     'elastic.apps.ElasticConfig',
     'main.apps.MainConfig',
     'places.apps.PlacesConfig',
-    'remote.apps.PlacesConfig',
+    'remote.apps.RemoteConfig',
     'resources.apps.ResourcesConfig', # for teaching
     'search.apps.SearchConfig',
     'traces.apps.TracesConfig'
