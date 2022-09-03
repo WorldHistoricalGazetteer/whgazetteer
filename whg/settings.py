@@ -52,15 +52,16 @@ INSTALLED_APPS = [
     'rest_framework_gis',
     'tinymce',
 
-    # project apps
+    # apps
     'accounts.apps.AccountsConfig',
     'api.apps.ApiConfig',
     'areas.apps.AreasConfig',
-    'collection.apps.CollectionConfig',  # "collections" reserved in python
+    'collection.apps.CollectionConfig',  # "collections" (plural) is reserved in python
     'datasets.apps.DatasetsConfig',
     'elastic.apps.ElasticConfig',
     'main.apps.MainConfig',
     'places.apps.PlacesConfig',
+    'remote.apps.PlacesConfig',
     'resources.apps.ResourcesConfig', # for teaching
     'search.apps.SearchConfig',
     'traces.apps.TracesConfig'

@@ -5,19 +5,7 @@ from django.urls import path
 from rest_framework.urlpatterns import format_suffix_patterns
 from . import views
 
-""" BEGIN new remote using ViewSets and drf router """
-from api import remoteviews
-from rest_framework.routers import DefaultRouter
-router = DefaultRouter()
-router.register('ds', remoteviews.DatasetViewSet)
-router.register('coll', remoteviews.CollectionViewSet)
-router.register('pl', remoteviews.PlaceViewSet)
-
-""" END new remote"""
-
-app_name = "api"
 urlpatterns = [
-    path('', include(router.urls)),
 
     # database places
     path('db/',views.SearchAPIView.as_view(),name='api-search'),
@@ -89,4 +77,4 @@ urlpatterns = [
     
 ]
 
-# urlpatterns = format_suffix_patterns(urlpatterns, allowed=['json', 'tsv', 'geojson'])
+urlpatterns = format_suffix_patterns(urlpatterns, allowed=['json', 'tsv', 'geojson'])

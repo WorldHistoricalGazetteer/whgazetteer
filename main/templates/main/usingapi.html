@@ -70,10 +70,10 @@
 				<div id="examples">
 				  <p class="mb-0 strong">Examples</p>
 				  <p class="mb-0">Abydos, Egypt in the database, attested to exist at 4000 BCE</p>
-				  <p><a href="{% url 'api:api-search' %}?name=abydos&ccode=eg&year=-4000" target="_blank">/api/db/?name=abydos&ccode=eg&year=-4000</a></p>
+				  <p><a href="{% url 'api-search' %}?name=abydos&ccode=eg&year=-4000" target="_blank">/api/db/?name=abydos&ccode=eg&year=-4000</a></p>
 				  
 				  <p class="mb-0">Khmer "landscape" features (regions, cultural groups, peoples) or settlements.</p>
-				  <p><a href="{% url 'api:api-search' %}?name_contains=khmer&fclass=p,l" target="_blank">/api/db/?name_contains=khmer&fclass=p,l</a></p>
+				  <p><a href="{% url 'api-search' %}?name_contains=khmer&fclass=p,l" target="_blank">/api/db/?name_contains=khmer&fclass=p,l</a></p>
 
 				</div>
 			  </div> <!-- place_db -->
@@ -158,15 +158,15 @@
 				<div id="examples" class="">
 				  <p class="mb-0 strong">Examples</p>
 				  <p class="mb-0">Settlements & sites within a bounding box (feature classes 'P' and 'S')</p>
-				  <p class="mb-1"><a href="{% url 'api:api-spatial' %}?type=bbox&sw=31.918,26.186&ne=32.918,27.186&fc=P,S" target="_blank">
+				  <p class="mb-1"><a href="{% url 'api-spatial' %}?type=bbox&sw=31.918,26.186&ne=32.918,27.186&fc=P,S" target="_blank">
 						/api/spatial/?type=bbox&sw=31.918,26.186&ne=33.918,28.186&fc=P,S
 				  </a></p>
 				  <p class="mb-0">Places in Old World Trade dataset within 100km of given point, ordered</p>
-				  <p class=mb-1><a href="{% url 'api:api-spatial' %}?type=nearby&lon=31.918&lat=26.186&km=100&dataset=owtrad" target="_blank">
+				  <p class=mb-1><a href="{% url 'api-spatial' %}?type=nearby&lon=31.918&lat=26.186&km=100&dataset=owtrad" target="_blank">
 						/api/spatial/?type=nearby&lon=31.918&lat=26.186&km=100&dataset=owtrad
 				  </a></p>
 				  <p class="mb-0">Settlements in HGIS de Las Indias collection within 10km of given point, ordered</p>
-				  <p class=mb-1><a href="{% url 'api:api-spatial' %}?type=nearby&lon=-98.3067&lat=19.1302&km=10&fc=P&collection=5" target="_blank">
+				  <p class=mb-1><a href="{% url 'api-spatial' %}?type=nearby&lon=-98.3067&lat=19.1302&km=10&fc=P&collection=5" target="_blank">
 						/api/spatial/?type=nearby&lon=-98.3067&lat=19.1302&km=10&fc=P&collection=5
 				  </a></p>
 				</div>
@@ -186,13 +186,13 @@
 				<div id="examples" class="">
 				  <p class="mb-0 strong">Examples</p>
 				  <p class="mb-0">All regions and public user study areas</p>
-				  <p><a href="{% url 'api:area-features' %}" target="_blank">
+				  <p><a href="{% url 'area-features' %}" target="_blank">
 				  http://whgazetteer.org/api/areas</a></p>
 				  <p class="mb-0">A region by id</p>
-				  <p><a href="{% url 'api:area-features' %}?id=75" target="_blank">
+				  <p><a href="{% url 'area-features' %}?id=75" target="_blank">
 				  http://whgazetteer.org/api/areas?id=75</a></p>
 				  <p class="mb-0">Search string</p>
-				  <p><a href="{% url 'api:area-features' %}?q=africa" target="_blank">
+				  <p><a href="{% url 'area-features' %}?q=africa" target="_blank">
 				  http://whgazetteer.org/api/areas?q=africa</a></p>
 				</div>
 			  </div> <!-- areas -->
@@ -213,16 +213,16 @@
 				<div id="examples">
 				  <p class="mb-0 strong">Examples</p>
 				  <p class="mb-0">List all 'public' datasets</p>
-				  <p><a href="{% url 'api:ds-list' %}" target="_blank">
+				  <p><a href="{% url 'ds-list' %}" target="_blank">
 					http://whgazetteer.org/api/datasets</a></p>
 				  <p class="mb-0">A 'public' dataset by id</p>
-				  <p><a href="{% url 'api:ds-list' %}?id=1" target="_blank">
+				  <p><a href="{% url 'ds-list' %}?id=1" target="_blank">
 					http://whgazetteer.org/api/datasets?id=1</a></p>
 				  <p class="mb-0">A 'public' dataset by label identifier</p>
-				  <p><a href="{% url 'api:ds-list' %}?label=dplace" target="_blank">
+				  <p><a href="{% url 'ds-list' %}?label=dplace" target="_blank">
 					http://whgazetteer.org/api/datasets?label=dplace</a></p>
 				  <p class="mb-0">Search title and description for term</p>
-				  <p><a href="{% url 'api:ds-list' %}?q=spanish" target="_blank">
+				  <p><a href="{% url 'ds-list' %}?q=spanish" target="_blank">
 					http://whgazetteer.org/api/datasets?q=spanish</a></p>					
 				</div>
 			  </div> <!-- datasets -->
