@@ -1,5 +1,5 @@
 """
-Tests only for for remote API endpoints
+Tests only for remote API endpoints
 added Sep 2022 @kgeographer
 """
 import os
@@ -19,17 +19,17 @@ from remote.serializers import  (
 	DatasetRemoteSerializer, DatasetRemoteDetailSerializer, PlaceRemoteSerializer, CollectionRemoteSerializer
 )
 
-DATASETS_URL = reverse('api:dataset-list')
+DATASETS_URL = reverse('remote:dataset-list')
 def dataset_detail_url(dataset_id):
 	"""Create and return a dataset detail URL."""
-	return reverse('api:dataset-detail', args=[dataset_id])
+	return reverse('remote:dataset-detail', args=[dataset_id])
 
-COLLECTIONS_URL = reverse('api:collection-list')
+COLLECTIONS_URL = reverse('remote:collection-list')
 def collection_detail_url(collection_id):
 	"""Create and return a collection detail URL."""
-	return reverse('api:collection-detail', args=[collection_id])
+	return reverse('remote:collection-detail', args=[collection_id])
 
-PLACES_URL = reverse('api:place-list')
+PLACES_URL = reverse('remote:place-list')
 
 def create_user(**params):
 	"""Create and return a new user."""

@@ -5,13 +5,7 @@ from django.urls import path
 from rest_framework.urlpatterns import format_suffix_patterns
 from . import views
 
-# app_name = "api"
-
 urlpatterns = [
-    path('api-auth/', include('rest_framework.urls')),
-    #path('', views.api_root),
-
-    # *** SEARCH (external) ***
 
     # database places
     path('db/',views.SearchAPIView.as_view(),name='api-search'),
@@ -25,8 +19,10 @@ urlpatterns = [
     # *** DATASETS ***
 
     # use: filter public datasets by id, label, term
-    path('datasets/', views.DatasetAPIView.as_view(), name='dataset-list'),
-    
+    # 2022-09 name conflict with new remote api
+    # path('datasets/', views.DatasetAPIView.as_view(), name='dataset-list'),
+    path('datasets/', views.DatasetAPIView.as_view(), name='ds-list'),
+
 
     # *** PLACES ***
         

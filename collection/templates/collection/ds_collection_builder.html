@@ -40,7 +40,6 @@
 	      <form id="collection_form" method="POST" action="#" enctype="multipart/form-data">
 	      {% csrf_token %}
 	      <input type="hidden" name="owner" value='{{ user.id }}'></input>
-{#	      <input type="hidden" name="type" value='dataset'></input>#}
 	      <input type="hidden" name="collection_class" value='dataset'></input>
 				<div class="form-group">
 					<label for="Title">Title &#x02733;</label><br/>

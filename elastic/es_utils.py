@@ -426,7 +426,6 @@ def replaceInIndex(es,idx,pids):
 
 # wrapper for removePlacesFromIndex()
 # delete all docs for dataset from the whg index
-# def removeDatasetFromIndex(idx, dsid):
 def removeDatasetFromIndex(request, *args, **kwargs):
   print('removeDatasetFromIndex() hands pids to removePlacesFromIndex()')
   print('args, kwargs',args, kwargs)
@@ -452,13 +451,14 @@ def removeDatasetFromIndex(request, *args, **kwargs):
 
 def removePlacesFromIndex(es, idx, pids):
   delthese=[]
+  # [6713137, 6713138, 6713141, 6713142]
   for pid in pids:
     # get its database record
     place = Place.objects.get(id=pid)
     # get its index document
     res = es.search(index=idx, body=esq_pid(pid))
     hits=res['hits']['hits']
-    print(hits)
+    # print(hits)
     # is it in the index?
     if len(hits) > 0:
       doc = hits[0]
@@ -509,7 +509,7 @@ def removePlacesFromIndex(es, idx, pids):
               print('update of new parent failed',sys.exit(sys.exc_info()))
             # parent status transfered to 'eligible' child, add to list
             print('parent w/kids '+hit['_source']['title'],pid+' transferred resp to: '+parent+'; tagged for deletion')
-            delthese.append(pid)
+          delthese.append(pid)
       elif role == 'child':
         # get its parent
         parent = src['relation']['parent']

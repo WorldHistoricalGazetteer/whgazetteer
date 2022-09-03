@@ -31,7 +31,7 @@ def default_omitted():
   return '{}'
 
 class Collection(models.Model):
-  owner = models.ForeignKey(User,related_name='collections', on_delete=models.CASCADE)
+  owner = models.ForeignKey(User, related_name='collections', on_delete=models.CASCADE)
   title = models.CharField(null=False, max_length=255)
   description = models.CharField( null=False, max_length=2044)
   keywords = ArrayField(models.CharField(max_length=50), null=True)
@@ -50,13 +50,10 @@ class Collection(models.Model):
   contact = models.CharField(null=True, blank=True, max_length=500)
   webpage = models.URLField(null=True, blank=True)
 
-  # modified, 20220416
-  collection_class = models.CharField(choices=COLLECTIONCLASSES, max_length=12, default='dataset')
-  # type = models.CharField(choices=COLLECTIONTYPES, max_length=12, null=True, blank=True)
+  # modified, 20220902: no default
+  collection_class = models.CharField(choices=COLLECTIONCLASSES, max_length=12)
 
   # single representative image
-  # image_file = models.FileField(upload_to=collection_path, blank=True, null=True)
-  # image_file = models.ImageField(upload_to=collection_path, blank=True, null=True)
   image_file = ResizedImageField(size=[800, 600], upload_to=collection_path, blank=True, null=True)
   # single pdf file
   file = models.FileField(upload_to=collection_path, blank=True, null=True)
@@ -69,9 +66,6 @@ class Collection(models.Model):
   # collections can comprise >=0 datasets, >=1 places
   datasets = models.ManyToManyField("datasets.Dataset", blank=True)
   places = models.ManyToManyField("places.Place", blank=True)
-
-  # tinymce field?
-  # content = HTMLField(null=True, blank=True)
 
   def get_absolute_url(self):
     #return reverse('datasets:dashboard', kwargs={'id': self.id})

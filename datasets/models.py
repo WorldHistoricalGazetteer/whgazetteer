@@ -31,7 +31,7 @@ def ds_image_path(instance, filename):
 # owner = models.ForeignKey('auth.User', related_name='snippets', on_delete=models.CASCADE)
 class Dataset(models.Model):
   #idx='whg'
-  owner = models.ForeignKey(User,related_name='datasets', on_delete=models.CASCADE)
+  owner = models.ForeignKey(User, related_name='datasets', on_delete=models.CASCADE)
   label = models.CharField(max_length=20, null=False, unique="True",
             error_messages={'unique': 'The dataset label entered is already in use, and must be unique. Try appending a version # or initials.'})
   title = models.CharField(max_length=255, null=False)

@@ -810,8 +810,8 @@ def task_delete(request, tid, scope="foo"):
 
   # delete dataset from index
   # undoes any acceessioning work
-  if auth in ['whg', 'idx']:
-    deleteDatasetFromIndex('whg', dsid)
+  # if auth in ['whg', 'idx']:
+  #   removeDatasetFromIndex('whg', dsid)
   # set status back to reconciling
   ds=Dataset.objects.get(id=dsid)
   ds.ds_status = 'reconciling'
