@@ -830,12 +830,12 @@
   
   // fetch complete-ish place record
   function getPlace(pid){
-    //console.log('getPlace()', pid)
+    console.log('getPlace()', pid)
     $.ajax({
       url: "/api/place/"+pid,
       }).done(function( data ) {
-        {#console.log('place data', data)#}
-        $("#detail").html(parsePlace(data))
+        console.log('place data', data)
+        {#$("#detail").html(parsePlace(data))#}
         spinner_detail.stop()
         // events on detail items
         $('.ext').on('click', function(e) {

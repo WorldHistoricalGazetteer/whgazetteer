@@ -36,19 +36,10 @@ from datasets.tasks import get_bounds_filter
 from places.models import Place, PlaceGeom
 from search.views import getGeomCollection
 
-# es = Elasticsearch([{'host': 'localhost',
-#                      'port': 9200,
-#                      'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
-#                      'timeout': 30,
-#                      'max_retries': 10,
-#                      'retry_on_timeout': True}])
-
-
 class StandardResultsSetPagination(PageNumberPagination):
   page_size = 10
   page_size_query_param = 'page_size'
   max_page_size = 20000
-
 
 #
 # External API
@@ -671,7 +662,7 @@ class PrettyJsonRenderer(JSONRenderer):
 #
 """
     place/<int:pk>/
-    uses: dataset.html#browse; collection.place_collection_builder.html
+    uses: ds_browse.html; place_collection_browse.html
     "published record by place_id"
 """
 class PlaceDetailAPIView(generics.RetrieveAPIView):
@@ -757,7 +748,6 @@ class GeoJSONAPIView(generics.ListAPIView):
     populates drf table in ds_browse.html
 """
 class PlaceTableViewSet(viewsets.ModelViewSet):
-  #queryset = Place.objects.all().order_by('title')
   serializer_class = PlaceTableSerializer
   permission_classes = (permissions.IsAuthenticatedOrReadOnly)
 
@@ -766,7 +756,6 @@ class PlaceTableViewSet(viewsets.ModelViewSet):
     ds: dataset
   """
   def get_queryset(self):
-    #print('PlaceTableViewSet.get_queryset()',self.request.GET)
     ds = get_object_or_404(Dataset, label=self.request.GET.get('ds'))
     # qs = ds.places.all().order_by('place_id')
     qs = ds.places.all().order_by('id')
