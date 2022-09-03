@@ -748,6 +748,7 @@ class GeoJSONAPIView(generics.ListAPIView):
     populates drf table in ds_browse.html
 """
 class PlaceTableViewSet(viewsets.ModelViewSet):
+  # queryset = Place.objects.all()
   serializer_class = PlaceTableSerializer
   permission_classes = (permissions.IsAuthenticatedOrReadOnly)
 
@@ -780,6 +781,7 @@ class PlaceTableViewSet(viewsets.ModelViewSet):
     populates drf table in collection.collection_places.html
 """
 class PlaceTableCollViewSet(viewsets.ModelViewSet):
+  # queryset = Place.objects.all()
   serializer_class = PlaceTableSerializer
   permission_classes = (permissions.IsAuthenticatedOrReadOnly)
 
