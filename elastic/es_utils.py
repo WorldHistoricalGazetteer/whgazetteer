@@ -474,7 +474,7 @@ def removePlacesFromIndex(es, idx, pids):
         eligible = list(set(kids)-set(pids)) # not slated for deletion
         if len(eligible) == 0:
           # add to array for deletion
-          print('childless parent '+str(pid)+' tagged for deletion')
+          print('childless parent '+str(pid)+' was tagged for deletion')
           delthese.append(pid)
         else:
           # > 0 eligible children, first promote one to parent
@@ -517,22 +517,38 @@ def removePlacesFromIndex(es, idx, pids):
         res = es.search(index=idx, body=qget)
         # parent _source, suggest, searchy
         psrc = res['hits']['hits'][0]['_source']
+        print('a child; parent src', pid, psrc)
+        print('pids at this pojnt:', pids)
         psugs = list(set(psrc['suggest']['input']))
         psearchy = list(set([item for item in psrc['searchy'] if type(item) != list]))
         # is parent slated for deletion? (walking dead)
         zombie = psrc['place_id'] in pids
+        print('zombie?', zombie)
         if not zombie: # skip zombies; picked up above with if role == 'parent':
           # remove this id from children and remove its variants (sugs) from suggest.input and searchy
           newsugs = list(set(psugs)-set(sugs))
           newsearchy = list(set(psearchy)-set(searchy))
           q_update = {"script":{
-            "source": "ctx._source.children.remove(ctx._source.children.indexOf(params.val)); \
-              ctx._source.suggest.input = params.sugs; ctx._source.searchy = params.searchy;",
             "lang": "painless",
-            "params":{"val": str(pid), "sugs": newsugs, "searchy": newsearchy }
+            "source": """ctx._source.suggest.input = params.sugs; ctx._source.searchy = params.searchy;""",
+            "params":{"sugs": newsugs, "searchy": newsearchy }
             },
               "query": {"match":{"_id": parent }}
             }
+          # sometimes docs named as parent don't have the id of the child
+          # in that case, don't look for the child id, it'll break ES
+          if len(psrc['children']) > 0:
+            q_update['script']['source'] = """ctx._source.children.remove(ctx._source.children.indexOf(params.val));
+                          ctx._source.suggest.input = params.sugs; ctx._source.searchy = params.searchy;"""
+            q_update['params']['val'] = str(pid)
+          # q_update = {"script":{
+          #   "source": """ctx._source.children.remove(ctx._source.children.indexOf(params.val));
+          #     ctx._source.suggest.input = params.sugs; ctx._source.searchy = params.searchy;""",
+          #   "lang": "painless",
+          #   "params":{"val": str(pid), "sugs": newsugs, "searchy": newsearchy }
+          #   },
+          #     "query": {"match":{"_id": parent }}
+          #   }
           try:
             es.update_by_query(index=idx,body=q_update)
             print('child '+psrc['title'],str(pid)+' excised from parent: '+parent+'; tagged for deletion')
