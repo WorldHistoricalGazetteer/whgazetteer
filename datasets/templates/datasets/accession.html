@@ -119,6 +119,18 @@
                 <a href="" class="mr-2 ext" data-toggle="modal" data-target="#ext_site">{{ link.jsonb.identifier }} {% fontawesome_icon 'external-link' color='#336699' %}</a>
               {% endfor %}</p>
             {% endif %}
+            {% if record.minmax %}
+              {% if record.minmax.0 == record.minmax.1 %}
+              <p><strong>Attested year</strong>: {{record.minmax.0}}</p>
+              {% else %}
+              <p><strong>Eariest/latest:</strong>: {{record.minmax.0}} / {{record.minmax.1}}</p>
+              {% endif %}
+            {% endif %}
+            {% if record.descriptions %}
+              {% for d in record.descriptions.all %}
+              <p><strong>Description</strong>: {{d.jsonb.value}}</p>
+              {%endfor%}
+            {% endif %}
           </div> <!-- place_record -->
           <div id="map">
             {% leaflet_map "map_review" callback="map_init" %}

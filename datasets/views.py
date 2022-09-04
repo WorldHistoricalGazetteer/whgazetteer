@@ -341,7 +341,7 @@ def review(request, pk, tid, passnum):
   else:
     # all unreviewed
     hitplaces = Hit.objects.values('place_id').filter(task_id=tid, reviewed=False)
-  print('review() hitplaces', [p['place_id'] for p in hitplaces])
+  # print('review() hitplaces', [p['place_id'] for p in hitplaces])
 
   # set review page returned
   if auth in ['whg','idx']:
@@ -718,6 +718,7 @@ def ds_recon(request, pk):
       scope = 'all'
 
     print('ds_recon() scope', scope)
+    print('ds_recon() auth', auth)
     # which task? wdlocal, tgn, idx, whg (future)
     func = eval('align_'+auth)
 

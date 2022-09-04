@@ -1501,9 +1501,10 @@ def align_idx(pk, *args, **kwargs):
   start = datetime.datetime.now()
     
   # limit scope if some are already indexed
+  qs = ds.places.filter(indexed=False)
   # TODO: scope = 'all' should be not possible for align_idx
-  qs = ds.places.all() if scope == 'all' else ds.places.filter(indexed=False) \
-    if scope == 'unindexed' else ds.places.filter(review_wd != 1)
+  # qs = ds.places.all() if scope == 'all' else ds.places.filter(indexed=False) \
+  #   if scope == 'unindexed' else ds.places.filter(review_wd != 1)
   
   """
   for each place, create qobj and run es_lookup_idx(qobj)
