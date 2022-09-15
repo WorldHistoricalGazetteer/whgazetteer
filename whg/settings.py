@@ -12,7 +12,7 @@ from django.contrib.messages import constants as messages
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
-
+DEBUG = True
 INSTALLED_APPS = [
   'django.contrib.admin',
     'django.contrib.auth',
