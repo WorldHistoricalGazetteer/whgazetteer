@@ -835,7 +835,7 @@
       url: "/api/place/"+pid,
       }).done(function( data ) {
         console.log('place data', data)
-        {#$("#detail").html(parsePlace(data))#}
+        $("#detail").html(parsePlace(data))
         spinner_detail.stop()
         // events on detail items
         $('.ext').on('click', function(e) {

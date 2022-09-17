@@ -204,6 +204,10 @@ class PlaceTableSerializer(serializers.ModelSerializer):
           ' tabindex="0" rel="clickover">'+place.dataset.label+'</a>'
     return cell_value
 
+  src_id = serializers.SerializerMethodField()
+  def get_src_id(self, place):
+    return '<a href="'+place.dataset.uri_base+place.src_id+'" target="_blank">'+place.src_id+'</a>'
+
   geo = serializers.SerializerMethodField()
   def get_geo(self, place):
     if place.geom_count > 0:

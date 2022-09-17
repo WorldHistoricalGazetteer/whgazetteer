@@ -684,9 +684,6 @@ def write_wd_pass0(request, tid):
 """
 def ds_recon(request, pk):
   ds = get_object_or_404(Dataset, id=pk)
-  if ds.public == False:
-    messages.add_message(request, messages.ERROR, """Dataset must be public before indexing!""")
-    return redirect('/datasets/' + str(ds.id) + '/addtask')
   # TODO: handle multipolygons from "#area_load" and "#area_draw"
   user = request.user
   context = {"dataset": ds.title}
@@ -697,6 +694,9 @@ def ds_recon(request, pk):
     print('ds_recon() request.POST:',request.POST)
     auth = request.POST['recon']
     language = request.LANGUAGE_CODE
+    if auth == 'idx' and ds.public == False:
+      messages.add_message(request, messages.ERROR, """Dataset must be public before indexing!""")
+      return redirect('/datasets/' + str(ds.id) + '/addtask')
     # previous successful task of this type?
     #   wdlocal? archive previous, scope = unreviewed
     #   idx? scope = unindexed
@@ -1896,10 +1896,10 @@ class DataListsView(LoginRequiredMixin, ListView):
     print('DataListsView() whgteam:' + str(whgteam) + ', teaching: ' + str(teaching))
 
     if self.request.path == reverse('data-datasets'):
-      list = Dataset.objects.all().order_by('-create_date') if whgteam \
-        else Dataset.objects.filter( Q(owner=me) ).order_by('-id')
-      # print('list:', list)
-      return list
+      idlist = [obj.id for obj in Dataset.objects.all().order_by('create_date') if me in obj.owners or
+                   me in obj.collaborators or me.is_superuser]
+      dslist = Dataset.objects.filter(id__in=idlist)
+      return dslist
     elif self.request.path == reverse('data-collections'):
       list = Collection.objects.all().order_by('created') if whgteam \
         else Collection.objects.filter(owner=me).order_by('created')
@@ -2773,7 +2773,7 @@ if >1 match, compute parent winner and merge others as children
 #   return HttpResponseRedirect(referer)
 
 """
-DEPRECATEE
+DEPRECATED
 DashboardView()
 list user datasets, study areas, collections, teaching resources
 """

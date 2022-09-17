@@ -27,7 +27,7 @@ sent_emails/
 
 nohup.out
 dump.rdb
-
+req-tree.txt
 es-*.*
 
 # Wing IDE

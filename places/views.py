@@ -122,7 +122,7 @@ class PlacePortalView(DetailView):
       # collections, not traces 20220425
       # get traces, collections for this attestation
       attest_traces = list(place.traces.all())
-      attest_collections = [t.collection for t in attest_traces]
+      attest_collections = [t.collection for t in attest_traces if t.collection.public == True]
       # add to global list
       annotations = annotations + attest_traces
       collections = list(set(collections + attest_collections))
@@ -162,42 +162,6 @@ class PlacePortalView(DetailView):
     context['annotations'] = annotations
 
     return context
-    # TODO: retire this trace implementation (replaced by collections)
-    # def mm_trace(tsarr):
-    #   if tsarr==[]:
-    #     return ''
-    #   else:
-    #     #print('mm_trace() tsarr',tsarr)
-    #     # TODO: not only simple years here; sorts string years?
-    #     starts = sorted( [t['start'] for t in tsarr] )
-    #     ends = sorted( [t['end'] for t in tsarr] )
-    #     mm = [min(starts), max(ends)]
-    #     mm = sorted(list(set([min(starts), max(ends)])))
-    #     return '('+str(mm[0])+('/'+str(mm[1]) if len(mm)>1 else '')+')'
-    #
-    # # get traces for this index parent and its children
-    # #print('ids',ids)
-    # qt = {"query": {"bool": {"must": [  {"terms":{"body.place_id": ids }}]}}}
-    # trace_hits = es.search(index='traces', doc_type='trace', body=qt)['hits']['hits']
-    # # for each hit, get target and aggregate body relation/when
-    # for h in trace_hits:
-    #   # filter bodies for place_id
-    #   bods=[b for b in h['_source']['body'] if b['place_id'] in ids]
-    #   bod = {
-    #     "id": bods[0]['id'],
-    #     "title": bods[0]['title'],
-    #     "place_id": bods[0]['place_id'],
-    #     "relations": [x['relations'][0]['relation'] +' '+mm_trace(x['relations'][0]['when']) for x in bods]
-    #   }
-      # context['traces'].append({
-      #   'trace_id':h['_id'],
-      #   'target':h['_source']['target'][0] if type(h['_source']['target']) == list else h['_source']['target'],
-      #   'body': bod,
-      #   'bodycount':len(h['_source']['body'])
-      # })
-    
-
-
 
 class PlaceDetailView(DetailView):
   #login_url = '/accounts/login/'
@@ -280,4 +244,41 @@ class PlaceModalView(DetailView):
 class PlaceFullView(PlacePortalView):
   def render_to_response(self, context, **response_kwargs):
     return JsonResponse(context, **response_kwargs)
+
+""" DEPRECATED """
+# TODO: retire this trace implementation (replaced by collections)
+# def mm_trace(tsarr):
+#   if tsarr==[]:
+#     return ''
+#   else:
+#     #print('mm_trace() tsarr',tsarr)
+#     # TODO: not only simple years here; sorts string years?
+#     starts = sorted( [t['start'] for t in tsarr] )
+#     ends = sorted( [t['end'] for t in tsarr] )
+#     mm = [min(starts), max(ends)]
+#     mm = sorted(list(set([min(starts), max(ends)])))
+#     return '('+str(mm[0])+('/'+str(mm[1]) if len(mm)>1 else '')+')'
+#
+# # get traces for this index parent and its children
+# #print('ids',ids)
+# qt = {"query": {"bool": {"must": [  {"terms":{"body.place_id": ids }}]}}}
+# trace_hits = es.search(index='traces', doc_type='trace', body=qt)['hits']['hits']
+# # for each hit, get target and aggregate body relation/when
+# for h in trace_hits:
+#   # filter bodies for place_id
+#   bods=[b for b in h['_source']['body'] if b['place_id'] in ids]
+#   bod = {
+#     "id": bods[0]['id'],
+#     "title": bods[0]['title'],
+#     "place_id": bods[0]['place_id'],
+#     "relations": [x['relations'][0]['relation'] +' '+mm_trace(x['relations'][0]['when']) for x in bods]
+#   }
+# context['traces'].append({
+#   'trace_id':h['_id'],
+#   'target':h['_source']['target'][0] if type(h['_source']['target']) == list else h['_source']['target'],
+#   'body': bod,
+#   'bodycount':len(h['_source']['body'])
+# })
+
+
 

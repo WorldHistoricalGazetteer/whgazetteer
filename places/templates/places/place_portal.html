@@ -12,10 +12,10 @@
   <script src="{% static 'js/aliases.js' %}"></script>
   <script src="{% static 'js/leaflet.ajax.min.js' %}"></script>
   <script src="{% static 'js/jquery.bootstrap.modal.forms.min.js' %}"></script>
-  <!--TODO: load local, only what's needed-->
+
   <script src = "https://d3js.org/d3.v4.min.js"></script>
+
   <!-- spinners stuff -->
-  
   <link rel="stylesheet" href="{% static 'css/spin.css' %}"/>
   
   <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.css' rel='stylesheet' />
@@ -205,6 +205,7 @@
 	      </div>
         {% endif %}
         <div id="place_temporal" class="col-content small">
+	        {{ annotations }}
           <p class="mb-0 allcap-heading">TEMPORAL ATTESTATIONS</p>
           <!--<div id="histogram_sum"></div>-->
           <div id="histogram_sum" class="svg-container"></div>
@@ -228,7 +229,6 @@
 		            {% if cclass == 'place' %}
 		              <a href="{% url 'collection:place-collection-browse' c.id %}" target="_blank">
 			              <b>{{ c.title }}</b></a>, a collection of <sr>{{ c.places_all.count }}</sr> places
-{#			            href='javascript:{ zoomTo("{{ form.authrecord_id.value }}") }'#}
 			              {{ c.title|json_script:"c_title" }}
 			              {{ c.description|json_script:"c_description" }}
 			              [<a href='javascript:{ showCollectionDescription()}' class="a_cdescription">description</a>,

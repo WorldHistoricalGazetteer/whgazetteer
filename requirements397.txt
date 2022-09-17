@@ -150,7 +150,7 @@ pexpect==4.8.0
 pickleshare==0.7.5
 Pillow==9.0.1
 pip-check-reqs==2.3.2
-pip-search==0.0.11
+pip-search==0.0.12
 pipdeptree==2.2.1
 platformdirs==2.5.1
 pluggy==1.0.0
