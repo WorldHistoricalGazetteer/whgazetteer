@@ -206,7 +206,11 @@ class PlaceTableSerializer(serializers.ModelSerializer):
 
   src_id = serializers.SerializerMethodField()
   def get_src_id(self, place):
-    return '<a href="'+place.dataset.uri_base+place.src_id+'" target="_blank">'+place.src_id+'</a>'
+    if 'whg' in place.dataset.uri_base:
+      srcid = place.src_id
+    else:
+      srcid = '<a href="'+place.dataset.uri_base+place.src_id+'" target="_blank">'+place.src_id+'</a>'
+    return srcid
 
   geo = serializers.SerializerMethodField()
   def get_geo(self, place):
