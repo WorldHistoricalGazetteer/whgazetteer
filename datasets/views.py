@@ -312,11 +312,10 @@ def review(request, pk, tid, passnum):
     if auth == 'tgn' else 'WHG'
   kwargs=json.loads(task.task_kwargs.replace("'",'"'))
   beta = 'beta' in list(request.user.groups.all().values_list('name',flat=True))
-
   # filter place records by passnum for those with unreviewed hits on this task
   # if request passnum is complete, increment
   cnt_pass = Hit.objects.values('place_id').filter(task_id=tid, reviewed=False, query_pass=passnum).count()
-
+  print('in review()', {'auth':auth, 'ds':ds,'task': task})
   # TODO: refactor this awful mess; controls whether PASS appears in review dropdown
   cnt_pass0 = Hit.objects.values('place_id').filter(
     task_id=tid, reviewed=False, query_pass='pass0').count()
@@ -360,7 +359,7 @@ def review(request, pk, tid, passnum):
   """
   status = [2] if passnum == 'def' else [0]
 
-  # place objects from place_ids (a single pass or all)
+  # unreviewed place objects from place_ids (a single pass or all)
   record_list = ds.places.order_by('id').filter(**{lookup: status}, pk__in=hitplaces)
 
   # no records left for pass (or in deferred queue)
@@ -373,9 +372,9 @@ def review(request, pk, tid, passnum):
     }
     return render(request, 'datasets/'+review_page, context=context)
 
-  # TODO: test concurrent reviewers scenario
   # manage pagination & urls
   # gets next place record as records[0]
+  # TODO: manage concurrent reviewers; i.e. 2 people have same page 1
   paginator = Paginator(record_list, 1)
 
   # handle request for singleton (e.g. deferred from browse table)
@@ -400,8 +399,10 @@ def review(request, pk, tid, passnum):
     raw_hits = Hit.objects.filter(place_id=placeid, task_id=tid, query_pass=passnum).order_by('-score')
   else:
     # accessioning -> get all regardless of pass
+    # raw_hits = Hit.objects.filter(place_id=placeid, task_id=tid).order_by('-score')
     raw_hits = Hit.objects.filter(place_id=placeid, task_id=tid).order_by('-score')
 
+  print('raw_hits', [h.json['titles'] for h in raw_hits])
   # ??why? get pass contents for all of a place's hits
   passes = list(set([item for sublist in [[s['pass'] for s in h.json['sources']] for h in raw_hits]
                      for item in sublist])) if auth in ['whg','idx'] else None
@@ -433,6 +434,7 @@ def review(request, pk, tid, passnum):
     'deferred': True if passnum =='def' else False,
   }
 
+  print('raw_hits at formset', [h.json['titles'] for h in raw_hits])
   # build formset from hits, add to context
   HitFormset = modelformset_factory(
     Hit,
@@ -451,7 +453,17 @@ def review(request, pk, tid, passnum):
     #   For wikidata review, act on each hit considered (new place_geom and place_link records if matched)
     #   For accession,
     place_post = get_object_or_404(Place,pk=request.POST['place_id'])
-    if formset.is_valid():
+    review_status = getattr(place_post, review_field)
+    print('review_status, passnum', review_status, passnum)
+    if review_status >=1:
+      context["already"] = True
+      url = '/datasets/'+str(pk)+'/review/'+task.task_id+'/'+passnum+'?page=1'
+      print('url', url)
+      # http://localhost:8000/datasets/1231/review/76c589e3-f630-4d5c-b59a-cebadb0d5ce0/0and1?page=1
+      # return render(request, 'datasets/' + review_page, context=context)
+      # return render(request, url)
+      return redirect('/datasets/'+str(pk)+'/review/'+task.task_id+'/'+passnum)
+    elif formset.is_valid():
       hits = formset.cleaned_data
       matches = 0
       matched_for_idx = [] # for accession
@@ -460,7 +472,7 @@ def review(request, pk, tid, passnum):
         hit = hits[x]['id']
         # is this hit a match?
         if hits[x]['match'] not in ['none']:
-          print('json of matched hit/cluster (in review())', hits[x]['json'])
+          # print('json of matched hit/cluster (in review())', hits[x]['json'])
           matches += 1
           # if wd or tgn, write place_geom, place_link record(s) now
           # IF someone didn't just review it!

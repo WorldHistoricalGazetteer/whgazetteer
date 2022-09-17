@@ -342,6 +342,10 @@
 
   // on each page load...
   $(function(){
+    console.log("already: {{ already }}")
+	  if("{{ already }}"){
+          alert('last record was saved by someone else, this is the next')
+	  }
     current_place = $('input[name=place_id]').val()
     console.log('lastPlace:',sessionStorage.lastPlace)
     console.log('current place:', $('input[name=place_id]').val())

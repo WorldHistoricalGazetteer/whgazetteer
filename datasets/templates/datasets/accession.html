@@ -137,6 +137,7 @@
           </div>
         </div>
         <!--available: ['whg_id', 'place_id', 'src_id', 'title', 'dataset', 'variants', 'types', 'ccodes', 'parents', 'descriptions', 'geoms', 'timespans', 'links']-->
+{#        <p>{{ hit_list }}</p>#}
         <div id="review_list" class="col-sm-8 pr-0">
           {% for form in formset %}
             <input type="hidden" name="id" value='{{ form.id.value }}'></input>
@@ -150,7 +151,6 @@
               <div class="match_radio custom-control custom-radio">
                 {% if form.json.value|get:"geoms"|length > 0 %}
                   <span class="mr-2 globeflash">
-                  <!--{ if form.json.value|get:"geoms" != Null }-->
                     <a class="geolink" rel="tooltip" 
                       {% if ds_label == 'tgn_filtered_01' or authority == 'whg' or authority == 'idx'%}
                         id="{{ form.json.value|get:"place_id" }}" 
