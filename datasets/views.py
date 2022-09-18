@@ -51,7 +51,7 @@ from resources.models import Resource
 
 
 """
-  email a Celery down notice
+  email various, incl. Celery down notice
   to ['whgazetteer@gmail.com','karl@kgeographer.org'],
 """
 def emailer(subj, msg, from_addr, to_addr):
@@ -570,6 +570,19 @@ def review(request, pk, tid, passnum):
       if ds.unindexed == 0:
         setattr(ds, 'ds_status', 'indexed')
         ds.save()
+
+      if ds.recon_status['wdlocal'] == 0:
+        ds.ds_status = 'wdcomplete'
+        ds.save()
+        msg = 'The WHG dataset '+ds.title+' ('+ds.label+') is ready to review for possible accessioning.'
+        msg += 'https://whgazetteer.org/datasets/'+str(ds.id)+'/summary'
+        msg += 'Its owner is '+ds.owner.first_name+' '+ds.owner.last_name+' ('+ds.owner.username+'), at '+ds.owner.email+'.'
+
+        from_addr = 'whg@kgeographer.org'
+        # to_addr = ['als512@pitt.edu', 'karl@kgeographer.org']
+        to_addr = ['karl@kgeographer.org']
+        emailer('WHG dataset "wikidata-complete"', msg, from_addr, to_addr)
+        print('ready to index, sent email')
 
       # set review_whg = 1
       print('review_field', review_field)
@@ -2543,10 +2556,6 @@ class DatasetReconcileView(LoginRequiredMixin, DetailView):
     ds_tasks = ds.tasks.filter(status='SUCCESS')
 
     context['ds'] = ds
-    context['log'] = ds.log.filter(category='dataset').order_by('-timestamp')
-    context['comments'] = Comment.objects.filter(place_id__dataset=ds).order_by('-created')
-    context['collaborators'] = ds.collaborators.all()
-    context['owners'] = ds.owners
     context['tasks'] = ds_tasks
 
     context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False

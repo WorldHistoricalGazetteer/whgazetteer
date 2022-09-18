@@ -182,7 +182,7 @@ STATUS_DS = [
     ('format_ok', 'Valid format'),
     ('uploaded', 'File uploaded'),
     ('reconciling', 'Reconciling'),
-    ('ready', 'Ready for submittal'),
+    ('wdcomplete', 'Wikidata recon completed'),
     ('accessioning', 'Accessioning'),
     ('indexed', 'Indexed'),
 ]

@@ -235,7 +235,6 @@ def make_download(request, *args, **kwargs):
 
 @task(name="task_emailer")
 def task_emailer(tid, dslabel, username, email, counthit, totalhits):
-  print('emailer tid, dslabel, username, email, counthit, totalhits',tid, dslabel, username, email, counthit, totalhits)
   # TODO: sometimes a valid tid is not recognized (race?)
   time.sleep(5)
   try:
