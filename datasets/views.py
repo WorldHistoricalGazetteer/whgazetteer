@@ -402,7 +402,7 @@ def review(request, pk, tid, passnum):
     # raw_hits = Hit.objects.filter(place_id=placeid, task_id=tid).order_by('-score')
     raw_hits = Hit.objects.filter(place_id=placeid, task_id=tid).order_by('-score')
 
-  print('raw_hits', [h.json['titles'] for h in raw_hits])
+  # print('raw_hits', [h.json['titles'] for h in raw_hits])
   # ??why? get pass contents for all of a place's hits
   passes = list(set([item for sublist in [[s['pass'] for s in h.json['sources']] for h in raw_hits]
                      for item in sublist])) if auth in ['whg','idx'] else None
@@ -434,7 +434,7 @@ def review(request, pk, tid, passnum):
     'deferred': True if passnum =='def' else False,
   }
 
-  print('raw_hits at formset', [h.json['titles'] for h in raw_hits])
+  # print('raw_hits at formset', [h.json['titles'] for h in raw_hits])
   # build formset from hits, add to context
   HitFormset = modelformset_factory(
     Hit,
@@ -451,17 +451,13 @@ def review(request, pk, tid, passnum):
     # process match/no match choices made by save in review or accession page
     # NB very different cases.
     #   For wikidata review, act on each hit considered (new place_geom and place_link records if matched)
-    #   For accession,
+    #   For accession, act on index 'clusters'
     place_post = get_object_or_404(Place,pk=request.POST['place_id'])
     review_status = getattr(place_post, review_field)
-    print('review_status, passnum', review_status, passnum)
+    # proceed with POST only if place is unreviewed; else return to a GET (and next place)
+    # NB. reviewer #2 is *not* notified
     if review_status >=1:
       context["already"] = True
-      url = '/datasets/'+str(pk)+'/review/'+task.task_id+'/'+passnum+'?page=1'
-      print('url', url)
-      # http://localhost:8000/datasets/1231/review/76c589e3-f630-4d5c-b59a-cebadb0d5ce0/0and1?page=1
-      # return render(request, 'datasets/' + review_page, context=context)
-      # return render(request, url)
       return redirect('/datasets/'+str(pk)+'/review/'+task.task_id+'/'+passnum)
     elif formset.is_valid():
       hits = formset.cleaned_data
@@ -584,8 +580,6 @@ def review(request, pk, tid, passnum):
     else:
       print('formset is NOT valid. errors:',formset.errors)
       print('formset data:',formset.data)
-
-    #
 
   return render(request, 'datasets/'+review_page, context=context)
 
@@ -1908,9 +1902,9 @@ class DataListsView(LoginRequiredMixin, ListView):
     print('DataListsView() whgteam:' + str(whgteam) + ', teaching: ' + str(teaching))
 
     if self.request.path == reverse('data-datasets'):
-      idlist = [obj.id for obj in Dataset.objects.all().order_by('create_date') if me in obj.owners or
+      idlist = [obj.id for obj in Dataset.objects.all() if me in obj.owners or
                    me in obj.collaborators or me.is_superuser]
-      dslist = Dataset.objects.filter(id__in=idlist)
+      dslist = Dataset.objects.filter(id__in=idlist).order_by('-create_date')
       return dslist
     elif self.request.path == reverse('data-collections'):
       list = Collection.objects.all().order_by('created') if whgteam \

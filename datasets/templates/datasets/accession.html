@@ -137,30 +137,31 @@
           </div>
         </div>
         <!--available: ['whg_id', 'place_id', 'src_id', 'title', 'dataset', 'variants', 'types', 'ccodes', 'parents', 'descriptions', 'geoms', 'timespans', 'links']-->
-{#        <p>{{ hit_list }}</p>#}
         <div id="review_list" class="col-sm-8 pr-0">
           {% for form in formset %}
             <input type="hidden" name="id" value='{{ form.id.value }}'></input>
             <input type="hidden" name="authrecord_id" value='{{ form.authrecord_id.value }}'></input>
             <input type="hidden" name="score" value='{{ form.score.value }}'></input>
             <input type="hidden" name="query_pass" value='{{ form.query_pass.value }}'></input>
-            {% for hidden in form.hidden_fields %}
-              {{ hidden }}
-            {% endfor %}
+{#            {% for hidden in form.hidden_fields %}#}
+{#              {{ hidden }}#}
+{#            {% endfor %}#}
             <div class="pl-2 pr-2 mb-1 matchbar">
               <div class="match_radio custom-control custom-radio">
-                {% if form.json.value|get:"geoms"|length > 0 %}
-                  <span class="mr-2 globeflash">
-                    <a class="geolink" rel="tooltip" 
-                      {% if ds_label == 'tgn_filtered_01' or authority == 'whg' or authority == 'idx'%}
-                        id="{{ form.json.value|get:"place_id" }}" 
-                      {% else %}
-                        id="{{ form.authrecord_id.value }}"
-                      {% endif %}
-                      href="javascript:{ zoomTo(+{{ form.authrecord_id.value }} ) }" title="Flash map marker">
-                      {% fontawesome_icon 'globe' color='#000' %}</a>
-                  </span>
-                {% endif %}
+                {# form.json.value holds list of index  #}
+{#                {% if form.json.value|get:"geoms"|length > 0 %}#}
+{#                  <span class="mr-2 globeflash">#}
+{#                    <a class="geolink" rel="tooltip" #}
+{#                      {% if ds_label == 'tgn_filtered_01' or authority == 'whg' or authority == 'idx'%}#}
+{#                        id="{{ form.json.value|get:"place_id" }}" #}
+{#                      {% else %}#}
+{#                        id="{{ form.authrecord_id.value }}"#}
+{#                      {% endif %}#}
+{#                      href="javascript:{ zoomTo(+{{ form.authrecord_id.value }} ) }" title="Flash map marker">#}
+{#                      {% fontawesome_icon 'globe' color='#000' %}</a>#}
+{#                  </span>#}
+{#                {% endif %}#}
+
                 <span class="inline">{{ form.match }}</span>
                 <span class="help" data-id="matches">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
                 {% if form.json.value|get:"sources" %}
@@ -188,6 +189,10 @@
 	              {% for src in form.json.value|get:"sources" %}
 	                <div class="accession-div-row">
 	                <p>
+	                  <a class="geolink" rel="tooltip" id="{{ src.pid }}"
+	                     href="javascript:{ zoomTo(+{{ form.authrecord_id.value }}) }" title="Flash map marker">
+		                  {% fontawesome_icon 'globe' color='#ED7702' %}
+	                  </a>
 		                <a class="pop-link pop-dataset" data-label={{src.dslabel}} data-toggle="popover" title="Dataset Profile" data-content="" tabindex="0" rel="clickover">{{ src.dslabel }}</a> (<a href="/api/place/{{src.pid}}/" target="_blank">{{ src.pid }}</a>):
 		                {% if src.variants|length > 0 %}<i>variants</i>: <b>{{ src.variants|join:", " }}</b>{% endif %}
 		                {% if src.types|length > 0 %}; <i>type(s)</i>: <b>{{ src.types|join:","}}</b>{% endif %}
