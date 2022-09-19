@@ -23,6 +23,7 @@ media/user*
 sent_emails/
 
 */.DS_Store
+*/*/.DS_Store
 .python-version
 
 nohup.out
@@ -51,3 +52,4 @@ local_settings.py
 __pycache__/
 whg/__pycache__/
 db.sqlite3
+
