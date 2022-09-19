@@ -1,9 +1,11 @@
-#from django.core import serializers
-from django.shortcuts import HttpResponse
+from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry
+from django.core import mail
+from django.core.mail import EmailMultiAlternatives
 from django.http import FileResponse, JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404, render #, redirect
 from django.views.generic import View
+
 
 import codecs, csv, datetime, sys, openpyxl, os, pprint, re, time
 import simplejson as json
@@ -1086,6 +1088,50 @@ def post_recon_update(ds, user, task):
   logobj.save()
   print('post_recon_update() logobj',logobj)
 
+def status_emailer(ds, task_name):
+  try:
+    tasklabel = 'Wikidata' if task_name=='wd' else 'WHG index'
+    text_content="Greetings! The "+tasklabel+" reconciliation task for the dataset "+ds.title+" ("+ds.label+") " \
+                 "has been completed.\nTime to follow up with its owner, "+ds.owner.first_name+" "+ds.owner.last_name+ \
+                 "("+ds.owner.username+")."
+    html_content="<h4>Greetings!</h4> <p>The "+tasklabel+" reconciliation task for the dataset <b>"+ds.title+" ("+ds.label+")</b> " \
+                 "has been completed.</p><p>Time to follow up with its owner, "+ds.owner.first_name+" "+ds.owner.last_name+ \
+                 " ("+ds.owner.username+").</p>"
+    if task_name == 'wd':
+      html_content += "<p>A nudge to mention that reconciling to the WHG index is helpful & worthwhile.</p>"
+    elif task_name == 'idx':
+      text_content = "Congratulations and thank you!\nYour *"+ds.title+"* dataset is now fully indexed \
+      in World Historical Gazetteer. Where we already had one or more records for a place, yours is now linked to it/them.\n \
+      For those we had no attestation for, yours is the new 'seed'. In any case, *all* your records are now accessible via \
+      the index search, database search, and API.\nBest regards,\nThe WHG Team"
+      html_content = "<h4>Congratulations and thank you!</h4><p>Your <b>"+ds.title+"</b> dataset is now fully indexed \
+      in World Historical Gazetteer. Where we already had one or more records for a place, yours is now linked to it/them.</p> \
+      <p>For those we had no attestation for, yours is the new 'seed'. In any case, <i>all</i> your records are now accessible via \ \
+      the index search, database search, and API.</p><p>Best regards,</p<<p>i>The WHG Team</i></p>"
+  except:
+    print('status_emailer() failed on dsid', ds.id, 'how come?')
+  subject, from_email = 'WHG dataset status update', 'whg@kgeographer.org'
+  to_email = settings.EMAIL_STATUS_TO if task_name == 'wd' \
+    else settings.EMAIL_STATUS_TO + [ds.owner.email]
+  conn = mail.get_connection(
+    host=settings.EMAIL_HOST,
+    user=settings.EMAIL_HOST_USER,
+    use_ssl=settings.EMAIL_USE_SSL,
+    password=settings.EMAIL_HOST_PASSWORD,
+    port=settings.EMAIL_PORT
+  )
+  # msg=EmailMessage(
+  msg = EmailMultiAlternatives(
+    subject,
+    text_content,
+    from_email,
+    to_email,
+    # [settings.EMAIL_STATUS_TO],
+    connection=conn
+  )
+  msg.bcc = ['karl@kgeographer.org']
+  msg.attach_alternative(html_content, "text/html")
+  msg.send(fail_silently=False)
 
 # TODO: faster?
 class UpdateCountsView(View):

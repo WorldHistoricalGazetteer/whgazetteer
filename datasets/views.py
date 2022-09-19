@@ -1,4 +1,5 @@
 # datasets.views
+# NB!!! some imports greyed out but ARE USED!
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -12,7 +13,6 @@ from django.http import HttpResponseServerError, HttpResponseRedirect, JsonRespo
 from django.shortcuts import redirect, get_object_or_404, render
 from django.urls import reverse
 from django.views.generic import (CreateView, ListView, UpdateView, DeleteView, DetailView)
-# NB!!! shows as unused but IT IS USED!
 from django_celery_results.models import TaskResult
 
 
@@ -461,6 +461,7 @@ def review(request, pk, tid, passnum):
       return redirect('/datasets/'+str(pk)+'/review/'+task.task_id+'/'+passnum)
     elif formset.is_valid():
       hits = formset.cleaned_data
+      # print('formset valid', hits)
       matches = 0
       matched_for_idx = [] # for accession
       # are any of the listed hits matches?
@@ -475,7 +476,7 @@ def review(request, pk, tid, passnum):
           if task.task_name[6:] in ['wdlocal','wd','tgn']:
             #print('task.task_name', task.task_name)
             hasGeom = 'geoms' in hits[x]['json'] and len(hits[x]['json']['geoms']) > 0
-            # only if 'accept geometries' was checked
+            # create place_geom records if 'accept geometries' was checked
             if kwargs['aug_geom'] == 'on' and hasGeom \
                and tid not in place_post.geoms.all().values_list('task_id',flat=True):
               gtype = hits[x]['json']['geoms'][0]['type']
@@ -495,7 +496,7 @@ def review(request, pk, tid, passnum):
               )
 
             # create single PlaceLink for matched authority record
-            # IF someone didn't just do it for this record
+            # TODO: this if: condition handled already?
             if tid not in place_post.links.all().values_list('task_id',flat=True):
               link = PlaceLink.objects.create(
                 place = place_post,
@@ -540,9 +541,9 @@ def review(request, pk, tid, passnum):
                             'pid':hits[x]['json']['pid'],
                             'score':hits[x]['json']['score'],
                             'links': links_count})
-          # TODO: (?) informational lookup on whg index
-          elif task.task_name == 'align_whg':
-            print('align_whg (non-accessioning) DOING NOTHING (YET)')
+          # TODO: informational lookup on whg index?
+          # elif task.task_name == 'align_whg':
+          #   print('align_whg (non-accessioning) DOING NOTHING (YET)')
         # in any case, flag hit as reviewed...
         hitobj = get_object_or_404(Hit, id=hit.id)
         hitobj.reviewed = True
@@ -571,20 +572,18 @@ def review(request, pk, tid, passnum):
         setattr(ds, 'ds_status', 'indexed')
         ds.save()
 
-      if ds.recon_status['wdlocal'] == 0:
-        ds.ds_status = 'wdcomplete'
+      # if none are left for this task, change status & email staff
+      if auth in ['wd'] and ds.recon_status['wdlocal'] == 0:
+        ds.ds_status = 'wd-complete'
         ds.save()
-        msg = 'The WHG dataset '+ds.title+' ('+ds.label+') is ready to review for possible accessioning.'
-        msg += 'https://whgazetteer.org/datasets/'+str(ds.id)+'/summary'
-        msg += 'Its owner is '+ds.owner.first_name+' '+ds.owner.last_name+' ('+ds.owner.username+'), at '+ds.owner.email+'.'
+        status_emailer(ds, 'wd')
+        print('sent status email')
+      elif auth == 'idx' and ds.recon_status['idx'] == 0:
+        ds.ds_status = 'indexed'
+        ds.save()
+        status_emailer(ds, 'idx')
+        print('sent status email')
 
-        from_addr = 'whg@kgeographer.org'
-        # to_addr = ['als512@pitt.edu', 'karl@kgeographer.org']
-        to_addr = ['karl@kgeographer.org']
-        emailer('WHG dataset "wikidata-complete"', msg, from_addr, to_addr)
-        print('ready to index, sent email')
-
-      # set review_whg = 1
       print('review_field', review_field)
       setattr(place_post, review_field, 1)
       place_post.save()
@@ -593,7 +592,7 @@ def review(request, pk, tid, passnum):
     else:
       print('formset is NOT valid. errors:',formset.errors)
       print('formset data:',formset.data)
-
+  # print('context', context)
   return render(request, 'datasets/'+review_page, context=context)
 
 """
