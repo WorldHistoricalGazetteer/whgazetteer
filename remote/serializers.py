@@ -14,7 +14,7 @@ class DatasetRemoteSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = Dataset
 		fields = [
-			'id', 'owner', 'title', 'label', 'description',
+			'id', 'owner', 'title', 'label', 'description', 'ds_status'
 		]
 		read_only_fields = ['id']
 

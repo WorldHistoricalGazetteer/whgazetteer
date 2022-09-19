@@ -189,6 +189,7 @@
             {% endif %}
             {% endif %}
           </p>
+	        {% if current_file %}
           <div id="div_file">
             <table id="file_metadata" class="ds-table table-striped">
               <tr>
@@ -237,6 +238,7 @@
             </table>
             <input class="btn btn-primary btn-sm hidden btn-file" type="submit" value="Upload" />
           </div> <!-- div_file -->
+	        {% endif %}
           <input type="hidden" name="datatype" value=
             {% if current_file %}"{{ current_file.datatype }}"{%else%}"place"{%endif%}>
           <input type="hidden" name="rev" value="{{ current_file.rev }}">

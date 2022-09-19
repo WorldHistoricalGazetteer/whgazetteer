@@ -180,6 +180,7 @@ RESOURCEFILE_ROLE = [
 STATUS_DS = [
     ('format_error', 'Invalid format'),
     ('format_ok', 'Valid format'),
+    ('remote', 'Created remotely'),
     ('uploaded', 'File uploaded'),
     ('reconciling', 'Reconciling'),
     ('wd-complete', 'Wikidata recon completed'),

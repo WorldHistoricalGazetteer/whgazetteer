@@ -114,9 +114,9 @@ class Dataset(models.Model):
     file = self.files.all().order_by('id')[0]
     return file
 
-  @property
-  def format(self):
-    return self.files.first().format
+  # @property
+  # def format(self):
+  #   return self.files.first().format
 
   # list of dataset geometries
   @property
