@@ -3,7 +3,7 @@
 # (Sep 2022)
 #
 from collection.models import Collection
-
+from datasets.models import Dataset, DatasetFile
 from rest_framework import (
     viewsets,
     mixins,
@@ -25,6 +25,7 @@ class DatasetViewSet(viewsets.ModelViewSet):
   permission_classes = [IsAuthenticated]
 
   def get_queryset(self):
+    print('self.request', self.request)
     """Retrieve recipes for authenticated user."""
     queryset = self.queryset
     result = queryset.filter(
@@ -41,9 +42,18 @@ class DatasetViewSet(viewsets.ModelViewSet):
       return self.serializer_class
 
   def perform_create(self, serializer):
-    """Create a new dataset."""
-    serializer.save(owner=self.request.user)
+    # Create a new dataset
+    user = self.request.user
+    serializer.save(owner=user)
 
+    # needs a new dummy DatasetFile too
+    DatasetFile.objects.create(
+      dataset_id=Dataset.objects.last(),
+      file='data/dummy.txt',
+      format='delimited',
+      df_status='dummy',
+      upload_date=None,
+    )
 
 class PlaceViewSet(viewsets.ModelViewSet):
   """View for managing place APIs."""

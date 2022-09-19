@@ -191,6 +191,7 @@ STATUS_DS = [
 STATUS_FILE = [
     ('format_ok', 'Valid format'),
     ('uploaded', 'File uploaded'),
+    ('dummy', 'Dummy for remote'),
 ]
 
 STATUS_HIT = [

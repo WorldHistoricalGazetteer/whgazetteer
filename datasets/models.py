@@ -114,9 +114,9 @@ class Dataset(models.Model):
     file = self.files.all().order_by('id')[0]
     return file
 
-  # @property
-  # def format(self):
-  #   return self.files.first().format
+  @property
+  def format(self):
+    return self.files.first().format
 
   # list of dataset geometries
   @property
@@ -257,7 +257,8 @@ class Dataset(models.Model):
     managed = True
     db_table = 'datasets'
 
-""" TODO: FK to dataset, not dataset_id"""
+# TODO: FK to dataset, not dataset_id
+# TODO: all new datasets need a file but some are new/empty & created remotely
 class DatasetFile(models.Model):
   dataset_id = models.ForeignKey(Dataset, related_name='files',
     default=-1, on_delete=models.CASCADE)
