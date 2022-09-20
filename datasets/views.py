@@ -291,10 +291,9 @@ def indexMultiMatch(pid, matchlist):
         q_adopt = {"script": {
           "source": "ctx._source.relation.parent = params.new_parent); ",
           "lang": "painless",
-          "params": {
-            "new_parent": winner['whg_id']
-          }
-        }, "query": {"match": {"place_id": kid}}}
+          "params": {"new_parent": winner['whg_id']}
+          },
+          "query": {"match": {"place_id": kid}}}
         es.update_by_query(index=idx, body=q_adopt, conflicts='proceed')
 
 """ 
