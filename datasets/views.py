@@ -289,7 +289,7 @@ def indexMultiMatch(pid, matchlist):
     if len(addkids) > 0:
       for kid in addkids:
         q_adopt = {"script": {
-          "source": "ctx._source.relation.parent = params.new_parent); ",
+          "source": "ctx._source.relation.parent = params.new_parent; ",
           "lang": "painless",
           "params": {"new_parent": winner['whg_id']}
           },
