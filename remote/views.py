@@ -86,7 +86,7 @@ class PlaceViewSet(viewsets.ModelViewSet):
       return self.serializer_class
 
   def perform_create(self, serializer):
-    """Create a new place, with place_links, ..."""
+    """Create a new place..."""
     serializer.save()
 
 class CollectionViewSet(viewsets.ModelViewSet):

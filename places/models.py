@@ -141,7 +141,6 @@ class PlaceName(models.Model):
   jsonb = JSONField(blank=True, null=True)
   task_id = models.CharField(max_length=100, blank=True, null=True)
 
-  #toponym = models.CharField(max_length=200)
   toponym = models.CharField(max_length=2044)
   name_src = models.ForeignKey(Source, null=True, on_delete=models.SET_NULL)
 
