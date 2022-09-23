@@ -57,23 +57,37 @@ class DatasetViewSet(viewsets.ModelViewSet):
 
 class PlaceViewSet(viewsets.ModelViewSet):
   """View for managing place APIs."""
-  serializer_class = PlaceRemoteSerializer
-  queryset = Place.objects.all() # ???
+  serializer_class = PlaceRemoteDetailSerializer
+  queryset = Place.objects.all()
   authentication_classes = [TokenAuthentication]
   permission_classes = [IsAuthenticated]
 
+  def _params_to_ints(self, qs):
+    """Convert a list of strings to integers."""
+    return [int(str_id) for str_id in qs.split(',')]
+
+  def get_queryset(self):
+    """Retrieve places for authenticated user."""
+    links = self.request.query_params.get('links')
+    queryset = self.queryset
+    if links:
+      link_ids = self._params_to_ints(links)
+      queryset = queryset.filter(links__id__in=link_ids)
+
+    return queryset.filter(
+      user=self.request.user
+    ).order_by('-id').distinct()
+
   def get_serializer_class(self):
-      """Return the serializer class for request."""
+      """return basic serializer for list, else detailed one"""
+      """NB we never list places"""
       if self.action == 'list':
           return PlaceRemoteSerializer
-
       return self.serializer_class
 
   def perform_create(self, serializer):
-    """Create a new place."""
+    """Create a new place, with place_links, ..."""
     serializer.save()
-
-
 
 class CollectionViewSet(viewsets.ModelViewSet):
   """View for managing collection APIs."""

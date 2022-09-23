@@ -249,10 +249,10 @@ class Dataset(models.Model):
 
   @property
   def unreviewed_hitcount(self):
-    unrev=Hit.objects.all().filter(dataset_id=self.id, reviewed=False).count()
+    unrev=Hit.objects.all().filter(dataset_id=self.id, reviewed=False, authority='wd').count()
+    # unrev = Hit.objects.all().filter(dataset_id=self.id, reviewed=False, authority=source).count()
     return unrev
   # count of unindexed places
-
   class Meta:
     managed = True
     db_table = 'datasets'
@@ -295,8 +295,6 @@ class DatasetUser(models.Model):
     managed = True
     db_table = 'dataset_user'
 
-
-# 
 class Hit(models.Model):
   # FK to celery_results_task_result.task_id
   place = models.ForeignKey(Place, on_delete=models.CASCADE)

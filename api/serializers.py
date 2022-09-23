@@ -188,8 +188,8 @@ class PlaceSerializer(serializers.ModelSerializer):
 
   class Meta:
     model = Place
-    fields = ('url','id', 'title', 'src_id', 'dataset', 'ccodes', 'fclasses',
-              'names','types','geoms','links','related', 'whens',
+    fields = ('url', 'id', 'title', 'src_id', 'dataset', 'ccodes', 'fclasses',
+              'names', 'types', 'geoms', 'links', 'related', 'whens',
               'descriptions', 'depictions', 'geo', 'minmax', 'traces'
             )
 

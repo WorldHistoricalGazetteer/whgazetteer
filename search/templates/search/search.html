@@ -227,8 +227,6 @@
     /*  if referer is search.html, it's returning from
       viewing a place portal or place detail page
     */
-    /*  always set class radio to places */
-    $('#r_place').prop('checked',true)
 
     if(localStorage['keep'] == 'true'){
       $("#search_info").remove()
@@ -1142,7 +1140,7 @@
     {#dsid = ds_select!="0" ? parseInt(ds_select) : null#}
     $.get("/search/db",{
       name: $('#input_box').val(),
-      name_contains: null, // if 'contains checked
+      name_contains: null, // if 'contains' checked
       // break array nec. - WHY???
       fclasses: fclasses.join(','),
       year: !y?null:y,
@@ -1169,6 +1167,7 @@
   */
   showResults = function(data, doctype, scope='suggest', title){
     console.log('showResults() data length', data.length)
+	  $(".spinner").remove()
     // always want result_div to show
     $("#result_div").show()
     var results_div = '';

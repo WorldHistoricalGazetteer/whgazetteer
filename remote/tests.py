@@ -12,7 +12,7 @@ from rest_framework import status
 from rest_framework.test import APIClient
 
 from datasets.models import Dataset
-from places.models import Place
+from places.models import Place, PlaceLink, PlaceGeom, PlaceDescription
 from collection.models import Collection
 
 from remote.serializers import  (
@@ -79,6 +79,7 @@ class PublicAPITests(TestCase):
 
 """Test authenticated API requests."""
 class PrivateApiTests(TestCase):
+
 	""" DATASETS: list, detail, create """
 	def setUp(self):
 		self.client = APIClient()
@@ -170,20 +171,6 @@ class PrivateApiTests(TestCase):
 		self.assertEqual(res.status_code, status.HTTP_200_OK)
 		self.assertEqual(res.data.get('results'), serializer.data)
 
-	# def test_get_collection_detail(self):
-	# 	"""Test get dataset detail"""
-	# 	dataset = create_dataset(user=self.user, label="example_5" )
-	#
-	# 	url = dataset_detail_url(dataset.id)
-	# 	res = self.client.get(url)
-	# 	# print('res.data', res.data)
-	#
-	# 	serializer = DatasetRemoteDetailSerializer(dataset)
-	# 	# print('serializer.data', serializer.data)
-	#
-	# 	self.assertEqual(res.data, serializer.data)
-	#
-
 	def test_create_collection(self):
 		"""Test creating a collection."""
 		payload = {
@@ -210,7 +197,7 @@ class PrivatePlaceApiTests(TestCase):
 		self.dataset = create_dataset(user=self.user, label='example_99', title='Example99')
 
 	def test_create_place(self):
-		"""Test creating a place in a dataset"""
+		"""Test creating a core Place record in a dataset"""
 		payload = {
 			'dataset': self.dataset,
 			'title': 'Wien',
@@ -225,3 +212,41 @@ class PrivatePlaceApiTests(TestCase):
 		for k, v in payload.items():
 			self.assertEqual(getattr(place, k), v)
 		self.assertEqual(place.dataset, self.dataset)
+
+	def test_create_detailed_place(self):
+		"""Test creating a place with link(s), geom(s), description"""
+		print('self', self)
+		payload = {
+			# 'dataset': 1,
+			'dataset': self.dataset,
+			'title': 'Wien',
+			'src_id': 'abc123',
+			'ccodes': ['AT'],
+			'links': [{'place_id':self.id, 'jsonb': {'type':'closeMatch', 'identifier':'wd:Q12345'}}],
+		}
+		# res = self.client.post(PLACES_URL, payload, format='json')
+		res = self.client.post(PLACES_URL, payload)
+
+		self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+		places = Place.objects.filter(dataset__owner = self.dataset.owner)
+		self.assertEqual(places.count(), 1)
+		place = places[0]
+		self.assertEqual(place.links.count(), 1)
+		for link in payload['links']:
+			exists = place.links.filter(
+				place_id=link['place_id'],
+				jsonb = link['jsonb']
+			).exists()
+			self.assertTrue(exists)
+
+
+		self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+		place = Place.objects.get(id=res.data['id'])
+
+		# for k, v in payload.items():
+		# 	self.assertEqual(getattr(place, k), v)
+		# self.assertEqual(place.links, self.dataset)
+		self.assertEqual(place.dataset, self.dataset)
+
+# 'geometry': {"type": "Point", "coordinates": [-1.2879,51.6708]},
+# 'descriptions': [{'place_id':self.id, 'jsonb':{'value':'Some place!', 'lang':'en', 'source':'a tome'}}]

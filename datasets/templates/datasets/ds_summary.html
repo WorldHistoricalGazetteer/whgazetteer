@@ -273,7 +273,7 @@
 	                <td class="pt-3">{{ ds.unindexed }}</td>
 	                <td class="pt-3 text-secondary">n/a</td>
                 </tr>
-	              {% else %}
+	              {% elif ds.numrows > 0 %}
 		              <tr class="text-danger"><td><b>Dataset is fully indexed!</b></td></tr>
 	              {% endif %}
             </table>

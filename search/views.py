@@ -311,13 +311,18 @@ class SearchDatabaseView(View):
       ga = GEOSGeometry(json.dumps(area.geojson))
     
     print('seach db params:', {'name':name,'name_contains':name_contains,'fclasses':fclasses,'bounds':bounds,'ds':ds})
-    
+    # africanports1887 mystery
+    # {'name': 'Ambriz', 'name_contains': None, 'fclasses': ['A', 'P', 'S', 'R', 'L', 'T', 'H'], 'bounds': '', 'ds': None}
+    # returns 0
+    # {'name': 'Abydos', 'name_contains': None, 'fclasses': ['A', 'P', 'S', 'R', 'L', 'T', 'H'], 'bounds': '', 'ds': None}
+    # returns 4
     qs = Place.objects.filter(dataset__public=True)
     
     if bounds:
-      #print('bounds geometry', ga[:200])
+      print('bounds geometry', ga[:200])
       qs = qs.filter(geoms__geom__within=ga)      
-      #qs = qs.filter(geoms__geom__intersects=ga)      
+    else:
+      print('no bounds, or empty string')
     qs = qs.filter(fclasses__overlap=fclasses) if fclasses else qs
     #qs = qs.filter(minmax__0__lte=year,minmax__1__gte=year) if year else qs
     
