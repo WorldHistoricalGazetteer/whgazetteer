@@ -107,15 +107,15 @@ class RemoteIndexAPIView(View):
         print('q', q)
 
       # run query
-      collection = collector(q, 'place', 'whg')
+      index_set = collector(q, 'place', 'whg')
       # format hits
-      collection = [collectionItem(s, 'place', None) for s in collection]
+      index_set = [collectionItem(s, 'place', None) for s in collection]
 
       # result object
       result = {'type': 'FeatureCollection',
-                'count': len(collection),
+                'count': len(index_set),
                 'pagesize': q['size'],
-                'features': collection[:int(pagesize)] if pagesize else collection}
+                'features': index_set[:int(pagesize)] if pagesize else index_set}
 
     # to client
     return JsonResponse(result, safe=False, json_dumps_params={'ensure_ascii': False, 'indent': 2})
@@ -213,7 +213,6 @@ class SpatialAPIView(generics.ListAPIView):
     #print('place result',result)
     return JsonResponse(result, safe=False, json_dumps_params={'ensure_ascii': False, 'indent': 2})
 
-
 """
   makeGeom(); called by collectionItem()
   format index locations as geojson
@@ -243,7 +242,7 @@ def collectionItem(i, datatype, format):
   score = i['score']
   if datatype == 'place':
     # serialize as geojson
-    i=i['hit']
+    i = i['hit']
     item = {
       "type":"Feature",
       "score": score,
@@ -300,10 +299,10 @@ def collectionItem(i, datatype, format):
   #print('place search item:',item)
   return item
 """
-  collector(); called by IndexAPIView; 
+  collector(); called by IndexAPIView, RemoteIndexAPIView
   execute es.search, return results post-processed by suggestionItem()
 """
-def collector(q,datatype,idx):
+def collector(q, datatype, idx):
   # returns only parents
   #print('collector',doctype,q)
   es = Elasticsearch([{'host': 'localhost',
@@ -315,14 +314,12 @@ def collector(q,datatype,idx):
   items = []
 
   if datatype=='place':
-    #print('collector/place q:',q)
     # TODO: trap errors
     res = es.search(index=idx, body=q)
     hits = res['hits']['hits']
-    #print('collector()/place hits',hits)
     if len(hits) > 0:
       for h in hits:
-        # print('hit h', h)
+        print('h', h)
         items.append(
           {"_id": h['_id'],
            "linkcount":len(h['_source']['links']),
@@ -332,7 +329,7 @@ def collector(q,datatype,idx):
           }
         )
     sorteditems = sorted(items, key=lambda x: x['childcount'], reverse=True)
-    #print('sorteditems from collector()',sorteditems)
+
     return sorteditems
     
   elif datatype == 'trace':
@@ -369,6 +366,7 @@ def bundler(q, whgid, idx):
         {"_id": h['_id'],
          "linkcount":len(h['_source']['links']),
          "childcount":len(h['_source']['children']),
+         "score": h['_score'],
          "hit": h['_source'],
         }
       )
