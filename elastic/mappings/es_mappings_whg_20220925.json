@@ -1,6 +1,15 @@
 {
   "settings":{
-    "number_of_shards": 1
+    "number_of_shards": 1,
+    "analysis": {
+      "normalizer": {
+        "standard": {
+          "type": "custom",
+          "char_filter": [],
+          "filter": ["lowercase", "asciifolding"]
+        }
+      }
+    }
   },
   "mappings" : {
     "properties" : {
@@ -164,7 +173,8 @@
             "type" : "keyword"
           },
           "toponym" : {
-            "type" : "keyword"
+            "type" : "keyword",
+            "normalizer": "standard"
           },
           "when" : {
             "properties" : {
@@ -236,7 +246,8 @@
         }
       },
       "searchy" : {
-        "type" : "keyword"
+        "type" : "keyword",
+        "normalizer": "standard"
       },
       "src_id" : {
         "type" : "keyword"
@@ -259,7 +270,8 @@
         "type" : "integer_range"
       },
       "title" : {
-        "type" : "keyword"
+        "type" : "keyword",
+        "normalizer": "standard"
       },
       "types" : {
         "properties" : {
