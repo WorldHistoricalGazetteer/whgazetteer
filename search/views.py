@@ -191,7 +191,8 @@ def suggester(doctype,q,scope,idx):
     return suggestions 
 
 """ 
-  executes place:search/suggest or trace:search on index
+  /search/index/?
+  from search.html
   via suggester(), formatted by suggestionItem()
 """
 class SearchView(View):
@@ -241,7 +242,10 @@ class SearchView(View):
               "query": {"bool": {
                 "must": [
                   {"exists": {"field": "whg_id"}},
-                  {"match": {"searchy": qstr}}
+                  {"multi_match": {
+                    "query": qstr,
+                    "fields": ["title^3", "names.toponym", "searchy"],
+                  }}
                 ]
               }}
         }

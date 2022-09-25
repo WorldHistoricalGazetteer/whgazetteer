@@ -86,8 +86,8 @@ class RemoteIndexAPIView(View):
             {"multi_match": {
               "query": name if name else name_startswith,
               "fields": ["title^3", "names.toponym", "searchy"],
-              # "type": "phrase" if name else "phrase_prefix",
-            }}]
+            }}],
+          "filter": []
         }}
       }
       if fc:
@@ -99,7 +99,12 @@ class RemoteIndexAPIView(View):
       if area:
         a = get_object_or_404(Area, pk=area)
         bounds = {"id": [str(a.id)], "type": [a.type]}  # nec. b/c some are polygons, some are multipolygons
-        q['query']['bool']["filter"] = get_bounds_filter(bounds, 'whg')
+        # q['query']['bool']["filter"] = get_bounds_filter(bounds, 'whg')
+        q['query']['bool']["filter"].append(get_bounds_filter(bounds, 'whg'))
+      if collection:
+        c = get_object_or_404(Collection, pk=collection)
+        ds_list = [d.label for d in c.datasets.all()]
+        q['query']['bool']["filter"].append({"terms": {"dataset": ds_list}})
       if fuzzy and fuzzy.lower() == 'true':
         q['query']['bool']['must'][1]['multi_match']['fuzziness']='AUTO'
         # up the count of results for fuzze search
@@ -109,7 +114,7 @@ class RemoteIndexAPIView(View):
       # run query
       index_set = collector(q, 'place', 'whg')
       # format hits
-      index_set = [collectionItem(s, 'place', None) for s in collection]
+      index_set = [collectionItem(s, 'place', None) for s in index_set]
 
       # result object
       result = {'type': 'FeatureCollection',
@@ -243,6 +248,7 @@ def collectionItem(i, datatype, format):
   if datatype == 'place':
     # serialize as geojson
     i = i['hit']
+    # print('item', i)
     item = {
       "type":"Feature",
       "score": score,
@@ -298,8 +304,9 @@ def collectionItem(i, datatype, format):
       }
   #print('place search item:',item)
   return item
+
 """
-  collector(); called by IndexAPIView, RemoteIndexAPIView
+  collector(); called by IndexAPIView(), RemoteIndexAPIView()
   execute es.search, return results post-processed by suggestionItem()
 """
 def collector(q, datatype, idx):
@@ -319,7 +326,7 @@ def collector(q, datatype, idx):
     hits = res['hits']['hits']
     if len(hits) > 0:
       for h in hits:
-        print('h', h)
+        # print('h', h)
         items.append(
           {"_id": h['_id'],
            "linkcount":len(h['_source']['links']),
@@ -328,7 +335,8 @@ def collector(q, datatype, idx):
            "hit": h['_source'],
           }
         )
-    sorteditems = sorted(items, key=lambda x: x['childcount'], reverse=True)
+    # sorteditems = sorted(items, key=lambda x: x['childcount'], reverse=True)
+    sorteditems = sorted(items, key=lambda x: x['score'], reverse=True)
 
     return sorteditems
     
@@ -449,9 +457,7 @@ class IndexAPIView(View):
             {"match":{"_id":whgid}}
         ]}}}
         bundle = bundler(q, whgid, idx)
-        #print('bundler', bundle)
         print('bundler q', q)
-        #result=[b for b in bundle]
         result={"index_id":whgid,
                 "note":str(len(bundle)) + " records asserted as skos:closeMatch",
                 "type":"FeatureCollection",
@@ -464,9 +470,9 @@ class IndexAPIView(View):
               {"exists": {"field": "whg_id"}},
               {"multi_match": {
                 "query": name if name else name_startswith, 
-                "fields": ["title","names.toponym","searchy"],
-                "type": "phrase" if name else "phrase_prefix"
-            }}]
+                "fields": ["title^3", "names.toponym", "searchy"],
+              }}
+            ]
           }}
         }
         if fc:
@@ -484,7 +490,7 @@ class IndexAPIView(View):
           bounds={"id":[str(a.id)],"type":[a.type]} # nec. b/c some are polygons, some are multipolygons
           q['query']['bool']["filter"]=get_bounds_filter(bounds,'whg')
 
-        #print('the api query was:',q)
+        print('the api query was:',q)
         
         # run query
         collection = collector(q,'place','whg')

@@ -1297,23 +1297,6 @@ def es_lookup_idx(qobj, *args, **kwargs):
     }
   }}
 
-  # qbase = {"size": 100,"query": {
-  #   "bool": {
-  #     "must": [
-  #       # must share a variant (strict match)
-  #       {"terms": {"names.toponym": variants}},
-  #       {"exists": {"field": "whg_id"}}
-  #     ],
-  #     "should": [
-  #       # bool::should adds to score
-  #       {"terms": {"links.identifier": qobj["links"] }}
-  #       ,{"terms": {"types.identifier": qobj["placetypes"]}}
-  #     ],
-  #     # spatial filters added according to what"s available
-  #     "filter": []
-  #   }
-  # }}
-  #
   # ADD SPATIAL
   if has_geom:
     qbase["query"]["bool"]["filter"].append(shape_filter)

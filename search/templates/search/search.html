@@ -1829,8 +1829,9 @@
     localStorage.setItem('search_scope', searchScope())
     whgid=$(this).data('id')
     console.log('whgid',whgid)
-    window.spinner = new Spin.Spinner().spin();
-    $("#map_search").append(spinner.el);
+	  // TODO: can't make spinner stop on window back
+    {#window.spinner = new Spin.Spinner().spin();#}
+    {#$("#map_search").append(spinner.el);#}
     location.href = '/places/'+whgid+'/portal'
   });
   $("#result_div").on('click', '.ds-link', function(e){
