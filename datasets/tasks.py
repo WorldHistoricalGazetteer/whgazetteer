@@ -939,7 +939,6 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
   q0 = {"query": { 
     "bool": {
       "must": [
-        #{"terms": {"authids":qobj['authids']}},
         {"bool": {
           "should": [
             {"terms": {"authids": qobj['authids']}},

@@ -19,16 +19,17 @@ from rest_framework import generics
 from rest_framework import permissions
 #from rest_framework import status
 from rest_framework import viewsets
-from rest_framework.authentication import SessionAuthentication
+from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from rest_framework.decorators import api_view
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from rest_framework.reverse import reverse
-from rest_framework.views import APIView
-import simplejson as json
 from accounts.permissions import IsOwnerOrReadOnly
-from api.serializers import (UserSerializer, DatasetSerializer, PlaceSerializer, PlaceTableSerializer, PlaceGeomSerializer, AreaSerializer, FeatureSerializer, LPFSerializer)#, SearchDatabaseSerializer)
+from api.serializers import (UserSerializer, DatasetSerializer, PlaceSerializer,
+                             PlaceTableSerializer, PlaceGeomSerializer, AreaSerializer,
+                             FeatureSerializer, LPFSerializer)
 from areas.models import Area
 from collection.models import Collection
 from datasets.models import Dataset
@@ -45,6 +46,79 @@ class StandardResultsSetPagination(PageNumberPagination):
 # External API
 # 
 #
+
+""" 
+  /remote/
+  search place index (always whg) parent records
+  params: name, name_startswith, fclass, ccode, area, dataset, collection, pagesize, fuzzy
+"""
+
+class RemoteIndexAPIView(View):
+  authentication_classes = [TokenAuthentication]
+  permission_classes = [IsAuthenticated]
+
+  def get(self, request):
+    idx = 'whg'
+    params = request.GET
+    print('RemoteSearchIndexView request params', params)
+
+    name = params.get('name')
+    name_startswith = params.get('name_startswith')
+    fc = params.get('fclass', None)
+    fclasses = [x.upper() for x in fc.split(',')] if fc else None
+    cc = params.get('ccode', None)
+    ccodes = [x.upper() for x in cc.split(',')] if cc else None
+    area = params.get('area', None)
+    dataset = params.get('dataset', None)
+    collection = params.get('collection', None)
+    pagesize = params.get('pagesize', None)
+    fuzzy = params.get('fuzzy', None)
+
+    if all(v is None for v in [name, name_startswith]):
+      return HttpResponse(
+        content='<h3>Query requires either name or name_startswith</h3>')
+    else:
+      q = {
+        "size": pagesize if pagesize else 10,
+        "query": {"bool": {
+          "must": [
+            {"exists": {"field": "whg_id"}},
+            {"multi_match": {
+              "query": name if name else name_startswith,
+              "fields": ["title^3", "names.toponym", "searchy"],
+              # "type": "phrase" if name else "phrase_prefix",
+            }}]
+        }}
+      }
+      if fc:
+        q['query']['bool']['must'].append({"terms": {"fclasses": fclasses}})
+      if dataset:
+        q['query']['bool']['must'].append({"match": {"dataset": dataset}})
+      if ccodes:
+        q['query']['bool']['must'].append({"terms": {"ccodes": ccodes}})
+      if area:
+        a = get_object_or_404(Area, pk=area)
+        bounds = {"id": [str(a.id)], "type": [a.type]}  # nec. b/c some are polygons, some are multipolygons
+        q['query']['bool']["filter"] = get_bounds_filter(bounds, 'whg')
+      if fuzzy and fuzzy.lower() == 'true':
+        q['query']['bool']['must'][1]['multi_match']['fuzziness']='AUTO'
+        # up the count of results for fuzze search
+        q['size'] = 20 if not pagesize else pagesize
+        print('q', q)
+
+      # run query
+      collection = collector(q, 'place', 'whg')
+      # format hits
+      collection = [collectionItem(s, 'place', None) for s in collection]
+
+      # result object
+      result = {'type': 'FeatureCollection',
+                'count': len(collection),
+                'pagesize': q['size'],
+                'features': collection[:int(pagesize)] if pagesize else collection}
+
+    # to client
+    return JsonResponse(result, safe=False, json_dumps_params={'ensure_ascii': False, 'indent': 2})
 
 """
 nearby and bbox spatial db queries
@@ -163,14 +237,16 @@ def makeGeom(geom):
   collectionItem(); called by collector();
   formats api search hits 
 """
-def collectionItem(i,datatype,format):
-  #print('collectionItem i',i)
+def collectionItem(i, datatype, format):
+  # print('collectionItem i',i)
   _id = i['_id']
+  score = i['score']
   if datatype == 'place':
     # serialize as geojson
     i=i['hit']
     item = {
       "type":"Feature",
+      "score": score,
       "properties": {
         "title":i['title'],
         "index_id":_id,
@@ -246,10 +322,12 @@ def collector(q,datatype,idx):
     #print('collector()/place hits',hits)
     if len(hits) > 0:
       for h in hits:
+        # print('hit h', h)
         items.append(
           {"_id": h['_id'],
            "linkcount":len(h['_source']['links']),
            "childcount":len(h['_source']['children']),
+           "score": h['_score'],
            "hit": h['_source'],
           }
         )
@@ -343,12 +421,10 @@ class TracesAPIView(View):
 class IndexAPIView(View):
   # @staticmethod
   def get(self, request):
-    print('key', settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY)
     params=request.GET
     print('IndexAPIView request params',params)
     """
       args in params: whgid, pid, name, name_startswith, fclass, dataset, ccode, year, area
-
     """
     whgid = request.GET.get('whgid')
     pid = request.GET.get('pid')
@@ -438,10 +514,9 @@ class SearchAPIView(generics.ListAPIView):
   filter_backends = [filters.SearchFilter]
   search_fields = ['@title']
 
-  #def get_queryset(self, format=None):
   def get(self, format=None, *args, **kwargs):
     params=self.request.query_params
-    print('SearchAPIView() params',params)
+    print('SearchAPIView() params', params)
 
     id_ = params.get('id',None)
     name = params.get('name',None)
@@ -455,7 +530,7 @@ class SearchAPIView(generics.ListAPIView):
     err_note = None
     context = params.get('context',None)
     # params
-    print({"cc":cc,"fclasses":fclasses})
+    print({"id_":id_, "fclasses":fclasses})
     
     qs = Place.objects.filter(Q(dataset__public=True) | Q(dataset__core=True))
 

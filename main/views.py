@@ -36,7 +36,6 @@ class LibreView(TemplateView):
 
 
 class Home2b(TemplateView):
-    print('in Home2b()')
     # template_name = 'main/home_v2a.html'
     template_name = 'main/home_v2b.html'
 

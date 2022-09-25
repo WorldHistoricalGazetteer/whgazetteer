@@ -239,11 +239,11 @@ class SearchView(View):
       elif scope == 'search':
         q = { "size": 100,
               "query": {"bool": {
-              "must": [
-                {"exists": {"field": "whg_id"}},
-                {"match": {"searchy": qstr}}
-              ]
-            }}
+                "must": [
+                  {"exists": {"field": "whg_id"}},
+                  {"match": {"searchy": qstr}}
+                ]
+              }}
         }
         if fclasses:
           q['query']['bool']['must'].append({"terms": {"fclasses": fclasses.split(',')}})

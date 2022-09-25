@@ -281,7 +281,6 @@ class PlaceTableSerializer(serializers.ModelSerializer):
 
 """ used by: api.views.GeoJSONViewSet() """
 class FeatureSerializer(GeoFeatureModelSerializer):
-  print('FeatureSerializer')
   geom = GeometrySerializerMethodField()
   def get_geom(self, obj):
     #print('obj',obj.__dict__)

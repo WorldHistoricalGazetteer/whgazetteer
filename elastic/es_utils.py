@@ -650,16 +650,19 @@ def confirm(prompt=None, resp=False):
 # ***
 def esInit(idx):
   import os, codecs
+  from django.conf import settings
   os.chdir('/Users/karlg/Documents/Repos/_whgazetteer/')
 
   from elasticsearch7 import Elasticsearch
   es = Elasticsearch([{'host': 'localhost',
                        'port': 9200,
-                       'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
+                       # 'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
+                       # alternate (settings.ES_APIKEY_REMOTE on server)
+                       'api_key': ('dlhTNGM0TUIxLVF2NVJzbUxlNnk6RDBFbVlwSURSb0N6Tk1kTXctazZSdw=='),
                        'timeout': 30,
                        'max_retries': 10,
                        'retry_on_timeout': True}])
-  mappings = codecs.open('elastic/mappings/es_mappings_whg.json', 'r', 'utf8').read()
+  mappings = codecs.open('elastic/mappings/es_mappings_whg_20220925.json', 'r', 'utf8').read()
 
   # zap existing if exists, re-create
   if confirm(prompt='Zap index '+idx+'?', resp=False):

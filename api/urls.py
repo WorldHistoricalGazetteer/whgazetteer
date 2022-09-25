@@ -5,16 +5,18 @@ from django.urls import path
 from rest_framework.urlpatterns import format_suffix_patterns
 from . import views
 
+# app_name = 'api'
+
 urlpatterns = [
 
     # database places
     path('db/',views.SearchAPIView.as_view(),name='api-search'),
     # index docs
     path('index/',views.IndexAPIView.as_view(),name='api-index-search'),
+    # index docs for remote
+    path('remote/',views.RemoteIndexAPIView.as_view(),name='api-remote-search'),
     # spatial (nearby or bbox)
     path('spatial/', views.SpatialAPIView.as_view(), name='api-spatial'),
-    # traces (deprecated)
-    # path('traces/', views.TracesAPIView.as_view(), name='traces-search'),
 
     # *** DATASETS ***
 
