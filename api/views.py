@@ -240,6 +240,7 @@ def makeGeom(geom):
 """
   collectionItem(); called by collector();
   formats api search hits 
+  TODO: rename 
 """
 def collectionItem(i, datatype, format):
   # print('collectionItem i',i)
@@ -248,7 +249,7 @@ def collectionItem(i, datatype, format):
   if datatype == 'place':
     # serialize as geojson
     i = i['hit']
-    # print('item', i)
+    print('item', i)
     item = {
       "type":"Feature",
       "score": score,
@@ -259,6 +260,7 @@ def collectionItem(i, datatype, format):
         "place_id":i['place_id'],
         "child_place_ids":[int(c) for c in i['children']],
         "dataset":i['dataset'],
+        "fclasses": [c for c in i['fclasses']],
         "placetypes":[t['label'] for t in i['types']],
         "variants":[n for n in i['suggest']['input'] if n != i['title']],
         'links':i['links'],
@@ -493,6 +495,7 @@ class IndexAPIView(View):
         print('the api query was:',q)
         
         # run query
+        # TODO; rename from collection to avoid confusing with Collection
         collection = collector(q,'place','whg')
         # format hits
         collection = [ collectionItem(s,'place', None) for s in collection]
@@ -578,7 +581,6 @@ class SearchAPIView(generics.ListAPIView):
                 }
       #print('place result',result)
       return JsonResponse(result, safe=False,json_dumps_params={'ensure_ascii':False,'indent':2})
-
 
 
 """ *** """
