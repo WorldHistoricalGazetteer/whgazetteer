@@ -616,7 +616,9 @@
     }
 
     window.dslabel = "{{ ds.label }}"
+
     // Change hash for page-reload
+	  // TODO: retire this - tabs are separate pages
     $('.nav-tabs a').on('shown.bs.tab', function (e) {
       window.location.hash = e.target.hash;
       if(e.target.hash=="#reconciliation"){

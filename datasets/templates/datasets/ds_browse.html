@@ -154,7 +154,10 @@
     wdtask = "{{wdtask}}" == "True"?true:false
     tgntask = "{{tgntask}}" == "True"?true:false
     whgtask = "{{whgtask}}" == "True"?true:false
-
+	  anytask = wdtask | tgntask | whgtask
+	  // hide filter dropdown if there are no tasks
+	  filter_col = anytask?"<'#status_filter.col-sm-12 col-md-5'>":"<'#nostatus.col-sm-12 col-md-5'>"
+		console.log('anytask?', anytask)
     buildSelect()
     
     startTableSpinner()
@@ -163,7 +166,9 @@
     window.dslabel = "{{ ds.label }}"
     window.filter = "{{ filter }}"
     table = $('#placetable').DataTable({
-      dom: "<'row'<'col-sm-12 col-md-3'l><'#status_filter.col-sm-12 col-md-5'>"+
+      dom: "<'row'<'col-sm-12 col-md-3'l>+" +
+      {#"<'#status_filter.col-sm-12 col-md-5'>"+#}
+      filter_col+
       "<'col-sm-12 col-md-4'f>>" +
       "<'row'<'col-sm-12'tr>>" +
       "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"
@@ -176,20 +181,20 @@
       ,order: [[2, 'asc']]
       ,columns: 
       [
-          {"data": "id"},
-          {"data": "src_id"},
-          {"data": "title"},
-          {"data": "ccodes"},
-          {"data": "geo"},
-          {"data": "review_wd"},
-          {"data": "review_tgn"},
-          {"data": "review_whg"},
-          {"data": "revwd", "visible": wdtask?true:false, 
-            "orderable":false},
-          {"data": "revtgn", "visible": tgntask?true:false, 
-            "orderable":false},
-          {"data": "revwhg", "visible": whgtask?true:false, 
-            "orderable":false}
+        {"data": "id"},
+        {"data": "src_id"},
+        {"data": "title"},
+        {"data": "ccodes"},
+        {"data": "geo"},
+        {"data": "review_wd"},
+        {"data": "review_tgn"},
+        {"data": "review_whg"},
+        {"data": "revwd", "visible": wdtask?true:false,
+          "orderable":false},
+        {"data": "revtgn", "visible": tgntask?true:false,
+          "orderable":false},
+        {"data": "revwhg", "visible": whgtask?true:false,
+          "orderable":false}
       ]
       ,columnDefs:[
         { className: "browse-task-col", "targets": [8,9,10] },

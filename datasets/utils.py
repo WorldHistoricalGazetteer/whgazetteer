@@ -670,7 +670,6 @@ def aat_lookup(aid):
   try:
     typeobj = get_object_or_404(Type, aat_id=aid)
     return typeobj.term
-    # return {"label": typeobj.term, "fclass":typeobj.fclass or None}
   except:
     print(str(aid)+' broke aat_lookup()', sys.exc_info())
     # return {"label": None, "fclass":None}

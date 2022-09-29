@@ -163,7 +163,7 @@ class PlaceType(models.Model):
 
   def __str__(self):
     #return self.jsonb['src_label']
-    return self.jsonb['sourceLabel']
+    return str([l for l in self.jsonb['sourceLabels']])
 
   class Meta:
     managed = True

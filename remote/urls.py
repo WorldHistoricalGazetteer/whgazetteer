@@ -10,6 +10,7 @@ router = DefaultRouter()
 router.register('ds', views.DatasetViewSet)
 router.register('coll', views.CollectionViewSet)
 router.register('pl', views.PlaceViewSet)
+router.register('types', views.TypeViewSet)
 
 """ END new remote"""
 

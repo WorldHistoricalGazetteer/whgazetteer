@@ -7,7 +7,7 @@ from areas.models import Area
 from collection.models import Collection
 from datasets.models import Dataset, DatasetFile
 from datasets.tasks import get_bounds_filter
-
+from places.models import Type
 from django.http import JsonResponse, HttpResponse#
 from django.shortcuts import get_object_or_404
 from django.views.generic import View
@@ -114,3 +114,18 @@ class CollectionViewSet(viewsets.ModelViewSet):
   def perform_create(self, serializer):
     """Create a new collection."""
     serializer.save(owner=self.request.user)
+
+class TypeViewSet(viewsets.ModelViewSet):
+  """View for managing Type (place type) APIs."""
+  serializer_class = TypeRemoteSerializerSlim
+  queryset = Type.objects.all()
+  authentication_classes = [TokenAuthentication]
+  permission_classes = [IsAuthenticated]
+
+  # def get_queryset(self):
+  #   """Retrieve collections for authenticated user."""
+  #   queryset = self.queryset
+  #   return queryset.filter(
+  #     owner=self.request.user
+  #   ).order_by('-id').distinct()
+

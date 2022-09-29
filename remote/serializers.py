@@ -1,12 +1,32 @@
 from rest_framework import serializers
 
-from datasets.models import Dataset
-from places.models import Place, PlaceName, PlaceLink, PlaceGeom, PlaceWhen, PlaceDescription
 from collection.models import Collection
+from datasets.models import Dataset
+from places.models import Place, PlaceName, PlaceLink, PlaceGeom, PlaceWhen, PlaceDescription, PlaceType, Type
 
 # ******************
 # NEW for remoteapi
 # ******************
+class TypeRemoteSerializer(serializers.ModelSerializer):
+	""" for lists """
+
+	class Meta:
+		model = Type
+		fields = [
+			'id', 'aat_id', 'parent_id', 'term', 'term_full', 'note', 'fclass'
+		]
+		read_only_fields = ['id']
+
+class TypeRemoteSerializerSlim(serializers.ModelSerializer):
+	""" for lists """
+
+	class Meta:
+		model = Type
+		fields = [
+			'id', 'aat_id', 'parent_id', 'term', 'fclass'
+		]
+		read_only_fields = ['id']
+
 class DatasetRemoteSerializer(serializers.ModelSerializer):
 	""" for lists """
 	owner = serializers.ReadOnlyField(source='owner.username')
@@ -102,6 +122,21 @@ class PlaceWhenRemoteSerializer(serializers.ModelSerializer):
 
 		return pw
 
+class PlaceTypeRemoteSerializer(serializers.ModelSerializer):
+	# for create only
+	class Meta:
+		model = PlaceType
+		fields = [
+			'id', 'place_id', 'jsonb',
+		]
+		read_only_fields = ['id']
+
+	def create(self, validated_data):
+		"""Create a PlaceDescription."""
+		pt = PlaceType.objects.create(**validated_data)
+
+		return pt
+
 class PlaceDescriptionRemoteSerializer(serializers.ModelSerializer):
 	# for create only
 	class Meta:
@@ -123,13 +158,14 @@ class PlaceRemoteSerializer(serializers.ModelSerializer):
 	links = PlaceLinkRemoteSerializer(many=True, required=False)
 	geoms = PlaceGeomRemoteSerializer(many=True, required=False)
 	whens = PlaceWhenRemoteSerializer(required=False)
+	types = PlaceTypeRemoteSerializer(many=True, required=False)
 	descriptions = PlaceDescriptionRemoteSerializer(many=True, required=False)
 
 	class Meta:
 		model = Place
 		fields = [
 			'id', 'dataset', 'title', 'src_id', 'ccodes',
-			'names', 'links', 'geoms', 'whens',
+			'names', 'links', 'geoms', 'whens', "types",
 			'descriptions'
 		]
 		read_only_fields = ['id']
@@ -180,6 +216,16 @@ class PlaceRemoteDetailSerializer(PlaceRemoteSerializer):
 		)
 		place.whens.add(pw_obj)
 
+	def _get_or_create_types(self, types, place):
+		"""Handle getting or creating types as needed."""
+		for type in types:
+			pt_obj, created = PlaceType.objects.get_or_create(
+				place_id = place.id,
+				src_id = place.src_id,
+				**type,
+			)
+			place.types.add(pt_obj)
+
 	def _get_or_create_descriptions(self, descriptions, place):
 		"""Handle getting or creating descriptions as needed."""
 		for descrip in descriptions:
@@ -195,15 +241,21 @@ class PlaceRemoteDetailSerializer(PlaceRemoteSerializer):
 		# pull attributes because they will need the new place_id
 		names = validated_data.pop('names', [])
 		links = validated_data.pop('links', [])
-		geoms = validated_data.pop('geoms',[])
-		whens = validated_data.pop('whens',[])
-		descriptions = validated_data.pop('descriptions',[])
+		geoms = validated_data.pop('geoms', [])
+		whens = validated_data.pop('whens', [])
+		types = validated_data.pop('types', [])
+		descriptions = validated_data.pop('descriptions', [])
 
 		place = Place.objects.create(**validated_data)
+		ds = place.dataset
 		self._get_or_create_names(names, place)
 		self._get_or_create_links(links, place)
 		self._get_or_create_geoms(geoms, place)
 		self._get_or_create_whens(whens, place)
+		self._get_or_create_types(types, place)
 		self._get_or_create_descriptions(descriptions, place)
+
+		ds.numrows +=1
+		ds.save()
 
 		return place
