@@ -14,7 +14,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
 
 INSTALLED_APPS = [
-  'django.contrib.admin',
+    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.gis',
@@ -222,8 +222,8 @@ ACCOUNT_FORMS = {'signup': 'allauth.account.forms.WHGRegisterForm',}
 
 AUTHENTICATION_BACKENDS = (
   'django.contrib.auth.backends.ModelBackend', # default
-    'guardian.backends.ObjectPermissionBackend',
-    'allauth.account.auth_backends.AuthenticationBackend',
+  'guardian.backends.ObjectPermissionBackend',
+  'allauth.account.auth_backends.AuthenticationBackend',
 )
 
 # Password validation
@@ -244,7 +244,6 @@ LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 
 USE_I18N = True
-
 USE_L10N = True
 
 # disabled for new psycopg2 config

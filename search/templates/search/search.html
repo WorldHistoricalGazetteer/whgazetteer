@@ -837,22 +837,24 @@
 
     // mapbox tokens
     var token_whg = '{{ mbtokenwhg }}',
-      token_mb = '{{ mbtokenmb }}';
+      token_mb = '{{ mbtokenmb }}',
+      token_kg = '{{ mbtokenkg }}';
 
   // style/tile urls
     var mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}',
       mbtiles_url = 'https://api.mapbox.com/v3/{id}/{z}/{x}/{y}.png',
       ne_url = 'http://blog.whgazetteer.org/tiles/ne/{z}/{x}/{y}.png';
 
-      var satellite  = L.tileLayer(mbstyle_url, {
+    var satellite  = L.tileLayer(mbstyle_url, {
       id:'mapbox/satellite-streets-v11',
-      token:token_mb}),
-    osm  = L.tileLayer(mbstyle_url, {
+      token:token_mb})
+    var osm  = L.tileLayer(mbstyle_url, {
       id:'mapbox/light-v10',
-      token:token_mb}),
-      ne_mb = L.tileLayer(mbtiles_url, {
-      id:'kgeographer.ne_global',
-      token:token_whg})
+      token:token_mb})
+    {#var ne_mb = L.tileLayer(mbtiles_url, {#}
+    {#  id:'kgeographer.ne_global',#}
+    {#  token:token_kg})#}
+    {#token:token_whg})#}
 
     // GL wrappers to display heatmaps
     mb_terrain = L.mapboxGL({
@@ -862,6 +864,7 @@
     ne_global= L.mapboxGL({
       style:'mapbox://styles/kgeographer/ckidglq8l2nra19nzzbl995ue',
       accessToken:token_whg}).addTo(mappy)
+      {#accessToken:token_kg}).addTo(mappy)#}
 
     var countryStyle = {
       "color": "#999",
@@ -895,15 +898,16 @@
       <!--"Regions (UN)": regions-->
     }
     mappy.zoomControl.setPosition('topright')
+
     bboxer = L.Control.boxzoom(
       { position:'topleft',
         title:'Select tool, then draw rectangle to filter results',
         enableShiftDrag: true
-        <!--,iconClasses:['bbox-icon']-->
+        // iconClasses:['bbox-icon']
       })
 
     // startup controls only
-    L.control.layers(baseLayers,dataLayers).addTo(mappy);
+    L.control.layers(baseLayers, dataLayers).addTo(mappy);
     baseLayers["NE global"].addTo(mappy)
 
     // TODO:

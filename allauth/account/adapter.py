@@ -112,7 +112,6 @@ class DefaultAccountAdapter(object):
     subject = self.format_email_subject(subject)
 
     from_email = self.get_from_email()
-
     bodies = {}
     for ext in ["html", "txt"]:
       try:

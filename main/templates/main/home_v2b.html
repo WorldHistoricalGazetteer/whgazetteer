@@ -1,5 +1,4 @@
 <!-- datasets/home.html -->
-<!--{ extends "main/base.html" %}-->
 {% extends "main/base_home.html" %}
 {% load fontawesome %}
 {% load static %}
@@ -11,7 +10,6 @@
 {% endblock %}
 
 {% block content %}
-{% load static %}
 
 <div class="container mt-1" style="height: calc(100vh - 90px);">
 	<div id="banner" class="banner-bare w-100 my-1 p-2">
@@ -109,7 +107,7 @@
               <a href="{% url 'collection:ds-collection-summary' featured_coll.1.id %}">{{featured_coll.1.title}}</a>
             </p>
             <p class="pr-0 coll-description">
-              <img class="pl-1 float-right"src="{{ imgc1 }}" />
+              <img class="pl-1 float-right"src="{{ imgc1 }}" width="75" />
               {{ featured_coll.1.description|safe|truncatechars:250 }}</div>
             </p>
 				  </div> <!-- .item-right -->

@@ -31,7 +31,8 @@ def ds_image_path(instance, filename):
 # owner = models.ForeignKey('auth.User', related_name='snippets', on_delete=models.CASCADE)
 class Dataset(models.Model):
   #idx='whg'
-  owner = models.ForeignKey(User, related_name='datasets', on_delete=models.CASCADE)
+  owner = models.ForeignKey(settings.AUTH_USER_MODEL,
+                            related_name='datasets', on_delete=models.CASCADE)
   label = models.CharField(max_length=20, null=False, unique="True",
             error_messages={'unique': 'The dataset label entered is already in use, and must be unique. Try appending a version # or initials.'})
   title = models.CharField(max_length=255, null=False)
@@ -280,25 +281,10 @@ class DatasetFile(models.Model):
     managed = True
     db_table = 'dataset_file'
 
-class DatasetUser(models.Model):
-  dataset_id = models.ForeignKey(Dataset, related_name='collabs',
-                                   default=-1, on_delete=models.CASCADE)
-  user_id = models.ForeignKey(User, related_name='ds_collab',
-                                default=-1, on_delete=models.CASCADE)
-  role = models.CharField(max_length=20, null=False, choices=TEAMROLES)
-
-  def __str__(self):
-    username = self.user_id.username
-    return '<b>' + username + '</b> (' + self.role + ')'
-
-  class Meta:
-    managed = True
-    db_table = 'dataset_user'
-
 class Hit(models.Model):
   # FK to celery_results_task_result.task_id
   place = models.ForeignKey(Place, on_delete=models.CASCADE)
-  # task_id = models.ForeignKey(TaskResult, 
+  # task_id = models.ForeignKey(TaskResult,
     #related_name='task_id', on_delete=models.CASCADE)
   task_id = models.CharField(max_length=50)
   authority = models.CharField(max_length=12, choices=AUTHORITIES )
@@ -306,7 +292,7 @@ class Hit(models.Model):
   query_pass = models.CharField(max_length=12, choices=PASSES )
   src_id = models.CharField(max_length=2044)
   score = models.FloatField()
-  
+
   reviewed = models.BooleanField(default=False)
   matched = models.BooleanField(default=False)
   flag = models.BooleanField(default=False)
@@ -325,6 +311,21 @@ class Hit(models.Model):
   class Meta:
     managed = True
     db_table = 'hits'
+
+class DatasetUser(models.Model):
+  dataset_id = models.ForeignKey(Dataset, related_name='collabs',
+                                   default=-1, on_delete=models.CASCADE)
+  user_id = models.ForeignKey(User, related_name='ds_collab',
+                                default=-1, on_delete=models.CASCADE)
+  role = models.CharField(max_length=20, null=False, choices=TEAMROLES)
+
+  def __str__(self):
+    username = self.user_id.username
+    return '<b>' + username + '</b> (' + self.role + ')'
+
+  class Meta:
+    managed = True
+    db_table = 'dataset_user'
 
 @receiver(pre_delete, sender=Dataset)
 def remove_files(**kwargs):

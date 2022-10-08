@@ -1,4 +1,5 @@
 # place.models
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.db import models as geomodels
 from django.contrib.postgres.fields import JSONField, ArrayField
@@ -27,8 +28,6 @@ class Place(models.Model):
   fclasses = ArrayField(models.CharField(max_length=1, choices=FEATURE_CLASSES), null=True, blank=True)
   indexed = models.BooleanField(default=False)  
   flag = models.BooleanField(default=False) # not in use
-
-  #collections = models.ManyToManyField("collection.Collection")
 
   # 0=hits:unreviewed, 1=hits:reviewed, 2=hits:deferred, null=no hits
   review_wd = models.IntegerField(null=True, choices=STATUS_REVIEW)
@@ -118,8 +117,9 @@ class Type(models.Model):
     managed = True
     db_table = 'types'
 
+# NB in LPF spec but seldom used
 class Source(models.Model):
-  owner = models.ForeignKey(User, on_delete=models.CASCADE)
+  owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
   # TODO: force unique...turn into slug or integer
   src_id = models.CharField(max_length=30, unique=True)    # contributor's id
   uri = models.URLField(null=True, blank=True)
@@ -156,14 +156,14 @@ class PlaceType(models.Model):
                               default=-1, on_delete=models.CASCADE)
   src_id = models.CharField(max_length=100,default='') # contributor's identifier
   jsonb = JSONField(blank=True, null=True)
-  # identifier, label, source_label, when{}
+  # identifier, label, sourceLabels[], when{}
 
   aat_id = models.IntegerField(null=True,blank=True) # Getty AAT identifier
   fclass = models.CharField(max_length=1,choices=FEATURE_CLASSES) # geonames feature class
 
   def __str__(self):
-    #return self.jsonb['src_label']
-    return str([l for l in self.jsonb['sourceLabels']])
+    return (self.jsonb['sourceLabel'] if 'sourceLabel' in self.jsonb else '') +\
+           ('; ' + self.jsonb['label'] if 'label' in self.jsonb else '')
 
   class Meta:
     managed = True

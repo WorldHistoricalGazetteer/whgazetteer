@@ -1,5 +1,6 @@
 from django.db import models
 from django.db.models import Q
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import ArrayField #,JSONField
 from django.core.validators import URLValidator
@@ -31,7 +32,8 @@ def default_omitted():
   return '{}'
 
 class Collection(models.Model):
-  owner = models.ForeignKey(User, related_name='collections', on_delete=models.CASCADE)
+  owner = models.ForeignKey(settings.AUTH_USER_MODEL,
+                            related_name='collections', on_delete=models.CASCADE)
   title = models.CharField(null=False, max_length=255)
   description = models.CharField( null=False, max_length=2044)
   keywords = ArrayField(models.CharField(max_length=50), null=True)
