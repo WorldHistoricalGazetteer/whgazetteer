@@ -1482,8 +1482,8 @@ def ds_insert_lpf(request, pk):
             minmax = datesobj['minmax'],
             timespans = datesobj['intervals']
           )
-          print('new place: ',newpl.title)
           newpl.save()
+          print('new place: ',newpl.title)
 
           # PlaceName: place,src_id,toponym,task_id,
           # jsonb:{toponym, lang, citation[{label, year, @id}], when{timespans, ...}}
@@ -1525,7 +1525,9 @@ def ds_insert_lpf(request, pk):
             objs['PlaceWhens'].append(PlaceWhen(
               place=newpl,
               src_id=newpl.src_id,
-              jsonb=feat['when']))
+              jsonb=feat['when'],
+              minmax=newpl.minmax
+            ))
 
           # PlaceGeom: place,src_id,task_id,jsonb:{type,coordinates[],when{},geo_wkt,src}
           #if 'geometry' in feat.keys() and feat['geometry']['type']=='GeometryCollection':
@@ -1605,7 +1607,7 @@ def ds_insert_lpf(request, pk):
       # email to user, admin
       subj = 'World Historical Gazetteer error followup'
       msg = 'Hello '+ user.username+', \n\nWe see your recent upload for the '+ds.label+' dataset failed, very sorry about that! We will look into why and get back to you within a day.\n\nRegards,\nThe WHG Team'
-      emailer(subj,msg,'admin@whgazetteer@gmail.com',[user.email, 'whgadmin@kgeographer.com'])
+      emailer(subj,msg,'whg@kgeographer.org',[user.email, 'whgadmin@kgeographer.com'])
 
       # return message to 500.html
       messages.error(request, "Database insert failed, but we don't know why. The WHG team has been notified and will follow up by email to <b>"+user.username+'</b> ('+user.email+')')
@@ -1866,7 +1868,7 @@ def ds_insert_tsv(request, pk):
       # email to user, admin
       subj = 'World Historical Gazetteer error followup'
       msg = 'Hello '+ user.username+', \n\nWe see your recent upload for the '+ds.label+' dataset failed, very sorry about that! We will look into why and get back to you within a day.\n\nRegards,\nThe WHG Team'
-      emailer(subj,msg,'whgazetteer@gmail.com',[user.email, 'karl@kgeographer.org'])
+      emailer(subj,msg,'whg@kgeographer.org',[user.email, 'karl@kgeographer.org'])
 
       # return message to 500.html
       messages.error(request, "Database insert failed, but we don't know why. The WHG team has been notified and will follow up by email to <b>"+user.username+'</b> ('+user.email+')')
@@ -2127,7 +2129,7 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
       dsobj.numrows = result['count']
       clean_label=form.cleaned_data['label'].replace(' ','_')
       if not form.cleaned_data['uri_base']:
-        dsobj.uri_base = 'https://whgazetteer.org/places/'+form.cleaned_data['label']+'/'
+        dsobj.uri_base = 'https://whgazetteer.org/api/db/?id='
 
       # links will be counted later on insert
       dsobj.numlinked = 0
