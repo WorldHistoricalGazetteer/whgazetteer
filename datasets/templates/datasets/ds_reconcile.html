@@ -45,8 +45,8 @@
         <h6 class="">Reconciliation Tasks 
           <span class="small help-matches" data-id="reconciliation">
             {% fontawesome_icon 'question-circle' color='#993333' %}
-          </span> {{ owners }}
-          {% if user.is_superuser or user in ds.owners %}
+          </span>
+          {% if user.is_superuser or user in ds.owners or user|has_group:'whg_team' %}
             <span class="ml-4 small">
             <a id="addtask_link" href="{% url 'datasets:ds_addtask' id=ds.id %}">Add new task {% fontawesome_icon 'plus-square' color='#336699' %}</a>
             </span>
@@ -55,7 +55,7 @@
         {% if not messages %}
 	        <p>Linking in WHG is the activity of matching records from one dataset with "close matches" in another, in a method called <sr>reconciliation</sr> or <sr>alignment</sr>. It can also accomplish geocoding of place names for many records that are missing location. Reconciliation tasks can be performed against our local <sr>Wikidata</sr> index. Fully accessioning data to WHG involves the further step of reconciling against our "union index."</p>
         {% endif %}
-        {% if user in ds.owners or user in collaborators or user.is_superuser %}
+        {% if user in ds.owners or user in collaborators or user.is_superuser or user|has_group:'whg_team'%}
 	        {% if ds.ds_status == 'indexed' %}
 		        <div id="ready" class="hidden pl-2">
 	            <p class="my-0">This dataset has been fully indexed</p>
@@ -238,7 +238,7 @@
     
     updateTotals('{{ ds.id }}')
     if('{{ status }}' == 'updating'){
-      console.log('{{ status }}','{{ context }}')
+      {#console.log('{{ status }}','{{ context }}')#}
       $("#ds_info").addClass('hidden')
       $("#ds_updating").removeClass('hidden')
       $("#div_file").toggleClass('border-red')
@@ -269,7 +269,7 @@
   })
   // updates task card totals
   function updateTotals(dsid){
-    console.log("admin? {{ user|has_group:'admin' }}")
+    {#console.log("admin? {{ user|has_group:'admin' }}")#}
     $.get("/datasets/updatecounts",{ds_id: dsid},
       function(data){
         updates=Object.entries(data)
@@ -277,7 +277,7 @@
           tid = updates[u][0]
           counts = updates[u][1]
           task = updates[u][1]['task']
-          console.log('updateTotals() counts', task, counts)
+          {#console.log('updateTotals() counts', task, counts)#}
           
           // if all are reviewed, disable radio button
           if(counts['total'] == 0 ){

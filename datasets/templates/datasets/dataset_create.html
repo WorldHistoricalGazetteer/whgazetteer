@@ -12,9 +12,9 @@
 
 <div class="container">
   <h4 class="mt-3">Add dataset</h4>
-  {%comment%}{% if messages %}
+  {% comment %}{% if messages %}
     <span class="text-danger strong"> {% for message in messages %}{{ message }}{% endfor %}</span>
-  {% endif %}{%endcomment%}
+  {% endif %}{% endcomment %}
     <div id="content_create" class="row mx-1">
       <div id="create_form" class="form-box mt-2 col-md-7 col-lg-5" >
 			  <form id="ds_form" method="POST" enctype="multipart/form-data">

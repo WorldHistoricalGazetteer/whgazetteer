@@ -1569,6 +1569,7 @@ def align_idx(pk, *args, **kwargs):
              'pid': par['pid'],
              'variants': par['variants'],
              'types': par['types'],
+             'related': par['related'],
              'children': par['children'],
              'minmax': par['minmax'],
              'pass': par['pass'][:5]
@@ -1588,6 +1589,7 @@ def align_idx(pk, *args, **kwargs):
               'pid':k['pid'],
               'variants':k['variants'],
               'types':k['types'],
+              'related': par['related'],
               'minmax':k['minmax'],
               'pass':k['pass'][:5]} for k in kids])
 

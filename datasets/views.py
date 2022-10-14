@@ -8,6 +8,7 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.core.mail import send_mail
 from django.core.paginator import Paginator
 from django.db.models import Q
+from django.db.utils import DataError
 from django.forms import modelformset_factory
 from django.http import HttpResponseServerError, HttpResponseRedirect, JsonResponse, HttpResponse
 from django.shortcuts import redirect, get_object_or_404, render
@@ -453,9 +454,9 @@ def review(request, pk, tid, passnum):
     #   For accession, act on index 'clusters'
     place_post = get_object_or_404(Place,pk=request.POST['place_id'])
     review_status = getattr(place_post, review_field)
-    # proceed with POST only if place is unreviewed; else return to a GET (and next place)
-    # NB. reviewer #2 is *not* notified
-    if review_status >=1:
+    # proceed with POST only if place is unreviewed or deferred; else return to a GET (and next place)
+    # NB. other reviewer(s) *not* notified
+    if review_status == 1:
       context["already"] = True
       return redirect('/datasets/'+str(pk)+'/review/'+task.task_id+'/'+passnum)
     elif formset.is_valid():
@@ -752,7 +753,7 @@ def ds_recon(request, pk):
       print('Celery is down :^(')
       emailer('Celery is down :^(',
               'if not celeryUp() -- look into it, bub!',
-              'whgazetteer@gmail.com',
+              'whg@kgeographer.org',
               ['karl@kgeographer.org'])
       messages.add_message(request, messages.INFO, """Sorry! WHG reconciliation services appears to be down. 
         The system administrator has been notified.""")
@@ -781,7 +782,7 @@ def ds_recon(request, pk):
       messages.add_message(request, messages.INFO, "Sorry! Reconciliation services appear to be down. The system administrator has been notified.<br/>"+ str(sys.exc_info()))
       emailer('WHG recon task failed',
               'a reconciliation task has failed for dataset #'+ds.id+', w/error: \n' +str(sys.exc_info())+'\n\n',
-              'whgazetteer@gmail.com',
+              'whg@kgeographer.org',
               'karl@kgeographer.org')
 
       return redirect('/datasets/'+str(ds.id)+'/reconcile')
@@ -1434,6 +1435,7 @@ def ds_insert_lpf(request, pk):
   print('dbcount',dbcount)
 
   if dbcount == 0:
+    errors=[]
     try:
       infile = dsf.file.open(mode="r")
       print('ds_insert_lpf() for dataset',ds)
@@ -1462,6 +1464,7 @@ def ds_insert_lpf(request, pk):
             if geojson:
               # a GeometryCollection
               ccodes = ccodesFromGeom(geojson)
+              print('ccodes', ccodes)
             else:
               ccodes = []
           else:
@@ -1473,17 +1476,21 @@ def ds_insert_lpf(request, pk):
           datesobj=parsedates_lpf(feat)
 
           # TODO: compute fclasses
-          newpl = Place(
-            # strip uribase from @id
-            src_id=feat['@id'] if uribase in ['', None] else feat['@id'].replace(uribase,''),
-            dataset=ds,
-            title=title,
-            ccodes=ccodes,
-            minmax = datesobj['minmax'],
-            timespans = datesobj['intervals']
-          )
-          newpl.save()
-          print('new place: ',newpl.title)
+          try:
+            newpl = Place(
+              # strip uribase from @id
+              src_id=feat['@id'] if uribase in ['', None] else feat['@id'].replace(uribase,''),
+              dataset=ds,
+              title=title,
+              ccodes=ccodes,
+              minmax = datesobj['minmax'],
+              timespans = datesobj['intervals']
+            )
+            newpl.save()
+            print('new place: ',newpl.title)
+          except:
+            print('failed id' + title + 'datesobj: '+datesobj)
+            print(sys.exc_info())
 
           # PlaceName: place,src_id,toponym,task_id,
           # jsonb:{toponym, lang, citation[{label, year, @id}], when{timespans, ...}}
@@ -1511,6 +1518,7 @@ def ds_insert_lpf(request, pk):
               else:
                 fc = None
               print('from feat[types]:',t)
+              print('PlaceType record newpl,newpl.src_id,t,fc',newpl,newpl.src_id,t,fc)
               objs['PlaceTypes'].append(PlaceType(
                 place=newpl,
                 src_id=newpl.src_id,
@@ -1534,7 +1542,7 @@ def ds_insert_lpf(request, pk):
           if geojson and geojson['type']=='GeometryCollection':
             #for g in feat['geometry']['geometries']:
             for g in geojson['geometries']:
-              #print('from feat[geometry]:',g)
+              # print('from feat[geometry]:',g)
               objs['PlaceGeoms'].append(PlaceGeom(
                 place=newpl,
                 src_id=newpl.src_id,
@@ -1580,17 +1588,53 @@ def ds_insert_lpf(request, pk):
               objs['PlaceDepictions'].append(PlaceDepiction(
                 place=newpl,src_id=newpl.src_id,jsonb=dep))
 
-          #
+          # throw errors into user message
+          def raiser(model, e):
+            print('Bulk load for '+ model + ' failed on', newpl)
+            errors.append({"field":model, "error":e})
+            print('error', e)
+            raise DataError
+
           # create related objects
-          PlaceName.objects.bulk_create(objs['PlaceNames'])
-          PlaceType.objects.bulk_create(objs['PlaceTypes'])
-          PlaceWhen.objects.bulk_create(objs['PlaceWhens'])
-          PlaceGeom.objects.bulk_create(objs['PlaceGeoms'])
-          PlaceLink.objects.bulk_create(objs['PlaceLinks'])
-          PlaceRelated.objects.bulk_create(objs['PlaceRelated'])
-          PlaceDescription.objects.bulk_create(objs['PlaceDescriptions'])
-          PlaceDepiction.objects.bulk_create(objs['PlaceDepictions'])
-          #print('new place record: ',newpl.src_id)
+          try:
+            PlaceName.objects.bulk_create(objs['PlaceNames'])
+          except DataError as e:
+            raiser('Name', e)
+
+          try:
+            PlaceType.objects.bulk_create(objs['PlaceTypes'])
+          except DataError as de:
+            raiser('Type', e)
+
+          try:
+            PlaceWhen.objects.bulk_create(objs['PlaceWhens'])
+          except DataError as de:
+            raiser('When', e)
+
+          try:
+            PlaceGeom.objects.bulk_create(objs['PlaceGeoms'])
+          except DataError as de:
+            raiser('Geom', e)
+
+          try:
+            PlaceLink.objects.bulk_create(objs['PlaceLinks'])
+          except DataError as de:
+            raiser('Link', e)
+
+          try:
+            PlaceRelated.objects.bulk_create(objs['PlaceRelated'])
+          except DataError as de:
+            raiser('Related', e)
+
+          try:
+            PlaceDescription.objects.bulk_create(objs['PlaceDescriptions'])
+          except DataError as de:
+            raiser('Description', e)
+
+          try:
+            PlaceDepiction.objects.bulk_create(objs['PlaceDepictions'])
+          except DataError as de:
+            raiser('Depiction', e)
 
           # TODO: compute newpl.ccodes (if geom), newpl.fclasses, newpl.minmax
           # something failed in *any* Place creation; delete dataset
@@ -1603,14 +1647,18 @@ def ds_insert_lpf(request, pk):
               "total_links":total_links})
     except:
       # drop the (empty) database
-      ds.delete()
+      # ds.delete()
       # email to user, admin
       subj = 'World Historical Gazetteer error followup'
-      msg = 'Hello '+ user.username+', \n\nWe see your recent upload for the '+ds.label+' dataset failed, very sorry about that! We will look into why and get back to you within a day.\n\nRegards,\nThe WHG Team'
+      msg = 'Hello '+ user.username+', \n\nWe see your recent upload for the '+ds.label+\
+            ' dataset failed, very sorry about that!'+\
+            '\nThe likely cause was: '+str(errors)+'\n\n'+\
+            "If you can, fix the cause. If not, please respond to this email and we will get back to you soon.\n\nRegards,\nThe WHG Team"
       emailer(subj,msg,'whg@kgeographer.org',[user.email, 'whgadmin@kgeographer.com'])
 
       # return message to 500.html
-      messages.error(request, "Database insert failed, but we don't know why. The WHG team has been notified and will follow up by email to <b>"+user.username+'</b> ('+user.email+')')
+      # messages.error(request, "Database insert failed, but we don't know why. The WHG team has been notified and will follow up by email to <b>"+user.username+'</b> ('+user.email+')')
+      # return redirect(request.GET.get('from'))
       return HttpResponseServerError()
 
   else:
@@ -1983,7 +2031,7 @@ def failed_upload_notification(user, tempfn):
     msg = 'Hello ' + user.username + \
       ', \n\nWe see your recent upload failed -- very sorry about that!' + \
       'We will look into why and get back to you within a day.\n\nRegards,\nThe WHG Team\n\n\n['+tempfn+']'
-    emailer(subj, msg, 'whgazetteer@gmail.com',
+    emailer(subj, msg, 'whg@kgeographer.org',
             [user.email, 'karl@kgeographer.org'])
 
 """

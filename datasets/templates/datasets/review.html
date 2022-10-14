@@ -121,7 +121,7 @@
                 {{ c }};
               {% endfor %}</p>
             {% endif %}
-            {% if record.related|length > 0 %}
+            {% if record.related.all|length > 0 %}
             <p><strong>Relations</strong>: 
               {% for rel in record.related.all %}
                 {{ rel.jsonb.label }}; <!--({ rel.jsonb.relationType }); -->

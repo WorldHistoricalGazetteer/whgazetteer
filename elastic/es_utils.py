@@ -286,6 +286,7 @@ def profileHit(hit):
   profile['countries'] = ccDecode(src['ccodes'])
   profile['variants'] = [n['toponym'] for n in src['names']]
   profile['types'] = [t['sourceLabel'] for t in src['types']]
+  profile['related'] = [r['label'] for r in src['relations']]
   if len(src['descriptions']) > 0:
     profile['descriptions'] = [d['value'] for d in src['descriptions']]
   geom_objlist = []

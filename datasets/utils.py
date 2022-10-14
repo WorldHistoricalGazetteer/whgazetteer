@@ -958,7 +958,6 @@ def ccodesFromGeom(geom):
       qs = Country.objects.filter(mpoly__intersects=g)       
     ccodes = [c.iso for c in qs]
     return ccodes
-    #print(ccodes)
 #
 def elapsed(delta):
   minutes, seconds = divmod(delta.seconds, 60)

@@ -358,7 +358,7 @@ def collector(q, datatype, idx):
   execute es.search, return post-processed results 
 """
 def bundler(q, whgid, idx):
-  print('key', settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY)
+  # print('key', settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY)
   es = Elasticsearch([{'host': 'localhost',
                        'port': 9200,
                        'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),

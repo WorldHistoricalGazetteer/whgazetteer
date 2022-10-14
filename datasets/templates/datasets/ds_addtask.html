@@ -52,7 +52,7 @@
       <form action="{% url 'datasets:ds_recon' ds.id %}" method="POST">
       {% csrf_token %}
       <!-- only ds owner or superuser can run tasks -->
-      {% if user.is_superuser or user in owners %}
+      {% if user.is_superuser or user in owners or user|has_group:'whg_team' %}
       <div class="row"  > <!-- page-wide -->
         <div id="recon_form" class="col-md-6">
           <!-- if already indexed, running more tasks makes no sense -->
@@ -65,7 +65,7 @@
             <input type="hidden" name="wd_lang" value="">
 
 	          {# whg accession option if superuser #}
-            {% if user.is_superuser %}
+            {% if user.is_superuser or user.username == 'als512' %}
               <div class="form-check text-danger mt-2">
                 <label class="form-check-label" for="r_whg">
                   <input type="radio" class="form-check-input" id="r_whg"

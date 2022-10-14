@@ -103,7 +103,7 @@
                 {{ c }};
               {% endfor %}</p>
             {% endif %}
-            {% if record.related|length > 0 %}
+            {% if record.related.all|length > 0 %}
             <p><strong>Relations</strong>: 
               {% for rel in record.related.all %}
                 {{ rel.jsonb.label }}; <!--({ rel.jsonb.relationType }); -->
@@ -184,8 +184,9 @@
 		                {% if src.types|length > 0 %}; <i>type(s)</i>: <b>{{ src.types|join:","}}</b>{% endif %}
 										{# index has some nulls in minmax #}
 		                {% if src.minmax and src.minmax.first != None %}; <i>earliest/latest</i>:<b> {{ src.minmax|join:"/"}}</b>{% endif %}
-		                <i class="text-muted">{{ src.pass }}</i>:
-	                </p>
+		                <i class="text-muted">{{ src.pass }}</i>
+		                {% if src.related|length > 0 %}<br/><i class="ml-3">relation(s)</i>: <b>{{ src.related|join:","}}</b>{% endif %}
+                </p>
 	                <p></p>
 	                </div>
 	              {% endfor %}
