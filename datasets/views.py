@@ -1826,7 +1826,6 @@ def ds_insert_tsv(request, pk):
                         "label":aat_lookup(int(aatnum[4:])) if aatnum else ''
                       }
             ))
-        # add fclasses to new Place
           newpl.fclasses = fclass_list
           newpl.save()
 

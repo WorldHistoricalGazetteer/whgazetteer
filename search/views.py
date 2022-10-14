@@ -1,7 +1,7 @@
 # various search.views
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Count
+from django.db.models import Q, Count
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import View
@@ -282,7 +282,7 @@ class SearchView(View):
       
   
 """
-  executes search on db.places
+  executes search on db.places /search/db
 """
 class SearchDatabaseView(View):
   @staticmethod
@@ -314,12 +314,13 @@ class SearchDatabaseView(View):
       print('bounds area', area)
       ga = GEOSGeometry(json.dumps(area.geojson))
     
-    print('seach db params:', {'name':name,'name_contains':name_contains,'fclasses':fclasses,'bounds':bounds,'ds':ds})
+    print('seaech db params:', {'name':name,'name_contains':name_contains,'fclasses':fclasses,'bounds':bounds,'ds':ds})
     # africanports1887 mystery
     # {'name': 'Ambriz', 'name_contains': None, 'fclasses': ['A', 'P', 'S', 'R', 'L', 'T', 'H'], 'bounds': '', 'ds': None}
     # returns 0
     # {'name': 'Abydos', 'name_contains': None, 'fclasses': ['A', 'P', 'S', 'R', 'L', 'T', 'H'], 'bounds': '', 'ds': None}
     # returns 4
+    # Abitibiwinni Aki
     qs = Place.objects.filter(dataset__public=True)
     
     if bounds:
@@ -327,8 +328,13 @@ class SearchDatabaseView(View):
       qs = qs.filter(geoms__geom__within=ga)      
     else:
       print('no bounds, or empty string')
-    qs = qs.filter(fclasses__overlap=fclasses) if fclasses else qs
-    #qs = qs.filter(minmax__0__lte=year,minmax__1__gte=year) if year else qs
+
+    if fclasses and len(fclasses) < 7:
+      qs.filter(fclasses__overlap=fclasses)
+    #   qs.filter(Q(fclasses__isnull=True) | Q(fclasses__overlap=fclasses) | Q(fclasses=[])).count()
+    # else:
+    #   # filter in effect
+    #   qs.filter(fclasses__overlap=fclasses)
     
     if name_contains:
       print( 'name_contains exists',name_contains)
