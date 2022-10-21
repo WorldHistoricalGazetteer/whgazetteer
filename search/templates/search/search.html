@@ -851,20 +851,15 @@
     var osm  = L.tileLayer(mbstyle_url, {
       id:'mapbox/light-v10',
       token:token_mb})
-    {#var ne_mb = L.tileLayer(mbtiles_url, {#}
-    {#  id:'kgeographer.ne_global',#}
-    {#  token:token_kg})#}
-    {#token:token_whg})#}
 
     // GL wrappers to display heatmaps
     mb_terrain = L.mapboxGL({
       style:'mapbox://styles/kgeographer/ckhf6o8yf07fw19qhbrm7f2q7',
-      accessToken:token_whg})
+      accessToken:token_kg})
 
     ne_global= L.mapboxGL({
       style:'mapbox://styles/kgeographer/ckidglq8l2nra19nzzbl995ue',
-      accessToken:token_whg}).addTo(mappy)
-      {#accessToken:token_kg}).addTo(mappy)#}
+      accessToken:token_kg}).addTo(mappy)
 
     var countryStyle = {
       "color": "#999",

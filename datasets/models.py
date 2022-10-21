@@ -74,7 +74,6 @@ class Dataset(models.Model):
 
   @property
   def bounds(self):
-    # pg_geoms=PlaceGeom.objects.values_list('geom',flat=True).filter(place__dataset=self.label)
     dsgeoms = PlaceGeom.objects.filter(place__dataset=self.label)
     extent = dsgeoms.aggregate(Extent('geom'))['geom__extent']
     b=box(extent[0],extent[1],extent[2],extent[3])

@@ -1692,7 +1692,7 @@ def ds_insert_tsv(request, pk):
 
       infile.seek(0)
       header = next(reader, None)
-      header = [col.lower() for col in header]
+      header = [col.lower().strip() for col in header]
       print('header.lower()',[col.lower() for col in header])
 
       # strip BOM character if exists
@@ -2054,7 +2054,6 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
 
   def form_valid(self, form):
     data=form.cleaned_data
-    print('data from create form', data)
     context={"format":data['format']}
     user=self.request.user
     file=self.request.FILES['file']
@@ -2062,7 +2061,7 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
     mimetype = file.content_type
 
     newfn, newtempfn = ['', '']
-    print('form_valid() mimetype',mimetype)
+    print('form_valid() mimetype', mimetype)
 
 
     # open & write tempf to a temp location;
@@ -2103,6 +2102,8 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
     print('DatasetCreateView() extension', ext)
     fail_msg = "A database insert failed and we aren't sure why. The WHG team has been notified "+\
                "and will follow up by email to <b>"+user.username+"</b> ("+user.email+")"
+
+    # this validates per row and always gets a result, even if errors
     if ext == 'json':
       try:
         result = validate_lpf(tempfn, 'coll')
@@ -2113,12 +2114,15 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
         messages.error(self.request, fail_msg)
         return HttpResponseServerError()
 
+    # for delimited, fvalidate() is performed on the entire file
+    # on fail, raises server error
     elif ext in ['csv', 'tsv']:
       try:
         # fvalidate() wants an extension
         newfn = tempfn+'.'+ext
         os.rename(tempfn, newfn)
         result = validate_tsv(newfn, ext)
+        print('tsv result', result)
       except:
         # email to user, admin
         failed_upload_notification(user, tempfn)
@@ -2155,7 +2159,8 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
       except:
         # email to user, admin
         failed_upload_notification(user, newfn)
-        messages.error(self.request, "Database insert failed and we aren't sure why. The WHG team has been notified and will follow up by email to <b>" +
+        messages.error(self.request, "Database insert failed and we aren't sure why. "+
+                       "The WHG team has been notified and will follow up by email to <b>" +
                        user.username+'</b> ('+user.email+')')
         return HttpResponseServerError()
 

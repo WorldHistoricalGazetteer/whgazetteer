@@ -106,10 +106,6 @@ class Collection(models.Model):
   @property
   def last_modified_iso(self):
     # TODO: log entries for collections
-    # if self.log.count() > 0:
-    #   last=self.log.all().order_by('-timestamp')[0].timestamp
-    # else:
-    #   last=self.created
     return self.created.strftime("%Y-%m-%d")
 
   @property

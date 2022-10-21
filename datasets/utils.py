@@ -596,8 +596,7 @@ def validate_tsv(fn, ext):
   except:
     err = sys.exc_info()
     print('error on fvalidate',err)    
-    print('error args',err[1].args)    
-  print(report)
+    print('error args',err[1].args)
   rpt = report['tables'][0]
   req = ['id','title','title_source','start']
   
@@ -606,10 +605,10 @@ def validate_tsv(fn, ext):
 
   # filter harmless errors 
   result['errors'] = [x['message'] for x in rpt['errors'] \
-            #if x['code'] not in ["blank-header"]]
             if x['code'] not in ["blank-header", "missing-header"]]
-  if len(list(set(req) - set(rpt['header']))) >0:
-    result['errors'].insert(0,'Required field(s) missing: '+', '.join(list(set(req)-set(rpt['header']))))
+  if len(list(set(req) - set(rpt['header']))) > 0:
+    result['errors'].insert(0,'Required columns missing or header malformed: '+
+                            ', '.join(list(set(req)-set(rpt['header']))))
 
   # TODO: filter cascade errors, e.g. caused by missing-cell
     

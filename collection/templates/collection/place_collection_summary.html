@@ -102,27 +102,6 @@
           {% endfor %}
         </div>
         <!-- fields: id, label, title, description, creator, created, webpage, numrows, datatype -->
-				{% comment %}
-        <div id="coll_dscards">
-          {% for d in ds_list %}
-            <div class="ds_card" data-id={{d.id}}>
-              <div class="ds_fields">
-                <ul class="no-bullets">
-                <li class=""><b>Title</b>:
-                  <a class="ds_title" href="{% url 'datasets:ds_meta' d.id %}">{{ d.title }}</a> (<i>{{d.id}}</i>)</li>
-                <li class=""><b>Description</b>: {{ d.description|readmore:200|safe }}</li>
-                <li class=""><b>Temporal coverage</b>: {{ d.minmax.0 }} / {{ d.minmax.1 }}</li>
-                <li class=""><b>Created</b>: {{ d.create_date|date:"d M Y" }}</li>
-                <li class="">
-                  <b>Number of records</b>: {{ d.numrows }}
-                  <span class="dl-links float-right mr-2"></span>
-                </li>
-                </ul>
-              </div>
-            </div>
-          {% endfor %}
-        </div> <!-- #coll_dscards -->
-        {% endcomment %}
       </div> 
     </div><!-- #coll_dslist -->
     </div> <!-- .row -->
