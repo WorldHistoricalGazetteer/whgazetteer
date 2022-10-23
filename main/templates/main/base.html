@@ -47,17 +47,30 @@
     <nav class="navbar navbar-expand-lg navbar-light">
       <div class="container">
         <a class="navbar-brand mr-0" href="{% url 'home' %}">
-          <img src="{% static 'images/whg_logo_38h.png'%}" class="d-inline-block align-bottom" height=38 width=50 alt=""/>&nbsp;World Historical Gazetteer
-		</a>
-		<div class="smallish d-none d-lg-block pt-2">
-		  <span id="beta_links">
-      <a href="#" class="feedback">contact us</a> |
-			<a href="https://twitter.com/whgazetteer" target="_blank"><img src="{% static 'images/twitter30h.png'%}" height=14></a>
-		  </span>
-		</div>
-		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-		  <span class="navbar-toggler-icon"></span>
-		</button>		
+          <img src="{% static 'images/whg_logo_38h.png'%}" class="d-inline-block align-bottom" height=38 width=50 alt=""/></a>
+				<!-- alternate nav elements for home page and others-->
+				<div id="nav_links" class="smallish d-lg-block pt-2">
+					<div id="links_home">
+						<span id="version_badge" class="badge badge-warning" >v2.1 beta</span>
+						<a href="#">
+							<span id="whatsnew_badge" class="badge badge-success help-matches" data-id="whatsnew21">What's New</span>
+						</a>
+						<span id="beta_links">
+							<a href="{% url 'main:tute-guide' %}">guide</a> |
+							<a href="#" class="feedback">contact us</a> |
+							<a href="https://twitter.com/whgazetteer" target="_blank">
+							<img src="{% static 'images/twitter30h.png'%}" height=14></a>
+						</span>
+					</div>
+					<div id="links_other" class="d-none">
+						<a class="navbar-brand mr-0" href="{% url 'home' %}">&nbsp;World Historical Gazetteer</a>
+						<a href="#" class="feedback">contact us</a> |
+						<a href="https://twitter.com/whgazetteer" target="_blank"><img src="{% static 'images/twitter30h.png'%}" height=14></a>
+					</div>
+				</div>
+				<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+				  <span class="navbar-toggler-icon"></span>
+				</button>
         <div class="collapse navbar-collapse pt-1" id="navbarNavAltMarkup">
           <div class="navbar-nav ml-auto pt-2 smallish">
             <li class="nav-item">
@@ -72,52 +85,51 @@
             <li class="nav-item">
               <a class="nav-link" href="{% url 'usingapi' %}">API</a>
             </li>
-			<li class="nav-item dropdown">
-			  <a class="nav-link dropdown-toggle" href="#" id="aboutDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-				About
-			  </a>
-			  <div class="dropdown-menu smallish z-2000" aria-labelledby="aboutDropdown">
-				<a class="dropdown-item" href="{% url 'about' %}">Introduction</a>
-				<a class="dropdown-item" href="{% url 'system' %}">System details</a>
-				<a class="dropdown-item" href="{% url 'licensing' %}">Licensing, Terms</a>
-				<a class="dropdown-item" href="{% url 'credits' %}">Credits & Contacts</a>
-				<div class="dropdown-divider"></div>
-				<a class="dropdown-item" href="http://blog.whgazetteer.org" target="_blank">
-				  News {% fontawesome_icon 'external-link' %}</a>
-			  </div>
-			</li>
-			{% if user.is_authenticated %}
-				<li class="nav-item dropdown">
-					  <a class="nav-link dropdown-toggle" href="#" id="dataDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-						Data
-					  </a>
-					  <div class="dropdown-menu smallish z-2000" aria-labelledby="dataDropdown">
-						<a class="dropdown-item" href="{% url 'data-datasets' %}">My datasets</a>
-						<a class="dropdown-item" href="{% url 'data-collections' %}">My collections</a>
-						<a class="dropdown-item" href="{% url 'data-areas' %}">My study areas</a>
-						<a class="dropdown-item" href="{% url 'public-lists' %}">Public data</a>
-					  {% if user|has_group:'whg_team' or user|has_group:'teaching' %}
-							<a class="dropdown-item" href="{% url 'data-resources' %}">Teaching Resources</a>
-					  {% endif %}
-					  </div>
-					</li>
-
-			  <li class="nav-item larger">
-				<a class="nav-link" rel="tooltip" title="{{ user }} profile" href="{% url 'account_profile' %}">{% fontawesome_icon 'user-circle' color='#336699' %}</a>
-			  </li>
-			  <li class="nav-item">
-				<a class="nav-link `ml-5" href="javascript:{document.getElementById('logout').submit()}">Logout</a>
-				<form id="logout" method="post" action="{% url 'account_logout' %}">
-				  {% csrf_token %}</form>
-			  </li>
-            {% else %}
-			  <li class="nav-item">
-				<a class="nav-link ml-5" href="{% url 'account_signup' %}">Register</a>
-				<!--<a class="nav-link ml-5" href="{ url 'register' %}">Register</a>-->
-			  </li>
-			  <li class="nav-item">
-				<a class="nav-link" href="{% url 'account_login' %}">Login</a>
-			  </li>
+						<li class="nav-item dropdown">
+						  <a class="nav-link dropdown-toggle" href="#" id="aboutDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+							About
+						  </a>
+						  <div class="dropdown-menu smallish z-2000" aria-labelledby="aboutDropdown">
+								<a class="dropdown-item" href="{% url 'about' %}">Introduction</a>
+								<a class="dropdown-item" href="{% url 'system' %}">System details</a>
+								<a class="dropdown-item" href="{% url 'licensing' %}">Licensing, Terms</a>
+								<a class="dropdown-item" href="{% url 'credits' %}">Credits & Contacts</a>
+								<div class="dropdown-divider"></div>
+								<a class="dropdown-item" href="http://blog.whgazetteer.org" target="_blank">
+								  News {% fontawesome_icon 'external-link' %}</a>
+						  </div>
+						</li>
+						{% if user.is_authenticated %}
+						<li class="nav-item dropdown">
+							  <a class="nav-link dropdown-toggle" href="#" id="dataDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+								Data
+							  </a>
+							  <div class="dropdown-menu smallish z-2000" aria-labelledby="dataDropdown">
+								<a class="dropdown-item" href="{% url 'data-datasets' %}">My datasets</a>
+								<a class="dropdown-item" href="{% url 'data-collections' %}">My collections</a>
+								<a class="dropdown-item" href="{% url 'data-areas' %}">My study areas</a>
+								<a class="dropdown-item" href="{% url 'public-lists' %}">Public data</a>
+							  {% if user|has_group:'whg_team' or user|has_group:'teaching' %}
+									<a class="dropdown-item" href="{% url 'data-resources' %}">Teaching Resources</a>
+							  {% endif %}
+							  </div>
+						</li>
+					  <li class="nav-item larger">
+						<a class="nav-link" rel="tooltip" title="{{ user }} profile" href="{% url 'account_profile' %}">{% fontawesome_icon 'user-circle' color='#336699' %}</a>
+					  </li>
+					  <li class="nav-item">
+							<a class="nav-link `ml-5" href="javascript:{document.getElementById('logout').submit()}">Logout</a>
+							<form id="logout" method="post" action="{% url 'account_logout' %}">
+							  {% csrf_token %}</form>
+					  </li>
+						{% else %}
+					  <li class="nav-item">
+						<a class="nav-link ml-5" href="{% url 'account_signup' %}">Register</a>
+						<!--<a class="nav-link ml-5" href="{ url 'register' %}">Register</a>-->
+					  </li>
+					  <li class="nav-item">
+						<a class="nav-link" href="{% url 'account_login' %}">Login</a>
+					  </li>
             {% endif %}
           </div>
         </div>
@@ -129,8 +141,14 @@
   <script type="text/javascript">
     // some global stuff
 	  $(function(){
+      // alter nav between home and all other pages
+			url = window.location.pathname
+			if(url != '/'){
+				$("#links_home").addClass('d-none')
+				$("#links_other").removeClass('d-none')
+			}
       language = window.navigator.language.substr(0,2)
-      <!--abouts = ['/about/','/community/','/system/','/licensing/','/credits/']-->
+      // abouts = ['/about/','/community/','/system/','/licensing/','/credits/']
       abouts = ['/about/','/system/','/licensing/','/credits/']
       clicked = window.location.pathname
     
@@ -140,12 +158,6 @@
       } else {
         $("[href='"+clicked+"']").addClass('navactive')
       }
-      
-      <!--$('[data-toggle="popover"]').popover(-->
-        <!--{ template:'<div class="popover" role="tooltip"><div class="arrow"></div><h1 class="popover-header"></h1><div class="popover-body"></div></div>',-->
-        <!--html: true-->
-        <!--}-->
-      <!--)-->
 	  });
 	  $(".feedback").click(function(){
       console.log(clicked)
