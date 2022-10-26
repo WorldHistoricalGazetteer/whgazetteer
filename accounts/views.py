@@ -9,23 +9,6 @@ from django.shortcuts import render, redirect, get_object_or_404
 from accounts.forms import UserModelForm, ProfileModelForm, LoginForm
 from datasets.models import Dataset, DatasetUser
 
-def create_group(request, *args, **kwargs):
-  # must be member of group_leaders
-  result = {"status": "", "id": "", 'name': ""}
-  if request.method == 'POST':
-    group_name = request.POST['group_name']
-    if group_name in Group.objects.all().values_list('name', flat=True):
-      result['status'] = "dupe"
-    else:
-      newgroup = Group.objects.create(
-        name = group_name
-      )
-      newgroup.user_set.add(request.user)
-      result = {"status": "ok", "id": newgroup.id, 'name': newgroup.name}
-
-  return JsonResponse(result, safe=False)
-
-
 @login_required
 @transaction.atomic
 def update_profile(request):
@@ -105,17 +88,34 @@ def login(request):
   else:
     return render(request, 'accounts/login.html')
 
-def login_view(request):
-  form = LoginForm(request.POST or None)
-  if request.POST and form.is_valid():
-    user = form.login(request)
-    if user:
-      login(request, user)
-      return HttpResponseRedirect("/")# Redirect to a success page.
-  return render(request, 'accounts/login.html', {'login_form': form })
-
 def logout(request):
   if request.method == 'POST':
     auth.logout(request)
     return redirect('home')
+
+def create_group(request, *args, **kwargs):
+  # must be member of group_leaders
+  result = {"status": "", "id": "", 'name': ""}
+  if request.method == 'POST':
+    group_name = request.POST['group_name']
+    if group_name in Group.objects.all().values_list('name', flat=True):
+      result['status'] = "dupe"
+    else:
+      newgroup = Group.objects.create(
+        name = group_name
+      )
+      newgroup.user_set.add(request.user)
+      result = {"status": "ok", "id": newgroup.id, 'name': newgroup.name}
+
+  return JsonResponse(result, safe=False)
+
+# def login_view(request):
+#   form = LoginForm(request.POST or None)
+#   if request.POST and form.is_valid():
+#     user = form.login(request)
+#     if user:
+#       login(request, user)
+#       return HttpResponseRedirect("/")# Redirect to a success page.
+#   return render(request, 'accounts/login.html', {'login_form': form })
+
 
