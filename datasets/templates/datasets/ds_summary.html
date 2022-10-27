@@ -179,13 +179,11 @@
           <p> <i>Current data file</i>
             {% if current_file.format == 'delimited' %}
             {% if ds.owner.id == user.id or user.is_superuser%}
-						{% comment %}
 	          {# TODO: test, expose update functionality #}
             <span class="float-right mr-2">
               <a href="#" id="a_update_modal" data-dsid = {{ ds.id }} data-toggle="modal" data-target="#updateModal">update</a>
               <span class="help-matches" data-id="updates">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
             </span>
-						{% endcomment %}
             {% endif %}
             {% endif %}
           </p>
@@ -353,8 +351,7 @@
         <div class="modal-footer">
           <div id="buttons_pre">
             <button id="btn_cancel" type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Cancel</button>
-            <button id="btn_update" type="button" data-dsid={{ds.id}} class="btn btn-primary btn-sm hidden">
-              Proceed</button>
+            <button id="btn_update" type="button" data-dsid='{{ds.id}}' class="btn btn-primary btn-sm hidden">Proceed</button>
           </div>
           <button id="btn_done" type="button" class="btn btn-secondary btn-sm hidden" data-dismiss="modal">Done</button>
         </div>

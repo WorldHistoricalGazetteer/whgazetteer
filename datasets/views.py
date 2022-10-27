@@ -1128,7 +1128,7 @@ def ds_update(request):
     keepg = request.POST['keepg']
     keepl = request.POST['keepl']
 
-    #print('keepg,type in ds_update() request',keepg,type(keepg))
+    #print('keepg, type in ds_update() request',keepg,type(keepg))
 
     # compare_data {'compare_result':{}}
     compare_data = json.loads(request.POST['compare_data'])
@@ -1333,6 +1333,7 @@ def ds_compare(request):
 
     # new file
     file_new=request.FILES['file']
+    print("request.FILES['file']", request.FILES['file'])
     tempf, tempfn = tempfile.mkstemp()
 
     # write new file as temporary to /var/folders/../...
@@ -1344,13 +1345,18 @@ def ds_compare(request):
     finally:
       os.close(tempf)
 
-    print('tempfn,filename_cur,file_new.name',tempfn,filename_cur,file_new.name)
+    print('tempfn,filename_cur,file_new.name',tempfn, filename_cur, file_new.name)
 
     # format validation
     if format == 'delimited':
+      print('format:', format)
       # goodtable wants filename only
       # returns [x['message'] for x in errors]
-      vresult = validate_tsv(tempfn)
+      try:
+        vresult = validate_tsv(tempfn, 'delimited')
+      except:
+        print('validate_tsv() failed:', sys.exc_info())
+
     elif format == 'lpf':
       # TODO: feed tempfn only?
       # TODO: accept json-lines; only FeatureCollections ('coll') now
@@ -1369,6 +1375,7 @@ def ds_compare(request):
     filename_new = 'user_'+user+'/'+file_new.name
     # temp files were given extensions in validation functions
     tempfn_new = tempfn+'.tsv' if format == 'delimited' else tempfn+'.jsonld'
+    print('tempfn_new', tempfn_new)
 
     # begin report
     comparison={
@@ -1385,10 +1392,18 @@ def ds_compare(request):
     print('count_geoms in ds_compare:894',count_geoms)
     # perform comparison
     fn_a = 'media/'+filename_cur
-    fn_b = tempfn_new
+    fn_b = tempfn
+    # fn_b = tempfn_new
+    print('fn_a, fn_b', fn_a, fn_b)
     if format == 'delimited':
       adf = pd.read_csv(fn_a, delimiter='\t')
-      bdf = pd.read_csv(fn_b, delimiter='\t')
+      print('adf', adf)
+      try:
+        bdf = pd.read_csv(fn_b, delimiter='\t')
+        print('bdf', bdf)
+      except:
+        print('bdf read failed', sys.exc_info())
+
       ids_a = adf['id'].tolist()
       ids_b = bdf['id'].tolist()
       # new or removed columns?
