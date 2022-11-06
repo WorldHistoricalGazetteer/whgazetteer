@@ -589,27 +589,35 @@ def validate_lpf(tempfn,format):
 def validate_tsv(fn, ext):
   # incoming csv or tsv
   print('validate_tsv() fn', fn)
-  result = {"format":"delimited", "errors":[]}
+  # pull header for missing columns test below
+  header = codecs.open(fn, 'r').readlines()[0][:-1].split('\t')
+  print('header', header)
+  result = {"format":"delimited", "errors":[], "columns":header}
   schema_lptsv = json.loads(codecs.open('datasets/static/validate/schema_tsv.json', 'r', 'utf8').read())
   try:
     report = fvalidate(fn, schema=schema_lptsv, sync_schema=True)
+    print('report', report)
   except:
     err = sys.exc_info()
     print('error on fvalidate',err)    
     print('error args',err[1].args)
-  rpt = report['tables'][0]
-  req = ['id','title','title_source','start']
-  
-  result['count'] = rpt['stats']['rows'] # count
-  result['columns'] = rpt['header']
 
-  # filter harmless errors 
-  result['errors'] = [x['message'] for x in rpt['errors'] \
+  if len(report['tables']) > 0:
+    rpt = report['tables'][0]
+    result['count'] = rpt['stats']['rows']  # count
+
+  req = ['id', 'title', 'title_source', 'start']
+  missing = list(set(req) - set(header))
+  print('missing', missing)
+
+  print('result pre', result)
+  # filter harmless errors
+  result['errors'] = [x['message'] for x in result['errors'] \
             if x['code'] not in ["blank-header", "missing-header"]]
-  if len(list(set(req) - set(rpt['header']))) > 0:
+  if len(missing) > 0:
     result['errors'].insert(0,'Required columns missing or header malformed: '+
-                            ', '.join(list(set(req)-set(rpt['header']))))
-
+                            ', '.join(missing))
+  print('result post', result)
   # TODO: filter cascade errors, e.g. caused by missing-cell
     
   return result
@@ -1088,11 +1096,11 @@ def post_recon_update(ds, user, task):
 def status_emailer(ds, task_name):
   try:
     tasklabel = 'Wikidata' if task_name=='wd' else 'WHG index'
-    text_content="Greetings! The "+tasklabel+" reconciliation task for the dataset "+ds.title+" ("+ds.label+") " \
-                 "has been completed.\nTime to follow up with its owner, "+ds.owner.first_name+" "+ds.owner.last_name+ \
+    text_content="Greetings! A "+tasklabel+" reconciliation task for the dataset "+ds.title+" ("+ds.label+") " \
+                 "has been completed.\nMight be time to follow up with its owner, "+ds.owner.first_name+" "+ds.owner.last_name+ \
                  "("+ds.owner.username+")."
-    html_content="<h4>Greetings!</h4> <p>The "+tasklabel+" reconciliation task for the dataset <b>"+ds.title+" ("+ds.label+")</b> " \
-                 "has been completed.</p><p>Time to follow up with its owner, "+ds.owner.first_name+" "+ds.owner.last_name+ \
+    html_content="<h4>Greetings!</h4> <p>A "+tasklabel+" reconciliation task for the dataset <b>"+ds.title+" ("+ds.label+")</b> " \
+                 "has been completed.</p><p>Might be time to follow up with its owner, "+ds.owner.first_name+" "+ds.owner.last_name+ \
                  " ("+ds.owner.username+").</p>"
     if task_name == 'wd':
       html_content += "<p>A nudge to mention that reconciling to the WHG index is helpful & worthwhile.</p>"
