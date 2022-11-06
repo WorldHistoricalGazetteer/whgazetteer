@@ -43,6 +43,7 @@ from datasets.static.hashes.parents import ccodes as cchash
 # NB these task names ARE in use; they are generated dynamically
 from datasets.tasks import align_wdlocal, align_idx, align_tgn, maxID
 
+# from datasets.update import deleteFromIndex
 from datasets.utils import *
 from elastic.es_utils import makeDoc, removePlacesFromIndex, replaceInIndex, removeDatasetFromIndex
 from main.choices import AUTHORITY_BASEURI
@@ -935,7 +936,8 @@ def dataset_file_delete(ds):
 """
 def update_rels_tsv(pobj, row):
   header = list(row.keys())
-  print('update_rels_tsv(): pobj, row, header',pobj,row,header)
+  print('update_rels_tsv(): pobj, row, header', pobj, row, header)
+  # dies somewhere after this
   src_id = row['id']
   title = row['title']
   # for PlaceName insertion, strip anything in parens
@@ -945,23 +947,23 @@ def update_rels_tsv(pobj, row):
   variants = [x.strip() for x in row['variants'].split(';')] \
     if 'variants' in header else []
   types = [x.strip() for x in row['types'].split(';')] \
-    if 'types' in header and str(row['types']) not in ('nan','') else []
-  #aat_types = [x.strip() for x in row['aat_types'].split(';')] \
+    if 'types' in header and str(row['types']) != '' else []
   aat_types = [x.strip() for x in row['aat_types'].split(';')] \
-    if 'aat_types' in header and str(row['aat_types']) not in ('nan','') else []
+    if 'aat_types' in header and str(row['aat_types']) != '' else []
   parent_name = row['parent_name'] if 'parent_name' in header else ''
   parent_id = row['parent_id'] if 'parent_id' in header else ''
   coords = makeCoords(row['lon'], row['lat']) \
     if 'lon' in header and 'lat' in header and not math.isnan(row['lon']) else []
-  matches = [x.strip() for x in row['matches'].split(';')] \
-    if 'matches' in header and row['matches'] != '' else []
+  try:
+    matches = [x.strip() for x in row['matches'].split(';')] \
+      if 'matches' in header and 'nan' not in row['matches'] else []
+  except:
+    print('matches, error', row['matches'], sys.exc_info())
   description = row['description'] \
-    if 'description' in header else ''
-
+    if 'description' in header and row['description'] != 'nan' else ''
   # build associated objects and add to arrays
   objs = {"PlaceName":[], "PlaceType":[], "PlaceGeom":[], "PlaceWhen":[],
-          "PlaceLink":[], "PlaceRelated":[], "PlaceDescription":[],
-            "PlaceDepiction":[]}
+          "PlaceLink":[], "PlaceRelated":[], "PlaceDescription":[], "PlaceDepiction":[]}
 
   # title as a PlaceName
   objs['PlaceName'].append(
@@ -1020,7 +1022,7 @@ def update_rels_tsv(pobj, row):
     return round(val,4)
   new_coords = list(map(trunc4,list(geom['coordinates'])))
   # only add new geometry
-  if len(pobj.geoms.all()) >0:
+  if len(pobj.geoms.all()) > 0:
     for g in pobj.geoms.all():
       if list(map(trunc4,g.jsonb['coordinates'])) != new_coords:
         objs['PlaceGeom'].append(
@@ -1029,12 +1031,15 @@ def update_rels_tsv(pobj, row):
               src_id = src_id,
               jsonb=geom
           ))
-
+  print('objs after geom', objs)
   #
   # PlaceLink() - all are closeMatch
+  # Pandas turns nulls into NaN strings, 'nan'
+  print('matches', matches)
   if len(matches) > 0:
     # any existing? only add new
     exist_links = list(pobj.links.all().values_list('jsonb__identifier',flat=True))
+    print('matches, exist_links at create', matches, exist_links)
     if set(matches)-set(exist_links) > 0:
       # one or more new matches; add 'em
       for m in matches:
@@ -1045,6 +1050,7 @@ def update_rels_tsv(pobj, row):
             jsonb={"type":"closeMatch", "identifier":m}
         ))
 
+  print('objs after matches', objs)
   #
   # PlaceRelated()
   if parent_name != '':
@@ -1058,6 +1064,7 @@ def update_rels_tsv(pobj, row):
           "label": parent_name}
     ))
 
+  print('objs after related', objs)
   #
   # PlaceWhen()
   # timespans[{start{}, end{}}], periods[{name,id}], label, duration
@@ -1071,9 +1078,12 @@ def update_rels_tsv(pobj, row):
               "end":{"latest":pobj.minmax[1]}}]
           }
   ))
+
+  print('objs after when', objs)
   #
   # PlaceDescription()
   # @id, value, lang
+  print('description', description)
   if description != '':
     objs['PlaceDescription'].append(
       PlaceDescription(
@@ -1084,6 +1094,8 @@ def update_rels_tsv(pobj, row):
         }
       ))
 
+  print('objs after all', objs)
+
   # what came from this row
   print('COUNTS:')
   print('PlaceName:',len(objs['PlaceName']))
@@ -1093,7 +1105,7 @@ def update_rels_tsv(pobj, row):
   print('PlaceRelated:',len(objs['PlaceRelated']))
   print('PlaceWhen:',len(objs['PlaceWhen']))
   print('PlaceDescription:',len(objs['PlaceDescription']))
-  print('max places.id', )
+  # print('max places.id', )
 
   # TODO: update place.fclasses, place.minmax, place.timespans
 
@@ -1128,12 +1140,12 @@ def ds_update(request):
     keepg = request.POST['keepg']
     keepl = request.POST['keepl']
 
-    #print('keepg, type in ds_update() request',keepg,type(keepg))
+    print('keepg, type in ds_update() request', keepg, type(keepg))
 
     # compare_data {'compare_result':{}}
     compare_data = json.loads(request.POST['compare_data'])
     compare_result = compare_data['compare_result']
-    #print('compare_data from ds_compare', compare_data)
+    print('compare_data from ds_compare', compare_data)
 
     # tempfn has .tsv or .jsonld extension from validation step
     tempfn = compare_data['tempfn']
@@ -1172,9 +1184,11 @@ def ds_update(request):
     if file_format == 'delimited':
       #adf = pd.read_csv('media/user_whgadmin/diamonds135.tsv', delimiter='\t',dtype={'id':'str','ccodes':'str'})
       #bdf = pd.read_csv('/var/folders/f4/x09rdl7n3lg7r7gwt1n3wjsr0000gn/T/tmpcfees9hd.tsv', delimiter='\t',dtype={'id':'str','ccodes':'str'})
-      adf = pd.read_csv('media/'+compare_data['filename_cur'], delimiter='\t',dtype={'id':'str','ccodes':'str'})
+      adf = pd.read_csv('media/'+compare_data['filename_cur'],
+                        delimiter='\t',
+                        dtype={'id':'str','ccodes':'str'})
       bdf = pd.read_csv(filepath, delimiter='\t')
-      bdf = bdf.astype({"id":str,"ccodes":str})
+      bdf = bdf.astype({"id":str,"ccodes":str,"matches":str,"types":str,"aat_types":str,"description":str})
       print('reopened old file, # lines:',len(adf))
       print('reopened new file, # lines:',len(bdf))
       ids_a = adf['id'].tolist()
@@ -1245,7 +1259,7 @@ def ds_update(request):
         # create related records (place_name, etc)
         # pobj is either a current (now updated) place or entirely new
         # rd is row dict
-        print('pobj,rd for add_rels_tsv()',pobj,rd)
+        print('pobj,rd for add_rels_tsv()', pobj, rd)
         update_rels_tsv(pobj, rd)
 
 
@@ -1275,7 +1289,8 @@ def ds_update(request):
 
         # surgically remove as req.
         if len(rows_delete)> 0:
-          deleteFromIndex(es, idx, rows_delete)
+          print('some rows to delete from index:', rows_delete)
+          # deleteFromIndex(es, idx, rows_delete)
 
         # update others
         if len(rows_replace) > 0:
@@ -1384,7 +1399,8 @@ def ds_compare(request):
       "filename_new": filename_new,
       "format": format,
       "validation_result": vresult,
-      "tempfn": tempfn_new,
+      "tempfn": tempfn,
+      # "tempfn": tempfn_new,
       "count_links": count_links,
       "count_geoms": count_geoms,
       "count_indexed": ds_status['idxcount'],
