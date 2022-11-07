@@ -582,10 +582,8 @@ def validate_lpf(tempfn,format):
   return result
 
 #
-# validate LP-TSV file (w/frictionless.py)
+# validate LP-TSV file (uses frictionless.py 3.31.0)
 # 
-#wd='/Users/karlg/documents/repos/_whgazetteer/_testdata/'
-#fn=wd+'priest_1line.tsv'
 def validate_tsv(fn, ext):
   # incoming csv or tsv
   print('validate_tsv() fn', fn)
@@ -599,8 +597,10 @@ def validate_tsv(fn, ext):
     print('report', report)
   except:
     err = sys.exc_info()
-    print('error on fvalidate',err)    
+    result['errors'].append('File failed format validation. Error: '+err+'; '+str(err[1].args))
+    print('error on fvalidate',err)
     print('error args',err[1].args)
+    return result
 
   if len(report['tables']) > 0:
     rpt = report['tables'][0]
@@ -608,18 +608,14 @@ def validate_tsv(fn, ext):
 
   req = ['id', 'title', 'title_source', 'start']
   missing = list(set(req) - set(header))
-  print('missing', missing)
 
-  print('result pre', result)
   # filter harmless errors
   result['errors'] = [x['message'] for x in result['errors'] \
             if x['code'] not in ["blank-header", "missing-header"]]
   if len(missing) > 0:
-    result['errors'].insert(0,'Required columns missing or header malformed: '+
+    result['errors'].insert(0,'Required column(s) missing or header malformed: '+
                             ', '.join(missing))
-  print('result post', result)
-  # TODO: filter cascade errors, e.g. caused by missing-cell
-    
+
   return result
 
 
@@ -707,9 +703,9 @@ def flatten(l):
 def format_size(num):
   return round(num/1000000, 2)
 
-""" 'monkey patch' for acknowledged GEOS/Django issue
-    "call this any time before using GEOS features" @bpartridge says
-    um...ok, trying
+""" 
+  'monkey patch' for hully() for acknowledged GEOS/Django issue
+  "call this any time before using GEOS features" @bpartridge says
 """
 def patch_geos_signatures():
   """
@@ -807,8 +803,9 @@ def patch_geos_signatures():
 
   GeometryCollection._create_collection = new_create_collection
 
-""" added patch from https://gist.github.com/bpartridge/26a11b28415d706bfb9993fc28767d68
-    per https://github.com/libgeos/geos/issues/528#issuecomment-997327327 
+""" 
+  added patch_geos_signatures() from https://gist.github.com/bpartridge/26a11b28415d706bfb9993fc28767d68
+  per https://github.com/libgeos/geos/issues/528#issuecomment-997327327 
 """
 def hully(g_list):
   """
@@ -944,8 +941,6 @@ def makeCoords(lonstr,latstr):
   #print(type(lonstr),latstr)
   lon = float(lonstr) if lonstr not in ['','nan'] else ''
   lat = float(latstr) if latstr not in ['','nan'] else ''
-  #lon = float(lonstr) if lonstr != '' else ''
-  #lat = float(latstr) if latstr != '' else ''
   coords = [] if (lonstr == ''  or latstr == '') else [lon,lat]
   return coords
 
@@ -970,11 +965,9 @@ def elapsed(delta):
   minutes, seconds = divmod(delta.seconds, 60)
   return '{:02}:{:02}'.format(int(minutes), int(seconds))
 
-# called from es_lookup_tgn()
+# called from es_lookup_tgn(); applicable for tgn only
 def bestParent(qobj, flag=False):
-  # applicable for tgn only
   best = []
-  #print('qobj in bestParent',qobj)
   # merge parent country/ies & parents
   if len(qobj['countries']) > 0 and qobj['countries'][0] != '':
     for c in qobj['countries']:
@@ -1065,11 +1058,9 @@ def classy(gaz, typeArray):
     default = 'Place'
     for k,v in t.items():
       # is any Black type in dbp array?
-      # TOD: this is crap logic, fix it
+      # TODO: this is crap logic, fix it
       if not set(typeArray).isdisjoint(t[k]):
         types.append(k)
-      #else:
-        #types.append(default)
   if len(types) == 0:
     types.append(default)
   return list(set(types))
@@ -1115,7 +1106,7 @@ def status_emailer(ds, task_name):
       the index search, database search, and API.</p><p>Best regards,</p<<p>i>The WHG Team</i></p>"
   except:
     print('status_emailer() failed on dsid', ds.id, 'how come?')
-  subject, from_email = 'WHG dataset status update', 'whg@kgeographer.org'
+  subject, from_email = 'WHG dataset status update', settings.DEFAULT_FROM_EMAIL
   to_email = settings.EMAIL_STATUS_TO if task_name == 'wd' \
     else settings.EMAIL_STATUS_TO + [ds.owner.email]
   conn = mail.get_connection(
@@ -1125,7 +1116,6 @@ def status_emailer(ds, task_name):
     password=settings.EMAIL_HOST_PASSWORD,
     port=settings.EMAIL_PORT
   )
-  # msg=EmailMessage(
   msg = EmailMultiAlternatives(
     subject,
     text_content,
