@@ -2122,6 +2122,10 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
       elif mimetype.startswith('application/'):
         encoding = fin.encoding
       print('encoding in DatasetCreate()', encoding)
+      if encoding != 'utf-8':
+        context['errors'] = ["The encoding of uploaded files must be unicode (utf-8). This file seems to be "+encoding]
+        context['action'] = 'errors'
+        return self.render_to_response(self.get_context_data(form=form, context=context))
     else:
       context['errors'] = "Not a valid file type; must be one of [.csv, .tsv, .xlsx, .ods, .json]"
       return self.render_to_response(self.get_context_data(form=form, context=context))
