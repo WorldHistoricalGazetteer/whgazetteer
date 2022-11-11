@@ -5,13 +5,8 @@ from django.test import TestCase, SimpleTestCase
 from django.urls import reverse
 import os, codecs, json, mimetypes, re, sys
 from chardet import detect
-from datasets.static.hashes import mimetypes as mthash
 from datasets.static.hashes import mimetypes_plus as mthash_plus
 from datasets.utils import validate_tsv
-
-# DatasetCreateView() -> 
-# load file, get encoding, mimetype (file.content_type)
-# validate_tsv(filepath,extension)
 
   
 class ValidateDelimited(SimpleTestCase):  

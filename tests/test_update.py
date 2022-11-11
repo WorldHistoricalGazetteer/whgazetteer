@@ -17,7 +17,6 @@ def create_user(**params):
 	return get_user_model().objects.create_user(**params)
 
 class CompareAndUpdateTests(TestCase):
-
   def setUp(self):
     self.client = Client()
     # self.user = create_user(email='user@example.com', password='test123', username='user1')

@@ -1102,7 +1102,8 @@
       doc_type: doctype,
       scope: scope,
       idx: index,
-      fclasses: fclasses.join(','),
+      fclasses: fclasses,
+      {#fclasses: fclasses.join(','),#}
       start: $("#input_start").val(),
       end: $("#input_end").val(),
       bounds: $("#boundsobj").val()
