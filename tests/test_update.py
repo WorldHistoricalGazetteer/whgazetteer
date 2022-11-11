@@ -19,9 +19,9 @@ def create_user(**params):
 class CompareAndUpdateTests(TestCase):
   def setUp(self):
     self.client = Client()
-    # self.user = create_user(email='user@example.com', password='test123', username='user1')
-    self.client.login(username='SomeUser', password='django9999')
-    # create a valid test dataset sample7
+    self.user = create_user(email='user@example.com', password='test123', username='user1')
+    self.client.force_login(self.user)
+    # client.login(username='SomeUser', password='django9999')
     with open('_testdata/_update/sample7.txt') as file_og:
       # print(fp.readlines())
       self.client.post('/datasets/create/', {
@@ -41,10 +41,11 @@ class CompareAndUpdateTests(TestCase):
                    'matches','lon','lat','geowkt','geo_source','geo_id','description'],
         'upload_date': '2020-11-10'
       })
+      print('last ds', Dataset.objects.last())
 
   def test_compare(self):
-    self.client = Client()
-    dsid=Dataset.objects.get(label='sample7').id
+    dsid=Dataset.objects.last().id
+    # dsid=Dataset.objects.get(label='sample7').id
     # upload new file and compare
     with open('_testdata/_update/sample7_new.txt') as file_new:
       # print(fp.readlines())
@@ -56,16 +57,17 @@ class CompareAndUpdateTests(TestCase):
         'keepl': True,
         'compare_data': {}
       })
-      result = json.loads(compare.content)
-      self.assertEquals(result.count_new, 7)
-      self.assertEquals(result.count_diff, 0)
-      self.assertEquals(result.count_replace, 6)
-      self.assertEquals(result.cols_del, [])
-      self.assertEquals(result.cols_add, [])
-      self.assertEquals(result.header_new, ['id', 'title', 'title_source', 'start', 'end', 'title_uri', 'ccodes', 'variants', 'types', 'aat_types',
+      print('compare type, contents', type(compare), json.loads(compare.content))
+      result = json.loads(compare.content)['compare_result']
+      self.assertEquals(result['count_new'], 7)
+      self.assertEquals(result['count_diff'], 0)
+      self.assertEquals(result['count_replace'], 6)
+      self.assertEquals(result['cols_del'], [])
+      self.assertEquals(result['cols_add'], [])
+      self.assertEquals(result['header_new'], ['id', 'title', 'title_source', 'start', 'end', 'title_uri', 'ccodes', 'variants', 'types', 'aat_types',
                      'matches', 'lon', 'lat', 'geowkt', 'geo_source', 'geo_id', 'description'])
-      self.assertEquals(result.rows_add, ['717_4'])
-      self.assertEquals(result.rows_del, ['717_2'])
+      self.assertEquals(result['rows_add'], ['717_4'])
+      self.assertEquals(result['rows_del'], ['717_2'])
 
     # delete dataset after test
     # ds = Dataset.objects.get(label='sample7')
