@@ -415,6 +415,7 @@ def get_encoding_excel(fn):
 def get_encoding_delim(fn):
   with open(fn, 'rb') as f:
     rawdata = f.read()
+  print('detect', detect(rawdata))
   return detect(rawdata)['encoding']
 
 def groom_files(user):
@@ -588,13 +589,14 @@ def validate_tsv(fn, ext):
   # incoming csv or tsv
   print('validate_tsv() fn', fn)
   # pull header for missing columns test below
-  header = codecs.open(fn, 'r').readlines()[0][:-1].split('\t')
+  header = codecs.open(fn, 'r').readlines()[0][:-1]
+  header = header.split('\t' if '\t' in header else ',')
   print('header', header)
   result = {"format":"delimited", "errors":[], "columns":header}
   schema_lptsv = json.loads(codecs.open('datasets/static/validate/schema_tsv.json', 'r', 'utf8').read())
   try:
     report = fvalidate(fn, schema=schema_lptsv, sync_schema=True)
-    print('report', report)
+    print('report at validate_tsv()::599', report)
   except:
     err = sys.exc_info()
     result['errors'].append('File failed format validation. Error: '+err+'; '+str(err[1].args))
@@ -617,7 +619,6 @@ def validate_tsv(fn, ext):
                             ', '.join(missing))
 
   return result
-
 
 # nextgen goodtables, allows xlsx, ods but has issues
 def frictionless_tsv(tempfn):
@@ -1121,10 +1122,8 @@ def status_emailer(ds, task_name):
     text_content,
     from_email,
     to_email,
-    # [settings.EMAIL_STATUS_TO],
     connection=conn
   )
-  msg.bcc = ['karl@kgeographer.org']
   msg.attach_alternative(html_content, "text/html")
   msg.send(fail_silently=False)
 

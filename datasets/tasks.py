@@ -278,15 +278,6 @@ def task_emailer(tid, dslabel, username, email, counthit, totalhits):
   msg.attach_alternative(html_content_success if task and task.status == 'SUCCESS' else html_content_fail, "text/html")
   msg.send(fail_silently=False)
 
-  # msg = EmailMultiAlternatives(
-  #   subject,
-  #   text_content,
-  #   from_email,
-  #   [email])
-  # msg.bcc = ['karl@kgeographer.com']
-  # msg.attach_alternative(html_content_success if task and task.status == 'SUCCESS' else html_content_fail, "text/html")
-  # msg.send(fail_silently=False)
-  
 # test task for uptimerobot
 @task(name="testAdd")
 def testAdd(n1,n2):

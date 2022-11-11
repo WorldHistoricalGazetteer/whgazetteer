@@ -1133,6 +1133,7 @@ def update_rels_tsv(pobj, row):
 # TODO: test this
 def ds_update(request):
   if request.method == 'POST':
+    print('request.POST', request.POST)
     dsid=request.POST['dsid']
     ds = get_object_or_404(Dataset, id=dsid)
     file_format=request.POST['format']
@@ -1336,8 +1337,6 @@ def ds_compare(request):
     ds_status = ds.status_idx
 
     # how many exist, whether from recon or original?
-    #count_geoms = PlaceGeom.objects.filter(place_id__in=ds.placeids,task_id__isnull=False).count()
-    #count_links = PlaceLink.objects.filter(place_id__in=ds.placeids,task_id__isnull=False).count()
     count_geoms = PlaceGeom.objects.filter(place_id__in=ds.placeids).count()
     count_links = PlaceLink.objects.filter(place_id__in=ds.placeids).count()
 
@@ -1711,7 +1710,7 @@ def ds_insert_tsv(request, pk):
   print('ds_insert_tsv()',ds)
   # retrieve just-added file
   dsf = ds.files.all().order_by('-rev')[0]
-
+  print('dsf', dsf)
   # insert only if empty
   dbcount = Place.objects.filter(dataset = ds.label).count()
   print('dbcount',dbcount)
@@ -1944,9 +1943,11 @@ def ds_insert_tsv(request, pk):
       # drop the (empty) dataset if insert wasn't complete
       ds.delete()
       # email to user, admin
-      subj = 'World Historical Gazetteer error followup'
-      msg = 'Hello '+ user.username+', \n\nWe see your recent upload for the '+ds.label+' dataset failed, very sorry about that! We will look into why and get back to you within a day.\n\nRegards,\nThe WHG Team'
-      emailer(subj,msg,'whg@kgeographer.org',[user.email, 'karl@kgeographer.org'])
+      failed_upload_notification(user, dsf.file.name, ds.label)
+
+      # subj = 'World Historical Gazetteer error followup'
+      # msg = 'Hello '+ user.username+', \n\nWe see your recent upload for the '+ds.label+' dataset failed, very sorry about that! We will look into why and get back to you within a day.\n\nRegards,\nThe WHG Team'
+      # emailer(subj,msg,'whg@kgeographer.org',[user.email, 'karl@kgeographer.org'])
 
       # return message to 500.html
       messages.error(request, "Database insert failed, but we don't know why. The WHG team has been notified and will follow up by email to <b>"+user.username+'</b> ('+user.email+')')
@@ -2056,11 +2057,11 @@ class PublicListsView(ListView):
     context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False
     return context
 
-def failed_upload_notification(user, tempfn):
-    subj = 'World Historical Gazetteer error followup'
+def failed_upload_notification(user, fn, ds=None):
+    subj = 'World Historical Gazetteer error followup ' + ('on dataset ('+ds+')') if ds else ''
     msg = 'Hello ' + user.username + \
       ', \n\nWe see your recent upload failed -- very sorry about that!' + \
-      'We will look into why and get back to you within a day.\n\nRegards,\nThe WHG Team\n\n\n['+tempfn+']'
+      'We will look into why and get back to you within a day.\n\nRegards,\nThe WHG Team\n\n\n['+fn+']'
     emailer(subj, msg, 'whg@kgeographer.org',
             [user.email, 'karl@kgeographer.org'])
 
@@ -2079,7 +2080,7 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
   success_message = 'dataset created'
 
   def form_invalid(self, form):
-    print('form invalid...',form.errors.as_data())
+    print('form invalid...', form.errors.as_data())
     context = {'form': form}
     return self.render_to_response(context=context)
 
@@ -2122,7 +2123,8 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
       elif mimetype.startswith('application/'):
         encoding = fin.encoding
       print('encoding in DatasetCreate()', encoding)
-      if encoding != 'utf-8':
+      if encoding not in ['utf-8', 'ascii']:
+      # if encoding != 'utf-8':
         context['errors'] = ["The encoding of uploaded files must be unicode (utf-8). This file seems to be "+encoding]
         context['action'] = 'errors'
         return self.render_to_response(self.get_context_data(form=form, context=context))

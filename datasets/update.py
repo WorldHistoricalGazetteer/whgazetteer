@@ -8,7 +8,7 @@ from places.models import *
 from datasets.models import Dataset, Hit, DatasetFile
 from datasets.utils import validate_lpf, validate_tsv
 from elasticsearch7 import Elasticsearch
-from elastic.es_utils import makeDoc
+from elastic.es_utils import makeDoc, fetch_pids
 es = Elasticsearch([{'host': 'localhost',
                      'port': 9200,
                      'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
