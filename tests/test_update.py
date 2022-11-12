@@ -44,21 +44,24 @@ class CompareAndUpdateTests(TestCase):
       print('last ds', Dataset.objects.last())
 
   def test_compare(self):
-    dsid=Dataset.objects.last().id
+    ds=Dataset.objects.last()
+    # dsid=Dataset.objects.last().id
     # dsid=Dataset.objects.get(label='sample7').id
     # upload new file and compare
     with open('_testdata/_update/sample7_new.txt') as file_new:
       # print(fp.readlines())
       compare = self.client.post('/datasets/compare/', {
-        'dsid': dsid,
+        'dsid': ds.id,
         'format': 'delimited',
         'file': file_new,
         'keepg': True,
         'keepl': True,
         'compare_data': {}
       })
-      print('compare type, contents', type(compare), json.loads(compare.content))
-      result = json.loads(compare.content)['compare_result']
+      # print('compare type, contents', type(compare), json.loads(compare.content))
+      compare_data = json.loads(compare.content)
+      result = compare_data['compare_result']
+      print('compare_data', compare_data)
       self.assertEquals(result['count_new'], 7)
       self.assertEquals(result['count_diff'], 0)
       self.assertEquals(result['count_replace'], 6)
@@ -69,6 +72,24 @@ class CompareAndUpdateTests(TestCase):
       self.assertEquals(result['rows_add'], ['717_4'])
       self.assertEquals(result['rows_del'], ['717_2'])
 
+      # self.client = Client()
+      # self.user = create_user(email='user@example.com', password='test123', username='user1')
+      # self.client.force_login(self.user)
+      # print('user', self.user )
+      # now update
+      update_result = self.client.post('/datasets/update/', {
+        'dsid': ds.id,
+        'format': 'delimited',
+        'compare_data': result,
+        'keepg': True,
+        'keepl': True
+      })
+
+      print('update_result', update_result)
+      print('places in ds', ds.places.all())
+      # print('src_ids', ds.places.all().values_list('src_id', flat=True))
+      # self.assertIn(str(ds.places.all().values_list('src_id', flat=True)), '717_4')
+      # self.assertFalse('717_2' in str(ds.places.all().values_list('src_id', flat=True)))
     # delete dataset after test
     # ds = Dataset.objects.get(label='sample7')
     # self.ds.delete()

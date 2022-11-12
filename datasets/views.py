@@ -21,6 +21,7 @@ from django_celery_results.models import TaskResult
 from celery import current_app as celapp
 # from chardet import detect
 import codecs, math, mimetypes, os, re, shutil, sys, tempfile
+import numpy as np
 from elasticsearch7 import Elasticsearch
 es = Elasticsearch([{'host': 'localhost',
                      'port': 9200,
@@ -945,22 +946,29 @@ def update_rels_tsv(pobj, row):
   title_source = row['title_source']
   title_uri = row['title_uri'] if 'title_uri' in header else ''
   variants = [x.strip() for x in row['variants'].split(';')] \
-    if 'variants' in header else []
+    if 'variants' in header and row['variants'] else []
   types = [x.strip() for x in row['types'].split(';')] \
     if 'types' in header and str(row['types']) != '' else []
+    # if row['types'] and str(row['types']) != '' else []
   aat_types = [x.strip() for x in row['aat_types'].split(';')] \
     if 'aat_types' in header and str(row['aat_types']) != '' else []
+    # if row['aat_types'] and str(row['aat_types']) != '' else []
   parent_name = row['parent_name'] if 'parent_name' in header else ''
   parent_id = row['parent_id'] if 'parent_id' in header else ''
+  # empty lon and lat are None
   coords = makeCoords(row['lon'], row['lat']) \
-    if 'lon' in header and 'lat' in header and not math.isnan(row['lon']) else []
+    if 'lon' in header and 'lat' in header and row['lon'] else []
+    # if 'lon' in header and 'lat' in header and not math.isnan(row['lon']) else []
   try:
     matches = [x.strip() for x in row['matches'].split(';')] \
-      if 'matches' in header and 'nan' not in row['matches'] else []
+      if 'matches' in header and row['matches'] else []
+      # if 'matches' in header and 'nan' not in row['matches'] else []
   except:
     print('matches, error', row['matches'], sys.exc_info())
   description = row['description'] \
-    if 'description' in header and row['description'] != 'nan' else ''
+    if row['description'] else ''
+    # if 'description' in header and row['description'] != 'nan' else ''
+
   # build associated objects and add to arrays
   objs = {"PlaceName":[], "PlaceType":[], "PlaceGeom":[], "PlaceWhen":[],
           "PlaceLink":[], "PlaceRelated":[], "PlaceDescription":[], "PlaceDepiction":[]}
@@ -1015,23 +1023,26 @@ def update_rels_tsv(pobj, row):
             "geowkt": 'POINT('+str(coords[0])+' '+str(coords[1])+')'}
   elif 'geowkt' in header and row['geowkt'] not in ['',None]: # some rows no geom
     geom = parse_wkt(row['geowkt'])
+  else:
+    geom = None
 
-  print('new geom',geom)
-  def trunc4(val):
-    print('val in trunc4()',val)
-    return round(val,4)
-  new_coords = list(map(trunc4,list(geom['coordinates'])))
-  # only add new geometry
-  if len(pobj.geoms.all()) > 0:
-    for g in pobj.geoms.all():
-      if list(map(trunc4,g.jsonb['coordinates'])) != new_coords:
-        objs['PlaceGeom'].append(
-            PlaceGeom(
-              place=pobj,
-              src_id = src_id,
-              jsonb=geom
-          ))
-  print('objs after geom', objs)
+  # not always a geom
+  if geom:
+    def trunc4(val):
+      # print('val in trunc4()',val)
+      return round(val,4)
+    new_coords = list(map(trunc4,list(geom['coordinates'])))
+    # only add new geometry
+    if len(pobj.geoms.all()) > 0:
+      for g in pobj.geoms.all():
+        if list(map(trunc4,g.jsonb['coordinates'])) != new_coords:
+          objs['PlaceGeom'].append(
+              PlaceGeom(
+                place=pobj,
+                src_id = src_id,
+                jsonb=geom
+            ))
+    print('objs after geom', objs)
   #
   # PlaceLink() - all are closeMatch
   # Pandas turns nulls into NaN strings, 'nan'
@@ -1065,7 +1076,7 @@ def update_rels_tsv(pobj, row):
     ))
 
   print('objs after related', objs)
-  #
+
   # PlaceWhen()
   # timespans[{start{}, end{}}], periods[{name,id}], label, duration
   objs['PlaceWhen'].append(
@@ -1098,18 +1109,19 @@ def update_rels_tsv(pobj, row):
 
   # what came from this row
   print('COUNTS:')
-  print('PlaceName:',len(objs['PlaceName']))
-  print('PlaceType:',len(objs['PlaceType']))
-  print('PlaceGeom:',len(objs['PlaceGeom']))
-  print('PlaceLink:',len(objs['PlaceLink']))
-  print('PlaceRelated:',len(objs['PlaceRelated']))
-  print('PlaceWhen:',len(objs['PlaceWhen']))
-  print('PlaceDescription:',len(objs['PlaceDescription']))
-  # print('max places.id', )
+  print('PlaceName:', len(objs['PlaceName']))
+  print('PlaceType:', len(objs['PlaceType']))
+  print('PlaceGeom:', len(objs['PlaceGeom']))
+  print('PlaceLink:', len(objs['PlaceLink']))
+  print('PlaceRelated:', len(objs['PlaceRelated']))
+  print('PlaceWhen:', len(objs['PlaceWhen']))
+  print('PlaceDescription:', len(objs['PlaceDescription']))
+  # no depictions in LP-TSV
 
   # TODO: update place.fclasses, place.minmax, place.timespans
 
   # bulk_create(Class, batch_size=n) for each
+  # PlaceName.objects.create(objs['PlaceName'][0])
   PlaceName.objects.bulk_create(objs['PlaceName'],batch_size=10000)
   print('names done')
   PlaceType.objects.bulk_create(objs['PlaceType'],batch_size=10000)
@@ -1133,7 +1145,7 @@ def update_rels_tsv(pobj, row):
 # TODO: test this
 def ds_update(request):
   if request.method == 'POST':
-    print('request.POST', request.POST)
+    print('request.POST ds_update()', request.POST)
     dsid=request.POST['dsid']
     ds = get_object_or_404(Dataset, id=dsid)
     file_format=request.POST['format']
@@ -1183,13 +1195,23 @@ def ds_update(request):
     # cur: user_whgadmin/diamonds135.tsv
     # new: user_whgadmin/diamonds135_rev2.tsv
     if file_format == 'delimited':
-      #adf = pd.read_csv('media/user_whgadmin/diamonds135.tsv', delimiter='\t',dtype={'id':'str','ccodes':'str'})
-      #bdf = pd.read_csv('/var/folders/f4/x09rdl7n3lg7r7gwt1n3wjsr0000gn/T/tmpcfees9hd.tsv', delimiter='\t',dtype={'id':'str','ccodes':'str'})
       adf = pd.read_csv('media/'+compare_data['filename_cur'],
                         delimiter='\t',
                         dtype={'id':'str','ccodes':'str'})
       bdf = pd.read_csv(filepath, delimiter='\t')
-      bdf = bdf.astype({"id":str,"ccodes":str,"matches":str,"types":str,"aat_types":str,"description":str})
+
+      # zap entirely empty columns
+      bdf.dropna(how='all', axis=1, inplace=True)
+      # replace NaN with None
+      bdf = bdf.replace({np.nan: None})
+
+      bdf = bdf.astype({"id":str,
+                        "ccodes":str,
+                        # "matches":str,
+                        "types":str,
+                        "aat_types":str
+                        # "description":str,
+                        })
       print('reopened old file, # lines:',len(adf))
       print('reopened new file, # lines:',len(bdf))
       ids_a = adf['id'].tolist()
@@ -1207,7 +1229,8 @@ def ds_update(request):
       # delete places with ids missing in new data (CASCADE includes links & geoms)
       places.filter(id__in=rows_delete).delete()
 
-      # delete related instances for the rest (except links and geoms)
+      # delete *most* related instances for the rest
+      # can't cascade because geoms and links are retained
       PlaceName.objects.filter(place_id__in=places).delete()
       PlaceType.objects.filter(place_id__in=places).delete()
       PlaceWhen.objects.filter(place_id__in=places).delete()
@@ -1223,12 +1246,11 @@ def ds_update(request):
         # make 3 dicts: all; for Places; for PlaceXxxxs
         rd = row.to_dict()
         print('rd in ds_update',rd)
-        #rdp = {key:rd[key][0] for key in place_fields}
         rdp = {key:rd[key] for key in place_fields}
         # look for corresponding current place
         #p = places.filter(src_id='1.0').first()
         p = places.filter(src_id=rdp['id']).first()
-        print('rdp (new row)',rdp)
+        print('rdp (new row)', rdp)
         start = int(rdp['start']) if 'start' in rdp else None
         end = int(rdp['end']) if 'end' in rdp and str(rdp['end']) != 'nan' else start
         minmax_new = [start,end] if start else [None]
@@ -1272,10 +1294,13 @@ def ds_update(request):
       result = {"status": "updated", "update_count":count_updated ,
                 "new_count":count_new, "del_count": len(rows_delete), "newfile": filepath,
                 "format":file_format}
+      print('update result', result)
+      print("compare_data['count_indexed']", compare_data['count_indexed'])
+
       #
       # if dataset is indexed, update it there too
       # TODO: if new records, new recon task & accessioning tasks needed
-      if compare_data['count_indexed'] > 0:
+      if compare_data['count_indexed']['value'] > 0:
         from elasticsearch7 import Elasticsearch
         es = Elasticsearch([{'host': 'localhost',
                              'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
@@ -1300,7 +1325,6 @@ def ds_update(request):
         # process new
         #if len(rows_add) > 0:
           # notify need to reconcile & accession them
-
       else:
         print('not indexed, that is all')
 
@@ -1314,7 +1338,7 @@ def ds_update(request):
         user_id = request.user.id
       )
 
-      return JsonResponse(result,safe=False)
+      return JsonResponse(result, safe=False)
     elif file_format == 'lpf':
       print("ds_update for lpf; doesn't get here yet")
 
@@ -1326,8 +1350,8 @@ returns json result object
 """
 def ds_compare(request):
   if request.method == 'POST':
-    print('request.POST',request.POST)
-    print('request.FILES',request.FILES)
+    # print('request.POST',request.POST)
+    # print('request.FILES',request.FILES)
     dsid=request.POST['dsid'] # 586 for diamonds
     user=request.user.username
     format=request.POST['format']
@@ -1347,7 +1371,7 @@ def ds_compare(request):
 
     # new file
     file_new=request.FILES['file']
-    print("request.FILES['file']", request.FILES['file'])
+    # print("request.FILES['file']", request.FILES['file'])
     tempf, tempfn = tempfile.mkstemp()
 
     # write new file as temporary to /var/folders/../...
@@ -1375,7 +1399,7 @@ def ds_compare(request):
       # TODO: feed tempfn only?
       # TODO: accept json-lines; only FeatureCollections ('coll') now
       vresult = validate_lpf(tempfn,'coll')
-    print('format, vresult:',format,vresult)
+    # print('format, vresult:',format,vresult)
 
     # if errors, parse & return to modal
     # which expects {validation_result{errors['','']}}
@@ -1409,13 +1433,13 @@ def ds_compare(request):
     fn_a = 'media/'+filename_cur
     fn_b = tempfn
     # fn_b = tempfn_new
-    print('fn_a, fn_b', fn_a, fn_b)
+    # print('fn_a, fn_b', fn_a, fn_b)
     if format == 'delimited':
       adf = pd.read_csv(fn_a, delimiter='\t')
-      print('adf', adf)
+      # print('adf', adf)
       try:
         bdf = pd.read_csv(fn_b, delimiter='\t')
-        print('bdf', bdf)
+        # print('bdf', bdf)
       except:
         print('bdf read failed', sys.exc_info())
 
@@ -1437,10 +1461,10 @@ def ds_compare(request):
       }
     # TODO: process LP format, collections + json-lines
     elif format == 'lpf':
-      print('need to compare lpf files:',fn_a,fn_b)
+      # print('need to compare lpf files:',fn_a,fn_b)
       comparison['compare_result'] = "it's lpf...tougher row to hoe"
 
-    print('comparison',comparison)
+    # print('comparison',comparison)
     # back to calling modal
     return JsonResponse(comparison,safe=False)
 

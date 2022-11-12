@@ -591,12 +591,12 @@ def validate_tsv(fn, ext):
   # pull header for missing columns test below
   header = codecs.open(fn, 'r').readlines()[0][:-1]
   header = header.split('\t' if '\t' in header else ',')
-  print('header', header)
+  # print('header', header)
   result = {"format":"delimited", "errors":[], "columns":header}
   schema_lptsv = json.loads(codecs.open('datasets/static/validate/schema_tsv.json', 'r', 'utf8').read())
   try:
     report = fvalidate(fn, schema=schema_lptsv, sync_schema=True)
-    print('report at validate_tsv()::599', report)
+    # print('report at validate_tsv()::599', report)
   except:
     err = sys.exc_info()
     result['errors'].append('File failed format validation. Error: '+err+'; '+str(err[1].args))
