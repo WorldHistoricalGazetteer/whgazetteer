@@ -1139,10 +1139,9 @@ def update_rels_tsv(pobj, row):
 
 """
   ds_update()
-  perform updates to database and index
-  given new datafile
+  perform updates to database and index, given new datafile
+  params: dsid, format, keepg, keepl, compare_data (json string)
 """
-# TODO: test this
 def ds_update(request):
   if request.method == 'POST':
     print('request.POST ds_update()', request.POST)
@@ -1155,7 +1154,6 @@ def ds_update(request):
 
     print('keepg, type in ds_update() request', keepg, type(keepg))
 
-    # compare_data {'compare_result':{}}
     compare_data = json.loads(request.POST['compare_data'])
     compare_result = compare_data['compare_result']
     print('compare_data from ds_compare', compare_data)
@@ -1345,22 +1343,20 @@ def ds_update(request):
 """
 ds_compare()
 validates dataset update file & compares w/existing
-called by ajax function from modal button
+called by ajax function from modal 
 returns json result object
 """
 def ds_compare(request):
   if request.method == 'POST':
-    # print('request.POST',request.POST)
-    # print('request.FILES',request.FILES)
+    print('ds_compare() request.POST', request.POST)
+    print('ds_compare() request.FILES',request.FILES)
     dsid=request.POST['dsid'] # 586 for diamonds
     user=request.user.username
     format=request.POST['format']
     ds = get_object_or_404(Dataset, id=dsid)
-
-    # {idxcount, submissions[{task_id,date}]}
     ds_status = ds.status_idx
 
-    # how many exist, whether from recon or original?
+    # how many exist, whether from reconciliation or original?
     count_geoms = PlaceGeom.objects.filter(place_id__in=ds.placeids).count()
     count_links = PlaceLink.objects.filter(place_id__in=ds.placeids).count()
 
@@ -1371,7 +1367,6 @@ def ds_compare(request):
 
     # new file
     file_new=request.FILES['file']
-    # print("request.FILES['file']", request.FILES['file'])
     tempf, tempfn = tempfile.mkstemp()
 
     # write new file as temporary to /var/folders/../...
@@ -1399,7 +1394,7 @@ def ds_compare(request):
       # TODO: feed tempfn only?
       # TODO: accept json-lines; only FeatureCollections ('coll') now
       vresult = validate_lpf(tempfn,'coll')
-    # print('format, vresult:',format,vresult)
+      # print('format, vresult:',format,vresult)
 
     # if errors, parse & return to modal
     # which expects {validation_result{errors['','']}}
@@ -1423,23 +1418,19 @@ def ds_compare(request):
       "format": format,
       "validation_result": vresult,
       "tempfn": tempfn,
-      # "tempfn": tempfn_new,
       "count_links": count_links,
       "count_geoms": count_geoms,
       "count_indexed": ds_status['idxcount'],
     }
     print('count_geoms in ds_compare:894',count_geoms)
-    # perform comparison
+    # create pandas (pd) objects, then perform comparison
+    # a = existing, b = new
     fn_a = 'media/'+filename_cur
     fn_b = tempfn
-    # fn_b = tempfn_new
-    # print('fn_a, fn_b', fn_a, fn_b)
     if format == 'delimited':
       adf = pd.read_csv(fn_a, delimiter='\t')
-      # print('adf', adf)
       try:
         bdf = pd.read_csv(fn_b, delimiter='\t')
-        # print('bdf', bdf)
       except:
         print('bdf read failed', sys.exc_info())
 
@@ -1734,10 +1725,10 @@ def ds_insert_tsv(request, pk):
   print('ds_insert_tsv()',ds)
   # retrieve just-added file
   dsf = ds.files.all().order_by('-rev')[0]
-  print('dsf', dsf)
+  print('ds_insert_tsv(): ds, file', ds, dsf)
   # insert only if empty
   dbcount = Place.objects.filter(dataset = ds.label).count()
-  print('dbcount',dbcount)
+  # print('dbcount',dbcount)
 
   if dbcount == 0:
     try:
@@ -1747,11 +1738,11 @@ def ds_insert_tsv(request, pk):
       infile.seek(0)
       header = next(reader, None)
       header = [col.lower().strip() for col in header]
-      print('header.lower()',[col.lower() for col in header])
+      # print('header.lower()',[col.lower() for col in header])
 
       # strip BOM character if exists
       header[0] = header[0][1:] if '\ufeff' in header[0] else header[0]
-      print('header', header)
+      # print('header', header)
 
       objs = {"PlaceName":[], "PlaceType":[], "PlaceGeom":[], "PlaceWhen":[],
               "PlaceLink":[], "PlaceRelated":[], "PlaceDescription":[]}
@@ -1844,10 +1835,10 @@ def ds_insert_tsv(request, pk):
             try:
               haslang = re.search("@(.*)$", v.strip())
               if len(v.strip()) > 200:
-                print(v.strip())
+                # print(v.strip())
                 pass
               else:
-                print('variant for', newpl.id, v)
+                # print('variant for', newpl.id, v)
                 new_name = PlaceName(
                   place=newpl,
                   src_id = src_id,
@@ -1960,18 +1951,13 @@ def ds_insert_tsv(request, pk):
       PlaceDescription.objects.bulk_create(objs['PlaceDescription'],batch_size=10000)
 
       infile.close()
-
-      print('rows,linked,links:', countrows, countlinked, total_links)
+      # print('rows,linked,links:', countrows, countlinked, total_links)
     except:
       print('tsv insert failed', sys.exc_info())
       # drop the (empty) dataset if insert wasn't complete
       ds.delete()
       # email to user, admin
       failed_upload_notification(user, dsf.file.name, ds.label)
-
-      # subj = 'World Historical Gazetteer error followup'
-      # msg = 'Hello '+ user.username+', \n\nWe see your recent upload for the '+ds.label+' dataset failed, very sorry about that! We will look into why and get back to you within a day.\n\nRegards,\nThe WHG Team'
-      # emailer(subj,msg,'whg@kgeographer.org',[user.email, 'karl@kgeographer.org'])
 
       # return message to 500.html
       messages.error(request, "Database insert failed, but we don't know why. The WHG team has been notified and will follow up by email to <b>"+user.username+'</b> ('+user.email+')')
@@ -2160,7 +2146,7 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
     # if utf8, get extension and validate
     # if encoding and encoding.lower().startswith('utf-8'):
     ext = mthash_plus.mimetypes[mimetype]
-    print('DatasetCreateView() extension', ext)
+    print('DatasetCreateView() extension:', ext)
     fail_msg = "A database insert failed and we aren't sure why. The WHG team has been notified "+\
                "and will follow up by email to <b>"+user.username+"</b> ("+user.email+")"
 
@@ -2183,7 +2169,7 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
         newfn = tempfn+'.'+ext
         os.rename(tempfn, newfn)
         result = validate_tsv(newfn, ext)
-        print('tsv result', result)
+        # print('tsv result', result)
       except:
         # email to user, admin
         failed_upload_notification(user, tempfn)
@@ -2202,7 +2188,7 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
         # add ext to tempfn (pandas need this)
         newtempfn = tempfn+'.'+ext
         os.rename(tempfn, newtempfn)
-        print('renamed tempfn for pandas:', tempfn)
+        # print('renamed tempfn for pandas:', tempfn)
 
         # dataframe from spreadsheet
         df = pd.read_excel(newtempfn, converters={
@@ -2214,7 +2200,7 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
         fout.write(table)
         fout.close()
 
-        print('to validate_tsv(newfn):', newfn)
+        # print('to validate_tsv(newfn):', newfn)
         # validate it...
         result = validate_tsv(newfn, 'tsv')
       except:
@@ -2233,8 +2219,9 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
     if len(result['errors']) == 0:
       context['status'] = 'format_ok'
 
-      print('validated, no errors; result:', result)
-      print('cleaned_data',form.cleaned_data)
+      print('validated, no errors')
+      # print('validated, no errors; result:', result)
+      # print('cleaned_data',form.cleaned_data)
 
       # new Dataset record ('owner','id','label','title','description')
       dsobj = form.save(commit=False)
@@ -2278,9 +2265,9 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
         user_id = user.id
       )
 
-      print('pre-write')
-      print('ext='+ext+'; newfn='+newfn+'; filepath='+filepath+
-            '; tempfn='+tempfn+'; newtempfn='+newtempfn)
+      # print('pre-write')
+      # print('ext='+ext+'; newfn='+newfn+'; filepath='+filepath+
+      #       '; tempfn='+tempfn+'; newtempfn='+newtempfn)
 
       # write request obj file to user directory
       if ext in ['csv', 'tsv', 'json']:
@@ -2463,8 +2450,8 @@ class DatasetSummaryView(LoginRequiredMixin, UpdateView):
     user = self.request.user
     file=data['file']
     filerev = ds.files.all().order_by('-rev')[0].rev
-    print('DatasetSummaryView kwargs',self.kwargs)
-    print('DatasetSummaryView form_valid() data->', data)
+    # print('DatasetSummaryView kwargs',self.kwargs)
+    # print('DatasetSummaryView form_valid() data->', data)
     if data["file"] == None:
       print('data["file"] == None')
       # no file, updating dataset only
@@ -2477,9 +2464,8 @@ class DatasetSummaryView(LoginRequiredMixin, UpdateView):
   def form_invalid(self, form):
     print('kwargs',self.kwargs)
     context = {}
-    print('form not valid', form.errors)
+    print('form not valid; errors:', form.errors)
     print('cleaned_data', form.cleaned_data)
-    context['errors'] = form.errors
     return super().form_invalid(form)
 
   def get_object(self):
@@ -2489,8 +2475,8 @@ class DatasetSummaryView(LoginRequiredMixin, UpdateView):
   def get_context_data(self, *args, **kwargs):
     context = super(DatasetSummaryView, self).get_context_data(*args, **kwargs)
 
-    print('DatasetSummaryView get_context_data() kwargs:',self.kwargs)
-    print('DatasetSummaryView get_context_data() request.user',self.request.user)
+    # print('DatasetSummaryView get_context_data() kwargs:',self.kwargs)
+    # print('DatasetSummaryView get_context_data() request.user',self.request.user)
     id_ = self.kwargs.get("id")
     ds = get_object_or_404(Dataset, id=id_)
 
@@ -2517,7 +2503,6 @@ class DatasetSummaryView(LoginRequiredMixin, UpdateView):
       file.numrows = result['numrows']
       ds.save()
       file.save()
-
 
     # build context for rendering ds_summary.html
     me = self.request.user
@@ -2550,7 +2535,7 @@ class DatasetSummaryView(LoginRequiredMixin, UpdateView):
 
     context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False
 
-    print('context from DatasetSummaryView', context)
+    # print('context from DatasetSummaryView', context)
     return context
 
 """ 

@@ -409,13 +409,14 @@ def fetch_geojson_flat(request, *args, **kwargs):
 
 def get_encoding_excel(fn):
   fin = codecs.open(fn, 'r')
+  encoding = fin.encoding
   fin.close()
-  return fin.encoding
+  return encoding
 
 def get_encoding_delim(fn):
   with open(fn, 'rb') as f:
     rawdata = f.read()
-  print('detect', detect(rawdata))
+  # print('detect', detect(rawdata))
   return detect(rawdata)['encoding']
 
 def groom_files(user):
@@ -587,7 +588,7 @@ def validate_lpf(tempfn,format):
 # 
 def validate_tsv(fn, ext):
   # incoming csv or tsv
-  print('validate_tsv() fn', fn)
+  # print('validate_tsv() fn', fn)
   # pull header for missing columns test below
   header = codecs.open(fn, 'r').readlines()[0][:-1]
   header = header.split('\t' if '\t' in header else ',')

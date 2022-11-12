@@ -6,17 +6,10 @@
 {% load dataset_extras %}
 
 {% block extra_head %}
-  {% leaflet_js %}
-  {% leaflet_css %}
   <script src="{% static 'js/aliases.js' %}"></script>
   <script src="{% static 'js/easyprint.js' %}"></script>
-{#  <script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>#}
-{#  <script src="//cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>#}
-{#  <script src="//cdn.datatables.net/1.10.23/js/dataTables.bootstrap4.min.js"></script>#}
 
   <link rel="stylesheet" href="{% static 'css/spin.css' %}"/>
-  <link rel="stylesheet" href="//cdn.datatables.net/1.10.23/css/dataTables.bootstrap4.min.css">
-
   <script src="{% static 'celery_progress/celery_progress.js' %}"></script>
 {% endblock %}
 
@@ -504,11 +497,11 @@
       stats = data['compare_result']
       keepg = data['keepg']; keepl = data['keepl'];
       html = 'This action would perform these WHG <i>database</i> updates:<br/><ul style="padding:0;list-style: inside;">'
-      html += '<li>Replace <b>'+stats['count_replace']+'</b> place records having same IDs </li>'
-      html += stats['rows_add'].length >0?'<li>Add records (<b>'+stats['rows_add'].join(', ')+'</b>)</li>':''
-      html += stats['rows_del'].length >0?'<li>Remove records (<b>'+stats['rows_del'].join(', ')+'</b>)</li>':''
-      html += stats['cols_add'].length >0?'<li>Add columns (<b>'+stats['cols_add']+'</b>)</li>':''
-      html += stats['cols_del'].length >0?'<li>Remove columns (<b>'+stats['cols_del']+'</b>)</li>':''
+      html += '<li>Replace <b>'+stats['count_replace']+'</b> place records having same source IDs </li>'
+      html += stats['rows_add'].length >0?'<li>Add records: (<b>'+stats['rows_add'].join(', ')+'</b>)</li>':''
+      html += stats['rows_del'].length >0?'<li>Remove records: (<b>'+stats['rows_del'].join(', ')+'</b>)</li>':''
+      html += stats['cols_add'].length >0?'<li>Add columns: (<b>'+stats['cols_add']+'</b>)</li>':''
+      html += stats['cols_del'].length >0?'<li>Remove columns: (<b>'+stats['cols_del']+'</b>)</li>':''
       if (data['count_geoms']>0){
         html += '<li class="text-danger">There are <b>'+data['count_geoms']+'</b> existing place-geometry records...keep them?'+
         ' <input type="checkbox" id="preserve_geoms" checked></li>'
@@ -519,7 +512,7 @@
       }
       html += '</ul>'
       html += data['count_indexed'] > 0 ? '<p>Also, in the WHG <u>index</u>, <b>'+stats['count_replace'] + '</b> records would be updated, and <b>'+stats['rows_del'].length+'</b> removed.</p>':''
-      html += stats['rows_add'].length >0 ? 'The '+stats['rows_add'].length+' record(s) added to the database will have to be reconciled and accessioned.':''
+      html += stats['rows_add'].length >0 ? '<b>NOTE:</b>The '+stats['rows_add'].length+' record(s) added to the database will have to be reconciled and accessioned.':''
     return html
   }
 
@@ -571,16 +564,16 @@
     console.log('id',$(this).data('id'))
   });
 
-  function minmaxer(timespans){
-    starts=[]; ends=[]
-    for (t in timespans){
-      // gets 'in', 'earliest' or 'latest'
-      starts.push(Object.values(timespans[t].start)[0])
-      ends.push(!!timespans[t].end ? Object.values(timespans[t].end)[0] : -1)
-    }
-    minmax=[Math.max.apply(null, starts),Math.max.apply(null, ends)]
-    return minmax
-  }
+  {#function minmaxer(timespans){#}
+  {#  starts=[]; ends=[]#}
+  {#  for (t in timespans){#}
+  {#    // gets 'in', 'earliest' or 'latest'#}
+  {#    starts.push(Object.values(timespans[t].start)[0])#}
+  {#    ends.push(!!timespans[t].end ? Object.values(timespans[t].end)[0] : -1)#}
+  {#  }#}
+  {#  minmax=[Math.max.apply(null, starts),Math.max.apply(null, ends)]#}
+  {#  return minmax#}
+  {# }#}
 
   $(function(){
     // help modals
@@ -614,26 +607,6 @@
 
     window.dslabel = "{{ ds.label }}"
 
-    // Change hash for page-reload
-	  // TODO: retire this - tabs are separate pages
-    $('.nav-tabs a').on('shown.bs.tab', function (e) {
-      window.location.hash = e.target.hash;
-      if(e.target.hash=="#reconciliation"){
-        updateTotals('{{ ds.id }}')
-      }
-      if(e.target.hash=="#browse"){
-        mappy.invalidateSize();
-        <!--startTableSpinner()-->
-        $("html,body").scrollTop(0)
-        if(typeof(features) != 'undefined'){
-          mappy.fitBounds(features.getBounds())
-        }
-      }
-      if(e.target.hash=="#addtask"){
-        mappyr.invalidateSize();
-        $("html,body").scrollTop(0)
-      }
-    })
   })
 
   // TODO: refactor this ugly nonsense

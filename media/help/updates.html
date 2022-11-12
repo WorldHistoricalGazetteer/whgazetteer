@@ -3,11 +3,11 @@
 <div>
     <a href=""></a><!-- avoids scroll to the bottom anchor-->
     <h4>Updating datasets</h4>
-    <p><mark>Not yet available</mark></p>
-    <p>Datasets can be updated by uploading a new file, the contents of which will replace the previous. Each new record is considered by the upload script in turn:</p>
+    <p><mark>NOTE: Dataset updates are available only for LP-TSV formatted files at this time.</mark></p>
+    <p>Datasets can be updated by uploading a new file, the contents of which will replace the previous. Each record in the new file is considered by the upload script in turn:</p>
     <ul>
         <li>If it has a feature/row identifier ('src_id') matching one in the WHG database, it will replace the existing record. However, existing associated <i>place_link</i> and <i>place_geom</i> records that were added during previous reconciliation steps will remain unchanged.</li>
-        <li>If it has a feature/row identifier ('src_id') that does not exist, it will be added to the database. Such records will need to be reconciled against Wikidata, then accessioned as before -- that is, reconciled against the WHG index).</li>
+        <li>If it has a feature/row identifier ('src_id') that does not exist, it will be added to the database. Such records will need to be processed as before: reconciled against Wikidata prior to accessioning (reconciliation with the WHG index).</li>
     </ul>
     <p></p>
 </div>
