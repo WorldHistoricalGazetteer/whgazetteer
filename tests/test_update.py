@@ -50,7 +50,7 @@ class CompareAndUpdateTests(TestCase):
     # upload new file and compare
     with open('_testdata/_update/sample7_new.txt') as file_new:
       # print(fp.readlines())
-      compare = self.client.post('/datasets/compare/', {
+      comparison = self.client.post('/datasets/compare/', {
         'dsid': ds.id,
         'format': 'delimited',
         'file': file_new,
@@ -58,10 +58,13 @@ class CompareAndUpdateTests(TestCase):
         'keepl': True,
         'compare_data': {}
       })
+      # compare_data = json.loads(request.POST['compare_data'])
+      # compare_result = compare_data['compare_result']
+
       # print('compare type, contents', type(compare), json.loads(compare.content))
-      compare_data = json.loads(compare.content)
+      compare_data = json.loads(comparison.content)
       result = compare_data['compare_result']
-      print('compare_data', compare_data)
+      print('compare_data (test)', compare_data)
       self.assertEquals(result['count_new'], 7)
       self.assertEquals(result['count_diff'], 0)
       self.assertEquals(result['count_replace'], 6)
@@ -80,14 +83,14 @@ class CompareAndUpdateTests(TestCase):
       update_result = self.client.post('/datasets/update/', {
         'dsid': ds.id,
         'format': 'delimited',
-        'compare_data': result,
+        'compare_data': compare_data,
         'keepg': True,
         'keepl': True
       })
-
+      #
       print('update_result', update_result)
       print('places in ds', ds.places.all())
-      # print('src_ids', ds.places.all().values_list('src_id', flat=True))
+      print('src_ids', ds.places.all().values_list('src_id', flat=True))
       # self.assertIn(str(ds.places.all().values_list('src_id', flat=True)), '717_4')
       # self.assertFalse('717_2' in str(ds.places.all().values_list('src_id', flat=True)))
     # delete dataset after test

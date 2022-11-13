@@ -1,14 +1,11 @@
 {% extends "main/base.html" %}
 {% load static %}
-{% load leaflet_tags %}
 {% load fontawesome %}
 {% load mathfilters %}
 {% load dataset_extras %}
 
 {% block extra_head %}
   <script src="{% static 'js/aliases.js' %}"></script>
-  <script src="{% static 'js/easyprint.js' %}"></script>
-
   <link rel="stylesheet" href="{% static 'css/spin.css' %}"/>
   <script src="{% static 'celery_progress/celery_progress.js' %}"></script>
 {% endblock %}
@@ -563,17 +560,6 @@
   $('.vocab').on('click', function(e) {
     console.log('id',$(this).data('id'))
   });
-
-  {#function minmaxer(timespans){#}
-  {#  starts=[]; ends=[]#}
-  {#  for (t in timespans){#}
-  {#    // gets 'in', 'earliest' or 'latest'#}
-  {#    starts.push(Object.values(timespans[t].start)[0])#}
-  {#    ends.push(!!timespans[t].end ? Object.values(timespans[t].end)[0] : -1)#}
-  {#  }#}
-  {#  minmax=[Math.max.apply(null, starts),Math.max.apply(null, ends)]#}
-  {#  return minmax#}
-  {# }#}
 
   $(function(){
     // help modals

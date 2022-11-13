@@ -127,28 +127,6 @@
 </div>
 
 <script type="text/javascript">
-
-  
-  /* // slider experiment
-  var html5Slider = document.getElementById('nouislider');
-  
-  noUiSlider.create(html5Slider, {
-      start: [10, 30],
-      connect: true,
-      range: {
-          'min': -20,
-          'max': 40
-      }
-  });
-  */
-  
-  /* // toggle layers
-  $(".gtype").click(function(e){
-    e.preventDefault()
-    console.log('toggle', $(this).data('g'))
-  })
-  */
-  
   $(function(){
     localStorage.setItem('filter', '99')
     wdtask = "{{wdtask}}" == "True"?true:false
@@ -467,9 +445,6 @@
       coordinates[0] += lnglat.lng > coordinates[0] ? 360 : -360;
     }
     
-    // highlight row
-    // console.log('making popup', pid, coordinates)
-      
     // popup
     var html='<b>'+title+'</b><br/>'+'<a href="javascript:getPlace('+pid+')">fetch info</a>'
     if(min != 'null'){

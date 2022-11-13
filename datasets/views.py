@@ -947,27 +947,31 @@ def update_rels_tsv(pobj, row):
   title_uri = row['title_uri'] if 'title_uri' in header else ''
   variants = [x.strip() for x in row['variants'].split(';')] \
     if 'variants' in header and row['variants'] else []
+
   types = [x.strip() for x in row['types'].split(';')] \
     if 'types' in header and str(row['types']) != '' else []
-    # if row['types'] and str(row['types']) != '' else []
+
   aat_types = [x.strip() for x in row['aat_types'].split(';')] \
     if 'aat_types' in header and str(row['aat_types']) != '' else []
-    # if row['aat_types'] and str(row['aat_types']) != '' else []
+
   parent_name = row['parent_name'] if 'parent_name' in header else ''
+
   parent_id = row['parent_id'] if 'parent_id' in header else ''
+
   # empty lon and lat are None
   coords = makeCoords(row['lon'], row['lat']) \
     if 'lon' in header and 'lat' in header and row['lon'] else []
-    # if 'lon' in header and 'lat' in header and not math.isnan(row['lon']) else []
+  if title == 'Kutaisi':
+    print('coords', coords)
+
   try:
     matches = [x.strip() for x in row['matches'].split(';')] \
       if 'matches' in header and row['matches'] else []
-      # if 'matches' in header and 'nan' not in row['matches'] else []
   except:
     print('matches, error', row['matches'], sys.exc_info())
+
   description = row['description'] \
     if row['description'] else ''
-    # if 'description' in header and row['description'] != 'nan' else ''
 
   # build associated objects and add to arrays
   objs = {"PlaceName":[], "PlaceType":[], "PlaceGeom":[], "PlaceWhen":[],
@@ -1026,14 +1030,25 @@ def update_rels_tsv(pobj, row):
   else:
     geom = None
 
-  # not always a geom
+  # TODO:
+  # if pobj is existing place, add geom only if it's new
+  # if pobj is new place and row has geom, always add it
   if geom:
     def trunc4(val):
       # print('val in trunc4()',val)
       return round(val,4)
     new_coords = list(map(trunc4,list(geom['coordinates'])))
-    # only add new geometry
-    if len(pobj.geoms.all()) > 0:
+
+    # if no geoms, add this one
+    if pobj.geoms.count() == 0:
+      objs['PlaceGeom'].append(
+        PlaceGeom(
+          place=pobj,
+          src_id=src_id,
+          jsonb=geom
+        ))
+    # otherwise only add if coords don't match
+    elif pobj.geoms.count() > 0:
       for g in pobj.geoms.all():
         if list(map(trunc4,g.jsonb['coordinates'])) != new_coords:
           objs['PlaceGeom'].append(
@@ -1043,7 +1058,7 @@ def update_rels_tsv(pobj, row):
                 jsonb=geom
             ))
     print('objs after geom', objs)
-  #
+
   # PlaceLink() - all are closeMatch
   # Pandas turns nulls into NaN strings, 'nan'
   print('matches', matches)
@@ -1422,7 +1437,7 @@ def ds_compare(request):
       "count_geoms": count_geoms,
       "count_indexed": ds_status['idxcount'],
     }
-    print('count_geoms in ds_compare:894',count_geoms)
+    print('count_geoms in ds_compare',count_geoms)
     # create pandas (pd) objects, then perform comparison
     # a = existing, b = new
     fn_a = 'media/'+filename_cur
@@ -2274,7 +2289,7 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
         fout = codecs.open(filepath,'w','utf8')
         try:
           for chunk in file.chunks():
-            fout.write(chunk.decode("utf-8"))
+            fout.write(chunk.decode("utf-8", errors="ignore"))
         except:
           print('error writing file; chunk'+str(chunk))
           sys.exit(sys.exc_info())
