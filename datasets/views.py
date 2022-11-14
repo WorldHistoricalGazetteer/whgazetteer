@@ -1057,7 +1057,7 @@ def update_rels_tsv(pobj, row):
                 src_id = src_id,
                 jsonb=geom
             ))
-    print('objs after geom', objs)
+  # print('objs after geom', objs)
 
   # PlaceLink() - all are closeMatch
   # Pandas turns nulls into NaN strings, 'nan'
@@ -1076,7 +1076,7 @@ def update_rels_tsv(pobj, row):
             jsonb={"type":"closeMatch", "identifier":m}
         ))
 
-  print('objs after matches', objs)
+  # print('objs after matches', objs)
   #
   # PlaceRelated()
   if parent_name != '':
@@ -1090,7 +1090,7 @@ def update_rels_tsv(pobj, row):
           "label": parent_name}
     ))
 
-  print('objs after related', objs)
+  # print('objs after related', objs)
 
   # PlaceWhen()
   # timespans[{start{}, end{}}], periods[{name,id}], label, duration
@@ -1105,7 +1105,7 @@ def update_rels_tsv(pobj, row):
           }
   ))
 
-  print('objs after when', objs)
+  # print('objs after when', objs)
   #
   # PlaceDescription()
   # @id, value, lang
@@ -1769,9 +1769,10 @@ def ds_insert_tsv(request, pk):
       for r in reader:
         # build attributes for new Place instance
         src_id = r[header.index('id')]
-        title = r[header.index('title')].replace("' ","'") # why?
+        title = r[header.index('title')].strip() # don't try to correct incoming except strip()
+        # title = r[header.index('title')].replace("' ","'") # why?
         # strip anything in parens for title only
-        title = re.sub('\(.*?\)', '', title)
+        # title = re.sub('\(.*?\)', '', title)
         title_source = r[header.index('title_source')]
         title_uri = r[header.index('title_uri')] if 'title_uri' in header else ''
         ccodes = r[header.index('ccodes')] if 'ccodes' in header else []
@@ -1818,7 +1819,8 @@ def ds_insert_tsv(request, pk):
 
         description = r[header.index('description')] \
           if 'description' in header else ''
-        # print('description (src_id)', description)
+
+        print('title, src_id (pre-newpl):', title, src_id)
 
         # create new Place object
         # TODO: generate fclasses
@@ -2184,7 +2186,7 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
         newfn = tempfn+'.'+ext
         os.rename(tempfn, newfn)
         result = validate_tsv(newfn, ext)
-        # print('tsv result', result)
+        print('newfn in create()', newfn)
       except:
         # email to user, admin
         failed_upload_notification(user, tempfn)

@@ -232,7 +232,8 @@ class SearchView(View):
     }
     request.session["search_params"] = params 
     print('search_params set', params)
-    
+
+    # TODO: fuzzy search; results ranked for closeness
     if doctype == 'place':
       if scope == 'suggest':
         q = { "suggest":{"suggest":{"prefix":qstr,"completion":{"field":"suggest"}} } }

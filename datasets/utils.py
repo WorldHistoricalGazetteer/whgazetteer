@@ -613,7 +613,7 @@ def validate_tsv(fn, ext):
   missing = list(set(req) - set(header))
 
   # filter harmless errors
-  result['errors'] = [x['message'] for x in result['errors'] \
+  result['errors'] = [x['message'] for x in rpt['errors'] \
             if x['code'] not in ["blank-header", "missing-header"]]
   if len(missing) > 0:
     result['errors'].insert(0,'Required column(s) missing or header malformed: '+
