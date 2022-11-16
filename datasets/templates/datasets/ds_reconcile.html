@@ -6,7 +6,6 @@
 
 {% block extra_head %}
   <script src="{% static 'js/aliases.js' %}"></script>
-  <script src="{% static 'js/easyprint.js' %}"></script>
   <script src="{% static 'css/spin.css' %}"></script>
 {% endblock %}
 
@@ -117,17 +116,21 @@
                           {% endif %}
                          <span class="help-matches" data-id="auto-match">{% fontawesome_icon 'question-circle' color='#993333' %}</span></span>
                          </li>
-                      {% endif %}
-                      {% if t.result|get:"pass1" > 0 %}
-	                      {% if t.task_name == 'align_idx'%}
-                          <li class="li-left">Passes 0, 1:
+                      {% elif t.task_name == "align_idx" %}
+	                      <li class="li-left">Passes 0, 1:
                           <span class="strong mx-2" id='{{t.task_id}}_1'>nn</span>
                           <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='0and1' %}">review</a>
-                        {% else %}
+                      {% endif %}
+                      {% if t.result|get:"pass1" > 0 %}
+{#	                      {% if t.task_name == 'align_idx'%}#}
+{#                          <li class="li-left">Passes 0, 1:#}
+{#                          <span class="strong mx-2" id='{{t.task_id}}_1'>nn</span>#}
+{#                          <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='0and1' %}">review</a>#}
+{#                        {% else %}#}
                           <li class="li-left">Pass 1:
                           <span class="strong mx-2" id='{{t.task_id}}_1'>nn</span>
                           <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass1' %}">review</a>
-                        {% endif %}
+{#                        {% endif %}#}
                         </li>
                       {% endif %}
 
@@ -229,7 +232,7 @@
           tid = updates[u][0]
           counts = updates[u][1]
           task = updates[u][1]['task']
-          {#console.log('updateTotals() counts', task, counts)#}
+          console.log('updateTotals() counts', task, counts)
           
           // if all are reviewed, disable radio button
           if(counts['total'] == 0 ){
@@ -255,9 +258,14 @@
           // hide 'review' link if count is 0
           // hide 'auto-accept' if it's pass0
           Object.keys(counts).forEach(function(key) {
+	          console.log('key, counts', key, counts[key])
             if(key.startsWith('pass') && counts[key] == 0){
               // console.log('foo:', "#"+tid+'_'+key.slice(-1))
-              $("#"+tid+'_'+key.slice(-1)).next().addClass('hidden')
+	            if(task=='align_idx'){
+                $("#"+tid+'_'+key.slice(-1)).addClass('hidden')
+	            } else {
+			          $("#"+tid+'_'+key.slice(-1)).next().addClass('hidden')
+	            }
               if(key == 'pass0'){
                 foo = "#pass0_"+tid+" .pass0auto"
                 $(foo).hide()

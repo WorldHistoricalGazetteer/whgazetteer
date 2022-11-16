@@ -1800,7 +1800,10 @@ def ds_insert_tsv(request, pk):
         # ccodes; compute if missing and there is geometry
         if len(ccodes) == 0:
           if geojson:
-            ccodes = ccodesFromGeom(geojson)
+            try:
+              ccodes = ccodesFromGeom(geojson)
+            except:
+              pass
           else:
             ccodes = []
         else:
@@ -1961,7 +1964,11 @@ def ds_insert_tsv(request, pk):
       # bulk_create(Class, batch_size=n) for each
       PlaceName.objects.bulk_create(objs['PlaceName'],batch_size=10000)
       PlaceType.objects.bulk_create(objs['PlaceType'],batch_size=10000)
-      PlaceGeom.objects.bulk_create(objs['PlaceGeom'],batch_size=10000)
+      try:
+        PlaceGeom.objects.bulk_create(objs['PlaceGeom'],batch_size=10000)
+      except:
+        print('geom insert failed', newpl, sys.exc_info())
+        pass
       PlaceLink.objects.bulk_create(objs['PlaceLink'],batch_size=10000)
       PlaceRelated.objects.bulk_create(objs['PlaceRelated'],batch_size=10000)
       PlaceWhen.objects.bulk_create(objs['PlaceWhen'],batch_size=10000)
@@ -1970,7 +1977,7 @@ def ds_insert_tsv(request, pk):
       infile.close()
       # print('rows,linked,links:', countrows, countlinked, total_links)
     except:
-      print('tsv insert failed', sys.exc_info())
+      print('tsv insert failed', newpl, sys.exc_info())
       # drop the (empty) dataset if insert wasn't complete
       ds.delete()
       # email to user, admin
@@ -2087,7 +2094,7 @@ class PublicListsView(ListView):
 def failed_upload_notification(user, fn, ds=None):
     subj = 'World Historical Gazetteer error followup ' + ('on dataset ('+ds+')') if ds else ''
     msg = 'Hello ' + user.username + \
-      ', \n\nWe see your recent upload failed -- very sorry about that!' + \
+      ', \n\nWe see your recent upload failed -- very sorry about that! ' + \
       'We will look into why and get back to you within a day.\n\nRegards,\nThe WHG Team\n\n\n['+fn+']'
     emailer(subj, msg, 'whg@kgeographer.org',
             [user.email, 'karl@kgeographer.org'])
