@@ -159,6 +159,7 @@ class PlaceNameSerializer(serializers.ModelSerializer):
 
   class Meta:
     model = PlaceName
+    fields = ('when','citation')
     fields = ('toponym','when','citation')
 
 """

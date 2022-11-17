@@ -1413,6 +1413,7 @@ def ds_compare(request):
 
     # if errors, parse & return to modal
     # which expects {validation_result{errors['','']}}
+    print('vresult', vresult)
     if len(vresult['errors']) > 0:
       errormsg = {"failed":{
         "errors":vresult['errors']
@@ -1808,6 +1809,7 @@ def ds_insert_tsv(request, pk):
             ccodes = []
         else:
           ccodes = [x.strip().upper() for x in r[header.index('ccodes')].split(';')]
+
         # TODO: assign aliases if wd, tgn, pl, bnf, gn, viaf
         matches = [aliasIt(x.strip()) for x in r[header.index('matches')].split(';')] \
           if 'matches' in header and r[header.index('matches')] != '' else []

@@ -122,15 +122,9 @@
                           <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='0and1' %}">review</a>
                       {% endif %}
                       {% if t.result|get:"pass1" > 0 %}
-{#	                      {% if t.task_name == 'align_idx'%}#}
-{#                          <li class="li-left">Passes 0, 1:#}
-{#                          <span class="strong mx-2" id='{{t.task_id}}_1'>nn</span>#}
-{#                          <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='0and1' %}">review</a>#}
-{#                        {% else %}#}
-                          <li class="li-left">Pass 1:
+	                      <li class="li-left">Pass 1:
                           <span class="strong mx-2" id='{{t.task_id}}_1'>nn</span>
                           <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass1' %}">review</a>
-{#                        {% endif %}#}
                         </li>
                       {% endif %}
 
