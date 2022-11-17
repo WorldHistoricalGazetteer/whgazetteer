@@ -500,12 +500,16 @@
       html += stats['cols_add'].length >0?'<li>Add columns: (<b>'+stats['cols_add']+'</b>)</li>':''
       html += stats['cols_del'].length >0?'<li>Remove columns: (<b>'+stats['cols_del']+'</b>)</li>':''
       if (data['count_geoms']>0){
-        html += '<li class="text-danger">There are <b>'+data['count_geoms']+'</b> existing place-geometry records...keep them?'+
+        html += '<li class="text-danger">Keep <b>'+data['count_geoms']+'</b> existing place-geometry records from prior reconciliation?'+
         ' <input type="checkbox" id="preserve_geoms" checked></li>'
+        {#html += '<li class="text-danger">There are <b>'+data['count_geoms']+'</b> existing place-geometry records...keep them?'+#}
+        {#' <input type="checkbox" id="preserve_geoms" checked></li>'#}
       }
       if (data['count_links']>0){
-        html += '<li class="text-danger">There are <b>'+data['count_links']+'</b> existing place-link records...keep them?'+
+        html += '<li class="text-danger">Keep <b>'+data['count_links']+'</b> existing place-link records from prior reconciliation?'+
         ' <input type="checkbox" id="preserve_links" checked></li>'
+        {#html += '<li class="text-danger">There are <b>'+data['count_links']+'</b> existing place-link records...keep them?'+#}
+        {#' <input type="checkbox" id="preserve_links" checked></li>'#}
       }
       html += '</ul>'
       html += data['count_indexed'] > 0 ? '<p>Also, in the WHG <u>index</u>, <b>'+stats['count_replace'] + '</b> records would be updated, and <b>'+stats['rows_del'].length+'</b> removed.</p>':''

@@ -937,7 +937,7 @@ def dataset_file_delete(ds):
 """
 def update_rels_tsv(pobj, row):
   header = list(row.keys())
-  print('update_rels_tsv(): pobj, row, header', pobj, row, header)
+  # print('update_rels_tsv(): pobj, row, header', pobj, row, header)
   # dies somewhere after this
   src_id = row['id']
   title = row['title']
@@ -961,9 +961,7 @@ def update_rels_tsv(pobj, row):
   # empty lon and lat are None
   coords = makeCoords(row['lon'], row['lat']) \
     if 'lon' in header and 'lat' in header and row['lon'] else []
-  if title == 'Kutaisi':
-    print('coords', coords)
-
+  print('coords', coords)
   try:
     matches = [x.strip() for x in row['matches'].split(';')] \
       if 'matches' in header and row['matches'] else []
@@ -999,7 +997,7 @@ def update_rels_tsv(pobj, row):
       if haslang:
         new_name.jsonb['lang'] = haslang.group(1)
       objs['PlaceName'].append(new_name)
-
+  print('objs after names', objs)
   #
   # PlaceType()
   # TODO: parse t
@@ -1016,7 +1014,7 @@ def update_rels_tsv(pobj, row):
                   "label":aat_lookup(int(aatnum[4:])) if aatnum !='aat:' else ''
                 }
       ))
-
+  print('objs after types', objs)
 
   #
   # PlaceGeom()
@@ -1027,16 +1025,17 @@ def update_rels_tsv(pobj, row):
             "geowkt": 'POINT('+str(coords[0])+' '+str(coords[1])+')'}
   elif 'geowkt' in header and row['geowkt'] not in ['',None]: # some rows no geom
     geom = parse_wkt(row['geowkt'])
+    print('from geowkt', geom)
   else:
     geom = None
-
+  print('geom', geom)
   # TODO:
   # if pobj is existing place, add geom only if it's new
   # if pobj is new place and row has geom, always add it
   if geom:
     def trunc4(val):
-      # print('val in trunc4()',val)
       return round(val,4)
+
     new_coords = list(map(trunc4,list(geom['coordinates'])))
 
     # if no geoms, add this one
@@ -1045,19 +1044,24 @@ def update_rels_tsv(pobj, row):
         PlaceGeom(
           place=pobj,
           src_id=src_id,
-          jsonb=geom
+          jsonb=geom,
+          geom=GEOSGeometry(json.dumps(geom))
         ))
     # otherwise only add if coords don't match
     elif pobj.geoms.count() > 0:
-      for g in pobj.geoms.all():
-        if list(map(trunc4,g.jsonb['coordinates'])) != new_coords:
-          objs['PlaceGeom'].append(
-              PlaceGeom(
-                place=pobj,
-                src_id = src_id,
-                jsonb=geom
-            ))
-  # print('objs after geom', objs)
+      try:
+        for g in pobj.geoms.all():
+          if list(map(trunc4, g.jsonb['coordinates'])) != new_coords:
+            objs['PlaceGeom'].append(
+                PlaceGeom(
+                  place=pobj,
+                  src_id = src_id,
+                  jsonb=geom,
+                  geom=GEOSGeometry(json.dumps(geom))
+              ))
+      except:
+        print('failed on ', pobj, sys.exc_info())
+  print('objs after geom', objs)
 
   # PlaceLink() - all are closeMatch
   # Pandas turns nulls into NaN strings, 'nan'
@@ -1168,11 +1172,11 @@ def ds_update(request):
     keepl = request.POST['keepl']
 
     print('keepg, type in ds_update() request', keepg, type(keepg))
+    print('keepl, type in ds_update() request', keepg, type(keepl))
 
     compare_data = json.loads(request.POST['compare_data'])
     compare_result = compare_data['compare_result']
     print('compare_data from ds_compare', compare_data)
-
     # tempfn has .tsv or .jsonld extension from validation step
     tempfn = compare_data['tempfn']
     filename_new = compare_data['filename_new']
@@ -1244,6 +1248,10 @@ def ds_update(request):
 
       # delete *most* related instances for the rest
       # can't cascade because geoms and links are retained
+      if not keepg:
+        PlaceGeom.objects.filter(place_id__in=places, task_id__isnull=False).delete()
+      if not keepl:
+        PlaceLink.objects.filter(place_id__in=places, task_id__isnull=False).delete()
       PlaceName.objects.filter(place_id__in=places).delete()
       PlaceType.objects.filter(place_id__in=places).delete()
       PlaceWhen.objects.filter(place_id__in=places).delete()
@@ -1258,7 +1266,7 @@ def ds_update(request):
       for index, row in bdf.iterrows():
         # make 3 dicts: all; for Places; for PlaceXxxxs
         rd = row.to_dict()
-        print('rd in ds_update',rd)
+        # print('rd in ds_update',rd)
         rdp = {key:rd[key] for key in place_fields}
         # look for corresponding current place
         #p = places.filter(src_id='1.0').first()
@@ -1289,13 +1297,14 @@ def ds_update(request):
           )
           newpl.save()
           pobj = newpl
-          #print('new place, related:', newpl, rdrels)
+          print('new place, related:', newpl)
 
         # TODO: needs to update, not add
         # create related records (place_name, etc)
         # pobj is either a current (now updated) place or entirely new
         # rd is row dict
-        print('pobj,rd for add_rels_tsv()', pobj, rd)
+        print('pobj geoms, links pre-rels', pobj.geoms, pobj.links)
+        # print('pobj,rd for add_rels_tsv()', pobj, rd)
         update_rels_tsv(pobj, rd)
 
 
@@ -1371,9 +1380,9 @@ def ds_compare(request):
     ds = get_object_or_404(Dataset, id=dsid)
     ds_status = ds.status_idx
 
-    # how many exist, whether from reconciliation or original?
-    count_geoms = PlaceGeom.objects.filter(place_id__in=ds.placeids).count()
-    count_links = PlaceLink.objects.filter(place_id__in=ds.placeids).count()
+    # how many exist from reconciliation?
+    count_geoms = PlaceGeom.objects.filter(place_id__in=ds.placeids, task_id__isnull=False).count()
+    count_links = PlaceLink.objects.filter(place_id__in=ds.placeids, task_id__isnull=False).count()
 
     # wrangling names
     # current (previous) file
@@ -1434,11 +1443,11 @@ def ds_compare(request):
       "format": format,
       "validation_result": vresult,
       "tempfn": tempfn,
-      "count_links": count_links,
-      "count_geoms": count_geoms,
+      # "count_links": count_links,
+      # "count_geoms": count_geoms,
       "count_indexed": ds_status['idxcount'],
     }
-    print('count_geoms in ds_compare',count_geoms)
+    # print('count_geoms in ds_compare',count_geoms)
     # create pandas (pd) objects, then perform comparison
     # a = existing, b = new
     fn_a = 'media/'+filename_cur
@@ -1452,9 +1461,13 @@ def ds_compare(request):
 
       ids_a = adf['id'].tolist()
       ids_b = bdf['id'].tolist()
+      print('ids_b', ids_b)
       # new or removed columns?
       cols_del = list(set(adf.columns)-set(bdf.columns))
       cols_add = list(set(bdf.columns)-set(adf.columns))
+
+      comparison['count_links']= sum([p.links.count() for p in ds.places.all() if p.src_id in ids_b])
+      comparison['count_geoms'] = ds.geometries.filter(task_id__isnull=True).count()
 
       comparison['compare_result'] = {
         "count_new":len(ids_b),
