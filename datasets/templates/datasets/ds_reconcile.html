@@ -36,7 +36,7 @@
   </ul>
   <div class="tab-content">
     <div id="reconciliation" class="tab-pane fade show active " role="tabpanel" aria-labelledby="reconciliation-tab">
-      <div id="ds_tasks" class="small">
+      <mark id="ds_tasks" class="small">
         <h6 class="">Reconciliation Tasks 
           <span class="small help-matches" data-id="reconciliation">
             {% fontawesome_icon 'question-circle' color='#993333' %}
@@ -55,6 +55,9 @@
 		        <div id="ready" class="hidden pl-2">
 	            <p class="my-0">This dataset has been fully indexed</p>
 		        </div>
+	        {% endif %}
+	        {% if ds.ds_status == 'updated' %}
+		        <p class="larger my-0 py-0 strong-red">This dataset has been updated, so a new reconciliation to Wikidata task should be run.</p>
 	        {% endif %}
 	        {% if not ds.ds_status == 'accessioning' %}
 	          <div id="ready" class="hidden pl-2">
@@ -227,12 +230,13 @@
           counts = updates[u][1]
           task = updates[u][1]['task']
           console.log('updateTotals() counts', task, counts)
-          
+          ds_status = "{{ ds.ds_status }}"
           // if all are reviewed, disable radio button
           if(counts['total'] == 0 ){
             $('.'+task).css('border', '2px dashed darkseagreen')
-	          if(task == 'align_wdlocal'){
-	            $("#authtag").html(task=='align_tgn'?'Getty TGN':'Wikidata')
+	          $("#authtag").html(task=='align_tgn'?'Getty TGN':'Wikidata')
+
+	          if(task == 'align_wdlocal' && ds_status != 'updated'){
 	            $("#ready").removeClass("hidden")
 	            {#$('#'+task).addClass("hidden")#}
 	          }
@@ -252,7 +256,7 @@
           // hide 'review' link if count is 0
           // hide 'auto-accept' if it's pass0
           Object.keys(counts).forEach(function(key) {
-	          console.log('key, counts', key, counts[key])
+	          {#console.log('key, counts', key, counts[key])#}
             if(key.startsWith('pass') && counts[key] == 0){
               // console.log('foo:', "#"+tid+'_'+key.slice(-1))
 	            if(task=='align_idx'){

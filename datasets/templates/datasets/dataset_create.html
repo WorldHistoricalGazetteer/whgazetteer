@@ -132,6 +132,8 @@
         {% for e in context.errors %}
           <li>{% if context.format == 'delimited' or context.format == 'unknown' %}
                 {{ e|safe }}
+	            {% elif 'encoding' in e %}
+	              <b>{{ e|safe }}</b>
               {% else %}
                 <b>row #{{ e.row }}</b>: {{ e.msg }}; <b>path</b>: {{ e.path }}
               {% endif %}</li>

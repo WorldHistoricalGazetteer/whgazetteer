@@ -255,7 +255,7 @@
 
     msgs = ["{{ msg_wdlocal.type }}","{{ msg_tgn.type }}","{{ msg_whg.type }}"]
     console.log('msgs',msgs)
-    if("{{ msg_wdlocal.type }}" == 'done'){
+    if("{{ msg_wdlocal.type }}" == 'done' && '{{ ds.ds_status }}' != 'updated' ){
       $("#r_wdlocal").attr('disabled',true)
 	    $("#r_whg").prop('checked','true')
     }

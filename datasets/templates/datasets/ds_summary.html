@@ -546,10 +546,11 @@
           }
           html+='</ul><p>Please correct and try again</p>'
         } else {
-          html = '<b>Current file</b>: <br/><i>'+data['filename_cur']+'</i><br/>'
-          html += '<b>New file</b>: <br/><i>'+data['filename_new']+'</i><br/>'
-          html += '<b>New temp file</b>: <br/><i>'+data['tempfn']+'</i><br/>'
-          html += '<b>Validation result</b>: <br/><i>' +
+          html = '<b>Current file</b>: <i>'+data['filename_cur']+'</i><br/>'
+          html += '<b>New file</b>: <i>'+data['filename_new']+'</i><br/>'
+          html += '<b>New temp file</b>: <i>'+data['tempfn']+'</i><br/>'
+          html += '<b>Indexed?</b>: <i>'+(data['count_indexed']>0?"Yes":"No")+'</i><br/>'
+          html += '<b>Validation result</b>: <i>' +
             (data['validation_result']['errors'].length <1?'format valid':data['validation_result']['errors'])+'</i><hr/>'
           html += comparisonText(data)
           $("#btn_update").removeClass('hidden')

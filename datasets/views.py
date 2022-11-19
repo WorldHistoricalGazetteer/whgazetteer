@@ -1199,18 +1199,12 @@ def ds_update(request):
       file = filename_new,
       rev = rev_cur + 1,
       format = file_format,
-      # TODO: accept csv, track delimiter
-      #delimiter = result['delimiter'] if "delimiter" in result.keys() else "n/a",
-      #df_status = 'updating',
       upload_date = datetime.date.today(),
       header = compare_result['header_new'],
       numrows = compare_result['count_new']
     )
 
     # (re-)open files as panda dataframes; a = current, b = new
-    # test files
-    # cur: user_whgadmin/diamonds135.tsv
-    # new: user_whgadmin/diamonds135_rev2.tsv
     if file_format == 'delimited':
       adf = pd.read_csv('media/'+compare_data['filename_cur'],
                         delimiter='\t',
@@ -1299,12 +1293,12 @@ def ds_update(request):
           pobj = newpl
           print('new place, related:', newpl)
 
-        # TODO: needs to update, not add
+        # print('pobj geoms, links pre-rels', pobj.geoms, pobj.links)
+        # print('pobj,rd for add_rels_tsv()', pobj, rd)
+
         # create related records (place_name, etc)
         # pobj is either a current (now updated) place or entirely new
         # rd is row dict
-        print('pobj geoms, links pre-rels', pobj.geoms, pobj.links)
-        # print('pobj,rd for add_rels_tsv()', pobj, rd)
         update_rels_tsv(pobj, rd)
 
 
@@ -1321,8 +1315,8 @@ def ds_update(request):
 
       #
       # if dataset is indexed, update it there too
-      # TODO: if new records, new recon task & accessioning tasks needed
-      if compare_data['count_indexed']['value'] > 0:
+      # TODO: reindex
+      if compare_data['count_indexed'] > 0:
         from elasticsearch7 import Elasticsearch
         es = Elasticsearch([{'host': 'localhost',
                              'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
@@ -1359,7 +1353,8 @@ def ds_update(request):
         dataset_id = dsid,
         user_id = request.user.id
       )
-
+      ds.ds_status = 'updated'
+      ds.save()
       return JsonResponse(result, safe=False)
     elif file_format == 'lpf':
       print("ds_update for lpf; doesn't get here yet")
@@ -1379,10 +1374,6 @@ def ds_compare(request):
     format=request.POST['format']
     ds = get_object_or_404(Dataset, id=dsid)
     ds_status = ds.status_idx
-
-    # how many exist from reconciliation?
-    count_geoms = PlaceGeom.objects.filter(place_id__in=ds.placeids, task_id__isnull=False).count()
-    count_links = PlaceLink.objects.filter(place_id__in=ds.placeids, task_id__isnull=False).count()
 
     # wrangling names
     # current (previous) file
@@ -1407,7 +1398,7 @@ def ds_compare(request):
     # format validation
     if format == 'delimited':
       print('format:', format)
-      # goodtable wants filename only
+      # goodtable wants file path only
       # returns [x['message'] for x in errors]
       try:
         vresult = validate_tsv(tempfn, 'delimited')
@@ -1443,11 +1434,8 @@ def ds_compare(request):
       "format": format,
       "validation_result": vresult,
       "tempfn": tempfn,
-      # "count_links": count_links,
-      # "count_geoms": count_geoms,
       "count_indexed": ds_status['idxcount'],
     }
-    # print('count_geoms in ds_compare',count_geoms)
     # create pandas (pd) objects, then perform comparison
     # a = existing, b = new
     fn_a = 'media/'+filename_cur
@@ -1467,7 +1455,7 @@ def ds_compare(request):
       cols_add = list(set(bdf.columns)-set(adf.columns))
 
       comparison['count_links']= sum([p.links.count() for p in ds.places.all() if p.src_id in ids_b])
-      comparison['count_geoms'] = ds.geometries.filter(task_id__isnull=True).count()
+      comparison['count_geoms'] = ds.geometries.filter(task_id__isnull=False).count()
 
       comparison['compare_result'] = {
         "count_new":len(ids_b),
@@ -2172,8 +2160,7 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
       elif mimetype.startswith('application/'):
         encoding = fin.encoding
       print('encoding in DatasetCreate()', encoding)
-      if encoding not in ['utf-8', 'ascii']:
-      # if encoding != 'utf-8':
+      if encoding.lower() not in ['utf-8', 'ascii']:
         context['errors'] = ["The encoding of uploaded files must be unicode (utf-8). This file seems to be "+encoding]
         context['action'] = 'errors'
         return self.render_to_response(self.get_context_data(form=form, context=context))
@@ -2790,6 +2777,9 @@ class DatasetAddTaskView(LoginRequiredMixin, DetailView):
       and %s of the %s records that had hits have been reviewed. <span class='text-danger strong'>Starting this new task 
       will archive the existing task and submit only unreviewed records.</span>. 
       If you proceed, you can keep or delete prior match results (links and/or geometry):</p>"""
+    msg_updating = """This dataset has been updated, <span class='strong'>Starting this new task 
+      will archive the previous task and re-submit all records. If you proceed, you can keep or delete prior 
+      matching results (links and/or geometry)</span>. <a href="%s">Questions? Contact our editorial team</a>"""
     msg_done = """All records have been submitted for reconciliation to %s and reviewed. 
       To begin the step of accessioning to the WHG index, please <a href="%s">contact our editorial team</a>"""
     for i in ds.taskstats.items():
@@ -2800,13 +2790,19 @@ class DatasetAddTaskView(LoginRequiredMixin, DetailView):
         hadhits = gothits[tid]
         reviewed = hadhits-remaining
         print('auth, tid, remaining, hadhits', auth, tid, remaining, hadhits)
-        if remaining == 0:
+        if remaining == 0 and ds.ds_status != 'updated':
+        # if remaining == 0:
           context['msg_'+auth] = {
             'msg': msg_done%(auth,"/contact"),
             'type': 'done'}
-        elif remaining < hadhits:
+        elif remaining < hadhits and ds.ds_status != 'updated':
           context['msg_'+auth] = {
             'msg': msg_inprogress%(auth, reviewed, hadhits),
+            'type': 'inprogress'}
+        elif ds.ds_status == 'updated':
+          context['msg_'+auth] = {
+            'msg': msg_updating%("/contact"),
+            # 'msg': msg_updating%(auth, reviewed, hadhits),
             'type': 'inprogress'}
         else:
           context['msg_'+auth] = {

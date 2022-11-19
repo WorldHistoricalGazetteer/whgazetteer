@@ -617,10 +617,11 @@ def escount_ds(idx,label):
                        'timeout':30,
                        'max_retries':10,
                        'retry_on_timeout':True}])
-  q = {"query":{"match":{"dataset": label }}}
-  res = es.search(index=idx,body=q)
+  q = {"match":{"dataset": label }}
+  # TODO: match new pattern query={} across platform
+  res = es.search(index=idx, query=q)
 
-  return res['hits']['total']
+  return res['hits']['total']['value']
 
 def confirm(prompt=None, resp=False):
   """prompts for yes or no response from the user. Returns True for yes and
