@@ -929,11 +929,7 @@ def dataset_file_delete(ds):
       print('did not find file '+ffn)
 
 """
-  update_rels_tsv(pobj, row)
-  updates objects related to a Place (pobj)
-  make new child objects of pobj: names, types, whens, related, descriptions
-  for geoms and links, add from row if not there
-  row is a pandas dict
+  update_rels_tsv() refactor (backup below)
 """
 def update_rels_tsv(pobj, row):
   header = list(row.keys())
@@ -1157,10 +1153,10 @@ def update_rels_tsv(pobj, row):
   print('descriptions done')
 
 """
-  ds_update()
-  perform updates to database and index, given new datafile
-  params: dsid, format, keepg, keepl, compare_data (json string)
+  ds_update() refactor (backup below)
 """
+# keepg, keepl = [True, True]
+# file_format='delimited'
 def ds_update(request):
   if request.method == 'POST':
     print('request.POST ds_update()', request.POST)
@@ -1174,7 +1170,583 @@ def ds_update(request):
     print('keepg, type in ds_update() request', keepg, type(keepg))
     print('keepl, type in ds_update() request', keepg, type(keepl))
 
-    compare_data = json.loads(request.POST['compare_data'])
+    # compare_data = comparison
+    # compare_result = compare_data['compare_result']
+    compare_data = json.loads(request.POST['compare_data']) # comparison returned by ds_compare
+    compare_result = compare_data['compare_result']
+    print('compare_data from ds_compare', compare_data)
+    # tempfn has .tsv or .jsonld extension from validation step
+    tempfn = compare_data['tempfn']
+    filename_new = compare_data['filename_new']
+    # dsfobj_cur = 'user_whgadmin/sample7c.txt'
+    dsfobj_cur = ds.files.all().order_by('-rev')[0]
+    rev_cur = dsfobj_cur.rev
+
+    # rename file if already exists in user area
+    if Path('media/'+filename_new).exists():
+      fn=os.path.splitext(filename_new)
+      #filename_new=filename_new[:-4]+'_'+tempfn[-11:-4]+filename_new[-4:]
+      filename_new=fn[0]+'_'+tempfn[-11:-4]+fn[1]
+
+    # user said go...copy tempfn to media/{user} folder
+    filepath = 'media/'+filename_new
+    copyfile(tempfn,filepath)
+
+    # and create new DatasetFile instance
+    DatasetFile.objects.create(
+      dataset_id = ds,
+      file = filename_new,
+      rev = rev_cur + 1,
+      format = file_format,
+      upload_date = datetime.date.today(),
+      header = compare_result['header_new'],
+      numrows = compare_result['count_new']
+    )
+
+    # (re-)open files as panda dataframes; a = current, b = new
+    if file_format == 'delimited':
+      adf = pd.read_csv('media/'+compare_data['filename_cur'],
+                        delimiter='\t',
+                        dtype={'id':'str','ccodes':'str'})
+      bdf = pd.read_csv(filepath, delimiter='\t')
+
+      # zap entirely empty columns
+      adf.dropna(how='all', axis=1, inplace=True)
+      bdf.dropna(how='all', axis=1, inplace=True)
+      # replace NaN with None
+      adf = bdf.replace({np.nan: None})
+      bdf = bdf.replace({np.nan: None})
+
+      bdf = bdf.astype({"id":str,
+                        "ccodes":str,
+                        # "matches":str,
+                        "types":str,
+                        "aat_types":str
+                        # "description":str,
+                        })
+      print('reopened old file, # lines:',len(adf))
+      print('reopened new file, # lines:',len(bdf))
+      ids_a = adf['id'].tolist()
+      ids_b = bdf['id'].tolist()
+      delete_srcids = [str(x) for x in (set(ids_a)-set(ids_b))]
+      replace_srcids = set.intersection(set(ids_b),set(ids_a))
+
+      # CURRENT
+      places = Place.objects.filter(dataset=ds.label)
+      # Place.id lists
+      rows_delete = list(places.filter(src_id__in=delete_srcids).values_list('id',flat=True))
+      rows_replace = list(places.filter(src_id__in=replace_srcids).values_list('id',flat=True))
+      #rows_add = list(places.filter(src_id__in=compare_result['rows_add']).values_list('id',flat=True))
+
+      # delete places with ids missing in new data (CASCADE includes links & geoms)
+      places.filter(id__in=rows_delete).delete()
+
+      # what follows updates existing Place records, replaces related records, and adds new Places & related
+      # delete related records for the rest (except links & geoms if 'retain' boxes are checked)
+      # can't cascade because geoms and links are retained
+      #
+      if not keepg:
+        PlaceGeom.objects.filter(place_id__in=places, task_id__isnull=False).delete()
+      if not keepl:
+        PlaceLink.objects.filter(place_id__in=places, task_id__isnull=False).delete()
+      PlaceName.objects.filter(place_id__in=places).delete()
+      PlaceType.objects.filter(place_id__in=places).delete()
+      PlaceWhen.objects.filter(place_id__in=places).delete()
+      PlaceRelated.objects.filter(place_id__in=places).delete()
+      PlaceDescription.objects.filter(place_id__in=places).delete()
+
+      count_updated, count_new = [0,0]
+      # update remaining place instances w/data from new file
+      # AND add new
+      place_fields = {'id', 'title', 'ccodes','start','end'}
+      for index, row in bdf.iterrows():
+        # make 3 dicts: all; for Places; for PlaceXxxxs
+        rd = row.to_dict()
+        # print('rd in ds_update', rd)
+        rdp = {key:rd[key] for key in place_fields}
+        # look for corresponding current place
+        #p = places.filter(src_id='1.0').first()
+        p = places.filter(src_id=rdp['id']).first()
+        print('rdp (new row)', rdp)
+        start = int(rdp['start']) if 'start' in rdp else None
+        end = int(rdp['end']) if 'end' in rdp and str(rdp['end']) != 'nan' else start
+        minmax_new = [start, end] if start else [None]
+        if p != None:
+          # place exists, update it
+          count_updated +=1
+          p.title = rdp['title']
+          p.ccodes = [] if str(rdp['ccodes']) == 'nan' else rdp['ccodes'].replace(' ','').split(';')
+          p.minmax = minmax_new
+          p.timespans = [minmax_new]
+          p.save()
+          pobj = p
+        else:
+          # entirely new place
+          count_new +=1
+          newpl = Place.objects.create(
+            src_id = rdp['id'],
+            title = re.sub('\(.*?\)', '', rdp['title']),
+            ccodes = [] if str(rdp['ccodes']) == 'nan' else rdp['ccodes'].replace(' ','').split(';'),
+            dataset = ds,
+            minmax = minmax_new,
+            timespans = [minmax_new]
+          )
+          newpl.save()
+          pobj = newpl
+          print('new place, related:', newpl)
+
+        # print('pobj geoms, links pre-rels', pobj.geoms, pobj.links)
+        # print('pobj,rd for add_rels_tsv()', pobj, rd)
+
+        # create new related records for all Places (existing & new)
+        # pobj is either a current (now updated) place or entirely new
+        # rd is row dict
+        update_rels_tsv(pobj, rd)
+
+
+      # update numrows
+      ds.numrows = ds.places.count()
+      ds.save()
+
+      # initiate a result object
+      result = {"status": "updated", "update_count":count_updated ,
+                "new_count":count_new, "del_count": len(rows_delete), "newfile": filepath,
+                "format":file_format}
+      print('update result', result)
+      print("compare_data['count_indexed']", compare_data['count_indexed'])
+
+      #
+      # if dataset is indexed, update it there too
+      # TODO: reindex
+      if compare_data['count_indexed'] > 0:
+        from elasticsearch7 import Elasticsearch
+        es = Elasticsearch([{'host': 'localhost',
+                             'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
+                             'timeout':30,
+                             'max_retries':10,
+                             'retry_on_timeout':True,
+                             'port': 9200
+                             }])
+        idx='whg'
+
+        result["indexed"] = True
+
+        # surgically remove as req.
+        if len(rows_delete)> 0:
+          print('some rows to delete from index:', rows_delete)
+          # deleteFromIndex(es, idx, rows_delete)
+
+        # update others
+        if len(rows_replace) > 0:
+          replaceInIndex(es, idx, rows_replace)
+
+        # process new
+        #if len(rows_add) > 0:
+          # notify need to reconcile & accession them
+      else:
+        print('not indexed, that is all')
+
+      # write log entry
+      Log.objects.create(
+        # category, logtype, "timestamp", subtype, note, dataset_id, user_id
+        category = 'dataset',
+        logtype = 'ds_update',
+        note = json.dumps(compare_result),
+        dataset_id = dsid,
+        user_id = request.user.id
+      )
+      ds.ds_status = 'updated'
+      ds.save()
+      return JsonResponse(result, safe=False)
+    elif file_format == 'lpf':
+      print("ds_update for lpf; doesn't get here yet")
+"""
+  ds_compare() refactor (backup below)
+  ds 1395 7 rows, status: uploaded
+  ds 1396 7 rows, status: wd-complete
+"""
+# ds=Dataset.objects.get(id=1395)
+# # ds=Dataset.objects.get(id=1396)
+# dsid=ds.id
+# user='whgadmin'
+# format='delimited'
+# ds_status = ds.status_idx
+def ds_compare(request):
+  if request.method == 'POST':
+    print('ds_compare() request.POST', request.POST)
+    print('ds_compare() request.FILES', request.FILES)
+    dsid = request.POST['dsid']
+    user = request.user.username
+    format = request.POST['format']
+    ds = get_object_or_404(Dataset, id=dsid)
+    ds_status = ds.status_idx
+
+    # wrangling names
+    # current (previous) file
+    file_cur = ds.files.all().order_by('-rev')[0].file
+    filename_cur = file_cur.name
+
+    # new file
+    file_new=request.FILES['file']
+    tempf, tempfn = tempfile.mkstemp()
+    # write new file as temporary to /var/folders/../...
+    try:
+      for chunk in file_new.chunks():
+        os.write(tempf, chunk)
+    except:
+      raise Exception("Problem with the input file %s" % request.FILES['file'])
+    finally:
+      os.close(tempf)
+
+    # tempfn = '/var/folders/w1/ms_2x6rj0ls88v79q33lvds80000gp/T/tmpp8g0dl2z'
+    print('tempfn,filename_cur,file_new.name',tempfn, filename_cur, file_new.name)
+
+    # format validation
+    if format == 'delimited':
+      print('format:', format)
+      # goodtable wants file path only
+      # returns [x['message'] for x in errors]
+      try:
+        vresult = validate_tsv(tempfn, 'delimited')
+      except:
+        print('validate_tsv() failed:', sys.exc_info())
+
+    elif format == 'lpf':
+      # TODO: feed tempfn only?
+      # TODO: accept json-lines; only FeatureCollections ('coll') now
+      vresult = validate_lpf(tempfn,'coll')
+      # print('format, vresult:',format,vresult)
+
+    # if errors, parse & return to modal
+    # which expects {validation_result{errors['','']}}
+    print('vresult', vresult)
+    if len(vresult['errors']) > 0:
+      errormsg = {"failed":{
+        "errors":vresult['errors']
+      }}
+      return JsonResponse(errormsg,safe=False)
+
+    # give new file a path
+    # filename_new = 'user_'+user+'/'+'sample7c_new.txt'
+    filename_new = 'user_'+user+'/'+file_new.name
+    # temp files were given extensions in validation functions
+    tempfn_new = tempfn+'.tsv' if format == 'delimited' else tempfn+'.jsonld'
+    print('tempfn_new', tempfn_new)
+
+    # begin report
+    comparison={
+      "id": dsid,
+      "filename_cur": filename_cur,
+      "filename_new": filename_new,
+      "format": format,
+      "validation_result": vresult,
+      "tempfn": tempfn,
+      "count_indexed": ds_status['idxcount'],
+    }
+    # create pandas (pd) objects, then perform comparison
+    # a = existing, b = new
+    fn_a = 'media/'+filename_cur
+    fn_b = tempfn
+    if format == 'delimited':
+      adf = pd.read_csv(fn_a, delimiter='\t')
+      try:
+        bdf = pd.read_csv(fn_b, delimiter='\t')
+      except:
+        print('bdf read failed', sys.exc_info())
+
+      ids_a = adf['id'].tolist()
+      ids_b = bdf['id'].tolist()
+      print('ids_a, ids_b', ids_a, ids_b)
+      # new or removed columns?
+      cols_del = list(set(adf.columns)-set(bdf.columns))
+      cols_add = list(set(bdf.columns)-set(adf.columns))
+
+      # count of *added* links
+      comparison['count_links_added'] = ds.links.filter(task_id__isnull=False).count()
+      # count of *added* geometries
+      comparison['count_geoms_added'] = ds.geometries.filter(task_id__isnull=False).count()
+
+      comparison['compare_result'] = {
+        "count_new":len(ids_b),
+        'count_diff':len(ids_b)-len(ids_a),
+        'count_replace': len(set.intersection(set(ids_b),set(ids_a))),
+        'cols_del': cols_del,
+        'cols_add': cols_add,
+        'header_new': vresult['columns'],
+        'rows_add': [str(x) for x in (set(ids_b)-set(ids_a))],
+        'rows_del': [str(x) for x in (set(ids_a)-set(ids_b))]
+      }
+    # TODO: process LP format, collections + json-lines
+    elif format == 'lpf':
+      # print('need to compare lpf files:',fn_a,fn_b)
+      comparison['compare_result'] = "it's lpf...tougher row to hoe"
+
+    # print('comparison',comparison)
+    # back to calling modal
+    return JsonResponse(comparison,safe=False)
+
+"""  
+  update_rels_tsv(pobj, row)
+  updates objects related to a Place (pobj)
+  make new child objects of pobj: names, types, whens, related, descriptions
+  for geoms and links, add from row if not there
+  row is a pandas dict
+"""
+def update_rels_tsv(pobj, row):
+  header = list(row.keys())
+  # print('update_rels_tsv(): pobj, row, header', pobj, row, header)
+  # dies somewhere after this
+  src_id = row['id']
+  title = row['title']
+  # for PlaceName insertion, strip anything in parens
+  title = re.sub('\(.*?\)', '', title)
+  title_source = row['title_source']
+  title_uri = row['title_uri'] if 'title_uri' in header else ''
+  variants = [x.strip() for x in row['variants'].split(';')] \
+    if 'variants' in header and row['variants'] else []
+
+  types = [x.strip() for x in row['types'].split(';')] \
+    if 'types' in header and str(row['types']) != '' else []
+
+  aat_types = [x.strip() for x in row['aat_types'].split(';')] \
+    if 'aat_types' in header and str(row['aat_types']) != '' else []
+
+  parent_name = row['parent_name'] if 'parent_name' in header else ''
+
+  parent_id = row['parent_id'] if 'parent_id' in header else ''
+
+  # empty lon and lat are None
+  coords = makeCoords(row['lon'], row['lat']) \
+    if 'lon' in header and 'lat' in header and row['lon'] else []
+  print('coords', coords)
+  try:
+    matches = [x.strip() for x in row['matches'].split(';')] \
+      if 'matches' in header and row['matches'] else []
+  except:
+    print('matches, error', row['matches'], sys.exc_info())
+
+  description = row['description'] \
+    if row['description'] else ''
+
+  # build associated objects and add to arrays
+  objs = {"PlaceName":[], "PlaceType":[], "PlaceGeom":[], "PlaceWhen":[],
+          "PlaceLink":[], "PlaceRelated":[], "PlaceDescription":[], "PlaceDepiction":[]}
+
+  # title as a PlaceName
+  objs['PlaceName'].append(
+    PlaceName(
+      place=pobj,
+      src_id = src_id,
+      toponym = title,
+      jsonb={"toponym": title, "citation": {"id":title_uri,"label":title_source}}
+  ))
+
+  # add variants as PlaceNames, if any
+  if len(variants) > 0:
+    for v in variants:
+      haslang = re.search("@(.*)$", v.strip())
+      new_name = PlaceName(
+        place=pobj,
+        src_id = src_id,
+        toponym = v.strip(),
+        jsonb={"toponym": v.strip(), "citation": {"id":"","label":title_source}}
+      )
+      if haslang:
+        new_name.jsonb['lang'] = haslang.group(1)
+      objs['PlaceName'].append(new_name)
+  print('objs after names', objs)
+
+  #
+  # PlaceType()
+  # TODO: parse t
+  if len(types) > 0:
+    fclass_list = []
+    for i,t in enumerate(types):
+      # i always 0 in tsv
+      aatnum='aat:'+aat_types[i] if len(aat_types) >= len(types) else None
+      print(aat_types[i])
+      if aatnum:
+        fc = get_object_or_404(Type, aat_id=aat_types[i])
+        print('fclass', fc.fclass)
+        fclass_list.append(fc.fclass)
+      objs['PlaceType'].append(
+        PlaceType(
+          place=pobj,
+          src_id = src_id,
+          jsonb={ "identifier":aatnum,
+                  "sourceLabel":t,
+                  "label":aat_lookup(int(aatnum[4:])) if aatnum !='aat:' else ''
+                },
+          fclass = fc.fclass
+      ))
+  if len(fclass_list) >0:
+    pobj.fclasses = fclass_list
+    pobj.save()
+  print('objs after types', objs)
+
+
+  #
+  # PlaceGeom()
+  # TODO: test geometry type or force geojson
+  if len(coords) > 0:
+    geom = {"type": "Point",
+            "coordinates": coords,
+            "geowkt": 'POINT('+str(coords[0])+' '+str(coords[1])+')'}
+  elif 'geowkt' in header and row['geowkt'] not in ['',None]: # some rows no geom
+    geom = parse_wkt(row['geowkt'])
+    print('from geowkt', geom)
+  else:
+    geom = None
+  print('geom', geom)
+  # TODO:
+  # if pobj is existing place, add geom only if it's new
+  # if pobj is new place and row has geom, always add it
+  if geom:
+    def trunc4(val):
+      return round(val,4)
+
+    new_coords = list(map(trunc4,list(geom['coordinates'])))
+
+    # if no geoms at all, add this one
+    if pobj.geoms.count() == 0:
+      objs['PlaceGeom'].append(
+        PlaceGeom(
+          place=pobj,
+          src_id=src_id,
+          jsonb=geom,
+          geom=GEOSGeometry(json.dumps(geom))
+        ))
+    # otherwise only add if coords don't match
+    elif pobj.geoms.count() > 0:
+      # add only if coords don't match
+      try:
+        for g in pobj.geoms.all():
+          if list(map(trunc4, g.jsonb['coordinates'])) != new_coords:
+            objs['PlaceGeom'].append(
+                PlaceGeom(
+                  place=pobj,
+                  src_id = src_id,
+                  jsonb=geom,
+                  geom=GEOSGeometry(json.dumps(geom))
+              ))
+      except:
+        print('failed geom on pobj:', pobj, sys.exc_info())
+  print('objs after geom', objs)
+
+  # PlaceLink() - all are closeMatch
+  # Pandas turns nulls into NaN strings, 'nan'
+  print('matches', matches)
+  if len(matches) > 0:
+    # any existing? only add new
+    exist_links = list(pobj.links.all().values_list('jsonb__identifier',flat=True))
+    print('matches, exist_links at create', matches, exist_links)
+
+    if len(set(matches)-set(exist_links)) > 0:
+      # one or more new matches; add 'em
+      for m in matches:
+        objs['PlaceLink'].append(
+          PlaceLink(
+            place=pobj,
+            src_id = src_id,
+            jsonb={"type":"closeMatch", "identifier":m}
+        ))
+
+  # print('objs after matches', objs)
+  #
+  # PlaceRelated()
+  if parent_name != '':
+    objs['PlaceRelated'].append(
+      PlaceRelated(
+        place=pobj,
+        src_id=src_id,
+        jsonb={
+          "relationType": "gvp:broaderPartitive",
+          "relationTo": parent_id,
+          "label": parent_name}
+    ))
+
+  # print('objs after related', objs)
+
+  # PlaceWhen()
+  # timespans[{start{}, end{}}], periods[{name,id}], label, duration
+  objs['PlaceWhen'].append(
+    PlaceWhen(
+      place=pobj,
+      src_id = src_id,
+      jsonb={
+            "timespans": [{
+              "start":{"earliest":pobj.minmax[0]},
+              "end":{"latest":pobj.minmax[1]}}]
+          }
+  ))
+
+  # print('objs after when', objs)
+  #
+  # PlaceDescription()
+  # @id, value, lang
+  print('description', description)
+  if description != '':
+    objs['PlaceDescription'].append(
+      PlaceDescription(
+        place=pobj,
+        src_id = src_id,
+        jsonb={
+          "@id": "", "value":description, "lang":""
+        }
+      ))
+
+  print('objs after all', objs)
+
+  # what came from this row
+  print('COUNTS:')
+  print('PlaceName:', len(objs['PlaceName']))
+  print('PlaceType:', len(objs['PlaceType']))
+  print('PlaceGeom:', len(objs['PlaceGeom']))
+  print('PlaceLink:', len(objs['PlaceLink']))
+  print('PlaceRelated:', len(objs['PlaceRelated']))
+  print('PlaceWhen:', len(objs['PlaceWhen']))
+  print('PlaceDescription:', len(objs['PlaceDescription']))
+  # no depictions in LP-TSV
+
+  # TODO: update place.fclasses, place.minmax, place.timespans
+
+  # bulk_create(Class, batch_size=n) for each
+  # PlaceName.objects.create(objs['PlaceName'][0])
+  PlaceName.objects.bulk_create(objs['PlaceName'],batch_size=10000)
+  print('names done')
+  PlaceType.objects.bulk_create(objs['PlaceType'],batch_size=10000)
+  print('types done')
+  PlaceGeom.objects.bulk_create(objs['PlaceGeom'],batch_size=10000)
+  print('geoms done')
+  PlaceLink.objects.bulk_create(objs['PlaceLink'],batch_size=10000)
+  print('links done')
+  PlaceRelated.objects.bulk_create(objs['PlaceRelated'],batch_size=10000)
+  print('related done')
+  PlaceWhen.objects.bulk_create(objs['PlaceWhen'],batch_size=10000)
+  print('whens done')
+  PlaceDescription.objects.bulk_create(objs['PlaceDescription'],batch_size=10000)
+  print('descriptions done')
+
+"""
+  backup copy 20 Nov 2022; pre-refactor
+  ds_update()
+  perform updates to database and index, given new datafile
+  params: dsid, format, keepg, keepl, compare_data (json string)
+"""
+def ds_update_bak(request):
+  if request.method == 'POST':
+    print('request.POST ds_update()', request.POST)
+    dsid=request.POST['dsid']
+    ds = get_object_or_404(Dataset, id=dsid)
+    file_format=request.POST['format']
+    # keep previous recon/review results?
+    keepg = request.POST['keepg']
+    keepl = request.POST['keepl']
+
+    print('keepg, type in ds_update() request', keepg, type(keepg))
+    print('keepl, type in ds_update() request', keepg, type(keepl))
+
+    compare_data = json.loads(request.POST['compare_data']) # comparison returned by ds_compare
     compare_result = compare_data['compare_result']
     print('compare_data from ds_compare', compare_data)
     # tempfn has .tsv or .jsonld extension from validation step
@@ -1360,12 +1932,13 @@ def ds_update(request):
       print("ds_update for lpf; doesn't get here yet")
 
 """
-ds_compare()
-validates dataset update file & compares w/existing
-called by ajax function from modal 
-returns json result object
+  backup copy 20 Nov 2022; pre-refactor
+  ds_compare()
+  validates dataset update file & compares w/existing
+  called by ajax function from modal 
+  returns json result object
 """
-def ds_compare(request):
+def ds_compare_bak(request):
   if request.method == 'POST':
     print('ds_compare() request.POST', request.POST)
     print('ds_compare() request.FILES',request.FILES)
@@ -1454,8 +2027,15 @@ def ds_compare(request):
       cols_del = list(set(adf.columns)-set(bdf.columns))
       cols_add = list(set(bdf.columns)-set(adf.columns))
 
-      comparison['count_links']= sum([p.links.count() for p in ds.places.all() if p.src_id in ids_b])
-      comparison['count_geoms'] = ds.geometries.filter(task_id__isnull=False).count()
+      # querysets of all links and geoms in dataset
+      dslinks = PlaceLink.objects.filter(place_id__in=ds.placeids).values_list('jsonb', flat=True)
+      dsgeoms = PlaceGeom.objects.filter(place_id__in=ds.placeids).values_list('jsonb', flat=True)
+
+      comparison['count_links_prior'] = dslinks.filter(task_id__isnull=True).count()
+      comparison['count_geoms_prior'] = dsgeoms.filter(task_id__isnull=True).count()
+
+      # comparison['count_links']= sum([p.links.count() for p in ds.places.all() if p.src_id in ids_b])
+      # comparison['count_geoms'] = ds.geometries.filter(task_id__isnull=False).count()
 
       comparison['compare_result'] = {
         "count_new":len(ids_b),

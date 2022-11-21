@@ -459,7 +459,7 @@ def removePlacesFromIndex(es, idx, pids):
     # get its index document
     res = es.search(index=idx, body=esq_pid(pid))
     hits=res['hits']['hits']
-    # print(hits)
+    print(hits)
     # is it in the index?
     if len(hits) > 0:
       doc = hits[0]
@@ -468,6 +468,7 @@ def removePlacesFromIndex(es, idx, pids):
       sugs = list(set(src['suggest']['input'])) # distinct only
       searchy = list(set([item for item in src['searchy'] if type(item) != list])) 
       # role-dependent action
+      print('role', role)
       if role == 'parent':
         # has children?
         kids = [int(x) for x in src['children']]
@@ -529,6 +530,8 @@ def removePlacesFromIndex(es, idx, pids):
           # remove this id from children and remove its variants (sugs) from suggest.input and searchy
           newsugs = list(set(psugs)-set(sugs))
           newsearchy = list(set(psearchy)-set(searchy))
+          print("newsugs",newsugs)
+          print("newsearchy",newsearchy)
           q_update = {"script":{
             "lang": "painless",
             "source": """ctx._source.suggest.input = params.sugs; ctx._source.searchy = params.searchy;""",
@@ -536,26 +539,20 @@ def removePlacesFromIndex(es, idx, pids):
             },
               "query": {"match":{"_id": parent }}
             }
+          print('q_update::542', q_update)
           # sometimes docs named as parent don't have the id of the child
           # in that case, don't look for the child id, it'll break ES
           if len(psrc['children']) > 0:
             q_update['script']['source'] = """ctx._source.children.remove(ctx._source.children.indexOf(params.val));
                           ctx._source.suggest.input = params.sugs; ctx._source.searchy = params.searchy;"""
-            q_update['params']['val'] = str(pid)
-          # q_update = {"script":{
-          #   "source": """ctx._source.children.remove(ctx._source.children.indexOf(params.val));
-          #     ctx._source.suggest.input = params.sugs; ctx._source.searchy = params.searchy;""",
-          #   "lang": "painless",
-          #   "params":{"val": str(pid), "sugs": newsugs, "searchy": newsearchy }
-          #   },
-          #     "query": {"match":{"_id": parent }}
-          #   }
+            q_update['script']['params']['val'] = str(pid)
+          print('q_update::549', q_update)
           try:
-            es.update_by_query(index=idx,body=q_update)
+            es.update_by_query(index=idx, body=q_update)
             print('child '+psrc['title'],str(pid)+' excised from parent: '+parent+'; tagged for deletion')
           except:
+            print('update of parent losing child failed', sys.exit(sys.exc_info()))
             pass
-            print('update of parent losing child failed',sys.exit(sys.exc_info()))
         # child's presence in parent removed, add to delthese[]
         delthese.append(pid)
       # ex. deleted 2: [6713134, 6713135]
@@ -569,6 +566,15 @@ def removePlacesFromIndex(es, idx, pids):
       place.save()
   es.delete_by_query(idx,body={"query": {"terms": {"place_id": delthese}}})
   print('deleted '+str(len(delthese))+': '+str(delthese))
+  msg = 'deleted '+str(len(delthese))+': '+str(delthese)
+  return JsonResponse(msg, safe=False)
+
+  # is place_id in any child[] fields?
+  # i.e. did removal work?
+  # GET /whg/_search
+  # {"query": {"bool": {"must": [{"match":{
+  #   "children":"6713142"}}]}}}
+
 
 # ***
 # given ds label, return list of place_id 

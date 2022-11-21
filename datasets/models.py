@@ -140,6 +140,12 @@ class Dataset(models.Model):
       last = self.create_date
     return last.strftime("%d %b %Y")
 
+  # list of dataset links
+  @property
+  def links(self):
+    l_list = PlaceLink.objects.filter(place_id__in=self.placeids).values_list('jsonb', flat=True)
+    return l_list
+
   @property
   def minmax(self):
     # TODO: temporal is sparse, sometimes [None, None]
