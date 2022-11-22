@@ -56,7 +56,8 @@
 	            <p class="my-0">This dataset has been fully indexed</p>
 		        </div>
 	        {% endif %}
-	        {% if ds.ds_status == 'updated' %}
+	        <!-- if already reconciled, notify need for new task -->
+	        {% if ds.ds_status == 'updated' and ds.recon_status %}
 		        <p class="larger my-0 py-0 strong-red">This dataset has been updated, so a new reconciliation to Wikidata task should be run.</p>
 	        {% endif %}
 	        {% if not ds.ds_status == 'accessioning' %}

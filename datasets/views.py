@@ -1229,6 +1229,8 @@ def ds_update(request):
       ids_a = adf['id'].tolist()
       ids_b = bdf['id'].tolist()
       delete_srcids = [str(x) for x in (set(ids_a)-set(ids_b))]
+      # TODO: limit these to rows that have changed
+      # OR...flag changed places so they can be omitted from
       replace_srcids = set.intersection(set(ids_b),set(ids_a))
 
       # CURRENT
@@ -1260,6 +1262,7 @@ def ds_update(request):
       # AND add new
       place_fields = {'id', 'title', 'ccodes','start','end'}
       for index, row in bdf.iterrows():
+        # TODO:
         # make 3 dicts: all; for Places; for PlaceXxxxs
         rd = row.to_dict()
         # print('rd in ds_update', rd)
@@ -1272,7 +1275,8 @@ def ds_update(request):
         end = int(rdp['end']) if 'end' in rdp and str(rdp['end']) != 'nan' else start
         minmax_new = [start, end] if start else [None]
         if p != None:
-          # place exists, update it
+          # TODO: if p != None and p.flag:
+          # place exists and it's flagged as changed, update it
           count_updated +=1
           p.title = rdp['title']
           p.ccodes = [] if str(rdp['ccodes']) == 'nan' else rdp['ccodes'].replace(' ','').split(';')
@@ -1337,6 +1341,7 @@ def ds_update(request):
           # deleteFromIndex(es, idx, rows_delete)
 
         # update others
+        # TODO: replace only flagged places
         if len(rows_replace) > 0:
           replaceInIndex(es, idx, rows_replace)
 
