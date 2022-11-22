@@ -608,7 +608,7 @@ def validate_tsv(fn, ext):
   if len(report['tables']) > 0:
     rpt = report['tables'][0]
     result['count'] = rpt['stats']['rows']  # count
-    print('rpt', rpt)
+    print('rpt errors', rpt['errors'])
 
   req = ['id', 'title', 'title_source', 'start']
   missing = list(set(req) - set(header))

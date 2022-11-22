@@ -1182,6 +1182,7 @@ def ds_update(request):
     dsfobj_cur = ds.files.all().order_by('-rev')[0]
     rev_cur = dsfobj_cur.rev
 
+
     # rename file if already exists in user area
     if Path('media/'+filename_new).exists():
       fn=os.path.splitext(filename_new)
@@ -1210,82 +1211,104 @@ def ds_update(request):
                         dtype={'id':'str','ccodes':'str'})
       bdf = pd.read_csv(filepath, delimiter='\t')
 
-      # zap entirely empty columns
-      adf.dropna(how='all', axis=1, inplace=True)
-      bdf.dropna(how='all', axis=1, inplace=True)
+      # DO NOT zap entirely empty columns
+      # adf.dropna(how='all', axis=1, inplace=True)
+      # bdf.dropna(how='all', axis=1, inplace=True)
+
       # replace NaN with None
       adf = bdf.replace({np.nan: None})
       bdf = bdf.replace({np.nan: None})
 
-      bdf = bdf.astype({"id":str,
-                        "ccodes":str,
-                        # "matches":str,
-                        "types":str,
-                        "aat_types":str
-                        # "description":str,
-                        })
+      bdf = bdf.astype({"id":str,"ccodes":str,"types":str,"aat_types":str})
       print('reopened old file, # lines:',len(adf))
       print('reopened new file, # lines:',len(bdf))
       ids_a = adf['id'].tolist()
       ids_b = bdf['id'].tolist()
+
       delete_srcids = [str(x) for x in (set(ids_a)-set(ids_b))]
       # TODO: limit these to rows that have changed
       # OR...flag changed places so they can be omitted from
-      replace_srcids = set.intersection(set(ids_b),set(ids_a))
+      # remaining_srcids = set.intersection(set(ids_b),set(ids_a))
+      # replace_srcids = set.intersection(set(ids_b),set(ids_a))
 
-      # CURRENT
-      places = Place.objects.filter(dataset=ds.label)
-      # Place.id lists
-      rows_delete = list(places.filter(src_id__in=delete_srcids).values_list('id',flat=True))
-      rows_replace = list(places.filter(src_id__in=replace_srcids).values_list('id',flat=True))
-      #rows_add = list(places.filter(src_id__in=compare_result['rows_add']).values_list('id',flat=True))
+      # CURRENT PLACES
+      ds_places = ds.places.all()
+      # Place.id list to delete
+      rows_delete = list(ds_places.filter(src_id__in=compare_result['rows_del']).values_list('id',flat=True))
+      # new src_ids list
+      rows_add = compare_result['rows_add'] # src_ids, no pid yet
 
-      # delete places with ids missing in new data (CASCADE includes links & geoms)
-      places.filter(id__in=rows_delete).delete()
+      # delete places with (src_)ids missing in new data (CASCADE includes links & geoms)
+      ds_places.filter(id__in=rows_delete).delete()
 
-      # what follows updates existing Place records, replaces related records, and adds new Places & related
-      # delete related records for the rest (except links & geoms if 'retain' boxes are checked)
-      # can't cascade because geoms and links are retained
-      #
-      if not keepg:
-        PlaceGeom.objects.filter(place_id__in=places, task_id__isnull=False).delete()
-      if not keepl:
-        PlaceLink.objects.filter(place_id__in=places, task_id__isnull=False).delete()
-      PlaceName.objects.filter(place_id__in=places).delete()
-      PlaceType.objects.filter(place_id__in=places).delete()
-      PlaceWhen.objects.filter(place_id__in=places).delete()
-      PlaceRelated.objects.filter(place_id__in=places).delete()
-      PlaceDescription.objects.filter(place_id__in=places).delete()
+
+      def delete_related(pid):
+        # maybe keep prior links and geoms matches; remove the rest
+        if not keepg:
+          # keep no geoms
+          PlaceGeom.objects.filter(place_id=pid).delete()
+        else:
+          # leave results of prior matches
+          PlaceGeom.objects.filter(place_id=pid, task_id__isnull=True).delete()
+        if not keepl:
+          # keep no links
+          PlaceLink.objects.filter(place_id=pid).delete()
+        else:
+          # leave results of prior matches
+          PlaceLink.objects.filter(place_id=pid, task_id__isnull=True).delete()
+        PlaceName.objects.filter(place_id=pid).delete()
+        PlaceType.objects.filter(place_id=pid).delete()
+        PlaceWhen.objects.filter(place_id=pid).delete()
+        PlaceRelated.objects.filter(place_id=pid).delete()
+        PlaceDescription.objects.filter(place_id=pid).delete()
 
       count_updated, count_new = [0,0]
-      # update remaining place instances w/data from new file
-      # AND add new
+      # set Place.flag = True *IF CHANGED ONLY*
+      # update place instances w/data from new file
+      rows_replace = []
       place_fields = {'id', 'title', 'ccodes','start','end'}
       for index, row in bdf.iterrows():
-        # TODO:
-        # make 3 dicts: all; for Places; for PlaceXxxxs
-        rd = row.to_dict()
-        # print('rd in ds_update', rd)
-        rdp = {key:rd[key] for key in place_fields}
-        # look for corresponding current place
-        #p = places.filter(src_id='1.0').first()
-        p = places.filter(src_id=rdp['id']).first()
+        # TODO: compare row to existing (maybe do this in ds_compare()?)
+        # new row as json
+        # row = bdf.loc[bdf['id']=='10'] Sampit
+        row_json = json.loads(row.to_json(orient='records'))[0]
+        row_bdf_sorted = {key: val for key, val in sorted(row_json.items(), key=lambda ele: ele[0])}
+        print('incoming row in ds_update', row_bdf_sorted)
+        # working subset of new row
+        rdp = {key:row_bdf_sorted[key] for key in place_fields}
         print('rdp (new row)', rdp)
+
+        # some Place attributes
         start = int(rdp['start']) if 'start' in rdp else None
         end = int(rdp['end']) if 'end' in rdp and str(rdp['end']) != 'nan' else start
         minmax_new = [start, end] if start else [None]
-        if p != None:
-          # TODO: if p != None and p.flag:
-          # place exists and it's flagged as changed, update it
-          count_updated +=1
-          p.title = rdp['title']
-          p.ccodes = [] if str(rdp['ccodes']) == 'nan' else rdp['ccodes'].replace(' ','').split(';')
-          p.minmax = minmax_new
-          p.timespans = [minmax_new]
-          p.save()
-          pobj = p
-        else:
-          # entirely new place
+
+        try:
+          # is there corresponding current Place?
+          p = ds_places.get(src_id=rdp['id'])
+          # there is, build a json object from it
+          row_adf = adf.loc[adf['id'] == p.src_id]
+          row_adf_json=json.loads((row_adf.to_json(orient='records')))[0]
+          row_adf_sorted = {key: val for key, val in sorted(row_adf_json.items(), key=lambda ele: ele[0])}
+          print(row_adf_sorted)
+
+          # rebuild and flag Place p only if changed
+          if row_adf_sorted != row_bdf_sorted:
+            print('re-build Place '+p+' from row_bdf_sorted')
+            count_updated += 1
+            p.title = rdp['title']
+            p.ccodes = [] if str(rdp['ccodes']) == 'nan' else rdp['ccodes'].replace(' ', '').split(';')
+            p.minmax = minmax_new
+            p.timespans = [minmax_new]
+            p.flag = True
+            p.save()
+            # add related records (PlaceName, PlaceType, etc.)
+            delete_related(p)
+            # TODO: does update_rels_tsv replace?
+            update_rels_tsv(p, row_bdf_sorted)
+        except:
+          # no corresponding Place, create new one
+          print('new place record needed from rdp', rdp)
           count_new +=1
           newpl = Place.objects.create(
             src_id = rdp['id'],
@@ -1298,15 +1321,8 @@ def ds_update(request):
           newpl.save()
           pobj = newpl
           print('new place, related:', newpl)
-
-        # print('pobj geoms, links pre-rels', pobj.geoms, pobj.links)
-        # print('pobj,rd for add_rels_tsv()', pobj, rd)
-
-        # create new related records for all Places (existing & new)
-        # pobj is either a current (now updated) place or entirely new
-        # rd is row dict
-        update_rels_tsv(pobj, rd)
-
+          # add related rcords (PlaceName, PlaceType, etc.)
+          update_rels_tsv(pobj, row_bdf_sorted)
 
       # update numrows
       ds.numrows = ds.places.count()
@@ -1432,7 +1448,7 @@ def ds_compare(request):
       return JsonResponse(errormsg,safe=False)
 
     # give new file a path
-    # filename_new = 'user_'+user+'/'+'sample7c_new.txt'
+    # filename_new = 'user_'+user+'/'+'sample7cr_new.tsv'
     filename_new = 'user_'+user+'/'+file_new.name
     # temp files were given extensions in validation functions
     tempfn_new = tempfn+'.tsv' if format == 'delimited' else tempfn+'.jsonld'
@@ -1497,7 +1513,7 @@ def ds_compare(request):
   for geoms and links, add from row if not there
   row is a pandas dict
 """
-def update_rels_tsv(pobj, row):
+def update_rels_tsv_bak(pobj, row):
   header = list(row.keys())
   # print('update_rels_tsv(): pobj, row, header', pobj, row, header)
   # dies somewhere after this
