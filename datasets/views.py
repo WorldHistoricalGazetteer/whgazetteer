@@ -21,6 +21,7 @@ from django_celery_results.models import TaskResult
 from celery import current_app as celapp
 # from chardet import detect
 import codecs, math, mimetypes, os, re, shutil, sys, tempfile
+from deepdiff import DeepDiff as diff
 import numpy as np
 from elasticsearch7 import Elasticsearch
 es = Elasticsearch([{'host': 'localhost',
@@ -1066,7 +1067,7 @@ def update_rels_tsv(pobj, row):
     # any existing? only add new
     exist_links = list(pobj.links.all().values_list('jsonb__identifier',flat=True))
     print('matches, exist_links at create', matches, exist_links)
-    if set(matches)-set(exist_links) > 0:
+    if len(set(matches)-set(exist_links)) > 0:
       # one or more new matches; add 'em
       for m in matches:
         objs['PlaceLink'].append(
@@ -1211,12 +1212,8 @@ def ds_update(request):
                         dtype={'id':'str','ccodes':'str'})
       bdf = pd.read_csv(filepath, delimiter='\t')
 
-      # DO NOT zap entirely empty columns
-      # adf.dropna(how='all', axis=1, inplace=True)
-      # bdf.dropna(how='all', axis=1, inplace=True)
-
       # replace NaN with None
-      adf = bdf.replace({np.nan: None})
+      adf = adf.replace({np.nan: None})
       bdf = bdf.replace({np.nan: None})
 
       bdf = bdf.astype({"id":str,"ccodes":str,"types":str,"aat_types":str})
@@ -1225,7 +1222,7 @@ def ds_update(request):
       ids_a = adf['id'].tolist()
       ids_b = bdf['id'].tolist()
 
-      delete_srcids = [str(x) for x in (set(ids_a)-set(ids_b))]
+      # delete_srcids = [str(x) for x in (set(ids_a)-set(ids_b))]
       # TODO: limit these to rows that have changed
       # OR...flag changed places so they can be omitted from
       # remaining_srcids = set.intersection(set(ids_b),set(ids_a))
@@ -1236,7 +1233,7 @@ def ds_update(request):
       # Place.id list to delete
       rows_delete = list(ds_places.filter(src_id__in=compare_result['rows_del']).values_list('id',flat=True))
       # new src_ids list
-      rows_add = compare_result['rows_add'] # src_ids, no pid yet
+      # rows_add = compare_result['rows_add'] # src_ids, no pid yet
 
       # delete places with (src_)ids missing in new data (CASCADE includes links & geoms)
       ds_places.filter(id__in=rows_delete).delete()
@@ -1271,12 +1268,16 @@ def ds_update(request):
         # TODO: compare row to existing (maybe do this in ds_compare()?)
         # new row as json
         # row = bdf.loc[bdf['id']=='10'] Sampit
-        row_json = json.loads(row.to_json(orient='records'))[0]
-        row_bdf_sorted = {key: val for key, val in sorted(row_json.items(), key=lambda ele: ele[0])}
+        row_dict = row.to_dict()
+        # row_json = row.to_json(orient='records')
+        # row_json = json.loads(row.to_json(orient='records'))
+        print(row_dict)
+        # row_json = json.loads(row.to_json(orient='records'))[0]
+        row_bdf_sorted = {key: val for key, val in sorted(row_dict.items(), key=lambda ele: ele[0])}
         print('incoming row in ds_update', row_bdf_sorted)
         # working subset of new row
         rdp = {key:row_bdf_sorted[key] for key in place_fields}
-        print('rdp (new row)', rdp)
+        print('rdp subset of row', rdp)
 
         # some Place attributes
         start = int(rdp['start']) if 'start' in rdp else None
@@ -1285,27 +1286,42 @@ def ds_update(request):
 
         try:
           # is there corresponding current Place?
+          print('corresponding current Place? src_id:', rdp['id'])
           p = ds_places.get(src_id=rdp['id'])
-          # there is, build a json object from it
+          # there is, build a json object from its latest file
           row_adf = adf.loc[adf['id'] == p.src_id]
           row_adf_json=json.loads((row_adf.to_json(orient='records')))[0]
           row_adf_sorted = {key: val for key, val in sorted(row_adf_json.items(), key=lambda ele: ele[0])}
-          print(row_adf_sorted)
+          print('row_adf_sorted', row_adf_sorted)
+          print('row_bdf_sorted', row_bdf_sorted)
 
-          # rebuild and flag Place p only if changed
+          # differences not considered in the matching algorithm
+          # do not warrant flagging for resubmitting to reconciliation
+          diffs = diff(row_adf_sorted,row_bdf_sorted, exclude_paths=[
+            "root['description']",
+            "root['title_uri']",
+            "root['title_source']",
+            "root['start']",
+            "root['end']",
+            "root['geo_id']",
+            "root['geo_source']"
+          ])
+          print('diffs', diffs)
+          # rebuild and flag Place p if any changes
           if row_adf_sorted != row_bdf_sorted:
-            print('re-build Place '+p+' from row_bdf_sorted')
+            print('re-build Place '+p.title+'('+str(p.src_id)+') from row_bdf_sorted')
             count_updated += 1
             p.title = rdp['title']
             p.ccodes = [] if str(rdp['ccodes']) == 'nan' else rdp['ccodes'].replace(' ', '').split(';')
             p.minmax = minmax_new
             p.timespans = [minmax_new]
-            p.flag = True
-            p.save()
             # add related records (PlaceName, PlaceType, etc.)
             delete_related(p)
             # TODO: does update_rels_tsv replace?
             update_rels_tsv(p, row_bdf_sorted)
+          if diffs:
+            p.flag = True
+          p.save()
         except:
           # no corresponding Place, create new one
           print('new place record needed from rdp', rdp)
@@ -1316,7 +1332,8 @@ def ds_update(request):
             ccodes = [] if str(rdp['ccodes']) == 'nan' else rdp['ccodes'].replace(' ','').split(';'),
             dataset = ds,
             minmax = minmax_new,
-            timespans = [minmax_new]
+            timespans = [minmax_new],
+            flag = True
           )
           newpl.save()
           pobj = newpl
@@ -1502,7 +1519,7 @@ def ds_compare(request):
       # print('need to compare lpf files:',fn_a,fn_b)
       comparison['compare_result'] = "it's lpf...tougher row to hoe"
 
-    # print('comparison',comparison)
+    print('comparison (compare_data)',comparison)
     # back to calling modal
     return JsonResponse(comparison,safe=False)
 
