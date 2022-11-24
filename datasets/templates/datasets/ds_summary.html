@@ -513,7 +513,7 @@
       }
       html += '</ul>'
       html += data['count_indexed'] > 0 ? '<p>Also, in the WHG <u>index</u>, <b>'+stats['count_replace'] + '</b> records would be updated, and <b>'+stats['rows_del'].length+'</b> removed.</p>':''
-      html += stats['rows_add'].length >0 ? '<b>NOTE:</b>The '+stats['rows_add'].length+' record(s) added to the database will have to be reconciled and accessioned.':''
+      html += stats['rows_add'].length >0 ? '<b>NOTE:</b>The '+stats['rows_add'].length+' new record(s) and any that will be modified will have to be reconciled.':''
     return html
   }
 

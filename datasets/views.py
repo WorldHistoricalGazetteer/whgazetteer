@@ -1000,8 +1000,13 @@ def update_rels_tsv(pobj, row):
   # TODO: parse t
   if len(types) > 0:
     for i,t in enumerate(types):
+      fclass_list = []
       # i always 0 in tsv
-      aatnum='aat:'+aat_types[i] if len(aat_types) >= len(types) else ''
+      aatnum='aat:'+aat_types[i] if len(aat_types) >= len(types) else None
+      # get fclass(es) to add to Place (pobj)
+      if aatnum and int(aatnum[4:]) in Type.objects.values_list('aat_id', flat=True):
+        fc = get_object_or_404(Type, aat_id=int(aatnum[4:])).fclass
+        fclass_list.append(fc)
       objs['PlaceType'].append(
         PlaceType(
           place=pobj,
@@ -1011,6 +1016,8 @@ def update_rels_tsv(pobj, row):
                   "label":aat_lookup(int(aatnum[4:])) if aatnum !='aat:' else ''
                 }
       ))
+    pobj.fclasses = fclass_list
+    pobj.save()
   print('objs after types', objs)
 
   #
@@ -1158,6 +1165,7 @@ def update_rels_tsv(pobj, row):
 """
 # keepg, keepl = [True, True]
 # file_format='delimited'
+# filename_new=
 def ds_update(request):
   if request.method == 'POST':
     print('request.POST ds_update()', request.POST)
@@ -1238,7 +1246,6 @@ def ds_update(request):
       # delete places with (src_)ids missing in new data (CASCADE includes links & geoms)
       ds_places.filter(id__in=rows_delete).delete()
 
-
       def delete_related(pid):
         # maybe keep prior links and geoms matches; remove the rest
         if not keepg:
@@ -1271,7 +1278,7 @@ def ds_update(request):
         row_dict = row.to_dict()
         # row_json = row.to_json(orient='records')
         # row_json = json.loads(row.to_json(orient='records'))
-        print(row_dict)
+        # print(row_dict)
         # row_json = json.loads(row.to_json(orient='records'))[0]
         row_bdf_sorted = {key: val for key, val in sorted(row_dict.items(), key=lambda ele: ele[0])}
         print('incoming row in ds_update', row_bdf_sorted)
@@ -1315,7 +1322,9 @@ def ds_update(request):
             p.ccodes = [] if str(rdp['ccodes']) == 'nan' else rdp['ccodes'].replace(' ', '').split(';')
             p.minmax = minmax_new
             p.timespans = [minmax_new]
-            # add related records (PlaceName, PlaceType, etc.)
+            # set to unreviewed
+            p.review_wd = None
+            # replace related records (PlaceName, PlaceType, etc.)
             delete_related(p)
             # TODO: does update_rels_tsv replace?
             update_rels_tsv(p, row_bdf_sorted)
@@ -3396,8 +3405,8 @@ class DatasetAddTaskView(LoginRequiredMixin, DetailView):
       will archive the existing task and submit only unreviewed records.</span>. 
       If you proceed, you can keep or delete prior match results (links and/or geometry):</p>"""
     msg_updating = """This dataset has been updated, <span class='strong'>Starting this new task 
-      will archive the previous task and re-submit all records. If you proceed, you can keep or delete prior 
-      matching results (links and/or geometry)</span>. <a href="%s">Questions? Contact our editorial team</a>"""
+      will archive the previous task and re-submit all new and altered records. If you proceed, you can keep or delete prior 
+      matching results (links and geometry)</span>. <a href="%s">Questions? Contact our editorial team</a>"""
     msg_done = """All records have been submitted for reconciliation to %s and reviewed. 
       To begin the step of accessioning to the WHG index, please <a href="%s">contact our editorial team</a>"""
     for i in ds.taskstats.items():

@@ -158,6 +158,7 @@
         <div id="recon_result" class="col-md-6 p-tight py-2 dashedbox">
           {% if request.method == 'GET' %}
           <div id="mapdiv_recon" class="mt-2">
+	          <span class="smallish">SEARCH EXTENT: <span id="area_name" class="strong-red">Global</span></span>
             {% leaflet_map "map_recon" %}
           </div>
           {% endif %}
@@ -241,18 +242,13 @@
     $("#r_keep_wd").attr('checked',true)
     $("#geo_constraint").show(400)}
   )
-  <!--$("#r_wd").click(function(){-->
-    <!--$("#r_keep_wd").attr('checked', true)-->
-    <!--$("#geo_constraint").hide(400)}-->
-  <!--)-->
-  
+
   // modal buttons
   $("#btn_done").on('click', function(){ location.reload(); })
   $("#btn_cancel").on('click', function(){ location.reload(); })
 
 
   $(function(){
-
     msgs = ["{{ msg_wdlocal.type }}","{{ msg_tgn.type }}","{{ msg_whg.type }}"]
     console.log('msgs',msgs)
     if("{{ msg_wdlocal.type }}" == 'done' && '{{ ds.ds_status }}' != 'updated' ){
@@ -303,7 +299,6 @@
 
   // show/hide task eval messages
   $("#r_tgn").click(function(){
-    <!--$("#tgn_tasks").removeClass('hidden')-->
     $("#tgn_tasks").show(400)
     $("#wdlocal_tasks").addClass('hidden')
   })
@@ -313,14 +308,12 @@
   })
 
   function renderMap(geom, tab){
-    // call the map being rendered 'mappo'
-    mappo = tab=='browse' ? mappy : mappyr
     if (geom.features.length==0) {
       console.log('no features in renderMap() call')
     } else {
       // clear existing if any
       if(typeof(features)!=='undefined'){
-        mappo.removeLayer(features)
+        mappy.removeLayer(features)
       }
       idToFeature = {}  // for feature lookup
       features = L.geoJSON(geom, {
@@ -348,12 +341,11 @@
             idToFeature[identifier] = layer
           }
         }
-      }).addTo(mappo);
+      }).addTo(mappy);
     }
-    mappo.fitBounds(features.getBounds())
-    mappo.on('zoomend', function() {
-      var currentZoom = mappo.getZoom();
-      <!--console.log('on zoomend', currentZoom)-->
+    mappy.fitBounds(features.getBounds())
+    mappy.on('zoomend', function() {
+      var currentZoom = mappy.getZoom();
       var myRadius = currentZoom*(1); //or whatever ratio you prefer
       var myWeight = currentZoom*(1/5); //or whatever ratio you prefer
       features.setStyle({radius: myRadius, weight: myWeight});
@@ -370,21 +362,36 @@
     $.ajax({
         url: '/api/area/'+aid
       }).done(function(data){
-        <!--console.log('render_area()',data)-->
+        console.log('render_area()',data)
         geom = {"type":"FeatureCollecton","features":[]}
         geom['features'].push(data.geojson)
         renderMap(geom,'area')
+		    $("#area_name").html(data.title).show()
     })
+  }
+
+  function reset_map(){
+    features.clearLayers()
+    $("#area_name").html('Global')
+	  mappy.setView(L.latLng(35,0), 1)
   }
   // clear dropdown choice if other is used & render geometry
   $( "#select_region" ).change(function() {
     $( "#select_userarea option[value=0]" ).prop('selected',true)
-    if ($(this).val() == 0) { features.clearLayers() } else{ render_area( $(this).val(), 'region') }
+    if ($(this).val() == 0) {
+			reset_map()
+    } else {
+        render_area( $(this).val(), 'region')
+    }
   });
   
   $( "#select_userarea" ).change(function() {
     $( "#select_region option[value=0]" ).prop('selected',true)
-    if ($(this).val() == 0) { features.clearLayers() } else{ render_area( $(this).val(), 'area') }
+    if ($(this).val() == 0) {
+        reset_map()
+    } else {
+        render_area( $(this).val(), 'area')
+    }
     if ($( "#select_userarea option[value='create']" ).prop('selected') == true) {
       location.href="{% url 'areas:area-create' %}?next={% url 'datasets:ds_recon' ds.id %}"
     }
@@ -413,7 +420,7 @@
       mappy.setMaxBounds(null)
       L.control.layers(baseLayers).addTo(mappy);
       baseLayers['OSM'].addTo(mappy)
-      
+
       var printer = L.easyPrint({
         tileLayer: osm,
         sizeModes: ['Current'],
@@ -438,12 +445,14 @@
           }
       })  
     } else {
-      // it's map_recon in #addtask tab, name it mappyr
-      window.mappyr = e.detail.map
-      mappyr.setMaxBounds(null)
-      L.control.layers(baseLayers).addTo(mappyr);
-      baseLayers['OSM'].addTo(mappyr)
-      mappyr.invalidateSize()
+      window.mappy = e.detail.map
+      mappy.setMaxBounds(null)
+      L.control.layers(baseLayers).addTo(mappy);
+      window.map_default = [mappy.getCenter(), mappy.getZoom()]
+		  console.log('map_default',map_default)
+
+      baseLayers['OSM'].addTo(mappy)
+      mappy.invalidateSize()
     }
 
   }, false);
@@ -472,24 +481,3 @@
   
 </script>
 {% endblock %}
-	            {% comment %}
-	            // TGN discontinued
-              <div class="form-check">
-                <label class="form-check-label text-secondary" for="r_tgn">
-                  <input type="radio" disabled class="form-check-input" id="r_tgn"
-                    name="recon" value="tgn" checked>Getty TGN (tgn)
-	                <mark class="small">temporarily unavailable</mark>
-                </label>
-                {% if msg_tgn %}
-                <div id="tgn_tasks" class="smaller hidden">
-                  <div class="mt-0 mb-2 smaller radiodiv">
-                  {{ msg_tgn.msg|safe }}
-                  {% if msg_tgn.type == 'inprogress' %}
-                  <label class="mb-0"><input id="r_keep_tgn" type="radio" name="prior" value="keep"> keep prior match results</label>
-                  <label class="mb-0"><input type="radio" name="prior" value="zap"> delete any prior match results</label>
-                  {% endif %}
-                  </div>
-                </div>
-                {% endif %}
-              </div>
-              {% endcomment %}
