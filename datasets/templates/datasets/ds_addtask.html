@@ -9,13 +9,13 @@
   {% leaflet_js %}
   {% leaflet_css %}
   <script src="{% static 'js/aliases.js' %}"></script>
-  <script src="{% static 'js/easyprint.js' %}"></script>
+{#  <script src="{% static 'js/easyprint.js' %}"></script>#}
   <script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>
   
   <link rel="stylesheet" href="{% static 'css/spin.css' %}"/>
-  <link rel="stylesheet" href="//cdn.datatables.net/1.10.23/css/dataTables.bootstrap4.min.css">
-  <script src="//cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
-  <script src="//cdn.datatables.net/1.10.23/js/dataTables.bootstrap4.min.js"></script>
+{#  <link rel="stylesheet" href="//cdn.datatables.net/1.10.23/css/dataTables.bootstrap4.min.css">#}
+{#  <script src="//cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>#}
+{#  <script src="//cdn.datatables.net/1.10.23/js/dataTables.bootstrap4.min.js"></script>#}
 	<style>
 		#error_closer {padding: 0 .75rem !important;}
 	</style>
@@ -87,7 +87,6 @@
               </div>
               <hr/>
             {% endif %}
-
 
             {% if ds.recon_status.idx %}
               <p>Accessioning has begun for this dataset. Initiating another reconciliation task could disrupt
@@ -207,13 +206,9 @@
               </div>
               <div id="update_spinner"></div>
               <div id="results_text" class="mb-2 small ds-card">
-                <p>Uploaded data will be compared with existing data, and results reported here.</p>
+                <p>Uploaded data will be compared with existing data, and results of that comparison reported here.</p>
                   <p>You may then proceed, or cancel this operation with no changes made.</p>
-                <!--{ if links_added > 0 or geoms_added > 0 %}-->
-                <!--<p>This dataset has been augmented with { links_added }} links and { geoms_added }} geometries-->
-                <!--via reconciliation tasks. </p>-->
-                <!--{ endif %}-->
-              </div>          
+              </div>
             </form>
           </div> <!-- .form-group -->
         </div> <!-- .modal-body -->      
@@ -330,7 +325,6 @@
         }
         ,onEachFeature: function(feature,layer) {
           f=feature; l=layer;
-          <!--console.log('f,l',feature,layer)-->
           identifier = f.place_id;
           if(f.type != 'Point'){
             layer.setStyle(styles[f.type].default).bindPopup(
@@ -351,7 +345,6 @@
       features.setStyle({radius: myRadius, weight: myWeight});
       opt = Object.values(idToFeature)[0].options
       foptions = { ...opt };
-      <!--console.log('zoomend() idToFeature',opt)-->
     });
     opt = Object.values(idToFeature)[0].options
     foptions = { ...opt };
@@ -413,7 +406,6 @@
       "Satellite": satellite
     };
 
-    
     if (e.detail.id == 'map_browse'){
       // it's the Browse map, name it mappy
       window.mappy = e.detail.map

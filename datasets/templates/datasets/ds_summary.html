@@ -168,8 +168,8 @@
         {% if current_file and current_file.df_status != 'dummy'%}
           <p> <i>Current data file</i>
             {% if current_file.format == 'delimited' %}
-            {% if ds.owner.id == user.id or user.is_superuser%}
-	          {# TODO: test, expose update functionality #}
+            {# expose update link only to update_beta group #}
+            {% if user|has_group:'update_beta' or user.is_superuser%}
             <span class="float-right mr-2">
               <a href="#" id="a_update_modal" data-dsid = {{ ds.id }} data-toggle="modal" data-target="#updateModal">update</a>
               <span class="help-matches" data-id="updates">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
@@ -177,7 +177,6 @@
             {% endif %}
             {% endif %}
           </p>
-{#	        {% if current_file.df_status != 'dummy' %}#}
           <div id="div_file">
             <table id="file_metadata" class="ds-table table-striped">
               <tr>
@@ -225,8 +224,7 @@
               {% endif %}
             </table>
             <input class="btn btn-primary btn-sm hidden btn-file" type="submit" value="Upload" />
-          </div> <!-- div_file -->
-{#	        {% endif %}#}
+          </div> <!-- #div_file -->
           <input type="hidden" name="datatype" value=
             {% if current_file %}"{{ current_file.datatype }}"{%else%}"place"{%endif%}>
           <input type="hidden" name="rev" value="{{ current_file.rev }}">
@@ -277,7 +275,7 @@
               </p>
               {# TODO: review download size cases #}
 	            <!-- if length <= 20k -->
-              {% if ds.numrows <= 20000 %}
+              {% if ds.numrows <= 25000 %}
                 <!-- lptsv originally -->
                 {% if current_file.format == 'delimited' %} 
                   <!-- offer lpf, augmented or not -->
@@ -330,10 +328,10 @@
               <div id="results_text" class="mb-2 small ds-card">
                 <p>Uploaded data will be compared with existing data, and results reported here.</p>
                   <p>You may then proceed, or cancel this operation with no changes made.</p>
-                <!--{ if links_added > 0 or geoms_added > 0 %}-->
-                <!--<p>This dataset has been augmented with { links_added }} links and { geoms_added }} geometries-->
-                <!--via reconciliation tasks. </p>-->
-                <!--{ endif %}-->
+                {% if links_added > 0 or geoms_added > 0 %}
+	                <p class="mt-3"><b>NOTE:</b> This dataset has been augmented with {{ links_added }} links and {{ geoms_added }} geometries
+                via reconciliation tasks. These can be preserved for records that are not modified or deleted in the update file.</p>
+                {% endif %}
               </div>
             </form>
           </div> <!-- .form-group -->
