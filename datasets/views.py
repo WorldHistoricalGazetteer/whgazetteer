@@ -1311,19 +1311,19 @@ def ds_update(request):
           # print('diffs', diffs)
           # rebuild and flag Place p if *any* changes
           if row_adf_sorted != row_bdf_sorted:
-            print('re-build Place '+p.title+'('+str(p.src_id)+') from row_bdf_sorted')
+            print('re-build Place '+p.title+'('+str(p.src_id)+')')
             count_updated += 1
             p.title = rdp['title']
             p.ccodes = [] if str(rdp['ccodes']) == 'nan' else rdp['ccodes'].replace(' ', '').split(';')
             p.minmax = minmax_new
             p.timespans = [minmax_new]
-            # set to unreviewed
-            p.review_wd = None
             # replace related records (PlaceName, PlaceType, etc.)
             delete_related(p)
             update_rels_tsv(p, row_bdf_sorted)
           if diffs:
             # TODO: is flag used on resubmit?
+            print('significant diffs, set review_wd=None, flag=True')
+            p.review_wd = None
             p.flag = True
           p.save()
         except:

@@ -235,6 +235,8 @@ class PlaceTableSerializer(serializers.ModelSerializer):
         val = '<i>no hits</i>'
     elif place.review_wd == 0:
       val = '&#9744;'
+    elif place.flag == True:
+      val = 'altered'
     else:
       # direct link to deferred record
       val = '<a href="/datasets/'+str(place.dataset.id)+'/review/'+\
