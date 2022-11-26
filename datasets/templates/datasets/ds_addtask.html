@@ -158,7 +158,7 @@
         <div id="recon_result" class="col-md-6 p-tight py-2 dashedbox">
           {% if request.method == 'GET' %}
           <div id="mapdiv_recon" class="mt-2">
-	          <span class="smallish">SEARCH EXTENT: <span id="area_name" class="strong-red">Global</span></span>
+	          <span class="smallish">SEARCH BOUNDS: <span id="area_name" class="strong-red">Global</span></span>
             {% leaflet_map "map_recon" %}
           </div>
           {% endif %}
