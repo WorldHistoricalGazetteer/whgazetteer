@@ -341,7 +341,7 @@
             <button id="btn_cancel" type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Cancel</button>
             <button id="btn_update" type="button" data-dsid='{{ds.id}}' class="btn btn-primary btn-sm hidden">Proceed</button>
           </div>
-          <button id="btn_done" type="button" class="btn btn-secondary btn-sm hidden" data-dismiss="modal">Done</button>
+          <button id="btn_done" type="button" class="btn btn-primary btn-sm hidden" data-dismiss="modal">Done</button>
         </div>
       </div>
     </div>
@@ -447,12 +447,15 @@
 
   // parse & prettify ds_update() results
   function updateText(data){
-    html = 'Update changes: <br/>' +
-           'Added '+data["new_count"]+' rows <br/>'+
-           'Deleted '+data["del_count"]+' rows <br/>'+
-           'Updated '+data["update_count"]+' rows <br/>'+
-           'in database'
-    html += data['indexed'] == false?'.':' and in WHG index.'
+    html = 'Changes in database: <br/>' + '<ul>' +
+           '<li>Added '+data["new_count"]+' rows </li>'+
+           '<li>Deleted '+data["del_count"]+' rows </li>'+
+           '<li>Updated '+data["update_count"]+' rows </li>'+'</ul>'
+	  html += 'A followup reconciliation to Wikidata task is required, '
+		if(data['indexed'] == true) {
+      html += 'as well as a reindexing, '
+		}
+    html += 'in order to account for these changes.'
     return html
   }
   // performs ds_update()
@@ -492,8 +495,8 @@
       stats = data['compare_result']
       keepg = data['keepg']; keepl = data['keepl'];
       html = 'This action would perform these WHG <i>database</i> updates:<br/><ul style="padding:0;list-style: inside;">'
-      html += '<li>Replace <b>'+stats['count_replace']+'</b> place records having same source IDs </li>'
-      html += stats['rows_add'].length >0?'<li>Add records: (<b>'+stats['rows_add'].join(', ')+'</b>)</li>':''
+      html += '<li>Update <b>'+stats['count_replace']+'</b> place record(s) having same source IDs </li>'
+      html += stats['rows_add'].length >0?'<li>Add '+stats['count_diff']+' record(s): (<b>'+stats['rows_add'].join(', ')+'</b>)</li>':''
       html += stats['rows_del'].length >0?'<li>Remove records: (<b>'+stats['rows_del'].join(', ')+'</b>)</li>':''
       html += stats['cols_add'].length >0?'<li>Add columns: (<b>'+stats['cols_add']+'</b>)</li>':''
       html += stats['cols_del'].length >0?'<li>Remove columns: (<b>'+stats['cols_del']+'</b>)</li>':''

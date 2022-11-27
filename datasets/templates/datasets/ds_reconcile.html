@@ -59,7 +59,7 @@
 	        <!-- if already reconciled, notify need for new task -->
 	        {% if ds.ds_status == 'updated' and ds.recon_status %}
 		        <p class="larger my-0 py-0 strong-red">This dataset has been updated, so a new reconciliation to Wikidata task should be run.
-			        Only new and modified rows will be submitted.</p>
+			        Only new and/or modified rows will be submitted.</p>
 	        {% endif %}
 	        {% if not ds.ds_status == 'accessioning' %}
 	          <div id="ready" class="hidden pl-2">
@@ -123,10 +123,11 @@
                          </li>
                       {% elif t.task_name == "align_idx" %}
 	                      <li class="li-left">Passes 0, 1:
-                          <span class="strong mx-2" id='{{t.task_id}}_1'>nn</span>
-                          <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='0and1' %}">review</a>
+                          <span class="strong mx-2" id='{{t.task_id}}_1'>nn
+                          <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='0and1' %}">review</a></span>
                       {% endif %}
-                      {% if t.result|get:"pass1" > 0 %}
+
+                      {% if t.result|get:"pass1" > 0 and t.task_name != "align_idx"%}
 	                      <li class="li-left">Pass 1:
                           <span class="strong mx-2" id='{{t.task_id}}_1'>nn</span>
                           <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass1' %}">review</a>
@@ -249,7 +250,8 @@
 	        running_count = (counts['total']-counts['deferred'])
           if(task=='align_idx'){
             $("#"+tid+'_1').html(counts['total']-counts['deferred'])
-          } else {
+          }
+          else {
             $("#"+tid+'_1').html(counts['pass1'])
           }
           $("#"+tid+'_2').html(counts['pass2'])
@@ -279,7 +281,7 @@
             $("#"+tid+'_def').removeClass('hidden')
           } else {
             $("#"+tid+'_def').html('none') 
-            $("#"+tid+'_def').removeClass('hidden')            
+            $("#"+tid+'_def').removeClass('hidden')
           }
         }
       }

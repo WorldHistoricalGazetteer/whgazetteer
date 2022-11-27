@@ -832,8 +832,8 @@ def task_delete(request, tid, scope="foo"):
 
   # delete dataset from index
   # undoes any acceessioning work
-  # if auth in ['whg', 'idx']:
-  #   removeDatasetFromIndex('whg', dsid)
+  if auth in ['whg', 'idx']:
+    removeDatasetFromIndex('whg', dsid)
   # set status back to reconciling
   ds=Dataset.objects.get(id=dsid)
   ds.ds_status = 'reconciling'
@@ -1269,6 +1269,7 @@ def ds_update(request):
       # set Place.flag = True *IF CHANGED ONLY*
       # update place instances w/data from new file
       rows_replace = []
+      rows_add = []
       place_fields = {'id', 'title', 'ccodes','start','end'}
       for index, row in bdf.iterrows():
         # new row as json
@@ -1321,7 +1322,7 @@ def ds_update(request):
             delete_related(p)
             update_rels_tsv(p, row_bdf_sorted)
           if diffs:
-            # TODO: is flag used on resubmit?
+            # TODO: is Place.flag necessary?
             print('significant diffs, set review_wd=None, flag=True')
             p.review_wd = None
             p.flag = True
@@ -1341,6 +1342,7 @@ def ds_update(request):
           )
           newpl.save()
           pobj = newpl
+          rows_add.append(pobj.id)
           print('new place, related:', newpl)
           # add related rcords (PlaceName, PlaceType, etc.)
           update_rels_tsv(pobj, row_bdf_sorted)
@@ -1352,40 +1354,34 @@ def ds_update(request):
       # initiate a result object
       result = {"status": "updated", "update_count":count_updated ,
                 "new_count":count_new, "del_count": len(rows_delete), "newfile": filepath,
-                "format":file_format}
+                "format":file_format, "rows_add": rows_add}
       print('update result', result)
       print("compare_data['count_indexed']", compare_data['count_indexed'])
 
       #
       # TODO: reindex
-      # if dataset is indexed, update it there too
+      # if dataset status is 'accessioning' or 'indexed',
       # alternately?: if ds.ds_status in ['accessioning', 'indexed']
       if compare_data['count_indexed'] > 0:
-        from elasticsearch7 import Elasticsearch
-        es = Elasticsearch([{'host': 'localhost',
-                             'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
-                             'timeout':30,
-                             'max_retries':10,
-                             'retry_on_timeout':True,
-                             'port': 9200
-                             }])
+        es = settings.ES_CONN
         idx='whg'
 
         result["indexed"] = True
 
         # surgically remove as req.
         if len(rows_delete) > 0:
-          print('some rows to delete from index:', rows_delete)
+          print('rows to delete from index:', rows_delete)
           # deleteFromIndex(es, idx, rows_delete)
 
         # update others
         # TODO: replace only flagged places
         if len(rows_replace) > 0:
-          replaceInIndex(es, idx, rows_replace)
+          print('rows to delete from index:', rows_replace)
+          # replaceInIndex(es, idx, rows_replace)
 
         # process new
-        # if len(rows_add) > 0:
-        #   print('some rows to add to index:', rows_add)
+        if len(rows_add) > 0:
+          print('new rows need reconciliation, then add to index:', rows_add)
           # notify need to reconcile & accession them
       else:
         print('not indexed, that is all')
@@ -1401,6 +1397,7 @@ def ds_update(request):
       )
       ds.ds_status = 'updated'
       ds.save()
+      # return to update modal
       return JsonResponse(result, safe=False)
     elif file_format == 'lpf':
       print("ds_update for lpf; doesn't get here yet")

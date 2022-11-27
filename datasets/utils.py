@@ -1173,7 +1173,7 @@ class UpdateCountsView(View):
       # ids of all unreviewed places
       pids = list(set(taskhits.all().values_list("place_id",flat=True)))
       defcount = defcountfunc(t.task_name, pids)
-      
+
       updates[t.task_id] = {
         "task":t.task_name,
         "total":len(pids),
@@ -1183,6 +1183,7 @@ class UpdateCountsView(View):
         "pass3":pcounts['p3'],
         "deferred": defcount
       }
+
     #print(json.dumps(updates, indent=2))        
     return JsonResponse(updates, safe=False)
 
