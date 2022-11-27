@@ -122,11 +122,10 @@
           <tr>
             <td style="vertical-align:top;"><b>Public?</b></td>
             <td>
-              <span class="form-public">
-              {% if form.public.value == True %}
-	              {{ form.public.value }}</span>
+              {% if ds.public == False %}
+	              False. <a href="#"><span class="help-matches" data-id="going_public_ds">Details on making a dataset public. {% fontawesome_icon 'question-circle' color='#336699' %}</span></a>
               {% else %}
-                <a href="#"><span class="help-matches" data-id="going_public_ds">Details on making a dataset public. {% fontawesome_icon 'question-circle' color='#336699' %}</span></a>
+	              {{ ds.public }}
               {% endif %}
             </td>
           </tr>

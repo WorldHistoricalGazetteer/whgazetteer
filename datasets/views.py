@@ -2520,7 +2520,7 @@ class DatasetSummaryView(LoginRequiredMixin, UpdateView):
     file=data['file']
     filerev = ds.files.all().order_by('-rev')[0].rev
     # print('DatasetSummaryView kwargs',self.kwargs)
-    # print('DatasetSummaryView form_valid() data->', data)
+    print('DatasetSummaryView form_valid() data->', data)
     if data["file"] == None:
       print('data["file"] == None')
       # no file, updating dataset only

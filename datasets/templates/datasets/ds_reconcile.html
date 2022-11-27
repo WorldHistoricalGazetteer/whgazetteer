@@ -102,7 +102,7 @@
 	                      records got <b>{{ t.result|get:"total_hits"|safe }}</b> hits in total
 	                    {% if t.task_name == 'align_idx' %}
 		                    {% with gothits=t.result|get:"got_hits" %}
-		                    ; {{ t.result|get:"count"|subtract:gothits}} were indexed automatically
+		                    ; {{ t.result|get:"count"|subtract:gothits}}; indexed automatically
 		                    {% endwith %}
 	                    {% endif %}
                     </p>
@@ -123,8 +123,8 @@
                          </li>
                       {% elif t.task_name == "align_idx" %}
 	                      <li class="li-left">Passes 0, 1:
-                          <span class="strong mx-2" id='{{t.task_id}}_1'>nn
-                          <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='0and1' %}">review</a></span>
+                          <span class="strong mx-2" id='{{t.task_id}}_1'>nn</span>
+                          <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='0and1' %}">review</a>
                       {% endif %}
 
                       {% if t.result|get:"pass1" > 0 and t.task_name != "align_idx"%}
@@ -238,10 +238,8 @@
           if(counts['total'] == 0 ){
             $('.'+task).css('border', '2px dashed darkseagreen')
 	          $("#authtag").html(task=='align_tgn'?'Getty TGN':'Wikidata')
-
 	          if(task == 'align_wdlocal' && ds_status != 'updated'){
 	            $("#ready").removeClass("hidden")
-	            {#$('#'+task).addClass("hidden")#}
 	          }
           }
           

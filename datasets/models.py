@@ -45,7 +45,7 @@ class Dataset(models.Model):
   bbox = geomodels.PolygonField(null=True, blank=True, srid=4326)
 
   core = models.BooleanField(default=False) # non-historical
-  public = models.BooleanField(default=False)    
+  public = models.BooleanField(default=False)
   ds_status = models.CharField(max_length=12, null=True, blank=True, choices=STATUS_DS)
 
 

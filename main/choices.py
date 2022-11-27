@@ -49,7 +49,7 @@ COMMENT_TAGS = [
 COMMENT_TAGS_REVIEW = [
     ('typo','Typo'),
     ('geom_error','Geometry error'),
-    ('defer', 'Deferring'),
+    ('defer', 'Deferring (in review)'),
     ('other','Other'),
 ]
 
