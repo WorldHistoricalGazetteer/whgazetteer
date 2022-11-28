@@ -123,7 +123,7 @@
             <td style="vertical-align:top;"><b>Public?</b></td>
             <td>
               {% if ds.public == False %}
-	              False. <a href="#"><span class="help-matches" data-id="going_public_ds">Details on making a dataset public. {% fontawesome_icon 'question-circle' color='#336699' %}</span></a>
+	              Not yet; <a href="#"><span class="help-matches" data-id="going_public_ds">Details on making a dataset public. {% fontawesome_icon 'question-circle' color='#336699' %}</span></a>
               {% else %}
 	              {{ ds.public }}
               {% endif %}
@@ -496,9 +496,9 @@
       html = 'This action would perform these WHG <i>database</i> updates:<br/><ul style="padding:0;list-style: inside;">'
       html += '<li>Update <b>'+stats['count_replace']+'</b> place record(s) having same source IDs </li>'
       html += stats['rows_add'].length >0?'<li>Add '+stats['count_diff']+' record(s): (<b>'+stats['rows_add'].join(', ')+'</b>)</li>':''
-      html += stats['rows_del'].length >0?'<li>Remove records: (<b>'+stats['rows_del'].join(', ')+'</b>)</li>':''
-      html += stats['cols_add'].length >0?'<li>Add columns: (<b>'+stats['cols_add']+'</b>)</li>':''
-      html += stats['cols_del'].length >0?'<li>Remove columns: (<b>'+stats['cols_del']+'</b>)</li>':''
+      html += stats['rows_del'].length >0?'<li>Remove record(s): (<b>'+stats['rows_del'].join(', ')+'</b>)</li>':''
+      html += stats['cols_add'].length >0?'<li>Add column(s): (<b>'+stats['cols_add']+'</b>)</li>':''
+      html += stats['cols_del'].length >0?'<li>Remove column(s): (<b>'+stats['cols_del']+'</b>)</li>':''
       if (data['count_geoms']>0){
         html += '<li class="text-danger">Keep <b>'+data['count_geoms']+'</b> existing place-geometry records from prior reconciliation?'+
         ' <input type="checkbox" id="preserve_geoms" checked></li>'
@@ -512,8 +512,10 @@
         {#' <input type="checkbox" id="preserve_links" checked></li>'#}
       }
       html += '</ul>'
-      html += data['count_indexed'] > 0 ? '<p>Also, in the WHG <u>index</u>, <b>'+stats['count_replace'] + '</b> records would be updated, and <b>'+stats['rows_del'].length+'</b> removed.</p>':''
-      html += stats['rows_add'].length >0 ? '<b>NOTE:</b>The '+stats['rows_add'].length+' new record(s) and any that will be modified will have to be reconciled.':''
+      {#html += data['count_indexed'] > 0 ? '<p>Also, in the WHG <u>index</u>, <b>'+stats['count_replace'] + '</b> records would be updated, and <b>'+stats['rows_del'].length+'</b> removed.</p>':''#}
+      html += stats['rows_add'].length >0 ? '<b>NOTE:</b><br/>' +
+		      'The '+stats['rows_add'].length+' new record(s) and any being modified will have to be reconciled.':''
+		  html += data['count_indexed'] > 0 ? '<br/>Following that, the new and/or modified records will need re-indexing.':''
     return html
   }
 

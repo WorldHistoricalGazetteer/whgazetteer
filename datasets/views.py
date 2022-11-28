@@ -796,12 +796,15 @@ def ds_recon(request, pk):
   hits + any geoms and links added by review
   reset Place.review_{auth} to null
 """
+# TODO: needs complete overhaul to account for ds.ds_status
 def task_delete(request, tid, scope="foo"):
   hits = Hit.objects.all().filter(task_id=tid)
   tr = get_object_or_404(TaskResult, task_id=tid)
+  auth = tr.task_name[6:] # wdlocal, idx
   dsid = tr.task_args[1:-1]
   ds=get_object_or_404(Dataset,pk=dsid)
-  auth = tr.task_name[6:] # wdlocal, idx
+  ds_status = ds.ds_status
+
   # only the places that had hit(s) in this task
   places = Place.objects.filter(id__in=[h.place_id for h in hits])
   # links and geometry added by a task have the task_id
@@ -1025,7 +1028,7 @@ def update_rels_tsv(pobj, row):
 
   #
   # PlaceGeom()
-  # TODO: test geometry type or force geojson
+  # TODO: test no existing identical geometry
   if len(coords) > 0:
     geom = {"type": "Point",
             "coordinates": coords,
@@ -1058,6 +1061,8 @@ def update_rels_tsv(pobj, row):
     elif pobj.geoms.count() > 0:
       try:
         for g in pobj.geoms.all():
+          print('exist. coords', list(map(trunc4, g.jsonb['coordinates'])))
+          print('new_coords', new_coords)
           if list(map(trunc4, g.jsonb['coordinates'])) != new_coords:
             objs['PlaceGeom'].append(
                 PlaceGeom(
@@ -1299,11 +1304,13 @@ def ds_update(request):
           print('row_bdf_sorted', row_bdf_sorted)
 
           # diff adf and bdf rows
-          # ignore attributes not used in reconciliation
-          diffs = diff(row_adf_sorted,row_bdf_sorted, exclude_paths=[
+          # used in reconciliation: title, matches, aat_types, ccodes, lon, lat, geowkt
+          # ignore changes to the rest
+          diffs = diff(row_adf_sorted, row_bdf_sorted, exclude_paths=[
             "root['description']",
             "root['title_uri']",
             "root['title_source']",
+            "root['parent_name']",
             "root['start']",
             "root['end']",
             "root['geo_id']",
@@ -1324,6 +1331,7 @@ def ds_update(request):
           if diffs:
             # TODO: is Place.flag necessary?
             print('significant diffs, set review_wd=None, flag=True')
+            rows_replace.append(p.id)
             p.review_wd = None
             p.flag = True
           p.save()
@@ -1374,9 +1382,8 @@ def ds_update(request):
           # deleteFromIndex(es, idx, rows_delete)
 
         # update others
-        # TODO: replace only flagged places
         if len(rows_replace) > 0:
-          print('rows to delete from index:', rows_replace)
+          print('rows to replace in index:', rows_replace)
           # replaceInIndex(es, idx, rows_replace)
 
         # process new
