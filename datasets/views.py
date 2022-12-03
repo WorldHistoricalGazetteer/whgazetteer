@@ -949,13 +949,13 @@ def update_rels_tsv(pobj, row):
   title_source = row['title_source']
   title_uri = row['title_uri'] if 'title_uri' in header else ''
   variants = [x.strip() for x in row['variants'].split(';')] \
-    if 'variants' in header and row['variants'] else []
+    if 'variants' in header and row['variants'] not in ['','None',None] else []
 
   types = [x.strip() for x in row['types'].split(';')] \
-    if 'types' in header and str(row['types']) != '' else []
+    if 'types' in header and str(row['types']) not in ['','None',None] else []
 
   aat_types = [x.strip() for x in row['aat_types'].split(';')] \
-    if 'aat_types' in header and str(row['aat_types']) != '' else []
+    if 'aat_types' in header and str(row['aat_types']) not in ['','None',None] else []
 
   parent_name = row['parent_name'] if 'parent_name' in header else ''
 
@@ -1003,7 +1003,7 @@ def update_rels_tsv(pobj, row):
   print('objs after names', objs)
   #
   # PlaceType()
-  # TODO: parse t
+  print('types', types)
   if len(types) > 0:
     for i,t in enumerate(types):
       fclass_list = []
@@ -1029,6 +1029,7 @@ def update_rels_tsv(pobj, row):
   #
   # PlaceGeom()
   # TODO: test no existing identical geometry
+  print('coords', coords)
   if len(coords) > 0:
     geom = {"type": "Point",
             "coordinates": coords,
@@ -1331,7 +1332,7 @@ def ds_update(request):
           if diffs:
             # TODO: is Place.flag necessary?
             print('significant diffs, set review_wd=None, flag=True')
-            rows_replace.append(p.id)
+            # rows_replace.append(p.id)
             p.review_wd = None
             p.flag = True
           p.save()
@@ -2145,12 +2146,13 @@ class PublicListsView(ListView):
     return context
 
 def failed_upload_notification(user, fn, ds=None):
-    subj = 'World Historical Gazetteer error followup ' + ('on dataset ('+ds+')') if ds else ''
+    subj = 'World Historical Gazetteer error followup '
+    subj += 'on dataset ('+ds+')' if ds else ''
     msg = 'Hello ' + user.username + \
       ', \n\nWe see your recent upload failed -- very sorry about that! ' + \
       'We will look into why and get back to you within a day.\n\nRegards,\nThe WHG Team\n\n\n['+fn+']'
-    emailer(subj, msg, 'whg@kgeographer.org',
-            [user.email, 'karl@kgeographer.org'])
+    emailer(subj, msg, settings.DEFAULT_FROM_EMAIL,
+            [user.email, settings.EMAIL_HOST_USER])
 
 """
   DatasetCreateView()

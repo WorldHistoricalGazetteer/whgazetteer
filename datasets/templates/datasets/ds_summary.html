@@ -495,8 +495,8 @@
       keepg = data['keepg']; keepl = data['keepl'];
       html = 'This action would perform these WHG <i>database</i> updates:<br/><ul style="padding:0;list-style: inside;">'
       html += '<li>Update <b>'+stats['count_replace']+'</b> place record(s) having same source IDs </li>'
-      html += stats['rows_add'].length >0?'<li>Add '+stats['count_diff']+' record(s): (<b>'+stats['rows_add'].join(', ')+'</b>)</li>':''
-      html += stats['rows_del'].length >0?'<li>Remove record(s): (<b>'+stats['rows_del'].join(', ')+'</b>)</li>':''
+      html += stats['rows_add'].length >0?'<li>Add '+stats['rows_add'].length+' record(s): (<b>'+stats['rows_add'].join(', ')+'</b>)</li>':''
+      html += stats['rows_del'].length >0?'<li>Remove '+stats['rows_del'].length+' record(s): (<b>'+stats['rows_del'].join(', ')+'</b>)</li>':''
       html += stats['cols_add'].length >0?'<li>Add column(s): (<b>'+stats['cols_add']+'</b>)</li>':''
       html += stats['cols_del'].length >0?'<li>Remove column(s): (<b>'+stats['cols_del']+'</b>)</li>':''
       if (data['count_geoms']>0){

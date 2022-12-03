@@ -1,83 +1,339 @@
 {
   "settings":{
-    "number_of_shards": 1
+    "number_of_shards": 1,
+    "analysis": {
+      "normalizer": {
+        "standard": {
+          "type": "custom",
+          "char_filter": [],
+          "filter": ["lowercase", "asciifolding"]
+        }
+      }
+    }
   },
-  "mappings": {
-    "place": {
-      "properties": {
-        "src_id": {"type": "keyword"},
-        "uri": {"type": "keyword"},
-        "dataset": {"type": "keyword"},
-        "relation": { 
-          "type": "join",
-          "relations": {
-            "parent": "child" 
+  "mappings" : {
+    "properties" : {
+      "ccodes" : {
+        "type" : "keyword"
+      },
+      "children" : {
+        "type" : "keyword"
+      },
+      "dataset" : {
+        "type" : "keyword"
+      },
+      "depictions" : {
+        "properties" : {
+          "id" : {
+            "type" : "keyword"
+          },
+          "license" : {
+            "type" : "text"
+          },
+          "title" : {
+            "type" : "text"
           }
-        },
-        "children": {"type": "keyword"},
-        "title": {"type": "text"},
-        "suggest": {  
-          "type": "completion",
-          "contexts": [
-            { "name": "place_type",
-              "type": "category",
-              "path": "types.identifier"
+        }
+      },
+      "descriptions" : {
+        "properties" : {
+          "id" : {
+            "type" : "keyword"
+          },
+          "lang" : {
+            "type" : "keyword"
+          },
+          "value" : {
+            "type" : "text"
+          }
+        }
+      },
+      "fclasses" : {
+        "type" : "keyword"
+      },
+      "geoms" : {
+        "properties" : {
+          "citation" : {
+            "properties" : {
+              "@id" : {
+                "type" : "text",
+                "fields" : {
+                  "keyword" : {
+                    "type" : "keyword",
+                    "ignore_above" : 256
+                  }
+                }
+              },
+              "id" : {
+                "type" : "text",
+                "fields" : {
+                  "keyword" : {
+                    "type" : "keyword",
+                    "ignore_above" : 256
+                  }
+                }
+              },
+              "label" : {
+                "type" : "text",
+                "fields" : {
+                  "keyword" : {
+                    "type" : "keyword",
+                    "ignore_above" : 256
+                  }
+                }
+              }
             }
-          ]
-        },
-        "ccodes": {"type": "keyword"},
-        "fclasses": {"type": "keyword"},
-        "searchy": {"type": "text"},        
-        "minmax": {"type": "integer_range"},
-        "timespans": {"type": "integer_range"},
-        "names": {
-          "properties": {
-            "lang": {"type": "keyword"},
-            "toponym": {"type": "text"}
+          },
+          "geowkt" : {
+            "type" : "keyword"
+          },
+          "location" : {
+            "type" : "geo_shape"
+          }
+        }
+      },
+      "links" : {
+        "properties" : {
+          "identifier" : {
+            "type" : "keyword"
+          },
+          "type" : {
+            "type" : "keyword"
+          }
+        }
+      },
+      "minmax" : {
+        "type" : "integer_range"
+      },
+      "names" : {
+        "properties" : {
+          "citation" : {
+            "properties" : {
+              "@id" : {
+                "type" : "text",
+                "fields" : {
+                  "keyword" : {
+                    "type" : "keyword",
+                    "ignore_above" : 256
+                  }
+                }
+              },
+              "id" : {
+                "type" : "text",
+                "fields" : {
+                  "keyword" : {
+                    "type" : "keyword",
+                    "ignore_above" : 256
+                  }
+                }
+              },
+              "label" : {
+                "type" : "text",
+                "fields" : {
+                  "keyword" : {
+                    "type" : "keyword",
+                    "ignore_above" : 256
+                  }
+                }
+              }
             }
-        },
-        "types": {
-          "properties": {
-            "identifier": {"type": "keyword"},
-            "label": {"type": "keyword"},
-            "sourceLabel": {"type": "text"}
+          },
+          "citations" : {
+            "properties" : {
+              "@id" : {
+                "type" : "text",
+                "fields" : {
+                  "keyword" : {
+                    "type" : "keyword",
+                    "ignore_above" : 256
+                  }
+                }
+              },
+              "id" : {
+                "type" : "text",
+                "fields" : {
+                  "keyword" : {
+                    "type" : "keyword",
+                    "ignore_above" : 256
+                  }
+                }
+              },
+              "label" : {
+                "type" : "text",
+                "fields" : {
+                  "keyword" : {
+                    "type" : "keyword",
+                    "ignore_above" : 256
+                  }
+                }
+              }
             }
-        },
-        "links": {
-          "properties": {
-            "type": {"type": "keyword"},
-            "identifier": {"type": "keyword"}
+          },
+          "lang" : {
+            "type" : "keyword"
+          },
+          "toponym" : {
+            "type" : "keyword",
+            "normalizer": "standard"
+          },
+          "when" : {
+            "properties" : {
+              "citation" : {
+                "properties" : {
+                  "id" : {
+                    "type" : "text",
+                    "fields" : {
+                      "keyword" : {
+                        "type" : "keyword",
+                        "ignore_above" : 256
+                      }
+                    }
+                  },
+                  "label" : {
+                    "type" : "text",
+                    "fields" : {
+                      "keyword" : {
+                        "type" : "keyword",
+                        "ignore_above" : 256
+                      }
+                    }
+                  }
+                }
+              },
+              "timespans" : {
+                "properties" : {
+                  "end" : {
+                    "properties" : {
+                      "in" : {
+                        "type" : "long"
+                      }
+                    }
+                  },
+                  "start" : {
+                    "properties" : {
+                      "in" : {
+                        "type" : "long"
+                      }
+                    }
+                  }
+                }
+              }
             }
-        },
-        "geoms": {
-          "properties": {
-            "location": {"type": "geo_shape"},
-            "geowkt": {"type": "keyword"}
           }
-        },
-        "relations": {
-          "properties": {
-            "relationType": {"type": "keyword"},
-            "relationTo": {"type": "keyword"},
-            "label": {"type": "text"}
+        }
+      },
+      "place_id" : {
+        "type" : "long"
+      },
+      "relation" : {
+        "type" : "join",
+        "eager_global_ordinals" : true,
+        "relations" : {
+          "parent" : "child"
+        }
+      },
+      "relations" : {
+        "properties" : {
+          "label" : {
+            "type" : "text"
+          },
+          "relationTo" : {
+            "type" : "keyword"
+          },
+          "relationType" : {
+            "type" : "keyword"
           }
-        },
-        "descriptions": {
-          "properties": {
-            "id": {"type": "keyword"},
-            "value": {"type": "text"},
-            "lang": {"type": "keyword"}
+        }
+      },
+      "searchy" : {
+        "type" : "keyword",
+        "normalizer": "standard"
+      },
+      "src_id" : {
+        "type" : "keyword"
+      },
+      "suggest" : {
+        "type" : "completion",
+        "analyzer" : "simple",
+        "preserve_separators" : true,
+        "preserve_position_increments" : true,
+        "max_input_length" : 50,
+        "contexts" : [
+          {
+            "name" : "place_type",
+            "type" : "CATEGORY",
+            "path" : "types.identifier"
           }
-        },
-        "depictions": {
-          "properties": {
-            "id": {"type": "keyword"},
-            "title": {"type": "text"},
-            "license": {"type": "text"}
+        ]
+      },
+      "timespans" : {
+        "type" : "integer_range"
+      },
+      "title" : {
+        "type" : "keyword",
+        "normalizer": "standard"
+      },
+      "types" : {
+        "properties" : {
+          "identifier" : {
+            "type" : "keyword"
+          },
+          "label" : {
+            "type" : "keyword"
+          },
+          "sourceLabel" : {
+            "type" : "text"
+          },
+          "src_label" : {
+            "type" : "text",
+            "fields" : {
+              "keyword" : {
+                "type" : "keyword",
+                "ignore_above" : 256
+              }
+            }
+          },
+          "when" : {
+            "properties" : {
+              "timespans" : {
+                "properties" : {
+                  "end" : {
+                    "properties" : {
+                      "in" : {
+                        "type" : "text",
+                        "fields" : {
+                          "keyword" : {
+                            "type" : "keyword",
+                            "ignore_above" : 256
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "start" : {
+                    "properties" : {
+                      "in" : {
+                        "type" : "text",
+                        "fields" : {
+                          "keyword" : {
+                            "type" : "keyword",
+                            "ignore_above" : 256
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
-        },
-        "place_id": {"type": "long"},
-        "whg_id": {"type": "long"}
+        }
+      },
+      "uri" : {
+        "type" : "keyword"
+      },
+      "whg_id" : {
+        "type" : "long"
       }
     }
   }

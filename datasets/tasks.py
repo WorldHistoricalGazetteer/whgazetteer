@@ -1499,7 +1499,9 @@ def align_idx(pk, *args, **kwargs):
       # get names for search fields
       names = [p.toponym for p in p.names.all()]
       doc['searchy'] = names
-      doc['suggest']['input'] = names
+      # suggester is not in use
+      # also, requires type filed as context; not all records have types
+      # doc['suggest']['input'] = names
       print("seed", whg_id, doc)
       new_seeds.append(doc)
       res = es.index(index=idx, id=str(whg_id), document=json.dumps(doc))
