@@ -333,6 +333,7 @@
     // update lastPlace pid in sessionStorage on every save
     sessionStorage.setItem('lastPlace', current_place)
   })
+
   $("#undo").click(function(e){
     e.preventDefault()
     url = $(this).data('url').replace('999',sessionStorage.lastPlace)

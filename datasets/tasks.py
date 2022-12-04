@@ -63,9 +63,10 @@ def make_download(request, *args, **kwargs):
   collid = kwargs['collid'] or None
   print('make_download() dsid, collid', dsid, collid)
   # test values
-  #username = 'SomeUser'
-  #req_format = 'tsv'
-  #dsid = 929  
+  # username = 'whgadmin'
+  # userid=1
+  # req_format = 'tsv'
+  # dsid = 1423
 
   date = makeNow()
 
@@ -117,9 +118,14 @@ def make_download(request, *args, **kwargs):
       # get latest dataset file
       dsf = ds.file
       # make pandas dataframe
-      df = pd.read_csv('media/'+dsf.file.name, delimiter='\t',dtype={'id':'str','aat_types':'str'})
+      df = pd.read_csv('media/'+dsf.file.name,
+                       delimiter=dsf.delimiter,
+                       # delimiter='\t',
+                       dtype={'id':'str','aat_types':'str'})
+      print('df', df)
       # copy existing header to newheader for write
       header = list(df)
+      # header = list(df)[0].split(',')
       newheader = deepcopy(header)
       # all exports should have these, empty or not
       newheader = list(set(newheader+['lon','lat','matches','geo_id','geo_source','geowkt']))
@@ -133,7 +139,8 @@ def make_download(request, *args, **kwargs):
       # TODO: better order?
       writer.writerow(newheader)
       # missing columns (were added to newheader)
-      missing=list(set(newheader)-set(list(df))); print('missing',missing)
+      missing=list(set(newheader)-set(list(df)))
+      print('missing',missing)
 
       for i, row in df.iterrows():
         dfrow = df.loc[i,:]
