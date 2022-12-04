@@ -498,19 +498,15 @@ def normalize(h, auth, language=None):
         for l in hlinks:
           links.append(qlinks[l]+':'+str(h['claims'][l][0]))
 
+      # non-English wp pages do not resolve well, ignore them
       # add en and FIRST {language} wikipedia sitelink OR first sitelink
-      wplinks = []
-      wplinks += [l['title'] for l in h['sitelinks'] if l['lang'] == 'en']
-      if language != 'en':
-        wplinks += [l['title'] for l in h['sitelinks'] if l['lang'] == language]
-      # TODO: non-English wp pages do not resolve well
-      #if len(wplinks) == 0 and len(h['sitelinks']) > 0:
-        #wplinks += [h['sitelinks'][0]['title']]
-        #wplinks += [h['sitelinks'][0]['title']+'@'+h['sitelinks'][0]['lang']]
-        
-      links += ['wp:'+l for l in set(wplinks)]
-
-      rec.links = links
+      # wplinks = []
+      # wplinks += [l['title'] for l in h['sitelinks'] if l['lang'] == 'en']
+      # if language != 'en':
+      #   wplinks += [l['title'] for l in h['sitelinks'] if l['lang'] == language]
+      # links += ['wp:'+l for l in set(wplinks)]
+      #
+      # rec.links = links
       #print('rec.links',rec.links)
 
       # look up Q class labels

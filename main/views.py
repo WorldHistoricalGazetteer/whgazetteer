@@ -76,12 +76,15 @@ def statusView(request):
         context["status_database"] = "down"
 
     # whg index
-    try:
-        q = {"query": {"bool": {"must": [{"match": {"place_id": "81011"}}]}}}
-        res1 = es.search(index="whg", body=q)
-        context["status_index"] = "up" if (res1['hits']['total'] == 1 and res1['hits']['hits'][0]['_source']['title'] == 'Abydos') else "error"
-    except:
-        context["status_index"] = "down"
+    # TODO: 20221203 something happened to cause
+    # ElasticsearchWarning: The client is unable to verify that the server is Elasticsearch due security privileges on the server side
+    # try:
+    #     q = {"query": {"bool": {"must": [{"match": {"place_id": "81011"}}]}}}
+    #     res1 = es.search(index="whg", body=q)
+    #     context["status_index"] = "up" if (res1['hits']['total'] == 1 and res1['hits']['hits'][0]['_source']['title'] == 'Abydos') \
+    #         else "error"
+    # except:
+    #     context["status_index"] = "down"
 
     # celery recon task
     try:

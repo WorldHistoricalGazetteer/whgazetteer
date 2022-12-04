@@ -498,8 +498,7 @@ def review(request, pk, tid, passnum):
                 }
               )
 
-            # create single PlaceLink for matched authority record
-            # TODO: this if: condition handled already?
+            # create single PlaceLink for matched wikidata record
             if tid not in place_post.links.all().values_list('task_id',flat=True):
               link = PlaceLink.objects.create(
                 place = place_post,
@@ -517,12 +516,12 @@ def review(request, pk, tid, passnum):
             # TODO: filter duplicates
             if 'links' in hits[x]['json']:
               for l in hits[x]['json']['links']:
-                #print('l in links',l)
                 authid = re.search("\: ?(.*?)$", l).group(1)
-                print('authid',authid)
-                if authid not in place.authids:
+                # print('authid, authids',authid, place.authids)
+                if l not in place.authids:
+                # if authid not in place.authids:
                   link = PlaceLink.objects.create(
-                    place = place,
+                    place = place_post,
                     task_id = tid,
                     src_id = place.src_id,
                     jsonb = {
@@ -2485,14 +2484,14 @@ def ds_list(request, label):
 def match_undo(request, ds, tid, pid):
   print('in match_undo() ds, task, pid:', ds, tid, pid)
   from django_celery_results.models import TaskResult
-
-  geom_matches = PlaceGeom.objects.all().filter(task_id=tid, place_id=pid)
-  link_matches = PlaceLink.objects.all().filter(task_id=tid, place_id=pid)
+  geom_matches = PlaceGeom.objects.filter(task_id=tid, place_id=pid)
+  link_matches = PlaceLink.objects.filter(task_id=tid, place_id=pid)
   geom_matches.delete()
   link_matches.delete()
 
   # reset place.review_xxx to 0
   tasktype = TaskResult.objects.get(task_id=tid).task_name[6:]
+  print('tasktype', tasktype)
   place = Place.objects.get(pk=pid)
   # remove any defer comments
   place.defer_comments.delete()
@@ -2503,6 +2502,7 @@ def match_undo(request, ds, tid, pid):
     place.review_tgn = 0
   else:
     place.review_whg = 0
+  place.save()
 
   # match task_id, place_id in hits; set reviewed = false
   Hit.objects.filter(task_id=tid, place_id=pid).update(reviewed=False)
@@ -2831,9 +2831,9 @@ class DatasetAddTaskView(LoginRequiredMixin, DetailView):
       If you proceed, you can keep or delete prior match results (links and/or geometry):</p>"""
     msg_updating = """This dataset has been updated, <span class='strong'>Starting this new task 
       will archive the previous task and re-submit all new and altered records. If you proceed, you can keep or delete prior 
-      matching results (links and geometry)</span>. <a href="%s">Questions? Contact our editorial team</a>"""
+      matching results (links and geometry)</span>. <a href="%s">Questions? Contact our editorial team.</a>"""
     msg_done = """All records have been submitted for reconciliation to %s and reviewed. 
-      To begin the step of accessioning to the WHG index, please <a href="%s">contact our editorial team</a>"""
+      To begin the step of accessioning to the WHG index, please <a href="%s">contact our editorial team.</a>"""
     for i in ds.taskstats.items():
       auth = i[0][6:]
       if len(i[1]) > 0: # there's a SUCCESS task
