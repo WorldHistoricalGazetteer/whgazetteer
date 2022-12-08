@@ -22,7 +22,7 @@ cached-property==1.5.2
 cchardet==2.1.7
 celery==4.4.7
 celery-progress==0.1.0
-certifi==2021.10.8
+certifi==2022.12.7
 cffi==1.15.0
 chardet==3.0.4
 charset-normalizer==2.0.12
