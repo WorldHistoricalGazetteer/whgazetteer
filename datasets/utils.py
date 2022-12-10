@@ -669,6 +669,27 @@ class HitRecord(object):
     import json
     return json.loads(json.dumps(self.__dict__,indent=2))
 
+
+class PlaceMapper(object):
+  def __init__(self, id, src_id, title):
+    self.id = id
+    self.src_id = src_id
+    self.title = title
+
+  def __setitem__(self, key, value):
+      setattr(self, key, value)
+
+  def __getitem__(self, key):
+      return getattr(self, key)
+
+  def __str__(self):
+    import json
+    return json.dumps(str(self.__dict__))
+
+  def toJSON(self):
+    import json
+    return json.loads(json.dumps(self.__dict__, indent=2))
+
 def is_aat(string):
   return True if string.startswith('aat') or 'aat/' in string else False
 
@@ -944,8 +965,8 @@ def parsejson(value,key):
 #
 def makeCoords(lonstr,latstr):
   #print(type(lonstr),latstr)
-  lon = float(lonstr) if lonstr not in ['','nan'] else ''
-  lat = float(latstr) if latstr not in ['','nan'] else ''
+  lon = float(lonstr) if lonstr not in ['','nan',None] else ''
+  lat = float(latstr) if latstr not in ['','nan',None] else ''
   coords = [] if (lonstr == ''  or latstr == '') else [lon,lat]
   return coords
 
@@ -1108,7 +1129,7 @@ def status_emailer(ds, task_name):
       html_content = "<h4>Congratulations and thank you!</h4><p>Your <b>"+ds.title+"</b> dataset is now fully indexed \
       in World Historical Gazetteer. Where we already had one or more records for a place, yours is now linked to it/them.</p> \
       <p>For those we had no attestation for, yours is the new 'seed'. In any case, <i>all</i> your records are now accessible via \ \
-      the index search, database search, and API.</p><p>Best regards,</p<<p>i>The WHG Team</i></p>"
+      the index search, database search, and API.</p><p>Best regards,</p<p><i>The WHG Team</i></p>"
   except:
     print('status_emailer() failed on dsid', ds.id, 'how come?')
   subject, from_email = 'WHG dataset status update', settings.DEFAULT_FROM_EMAIL

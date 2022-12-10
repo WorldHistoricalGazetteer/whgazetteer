@@ -114,6 +114,7 @@ class PlaceLinkSerializer(serializers.ModelSerializer):
     model = PlaceLink
     fields = ('type', 'identifier', 'aug')
 
+# returns single (first) geom for a place
 class PlaceGeomSerializer(serializers.ModelSerializer):
   # json: type, geowkt, coordinates, when{}
   #title = serializers.ReadOnlyField(source='title')
@@ -136,7 +137,26 @@ class PlaceGeomSerializer(serializers.ModelSerializer):
     fields = ('place_id','src_id','type', 'geowkt', 'coordinates',
               'geom_src', 'citation', 'when', 'title', 'ds',
               'certainty')
-              #'geom_src', 'citation', 'when',  'ds')
+
+# return list of normalized coordinates for a place
+class PlaceGeomsSerializer(serializers.ModelSerializer):
+  # ds = serializers.SerializerMethodField()
+  # def get_ds(self, obj):
+  #   return obj.place.dataset.id
+
+  type = serializers.ReadOnlyField(source='jsonb.type')
+  geowkt = serializers.ReadOnlyField(source='jsonb.geowkt')
+  coordinates = serializers.ReadOnlyField(source='jsonb.coordinates')
+  # citation = serializers.ReadOnlyField(source='jsonb.citation')
+  # when = serializers.ReadOnlyField(source='jsonb.when')
+  # certainty = serializers.ReadOnlyField(source='jsonb.certainty')
+
+  class Meta:
+    model = PlaceGeom
+    fields = ('place_id','src_id','type', 'geowkt', 'coordinates'
+              #, 'ds'
+              #'title', 'geom_src', 'when', 'certainty'
+    )
 
 class PlaceTypeSerializer(serializers.ModelSerializer):
   # json: identifier, label, sourceLabel OR sourceLabels[{}], when{}
@@ -192,6 +212,39 @@ class PlaceSerializer(serializers.ModelSerializer):
     fields = ('url', 'id', 'title', 'src_id', 'dataset', 'ccodes', 'fclasses',
               'names', 'types', 'geoms', 'links', 'related', 'whens',
               'descriptions', 'depictions', 'geo', 'minmax', 'traces'
+            )
+
+"""
+    partial direct representation of normalized place-related records in database
+    used for dataset updates
+"""
+# p_mapper = PlaceMapper(
+#   pobj['id'],
+#   pobj['src_id'],
+#   pobj['title']
+# )
+# add key:value pairs to consider
+# p_mapper['ccodes'] = pobj['ccodes']
+# p_mapper['types'] = [t['sourceLabel'] for t in pobj['types']]
+# p_mapper['aat_types'] = [t['identifier'][4:] for t in pobj['types']]
+# p_mapper['variants'] = [n['toponym'] for n in pobj['names'] if n['toponym'] != pobj['title']]
+# p_mapper['coords'] = [g['coordinates'] for g in pobj['geoms']]
+# p_mapper['links'] = [l['identifier'] for l in pobj['links']]
+
+class PlaceCompareSerializer(serializers.ModelSerializer):
+  dataset = serializers.ReadOnlyField(source='dataset.title')
+  names = PlaceNameSerializer(many=True, read_only=True)
+  types = PlaceTypeSerializer(many=True, read_only=True)
+  geoms = PlaceGeomsSerializer(many=True, read_only=True)
+  links = PlaceLinkSerializer(many=True, read_only=True)
+  related = PlaceRelatedSerializer(many=True, read_only=True)
+  whens = PlaceWhenSerializer(many=True, read_only=True)
+
+  class Meta:
+    model = Place
+    fields = ('url', 'id', 'title', 'src_id', 'dataset', 'ccodes', 'fclasses',
+              'names', 'types', 'geoms', 'links', 'related', 'whens',
+              'minmax', 'traces'
             )
 
 # returns default and computed columns for owner ds browse table (ds_browse.html)
@@ -327,97 +380,89 @@ class SearchDatabaseSerializer(serializers.HyperlinkedModelSerializer):
   used for nearby queries in SpatialAPIView() from /api/spatial? 
   returns Place records via PlaceGeom
 """
-class PlaceGeomSerializer(serializers.ModelSerializer):
-  # names = PlaceNameSerializer(source="placename_set", many=True, read_only=True)
-  # types = PlaceTypeSerializer(many=True, read_only=True)
-  # links = PlaceLinkSerializer(many=True, read_only=True)
-  # related = PlaceRelatedSerializer(many=True, read_only=True)
-  # whens = PlaceWhenSerializer(many=True, read_only=True)
-  # descriptions = PlaceDescriptionSerializer(many=True, read_only=True)
-  # depictions = PlaceDepictionSerializer(many=True, read_only=True)
-
-  names = serializers.SerializerMethodField('get_names')
-  def get_names(self, placegeom):
-    full = json.loads(coreserializers.serialize(
-        "json", placegeom.place.names.all()))
-    data = [n['fields']['jsonb'] for n in full]
-    print('name data', data)
-    return data
-
-  types = serializers.SerializerMethodField('get_types')
-  def get_types(self, placegeom):
-    full = json.loads(coreserializers.serialize(
-        "json", placegeom.place.types.all()))
-    data = [n['fields']['jsonb'] for n in full]
-    return data
-
-  links = serializers.SerializerMethodField('get_links')
-  def get_links(self, placegeom):
-    full = json.loads(coreserializers.serialize(
-        "json", placegeom.place.links.all()))
-    data = [n['fields']['jsonb'] for n in full]
-    return data
-
-  whens = serializers.SerializerMethodField('get_whens')
-  def get_whens(self, placegeom):
-    full = json.loads(coreserializers.serialize(
-        "json", placegeom.place.whens.all()))
-    data = [n['fields']['jsonb'] for n in full]
-    return data
-
-  related = serializers.SerializerMethodField('get_related')
-  def get_related(self, placegeom):
-    full = json.loads(coreserializers.serialize(
-        "json", placegeom.place.related.all()))
-    data = [n['fields']['jsonb'] for n in full]
-    return data
-
-  descriptions = serializers.SerializerMethodField('get_descriptions')
-  def get_descriptions(self, placegeom):
-    full = json.loads(coreserializers.serialize(
-        "json", placegeom.place.descriptions.all()))
-    data = [n['fields']['jsonb'] for n in full]
-    return data
-
-  # custom fields for LPF transform
-  type = serializers.SerializerMethodField('get_type')
-  def get_type(self, placegeom):
-    return "Feature"
-
-  uri = serializers.SerializerMethodField('get_uri')
-  def get_uri(self, placegeom):
-    return "https://whgazetteer.org/api/place/" + str(placegeom.place.id)
-
-  properties = serializers.SerializerMethodField('get_properties')
-  def get_properties(self, placegeom):
-    props = {
-      "place_id":placegeom.place.id,
-      "dataset_label": placegeom.place.dataset.label,
-      "src_id": placegeom.place.src_id,
-      "title": placegeom.place.title,
-      "ccodes": placegeom.place.ccodes,
-      "fclasses": placegeom.place.fclasses,
-      "minmax": placegeom.place.minmax,
-      "timespans": placegeom.place.timespans
-    }
-    return props
-
-  geometry = serializers.SerializerMethodField('get_geometry')
-  def get_geometry(self, placegeom):
-    return placegeom.jsonb
-    # gcoll = {"type":"GeometryCollection","geometries":[]}
-    # geoms = [g.jsonb for g in placegeom.geoms.all()]
-    # for g in geoms:
-    #   gcoll["geometries"].append(g)
-    # return gcoll
-
-  class Meta:
-    model = PlaceGeom
-    fields = ('uri', 'type', 'properties', 'geometry', 'place'
-                ,'names','types','links'
-                ,'related','whens', 'descriptions'
-                # 'depictions', 'minmax'
-            )
+# class PlaceGeomSerializer(serializers.ModelSerializer):
+#   names = serializers.SerializerMethodField('get_names')
+#   def get_names(self, placegeom):
+#     full = json.loads(coreserializers.serialize(
+#         "json", placegeom.place.names.all()))
+#     data = [n['fields']['jsonb'] for n in full]
+#     print('name data', data)
+#     return data
+#
+#   types = serializers.SerializerMethodField('get_types')
+#   def get_types(self, placegeom):
+#     full = json.loads(coreserializers.serialize(
+#         "json", placegeom.place.types.all()))
+#     data = [n['fields']['jsonb'] for n in full]
+#     return data
+#
+#   links = serializers.SerializerMethodField('get_links')
+#   def get_links(self, placegeom):
+#     full = json.loads(coreserializers.serialize(
+#         "json", placegeom.place.links.all()))
+#     data = [n['fields']['jsonb'] for n in full]
+#     return data
+#
+#   whens = serializers.SerializerMethodField('get_whens')
+#   def get_whens(self, placegeom):
+#     full = json.loads(coreserializers.serialize(
+#         "json", placegeom.place.whens.all()))
+#     data = [n['fields']['jsonb'] for n in full]
+#     return data
+#
+#   related = serializers.SerializerMethodField('get_related')
+#   def get_related(self, placegeom):
+#     full = json.loads(coreserializers.serialize(
+#         "json", placegeom.place.related.all()))
+#     data = [n['fields']['jsonb'] for n in full]
+#     return data
+#
+#   descriptions = serializers.SerializerMethodField('get_descriptions')
+#   def get_descriptions(self, placegeom):
+#     full = json.loads(coreserializers.serialize(
+#         "json", placegeom.place.descriptions.all()))
+#     data = [n['fields']['jsonb'] for n in full]
+#     return data
+#
+#   # custom fields for LPF transform
+#   type = serializers.SerializerMethodField('get_type')
+#   def get_type(self, placegeom):
+#     return "Feature"
+#
+#   uri = serializers.SerializerMethodField('get_uri')
+#   def get_uri(self, placegeom):
+#     return "https://whgazetteer.org/api/place/" + str(placegeom.place.id)
+#
+#   properties = serializers.SerializerMethodField('get_properties')
+#   def get_properties(self, placegeom):
+#     props = {
+#       "place_id":placegeom.place.id,
+#       "dataset_label": placegeom.place.dataset.label,
+#       "src_id": placegeom.place.src_id,
+#       "title": placegeom.place.title,
+#       "ccodes": placegeom.place.ccodes,
+#       "fclasses": placegeom.place.fclasses,
+#       "minmax": placegeom.place.minmax,
+#       "timespans": placegeom.place.timespans
+#     }
+#     return props
+#
+#   geometry = serializers.SerializerMethodField('get_geometry')
+#   def get_geometry(self, placegeom):
+#     return placegeom.jsonb
+#     # gcoll = {"type":"GeometryCollection","geometries":[]}
+#     # geoms = [g.jsonb for g in placegeom.geoms.all()]
+#     # for g in geoms:
+#     #   gcoll["geometries"].append(g)
+#     # return gcoll
+#
+#   class Meta:
+#     model = PlaceGeom
+#     fields = ('uri', 'type', 'properties', 'geometry', 'place'
+#                 ,'names','types','links'
+#                 ,'related','whens', 'descriptions'
+#                 # 'depictions', 'minmax'
+#             )
 
 """ used by 
     SearchAPIView() from /api/db? 

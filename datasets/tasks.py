@@ -28,7 +28,9 @@ from datasets.static.hashes.parents import ccodes as cchash
 from datasets.static.hashes.qtypes import qtypes
 from elastic.es_utils import makeDoc, build_qobj, profileHit
 #from datasets.task_utils import *
-from datasets.utils import bestParent, elapsed, getQ, HitRecord, hully, makeNow, parse_wkt, post_recon_update
+from datasets.utils import bestParent, elapsed, getQ, \
+  HitRecord, hully, makeNow, parse_wkt, post_recon_update
+
 from main.models import Log
 
 #from places.models import Place
@@ -127,6 +129,7 @@ def make_download(request, *args, **kwargs):
       header = list(df)
       # header = list(df)[0].split(',')
       newheader = deepcopy(header)
+
       # all exports should have these, empty or not
       newheader = list(set(newheader+['lon','lat','matches','geo_id','geo_source','geowkt']))
 

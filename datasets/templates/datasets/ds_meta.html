@@ -129,7 +129,7 @@
               <span id='progress-bar' class='progress-bar' style="background-color: #68a9ef; width: 0%; line-height:.5rem;">&nbsp;</span></p>
             <!-- dataset needn't be augmented for public page -->
             <!-- they don't have access to original file -->
-              {% if object.numrows <= 20000 %}
+              {% if object.numrows <= 25000 %}
                 <p><a class="a-dl-celery" href="#" ref="lpf">Linked Places format {% fontawesome_icon 'download'%}</a>
                     <span id="file_lpf" class="ml-1"></span></p>
                 {% if current_file.format == 'delimited' %}
@@ -139,7 +139,7 @@
                   <p class="mt-2"><i>LP-TSV conversion is not possible for this LPF dataset. <a id="conversion_help" class="pointer" data-toggle="popover" title="LPF download options" data-content="<p>Data initially loaded in Linked Places format (LPF) has one&#8209;to&#8209;many relations that can't be converted to simple TSV files.</p>" tabindex="0" data-trigger="focus" data-original-title=""><i title="" class="fa fa-question-circle" style="color:#336699;"></i></a></i></p>
                 {% endif %}
               {% else %}  
-                <span class="red-head"><br/>Download of augmented datasets larger than 20,000 rows is not supported right now.</span>
+                <span class="red-head"><br/>Download of augmented datasets larger than 25,000 rows is not supported right now.</span>
               {% endif %}
             <div id="progress-bar-message" class="hidden">Waiting for progress to start...</div>
             <div id="celery-result"></div>

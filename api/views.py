@@ -29,7 +29,7 @@ from rest_framework.reverse import reverse
 from accounts.permissions import IsOwnerOrReadOnly
 from api.serializers import (UserSerializer, DatasetSerializer, PlaceSerializer,
                              PlaceTableSerializer, PlaceGeomSerializer, AreaSerializer,
-                             FeatureSerializer, LPFSerializer)
+                             FeatureSerializer, LPFSerializer, PlaceCompareSerializer)
 from areas.models import Area
 from collection.models import Collection
 from datasets.models import Dataset
@@ -750,6 +750,20 @@ class PlaceDetailAPIView(generics.RetrieveAPIView):
   """  returns single serialized database place record by id  """
   queryset = Place.objects.all()
   serializer_class = PlaceSerializer
+  renderer_classes = [PrettyJsonRenderer]
+
+  permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
+  authentication_classes = [SessionAuthentication]
+
+"""
+    place_compare/<int:pk>/
+    uses: ds_update()
+    "partial database record by place_id for update comparisons"
+"""
+class PlaceCompareAPIView(generics.RetrieveAPIView):
+  """  returns single serialized database place record by id  """
+  queryset = Place.objects.all()
+  serializer_class = PlaceCompareSerializer
   renderer_classes = [PrettyJsonRenderer]
 
   permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]

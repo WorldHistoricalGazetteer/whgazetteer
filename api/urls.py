@@ -6,6 +6,7 @@ from rest_framework.urlpatterns import format_suffix_patterns
 from . import views
 
 # app_name = 'api'
+# naming this BREAKS DATATABLES IN DATASET BROWSE
 
 urlpatterns = [
 
@@ -30,7 +31,10 @@ urlpatterns = [
         
     # use: single place for ds_browse:: PlaceSerializer
     # also search.html if search scope = 'db'
-    path('place/<int:pk>/', views.PlaceDetailAPIView.as_view(), name='place-detail'),    
+    path('place/<int:pk>/', views.PlaceDetailAPIView.as_view(), name='place-detail'),
+
+    # single place for record comparison in ds_update
+    path('place_compare/<int:pk>/', views.PlaceCompareAPIView.as_view(), name='place-compare'),
 
     # places in a dataset
     # use: drf table in ds_browse  :: PlaceSerializer
