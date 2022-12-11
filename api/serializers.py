@@ -172,15 +172,16 @@ class PlaceTypeSerializer(serializers.ModelSerializer):
     fields = ('label', 'sourceLabel', 'sourceLabels', 'when', 'identifier','gn_class')
 
 class PlaceNameSerializer(serializers.ModelSerializer):
-  # json: toponym, citation{}
+  # jsonb: toponym, citation{}
   toponym = serializers.ReadOnlyField(source='jsonb.toponym')
-  citation = serializers.ReadOnlyField(source='jsonb.citation')
+  citations = serializers.ReadOnlyField(source='jsonb.citations')
+  # id = serializers.ReadOnlyField(source='jsonb.citation["id"]')
+  # label = serializers.ReadOnlyField(source='jsonb.citation.label')
   when = serializers.ReadOnlyField(source='jsonb.when')
 
   class Meta:
     model = PlaceName
-    fields = ('when','citation')
-    fields = ('toponym','when','citation')
+    fields = ('toponym','when','citations')
 
 """
     direct representation of normalized records in database
