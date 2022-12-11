@@ -147,7 +147,7 @@ class PlaceGeomsSerializer(serializers.ModelSerializer):
   type = serializers.ReadOnlyField(source='jsonb.type')
   geowkt = serializers.ReadOnlyField(source='jsonb.geowkt')
   coordinates = serializers.ReadOnlyField(source='jsonb.coordinates')
-  # citation = serializers.ReadOnlyField(source='jsonb.citation')
+  citation = serializers.ReadOnlyField(source='jsonb.citation')
   # when = serializers.ReadOnlyField(source='jsonb.when')
   # certainty = serializers.ReadOnlyField(source='jsonb.certainty')
 
@@ -218,19 +218,6 @@ class PlaceSerializer(serializers.ModelSerializer):
     partial direct representation of normalized place-related records in database
     used for dataset updates
 """
-# p_mapper = PlaceMapper(
-#   pobj['id'],
-#   pobj['src_id'],
-#   pobj['title']
-# )
-# add key:value pairs to consider
-# p_mapper['ccodes'] = pobj['ccodes']
-# p_mapper['types'] = [t['sourceLabel'] for t in pobj['types']]
-# p_mapper['aat_types'] = [t['identifier'][4:] for t in pobj['types']]
-# p_mapper['variants'] = [n['toponym'] for n in pobj['names'] if n['toponym'] != pobj['title']]
-# p_mapper['coords'] = [g['coordinates'] for g in pobj['geoms']]
-# p_mapper['links'] = [l['identifier'] for l in pobj['links']]
-
 class PlaceCompareSerializer(serializers.ModelSerializer):
   dataset = serializers.ReadOnlyField(source='dataset.title')
   names = PlaceNameSerializer(many=True, read_only=True)
@@ -244,8 +231,7 @@ class PlaceCompareSerializer(serializers.ModelSerializer):
     model = Place
     fields = ('url', 'id', 'title', 'src_id', 'dataset', 'ccodes', 'fclasses',
               'names', 'types', 'geoms', 'links', 'related', 'whens',
-              'minmax', 'traces'
-            )
+              'minmax' )
 
 # returns default and computed columns for owner ds browse table (ds_browse.html)
 class PlaceTableSerializer(serializers.ModelSerializer):

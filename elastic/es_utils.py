@@ -443,12 +443,12 @@ def removeDatasetFromIndex(request, *args, **kwargs):
   return JsonResponse({'msg':'task passed to removePlacesFromIndex('+str(ds.id)+')'})
 
 #
-# delete docs given place_id list
+# delete docs in given pid list
 # if parent, promotes a child if any
 # if child, removes references to it in parent (children[], suggest.input[])
 # TODO: confirm suggest.input[] is not distinct
 #  i.e. what if variant was also contributed by parent or another child?
-#
+# NB: suggest.input deprecated
 
 def removePlacesFromIndex(es, idx, pids):
   delthese=[]
@@ -557,7 +557,6 @@ def removePlacesFromIndex(es, idx, pids):
         delthese.append(pid)
       # ex. deleted 2: [6713134, 6713135]
       # DB ACTIONS
-      # remove indexed flag;
       place.indexed = False
       # delete previous hits from whg task
       place.hit_set.filter(authority='whg').delete()

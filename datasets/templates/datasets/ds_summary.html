@@ -445,16 +445,17 @@
   }
 
   // parse & prettify ds_update() results
+  // [status,format,update_count,redo_count,new_count,deleted_count,newfile]
   function updateText(data){
     html = 'Changes in database: <br/>' + '<ul>' +
            '<li>Added '+data["new_count"]+' rows </li>'+
-           '<li>Deleted '+data["del_count"]+' rows </li>'+
+           '<li>Deleted '+data["deleted_count"]+' rows </li>'+
            '<li>Updated '+data["update_count"]+' rows </li>'+'</ul>'
-	  html += 'A followup reconciliation to Wikidata task is required, '
+	  html += 'A followup reconciliation to Wikidata task is required.'
+
 		if(data['indexed'] == true) {
-      html += 'as well as a reindexing, '
+      html += ', as well as a reindexing, in order to account for these changes.'
 		}
-    html += 'in order to account for these changes.'
     return html
   }
   // performs ds_update()

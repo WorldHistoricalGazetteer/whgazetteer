@@ -1171,35 +1171,48 @@ def update_rels_tsv(pobj, row):
   perform updates to database and index, given ds_compare() results
   params: dsid, format, keepg, keepl, compare_data (json string)
 """
-# dsid = 1433
-# file_format = 'delimited'
-# keepg, keepl = [True, True]
-# compare_data = {'id': '1433', 'filename_cur': 'user_whgadmin/sample7g.txt', 'filename_new': 'user_whgadmin/sample7g_new.txt', 'format': 'delimited', 'validation_result': {'format': 'delimited', 'errors': [], 'columns': ['id', 'title', 'title_source', 'start', 'end', 'title_uri', 'ccodes', 'variants', 'types', 'aat_types', 'matches', 'lon', 'lat', 'geowkt', 'geo_source', 'geo_id', 'description'], 'count': 7}, 'tempfn': '/var/folders/w1/ms_2x6rj0ls88v79q33lvds80000gp/T/tmpsrra1242', 'count_indexed': 0, 'count_links_added': 0, 'count_geoms_added': 0, 'compare_result': {'count_new': 7, 'count_diff': 0, 'count_replace': 6, 'cols_del': [], 'cols_add': ['description', 'title_uri'], 'header_new': ['id', 'title', 'title_source', 'start', 'end', 'title_uri', 'ccodes', 'variants', 'types', 'aat_types', 'matches', 'lon', 'lat', 'geowkt', 'geo_source', 'geo_id', 'description'], 'rows_add': ['717_4'], 'rows_del': ['717_2']}}
-
+""" TEST VALUES 
+    from datasets.models import Dataset
+    ds=Dataset.objects.get(id=1435)
+    dsid=1435
+    ds_places = ds.places.all()
+    from django.test import Client
+    filepath = 'media/user_whgadmin/sample7g_new.txt'
+    import pandas as pd
+    import numpy as np
+    file_format = 'delimited'
+    keepg, keepl = [True, True]
+    compare_data={}
+    bdf = pd.read_csv(filepath, delimiter='\t')
+    bdf = bdf.replace({np.nan: None})
+    bdf = bdf.astype({"id": str, "ccodes": str, "types": str, "aat_types": str})
+    ids_b = bdf['id'].tolist()
+    # row = bdf.iloc[6]
+    row = bdf.iloc[3]
+    row_dict = row.to_dict()
+"""
 def ds_update(request):
   if request.method == 'POST':
     print('request.POST ds_update()', request.POST)
     dsid=request.POST['dsid']
     ds = get_object_or_404(Dataset, id=dsid)
     file_format=request.POST['format']
+
     # keep previous recon/review results?
     keepg = request.POST['keepg']
     keepl = request.POST['keepl']
+    print('keepg, keepl', keepg, keepl)
 
-    print('keepg, type in ds_update() request', keepg, type(keepg))
-    print('keepl, type in ds_update() request', keepg, type(keepl))
-
-    # compare_data = comparison
-    # compare_result = compare_data['compare_result']
-    compare_data = json.loads(request.POST['compare_data']) # comparison returned by ds_compare
+    # comparison returned by ds_compare
+    compare_data = json.loads(request.POST['compare_data'])
     compare_result = compare_data['compare_result']
     print('compare_data from ds_compare', compare_data)
+
     # tempfn has .tsv or .jsonld extension from validation step
     tempfn = compare_data['tempfn']
     filename_new = compare_data['filename_new']
-    # dsfobj_cur = 'user_whgadmin/sample7c.txt'
     dsfobj_cur = ds.files.all().order_by('-rev')[0]
-    rev_cur = dsfobj_cur.rev
+    rev_num = dsfobj_cur.rev
 
     # rename file if already exists in user area
     if Path('media/'+filename_new).exists():
@@ -1211,52 +1224,35 @@ def ds_update(request):
     filepath = 'media/'+filename_new
     copyfile(tempfn,filepath)
 
-    # and create new DatasetFile instance
+    # and create new DatasetFile; increment rev
     DatasetFile.objects.create(
       dataset_id = ds,
       file = filename_new,
-      rev = rev_cur + 1,
+      rev = rev_num + 1,
       format = file_format,
       upload_date = datetime.date.today(),
       header = compare_result['header_new'],
       numrows = compare_result['count_new']
     )
 
-    # (re-)open files as panda dataframes; a = current, b = new
+    # reopen new file as panda dataframe bdf
     if file_format == 'delimited':
-      adf = pd.read_csv('media/'+compare_data['filename_cur'],
-                        delimiter='\t',
-                        dtype={'id':'str','ccodes':'str'})
-      # TODO: account for geoms and links added by reconciliation
-
       bdf = pd.read_csv(filepath, delimiter='\t')
 
-      # replace NaN with None
-      adf = adf.replace({np.nan: None})
+      # replace pandas NaN with None
       bdf = bdf.replace({np.nan: None})
-
-      bdf = bdf.astype({"id":str,"ccodes":str,"types":str,"aat_types":str})
-      print('reopened old file, # lines:',len(adf))
+      # force data types
+      bdf = bdf.astype({"id":str, "ccodes":str, "types":str, "aat_types":str})
       print('reopened new file, # lines:',len(bdf))
-      ids_a = adf['id'].tolist()
-      ids_b = bdf['id'].tolist()
-
-      # delete_srcids = [str(x) for x in (set(ids_a)-set(ids_b))]
-      # TODO: limit these to rows that have changed
-      # OR...flag changed places so they can be omitted from
-      # remaining_srcids = set.intersection(set(ids_b),set(ids_a))
-      # replace_srcids = set.intersection(set(ids_b),set(ids_a))
 
       # CURRENT PLACES
       ds_places = ds.places.all()
-      # Place.id list to delete
-      rows_delete = list(ds_places.filter(src_id__in=compare_result['rows_del']).values_list('id',flat=True))
-      # new src_ids list
-      # rows_add = compare_result['rows_add'] # src_ids, no pid yet
-
-      # delete places with (src_)ids missing in new data (CASCADE includes links & geoms)
+      # pids of missing src_ids
+      rows_delete, idx_delete = list(ds_places.filter(src_id__in=compare_result['rows_del']).values_list('id',flat=True))
+      # CASCADE includes links & geoms
       ds_places.filter(id__in=rows_delete).delete()
 
+      # for use below
       def delete_related(pid):
         # option to keep prior links and geoms matches; remove the rest
         if not keepg:
@@ -1277,75 +1273,65 @@ def ds_update(request):
         PlaceRelated.objects.filter(place_id=pid).delete()
         PlaceDescription.objects.filter(place_id=pid).delete()
 
-      count_updated, count_new = [0,0]
-      # set Place.flag = True *IF CHANGED ONLY*
-      # update place instances w/data from new file
-      rows_replace = []
+      # counts for report
+      count_new, count_replaced, count_redo = [0,0,0]
+      # pids for index operations
       rows_add = []
-      place_fields = {'id', 'title', 'ccodes','start','end'}
-      # print('before for...', )
-      for index, row in bdf.iterrows():
-        # new row as json
-        row_dict = row.to_dict()
-        # print(row_dict)
+      rows_delete = []
 
-        row_bdf_sorted = {key: val for key, val in sorted(row_dict.items(), key=lambda ele: ele[0])}
-        print('incoming row in ds_update', row_bdf_sorted)
-        # working subset of new row
-        rdp = {key:row_bdf_sorted[key] for key in place_fields}
-        print('rdp subset of row', rdp)
+      place_fields = {'id', 'title', 'ccodes','start','end','attestation_year'}
+      for index, row in bdf.iterrows():
+        # new row as dict
+        row = row.to_dict()
+        print('row as dict', row)
+
+        # subset (why?)
+        # rdp = {key:row[key] for key in row}
 
         # some Place attributes
-        start = int(rdp['start']) if 'start' in rdp else None
-        end = int(rdp['end']) if 'end' in rdp and str(rdp['end']) != 'nan' else start
+
+        start = int(row['start']) if 'start' in row else int(row['attestation_year']) \
+          if ('attestation_year' in row) else None
+        end = int(row['end']) if 'end' in row and str(row['end']) != 'nan' else start
         minmax_new = [start, end] if start else [None]
 
-        from datasets.models import Dataset
-        ds=Dataset.objects.get(id=1435)
-        ds_places = ds.places.all()
-        from django.test import Client
-        filepath = 'media/user_whgadmin/sample7g_new.txt'
-        import pandas as pd
-        import numpy as np
-        bdf = pd.read_csv(filepath, delimiter='\t')
-        bdf = bdf.replace({np.nan: None})
-        bdf = bdf.astype({"id": str, "ccodes": str, "types": str, "aat_types": str})
-        ids_b = bdf['id'].tolist()
-        # row = bdf.iloc[6]
-        row = bdf.iloc[3]
-        row_dict = row.to_dict()
-        rbs = {key: val for key, val in sorted(row_dict.items(), key=lambda ele: ele[0])}
         from datasets.utils import PlaceMapper
 
         # extract coords from upload file
-        row_coords = makeCoords(rbs['lon'], rbs['lat']) \
-          if rbs['lon'] and rbs['lat'] else None
-        if rbs['geowkt']:
-          gtype = wkt.loads(rbs['geowkt']).type
+        row_coords = makeCoords(row['lon'], row['lat']) \
+          if row['lon'] and row['lat'] else None
+        if row['geowkt']:
+          gtype = wkt.loads(row['geowkt']).type
           if 'Multi' not in gtype:
-            row_coords = [list(u) for u in wkt.loads(rbs['geowkt']).coords]
+            row_coords = [list(u) for u in wkt.loads(row['geowkt']).coords]
           else:
-            row_coords = [list(u) for u in wkt.loads(rbs['geowkt']).xy]
-        # ['aat_types', 'ccodes', 'description', 'end', 'geo_id', 'geo_source',
-        # 'geowkt', 'id', 'lat', 'lon', 'matches', 'start', 'title',
-        # 'title_source', 'title_uri', 'types', 'variants']
+            row_coords = [list(u) for u in wkt.loads(row['geowkt']).xy]
+        # all columns
+        # id,title,title_source,title_uri,ccodes,matches,variants,types,aat_types,parent_name,parent_id,geo_source,geo_id,description
         row_mapper = {
-          'src_id': rbs['id'],
-          'title': rbs['title'],
-          'variants': rbs['variants'].split(';') if rbs['variants'] else [],
-          'ccodes': rbs['ccodes'].split(';') if rbs['ccodes'] else [],
-          'types': rbs['types'].split(';') if rbs['types'] else [],
-          'links': rbs['matches'].split(';') if rbs['matches'] else [],
-          'aat_types': rbs['aat_types'].split(';') if rbs['aat_types'] else [],
+          'src_id': row['id'],
+          'title': row['title'],
+          'title_source': row['title_source'] if 'title_source' in row else '',
+          'title_uri': row['title_uri'] if 'title_uri' in row else '',
+          'ccodes': row['ccodes'].split(';') if row['ccodes'] else [],
+          'matches': row['matches'].split(';') if row['matches'] else [],
+          'variants': row['variants'].split(';') if row['variants'] else [],
+          'types': row['types'].split(';') if row['types'] else [],
+          'aat_types': row['aat_types'].split(';') if row['aat_types'] else [],
+          'parent_name': row['parent_name'] if row['parent_name'] else '',
+          'parent_id': row['parent_id'] if row['parent_id'] else '',
+          'geo_source': row['geo_source'] if row['geo_source'] else '',
+          'geo_id': row['geo_id'] if row['geo_id'] else '',
+          'description': row['description'] if row['description'] else '',
           'coords': row_coords or [],
         }
 
         try:
           # is there corresponding current Place?
-          # p = ds_places.get(src_id=rdp['id'])
-          p = ds_places.get(src_id='11')
-          # if yes, build a json object from serialized record in database
+          p = ds_places.get(src_id=rdp['id'])
+          # p = ds_places.get(src_id='11')
           if p:
+            # fetch existing API record
             c = Client()
             try:
               result = c.get('/api/place_compare/' + str(p.id) + '/')
@@ -1354,96 +1340,100 @@ def ds_update(request):
             except:
               print('pobj failed', p.id, sys.exc_info())
 
-            # initiate a mapping place object
+            # build object for comparison
             # TODO: build separate serializer(s) for this? performance?
             p_mapper = PlaceMapper(
               pobj['id'],
               pobj['src_id'],
               pobj['title']
             )
+            # id,title,title_source,title_uri,ccodes,matches,variants,types,aat_types,
+            # parent_name,parent_id,geo_source,geo_id,description
             # add key:value pairs to consider
+            title_name = next(n for n in pobj['names'] if n['toponym'] == pobj['title']) or None
+            p_mapper['title_source'] = title_name['toponym'] if title_name else ''
+            p_mapper['title_id'] = title_name['id'] if 'id' in title_name else ''
+
             p_mapper['ccodes'] = pobj['ccodes'] or []
             p_mapper['types'] = [t['sourceLabel'] for t in pobj['types']] or []
             p_mapper['aat_types'] = [t['identifier'][4:] for t in pobj['types']] or []
             p_mapper['variants'] = [n['toponym'] for n in pobj['names'] if n['toponym'] != pobj['title']] or []
-            p_mapper['coords'] = [g['coordinates'] for g in pobj['geoms']]
-            p_mapper['links'] = [l['identifier'] for l in pobj['links']]
+            p_mapper['coords'] = [g['coordinates'] for g in pobj['geoms']] or []
+            p_mapper['geo_sources'] = [g['citation']['label'] for g in pobj['geoms']] or []
+            p_mapper['geo_ids'] = [g['citation']['id'] for g in pobj['geoms']] or []
+            p_mapper['links'] = [l['identifier'] for l in pobj['links']] or []
+            p_mapper['related'] = [r['label'] for r in pobj['related']]
+            p_mapper['related_id'] = [r['identifier'] for r in pobj['related']]
+            p_mapper['description'] = [d['value'] for d in pobj['related']]
 
-
-            # diff database p_mapper and incoming row
-            # compare p_mapper & row_mapper: title, variants, ccodes, links, types, aat_types, coords
+            # diff incoming (row_mapper) & database (p_mapper)
+            # meaningful = title, variants, aat_types, links/matches, coords
             diffs=[]
+
+            # [:6] not meaningful (don't affect reconciliation)
+            diffs.append(row_mapper['title_source'] == p_mapper['title_source'])
+            diffs.append(row_mapper['title_id'] == p_mapper['title_id'])
+            diffs.append(row_mapper['parent_name'] in p_mapper['related'])
+            diffs.append(row_mapper['parent_id'] in p_mapper['related_id'])
+            diffs.append(row_mapper['geo_source'] in p_mapper['geo_sources'])
+            diffs.append(row_mapper['geo_id'] in p_mapper['geo_ids'])
+            diffs.append(row_mapper['description'] in p_mapper['description'])
+
+            # [7:] meaningful
             diffs.append(row_mapper['title'] == p_mapper['title'])
-            diffs.append(
-              sorted(row_mapper['variants']) == sorted(p_mapper['variants'])
-            )
+            diffs.append(sorted(row_mapper['variants']) == sorted(p_mapper['variants']))
             diffs.append(sorted(row_mapper['aat_types']) == sorted(p_mapper['aat_types']))
-            diffs.append(sorted(row_mapper['links']) == sorted(p_mapper['links']))
+            diffs.append(sorted(row_mapper['matches']) == sorted(p_mapper['links']))
             if row_mapper['coords'] != []:
               diffs.append(row_mapper['coords'] in p_mapper['coords'])
 
-            # replace Place record
-            count_updated += 1
+            # update Place record in all cases
+            count_replaced += 1
             p.title = row_mapper['title']
             p.ccodes = row_mapper['ccodes']
             p.minmax = minmax_new
             p.timespans = [minmax_new]
 
-            if False not in diffs:
-              # essential attribs same; no need to reconcile again
-              # replace record with row values, preserving geoms and links
-              # replace related records (PlaceName, PlaceType, etc.)
-              delete_related(p, keepg, keepl)
-              update_rels_tsv(p, row_mapper)
-            else:
-              # something significant changed
-              # replace entire record, including geoms and links
-              # flag as needing reconciliation
-              delete_related(p, False, False)
-              update_rels_tsv(p, row_mapper)
-              p.flag = True
-              p.save()
+            if False in diffs:
+              # there was SOME change(s) -> add to delete-from-index list
+              # (will be reindexed after re-reconciling)
+              idx_delete.append(p.id)
 
-            # diffs = diff(pobj, row_bdf_sorted, exclude_paths=[
-            #   "root['description']",
-            #   "root['title_uri']",
-            #   "root['title_source']",
-            #   "root['parent_name']",
-            #   "root['start']",
-            #   "root['end']",
-            #   "root['geo_id']",
-            #   "root['geo_source']"
-            # ])
-            # print('diffs', diffs)
-            # rebuild and flag Place p if *any* changes
-            # if row_adf_sorted != row_bdf_sorted:
-            #   print('re-build Place '+p.title+'('+str(p.src_id)+')')
-            #   count_updated += 1
-            #   p.title = rdp['title']
-            #   p.ccodes = [] if str(rdp['ccodes']) == 'nan' else rdp['ccodes'].replace(' ', '').split(';')
-            #   p.minmax = minmax_new
-            #   p.timespans = [minmax_new]
-            #   # replace related records (PlaceName, PlaceType, etc.)
-            #   delete_related(p)
-            #   update_rels_tsv(p, row_bdf_sorted)
-            # if diffs:
-            #   # TODO: is Place.flag necessary?
-            #   print('significant diffs, set review_wd=None, flag=True')
-            #   # rows_replace.append(p.id)
-            #   p.review_wd = None
-            #   p.flag = True
+            if False not in diffs[7:]:
+              # no meaningful changes
+              # replace related, preserving geoms & links if keepg, keepl
+              # leave review_wd and flag status intact
+              delete_related(p)
+              update_rels_tsv(p, row)
+            else:
+              # meaningful change(s) exist
+              count_redo +=1
+              # replace related, including geoms and links
+              keepg, keepl = [False, False]
+              delete_related(p)
+              update_rels_tsv(p, row)
+
+              # (re)set Place.review_wd & Place.flag (needs reconciliation)
+              p.review_wd = None
+              p.flag = True
+
+              # meaningful change, so
+              # add to list for index deletion
+              idx_delete.append(p.id)
+
             p.save()
           else:
             # no corresponding Place, create new one
-            print('new place record needed from rdp', rdp)
+            print('new place record needed from rdp', row)
             count_new +=1
             newpl = Place.objects.create(
-              src_id = rdp['id'],
-              title = re.sub('\(.*?\)', '', rdp['title']),
-              ccodes = [] if str(rdp['ccodes']) == 'nan' else rdp['ccodes'].replace(' ','').split(';'),
+              src_id = row['id'],
+              title = re.sub('\(.*?\)', '', row['title']),
+              ccodes = [] if str(row['ccodes']) == 'nan' else row['ccodes'].replace(' ','').split(';'),
               dataset = ds,
               minmax = minmax_new,
               timespans = [minmax_new],
+              # flax for reconciling
               flag = True
             )
             newpl.save()
@@ -1451,18 +1441,21 @@ def ds_update(request):
             rows_add.append(pobj.id)
             print('new place, related:', newpl)
             # add related rcords (PlaceName, PlaceType, etc.)
-            update_rels_tsv(pobj, row_bdf_sorted)
+            update_rels_tsv(pobj, row)
         except:
-          print('update failed on ', row_dict)
+          print('update failed on ', row)
           print('error', sys.exc_info())
+
       # update numrows
       ds.numrows = ds.places.count()
       ds.save()
 
       # initiate a result object
-      result = {"status": "updated", "update_count":count_updated ,
-                "new_count":count_new, "del_count": len(rows_delete), "newfile": filepath,
-                "format":file_format, "rows_add": rows_add}
+      result = {"status": "updated", "format":file_format,
+                "update_count":count_replaced, "redo_count": count_redo,
+                "new_count":count_new, "deleted_count": len(rows_delete),
+                "newfile": filepath}
+
       print('update result', result)
       print("compare_data['count_indexed']", compare_data['count_indexed'])
 
@@ -1471,25 +1464,16 @@ def ds_update(request):
       # if dataset status is 'accessioning' or 'indexed',
       # alternately?: if ds.ds_status in ['accessioning', 'indexed']
       if compare_data['count_indexed'] > 0:
-        es = settings.ES_CONN
-        idx='whg'
-
         result["indexed"] = True
 
         # surgically remove as req.
-        if len(rows_delete) > 0:
-          print('rows to delete from index:', rows_delete)
-          # deleteFromIndex(es, idx, rows_delete)
-
-        # update others
-        if len(rows_replace) > 0:
-          print('rows to replace in index:', rows_replace)
-          # replaceInIndex(es, idx, rows_replace)
-
-        # process new
-        if len(rows_add) > 0:
-          print('new rows need reconciliation, then add to index:', rows_add)
-          # notify need to reconcile & accession them
+        # idx_delete is superset of rows_delete
+        print('rows_delete, idx_delete', rows_delete, idx_delete)
+        if len(idx_delete) > 0:
+          es = settings.ES_CONN
+          idx = 'whg'
+          print('pids to delete from index:', idx_delete)
+          removePlacesFromIndex(es, idx, idx_delete)
       else:
         print('not indexed, that is all')
 
@@ -1515,28 +1499,6 @@ def ds_update(request):
   called by ajax function from modal in ds_summary.html
   returns json result object 'comparison' for use by ds_update()
 """
-# TODO: compare incoming file with database records, NOT the last file
-# if any reconciliation has occurred they will be different
-# from rest_framework.test import APIClient
-# from django.urls import reverse
-# client = APIClient()
-# # call reverse('place-detail') -- /api/place/<int:pk>
-# pid = 6873947
-#
-# def place_detail_url(pid):
-# 	"""Create and return a place detail URL."""
-# 	return reverse('place-detail')
-# 	# return reverse('api:place-detail', args=[{"pk":pid}])
-# url = reverse('api:place-detail')
-# url = '/api/place/6873947/'
-# payload ={"pk": pid}
-# # url = place_detail_url(pid)
-# res = client.get(url)
-#
-# serializer = DatasetRemoteDetailSerializer(dataset)
-# qs=Place.objects.filter(dataset='croniken_wpish')
-# qs.values_list('id','title','names__jsonb', 'links__jsonb', 'geoms__jsonb')[150:151]
-
 def ds_compare(request):
   if request.method == 'POST':
     print('ds_compare() request.POST', request.POST)
@@ -3286,249 +3248,249 @@ class DatasetLogView(LoginRequiredMixin, DetailView):
   perform updates to database and index, given new datafile
   params: dsid, format, keepg, keepl, compare_data (json string)
 """
-def ds_update_bak(request):
-  if request.method == 'POST':
-    print('request.POST ds_update()', request.POST)
-    dsid=request.POST['dsid']
-    ds = get_object_or_404(Dataset, id=dsid)
-    file_format=request.POST['format']
-    # keep previous recon/review results?
-    keepg = request.POST['keepg']
-    keepl = request.POST['keepl']
-
-    print('keepg, type in ds_update() request', keepg, type(keepg))
-    print('keepl, type in ds_update() request', keepg, type(keepl))
-
-    # compare_data = comparison
-    # compare_result = compare_data['compare_result']
-    compare_data = json.loads(request.POST['compare_data']) # comparison returned by ds_compare
-    compare_result = compare_data['compare_result']
-    print('compare_data from ds_compare', compare_data)
-    # tempfn has .tsv or .jsonld extension from validation step
-    tempfn = compare_data['tempfn']
-    filename_new = compare_data['filename_new']
-    # dsfobj_cur = 'user_whgadmin/sample7c.txt'
-    dsfobj_cur = ds.files.all().order_by('-rev')[0]
-    rev_cur = dsfobj_cur.rev
-
-    # rename file if already exists in user area
-    if Path('media/'+filename_new).exists():
-      fn=os.path.splitext(filename_new)
-      #filename_new=filename_new[:-4]+'_'+tempfn[-11:-4]+filename_new[-4:]
-      filename_new=fn[0]+'_'+tempfn[-11:-4]+fn[1]
-
-    # user said go...copy tempfn to media/{user} folder
-    filepath = 'media/'+filename_new
-    copyfile(tempfn,filepath)
-
-    # and create new DatasetFile instance
-    DatasetFile.objects.create(
-      dataset_id = ds,
-      file = filename_new,
-      rev = rev_cur + 1,
-      format = file_format,
-      upload_date = datetime.date.today(),
-      header = compare_result['header_new'],
-      numrows = compare_result['count_new']
-    )
-
-    # (re-)open files as panda dataframes; a = current, b = new
-    if file_format == 'delimited':
-      adf = pd.read_csv('media/'+compare_data['filename_cur'],
-                        delimiter='\t',
-                        dtype={'id':'str','ccodes':'str'})
-      # TODO: account for geoms and links added by reconciliation
-
-      bdf = pd.read_csv(filepath, delimiter='\t')
-
-      # replace NaN with None
-      adf = adf.replace({np.nan: None})
-      bdf = bdf.replace({np.nan: None})
-
-      bdf = bdf.astype({"id":str,"ccodes":str,"types":str,"aat_types":str})
-      print('reopened old file, # lines:',len(adf))
-      print('reopened new file, # lines:',len(bdf))
-      ids_a = adf['id'].tolist()
-      ids_b = bdf['id'].tolist()
-
-      # delete_srcids = [str(x) for x in (set(ids_a)-set(ids_b))]
-      # TODO: limit these to rows that have changed
-      # OR...flag changed places so they can be omitted from
-      # remaining_srcids = set.intersection(set(ids_b),set(ids_a))
-      # replace_srcids = set.intersection(set(ids_b),set(ids_a))
-
-      # CURRENT PLACES
-      ds_places = ds.places.all()
-      # Place.id list to delete
-      rows_delete = list(ds_places.filter(src_id__in=compare_result['rows_del']).values_list('id',flat=True))
-      # new src_ids list
-      # rows_add = compare_result['rows_add'] # src_ids, no pid yet
-
-      # delete places with (src_)ids missing in new data (CASCADE includes links & geoms)
-      ds_places.filter(id__in=rows_delete).delete()
-
-      def delete_related(pid):
-        # option to keep prior links and geoms matches; remove the rest
-        if not keepg:
-          # keep no geoms
-          PlaceGeom.objects.filter(place_id=pid).delete()
-        else:
-          # leave results of prior matches
-          PlaceGeom.objects.filter(place_id=pid, task_id__isnull=True).delete()
-        if not keepl:
-          # keep no links
-          PlaceLink.objects.filter(place_id=pid).delete()
-        else:
-          # leave results of prior matches
-          PlaceLink.objects.filter(place_id=pid, task_id__isnull=True).delete()
-        PlaceName.objects.filter(place_id=pid).delete()
-        PlaceType.objects.filter(place_id=pid).delete()
-        PlaceWhen.objects.filter(place_id=pid).delete()
-        PlaceRelated.objects.filter(place_id=pid).delete()
-        PlaceDescription.objects.filter(place_id=pid).delete()
-
-      count_updated, count_new = [0,0]
-      # set Place.flag = True *IF CHANGED ONLY*
-      # update place instances w/data from new file
-      rows_replace = []
-      rows_add = []
-      place_fields = {'id', 'title', 'ccodes','start','end'}
-      for index, row in bdf.iterrows():
-        # is there an existing place.src_id?
-        p = ds_places.filter(src_id=row['id']) or None
-        # if so, get a json representation of it
-
-        # new row as json
-        row_dict = row.to_dict()
-        # print(row_dict)
-
-        row_bdf_sorted = {key: val for key, val in sorted(row_dict.items(), key=lambda ele: ele[0])}
-        print('incoming row in ds_update', row_bdf_sorted)
-        # working subset of new row
-        rdp = {key:row_bdf_sorted[key] for key in place_fields}
-        print('rdp subset of row', rdp)
-
-        # some Place attributes
-        start = int(rdp['start']) if 'start' in rdp else None
-        end = int(rdp['end']) if 'end' in rdp and str(rdp['end']) != 'nan' else start
-        minmax_new = [start, end] if start else [None]
-
-        try:
-          # is there corresponding current Place?
-          p = ds_places.get(src_id=rdp['id'])
-          # there is, so build a json object from adf (previous file) dataframe
-          row_adf = adf.loc[adf['id'] == p.src_id]
-          row_adf_json=json.loads((row_adf.to_json(orient='records')))[0]
-          # no particular reason to sort here except for inspection
-          row_adf_sorted = {key: val for key, val in sorted(row_adf_json.items(), key=lambda ele: ele[0])}
-          print('row_adf_sorted', row_adf_sorted)
-          print('row_bdf_sorted', row_bdf_sorted)
-
-          # diff adf and bdf rows
-          # used in reconciliation: title, matches, aat_types, ccodes, lon, lat, geowkt
-          # ignore changes to the rest
-          diffs = diff(row_adf_sorted, row_bdf_sorted, exclude_paths=[
-            "root['description']",
-            "root['title_uri']",
-            "root['title_source']",
-            "root['parent_name']",
-            "root['start']",
-            "root['end']",
-            "root['geo_id']",
-            "root['geo_source']"
-          ])
-          # print('diffs', diffs)
-          # rebuild and flag Place p if *any* changes
-          if row_adf_sorted != row_bdf_sorted:
-            print('re-build Place '+p.title+'('+str(p.src_id)+')')
-            count_updated += 1
-            p.title = rdp['title']
-            p.ccodes = [] if str(rdp['ccodes']) == 'nan' else rdp['ccodes'].replace(' ', '').split(';')
-            p.minmax = minmax_new
-            p.timespans = [minmax_new]
-            # replace related records (PlaceName, PlaceType, etc.)
-            delete_related(p)
-            update_rels_tsv(p, row_bdf_sorted)
-          if diffs:
-            # TODO: is Place.flag necessary?
-            print('significant diffs, set review_wd=None, flag=True')
-            # rows_replace.append(p.id)
-            p.review_wd = None
-            p.flag = True
-          p.save()
-        except:
-          # no corresponding Place, create new one
-          print('new place record needed from rdp', rdp)
-          count_new +=1
-          newpl = Place.objects.create(
-            src_id = rdp['id'],
-            title = re.sub('\(.*?\)', '', rdp['title']),
-            ccodes = [] if str(rdp['ccodes']) == 'nan' else rdp['ccodes'].replace(' ','').split(';'),
-            dataset = ds,
-            minmax = minmax_new,
-            timespans = [minmax_new],
-            flag = True
-          )
-          newpl.save()
-          pobj = newpl
-          rows_add.append(pobj.id)
-          print('new place, related:', newpl)
-          # add related rcords (PlaceName, PlaceType, etc.)
-          update_rels_tsv(pobj, row_bdf_sorted)
-
-      # update numrows
-      ds.numrows = ds.places.count()
-      ds.save()
-
-      # initiate a result object
-      result = {"status": "updated", "update_count":count_updated ,
-                "new_count":count_new, "del_count": len(rows_delete), "newfile": filepath,
-                "format":file_format, "rows_add": rows_add}
-      print('update result', result)
-      print("compare_data['count_indexed']", compare_data['count_indexed'])
-
-      #
-      # TODO: reindex
-      # if dataset status is 'accessioning' or 'indexed',
-      # alternately?: if ds.ds_status in ['accessioning', 'indexed']
-      if compare_data['count_indexed'] > 0:
-        es = settings.ES_CONN
-        idx='whg'
-
-        result["indexed"] = True
-
-        # surgically remove as req.
-        if len(rows_delete) > 0:
-          print('rows to delete from index:', rows_delete)
-          # deleteFromIndex(es, idx, rows_delete)
-
-        # update others
-        if len(rows_replace) > 0:
-          print('rows to replace in index:', rows_replace)
-          # replaceInIndex(es, idx, rows_replace)
-
-        # process new
-        if len(rows_add) > 0:
-          print('new rows need reconciliation, then add to index:', rows_add)
-          # notify need to reconcile & accession them
-      else:
-        print('not indexed, that is all')
-
-      # write log entry
-      Log.objects.create(
-        # category, logtype, "timestamp", subtype, note, dataset_id, user_id
-        category = 'dataset',
-        logtype = 'ds_update',
-        note = json.dumps(compare_result),
-        dataset_id = dsid,
-        user_id = request.user.id
-      )
-      ds.ds_status = 'updated'
-      ds.save()
-      # return to update modal
-      return JsonResponse(result, safe=False)
-    elif file_format == 'lpf':
-      print("ds_update for lpf; doesn't get here yet")
+# def ds_update_bak(request):
+#   if request.method == 'POST':
+#     print('request.POST ds_update()', request.POST)
+#     dsid=request.POST['dsid']
+#     ds = get_object_or_404(Dataset, id=dsid)
+#     file_format=request.POST['format']
+#     # keep previous recon/review results?
+#     keepg = request.POST['keepg']
+#     keepl = request.POST['keepl']
+#
+#     print('keepg, type in ds_update() request', keepg, type(keepg))
+#     print('keepl, type in ds_update() request', keepg, type(keepl))
+#
+#     # compare_data = comparison
+#     # compare_result = compare_data['compare_result']
+#     compare_data = json.loads(request.POST['compare_data']) # comparison returned by ds_compare
+#     compare_result = compare_data['compare_result']
+#     print('compare_data from ds_compare', compare_data)
+#     # tempfn has .tsv or .jsonld extension from validation step
+#     tempfn = compare_data['tempfn']
+#     filename_new = compare_data['filename_new']
+#     # dsfobj_cur = 'user_whgadmin/sample7c.txt'
+#     dsfobj_cur = ds.files.all().order_by('-rev')[0]
+#     rev_cur = dsfobj_cur.rev
+#
+#     # rename file if already exists in user area
+#     if Path('media/'+filename_new).exists():
+#       fn=os.path.splitext(filename_new)
+#       #filename_new=filename_new[:-4]+'_'+tempfn[-11:-4]+filename_new[-4:]
+#       filename_new=fn[0]+'_'+tempfn[-11:-4]+fn[1]
+#
+#     # user said go...copy tempfn to media/{user} folder
+#     filepath = 'media/'+filename_new
+#     copyfile(tempfn,filepath)
+#
+#     # and create new DatasetFile instance
+#     DatasetFile.objects.create(
+#       dataset_id = ds,
+#       file = filename_new,
+#       rev = rev_cur + 1,
+#       format = file_format,
+#       upload_date = datetime.date.today(),
+#       header = compare_result['header_new'],
+#       numrows = compare_result['count_new']
+#     )
+#
+#     # (re-)open files as panda dataframes; a = current, b = new
+#     if file_format == 'delimited':
+#       adf = pd.read_csv('media/'+compare_data['filename_cur'],
+#                         delimiter='\t',
+#                         dtype={'id':'str','ccodes':'str'})
+#       # TODO: account for geoms and links added by reconciliation
+#
+#       bdf = pd.read_csv(filepath, delimiter='\t')
+#
+#       # replace NaN with None
+#       adf = adf.replace({np.nan: None})
+#       bdf = bdf.replace({np.nan: None})
+#
+#       bdf = bdf.astype({"id":str,"ccodes":str,"types":str,"aat_types":str})
+#       print('reopened old file, # lines:',len(adf))
+#       print('reopened new file, # lines:',len(bdf))
+#       ids_a = adf['id'].tolist()
+#       ids_b = bdf['id'].tolist()
+#
+#       # delete_srcids = [str(x) for x in (set(ids_a)-set(ids_b))]
+#       # TODO: limit these to rows that have changed
+#       # OR...flag changed places so they can be omitted from
+#       # remaining_srcids = set.intersection(set(ids_b),set(ids_a))
+#       # replace_srcids = set.intersection(set(ids_b),set(ids_a))
+#
+#       # CURRENT PLACES
+#       ds_places = ds.places.all()
+#       # Place.id list to delete
+#       rows_delete = list(ds_places.filter(src_id__in=compare_result['rows_del']).values_list('id',flat=True))
+#       # new src_ids list
+#       # rows_add = compare_result['rows_add'] # src_ids, no pid yet
+#
+#       # delete places with (src_)ids missing in new data (CASCADE includes links & geoms)
+#       ds_places.filter(id__in=rows_delete).delete()
+#
+#       def delete_related(pid):
+#         # option to keep prior links and geoms matches; remove the rest
+#         if not keepg:
+#           # keep no geoms
+#           PlaceGeom.objects.filter(place_id=pid).delete()
+#         else:
+#           # leave results of prior matches
+#           PlaceGeom.objects.filter(place_id=pid, task_id__isnull=True).delete()
+#         if not keepl:
+#           # keep no links
+#           PlaceLink.objects.filter(place_id=pid).delete()
+#         else:
+#           # leave results of prior matches
+#           PlaceLink.objects.filter(place_id=pid, task_id__isnull=True).delete()
+#         PlaceName.objects.filter(place_id=pid).delete()
+#         PlaceType.objects.filter(place_id=pid).delete()
+#         PlaceWhen.objects.filter(place_id=pid).delete()
+#         PlaceRelated.objects.filter(place_id=pid).delete()
+#         PlaceDescription.objects.filter(place_id=pid).delete()
+#
+#       count_updated, count_new = [0,0]
+#       # set Place.flag = True *IF CHANGED ONLY*
+#       # update place instances w/data from new file
+#       rows_replace = []
+#       rows_add = []
+#       place_fields = {'id', 'title', 'ccodes','start','end'}
+#       for index, row in bdf.iterrows():
+#         # is there an existing place.src_id?
+#         p = ds_places.filter(src_id=row['id']) or None
+#         # if so, get a json representation of it
+#
+#         # new row as json
+#         row_dict = row.to_dict()
+#         # print(row_dict)
+#
+#         row_bdf_sorted = {key: val for key, val in sorted(row_dict.items(), key=lambda ele: ele[0])}
+#         print('incoming row in ds_update', row_bdf_sorted)
+#         # working subset of new row
+#         rdp = {key:row_bdf_sorted[key] for key in place_fields}
+#         print('rdp subset of row', rdp)
+#
+#         # some Place attributes
+#         start = int(rdp['start']) if 'start' in rdp else None
+#         end = int(rdp['end']) if 'end' in rdp and str(rdp['end']) != 'nan' else start
+#         minmax_new = [start, end] if start else [None]
+#
+#         try:
+#           # is there corresponding current Place?
+#           p = ds_places.get(src_id=rdp['id'])
+#           # there is, so build a json object from adf (previous file) dataframe
+#           row_adf = adf.loc[adf['id'] == p.src_id]
+#           row_adf_json=json.loads((row_adf.to_json(orient='records')))[0]
+#           # no particular reason to sort here except for inspection
+#           row_adf_sorted = {key: val for key, val in sorted(row_adf_json.items(), key=lambda ele: ele[0])}
+#           print('row_adf_sorted', row_adf_sorted)
+#           print('row_bdf_sorted', row_bdf_sorted)
+#
+#           # diff adf and bdf rows
+#           # used in reconciliation: title, matches, aat_types, ccodes, lon, lat, geowkt
+#           # ignore changes to the rest
+#           diffs = diff(row_adf_sorted, row_bdf_sorted, exclude_paths=[
+#             "root['description']",
+#             "root['title_uri']",
+#             "root['title_source']",
+#             "root['parent_name']",
+#             "root['start']",
+#             "root['end']",
+#             "root['geo_id']",
+#             "root['geo_source']"
+#           ])
+#           # print('diffs', diffs)
+#           # rebuild and flag Place p if *any* changes
+#           if row_adf_sorted != row_bdf_sorted:
+#             print('re-build Place '+p.title+'('+str(p.src_id)+')')
+#             count_updated += 1
+#             p.title = rdp['title']
+#             p.ccodes = [] if str(rdp['ccodes']) == 'nan' else rdp['ccodes'].replace(' ', '').split(';')
+#             p.minmax = minmax_new
+#             p.timespans = [minmax_new]
+#             # replace related records (PlaceName, PlaceType, etc.)
+#             delete_related(p)
+#             update_rels_tsv(p, row_bdf_sorted)
+#           if diffs:
+#             # TODO: is Place.flag necessary?
+#             print('significant diffs, set review_wd=None, flag=True')
+#             # rows_replace.append(p.id)
+#             p.review_wd = None
+#             p.flag = True
+#           p.save()
+#         except:
+#           # no corresponding Place, create new one
+#           print('new place record needed from rdp', rdp)
+#           count_new +=1
+#           newpl = Place.objects.create(
+#             src_id = rdp['id'],
+#             title = re.sub('\(.*?\)', '', rdp['title']),
+#             ccodes = [] if str(rdp['ccodes']) == 'nan' else rdp['ccodes'].replace(' ','').split(';'),
+#             dataset = ds,
+#             minmax = minmax_new,
+#             timespans = [minmax_new],
+#             flag = True
+#           )
+#           newpl.save()
+#           pobj = newpl
+#           rows_add.append(pobj.id)
+#           print('new place, related:', newpl)
+#           # add related rcords (PlaceName, PlaceType, etc.)
+#           update_rels_tsv(pobj, row_bdf_sorted)
+#
+#       # update numrows
+#       ds.numrows = ds.places.count()
+#       ds.save()
+#
+#       # initiate a result object
+#       result = {"status": "updated", "update_count":count_updated ,
+#                 "new_count":count_new, "del_count": len(rows_delete), "newfile": filepath,
+#                 "format":file_format, "rows_add": rows_add}
+#       print('update result', result)
+#       print("compare_data['count_indexed']", compare_data['count_indexed'])
+#
+#       #
+#       # TODO: reindex
+#       # if dataset status is 'accessioning' or 'indexed',
+#       # alternately?: if ds.ds_status in ['accessioning', 'indexed']
+#       if compare_data['count_indexed'] > 0:
+#         es = settings.ES_CONN
+#         idx='whg'
+#
+#         result["indexed"] = True
+#
+#         # surgically remove as req.
+#         if len(rows_delete) > 0:
+#           print('rows to delete from index:', rows_delete)
+#           # deleteFromIndex(es, idx, rows_delete)
+#
+#         # update others
+#         if len(rows_replace) > 0:
+#           print('rows to replace in index:', rows_replace)
+#           # replaceInIndex(es, idx, rows_replace)
+#
+#         # process new
+#         if len(rows_add) > 0:
+#           print('new rows need reconciliation, then add to index:', rows_add)
+#           # notify need to reconcile & accession them
+#       else:
+#         print('not indexed, that is all')
+#
+#       # write log entry
+#       Log.objects.create(
+#         # category, logtype, "timestamp", subtype, note, dataset_id, user_id
+#         category = 'dataset',
+#         logtype = 'ds_update',
+#         note = json.dumps(compare_result),
+#         dataset_id = dsid,
+#         user_id = request.user.id
+#       )
+#       ds.ds_status = 'updated'
+#       ds.save()
+#       # return to update modal
+#       return JsonResponse(result, safe=False)
+#     elif file_format == 'lpf':
+#       print("ds_update for lpf; doesn't get here yet")
 
 """
   ds_compare_bak() backup copy 5 Dec 2022; pre-refactor
