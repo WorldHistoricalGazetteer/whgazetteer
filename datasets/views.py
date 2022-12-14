@@ -1336,132 +1336,130 @@ def ds_update(request):
         try:
           # is there corresponding current Place?
           p = ds_places.get(src_id=row['id'])
-          # p = ds_places.get(src_id='717_3')
-          if p:
-            # fetch existing API record
-            c = Client()
-            from datasets.utils import PlaceMapper
-            try:
-              result = c.get('/api/place_compare/' + str(p.id) + '/')
-              pobj = result.json()
-              pobj = {key: val for key, val in sorted(pobj.items(), key=lambda ele: ele[0])}
-            except:
-              print('pobj failed', p.id, sys.exc_info())
+          # fetch existing API record
+          c = Client()
+          from datasets.utils import PlaceMapper
+          try:
+            result = c.get('/api/place_compare/' + str(p.id) + '/')
+            pobj = result.json()
+            pobj = {key: val for key, val in sorted(pobj.items(), key=lambda ele: ele[0])}
+          except:
+            print('pobj failed', p.id, sys.exc_info())
 
-            # build object for comparison
-            # TODO: build separate serializer(s) for this? performance?
-            p_mapper = PlaceMapper(
-              pobj['id'],
-              pobj['src_id'],
-              pobj['title']
-            )
-            # id,title,title_source,title_uri,ccodes,matches,variants,types,aat_types,
-            # parent_name,parent_id,geo_source,geo_id,description
-            # add key:value pairs to consider
-            title_name = next(n for n in pobj['names'] if n['toponym'] == pobj['title']) or None
-            # title_sources = [c['label'] for c in title_name['citations'] if c['label'] !='']
-            # title_ids = [c['id'] for c in title_name['citations'] if c['id'] !='']
-            p_mapper['title_sources'] = [c['label'] for c in title_name['citations'] if c['label'] !='']
-            p_mapper['title_ids'] = [c['id'] for c in title_name['citations'] if c['id'] !='']
+          # build object for comparison
+          # TODO: build separate serializer(s) for this? performance?
+          p_mapper = PlaceMapper(
+            pobj['id'],
+            pobj['src_id'],
+            pobj['title']
+          )
+          # id,title,title_source,title_uri,ccodes,matches,variants,types,aat_types,
+          # parent_name,parent_id,geo_source,geo_id,description
+          # add key:value pairs to consider
+          title_name = next(n for n in pobj['names'] if n['toponym'] == pobj['title']) or None
+          # title_sources = [c['label'] for c in title_name['citations'] if c['label'] !='']
+          # title_ids = [c['id'] for c in title_name['citations'] if c['id'] !='']
+          p_mapper['title_sources'] = [c['label'] for c in title_name['citations'] if c['label'] !='']
+          p_mapper['title_ids'] = [c['id'] for c in title_name['citations'] if c['id'] !='']
 
-            p_mapper['ccodes'] = pobj['ccodes'] or []
-            p_mapper['types'] = [t['sourceLabel'] for t in pobj['types']] or []
-            p_mapper['aat_types'] = [t['identifier'][4:] for t in pobj['types']] or []
-            p_mapper['variants'] = [n['toponym'] for n in pobj['names'] if n['toponym'] != pobj['title']] or []
-            p_mapper['coords'] = [g['coordinates'] for g in pobj['geoms']] or []
-            # if 'citation' in pobj['geoms'] and 'label' in :
+          p_mapper['ccodes'] = pobj['ccodes'] or []
+          p_mapper['types'] = [t['sourceLabel'] for t in pobj['types']] or []
+          p_mapper['aat_types'] = [t['identifier'][4:] for t in pobj['types']] or []
+          p_mapper['variants'] = [n['toponym'] for n in pobj['names'] if n['toponym'] != pobj['title']] or []
+          p_mapper['coords'] = [g['coordinates'] for g in pobj['geoms']] or []
+          # if 'citation' in pobj['geoms'] and 'label' in :
 
-            p_mapper['geo_sources'] = [g['citation']['label'] for g in pobj['geoms'] \
-                if 'citation' in g and 'label' in g['citation']] or []
-            p_mapper['geo_ids'] = [g['citation']['id'] for g in pobj['geoms'] \
-                if 'citation' in g and 'id' in g['citation']]  or []
+          p_mapper['geo_sources'] = [g['citation']['label'] for g in pobj['geoms'] \
+              if 'citation' in g and 'label' in g['citation']] or []
+          p_mapper['geo_ids'] = [g['citation']['id'] for g in pobj['geoms'] \
+              if 'citation' in g and 'id' in g['citation']]  or []
 
-            p_mapper['links'] = [l['identifier'] for l in pobj['links']] or []
-            p_mapper['related'] = [r['label'] for r in pobj['related']]
-            p_mapper['related_id'] = [r['identifier'] for r in pobj['related']]
-            p_mapper['descriptions'] = [d['value'] for d in pobj['related']]
+          p_mapper['links'] = [l['identifier'] for l in pobj['links']] or []
+          p_mapper['related'] = [r['label'] for r in pobj['related']]
+          p_mapper['related_id'] = [r['identifier'] for r in pobj['related']]
+          p_mapper['descriptions'] = [d['value'] for d in pobj['related']]
 
-            # diff incoming (row_mapper) & database (p_mapper)
-            # meaningful = title, variants, aat_types, links/matches, coords
-            diffs=[]
+          # diff incoming (row_mapper) & database (p_mapper)
+          # meaningful = title, variants, aat_types, links/matches, coords
+          diffs=[]
 
-            # [:6] not meaningful (don't affect reconciliation)
-            diffs.append(row_mapper['title_source'] in p_mapper['title_sources'] if row_mapper['title_source'] else True)
-            diffs.append(row_mapper['title_uri'] in p_mapper['title_ids'] if row_mapper['title_uri'] else True)
-            diffs.append(row_mapper['parent_name'] in p_mapper['related'] if row_mapper['parent_name'] else True)
-            diffs.append(row_mapper['parent_id'] in p_mapper['related_id'] if row_mapper['parent_id'] else True)
-            diffs.append(row_mapper['geo_source'] in p_mapper['geo_sources'] if row_mapper['parent_id'] else True)
-            diffs.append(row_mapper['geo_id'] in p_mapper['geo_ids'] if row_mapper['geo_id'] else True)
-            diffs.append(row_mapper['description'] in p_mapper['descriptions'] if row_mapper['description'] else True)
-            print('meaningless', diffs)
+          # [:6] not meaningful (don't affect reconciliation)
+          diffs.append(row_mapper['title_source'] in p_mapper['title_sources'] if row_mapper['title_source'] else True)
+          diffs.append(row_mapper['title_uri'] in p_mapper['title_ids'] if row_mapper['title_uri'] else True)
+          diffs.append(row_mapper['parent_name'] in p_mapper['related'] if row_mapper['parent_name'] else True)
+          diffs.append(row_mapper['parent_id'] in p_mapper['related_id'] if row_mapper['parent_id'] else True)
+          diffs.append(row_mapper['geo_source'] in p_mapper['geo_sources'] if row_mapper['parent_id'] else True)
+          diffs.append(row_mapper['geo_id'] in p_mapper['geo_ids'] if row_mapper['geo_id'] else True)
+          diffs.append(row_mapper['description'] in p_mapper['descriptions'] if row_mapper['description'] else True)
+          print('meaningless', diffs)
 
-            # [7:] meaningful
-            diffs.append(row_mapper['title'] == p_mapper['title']); print(diffs)
-            diffs.append(sorted(row_mapper['variants']) == sorted(p_mapper['variants'])); print(diffs)
-            diffs.append(sorted(row_mapper['aat_types']) == sorted(p_mapper['aat_types']))
-            diffs.append(sorted(row_mapper['matches']) == sorted(p_mapper['links']))
-            if row_mapper['coords'] != []:
-              diffs.append(row_mapper['coords'] in p_mapper['coords'])
-            print('meaningful', diffs)
+          # [7:] meaningful
+          diffs.append(row_mapper['title'] == p_mapper['title']); print(diffs)
+          diffs.append(sorted(row_mapper['variants']) == sorted(p_mapper['variants'])); print(diffs)
+          diffs.append(sorted(row_mapper['aat_types']) == sorted(p_mapper['aat_types']))
+          diffs.append(sorted(row_mapper['matches']) == sorted(p_mapper['links']))
+          if row_mapper['coords'] != []:
+            diffs.append(row_mapper['coords'] in p_mapper['coords'])
+          print('meaningful', diffs)
 
-            # update Place record in all cases
-            count_replaced += 1
-            p.title = row_mapper['title']
-            p.ccodes = row_mapper['ccodes']
-            p.minmax = minmax_new
-            p.timespans = [minmax_new]
+          # update Place record in all cases
+          count_replaced += 1
+          p.title = row_mapper['title']
+          p.ccodes = row_mapper['ccodes']
+          p.minmax = minmax_new
+          p.timespans = [minmax_new]
 
-            if False in diffs:
-              # there was SOME change(s) -> add to delete-from-index list
-              # (will be reindexed after re-reconciling)
-              idx_delete.append(p.id)
+          if False in diffs:
+            # there was SOME change(s) -> add to delete-from-index list
+            # (will be reindexed after re-reconciling)
+            idx_delete.append(p.id)
 
-            if False not in diffs[7:]:
-              # no meaningful changes
-              # replace related, preserving geoms & links if keepg, keepl
-              # leave review_wd and flag status intact
-              delete_related(p)
-              update_rels_tsv(p, row)
-            else:
-              # meaningful change(s) exist
-              count_redo +=1
-              # replace related, including geoms and links
-              keepg, keepl = [False, False]
-              delete_related(p)
-              update_rels_tsv(p, row)
-
-              # (re)set Place.review_wd & Place.flag (needs reconciliation)
-              p.review_wd = None
-              p.flag = True
-
-              # meaningful change, so
-              # add to list for index deletion
-              idx_delete.append(p.id)
-
-            p.save()
+          if False not in diffs[7:]:
+            # no meaningful changes
+            # replace related, preserving geoms & links if keepg, keepl
+            # leave review_wd and flag status intact
+            delete_related(p)
+            update_rels_tsv(p, row)
           else:
-            # no corresponding Place, create new one
-            print('new place record needed from rdp', row)
-            count_new +=1
-            newpl = Place.objects.create(
-              src_id = row['id'],
-              title = re.sub('\(.*?\)', '', row['title']),
-              ccodes = [] if str(row['ccodes']) == 'nan' else row['ccodes'].replace(' ','').split(';'),
-              dataset = ds,
-              minmax = minmax_new,
-              timespans = [minmax_new],
-              # flax for reconciling
-              flag = True
-            )
-            newpl.save()
-            pobj = newpl
-            rows_add.append(pobj.id)
-            print('new place, related:', newpl)
-            # add related rcords (PlaceName, PlaceType, etc.)
-            update_rels_tsv(pobj, row)
+            # meaningful change(s) exist
+            count_redo +=1
+            # replace related, including geoms and links
+            keepg, keepl = [False, False]
+            delete_related(p)
+            update_rels_tsv(p, row)
+
+            # (re)set Place.review_wd & Place.flag (needs reconciliation)
+            p.review_wd = None
+            p.flag = True
+
+            # meaningful change, so
+            # add to list for index deletion
+            idx_delete.append(p.id)
+
+          p.save()
         except:
-          print('update failed on ', row)
-          print('error', sys.exc_info())
+          # no corresponding Place, create new one
+          print('new place record needed from rdp', row)
+          count_new +=1
+          newpl = Place.objects.create(
+            src_id = row['id'],
+            title = re.sub('\(.*?\)', '', row['title']),
+            ccodes = [] if str(row['ccodes']) == 'nan' else row['ccodes'].replace(' ','').split(';'),
+            dataset = ds,
+            minmax = minmax_new,
+            timespans = [minmax_new],
+            # flax for reconciling
+            flag = True
+          )
+          newpl.save()
+          pobj = newpl
+          rows_add.append(pobj.id)
+          print('new place, related:', newpl)
+          # add related rcords (PlaceName, PlaceType, etc.)
+          update_rels_tsv(pobj, row)
+        # except:
+        #   print('update failed on ', row)
+        #   print('error', sys.exc_info())
 
       # update numrows
       ds.numrows = ds.places.count()
