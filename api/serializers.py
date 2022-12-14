@@ -148,12 +148,14 @@ class PlaceGeomsSerializer(serializers.ModelSerializer):
   geowkt = serializers.ReadOnlyField(source='jsonb.geowkt')
   coordinates = serializers.ReadOnlyField(source='jsonb.coordinates')
   citation = serializers.ReadOnlyField(source='jsonb.citation')
+  # citation = serializers.ReadOnlyField(source='jsonb.citation') or None
   # when = serializers.ReadOnlyField(source='jsonb.when')
   # certainty = serializers.ReadOnlyField(source='jsonb.certainty')
 
   class Meta:
     model = PlaceGeom
-    fields = ('place_id','src_id','type', 'geowkt', 'coordinates'
+    fields = ('place_id','src_id','type', 'geowkt', 'coordinates',
+              'citation'
               #, 'ds'
               #'title', 'geom_src', 'when', 'certainty'
     )

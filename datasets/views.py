@@ -1173,11 +1173,11 @@ def update_rels_tsv(pobj, row):
 """
 """ TEST VALUES 
     from datasets.models import Dataset
-    ds=Dataset.objects.get(id=1435)
+    ds=Dataset.objects.get(id=1441)
     dsid=1435
     ds_places = ds.places.all()
     from django.test import Client
-    filepath = 'media/user_whgadmin/sample7g_new.txt'
+    # filepath = 'media/user_whgadmin/sample7g_new.txt'
     import pandas as pd
     import numpy as np
     file_format = 'delimited'
@@ -1237,20 +1237,29 @@ def ds_update(request):
 
     # reopen new file as panda dataframe bdf
     if file_format == 'delimited':
-      bdf = pd.read_csv(filepath, delimiter='\t')
+      try:
+        bdf = pd.read_csv(filepath, delimiter='\t')
 
-      # replace pandas NaN with None
-      bdf = bdf.replace({np.nan: None})
-      # force data types
-      bdf = bdf.astype({"id":str, "ccodes":str, "types":str, "aat_types":str})
-      print('reopened new file, # lines:',len(bdf))
+        # replace pandas NaN with None
+        bdf = bdf.replace({np.nan: None})
+        # force data types
+        bdf = bdf.astype({"id":str, "ccodes":str, "types":str, "aat_types":str})
+        print('reopened new file, # lines:',len(bdf))
+      except:
+        raise
 
       # CURRENT PLACES
       ds_places = ds.places.all()
+      print('ds_places', ds_places)
       # pids of missing src_ids
-      rows_delete, idx_delete = list(ds_places.filter(src_id__in=compare_result['rows_del']).values_list('id',flat=True))
+      rows_delete = idx_delete = list(ds_places.filter(src_id__in=compare_result['rows_del']).values_list('id',flat=True))
+      print('rows_delete, idx_delete', rows_delete, idx_delete)
+
       # CASCADE includes links & geoms
-      ds_places.filter(id__in=rows_delete).delete()
+      try:
+        ds_places.filter(id__in=rows_delete).delete()
+      except:
+        raise
 
       # for use below
       def delete_related(pid):
@@ -1327,7 +1336,7 @@ def ds_update(request):
         try:
           # is there corresponding current Place?
           p = ds_places.get(src_id=row['id'])
-          # p = ds_places.get(src_id='11')
+          # p = ds_places.get(src_id='717_3')
           if p:
             # fetch existing API record
             c = Client()
@@ -1360,8 +1369,13 @@ def ds_update(request):
             p_mapper['aat_types'] = [t['identifier'][4:] for t in pobj['types']] or []
             p_mapper['variants'] = [n['toponym'] for n in pobj['names'] if n['toponym'] != pobj['title']] or []
             p_mapper['coords'] = [g['coordinates'] for g in pobj['geoms']] or []
-            p_mapper['geo_sources'] = [g['citation']['label'] for g in pobj['geoms']] or []
-            p_mapper['geo_ids'] = [g['citation']['id'] for g in pobj['geoms']] or []
+            # if 'citation' in pobj['geoms'] and 'label' in :
+
+            p_mapper['geo_sources'] = [g['citation']['label'] for g in pobj['geoms'] \
+                if 'citation' in g and 'label' in g['citation']] or []
+            p_mapper['geo_ids'] = [g['citation']['id'] for g in pobj['geoms'] \
+                if 'citation' in g and 'id' in g['citation']]  or []
+
             p_mapper['links'] = [l['identifier'] for l in pobj['links']] or []
             p_mapper['related'] = [r['label'] for r in pobj['related']]
             p_mapper['related_id'] = [r['identifier'] for r in pobj['related']]
@@ -1890,6 +1904,7 @@ def ds_insert_tsv(request, pk):
     try:
       infile = dsf.file.open(mode="r")
       reader = csv.reader(infile, delimiter=dsf.delimiter)
+      # reader = csv.reader(infile, delimiter='\t')
 
       infile.seek(0)
       header = next(reader, None)
@@ -1898,7 +1913,7 @@ def ds_insert_tsv(request, pk):
 
       # strip BOM character if exists
       header[0] = header[0][1:] if '\ufeff' in header[0] else header[0]
-      # print('header', header)
+      print('header', header)
 
       objs = {"PlaceName":[], "PlaceType":[], "PlaceGeom":[], "PlaceWhen":[],
               "PlaceLink":[], "PlaceRelated":[], "PlaceDescription":[]}
@@ -1928,15 +1943,20 @@ def ds_insert_tsv(request, pk):
         coords = makeCoords(r[header.index('lon')],r[header.index('lat')]) \
           if 'lon' in header and 'lat' in header else None
         geowkt = r[header.index('geowkt')] if 'geowkt' in header else None
+        geosource = r[header.index('geo_source')] if 'geo_source' in header else None
+        geoid = r[header.index('geo_id')] if 'geo_id' in header else None
         geojson = None # zero it out
-
+        print('geosource:', geosource)
+        print('geoid:', geoid)
         # make Point geometry from lon/lat if there
         if coords and len(coords) == 2:
           geojson = {"type": "Point", "coordinates": coords,
                       "geowkt": 'POINT('+str(coords[0])+' '+str(coords[1])+')'}
         # else make geometry (any) w/Shapely if geowkt
-        if geowkt and geowkt not in ['',None]:
-          geojson = parse_wkt(r[header.index('geowkt')])
+        if geowkt and geowkt not in ['']:
+          geojson = parse_wkt(geowkt)
+        if geojson and (geosource or geoid):
+          geojson['citation']={'label':geosource,'id':geoid}
 
         # ccodes; compute if missing and there is geometry
         if len(ccodes) == 0:
@@ -2039,6 +2059,7 @@ def ds_insert_tsv(request, pk):
         #
         # PlaceGeom()
         #
+        print('geojson', geojson)
         if geojson:
           objs['PlaceGeom'].append(
             PlaceGeom(

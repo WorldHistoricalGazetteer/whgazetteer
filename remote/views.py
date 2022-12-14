@@ -24,7 +24,6 @@ from rest_framework.permissions import IsAuthenticated
 
 from remote.serializers import *
 
-
 class DatasetViewSet(viewsets.ModelViewSet):
   """View for managing dataset APIs."""
   serializer_class = DatasetRemoteDetailSerializer

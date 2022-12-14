@@ -26,6 +26,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from rest_framework.reverse import reverse
+from rest_framework.views import APIView
 from accounts.permissions import IsOwnerOrReadOnly
 from api.serializers import (UserSerializer, DatasetSerializer, PlaceSerializer,
                              PlaceTableSerializer, PlaceGeomSerializer, AreaSerializer,
@@ -46,12 +47,12 @@ class StandardResultsSetPagination(PageNumberPagination):
 # External API
 # 
 #
-
 """ 
   /remote/
   search place index (always whg) parent records
   params: name, name_startswith, fclass, ccode, area, dataset, collection, pagesize, fuzzy
 """
+
 
 class RemoteIndexAPIView(View):
   authentication_classes = [TokenAuthentication]
@@ -60,7 +61,7 @@ class RemoteIndexAPIView(View):
   def get(self, request):
     idx = 'whg'
     params = request.GET
-    print('RemoteSearchIndexView request params', params)
+    # print('RemoteSearchIndexView request params', params)
 
     name = params.get('name')
     name_startswith = params.get('name_startswith')
@@ -72,7 +73,10 @@ class RemoteIndexAPIView(View):
     dataset = params.get('dataset', None)
     collection = params.get('collection', None)
     pagesize = params.get('pagesize', None)
+    offset = params.get('offset', None)
     fuzzy = params.get('fuzzy', None)
+
+    print('offset', offset)
 
     if all(v is None for v in [name, name_startswith]):
       return HttpResponse(
@@ -80,6 +84,7 @@ class RemoteIndexAPIView(View):
     else:
       q = {
         "size": pagesize if pagesize else 10,
+        "from": offset if offset else 0,
         "query": {"bool": {
           "must": [
             {"exists": {"field": "whg_id"}},
@@ -106,27 +111,33 @@ class RemoteIndexAPIView(View):
         ds_list = [d.label for d in c.datasets.all()]
         q['query']['bool']["filter"].append({"terms": {"dataset": ds_list}})
       if fuzzy and fuzzy.lower() == 'true':
-        q['query']['bool']['must'][1]['multi_match']['fuzziness']='AUTO'
+        q['query']['bool']['must'][1]['multi_match']['fuzziness'] = 'AUTO'
         # up the count of results for fuzze search
         q['size'] = 20 if not pagesize else pagesize
-        print('q', q)
+        q['from'] = 20 if not offset else offset
+
+      print('q', q)
 
       # run query
       index_set = collector(q, 'place', 'whg')
-      # format hits
-      index_set = [collectionItem(s, 'place', None) for s in index_set]
+      print('index_set (collector() result)', index_set)
+
+      # format hit items
+      items = [collectionItem(s, 'place', None) for s in index_set['items']]
 
       # result object
       result = {'type': 'FeatureCollection',
-                'count': len(index_set),
+                'count': index_set['count'],
+                'offset': q['from'],
                 'pagesize': q['size'],
-                'features': index_set[:int(pagesize)] if pagesize else index_set}
+                'features': items[:int(pagesize)] if pagesize else items}
 
     # to client
     return JsonResponse(result, safe=False, json_dumps_params={'ensure_ascii': False, 'indent': 2})
 
+
 """
-nearby and bbox spatial db queries
+  nearby and bbox spatial db queries
 """
 class SpatialAPIView(generics.ListAPIView):
   renderer_classes = [JSONRenderer]
@@ -249,7 +260,7 @@ def collectionItem(i, datatype, format):
   if datatype == 'place':
     # serialize as geojson
     i = i['hit']
-    print('item', i)
+    # print('item', i)
     item = {
       "type":"Feature",
       "score": score,
@@ -311,46 +322,52 @@ def collectionItem(i, datatype, format):
   collector(); called by IndexAPIView(), RemoteIndexAPIView()
   execute es.search, return results post-processed by suggestionItem()
 """
+
+
 def collector(q, datatype, idx):
   # returns only parents
-  #print('collector',doctype,q)
+  # print('collector',doctype,q)
   es = Elasticsearch([{'host': 'localhost',
                        'port': 9200,
                        'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
-                       'timeout':30,
-                       'max_retries':10,
-                       'retry_on_timeout':True}])
+                       'timeout': 30,
+                       'max_retries': 10,
+                       'retry_on_timeout': True}])
   items = []
 
-  if datatype=='place':
+  if datatype == 'place':
     # TODO: trap errors
     res = es.search(index=idx, body=q)
+    print('res', res)
     hits = res['hits']['hits']
+    count = res['hits']['total']['value']
     if len(hits) > 0:
       for h in hits:
         # print('h', h)
         items.append(
           {"_id": h['_id'],
-           "linkcount":len(h['_source']['links']),
-           "childcount":len(h['_source']['children']),
+           "linkcount": len(h['_source']['links']),
+           "childcount": len(h['_source']['children']),
            "score": h['_score'],
            "hit": h['_source'],
-          }
+           }
         )
-    # sorteditems = sorted(items, key=lambda x: x['childcount'], reverse=True)
-    sorteditems = sorted(items, key=lambda x: x['score'], reverse=True)
+    result = {"count": count,
+              "items": sorted(items, key=lambda x: x['score'], reverse=True)}
+    return result
 
-    return sorteditems
-    
+    # sorteditems = sorted(items, key=lambda x: x['score'], reverse=True)
+    # return sorteditems
+
   elif datatype == 'trace':
-    print('collector()/trace q:',q)
-    res = es.search(index='traces',doc_type='trace',body=q)
+    print('collector()/trace q:', q)
+    res = es.search(index='traces', doc_type='trace', body=q)
     hits = res['hits']['hits']
-    #print('collector()/trace hits',hits)
+    # print('collector()/trace hits',hits)
     if len(hits) > 0:
       for h in hits:
-        items.append({"_id":h['_id'],"hit":h['_source']})
-    return items 
+        items.append({"_id": h['_id'], "hit": h['_source']})
+    return items
 
 
 """

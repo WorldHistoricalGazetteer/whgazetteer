@@ -6,7 +6,7 @@ from rest_framework.urlpatterns import format_suffix_patterns
 from . import views
 
 # app_name = 'api'
-# naming this BREAKS DATATABLES IN DATASET BROWSE
+# naming this app BREAKS DATATABLES IN DATASET BROWSE
 
 urlpatterns = [
 
