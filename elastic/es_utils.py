@@ -425,6 +425,7 @@ def replaceInIndex(es,idx,pids):
       pass
   print('replaceInIndex() count:',repl_count)
 
+
 # wrapper for removePlacesFromIndex()
 # delete all docs for dataset from the whg index
 def removeDatasetFromIndex(request, *args, **kwargs):
@@ -439,8 +440,10 @@ def removeDatasetFromIndex(request, *args, **kwargs):
                        'timeout': 30,
                        'max_retries': 10,
                        'retry_on_timeout': True}])
-  removePlacesFromIndex(es, 'whg', ds.placeids)
-  return JsonResponse({'msg':'task passed to removePlacesFromIndex('+str(ds.id)+')'})
+  removePlacesFromIndex(es, 'whg', list(ds.placeids))
+  # for browser console
+  return JsonResponse({ 'msg':'pids passed to removePlacesFromIndex('+str(ds.id)+')',
+                        'ids': list(ds.placeids)})
 
 #
 # delete docs in given pid list
@@ -452,14 +455,15 @@ def removeDatasetFromIndex(request, *args, **kwargs):
 
 def removePlacesFromIndex(es, idx, pids):
   delthese=[]
-  # [6713137, 6713138, 6713141, 6713142]
+  # print('pids to delete', pids)
+  # sys.exit()
   for pid in pids:
     # get its database record
     place = Place.objects.get(id=pid)
     # get its index document
     res = es.search(index=idx, body=esq_pid(pid))
     hits=res['hits']['hits']
-    print(hits)
+    print('hits', hits)
     # is it in the index?
     if len(hits) > 0:
       doc = hits[0]
@@ -479,44 +483,49 @@ def removePlacesFromIndex(es, idx, pids):
           print('childless parent '+str(pid)+' was tagged for deletion')
           delthese.append(pid)
         else:
-          # > 0 eligible children, first promote one to parent
+          # > 0 eligible children -> pick winner from confirmed children
+          qeligible = {"bool": {
+            "must": [{"terms":{"place_id": kids }}],
+            "should": {"exists": {"field": "links"}}
+          }}
+          # only kids confirmed to exist
+          res = es.search(index=idx, query=qeligible)
+          # of those with any links...
+          linked = [h['_source'] for h in res['hits']['hits'] if 'links' in h['_source']]
+          # which has most?
+          linked_len = [{'pid': h['place_id'], 'len': len(h['links'])} for h in linked if 'links' in h]
+          # coalesce to 1st eligible if no kid have links
+          winner = max(linked_len, key=lambda x: x['len'])['pid'] if len(linked_len)>0 \
+            else eligible[0]
           # TODO: can we make a logical choice?
-          newparent = eligible[0]
-          newkids = eligible.pop(0)
-          # get newparent index record and update it:
-          # make it a parent, give it a whg_id - _id, 
-          # update its suggest[] and searchy[] arrays (probably redundant)
+          newparent = winner
+          newkids = eligible.pop(eligible.index(winner))
+          # update winner
+          # make it a parent, give it a whg_id _id,
           # update its children with newkids
-          qget = {"query": {"bool": {"must": [{"match":{"place_id": newparent }}]}}}
-          res = es.search(index=idx, body=qget)
-          # TODO: this is meaningful only for tests
-          # ensure the prospective parent exists
-          if len(res['hits']['hits']) > 0:
-            hit = res['hits']['hits'][0]
-            _id = hit['_id']
-            # elevate to parent
-            q_update = {"script":{"source": "ctx._source.whg_id = params._id; \
-                ctx._source.relation.name = 'parent'; \
-                ctx._source.relation.remove('parent'); \
-                ctx._source.children.addAll(params.newkids); \
-                ctx._source.suggest.input.addAll(params.sugs); \
-                ctx._source.searchy.addAll(params.sugs);",
-                                  "lang": "painless",
-                "params":{"_id": _id, "newkids": newkids, "sugs": sugs }
-              },
-                        "query": {"match":{"place_id": newparent }}}
-            try:
-              es.update_by_query(index=idx,body=q_update)
-            except:
-              print('update of new parent failed',sys.exit(sys.exc_info()))
-            # parent status transfered to 'eligible' child, add to list
-            print('parent w/kids '+hit['_source']['title'],pid+' transferred resp to: '+parent+'; tagged for deletion')
-          delthese.append(pid)
+          # update its suggest[] and searchy[] arrays (probably redundant)
+          q_update = {"script":{"source": "ctx._source.whg_id = params._id; \
+              ctx._source.relation.name = 'parent'; \
+              ctx._source.relation.remove('parent'); \
+              ctx._source.children.addAll(params.newkids); \
+              ctx._source.suggest.input.addAll(params.sugs); \
+              ctx._source.searchy.addAll(params.sugs);",
+                                "lang": "painless",
+              "params":{"_id": newparent, "newkids": newkids, "sugs": sugs }
+            },
+              "query": {"match":{"place_id": newparent }}}
+          try:
+            es.update_by_query(index=idx, body=q_update)
+          except:
+            print('update of new parent failed',sys.exit(sys.exc_info()))
+          # parent status transfered to 'eligible' child, add to list
+          print('parent w/kids, '+pid +' transferred resp to: '+newparent+' & was tagged for deletion')
+        delthese.append(pid)
       elif role == 'child':
         # get its parent
         parent = src['relation']['parent']
-        qget = {"query": {"bool": {"must": [{"match":{"_id": parent }}]}}}
-        res = es.search(index=idx, body=qget)
+        qget = {"bool": {"must": [{"match":{"_id": parent }}]}}
+        res = es.search(index=idx, query=qget)
         # parent _source, suggest, searchy
         psrc = res['hits']['hits'][0]['_source']
         print('a child; parent src', pid, psrc)
@@ -543,8 +552,9 @@ def removePlacesFromIndex(es, idx, pids):
           # sometimes docs named as parent don't have the id of the child
           # in that case, don't look for the child id, it'll break ES
           if len(psrc['children']) > 0:
-            q_update['script']['source'] = """ctx._source.children.remove(ctx._source.children.indexOf(params.val));
-                          ctx._source.suggest.input = params.sugs; ctx._source.searchy = params.searchy;"""
+            q_update['script']['source'] = """
+              ctx._source.children.remove(ctx._source.children.indexOf(params.val));
+              ctx._source.suggest.input = params.sugs; ctx._source.searchy = params.searchy;"""
             q_update['script']['params']['val'] = str(pid)
           print('q_update::549', q_update)
           try:
