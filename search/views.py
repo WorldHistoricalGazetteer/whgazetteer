@@ -84,7 +84,7 @@ def makeGeom(pid,geom):
 """
   format search result items (places or traces)
 """
-def suggestionItem(s,doctype,scope):
+def suggestionItem(s, doctype, scope):
   #print('sug geom',s['geometries'])
   if doctype == 'place':
     if scope == 'suggest':

@@ -427,7 +427,8 @@ def replaceInIndex(es,idx,pids):
 
 
 # wrapper for removePlacesFromIndex()
-# delete all docs for dataset from the whg index
+# delete all docs for dataset from the whg index,
+# whether record is in database or not
 def removeDatasetFromIndex(request, *args, **kwargs):
   print('removeDatasetFromIndex() hands pids to removePlacesFromIndex()')
   print('args, kwargs',args, kwargs)
@@ -440,31 +441,34 @@ def removeDatasetFromIndex(request, *args, **kwargs):
                        'timeout': 30,
                        'max_retries': 10,
                        'retry_on_timeout': True}])
-  removePlacesFromIndex(es, 'whg', list(ds.placeids))
+  q_pids = {"match": {"dataset": 'sample7h'}}
+  # q_pids = {"match": {"dataset": ds.label}}
+  res = es.search(index='whg', query=q_pids, _source=["title", "place_id"])
+  pids = [h['_source']['place_id'] for h in res['hits']['hits']]
+  print('pids in remove...()', pids)
+  removePlacesFromIndex(es, 'whg', pids)
+  ds.ds_status = 'wd-complete'
+  ds.save()
   # for browser console
   return JsonResponse({ 'msg':'pids passed to removePlacesFromIndex('+str(ds.id)+')',
-                        'ids': list(ds.placeids)})
+                        'ids': pids})
 
 #
 # delete docs in given pid list
 # if parent, promotes a child if any
 # if child, removes references to it in parent (children[], suggest.input[])
-# TODO: confirm suggest.input[] is not distinct
-#  i.e. what if variant was also contributed by parent or another child?
-# NB: suggest.input deprecated
-
+# called from ds_update() and removeDatasetFromIndex() above
 def removePlacesFromIndex(es, idx, pids):
   delthese=[]
-  # print('pids to delete', pids)
-  # sys.exit()
+  print('pids in removePlacesFromIndex()', pids)
+  # pids = [6880677, 6880677, 6880679, 6880679, 6880680, 6880680, 6880681,
+  #         6880681, 6880682, 6880682, 6880683, 6880683]
   for pid in pids:
-    # get its database record
-    place = Place.objects.get(id=pid)
-    # get its index document
-    res = es.search(index=idx, body=esq_pid(pid))
+    # get index document
+    res = es.search(index=idx, query=esq_pid(pid))
     hits=res['hits']['hits']
-    print('hits', hits)
-    # is it in the index?
+    print('hits, place', hits)
+    # confirm it's in the index
     if len(hits) > 0:
       doc = hits[0]
       src = doc['_source']
@@ -543,7 +547,9 @@ def removePlacesFromIndex(es, idx, pids):
           print("newsearchy",newsearchy)
           q_update = {"script":{
             "lang": "painless",
-            "source": """ctx._source.suggest.input = params.sugs; ctx._source.searchy = params.searchy;""",
+            "source": """
+              ctx._source.suggest.input = params.sugs; 
+              ctx._source.searchy = params.searchy;""",
             "params":{"sugs": newsugs, "searchy": newsearchy }
             },
               "query": {"match":{"_id": parent }}
@@ -565,25 +571,26 @@ def removePlacesFromIndex(es, idx, pids):
             pass
         # child's presence in parent removed, add to delthese[]
         delthese.append(pid)
-      # ex. deleted 2: [6713134, 6713135]
+
       # DB ACTIONS
-      place.indexed = False
-      # delete previous hits from whg task
-      place.hit_set.filter(authority='whg').delete()
-      # reset review_whg status to null
-      place.review_whg = None
-      place.save()
+      try:
+        # get database record if it wasn't just deleted
+        place = Place.objects.get(id=pid)
+        place.indexed = False
+        # delete previous hits from whg task
+        place.hit_set.filter(authority='whg').delete()
+        # reset review_whg status to null
+        place.review_whg = None
+        place.save()
+      except:
+        pass
+    else:
+      print(str(pid) + ' not in index, passed')
+      pass
   es.delete_by_query(idx,body={"query": {"terms": {"place_id": delthese}}})
   print('deleted '+str(len(delthese))+': '+str(delthese))
   msg = 'deleted '+str(len(delthese))+': '+str(delthese)
   return JsonResponse(msg, safe=False)
-
-  # is place_id in any child[] fields?
-  # i.e. did removal work?
-  # GET /whg/_search
-  # {"query": {"bool": {"must": [{"match":{
-  #   "children":"6713142"}}]}}}
-
 
 # ***
 # given ds label, return list of place_id 
@@ -601,14 +608,14 @@ def fetch_pids(dslabel):
 # query to get a document by place_id
 # ***
 def esq_pid(pid):
-  q = {"query": {"bool": {"must": [{"match":{"place_id": pid }}]}}}
+  q = {"bool": {"must": [{"match":{"place_id": pid }}]}}
   return q
 
 # ***
 # query to get a document by _id
 # ***
 def esq_id(_id):
-  q = {"query": {"bool": {"must": [{"match":{"_id": _id }}]}}}
+  q = {"bool": {"must": [{"match":{"_id": _id }}]}}
   return q
 
 # ***

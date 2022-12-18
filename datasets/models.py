@@ -30,7 +30,6 @@ def ds_image_path(instance, filename):
 
 # owner = models.ForeignKey('auth.User', related_name='snippets', on_delete=models.CASCADE)
 class Dataset(models.Model):
-  #idx='whg'
   owner = models.ForeignKey(settings.AUTH_USER_MODEL,
                             related_name='datasets', on_delete=models.CASCADE)
   label = models.CharField(max_length=20, null=False, unique="True",
@@ -47,7 +46,6 @@ class Dataset(models.Model):
   core = models.BooleanField(default=False) # non-historical
   public = models.BooleanField(default=False)
   ds_status = models.CharField(max_length=12, null=True, blank=True, choices=STATUS_DS)
-
 
   # 4 added 20210619
   creator = models.CharField(max_length=500, null=True, blank=True)

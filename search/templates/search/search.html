@@ -636,17 +636,6 @@
       }
     }
 
-    // remove result rows not in bbox
-    <!--results = $("#result_table tr")-->
-    <!--results.each(function(){-->
-      <!--if(ids_hide.indexOf($(this).data('id')) > -1){-->
-        <!--$(this).remove();-->
-      <!--}-->
-    <!--});-->
-
-    // TODO: rebuild #type_select
-
-
     <!--console.log('hidden in list)', hidethese)-->
     // omit header row
     $("#rowcount").html((results.length-1) - ids_hide.length)
@@ -1244,7 +1233,6 @@
       bodies = data.bodies
       console.log('trace data',data)
       result_table = '<table id="result_table">'+'<thead><tr><th>Place</th><th>Relation [earliest, latest]</th><th>geom?</th></tr></thead>'
-      <!--console.log('trace data bodies',data.bodies)-->
       data.bodies.forEach(function(bod){
         // add a whg_id to bodies
         result_table += sugLister(bod, doctype, scope)
@@ -1420,9 +1408,9 @@
     formats search result item (sug)
   */
   function sugLister(sug, doctype, scope) {
-    <!--console.log(sug)-->
     if (doctype=='place') {
-			// this is count of children[]; add 1 to include self
+			console.log('sug', sug)
+      // this is count of children[]; add 1 to include self
       linkcount = parseInt(sug['linkcount']) +1
       attestations = sug['ds'] ? '' : ' <i>' + linkcount + (linkcount>1?' linked attestations</i>; ':' attestation</i>; ')
       vcount = sug['variants'].length
@@ -1552,7 +1540,6 @@
       }
       return(result)
     }
-    <!--timespan_arr = []-->
     //
     // TITLE
     descrip = '<p><b>Title</b>: <span id="row_title" class="larger text-danger">'+data.title+'</span>'
@@ -1614,20 +1601,17 @@
 
     //
     // RELATED
-    <!--right=''-->
     if (data.related.length > 0) {
       parent='<p class="mb-0"><b>Parent(s)</b>: ';
       related='<p class="mb-0"><b>Related</b>: ';
       for (r in data.related){
         rel = data.related[r]
-        <!--console.log('rel',rel)-->
         if (rel.relation_type == 'gvp:broaderPartitive'){
           parent += '<span class="h1em">'+rel.label
           parent += 'when' in rel && !('timespans' in rel.when) ?
             ', '+rel.when.start.in+'-'+rel.when.end.in :
             'when' in rel && ('timespans' in rel.when) ? ', '+
               minmaxer(rel.when.timespans) : ''
-              <!--rel.when.timespans : ''-->
           parent += '</span>; '
         }
         else {

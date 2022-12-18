@@ -32,8 +32,7 @@
 			      href="#tab-panel-3"
 			      title="More Description Here"
 			      data-toggle="tab"
-			      >Tab 3</a
-			    >
+			      >Clear children</a>
 			  </li>
 			</ul>
 	  </div>
@@ -95,6 +94,35 @@
 				    <div id="">
 			      <h5>alternate parents if any</h5>
 			      <div id="altparents"></div>
+				    </div>
+			    </div>
+			  </div> <!-- row d-flex -->
+		  </div>
+		  <div class="tab-pane container" id="tab-panel-3">
+			  <div>
+				  <span class="">
+				    <input id="pid_input" class="small" name="pid" placeholder="Enter index id (whg_id)">
+				    <button type="button" data-id='fetch' class="b_action btn btn-primary btn-sm">Fetch record</button>
+			    </span>
+				  {# show action buttons after fetch #}
+				  <span id="child_actions" class="hidden ml-2">Child actions:
+				    <button type="button" data-id='promote' class="b_action btn btn-secondary btn-sm">Promote to parent</button>
+				    <button type="button" data-id='relocate' class="b_action btn btn-secondary btn-sm ml-2">Relocate to</button>
+					  <input type="text" id="newparent" name="newparent" placeholder="new parent pid"/>
+			    </span>
+				  <span id="parent_actions" class="hidden ml-2">Parent actions:
+				    <button type="button" data-id='' class="b_action btn btn-secondary btn-sm ml-2">Demote</button>
+					  <input type="text" id="newparent" name="newparent" placeholder="new parent pid"/> (elevate a child if any)
+			    </span>
+			  </div>
+			  <div class="row mx-0 pt-2">
+			    <div id="panel_3_left" class="col-sm-6 pl-0 small">
+			      <h5>index record [<mark id="record_role">role</mark>]
+			      </h5>
+			      <div id="idx_place">fetch will display index record here </div>
+			    </div>
+			    <div id="panel_3_right" class="form-box mt-2 col-sm-6 hidden">
+				    <div id="">
 				    </div>
 			    </div>
 			  </div> <!-- row d-flex -->

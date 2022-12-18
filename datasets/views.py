@@ -1252,8 +1252,8 @@ def ds_update(request):
       ds_places = ds.places.all()
       print('ds_places', ds_places)
       # pids of missing src_ids
-      rows_delete = idx_delete = list(ds_places.filter(src_id__in=compare_result['rows_del']).values_list('id',flat=True))
-      print('rows_delete, idx_delete', rows_delete, idx_delete)
+      rows_delete = list(ds_places.filter(src_id__in=compare_result['rows_del']).values_list('id',flat=True))
+      print('rows_delete, idx_delete', rows_delete)
 
       # CASCADE includes links & geoms
       try:
@@ -1286,7 +1286,7 @@ def ds_update(request):
       count_new, count_replaced, count_redo = [0,0,0]
       # pids for index operations
       rows_add = []
-      rows_delete = []
+      idx_delete = []
 
       place_fields = {'id', 'title', 'ccodes','start','end','attestation_year'}
       for index, row in bdf.iterrows():
@@ -1413,7 +1413,6 @@ def ds_update(request):
             # there was SOME change(s) -> add to delete-from-index list
             # (will be reindexed after re-reconciling)
             idx_delete.append(p.id)
-
           if False not in diffs[7:]:
             # no meaningful changes
             # replace related, preserving geoms & links if keepg, keepl
