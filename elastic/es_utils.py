@@ -449,6 +449,11 @@ def removeDatasetFromIndex(request, *args, **kwargs):
   removePlacesFromIndex(es, 'whg', pids)
   ds.ds_status = 'wd-complete'
   ds.save()
+
+  # delete latest idx task (its hits were removed already)
+  latest = ds.tasks.filter(task_name='align_idx',status="SUCCESS").order_by('-date_done')[0]
+  latest.delete()
+
   # for browser console
   return JsonResponse({ 'msg':'pids passed to removePlacesFromIndex('+str(ds.id)+')',
                         'ids': pids})
@@ -458,11 +463,11 @@ def removeDatasetFromIndex(request, *args, **kwargs):
 # if parent, promotes a child if any
 # if child, removes references to it in parent (children[], suggest.input[])
 # called from ds_update() and removeDatasetFromIndex() above
+# TODO: why populate delthese[]? pids to delete are provided
 def removePlacesFromIndex(es, idx, pids):
   delthese=[]
   print('pids in removePlacesFromIndex()', pids)
-  # pids = [6880677, 6880677, 6880679, 6880679, 6880680, 6880680, 6880681,
-  #         6880681, 6880682, 6880682, 6880683, 6880683]
+  # pids = [6880701, 6880703, 6880704, 6880705, 6880706, 6880707]
   for pid in pids:
     # get index document
     res = es.search(index=idx, query=esq_pid(pid))
@@ -473,10 +478,9 @@ def removePlacesFromIndex(es, idx, pids):
       doc = hits[0]
       src = doc['_source']
       role = src['relation']['name']; print('role:',role)
-      sugs = list(set(src['suggest']['input'])) # distinct only
-      searchy = list(set([item for item in src['searchy'] if type(item) != list])) 
+      # searchy[] for children is typically empty
+      searchy = list(set([item for item in src['searchy'] if type(item) != list]))
       # role-dependent action
-      print('role', role)
       if role == 'parent':
         # has children?
         kids = [int(x) for x in src['children']]
@@ -487,7 +491,7 @@ def removePlacesFromIndex(es, idx, pids):
           print('childless parent '+str(pid)+' was tagged for deletion')
           delthese.append(pid)
         else:
-          # > 0 eligible children -> pick winner from confirmed children
+          # > 0 eligible children? pick winner from confirmed children
           qeligible = {"bool": {
             "must": [{"terms":{"place_id": kids }}],
             "should": {"exists": {"field": "links"}}
@@ -501,77 +505,60 @@ def removePlacesFromIndex(es, idx, pids):
           # coalesce to 1st eligible if no kid have links
           winner = max(linked_len, key=lambda x: x['len'])['pid'] if len(linked_len)>0 \
             else eligible[0]
-          # TODO: can we make a logical choice?
+          # TODO: better logical choice of winner?
           newparent = winner
           newkids = eligible.pop(eligible.index(winner))
           # update winner
-          # make it a parent, give it a whg_id _id,
-          # update its children with newkids
-          # update its suggest[] and searchy[] arrays (probably redundant)
+          # make it a parent: give it a whg_id; update children with newkids; update searchy[]
           q_update = {"script":{"source": "ctx._source.whg_id = params._id; \
               ctx._source.relation.name = 'parent'; \
               ctx._source.relation.remove('parent'); \
               ctx._source.children.addAll(params.newkids); \
-              ctx._source.suggest.input.addAll(params.sugs); \
-              ctx._source.searchy.addAll(params.sugs);",
-                                "lang": "painless",
-              "params":{"_id": newparent, "newkids": newkids, "sugs": sugs }
+              ctx._source.searchy.addAll(params.searchy);",
+              "lang": "painless",
+              "params":{"_id": newparent, "newkids": newkids, "searchy": searchy }
             },
               "query": {"match":{"place_id": newparent }}}
           try:
             es.update_by_query(index=idx, body=q_update)
+            delthese.append(pid)
           except:
             print('update of new parent failed',sys.exit(sys.exc_info()))
           # parent status transfered to 'eligible' child, add to list
           print('parent w/kids, '+pid +' transferred resp to: '+newparent+' & was tagged for deletion')
-        delthese.append(pid)
       elif role == 'child':
-        # get its parent
+        # get its parent and remove its id from parent's children
+        # parent's searchy can't be reliably edited
         parent = src['relation']['parent']
         qget = {"bool": {"must": [{"match":{"_id": parent }}]}}
         res = es.search(index=idx, query=qget)
         # parent _source, suggest, searchy
         psrc = res['hits']['hits'][0]['_source']
-        print('a child; parent src', pid, psrc)
-        print('pids at this pojnt:', pids)
-        psugs = list(set(psrc['suggest']['input']))
-        psearchy = list(set([item for item in psrc['searchy'] if type(item) != list]))
+        print('a child; parent src:', pid, psrc)
         # is parent slated for deletion? (walking dead)
         zombie = psrc['place_id'] in pids
-        print('zombie?', zombie)
-        if not zombie: # skip zombies; picked up above with if role == 'parent':
-          # remove this id from children and remove its variants (sugs) from suggest.input and searchy
-          newsugs = list(set(psugs)-set(sugs))
-          newsearchy = list(set(psearchy)-set(searchy))
-          print("newsugs",newsugs)
-          print("newsearchy",newsearchy)
+        # skip zombies; picked up above with if role == 'parent':
+        # sometimes docs named as parent don't have the id of the child
+        # in that case, don't look for the child id, it'll break ES
+        if not zombie and len(psrc['children']) > 0:
+          # remove this id from parent's children
           q_update = {"script":{
             "lang": "painless",
-            "source": """
-              ctx._source.suggest.input = params.sugs; 
-              ctx._source.searchy = params.searchy;""",
-            "params":{"sugs": newsugs, "searchy": newsearchy }
+            "source": "ctx._source.children.remove(ctx._source.children.indexOf(params.val))",
+            "params":{"val": str(pid) }
             },
               "query": {"match":{"_id": parent }}
             }
-          print('q_update::542', q_update)
-          # sometimes docs named as parent don't have the id of the child
-          # in that case, don't look for the child id, it'll break ES
-          if len(psrc['children']) > 0:
-            q_update['script']['source'] = """
-              ctx._source.children.remove(ctx._source.children.indexOf(params.val));
-              ctx._source.suggest.input = params.sugs; ctx._source.searchy = params.searchy;"""
-            q_update['script']['params']['val'] = str(pid)
-          print('q_update::549', q_update)
           try:
             es.update_by_query(index=idx, body=q_update)
-            print('child '+psrc['title'],str(pid)+' excised from parent: '+parent+'; tagged for deletion')
+            # child id removed, add to delthese[]
+            delthese.append(pid)
+            print('child ' + psrc['title'], str(pid) + ' excised from parent: ' + parent + '; tagged for deletion')
           except:
             print('update of parent losing child failed', sys.exit(sys.exc_info()))
             pass
-        # child's presence in parent removed, add to delthese[]
-        delthese.append(pid)
-
+          # can't safely excise names from searchy
+          print('q_update initial:', q_update)
       # DB ACTIONS
       try:
         # get database record if it wasn't just deleted
@@ -585,9 +572,9 @@ def removePlacesFromIndex(es, idx, pids):
       except:
         pass
     else:
-      print(str(pid) + ' not in index, passed')
+      print(str(pid) + ' not in index for some reason, passed')
       pass
-  es.delete_by_query(idx,body={"query": {"terms": {"place_id": delthese}}})
+  es.delete_by_query(idx, body={"query": {"terms": {"place_id": delthese}}})
   print('deleted '+str(len(delthese))+': '+str(delthese))
   msg = 'deleted '+str(len(delthese))+': '+str(delthese)
   return JsonResponse(msg, safe=False)

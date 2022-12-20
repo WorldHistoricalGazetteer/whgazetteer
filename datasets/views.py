@@ -34,6 +34,7 @@ es = Elasticsearch([{'host': 'localhost',
                      }])
 import pandas as pd
 from pathlib import Path
+from shapely import wkt
 from shutil import copyfile
 
 from areas.models import Area
@@ -1172,25 +1173,35 @@ def update_rels_tsv(pobj, row):
   params: dsid, format, keepg, keepl, compare_data (json string)
 """
 """ TEST VALUES 
-    from datasets.models import Dataset
-    ds=Dataset.objects.get(id=1441)
-    dsid=1435
+    from datasets.models import Dataset, DatasetFile
+    from django.shortcuts import get_object_or_404
+    ds=Dataset.objects.get(id=1460)
+    dsid=1460
     ds_places = ds.places.all()
     from django.test import Client
-    # filepath = 'media/user_whgadmin/sample7g_new.txt'
     import pandas as pd
     import numpy as np
+    import datetime, re
     file_format = 'delimited'
     keepg, keepl = [True, True]
-    compare_data={}
-    bdf = pd.read_csv(filepath, delimiter='\t')
-    bdf = bdf.replace({np.nan: None})
-    bdf = bdf.astype({"id": str, "ccodes": str, "types": str, "aat_types": str})
-    ids_b = bdf['id'].tolist()
-    # row = bdf.iloc[6]
-    row = bdf.iloc[3]
-    row = row.to_dict()
+    compare_data={'id': '1460', 'filename_cur': 'user_whgadmin/sample7h.txt', 'filename_new': 'user_whgadmin/sample7h_new.txt', 'format': 'delimited', 'validation_result': {'format': 'delimited', 'errors': [], 'columns': ['id', 'title', 'title_source', 'start', 'end', 'title_uri', 'ccodes', 'variants', 'types', 'aat_types', 'matches', 'lon', 'lat', 'geowkt', 'geo_source', 'geo_id', 'description'], 'count': 0}, 'tempfn': '/var/folders/w1/ms_2x6rj0ls88v79q33lvds80000gp/T/tmpo40rw66r', 'count_indexed': 7, 'count_links_added': 5, 'count_geoms_added': 5, 'compare_result': {'count_new': 7, 'count_diff': 0, 'count_replace': 6, 'cols_del': [], 'cols_add': ['title_uri', 'description'], 'header_new': ['id', 'title', 'title_source', 'start', 'end', 'title_uri', 'ccodes', 'variants', 'types', 'aat_types', 'matches', 'lon', 'lat', 'geowkt', 'geo_source', 'geo_id', 'description'], 'rows_add': ['717_4'], 'rows_del': ['717_2']}}
+
+    compare_result = compare_data['compare_result']
+    tempfn = compare_data['tempfn']
+    filename_new = compare_data['filename_new']
+    dsfobj_cur = ds.files.all().order_by('-rev')[0]
+    rev_num = dsfobj_cur.rev
+    from pathlib import Path
+    from shutil import copyfile
+    if Path('media/'+filename_new).exists():
+      fn=os.path.splitext(filename_new)
+      #filename_new=filename_new[:-4]+'_'+tempfn[-11:-4]+filename_new[-4:]
+      filename_new=fn[0]+'_'+tempfn[-11:-4]+fn[1]
+    filepath = 'media/'+filename_new
+    copyfile(tempfn,filepath)
+    
 """
+
 def ds_update(request):
   if request.method == 'POST':
     print('request.POST ds_update()', request.POST)
@@ -1253,7 +1264,7 @@ def ds_update(request):
       print('ds_places', ds_places)
       # pids of missing src_ids
       rows_delete = list(ds_places.filter(src_id__in=compare_result['rows_del']).values_list('id',flat=True))
-      print('rows_delete, idx_delete', rows_delete)
+      print('rows_delete', rows_delete) # 6880702
 
       # CASCADE includes links & geoms
       try:
@@ -1289,6 +1300,8 @@ def ds_update(request):
       idx_delete = []
 
       place_fields = {'id', 'title', 'ccodes','start','end','attestation_year'}
+      # bdfx=bdf.iloc[1:]
+      # for index, row in bdfx.iterrows():
       for index, row in bdf.iterrows():
         # new row as dict
         row = row.to_dict()
@@ -1433,7 +1446,8 @@ def ds_update(request):
 
             # meaningful change, so
             # add to list for index deletion
-            idx_delete.append(p.id)
+            if p.id not in idx_delete:
+              idx_delete.append(p.id)
 
           p.save()
         except:
@@ -1474,9 +1488,6 @@ def ds_update(request):
       print("compare_data['count_indexed']", compare_data['count_indexed'])
 
       #
-      # TODO: reindex
-      # if dataset status is 'accessioning' or 'indexed',
-      # alternately?: if ds.ds_status in ['accessioning', 'indexed']
       if compare_data['count_indexed'] > 0:
         result["indexed"] = True
 
@@ -1498,6 +1509,7 @@ def ds_update(request):
         logtype = 'ds_update',
         note = json.dumps(compare_result),
         dataset_id = dsid,
+        # user_id = 1
         user_id = request.user.id
       )
       ds.ds_status = 'updated'
