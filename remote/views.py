@@ -73,7 +73,6 @@ class DatasetViewSet(viewsets.ModelViewSet):
     DatasetFile.objects.create(
       dataset_id=Dataset.objects.last(),
       file=filename,
-      # file='data/dummy.txt',
       format='delimited',
       df_status='dummy',
       upload_date=None,
