@@ -247,13 +247,13 @@ class PlaceTableSerializer(serializers.ModelSerializer):
           ' tabindex="0" rel="clickover">'+place.dataset.label+'</a>'
     return cell_value
 
-  src_id = serializers.SerializerMethodField()
-  def get_src_id(self, place):
-    if 'whg' in place.dataset.uri_base:
-      srcid = place.src_id
+  id = serializers.SerializerMethodField()
+  def get_id(self, place):
+    if place.dataset.public:
+      pid = '<a href="'+place.dataset.uri_base+str(place.id)+'">'+str(place.id)+'</a>'
     else:
-      srcid = '<a href="'+place.dataset.uri_base+place.src_id+'" target="_blank">'+place.src_id+'</a>'
-    return srcid
+      pid = place.id
+    return pid
 
   geo = serializers.SerializerMethodField()
   def get_geo(self, place):

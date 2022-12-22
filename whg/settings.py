@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'bootstrap_modal_forms',
     'captcha',
     'celery_progress',
+    # 'corsheaders',
     'django_celery_results',
     'django_extensions',
     'django_filters',
@@ -69,13 +70,13 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
   'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.middleware.locale.LocaleMiddleware',
-    'django.middleware.security.SecurityMiddleware',
+  'django.contrib.auth.middleware.AuthenticationMiddleware',
+  'django.contrib.messages.middleware.MessageMiddleware',
+  'django.middleware.clickjacking.XFrameOptionsMiddleware',
+  'django.middleware.common.CommonMiddleware',
+  'django.middleware.csrf.CsrfViewMiddleware',
+  'django.middleware.locale.LocaleMiddleware',
+  'django.middleware.security.SecurityMiddleware',
 ]
 
 ROOT_URLCONF = 'whg.urls'

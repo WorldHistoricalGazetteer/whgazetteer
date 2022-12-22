@@ -1252,7 +1252,8 @@ def ds_update(request):
         bdf = pd.read_csv(filepath, delimiter='\t')
 
         # replace pandas NaN with None
-        bdf = bdf.replace({np.nan: None})
+        bdf = bdf.replace({np.nan: ''})
+        # bdf = bdf.replace({np.nan: None})
         # force data types
         bdf = bdf.astype({"id":str, "ccodes":str, "types":str, "aat_types":str})
         print('reopened new file, # lines:',len(bdf))
@@ -1300,17 +1301,14 @@ def ds_update(request):
       idx_delete = []
 
       place_fields = {'id', 'title', 'ccodes','start','end','attestation_year'}
+      alldiffs=[]
       # bdfx=bdf.iloc[1:]
       # for index, row in bdfx.iterrows():
       for index, row in bdf.iterrows():
+        # row=bdf.iloc[1]
         # new row as dict
         row = row.to_dict()
         print('row as dict', row)
-
-        # subset (why?)
-        # rdp = {key:row[key] for key in row}
-
-        # some Place attributes
 
         start = int(row['start']) if 'start' in row else int(row['attestation_year']) \
           if ('attestation_year' in row) else None
@@ -1326,23 +1324,25 @@ def ds_update(request):
             row_coords = [list(u) for u in wkt.loads(row['geowkt']).coords]
           else:
             row_coords = [list(u) for u in wkt.loads(row['geowkt']).xy]
-        # all columns
-        # id,title,title_source,title_uri,ccodes,matches,variants,types,aat_types,parent_name,parent_id,geo_source,geo_id,description
+        # all columns in mew file
+        header = list(bdf.keys())
+        # row_mapper = [{k: row[k]} for k in header]
         row_mapper = {
           'src_id': row['id'],
           'title': row['title'],
-          'title_source': row['title_source'] if 'title_source' in row else [],
-          'title_uri': row['title_uri'] if 'title_uri' in row else [],
-          'ccodes': row['ccodes'].split(';') if row['ccodes'] else [],
-          'matches': row['matches'].split(';') if row['matches'] else [],
-          'variants': row['variants'].split(';') if row['variants'] else [],
-          'types': row['types'].split(';') if row['types'] else [],
-          'aat_types': row['aat_types'].split(';') if row['aat_types'] else [],
-          'parent_name': row['parent_name'] if 'parent_name' in row else None,
-          'parent_id': row['parent_id'] if 'parent_id' in row else None,
-          'geo_source': row['geo_source'] if 'geo_source' in row else None,
-          'geo_id': row['geo_id'] if 'geo_id' in row else None,
-          'description': row['description'] if 'description' in row else '',
+          'minmax': minmax_new,
+          'title_source': row['title_source'] if 'title_source' in header else '',
+          'title_uri': row['title_uri'] if 'title_uri' in header else '',
+          'ccodes': row['ccodes'].split(';') if 'ccodes' in header and row['ccodes'] else [],
+          'matches': row['matches'].split(';') if 'matches' in header and row['matches']else [],
+          'variants': row['variants'].split(';') if 'variants' in header and row['variants']else [],
+          'types': row['types'].split(';') if 'types' in header and row['types'] else [],
+          'aat_types': row['aat_types'].split(';') if 'aat_types' in header and row['aat_types'] else [],
+          'parent_name': row['parent_name'] if 'parent_name' in header else '',
+          'parent_id': row['parent_id'] if 'parent_id' in header else '',
+          'geo_source': row['geo_source'] if 'geo_source' in header else '',
+          'geo_id': row['geo_id'] if 'geo_id' in header else '',
+          'description': row['description'] if 'description' in header else '',
           'coords': row_coords or [],
         }
 
@@ -1353,6 +1353,7 @@ def ds_update(request):
           c = Client()
           from datasets.utils import PlaceMapper
           try:
+            # result = c.get('/api/place_compare/' + str(6873911) + '/')
             result = c.get('/api/place_compare/' + str(p.id) + '/')
             pobj = result.json()
             pobj = {key: val for key, val in sorted(pobj.items(), key=lambda ele: ele[0])}
@@ -1364,23 +1365,23 @@ def ds_update(request):
           p_mapper = PlaceMapper(
             pobj['id'],
             pobj['src_id'],
-            pobj['title']
+            pobj['title'],
           )
+
           # id,title,title_source,title_uri,ccodes,matches,variants,types,aat_types,
           # parent_name,parent_id,geo_source,geo_id,description
           # add key:value pairs to consider
+          p_mapper['minmax'] = pobj['minmax']
           title_name = next(n for n in pobj['names'] if n['toponym'] == pobj['title']) or None
-          # title_sources = [c['label'] for c in title_name['citations'] if c['label'] !='']
-          # title_ids = [c['id'] for c in title_name['citations'] if c['id'] !='']
-          p_mapper['title_sources'] = [c['label'] for c in title_name['citations'] if c['label'] !='']
-          p_mapper['title_ids'] = [c['id'] for c in title_name['citations'] if c['id'] !='']
-
+          p_mapper['title_source'] = title_name['citation']['label'] if \
+            'citation' in title_name and 'label' in title_name['citation'] else ''
+          p_mapper['title_id'] = title_name['citation']['id'] if \
+            'citation' in title_name and 'id' in title_name['citation'] else ''
           p_mapper['ccodes'] = pobj['ccodes'] or []
           p_mapper['types'] = [t['sourceLabel'] for t in pobj['types']] or []
           p_mapper['aat_types'] = [t['identifier'][4:] for t in pobj['types']] or []
           p_mapper['variants'] = [n['toponym'] for n in pobj['names'] if n['toponym'] != pobj['title']] or []
           p_mapper['coords'] = [g['coordinates'] for g in pobj['geoms']] or []
-          # if 'citation' in pobj['geoms'] and 'label' in :
 
           p_mapper['geo_sources'] = [g['citation']['label'] for g in pobj['geoms'] \
               if 'citation' in g and 'label' in g['citation']] or []
@@ -1394,26 +1395,30 @@ def ds_update(request):
 
           # diff incoming (row_mapper) & database (p_mapper)
           # meaningful = title, variants, aat_types, links/matches, coords
-          diffs=[]
+          diffs = []
 
-          # [:6] not meaningful (don't affect reconciliation)
-          diffs.append(row_mapper['title_source'] in p_mapper['title_sources'] if row_mapper['title_source'] else True)
-          diffs.append(row_mapper['title_uri'] in p_mapper['title_ids'] if row_mapper['title_uri'] else True)
+          # [:8] not meaningful (don't affect reconciliation)
+          diffs.append(row_mapper['title_source'] == p_mapper['title_source'] if row_mapper['title_source'] else True)
+          diffs.append(row_mapper['title_uri'] == p_mapper['title_id'] if row_mapper['title_uri'] else True)
           diffs.append(row_mapper['parent_name'] in p_mapper['related'] if row_mapper['parent_name'] else True)
           diffs.append(row_mapper['parent_id'] in p_mapper['related_id'] if row_mapper['parent_id'] else True)
-          diffs.append(row_mapper['geo_source'] in p_mapper['geo_sources'] if row_mapper['parent_id'] else True)
-          diffs.append(row_mapper['geo_id'] in p_mapper['geo_ids'] if row_mapper['geo_id'] else True)
+          diffs.append(row_mapper['geo_source'] in p_mapper['geo_sources'] if row_mapper['geo_source'] !='' else True)
+          diffs.append(row_mapper['geo_id'] in p_mapper['geo_ids'] if row_mapper['geo_id'] !='' else True)
           diffs.append(row_mapper['description'] in p_mapper['descriptions'] if row_mapper['description'] else True)
-          print('meaningless', diffs)
+          diffs.append(row_mapper['minmax'] == p_mapper['minmax'])
+          diffs.append(sorted(row_mapper['types']) == sorted(p_mapper['types']))
 
-          # [7:] meaningful
-          diffs.append(row_mapper['title'] == p_mapper['title']); print(diffs)
-          diffs.append(sorted(row_mapper['variants']) == sorted(p_mapper['variants'])); print(diffs)
+          # [9:] meaningful
+          diffs.append(row_mapper['title'] == p_mapper['title'])
+          diffs.append(sorted(row_mapper['variants']) == sorted(p_mapper['variants']))
           diffs.append(sorted(row_mapper['aat_types']) == sorted(p_mapper['aat_types']))
           diffs.append(sorted(row_mapper['matches']) == sorted(p_mapper['links']))
+          diffs.append(sorted(row_mapper['ccodes']) == sorted(p_mapper['ccodes']))
           if row_mapper['coords'] != []:
-            diffs.append(row_mapper['coords'] in p_mapper['coords'])
-          print('meaningful', diffs)
+            diffs.append(row_mapper['coords'] == p_mapper['coords'])
+
+          print('diffs', diffs)
+          alldiffs.append({'title':row_mapper['title'], 'diffs':diffs})
 
           # update Place record in all cases
           count_replaced += 1
@@ -1426,7 +1431,7 @@ def ds_update(request):
             # there was SOME change(s) -> add to delete-from-index list
             # (will be reindexed after re-reconciling)
             idx_delete.append(p.id)
-          if False not in diffs[7:]:
+          if False not in diffs[9:]:
             # no meaningful changes
             # replace related, preserving geoms & links if keepg, keepl
             # leave review_wd and flag status intact
@@ -1492,8 +1497,9 @@ def ds_update(request):
         result["indexed"] = True
 
         # surgically remove as req.
-        # idx_delete is superset of rows_delete
-        print('rows_delete, idx_delete', rows_delete, idx_delete)
+        # rows_delete(gone from db) + idx_delete(rows with meaningful change)
+        idx_delete = rows_delete + idx_delete
+        print('idx_delete', idx_delete)
         if len(idx_delete) > 0:
           es = settings.ES_CONN
           idx = 'whg'

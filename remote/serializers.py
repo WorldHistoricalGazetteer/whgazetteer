@@ -171,6 +171,7 @@ class PlaceRemoteSerializer(serializers.ModelSerializer):
 		read_only_fields = ['id']
 
 class PlaceRemoteDetailSerializer(PlaceRemoteSerializer):
+	# src_id = serializers.JSONField(required=False)
 	"""create Place and related records"""
 	def _get_or_create_names(self, names, place):
 		"""Handle getting or creating names as needed."""
@@ -248,6 +249,7 @@ class PlaceRemoteDetailSerializer(PlaceRemoteSerializer):
 
 		place = Place.objects.create(**validated_data)
 		ds = place.dataset
+		# place.src_id = ds.label[:6]+'_'+str(place.id)
 		self._get_or_create_names(names, place)
 		self._get_or_create_links(links, place)
 		self._get_or_create_geoms(geoms, place)
