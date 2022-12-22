@@ -18,7 +18,7 @@ def yearPadder(y):
 class Place(models.Model):
   # id is auto-maintained, per Django
   title = models.CharField(max_length=255)
-  src_id = models.CharField(max_length=2044)
+  src_id = models.CharField(max_length=2044, blank=True)
   # note FK is label, not id
   dataset = models.ForeignKey('datasets.Dataset', db_column='dataset',
                                 to_field='label', related_name='places', on_delete=models.CASCADE)

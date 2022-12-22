@@ -110,22 +110,22 @@ class PlaceViewSet(viewsets.ModelViewSet):
 
   def perform_create(self, serializer):
     """Create a new place..."""
-    dslabel = serializer.validated_data['dataset']
-    ds = Dataset.objects.get(label=dslabel)
-    max_srcid = ds.places.last().src_id
+    ds = serializer.validated_data['dataset']
+    # ds = Dataset.objects.get(label=dslabel)
+    max_srcid = 999 if ds.places.count() == 0 else ds.places.last().src_id
     # srcids=list(ds.places.values_list('src_id', flat=True))
     # max_srcid = max([int(x[len(dslabel)+1:]) for x in srcids])
 
     if 'src_id' not in serializer.validated_data:
       # create one
-      srcid = dslabel+'_'+max_srcid+1
+      srcid = ds.label+'_'+str(max_srcid+1)
     cc_in = serializer.validated_data['ccodes']
     geoms = serializer.validated_data['geoms']
     if len(cc_in) == 0 and len(geoms) > 0:
       cc_out = datasets.utils.ccodesFromGeom(geoms[0]['jsonb'])
     else:
       cc_out = cc_in
-    serializer.save(ccodes=cc_out)
+    serializer.save(ccodes=cc_out, src_id=srcid)
 
 class CollectionViewSet(viewsets.ModelViewSet):
   """View for managing collection APIs."""
