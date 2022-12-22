@@ -160,7 +160,6 @@ class PlaceRemoteSerializer(serializers.ModelSerializer):
 	whens = PlaceWhenRemoteSerializer(required=False)
 	types = PlaceTypeRemoteSerializer(many=True, required=False)
 	descriptions = PlaceDescriptionRemoteSerializer(many=True, required=False)
-
 	class Meta:
 		model = Place
 		fields = [
@@ -227,6 +226,18 @@ class PlaceRemoteDetailSerializer(PlaceRemoteSerializer):
 			)
 			place.types.add(pt_obj)
 
+	# def create_ccodes(self, ccodes, place):
+	# # def _get_or_create_ccodes(self, ccodes, place):
+	# 	"""Handle getting or creating ccodes as needed."""
+	# 	from datasets.utils import ccodesFromGeom
+	# 	if len(ccodes) == 0 and place.geoms.count() > 0:
+	# 		try:
+	# 			print('place.geoms.first().jsonb', place.geoms.first().jsonb)
+	# 			ccodes = ccodesFromGeom(place.geoms.first().jsonb)
+	# 		except:
+	# 			raise
+	# 	return ccodes
+
 	def _get_or_create_descriptions(self, descriptions, place):
 		"""Handle getting or creating descriptions as needed."""
 		for descrip in descriptions:
@@ -246,8 +257,12 @@ class PlaceRemoteDetailSerializer(PlaceRemoteSerializer):
 		whens = validated_data.pop('whens', [])
 		types = validated_data.pop('types', [])
 		descriptions = validated_data.pop('descriptions', [])
+		# always there, even if empty
+		# ccodes = validated_data['ccodes']
 
 		place = Place.objects.create(**validated_data)
+		# place.ccodes = self.create_ccodes(ccodes, place)
+		# place.save()
 		ds = place.dataset
 		# place.src_id = ds.label[:6]+'_'+str(place.id)
 		self._get_or_create_names(names, place)

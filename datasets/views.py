@@ -2423,8 +2423,8 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
 
       print('validated, no errors')
       # print('validated, no errors; result:', result)
-      # print('cleaned_data',form.cleaned_data)
-
+      print('cleaned_data',form.cleaned_data)
+      nolabel = form.cleaned_data["label"] == ''
       # new Dataset record ('owner','id','label','title','description')
       dsobj = form.save(commit=False)
       dsobj.ds_status = 'format_ok'
@@ -2438,6 +2438,13 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
       dsobj.total_links = 0
       try:
         dsobj.save()
+        ds = Dataset.objects.get(id=dsobj.id)
+        label='ds_' + str(ds.id)
+        print('new dataset label', 'ds_' + label)
+        # generate a unique label if none was entered
+        if dsobj.label == '':
+          ds.label = 'ds_' + str(dsobj.id)
+          ds.save()
       except:
         # self.args['form'] = form
         return render(self.request,'datasets/dataset_create.html', self.args)

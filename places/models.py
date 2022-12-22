@@ -22,7 +22,7 @@ class Place(models.Model):
   # note FK is label, not id
   dataset = models.ForeignKey('datasets.Dataset', db_column='dataset',
                                 to_field='label', related_name='places', on_delete=models.CASCADE)
-  ccodes = ArrayField(models.CharField(max_length=2))
+  ccodes = ArrayField(models.CharField(max_length=2, null=True), blank=True)
   minmax = ArrayField(models.IntegerField(blank=True, null=True),null=True,blank=True)
   timespans = JSONField(blank=True,null=True) # for list of lists
   fclasses = ArrayField(models.CharField(max_length=1, choices=FEATURE_CLASSES), null=True, blank=True)

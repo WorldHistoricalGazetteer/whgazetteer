@@ -2,6 +2,8 @@
 # API for external app integrations
 # (Sep 2022)
 #
+import codecs
+import datasets.utils
 from api.views import collector, collectionItem
 from areas.models import Area
 from collection.models import Collection
@@ -51,12 +53,27 @@ class DatasetViewSet(viewsets.ModelViewSet):
   def perform_create(self, serializer):
     # Create a new dataset
     user = self.request.user
+    if 'label' not in serializer.validated_data:
+      label_out = 'ds_'+ str(Dataset.objects.last().id+1)
+    else:
+      label_out = serializer.validated_data['label']
+    # serializer.save(owner=user, label=label_out)
     serializer.save(owner=user)
+    # label_out = 'ds_' + str(Dataset.objects.last().id)
+    serializer.save(label=label_out)
 
     # needs a new dummy DatasetFile too
+    # will be deleted with cascade
+    dsid = Dataset.objects.last()
+    filename = 'user_'+user.username+'/'+str(dsid)+'-dummy.txt'
+    filepath = 'media/'+filename
+    dummyfile=codecs.open(filepath, mode='w', encoding='utf8')
+    dummyfile.write("# nothing to see here, it's a dummy file")
+    dummyfile.close()
     DatasetFile.objects.create(
       dataset_id=Dataset.objects.last(),
-      file='data/dummy.txt',
+      file=filename,
+      # file='data/dummy.txt',
       format='delimited',
       df_status='dummy',
       upload_date=None,
@@ -94,7 +111,22 @@ class PlaceViewSet(viewsets.ModelViewSet):
 
   def perform_create(self, serializer):
     """Create a new place..."""
-    serializer.save()
+    dslabel = serializer.validated_data['dataset']
+    ds = Dataset.objects.get(label=dslabel)
+    max_srcid = ds.places.last().src_id
+    # srcids=list(ds.places.values_list('src_id', flat=True))
+    # max_srcid = max([int(x[len(dslabel)+1:]) for x in srcids])
+
+    if 'src_id' not in serializer.validated_data:
+      # create one
+      srcid = dslabel+'_'+max_srcid+1
+    cc_in = serializer.validated_data['ccodes']
+    geoms = serializer.validated_data['geoms']
+    if len(cc_in) == 0 and len(geoms) > 0:
+      cc_out = datasets.utils.ccodesFromGeom(geoms[0]['jsonb'])
+    else:
+      cc_out = cc_in
+    serializer.save(ccodes=cc_out)
 
 class CollectionViewSet(viewsets.ModelViewSet):
   """View for managing collection APIs."""
