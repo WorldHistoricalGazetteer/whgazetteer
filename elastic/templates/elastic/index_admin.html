@@ -14,37 +14,31 @@
 {% block content %}
 <div class="container">
   {% if user.is_staff %}
-  <h4 class="mt-3">Index admin tasks</h4>
+  <h4 class="mt-3">Admin tasks</h4>
   <div class="row mb-5">
 	  <div class="col-sm-2" id="admin_left">
 			<ul class="nav nav-tabs left-tabs">
 			  <li class="nav-item">
-			    <a class="nav-link active" href="#tab-panel-1" data-toggle="tab">Delete dataset</a>
+			    <a class="nav-link" href="#tab-panel-1" data-toggle="tab">Delete dataset (idx)</a>
 			  </li>
 			  <li class="nav-item">
-			    <a class="nav-link" href="#tab-panel-2" data-toggle="tab">Reorganize parent/child</a>
+			    <a class="nav-link" href="#tab-panel-2" data-toggle="tab">Reorganize parent/child (idx)</a>
 			  </li>
 			  <li class="nav-item">
-			    <!-- use the title attribute to show a tooltip with the full long name
-			         in case the tab is trucated-->
-			    <a
-			      class="nav-link"
-			      href="#tab-panel-3"
-			      title="More Description Here"
-			      data-toggle="tab"
-			      >Clear children</a>
+			    <a class="nav-link active" href="#tab-panel-3" data-toggle="tab">Remote AJAX tests</a>
+			  </li>
+			  <li class="nav-item">
+			    <a class="nav-link" href="#tab-panel-4" data-toggle="tab">Clear children (idx)</a>
 			  </li>
 			</ul>
 	  </div>
 	  <div class="col-sm-10 tab-content" id="admin_center">
-			<div class="tab-pane container active" id="tab-panel-1">
-{#			  <form id="fetch_form" method="POST" action={% url 'elastic:remove-dataset' %} enctype="multipart/form-data">#}
+			<div class="tab-pane container" id="tab-panel-1">
 			  <form id="fetch_form" method="POST" action="#" enctype="multipart/form-data">
 			  {% csrf_token %}
 		    <p>Remove all records of a dataset. <mark>es_utils.removeDatasetFromIndex()</mark></p>
 		    <input id="ds_input" class="small" name="dsid" placeholder="Dataset id (dsid)">
 		    <button id="btn_remove" type="button" class="btn btn-primary btn-sm">Remove Dataset</button>
-{#		    <button id="btn_fetch_ds" type="submit" class="btn btn-primary btn-sm">Fetch Dataset</button>#}
 			  <ul>
 				  <li>if parent</li>
 					  <ul>
@@ -98,32 +92,41 @@
 			    </div>
 			  </div> <!-- row d-flex -->
 		  </div>
-		  <div class="tab-pane container" id="tab-panel-3">
+		  <div class="tab-pane container active" id="tab-panel-3">
+			  <div>
+					<p><input id="new_placetitle" class="small" name="dstitle" placeholder="Place title">
+						<input id="dslabel" class="small" name="dslabel" placeholder="Dataset label">
+						<button id="b_post_place" type="button" class="btn btn-primary btn-sm">POST a new Place</button><br/>
+						<span class="small">other attributes in data payload; datasets 'remote02', 'remote03' are open for posting</span>
+					</p>
+					<p><input id="new_dstitle" class="small" name="dstitle" placeholder="Dataset title">
+							<button id="b_post_dataset" type="button" class="btn btn-primary btn-sm">POST a new Dataset</button><br/>
+						<span class="small">unique label is auto generated: "ds_{dataset id}"</span></p>
+			  </div>
+			  <div class="row mx-0 pt-2">
+			    <div id="panel_3_left" class="col-sm-6 pl-0 small">
+			      <div id="idx_place" class="hidden">payload here </div>
+			    </div>
+			    <div id="panel_3_right" class="form-box mt-2 col-sm-6">
+				    response here
+			    </div>
+			  </div> <!-- row d-flex -->
+		  </div>
+		  <div class="tab-pane container" id="tab-panel-4">
 			  <div>
 				  <span class="">
 				    <input id="pid_input" class="small" name="pid" placeholder="Enter index id (whg_id)">
 				    <button type="button" data-id='fetch' class="b_action btn btn-primary btn-sm">Fetch record</button>
 			    </span>
-				  {# show action buttons after fetch #}
-				  <span id="child_actions" class="hidden ml-2">Child actions:
-				    <button type="button" data-id='promote' class="b_action btn btn-secondary btn-sm">Promote to parent</button>
-				    <button type="button" data-id='relocate' class="b_action btn btn-secondary btn-sm ml-2">Relocate to</button>
-					  <input type="text" id="newparent" name="newparent" placeholder="new parent pid"/>
-			    </span>
-				  <span id="parent_actions" class="hidden ml-2">Parent actions:
-				    <button type="button" data-id='' class="b_action btn btn-secondary btn-sm ml-2">Demote</button>
-					  <input type="text" id="newparent" name="newparent" placeholder="new parent pid"/> (elevate a child if any)
-			    </span>
 			  </div>
 			  <div class="row mx-0 pt-2">
-			    <div id="panel_3_left" class="col-sm-6 pl-0 small">
+			    <div id="panel_4_left" class="col-sm-6 pl-0 small">
 			      <h5>index record [<mark id="record_role">role</mark>]
 			      </h5>
-			      <div id="idx_place">fetch will display index record here </div>
+			      <div id="idx_place">clearing children array</div>
 			    </div>
-			    <div id="panel_3_right" class="form-box mt-2 col-sm-6 hidden">
-				    <div id="">
-				    </div>
+			    <div id="panel_4_right" class="form-box mt-2 col-sm-6 hidden">
+				    <div id=""> </div>
 			    </div>
 			  </div> <!-- row d-flex -->
 		  </div>
@@ -148,7 +151,6 @@
 		    type: 'POST',
 		    url: urly,
 		    data: {
-          {#"dsid": dsid,#}
 			    "csrfmiddlewaretoken":"{{ csrf_token }}"
 		    },
 		    success: function(response){
@@ -157,34 +159,73 @@
 	    })
     })
 
-   {#$(".a-dl").click(function(e){#}
-   {#   e.preventDefault()#}
-   {#   // startDownloadSpinner()#}
-   {#   cell = $(this).closest('tr').find('td').eq(2)#}
-   {#   format = cell.find('input[name="format"]:checked').val()#}
-   {#   dsid = $(this).data('id')#}
-   {#   // console.log('sending to downloader()', dsid, format)#}
-   {#   urly='/datasets/dlcelery/'#}
-   {#   $.ajax({#}
-   {#       type: 'POST',#}
-   {#       url: urly,#}
-   {#       data: {#}
-   {#         "format":format,#}
-   {#         "dsid":dsid,#}
-   {#         "csrfmiddlewaretoken":"{{ csrf_token }}"},#}
-   {#       datatype:'json',#}
-   {#       success:function(response){#}
-   {#         startDownloadSpinner()#}
-   {#         task_id = response.task_id#}
-   {#         var progressUrl = "/celery-progress/"+task_id+"/";#}
-   {#         CeleryProgressBar.initProgressBar(progressUrl,#}
-   {#           { pollingInterval: 500,#}
-   {#             onResult: customResult,#}
-   {#           }#}
-   {#         )#}
-   {#       }#}
-   {#     })#}
-   {# })#}
+		$("#b_post_place").click(function(e){
+		  e.preventDefault()
+			title = $("#new_placetitle").val()
+			dslabel = $("#dslabel").val() != ''?$("#dslabel").val():'remote03'
+			var data = {
+        "title": title,
+        "dataset": dslabel,
+	      "ccodes": [],
+		    "names":[
+            { "toponym": title,
+                "jsonb":{"toponym": title}}],
+        "whens":{"jsonb":{"timespans":[{"start":{"earliest":"1230"}}]}},
+        "geoms":[{"jsonb": {"type":"Point", "coordinates": [16.390228,48.214608]}}],
+        "types":[],
+        "descriptions":[{"jsonb": {"value":"Just another, that is all"}}]
+			};
+		  console.log('sending place ' + title + ' to '+ dslabel)
+		  urly='https://whgazetteer.org/remote/pl/'
+		  $.ajax({
+		      type: "POST",
+		      url: urly,
+		      data: JSON.stringify(data),
+				  contentType: "application/json; charset=utf-8",
+		      datatype:"json",
+				  headers: {'Authorization': "Token 1b7be4ea1d84020e483065524b3ccbcf15c18b17",
+				    "Content-Type": "application/json"},
+					error: function(xhr, status, error){
+					   var errorMessage = xhr.status + ': ' + xhr.statusText
+					   alert('Error - ' + errorMessage);
+					},
+				  success:function(response){
+            console.log(response)
+						$("#panel_3_right").html(response)
+		      }
+	    })
+		})
+
+		$("#b_post_dataset").click(function(e){
+		  e.preventDefault()
+			title = $("#new_dstitle").val()
+			var data = {
+        "owner": 14,
+				"title": title,
+        "description":"Created with remote POST from dev; label is auto-generated",
+				"ds_status":"remote",
+        "numrows":0
+			}
+		  console.log('new dataset title' + title )
+		  urly='https://whgazetteer.org/remote/ds/'
+		  $.ajax({
+		      type: "POST",
+		      url: urly,
+		      data: JSON.stringify(data),
+				  contentType: "application/json; charset=utf-8",
+		      datatype:"json",
+				  headers: {'Authorization': "Token 1b7be4ea1d84020e483065524b3ccbcf15c18b17",
+				    "Content-Type": "application/json"},
+					error: function(xhr, status, error){
+					   var errorMessage = xhr.status + ': ' + xhr.statusText
+					   alert('Error - ' + errorMessage);
+					},
+				  success:function(response){
+            console.log(response)
+						$("#panel_3_right").html(JSON.stringify(response))
+		      }
+	    })
+		})
 
     $(".help-matches").click(function(){
       page=$(this).data('id')
