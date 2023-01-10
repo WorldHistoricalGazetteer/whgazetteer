@@ -70,11 +70,11 @@
           </table>
           <hr/>
           <p>
-            <label for="id_captcha_1"></label> 
-              <img class="captcha" alt="captcha" src="" />
-            <input id="id_captcha_0" type="hidden" name="captcha_0" value="" required >
-            <input id="id_captcha_1" type="text" name="captcha_1" required autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false">
-            <span class="ml-2"><a href="#" class="captcha smaller">refresh</a></span>
+            <!-- <label for="id_captcha_1"></label>  -->
+              <!-- <img class="captcha" alt="captcha" src="" /> -->
+            <!-- <input id="id_captcha_0" type="hidden" name="captcha_0" value="" required > -->
+            <!-- <input id="id_captcha_1" type="text" name="captcha_1" required autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false"> -->
+            <!-- <span class="ml-2"><a href="#" class="captcha smaller">refresh</a></span> -->
           </p>        
           <button type="submit">{% trans "Register" %} &raquo;</button>
         </form>
@@ -82,17 +82,17 @@
     </div>
   </div>
 <script type="text/javascript">
-  $(function() {
-    $.getJSON("/captcha/refresh/", function (result) {
-        $('.captcha').attr('src', result['image_url']);
-        $('#id_captcha_0').val(result['key'])
-    });
-  })
-  $('.captcha').click(function () {
-    $.getJSON("/captcha/refresh/", function (result) {
-        $('.captcha').attr('src', result['image_url']);
-        $('#id_captcha_0').val(result['key'])
-    });
-});
+//   $(function() {
+//     $.getJSON("/captcha/refresh/", function (result) {
+//         $('.captcha').attr('src', result['image_url']);
+//         $('#id_captcha_0').val(result['key'])
+//     });
+//   })
+//   $('.captcha').click(function () {
+//     $.getJSON("/captcha/refresh/", function (result) {
+//         $('.captcha').attr('src', result['image_url']);
+//         $('#id_captcha_0').val(result['key'])
+//     });
+// });
 </script>
 {% endblock %}

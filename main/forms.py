@@ -22,7 +22,7 @@ class ContactForm(forms.Form):
         widget=forms.TextInput(attrs={'size': 50}),
         required=True)
     message = forms.CharField(widget=forms.Textarea(attrs={'cols': 50, 'rows': 5}), required=True)
-    captcha = CaptchaField()
+    # captcha = CaptchaField()
 
 class CommentModalForm(BSModalForm):
     class Meta:

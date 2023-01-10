@@ -43,3 +43,4 @@ class ProfileModelForm(forms.ModelForm):
             #'web_page': forms.TextInput(attrs={'size': 60}),
             'password': forms.PasswordInput(attrs={'size': 60}),
         }
+

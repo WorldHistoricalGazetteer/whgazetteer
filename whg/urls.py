@@ -62,7 +62,7 @@ urlpatterns = [
     path('accounts/', include('allauth.urls')),
     #path('accounts/', include('accounts.urls')),
     path('admin/', admin.site.urls),
-    path('captcha/', include('captcha.urls')),
+    #path('captcha/', include('captcha.urls')),
 
     re_path(r'^celery-progress/', include('celery_progress.urls')),  # the endpoint is configurable
     

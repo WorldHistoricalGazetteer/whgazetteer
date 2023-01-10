@@ -430,7 +430,7 @@ class WHGRegisterForm(SignupForm):
     last_name = forms.CharField(max_length=30, label='Last Name')
     #affiliation = forms.CharField(max_length=256, label='Affiliation')
     #web_page = forms.URLField(label='Web page')
-    captcha = CaptchaField(label='foo')
+    # captcha = CaptchaField(label='foo')
     
     def signup(self, request, user):
         user.first_name = self.cleaned_data['first_name']

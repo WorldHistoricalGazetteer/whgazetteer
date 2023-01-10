@@ -116,7 +116,7 @@ class Dataset(models.Model):
 
   @property
   def format(self):
-    return self.files.first().format
+    return self.files.first()
 
   # list of dataset geometries
   @property

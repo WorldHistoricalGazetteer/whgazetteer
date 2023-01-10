@@ -16,7 +16,7 @@
 <div class="container mt-1" style="height: calc(100vh - 90px);">
 	<div id="banner" class="banner-bare w-100 my-1 p-2">
 		<div class="centered w-100">
-		  <span class="title mb-0"><img src="{% static 'images/whg_logo.svg'%}" class="d-inline-block align-bottom mr-2" height=80 width=80 alt=""/>World Historical Gazetteer</span>
+		  <span class="title mb-0"><img src="{% static 'images/whg_logo.svg'%}" class="d-inline-block align-bottom mr-2" height=80 width=80 alt=""/>MEHDIE</span>
 		  <span id="tagline" class="mx-auto" style="display:block">linking knowledge about the past via place</span>
 		</div>
 	</div>
@@ -72,6 +72,7 @@
 		  <div class="wrapper-right">
 			<div class="item-right">
         <span class="col-bottom cb-coll">collection <sr>(in-progress)</sr></span>
+                {% if featured_coll.0.image_file %}
 			  {% with featured_coll.0.image_file.url as imgc0 %}
 				<div class="">
 				  <p class="mb-0 featured-title">
@@ -79,13 +80,16 @@
           </p>
 					<p class="coll-description">
             <a href="#" class="pop"><img class="thumbnail float-right pl-2" src="{{ imgc0 }}" alt="Detail from <a href='https://www.davidrumsey.com/luna/servlet/s/rp56bh' target='_blank'>'Carte De Hollande Et D&#39;utrecht' (Covens et Mortier, 1750)</a>" height=150 width=150 /></a>
+
             {{ featured_coll.0.description|safe }}
           </p>
 				</div>
 			  </div>
 			  {% endwith %}
+          {% endif %}
 			</div> <!-- .item-right-top -->
 			<div class="row">
+            {% if featured_ds.0.image_file %}
 			  {% with featured_ds.0.image_file.url as imgd0 %}
 			  <div class="col-sm-6 pr-0">
           <div class="item-right">
@@ -100,7 +104,8 @@
           </div> <!-- .item-right -->
 			  </div> <!-- col-sm-6 -->
 			  {% endwith %}
-
+            {% endif %}
+            {% if featured_coll.1.image_file %}
 			  {% with featured_coll.1.image_file.url as imgc1 %}
 			  <div class="col-sm-6 pl-0">
           <div class="item-right">
@@ -115,7 +120,7 @@
 				  </div> <!-- .item-right -->
 			  </div> <!-- col-sm-6 -->
 			  {% endwith %}
-			  
+			  {% endif %}
 			</div> <!-- row -->
 		  </div> <!-- wrapper-right -->
 		</div> <!-- content_right -->

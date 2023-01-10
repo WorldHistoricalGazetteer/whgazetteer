@@ -21,7 +21,7 @@
         </table>
         <!--username: {{ form.username }}-->
         <p>Please type characters in this image 
-          <span class="ml-2">{{ form.captcha }} <a class="captcha smaller" href="#">refresh</a></span>
+          <!-- <span class="ml-2">{{ form.captcha }} <a class="captcha smaller" href="#">refresh</a></span> -->
         </p>
         {% if user.is_authenticated %}
         <input type="hidden" name="username" value='{{ user.username }}'>
@@ -37,11 +37,11 @@
   </div>
 </div>
 <script type="text/javascript">
-  $('.captcha').click(function () {
-    $.getJSON("/captcha/refresh/", function (result) {
-        $('.captcha').attr('src', result['image_url']);
-        $('#id_captcha_0').val(result['key'])
-    });
-});
+//   $('.captcha').click(function () {
+//     $.getJSON("/captcha/refresh/", function (result) {
+//         $('.captcha').attr('src', result['image_url']);
+//         $('#id_captcha_0').val(result['key'])
+//     });
+// });
 </script>
 {% endblock %}

@@ -107,9 +107,9 @@ CELERY_BEAT_SCHEDULE = {
     }}
 
 
-CAPTCHA_NOISE_FUNCTIONS = (
-  #'captcha.helpers.noise_arcs',
-    'captcha.helpers.noise_dots',)
+# CAPTCHA_NOISE_FUNCTIONS = (
+#   #'captcha.helpers.noise_arcs',
+#     'captcha.helpers.noise_dots',)
 
 DJANGORESIZED_DEFAULT_SIZE = [1000, 800]
 DJANGORESIZED_DEFAULT_QUALITY = 75
@@ -186,7 +186,7 @@ LOGOUT_REDIRECT_URL='/'
 # /././././././.
 # start django-allauth
 # /././././././.
-SITE_ID = 1
+SITE_ID = 2
 
 ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS =1
 ACCOUNT_EMAIL_REQUIRED = True
@@ -256,12 +256,21 @@ MEDIA_URL = '/media/'
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 STATICFILES_DIRS = [
-  os.path.join(BASE_DIR, 'datasets/static/'),
+    os.path.join(BASE_DIR, 'datasets/static/'),
     os.path.join(BASE_DIR, 'main/static/'),
     os.path.join(BASE_DIR, 'whg/static/'),
 ]
+
+if os.name == 'nt':
+    import platform
+    OSGEO4W = r"C:\OSGeo4W"
+    assert os.path.isdir(OSGEO4W), "Directory does not exist: " + OSGEO4W
+    os.environ['OSGEO4W_ROOT'] = OSGEO4W
+    os.environ['GDAL_DATA'] = OSGEO4W + r"\share\gdal"
+    os.environ['PROJ_LIB'] = OSGEO4W + r"\share\proj"
+    os.environ['PATH'] = OSGEO4W + r"\bin;" + os.environ['PATH']
 
 try:
   from .local_settings import *
