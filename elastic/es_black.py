@@ -119,12 +119,7 @@ def init():
   idx = 'whg' 
 
   from elasticsearch7 import Elasticsearch
-  es = Elasticsearch([{'host': 'localhost',
-                       'port': 9200,
-                       'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
-                       'timeout':30,
-                       'max_retries':10,
-                       'retry_on_timeout':True}])
+  es = settings.ES_CONN
   # zap dataset from index
   q_del = {"query": {"match": {"dataset": dataset}}}
   try:

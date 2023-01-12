@@ -47,12 +47,7 @@ class LookupView(View):
         [string] idx: latest name for whg index
         [string] place_id: from a trace body
     """
-    es = Elasticsearch([{'host': 'localhost',
-                         'port': 9200,
-                         'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
-                         'timeout': 30,
-                         'max_retries': 10,
-                         'retry_on_timeout': True}])
+    es = settings.ES_CONN
     idx = request.GET.get('idx')
     pid = request.GET.get('place_id')
     q={"query": {"bool": {"must": [{"match":{"place_id": pid }}]}}}
@@ -138,12 +133,7 @@ def suggester(doctype,q,scope,idx):
   print('key', settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY)
   # returns only parents; children retrieved into place portal
   print('suggester',doctype,q)
-  es = Elasticsearch([{'host': 'localhost',
-                       'port': 9200,
-                       'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
-                       'timeout':30,
-                       'max_retries':10,
-                       'retry_on_timeout':True}])
+  es = settings.ES_CONN
   print('suggester es connector',es)
 
   suggestions = []
@@ -395,12 +385,7 @@ class SearchDatabaseView(View):
 '''
 def contextSearch(idx, doctype, q, task):
   print('context query', q)
-  es = Elasticsearch([{'host': 'localhost',
-                       'port': 9200,
-                       'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
-                       'timeout':30,
-                       'max_retries':10,
-                       'retry_on_timeout':True}])
+  es = settings.ES_CONN
   count_hits=0
   result_obj = {"hits":[]}
   # TODO: convert calling map(s) to MapLibre.js to handle large datasets
@@ -462,12 +447,7 @@ class FeatureContextView(View):
 '''
 def getGeomCollection(idx,doctype,q):
   # q includes list of place_ids from a trace record
-  es = Elasticsearch([{'host': 'localhost',
-                       'port': 9200,
-                       'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
-                       'timeout':30,
-                       'max_retries':10,
-                       'retry_on_timeout':True}])
+  es = settings.ES_CONN
   #try:
   res = es.search(index='whg', body=q, size=300)
   # res = es.search(index='whg', body=q, size=300)

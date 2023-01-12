@@ -327,12 +327,7 @@ def collectionItem(i, datatype, format):
 def collector(q, datatype, idx):
   # returns only parents
   # print('collector',doctype,q)
-  es = Elasticsearch([{'host': 'localhost',
-                       'port': 9200,
-                       'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
-                       'timeout': 30,
-                       'max_retries': 10,
-                       'retry_on_timeout': True}])
+  es = settings.ES_CONN
   items = []
 
   if datatype == 'place':
@@ -375,14 +370,7 @@ def collector(q, datatype, idx):
   execute es.search, return post-processed results 
 """
 def bundler(q, whgid, idx):
-  # print('key', settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY)
-  es = Elasticsearch([{'host': 'localhost',
-                       'port': 9200,
-                       'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
-                       'http_auth': ('elastic', settings.ES_REST_PWD),
-                       'timeout':30,
-                       'max_retries':10,
-                       'retry_on_timeout':True}])
+  es = settings.ES_CONN
   print('bundler es connector', es)
   res = es.search(index=idx, body=q)
   hits = res['hits']['hits']

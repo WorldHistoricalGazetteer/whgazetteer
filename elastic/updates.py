@@ -1,7 +1,7 @@
 # update ES records for this and that
-
+from django.conf import settings
 from elasticsearch import Elasticsearch
-es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+es = settings.ES_CONN
 
 from datasets.models import Dataset
 from places.models import Place

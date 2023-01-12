@@ -25,13 +25,7 @@ import codecs, math, mimetypes, os, re, shutil, sys, tempfile
 from deepdiff import DeepDiff as diff
 import numpy as np
 from elasticsearch7 import Elasticsearch
-es = Elasticsearch([{'host': 'localhost',
-                     'port': 9200,
-                     'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
-                     'timeout': 30,
-                     'max_retries': 10,
-                     'retry_on_timeout': True
-                     }])
+es = settings.ES_CONN
 import pandas as pd
 from pathlib import Path
 from shapely import wkt
@@ -85,13 +79,7 @@ def link_uri(auth,id):
 def indexMatch(pid, hit_pid=None):
   print('indexMatch(): pid '+str(pid)+' w/hit_pid '+str(hit_pid))
   from elasticsearch7 import Elasticsearch
-  es = Elasticsearch([{'host': 'localhost',
-                       'port': 9200,
-                       'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
-                       'timeout': 30,
-                       'max_retries': 10,
-                       'retry_on_timeout': True
-                       }])
+  es = settings.ES_CONN
   idx='whg'
   place = get_object_or_404(Place, id=pid)
 
@@ -193,13 +181,7 @@ def indexMatch(pid, hit_pid=None):
 def indexMultiMatch(pid, matchlist):
   print('indexMultiMatch(): pid '+str(pid)+' matches '+str(matchlist))
   from elasticsearch7 import Elasticsearch, RequestError
-  es = Elasticsearch([{'host': 'localhost',
-                       'port': 9200,
-                       'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
-                       'timeout': 30,
-                       'max_retries': 10,
-                       'retry_on_timeout': True
-                       }])
+  es = settings.ES_CONN
   idx='whg'
   place = Place.objects.get(id=pid)
   from elastic.es_utils import makeDoc

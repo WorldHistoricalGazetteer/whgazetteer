@@ -58,13 +58,7 @@ class PlacePortalView(DetailView):
   def get_object(self):
     id_ = self.kwargs.get("id")
     print('args',self.args,'kwargs:',self.kwargs)
-    es = Elasticsearch([{'host': 'localhost',
-                         'port': 9200,
-                         'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
-                         'timeout': 30,
-                         'max_retries': 10,
-                         'retry_on_timeout': True
-                         }])
+    es = settings.ES_CONN
     q = {"query":{"bool": {"must": [{"match":{"_id": id_}}]}}}
     pid=es.search(index='whg',body=q)['hits']['hits'][0]['_source']['place_id']
     # pid=es.search(index='whg', body=q)['hits']['hits'][0]['_source']['place_id']
@@ -77,12 +71,7 @@ class PlacePortalView(DetailView):
     context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
     context['mbtokenwhg'] = settings.MAPBOX_TOKEN_WHG
     context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
-    es = Elasticsearch([{'host': 'localhost',
-                         'port': 9200,
-                         'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
-                         'timeout': 30,
-                         'max_retries': 10,
-                         'retry_on_timeout': True}])
+    es = settings.ES_CONN
     id_ = self.kwargs.get("id")
     pid = self.kwargs.get("pid")
     me = self.request.user

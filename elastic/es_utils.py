@@ -7,13 +7,7 @@ from django.http import JsonResponse
 from places.models import Place
 from datasets.static.hashes.parents import ccodes as cchash
 from elasticsearch7 import Elasticsearch
-es = Elasticsearch([{'host': 'localhost',
-                     'port': 9200,
-                     'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
-                     'timeout': 30,
-                     'max_retries': 10,
-                     'retry_on_timeout': True
-                     }])
+es = settings.ES_CONN
 from copy import deepcopy
 import sys
 # given pid, gets db and index records
@@ -435,12 +429,7 @@ def removeDatasetFromIndex(request, *args, **kwargs):
   from datasets.models import Dataset
   from elasticsearch7 import Elasticsearch
   ds = Dataset.objects.get(id = kwargs['dsid'])
-  es = Elasticsearch([{'host': 'localhost',
-                       'port': 9200,
-                       'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
-                       'timeout': 30,
-                       'max_retries': 10,
-                       'retry_on_timeout': True}])
+  es = settings.ES_CONN
   q_pids = {"match": {"dataset": 'sample7h'}}
   # q_pids = {"match": {"dataset": ds.label}}
   res = es.search(index='whg', query=q_pids, _source=["title", "place_id"])
@@ -620,12 +609,7 @@ def esq_children(_id):
 # ***
 def escount_ds(idx,label):
   from elasticsearch7 import Elasticsearch
-  es = Elasticsearch([{'host': 'localhost',
-                       'port': 9200,
-                       'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
-                       'timeout':30,
-                       'max_retries':10,
-                       'retry_on_timeout':True}])
+  es = settings.ES_CONN
   q = {"match":{"dataset": label }}
   # TODO: match new pattern query={} across platform
   res = es.search(index=idx, query=q)
@@ -665,14 +649,7 @@ def esInit(idx):
   os.chdir('/Users/karlg/Documents/Repos/_whgazetteer/')
 
   from elasticsearch7 import Elasticsearch
-  es = Elasticsearch([{'host': 'localhost',
-                       'port': 9200,
-                       # 'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
-                       # alternate (settings.ES_APIKEY_REMOTE on server)
-                       'api_key': ('dlhTNGM0TUIxLVF2NVJzbUxlNnk6RDBFbVlwSURSb0N6Tk1kTXctazZSdw=='),
-                       'timeout': 30,
-                       'max_retries': 10,
-                       'retry_on_timeout': True}])
+  es = settings.ES_CONN
   mappings = codecs.open('elastic/mappings/es_mappings_whg_20220925.json', 'r', 'utf8').read()
 
   # zap existing if exists, re-create

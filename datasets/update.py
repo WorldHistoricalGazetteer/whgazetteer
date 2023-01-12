@@ -9,13 +9,7 @@ from datasets.models import Dataset, Hit, DatasetFile
 from datasets.utils import validate_lpf, validate_tsv
 from elasticsearch7 import Elasticsearch
 from elastic.es_utils import makeDoc, fetch_pids
-es = Elasticsearch([{'host': 'localhost',
-                     'port': 9200,
-                     'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
-                     'timeout': 30,
-                     'max_retries': 10,
-                     'retry_on_timeout': True
-                     }])
+es = settings.ES_CONN
 idx='whg'
 
 dsid=586 # 'diamonds' current file: user_whgadmin/diamonds135_rev3_g6cvm1l.tsv

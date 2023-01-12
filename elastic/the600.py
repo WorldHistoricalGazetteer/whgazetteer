@@ -21,7 +21,7 @@ from places.models import Place
 import shapely.geometry as sgeo
 from geopy import distance
 from elasticsearch import Elasticsearch
-es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+es = settings.ES_CONN
 ##
 
 def maxID(es):

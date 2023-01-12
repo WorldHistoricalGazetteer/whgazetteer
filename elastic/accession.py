@@ -4,13 +4,7 @@
 from copy import deepcopy
 from elastic.es_utils import *
 from elasticsearch7 import Elasticsearch, RequestError
-es = Elasticsearch([{'host': 'localhost',
-                     'port': 9200,
-                     'api_key': (settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY),
-                     'timeout': 30,
-                     'max_retries': 10,
-                     'retry_on_timeout': True
-                     }])
+es = settings.ES_CONN
 idx='whg'
 # owt10 places
  #/'Memphis',

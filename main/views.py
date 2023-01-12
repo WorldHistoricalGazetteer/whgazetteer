@@ -14,7 +14,7 @@ from bootstrap_modal_forms.generic import BSModalCreateView
 
 from .forms import CommentModalForm, ContactForm
 from elasticsearch7 import Elasticsearch
-es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+es = settings.ES_CONN
 from random import shuffle
 # import requests
 
