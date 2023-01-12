@@ -6,7 +6,6 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse
 from django.views.generic import DetailView
 from django.utils.safestring import SafeString
-from elasticsearch import Elasticsearch
 import simplejson as json
 
 from .models import *
