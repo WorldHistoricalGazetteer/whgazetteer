@@ -241,7 +241,7 @@ class PlaceWhen(models.Model):
                               default=-1, on_delete=models.CASCADE)
   src_id = models.CharField(max_length=100,default='') # contributor's identifier
   jsonb = JSONField(blank=True, null=True)
-  minmax = ArrayField(models.IntegerField(blank=True,null=True))
+  minmax = ArrayField(models.IntegerField(blank=True,null=True), null=True)
 
   class Meta:
     managed = True

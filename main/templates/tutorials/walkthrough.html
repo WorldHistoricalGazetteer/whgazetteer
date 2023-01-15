@@ -9,7 +9,9 @@
       <h3>Tutorial: Uploading and extending data via reconciliation</h3>
     </div>
     <div id="contrib_content" class="mx-5">
-      <p class="lead">Take the following steps to walk through uploading a sample dataset to WHG and performing reconciliation against our internal index of 3.6 million Wikidata place records. More information is available in our Site Guide, and the tutorial, "<a href="{% url 'main:tute-lptsv' %}">Preparing an LP-TSV format file from a spreadsheet</a>." <br/><mark class="small">Note: the process is virtually the same for reconciling against our Getty TGN index.</mark></p>
+      <p class="lead">Take the following steps to walk through uploading a sample dataset to WHG and performing reconciliation against our internal index of 3.6 million Wikidata place records. More information is available in our Site Guide, and the tutorial, "<a href="{% url 'main:tute-lptsv' %}">Preparing an LP-TSV format file from a spreadsheet</a>."
+{#	      <br/><mark class="small">Note: the process is virtually the same for reconciling against our Getty TGN index.</mark>#}
+      </p>
       
       <div id="choosing#Intro" class="tute-section">
         <h4 class="p-1">Register and Upload</h4>
@@ -39,18 +41,21 @@
               <ul><li>A fairly rigorous validation of file format is performed, and errors are reported on the right side of the screen. Formatting anomalies or errors may produce unexpected errors. If you encounter a problem, please get in touch using the <a href="{% url 'contact' %}">Contact form</a> and we will help troubleshoot the problem.</li></ul>
             </li>
 		      </ul>
-          <p class="mb-0">If there are no errors the file's contents are inserted into the WHG database and you are directed to a dataset portal page where you can:</p>
+          <p class="mb-0">If there are no errors, the file's contents are inserted into the WHG database and you are directed to the new dataset's portal page where you can:</p>
           <ul>
-            <li>browse the contents of the uploaded data on the Browse tab</li>
-            <li>initiate reconciliation tasks to find prospective matches in Wikidata and/or the Getty Thesaurus of Geographic Names (TGN)</li>
+	          <li>view and edit its metadata</li>
+            <li>view the uploaded data in a table and a map (Browse tab)</li>
+            <li>initiate a reconciliation task to find prospective matches in Wikidata (Linking tab)</li>
+	          <li>add other registered users as collaborators (Collaborators tab)</li>
           </ul>
         </div>
         <div class="p-1">
           <h4 class="p-1">Reconciliation</h4>
-          <p>WHG reconciliation services allow dataset owners (and designated co-owners) to augment their data with a) additional geometry for more complete mapping and analysis, and b) links to (i.e. matches with) modern name authority resources like Wikidata, Getty TGN, and via Wikidata concordances, many others including GeoNames, VIAF, Library of Congress and BnF. Those links are the essential "glue" enabling the semi-automation of accessioning to the WHG "union index" (for details, see the 'WHG Data' section of the <a href="{% url 'main:tute-guide'%}" target="_blank">Site Guide</a>)</p>
+          <p>WHG reconciliation services allow dataset owners (and designated co-owners) to augment their data with a) additional geometry for more complete mapping and analysis, and b) links to (i.e. matches with) Wikidata records&mdash;and via Wikidata concordances, many others including Getty TGN, GeoNames, VIAF, Library of Congress and BnF.<p>
+	        <p>Those links are the essential "glue" enabling the semi-automation of the final accessioning step&mdash;reconciling to the WHG "union index" (for details, see the 'WHG Data' section of the <a href="{% url 'main:tute-guide'%}" target="_blank">Site Guide</a>)</p>
           <ul>
             <li>Navigate to the "Linking" tab of the dataset portal page and click the "Add new task" link.</li>
-            <li>Leave default settings in place, with Wikidata selected. Help screen links () explain some of the options (more in the "Page by page" section of the <a href="{% url 'main:tute-guide'%}" target="_blank">Site Guide</a>), but we leave those aside for this exercise.</li>
+            <li>Leave default settings in place, with Wikidata selected. Help screen links explain some of the options (more in the "Page by page" section of the <a href="{% url 'main:tute-guide'%}" target="_blank">Site Guide</a>), but we leave those aside for this exercise.</li>
             <li>Click the "Start" button</li>
             <li>For each record in the uploaded data file, a search is performed against our indexed copy of ~3.6m Wikidata records. Up to three passes (queries) are made; if the first returns no results, the second is performed, and so on. These are labeled pass0, pass1, and pass2 in the results.</li>
             <li>The task is queued and performed asynchronously. You will receive an email notification when it is complete, and you can return to this page (or simply refresh it if you haven't left)</li>
@@ -62,15 +67,15 @@
           <h4 class="p-1">Reconciliation Review</h4>
           <p>Once a reconciliation task is complete, dataset owners and team members must review the prospective matches, declaring match/no match for each. This is made easier with our Review screen.</p>
           <ul>
-            <li>The Review screen presents all of the uploaded records that had any hits, one by one on the left side, with the "hits" found on the right. Records that got no hits are not in this queue.</li>
+            <li>The Review screen presents all of the uploaded records that had any hits, one by one on the left side, and the "hits" found for each on the right. Records that got no hits are not in this queue.</li>
             <li>The default selection for all hits is "<b>no match</b>." If any of the hits on the right are a 'close match' with your record, click the appropriate radio button. In either case, click the "Save" button to record your decisions. The screen then advances to the next record and the previous is removed from the queue.</li>
             <li>Assertions of matches are saved to the WHG database as 'place_link' records, associated with your dataset's place record.</li>
             <li>Additionally, if the "accept geometries in matches" box was initially checked when creating this reconciliation task (default is "yes"), any geometries in the authority record (Wikidata in this case), are saved as new place_geom records, and are now associated with your dataset's place record.</li>
-            <li>A help icon links to an explanation of the formal relation, "<b>closeMatch</b>."</li>
+            <li>A help icon <i title="" class="fa fa-question-circle" style="color:#993333;"></i> links to a detailed explanation of the process and the term, "<b>closeMatch</b>."</li>
             <li>Note that if your record had a geometry to begin with, it will show up in the map as a green marker. Geometries from all of the hits appear as orange markers. Hovering over the globe symbol for a hit will highlight that record on the map.</li>
             <li>Note that after the first save, an "Undo last save" link appears on the right side of the grey banner. This will undo the previous decision and return that record to the queue.</li>
           </ul>
-          <p>After reviewing all hits from all passes, affirming any matches discovered, you will have effectively augmented your dataset in the WHG database with new place_link and place_geom records. Those additions will be reflected in the Browse tab map and record details. Also, your dataset is now eligible for flagging as "public," and is prepared for accessioning to the WHG Union index. <br/><mark>Note: At this time, accessioning will be initiated and guided by WHG staff in consultation with contributors.</mark></p>
+          <p>After reviewing all hits from all passes, affirming any matches discovered, you will have effectively augmented your dataset in the WHG database with new place_link and place_geom records. Those additions will be reflected in the Browse tab map and record details. Also, your dataset is now eligible for flagging as "public," and is ready for accessioning to the WHG Union index&mdash;the step that links your individual records with those of other datasets.<br/><mark>Note: At this time, accessioning will be initiated and guided by WHG staff in consultation with contributors.</mark></p>
         </div>
       </div> <!-- choosing#Intro -->
     </div> <!-- contrib_content -->

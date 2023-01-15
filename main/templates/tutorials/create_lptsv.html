@@ -13,15 +13,15 @@
       <div id="" class="tute-section">
         <h4 class="p-1">Overview: LP-TSV</h4>
         <div class="p-1">
-		  <p>First, what is LP-TSV? In short, <a href="https://github.com/LinkedPasts/linked-places/blob/master/tsv_0.3.md" target="_blank">LP-TSV is a delimited file format</a> (csv, tsv, or spreadsheet) developed by WHG to support users and contributors whose data is relatively simple. For example, an LP-TSV row can include a timespan for an entire record, but does not permit temporally scoping individual components (names, geometries, etc.) as the full, JSON-based <a href="https://github.com/LinkedPasts/linked-places/" target="_blank">Linked Places format</a> does.</p>
+		  <p>First, what is LP-TSV? In short, <a href="https://github.com/LinkedPasts/linked-places/blob/master/tsv_0.4.md" target="_blank">LP-TSV is a delimited file format</a> (csv, tsv, or spreadsheet) developed by WHG to support users and contributors whose data is relatively simple. For example, an LP-TSV row can include a timespan for an entire record, but does not permit temporally scoping individual components (names, geometries, etc.) as the full, JSON-based <a href="https://github.com/LinkedPasts/linked-places/" target="_blank">Linked Places format</a> does.</p>
 		  <p>The distinctive features of LP-TSV include:</p>
 		<ul>
-          <li>It requires one "title" toponym, a named source for it, and at minimum a "start" year integer.</li>
-          <li>It permits any number of name variants, 2-letter country codes, types, and matches (links to other records) but only as semicolon-delimited lists of strings within those columns.</li>
+          <li>It requires one "title" toponym, a named source for it, and at minimum a "start" or "attestation_year" integer.</li>
+          <li>It permits any number of name variants, 2-letter country codes, types, and matches (links to other records), but only as semicolon-delimited lists of strings within those columns.</li>
           <li>It permits one geometry, which can be either a longitude/latitude pair or a <a href="https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry" target="_blank">WKT (Well-Known Text)</a> expression.</li>
           <li>With respect to relations, it permits only a single "parent_name"/"parent_id" combination.</li>
 		</ul>
-		<p class="">If the above bullets were a little confusing, do not worry. This guide will show you what each of these four main points mean and how to add or organize that information for your data.</p>
+		<p class="">If this is a little confusing, do not worry. This guide will show you what each of these four main points mean and how to add or organize that information for your data.</p>
 
         <h4 class="p-1">An Example Historical Dataset</h4>
 		<p>We will begin with a sample historical dataset. This dataset, “<a href="https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/AMPGMW" target="_blank">Hernan Cortes and the Conquest of the Aztec Empire</a>,” has been published to the World Historical Gazetteer Dataverse. You can download it in MS Excel format to try to the steps of this guide yourself.</p>
@@ -29,9 +29,11 @@
 		<p>Let’s navigate to the data itself by clicking on the data sheet button on the bottom left of the screen.</p>
 		<p><img src="{% static 'images/tutes/lptsv_fig1.JPG' %}" width=800 /></p>
 		<p>We see there are ID numbers, dates of events, where the event happened, the type of activity, and descriptions of the event. The description column also occasionally lists a name variant for a given place.</p>
+	        <p>Importantly, this is a list of <b>events</b>, and in cases multiple events happened in the same place. <br/>
+		        <b>Our goal is a list of distinct places, one row per place!</b></p>
 		<p><img src="{% static 'images/tutes/lptsv_fig2.JPG' %}" width=800 /></p>
-        <h4 class="p-1">Converting Historical Datasets to LP-TSV</h4>
-		<p>In the above LP-TSV section, the four bullets listed some key parameters needed for that format. Of these, this dataset already contains the most important one, toponym, or the name of the place. The dataset also includes the start date (and occasionally end date) of an event.</p>
+    <h4 class="p-1">Converting Historical Datasets to LP-TSV</h4>
+		<p>In the Overview section above, the bullet points list some key parameters needed for that format. Of these, this dataset already contains the most important one: "Place" is the 'principal' or 'preferred' name of the place; you can think of this as the record's headword. In LP-TSV we call this "title." The "Date" column includes the start date (and occasionally end date) of an event.</p>
 		<p>To begin the conversion process, first <a href="https://github.com/LinkedPasts/linked-places/blob/master/LP-TSV_template.xlsx" target="_blank">download this LP-TSV template file</a>. It has all the necessary columns included for the dataset to be successfully loaded into the WHG. The sample file also shows via color scheme which columns are required, encouraged, and optional. The more of this information we include, the easier it will be for us to reconcile, or match up, our list of places with places in Wikidata and in the WHG system.</p>
 		<p><img src="{% static 'images/tutes/lptsv_fig3.JPG' %}" width=800 /></p>
 

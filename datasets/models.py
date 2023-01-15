@@ -73,12 +73,13 @@ class Dataset(models.Model):
   @property
   def bounds(self):
     dsgeoms = PlaceGeom.objects.filter(place__dataset=self.label)
-    extent = dsgeoms.aggregate(Extent('geom'))['geom__extent']
+    # dsgeoms = self.geometries
+    extent = dsgeoms.aggregate(Extent('geom'))['geom__extent'] if dsgeoms.count() > 0 else (0,0,1,1)
     b=box(extent[0],extent[1],extent[2],extent[3])
-
     feat = Feature(geometry=mapping(b),properties={"id":self.id,"label":self.label,"title":self.title})
     # print(feat)
-    return feat if dsgeoms.count() > 0 else None
+    return feat
+    # return feat if dsgeoms.count() > 0 else None
 
   @property
   def collaborators(self):
