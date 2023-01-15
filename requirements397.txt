@@ -53,7 +53,7 @@ django-celery-results==1.0.2
 django-cors-headers==2.4.0
 django-datatables-view==1.17.0
 django-extensions==2.1.5
-django-filter==2.0.0
+django-filter==2.4.0
 django-fontawesome==1.0
 django-geojson==2.11.0
 django-guardian==2.3.0
