@@ -1,0 +1,68 @@
+Clone and run WHG v2.1
+uses Python 3.97 and Django 2.28.0
+requires local Django database
+connects to production indexes for search, reconciliation
+
+- clone WHG repo from github (https://github.com/WorldHistoricalGazetteer/whgazetteer) into desired location
+	- e.g. git clone git@github.com:WorldHistoricalGazetteer/whgazetteer.git
+
+- create a Python 3.97 virtual environment & activate it 
+	- confirm 3.97 is active: python -V
+	- configure your IDE to use that 3.97 Python environment
+
+- install minimum Python packages from project root (e.g. myrepos/whgazetteer)
+	- python -m pip install -r reqmin.txt
+
+- create new empty PostgreSQL database (>= v10) with postgis extension
+	e.g. using psql:
+		psql -h localhost -p 5432 -d postgres 
+		postgres$ CREATE DATABASE whg;
+		\c whg
+		whg$ CREATE EXTENSION postgis;
+
+- add private settings to whg/settings.py (obtain from karl@kgeographer.org)
+	- SECRET_KEY
+	- MAPBOX_TOKENs
+	- ES_APIKEY_ID, ES_APIKEY_KEY (for Elasticsearch)
+	- ES_CONN connection string
+	- DATABASES (your local 'whg' as default)
+	- DEBUG = True
+	- URL_FRONT = 'http://localhost:8000/'
+	- EMAIL settings
+	- (possibly required) GDAL_LIBRARY_PATH, GEOS_LIBRARY_PATH
+
+- build database tables from Django models
+	$ ./manage.py makemigrations --dry-run (test, confirm ok)
+	$ ./manage.py makemigrations (generates migration files per model)
+	$ ./manage.py migrate (builds tables)
+
+- create superuser account
+	- repos/whg $ python manage.py createsuperuser
+
+- confirm admin app
+	repos/whg $ ./manage.py runserver
+	in browser, navigate to http://localhost:8000/admin
+	log in as {superuser}
+	browse model pages (datasets, places, etc.) no data in them yet
+
+- populate database tables for basic operation (homepage looks for these)
+	types.sql; combined.sql (datasets, collections req. for home page), e.g.
+		> psql -p 5432 whg < types.sql
+		> psql -p 5432 whg < combined.sql
+
+- home page should load http://localhost:8000
+- navigate to My Datasets, My Collections, confirm 2 of each
+- **should** be functional; report issues to KG
+
+- NOTE re: reconciliation and data downloads
+	- The Celery python package is used to manage task queues, and Celery relies on the redis library.
+	- Celery is run as a separate process, and needs to be started alongside the Django server
+		- from the project root, run: celery -A whg worker -l info
+	- redis is a message broker library, its python package was installed via pip
+	- Celery will look for a redis server on its default port, 6379
+		- Celery finds all views in the project tagged with the @shared_task decorator
+	- redis *may* need to be installed as a service on your system.
+		https://redis.io/topics/quickstart
+		windows: https://redis.io/docs/getting-started/installation/install-redis-on-windows/
+	-
+

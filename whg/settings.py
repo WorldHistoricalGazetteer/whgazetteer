@@ -25,15 +25,11 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
-    #'allauth.socialaccount.providers.github',
-    #'allauth.socialaccount.providers.google',
-    #'allauth.socialaccount.providers.orcid',
 
     # 3rd party
     'bootstrap_modal_forms',
     'captcha',
     'celery_progress',
-    # 'corsheaders',
     'django_celery_results',
     'django_extensions',
     'django_filters',
