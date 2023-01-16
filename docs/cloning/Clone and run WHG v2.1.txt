@@ -61,6 +61,7 @@ connects to production indexes for search, reconciliation
 
 - home page should load http://localhost:{port}
 - navigate to My Datasets, My Collections, confirm 2 of each
+- add new sample dataset, docs/cloning/sample7.txt
 - **should** be functional; report issues to KG
 
 - NOTE re: reconciliation and data downloads
