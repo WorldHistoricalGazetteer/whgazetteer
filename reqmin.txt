@@ -69,7 +69,6 @@ ordered-set==4.1.0
 pandas==1.4.1
 petl==1.7.12
 Pillow==9.4.0
-psycopg2==2.9.3
 psycopg2-binary==2.9.5
 pycparser==2.21
 Pygments==2.14.0

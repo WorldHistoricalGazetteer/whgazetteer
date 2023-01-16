@@ -4,11 +4,19 @@ requires local Django database
 connects to production indexes for search, reconciliation
 
 - clone WHG repo from github (https://github.com/WorldHistoricalGazetteer/whgazetteer) into desired location
-	- e.g. git clone git@github.com:WorldHistoricalGazetteer/whgazetteer.git
+	- e.g. myrepos> git clone git@github.com:WorldHistoricalGazetteer/whgazetteer.git
+		- cd whgazetteer
 
-- create a Python 3.97 virtual environment & activate it 
+- create a Python 3.97 virtual environment & activate it, e.g.
+		pyenv install 3.97
+		virtualenv ~/envs/whg397
+		(from project root) source ~/envs/whg397/bin/activate (varies for windows)
 	- confirm 3.97 is active: python -V
 	- configure your IDE to use that 3.97 Python environment
+
+- create a debug file, e.g. from project root
+		mkdir whg/logs
+		touch whg/logs/debug.log
 
 - install minimum Python packages from project root (e.g. myrepos/whgazetteer)
 	- python -m pip install -r reqmin.txt
@@ -33,24 +41,25 @@ connects to production indexes for search, reconciliation
 
 - build database tables from Django models
 	$ ./manage.py makemigrations --dry-run (test, confirm ok)
+		- account, accounts, areas, resources, collection, datasets, places, traces, main
 	$ ./manage.py makemigrations (generates migration files per model)
 	$ ./manage.py migrate (builds tables)
 
 - create superuser account
-	- repos/whg $ python manage.py createsuperuser
+	- myrepos/whgazetteer $ python manage.py createsuperuser
 
 - confirm admin app
-	repos/whg $ ./manage.py runserver
-	in browser, navigate to http://localhost:8000/admin
+	myrepos/whgazetteer$ ./manage.py runserver {port}
+	in browser, navigate to http://localhost:{port}/admin
 	log in as {superuser}
 	browse model pages (datasets, places, etc.) no data in them yet
 
 - populate database tables for basic operation (homepage looks for these)
 	types.sql; combined.sql (datasets, collections req. for home page), e.g.
-		> psql -p 5432 whg < types.sql
-		> psql -p 5432 whg < combined.sql
+		> psql -p 5432 {database} < docs/cloning/types.sql
+		> psql -p 5432 {database} < docs/cloning/combined.sql
 
-- home page should load http://localhost:8000
+- home page should load http://localhost:{port}
 - navigate to My Datasets, My Collections, confirm 2 of each
 - **should** be functional; report issues to KG
 
