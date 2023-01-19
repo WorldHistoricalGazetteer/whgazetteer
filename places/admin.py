@@ -6,6 +6,7 @@ from .models import *
 # appear in admin
 class PlaceAdmin(admin.ModelAdmin):
     list_display = ('id', 'dataset','title', 'ccodes', 'src_id')
+    list_filter = ('dataset',)
 admin.site.register(Place,PlaceAdmin)
 
 class SourceAdmin(admin.ModelAdmin):

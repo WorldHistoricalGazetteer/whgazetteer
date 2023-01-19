@@ -112,11 +112,17 @@ class PlaceViewSet(viewsets.ModelViewSet):
     """Create a new place..."""
     ds = serializer.validated_data['dataset']
     dslabel = ds.label
-    last_srcid = ds.places.order_by('-id').first().src_id; print(last_srcid)
-    last_is_remote = last_srcid.startswith(dslabel); print('remote?', last_is_remote)
-    if last_is_remote:
-      srcid = dslabel+'_'+str(int(last_srcid[len(dslabel)+1:])+1); print(srcid)
+    if ds.places.count() > 0:
+      last_srcid = ds.places.order_by('-id').first().src_id; print('last_srcid', last_srcid)
+      last_is_remote = last_srcid.startswith(dslabel)
+      if last_is_remote:
+        # increment
+        srcid = dslabel+'_'+str(int(last_srcid[len(dslabel)+1:])+1); print('new scrcid', srcid)
+      else:
+        # generate new, starting at 1000
+        srcid=dslabel+'_1000'
     else:
+      # no places yet; generate new, starting at 1000
       srcid=dslabel+'_1000'
 
     cc_in = serializer.validated_data['ccodes']

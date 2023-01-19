@@ -205,16 +205,16 @@ class PlaceRemoteDetailSerializer(PlaceRemoteSerializer):
 			)
 			place.geoms.add(pg_obj)
 
-	def _get_or_create_whens(self, when, place):
-		"""Handle getting or creating a single when as needed."""
-		auth_user = self.context['request'].user
-		#
-		pw_obj, created = PlaceWhen.objects.get_or_create(
-			place_id = place.id,
-			src_id = place.src_id,
-			**when,
-		)
-		place.whens.add(pw_obj)
+	# def _get_or_create_whens(self, when, place):
+	# 	"""Handle getting or creating a single when as needed."""
+	# 	auth_user = self.context['request'].user
+	# 	#
+	# 	pw_obj, created = PlaceWhen.objects.get_or_create(
+	# 		place_id = place.id,
+	# 		src_id = place.src_id,
+	# 		**when,
+	# 	)
+	# 	place.whens.add(pw_obj)
 
 	def _get_or_create_types(self, types, place):
 		"""Handle getting or creating types as needed."""
@@ -243,9 +243,10 @@ class PlaceRemoteDetailSerializer(PlaceRemoteSerializer):
 		for descrip in descriptions:
 			pd_obj, created = PlaceDescription.objects.get_or_create(
 				place_id = place.id,
-				src_id=place.src_id,
+				src_id = place.src_id,
 				**descrip,
 			)
+			print('pd_obj', pd_obj)
 			place.descriptions.add(pd_obj)
 
 	def create(self, validated_data):
@@ -254,7 +255,7 @@ class PlaceRemoteDetailSerializer(PlaceRemoteSerializer):
 		names = validated_data.pop('names', [])
 		links = validated_data.pop('links', [])
 		geoms = validated_data.pop('geoms', [])
-		whens = validated_data.pop('whens', [])
+		# whens = validated_data.pop('whens', [])
 		types = validated_data.pop('types', [])
 		descriptions = validated_data.pop('descriptions', [])
 		# always there, even if empty
@@ -268,7 +269,7 @@ class PlaceRemoteDetailSerializer(PlaceRemoteSerializer):
 		self._get_or_create_names(names, place)
 		self._get_or_create_links(links, place)
 		self._get_or_create_geoms(geoms, place)
-		self._get_or_create_whens(whens, place)
+		# self._get_or_create_whens(whens, place)
 		self._get_or_create_types(types, place)
 		self._get_or_create_descriptions(descriptions, place)
 
