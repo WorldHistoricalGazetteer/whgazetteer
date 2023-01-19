@@ -40,8 +40,8 @@ connects to production indexes for search, reconciliation
 	- (possibly required) GDAL_LIBRARY_PATH, GEOS_LIBRARY_PATH
 
 - build database tables from Django models
-	$ ./manage.py makemigrations --dry-run (test, confirm ok)
-		- account, accounts, areas, resources, collection, datasets, places, traces, main
+	$ ./manage.py makemigrations --dry-run 
+		confirm: account, accounts, areas, resources, collection, datasets, places, traces, main
 	$ ./manage.py makemigrations (generates migration files per model)
 	$ ./manage.py migrate (builds tables)
 
