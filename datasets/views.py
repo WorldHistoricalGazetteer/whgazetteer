@@ -2282,7 +2282,8 @@ class DatasetCreateEmptyView (LoginRequiredMixin, CreateView):
   def form_valid(self, form):
     data=form.cleaned_data
     print('cleaned_data',data)
-    context={"format":data['format']}
+    context={"format": "empty"}
+    # context={"format":data['format']}
     user=self.request.user
     # validated -> create Dataset, DatasetFile, Log instances,
     # advance to dataset_detail
@@ -2345,7 +2346,7 @@ class DatasetCreateEmptyView (LoginRequiredMixin, CreateView):
     # create initial DatasetFile record
     DatasetFile.objects.create(
       dataset_id = dsobj,
-      file = 'dummy_file.tsv',
+      file = 'dummy_file.txt',
       rev = 1,
       format = 'delimited',
       delimiter = 'n/a',

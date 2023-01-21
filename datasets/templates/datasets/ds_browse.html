@@ -139,7 +139,7 @@
     buildSelect()
     
     startTableSpinner()
-    startDetailSpinner()
+    {#startDetailSpinner()#}
     
     window.dslabel = "{{ ds.label }}"
     window.filter = "{{ filter }}"
@@ -578,7 +578,7 @@
 	    // looks only at geometry features
 	    feat = features.find(function(f){
           return f.properties.pid==pid})
-	    {#console.log('feat', feat)#}
+	    console.log('feat', feat)
 
 	    if(feat){
 	      geom = feat.geometry
@@ -606,7 +606,10 @@
     // highlight first row, fetch detail, but don't zoomTo() it
     $("#placetable tbody").find('tr').eq(0).addClass('highlight-row')
 
-    getPlace(pid)
+    if(pid){
+      startDetailSpinner()
+	    getPlace(pid)
+    }
   }
 
   // build select 

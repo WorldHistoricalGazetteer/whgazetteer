@@ -47,9 +47,15 @@
     </ul>
     <div class="tab-content">
       <div id="mydslist" class="tab-pane fade show active" role="tabpanel" aria-labelledby="mydslist-tab">
-        <p class="mb-1 ml-1"><a href="{% url 'datasets:dataset-create' %}" class="">
-          {% fontawesome_icon 'plus-square' color='#336699' %} upload new</a>&nbsp;&nbsp;
-          <a href="{% url 'datasets:dataset-create-empty' %}">{% fontawesome_icon 'plus-square' color='#336699' %} new empty</a>
+        <p class="mb-1 ml-1">
+	          <a href="{% url 'datasets:dataset-create' %}" class="">
+		          {% fontawesome_icon 'plus-square' color='#336699' %} upload new</a>
+						{% if user|has_group:"beta30" or whgteam %}
+							<span>
+              <a href="{% url 'datasets:dataset-create-empty' %}">
+	              {% fontawesome_icon 'plus-square' color='#336699' %} new empty</a>
+							</span>
+						{% endif %}
 	        {% if whgteam %}
           <span class="ml-2 float-right small">
 	          <select id="status_select">

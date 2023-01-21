@@ -80,50 +80,18 @@
           </tr>
           <tr><td class="my-0 small">&#x02733;<i><b> required</b></i></td><td></td></tr>
         </table>
-			  {% comment %}
-        <hr/><!--<p class="my-0 ml-3">initial file</p>-->
-        <table id="file_metadata" class="ds-table table-striped">
-          <tr>
-            <td><b>File</b></td>
-            <td>{{ form.file }}</td>
-          </tr>
-          <tr>
-            <td><b>Format</b></td>
-            <td>{{ form.format }}</td>
-          </tr>
-          <tr>
-            <td><b>License</b></td>
-            <td><a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">CC BY 4.0</a></td>
-          </tr>
-        </table>
-        {% if user.is_superuser %}
-          <table class="mt-2" style="background-color:aliceblue;">
-          <tr style="">
-            <td style="vertical-align:top; padding-top:3px;"><b>Featured rank</b></td>
-            <td style="vertical-align:top; padding-top:3px;">{{ form.featured }} </td>
-          </tr>
-          <tr>
-            <td style="vertical-align:top;"><b>Image</b></td>
-            <td>{{ form.image_file }}</td>
-          </tr>
-        </table>
-        {% endif %}
-        {% endcomment %}
         <!-- status, format, delimiter, numrows, header  -->
         <input type="hidden" name="owner" value='{{ user.id }}'></input>
         <input type="hidden" name="datatype" value="place"></input>
-{#        <input type="hidden" name="rev" value=-1></input>#}
-{#        <input type="hidden" name="df_status" value='uploaded'></input>#}
-{#        <input type="hidden" name="delimiter" value='fubar'></input>#}
+        <input type="hidden" name="rev" value=1></input>
+        <input type="hidden" name="df_status" value='dummy'></input>
         <input type="hidden" name="numrows" value=0></input>
         <input type="hidden" name="numlinked" value=0></input>
-{#        <input type="hidden" name="header" value=[]></input>#}
-{#        <input type="hidden" name="upload_date" value='2020-02-15'></input>#}
         <br/>
         <!-- upload button initially & if it's not yet ok -->
         {% if status != 'format_ok' %}
-        <input id="btn_create" class="btn btn-primary btn-sm" type="submit" value="Create" />
-        <span title="back"><a href="{% url 'data-datasets' %}">Cancel</a></span>
+	        <input id="btn_create" class="btn btn-primary btn-sm" type="submit" value="Create" />
+	        <span title="back"><a href="{% url 'data-datasets' %}">Cancel</a></span>
         {% endif %}
 		    </form>
       </div>

@@ -167,13 +167,13 @@
         {% if current_file and current_file.df_status != 'dummy'%}
           <p> <i>Current data file</i>
             {% if current_file.format == 'delimited' %}
-            {# expose update link only to update_beta group #}
-            {% if user|has_group:'update_beta' or user.is_superuser%}
-            <span class="float-right mr-2">
-              <a href="#" id="a_update_modal" data-dsid = {{ ds.id }} data-toggle="modal" data-target="#updateModal">update</a>
-              <span class="help-matches" data-id="updates">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
-            </span>
-            {% endif %}
+	            {# expose update link only to update_beta group #}
+	            {% if user|has_group:'update_beta' or user.is_superuser%}
+		            <span class="float-right mr-2">
+		              <a href="#" id="a_update_modal" data-dsid = {{ ds.id }} data-toggle="modal" data-target="#updateModal">update</a>
+		              <span class="help-matches" data-id="updates">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
+		            </span>
+	            {% endif %}
             {% endif %}
           </p>
           <div id="div_file">
@@ -225,7 +225,7 @@
             <input class="btn btn-primary btn-sm hidden btn-file" type="submit" value="Upload" />
           </div> <!-- #div_file -->
           <input type="hidden" name="datatype" value=
-            {% if current_file %}"{{ current_file.datatype }}"{%else%}"place"{%endif%}>
+            {% if current_file %}{{ current_file.datatype }}{% else %}"place"{%endif%}>
           <input type="hidden" name="rev" value="{{ current_file.rev }}">
           <input type="hidden" name="format" value="{{ current_file.format }}">
           <input type="hidden" name="delimiter" value="{{ current_file.delimiter }}">
@@ -238,6 +238,8 @@
         <input type="hidden" name="accepted_date" value="2020-04-01">
         <input type="hidden" name="owner" value="{{ ds.owner.id }}">
         <input type="hidden" name="label" value="{{ ds.label }}">
+        <input type="hidden" name="format" value="dummy">
+        <input type="hidden" name="datatype" value="place">
       </div>
       <div class="col-sm-5 small">
         <div id="ds_info">
