@@ -11,7 +11,7 @@
 {% endblock %}
 
 <div class="container">
-  <h4 class="mt-3">Add dataset</h4>
+  <h4 class="mt-3">New empty dataset</h4>
   {% comment %}{% if messages %}
     <span class="text-danger strong"> {% for message in messages %}{{ message }}{% endfor %}</span>
   {% endif %}{% endcomment %}
@@ -80,6 +80,7 @@
           </tr>
           <tr><td class="my-0 small">&#x02733;<i><b> required</b></i></td><td></td></tr>
         </table>
+			  {% comment %}
         <hr/><!--<p class="my-0 ml-3">initial file</p>-->
         <table id="file_metadata" class="ds-table table-striped">
           <tr>
@@ -107,20 +108,21 @@
           </tr>
         </table>
         {% endif %}
+        {% endcomment %}
         <!-- status, format, delimiter, numrows, header  -->
         <input type="hidden" name="owner" value='{{ user.id }}'></input>
         <input type="hidden" name="datatype" value="place"></input>
-        <input type="hidden" name="rev" value=-1></input>
-        <input type="hidden" name="df_status" value='uploaded'></input>
-        <input type="hidden" name="delimiter" value='fubar'></input>
-        <input type="hidden" name="numrows" value=-1></input>
+{#        <input type="hidden" name="rev" value=-1></input>#}
+{#        <input type="hidden" name="df_status" value='uploaded'></input>#}
+{#        <input type="hidden" name="delimiter" value='fubar'></input>#}
+        <input type="hidden" name="numrows" value=0></input>
         <input type="hidden" name="numlinked" value=0></input>
-        <input type="hidden" name="header" value=[]></input>
-        <input type="hidden" name="upload_date" value='2020-02-15'></input>
+{#        <input type="hidden" name="header" value=[]></input>#}
+{#        <input type="hidden" name="upload_date" value='2020-02-15'></input>#}
         <br/>
         <!-- upload button initially & if it's not yet ok -->
         {% if status != 'format_ok' %}
-        <input id="btn_upload" class="btn btn-primary btn-sm" type="submit" value="Upload" />
+        <input id="btn_create" class="btn btn-primary btn-sm" type="submit" value="Create" />
         <span title="back"><a href="{% url 'data-datasets' %}">Cancel</a></span>
         {% endif %}
 		    </form>
@@ -146,13 +148,9 @@
         </h5><p>An email has been sent to WHG staff, and we will look into it and get back to you soon. You can double-check your file formatting and try again, or wait for our response.</p>
       {% else %}
         <div class="smallish">
-          <p class="mb-0"><b>Sample data</b></p>
-          <p class="mb-2">Some sample datasets are available from our GitHub repository. Download and open <a href="https://github.com/WorldHistoricalGazetteer/whgazetteer/raw/main/example_data/whg_example-data.zip" download>this zip file</a>, check its README.txt file, and try loading them from your local computer and reconciling them against <a href="https://www.wikidata.org/" target="_blank">Wikidata</a>. A spreadsheet template is included, which may aid in creating your own LP-TSV file.</p>
-          <p class="mb-0"><b>Data formats</b></p>
-          <p class="mb-2">There are two accepted upload formats: <a href="https://github.com/LinkedPasts/linked-places" target="_blank">Linked Places</a> (JSON-LD based, GeoJSON compatible, expressive), and <a href="https://github.com/LinkedPasts/linked-places/blob/master/tsv_0.3.md" target="_blank">LP-TSV</a>, a tabular format for relatively simpler records uploaded as either text files (.csv, .tsv), or spreadsheets (.xlsx, .ods). <a href="/tutorials/choosing" target="_blank">More information on making the choice</a>. <span class="strong"><i>NOTE: Encoding for all uploaded files must be unicode UTF-8</i>.</span></p>
-          <div id="upload_spinner"></div>
-          <p class="mb-0"><b>Validation Errors</b></p>
-          <p class="mb-2">Uploaded files are validated for adherence to our format(s). In most cases, if there is a problem, an error message will explain, but the error-trapping is not yet perfect. If you are unable to upload a dataset successfully, please <a href="#" class="feedback">contact us</a>. We will gladly help sort out the issue quickly.</p>
+          <p class="mb-2">This form creates a new, empty dataset. At this time, Place records can be added to it after the fact only via integrated applications using the new Recogito.js geotagging widget, a work-in-progress</p>
+          <p class="mb-0"></p>
+          <p class="mb-2"></p>
           <p class="mb-0"><b>Consultation requests welcome!</b></p>
           <p class="mb-1">If you are planning a data contribution to WHG, or want help exploring its usefulness or feasability for your project, please do <a href="#" class="feedback">contact us</a>.</p>
         </div>
@@ -179,7 +177,7 @@
     $('#id_datatype option[value="anno"]').prop('disabled',true)
     $('#id_datatype option[value="source"]').prop('disabled',true)
 
-    $("#btn_upload").on('click', function(){
+    $("#btn_create").on('click', function(){
       console.log('upload_data spinner')
       startUploadSpinner()
     })

@@ -2271,7 +2271,7 @@ class DatasetCreateEmptyView (LoginRequiredMixin, CreateView):
   redirect_field_name = 'redirect_to'
 
   form_class = DatasetCreateEmptyModelForm
-  template_name = 'datasets/dataset_empty_create.html'
+  template_name = 'datasets/dataset_create_empty.html'
   success_message = 'empty dataset created'
 
   def form_invalid(self, form):
@@ -2281,6 +2281,104 @@ class DatasetCreateEmptyView (LoginRequiredMixin, CreateView):
 
   def form_valid(self, form):
     data=form.cleaned_data
+    print('cleaned_data',data)
+    context={"format":data['format']}
+    user=self.request.user
+    # validated -> create Dataset, DatasetFile, Log instances,
+    # advance to dataset_detail
+    # else present form again with errors
+    # if len(result['errors']) == 0:
+    context['status'] = 'format_ok'
+
+    # print('validated, no errors')
+    # print('validated, no errors; result:', result)
+    nolabel = form.cleaned_data["label"] == ''
+    # new Dataset record ('owner','id','label','title','description')
+    dsobj = form.save(commit=False)
+    dsobj.ds_status = 'format_ok'
+    dsobj.numrows = 0
+    clean_label=form.cleaned_data['label'].replace(' ','_')
+    if not form.cleaned_data['uri_base']:
+      dsobj.uri_base = 'https://whgazetteer.org/api/db/?id='
+
+    # links will be counted later on insert
+    dsobj.numlinked = 0
+    dsobj.total_links = 0
+    try:
+      dsobj.save()
+      ds = Dataset.objects.get(id=dsobj.id)
+      label='ds_' + str(ds.id)
+      print('new dataset label', 'ds_' + label)
+      # generate a unique label if none was entered
+      if dsobj.label == '':
+        ds.label = 'ds_' + str(dsobj.id)
+        ds.save()
+    except:
+      # self.args['form'] = form
+      return render(self.request,'datasets/dataset_create.html', self.args)
+
+    #
+    # create user directory if necessary
+    userdir = r'media/user_'+user.username+'/'
+    if not Path(userdir).exists():
+      os.makedirs(userdir)
+
+    # build path, and rename file if already exists in user area
+    # file_exists = Path(userdir+filename).exists()
+    # if not file_exists:
+    #   filepath = userdir+filename
+    # else:
+    #   splitty = filename.split('.')
+    #   filename=splitty[0]+'_'+tempfn[-7:]+'.'+splitty[1]
+    #   filepath = userdir+filename
+
+    # write log entry
+    Log.objects.create(
+      # category, logtype, "timestamp", subtype, dataset_id, user_id
+      category = 'dataset',
+      logtype = 'ds_create_empty',
+      subtype = data['datatype'],
+      dataset_id = dsobj.id,
+      user_id = user.id
+    )
+
+    # create initial DatasetFile record
+    DatasetFile.objects.create(
+      dataset_id = dsobj,
+      file = 'dummy_file.tsv',
+      rev = 1,
+      format = 'delimited',
+      delimiter = 'n/a',
+      df_status = 'dummy',
+      upload_date = None,
+      header = [],
+      numrows = 0
+    )
+
+
+    # data will be written on load of dataset.html w/dsobj.status = 'format_ok'
+    #return redirect('/datasets/'+str(dsobj.id)+'/detail')
+    return redirect('/datasets/'+str(dsobj.id)+'/summary')
+
+  # else:
+    context['action'] = 'errors'
+    # context['format'] = result['format']
+    # context['errors'] = parse_errors_lpf(result['errors']) \
+    #   if ext == 'json' else parse_errors_tsv(result['errors'])
+    # context['columns'] = result['columns'] \
+    #   if ext != 'json' else []
+
+    #os.remove(tempfn)
+
+    return self.render_to_response(
+      self.get_context_data(
+        form=form, context=context
+    ))
+
+  def get_context_data(self, *args, **kwargs):
+    context = super(DatasetCreateEmptyView, self).get_context_data(*args, **kwargs)
+    #context['action'] = 'create'
+    return context
 
 """
   DatasetCreateView()
