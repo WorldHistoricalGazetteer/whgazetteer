@@ -33,7 +33,7 @@ from shutil import copyfile
 
 from areas.models import Area
 from collection.models import Collection
-from datasets.forms import HitModelForm, DatasetDetailModelForm, DatasetCreateModelForm
+from datasets.forms import HitModelForm, DatasetDetailModelForm, DatasetCreateModelForm, DatasetCreateEmptyModelForm
 from datasets.models import Dataset, Hit, DatasetFile
 from datasets.static.hashes import mimetypes_plus as mthash_plus
 from datasets.static.hashes.parents import ccodes as cchash
@@ -2259,6 +2259,28 @@ def failed_upload_notification(user, fn, ds=None):
       'We will look into why and get back to you within a day.\n\nRegards,\nThe WHG Team\n\n\n['+fn+']'
     emailer(subj, msg, settings.DEFAULT_FROM_EMAIL,
             [user.email, settings.EMAIL_HOST_USER])
+
+"""
+  DatasetCreateView()
+  initial create
+  upload file, validate format, create DatasetFile instance,
+  redirect to dataset.html for db insert if context['format_ok']
+"""
+class DatasetCreateEmptyView (LoginRequiredMixin, CreateView):
+  login_url = '/accounts/login/'
+  redirect_field_name = 'redirect_to'
+
+  form_class = DatasetCreateEmptyModelForm
+  template_name = 'datasets/dataset_empty_create.html'
+  success_message = 'empty dataset created'
+
+  def form_invalid(self, form):
+    print('form invalid...', form.errors.as_data())
+    context = {'form': form}
+    return self.render_to_response(context=context)
+
+  def form_valid(self, form):
+    data=form.cleaned_data
 
 """
   DatasetCreateView()

@@ -12,8 +12,9 @@ from datasets.utils import download_file, UpdateCountsView, download_augmented, 
 app_name='datasets'
 urlpatterns = [
 
-  ## BASICS: create, delete, insert data
+  ## BASICS: create from upload, create empty, delete
   path('create/', views.DatasetCreateView.as_view(), name='dataset-create'),
+  path('create_empty/', views.DatasetCreateEmptyView.as_view(), name='dataset-create-empty'),
   path('<int:id>/delete', views.DatasetDeleteView.as_view(), name='dataset-delete'),
 
   # insert validated delimited file data to db (csv, tsv, spreadsheet)

@@ -92,6 +92,36 @@ class DatasetDetailModelForm(forms.ModelForm):
             field.error_messages = {'required': 'The field {fieldname} is required'.format(
                 fieldname=field.label)}
 
+class DatasetCreateEmptyModelForm(forms.ModelForm):
+    class Meta:
+        model = Dataset
+        fields = ('owner', 'id', 'title', 'label', 'datatype', 'description', 'uri_base', 'public',
+                  'creator', 'contributors', 'source', 'webpage', 'image_file', 'featured', 'ds_status')
+
+        widgets = {
+            'description': forms.Textarea(attrs={
+                'rows': 2, 'cols': 45, 'class': 'textarea', 'placeholder': 'Brief description'}),
+            'uri_base': forms.URLInput(attrs={
+                    'placeholder': 'Leave blank unless record IDs are URIs', 'size': 45}),
+            'title': forms.TextInput(attrs={'size': 45}),
+            'label': forms.TextInput(attrs={'placeholder': '20 char max; no spaces','size': 22}),
+            'creator': forms.TextInput(attrs={'size': 45}),
+            'source': forms.TextInput(attrs={'size': 45}),
+            'featured': forms.TextInput(attrs={'size': 4}),
+            'webpage': forms.URLInput(attrs={'size': 45, 'placeholder': 'Project home page, if any'})
+        }
+
+    def clean_label(self):
+        label = self.cleaned_data['label']
+        if ' ' in label:
+            raise forms.ValidationError('Label cannot contain any spaces; replace with underscores (_)')
+        return label
+
+    def __init__(self, *args, **kwargs):
+        super(DatasetCreateEmptyModelForm, self).__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.error_messages = {'required': 'The field {fieldname} is required'.format(
+                fieldname=field.label)}
 
 class DatasetCreateModelForm(forms.ModelForm):
     class Meta:
