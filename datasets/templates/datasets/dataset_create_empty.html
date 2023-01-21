@@ -149,13 +149,13 @@
       console.log('upload_data spinner')
       startUploadSpinner()
     })
-    document.getElementById("id_file").onchange = function(e) {
-      ext = this.value.split('.').pop()
-      <!--console.log('extension',ext);-->
-      if (/(csv|tsv|xls|ods|txt|tab)/.test(ext) == false){
-        $("#id_format_1").prop("checked", true)
-      }
-    }
+    {#document.getElementById("id_file").onchange = function(e) {#}
+    {#  ext = this.value.split('.').pop()#}
+    {#  <!--console.log('extension',ext);-->#}
+    {#  if (/(csv|tsv|xls|ods|txt|tab)/.test(ext) == false){#}
+    {#    $("#id_format_1").prop("checked", true)#}
+    {#  }#}
+    {# }#}
   })
   $("[rel='tooltip']").tooltip();
   function startUploadSpinner() {

@@ -908,11 +908,11 @@ def dataset_file_delete(ds):
   dsf_list = ds.files.all()
   for f in dsf_list:
     ffn = 'media/'+f.file.name
-    if os.path.exists(ffn):
+    if os.path.exists(ffn) and f.file.name != 'dummy_file.txt':
       os.remove(ffn)
       print('zapped file '+ffn)
     else:
-      print('did not find file '+ffn)
+      print('did not find or ignored file '+ffn)
 
 """
   update_rels_tsv(pobj, row) refactored 26 Nov 2022 (backup below)
