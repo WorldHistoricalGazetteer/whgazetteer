@@ -1701,7 +1701,7 @@ def ds_insert_lpf(request, pk):
             newpl.save()
             print('new place: ',newpl.title)
           except:
-            print('failed id' + title + 'datesobj: '+datesobj)
+            print('failed id' + title + 'datesobj: '+str(datesobj))
             print(sys.exc_info())
 
           # PlaceName: place,src_id,toponym,task_id,
@@ -2302,7 +2302,7 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
     finally:
       os.close(tempf)
 
-    print('tempfn in DatasetCreate()', tempfn)
+    # print('tempfn in DatasetCreate()', tempfn)
 
     # open, sniff, validate
     # pass to ds_insert_{tsv|lpf} if valid

@@ -1,7 +1,7 @@
 {
   "definitions": {},
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "schema_lpf_v1.1.json",
+  "$id": "schema_lpf_v1.2.json",
   "type": "object",
   "title": "The Linked Place Schema",
   "additionalProperties": false,
@@ -117,8 +117,8 @@
                 }
               },
               "periods": {
-                "$id": "#/properties/names/items/properties/when/properties/periods",
                 "type": "array",
+                "$id": "#/properties/names/items/properties/when/properties/periods",
                 "title": "Names->Items->When->Periods",
                 "items": {
                   "$id": "#/properties/names/properties/periods/items",
@@ -128,7 +128,7 @@
                     "name": {"type": "string"},
                     "uri": {"type": "string"}
                   },
-                  "required": ["name"]
+                  "required": []
                 }
               },
               "label": {"type": "string"},
@@ -259,7 +259,7 @@
                     "name": {"type": "string"},
                     "uri": {"type": "string"}
                   },
-                  "required": ["name"]
+                  "required": []
                 }
               },
               "label": {"type": "string"},
@@ -348,7 +348,7 @@
                         "name": {"type": "string"},
                         "uri": {"type": "string"}
                       },
-                      "required": ["name"]
+                      "required": []
                     }
                   },
                   "label": {"type": "string"},
@@ -443,7 +443,7 @@
                     "name": {"type": "string"},
                     "uri": {"type": "string"}
                   },
-                  "required": ["name"]
+                  "required": []
                 }
               },
               "label": {"type": "string"},
@@ -526,7 +526,7 @@
               "name": {"type": "string"},
               "uri": {"type": "string"}
             },
-            "required": ["name"]
+            "required": []
           }
         },
         "label": {"type": "string"},

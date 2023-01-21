@@ -127,11 +127,12 @@ class PlaceViewSet(viewsets.ModelViewSet):
 
     cc_in = serializer.validated_data['ccodes']
     geoms = serializer.validated_data['geoms']
+    minmax = serializer.validated_data['minmax']
     if len(cc_in) == 0 and len(geoms) > 0:
       cc_out = datasets.utils.ccodesFromGeom(geoms[0]['jsonb'])
     else:
       cc_out = cc_in
-    serializer.save(ccodes=cc_out, src_id=srcid)
+    serializer.save(ccodes=cc_out, src_id=srcid, minmax=minmax)
 
 class CollectionViewSet(viewsets.ModelViewSet):
   """View for managing collection APIs."""

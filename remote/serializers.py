@@ -163,9 +163,8 @@ class PlaceRemoteSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = Place
 		fields = [
-			'id', 'dataset', 'title', 'src_id', 'ccodes',
-			'names', 'links', 'geoms', 'whens', "types",
-			'descriptions'
+			'id', 'dataset', 'title', 'src_id', 'ccodes', 'minmax',
+			'names', 'links', 'geoms', 'whens', 'types', 'descriptions'
 		]
 		read_only_fields = ['id']
 
