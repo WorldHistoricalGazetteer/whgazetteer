@@ -59,6 +59,9 @@ connects to production indexes for search, reconciliation
 		> psql -p 5432 {database} < docs/cloning/types.sql
 		> psql -p 5432 {database} < docs/cloning/combined.sql
 
+- from project root, gather static files from throughout project into static/
+		repos/whgazetteer $ python ./manage.py collectstatic
+
 - home page should load http://localhost:{port}
 - navigate to My Datasets, My Collections, confirm 2 of each
 - add new sample dataset, docs/cloning/sample7.txt

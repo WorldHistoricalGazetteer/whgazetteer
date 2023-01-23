@@ -778,7 +778,7 @@ def ds_recon(request, pk):
   hits + any geoms and links added by review
   reset Place.review_{auth} to null
 """
-# TODO: needs complete overhaul to account for ds.ds_status
+# TODO: needs overhaul to account for ds.ds_status
 def task_delete(request, tid, scope="foo"):
   hits = Hit.objects.all().filter(task_id=tid)
   tr = get_object_or_404(TaskResult, task_id=tid)
@@ -819,9 +819,14 @@ def task_delete(request, tid, scope="foo"):
   # undoes any acceessioning work
   if auth in ['whg', 'idx']:
     removeDatasetFromIndex('whg', dsid)
-  # set status back to reconciling
-  ds=Dataset.objects.get(id=dsid)
-  ds.ds_status = 'reconciling'
+  # set status
+  print('ds.tasks.all()', ds.tasks.all())
+  print('ds.file.file.name', ds.file.file.name)
+  if ds.tasks.count() == 0:
+    if ds.file.file.name.startswith('dummy'):
+      ds.ds_status = 'remote'
+    else:
+      ds.ds_status = 'uploaded'
   ds.save()
 
   return redirect('/datasets/'+dsid+'/reconcile')
