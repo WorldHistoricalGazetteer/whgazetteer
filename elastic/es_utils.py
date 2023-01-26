@@ -258,11 +258,11 @@ def build_qobj(place):
 summarize a WHG hit for analysis
 """
 def profileHit(hit):
-  #print('_source keys',hit['_source'].keys())
   _id = hit['_id']
   src = hit['_source']
   pid = src['place_id']
-  
+  print('profileHit() src', src)
+
   relation = src['relation']
   profile = {
     '_id':_id,'pid':pid,'title':src['title'],
@@ -270,6 +270,8 @@ def profileHit(hit):
     'dataset':src['dataset'],
     'score':hit['_score']
   }
+  types = src['types']
+
   profile['parent'] = relation['parent'] if \
     relation['name']=='child' else None
   profile['children'] = src['children'] if \
@@ -314,21 +316,25 @@ def indexSomeParents(es, idx, pids):
     parent_obj['relation']={"name":"parent"}
     # parents get an incremented _id & whg_id
     parent_obj['whg_id']=whg_id
-    # add its own names to the suggest field
+    # add its own names to the searchy field
+    # suggest['input] field no longer in use
     for n in parent_obj['names']:
-      parent_obj['suggest']['input'].append(n['toponym'])
+      parent_obj['searchy'].append(n['toponym'])
+      # parent_obj['suggest']['input'].append(n['toponym'])
     # add its title
-    if place.title not in parent_obj['suggest']['input']:
-      parent_obj['suggest']['input'].append(place.title)
-    parent_obj['searchy'] = parent_obj['suggest']['input']
-    print('parent_obj',parent_obj)
+    if place.title not in parent_obj['searchy']:
+      parent_obj['searchy'].append(place.title)
+    # print('parent_obj',parent_obj)
     #index it
     try:
       res = es.index(index=idx, id=str(whg_id), body=json.dumps(parent_obj))
     except:
       print('failed indexing (as parent)'+str(pid),sys.exc_info())
       pass
-    print('created parent:',idx,pid,place.title)    
+    place.indexed = True
+    place.review_whg = True
+    place.save()
+    # print('created parent:',idx, pid, place.title)
 
 # ***
 
