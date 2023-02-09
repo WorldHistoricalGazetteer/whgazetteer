@@ -1,7 +1,7 @@
 from django.db import models
 from django.db.models import Q
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.contrib.postgres.fields import ArrayField #,JSONField
 from django.core.validators import URLValidator
 from django.urls import reverse
@@ -150,6 +150,24 @@ class CollectionUser(models.Model):
   class Meta:
     managed = True
     db_table = 'collection_user'
+
+class CollectionGroup(models.Model):
+  owner = models.ForeignKey(settings.AUTH_USER_MODEL,
+                            related_name='classes', on_delete=models.CASCADE)
+  group = models.ForeignKey(Group, related_name='collection_group', on_delete=models.CASCADE)
+  title = models.CharField(null=False, max_length=1024)
+  description = models.CharField(null=False, max_length=2048)
+  keywords = ArrayField(models.CharField(max_length=50), null=True)
+
+  # a Collection can belong to >=1 CollectionGroup
+  collections = models.ManyToManyField("collection.Collection", blank=True)
+
+  def __str__(self):
+    return self.title
+
+  class Meta:
+    managed = True
+    db_table = 'collection_group'
 
 """ not in use @v2.1; single image only """
 class CollectionImage(models.Model):

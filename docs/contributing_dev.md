@@ -10,7 +10,7 @@ WHG is a Django application, and its backend makes extensive use of PostgreSQL/P
 Experienced Django developers could help with refining existing features and building new ones, but there are several ways to help that don't involve Django per se, for the front end (mapping, styling, localization), and the back end Elasticsearch indexes.
 
 #### Creating a local instance
-It is now possible to create a running instance of WHG in order to contribute directly to the development of the platform via pull requests. [The steps are outlined here](cloning.md).
+It is now possible to create a running instance of WHG in order to contribute directly to the development of the platform via pull requests. [The steps are outlined here](https://github.com/WorldHistoricalGazetteer/whgazetteer/blob/main/docs/cloning/cloning.md).
 
 #### Front end
 
