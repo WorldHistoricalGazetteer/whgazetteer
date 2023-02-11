@@ -2260,7 +2260,7 @@ def failed_upload_notification(user, fn, ds=None):
     subj = 'World Historical Gazetteer error followup '
     subj += 'on dataset ('+ds+')' if ds else ''
     msg = 'Hello ' + user.username + \
-      ', \n\nWe see your recent upload failed -- very sorry about that! ' + \
+      ', \n\nWe see your recent upload was not successful -- very sorry about that! ' + \
       'We will look into why and get back to you within a day.\n\nRegards,\nThe WHG Team\n\n\n['+fn+']'
     emailer(subj, msg, settings.DEFAULT_FROM_EMAIL,
             [user.email, settings.EMAIL_HOST_USER])
