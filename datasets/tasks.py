@@ -202,15 +202,19 @@ def make_download(request, *args, **kwargs):
       outfile = open(fn, 'w', encoding='utf-8')
       features = []
       for p in qs:
+        when = p.whens.first().jsonb
+        if 'minmax' in when:
+          del when['minmax']
         rec = {"type": "Feature",
-               "properties": {"id": p.id, "src_id": p.src_id, "title": p.title, "ccodes": p.ccodes},
-               "geometry": {"type": "GeometryCollection",
-                            "geometries": [g.jsonb for g in p.geoms.all()]},
-               "names": [n.jsonb for n in p.names.all()],
-               "types": [t.jsonb for t in p.types.all()],
-               "links": [l.jsonb for l in p.links.all()],
-               "whens": [w.jsonb for w in p.whens.all()],
-               }
+          "@id": "https://whgazetteer.org/api/db/?id=" + str(p.id),
+          "properties": {"pid": p.id, "src_id": p.src_id, "title": p.title, "ccodes": p.ccodes},
+          "geometry": {"type": "GeometryCollection",
+                      "geometries": [g.jsonb for g in p.geoms.all()]},
+          "names": [n.jsonb for n in p.names.all()],
+          "types": [t.jsonb for t in p.types.all()],
+          "links": [l.jsonb for l in p.links.all()],
+          "when": when
+        }
         features.append(rec)
 
       count = str(len(qs))

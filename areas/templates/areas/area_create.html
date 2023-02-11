@@ -55,6 +55,7 @@
   
   <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.css' rel='stylesheet' />
   <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.js'></script>
+  <script src="{% static 'js/leaflet.ajax.min.js' %}"></script>
   <script src="{% static 'js/leaflet-mapbox-gl.js' %}"></script>
 
 {% endblock %}
@@ -231,18 +232,36 @@
 
     var satellite  = L.tileLayer(mbstyle_url, {id:'mapbox/satellite-streets-v11', token:token_mb, attribution:attrib_mb});
     var osm  = L.tileLayer(mbstyle_url, {id:'mapbox/light-v10', token:token_mb, attribution:attrib_mb});
-  
-    {#ccodeItems = L.featureGroup().addTo(mappy)#}
+
+    var riverStyle = {
+      "color": "#336699",
+      "weight": 1
+    };
+
+    rivers = new L.GeoJSON.AJAX("/datasets/ne_rivers982/places",
+      {style:riverStyle,
+        onEachFeature: function (feature, layer) {
+          popupOptions = {maxWidth: 200};
+            layer.bindPopup(feature.properties.name+" ("+feature.properties.src_id+")", popupOptions);
+          }
+      });
+
     drawnItems = L.featureGroup().addTo(mappy)
 
     var baseLayers = {
       "OSM": osm,
       "Satellite": satellite
     };
-    var overlays = {"Drawn features": drawnItems}
+
+    var overlays = {
+      "Drawn features": drawnItems,
+	    "Rivers": rivers
+    }
 
     layerGroup = L.control.layers(baseLayers,overlays).addTo(mappy);
     baseLayers['OSM'].addTo(mappy)
+	  {#overlays['Rivers'].addTo(mappy)#}
+
   }, false);
 
   function zoomTo(id) {
