@@ -9,9 +9,18 @@ class ResourceFileAdmin(admin.StackedInline):
 class ResourceImageAdmin(admin.StackedInline):
     model = ResourceImage
 
+# pub_date, owner, title, type, description, subjects, gradelevels, keywords, authors,
+# contact, webpage, public, featured, regions, status
 
 @admin.register(Resource)
 class ResourceAdmin(admin.ModelAdmin):
+    fields = ('pub_date','owner','title','authors','description','keywords',
+              'type','subjects','gradelevels', 'public', 'featured', 'status',
+              'regions')
+    list_display = ('title', 'pub_date', 'authors', 'gradelevels', 'type', 'featured')
+    list_filter = ('gradelevels', 'authors')
+    # date_hierarchy = 'pub_date'
+
     inlines = [ResourceFileAdmin, ResourceImageAdmin]
 
     class Meta:

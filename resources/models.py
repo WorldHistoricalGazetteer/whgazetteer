@@ -18,7 +18,7 @@ class Resource(models.Model):
   title = models.CharField(max_length=255, null=False)
   # [lessonplan | syllabus]
   type = models.CharField(max_length=12, null=False, choices=RESOURCE_TYPES)
-  description = models.CharField(max_length=2044, null=False)
+  description = models.TextField(max_length=2044, null=False)
   subjects = models.CharField(max_length=2044, null=False)
   gradelevels = ArrayField(models.CharField(max_length=24, blank=True))
   keywords = ArrayField(models.CharField(max_length=24, null=False))

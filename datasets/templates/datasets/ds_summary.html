@@ -166,6 +166,7 @@
         <input class="btn btn-primary btn-sm hidden btn-ds" type="submit" value="Save" />
         {% if current_file and current_file.df_status != 'dummy'%}
           <p> <i>Current data file</i>
+	          {% comment %}
             {% if current_file.format == 'delimited' %}
 	            {# expose update link only to update_beta group #}
 	            {% if user|has_group:'update_beta' or user.is_superuser%}
@@ -175,6 +176,7 @@
 		            </span>
 	            {% endif %}
             {% endif %}
+	          {% endcomment %}
           </p>
           <div id="div_file">
             <table id="file_metadata" class="ds-table table-striped">

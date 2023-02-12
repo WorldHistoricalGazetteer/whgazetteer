@@ -49,10 +49,10 @@ def testy():
   builds download file, retrieved via ajax JS in ds_summary.html, ds_meta.html,
   collection_detail.html (modal), place_collection_browse.html (modal)
 """
-@task(name="make_download")  
+@task(name="make_download")
 def make_download(request, *args, **kwargs):
   # TODO: integrate progress_recorder for better progress bar in GUI
-  #progress_recorder = ProgressRecorder(self) #accessed?
+  # progress_recorder = ProgressRecorder(self) #accessed?
   username = request['username'] or "AnonymousUser"
   userid = request['userid'] or User.objects.get(username="AnonymousUser").id
   req_format = kwargs['format']
@@ -197,19 +197,19 @@ def make_download(request, *args, **kwargs):
       print('building lpf file')
       # make file name
       fn = 'media/downloads/'+username+'_'+dslabel+'_'+date+'.json'
-      url_prefix='http://whgazetteer.org/api/place/'
-
       outfile = open(fn, 'w', encoding='utf-8')
       features = []
       for p in qs:
         when = p.whens.first().jsonb
         if 'minmax' in when:
           del when['minmax']
-        rec = {"type": "Feature",
-          "@id": "https://whgazetteer.org/api/db/?id=" + str(p.id),
+        rec = {
+          "type": "Feature",
+          "@id": ds.uri_base + (str(p.id) if 'whgazetteer' in ds.uri_base else p.src_id),
           "properties": {"pid": p.id, "src_id": p.src_id, "title": p.title, "ccodes": p.ccodes},
-          "geometry": {"type": "GeometryCollection",
-                      "geometries": [g.jsonb for g in p.geoms.all()]},
+          "geometry": {
+            "type": "GeometryCollection",
+            "geometries": [g.jsonb for g in p.geoms.all()]},
           "names": [n.jsonb for n in p.names.all()],
           "types": [t.jsonb for t in p.types.all()],
           "links": [l.jsonb for l in p.links.all()],

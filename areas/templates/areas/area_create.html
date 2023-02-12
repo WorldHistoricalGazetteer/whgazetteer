@@ -233,6 +233,26 @@
     var satellite  = L.tileLayer(mbstyle_url, {id:'mapbox/satellite-streets-v11', token:token_mb, attribution:attrib_mb});
     var osm  = L.tileLayer(mbstyle_url, {id:'mapbox/light-v10', token:token_mb, attribution:attrib_mb});
 
+    var watershedStyle = {
+      "fillColor": "#993333",
+      "color": "#fff",
+      "weight": 1,
+      "opacity": 0.7,
+      "fillOpacity": 0.1
+    };
+
+    function random_rgba() {
+        var o = Math.round, ra = Math.random, s = 255;
+        tup = [o(ra()*s), o(ra()*s), o(ra()*s)]
+
+        const rgbToHex = (r,g,b) => '#' + [r,g,b].map(x => {
+          const hex = x.toString(16)
+          return hex.length === 1 ? '0' + hex : hex
+        }).join('')
+
+        return rgbToHex(tup[0],tup[1],tup[2])
+    }
+
     var riverStyle = {
       "color": "#336699",
       "weight": 1
@@ -246,6 +266,15 @@
           }
       });
 
+    watersheds = new L.GeoJSON.AJAX("/datasets/wri_watersheds/places",
+      { style:watershedStyle,
+        onEachFeature: function (feature, layer) {
+        layer.setStyle({"fillColor":random_rgba()})
+          popupOptions = {maxWidth: 200};
+            layer.bindPopup(feature.properties.name+" ("+feature.properties.src_id+")", popupOptions);
+        }
+      })
+
     drawnItems = L.featureGroup().addTo(mappy)
 
     var baseLayers = {
@@ -255,7 +284,8 @@
 
     var overlays = {
       "Drawn features": drawnItems,
-	    "Rivers": rivers
+	    "Rivers": rivers,
+	    "Watersheds": watersheds
     }
 
     layerGroup = L.control.layers(baseLayers,overlays).addTo(mappy);
