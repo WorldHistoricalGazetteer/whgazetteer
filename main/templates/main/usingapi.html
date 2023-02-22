@@ -78,7 +78,6 @@
 				</div>
 			  </div> <!-- place_db -->
 			  <div id="place_idx" class="tab-pane fade show active" role="tabpanel" aria-labelledby="placeidx-tab">
-{#				  <div id="disabled" style="position:absolute; top:200px; min-height: 400px; min-width:400px; color:#993333; opacity: 80%;"><h3>Access to the index API is temporarily disabled. Back soon!</h3></div>#}
 				<p class="mb-0">
 				  Search <span class="red-head strong">union index</span> (<b>whgazetteer.org/api/index?</b>). Returns GeoJSON.</p>
 				<!--<p class="smaller my-0"><i>using these parameters</i></p>-->
@@ -88,8 +87,8 @@
 				  </thead>
 				  <tbody>
 					<tr><td>whgid</td><td>integer</td><td>index identifier; returns 1 or more linked records</td></tr>
-					<tr><td>name</td><td>string</td><td>exact match; <b>name, name_startswith, or whgid is required</b></td></tr>
-					<tr><td>name_startswith</td><td>string</td><td>starts <i>any part of</i> a name</td></tr>
+					<tr><td>name</td><td>string</td><td>exact match; <b>name, or whgid is required</b></td></tr>
+					{% comment %}<tr><td>name_startswith</td><td>string</td><td>starts <i>any part of</i> a name</td></tr>{% endcomment %}
 					<tr><td>dataset</td><td>string</td><td>dataset label</td></tr>
 					<tr><td>ccode</td><td>string</td><td>1 or more 2-letter ISO codes, comma separate</td></tr>
 					<tr>
@@ -110,9 +109,9 @@
 
 				  <p class="mb-0">Index record linking the two database records for Abydos, EG asserted as matches.</p>
 					<p><a href="{{ settings.URL_FRONT }}/api/index/?whgid=12608007" target="_blank">/api/index/?whgid=12608007</a></p>
-
+					{% comment %}
 					<p class="mb-0">Settlements and sites in N. Africa w/part of any name variant starting with "aby."</p>
-				  <p><a href="{{ settings.URL_FRONT }}/api/index/?name_startswith=aby&fclass=p,s&area=85" target="_blank">/api/index/?name_startswith=aby&fclass=p,s&area=85</a>
+				  <p><a href="{{ settings.URL_FRONT }}/api/index/?name_startswith=aby&fclass=p,s&area=85" target="_blank">/api/index/?name_startswith=aby&fclass=p,s&area=85</a>{% endcomment %}
 				</div>
 
 			  </div> <!-- place_idx -->

@@ -37,7 +37,6 @@
             <tr>
 	            <td class="float-right pr-3 strong">Groups</td>
 	            <td id="grouplist">
-{#		            {{ user.groups.all }}{{ context.groups }}#}
               {% for g in context.groups %}
 	              {% if g.name == 'pilot people' %}
 	                <a href="#" data-id="{{g.id}}" class="a_addmembers">{{g.name}}</a> {% comment %}({{g.id}}){% endcomment %}
@@ -70,7 +69,6 @@
       </table>
     </div> <!-- view_profile -->
     <div id="edit_profile" class="hidden">
-      {{context}}
       <table>
         <tbody>
           <tr><td class="float-right pr-3 strong">Username</td><td>{{ user_form.username.value }}</td></tr>

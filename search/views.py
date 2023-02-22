@@ -77,113 +77,54 @@ def makeGeom(pid,geom):
   return geomset
 
 """
-  format search result items (places or traces)
+  format search result items
 """
-def suggestionItem(s, doctype, scope):
-  #print('sug geom',s['geometries'])
-  if doctype == 'place':
-    if scope == 'suggest':
-      item = { 
-        "name":s['title'],
-        "type": s['types'][0]['sourceLabel'] if 'sourceLabel' in s['types'][0] else s['types'][0]['label'],
-        "whg_id":s['whg_id'],
-        "pid":s['place_id'],
-        "variants":[n for n in s['suggest']['input'] if n != s['title']],
-        "dataset":s['dataset'],
-        "ccodes":s['ccodes'],
-        #"geom": makeGeom(s['place_id'],s['geoms'])
-      }
-      #print('place sug item', item)
-    else:
-      h = s['hit']
-      item = {
-        "whg_id": h['whg_id'] if 'whg_id' in h else '',
-        "pid":h['place_id'],
-        "linkcount":s['linkcount'],
-        "name": h['title'],
-        "variants":[n for n in h['suggest']['input'] if n != h['title']],
-        "ccodes": h['ccodes'],
-        "fclasses": h['fclasses'],
-        # "types": [t['sourceLabel'] or t['label'] for t in h['types'] ],
-        # "types": [t['src_label'] or t['label'] for t in h['types'] ],
-        "types": [t['label'] for t in h['types'] ],
-        "geom": makeGeom(h['place_id'],h['geoms'])
-        #"snippet": s['snippet']['descriptions.value'][0] if s['snippet'] != '' else []
-      }
-  elif doctype == 'trace':
-    # now with place_id, not whg_id (aka _id; they're transient)
-    # TODO: targets are list in latest spec, but example data has only one
-    target = s['hit']['target'] if type(s['hit']['target']) == dict else s['hit']['target'][0]
-    item = {
-      "_id": s['_id'],
-      "id": target['id'],
-      "type": target['type'],
-      "title": target['title'],
-      "depiction": target['depiction'] if 'depiction' in target.keys() else '',
-      "bodies":s['hit']['body']
-    }
-  #print('place search item:',item)
+def suggestionItem(s):
+  h = s['hit']
+  item = {
+    "whg_id": h['whg_id'] if 'whg_id' in h else '',
+    "pid":h['place_id'],
+    "linkcount":s['linkcount'],
+    "name": h['title'],
+    "variants":[n for n in h['suggest']['input'] if n != h['title']],
+    "ccodes": h['ccodes'],
+    "fclasses": h['fclasses'],
+    "types": [t['label'] for t in h['types'] ],
+    "geom": makeGeom(h['place_id'],h['geoms'])
+  }
   return item
 
 
 """
-  actually performs es search, places (whg) or traces
+  performs es search in index aliased 'whg'
 """
-def suggester(doctype,q,scope,idx):
+def suggester(q, idx):
   print('key', settings.ES_APIKEY_ID, settings.ES_APIKEY_KEY)
   # returns only parents; children retrieved into place portal
-  print('suggester',doctype,q)
+  print('suggester q',q)
   es = settings.ES_CONN
-  print('suggester es connector',es)
+  # print('suggester es connector',es)
 
   suggestions = []
   
-  if doctype=='place':
-    #print('suggester/place q:',q)
-    # res = es.search(index=idx, body=q)
-    # doc_type not present from 7.17 on
-    # body to be deprecated 'in 9.0'
-    res = es.search(index=idx, body=q)
-    #res = es.search(index='whg,tgn', body=q)
-    if scope == 'suggest':
-      sugs = res['suggest']['suggest'][0]['options']
-      #print('suggester()/place sugs',sugs)
-      if len(sugs) > 0:
-        for s in sugs:
-          if 'parent' not in s['_source']['relation'].keys():
-            # it's a parent, add to suggestions[]
-            suggestions.append(s['_source'])
-      return suggestions      
-    elif scope == 'search':
-      hits = res['hits']['hits']
-      if len(hits) > 0:
-        for h in hits:
-          suggestions.append(
-            {"_id": h['_id'],
-             "linkcount":len(set(h['_source']['children'])),
-             "hit": h['_source'],
-            }
-          )
-      sortedsugs = sorted(suggestions, key=lambda x: x['linkcount'], reverse=True)
-      # TODO: there may be parents and children
-      # print('SUGGESTIONS from suggester()',type(suggestions), sortedsugs)
-      return sortedsugs
-    
-  elif doctype == 'trace':
-    print('suggester()/trace q:',q)
-    res = es.search(index='traces', body=q)
-    hits = res['hits']['hits']
-    #print('suggester()/trace hits',hits)
-    if len(hits) > 0:
-      for h in hits:
-        suggestions.append({"_id":h['_id'],"hit":h['_source']})
-    #print('suggestions',suggestions)
-    return suggestions 
+  res = es.search(index=idx, body=q)
+  hits = res['hits']['hits']
+  if len(hits) > 0:
+    for h in hits:
+      suggestions.append(
+        {"_id": h['_id'],
+         "linkcount":len(set(h['_source']['children'])),
+         "hit": h['_source'],
+        }
+      )
 
+  sortedsugs = sorted(suggestions, key=lambda x: x['linkcount'], reverse=True)
+  # TODO: there may be parents and children
+  return sortedsugs
+    
 """ 
   /search/index/?
-  from search.html
-  via suggester(), formatted by suggestionItem()
+  from search.html 
 """
 class SearchView(View):
   @staticmethod
@@ -193,27 +134,24 @@ class SearchView(View):
     """
       args in request.GET:
         [string] qstr: query string
-        [string] doc_type: place or trace
-        [string] scope: suggest or search
+        # [string] doc_type: place or trace
+        # [string] scope: suggest or search
         [string] idx: index to be queried
         [int] year: filter for timespans including this
         [string[]] fclasses: filter on geonames class (A,H,L,P,S,T)
         [string] bounds: text of JSON geometry
     """
     qstr = request.GET.get('qstr')
-    doctype = request.GET.get('doc_type')
-    scope = request.GET.get('scope')
     idx = request.GET.get('idx')
     fclasses = request.GET.get('fclasses')
     start = request.GET.get('start')
     end = request.GET.get('end')
     bounds = request.GET.get('bounds')
-    #ds = request.GET.get('ds')
     
     params = {
       "qstr":qstr,
-      "doctype": doctype,
-      "scope": scope,
+      # "doctype": doctype,
+      # "scope": scope,
       "idx": idx,
       "fclasses": fclasses,
       "start": start,
@@ -224,50 +162,31 @@ class SearchView(View):
     print('search_params set', params)
 
     # TODO: fuzzy search; results ranked for closeness
-    if doctype == 'place':
-      if scope == 'suggest':
-        q = { "suggest":{"suggest":{"prefix":qstr,"completion":{"field":"suggest"}} } }
-        print('suggest query:',q)
-      elif scope == 'search':
-        q = { "size": 100,
-              "query": {"bool": {
-                "must": [
-                  {"exists": {"field": "whg_id"}},
-                  {"multi_match": {
-                    "query": qstr,
-                    "fields": ["title^3", "names.toponym", "searchy"],
-                  }}
-                ]
+    # TODO: remove remaining references to traces
+    q = { "size": 100,
+          "query": {"bool": {
+            "must": [
+              {"exists": {"field": "whg_id"}},
+              {"multi_match": {
+                "query": qstr,
+                "fields": ["title^3", "names.toponym", "searchy"],
               }}
-        }
-        if fclasses:
-          q['query']['bool']['must'].append({"terms": {"fclasses": fclasses.split(',')}})
-        if start:
-          q['query']['bool']['must'].append({"range":{"timespans":{"gte" :start,"lte":end if end else 2005}}})
-        if bounds:
-          bounds=json.loads(bounds)
-          q['query']['bool']["filter"]=get_bounds_filter(bounds,'whg')
+            ]
+          }}
+    }
+    if fclasses:
+      q['query']['bool']['must'].append({"terms": {"fclasses": fclasses.split(',')}})
+    if start:
+      q['query']['bool']['must'].append({"range":{"timespans":{"gte" :start,"lte":end if end else 2005}}})
+    if bounds:
+      bounds=json.loads(bounds)
+      q['query']['bool']["filter"]=get_bounds_filter(bounds,'whg')
 
-    elif doctype == 'trace':
-      q={ 
-        "size": 100,
-        "query": { "bool": {
-          "must": [
-            {"multi_match": {
-              "query": qstr,
-              "fields": ["target.title","tags"],
-              "type": "phrase_prefix"
-          }}]
-        }}
-      }      
-      print('trace query:',q)
-    
-    suggestions = suggester(doctype, q, scope, idx)
-    suggestions = [suggestionItem(s, doctype, scope) for s in suggestions]
+    suggestions = suggester(q, idx)
+    suggestions = [suggestionItem(s) for s in suggestions]
     
     # return query params for ??
-    result = suggestions if doctype=='trace' else \
-      {'get': request.GET, 'suggestions': suggestions, 'session': params }
+    result = {'get': request.GET, 'suggestions': suggestions, 'session': params }
 
     return JsonResponse(result, safe=False)
       
@@ -306,12 +225,6 @@ class SearchDatabaseView(View):
       ga = GEOSGeometry(json.dumps(area.geojson))
     
     print('seaech db params:', {'name':name,'name_contains':name_contains,'fclasses':fclasses,'bounds':bounds,'ds':ds})
-    # africanports1887 mystery
-    # {'name': 'Ambriz', 'name_contains': None, 'fclasses': ['A', 'P', 'S', 'R', 'L', 'T', 'H'], 'bounds': '', 'ds': None}
-    # returns 0
-    # {'name': 'Abydos', 'name_contains': None, 'fclasses': ['A', 'P', 'S', 'R', 'L', 'T', 'H'], 'bounds': '', 'ds': None}
-    # returns 4
-    # Abitibiwinni Aki
     qs = Place.objects.filter(dataset__public=True)
     
     if bounds:
@@ -322,11 +235,7 @@ class SearchDatabaseView(View):
 
     if fclasses and len(fclasses) < 7:
       qs.filter(fclasses__overlap=fclasses)
-    #   qs.filter(Q(fclasses__isnull=True) | Q(fclasses__overlap=fclasses) | Q(fclasses=[])).count()
-    # else:
-    #   # filter in effect
-    #   qs.filter(fclasses__overlap=fclasses)
-    
+
     if name_contains:
       print( 'name_contains exists',name_contains)
       qs = qs.filter(title__icontains=name_contains)
@@ -335,16 +244,10 @@ class SearchDatabaseView(View):
       qs = qs.filter(names__jsonb__toponym__istartswith=name).distinct()
 
     qs = qs.filter(dataset=ds.label) if ds else qs
-    #qs = qs.filter(ccodes__overlap=cc) if cc else qs
     count = len(qs)
 
-    #filtered = qs[:pagesize] if pagesize and pagesize < 200 else qs[:20]
     filtered = qs[:pagesize]
 
-    # needed for suglister
-    #pid    #name    #variants[]    #ccodes[]    #types[]    #geom[]
-    # adding dataset
-    
     # normalizes place.geoms objects for results display
     def dbsug_geoms(pobjs):
       suglist = []

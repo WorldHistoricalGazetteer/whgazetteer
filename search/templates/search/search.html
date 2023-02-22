@@ -12,10 +12,7 @@
   <script src="{% static 'js/parents.js' %}"></script>
   <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
   <link rel="stylesheet" href="//cdn.datatables.net/1.10.16/css/dataTables.bootstrap4.min.css">
-  <link rel="stylesheet" href="{% static 'css/typeahead.css' %}">
   <script src="{% static 'js/leaflet.ajax.min.js' %}"></script>
-  <script src="{% static 'js/typeahead.bundle.js' %}"></script>
-
 
   <script src="{% static 'leaf_bb/leaflet-control-boxzoom.js' %}"></script>
   <link rel="stylesheet" href="{% static 'leaf_bb/leaflet-control-boxzoom.css' %}">
@@ -40,14 +37,8 @@
         <input id="input_box" class="" type="text" placeholder="Enter place name" autocomplete="false">
         <button class="b-input">{% fontawesome_icon 'search' color='#336699'%}</button>
       </div>
-      <div id="search_input_traces" class="d-input input-group input-group-sm pb-2 justify-content-center hidden" >
-        <input id="input_box_traces" class="typeahead" type="text" placeholder="subject term, e.g. 'empire'">
-      </div>
 
       <ul id="scope_tabs" class="nav nav-tabs small">
-        {%comment%}<span class="ds-title ml-1 mr-3">Search
-        <a id="search_help" class="pointer" data-toggle="popover" title="Search scope" data-html="true" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a>
-        </span>{%endcomment%}
         <li class="nav-item">
         <a class="nav-link active" id="a_idx" data-scope="idx" href="#" role="tab" style="background:#f1fff1;"> Search Index {%fontawesome_icon 'link'%}</a>
         </li>
@@ -136,11 +127,6 @@
         </div>
         </div> <!-- .row -->
       </div> <!-- search_info -->
-      {%comment%}
-      {% if user.is_superuser %}
-        <div>search params: {{ search_params }}</div>
-      {% endif %}
-      {%endcomment%}
       <div id="type_filter" class="hidden">
         <p class='allcap-heading half mb-0 pl-1'>PLACE TYPES (select to limit)
           <span class="float-right mr-2"><a href="#" class="hide-filter">
@@ -227,7 +213,6 @@
     /*  if referer is search.html, it's returning from
       viewing a place portal or place detail page
     */
-
     if(localStorage['keep'] == 'true'){
       $("#search_info").remove()
     }
@@ -236,7 +221,6 @@
     kept = ls('keep')
     state()
     // remove 'keep' on any nav except place pages
-    // $('span').show().filter(':not(.pears, .apples, .oranges, .etc)')
     $('a').show().filter(':not(.place-link, .db-link)').click(function(){
       localStorage.removeItem('keep')
     })
@@ -247,9 +231,6 @@
       localStorage.removeItem('keep')
       localStorage.removeItem('last_results')
     }
-
-    window.search_class = $('input[name=class]').val() // place or trace
-    if(search_class == "trace") {$("#traces_info").show()}
 
     // toggle all fclass checkboxes
     $("#check_toggle").click(function(e){
@@ -356,65 +337,6 @@
 
   // clear map, inputs, results
     $("#type_filter").hide();
-
-    // data type choice determines index searched
-    var suggester = new Bloodhound({
-      datumTokenizer: Bloodhound.tokenizers.whitespace,
-      queryTokenizer: Bloodhound.tokenizers.whitespace,
-      remote: {
-        wildcard: '%QUERY',
-        url: 'foofah',
-        prepare: function (query, settings) {
-          var doctype = 'place'
-          {#var doctype = $("input[name='class']:checked").val();#}
-          settings.url = '/search/index?doc_type='+doctype+'&scope=suggest&'+$.param({
-            qstr: query,
-            idx: doctype == 'place' ? 'whg' : 'trace'
-          });
-          return settings;
-      }
-      }
-    });
-    function hh(element) {
-      el=element.toLowerCase()
-      return el.includes($("#input_box").val().toLowerCase());
-    }
-    $('.typeahead').typeahead({minLength:2,highlight:true}, {
-      name: 'suggester',
-      source: suggester,
-      display: 'name',
-      limit: 10,
-      templates: {
-        empty: ['<div class="small ml-2">','no results...','</div>'].join('\n'),
-        suggestion: function (data) {
-          doctype = 'place'
-          {#doctype = $("input[name='class']:checked").val()#}
-          if(doctype == 'place'){
-            // console.log('variants',data.variants)
-            return data.variants.length>0 ?
-              '<p class="tight-p tt-suggestion">' + data.name + '<br/><i class="tight-p">' +
-                data.variants.filter(hh).join(', ') + '<i></p>' :
-              '<p class="tight-p">' + data.name + '</p>'
-          } else {
-            // console.log('data',data)-->
-            return '<p rel="'+data._id+'">'+data.title+'</p>'
-          }
-        }
-      }
-    })
-    .on('typeahead:selected', function (obj, datum) {
-      // fetchTraceGeom() -> [views.TraceGeomView() <- views.getGeomCollection()] -> showResults() -> sugLister
-      // console.log('trace typeahead clicked: datum',datum)-->
-      if(doctype=='trace'){
-        fetchTraceGeom(datum._id,0,datum.title)
-      }
-    })
-    .on('typeahead:asyncrequest', function() {
-      $('.typeahead').addClass('input-loading');
-    })
-    .on('typeahead:asynccancel typeahead:asyncreceive', function() {
-      $('.typeahead').removeClass('input-loading');
-    });
 
     // fetch area list
     $.get("/api/area_list", function(data){
@@ -1072,42 +994,29 @@
   */
   searchPlacesIdx = function (){
     //console.log('searchPlacesIdx()',search_scope)
-    window.doctype = 'place';
     // get filter values: fclasses, start, end, ??
     var fclasses = [];
     $('#search_filters input:checked').each(function() {
       fclasses.push($(this).val());
     });
-    // hack disables typeahead
-    scope = doctype =='place' ? 'search' : 'suggest'
-    // end hack
-    index = doctype =='place' ? 'whg' : 'traces'
+    index = 'whg'
     // clear filters
     $(".list-inline").html('')
     // console.log('bounds in js SearchPlacesIdx()',$("#boundsobj").val())-->
     $.get("/search/index",{
-      // qstr: $(".tt-input")[0].value,
-      // disabled typeahead
       qstr: $('#input_box').val(),
-      doc_type: doctype,
-      scope: scope,
       idx: index,
       fclasses: fclasses,
-      {#fclasses: fclasses.join(','),#}
       start: $("#input_start").val(),
       end: $("#input_end").val(),
       bounds: $("#boundsobj").val()
-      {#ds: $("#select_ds_search").val()#}
       }, function(data){
         window.searchres = data['suggestions']
         window.session = data['session']
         // store locally
         localStorage.setItem('last_results',JSON.stringify(searchres))
-        //localStorage.setItem('last_results',searchres)-->
         // render to html
-        if(doctype == 'place'){
-          showResults(searchres, doctype, scope);
-        }
+		    showResults(searchres);
       }
     );
     $('.tt-menu').hide()
@@ -1155,92 +1064,75 @@
     scope: ['suggest' | 'search']
     title:
   */
-  showResults = function(data, doctype, scope='suggest', title){
+  showResults = function(data, title){
     console.log('showResults() data length', data.length)
 	  $(".spinner").remove()
     // always want result_div to show
     $("#result_div").show()
     var results_div = '';
     var result_table = '';
-    <!--search_scope = ls('search_scope')-->
     search_scope = searchScope()
     // ensure correct tab is selected
-    switchTab(search_scope)
     geoms=[]
     var types=[], typesArr = [], ccArr = []
-    if (doctype == 'place'){
-      if(data.length == 0) {
-        results_div += '<p class="small ml-2">No results, sorry.</p>'
-      } else {
-        result_table ='<table id="result_table" class="tableFixHead"><thead><tr>'
-        +'<th>Title <i class="fa fa-sort ml-1" data-id=0 ref=asc></i></th>'
-        +(search_scope=='idx'?'<th>Linked <i class="fa fa-sort ml-1" data-id=1 ref=desc></i></th>':'')
-        +'<th>Countries&nbsp;<i class="fa fa-sort small" data-id='
-        +(search_scope=='idx'?2:1)+' ref=asc></i></th>'
-        +(search_scope=='idx'?'':'<th>Dataset <i class="fa fa-sort ml-1" data-id=2 ref=asc></i></th>')
-        +'<th>Type(s)</th><th>Name variants</th><th>geom?</th> </tr></thead>'
+    if(data.length == 0) {
+      results_div += '<p class="small ml-2">No results, sorry. Try database search for records that are not yet indexed</p>'
+    } else {
+      result_table ='<table id="result_table" class="tableFixHead"><thead><tr>'
+      +'<th>Title <i class="fa fa-sort ml-1" data-id=0 ref=asc></i></th>'
+      +(search_scope=='idx'?'<th>Linked <i class="fa fa-sort ml-1" data-id=1 ref=desc></i></th>':'')
+      +'<th>Countries&nbsp;<i class="fa fa-sort small" data-id='
+      +(search_scope=='idx'?2:1)+' ref=asc></i></th>'
+      +(search_scope=='idx'?'':'<th>Dataset <i class="fa fa-sort ml-1" data-id=2 ref=asc></i></th>')
+      +'<th>Type(s)</th><th>Name variants</th><th>geom?</th> </tr></thead>'
 
-        countadded = 0
-        havegeom = 0
+      countadded = 0
+      havegeom = 0
 
-        data.forEach(function(sug){
-          typesArr=typesArr.concat(sug.types)
-          ccArr=ccArr.concat(sug.ccodes)
+      data.forEach(function(sug){
+        typesArr=typesArr.concat(sug.types)
+        ccArr=ccArr.concat(sug.ccodes)
 
-          if(!!sug.geom) {
-            havegeom +=1
-            sug.geom.forEach(function(g){
-              g['properties']['title'] = sug.name
-              g['properties']['whgid'] = (doctype=='place')?sug.whg_id:sug.place_id
-              geoms.push(g)
-            })
-          }
-          // adds a row to result_div that gets inserted into #result_div later
-          result_table += sugLister(sug, doctype, scope)
-          countadded +=1
-          // result_table += sugTableRow(sug, doctype, scope)   -->
-        })
-        result_table += '</table>'
-        // console.log('showResults() countadded, havegeom',countadded, havegeom)-->
-
-        // list of distinct types
-        types = Array.from(new Set(typesArr));
-        // TODO: on zoomend, any geoms in viewport are added to result_div
-        // into select dropdown
-        $('#type_select').empty();
-        $('#type_select').append('<option value="0">Place type</option>');
-        $.each(types, function(i, p) {
-          $('#type_select').append($('<option></option>').val(p).html(p));
-        });
-
-        countries = Array.from(new Set(ccArr));
-        $('#cc_select').empty();
-        $('#cc_select').append('<option value="0">Modern country bounds</option>');
-        $.each(countries, function(i, p) {
-          // look up country name, least we can do!
-          cName = ccode_hash[p]['gnlabel']
-          $('#cc_select').append($('<option></option>').val(p).html(cName+' ('+p+')'));
-        });
-
-        if(scope=='search') {
-          // console.log('geoms from sugs, to renderPlaces()', geoms)
-          renderPlaces(geoms)
+        if(!!sug.geom) {
+          havegeom +=1
+          sug.geom.forEach(function(g){
+            g['properties']['title'] = sug.name
+            g['properties']['whgid'] = sug.whg_id
+            {#g['properties']['whgid'] = (doctype=='place')?sug.whg_id:sug.place_id#}
+            geoms.push(g)
+          })
         }
-        if(data.length > 1){$("#result_filters").show()}
-      }
-    } else if (doctype == 'trace') {
-      bboxer.addTo(mappy)
-      // data has features and bodies
-      bodies = data.bodies
-      console.log('trace data',data)
-      result_table = '<table id="result_table">'+'<thead><tr><th>Place</th><th>Relation [earliest, latest]</th><th>geom?</th></tr></thead>'
-      data.bodies.forEach(function(bod){
-        // add a whg_id to bodies
-        result_table += sugLister(bod, doctype, scope)
+        // adds a row to result_div that gets inserted into #result_div later
+        //result_table += sugLister(sug, doctype, scope)
+        result_table += sugLister(sug)
+        countadded +=1
+        // result_table += sugTableRow(sug, doctype, scope)   -->
       })
       result_table += '</table>'
-      $("#result_filters").hide()
-    };
+      // console.log('showResults() countadded, havegeom',countadded, havegeom)-->
+
+      // list of distinct types
+      types = Array.from(new Set(typesArr));
+      // TODO: on zoomend, any geoms in viewport are added to result_div
+      // into select dropdown
+      $('#type_select').empty();
+      $('#type_select').append('<option value="0">Place type</option>');
+      $.each(types, function(i, p) {
+        $('#type_select').append($('<option></option>').val(p).html(p));
+      });
+
+      countries = Array.from(new Set(ccArr));
+      $('#cc_select').empty();
+      $('#cc_select').append('<option value="0">Modern country bounds</option>');
+      $.each(countries, function(i, p) {
+        // look up country name, least we can do!
+        cName = ccode_hash[p]['gnlabel']
+        $('#cc_select').append($('<option></option>').val(p).html(cName+' ('+p+')'));
+      });
+
+      renderPlaces(geoms)
+      if(data.length > 1){$("#result_filters").show()}
+    }
 
     if(searchClass() == 'place' && searchScope() == 'idx' && (data.length > 3 || mappy.getZoom() < 5)){
       $("#offer_mapfilter").fadeIn()
@@ -1250,13 +1142,11 @@
     $("#reset_search").show()
     $("#search_info").hide()
 
-    // $("#traces_info").hide()
     let src = search_scope=='idx'?'UNION INDEX':'DATABASE'
     let elem = document.getElementById('result_div')
 
-    titleMarkup = doctype=='trace'?'<p class="pl-1 mb-1 strong">'+title+' :: a Linked Traces dataset ('+data.bodies.length+' related places) <span class="ml-2">Places with geometry listed first</span></p>':''
-    titleMarkup += (doctype=='place' ? src+' SEARCH RESULTS (<span id="rowcount">'+data.length+'</span>)<span class="ml-4">List may include records with no geometry</span>' : '')
-    // console.log('titleMarkup',titleMarkup)
+    titleMarkup = src+' SEARCH RESULTS (<span id="rowcount">'+
+		    data.length+'</span>)<span class="ml-4">List may include records with no geometry</span>'
 
     $("#result_title").html(titleMarkup)
     $("#result_title").fadeIn()
@@ -1340,7 +1230,7 @@
     if(typeof(traces)!=='undefined'){ traces.clearLayers() }
 
     featcoll = {"type":"FeatureCollection","features":geoms}
-    <!--console.log('geodata prior to render',data)-->
+    // console.log('geodata prior to render',data)
     var count_features = 0
     idToFeature = {}
     idToArea = {}
@@ -1363,7 +1253,6 @@
       },
       onEachFeature: function(feature,layer) {
         f=feature; l=layer;
-        <!--identifier = feature.properties.whgid;-->
         // if feature has src key, it's from a database search; also, popup link differs
         if(feature.src){
           identifier = feature.properties.pid
@@ -1376,7 +1265,6 @@
           layer.setStyle(['LineString','MultiLineString'].indexOf(feature.type)>-1 ? styles.line_default:styles.pgon_default)
           idToFeature[identifier] = layer
         }
-        <!--layer.bindPopup(feature.properties.title+popup_link);-->
         layer.bindPopup(feature.properties.title);
 
         // find row in results and highlight it
@@ -1387,7 +1275,7 @@
           $(".search-row").css('background-color','#fff')
 
           fid = search_scope=='idx'?this.feature.geometry.properties.whgid:this.feature.geometry.properties.pid
-          {#console.log('fid of clicked layer', fid)#}
+
           foo=$("tr.place-item").find('[data-id="'+fid+'"]').closest('.search-row')
           foo.css('background-color','#f4f4d7')
           foo[0].scrollIntoView()
@@ -1408,64 +1296,43 @@
     *** sugLister() ***  from showResults()
     formats search result item (sug)
   */
-  function sugLister(sug, doctype, scope) {
-    if (doctype=='place') {
-			console.log('sug', sug)
-      // this is count of children[]; add 1 to include self
-      linkcount = parseInt(sug['linkcount']) +1
-      attestations = sug['ds'] ? '' : ' <i>' + linkcount + (linkcount>1?' linked attestations</i>; ':' attestation</i>; ')
-      vcount = sug['variants'].length
-      variants = vcount > 0 ? sug['variants'].sort().slice(0,6).join('; ') : ''
-      if (scope=='search'){
-        ccodes = sug['ccodes'] != '' ? ' '+sug['ccodes']+' ' : ''
-        types = sug['types'].join('; ')
-        geo = sug['geom'].length > 0 ? ' {% fontawesome_icon 'globe' color='#666' %}' : ''
-        // whgid if index search, else pid
-        identifier = sug['ds'] ? sug['pid'] : sug['whg_id']
-        dsid = sug['ds'] ? parseInt(sug['ds']['id']) : ''
-        // add dataset link if this is db search result
-        if(sug['ds']){
-          dslink = dsid != 394 ? '<a href="#" class="ds-link" data-id='+dsid+'>'+sug['ds']['title']+'</a>': sug['ds']['title']
-        } else {
-          dslink = ''
-        }
-        // link destination varies
-        link_class = sug['ds'] ? 'db-link' : 'place-link'
-        variants = vcount > 5 ? variants +' ... <i>'+vcount+' total</i>' : variants
-
-        // table row
-        item = '<tr class="search-row place-item" data-id="'+identifier
-        +'" data-types="'+sug['types']
-        +'" data-ccodes="'+ccodes
-        +'">'
-        +'<td><a class="'+link_class+'" href="#" data-id="'+identifier+'"><b>'+sug['name']+'</a></td>'
-        +(sug['ds'] ? '': '<td>'+linkcount+'</td>')
-        +'<td>'+ccodes+'</td>'
-        +(sug['ds'] ? '<td>'+dslink+'</td>' : '')
-        +'<td>'+types+'</td>'
-        +'<td>'+variants+'</td>'
-        +'<td class="text-center">'+geo+'</td></tr>'
-
-      } else if (scope=='suggest') {
-        // was used for autocomplete, now deprecated
-        item = '<div class="sug_row sug-item">'+sug['name']+' '+variants+'</div>'
-      }
-    } else if (doctype=='trace') {
-      // console.log('sug',sug)-->
-      let pid = sug['place_id'] != null ? sug['place_id'] : ""
-      // make object array from idToFeature{}-->
-      if(pid in idToFeature){
-        whgid=idToFeature[pid].feature.properties['whg_id']
-      } else {
-        foo=itf_new.filter(function(f){return f.feature.feature.properties['place_id']==pid})
-        whgid = foo.length>0 ? foo[0].id : 'none'
-      }
-      item = '<tr class="search-row trace-item" data-id="'+whgid+'">'+
-      '<td><a class="trace-link" href="#" data-id="'+whgid+'"><b>'+sug.title+'</a>'+
-		      (whgid=='none'?' (<sr>no geometry yet</sr>)':'')+'</td>'+'<td>'+parseRels(sug.relations)+'</td><td>'+
-      (whgid=='none'?'&mdash;':'<i class="fa fa-globe"></i>')
-      +'</td></tr>'
+  function sugLister(sug) {
+  //function sugLister(sug, doctype, scope) {
+		{#console.log('sug', sug)#}
+    // this is count of children[]; add 1 to include self
+    linkcount = parseInt(sug['linkcount']) +1
+    attestations = sug['ds'] ? '' : ' <i>' + linkcount + (linkcount>1?' linked attestations</i>; ':' attestation</i>; ')
+    vcount = sug['variants'].length
+    variants = vcount > 0 ? sug['variants'].sort().slice(0,6).join('; ') : ''
+    ccodes = sug['ccodes'] != '' ? ' '+sug['ccodes']+' ' : ''
+    types = sug['types'].join('; ')
+    geo = sug['geom'].length > 0 ? ' {% fontawesome_icon 'globe' color='#666' %}' : ''
+    // whgid if index search, else pid
+    identifier = sug['ds'] ? sug['pid'] : sug['whg_id']
+    dsid = sug['ds'] ? parseInt(sug['ds']['id']) : ''
+    // add dataset link if this is db search result
+    if(sug['ds']){
+      dslink = dsid != 394 ? '<a href="#" class="ds-link" data-id='+dsid+'>'+sug['ds']['title']+'</a>': sug['ds']['title']
+    } else {
+      dslink = ''
     }
+    // link destination varies
+    link_class = sug['ds'] ? 'db-link' : 'place-link'
+    variants = vcount > 5 ? variants +' ... <i>'+vcount+' total</i>' : variants
+
+    // table row
+    item = '<tr class="search-row place-item" data-id="'+identifier
+    +'" data-types="'+sug['types']
+    +'" data-ccodes="'+ccodes
+    +'">'
+    +'<td><a class="'+link_class+'" href="#" data-id="'+identifier+'"><b>'+sug['name']+'</a></td>'
+    +(sug['ds'] ? '': '<td>'+linkcount+'</td>')
+    +'<td>'+ccodes+'</td>'
+    +(sug['ds'] ? '<td>'+dslink+'</td>' : '')
+    +'<td>'+types+'</td>'
+    +'<td>'+variants+'</td>'
+    +'<td class="text-center">'+geo+'</td></tr>'
+
     return item
   }
   // from sugLister()
@@ -1911,23 +1778,23 @@
     window.spinner_search = new Spin.Spinner(spin_opts).spin();
     $("#search_filters").append(spinner_search.el);
   }
-  switchTab = function(scope){
-    if(scope == 'db'){
-      $("#scope_idx").removeClass('active')
-      $("#scope_db").addClass('active')
-      $("#search_filters").css("background","whitesmoke")
-      $("#scope_db").css("border-bottom","1px solid whitesmoke")
-      $("#dbicon").fadeIn()
-      $("#filter_spatial").hide()
-      $("#input_area").val('')
-    } else {
-      $("#scope_db").removeClass('active')
-      $("#scope_idx").addClass('active')
-      $("#search_filters").css("background","#f1fff1")
-      $("#dbicon").hide()
-      $("#filter_spatial").show()
-    }
-  }
+  {#switchTab = function(scope){#}
+  {#  if(scope == 'db'){#}
+  {#    $("#scope_idx").removeClass('active')#}
+  {#    $("#scope_db").addClass('active')#}
+  {#    $("#search_filters").css("background","whitesmoke")#}
+  {#    $("#scope_db").css("border-bottom","1px solid whitesmoke")#}
+  {#    $("#dbicon").fadeIn()#}
+  {#    $("#filter_spatial").hide()#}
+  {#    $("#input_area").val('')#}
+  {#  } else {#}
+  {#    $("#scope_db").removeClass('active')#}
+  {#    $("#scope_idx").addClass('active')#}
+  {#    $("#search_filters").css("background","#f1fff1")#}
+  {#    $("#dbicon").hide()#}
+  {#    $("#filter_spatial").show()#}
+  {#  }#}
+  {# }#}
   resetSearch = function(){
     localStorage.removeItem('last_results')
     localStorage.setItem('search_scope', 'idx')
