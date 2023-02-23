@@ -52,8 +52,6 @@ class StandardResultsSetPagination(PageNumberPagination):
   search place index (always whg) parent records
   params: name, name_startswith, fclass, ccode, area, dataset, collection, pagesize, fuzzy
 """
-
-
 class RemoteIndexAPIView(View):
   authentication_classes = [TokenAuthentication]
   permission_classes = [IsAuthenticated]
@@ -119,11 +117,12 @@ class RemoteIndexAPIView(View):
       print('q', q)
 
       # run query
-      index_set = collector(q, 'place', 'whg')
+      index_set = collector(q, 'whg')
       print('index_set (collector() result)', index_set)
 
       # format hit items
-      items = [collectionItem(s, 'place', None) for s in index_set['items']]
+      items = [collectionItem(i) for i in index_set['items']]
+      # items = [collectionItem(s, 'place', None) for s in index_set['items']]
 
       # result object
       result = {'type': 'FeatureCollection',
@@ -413,7 +412,7 @@ class IndexAPIView(View):
         # format hits
         print('collection in IndexAPIView()', collection)
         # print('collection["items"] in IndexAPIView()', collection['items'])
-        collection = [ collectionItem(i) for i in collection['items']]
+        collection = [collectionItem(i) for i in collection['items']]
 
         # result object
         result = {'type':'FeatureCollection',

@@ -188,6 +188,12 @@ STATUS_DS = [
     ('indexed', 'Indexed'),
 ]
 
+STATUS_ED = [
+    ('published', 'Published'),
+    ('ready', 'Ready'),
+    ('demo', 'Demo'),
+    ('sandbox', 'Sandbox'),
+]
 STATUS_FILE = [
     ('format_ok', 'Valid format'),
     ('uploaded', 'File uploaded'),

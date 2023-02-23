@@ -62,7 +62,9 @@ class Collection(models.Model):
 
   created = models.DateTimeField(null=True, auto_now_add=True)
   # modified = models.DateTimeField(null=True)
+
   public = models.BooleanField(default=False)
+  active = models.BooleanField(default=True)
   featured = models.IntegerField(null=True, blank=True)
 
   # collections can comprise >=0 datasets, >=1 places

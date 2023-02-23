@@ -2190,7 +2190,7 @@ class DataListsView(LoginRequiredMixin, ListView):
     me = self.request.user
     whgteam = me.is_superuser or 'whg_team' in [g.name for g in me.groups.all()]
     teaching = 'teaching' in [g.name for g in me.groups.all()]
-    print('DataListsView() whgteam:' + str(whgteam) + ', teaching: ' + str(teaching))
+    # print('DataListsView() whgteam:' + str(whgteam) + ', teaching: ' + str(teaching))
 
     if self.request.path == reverse('data-datasets'):
       idlist = [obj.id for obj in Dataset.objects.all() if me in obj.owners or
