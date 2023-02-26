@@ -1901,7 +1901,7 @@ def ds_insert_tsv(request, pk):
   # insert only if empty
   dbcount = Place.objects.filter(dataset = ds.label).count()
   # print('dbcount',dbcount)
-
+  insert_errors = []
   if dbcount == 0:
     try:
       infile = dsf.file.open(mode="r")
@@ -2044,8 +2044,22 @@ def ds_insert_tsv(request, pk):
           fclass_list=[]
           for i,t in enumerate(types):
             aatnum='aat:'+aat_types[i] if len(aat_types) >= len(types) and aat_types[i] !='' else None
+            print('aatnum in insert_tsv() PlaceTypes', aatnum)
             if aatnum:
-              fclass_list.append(get_object_or_404(Type, aat_id=int(aatnum[4:])).fclass)
+              try:
+                fclass_list.append(get_object_or_404(Type, aat_id=int(aatnum[4:])).fclass)
+              except:
+                # report type lookup issue
+                insert_errors.append(
+                  {'src_id':src_id,
+                  'title':newpl.title,
+                  'field':'aat_type',
+                  'msg':aatnum + ' not in WHG-supported list;'}
+                )
+                raise
+                # messages.add_message(request, messages.INFO, 'choked on an invalid AAT place type id')
+                # return redirect('/mydata')
+                # continue
             objs['PlaceType'].append(
               PlaceType(
                 place=newpl,
@@ -2140,6 +2154,7 @@ def ds_insert_tsv(request, pk):
       PlaceDescription.objects.bulk_create(objs['PlaceDescription'],batch_size=10000)
 
       infile.close()
+      print('insert_errors', insert_errors)
       # print('rows,linked,links:', countrows, countlinked, total_links)
     except:
       print('tsv insert failed', newpl, sys.exc_info())
@@ -2260,8 +2275,13 @@ def failed_upload_notification(user, fn, ds=None):
     subj = 'World Historical Gazetteer error followup '
     subj += 'on dataset ('+ds+')' if ds else ''
     msg = 'Hello ' + user.username + \
-      ', \n\nWe see your recent upload was not successful -- very sorry about that! ' + \
-      'We will look into why and get back to you within a day.\n\nRegards,\nThe WHG Team\n\n\n['+fn+']'
+      ', \n\nWe see your recent upload was not successful '
+    if ds:
+      msg += 'on insert to the database '
+    else:
+      msg += 'on initial validation '
+    msg +='-- very sorry about that! ' + \
+      '\nWe will look into why and get back to you within a day.\n\nRegards,\nThe WHG Team\n\n\n['+fn+']'
     emailer(subj, msg, settings.DEFAULT_FROM_EMAIL,
             [user.email, settings.EMAIL_HOST_USER])
 

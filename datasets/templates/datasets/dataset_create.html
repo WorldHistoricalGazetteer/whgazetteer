@@ -11,7 +11,7 @@
 {% endblock %}
 
 <div class="container">
-  <h4 class="mt-3">Add dataset</h4>
+  <h4 class="mt-3">Upload dataset</h4>
   {% comment %}{% if messages %}
     <span class="text-danger strong"> {% for message in messages %}{{ message }}{% endfor %}</span>
   {% endif %}{% endcomment %}
@@ -146,13 +146,20 @@
         </h5><p>An email has been sent to WHG staff, and we will look into it and get back to you soon. You can double-check your file formatting and try again, or wait for our response.</p>
       {% else %}
         <div class="smallish">
-          <p class="mb-0"><b>Sample data</b></p>
-          <p class="mb-2">Some sample datasets are available from our GitHub repository. Download and open <a href="https://github.com/WorldHistoricalGazetteer/whgazetteer/raw/main/example_data/whg_example-data.zip" download>this zip file</a>, check its README.txt file, and try loading them from your local computer and reconciling them against <a href="https://www.wikidata.org/" target="_blank">Wikidata</a>. A spreadsheet template is included, which may aid in creating your own LP-TSV file.</p>
-          <p class="mb-0"><b>Data formats</b></p>
-          <p class="mb-2">There are two accepted upload formats: <a href="https://github.com/LinkedPasts/linked-places" target="_blank">Linked Places</a> (JSON-LD based, GeoJSON compatible, expressive), and <a href="https://github.com/LinkedPasts/linked-places/blob/master/tsv_0.3.md" target="_blank">LP-TSV</a>, a tabular format for relatively simpler records uploaded as either text files (.csv, .tsv), or spreadsheets (.xlsx, .ods). <a href="/tutorials/choosing" target="_blank">More information on making the choice</a>. <span class="strong"><i>NOTE: Encoding for all uploaded files must be unicode UTF-8</i>.</span></p>
+          {% comment %}<p class="mb-0 larger"><b>Uploading data to WHG</b></p>{% endcomment %}
+          <p class="mb-0 text-uppercase"><b>data formats</b></p>
+          <p class="mb-2">The WHG platform can read two upload formats: <a href="https://github.com/LinkedPasts/linked-places" target="_blank">Linked Places</a> (JSON-LD based, GeoJSON compatible, expressive), and <a href="https://github.com/LinkedPasts/linked-places/blob/master/tsv_0.3.md" target="_blank">LP-TSV</a>, a tabular format for relatively simpler records uploaded as either text files (.csv, .tsv), or spreadsheets (.xlsx, .ods). <a href="/tutorials/choosing" target="_blank">More information on making the choice</a>. <span class="strong"><i>NOTE: Encoding for all uploaded files must be unicode (UTF-8)</i>.</span></p>
+          <p class="mb-0 text-uppercase"><mark-g>Quick Start</mark-g></p>
+		        <ol class="mb-2 pl-3">
+	        <li>Download a copy of <a href="https://tinyurl.com/2tspp7be" target="_blank">this Google spreadsheet</a> to your computer and follow its included instructions.</li>
+	        <li>Choose that file in the form on the left, fill out the first three fields of metadata, and click "Upload"&mdash;now you have a test dataset in your private workspace!</li>
+	        <li>Explore WHG features for managing it from its new dataset page, e.g. under the Linking tab, begin reconciliation with our index of 3.5 million  <a href="https://www.wikidata.org/" target="_blank">Wikidata</a> place records.</li>
+	          </ol>
+          <p class="mb-0 text-uppercase"><b>Sample data and templates</b></p>
+          <p class="mb-2">Some sample datasets and templates are available in <a href="https://github.com/WorldHistoricalGazetteer/whgazetteer/raw/main/example_data/whg_example-data.zip" download>this zip file</a>, check its README.txt file, and try loading a sample from your local computer, then reconciling it against Wikidata records.</p>
           <div id="upload_spinner"></div>
-          <p class="mb-0"><b>Validation Errors</b></p>
-          <p class="mb-2">Uploaded files are validated for adherence to our format(s). In most cases, if there is a problem, an error message will explain, but the error-trapping is not yet perfect. If you are unable to upload a dataset successfully, please <a href="#" class="feedback">contact us</a>. We will gladly help sort out the issue quickly.</p>
+          <p class="mb-0 text-uppercase"><b>Validation Errors</b></p>
+          <p class="mb-2">Uploaded files are validated for conformance to our Linked Places format(s). In most cases, if there is a problem, an error message will explain, but the error-trapping is not yet perfect. If you are unable to upload a dataset successfully, please <a href="#" class="feedback">contact us</a>. We will gladly help sort out the issue quickly.</p>
           <p class="mb-0"><b>Consultation requests welcome!</b></p>
           <p class="mb-1">If you are planning a data contribution to WHG, or want help exploring its usefulness or feasability for your project, please do <a href="#" class="feedback">contact us</a>.</p>
         </div>

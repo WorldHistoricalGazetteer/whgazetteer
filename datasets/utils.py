@@ -14,7 +14,7 @@ from chardet import detect
 from django_celery_results.models import TaskResult
 from frictionless import validate as fvalidate
 from goodtables import validate as gvalidate
-from jsonschema import draft7_format_checker, validate 
+from jsonschema import draft7_format_checker, validate
 from shapely import wkt
 
 from areas.models import Country
@@ -587,7 +587,7 @@ def validate_lpf(tempfn,format):
 # validate LP-TSV file (uses frictionless.py 3.31.0)
 # 
 def validate_tsv(fn, ext):
-  # incoming csv or tsv
+  # incoming csv or tsv; in cases converted from xlsx or ods via pandas
   # print('validate_tsv() fn', fn)
   # pull header for missing columns test below
   header = codecs.open(fn, 'r').readlines()[0][:-1]
@@ -597,7 +597,6 @@ def validate_tsv(fn, ext):
   schema_lptsv = json.loads(codecs.open('datasets/static/validate/schema_tsv.json', 'r', 'utf8').read())
   try:
     report = fvalidate(fn, schema=schema_lptsv, sync_schema=True)
-    # print('report at validate_tsv()::599', report)
   except:
     err = sys.exc_info()
     result['errors'].append('File failed format validation. Error: '+err+'; '+str(err[1].args))
@@ -617,41 +616,10 @@ def validate_tsv(fn, ext):
   # TODO: is filtering encoding-error here problematic?
   result['errors'] = [x['message'] for x in rpt['errors'] \
             if x['code'] not in ["blank-header", "missing-header", "encoding-error"]]
-            # if x['code'] not in ["blank-header", "missing-header"]]
   if len(missing) > 0:
     result['errors'].insert(0,'Required column(s) missing or header malformed: '+
                             ', '.join(missing))
 
-  return result
-
-# nextgen goodtables, allows xlsx, ods but has issues
-def frictionless_tsv(tempfn):
-  result = {"errors":[],"format":"delimited"}
-  # TODO: detect encoding
-  newfn = tempfn+'.tsv'
-  os.rename(tempfn,newfn)
-  print('tempfn,newfn',tempfn,type(tempfn),newfn,type(newfn))
-  schema_lptsv = json.loads(codecs.open('datasets/static/validate/schema_tsv.json', 'r', 'utf8').read())
-  report = gvalidate(newfn,
-                     schema=schema_lptsv,
-                     order_fields=True,
-                     #row_limit=20000,
-                     row_limit=30000,
-                     skip_errors=['missing-header','missing-cell','non-matching-header'])
-  pp.pprint(report)  
-  #print('error count',report['error-count'])
-  result['count'] = report['tables'][0]['row-count']-1 # counts header apparently
-  result['columns'] = report['tables'][0]['headers']
-  result['file'] = report['tables'][0]['source']
-  # make sense of errors for users
-  # filter harmless errors (a goodtable library bug IMO)
-  errors = [x for x in report['tables'][0]['errors'] if x['code'] not in ["blank-header","missing-header"]]
-  error_types = list(set([x['code'] for x in errors]))
-  if 'non-matching-header' in error_types:
-    # have user fix that issue and try again
-    result['errors'].append('One or more column heading is invalid: '+str(result['columns']))
-  else:
-    result['errors'] = [x['message'].replace('and format "default"','') for x in errors]
   return result
 
 class HitRecord(object):

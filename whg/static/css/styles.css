@@ -46,6 +46,8 @@ input[type="radio"] {
   general use
 **/
 mark-b { background-color: aliceblue;}
+mark-g { background-color: #cff3cf; padding:0 3px;}
+mark-r { background-color: chocolate; color:white; padding:0 3px;}
 label {vertical-align:top;}
 .alert {padding: 0 1.25rem !important;}
 .arial {font-family: arial, san-serif;}
@@ -95,6 +97,7 @@ label {vertical-align:top;}
 .scrolldiv {overflow-y:auto; display:block;}
 .scroll100 {display:block; overflow-y:auto; max-height:120px;}
 .scroll65 {display:block; overflow-y:auto; max-height:65px;width:100%}
+.smallcaps {font-variant:small-caps;}
 .smaller {font-size: small;} /* smaller than bootstrap */
 .smallish {font-size: .9rem;} /* smaller than bootstrap */
 .status {color:#fff; box-shadow: 2px 2px #eee; border:1px dashed #ccc;}
