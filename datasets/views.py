@@ -2213,9 +2213,8 @@ class DataListsView(LoginRequiredMixin, ListView):
       dslist = Dataset.objects.filter(id__in=idlist).order_by('-create_date')
       return dslist
     elif self.request.path == reverse('data-collections'):
-      list = Collection.objects.all().order_by('created') if whgteam \
-        else Collection.objects.filter(owner=me).order_by('created')
-      # print('list:', list)
+      list = Collection.objects.filter(active=True).order_by('created') if whgteam \
+        else Collection.objects.filter(owner=me, active=True).order_by('created')
       return list
     elif self.request.path == reverse('data-areas'):
       print('areas...whgteam?', whgteam)

@@ -88,14 +88,15 @@
           <div class="list-box">
             <table id="table_collections"class="table table-striped">
               <thead class="small">
-                  <th>id</th>
-                  <th>type</th>
-                  <th>title</th>
-                  <th></th>
-                  <th>count</th>
-                  <th>created</th>
-                  <th>owner</th>
-                  <th>public?</th>
+                <th>id</th>
+                <th>type</th>
+                <th>title</th>
+                <th></th>
+                <th>count</th>
+                <th>created</th>
+                <th>owner</th>
+                <th>public?</th>
+                {% if whgteam %}<th>active?</th>{% endif %}
               </thead>
               <tbody>
                 {% for c in collection_list %}
@@ -122,6 +123,9 @@
 	                  {#<td>{{ c.created }}</td>#}
                     <td>{{ c.owner }}</td>
                     <td>{% if c.public %}yes{% endif %}</td>
+                    {% if whgteam %}
+                    <td><input type="checkbox" class="active-check"/></td>
+                    {% endif %}
                   </tr>
                 {% endfor %}
               </tbody>
@@ -133,7 +137,38 @@
   </div>
 
   <script>
+		$('.active-check').change(function() {
+				collid = $(this).closest('tr').find('td:eq(0)').text();
+				colltitle = $(this).closest('tr').find('td:eq(2)').text();
+        {#console.log('collection #',coll)#}
+				var formData = new FormData();
+        formData.append('id', collid);
+        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+        if(!this.checked) {
+            var status = 0
+            // set active = False
+            $.ajax({
+                type: 'POST',
+                enctype: 'multipart/form-data',
+                url: '/collections/inactive/',
+                processData: false,
+                contentType: false,
+                cache: false,
+                data: formData,
+                success: function (data) {
+                    alert(data['msg'])
+		                location.reload();
+										return false;
+                }
+            })
+            console.log('setting collection # ' + collid + ' active bit to ' + status)
+        }
+    });
+
     $(function(){
+      // set all active check boxes to active (because they are
+	    $("input[type='checkbox']").prop("checked", true);
+
       $("[rel='tooltip']").tooltip();
 
       // manage url

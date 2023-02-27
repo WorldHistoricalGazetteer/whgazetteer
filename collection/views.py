@@ -17,6 +17,15 @@ from traces.forms import TraceAnnotationModelForm
 from traces.models import TraceAnnotation
 from itertools import chain
 
+# sets collection to inactive, removing from lists
+def inactive(request, *args, **kwargs):
+  print('inactive() request.POST', request.POST)
+  coll = Collection.objects.get(id=request.POST['id'])
+  coll.active = False
+  coll.save()
+  result = {"msg": "collection " + coll.title + '('+str(coll.id)+') flagged inactive'}
+  return JsonResponse(result, safe=False)
+
 # removes dataset from collection, refreshes page
 def remove_link(request, *args, **kwargs):
   #print('kwargs', kwargs)

@@ -41,6 +41,9 @@ urlpatterns = [
     path('<int:id>/annotate', csrf_exempt(annotate), name="collection-annotate"),
     path('annoform/', get_form, name="get_form"),
 
+    # switch off active bit
+    path('inactive/', views.inactive, name="collection-inactive"),
+
     path('<int:id>/geojson/', views.fetch_geojson_coll, name="geojson-coll"),
 
 ] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
