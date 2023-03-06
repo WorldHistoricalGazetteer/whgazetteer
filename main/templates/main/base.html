@@ -60,10 +60,12 @@
 				<!-- alternate nav elements for home page and others-->
 				<div id="nav_links" class="smallish d-lg-block pt-2">
 					<div id="links_home">
-						<span id="version_badge" class="badge badge-warning" >v2.1 beta</span>
+						<span id="version_badge" class="badge badge-warning" >v2.1</span>
+						{% comment %}
 						<a href="#">
 							<span id="whatsnew_badge" class="badge badge-success help-matches" data-id="whatsnew21">What's New</span>
 						</a>
+						{% endcomment %}
 						<span id="beta_links">
 							<a href="{% url 'main:tute-guide' %}">guide</a> |
 							<a href="#" class="feedback">contact us</a> |

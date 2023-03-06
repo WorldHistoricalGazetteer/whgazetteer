@@ -73,16 +73,18 @@
 		        <p>A <b>Place Collection</b> is an authored data publication. It can include all places from one or more public dataset, as well as individual places discovered in WHG search results and browse screens. Any of its place records can be annotated with information pertaining to its membership in the collection. <a href="{% url 'main:tute-place_collections' %}">Guide {% fontawesome_icon 'question-circle' color='#336699' %}</a>
 			        {% comment %}<a href="">more...</a> <p>Metadata for collection itself will include an abstract, and can include any number of links to relevant web resources.</p>{% endcomment %}
 	        </div>
-	        {% comment %}<div id="regioncoll_blurb" class="col-sm-4">
-		        <h5 class="text-center"><span class="text-muted font-italic"><b>Region</b> collections (coming soon)</span>
-			        { comment %}<span class="smaller float-right pr-2 pt-1">
-				        <a href="">{% fontawesome_icon 'plus-square' color='#336699' %} new</a>
-			        </span>{ endcomment %}
-		        </h5>
-		        <p><b>Region collections</b> are composed of all public WHG place records that lie within any area defined in the WHG system. This includes "standard" regions, e.g. from the United Nations, or modern countries, region features within  contributed datasets, or users' own study areas
-			        { comment %}<a href="#" data-html="true" onClick='return false;' title="Can be created on the Study Areas tab of this page or in the course of starting a reconciliation task." rel="tooltip" class="ttip">study areas</a> { endcomment %}
-			        created on the fly.</p>
-	        </div>{% endcomment %}
+        </div>
+        <div class="row">
+        {% if whgteam %}
+          <div class="ml-2 col-sm-12 small">
+            <span class="float-right mr-3">
+	          <select id="status_select">
+	          <option value="active">Active</option>
+	          <option value="public">Public</option>
+	          <option value="all">All</option>
+            </select></span>
+          </div>
+	        {% endif %}
         </div>
         <div id="collection_list" class="mt-1 ml-0">
           <div class="list-box">

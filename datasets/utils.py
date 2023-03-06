@@ -591,7 +591,9 @@ def validate_tsv(fn, ext):
   # print('validate_tsv() fn', fn)
   # pull header for missing columns test below
   header = codecs.open(fn, 'r').readlines()[0][:-1]
-  header = header.split('\t' if '\t' in header else ',')
+  header = list(map(str.lower, header.split('\t' if '\t' in header else ',')))
+  # header = header.split('\t' if '\t' in header else ',')
+  list(map(str.lower, header))
   # print('header', header)
   result = {"format":"delimited", "errors":[], "columns":header}
   schema_lptsv = json.loads(codecs.open('datasets/static/validate/schema_tsv.json', 'r', 'utf8').read())

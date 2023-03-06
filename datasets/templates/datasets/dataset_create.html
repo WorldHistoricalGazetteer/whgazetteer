@@ -87,15 +87,15 @@
             <td>{{ form.file }}</td>
           </tr>
           <tr>
-            <td><b>Format</b></td>
+            <td><b>Format </b></td>
             <td>{{ form.format }}</td>
           </tr>
           <tr>
-            <td><b>License</b></td>
-            <td><a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">CC BY 4.0</a></td>
+            <td><b>License </b></td>
+            <td>&nbsp;<a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">CC BY 4.0</a></td>
           </tr>
         </table>
-        {% if user.is_superuser %}
+        {% comment %}
           <table class="mt-2" style="background-color:aliceblue;">
           <tr style="">
             <td style="vertical-align:top; padding-top:3px;"><b>Featured rank</b></td>
@@ -106,7 +106,7 @@
             <td>{{ form.image_file }}</td>
           </tr>
         </table>
-        {% endif %}
+        {% endcomment %}
         <!-- status, format, delimiter, numrows, header  -->
         <input type="hidden" name="owner" value='{{ user.id }}'></input>
         <input type="hidden" name="datatype" value="place"></input>
