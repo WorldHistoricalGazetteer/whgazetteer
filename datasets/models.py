@@ -48,9 +48,6 @@ class Dataset(models.Model):
 
   ds_status = models.CharField(max_length=12, null=True, blank=True, choices=STATUS_DS)
 
-  # added 23 Feb 2023 for admin dataset list controls
-  ed_status = models.CharField(max_length=12, null=True, blank=True, choices=STATUS_ED)
-
   # 4 added 20210619
   creator = models.CharField(max_length=500, null=True, blank=True)
   source = models.CharField(max_length=500, null=True, blank=True)

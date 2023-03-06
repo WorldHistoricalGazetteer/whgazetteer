@@ -165,7 +165,9 @@
 
     $("#status_select").change(function() {
         let term = $(this).val()
-		    console.log('select term', term)
+		    if(term == 'all'){
+          $("#status_select option")[0].innerHTML='Filter status'
+		    }
         statusFilter(term)
     })
 

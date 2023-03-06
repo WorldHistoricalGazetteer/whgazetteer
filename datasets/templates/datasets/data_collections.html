@@ -79,9 +79,12 @@
           <div class="ml-2 col-sm-12 small">
             <span class="float-right mr-3">
 	          <select id="status_select">
-	          <option value="active">Active</option>
-	          <option value="public">Public</option>
-	          <option value="all">All</option>
+		          <option value="all">Filter status</option>
+		          <option value="published">Published</option>
+		          <option value="ready">Ready</option>
+		          <option value="demo">Demo</option>
+		          <option value="sandbox">Sandbox</option>
+		          <option value="group">Group</option>
             </select></span>
           </div>
 	        {% endif %}
@@ -97,8 +100,7 @@
                 <th>count</th>
                 <th>created</th>
                 <th>owner</th>
-                <th>public?</th>
-                {% if whgteam %}<th>active?</th>{% endif %}
+                <th>status</th>
               </thead>
               <tbody>
                 {% for c in collection_list %}
@@ -118,18 +120,11 @@
 	                    {% elif c.collection_class == 'place' %}
 	                      <a href="{% url 'collection:place-collection-update' c.id %}">edit</a>&nbsp;
 	                    {% endif %}
-                      {# TODO: add regions #}
                     </td>
                     <td>{{ c.rowcount }}</td>
 										<td class="small">{{ c.created|date:"Y-m-d, H:i" }}</td>
-	                  {#<td>{{ c.created }}</td>#}
                     <td>{{ c.owner }}</td>
-                    <td>{% if c.public %}yes{% endif %}</td>
-                    {% if whgteam and c.active == True %}
-                    <td><input type="checkbox" class="active-check" checked="checked"/></td>
-                    {% else %}
-                    <td><input type="checkbox" class="active-check"/></td>
-                    {% endif %}
+                    <td>{{ c.status }}</td>
                   </tr>
                 {% endfor %}
               </tbody>
@@ -141,33 +136,57 @@
   </div>
 
   <script>
-		$('.active-check').change(function() {
-				collid = $(this).closest('tr').find('td:eq(0)').text();
-				colltitle = $(this).closest('tr').find('td:eq(2)').text();
+
+    $("#status_select").change(function() {
+        let term = $(this).val()
+		    if(term == 'all'){
+          $("#status_select option")[0].innerHTML='Filter status'
+		    }
+        statusFilter(term)
+    })
+
+    statusFilter = function(term) {
+        sel = $('#status_select').find(":selected").val()
+		    if (sel != 'all'){
+					$("#status_select option")[0].innerHTML='Show all'
+		     }
+        results = $("#table_collections tbody tr")
+        for (i = 0; i < results.length; i++) {
+            coll_status = results[i].cells[7].innerHTML
+            if (term == coll_status || term == 'all') {
+                results[i].style.display = "";
+            } else if (term != coll_status) {
+                results[i].style.display = "none";
+            }
+        }
+    }
+		{#$('.active-check').change(function() {#}
+		{#		collid = $(this).closest('tr').find('td:eq(0)').text();#}
+		{#		colltitle = $(this).closest('tr').find('td:eq(2)').text();#}
         {#console.log('collection #',coll)#}
-				var formData = new FormData();
-        formData.append('id', collid);
-        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
-        if(!this.checked) {
-            var status = 0
-            // set active = False
-            $.ajax({
-                type: 'POST',
-                enctype: 'multipart/form-data',
-                url: '/collections/inactive/',
-                processData: false,
-                contentType: false,
-                cache: false,
-                data: formData,
-                success: function (data) {
-                    alert(data['msg'])
+		{#		var formData = new FormData();#}
+    {#    formData.append('id', collid);#}
+    {#    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');#}
+    {#    if(!this.checked) {#}
+    {#        var status = 0#}
+    {#        // set active = False#}
+    {#        $.ajax({#}
+    {#            type: 'POST',#}
+    {#            enctype: 'multipart/form-data',#}
+    {#            url: '/collections/inactive/',#}
+    {#            processData: false,#}
+    {#            contentType: false,#}
+    {#            cache: false,#}
+    {#            data: formData,#}
+    {#            success: function (data) {#}
+    {#                alert(data['msg'])#}
 		                {#location.reload();#}
 										{#return false;#}
-                }
-            })
-            console.log('setting collection # ' + collid + ' active bit to ' + status)
-        }
-    });
+    {#            }#}
+    {#        })#}
+    {#        console.log('setting collection # ' + collid + ' active bit to ' + status)#}
+    {#    }#}
+    {# });#}
 
     $(function(){
       // set all active check boxes to active (because they are

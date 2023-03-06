@@ -6,7 +6,7 @@ from django.contrib.postgres.fields import ArrayField #,JSONField
 from django.core.validators import URLValidator
 from django.urls import reverse
 from datasets.models import Dataset
-from main.choices import COLLECTIONCLASSES, LINKTYPES, TEAMROLES
+from main.choices import COLLECTIONCLASSES, LINKTYPES, TEAMROLES, STATUS_COLL
 from places.models import Place
 from django_resized import ResizedImageField
 from tinymce.models import HTMLField
@@ -64,7 +64,7 @@ class Collection(models.Model):
   # modified = models.DateTimeField(null=True)
 
   public = models.BooleanField(default=False)
-  active = models.BooleanField(default=True)
+  status = models.CharField(max_length=12, null=True, blank=True, choices=STATUS_COLL, default='sandbox')
   featured = models.IntegerField(null=True, blank=True)
 
   # collections can comprise >=0 datasets, >=1 places

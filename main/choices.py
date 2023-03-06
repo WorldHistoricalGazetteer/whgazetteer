@@ -177,6 +177,14 @@ RESOURCEFILE_ROLE = [
     ('supporting', 'Supporting file')
 ]
 
+STATUS_COLL = [
+    ('published', 'Published'),
+    ('ready', 'Ready'),
+    ('demo', 'Demo'),
+    ('sandbox', 'Sandbox'),
+    ('group', 'Group'),
+]
+
 STATUS_DS = [
     ('format_error', 'Invalid format'),
     ('format_ok', 'Valid format'),
@@ -188,12 +196,6 @@ STATUS_DS = [
     ('indexed', 'Indexed'),
 ]
 
-STATUS_ED = [
-    ('published', 'Published'),
-    ('ready', 'Ready'),
-    ('demo', 'Demo'),
-    ('sandbox', 'Sandbox'),
-]
 STATUS_FILE = [
     ('format_ok', 'Valid format'),
     ('uploaded', 'File uploaded'),
