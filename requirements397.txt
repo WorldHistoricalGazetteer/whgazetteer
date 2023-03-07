@@ -48,7 +48,7 @@ Django==2.2.28
 django-allauth==0.44.0
 django-bootstrap-breadcrumbs==0.9.1
 django-bootstrap-modal-forms==1.4.1
-django-celery-results==1.0.2
+django-celery-results==2.4.0
 django-cors-headers==2.4.0
 django-datatables-view==1.17.0
 django-extensions==2.1.5
