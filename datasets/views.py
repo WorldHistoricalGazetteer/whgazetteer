@@ -2264,7 +2264,7 @@ class PublicListsView(ListView):
 
     # public datasets available as dataset_list
     # public collections
-    context['coll_list'] = Collection.objects.filter(public=True).order_by('created')
+    context['coll_list'] = Collection.objects.filter(status='published').order_by('created')
     context['viewable'] = ['uploaded','inserted','reconciling','review_hits','reviewed','review_whg','indexed']
 
     context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False
@@ -2849,6 +2849,7 @@ class DatasetSummaryView(LoginRequiredMixin, UpdateView):
     context['ds'] = ds
     context['collaborators'] = ds.collaborators.all()
     context['owners'] = ds.owners
+    context['whgteam'] = User.objects.filter(groups__name='whg_team')
 
     # excludes datasets uploaded directly (1 & 2)
     if file.file:

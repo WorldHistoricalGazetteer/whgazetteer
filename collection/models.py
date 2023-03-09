@@ -63,7 +63,7 @@ class Collection(models.Model):
   created = models.DateTimeField(null=True, auto_now_add=True)
   # modified = models.DateTimeField(null=True)
 
-  public = models.BooleanField(default=False)
+  # public = models.BooleanField(default=False)
   status = models.CharField(max_length=12, null=True, blank=True, choices=STATUS_COLL, default='sandbox')
   featured = models.IntegerField(null=True, blank=True)
 

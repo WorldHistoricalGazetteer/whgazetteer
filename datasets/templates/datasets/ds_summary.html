@@ -120,13 +120,31 @@
             </td>
           </tr>
           <tr>
-            <td style="vertical-align:top;"><b>Public?</b></td>
+            <td style="vertical-align:top;">
+	            <b>Public?</b>
+	            {% if user in whgteam %}
+		            <a href="#" class="edit-public">{% fontawesome_icon 'edit' color='#336699' %}</a>
+	            {% endif %}
+            </td>
             <td>
-              {% if ds.public == False %}
-	              Not yet; <a href="#"><span class="help-matches" data-id="going_public_ds">Details on making a dataset public. {% fontawesome_icon 'question-circle' color='#336699' %}</span></a>
-              {% else %}
-	              {{ ds.public }}
+	            <span class="form-public">{{ form.public.value }}</span>
+              <span class="hidden editing-public">{{ form.public }}</span>
+
+	            {% if not user in whgteam and ds.public == False %}
+		              <a href="#"><span class="help-matches" data-id="going_public_ds">Details on making a dataset public. {% fontawesome_icon 'question-circle' color='#336699' %}</span></a>
+	            {% endif %}
+{% comment %}
+	            {% if user in whgteam %}
+		            {{ ds.public }} {{ form.public }}
+	            {% else %}
+
+                {% if ds.public == False %}
+		              Not yet; <a href="#"><span class="help-matches" data-id="going_public_ds">Details on making a dataset public. {% fontawesome_icon 'question-circle' color='#336699' %}</span></a>
+                {% else %}
+	                {{ ds.public }}
+                {% endif %}
               {% endif %}
+{% endcomment %}
             </td>
           </tr>
           <tr>

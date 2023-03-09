@@ -111,7 +111,6 @@
 		      <input type="hidden" name="owner" value='{{ form.owner.value }}' />
 	      {% endif %}
 	      <input type="hidden" name="collection_class" value='place' />
-	      {% comment %}action: {{ action }}, owner: {{ form.owner.value }}{% endcomment %}
 				<div class="form-group">
 					<label for="Title">Title &#x02733;</label><br/>
 					{{ form.title }}
@@ -179,7 +178,7 @@
         <tr>
 	        <td class="my-0 small">&#x02733;<i><b> required</b></i></td>
 	        <td>
-		        {% if action == 'update' and user.is_superuser %}
+		        {% if action == 'update' and user in whgteam %}
 			        <a class="float-right show-hide" href="#">
 				        editor options {% fontawesome_icon 'gear' color='#336699' %}
 			        </a>
@@ -187,8 +186,9 @@
 	        </td>
         </tr>
 	      <div id="editor_options" class="hidden">
-		      <p>Featured rank: {{ form.featured }}</p>
-{#		      <p>Image: {{ form.image_file }}</p>#}
+		      <p>Status: {{ form.status }}</p>
+					<p>Featured rank: {{ form.featured }}</p>
+					{% comment %}<p>Featured rank: {{ form.featured }}</p>{% endcomment %}
 	      </div>
 	      <div id="select_div" class="hidden">{{ form.datasets }}</div>
 	      <div id="collection_options"></div>
