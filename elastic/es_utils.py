@@ -654,9 +654,8 @@ def esInit(idx):
   from django.conf import settings
   os.chdir('/Users/karlg/Documents/Repos/_whgazetteer/')
 
-  from elasticsearch7 import Elasticsearch
   es = settings.ES_CONN
-  mappings = codecs.open('elastic/mappings/es_mappings_whg_20220925.json', 'r', 'utf8').read()
+  mappings = codecs.open('elastic/mappings/es_mappings_whg08.json', 'r', 'utf8').read()
 
   # zap existing if exists, re-create
   if confirm(prompt='Zap index '+idx+'?', resp=False):

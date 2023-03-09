@@ -30,7 +30,6 @@ AUTHORITY_BASEURI = {
 COLLECTIONCLASSES = [
     ('dataset','Dataset collection'),
     ('place','Place collection'),
-    ('region','Region collection')
 ]
 
 COLLECTIONTYPES = [

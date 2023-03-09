@@ -35,7 +35,7 @@ class Collection(models.Model):
   owner = models.ForeignKey(settings.AUTH_USER_MODEL,
                             related_name='collections', on_delete=models.CASCADE)
   title = models.CharField(null=False, max_length=255)
-  description = models.CharField( null=False, max_length=2044)
+  description = models.TextField(max_length=3000)
   keywords = ArrayField(models.CharField(max_length=50), null=True)
 
   # array of place ids "removed" by user from the collection

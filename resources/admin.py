@@ -18,7 +18,7 @@ class ResourceAdmin(admin.ModelAdmin):
               'type','subjects','gradelevels', 'public', 'featured', 'status',
               'regions')
     list_display = ('title', 'pub_date', 'authors', 'gradelevels', 'type', 'featured')
-    list_filter = ('gradelevels', 'authors')
+    list_filters = ('gradelevels', 'authors')
     # date_hierarchy = 'pub_date'
 
     inlines = [ResourceFileAdmin, ResourceImageAdmin]

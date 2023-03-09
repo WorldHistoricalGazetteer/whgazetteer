@@ -1,0 +1,321 @@
+{   "settings": {
+      "analysis": {
+        "normalizer": {
+          "asciifolding": {
+            "type": "custom",
+            "char_filter": [],
+            "filter": ["lowercase", "asciifolding"]
+          }
+        }
+      }
+    },
+    "mappings" : {
+      "properties" : {
+        "ccodes" : {
+          "type" : "keyword"
+        },
+        "children" : {
+          "type" : "keyword"
+        },
+        "dataset" : {
+          "type" : "keyword"
+        },
+        "depictions" : {
+          "properties" : {
+            "id" : {
+              "type" : "keyword"
+            },
+            "license" : {
+              "type" : "text"
+            },
+            "title" : {
+              "type" : "text"
+            }
+          }
+        },
+        "descriptions" : {
+          "properties" : {
+            "id" : {
+              "type" : "keyword"
+            },
+            "lang" : {
+              "type" : "keyword"
+            },
+            "value" : {
+              "type" : "text"
+            }
+          }
+        },
+        "fclasses" : {
+          "type" : "keyword"
+        },
+        "geoms" : {
+          "properties" : {
+            "citation" : {
+              "properties" : {
+                "@id" : {
+                  "type" : "text",
+                  "fields" : {
+                    "keyword" : {
+                      "type" : "keyword",
+                      "ignore_above" : 256
+                    }
+                  }
+                },
+                "id" : {
+                  "type" : "text",
+                  "fields" : {
+                    "keyword" : {
+                      "type" : "keyword",
+                      "ignore_above" : 256
+                    }
+                  }
+                },
+                "label" : {
+                  "type" : "text",
+                  "fields" : {
+                    "keyword" : {
+                      "type" : "keyword",
+                      "ignore_above" : 256
+                    }
+                  }
+                }
+              }
+            },
+            "geowkt" : {
+              "type" : "keyword"
+            },
+            "location" : {
+              "type" : "geo_shape"
+            }
+          }
+        },
+        "links" : {
+          "properties" : {
+            "identifier" : {
+              "type" : "keyword"
+            },
+            "type" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "minmax" : {
+          "type" : "integer_range"
+        },
+        "names" : {
+          "properties" : {
+            "citation" : {
+              "properties" : {
+                "@id" : {
+                  "type" : "text",
+                  "fields" : {
+                    "keyword" : {
+                      "type" : "keyword",
+                      "ignore_above" : 256
+                    }
+                  }
+                },
+                "id" : {
+                  "type" : "text",
+                  "fields" : {
+                    "keyword" : {
+                      "type" : "keyword",
+                      "ignore_above" : 256
+                    }
+                  }
+                },
+                "label" : {
+                  "type" : "text",
+                  "fields" : {
+                    "keyword" : {
+                      "type" : "keyword",
+                      "ignore_above" : 256
+                    }
+                  }
+                }
+              }
+            },
+            "citations" : {
+              "properties" : {
+                "@id" : {
+                  "type" : "text",
+                  "fields" : {
+                    "keyword" : {
+                      "type" : "keyword",
+                      "ignore_above" : 256
+                    }
+                  }
+                },
+                "id" : {
+                  "type" : "text",
+                  "fields" : {
+                    "keyword" : {
+                      "type" : "keyword",
+                      "ignore_above" : 256
+                    }
+                  }
+                },
+                "label" : {
+                  "type" : "text",
+                  "fields" : {
+                    "keyword" : {
+                      "type" : "keyword",
+                      "ignore_above" : 256
+                    }
+                  }
+                }
+              }
+            },
+            "lang" : {
+              "type" : "keyword"
+            },
+            "toponym" : {
+              "type" : "text"
+            },
+            "when" : {
+              "properties" : {
+                "citation" : {
+                  "properties" : {
+                    "id" : {
+                      "type" : "text",
+                      "fields" : {
+                        "keyword" : {
+                          "type" : "keyword",
+                          "ignore_above" : 256
+                        }
+                      }
+                    },
+                    "label" : {
+                      "type" : "text",
+                      "fields" : {
+                        "keyword" : {
+                          "type" : "keyword",
+                          "ignore_above" : 256
+                        }
+                      }
+                    }
+                  }
+                },
+                "timespans" : {
+                  "properties" : {
+                    "end" : {
+                      "properties" : {
+                        "in" : {
+                          "type" : "long"
+                        }
+                      }
+                    },
+                    "start" : {
+                      "properties" : {
+                        "in" : {
+                          "type" : "long"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "place_id" : {
+          "type" : "long"
+        },
+        "relation" : {
+          "type" : "join",
+          "eager_global_ordinals" : true,
+          "relations" : {
+            "parent" : "child"
+          }
+        },
+        "relations" : {
+          "properties" : {
+            "label" : {
+              "type" : "text"
+            },
+            "relationTo" : {
+              "type" : "keyword"
+            },
+            "relationType" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "searchy" : {
+          "type" : "text"
+        },
+        "src_id" : {
+          "type" : "keyword"
+        },
+        "timespans" : {
+          "type" : "integer_range"
+        },
+        "title" : {
+          "type" : "text"
+        },
+        "types" : {
+          "properties" : {
+            "identifier" : {
+              "type" : "keyword"
+            },
+            "label" : {
+              "type" : "keyword"
+            },
+            "sourceLabel" : {
+              "type" : "text"
+            },
+            "src_label" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword",
+                  "ignore_above" : 256
+                }
+              }
+            },
+            "when" : {
+              "properties" : {
+                "timespans" : {
+                  "properties" : {
+                    "end" : {
+                      "properties" : {
+                        "in" : {
+                          "type" : "text",
+                          "fields" : {
+                            "keyword" : {
+                              "type" : "keyword",
+                              "ignore_above" : 256
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "start" : {
+                      "properties" : {
+                        "in" : {
+                          "type" : "text",
+                          "fields" : {
+                            "keyword" : {
+                              "type" : "keyword",
+                              "ignore_above" : 256
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "uri" : {
+          "type" : "keyword"
+        },
+        "whg_id" : {
+          "type" : "long"
+        }
+      }
+    }
+}

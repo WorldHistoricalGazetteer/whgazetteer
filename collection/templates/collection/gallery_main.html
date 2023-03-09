@@ -47,20 +47,15 @@
 	{% endblock %}
 
 	<div class="container pt-2 container-md" style="height: calc(100vh - 65px); position:relative;">
-		<a id="badge_link" href="{% url 'main:tute-place_collections' %}">
-				<span id="badgenew" class="badge badge-warning p-2"><b>NEW! Place Collections</b></span>
-		</a>
 		<section class="text-center">
 			<div class="container mb-1" style="position:relative">
-				<h3>Teaching with World Historical Gazetteer
-				</h3>
+				<h3>Collections Gallery</h3>
 			</div>
 		</section>
 		<div id="teaching_top" class="row">
 			<div class="row">
 				<div class="col-md-7" style="font-size: 1.3rem;">
-					<p>Place names&mdash;their origins, change over time, and reflections of identity&mdash;can provide a fascinating and revealing lens through which to explore history. Used with the interactive tools of digital history, the study of place names brings
-				new, deeper, and broader connections to our understanding of patterns of historical change.</p>
+					<p>Collections in WHG are sets of place records found in our database and/or index.</p>
 				</div>
 				<div class="col-md-5">{% leaflet_map "main" %}</div>
 			</div>
@@ -68,11 +63,12 @@
 		<div id="teaching_bottom" class="row mt-2">
 			<div class="col-sm-4 px-0" style="height: 80%;">
 				<div class="teaching-essay p-2">
+					{% comment %}
 					<div id="">
 					<h5 class="mb-0 strong">Place in World History</h5>
 					<p class="my-1"><a href="https://www.worldhistory.pitt.edu/people/ruth-mostern" target="_blank">Ruth Mostern</a> <span class="font-italic small ml-2">WHG Project Director</span></p>
 					<p class="mb-0" style="font-size:.85rem;">Most of us use the word place without thinking too much about what it means, but for historians, place can be a powerful concept. According to the geographer John Agnew, when we say that something is a place, we are invoking three ideas.  First, we are talking about something that has a <u>location</u>. A place exists somewhere on the surface of the earth. Second, we mean that it has a <u>locale</u>. A place is a location that is a setting for social relations. Third, we are referring to a <u>sense of place</u>, which means that some  people have had experiences that they associate with that location.  In other words, a place is a location in which memorable events have transpired. <span class="modal-link float-right mr-1" data-id="essay_rm"><a href="#" >more...</a></span></p>
-					</div>
+					</div>{% endcomment %}
 				</div>
 			</div>
 			<div class="col-sm-8 pr-0" style="height: 85%;">
