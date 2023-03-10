@@ -96,14 +96,14 @@
     "description": "Earliest relevant date or date range (YYYY[-MM-DD/YYYY-MM-DD]); '-' prefix for BCE",
     "constraints": {
       "required": true,
-      "pattern": "(-?\\d{4}(-\\d{2})?(-\\d{2})?)(\/(-?\\d{4}(-\\d{2})?(-\\d{2})?))?"
+      "pattern": "(-?\\d{1,4}(-\\d{2})?(-\\d{2})?)(\/(-?\\d{1,4}(-\\d{2})?(-\\d{2})?))?"
     }
   },
   {"name": "end",
     "type": "string",
     "description": "Latest relevant date/date range per 'start'",
     "constraints": {
-      "pattern": "(-?\\d{4}(-\\d{2})?(-\\d{2})?)(\/(-?\\d{4}(-\\d{2})?(-\\d{2})?))?"
+      "pattern": "(-?\\d{1,4}(-\\d{2})?(-\\d{2})?)(\/(-?\\d1,4}(-\\d{2})?(-\\d{2})?))?"
     }
   },
   {"name": "description",

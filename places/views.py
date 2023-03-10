@@ -111,7 +111,7 @@ class PlacePortalView(DetailView):
       # collections, not traces 20220425
       # get traces, collections for this attestation
       attest_traces = list(place.traces.all())
-      attest_collections = [t.collection for t in attest_traces if t.collection.public == True]
+      attest_collections = [t.collection for t in attest_traces if t.collection.status == "published"]
       # add to global list
       annotations = annotations + attest_traces
       collections = list(set(collections + attest_collections))
