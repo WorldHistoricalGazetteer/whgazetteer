@@ -130,7 +130,7 @@ class SearchView(View):
   @staticmethod
   def get(request):
     print('SearchView() request',request.GET)
-    print('SearchView() bounds',request.GET.get('bounds'))
+    print('SearchView() bounds',request.GET.get('fclasses'))
     """
       args in request.GET:
         [string] qstr: query string

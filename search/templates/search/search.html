@@ -824,7 +824,6 @@
       /*  none of this should happen if not places and no features
         (apart from countries or areas have loaded)
       */
-      <!--if(typeof idToFeature != 'undefined' && searchClass()=='place'){      // the result list-->
       if(typeof idToFeature != 'undefined' && searchClass()=='place' && search_scope == 'idx'){      // the result list
         results = $("#result_div tbody tr")
         // get layer ids
@@ -842,7 +841,6 @@
         window.shown_layers = L.featureGroup(show_these)
         for(l in hide_these){hide_these[l].removeFrom(mappy)}
         for(l in show_these){show_these[l].addTo(mappy)}
-        <!--mappy.fitBounds(shown_layers.getBounds())      -->
 
         // hide rows for hidden map layers
         for (i = 0; i < results.length; i++) {
@@ -905,14 +903,6 @@
     return JSON.parse(JSON.parse(y))
   }
 
-  <!--chash = new Object;-->
-  <!--$.each(countries._layers, function(k,v){-->
-    <!--cc = v.feature.properties.iso-->
-    <!--label = v.feature.properties.gnlabel-->
-    <!--cchash[cc] = label-->
-    <!--console.log(cc,label)-->
-  <!--})-->
-
   styles_bbox = {
     "MultiPolygon": {
       "default":{fillOpacity: 0.3, opacity: 1, color: "#000", weight: 1, fillColor:"#ff9999"},
@@ -938,67 +928,19 @@
   }
 
 
-  fetchTraceGeom = function(trace_id,counter,title) {
-    <!-- get trace GeoJSON (includes features[] and bodies[] ) -->
-    if(typeof(traces) !== "undefined") {traces.clearLayers();}
-    if(features) {features.clearLayers();}
-    $.get("/search/tracegeom",{idx: 'traces', search: trace_id, doc_type: 'trace'},
-      function(data){
-        <!--console.log('bodies in this trace',data.bodies)-->
-        <!--console.log('fetchTraceGeom() data',data)-->
-        var count_features = 0
-        window.idToFeature = {}
-        window.itf_new = []
-        mappy.createPane('tracePane');
-        mappy.getPane('tracePane').style.zIndex = 200;
-        traces = L.geoJSON(data, {
-          pane: 'tracePane',
-          pointToLayer: function (feature, latlng) {
-            count_features +=1;
-            identifier = feature.properties.whg_id;
-            <!--console.log(feature,identifier)-->
-            marker = L.circleMarker(latlng,
-              {
-                radius: 5, fillOpacity: 0.8, opacity: 1, weight: 1,
-                color: "#fff", fillColor: filly(counter)
-              }
-            ).bindPopup('whg:'+identifier+'<br/><b>'+
-              '<a href="/places/'+identifier+'/portal">'+feature.properties.title+"</b></a>");
-
-            <!--console.log('marker feature?',marker)-->
-            idToFeature[identifier] = marker
-            itf_new.push({"id":identifier,"feature":marker})
-            return marker
-          }
-        }).addTo(mappy);
-
-        bounds = traces.getBounds()
-        if (bounds.getSouthWest().equals(bounds.getNorthEast())) {
-          // single point
-          mappy.setView(bounds.getCenter(),5)
-        } else {
-          <!--mappy.fitBounds(bounds,{padding: [200, 0]})-->
-      // TODO: some logic to provide padding if bounds too small
-        mappy.fitBounds(bounds)
-      }
-      <!--console.log('searchResults from fetchTraceGeometry()')-->
-      showResults(data,'trace','suggest',title)
-    });
-  }
-
   // clear results, type filter
   /*
     *** searchPlacesIdx() *** from #input_box keyup
     index search w/o autocomplete -> showResults()
-  handles traces also !?
   */
   searchPlacesIdx = function (){
     //console.log('searchPlacesIdx()',search_scope)
     // get filter values: fclasses, start, end, ??
-    var fclasses = [];
+    fclasses = [];
     $('#search_filters input:checked').each(function() {
       fclasses.push($(this).val());
     });
+    {#console.log('fclasses', fclasses)#}
     index = 'whg'
     // clear filters
     $(".list-inline").html('')
@@ -1006,7 +948,7 @@
     $.get("/search/index",{
       qstr: $('#input_box').val(),
       idx: index,
-      fclasses: fclasses,
+      fclasses: fclasses.join(','),
       start: $("#input_start").val(),
       end: $("#input_end").val(),
       bounds: $("#boundsobj").val()
@@ -1029,10 +971,10 @@
   searchPlacesDb = function(){
     <!--console.log('searchPlacesDb()',search_scope)-->
     startSearchSpinner()
-      fclasses = [];
-      $('#search_filters input:checked').each(function() {
-        fclasses.push($(this).val());
-      });
+    fclasses = [];
+    $('#search_filters input:checked').each(function() {
+      fclasses.push($(this).val());
+    });
     years = [Number($("#input_start").val()),Number($("#input_end").val())]
     y = years.find(element => element != 0 );
     {#ds_select = $("#select_ds_search").val()#}
@@ -1184,7 +1126,7 @@
     $(".search-row").on('click',function(e){
       // identifier either a whgid (index search) or pid (db search)
       layerid = $(this).data('id')
-      console.log('search-row click', layerid)
+      {#console.log('search-row click', layerid)#}
 
       f = $(this).data('id') !='none'?idToFeature[layerid]:null
       // if there's a feature, highlight it

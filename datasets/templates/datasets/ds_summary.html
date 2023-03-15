@@ -66,7 +66,10 @@
               <a href="#" class="edit-webpage">{% fontawesome_icon 'edit' color='#336699' %}</a>
             </td>
             <td>
-              <span class="form-webpage">{{ form.webpage.value|default_if_none:"..." }}</span>
+              <span class="form-webpage">
+	              <a href="{{ form.webpage.value|default_if_none:"..." }}" target="_blank">
+	              {{ form.webpage.value|default_if_none:"..." }}</a>
+              </span>
               <span class="hidden editing-webpage">{{ form.webpage }}</span>&nbsp;
             </td>
           </tr>
