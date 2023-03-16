@@ -678,7 +678,7 @@ def write_wd_pass0(request, tid):
   return HttpResponseRedirect(referer)
 
 """
-  ds_recon(pk)
+  ds_recon()
   initiates & monitors Celery tasks against Elasticsearch indexes
   i.e. align_[wdlocal | idx | tgn ] in tasks.py
   url: datasets/{ds.id}/reconcile ('ds_reconcile'; from ds_addtask.html)
@@ -3071,8 +3071,18 @@ class DatasetAddTaskView(LoginRequiredMixin, DetailView):
     area_types=['ccodes','copied','drawn']
 
     # user study areas
-    userareas = Area.objects.all().filter(type__in=area_types).values('id','title').order_by('-created')
+    userareas = Area.objects.filter(type__in=area_types).values('id','title').order_by('-created')
     context['area_list'] = userareas if me.username == 'whgadmin' else userareas.filter(owner=me)
+
+    # user datasets
+    # userdatasets = Dataset.objects.filter(owner=me).values('id','title').order_by('-created')
+    context['ds_list'] = Dataset.objects.filter(owner=me, ds_status='indexed').values('id','title').order_by('-create_date')
+    # context['ds_list'] = userdatasets if me.username == 'whgadmin' else userdatasets.filter(owner=me)
+
+    # user dataset collections
+    # usercollections = Collection.objects.filter(type__in=area_types).values('id','title').order_by('-created')
+    context['coll_list'] = Collection.objects.filter(owner=me, collection_class='dataset').values('id','title').order_by('-created')
+    # context['coll_list'] = usercollections if me.username == 'whgadmin' else usercollections.filter(owner=me)
 
     # pre-defined UN regions
     predefined = Area.objects.all().filter(type='predefined').values('id','title')
@@ -3081,7 +3091,7 @@ class DatasetAddTaskView(LoginRequiredMixin, DetailView):
     for t in ds.tasks.filter(status='SUCCESS'):
       gothits[t.task_id] = int(json.loads(t.result)['got_hits'])
 
-    # deliver status messae(s) to template
+    # deliver status message(s) to template
     msg_unreviewed = """There is a <span class='strong'>%s</span> task in progress, 
       and all %s records that got hits remain unreviewed. <span class='text-danger strong'>Starting this new task 
       will delete the existing one</span>, with no impact on your dataset."""

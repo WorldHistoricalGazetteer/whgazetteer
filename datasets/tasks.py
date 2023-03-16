@@ -1439,8 +1439,11 @@ def es_lookup_idx(qobj, *args, **kwargs):
 # align/accession to whg index
 # gets result_obj per Place
 # writes 'union' Hit records to db for review
-# OR writes seed parent to whg index
+# OR writes seed parent to whg index 
 """
+# TODO (1): "passive analysis option" reports unmatched and matched only
+# TODO (2): "passive analysis option" that reports matches within datasets in a collection
+# TODO (3): option with collection constraint; writes place_link records for partner records
 @task(name="align_idx")
 def align_idx(pk, *args, **kwargs):
   print('kwargs in align_idx()',kwargs)  

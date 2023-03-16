@@ -58,36 +58,52 @@
           <!-- if already indexed, running more tasks makes no sense -->
           {% if ds.unindexed == 0 %}
             <div>
-              <p class="mt-3 text-danger">This dataset is completely indexed. Perhaps you want to update it?</p>
+              <p class="mt-3 text-danger">This dataset is completely indexed. Further reconciliation not permitted.</p>
             </div>
           {% else %}
             <input type="hidden" name="ds" value="{{ ds.id }}">
             <input type="hidden" name="wd_lang" value="">
 
-	          {# whg accession option if superuser #}
+	          {# whg accession and test options if superuser or editor #}
             {% if user.is_superuser or user.username == 'als512' %}
-              <div class="form-check text-danger mt-2">
-                <label class="form-check-label" for="r_whg">
-                  <input type="radio" class="form-check-input" id="r_whg"
-                    name="recon" value="idx">WHG (accession/reconcile) 
+              <div class="form-check mt-2">
+                <label class="form-check-label text-danger" for="r_idx">
+                  <input type="radio" class="form-check-input" id="r_idx"
+                    name="recon" value="idx">WHG accession (reconcile, index)
                 </label>
-								{% for message in messages %}
-									<div class="container-fluid p-0">
-									  <div class="alert {{ message.tags }} alert-dismissible" role="alert" >
-									    <button type="button" id="error_closer" class="close" data-dismiss="alert" aria-label="Close">
-									      <span aria-hidden="True">&times;</span>
-									    </button>
-									    {{ message }}
-									  </div>
-									</div>
-								{% endfor %}
-                <div id="wd_lang" class="hidden">
-                  Preferred label language: <input class="input-sm col-xs-2"type="text" name="lang">
+								<br/>
+								{#	test reconcile against whg index; no writes #}
+	              <label class="form-check-label text-secondary" for="t_whg">
+	                <input type="radio" class="form-check-input" id="t_whg"
+	                  name="recon" value="t_whg">WHG index subset (reports results, no writes)
+	              </label>
+                <div id="data_limiter" class="hidden">
+	                <select id="select_colls" name="collection" class="custom-select-sm" style="width:auto;">
+		                <option value="0"><i>Limit to collection</i></option>
+	                  {% for c in coll_list %}
+	                    <option value="{{ c.id }}">{{ c.title }}</option>
+	                  {% endfor %}
+	                </select>
+	                <select id="select_ds" name="dataset" class="custom-select-sm" style="width:auto;">
+	                  <option value="0">Limit to dataset</option>
+	\                  {% for ds in ds_list %}
+	                    <option value="{{ ds.id }}">{{ ds.title }}</option>
+	                  {% endfor %}
+	                </select>
                 </div>
               </div>
+							{% for message in messages %}
+								<div class="container-fluid p-0">
+								  <div class="alert {{ message.tags }} alert-dismissible" role="alert" >
+								    <button type="button" id="error_closer" class="close" data-dismiss="alert" aria-label="Close">
+								      <span aria-hidden="True">&times;</span>
+								    </button>
+								    {{ message }}
+								  </div>
+								</div>
+							{% endfor %}
               <hr/>
-            {% endif %}
-
+						{% endif %}
             {% if ds.recon_status.idx %}
               <p>Accessioning has begun for this dataset. Initiating another reconciliation task could disrupt
 	              the workflow in progress. If you would like to stop the accessioning step and roll back the workflow,
@@ -226,32 +242,42 @@
 </div>
 
 <script type="text/javascript">
-  // show/hide geo constraint options
-  $("#r_tgn").click(function(){
-    <!--console.log('tgn now');-->
-    $("#r_keep_wd").attr('checked',false)
-    $("#r_keep_tgn").attr('checked',true)
-    $("#geo_constraint").show(400)})
-  $("#r_wdlocal").click(function(){
-    $("#r_keep_tgn").attr('checked',false)
-    $("#r_keep_wd").attr('checked',true)
-    $("#geo_constraint").show(400)}
-  )
-
   // modal buttons
   $("#btn_done").on('click', function(){ location.reload(); })
   $("#btn_cancel").on('click', function(){ location.reload(); })
 
+  //
+  $('#recon_form').change(function(){
+		task = $("input[name='recon']:checked").val();
+    if (task == 't_whg') {
+      $("#data_limiter").show()
+    } else {
+      $("#data_limiter").hide()
+    }
+  });
+	$('#data_limiter').change(function(){
+		coll = $("#select_colls").val();
+		ds = $("#select_ds").val();
+		{#huh = $(this)#}
+    {#console.log('$(this)', $(this))#}
+    {#console.log('coll, ds', coll, ds)#}
+	})
+
+  $( "#select_region" ).change(function() {
+    $( "#select_userarea option[value=0]" ).prop('selected',true)
+    if ($(this).val() == 0) {
+			reset_map()
+    } else {
+        render_area( $(this).val(), 'region')
+    }
+  });
 
   $(function(){
-    msgs = ["{{ msg_wdlocal.type }}","{{ msg_tgn.type }}","{{ msg_whg.type }}"]
+    msgs = ["{{ msg_wdlocal.type }}","{{ msg_whg.type }}"]
     console.log('msgs',msgs)
     if("{{ msg_wdlocal.type }}" == 'done' && '{{ ds.ds_status }}' != 'updated' ){
       $("#r_wdlocal").attr('disabled',true)
 	    $("#r_whg").prop('checked','true')
-    }
-    if("{{ msg_tgn.type }}" == 'done'){
-      $("#r_tgn").attr('disabled',true)
     }
     found = msgs.slice(0,2).some(r=> ['none','unreviewed','inprogress'].includes(r))
 
@@ -291,16 +317,6 @@
 
   // activate all tooltips
   $("[rel='tooltip']").tooltip();
-
-  // show/hide task eval messages
-  $("#r_tgn").click(function(){
-    $("#tgn_tasks").show(400)
-    $("#wdlocal_tasks").addClass('hidden')
-  })
-  $("#r_wdlocal").click(function(){
-    $("#wdlocal_tasks").removeClass('hidden')
-    $("#tgn_tasks").hide(400)
-  })
 
   function renderMap(geom, tab){
     if (geom.features.length==0) {
@@ -368,6 +384,21 @@
     $("#area_name").html('Global')
 	  mappy.setView(L.latLng(35,0), 1)
   }
+
+  window.limiter = []
+  // clear data limiter dropdown choice if other is used
+  $( "#select_colls" ).change(function() {
+    $( "#select_ds option[value=0]" ).prop('selected',true)
+	  limiter = ['c',$(this).val()]
+	  console.log('limiter:', limiter)
+  });
+  
+  $( "#select_ds" ).change(function() {
+    $( "#select_colls option[value=0]" ).prop('selected',true)
+	  limiter = ['d',$(this).val()]
+	  console.log('limiter:', limiter)
+  });
+
   // clear dropdown choice if other is used & render geometry
   $( "#select_region" ).change(function() {
     $( "#select_userarea option[value=0]" ).prop('selected',true)
@@ -377,7 +408,7 @@
         render_area( $(this).val(), 'region')
     }
   });
-  
+
   $( "#select_userarea" ).change(function() {
     $( "#select_region option[value=0]" ).prop('selected',true)
     if ($(this).val() == 0) {
@@ -441,7 +472,6 @@
       mappy.setMaxBounds(null)
       L.control.layers(baseLayers).addTo(mappy);
       window.map_default = [mappy.getCenter(), mappy.getZoom()]
-		  console.log('map_default',map_default)
 
       baseLayers['OSM'].addTo(mappy)
       mappy.invalidateSize()
