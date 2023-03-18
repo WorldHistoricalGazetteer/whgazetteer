@@ -263,7 +263,7 @@ def task_emailer(tid, dslabel, username, email, counthit, totalhits, test):
     else:
       text_content="Greetings "+username+"! Your "+tasklabel+" TEST task has completed with status: "+ \
         task.status+". \n"+str(counthit)+" records got a total of "+str(totalhits)+".\nRefresh the dataset page and view results on the 'Reconciliation' tab."
-      html_content_success="<h3>Greetings, "+username+"</h3> <p>Your <b>"+tasklabel+"</b> reconciliation task for the <b>"+dslabel+"</b> dataset has completed with status: "+ task.status+". "+str(counthit)+" records got a total of "+str(totalhits)+" hits.</p>" + \
+      html_content_success="<h3>Greetings, "+username+"</h3> <p>Your <b>TEST "+tasklabel+"</b> reconciliation task for the <b>"+dslabel+"</b> dataset has completed with status: "+ task.status+". "+str(counthit)+" records got a total of "+str(totalhits)+" hits.</p>" + \
         "<p>View results on the 'Reconciliation' tab (you may have to refresh the page).</p>"
   except:
     print('task lookup in task_emailer() failed on tid', tid, 'how come?')
@@ -1450,17 +1450,7 @@ def es_lookup_tgn(qobj, *args, **kwargs):
       "repr_point": {
         "points": location['coordinates']
       }
-    }
-    }
-    # filter_within = { "geo_shape": {
-    #   "location": {
-    #     "shape": {
-    #       "type": location['type'],
-    #       "coordinates" : location['coordinates']
-    #     },
-    #     "relation": "within" # within | intersects | contains
-    #   }
-    # }}
+    }}
     q1['query']['bool']['filter'].append(filter_within)
 
   # /\/\/\/\/\/
