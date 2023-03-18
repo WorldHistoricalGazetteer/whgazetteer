@@ -243,7 +243,7 @@ def make_download(request, *args, **kwargs):
 
 
 @task(name="task_emailer")
-def task_emailer(tid, dslabel, username, email, counthit, totalhits):
+def task_emailer(tid, dslabel, username, email, counthit, totalhits, test):
   # TODO: sometimes a valid tid is not recognized (race?)
   time.sleep(5)
   try:
@@ -255,9 +255,14 @@ def task_emailer(tid, dslabel, username, email, counthit, totalhits):
       text_content="Greetings "+username+"! Unfortunately, your "+tasklabel+" reconciliation task has completed with status: "+ \
         task.status+". \nError: "+fail_msg+"\nWHG staff have been notified. We will troubleshoot the issue and get back to you."
       html_content_fail="<h3>Greetings, "+username+"</h3> <p>Unfortunately, your <b>"+tasklabel+"</b> reconciliation task for the <b>"+dslabel+"</b> dataset has completed with status: "+ task.status+".</p><p>Error: "+fail_msg+". WHG staff have been notified. We will troubleshoot the issue and get back to you soon.</p>"
-    else:
+    elif test == 'off':
       text_content="Greetings "+username+"! Your "+tasklabel+" reconciliation task has completed with status: "+ \
         task.status+". \n"+str(counthit)+" records got a total of "+str(totalhits)+" hits.\nRefresh the dataset page and view results on the 'Reconciliation' tab."
+      html_content_success="<h3>Greetings, "+username+"</h3> <p>Your <b>"+tasklabel+"</b> reconciliation task for the <b>"+dslabel+"</b> dataset has completed with status: "+ task.status+". "+str(counthit)+" records got a total of "+str(totalhits)+" hits.</p>" + \
+        "<p>View results on the 'Reconciliation' tab (you may have to refresh the page).</p>"
+    else:
+      text_content="Greetings "+username+"! Your "+tasklabel+" TEST task has completed with status: "+ \
+        task.status+". \n"+str(counthit)+" records got a total of "+str(totalhits)+".\nRefresh the dataset page and view results on the 'Reconciliation' tab."
       html_content_success="<h3>Greetings, "+username+"</h3> <p>Your <b>"+tasklabel+"</b> reconciliation task for the <b>"+dslabel+"</b> dataset has completed with status: "+ task.status+". "+str(counthit)+" records got a total of "+str(totalhits)+" hits.</p>" + \
         "<p>View results on the 'Reconciliation' tab (you may have to refresh the page).</p>"
   except:
@@ -593,285 +598,6 @@ def get_bounds_filter(bounds, idx):
   return filter
 
 
-"""
-perform elasticsearch > tgn queries
-from align_tgn()
-
-"""
-def es_lookup_tgn(qobj, *args, **kwargs):
-  print('es_lookup_tgn qobj',qobj)
-  bounds = kwargs['bounds']
-  hit_count = 0
-
-  # empty result object
-  result_obj = {
-      'place_id': qobj['place_id'], 'hits':[],
-        'missed':-1, 'total_hits':-1
-    }  
-
-  # array (includes title)
-  variants = list(set(qobj['variants']))
-
-  # bestParent() coalesces mod. country and region; countries.json
-  parent = bestParent(qobj)
-
-  # pre-computed in sql
-  # minmax = row['minmax']
-
-  # getty aat numerical identifiers
-  placetypes = list(set(qobj['placetypes']))
-
-  # base query: name, type, parent, bounds if specified
-  # geo_polygon filter added later for pass1; used as-is for pass2
-  qbase = {"query": { 
-    "bool": {
-      "must": [
-        {"terms": {"names.name":variants}},
-        {"terms": {"types.id":placetypes}}
-        ],
-      "should":[
-        {"terms": {"parents":parent}}
-        #,{"terms": {"types.id":placetypes}}
-        ],
-      "filter": [get_bounds_filter(bounds,'tgn')] if bounds['id'] != ['0'] else []
-    }
-  }}
-
-  qbare = {"query": { 
-    "bool": {
-      "must": [
-        {"terms": {"names.name":variants}}
-        ],
-      "should":[
-        {"terms": {"parents":parent}}                
-        ],
-      "filter": [get_bounds_filter(bounds,'tgn')] if bounds['id'] != ['0'] else []
-    }
-  }}
-
-  # grab deep copy of qbase, add w/geo filter if 'geom'
-  q1 = deepcopy(qbase)
-
-  # create 'within polygon' filter and add to q1
-  if 'geom' in qobj.keys():
-    location = qobj['geom']
-    # always polygon returned from hully(g_list)
-    filter_within = { "geo_polygon": {
-      "repr_point": {
-        "points": location['coordinates']
-        }
-      }
-    }
-    # filter_within = { "geo_shape": {
-    #   "location": {
-    #     "shape": {
-    #       "type": location['type'],
-    #       "coordinates" : location['coordinates']
-    #     },
-    #     "relation": "within" # within | intersects | contains
-    #   }
-    # }}
-    q1['query']['bool']['filter'].append(filter_within)
-
-  # /\/\/\/\/\/
-  # pass1: must[name]; should[type,parent]; filter[bounds,geom]
-  # /\/\/\/\/\/
-  #print('q1',q1)
-  try:
-    res1 = es.search(index="tgn", body = q1)
-    hits1 = res1['hits']['hits']
-  except:
-    print('pass1 error:',sys.exc_info())
-  if len(hits1) > 0:
-    for hit in hits1:
-      hit_count +=1
-      hit['pass'] = 'pass1'
-      result_obj['hits'].append(hit)
-  elif len(hits1) == 0:
-    #print('q1 no result:)',q1)
-    # /\/\/\/\/\/
-    # pass2: revert to qbase{} (drops geom)
-    # /\/\/\/\/\/  
-    q2 = qbase
-    try:
-      res2 = es.search(index="tgn", body = q2)
-      hits2 = res2['hits']['hits']
-    except:
-      print('pass2 error:',sys.exc_info()) 
-    if len(hits2) > 0:
-      for hit in hits2:
-        hit_count +=1
-        hit['pass'] = 'pass2'
-        result_obj['hits'].append(hit)
-    elif len(hits2) == 0:
-      #print('q2 no result:)',q2)
-      # /\/\/\/\/\/
-      # pass3: revert to qbare{} (drops placetype)
-      # /\/\/\/\/\/  
-      q3 = qbare
-      #print('q3 (bare)',q3)
-      try:
-        res3 = es.search(index="tgn", body = q3)
-        hits3 = res3['hits']['hits']
-      except:
-        print('pass3 error:',sys.exc_info())        
-      if len(hits3) > 0:
-        for hit in hits3:
-          hit_count +=1
-          hit['pass'] = 'pass3'
-          result_obj['hits'].append(hit)
-      else:
-        # no hit at all, name & bounds only
-        #print('q3 no result:)',q3)
-        result_obj['missed'] = qobj['place_id']
-  result_obj['hit_count'] = hit_count
-  return result_obj
-
-"""
-manage align/reconcile to tgn
-get result_obj per Place via es_lookup_tgn()
-parse, write Hit records for review
-
-"""
-@task(name="align_tgn")
-def align_tgn(pk, *args, **kwargs):
-  task_id = align_tgn.request.id
-  ds = get_object_or_404(Dataset, id=pk)
-  user = get_object_or_404(User, pk=kwargs['user'])
-  bounds = kwargs['bounds']
-  scope = kwargs['scope']
-  print('args, kwargs from align_tgn() task',args,kwargs)
-  hit_parade = {"summary": {}, "hits": []}
-  [nohits,tgn_es_errors,features] = [[],[],[]]
-  [count_hit, count_nohit, total_hits, count_p1, count_p2, count_p3] = [0,0,0,0,0,0]
-  start = datetime.datetime.now()
-
-  # queryset depends 'scope'
-  qs = ds.places.all() if scope == 'all' else \
-    ds.places.filter(~Q(review_tgn = 1))
-
-  for place in qs:
-    #place=get_object_or_404(Place,id=131735)
-    # build query object
-    qobj = {"place_id":place.id,
-            "src_id":place.src_id,
-            "title":place.title}
-    [variants,geoms,types,ccodes,parents]=[[],[],[],[],[]]
-
-    # ccodes (2-letter iso codes)
-    for c in place.ccodes:
-      ccodes.append(c.upper())
-    qobj['countries'] = place.ccodes
-
-    # types (Getty AAT identifiers)
-    # all have 'aat:' prefixes
-    for t in place.types.all():
-      #types.append('aat:'+t.jsonb['identifier'])
-      types.append(t.jsonb['identifier'])
-    qobj['placetypes'] = types
-
-    # names
-    for name in place.names.all():
-      variants.append(name.toponym)
-    qobj['variants'] = variants
-
-    # parents
-    # TODO: other relations
-    if len(place.related.all()) > 0:
-      for rel in place.related.all():
-        if rel.jsonb['relationType'] == 'gvp:broaderPartitive':
-          parents.append(rel.jsonb['label'])
-      qobj['parents'] = parents
-    else:
-      qobj['parents'] = []
-
-    # geoms
-    if len(place.geoms.all()) > 0:
-      g_list =[g.jsonb for g in place.geoms.all()]
-      print('g_list', g_list)
-      # make everything a simple polygon hull for spatial filter
-      qobj['geom'] = hully(g_list)
-
-    ## run pass1-pass3 ES queries
-    #print('qobj in align_tgn()',qobj)
-    result_obj = es_lookup_tgn(qobj, bounds=bounds)
-      
-    if result_obj['hit_count'] == 0:
-      count_nohit +=1
-      nohits.append(result_obj['missed'])
-      print('no hits in align_tgn() for', place.id, place.title)
-    else:
-      # place/task status 0 (unreviewed hits)
-      place.review_tgn = 0
-      place.save()
-      count_hit +=1
-      total_hits += len(result_obj['hits'])
-      #print("hit[0]: ",result_obj['hits'][0]['_source'])  
-      #print('hits from align_tgn',result_obj['hits'])
-      for hit in result_obj['hits']:
-        if hit['pass'] == 'pass1': 
-          count_p1+=1 
-        elif hit['pass'] == 'pass2': 
-          count_p2+=1
-        elif hit['pass'] == 'pass3': 
-          count_p3+=1
-        hit_parade["hits"].append(hit)
-        # correct lower case 'point' in tgn index
-        # TODO: fix in index
-        if 'location' in hit['_source'].keys():
-          loc = hit['_source']['location'] 
-          loc['type'] = "Point"
-        else:
-          loc={}
-        new = Hit(
-          authority = 'tgn',
-          authrecord_id = hit['_id'],
-          dataset = ds,
-          place = place,
-          task_id = align_tgn.request.id,
-          query_pass = hit['pass'],
-          # prepare for consistent display in review screen
-          json = normalize(hit['_source'],'tgn'),
-          src_id = qobj['src_id'],
-          score = hit['_score'],
-          geom = loc,
-          reviewed = False,
-          matched = False,
-        )
-        new.save()
-  end = datetime.datetime.now()
-
-  print('tgn ES errors:',tgn_es_errors)
-  hit_parade['summary'] = {
-      'count':qs.count(),
-      'got_hits':count_hit,
-      'total_hits': total_hits, 
-      'pass1': count_p1, 
-      'pass2': count_p2, 
-      'pass3': count_p3,
-      'no_hits': {'count': count_nohit },
-      'elapsed': elapsed(end-start)
-    }
-  print("summary returned",hit_parade['summary'])
-  
-  # create log entry and update ds status
-  post_recon_update(ds, user, 'tgn')
-
-  # email owner when complete
-  task_emailer.delay(
-    task_id,
-    ds.label,
-    user.username,
-    user.email,
-    count_hit,
-    total_hits  
-  )  
-  
-  return hit_parade['summary']
-
-
-
-
 #
 # for tests
 #bounds={'type': ['userarea'], 'id': ['0']}
@@ -1044,11 +770,6 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
   result_obj['hit_count'] = hit_count
   return result_obj
 
-
-# ***
-# manage reconcile to local wikidata
-# ***
-# test stuff
 
 """
 manage align/reconcile to local wikidata index
@@ -1446,7 +1167,8 @@ def es_lookup_idx(qobj, *args, **kwargs):
 # TODO (3): option with collection constraint; writes place_link records for partner records
 @task(name="align_idx")
 def align_idx(pk, *args, **kwargs):
-  print('kwargs in align_idx()',kwargs)  
+  print('kwargs in align_idx()',kwargs)
+  test = kwargs['test']
   task_id = align_idx.request.id
   ds = get_object_or_404(Dataset, id=pk)
   idx = 'whg'
@@ -1456,7 +1178,7 @@ def align_idx(pk, *args, **kwargs):
   """
   kwargs: {'ds': 1231, 'dslabel': 'owt10b', 'owner': 14, 'user': 1, 
     'bounds': {'type': ['userarea'], 'id': ['0']}, 'aug_geom': 'on', 
-    'scope': 'all', 'lang': 'en'}
+    'scope': 'all', 'lang': 'en', 'test': 'false'}
   """
   """
     {'csrfmiddlewaretoken': ['Z3vg1TOlJRNTYSErmyNYuuaoTYMmk8235pMea2nXHtxvpfmvmdqPsqRHeefFqt2u'], 
@@ -1466,9 +1188,9 @@ def align_idx(pk, *args, **kwargs):
     'lang': ['']}>
   """
   # open file for writing new seed/parents for inspection
-  # wd = "/Users/karlg/Documents/repos/_whgazetteer/_scratch/accessioning/"
-  # fn1 = "new-parents_"+str(ds.id)+".txt"
-  # fout1 = codecs.open(wd+fn1, mode="w", encoding="utf8")
+  wd = "/Users/karlg/Documents/repos/_whgazetteer/_scratch/accessioning/"
+  fn1 = "new-parents_"+str(ds.id)+".txt"
+  fout1 = codecs.open(wd+fn1, mode="w", encoding="utf8")
   
   #bounds = {'type': ['userarea'], 'id': ['0']}
   bounds = kwargs['bounds']
@@ -1507,15 +1229,13 @@ def align_idx(pk, *args, **kwargs):
       # get names for search fields
       names = [p.toponym for p in p.names.all()]
       doc['searchy'] = names
-      # suggester is not in use
-      # also, requires type filed as context; not all records have types
-      # doc['suggest']['input'] = names
       print("seed", whg_id, doc)
       new_seeds.append(doc)
-      res = es.index(index=idx, id=str(whg_id), document=json.dumps(doc))
-      p.indexed = True
-      p.save()
-      # es.index(idx, doc, id=whg_id)
+      if test == 'off':
+        res = es.index(index=idx, id=str(whg_id), document=json.dumps(doc))
+        p.indexed = True
+        p.save()
+        # es.index(idx, doc, id=whg_id)
       
     # got some hits, format json & write to db as for align_wdlocal, etc.
     elif len(result_obj['hits']) > 0:
@@ -1626,9 +1346,9 @@ def align_idx(pk, *args, **kwargs):
         #print(json.dumps(jsonic,indent=2))
   
   # write new index seed/parent docs for inspection
-  # fout1.write(json.dumps(new_seeds, indent=2))
-  # fout1.close()
-  # print(str(len(new_seeds)) + ' new index seeds written to '+ fn1)
+  fout1.write(json.dumps(new_seeds, indent=2))
+  fout1.close()
+  print(str(len(new_seeds)) + ' new index seeds written to '+ fn1)
   
   end = datetime.datetime.now()
   
@@ -1654,10 +1374,288 @@ def align_idx(pk, *args, **kwargs):
     user.username,
     user.email,
     count_hit,
-    total_hits
+    total_hits,
+    test,
   )    
   print('elapsed time:', elapsed(end-start))
 
 
   return hit_parade['summary']
 
+
+"""
+perform elasticsearch > tgn queries
+from align_tgn()
+
+"""
+def es_lookup_tgn(qobj, *args, **kwargs):
+  print('es_lookup_tgn qobj', qobj)
+  bounds = kwargs['bounds']
+  hit_count = 0
+
+  # empty result object
+  result_obj = {
+    'place_id': qobj['place_id'], 'hits': [],
+    'missed': -1, 'total_hits': -1
+  }
+
+  # array (includes title)
+  variants = list(set(qobj['variants']))
+
+  # bestParent() coalesces mod. country and region; countries.json
+  parent = bestParent(qobj)
+
+  # pre-computed in sql
+  # minmax = row['minmax']
+
+  # getty aat numerical identifiers
+  placetypes = list(set(qobj['placetypes']))
+
+  # base query: name, type, parent, bounds if specified
+  # geo_polygon filter added later for pass1; used as-is for pass2
+  qbase = {"query": {
+    "bool": {
+      "must": [
+        {"terms": {"names.name": variants}},
+        {"terms": {"types.id": placetypes}}
+      ],
+      "should": [
+        {"terms": {"parents": parent}}
+        # ,{"terms": {"types.id":placetypes}}
+      ],
+      "filter": [get_bounds_filter(bounds, 'tgn')] if bounds['id'] != ['0'] else []
+    }
+  }}
+
+  qbare = {"query": {
+    "bool": {
+      "must": [
+        {"terms": {"names.name": variants}}
+      ],
+      "should": [
+        {"terms": {"parents": parent}}
+      ],
+      "filter": [get_bounds_filter(bounds, 'tgn')] if bounds['id'] != ['0'] else []
+    }
+  }}
+
+  # grab deep copy of qbase, add w/geo filter if 'geom'
+  q1 = deepcopy(qbase)
+
+  # create 'within polygon' filter and add to q1
+  if 'geom' in qobj.keys():
+    location = qobj['geom']
+    # always polygon returned from hully(g_list)
+    filter_within = {"geo_polygon": {
+      "repr_point": {
+        "points": location['coordinates']
+      }
+    }
+    }
+    # filter_within = { "geo_shape": {
+    #   "location": {
+    #     "shape": {
+    #       "type": location['type'],
+    #       "coordinates" : location['coordinates']
+    #     },
+    #     "relation": "within" # within | intersects | contains
+    #   }
+    # }}
+    q1['query']['bool']['filter'].append(filter_within)
+
+  # /\/\/\/\/\/
+  # pass1: must[name]; should[type,parent]; filter[bounds,geom]
+  # /\/\/\/\/\/
+  # print('q1',q1)
+  try:
+    res1 = es.search(index="tgn", body=q1)
+    hits1 = res1['hits']['hits']
+  except:
+    print('pass1 error:', sys.exc_info())
+  if len(hits1) > 0:
+    for hit in hits1:
+      hit_count += 1
+      hit['pass'] = 'pass1'
+      result_obj['hits'].append(hit)
+  elif len(hits1) == 0:
+    # print('q1 no result:)',q1)
+    # /\/\/\/\/\/
+    # pass2: revert to qbase{} (drops geom)
+    # /\/\/\/\/\/
+    q2 = qbase
+    try:
+      res2 = es.search(index="tgn", body=q2)
+      hits2 = res2['hits']['hits']
+    except:
+      print('pass2 error:', sys.exc_info())
+    if len(hits2) > 0:
+      for hit in hits2:
+        hit_count += 1
+        hit['pass'] = 'pass2'
+        result_obj['hits'].append(hit)
+    elif len(hits2) == 0:
+      # print('q2 no result:)',q2)
+      # /\/\/\/\/\/
+      # pass3: revert to qbare{} (drops placetype)
+      # /\/\/\/\/\/
+      q3 = qbare
+      # print('q3 (bare)',q3)
+      try:
+        res3 = es.search(index="tgn", body=q3)
+        hits3 = res3['hits']['hits']
+      except:
+        print('pass3 error:', sys.exc_info())
+      if len(hits3) > 0:
+        for hit in hits3:
+          hit_count += 1
+          hit['pass'] = 'pass3'
+          result_obj['hits'].append(hit)
+      else:
+        # no hit at all, name & bounds only
+        # print('q3 no result:)',q3)
+        result_obj['missed'] = qobj['place_id']
+  result_obj['hit_count'] = hit_count
+  return result_obj
+
+
+"""
+manage align/reconcile to tgn
+get result_obj per Place via es_lookup_tgn()
+parse, write Hit records for review
+
+"""
+@task(name="align_tgn")
+def align_tgn(pk, *args, **kwargs):
+  task_id = align_tgn.request.id
+  ds = get_object_or_404(Dataset, id=pk)
+  user = get_object_or_404(User, pk=kwargs['user'])
+  bounds = kwargs['bounds']
+  scope = kwargs['scope']
+  print('args, kwargs from align_tgn() task', args, kwargs)
+  hit_parade = {"summary": {}, "hits": []}
+  [nohits, tgn_es_errors, features] = [[], [], []]
+  [count_hit, count_nohit, total_hits, count_p1, count_p2, count_p3] = [0, 0, 0, 0, 0, 0]
+  start = datetime.datetime.now()
+
+  # queryset depends 'scope'
+  qs = ds.places.all() if scope == 'all' else \
+    ds.places.filter(~Q(review_tgn=1))
+
+  for place in qs:
+    # place=get_object_or_404(Place,id=131735)
+    # build query object
+    qobj = {"place_id": place.id,
+            "src_id": place.src_id,
+            "title": place.title}
+    [variants, geoms, types, ccodes, parents] = [[], [], [], [], []]
+
+    # ccodes (2-letter iso codes)
+    for c in place.ccodes:
+      ccodes.append(c.upper())
+    qobj['countries'] = place.ccodes
+
+    # types (Getty AAT identifiers)
+    # all have 'aat:' prefixes
+    for t in place.types.all():
+      # types.append('aat:'+t.jsonb['identifier'])
+      types.append(t.jsonb['identifier'])
+    qobj['placetypes'] = types
+
+    # names
+    for name in place.names.all():
+      variants.append(name.toponym)
+    qobj['variants'] = variants
+
+    # parents
+    # TODO: other relations
+    if len(place.related.all()) > 0:
+      for rel in place.related.all():
+        if rel.jsonb['relationType'] == 'gvp:broaderPartitive':
+          parents.append(rel.jsonb['label'])
+      qobj['parents'] = parents
+    else:
+      qobj['parents'] = []
+
+    # geoms
+    if len(place.geoms.all()) > 0:
+      g_list = [g.jsonb for g in place.geoms.all()]
+      print('g_list', g_list)
+      # make everything a simple polygon hull for spatial filter
+      qobj['geom'] = hully(g_list)
+
+    ## run pass1-pass3 ES queries
+    # print('qobj in align_tgn()',qobj)
+    result_obj = es_lookup_tgn(qobj, bounds=bounds)
+
+    if result_obj['hit_count'] == 0:
+      count_nohit += 1
+      nohits.append(result_obj['missed'])
+      print('no hits in align_tgn() for', place.id, place.title)
+    else:
+      # place/task status 0 (unreviewed hits)
+      place.review_tgn = 0
+      place.save()
+      count_hit += 1
+      total_hits += len(result_obj['hits'])
+      # print("hit[0]: ",result_obj['hits'][0]['_source'])
+      # print('hits from align_tgn',result_obj['hits'])
+      for hit in result_obj['hits']:
+        if hit['pass'] == 'pass1':
+          count_p1 += 1
+        elif hit['pass'] == 'pass2':
+          count_p2 += 1
+        elif hit['pass'] == 'pass3':
+          count_p3 += 1
+        hit_parade["hits"].append(hit)
+        # correct lower case 'point' in tgn index
+        # TODO: fix in index
+        if 'location' in hit['_source'].keys():
+          loc = hit['_source']['location']
+          loc['type'] = "Point"
+        else:
+          loc = {}
+        new = Hit(
+          authority='tgn',
+          authrecord_id=hit['_id'],
+          dataset=ds,
+          place=place,
+          task_id=align_tgn.request.id,
+          query_pass=hit['pass'],
+          # prepare for consistent display in review screen
+          json=normalize(hit['_source'], 'tgn'),
+          src_id=qobj['src_id'],
+          score=hit['_score'],
+          geom=loc,
+          reviewed=False,
+          matched=False,
+        )
+        new.save()
+  end = datetime.datetime.now()
+
+  print('tgn ES errors:', tgn_es_errors)
+  hit_parade['summary'] = {
+    'count': qs.count(),
+    'got_hits': count_hit,
+    'total_hits': total_hits,
+    'pass1': count_p1,
+    'pass2': count_p2,
+    'pass3': count_p3,
+    'no_hits': {'count': count_nohit},
+    'elapsed': elapsed(end - start)
+  }
+  print("summary returned", hit_parade['summary'])
+
+  # create log entry and update ds status
+  post_recon_update(ds, user, 'tgn')
+
+  # email owner when complete
+  task_emailer.delay(
+    task_id,
+    ds.label,
+    user.username,
+    user.email,
+    count_hit,
+    total_hits
+  )
+
+  return hit_parade['summary']

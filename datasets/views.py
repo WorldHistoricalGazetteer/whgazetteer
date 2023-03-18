@@ -690,11 +690,11 @@ def ds_recon(request, pk):
   # TODO: handle multipolygons from "#area_load" and "#area_draw"
   user = request.user
   context = {"dataset": ds.title}
-
   if request.method == 'GET':
     print('ds_recon() GET')
   elif request.method == 'POST' and request.POST:
     print('ds_recon() request.POST:',request.POST)
+    test = 'on' if 'test' in request.POST else 'off'
     auth = request.POST['recon']
     language = request.LANGUAGE_CODE
     if auth == 'idx' and ds.public == False:
@@ -758,6 +758,7 @@ def ds_recon(request, pk):
         aug_geom=aug_geom,
         scope=scope,
         lang=language,
+        test=test,
       )
       messages.add_message(request, messages.INFO, "<span class='text-danger'>Your reconciliation task is under way.</span><br/>When complete, you will receive an email and if successful, results will appear below (you may have to refresh screen). <br/>In the meantime, you can navigate elsewhere.")
       return redirect('/datasets/'+str(ds.id)+'/reconcile')

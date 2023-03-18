@@ -6,7 +6,7 @@
 
 {% block extra_head %}
   <script src="{% static 'js/aliases.js' %}"></script>
-  <script src="{% static 'css/spin.css' %}"></script>
+{#  <script src="{% static 'css/spin.css' %}"></script>#}
 {% endblock %}
 
 {% block title %}<title>Dataset::{{ ds.label }}</title>{% endblock %}
@@ -47,7 +47,7 @@
             </span>
           {% endif %}
         </h6>
-        {% if not messages %}
+        {% if not messages and tasks|length < 1 %}
 	        <p>Linking in WHG is the activity of matching records from one dataset with "close matches" in another, in a method called <sr>reconciliation</sr> or <sr>alignment</sr>. It can also accomplish geocoding of place names for many records that are missing location. Reconciliation tasks can be performed against our local <sr>Wikidata</sr> index. Fully accessioning data to WHG involves the further step of reconciling against our "union index."</p>
         {% endif %}
         {% if user in ds.owners or user in collaborators or user.is_superuser or user|has_group:'whg_team'%}
