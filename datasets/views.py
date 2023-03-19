@@ -297,6 +297,8 @@ def review(request, pk, tid, passnum):
   authname = 'Wikidata' if auth == 'wd' else 'Getty TGN' \
     if auth == 'tgn' else 'WHG'
   kwargs=json.loads(task.task_kwargs.replace("'",'"'))
+  print('review() kwargs', kwargs)
+  test = kwargs['test']
   beta = 'beta' in list(request.user.groups.all().values_list('name',flat=True))
   # filter place records by passnum for those with unreviewed hits on this task
   # if request passnum is complete, increment
@@ -418,6 +420,7 @@ def review(request, pk, tid, passnum):
     'count_pass2': cnt_pass2,
     'count_pass3': cnt_pass3,
     'deferred': True if passnum =='def' else False,
+    'test':test,
   }
 
   # print('raw_hits at formset', [h.json['titles'] for h in raw_hits])

@@ -51,6 +51,11 @@ def join(value,delimit):
         value=map(str,value)
     return delimit.join(value)
 
+# @register.filter
+# def json(val,key):
+#     obj = val.split(',')
+#     return obj[key]
+
 @register.filter
 def parse(obj,key):
     if '/' in key:

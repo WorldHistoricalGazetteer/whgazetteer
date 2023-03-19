@@ -67,6 +67,8 @@
                 <a href="?page={{ records.paginator.num_pages }}">last &raquo;</a>
             {% endif %}
           </span>
+	        {% if test == 'on' %}
+	          <span class="bold float-right">VIEW ONLY</span>{% endif %}
         </div>
       </div>
       <div class="row mt-2">
@@ -292,10 +294,14 @@
     document.location.href = url
   })
   $(function(){
+    if("{{ test }}" == "on"){
+      $("#review_nav").css("background-color", "lightsalmon")
+	    $("input:radio").attr("disabled", "disabled")
+	    $("#btn_save").hide()
+	    $("#defer_link").hide()
+    }
     // on each page load...
     current_place = $('input[name=place_id]').val()
-    <!--console.log('lastPlace:',sessionStorage.lastPlace)-->
-    <!--console.log('current place:', $('input[name=place_id]').val())-->
     // show undo link if there is a lastPlace & it's not the current place
     if((sessionStorage.lastPlace && sessionStorage.lastPlace != current_place)){
       $("#undo").removeClass('hidden-imp')}

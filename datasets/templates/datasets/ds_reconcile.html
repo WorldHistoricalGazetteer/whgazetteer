@@ -91,18 +91,22 @@
                       <a class="confirm-del-all" data-id={{t.task_id}} href="{% url 'datasets:task-delete' tid=t.task_id scope='task' %}">Delete task & hits, clear matches {% fontawesome_icon 'trash' color='#ff0000' %}
                       </a><br/>
                       <a class="confirm-del-geoms" href="{% url 'datasets:task-delete' tid=t.task_id scope='geoms'%}">
-                        Delete geometries added so far
-                      </a>
+                        Delete geometries added so far</a>
 	                    </p>
 	                  {% endif %}
                   </div>
                   <div class="col-sm-6">
                     <p>
 	                    <b>Result</b>: {{ t.result|get:"got_hits"|safe }} of the {{ t.result|get:"count"|safe }}
-	                      records got <b>{{ t.result|get:"total_hits"|safe }}</b> hits in total
+	                      records got <b>{{ t.result|get:"total_hits"|safe }}</b> hits in total;
 	                    {% if t.task_name == 'align_idx' %}
 		                    {% with gothits=t.result|get:"got_hits" %}
-		                    ; {{ t.result|get:"count"|subtract:gothits}}; indexed automatically
+			                    {% if t.task_kwargs|parsejson:"test" == 'off' %}
+			                      {{ t.result|get:"count"|subtract:gothits}} were indexed automatically
+			                    {% else %}<br/>
+			                      <span class="text-danger italic">
+				                      {{ t.result|get:"count"|subtract:gothits}} would have been indexed automatically</span>.
+			                    {% endif %}
 		                    {% endwith %}
 	                    {% endif %}
                     </p>
@@ -151,19 +155,14 @@
                         &nbsp;<a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='def' %}">review</a>
                         </span>
                       </li>
-                    </ul> 
-                    
+                    </ul>
                   </div>
                   <div id="task_logo" class="col-sm-2">
-                    {% if t.task_name == 'align_wd' %}
-                      <img src="{% static 'images/Wikidata-logo-en.svg'%}" width="80"/>
-                    {% elif t.task_name == 'align_wdlocal' %}
+                    {% if t.task_name == 'align_wdlocal' %}
                       <img src="{% static 'images/wikidata-logo-local.png'%}" width="80"/>
-                    {% elif t.task_name == 'align_tgn' %}
-                      <img src="{% static 'images/getty80.png'%}" width="80"/>
-                    {% elif t.task_name == 'align_idx'%}
+                    {% elif t.task_name == 'align_idx' and t.task_kwargs|parsejson:"test" == 'off' %}
                       <img src="{% static 'images/whg_accessioning.svg'%}" width="80"/>
-                    {% elif t.task_name == 'align_whg'%}
+                    {% else %}
                       <img src="{% static 'images/whg_aligning.svg'%}" width="80"/>
                     {% endif %}
                   </div>
