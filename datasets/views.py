@@ -298,7 +298,7 @@ def review(request, pk, tid, passnum):
     if auth == 'tgn' else 'WHG'
   kwargs=json.loads(task.task_kwargs.replace("'",'"'))
   print('review() kwargs', kwargs)
-  test = kwargs['test']
+  test = kwargs['test'] if 'test' in kwargs else "off"
   beta = 'beta' in list(request.user.groups.all().values_list('name',flat=True))
   # filter place records by passnum for those with unreviewed hits on this task
   # if request passnum is complete, increment
@@ -700,7 +700,7 @@ def ds_recon(request, pk):
     test = 'on' if 'test' in request.POST else 'off'
     auth = request.POST['recon']
     language = request.LANGUAGE_CODE
-    if auth == 'idx' and ds.public == False:
+    if auth == 'idx' and ds.public == False and test == 'off':
       messages.add_message(request, messages.ERROR, """Dataset must be public before indexing!""")
       return redirect('/datasets/' + str(ds.id) + '/addtask')
     # previous successful task of this type?
@@ -788,7 +788,8 @@ def task_delete(request, tid, scope="foo"):
   tr = get_object_or_404(TaskResult, task_id=tid)
   auth = tr.task_name[6:] # wdlocal, idx
   dsid = tr.task_args[1:-1]
-  test = json.loads(tr.task_kwargs.replace("'",'"'))['test']
+  test = json.loads(tr.task_kwargs.replace("'",'"'))['test'] \
+    if 'test' in tr.task_kwargs else 'off'
   ds=get_object_or_404(Dataset, pk=dsid)
   ds_status = ds.ds_status
   print('task_delete() dsid', dsid)

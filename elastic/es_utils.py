@@ -431,19 +431,20 @@ def replaceInIndex(es,idx,pids):
 # whether record is in database or not
 def removeDatasetFromIndex(request, *args, **kwargs):
   print('removeDatasetFromIndex() hands pids to removePlacesFromIndex()')
-  print('args, kwargs',args, kwargs)
+  print('args, kwargs', args, kwargs)
   from datasets.models import Dataset
-  from elasticsearch7 import Elasticsearch
-  ds = Dataset.objects.get(id = kwargs['dsid'])
+  ds = Dataset.objects.get(id = args[0])
+  # ds = Dataset.objects.get(id = kwargs['dsid'])
   es = settings.ES_CONN
-  q_pids = {"match": {"dataset": 'sample7h'}}
-  # q_pids = {"match": {"dataset": ds.label}}
+  # q_pids = {"match": {"dataset": 'sample7h'}}
+  q_pids = {"match": {"dataset": ds.label}}
   res = es.search(index='whg', query=q_pids, _source=["title", "place_id"])
   pids = [h['_source']['place_id'] for h in res['hits']['hits']]
   print('pids in remove...()', pids)
   removePlacesFromIndex(es, 'whg', pids)
   ds.ds_status = 'wd-complete'
   ds.save()
+  # remove indexed flag in places
 
   # delete latest idx task (its hits were removed already)
   latest = ds.tasks.filter(task_name='align_idx',status="SUCCESS").order_by('-date_done')[0]

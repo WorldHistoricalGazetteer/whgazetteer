@@ -791,6 +791,8 @@ def align_wdlocal(pk, **kwargs):
   [nohits,wdlocal_es_errors,features] = [[],[],[]]
   [count_hit, count_nohit, total_hits, count_p0, count_p1, count_p2] = [0,0,0,0,0,0]
   start = datetime.datetime.now()
+  # no test option for wikidata, but needs default
+  test = 'off'
 
   # queryset depends on 'scope'
   qs = ds.places.all() if scope == 'all' else \
@@ -909,7 +911,7 @@ def align_wdlocal(pk, **kwargs):
   print("summary returned",hit_parade['summary'])
 
   # create log entry and update ds status
-  post_recon_update(ds, user, 'wdlocal')
+  post_recon_update(ds, user, 'wdlocal', test)
     
   # email owner when complete
   task_emailer.delay(
@@ -918,7 +920,8 @@ def align_wdlocal(pk, **kwargs):
     user.username,
     user.email,
     count_hit,
-    total_hits
+    total_hits,
+    test
   )
   
   return hit_parade['summary']
