@@ -39,25 +39,6 @@ def bestParent(qobj, flag=False):
     best = ['World']
   return best
 
-# log recon action & update status
-def post_recon_update(ds, user, task):
-  if task == 'idx':
-    ds.ds_status = 'indexed' if ds.unindexed == 0 else 'accessioning'  
-  else:
-    ds.ds_status = 'reconciling'
-  ds.save()
-  
-  # recon task has completed, log it
-  logobj = Log.objects.create(
-    category = 'dataset',
-    logtype = 'ds_recon',
-    subtype = 'align_'+task,
-    dataset_id = ds.id,
-    user_id = user.id
-  )
-  logobj.save()
-  print('post_recon_update() logobj',logobj)
-
 # wikidata Qs from ccodes
 #TODO: consolidate hashes
 def getQ(arr,what):

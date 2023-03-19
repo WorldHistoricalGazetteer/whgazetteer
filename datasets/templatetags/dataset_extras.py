@@ -51,11 +51,6 @@ def join(value,delimit):
         value=map(str,value)
     return delimit.join(value)
 
-# @register.filter
-# def json(val,key):
-#     obj = val.split(',')
-#     return obj[key]
-
 @register.filter
 def parse(obj,key):
     if '/' in key:
@@ -74,10 +69,15 @@ def parsedict(value,key):
     return value[key]
 
 @register.filter
-def parsejson(value,key):
-    """returns value for given key"""
-    obj = json.loads(value.replace("'",'"'))
-    return obj[key]
+def parsejson(val,key):
+    """returns value for given key if exists"""
+    # obj = json.loads(val.replace("'", '"'))
+    # return obj[key]
+    if key in val:
+        obj = json.loads(val.replace("'",'"'))
+        return obj[key]
+    else:
+        return None
 
 @register.filter
 def readmore(txt, numchars):

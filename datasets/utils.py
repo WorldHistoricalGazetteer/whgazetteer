@@ -1061,14 +1061,18 @@ def classy(gaz, typeArray):
     types.append(default)
   return list(set(types))
 
+
 # log recon action & update status
-def post_recon_update(ds, user, task):
-  if task == 'idx':
-    ds.ds_status = 'indexed' if ds.unindexed == 0 else 'accessioning'  
+def post_recon_update(ds, user, task, test):
+  print('test in utils.post_recon_update()', test )
+  if test == "off":
+    if task == 'idx':
+      ds.ds_status = 'indexed' if ds.unindexed == 0 else 'accessioning'
+    else:
+      ds.ds_status = 'reconciling'
+    ds.save()
   else:
-    ds.ds_status = 'reconciling'
-  ds.save()
-  
+    task += '_test'
   # recon task has completed, log it
   logobj = Log.objects.create(
     category = 'dataset',
@@ -1078,7 +1082,7 @@ def post_recon_update(ds, user, task):
     user_id = user.id
   )
   logobj.save()
-  print('post_recon_update() logobj',logobj)
+  # print('post_recon_update() logobj',logobj)
 
 def status_emailer(ds, task_name):
   try:

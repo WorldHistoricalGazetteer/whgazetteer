@@ -788,8 +788,12 @@ def task_delete(request, tid, scope="foo"):
   tr = get_object_or_404(TaskResult, task_id=tid)
   auth = tr.task_name[6:] # wdlocal, idx
   dsid = tr.task_args[1:-1]
-  ds=get_object_or_404(Dataset,pk=dsid)
+  test = json.loads(tr.task_kwargs.replace("'",'"'))['test']
+  ds=get_object_or_404(Dataset, pk=dsid)
   ds_status = ds.ds_status
+  print('task_delete() dsid', dsid)
+  # return HttpResponse(
+  #   content='<h3>stopped task_delete()</h3>')
 
   # only the places that had hit(s) in this task
   places = Place.objects.filter(id__in=[h.place_id for h in hits])
@@ -821,7 +825,7 @@ def task_delete(request, tid, scope="foo"):
 
   # delete dataset from index
   # undoes any acceessioning work
-  if auth in ['whg', 'idx']:
+  if auth in ['whg', 'idx'] and test == 'off':
     removeDatasetFromIndex('whg', dsid)
   # set status
   print('ds.tasks.all()', ds.tasks.all())

@@ -1132,7 +1132,13 @@ em { color: #993333;}
   padding:12px 12px 0 12px;
   box-shadow: 3px 3px #eee;
 }
-.task-box p, .task-box li {font-size: small; margin-bottom:.3rem;}
+.task-box-test {
+  border: 1px dotted red;
+  background-color: #f8f8f8;
+  padding:12px 12px 0 12px;
+  box-shadow: 3px 3px #eee;
+}
+.task-box, .task-box-test p, .task-box li {font-size: small; margin-bottom:.3rem;}
 .dataset-detail {
   background-color: ghostwhite;
   padding: 10px;

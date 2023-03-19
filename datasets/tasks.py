@@ -1365,7 +1365,7 @@ def align_idx(pk, *args, **kwargs):
   print("hit_parade['summary']",hit_parade['summary'])
   
   # create log entry and update ds status
-  post_recon_update(ds, user, 'idx')
+  post_recon_update(ds, user, 'idx', test)
 
   # email owner when complete
   task_emailer.delay(
