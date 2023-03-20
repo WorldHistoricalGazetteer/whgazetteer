@@ -84,6 +84,8 @@ label {vertical-align:top;}
 }
 .ital {font-style: italic;}
 .larger {font-size: larger;}
+.linky {color: #5d96cd;}
+.linkypop {color: #993333;}
 /*.more {display: none;}*/
 .nobr {white-space: nowrap;}
 .no-bullet { list-style: none;}

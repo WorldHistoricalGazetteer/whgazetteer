@@ -1,6 +1,6 @@
 {% extends "main/base.html" %}
 {% load static %}
-{ load fontawesome %}
+
 {% load mathfilters %}
 {% load dataset_extras %}
 
@@ -193,7 +193,7 @@
 	            {% if user|has_group:'update_beta' or user.is_superuser%}
 		            <span class="float-right mr-2">
 		              <a href="#" id="a_update_modal" data-dsid = {{ ds.id }} data-toggle="modal" data-target="#updateModal">update</a>
-		              <span class="help-matches" data-id="updates">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
+		              <span class="help-matches" data-id="updates"><i class="fas fa-question-circle linkypop"></i></span>
 		            </span>
 	            {% endif %}
             {% endif %}

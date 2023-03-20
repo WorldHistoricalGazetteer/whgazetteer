@@ -1,7 +1,7 @@
 <!-- datasets/review.html -->
 {% extends "main/base.html" %}
 {% load leaflet_tags %}
-{ load fontawesome %}
+
 {% load static %}
 {% load dataset_extras %}
 {% block title %}<title>Review hits::{{ ds_label }}>{{authority}}</title>{% endblock %}
@@ -38,7 +38,7 @@
       </select>
     {% endif %} 
     </span>
-    <span class="help-matches" data-id="review">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
+    <span class="help-matches" data-id="review"><i class="fas fa-question-circle linkypop"></i></span>
     <span class="half float-right mr-2"><i>task id</i>: {{ task_id|truncatechars:10 }}...</span>
   </div> <!-- col 8 -->
   </div> <!-- .row -->

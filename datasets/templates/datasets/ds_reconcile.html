@@ -1,6 +1,6 @@
 {% extends "main/base.html" %}
 {% load static %}
-{ load fontawesome %}
+
 {% load mathfilters %}
 {% load dataset_extras %}
 
@@ -39,7 +39,7 @@
       <mark id="ds_tasks" class="small">
         <h6 class="">Reconciliation Tasks 
           <span class="small help-matches" data-id="reconciliation">
-            {% fontawesome_icon 'question-circle' color='#993333' %}
+            <i class="fas fa-question-circle linkypop"></i>
           </span>
           {% if user.is_superuser or user in ds.owners or user|has_group:'whg_team' %}
             <span class="ml-4 small">
@@ -124,7 +124,7 @@
                           {% elif t.task_name == 'align_wdlocal'%}
                           | <a href="{% url 'datasets:wd_pass0' tid=t.task_id %}">auto-accept</a> 
                           {% endif %}
-                         <span class="help-matches" data-id="auto-match">{% fontawesome_icon 'question-circle' color='#993333' %}</span></span>
+                         <span class="help-matches" data-id="auto-match"><i class="fas fa-question-circle linkypop"></i></span></span>
                          </li>
                       {% elif t.task_name == "align_idx" %}
 	                      <li class="li-left">Passes 0, 1:

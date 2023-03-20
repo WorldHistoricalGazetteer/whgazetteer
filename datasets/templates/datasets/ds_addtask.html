@@ -1,7 +1,7 @@
 {% extends "main/base.html" %}
 {% load static %}
 {% load leaflet_tags %}
-{ load fontawesome %}
+
 {% load mathfilters %}
 {% load dataset_extras %}
 
@@ -137,7 +137,7 @@
               <div id="geo_constraint" class="mt-2">
                 <hr/>
                 <div class="mb-2">
-                  <p class="font-weight-bold">Geographic bounds <span class="help-matches" data-id="geo_bounds">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
+                  <p class="font-weight-bold">Geographic bounds <span class="help-matches" data-id="geo_bounds"><i class="fas fa-question-circle linkypop"></i></span>
                   </p>
                   <p>
                     <select id="select_region" name="region" class="custom-select-sm" style="width:auto;">
@@ -184,13 +184,13 @@
             <p class="allcap-heading small mb-0">OPTIONS</p>
             <p><span id="q_accept" class="small">
               <input id="accept_geom" name="geom" type="checkbox" checked="checked"/> accept geometries in matches
-            <span class="help-matches" data-id="accept-geometry">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
+            <span class="help-matches" data-id="accept-geometry"><i class="fas fa-question-circle linkypop"></i></span>
             </span></p>
             {%comment%}
             {% if ds.q_count > 0 %}
             <p><span id="q_accept" class="small">
               <input id="accept_geom" name="geom" type="checkbox" checked="checked"/> skip records 
-            <span class="help-matches" data-id="accept-geometry">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
+            <span class="help-matches" data-id="accept-geometry"><i class="fas fa-question-circle linkypop"></i></span>
             {% endif %}
             {%endcomment%}
           </div>
