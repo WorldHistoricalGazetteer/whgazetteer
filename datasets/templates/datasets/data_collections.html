@@ -59,7 +59,7 @@
 	        <div id="dscoll_blurb" class="col-sm-6">
 		        <h5><b>Dataset</b> collections
 			        <span class="smaller float-right pr-2 pt-1">
-				        <a href="{% url 'collection:ds-collection-create' %}">{% fontawesome_icon 'plus-square' color='#336699' %} new</a>
+				        <a href="{% url 'collection:ds-collection-create' %}"><i class="fas fa-plus-square linky"></i> new</a>
 			        </span>
 		        </h5>
 		        <p>A <b>Dataset Collection</b> is a set of public datasets, typically from multiple contributors and linked to define a "focus domain" within World Historical Gazetteer. As with all collections, searches, downloads and API calls can be constrained to include only places in the collection's member datasets.</p>
@@ -67,10 +67,10 @@
 	        <div id="placecoll_blurb" class="col-sm-6">
 		        <h5><b>Place</b> collections <span class="badge badge-warning px-2">beta</span>
 			        <span class="smaller float-right pr-2 pt-1">
-				        <a href="{% url 'collection:place-collection-create' %}">{% fontawesome_icon 'plus-square' color='#336699' %} new</a>
+				        <a href="{% url 'collection:place-collection-create' %}"><i class="fas fa-plus-square linky"></i> new</a>
 			        </span>
 		        </h5>
-		        <p>A <b>Place Collection</b> is an authored data publication. It can include all places from one or more public dataset, as well as individual places discovered in WHG search results and browse screens. Any of its place records can be annotated with information pertaining to its membership in the collection. <a href="{% url 'main:tute-place_collections' %}">Guide {% fontawesome_icon 'question-circle' color='#336699' %}</a>
+		        <p>A <b>Place Collection</b> is an authored data publication. It can include all places from one or more public dataset, as well as individual places discovered in WHG search results and browse screens. Any of its place records can be annotated with information pertaining to its membership in the collection. <a href="{% url 'main:tute-place_collections' %}">Guide <i class="fas fa-question-circle linky"></i></a>
 			        {% comment %}<a href="">more...</a> <p>Metadata for collection itself will include an abstract, and can include any number of links to relevant web resources.</p>{% endcomment %}
 	        </div>
         </div>

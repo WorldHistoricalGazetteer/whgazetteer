@@ -35,15 +35,15 @@
 
       <div id="search_input" class="d-input input-group input-group-sm pb-2 justify-content-center" >
         <input id="input_box" class="" type="text" placeholder="Enter place name" autocomplete="false">
-        <button class="b-input">{% fontawesome_icon 'search' color='#336699'%}</button>
+	      <button class="b-input"><i class="fas fa-search" style="color:blue;"></i></button>
       </div>
 
       <ul id="scope_tabs" class="nav nav-tabs small">
         <li class="nav-item">
-        <a class="nav-link active" id="a_idx" data-scope="idx" href="#" role="tab" style="background:#f1fff1;"> Search Index {%fontawesome_icon 'link'%}</a>
+	        <a class="nav-link active" id="a_idx" data-scope="idx" href="#" role="tab" style="background:#f1fff1;"> Search Index <i class="fas fa-link linky"></i></a>
         </li>
         <li class="nav-item ml-1">
-        <a class="nav-link" id="a_db" data-scope="db" href="#" role="tab" style="background:whitesmoke;">Search Database {%fontawesome_icon 'database'%}</a>
+	        <a class="nav-link" id="a_db" data-scope="db" href="#" role="tab" style="background:whitesmoke;">Search Database <i class="fas fa-database linky"></i></a>
         </li>
       </ul>
       <div id="search_filters" class="tab-pane fade show active" role="tabpanel">
@@ -53,7 +53,7 @@
             <p class="mb-0">place categories
             <span class="ml-1">
               <span class="mr-1"><a id="check_toggle" href="#">clear all</a></span>
-              <a id="filter_help" class="pointer" data-toggle="popover" title="Place categories" data-content="" tabindex="0" data-trigger="focus">{% fontawesome_icon 'question-circle' color='#336699' %}</a>
+              <a id="filter_help" class="pointer" data-toggle="popover" title="Place categories" data-content="" tabindex="0" data-trigger="focus"><i class="fas fa-question-circle linky"></i></a>
             </span>
             </p>
             <ul class="ul-left p-0 mb-0">
@@ -70,7 +70,7 @@
             <p class="mb-0">temporal ( default = all )
             <span class="float-right">
               <a id="temporal_help" class="pointer" data-toggle="popover" title="Temporal filter" data-content="" tabindex="0" data-trigger="focus">
-              {% fontawesome_icon 'question-circle' color='#336699' %}</a></span>
+              <i class="fas fa-question-circle linky"></i></a></span>
             </p>
             <div>
               <label class="input-sm"><input id="input_start" type="text" value = "" size="12" placeholder="earliest year"></label>
@@ -80,12 +80,12 @@
             <p class="mb-0">spatial
               <span class="float-right">
               <a id="spatial_help" class="pointer" data-toggle="popover" title="Spatial filter" data-content="" tabindex="0" data-trigger="focus">
-              {% fontawesome_icon 'question-circle' color='#336699' %}</a></span>
+              <i class="fas fa-question-circle linky"></i></a></span>
             </p>
               <label><input id="input_area" type="text" size="30" placeholder="Region, country, study area" /></label>
               <input type="hidden" id="boundsobj" />
             </div>
-            <span id="dbicon" class="hidden">{% fontawesome_icon 'database' color='#999' %}</span>
+	          <span id="dbicon" class="hidden"><i class="fas fa-database linky"></i></span>
             <div id="search_resets" class="float-right pt-4">
               <span id="reset_search" class="hidden">
                 <a href="javascript:resetSearch()">reset search</a></span>
@@ -96,7 +96,7 @@
         </div> <!-- .row -->
       </div> <!-- #search_filters -->
       <div id="result_filters" class="pt-2 pl-1 hidden">
-        <p class="half pl-2 mr-1">result filters {% fontawesome_icon 'filter' %}
+	      <p class="half pl-2 mr-1">result filters <i class="fas fa-filter linky"></i>
         <span id="dropdown_filters">
         <span class="ml-2"><select id="type_select"></select></span>
         <span class="ml-2"><select id="cc_select"></select></span>
@@ -130,8 +130,8 @@
       <div id="type_filter" class="hidden">
         <p class='allcap-heading half mb-0 pl-1'>PLACE TYPES (select to limit)
           <span class="float-right mr-2"><a href="#" class="hide-filter">
-            close {% fontawesome_icon 'times-circle' color='#336699' %}</a></span>
-          <span class="float-right clear-filter hidden mr-2"><a href="#">restore all</span></a>
+	          close <i class="fas fa-times-circle linky"></i></a></span>
+          <span class="float-right clear-filter hidden mr-2"><a href="#">restore all</a></span>
         </p>
         <ul class="list-inline"></ul>
       </div>
@@ -1248,7 +1248,7 @@
     variants = vcount > 0 ? sug['variants'].sort().slice(0,6).join('; ') : ''
     ccodes = sug['ccodes'] != '' ? ' '+sug['ccodes']+' ' : ''
     types = sug['types'].join('; ')
-    geo = sug['geom'].length > 0 ? ' {% fontawesome_icon 'globe' color='#666' %}' : ''
+    geo = sug['geom'].length > 0 ? ' <i class="fas fa-globe" style="color:#666;"></i>' : ''
     // whgid if index search, else pid
     identifier = sug['ds'] ? sug['pid'] : sug['whg_id']
     dsid = sug['ds'] ? parseInt(sug['ds']['id']) : ''
@@ -1317,9 +1317,9 @@
     // abbreviate links not in aliases.base_urls
     if(identifier.startsWith('http')) {
       let tag = identifier.replace(/.+\/\/|www.|\..+/g, '')
-      link = '<a href="'+identifier+'" target="_blank">'+tag+'{% fontawesome_icon 'external-link' color='#336699' %},  </a>'
+      link = '<a href="'+identifier+'" target="_blank">'+tag+'<i class="fas fa-external-link-alt linky"></i>,  </a>'
     } else {
-    link = '<a href="" class="ext" data-target="#ext_site">'+identifier+'&nbsp;{% fontawesome_icon 'external-link' color='#336699' %}</a>, '
+    link = '<a href="" class="ext" data-target="#ext_site">'+identifier+'&nbsp;<i class="fas fa-external-link-alt linky"></i></a>, '
     }
     return link
   }
@@ -1327,7 +1327,7 @@
   // from parsePlace() builds link for external placetype record
   function url_exttype(type) {
     link = ' <a href="#" class="exttab" data-id='+type.identifier+
-      '>('+type.label+' {% fontawesome_icon 'external-link' color='#336699' %})</a>'
+      '>('+type.label+' <i class="fas fa-external-link-alt linky"></i>)</a>'
     return link
   }
 

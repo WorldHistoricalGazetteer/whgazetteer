@@ -3,7 +3,6 @@
 
 {% block content %}
 {% load static %}
-{ load fontawesome %}
 
   <div class="container">
     <div class="d-flex justify-content-center mt-3">
@@ -171,11 +170,11 @@
             <div id="pills-data" class="tab-pane fade" role="tabpanel" aria-labelledby="pills-data-tab">
               <div id="gp_data" class="tute-section"><a name="dashboard"></a>
                 <!--<p class="subhead strong">Data dashboard</p>-->
-                <p>The Data dashbord page lists any Datasets created by a user or for which they are a collaborator, as well as any Study Areas and Collections they have created. Clicking an "add new" or "create new" link ({% fontawesome_icon 'plus-square' color='#336699' %}) starts the process of creating and managing a Dataset, Study Area, or Collection.</p>
+                <p>The Data dashbord page lists any Datasets created by a user or for which they are a collaborator, as well as any Study Areas and Collections they have created. Clicking an "add new" or "create new" link (<i class="fas fa-plus-square linky"></i>) starts the process of creating and managing a Dataset, Study Area, or Collection.</p>
                 <h5>Datasets</h5>
                 <h6>Place data</h6>
                 <p>Registered users can create Place datasets by uploading files in one of two formats: the expressive GeoJSON-LD based <a href="https://github.com/LinkedPasts/linked-places" target="_blank">Linked Places format</a> ("LP format" for short), or the simpler <a href="https://github.com/LinkedPasts/linked-places/blob/master/tsv_0.3.md" target="_blank">LP-TSV format</a>. Considerations for making the choice are found in the <a href="{% url 'main:tute-choosing' %}">"Choosing an upload data format"</a> tutorial.</p>
-                <p>Help icons ({% fontawesome_icon 'question-circle' color='#336699' %}) for each field in the "Upload dataset" form provide popup instruction for filling it.</p>
+                <p>Help icons (<i class="fas fa-question-circle linky"></i>) for each field in the "Upload dataset" form provide popup instruction for filling it.</p>
                 <p>Uploaded data files are validated for adherence to the relevant format spec, LP or LP-TSV. If there are formatting errors, details of the errors are displayed (insofar as possible) and after correcting them the file upload can be attempted again.</p>
                 <p>Upon successful upload, a <a href="{% url 'main:tute-guide' %}#dataset-portal">Dataset Portal page</a> is displayed.</p>
                 <h6>Trace data</h6>
@@ -234,7 +233,7 @@
               <div id="gp_review" class="tute-section"><a name="review"></a>
                 <h6>Reviewing "hits"</h6>
                 <p>Prospective matches to external authorities are <b>not</b> automatically added to the WHG database during reconciliation; i.e. new "place_geom" and "place_link" records augmenting the dataset are created only by the Reconciliation Review step performed by the dataset creator or specified collaborators.</p>
-                <p>The Review page presents those dataset records that got one or more prospective matches ("hits') on the left of the screen, one by one, and a list of those hits on the right. A small map displays geometry for your record with a green marker, and geometries of all hits with orange markers. Hovering over the globe symbol&nbsp;({% fontawesome_icon 'globe' color='#336699' %}) in a hit item highlights its position in the map.</p>
+                <p>The Review page presents those dataset records that got one or more prospective matches ("hits') on the left of the screen, one by one, and a list of those hits on the right. A small map displays geometry for your record with a green marker, and geometries of all hits with orange markers. Hovering over the globe symbol&nbsp;(<i class="fas fa-globe"></i>) in a hit item highlights its position in the map.</p>
                 
                 <p>The objective is to determine, for each dataset record, whether any of the hits are a "closeMatch" to it. By default, "no match" is selected for each hit. The reviewer can optionally change the selection to "closeMatch" for one or more hits. In any case, clicking save records the choice and advances to the next record. Attributes of the dataset record and the hits provide context to assist making the assessment.</p>
                 

@@ -42,7 +42,7 @@
             <td>{{ object.src_id }}
                 {%if not 'whg' in dataset.uri_base %}
                     <a href="{{dataset.uri_base}}{{object.src_id}}" target="_blank">
-                        source record {% fontawesome_icon 'external-link' color='#336699' %}</a>
+                        source record <i class="fas fa-external-link-alt linky"></i></a>
                 {%endif%}
             </td>
           </tr>

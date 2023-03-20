@@ -72,7 +72,7 @@
 						<label for="Public">Public:</label>
 						{{ form.public }}
 					{% elif action == "update" %}Not yet public, see:
-						<a href="#"><span class="help-matches" data-id="going_public_coll">making a collection public {% fontawesome_icon 'question-circle' color='#336699' %}</span></a>
+						<a href="#"><span class="help-matches" data-id="going_public_coll">making a collection public <i class="fas fa-question-circle linky"></i></span></a>
 					{% endif %}
 				</div>
 	      <hr/>
@@ -118,7 +118,7 @@
               </select>
             </span>
             <a href="javascript:{ addDataset() }" class="">
-              {% fontawesome_icon 'plus-square' color='#336699' %} add</a>
+              <i class="fas fa-plus-square linky"></i> add</a>
           </p>
           <!-- id, label, title, description, creator, create_date, webpage, numrows, datatype -->
           <div id="coll_dscards_create">

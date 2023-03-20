@@ -43,7 +43,7 @@
           </span>
           {% if user.is_superuser or user in ds.owners or user|has_group:'whg_team' %}
             <span class="ml-4 small">
-            <a id="addtask_link" href="{% url 'datasets:ds_addtask' id=ds.id %}">Add new task {% fontawesome_icon 'plus-square' color='#336699' %}</a>
+            <a id="addtask_link" href="{% url 'datasets:ds_addtask' id=ds.id %}">Add new task <i class="fas fa-plus-square linky"></i></a>
             </span>
           {% endif %}
         </h6>

@@ -197,7 +197,7 @@
 						Public: {{ form.public }}
 					{% elif action == "update" %}
 						<a href="#"><span class="help-matches" data-id="going_public_coll">
-							{% fontawesome_icon 'question-circle' color='#336699' %} making a collection public </span></a>
+							<i class="fas fa-question-circle linky"></i> making a collection public </span></a>
 					{% endif %}
 				</div>
 	      <div id="d_buttons" class="" style="">
@@ -583,9 +583,9 @@
     // abbreviate links not in aliases.base_urls
     if(identifier.startsWith('http')) {
       let tag = identifier.replace(/.+\/\/|www.|\..+/g, '')
-      link = '<a href="'+identifier+'" target="_blank">'+tag+'{% fontawesome_icon 'external-link' color='#336699' %},  </a>'
+      link = '<a href="'+identifier+'" target="_blank">'+tag+'<i class="fas fa-external-link-alt linky"></i>,  </a>'
     } else {
-    link = '<a href="" class="ext" data-target="#ext_site">'+identifier+'{% fontawesome_icon 'external-link' color='#336699' %}</a>, '
+    link = '<a href="" class="ext" data-target="#ext_site">'+identifier+'<i class="fas fa-external-link-alt linky"></i></a>, '
     }
     return link
   }

@@ -642,9 +642,9 @@
     // abbreviate links not in aliases.base_urls
     if(identifier.startsWith('http')) {
       let tag = identifier.replace(/.+\/\/|www.|\..+/g, '')
-      link = '<a href="'+identifier+'" target="_blank">'+tag+' {% fontawesome_icon 'external-link' color='#336699' %}, </a>'
+      link = '<a href="'+identifier+'" target="_blank">'+tag+' <i class="fas fa-external-link-alt linky"></i>, </a>'
     } else {
-    link = '<a href="" class="ext" data-target="#ext_site">'+identifier+' {% fontawesome_icon 'external-link' color='#336699' %}</a>, '
+    link = '<a href="" class="ext" data-target="#ext_site">'+identifier+' <i class="fas fa-external-link-alt linky"></i></a>, '
     }
     return link
   }

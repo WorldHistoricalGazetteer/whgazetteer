@@ -134,7 +134,7 @@
               <span class="hidden editing-public">{{ form.public }}</span>
 
 	            {% if not user in whgteam and ds.public == False %}
-		              <a href="#"><span class="help-matches" data-id="going_public_ds">Details on making a dataset public. {% fontawesome_icon 'question-circle' color='#336699' %}</span></a>
+		              <a href="#"><span class="help-matches" data-id="going_public_ds">Details on making a dataset public. <i class="fas fa-question-circle linky"></i></span></a>
 	            {% endif %}
 {% comment %}
 	            {% if user in whgteam %}
@@ -142,7 +142,7 @@
 	            {% else %}
 
                 {% if ds.public == False %}
-		              Not yet; <a href="#"><span class="help-matches" data-id="going_public_ds">Details on making a dataset public. {% fontawesome_icon 'question-circle' color='#336699' %}</span></a>
+		              Not yet; <a href="#"><span class="help-matches" data-id="going_public_ds">Details on making a dataset public. <i class="fas fa-question-circle linky"></i></span></a>
                 {% else %}
 	                {{ ds.public }}
                 {% endif %}

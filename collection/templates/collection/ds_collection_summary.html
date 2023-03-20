@@ -56,7 +56,7 @@
 		        <tr><td><b>Keywords</b></td><td>{{ object.keywords|join:', ' }}</td></tr>
 		        {% if object.webpage %}
 		        <tr><td><b>Webpage</b></td><td>
-		          <a href="{{object.webpage }}" target="_blank">link {% fontawesome_icon 'external-link' color='#336699' %}</a>
+		          <a href="{{object.webpage }}" target="_blank">link <i class="fas fa-external-link-alt linky"></i></a>
 		        </td></tr>
 		        {% endif %}
 		        {% if object.contact %}

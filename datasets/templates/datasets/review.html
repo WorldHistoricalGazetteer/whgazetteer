@@ -135,7 +135,7 @@
             {% if record.links.all|length > 0 %}
             <p><strong>Links</strong>: 
               {% for link in record.links.all %}
-                <a href="" class="mr-2 ext" data-toggle="modal" data-target="#ext_site">{{ link.jsonb.identifier }} {% fontawesome_icon 'external-link' color='#336699' %}</a>
+                <a href="" class="mr-2 ext" data-toggle="modal" data-target="#ext_site">{{ link.jsonb.identifier }} <i class="fas fa-external-link-alt linky"></i></a>
               {% endfor %}</p>
             {% endif %}
             {% if record.minmax %}
@@ -209,7 +209,7 @@
                   {% else %}
                   <p><strong>{{ authority|upper }} ID</strong>: 
                   {% endif %}
-                  <a href="" data-auth={{authority}} class="mr-2 ext-recon" >{{ form.authrecord_id.value }}</a>{% fontawesome_icon 'external-link' color='#336699' %}
+                  <a href="" data-auth={{authority}} class="mr-2 ext-recon" >{{ form.authrecord_id.value }}</a><i class="fas fa-external-link-alt linky"></i>
                   </p>
                 {% endif %}
                 
@@ -242,7 +242,7 @@
                 {% if form.json.value|get:"links"|length > 0 %} 
                   <p><strong>Links</strong>: 
                   {% for link in form.json.value|get:"links" %}
-                    <a href="" class="mr-2 ext" data-toggle="modal" data-target="#ext_site">{{ link }} {% fontawesome_icon 'external-link' color='#336699' %}</a>
+                    <a href="" class="mr-2 ext" data-toggle="modal" data-target="#ext_site">{{ link }} <i class="fas fa-external-link-alt linky"></i></a>
                   {% endfor %}
                 </p>{% endif %}
 
