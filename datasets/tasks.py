@@ -1,7 +1,7 @@
 # celery tasks for reconciliation and downloads
 # align_tgn(), align_wdlocal(), align_idx(), align_whg, make_download
 from __future__ import absolute_import, unicode_literals
-from celery import task, shared_task # this is @task decorator
+from celery import shared_task # this is @shared_task decorator
 #from celery_progress.backend import ProgressRecorder
 from django_celery_results.models import TaskResult
 from django.conf import settings
@@ -49,7 +49,7 @@ def testy():
   builds download file, retrieved via ajax JS in ds_summary.html, ds_meta.html,
   collection_detail.html (modal), place_collection_browse.html (modal)
 """
-@task(name="make_download")
+@shared_task(name="make_download")
 def make_download(request, *args, **kwargs):
   # TODO: integrate progress_recorder for better progress bar in GUI
   # progress_recorder = ProgressRecorder(self) #accessed?
@@ -242,7 +242,7 @@ def make_download(request, *args, **kwargs):
   return completed_message
 
 
-@task(name="task_emailer")
+@shared_task(name="task_emailer")
 def task_emailer(tid, dslabel, username, email, counthit, totalhits, test):
   # TODO: sometimes a valid tid is not recognized (race?)
   time.sleep(5)
@@ -293,7 +293,7 @@ def task_emailer(tid, dslabel, username, email, counthit, totalhits, test):
   msg.send(fail_silently=False)
 
 # test task for uptimerobot
-@task(name="testAdd")
+@shared_task(name="testAdd")
 def testAdd(n1,n2):
   sum = n1+n2
   return sum
@@ -777,7 +777,7 @@ get result_obj per Place via es_lookup_wdlocal()
 parse, write Hit records for review
 
 """
-@task(name="align_wdlocal")
+@shared_task(name="align_wdlocal")
 def align_wdlocal(pk, **kwargs):
   task_id = align_wdlocal.request.id
   ds = get_object_or_404(Dataset, id=pk)
@@ -1168,7 +1168,7 @@ def es_lookup_idx(qobj, *args, **kwargs):
 # TODO (1): "passive analysis option" reports unmatched and matched only
 # TODO (2): "passive analysis option" that reports matches within datasets in a collection
 # TODO (3): option with collection constraint; writes place_link records for partner records
-@task(name="align_idx")
+@shared_task(name="align_idx")
 def align_idx(pk, *args, **kwargs):
   print('kwargs in align_idx()',kwargs)
   test = kwargs['test']
@@ -1517,7 +1517,7 @@ get result_obj per Place via es_lookup_tgn()
 parse, write Hit records for review
 
 """
-@task(name="align_tgn")
+@shared_task(name="align_tgn")
 def align_tgn(pk, *args, **kwargs):
   task_id = align_tgn.request.id
   ds = get_object_or_404(Dataset, id=pk)

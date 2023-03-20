@@ -1,6 +1,5 @@
 # api.urls
 
-from django.conf.urls import url, include
 from django.urls import path
 from rest_framework.urlpatterns import format_suffix_patterns
 from . import views
@@ -66,7 +65,7 @@ urlpatterns = [
     path('area_features/', views.AreaFeaturesView.as_view(),name='area-features'), 
     
     # only UN regions, for teaching
-    path('regions/', views.RegionViewSet, name='regions'),
+    path('regions/', views.RegionViewSet.as_view(), name='regions'),
 
     # 
     # *** USERS ***

@@ -1,7 +1,6 @@
 
-from django.conf.urls import url, include
+from django.conf.urls import include
 from django.urls import path
-from rest_framework.urlpatterns import format_suffix_patterns
 from . import views
 
 """ BEGIN new remote using ViewSets and drf router """

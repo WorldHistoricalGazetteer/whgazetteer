@@ -1,7 +1,7 @@
-{% load i18n staticfiles %}
+{% load i18n %}
 {% load dataset_extras %}
 <!DOCTYPE html>
-{% load fontawesome %}
+{ load fontawesome %}
 <html lang="en">
 <!-- identical to base.html EXCEPT no title in menu bar -->
 <head>
@@ -86,7 +86,7 @@
 					<a class="dropdown-item" href="{% url 'credits' %}">Credits & Contacts</a>
 					<div class="dropdown-divider"></div>
 					<a class="dropdown-item" href="http://blog.whgazetteer.org" target="_blank">
-					  News {% fontawesome_icon 'external-link' %}</a>
+					  News <i class="fas fa-external-link-alt"></i></a>
 				  </div>
 				</li>
 				{% if user.is_authenticated %}
@@ -105,7 +105,7 @@
 					  </div>
 					</li>
 				  <li class="nav-item larger">
-						<a class="nav-link" rel="tooltip" title="{{ user }} profile" href="{% url 'account_profile' %}">{% fontawesome_icon 'user-circle' color='#336699' %}</a>
+						<a class="nav-link" rel="tooltip" title="{{ user }} profile" href="{% url 'account_profile' %}"><i class="fas fa-user" style="color:#336699;"></i></a>
 				  </li>
 				  <li class="nav-item">
 						<a class="nav-link `ml-5" href="javascript:{document.getElementById('logout').submit()}">Logout</a>

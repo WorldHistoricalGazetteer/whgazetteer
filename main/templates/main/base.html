@@ -1,7 +1,7 @@
-{% load i18n staticfiles %}
+{% load i18n %}
+{% load static %}
 {% load dataset_extras %}
 <!DOCTYPE html>
-{% load fontawesome %}
 <html lang="en">
 <head>
   <!-- Global site tag (gtag.js) - Google Analytics -->
@@ -34,7 +34,10 @@
   
   <!-- Add additional CSS in static -->
   {% load static %}
-  {% fontawesome_stylesheet %}
+	<script src="{% static 'fontawesomefree/js/fontawesome.min.js' %}"></script>
+	<script src="{% static 'fontawesomefree/js/solid.min.js' %}"></script>
+	<script src="{% static 'fontawesomefree/js/brands.min.js' %}"></script>
+{#  {% fontawesome_stylesheet %}#}
 {#	<link href="{% static 'fontawesomefree/css/all.min.css' %}" rel="stylesheet" type="text/css">#}
   <link rel="stylesheet" href="{% static 'css/styles.css' %}">
   <link rel="shortcut icon" type="image/png" href="{% static 'images/favicon.ico' %}"/>
@@ -107,7 +110,7 @@
 								<a class="dropdown-item" href="{% url 'credits' %}">Credits & Contacts</a>
 								<div class="dropdown-divider"></div>
 								<a class="dropdown-item" href="http://blog.whgazetteer.org" target="_blank">
-								  News {% fontawesome_icon 'external-link' %}</a>
+								  News <i class="fas fa-external-link-alt"></i></a>
 						  </div>
 						</li>
 						{% if user.is_authenticated %}
@@ -126,7 +129,7 @@
 							  </div>
 						</li>
 					  <li class="nav-item larger">
-						<a class="nav-link" rel="tooltip" title="{{ user }} profile" href="{% url 'account_profile' %}">{% fontawesome_icon 'user-circle' color='#336699' %}</a>
+						<a class="nav-link" rel="tooltip" title="{{ user }} profile" href="{% url 'account_profile' %}"><i class="fas fa-user" style="color:#336699;"></i></a>
 					  </li>
 					  <li class="nav-item">
 							<a class="nav-link `ml-5" href="javascript:{document.getElementById('logout').submit()}">Logout</a>

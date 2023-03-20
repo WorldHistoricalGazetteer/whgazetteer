@@ -9,6 +9,8 @@ from django.contrib.messages import constants as messages
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 # https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
 
 INSTALLED_APPS = [
@@ -36,7 +38,7 @@ INSTALLED_APPS = [
     'django_resized',
     'django_tables2',
     'djgeojson',
-    'fontawesome',
+    # 'fontawesome',
     'guardian',
     'leaflet',
     'mathfilters',
@@ -100,7 +102,6 @@ CELERY_BEAT_SCHEDULE = {
   'task01': {
       'task': 'datasets.tasks.testy','schedule': crontab(minute='*/2')
     }}
-
 
 CAPTCHA_NOISE_FUNCTIONS = (
   #'captcha.helpers.noise_arcs',
