@@ -14,7 +14,8 @@ MATCHTYPES = [
 class HitModelForm(forms.ModelForm):
     match = forms.CharField(
         initial='none',
-        widget=forms.RadioSelect(choices=MATCHTYPES))
+        widget=forms.RadioSelect(choices=MATCHTYPES)
+    )
 
     class Meta:
         model = Hit

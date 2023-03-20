@@ -12,6 +12,9 @@
   <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.css' rel='stylesheet' />
   <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.js'></script>
   <script src="{% static 'js/leaflet-mapbox-gl.js' %}"></script>
+	<style>
+		label {}
+	</style>
 {% endblock %}
 {% block content %}
 <div class="container">
@@ -149,12 +152,12 @@
               {{ hidden }}
             {% endfor %}
             <div class="pl-2 pr-2 mb-1 matchbar">
-              <div class="match_radio custom-control custom-radio">
-                <span class="inline">{{ form.match }}</span>
+              <div class="match_radio custom-control custom-radio pl-1">
+	              {% for choice in form.match %}{{ choice }}&nbsp;{% endfor %}
                 <span class="help" data-id="matches"><i class="fas fa-question-circle linkypop"></i></span>
                 {% if form.json.value|get:"sources" %}
                 <span class="float-right mr-1 mt-1 smaller">
-	                {{ form.json.value|get:"whg_id" }}&nbsp;&nbsp;{{ form.json.value|get:"sources"|length }} linked records <i class="fas fa-link linky">
+	                {{ form.json.value|get:"whg_id" }}&nbsp;&nbsp;{{ form.json.value|get:"sources"|length }} linked records <i class="fas fa-link linky"></i>
                 </span>
                 {% endif %}
                 </span>
@@ -179,7 +182,7 @@
 	                <p>
 	                  <a class="geolink" rel="tooltip" id="{{ src.pid }}"
 	                     href="javascript:{ zoomTo(+{{ form.authrecord_id.value }}) }" title="Flash map marker">
-		                  {% fontawesome_icon 'globe' color='#ED7702' %}
+		                  <i class="fas fa-globe" style="color:#ED7702;"></i>
 	                  </a>
 		                <a class="pop-link pop-dataset" data-label={{src.dslabel}} data-toggle="popover" title="Dataset Profile" data-content="" tabindex="0" rel="clickover">{{ src.dslabel }}</a> (<a href="/api/place/{{src.pid}}/" target="_blank">{{ src.pid }}</a>):
 		                {% if src.variants|length > 0 %}<i>variants</i>: <b>{{ src.variants|join:", " }}</b>{% endif %}
@@ -197,7 +200,8 @@
               {% if form.json.value|get:"links"|length > 0 %} 
                 <p><strong>All concordances</strong>: 
                 {% for link in form.json.value|get:"links" %}
-                  <a href="" class="mr-2 ext" data-toggle="modal" data-target="#ext_site">{{ link }} <i class="fas fa-external-link-alt linky"></i></a>
+                  <a href="" class="mr-2 ext" data-toggle="modal" data-target="#ext_site">{{ link }}
+	                  <i class="fas fa-external-link-alt linky"></i></a>
                 {% endfor %}
               </p>{% endif %}
               
