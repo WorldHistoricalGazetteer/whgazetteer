@@ -66,7 +66,7 @@
     {% if action == 'update' %}Update Study Area <span class="text-danger">"{{ form.title.value }}"</span>
     <a href="{% url 'areas:area-delete' object.id %}" class="float-right"
       title="Delete area feature" rel="tooltip" style="margin-top:-2px;">
-      {% fontawesome_icon 'trash' color='#336699' %}</a>
+      <i class="fas fa-trash" linkyred"></i></a>
     {% else %}Create Study Area{% endif %}
   </h4>
   <div class="d-flex">

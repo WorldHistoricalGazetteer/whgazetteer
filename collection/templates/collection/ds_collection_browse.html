@@ -34,7 +34,7 @@
 	<div>
 		<span class="float-right mr-2 pt-2">
 			<a href="{% url 'collection:ds-collection-update' object.id %}" >
-				{% fontawesome_icon 'gear' color='#336699' %}</a>
+				<i class="fas fa-cog linky"></i></a>
 		</span>
 	</div>
 	{% endif %}
@@ -76,9 +76,9 @@
                     <th class="hidden">revwd</th>
                     <th class="hidden">revtgn</th>
                     <th class="hidden">revwhg</th>
-                    <th>wikidata <a rel="tooltip" data-html="true" title="&#x25a2; not reviewed<br/><i class='fa fa-check-square-o'></i> reviewed" class="pointer text-danger strong">?</a></th>
-                    <th>tgn <a rel="tooltip" data-html="true" title="&#x25a2; not reviewed<br/><i class='fa fa-check-square-o'></i> reviewed" class="pointer text-danger strong">?</a></th>
-                    <th>whg <a rel="tooltip" data-html="true" title="&#x25a2; not reviewed<br/><i class='fa fa-check-square-o'></i> reviewed )" class="pointer text-danger strong">?</a></th>
+                    <th>wikidata <a rel="tooltip" data-html="true" title="&#x25a2; not reviewed<br/><i class='fa fa-check'></i> reviewed" class="pointer text-danger strong">?</a></th>
+                    <th>tgn <a rel="tooltip" data-html="true" title="&#x25a2; not reviewed<br/><i class='fa fa-check'></i> reviewed" class="pointer text-danger strong">?</a></th>
+                    <th>whg <a rel="tooltip" data-html="true" title="&#x25a2; not reviewed<br/><i class='fa fa-check'></i> reviewed )" class="pointer text-danger strong">?</a></th>
                     <th class="hidden">dataset_id</th>
                     <!--<th>ds</th>-->
                   </tr>

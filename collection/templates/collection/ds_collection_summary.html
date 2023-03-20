@@ -31,7 +31,7 @@
 	<div>
 		<span class="float-right mr-2 pt-2">
 			<a href="{% url 'collection:ds-collection-update' object.id %}" >
-				{% fontawesome_icon 'gear' color='#336699' %}</a>
+				<i class="fas fa-cog linky"></i></a>
 		</span>
 	</div>
 	{% endif %}
@@ -133,7 +133,7 @@
               {% for d in ds_list %}
                 <tr class="align-top">
                 <td>{{ d.title }}&nbsp;
-                  <a id="cite_{{d.id}}" class="clippy" aria-label="{% if d.citation %}{{ d.citation }}{% else %}{{d.title}}. [Data file, last modified {{ d.last_modified_text}}]. Retrieved from http://whgazetteer.org/datasets/{{d.id}}, {% now 'd M Y' %}{% endif %}" rel="tooltip" title="copy to clipboard">{% fontawesome_icon 'clipboard' color='#336699' %}</a><br/>
+                  <a id="cite_{{d.id}}" class="clippy" aria-label="{% if d.citation %}{{ d.citation }}{% else %}{{d.title}}. [Data file, last modified {{ d.last_modified_text}}]. Retrieved from http://whgazetteer.org/datasets/{{d.id}}, {% now 'd M Y' %}{% endif %}" rel="tooltip" title="copy to clipboard"><i class="fas fa-clipboard linky"></i></a><br/>
                   <span class="ml-2 small" style="disply:block"><i>est. download time: {{d.dl_est}}</i></span>
                 </td>
                 <td>{{d.numrows}}</td>
@@ -350,8 +350,9 @@
 
     // mapbox tokens 
     var token_whg = '{{ mbtokenwhg }}', 
+        token_kg = '{{ mbtokenkg }}',
         token_mb = '{{ mbtokenmb }}';
-    
+
     // style/tile urls
     var mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}',
         mbtiles_url = 'https://api.mapbox.com/v3/{id}/{z}/{x}/{y}.png',
@@ -367,11 +368,11 @@
     // GL wrappers can display heatmaps
     mb_terrain = L.mapboxGL({
       style:'mapbox://styles/kgeographer/ckhf6o8yf07fw19qhbrm7f2q7',
-      accessToken:token_whg})
+      accessToken:token_kg})
 
     ne_global= L.mapboxGL({
       style:'mapbox://styles/kgeographer/ckidglq8l2nra19nzzbl995ue',
-      accessToken:token_whg}).addTo(mappy)
+      accessToken:token_kg}).addTo(mappy)
 
 
     var baseLayers = {

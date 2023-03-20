@@ -23,7 +23,8 @@
 	  {% if deferred is True %}
 	    (<span class="text-danger">"deferred"</span>)
 	  {% endif %}
-	  <span class="help" data-id="accessioning"><i class="fas fa-question-circle linkypop"></i></span>
+    {% comment %}
+	  <span class="help" data-id="accessioning"><i class="fas fa-question-circle linkypop"></i></span>{% endcomment %}
 	  <span class="small ml-3"> <i>dataset</i>:
 		  <a href="{% url 'datasets:ds_reconcile' id=ds_id %}"> {{ ds_label }}</a>
 	  </span>

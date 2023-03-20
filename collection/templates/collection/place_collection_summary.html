@@ -37,7 +37,7 @@
 		<span class="float-right mr-2 pt-2">
       <i class="fas fa-download linky"></i> <a href="" id="a_download_modal" data-dsid = {{ object.id }} data-toggle="modal" data-target="#downloadModal" title="download options"> download options</a>
 			<span class="ml-4">
-			<a href="{% url 'collection:place-collection-update' object.id %}" >{% fontawesome_icon 'gear' color='#336699' %}</a>
+			<a href="{% url 'collection:place-collection-update' object.id %}" ><i class="fas fa-cog linky"></i></a>
 			</span>
 		</span>
 	</div>
@@ -130,7 +130,7 @@
               {% for d in ds_list %}
                 <tr class="align-top">
                 <td>{{ d.title }}&nbsp;
-                  <a id="cite_{{d.id}}" class="clippy" aria-label="{% if d.citation %}{{ d.citation }}{% else %}{{d.title}}. [Data file, last modified {{ d.last_modified_text}}]. Retrieved from http://whgazetteer.org/datasets/{{d.id}}, {% now 'd M Y' %}{% endif %}" rel="tooltip" title="copy to clipboard">{% fontawesome_icon 'clipboard' color='#336699' %}</a><br/>
+                  <a id="cite_{{d.id}}" class="clippy" aria-label="{% if d.citation %}{{ d.citation }}{% else %}{{d.title}}. [Data file, last modified {{ d.last_modified_text}}]. Retrieved from http://whgazetteer.org/datasets/{{d.id}}, {% now 'd M Y' %}{% endif %}" rel="tooltip" title="copy to clipboard"><i class="fas fa-clipboard linky"></i></a><br/>
                   <span class="ml-2 small" style="disply:block"><i>est. download time: {{d.dl_est}}</i></span>
                 </td>
                 <td>{{d.numrows}}</td>

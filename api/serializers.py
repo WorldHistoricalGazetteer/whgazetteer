@@ -272,7 +272,7 @@ class PlaceTableSerializer(serializers.ModelSerializer):
   def rev_wd(self, place):
     tasks_wd = place.dataset.tasks.filter(task_name='align_wdlocal', status='SUCCESS')
     if place.review_wd == 1:
-      val = '<i class="fa fa-check-square-o"></i>'
+      val = '<i class="fa fa-check"></i>'
     elif not place.hashits_wd:
         val = '<i>no hits</i>'
     elif place.review_wd == 0:
@@ -290,7 +290,7 @@ class PlaceTableSerializer(serializers.ModelSerializer):
   def rev_whg(self, place):
     tasks_whg = place.dataset.tasks.filter(task_name='align_idx', status='SUCCESS')
     if place.review_whg == 1:
-      val = '<i class="fa fa-check-square-o"></i>'
+      val = '<i class="fa fa-check"></i>'
     elif not place.hashits_whg:
       val = '<i>no hits</i>'
     elif place.review_whg == 0:
@@ -305,7 +305,7 @@ class PlaceTableSerializer(serializers.ModelSerializer):
   revtgn = serializers.SerializerMethodField('rev_tgn')
   def rev_tgn(self, place):
     if place.review_tgn == 1:
-      val = '<i class="fa fa-check-square-o"></i>'
+      val = '<i class="fa fa-check"></i>'
     elif not place.hashits_tgn:
       val = '<i>no hits</i>'
     elif place.review_tgn == 0:

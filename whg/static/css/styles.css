@@ -48,7 +48,7 @@ input[type="radio"] {
 mark-b { background-color: aliceblue;}
 mark-g { background-color: #cff3cf; padding:0 3px;}
 mark-r { background-color: chocolate; color:white; padding:0 3px;}
-label {vertical-align:top;}
+label {vertical-align:text-top;}
 .alert {padding: 0 1.25rem !important;}
 .arial {font-family: arial, san-serif;}
 .bg-light { background-color: #fff !important; }
@@ -60,6 +60,7 @@ label {vertical-align:top;}
 .fa-search, .fa-times {color:#999; }
 /*.half { font-size: .7em; margin-top:.6em;}*/
 .half { font-size: .7em;}
+.help {cursor: pointer;}
 .h2em { height: 2em; }
 .h1em { height: 1em; }
 .hang {  padding-left: .2rem ;  text-indent: -.2rem;}

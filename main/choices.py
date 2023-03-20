@@ -94,8 +94,8 @@ FORMATS = [
 LINKTYPES = [
     # ('page','web page'),
     ('page',"<i title class='fa fa-window-maximize'></i>"),
-    ('image',"<i title class='fa fa-file-image-o'></i>"),
-    ('pdf',"<i title class='fa fa-file-pdf-o'></i>")
+    ('image','<img src="/static/images/noun-photo.svg" width="16"/>') ,
+    ('pdf',"<i title class='fa fa-file-pdf'></i>")
 ]
 
 LOG_CATEGORIES = [

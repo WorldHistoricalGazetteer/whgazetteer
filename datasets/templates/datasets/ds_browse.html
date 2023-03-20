@@ -101,9 +101,9 @@
                     <th class="hidden">revwd</th>
                     <th class="hidden">revtgn</th>
                     <th class="hidden">revwhg</th>
-                    <th>wikidata <a rel="tooltip" data-html="true" title="&#x25a2; not reviewed<br/><i class='fa fa-check-square-o'></i> reviewed" class="pointer text-danger strong">?</a></th>
-                    <th>tgn <a rel="tooltip" data-html="true" title="&#x25a2; not reviewed<br/><i class='fa fa-check-square-o'></i> reviewed" class="pointer text-danger strong">?</a></th>
-                    <th>whg <a rel="tooltip" data-html="true" title="&#x25a2; not reviewed<br/><i class='fa fa-check-square-o'></i> reviewed )" class="pointer text-danger strong">?</a></th>
+                    <th>wikidata <a rel="tooltip" data-html="true" title="&#x25a2; not reviewed<br/><i class='fa fa-check'></i> reviewed" class="pointer text-danger strong">?</a></th>
+                    <th>tgn <a rel="tooltip" data-html="true" title="&#x25a2; not reviewed<br/><i class='fa fa-check'></i> reviewed" class="pointer text-danger strong">?</a></th>
+                    <th>whg <a rel="tooltip" data-html="true" title="&#x25a2; not reviewed<br/><i class='fa fa-check'></i> reviewed )" class="pointer text-danger strong">?</a></th>
                   </tr>
                 </thead>
               </table>
@@ -293,8 +293,8 @@
             'circle-opacity': 1,
             'circle-color': '#ff9900',
             'circle-radius': {
-              {#stops: [[2, 3], [16, 10]]#}
-              stops: [[1, 2], [3, 3], [16, 10]]
+              stops: [[2, 3], [16, 10]]
+              {#stops: [[1, 2], [3, 3], [16, 10]]#}
             }
           },
           'filter': ['==', '$type', 'Point']
@@ -652,7 +652,7 @@
   // builds link for external placetype record
   function url_exttype(type) {
     link = ' <a href="#" class="exttab" data-id='+type.identifier+
-      '>('+type.label+' {% fontawesome_icon "external-link" color="#336699" %})</a>'
+      '>('+type.label+' <i class="fas fa-external-link-alt linky"></i>)</a>'
     return link
   }
   function minmaxer(timespans){

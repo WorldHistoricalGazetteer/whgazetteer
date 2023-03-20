@@ -44,7 +44,7 @@
 				<i class="fas fa-download linky"></i>
 				<a href="" id="a_download_modal" class="mr-2" data-collid = {{ object.id }} data-toggle="modal" data-target="#downloadModal" title="download options"> download options</a>
 				<a href="{% url 'collection:place-collection-update' object.id %}" >edit
-					{% fontawesome_icon 'gear' color='#336699' %}</a>
+					<i class="fas fa-cog linky"></i></a>
 			</span>
 		{% endif %}
 		</h5>
@@ -67,7 +67,7 @@
 				        <tr>
 					        <td><b>Essay</b></td>
 					        <td>
-						        <a href="/media/{{ object.file }}" target="_blank"> {% fontawesome_icon 'file-pdf-o' %}
+						        <a href="/media/{{ object.file }}" target="_blank"> <i class="fas fa-file-pdf linky"></i>
 						        {{ object.file.name|filename }}</a>
 					        </td>
 				        </tr>
@@ -163,7 +163,7 @@
 	          <p>
 		          {% for d in ds_list %}
 			          {{ d.title }}&nbsp;
-	                <a id="cite_{{d.id}}" class="clippy" aria-label="{% if d.citation %}{{ d.citation }}{% else %}{{d.title}}. [Data file (partial), Retrieved from {{ url_front}}collections/{{object.id}}/browse_pl, {% now 'd M Y' %}{% endif %}" rel="tooltip" title="copy to clipboard"> citation: {% fontawesome_icon 'clipboard' color='#336699' %}</a><br/>
+	                <a id="cite_{{d.id}}" class="clippy" aria-label="{% if d.citation %}{{ d.citation }}{% else %}{{d.title}}. [Data file (partial), Retrieved from {{ url_front}}collections/{{object.id}}/browse_pl, {% now 'd M Y' %}{% endif %}" rel="tooltip" title="copy to clipboard"> citation: <i class="fas fa-clipboard linky"></i></a><br/>
 		          {% endfor %}
 	          </p>
             <div id=""></div>
@@ -493,7 +493,8 @@
     container: 'map', // container id
 	  style:'mapbox://styles/mapbox/light-v10',
 	  {#style:'mapbox://styles/kgeographer/ckidglq8l2nra19nzzbl995ue',#}
-	  accessToken: '{{ mbtokenwhg }}',
+	  accessToken: '{{ mbtokenmb }}',
+	  {#accessToken: '{{ mbtokenwhg }}',#}
     center: [9.2, 33],
     zoom: 0.2, // starting zoom
     minZoom: 0.1,

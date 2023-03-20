@@ -92,10 +92,10 @@
 				<span class="float-right small">
 					<span class="badge badge-warning px-2">beta</span>&nbsp;&nbsp;
 			    <a href="{% url 'collection:place-collection-browse' object.id %}">
-				    view&nbsp;&nbsp;{% fontawesome_icon 'eye' color='#336699' %}</a>&nbsp;
+				    view&nbsp;&nbsp;<i class="fas fa-eye linky"></i></a>&nbsp;
 			    <a href="{% url 'collection:collection-delete' object.id %}"
 		      title="Delete collection" rel="tooltip" style="margin-top:-2px;">
-			    {% fontawesome_icon 'trash' color='crimson' %}</a>
+			    <i class="fas fa-trash" linkyred"></i></a>
 				</span>
 	    {% else %}
 		    Place Collection Builder: {<span class="red-head">new</span>}
@@ -134,7 +134,7 @@
 						{% if action == 'create' %} {# create, no image yet #}
 							<span id="img_chooser_create">{{ form.image_file }}</span>
 						{% elif form.image_file.value %} {# update & there's an image #}
-							{% fontawesome_icon 'photo' color='#336699' %}
+							<img src="{% static 'images/noun-photo.svg'%}" width="16"/>
 							<a href="/media/{{ form.image_file.value }}">
 								{{ object.image_file.url|remove:'/media/collections/'|truncatechars:30 }}
 							</a>
@@ -149,7 +149,7 @@
 						{% if action == 'create' %} {# create, no file yet #}
 							<span id="file_chooser_create">{{ form.file }}</span>
 						{% elif form.file.value %} {# update & there's an file #}
-							{% fontawesome_icon 'file-pdf' color='#336699' %}
+							<i class="far fa-file-pdf linky"></i>
 							<a href="/media/{{ form.file.value }}">{{ object.file.url|remove:'/media/collections/' }}</a>
 							(<a href="javascript:$('#file_chooser').toggle()">change</a>)
 						{% else %} {# update and there's no image yet #}
@@ -180,7 +180,7 @@
 	        <td>
 		        {% if action == 'update' and user in whgteam %}
 			        <a class="float-right show-hide" href="#">
-				        editor options {% fontawesome_icon 'gear' color='#336699' %}
+				        editor options <i class="fas fa-cog linky"></i>
 			        </a>
 		        {% endif %}
 	        </td>
@@ -281,7 +281,7 @@
 			              <p class="my-1"><b>Create date</b>: {{ d.create_date|date:"d M Y" }}</p>
 			              <p class="my-1"><b># rows</b>: {{ d.numrows }}
 			              <a href="{% url 'collection:remove-ds' ds_id=d.id coll_id=object.id %}" class="float-right">
-				              {% fontawesome_icon 'minus' color='#336699' %} remove</a>
+				              <i class="fas fa-minus-square linky"></i> remove</a>
 			              </p>
 			            </div>
 			          </div>
@@ -298,14 +298,14 @@
 						        {% if coll_places|length > 1 %}
 						        <span class="float-right mr-1">
 							        <a class="mark-place" href="#" title="Remove from collection" rel="tooltip" data-pid="{{ p.id }}" data-col="{{ object.id }}">
-								        {% fontawesome_icon 'minus-square' color='#ff8080' %}</a>
+								        <i class="fas fa-minus-square" style="color:#ff8080"></i></a>
 							        {% comment %}<a class="anno-place" href="#" title="Annotate place" rel="tooltip" data-pid="{{ p.id }}">
 								        <i class="fas fa-edit linky"></i></a>{% endcomment %}
 						        </span>
 						        {% else %}
 						        <span class="float-right mr-1">
 							        <a class="mark-place" href="#" title="Remove from collection" data-pid="{{ p.id }}" data-col="{{ object.id }}">
-								        {% fontawesome_icon 'minus-square' color='#ff8080' %}</a>
+								        <i class="fas fa-minus-square" style="color:#ff8080"></i></a>
 							        {% comment %}<a class="anno-place" href="#" title="Annotate place" data-pid="{{ p.id }}">
 								        <i class="fas fa-edit linky"></i></a>{% endcomment %}
 						        </span>
@@ -594,7 +594,7 @@
   function url_exttype(type) {
     {#console.dir(type)#}
     link = ' <a href="#" class="exttab" data-id='+type.identifier+
-      '>('+type.label.label+' {% fontawesome_icon "external-link" color="#336699" %})</a>'
+      '>('+type.label.label+' <i class="fas fa-external-link-alt linky"></i>)</a>'
     return link
   }
 
@@ -864,7 +864,7 @@
           +'<p class="my-1"><b>Description</b>: '+d.description+'</p>'
           +'<p class="my-1"><b>Create date</b>: '+d.create_date.slice(0,10)+'; <b># rows</b>: '+d.numrows+'</p>'
           +'<p class="my-1"><a href="javascript:{ removeDataset('+d.id+') }">'
-              +'{% fontawesome_icon "minus-square" color="#336699" %} remove</a>'
+              +'<i class="fas fa-minus-square" style="color:#336699"></i> remove</a>'
 		          +'<span class="float-right"><a class="a_addplaces" href="javascript:{addPlaces('+d.id+')}">add all '
 		          +d.numrows+' places</a></span'
 		      +'</p></div></div>'

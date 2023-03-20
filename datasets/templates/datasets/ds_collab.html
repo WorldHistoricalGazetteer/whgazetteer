@@ -68,7 +68,7 @@
               {% if user.is_superuser or user in owners %}
                 <span class="float-right mr-2">
                 <a href="{% url 'datasets:collab-delete' uid=c.user_id_id dsid=ds.id v='2' %}">
-                {% fontawesome_icon 'times-circle' color='#336699'%}</a></span>
+                <i class="fas fa-times-circle linky"></i></a></span>
               {% endif %}
             </li>
           {% endfor %}
