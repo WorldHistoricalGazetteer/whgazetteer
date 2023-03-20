@@ -73,10 +73,12 @@
                 </label> <span class="float-right">test only? <input type="checkbox" name="test" ></span>
 								<br/>
 								{#	test reconcile against whg index; no writes #}
+                {% comment %}
 	              <label class="form-check-label text-secondary" for="t_whg">
 	                <input type="radio" class="form-check-input" id="t_whg"
 	                  name="recon" value="t_whg">WHG index subset (reports results, no writes)
 	              </label>
+	              {% endcomment %}
                 <div id="data_limiter" class="hidden">
 	                <select id="select_colls" name="collection" class="custom-select-sm" style="width:auto;">
 		                <option value="0"><i>Limit to collection</i></option>
