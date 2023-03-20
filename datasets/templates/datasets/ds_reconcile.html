@@ -88,8 +88,8 @@
                     </p>
                     <p><b>ID</b>: {{ t.task_id }}</p>
 	                  {% if t.task_name != 'align_idx' or user|has_group:'admins' %}
-                      <p id="{{ t.task_name }}" class="small">
-                      <a class="confirm-del-all" data-id={{t.task_id}} href="{% url 'datasets:task-delete' tid=t.task_id scope='task' %}">Delete task & hits, clear matches {% fontawesome_icon 'trash' color='#ff0000' %}
+                      <p id="{{ t.task_name }}" >
+                      <a class="confirm-del-all" data-id={{t.task_id}} href="{% url 'datasets:task-delete' tid=t.task_id scope='task' %}">Delete task & hits, clear matches <i class="fas fa-trash linkyred"></i>
                       </a><br/>
                       <a class="confirm-del-geoms" href="{% url 'datasets:task-delete' tid=t.task_id scope='geoms'%}">
                         Delete geometries added so far</a>
@@ -159,9 +159,11 @@
                     </ul>
                   </div>
                   <div id="task_logo" class="col-sm-2">
+{#                    {% with test="off" %}#}
                     {% with test=t.task_kwargs|parsejson:"test" %}
                     {% if t.task_name == 'align_wdlocal' %}
                       <img src="{% static 'images/wikidata-logo-local.png'%}" width="80"/>
+{#                    {% elif t.task_name == 'align_idx' %}#}
                     {% elif t.task_name == 'align_idx' and test != "on" %}
                       <img src="{% static 'images/whg_accessioning.svg'%}" width="80"/>
                     {% else %}

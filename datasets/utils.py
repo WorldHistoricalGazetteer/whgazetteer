@@ -54,7 +54,8 @@ def downloader(request, *args, **kwargs):
   collid = request.POST.get('collid') or None
   from datasets.tasks import make_download
   # POST *should* be the only case...
-  if request.method == 'POST' and request.is_ajax:
+  if request.method == 'POST' and request.accepts('XMLHttpRequest'):
+  # if request.method == 'POST' and request.is_ajax:
     print('ajax == True')
     format=request.POST['format']
     download_task = make_download.delay(

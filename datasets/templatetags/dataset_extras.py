@@ -70,14 +70,14 @@ def parsedict(value,key):
 
 @register.filter
 def parsejson(val,key):
-    """returns value for given key if exists"""
-    # obj = json.loads(val.replace("'", '"'))
-    # return obj[key]
-    if key in val:
-        obj = json.loads(val.replace("'",'"'))
+    """returns value for given key if exists;
+    returns value for given key if exists; used in ds_reconcile.html"""
+    obj = json.loads(val.replace("'", '"'))
+    if key in obj:
         return obj[key]
     else:
-        return None
+        return 'off'
+        # return None
 
 @register.filter
 def readmore(txt, numchars):

@@ -41,7 +41,7 @@
 			<span class="half ital text-secondary"> a place collection by {{ object.owner.first_name }} {{ object.owner.last_name }} <span class="badge badge-warning ml-3">BETA</span></span>
 		{% if user.id == object.owner.id or user.is_superuser or user in whgteam %}
 			<span class="float-right smallish mr-2 pt-2">
-				{% fontawesome_icon 'download' color='#336699' %}
+				<i class="fas fa-download linky"></i>
 				<a href="" id="a_download_modal" class="mr-2" data-collid = {{ object.id }} data-toggle="modal" data-target="#downloadModal" title="download options"> download options</a>
 				<a href="{% url 'collection:place-collection-update' object.id %}" >edit
 					{% fontawesome_icon 'gear' color='#336699' %}</a>
@@ -144,7 +144,7 @@
   <div class="modal-dialog">
     <div class="modal-content modal-85">
       <div class="modal-header">
-        <h5 class="modal-title" id="downloadModalLabel">{% fontawesome_icon 'download' color='#336699' %} Download options for the <span class="text-danger">{{ object.title }}</span> collection</h5>
+        <h5 class="modal-title" id="downloadModalLabel"><i class="fas fa-download linky"></i> Download options for the <span class="text-danger">{{ object.title }}</span> collection</h5>
       </div>
       <div class="modal-body container">
         <div class="dl-blurb">

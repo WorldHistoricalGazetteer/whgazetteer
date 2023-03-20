@@ -49,12 +49,12 @@
       <div id="ds_details" class="col-sm-7 small">
       {% if object.owner.id == user.id or user.is_superuser %}
         <span class="float-right">
-          Delete dataset <a href="{% url 'datasets:dataset-delete' ds.id %}" class="" title="Delete dataset" rel="tooltip">{% fontawesome_icon 'trash' color='#ff0000' %}</a></span>
+          Delete dataset <a href="{% url 'datasets:dataset-delete' ds.id %}" class="" title="Delete dataset" rel="tooltip"><i class="fas fa-trash linkyred"></i></a></span>
       {% endif %}
         <table class="ds-table">
           <tr>
             <td><b>Title</b>
-              <a href="#" class="edit-title">{% fontawesome_icon 'edit' color='#336699' %}</a>
+              <a href="#" class="edit-title"><i class="fas fa-edit linky"></i></a>
             </td>
             <td>
               <span class="form-title h6 strong">{{ form.title.value }}</span>
@@ -63,7 +63,7 @@
           </tr>
           <tr>
             <td style="vertical-align:top;"><b>Webpage</b>
-              <a href="#" class="edit-webpage">{% fontawesome_icon 'edit' color='#336699' %}</a>
+              <a href="#" class="edit-webpage"><i class="fas fa-edit linky"></i></a>
             </td>
             <td>
               <span class="form-webpage">
@@ -75,7 +75,7 @@
           </tr>
           <tr>
             <td style="vertical-align:top;"><b>Description</b>
-              <a href="#" class="edit-description">{% fontawesome_icon 'edit' color='#336699' %}</a>
+              <a href="#" class="edit-description"><i class="fas fa-edit linky"></i></a>
             </td>
             <td>
               <span class="form-description">{{ form.description.value }}</span>
@@ -88,7 +88,7 @@
           </tr>
           <tr>
             <td style="vertical-align:top;"><b>Creator(s)</b>
-              <a href="#" class="edit-creator">{% fontawesome_icon 'edit' color='#336699' %}</a>
+              <a href="#" class="edit-creator"><i class="fas fa-edit linky"></i></a>
             </td>
             <td>
               <span class="form-creator">{{ form.creator.value }}</span>
@@ -97,7 +97,7 @@
           </tr>
           <tr>
             <td style="vertical-align:top;"><b>Source(s)</b>
-              <a href="#" class="edit-source">{% fontawesome_icon 'edit' color='#336699' %}</a>
+              <a href="#" class="edit-source"><i class="fas fa-edit linky"></i></a>
             </td>
             <td>
               <span class="form-source">{{ form.source.value|default_if_none:"..." }}</span>
@@ -106,7 +106,7 @@
           </tr>
           <tr>
             <td style="vertical-align:top;"><b>Contributors</b>
-              <a href="#" class="edit-contrib">{% fontawesome_icon 'edit' color='#336699' %}</a>
+              <a href="#" class="edit-contrib"><i class="fas fa-edit linky"></i></a>
             </td>
             <td>
               <span class="form-contrib">{{ form.contributors.value|default_if_none:"..." }}</span>
@@ -115,7 +115,7 @@
           </tr>
           <tr>
             <td style="vertical-align:top;"><b>Citation</b>
-              <a href="#" class="edit-citation">{% fontawesome_icon 'edit' color='#336699' %}</a>
+              <a href="#" class="edit-citation"><i class="fas fa-edit linky"></i></a>
             </td>
             <td>
               <span class="form-citation">{{ form.citation.value|default_if_none:"..." }}</span>
@@ -126,7 +126,7 @@
             <td style="vertical-align:top;">
 	            <b>Public?</b>
 	            {% if user in whgteam %}
-		            <a href="#" class="edit-public">{% fontawesome_icon 'edit' color='#336699' %}</a>
+		            <a href="#" class="edit-public"><i class="fas fa-edit linky"></i></a>
 	            {% endif %}
             </td>
             <td>
@@ -156,7 +156,7 @@
           </tr>
           <tr>
             <td><b>URI base</b>
-              <a href="#" class="edit-uri_base">{% fontawesome_icon 'edit' color='#336699' %}</a>
+              <a href="#" class="edit-uri_base"><i class="fas fa-edit linky"></i></a>
             </td>
             <td>
               <span class="form-uri_base">{{ form.uri_base.value }}</span>
@@ -166,7 +166,7 @@
           {% if user.is_superuser %}
             <tr>
               <td style="vertical-align:top;"><b>Featured rank</b>
-                <a href="#" class="edit-featured">{% fontawesome_icon 'edit' color='#336699' %}</a>
+                <a href="#" class="edit-featured"><i class="fas fa-edit linky"></i></a>
               </td>
               <td>
                 <span class="form-featured">{{ form.featured.value|default_if_none:"..." }}</span>
@@ -175,7 +175,7 @@
             </tr>
             <tr>
               <td style="vertical-align:top;"><b>Image</b>
-                <a href="#" class="edit-image">{% fontawesome_icon 'edit' color='#336699' %}</a>
+                <a href="#" class="edit-image"><i class="fas fa-edit linky"></i></a>
               </td>
               <td>
                 <span class="form-image">{{ form.image_file.value}}</span>
@@ -209,7 +209,7 @@
                 <td><b>File</b></td>
                 <td>
                   <span class="display-field">
-                  <a href="{% url 'datasets:dl-file' ds.id %}" ref="current" download>{{ current_file.file }} {% fontawesome_icon 'download' color='#336699'%}</a> ({{filesize}} mb)
+                  <a href="{% url 'datasets:dl-file' ds.id %}" ref="current" download>{{ current_file.file }} <i class="fas fa-download linky"></i></a> ({{filesize}} mb)
                   </span>
                 </td>
               </tr>
@@ -303,16 +303,16 @@
                 <!-- lptsv originally -->
                 {% if current_file.format == 'delimited' %} 
                   <!-- offer lpf, augmented or not -->
-                  <p><a class="a-dl-celery" href="#" ref="lpf">Linked Places format {% fontawesome_icon 'download'%}</a><span id="file_lpf" class="ml-1"></span></p>
+                  <p><a class="a-dl-celery" href="#" ref="lpf">Linked Places format <i class="fas fa-download linky"></i></a><span id="file_lpf" class="ml-1"></span></p>
                   {% if links_added > 0 or geoms_added > 0 %}
                     <!-- augmented, offer tsv -->
-                    <p><a class="a-dl-celery" href="#" ref="tsv">LP-TSV (augmented) {% fontawesome_icon 'download'%}</a>
+                    <p><a class="a-dl-celery" href="#" ref="tsv">LP-TSV (augmented) <i class="fas fa-download linky"></i></a>
                       <span id="file_tsv" class="ml-1"></span></p>
                   {% endif %}
                 <!-- lpf originally -->
                 {% elif links_added > 0 or geoms_added > 0 %} 
                   <!-- offer dl if augmented -->
-                  <p><a class="a-dl-celery" href="#" ref="lpf">Linked Places format {% fontawesome_icon 'download'%}</a> (augmented) <span id="file_lpf" class="ml-1"></span></p>
+                  <p><a class="a-dl-celery" href="#" ref="lpf">Linked Places format <i class="fas fa-download linky"></i></a> (augmented) <span id="file_lpf" class="ml-1"></span></p>
                   <p class="mt-2"><i>LP-TSV conversion is not possible for this LPF dataset. <a id="conversion_help" class="pointer" data-toggle="popover" title="LPF download options" data-content="<p>Data initially loaded in Linked Places format (LPF) has one&#8209;to&#8209;many relations that can't be converted to simple TSV files.</p>" tabindex="0" data-trigger="focus" data-original-title=""><i title="" class="fa fa-question-circle" style="color:#336699;"></i></a></i></p>
                 {% else %}
                   <!-- originally lpf, not yet augmented -->

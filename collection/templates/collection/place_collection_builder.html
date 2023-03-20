@@ -300,14 +300,14 @@
 							        <a class="mark-place" href="#" title="Remove from collection" rel="tooltip" data-pid="{{ p.id }}" data-col="{{ object.id }}">
 								        {% fontawesome_icon 'minus-square' color='#ff8080' %}</a>
 							        {% comment %}<a class="anno-place" href="#" title="Annotate place" rel="tooltip" data-pid="{{ p.id }}">
-								        {% fontawesome_icon 'edit' color='#336699' %}</a>{% endcomment %}
+								        <i class="fas fa-edit linky"></i></a>{% endcomment %}
 						        </span>
 						        {% else %}
 						        <span class="float-right mr-1">
 							        <a class="mark-place" href="#" title="Remove from collection" data-pid="{{ p.id }}" data-col="{{ object.id }}">
 								        {% fontawesome_icon 'minus-square' color='#ff8080' %}</a>
 							        {% comment %}<a class="anno-place" href="#" title="Annotate place" data-pid="{{ p.id }}">
-								        {% fontawesome_icon 'edit' color='#336699' %}</a>{% endcomment %}
+								        <i class="fas fa-edit linky"></i></a>{% endcomment %}
 						        </span>
 						        {% endif %}
 							      {% if p.traces %}

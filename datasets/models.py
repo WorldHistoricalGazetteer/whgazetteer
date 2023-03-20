@@ -216,6 +216,8 @@ class Dataset(models.Model):
     #from django_celery_results.models import TaskResult
     return TaskResult.objects.filter(task_args = '['+str(self.id)+']',task_name__startswith='align')
 
+  TaskResult.objects.filter(task_args='[' + str(1547) + ']', task_name__startswith='align')
+
   # tasks stats
   @property
   def taskstats(self):

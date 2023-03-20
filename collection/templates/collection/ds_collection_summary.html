@@ -82,7 +82,7 @@
 	      {% endfor %}
 	      <div>
 	        <h5>Datasets ({{ds_list|length}})<span class="small float-right mr-2">
-	          {% fontawesome_icon 'download' color='#336699' %} <a href="" id="a_download_modal" data-dsid = {{ object.id }} data-toggle="modal" data-target="#downloadModal" title="download options"> download options</a></span>
+	          <i class="fas fa-download linky"></i> <a href="" id="a_download_modal" data-dsid = {{ object.id }} data-toggle="modal" data-target="#downloadModal" title="download options"> download options</a></span>
 	        </h5>
 	        <!-- fields: id, label, title, description, creator, create_date, webpage, numrows, datatype -->
 	        <div id="coll_dscards">
@@ -114,7 +114,7 @@
     <div class="modal-dialog">
       <div class="modal-content modal-85">
         <div class="modal-header">
-          <h5 class="modal-title" id="downloadModalLabel">{% fontawesome_icon 'download' color='#336699' %} Download options for the <span class="text-danger">{{ object.title }}</span> collection</h5>
+          <h5 class="modal-title" id="downloadModalLabel"><i class="fas fa-download linky"></i> Download options for the <span class="text-danger">{{ object.title }}</span> collection</h5>
         </div>
         <div class="modal-body container">
           <div class="dl-blurb">

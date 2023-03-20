@@ -86,6 +86,8 @@ label {vertical-align:top;}
 .larger {font-size: larger;}
 .linky {color: #5d96cd;}
 .linkypop {color: #993333;}
+.linkyred {color: #ff0000;}
+
 /*.more {display: none;}*/
 .nobr {white-space: nowrap;}
 .no-bullet { list-style: none;}

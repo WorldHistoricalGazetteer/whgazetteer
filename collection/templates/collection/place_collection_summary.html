@@ -35,7 +35,7 @@
 	{% if user.is_superuser or user in whgteam %}
 	<div>
 		<span class="float-right mr-2 pt-2">
-      {% fontawesome_icon 'download' color='#336699' %} <a href="" id="a_download_modal" data-dsid = {{ object.id }} data-toggle="modal" data-target="#downloadModal" title="download options"> download options</a>
+      <i class="fas fa-download linky"></i> <a href="" id="a_download_modal" data-dsid = {{ object.id }} data-toggle="modal" data-target="#downloadModal" title="download options"> download options</a>
 			<span class="ml-4">
 			<a href="{% url 'collection:place-collection-update' object.id %}" >{% fontawesome_icon 'gear' color='#336699' %}</a>
 			</span>
@@ -111,7 +111,7 @@
     <div class="modal-dialog">
       <div class="modal-content modal-85">
         <div class="modal-header">
-          <h5 class="modal-title" id="downloadModalLabel">{% fontawesome_icon 'download' color='#336699' %} Download options for the <span class="text-danger">{{ object.title }}</span> collection</h5>
+          <h5 class="modal-title" id="downloadModalLabel"><i class="fas fa-download linky"></i> Download options for the <span class="text-danger">{{ object.title }}</span> collection</h5>
         </div>
         <div class="modal-body container">
           <div class="dl-blurb">
