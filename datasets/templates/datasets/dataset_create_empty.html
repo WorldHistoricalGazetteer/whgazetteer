@@ -42,7 +42,7 @@
           <tr>
             <td><b>Label &#x02733;</b> 
               <a  id="label_help" class="pointer"data-toggle="popover" title="Dataset label" 
-                data-content="" tabindex=99 data-trigger="focus">{% fontawesome_icon 'question-circle' color='#993300' %}</a>
+                data-content="" tabindex=99 data-trigger="focus"><i class="fas fa-question-circle linky"></i></a>
             </td>
             <td>{{ form.label }}</td>
           </tr>
@@ -65,7 +65,7 @@
           <tr>
             <td><b>URI base</b> 
               <a class="pointer" id="uribase_help" data-toggle="popover" title="URI base" 
-                data-content="" tabindex=98 data-trigger="focus">{% fontawesome_icon 'question-circle' color='#993300' %}</a>
+                data-content="" tabindex=98 data-trigger="focus"><i class="fas fa-question-circle linky"></i></a>
             </td>
             <td>{{ form.uri_base }}</td>
           </tr>
@@ -97,7 +97,7 @@
       </div>
   <div class="mt-2 col-md-5 col-lg-7" id="create_review">
       {% if context.action == 'errors' %}
-        <h5>{% fontawesome_icon 'exclamation-circle' color="#993333" %} This file has one or more problems:</h5>
+        <h5><i class="fas fa-exclamation-circle" style="color:#993333;"> This file has one or more problems:</h5>
         <ul>
         {% for e in context.errors %}
           <li>{% if context.format == 'delimited' or context.format == 'unknown' %}
@@ -111,7 +111,7 @@
         </ul>
         <p>After making corrections, try reloading the file</p><hr/>
       {% elif context.action == 'broken' %}
-        <h5>{% fontawesome_icon 'exclamation-circle' color="#993333" %} 
+        <h5><i class="fas fa-exclamation-circle" style="color:#993333;">
           Uh oh! Something has gone wrong during format validation, and the problem could not be determined.
         </h5><p>An email has been sent to WHG staff, and we will look into it and get back to you soon. You can double-check your file formatting and try again, or wait for our response.</p>
       {% else %}

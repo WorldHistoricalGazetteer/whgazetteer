@@ -6,10 +6,10 @@
 
   <div class="container">
     <div class="d-flex justify-content-center mt-3">
-      <h3>World Historical Gazetteer Version 2.0: A Guide</h3>
+      <h3>World Historical Gazetteer Version 2.1: A Guide</h3>
     </div>
     <div id="guide_content" class="mx-5">
-      <p class="lead">Welcome to Version 2 of the World Historical Gazetteer (WHG) platform, featuring several significant changes from Version 1. WHG remains a work-in-progress, so expect further refinements, new features and new data on an ongoing basis. Notes about planned near-future updates appear <mark>highlighted like this</mark>.</p>
+      <p class="lead">Welcome to Version 2.1 of the World Historical Gazetteer (WHG) platform, featuring several significant changes from Version 1. WHG remains a work-in-progress, so expect further refinements, new features and new data on an ongoing basis. Notes about planned near-future updates appear <mark>highlighted like this</mark>.</p>
       <div id="guide_tabs">
         <ul class="nav nav-tabs" role="tablist">
           <li class="nav-item">
@@ -54,12 +54,8 @@
               <h5>Data</h5>
               <div class="p-1">
                 <p class="subhead">Two Place Data Stores: Database and Index</p>
-{%comment%}                <p class="mb-0">
-                  <a class="popimg" href="#">
-                    <img src="{% static 'images/two-stores.png'%}" height=250 class="img-responsive"/>
-                  </a></p>{%endcomment%}
                 <p class="mb-1"><a class="popimg" href="#">
-                    <img src="{% static 'images/two-stores.png'%}" height=250 class="img-responsive" align="right"/>
+                    <img src="{% static 'images/two-stores.png'%}" height=250 align="right"/>
                   </a> Data from files uploaded to WHG in either the full Linked Place format (LP) or abbreviated LP-TSV format are imported into a PostgreSQL relational database and made available to the uploader ("owner") for viewing and augmenting via our reconciliation process. Dataset owners can designate other WHG users as co-owners or collaborating "members." Data cannot be edited in WHG, but datasets can be updated. <mark>Semi-automated update functionality is a work-in-progress. A staff-assisted process is possible in the interim.</mark></p>
                 
                 <p class="mb-1">The reconciliation process finds prospective matches to your records in Wikidata and/or Getty TGN. When dataset owner(s) accept an external record as a "close match," one or more <i>place_link</i> and <i>place_geom</i> records are added to the database, reflecting that match. This <i>augments</i> your dataset within the WHG database with concordance identifiers  (links), and geographical coordinates, but does not alter the original uploaded content in any way. When a dataset is flagged as public, its records become publicly accessible via the Search page, a public Browse page, and <a href="{% url 'usingapi' %}">the WHG API</a>.</p>
@@ -100,7 +96,7 @@
               <div class="p-1">
                 <p>Details for how to use the following services appear in the "Page by Page" section of this Guide and in help screens throughout the application.</p>
                 <p class="subhead">Linking and geocoding via reconciliation</p>
-                <p>A core feature of WHG is its reconciliation services, which allow you to upload place records drawn from your historical sources and find potential matches for them in two authority resources: <a href="https://www.wikidata.org/" target="_blank">Wikidata</a> and the <a href="http://www.getty.edu/research/tools/vocabularies/tgn/" target="_blank">Getty Thesaurus of Geographic Names (TGN)</a>. Records from both include geographic coordinates in almost cases. Potential matches are queued for review, and when you accept a match, your original dataset is augmented with geometry from the authority record as well as the authority identifier. Many Wikidata records also include concordances: identifiers from GeoNames, VIAF, and Library of Congress among others. Those are also added to the original dataset.</p>
+                <p>A core feature of WHG is its reconciliation services, which allow you to upload place records drawn from your historical sources and find potential matches for them in <a href="https://www.wikidata.org/" target="_blank">Wikidata</a>. Records from Wikidata include geographic coordinates in almost cases. Potential matches are queued for review, and when you accept a match, your original dataset is augmented with geometry from the authority record as well as the authority identifier. Many Wikidata records also include concordances: identifiers from GeoNames, VIAF, and Library of Congress among others. Those are also added to the original dataset.</p>
                 <p>The scripts that we have developed to suggest potential matches do not simply match names; they make use of context provided in both the uploaded and authority records, including: a) all name variants, b) modern country or study area bounds, c) place type, and d) any provided coordinates.</p>
                 
                 <p class="subhead">Downloading augmented data</p>

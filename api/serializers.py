@@ -250,7 +250,7 @@ class PlaceTableSerializer(serializers.ModelSerializer):
   id = serializers.SerializerMethodField()
   def get_id(self, place):
     if place.dataset.public or place.dataset.core:
-      pid = '<a href="'+place.dataset.uri_base+str(place.id)+'">'+str(place.id)+'</a>'
+      pid = '<a href="'+place.dataset.uri_base+str(place.id)+'" target="_blank">'+str(place.id)+'</a>'
     else:
       pid = place.id
     return pid

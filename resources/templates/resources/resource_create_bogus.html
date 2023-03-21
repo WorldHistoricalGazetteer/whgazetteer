@@ -113,7 +113,7 @@
     </form>
     <div class="mt-2 col-md-5 col-lg-7" id="create_review">
         {% if context.action == 'errors' %}
-        <h5>{% fontawesome_icon 'exclamation-circle' color="#993333" %} This file has one or more problems:</h5>
+        <h5><i class="fas fa-exclamation-circle" style="color:#993333;"> This file has one or more problems:</h5>
         <ul>
             {% for e in context.errors %}
             <li>{% if context.format == 'delimited' or context.format == 'unknown' %}
@@ -127,7 +127,7 @@
         <p>After making corrections, try reloading the file</p>
         <hr />
         {% elif context.action == 'broken' %}
-        <h5>{% fontawesome_icon 'exclamation-circle' color="#993333" %}
+        <h5><i class="fas fa-exclamation-circle" style="color:#993333;">
             Uh oh! Something has gone wrong during format validation, and the problem could not be determined.
         </h5>
         <p>An email has been sent to WHG staff, and we will look into it and get back to you soon. You can double-check

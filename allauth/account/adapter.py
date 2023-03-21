@@ -1,7 +1,5 @@
 from __future__ import unicode_literals
 
-import os, re # added kg; Feb 2021
-
 import hashlib
 import json
 import time
@@ -122,7 +120,7 @@ class DefaultAccountAdapter(object):
                     self.request,
                     ).strip()
       except TemplateDoesNotExist:
-        print('html body create failed')
+        print('html body create failed - no biggie')
         if ext == "txt" and not bodies:
           # We need at least one body
           raise

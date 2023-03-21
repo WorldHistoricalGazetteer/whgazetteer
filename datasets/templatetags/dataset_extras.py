@@ -143,6 +143,7 @@ def trunc_it(str, numchars):
 def url_it(val):
     r1 = '((http|ftp|https)://([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?)'
     reg = re.search(r1, val)
-    return val.replace(reg.group(1),'<a href="'+reg.group(1)+'" target="_blank">link <i class="fa fa-external-link"></i> </>') if reg else val
+    return val.replace(reg.group(1),'<a href="'+reg.group(1)+
+        '" target="_blank">link</a>  <i class="fas fa-external-link-alt linky"></i>') if reg else val
 
 
