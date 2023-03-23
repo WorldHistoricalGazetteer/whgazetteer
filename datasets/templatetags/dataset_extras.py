@@ -1,7 +1,7 @@
 from django import template
 from django.contrib.auth.models import Group
 from django.template.defaultfilters import stringfilter
-import json, re, validators, textwrap
+import json, re, validators, textwrap, ast
 
 register = template.Library()
 
@@ -70,14 +70,29 @@ def parsedict(value,key):
 
 @register.filter
 def parsejson(val,key):
-    """returns value for given key if exists;
-    returns value for given key if exists; used in ds_reconcile.html"""
-    obj = json.loads(val.replace("'", '"'))
+    # my_string = "{'key':'val','key2':2}"
+    obj = ast.literal_eval(val)
+    print('obj, key', obj[key])
+    return
     if key in obj:
         return obj[key]
     else:
         return 'off'
-        # return None
+
+@register.filter
+def parsetest(val,key):
+    print('val', val)
+    print('type(val)', type(val))
+    print('key', key)
+    obj = ast.literal_eval(val)
+    # obj = ast.literal_eval(val.replace("'",'"'))
+    obj = json.loads(obj.replace("'",'"'))
+    # print('type(obj)', type(obj))
+    # print('obj[key]', obj[key])
+    if 'test' in obj:
+        return obj[key]
+    else:
+        return 'off'
 
 @register.filter
 def readmore(txt, numchars):

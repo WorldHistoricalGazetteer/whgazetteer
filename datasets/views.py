@@ -21,7 +21,7 @@ from django_celery_results.models import TaskResult
 # external
 from celery import current_app as celapp
 from copy import deepcopy
-import codecs, math, mimetypes, os, re, shutil, sys, tempfile
+import ast, shutil, tempfile, codecs, math, mimetypes, os, re, sys
 from deepdiff import DeepDiff as diff
 import numpy as np
 from elasticsearch7 import Elasticsearch
@@ -296,8 +296,8 @@ def review(request, pk, tid, passnum):
   auth = task.task_name[6:].replace('local','')
   authname = 'Wikidata' if auth == 'wd' else 'Getty TGN' \
     if auth == 'tgn' else 'WHG'
-  kwargs=json.loads(task.task_kwargs.replace("'",'"'))
-  print('review() kwargs', kwargs)
+  kwargs = ast.literal_eval(task.task_kwargs)
+  kwargs = json.loads(kwargs.replace("'", '"'))
   test = kwargs['test'] if 'test' in kwargs else "off"
   beta = 'beta' in list(request.user.groups.all().values_list('name',flat=True))
   # filter place records by passnum for those with unreviewed hits on this task
@@ -413,7 +413,7 @@ def review(request, pk, tid, passnum):
     'countries': countries,
     'passnum': passnum,
     'page': page if request.method == 'GET' else str(int(page)-1),
-    'aug_geom': json.loads(task.task_kwargs.replace("'",'"'))['aug_geom'],
+    'aug_geom': kwargs['aug_geom'],
     'mbtokenmb': settings.MAPBOX_TOKEN_MB,
     'count_pass0': cnt_pass0,
     'count_pass1': cnt_pass1,

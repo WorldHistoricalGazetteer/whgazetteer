@@ -214,10 +214,11 @@ class Dataset(models.Model):
   @property
   def tasks(self):
     #from django_celery_results.models import TaskResult
-    return TaskResult.objects.filter(task_args = '['+str(self.id)+']',task_name__startswith='align')
+    # return TaskResult.objects.filter(task_args = '['+str(self.id)+']',task_name__startswith='align')
+    return TaskResult.objects.filter(task_args = '"('+str(self.id)+',)"',task_name__startswith='align')
 
-  TaskResult.objects.filter(task_args='[' + str(1547) + ']', task_name__startswith='align')
-
+  # "(1556,)"
+  # "{'ds': 1556, 'dslabel': 'dj4test1', 'owner': 1, 'user': 1, 'bounds': {'type': ['userarea'], 'id': ['0']}, 'aug_geom': 'on', 'scope': 'all', 'lang': 'en', 'test': 'off'}"
   # tasks stats
   @property
   def taskstats(self):

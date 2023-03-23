@@ -97,6 +97,8 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
 # trying to throw error if no worker available
 CELERY_TASK_EAGER_PROPAGATES = True
+# required per https://github.com/celery/django-celery-results/issues/334
+CELERY_RESULT_EXTENDED = True
 
 CELERY_BEAT_SCHEDULE = {
   'task01': {
