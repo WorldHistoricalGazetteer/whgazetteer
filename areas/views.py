@@ -41,7 +41,7 @@ class AreaCreateView(CreateView):
     
     def get_context_data(self, *args, **kwargs):
         context = super(AreaCreateView, self).get_context_data(*args, **kwargs)
-        context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB        
+        context['mbtoken'] = settings.MAPBOX_TOKEN_WHG        
         #print('args',args,kwargs)
         context['action'] = 'create'
         #context['referrer'] = self.request.POST.get('referrer')
@@ -82,6 +82,6 @@ class AreaUpdateView(UpdateView):
     def get_context_data(self, *args, **kwargs):
         context = super(AreaUpdateView, self).get_context_data(*args, **kwargs)
         context['action'] = 'update'
-        context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
+        context['mbtoken'] = settings.MAPBOX_TOKEN_WHG
         return context
 

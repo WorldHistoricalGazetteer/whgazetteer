@@ -634,7 +634,7 @@
     mappy.getPane('tracePane').style.zIndex = 200;
     traceLayers = new L.layerGroup().addTo(mappy)
     
-    token_mb = '{{ mbtokenmb }}',
+    token_mb = '{{ mbtoken }}',
     mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}';
       
     var satellite  = L.tileLayer(mbstyle_url, {id:'mapbox/satellite-streets-v11', token:token_mb})

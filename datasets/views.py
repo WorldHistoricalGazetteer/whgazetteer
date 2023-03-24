@@ -414,7 +414,7 @@ def review(request, pk, tid, passnum):
     'passnum': passnum,
     'page': page if request.method == 'GET' else str(int(page)-1),
     'aug_geom': json.loads(task.task_kwargs.replace("'",'"'))['aug_geom'],
-    'mbtokenmb': settings.MAPBOX_TOKEN_MB,
+    'mbtoken': settings.MAPBOX_TOKEN_WHG,
     'count_pass0': cnt_pass0,
     'count_pass1': cnt_pass1,
     'count_pass2': cnt_pass2,
@@ -2908,7 +2908,7 @@ class DatasetBrowseView(LoginRequiredMixin, DetailView):
   def get_context_data(self, *args, **kwargs):
     context = super(DatasetBrowseView, self).get_context_data(*args, **kwargs)
     context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
-    context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
+    context['mbtoken'] = settings.MAPBOX_TOKEN_WHG
 
     print('DatasetBrowseView get_context_data() kwargs:',self.kwargs)
     print('DatasetBrowseView get_context_data() request.user',self.request.user)
@@ -2946,7 +2946,7 @@ class DatasetPlacesView(DetailView):
   def get_context_data(self, *args, **kwargs):
     context = super(DatasetPlacesView, self).get_context_data(*args, **kwargs)
     context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
-    context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
+    context['mbtoken'] = settings.MAPBOX_TOKEN_WHG
 
     print('DatasetPlacesView get_context_data() kwargs:',self.kwargs)
     print('DatasetPlacesView get_context_data() request.user',self.request.user)
@@ -3070,7 +3070,8 @@ class DatasetAddTaskView(LoginRequiredMixin, DetailView):
     context = super(DatasetAddTaskView, self).get_context_data(*args, **kwargs)
     """ maps need these """
     context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
-    context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
+    context['mbtoken'] = settings.MAPBOX_TOKEN_WHG
+    context['mbtoken'] = settings.MAPBOX_TOKEN_WHG
 
     id_ = self.kwargs.get("id")
     ds = get_object_or_404(Dataset, id=id_)

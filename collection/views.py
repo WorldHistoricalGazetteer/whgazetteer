@@ -222,7 +222,7 @@ class PlaceCollectionCreateView(LoginRequiredMixin, CreateView):
     user = self.request.user
     print('PlaceCollectionCreateView() user', user)
     context = super(PlaceCollectionCreateView, self).get_context_data(**kwargs)
-    context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
+    context['mbtoken'] = settings.MAPBOX_TOKEN_WHG
 
     datasets = []
     # add 1 or more links, images (?)
@@ -348,7 +348,7 @@ class PlaceCollectionUpdateView(UpdateView):
     context['coll_places'] = self.object.places_all.order_by('title')
 
     context['created'] = self.object.created.strftime("%Y-%m-%d")
-    context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
+    context['mbtoken'] = settings.MAPBOX_TOKEN_WHG
     context['whgteam'] = User.objects.filter(groups__name='whg_team')
 
     return context
@@ -370,7 +370,7 @@ class PlaceCollectionSummaryView(DetailView):
     bboxes = [ds.bounds for ds in datasets]
 
     context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
-    context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
+    context['mbtoken'] = settings.MAPBOX_TOKEN_WHG
     context['mbtokenwhg'] = settings.MAPBOX_TOKEN_WHG
     context['whgteam'] = User.objects.filter(groups__name='whg_team')
 
@@ -398,7 +398,7 @@ class PlaceCollectionBrowseView(DetailView):
   def get_context_data(self, *args, **kwargs):
     context = super(PlaceCollectionBrowseView, self).get_context_data(*args, **kwargs)
     context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
-    context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
+    context['mbtoken'] = settings.MAPBOX_TOKEN_WHG
     context['mbtokenwhg'] = settings.MAPBOX_TOKEN_WHG
     context['media_url'] = settings.MEDIA_URL
 
@@ -454,7 +454,7 @@ class DatasetCollectionCreateView(LoginRequiredMixin, CreateView):
   def get_context_data(self, *args, **kwargs):
     user = self.request.user
     context = super(DatasetCollectionCreateView, self).get_context_data(*args, **kwargs)
-    context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
+    context['mbtoken'] = settings.MAPBOX_TOKEN_WHG
     context['whgteam'] = User.objects.filter(groups__name='whg_team')
 
     datasets = []
@@ -516,7 +516,7 @@ class DatasetCollectionUpdateView(UpdateView):
     context['coll_dsset'] = datasets
 
     context['created'] = self.object.created.strftime("%Y-%m-%d")
-    context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
+    context['mbtoken'] = settings.MAPBOX_TOKEN_WHG
     context['whgteam'] = User.objects.filter(groups__name='whg_team')
 
     return context
@@ -538,7 +538,7 @@ class DatasetCollectionSummaryView(DetailView):
     bboxes = [ds.bounds for ds in datasets]
 
     context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
-    context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
+    context['mbtoken'] = settings.MAPBOX_TOKEN_WHG
     context['mbtokenwhg'] = settings.MAPBOX_TOKEN_WHG
     context['whgteam'] = User.objects.filter(groups__name='whg_team')
 
@@ -567,7 +567,7 @@ class DatasetCollectionBrowseView(DetailView):
   def get_context_data(self, *args, **kwargs):
     context = super(DatasetCollectionBrowseView, self).get_context_data(*args, **kwargs)
     context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
-    context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
+    context['mbtoken'] = settings.MAPBOX_TOKEN_WHG
     context['media_url'] = settings.MEDIA_URL
 
     print('DatasetCollectionBrowseView get_context_data() kwargs:',self.kwargs)

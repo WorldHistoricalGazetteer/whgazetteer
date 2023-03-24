@@ -381,7 +381,7 @@
   // expose leaflet map for events, call it 'mappy'
   window.addEventListener('map:init', function (e) {
     window.mappy = e.detail.map
-      var token_mb = '{{ mbtokenmb }}',
+      var token_mb = '{{ mbtoken }}',
       mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}';
       
     var satellite  = L.tileLayer(mbstyle_url, {
