@@ -640,13 +640,9 @@
     var satellite  = L.tileLayer(mbstyle_url, {id:'mapbox/satellite-streets-v11', token:token_mb})
     var osm  = L.tileLayer(mbstyle_url, {id:'mapbox/light-v10', token:token_mb});
 
-    var pleiades = L.mapboxGL({
-      style:'mapbox://styles/kgeographer/ckc21ai6n5ozq1io64x91hndl',
-      accessToken:'{{ mbtokenkg }}'})
-
     ne_global= L.mapboxGL({
       style:'mapbox://styles/kgeographer/ckidglq8l2nra19nzzbl995ue',
-      accessToken:'{{ mbtokenkg }}'})
+      accessToken:'{{ mbtoken }}'})
       
     var watershedStyle = {
       "fillColor": "#993333",
