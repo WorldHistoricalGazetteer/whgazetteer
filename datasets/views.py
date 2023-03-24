@@ -447,6 +447,7 @@ def review(request, pk, tid, passnum):
     # NB. other reviewer(s) *not* notified
     if review_status == 1:
       context["already"] = True
+      messages.success(request, ('Last record ('+place_post.title+') reviewed by another'))
       return redirect('/datasets/'+str(pk)+'/review/'+task.task_id+'/'+passnum)
     elif formset.is_valid():
       hits = formset.cleaned_data

@@ -41,7 +41,8 @@
           <span class="small help-matches" data-id="reconciliation">
             {% fontawesome_icon 'question-circle' color='#993333' %}
           </span>
-          {% if user.is_superuser or user in ds.owners or user|has_group:'whg_team' %}
+          {% comment %}who can add a task{% endcomment %}
+          {% if user.is_superuser or user in ds.owners %}
             <span class="ml-4 small">
             <a id="addtask_link" href="{% url 'datasets:ds_addtask' id=ds.id %}">Add new task {% fontawesome_icon 'plus-square' color='#336699' %}</a>
             </span>
@@ -50,7 +51,7 @@
         {% if not messages and tasks|length < 1 %}
 	        <p>Linking in WHG is the activity of matching records from one dataset with "close matches" in another, in a method called <sr>reconciliation</sr> or <sr>alignment</sr>. It can also accomplish geocoding of place names for many records that are missing location. Reconciliation tasks can be performed against our local <sr>Wikidata</sr> index. Fully accessioning data to WHG involves the further step of reconciling against our "union index."</p>
         {% endif %}
-        {% if user in ds.owners or user in collaborators or user.is_superuser or user|has_group:'whg_team'%}
+        {% if user in ds.owners or user in ds.collaborators or user.is_superuser %}
 	        {% if ds.ds_status == 'indexed' %}
 		        <div id="ready" class="hidden pl-2">
 	            <p class="my-0">This dataset has been fully indexed</p>
@@ -87,8 +88,8 @@
                       ({{ t.date_done|date:"d-M-Y, H:i (e)" }}; elapsed: {{ t.result|get:"elapsed"|safe }})</span>
                     </p>
                     <p><b>ID</b>: {{ t.task_id }}</p>
-	                  {% if t.task_name != 'align_idx' or user|has_group:'admins' %}
-                      <p id="{{ t.task_name }}" class="small">
+	                  {% if t.task_name != 'align_idx' and user in  ds.owners %}
+                      <p id="{{ t.task_name }}">
                       <a class="confirm-del-all" data-id={{t.task_id}} href="{% url 'datasets:task-delete' tid=t.task_id scope='task' %}">Delete task & hits, clear matches {% fontawesome_icon 'trash' color='#ff0000' %}
                       </a><br/>
                       <a class="confirm-del-geoms" href="{% url 'datasets:task-delete' tid=t.task_id scope='geoms'%}">
@@ -111,10 +112,13 @@
 		                    {% endwith %}
 	                    {% endif %}
                     </p>
-                    <p class="mb-0">Remaining to review: <span id="{{t.task_id}}_remaining">nn</span></p>
+                    <p class="mb-0">Remaining to review:
+											{# display total remaining only to owners #}
+	                    {% if user in ds.owners %}<span id="{{t.task_id}}_remaining">nn</span>{% endif %}
+                    </p>
                     <span id="spinner"></span>
                     <ul>
-                      {% if t.result|get:"pass0" > 0 and t.task_name != "align_idx" %}
+                      {% if t.result|get:"pass0" > 0 and t.task_name != "align_idx" and user in ds.owners %}
                         <li id="pass0_{{t.task_id}}" class="li-left">Pass 0 (matched links): 
                         <span class="mx-2 strong" id='{{t.task_id}}_0'>nn</span> 
                             <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass0' %}">review</a>

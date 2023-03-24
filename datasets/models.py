@@ -87,6 +87,7 @@ class Dataset(models.Model):
     ## includes roles: member, owner
     team = DatasetUser.objects.filter(dataset_id_id = self.id).values_list('user_id_id')
     # members of whg_team group are collaborators on all datasets
+    # teamusers = User.objects.filter(id__in=team) | User.objects.filter(groups__name='whg_team') | self.owner
     teamusers = User.objects.filter(id__in=team) | User.objects.filter(groups__name='whg_team')
     return teamusers
 

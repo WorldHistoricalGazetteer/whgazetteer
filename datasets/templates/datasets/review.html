@@ -36,6 +36,7 @@
         {% if count_pass3 > 0 %}
           <option value="pass3">PASS 3&nbsp;</option>{% endif %}
       </select>
+	    {% for m in messages %}{{ m }}{% endfor %}
     {% endif %} 
     </span>
     <span class="help-matches" data-id="review">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
