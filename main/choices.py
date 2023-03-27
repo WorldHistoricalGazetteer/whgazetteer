@@ -88,7 +88,7 @@ FEATURE_CLASSES = [
 FORMATS = [
     ('delimited', 'Delimited/Spreadsheet'),
     ('lpf', 'Linked Places v1.2'),
-    # ('dummy', 'empty file')
+    ('dummy', 'empty file')
 ]
 
 LINKTYPES = [

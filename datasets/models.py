@@ -1,7 +1,6 @@
 # datasets.models
 from django.conf import settings
-from django.contrib.postgres.fields import ArrayField
-from django.db.models import JSONField
+from django.contrib.postgres.fields import JSONField, ArrayField
 from django.contrib.gis.db import models as geomodels
 from django.contrib.gis.db.models import Collect, Extent
 from django.contrib.gis.geos import GeometryCollection, Polygon
