@@ -28,8 +28,8 @@ class Resource(models.Model):
   public = models.BooleanField(default=False)
   featured = models.IntegerField(null=True, blank=True)
 
-  # test
-  regions = MultiSelectField(choices=REGIONS, null=True, blank=True)
+  # test commented 28 Mar
+  #regions = MultiSelectField(choices=REGIONS, null=True, blank=True)
 
   # [uploaded | published]
   status = models.CharField(

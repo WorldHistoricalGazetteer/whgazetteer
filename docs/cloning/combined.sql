@@ -29,11 +29,11 @@ INSERT INTO public."dataset_file" (dataset_id_id, file, rev, format, datatype) V
 -- CREATE COLLECTIONS
 with z as (select * from auth_user au where is_superuser = true)
 	INSERT INTO public."collections" (owner_id, title, description, collection_class, 
-		featured, omitted, public, image_file, created, keywords) VALUES
+		featured, omitted, status, image_file, created, keywords) VALUES
 		((select id from z), 'Sample Collection 01', 'Sample for loading home page', 'dataset', 
-			1, '{}', false, 'dummy_image.png', now(), array['could','it','be']),
+			1, '{}', 'sandbox', 'dummy_image.png', now(), array['could','it','be']),
 		((select id from z), 'Sample Collection 02', 'Sample for loading home page', 'dataset', 
-			2, '{}', false, 'dummy_image.png', now(), array['so','it','goes']) ;
+			2, '{}', 'sandbox', 'dummy_image.png', now(), array['so','it','goes']) ;
 
 INSERT INTO public."collections_datasets" (collection_id, dataset_id) VALUES
 	(1, 1),	(1, 2),	(2, 1),	(2, 2);
