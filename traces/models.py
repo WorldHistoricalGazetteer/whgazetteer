@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.contrib.postgres.fields import JSONField, ArrayField
+from django.contrib.postgres.fields import ArrayField
+from django.db.models import JSONField
 from django.core.validators import URLValidator
 from main.choices import ERAS, TRACETYPES, TRACERELATIONS
 
