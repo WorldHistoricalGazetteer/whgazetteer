@@ -477,7 +477,7 @@ def normalize(h, auth, language=None):
     # hit['_source'] keys(): ['id', 'type', 'modified', 'descriptions', 'claims',
     # 'sitelinks', 'variants', 'minmax', 'types', 'location']
     try:
-      #print('h in normalize',h)
+      print('h in normalize',h)
       # TODO: do it in index?
       variants=h['variants']
       title = wdTitle(variants, language)
@@ -503,15 +503,18 @@ def normalize(h, auth, language=None):
         # single MultiPoint geom if exists
         rec.geoms = [loc]
 
-      # turn these identifier claims into links
-      qlinks = {'P1566':'gn', 'P1584':'pl', 'P244':'loc', 'P1667':'tgn', 'P214':'viaf', 'P268':'bnf', 'P1667':'tgn', 'P2503':'gov', 'P1871':'cerl', 'P227':'gnd'}
-      links=[]
-      hlinks = list(
-        set(h['claims'].keys()) & set(qlinks.keys()))
-      if len(hlinks) > 0:
-        for l in hlinks:
-          links.append(qlinks[l]+':'+str(h['claims'][l][0]))
+      rec.links = h['authids']
 
+      # dont' know what happened here; h has key 'authids'
+
+      # turn these identifier claims into links
+      # qlinks = {'P1566':'gn', 'P1584':'pl', 'P244':'loc', 'P1667':'tgn', 'P214':'viaf', 'P268':'bnf', 'P1667':'tgn', 'P2503':'gov', 'P1871':'cerl', 'P227':'gnd'}
+      # links=[]
+      # hlinks = list(
+      #   set(h['claims'].keys()) & set(qlinks.keys()))
+      # if len(hlinks) > 0:
+      #   for l in hlinks:
+      #     links.append(qlinks[l]+':'+str(h['claims'][l][0]))
       # non-English wp pages do not resolve well, ignore them
       # add en and FIRST {language} wikipedia sitelink OR first sitelink
       # wplinks = []
@@ -895,6 +898,7 @@ def align_wdlocal(pk, **kwargs):
           matched = False
         )
         new.save()
+        # print('new hit in align_wdlocal', hit['_source'])
   end = datetime.datetime.now()
 
   print('wdlocal ES errors:',wdlocal_es_errors)

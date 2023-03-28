@@ -234,13 +234,7 @@
                   {% endif %}
                 {% endif %}
                 
-                {%comment%}
-                {% if form.json.value|get:"countries"|length > 0 %} 
-                <p><strong>Countries</strong>: {{ form.json.value|get:"countries" }}</p>
-                {% endif %}
-                {%endcomment%}
-
-                {% if form.json.value|get:"links"|length > 0 %} 
+                {% if form.json.value|get:"links"|length > 0 %}
                   <p><strong>Links</strong>: 
                   {% for link in form.json.value|get:"links" %}
                     <a href="" class="mr-2 ext" data-toggle="modal" data-target="#ext_site">{{ link }} {% fontawesome_icon 'external-link' color='#336699' %}</a>
