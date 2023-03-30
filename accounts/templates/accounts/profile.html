@@ -4,7 +4,8 @@
 
 <div class="container">
   <div class="d-flex justify-content-center mt-3">
-  <form id="profile_form" method="POST" action="{% url 'account_profile' %}" enctype="multipart/form-data">
+  <!-- <form id="profile_form" method="POST" action="{ url 'account_profile' %}" enctype="multipart/form-data"> -->
+  <form id="profile_form" method="POST" action="{% url 'profile' %}" enctype="multipart/form-data">
   {% csrf_token %}
   {{ user_form.errors }}
   {{ profile_form.errors }}
@@ -41,7 +42,7 @@
 	              {% if g.name == 'pilot people' %}
 	                <a href="#" data-id="{{g.id}}" class="a_addmembers">{{g.name}}</a> {% comment %}({{g.id}}){% endcomment %}
 	              {% else %}
-		              <span class="red-head">{{g.name}}</span> {% comment %}({{g.id}}){% endcomment %}
+		              <br/><span class=""><a href="">{{g.name}}</a></span>
 	              {% endif %}
               {% if not forloop.last %}; {% endif %}{% endfor %}
             </td></tr>
@@ -56,7 +57,7 @@
           </tr>{% endif %}
           <tr><td></td>
 	          <td>
-			        {% if context.group_leader %}
+			        {% if context.group_leader or user.is_superuser %}
 			          <p class="mt-3">
 				          <a href="#" id="a_creategroup">create a personal group <i class="fas fa-plus-square linky"></i></a>
 			          </p>
@@ -84,7 +85,8 @@
       </table>
       <div>
         <input class="btn btn-primary btn-sm ml-3 mt-3" type="submit" value="Save" />
-        <span class="ml-2" style="vertical-align:bottom;"><a href="{% url 'account_profile' %}">Cancel</a></span>
+        <!-- <span class="ml-2" style="vertical-align:bottom;"><a href="{ url 'account_profile' %}">Cancel</a></span> -->
+        <span class="ml-2" style="vertical-align:bottom;"><a href="{% url 'profile' %}">Cancel</a></span>
       </div>
     </div> <!-- #editProfile -->
     <div>
@@ -123,11 +125,10 @@
           cache: false,
           data: formData,
           success: function (response) {
-              {#if(response.result == 'dupe'){#}
-              {#  alert('That group name is taken')#}
-              {#$("input.action").prop('checked',false)#}
-              {# } else {#}
-              {#	// TODO: list in gui#}
+              if(response.result == 'dupe'){
+                alert('That group name is taken')
+                $("input.action").prop('checked',false)
+              } else {
               res = response
 		          if (res.status == "dupe") {
                 alert('that name is taken, try another')
@@ -140,12 +141,12 @@
                 $("#grouplist").append(el)
 		          }
               $("#group_name").val('')
-              {#$("#added_flash").fadeIn().delay(2000).fadeOut()#}
+              // $("#added_flash").fadeIn().delay(2000).fadeOut()
               console.log('group created, click its name in group list to add members', res)
-              {# }#}
+              }
           }
       })
-      {#$("#addtocoll").hide()#}
+      $("#addtocoll").hide()
       $("#linkform_popup").hide()
   }
 

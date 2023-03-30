@@ -68,7 +68,7 @@ def register(request):
         user.profile.affiliation=request.POST['affiliation']
         #user.profile.user_type=request.POST['user_type']
         user.profile.name=request.POST['name']
-        auth.login(request, user)
+        auth.login(request, user, backend='django.contrib.auth.backends.ModelBackend')
         return redirect('home')
     else:
       return render(request, 'accounts/register.html', {'error': 'Sorry, password mismatch!'})
@@ -80,7 +80,7 @@ def login(request):
     user = auth.authenticate(username=request.POST['username'],password=request.POST['password'])
 
     if user is not None:
-      auth.login(request,user)
+      auth.login(request,user, backend='django.contrib.auth.backends.ModelBackend')
       return redirect('data-datasets')
     else:
       raise forms.ValidationError("Sorry, that login was invalid. Please try again.")

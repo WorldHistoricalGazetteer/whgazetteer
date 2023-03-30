@@ -211,7 +211,7 @@ ACCOUNT_LOGIN_ATTEMPTS_TIMEOUT = 86400 # 1 day in seconds
 ACCOUNT_LOGOUT_REDIRECT_URL ='/'
 LOGIN_REDIRECT_URL = '/accounts/email/' # default to /accounts/profile
 
-ACCOUNT_FORMS = {'signup': 'allauth.account.forms.WHGRegisterForm',}
+# ACCOUNT_FORMS = {'signup': 'allauth.account.forms.WHGRegisterForm',}
 
 #SOCIALACCOUNT_PROVIDERS = {
   ## For each OAuth based provider, either add a ``SocialApp``
@@ -237,7 +237,7 @@ ACCOUNT_FORMS = {'signup': 'allauth.account.forms.WHGRegisterForm',}
 AUTHENTICATION_BACKENDS = (
   'django.contrib.auth.backends.ModelBackend', # default
   'guardian.backends.ObjectPermissionBackend',
-  'allauth.account.auth_backends.AuthenticationBackend',
+  # 'allauth.account.auth_backends.AuthenticationBackend',
 )
 
 # Password validation
