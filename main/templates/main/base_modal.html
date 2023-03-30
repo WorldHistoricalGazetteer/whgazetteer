@@ -50,7 +50,7 @@
     // some global stuff
 	  $(function(){
       language = window.navigator.language.substr(0,2)
-      <!--abouts = ['/about/','/community/','/system/','/licensing/','/credits/']-->
+      //abouts = ['/about/','/community/','/system/','/licensing/','/credits/']
       abouts = ['/about/','/system/','/licensing/','/credits/']
       clicked = window.location.pathname
     
@@ -61,11 +61,11 @@
         $("[href='"+clicked+"']").addClass('navactive')
       }
       
-      <!--$('[data-toggle="popover"]').popover(-->
-        <!--{ template:'<div class="popover" role="tooltip"><div class="arrow"></div><h1 class="popover-header"></h1><div class="popover-body"></div></div>',-->
-        <!--html: true-->
-        <!--}-->
-      <!--)-->
+      // $('[data-toggle="popover"]').popover(
+      //   { template:'<div class="popover" role="tooltip"><div class="arrow"></div><h1 class="popover-header"></h1><div class="popover-body"></div></div>',
+      //   html: true
+      //   }
+      // )
 	  });
     
 	  $(".feedback").click(function(){

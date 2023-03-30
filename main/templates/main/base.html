@@ -18,12 +18,9 @@
 	<script src="{% static 'jquery-ui-1.13.2/jquery-ui.min.js' %}"></script>
   <link rel="stylesheet" href="{% static 'jquery-ui-1.13.2/jquery-ui.min.css' %}"/>
 
-	
-  <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns" crossorigin="anonymous"></script> -->
-	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
-
 	<script src="{% static 'js/spin.umd.js' %}"></script>
-  <!-- google font -->
+  
+	<!-- google font -->
   <link href="https://fonts.googleapis.com/css?family=EB+Garamond|Raleway&display=swap" rel="stylesheet">
   
   <!-- Add additional CSS in static -->
@@ -36,7 +33,8 @@
   <link rel="stylesheet" href="{% static 'css/styles.css' %}">
   <link rel="shortcut icon" type="image/png" href="{% static 'images/favicon.ico' %}"/>
   <link rel="stylesheet" href="{% static 'css/spin.css' %}" />
-  <!-- some pages will want more -->
+  
+	<!-- some pages will want more -->
   {% block extra_head %}{% endblock %}
 </head>
 <!-- Google tag (gtag.js) -->
@@ -45,9 +43,9 @@
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-
   gtag('config', 'G-ZB73342G3Y');
-</script><body>
+</script>
+<body>
   <header>
     <nav class="navbar navbar-expand-lg navbar-light">
       <div class="container" style="background-color: gainsboro;">
@@ -122,22 +120,18 @@
 							  </div>
 						</li>
 					  <li class="nav-item larger">
-						<!-- <a class="nav-link" rel="tooltip" title="{{ user }} profile" href="{ url 'account_profile' %}"><i class="fas fa-user" style="color:#336699;"></i></a> -->
 						<a class="nav-link" rel="tooltip" title="{{ user }} profile" href="{% url 'profile' %}"><i class="fas fa-user" style="color:#336699;"></i></a>
 					  </li>
 					  <li class="nav-item">
 							<a class="nav-link `ml-5" href="javascript:{document.getElementById('logout').submit()}">Logout</a>
-							<!-- <form id="logout" method="post" action="{ url 'account_logout' %}"> -->
 							<form id="logout" method="post" action="{% url 'logout' %}">
 							  {% csrf_token %}</form>
 					  </li>
 						{% else %}
 					  <li class="nav-item">
-						<!-- <a class="nav-link ml-5" href="{ url 'account_signup' %}">Register</a> -->
 						<a class="nav-link ml-5" href="{% url 'register' %}">Register</a>
 					  </li>
 					  <li class="nav-item">
-						<!-- <a class="nav-link" href="{ url 'account_login' %}">Login</a> -->
 						<a class="nav-link" href="{% url 'login' %}">Login</a>
 					  </li>
             {% endif %}
@@ -175,6 +169,6 @@
       window.location.href=url
 	  })
   </script>
-  
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
 </body>
 </html>
