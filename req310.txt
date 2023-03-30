@@ -41,7 +41,6 @@ django-guardian==2.3.0
 django-leaflet==0.28.3
 django-mathfilters==0.4.0
 django-multiselectfield==0.1.12
-django-multiselectfield2==0.0.1
 django-ranged-response==0.2.0
 django-resized==0.3.11
 django-shapeshifter==18.9.23
