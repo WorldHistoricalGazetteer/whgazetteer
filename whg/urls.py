@@ -58,8 +58,8 @@ urlpatterns = [
     # backend stuff
     path('api/', include('api.urls')),
     path('remote/', include('remote.urls')),
-    path('accounts/', include('allauth.urls')),
-    #path('accounts/', include('accounts.urls')),
+    # path('accounts/', include('allauth.urls')),
+    path('accounts/', include('accounts.urls')),
     path('admin/', admin.site.urls),
     path('captcha/', include('captcha.urls')),
 

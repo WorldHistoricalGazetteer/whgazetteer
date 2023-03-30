@@ -117,20 +117,23 @@
 							  </div>
 						</li>
 					  <li class="nav-item larger">
-						<a class="nav-link" rel="tooltip" title="{{ user }} profile" href="{% url 'account_profile' %}"><i class="fas fa-user" style="color:#336699;"></i></a>
+						<!-- <a class="nav-link" rel="tooltip" title="{{ user }} profile" href="{ url 'account_profile' %}"><i class="fas fa-user" style="color:#336699;"></i></a> -->
+						<a class="nav-link" rel="tooltip" title="{{ user }} profile" href="{% url 'profile' %}"><i class="fas fa-user" style="color:#336699;"></i></a>
 					  </li>
 					  <li class="nav-item">
 							<a class="nav-link `ml-5" href="javascript:{document.getElementById('logout').submit()}">Logout</a>
-							<form id="logout" method="post" action="{% url 'account_logout' %}">
+							<!-- <form id="logout" method="post" action="{ url 'account_logout' %}"> -->
+							<form id="logout" method="post" action="{% url 'logout' %}">
 							  {% csrf_token %}</form>
 					  </li>
 						{% else %}
 					  <li class="nav-item">
-						<a class="nav-link ml-5" href="{% url 'account_signup' %}">Register</a>
-						<!--<a class="nav-link ml-5" href="{ url 'register' %}">Register</a>-->
+						<!-- <a class="nav-link ml-5" href="{ url 'account_signup' %}">Register</a> -->
+						<a class="nav-link ml-5" href="{% url 'register' %}">Register</a>
 					  </li>
 					  <li class="nav-item">
-						<a class="nav-link" href="{% url 'account_login' %}">Login</a>
+						<!-- <a class="nav-link" href="{ url 'account_login' %}">Login</a> -->
+						<a class="nav-link" href="{% url 'login' %}">Login</a>
 					  </li>
             {% endif %}
           </div>
