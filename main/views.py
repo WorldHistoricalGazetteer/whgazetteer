@@ -35,6 +35,33 @@ class LibreView(TemplateView):
         return context
 
 
+class Home30a(TemplateView):
+    # template_name = 'main/home_v2a.html'
+    template_name = 'main/home_v30a.html'
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(Home30a, self).get_context_data(*args, **kwargs)
+        
+        # deliver featured datasets and collections
+        f_collections = Collection.objects.exclude(featured__isnull=True)
+        f_datasets = list(Dataset.objects.exclude(featured__isnull=True))
+        shuffle(f_datasets)
+        
+        # 2 collections, rotate datasets randomly
+        context['featured_coll'] = f_collections.order_by('featured')[:2]
+        context['featured_ds'] = f_datasets
+        context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
+        context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
+        context['mbtokenwhg'] = settings.MAPBOX_TOKEN_WHG
+        context['media_url'] = settings.MEDIA_URL
+        context['base_dir'] = settings.BASE_DIR
+        context['beta_or_better'] = True if self.request.user.groups.filter(
+            name__in=['beta', 'admins']).exists() else False
+        context['teacher'] = True if self.request.user.groups.filter(
+            name__in=['teacher']).exists() else False
+
+        return context
+
 class Home2b(TemplateView):
     # template_name = 'main/home_v2a.html'
     template_name = 'main/home_v2b.html'
