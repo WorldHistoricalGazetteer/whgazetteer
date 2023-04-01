@@ -1,7 +1,7 @@
 # celery tasks for reconciliation and downloads
 # align_tgn(), align_wdlocal(), align_idx(), align_whg, make_download
 from __future__ import absolute_import, unicode_literals
-from celery import task, shared_task # this is @task decorator
+from celery import task, shared_task # these are @task decorators
 #from celery_progress.backend import ProgressRecorder
 from django_celery_results.models import TaskResult
 from django.conf import settings
@@ -985,16 +985,13 @@ def es_lookup_idx(qobj, *args, **kwargs):
   """
   prepare queries from qobj
   """
-  # q0 is matching concordance identifiers, boosted by name matches
-  # TODO: are scores used?
+  # q0 is matching concordance identifiers
   q0 = {
     "query": {"bool": { "must": [
-      {"terms": {"links.identifier": linklist }},
-      {"bool": {"should": [
-        {"terms": {"names.toponym": variants}},        
-        {"terms": {"searchy": variants}}]}}     
+      {"terms": {"links.identifier": linklist }}
     ]
   }}}
+
 
   # build q1 from qbase + spatial context, fclasses if any
   qbase = {"size": 100,"query": { 
@@ -1012,7 +1009,7 @@ def es_lookup_idx(qobj, *args, **kwargs):
         }
       ],
       "should": [
-        # bool::should boosts score
+        # bool::should outside of must boosts score
         {"terms": {"links.identifier": qobj["links"] }},
         {"terms": {"types.identifier": qobj["placetypes"]}}
       ],
@@ -1199,7 +1196,7 @@ def align_idx(pk, *args, **kwargs):
   fn1 = "new-parents_"+str(ds.id)+".txt"
   fout1 = codecs.open(wd+fn1, mode="w", encoding="utf8")
   
-  #bounds = {'type': ['userarea'], 'id': ['0']}
+  # bounds = {'type': ['userarea'], 'id': ['0']}
   bounds = kwargs['bounds']
   scope = kwargs['scope']
   
