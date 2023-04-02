@@ -1,31 +1,33 @@
 {
-  "settings":{
-    "number_of_shards": 1,
-    "analysis": {
-      "normalizer": {
-        "standard": {
-          "type": "custom",
-          "char_filter": [],
-          "filter": ["lowercase", "asciifolding"]
+  "settings" : {
+    "index" : {
+      "number_of_shards": "1",
+      "analysis": {
+        "normalizer": {
+          "asciifolding": {
+            "filter": [
+              "lowercase",
+              "asciifolding"
+            ],
+            "type": "custom",
+            "char_filter": []
+          }
         }
       }
     }
   },
-  "mappings" : {
+  "mappings": {
     "properties" : {
       "title" : {
-        "type" : "keyword",
-        "normalizer": "standard"
+        "type" : "text"
       },
       "searchy" : {
-        "type" : "keyword",
-        "normalizer": "standard"
+        "type" : "text"
       },
       "names" : {
         "properties" : {
           "toponym" : {
-            "type" : "keyword",
-            "normalizer": "standard"
+            "type" : "text"
           },
           "citation" : {
             "properties" : {
@@ -162,6 +164,15 @@
       },
       "descriptions" : {
         "properties" : {
+          "@id" : {
+            "type" : "text",
+            "fields" : {
+              "keyword" : {
+                "type" : "keyword",
+                "ignore_above" : 256
+              }
+            }
+          },
           "id" : {
             "type" : "keyword"
           },
@@ -257,18 +268,17 @@
         "type" : "keyword"
       },
       "suggest" : {
-        "type" : "completion",
-        "analyzer" : "simple",
-        "preserve_separators" : true,
-        "preserve_position_increments" : true,
-        "max_input_length" : 50,
-        "contexts" : [
-          {
-            "name" : "place_type",
-            "type" : "CATEGORY",
-            "path" : "types.identifier"
+        "properties" : {
+          "input" : {
+            "type" : "text",
+            "fields" : {
+              "keyword" : {
+                "type" : "keyword",
+                "ignore_above" : 256
+              }
+            }
           }
-        ]
+        }
       },
       "timespans" : {
         "type" : "integer_range"
