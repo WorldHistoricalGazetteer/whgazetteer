@@ -178,8 +178,6 @@ class SearchView(View):
       fclist = fclasses.split(',')
       fclist.append('X')
       q['query']['bool']['must'].append({"terms": {"fclasses": fclist}})
-      # print('fc_list after split', fc_list)
-      # q['query']['bool']['must'].append({"terms": {"fclasses": fclasses.split(',')}})
 
     if start:
       q['query']['bool']['must'].append({"range":{"timespans":{"gte" :start,"lte":end if end else 2005}}})
