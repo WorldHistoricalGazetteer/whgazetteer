@@ -9,7 +9,6 @@ from django.views.generic import View
 
 import codecs, csv, datetime, sys, openpyxl, os, pprint, re, time
 import simplejson as json
-#from celery import task, shared_task
 from chardet import detect
 from django_celery_results.models import TaskResult
 from frictionless import validate as fvalidate
