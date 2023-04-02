@@ -998,7 +998,7 @@ def es_lookup_idx(qobj, *args, **kwargs):
     "bool": {
       "must": [
         {"exists": {"field": "whg_id"}},
-        # must match a or b or c
+        # must match one of these (exact)
         {"bool": {
             "should": [
               {"terms": {"names.toponym": variants}},
@@ -1009,8 +1009,8 @@ def es_lookup_idx(qobj, *args, **kwargs):
         }
       ],
       "should": [
-        # bool::should outside of must boosts score
-        {"terms": {"links.identifier": qobj["links"] }},
+        # bool::"should" outside of "must" boosts score
+        # {"terms": {"links.identifier": qobj["links"] }},
         {"terms": {"types.identifier": qobj["placetypes"]}}
       ],
       # spatial filters added according to what"s available
@@ -1035,14 +1035,16 @@ def es_lookup_idx(qobj, *args, **kwargs):
       qbase["query"]["bool"]["should"].append(countries_match)
 
   # ADD fclasses IF ANY
-  if has_fclasses:
-    qbase["query"]["bool"]["must"].append(
-    {"terms": {"fclasses": qobj["fclasses"]}})
+  # if has_fclasses:
+  #   qbase["query"]["bool"]["must"].append(
+  #   {"terms": {"fclasses": qobj["fclasses"]}})
+
   # grab a copy
   q1 = qbase
+  print('q1', q1)
 
   # /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-  # pass0a, pass0b
+  # pass0a, pass0b (identifiers)
   # /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
   try:
     result0a = es.search(index=idx, body=q0)
@@ -1192,9 +1194,9 @@ def align_idx(pk, *args, **kwargs):
     'lang': ['']}>
   """
   # open file for writing new seed/parents for inspection
-  wd = "/Users/karlg/Documents/repos/_whgazetteer/_scratch/accessioning/"
-  fn1 = "new-parents_"+str(ds.id)+".txt"
-  fout1 = codecs.open(wd+fn1, mode="w", encoding="utf8")
+  # wd = "/Users/karlg/Documents/repos/_whgazetteer/_scratch/accessioning/"
+  # fn1 = "new-parents_"+str(ds.id)+".txt"
+  # fout1 = codecs.open(wd+fn1, mode="w", encoding="utf8")
   
   # bounds = {'type': ['userarea'], 'id': ['0']}
   bounds = kwargs['bounds']
@@ -1349,10 +1351,10 @@ def align_idx(pk, *args, **kwargs):
         new.save()
         #print(json.dumps(jsonic,indent=2))
   
-  # write new index seed/parent docs for inspection
-  fout1.write(json.dumps(new_seeds, indent=2))
-  fout1.close()
-  print(str(len(new_seeds)) + ' new index seeds written to '+ fn1)
+  # testing: write new index seed/parent docs for inspection
+  # fout1.write(json.dumps(new_seeds, indent=2))
+  # fout1.close()
+  # print(str(len(new_seeds)) + ' new index seeds written to '+ fn1)
   
   end = datetime.datetime.now()
   

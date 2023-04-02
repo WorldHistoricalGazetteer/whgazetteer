@@ -169,7 +169,7 @@ class SearchView(View):
               {"exists": {"field": "whg_id"}},
               {"multi_match": {
                 "query": qstr,
-                "fields": ["title^3", "names.toponym", "searchy"],
+                "fields": ["title^3", "names.toponym", "searchy"]
               }}
             ]
           }}

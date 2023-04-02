@@ -198,7 +198,7 @@ def ccDecode(codes):
   return countries
 
 """
-build query object qobj
+build query object qobj for ES
 """
 def build_qobj(place):
   from datasets.utils import hully
@@ -222,7 +222,7 @@ def build_qobj(place):
   qobj['countries'] = list(set(place.ccodes))
 
   # types (Getty AAT identifiers)
-  # if no aat mappings (srcLabel only), make assumption
+  # if no aat mappings (srcLabel only)
   for t in place.types.all():
     if t.jsonb['identifier'] not in ['', None]:
       types.append(t.jsonb['identifier'])
@@ -230,7 +230,11 @@ def build_qobj(place):
       # no type? use inhabited place, cultural group, site
       types.extend(['aat:300008347','aat:300387171','aat:300000809'])
       # add fclasses
-      qobj['fclasses'] = ['P','S']
+      # qobj['fclasses'] = ['P','S']
+
+      # hot fix 2 Apr 2023:
+      # if no types, add all fclasses ('X' appears in some)
+      qobj['fclasses'] = ['P', 'S', 'A', 'T', 'H', 'L', 'R', 'X']
   qobj['placetypes'] = list(set(types))
 
   # variants
@@ -433,12 +437,11 @@ def removeDatasetFromIndex(request, *args, **kwargs):
   print('removeDatasetFromIndex() hands pids to removePlacesFromIndex()')
   print('args, kwargs', args, kwargs)
   from datasets.models import Dataset
-  ds = Dataset.objects.get(id = args[0])
-  # ds = Dataset.objects.get(id = kwargs['dsid'])
+  ds = Dataset.objects.get(id = args[0] if args else kwargs['dsid'])
   es = settings.ES_CONN
   # q_pids = {"match": {"dataset": 'sample7h'}}
   q_pids = {"match": {"dataset": ds.label}}
-  res = es.search(index='whg', query=q_pids, _source=["title", "place_id"])
+  res = es.search(index='whg', query=q_pids, _source=["title", "place_id"], size=ds.places.count())
   pids = [h['_source']['place_id'] for h in res['hits']['hits']]
   print('pids in remove...()', pids)
   removePlacesFromIndex(es, 'whg', pids)
@@ -463,7 +466,6 @@ def removeDatasetFromIndex(request, *args, **kwargs):
 def removePlacesFromIndex(es, idx, pids):
   delthese=[]
   print('pids in removePlacesFromIndex()', pids)
-  # pids = [6880701, 6880703, 6880704, 6880705, 6880706, 6880707]
   for pid in pids:
     # get index document
     res = es.search(index=idx, query=esq_pid(pid))
@@ -553,8 +555,11 @@ def removePlacesFromIndex(es, idx, pids):
           except:
             print('update of parent losing child failed', sys.exit(sys.exc_info()))
             pass
-          # can't safely excise names from searchy
+          # TODO: should excise names from searchy, but can't yet
           print('q_update initial:', q_update)
+        else:
+          # child thought this was parent but parent.children[] doesn't have it
+          delthese.append(pid)
       # DB ACTIONS
       try:
         # get database record if it wasn't just deleted
