@@ -11,7 +11,9 @@ from django.db import connection
 from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
+User = get_user_model()
 
 # from django.contrib.gis.geos import Polygon, Point, LineString
 

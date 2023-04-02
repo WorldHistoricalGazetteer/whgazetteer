@@ -1,7 +1,8 @@
 # testy_whg.py 28 Feb 2021
 # for Dataset id in list, perform whg recon, write summary to file
 
-from django.contrib.auth.models import User, Group
+from django.contrib.auth import get_user_model
+User = get_user_model()
 from django.contrib.gis.geos import Polygon, Point, LineString
 from django.shortcuts import get_object_or_404
 

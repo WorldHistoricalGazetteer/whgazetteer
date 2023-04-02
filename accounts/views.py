@@ -1,5 +1,7 @@
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User, Group
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
+User = get_user_model()
 from django.contrib import auth, messages
 from django.db import transaction
 from django.http import HttpResponseRedirect, JsonResponse

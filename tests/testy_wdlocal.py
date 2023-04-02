@@ -1,7 +1,8 @@
 # testy_wdlocal.py 14 Feb 2021
 # for Dataset id in list, perform wdlocal recon, write results to file
 
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+User = get_user_model()
 from django.shortcuts import get_object_or_404
 
 import codecs, pytz

@@ -2,6 +2,8 @@
 # misc elasticsearch supporting tasks
 # revs: 2021-03; 2020-03; 2019-10-01; 2019-03-05;
 
+from django.contrib.auth import get_user_model
+User = get_user_model()
 from django.conf import settings
 from django.http import JsonResponse
 from places.models import Place
@@ -15,7 +17,6 @@ import sys
 #
 def fetch(request):
   from places.models import Place
-  from django.contrib.auth.models import User
   user = User.objects.get(pk=1)
   idx='whg'
   if request.method == 'POST':

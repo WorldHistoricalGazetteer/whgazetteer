@@ -59,8 +59,11 @@ INSTALLED_APPS = [
     'remote.apps.RemoteConfig',
     'resources.apps.ResourcesConfig', # for teaching
     'search.apps.SearchConfig',
-    'traces.apps.TracesConfig'
+    'traces.apps.TracesConfig',
+    'users',
 ]
+
+AUTH_USER_MODEL = 'users.User'
 
 MIDDLEWARE = [
   'django.contrib.sessions.middleware.SessionMiddleware',

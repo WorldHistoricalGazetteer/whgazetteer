@@ -1,5 +1,8 @@
 # api.serializers.py
-from django.contrib.auth.models import User, Group
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
+User = get_user_model()
+
 from django.contrib.gis.geos import GEOSGeometry, Point, Polygon, MultiPolygon, LineString, MultiLineString
 from rest_framework import serializers
 from django.core import serializers as coreserializers

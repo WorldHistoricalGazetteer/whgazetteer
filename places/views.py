@@ -1,5 +1,6 @@
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+User = get_user_model()
 from django.http import JsonResponse,HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.views.generic import DetailView

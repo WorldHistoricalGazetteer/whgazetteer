@@ -5,7 +5,9 @@ from django.db.models import JSONField
 from django.contrib.gis.db import models as geomodels
 from django.contrib.gis.db.models import Collect, Extent
 from django.contrib.gis.geos import GeometryCollection, Polygon
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
+User = get_user_model()
 from django.db import models
 from django.db.models import Q
 from django.db.models.signals import pre_delete
