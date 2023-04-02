@@ -71,7 +71,9 @@
         </p>
         <div id="dataset_list" class="mt-1">
           <div class="list-box">
-            <h6 class="my-2">My Datasets</h6>
+            <h6 class="my-2">My Datasets
+	            <span class="smaller float-right pr-4"><i class="small fa fa-users" style="color:grey;"></i> = Collaborator</span>
+            </h6>
             {% if dataset_list|length == 0 %}<p class="smaller"><i>None yet...</i></p>
             {% else %}
             <table id="table_ds" class="table table-striped">
@@ -92,11 +94,17 @@
                   <tr class="place-row">
                     <td>{{ d.id }}</td>
                     <td>
-                    <a href="{% url 'datasets:ds_summary' d.id %}" title="Dataset details" rel="tooltip">{{ d.title }}</a>
+                    <a href="{% url 'datasets:ds_summary' d.id %}" title="Dataset details" rel="tooltip">
+	                    {{ d.title }}</a>
+	                    {% if not user == d.owner %}
+		                    <span class="smaller ml-3">
+			                    <i class="small fa fa-users" style="color:grey;"></i></span>
+	                    {% endif %}
                     </td>
                     <td>{% if d.core == True %}
                           {{ d.label }} <span class="corerow"> (core)</span>
-                        {% else %}{{ d.label }}{% endif %}</td>
+                        {% else %}{{ d.label }}{% endif %}
+                    </td>
                     <td class="small">{{ d.create_date|date:"Y-m-d, H:i" }}</td>
                     <td>{{ d.format }}</td>
                     <td>{{ d.numrows }}</td>

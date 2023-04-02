@@ -1,7 +1,7 @@
 # celery tasks for reconciliation and downloads
 # align_tgn(), align_wdlocal(), align_idx(), align_whg, make_download
 from __future__ import absolute_import, unicode_literals
-from celery import shared_task # this is @shared_task decorator
+from celery import task, shared_task # these are @task decorators
 #from celery_progress.backend import ProgressRecorder
 from django_celery_results.models import TaskResult
 from django.conf import settings
@@ -477,7 +477,7 @@ def normalize(h, auth, language=None):
     # hit['_source'] keys(): ['id', 'type', 'modified', 'descriptions', 'claims',
     # 'sitelinks', 'variants', 'minmax', 'types', 'location']
     try:
-      #print('h in normalize',h)
+      print('h in normalize',h)
       # TODO: do it in index?
       variants=h['variants']
       title = wdTitle(variants, language)
@@ -503,15 +503,18 @@ def normalize(h, auth, language=None):
         # single MultiPoint geom if exists
         rec.geoms = [loc]
 
-      # turn these identifier claims into links
-      qlinks = {'P1566':'gn', 'P1584':'pl', 'P244':'loc', 'P1667':'tgn', 'P214':'viaf', 'P268':'bnf', 'P1667':'tgn', 'P2503':'gov', 'P1871':'cerl', 'P227':'gnd'}
-      links=[]
-      hlinks = list(
-        set(h['claims'].keys()) & set(qlinks.keys()))
-      if len(hlinks) > 0:
-        for l in hlinks:
-          links.append(qlinks[l]+':'+str(h['claims'][l][0]))
+      rec.links = h['authids']
 
+      # dont' know what happened here; h has key 'authids'
+
+      # turn these identifier claims into links
+      # qlinks = {'P1566':'gn', 'P1584':'pl', 'P244':'loc', 'P1667':'tgn', 'P214':'viaf', 'P268':'bnf', 'P1667':'tgn', 'P2503':'gov', 'P1871':'cerl', 'P227':'gnd'}
+      # links=[]
+      # hlinks = list(
+      #   set(h['claims'].keys()) & set(qlinks.keys()))
+      # if len(hlinks) > 0:
+      #   for l in hlinks:
+      #     links.append(qlinks[l]+':'+str(h['claims'][l][0]))
       # non-English wp pages do not resolve well, ignore them
       # add en and FIRST {language} wikipedia sitelink OR first sitelink
       # wplinks = []
@@ -895,6 +898,7 @@ def align_wdlocal(pk, **kwargs):
           matched = False
         )
         new.save()
+        # print('new hit in align_wdlocal', hit['_source'])
   end = datetime.datetime.now()
 
   print('wdlocal ES errors:',wdlocal_es_errors)
@@ -981,16 +985,13 @@ def es_lookup_idx(qobj, *args, **kwargs):
   """
   prepare queries from qobj
   """
-  # q0 is matching concordance identifiers, boosted by name matches
-  # TODO: are scores used?
+  # q0 is matching concordance identifiers
   q0 = {
     "query": {"bool": { "must": [
-      {"terms": {"links.identifier": linklist }},
-      {"bool": {"should": [
-        {"terms": {"names.toponym": variants}},        
-        {"terms": {"searchy": variants}}]}}     
+      {"terms": {"links.identifier": linklist }}
     ]
   }}}
+
 
   # build q1 from qbase + spatial context, fclasses if any
   qbase = {"size": 100,"query": { 
@@ -1008,7 +1009,7 @@ def es_lookup_idx(qobj, *args, **kwargs):
         }
       ],
       "should": [
-        # bool::should boosts score
+        # bool::should outside of must boosts score
         {"terms": {"links.identifier": qobj["links"] }},
         {"terms": {"types.identifier": qobj["placetypes"]}}
       ],
@@ -1195,7 +1196,7 @@ def align_idx(pk, *args, **kwargs):
   fn1 = "new-parents_"+str(ds.id)+".txt"
   fout1 = codecs.open(wd+fn1, mode="w", encoding="utf8")
   
-  #bounds = {'type': ['userarea'], 'id': ['0']}
+  # bounds = {'type': ['userarea'], 'id': ['0']}
   bounds = kwargs['bounds']
   scope = kwargs['scope']
   

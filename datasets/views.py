@@ -413,7 +413,7 @@ def review(request, pk, tid, passnum):
     'countries': countries,
     'passnum': passnum,
     'page': page if request.method == 'GET' else str(int(page)-1),
-    'aug_geom': kwargs['aug_geom'],
+    'aug_geom': json.loads(task.task_kwargs.replace("'",'"'))['aug_geom'],
     'mbtoken': settings.MAPBOX_TOKEN_WHG,
     'count_pass0': cnt_pass0,
     'count_pass1': cnt_pass1,
@@ -447,6 +447,7 @@ def review(request, pk, tid, passnum):
     # NB. other reviewer(s) *not* notified
     if review_status == 1:
       context["already"] = True
+      messages.success(request, ('Last record ('+place_post.title+') reviewed by another'))
       return redirect('/datasets/'+str(pk)+'/review/'+task.task_id+'/'+passnum)
     elif formset.is_valid():
       hits = formset.cleaned_data
@@ -3070,7 +3071,8 @@ class DatasetAddTaskView(LoginRequiredMixin, DetailView):
     context = super(DatasetAddTaskView, self).get_context_data(*args, **kwargs)
     """ maps need these """
     context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
-    context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
+    context['mbtoken'] = settings.MAPBOX_TOKEN_WHG
+    context['mbtoken'] = settings.MAPBOX_TOKEN_WHG
 
     id_ = self.kwargs.get("id")
     ds = get_object_or_404(Dataset, id=id_)

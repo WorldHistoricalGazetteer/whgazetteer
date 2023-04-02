@@ -30,7 +30,7 @@ class SearchPageView(TemplateView):
 
     context = super(SearchPageView, self).get_context_data(*args, **kwargs)
     context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
-    context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
+    context['mbtoken'] = settings.MAPBOX_TOKEN_WHG
     context['mbtokenwhg'] = settings.MAPBOX_TOKEN_WHG
     context['media_url'] = settings.MEDIA_URL
     context['dslist'] = dslist
@@ -175,16 +175,22 @@ class SearchView(View):
           }}
     }
     if fclasses:
-      q['query']['bool']['must'].append({"terms": {"fclasses": fclasses.split(',')}})
+      fclist = fclasses.split(',')
+      fclist.append('X')
+      q['query']['bool']['must'].append({"terms": {"fclasses": fclist}})
+      # print('fc_list after split', fc_list)
+      # q['query']['bool']['must'].append({"terms": {"fclasses": fclasses.split(',')}})
+
     if start:
       q['query']['bool']['must'].append({"range":{"timespans":{"gte" :start,"lte":end if end else 2005}}})
     if bounds:
       bounds=json.loads(bounds)
       q['query']['bool']["filter"]=get_bounds_filter(bounds,'whg')
 
+    print('query q in search', q)
     suggestions = suggester(q, idx)
     suggestions = [suggestionItem(s) for s in suggestions]
-    
+    # print('suggestions', suggestions)
     # return query params for ??
     result = {'get': request.GET, 'suggestions': suggestions, 'session': params }
 

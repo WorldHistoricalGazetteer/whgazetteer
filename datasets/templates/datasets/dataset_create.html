@@ -89,10 +89,10 @@
           <tr>
             <td><b>Format </b></td>
             <td>
-	            {% for choice in form.format %}
-	            {% if choice.data.value != 'dummy' %}
-		            {{ choice }}
-	            {% endif %}
+              {% for choice in form.format %}
+              {% if choice.data.value != 'dummy' %}
+                {{ choice }}
+              {% endif %}
             {% endfor %}
             </td>
           </tr>

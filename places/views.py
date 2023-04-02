@@ -70,7 +70,7 @@ class PlacePortalView(DetailView):
     context = super(PlacePortalView, self).get_context_data(*args, **kwargs)
     context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
     context['mbtokenwhg'] = settings.MAPBOX_TOKEN_WHG
-    context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
+    context['mbtoken'] = settings.MAPBOX_TOKEN_WHG
     es = settings.ES_CONN
     id_ = self.kwargs.get("id")
     pid = self.kwargs.get("pid")
@@ -173,7 +173,7 @@ class PlaceDetailView(DetailView):
   def get_context_data(self, *args, **kwargs):
     context = super(PlaceDetailView, self).get_context_data(*args, **kwargs)
     context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
-    context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
+    context['mbtoken'] = settings.MAPBOX_TOKEN_WHG
 
     print('PlaceDetailView get_context_data() kwargs:',self.kwargs)
     print('PlaceDetailView get_context_data() request.user',self.request.user)
@@ -208,7 +208,7 @@ class PlaceModalView(DetailView):
   def get_context_data(self, *args, **kwargs):
     context = super(PlaceModalView, self).get_context_data(*args, **kwargs)
     context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
-    context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
+    context['mbtoken'] = settings.MAPBOX_TOKEN_WHG
 
     print('PlaceModalView get_context_data() kwargs:',self.kwargs)
     print('PlaceModalView get_context_data() request.user',self.request.user)

@@ -222,7 +222,7 @@ class PlaceCollectionCreateView(LoginRequiredMixin, CreateView):
     user = self.request.user
     print('PlaceCollectionCreateView() user', user)
     context = super(PlaceCollectionCreateView, self).get_context_data(**kwargs)
-    context['mbtoken'] = settings.MAPBOX_TOKEN_WHG
+    context['mbtoken'] = settings.MAPBOX_TOKEN_MB
 
     datasets = []
     # add 1 or more links, images (?)
@@ -371,7 +371,7 @@ class PlaceCollectionSummaryView(DetailView):
 
     context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
     context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
-    context['mbtoken'] = settings.MAPBOX_TOKEN_WHG
+    context['mbtokenwhg'] = settings.MAPBOX_TOKEN_WHG
     context['whgteam'] = User.objects.filter(groups__name='whg_team')
 
     context['place_list'] = places
@@ -399,7 +399,7 @@ class PlaceCollectionBrowseView(DetailView):
     context = super(PlaceCollectionBrowseView, self).get_context_data(*args, **kwargs)
     context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
     context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
-    context['mbtoken'] = settings.MAPBOX_TOKEN_WHG
+    context['mbtokenwhg'] = settings.MAPBOX_TOKEN_WHG
     context['media_url'] = settings.MEDIA_URL
 
     id_ = self.kwargs.get("id")
@@ -539,7 +539,7 @@ class DatasetCollectionSummaryView(DetailView):
 
     context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
     context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
-    context['mbtoken'] = settings.MAPBOX_TOKEN_WHG
+    context['mbtokenwhg'] = settings.MAPBOX_TOKEN_WHG
     context['whgteam'] = User.objects.filter(groups__name='whg_team')
 
     context['ds_list'] = datasets

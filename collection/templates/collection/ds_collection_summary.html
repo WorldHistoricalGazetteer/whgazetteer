@@ -350,10 +350,9 @@
     mappy.setMaxBounds(null)
 
     // mapbox tokens 
-    var token_whg = '{{ mbtokenwhg }}', 
-        token_kg = '{{ mbtokenkg }}',
-        token_mb = '{{ mbtokenmb }}';
-
+    var token_whg = '{{ mbtoken }}',
+        token_mb = '{{ mbtoken }}';
+    
     // style/tile urls
     var mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}',
         mbtiles_url = 'https://api.mapbox.com/v3/{id}/{z}/{x}/{y}.png',

@@ -39,6 +39,7 @@
         {% if count_pass3 > 0 %}
           <option value="pass3">PASS 3&nbsp;</option>{% endif %}
       </select>
+	    {% for m in messages %}{{ m }}{% endfor %}
     {% endif %} 
     </span>
     <span class="help-matches" data-id="review"><i class="fas fa-question-circle linkypop"></i></span>
@@ -240,13 +241,7 @@
                   {% endif %}
                 {% endif %}
                 
-                {%comment%}
-                {% if form.json.value|get:"countries"|length > 0 %} 
-                <p><strong>Countries</strong>: {{ form.json.value|get:"countries" }}</p>
-                {% endif %}
-                {%endcomment%}
-
-                {% if form.json.value|get:"links"|length > 0 %} 
+                {% if form.json.value|get:"links"|length > 0 %}
                   <p><strong>Links</strong>: 
                   {% for link in form.json.value|get:"links" %}
                     <a href="" class="mr-2 ext" data-toggle="modal" data-target="#ext_site">{{ link }} <i class="fas fa-external-link-alt linky"></i></a>
