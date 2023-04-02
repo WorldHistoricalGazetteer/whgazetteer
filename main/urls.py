@@ -17,7 +17,6 @@ urlpatterns = [
     path('collections/', TemplateView.as_view(template_name="tutorials/collections.html"), name="tute-collections"),
     path('contributing/', TemplateView.as_view(template_name="tutorials/contributing.html"), name="tute-contributing"),
     path('walkthrough/', TemplateView.as_view(template_name="tutorials/walkthrough.html"), name="tute-walkthrough"),
-    # path('traces/', TemplateView.as_view(template_name="tutorials/traces.html"), name="tute-traces"),
     path('placecollections/', TemplateView.as_view(template_name="tutorials/place_collections.html"), name="tute-place_collections"),
     path('create_lptsv/', TemplateView.as_view(template_name="tutorials/create_lptsv.html"), name="tute-lptsv"),
 

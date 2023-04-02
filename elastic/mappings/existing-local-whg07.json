@@ -1,4 +1,19 @@
 {
+    "settings" : {
+      "number_of_shards": "1",
+      "analysis": {
+        "normalizer": {
+          "standard": {
+            "filter": [
+              "lowercase",
+              "asciifolding"
+            ],
+            "type": "custom",
+            "char_filter": []
+          }
+        }
+      }
+    },
     "mappings" : {
       "properties" : {
         "ccodes" : {
