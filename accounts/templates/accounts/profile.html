@@ -11,76 +11,79 @@
   {{ profile_form.errors }}
   {{ user_form.non_field_errors }}
   {{ profile_form.non_field_errors }}
-  <h3 class="text-center"><span class="red-head">{{ user.username }}</span> profile <span class="small ml-2"><a id="edit_link" href="#">edit <i class="fas fa-edit linky"></i></a></span></h3>
+  <h3 class="text-center"><span class="red-head">{{ user.username }}</span> profile
+      <span class="small ml-2"><a id="edit_link" href="#">edit <i class="fas fa-edit linky"></i></a></span>
+  </h3>
   <!--</div>-->
   <!-- non-changeable fields -->
-  <span class="hidden">{{ user_form.username }}</span>
+  <span class="hidden">{{ user_form.email }}</span>
   <span class="hidden">{{ user_form.password }}</span>
-  <span class="hidden">{{ profile_form.name }}</span>
+{#  <span class="hidden">{{ profile_form.name }}</span>#}
   <span class="hidden">{{ profile_form.user_type }}</span>
   <div class="profile px-5">
     <div id="view_profile">
       <table>
         <tbody>
-          <tr><td class="float-right pr-3 strong">Username</td><td>{{ user_form.username.value }}</td></tr>
           <tr>
-            <td class="float-right pr-3 strong">Name</td>
-            <td>{% if user.profile.user_type == 'individual' %}{{ user_form.first_name.value }} {{ user_form.last_name.value }}
-                {% else %} {{ profile_form.name.value }} {% endif %}</td>
+              <td class="float-right pr-3 strong">Name</td>
+              <td>{{ user_form.username.value }}</td>
           </tr>
           <tr>
             <td class="float-right pr-3 strong">Email</td>
             <td>{{ user_form.email.value }}</td>
           </tr>
-          <tr><td class="float-right pr-3 strong">Affiliation</td><td>{{ profile_form.affiliation.value }}</td></tr>
-          <!--<tr><td class="float-right pr-3 strong">Web page</td><td>{ profile_form.web_page.value }}</td></tr>-->
+          <tr>
+              <td class="float-right pr-3 strong">Affiliation</td><td>{{ profile_form.affiliation.value }}</td>
+          </tr>
+{#          <tr><td class="float-right pr-3 strong">Web page</td><td>{{ profile_form.web_page.value }}</td></tr>#}
           {% if context.groups|length > 0 %}
-            <tr>
-	            <td class="float-right pr-3 strong">Groups</td>
-	            <td id="grouplist">
+          <tr>
+            <td class="pr-3 strong" style="vertical-align: top">Groups</td>
+            <td id="grouplist">
               {% for g in context.groups %}
-	              {% if g.name == 'pilot people' %}
-	                <a href="#" data-id="{{g.id}}" class="a_addmembers">{{g.name}}</a> {% comment %}({{g.id}}){% endcomment %}
-	              {% else %}
-		              <br/><span class=""><a href="">{{g.name}}</a></span>
-	              {% endif %}
+                  <span class=""><a href="">{{g.name}}</a></span><br/>
               {% if not forloop.last %}; {% endif %}{% endfor %}
-            </td></tr>
+            </td>
+          </tr>
           {% endif %}
+
           {% if context.owned|length > 0 %}
-          <tr><td class="float-right pr-3 strong">Datasets</td>
-          <td>{% for ds in context.owned %}<b><a href="{% url 'datasets:ds_summary' ds.0 %}">{{ds.1}}</a></b> ({{ds.0}}, {{ds.2}})<br/> {% endfor %} </td>
-          </tr>{% endif %}
+          <tr>
+            <td class="pr-3 strong" style="vertical-align: top;">Datasets</td>
+            <td>{% for ds in context.owned %}<b><a href="{% url 'datasets:ds_summary' ds.0 %}">{{ds.1}}</a></b> ({{ds.0}}, {{ds.2}})<br/> {% endfor %} </td>
+          </tr>
+          {% endif %}
+
           {% if context.collabs|length > 0 %}
-          <tr><td class="float-right pr-3 strong">Member</td>
-          <td>{% for ds in context.collabs %}<b>{{ds.1}}</b> ({{ds.0}}, {{ds.2}})<br/> {% endfor %} </td>
-          </tr>{% endif %}
-          <tr><td></td>
-	          <td>
-			        {% if context.group_leader or user.is_superuser %}
-			          <p class="mt-3">
-				          <a href="#" id="a_creategroup">create a personal group <i class="fas fa-plus-square linky"></i></a>
-			          </p>
-				        <p id="groupform" class="hidden"><input id="group_name" type="text" placeholder="Enter a group name" />
-					        <button id="b_addgroup" type="button">Save</button> </p>
-			        {% endif %}
-	          </td>
+          <tr>
+            <td class="float-right pr-3 strong">Member</td>
+            <td>{% for ds in context.collabs %}<b>{{ds.1}}</b> ({{ds.0}}, {{ds.2}})<br/> {% endfor %} </td>
+          </tr>
+          {% endif %}
+
+          <tr>
+            <td></td>
+            <td>
+                {% if context.group_leader or user.is_superuser %}
+                  <p class="mt-3">
+                      <a href="#" id="a_creategroup">create a personal group <i class="fas fa-plus-square linky"></i></a>
+                  </p>
+                    <p id="groupform" class="hidden"><input id="group_name" type="text" placeholder="Enter a group name" />
+                        <button id="b_addgroup" type="button">Save</button> </p>
+                {% endif %}
+            </td>
           </tr>
         </tbody>
       </table>
-    </div> <!-- view_profile -->
+    </div> <!-- #view_profile -->
     <div id="edit_profile" class="hidden">
       <table>
         <tbody>
-          <tr><td class="float-right pr-3 strong">Username</td><td>{{ user_form.username.value }}</td></tr>
-          <tr>
-            <td class="float-right pr-3 strong">Name</td>
-            <td>{% if user.profile.user_type == 'individual' %}{{ user_form.first_name }} {{ user_form.last_name }}
-                {% else %} {{ profile_form.name }} {% endif %}</td></tr>
-          <tr>
+          <tr><td class="float-right pr-3 strong">Name</td><td>{{ user_form.name }}</td></tr>
             <td class="float-right pr-3 strong">Email</td>
-            <td>{{ user_form.email }}</td></tr>
+            <td>{{ user_form.email.value }}</td></tr>
           <tr><td class="float-right pr-3 strong">Affiliation</td><td>{{ profile_form.affiliation }}</td></tr>
+{#          <tr><td class="float-right pr-3 strong">Web page</td><td>{{ profile_form.webpage }}</td></tr>#}
         </tbody>
       </table>
       <div>
@@ -89,8 +92,6 @@
         <span class="ml-2" style="vertical-align:bottom;"><a href="{% url 'profile' %}">Cancel</a></span>
       </div>
     </div> <!-- #editProfile -->
-    <div>
-    </div>
   </div> <!-- .profile -->
   </form>
   </div>

@@ -1,14 +1,12 @@
 from django import forms
-from django.conf import settings
 from django.contrib.auth import authenticate
-from django.db import models
 from django.contrib.auth import get_user_model
 User = get_user_model()
 
-from accounts.models import Profile
+# from accounts.models import Profile
 
 class LoginForm(forms.Form):
-    username = forms.CharField(max_length=255, required=True)
+    email = forms.CharField(max_length=255, required=True)
     password = forms.CharField(widget=forms.PasswordInput, required=True)
 
     def clean(self):
@@ -24,24 +22,26 @@ class LoginForm(forms.Form):
         password = self.cleaned_data.get('password')
         user = authenticate(username=username, password=password)
         return user
-    
+
+# not currently used
 class UserModelForm(forms.ModelForm):
     
     class Meta:
         model = User
-        fields = ('username','email','first_name','last_name',)
+        fields = ('username', 'email', 'first_name', 'last_name',)
         exclude = ('password',)
 
+# in use
 class ProfileModelForm(forms.ModelForm):
     
     class Meta:
-        model = Profile
+        model = User
         #fields = ('name','affiliation','web_page','user_type')
         #fields = ('affiliation','web_page','user_type')
-        fields = ('affiliation','user_type')
+        fields = ('name', 'affiliation', )
         widgets = {
-            'name': forms.TextInput(attrs={'size': 60}),
-            'affiliation': forms.TextInput(attrs={'size': 60}),
-            #'web_page': forms.TextInput(attrs={'size': 60}),
-            'password': forms.PasswordInput(attrs={'size': 60}),
+            'name': forms.TextInput(attrs={'size': 40}),
+            'affiliation': forms.TextInput(attrs={'size': 40}),
+            # 'web_page': forms.TextInput(attrs={'size': 60}),
+            'password': forms.PasswordInput(attrs={'size': 40}),
         }

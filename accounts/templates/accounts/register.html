@@ -11,15 +11,18 @@
       {% csrf_token %}
       <input type="hidden" name="first_name" value="n/a"/> <input type="hidden" name="last_name" value="n/a"/>
       <table>
-        <tr><td class="">Username* </td><td><input type="text" name="username" /></td></tr>
-        <tr><td class="">Full name </td><td><input type="text" name="name" /></td></tr>
-        <tr><td class="">Email* </td><td><input type="text" name="email" /></td></tr>
+        <tr><td class="">Email <i class="fa fa-asterisk fa-xs"></i></td><td><input type="text" name="email" /></td></tr>
+        <tr><td class="">Full name <i class="fa fa-asterisk fa-xs"></i></td><td><input type="text" name="name" /></td></tr>
         <tr><td class="">Affiliation </td><td><input type="text" name="affiliation" /></td></tr>
         <tr><td class="">Web page </td><td><input type="text" name="web_page" /></td></tr>
-        <tr><td class="">Password* </td><td><input type="password" name="password1" /></td></tr>
-        <tr><td class="">Confirm password* </td><td><input type="password" name="password2" /></td></tr>
+          <tr><td class="">Password <i class="fa fa-asterisk fa-xs"></i></td><td><input type="password" name="password1" /></td></tr>
+          <tr><td class="">Confirm password <i class="fa fa-asterisk fa-xs"></i></td><td><input type="password" name="password2" /></td></tr>
       </table>
-      <input class="btn btn-primary" type="submit" value="Register" /><span class="float-right">* required</span>
+      <p class="mt-3">
+        <input class="btn btn-primary" type="submit" value="Register"/>
+          <span class="float-right"><i class="fa fa-asterisk fa-xs"></i> required</span>
+      </p>
+
     </form>
   </div>
   </div>

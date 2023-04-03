@@ -11,8 +11,8 @@ class User(AbstractUser):
   is_active = models.BooleanField(default=True)
   is_staff = models.BooleanField(default=False)
 
-  REQUIRED_FIELDS = ['username']
   USERNAME_FIELD = 'email'
+  REQUIRED_FIELDS = ['username']
 
   class Meta:
       db_table = 'auth_user'

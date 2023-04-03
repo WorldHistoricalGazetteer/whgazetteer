@@ -10,11 +10,13 @@
         <h2>Login</h2>
         <form method="post" action="{% url 'login' %}">
           {% csrf_token %}
-          Username:<br/>
-          <input type="text" name="username" />
+          Email:<br/>
+          <input type="text" name="email" size = 30 />
+{#          Username:<br/>#}
+{#          <input type="text" name="username" />#}
           <br/>
           Password:<br/>
-          <input type="password" name="password" />
+          <input type="password" name="password" size = 30/>
           <br/><br/>
           <input class="btn btn-primary" type="submit" value="Login" />
         </form>
