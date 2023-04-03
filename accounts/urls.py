@@ -3,13 +3,13 @@ from . import views
 # under allauth.account
 from django.contrib.auth.views import * 
 
-#app_name = "accounts"
+app_name = "accounts"
 
 urlpatterns = [
     path('register/', views.register, name='register'),
     path('login/', views.login, name='login'),
     path('logout/', views.logout, name='logout'),
-    # path('profile/', views.update_profile, name='profile'),
+    path('profile/', views.update_profile, name='profile'),
     path('create_group/', views.create_group, name='create-group'),
 
     path('password_change/', PasswordChangeView.as_view(), name='password_change'),

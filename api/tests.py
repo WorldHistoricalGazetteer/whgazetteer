@@ -1,5 +1,5 @@
 """
-Tests only for for remote API endpoints
+Tests only for remote API endpoints
 added Sep 2022 @kgeographer
 """
 import os

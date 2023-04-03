@@ -96,7 +96,7 @@
 	              {{rec.dataset.name|truncatechars:25}}</a>
           <span class="float-right">
             <a href="#" data-id="{{ rec.place_id }}" class="create-comment mr-2" rel="tooltip" title="create note">
-              issue? <i class="fas fa-edit linky"></i></a>pid:
+              issue? <i class="fas fa-edit linky fa-xs"></i></a>pid:
             <a href="" class="a_modal" data-pid="{{ rec.place_id }}" data-toggle="modal" data-target="#modal_place" title="full record">{{ rec.place_id }}</a>
             <span class="ml-2">
               {% if rec.geoms|length > 0 %}

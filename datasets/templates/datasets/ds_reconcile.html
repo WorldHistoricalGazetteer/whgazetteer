@@ -90,7 +90,7 @@
                     <p><b>ID</b>: {{ t.task_id }}</p>
 	                  {% if t.task_name != 'align_idx' and user in  ds.owners %}
                       <p id="{{ t.task_name }}">
-                      <a class="confirm-del-all" data-id={{t.task_id}} href="{% url 'datasets:task-delete' tid=t.task_id scope='task' %}">Delete task & hits, clear matches {% fontawesome_icon 'trash' color='#ff0000' %}
+                      <a class="confirm-del-all" data-id={{t.task_id}} href="{% url 'datasets:task-delete' tid=t.task_id scope='task' %}">Delete task & hits, clear matches <i class="fas fa-trash linkyred"></i></i>
                       </a><br/>
                       <a class="confirm-del-geoms" href="{% url 'datasets:task-delete' tid=t.task_id scope='geoms'%}">
                         Delete geometries added so far</a>

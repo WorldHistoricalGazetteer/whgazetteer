@@ -8,7 +8,7 @@
     <div class="d-flex justify-content-center mt-3">
       <div>
         <h2>Login</h2>
-        <form method="post" action="{% url 'login' %}">
+        <form method="post" action="{% url 'accounts:login' %}">
           {% csrf_token %}
           Email:<br/>
           <input type="text" name="email" size = 30 />
@@ -20,7 +20,7 @@
           <br/><br/>
           <input class="btn btn-primary" type="submit" value="Login" />
         </form>
-        <p class="mt-2"><a href="{% url 'password_reset' %}">Forgot password?</a></p>
+        <p class="mt-2"><a href="{% url 'accounts:password_reset' %}">Forgot password?</a></p>
         {% if error %}
           <p style="color:red">{{ error }}</p>
         {% endif %}

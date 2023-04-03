@@ -1,18 +1,24 @@
 {% extends 'main/base.html' %}
-
+{% block extra_head %}
+    <style>
+        th, td { padding: 2px 10px;}
+    </style>
+{% endblock %}
 {% block content %}
 
 <div class="container">
   <div class="d-flex justify-content-center mt-3">
   <!-- <form id="profile_form" method="POST" action="{ url 'account_profile' %}" enctype="multipart/form-data"> -->
-  <form id="profile_form" method="POST" action="{% url 'profile' %}" enctype="multipart/form-data">
+  <form id="profile_form" method="POST" action="{% url 'accounts:profile' %}" enctype="multipart/form-data">
   {% csrf_token %}
   {{ user_form.errors }}
   {{ profile_form.errors }}
   {{ user_form.non_field_errors }}
   {{ profile_form.non_field_errors }}
   <h3 class="text-center"><span class="red-head">{{ user.username }}</span> profile
-      <span class="small ml-2"><a id="edit_link" href="#">edit <i class="fas fa-edit linky"></i></a></span>
+      <span id="edit_link" class="small ml-2">
+          <a href="#"><i class="fas fa-edit linky fa-xs"></i></a>
+      </span>
   </h3>
   <!--</div>-->
   <!-- non-changeable fields -->
@@ -25,15 +31,16 @@
       <table>
         <tbody>
           <tr>
-              <td class="float-right pr-3 strong">Name</td>
-              <td>{{ user_form.username.value }}</td>
-          </tr>
-          <tr>
             <td class="float-right pr-3 strong">Email</td>
             <td>{{ user_form.email.value }}</td>
           </tr>
           <tr>
-              <td class="float-right pr-3 strong">Affiliation</td><td>{{ profile_form.affiliation.value }}</td>
+              <td class="float-right pr-3 strong">Name</td>
+              <td>{{ user_form.name.value }}</td>
+          </tr>
+          <tr>
+              <td class="float-right pr-3 strong">Affiliation</td>
+              <td>{{ user_form.affiliation.value }}</td>
           </tr>
 {#          <tr><td class="float-right pr-3 strong">Web page</td><td>{{ profile_form.web_page.value }}</td></tr>#}
           {% if context.groups|length > 0 %}
@@ -42,7 +49,7 @@
             <td id="grouplist">
               {% for g in context.groups %}
                   <span class=""><a href="">{{g.name}}</a></span><br/>
-              {% if not forloop.last %}; {% endif %}{% endfor %}
+              {% if not forloop.last %} {% endif %}{% endfor %}
             </td>
           </tr>
           {% endif %}
@@ -79,17 +86,18 @@
     <div id="edit_profile" class="hidden">
       <table>
         <tbody>
-          <tr><td class="float-right pr-3 strong">Name</td><td>{{ user_form.name }}</td></tr>
+          <tr>
             <td class="float-right pr-3 strong">Email</td>
-            <td>{{ user_form.email.value }}</td></tr>
-          <tr><td class="float-right pr-3 strong">Affiliation</td><td>{{ profile_form.affiliation }}</td></tr>
+            <td>{{ user_form.email.value }}</td>
+          </tr>
+          <tr><td class="float-right pr-3 strong">Name</td><td>{{ user_form.name }}</td></tr>
+          <tr><td class="float-right pr-3 strong">Affiliation</td><td>{{ user_form.affiliation }}</td></tr>
 {#          <tr><td class="float-right pr-3 strong">Web page</td><td>{{ profile_form.webpage }}</td></tr>#}
         </tbody>
       </table>
-      <div>
+      <div class="text-center">
         <input class="btn btn-primary btn-sm ml-3 mt-3" type="submit" value="Save" />
-        <!-- <span class="ml-2" style="vertical-align:bottom;"><a href="{ url 'account_profile' %}">Cancel</a></span> -->
-        <span class="ml-2" style="vertical-align:bottom;"><a href="{% url 'profile' %}">Cancel</a></span>
+        <span class="ml-2" style="vertical-align:bottom;"><a href="{% url 'accounts:profile' %}">Cancel</a></span>
       </div>
     </div> <!-- #editProfile -->
   </div> <!-- .profile -->
@@ -103,15 +111,16 @@
 		$("#groupform").show()
 
 	})
-  $("#edit_link").click(function(){
-    $("#view_profile").toggle()
-    $("#edit_profile").toggle()
-  })
+    $("#edit_link").click(function(){
+        $("#view_profile").toggle()
+        $("#edit_profile").toggle()
+        $("#edit_link").toggle()
+    })
 	$("#b_addgroup").click(function(){
-    create_group()
+        create_group()
 	})
 	$(".a_addmembers").click(function(){
-    console.log('something simple for adding members to '+$(this).data('id'))
+        console.log('something simple for adding members to '+$(this).data('id'))
 	})
 	function create_group() {
       var formData = new FormData()
@@ -130,20 +139,21 @@
                 alert('That group name is taken')
                 $("input.action").prop('checked',false)
               } else {
-              res = response
-		          if (res.status == "dupe") {
-                alert('that name is taken, try another')
-		          } else {
+                res = response
+                if (res.status == "dupe") {
+                    alert('that name is taken, try another')
+                } else {
                 // have to build an el here and add a click event to it
-			          el = $('<a href="#" class="a_addmembers">' + res.name + '</a> (' + res.id + ')')
-								el.click(function(){
-									console.log($(this).text())
-								})
-                $("#grouplist").append(el)
+                    el = $('<a href="#" class="a_addmembers">' + res.name + '</a> (' + res.id + ')')
+                    el.click(function(){
+                        console.log($(this).text())
+                    })
+                    $("#grouplist").append(el)
 		          }
               $("#group_name").val('')
               // $("#added_flash").fadeIn().delay(2000).fadeOut()
               console.log('group created, click its name in group list to add members', res)
+              $("#groupform").hide()
               }
           }
       })

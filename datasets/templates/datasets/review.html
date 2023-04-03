@@ -99,10 +99,10 @@
                 <h4 class="text-danger">{{ record.title }}
 	                {% if record.comment_set.count == 0 %}
                   <span class="float-right create-comment-review btn" data-id="{{ record.id }}"
-                      data-src='record'>add note <i class="fas fa-edit linky"></i>
+                      data-src='record'>add note <i class="fas fa-edit linky fa-xs"></i>
                   </span>
 	                {% elif record.comment_set.count > 0 %}
-		                <span class="float-right view-comments btn">show note(s) <i class="fas fa-edit linky"></i></span>
+		                <span class="float-right view-comments btn">show note(s) <i class="fas fa-edit linky fa-xs"></i></span>
 	                {% endif %}
                 </h4>
               </span>
@@ -193,7 +193,7 @@
                     <button type="button" 
                       data-id="{{ form.json.value|get:"place_id" }}" 
                       class="create-comment-review btn btn-sm" style="background-color:oldlace;">
-                    <i class="fas fa-edit linky"></i></button>
+                    <i class="fas fa-edit linky fa-xs"></i></button>
                   {% endif %}
                   </span>
                 </div>

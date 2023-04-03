@@ -23,25 +23,31 @@ class LoginForm(forms.Form):
         user = authenticate(username=username, password=password)
         return user
 
-# not currently used
+# used to edit
 class UserModelForm(forms.ModelForm):
     
     class Meta:
         model = User
-        fields = ('username', 'email', 'first_name', 'last_name',)
+        fields = ('email', 'name', 'affiliation')
         exclude = ('password',)
 
-# in use
-class ProfileModelForm(forms.ModelForm):
-    
-    class Meta:
-        model = User
-        #fields = ('name','affiliation','web_page','user_type')
-        #fields = ('affiliation','web_page','user_type')
-        fields = ('name', 'affiliation', )
         widgets = {
-            'name': forms.TextInput(attrs={'size': 40}),
-            'affiliation': forms.TextInput(attrs={'size': 40}),
-            # 'web_page': forms.TextInput(attrs={'size': 60}),
-            'password': forms.PasswordInput(attrs={'size': 40}),
+            'email': forms.TextInput(attrs={'size': 30}),
+            'name': forms.TextInput(attrs={'size': 30}),
+            'affiliation': forms.TextInput(attrs={'size': 30}),
         }
+
+# not in use
+# class ProfileModelForm(forms.ModelForm):
+#
+#     class Meta:
+#         model = User
+#         #fields = ('name','affiliation','web_page','user_type')
+#         #fields = ('affiliation','web_page','user_type')
+#         fields = ('name', 'affiliation', )
+#         widgets = {
+#             'name': forms.TextInput(attrs={'size': 40}),
+#             'affiliation': forms.TextInput(attrs={'size': 40}),
+#             # 'web_page': forms.TextInput(attrs={'size': 60}),
+#             'password': forms.PasswordInput(attrs={'size': 40}),
+#         }

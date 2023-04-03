@@ -6,7 +6,7 @@ from celery.schedules import crontab
 from django.contrib.messages import constants as messages
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
+SITE_ID = 1
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
@@ -193,8 +193,6 @@ LEAFLET_CONFIG = {
     "<a href='http://creativecommons.org/licenses/by-nc/3.0/deed.en_US' target='_blank'> CC-BY-NC 3.0</a>"
 }
 
-EMAIL_FILE_PATH = os.path.join(BASE_DIR, "sent_emails")
-
 LOGIN_URL = '/accounts/login/'
 LOGIN_REDIRECT_URL='/accounts/login/'
 LOGOUT_REDIRECT_URL='/'
@@ -203,16 +201,15 @@ LOGOUT_REDIRECT_URL='/'
 # /././././././.
 # start django-allauth
 # /././././././.
-SITE_ID = 1
-
-ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS =1
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_EMAIL_VERIFICATION = "mandatory"
-ACCOUNT_LOGIN_ATTEMPTS_LIMIT = 5
-ACCOUNT_LOGIN_ATTEMPTS_TIMEOUT = 86400 # 1 day in seconds
-
-ACCOUNT_LOGOUT_REDIRECT_URL ='/'
-LOGIN_REDIRECT_URL = '/accounts/email/' # default to /accounts/profile
+#
+# ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS =1
+# ACCOUNT_EMAIL_REQUIRED = True
+# ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+# ACCOUNT_LOGIN_ATTEMPTS_LIMIT = 5
+# ACCOUNT_LOGIN_ATTEMPTS_TIMEOUT = 86400 # 1 day in seconds
+#
+# ACCOUNT_LOGOUT_REDIRECT_URL ='/'
+# LOGIN_REDIRECT_URL = '/accounts/email/' # default to /accounts/profile
 
 # ACCOUNT_FORMS = {'signup': 'allauth.account.forms.WHGRegisterForm',}
 
