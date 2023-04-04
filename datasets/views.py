@@ -1986,28 +1986,40 @@ def ds_insert_tsv(request, pk):
         matches = [aliasIt(x.strip()) for x in r[header.index('matches')].split(';')] \
           if 'matches' in header and r[header.index('matches')] != '' else []
 
+        # TODO: patched Apr 2023; needs refactor
+        # there _should_ always be a start or attestation_year
+        # not forced by validation yet
+        # start = r[header.index('start')] if 'start' in header else None
         start = r[header.index('start')] if 'start' in header else None
-        # validate_tsv() ensures there is always a start
+        # source_year = r[header.index('attestation_year')] if 'attestation_year' in header else None
         has_end = 'end' in header and r[header.index('end')] !=''
-        end = r[header.index('end')] if has_end else start
-        print('ds_insert_tsv() start,end', start, end)
-        datesobj = parsedates_tsv(start,end)
-        # returns {timespans:[{}],minmax[]}
-
+        has_source_yr = 'attestation_year' in header and r[header.index('attestation_year')] !=''
+        end = r[header.index('end')] if has_end else None
+        source_year = r[header.index('attestation_year')] if has_source_yr else None
+        # end = r[header.index('end')] if has_end else start
+        print('row r' , r)
+        # print('start:'+start,'; end:'+end, ';year'+source_year)
+        dates = (start,end,source_year)
+        print('dates tuple', dates)
+        # must be start and/or source_year
+        datesobj = parsedates_tsv(dates)
+        # returns, e.g. {'timespans': [{'start': {'earliest': 1015}, 'end': None}],
+        #  'minmax': [1015, None],
+        #  'source_year': 1962}
         description = r[header.index('description')] \
           if 'description' in header else ''
 
         print('title, src_id (pre-newpl):', title, src_id)
-
+        print('datesobj', datesobj)
         # create new Place object
-        # TODO: generate fclasses
         newpl = Place(
           src_id = src_id,
           dataset = ds,
           title = title,
           ccodes = ccodes,
           minmax = datesobj['minmax'],
-          timespans = [datesobj['minmax']] # list of lists
+          timespans = [datesobj['minmax']], # list of lists
+          attestation_year = datesobj['source_year'] # integer or None
         )
         newpl.save()
         countrows += 1
@@ -2098,14 +2110,15 @@ def ds_insert_tsv(request, pk):
         #
         # PlaceWhen()
         # via parsedates_tsv(): {"timespans":[{start{}, end{}}]}
-        if start != '':
-          objs['PlaceWhen'].append(
-            PlaceWhen(
-              place=newpl,
-              src_id = src_id,
-              #jsonb=datesobj['timespans']
-              jsonb=datesobj
-          ))
+        # if not start in ('',None):
+        # if start != '':
+        objs['PlaceWhen'].append(
+          PlaceWhen(
+            place=newpl,
+            src_id = src_id,
+            #jsonb=datesobj['timespans']
+            jsonb=datesobj
+        ))
 
         #
         # PlaceLink() - all are closeMatch

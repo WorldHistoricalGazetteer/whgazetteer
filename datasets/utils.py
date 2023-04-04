@@ -466,15 +466,27 @@ def parse_errors_lpf(errors):
 # called by ds_insert_tsv()
 # returns object for PlaceWhen.jsonb in db
 # and minmax int years for PlacePortalView()
-#
-def parsedates_tsv(s,e):
-  print('parsedates() s,e', s,e)
-  s_yr=s[:5] if s[0] == '-' else s[:4]
-  e_yr=e[:5] if e[0] == '-' else e[:4]
-  #union = intmap([*set(e.split('/')), *set(s.split('/'))])
-  return {"timespans":[
-    {"start": {"earliest":s}, "end": {"latest":e}}],
-          "minmax":[int(s_yr),int(e_yr)]}
+# TODO: patched Apr 2023; needs refactor
+def parsedates_tsv(dates):
+  print('parsedates() dates', dates)
+  # they are either a string or None at this point
+  s_yr=int(dates[0]) if dates[0] else None; print('s_yr:', s_yr)
+  e_yr=int(dates[1]) if dates[1] else None; print('e_yr:', e_yr)
+  src_yr=int(dates[2]) if dates[2] else None; print('src_yr:', src_yr)
+  result = {
+    "timespans":[{
+      "start": {
+        "earliest":s_yr or None},
+        # "earliest":s_yr or -99999},
+      "end": {
+        "latest":e_yr or None}
+        # "latest":e_yr if e_yr else 9999}
+    }],
+    "minmax":[s_yr or -99999, e_yr or 9999],
+    "source_year": src_yr
+  }
+  print('parsedates_tsv() result', result)
+  return result
 
 # extract integers for new Place from lpf
 def timespansReduce(tsl):
