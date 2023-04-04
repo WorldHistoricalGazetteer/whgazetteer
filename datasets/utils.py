@@ -468,6 +468,7 @@ def parse_errors_lpf(errors):
 # and minmax int years for PlacePortalView()
 #
 def parsedates_tsv(s,e):
+  print('parsedates() s,e', s,e)
   s_yr=s[:5] if s[0] == '-' else s[:4]
   e_yr=e[:5] if e[0] == '-' else e[:4]
   #union = intmap([*set(e.split('/')), *set(s.split('/'))])

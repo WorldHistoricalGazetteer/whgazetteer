@@ -30,6 +30,7 @@
       <excludeFolder url="file://$MODULE_DIR$/media/user_SomeUser" />
       <excludeFolder url="file://$MODULE_DIR$/media/user_myname" />
       <excludeFolder url="file://$MODULE_DIR$/_dumps" />
+      <excludeFolder url="file://$MODULE_DIR$/dj4" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.9 (whg397)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />

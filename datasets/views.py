@@ -1990,7 +1990,7 @@ def ds_insert_tsv(request, pk):
         # validate_tsv() ensures there is always a start
         has_end = 'end' in header and r[header.index('end')] !=''
         end = r[header.index('end')] if has_end else start
-
+        print('ds_insert_tsv() start,end', start, end)
         datesobj = parsedates_tsv(start,end)
         # returns {timespans:[{}],minmax[]}
 

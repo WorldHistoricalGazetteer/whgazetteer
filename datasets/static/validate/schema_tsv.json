@@ -95,7 +95,13 @@
     "type": "string",
     "description": "Earliest relevant date or date range (YYYY[-MM-DD/YYYY-MM-DD]); '-' prefix for BCE",
     "constraints": {
-      "required": true,
+      "pattern": "(-?\\d{1,4}(-\\d{2})?(-\\d{2})?)(\/(-?\\d{1,4}(-\\d{2})?(-\\d{2})?))?"
+    }
+  },
+  {"name": "attestation_year",
+    "type": "string",
+    "description": "Source publication date (YYYY[-MM-DD/YYYY-MM-DD]); '-' prefix for BCE",
+    "constraints": {
       "pattern": "(-?\\d{1,4}(-\\d{2})?(-\\d{2})?)(\/(-?\\d{1,4}(-\\d{2})?(-\\d{2})?))?"
     }
   },
