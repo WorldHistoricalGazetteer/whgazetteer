@@ -214,7 +214,7 @@ class PlaceSerializer(serializers.ModelSerializer):
     model = Place
     fields = ('url', 'id', 'title', 'src_id', 'dataset', 'ccodes', 'fclasses',
               'names', 'types', 'geoms', 'links', 'related', 'whens',
-              'descriptions', 'depictions', 'geo', 'minmax', 'traces'
+              'descriptions', 'depictions', 'geo', 'minmax', 'traces', 'attestation_year'
             )
 
 """

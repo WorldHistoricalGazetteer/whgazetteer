@@ -13,7 +13,7 @@
 
   <script src="{% static 'js/aliases.js' %}"></script>
   <script src="{% static 'js/easyprint.js' %}"></script>
-  <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
   
   <link rel="stylesheet" href="{% static 'css/spin.css' %}"/>
   <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.10.24/b-1.7.0/b-colvis-1.7.0/b-html5-1.7.0/cr-1.5.3/fh-3.1.8/sc-2.0.3/sp-1.2.2/sl-1.3.3/datatables.min.css"/>
@@ -548,8 +548,7 @@
   function setRowEvents(){
     $("#status_select").change(function(e){
       // clear search first
-      console.log('search has val:',$("#placetable_filter input").val())
-      //$("#placetable_filter input").val('')
+      // console.log('search has val:',$("#placetable_filter input").val())
       if($("#placetable_filter input").val() != ''){
         $('#placetable').DataTable().search('').draw()
       }
@@ -710,7 +709,6 @@
     for (t in data.types) {
       str = ''
       var type = data.types[t]
-      {#console.log('type',type)#}
       if('sourceLabels' in type){
         srclabels = type.sourceLabels
         for(l in srclabels){
@@ -754,7 +752,7 @@
 
     //
     // RELATED
-    //right=''
+    //
     if (data.related.length > 0) {
       parent='<p class="mb-0"><b>Parent(s)</b>: '; 
       related='<p class="mb-0"><b>Related</b>: ';
@@ -789,18 +787,23 @@
     //
     // CCODES
     //
-    //if (data.ccodes.length > 0) {
     if (!!data.countries) {
       //console.log('data.countries',data.countries)
       descrip+='<p><b>Modern country bounds</b>: '+ data.countries.join(', ')+'</p>'
     }
     //
-    // MINMAX
+    // MINMAX; ATTESTATION_YEAR
     //
-    //console.log('data.minmax',data.minmax)
     mm=data.minmax
+	  at=data.attestation_year
     if(data.minmax && !(mm[0] == null && mm[1] == null)) {
-      descrip += '<p><b>When</b>: earliest: '+data.minmax[0]+'; latest: '+data.minmax[1]    
+      start = data.minmax[0] > -99999 ? data.minmax[0] : null
+	    end = data.minmax[1] < 9999 ? data.minmax[1] : null
+
+	    if(start){descrip +='<p><b>When</b>: earliest: '+data.minmax[0]
+        } else {descrip +='<p><b>When</b>: <i>not available</i></p>'}
+	    if(end){descrip +='; latest: '+data.minmax[1]}
+			if(at){descrip += '<b>Source year</b>: ' + at}
     }
 
     // if geom(s) and 'certainty', add it

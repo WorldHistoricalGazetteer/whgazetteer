@@ -10,7 +10,7 @@
   {% leaflet_css %}
   <script src="{% static 'js/aliases.js' %}"></script>
   <script src="{% static 'js/easyprint.js' %}"></script>
-  <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
   
   <link rel="stylesheet" href="{% static 'css/spin.css' %}"/>
   <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.10.24/b-1.7.0/b-colvis-1.7.0/b-html5-1.7.0/cr-1.5.3/fh-3.1.8/sc-2.0.3/sp-1.2.2/sl-1.3.3/datatables.min.css"/>
@@ -940,7 +940,7 @@
       }
       return(result)
     }
-    //timespan_arr = []-->
+
     //
     // TITLE 
     descrip = '<p><b>Title</b>: <span id="row_title" class="larger text-danger">'+data.title+'</span>'
@@ -993,20 +993,19 @@
 
     //
     // RELATED
-    //right=''-->
+    //
     if (data.related.length > 0) {
       parent='<p class="mb-0"><b>Parent(s)</b>: '; 
       related='<p class="mb-0"><b>Related</b>: ';
       for (r in data.related){
         rel = data.related[r]
-        //console.log('rel',rel)-->
+        //console.log('rel',rel)
         if (rel.relation_type == 'gvp:broaderPartitive'){
           parent += '<span class="small h1em">'+rel.label
           parent += 'when' in rel && !('timespans' in rel.when) ? 
             ', '+rel.when.start.in+'-'+rel.when.end.in : 
             'when' in rel && ('timespans' in rel.when) ? ', '+
               minmaxer(rel.when.timespans) : ''
-              //rel.when.timespans : ''-->
           parent += '</span>; '
         } 
         else {
@@ -1023,22 +1022,38 @@
       val = data.descriptions[0]['value'].substring(0,300)
       descrip+='<p><b>Description</b>: '+(val.startsWith('http')?'<a href="'+val+'" target="_blank">Link</a>':val)
         +' ... </p>'
-        //'<br/><span class="small red-bold">('+data.descriptions[0]['identifier']+')</span>-->
     }
     //
     // CCODES
     //
-    //if (data.ccodes.length > 0) {-->
     if (!!data.countries) {
       //console.log('data.countries',data.countries)-->
       descrip+='<p><b>Modern country bounds</b>: '+ data.countries.join(', ')+'</p>'
     }
     //
-    // MINMAX
+    // MINMAX; ATTESTATION_YEAR
     //
-    if(data.minmax && data.minmax.length>0){
-      descrip += '<p><b>When</b>: earliest: '+data.minmax[0]+'; latest: '+data.minmax[1]    
+    mm=data.minmax
+	  at=data.attestation_year
+    if(data.minmax && !(mm[0] == null && mm[1] == null)) {
+      start = data.minmax[0] > -99999 ? data.minmax[0] : null
+	    end = data.minmax[1] < 9999 ? data.minmax[1] : null
+
+      {#descrip += '<p><b>When</b>:'#}
+	    if(start){descrip +='<p><b>When</b>: earliest: '+data.minmax[0]
+        } else {descrip +='<p><b>When</b>: <i>not available</i></p>'}
+	    if(end){descrip +='; latest: '+data.minmax[1]}
+			if(at){descrip += '<b>Source year</b>: ' + at}
     }
+
+    // if geom(s) and 'certainty', add it
+    if(data.geoms.length >0){
+      cert = data.geoms[0].certainty
+      if(cert != undefined ){
+        descrip += '<p><b>Location certainty</b>: '+cert+'</p>'
+      }
+    }
+
     descrip += '</div>'
     return descrip
   }
