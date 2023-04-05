@@ -66,16 +66,15 @@
     {% if action == 'update' %}
         Update Study Area
         <span class="text-danger">"{{ form.title.value }}"</span>
-        <span class="ml-3 half">(<mark id="count_result">{{ object.count_public }}</mark> places from public datasets lie within this area)
-	          {% comment %}
-            <a href="#" id="btn_counter" class="btn btn-sm btn-outline-secondary" role="button">Count indexed places</a>
-            <span id="count_result" class="ml-3 small"><mark>##</mark></span>
-            {% endcomment %}
+        <span class="ml-3 half">
+            (<mark id="count_result">{{ object.count_public }}</mark> places from public datasets lie within this area)
         </span>
-    <a href="{% url 'areas:area-delete' object.id %}" class="float-right"
-      title="Delete area feature" rel="tooltip" style="margin-top:-2px;">
-      <i class="fas fa-trash linkyred"></i></a>
-    {% else %}Create Study Area{% endif %}
+        <a href="{% url 'areas:area-delete' object.id %}" class="float-right"
+        title="Delete area feature" rel="tooltip" style="margin-top:-2px;">
+        <i class="fas fa-trash linkyred"></i></a>
+    {% else %}
+        Create Study Area
+    {% endif %}
   </h4>
   <div class="d-flex">
     <div class="form-box mt-2 col-sm-4">

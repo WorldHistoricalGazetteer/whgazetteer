@@ -154,6 +154,7 @@ class CollectionUser(models.Model):
     managed = True
     db_table = 'collection_user'
 
+# used for instructor-led assignments, workshops, etc.
 class CollectionGroup(models.Model):
   owner = models.ForeignKey(settings.AUTH_USER_MODEL,
                             related_name='classes', on_delete=models.CASCADE)

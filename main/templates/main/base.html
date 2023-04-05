@@ -35,7 +35,11 @@
   <link rel="stylesheet" href="{% static 'css/spin.css' %}" />
   
 	<!-- some pages will want more -->
-  {% block extra_head %}{% endblock %}
+  {% block extra_head %}
+      <style>
+        .container a {text-decoration: none !important;}
+      </style>
+  {% endblock %}
 </head>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZB73342G3Y"></script>
@@ -47,7 +51,94 @@
 </script>
 <body>
   <header>
-    <nav class="navbar navbar-expand-lg navbar-light">
+<nav class="navbar navbar-expand-lg bg-light">
+  <div class="container">
+    <a href="{% url 'home' %}">
+        <img src="{% static 'images/whg_logo_38h.png'%}" alt="WHG" width="50" height="38">
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse smallish pt-2" id="navbarSupportedContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <div id="links_home">
+            <span id="version_badge" class="badge text-bg-success">v3.0a</span>
+            <span id="beta_links">
+                <a href="{% url 'main:tute-guide' %}" class="text-decoration-none">guide</a> |
+                <a href="#" class="feedback text-decoration-none">contact us</a> |
+                <a href="https://twitter.com/whgazetteer" target="_blank">
+                <img src="{% static 'images/twitter30h.png'%}" height=14></a>
+            </span>
+        </div>
+        <div id="links_other" class="d-none">
+            <a class="navbar-brand mr-0" href="{% url 'home' %}">&nbsp;World Historical Gazetteer</a>
+            <a href="#" class="feedback text-decoration-none">contact us</a> |
+            <a href="https://twitter.com/whgazetteer" target="_blank"><img src="{% static 'images/twitter30h.png'%}" height=14></a>
+        </div>
+        </ul>
+        <ul class="navbar-nav">
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'search-page' %}">Search</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'teaching-page' %}">Teaching</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'main:tutorials' %}">Guides</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'usingapi' %}">API</a>
+            </li>
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            About
+            </a>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="{% url 'about' %}">Introduction</a></li>
+                <li><a class="dropdown-item" href="{% url 'system' %}">System details</a></li>
+                <li><a class="dropdown-item" href="{% url 'licensing' %}">Licensing, Terms</a></li>
+                <li><a class="dropdown-item" href="{% url 'credits' %}">Credits & Contacts</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="http://blog.whgazetteer.org" target="_blank">News</a></li>
+            </ul>
+        </li>
+        {% if user.is_authenticated %}
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Data
+                </a>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="{% url 'data-datasets' %}">My datasets</a></li>
+                    <li><a class="dropdown-item" href="{% url 'data-collections' %}">My collections</a></li>
+                    <li><a class="dropdown-item" href="{% url 'data-areas' %}">My study areas</a></li>
+                    <li><a class="dropdown-item" href="{% url 'public-lists' %}">Public data</a></li>
+                  {% if user|has_group:'whg_team' or user|has_group:'teaching' %}
+                        <li><a class="dropdown-item" href="{% url 'data-resources' %}">Teaching Resources</a></li>
+                  {% endif %}
+                </ul>
+            </li>
+            <li class="nav-item larger">
+            <a class="nav-link" rel="tooltip" title="{{ user.name }}'s profile" href="{% url 'accounts:profile' %}">
+                <i class="fas fa-user" style="color:#336699;"></i></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link `ml-5" href="javascript:{document.getElementById('logout').submit()}">Logout</a>
+                <form id="logout" method="post" action="{% url 'accounts:logout' %}">
+                  {% csrf_token %}</form>
+            </li>
+        {% else %}
+            <li class="nav-item">
+                <a class="nav-link ml-5" href="{% url 'accounts:register' %}">Register</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'accounts:login' %}">Login</a>
+            </li>
+        {% endif %}
+        </ul>
+    </div>
+  </div>
+</nav>
+    {% comment %}<nav class="navbar navbar-expand-lg navbar-light">
       <div class="container" style="background-color: gainsboro;">
         <a class="navbar-brand mr-0" href="{% url 'home' %}">
           <img src="{% static 'images/whg_logo_38h.png'%}" class="d-inline-block align-bottom" height=38 width=50 alt=""/></a>
@@ -55,11 +146,9 @@
 				<div id="nav_links" class="smallish d-lg-block pt-2">
 					<div id="links_home">
 						<span id="version_badge" class="badge badge-warning" >v3.0a</span>
-						{% comment %}
 						<a href="#">
 							<span id="whatsnew_badge" class="badge badge-success help-matches" data-id="whatsnew21">What's New</span>
 						</a>
-						{% endcomment %}
 						<span id="beta_links">
 							<a href="{% url 'main:tute-guide' %}">guide</a> |
 							<a href="#" class="feedback">contact us</a> |
@@ -138,19 +227,20 @@
           </div>
         </div>
       </div>
-    </nav>
+    </nav>{% endcomment %}
   </header>
+
   {% block content %}
   {% endblock %}
   <script type="text/javascript">
     // some global stuff
 	  $(function(){
       // alter nav between home and all other pages
-			url = window.location.pathname
-			if(url != '/'){
-				$("#links_home").addClass('d-none')
-				$("#links_other").removeClass('d-none')
-			}
+        url = window.location.pathname
+        if(url != '/'){
+            $("#links_home").addClass('d-none')
+            $("#links_other").removeClass('d-none')
+        }
       language = window.navigator.language.substr(0,2)
       // abouts = ['/about/','/community/','/system/','/licensing/','/credits/']
       abouts = ['/about/','/system/','/licensing/','/credits/']

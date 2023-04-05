@@ -59,7 +59,8 @@ class AreaDeleteView(DeleteView):
         return reverse('data-areas')
 
 #
-# detail & update
+# update (edit); uses same template as create
+# context['action'] governs template display
 #
 class AreaUpdateView(UpdateView):
     form_class = AreaModelForm
