@@ -139,13 +139,15 @@
                 <a href="" class="mr-2 ext" data-toggle="modal" data-target="#ext_site">{{ link.jsonb.identifier }} {% fontawesome_icon 'external-link' color='#336699' %}</a>
               {% endfor %}</p>
             {% endif %}
-            {% if record.minmax %}
-              {% if record.minmax.0 == record.minmax.1 %}
-              <p><strong>Attested year</strong>: {{record.minmax.0}}</p>
-              {% else %}
-              <p><strong>Eariest/latest:</strong>: {{record.minmax.0}} / {{record.minmax.1}}</p>
-              {% endif %}
+
+            {% if record.attestation_year %}
+	            <p><strong>Source year</strong>: {{ record.attestation_year }}</p>
+            {% elif record.minmax.0 > -99999 %}
+              <p><b>When</b>: earliest: {{ record.minmax.0 }}
+	              {% if record.minmax.1 < 9999 %}; latest: {{record.minmax.1}}{% endif %}
+              </p>
             {% endif %}
+
             {% if record.descriptions %}
               {% for d in record.descriptions.all %}
               <p><strong>Description</strong>: {{d.jsonb.value}}</p>

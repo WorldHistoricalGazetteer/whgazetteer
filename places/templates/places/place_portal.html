@@ -736,7 +736,7 @@
     features = L.geoJSON(geom, {
       pane: 'mainPane',
       pointToLayer: function (feature, latlng) {
-        {#console.log('feature', feature.properties)#}
+        console.log('feature', 'when' in feature? feature:'no when')
         ll = latlng
         identifier = feature.properties.id
         {#title = feature.properties.title#}
@@ -745,10 +745,15 @@
             radius: 8, fillOpacity: 0.8, opacity: 1, weight: 1,
             color: "#000", fillColor: fill(feature.properties.dataset)
           }
-        ).bindPopup('pid: <b>'+identifier+'</b><br/>lon/lat: ['+latlng['lng']+', '+latlng['lat']+']'
-          +('when' in feature?'<br/>('+
-          feature.when.timespans[0].start.in+
-          ('end' in feature.when.timespans[0]?'/'+feature.when.timespans[0].end.in:'/-')+')':''))
+        ).bindPopup(
+            'pid: <b>'+identifier+
+		        '</b><br/>lon/lat: ['+latlng['lng']+', '+latlng['lat']+']'
+            {#+('when' in feature?'<br/>('+ feature.when.timespans[0] :''#}
+            {#+('when' in feature?'<br/>('+ feature.when.timespans[0]:''#}
+              {#feature.when.timespans[0].start+#}
+              {#('end' in feature.when.timespans[0]?'/'+feature.when.timespans[0].end:'/-')+')'#}
+		        {#)#}
+        )
      
         idToFeature[feature.properties.id] = marker
         return marker

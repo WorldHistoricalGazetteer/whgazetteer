@@ -297,13 +297,13 @@ def review(request, pk, tid, passnum):
   authname = 'Wikidata' if auth == 'wd' else 'Getty TGN' \
     if auth == 'tgn' else 'WHG'
   kwargs=json.loads(task.task_kwargs.replace("'",'"'))
-  print('review() kwargs', kwargs)
+  # print('review() kwargs', kwargs)
   test = kwargs['test'] if 'test' in kwargs else "off"
   beta = 'beta' in list(request.user.groups.all().values_list('name',flat=True))
   # filter place records by passnum for those with unreviewed hits on this task
   # if request passnum is complete, increment
   cnt_pass = Hit.objects.values('place_id').filter(task_id=tid, reviewed=False, query_pass=passnum).count()
-  print('in review()', {'auth':auth, 'ds':ds,'task': task})
+  # print('in review()', {'auth':auth, 'ds':ds,'task': task})
   # TODO: refactor this awful mess; controls whether PASS appears in review dropdown
   cnt_pass0 = Hit.objects.values('place_id').filter(
     task_id=tid, reviewed=False, query_pass='pass0').count()
@@ -378,7 +378,6 @@ def review(request, pk, tid, passnum):
       request.GET.get('page')
   records = paginator.get_page(page)
   count = len(record_list)
-
   # get hits for this record
   placeid = records[0].id
   place = get_object_or_404(Place, id=placeid)
@@ -1958,8 +1957,8 @@ def ds_insert_tsv(request, pk):
         geosource = r[header.index('geo_source')] if 'geo_source' in header else None
         geoid = r[header.index('geo_id')] if 'geo_id' in header else None
         geojson = None # zero it out
-        print('geosource:', geosource)
-        print('geoid:', geoid)
+        # print('geosource:', geosource)
+        # print('geoid:', geoid)
         # make Point geometry from lon/lat if there
         if coords and len(coords) == 2:
           geojson = {"type": "Point", "coordinates": coords,
@@ -1997,7 +1996,7 @@ def ds_insert_tsv(request, pk):
         end = r[header.index('end')] if has_end else None
         source_year = r[header.index('attestation_year')] if has_source_yr else None
         # end = r[header.index('end')] if has_end else start
-        print('row r' , r)
+        # print('row r' , r)
         # print('start:'+start,'; end:'+end, ';year'+source_year)
         dates = (start,end,source_year)
         print('dates tuple', dates)

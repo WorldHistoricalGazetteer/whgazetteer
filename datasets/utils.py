@@ -468,7 +468,7 @@ def parse_errors_lpf(errors):
 # and minmax int years for PlacePortalView()
 # TODO: patched Apr 2023; needs refactor
 def parsedates_tsv(dates):
-  print('parsedates() dates', dates)
+  # print('parsedates() dates', dates)
   # they are either a string or None at this point
   s_yr=int(dates[0]) if dates[0] else None; print('s_yr:', s_yr)
   e_yr=int(dates[1]) if dates[1] else None; print('e_yr:', e_yr)
@@ -477,15 +477,13 @@ def parsedates_tsv(dates):
     "timespans":[{
       "start": {
         "earliest":s_yr or None},
-        # "earliest":s_yr or -99999},
       "end": {
         "latest":e_yr or None}
-        # "latest":e_yr if e_yr else 9999}
     }],
     "minmax":[s_yr or -99999, e_yr or 9999],
     "source_year": src_yr
   }
-  print('parsedates_tsv() result', result)
+  # print('parsedates_tsv() result', result)
   return result
 
 # extract integers for new Place from lpf

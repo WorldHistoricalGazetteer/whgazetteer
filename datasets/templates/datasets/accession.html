@@ -121,13 +121,15 @@
                 <a href="" class="mr-2 ext" data-toggle="modal" data-target="#ext_site">{{ link.jsonb.identifier }} {% fontawesome_icon 'external-link' color='#336699' %}</a>
               {% endfor %}</p>
             {% endif %}
-            {% if record.minmax %}
-              {% if record.minmax.0 == record.minmax.1 %}
-              <p><strong>Attested year</strong>: {{record.minmax.0}}</p>
-              {% else %}
-              <p><strong>Eariest/latest:</strong>: {{record.minmax.0}} / {{record.minmax.1}}</p>
-              {% endif %}
+
+            {% if record.attestation_year %}
+	            <p><strong>Source year</strong>: {{ record.attestation_year }}</p>
+            {% elif record.minmax.0 > -99999 %}
+              <p><b>When</b>: earliest: {{ record.minmax.0 }}
+	              {% if record.minmax.1 < 9999 %}; latest: {{record.minmax.1}}{% endif %}
+              </p>
             {% endif %}
+
             {% if record.descriptions %}
               {% for d in record.descriptions.all %}
               <p><strong>Description</strong>: {{d.jsonb.value}}</p>
@@ -184,9 +186,11 @@
 		                <a class="pop-link pop-dataset" data-label={{src.dslabel}} data-toggle="popover" title="Dataset Profile" data-content="" tabindex="0" rel="clickover">{{ src.dslabel }}</a> (<a href="/api/place/{{src.pid}}/" target="_blank">{{ src.pid }}</a>):
 		                {% if src.variants|length > 0 %}<i>variants</i>: <b>{{ src.variants|join:", " }}</b>{% endif %}
 		                {% if src.types|length > 0 %}; <i>type(s)</i>: <b>{{ src.types|join:","}}</b>{% endif %}
-										{# index has some nulls in minmax #}
+
+		                {# TODO: parse new place object #}
 		                {% if src.minmax and src.minmax.first != None %}; <i>earliest/latest</i>:<b> {{ src.minmax|join:"/"}}</b>{% endif %}
-		                <i class="text-muted">{{ src.pass }}</i>
+
+		                &nbsp;<i class="text-muted">{{ src.pass }}</i>
 		                {% if src.related|length > 0 %}<br/><i class="ml-3">relation(s)</i>: <b>{{ src.related|join:","}}</b>{% endif %}
                 </p>
 	                <p></p>
