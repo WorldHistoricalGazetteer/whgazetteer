@@ -241,6 +241,12 @@ TRACETYPES = [
     ('concept','Concept')
 ]
 
+USER_ROLE = (
+    ('normal', 'normal'),
+    ('group_leader', 'group leader'),
+    ('superuser', 'superuser'),
+)
+
 USERTYPES = [
     ('individual', 'Individual'),
     ('group', 'Group or project team')

@@ -28,7 +28,7 @@ class UserModelForm(forms.ModelForm):
     
     class Meta:
         model = User
-        fields = ('email', 'name', 'affiliation')
+        fields = ('email', 'name', 'affiliation', 'role')
         exclude = ('password',)
 
         widgets = {

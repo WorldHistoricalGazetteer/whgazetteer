@@ -3,10 +3,13 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 from django.contrib.postgres.fields import ArrayField
 from django.db.models import JSONField
-from django.core.validators import URLValidator
-from main.choices import ERAS, TRACETYPES, TRACERELATIONS
+from django_resized import ResizedImageField
 
-# annotates a collection (& its subject) with a place
+def collection_path(instance, filename):
+  # upload to MEDIA_ROOT/collections/<coll id>/<filename>
+  return 'collections/{0}/{1}'.format(instance.id, filename)
+
+# annotates a place record in a collection
 # FKs: Collection, Place
 class TraceAnnotation(models.Model):
     collection = models.ForeignKey('collection.Collection', db_column='collection',
@@ -17,6 +20,7 @@ class TraceAnnotation(models.Model):
 
     # optional free text note
     note = models.CharField(max_length=2044, blank=True, null=True)
+    image_file = ResizedImageField(size=[800, 600], upload_to=collection_path, blank=True, null=True)
 
     # choices will come from Collection relations; 20220416: only one for now
     relation = ArrayField(models.CharField(max_length=30), blank=True, null=True)

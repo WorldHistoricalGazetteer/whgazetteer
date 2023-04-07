@@ -8,8 +8,9 @@ from django.contrib.postgres.fields import ArrayField
 from django.core.validators import URLValidator
 from django.urls import reverse
 from datasets.models import Dataset
-from main.choices import COLLECTIONCLASSES, LINKTYPES, TEAMROLES, STATUS_COLL
+from main.choices import COLLECTIONCLASSES, LINKTYPES, TEAMROLES, STATUS_COLL, USER_ROLE
 from places.models import Place
+from traces.models import TraceAnnotation
 from django_resized import ResizedImageField
 from tinymce.models import HTMLField
 
@@ -19,6 +20,7 @@ import sys
 from PIL import Image
 from django.core.files.uploadedfile import InMemoryUploadedFile
 """ end """
+
 def collection_path(instance, filename):
   # upload to MEDIA_ROOT/collections/<coll id>/<filename>
   return 'collections/{0}/{1}'.format(instance.id, filename)
@@ -29,6 +31,7 @@ def user_directory_path(instance, filename):
 
 def default_relations():
   return 'locale'.split(', ')
+
 # needed b/c collection place_list filters on it
 def default_omitted():
   return '{}'
@@ -42,10 +45,11 @@ class Collection(models.Model):
 
   # array of place ids "removed" by user from the collection
   # filtered in collection.places_all and can't be annotated
+  # kluge-y
   omitted = ArrayField(models.IntegerField(), blank=True, default=default_omitted)
 
   # per-collection relation keyword choices, e.g. waypoint, birthplace, battle site
-  # need default or it errors for some reason
+  # TODO: ?? need default or it errors for some reason
   rel_keywords = ArrayField(models.CharField(max_length=30), blank=True, null=True)
   # rel_keywords = ArrayField(models.CharField(max_length=30), blank=True, default=default_relations)
 
@@ -65,8 +69,14 @@ class Collection(models.Model):
   created = models.DateTimeField(null=True, auto_now_add=True)
   # modified = models.DateTimeField(null=True)
 
-  status = models.CharField(max_length=12, null=True, blank=True, choices=STATUS_COLL, default='sandbox')
+  # group, sandbox, demo, ready, public
+  status = models.CharField(max_length=12, choices=STATUS_COLL, default='sandbox')
   featured = models.IntegerField(null=True, blank=True)
+  public = models.BooleanField(null=False, default=False)
+  # filter for group_leader 'class' screen
+  submitted = models.BooleanField(null=False, default=False)
+  # flag set by group_leader
+  nominated = models.BooleanField(null=False, default=False)
 
   # collections can comprise >=0 datasets, >=1 places
   datasets = models.ManyToManyField("datasets.Dataset", blank=True)
@@ -147,8 +157,8 @@ class CollectionUser(models.Model):
   role = models.CharField(max_length=20, null=False, choices=TEAMROLES)
 
   def __str__(self):
-    username = self.user_id.username
-    return '<b>' + username + '</b> (' + self.role + ')'
+    name = self.user.name
+    return '<b>' + name + '</b> (' + self.role + ')'
 
   class Meta:
     managed = True
@@ -157,11 +167,14 @@ class CollectionUser(models.Model):
 # used for instructor-led assignments, workshops, etc.
 class CollectionGroup(models.Model):
   owner = models.ForeignKey(settings.AUTH_USER_MODEL,
-                            related_name='classes', on_delete=models.CASCADE)
-  group = models.ForeignKey(Group, related_name='collection_group', on_delete=models.CASCADE)
-  title = models.CharField(null=False, max_length=1024)
-  description = models.CharField(null=False, max_length=2048)
+                            related_name='collection_groups', on_delete=models.CASCADE)
+  title = models.CharField(null=False, max_length=300)
+  description = models.TextField(null=True, max_length=3000)
   keywords = ArrayField(models.CharField(max_length=50), null=True)
+
+  created = models.DateTimeField(auto_now_add=True)
+  start_date = models.DateTimeField(null=True)
+  due_date = models.DateTimeField(null=True)
 
   # a Collection can belong to >=1 CollectionGroup
   collections = models.ManyToManyField("collection.Collection", blank=True)
@@ -173,19 +186,36 @@ class CollectionGroup(models.Model):
     managed = True
     db_table = 'collection_group'
 
-""" not in use @v2.1; single image only """
-class CollectionImage(models.Model):
-  collection = models.ForeignKey(Collection, default=None,
-    on_delete=models.CASCADE, related_name='images')
-  image = models.FileField(upload_to=collection_path)
-  caption = models.CharField(null=True, blank=True, max_length=500)
-  uri = models.TextField(validators=[URLValidator()], null=True, blank=True)
-  license = models.CharField(null=True, blank=True, max_length=64)
+class CollectionGroupUser(models.Model):
+  collectiongroup = models.ForeignKey(CollectionGroup, related_name='members',
+                                   default=-1, on_delete=models.CASCADE)
+  user = models.ForeignKey(User, related_name='members',
+                                default=-1, on_delete=models.CASCADE)
+  role = models.CharField(max_length=20, null=False, choices=USER_ROLE, default = 'normal')
 
   def __str__(self):
-    cap = self.caption[:20]+('...' if len(self)>20 else '')
-    return '%s:%s' % (self.id, cap)
+    username = self.user.name
+    return '<b>' + username + '</b> (' +self.collectiongroup.title + '; ' + self.role + ')'
 
   class Meta:
-      managed = True
-      db_table = 'collection_image'
+    managed = True
+    db_table = 'collection_group_user'
+
+""" not in use 1 image per Collection """
+# class CollectionImage(models.Model):
+#   collection = models.ForeignKey(Collection, default=None,
+#     on_delete=models.CASCADE, related_name='images')
+#   # annotation = models.ForeignKey(TraceAnnotation, default=None,
+#   #   on_delete=models.CASCADE, related_name='image')
+#   image = models.FileField(upload_to=collection_path)
+#   caption = models.CharField(null=True, blank=True, max_length=500)
+#   uri = models.TextField(validators=[URLValidator()], null=True, blank=True)
+#   license = models.CharField(null=True, blank=True, max_length=64)
+#
+#   def __str__(self):
+#     cap = self.caption[:20]+('...' if len(self)>20 else '')
+#     return '%s:%s' % (self.id, cap)
+#
+#   class Meta:
+#       managed = True
+#       db_table = 'collection_image'

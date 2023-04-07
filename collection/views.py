@@ -1,6 +1,7 @@
 # collection.views (collections)
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
@@ -10,7 +11,7 @@ from django.views.generic import (View, CreateView, UpdateView, DetailView, Dele
 #from datasets.utils import hully
 from .forms import CollectionModelForm, CollectionLinkForm
 from .models import *
-from collection.models import Collection, CollectionImage
+from collection.models import Collection
 from main.models import Log
 from places.models import PlaceGeom
 from traces.forms import TraceAnnotationModelForm
@@ -195,11 +196,32 @@ def remove_dataset(request, *args, **kwargs):
 
   return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
+def create_collection_group(request, *args, **kwargs):
+  # must be member of group_leaders
+  result = {"status": "", "id": "", 'title': ""}
+  if request.method == 'POST':
+    print('request.POST', request.POST)
+    owner = get_user_model().objects.get(id=request.POST['ownerid'])
+    group_title = request.POST['title']
+    description = request.POST['description']
+    if group_title in CollectionGroup.objects.all().values_list('title', flat=True):
+      result['status'] = "dupe"
+    else:
+      newgroup = CollectionGroup.objects.create(
+        owner = owner,
+        title = group_title,
+        description = description,
+      )
+      # newgroup.user_set.add(request.user)
+      result = {"status": "ok", "id": newgroup.id, 'title': newgroup.title}
 
-from django.forms.models import inlineformset_factory
-CollectionImageFormset = inlineformset_factory(
-    Collection, CollectionImage, fields=('image','caption','uri','license'), extra=1
-)
+  return JsonResponse(result, safe=False)
+
+# from django.forms.models import inlineformset_factory
+# CollectionImageFormset = inlineformset_factory(
+#     Collection, CollectionImage, fields=('image','caption','uri','license'), extra=1
+# )
+
 from django.forms.models import inlineformset_factory
 CollectionLinkFormset = inlineformset_factory(
     Collection, CollectionLink, fields=('uri','label','link_type'), extra=2

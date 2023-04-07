@@ -602,7 +602,7 @@ input[type="text"] {
   color:#993333;
   /*text-align:center;*/
   font-variant:small-caps;
-  font-weight: strong;
+  font-weight: 600;
   background-color: aliceblue;
 }
 /*.filters-title label {margin-bottom:0; vertical-align:bottom !important;}*/

@@ -1,13 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, PermissionsMixin
-
+from main.choices import USER_ROLE
 
 class User(AbstractUser, PermissionsMixin):
 
-  USER_ROLE = (
-    ('normal', 'normal'),
-    ('group_leader', 'group leader'),
-  )
   email = models.EmailField(max_length=255, unique=True)
   name = models.CharField(max_length=255)
   affiliation = models.CharField(max_length=255, null=True)
@@ -21,3 +17,5 @@ class User(AbstractUser, PermissionsMixin):
   class Meta:
       db_table = 'auth_user'
 
+  def __str__(self):
+    return '%s: %s' % (self.name, self.id)

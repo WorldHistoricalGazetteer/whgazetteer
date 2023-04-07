@@ -9,6 +9,7 @@ from django import forms
 from django.shortcuts import render, redirect, get_object_or_404
 
 from accounts.forms import UserModelForm
+from collection.models import CollectionGroup
 from datasets.models import Dataset, DatasetUser
 
 @login_required
@@ -24,7 +25,7 @@ def update_profile(request):
       user_form.save()
       # profile_form.save()
       messages.success(request, ('Your profile was successfully updated!'))
-      return redirect('profile')
+      return redirect('accounts:profile')
     else:
       print()
       print('error, user_form',user_form.cleaned_data)
@@ -95,21 +96,7 @@ def logout(request):
     auth.logout(request)
     return redirect('home')
 
-def create_group(request, *args, **kwargs):
-  # must be member of group_leaders
-  result = {"status": "", "id": "", 'name': ""}
-  if request.method == 'POST':
-    group_name = request.POST['group_name']
-    if group_name in Group.objects.all().values_list('name', flat=True):
-      result['status'] = "dupe"
-    else:
-      newgroup = Group.objects.create(
-        name = group_name
-      )
-      newgroup.user_set.add(request.user)
-      result = {"status": "ok", "id": newgroup.id, 'name': newgroup.name}
 
-  return JsonResponse(result, safe=False)
 
 # def login_view(request):
 #   form = LoginForm(request.POST or None)

@@ -888,17 +888,17 @@ def task_archive(tid, prior):
 def collab_add(request, dsid, v):
   print('collab_add() request, dsid', request, dsid)
   try:
-    uid=get_object_or_404(User,username=request.POST['username']).id
+    uid=get_object_or_404(User,email=request.POST['email']).id
     role=request.POST['role']
   except:
     # TODO: raise error to screen
     messages.add_message(
-      request, messages.INFO, "Please check username, we don't have '" + request.POST['username']+"'")
+      request, messages.INFO, "Please check username, we don't have '" + request.POST['email']+"'")
     if not v:
       return redirect('/datasets/'+str(dsid)+'/collab')
     else:
       return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-  print('collab_add():',request.POST['username'],role, dsid, uid)
+  print('collab_add():',request.POST['email'],role, dsid, uid)
   DatasetUser.objects.create(user_id_id=uid, dataset_id_id=dsid, role=role)
   if v == '1':
     return redirect('/datasets/'+str(dsid)+'/collab')

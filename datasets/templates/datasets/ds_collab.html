@@ -37,15 +37,15 @@
       <div></div>
       <div class="sharing-box my-3 w-50">
         <div class="sharing-header mb-0 pl-2 strong">Collaborators</div>
-        <div class="smallish pl-2 mb-2">
-          <p class="mb-2">Collaborators are registered WHG users, assigned per dataset.</p>
-          <p><sr>Members</sr> can view its contents and metadata, and perform review of reconciliation task results. <sr>Co-owners</sr> can perform all actions.</p>
+        <div class="smallish" style="padding-left: .3rem;">
+          <p class="">Collaborators are registered WHG users, assigned per dataset.</p>
+          <p><sr>Members</sr> can view its contents and metadata, and perform review of reconciliation task results. <br/><sr>Co-owners</sr> can perform all actions.</p>
         </div>
         {% if user.is_superuser or user in owners %}
           <div class="ml-2 my-2">
             <div class="form-check form-check-inline sharing-input">
               <span class="input-group"> 
-                <input type="text" class="form-control input-sm" name="username" placeholder="Enter username">
+                <input type="text" class="form-control input-sm" name="email" placeholder="Enter user email">
                 <div class="input-group-append">
                   <button class="btn btn-sm btn-outline-secondary" type="submit">Add</button>
                 </div>
