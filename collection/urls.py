@@ -27,7 +27,12 @@ urlpatterns = [
 
     path('<int:id>/delete', views.CollectionDeleteView.as_view(), name='collection-delete'),
 
-    path('create_collection_group/', views.create_collection_group, name='create-collection-group'),
+    # COLLECTION GROUPS (for classes, workshops)
+    # path('create_collection_group/', views.create_collection_group, name='create-collection-group'),
+    path('create_collection_group/', views.CollectionGroupCreateView.as_view(), name='collection-group-create'),
+    path('group/<int:id>/update', views.CollectionGroupUpdateView.as_view(), name='collection-group-update'),
+    path('group/<int:id>/delete', views.CollectionGroupDeleteView.as_view(), name='collection-group-delete'),
+
     # UTILITY
     path('list_ds/', views.ListDatasetView.as_view(), name='list-ds'),
     path('add_ds/<int:coll_id>/<int:ds_id>', views.add_dataset, name='add-ds'),

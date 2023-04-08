@@ -12,7 +12,6 @@ from main.choices import COLLECTIONCLASSES, LINKTYPES, TEAMROLES, STATUS_COLL, U
 from places.models import Place
 from traces.models import TraceAnnotation
 from django_resized import ResizedImageField
-from tinymce.models import HTMLField
 
 """ for images """
 from io import BytesIO
@@ -167,7 +166,7 @@ class CollectionUser(models.Model):
 # used for instructor-led assignments, workshops, etc.
 class CollectionGroup(models.Model):
   owner = models.ForeignKey(settings.AUTH_USER_MODEL,
-                            related_name='collection_groups', on_delete=models.CASCADE)
+      related_name='collection_groups', on_delete=models.CASCADE)
   title = models.CharField(null=False, max_length=300)
   description = models.TextField(null=True, max_length=3000)
   keywords = ArrayField(models.CharField(max_length=50), null=True)
@@ -200,22 +199,3 @@ class CollectionGroupUser(models.Model):
   class Meta:
     managed = True
     db_table = 'collection_group_user'
-
-""" not in use 1 image per Collection """
-# class CollectionImage(models.Model):
-#   collection = models.ForeignKey(Collection, default=None,
-#     on_delete=models.CASCADE, related_name='images')
-#   # annotation = models.ForeignKey(TraceAnnotation, default=None,
-#   #   on_delete=models.CASCADE, related_name='image')
-#   image = models.FileField(upload_to=collection_path)
-#   caption = models.CharField(null=True, blank=True, max_length=500)
-#   uri = models.TextField(validators=[URLValidator()], null=True, blank=True)
-#   license = models.CharField(null=True, blank=True, max_length=64)
-#
-#   def __str__(self):
-#     cap = self.caption[:20]+('...' if len(self)>20 else '')
-#     return '%s:%s' % (self.id, cap)
-#
-#   class Meta:
-#       managed = True
-#       db_table = 'collection_image'

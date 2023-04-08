@@ -67,6 +67,8 @@ CollectionGroupUser.objects.create(
   user = u2,
   role='member'
 ).save()
+
+cg= CollectionGroup.objects.get(id=16)
 import json, pprint
 pprint.pprint({
   'cg': cg.title,

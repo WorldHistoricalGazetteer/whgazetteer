@@ -10,7 +10,7 @@ class CollectionAdmin(admin.ModelAdmin):
 admin.site.register(Collection, CollectionAdmin)
 
 class CollectionGroupAdmin(admin.ModelAdmin):
-    list_display = ('id', 'title', 'owner', 'start_date', 'due_date')
+    list_display = ('title', 'id', 'owner', 'start_date', 'due_date')
 admin.site.register(CollectionGroup, CollectionGroupAdmin)
 
 class CollectionLinkAdmin(admin.ModelAdmin):

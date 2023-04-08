@@ -1,8 +1,28 @@
 from django import forms
 from django.db import models
-from .models import Collection, CollectionLink
+from .models import Collection, CollectionLink, CollectionGroup
 
-from tinymce.widgets import TinyMCE
+class CollectionGroupModelForm(forms.ModelForm):
+    # create and/or edit CollectionGroup
+    class Meta:
+        model = CollectionGroup
+        fields = ('id', 'title', 'owner', 'description', 'keywords',
+                  'start_date', 'due_date')
+        widgets = {
+            'description': forms.Textarea(attrs={
+                'rows': 2, 'cols': 40, 'class': 'textarea'
+            }),
+            'keywords': forms.TextInput(attrs={
+                'placeholder': 'e.g. journey, Central Asia',
+                'size': 30
+            }),
+            'start_date': forms.SelectDateWidget,
+            'due_date': forms.SelectDateWidget
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(CollectionGroupModelForm, self).__init__(*args, **kwargs)
+
 
 class CollectionLinkForm(forms.ModelForm):
     class Meta:

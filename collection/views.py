@@ -9,9 +9,8 @@ from django.urls import reverse
 from django.views.generic import (View, CreateView, UpdateView, DetailView, DeleteView )
 
 #from datasets.utils import hully
-from .forms import CollectionModelForm, CollectionLinkForm
+from .forms import CollectionModelForm, CollectionGroupModelForm
 from .models import *
-from collection.models import Collection
 from main.models import Log
 from places.models import PlaceGeom
 from traces.forms import TraceAnnotationModelForm
@@ -437,6 +436,85 @@ class PlaceCollectionBrowseView(DetailView):
     context['updates'] = {}
     context['url_front'] = settings.URL_FRONT
 
+    return context
+
+""" COLLECTION GROUPS """
+class CollectionGroupCreateView(CreateView):
+  form_class = CollectionGroupModelForm
+  template_name = 'collection/collection_group_create.html'
+  queryset = CollectionGroup.objects.all()
+
+  # if called from reconciliation addtask, return there
+  def get_form_kwargs(self, **kwargs):
+    kwargs = super(CollectionGroupCreateView, self).get_form_kwargs()
+    print('kwargs', kwargs)
+    print('GET in CollectionGroupCreateView()', self.request.GET)
+    # print('redirect',redirect)
+    if redirect != '':
+      self.success_url = redirect
+    else:
+      self.success_url = '/mystudyareas'
+    return kwargs
+
+  def form_invalid(self, form):
+    print('form invalid...', form.errors.as_data())
+    context = {'form': form}
+    return self.render_to_response(context=context)
+
+  def form_valid(self, form):
+    context = {}
+    if form.is_valid():
+      print('form is valid, cleaned_data', form.cleaned_data)
+    else:
+      print('form not valid', form.errors)
+      context['errors'] = form.errors
+    return super().form_valid(form)
+
+  def get_context_data(self, *args, **kwargs):
+    context = super(CollectionGroupCreateView, self).get_context_data(*args, **kwargs)
+    context['mbtoken'] = settings.MAPBOX_TOKEN_WHG
+    # print('args',args,kwargs)
+    context['action'] = 'create'
+    # context['referrer'] = self.request.POST.get('referrer')
+    return context
+
+class CollectionGroupDeleteView(DeleteView):
+  template_name = 'collection/collection_group_delete.html'
+
+  def get_object(self):
+    id_ = self.kwargs.get("id")
+    return get_object_or_404(CollectionGroup, id=id_)
+
+  def get_success_url(self):
+    return reverse('data-areas')
+
+#
+# update (edit); uses same template as create
+# context['action'] governs template display
+#
+class CollectionGroupUpdateView(UpdateView):
+  form_class = CollectionGroupModelForm
+  template_name = 'collection/collection_group_create.html'
+
+  success_url = '/accounts/profile'
+
+  def get_object(self):
+    id_ = self.kwargs.get("id")
+    return get_object_or_404(CollectionGroup, id=id_)
+
+  def form_valid(self, form):
+    if form.is_valid():
+      # print('form.cleaned_data', form.cleaned_data)
+      obj = form.save(commit=False)
+      obj.save()
+    else:
+      print('form not valid', form.errors)
+    return super().form_valid(form)
+
+  def get_context_data(self, *args, **kwargs):
+    context = super(CollectionGroupUpdateView, self).get_context_data(*args, **kwargs)
+    context['action'] = 'update'
+    # context['mbtoken'] = settings.MAPBOX_TOKEN_WHG
     return context
 
 
