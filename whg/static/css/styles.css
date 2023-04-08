@@ -59,6 +59,7 @@ label {vertical-align:text-top;}
 .dashedbox {border:1px dashed #ccc; border-radius:8px; }
 .fa-search, .fa-times {color:#999; }
 /*.half { font-size: .7em; margin-top:.6em;}*/
+.float-end-padded {margin-right: .3rem;}
 .half { font-size: .7em;}
 .help {cursor: pointer;}
 .h2em { height: 2em; }

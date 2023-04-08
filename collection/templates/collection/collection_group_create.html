@@ -20,14 +20,15 @@
     {% if action == 'update' %}
         Update Collection Group
         <span class="text-danger">"{{ form.title.value }}"</span>
-        <a href="{% url 'collection:collection-group-delete' object.id %}" class="float-right"
+        <a href="{% url 'collection:collection-group-delete' object.id %}" class="float-end small"
         title="Delete group" rel="tooltip" style="margin-top:-2px;">
         <i class="fas fa-trash linkyred"></i></a>
     {% else %}
         Create Collection Group
     {% endif %}
   </h4>
-  <div class="d-flex">
+{#  <div class="flex row">#}
+  <div class="d-flex container row">
     <div class="form-box mt-2 col-sm-4">
         {% if action == 'update' %}
         <form id="cg_form" method="POST" action="{% url 'collection:collection-group-update' object.id %}" enctype="multipart/form-data">
@@ -47,6 +48,29 @@
       <input class="btn-sm btn-primary mt-2" type="submit" value="Save" id="b_save"/>
       <span title="back"><a href="{% url 'accounts:profile' %}">Cancel</a></span>
     </form>
+    </div>
+    <div class="col-sm-4 mt-2">
+        <h5 class="sharing-header">Members
+            <span class="float-end float-end-padded small">
+                <a href=""><i class="fas fa-plus-square linky"></i></a></span>
+        </h5>
+        <div id="members_content">
+            <ul class="small">
+            {% for m in members.all %}
+                <li>{{ m.user.name }} ({{ m.user.email }})</li>
+            {% endfor %}
+            </ul>
+        </div>
+    </div>
+    <div class="col-sm-4 mt-2">
+        <h5 class="sharing-header">Submitted Collections</h5>
+        <div id="collections_content">
+            <ul class="small">
+            {% for m in collections.all %}
+                <li><a href="{% url 'collection:ds-collection-summary' m.id %}">{{ m.title }}</a> ({{ m.owner.name }})</li>
+            {% endfor %}
+            </ul>
+        </div>
     </div>
   </div> <!-- d-flex -->
 </div> <!-- container -->

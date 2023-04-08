@@ -511,10 +511,12 @@ class CollectionGroupUpdateView(UpdateView):
       print('form not valid', form.errors)
     return super().form_valid(form)
 
+
   def get_context_data(self, *args, **kwargs):
     context = super(CollectionGroupUpdateView, self).get_context_data(*args, **kwargs)
     context['action'] = 'update'
-    # context['mbtoken'] = settings.MAPBOX_TOKEN_WHG
+    context['members'] = self.get_object().members
+    context['collections'] = self.get_object().collections.filter(submitted=True)
     return context
 
 
@@ -637,9 +639,7 @@ class DatasetCollectionSummaryView(DetailView):
     # gather bounding boxes
     bboxes = [ds.bounds for ds in datasets]
 
-    context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
-    context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
-    context['mbtokenwhg'] = settings.MAPBOX_TOKEN_WHG
+    context['mbtoken'] = settings.MAPBOX_TOKEN_WHG
     context['whgteam'] = User.objects.filter(groups__name='whg_team')
 
     context['ds_list'] = datasets

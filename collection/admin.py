@@ -3,7 +3,8 @@ from .models import *
 
 class CollectionAdmin(admin.ModelAdmin):
     list_display = ('title', 'id', 'description', 'owner_id', 'status')
-    fields = ('id','collection_class','title','owner',('status','featured'),
+    fields = ('id','collection_class','title','owner',
+              ('public', 'submitted'), ('status','featured'),
               'description','image_file','keywords','rel_keywords','file','creator')
     readonly_fields = ('id','datasets','places','omitted','collection_class')
     list_filter = ('status','collection_class')
