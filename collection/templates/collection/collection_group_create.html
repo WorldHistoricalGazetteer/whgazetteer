@@ -29,7 +29,11 @@
   </h4>
   <div class="d-flex">
     <div class="form-box mt-2 col-sm-4">
-    <form id="cg_form" method="POST" action="{% url 'collection:collection-group-update' object.id %}" enctype="multipart/form-data">
+        {% if action == 'update' %}
+        <form id="cg_form" method="POST" action="{% url 'collection:collection-group-update' object.id %}" enctype="multipart/form-data">
+        {% else %}
+        <form id="cg_form" method="POST" action="{% url 'collection:collection-group-create' %}" enctype="multipart/form-data">
+        {% endif %}
       {% csrf_token %}
       <input type="hidden" name="owner" value='{{ user.id }}' />
       {% if action == 'update' %}

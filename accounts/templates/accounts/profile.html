@@ -84,22 +84,16 @@
               <td class="float-right pr-3 strong" style="vertical-align: top">Collection<br/>groups</td>
               <td style="vertical-align: top;">
                   {% for cg in user.collection_groups.all %}
-                      <a href="{% url 'collection:collection-group-update' id=cg.id %}">{{ cg.title }}</a> ({{ cg.id }}; {{cg.members.count}} members)<br/>
+                      <a href="{% url 'collection:collection-group-update' id=cg.id %}">{{ cg.title }}</a>
+                      <span class="small">({{ cg.id }}; {{cg.members.count}} members)</span><br/>
                   {% endfor %}
               </td>
           </tr>
           <tr>
             <td></td>
             <td>
-{#                <span id="groupform" class="hidden">#}
-{#                    <div class="input-group mb-3">#}
-{#                      <input type="text" id="group_title" class="form-control" placeholder="Group title" aria-describedby="basic-addon2">#}
-{#                        <button id="b_addgroup" type="button" class="btn btn-sm btn-primary" >Add</button>#}
-{#                    </div>#}
-{#                </span>#}
                 <p class="mt-3">
                   <a href="{% url 'collection:collection-group-create' %}" id="a_creategroup">New collection group <i class="fas fa-plus-square linky"></i></a>
-{#                    <span id="create_cancel" class="hidden"><a href="">cancel</a></span>#}
                 </p>
             </td>
           </tr>
