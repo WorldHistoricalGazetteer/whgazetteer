@@ -52,8 +52,21 @@
     <div class="col-sm-4 mt-2">
         <h5 class="sharing-header">Members
             <span class="float-end float-end-padded small">
-                <a href=""><i class="fas fa-plus-square linky"></i></a></span>
+                <a href="#" id="l_addusers">
+                    <i class="fas fa-plus-square linky"></i></a>
+            </span>
         </h5>
+        <div id="div_addusers" class="mb-3">
+            <form id="f_addusers">{% csrf_token %}
+            <input class="form-control form-control-sm" id="userfile" type="file">
+{#            <input class="form-control form-control-sm" id="formFileSm" type="file">#}
+            <div id="addusers_info" class="form-text">
+              To create multiple WHG users as group members, upload a .csv file with two columns: 'email', and 'full_name'.
+            </div>
+            <button class="btn btn-sm btn-primary" type="submit">Upload</button>
+            </form><hr/>
+        </div>
+        <div id="results_text"></div>
         <div id="members_content">
             <ul class="small">
             {% for m in members.all %}
@@ -77,11 +90,60 @@
 
 <script type="text/javascript">
   $(function() {
-      {#$("#b_save").click(function(){#}
-      {#    #}
-      {#    console.log("should be sending...wtf?")#}
-      {# })#}
+      $("#l_addusers").click(function(){
+        $("#div_addusers").toggle()
+        {#$("#div_addusers").removeClass('hidden')#}
+      })
   })
+  // submit file with new users
+  //
+  $(document).on('submit', '#f_addusers', function(e){
+    e.preventDefault()
+    var formData = new FormData();
+    formData.append('file', $('#userfile')[0].files[0]);
+    formData.append('cgid', '{{ object.id }}');
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+    console.log('ajax on submit file', $('#userfile')[0].files[0])
+    {##}
+    $.ajax({
+        type: 'POST',
+        enctype: 'multipart/form-data',
+        url: '/accounts/addusers/',
+        processData: false,
+        contentType: false,
+        cache: false,
+        data: formData,
+        success: function (data) {
+            html = data['new_users']
+            console.log('data returned', data)
+            $("#results_text").html(html)
+        }
+    })
+        {#if('failed' in data){#}
+        {#  errors = data['failed']['errors']#}
+        {#  html = '<b class="text-danger">Data validation issue(s):</b> <ul class="ul-flush">'#}
+        {#  for(var i=0; i<errors.length; i++){#}
+        {#    html += '<li class="li-flush">'+errors[i]+'</li>'#}
+        {#  }#}
+        {#  html+='</ul><p>Please correct and try again</p>'#}
+        {# } else {#}
+        {#    html = data#}
+          {#html = '<b>Current file</b>: <i>'+data['filename_cur']+'</i><br/>'#}
+          {#html += '<b>New file</b>: <i>'+data['filename_new']+'</i><br/>'#}
+          {#html += '<b>New temp file</b>: <i>'+data['tempfn']+'</i><br/>'#}
+          {#html += '<b>Indexed?</b>: <i>'+(data['count_indexed']>0?"Yes":"No")+'</i><br/>'#}
+          {#html += '<b>Validation result</b>: <i>' +#}
+          {#  (data['validation_result']['errors'].length <1?'format valid':data['validation_result']['errors'])+'</i><hr/>'#}
+          {#html += comparisonText(data)#}
+          {#$("#btn_update").removeClass('hidden')#}
+        {# } {# success #}
+        {#$("#loadfile").addClass('hidden')#}
+        {#$("#results_text").html(html)#}
+        {#compare_data=data#}
+      {# }#}
+     {# }) {# ajax #}
+  })
+
 </script>
 
 {% endblock %}

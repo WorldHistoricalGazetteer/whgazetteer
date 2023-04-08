@@ -168,7 +168,6 @@
 						{% if links|length > 0 %}
 							{% for l in links %}
 								{{ l.get_link_type_display|safe }} <a href="{{ l.uri }}" target="_blank">{{ l.label }}</a>
-								{# {% url 'collection:remove-link' link_id=l.id %} #}
 									[ <a href="{% url 'collection:remove-link' id=l.id %}" class="a_removelink"><i>remove</i></a> ]<br/>
 							{% endfor %}
 						{% endif %}
