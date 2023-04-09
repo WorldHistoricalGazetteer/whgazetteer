@@ -8,7 +8,7 @@ from main import views
 from datasets.views import PublicListsView, DataListsView
 from resources.views import TeachingPortalView
 
-# app_name='whg'
+app_name='whg'
 #handler404 = 'datasets.views.handler404',
 handler500 = 'main.views.custom_error_view'
 
