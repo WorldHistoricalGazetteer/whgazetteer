@@ -29,7 +29,7 @@ class TypeRemoteSerializerSlim(serializers.ModelSerializer):
 
 class DatasetRemoteSerializer(serializers.ModelSerializer):
 	""" for lists """
-	owner = serializers.ReadOnlyField(source='owner.username')
+	owner = serializers.ReadOnlyField(source='owner.email')
 
 	class Meta:
 		model = Dataset
@@ -53,7 +53,7 @@ class DatasetRemoteDetailSerializer(DatasetRemoteSerializer):
 
 class CollectionRemoteSerializer(serializers.ModelSerializer):
 	# for list, add (place)
-	owner = serializers.ReadOnlyField(source='owner.username')
+	owner = serializers.ReadOnlyField(source='owner.email')
 
 	class Meta:
 		model = Collection

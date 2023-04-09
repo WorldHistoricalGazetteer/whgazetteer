@@ -133,10 +133,10 @@ def contactView(request):
         if form.is_valid():
             human = True
             name = form.cleaned_data['name']
-            username = form.cleaned_data['username'] # hidden input
+            username = form.cleaned_data['name'] # hidden input
             subject = form.cleaned_data['subject']
             from_email = form.cleaned_data['from_email']
-            message = name +' ('+username+'; '+from_email+'), on the subject of '+subject+' says: \n\n'+form.cleaned_data['message']
+            message = name +'('+from_email+'), on the subject of '+subject+' says: \n\n'+form.cleaned_data['message']
             subject_reply = "WHG message received"
             message_reply = '\nWe received your message concerning "'+subject+'" and will respond soon.\n\n regards,\nThe WHG project team'
             try:

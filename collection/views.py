@@ -333,7 +333,7 @@ class PlaceCollectionUpdateView(UpdateView):
         # category, logtype, "timestamp", subtype, note, dataset_id, user_id
         category = 'collection',
         logtype = 'update',
-        note = 'collection id: '+ str(obj.id) + ' by '+ self.request.user.username,
+        note = 'collection id: '+ str(obj.id) + ' by '+ self.request.user.name,
         user_id = self.request.user.id
       )
     else:
@@ -595,7 +595,7 @@ class DatasetCollectionUpdateView(UpdateView):
         # category, logtype, "timestamp", subtype, note, dataset_id, user_id
         category = 'collection',
         logtype = 'update',
-        note = 'collection id: '+ str(obj.id) + ' by '+ self.request.user.username,
+        note = 'collection id: '+ str(obj.id) + ' by '+ self.request.user.name,
         user_id = self.request.user.id
       )
     else:

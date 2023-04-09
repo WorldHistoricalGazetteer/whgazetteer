@@ -25,7 +25,7 @@
         {% if user.is_authenticated %}
         <input type="hidden" name="name" value='{{ user.name }}'>
         {% else %}
-        <input type="hidden" name="username" value='Guest user'>
+        <input type="hidden" name="name" value='Guest user'>
         {% endif %}
         <div class="form-actions mt-2">
           <button class="submit-btn btn btn-primary" type="submit">Send</button>

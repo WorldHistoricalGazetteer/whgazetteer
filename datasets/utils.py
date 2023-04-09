@@ -58,7 +58,7 @@ def downloader(request, *args, **kwargs):
     print('ajax == True')
     format=request.POST['format']
     download_task = make_download.delay(
-      {"username":user.name, "userid":user.id},
+      {"name":user.name, "userid":user.id},
       dsid=dsid,
       collid=collid,
       format=format,
@@ -84,7 +84,7 @@ def download_augmented(request, *args, **kwargs):
   from django.db import connection
   print('download_augmented kwargs',kwargs)
   print('download_augmented request',request)
-  username = request.user.username
+  name = request.user.name
   ds=get_object_or_404(Dataset,pk=kwargs['id'])
   dslabel = ds.label
   url_prefix='http://whgazetteer.org/api/place/'
@@ -106,7 +106,7 @@ def download_augmented(request, *args, **kwargs):
     print('making a tsv file')
     # make file name
     #fn = 'media/user_'+user+'/'+ds.label+'_aug_'+date+'.tsv'
-    fn = 'media/downloads/'+username+'_'+dslabel+'_'+date+'.tsv'
+    fn = 'media/downloads/'+name+'_'+dslabel+'_'+date+'.tsv'
 
     def augLinks(linklist):
       aug_links = []
@@ -153,7 +153,7 @@ def download_augmented(request, *args, **kwargs):
   else:
     print('building lpf file')
     # make file name
-    fn = 'media/downloads/'+username+'_'+dslabel+'_'+date+'.tsv'
+    fn = 'media/downloads/'+name+'_'+dslabel+'_'+date+'.tsv'
     result={"type":"FeatureCollection","features":[],
             "@context": "https://raw.githubusercontent.com/LinkedPasts/linked-places/master/linkedplaces-context-v1.1.jsonld",
             "filename": "/"+fn}
@@ -257,7 +257,7 @@ def download_file(request, *args, **kwargs):
 # experiment (deprecated?)
 def download_augmented_slow(request, *args, **kwargs):
   print('download_augmented kwargs',kwargs)
-  user = request.user.username
+  user = request.user.name
   ds=get_object_or_404(Dataset,pk=kwargs['id'])
   fileobj = ds.files.all().order_by('-rev')[0]
   date=makeNow()

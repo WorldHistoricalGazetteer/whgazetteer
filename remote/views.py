@@ -65,7 +65,7 @@ class DatasetViewSet(viewsets.ModelViewSet):
     # needs a new dummy DatasetFile too
     # will be deleted with cascade
     dsid = Dataset.objects.last()
-    filename = 'user_'+user.username+'/'+str(dsid)+'-dummy.txt'
+    filename = 'user_'+user.id+'/'+str(dsid)+'-dummy.txt'
     filepath = 'media/'+filename
     dummyfile=codecs.open(filepath, mode='w', encoding='utf8')
     dummyfile.write("# nothing to see here, it's a dummy file")

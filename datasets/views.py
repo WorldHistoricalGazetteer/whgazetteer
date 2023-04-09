@@ -1535,7 +1535,7 @@ def ds_compare(request):
     print('ds_compare() request.POST', request.POST)
     print('ds_compare() request.FILES', request.FILES)
     dsid = request.POST['dsid']
-    user = request.user.username
+    user = request.user.name
     format = request.POST['format']
     ds = get_object_or_404(Dataset, id=dsid)
     ds_status = ds.ds_status
@@ -1879,7 +1879,7 @@ def ds_insert_lpf(request, pk):
       # ds.delete()
       # email to user, admin
       subj = 'World Historical Gazetteer error followup'
-      msg = 'Hello '+ user.username+', \n\nWe see your recent upload for the '+ds.label+\
+      msg = 'Hello '+ user.name+', \n\nWe see your recent upload for the '+ds.label+\
             ' dataset failed, very sorry about that!'+\
             '\nThe likely cause was: '+str(errors)+'\n\n'+\
             "If you can, fix the cause. If not, please respond to this email and we will get back to you soon.\n\nRegards,\nThe WHG Team"
@@ -2176,7 +2176,7 @@ def ds_insert_tsv(request, pk):
       failed_upload_notification(user, dsf.file.name, ds.label)
 
       # return message to 500.html
-      messages.error(request, "Database insert failed, but we don't know why. The WHG team has been notified and will follow up by email to <b>"+user.username+'</b> ('+user.email+')')
+      messages.error(request, "Database insert failed, but we don't know why. The WHG team has been notified and will follow up by email to <b>"+user.name+'</b> ('+user.email+')')
       return HttpResponseServerError()
   else:
     print('insert_tsv skipped, already in')
@@ -2285,7 +2285,7 @@ class PublicListsView(ListView):
 def failed_upload_notification(user, fn, ds=None):
     subj = 'World Historical Gazetteer error followup '
     subj += 'on dataset ('+ds+')' if ds else ''
-    msg = 'Hello ' + user.username + \
+    msg = 'Hello ' + user.name + \
       ', \n\nWe see your recent upload was not successful '
     if ds:
       msg += 'on insert to the database '
@@ -2356,7 +2356,7 @@ class DatasetCreateEmptyView (LoginRequiredMixin, CreateView):
 
     #
     # create user directory if necessary
-    userdir = r'media/user_'+user.username+'/'
+    userdir = r'media/user_'+user.id+'/'
     if not Path(userdir).exists():
       os.makedirs(userdir)
 
@@ -2489,7 +2489,7 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
     ext = mthash_plus.mimetypes[mimetype]
     print('DatasetCreateView() extension:', ext)
     fail_msg = "A database insert failed and we aren't sure why. The WHG team has been notified "+\
-               "and will follow up by email to <b>"+user.username+"</b> ("+user.email+")"
+               "and will follow up by email to <b>"+user.name+"</b> ("+user.email+")"
 
     # this validates per row and always gets a result, even if errors
     if ext == 'json':
@@ -2549,7 +2549,7 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
         failed_upload_notification(user, newfn)
         messages.error(self.request, "Database insert failed and we aren't sure why. "+
                        "The WHG team has been notified and will follow up by email to <b>" +
-                       user.username+'</b> ('+user.email+')')
+                       user.name+'</b> ('+user.email+')')
         return HttpResponseServerError()
 
     print('validation complete, still in DatasetCreateView')
@@ -2590,7 +2590,7 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
 
       #
       # create user directory if necessary
-      userdir = r'media/user_'+user.username+'/'
+      userdir = r'media/user_'+user.id+'/'
       if not Path(userdir).exists():
         os.makedirs(userdir)
 
@@ -3085,7 +3085,7 @@ class DatasetAddTaskView(LoginRequiredMixin, DetailView):
 
     # user study areas
     userareas = Area.objects.filter(type__in=area_types).values('id','title').order_by('-created')
-    context['area_list'] = userareas if me.username == 'whgadmin' else userareas.filter(owner=me)
+    context['area_list'] = userareas if me.id == 2 else userareas.filter(owner=me)
 
     # user datasets
     # userdatasets = Dataset.objects.filter(owner=me).values('id','title').order_by('-created')
@@ -3697,7 +3697,7 @@ def ds_compare_bak():
     print('ds_compare() request.POST', request.POST)
     print('ds_compare() request.FILES', request.FILES)
     dsid = request.POST['dsid']
-    user = request.user.username
+    user = request.user.name
     format = request.POST['format']
     ds = get_object_or_404(Dataset, id=dsid)
     ds_status = ds.ds_status

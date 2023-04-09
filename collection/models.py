@@ -193,8 +193,8 @@ class CollectionGroupUser(models.Model):
   role = models.CharField(max_length=20, null=False, choices=USER_ROLE, default = 'normal')
 
   def __str__(self):
-    username = self.user.name
-    return '<b>' + username + '</b> (' +self.collectiongroup.title + '; ' + self.role + ')'
+    name = self.user.name
+    return '<b>' + name + '</b> (' +self.collectiongroup.title + '; ' + self.role + ')'
 
   class Meta:
     managed = True

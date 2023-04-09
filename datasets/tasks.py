@@ -234,7 +234,7 @@ def make_download(request, *args, **kwargs):
       # category, logtype, "timestamp", subtype, note, dataset_id, user_id
       category = 'dataset',
       logtype = 'ds_download',
-      note = {"format":req_format, "username":name},
+      note = {"format":req_format, "name":name},
       dataset_id = dsid,
       user_id = userid
     )

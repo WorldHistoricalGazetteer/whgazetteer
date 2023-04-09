@@ -177,7 +177,7 @@ class ResourceUpdateView(UpdateView):
           category='resource',
           logtype='update',
           note='resource id: ' + str(obj.id) + \
-          ' by ' + self.request.user.username,
+          ' by ' + self.request.user.name,
           user_id=self.request.user.id
       )
     else:
