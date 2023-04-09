@@ -48,8 +48,8 @@ The following steps have been tested on MacOS Monterey (12.6). Windows-specific 
   - log in as {superuser} 
   - confirm model pages (datasets, places, etc.). There is no data in them yet.
 - populate a few database tables for basic operation (home page looks for these), e.g.
-    - `psql -p 5432 {database} < docs/cloning/types.sql`
-    - `psql -p 5432 {database} < docs/cloning/combined.sql`
+    - `psql -p {port} {database} < docs/cloning/types.sql`
+    - `psql -p {port} {database} < docs/cloning/combined.sql`
 - from project root, gather static files from throughout project into static/ 
   - {project root}$ `python ./manage.py collectstatic`
 - home page should now load at `http://localhost:{port}`

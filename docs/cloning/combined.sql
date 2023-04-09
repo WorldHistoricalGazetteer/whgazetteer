@@ -13,7 +13,7 @@ DELETE FROM public."datasets";
 ALTER SEQUENCE datasets_id_seq RESTART WITH 1;
 
 -- CREATE 2 DATASETS (ids 1 & 2)
-with z as (select * from auth_user au where is_superuser = true)
+with z as (select * from users_user au where is_superuser = true)
 	INSERT INTO public."datasets" (owner_id, label, title, description, core, public, 
 		datatype, featured, image_file, create_date) VALUES
 		((select id from z), 'sample01','Sample dataset 01','sample dataset required to load home page', 
@@ -27,13 +27,13 @@ INSERT INTO public."dataset_file" (dataset_id_id, file, rev, format, datatype) V
 	(2, 'dummy_file.txt', 1, 'delimited', 'place');
 
 -- CREATE COLLECTIONS
-with z as (select * from auth_user au where is_superuser = true)
+with z as (select * from users_user au where is_superuser = true)
 	INSERT INTO public."collections" (owner_id, title, description, collection_class, 
-		featured, omitted, status, image_file, created, keywords) VALUES
+		featured, omitted, status, image_file, created, keywords, public, submitted, nominated) VALUES
 		((select id from z), 'Sample Collection 01', 'Sample for loading home page', 'dataset', 
-			1, '{}', 'sandbox', 'dummy_image.png', now(), array['could','it','be']),
+			1, '{}', 'sandbox', 'dummy_image.png', now(), array['could','it','be'], FALSE, FALSE, FALSE ),
 		((select id from z), 'Sample Collection 02', 'Sample for loading home page', 'dataset', 
-			2, '{}', 'sandbox', 'dummy_image.png', now(), array['so','it','goes']) ;
+			2, '{}', 'sandbox', 'dummy_image.png', now(), array['so','it','goes'], FALSE, FALSE, FALSE ) ;
 
 INSERT INTO public."collections_datasets" (collection_id, dataset_id) VALUES
 	(1, 1),	(1, 2),	(2, 1),	(2, 2);

@@ -450,11 +450,18 @@ class CollectionGroupCreateView(CreateView):
     print('kwargs', kwargs)
     print('GET in CollectionGroupCreateView()', self.request.GET)
     # print('redirect',redirect)
-    if redirect != '':
-      self.success_url = redirect
-    else:
-      self.success_url = '/mystudyareas'
+    # if redirect != '':
+    #   self.success_url = redirect
+    # else:
+    #   self.success_url = '/'
+    #   # self.success_url = '/mystudyareas'
     return kwargs
+
+  def get_success_url(self):
+    cgid = self.kwargs.get("id")
+    #user = self.request.user
+    #print('messages:', messages.get_messages(self.kwargs))
+    return '/accounts/profile/'
 
   def form_invalid(self, form):
     print('form invalid...', form.errors.as_data())

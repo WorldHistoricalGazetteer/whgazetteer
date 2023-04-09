@@ -122,9 +122,9 @@ def register(request):
       except User.DoesNotExist:
         print('request.POST',request.POST)
         user = User.objects.create_user(
-                  request.POST['name'],
+                  request.POST['email'],
                     password=request.POST['password1'],
-                    email=request.POST['email'],
+                    # email=request.POST['email'],
                     affiliation=request.POST['affiliation'],
                     name=request.POST['name'],
                     role='normal',

@@ -71,11 +71,11 @@ class Collection(models.Model):
   # group, sandbox, demo, ready, public
   status = models.CharField(max_length=12, choices=STATUS_COLL, default='sandbox')
   featured = models.IntegerField(null=True, blank=True)
-  public = models.BooleanField(null=False, default=False)
+  public = models.BooleanField(default=False)
   # filter for group_leader 'class' screen
-  submitted = models.BooleanField(null=False, default=False)
+  submitted = models.BooleanField(default=False)
   # flag set by group_leader
-  nominated = models.BooleanField(null=False, default=False)
+  nominated = models.BooleanField(default=False)
 
   # collections can comprise >=0 datasets, >=1 places
   datasets = models.ManyToManyField("datasets.Dataset", blank=True)

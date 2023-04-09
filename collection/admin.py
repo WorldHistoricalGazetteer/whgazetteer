@@ -18,6 +18,10 @@ class CollectionLinkAdmin(admin.ModelAdmin):
     list_display = ('id', 'collection', 'link_type', 'uri')
 admin.site.register(CollectionLink, CollectionLinkAdmin)
 
+class CollectionGroupUserAdmin(admin.ModelAdmin):
+  list_display = ('id', 'collectiongroup', 'user', 'role')
+admin.site.register(CollectionGroupUser, CollectionGroupUserAdmin)
+
 # collaborators
 class CollectionUserAdmin(admin.ModelAdmin):
     list_display = ('id', 'collection', 'user', 'role')
