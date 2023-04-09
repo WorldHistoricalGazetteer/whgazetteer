@@ -20,7 +20,7 @@ def create_user(**params):
 class CompareAndUpdateTests(TestCase):
   def setUp(self):
     self.client = Client()
-    self.user = create_user(email='user@example.com', password='test123', username='user1')
+    self.user = create_user(email='user@example.com', password='test123', name='user1')
     self.client.force_login(self.user)
     # client.login(username='SomeUser', password='django9999')
     with open('_testdata/_update/sample7.txt') as file_og:

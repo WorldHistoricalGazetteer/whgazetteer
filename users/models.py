@@ -11,16 +11,18 @@ class User(AbstractUser, PermissionsMixin):
   is_active = models.BooleanField(default=True)
   is_staff = models.BooleanField(default=False)
 
-  # this is a horrible after-effect of switching to a custom user model:
-  # old abandoned fields are still embedded in the logic throughout!!
-  first_name = models.CharField(max_length=255)
-  last_name = models.CharField(max_length=255)
-  username = models.CharField(max_length=255)
+  # horrible after-effect of switching to a custom user model:
+  # abandoned fields are still embedded in the logic throughout!!
+  # i.e. username is required to create a new User
+  username = models.CharField(max_length=255,null=True,blank=True,unique=False)
+  first_name = models.CharField(max_length=255,null=True,blank=True)
+  last_name = models.CharField(max_length=255,null=True,blank=True)
 
   USERNAME_FIELD = 'email'
   REQUIRED_FIELDS = ['name']
 
   class Meta:
+      # db_table = 'users'
       db_table = 'auth_user'
 
   def __str__(self):

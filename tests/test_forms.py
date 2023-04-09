@@ -8,7 +8,7 @@ from datasets.models import Dataset
 class DatasetCreateTestCase(TestCase):
     
     def test_valid_form(self):
-        owner=User.objects.create(username='tempy',password='tempy')
+        owner=User.objects.create(email='temp@tempy.com',password='tempy')
         print('owner id',owner.id)
         label='ds_testy'
         title='Test Dataset'

@@ -39,7 +39,7 @@ def collectiongroup_detail_url(collectiongroup_id):
 
 def create_user(**params):
 	"""Create and return a new user."""
-	return settings.AUTH_USER_MODEL.create_user(**params)
+	return User.objects.create(**params)
 	# return get_user_model().objects.create_user(**params)
 
 def create_place_collection(user, **params):

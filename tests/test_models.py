@@ -11,7 +11,7 @@ class DatasetAndPlaceModelsTest(TestCase):
     
     @classmethod
     def setUpTestData(cls):
-        user = User.objects.create(username='tempy',password='tempy')
+        user = User.objects.create(email='user@tempy.com',password='tempy')
         print("setUpTestData(): Run once to set up non-modified data for all class methods.")
         Dataset.objects.create(
             owner=user,

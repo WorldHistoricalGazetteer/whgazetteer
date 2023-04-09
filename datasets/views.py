@@ -893,7 +893,7 @@ def collab_add(request, dsid, v):
   except:
     # TODO: raise error to screen
     messages.add_message(
-      request, messages.INFO, "Please check username, we don't have '" + request.POST['email']+"'")
+      request, messages.INFO, "Please check email, we don't have '" + request.POST['email']+"'")
     if not v:
       return redirect('/datasets/'+str(dsid)+'/collab')
     else:
