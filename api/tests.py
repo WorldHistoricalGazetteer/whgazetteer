@@ -82,7 +82,7 @@ class PrivateApiTests(TestCase):
 	""" DATASETS: list, detail, create """
 	def setUp(self):
 		self.client = APIClient()
-		self.user = create_user(email='user@example.com', password='test123', username='user1')
+		self.user = create_user(email='user@example.com', password='test123', name='user1')
 		self.client.force_authenticate(self.user)
 
 	def test_retrieve_datasets(self):
@@ -102,7 +102,7 @@ class PrivateApiTests(TestCase):
 
 	def test_dataset_list_limited_to_user(self):
 		"""Test list of datasets is limited to authenticated user."""
-		other_user = create_user(email='other@example.com', password='test123', username='user2')
+		other_user = create_user(email='other@example.com', password='test123', name='user2')
 		# Datasets must have unique labels
 		create_dataset(user=other_user, label='example3')
 		create_dataset(user=self.user, label='example4')
@@ -158,7 +158,7 @@ class PrivateApiTests(TestCase):
 
 	def test_collection_list_limited_to_user(self):
 		"""Test list of collections is limited to authenticated user."""
-		other_user = create_user(email='other@example.com', password='test123', username='user3')
+		other_user = create_user(email='other@example.com', password='test123', name='user3')
 		create_collection(user=other_user)
 		create_collection(user=self.user)
 
@@ -205,7 +205,7 @@ class PrivatePlaceApiTests(TestCase):
 	""" PLACES: add to dataset """
 	def setUp(self):
 		self.client = APIClient()
-		self.user = create_user(email='user@example.com', password='test123', username='user1')
+		self.user = create_user(email='user@example.com', password='test123', name='user1')
 		self.client.force_authenticate(self.user)
 		self.dataset = create_dataset(user=self.user, label='example_99', title='Example99')
 

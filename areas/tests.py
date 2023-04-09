@@ -9,7 +9,7 @@ from areas.forms import AreaModelForm
 
 class AreaFormTestCase(TestCase):
     def test_valid_form(self):
-        User.objects.create(username='Satch')
+        User.objects.create(email='satch@kgeographer.org')
         owner = get_object_or_404(User, id=1)
         id=1
         type = 'ccodes'

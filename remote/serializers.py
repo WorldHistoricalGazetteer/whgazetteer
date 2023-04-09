@@ -164,7 +164,8 @@ class PlaceRemoteSerializer(serializers.ModelSerializer):
 		model = Place
 		fields = [
 			'id', 'dataset', 'title', 'src_id', 'ccodes', 'minmax',
-			'names', 'links', 'geoms', 'whens', 'types', 'descriptions'
+			'names', 'links', 'whens', 'types', 'descriptions',
+			# 'geoms'
 		]
 		read_only_fields = ['id']
 
@@ -224,18 +225,6 @@ class PlaceRemoteDetailSerializer(PlaceRemoteSerializer):
 				**type,
 			)
 			place.types.add(pt_obj)
-
-	# def create_ccodes(self, ccodes, place):
-	# # def _get_or_create_ccodes(self, ccodes, place):
-	# 	"""Handle getting or creating ccodes as needed."""
-	# 	from datasets.utils import ccodesFromGeom
-	# 	if len(ccodes) == 0 and place.geoms.count() > 0:
-	# 		try:
-	# 			print('place.geoms.first().jsonb', place.geoms.first().jsonb)
-	# 			ccodes = ccodesFromGeom(place.geoms.first().jsonb)
-	# 		except:
-	# 			raise
-	# 	return ccodes
 
 	def _get_or_create_descriptions(self, descriptions, place):
 		"""Handle getting or creating descriptions as needed."""

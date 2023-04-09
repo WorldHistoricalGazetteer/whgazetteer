@@ -31,7 +31,7 @@ total_links = models.IntegerField(null=True, blank=True)
 # ***
 class DatasetSerializer(serializers.HyperlinkedModelSerializer):
   # don't list all places in a dataset API record
-  owner = serializers.ReadOnlyField(source='owner.username')
+  owner = serializers.ReadOnlyField(source='owner.name')
 
   place_count = serializers.SerializerMethodField('get_count')
   def get_count(self,ds):
@@ -50,7 +50,7 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
 
   class Meta:
     model = User
-    fields = ['id', 'username', 'email', 'url', 'datasets']
+    fields = ['id', 'name', 'email', 'url', 'datasets']
     #fields = ('id','url', 'username', 'email', 'groups', 'datasets')
 
 class TraceAnnotationSerializer(serializers.ModelSerializer):

@@ -65,7 +65,7 @@
             <input type="hidden" name="wd_lang" value="">
 
 	          {# whg accession and test options if superuser or editor #}
-            {% if user.is_superuser or user.username == 'als512' %}
+            {% if user.is_superuser or user.email == 'als512@pitt.edu' %}
               <div class="form-check mt-2">
                 <label class="form-check-label text-danger" for="r_idx">
                   <input type="radio" class="form-check-input" id="r_idx"

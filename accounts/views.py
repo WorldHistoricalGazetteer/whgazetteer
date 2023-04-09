@@ -24,7 +24,7 @@ def addusers(request):
     print('addusers() request.FILES', request.FILES)
     cgid = request.POST['cgid']
     cg=get_object_or_404(CollectionGroup, id=cgid)
-    user = request.user.username
+    user = request.user.name
 
     # uploaded file
     user_list = request.FILES['file']

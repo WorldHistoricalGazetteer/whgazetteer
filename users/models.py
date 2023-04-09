@@ -11,6 +11,12 @@ class User(AbstractUser, PermissionsMixin):
   is_active = models.BooleanField(default=True)
   is_staff = models.BooleanField(default=False)
 
+  # this is a horrible after-effect of switching to a custom user model:
+  # old abandoned fields are still embedded in the logic throughout!!
+  first_name = models.CharField(max_length=255)
+  last_name = models.CharField(max_length=255)
+  username = models.CharField(max_length=255)
+
   USERNAME_FIELD = 'email'
   REQUIRED_FIELDS = ['name']
 

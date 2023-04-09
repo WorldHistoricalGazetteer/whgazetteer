@@ -14,7 +14,7 @@
     <form method="post" action="{% url 'accounts:register' %}">
     <h2 class="">User Registration</h2>
       {% csrf_token %}
-      <input type="hidden" name="first_name" value="n/a"/> <input type="hidden" name="last_name" value="n/a"/>
+{#      <input type="hidden" name="first_name" value="n/a"/> <input type="hidden" name="last_name" value="n/a"/>#}
       <table>
         <tr><td class="">Email <i class="fa fa-asterisk "></i></td><td><input type="text" name="email" /></td></tr>
         <tr><td class="">Full name <i class="fa fa-asterisk "></i></td><td><input type="text" name="name" /></td></tr>

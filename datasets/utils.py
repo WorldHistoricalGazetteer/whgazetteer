@@ -58,7 +58,7 @@ def downloader(request, *args, **kwargs):
     print('ajax == True')
     format=request.POST['format']
     download_task = make_download.delay(
-      {"username":user.username, "userid":user.id},
+      {"username":user.name, "userid":user.id},
       dsid=dsid,
       collid=collid,
       format=format,
@@ -1088,11 +1088,11 @@ def status_emailer(ds, task_name):
   try:
     tasklabel = 'Wikidata' if task_name=='wd' else 'WHG index'
     text_content="Greetings! A "+tasklabel+" reconciliation task for the dataset "+ds.title+" ("+ds.label+") " \
-                 "has been completed.\nMight be time to follow up with its owner, "+ds.owner.first_name+" "+ds.owner.last_name+ \
-                 "("+ds.owner.username+")."
+                 "has been completed.\nMight be time to follow up with its owner, "+ds.owner.name+ \
+                 "("+ds.owner.email+")."
     html_content="<h4>Greetings!</h4> <p>A "+tasklabel+" reconciliation task for the dataset <b>"+ds.title+" ("+ds.label+")</b> " \
-                 "has been completed.</p><p>Might be time to follow up with its owner, "+ds.owner.first_name+" "+ds.owner.last_name+ \
-                 " ("+ds.owner.username+").</p>"
+                 "has been completed.</p><p>Might be time to follow up with its owner, "+ds.owner.name+ \
+                 " ("+ds.owner.email+").</p>"
     if task_name == 'wd':
       html_content += "<p>A nudge to mention that reconciling to the WHG index is helpful & worthwhile.</p>"
     elif task_name == 'idx':

@@ -11,7 +11,7 @@ class ContactForm(forms.Form):
     name = forms.CharField(
         widget=forms.TextInput(attrs={'size': 50}),
         required=True)
-    username = forms.CharField(
+    name = forms.CharField(
         widget=forms.TextInput(attrs={'size': 50}),
         required=True)
     from_email = forms.EmailField(

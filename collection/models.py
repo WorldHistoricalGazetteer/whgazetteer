@@ -26,7 +26,7 @@ def collection_path(instance, filename):
 
 def user_directory_path(instance, filename):
   # upload to MEDIA_ROOT/user_<username>/<filename>
-  return 'user_{0}/{1}'.format(instance.owner.username, filename)
+  return 'user_{0}/{1}'.format(instance.owner.id, filename)
 
 def default_relations():
   return 'locale'.split(', ')
@@ -37,7 +37,7 @@ def default_omitted():
 
 class Collection(models.Model):
   owner = models.ForeignKey(settings.AUTH_USER_MODEL,
-                            related_name='collections', on_delete=models.CASCADE)
+      related_name='collections', on_delete=models.CASCADE)
   title = models.CharField(null=False, max_length=255)
   description = models.TextField(max_length=3000)
   keywords = ArrayField(models.CharField(max_length=50), null=True)

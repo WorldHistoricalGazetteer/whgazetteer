@@ -19,12 +19,11 @@
           <tr><td>Subject</td><td>{{ form.subject }}</td></tr>
           <tr><td>Message</td><td>{{ form.message }}</td></tr>
         </table>
-        <!--username: {{ form.username }}-->
         <p>Please type characters in this image 
           <span class="ml-2">{{ form.captcha }} <a class="captcha smaller" href="#">refresh</a></span>
         </p>
         {% if user.is_authenticated %}
-        <input type="hidden" name="username" value='{{ user.username }}'>
+        <input type="hidden" name="name" value='{{ user.name }}'>
         {% else %}
         <input type="hidden" name="username" value='Guest user'>
         {% endif %}

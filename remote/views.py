@@ -110,7 +110,8 @@ class PlaceViewSet(viewsets.ModelViewSet):
 
   def perform_create(self, serializer):
     """Create a new place..."""
-    ds = serializer.validated_data['dataset']
+    vdata = serializer.validated_data
+    ds = vdata['dataset']
     dslabel = ds.label
     if ds.places.count() > 0:
       last_srcid = ds.places.order_by('-id').first().src_id; print('last_srcid', last_srcid)
@@ -125,9 +126,12 @@ class PlaceViewSet(viewsets.ModelViewSet):
       # no places yet; generate new, starting at 1000
       srcid=dslabel+'_1000'
 
-    cc_in = serializer.validated_data['ccodes']
-    geoms = serializer.validated_data['geoms']
-    minmax = serializer.validated_data['minmax']
+    cc_in = vdata['ccodes']
+    if 'geoms' in vdata:
+      geoms = vdata['geoms']
+    else:
+      geoms = []
+    minmax = vdata['minmax']
     if len(cc_in) == 0 and len(geoms) > 0:
       cc_out = datasets.utils.ccodesFromGeom(geoms[0]['jsonb'])
     else:

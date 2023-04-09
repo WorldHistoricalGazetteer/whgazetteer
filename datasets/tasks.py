@@ -55,8 +55,8 @@ def testy():
 def make_download(request, *args, **kwargs):
   # TODO: integrate progress_recorder for better progress bar in GUI
   # progress_recorder = ProgressRecorder(self) #accessed?
-  username = request['username'] or "AnonymousUser"
-  userid = request['userid'] or User.objects.get(username="AnonymousUser").id
+  name = request['name'] or "AnonymousUser"
+  userid = request['userid'] or User.objects.get(email="AnonymousUser").id
   req_format = kwargs['format']
   dsid = kwargs['dsid'] or None
   collid = kwargs['collid'] or None
@@ -75,7 +75,7 @@ def make_download(request, *args, **kwargs):
     colltitle = coll.title
     qs = coll.places.all()
     req_format = 'lpf'
-    fn = 'media/downloads/'+username+'_'+collid+'_'+date+'.json'
+    fn = 'media/downloads/'+str(userid)+'_'+str(collid)+'_'+date+'.json'
     outfile= open(fn, 'w', encoding='utf-8')
     features = []
     for p in qs:
@@ -132,7 +132,7 @@ def make_download(request, *args, **kwargs):
 
 
       # name and open csv file for writer
-      fn = 'media/downloads/'+username+'_'+dslabel+'_'+date+'.tsv'
+      fn = 'media/downloads/'+userid+'_'+dslabel+'_'+date+'.tsv'
       csvfile = open(fn, 'w', newline='', encoding='utf-8')
       writer = csv.writer(csvfile, delimiter='\t', quotechar='', quoting=csv.QUOTE_NONE)
 
@@ -198,7 +198,7 @@ def make_download(request, *args, **kwargs):
     else:
       print('building lpf file')
       # make file name
-      fn = 'media/downloads/'+username+'_'+dslabel+'_'+date+'.json'
+      fn = 'media/downloads/'+userid+'_'+dslabel+'_'+date+'.json'
       outfile = open(fn, 'w', encoding='utf-8')
       features = []
       for p in qs:
@@ -234,7 +234,7 @@ def make_download(request, *args, **kwargs):
       # category, logtype, "timestamp", subtype, note, dataset_id, user_id
       category = 'dataset',
       logtype = 'ds_download',
-      note = {"format":req_format, "username":username},
+      note = {"format":req_format, "username":name},
       dataset_id = dsid,
       user_id = userid
     )
@@ -245,7 +245,7 @@ def make_download(request, *args, **kwargs):
 
 
 @shared_task(name="task_emailer")
-def task_emailer(tid, dslabel, username, email, counthit, totalhits, test):
+def task_emailer(tid, dslabel, name, email, counthit, totalhits, test):
   # TODO: sometimes a valid tid is not recognized (race?)
   time.sleep(5)
   try:
@@ -254,24 +254,24 @@ def task_emailer(tid, dslabel, username, email, counthit, totalhits, test):
       'Getty TGN' if task.task_name.endswith('tgn') else 'WHGazetteer'
     if task.status == "FAILURE":
       fail_msg = task.result['exc_message']
-      text_content="Greetings "+username+"! Unfortunately, your "+tasklabel+" reconciliation task has completed with status: "+ \
+      text_content="Greetings "+name+"! Unfortunately, your "+tasklabel+" reconciliation task has completed with status: "+ \
         task.status+". \nError: "+fail_msg+"\nWHG staff have been notified. We will troubleshoot the issue and get back to you."
-      html_content_fail="<h3>Greetings, "+username+"</h3> <p>Unfortunately, your <b>"+tasklabel+"</b> reconciliation task for the <b>"+dslabel+"</b> dataset has completed with status: "+ task.status+".</p><p>Error: "+fail_msg+". WHG staff have been notified. We will troubleshoot the issue and get back to you soon.</p>"
+      html_content_fail="<h3>Greetings, "+name+"</h3> <p>Unfortunately, your <b>"+tasklabel+"</b> reconciliation task for the <b>"+dslabel+"</b> dataset has completed with status: "+ task.status+".</p><p>Error: "+fail_msg+". WHG staff have been notified. We will troubleshoot the issue and get back to you soon.</p>"
     elif test == 'off':
-      text_content="Greetings "+username+"! Your "+tasklabel+" reconciliation task has completed with status: "+ \
+      text_content="Greetings "+name+"! Your "+tasklabel+" reconciliation task has completed with status: "+ \
         task.status+". \n"+str(counthit)+" records got a total of "+str(totalhits)+" hits.\nRefresh the dataset page and view results on the 'Reconciliation' tab."
-      html_content_success="<h3>Greetings, "+username+"</h3> <p>Your <b>"+tasklabel+"</b> reconciliation task for the <b>"+dslabel+"</b> dataset has completed with status: "+ task.status+". "+str(counthit)+" records got a total of "+str(totalhits)+" hits.</p>" + \
+      html_content_success="<h3>Greetings, "+name+"</h3> <p>Your <b>"+tasklabel+"</b> reconciliation task for the <b>"+dslabel+"</b> dataset has completed with status: "+ task.status+". "+str(counthit)+" records got a total of "+str(totalhits)+" hits.</p>" + \
         "<p>View results on the 'Reconciliation' tab (you may have to refresh the page).</p>"
     else:
-      text_content="Greetings "+username+"! Your "+tasklabel+" TEST task has completed with status: "+ \
+      text_content="Greetings "+name+"! Your "+tasklabel+" TEST task has completed with status: "+ \
         task.status+". \n"+str(counthit)+" records got a total of "+str(totalhits)+".\nRefresh the dataset page and view results on the 'Reconciliation' tab."
-      html_content_success="<h3>Greetings, "+username+"</h3> <p>Your <b>TEST "+tasklabel+"</b> reconciliation task for the <b>"+dslabel+"</b> dataset has completed with status: "+ task.status+". "+str(counthit)+" records got a total of "+str(totalhits)+" hits.</p>" + \
+      html_content_success="<h3>Greetings, "+name+"</h3> <p>Your <b>TEST "+tasklabel+"</b> reconciliation task for the <b>"+dslabel+"</b> dataset has completed with status: "+ task.status+". "+str(counthit)+" records got a total of "+str(totalhits)+" hits.</p>" + \
         "<p>View results on the 'Reconciliation' tab (you may have to refresh the page).</p>"
   except:
     print('task lookup in task_emailer() failed on tid', tid, 'how come?')
-    text_content="Greetings "+username+"! Your reconciliation task for the <b>"+dslabel+"</b> dataset has completed.\n"+ \
+    text_content="Greetings "+name+"! Your reconciliation task for the <b>"+dslabel+"</b> dataset has completed.\n"+ \
       str(counthit)+" records got a total of "+str(totalhits)+" hits.\nRefresh the dataset page and view results on the 'Reconciliation' tab."
-    html_content_success="<h3>Greetings, "+username+"</h3> <p>Your reconciliation task for the <b>"+dslabel+"</b> dataset has completed. "+str(counthit)+" records got a total of "+str(totalhits)+" hits.</p>" + \
+    html_content_success="<h3>Greetings, "+name+"</h3> <p>Your reconciliation task for the <b>"+dslabel+"</b> dataset has completed. "+str(counthit)+" records got a total of "+str(totalhits)+" hits.</p>" + \
       "<p>View results on the 'Reconciliation' tab (you may have to refresh the page).</p>"
 
   subject, from_email = 'WHG reconciliation result', 'whg@kgeographer.org'
@@ -923,7 +923,7 @@ def align_wdlocal(pk, **kwargs):
   task_emailer.delay(
     task_id,
     ds.label,
-    user.username,
+    user.name,
     user.email,
     count_hit,
     total_hits,
@@ -1379,7 +1379,7 @@ def align_idx(pk, *args, **kwargs):
   task_emailer.delay(
     task_id,
     ds.label,
-    user.username,
+    user.name,
     user.email,
     count_hit,
     total_hits,
@@ -1650,7 +1650,7 @@ def align_tgn(pk, *args, **kwargs):
   task_emailer.delay(
     task_id,
     ds.label,
-    user.username,
+    user.name,
     user.email,
     count_hit,
     total_hits

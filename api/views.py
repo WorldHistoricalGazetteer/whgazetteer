@@ -30,9 +30,10 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.reverse import reverse
 from rest_framework.views import APIView
 from accounts.permissions import IsOwnerOrReadOnly
-from api.serializers import (UserSerializer, DatasetSerializer, PlaceSerializer,
-                             PlaceTableSerializer, PlaceGeomSerializer, AreaSerializer,
-                             FeatureSerializer, LPFSerializer, PlaceCompareSerializer)
+from api.serializers import (
+  UserSerializer, DatasetSerializer, PlaceSerializer,
+  PlaceTableSerializer, PlaceGeomSerializer, AreaSerializer,
+  FeatureSerializer, LPFSerializer, PlaceCompareSerializer)
 from areas.models import Area
 from collection.models import Collection
 from datasets.models import Dataset
@@ -839,11 +840,7 @@ class AreaListView(View):
       area_list.append(area)
       
     return JsonResponse(area_list, safe=False)
-  
-"""
-  areas/
 
-"""
 # simple objects for dropdown
 class AreaListAllView(View):
   @staticmethod
