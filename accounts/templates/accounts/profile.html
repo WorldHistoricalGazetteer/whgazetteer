@@ -1,186 +1,187 @@
 {% extends 'main/base.html' %}
 {% block extra_head %}
     <style>
-        th, td { padding: 2px 10px;}
+        th, td {
+            padding: 2px 10px;
+        }
     </style>
 {% endblock %}
 {% block content %}
 
-<div class="container w-100">
-{#  <div class="d-flex mt-3">#}
-  <div class="d-flex justify-content-center mt-3 w-100">
-  <form id="profile_form" method="POST" action="{% url 'accounts:profile' %}" enctype="multipart/form-data">
-  {% csrf_token %}
-  {{ user_form.errors }}
-  {{ profile_form.errors }}
-  {{ user_form.non_field_errors }}
-  {{ profile_form.non_field_errors }}
-  <h3 class="text-center">Dashboard</h3>
-  <div class="container row mt-3 w-100">
-      <div class="col-sm-6" id="dash_left">
-      <h5 class="ml-2 sharing-header">Profile
-        <span id="edit_link" class="small float-end float-end-padded"">
-          <a href="#"><i class="fas fa-edit linky fa-xs"></i></a>
+<div class="container">
+	<h3 class="text-center">Dashboard</h3>
+	<div class="row">
+    <div class="col-6" id="dash_left">
+			<form id="profile_form" method="POST" action="{% url 'accounts:profile' %}" enctype="multipart/form-data">
+	    {% csrf_token %}
+	    {{ user_form.errors }}
+	    {{ profile_form.errors }}
+	    {{ user_form.non_field_errors }}
+	    {{ profile_form.non_field_errors }}
+      <h5 class="attest-header">Profile
+        <span id="edit_link" class="small float-end float-end-padded">
+        <a href="#"><i class="fas fa-edit linky fa-xs"></i></a>
         </span>
-    </h5>
+      </h5>
       <span class="hidden">{{ user_form.email }}</span>
       <span class="hidden">{{ user_form.password }}</span>
       <span class="hidden">{{ user_form.role }}</span>
       <table>
-        <tbody>
-          <tr>
-            <td class="float-right pr-3 strong">Login email</td>
-            <td>{{ user_form.email.value }}</td>
-          </tr>
-          <tr>
-              <td class="float-right pr-3 strong">Full name</td>
-              <td class="strong-red">{{ user_form.name.value }}</td>
-          </tr>
-          <tr>
-              <td class="float-right pr-3 strong">Affiliation</td>
-              <td>{{ user_form.affiliation.value }}</td>
-          </tr>
-          <tr>
-              <td class="float-right pr-3 strong">WHG role (id)</td>
-              <td class="ital">
-                  {% if user.is_superuser %}superuser{% else %}
-                  {{ user_form.role.value }}{% endif %} ({{ user.id }})
-              </td>
-          </tr>
-        </tbody>
-      </table>
-    <div id="edit_profile" class="hidden">
-      <table>
-        <tbody>
-          <tr>
-            <td class="float-right pr-3 strong">Email</td>
-            <td>{{ user_form.email.value }}</td>
-          </tr>
-          <tr><td class="float-right pr-3 strong">Name</td><td>{{ user_form.name }}</td></tr>
-          <tr><td class="float-right pr-3 strong">Affiliation</td><td>{{ user_form.affiliation }}</td></tr>
-    {#          <tr><td class="float-right pr-3 strong">Web page</td><td>{{ profile_form.webpage }}</td></tr>#}
-        </tbody>
-      </table>
-      <div class="text-center">
-        <input class="btn btn-primary btn-sm ml-3 mt-3" type="submit" value="Save" />
-        <span class="ml-2" style="vertical-align:bottom;"><a href="{% url 'accounts:profile' %}">Cancel</a></span>
-      </div>
-    </div> <!-- #editProfile -->
-    </div>
-      <div class="col-sm-6" id="dash_right">
-      <h5 class="ml-2 sharing-header">Content</h5>
-      <table>
+            <tbody>
+            <tr>
+                <td class="float-right pr-3 strong">Login email</td>
+                <td>{{ user_form.email.value }}</td>
+            </tr>
+            <tr>
+                <td class="float-right pr-3 strong">Full name</td>
+                <td class="strong-red">{{ user_form.name.value }}</td>
+            </tr>
+            <tr>
+                <td class="float-right pr-3 strong">Affiliation</td>
+                <td>{{ user_form.affiliation.value }}</td>
+            </tr>
+            <tr>
+                <td class="float-right pr-3 strong">WHG role (id)</td>
+                <td class="ital">
+                    {% if user.is_superuser %}superuser{% else %}
+                        {{ user_form.role.value }}{% endif %} ({{ user.id }})
+                </td>
+            </tr>
+            </tbody>
+        </table>
+      <div id="edit_profile" class="hidden">
+	      <hr/>
+        <table>
           <tbody>
           <tr>
-            <td class="pr-3 strong" style="vertical-align: top">System groups</td>
-            <td id="grouplist">
-              {% for g in context.groups %}
-                  <span class="ital">{{g.name}}</span><br/>
-              {% if not forloop.last %} {% endif %}{% endfor %}
-            </td>
-          </tr>
-          {% if user_form.role.value == 'group_leader' or user.is_superuser %}
-          <tr>
-              <td class="float-right pr-3 strong" style="vertical-align: top">Collection<br/>groups</td>
-              <td style="vertical-align: top;">
-                  {% for cg in user.collection_groups.all %}
-                      <a href="{% url 'collection:collection-group-update' id=cg.id %}">{{ cg.title }}</a>
-                      <span class="small">({{ cg.id }}; {{cg.members.count}} members)</span><br/>
-                  {% endfor %}
-              </td>
+            <td class="float-right pr-3 strong">Name</td>
+            <td>{{ user_form.name }}</td>
           </tr>
           <tr>
-            <td></td>
-            <td>
-                <p class="mt-3">
-                  <a href="{% url 'collection:collection-group-create' %}" id="a_creategroup">New collection group <i class="fas fa-plus-square linky"></i></a>
-                </p>
-            </td>
+	          <td class="float-right pr-3 strong">Affiliation</td>
+	          <td>{{ user_form.affiliation }}</td>
           </tr>
-          {% endif %}
-          {% if context.groups|length > 0 %}
-          {% endif %}
-          {% if context.owned|length > 0 %}
+          </tbody>
+        </table>
+        <div class="ps-2">
+          <input class="btn btn-primary btn-sm mt-3" type="submit" value="Save"/>
+          <span class="ms-2" style="vertical-align:bottom;">
+            <a href="{% url 'accounts:profile' %}">Cancel</a>
+          </span>
+        </div>
+      </div> <!-- #editProfile -->
+			</form>
+    </div>
+    <div class="col-6" id="dash_right">
+	    <h5 class="attest-header">Content</h5>
+	    <table class="w-100">
+        <tbody>
+        <tr>
+          <td class="pr-3 strong" style="vertical-align: top">System groups</td>
+          <td id="grouplist">
+            {% for g in context.groups %}
+              <span class="ital">{{ g.name }}</span><br/>
+              {% if not forloop.last %} {% endif %}
+            {% endfor %}
+          </td>
+        </tr>
+        {% if user_form.role.value == 'group_leader' or user.is_superuser %}
+        <tr style="background-color: aliceblue;">
+          <td class="float-right pr-3 strong" style="vertical-align: top">Collection<br/>groups
+          </td>
+          <td style="vertical-align: top;">
+            {% for cg in user.collection_groups.all %}
+              <a href="{% url 'collection:collection-group-update' id=cg.id %}">{{ cg.title }}</a>
+              <span class="small">({{ cg.id }}; {{ cg.members.count }} members)</span><br/>
+            {% endfor %}
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>
+            <p class="mt-3">
+                <a href="{% url 'collection:collection-group-create' %}" id="a_creategroup">New
+                    collection group <i class="fas fa-plus-square linky"></i>
+                </a>
+            </p>
+          </td>
+        </tr>
+        {% endif %}
+        {% if context.groups|length > 0 %}
+        {% endif %}
+        {% if context.owned|length > 0 %}
           <tr>
             <td class="pr-3 strong" style="vertical-align: top;">Datasets</td>
             <td>
-                {% for ds in context.owned %}
-                    <b><a href="{% url 'datasets:ds_summary' ds.0 %}">{{ds.1}}</a></b> ({{ds.0}}, {{ds.2}})<br/>
-                {% endfor %}
-                {% for ds in context.collabs %}
-                    <b><a href="{% url 'datasets:ds_summary' ds.0 %}">{{ds.1}}</a></b> ({{ds.0}}, {{ds.2}})<br/>
-                {% endfor %}
+              {% for ds in context.owned %}
+                  <b><a href="{% url 'datasets:ds_summary' ds.0 %}">{{ ds.1 }}</a></b> ({{ ds.0 }}
+                  , {{ ds.2 }})<br/>
+              {% endfor %}
+              {% for ds in context.collabs %}
+                  <b><a href="{% url 'datasets:ds_summary' ds.0 %}">{{ ds.1 }}</a></b> ({{ ds.0 }}
+                  , {{ ds.2 }})<br/>
+              {% endfor %}
             </td>
           </tr>
-          {% endif %}
-          </tbody>
-      </table>
-    </div>
-  </div>
-  <!-- non-changeable fields -->
-
-  </form>
-  </div>
-</div>
+        {% endif %}
+        </tbody>
+    </table>
+    </div> {# right #}
+	</div> {# row #}
+</div> {# container #}
 
 <script type="text/javascript">
-	{#$("#a_creategroup").click(function(){#}
-	{#	console.log('open a GroupCreate form now')#}
-    {#    $("#create_cancel").toggle()#}
-	{#	$("#groupform").show().css("display:inline-flex;")#}
-	{# })#}
-    $("#edit_link").click(function(){
+    $("#edit_link").click(function () {
         $("#view_profile").toggle()
         $("#edit_profile").toggle()
         $("#edit_link").toggle()
     })
-	$("#b_addgroup").click(function(){
+    $("#b_addgroup").click(function () {
         console.log('adding group')
-        {#create_group()#}
-	})
-	$(".a_addmembers").click(function(){
-        console.log('something simple for adding members to '+$(this).data('id'))
-	})
-	function create_group() {
-      var formData = new FormData()
-      formData.append('ownerid', {{ user.id }} )
-      formData.append('title', $("#group_title").val())
-      formData.append('description', "is this required?")
-      formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
-      $.ajax({
-          type: 'POST',
-          enctype: 'multipart/form-data',
-          url: '/collections/create_collection_group/',
-          processData: false,
-          contentType: false,
-          cache: false,
-          data: formData,
-          success: function (response) {
-              if(response.result == 'dupe'){
-                alert('That group name is taken')
-                $("input.action").prop('checked',false)
-              } else {
-                res = response
-                if (res.status == "dupe") {
-                    alert('that name is taken, try another')
-                } else {
-                // have to build an el here and add a click event to it
-                    el = $('<a href="#" class="a_addmembers">' + res.name + '</a> (' + res.id + ')')
-                    el.click(function(){
-                        console.log($(this).text())
-                    })
-                    $("#grouplist").append(el)
-		          }
-              $("#group_name").val('')
-              // $("#added_flash").fadeIn().delay(2000).fadeOut()
-              console.log('group created, click its name in group list to add members', res)
-              $("#groupform").hide()
-              }
-          }
-      })
-      $("#addtocoll").hide()
-      $("#linkform_popup").hide()
-  }
+    })
+    $(".a_addmembers").click(function () {
+        console.log('something simple for adding members to ' + $(this).data('id'))
+    })
 
-</script>
+    function create_group() {
+        var formData = new FormData()
+        formData.append('ownerid', {{ user.id }})
+        formData.append('title', $("#group_title").val())
+        formData.append('description', "is this required?")
+        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+        $.ajax({
+            type: 'POST',
+            enctype: 'multipart/form-data',
+            url: '/collections/create_collection_group/',
+            processData: false,
+            contentType: false,
+            cache: false,
+            data: formData,
+            success: function (response) {
+                if (response.result == 'dupe') {
+                    alert('That group name is taken')
+                    $("input.action").prop('checked', false)
+                } else {
+                    res = response
+                    if (res.status == "dupe") {
+                        alert('that name is taken, try another')
+                    } else {
+                        // have to build an el here and add a click event to it
+                        el = $('<a href="#" class="a_addmembers">' + res.name + '</a> (' + res.id + ')')
+                        el.click(function () {
+                            console.log($(this).text())
+                        })
+                        $("#grouplist").append(el)
+                    }
+                    $("#group_name").val('')
+                    // $("#added_flash").fadeIn().delay(2000).fadeOut()
+                    console.log('group created, click its name in group list to add members', res)
+                    $("#groupform").hide()
+                }
+            }
+        })
+        $("#addtocoll").hide()
+        $("#linkform_popup").hide()
+    }
+	</script>
 {% endblock %}
