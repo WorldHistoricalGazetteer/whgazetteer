@@ -88,7 +88,7 @@
                       ({{ t.date_done|date:"d-M-Y, H:i (e)" }}; elapsed: {{ t.result|get:"elapsed"|safe }})</span>
                     </p>
                     <p><b>ID</b>: {{ t.task_id }}</p>
-	                  {% if t.task_name != 'align_idx' and user in  ds.owners %}
+	                  {% if t.task_name != 'align_idx' and user in ds.owners or user.is_superuser %}
                       <p id="{{ t.task_name }}">
                       <a class="confirm-del-all" data-id={{t.task_id}} href="{% url 'datasets:task-delete' tid=t.task_id scope='task' %}">Delete task & hits, clear matches {% fontawesome_icon 'trash' color='#ff0000' %}
                       </a><br/>
@@ -114,11 +114,13 @@
                     </p>
                     <p class="mb-0">Remaining to review:
 											{# display total remaining only to owners #}
-	                    {% if user in ds.owners %}<span id="{{t.task_id}}_remaining">nn</span>{% endif %}
+	                    {% if user in ds.owners or user.is_superuser %}
+		                    <span id="{{t.task_id}}_remaining">nn</span>
+	                    {% endif %}
                     </p>
                     <span id="spinner"></span>
                     <ul>
-                      {% if t.result|get:"pass0" > 0 and t.task_name != "align_idx" and user in ds.owners %}
+                      {% if t.result|get:"pass0" > 0 and t.task_name != "align_idx" and user in ds.owners or user.is_superuser %}
                         <li id="pass0_{{t.task_id}}" class="li-left">Pass 0 (matched links): 
                         <span class="mx-2 strong" id='{{t.task_id}}_0'>nn</span> 
                             <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass0' %}">review</a>

@@ -706,8 +706,9 @@ def ds_recon(request, pk):
     # previous successful task of this type?
     #   wdlocal? archive previous, scope = unreviewed
     #   idx? scope = unindexed
-    previous = ds.tasks.filter(task_name='align_'+auth,status='SUCCESS')
+    previous = ds.tasks.filter(task_name='align_'+auth, status='SUCCESS')
     prior = request.POST['prior'] if 'prior' in request.POST else 'na'
+    rerun = 'rerun' in request.POST
     if previous.count() > 0:
       if auth == 'idx':
         scope = "unindexed"
@@ -715,7 +716,7 @@ def ds_recon(request, pk):
         # get its id and archive it
         tid = previous.first().task_id
         task_archive(tid, prior)
-        scope = 'unreviewed'
+        scope = 'rerun' if rerun else 'unreviewed'
         print('recon(): archived previous task')
         print('ds_recon(): links & geoms were '+ ('kept' if prior=='keep' else 'zapped'))
     else:
@@ -725,6 +726,7 @@ def ds_recon(request, pk):
 
     print('ds_recon() scope', scope)
     print('ds_recon() auth', auth)
+    # return
     # which task? wdlocal, tgn, idx, whg (future)
     func = eval('align_'+auth)
 

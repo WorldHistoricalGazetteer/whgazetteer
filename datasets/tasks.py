@@ -477,7 +477,7 @@ def normalize(h, auth, language=None):
     # hit['_source'] keys(): ['id', 'type', 'modified', 'descriptions', 'claims',
     # 'sitelinks', 'variants', 'minmax', 'types', 'location']
     try:
-      print('h in normalize',h)
+      # print('h in normalize',h)
       # TODO: do it in index?
       variants=h['variants']
       title = wdTitle(variants, language)
@@ -616,6 +616,7 @@ from align_wdlocal()
 
 """
 def es_lookup_wdlocal(qobj, *args, **kwargs):
+  print('qobj', qobj)
   #bounds = {'type': ['userarea'], 'id': ['0']}
   bounds = kwargs['bounds']
   hit_count = 0
@@ -641,10 +642,15 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
   has_bounds = bounds['id'] != ['0']
   has_geom = 'geom' in qobj.keys()
   has_countries = len(countries) > 0
+  fclass_count = len(qobj["fclasses"])
+  print('fclass_count', fclass_count)
+
   if has_bounds:
     area_filter = get_bounds_filter(bounds, 'wd')
   if has_geom:
     # qobj['geom'] always a polygon hull
+    # TODO: geo_distance filter may be better
+    # qobj['geom'] currently always a computed hull from utils.hully()
     shape_filter = { "geo_shape": {
       "location": {
         "shape": {
@@ -654,7 +660,7 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
     }}
   if has_countries:
     countries_match = {"terms": {"claims.P17":countries}}
-  
+
   # prelim query: any authid matches?
   # can be accepted without review
   # incoming qobj['authids'] might include
@@ -693,6 +699,15 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
   if has_geom:
     # shape_filter is polygon hull ~100km diameter
     qbase['query']['bool']['filter'].append(shape_filter)
+    # TODO: if geom is point, add sort
+    # qbase["sort"] = [
+    #   {
+    #     "_geo_distance": {
+    #       "order": "asc",
+    #       "repr_point":
+    #     }
+    #   }
+    # ]
     if has_countries:
       qbase['query']['bool']['should'].append(countries_match)
   elif has_countries:
@@ -704,17 +719,21 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
     if has_countries:
       qbase['query']['bool']['should'].append(countries_match)
 
-  
-  # q1 = qbase + types
+  # q1 = qbase + types in must IF ANY
+  # q1 = qbase + fclasses in should IF ANY, *for weight*?
   q1 = deepcopy(qbase)
-  q1['query']['bool']['must'].append(    
-    {"terms": {"types.id":qtypes}})
-
-  # add fclasses if any, drop types; geom if any remains
-  q2 = deepcopy(qbase)
+  if len(qtypes) > 0:
+    q1['query']['bool']['must'].append({"terms": {"types.id":qtypes}})
   if len(qobj['fclasses']) > 0:
+    q1['query']['bool']['shoould'].append({"terms": {"fclasses":qobj['fclasses']}})
+  # print('q1', q1)
+
+  # qbase
+  q2 = deepcopy(qbase)
+  if fclass_count > 0:
     q2['query']['bool']['must'].append(
       {"terms": {"fclasses":qobj['fclasses']}})
+  # print('q2', q2)
 
   # /\/\/\/\/\/
   # pass0 (q0): 
@@ -732,12 +751,11 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
       hit['pass'] = 'pass0'
       result_obj['hits'].append(hit)
   elif len(hits0) == 0:
-    #print('q0 (no hits)', qobj)
     # /\/\/\/\/\/
     # pass1 (q1): 
     # must[name, placetype]; spatial filter
     # /\/\/\/\/\/
-    #print('q1',q1)
+    print('no q0 hits...q1',q1)
     try:
       res1 = es.search(index="wd", body = q1)
       hits1 = res1['hits']['hits']
@@ -752,9 +770,9 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
         result_obj['hits'].append(hit)
     elif len(hits1) == 0:
       # /\/\/\/\/\/
-      # pass2: remove type, add fclasses
+      # pass2: remove type; qbase only
       # /\/\/\/\/\/  
-      #print('q1: no hits',q1)
+      print('no q1 hits...q2',q2)
       try:
         res2 = es.search(index="wd", body = q2)
         hits2 = res2['hits']['hits']
@@ -769,7 +787,6 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
           result_obj['hits'].append(hit)
       elif len(hits2) == 0:
         result_obj['missed'] = str(qobj['place_id']) + ': ' + qobj['title']
-        #print('q2: no hits',q2)
   result_obj['hit_count'] = hit_count
   return result_obj
 
@@ -788,7 +805,7 @@ def align_wdlocal(pk, **kwargs):
   bounds = kwargs['bounds']
   scope = kwargs['scope']
   print('kwargs from align_wdlocal() task', kwargs)
-  #bounds = {'type': ['userarea'], 'id': ['0']}
+  # return
   language = kwargs['lang']
   hit_parade = {"summary": {}, "hits": []}
   [nohits,wdlocal_es_errors,features] = [[],[],[]]
@@ -798,12 +815,22 @@ def align_wdlocal(pk, **kwargs):
   test = 'off'
 
   # queryset depends on 'scope'
-  qs = ds.places.all() if scope == 'all' else \
-    ds.places.filter(~Q(review_wd = 1))
-  
+  # 0=hits:unreviewed, 1=hits:reviewed, 2=hits:deferred, null=no hits
+  # rerun hot permits admins to rerun align_wdlocal() post-fix for types (10 Apr 2023)
+  if scope == 'all':
+    qs = ds.places.all()
+  elif scope == 'rerun':
+    # include everything that didn't have a successful match previously
+    qs = ds.places.filter(Q(review_wd__in=[0,2]) | Q(review_wd__isnull=True) |Q(flag =True))
+  else:
+    # everything unreviewed and deferred; skip records that had no prior hits (NULLs)
+    qs = ds.places.filter(~Q(review_wd__in=[0,2]))
+
   print('wtf? scope, count',scope,qs.count())
+  # return
+
   for place in qs:
-    print('review_wd',place.review_wd)
+    # print('review_wd',place.review_wd)
     #place = get_object_or_404(Place, pk=6596036)
     # build query object
     qobj = {"place_id":place.id,
@@ -873,6 +900,7 @@ def align_wdlocal(pk, **kwargs):
 
       count_hit +=1
       total_hits += len(result_obj['hits'])
+      print("result_obj['hits']", result_obj['hits'])
       for hit in result_obj['hits']:
         #print('pre-write hit', hit)
         if hit['pass'] == 'pass0': 

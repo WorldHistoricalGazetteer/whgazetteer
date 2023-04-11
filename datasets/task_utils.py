@@ -24,42 +24,6 @@ class HitRecord(object):
     import json
     return json.loads(json.dumps(self.__dict__,indent=2))
 
-def bestParent(qobj, flag=False):
-  # applicable for tgn only
-  best = []
-  #print('qobj in bestParent',qobj)
-  # merge parent country/ies & parents
-  if len(qobj['countries']) > 0 and qobj['countries'][0] != '':
-    for c in qobj['countries']:
-      best.append(parents.ccodes[0][c.upper()]['tgnlabel'])
-  if len(qobj['parents']) > 0:
-    for p in qobj['parents']:
-      best.append(p)
-  if len(best) == 0:
-    best = ['World']
-  return best
-
-# wikidata Qs from ccodes
-#TODO: consolidate hashes
-def getQ(arr,what):
-  #print('arr,what',arr, what)
-  qids=[]
-  if what == 'ccodes':
-    from datasets.static.hashes.parents import ccodes
-    for c in arr:
-      if c.upper() in ccodes[0]:
-        qids.append('wd:'+ccodes[0][c.upper()]['wdid'].upper())
-  elif what == 'types':
-    if len(arr) == 0:
-      qids.append('wd:Q486972')
-    for t in arr:
-      if t in aat_q.qnums:
-        for q in aat_q.qnums[t]:
-          qids.append('wd:'+q)
-      else:
-        qids.append('wd:Q486972')
-  return list(set(qids))
-
 
 def parse_wkt(g):
   #print('wkt',g)

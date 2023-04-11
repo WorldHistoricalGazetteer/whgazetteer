@@ -72,13 +72,6 @@
                     name="recon" value="idx">WHG accession (reconcile, index)
                 </label> <span class="float-right">test only? <input type="checkbox" name="test" ></span>
 								<br/>
-								{#	test reconcile against whg index; no writes #}
-                {% comment %}
-	              <label class="form-check-label text-secondary" for="t_whg">
-	                <input type="radio" class="form-check-input" id="t_whg"
-	                  name="recon" value="t_whg">WHG index subset (reports results, no writes)
-	              </label>
-	              {% endcomment %}
                 <div id="data_limiter" class="hidden">
 	                <select id="select_colls" name="collection" class="custom-select-sm" style="width:auto;">
 		                <option value="0"><i>Limit to collection</i></option>
@@ -118,15 +111,21 @@
             <div class="form-check">
               <label class="form-check-label" for="r_wdlocal">
                 <input type="radio" class="form-check-input r_wd" id="r_wdlocal"
-                  name="recon" value="wdlocal" checked>Wikidata (wdlocal) <span class="ml-2 font-italic small">estimated time: {{ ds.numrows|time_estimate }}</span>
+                  name="recon" value="wdlocal" checked> Wikidata (wdlocal)
+	              <span class="ml-2 font-italic small">estimated time: {{ ds.numrows|time_estimate }}</span>
               </label>
               {% if msg_wdlocal %}
                 <div id="wdlocal_tasks" class="smaller">
                   <div class="mt-0 smaller radiodiv">
                   {{ msg_wdlocal.msg|safe }}
                   {% if msg_wdlocal.type == 'inprogress' %}
-                  <label class="mb-0"><input type="radio" name="prior"  value="keep" id="r_keep_wd"> keep prior match results</label>
-                  <label class="mb-0"><input type="radio" name="prior" value="zap"> delete prior match results</label>
+                  <label class="mb-0">
+	                  <input type="radio" name="prior"  value="keep" id="r_keep_wd"> keep prior match results</label>
+                  <label class="mb-0">
+	                  <input type="radio" name="prior" value="zap"> delete prior match results</label>
+                  {% if user.is_superuser %}
+                  <label class="mb-0 ml-2">
+	                  <input type="checkbox" name="rerun"> smart rerun</label>{% endif %}
                   {% endif %}
                   </div>
                 </div>
@@ -137,7 +136,9 @@
               <div id="geo_constraint" class="mt-2">
                 <hr/>
                 <div class="mb-2">
-                  <p class="font-weight-bold">Geographic bounds <span class="help-matches" data-id="geo_bounds">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
+                  <p class="font-weight-bold">Geographic bounds
+	                  <span class="help-matches" data-id="geo_bounds">
+		                  {% fontawesome_icon 'question-circle' color='#993333' %}</span>
                   </p>
                   <p>
                     <select id="select_region" name="region" class="custom-select-sm" style="width:auto;">
@@ -198,7 +199,9 @@
         </div> <!-- recon_result -->
       </div> <!-- row -->
       {% else %}
-        <div><p class="pl-3 text-danger"><b>Sorry, reconciliation tasks can only be initiated by the dataset owner.</b></p></div>
+        <div><p class="pl-3 text-danger">
+	        <b>Sorry, reconciliation tasks can only be initiated by the dataset owner.</b></p>
+        </div>
       {% endif %}
       </form>
       <div class="selector py-3"><div id="helpme"></div></div>

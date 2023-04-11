@@ -908,7 +908,9 @@ def hully(g_list):
     longs = list(c[0] for c in flatten(coll.coords))
     try:
       if len([i for i in longs if i >= 175]) == 0:
-        hull = hull.buffer(1.4) # ~100km radius
+        hull = hull.buffer(.4) # ~50 km 11 Apr 2023
+        # hull = hull.buffer(1) #
+        # hull = hull.buffer(1.4) # ~100km radius ??
       else:
         hull = hull.buffer(0.1)
     except:
@@ -997,14 +999,16 @@ def getQ(arr,what):
       if c.upper() in ccodes[0]:
         qids.append('wd:'+ccodes[0][c.upper()]['wdid'].upper())
   elif what == 'types':
-    if len(arr) == 0:
-      qids.append('wd:Q486972')
+    # if no types, add human settlement
+    # if len(arr) == 0:
+    #   qids.append('wd:Q486972')
     for t in arr:
       if t in aat_q.qnums:
         for q in aat_q.qnums[t]:
           qids.append('wd:'+q)
-      else:
-        qids.append('wd:Q486972')
+      # else:
+      #   if type not found in mappings
+      #   qids.append('wd:Q486972')
   return list(set(qids))
 
 def roundy(x, direct="up", base=10):
