@@ -2590,7 +2590,7 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
 
       #
       # create user directory if necessary
-      userdir = r'media/user_'+user.id+'/'
+      userdir = r'media/user_'+str(user.id)+'/'
       if not Path(userdir).exists():
         os.makedirs(userdir)
 

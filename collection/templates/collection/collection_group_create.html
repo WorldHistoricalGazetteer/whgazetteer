@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="{% static 'js/tags/bootstrap-tagsinput-typeahead.css' %}"/>
   <style>
     textarea {width: 100%;}
+    #results_text {background-color: #dff0d8;}
   </style>{% endblock %}
 {% block content %}
 <div class="container">
@@ -64,12 +65,18 @@
 	        <form id="f_addusers">{% csrf_token %}
 	        <input class="form-control form-control-sm" id="userfile" type="file">
 	        <div id="addusers_info" class="form-text">
-	          To create multiple WHG users as group members, upload a .csv file with two columns: 'email', and 'full_name'.
+	          To create multiple WHG users as group members,
+		        upload a .csv file with two columns: 'email', and 'full_name'.
 	        </div>
-	        <button class="btn btn-sm btn-primary" type="submit">Upload</button>
-	        </form><hr/>
+	        <button id="b_upload" class="btn btn-sm btn-secondary" type="submit">Upload file</button>
+	        <span id="s_create" class="hidden small">
+		        <button id="b_create" class="btn btn-sm btn-primary" type="submit">Create users</button>
+		        <a id="a_cancel" class="ps-3" href="">Cancel</a>
+	        </span>
+
+	        </form>
+		      <div id="results_text" class="mb-3 small"></div><hr/>
 	      </div>
-	      <div id="results_text" class="mb-3" style="background-color: palegoldenrod"></div>
 	      <div id="members_content">
 	          <ul class="small">
 	          {% for m in members.all %}
@@ -96,10 +103,20 @@
 
 <script type="text/javascript">
   $(function() {
-      $("#l_addusers").click(function(){
-        $("#div_addusers").toggle()
-        {#$("#div_addusers").removeClass('hidden')#}
-      })
+    $("#l_addusers").click(function(e){
+      $("#div_addusers").toggle()
+    })
+
+		$('#f_addusers').submit(function() {
+	    if ($("#userfile").val() === "") {
+        alert('no file selected!');
+        return false;}
+		});
+
+    $("#create_cancel").click(function(){
+      $("b_create").toggle()
+      {#$("#div_addusers").removeClass('hidden')#}
+    })
   })
   // submit file with new users
   //
@@ -120,9 +137,19 @@
         cache: false,
         data: formData,
         success: function (data) {
-            html = data['new_users']
             console.log('data returned', data)
+		        if('errors' in data){
+              html = "Problem with file, please check format."
+		        }
+            users = data['new_users']
+            html='Add these?<br/><ul class="ps-3">'
+		        for(i = 0; i < users.length; ++i){
+                html += '<li>'+users[i][0] +'; '+ users[i][1] + '</li>'
+		        }
+            html += '</ul>'
             $("#results_text").html(html)
+		        $("#b_upload").hide()
+		        $("#s_create").fadeIn(1000)
         }
     })
   })

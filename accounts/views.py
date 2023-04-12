@@ -11,7 +11,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from accounts.forms import UserModelForm
 from collection.models import CollectionGroup
 from datasets.models import Dataset, DatasetUser
-import os, sys, tempfile
+from datasets.static.hashes import mimetypes_plus as mthash_plus
+import codecs, os, tempfile #,sys
 import pandas as pd
 
 def validate_usersfile(file):
@@ -25,17 +26,25 @@ def addusers(request):
     cgid = request.POST['cgid']
     cg=get_object_or_404(CollectionGroup, id=cgid)
     user = request.user.name
+    data = request.POST
+    context = {}
 
     # uploaded file
-    user_list = request.FILES['file']
+    file = request.FILES['file']
+    mimetype = file.content_type
     tempf, tempfn = tempfile.mkstemp()
 
+    # VALIDATION
+    fin = codecs.open(tempfn, 'r')
+    valid_mime = mimetype in mthash_plus.mimetypes
+    if not valid_mime:
+      raise('invalid mime')
     print('cg.title', cg.title)
     print('user', user)
     print('tempfn', tempfn)
     # return
     try:
-      for chunk in user_list.chunks():
+      for chunk in file.chunks():
         os.write(tempf, chunk)
     except:
       raise Exception("Problem with the input file %s" % request.FILES['file'])
@@ -43,30 +52,33 @@ def addusers(request):
       os.close(tempf)
     print('tempfn', tempfn)
 
-    # VALIDATION
-    # try:
-    #   vresult = validate_usersfile(tempfn)
-    # except:
-    #   print('validate_usersfile() failed:', sys.exc_info())
-    #
-    # # return errors to form
-    # if len(vresult['errors']) > 0:
-    #   errormsg = {"failed":{
-    #     "errors":vresult['errors']
-    #   }}
-    #   return JsonResponse(errormsg,safe=False)
+    fin = codecs.open(tempfn, 'r')
+    valid_mime = mimetype in mthash_plus.mimetypes
 
-    filename_new = 'user_' + user + '/' + user_list.name
-    df = pd.read_csv(tempfn, delimiter = ',')
+    text=codecs.open(tempfn, 'r')
+    header = codecs.open(tempfn, 'r').readlines()[0][:-1]
+    header = list(map(str.lower, header.split('\t' if '\t' in header else ',')))
+    # header = header.split('\t' if '\t' in header else ',')
+    list(map(str.lower, header))
+    print('text', text)
+    newusers = []
+    for l in text.readlines():
+      newusers.append(l.split(','))
+    # return
+    # filename_new = 'user_' + str(user.id) + '/' + file.name
+    # df = pd.read_csv(tempfn, delimiter = ',')
+
     # assume no header
     # emails = df['email'].tolist()
     # names = df['fullname'].tolist()
     # print('emails', emails)
     # print('names', names)
     interim = {'cg': cg.title,
-               'new_users': df.iloc[:,[0,1]].to_csv(),
+               'new_users': newusers,
+               # 'new_users': df.iloc[:,[0,1]].to_csv(),
                # 'new_users': df[['email', 'fullname']],
-               'count': len(df.index)
+               'count': len(newusers)
+               # 'count': len(df.index)
                }
 
     return JsonResponse(interim, safe=False)

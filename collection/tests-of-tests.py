@@ -10,6 +10,9 @@ user = User.objects.get(id=12) #another
 # get a user with role == group_leader
 leader = User.objects.get(id=6) #sage
 
+
+
+
 # create a place collection
 pcoll = Collection.objects.create(
 # owner, title, description, keywords, omitted, rel_keywords, creator, contact, webpage,
