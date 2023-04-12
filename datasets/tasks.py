@@ -725,7 +725,7 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
   if len(qtypes) > 0:
     q1['query']['bool']['must'].append({"terms": {"types.id":qtypes}})
   if len(qobj['fclasses']) > 0:
-    q1['query']['bool']['shoould'].append({"terms": {"fclasses":qobj['fclasses']}})
+    q1['query']['bool']['should'].append({"terms": {"fclasses":qobj['fclasses']}})
   # print('q1', q1)
 
   # qbase
@@ -826,8 +826,7 @@ def align_wdlocal(pk, **kwargs):
     # everything unreviewed and deferred; skip records that had no prior hits (NULLs)
     qs = ds.places.filter(~Q(review_wd__in=[0,2]))
 
-  print('wtf? scope, count',scope,qs.count())
-  # return
+  print('scope, count',scope,qs.count())
 
   for place in qs:
     # print('review_wd',place.review_wd)
