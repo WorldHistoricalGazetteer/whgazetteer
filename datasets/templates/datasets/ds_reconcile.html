@@ -120,17 +120,19 @@
                     </p>
                     <span id="spinner"></span>
                     <ul>
-                      {% if t.result|get:"pass0" > 0 and t.task_name != "align_idx" and user in ds.owners or user.is_superuser %}
-                        <li id="pass0_{{t.task_id}}" class="li-left">Pass 0 (matched links): 
+                      {% if t.result|get:"pass0" > 0 and t.task_name != "align_idx" and user in ds.owners%}
+{#                      {% if t.result|get:"pass0" > 0 and t.task_name != "align_idx" and user in ds.owners or user.is_superuser %}#}
+                        <li id="pass0_{{t.task_id}}" class="li-left">Pass 0 (matched links):
                         <span class="mx-2 strong" id='{{t.task_id}}_0'>nn</span> 
                             <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass0' %}">review</a>
                          <span class="pass0auto">
                           {% if t.task_name == 'align_idx'%}
-                          | <a href="{% url 'datasets:idx_pass0' tid=t.task_id %}">auto-accept</a>  
+                          | <a href="{% url 'datasets:idx_pass0' tid=t.task_id %}">auto-accept</a>
                           {% elif t.task_name == 'align_wdlocal'%}
-                          | <a href="{% url 'datasets:wd_pass0' tid=t.task_id %}">auto-accept</a> 
+                          | <a href="{% url 'datasets:wd_pass0' tid=t.task_id %}">auto-accept</a>
                           {% endif %}
-                         <span class="help-matches" data-id="auto-match">{% fontawesome_icon 'question-circle' color='#993333' %}</span></span>
+                         <span class="help-matches" data-id="auto-match">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
+                         </span>
                          </li>
                       {% elif t.task_name == "align_idx" %}
 	                      <li class="li-left">Passes 0, 1:

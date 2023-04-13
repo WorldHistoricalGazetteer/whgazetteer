@@ -131,7 +131,6 @@
             <p><strong>Place type(s)</strong>:
               {% for type in record.types.all %}
                 {{ type.jsonb.sourceLabel }} ({{ type.jsonb.label }});
-{#                {{ type.jsonb.sourceLabel }} ({{ type.jsonb.label.label }}); #}
               {% endfor %}</p>
             {% if record.links.all|length > 0 %}
             <p><strong>Links</strong>: 
