@@ -747,9 +747,9 @@
     mappy.setView(new L.LatLng(32, 12.6), 1);
 
     // mapbox tokens
-    var token_whg = '{{ mbtoken }}',
-      token_mb = '{{ mbtoken }}',
-      token_kg = '{{ mbtoken }}';
+    var token_whg = '{{ mbtoken }}'
+			{#,token_mb = '{{ mbtoken }}'#}
+      {#,token_kg = '{{ mbtoken }}';#}
 
   // style/tile urls
     var mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}',
@@ -758,19 +758,19 @@
 
     var satellite  = L.tileLayer(mbstyle_url, {
       id:'mapbox/satellite-streets-v11',
-      token:token_mb})
+      token:token_whg})
     var osm  = L.tileLayer(mbstyle_url, {
       id:'mapbox/light-v10',
-      token:token_mb})
+      token:token_whg})
 
-    // GL wrappers to display heatmaps
+    //
     mb_terrain = L.mapboxGL({
       style:'mapbox://styles/kgeographer/ckhf6o8yf07fw19qhbrm7f2q7',
-      accessToken:token_kg})
+      accessToken:token_whg})
 
     ne_global= L.mapboxGL({
       style:'mapbox://styles/kgeographer/ckidglq8l2nra19nzzbl995ue',
-      accessToken:token_kg}).addTo(mappy)
+      accessToken:token_whg}).addTo(mappy)
 
     var countryStyle = {
       "color": "yellow",

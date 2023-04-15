@@ -1,6 +1,7 @@
 # places.admin
 
 from django.contrib import admin
+from django.contrib.gis import admin as gisadmin
 from .models import *
 
 # appear in admin
@@ -25,8 +26,10 @@ class PlaceTypeAdmin(admin.ModelAdmin):
     list_display = ('place_id','jsonb')
 admin.site.register(PlaceType,PlaceTypeAdmin)
 
-class PlaceGeomAdmin(admin.ModelAdmin):
-    list_display = ('place_id','jsonb')
+class PlaceGeomAdmin(gisadmin.GeoModelAdmin):
+# class PlaceGeomAdmin(admin.ModelAdmin):
+    list_display = ('place_id','src_id', 'task_id')
+    fields = ("src_id", "geom", 'task_id')
 admin.site.register(PlaceGeom,PlaceGeomAdmin)
 
 admin.site.register(PlaceWhen)
