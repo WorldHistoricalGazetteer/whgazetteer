@@ -64,18 +64,17 @@
 	      <div id="div_addusers" class="mb-3">
 	        <form id="f_addusers">{% csrf_token %}
 	        <input class="form-control form-control-sm" id="userfile" type="file">
-	        <div id="addusers_info" class="form-text">
+	        <div id="addusers_info" class="form-text small mb-2">
 	          To create multiple WHG users as group members,
 		        upload a .csv file with two columns: 'email', and 'full_name'.
 	        </div>
-	        <button id="b_upload" class="btn btn-sm btn-secondary" type="submit">Upload file</button>
-	        <span id="s_create" class="hidden small">
-		        <button id="b_create" class="btn btn-sm btn-primary" type="submit">Create users</button>
+	        <button id="b_upload" class="btn btn-sm btn-primary" type="submit">Upload file</button>
+	        <span id="s_cancel" class="hidden small float-end pe-3">
+{#		        <button id="b_create" class="btn btn-sm btn-primary" type="submit">Create users</button>#}
 		        <a id="a_cancel" class="ps-3" href="">Cancel</a>
 	        </span>
-
 	        </form>
-		      <div id="results_text" class="mb-3 small"></div><hr/>
+		      <div id="results_text" class="my-2 small"></div><hr/>
 	      </div>
 	      <div id="members_content">
 	          <ul class="small">
@@ -100,9 +99,9 @@
     </div>
   </div> <!-- d-flex -->
 </div> <!-- container -->
-
 <script type="text/javascript">
   $(function() {
+    console.log('ls new users', !!localStorage.getItem("newusers"))
     $("#l_addusers").click(function(e){
       $("#div_addusers").toggle()
     })
@@ -125,32 +124,42 @@
     var formData = new FormData();
     formData.append('file', $('#userfile')[0].files[0]);
     formData.append('cgid', '{{ object.id }}');
+    formData.append('action', ($("#results_text").text() === '')?'upload':'addem');
+    formData.append('newusers', localStorage.getItem("newusers"));
     formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
-    console.log('ajax on submit file', $('#userfile')[0].files[0])
+    console.log('formData', formData)
     {##}
     $.ajax({
-        type: 'POST',
-        enctype: 'multipart/form-data',
-        url: '/accounts/addusers/',
-        processData: false,
-        contentType: false,
-        cache: false,
-        data: formData,
-        success: function (data) {
-            console.log('data returned', data)
-		        if('errors' in data){
-              html = "Problem with file, please check format."
-		        }
-            users = data['new_users']
-            html='Add these?<br/><ul class="ps-3">'
-		        for(i = 0; i < users.length; ++i){
-                html += '<li>'+users[i][0] +'; '+ users[i][1] + '</li>'
-		        }
-            html += '</ul>'
-            $("#results_text").html(html)
-		        $("#b_upload").hide()
-		        $("#s_create").fadeIn(1000)
+      type: 'POST',
+      enctype: 'multipart/form-data',
+      url: '/accounts/addusers/',
+      processData: false,
+      contentType: false,
+      cache: false,
+      data: formData,
+      success: function (data) {
+        console.log('data returned', data)
+        if (data['errors'].length >0) {
+          err = data['errors']
+          html = 'Problem(s) with file:<br/><ul class="ps-3">'
+          for (i = 0; i < err.length; ++i) {
+              html += '<li>' + err[i] + '</li>'
+          }
+          html += '</ul>'
+          $("#results_text").html(html)
+        } else {
+          users = data['add']
+	        localStorage.setItem("newusers", users);
+          html = 'Accounts to create:<br/><ul class="ps-3">'
+          for (i = 0; i < users.length; ++i) {
+              html += '<li>' + users[i][0] + '; ' + users[i][1] + '</li>'
+          }
+          html += '</ul>'
+          $("#results_text").html(html)
+          $("#b_upload").text('Submit')
+          $("#s_cancel").fadeIn(800)
         }
+      }
     })
   })
 

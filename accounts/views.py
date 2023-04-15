@@ -9,23 +9,67 @@ from django import forms
 from django.shortcuts import render, redirect, get_object_or_404
 
 from accounts.forms import UserModelForm
-from collection.models import CollectionGroup
+from collection.models import Collection, CollectionGroup, CollectionGroupUser
 from datasets.models import Dataset, DatasetUser
 from datasets.static.hashes import mimetypes_plus as mthash_plus
-import codecs, os, tempfile #,sys
+import codecs, os, re, sys, tempfile
 import pandas as pd
 
-def validate_usersfile(file):
-  print('validate_usersfile() file', file)
-  return
+# @login_required
+def validate_usersfile(tempfn):
+  print('validate_usersfile() tempfn', tempfn)
+  User = get_user_model()
+  # wd=os.getcwd()+'/_scratch/'
+  r_email = re.compile(r'([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+')
+  def emailValid(email):
+    return True if re.fullmatch(r_email, email) else False
+  result = {"status":'ok', "errors": [], "add": [], 'dupe': []}
+  # print('validate_usersfile()', fin, result)
+  import csv
+  with open(tempfn, newline='') as csvfile:
+    reader = csv.reader(csvfile, delimiter=',',
+                        skipinitialspace=True)
+    for i, row in enumerate(reader):
+      try:
+        print('i, row', i, row)
+        # delimited with comma? return for resubmit
+        if len(row) != 2:
+          result['errors'].append('row #'+str(i+1)+' not delimited with comma')
+          result['status'] = 'failed'
+          print(result)
+        else:
+          # got a list w/2 elements
+          # 1st term an email?
+          if not emailValid(row[0]):
+            result['errors'].append(
+              'invalid email on row #'+str(i+1)+': '+row[0])
+          # is name blank?
+          if row[1] == '':
+            result['errors'].append('no name for row #' + str(i+1))
+          if len(result['errors']) > 0:
+            result['status'] = 'failed'
+          else:
+            # no format errors, check if user exists
+            user = User.objects.filter(email=row[0])
+            if not user.exists():
+              result['add'].append(row)
+            else:
+              result['dupe'].append(row)
+      except:
+        raise
+  print('validate result', result)
+  return result
 
+@login_required
 def addusers(request):
   if request.method == 'POST':
+    action = request.POST['action'] # 'upload' or 'addem'
     print('addusers() request.POST', request.POST)
     print('addusers() request.FILES', request.FILES)
     cgid = request.POST['cgid']
     cg=get_object_or_404(CollectionGroup, id=cgid)
     user = request.user.name
+    print('user in addusers()::68')
     data = request.POST
     context = {}
 
@@ -33,55 +77,50 @@ def addusers(request):
     file = request.FILES['file']
     mimetype = file.content_type
     tempf, tempfn = tempfile.mkstemp()
-
-    # VALIDATION
-    fin = codecs.open(tempfn, 'r')
-    valid_mime = mimetype in mthash_plus.mimetypes
-    if not valid_mime:
-      raise('invalid mime')
-    print('cg.title', cg.title)
-    print('user', user)
-    print('tempfn', tempfn)
-    # return
+    # write it to a tmp location
     try:
       for chunk in file.chunks():
         os.write(tempf, chunk)
     except:
-      raise Exception("Problem with the input file %s" % request.FILES['file'])
+      raise Exception("Problem opening/writing input file")
     finally:
       os.close(tempf)
-    print('tempfn', tempfn)
 
-    fin = codecs.open(tempfn, 'r')
-    valid_mime = mimetype in mthash_plus.mimetypes
+    added_count = 0
 
-    text=codecs.open(tempfn, 'r')
-    header = codecs.open(tempfn, 'r').readlines()[0][:-1]
-    header = list(map(str.lower, header.split('\t' if '\t' in header else ',')))
-    # header = header.split('\t' if '\t' in header else ',')
-    list(map(str.lower, header))
-    print('text', text)
-    newusers = []
-    for l in text.readlines():
-      newusers.append(l.split(','))
-    # return
-    # filename_new = 'user_' + str(user.id) + '/' + file.name
-    # df = pd.read_csv(tempfn, delimiter = ',')
+    # VALIDATION
+    if action == 'upload':
+      # wd = os.getcwd() + '/_scratch/'
+      # tempfn = wd + 'newusers.csv'
+      # tempfn = wd+'badusers.csv'
+      print('addusers() tempfn', tempfn)
+      result = validate_usersfile(tempfn)
+      print('result in addusers()', result)
+    else:
+      # action == 'addem' -- create users
+      to_add = request.POST['newusers']
+      for u in to_add:
+        new_user = User.objects.create(
+          email = u[0],
+          name = u[1],
+          # email name reversed
+          password = re.match('^(.*)@', u[0]).group(1)[::-1]
+        )
+        new_user.save()
+      # add to CollectionGroup
+      cguser = CollectionGroupUser.objects.create(
+        role = 'normal',
+        collectiongroup = cg,
+        user=new_user
+      )
+      cguser.save()
+      added_count +=1
 
-    # assume no header
-    # emails = df['email'].tolist()
-    # names = df['fullname'].tolist()
-    # print('emails', emails)
-    # print('names', names)
-    interim = {'cg': cg.title,
-               'new_users': newusers,
-               # 'new_users': df.iloc[:,[0,1]].to_csv(),
-               # 'new_users': df[['email', 'fullname']],
-               'count': len(newusers)
-               # 'count': len(df.index)
-               }
+      result= {'status': 'added ' + str(added_count)+' users',
+               'users': [u[0] for u in to_add]}
 
-    return JsonResponse(interim, safe=False)
+    return JsonResponse(result, safe=False)
+
 
 @login_required
 @transaction.atomic

@@ -1,3 +1,5 @@
+import os
+
 from django.test import TestCase
 from django.conf import settings
 # Create your tests here.
@@ -9,8 +11,7 @@ User = get_user_model()
 user = User.objects.get(id=12) #another
 # get a user with role == group_leader
 leader = User.objects.get(id=6) #sage
-
-
+import os, codecs, re, json
 
 
 # create a place collection
