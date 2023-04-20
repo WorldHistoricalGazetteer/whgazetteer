@@ -112,10 +112,10 @@
             {% endfor %}
             <p><strong>WHG place id</strong>: {{ record.id }} </p>
             <p><strong>Source id</strong>: {{ record.src_id }}</p>
-            <p class="scroll100"><strong>Name variants</strong>:<i>
+            <p class="scroll100"><strong>Name variants</strong>:
               {% for name in record.names.all %}
                {{ name.jsonb.toponym }};
-              {% endfor %}</i></p>
+              {% endfor %}</p>
             {% if countries %}
             <p><strong>Modern countries</strong>:
               {% for c in countries %}
@@ -188,6 +188,8 @@
                       data-id="{{ form.json.value|get:"place_id" }}" 
                       class="create-comment-review btn btn-sm" style="background-color:oldlace;">
                     {% fontawesome_icon 'edit' color='#336699' %}</button>
+                  {% else %}
+	                  <span class="float-right small">score: {{ form.score.value }}</span>
                   {% endif %}
                   </span>
                 </div>

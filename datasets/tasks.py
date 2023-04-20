@@ -682,7 +682,7 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
   }}}
 
   # base query
-  qbase = {"query": { 
+  qbase = {"query": {
     "bool": {
       "must": [
         {"terms": {"variants.names":variants}}
@@ -699,15 +699,6 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
   if has_geom:
     # shape_filter is polygon hull ~100km diameter
     qbase['query']['bool']['filter'].append(shape_filter)
-    # TODO: if geom is point, add sort
-    # qbase["sort"] = [
-    #   {
-    #     "_geo_distance": {
-    #       "order": "asc",
-    #       "repr_point":
-    #     }
-    #   }
-    # ]
     if has_countries:
       qbase['query']['bool']['should'].append(countries_match)
   elif has_countries:
@@ -726,14 +717,24 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
     q1['query']['bool']['must'].append({"terms": {"types.id":qtypes}})
   if len(qobj['fclasses']) > 0:
     q1['query']['bool']['should'].append({"terms": {"fclasses":qobj['fclasses']}})
-  # print('q1', q1)
 
-  # qbase
+  """ adding fclasses as 'must' not effective for wikidata, where typing 
+      quality is problematic at best """
   q2 = deepcopy(qbase)
+
+  # for variants.name as text field...(wd_text index)
+  # prefix for anything starting with first 5 characters (w/spatial constraint)
+  q2['query']['bool']['must'] = {"bool": {"should": [
+        {"prefix": {"variants.names": {"value": qobj['title'][:5]}}}
+    ]}}
+  # OR any of the variants
+  for v in variants:
+    q2['query']['bool']['must']['bool']['should'].append(
+      {"match": {"variants.names": v}})
+  # adds weight but not required
   if fclass_count > 0:
-    q2['query']['bool']['must'].append(
+    q2['query']['bool']['should'].append(
       {"terms": {"fclasses":qobj['fclasses']}})
-  # print('q2', q2)
 
   # /\/\/\/\/\/
   # pass0 (q0): 
@@ -772,7 +773,7 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
       # /\/\/\/\/\/
       # pass2: remove type; qbase only
       # /\/\/\/\/\/  
-      print('no q1 hits...q2',q2)
+      print('no q1 hits, so q2',q2)
       try:
         res2 = es.search(index="wd", body = q2)
         hits2 = res2['hits']['hits']
@@ -816,7 +817,7 @@ def align_wdlocal(pk, **kwargs):
 
   # queryset depends on 'scope'
   # 0=hits:unreviewed, 1=hits:reviewed, 2=hits:deferred, null=no hits
-  # rerun hot permits admins to rerun align_wdlocal() post-fix for types (10 Apr 2023)
+  # rerun permits admins to rerun align_wdlocal() post-fix for types (10 Apr 2023)
   if scope == 'all':
     qs = ds.places.all()
   elif scope == 'rerun':

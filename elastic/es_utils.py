@@ -656,13 +656,13 @@ def confirm(prompt=None, resp=False):
 # create an index
 # ***
 def esInit(idx):
+  idx='wd_text'
   import os, codecs
   from django.conf import settings
-  os.chdir('/Users/karlg/Documents/Repos/_whgazetteer/')
-
+  os.chdir('elastic/mappings/')
   es = settings.ES_CONN
-  mappings = codecs.open('elastic/mappings/es_mappings_whg.json', 'r', 'utf8').read()
-
+  file = codecs.open('wd2023_multi.json', 'r', 'utf8').read()
+  mappings = ''.join(line for line in file if not '/*' in line)
   # zap existing if exists, re-create
   if confirm(prompt='Zap index '+idx+'?', resp=False):
     try:
@@ -671,9 +671,10 @@ def esInit(idx):
       print(ex)
     try:
       es.indices.create(index=idx, ignore=400, body=mappings)
-      print ('index "'+idx+'" created')
+      es.indices.put_alias('wd_text', 'wd')
     except Exception as ex:
       print(ex)
+    print ('index "'+idx+'" created')
   else:
     print('oh, okay')
 

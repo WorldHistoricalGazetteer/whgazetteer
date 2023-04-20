@@ -1,0 +1,125 @@
+{
+    "mappings" : {
+      "properties" : {
+        "variants" : {
+          "properties" : {
+            "lang" : {
+              "type" : "keyword"
+            },
+            "names" : {
+              "type" : "text"
+            }
+          }
+        },
+        "authids" : {
+          "type" : "keyword"
+        },
+        "claims" : {
+          "properties" : {
+            "P1319" : {
+              "type" : "text"
+            },
+            "P1326" : {
+              "type" : "text"
+            },
+            "P1566" : {
+              "type" : "keyword"
+            },
+            "P1584" : {
+              "type" : "keyword"
+            },
+            "P1667" : {
+              "type" : "keyword"
+            },
+            "P17" : {
+              "type" : "keyword"
+            },
+            "P1871" : {
+              "type" : "keyword"
+            },
+            "P214" : {
+              "type" : "keyword"
+            },
+            "P227" : {
+              "type" : "keyword"
+            },
+            "P244" : {
+              "type" : "keyword"
+            },
+            "P2503" : {
+              "type" : "keyword"
+            },
+            "P268" : {
+              "type" : "keyword"
+            },
+            "P31" : {
+              "type" : "keyword"
+            },
+            "P571" : {
+              "type" : "text"
+            },
+            "P625" : {
+              "type" : "text"
+            }
+          }
+        },
+        "descriptions" : {
+          "properties" : {
+            "lang" : {
+              "type" : "keyword"
+            },
+            "text" : {
+              "type" : "text"
+            }
+          }
+        },
+        "fclasses" : {
+          "type" : "keyword"
+        },
+        "id" : {
+          "type" : "keyword"
+        },
+        "location" : {
+          "type" : "geo_shape"
+        },
+        "minmax" : {
+          "type" : "integer_range"
+        },
+        "modified" : {
+          "type" : "date"
+        },
+        "repr_point" : {
+          "type" : "geo_point"
+        },
+        "sitelinks" : {
+          "properties" : {
+            "lang" : {
+              "type" : "keyword"
+            },
+            "title" : {
+              "type" : "text"
+            }
+          }
+        },
+        "type" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 256
+            }
+          }
+        },
+        "types" : {
+          "properties" : {
+            "id" : {
+              "type" : "keyword"
+            },
+            "label" : {
+              "type" : "text"
+            }
+          }
+        }
+      }
+    }
+}

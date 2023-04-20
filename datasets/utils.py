@@ -911,6 +911,7 @@ def hully(g_list):
         hull = hull.buffer(.4) # ~50 km 11 Apr 2023
         # hull = hull.buffer(1) #
         # hull = hull.buffer(1.4) # ~100km radius ??
+        # hull = hull.buffer(2.0) # ??
       else:
         hull = hull.buffer(0.1)
     except:
@@ -1237,3 +1238,94 @@ def xl_upload(request):
     return render(request, 'datasets/xl.html', {"excel_data":excel_data}) 
 
 
+# for hits in a wikidata task, create place_link and place_geom matches
+# where geometry is within 5km
+def match_close(dsid, n=50000, write=False ):
+	from datasets.models import Dataset, Hit
+	from places.models import PlaceGeom, PlaceLink, Place
+	from django.contrib.gis.geos import GEOSGeometry
+	import json
+
+	ds=Dataset.objects.get(id=dsid)
+	task = ds.tasks.first()
+	# hits = Hit.objects.filter(task_id = task.task_id, reviewed = False).order_by('id')
+	hits = Hit.objects.filter(task_id = task.task_id,
+	                          reviewed = False,
+	                          ).order_by('place_id')
+	count_add = 0
+	geom_add = 0
+	link_add = 0
+	still_queued = 0
+	for h in hits[:n]:
+		# place record
+		place = Place.objects.get(id=h.place_id)
+		pgs = [pg.geom for pg in place.geoms.all()]
+
+		# wikidata
+		qobj = {'pid': h.place_id, 'links':h.json['links'], 'geoms':h.json['geoms']}
+		# print('hit title:', h.json['title'])
+		# print('place title:', place.title)
+		gwds = [GEOSGeometry(json.dumps(g)) for g in qobj['geoms']]
+		qid = qobj['geoms'][0]['id']
+
+		gwd = gwds[0]
+		gpl = pgs[0] # first place geom
+
+		try:
+			dist = gwd.distance(gpl) * 100 # km, more or less
+		except:
+			print('place', place, sys.exc_info())
+			print('gwd, gpl', gwd, gpl)
+			pass
+		# print(place.title, h.json['geoms'][0]['id'], dist)
+
+		if dist <= 5:
+			# print('dist: ~' + str(dist)[:6] + 'km; '+str(h.authrecord_id), gwd.json)
+			count_add +=1
+			if write:
+				jsonb = {
+					"type": gwd.geom_type,
+					"citation": {"id": 'wd:' + qid, "label":'Wikidata' },
+					"coordinates": qobj['geoms'][0]['coordinates']
+				}
+
+				# place, src_id, jsonb, task_id, geom
+				pgobj = PlaceGeom.objects.create(
+				  place = place,
+					geom = gwd,
+				  jsonb = jsonb,
+					src_id = place.src_id,
+					task_id = task.task_id
+				)
+				pgobj.save()
+				geom_add +=1
+				# place, src_id, jsonb, task_id
+				# {"type": "closeMatch", "identifier": "tgn:7011198"}
+				for i, l in enumerate(qobj['links']):
+					# print('links to add:', i, l)
+					link_add +=1
+					plobj = PlaceLink.objects.create(
+						place_id = place.id,
+						src_id = place.src_id,
+						task_id = task.task_id,
+						jsonb={'type': 'closeMatch', 'identifier': l}
+					)
+					plobj.save()
+
+				# wrote geoms/links
+				h.matched = True
+				h.reviewed = True
+				h.save()
+				# place was reviewed
+				place.review_wd = 1
+				place.save()
+		else:
+			still_queued +=1
+			# within 30km w/name match
+
+	print("wrote match records" if write else "only tested...")
+	print("counts:", {"total": count_add,
+	                 "geoms": geom_add,
+	                 "links": link_add,
+	                  "remaining": still_queued
+	                  })

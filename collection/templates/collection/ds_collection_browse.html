@@ -147,6 +147,7 @@
     .columns([5,6,7,11])
     .search( '' )
     .draw();
+    {#$('#ds_select option:first').attr('selected', true)#}
     $("#ds_select").val('-1')
   }
 
@@ -208,9 +209,10 @@
   }
 
   function buildSelect(){
-    select = '<label>Datasets: <select id="ds_select">'+
-    '<option value="-1" selected="selected">All</option>'
+    select = '<label>Datasets: <select id="ds_select">'
+    select += '<option value="-1" selected="selected">All</option>'
     for(let ds of ds_list){
+      {#select += '<option value="'+ds.label+'>'+#}
       select += '<option value="'+ds.label+'" selected="selected">'+
         ds.title+'</option>'
     }
