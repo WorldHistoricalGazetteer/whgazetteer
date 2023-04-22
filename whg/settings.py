@@ -212,23 +212,6 @@ LOGIN_REDIRECT_URL = '/accounts/email/' # default to /accounts/profile
 
 ACCOUNT_FORMS = {'signup': 'allauth.account.forms.WHGRegisterForm',}
 
-#SOCIALACCOUNT_PROVIDERS = {
-  ## For each OAuth based provider, either add a ``SocialApp``
-  ## (``socialaccount`` app) containing the required client
-  ## credentials, or list them here:
-  #'github': {
-    #'APP': {
-      #'client_id': '123',
-      #'secret': '456',
-      #'key': ''
-    #}
-  #},
-  #'orcid': {
-      ## Base domain of the API. Default value: 'orcid.org', for the production API
-      #'BASE_DOMAIN':'sandbox.orcid.org',  # for the sandbox API
-      ## Member API or Public API? Default: False (for the public API)
-      #'MEMBER_API': True,  # for the member API
-  #}}
 # /././././././.
 # end django-allauth
 # /././././././.
