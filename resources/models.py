@@ -30,8 +30,8 @@ class Resource(models.Model):
   featured = models.IntegerField(null=True, blank=True)
 
   # test commented 28 Mar
-  regions = MultiSelectField(choices=REGIONS, null=True, blank=True)
-  # regions = models.CharField(max_length=24, choices=REGIONS, null=True, blank=True)
+  # regions = MultiSelectField(choices=REGIONS, null=True, blank=True)
+  regions = models.CharField(max_length=24, choices=REGIONS, null=True, blank=True)
 
   # [uploaded | published]
   status = models.CharField(

@@ -12,7 +12,7 @@ from accounts.forms import UserModelForm
 from collection.models import Collection, CollectionGroup, CollectionGroupUser
 from datasets.models import Dataset, DatasetUser
 from datasets.static.hashes import mimetypes_plus as mthash_plus
-import codecs, os, re, sys, tempfile
+import codecs, json, os, re, sys, tempfile
 import pandas as pd
 
 # @login_required
@@ -65,31 +65,28 @@ def addusers(request):
   if request.method == 'POST':
     action = request.POST['action'] # 'upload' or 'addem'
     print('addusers() request.POST', request.POST)
-    print('addusers() request.FILES', request.FILES)
     cgid = request.POST['cgid']
     cg=get_object_or_404(CollectionGroup, id=cgid)
-    user = request.user.name
-    print('user in addusers()::68')
-    data = request.POST
-    context = {}
-
-    # uploaded file
-    file = request.FILES['file']
-    mimetype = file.content_type
-    tempf, tempfn = tempfile.mkstemp()
-    # write it to a tmp location
-    try:
-      for chunk in file.chunks():
-        os.write(tempf, chunk)
-    except:
-      raise Exception("Problem opening/writing input file")
-    finally:
-      os.close(tempf)
-
     added_count = 0
 
     # VALIDATION
     if action == 'upload':
+      print('in addusers(), upload')
+      print('addusers() request.FILES', request.FILES)
+        # uploaded file
+      file = request.FILES['file']
+      mimetype = file.content_type
+      tempf, tempfn = tempfile.mkstemp()
+      # write it to a tmp location
+      try:
+        for chunk in file.chunks():
+          os.write(tempf, chunk)
+      except:
+        raise Exception("Problem opening/writing input file")
+      finally:
+        os.close(tempf)
+
+      # validate file and return results
       # wd = os.getcwd() + '/_scratch/'
       # tempfn = wd + 'newusers.csv'
       # tempfn = wd+'badusers.csv'
@@ -98,8 +95,9 @@ def addusers(request):
       print('result in addusers()', result)
     else:
       # action == 'addem' -- create users
-      to_add = request.POST['newusers']
+      to_add = json.loads(request.POST['newusers'])
       for u in to_add:
+        print('u', u)
         new_user = User.objects.create(
           email = u[0],
           name = u[1],
@@ -107,17 +105,17 @@ def addusers(request):
           password = re.match('^(.*)@', u[0]).group(1)[::-1]
         )
         new_user.save()
-      # add to CollectionGroup
-      cguser = CollectionGroupUser.objects.create(
-        role = 'normal',
-        collectiongroup = cg,
-        user=new_user
-      )
-      cguser.save()
-      added_count +=1
+        # add to CollectionGroup
+        cguser = CollectionGroupUser.objects.create(
+          role = 'normal',
+          collectiongroup = cg,
+          user=new_user
+        )
+        cguser.save()
+        added_count +=1
 
       result= {'status': 'added ' + str(added_count)+' users',
-               'users': [u[0] for u in to_add]}
+               'users': [[u[0], u[1] ]for u in to_add], 'errors':[]}
 
     return JsonResponse(result, safe=False)
 

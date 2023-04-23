@@ -61,7 +61,7 @@
 	      {% endif %}
       </h5>
       {% if action == 'update' %}
-	      <div id="div_addusers" class="mb-3">
+	      <div id="div_addusers" class="mb-3 hidden">
 	        <form id="f_addusers">{% csrf_token %}
 	        <input class="form-control form-control-sm" id="userfile" type="file">
 	        <div id="addusers_info" class="form-text small mb-2">
@@ -74,8 +74,8 @@
 		        <a id="a_cancel" class="ps-3" href="">Cancel</a>
 	        </span>
 	        </form>
-		      <div id="results_text" class="my-2 small"></div><hr/>
 	      </div>
+	      <div id="results_text" class="my-2 small"></div><hr/>
 	      <div id="members_content">
 	          <ul class="small">
 	          {% for m in members.all %}
@@ -101,7 +101,8 @@
 </div> <!-- container -->
 <script type="text/javascript">
   $(function() {
-    console.log('ls new users', !!localStorage.getItem("newusers"))
+    localStorage.removeItem("newusers")
+    console.log('ls new users', localStorage.getItem("newusers"))
     $("#l_addusers").click(function(e){
       $("#div_addusers").toggle()
     })
@@ -122,10 +123,15 @@
   $(document).on('submit', '#f_addusers', function(e){
     e.preventDefault()
     var formData = new FormData();
+	  if($("#b_upload").text() === 'Upload file'){
+      formData.append('action', 'upload')
+		  localStorage.removeItem("newusers")
+	  } else {
+		  formData.append('action', 'addem')
+      formData.append('newusers', localStorage.getItem("newusers"));
+	  }
     formData.append('file', $('#userfile')[0].files[0]);
     formData.append('cgid', '{{ object.id }}');
-    formData.append('action', ($("#results_text").text() === '')?'upload':'addem');
-    formData.append('newusers', localStorage.getItem("newusers"));
     formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
     console.log('formData', formData)
     {##}
@@ -139,6 +145,7 @@
       data: formData,
       success: function (data) {
         console.log('data returned', data)
+	      // after adding: status, users, errors
         if (data['errors'].length >0) {
           err = data['errors']
           html = 'Problem(s) with file:<br/><ul class="ps-3">'
@@ -148,20 +155,42 @@
           html += '</ul>'
           $("#results_text").html(html)
         } else {
-          users = data['add']
-	        localStorage.setItem("newusers", users);
-          html = 'Accounts to create:<br/><ul class="ps-3">'
+          if('add' in data){
+            // reporting back validation
+            users = data['add']
+		        localStorage.setItem("newusers", JSON.stringify(users));
+	          html = 'Accounts to create:<br/><ul class="ps-3">'
+          } else {
+            // reporting back added users
+	          $("#div_addusers").hide()
+            users = data['users']
+            html = 'Accounts created:<br/><ul class="ps-3">'
+          }
           for (i = 0; i < users.length; ++i) {
-              html += '<li>' + users[i][0] + '; ' + users[i][1] + '</li>'
+            html += '<li>' + users[i][1] + '; ' + users[i][0] + '</li>'
+	          if('users' in data){
+              $("#members_content ul").append(
+                  '<li>' + users[i][1] + ' (' + users[i][0] + ')</li>')
+	          }
           }
           html += '</ul>'
-          $("#results_text").html(html)
-          $("#b_upload").text('Submit')
-          $("#s_cancel").fadeIn(800)
+          // dupe only returned during add
+          if('dupe' in data){
+            html += 'These exist already:<br/><ul class="ps-3">'
+		        for (i = 0; i < data['dupe'].length; ++i) {
+		            html += '<li>' + data['dupe'][i][1] +
+				            '; ' + data['dupe'][i][0] + '</li>'
+		        }
+          }
+          html += '</ul>'
         }
-      }
-    })
-  })
+        $("#results_text").html(html)
+        $("#b_upload").text('Submit')
+        $("#s_cancel").fadeIn(800)
+      } // success
+    }) // ajax
+	  {#$("#div_addusers").hide()#}
+  }) // on submit
 
 </script>
 

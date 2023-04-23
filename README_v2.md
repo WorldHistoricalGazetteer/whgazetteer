@@ -1,16 +1,14 @@
-## World Historical Gazetteer v3.0a
+## World Historical Gazetteer
 
-This is the repository submodule, **dj4** for the v3.0-beta version of the World Historical Gazetteer (WHG) web platform and API in development.
+This is the repository for the World Historical Gazetteer (WHG) web platform and API. The project is based at the University of Pittsburgh's [World History Center (WHC)](https://www.worldhistory.pitt.edu/). It has been substantially funded by a US National Endowment for the Humanities (NEH) grant and in-kind support from WHC. 
 
-Everything here is changing continually.
+WHG is aggregating attestations of historical place references contributed by researchers. Version 1 was launched on 27 July 2020 and [Version 2](http://whgazetteer.org) released on 4 August 2021, with generous support from the Royal Dutch Academy's [KNAW Humanities Cluster](https://www.knaw.nl/en). Incremental updates are ongoing. There is substantial information about the purposes and uses of WHG in its [Site Guide](http://whgazetteer.org/tutorials/guide/) and [Tutorials](http://whgazetteer.org/tutorials/). Announcements and discussion about the project are available on [our blog website](http://blog.whgazetteer.org) and via our Twitter feed, [@WHGazetteer](https://twitter.com/WHGazetteer).
 
 ### Contributing to software and data development
 
 WHG is an open-source project. Please see [this document](docs/contributing_dev.md) for an overview of how to participate in the several aspects of WHG development. Specific tasks in our long TODO queue will be added as GitHub issues soon. 
 
 ### Change log
-
-#### v3.0-beta (27 April 2022)
 
 #### v2.1-beta (27 April 2022)
 
