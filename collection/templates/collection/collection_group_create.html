@@ -39,13 +39,18 @@
         {% endif %}
       {% csrf_token %}
       <input type="hidden" name="owner" value='{{ user.id }}' />
+      <input type="hidden" name="action" value='{{ action }}' />
       {% if action == 'update' %}
       {% endif %}
       <p>Title<br/>{{ form.title }}</p>
       <p><span class="top">Description</span><br/>{{ form.description }}</p>
+      <p><span class="top">Type</span><br/>{{ form.type }}</p>
       <p><span class="top">Keywords</span><br/>{{ form.keywords }}</p>
-      <p><span class="top">Start date</span><br/>{{ form.start_date }}</p>
-      <p><span class="top">Due date</span><br/>{{ form.due_date }}</p>
+      <p><span class="top">Start date</span> {{ form.start_date }}</p>
+      <p><span class="top">Due date</span> {{ form.due_date }}</p>
+      <p><span class="top">Gallery?</span> {{ form.gallery }}
+	      <span class="ms-3">required? {{ form.gallery_required }}</span></p>
+      <p><span class="top"></p>
       <hr/>
       <input class="btn-sm btn-primary mt-2" type="submit" value="Save" id="b_save"/>
       <span title="back"><a href="{% url 'accounts:profile' %}">Cancel</a></span>

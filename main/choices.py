@@ -32,6 +32,11 @@ COLLECTIONCLASSES = [
     ('place','Place collection'),
 ]
 
+COLLECTIONGROUP_TYPES = [
+    ('class', 'Class'),
+    ('workshop', 'Workshop')
+]
+
 COLLECTIONTYPES = [
     ('event','Event'),
     ('person','Person'),

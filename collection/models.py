@@ -8,10 +8,12 @@ from django.contrib.postgres.fields import ArrayField
 from django.core.validators import URLValidator
 from django.urls import reverse
 from datasets.models import Dataset
-from main.choices import COLLECTIONCLASSES, LINKTYPES, TEAMROLES, STATUS_COLL, USER_ROLE
+from main.choices import COLLECTIONCLASSES, LINKTYPES, TEAMROLES, STATUS_COLL, \
+  USER_ROLE, COLLECTIONGROUP_TYPES
 from places.models import Place
 from traces.models import TraceAnnotation
 from django_resized import ResizedImageField
+from multiselectfield import MultiSelectField
 
 """ for images """
 from io import BytesIO
@@ -170,6 +172,10 @@ class CollectionGroup(models.Model):
   title = models.CharField(null=False, max_length=300)
   description = models.TextField(null=True, max_length=3000)
   keywords = ArrayField(models.CharField(max_length=50), null=True)
+
+  type = models.CharField(choices=COLLECTIONGROUP_TYPES, default="class", max_length=8)
+  gallery = models.BooleanField(null=False, default=False)
+  gallery_required = models.BooleanField(null=False, default=False)
 
   created = models.DateTimeField(auto_now_add=True)
   start_date = models.DateTimeField(null=True)

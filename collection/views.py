@@ -374,7 +374,8 @@ class PlaceCollectionUpdateView(UpdateView):
 
     return context
 
-""" public collection view, contents, bboxes on a map """
+""" public collection view, contents, bboxes on a map 
+  NOT IN USE, place_collection_browse is single display page """
 class PlaceCollectionSummaryView(DetailView):
   template_name = 'collection/place_collection_summary.html'
 
@@ -444,24 +445,18 @@ class CollectionGroupCreateView(CreateView):
   template_name = 'collection/collection_group_create.html'
   queryset = CollectionGroup.objects.all()
 
-  # if called from reconciliation addtask, return there
+  #
   def get_form_kwargs(self, **kwargs):
     kwargs = super(CollectionGroupCreateView, self).get_form_kwargs()
     print('kwargs', kwargs)
     print('GET in CollectionGroupCreateView()', self.request.GET)
-    # print('redirect',redirect)
-    # if redirect != '':
-    #   self.success_url = redirect
-    # else:
-    #   self.success_url = '/'
-    #   # self.success_url = '/mystudyareas'
     return kwargs
 
   def get_success_url(self):
     cgid = self.kwargs.get("id")
-    #user = self.request.user
-    #print('messages:', messages.get_messages(self.kwargs))
-    return '/accounts/profile/'
+    action = self.kwargs.get("action")
+    return redirect('collections/groups/'+str(cgid)+'/update')
+    # return '/accounts/profile/'
 
   def form_invalid(self, form):
     print('form invalid...', form.errors.as_data())
@@ -503,17 +498,29 @@ class CollectionGroupUpdateView(UpdateView):
   form_class = CollectionGroupModelForm
   template_name = 'collection/collection_group_create.html'
 
-  success_url = '/accounts/profile'
+  def get_form_kwargs(self, **kwargs):
+    kwargs = super(CollectionGroupUpdateView, self).get_form_kwargs()
+    print('kwargs', kwargs)
+    print('id', self.kwargs.get("id"))
+    return kwargs
+
+  # def get_success_url(self):
+  #   cgid = self.kwargs.get("id")
+  #   return redirect('/collections/groups/'+str(cgid)+'/update')
+
+  # success_url = '/accounts/profile'
 
   def get_object(self):
     id_ = self.kwargs.get("id")
     return get_object_or_404(CollectionGroup, id=id_)
 
   def form_valid(self, form):
+    id_ = self.kwargs.get("id")
     if form.is_valid():
       # print('form.cleaned_data', form.cleaned_data)
       obj = form.save(commit=False)
       obj.save()
+      return redirect('/collections/group/' + str(id_) + '/update')
     else:
       print('form not valid', form.errors)
     return super().form_valid(form)
