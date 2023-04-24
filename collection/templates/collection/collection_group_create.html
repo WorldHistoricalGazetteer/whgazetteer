@@ -32,16 +32,17 @@
 {#  <div class="flex row">#}
   <div class="d-flex container row">
     <div class="form-box mt-2 col-sm-4">
-        {% if action == 'update' %}
-        <form id="cg_form" method="POST" action="{% url 'collection:collection-group-update' object.id %}" enctype="multipart/form-data">
-        {% else %}
-        <form id="cg_form" method="POST" action="{% url 'collection:collection-group-create' %}" enctype="multipart/form-data">
-        {% endif %}
+	    {% if action == 'update' %}
+	    <form id="cg_form" method="POST" action="{% url 'collection:collection-group-update' object.id %}" enctype="multipart/form-data">
+      {% else %}
+      <form id="cg_form" method="POST" action="{% url 'collection:collection-group-create' %}" enctype="multipart/form-data">
+      {% endif %}
       {% csrf_token %}
       <input type="hidden" name="owner" value='{{ user.id }}' />
       <input type="hidden" name="action" value='{{ action }}' />
+      {% comment %}
       {% if action == 'update' %}
-      {% endif %}
+      {% endif %}{% endcomment %}
       <p>Title<br/>{{ form.title }}</p>
       <p><span class="top">Description</span><br/>{{ form.description }}</p>
       <p><span class="top">Type</span><br/>{{ form.type }}</p>
@@ -50,7 +51,6 @@
       <p><span class="top">Due date</span> {{ form.due_date }}</p>
       <p><span class="top">Gallery?</span> {{ form.gallery }}
 	      <span class="ms-3">required? {{ form.gallery_required }}</span></p>
-      <p><span class="top"></p>
       <hr/>
       <input class="btn-sm btn-primary mt-2" type="submit" value="Save" id="b_save"/>
       <span title="back"><a href="{% url 'accounts:profile' %}">Cancel</a></span>
@@ -73,11 +73,12 @@
 	          To create multiple WHG users as group members,
 		        upload a .csv file with two columns: 'email', and 'full_name'.
 	        </div>
-	        <button id="b_upload" class="btn btn-sm btn-primary" type="submit">Upload file</button>
-	        <span id="s_cancel" class="hidden small float-end pe-3">
-{#		        <button id="b_create" class="btn btn-sm btn-primary" type="submit">Create users</button>#}
-		        <a id="a_cancel" class="ps-3" href="">Cancel</a>
-	        </span>
+	        <div id="form_button" class="mt-2 hidden">
+		        <button id="b_upload" class="btn btn-sm btn-primary" type="submit">Upload file</button>
+		        <span id="s_cancel" class="hidden small float-end pe-3">
+			        <a id="a_cancel" class="ps-3" href="">Cancel</a>
+		        </span>
+	        </div>
 	        </form>
 	      </div>
 	      <div id="results_text" class="my-2 small"></div><hr/>
@@ -111,6 +112,10 @@
     $("#l_addusers").click(function(e){
       $("#div_addusers").toggle()
     })
+
+    $("input:file").change(function (){
+       $("#form_button").show();
+     });
 
 		$('#f_addusers').submit(function() {
 	    if ($("#userfile").val() === "") {
@@ -149,49 +154,54 @@
       cache: false,
       data: formData,
       success: function (data) {
+        result = data
         console.log('data returned', data)
 	      // after adding: status, users, errors
+	      // after validation: already[], just_add[], create_add[]
+	      {#return#}
         if (data['errors'].length >0) {
           err = data['errors']
           html = 'Problem(s) with file:<br/><ul class="ps-3">'
           for (i = 0; i < err.length; ++i) {
-              html += '<li>' + err[i] + '</li>'
+            html += '<li>' + err[i] + '</li>'
           }
           html += '</ul>'
           $("#results_text").html(html)
         } else {
-          if('add' in data){
-            // reporting back validation
-            users = data['add']
-		        localStorage.setItem("newusers", JSON.stringify(users));
-	          html = 'Accounts to create:<br/><ul class="ps-3">'
-          } else {
-            // reporting back added users
-	          $("#div_addusers").hide()
-            users = data['users']
-            html = 'Accounts created:<br/><ul class="ps-3">'
+          // reporting back validation
+          already = data['already']
+          just_add = data['just_add']
+          create_add = data['create_add']
+	        html = ''
+          if (data['create_add'].length > 0) {
+              localStorage.setItem("create_add", JSON.stringify(create_add));
+              html += 'Create and add:<br/><ul class="ps-3">'
+              for (i = 0; i < create_add.length; ++i) {
+                  html += '<li>' + create_add[i][1] + '; ' + create_add[i][0] + '</li>'
+              }
+              html += '</ul>'
           }
-          for (i = 0; i < users.length; ++i) {
-            html += '<li>' + users[i][1] + '; ' + users[i][0] + '</li>'
-	          if('users' in data){
-              $("#members_content ul").append(
-                  '<li>' + users[i][1] + ' (' + users[i][0] + ')</li>')
-	          }
+          if (data['just_add'].length > 0) {
+              localStorage.setItem("just_add", JSON.stringify(just_add));
+              html += 'Add existing users:<br/><ul class="ps-3">'
+              for (i = 0; i < just_add.length; ++i) {
+                  html += '<li>' + just_add[i][1] + '; ' + just_add[i][0] + '</li>'
+              }
+              html += '</ul>'
           }
-          html += '</ul>'
-          // dupe only returned during add
-          if('dupe' in data){
-            html += 'These exist already:<br/><ul class="ps-3">'
-		        for (i = 0; i < data['dupe'].length; ++i) {
-		            html += '<li>' + data['dupe'][i][1] +
-				            '; ' + data['dupe'][i][0] + '</li>'
-		        }
+          if (data['already'].length > 0) {
+              html += 'Already members:<br/><ul class="ps-3">'
+              for (i = 0; i < already.length; ++i) {
+                  html += '<li>' + already[i][1] + '</li>'
+              }
+              html += '</ul>'
           }
-          html += '</ul>'
+
+          $("#addusers_info").hide()
+          $("#results_text").html(html)
+          $("#b_upload").text('Submit')
+          $("#s_cancel").fadeIn(800)
         }
-        $("#results_text").html(html)
-        $("#b_upload").text('Submit')
-        $("#s_cancel").fadeIn(800)
       } // success
     }) // ajax
 	  {#$("#div_addusers").hide()#}

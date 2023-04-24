@@ -16,15 +16,17 @@ import codecs, json, os, re, sys, tempfile
 import pandas as pd
 
 # @login_required
-def validate_usersfile(tempfn):
+# validate CollectionGroup member file upload
+def validate_usersfile(tempfn, cg):
   print('validate_usersfile() tempfn', tempfn)
   User = get_user_model()
   # wd=os.getcwd()+'/_scratch/'
   r_email = re.compile(r'([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+')
   def emailValid(email):
     return True if re.fullmatch(r_email, email) else False
-  result = {"status":'ok', "errors": [], "add": [], 'dupe': []}
-  # print('validate_usersfile()', fin, result)
+  # buckets
+  result = {"status":'ok', "errors": [], "create_add": [],
+            'just_add': [], 'already': []}
   import csv
   with open(tempfn, newline='') as csvfile:
     reader = csv.reader(csvfile, delimiter=',',
@@ -38,26 +40,32 @@ def validate_usersfile(tempfn):
           result['status'] = 'failed'
           print(result)
         else:
-          # got a list w/2 elements
-          # 1st term an email?
+          # 1st term valid email?
           if not emailValid(row[0]):
             result['errors'].append(
               'invalid email on row #'+str(i+1)+': '+row[0])
           # is name blank?
           if row[1] == '':
             result['errors'].append('no name for row #' + str(i+1))
+          # if errors, return them
           if len(result['errors']) > 0:
             result['status'] = 'failed'
           else:
-            # no format errors, check if user exists
+            # no format errors
+            # user exists? in this group?
             user = User.objects.filter(email=row[0])
-            if not user.exists():
-              result['add'].append(row)
+            members = [u.user_id for u in cg.members.all()]
+            if user.exists():
+              in_group = user[0].id in members
+              if in_group:
+                result['already'].append(row)
+              else:
+                result['just_add'].append(row)
             else:
-              result['dupe'].append(row)
+              result['create_add'].append(row)
       except:
         raise
-  print('validate result', result)
+  # print('validate result', result)
   return result
 
 @login_required
@@ -86,15 +94,12 @@ def addusers(request):
       finally:
         os.close(tempf)
 
-      # validate file and return results
-      # wd = os.getcwd() + '/_scratch/'
-      # tempfn = wd + 'newusers.csv'
-      # tempfn = wd+'badusers.csv'
       print('addusers() tempfn', tempfn)
-      result = validate_usersfile(tempfn)
-      print('result in addusers()', result)
-    else:
-      # action == 'addem' -- create users
+      # validate file and return results
+      result = validate_usersfile(tempfn, cg)
+      print('validation result', result)
+    elif action == 'addem':
+      # create users
       to_add = json.loads(request.POST['newusers'])
       for u in to_add:
         print('u', u)
