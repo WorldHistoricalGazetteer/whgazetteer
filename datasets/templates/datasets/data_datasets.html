@@ -43,10 +43,16 @@
            role="tab" aria-controls="resourcelist" aria-selected="false">Teaching resources</a>
       </li>
       {% endif %}
+      {% if user.is_superuser or user.role == 'group_leader' %}
+      <li class="nav-item">
+        <a class="nav-link" id="cglist-tab" href="{% url 'data-collgroups' %}"
+           role="tab" aria-controls="cglist" aria-selected="false">Collection groups</a>
+      </li>
+      {% endif %}
     </ul>
     <div class="tb-content">
       <div id="mydslist" class="tab-pane fade show active" role="tabpanel" aria-labelledby="mydslist-tab">
-        <p class="mb-1 ms-1">
+        <div class="mb-1 ms-1 clearfix">
 	          <a href="{% url 'datasets:dataset-create' %}" class="">
 		          <i class="fas fa-plus-square linky"></i> upload new</a>
 						{% if user|has_group:"beta30" or whgteam %}
@@ -56,7 +62,7 @@
 							</span>
 						{% endif %}
 	        {% if whgteam %}
-          <span class="ms-2 float-end small">
+          <span class="ms-2 small float-end">
 	          <select id="status_select">
 	          <option value="all">Filter status</option>
 	          <option value="uploaded">Uploaded</option>
@@ -68,7 +74,7 @@
             </select>
           </span>
 	        {% endif %}
-        </p>
+        </div>
         <div id="dataset_list" class="mt-1">
           <div class="list-box">
             <h6 class="my-2">My Datasets

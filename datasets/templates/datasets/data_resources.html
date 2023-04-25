@@ -47,6 +47,12 @@
            role="tab" aria-controls="resourcelist" aria-selected="false">Teaching resources</a>
       </li>
       {% endif %}
+      {% if user.is_superuser or user.role == 'group_leader' %}
+      <li class="nav-item">
+        <a class="nav-link" id="resourcelist-tab" href="{% url 'data-collgroups' %}"
+           role="tab" aria-controls="resourcelist" aria-selected="false">Collection groups</a>
+      </li>
+      {% endif %}
     </ul>
     <div class="tab-content">
       {% if beta_or_better %}

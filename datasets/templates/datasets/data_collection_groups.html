@@ -35,7 +35,7 @@
            role="tab" aria-controls="collectionlist" aria-selected="false">Collections</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link active" id="arealist-tab" data-link="arealist" data-toggle="tab"
+        <a class="nav-link" id="arealist-tab" href="{% url 'data-areas' %}"
            role="tab" aria-controls="arealist" aria-selected="false">Study Areas</a>
       </li>
       {% if beta_or_better %}
@@ -46,31 +46,43 @@
       {% endif %}
       {% if user.is_superuser or user.role == 'group_leader' %}
       <li class="nav-item">
-        <a class="nav-link" id="cglist-tab"  href="{% url 'data-collgroups' %}"
-           role="tab" aria-controls="cglist" aria-selected="false">Collection groups</a>
+        <a class="nav-link active" id="resourcelist-tab" data-link="cglist" data-toggle="tab"
+           role="tab" aria-controls="resourcelist" aria-selected="false">Collection groups
+	        {% if whgteam %} (all) {% endif %}
+        </a>
       </li>
       {% endif %}
     </ul>
     <div class="tab-content">
-      <div id="arealist" class="tab-pane fade show active" role="tabpanel" aria-labelledby="arealist-tab">
-        <p class="mb-1 ms-1"><a href="{% url 'areas:area-create' %}" class="">
-          <i class="fas fa-plus-square linky"></i> create new</a></p>
-        <div id="area_list" class="mt-1 ms-0">
+      <div id="cglist" class="tab-pane fade show active" role="tabpanel" aria-labelledby="cglist-tab">
+        <p class="mb-1 ms-1"><a href="#" class="">
+          <i class="fas fa-plus-square linky"></i> create new</a> </p>
+        <div id="collgroup_list" class="mt-1 ms-0">
           <div class="list-box">
-            <table id="table_areas" class="table table-striped">
+            <table id="table_cgroups" class="table table-striped">
               <thead class="small">
-                  <th>id</th>
-                  <th>title <i class="fa fa-sort ms-1" data-id=1 ref=asc></i></th>
-                  <th>type <i class="fa fa-sort ms-1" data-id=2 ref=asc></i></th>
-                  <th>ccodes</th>
+                <th>id</th>
+                <th>title <i class="fa fa-sort ms-1" data-id=1 ref=asc></i></th>
+                <th>type<i class="fa fa-sort ms-1" data-id=2 ref=asc></i></th>
+                <th>start<i class="fa fa-sort ms-1" data-id=3 ref=asc></i></th>
+                <th>end<i class="fa fa-sort ms-1" data-id=4 ref=asc></i></th>
+                <th>members<i class="fa fa-sort ms-1" data-id=5 ref=asc></i></th>
+                {% if whgteam %}
+	                <th>owner<i class="fa fa-sort ms-1" data-id=6 ref=asc></i></th>
+                {% endif %}
               </thead>
               <tbody>
-                {% for a in area_list %}
+                {% for cg in collectiongroup_list %}
                   <tr class="place-row">
-                    <td>{{ a.id }}</td>
-                    <td><a href="{% url 'areas:area-update' a.id %}">{{ a.title }}</a></td>
-                    <td>{{ a.type }}</td>
-                    <td>{{ a.ccodes }}</td>
+                    <td>{{ cg.id }}</td>
+                    <td><a href="{% url 'collection:collection-group-update' cg.id %}">{{ cg.title }}</a></td>
+                    <td>{{ cg.type }}</td>
+                    <td>{{ cg.start_date|date:'Y-m-d'  }}</td>
+                    <td>{{ cg.due_date|date:'Y-m-d' }}</td>
+                    <td>{{ cg.members.count }}</td>
+                    {% if whgteam %}
+	                    <td>{{ cg.owner.name }}</td>
+                    {% endif %}
                   </tr>
                 {% endfor %}
               </tbody>

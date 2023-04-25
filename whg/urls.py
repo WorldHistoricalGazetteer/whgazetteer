@@ -37,6 +37,7 @@ urlpatterns = [
     path('mycollections/', DataListsView.as_view(), name='data-collections'),
     path('mystudyareas/', DataListsView.as_view(), name='data-areas'),
     path('resourcelist/', DataListsView.as_view(), name='data-resources'),
+    path('mycollgroups/', DataListsView.as_view(), name='data-collgroups'),
 
     path('public_data/', PublicListsView.as_view(), name='public-lists'),
 

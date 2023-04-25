@@ -34,7 +34,7 @@ from shapely import wkt
 from shutil import copyfile
 
 from areas.models import Area
-from collection.models import Collection
+from collection.models import Collection, CollectionGroup
 from datasets.forms import HitModelForm, DatasetDetailModelForm, DatasetCreateModelForm, DatasetCreateEmptyModelForm
 from datasets.models import Dataset, Hit, DatasetFile
 from datasets.static.hashes import mimetypes_plus as mthash_plus
@@ -2151,7 +2151,6 @@ def ds_insert_tsv(request, pk):
               }
             ))
 
-
       # bulk_create(Class, batch_size=n) for each
       PlaceName.objects.bulk_create(objs['PlaceName'],batch_size=10000)
       PlaceType.objects.bulk_create(objs['PlaceType'],batch_size=10000)
@@ -2200,6 +2199,7 @@ class DataListsView(LoginRequiredMixin, ListView):
   template_c = 'datasets/data_collections.html'
   template_a = 'datasets/data_areas.html'
   template_r = 'datasets/data_resources.html'
+  template_cg = 'datasets/data_collection_groups.html'
 
   # which template to use?
   def get_template_names(self, *args, **kwargs):
@@ -2210,14 +2210,16 @@ class DataListsView(LoginRequiredMixin, ListView):
       return [self.template_c]
     elif self.request.path == reverse('data-areas'):
       return [self.template_a]
-    else:
+    elif self.request.path == reverse('data-resources'):
       return [self.template_r]
+    else:
+      return [self.template_cg]
 
   def get_queryset(self, **kwargs):
     me = self.request.user
     whgteam = me.is_superuser or 'whg_team' in [g.name for g in me.groups.all()]
     teaching = 'teaching' in [g.name for g in me.groups.all()]
-    # print('DataListsView() whgteam:' + str(whgteam) + ', teaching: ' + str(teaching))
+    print('me in DataListsView', me)
 
     if self.request.path == reverse('data-datasets'):
       idlist = [obj.id for obj in Dataset.objects.all() if me in obj.owners or
@@ -2229,28 +2231,34 @@ class DataListsView(LoginRequiredMixin, ListView):
         else Collection.objects.filter(owner=me).order_by('created')
       return list
     elif self.request.path == reverse('data-areas'):
-      print('areas...whgteam?', whgteam)
+      # print('areas...whgteam?', whgteam)
       study_areas = ['ccodes', 'copied', 'drawn']       # only user study areas
       list = Area.objects.all().filter(type__in=study_areas).order_by('-id') if whgteam else \
         Area.objects.all().filter(type__in=study_areas, owner=me).order_by('-id')
       # print('list:', list)
       return list
-    else:
-      print('resources...whgteam?', whgteam)
+    elif self.request.path == reverse('data-resources'):
+      # print('resources...whgteam?', whgteam)
       list = Resource.objects.all().order_by('create_date') if whgteam or teaching \
         else Resource.objects.all().filter(owner=me).order_by('created')
       # print('list:', list)
       return list
+    else:
+      # print('collgroups...whgteam?', whgteam)
+      list = CollectionGroup.objects.all().order_by('-created') \
+        if whgteam or teaching else CollectionGroup.objects.filter(owner=me).order_by('-created')
+      return list
+
 
   def get_context_data(self, *args, **kwargs):
     me = self.request.user
     context = super(DataListsView, self).get_context_data(*args, **kwargs)
-    print('in get_context', me)
+    print('me in get_context_data()', me)
 
     context['viewable'] = ['uploaded', 'inserted', 'reconciling', 'review_hits', 'reviewed', 'review_whg', 'indexed']
     context['beta_or_better'] = True if me.groups.filter(name__in=['beta', 'admins', 'whg_team']).exists() \
       else False
-    context['whgteam'] = True if me.groups.filter(name__in=['admins', 'whg_team']).exists() else False
+    context['whgteam'] = True if me.is_superuser or me.groups.filter(name__in=['admins', 'whg_team']).exists() else False
     # TODO: assign users to 'teacher' group
     context['teacher'] = True if self.request.user.groups.filter(name__in=['teacher']).exists() else False
     return context
@@ -3855,59 +3863,4 @@ if >1 match, compute parent winner and merge others as children
 #     print(len(hset), hset)
 #   print('write_idx_pass0(); process '+str(hits.count())+' hits')
 #   return HttpResponseRedirect(referer)
-
-"""
-DEPRECATED
-DashboardView()
-list user datasets, study areas, collections, teaching resources
-"""
-# class DashboardView(LoginRequiredMixin, ListView):
-#   login_url = '/accounts/login/'
-#   redirect_field_name = 'redirect_to'
-#
-#   context_object_name = 'dataset_list'
-#   template_name = 'datasets/dashboard.html'
-#
-#   def get_queryset(self):
-#     me = self.request.user
-#     if me.is_superuser or 'whg_team' in [g.name for g in me.groups.all()]:
-#       print('in get_queryset() if',me)
-#       return Dataset.objects.all().order_by('-create_date')
-#     else:
-#       return Dataset.objects.filter( Q(owner=me) ).order_by('-id')
-#
-#
-#   def get_context_data(self, *args, **kwargs):
-#     me = self.request.user
-#     context = super(DashboardView, self).get_context_data(*args, **kwargs)
-#     print('in get_context',me)
-#
-#     types_ok=['ccodes','copied','drawn']
-#     # returns co-owned and shared datasets (rw)
-#     context['shared_list'] = Dataset.objects.filter(id__in=myprojects(me)).order_by('-create_date')
-#
-#     context['public_list'] = Dataset.objects.filter(public=True).order_by('-numrows')
-#
-#     # list areas
-#     userareas = Area.objects.all().filter(type__in=types_ok).order_by('created')
-#     context['area_list'] = userareas if me.is_superuser else userareas.filter(owner=me)
-#
-#     # list collections
-#     collection_list = Collection.objects.all().order_by('create_date')
-#     context['collections'] = collection_list if me.is_superuser else \
-#       collection_list.filter(owner=me)
-#
-#     # list teaching resources
-#     resource_list = Resource.objects.all().order_by('create_date')
-#     context['resources'] = resource_list if me.is_superuser else \
-#       resource_list.filter(owner=me)
-#
-#     context['viewable'] = ['uploaded','inserted','reconciling','review_hits','reviewed','review_whg','indexed']
-#
-#     context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins', 'whg_team']).exists() else False
-#     # TODO: assign users to 'teacher' group
-#     context['teacher'] = True if self.request.user.groups.filter(name__in=['teacher']).exists() else False
-#     # TODO: user place collections
-#     #print('DashboardView context:', context)
-#     return context
 
