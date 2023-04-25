@@ -23,13 +23,13 @@
     <!--<h5 class="mb-2 mt-3">-->
     <h5 class="">
     {% if authority == 'idx' %}Accessioning{%else%}Reconciliation{%endif%} Review 
-    {% if deferred is True %}<span class="text-danger ml-2">(deferred)</span>{% endif %}
+    {% if deferred is True %}<span class="text-danger ms-2">(deferred)</span>{% endif %}
   </h5>
   </div> <!-- col 4-->
   <div class="col-sm-8">
     <span class="small">
     {% if deferred is False %}
-      <select id="select_pass" name="pass" class="custom-select-sm mr-2" style="width:auto;">
+      <select id="select_pass" name="pass" class="custom-select-sm me-2" style="width:auto;">
         {% if count_pass0 > 0 %}
         <option value="pass0">PASS 0 (auto-matched)&nbsp;</option>{% endif %}
         {% if count_pass1 > 0 %}
@@ -43,7 +43,7 @@
     {% endif %} 
     </span>
     <span class="help-matches" data-id="review"><i class="fas fa-question-circle linkypop"></i></span>
-    <span class="half float-right mr-2"><i>task id</i>: {{ task_id|truncatechars:10 }}...</span>
+    <span class="half float-end me-2"><i>task id</i>: {{ task_id|truncatechars:10 }}...</span>
   </div> <!-- col 8 -->
   </div> <!-- .row -->
   {% if nohits and passnum == 'def' %}
@@ -83,7 +83,7 @@
                 <a href="?page={{ records.paginator.num_pages }}">last &raquo;</a>
             {% endif %}
           </span>
-          <span class="float-right">
+          <span class="float-end">
             <a id="undo" class="small hidden-imp" href="" data-url="{% url 'datasets:match-undo' ds=ds_id tid=task_id pid=999 %}">
 	            Undo last save <i class="fas fa-undo" style="color:#336699;"></i></a>
           </span>
@@ -98,11 +98,11 @@
               <span>
                 <h4 class="text-danger">{{ record.title }}
 	                {% if record.comment_set.count == 0 %}
-                  <span class="float-right create-comment-review btn" data-id="{{ record.id }}"
+                  <span class="float-end create-comment-review btn" data-id="{{ record.id }}"
                       data-src='record'>add note <i class="fas fa-edit linky fa-xs"></i>
                   </span>
 	                {% elif record.comment_set.count > 0 %}
-		                <span class="float-right view-comments btn">show note(s) <i class="fas fa-edit linky fa-xs"></i></span>
+		                <span class="float-end view-comments btn">show note(s) <i class="fas fa-edit linky fa-xs"></i></span>
 	                {% endif %}
                 </h4>
               </span>
@@ -139,7 +139,7 @@
             {% if record.links.all|length > 0 %}
             <p><strong>Links</strong>: 
               {% for link in record.links.all %}
-                <a href="" class="mr-2 ext" data-toggle="modal" data-target="#ext_site">{{ link.jsonb.identifier }} <i class="fas fa-external-link-alt linky"></i></a>
+                <a href="" class="me-2 ext" data-toggle="modal" data-target="#ext_site">{{ link.jsonb.identifier }} <i class="fas fa-external-link-alt linky"></i></a>
               {% endfor %}</p>
             {% endif %}
             {% if record.minmax %}
@@ -172,7 +172,7 @@
               <div class="pl-2 pr-2 mb-1 matchbar">
                 <div class="match_radio custom-control custom-radio"  data-id="{{ form.authrecord_id.value }}">
                   {% if form.json.value|get:"geoms"|length > 0 %}
-                    <span class="mr-2 globeflash">
+                    <span class="me-2 globeflash">
                     <!--{ if form.json.value|get:"geoms" != Null }-->
                       <a class="geolink" rel="tooltip" 
                         {% if ds_label == 'tgn_filtered_01' or authority == 'whg' or authority == 'idx'%}
@@ -217,7 +217,7 @@
                   {% else %}
                   <p><strong>{{ authority|upper }} ID</strong>: 
                   {% endif %}
-                  <a href="" data-auth={{authority}} class="mr-2 ext-recon" >{{ form.authrecord_id.value }}</a><i class="fas fa-external-link-alt linky"></i>
+                  <a href="" data-auth={{authority}} class="me-2 ext-recon" >{{ form.authrecord_id.value }}</a><i class="fas fa-external-link-alt linky"></i>
                   </p>
                 {% endif %}
                 
@@ -244,7 +244,7 @@
                 {% if form.json.value|get:"links"|length > 0 %}
                   <p><strong>Links</strong>: 
                   {% for link in form.json.value|get:"links" %}
-                    <a href="" class="mr-2 ext" data-toggle="modal" data-target="#ext_site">{{ link }} <i class="fas fa-external-link-alt linky"></i></a>
+                    <a href="" class="me-2 ext" data-toggle="modal" data-target="#ext_site">{{ link }} <i class="fas fa-external-link-alt linky"></i></a>
                   {% endfor %}
                 </p>{% endif %}
 

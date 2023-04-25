@@ -25,10 +25,10 @@
 	  {% endif %}
     {% comment %}
 	  <span class="help" data-id="accessioning"><i class="fas fa-question-circle linkypop"></i></span>{% endcomment %}
-	  <span class="small ml-3"> <i>dataset</i>:
+	  <span class="small ms-3"> <i>dataset</i>:
 		  <a href="{% url 'datasets:ds_reconcile' id=ds_id %}"> {{ ds_label }}</a>
 	  </span>
-	  <span class="half float-right mr-2"><i>task id</i>: {{ task_id }}</span>
+	  <span class="half float-end me-2"><i>task id</i>: {{ task_id }}</span>
   </h5>
   {% if nohits %}
     <div>
@@ -52,7 +52,7 @@
 
         <div class="col-sm-8">
         <span>
-          <button type="submit" id="btn_save" class="button-sm mr-2">Save</button>
+          <button type="submit" id="btn_save" class="button-sm me-2">Save</button>
           {% if deferred is False %}
           <a id="defer_link" rel="tooltip" 
             title="flag for separate review" class="small" 
@@ -72,7 +72,7 @@
             {% endif %}
           </span>
 	        {% if test == 'on' %}
-	          <span class="bold float-right">VIEW ONLY</span>{% endif %}
+	          <span class="bold float-end">VIEW ONLY</span>{% endif %}
         </div>
       </div>
       <div class="row mt-2">
@@ -84,10 +84,10 @@
               <span>
                 <h4 class="text-danger">{{ record.title }}
                   {% if record.geoms %}
-                  <span class="ml-2"><svg height="18" width="18">
+                  <span class="ms-2"><svg height="18" width="18">
                     <circle cx="9" cy="8" r="7" stroke="grey" stroke-width="1" fill="green" fill-opacity="0.4"/>
                   </svg></span>{% endif %}
-                  <span class="float-right">
+                  <span class="float-end">
                     <button type="button" data-id="{{ record.id }}" class="create-comment btn"
                       data-src='record'> <i class="fas fa-edit linky fa-xs"></i></button>
                   </span>
@@ -122,7 +122,7 @@
             {% if record.links.all|length > 0 %}
             <p><strong>Links</strong>: 
               {% for link in record.links.all %}
-                <a href="" class="mr-2 ext" data-toggle="modal" data-target="#ext_site">{{ link.jsonb.identifier }} <i class="fas fa-external-link-alt linky"></i></a>
+                <a href="" class="me-2 ext" data-toggle="modal" data-target="#ext_site">{{ link.jsonb.identifier }} <i class="fas fa-external-link-alt linky"></i></a>
               {% endfor %}</p>
             {% endif %}
             {% if record.minmax %}
@@ -157,7 +157,7 @@
 	              {% for choice in form.match %}{{ choice }}&nbsp;{% endfor %}
                 <span class="help" data-id="matches"><i class="fas fa-question-circle linkypop"></i></span>
                 {% if form.json.value|get:"sources" %}
-                <span class="float-right mr-1 mt-1 smaller">
+                <span class="float-end me-1 mt-1 smaller">
 	                {{ form.json.value|get:"whg_id" }}&nbsp;&nbsp;{{ form.json.value|get:"sources"|length }} linked records <i class="fas fa-link linky"></i>
                 </span>
                 {% endif %}
@@ -191,7 +191,7 @@
 										{# index has some nulls in minmax #}
 		                {% if src.minmax and src.minmax.first != None %}; <i>earliest/latest</i>:<b> {{ src.minmax|join:"/"}}</b>{% endif %}
 		                <i class="text-muted">{{ src.pass }}</i>
-		                {% if src.related|length > 0 %}<br/><i class="ml-3">relation(s)</i>: <b>{{ src.related|join:","}}</b>{% endif %}
+		                {% if src.related|length > 0 %}<br/><i class="ms-3">relation(s)</i>: <b>{{ src.related|join:","}}</b>{% endif %}
                 </p>
 	                <p></p>
 	                </div>
@@ -201,7 +201,7 @@
               {% if form.json.value|get:"links"|length > 0 %} 
                 <p><strong>All concordances</strong>: 
                 {% for link in form.json.value|get:"links" %}
-                  <a href="" class="mr-2 ext" data-toggle="modal" data-target="#ext_site">{{ link }}
+                  <a href="" class="me-2 ext" data-toggle="modal" data-target="#ext_site">{{ link }}
 	                  <i class="fas fa-external-link-alt linky"></i></a>
                 {% endfor %}
               </p>{% endif %}

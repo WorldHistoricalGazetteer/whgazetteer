@@ -13,7 +13,7 @@
 <div class="container mt-1" style="height: calc(100vh - 90px);">
 	<div id="banner" class="banner-bare w-100 my-1 p-2">
 		<div class="centered w-100">
-		  <span class="title mb-0"><img src="{% static 'images/whg_logo.svg'%}" class="d-inline-block align-bottom mr-2" height=80 width=80 alt=""/>World Historical Gazetteer</span>
+		  <span class="title mb-0"><img src="{% static 'images/whg_logo.svg'%}" class="d-inline-block align-bottom me-2" height=80 width=80 alt=""/>World Historical Gazetteer</span>
 		  <span id="tagline" class="mx-auto" style="display:block">linking knowledge about the past via place</span>
 		</div>
 	</div>
@@ -71,7 +71,7 @@
             <a href="{% url 'collection:ds-collection-summary' featured_coll.0.id %}">{{ featured_coll.0.title}}</a>
           </p>
 					<p class="coll-description">
-            <a href="#" class="pop"><img class="thumbnail float-right pl-2" src="{{ imgc0 }}" alt="Detail from <a href='https://www.davidrumsey.com/luna/servlet/s/rp56bh' target='_blank'>'Carte De Hollande Et D&#39;utrecht' (Covens et Mortier, 1750)</a>" height=150 width=150 /></a>
+            <a href="#" class="pop"><img class="thumbnail float-end pl-2" src="{{ imgc0 }}" alt="Detail from <a href='https://www.davidrumsey.com/luna/servlet/s/rp56bh' target='_blank'>'Carte De Hollande Et D&#39;utrecht' (Covens et Mortier, 1750)</a>" height=150 width=150 /></a>
             {{ featured_coll.0.description|safe }}
           </p>
 				</div>
@@ -87,7 +87,7 @@
               <a href="{% url 'datasets:ds_meta' pk=featured_ds.0.id %}">{{featured_ds.0.title}}</a>
             </p>
             <p class="pr-0 coll-description">
-              <img class="pl-1 float-right" src="{{ imgd0 }}" width=75 />
+              <img class="pl-1 float-end" src="{{ imgd0 }}" width=75 />
               {{ featured_ds.0.description|safe|truncatechars:250 }}
             </p>
           </div> <!-- .item-right -->
@@ -102,7 +102,7 @@
               <a href="{% url 'collection:ds-collection-summary' featured_coll.1.id %}">{{featured_coll.1.title}}</a>
             </p>
             <p class="pr-0 coll-description">
-              <img class="pl-1 float-right"src="{{ imgc1 }}" width="75" />
+              <img class="pl-1 float-end"src="{{ imgc1 }}" width="75" />
               {{ featured_coll.1.description|safe|truncatechars:250 }}</div>
             </p>
 				  </div> <!-- .item-right -->

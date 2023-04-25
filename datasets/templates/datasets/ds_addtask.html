@@ -26,7 +26,7 @@
 {% block content %}
 <div id="dataset_content" class="container mt-1 px-1">
   <ul id="dataset_tabs" class="nav nav-tabs" role="tablist">
-      <span class="ds-title ml-1 mr-3">{{ ds.title }}</span>
+      <span class="ds-title ms-1 me-3">{{ ds.title }}</span>
       <li class="nav-item">
           <a class="nav-link" id="summary-tab" href="{% url 'datasets:ds_summary' id=ds.id %}" role="tab" aria-controls="summary" aria-selected="false">Metadata</a>
       </li>
@@ -70,7 +70,7 @@
                 <label class="form-check-label text-danger" for="r_idx">
                   <input type="radio" class="form-check-input" id="r_idx"
                     name="recon" value="idx">WHG accession (reconcile, index)
-                </label> <span class="float-right">test only? <input type="checkbox" name="test" ></span>
+                </label> <span class="float-end">test only? <input type="checkbox" name="test" ></span>
 								<br/>
 								{#	test reconcile against whg index; no writes #}
                 {% comment %}
@@ -118,7 +118,7 @@
             <div class="form-check">
               <label class="form-check-label" for="r_wdlocal">
                 <input type="radio" class="form-check-input r_wd" id="r_wdlocal"
-                  name="recon" value="wdlocal" checked>Wikidata (wdlocal) <span class="ml-2 font-italic small">estimated time: {{ ds.numrows|time_estimate }}</span>
+                  name="recon" value="wdlocal" checked>Wikidata (wdlocal) <span class="ms-2 font-italic small">estimated time: {{ ds.numrows|time_estimate }}</span>
               </label>
               {% if msg_wdlocal %}
                 <div id="wdlocal_tasks" class="smaller">
@@ -146,7 +146,7 @@
                       {% for r in region_list %}
                         <option value="{{ r.id }}">{{ r.title }}</option>
                       {% endfor %}
-                    </select><span class="ml-2"><b>or...</b></span></p>
+                    </select><span class="ms-2"><b>or...</b></span></p>
                   <p>
                     <select id="select_userarea" name="userarea" class="custom-select-sm" style="width:auto;">
                       <option value="0" selected="selected">Select user-defined study area</option>
@@ -156,7 +156,7 @@
                       {% endfor %}
                       <option value="create">{ new }</option>
                     </select>
-                  <span class="ml-2 small">
+                  <span class="ms-2 small">
                     <a href="{% url 'areas:area-create' %}?next=/datasets/{{ds.id}}/addtask">create user area</a>
                   </span></p>
                 </div>

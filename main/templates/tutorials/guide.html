@@ -191,7 +191,7 @@
                 <h5>Reconciliation</h5>
                 <p>Reconciliation tasks are initiated from this section and listed for access to review screens; <a href="#reconciliation">a process outlined in a later section</a>. A summary of the initial results is generated and displayed in a list, with links provided to access the <a href="#review">review screen</a>,</p>
                 <p>It is also possible to delete the task, its associated hits, and any match records created in review work. <span class="text-danger">Caution! There is no recovery from these clearing actions!</span></p>
-                <div class="ml-2 contributing">
+                <div class="ms-2 contributing">
                 <p class="mb-0 strong red-head">Contributing a dataset to WHG</p>
                 <p>After a dataset has been uploaded and, using our reconciliation services, augmented with as many links (matches) to modern authorities as possible (<a href="#reconciliation">see Reconciliation</a>), it can be considered for accessioning&mdash;that is, contributed to the WHG "union index." At this time all accessioning will be initiated by the WHG project team, and review performed by the dataset owner and collaborators.</p>
                 <p>Accessioning a dataset to WHG entails reconciling its records to the WHG index. Each record is compared with the WHG index to see if the referenced place already has one or more attestations from another dataset.                 If an incoming record has a concordance "link"" in common with with one already in the index, it will be automatically indexed as a "child" or "sibling" of the matched record (owners have the opton to review these or auto-accept them).</p>
@@ -236,7 +236,7 @@
                 <h6>What is a Match?</h6>
                 <p>The term <i>closeMatch</i> used by WHG comes from the <a href="https://www.w3.org/TR/2009/REC-skos-reference-20090818/" target="_blank">Simple Knowledge Organization System (SKOS) vocabulary</a>, a data model commonly used in linked data applications. For WHG, a Place is considered a SKOS:Concept, described by data records in <a href="https://github.com/LinkedPasts/linked-places" target="_blank">Linked Places format</a>, so assertions of a skos:closeMatch between your record and that of an external authority indicates:</p>
                 <!--<ul>-->
-                <p class="ml-5 my-2">"...(the) two concepts are sufficiently similar that they can be used interchangeably in some information retrieval applications"</p>
+                <p class="ms-5 my-2">"...(the) two concepts are sufficiently similar that they can be used interchangeably in some information retrieval applications"</p>
                 <!--</ul>-->
                 <p class="mb-4  >Note that <i>closeMatch</i> is a super-property of <i>exactMatch</i>; that is, every <i>exactMatch</i> is also a <i>closeMatch</i>. Clear? Oh well. Practically speaking, for WHG asserting closeMatch serves as a linking "glue." Specifically, records that share one or more common authority link will be conflated (linked) <b>in our union index" only</b>, and returned together in response to queries. For example, records for Abyssinia and Ethiopia from different sources share two links, to a DBPedia record and a TGN record. Therefore, they appear together when searching for either Abyssinia or Ethiopia. They are <i>not</i> conflated or linked in any way within the WHG database.</p>
               </div>

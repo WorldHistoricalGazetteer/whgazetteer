@@ -7,7 +7,7 @@
 <div class="container">
     
   <!--<div class="d-flex justify-content-center mt-3">-->
-  <div class="d-flex mt-3 ml-5">
+  <div class="d-flex mt-3 ms-5">
     <div>
       <h5 class="mb-3">Questions, bug reports, feature requests, support requests and comments all welcome!</h5>
       <p></p> 
@@ -20,7 +20,7 @@
           <tr><td>Message</td><td>{{ form.message }}</td></tr>
         </table>
         <p>Please type characters in this image 
-          <span class="ml-2">{{ form.captcha }} <a class="captcha smaller" href="#">refresh</a></span>
+          <span class="ms-2">{{ form.captcha }} <a class="captcha smaller" href="#">refresh</a></span>
         </p>
         {% if user.is_authenticated %}
         <input type="hidden" name="name" value='{{ user.name }}'>
@@ -29,7 +29,7 @@
         {% endif %}
         <div class="form-actions mt-2">
           <button class="submit-btn btn btn-primary" type="submit">Send</button>
-          <span class="ml-2"><a href="javascript:history.back()">Cancel</a></span>
+          <span class="ms-2"><a href="javascript:history.back()">Cancel</a></span>
         </div>
       </form>
     </div>

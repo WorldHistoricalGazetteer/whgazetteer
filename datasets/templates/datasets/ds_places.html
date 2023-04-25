@@ -53,7 +53,7 @@
 	  </p>
   {% endwith %}{% endcomment %}
   <ul id="dataset_tabs" class="nav nav-tabs" role="tablist">
-			<span class="ds-title ml-1 mr-3">{{ object.title }}</span>
+			<span class="ds-title ms-1 me-3">{{ object.title }}</span>
       <li class="nav-item">
           <a class="nav-link" id="summary-tab" data-link="summary" href="{% url 'datasets:ds_meta' pk=object.id %}" role="tab">Summary</a>
       </li>
@@ -80,11 +80,11 @@
 	        </p>
 	      </div>
 {#      {% endif %}#}
-      <span id="added_flash" class="mr-2 hidden" style="background-color: yellow; position:absolute; top:10px; right:10px;"> added! </span>
+      <span id="added_flash" class="me-2 hidden" style="background-color: yellow; position:absolute; top:10px; right:10px;"> added! </span>
       <div id="selection_status" style="position:absolute; right:20px;">
 	      <span id="actions">
-		      <span id="addtocoll" class="float-right ">
-{#            <span id="added_flash" class="mr-2 hidden" style="background-color: yellow;">added!</span>#}
+		      <span id="addtocoll" class="float-end ">
+{#            <span id="added_flash" class="me-2 hidden" style="background-color: yellow;">added!</span>#}
 			      <a id="addchecked" href="#">add<mark id="sel_count"></mark>to collection <i class="fa fa-plus"></i></a>
 		      </span>
 	      </span>

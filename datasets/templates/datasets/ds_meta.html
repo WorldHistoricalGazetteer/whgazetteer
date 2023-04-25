@@ -32,7 +32,7 @@
 	  <p class="small"><a href="{{ last }}"><i class="fas fa-arrow-alt-circle-left linky"></i> back</a> / {{ object.title }}</p>
   {% endwith %}
   <ul id="dataset_tabs" class="nav nav-tabs" role="tablist">
-      {%comment%}<span class="ds-title ml-1 mr-3"><small class="text-secondary">Dataset:</small></span>{%endcomment%}
+      {%comment%}<span class="ds-title ms-1 me-3"><small class="text-secondary">Dataset:</small></span>{%endcomment%}
       <li class="nav-item">
           <a class="nav-link active" id="summary-tab" data-link="summary" href="" role="tab">Dataset Summary</a>
       </li>
@@ -131,10 +131,10 @@
             <!-- they don't have access to original file -->
               {% if object.numrows <= 25000 %}
                 <p><a class="a-dl-celery" href="#" ref="lpf">Linked Places format <i class="fas fa-download linky"></i></a>
-                    <span id="file_lpf" class="ml-1"></span></p>
+                    <span id="file_lpf" class="ms-1"></span></p>
                 {% if current_file.format == 'delimited' %}
                   <p><a class="a-dl-celery" href="#" ref="tsv">LP-TSV <i class="fas fa-download linky"></i></a>
-                      <span id="file_tsv" class="ml-1"></span></p>
+                      <span id="file_tsv" class="ms-1"></span></p>
                 {% else %}
                   <p class="mt-2"><i>LP-TSV conversion is not possible for this LPF dataset. <a id="conversion_help" class="pointer" data-toggle="popover" title="LPF download options" data-content="<p>Data initially loaded in Linked Places format (LPF) has one&#8209;to&#8209;many relations that can't be converted to simple TSV files.</p>" tabindex="0" data-trigger="focus" data-original-title=""><i title="" class="fa fa-question-circle" style="color:#336699;"></i></a></i></p>
                 {% endif %}

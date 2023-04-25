@@ -66,10 +66,10 @@
     {% if action == 'update' %}
         Update Study Area
         <span class="text-danger">"{{ form.title.value }}"</span>
-        <span class="ml-3 half">
+        <span class="ms-3 half">
             (<mark id="count_result">{{ object.count_public }}</mark> places from public datasets lie within this area)
         </span>
-        <a href="{% url 'areas:area-delete' object.id %}" class="float-right"
+        <a href="{% url 'areas:area-delete' object.id %}" class="float-end"
         title="Delete area feature" rel="tooltip" style="margin-top:-2px;">
         <i class="fas fa-trash linkyred"></i></a>
     {% else %}
@@ -99,9 +99,9 @@
         <div class="tab-content">
           <div id="areas_codes" class="tab-pane fade show active">
             <p id="p_ccodes">Country codes (ISO 3166 alpha2) &nbsp;<a href="https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2" target="_blank"><i class="fas fa-external-link-alt linky"></i></a><br/>{{ form.ccodes }}
-              <span class="float-right ml-1">
+              <span class="float-end ms-1">
                 <a href="javascript:{ map_clear() }">clear</a></span>
-              <span class="float-right">
+              <span class="float-end">
                 <a href="javascript:{ map_render() }">preview |</a></span>
             </p>
             <p>Buffer (optional, km)<br/>

@@ -12,7 +12,7 @@
 {% block content %}
 <div id="dataset_content" class="container mt-1 px-1">
   <ul id="dataset_tabs" class="nav nav-tabs" role="tablist">
-      <span class="ds-title ml-1 mr-3">{{ ds.title }}</span>
+      <span class="ds-title ms-1 me-3">{{ ds.title }}</span>
       <li class="nav-item">
           <a class="nav-link" id="summary-tab" data-link="summary" href="{% url 'datasets:ds_summary' id=ds.id %}" role="tab" aria-controls="summary" aria-selected="false">Metadata</a>
       </li>
@@ -42,7 +42,7 @@
           <p><sr>Members</sr> can view its contents and metadata, and perform review of reconciliation task results. <br/><sr>Co-owners</sr> can perform all actions.</p>
         </div>
         {% if user.is_superuser or user in owners %}
-          <div class="ml-2 my-2">
+          <div class="ms-2 my-2">
             <div class="form-check form-check-inline sharing-input">
               <span class="input-group"> 
                 <input type="text" class="form-control input-sm" name="email" placeholder="Enter user email">
@@ -66,7 +66,7 @@
             <li>
               {{ c|safe }} <!-- username, bold -->
               {% if user.is_superuser or user in owners %}
-                <span class="float-right mr-2">
+                <span class="float-end me-2">
                 <a href="{% url 'datasets:collab-delete' uid=c.user_id_id dsid=ds.id v='2' %}">
                 <i class="fas fa-times-circle linky"></i></a></span>
               {% endif %}

@@ -1,4 +1,4 @@
-<!-- datasets/dashboard.html -->
+<!-- datasets/public_list.html -->
 {% extends "main/base.html" %}
 {% block title %}<title>WHG::Datasets</title>{% endblock %}
 {% block extra_head %}
@@ -27,19 +27,19 @@
   {% load dataset_extras %}
 
   <div class="container pt-3">
-    <ul id="public_list_tabs" class="nav nav-tabs" role="tablist">
-      <li class="nav-item">
-        <a class="nav-link active" id="dslist-tab" data-toggle="tab" href="#ds_list" role="tab" aria-controls="ds_list" aria-selected="false">Public Datasets</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" id="colllist-tab" data-toggle="tab" href="#coll_list" role="tab" aria-controls="coll_list" aria-selected="true">Public Collections</a>
-      </li>
-    </ul>
-    <div class="tab-content">
-      <div id="ds_list" class="tab-pane fade show active" role="tabpanel" aria-labelledby="dslist-tab">
+		<ul class="nav nav-tabs" id="myTab" role="tablist">
+		  <li class="nav-item" role="presentation">
+		    <button class="nav-link active" id="dslist-tab" data-bs-toggle="tab" data-bs-target="#ds_list" type="button" role="tab" aria-controls="ds_list" aria-selected="true">Public Datasets</button>
+		  </li>
+		  <li class="nav-item" role="presentation">
+		    <button class="nav-link" id="colllist-tab" data-bs-toggle="tab" data-bs-target="#coll_list" type="button" role="tab" aria-controls="coll_list" aria-selected="false">Public Collections</button>
+		  </li>
+		</ul>
+    <div class="tab-content" id="public_content">
+      <div id="ds_list" class="tab-pane fade show active" role="tabpanel" aria-labelledby="ds_list-tab">
         <p class="mb-1">These datasets flagged as <sr>public</sr> in WHG include <sr>a growing set of historical contributions</sr>, as well as several in a non-historical "core." They can be browsed on their linked pages, explored in context of the entire repository on the <a href="{% url 'search-page' %}">Search page</a>, and accessed programmatically with our <a href="{% url 'usingapi' %}">Index and Database APIs</a>.</p> 
-        <p>All such public data are made available under a <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">Creative Commons Attribution 4.0 International (CC BY 4.0) License</a>, requirements of which appear alongside download links on all Dataset and Collection pages <span class="float-right px-2" style="background:aliceblue;"><b>H</b> = Historical; <b>C</b> = Core (non-historical)</span></p> 
-        <div id="public_list" class="mt-1 ml-0">
+        <p>All such public data are made available under a <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">Creative Commons Attribution 4.0 International (CC BY 4.0) License</a>, requirements of which appear alongside download links on all Dataset and Collection pages <span class="float-end px-2" style="background:aliceblue;"><b>H</b> = Historical; <b>C</b> = Core (non-historical)</span></p>
+        <div id="public_list" class="mt-1 ms-0">
           <div class="list-box">
             <table id="public_dstable" class="table table-striped small">
 `              <colgroup>
@@ -51,12 +51,12 @@
                 <col style="width:60px !important">
               </colgroup>
 `              <thead>
-                  <th>title <i class="fa fa-sort ml-1" data-id=0 ref=asc></i></th>
+                  <th>title <i class="fa fa-sort ms-1" data-id=0 ref=asc></i></th>
                   <th>rows</th>
                   <th>description</th>
-                  <th>modified <i class="fa fa-sort ml-1" data-id=3 /></th>
-                  <th>contributor <i class="fa fa-sort ml-1" data-id=4 ref=asc></i></th>
-                  <th class="th-mini">type <i class="fa fa-sort ml-1" data-id=5></i></th>
+                  <th>modified <i class="fa fa-sort ms-1" data-id=3 /></th>
+                  <th>contributor <i class="fa fa-sort ms-1" data-id=4 ref=asc></i></th>
+                  <th class="th-mini">type <i class="fa fa-sort ms-1" data-id=5></i></th>
               </thead>
               <tbody>
                 {% for ds in dataset_list %}
@@ -76,9 +76,9 @@
           </div>
         </div>
       </div>
-      <div id="coll_list" class="tab-pane fade " role="tabpanel" aria-labelledby="colllist-tab">
-        <p class="mb-1 ml-1">These dataset and place collections have been flagged "published" in WHG. Most are downloadable from their linked page. Public data contained therein are made available under a <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">Creative Commons Attribution 4.0 International (CC BY 4.0) License</a>.</p>
-        <div id="collection_list" class="mt-1 ml-0">
+      <div id="coll_list" class="tab-pane fade " role="tabpanel" aria-labelledby="coll_list-tab">
+        <p class="mb-1 ms-1">These dataset and place collections have been flagged "published" in WHG. Most are downloadable from their linked page. Public data contained therein are made available under a <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">Creative Commons Attribution 4.0 International (CC BY 4.0) License</a>.</p>
+        <div id="collection_list" class="mt-1 ms-0">
           <div class="list-box">
             <table id="public_collectionlist"class="table table-striped">
               <thead class="small">
@@ -115,7 +115,7 @@
   <script>
     $("[rel='tooltip']").tooltip();
     $(function(){
-        <!--alert('{{ msg }}')-->
+
     })
     $(".fa-sort").on('click',function(){
       table_id =$(this).closest('table').prop('id') // parent table id

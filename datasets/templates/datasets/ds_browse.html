@@ -36,7 +36,7 @@
     <p>Access to this page is limited to the dataset owner and designated collaborators</p>
   {% else %}
   <ul id="dataset_tabs" class="nav nav-tabs" role="tablist">
-      <span class="ds-title ml-1 mr-3">{{ ds.title }}</span>
+      <span class="ds-title ms-1 me-3">{{ ds.title }}</span>
       <li class="nav-item">
           <a class="nav-link" id="summary-tab" href="{% url 'datasets:ds_summary' id=ds.id %}" role="tab"
              aria-controls="summary" aria-selected="false">Metadata</a>
@@ -80,7 +80,7 @@
               <div id="nouislider" class="my-2"></div>
               <!--<div><input style="width:100%;" id="slider" type="range" min= {ds.minmax.0}} max= {ds.minmax.1}} step="100" value="0"></div>
               <div class="small" style="margin-top:-10px;border-bottom:1px dashed #ddd;">
-                {{ds.minmax.0}}<span class="float-right">{{ds.minmax.1}}
+                {{ds.minmax.0}}<span class="float-end">{{ds.minmax.1}}
               </div>-->
               {%endcomment%}
               

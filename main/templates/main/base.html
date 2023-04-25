@@ -71,7 +71,7 @@
             </span>
         </div>
         <div id="links_other" class="d-none">
-            <a class="navbar-brand mr-0" href="{% url 'home' %}">&nbsp;World Historical Gazetteer</a>
+            <a class="navbar-brand me-0" href="{% url 'home' %}">&nbsp;World Historical Gazetteer</a>
             <a href="#" class="feedback text-decoration-none">contact us</a> |
             <a href="https://twitter.com/whgazetteer" target="_blank"><img src="{% static 'images/twitter30h.png'%}" height=14></a>
         </div>
@@ -122,13 +122,13 @@
                 <i class="fas fa-user" style="color:#336699;"></i></a>
             </li>
             <li class="nav-item">
-                <a class="nav-link `ml-5" href="javascript:{document.getElementById('logout').submit()}">Logout</a>
+                <a class="nav-link `ms-5" href="javascript:{document.getElementById('logout').submit()}">Logout</a>
                 <form id="logout" method="post" action="{% url 'accounts:logout' %}">
                   {% csrf_token %}</form>
             </li>
         {% else %}
             <li class="nav-item">
-                <a class="nav-link ml-5" href="{% url 'accounts:register' %}">Register</a>
+                <a class="nav-link ms-5" href="{% url 'accounts:register' %}">Register</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'accounts:login' %}">Login</a>
@@ -140,7 +140,7 @@
 </nav>
     {% comment %}<nav class="navbar navbar-expand-lg navbar-light">
       <div class="container" style="background-color: gainsboro;">
-        <a class="navbar-brand mr-0" href="{% url 'home' %}">
+        <a class="navbar-brand me-0" href="{% url 'home' %}">
           <img src="{% static 'images/whg_logo_38h.png'%}" class="d-inline-block align-bottom" height=38 width=50 alt=""/></a>
 				<!-- alternate nav elements for home page and others-->
 				<div id="nav_links" class="smallish d-lg-block pt-2">
@@ -157,7 +157,7 @@
 						</span>
 					</div>
 					<div id="links_other" class="d-none">
-						<a class="navbar-brand mr-0" href="{% url 'home' %}">&nbsp;World Historical Gazetteer</a>
+						<a class="navbar-brand me-0" href="{% url 'home' %}">&nbsp;World Historical Gazetteer</a>
 						<a href="#" class="feedback">contact us</a> |
 						<a href="https://twitter.com/whgazetteer" target="_blank"><img src="{% static 'images/twitter30h.png'%}" height=14></a>
 					</div>
@@ -212,13 +212,13 @@
 						<a class="nav-link" rel="tooltip" title="{{ user.name }}'s profile" href="{% url 'accounts:profile' %}"><i class="fas fa-user" style="color:#336699;"></i></a>
 					  </li>
 					  <li class="nav-item">
-							<a class="nav-link `ml-5" href="javascript:{document.getElementById('logout').submit()}">Logout</a>
+							<a class="nav-link `ms-5" href="javascript:{document.getElementById('logout').submit()}">Logout</a>
 							<form id="logout" method="post" action="{% url 'accounts:logout' %}">
 							  {% csrf_token %}</form>
 					  </li>
 						{% else %}
 					  <li class="nav-item">
-						<a class="nav-link ml-5" href="{% url 'accounts:register' %}">Register</a>
+						<a class="nav-link ms-5" href="{% url 'accounts:register' %}">Register</a>
 					  </li>
 					  <li class="nav-item">
 						<a class="nav-link" href="{% url 'accounts:login' %}">Login</a>

@@ -48,7 +48,7 @@
       <div class="row">
       <div id="ds_details" class="col-sm-7 small">
       {% if object.owner.id == user.id or user.is_superuser %}
-        <span class="float-right">
+        <span class="float-end">
           Delete dataset <a href="{% url 'datasets:dataset-delete' ds.id %}" class="" title="Delete dataset" rel="tooltip"><i class="fas fa-trash linkyred"></i></a></span>
       {% endif %}
         <table class="ds-table">
@@ -191,7 +191,7 @@
             {% if current_file.format == 'delimited' %}
 	            {# expose update link only to update_beta group #}
 	            {% if user|has_group:'update_beta' or user.is_superuser%}
-		            <span class="float-right mr-2">
+		            <span class="float-end me-2">
 		              <a href="#" id="a_update_modal" data-dsid = {{ ds.id }} data-toggle="modal" data-target="#updateModal">update</a>
 		              <span class="help-matches" data-id="updates"><i class="fas fa-question-circle linkypop"></i></span>
 		            </span>
@@ -303,16 +303,16 @@
                 <!-- lptsv originally -->
                 {% if current_file.format == 'delimited' %} 
                   <!-- offer lpf, augmented or not -->
-                  <p><a class="a-dl-celery" href="#" ref="lpf">Linked Places format <i class="fas fa-download linky"></i></a><span id="file_lpf" class="ml-1"></span></p>
+                  <p><a class="a-dl-celery" href="#" ref="lpf">Linked Places format <i class="fas fa-download linky"></i></a><span id="file_lpf" class="ms-1"></span></p>
                   {% if links_added > 0 or geoms_added > 0 %}
                     <!-- augmented, offer tsv -->
                     <p><a class="a-dl-celery" href="#" ref="tsv">LP-TSV (augmented) <i class="fas fa-download linky"></i></a>
-                      <span id="file_tsv" class="ml-1"></span></p>
+                      <span id="file_tsv" class="ms-1"></span></p>
                   {% endif %}
                 <!-- lpf originally -->
                 {% elif links_added > 0 or geoms_added > 0 %} 
                   <!-- offer dl if augmented -->
-                  <p><a class="a-dl-celery" href="#" ref="lpf">Linked Places format <i class="fas fa-download linky"></i></a> (augmented) <span id="file_lpf" class="ml-1"></span></p>
+                  <p><a class="a-dl-celery" href="#" ref="lpf">Linked Places format <i class="fas fa-download linky"></i></a> (augmented) <span id="file_lpf" class="ms-1"></span></p>
                   <p class="mt-2"><i>LP-TSV conversion is not possible for this LPF dataset. <a id="conversion_help" class="pointer" data-toggle="popover" title="LPF download options" data-content="<p>Data initially loaded in Linked Places format (LPF) has one&#8209;to&#8209;many relations that can't be converted to simple TSV files.</p>" tabindex="0" data-trigger="focus" data-original-title=""><i title="" class="fa fa-question-circle" style="color:#336699;"></i></a></i></p>
                 {% else %}
                   <!-- originally lpf, not yet augmented -->

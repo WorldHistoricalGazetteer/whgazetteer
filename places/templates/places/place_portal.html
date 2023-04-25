@@ -69,7 +69,7 @@
 {% block content %}
 <div class="container">
   <div id="place_title">
-    <span id="backlink" class="mr-1 text-muted smaller"> <a href="javascript:window.history.go(-1);" class="history1">return to search results</a></span>
+    <span id="backlink" class="me-1 text-muted smaller"> <a href="javascript:window.history.go(-1);" class="history1">return to search results</a></span>
     <h4>{{ title }}</h4>
   </div>
   <div id="place_content" class="tab-content">
@@ -77,8 +77,8 @@
       <div id="place_home_l" class="col-sm-6">
 	      <div class="small allcap-heading">
 		      ATTESTATIONS TO DATE
-		      <span id="added_flash" class="float-right"></span>
-		      <span id="addtocoll" class="float-right mr-1 hidden">
+		      <span id="added_flash" class="float-end"></span>
+		      <span id="addtocoll" class="float-end me-1 hidden">
 			      <a id="addchecked" href="#">add to collection {% fontawesome_icon 'plus' %}</a>
 		      </span>
 	      </div>
@@ -91,19 +91,19 @@
             <div class="attest-header">
           {% endif %}
           <b>{{ rec.title }}</b>
-          <span class="ml-2">
+          <span class="ms-2">
             dataset: <a class="pop-link pop-dataset" data-id={{rec.dataset.id}} data-toggle="popover" title="Dataset Profile" data-content="" tabindex="0" rel="clickover">
 	              {{rec.dataset.name|truncatechars:25}}</a>
-          <span class="float-right">
-            <a href="#" data-id="{{ rec.place_id }}" class="create-comment mr-2" rel="tooltip" title="create note">
+          <span class="float-end">
+            <a href="#" data-id="{{ rec.place_id }}" class="create-comment me-2" rel="tooltip" title="create note">
               issue? <i class="fas fa-edit linky fa-xs"></i></a>pid:
             <a href="" class="a_modal" data-pid="{{ rec.place_id }}" data-toggle="modal" data-target="#modal_place" title="full record">{{ rec.place_id }}</a>
-            <span class="ml-2">
+            <span class="ms-2">
               {% if rec.geoms|length > 0 %}
                 <a href="#" class="flash-geo ttip" data-id="{{ rec.place_id }}" title="flash map marker">{% fontawesome_icon 'map-marker' %}</a>
               {% endif %}
               {% if user.is_authenticated %}
-              <input type="radio" name="r_anno" rel="tooltip" title="add to a collection" class="action ml-2" data-id="{{ rec.place_id }}" />
+              <input type="radio" name="r_anno" rel="tooltip" title="add to a collection" class="action ms-2" data-id="{{ rec.place_id }}" />
               {% endif %}
             </span>
           </span>
@@ -211,13 +211,13 @@
         </div>
         <div id="place_map" class="col-content small">
           <p class="mb-0 allcap-heading">GEOGRAPHY <span class="nogeo text-danger"></span>
-              <span id="fetch_context" class="float-right">nearby places (8000 max) <input id="fetch-context" type="checkbox"/></span>
+              <span id="fetch_context" class="float-end">nearby places (8000 max) <input id="fetch-context" type="checkbox"/></span>
           </p>
           <div id="map">{% leaflet_map "map" callback="map_init" %}</div>
         </div>
         <div id="place_traces" class="col-content small mt-1">
           <p class="mb-0 allcap-heading">IN COLLECTIONS
-            <span id="clear_markers" class="float-right hidden"><a href="#">clear markers</a> </span>
+            <span id="clear_markers" class="float-end hidden"><a href="#">clear markers</a> </span>
           </p>
           <div id="collection_list">
           {% if collections|length > 0 %}

@@ -42,7 +42,7 @@
         <li class="nav-item">
 	        <a class="nav-link active" id="a_idx" data-scope="idx" href="#" role="tab" style="background:#f1fff1;"> Search Index <i class="fas fa-link linky"></i></a>
         </li>
-        <li class="nav-item ml-1">
+        <li class="nav-item ms-1">
 	        <a class="nav-link" id="a_db" data-scope="db" href="#" role="tab" style="background:whitesmoke;">Search Database <i class="fas fa-database linky"></i></a>
         </li>
       </ul>
@@ -51,8 +51,8 @@
         <div class="small row">
           <div id="filters_class" class="col-md-12 col-lg-6">
             <p class="mb-0">place categories
-            <span class="ml-1">
-              <span class="mr-1"><a id="check_toggle" href="#">clear all</a></span>
+            <span class="ms-1">
+              <span class="me-1"><a id="check_toggle" href="#">clear all</a></span>
               <a id="filter_help" class="pointer" data-toggle="popover" title="Place categories" data-content="" tabindex="0" data-trigger="focus"><i class="fas fa-question-circle linky"></i></a>
             </span>
             </p>
@@ -68,17 +68,17 @@
           </div>
           <div id="filters_st" class="col-md-12 col-lg-6">
             <p class="mb-0">temporal ( default = all )
-            <span class="float-right">
+            <span class="float-end">
               <a id="temporal_help" class="pointer" data-toggle="popover" title="Temporal filter" data-content="" tabindex="0" data-trigger="focus">
               <i class="fas fa-question-circle linky"></i></a></span>
             </p>
             <div>
               <label class="input-sm"><input id="input_start" type="text" value = "" size="12" placeholder="earliest year"></label>
-              <label class="input-sm ml-2"><input id="input_end" type="text" value = "" size="12" placeholder="latest year"></label>
+              <label class="input-sm ms-2"><input id="input_end" type="text" value = "" size="12" placeholder="latest year"></label>
             </div>
             <div id="filter_spatial">
             <p class="mb-0">spatial
-              <span class="float-right">
+              <span class="float-end">
               <a id="spatial_help" class="pointer" data-toggle="popover" title="Spatial filter" data-content="" tabindex="0" data-trigger="focus">
               <i class="fas fa-question-circle linky"></i></a></span>
             </p>
@@ -86,20 +86,20 @@
               <input type="hidden" id="boundsobj" />
             </div>
 	          <span id="dbicon" class="hidden"><i class="fas fa-database linky"></i></span>
-            <div id="search_resets" class="float-right pt-4">
+            <div id="search_resets" class="float-end pt-4">
               <span id="reset_search" class="hidden">
                 <a href="javascript:resetSearch()">reset search</a></span>
               <span id="reset_filters" class="hidden">
-                <a class="ml-3" href="javascript:clearMapFilter()">reset filters</a></span>
+                <a class="ms-3" href="javascript:clearMapFilter()">reset filters</a></span>
             </div>
           </div> <!-- #filters_st -->
         </div> <!-- .row -->
       </div> <!-- #search_filters -->
       <div id="result_filters" class="pt-2 pl-1 hidden">
-	      <p class="half pl-2 mr-1">result filters <i class="fas fa-filter linky"></i>
+	      <p class="half pl-2 me-1">result filters <i class="fas fa-filter linky"></i>
         <span id="dropdown_filters">
-        <span class="ml-2"><select id="type_select"></select></span>
-        <span class="ml-2"><select id="cc_select"></select></span>
+        <span class="ms-2"><select id="type_select"></select></span>
+        <span class="ms-2"><select id="cc_select"></select></span>
         </span>
         </p>
       </div>
@@ -108,7 +108,7 @@
       <div id="search_right" class="col-sm-6">
         <div id="map_options" class="p-1 small">
         <span id="offer_mapfilter" class="hidden">Draw a bounding box to filter result list</span>
-        <span id="clear_mapfilter" class="hidden float-right"><a href="javascript:mappy.fitBounds( features.getBounds())">clear map filter</a></span>
+        <span id="clear_mapfilter" class="hidden float-end"><a href="javascript:mappy.fitBounds( features.getBounds())">clear map filter</a></span>
         </div>
         {% leaflet_map "map_search" %}
       </div> <!--#search_right -->
@@ -129,9 +129,9 @@
       </div> <!-- search_info -->
       <div id="type_filter" class="hidden">
         <p class='allcap-heading half mb-0 pl-1'>PLACE TYPES (select to limit)
-          <span class="float-right mr-2"><a href="#" class="hide-filter">
+          <span class="float-end me-2"><a href="#" class="hide-filter">
 	          close <i class="fas fa-times-circle linky"></i></a></span>
-          <span class="float-right clear-filter hidden mr-2"><a href="#">restore all</a></span>
+          <span class="float-end clear-filter hidden me-2"><a href="#">restore all</a></span>
         </p>
         <ul class="list-inline"></ul>
       </div>
@@ -1018,14 +1018,14 @@
     geoms=[]
     var types=[], typesArr = [], ccArr = []
     if(data.length == 0) {
-      results_div += '<p class="small ml-2">No results, sorry. Try database search for records that are not yet indexed</p>'
+      results_div += '<p class="small ms-2">No results, sorry. Try database search for records that are not yet indexed</p>'
     } else {
       result_table ='<table id="result_table" class="tableFixHead"><thead><tr>'
-      +'<th>Title <i class="fa fa-sort ml-1" data-id=0 ref=asc></i></th>'
-      +(search_scope=='idx'?'<th>Linked <i class="fa fa-sort ml-1" data-id=1 ref=desc></i></th>':'')
+      +'<th>Title <i class="fa fa-sort ms-1" data-id=0 ref=asc></i></th>'
+      +(search_scope=='idx'?'<th>Linked <i class="fa fa-sort ms-1" data-id=1 ref=desc></i></th>':'')
       +'<th>Countries&nbsp;<i class="fa fa-sort small" data-id='
       +(search_scope=='idx'?2:1)+' ref=asc></i></th>'
-      +(search_scope=='idx'?'':'<th>Dataset <i class="fa fa-sort ml-1" data-id=2 ref=asc></i></th>')
+      +(search_scope=='idx'?'':'<th>Dataset <i class="fa fa-sort ms-1" data-id=2 ref=asc></i></th>')
       +'<th>Type(s)</th><th>Name variants</th><th>geom?</th> </tr></thead>'
 
       countadded = 0
@@ -1088,7 +1088,7 @@
     let elem = document.getElementById('result_div')
 
     titleMarkup = src+' SEARCH RESULTS (<span id="rowcount">'+
-		    data.length+'</span>)<span class="ml-4">List may include records with no geometry</span>'
+		    data.length+'</span>)<span class="ms-4">List may include records with no geometry</span>'
 
     $("#result_title").html(titleMarkup)
     $("#result_title").fadeIn()

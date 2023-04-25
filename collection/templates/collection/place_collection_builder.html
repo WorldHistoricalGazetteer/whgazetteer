@@ -89,7 +89,7 @@
 	  <h5 class="mt-3">
 		  {% if action == 'update' %}<span class="text-secondary">Place Collection Builder:</span>
 		    <span class="text-bold red-head">{{ form.title.value }}</span>
-				<span class="float-right small">
+				<span class="float-end small">
 					<span class="badge badge-warning px-2">beta</span>&nbsp;&nbsp;
 			    <a href="{% url 'collection:place-collection-browse' object.id %}">
 				    view&nbsp;&nbsp;<i class="fas fa-eye linky"></i></a>&nbsp;
@@ -178,7 +178,7 @@
 	        <td class="my-0 small">&#x02733;<i><b> required</b></i></td>
 	        <td>
 		        {% if action == 'update' and user in whgteam %}
-			        <a class="float-right show-hide" href="#">
+			        <a class="float-end show-hide" href="#">
 				        editor options <i class="fas fa-cog linky"></i>
 			        </a>
 		        {% endif %}
@@ -200,14 +200,14 @@
 					{% endif %}
 				</div>
 	      <div id="d_buttons" class="" style="">
-          <span class="float-right">
+          <span class="float-end">
 		      <a href="/mycollections">Cancel</a>
           {# TODO: convert to bootstrap buttons for styling #}
           {% if action == 'create' %}
-	          <input id="btn_coll_submit" class="btn-sm btn-primary mt-2 ml-2" type="submit" value="Save" />
+	          <input id="btn_coll_submit" class="btn-sm btn-primary mt-2 ms-2" type="submit" value="Save" />
           {% else %}
-	          <input id="btn_coll_submit" name="display" class="btn-sm btn-primary mt-2 ml-2" type="submit" value="Save & Exit" />
-	          <input id="btn_coll_update" name="update" class="btn-sm btn-info mt-2 ml-2" type="submit" value="Update" />
+	          <input id="btn_coll_submit" name="display" class="btn-sm btn-primary mt-2 ms-2" type="submit" value="Save & Exit" />
+	          <input id="btn_coll_update" name="update" class="btn-sm btn-info mt-2 ms-2" type="submit" value="Update" />
           {% endif %}
           </span>
 	      </div>
@@ -251,7 +251,7 @@
 		    <div id="builder_content" class="tab-content">
 			    <div id="coll_dslist" class="tab-pane fade" role="tabpanel" aria-labelledby="coll_dslist-tab">
 		        <p class="mt-2">
-			        <span class="mr-2 smaller">
+			        <span class="me-2 smaller">
 			          <select id="select_ds" name="ds" class="custom-select-sm">
 			          <option value="0">Select dataset</option>
 			          <option disabled>___________</option>
@@ -279,7 +279,7 @@
 			              <p class="my-1"><b>Description</b>: {{ d.description|truncatechars:150 }}</p>
 			              <p class="my-1"><b>Create date</b>: {{ d.create_date|date:"d M Y" }}</p>
 			              <p class="my-1"><b># rows</b>: {{ d.numrows }}
-			              <a href="{% url 'collection:remove-ds' ds_id=d.id coll_id=object.id %}" class="float-right">
+			              <a href="{% url 'collection:remove-ds' ds_id=d.id coll_id=object.id %}" class="float-end">
 				              <i class="fas fa-minus-square linky"></i> remove</a>
 			              </p>
 			            </div>
@@ -295,14 +295,14 @@
 							      <i>pid: (<a class="coll-place" data-pid={{ p.id }} href="#" >{{ p.id }}</a>)</i>
 						        {# candidate for biggest kluge ever; tooltip breaks for single place!? #}
 						        {% if coll_places|length > 1 %}
-						        <span class="float-right mr-1">
+						        <span class="float-end me-1">
 							        <a class="mark-place" href="#" title="Remove from collection" rel="tooltip" data-pid="{{ p.id }}" data-col="{{ object.id }}">
 								        <i class="fas fa-minus-square" style="color:#ff8080"></i></a>
 							        {% comment %}<a class="anno-place" href="#" title="Annotate place" rel="tooltip" data-pid="{{ p.id }}">
 								        <i class="fas fa-edit linky fa-xs"></i></a>{% endcomment %}
 						        </span>
 						        {% else %}
-						        <span class="float-right mr-1">
+						        <span class="float-end me-1">
 							        <a class="mark-place" href="#" title="Remove from collection" data-pid="{{ p.id }}" data-col="{{ object.id }}">
 								        <i class="fas fa-minus-square" style="color:#ff8080"></i></a>
 							        {% comment %}<a class="anno-place" href="#" title="Annotate place" data-pid="{{ p.id }}">
@@ -864,7 +864,7 @@
           +'<p class="my-1"><b>Create date</b>: '+d.create_date.slice(0,10)+'; <b># rows</b>: '+d.numrows+'</p>'
           +'<p class="my-1"><a href="javascript:{ removeDataset('+d.id+') }">'
               +'<i class="fas fa-minus-square" style="color:#336699"></i> remove</a>'
-		          +'<span class="float-right"><a class="a_addplaces" href="javascript:{addPlaces('+d.id+')}">add all '
+		          +'<span class="float-end"><a class="a_addplaces" href="javascript:{addPlaces('+d.id+')}">add all '
 		          +d.numrows+' places</a></span'
 		      +'</p></div></div>'
 		$(".a_addplaces").click(function(){

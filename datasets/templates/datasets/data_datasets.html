@@ -46,7 +46,7 @@
     </ul>
     <div class="tb-content">
       <div id="mydslist" class="tab-pane fade show active" role="tabpanel" aria-labelledby="mydslist-tab">
-        <p class="mb-1 ml-1">
+        <p class="mb-1 ms-1">
 	          <a href="{% url 'datasets:dataset-create' %}" class="">
 		          <i class="fas fa-plus-square linky"></i> upload new</a>
 						{% if user|has_group:"beta30" or whgteam %}
@@ -56,7 +56,7 @@
 							</span>
 						{% endif %}
 	        {% if whgteam %}
-          <span class="ml-2 float-right small">
+          <span class="ms-2 float-end small">
 	          <select id="status_select">
 	          <option value="all">Filter status</option>
 	          <option value="uploaded">Uploaded</option>
@@ -72,22 +72,22 @@
         <div id="dataset_list" class="mt-1">
           <div class="list-box">
             <h6 class="my-2">My Datasets
-	            <span class="smaller float-right pr-4"><i class="small fa fa-users" style="color:grey;"></i> = Collaborator</span>
+	            <span class="smaller float-end pr-4"><i class="small fa fa-users" style="color:grey;"></i> = Collaborator</span>
             </h6>
             {% if dataset_list|length == 0 %}<p class="smaller"><i>None yet...</i></p>
             {% else %}
             <table id="table_ds" class="table table-striped">
               <thead class="small strong">
                 <th>id</th>
-                <th>name <i class="fa fa-sort ml-1" data-id=1 ref=asc></i></th>
-                <th>label <i class="fa fa-sort ml-1" data-id=2 ref=asc></i></th>
-                <th>created <i class="fa fa-sort ml-1" data-id=3 title="UTC"></i></th>
+                <th>name <i class="fa fa-sort ms-1" data-id=1 ref=asc></i></th>
+                <th>label <i class="fa fa-sort ms-1" data-id=2 ref=asc></i></th>
+                <th>created <i class="fa fa-sort ms-1" data-id=3 title="UTC"></i></th>
                 <th>format</th>
                 <th># rows</th>
-                <th>status <i class="fa fa-sort ml-1" data-id=6 ref=asc></i></th>
+                <th>status <i class="fa fa-sort ms-1" data-id=6 ref=asc></i></th>
                 <!--{ if user.is_superuser %}-->
                 {% if beta_or_better %}
-                <th>owner <i class="fa fa-sort ml-1" data-id=7 ref=asc></i></th>{% endif %}
+                <th>owner <i class="fa fa-sort ms-1" data-id=7 ref=asc></i></th>{% endif %}
               </thead>
               <tbody>
                 {% for d in dataset_list %}
@@ -97,7 +97,7 @@
                     <a href="{% url 'datasets:ds_summary' d.id %}" title="Dataset details" rel="tooltip">
 	                    {{ d.title }}</a>
 	                    {% if not user == d.owner %}
-		                    <span class="smaller ml-3">
+		                    <span class="smaller ms-3">
 			                    <i class="small fa fa-users" style="color:grey;"></i></span>
 	                    {% endif %}
                     </td>

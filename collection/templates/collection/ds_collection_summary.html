@@ -29,7 +29,7 @@
 <div class="container mt-1">
 	{% if user.id == object.owner.id or user.is_superuser or user in whgteam %}
 	<div>
-		<span class="float-right mr-2 pt-2">
+		<span class="float-end me-2 pt-2">
 			<a href="{% url 'collection:ds-collection-update' object.id %}" >
 				<i class="fas fa-cog linky"></i></a>
 		</span>
@@ -82,7 +82,7 @@
 	        {{ g|safe|json_script:g.properties.id }}
 	      {% endfor %}
 	      <div>
-	        <h5>Datasets ({{ds_list|length}})<span class="small float-right mr-2">
+	        <h5>Datasets ({{ds_list|length}})<span class="small float-end me-2">
 	          <i class="fas fa-download linky"></i> <a href="" id="a_download_modal" data-dsid = {{ object.id }} data-toggle="modal" data-target="#downloadModal" title="download options"> download options</a></span>
 	        </h5>
 	        <!-- fields: id, label, title, description, creator, create_date, webpage, numrows, datatype -->
@@ -98,7 +98,7 @@
 	                <li class=""><b>Created</b>: {{ d.create_date|date:"d M Y" }}</li>
 	                <li class="">
 	                  <b>Number of records</b>: {{ d.numrows }}
-	                  <span class="dl-links float-right mr-2">
+	                  <span class="dl-links float-end me-2">
 	                  </span>
 	                </li>
 	                </ul>
@@ -135,7 +135,7 @@
                 <tr class="align-top">
                 <td>{{ d.title }}&nbsp;
                   <a id="cite_{{d.id}}" class="clippy" aria-label="{% if d.citation %}{{ d.citation }}{% else %}{{d.title}}. [Data file, last modified {{ d.last_modified_text}}]. Retrieved from http://whgazetteer.org/datasets/{{d.id}}, {% now 'd M Y' %}{% endif %}" rel="tooltip" title="copy to clipboard"><i class="fas fa-clipboard linky"></i></a><br/>
-                  <span class="ml-2 small" style="disply:block"><i>est. download time: {{d.dl_est}}</i></span>
+                  <span class="ms-2 small" style="disply:block"><i>est. download time: {{d.dl_est}}</i></span>
                 </td>
                 <td>{{d.numrows}}</td>
                 <td> <!-- always offer lpf -->
@@ -144,7 +144,7 @@
                     <label class="form-check-label" for="r_lpf">LPF</label>
                   </div>
                   {% if d.format == 'delimited' %}
-                  <div class="form-check form-check-inline ml-1">
+                  <div class="form-check form-check-inline ms-1">
                     <input class="form-check-input hover" type="radio" name="format" value="tsv">
                     <label class="form-check-label" for="r_lp-tsv">LP-TSV</label>
                   </div>
