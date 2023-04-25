@@ -25,7 +25,7 @@ def validate_usersfile(tempfn, cg):
   def emailValid(email):
     return True if re.fullmatch(r_email, email) else False
   # buckets
-  result = {"status":'ok', "errors": [], "create_add": [],
+  result = {"status":'validated', "errors": [], "create_add": [],
             'just_add': [], 'already': []}
   import csv
   with open(tempfn, newline='') as csvfile:
@@ -68,6 +68,15 @@ def validate_usersfile(tempfn, cg):
   # print('validate result', result)
   return result
 
+def add_to_group(cg,member):
+  print('add_to_group', cg, member)
+  cguser = CollectionGroupUser.objects.create(
+    role='normal',
+    collectiongroup=cg,
+    user=member
+  )
+  cguser.save()
+
 @login_required
 def addusers(request):
   if request.method == 'POST':
@@ -75,7 +84,9 @@ def addusers(request):
     print('addusers() request.POST', request.POST)
     cgid = request.POST['cgid']
     cg=get_object_or_404(CollectionGroup, id=cgid)
-    added_count = 0
+    created_count = 0
+    only_joined_count = 0
+    new_members=[]
 
     # VALIDATION
     if action == 'upload':
@@ -99,28 +110,51 @@ def addusers(request):
       result = validate_usersfile(tempfn, cg)
       print('validation result', result)
     elif action == 'addem':
-      # create users
-      to_add = json.loads(request.POST['newusers'])
-      for u in to_add:
-        print('u', u)
-        new_user = User.objects.create(
-          email = u[0],
-          name = u[1],
-          # email name reversed
-          password = re.match('^(.*)@', u[0]).group(1)[::-1]
-        )
-        new_user.save()
-        # add to CollectionGroup
-        cguser = CollectionGroupUser.objects.create(
-          role = 'normal',
-          collectiongroup = cg,
-          user=new_user
-        )
-        cguser.save()
-        added_count +=1
-
-      result= {'status': 'added ' + str(added_count)+' users',
-               'users': [[u[0], u[1] ]for u in to_add], 'errors':[]}
+      try:
+        # process 'create_add' and 'just_add'
+        create_add = json.loads(request.POST['create_add']) or None
+        just_add = json.loads(request.POST['just_add']) or None
+        print('just_add',just_add)
+        print('create_add',create_add)
+        # return
+        # create new
+        if create_add:
+          for u in create_add:
+            print('u', u)
+            new_user = User.objects.create(
+              email = u[0],
+              name = u[1],
+              # email name reversed
+              password = re.match('^(.*)@', u[0]).group(1)[::-1]
+            )
+            new_user.save()
+            add_to_group(cg,new_user)
+            created_count +=1
+            new_members.append([u[0], u[1], new_user.id])
+        # add all to group
+        if just_add:
+          for u in just_add:
+            user=User.objects.get(email=u[0])
+            print('user', user)
+            add_to_group(cg, user)
+            new_members.append([u[0], u[1], user.id])
+            # cguser = CollectionGroupUser.objects.create(
+            #   role='normal',
+            #   collectiongroup=cg,
+            #   user=user
+            # )
+            # cguser.save()
+            only_joined_count +=1
+        total = created_count+only_joined_count
+        result = {
+          'status': 'added', 'errors': [],
+          'newmembers': new_members,
+          'msg': '<p>Created ' + str(created_count) + ' new WHG users</p>' +
+                 '<p>Added <b>'+str(total)+'</b> new group members</p>'
+        }
+      except:
+        result = {'status': 'failed', 'errors': sys.exc_info(),
+                  'msg': 'something went wrong!'}
 
     return JsonResponse(result, safe=False)
 

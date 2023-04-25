@@ -70,8 +70,9 @@
 	        <form id="f_addusers">{% csrf_token %}
 	        <input class="form-control form-control-sm" id="userfile" type="file">
 	        <div id="addusers_info" class="form-text small mb-2">
-	          To create multiple WHG users as group members,
-		        upload a .csv file with two columns: 'email', and 'full_name'.
+	          To add existing WHG users to this group, and/or create new WHG user
+		        accounts as group members, upload a .csv file with each line like so:
+		        <br/><span class="ms-3 fw-bold fs-6"> email, full name</span>
 	        </div>
 	        <div id="form_button" class="mt-2 hidden">
 		        <button id="b_upload" class="btn btn-sm btn-primary" type="submit">Upload file</button>
@@ -80,12 +81,13 @@
 		        </span>
 	        </div>
 	        </form>
+	        <hr/>
 	      </div>
-	      <div id="results_text" class="my-2 small"></div><hr/>
+	      <div id="results_text" class="my-2 small"></div>
 	      <div id="members_content">
 	          <ul class="small">
 	          {% for m in members.all %}
-	              <li>{{ m.user.name }} ({{ m.user.email }})</li>
+	              <li>{{ m.user.name }} ({{ m.user.id }}) ({{ m.user.email }})</li>
 	          {% endfor %}
 	          </ul>
 	      </div>
@@ -134,11 +136,15 @@
     e.preventDefault()
     var formData = new FormData();
 	  if($("#b_upload").text() === 'Upload file'){
+      // clear local storage values
       formData.append('action', 'upload')
-		  localStorage.removeItem("newusers")
+		  localStorage.removeItem("create_add")
+		  localStorage.removeItem("just_add")
 	  } else {
+      // submitting now, add from local storage
 		  formData.append('action', 'addem')
-      formData.append('newusers', localStorage.getItem("newusers"));
+      formData.append('create_add', localStorage.getItem("create_add"));
+      formData.append('just_add', localStorage.getItem("just_add"));
 	  }
     formData.append('file', $('#userfile')[0].files[0]);
     formData.append('cgid', '{{ object.id }}');
@@ -156,12 +162,15 @@
       success: function (data) {
         result = data
         console.log('data returned', data)
-	      // after adding: status, users, errors
-	      // after validation: already[], just_add[], create_add[]
-	      {#return#}
+	      // after validation: status, errors[], already[], just_add[], create_add[]
+	      // after adding: status, errors[], msg
         if (data['errors'].length >0) {
           err = data['errors']
-          html = 'Problem(s) with file:<br/><ul class="ps-3">'
+	        if(data['status']=='failed'){
+            html = data['msg']
+	        } else {
+            html = 'Problem(s) with file:<br/><ul class="ps-3">'
+	        }
           for (i = 0; i < err.length; ++i) {
             html += '<li>' + err[i] + '</li>'
           }
@@ -169,39 +178,55 @@
           $("#results_text").html(html)
         } else {
           // reporting back validation
-          already = data['already']
-          just_add = data['just_add']
-          create_add = data['create_add']
-	        html = ''
-          if (data['create_add'].length > 0) {
-              localStorage.setItem("create_add", JSON.stringify(create_add));
-              html += 'Create and add:<br/><ul class="ps-3">'
-              for (i = 0; i < create_add.length; ++i) {
-                  html += '<li>' + create_add[i][1] + '; ' + create_add[i][0] + '</li>'
-              }
-              html += '</ul>'
-          }
-          if (data['just_add'].length > 0) {
-              localStorage.setItem("just_add", JSON.stringify(just_add));
-              html += 'Add existing users:<br/><ul class="ps-3">'
-              for (i = 0; i < just_add.length; ++i) {
-                  html += '<li>' + just_add[i][1] + '; ' + just_add[i][0] + '</li>'
-              }
-              html += '</ul>'
-          }
-          if (data['already'].length > 0) {
-              html += 'Already members:<br/><ul class="ps-3">'
-              for (i = 0; i < already.length; ++i) {
-                  html += '<li>' + already[i][1] + '</li>'
-              }
-              html += '</ul>'
-          }
+					if(data['status'] == 'validated'){
+	          already = data['already']
+	          just_add = data['just_add']
+	          create_add = data['create_add']
+		        html = ''
+	          if (data['create_add'].length > 0) {
+	              localStorage.setItem("create_add", JSON.stringify(create_add));
+	              html += 'Create WHG user(s) & add to group:<br/><ul class="ps-3">'
+	              for (i = 0; i < create_add.length; ++i) {
+	                  html += '<li>' + create_add[i][1] + '; ' + create_add[i][0] + '</li>'
+	              }
+	              html += '</ul>'
+	          }
+	          if (data['just_add'].length > 0) {
+	              localStorage.setItem("just_add", JSON.stringify(just_add));
+	              html += 'Add existing user(s) to group:<br/><ul class="ps-3">'
+	              for (i = 0; i < just_add.length; ++i) {
+	                  html += '<li>' + just_add[i][1] + '; ' + just_add[i][0] + '</li>'
+	              }
+	              html += '</ul>'
+	          }
+	          if (data['already'].length > 0) {
+	              html += 'Already members:<br/><ul class="ps-3">'
+	              for (i = 0; i < already.length; ++i) {
+	                  html += '<li>' + already[i][1] + '</li>'
+	              }
+	              html += '</ul>'
+	          }
 
-          $("#addusers_info").hide()
-          $("#results_text").html(html)
-          $("#b_upload").text('Submit')
-          $("#s_cancel").fadeIn(800)
-        }
+	          $("#addusers_info").hide()
+	          $("#results_text").html(html)
+	          $("#b_upload").text('Submit')
+	          $("#s_cancel").fadeIn(800)
+	        } else if (data['status'] == 'added') {
+          // report add results
+						html = data['msg']
+						$("#div_addusers").hide()
+						added = data['newmembers']
+						for (i = 0; i < added.length; ++i) {
+              $("#members_content ul").append(
+                '<li>' + added[i][1] + ' (' + added[i][0] + ')</li>'
+              )
+            }
+
+					}
+				}
+        // add new members immediately
+        $("#results_text").addClass('p-2')
+        $("#results_text").html(html)
       } // success
     }) // ajax
 	  {#$("#div_addusers").hide()#}
