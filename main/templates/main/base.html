@@ -111,6 +111,9 @@
                     <li><a class="dropdown-item" href="{% url 'data-datasets' %}">My datasets</a></li>
                     <li><a class="dropdown-item" href="{% url 'data-collections' %}">My collections</a></li>
                     <li><a class="dropdown-item" href="{% url 'data-areas' %}">My study areas</a></li>
+                    {% if user.role == 'group_leader' or user|has_group:"beta30" or user.is_superuser %}
+                    <li><a class="dropdown-item" href="{% url 'data-collgroups' %}">My groups</a></li>
+                    {% endif %}
                     <li><a class="dropdown-item" href="{% url 'public-lists' %}">Public data</a></li>
                   {% if user|has_group:'whg_team' or user|has_group:'teaching' %}
                         <li><a class="dropdown-item" href="{% url 'data-resources' %}">Teaching Resources</a></li>

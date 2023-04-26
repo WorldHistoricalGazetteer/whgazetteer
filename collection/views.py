@@ -6,7 +6,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from django.views.generic import (View, CreateView, UpdateView, DetailView, DeleteView )
+from django.views.generic import (View, CreateView, UpdateView, DetailView, DeleteView, ListView )
 
 #from datasets.utils import hully
 from .forms import CollectionModelForm, CollectionGroupModelForm
@@ -489,7 +489,6 @@ class CollectionGroupDeleteView(DeleteView):
 
   def get_success_url(self):
     return reverse('accounts:profile')
-
 #
 # update (edit); uses same template as create
 # context['action'] governs template display
@@ -533,6 +532,65 @@ class CollectionGroupUpdateView(UpdateView):
     context['collections'] = self.get_object().collections.filter(submitted=True)
     return context
 
+class CollectionGroupGalleryView(ListView):
+  redirect_field_name = 'redirect_to'
+
+  context_object_name = 'collections'
+  template_name = 'collection/collection_group_gallery.html'
+  model = Collection
+
+  def get_object(self):
+    id_ = self.kwargs.get("id")
+    return get_object_or_404(CollectionGroup, id=id_)
+
+  def get_queryset(self):
+    # original qs
+    qs = super().get_queryset()
+    return qs
+    # return qs.filter(public = True).order_by('core','title')
+
+  def get_context_data(self, *args, **kwargs):
+    context = super(CollectionGroupGalleryView, self).get_context_data(*args, **kwargs)
+
+    # public datasets available as dataset_list
+    # public collections
+    context['group'] = self.get_object()
+    context['collections'] = Collection.objects.order_by('created')
+    # context['viewable'] = ['uploaded','inserted','reconciling','review_hits','reviewed','review_whg','indexed']
+
+    context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False
+    return context
+
+# class CollectionGroupGalleryView(ListView):
+#   print('what the actual fuck?')
+#   template_name = 'collection/collection_group_gallery.html'
+#   model = CollectionGroup
+#
+#   def get_form_kwargs(self, **kwargs):
+#     kwargs = super(CollectionGroupGalleryView, self).get_form_kwargs()
+#     print('kwargs', kwargs)
+#     print('id', self.kwargs.get("id"))
+#     return kwargs
+#
+#   def get_object(self):
+#     id_ = self.kwargs.get("id")
+#     return get_object_or_404(CollectionGroup, id=id_)
+#
+#
+#   # def get_queryset(self, **kwargs):
+#   #   me = self.request.user
+#   #   # qs as all first, filter as req.
+#   #   qs = self.get_object().collections.all()
+#   #   return qs.filter(submitted=True).order_by('?')
+#   #   # return qs.filter(owner=me).order_by('?')
+#
+#   def get_context_data(self, *args, **kwargs):
+#     context = super(CollectionGroupGalleryView, self).get_context_data(*args, **kwargs)
+#     context['beta_or_better'] = True if self.request.user.groups.filter(
+#         name__in=['beta', 'admins']).exists() else False
+#     context['collections'] = self.get_object().collections.filter(submitted=True)
+#
+#
 
 """ DATASET COLLECTIONS """
 """ datasets only collection 

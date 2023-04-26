@@ -32,6 +32,7 @@ urlpatterns = [
     path('create_collection_group/', views.CollectionGroupCreateView.as_view(), name='collection-group-create'),
     path('group/<int:id>/update', views.CollectionGroupUpdateView.as_view(), name='collection-group-update'),
     path('group/<int:id>/delete', views.CollectionGroupDeleteView.as_view(), name='collection-group-delete'),
+    path('group/<int:id>/gallery', views.CollectionGroupGalleryView.as_view(), name='collection-group-gallery'),
 
     # UTILITY
     path('list_ds/', views.ListDatasetView.as_view(), name='list-ds'),

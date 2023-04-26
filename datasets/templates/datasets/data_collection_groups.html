@@ -62,6 +62,8 @@
             <table id="table_cgroups" class="table table-striped">
               <thead class="small">
                 <th>id</th>
+                <th></th>
+                <th></th>
                 <th>title <i class="fa fa-sort ms-1" data-id=1 ref=asc></i></th>
                 <th>type<i class="fa fa-sort ms-1" data-id=2 ref=asc></i></th>
                 <th>start<i class="fa fa-sort ms-1" data-id=3 ref=asc></i></th>
@@ -75,10 +77,14 @@
                 {% for cg in collectiongroup_list %}
                   <tr class="place-row">
                     <td>{{ cg.id }}</td>
-                    <td><a href="{% url 'collection:collection-group-update' cg.id %}">{{ cg.title }}</a></td>
+                    <td><a href="{% url 'collection:collection-group-gallery' cg.id %}" title="Gallery">
+	                    <i class="fas fa-th" aria-hidden="true"></i></a></td>
+                    <td><a href="{% url 'collection:collection-group-update' cg.id %}" title="Edit">
+	                    <i class="fas fa-cog" aria-hidden="true"></i></a></td>
+                    <td>{{ cg.title }}</td>
                     <td>{{ cg.type }}</td>
-                    <td>{{ cg.start_date|date:'Y-m-d'  }}</td>
-                    <td>{{ cg.due_date|date:'Y-m-d' }}</td>
+                    <td>{{ cg.start_date|date:'d-M-Y'  }}</td>
+                    <td>{{ cg.due_date|date:'d-M-Y' }}</td>
                     <td>{{ cg.members.count }}</td>
                     {% if whgteam %}
 	                    <td>{{ cg.owner.name }}</td>
