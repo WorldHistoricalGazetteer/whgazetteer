@@ -47,7 +47,7 @@
 	<div class="container pt-2 container-md" style="height: calc(100vh - 65px); position:relative;">
 		<section class="text-center">
 			<div class="container mb-1" style="position:relative">
-				<h3>{{ group }}</h3>
+				<h3>{{ group }} <span class="ital fs-6">{{ group.owner.name}}</span></h3>
 			</div>
 		</section>
 {#		<div id="teaching_top" class="row">#}
@@ -59,30 +59,31 @@
 {#			</div>#}
 {#		</div> <!-- .row -->#}
 		<div id="gallery_bottom" class="row mt-2">
-			<div class="col-sm-4 px-0" style="height: 80%;">
-				<div class=" p-2">
-				</div>
-			</div>
-			<div class="col-sm-8 pr-0" style="height: 85%;">
+{#			<div class="col-sm-4 px-0" style="height: 80%;">#}
+{#				<div class=" p-2">#}
+{#				</div>#}
+{#			</div>#}
+			<div class="col-sm-12 pe-0" style="height: 85%;">
 				<div class="resource-gallery h-100">
-					<div class="gallery-banner pl-2 small w-100";>COLLECTIONS ({{ collections|length }})
+					<div class="gallery-banner ps-2 small w-100";>COLLECTIONS ({{ collections|length }})
 						<span id="regions_reset" class="reset-link me-2" style="cursor:pointer;">reset filter</span>
 					</div>
-					<div class="pl-1">
-						<p>context: {{ beta_or_better }}</p>
+					<div class="ps-1">
 						{% for c in collections %}
 							<div class="resource-card mt-1">
-								{{ c.title }}, {{ c.owner }}
-{#								<div class="resource-card-header pl-2 small ">{{ r.type }}#}
+{#								<div class="resource-card-header ps-2 small ">{{ r.type }}#}
 {#									<span class="regions-ttlink me-1" data-toggle="tooltip" data-html="true" title="{{r.regions}}">#}
 {#										<i class="fas fa-globe linky"></i> regions</span>#}
 {#								</div>#}
-{#								<div class="resource-card-content px-2 pt-1" data-id={{r.id}}>#}
-{#									{% with remainder=190|add:r.title_length %}#}
-{#									<h6><a href="{% url 'resources:resource-detail' r.id %}">{{ r.title }}</a></h6>#}
-{#									<p class="resource-card-blurb my-1">{{ r.description|trunc_it:remainder }} </p>#}
-{#									{%endwith%}#}
-{#								</div>#}
+								<div class="resource-card-content px-2 pt-1" data-id={{r.id}}>
+									{% with remainder=190 %}
+									<h6>
+										<a href="{% url 'collection:place-collection-browse' c.id %}">{{ c.title }}</a>
+										 ({{ c.owner.name }})
+									</h6>
+									<p class="resource-card-blurb my-1">{{ c.description|trunc_it:remainder }} </p>
+									{%endwith%}
+								</div>
 							</div>
 						{% endfor %}
 					</div>

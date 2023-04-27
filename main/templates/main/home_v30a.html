@@ -23,36 +23,36 @@
 		<div id="content_left" class="d-flex flex-column p-2">
       <div class="home-header h5 w-100 mb-1"></div>
 		  <div class="wrapper-left">
-			<div class="item-left row mx-0 mb-1 pl-2" id="item_left_search">
+			<div class="item-left row mx-0 mb-1 ps-2" id="item_left_search">
 			  <div class="col-sm-2 home-icon"><img src="{% static 'images/001-binoculars.png'%}" class="" height=54 width=54 alt=""/><span class="helper"></span></div>
-			  <div class="col-sm-10 pt-3"><p class="pr-2 bigger">
+			  <div class="col-sm-10 pt-3"><p class="pe-2 bigger">
 				<b>Explore</b> open access, historical place data
 				<!--<b>Explore</b> and download open access historical place data-->
 				<a href="{% url 'search-page' %}"><span class="link-spanner"></span></a></p></div>
 			</div><!-- .item-left -->
-			<div class="item-left row mx-0 mb-1 pl-2">
+			<div class="item-left row mx-0 mb-1 ps-2">
 			  <div class="col-sm-2 home-icon"><img src="{% static 'images/001-up-arrow.png'%}" class="" height=42 width=42 alt=""/></div>
-			  <div class="col-sm-10 pt-1"><p class="pr-2">
+			  <div class="col-sm-10 pt-1"><p class="pe-2">
 				<!--<b>Upload and augment</b> your data with geometry and identifiers from Wikidata and Getty TGN-->
 				Upload and <b>extend</b> your data with geometry and identifiers from Wikidata and Getty TGN
 				<a href="{% url 'datasets:dataset-create' %}"><span class="link-spanner"></span></a></p></div>
 			</div><!-- .item-left -->
-			<div class="item-left row mx-0 mb-1 pl-2">
+			<div class="item-left row mx-0 mb-1 ps-2">
 			  <div class="col-sm-2 home-icon"><img src="{% static 'images/003-browser.png'%}" class="" height=42 width=42 alt=""/></div>
-			  <div class="col-sm-10 pt-1"><p class="pr-2"><b>Contribute</b> your uploaded data to WHG by linking it to other places in our index<a href="{% url 'main:tute-contributing' %}"><span class="link-spanner"></span></a></p></div>
+			  <div class="col-sm-10 pt-1"><p class="pe-2"><b>Contribute</b> your uploaded data to WHG by linking it to other places in our index<a href="{% url 'main:tute-contributing' %}"><span class="link-spanner"></span></a></p></div>
 			</div> <!-- .item-left -->
-			<div class="item-left row mx-0 mb-1 pl-2">
+			<div class="item-left row mx-0 mb-1 ps-2">
 			  <div class="col-sm-2 home-icon"><img src="{% static 'images/011-teaching.png'%}" class="" height=42 width=42 alt=""/></div>
-			  <div class="col-sm-10 pt-2"><p class="pr-2"><b>Teach</b> with WHG-focused lesson plans<a href="{% url 'teaching-page' %}"><span class="link-spanner"></span></a></p></div>
+			  <div class="col-sm-10 pt-2"><p class="pe-2"><b>Teach</b> with WHG-focused lesson plans<a href="{% url 'teaching-page' %}"><span class="link-spanner"></span></a></p></div>
 			</div> <!-- .item-left --> 
-			<div class="item-left row mx-0 mb-1 pl-2">
+			<div class="item-left row mx-0 mb-1 ps-2">
 			  <div class="col-sm-2 home-icon"><img src="{% static 'images/008-collect.png'%}" class="" height=42 width=42 alt=""/></div>
-			  <div class="col-sm-10 pt-1"><p class="pr-2"><b>Create and share</b> your custom collection of places and datasets published in WHG<a href="{% url 'main:tute-collections' %}"><span class="link-spanner"></span></a></p></div>
+			  <div class="col-sm-10 pt-1"><p class="pe-2"><b>Create and share</b> your custom collection of places and datasets published in WHG<a href="{% url 'main:tute-collections' %}"><span class="link-spanner"></span></a></p></div>
 			</div> <!-- .item-left --> 
-			<div class="item-left row mx-0 mb-1 pl-2">
+			<div class="item-left row mx-0 mb-1 ps-2">
 			  <div class="col-sm-2 home-icon"><img src="{% static 'images/006-api-2.png'%}" class="" height=42 width=42 alt=""/></div>
-			  <!-- <div class="col-sm-10 pt-1"><p class="pr-2"><b>Integrate WHG data</b> with other systems using our application programming interface<a href="{% url 'usingapi' %}"><span class="link-spanner"></span></a></p></div> -->
-			  <div class="col-sm-10 pt-1"><p class="pr-2"><b>Integrate WHG data</b> using our application programming interface<a href="{% url 'usingapi' %}"><span class="link-spanner"></span></a></p></div>
+			  <!-- <div class="col-sm-10 pt-1"><p class="pe-2"><b>Integrate WHG data</b> with other systems using our application programming interface<a href="{% url 'usingapi' %}"><span class="link-spanner"></span></a></p></div> -->
+			  <div class="col-sm-10 pt-1"><p class="pe-2"><b>Integrate WHG data</b> using our application programming interface<a href="{% url 'usingapi' %}"><span class="link-spanner"></span></a></p></div>
 			</div> <!-- .item-left -->
 		  </div> <!-- wrapper-left-->
 		</div> <!-- content_left-->    
@@ -71,7 +71,7 @@
             <a href="{% url 'collection:ds-collection-summary' featured_coll.0.id %}">{{ featured_coll.0.title}}</a>
           </p>
 					<p class="coll-description">
-            <a href="#" class="pop"><img class="thumbnail float-end pl-2" src="{{ imgc0 }}" alt="Detail from <a href='https://www.davidrumsey.com/luna/servlet/s/rp56bh' target='_blank'>'Carte De Hollande Et D&#39;utrecht' (Covens et Mortier, 1750)</a>" height=150 width=150 /></a>
+            <a href="#" class="pop"><img class="thumbnail float-end ps-2" src="{{ imgc0 }}" alt="Detail from <a href='https://www.davidrumsey.com/luna/servlet/s/rp56bh' target='_blank'>'Carte De Hollande Et D&#39;utrecht' (Covens et Mortier, 1750)</a>" height=150 width=150 /></a>
             {{ featured_coll.0.description|safe }}
           </p>
 				</div>
@@ -80,14 +80,14 @@
 			</div> <!-- .item-right-top -->
 			<div class="row">
 			  {% with featured_ds.0.image_file.url as imgd0 %}
-			  <div class="col-sm-6 pr-0">
+			  <div class="col-sm-6 pe-0">
           <div class="item-right">
             <span class="col-bottom cb-dataset">dataset</span>
             <p class="my-0 featured-title">
               <a href="{% url 'datasets:ds_meta' pk=featured_ds.0.id %}">{{featured_ds.0.title}}</a>
             </p>
-            <p class="pr-0 coll-description">
-              <img class="pl-1 float-end" src="{{ imgd0 }}" width=75 />
+            <p class="pe-0 coll-description">
+              <img class="ps-1 float-end" src="{{ imgd0 }}" width=75 />
               {{ featured_ds.0.description|safe|truncatechars:250 }}
             </p>
           </div> <!-- .item-right -->
@@ -95,14 +95,14 @@
 			  {% endwith %}
 
 			  {% with featured_coll.1.image_file.url as imgc1 %}
-			  <div class="col-sm-6 pl-0">
+			  <div class="col-sm-6 ps-0">
           <div class="item-right">
             <span class="col-bottom cb-coll">collection</span>
             <p class="my-0 featured-title">
               <a href="{% url 'collection:ds-collection-summary' featured_coll.1.id %}">{{featured_coll.1.title}}</a>
             </p>
-            <p class="pr-0 coll-description">
-              <img class="pl-1 float-end"src="{{ imgc1 }}" width="75" />
+            <p class="pe-0 coll-description">
+              <img class="ps-1 float-end"src="{{ imgc1 }}" width="75" />
               {{ featured_coll.1.description|safe|truncatechars:250 }}</div>
             </p>
 				  </div> <!-- .item-right -->

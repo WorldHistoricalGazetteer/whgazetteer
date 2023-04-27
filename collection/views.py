@@ -356,8 +356,8 @@ class PlaceCollectionUpdateView(UpdateView):
     # anno_form = TraceAnnotationModelForm(self.request.GET or None, prefix="sch")
     # populates dropdown
     ds_select = [obj for obj in Dataset.objects.all().order_by('title') if user in obj.owners or user.is_superuser]
-    if not user.is_superuser:
-      ds_select.insert(len(ds_select)-1, Dataset.objects.get(label='owt10'))
+    # if not user.is_superuser:
+    #   ds_select.insert(len(ds_select)-1, Dataset.objects.get(label='owt10'))
 
     context['action'] = 'update'
     context['ds_select'] = ds_select
@@ -551,11 +551,13 @@ class CollectionGroupGalleryView(ListView):
 
   def get_context_data(self, *args, **kwargs):
     context = super(CollectionGroupGalleryView, self).get_context_data(*args, **kwargs)
+    cg = CollectionGroup.objects.get(id=self.kwargs.get("id"))
 
     # public datasets available as dataset_list
     # public collections
     context['group'] = self.get_object()
-    context['collections'] = Collection.objects.order_by('created')
+    context['collections'] = cg.collections.all()
+    # context['collections'] = Collection.objects.order_by('created')
     # context['viewable'] = ['uploaded','inserted','reconciling','review_hits','reviewed','review_whg','indexed']
 
     context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False

@@ -29,19 +29,19 @@
       <table>
             <tbody>
             <tr>
-                <td class="float-end pr-3 strong">Login email</td>
+                <td class="float-end pe-3 strong">Login email</td>
                 <td>{{ user_form.email.value }}</td>
             </tr>
             <tr>
-                <td class="float-end pr-3 strong">Full name</td>
+                <td class="float-end pe-3 strong">Full name</td>
                 <td class="strong-red">{{ user_form.name.value }}</td>
             </tr>
             <tr>
-                <td class="float-end pr-3 strong">Affiliation</td>
+                <td class="float-end pe-3 strong">Affiliation</td>
                 <td>{{ user_form.affiliation.value }}</td>
             </tr>
             <tr>
-                <td class="float-end pr-3 strong">WHG role (id)</td>
+                <td class="float-end pe-3 strong">WHG role (id)</td>
                 <td class="ital">
                     {% if user.is_superuser %}superuser{% else %}
                         {{ user_form.role.value }}{% endif %} ({{ user.id }})
@@ -54,11 +54,11 @@
         <table>
           <tbody>
           <tr>
-            <td class="float-end pr-3 strong">Name</td>
+            <td class="float-end pe-3 strong">Name</td>
             <td>{{ user_form.name }}</td>
           </tr>
           <tr>
-	          <td class="float-end pr-3 strong">Affiliation</td>
+	          <td class="float-end pe-3 strong">Affiliation</td>
 	          <td>{{ user_form.affiliation }}</td>
           </tr>
           </tbody>
@@ -77,7 +77,7 @@
 	    <table class="w-100">
         <tbody>
         <tr>
-          <td class="pr-3 strong" style="vertical-align: top">System groups</td>
+          <td class="pe-3 strong" style="vertical-align: top">System groups</td>
           <td id="grouplist">
             {% for g in context.groups %}
               <span class="ital">{{ g.name }}</span><br/>
@@ -87,7 +87,7 @@
         </tr>
         {% if user_form.role.value == 'group_leader' or user.is_superuser %}
         <tr style="background-color: aliceblue;">
-          <td class="float-end pr-3 strong" style="vertical-align: top">Collection<br/>groups
+          <td class="float-end pe-3 strong" style="vertical-align: top">Collection<br/>groups
           </td>
           <td style="vertical-align: top;">
             {% for cg in user.collection_groups.all %}
@@ -111,7 +111,7 @@
         {% endif %}
         {% if context.owned|length > 0 %}
           <tr>
-            <td class="pr-3 strong" style="vertical-align: top;">Datasets</td>
+            <td class="pe-3 strong" style="vertical-align: top;">Datasets</td>
             <td>
               {% for ds in context.owned %}
                   <b><a href="{% url 'datasets:ds_summary' ds.0 %}">{{ ds.1 }}</a></b> ({{ ds.0 }}

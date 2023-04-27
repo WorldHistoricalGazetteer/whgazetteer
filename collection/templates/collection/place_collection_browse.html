@@ -51,7 +51,7 @@
 	</div> <!-- #collection_title -->
   {{ ds_list|json_script:"ds_list" }}
   {{ bboxes|json_script:"bboxes" }}
-  <div class="container mt-3 pl-0">
+  <div class="container mt-3 ps-0">
     <div class="row">
       <div id="drftable_detail" class="col-sm-8">
         <div class="toomany hidden text-danger small"></div>
@@ -103,16 +103,16 @@
 		        </div>
 	        </div>
 	      </div>
-        <div class="row pl-4">
+        <div class="row ps-4">
           <div class="col-sm-8" style="padding:0 !important;">
             <div id="map" style="height:300px;"></div>
           </div>
           <div id="row_detail" class="col-sm-4">
-            <div id="detail" class="small pl-2"></div>
+            <div id="detail" class="small ps-2"></div>
           </div>
         </div>
       </div> <!-- drftable_detail -->
-      <div id="drftable_list" class="col-sm-4 pl-0">
+      <div id="drftable_list" class="col-sm-4 ps-0">
         {{ coll_places|slice:":10"}}
         <table id="placetable" class="table table-striped table-bordered" style="width:100%">
           <thead>
@@ -155,7 +155,7 @@
           </p></div>
         </div>
         <div class="row">
-          <div class="col-sm-8 pr-0 scroll-div">
+          <div class="col-sm-8 pe-0 scroll-div">
             <p class="modal-col-head p-1 mb-2">Collection <small>({{ object.places_all.count }} total rows)</small></p>
             <p><a href="#" class="a-dl" data-collid={{ object.id }}>
 	            <i class="fa fa-download" title="Download"></i> download entire collection</a></p>
@@ -416,7 +416,7 @@
     // initialize table
     // task columns are inoperable in this public view
     table = $('#placetable').DataTable({
-      dom: "<'row'<'pl-3'f>>" +
+      dom: "<'row'<'ps-3'f>>" +
       "<'row'<'col-sm-12'tr>>" +
       "<'row mt-1'<'col-sm-12 col-md-5'l><'col-sm-12 col-md-7'p>>"
       ,serverSide: true

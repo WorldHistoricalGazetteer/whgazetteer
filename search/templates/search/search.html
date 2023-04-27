@@ -95,8 +95,8 @@
           </div> <!-- #filters_st -->
         </div> <!-- .row -->
       </div> <!-- #search_filters -->
-      <div id="result_filters" class="pt-2 pl-1 hidden">
-	      <p class="half pl-2 me-1">result filters <i class="fas fa-filter linky"></i>
+      <div id="result_filters" class="pt-2 ps-1 hidden">
+	      <p class="half ps-2 me-1">result filters <i class="fas fa-filter linky"></i>
         <span id="dropdown_filters">
         <span class="ms-2"><select id="type_select"></select></span>
         <span class="ms-2"><select id="cc_select"></select></span>
@@ -122,20 +122,20 @@
           <p class="my-0">There are two data stores in WHG, which can be searched independently: a <sr>union index</sr> and a <sr>database</sr>. Data uploaded to WHG is initially stored in a relational database, and records from all datasets flagged as "public" are searchable with the "Search Database" option above. When a dataset is accessioned, its records are added to a union index, where place records asserted as "closely matched" are grouped. The default scope of search is the union index.</p>
           </div>
         </div>
-        <div class="col-sm-6 pl-4">
+        <div class="col-sm-6 ps-4">
           <img src="{% static 'images/search-figure.svg'%}" style="width:100%; height:auto;" alt=""/>
         </div>
         </div> <!-- .row -->
       </div> <!-- search_info -->
       <div id="type_filter" class="hidden">
-        <p class='allcap-heading half mb-0 pl-1'>PLACE TYPES (select to limit)
+        <p class='allcap-heading half mb-0 ps-1'>PLACE TYPES (select to limit)
           <span class="float-end me-2"><a href="#" class="hide-filter">
 	          close <i class="fas fa-times-circle linky"></i></a></span>
           <span class="float-end clear-filter hidden me-2"><a href="#">restore all</a></span>
         </p>
         <ul class="list-inline"></ul>
       </div>
-      <div id='result_title' class='half allcap-heading mb-0 pl-1'></div>
+      <div id='result_title' class='half allcap-heading mb-0 ps-1'></div>
       <div id="result_div" class=""></div>
     </div> <!-- .row -->
   </div>

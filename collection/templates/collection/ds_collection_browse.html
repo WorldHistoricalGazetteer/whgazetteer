@@ -51,7 +51,7 @@
   {{ bboxes|json_script:"bboxes" }}
   <div class="tab-content">
     <div id="browse" class="tab-pane fade show active" role="tabpanel" aria-labelledby="browse-tab">
-        <div class="container mt-3 pl-0">
+        <div class="container mt-3 ps-0">
           <div class="row">
             <div id="drftable_detail" class="col-sm-5">
               <div class="toomany hidden text-danger small"></div>
@@ -231,8 +231,8 @@
     // initialize table
     // task columns are inoperable in this public view
     table = $('#placetable').DataTable({
-      dom: "<'row'<'#ds_filter.col-sm-12 col-md-8 pr-0'>"+
-      "<'col-sm-12 col-md-4 pl-0'f>>" +
+      dom: "<'row'<'#ds_filter.col-sm-12 col-md-8 pe-0'>"+
+      "<'col-sm-12 col-md-4 ps-0'f>>" +
       "<'row'<'col-sm-12'tr>>" +
       "<'row mt-1'<'col-sm-12 col-md-3'l><'col-sm-12 col-md-2'i><'col-sm-12 col-md-7'p>>"
       ,serverSide: true

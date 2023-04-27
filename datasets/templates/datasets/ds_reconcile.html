@@ -53,7 +53,7 @@
         {% endif %}
         {% if user in ds.owners or user in ds.collaborators or user.is_superuser %}
 	        {% if ds.ds_status == 'indexed' %}
-		        <div id="ready" class="hidden pl-2">
+		        <div id="ready" class="hidden ps-2">
 	            <p class="my-0">This dataset has been fully indexed</p>
 		        </div>
 	        {% endif %}
@@ -63,7 +63,7 @@
 			        Only new and/or modified rows will be submitted.</p>
 	        {% endif %}
 	        {% if not ds.ds_status == 'accessioning' %}
-	          <div id="ready" class="hidden pl-2">
+	          <div id="ready" class="hidden ps-2">
 	            <p class="my-0">All potential matches to <span id="authtag"></span> have been reviewed,
 		            so the dataset may be ready for accessioning to the WHG index.</p>
 	            <p class="my-0">If you would like to proceed, please <a class="btn btn-success btn-sm text-light py-0" href="{% url 'contact' %}">contact our editorial team.</a></p>
