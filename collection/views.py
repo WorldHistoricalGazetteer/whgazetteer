@@ -358,7 +358,7 @@ class PlaceCollectionUpdateView(UpdateView):
     ds_select = [obj for obj in Dataset.objects.all().order_by('title') if user in obj.owners or user.is_superuser]
     # if not user.is_superuser:
     #   ds_select.insert(len(ds_select)-1, Dataset.objects.get(label='owt10'))
-
+    context['mygroups'] = CollectionGroupUser.objects.filter(user_id=user)
     context['action'] = 'update'
     context['ds_select'] = ds_select
     context['coll_dsset'] = datasets

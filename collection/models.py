@@ -74,6 +74,8 @@ class Collection(models.Model):
   status = models.CharField(max_length=12, choices=STATUS_COLL, default='sandbox')
   featured = models.IntegerField(null=True, blank=True)
   public = models.BooleanField(default=False)
+  group = models.ForeignKey("CollectionGroup", db_column='group',
+                            related_name="group", null=True, blank=True, on_delete=models.PROTECT)
   # filter for group_leader 'class' screen
   submitted = models.BooleanField(default=False)
   # flag set by group_leader

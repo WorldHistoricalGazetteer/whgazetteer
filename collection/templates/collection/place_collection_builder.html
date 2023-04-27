@@ -111,6 +111,9 @@
 		      <input type="hidden" name="owner" value='{{ form.owner.value }}' />
 	      {% endif %}
 	      <input type="hidden" name="collection_class" value='place' />
+				{% if mygroups|length > 0 %}
+	        <p>For a group/class? {{ form.group }}</p>
+				{% endif %}
 				<div class="form-group">
 					<label for="Title">Title &#x02733;</label><br/>
 					{{ form.title }}
@@ -229,7 +232,7 @@
 					</div>
 	      {% endif %}
 	    </div> <!-- #coll_form -->
-	    <div id="coll_builder" class="col-sm-4 p-2" style="height: auto;">
+	    <div id="coll_builder" class="col-sm-4 p-2" style="height: auto; position:relative;">
 {#			<div id-"builder_container">#}
 				<ul id="coll_tabs" class="nav nav-tabs" role="tablist">
 					{% if action == 'update' %}
@@ -788,6 +791,8 @@
   }
 
   $(function(){
+    // TODO: change text depending on state
+    {#$('#id_group').prepend($('<option><i>Choose group</i></option>'));#}
     // scroll to place w/last saved annotation
     offset = sessionStorage.getItem('offset')
 		$("#coll_placelist").scrollTop(offset)
