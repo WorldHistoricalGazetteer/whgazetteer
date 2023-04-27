@@ -792,7 +792,9 @@
 
   $(function(){
     // TODO: change text depending on state
-    {#$('#id_group').prepend($('<option><i>Choose group</i></option>'));#}
+	  {#if($("#id_group").length){#}
+    {#  $('#id_group').prepend($('<option value=0><i>None</i></option>'));#}
+	  {# }#}
     // scroll to place w/last saved annotation
     offset = sessionStorage.getItem('offset')
 		$("#coll_placelist").scrollTop(offset)
