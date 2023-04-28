@@ -19,7 +19,7 @@
 	    {{ user_form.non_field_errors }}
 	    {{ profile_form.non_field_errors }}
       <h5 class="profile-header">Profile
-        <span id="edit_link" class="small float-end float-end-padded">
+        <span id="edit_link" class="small float-end">
         <a href="#"><i class="fas fa-edit linky fa-xs"></i></a>
         </span>
       </h5>
@@ -77,7 +77,7 @@
 	    <table class="w-100">
         <tbody>
         {% if user_form.role.value == 'group_leader' or user.is_superuser %}
-	        <tr style="background-color: cornsilk;">
+	        <tr style="background-color: honeydew;">
 		        <td class="pe-3" style="vertical-align:top;"> Collection groups
 	            <p class="mt-0 text-secondary small">
 		            <i class="fas fa-plus-square linky"></i>

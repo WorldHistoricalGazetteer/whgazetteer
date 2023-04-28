@@ -250,10 +250,10 @@ class PlaceCollectionCreateView(LoginRequiredMixin, CreateView):
     # add 1 or more links, images (?)
     if self.request.POST:
       context["links_form"] = CollectionLinkFormset(self.request.POST)
-      context["images_form"] = CollectionImageFormset(self.request.POST)
+      # context["images_form"] = CollectionImageFormset(self.request.POST)
     else:
       context["links_form"] = CollectionLinkFormset()
-      context["images_form"] = CollectionImageFormset()
+      # context["images_form"] = CollectionImageFormset()
 
     # owners create collections from their datasets
     ds_select = [obj for obj in Dataset.objects.all().order_by('title') if user in obj.owners or user.is_superuser]

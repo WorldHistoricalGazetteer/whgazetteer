@@ -1239,7 +1239,7 @@ span.edit-row {
 **/
 .profile p {}
 
-.profile-header {
+.profile-header, .cg-header {
   display:block;
   background-color: #fdf5e6;
   padding: 2px 0 2px 4px;
