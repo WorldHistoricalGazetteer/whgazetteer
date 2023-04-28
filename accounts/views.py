@@ -183,17 +183,17 @@ def update_profile(request):
     # profile_form = ProfileModelForm(instance=request.user.profile)
     id_ = request.user.id
     u = get_object_or_404(User, id=id_)
-    owned = [[ds.id, ds.title, 'owner'] for ds in Dataset.objects.filter(owner = u).order_by('title')]
-    collabs = [[dc.dataset_id.id, dc.dataset_id.title, dc.role] for dc in DatasetUser.objects.filter(user_id_id = id_)]
+    ds_owned = [[ds.id, ds.title, 'owner'] for ds in Dataset.objects.filter(owner = u).order_by('title')]
+    ds_collabs = [[dc.dataset_id.id, dc.dataset_id.title, dc.role] for dc in DatasetUser.objects.filter(user_id_id = id_)]
     # groups = u.groups.values_list('name', flat=True)
-    groups = u.groups.all()
+    groups_owned = u.groups.all()
     group_leader = 'group_leaders' in  u.groups.values_list('name', flat=True) # True or False
-    #owned.extend(collabs)
-    context['owned'] = owned
-    context['collabs'] = collabs
-    context['comments'] = 'get comments associated with projects I own'
-    context['groups'] = groups
+    context['ds_owned'] = ds_owned
+    context['ds_collabs'] = ds_collabs
+    context['groups_owned'] = groups_owned
+    context['mygroups'] = [ g.collectiongroup for g in CollectionGroupUser.objects.filter(user=u)]
     context['group_leader'] = group_leader
+    context['comments'] = 'get comments associated with projects I own'
 
   return render(request, 'accounts/profile.html', {
       'user_form': user_form,

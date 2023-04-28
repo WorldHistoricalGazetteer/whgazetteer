@@ -9,7 +9,7 @@
 {% block content %}
 
 <div class="container">
-	<h3 class="text-center">Dashboard</h3>
+	<h3 class="text-center">My Dashboard</h3>
 	<div class="row">
     <div class="col-6" id="dash_left">
 			<form id="profile_form" method="POST" action="{% url 'accounts:profile' %}" enctype="multipart/form-data">
@@ -73,51 +73,60 @@
 			</form>
     </div>
     <div class="col-6" id="dash_right">
-	    <h5 class="sharing-header">Content</h5>
+	    <h5 class="sharing-header">Groups</h5>
 	    <table class="w-100">
         <tbody>
-        <tr>
-          <td class="pe-3 strong" style="vertical-align: top">System groups</td>
-          <td id="grouplist">
-            {% for g in context.groups %}
-              <span class="ital">{{ g.name }}</span><br/>
-              {% if not forloop.last %} {% endif %}
-            {% endfor %}
-          </td>
-        </tr>
         {% if user_form.role.value == 'group_leader' or user.is_superuser %}
-        <tr style="background-color: aliceblue;">
-          <td class="float-end pe-3 strong" style="vertical-align: top">Collection<br/>groups
-          </td>
-          <td style="vertical-align: top;">
-            {% for cg in user.collection_groups.all %}
-              <a href="{% url 'collection:collection-group-update' id=cg.id %}">{{ cg.title }}</a>
-              <span class="small">({{ cg.id }}; {{ cg.members.count }} members)</span><br/>
-            {% endfor %}
-          </td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>
-            <p class="mt-3">
-                <a href="{% url 'collection:collection-group-create' %}" id="a_creategroup">New
-                    collection group <i class="fas fa-plus-square linky"></i>
-                </a>
-            </p>
-          </td>
-        </tr>
+	        <tr style="background-color: cornsilk;">
+		        <td class="pe-3" style="vertical-align:top;"> Collection groups
+	            <p class="mt-0 text-secondary small">
+		            <i class="fas fa-plus-square linky"></i>
+		            <a href="{% url 'collection:collection-group-create' %}" id="a_creategroup">new</a>
+	            </p>
+	          </td>
+	          <td style="vertical-align: top;">
+	            {% for cg in user.collection_groups.all %}
+	              <a href="{% url 'collection:collection-group-update' id=cg.id %}">{{ cg.title }}</a><br/>
+	              <span class="small">({{ cg.members.count }} members)</span><br/>
+	            {% endfor %}
+	          </td>
+	        </tr>
+	        <tr style="border-bottom: gainsboro 1px solid;">
+	          <td >&nbsp;</td> <td></td>
+	        </tr>
+	        {% if context.groups_owned|length > 0 %}
+	        <tr>
+	          <td class="pe-3" style="vertical-align: top">System groups</td>
+	          <td id="grouplist">
+	            {% for g in context.groups_owned %}
+	              <span class="ital">{{ g.name }}</span><br/>
+	              {% if not forloop.last %} {% endif %}
+	            {% endfor %}
+	          </td>
+	        </tr>
+	        {% endif %}
+        {% endif %} {# group_leqder #}
+        {% if context.mygroups|length > 0 %}
+          <tr>
+            <td class="pe-3 strong" style="vertical-align: top;">Collection Groups</td>
+            <td>
+              {% for g in context.mygroups %}
+                  <b><a href="{% url 'collection:collection-group-detail' g.id %}">{{ g }}
+{#	                  {{ ds.1 }}</a></b> ({{ ds.0 }}, {{ ds.2 }})#}
+	              <br/>
+              {% endfor %}
+            </td>
+          </tr>
         {% endif %}
-        {% if context.groups|length > 0 %}
-        {% endif %}
-        {% if context.owned|length > 0 %}
+        {% if context.ds_owned|length > 0 %}
           <tr>
             <td class="pe-3 strong" style="vertical-align: top;">Datasets</td>
             <td>
-              {% for ds in context.owned %}
+              {% for ds in context.ds_owned %}
                   <b><a href="{% url 'datasets:ds_summary' ds.0 %}">{{ ds.1 }}</a></b> ({{ ds.0 }}
                   , {{ ds.2 }})<br/>
               {% endfor %}
-              {% for ds in context.collabs %}
+              {% for ds in context.ds_collabs %}
                   <b><a href="{% url 'datasets:ds_summary' ds.0 %}">{{ ds.1 }}</a></b> ({{ ds.0 }}
                   , {{ ds.2 }})<br/>
               {% endfor %}

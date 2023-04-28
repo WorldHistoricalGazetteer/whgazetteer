@@ -225,6 +225,7 @@ from django.forms.models import inlineformset_factory
 CollectionLinkFormset = inlineformset_factory(
     Collection, CollectionLink, fields=('uri','label','link_type'), extra=2
 )
+
 """ PLACE COLLECTIONS """
 """ TODO: refactor to fewer views """
 """ collections from places and/or datasets 
@@ -305,9 +306,7 @@ class PlaceCollectionCreateView(LoginRequiredMixin, CreateView):
     # return to update page after create
     return reverse('collection:place-collection-update', kwargs = {'id':self.object.id})
 
-""" update place collection 
-    uses place_collection_builder.html
-"""
+""" update place collection; uses place_collection_builder.html """
 class PlaceCollectionUpdateView(UpdateView):
   form_class = CollectionModelForm
   template_name = 'collection/place_collection_builder.html'
@@ -374,33 +373,6 @@ class PlaceCollectionUpdateView(UpdateView):
 
     return context
 
-""" public collection view, contents, bboxes on a map 
-  NOT IN USE, place_collection_browse is single display page """
-class PlaceCollectionSummaryView(DetailView):
-  template_name = 'collection/place_collection_summary.html'
-
-  model = Collection
-
-  def get_context_data(self, **kwargs):
-    context = super(PlaceCollectionSummaryView, self).get_context_data(**kwargs)
-    id_ = self.kwargs.get("pk")
-    print('CollectionDetailView(), kwargs',self, self.kwargs)
-
-    datasets = self.object.datasets.all()
-    places = self.object.places.all().order_by('title')
-    # gather bounding boxes
-    bboxes = [ds.bounds for ds in datasets]
-
-    context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
-    context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
-    context['mbtokenwhg'] = settings.MAPBOX_TOKEN_WHG
-    context['whgteam'] = User.objects.filter(groups__name='whg_team')
-
-    context['place_list'] = places
-    context['ds_list'] = datasets
-    context['bboxes'] = bboxes
-    return context
-
 """ browse collection *all* places """
 class PlaceCollectionBrowseView(DetailView):
   login_url = '/accounts/login/'
@@ -439,7 +411,9 @@ class PlaceCollectionBrowseView(DetailView):
 
     return context
 
-""" COLLECTION GROUPS """
+""" 
+COLLECTION GROUPS 
+"""
 class CollectionGroupCreateView(CreateView):
   form_class = CollectionGroupModelForm
   template_name = 'collection/collection_group_create.html'
@@ -480,6 +454,37 @@ class CollectionGroupCreateView(CreateView):
     # context['referrer'] = self.request.POST.get('referrer')
     return context
 
+class CollectionGroupDetailView(DetailView):
+  model = CollectionGroup
+  template_name = 'collection/collection_group_detail.html'
+
+  def get_success_url(self):
+    pid = self.kwargs.get("id")
+    # print('messages:', messages.get_messages(self.kwargs))
+    return '/collection/' + str(pid) + '/detail'
+
+  def get_object(self):
+    id_ = self.kwargs.get("id")
+    return get_object_or_404(CollectionGroup, id=id_)
+
+  def get_context_data(self, *args, **kwargs):
+    context = super(CollectionGroupDetailView, self).get_context_data(*args, **kwargs)
+    context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
+    context['mbtoken'] = settings.MAPBOX_TOKEN_WHG
+
+    print('CollectionGroupDetailView get_context_data() kwargs:', self.kwargs)
+    print('CollectionGroupDetailView get_context_data() request.user', self.request.user)
+    cg = get_object_or_404(CollectionGroup, pk=self.kwargs.get("id"))
+    me = self.request.user
+
+    context['message'] = 'CollectionGroupDetailView() loud and clear'
+    # context['timespans'] = {'ts': place.timespans or None}
+    # context['minmax'] = {'mm': place.minmax or None}
+    # context['dataset'] = ds
+    context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False
+
+    return context
+
 class CollectionGroupDeleteView(DeleteView):
   template_name = 'collection/collection_group_delete.html'
 
@@ -489,10 +494,8 @@ class CollectionGroupDeleteView(DeleteView):
 
   def get_success_url(self):
     return reverse('accounts:profile')
-#
-# update (edit); uses same template as create
-# context['action'] governs template display
-#
+
+"""update (edit); uses same template as create; context['action'] governs template display"""
 class CollectionGroupUpdateView(UpdateView):
   form_class = CollectionGroupModelForm
   template_name = 'collection/collection_group_create.html'
@@ -563,36 +566,6 @@ class CollectionGroupGalleryView(ListView):
     context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False
     return context
 
-# class CollectionGroupGalleryView(ListView):
-#   print('what the actual fuck?')
-#   template_name = 'collection/collection_group_gallery.html'
-#   model = CollectionGroup
-#
-#   def get_form_kwargs(self, **kwargs):
-#     kwargs = super(CollectionGroupGalleryView, self).get_form_kwargs()
-#     print('kwargs', kwargs)
-#     print('id', self.kwargs.get("id"))
-#     return kwargs
-#
-#   def get_object(self):
-#     id_ = self.kwargs.get("id")
-#     return get_object_or_404(CollectionGroup, id=id_)
-#
-#
-#   # def get_queryset(self, **kwargs):
-#   #   me = self.request.user
-#   #   # qs as all first, filter as req.
-#   #   qs = self.get_object().collections.all()
-#   #   return qs.filter(submitted=True).order_by('?')
-#   #   # return qs.filter(owner=me).order_by('?')
-#
-#   def get_context_data(self, *args, **kwargs):
-#     context = super(CollectionGroupGalleryView, self).get_context_data(*args, **kwargs)
-#     context['beta_or_better'] = True if self.request.user.groups.filter(
-#         name__in=['beta', 'admins']).exists() else False
-#     context['collections'] = self.get_object().collections.filter(submitted=True)
-#
-#
 
 """ DATASET COLLECTIONS """
 """ datasets only collection 
@@ -773,3 +746,31 @@ class CollectionDeleteView(DeleteView):
 
   def get_success_url(self):
     return reverse('data-collections')
+
+""" public collection view, contents, bboxes on a map 
+  NOT IN USE, place_collection_browse is single display page """
+# class PlaceCollectionSummaryView(DetailView):
+#   template_name = 'collection/place_collection_summary.html'
+#
+#   model = Collection
+#
+#   def get_context_data(self, **kwargs):
+#     context = super(PlaceCollectionSummaryView, self).get_context_data(**kwargs)
+#     id_ = self.kwargs.get("pk")
+#     print('CollectionDetailView(), kwargs',self, self.kwargs)
+#
+#     datasets = self.object.datasets.all()
+#     places = self.object.places.all().order_by('title')
+#     # gather bounding boxes
+#     bboxes = [ds.bounds for ds in datasets]
+#
+#     context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
+#     context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
+#     context['mbtokenwhg'] = settings.MAPBOX_TOKEN_WHG
+#     context['whgteam'] = User.objects.filter(groups__name='whg_team')
+#
+#     context['place_list'] = places
+#     context['ds_list'] = datasets
+#     context['bboxes'] = bboxes
+#     return context
+
