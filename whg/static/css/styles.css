@@ -1114,6 +1114,7 @@ em { color: #993333;}
   padding: 0;
   box-shadow: 1px 1px #eee;
 }
+/* #fdf5e6 */
 .sharing-header {
   display:block;
   background-color: #ECF0F1;
@@ -1238,6 +1239,12 @@ span.edit-row {
 **/
 .profile p {}
 
+.profile-header {
+  display:block;
+  background-color: #fdf5e6;
+  padding: 2px 0 2px 4px;
+  border-bottom: 1px solid #D6D7D9;
+}
 
 /**
   element IDs

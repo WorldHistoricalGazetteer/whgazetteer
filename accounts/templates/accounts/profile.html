@@ -18,7 +18,7 @@
 	    {{ profile_form.errors }}
 	    {{ user_form.non_field_errors }}
 	    {{ profile_form.non_field_errors }}
-      <h5 class="sharing-header">Profile
+      <h5 class="profile-header">Profile
         <span id="edit_link" class="small float-end float-end-padded">
         <a href="#"><i class="fas fa-edit linky fa-xs"></i></a>
         </span>
@@ -73,7 +73,7 @@
 			</form>
     </div>
     <div class="col-6" id="dash_right">
-	    <h5 class="sharing-header">Groups</h5>
+	    <h5 class="profile-header">Groups</h5>
 	    <table class="w-100">
         <tbody>
         {% if user_form.role.value == 'group_leader' or user.is_superuser %}
