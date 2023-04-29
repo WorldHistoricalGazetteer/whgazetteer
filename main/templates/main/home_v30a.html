@@ -10,26 +10,43 @@
 
 {% block content %}
 
-<div class="container mt-1" style="height: calc(100vh - 90px);">
+<div class="container mt-1" style="height: calc(100vh - 210px);">
 	<div id="banner" class="banner-bare w-100 my-1 p-2">
 		<div class="centered w-100">
-		  <span class="title mb-0"><img src="{% static 'images/whg_logo.svg'%}" class="d-inline-block align-bottom me-2" height=80 width=80 alt=""/>World Historical Gazetteer</span>
+		  <span class="title mb-0"><img src="{% static 'images/whg_logo.svg'%}"
+          class="d-inline-block align-bottom me-2" height=80 width=80 alt=""/>World Historical Gazetteer</span>
 		  <span id="tagline" class="mx-auto" style="display:block">linking knowledge about the past via place</span>
 		</div>
 	</div>
-	<div id="content_top" class="row mx-0 text-light">
-		<div class="col-sm-3 bg-info">left</div>
-		<div class="col-sm-6 bg-warning">map middle</div>
-		<div class="col-sm-3 bg-success">
-			<div>right top</div>
-			<div>right bottom</div>
+
+	<div id="content_top" class="row gx-2 gy-2 mx-0 h-75">
+		<div class="col-sm-3">
+			<div class="p-2 border h-100">left</div>
+		</div>
+		<div class="col-sm-6">
+			<div class="p-2 border h-100 bg-light">map in the middle</div>
+		</div>
+		<div class="col-sm-3">
+			<div class="p-1 border gy-2 h-100 bg-light">
+				<div class="h-50 border mb-1 p-1">right top</div>
+				<div class="h-50 border p-1">right bottom</div>
+			</div>
 		</div>
 	</div> <!-- content_top -->
-	<div id="content_bottom" class="row mx-0 text-light">
-		<div class="col-sm-3 bg-secondary">search and browse</div>
-		<div class="col-sm-3 bg-success">upload and enhance</div>
-		<div class="col-sm-3 bg-danger">build</div>
-		<div class="col-sm-3 bg-primary">use</div>
+
+	<div id="content_bottom" class="row gx-2 gy-2 mx-0 h-25">
+		<div class="col-sm-3 p-1">
+			<div class="h-100 border p-1">search and browse</div>
+		</div>
+		<div class="col-sm-3 p-1">
+			<div class="h-100 border p-1">upload and enhance</div>
+		</div>
+		<div class="col-sm-3 p-1">
+			<div class="h-100 border p-1">build</div>
+		</div>
+		<div class="col-sm-3 p-1">
+			<div class="h-100 border p-1">use</div>
+		</div>
 	</div> <!-- content_bottom-->
   <div class="modal fade" id="image_modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
     <div class="modal-dialog">
