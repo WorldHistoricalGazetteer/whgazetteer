@@ -111,9 +111,6 @@
 		      <input type="hidden" name="owner" value='{{ form.owner.value }}' />
 	      {% endif %}
 	      <input type="hidden" name="collection_class" value='place' />
-				{% if mygroups|length > 0 %}
-	        <p>For a group/class? {{ form.group }}</p>
-				{% endif %}
 				<div class="form-group">
 					<label for="Title">Title &#x02733;</label><br/>
 					{{ form.title }}
@@ -207,13 +204,19 @@
 		      <a href="/mycollections">Cancel</a>
           {# TODO: convert to bootstrap buttons for styling #}
           {% if action == 'create' %}
-	          <input id="btn_coll_submit" class="btn-sm btn-primary mt-2 ms-2" type="submit" value="Save" />
+	          <input id="btn_coll_save" class="btn-sm btn-primary mt-2 ms-2" type="submit" value="Save" />
           {% else %}
-	          <input id="btn_coll_submit" name="display" class="btn-sm btn-primary mt-2 ms-2" type="submit" value="Save & Exit" />
+	          <input id="btn_coll_save" name="display" class="btn-sm btn-primary mt-2 ms-2" type="submit" value="Save & Exit" />
 	          <input id="btn_coll_update" name="update" class="btn-sm btn-info mt-2 ms-2" type="submit" value="Update" />
           {% endif %}
           </span>
 	      </div>
+	      {% if mygroups|length > 0 %}
+		      <hr/>
+	        <p>For a group/class? {{ form.group }}
+						<a id="btn_coll_submit" class="btn btn-primary btn-sm" href="#" role="button">Submit</a>
+					</p>
+				{% endif %}
 	      </form>
 		    {# 1 or more links #}
 	      {% if action == "update" %}
@@ -233,19 +236,23 @@
 	      {% endif %}
 	    </div> <!-- #coll_form -->
 	    <div id="coll_builder" class="col-sm-4 p-2" style="height: auto; position:relative;">
-{#			<div id-"builder_container">#}
 				<ul id="coll_tabs" class="nav nav-tabs" role="tablist">
 					{% if action == 'update' %}
-					  <li class="nav-item">
-					    <a class="nav-link" id="coll_dslist-tab" data-toggle="tab" href="#coll_dslist" role="tab" aria-controls="coll_dslist" data-id="ds">Datasets</a>
-					  </li>
+					<li class="nav-item" role="presentation">
+					    <button class="nav-link" id="coll_dslist-tab" data-bs-toggle="tab" data-bs-target="#coll_dslist"
+					       role="tab" aria-controls="coll_dslist" aria-selected="false" data-id="ds">
+						    Datasets</button>
+				  </li>
 					{% else %}
-					  <li class="nav-item disabled">
-							<a class="nav-link" id="coll_dslist-tab"  style="color:grey !important;" href="#coll_dslist" >Datasets</a>
-					  </li>
+				  <li class="nav-item disabled" role="presentation">
+							<button class="nav-link" id="coll_dslist-tab"  style="color:grey !important;"
+							        data-bs-target="#coll_dslist" >Datasets</button>
+				  </li>
 					{% endif %}
-				  <li class="nav-item">
-				    <a class="nav-link active" id="coll_placelist-tab" data-toggle="tab" href="#coll_placelist" role="tab" aria-controls="coll_placelist" data-id="pl">Places ({{ coll_places|length }})</a>
+				  <li class="nav-item" role="presentation">
+				    <button class="nav-link active" id="coll_placelist-tab" data-bs-toggle="tab" data-bs-target="#coll_placelist"
+				       role="tab" aria-controls="coll_placelist" aria-selected="true" data-id="pl">
+					    Places ({{ coll_places|length }})</button>
 				  </li>
 					<span class="small" style="position:absolute; right:1rem; top:1.5rem;">
 						<a id="a_remove" href="#"></a>
@@ -268,6 +275,7 @@
 		        </p>
 		        <!-- id, label, title, description, creator, create_date, webpage, numrows, datatype -->
 		        <div id="coll_dscards_create">
+		        {{ ds_select }}
 			        <p>The select dropdown above lists datasets you "own" or have been made a collaborator on.</p>
 			        {% if coll_dsset|length == 0 %}
 				        <p id="further_explanation">Once selected, you can choose to "add all places" from it and they will appear on your collection's place list. Note that very large datasets (more than a few thousand rows) may present issues in managing annotations and in the display of the collection.</p>
@@ -384,7 +392,9 @@
 </div> <!-- container -->
 
 <script type="text/javascript">
-	/* scroll #coll_placelist to last selected */
+	$("#btn_coll_submit").click(function(){
+		console.log('submitting collection {{ object.id }}')
+	})
 
   {#$(".anno-place").click(function(){#}
   $(".col-place-card").click(function(){

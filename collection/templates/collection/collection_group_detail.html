@@ -76,7 +76,8 @@
 		        This will be visible only to you until <i>you</i> link it to this Collection Group and submit it for evaluation.
 	        </p>
 	        <p>Instructions for adding place records, annotating them, and supplementing your collection with links,
-		        images, and a PDF essay can be found on the Builder page. <a href="#">A detailed tutorial</a> is also available.</p>
+		        images, and a PDF essay can be found on the Builder page. A
+		        <a href="{% url 'main:tute-place_collections' %}">more detailed guide</a> is also available.</p>
 					<h6>Submitting your collection</h6>
 					<p>When you are ready to have your {% if object.type == 'class' %}instructor{% else %} workshop leader{% endif %}
 					evaluate it{% if object.gallery_required == true %}, and make it visible in the group gallery{% endif %}, click the

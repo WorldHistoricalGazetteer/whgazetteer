@@ -355,8 +355,8 @@ class PlaceCollectionUpdateView(UpdateView):
     # anno_form = TraceAnnotationModelForm(self.request.GET or None, prefix="sch")
     # populates dropdown
     ds_select = [obj for obj in Dataset.objects.all().order_by('title') if user in obj.owners or user.is_superuser]
-    # if not user.is_superuser:
-    #   ds_select.insert(len(ds_select)-1, Dataset.objects.get(label='owt10'))
+    if not user.is_superuser:
+      ds_select.insert(len(ds_select)-1, Dataset.objects.get(label='owt10'))
     context['mygroups'] = CollectionGroupUser.objects.filter(user_id=user)
     context['action'] = 'update'
     context['ds_select'] = ds_select
@@ -391,9 +391,9 @@ class PlaceCollectionBrowseView(DetailView):
 
   def get_context_data(self, *args, **kwargs):
     context = super(PlaceCollectionBrowseView, self).get_context_data(*args, **kwargs)
-    context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
-    context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
-    context['mbtokenwhg'] = settings.MAPBOX_TOKEN_WHG
+    # context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
+    # context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
+    context['mbtoken'] = settings.MAPBOX_TOKEN_WHG
     context['media_url'] = settings.MEDIA_URL
 
     id_ = self.kwargs.get("id")
