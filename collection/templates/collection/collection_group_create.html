@@ -15,6 +15,7 @@
   <style>
     textarea {width: 100%;}
     #results_text {background-color: #dff0d8;}
+    .form-box p {margin: .5rem;}
   </style>{% endblock %}
 {% block content %}
 <div class="container">
@@ -49,6 +50,19 @@
       <p><span class="top">Keywords</span><br/>{{ form.keywords }}</p>
       <p><span class="top">Start date</span> {{ form.start_date }}</p>
       <p><span class="top">Due date</span> {{ form.due_date }}</p>
+      <p class="form-group">
+				<label for="File">File <i class="small">(PDF format)</i></label><br/>
+				{% if action == 'create' %} {# create, no file yet #}
+					<span id="file_chooser_create">{{ form.file }}</span>
+				{% elif form.file.value %} {# update & there's an file #}
+					<i class="far fa-file-pdf linky"></i>
+					<a href="/media/{{ form.file.value }}" target="_blank">{{ object.file.url|remove:'/media/groups/' }}</a>
+					(<a href="javascript:$('#file_chooser').toggle()">change</a>)
+				{% else %} {# update and there's no image yet #}
+					<span id="file_chooser_update" >{{ form.file }}</span>
+				{% endif %}
+        <span id="file_chooser" class="hidden">{{ form.file }}</span>
+			</p>
       <p><span class="top">Gallery?</span> {{ form.gallery }}
 	      <span class="ms-3">required? {{ form.gallery_required }}</span>
 	      <span class="float-end"><a href="#"><i class="fas fa-question-circle linkypop"></i></a></span>

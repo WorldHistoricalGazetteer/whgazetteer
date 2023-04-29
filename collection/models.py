@@ -26,6 +26,10 @@ def collection_path(instance, filename):
   # upload to MEDIA_ROOT/collections/<coll id>/<filename>
   return 'collections/{0}/{1}'.format(instance.id, filename)
 
+def collectiongroup_path(instance, filename):
+  # upload to MEDIA_ROOT/groups/<collection group id>/<filename>
+  return 'groups/{0}/{1}'.format(instance.id, filename)
+
 def user_directory_path(instance, filename):
   # upload to MEDIA_ROOT/user_<username>/<filename>
   return 'user_{0}/{1}'.format(instance.owner.id, filename)
@@ -174,6 +178,9 @@ class CollectionGroup(models.Model):
   title = models.CharField(null=False, max_length=300)
   description = models.TextField(null=True, max_length=3000)
   keywords = ArrayField(models.CharField(max_length=50), null=True)
+
+  # single pdf file
+  file = models.FileField(upload_to=collectiongroup_path, blank=True, null=True)
 
   type = models.CharField(choices=COLLECTIONGROUP_TYPES, default="class", max_length=8)
   gallery = models.BooleanField(null=False, default=False)

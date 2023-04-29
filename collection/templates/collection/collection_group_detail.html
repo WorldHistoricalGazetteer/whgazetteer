@@ -57,13 +57,13 @@
 	      <div class="fs-5">The
 		      {% if object.type == 'class' %} assignment{% else %} session {% endif %}
 	        <span class="float-end fs-6 pt-2">
-		        <a href="#">download PDF</a> <i class="far fa-file-pdf linky"></i>
+		        <a href="/media/{{ object.file }}" target="_blank">download PDF</a> <i class="far fa-file-pdf linky"></i>
 	        </span>
         </div>
         <div class="bg-white p-1">
 					<p>{{ object.description }}</p>
 	        <p>Please download the full
-		        <a href="#">{% if object.type == 'class' %}assignment {% else %}session{% endif %}description</a>
+		        <a href="/media/{{ object.file }}" target="_blank">{% if object.type == 'class' %}assignment {% else %}session{% endif %}description</a>
 		        for details.</p>
         </div>
       </div> <!-- left -->
