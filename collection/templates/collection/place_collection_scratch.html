@@ -4,15 +4,10 @@
 
 {% load static %}
 {% load dataset_extras %}
-{% block title %}<title>WHG::Create/Update Collection (beta)</title>{% endblock %}
+{% block title %}
+	<title>WHG::Create/Update Collection</title>
+{% endblock %}
 {% block extra_head %}
-  {% leaflet_js %}
-  {% leaflet_css %}
-  
-  <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.css' rel='stylesheet' />
-  <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.js'></script>
-  <script src="{% static 'js/leaflet-mapbox-gl.js' %}"></script>
-
   <style>
     #linkform_popup {
 	    position:absolute;
@@ -62,7 +57,7 @@
     }
     #builder_content {
 	    position:absolute;
-	    width: 95%;
+	    width: 45%;
 	    height: 92%;
 	    border-left: 1px solid gainsboro;
 	    border-right: 1px solid gainsboro;
@@ -101,8 +96,20 @@
 		    Place Collection Builder: {<span class="red-head">new</span>}
 	    {% endif %}
 	  </h5>
-	  <div class="d-flex" style="height:90%;">
-	    <div id="coll_form" class="col-sm-8 form-box mt-2 pb-2" style="height: fit-content;">
+	  <ul class="nav nav-tabs" id="" role="tablist">
+		  <li class="nav-item" role="presentation">
+		    <button class="nav-link" id="form-tab" data-bs-toggle="tab" data-bs-target="#coll_form"
+          type="button" role="tab" aria-controls="coll_form" aria-selected="true">Create/Edit</button>
+		  </li>
+		  <li class="nav-item" role="presentation">
+		    <button class="nav-link active" id="build-tab" data-bs-toggle="tab" data-bs-target="#coll_builder"
+          type="button" role="tab" aria-controls="coll_builder" aria-selected="false">Build</button>
+		  </li>
+		</ul>
+	  <div class="tab-content" id="content" style="height:90%;">
+{#	  <div class="d-flex" style="height:90%;">#}
+{#	    <div id="coll_form" class="col-sm-4 form-box mt-2 pb-2" style="height: fit-content;">#}
+	    <div id="coll_form" class="tab-pane fade" style="height: fit-content;">
 	      <form id="collection_form" method="POST" action="#" enctype="multipart/form-data">
         {% csrf_token %}
 	      {% if action == 'create' %}
@@ -112,8 +119,7 @@
 	      {% endif %}
 	      <input type="hidden" name="collection_class" value='place' />
 				<div class="form-group">
-					<label for="Title">Title &#x02733;</label><br/>
-					{{ form.title }}
+					<label for="Title">Title &#x02733;</label>{{ form.title }}
 				</div>
 				<div class="form-group">
 					<label for="Description">Description &#x02733;</label>
@@ -233,12 +239,165 @@
 	          </form>
 					</div>
 	      {% endif %}
-	    </div> <!-- #coll_form -->
-    </div> <!-- d-flex -->
+	    </div> {# coll_form #}
+
+	    <div id="coll_builder" class="tab-pane fade show active" style="height: auto; position:relative;">
+	      <div class="row">
+	        <div class="col-sm-6" id="builder">
+						<ul id="coll_tabs" class="nav nav-tabs" role="tablist">
+							{% if action == 'update' %}
+							<li class="nav-item" role="presentation">
+							    <button class="nav-link" id="coll_dslist-tab" data-bs-toggle="tab" data-bs-target="#coll_dslist"
+							       role="tab" aria-controls="coll_dslist" aria-selected="false" data-id="ds">
+								    Datasets</button>
+						  </li>
+							{% else %}
+						  <li class="nav-item disabled" role="presentation">
+									<button class="nav-link" id="coll_dslist-tab"  style="color:grey !important;"
+									        data-bs-target="#coll_dslist" >Datasets</button>
+						  </li>
+							{% endif %}
+						  <li class="nav-item" role="presentation">
+						    <button class="nav-link active" id="coll_placelist-tab" data-bs-toggle="tab" data-bs-target="#coll_placelist"
+						       role="tab" aria-controls="coll_placelist" aria-selected="true" data-id="pl">
+							    Places ({{ coll_places|length }})</button>
+						  </li>
+							<span class="small" style="position:absolute; right:1rem; top:1.5rem;">
+								<a id="a_remove" href="#"></a>
+							</span>
+						</ul>
+				    <div id="builder_content" class="tab-content">
+					    <div id="coll_dslist" class="tab-pane fade" role="tabpanel" aria-labelledby="coll_dslist-tab">
+				        <p class="mt-2">
+					        <span class="me-2 smaller">
+					          <select id="select_ds" name="ds" class="custom-select-sm">
+					          <option value="0">Select dataset</option>
+					          <option disabled>___________</option>
+					          {% for ds in ds_select %}
+					            {% if ds not in coll_dsset %}
+					              <option value="{{ ds.id }}">{{ ds.title }}</option>
+					            {% endif %}
+					          {% endfor %}
+					          </select>
+					        </span>
+				        </p>
+				        <!-- id, label, title, description, creator, create_date, webpage, numrows, datatype -->
+				        <div id="coll_dscards_create">
+				        {{ ds_select }}
+					        <p>The select dropdown above lists datasets you "own" or have been made a collaborator on.</p>
+					        {% if coll_dsset|length == 0 %}
+						        <p id="further_explanation">Once selected, you can choose to "add all places" from it and they will appear on your collection's place list. Note that very large datasets (more than a few thousand rows) may present issues in managing annotations and in the display of the collection.</p>
+					        {% endif %}
+					        {% for d in coll_dsset %}
+					          <div class="ds_card w-100">
+					            <p class="mb-0">
+						            <a href="{% url 'datasets:ds_summary' id=d.id %}"><span class="ds_title">{{ d.title }}</span></a>
+						            <small>({{d.label}}/{{ d.id}})</small>
+					            </p>
+					            <div class="ds_fields">
+					              <p class="my-1"><b>Description</b>: {{ d.description|truncatechars:150 }}</p>
+					              <p class="my-1"><b>Create date</b>: {{ d.create_date|date:"d M Y" }}</p>
+					              <p class="my-1"><b># rows</b>: {{ d.numrows }}
+					              <a href="{% url 'collection:remove-ds' ds_id=d.id coll_id=object.id %}" class="float-end">
+						              <i class="fas fa-minus-square linky"></i> remove</a>
+					              </p>
+					            </div>
+					          </div>
+					        {% endfor %}
+				        </div> <!-- #coll_dscards_create -->
+					    </div> {#  coll_dslist #}
+					    <div id="coll_placelist" class="tab-pane fade show active" role="tabpanel" aria-labelledby="coll_placelist-tab">
+						    {% if coll_places|length > 0 %}
+						      {% for p in coll_places %}
+							      <div class="col-place-card" data-id="{{ p.id }}">
+								      <p><b>{{ p.title }}</b> {{ p.ccodes }}
+									      <i>pid: (<a class="coll-place" data-pid={{ p.id }} href="#" >{{ p.id }}</a>)</i>
+								        {# candidate for biggest kluge ever; tooltip breaks for single place!? #}
+								        {% if coll_places|length > 1 %}
+								        <span class="float-end me-1">
+									        <a class="mark-place" href="#" title="Remove from collection" rel="tooltip" data-pid="{{ p.id }}" data-col="{{ object.id }}">
+										        <i class="fas fa-minus-square" style="color:#ff8080"></i></a>
+									        {% comment %}<a class="anno-place" href="#" title="Annotate place" rel="tooltip" data-pid="{{ p.id }}">
+										        <i class="fas fa-edit linky fa-xs"></i></a>{% endcomment %}
+								        </span>
+								        {% else %}
+								        <span class="float-end me-1">
+									        <a class="mark-place" href="#" title="Remove from collection" data-pid="{{ p.id }}" data-col="{{ object.id }}">
+										        <i class="fas fa-minus-square" style="color:#ff8080"></i></a>
+									        {% comment %}<a class="anno-place" href="#" title="Annotate place" data-pid="{{ p.id }}">
+										        <i class="fas fa-edit linky fa-xs"></i></a>{% endcomment %}
+								        </span>
+								        {% endif %}
+									      {% if p.traces %}
+										      <br/>
+										      {% for t in p.traces %}
+											      {% if t.collection.id == object.id and t.saved %}
+											      <i>annotated</i>
+											      {% endif %}
+										      {% endfor %}
+									      {% endif %}
+							        </p>
+							      </div>
+							    {% endfor %}
+						    {% else %}
+							    {% if action == 'update' %}
+								    <p class="larger mb-0 strong">How to add places</p>
+								    <ul>
+									    <li><sr>From a Place Portal page</sr>. Use the Search page to find the place you're looking for, navigate to its "Portal Page" and choose <i>one</i> of the attestations found there.</li>
+								      <li><sr>From a public dataset's Browse page</sr>. Find a dataset of interest on the Public Datasets list, select the "Browse" tab, then select any number of records. A popup form will offer a list of your collections they can be added to.</li>
+									    <li><sr>From one or more of your own datasets.</sr>. You can add <b>all</b> of the places from any of your own datasets. Further instructions are found on Datasets tab to the left of this one.</li>
+								    </ul>
+							    {% endif %}
+							    {% if action == 'create' %}
+								    <h5 style="display:block;">Welcome</h5>
+								    <p>To create a new Place Collection, first fill out the required fields in the form on the left. and press <b>Save</b>. All information can be edited afterwards.</p>
+								    <p>Afterwards you can begin adding places, and add an image, a file and up to three links.</p>
+								    <p>"Annotation keywords" are terms that will be your own vocabulary for relations between a given place and the collection theme or topic. For example, relevant annotation keywords for a collection about a journey might include "waypoint" and "extended stay." For lives of individuals, "birthplace" and "resided" might be appropriate. The choice is yours.</p>
+					        {% endif %}
+						    {% endif %}
+			        </div>
+						</div> {# builder_content #}
+          </div> {# builder #}
+		    {% if action == 'update' %}
+			    <div id="coll_right" class="col-sm-6 p-2" style="height: auto;">
+			      <div id="coll_right_intro" class="hidden">
+				      <h5>Collections in WHG</h5>
+				      <p>A <mark-b>collection</mark-b> is a set of existing WHG place records.</p>
+				      <p>Registered users can build a collection by</p>
+				      <ol class="mb-1 ps-4">
+					      <li>Filling the required fields in the "Create" form</li>
+					      <li>Adding individual place records from any public dataset, discovered by search or browsing
+						      <br/> <b class="red-bold">and/or</b></li>
+					      <li>Adding one or more entire datasets for which they are the owner or a collaborator</li>
+				      </ol>
+				      <p>Places added to a collection by either method (step #2 or step #3) appear in the list viewed under the "Places" tab.</p>
+				      <p>Optionally, each place in a collection can be annotated with information about its membership in the collection: </p>
+				      <ul class="mb-1 ps-4">
+					      <li>associated dates or temporal order</li>
+					      <li>one of the optional "relation tags" included in the collection metadata</li>
+					      <li>a free-text description of the relation</li>
+				      </ul>
+				      <p>[<i>figure</i>]</p>
+			      </div>
+						{% if coll_places|length > 0 %}
+				    <div id="coll_right_anno" >
+				      <h6>Annotations</h6>
+					    <div id="annotator" class="mb-1">
+						    {% if action == 'update' %}
+						    <p class="mt-3">Select a place record from list on the left to annotate it.</p>
+						    {% endif %}
+					    </div>
+				    </div> <!-- coll_right_anno -->
+			      {% endif %}
+			    </div> {# coll_right #}
+		    {% endif %}
+	    </div> {# row #}
+      </div> {# coll_builder #}
+    </div> {# content #}
 	  {# help modal div #}
 		<div class="selector py-3"><div id="helpme"></div></div>
   {% endif %}
-</div> <!-- container -->
+</div> {# container #}
 
 <script type="text/javascript">
 	$("#btn_coll_submit").click(function(){
@@ -789,5 +948,5 @@
 
 </script>
 
-{% endblock %}
+{% endblock %} {# content #}
 
