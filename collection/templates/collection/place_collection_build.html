@@ -83,11 +83,25 @@
 	  <p>Access to this page is limited to the collection owner, <b>{{ user.username }} ({{ object.owner.id }})</b></p>
   {% else %}
   <div class="h-100">
-	  <h5 class="mt-3">Heading</h5>
+	  <h5 class="mt-3">
+		  {% if action == 'update' %}<span class="text-secondary">Place Collection Builder:</span>
+		    <span class="text-bold red-head">{{ form.title.value }}</span>
+				<span class="float-end small">
+					<span class="badge badge-warning px-2">beta</span>&nbsp;&nbsp;
+			    <a href="{% url 'collection:place-collection-browse' object.id %}">
+				    view&nbsp;&nbsp;<i class="fas fa-eye linky"></i></a>&nbsp;
+			    <a href="{% url 'collection:collection-delete' object.id %}"
+		      title="Delete collection" rel="tooltip" style="margin-top:-2px;">
+			    <i class="fas fa-trash linkyred"></i></a>
+				</span>
+	    {% else %}
+		    Place Collection Builder: {<span class="red-head">new</span>}
+	    {% endif %}
+	  </h5>
 	  <ul class="nav nav-tabs" id="" role="tablist">
 		  <li class="nav-item" role="presentation">
 		    <button class="nav-link" id="form-tab" data-bs-toggle="tab" data-bs-target="#coll_form"
-          type="button" role="tab" aria-controls="coll_form" aria-selected="true">Create/Edit</button>
+          type="button" role="tab" aria-controls="coll_form" aria-selected="true">Create/Edit Form</button>
 		  </li>
 		  <li class="nav-item" role="presentation">
 		    <button class="nav-link active" id="build-tab" data-bs-toggle="tab" data-bs-target="#coll_builder"
@@ -96,7 +110,135 @@
 		</ul>
 	  <div class="tab-content" id="content">
 	    <div id="coll_form" class="tab-pane fade h-100">
-				<p>DIV coll_form</p>
+	      <form id="collection_form" method="POST" action="#" enctype="multipart/form-data">
+        {% csrf_token %}
+	      {% if action == 'create' %}
+	        <input type="hidden" name="owner" value='{{ user.id }}' />
+	      {% else %}
+		      <input type="hidden" name="owner" value='{{ form.owner.value }}' />
+	      {% endif %}
+	      <input type="hidden" name="collection_class" value='place' />
+				<div class="form-group">
+					<label for="Title">Title &#x02733;</label>{{ form.title }}
+				</div>
+				<div class="form-group">
+					<label for="Description">Description &#x02733;</label>
+					{{ form.description }}
+				</div>
+				<div class="form-group">
+					<label for="Collection keywords">Collection keywords &#x02733;</label>
+					{{ form.keywords }}
+				</div>
+				<div class="form-group">
+					<label for="Annotation keywords">Annotation keywords</label>
+					{{ form.rel_keywords }}
+				</div>
+	      {% if action == 'update' %}
+					{# single image for now (20220416 #}
+		      <div class="form-group">
+			      <label for="Image">Image <i class="small">(800px wide or less)</i></label><br/>
+						{% if action == 'create' %} {# create, no image yet #}
+							<span id="img_chooser_create">{{ form.image_file }}</span>
+						{% elif form.image_file.value %} {# update & there's an image #}
+							<img src="{% static 'images/noun-photo.svg'%}" width="16"/>
+							<a href="/media/{{ form.image_file.value }}">
+								{{ object.image_file.url|remove:'/media/collections/'|truncatechars:30 }}
+							</a>
+							(<a href="javascript:$('#img_chooser').toggle()">change</a>)
+						{% else %} {# update and there's no image yet #}
+							<span id="img_chooser_update" >{{ form.image_file }}</span>
+						{% endif %}
+		        <span id="img_chooser" class="hidden">{{ form.image_file }}</span>
+					</div>
+		      <div class="form-group">
+						<label for="File">File <i class="small">(PDF format)</i></label><br/>
+						{% if action == 'create' %} {# create, no file yet #}
+							<span id="file_chooser_create">{{ form.file }}</span>
+						{% elif form.file.value %} {# update & there's an file #}
+							<i class="far fa-file-pdf linky"></i>
+							<a href="/media/{{ form.file.value }}">{{ object.file.url|remove:'/media/collections/' }}</a>
+							(<a href="javascript:$('#file_chooser').toggle()">change</a>)
+						{% else %} {# update and there's no image yet #}
+							<span id="file_chooser_update" >{{ form.file }}</span>
+						{% endif %}
+		        <span id="file_chooser" class="hidden">{{ form.file }}</span>
+					</div>
+					<div>Links
+						{% if links|length < 3 %}
+							<a href="#" id="a_linkpopup">
+								<button type="button" style="border-width: thin;">Add</button>
+							</a>
+						{% else %}(3 maximum) {% endif %}<br/>
+						<span id="linklist">
+						{% if links|length > 0 %}
+							{% for l in links %}
+								{{ l.get_link_type_display|safe }} <a href="{{ l.uri }}" target="_blank">{{ l.label }}</a>
+									[ <a href="{% url 'collection:remove-link' id=l.id %}" class="a_removelink"><i>remove</i></a> ]<br/>
+							{% endfor %}
+						{% endif %}
+						</span>
+					</div>{% endif %} {# action == 'update' #}
+	      <hr class="my-1"/>
+        <tr>
+	        <td class="my-0 small">&#x02733;<i><b> required</b></i></td>
+	        <td>
+		        {% if action == 'update' and user in whgteam %}
+			        <a class="float-end show-hide" href="#">
+				        editor options <i class="fas fa-cog linky"></i>
+			        </a>
+		        {% endif %}
+	        </td>
+        </tr>
+	      <div id="editor_options" class="hidden">
+		      <p>Status: {{ form.status }}</p>
+					<p>Featured rank: {{ form.featured }}</p>
+					{% comment %}<p>Featured rank: {{ form.featured }}</p>{% endcomment %}
+	      </div>
+	      <div id="select_div" class="hidden">{{ form.datasets }}</div>
+	      <div id="collection_options"></div>
+	      <div id="d_public">
+					{% if form.public.value == True %}
+						Public: {{ form.public }}
+					{% elif action == "update" %}
+						<a href="#"><span class="help-matches" data-id="going_public_coll">
+							<i class="fas fa-question-circle linky"></i> making a collection public </span></a>
+					{% endif %}
+				</div>
+	      <div id="d_buttons" class="" style="">
+          <span class="float-end">
+		      <a href="/mycollections">Cancel</a>
+          {# TODO: convert to bootstrap buttons for styling #}
+          {% if action == 'create' %}
+	          <input id="btn_coll_save" class="btn-sm btn-primary mt-2 ms-2" type="submit" value="Save" />
+          {% else %}
+	          <input id="btn_coll_save" name="display" class="btn-sm btn-primary mt-2 ms-2" type="submit" value="Save & Exit" />
+	          <input id="btn_coll_update" name="update" class="btn-sm btn-info mt-2 ms-2" type="submit" value="Update" />
+          {% endif %}
+          </span>
+	      </div>
+	      {% if mygroups|length > 0 %}
+		      <hr/>
+	        <p>For a group/class? {{ form.group }}
+						<a id="btn_coll_submit" class="btn btn-primary btn-sm" href="#" role="button">Submit</a>
+					</p>
+				{% endif %}
+	      </form>
+		    {# 1 or more links #}
+	      {% if action == "update" %}
+		      <div id="linkform_popup" class="pop">
+		        <form action="#" method="post">
+		        {% csrf_token %}
+		        <input type="hidden" name="collection" value="{{ object.id }}">
+		        <div class="closer" style="position:absolute; top:7px; right:7px;">X</div>
+		        <table class="mb-2">
+			        <tr><td>URI*: </td><td><input id="l_uri" name="uri" value="{{ links_form.uri }}" /></td></tr>
+			        <tr><td>Label*: </td><td><input id="l_label" name="label" value="{{ links_form.label }}" /></td></tr>
+			        <tr><td>Type*: </td><td><input id="l_linktype" name="link_type" value="{{ links_form.link_type }}" /></td></tr>
+		        </table>
+		        <button id="b_createlink" type="button">Save</button>
+	          </form>
+					</div>
+	      {% endif %}
 	    </div> {# coll_form #}
 	    <div id="coll_builder" class="tab-pane fade show active h-100" style="height: auto; position:relative;">
 	      <div class="d-flex h-100">
@@ -126,10 +268,105 @@
 						</ul>
 				    <div id="builder_content" class="tab-content">
 							<div id="coll_dslist" class="tab-pane fade" role="tabpanel" aria-labelledby="coll_dslist-tab">
-				        <p>coll_dslist</p>
+				        <p class="mt-2">
+					        <span class="me-2 smaller">
+					          <select id="select_ds" name="ds" class="custom-select-sm">
+					          <option value="0">Select dataset</option>
+					          <option disabled>___________</option>
+					          {% for ds in ds_select %}
+					            {% if ds not in coll_dsset %}
+					              <option value="{{ ds.id }}">{{ ds.title }}</option>
+					            {% endif %}
+					          {% endfor %}
+					          </select>
+					        </span>
+				        </p>
+				        <!-- id, label, title, description, creator, create_date, webpage, numrows, datatype -->
+				        <div id="coll_dscards_create">
+					        <p>The select dropdown above lists datasets you "own" or have been made a collaborator on.</p>
+					        {% if coll_dsset|length == 0 %}
+						        <p id="further_explanation">Once selected, you can choose to "add all places" from it and
+		                  they will appear on your collection's place list. Note that very large datasets
+		                  (more than a few thousand rows) may present issues in managing annotations and in the
+		                  display of the collection.</p>
+					        {% endif %}
+					        {% for d in coll_dsset %}
+					          <div class="ds_card w-100">
+					            <p class="mb-0">
+						            <a href="{% url 'datasets:ds_summary' id=d.id %}"><span class="ds_title">{{ d.title }}</span></a>
+						            <small>({{d.label}}/{{ d.id}})</small>
+					            </p>
+					            <div class="ds_fields">
+					              <p class="my-1"><b>Description</b>: {{ d.description|truncatechars:150 }}</p>
+					              <p class="my-1"><b>Create date</b>: {{ d.create_date|date:"d M Y" }}</p>
+					              <p class="my-1"><b># rows</b>: {{ d.numrows }}
+					              <a href="{% url 'collection:remove-ds' ds_id=d.id coll_id=object.id %}" class="float-end">
+						              <i class="fas fa-minus-square linky"></i> remove</a>
+					              </p>
+					            </div>
+					          </div>
+					        {% endfor %}
+				        </div> {# coll_dscards_create #}
 							</div>
 				      <div id="coll_placelist" class="tab-pane fade show active" role="tabpanel" aria-labelledby="coll_placelist-tab">
-								<p>coll_placelist</p>
+						    {% if coll_places|length > 0 %}
+						      {% for p in coll_places %}
+							      <div class="col-place-card" data-id="{{ p.id }}">
+								      <p><b>{{ p.title }}</b> {{ p.ccodes }}
+									      <i>pid: (<a class="coll-place" data-pid={{ p.id }} href="#" >{{ p.id }}</a>)</i>
+{#								         candidate for biggest kluge ever; tooltip breaks for single place!?#}
+								        {% if coll_places|length > 1 %}
+								        <span class="float-end me-1">
+									        <a class="mark-place" href="#" title="Remove from collection" rel="tooltip"
+                                data-pid="{{ p.id }}" data-col="{{ object.id }}">
+										        <i class="fas fa-minus-square" style="color:#ff8080"></i></a>
+									        {% comment %}<a class="anno-place" href="#" title="Annotate place" rel="tooltip" data-pid="{{ p.id }}">
+										        <i class="fas fa-edit linky fa-xs"></i></a>{% endcomment %}
+								        </span>
+								        {% else %}
+								        <span class="float-end me-1">
+									        <a class="mark-place" href="#" title="Remove from collection" data-pid="{{ p.id }}"
+                               data-col="{{ object.id }}">
+										        <i class="fas fa-minus-square" style="color:#ff8080"></i></a>
+									        {% comment %}<a class="anno-place" href="#" title="Annotate place" data-pid="{{ p.id }}">
+										        <i class="fas fa-edit linky fa-xs"></i></a>{% endcomment %}
+								        </span>
+								        {% endif %}
+									      {% if p.traces %}
+										      <br/>
+										      {% for t in p.traces %}
+											      {% if t.collection.id == object.id and t.saved %}
+											      <i>annotated</i>
+											      {% endif %}
+										      {% endfor %}
+									      {% endif %}
+							        </p>
+							      </div>
+							    {% endfor %}
+						    {% else %}
+							    {% if action == 'update' %}
+								    <p class="larger mb-0 strong">How to add places</p>
+								    <ul>
+										  <li><sr>From a Place Portal page</sr>. Use the Search page to find the place you're looking for,
+		                      navigate to its "Portal Page" and choose <i>one</i> of the attestations found there.</li>
+										      <li><sr>From a public dataset's Browse page</sr>. Find a dataset of interest on the Public Datasets list,
+		                      select the "Browse" tab, then select any number of records. A popup form will offer a list of
+		                      your collections they can be added to.</li>
+										    <li><sr>From one or more of your own datasets.</sr>. You can add <b>all</b> of the places from
+		                        any of your own datasets. Further instructions are found on Datasets tab to the left of this one.</li>
+								    </ul>
+							    {% endif %}
+							    {% if action == 'create' %}
+								    <h5 style="display:block;">Welcome</h5>
+									  <p>To create a new Place Collection, first fill out the required fields in the form on the left.
+		                      and press <b>Save</b>. All information can be edited afterwards.</p>
+								    <p>Afterwards you can begin adding places, and add an image, a file and up to three links.</p>
+									  <p>"Annotation keywords" are terms that will be your own vocabulary for relations between a given
+		                    place and the collection theme or topic. For example, relevant annotation keywords for a collection
+		                    about a journey might include "waypoint" and "extended stay." For lives of individuals, "birthplace"
+		                    and "resided" might be appropriate. The choice is yours.</p>
+					        {% endif %}
+						    {% endif %}
 			        </div>
 				    </div> {# builder_content #}
 			    </div> {# builder #}
