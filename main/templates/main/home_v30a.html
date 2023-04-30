@@ -6,6 +6,9 @@
 {% block extra_head %}
   <script src="{% static 'js/spin.umd.js' %}"></script>  
   <link rel="stylesheet" href="{% static 'css/spin.css' %}"/>
+	<style>
+		#intro {font-size: .9rem;}
+	</style>
 {% endblock %}
 
 {% block content %}
@@ -20,16 +23,28 @@
 	</div>
 
 	<div id="content_top" class="row gx-2 gy-2 mx-0 h-75">
-		<div class="col-sm-3">
-			<div class="p-2 border h-100">left</div>
+		<div class="col-sm-3" id="intro">
+			<div class="p-2 border h-100">
+				<p>Sed aliquam, metus ultricies varius auctor, eros neque iaculis est, ullamcorper cursus turpis purus non tellus.
+					Nunc non velit quis est molestie tempor id eu tellus. Donec elementum, purus in ornare vehicula,
+					lectus nulla molestie diam, vitae lacinia felis augue id leo. Praesent ac vehicula nulla. Sed sit amet lacinia arcu.
+					Praesent suscipit a justo non ornare. Nulla a ligula commodo, laoreet risus a, cursus neque.
+					Vestibulum ut orci ultricies, lacinia sapien ac, mollis justo.
+				</p>
+			</div>
 		</div>
 		<div class="col-sm-6">
-			<div class="p-2 border h-100 bg-light">map in the middle</div>
+			<div class="p-2 border mb-1 h-75 bg-light">map in the middle</div>
+			<div class="p-2 border bg-light" style="height: 24%;">map blurb</div>
 		</div>
 		<div class="col-sm-3">
-			<div class="p-1 border gy-2 h-100 bg-light">
-				<div class="h-50 border mb-1 p-1">right top</div>
-				<div class="h-50 border p-1">right bottom</div>
+			<div class="gy-2 h-100 bg-light pb-1">
+				<div class="h-50 border mb-1 p-1">
+					<h6 class="bg-secondary text-light p-1">Datasets</h6>
+				</div>
+				<div class="h-50 border p-1">
+					<h6 class="bg-secondary text-light p-1">Collections</h6>
+				</div>
 			</div>
 		</div>
 	</div> <!-- content_top -->

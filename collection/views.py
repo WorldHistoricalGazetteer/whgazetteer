@@ -233,7 +233,8 @@ CollectionLinkFormset = inlineformset_factory(
 """
 class PlaceCollectionCreateView(LoginRequiredMixin, CreateView):
   form_class = CollectionModelForm
-  template_name = 'collection/place_collection_builder.html'
+  template_name = 'collection/place_collection_build.html'
+  # template_name = 'collection/place_collection_builder.html'
   queryset = Collection.objects.all()
 
   def get_form_kwargs(self, **kwargs):
@@ -309,7 +310,8 @@ class PlaceCollectionCreateView(LoginRequiredMixin, CreateView):
 """ update place collection; uses place_collection_builder.html """
 class PlaceCollectionUpdateView(UpdateView):
   form_class = CollectionModelForm
-  template_name = 'collection/place_collection_builder.html'
+  template_name = 'collection/place_collection_build.html'
+  # template_name = 'collection/place_collection_builder.html'
   # success_url = '/mycollections'
 
   def get_object(self):

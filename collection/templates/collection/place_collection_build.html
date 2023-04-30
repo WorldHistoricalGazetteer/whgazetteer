@@ -1,0 +1,952 @@
+<!-- collection/place_collection_builder.html -->
+{% extends "main/base.html" %}
+{% load leaflet_tags %}
+
+{% load static %}
+{% load dataset_extras %}
+{% block title %}
+	<title>WHG::Create/Update Collection</title>
+{% endblock %}
+{% block extra_head %}
+  <style>
+    #linkform_popup {
+	    position:absolute;
+			background-color: whitesmoke;
+	    border: 1px solid grey;
+	    box-shadow: gainsboro 4px 4px;
+	    border-radius: 6px;
+	    padding: 15px;
+	    height: 150px;
+	    width: 250px;
+	    bottom: 50px;
+	    left: 110px;
+	    z-index: 1000;
+	    display:none;
+    }
+    .coll-col { border-right: 1px dashed lightgray;;}
+    #coll_place_detail{
+	    border-bottom:dashed 1px grey;
+	    padding-bottom: .3rem;
+	    {#background-color: aliceblue;#}
+    }
+    #coll_place_detail {min-height: 80px;}
+    #coll_place_detail p{ margin-bottom: 0}
+    #coll_right_anno, #coll_right_intro {
+	    {#margin-top:42px;#}
+    }
+    #anno_div table td {padding-top: 3px; padding-bottom: 3px;}
+    #anno_div input {height: 1.5rem; font-size:.8rem;}
+    {##annotator {background-color: #fafafa;}#}
+    .form-group {margin-bottom: 4px !important;}
+    .form-group label {margin-bottom:0 !important;}
+    .col-place-card {
+	    border: #c3c3c3 1px dashed;
+	    margin-bottom: 3px;
+	    background-color: #fafafa;
+	    padding-left: 2px;
+	    cursor: pointer;
+    }
+    .card-highlight {border: 1px solid #993333; background-color: lightyellow;}
+		#coll_placelist, #coll_dslist {
+	    padding: 3px;
+	    position: absolute;
+	    max-height: 100%;
+	    min-height: auto;
+	    width: 100%;
+	    overflow-y:auto;
+    }
+    #builder_content {
+	    position:absolute;
+	    width: 45%;
+	    height: 92%;
+	    border-left: 1px solid gainsboro;
+	    border-right: 1px solid gainsboro;
+	    border-bottom: 1px solid gainsboro;
+	    background-color: #fdf5e6;
+	    {#max-height: 92%;#}
+    }
+    #coll_tabs {
+			{#margin-right: 2px;#}
+			background-color: #fdf5e6;
+			border-top: 1px solid gainsboro;
+			border-left: 1px solid gainsboro;
+			border-right: 1px solid gainsboro;
+			border-radius: 8px 8px 0 0;
+		}
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="container container-md" style="height: calc(100vh - 65px);">
+  {% if action == 'update' and user.id != object.owner.id and not user.is_superuser and not user in whgteam %}
+	  <p>Access to this page is limited to the collection owner, <b>{{ user.username }} ({{ object.owner.id }})</b></p>
+  {% else %}
+	  <h5 class="mt-3">
+		  {% if action == 'update' %}<span class="text-secondary">Place Collection Builder:</span>
+		    <span class="text-bold red-head">{{ form.title.value }}</span>
+				<span class="float-end small">
+					<span class="badge badge-warning px-2">beta</span>&nbsp;&nbsp;
+			    <a href="{% url 'collection:place-collection-browse' object.id %}">
+				    view&nbsp;&nbsp;<i class="fas fa-eye linky"></i></a>&nbsp;
+			    <a href="{% url 'collection:collection-delete' object.id %}"
+		      title="Delete collection" rel="tooltip" style="margin-top:-2px;">
+			    <i class="fas fa-trash linkyred"></i></a>
+				</span>
+	    {% else %}
+		    Place Collection Builder: {<span class="red-head">new</span>}
+	    {% endif %}
+	  </h5>
+	  <ul class="nav nav-tabs" id="" role="tablist">
+		  <li class="nav-item" role="presentation">
+		    <button class="nav-link" id="form-tab" data-bs-toggle="tab" data-bs-target="#coll_form"
+          type="button" role="tab" aria-controls="coll_form" aria-selected="true">Create/Edit</button>
+		  </li>
+		  <li class="nav-item" role="presentation">
+		    <button class="nav-link active" id="build-tab" data-bs-toggle="tab" data-bs-target="#coll_builder"
+          type="button" role="tab" aria-controls="coll_builder" aria-selected="false">Build</button>
+		  </li>
+		</ul>
+	  <div class="tab-content" id="content" style="height:90%;">
+{#	  <div class="d-flex" style="height:90%;">#}
+{#	    <div id="coll_form" class="col-sm-4 form-box mt-2 pb-2" style="height: fit-content;">#}
+	    <div id="coll_form" class="tab-pane fade" style="height: fit-content;">
+	      <form id="collection_form" method="POST" action="#" enctype="multipart/form-data">
+        {% csrf_token %}
+	      {% if action == 'create' %}
+	        <input type="hidden" name="owner" value='{{ user.id }}' />
+	      {% else %}
+		      <input type="hidden" name="owner" value='{{ form.owner.value }}' />
+	      {% endif %}
+	      <input type="hidden" name="collection_class" value='place' />
+				<div class="form-group">
+					<label for="Title">Title &#x02733;</label>{{ form.title }}
+				</div>
+				<div class="form-group">
+					<label for="Description">Description &#x02733;</label>
+					{{ form.description }}
+				</div>
+				<div class="form-group">
+					<label for="Collection keywords">Collection keywords &#x02733;</label>
+					{{ form.keywords }}
+				</div>
+				<div class="form-group">
+					<label for="Annotation keywords">Annotation keywords</label>
+					{{ form.rel_keywords }}
+				</div>
+	      {% if action == 'update' %}
+					{# single image for now (20220416 #}
+		      <div class="form-group">
+			      <label for="Image">Image <i class="small">(800px wide or less)</i></label><br/>
+						{% if action == 'create' %} {# create, no image yet #}
+							<span id="img_chooser_create">{{ form.image_file }}</span>
+						{% elif form.image_file.value %} {# update & there's an image #}
+							<img src="{% static 'images/noun-photo.svg'%}" width="16"/>
+							<a href="/media/{{ form.image_file.value }}">
+								{{ object.image_file.url|remove:'/media/collections/'|truncatechars:30 }}
+							</a>
+							(<a href="javascript:$('#img_chooser').toggle()">change</a>)
+						{% else %} {# update and there's no image yet #}
+							<span id="img_chooser_update" >{{ form.image_file }}</span>
+						{% endif %}
+		        <span id="img_chooser" class="hidden">{{ form.image_file }}</span>
+					</div>
+		      <div class="form-group">
+						<label for="File">File <i class="small">(PDF format)</i></label><br/>
+						{% if action == 'create' %} {# create, no file yet #}
+							<span id="file_chooser_create">{{ form.file }}</span>
+						{% elif form.file.value %} {# update & there's an file #}
+							<i class="far fa-file-pdf linky"></i>
+							<a href="/media/{{ form.file.value }}">{{ object.file.url|remove:'/media/collections/' }}</a>
+							(<a href="javascript:$('#file_chooser').toggle()">change</a>)
+						{% else %} {# update and there's no image yet #}
+							<span id="file_chooser_update" >{{ form.file }}</span>
+						{% endif %}
+		        <span id="file_chooser" class="hidden">{{ form.file }}</span>
+					</div>
+					<div>Links
+						{% if links|length < 3 %}
+							<a href="#" id="a_linkpopup">
+								<button type="button" style="border-width: thin;">Add</button>
+							</a>
+						{% else %}(3 maximum) {% endif %}<br/>
+						<span id="linklist">
+						{% if links|length > 0 %}
+							{% for l in links %}
+								{{ l.get_link_type_display|safe }} <a href="{{ l.uri }}" target="_blank">{{ l.label }}</a>
+									[ <a href="{% url 'collection:remove-link' id=l.id %}" class="a_removelink"><i>remove</i></a> ]<br/>
+							{% endfor %}
+						{% endif %}
+						</span>
+					</div>{% endif %} {# action == 'update' #}
+	      <hr class="my-1"/>
+        <tr>
+	        <td class="my-0 small">&#x02733;<i><b> required</b></i></td>
+	        <td>
+		        {% if action == 'update' and user in whgteam %}
+			        <a class="float-end show-hide" href="#">
+				        editor options <i class="fas fa-cog linky"></i>
+			        </a>
+		        {% endif %}
+	        </td>
+        </tr>
+	      <div id="editor_options" class="hidden">
+		      <p>Status: {{ form.status }}</p>
+					<p>Featured rank: {{ form.featured }}</p>
+					{% comment %}<p>Featured rank: {{ form.featured }}</p>{% endcomment %}
+	      </div>
+	      <div id="select_div" class="hidden">{{ form.datasets }}</div>
+	      <div id="collection_options"></div>
+	      <div id="d_public">
+					{% if form.public.value == True %}
+						Public: {{ form.public }}
+					{% elif action == "update" %}
+						<a href="#"><span class="help-matches" data-id="going_public_coll">
+							<i class="fas fa-question-circle linky"></i> making a collection public </span></a>
+					{% endif %}
+				</div>
+	      <div id="d_buttons" class="" style="">
+          <span class="float-end">
+		      <a href="/mycollections">Cancel</a>
+          {# TODO: convert to bootstrap buttons for styling #}
+          {% if action == 'create' %}
+	          <input id="btn_coll_save" class="btn-sm btn-primary mt-2 ms-2" type="submit" value="Save" />
+          {% else %}
+	          <input id="btn_coll_save" name="display" class="btn-sm btn-primary mt-2 ms-2" type="submit" value="Save & Exit" />
+	          <input id="btn_coll_update" name="update" class="btn-sm btn-info mt-2 ms-2" type="submit" value="Update" />
+          {% endif %}
+          </span>
+	      </div>
+	      {% if mygroups|length > 0 %}
+		      <hr/>
+	        <p>For a group/class? {{ form.group }}
+						<a id="btn_coll_submit" class="btn btn-primary btn-sm" href="#" role="button">Submit</a>
+					</p>
+				{% endif %}
+	      </form>
+		    {# 1 or more links #}
+	      {% if action == "update" %}
+		      <div id="linkform_popup" class="pop">
+		        <form action="#" method="post">
+		        {% csrf_token %}
+		        <input type="hidden" name="collection" value="{{ object.id }}">
+		        <div class="closer" style="position:absolute; top:7px; right:7px;">X</div>
+		        <table class="mb-2">
+			        <tr><td>URI*: </td><td><input id="l_uri" name="uri" value="{{ links_form.uri }}" /></td></tr>
+			        <tr><td>Label*: </td><td><input id="l_label" name="label" value="{{ links_form.label }}" /></td></tr>
+			        <tr><td>Type*: </td><td><input id="l_linktype" name="link_type" value="{{ links_form.link_type }}" /></td></tr>
+		        </table>
+		        <button id="b_createlink" type="button">Save</button>
+	          </form>
+					</div>
+	      {% endif %}
+	    </div> {# coll_form #}
+
+	    <div id="coll_builder" class="tab-pane fade show active" style="height: auto; position:relative;">
+	      <div class="row">
+	        <div class="col-sm-6" id="builder">
+						<ul id="coll_tabs" class="nav nav-tabs" role="tablist">
+							{% if action == 'update' %}
+							<li class="nav-item" role="presentation">
+							    <button class="nav-link" id="coll_dslist-tab" data-bs-toggle="tab" data-bs-target="#coll_dslist"
+							       role="tab" aria-controls="coll_dslist" aria-selected="false" data-id="ds">
+								    Datasets</button>
+						  </li>
+							{% else %}
+						  <li class="nav-item disabled" role="presentation">
+									<button class="nav-link" id="coll_dslist-tab"  style="color:grey !important;"
+									        data-bs-target="#coll_dslist" >Datasets</button>
+						  </li>
+							{% endif %}
+						  <li class="nav-item" role="presentation">
+						    <button class="nav-link active" id="coll_placelist-tab" data-bs-toggle="tab" data-bs-target="#coll_placelist"
+						       role="tab" aria-controls="coll_placelist" aria-selected="true" data-id="pl">
+							    Places ({{ coll_places|length }})</button>
+						  </li>
+							<span class="small" style="position:absolute; right:1rem; top:1.5rem;">
+								<a id="a_remove" href="#"></a>
+							</span>
+						</ul>
+				    <div id="builder_content" class="tab-content">
+					    <div id="coll_dslist" class="tab-pane fade" role="tabpanel" aria-labelledby="coll_dslist-tab">
+				        <p class="mt-2">
+					        <span class="me-2 smaller">
+					          <select id="select_ds" name="ds" class="custom-select-sm">
+					          <option value="0">Select dataset</option>
+					          <option disabled>___________</option>
+					          {% for ds in ds_select %}
+					            {% if ds not in coll_dsset %}
+					              <option value="{{ ds.id }}">{{ ds.title }}</option>
+					            {% endif %}
+					          {% endfor %}
+					          </select>
+					        </span>
+				        </p>
+				        <!-- id, label, title, description, creator, create_date, webpage, numrows, datatype -->
+				        <div id="coll_dscards_create">
+				        {{ ds_select }}
+					        <p>The select dropdown above lists datasets you "own" or have been made a collaborator on.</p>
+					        {% if coll_dsset|length == 0 %}
+						        <p id="further_explanation">Once selected, you can choose to "add all places" from it and they will appear on your collection's place list. Note that very large datasets (more than a few thousand rows) may present issues in managing annotations and in the display of the collection.</p>
+					        {% endif %}
+					        {% for d in coll_dsset %}
+					          <div class="ds_card w-100">
+					            <p class="mb-0">
+						            <a href="{% url 'datasets:ds_summary' id=d.id %}"><span class="ds_title">{{ d.title }}</span></a>
+						            <small>({{d.label}}/{{ d.id}})</small>
+					            </p>
+					            <div class="ds_fields">
+					              <p class="my-1"><b>Description</b>: {{ d.description|truncatechars:150 }}</p>
+					              <p class="my-1"><b>Create date</b>: {{ d.create_date|date:"d M Y" }}</p>
+					              <p class="my-1"><b># rows</b>: {{ d.numrows }}
+					              <a href="{% url 'collection:remove-ds' ds_id=d.id coll_id=object.id %}" class="float-end">
+						              <i class="fas fa-minus-square linky"></i> remove</a>
+					              </p>
+					            </div>
+					          </div>
+					        {% endfor %}
+				        </div> <!-- #coll_dscards_create -->
+					    </div> {#  coll_dslist #}
+					    <div id="coll_placelist" class="tab-pane fade show active" role="tabpanel" aria-labelledby="coll_placelist-tab">
+						    {% if coll_places|length > 0 %}
+						      {% for p in coll_places %}
+							      <div class="col-place-card" data-id="{{ p.id }}">
+								      <p><b>{{ p.title }}</b> {{ p.ccodes }}
+									      <i>pid: (<a class="coll-place" data-pid={{ p.id }} href="#" >{{ p.id }}</a>)</i>
+								        {# candidate for biggest kluge ever; tooltip breaks for single place!? #}
+								        {% if coll_places|length > 1 %}
+								        <span class="float-end me-1">
+									        <a class="mark-place" href="#" title="Remove from collection" rel="tooltip" data-pid="{{ p.id }}" data-col="{{ object.id }}">
+										        <i class="fas fa-minus-square" style="color:#ff8080"></i></a>
+									        {% comment %}<a class="anno-place" href="#" title="Annotate place" rel="tooltip" data-pid="{{ p.id }}">
+										        <i class="fas fa-edit linky fa-xs"></i></a>{% endcomment %}
+								        </span>
+								        {% else %}
+								        <span class="float-end me-1">
+									        <a class="mark-place" href="#" title="Remove from collection" data-pid="{{ p.id }}" data-col="{{ object.id }}">
+										        <i class="fas fa-minus-square" style="color:#ff8080"></i></a>
+									        {% comment %}<a class="anno-place" href="#" title="Annotate place" data-pid="{{ p.id }}">
+										        <i class="fas fa-edit linky fa-xs"></i></a>{% endcomment %}
+								        </span>
+								        {% endif %}
+									      {% if p.traces %}
+										      <br/>
+										      {% for t in p.traces %}
+											      {% if t.collection.id == object.id and t.saved %}
+											      <i>annotated</i>
+											      {% endif %}
+										      {% endfor %}
+									      {% endif %}
+							        </p>
+							      </div>
+							    {% endfor %}
+						    {% else %}
+							    {% if action == 'update' %}
+								    <p class="larger mb-0 strong">How to add places</p>
+								    <ul>
+									    <li><sr>From a Place Portal page</sr>. Use the Search page to find the place you're looking for, navigate to its "Portal Page" and choose <i>one</i> of the attestations found there.</li>
+								      <li><sr>From a public dataset's Browse page</sr>. Find a dataset of interest on the Public Datasets list, select the "Browse" tab, then select any number of records. A popup form will offer a list of your collections they can be added to.</li>
+									    <li><sr>From one or more of your own datasets.</sr>. You can add <b>all</b> of the places from any of your own datasets. Further instructions are found on Datasets tab to the left of this one.</li>
+								    </ul>
+							    {% endif %}
+							    {% if action == 'create' %}
+								    <h5 style="display:block;">Welcome</h5>
+								    <p>To create a new Place Collection, first fill out the required fields in the form on the left. and press <b>Save</b>. All information can be edited afterwards.</p>
+								    <p>Afterwards you can begin adding places, and add an image, a file and up to three links.</p>
+								    <p>"Annotation keywords" are terms that will be your own vocabulary for relations between a given place and the collection theme or topic. For example, relevant annotation keywords for a collection about a journey might include "waypoint" and "extended stay." For lives of individuals, "birthplace" and "resided" might be appropriate. The choice is yours.</p>
+					        {% endif %}
+						    {% endif %}
+			        </div>
+						</div> {# builder_content #}
+          </div> {# builder #}
+		    {% if action == 'update' %}
+			    <div id="coll_right" class="col-sm-6 p-2" style="height: auto;">
+			      <div id="coll_right_intro" class="hidden">
+				      <h5>Collections in WHG</h5>
+				      <p>A <mark-b>collection</mark-b> is a set of existing WHG place records.</p>
+				      <p>Registered users can build a collection by</p>
+				      <ol class="mb-1 ps-4">
+					      <li>Filling the required fields in the "Create" form</li>
+					      <li>Adding individual place records from any public dataset, discovered by search or browsing
+						      <br/> <b class="red-bold">and/or</b></li>
+					      <li>Adding one or more entire datasets for which they are the owner or a collaborator</li>
+				      </ol>
+				      <p>Places added to a collection by either method (step #2 or step #3) appear in the list viewed under the "Places" tab.</p>
+				      <p>Optionally, each place in a collection can be annotated with information about its membership in the collection: </p>
+				      <ul class="mb-1 ps-4">
+					      <li>associated dates or temporal order</li>
+					      <li>one of the optional "relation tags" included in the collection metadata</li>
+					      <li>a free-text description of the relation</li>
+				      </ul>
+				      <p>[<i>figure</i>]</p>
+			      </div>
+						{% if coll_places|length > 0 %}
+				    <div id="coll_right_anno" >
+				      <h6>Annotations</h6>
+					    <div id="annotator" class="mb-1">
+						    {% if action == 'update' %}
+						    <p class="mt-3">Select a place record from list on the left to annotate it.</p>
+						    {% endif %}
+					    </div>
+				    </div> <!-- coll_right_anno -->
+			      {% endif %}
+			    </div> {# coll_right #}
+		    {% endif %}
+	    </div> {# row #}
+      </div> {# coll_builder #}
+    </div> {# content #}
+	  {# help modal div #}
+		<div class="selector py-3"><div id="helpme"></div></div>
+  {% endif %}
+</div> {# container #}
+
+<script type="text/javascript">
+	$("#btn_coll_submit").click(function(){
+		console.log('submitting collection {{ object.id }}')
+	})
+
+  {#$(".anno-place").click(function(){#}
+  $(".col-place-card").click(function(){
+		// clear highlights
+    $(".col-place-card").removeClass('card-highlight')
+	  $(this).addClass('card-highlight')
+	  // get pid
+    let pid = $(this).data('pid')
+	  // highlight this one
+		card=$(this).addClass('card-highlight')
+	  // position of clicked card
+	  cardtop = card.offset().top
+	  sessionStorage.setItem('cardtop', cardtop)
+	  // position of list scroller
+	  scrolltop = $("#coll_placelist").scrollTop()
+	  sessionStorage.setItem('scrolltop', scrolltop)
+	  // permanent position of list on page
+	  listtop = $("#coll_placelist").offset().top
+	  offset = cardtop+scrolltop-listtop
+	  sessionStorage.setItem('offset', offset)
+	  console.log('offset',offset)
+	  console.log('cardtop, scrolltop, listtop',
+			  cardtop, scrolltop, listtop )
+	  getAnno($(this).data('id'))
+  })
+  {#$(".anno-place").click(function(){#}
+  {#  $(this).tooltip('hide');#}
+  {#  $(".col-place-card").removeClass('card-highlight')#}
+  {#  let pid = $(this).data('pid')#}
+	{#	card=$("div[class*=col-place-card]")#}
+  {#          .filter("div[data-id="+pid+"]").addClass('card-highlight')#}
+	{#  // position of clicked card#}
+	{#  cardtop = card.offset().top#}
+	{#  sessionStorage.setItem('cardtop', cardtop)#}
+	{#  // position of list scroller#}
+	{#  scrolltop = $("#coll_placelist").scrollTop()#}
+	{#  sessionStorage.setItem('scrolltop', scrolltop)#}
+	{#  // permanent position of list on page#}
+	{#  listtop = $("#coll_placelist").offset().top#}
+	{#  offset = cardtop+scrolltop-listtop#}
+	{#  sessionStorage.setItem('offset', offset)#}
+	{#  console.log('offset',offset)#}
+	{#  console.log('cardtop, scrolltop, listtop',#}
+	{#		  cardtop, scrolltop, listtop )#}
+	{#  getAnno($(this).data('pid'))#}
+  {# })#}
+
+	function goBrowse(){
+    window.location = '/collections/{{ object.id }}/browse_pl'
+	}
+	function saveExit(){
+    {#console.log('saveExit(callback)')#}
+    {#$.when($("#collection_form").submit()).then(function(){goBrowse()})#}
+    $("#collection_form").submit()
+	}
+
+	function create_collection_link(){
+      var formData = new FormData()
+			formData.append('collection', '{{ object.id }}')
+			formData.append('uri', $("#l_uri").val())
+			formData.append('label',$("#l_label").val() )
+			formData.append('link_type',$("#l_linktype").val() )
+			formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+			$.ajax({
+		      type: 'POST',
+		      enctype: 'multipart/form-data',
+		      url: '/collections/create_link/',
+		      processData: false,
+		      contentType: false,
+		      cache: false,
+		      data: formData,
+		      success:function(response){
+			      if(response.result == 'dupe'){
+              alert('That url is already linked to this collection!')
+				      {#$("input.action").prop('checked',false)#}
+			      } else {
+							// TODO: list in gui
+				      linky = response.result
+				      $("#linklist").append('<a href="'+linky.uri+
+						      '" target="_blank">'+linky.label+'</a> ('+linky.link_icon+
+						      '<i title class="fa fa-minus-square-o"></i> ); ')
+				      $("#added_flash").fadeIn().delay(2000).fadeOut()
+				      {#console.log('added! gimmee feedback', response.result)#}
+			      }
+		      }
+			})
+			{#$("#addtocoll").hide()#}
+			$("#linkform_popup input").val('')
+			$("#linkform_popup").hide()
+	}
+
+	$("#a_linkpopup").click(function(){
+    $("#linkform_popup").fadeIn()
+	})
+
+	$("#b_createlink").click(function(){
+    create_collection_link()
+	})
+
+	// do something with place name (modal popup?)
+	$(".coll-place").click(function() {
+      {#console.log('place record', $(this).data('pid'));#}
+  })
+	$(".closer").click(function(){
+			{#$("#linkform_popup").fadeOut()#}
+			$(".pop").fadeOut()
+	})
+	// fetch r/o place record to annotation panel
+
+	function remove_from_collection(coll, pids) {
+      var formData = new FormData()
+      formData.append('collection', coll)
+      formData.append('place_list', pids)
+      formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+      // collection.views.remove_places()
+      $.ajax({
+          type: 'POST',
+          enctype: 'multipart/form-data',
+          url: '/collections/remove_places/',
+          processData: false,
+          contentType: false,
+          cache: false,
+          data: formData,
+          success: function (response) {
+              {#console.log('result:', response)#}
+          }
+      })
+			// remove card from dom & hide link
+			$(".col-place-card").each(function(index) {
+        if ( remove_these.includes( $(this).data('id') ) ) {
+          $(this).remove()
+        }
+      })
+			// update count in tab
+			newcount = $(".col-place-card").length
+			$("#coll_placelist-tab").text('Places ('+newcount+')')
+			remove_these = [];
+      $("#a_remove").html('')
+  }
+	// remove place(s) from collection
+	$("#a_remove").click(function(){
+		coll = '{{ object.id }}'
+    remove_from_collection(coll, remove_these)
+	})
+	// mark/unmark place for removal from collection
+	$(".mark-place").click(function(e){
+    e.stopPropagation()
+    pid = $(this).data('pid')
+		col = $(this).data('col')
+    {#console.log('mark ' + pid + ' in ' + col)#}
+		{#card = $(".col-place-card[data-id="+pid+"]")#}
+		if(remove_these.indexOf(pid)>-1){
+      // unmark it
+			card = $(".col-place-card[data-id="+pid+"]")
+			card.css('opacity', 1.0)
+			$(".col-place-card[data-id="+pid+"] i.fa-plus-circle")
+		    .addClass('fa-minus-circle')
+		    .removeClass('fa-plus-circle')
+		    .css('color','lightcoral')
+			$(card[0]).find('.restore-place').addClass('remove-place')
+				.removeClass('restore-place')
+			idx = remove_these.indexOf(pid)
+			remove_these.splice(idx,1)
+			$("#a_remove").html('remove '+remove_these.length)
+			if(remove_these.length == 0){$("#a_remove").html('')}
+		} else {
+      // mark for removal
+			card = $(".col-place-card[data-id="+pid+"]")
+			card.css('opacity', 0.5)
+			$(".col-place-card[data-id="+pid+"] i.fa-minus-circle")
+		    .addClass('fa-plus-circle')
+		    .removeClass('fa-minus-circle')
+		    .css('color','green')
+			$(card[0]).find('.remove-place').addClass('restore-place')
+				.removeClass('remove-place')
+			remove_these.push(pid)
+			$("#a_remove").html('remove '+remove_these.length)
+		}
+    {#console.log('remove_these:', remove_these)#}
+	})
+
+	$("#btn_coll_update").click(function(){
+      {#console.log('save & return')#}
+	})
+	// show/hide editor-restricted options
+  $("#editor_options").hide();
+	$('.show-hide').click(function(e) {
+    $("#editor_options").slideToggle("fast");
+    var val = $(this).html() == "↑" ? "↓" : "↑";
+    {#var val = $(this).html() == "-" ? "+" : "-";#}
+    $(this).hide().html(val).fadeIn("fast");
+    {#$(this).hide().html(val).fadeIn("fast");#}
+    e.preventDefault();
+  });
+
+	// builds link for external place record
+  function url_extplace(identifier) {
+    // abbreviate links not in aliases.base_urls
+    if(identifier.startsWith('http')) {
+      let tag = identifier.replace(/.+\/\/|www.|\..+/g, '')
+      link = '<a href="'+identifier+'" target="_blank">'+tag+'<i class="fas fa-external-link-alt linky"></i>,  </a>'
+    } else {
+    link = '<a href="" class="ext" data-target="#ext_site">'+identifier+'<i class="fas fa-external-link-alt linky"></i></a>, '
+    }
+    return link
+  }
+
+	// builds link for external placetype record
+  function url_exttype(type) {
+    {#console.dir(type)#}
+    link = ' <a href="#" class="exttab" data-id='+type.identifier+
+      '>('+type.label.label+' <i class="fas fa-external-link-alt linky"></i>)</a>'
+    return link
+  }
+
+	// extent of timespan list
+  function minmaxer(timespans){
+    //console.log('got to minmax()',JSON.stringify(timespans))
+    starts=[]; ends=[]
+    for (t in timespans){
+      // gets 'in', 'earliest' or 'latest'
+      starts.push(Object.values(timespans[t].start)[0])
+      ends.push(!!timespans[t].end ? Object.values(timespans[t].end)[0] : -1)
+    }
+    //console.log('starts',starts,'ends',ends)
+    minmax=[Math.max.apply(null, starts),Math.max.apply(null, ends)]
+    return minmax
+  }
+
+  // return html for display
+  function parsePlace(data) {
+    window.featdata = data
+	  trace = JSON.parse(data.traces).find(function(t){return t.fields.collection = "{{ object.id }}"})
+	  if(trace){
+      {#console.log('has trace for this collection', trace.fields)#}
+		  $("#anno_detail").html(JSON.stringify(trace.fields))
+	  } else {
+      {#console.log('no trace for this collection')#}
+	  }
+
+    function onlyUnique(array) {
+      const map = new Map();
+      const result = [];
+      for (const item of array) {
+        if(!map.has(item.identifier)){
+            map.set(item.identifier, true);
+            result.push({
+                identifier: item.identifier,
+                type: item.type,
+                aug: item.aug
+            });
+        }
+      }
+      return(result)
+    }
+    // TITLE
+    descrip = '<p><b>Title</b>: <span id="row_title" class="larger text-danger">'+data.title+'</span>'
+    // NAME VARIANTS
+    descrip+='<p class="scroll65"><b>Variants</b>: '
+    for (n in data.names) {
+      let name = data.names[n]
+      descrip+= '<p>'+name.toponym !=''?name.toponym+'; ': ''
+    }
+    // TYPES
+    // may include sourceLabel:"" **OR** sourceLabels[{"label":"","lang":""},...]
+    // console.log('data.types',data.types)
+    //{"label":"","identifier":"aat:___","sourceLabels":[{"label":" ","lang":"en"}]}
+    descrip+='</p><p><b>Types</b>: '
+    typeids = ''
+    for (t in data.types) {
+      str = ''
+      var type = data.types[t]
+      {#console.log('type',type)#}
+      if('sourceLabels' in type){
+        srclabels = type.sourceLabels
+        for(l in srclabels){
+          label = srclabels[l]['label']
+          str = label !='' ? label + '; ' : ''
+        }
+      } else if ('sourceLabel' in type) {
+        str = type.sourceLabel !='' ? type.sourceLabel + '; ' : ''
+      }
+      if(type.label!=''){
+        str += url_exttype(type) + ' '
+      }
+      typeids+=str
+    }
+    descrip += typeids.replace(/(; $)/g, "") +'</p>'
+
+    // LINKS
+    //
+    descrip += '<p class="mb-0"><b>Links</b>: <i>original: </i>'
+    close_count = added_count = related_count = 0
+    html_close = html_added = html_related = ''
+    if (data.links.length > 0) {
+      links=data.links
+      links_arr = onlyUnique(data.links)
+      {#console.log('distinct data.links',links_arr)#}
+      for (l in links_arr) {
+        //console.log('link',links_arr[l])
+        if (links_arr[l].aug == true) {
+          added_count +=1
+          html_added += url_extplace(links_arr[l].identifier)
+        } else {
+          close_count +=1
+          html_close+=url_extplace(links_arr[l].identifier)
+        }
+      }
+      descrip += close_count > 0 ? html_close : 'none; '
+      descrip += added_count > 0 ? '<i>added</i>: '+html_added : '<i>added</i>: none'
+    } else { descrip += "<i class='small'>no links established yet</i>" }
+    descrip += '</p>'
+
+    // RELATED
+    //right=''
+    if (data.related.length > 0) {
+      parent='<p class="mb-0"><b>Parent(s)</b>: ';
+      related='<p class="mb-0"><b>Related</b>: ';
+      for (r in data.related){
+        rel = data.related[r]
+        //console.log('rel',rel)
+        if (rel.relation_type == 'gvp:broaderPartitive'){
+          parent += '<span class="h1em">'+rel.label
+          parent += 'when' in rel && !('timespans' in rel.when) ?
+            ', '+rel.when.start.in+'-'+rel.when.end.in :
+            'when' in rel && ('timespans' in rel.when) ? ', '+
+              minmaxer(rel.when.timespans) : ''
+              //rel.when.timespans : ''
+          parent += '</span>; '
+        }
+        else {
+          related += '<p class="small h1em">'+rel.label+ ', '+rel.when.start.in+'-'+rel.when.end.in+'</p>'
+        }
+      }
+      descrip+=parent.length > 39 ? parent :''
+      descrip+=related.length > 37 ? related :''
+    }
+
+    // DESCRIPTIONS
+    // TODO: link description to identifier URI if present
+    if (data.descriptions.length > 0) {
+      val = data.descriptions[0]['value'].substring(0,300)
+      descrip+='<p><b>Description</b>: '+(val.startsWith('http')?'<a href="'+val+'" target="_blank">Link</a>':val)
+        +' ... </p>'
+        //'<br/><span class="small red-bold">('+data.descriptions[0]['identifier']+')</span>
+    }
+
+    // CCODES
+    //
+    //if (data.ccodes.length > 0) {
+    if (!!data.countries) {
+      //console.log('data.countries',data.countries)
+      descrip+='<p><b>Modern country bounds</b>: '+ data.countries.join(', ')+'</p>'
+    }
+
+    // MINMAX
+    //
+    //console.log('data.minmax',data.minmax)
+    mm=data.minmax
+    if(data.minmax && !(mm[0] == null && mm[1] == null)) {
+      descrip += '<p><b>When</b>: earliest: '+data.minmax[0]+'; latest: '+data.minmax[1]
+    }
+
+    // TRACES
+	  trace=JSON.parse(data.traces).find(function(t){
+          return t.fields.collection = "{{ object.id }}"})
+	  {#console.log('got trace:', trace)#}
+	  {#if(!trace){#}
+    {#  // no annotations yet, make form visible#}
+		{#  $("#anno_detail").hide()#}
+    {#  $("#anno_div").fadeIn()#}
+	  {# else #}
+	  {#  $("#anno_detail").html('<p><b>Trace annotation</b>: '+trace.fields+'</p>')#}
+	  {# } #}
+
+    // if geom(s) and 'certainty', add it
+    if(data.geoms.length >0){
+      cert = data.geoms[0].certainty
+      if(cert != undefined ){
+        descrip += '<p><b>Location certainty</b>: '+cert+'</p>'
+      }
+    }
+    descrip += '</div>'
+    return descrip
+  }
+
+  function getAnno(pid){
+    let coll_id = "{{ object.id }}"
+	  // traces.views.get_form()
+	  // returns TraceAnnotationForm; w/instance if trace_annotation record exists, else empty
+		const url = "/collections/annoform/?c="+'{{ object.id }}'+"&p="+pid
+    fetch(url)
+      .then(function (response) {
+        return response.json();
+      })
+      .then(function (data) {
+        {#console.log('data',data.form)#}
+        const formContainer = document.querySelector("#annotator");
+        formContainer.innerHTML = data.form;
+        $("[rel='tooltip']").tooltip();
+        {#$(".mark-place").mouseleave(function(){#}
+        {#  $(this).tooltip('hide');#}
+				})
+  }
+
+  $(function(){
+    // TODO: change text depending on state
+	  {#if($("#id_group").length){#}
+    {#  $('#id_group').prepend($('<option value=0><i>None</i></option>'));#}
+	  {# }#}
+    // scroll to place w/last saved annotation
+    offset = sessionStorage.getItem('offset')
+		$("#coll_placelist").scrollTop(offset)
+
+	  window.remove_these = []
+		$("[rel='tooltip']").tooltip();
+    $(".nav-link").click(function(){
+			  var tab = $(this).data('id')
+			  {#console.log(tab)#}
+			  if(tab == 'ds'){
+					  $("#coll_right_anno").addClass('hidden')
+					  {#$("#coll_right_intro").removeClass('hidden')#}
+			  } else {
+					  {#console.log('show anno header if there are place cards')#}
+					  if($("#coll_placelist").children(".col-place-card").length > 0){
+              $("#coll_right_anno").removeClass('hidden')
+					  }
+					  {#$("#coll_right_intro").addClass('hidden')#}
+			  }
+	  })
+
+    dslist=[]
+    $( ".textarea" ).each(function(index) {
+      if ( ["None","null"].includes( $(this).val() ) ) {
+        $(this).val('')
+      }
+    });
+
+    $("#id_geojson").attr("placeholder","generated from country codes")
+
+    // help modals
+    $(".help-matches").click(function(){
+      page=$(this).data('id')
+      {#console.log('help:', page)#}
+      $('.selector').dialog('open');
+    })
+
+    $(".selector").dialog({
+      resizable: false,
+      autoOpen: false,
+      height: $(window).height() * 0.9,
+      width: $(window).width() * 0.8,
+      title: "WHG Help",
+      modal: true,
+      buttons: { 'Close': function() {console.log('close dialog'); $(this).dialog('close');} },
+      open: function(event, ui) {
+        $('#helpme').load('/media/help/'+page+'.html')
+      },
+      show: {effect: "fade",duration: 400 },
+      hide: {effect: "fade",duration: 400 }
+    });
+  })
+
+	$("#select_ds").change(function(){
+    {#console.log('selected from list', $(this).val())#}
+		$("further_explanation").hide()
+		{#if($("a.active").data('id') == 'pl' ){#}
+		if($("a.active").data('id') == 'pl' && '{{ place_list }}'){
+      $("#col_right_anno").fadeIn()
+				{#console.log('active', $("a.active").data('id'),'{{ place_list|length }}' )#}
+		}
+		addDataset('create')
+	})
+	//
+  function listDataset(d) {
+    {#console.log('listing this:', d.title)#}
+    dslist.push(d.id)
+    $("#id_datasets [value=" + d.id + "]").attr("checked", "checked");
+    coll_id={{ object.id }}
+    card='<div class="ds_card" id="card_'+d.id+'">'
+        +'<p class="mb-0"><a href="#"><span class="ds_title">'+d.title+'</span></a> ('+d.label+'/'+d.id+')</p>'
+        +'<div class="ds_fields">'
+          +'<p class="my-1"><b>Description</b>: '+d.description+'</p>'
+          +'<p class="my-1"><b>Create date</b>: '+d.create_date.slice(0,10)+'; <b># rows</b>: '+d.numrows+'</p>'
+          +'<p class="my-1"><a href="javascript:{ removeDataset('+d.id+') }">'
+              +'<i class="fas fa-minus-square" style="color:#336699"></i> remove</a>'
+		          +'<span class="float-end"><a class="a_addplaces" href="javascript:{addPlaces('+d.id+')}">add all '
+		          +d.numrows+' places</a></span'
+		      +'</p></div></div>'
+		$(".a_addplaces").click(function(){
+		  thisy = $(this)
+		  {#console.log('thisy', thisy)#}
+		})
+    $("#coll_dscards_create").append(card)
+    // console.log(card)
+  }
+
+	// adds all dataset places to placelist
+	function addPlaces(dsid){
+		let url = "/collections/add_ds/"+"{{ object.id }}"+"/"+dsid
+		// collection.views.add_dataset
+		{#console.log('adding dataset w/o save',dsid, {{ object.id }}, url)#}
+		document.location.href = url
+		{#url = "{% url 'collection:add-ds' ds_id="+dsid+" coll_id=456 %}"#}
+		{#document.location.href = url.replace('123', dsid).replace('456',{{ object.id }})#}
+		{#)#}
+		{#$("#collection_form").submit('remain')#}
+	}
+
+  // lists dataset on dropdown select
+  function addDataset(action) {
+    {#console.log('selected', $("#select_ds").val())#}
+
+    $.get("/collections/list_ds", {ds_id:$("#select_ds").val()},
+      function(data){
+        // render to html
+        listDataset(data)
+        {#console.log('ds to list:',data)#}
+        // append ds.id to form
+    });
+    // reset select
+    $("#select_ds").val(0)
+    $("#msg").html('').hide()
+  }
+
+  function clearDataset(dsid){
+    {#console.log('clear card for ds', dsid)#}
+    $("#card_"+dsid).remove()
+  }
+
+  function removeDataset(dsid) {
+    {#console.log('removing ' + dsid + 'from collection '+ "{{object.id}}")#}
+    $("#id_datasets [value=" + dsid + "]").prop("checked", false);
+    let idx = dslist.indexOf(dsid)
+    dslist.splice(idx, dslist.length);
+    card = "#card_"+dsid
+    $(card).remove()
+    if(dslist.length == 0 ){ $("#msg").html('None yet...').show()}
+    {#console.log('removed '+dsid+' from dslist[] and dom')#}
+    // reset select
+    $("#select_ds").val(0)
+  }
+
+</script>
+
+{% endblock %} {# content #}
+
