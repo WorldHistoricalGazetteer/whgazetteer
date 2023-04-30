@@ -192,6 +192,8 @@ def remove_dataset(request, *args, **kwargs):
   coll.omitted = list(set(coll.omitted)-set(remove_these))
   coll.save()
   coll.datasets.remove(ds)
+  # remove trace annos for all places from deleted dataset
+  TraceAnnotation.objects.filter(collection=coll, place__in=ds.placeids).delete()
 
   return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
