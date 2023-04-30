@@ -63,10 +63,12 @@
 				{% endif %}
         <span id="file_chooser" class="hidden">{{ form.file }}</span>
 			</p>
+      {# collection group links, e.g. https://study.com/academy/lesson/what-is-diaspora-definition-meaning.html#}
       <p><span class="top">Gallery?</span> {{ form.gallery }}
 	      <span class="ms-3">required? {{ form.gallery_required }}</span>
 	      <span class="float-end"><a href="#"><i class="fas fa-question-circle linkypop"></i></a></span>
       </p>
+      <p>Links (TODO)</p>
       <hr/>
       <input class="btn-sm btn-primary mt-2" type="submit" value="Save" id="b_save"/>
       <span title="back"><a href="{% url 'accounts:profile' %}">Cancel</a></span>

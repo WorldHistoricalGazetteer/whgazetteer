@@ -8,7 +8,7 @@ class CollectionGroupModelForm(forms.ModelForm):
         model = CollectionGroup
         fields = ('id', 'title', 'owner', 'description', 'keywords',
                   'start_date', 'due_date', 'gallery', 'gallery_required',
-                  'type', 'file')
+                  'type', 'file',)
         widgets = {
             'description': forms.Textarea(attrs={
                 'rows': 2, 'cols': 40, 'class': 'textarea'
