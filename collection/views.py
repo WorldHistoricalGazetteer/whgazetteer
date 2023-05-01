@@ -421,7 +421,7 @@ class PlaceCollectionBrowseView(DetailView):
     context['coll'] = coll
     context['ds_list'] = coll.ds_list
     context['ds_counter'] = coll.ds_counter
-    context['links'] = coll.links.all()
+    context['links'] = coll.related_links.all()
     context['places'] = coll.places.all().order_by('title')
     context['updates'] = {}
     context['url_front'] = settings.URL_FRONT

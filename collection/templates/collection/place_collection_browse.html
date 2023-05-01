@@ -85,14 +85,14 @@
 			          <tr><td>Links: </td>
 			          <td>
 				          {% for l in links %}
-					          <a href="{{ l.uri }}" target="_blank">{{ l.label }}</a> ( a {{ l.link_type }});
+					          <a href="{{ l.uri }}" target="_blank">{{ l.label }}</a> ({{ l.link_type }});
 				          {% endfor %}
 			          </td>
 		            </tr>
 		          {% endif %}
 			        </table>
 		        </div>
-		        <div class="col-sm-4" style="max-height: 200px;">
+		        <div class="col-sm-4" style="max-height: 200px; position:relative;">
 			        {% if object.image_file %}
 				        <a href="#" class="pop">
 			        <img class="img-responsive thumbnail" src="/media/{{ object.image_file.name }}" width="220px" />

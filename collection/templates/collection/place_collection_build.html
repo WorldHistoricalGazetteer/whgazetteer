@@ -203,8 +203,7 @@
 						<div class="mt-3">Links
 							{% if links|length < 3 %}
 								<a href="#" id="a_linkpopup"><button type="button" style="border-width: thin;">Add</button></a>
-								<i class="small">(1 or more)</i>
-							{% else %}(3 maximum) {% endif %}<br/>
+							{% endif %} <i class="small">(3 maximum)</i><br/>
 							<span id="linklist">
 							{% if links|length > 0 %}
 								{% for l in links %}
@@ -497,9 +496,9 @@
 							// TODO: list in gui
 				      linky = response.result
 				      console.log(linky)
-				      $("#linklist").append('<a href="'+linky.uri+
-						      '" target="_blank">'+linky.label+'</a> ('+linky.link_icon+
-						      '<i class="fas fa-minus-square linky"></i> ); ')
+				      $("#linklist").append(linky.link_icon+'<a href="'+linky.uri+
+						      '" target="_blank">'+linky.label+'</a> ('+
+						      ' <i class="fas fa-minus-square linky"></i> ); ')
 				      $("#added_flash").fadeIn().delay(2000).fadeOut()
 				      {#console.log('added! gimmee feedback', response.result)#}
 			      }
