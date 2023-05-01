@@ -202,9 +202,8 @@
 						</div>
 						<div class="mt-3">Links
 							{% if links|length < 3 %}
-								<a href="#" id="a_linkpopup">
-									<button type="button" style="border-width: thin;">Add</button>
-								</a> <i class="small"> (1 or more)</i>
+								<a href="#" id="a_linkpopup"><button type="button" style="border-width: thin;">Add</button></a>
+								<i class="small">(1 or more)</i>
 							{% else %}(3 maximum) {% endif %}<br/>
 							<span id="linklist">
 							{% if links|length > 0 %}
@@ -227,7 +226,16 @@
 				        <table class="mb-2">
 					        <tr><td>URI*: </td><td><input id="l_uri" name="uri" value="{{ links_form.uri }}" /></td></tr>
 					        <tr><td>Label*: </td><td><input id="l_label" name="label" value="{{ links_form.label }}" /></td></tr>
-{#					        <tr><td>Type: </td><td><input id="l_linktype" name="link_type" value="{{ links_form.link_type }}" /></td></tr>#}
+					        <tr><td>Type: </td>
+						        <td>
+							        <select id="select_linktype" name="link_type">
+							          <option value="webpage">Web page</option>
+							          <option value="document">Document</option>
+							          <option value="image">Image</option>
+						          </select>
+						        </td>
+{#						        <td><input id="l_type" name="type" value="{{ links_form.link_type }}" /></td>#}
+					        </tr>
 				        </table>
 				        <button id="b_createlink" type="button">Save</button>
 		          </form>
@@ -452,27 +460,6 @@
 		{#	  cardtop, scrolltop, listtop )#}
 	  getAnno($(this).data('id'))
   })
-  {#$(".anno-place").click(function(){#}
-  {#  $(this).tooltip('hide');#}
-  {#  $(".col-place-card").removeClass('card-highlight')#}
-  {#  let pid = $(this).data('pid')#}
-	{#	card=$("div[class*=col-place-card]")#}
-  {#          .filter("div[data-id="+pid+"]").addClass('card-highlight')#}
-	{#  // position of clicked card#}
-	{#  cardtop = card.offset().top#}
-	{#  sessionStorage.setItem('cardtop', cardtop)#}
-	{#  // position of list scroller#}
-	{#  scrolltop = $("#coll_placelist").scrollTop()#}
-	{#  sessionStorage.setItem('scrolltop', scrolltop)#}
-	{#  // permanent position of list on page#}
-	{#  listtop = $("#coll_placelist").offset().top#}
-	{#  offset = cardtop+scrolltop-listtop#}
-	{#  sessionStorage.setItem('offset', offset)#}
-	{#  console.log('offset',offset)#}
-	{#  console.log('cardtop, scrolltop, listtop',#}
-	{#		  cardtop, scrolltop, listtop )#}
-	{#  getAnno($(this).data('pid'))#}
-  {# })#}
 
 	function goBrowse(){
     window.location = '/collections/{{ object.id }}/browse_pl'
@@ -485,15 +472,19 @@
 
 	function create_collection_link(){
       var formData = new FormData()
-			formData.append('collection', '{{ object.id }}')
+			formData.append('model', 'Collection')
+			formData.append('objectid', '{{ object.id }}')
 			formData.append('uri', $("#l_uri").val())
 			formData.append('label',$("#l_label").val() )
-			formData.append('link_type',$("#l_linktype").val() )
+			formData.append('link_type',$("#select_linktype").val() )
+			formData.append('license', '')
 			formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
 			$.ajax({
 		      type: 'POST',
 		      enctype: 'multipart/form-data',
-		      url: '/collections/create_link/',
+		      url: '{% url "create-link" %}',
+		      {#url: '/main/create_link/',#}
+		      {#url: '/collections/create_link/',#}
 		      processData: false,
 		      contentType: false,
 		      cache: false,
@@ -532,7 +523,6 @@
       {#console.log('place record', $(this).data('pid'));#}
   })
 	$(".closer").click(function(){
-			{#$("#linkform_popup").fadeOut()#}
 			$(".pop").fadeOut()
 	})
 	// fetch r/o place record to annotation panel

@@ -1,14 +1,15 @@
 # main.views
-
+from django.apps import apps
 from django.conf import settings
 from django.core.mail import send_mail, BadHeaderError
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404, redirect #, render_to_response
 from django.urls import reverse_lazy
 from django.views.generic.base import TemplateView
 from collection.models import Collection
 from datasets.models import Dataset
 from datasets.tasks import testAdd
+from main.models import Link
 from places.models import Place
 from bootstrap_modal_forms.generic import BSModalCreateView
 
@@ -21,6 +22,63 @@ from random import shuffle
 def custom_error_view(request, exception=None):
     print('error request', request.GET.__dict__)
     return render(request, "main/500.html", {'error':'fubar'})
+
+""" 
+  create link associated with instance of various models, so far:
+  Collection, CollectionGroup, TraceAnnotation, Place 
+"""
+# formData.append('model', 'Collection')
+# formData.append('objectid', '{{ object.id }}')
+# formData.append('uri', $("#l_uri").val())
+# formData.append('label',$("#l_label").val() )
+# formData.append('link_type',$("#l_linktype").val() )
+# formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+def create_link(request, *args, **kwargs):
+  if request.method == 'POST':
+    print('main.create_link() request', request.POST)
+    model = request.POST['model']
+    objectid = request.POST['objectid']
+    uri = request.POST['uri']
+    label = request.POST['label']
+    link_type = request.POST['link_type']
+    license = request.POST['license']
+
+    # model = 'Collection'; objectid=4; uri='http://somewhere.edu'; label='relevant?'; link_type=''
+    # from django.apps import apps
+    Model = apps.get_model(f"collection.{model}")
+    model_str=model.lower()
+    obj = Model.objects.get(id=objectid)
+    gotlink = obj.links.filter(uri=uri)
+    status, msg = ['','']
+    # columns in Links table
+    # collection_id, collection_group_id, trace_annotation_id, place_id
+    if not gotlink:
+      try:
+        link=Link.objects.create(
+          **{model_str:obj}, # instance identifier
+          uri = uri,
+          label = label,
+          link_type = link_type
+        )
+        result = {'uri': link.uri, 'label': link.label,
+                  'link_type':link.link_type,
+                  'link_icon':link.get_link_type_display(),
+                  'id':link.id}
+        status="ok"
+      except:
+        status = "failed"
+        result = "Link *not* created...why?"
+    else:
+      result = 'dupe'
+    return JsonResponse({'status': status, 'result': result}, safe=False)
+
+def remove_link(request, *args, **kwargs):
+  #print('kwargs', kwargs)
+  link = Link.objects.get(id=kwargs['id'])
+  # link = CollectionLink.objects.get(id=kwargs['id'])
+  print('remove_link()', link)
+  link.delete()
+  return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 # experiment with MapLibre
 class LibreView(TemplateView):

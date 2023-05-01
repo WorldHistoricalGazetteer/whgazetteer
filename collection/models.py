@@ -145,7 +145,7 @@ class CollectionLink(models.Model):
     on_delete=models.CASCADE, related_name='links')
   label = models.CharField(null=True, blank=True, max_length=200)
   uri = models.TextField(validators=[URLValidator()])
-  link_type = models.CharField(default='page', max_length=10, choices=LINKTYPES)
+  link_type = models.CharField(default='webpage', max_length=10, choices=LINKTYPES)
   license = models.CharField(null=True, blank=True, max_length=64)
 
   def __str__(self):

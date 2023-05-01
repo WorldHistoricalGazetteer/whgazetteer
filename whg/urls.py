@@ -54,9 +54,9 @@ urlpatterns = [
     path('contact/', views.contactView, name='contact'),
     path('success/', views.contactSuccessView, name='success'),
     path('status/', views.statusView, name='status'),
-    
+    path('create_link/', views.create_link, name="create-link"),
 
-    # backend stuff
+                  # backend stuff
     path('api/', include('api.urls')),
     path('remote/', include('remote.urls')),
     # path('accounts/', include('allauth.urls')),

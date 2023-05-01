@@ -20,7 +20,6 @@ urlpatterns = [
     path('placecollections/', TemplateView.as_view(template_name="tutorials/place_collections.html"), name="tute-place_collections"),
     path('create_lptsv/', TemplateView.as_view(template_name="tutorials/create_lptsv.html"), name="tute-lptsv"),
 
-
     path('modal/', TemplateView.as_view(template_name="main/modal.html"), name="dynamic-modal"),
 ]
 #] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)

@@ -1,5 +1,7 @@
 # collection.views (collections)
 
+from django import forms
+from django.apps import apps
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -11,7 +13,7 @@ from django.views.generic import (View, CreateView, UpdateView, DetailView, Dele
 #from datasets.utils import hully
 from .forms import CollectionModelForm, CollectionGroupModelForm
 from .models import *
-from main.models import Log
+from main.models import Log, Link
 from places.models import PlaceGeom
 from traces.forms import TraceAnnotationModelForm
 from traces.models import TraceAnnotation
@@ -29,36 +31,44 @@ def inactive(request, *args, **kwargs):
 # removes dataset from collection, refreshes page
 def remove_link(request, *args, **kwargs):
   #print('kwargs', kwargs)
-  link = CollectionLink.objects.get(id=kwargs['id'])
+  link = Link.objects.get(id=kwargs['id'])
+  # link = CollectionLink.objects.get(id=kwargs['id'])
   print('remove_link()', link)
   link.delete()
   return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
-""" create collection_link record """
+""" 
+  create link associated with a collection.models.* instance 
+"""
 def create_link(request, *args, **kwargs):
   if request.method == 'POST':
-    status, msg = ['','']
     print('create_link() request', request.POST)
-    coll = Collection.objects.get(id=request.POST['collection'])
     uri = request.POST['uri']
     label = request.POST['label']
     link_type = request.POST['link_type']
-    gotlink = CollectionLink.objects.filter(uri=uri, collection=coll)
+    model = request.POST['model']
+    Model = apps.get_model(f"collection.{model}")
+    objectid = request.POST['objectid']
+    model_str=model.lower()
+    status, msg = ['','']
+    obj = Model.objects.get(id=4)
+    # obj = Model.objects.get(id=request.POST['objectid'])
+    gotlink = obj.links.filter(uri=uri)
     if not gotlink:
       try:
-        cl=CollectionLink.objects.create(
-          collection = coll,
+        link=Model.objects.create(
+          **{model_str:obj},
           uri = uri,
           label = label,
           link_type = link_type
         )
-        result = {'uri': cl.uri, 'label': cl.label,
-                  'link_type':cl.link_type,
-                  'link_icon':cl.get_link_type_display()}
+        result = {'uri': link.uri, 'label': link.label,
+                  'link_type':link.link_type,
+                  'link_icon':link.get_link_type_display()}
         status="ok"
       except:
         status = "failed"
-        result = "CollectionLink *not* created...why?"
+        result = "Link *not* created...why?"
     else:
       result = 'dupe'
     return JsonResponse({'status': status, 'result': result}, safe=False)
@@ -225,7 +235,9 @@ def create_collection_group(request, *args, **kwargs):
 
 from django.forms.models import inlineformset_factory
 CollectionLinkFormset = inlineformset_factory(
-    Collection, CollectionLink, fields=('uri','label','link_type'), extra=2
+    Collection, CollectionLink, fields=('uri','label','link_type'), extra=2,
+    widgets={
+      'link_type': forms.Select(choices=('webpage'))}
 )
 
 """ PLACE COLLECTIONS """
@@ -365,7 +377,8 @@ class PlaceCollectionUpdateView(UpdateView):
     context['action'] = 'update'
     context['ds_select'] = ds_select
     context['coll_dsset'] = datasets
-    context['links'] = CollectionLink.objects.filter(collection=self.object.id)
+    context['links'] = Link.objects.filter(collection=self.object.id)
+    # context['links'] = CollectionLink.objects.filter(collection=self.object.id)
 
     # test: send single anno form to template
     context['form_anno'] = form_anno

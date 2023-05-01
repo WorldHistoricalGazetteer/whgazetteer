@@ -16,7 +16,22 @@
     textarea {width: 100%;}
     #results_text {background-color: #dff0d8;}
     .form-box p {margin: .5rem;}
-  </style>{% endblock %}
+    #linkform_popup {
+	    position:absolute;
+			background-color: whitesmoke;
+	    border: 1px solid grey;
+	    box-shadow: gainsboro 4px 4px;
+	    border-radius: 6px;
+	    padding: 15px;
+	    height: 150px;
+	    width: 300px;
+	    top: 145px;
+	    left: 600px;
+	    z-index: 1000;
+	    display:none;
+    }
+  </style>
+{% endblock %}
 {% block content %}
 <div class="container">
   <h4 class="mt-3">
@@ -68,8 +83,34 @@
 	      <span class="ms-3">required? {{ form.gallery_required }}</span>
 	      <span class="float-end"><a href="#"><i class="fas fa-question-circle linkypop"></i></a></span>
       </p>
-      <p>Links (TODO)</p>
-      <hr/>
+			<div class="mt-3">Links
+				{% if links|length < 3 %}
+					<a href="#" id="a_linkpopup"><button type="button" style="border-width: thin;">Add</button></a>
+					<i class="small">(1 or more)</i>
+				{% else %}(3 maximum) {% endif %}<br/>
+				<span id="linklist">
+				{% if links|length > 0 %}
+					{% for l in links %}
+						{{ l.get_link_type_display|safe }} <a href="{{ l.uri }}" target="_blank">{{ l.label }}</a>
+							[ <a href="{% url 'collection:remove-link' id=l.id %}" class="a_removelink"><i>remove</i></a> ]<br/>
+					{% endfor %}
+				{% endif %}
+				</span>
+			</div>
+      <div id="linkform_popup" class="pop">
+        <form action="#" method="post">
+	        {% csrf_token %}
+	        <input type="hidden" name="collection" value="{{ object.id }}">
+	        <div class="closer" style="position:absolute; top:7px; right:7px;">X</div>
+	        <table class="mb-2">
+		        <tr><td>URI*: </td><td><input id="l_uri" name="uri" value="{{ links_form.uri }}" /></td></tr>
+		        <tr><td>Label*: </td><td><input id="l_label" name="label" value="{{ links_form.label }}" /></td></tr>
+{#					        <tr><td>Type: </td><td><input id="l_linktype" name="link_type" value="{{ links_form.link_type }}" /></td></tr>#}
+	        </table>
+	        <button id="b_createlink" type="button">Save</button>
+        </form>
+			</div>
+	    <hr/>
       <input class="btn-sm btn-primary mt-2" type="submit" value="Save" id="b_save"/>
       <span title="back"><a href="{% url 'accounts:profile' %}">Cancel</a></span>
     </form>
@@ -147,6 +188,53 @@
       $("b_create").toggle()
       {#$("#div_addusers").removeClass('hidden')#}
     })
+
+		function create_collection_link(){
+	      var formData = new FormData()
+				formData.append('model', 'CollectionGroup')
+				formData.append('objectid', '{{ object.id }}')
+				formData.append('uri', $("#l_uri").val())
+				formData.append('label',$("#l_label").val() )
+				formData.append('link_type',$("#l_linktype").val() )
+				formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+				$.ajax({
+			      type: 'POST',
+			      enctype: 'multipart/form-data',
+			      url: '/collections/create_link/',
+			      processData: false,
+			      contentType: false,
+			      cache: false,
+			      data: formData,
+			      success:function(response){
+				      if(response.result == 'dupe'){
+	              alert('That url is already linked to this collection!')
+					      {#$("input.action").prop('checked',false)#}
+				      } else {
+								// TODO: list in gui
+					      linky = response.result
+					      console.log(linky)
+					      $("#linklist").append('<a href="'+linky.uri+
+							      '" target="_blank">'+linky.label+'</a> ('+linky.link_icon+
+							      '<i class="fas fa-minus-square linky"></i> ); ')
+					      $("#added_flash").fadeIn().delay(2000).fadeOut()
+					      {#console.log('added! gimmee feedback', response.result)#}
+				      }
+			      }
+				})
+				{#$("#addtocoll").hide()#}
+				$("#linkform_popup input").val('')
+				$("#linkform_popup").hide()
+		}
+
+    $("#b_createlink").click(function(){
+      create_collection_link()
+		})
+		$("#a_linkpopup").click(function(){
+	    $("#linkform_popup").fadeIn()
+		})
+    $(".closer").click(function(){
+			$(".pop").fadeOut()
+		})
   })
   // submit file with new users
   //
