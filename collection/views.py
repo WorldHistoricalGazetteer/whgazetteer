@@ -73,6 +73,18 @@ def create_link(request, *args, **kwargs):
       result = 'dupe'
     return JsonResponse({'status': status, 'result': result}, safe=False)
 
+"""
+  group member submits collection to group for review
+"""
+def submit_collection(request, *args, **kwargs):
+  # add to collection group, and submit it
+  coll = Collection.objects.get(id=kwargs['cid'])
+  cg = CollectionGroup.objects.get(id=kwargs['cgid'])
+  cg.collections.add(coll)
+  coll.submitted = True
+  coll.save()
+  return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
 """ add list of >=1 places to collection """
 def add_places(request, *args, **kwargs):
   if request.method == 'POST':

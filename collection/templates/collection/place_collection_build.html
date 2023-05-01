@@ -165,7 +165,9 @@
 			      {% if mygroups|length > 0 %}
 				      <hr/>
 			        <p>For a group/class? {{ form.group }}
-								<a id="btn_coll_submit" class="btn btn-primary btn-sm" href="#" role="button">Submit</a>
+								<a id="btn_coll_submit" class="btn btn-primary btn-sm"
+								   href="/collections/submit/{{ object.id }}/5" role="button">Submit</a>
+{#								   href="{% url 'collection:submit-collection' cid=object.id cgid=5 %}" role="button">Submit</a>#}
 							</p>
 						{% endif %}
 		      </div>
@@ -179,10 +181,10 @@
 							{% elif form.image_file.value %} {# update & there's an image #}
 								<img src="{% static 'images/noun-photo.svg'%}" width="16"/>
 								<a href="/media/{{ form.image_file.value }}">
-									{{ object.image_file.url|remove:'/media/collections/'|truncatechars:30 }}
+									{{ object.image_file}}
 								</a>
-								(<a href="javascript:$('#img_chooser').toggle()">change</a>)
-							{% else %} {# update and there's no image yet
+								(<a href="javascript:showChooser('img')">change</a>)
+							{% else %} {# update and there's no image yet #}
 								<span id="img_chooser_update" >{{ form.image_file }}</span>
 							{% endif %}
 			        <span id="img_chooser" class="hidden">{{ form.image_file }}</span>
@@ -425,8 +427,12 @@
 </div> {# container #}
 
 <script type="text/javascript">
+	function showChooser(type){
+    elem = "#"+type+"_chooser"
+    $(elem).toggle()
+	}
 	$("#btn_coll_submit").click(function(){
-		console.log('submitting collection {{ object.id }}')
+    submitCollection('{{ object.id }}')
 	})
 	$("#build-tab").click(function(e){
 		e.preventDefault()
@@ -460,6 +466,10 @@
 	  getAnno($(this).data('id'))
   })
 
+	function submitCollection(){
+    console.log('submitting collection {{ object.id }} to group '+ $("#id_group").val())
+
+	}
 	function goBrowse(){
     window.location = '/collections/{{ object.id }}/browse_pl'
 	}
