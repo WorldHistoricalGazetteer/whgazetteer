@@ -49,10 +49,11 @@
 					<img src="{% static 'images/noun-photo.svg'%}" width="16"/>
 					<a href="/media/{{ form.image_file.value }}">
 						{{ form.image_file.value }}</a>
-					(<a href="javascript:showChooser('img')">change</a>)
+					(<a href="javascript:showChooser('anno_img')">change</a>)
 				{% else %}
 					{{ form.image_file }}
 				{% endif %}
+				<span id="anno_img_chooser" class="hidden">{{ form.image_file }}</span>
 			</td>
 		</tr>
 	</table>

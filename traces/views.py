@@ -22,6 +22,7 @@ from django.views.decorators.csrf import csrf_exempt
 # def annotate(request, cid, pid):
 def annotate(request, *args, **kwargs):
   cid = kwargs.get('id')
+  anno_id = request.POST.get('anno_id')
   returnPath = '/collections/'+str(cid)+'/update_pl'
   print('request.POST',request.POST)
   print('request.FILES',request.FILES)

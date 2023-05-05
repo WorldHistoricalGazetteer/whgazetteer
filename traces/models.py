@@ -7,7 +7,7 @@ from django_resized import ResizedImageField
 
 def collection_path(instance, filename):
   # upload to MEDIA_ROOT/collections/<coll id>/<filename>
-  return 'collections/{0}/{1}'.format(instance.id, filename)
+  return 'collections/anno/{1}'.format(instance.id, filename)
 
 # annotates a place record in a collection
 # FKs: Collection, Place
@@ -20,7 +20,9 @@ class TraceAnnotation(models.Model):
 
     # optional free text note
     note = models.CharField(max_length=2044, blank=True, null=True)
-    image_file = ResizedImageField(size=[800, 600], upload_to=collection_path, blank=True, null=True)
+    image_file = ResizedImageField(size=[800, 600],
+                                   upload_to=collection_path,
+                                   blank=True, null=True)
 
     # choices will come from Collection relations; 20220416: only one for now
     relation = ArrayField(models.CharField(max_length=30), blank=True, null=True)
