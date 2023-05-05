@@ -257,12 +257,11 @@ CollectionLinkFormset = inlineformset_factory(
 """ PLACE COLLECTIONS """
 """ TODO: refactor to fewer views """
 """ collections from places and/or datasets 
-    uses place_collection_builder.html
+    uses place_collection_build.html
 """
 class PlaceCollectionCreateView(LoginRequiredMixin, CreateView):
   form_class = CollectionModelForm
   template_name = 'collection/place_collection_build.html'
-  # template_name = 'collection/place_collection_builder.html'
   queryset = Collection.objects.all()
 
   def get_form_kwargs(self, **kwargs):
@@ -335,20 +334,14 @@ class PlaceCollectionCreateView(LoginRequiredMixin, CreateView):
     # return to update page after create
     return reverse('collection:place-collection-update', kwargs = {'id':self.object.id})
 
-""" update place collection; uses place_collection_builder.html """
+""" update place collection; uses place_collection_build.html """
 class PlaceCollectionUpdateView(UpdateView):
   form_class = CollectionModelForm
   template_name = 'collection/place_collection_build.html'
-  # template_name = 'collection/place_collection_builder.html'
-  # success_url = '/mycollections'
 
   def get_object(self):
     id_ = self.kwargs.get("id")
     return get_object_or_404(Collection, id=id_)
-
-  # def get_success_url(self):
-  #   id_ = self.kwargs.get("id")
-  #   return redirect('/collections/'+str(id_)+'/update_pl')
 
   def form_valid(self, form):
     print('referrer', self.request.META.get('HTTP_REFERER'))
@@ -381,7 +374,7 @@ class PlaceCollectionUpdateView(UpdateView):
 
     datasets = self.object.datasets.all()
 
-    form_anno = TraceAnnotationModelForm(self.request.GET or None)
+    form_anno = TraceAnnotationModelForm(self.request.GET or None, auto_id="anno_%s")
     # anno_form = TraceAnnotationModelForm(self.request.GET or None, prefix="sch")
     # populates dropdown
     ds_select = [obj for obj in Dataset.objects.all().order_by('title') if user in obj.owners or user.is_superuser]

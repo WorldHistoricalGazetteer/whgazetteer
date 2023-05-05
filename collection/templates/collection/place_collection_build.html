@@ -85,7 +85,7 @@
   {% else %}
   <div class="h-100">
 	  <h5 class="mt-3">
-		  {% if action == 'update' %}<span class="text-secondary">Place Collection Builder:</span>
+		  {% if action == 'update' %}<span class="text-secondary">Place Collection Builder (wtf):</span>
 		    <span class="text-bold red-head">{{ form.title.value }}</span>
 				<span class="float-end small">
 					<span class="badge badge-warning px-2">beta</span>&nbsp;&nbsp;
@@ -102,17 +102,17 @@
 	  </h5>
 	  <ul class="nav nav-tabs" id="" role="tablist">
 		  <li class="nav-item" role="presentation">
-		    <button class="nav-link active" id="form-tab" data-bs-toggle="tab" data-bs-target="#coll_form"
+		    <button class="nav-link" id="form-tab" data-bs-toggle="tab" data-bs-target="#coll_form"
           type="button" role="tab" aria-controls="coll_form" aria-selected="true">Create/Edit Form</button>
 		  </li>
 		  <li class="nav-item" role="presentation">
-		    <button class="nav-link" id="build-tab" data-bs-toggle="tab" data-bs-target="#coll_builder"
+		    <button class="nav-link active" id="build-tab" data-bs-toggle="tab" data-bs-target="#coll_builder"
           type="button" role="tab" aria-controls="coll_builder" aria-selected="false">Add and annotate places</button>
 		  </li>
 		</ul>
 	  <div class="tab-content" id="content">
 
-	    <div id="coll_form" class="tab-pane fade show active h-100">
+	    <div id="coll_form" class="tab-pane fade h-100">
 	      <div class="row">
 		      <div class="col-sm-5">
 			      <form id="collection_form" method="POST" action="#" enctype="multipart/form-data">
@@ -256,7 +256,7 @@
 	      </div> {# row #}
 	    </div> {# coll_form #}
 
-	    <div id="coll_builder" class="tab-pane fade h-100" style="height: auto; position:relative;">
+	    <div id="coll_builder" class="tab-pane fade show active h-100" style="height: auto; position:relative;">
 	      <div class="d-flex h-100">
 	        <div class="col-sm-6" id="builder">
 						<ul id="coll_tabs" class="nav nav-tabs " role="tablist">
@@ -828,9 +828,7 @@
         const formContainer = document.querySelector("#annotator");
         formContainer.innerHTML = data.form;
         $("[rel='tooltip']").tooltip();
-        {#$(".mark-place").mouseleave(function(){#}
-        {#  $(this).tooltip('hide');#}
-				})
+      })
   }
 
   $(function(){

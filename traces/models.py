@@ -13,9 +13,9 @@ def collection_path(instance, filename):
 # FKs: Collection, Place
 class TraceAnnotation(models.Model):
     collection = models.ForeignKey('collection.Collection', db_column='collection',
-        related_name='collections', on_delete=models.CASCADE)
+        related_name='annotations', on_delete=models.CASCADE)
     place = models.ForeignKey('places.Place', db_column='place',
-        related_name='places', on_delete=models.CASCADE)
+        related_name='annotations', on_delete=models.CASCADE)
     src_id = models.CharField(max_length=2044, blank=True, null=True) # if exists
 
     # optional free text note

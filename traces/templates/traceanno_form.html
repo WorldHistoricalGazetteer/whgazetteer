@@ -1,5 +1,5 @@
 <!-- context keys: place, collection -->
-
+{% load static %}
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns" crossorigin="anonymous"></script>
 
 <div style="background-color: #fafafa; padding:2px;">
@@ -13,7 +13,8 @@
 {#<p>existing? {{ existing }}</p>#}
 <hr/>
 <!-- submits to traces.views.annotate() -->
-<form id="anno_form" action="{% url 'collection:collection-annotate' collection.id %}" method="POST">
+<form id="anno_form" action="{% url 'collection:collection-annotate' collection.id %}" method="POST"
+	enctype="multipart/form-data">
 {#<form id="anno_form" action="" method="POST">#}
 	<input type="hidden" name="owner" value="{{ collection.owner_id }}"/>
 	<input type="hidden" name="place" value="{{ place.id }}"/>
@@ -41,6 +42,19 @@
 			</a>
 			</td></tr>
 		<tr><td class="align-top">Notes:</td><td>{{ form.note }}</td></tr>
+		<tr>
+			<td class="align-top">Image:</td>
+			<td>
+				{% if form.image_file.value %}
+					<img src="{% static 'images/noun-photo.svg'%}" width="16"/>
+					<a href="/media/{{ form.image_file.value }}">
+						{{ form.image_file.value }}</a>
+					(<a href="javascript:showChooser('img')">change</a>)
+				{% else %}
+					{{ form.image_file }}
+				{% endif %}
+			</td>
+		</tr>
 	</table>
 {#	<button id="b_anno_submit" type="button" onclick=saveAnno() class="button button-sm">Save</button>#}
 	<button id="b_anno_submit" type="submit" class="button button-sm">Save</button>
