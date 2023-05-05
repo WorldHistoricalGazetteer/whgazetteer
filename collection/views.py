@@ -46,32 +46,34 @@ def create_link(request, *args, **kwargs):
     uri = request.POST['uri']
     label = request.POST['label']
     link_type = request.POST['link_type']
-    model = request.POST['model']
-    Model = apps.get_model(f"collection.{model}")
     objectid = request.POST['objectid']
-    model_str=model.lower()
-    status, msg = ['','']
-    obj = Model.objects.get(id=4)
-    # obj = Model.objects.get(id=request.POST['objectid'])
-    gotlink = obj.links.filter(uri=uri)
-    if not gotlink:
+    model = request.POST['model'] # Collection, CollectionGroup
+    Model = apps.get_model(f"collection.{model}")
+    LinkModel = apps.get_model(f"collection.{model+'Link'}") # CollectionLink, CollectionGroupLink
+    # object getting a link
+    try:
+      obj = Model.objects.get(id=objectid)
+    except:
+      print('obj create failed', sys.exc_info())
+    # is it a duplicate?
+    dupe = obj.links.filter(uri=uri)
+    fk = 'collection_group' if model == 'CollectionGroup' else model.lower
+    if not dupe:
       try:
-        link=Model.objects.create(
-          **{model_str:obj},
+        link=Link.objects.create(
+          **{fk:obj},
           uri = uri,
           label = label,
           link_type = link_type
         )
-        result = {'uri': link.uri, 'label': link.label,
+        result = {'status': 'ok', 'uri': link.uri, 'label': link.label,
                   'link_type':link.link_type,
                   'link_icon':link.get_link_type_display()}
-        status="ok"
       except:
-        status = "failed"
-        result = "Link *not* created...why?"
+        result = {'status': "Link *not* created...why?"}
     else:
       result = 'dupe'
-    return JsonResponse({'status': status, 'result': result}, safe=False)
+    return JsonResponse(result, safe=False)
 
 """
   group member submits collection to group for review
@@ -507,9 +509,7 @@ class CollectionGroupDetailView(DetailView):
     me = self.request.user
 
     context['message'] = 'CollectionGroupDetailView() loud and clear'
-    # context['timespans'] = {'ts': place.timespans or None}
-    # context['minmax'] = {'mm': place.minmax or None}
-    # context['dataset'] = ds
+    context['links'] = Link.objects.filter(collection_group_id=self.get_object())
     context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False
 
     return context
@@ -562,6 +562,7 @@ class CollectionGroupUpdateView(UpdateView):
     context['action'] = 'update'
     context['members'] = self.get_object().members
     context['collections'] = self.get_object().collections.filter(submitted=True)
+    context['links'] = Link.objects.filter(collection_group_id = self.get_object())
     return context
 
 class CollectionGroupGalleryView(ListView):

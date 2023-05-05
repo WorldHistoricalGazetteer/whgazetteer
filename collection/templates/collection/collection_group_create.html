@@ -34,17 +34,21 @@
 {% endblock %}
 {% block content %}
 <div class="container">
-  <h4 class="mt-3">
+  <h5 class="mt-3">
     {% if action == 'update' %}
         Update Collection Group
         <span class="text-danger">"{{ form.title.value }}"</span>
-        <a href="{% url 'collection:collection-group-delete' object.id %}" class="float-end small"
-        title="Delete group" rel="tooltip" style="margin-top:-2px;">
-        <i class="fas fa-trash linkyred"></i></a>
+	      <span class="float-end half">
+			    <a href="{% url 'collection:collection-group-detail' object.id %}">
+					    view</a>&nbsp;<i class="fas fa-eye linky"></i>
+	        <a href="{% url 'collection:collection-group-delete' object.id %}"
+	          title="Delete group" rel="tooltip" style="margin-top:-2px;"> <i class="fas fa-trash linkyred"></i>
+	        </a>
+	      </span>
     {% else %}
         Create Collection Group
     {% endif %}
-  </h4>
+  </h5>
 {#  <div class="flex row">#}
   <div class="d-flex container row">
     <div class="form-box mt-2 col-sm-4">
@@ -103,9 +107,17 @@
 	        <input type="hidden" name="collection" value="{{ object.id }}">
 	        <div class="closer" style="position:absolute; top:7px; right:7px;">X</div>
 	        <table class="mb-2">
-		        <tr><td>URI*: </td><td><input id="l_uri" name="uri" value="{{ links_form.uri }}" /></td></tr>
-		        <tr><td>Label*: </td><td><input id="l_label" name="label" value="{{ links_form.label }}" /></td></tr>
-{#					        <tr><td>Type: </td><td><input id="l_linktype" name="link_type" value="{{ links_form.link_type }}" /></td></tr>#}
+					        <tr><td>URI*: </td><td><input id="l_uri" name="uri" value="{{ links_form.uri }}" /></td></tr>
+					        <tr><td>Label*: </td><td><input id="l_label" name="label" value="{{ links_form.label }}" /></td></tr>
+					        <tr><td>Type: </td>
+						        <td>
+							        <select id="select_linktype" name="link_type">
+							          <option value="webpage">Web page</option>
+							          <option value="document">Document</option>
+							          <option value="image">Image</option>
+						          </select>
+						        </td>
+					        </tr>
 	        </table>
 	        <button id="b_createlink" type="button">Save</button>
         </form>
@@ -195,8 +207,10 @@
 				formData.append('objectid', '{{ object.id }}')
 				formData.append('uri', $("#l_uri").val())
 				formData.append('label',$("#l_label").val() )
-				formData.append('link_type',$("#l_linktype").val() )
+				formData.append('link_type',$("#select_linktype").val() )
 				formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+        {#for (var pair of formData.entries()) {#}
+        {#  console.log(pair[0]+ ', ' + pair[1]);}#}
 				$.ajax({
 			      type: 'POST',
 			      enctype: 'multipart/form-data',
@@ -206,15 +220,16 @@
 			      cache: false,
 			      data: formData,
 			      success:function(response){
-				      if(response.result == 'dupe'){
+              console.log('response', response)
+				      if(response == 'dupe'){
 	              alert('That url is already linked to this collection!')
 					      {#$("input.action").prop('checked',false)#}
 				      } else {
 								// TODO: list in gui
-					      linky = response.result
+					      linky = response
 					      console.log(linky)
-					      $("#linklist").append('<a href="'+linky.uri+
-							      '" target="_blank">'+linky.label+'</a> ('+linky.link_icon+
+					      $("#linklist").append(linky.link_icon+'<a href="'+linky.uri+
+							      '" target="_blank">'+linky.label+'</a> ('+
 							      '<i class="fas fa-minus-square linky"></i> ); ')
 					      $("#added_flash").fadeIn().delay(2000).fadeOut()
 					      {#console.log('added! gimmee feedback', response.result)#}
