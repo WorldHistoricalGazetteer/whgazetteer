@@ -10,12 +10,10 @@
 		{% endif %}
 	{% endfor %}</p>
 </div>
-<p>existing? {{ existing }}</p>
 <hr/>
 <!-- submits to traces.views.annotate() -->
-<form id="anno_form" action="{% url 'collection:collection-annotate' collection.id %}" method="POST"
-	enctype="multipart/form-data">
-{#<form id="anno_form" action="" method="POST">#}
+<form id="anno_form" action="{% url 'collection:collection-annotate' collection.id %}"
+      method="POST"	enctype="multipart/form-data">
 	<input type="hidden" name="owner" value="{{ collection.owner_id }}"/>
 	<input type="hidden" name="place" value="{{ place.id }}"/>
 	<input type="hidden" name="collection" value="{{ collection.id }}"/>
@@ -44,38 +42,23 @@
 		<tr><td class="align-top">Notes:</td><td>{{ form.note }}</td></tr>
 		<tr>
 			<td class="align-top">Image:</td>
-			<td> {{ form.image_file.value }} {{ form.image_file }}
-{#				      <div class="form-group mb-2">#}
-{#				      <label for="Image">Anno image <i class="small">(800px wide or less)</i></label><br/>#}
-{#							{% if action == 'create' %} {# create, no image yet #}
-{#								<span id="img_chooser_create">{{ form.image_file }}</span>#}
-{#							{% elif form.image_file.value %} {# update & there's an image #}
-{#								<img src="{% static 'images/noun-photo.svg'%}" width="16"/>#}
-{#								<a href="/media/{{ form.image_file.value }}">#}
-{#									{{ form.image_file.value }}#}
-{#								</a>#}
-{#								(<a href="javascript:showChooser('anno_img')">change</a>)#}
-{#							{% else %} {# update and there's no image yet #}
-{#								<span id="img_chooser_update" >{{ form.image_file }}</span>#}
-{#							{% endif %}#}
-{#			        <span id="anno_img_chooser" class="hidden">{{ form.image_file }}</span>#}
-{#						</div>#}
-{#			 <div class="form-group mb-2">#}
-{#				{% if form.image_file.value %}#}
-{#					<img src="{% static 'images/noun-photo.svg'%}" width="16"/>#}
-{#					<a href="/media/{{ form.image_file.value }}">#}
-{#						{{ form.image_file.value }}</a>#}
-{#					(<a href="javascript:showChooser('anno_img')">change</a>)#}
-{#				{% else %}#}
-{#					{{ form.image_file }}#}
-{#				{% endif %}#}
-{#				<span id="anno_img_chooser" class="hidden">{{ form.image_file }}</span>#}
-{#			 </div>#}
+			<td>
+				{% if form.image_file.value %}
+					<a href="/media/{{ form.image_file.value }}">
+						{{ form.image_file.value }}
+					</a> (<a href="javascript:showChooser('anno_img')">change</a>)
+				{% else %}
+					{{ form.image_file }}
+				{% endif %}
+					<span id="anno_img_chooser" class="hidden">{{ form.image_file }}</span>
 			</td>
 		</tr>
+		<tr><td></td>
+			<td>
+			<button id="b_anno_submit" type="submit" class="button button-sm mt-2">Save annotation</button>
+			</td></tr>
 	</table>
-{#	<button id="b_anno_submit" type="button" onclick=saveAnno() class="button button-sm">Save</button>#}
-	<button id="b_anno_submit" type="submit" class="button button-sm">Save</button>
+
 </form>
 <script type="application/javascript">
 </script>
