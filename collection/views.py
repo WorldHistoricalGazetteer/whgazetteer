@@ -250,6 +250,7 @@ def create_collection_group(request, *args, **kwargs):
 from django.forms.models import inlineformset_factory
 CollectionLinkFormset = inlineformset_factory(
     Collection, CollectionLink, fields=('uri','label','link_type'), extra=2,
+    # Collection, CollectionLink, fields=('uri','label','link_type'), extra=2,
     widgets={
       'link_type': forms.Select(choices=('webpage'))}
 )

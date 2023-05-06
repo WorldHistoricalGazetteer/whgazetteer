@@ -1,6 +1,6 @@
 from django import forms
 from django.db import models
-from .models import Collection, CollectionLink, CollectionGroup
+from .models import Collection, CollectionGroup, CollectionLink
 
 class CollectionGroupModelForm(forms.ModelForm):
     # create and/or edit CollectionGroup

@@ -87,7 +87,8 @@ class Collection(models.Model):
 
   # collections can comprise >=0 datasets, >=1 places
   datasets = models.ManyToManyField("datasets.Dataset", blank=True)
-  places = models.ManyToManyField("places.Place", blank=True)
+  # places = models.ManyToManyField("places.Place", blank=True)
+  places = models.ManyToManyField("places.Place", through='CollPlace', blank=True)
 
   def get_absolute_url(self):
     #return reverse('datasets:dashboard', kwargs={'id': self.id})
@@ -140,21 +141,14 @@ class Collection(models.Model):
   class Meta:
     db_table = 'collections'
 
-class CollectionLink(models.Model):
-  collection = models.ForeignKey(Collection, default=None,
-    on_delete=models.CASCADE, related_name='links')
-  label = models.CharField(null=True, blank=True, max_length=200)
-  uri = models.TextField(validators=[URLValidator()])
-  link_type = models.CharField(default='webpage', max_length=10, choices=LINKTYPES)
-  license = models.CharField(null=True, blank=True, max_length=64)
+class CollPlace(models.Model):
+  collection = models.ForeignKey(Collection, on_delete=models.CASCADE)
+  place = models.ForeignKey(Place, on_delete=models.CASCADE)
+  sequence = models.IntegerField()
 
-  def __str__(self):
-    cap = self.label[:20]+('...' if len(self.label)>20 else '')
-    return '%s:%s' % (self.id, cap)
-
-  class Meta:
-      managed = True
-      db_table = 'collection_link'
+  # @property
+  # def maxid(self):
+  #   return
 
 class CollectionUser(models.Model):
   collection = models.ForeignKey(Collection, related_name='collabs',
@@ -214,20 +208,36 @@ class CollectionGroupUser(models.Model):
     managed = True
     db_table = 'collection_group_user'
 
-
-class CollectionGroupLink(models.Model):
-  collection_group = models.ForeignKey(CollectionGroup, default=None,
+""" handled in Link model now """
+class CollectionLink(models.Model):
+  collection = models.ForeignKey(Collection, default=None,
     on_delete=models.CASCADE, related_name='links')
   label = models.CharField(null=True, blank=True, max_length=200)
   uri = models.TextField(validators=[URLValidator()])
-  link_type = models.CharField(default='page', max_length=10, choices=LINKTYPES)
+  link_type = models.CharField(default='webpage', max_length=10, choices=LINKTYPES)
   license = models.CharField(null=True, blank=True, max_length=64)
 
   def __str__(self):
-    cap = self.label[:20] + ('...' if len(self.label) > 20 else '')
+    cap = self.label[:20]+('...' if len(self.label)>20 else '')
     return '%s:%s' % (self.id, cap)
 
   class Meta:
-    managed = True
-    db_table = 'collection_group_link'
+      managed = True
+      db_table = 'collection_link'
+
+# class CollectionGroupLink(models.Model):
+#   collection_group = models.ForeignKey(CollectionGroup, default=None,
+#     on_delete=models.CASCADE, related_name='links')
+#   label = models.CharField(null=True, blank=True, max_length=200)
+#   uri = models.TextField(validators=[URLValidator()])
+#   link_type = models.CharField(default='page', max_length=10, choices=LINKTYPES)
+#   license = models.CharField(null=True, blank=True, max_length=64)
+#
+#   def __str__(self):
+#     cap = self.label[:20] + ('...' if len(self.label) > 20 else '')
+#     return '%s:%s' % (self.id, cap)
+#
+#   class Meta:
+#     managed = True
+#     db_table = 'collection_group_link'
 
