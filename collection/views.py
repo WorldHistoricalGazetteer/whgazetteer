@@ -203,7 +203,23 @@ def add_dataset(request, *args, **kwargs):
   print('add_dataset(): coll, ds', coll, ds)
   coll.datasets.add(ds)
   # coll.datasets.remove(ds)
-
+  from collection.models import CollPlace
+  from itertools import count
+  # ds=Dataset.objects.get(id=5)
+  # get max sequence & increment
+  cps = CollPlace.objects.filter(collection=coll).values_list("place",flat=True)
+  maxseq = count(max(cps.values_list("sequence", flat=True)))
+  # def seq():
+  #   global maxseq
+  #   maxseq += 1
+  #   return maxseq
+  for p in ds.places.all():
+    if p.id not in cps:
+      CollPlace.objects.create(
+        collection=coll,
+        place=p,
+        sequence=next(maxseq)
+      )
   return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 # removes dataset from collection & clean up "omitted"; refreshes page
