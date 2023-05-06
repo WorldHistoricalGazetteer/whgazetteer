@@ -22,8 +22,6 @@
 
   <link href="https://unpkg.com/maplibre-gl@1.15.2/dist/maplibre-gl.css" rel="stylesheet" />
 
-  <!--<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.css' rel='stylesheet' />-->
-  <!--<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.js'></script>-->
   <script src="{% static 'js/leaflet-mapbox-gl.js' %}"></script>
 
   <style>
@@ -38,11 +36,13 @@
 <div id="collection_content" class="container mt-1 px-1">
 	<div id="collection_title">
 		<h5><sr>{{object.title}}</sr>
-			<span class="half ital text-secondary"> a place collection by {{ object.owner.name }} {{ object.owner.last_name }} <span class="badge badge-warning ms-3">BETA</span></span>
+			<span class="half ital text-secondary"> a place collection by {{ object.owner.name }} {{ object.owner.last_name }}
+				<span class="badge badge-warning ms-3">BETA</span></span>
 		{% if user.id == object.owner.id or user.is_superuser or user in whgteam %}
 			<span class="float-end smallish me-2 pt-2">
 				<i class="fas fa-download linky"></i>
-				<a href="" id="a_download_modal" class="me-2" data-collid = {{ object.id }} data-toggle="modal" data-target="#downloadModal" title="download options"> download options</a>
+				<a href="" id="a_download_modal" class="me-2" data-collid = {{ object.id }} data-toggle="modal"
+				   data-target="#downloadModal" title="download options"> download options</a>
 				<a href="{% url 'collection:place-collection-update' object.id %}" >edit
 					<i class="fas fa-cog linky"></i></a>
 			</span>
@@ -95,7 +95,7 @@
 		        <div class="col-sm-4" style="max-height: 200px; position:relative;">
 			        {% if object.image_file %}
 				        <a href="#" class="pop">
-			        <img class="img-responsive thumbnail" src="/media/{{ object.image_file.name }}" width="220px" />
+			        <img id="active_img" class="img-responsive thumbnail" src="/media/{{ object.image_file.name }}" width="220px" />
 				        </a>
 			        {% else %}
 			        <span><i>image here</i></span>
@@ -120,13 +120,14 @@
               <th>pid</th>
               <th>title</th>
               <th>country</th>
-              <th>dataset</th>
+{#              <th>dataset</th>#}
             </tr>
           </thead>
         </table>
       </div>
     </div>
   </div>
+
   <div id="ext_site" class="modal fade" role="dialog">
 	    <div class="modal-dialog">
 	      <div class="modal-content">
@@ -144,14 +145,23 @@
   <div class="modal-dialog">
     <div class="modal-content modal-85">
       <div class="modal-header">
-        <h5 class="modal-title" id="downloadModalLabel"><i class="fas fa-download linky"></i> Download options for the <span class="text-danger">{{ object.title }}</span> collection</h5>
+        <h5 class="modal-title" id="downloadModalLabel"><i class="fas fa-download linky"></i>
+	        Download options for the <span class="text-danger">{{ object.title }}</span> collection</h5>
       </div>
       <div class="modal-body container">
         <div class="dl-blurb">
-          <p class="mb-1">Data uploaded as Linked Places format (LPF) are available only in that format. Data uploaded as LP-TSV (delimited text files or spreadsheets) can be downloaded as either <sr>LPF</sr> or <sr>LP-TSV</sr>.
+          <p class="mb-1">Data uploaded as Linked Places format (LPF) are available only in that format.
+	          Data uploaded as LP-TSV (delimited text files or spreadsheets) can be downloaded as either
+	          <sr>LPF</sr> or <sr>LP-TSV</sr>.
           <!--Downloads totaling more than {n} records will be queued, and a notification email sent when completed.-->
           </p>
-          <div id="dl_licensing"><p><sr>IMPORTANT LICENSING INFORMATION</sr>: Data made public in WHG by its creators are available under the Creative Commons Attribution 4.0 International (CC BY 4.0) License. They can be freely shared, re-used, and adapted, but "you <b>must</b> give appropriate credit, provide a link to the license, and indicate if changes were made." Please see <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">CC-BY-4.0 details</a>; and <a href="{% url 'licensing' %}"target="_blank">WHG policy.</a> Citations are provided below. <b>By clicking download on this form, you are agreeing to those terms</b>.
+          <div id="dl_licensing"><p><sr>IMPORTANT LICENSING INFORMATION</sr>: Data made public in WHG by its creators
+	          are available under the Creative Commons Attribution 4.0 International (CC BY 4.0) License. They can be
+	          freely shared, re-used, and adapted, but "you <b>must</b> give appropriate credit, provide a link to the
+	          license, and indicate if changes were made."
+	          Please see <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">CC-BY-4.0 details</a>;
+	          and <a href="{% url 'licensing' %}"target="_blank">WHG policy.</a>
+	          Citations are provided below. <b>By clicking download on this form, you are agreeing to those terms</b>.
           </p></div>
         </div>
         <div class="row">
@@ -163,7 +173,8 @@
 	          <p>
 		          {% for d in ds_list %}
 			          {{ d.title }}&nbsp;
-	                <a id="cite_{{d.id}}" class="clippy" aria-label="{% if d.citation %}{{ d.citation }}{% else %}{{d.title}}. [Data file (partial), Retrieved from {{ url_front}}collections/{{object.id}}/browse_pl, {% now 'd M Y' %}{% endif %}" rel="tooltip" title="copy to clipboard"> citation: <i class="fas fa-clipboard linky"></i></a><br/>
+	                <a id="cite_{{d.id}}" class="clippy"
+	                   aria-label="{% if d.citation %}{{ d.citation }}{% else %}{{d.title}}. [Data file (partial), Retrieved from {{ url_front}}collections/{{object.id}}/browse_pl, {% now 'd M Y' %}{% endif %}" rel="tooltip" title="copy to clipboard"> citation: <i class="fas fa-clipboard linky"></i></a><br/>
 		          {% endfor %}
 	          </p>
             <div id=""></div>
@@ -172,7 +183,8 @@
           <div class="col-sm-4">
             <p class="modal-col-head p-1 mb-2">File Formats</p>
             <div class="p-1 small">
-            <p class="my-1"><sr>Linked Places format (LPF)</sr> is JSON-based, valid GeoJSON and valid JSON-LD (rdf) with temporal extensions</p>
+            <p class="my-1"><sr>Linked Places format (LPF)</sr> is JSON-based, valid GeoJSON and valid JSON-LD (rdf)
+	            with temporal extensions</p>
             <p class="my-1"><sr>LP-TSV downloads</sr> are tab-separated text files.</p>
             </div>
             <div id="progress-bar-message" class="hidden">Waiting for progress to start...</div>
@@ -274,7 +286,7 @@
       thisy=$(this)
       // get id
       pid=$(this)[0].cells[0].textContent
-      ds_src=table.row(thisy.index()).data().dataset.label
+      {#ds_src=table.row(thisy.index()).data().dataset.label#}
       {#console.log('clicked row pid', pid, ds_src)#}
       
       geom = all_feats.find(function(f){return f.properties.pid==pid}).geometry
@@ -432,13 +444,14 @@
           {"data": "id"},
           {"data": "title"},
           {"data": "ccodes"},
-          {"data": "dataset.title"},
-          {#{"data": "dataset.label", "name":"dataset.label"},#}
+          {#{"data": "dataset.title"},#}
+          {#{"data": "<dataset></dataset>l", "name":"dataset.label"},#}
       ]
       ,columnDefs:[
         {#{ orderable: false, "targets": [4,5,6,7]},#}
         {#,{ visible: false, "targets": [1,4,5,6,7,11]}#}
-        { searchable: false, "targets": [2,3]}
+        {#{ searchable: false, "targets": [2,3]}#}
+        { searchable: false, "targets": [2]}
       ]
     })
 
@@ -797,6 +810,7 @@
     {#console.log('getPlace()', pid, from)#}
     $.ajax({
 	    // TODO: need to filter for collection
+	    // TODO:
       url: "/api/place/"+pid,
       }).done(function( data ) {
         // if geom is polygon, make feature & add to map if not initial table.draw()
@@ -876,7 +890,10 @@
       trace = JSON.parse(data.traces).find(function (t) {
         return t.fields.collection == "{{ object.id }}"
       })
-		  {#console.log('wtf, trace, object.id', trace,"{{ object.id }}" )#}
+		  let imgpath = trace.fields.image_file
+		  collimgpath = "{{ object.image_file.name }}"
+		  {#console.log('collimgpath', collimgpath)#}
+		  {#console.log('trace fields', trace.fields)#}
       blank = trace.fields.relation == null && trace.fields.note == null && trace.fields.start == null
       if (blank) {
         descrip += '<i>none yet</i>'
@@ -904,8 +921,17 @@
             descrip += '<p><b><u>Start/End</u></b>: ' + (trace.fields.start ?? "") + '/' +
                 (trace.fields.end ?? '') + '</p>'
         }
+        if (imgpath !=""){
+			    // display annotation image if any
+		      $("#active_img").attr('src','/media/'+imgpath)
+        } else {
+          $("#active_img").attr('src','/media/'+collimgpath)
+        }
       }
-    }
+    } else {
+      // restore collection image if others have been viewed
+		  $("#active_img").attr('src','/media/'+collimgpath)
+	  }
 		descrip += '<hr/><div class="red-head-anno">PLACE RECORD</div>'
     //
     // NAME VARIANTS
@@ -954,10 +980,10 @@
     //
     // MINMAX
     //
-    if(data.minmax && data.minmax.length>0){
-      descrip += '<p><b><u>When</u></b>: earliest: '+data.minmax[0]+'; latest: '+data.minmax[1]
+    if(data.minmax && data.minmax[0]){
+      descrip += '<p><b><u>When</u></b>: earliest: '+data.minmax[0]+
+          (data.minmax[1]?'; latest: '+data.minmax[1]:'')
     }
-
     //
     // LINKS
     //

@@ -326,10 +326,10 @@
 				      <div id="coll_placelist" class="tab-pane fade show active" role="tabpanel" aria-labelledby="coll_placelist-tab">
 						    {% if coll_places|length > 0 %}
 						      {% for p in coll_places %}
-							      <div class="col-place-card" data-id="{{ p.id }}">
+						        <div class="col-place-card" data-id="{{ p.id }}">
 								      <p><b>{{ p.title }}</b> {{ p.ccodes }}
 									      <i>pid: (<a class="coll-place" data-pid={{ p.id }} href="#" >{{ p.id }}</a>)</i>
-{#								         candidate for biggest kluge ever; tooltip breaks for single place!?#}
+{#								       biggest kluge ever? tooltip breaks for single place!?#}
 								        {% if coll_places|length > 1 %}
 								        <span class="float-end me-1">
 									        <a class="mark-place" href="#" title="Remove from collection" rel="tooltip"
@@ -351,7 +351,7 @@
 										      <br/>
 										      {% for t in p.traces %}
 											      {% if t.collection.id == object.id and t.saved %}
-											      <i>annotated</i>
+											        <i class="red-head">annotated</i>
 											      {% endif %}
 										      {% endfor %}
 									      {% endif %}

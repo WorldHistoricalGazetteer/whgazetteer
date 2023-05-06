@@ -18,6 +18,7 @@
 	<input type="hidden" name="place" value="{{ place.id }}"/>
 	<input type="hidden" name="collection" value="{{ collection.id }}"/>
 	<input type="hidden" name="motivation" value="locating"/>
+	<input type="hidden" name="saved" value="true"/>
 	{% if existing %}
 		<input type="hidden" name="anno_id" value={{ existing }} />
 	{% endif %}

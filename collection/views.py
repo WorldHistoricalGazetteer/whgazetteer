@@ -428,6 +428,7 @@ class PlaceCollectionBrowseView(DetailView):
     context['coll'] = coll
     context['ds_list'] = coll.ds_list
     context['ds_counter'] = coll.ds_counter
+    context['images'] = [ta.image_file.name for ta in coll.annotations.all()]
     context['links'] = coll.related_links.all()
     context['places'] = coll.places.all().order_by('title')
     context['updates'] = {}
