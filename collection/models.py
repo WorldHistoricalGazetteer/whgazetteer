@@ -100,6 +100,11 @@ class Collection(models.Model):
     return Place.objects.filter(dataset__in=dses)
 
   @property
+  def places_thru(self):
+    seq_places = [{'p':cp.place,'seq':cp.sequence} for cp in CollPlace.objects.filter(collection=4).order_by('sequence')]
+    return seq_places
+
+  @property
   def places_all(self):
     all = Place.objects.filter(
       Q(dataset__in=self.datasets.all()) | Q(id__in=self.places.all().values_list('id'))

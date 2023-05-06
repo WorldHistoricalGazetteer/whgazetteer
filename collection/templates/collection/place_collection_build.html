@@ -324,32 +324,30 @@
 				        </div> {# coll_dscards_create #}
 							</div>
 				      <div id="coll_placelist" class="tab-pane fade show active" role="tabpanel" aria-labelledby="coll_placelist-tab">
-						    {% if coll_places|length > 0 %}
-						      {% for p in coll_places %}
-						        <div class="col-place-card" data-id="{{ p.id }}">
-								      <p><b>{{ p.title }}</b> {{ p.ccodes }}
-									      <i>pid: (<a class="coll-place" data-pid={{ p.id }} href="#" >{{ p.id }}</a>)</i>
-{#								       biggest kluge ever? tooltip breaks for single place!?#}
-								        {% if coll_places|length > 1 %}
-								        <span class="float-end me-1">
+						    {% if seq_places|length > 0 %}
+{#						    {% if coll_places|length > 0 %}#}
+						      {% for p in seq_places %}
+{#						      {% for p in coll_places %}#}
+						        <div class="col-place-card" data-id="{{ p.p.id }}">
+								      <p><b>{{ p.p.title }}</b> {{ p.p.ccodes }}
+									      <i>pid: (<a class="coll-place" data-pid={{ p.p.id }} href="#" >{{ p.p.id }}</a>)</i>
+												{# huge kluge: tooltip breaks for single place!? #}
+								        {% if seq_places|length > 1 %}
+								        <span class="float-end me-1"> {{ p.seq }}
 									        <a class="mark-place" href="#" title="Remove from collection" rel="tooltip"
-                                data-pid="{{ p.id }}" data-col="{{ object.id }}">
+                                data-pid="{{ p.p.id }}" data-col="{{ object.id }}">
 										        <i class="fas fa-minus-square" style="color:#ff8080"></i></a>
-									        {% comment %}<a class="anno-place" href="#" title="Annotate place" rel="tooltip" data-pid="{{ p.id }}">
-										        <i class="fas fa-edit linky fa-xs"></i></a>{% endcomment %}
 								        </span>
 								        {% else %}
 								        <span class="float-end me-1">
-									        <a class="mark-place" href="#" title="Remove from collection" data-pid="{{ p.id }}"
+									        <a class="mark-place" href="#" title="Remove from collection" data-pid="{{ p.p.id }}"
                                data-col="{{ object.id }}">
 										        <i class="fas fa-minus-square" style="color:#ff8080"></i></a>
-									        {% comment %}<a class="anno-place" href="#" title="Annotate place" data-pid="{{ p.id }}">
-										        <i class="fas fa-edit linky fa-xs"></i></a>{% endcomment %}
 								        </span>
 								        {% endif %}
-									      {% if p.traces %}
+									      {% if p.p.traces %}
 										      <br/>
-										      {% for t in p.traces %}
+										      {% for t in p.p.traces %}
 											      {% if t.collection.id == object.id and t.saved %}
 											        <i class="red-head">annotated</i>
 											      {% endif %}
@@ -408,7 +406,7 @@
 				      </ul>
 				      <p>[<i>figure</i>]</p>
 			      </div>
-						{% if coll_places|length > 0 %}
+						{% if seq_places|length > 0 %}
 				    <div id="coll_right_anno" >
 				      <h6>Annotations</h6>
 					    <div id="annotator" class="mb-1">
@@ -446,10 +444,11 @@
   $(".col-place-card").click(function(){
 		// clear highlights
     $(".col-place-card").removeClass('card-highlight')
-	  $(this).addClass('card-highlight')
-	  // get pid
-    let pid = $(this).data('pid')
 	  // highlight this one
+	  {#$(this).addClass('card-highlight')#}
+	  // get pid
+    let pid = $(this).data('id')
+	  console.log('clicked $(this), pid', $(this), pid)
 		card=$(this).addClass('card-highlight')
 	  // position of clicked card
 	  cardtop = card.offset().top
@@ -464,7 +463,7 @@
 	  {#console.log('offset',offset)#}
 	  {#console.log('cardtop, scrolltop, listtop',#}
 		{#	  cardtop, scrolltop, listtop )#}
-	  getAnno($(this).data('id'))
+	  getAnno(pid)
   })
 
 	function submitCollection(){

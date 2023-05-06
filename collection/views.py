@@ -5,6 +5,7 @@ from django.apps import apps
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.forms.models import inlineformset_factory
 from django.http import JsonResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -19,7 +20,7 @@ from traces.forms import TraceAnnotationModelForm
 from traces.models import TraceAnnotation
 from itertools import chain
 
-# sets collection to inactive, removing from lists
+"""sets collection to inactive, removing from lists """
 def inactive(request, *args, **kwargs):
   print('inactive() request.POST', request.POST)
   coll = Collection.objects.get(id=request.POST['id'])
@@ -28,7 +29,7 @@ def inactive(request, *args, **kwargs):
   result = {"msg": "collection " + coll.title + '('+str(coll.id)+') flagged inactive'}
   return JsonResponse(result, safe=False)
 
-# removes dataset from collection, refreshes page
+"""removes dataset from collection, refreshes page"""
 def remove_link(request, *args, **kwargs):
   #print('kwargs', kwargs)
   link = Link.objects.get(id=kwargs['id'])
@@ -137,8 +138,8 @@ def remove_places(request, *args, **kwargs):
         TraceAnnotation.objects.filter(collection=coll, place__in=place_list).delete()
     return JsonResponse({'result': str(len(place_list))+' places removed, we think'}, safe=False)
 
-""" create place collection on the fly
-    return id for adding place(s) to it 
+""" 
+create place collection on the fly; return id for adding place(s) to it 
 """
 def flash_collection_create(request, *args, **kwargs):
   print('flash_collection_create request.POST', request.POST)
@@ -195,7 +196,7 @@ class ListDatasetView(View):
     }
     return JsonResponse(result, safe=False)
 
-# adds dataset to collection, refreshes page
+"""adds dataset to collection, refreshes page"""
 def add_dataset(request, *args, **kwargs):
   print('add_dataset() kwargs', kwargs)
   coll = Collection.objects.get(id=kwargs['coll_id'])
@@ -222,7 +223,7 @@ def add_dataset(request, *args, **kwargs):
       )
   return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
-# removes dataset from collection & clean up "omitted"; refreshes page
+"""removes dataset from collection & clean up "omitted"; refreshes page """
 def remove_dataset(request, *args, **kwargs):
   coll = Collection.objects.get(id=kwargs['coll_id'])
   ds = Dataset.objects.get(id=kwargs['ds_id'])
@@ -258,24 +259,17 @@ def create_collection_group(request, *args, **kwargs):
 
   return JsonResponse(result, safe=False)
 
-# from django.forms.models import inlineformset_factory
-# CollectionImageFormset = inlineformset_factory(
-#     Collection, CollectionImage, fields=('image','caption','uri','license'), extra=1
-# )
-
-from django.forms.models import inlineformset_factory
 CollectionLinkFormset = inlineformset_factory(
     Collection, CollectionLink, fields=('uri','label','link_type'), extra=2,
-    # Collection, CollectionLink, fields=('uri','label','link_type'), extra=2,
     widgets={
       'link_type': forms.Select(choices=('webpage'))}
 )
 
-""" PLACE COLLECTIONS """
-""" TODO: refactor to fewer views """
-""" collections from places and/or datasets 
-    uses place_collection_build.html
+""" 
+  PLACE COLLECTIONS
+  collections from places and/or datasets; uses place_collection_build.html
 """
+# TODO: refactor to fewer views
 class PlaceCollectionCreateView(LoginRequiredMixin, CreateView):
   form_class = CollectionModelForm
   template_name = 'collection/place_collection_build.html'
@@ -313,13 +307,9 @@ class PlaceCollectionCreateView(LoginRequiredMixin, CreateView):
 
   def form_valid(self, form):
     context = self.get_context_data()
-    # images = context['images']
     self.object = form.save()
-    # if images.is_valid():
-    #   images.instance = self.object
-    #   images.save()
 
-    # write log entry
+    # TODO: write log entry
     # Log.objects.create(
     #   # category, logtype, "timestamp", subtype, dataset_id, user_id
     #   category='collection',
@@ -406,7 +396,10 @@ class PlaceCollectionUpdateView(UpdateView):
 
     # test: send single anno form to template
     context['form_anno'] = form_anno
-    context['coll_places'] = self.object.places_all.order_by('title')
+    # context['coll_places'] = self.object.places_all
+    context['seq_places'] = [
+      {'p':cp.place,'seq':cp.sequence} for cp in CollPlace.objects.filter(collection=_id).order_by('sequence')
+    ]
 
     context['created'] = self.object.created.strftime("%Y-%m-%d")
     context['mbtoken'] = settings.MAPBOX_TOKEN_WHG
@@ -431,15 +424,12 @@ class PlaceCollectionBrowseView(DetailView):
     return get_object_or_404(Collection, id=id_)
 
   def get_context_data(self, *args, **kwargs):
+    id_ = self.kwargs.get("id")
+    coll = get_object_or_404(Collection, id=id_)
+
     context = super(PlaceCollectionBrowseView, self).get_context_data(*args, **kwargs)
-    # context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
-    # context['mbtokenmb'] = settings.MAPBOX_TOKEN_MB
     context['mbtoken'] = settings.MAPBOX_TOKEN_WHG
     context['media_url'] = settings.MEDIA_URL
-
-    id_ = self.kwargs.get("id")
-
-    coll = get_object_or_404(Collection, id=id_)
 
     context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False
     context['coll'] = coll

@@ -407,24 +407,23 @@
       placement: 'right',
       html: true
     }).on('show.bs.popover', function () {
-        $.ajax({
-          url: '/api/datasets/',
-          data: {id:$(this).data('id')},
-          dataType: "JSON",
-          async: false,
-          success: function (data) {
-            ds=data.results[0]
-            {#console.log('ds',ds)#}
-            html='<p class="thin"><b>Title</b>: '+ds.title+'</p>'
-            html+='<p class="thin"><b>Description</b>: '+ds.description+'</p>'
-            html+='<p class="thin"><b>WHG Owner</b>: '+ds.owner+'</p>'
-            html+='<p class="thin"><b>Creator</b>: '+ds.creator+'</p>'
-            dspop.attr('data-content', html);
-          }
+      $.ajax({
+        url: '/api/datasets/',
+        data: {id:$(this).data('id')},
+        dataType: "JSON",
+        async: false,
+        success: function (data) {
+          ds=data.results[0]
+          {#console.log('ds',ds)#}
+          html='<p class="thin"><b>Title</b>: '+ds.title+'</p>'
+          html+='<p class="thin"><b>Description</b>: '+ds.description+'</p>'
+          html+='<p class="thin"><b>WHG Owner</b>: '+ds.owner+'</p>'
+          html+='<p class="thin"><b>Creator</b>: '+ds.creator+'</p>'
+          dspop.attr('data-content', html);
+        }
       });
     })
 
-    // window.filter = "{{ filter }}"
     // initialize table
     // task columns are inoperable in this public view
     table = $('#placetable').DataTable({
@@ -955,7 +954,6 @@
     // TYPES
     // may include sourceLabel:"" **OR** sourceLabels[{"label":"","lang":""},...]
     // console.log('data.types',data.types)
-    //{"label":"","identifier":"aat:___","sourceLabels":[{"label":" ","lang":"en"}]}
 	  if(data.types && data.types.length>0) {
       descrip += '</p><p><b><u>Place type</u></b>: '
       typeids = ''
@@ -989,7 +987,8 @@
     //
 	  if (data.links.length > 0) {
 	    {#descrip += '<p class="mb-0"><b>External links ('+data.links.length+') </b><a href="javascript:{toggle_links()}">show</a> '#}
-	    descrip += '<p class="mb-0"><b><u>External links</u> ('+data.links.length+') </b><a href="#" onclick="toggleLinks()" id="togglelinks">Show</a>'
+	    descrip += '<p class="mb-0"><b><u>External links</u> ('+data.links.length+') </b>'+
+			    '<a href="#" onclick="toggleLinks()" id="togglelinks">Show</a>'
 		  descrip += '<br/><span id="p_links" class="hidden">'
 	    close_count = added_count = related_count = 0
 	    html = ''
@@ -1039,9 +1038,8 @@
     //
     // CCODES
     //
-    <!--if (data.ccodes.length > 0) {-->
     if (!!data.countries) {
-      <!--console.log('data.countries',data.countries)-->
+      // console.log('data.countries',data.countries)
       descrip+='<p><b><u>Modern country</u></b>: '+ data.countries.join(', ')+'</p>'
     }
     descrip += '</div>'
@@ -1069,73 +1067,6 @@
     return link
   }
 
-  // render heatmap layer
-  function heat(dataset, ramp) {
-	  {#console.log('heat('+dataset+', '+ramp+')')#}
-	  <!--if (!!gl.getLayer('heat_active')){-->
-		  <!--gl.removeLayer('heat_active')-->
-    <!--}-->
-	  <!--ne_global.getMapboxMap().addLayer({-->
-	  mappy.addLayer({
-      "id": "heat_"+dataset,
-      "type": "heatmap",
-      "source": dataset,
-      "maxzoom": 9,
-      "paint": {
-          // Increase the heatmap weight based on frequency and property magnitude
-        "heatmap-weight": ["interpolate", ["linear"], ["get", "mag"], 0, 0, 6, 1 ],
-        // Increase the heatmap color weight weight by zoom level
-        // heatmap-intensity is a multiplier on top of heatmap-weight
-        "heatmap-intensity": ["interpolate", ["linear"],["zoom"], 0, 1, 9, 3 ],
-        // Color ramp for heatmap.  Domain is 0 (low) to 1 (high).
-        // Begin color ramp at 0-stop with a 0-transparancy color
-        // to create a blur-like effect.
-        "heatmap-color": heatramps[ramp],
-        // Adjust the heatmap radius by zoom level
-        "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 0, 2, 9, 20 ],
-        // Transition from heatmap to circle layer by zoom level
-        "heatmap-opacity": ["interpolate", ["linear"], ["zoom"], 7, 1, 9, 0 ],
-      }
-    });    
-  }
-  
-  // add heatmap source for each dataset unless it's a polygon layer
-  function addHeatSources(ds_list){
-    heatsources=[]
-    for(d in ds_list){
-      ds = ds_list[d]
-      if(ds.geotypes['poly'] < 200){
-        gl.addSource(ds.label, {
-          'type': 'geojson',
-          'data': '/datasets/'+ds.id+'/geojson'
-        });
-        heatsources.push(ds.label)
-        // different color ramps by index
-        heat(ds.label, d)
-      }
-    }
-    spinner_map.stop()
-  }
-  
-  // [ greenish, redish]
-  var heatramps = [
-    ["interpolate",["linear"],["heatmap-density"],
-    0,"rgba(237,248,251,0)",0.2,"rgb(204,236,230)",0.4,"rgb(153,216,201)",0.6,
-    "rgb(102,194,164)",0.8,"rgb(44,162,95)",1,"rgb(0,109,44)"],
-
-    ["interpolate",["linear"],["heatmap-density"],
-    0,'rgba(254,240,217,0)',0.2,'rgb(253,212,158)',0.4,'rgb(253,187,132)',0.6,
-    'rgb(252,141,89)',0.8,'rgb(227,74,51)',1,'rgb(179,0,0)'],
-    
-    ["interpolate",["linear"],["heatmap-density"],
-    0,'rgba(246,239,247,0)',0.2,'rgb(208,209,230)',0.4,'rgb(166,189,219)',0.6,
-    'rgb(103,169,207)',0.8,'rgb(28,144,153)',1,'rgb(1,108,89)'],
-    
-    ["interpolate",["linear"],["heatmap-density"],
-    0,'rgba(237,248,251,0)',0.2,'rgb(191,211,230)',0.4,'rgb(158,188,218)',0.6,
-    'rgb(140,150,198)',0.8,'rgb(136,86,167)',1,'rgb(129,15,124)'],    
-  ]
-    
   styles = {
     "Point": {
       "default": {radius: 2, fillColor:"#ff9900", fillOpacity: 0.8, stroke: false},
