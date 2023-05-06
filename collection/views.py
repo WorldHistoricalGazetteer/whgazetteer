@@ -398,7 +398,7 @@ class PlaceCollectionUpdateView(UpdateView):
     context['form_anno'] = form_anno
     # context['coll_places'] = self.object.places_all
     context['seq_places'] = [
-      {'p':cp.place,'seq':cp.sequence} for cp in CollPlace.objects.filter(collection=_id).order_by('sequence')
+      {'id':cp.id,'p':cp.place,'seq':cp.sequence} for cp in CollPlace.objects.filter(collection=_id).order_by('sequence')
     ]
 
     context['created'] = self.object.created.strftime("%Y-%m-%d")

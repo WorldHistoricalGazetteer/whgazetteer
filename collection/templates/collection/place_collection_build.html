@@ -275,7 +275,7 @@
 						  <li class="nav-item" role="presentation">
 						    <button class="nav-link active" id="coll_placelist-tab" data-bs-toggle="tab" data-bs-target="#coll_placelist"
 						       role="tab" aria-controls="coll_placelist" aria-selected="true" data-id="pl">
-							    Places ({{ coll_places|length }})</button>
+							    Places ({{ seq_places|length }})</button>
 						  </li>
 							<span class="small" style="position:absolute; right:1rem; top:1.5rem;">
 								<a id="a_remove" href="#"></a>
@@ -328,12 +328,12 @@
 {#						    {% if coll_places|length > 0 %}#}
 						      {% for p in seq_places %}
 {#						      {% for p in coll_places %}#}
-						        <div class="col-place-card" data-id="{{ p.p.id }}">
+						        <div class="col-place-card" data-id="{{ p.p.id }}" data-idx="{{ p.seq }}">
 								      <p><b>{{ p.p.title }}</b> {{ p.p.ccodes }}
 									      <i>pid: (<a class="coll-place" data-pid={{ p.p.id }} href="#" >{{ p.p.id }}</a>)</i>
 												{# huge kluge: tooltip breaks for single place!? #}
 								        {% if seq_places|length > 1 %}
-								        <span class="float-end me-1"> {{ p.seq }}
+								        <span class="float-end me-1"> <span class="seq-visible">id: {{ p.id }}; seq:{{ p.seq }}</span>
 									        <a class="mark-place" href="#" title="Remove from collection" rel="tooltip"
                                 data-pid="{{ p.p.id }}" data-col="{{ object.id }}">
 										        <i class="fas fa-minus-square" style="color:#ff8080"></i></a>
@@ -426,6 +426,7 @@
 </div> {# container #}
 
 <script type="text/javascript">
+
 	function showChooser(type){
     elem = "#"+type+"_chooser"
     $(elem).toggle()
@@ -440,31 +441,6 @@
 		}
 		console.log('build tab', $("#coll_placelist div:first-child").data("id"))
 	})
-  {#$(".anno-place").click(function(){#}
-  $(".col-place-card").click(function(){
-		// clear highlights
-    $(".col-place-card").removeClass('card-highlight')
-	  // highlight this one
-	  {#$(this).addClass('card-highlight')#}
-	  // get pid
-    let pid = $(this).data('id')
-	  console.log('clicked $(this), pid', $(this), pid)
-		card=$(this).addClass('card-highlight')
-	  // position of clicked card
-	  cardtop = card.offset().top
-	  sessionStorage.setItem('cardtop', cardtop)
-	  // position of list scroller
-	  scrolltop = $("#coll_placelist").scrollTop()
-	  sessionStorage.setItem('scrolltop', scrolltop)
-	  // permanent position of list on page
-	  listtop = $("#coll_placelist").offset().top
-	  offset = cardtop+scrolltop-listtop
-	  sessionStorage.setItem('offset', offset)
-	  {#console.log('offset',offset)#}
-	  {#console.log('cardtop, scrolltop, listtop',#}
-		{#	  cardtop, scrolltop, listtop )#}
-	  getAnno(pid)
-  })
 
 	function submitCollection(){
     console.log('submitting collection {{ object.id }} to group '+ $("#id_group").val())
@@ -793,14 +769,6 @@
     // TRACES
 	  trace=JSON.parse(data.traces).find(function(t){
           return t.fields.collection = "{{ object.id }}"})
-	  {#console.log('got trace:', trace)#}
-	  {#if(!trace){#}
-    {#  // no annotations yet, make form visible#}
-		{#  $("#anno_detail").hide()#}
-    {#  $("#anno_div").fadeIn()#}
-	  {# else #}
-	  {#  $("#anno_detail").html('<p><b>Trace annotation</b>: '+trace.fields+'</p>')#}
-	  {# } #}
 
     // if geom(s) and 'certainty', add it
     if(data.geoms.length >0){
@@ -830,7 +798,50 @@
       })
   }
 
+    {#$(".anno-place").click(function(){#}
+  $(".col-place-card").click(function(){
+		// clear highlights
+    $(".col-place-card").removeClass('card-highlight')
+	  // current index
+	  {#console.log('idx', $(this).data('idx'))#}
+	  // get pid
+    let pid = $(this).data('id')
+	  {#console.log('clicked $(this), pid', $(this), pid)#}
+		card=$(this).addClass('card-highlight')
+	  // position of clicked card
+	  cardtop = card.offset().top
+	  sessionStorage.setItem('cardtop', cardtop)
+	  // position of list scroller
+	  scrolltop = $("#coll_placelist").scrollTop()
+	  sessionStorage.setItem('scrolltop', scrolltop)
+	  // permanent position of list on page
+	  listtop = $("#coll_placelist").offset().top
+	  offset = cardtop+scrolltop-listtop
+	  sessionStorage.setItem('offset', offset)
+	  {#console.log('offset',offset)#}
+	  {#console.log('cardtop, scrolltop, listtop',#}
+		{#	  cardtop, scrolltop, listtop )#}
+	  getAnno(pid)
+  })
+
   $(function(){
+		var cardList = $('#coll_placelist');
+		{#var panelList = $('#draggablePanelList');#}
+		cardList.sortable({
+			// Only make the .panel-heading child elements support dragging.
+			// Omit this to make then entire <li>...</li> draggable.
+			{#handle: '.row-handle',#}
+			update: function() {
+				$('.col-place-card', cardList).each(function(index, elem) {
+					$listItem = $(elem), newIndex = $listItem.index();
+					console.log('old idx, newIndex', $(elem).data('idx'), newIndex)
+					{#$(elem).data('idx', newIndex)#}
+					{#console.log('new idx', $(elem).data('idx'))#}
+					{#$(elem).data('idx', newIndex)#}
+					// Persist the new indices.
+				});
+			}
+	 })
     // TODO: change text depending on state
 	  {#if($("#id_group").length){#}
     {#  $('#id_group').prepend($('<option value=0><i>None</i></option>'));#}
