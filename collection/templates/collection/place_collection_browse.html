@@ -324,6 +324,8 @@
   }
 
   $(function(){
+    collimagepath = "{{ object.image_file.name }}"
+
     $(".btn-cancel").click(function(){$("#downloadModal").modal('hide') })
 
     clearEl = function(el){
@@ -449,16 +451,15 @@
       ]
       ,columnDefs:[
         {#{ orderable: false, "targets": [4,5,6,7]},#}
-        {#,{ visible: false, "targets": [1,4,5,6,7,11]}#}
+        { visible: false, "targets": [3]}
         {#{ searchable: false, "targets": [2,3]}#}
-        { searchable: false, "targets": [2]}
+        ,{ searchable: false, "targets": [2]}
       ]
     })
 
     table.on( 'draw', function () {
       spinner_table.stop()
       setRowEvents();
-      {#$("#drftable_list table tbody")[0].rows[0].click()#}
     })
     
     // help popups
@@ -891,7 +892,7 @@
         return t.fields.collection == "{{ object.id }}"
       })
 		  let imgpath = trace.fields.image_file
-		  collimgpath = "{{ object.image_file.name }}"
+		  {#collimgpath = "{{ object.image_file.name }}"#}
       blank = trace.fields.relation == null && trace.fields.note == null && trace.fields.start == null
       if (blank) {
         descrip += '<i>none yet</i>'
@@ -928,7 +929,8 @@
       }
     } else {
       // restore collection image if others have been viewed
-		  $("#active_img").attr('src','/media/'+collimgpath)
+		  $("#active_img").attr('src','/media/{{ object.image_file.name }}')
+		  {#$("#active_img").attr('src','/media/'+collimgpath)#}
 	  }
 		descrip += '<hr/><div class="red-head-anno">PLACE RECORD</div>'
     //
