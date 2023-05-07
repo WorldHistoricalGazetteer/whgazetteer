@@ -89,9 +89,20 @@ def submit_collection(request, *args, **kwargs):
   coll.save()
   return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
+""" utility: get next sequence for a collection """
+def seq(coll):
+  cps = CollPlace.objects.filter(collection=coll).values_list("sequence",flat=True)
+  if cps:
+    next=max(cps)+1
+  else:
+    next=0
+  print(next)
+  return next
+
 """ add list of >=1 places to collection """
 def add_places(request, *args, **kwargs):
   if request.method == 'POST':
+    user = request.user
     status, msg = ['','']
     dupes = []
     added = []
@@ -107,11 +118,16 @@ def add_places(request, *args, **kwargs):
           src_id = place.src_id,
           collection = coll,
           motivation = 'locating',
-          owner = request.user,
+          owner = user,
           anno_type = 'place',
           saved = 0
         )
-        coll.places.add(p)
+        # coll.places.add(p)
+        CollPlace.objects.create(
+          collection=coll,
+          place=place,
+          sequence=seq(coll)
+        )
         added.append(p)
       else:
         dupes.append(place.title)
@@ -220,7 +236,7 @@ def add_dataset(request, *args, **kwargs):
   from itertools import count
   # ds=Dataset.objects.get(id=5)
   # get max sequence & increment
-  cps = CollPlace.objects.filter(collection=coll).values_list("place",flat=True)
+  cps = CollPlace.objects.filter(collection=coll).values_list("sequence",flat=True)
   maxseq = count(max(cps.values_list("sequence", flat=True)))
   # def seq():
   #   global maxseq
