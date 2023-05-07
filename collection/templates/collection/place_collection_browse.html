@@ -27,6 +27,7 @@
   <style>
 		.red-head-anno {font-size: smaller; color: #993333;}
 		.modal-custom {max-width: inherit;}
+		.dataTables_scroll {border-top:1px solid gainsboro; margin-top:2px;}
   </style>
 {% endblock %}
 
@@ -120,7 +121,7 @@
               <th>pid</th>
               <th>title</th>
               <th>country</th>
-              <th>wtf</th>
+              <th>cpid</th> {# collection_place id, not visible #}
             </tr>
           </thead>
         </table>
@@ -437,10 +438,13 @@
         url: "/api/placetable_coll/?format=datatables&id={{ object.id }}"
       }
       ,scrollY: 430
+	    {#,paging: false#}
+	    ,pageLength: 20
+      ,lengthMenu: [20, 40, 100]
+      {#,scrollY: 430#}
       ,select: true
       ,order: [[3, 'asc']]
-      ,LengthMenu: [10, 25, 50, 100]
-      ,columns: 
+      ,columns:
       [
           {"data": "id"},
           {"data": "title"},
