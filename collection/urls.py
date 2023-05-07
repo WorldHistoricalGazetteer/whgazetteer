@@ -39,6 +39,7 @@ urlpatterns = [
     path('list_ds/', views.ListDatasetView.as_view(), name='list-ds'),
     path('add_ds/<int:coll_id>/<int:ds_id>', views.add_dataset, name='add-ds'),
     path('remove_ds/<int:coll_id>/<int:ds_id>', views.remove_dataset, name='remove-ds'),
+    path('update_sequence/', views.update_sequence, name='update-sequence'),
 
     path('add_places/', views.add_places, name="collection-add-places"),
     path('remove_places/', views.remove_places, name="collection-remove-places"),

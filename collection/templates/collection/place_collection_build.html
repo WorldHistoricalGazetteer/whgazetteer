@@ -328,7 +328,7 @@
 {#						    {% if coll_places|length > 0 %}#}
 						      {% for p in seq_places %}
 {#						      {% for p in coll_places %}#}
-						        <div class="col-place-card" data-id="{{ p.p.id }}" data-idx="{{ p.seq }}">
+						        <div class="col-place-card" id="{{ p.p.id }}" data-id="{{ p.p.id }}" data-idx="{{ p.seq }}">
 								      <p><b>{{ p.p.title }}</b> {{ p.p.ccodes }}
 									      <i>pid: (<a class="coll-place" data-pid={{ p.p.id }} href="#" >{{ p.p.id }}</a>)</i>
 												{# huge kluge: tooltip breaks for single place!? #}
@@ -825,21 +825,43 @@
   })
 
   $(function(){
+
 		var cardList = $('#coll_placelist');
 		{#var panelList = $('#draggablePanelList');#}
 		cardList.sortable({
 			// Only make the .panel-heading child elements support dragging.
 			// Omit this to make then entire <li>...</li> draggable.
 			{#handle: '.row-handle',#}
-			update: function() {
+			axis:'y',
+			update: function(event, ui) {
+				{#console.log('$(this)', $(this))#}
+				{#console.log('$(elem)', $(elem))#}
+				new_sequence={}
 				$('.col-place-card', cardList).each(function(index, elem) {
-					$listItem = $(elem), newIndex = $listItem.index();
-					console.log('old idx, newIndex', $(elem).data('idx'), newIndex)
-					{#$(elem).data('idx', newIndex)#}
-					{#console.log('new idx', $(elem).data('idx'))#}
-					{#$(elem).data('idx', newIndex)#}
-					// Persist the new indices.
-				});
+					id = $(elem).data('id')
+					new_sequence[id] = index
+					$("#"+id+" .seq-visible").text("id: "+id+"; seq: "+index)
+				 });
+				// Persist the new indices.
+        console.log('new_sequence', new_sequence)
+				var formData = new FormData()
+				formData.append('coll_id', {{object.id}})
+				formData.append('seq', JSON.stringify(new_sequence))
+				formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+        $.ajax({
+	        type: 'POST',
+		      {#enctype: 'multipart/form-data',#}
+          url: '{% url "collection:update-sequence" %}',
+		      processData: false,
+		      contentType: false,
+		      cache: false,
+          data: formData,
+          dataType: "json",
+          async: false,
+          success: function (result) {
+            console.log('result', result)
+          }
+      });
 			}
 	 })
     // TODO: change text depending on state

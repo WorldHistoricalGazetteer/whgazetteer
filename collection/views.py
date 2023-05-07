@@ -1,4 +1,5 @@
 # collection.views (collections)
+import json
 
 from django import forms
 from django.apps import apps
@@ -137,6 +138,17 @@ def remove_places(request, *args, **kwargs):
       if place.traces:
         TraceAnnotation.objects.filter(collection=coll, place__in=place_list).delete()
     return JsonResponse({'result': str(len(place_list))+' places removed, we think'}, safe=False)
+
+""" update sequence of annotated places """
+def update_sequence(request, *args, **kwargs):
+  print('request.POST', request.POST)
+  new_sequence = json.loads(request.POST['seq'])
+  # print('new_sequence', new_sequence)
+  cid = request.POST['coll_id']
+  for cp in CollPlace.objects.filter(collection=4):
+    cp.sequence = new_sequence[str(cp.place_id)]
+    cp.save()
+  return JsonResponse({"msg": "updated?", "POST": new_sequence})
 
 """ 
 create place collection on the fly; return id for adding place(s) to it 
