@@ -120,7 +120,7 @@
               <th>pid</th>
               <th>title</th>
               <th>country</th>
-              <th>fclasses</th>
+              <th>wtf</th>
             </tr>
           </thead>
         </table>
@@ -436,14 +436,14 @@
       }
       ,scrollY: 430
       ,select: true
-      ,order: [[1, 'asc']]
+      ,order: [[3, 'asc']]
       ,LengthMenu: [10, 25, 50, 100]
       ,columns: 
       [
           {"data": "id"},
           {"data": "title"},
           {"data": "ccodes"},
-          {"data": "fclasses"}
+          {"data": "collplace_set", "name": "seq"}
           {#{"data": "dataset.title"},#}
           {#{"data": "<dataset></dataset>l", "name":"dataset.label"},#}
       ]

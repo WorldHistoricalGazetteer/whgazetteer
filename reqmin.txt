@@ -43,7 +43,7 @@ django-templated-mail==1.1.1
 django-timezone-field==4.0
 django-tinymce==3.3.0
 django-webpack-loader==0.6.0
-djangorestframework==3.11.2
+djangorestframework==3.14.0
 djangorestframework-datatables==0.7.0
 djangorestframework-gis==0.15
 djangorestframework-simplejwt==4.8.0

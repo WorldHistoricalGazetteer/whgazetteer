@@ -319,7 +319,8 @@ class PlaceTableSerializer(serializers.ModelSerializer):
 
   # seq = serializers.SerializerMethodField('seq')
   # def seq(self, place):
-  #   return place.collplace_set.first().sequence
+  #   return place.collplace_set
+    # return self.collplace_set.first().sequence
 
   class Meta:
     model = Place
@@ -327,9 +328,9 @@ class PlaceTableSerializer(serializers.ModelSerializer):
                   'ccodes', 'geo', 'minmax',
                   'revwhg', 'revwd', 'revtgn',
                   'review_whg', 'review_wd', 'review_tgn'
-                  ,'ds', 'dataset', 'dataset_id', 'chk',
+                  ,'ds', 'dataset', 'dataset_id', 'chk', 'collplace_set'
                   )
-
+    # datatables_always_serialize = ('seq',)
 
 """ used by: api.views.GeoJSONViewSet() """
 class FeatureSerializer(GeoFeatureModelSerializer):
