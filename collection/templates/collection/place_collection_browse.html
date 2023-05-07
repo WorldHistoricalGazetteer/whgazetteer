@@ -120,7 +120,7 @@
               <th>pid</th>
               <th>title</th>
               <th>country</th>
-{#              <th>dataset</th>#}
+              <th>fclasses</th>
             </tr>
           </thead>
         </table>
@@ -443,6 +443,7 @@
           {"data": "id"},
           {"data": "title"},
           {"data": "ccodes"},
+          {"data": "fclasses"}
           {#{"data": "dataset.title"},#}
           {#{"data": "<dataset></dataset>l", "name":"dataset.label"},#}
       ]
@@ -891,8 +892,6 @@
       })
 		  let imgpath = trace.fields.image_file
 		  collimgpath = "{{ object.image_file.name }}"
-		  {#console.log('collimgpath', collimgpath)#}
-		  {#console.log('trace fields', trace.fields)#}
       blank = trace.fields.relation == null && trace.fields.note == null && trace.fields.start == null
       if (blank) {
         descrip += '<i>none yet</i>'

@@ -101,7 +101,7 @@ class Collection(models.Model):
 
   @property
   def places_thru(self):
-    seq_places = [{'p':cp.place,'seq':cp.sequence} for cp in CollPlace.objects.filter(collection=4).order_by('sequence')]
+    seq_places = [{'p':cp.place,'seq':cp.sequence} for cp in CollPlace.objects.filter(collection=self.id).order_by('sequence')]
     return seq_places
 
   @property

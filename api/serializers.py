@@ -317,13 +317,17 @@ class PlaceTableSerializer(serializers.ModelSerializer):
       val = '<i>deferred</i>'
     return val
 
+  # seq = serializers.SerializerMethodField('seq')
+  # def seq(self, place):
+  #   return place.collplace_set.first().sequence
+
   class Meta:
     model = Place
-    fields =  ('url','id', 'title', 'src_id',
+    fields =  ('url','id', 'title', 'src_id', 'fclasses',
                   'ccodes', 'geo', 'minmax',
                   'revwhg', 'revwd', 'revtgn',
                   'review_whg', 'review_wd', 'review_tgn'
-                  ,'ds', 'dataset', 'dataset_id', 'chk'
+                  ,'ds', 'dataset', 'dataset_id', 'chk',
                   )
 
 
