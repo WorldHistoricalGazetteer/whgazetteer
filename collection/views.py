@@ -1,5 +1,6 @@
 # collection.views (collections)
 import json
+from itertools import count
 
 from django import forms
 from django.apps import apps
@@ -12,16 +13,14 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.generic import (View, CreateView, UpdateView, DetailView, DeleteView, ListView )
 
-#from datasets.utils import hully
 from .forms import CollectionModelForm, CollectionGroupModelForm
 from .models import *
 from main.models import Log, Link
 from places.models import PlaceGeom
 from traces.forms import TraceAnnotationModelForm
 from traces.models import TraceAnnotation
-from itertools import chain
 
-"""sets collection to inactive, removing from lists """
+""" sets collection to inactive, removing from lists """
 def inactive(request, *args, **kwargs):
   print('inactive() request.POST', request.POST)
   coll = Collection.objects.get(id=request.POST['id'])
@@ -30,7 +29,7 @@ def inactive(request, *args, **kwargs):
   result = {"msg": "collection " + coll.title + '('+str(coll.id)+') flagged inactive'}
   return JsonResponse(result, safe=False)
 
-"""removes dataset from collection, refreshes page"""
+""" removes dataset from collection, refreshes page"""
 def remove_link(request, *args, **kwargs):
   #print('kwargs', kwargs)
   link = Link.objects.get(id=kwargs['id'])
@@ -40,7 +39,8 @@ def remove_link(request, *args, **kwargs):
   return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 """ 
-  create link associated with a collection.models.* instance 
+  create Link record
+  for a Collection, CollectionGroup, & ?? 
 """
 def create_link(request, *args, **kwargs):
   if request.method == 'POST':
@@ -99,8 +99,15 @@ def seq(coll):
   print(next)
   return next
 
-""" add list of >=1 places to collection """
+""" 
+  add list of >=1 places to collection 
+  i.e. new CollPlace and TraceAnnotation rows
+  ajax call from ds_places.html and place_portal.html
+"""
+# TODO: essentially same as add_dataset(); needs refactor
 def add_places(request, *args, **kwargs):
+  print('args', args)
+  print('kwargs', kwargs)
   if request.method == 'POST':
     user = request.user
     status, msg = ['','']
@@ -224,32 +231,46 @@ class ListDatasetView(View):
     }
     return JsonResponse(result, safe=False)
 
-"""adds dataset to collection, refreshes page"""
+"""
+  adds all places in a dataset as CollPlace records
+  i.e. new CollPlace and TraceAnnotation rows
+  url call from place_collection_build.html
+"""
+# TODO: essentially same as add_places(); needs refactor
 def add_dataset(request, *args, **kwargs):
+  print('method', request.method)
   print('add_dataset() kwargs', kwargs)
   coll = Collection.objects.get(id=kwargs['coll_id'])
   ds = Dataset.objects.get(id=kwargs['ds_id'])
+  user = request.user
   print('add_dataset(): coll, ds', coll, ds)
-  coll.datasets.add(ds)
-  # coll.datasets.remove(ds)
-  from collection.models import CollPlace
-  from itertools import count
-  # ds=Dataset.objects.get(id=5)
-  # get max sequence & increment
-  cps = CollPlace.objects.filter(collection=coll).values_list("sequence",flat=True)
-  maxseq = count(max(cps.values_list("sequence", flat=True)))
-  # def seq():
-  #   global maxseq
-  #   maxseq += 1
-  #   return maxseq
-  for p in ds.places.all():
-    if p.id not in cps:
+  status, msg = ['', '']
+  dupes = []
+  added = []
+  for place in ds.places.all():
+    gotplace = TraceAnnotation.objects.filter(collection=coll, place=place)
+    if not gotplace:
+      t = TraceAnnotation.objects.create(
+        place=place,
+        src_id=place.src_id,
+        collection=coll,
+        motivation='locating',
+        owner=user,
+        anno_type='place',
+        saved=0
+      )
+      # coll.places.add(p)
       CollPlace.objects.create(
         collection=coll,
-        place=p,
-        sequence=next(maxseq)
+        place=place,
+        sequence=seq(coll)
       )
-  return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+      added.append(place.id)
+    else:
+      dupes.append(place.title)
+    msg = {"added": added, "dupes": dupes}
+  return JsonResponse({'status': status, 'msg': msg}, safe=False)
+  # return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 """removes dataset from collection & clean up "omitted"; refreshes page """
 def remove_dataset(request, *args, **kwargs):

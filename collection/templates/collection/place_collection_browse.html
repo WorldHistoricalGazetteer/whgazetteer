@@ -892,11 +892,12 @@
 		//
 	  descrip += '<div class="red-head-anno">ANNOTATION</div>'
 	  if(JSON.parse(data.traces).length > 0) {
+      // there is *always* a trace, even if not saved
       trace = JSON.parse(data.traces).find(function (t) {
         return t.fields.collection == "{{ object.id }}"
       })
 		  let imgpath = trace.fields.image_file
-		  {#collimgpath = "{{ object.image_file.name }}"#}
+		  {#console.log('imgpath', imgpath)#}
       blank = trace.fields.relation == null && trace.fields.note == null && trace.fields.start == null
       if (blank) {
         descrip += '<i>none yet</i>'
@@ -924,14 +925,17 @@
             descrip += '<p><b><u>Start/End</u></b>: ' + (trace.fields.start ?? "") + '/' +
                 (trace.fields.end ?? '') + '</p>'
         }
-        if (imgpath !=""){
-			    // display annotation image if any
-		      $("#active_img").attr('src','/media/'+imgpath)
-        } else {
-          $("#active_img").attr('src','/media/'+collimgpath)
-        }
+      }
+      if (imgpath !=""){
+		    // display annotation image if any
+	      $("#active_img").attr('src','/media/'+imgpath)
+      } else {
+        // trace has no image
+        {#console.log('trace has no image')#}
+        $("#active_img").attr('src','/media/{{ object.image_file.name }}')
       }
     } else {
+      console.log('no trace for selected place')
       // restore collection image if others have been viewed
 		  $("#active_img").attr('src','/media/{{ object.image_file.name }}')
 		  {#$("#active_img").attr('src','/media/'+collimgpath)#}

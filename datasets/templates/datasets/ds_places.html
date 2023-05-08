@@ -176,6 +176,10 @@
     e.which(13)
 		$("#placetable_filter input").trigger(e)
 	}
+
+	// pids generate new CollPlace (collection_collplace) and
+	// TraceAnnotation records (trace_annotations
+	// same function in place_portal.html
 	function add_to_collection(coll, pids){
       console.log('add_to_collection()')
       var formData = new FormData()
@@ -336,7 +340,6 @@
   $(".table-chk").click(function(e){
     e.preventDefault()
     console.log('adding', $(this).data('id'))
-	  {#checked_rows.push($(this).data('id'))#}
 	  {#console.log('checked_rows',checked_rows)#}
   })
 

@@ -106,7 +106,7 @@ def readmore(txt, numchars):
 
 @register.filter
 def remove(str, tozap):
-    print('remove string', str, type(str))
+    # print('remove string', str, type(str))
     return str.replace(tozap, '')
 
 @register.filter

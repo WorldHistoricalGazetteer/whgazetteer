@@ -276,10 +276,10 @@
     $("#coll_title").html(title)
     $("#coll_popup_content").html('<p>'+descrip+'</p>')
 	}
-	{#$(".a_cdescription").click(function(){#}
-  {#  console.log('display description of ',$(this).data('id'))#}
-	{#	$("#coll_description").html().show()#}
-	{# })#}
+
+	// pids generate new CollPlace (collection_collplace) and
+	// TraceAnnotation records (trace_annotations
+	// same function in ds_places.html
 	function add_to_collection(coll, pids){
       var formData = new FormData()
 			formData.append('collection', coll)
