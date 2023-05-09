@@ -658,7 +658,7 @@
         'type': 'circle',
         'source': 'places',
         'paint': {
-          'circle-opacity': 0.8,
+          'circle-opacity': 0.5,
 	        'circle-color': [
 						'match',
 						['get', 'relation'],
@@ -667,8 +667,9 @@
 			        '#ccc'
 						],
           'circle-radius': {
-            stops: [[1, 3], [3, 5], [16, 10]]
-          }
+            stops: [[1, 5], [3, 8], [16, 10]]
+          },
+	        'circle-stroke-width': 1
          },
         'filter': ['==', '$type', 'Point']
       }, 'z-index-4');
@@ -735,29 +736,6 @@
       obj[layer_list[l]] = mappy.getLayer(layer_list[l]).getPaintProperty('circle-color')
     }
   }
-	// return markers to default
-	{#function unHighlightFeatures(){#}
-  {#    mappy.setPaintProperty('gl_active_point', 'circle-color', '#ff9900');#}
-  {#    mappy.setPaintProperty('gl_active_point', 'circle-radius', 6);#}
-  {#    mappy.setPaintProperty('gl_active_point', 'circle-stroke-width', 0);#}
-	{# }#}
-
-  {#function highlight(pid) {#}
-  {#  mappy.setPaintProperty(#}
-  {#    'gl_active_point', 'circle-radius',#}
-  {#      { 'property':'pid',#}
-  {#        'type':'categorical',#}
-  {#        'default': 6,#}
-  {#        'stops':[[Number(pid), 8]]}#}
-  {#  );#}
-	{##}
-  {#  mappy.setFeatureState({#}
-	{#		source: 'places',#}
-	{#		sourceLayer: 'gl_active_point',#}
-	{#		id: pid#}
-	{#	 })#}
-	{##}
-  {# }#}
 
   // hightlight selected in row
   function highlightFeatureGL(pid, geom, coords, src){
