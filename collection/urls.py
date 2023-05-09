@@ -42,7 +42,7 @@ urlpatterns = [
     path('update_sequence/', views.update_sequence, name='update-sequence'),
 
     path('add_places/', views.add_places, name="collection-add-places"),
-    path('remove_places/', views.remove_places, name="collection-remove-places"),
+    path('archive_traces/', views.archive_traces, name="collection-archive_traces"),
     path('create_link/', views.create_link, name="collection-create-link"),
     path('remove_link/<int:id>/', views.remove_link, name="remove-link"),
     path('submit/<int:cid>/<int:cgid>/', views.submit_collection, name="submit-collection"),

@@ -802,7 +802,8 @@ class PlaceTableCollViewSet(viewsets.ModelViewSet):
     from django.db.models import Min, Max
     coll = get_object_or_404(Collection, id=self.request.GET.get('id'))
 
-    qs = coll.places.annotate(seq=Min('collplace__sequence')).order_by('seq')
+    qs = coll.places.annotate(seq=Min('annos__sequence')).order_by('seq')
+    # qs = coll.places.annotate(seq=Min('collplace__sequence')).order_by('seq')
 
     if query is not None:
       qs = qs.filter(title__istartswith=query)

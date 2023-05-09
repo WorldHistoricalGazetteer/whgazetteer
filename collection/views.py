@@ -141,25 +141,25 @@ def add_places(request, *args, **kwargs):
       msg = {"added": added, "dupes": dupes}
     return JsonResponse({'status': status, 'msg': msg}, safe=False)
 
-""" remove list of >=1 places from collection """
-def remove_places(request, *args, **kwargs):
+""" 
+  deletes CollPlace record(s) and 
+  archives TraceAnnotation(s) for list of pids 
+"""
+def archive_traces(request, *args, **kwargs):
   if request.method == 'POST':
-    print('remove_places request', request.POST)
+    print('archive_traces request', request.POST)
     coll = Collection.objects.get(id=request.POST['collection'])
     place_list = [int(i) for i in request.POST['place_list'].split(',')]
     print('place_list to remove', place_list)
-    # remove from collections_places
+    # remove CollPlace, archive TraceAnnotation
     for pid in place_list:
       place = Place.objects.get(id=pid)
       if place in coll.places.all():
-        print('collection place', place)
+        # print('collection place', place)
         coll.places.remove(place)
-      elif place in coll.places_all:
-        print('pid to omitted:',place.id)
-        coll.omitted.append(place.id)
-        coll.save()
       if place.traces:
-        TraceAnnotation.objects.filter(collection=coll, place__in=place_list).delete()
+        # can be only one but .update only works on filter
+        TraceAnnotation.objects.filter(collection=coll,place=place).update(archived=True)
     return JsonResponse({'result': str(len(place_list))+' places removed, we think'}, safe=False)
 
 """ update sequence of annotated places """
@@ -445,11 +445,11 @@ class PlaceCollectionUpdateView(UpdateView):
 
     # test: send single anno form to template
     context['form_anno'] = form_anno
-    # context['coll_places'] = self.object.places_all
+    # TODO: refactor CollPlace and TraceAnnotation redundancy
     context['seq_places'] = [
-      {'id':cp.id,'p':cp.place,'seq':cp.sequence} for cp in CollPlace.objects.filter(collection=_id).order_by('sequence')
+      {'id':cp.id,'p':cp.place,'seq':cp.sequence}
+        for cp in CollPlace.objects.filter(collection=_id).order_by('sequence')
     ]
-
     context['created'] = self.object.created.strftime("%Y-%m-%d")
     context['mbtoken'] = settings.MAPBOX_TOKEN_WHG
     context['whgteam'] = User.objects.filter(groups__name='whg_team')
@@ -484,7 +484,7 @@ class PlaceCollectionBrowseView(DetailView):
     context['coll'] = coll
     context['ds_list'] = coll.ds_list
     context['ds_counter'] = coll.ds_counter
-    context['images'] = [ta.image_file.name for ta in coll.annotations.all()]
+    context['images'] = [ta.image_file.name for ta in coll.traces.all()]
     context['links'] = coll.related_links.all()
     context['places'] = coll.places.all().order_by('title')
     context['updates'] = {}

@@ -328,7 +328,8 @@ class PlaceTableSerializer(serializers.ModelSerializer):
                   'ccodes', 'geo', 'minmax',
                   'revwhg', 'revwd', 'revtgn',
                   'review_whg', 'review_wd', 'review_tgn'
-                  ,'ds', 'dataset', 'dataset_id', 'chk', 'collplace_set'
+                  ,'ds', 'dataset', 'dataset_id', 'chk',
+                  'annos'
                   )
     # datatables_always_serialize = ('seq',)
 

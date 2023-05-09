@@ -147,13 +147,11 @@ class Collection(models.Model):
     db_table = 'collections'
 
 class CollPlace(models.Model):
-  collection = models.ForeignKey(Collection, on_delete=models.CASCADE)
-  place = models.ForeignKey(Place, on_delete=models.CASCADE)
+  collection = models.ForeignKey(Collection, related_name='annos',
+                                 on_delete=models.CASCADE)
+  place = models.ForeignKey(Place, related_name='annos',
+                            on_delete=models.CASCADE)
   sequence = models.IntegerField()
-
-  # @property
-  # def maxid(self):
-  #   return
 
 class CollectionUser(models.Model):
   collection = models.ForeignKey(Collection, related_name='collabs',

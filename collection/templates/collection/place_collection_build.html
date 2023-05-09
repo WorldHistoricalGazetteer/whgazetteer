@@ -275,11 +275,11 @@
 						  <li class="nav-item" role="presentation">
 						    <button class="nav-link active" id="coll_placelist-tab" data-bs-toggle="tab" data-bs-target="#coll_placelist"
 						       role="tab" aria-controls="coll_placelist" aria-selected="true" data-id="pl">
-							    Places ({{ seq_places|length }})</button>
+							    Places ({{ seq_places|length }})
+						      <span class="small float-end ms-3"><a id="a_remove" href="#"></a></span>
+						    </button>
+
 						  </li>
-							<span class="small" style="position:absolute; right:1rem; top:1.5rem;">
-								<a id="a_remove" href="#"></a>
-							</span>
 						</ul>
 				    <div id="builder_content" class="tab-content">
 							<div id="coll_dslist" class="tab-pane fade" role="tabpanel" aria-labelledby="coll_dslist-tab">
@@ -325,9 +325,7 @@
 							</div>
 				      <div id="coll_placelist" class="tab-pane fade show active" role="tabpanel" aria-labelledby="coll_placelist-tab">
 						    {% if seq_places|length > 0 %}
-{#						    {% if coll_places|length > 0 %}#}
 						      {% for p in seq_places %}
-{#						      {% for p in coll_places %}#}
 						        <div class="col-place-card" id="{{ p.p.id }}" data-id="{{ p.p.id }}" data-idx="{{ p.seq }}">
 								      <p><b>{{ p.p.title }}</b> {{ p.p.ccodes }}
 									      <i>pid: (<a class="coll-place" data-pid={{ p.p.id }} href="#" >{{ p.p.id }}</a>)</i>
@@ -345,13 +343,14 @@
 										        <i class="fas fa-minus-square" style="color:#ff8080"></i></a>
 								        </span>
 								        {% endif %}
-									      {% if p.p.traces %}
+{#									      {% if p.saved %}#}
+									      {% if p.traces %}
 										      <br/>
-										      {% for t in p.p.traces %}
-											      {% if t.collection.id == object.id and t.saved %}
+{#										      {% for t in p.traces %}#}
+{#											      {% if t.collection.id == object.id and t.saved %}#}
 											        <i class="red-head">annotated</i>
-											      {% endif %}
-										      {% endfor %}
+{#											      {% endif %}#}
+{#										      {% endfor %}#}
 									      {% endif %}
 							        </p>
 							      </div>
@@ -362,9 +361,9 @@
 								    <ul>
 										  <li><sr>From a Place Portal page</sr>. Use the Search page to find the place you're looking for,
 		                      navigate to its "Portal Page" and choose <i>one</i> of the attestations found there.</li>
-										      <li><sr>From a public dataset's Browse page</sr>. Find a dataset of interest on the Public Datasets list,
-		                      select the "Browse" tab, then select any number of records. A popup form will offer a list of
-		                      your collections they can be added to.</li>
+										      <li><sr>From a public dataset's Browse page</sr>. Find a dataset of interest on the
+											      Public Datasets list, select the "Browse" tab, then select any number of records.
+											      A popup form will offer a list of your collections they can be added to.</li>
 										    <li><sr>From one or more of your own datasets.</sr>. You can add <b>all</b> of the places from
 		                        any of your own datasets. Further instructions are found on Datasets tab to the left of this one.</li>
 								    </ul>
@@ -411,7 +410,7 @@
 				      <h6>Annotations</h6>
 					    <div id="annotator" class="mb-1">
 						    {% if action == 'update' %}
-						    <p class="mt-3">Select a place record from list on the left to annotate it.</p>
+						    <h5 class="mt-3">Select a place record from list to annotate it.</h5>
 						    {% endif %}
 					    </div>
 				    </div> <!-- coll_right_anno -->
@@ -512,16 +511,16 @@
 	})
 	// fetch r/o place record to annotation panel
 
+	// remove places from collection (archive?)
 	function remove_from_collection(coll, pids) {
       var formData = new FormData()
       formData.append('collection', coll)
       formData.append('place_list', pids)
       formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
-      // collection.views.remove_places()
       $.ajax({
           type: 'POST',
           enctype: 'multipart/form-data',
-          url: '/collections/remove_places/',
+          url: '/collections/archive_traces/',
           processData: false,
           contentType: false,
           cache: false,
