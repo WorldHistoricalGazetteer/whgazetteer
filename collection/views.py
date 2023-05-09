@@ -192,25 +192,33 @@ def flash_collection_create(request, *args, **kwargs):
   return JsonResponse(result, safe=False)
 
 """ gl map needs this """
+# TODO: needs
 def fetch_geojson_coll(request, *args, **kwargs):
   # print('fetch_geojson_coll kwargs',kwargs)
   id_=kwargs['id']
   coll=get_object_or_404(Collection, id=id_)
   pids = [p.id for p in coll.places_all]
-  # pids = [p.id for p in coll.places.all()]
-
+  rel_keywords = coll.rel_keywords
   # build FeatureCollection
-  features=PlaceGeom.objects.filter(place_id__in=pids).values_list(
-    'jsonb','place_id','src_id','place__title','place__minmax',
-    'place__fclasses', 'place__dataset__id', 'place__dataset__label')
-  fcoll = {"type":"FeatureCollection","features":[]}
-  for f in features:
-    feat={"type":"Feature",
-          "properties":{"pid":f[1],"src_id":f[2],"title":f[3],"minmax":f[4],
-                        "fclasses":f[5], "dsid":f[6], "dslabel":f[7]
-                        },
-          "geometry":f[0]}
-    fcoll['features'].append(feat)
+  # alternate
+  features_t = [
+    {"type": "Feature", "geometry": t.place.geoms.all()[0].jsonb,
+     "properties":{"pid":t.place.id, "relation": t.relation[0]}}
+    for t in coll.traces.filter(archived=False)
+    # for t in coll.traces.all()
+  ]
+  # print(features_t[0])
+  # features=PlaceGeom.objects.filter(place_id__in=pids).values_list(
+  #   'jsonb','place_id','src_id','place__title','place__minmax',
+  #   'place__fclasses', 'place__dataset__id', 'place__dataset__label')
+  fcoll = {"type":"FeatureCollection","features":features_t,"relations":rel_keywords}
+  # fcoll = {"type":"FeatureCollection","features":[],"relations":rel_keywords}
+  # for f in features:
+  #   feat={"type":"Feature",
+  #         "properties":{"pid":f[1],"src_id":f[2],"title":f[3],"minmax":f[4],
+  #                       "fclasses":f[5], "dsid":f[6], "dslabel":f[7]},
+  #         "geometry":f[0]}
+  #   fcoll['features'].append(feat)
   return JsonResponse(fcoll, safe=False, json_dumps_params={'ensure_ascii':False,'indent':2})
 
 """ returns json for display """

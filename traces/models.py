@@ -29,7 +29,7 @@ class TraceAnnotation(models.Model):
                                    blank=True, null=True)
 
     # user-defined list of relations
-    relation = ArrayField(models.CharField(max_length=30), blank=True, null=True)
+    relation = ArrayField(models.CharField(max_length=30), default=[''], blank=True, null=True)
 
     start = models.CharField(max_length=11, blank=True, null=True) # ISO8601 date, incl. '-'
     end = models.CharField(max_length=11, blank=True, null=True) # ISO8601 date, incl. '-'
