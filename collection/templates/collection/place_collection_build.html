@@ -343,15 +343,12 @@
 										        <i class="fas fa-minus-square" style="color:#ff8080"></i></a>
 								        </span>
 								        {% endif %}
-{#									      {% if p.saved %}#}
-									      {% if p.traces %}
-										      <br/>
-{#										      {% for t in p.traces %}#}
-{#											      {% if t.collection.id == object.id and t.saved %}#}
-											        <i class="red-head">annotated</i>
-{#											      {% endif %}#}
-{#										      {% endfor %}#}
-									      {% endif %}
+								          {# TODO: CollPlace/TraceAnnotation redundancy issue #}
+										      {% for t in p.p.traces.all %}
+											      {% if t.collection.id == object.id and t.saved %}
+											        <i class="red-head ms-3">annotated</i>
+											      {% endif %}
+										      {% endfor %}
 							        </p>
 							      </div>
 							    {% endfor %}
