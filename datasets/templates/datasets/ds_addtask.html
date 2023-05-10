@@ -58,14 +58,13 @@
           <!-- if already indexed, running more tasks makes no sense -->
           {% if ds.unindexed == 0 and not user.is_superuser %}
             <div>
-              <p class="mt-3 text-danger">This dataset is completely indexed. Further reconciliation not permitted.</p>
+              <p class="mt-3 text-danger">This dataset is completely indexed. Further reconciliation tasks not permitted.</p>
             </div>
           {% else %}
             <input type="hidden" name="ds" value="{{ ds.id }}">
             <input type="hidden" name="wd_lang" value="">
-
 	          {# whg accession and test options if superuser or editor #}
-            {% if user.is_superuser or user.username == 'als512' %}
+            {% if editorial %}
               <div class="form-check mt-2">
                 <label class="form-check-label text-danger" for="r_idx">
                   <input type="radio" class="form-check-input" id="r_idx"

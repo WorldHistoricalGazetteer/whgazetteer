@@ -39,9 +39,10 @@
         <div class="sharing-header mb-0 pl-2 strong">Collaborators</div>
         <div class="smallish pl-2 mb-2">
           <p class="mb-2">Collaborators are registered WHG users, assigned per dataset.</p>
-          <p><sr>Members</sr> can view its contents and metadata, and perform review of reconciliation task results. <sr>Co-owners</sr> can perform all actions.</p>
+          <p><sr>Members</sr> can view its contents and metadata, and perform review of reconciliation task results.
+	          <sr>Co-owners</sr> can perform all actions.</p>
         </div>
-        {% if user.is_superuser or user in owners %}
+        {% if user.is_superuser or user in owners or editorial %}
           <div class="ml-2 my-2">
             <div class="form-check form-check-inline sharing-input">
               <span class="input-group"> 

@@ -42,34 +42,39 @@
             {% fontawesome_icon 'question-circle' color='#993333' %}
           </span>
           {% comment %}who can add a task{% endcomment %}
-          {% if user.is_superuser or user in ds.owners %}
+          {% if user.is_superuser or user in ds.owners or editorial %}
             <span class="ml-4 small">
             <a id="addtask_link" href="{% url 'datasets:ds_addtask' id=ds.id %}">Add new task {% fontawesome_icon 'plus-square' color='#336699' %}</a>
             </span>
           {% endif %}
         </h6>
         {% if not messages and tasks|length < 1 %}
-	        <p>Linking in WHG is the activity of matching records from one dataset with "close matches" in another, in a method called <sr>reconciliation</sr> or <sr>alignment</sr>. It can also accomplish geocoding of place names for many records that are missing location. Reconciliation tasks can be performed against our local <sr>Wikidata</sr> index. Fully accessioning data to WHG involves the further step of reconciling against our "union index."</p>
+	        <p>Linking in WHG is the activity of matching records from one dataset with "close matches" in another,
+		        in a method called <sr>reconciliation</sr> or <sr>alignment</sr>. It can also accomplish geocoding of
+		        place names for many records that are missing location. Reconciliation tasks can be performed against our
+		        local <sr>Wikidata</sr> index. Fully accessioning data to WHG involves the further step of reconciling
+		        against our "union index."</p>
         {% endif %}
         {% if user in ds.owners or user in ds.collaborators or user.is_superuser %}
 	        {% if ds.ds_status == 'indexed' %}
-		        <div id="ready" class="hidden pl-2">
-	            <p class="my-0">This dataset has been fully indexed</p>
-		        </div>
+	        <div id="ready" class="hidden pl-2">
+            <p class="my-0">This dataset has been fully indexed</p>
+	        </div>
 	        {% endif %}
 	        <!-- if already reconciled, notify need for new task -->
 	        {% if ds.ds_status == 'updated' and ds.recon_status %}
-		        <p class="larger my-0 py-0 strong-red">This dataset has been updated, so a new reconciliation to Wikidata task should be run.
-			        Only new and/or modified rows will be submitted.</p>
+	        <p class="larger my-0 py-0 strong-red">This dataset has been updated, so a new reconciliation to Wikidata task should be run.
+		        Only new and/or modified rows will be submitted.</p>
 	        {% endif %}
 	        {% if not ds.ds_status == 'accessioning' %}
-	          <div id="ready" class="hidden pl-2">
-	            <p class="my-0">All potential matches to <span id="authtag"></span> have been reviewed,
-		            so the dataset may be ready for accessioning to the WHG index.</p>
-	            <p class="my-0">If you would like to proceed, please <a class="btn btn-success btn-sm text-light py-0" href="{% url 'contact' %}">contact our editorial team.</a></p>
-	          </div>
+          <div id="ready" class="hidden pl-2">
+            <p class="my-0">All potential matches to <span id="authtag"></span> have been reviewed,
+	            so the dataset may be ready for accessioning to the WHG index.</p>
+            <p class="my-0">If you would like to proceed, please
+	            <a class="btn btn-success btn-sm text-light py-0" href="{% url 'contact' %}">
+		            contact our editorial team.</a></p>
+          </div>
 	        {% endif %}
-
           {% if tasks|length < 1 %}<i id="none_yet">None yet...</i>{% endif %}
           {% if messages %}<div>
             {% for message in messages %}
@@ -79,21 +84,25 @@
             {% endfor %}</div>
           {% endif %}        
           {% for t in tasks %}
-            {% if t.status == 'SUCCESS' %}
-              <div class="{% if t.task_kwargs|parsejson:"test" == 'on' %}task-box-test{% else %}task-box{% endif %} mb-2 ">
-{#              <div class="task-box mb-2 {{t.task_name}}">#}
+	          <!-- task-box -->
+	          {% with test=t.task_kwargs|parsejson:"test" %}
+	          <div class="{% if test == 'on' %}task-box-test{% else %}task-box{% endif %} mb-2 ">
                 <div class="row ">
                   <div class="col-sm-4">
                     <p><b>Task</b>: {{ t.task_name }} <span class="small">
                       ({{ t.date_done|date:"d-M-Y, H:i (e)" }}; elapsed: {{ t.result|get:"elapsed"|safe }})</span>
                     </p>
                     <p><b>ID</b>: {{ t.task_id }}</p>
-	                  {% if t.task_name != 'align_idx' and user in ds.owners or user.is_superuser %}
+	                  {% if t.task_name != 'align_idx' and user in ds.owners or user.is_superuser or test == 'on'%}
                       <p id="{{ t.task_name }}">
-                      <a class="confirm-del-all" data-id={{t.task_id}} href="{% url 'datasets:task-delete' tid=t.task_id scope='task' %}">Delete task & hits, clear matches {% fontawesome_icon 'trash' color='#ff0000' %}
-                      </a><br/>
-                      <a class="confirm-del-geoms" href="{% url 'datasets:task-delete' tid=t.task_id scope='geoms'%}">
-                        Delete geometries added so far</a>
+	                      <a class="confirm-del-all" data-id={{t.task_id}} data-test={{ test }}
+			                      href="{% url 'datasets:task-delete' tid=t.task_id scope='task' %}">
+		                        Delete task & hits, clear matches {% fontawesome_icon 'trash' color='#ff0000' %}
+	                      </a><br/>
+	                      {% if test != 'on' %}
+	                      <a class="confirm-del-geoms" href="{% url 'datasets:task-delete' tid=t.task_id scope='geoms'%}">
+	                        Delete geometries added so far</a>
+	                      {% endif %}
 	                    </p>
 	                  {% endif %}
                   </div>
@@ -121,7 +130,6 @@
                     <span id="spinner"></span>
                     <ul>
                       {% if t.result|get:"pass0" > 0 and t.task_name != "align_idx" and user in ds.owners%}
-{#                      {% if t.result|get:"pass0" > 0 and t.task_name != "align_idx" and user in ds.owners or user.is_superuser %}#}
                         <li id="pass0_{{t.task_id}}" class="li-left">Pass 0 (matched links):
                         <span class="mx-2 strong" id='{{t.task_id}}_0'>nn</span> 
                             <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass0' %}">review</a>
@@ -178,8 +186,8 @@
                     {% endwith %}
                   </div>
                 </div> <!-- row -->
-              </div> <!-- task-box -->
-            {% endif %}
+              </div>
+	          {% endwith %}
           {% endfor %}
         {% endif %}
       </div> <!-- #ds_tasks -->
@@ -243,7 +251,7 @@
           tid = updates[u][0]
           counts = updates[u][1]
           task = updates[u][1]['task']
-          console.log('updateTotals() counts', task, counts)
+          {#console.log('updateTotals() counts', task, counts)#}
           ds_status = "{{ ds.ds_status }}"
           // if all are reviewed, disable radio button
           if(counts['total'] == 0 ){
@@ -298,12 +306,20 @@
       spinner_counts.stop()
     })
   }  
+
   $(".confirm-del-geoms").click(function(){
     return confirm('DANGER! Deletes all place_geom records created so far in Review step');
   })
   $(".confirm-del-all").click(function(){
     id=$(this).data('id')
-    return confirm('DANGER! Destroys task, its hits, and clears matches confirmed in Review step...'+id);
+    test=$(this).data('test')
+	  console.log('id, test', id, test)
+	  if (test == 'off') {
+			msg= 'DANGER! Destroys task, its hits, and clears matches confirmed in Review step...'+id
+	  } else {
+		  msg= 'DANGER! Destroys this test task and all record of its results\n\n'+id
+	  }
+    return confirm(msg);
   })
 </script>
 {% endblock %}
