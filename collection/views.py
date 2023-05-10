@@ -1,5 +1,6 @@
 # collection.views (collections)
-import json
+import json, validators
+from validators import ValidationFailure
 from itertools import count
 
 from django import forms
@@ -38,56 +39,27 @@ def remove_link(request, *args, **kwargs):
   link.delete()
   return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
-""" 
-  create Link record
-  for a Collection, CollectionGroup, & ?? 
 """
-def create_link(request, *args, **kwargs):
-  if request.method == 'POST':
-    print('create_link() request', request.POST)
-    uri = request.POST['uri']
-    label = request.POST['label']
-    link_type = request.POST['link_type']
-    objectid = request.POST['objectid']
-    model = request.POST['model'] # Collection, CollectionGroup
-    Model = apps.get_model(f"collection.{model}")
-    LinkModel = apps.get_model(f"collection.{model+'Link'}") # CollectionLink, CollectionGroupLink
-    # object getting a link
-    try:
-      obj = Model.objects.get(id=objectid)
-    except:
-      print('obj create failed', sys.exc_info())
-    # is it a duplicate?
-    dupe = obj.links.filter(uri=uri)
-    fk = 'collection_group' if model == 'CollectionGroup' else model.lower
-    if not dupe:
-      try:
-        link=Link.objects.create(
-          **{fk:obj},
-          uri = uri,
-          label = label,
-          link_type = link_type
-        )
-        result = {'status': 'ok', 'uri': link.uri, 'label': link.label,
-                  'link_type':link.link_type,
-                  'link_icon':link.get_link_type_display()}
-      except:
-        result = {'status': "Link *not* created...why?"}
-    else:
-      result = 'dupe'
-    return JsonResponse(result, safe=False)
+  add or remove collection to/from collection group; flagged submitted
+"""
+def group_connect(request, *args, **kwargs):
+  action = request.POST['action']
+  coll = Collection.objects.get(id=request.POST['coll'])
+  cg = CollectionGroup.objects.get(id=request.POST['group'])
+  if action == 'submit':
+    cg.collections.add(coll)
+    coll.submitted = True
+    coll.save()
+    status = 'added to'
+  else:
+    cg.collections.remove(coll)
+    coll.submitted = False
+    coll.save()
+    status = 'removed from'
 
-"""
-  group member submits collection to group for review
-"""
-def submit_collection(request, *args, **kwargs):
-  # add to collection group, and submit it
-  coll = Collection.objects.get(id=kwargs['cid'])
-  cg = CollectionGroup.objects.get(id=kwargs['cgid'])
-  cg.collections.add(coll)
-  coll.submitted = True
-  coll.save()
-  return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+  return JsonResponse({'status': status, 'coll': coll.title, 'group': cg.title}, safe=False,
+                      json_dumps_params={'ensure_ascii': False, 'indent': 2})
+
 
 """ utility: get next sequence for a collection """
 def seq(coll):
@@ -168,7 +140,7 @@ def update_sequence(request, *args, **kwargs):
   new_sequence = json.loads(request.POST['seq'])
   # print('new_sequence', new_sequence)
   cid = request.POST['coll_id']
-  for cp in CollPlace.objects.filter(collection=4):
+  for cp in CollPlace.objects.filter(collection=cid):
     cp.sequence = new_sequence[str(cp.place_id)]
     cp.save()
   return JsonResponse({"msg": "updated?", "POST": new_sequence})
@@ -288,8 +260,9 @@ def remove_dataset(request, *args, **kwargs):
   ds = Dataset.objects.get(id=kwargs['ds_id'])
   print('remove_dataset(): coll, ds', coll, ds)
   # remove any "omitted" from ds being removed
-  remove_these = list(set(list(ds.placeids)) & set(coll.omitted) )
-  coll.omitted = list(set(coll.omitted)-set(remove_these))
+  remove_these = list(set(list(ds.placeids)))
+  # remove_these = list(set(list(ds.placeids)) & set(coll.omitted) )
+  # coll.omitted = list(set(coll.omitted)-set(remove_these))
   coll.save()
   coll.datasets.remove(ds)
   # remove trace annos for all places from deleted dataset
@@ -401,43 +374,50 @@ class PlaceCollectionCreateView(LoginRequiredMixin, CreateView):
     return reverse('collection:place-collection-update', kwargs = {'id':self.object.id})
 
 """ update place collection; uses place_collection_build.html """
-class PlaceCollectionUpdateView(UpdateView):
+class PlaceCollectionUpdateView(LoginRequiredMixin, UpdateView):
   form_class = CollectionModelForm
   template_name = 'collection/place_collection_build.html'
+  queryset = Collection.objects.all()
+
+  def get_form_kwargs(self, **kwargs):
+    kwargs = super(PlaceCollectionUpdateView, self).get_form_kwargs()
+    return kwargs
 
   def get_object(self):
+    print('PlaceCollectionUpdateView() kwargs', self.kwargs)
+    print('POST', self.request.POST)
     id_ = self.kwargs.get("id")
     return get_object_or_404(Collection, id=id_)
 
+  def form_invalid(self, form):
+    print('form invalid...', form.errors.as_data())
+    context = {'form': form}
+    return self.render_to_response(context=context)
+
   def form_valid(self, form):
+    data = form.cleaned_data
+    print('cleaned_data', data)
     print('referrer', self.request.META.get('HTTP_REFERER'))
-    print('update kwargs', self.kwargs)
     id_ = self.kwargs.get("id")
-    if form.is_valid():
-      print('cleaned_data', form.cleaned_data)
-      obj = form.save(commit=False)
-      obj.save()
-      Log.objects.create(
-        # category, logtype, "timestamp", subtype, note, dataset_id, user_id
-        category = 'collection',
-        logtype = 'update',
-        note = 'collection id: '+ str(obj.id) + ' by '+ self.request.user.name,
-        user_id = self.request.user.id
-      )
-    else:
-      print('form not valid', form.errors)
+    obj = form.save(commit=False)
+    obj.save()
+    Log.objects.create(
+      # category, logtype, "timestamp", subtype, note, dataset_id, user_id
+      category = 'collection',
+      logtype = 'update',
+      note = 'collection id: '+ str(obj.id) + ' by '+ self.request.user.name,
+      user_id = self.request.user.id
+    )
+    # return to page, or to browse
     if 'update' in self.request.POST:
       return redirect('/collections/' + str(id_) + '/update_pl')
     else:
       return redirect('/collections/' + str(id_) + '/browse_pl')
-    # return super().form_valid(form)
 
   def get_context_data(self, *args, **kwargs):
     context = super(PlaceCollectionUpdateView, self).get_context_data(*args, **kwargs)
     user = self.request.user
     _id = self.kwargs.get("id")
-    print('PlaceCollectionUpdateView() kwargs', self.kwargs)
-
     datasets = self.object.datasets.all()
 
     form_anno = TraceAnnotationModelForm(self.request.GET or None, auto_id="anno_%s")

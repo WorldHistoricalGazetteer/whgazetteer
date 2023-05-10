@@ -22,7 +22,8 @@ class Link(models.Model):
     place = models.ForeignKey(Place, default=None,
         on_delete=models.CASCADE, related_name='related_links', blank=True, null=True)
 
-    uri = models.TextField(validators=[URLValidator()])
+    uri=models.URLField(max_length=200)
+    # uri = models.TextField(validators=[URLValidator()])
     label = models.CharField(null=True, blank=True, max_length=200)
     link_type = models.CharField(default='webpage', max_length=10, choices=LINKTYPES)
     license = models.CharField(null=True, blank=True, max_length=64)

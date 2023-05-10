@@ -1,10 +1,10 @@
-  allauth-out
-  collfixes
-* collgroups
-  customuser
-  dj4
-  eswoe
+  collgroups
+* dj4
+  groups
   limiter
 + main
-  startend
+  markers
+  rm
+  seq
+  seq2
   wikitypes

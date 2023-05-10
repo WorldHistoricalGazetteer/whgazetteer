@@ -17,28 +17,33 @@ from .forms import CommentModalForm, ContactForm
 from elasticsearch7 import Elasticsearch
 es = settings.ES_CONN
 from random import shuffle
+from urllib.parse import urlparse
 # import requests
 
 def custom_error_view(request, exception=None):
     print('error request', request.GET.__dict__)
     return render(request, "main/500.html", {'error':'fubar'})
 
+def is_url(url):
+  try:
+    result = urlparse(url)
+    return all([result.scheme, result.netloc])
+  except ValueError:
+    return False
 """ 
   create link associated with instance of various models, so far:
   Collection, CollectionGroup, TraceAnnotation, Place 
 """
-# formData.append('model', 'Collection')
-# formData.append('objectid', '{{ object.id }}')
-# formData.append('uri', $("#l_uri").val())
-# formData.append('label',$("#l_label").val() )
-# formData.append('link_type',$("#l_linktype").val() )
-# formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
 def create_link(request, *args, **kwargs):
   if request.method == 'POST':
     print('main.create_link() request', request.POST)
     model = request.POST['model']
     objectid = request.POST['objectid']
+
     uri = request.POST['uri']
+    if not is_url(uri):
+      return JsonResponse({'status': 'failed', 'result': 'bad uri'}, safe=False)
+
     label = request.POST['label']
     link_type = request.POST['link_type']
     license = request.POST['license']

@@ -98,80 +98,84 @@
 	    {% else %}
 		    Place Collection Builder: {<span class="red-head">new</span>}
 	    {% endif %}
+	    action: {{ action }}
 	  </h5>
 	  <ul class="nav nav-tabs" id="" role="tablist">
 		  {# create form #}
 		  <li class="nav-item" role="presentation">
 		    <button class="nav-link active" id="form-tab" data-bs-toggle="tab" data-bs-target="#coll_form"
-          type="button" role="tab" aria-controls="coll_form" aria-selected="true">Create/Edit Form</button>
+          type="button" role="tab" aria-controls="coll_form" aria-selected="true">
+			    {% if action == 'create' %}Create{% else %}Edit{% endif %} Collection</button>
 		  </li>
 		  {# add & annotate #}
+		  {% if action == "update" %}
 		  <li class="nav-item" role="presentation">
 		    <button class="nav-link" id="build-tab" data-bs-toggle="tab" data-bs-target="#coll_builder"
           type="button" role="tab" aria-controls="coll_builder" aria-selected="false">Add and annotate places</button>
 		  </li>
+		  {% endif %}
 		</ul>
 	  <div class="tab-content" id="content">
 	    <div id="coll_form" class="tab-pane fade show active h-100">
-	      <div class="row">
-	        {# form #}
+		    <form id="collection_form" method="POST" enctype="multipart/form-data">
+		    {% csrf_token %}
+        <div class="row">
+          {# initial form #}
 		      <div class="col-sm-5">
-			      <form id="collection_form" method="POST" action="#" enctype="multipart/form-data">
-		        {% csrf_token %}
-			      {% if action == 'create' %}
-			        <input type="hidden" name="owner" value='{{ user.id }}' />
-			      {% else %}
-				      <input type="hidden" name="owner" value='{{ form.owner.value }}' />
-			      {% endif %}
-			      <input type="hidden" name="collection_class" value='place' />
-						<div class="form-group">
-							<label for="Title">Title &#x02733;</label><br/>{{ form.title }}
-						</div>
-						<div class="form-group">
-							<label for="Description">Description &#x02733;</label><br/>{{ form.description }}
-						</div>
-						<div class="form-group">
-							<label for="Collection keywords">Collection keywords &#x02733;</label><br/>{{ form.keywords }}
-						</div>
-						<div class="form-group">
-							<label for="Annotation keywords">Annotation keywords</label><br/>{{ form.rel_keywords }}
-						</div>
-			      <div id="d_buttons" class="" style="">
-		          <span class="">
-				      <a href="/mycollections">Cancel</a>
-		          {% if action == 'create' %}
-			          <input id="btn_coll_save" class="btn-sm btn-primary mt-2 ms-2" type="submit" value="Save" />
-		          {% else %}
-			          <input id="btn_coll_save" name="display" class="btn-sm btn-primary mt-2 ms-2"
-			                 type="submit" value="Save & View" />
-			          <input id="btn_coll_update" name="update" class="btn-sm btn-info mt-2 ms-2"
-			                 type="submit" value="Update in place" />
-		          {% endif %}
-		          </span>
-			      </div>
-						<p class="my-0 small">&#x02733;<i><b> required</b></i>
-			        {% if action == 'update' and user in whgteam %}
-				        <span><a class="float-end show-hide" href="#">
-					        editor options <i class="fas fa-cog linky"></i>
-				        </a></span>
-			        {% endif %}
-						</p>
-			      <div id="editor_options" class="hidden">
-				      <p>Status: {{ form.status }}</p>
-							<p>Featured rank: {{ form.featured }}</p>
-							{% comment %}<p>Featured rank: {{ form.featured }}</p>{% endcomment %}
-			      </div>
-			      <div id="select_div" class="hidden">{{ form.datasets }}</div>
-			      <div id="collection_options"></div>
-			      {% if mygroups|length > 0 %}
-				      <hr/>
-			        <p>For a group/class? {{ form.group }}
-								<a id="btn_coll_submit" class="btn btn-primary btn-sm"
-								   href="/collections/submit/{{ object.id }}/5" role="button">Submit</a>
-							</p>
-						{% endif %}
-			      </form> {# collection_form #}
+		      {% if action == 'create' %}
+		        <input type="hidden" name="owner" value='{{ user.id }}' />
+		      {% else %}
+			      <input type="hidden" name="owner" value='{{ form.owner.value }}' />
+		      {% endif %}
+		      <input type="hidden" name="collection_class" value='place' />
+					<div class="form-group">
+						<label for="Title">Title &#x02733;</label><br/>{{ form.title }}
+					</div>
+					<div class="form-group">
+						<label for="Description">Description &#x02733;</label><br/>{{ form.description }}
+					</div>
+					<div class="form-group">
+						<label for="Collection keywords">Collection keywords &#x02733;</label><br/>{{ form.keywords }}
+					</div>
+					<div class="form-group">
+						<label for="Annotation keywords">Annotation keywords</label><br/>{{ form.rel_keywords }}
+					</div>
+		      <div id="d_buttons" class="" style="">
+	          <span class="">
+	          {% if action == 'create' %}
+			        <a href="/mycollections">Cancel</a>
+		          <input id="btn_coll_save" class="btn-sm btn-primary mt-2 ms-2" type="submit" value="Save" />
+	          {% else %}
+		          <input id="btn_coll_save" name="display" class="btn-sm btn-primary mt-2 ms-2"
+		                 type="submit" value="Save & View" />
+		          <input id="btn_coll_update" name="update" class="btn-sm btn-info mt-2 ms-2"
+		                 type="submit" value="Update in place" />
+	          {% endif %}
+	          </span>
 		      </div>
+					<p class="my-0 small">&#x02733;<i><b> required</b></i>
+		        {% if action == 'update' and user in whgteam %}
+			        <span><a class="float-end show-hide" href="#">
+				        editor options <i class="fas fa-cog linky"></i>
+			        </a></span>
+		        {% endif %}
+					</p>
+		      <div id="editor_options" class="hidden">
+			      <p>Status: {{ form.status }}</p>
+						<p>Featured rank: {{ form.featured }}</p>
+						{% comment %}<p>Featured rank: {{ form.featured }}</p>{% endcomment %}
+		      </div>
+		      <div id="select_div" class="hidden">{{ form.datasets }}</div>
+		      <div id="collection_options"></div>
+		      {% if mygroups|length > 0 %}
+			      <hr/>
+		        <p>For a group/class? {{ form.group }}
+							<a id="btn_coll_submit" class="btn btn-primary btn-sm"
+							   href="/collections/submit/{{ object.id }}/" role="button">Submit</a>
+						</p>
+					{% endif %}
+	      </div>
+          {# more collection properties #}
 		      <div class="col-sm-7">
 		      {% if action == 'update' %}
 			      <div class="form-group mb-2">
@@ -191,21 +195,23 @@
 						</div>
 			      <div class="form-group mt-3">
 							<label for="File">Collection essay <i class="small">(PDF format)</i></label><br/>
-							{% if action == 'create' %} {# create, no file yet
+							{% if action == 'create' %} {# create, no file yet #}
 								<span id="file_chooser_create">{{ form.file }}</span>
 							{% elif form.file.value %} {# update & there's a file #}
 								<i class="far fa-file-pdf linky"></i>
 								<a href="/media/{{ form.file.value }}">{{ object.file.url|remove:'/media/collections/' }}</a>
-								(<a href="javascript:$('#file_chooser').toggle()">change</a>)
-							{% else %} {# update and there's no image yet
+								(<a href="javascript:showChooser('file')">change</a>)
+	{#								(<a href="javascript:$('#file_chooser').toggle()">change</a>)#}
+							{% else %} {# update and there's no image yet #}
 								<span id="file_chooser_update" >{{ form.file }}</span>
 							{% endif %}
 			        <span id="file_chooser" class="hidden">{{ form.file }}</span>
 						</div>
+			      {# add link form #}
 						<div class="mt-3">Links
 							{% if links|length < 3 %}
 								<a href="#" id="a_linkpopup"><button type="button" style="border-width: thin;">Add</button></a>
-							{% endif %} <i class="small">(3 maximum)</i><br/>
+							{% endif %} <i class="small link-counter">(3 maximum)</i><br/>
 							<span id="linklist">
 							{% if links|length > 0 %}
 								{% for l in links %}
@@ -215,11 +221,6 @@
 							{% endif %}
 							</span>
 						</div>
-
-		      {% endif %} {# action == 'update' #}
-		      {% if action == "update" %}
-			      {# separate form for links #}
-		      {% endif %}
 			      <div id="d_public" class="mt-5">
 							{% if form.public.value == True %}
 								Public: {{ form.public }}
@@ -228,8 +229,43 @@
 									<i class="fas fa-question-circle linky"></i> making a collection public </span></a>
 							{% endif %}
 						</div>
+		      {% else %}
+				    <h5 style="display:block;">Welcome</h5>
+					  <p>To create a new Place Collection, first fill out the required fields in the form on the left.
+						  and press <b>Save</b>. All information can be edited afterwards, and you can begin adding and
+						  annotating places. The collection itself can include primary image, an essay file and
+						  links to related material.</p>
+			      <p><mark-b>Collection keywords</mark-b> are terms describing the collection.</p>
+					  <p><mark-b>Annotation keywords</mark-b> are terms that will be your own vocabulary for relations between a given
+	              place and the collection theme or topic. For example, relevant annotation keywords for a collection
+	              about a journey might include "waypoint" and "extended stay." For lives of individuals, "birthplace"
+	              and "resided" might be appropriate. The choice is yours.</p>
+		      {% endif %}
 		      </div> {# col-sm-7 #}
-	      </div> {# row #}
+        </div> {# row #}
+		    </form>
+		    <div id="linkform_popup" class="pop">
+		        <form action="#" method="post">
+		        {% csrf_token %}
+			        {{ links_form }}
+		        <input type="hidden" name="collection" value="{{ object.id }}">
+		        <div class="closer" style="position:absolute; top:7px; right:7px;">X</div>
+		        <table class="mb-2">
+			        <tr><td>URI*: </td><td><input id="l_uri" name="uri" value="{{ links_form.uri }}" /></td></tr>
+			        <tr><td>Label*: </td><td><input id="l_label" name="label" value="{{ links_form.label }}" /></td></tr>
+			        <tr><td>Type*: </td>
+				          <td>
+						        <select id="select_linktype" name="link_type">
+						          <option value="webpage">Web page</option>
+						          <option value="document">Document</option>
+						          <option value="image">Image</option>
+					          </select>
+			            </td>
+			        </tr>
+		        </table>
+		        <button id="b_createlink" type="button">Save</button>
+	          </form>
+		    </div>
 	    </div> {# coll_form #}
 
 	    <div id="coll_builder" class="tab-pane fade h-100" style="height: auto; position:relative;">
@@ -344,14 +380,7 @@
 								    </ul>
 							    {% endif %}
 							    {% if action == 'create' %}
-								    <h5 style="display:block;">Welcome</h5>
-									  <p>To create a new Place Collection, first fill out the required fields in the form on the left.
-		                      and press <b>Save</b>. All information can be edited afterwards.</p>
-								    <p>Afterwards you can begin adding places, and add an image, a file and up to three links.</p>
-									  <p>"Annotation keywords" are terms that will be your own vocabulary for relations between a given
-		                    place and the collection theme or topic. For example, relevant annotation keywords for a collection
-		                    about a journey might include "waypoint" and "extended stay." For lives of individuals, "birthplace"
-		                    and "resided" might be appropriate. The choice is yours.</p>
+
 					        {% endif %}
 						    {% endif %}
 			        </div>
@@ -405,9 +434,7 @@
     elem = "#"+type+"_chooser"
     $(elem).toggle()
 	}
-	$("#btn_coll_submit").click(function(){
-    submitCollection('{{ object.id }}')
-	})
+
 	$("#build-tab").click(function(e){
 		e.preventDefault()
 		if($("#coll_placelist div").length >0){
@@ -416,10 +443,45 @@
 		console.log('build tab', $("#coll_placelist div:first-child").data("id"))
 	})
 
-	function submitCollection(){
-    console.log('submitting collection {{ object.id }} to group '+ $("#id_group").val())
+	$("#btn_coll_submit").click(function(e){
+    e.preventDefault()
+    group_connect('submit')
+	})
+	$("#btn_coll_unsubmit").click(function(e){
+    e.preventDefault()
+    group_connect('unsubmit')
+	})
 
+	// flag collection as submitted, shows up on leader's list
+	function group_connect(action){
+    console.log('submitting collection {{ object.id }} to group '+ $("#id_group").val())
+    var formData = new FormData()
+		formData.append('action', action)
+		formData.append('coll', '{{ object.id }}')
+		formData.append('group', $("#id_group").val())
+		formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+		$.ajax({
+	      type: 'POST',
+	      enctype: 'multipart/form-data',
+	      url: '{% url "collection:group-connect" %}',
+	      processData: false,
+	      contentType: false,
+	      cache: false,
+	      data: formData,
+	      success:function(response){
+		      if(response.status == 'ok'){
+            console.log(response)
+		      } else {
+						console.log(response)
+		      }
+	      }
+			})
+			// turn submit into unsubmit
+			// display 'Submitted to ' +result['group']+ ' '+{date}
+			{#$("#").val('')#}
+			{#$("#").hide()#}
 	}
+
 	function goBrowse(){
     window.location = '/collections/{{ object.id }}/browse_pl'
 	}
@@ -442,8 +504,6 @@
 		      type: 'POST',
 		      enctype: 'multipart/form-data',
 		      url: '{% url "create-link" %}',
-		      {#url: '/main/create_link/',#}
-		      {#url: '/collections/create_link/',#}
 		      processData: false,
 		      contentType: false,
 		      cache: false,
@@ -451,15 +511,17 @@
 		      success:function(response){
 			      if(response.result == 'dupe'){
               alert('That url is already linked to this collection!')
-				      {#$("input.action").prop('checked',false)#}
+			      } else if (response.result == 'bad uri'){
+              alert('That url is not formed correctly!')
 			      } else {
-							// TODO: list in gui
 				      linky = response.result
 				      console.log(linky)
-				      $("#linklist").append(linky.link_icon+'<a href="'+linky.uri+
-						      '" target="_blank">'+linky.label+'</a> ('+
-						      ' <i class="fas fa-minus-square linky"></i> ); ')
+				      $("#linklist").append(linky.link_icon+' <a href="'+linky.uri+
+						      '" target="_blank">'+linky.label+'</a>')
 				      $("#added_flash").fadeIn().delay(2000).fadeOut()
+				      if($("#linklist svg").length >=2 ){
+								$(".link-counter").html("(that's 3!)")
+				      }
 				      {#console.log('added! gimmee feedback', response.result)#}
 			      }
 		      }

@@ -43,9 +43,10 @@ urlpatterns = [
 
     path('add_places/', views.add_places, name="collection-add-places"),
     path('archive_traces/', views.archive_traces, name="collection-archive_traces"),
-    path('create_link/', views.create_link, name="collection-create-link"),
+    # path('create_link/', views.create_link, name="collection-create-link"),
     path('remove_link/<int:id>/', views.remove_link, name="remove-link"),
-    path('submit/<int:cid>/<int:cgid>/', views.submit_collection, name="submit-collection"),
+    # submits or unsubmits collection to/from a group
+    path('group_connect/', views.group_connect, name="group-connect"),
 
     # function-based views to process a trace annotation
     path('<int:id>/annotate', csrf_exempt(annotate), name="collection-annotate"),

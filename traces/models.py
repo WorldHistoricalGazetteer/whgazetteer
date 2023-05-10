@@ -9,6 +9,9 @@ def collection_path(instance, filename):
   # upload to MEDIA_ROOT/collections/<coll id>/<filename>
   return 'collections/anno/{1}'.format(instance.id, filename)
 
+def getDefaultRelations():
+    return ['']
+
 """
     annotates a place record in a collection
     initial record w/defaults created upon adding place to collection
@@ -29,7 +32,7 @@ class TraceAnnotation(models.Model):
                                    blank=True, null=True)
 
     # user-defined list of relations
-    relation = ArrayField(models.CharField(max_length=30), default=[''], blank=True, null=True)
+    relation = ArrayField(models.CharField(max_length=30), default=getDefaultRelations, blank=True, null=True)
 
     start = models.CharField(max_length=11, blank=True, null=True) # ISO8601 date, incl. '-'
     end = models.CharField(max_length=11, blank=True, null=True) # ISO8601 date, incl. '-'

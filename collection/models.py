@@ -38,6 +38,7 @@ def default_relations():
   return 'locale'.split(', ')
 
 # needed b/c collection place_list filters on it
+# migration olook for these, even though field was deleted
 def default_omitted():
   return '{}'
 
@@ -51,7 +52,7 @@ class Collection(models.Model):
   # array of place ids "removed" by user from the collection
   # filtered in collection.places_all and can't be annotated
   # kluge-y
-  omitted = ArrayField(models.IntegerField(), blank=True, default=default_omitted)
+  # omitted = ArrayField(models.IntegerField(), blank=True, default=default_omitted)
 
   # per-collection relation keyword choices, e.g. waypoint, birthplace, battle site
   # TODO: ?? need default or it errors for some reason
@@ -80,14 +81,18 @@ class Collection(models.Model):
   public = models.BooleanField(default=False)
   group = models.ForeignKey("CollectionGroup", db_column='group',
                             related_name="group", null=True, blank=True, on_delete=models.PROTECT)
-  # filter for group_leader 'class' screen
+
+  # group_leader sees submitted
   submitted = models.BooleanField(default=False)
+  submit_date = models.DateTimeField(null=True, blank=True)
+
   # flag set by group_leader
   nominated = models.BooleanField(default=False)
+  nominate_date = models.DateTimeField(null=True, blank=True)
 
   # collections can comprise >=0 datasets, >=1 places
   datasets = models.ManyToManyField("datasets.Dataset", blank=True)
-  # places = models.ManyToManyField("places.Place", blank=True)
+  # writes CollPlace record to collection_collplace
   places = models.ManyToManyField("places.Place", through='CollPlace', blank=True)
 
   def get_absolute_url(self):
@@ -109,7 +114,8 @@ class Collection(models.Model):
     all = Place.objects.filter(
       Q(dataset__in=self.datasets.all()) | Q(id__in=self.places.all().values_list('id'))
     )
-    return all.exclude(id__in=self.omitted)
+    return all
+    # return all.exclude(id__in=self.omitted)
 
   @property
   def ds_list(self):
@@ -228,19 +234,5 @@ class CollectionLink(models.Model):
       managed = True
       db_table = 'collection_link'
 
-# class CollectionGroupLink(models.Model):
-#   collection_group = models.ForeignKey(CollectionGroup, default=None,
-#     on_delete=models.CASCADE, related_name='links')
-#   label = models.CharField(null=True, blank=True, max_length=200)
-#   uri = models.TextField(validators=[URLValidator()])
-#   link_type = models.CharField(default='page', max_length=10, choices=LINKTYPES)
-#   license = models.CharField(null=True, blank=True, max_length=64)
-#
-#   def __str__(self):
-#     cap = self.label[:20] + ('...' if len(self.label) > 20 else '')
-#     return '%s:%s' % (self.id, cap)
-#
-#   class Meta:
-#     managed = True
-#     db_table = 'collection_group_link'
+
 

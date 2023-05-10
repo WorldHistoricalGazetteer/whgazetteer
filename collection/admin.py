@@ -6,7 +6,7 @@ class CollectionAdmin(admin.ModelAdmin):
     fields = ('id','collection_class','title','owner',
               ('public', 'submitted'), ('status','featured'),
               'description','image_file','keywords','rel_keywords','file','creator')
-    readonly_fields = ('id','datasets','places','omitted','collection_class')
+    readonly_fields = ('id','datasets','places', 'collection_class')
     list_filter = ('status','collection_class')
 admin.site.register(Collection, CollectionAdmin)
 
