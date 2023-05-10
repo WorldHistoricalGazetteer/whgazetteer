@@ -243,6 +243,7 @@ class ListDatasetView(View):
   adds all places in a dataset as CollPlace records
   i.e. new CollPlace and TraceAnnotation rows
   url call from place_collection_build.html
+  adds dataset to db:collections_datasets
 """
 # TODO: essentially same as add_places(); needs refactor
 def add_dataset(request, *args, **kwargs):
@@ -255,6 +256,7 @@ def add_dataset(request, *args, **kwargs):
   status, msg = ['', '']
   dupes = []
   added = []
+  coll.datasets.add(ds)
   for place in ds.places.all():
     gotplace = TraceAnnotation.objects.filter(collection=coll, place=place)
     if not gotplace:

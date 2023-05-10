@@ -91,7 +91,6 @@
 					<span class="badge badge-warning px-2">beta</span>&nbsp;&nbsp;
 			    <a href="{% url 'collection:place-collection-browse' object.id %}">
 				    view&nbsp;&nbsp;<i class="fas fa-eye linky"></i></a>&nbsp;
-
 			    <a href="{% url 'collection:collection-delete' object.id %}"
 		      title="Delete collection" rel="tooltip" style="margin-top:-2px;">
 			    <i class="fas fa-trash linkyred"></i></a>
@@ -101,19 +100,21 @@
 	    {% endif %}
 	  </h5>
 	  <ul class="nav nav-tabs" id="" role="tablist">
+		  {# create form #}
 		  <li class="nav-item" role="presentation">
-		    <button class="nav-link" id="form-tab" data-bs-toggle="tab" data-bs-target="#coll_form"
+		    <button class="nav-link active" id="form-tab" data-bs-toggle="tab" data-bs-target="#coll_form"
           type="button" role="tab" aria-controls="coll_form" aria-selected="true">Create/Edit Form</button>
 		  </li>
+		  {# add & annotate #}
 		  <li class="nav-item" role="presentation">
-		    <button class="nav-link active" id="build-tab" data-bs-toggle="tab" data-bs-target="#coll_builder"
+		    <button class="nav-link" id="build-tab" data-bs-toggle="tab" data-bs-target="#coll_builder"
           type="button" role="tab" aria-controls="coll_builder" aria-selected="false">Add and annotate places</button>
 		  </li>
 		</ul>
 	  <div class="tab-content" id="content">
-
-	    <div id="coll_form" class="tab-pane fade h-100">
+	    <div id="coll_form" class="tab-pane fade show active h-100">
 	      <div class="row">
+	        {# form #}
 		      <div class="col-sm-5">
 			      <form id="collection_form" method="POST" action="#" enctype="multipart/form-data">
 		        {% csrf_token %}
@@ -141,21 +142,20 @@
 		          {% if action == 'create' %}
 			          <input id="btn_coll_save" class="btn-sm btn-primary mt-2 ms-2" type="submit" value="Save" />
 		          {% else %}
-			          <input id="btn_coll_save" name="display" class="btn-sm btn-primary mt-2 ms-2" type="submit" value="Save & View" />
-			          <input id="btn_coll_update" name="update" class="btn-sm btn-info mt-2 ms-2" type="submit" value="Update in place" />
+			          <input id="btn_coll_save" name="display" class="btn-sm btn-primary mt-2 ms-2"
+			                 type="submit" value="Save & View" />
+			          <input id="btn_coll_update" name="update" class="btn-sm btn-info mt-2 ms-2"
+			                 type="submit" value="Update in place" />
 		          {% endif %}
 		          </span>
 			      </div>
-						<p class="my-0 small">&#x02733;<i><b> required</b></i></p>
-		        <tr>
-			        <td>
-				        {% if action == 'update' and user in whgteam %}
-					        <a class="float-end show-hide" href="#">
-						        editor options <i class="fas fa-cog linky"></i>
-					        </a>
-				        {% endif %}
-			        </td>
-		        </tr>
+						<p class="my-0 small">&#x02733;<i><b> required</b></i>
+			        {% if action == 'update' and user in whgteam %}
+				        <span><a class="float-end show-hide" href="#">
+					        editor options <i class="fas fa-cog linky"></i>
+				        </a></span>
+			        {% endif %}
+						</p>
 			      <div id="editor_options" class="hidden">
 				      <p>Status: {{ form.status }}</p>
 							<p>Featured rank: {{ form.featured }}</p>
@@ -168,11 +168,10 @@
 			        <p>For a group/class? {{ form.group }}
 								<a id="btn_coll_submit" class="btn btn-primary btn-sm"
 								   href="/collections/submit/{{ object.id }}/5" role="button">Submit</a>
-{#								   href="{% url 'collection:submit-collection' cid=object.id cgid=5 %}" role="button">Submit</a>#}
 							</p>
 						{% endif %}
+			      </form> {# collection_form #}
 		      </div>
-
 		      <div class="col-sm-7">
 		      {% if action == 'update' %}
 			      <div class="form-group mb-2">
@@ -216,32 +215,10 @@
 							{% endif %}
 							</span>
 						</div>
+
 		      {% endif %} {# action == 'update' #}
-		      </form> {# collection_form #}
 		      {% if action == "update" %}
 			      {# separate form for links #}
-			      <div id="linkform_popup" class="pop">
-			        <form action="#" method="post">
-				        {% csrf_token %}
-				        <input type="hidden" name="collection" value="{{ object.id }}">
-				        <div class="closer" style="position:absolute; top:7px; right:7px;">X</div>
-				        <table class="mb-2">
-					        <tr><td>URI*: </td><td><input id="l_uri" name="uri" value="{{ links_form.uri }}" /></td></tr>
-					        <tr><td>Label*: </td><td><input id="l_label" name="label" value="{{ links_form.label }}" /></td></tr>
-					        <tr><td>Type: </td>
-						        <td>
-							        <select id="select_linktype" name="link_type">
-							          <option value="webpage">Web page</option>
-							          <option value="document">Document</option>
-							          <option value="image">Image</option>
-						          </select>
-						        </td>
-{#						        <td><input id="l_type" name="type" value="{{ links_form.link_type }}" /></td>#}
-					        </tr>
-				        </table>
-				        <button id="b_createlink" type="button">Save</button>
-		          </form>
-						</div>
 		      {% endif %}
 			      <div id="d_public" class="mt-5">
 							{% if form.public.value == True %}
@@ -251,12 +228,11 @@
 									<i class="fas fa-question-circle linky"></i> making a collection public </span></a>
 							{% endif %}
 						</div>
-
-		      </div> {# col-sm-6 #}
+		      </div> {# col-sm-7 #}
 	      </div> {# row #}
 	    </div> {# coll_form #}
 
-	    <div id="coll_builder" class="tab-pane fade show active h-100" style="height: auto; position:relative;">
+	    <div id="coll_builder" class="tab-pane fade h-100" style="height: auto; position:relative;">
 	      <div class="d-flex h-100">
 	        <div class="col-sm-6" id="builder">
 						<ul id="coll_tabs" class="nav nav-tabs " role="tablist">
@@ -308,7 +284,8 @@
 					        {% for d in coll_dsset %}
 					          <div class="ds_card w-100">
 					            <p class="mb-0">
-						            <a href="{% url 'datasets:ds_summary' id=d.id %}"><span class="ds_title">{{ d.title }}</span></a>
+						            <a href="{% url 'datasets:ds_summary' id=d.id %}">
+							            <span class="ds_title">{{ d.title }}</span></a>
 						            <small>({{d.label}}/{{ d.id}})</small>
 					            </p>
 					            <div class="ds_fields">
@@ -323,7 +300,8 @@
 					        {% endfor %}
 				        </div> {# coll_dscards_create #}
 							</div>
-				      <div id="coll_placelist" class="tab-pane fade show active" role="tabpanel" aria-labelledby="coll_placelist-tab">
+				      <div id="coll_placelist" class="tab-pane fade show active" role="tabpanel"
+				           aria-labelledby="coll_placelist-tab">
 						    {% if seq_places|length > 0 %}
 						      {% for p in seq_places %}
 						        <div class="col-place-card" id="{{ p.p.id }}" data-id="{{ p.p.id }}" data-idx="{{ p.seq }}">
@@ -331,7 +309,7 @@
 									      <i>pid: (<a class="coll-place" data-pid={{ p.p.id }} href="#" >{{ p.p.id }}</a>)</i>
 												{# huge kluge: tooltip breaks for single place!? #}
 								        {% if seq_places|length > 1 %}
-								        <span class="float-end me-1"> <span class="seq-visible">id: {{ p.id }}; seq:{{ p.seq }}</span>
+								        <span class="float-end me-3"> <span class="seq-visible">id: {{ p.id }}; seq:{{ p.seq }}</span>
 									        <a class="mark-place" href="#" title="Remove from collection" rel="tooltip"
                                 data-pid="{{ p.p.id }}" data-col="{{ object.id }}">
 										        <i class="fas fa-minus-square" style="color:#ff8080"></i></a>
