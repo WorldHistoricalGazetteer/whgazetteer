@@ -151,24 +151,6 @@ def alt_parents(place, parent_pid):
   return result_obj
 
   #
-# def esq_addchild(_id):
-#   q = {"query":{"bool":{"should": [
-#         {"parent_id": {"type": "child","id":_id}},
-#         {"match":{"_id":_id}}
-#       ]}}}
-#   return q
-
-# def addChild(place, parent_id):
-#   childobj = makeDoc(place)
-#   childobj['relation']['name'] = 'child'
-#   childobj['relation']['parent'] = str(parent_id)
-#
-#   # modify parent:
-#   parent = es.search(index='whg', body=esq_addchild(parent_id))['hits']['hits'][0]
-#   # - add place.id to children;
-#   # - add names.toponym to searchy if absent
-#
-#   print('adding place doc', childobj, 'as child of', parent_id)
 
 
 
@@ -256,7 +238,6 @@ def build_qobj(place):
     qobj['geom'] = hully(g_list)
 
   return qobj
-
 
 """
 summarize a WHG hit for analysis
@@ -792,3 +773,4 @@ def repair_fclasses():
       }}
     }
     es.update_by_query(index=idx, body=q_update, conflicts='proceed')
+

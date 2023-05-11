@@ -109,7 +109,6 @@ def indexDataset(pids=None):
   f_err_geom.close()
   f_err_multi.close()
 
-
 def init():
   global es, idx, rows
   dataset = input('dataset: ')

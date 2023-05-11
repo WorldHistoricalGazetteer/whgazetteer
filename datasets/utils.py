@@ -1238,103 +1238,129 @@ def xl_upload(request):
 		return render(request, 'datasets/xl.html', {"excel_data":excel_data})
 
 
-def match_close_idx(dsid, n=50000, write=False ):
-  from datasets.models import Dataset, Hit
-  from places.models import PlaceGeom, PlaceLink, Place
-  from django.contrib.gis.geos import GEOSGeometry
-  import json
-
-  ds=Dataset.objects.get(id=dsid)
-  task = ds.tasks.filter(task_name='align_idx', task_args='['+str(dsid)+']', status='SUCCESS')[0]
-  # hits = Hit.objects.filter(task_id = task.task_id, reviewed = False).order_by('id')
-  hits = Hit.objects.filter(task_id = task.task_id,
-                            reviewed = False,
-                            ).order_by('place_id')
-  count_add = 0
-  geom_add = 0
-  link_add = 0
-  still_queued = 0
-
-  for h in hits[:n]:
-    place = Place.objects.get(id=h.place_id)
-    pgs = [pg.geom for pg in place.geoms.all()]
-		# this is augmented db place, may have multiple geoms
-
-    if len(pgs) == 0:
-      print('place id#'+str(place.id)+' ('+place.title+') has no geometry')
-      continue
-
-    # index hit
-    hobj = {'pid': h.json['pid'], 'links':h.json['links'], 'geoms':h.json['geoms']}
-
-    if 'geoms' in hobj and len(hobj['geoms']) == 0:
-      continue
-      # print('place id#' + str(h.place_id) + ' (' + h.title + ') has no geometry')
-
-    gidx = [GEOSGeometry(json.dumps(g)) for g in qobj['geoms']]
-    qid = hobj['geoms'][0]['id']
-
-    gidx0 = gidx[0] # first index hit geom
-    gpl = pgs[0] # first place geom
-
-    try:
-      dist = gidx0.distance(gpl) * 100 # km, more or less
-    except:
-      # print('place', place, sys.exc_info())
-      # print('gwd, gpl', gwd, gpl)
-      continue
-    # print(place.title, h.json['geoms'][0]['id'], dist)
-
-    if dist <= 5:
-      # print('dist: ~' + str(dist)[:6] + 'km; '+str(h.authrecord_id), gwd.json)
-      count_add +=1
-      if write:
-        jsonb = {
-          "type": gidx0.geom_type,
-          "citation": {"id": 'wd:' + qid, "label":'Wikidata' },
-          "coordinates": hobj['geoms'][0]['coordinates']
-        }
-
-        # place, src_id, jsonb, task_id, geom
-        pgobj = PlaceGeom.objects.create(
-          place = place,
-          geom = gidx0,
-          jsonb = jsonb,
-          src_id = place.src_id,
-          task_id = task.task_id
-        )
-        pgobj.save()
-        geom_add +=1
-        # place, src_id, jsonb, task_id
-        # {"type": "closeMatch", "identifier": "tgn:7011198"}
-        for i, l in enumerate(qobj['links']):
-          # print('links to add:', i, l)
-          link_add +=1
-          plobj = PlaceLink.objects.create(
-            place_id = place.id,
-            src_id = place.src_id,
-            task_id = task.task_id,
-            jsonb={'type': 'closeMatch', 'identifier': l}
-          )
-          plobj.save()
-
-        # wrote geoms/links
-        h.matched = True
-        h.reviewed = True
-        h.save()
-        # place was reviewed
-        place.review_wd = 1
-        place.save()
-    else:
-      still_queued +=1
-  # within 30km w/name match
-
-  print("wrote match records" if write else "only tested...")
-  print("counts:", {"total": count_add,
-                    "geoms": geom_add,
-                   "links": link_add,
-                    "remaining": still_queued
-                    })
+# def match_close_idx(dsid, n=50000, write=False, dscoll=None):
+#   from datasets.models import Dataset, Hit
+#   from places.models import PlaceGeom, PlaceLink, Place
+#   from django.contrib.gis.geos import GEOSGeometry
+#   import json
+#
+#   ds=Dataset.objects.get(id=dsid)
+#
+#   # latest successful align_idx task
+#   task = ds.tasks.filter(task_name='align_idx', task_args='['+str(dsid)+']', status='SUCCESS')[0]
+#
+# 	# all unreviewed hits for the task
+#   hits = Hit.objects.filter(task_id = task.task_id,
+#                             reviewed = False,
+#                             ).order_by('place_id')
+#   count_add = 0
+#   geom_add = 0
+#   link_add = 0
+#   still_queued = 0
+#   matches = []
+#
+#   # place_id, h.authrecord_id, json, authority (whg), dataset_id, geom[], reviewed, matched, score
+#   # h.json.whg_id,
+#   # h.json.geoms[],
+#   # h.json.links[],
+#   # h.json.sources[pid,types[],minmax,dslabel,related[],children[],variants[]]
+#
+#   for h in hits[:n]:
+# 	  # incoming record
+# 	  place = Place.objects.get(id=h.place_id)
+# 	  p_geoms = [pg.geom for pg in place.geoms.all()]
+#
+# 	  # prospective match
+# 	  hitplace = Place.objects.get(id=h.json['pid'])
+# 	  h_geoms = h.geom
+#
+# 	  # both must have geometry
+#     if len(p_geoms) > 0 and len(h_geoms) > 0:
+# 			print('geoms to compare, proceed')
+#
+#     # partial db record
+#     hobj = {'pid': h.json['pid'],
+#             'links':h.json['links'],
+#             'geoms':h.json['geoms']}
+#
+# 		# first hit geometry
+# 		ghit = [GEOSGeometry(json.dumps(g)) for g in hobj['geoms']][0]
+#
+# 		# first place geometry
+#     gpl = p_geoms[0] # first geom of db place
+#
+#     try:
+#       dist = ghit.distance(gpl) * 100
+#     except:
+# 			print('dist failed', sys.exc_info())
+#
+#
+#     """
+#     perform match, i.e.
+#       create ES place doc for place
+#         all hits are parents
+#         add place as child
+#       hit is child:
+#         add place as sibling (child of hit parent)
+#       if gaz-builder scenario:
+#         hit in ds collection:
+#           write db place_link
+#     """
+#     if dist <= 5:
+#       count_add +=1
+#       if write:
+# 	      # perform match
+# 	      # new_obj = makeDoc(place)
+#         jsonb = {
+#           "type": gidx0.geom_type,
+#           "citation": {"id": 'wd:' + hit_pid, "label":'Wikidata' },
+#           "coordinates": hobj['geoms'][0]['coordinates']
+#         }
+#
+#         # place, src_id, jsonb, task_id, geom
+#         pgobj = PlaceGeom.objects.create(
+#           place = place,
+#           geom = gidx0,
+#           jsonb = jsonb,
+#           src_id = place.src_id,
+#           task_id = task.task_id
+#         )
+#         pgobj.save()
+#         geom_add +=1
+#         # place, src_id, jsonb, task_id
+#         # {"type": "closeMatch", "identifier": "tgn:7011198"}
+#         for i, l in enumerate(hobj['links']):
+#           # print('links to add:', i, l)
+#           link_add +=1
+#           plobj = PlaceLink.objects.create(
+#             place_id = place.id,
+#             src_id = place.src_id,
+#             task_id = task.task_id,
+#             jsonb={'type': 'closeMatch', 'identifier': l}
+#           )
+#           plobj.save()
+#
+#         # wrote geoms/links
+#         h.matched = True
+#         h.reviewed = True
+#         h.save()
+#         # place was reviewed
+#         place.review_wd = 1
+#         place.save()
+#       else:
+#         matches.append({'ds_pid':place.id, 'hit_pid':hit_pid})
+#         # log this match for inspection
+#     else:
+# 	    # no match, leave in queue
+#       still_queued +=1
+#
+#   # print("wrote match records" if write else "only tested...")
+#   print("counts:", {"total": count_add,
+#                     "geoms": geom_add,
+#                     "links": link_add,
+#                     "remaining": still_queued,
+#                     "matches": matches
+#                     })
 
 # for hits in a wikidata task, create place_link and place_geom matches
 # where geometry is within 5km
@@ -1379,13 +1405,14 @@ def match_close_db(dsid, n=50000, write=False ):
     gpl = pgs[0] # first place geom
 
     try:
-      dist = gwd.distance(gpl) * 100 # km, more or less
+      dist = gwd.distance(gpl) * 100 # 3km more or less
     except:
       # print('place', place, sys.exc_info())
       # print('gwd, gpl', gwd, gpl)
       continue
     # print(place.title, h.json['geoms'][0]['id'], dist)
 
+		# add place_geom and place_link records if write==True
     if dist <= 5:
       # print('dist: ~' + str(dist)[:6] + 'km; '+str(h.authrecord_id), gwd.json)
       count_add +=1
@@ -1420,6 +1447,7 @@ def match_close_db(dsid, n=50000, write=False ):
           plobj.save()
 
         # wrote geoms/links
+        # flag hits and place
         h.matched = True
         h.reviewed = True
         h.save()
@@ -1433,6 +1461,6 @@ def match_close_db(dsid, n=50000, write=False ):
   print("wrote match records" if write else "only tested...")
   print("counts:", {"total": count_add,
                     "geoms": geom_add,
-                   "links": link_add,
+                    "links": link_add,
                     "remaining": still_queued
                     })

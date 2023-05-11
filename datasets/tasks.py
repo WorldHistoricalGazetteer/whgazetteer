@@ -1255,7 +1255,7 @@ def align_idx(pk, *args, **kwargs):
     # PARSE RESULTS
     # no hits on any pass, it's a new seed/parent
     if len(result_obj['hits']) == 0:
-      # create new parent (write to file for inspection)
+      # create new parent (or write to file for inspection)
       whg_id +=1
       doc = makeDoc(p)
       doc['relation']['name'] = 'parent'

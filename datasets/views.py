@@ -155,9 +155,9 @@ def indexMatch(pid, hit_pid=None):
       #count_kids +=1
       print('added '+str(place.id) + ' as child of '+ str(hit_pid))
 
-      # add child's names to parent's searchy & suggest.input[] fields
+      # add child's names to parent's searchy fields
       q_update = { "script": {
-          "source": "ctx._source.suggest.input.addAll(params.names); ctx._source.children.add(params.id); ctx._source.searchy.addAll(params.names)",
+          "source": "ctx._source.children.add(params.id); ctx._source.searchy.addAll(params.names)",
           "lang": "painless",
           "params":{"names": match_names, "id": str(place.id)}
         },
