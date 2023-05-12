@@ -451,17 +451,13 @@
     window.geom = {"type":"FeatureCollecton","features":[]}
 
     window.gelems = $('script').filter(function() {
-      // return this.id.match(/[0-9]/) && this.text != '"null"';-->
+      // return this.id.match(/[0-9]/) && this.text != '"null"';
       return this.id !='' && this.text != '"null"';
     });
-    <!--console.log(gelems)-->
+    //
     for (i=0;i<gelems.length;i++){
       let t_geom = cleanJson(gelems[i].text)
       t_geom['properties'] = {"id": gelems[i].id,"ds": t_geom.ds!=null?t_geom.ds:ds}
-      <!-- citation does not always have id-->
-      <!--if ('citation' in t_geom){-->
-        <!--t_geom['properties'] = {"id":t_geom['citation']['id'] }-->
-      <!--} else t_geom['properties'] = {"id": gelems[i].id,"ds": t_geom.ds!=null?t_geom.ds:ds}-->
       geom['features'].push(t_geom)
     }
 
@@ -473,14 +469,23 @@
         return "green"}
     }
 
+    function onEachFeature(feature, layer){
+			if(feature.type.includes('Polygon')) {
+        if (feature.properties.ds == ds){
+          layer.setStyle({fillColor: "green", color: "green", fillOpacity:0.2, stroke: true, weight: 1})
+        } else {
+          // it's on the hit list
+	        layer.setStyle({fillColor: "orange", color: "orange", fillOpacity:0.2, stroke: true, weight: 1})
+        }
+			} else if(feature.type.includes('Line')) {
+          layer.setStyle({color: "blue", stroke: true, weight: 1.5})
+			}
+    }
     if (geom['features'].length > 0) {
-      <!--console.log('geom: ',geom)-->
       idToFeature = {} // for feature lookup
       features = L.geoJSON(geom, {
-
+        onEachFeature: onEachFeature,
         pointToLayer: function (feature, latlng) {
-          <!--console.log('feature.properties',feature.properties)-->
-          <!--console.log('feature',feature)-->
           matchid = feature.properties.id
           marker = L.circleMarker(latlng,
             {
