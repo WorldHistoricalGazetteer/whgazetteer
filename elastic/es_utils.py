@@ -774,3 +774,158 @@ def repair_fclasses():
     }
     es.update_by_query(index=idx, body=q_update, conflicts='proceed')
 
+
+"""
+  find perform match for hits matching variant(s) and geoms <= ~3k apart
+"""
+def match_close_idx(dsid, n=50000, test=True, dscoll=None):
+  from django.conf import settings
+  from datasets.models import Dataset, Hit
+  from elastic.es_utils import makeDoc
+  from places.models import Place, PlaceGeom
+  from django.contrib.gis.geos import GEOSGeometry
+  import json, sys
+  es = settings. ES_CONN
+  ds=Dataset.objects.get(id=dsid)
+  idx='whg'
+
+  # latest successful align_idx task
+  task = ds.tasks.filter(task_name='align_idx', task_args='['+str(dsid)+']', status='SUCCESS')[0]
+
+  # all unreviewed hits for the task
+  hits = Hit.objects.filter(task_id = task.task_id,
+                            reviewed = False,
+                            ).order_by('place_id')
+
+  [count_add, geom_add, link_add, still_queued, skipped, to_match] = [0, 0, 0, 0, 0, 0]
+  matches = []
+
+  for h in hits[:n]:
+    # incoming record
+    place = Place.objects.get(id=h.place_id)
+    p_geoms = [pg.geom for pg in place.geoms.all()]
+
+    # prospective match
+    hitplace = Place.objects.get(id=h.json['pid'])
+    h_geoms = h.geom
+
+    # both must have geometry or don't bother
+    if len(p_geoms) > 0 and len(h_geoms) > 0:
+      # print('geoms to compare, proceed')
+
+        # partial db record
+      hobj = {'pid': h.json['pid'],
+              'links':h.json['links'],
+              'geoms':h.json['geoms']}
+
+      # first hit geometry
+      ghit = [GEOSGeometry(json.dumps(g)) for g in hobj['geoms']][0]
+
+      # first place geometry
+      gpl = p_geoms[0] # first geom of db place
+
+      try:
+        dist = ghit.distance(gpl) * 100
+      except:
+        print('dist failed', sys.exc_info())
+
+      """
+      perform match, i.e.
+        create ES place doc for place
+          all hits are parents
+          add place as child; add its names to searchy[]
+        FUTURE gaz-builder scenario:
+          if hit in ds collection:
+            write db place_link
+      """
+      if dist <= 5:
+        count_add +=1
+        if not test:
+          # perform match
+          new_obj = makeDoc(place)
+          # new_obj['relation'] = {"name": "child", "parent": parent_whgid}
+          new_obj['relation'] = {"name":"child", "parent": h.json['whg_id']}
+          # index the child
+          try:
+            es.index(index=idx, id=place.id, routing=1, body=json.dumps(new_obj))
+          except:
+            print('es.index() failed', sys.exc_info())
+          # add child to parent children[]
+          place_names = [p.toponym for p in place.names.all()]
+          hit_names = [elem for sublist in [s['variants'] for s in h.json['sources']] for elem in sublist]
+          new_names = list(set(place_names) - set(hit_names))
+          q_update = {"script": {
+            "source": "ctx._source.children.add(params.id)",
+            # "source": "ctx._source.searchy.input.addAll(params.names); ctx._source.children.add(params.id)",
+            "lang": "painless",
+            "params": {"names": new_names, "id": str(place.id)}
+          },
+            "query": {"match": {"_id": h.json['whg_id']}}}
+          try:
+            es.update_by_query(index=idx, body=q_update, conflicts='proceed')
+          except:
+            print('es.update_by_query() failed', sys.exc_info())
+
+          # place was reviewed
+          place.review_whg = 1
+          place.save()
+          h.matched = True
+          h.reviewed = True
+          h.save()
+
+          """ not creating db link records, YET! """
+          # jsonb = {
+          #   "type": gidx0.geom_type,
+          #   "citation": {"id": 'wd:' + hit_pid, "label":'Wikidata' },
+          #   "coordinates": hobj['geoms'][0]['coordinates']
+          # }
+
+          # place, src_id, jsonb, task_id, geom
+          # pgobj = PlaceGeom.objects.create(
+          #   place = place,
+          #   geom = gidx0,
+          #   jsonb = jsonb,
+          #   src_id = place.src_id,
+          #   task_id = task.task_id
+          # )
+          # pgobj.save()
+          # geom_add +=1
+          # # place, src_id, jsonb, task_id
+          # # {"type": "closeMatch", "identifier": "tgn:7011198"}
+          # for i, l in enumerate(hobj['links']):
+          #   # print('links to add:', i, l)
+          #   link_add +=1
+          #   plobj = PlaceLink.objects.create(
+          #     place_id = place.id,
+          #     src_id = place.src_id,
+          #     task_id = task.task_id,
+          #     jsonb={'type': 'closeMatch', 'identifier': l}
+          #   )
+          #   plobj.save()
+          #
+          # # wrote geoms/links
+          # h.matched = True
+          # h.reviewed = True
+          # h.save()
+          # # place was reviewed
+          # place.review_wd = 1
+          # place.save()
+        else:
+          # count or log this match for inspection
+          to_match +=1
+          # matches.append({'ds_pid':place.id, 'hit_pid':h.json['pid']})
+      else:
+        # no match, leave in queue
+        still_queued +=1
+    else:
+      skipped +=1
+  print("wrote match records" if not test else "only tested...")
+  print("counts:", {"matched": count_add,
+                    "to_match": to_match,
+                    "no geom": skipped,
+                    "geoms": geom_add,
+                    "links": link_add,
+                    "remaining": still_queued,
+                    "matches": matches
+                    })
+

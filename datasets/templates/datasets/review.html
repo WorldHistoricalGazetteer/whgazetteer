@@ -477,6 +477,7 @@
       <!--console.log('geom: ',geom)-->
       idToFeature = {} // for feature lookup
       features = L.geoJSON(geom, {
+
         pointToLayer: function (feature, latlng) {
           <!--console.log('feature.properties',feature.properties)-->
           <!--console.log('feature',feature)-->

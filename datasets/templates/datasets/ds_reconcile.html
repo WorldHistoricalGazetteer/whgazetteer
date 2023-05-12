@@ -123,7 +123,7 @@
                     </p>
                     <p class="mb-0">Remaining to review:
 											{# display total remaining only to owners #}
-	                    {% if user in ds.owners or user.is_superuser %}
+	                    {% if editorial or user in ds.collaborators %}
 		                    <span id="{{t.task_id}}_remaining">nn</span>
 	                    {% endif %}
                     </p>
@@ -251,7 +251,7 @@
           tid = updates[u][0]
           counts = updates[u][1]
           task = updates[u][1]['task']
-          {#console.log('updateTotals() counts', task, counts)#}
+          console.log('updateTotals() counts', task, counts)
           ds_status = "{{ ds.ds_status }}"
           // if all are reviewed, disable radio button
           if(counts['total'] == 0 ){

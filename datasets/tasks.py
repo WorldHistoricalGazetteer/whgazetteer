@@ -1249,9 +1249,9 @@ def align_idx(pk, *args, **kwargs):
   """
   for p in qs:
     qobj = build_qobj(p)
-    
+
     result_obj = es_lookup_idx(qobj, bounds=bounds)
-    
+
     # PARSE RESULTS
     # no hits on any pass, it's a new seed/parent
     if len(result_obj['hits']) == 0:
