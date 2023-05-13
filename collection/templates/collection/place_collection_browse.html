@@ -107,6 +107,8 @@
         <div class="row ps-4">
           <div class="col-sm-8" style="padding:0 !important;">
             <div id="map" style="height:300px;"></div>
+	          <span class="small"> Legend: {% for k, v in object.kw_colors.items %}
+		          <i>{{ k }}</i>: <span class="fs-5" style="color:{{ v }}">&#9679;</span> | {% endfor %}</span>
           </div>
           <div id="row_detail" class="col-sm-4">
             <div id="detail" class="small ps-2"></div>

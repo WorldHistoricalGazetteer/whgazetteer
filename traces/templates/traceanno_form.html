@@ -1,5 +1,8 @@
 <!-- context keys: place, collection -->
 {% load static %}
+{% block extra_head %}
+
+{% endblock %}
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns" crossorigin="anonymous"></script>
 
 <div style="background-color: #fafafa; padding:2px;">
@@ -26,14 +29,21 @@
 		<tr>
 			<td>Relation:</td>
 			<td>
-				<select id="select_relation" name="relation">
+				<select class="" id="select_relation" name="relation">
 					<option value="" selected >Select relation</option>
-					{% for rel in collection.rel_keywords %}
-						<option value='{{ rel }}' {% if rel == form.relation.value %}selected{% endif %}>{{ rel }}</option>
+					{% for k, v in collection.kw_colors.items %}
+						<option class="{{ v }}Text" value='{{ k }}' {% if k == form.relation.value %}selected{% endif %}>
+							{{ k }} <span class="{{ v }}Text" >({{ v }})</span>
+						</option>
 					{% endfor %}
 				</select>
 			</td>
 		</tr>
+		<tr style="line-height: .6rem; padding-bottom: 1rem;"><td></td>
+			<td class="align-top"><span class="small">{% for k, v in collection.kw_colors.items %}
+				<i>{{ k }}</i>: <span class="fs-5" style="color:{{ v }}">&#9679;</span> | {% endfor %}</span></td>
+		</tr>
+		<tr style="height: .8rem; padding-bottom: 1rem;"><td></td><td></td></tr>
 		<tr><td>Start/End:</td>
 			<td>{{ form.start }} / {{ form.end }}
 			<a href="#" class="" rel="tooltip" data-html="true" title="Month and day optional.<br/>For BCE, prefix with '-'">
@@ -61,6 +71,5 @@
 	</table>
 
 </form>
-<script type="application/javascript">
-</script>
+<script type="application/javascript"></script>
 {#</html>#}

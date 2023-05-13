@@ -27,8 +27,6 @@ def annotate(request, *args, **kwargs):
   anno_id = request.POST.get('anno_id')
   saved = request.POST.get('saved')
   coll = get_object_or_404(Collection, id=cid)
-  # for k, v in request.POST.items():
-  #   print('annotate POST.item', k, v)
   context = {}
 
   if anno_id:
@@ -135,6 +133,7 @@ def get_form(request):
         "form": form,
         "place": place,
         "collection": coll,
+        "colors": coll.kw_colors,
         "existing": existing[0].id if existing else None
         # "existing": existing[0].id or None
     }

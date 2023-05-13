@@ -9,7 +9,7 @@
 {% endblock %}
 {% block extra_head %}
   <style>
-    label {font-weight: bold;}
+	  label {font-weight: bold;}
     #linkform_popup {
 	    position:absolute;
 			background-color: whitesmoke;
@@ -85,7 +85,7 @@
   {% else %}
   <div class="h-100">
 	  <h5 class="mt-3">
-		  {% if action == 'update' %}<span class="text-secondary">Place Collection Builder:</span>
+		  {% if action == 'update' %}<span class="text-secondary">Place Collection Builder: </span>
 		    <span class="text-bold red-head">{{ form.title.value }}</span>
 				<span class="float-end small">
 					<span class="badge badge-warning px-2">beta</span>&nbsp;&nbsp;
@@ -103,20 +103,20 @@
 	  <ul class="nav nav-tabs" id="" role="tablist">
 		  {# create form #}
 		  <li class="nav-item" role="presentation">
-		    <button class="nav-link active" id="form-tab" data-bs-toggle="tab" data-bs-target="#coll_form"
+		    <button class="nav-link" id="form-tab" data-bs-toggle="tab" data-bs-target="#coll_form"
           type="button" role="tab" aria-controls="coll_form" aria-selected="true">
 			    {% if action == 'create' %}Create{% else %}Edit{% endif %} Collection</button>
 		  </li>
 		  {# add & annotate #}
 		  {% if action == "update" %}
 		  <li class="nav-item" role="presentation">
-		    <button class="nav-link" id="build-tab" data-bs-toggle="tab" data-bs-target="#coll_builder"
+		    <button class="nav-link active" id="build-tab" data-bs-toggle="tab" data-bs-target="#coll_builder"
           type="button" role="tab" aria-controls="coll_builder" aria-selected="false">Add and annotate places</button>
 		  </li>
 		  {% endif %}
 		</ul>
 	  <div class="tab-content" id="content">
-	    <div id="coll_form" class="tab-pane fade show active h-100">
+	    <div id="coll_form" class="tab-pane fade h-100">
 		    <form id="collection_form" method="POST" enctype="multipart/form-data">
 		    {% csrf_token %}
         <div class="row">
@@ -168,7 +168,6 @@
 		      <div id="select_div" class="hidden">{{ form.datasets }}</div>
 		      <div id="collection_options"></div>
 		      {% if mygroups|length > 0 %}
-			      <hr/>
 		        <p>For a group/class? {{ form.group }}
 							<a id="btn_coll_submit" class="btn btn-primary btn-sm"
 							   href="/collections/submit/{{ object.id }}/" role="button">Submit</a>
@@ -268,7 +267,7 @@
 		    </div>
 	    </div> {# coll_form #}
 
-	    <div id="coll_builder" class="tab-pane fade h-100" style="height: auto; position:relative;">
+	    <div id="coll_builder" class="tab-pane fade show active h-100" style="height: auto; position:relative;">
 	      <div class="d-flex h-100">
 	        <div class="col-sm-6" id="builder">
 						<ul id="coll_tabs" class="nav nav-tabs " role="tablist">
@@ -827,14 +826,13 @@
         return response.json();
       })
       .then(function (data) {
-        {#console.log('data',data.form)#}
         const formContainer = document.querySelector("#annotator");
         formContainer.innerHTML = data.form;
         $("[rel='tooltip']").tooltip();
+        $("#keyword_color").html('#keyword_color')
       })
   }
 
-    {#$(".anno-place").click(function(){#}
   $(".col-place-card").click(function(){
 		// clear highlights
     $(".col-place-card").removeClass('card-highlight')
@@ -861,7 +859,8 @@
   })
 
   $(function(){
-
+		$("#coll_placelist div:first-child").click()
+		console.log('clicked', $('select[name="relation"]').val())
 		var cardList = $('#coll_placelist');
 		{#var panelList = $('#draggablePanelList');#}
 		cardList.sortable({

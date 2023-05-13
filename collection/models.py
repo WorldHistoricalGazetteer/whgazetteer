@@ -100,6 +100,13 @@ class Collection(models.Model):
     return reverse('data-collections')
 
   @property
+  def kw_colors(self):
+    colors = ['orange', 'red', 'green', 'blue', 'purple',
+      'red', 'green', 'blue', 'purple']
+    return dict(zip(self.rel_keywords, colors))
+
+
+  @property
   def places_ds(self):
     dses = self.datasets.all()
     return Place.objects.filter(dataset__in=dses)
