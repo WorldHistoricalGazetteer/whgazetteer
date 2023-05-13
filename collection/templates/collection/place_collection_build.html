@@ -103,20 +103,20 @@
 	  <ul class="nav nav-tabs" id="" role="tablist">
 		  {# create form #}
 		  <li class="nav-item" role="presentation">
-		    <button class="nav-link" id="form-tab" data-bs-toggle="tab" data-bs-target="#coll_form"
+		    <button class="nav-link active" id="form-tab" data-bs-toggle="tab" data-bs-target="#coll_form"
           type="button" role="tab" aria-controls="coll_form" aria-selected="true">
 			    {% if action == 'create' %}Create{% else %}Edit{% endif %} Collection</button>
 		  </li>
 		  {# add & annotate #}
 		  {% if action == "update" %}
 		  <li class="nav-item" role="presentation">
-		    <button class="nav-link active" id="build-tab" data-bs-toggle="tab" data-bs-target="#coll_builder"
+		    <button class="nav-link" id="build-tab" data-bs-toggle="tab" data-bs-target="#coll_builder"
           type="button" role="tab" aria-controls="coll_builder" aria-selected="false">Add and annotate places</button>
 		  </li>
 		  {% endif %}
 		</ul>
 	  <div class="tab-content" id="content">
-	    <div id="coll_form" class="tab-pane fade h-100">
+	    <div id="coll_form" class="tab-pane fade show active h-100">
 		    <form id="collection_form" method="POST" enctype="multipart/form-data">
 		    {% csrf_token %}
         <div class="row">
@@ -144,12 +144,12 @@
 	          <span class="">
 	          {% if action == 'create' %}
 			        <a href="/mycollections">Cancel</a>
-		          <input id="btn_coll_save" class="btn-sm btn-primary mt-2 ms-2" type="submit" value="Save" />
+		          <input id="btn_coll_save" class="btn-sm btn-primary mt-2" type="submit" value="Save" />
 	          {% else %}
-		          <input id="btn_coll_save" name="display" class="btn-sm btn-primary mt-2 ms-2"
-		                 type="submit" value="Save & View" />
-		          <input id="btn_coll_update" name="update" class="btn-sm btn-info mt-2 ms-2"
-		                 type="submit" value="Update in place" />
+		          <input id="btn_coll_save" name="display" class="btn btn-sm btn-success mt-2 "
+		                 type="submit" value="Save & exit" />
+		          <input id="btn_coll_update" name="update" class="btn btn-sm btn-primary mt-2 ms-2"
+		                 type="submit" value="Save" />
 	          {% endif %}
 	          </span>
 		      </div>
@@ -168,10 +168,12 @@
 		      <div id="select_div" class="hidden">{{ form.datasets }}</div>
 		      <div id="collection_options"></div>
 		      {% if mygroups|length > 0 %}
-		        <p>For a group/class? {{ form.group }}
-							<a id="btn_coll_submit" class="btn btn-primary btn-sm"
-							   href="/collections/submit/{{ object.id }}/" role="button">Submit</a>
-						</p>
+			      Submit to group:
+		        <span id="submitter" class="">
+			        {{ form.group }}{% comment %}
+			        <a id="btn_coll_submit" class="btn btn-primary btn-sm"
+						   href="/collections/submit/{{ object.id }}/" role="button">Submit</a>{% endcomment %}
+		        </span>
 					{% endif %}
 	      </div>
           {# more collection properties #}
@@ -267,7 +269,7 @@
 		    </div>
 	    </div> {# coll_form #}
 
-	    <div id="coll_builder" class="tab-pane fade show active h-100" style="height: auto; position:relative;">
+	    <div id="coll_builder" class="tab-pane fade h-100" style="height: auto; position:relative;">
 	      <div class="d-flex h-100">
 	        <div class="col-sm-6" id="builder">
 						<ul id="coll_tabs" class="nav nav-tabs " role="tablist">
@@ -428,7 +430,9 @@
 </div> {# container #}
 
 <script type="text/javascript">
-
+	$("#check_submitter").click(function(e){
+    $("#submitter").toggle()
+	})
 	function showChooser(type){
     elem = "#"+type+"_chooser"
     $(elem).toggle()
@@ -859,8 +863,18 @@
   })
 
   $(function(){
+    $("#id_group option:first").text('None')
+    $("#id_group").change(function(){
+      if($("#id_group").val() == ""){
+        $("#btn_coll_update").attr('value','Un-submit')
+      } else {
+        $("#btn_coll_update").attr('value','Submit')
+      }
+      {#console.log('id_group.val()', $("#id_group").val())#}
+      {#$("#btn_coll_update").attr('value','Submit')#}
+      console.log('changed group setting')
+    })
 		$("#coll_placelist div:first-child").click()
-		console.log('clicked', $('select[name="relation"]').val())
 		var cardList = $('#coll_placelist');
 		{#var panelList = $('#draggablePanelList');#}
 		cardList.sortable({

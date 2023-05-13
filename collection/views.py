@@ -575,12 +575,6 @@ class CollectionGroupUpdateView(UpdateView):
     print('id', self.kwargs.get("id"))
     return kwargs
 
-  # def get_success_url(self):
-  #   cgid = self.kwargs.get("id")
-  #   return redirect('/collections/groups/'+str(cgid)+'/update')
-
-  # success_url = '/accounts/profile'
-
   def get_object(self):
     id_ = self.kwargs.get("id")
     return get_object_or_404(CollectionGroup, id=id_)
@@ -599,9 +593,17 @@ class CollectionGroupUpdateView(UpdateView):
 
   def get_context_data(self, *args, **kwargs):
     context = super(CollectionGroupUpdateView, self).get_context_data(*args, **kwargs)
+    cg= self.get_object()
+    member_ids=list(cg.members.all().values_list('user', flat=True))
+    members = [m.user for m in cg.members.all()]
+    # all_coll = [m.user.collections.all() for m in members]
+    # [m.user.collections.filter(group=id_) for m in cg.members.all()]
     context['action'] = 'update'
-    context['members'] = self.get_object().members
-    context['collections'] = self.get_object().collections.filter(submitted=True)
+    # context['members'] = [m.user for m in self.get_object().members.all()]
+    context['members'] = members
+    # context['members'] = member_ids
+    context['collections'] = Collection.objects.filter(group=cg.id)
+    # context['collections'] = self.get_object().collections.filter(submitted=True)
     context['links'] = Link.objects.filter(collection_group_id = self.get_object())
     return context
 

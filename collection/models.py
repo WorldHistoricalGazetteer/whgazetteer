@@ -90,7 +90,7 @@ class Collection(models.Model):
   nominated = models.BooleanField(default=False)
   nominate_date = models.DateTimeField(null=True, blank=True)
 
-  # collections can comprise >=0 datasets, >=1 places
+  # collections  can comprise >=0 datasets, >=1 places
   datasets = models.ManyToManyField("datasets.Dataset", blank=True)
   # writes CollPlace record to collection_collplace
   places = models.ManyToManyField("places.Place", through='CollPlace', blank=True)

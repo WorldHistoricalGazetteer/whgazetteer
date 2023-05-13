@@ -53,9 +53,11 @@
   <div class="d-flex container row">
     <div class="form-box mt-2 col-sm-4">
 	    {% if action == 'update' %}
-	    <form id="cg_form" method="POST" action="{% url 'collection:collection-group-update' object.id %}" enctype="multipart/form-data">
+	    <form id="cg_form" method="POST" action="{% url 'collection:collection-group-update' object.id %}"
+	          enctype="multipart/form-data">
       {% else %}
-      <form id="cg_form" method="POST" action="{% url 'collection:collection-group-create' %}" enctype="multipart/form-data">
+      <form id="cg_form" method="POST" action="{% url 'collection:collection-group-create' %}"
+            enctype="multipart/form-data">
       {% endif %}
       {% csrf_token %}
       <input type="hidden" name="owner" value='{{ user.id }}' />
@@ -157,8 +159,9 @@
 	      <div id="results_text" class="my-2 small"></div>
 	      <div id="members_content">
 	          <ul class="small">
-	          {% for m in members.all %}
-	              <li>{{ m.user.name }} ({{ m.user.id }}) ({{ m.user.email }})</li>
+	          {% for m in members %}
+	              <li>{{ m.name }} ({{ m.id }}) ({{ m.email }})</li>
+{#	              <li>{{ m.user.name }} ({{ m.user.id }}) ({{ m.user.email }})</li>#}
 	          {% endfor %}
 	          </ul>
 	      </div>
@@ -167,14 +170,15 @@
       {% endif %}
     </div>
     <div class="col-sm-4 mt-2">
-        <h5 class="sharing-header">Submitted Collections</h5>
-        <div id="collections_content">
-            <ul class="small">
-            {% for m in collections.all %}
-                <li><a href="{% url 'collection:ds-collection-summary' m.id %}">{{ m.title }}</a> ({{ m.owner.name }})</li>
-            {% endfor %}
-            </ul>
-        </div>
+      <h5 class="sharing-header">Submitted Collections</h5>
+      <div id="collections_content">
+        <ul class="small">
+        {% for m in collections.all %}
+	        <li><a href="{% url 'collection:ds-collection-summary' m.id %}">
+		        {{ m.title }}</a> ({{ m.owner.name }})</li>
+        {% endfor %}
+        </ul>
+      </div>
     </div>
   </div> <!-- d-flex -->
 </div> <!-- container -->

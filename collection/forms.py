@@ -48,7 +48,7 @@ class CollectionLinkForm(forms.ModelForm):
 class CollectionModelForm(forms.ModelForm):
     # ** trying to return to referrer
     next = forms.CharField(required=False)
-    # **
+    # group = forms.ModelChoiceField()
 
     class Meta:
         model = Collection
@@ -74,3 +74,4 @@ class CollectionModelForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(CollectionModelForm, self).__init__(*args, **kwargs)
+        self.fields['group'].initial = 'initial value'
