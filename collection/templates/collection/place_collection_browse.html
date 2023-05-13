@@ -665,7 +665,7 @@
 						'match',
 						['get', 'relation'],
 		        ...circleColor(),
-		        '', 'grey',
+		        '', '#e8e8e8',
 			        '#ccc'
 						],
           'circle-radius': {
@@ -727,8 +727,9 @@
   }
 
   // TODO: better colors
-  colors_point=['#ff9900','red','green','blue', 'purple',
-    '#ff9900','red','green','blue', 'purple']
+  colors_point=[
+      'orange', 'red', 'green', 'blue', 'purple',
+      'red', 'green', 'blue', 'purple']
   colors_poly=['#eee','aliceblue']
   colors_line=['#eee','blue']
 
@@ -765,13 +766,7 @@
           'type':'categorical',
           'stops':[[Number(pid), 2]]}
     );
-    {#mappy.setPaintProperty(#}
-    {#  'gl_active_point', 'circle-color',#}
-    {#    { 'property':'pid',#}
-          {#'default': '#ff9900',#}
-    {#      'type':'categorical',#}
-    {#      'stops':[[Number(pid), 'yellow']]}#}
-    {#);#}
+
     mappy.setPaintProperty(
       'gl_active_point', 'circle-opacity',
         { 'property':'pid',
