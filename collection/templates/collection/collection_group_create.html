@@ -125,7 +125,7 @@
         </form>
 			</div>
 	    <hr/>
-      <input class="btn-sm btn-primary mt-2" type="submit" value="Save" id="b_save"/>
+      <input class="btn btn-sm btn-primary mt-2" type="submit" value="Save" id="b_save"/>
       <span title="back"><a href="{% url 'accounts:profile' %}">Cancel</a></span>
     </form>
     </div>
@@ -161,7 +161,6 @@
 	          <ul class="small">
 	          {% for m in members %}
 	              <li>{{ m.name }} ({{ m.id }}) ({{ m.email }})</li>
-{#	              <li>{{ m.user.name }} ({{ m.user.id }}) ({{ m.user.email }})</li>#}
 	          {% endfor %}
 	          </ul>
 	      </div>
