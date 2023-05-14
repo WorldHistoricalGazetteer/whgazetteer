@@ -240,9 +240,10 @@ class PlaceCompareSerializer(serializers.ModelSerializer):
               'minmax' )
 
 # returns default and computed columns for owner ds browse table (ds_browse.html)
+# TODO: used by both PlaceTableViewSet and PlaceTableCollViewSet - PROBLEM?
 class PlaceTableSerializer(serializers.ModelSerializer):
+  print('hit PlaceTableSerializer()')
   dataset = DatasetSerializer()
-
   ds = serializers.SerializerMethodField()
   def get_ds(self, place):
     cell_value = '<a class="pop-link pop-dataset" data-id='+str(place.dataset.id)+\
@@ -317,11 +318,6 @@ class PlaceTableSerializer(serializers.ModelSerializer):
       val = '<i>deferred</i>'
     return val
 
-  # seq = serializers.SerializerMethodField('seq')
-  # def seq(self, place):
-  #   return place.collplace_set
-    # return self.collplace_set.first().sequence
-
   class Meta:
     model = Place
     fields =  ('url','id', 'title', 'src_id', 'fclasses',
@@ -329,9 +325,7 @@ class PlaceTableSerializer(serializers.ModelSerializer):
                   'revwhg', 'revwd', 'revtgn',
                   'review_whg', 'review_wd', 'review_tgn'
                   ,'ds', 'dataset', 'dataset_id', 'chk',
-                  'annos'
-                  )
-    # datatables_always_serialize = ('seq',)
+                  'annos')
 
 """ used by: api.views.GeoJSONViewSet() """
 class FeatureSerializer(GeoFeatureModelSerializer):

@@ -76,7 +76,7 @@ class Collection(models.Model):
   # modified = models.DateTimeField(null=True)
 
   # group, sandbox, demo, ready, public
-  status = models.CharField(max_length=12, choices=STATUS_COLL, default='sandbox')
+  status = models.CharField(max_length=12, choices=STATUS_COLL, default='sandbox', null=True, blank=True)
   featured = models.IntegerField(null=True, blank=True)
   public = models.BooleanField(default=False)
   group = models.ForeignKey("CollectionGroup", db_column='group',

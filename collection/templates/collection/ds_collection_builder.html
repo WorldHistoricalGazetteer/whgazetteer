@@ -39,8 +39,8 @@
       <div id="coll_form" class="col-sm-5 form-box mt-2">
 	      <form id="collection_form" method="POST" action="#" enctype="multipart/form-data">
 	      {% csrf_token %}
-	      <input type="hidden" name="owner" value='{{ user.id }}'></input>
-	      <input type="hidden" name="collection_class" value='dataset'></input>
+	      <input type="hidden" name="owner" value='{{ user.id }}' />
+	      <input type="hidden" name="collection_class" value='dataset' />
 				<div class="form-group">
 					<label for="Title">Title &#x02733;</label><br/>
 					{{ form.title }}
@@ -60,7 +60,9 @@
 				<div class="form-group">
 					<label for="Image">Image
 						{% if form.image_file.value %}
-					<a href="/media/{{ form.image_file.value }}">{{ object.image_file.url|remove:'/media/collections/' }}</a> (<a href="javascript:$('#img_chooser').show()">change</a>)
+						<a href="/media/{{ form.image_file.value }}">
+						{{ object.image_file.url|remove:'/media/collections/' }}</a>
+							(<a href="javascript:$('#img_chooser').show()">change</a>)
 						{% else %}
 							{{ form.image_file }}
 						{% endif %}
@@ -72,7 +74,8 @@
 						<label for="Public">Public:</label>
 						{{ form.public }}
 					{% elif action == "update" %}Not yet public, see:
-						<a href="#"><span class="help-matches" data-id="going_public_coll">making a collection public <i class="fas fa-question-circle linky"></i></span></a>
+						<a href="#"><span class="help-matches" data-id="going_public_coll">
+							making a collection public <i class="fas fa-question-circle linky"></i></span></a>
 					{% endif %}
 				</div>
 	      <hr/>

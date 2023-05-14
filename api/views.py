@@ -756,7 +756,8 @@ class GeoJSONAPIView(generics.ListAPIView):
     populates drf table in ds_browse.html
 """
 class PlaceTableViewSet(viewsets.ModelViewSet):
-  # queryset = Place.objects.all()
+  print('hit PlaceTableViewSet()')
+
   serializer_class = PlaceTableSerializer
   permission_classes = (permissions.IsAuthenticatedOrReadOnly)
 
@@ -789,7 +790,7 @@ class PlaceTableViewSet(viewsets.ModelViewSet):
     populates drf table in collection.collection_places.html
 """
 class PlaceTableCollViewSet(viewsets.ModelViewSet):
-  # queryset = Place.objects.all()
+
   serializer_class = PlaceTableSerializer
   permission_classes = (permissions.IsAuthenticatedOrReadOnly)
 
@@ -798,13 +799,19 @@ class PlaceTableCollViewSet(viewsets.ModelViewSet):
     coll: collection
   """
   def get_queryset(self):
+    print('PlaceTableCollViewSet() path', self.request.META['PATH_INFO'])
+    # /api/placetable_coll/
+    # a q value if it's a search on the table
     query = self.request.GET.get('q')
+    id_ = self.request.GET.get('id')
     from django.db.models import Min, Max
-    coll = get_object_or_404(Collection, id=self.request.GET.get('id'))
-
-    qs = coll.places.annotate(seq=Min('annos__sequence')).order_by('seq')
+    coll = get_object_or_404(Collection, id=id_)
+    if coll.collection_class == 'dataset':
+      qs = coll.places_all
+    else:
+      qs = coll.places.annotate(seq=Min('annos__sequence')).order_by('seq')
     # qs = coll.places.annotate(seq=Min('collplace__sequence')).order_by('seq')
-
+    print('qs from PlaceTableCollViewSet()', qs)
     if query is not None:
       qs = qs.filter(title__istartswith=query)
     return qs

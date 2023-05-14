@@ -644,6 +644,7 @@ class CollectionGroupGalleryView(ListView):
     uses ds_collection_builder.html
 """
 class DatasetCollectionCreateView(LoginRequiredMixin, CreateView):
+  print('hit DatasetCollectionCreateView()')
   form_class = CollectionModelForm
   template_name = 'collection/ds_collection_builder.html'
   queryset = Collection.objects.all()
@@ -785,12 +786,13 @@ class DatasetCollectionBrowseView(DetailView):
 
   def get_context_data(self, *args, **kwargs):
     context = super(DatasetCollectionBrowseView, self).get_context_data(*args, **kwargs)
+    print('DatasetCollectionBrowseView get_context_data() kwargs:',self.kwargs)
+    print('DatasetCollectionBrowseView get_context_data() request.user',self.request.user)
+
     context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
     context['mbtoken'] = settings.MAPBOX_TOKEN_WHG
     context['media_url'] = settings.MEDIA_URL
 
-    print('DatasetCollectionBrowseView get_context_data() kwargs:',self.kwargs)
-    print('DatasetCollectionBrowseView get_context_data() request.user',self.request.user)
     id_ = self.kwargs.get("id")
     # compute bounding boxes
 

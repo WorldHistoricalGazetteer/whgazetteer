@@ -168,7 +168,7 @@
 		      <div id="select_div" class="hidden">{{ form.datasets }}</div>
 		      <div id="collection_options"></div>
 		      {% if mygroups|length > 0 %}
-			      Submit to group:
+			      <span id="submit_prompt">Submit{% if form.group.value %}ted{% endif %} to group:</span>
 		        <span id="submitter" class="">
 			        {{ form.group }}{% comment %}
 			        <a id="btn_coll_submit" class="btn btn-primary btn-sm"
@@ -488,6 +488,7 @@
 	function goBrowse(){
     window.location = '/collections/{{ object.id }}/browse_pl'
 	}
+
 	function saveExit(){
     {#console.log('saveExit(callback)')#}
     {#$.when($("#collection_form").submit()).then(function(){goBrowse()})#}
@@ -546,10 +547,10 @@
 	$(".coll-place").click(function() {
       {#console.log('place record', $(this).data('pid'));#}
   })
+
 	$(".closer").click(function(){
 			$(".pop").fadeOut()
 	})
-	// fetch r/o place record to annotation panel
 
 	// remove places from collection (archive?)
 	function remove_from_collection(coll, pids) {
@@ -581,11 +582,13 @@
 			remove_these = [];
       $("#a_remove").html('')
   }
-	// remove place(s) from collection
+
+  // remove place(s) from collection
 	$("#a_remove").click(function(){
 		coll = '{{ object.id }}'
     remove_from_collection(coll, remove_these)
 	})
+
 	// mark/unmark place for removal from collection
 	$(".mark-place").click(function(e){
     e.stopPropagation()
@@ -626,6 +629,7 @@
 	$("#btn_coll_update").click(function(){
       {#console.log('save & return')#}
 	})
+
 	// show/hide editor-restricted options
   $("#editor_options").hide();
 	$('.show-hide').click(function(e) {
@@ -867,6 +871,7 @@
     $("#id_group").change(function(){
       if($("#id_group").val() == ""){
         $("#btn_coll_update").attr('value','Un-submit')
+	      $("#submit_prompt").fadeOut()
       } else {
         $("#btn_coll_update").attr('value','Submit')
       }
