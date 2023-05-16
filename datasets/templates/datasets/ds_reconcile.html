@@ -129,7 +129,7 @@
                     </p>
                     <span id="spinner"></span>
                     <ul>
-                      {% if t.result|get:"pass0" > 0 and t.task_name != "align_idx" and user in ds.owners%}
+                      {% if t.result|get:"pass0" > 0 and t.task_name != "align_idx" and user in ds.owners %}
                         <li id="pass0_{{t.task_id}}" class="li-left">Pass 0 (matched links):
                         <span class="mx-2 strong" id='{{t.task_id}}_0'>nn</span> 
                             <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass0' %}">review</a>

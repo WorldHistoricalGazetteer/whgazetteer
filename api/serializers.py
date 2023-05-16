@@ -239,8 +239,14 @@ class PlaceCompareSerializer(serializers.ModelSerializer):
 # returns default and computed columns for owner ds browse table (ds_browse.html)
 class PlaceTableSerializer(serializers.ModelSerializer):
   dataset = DatasetSerializer()
-
   ds = serializers.SerializerMethodField()
+
+  # user = serializers.SerializerMethodField()
+  # def get_user(self, place):
+  #   request = self.context.get('request', None)
+  #   if request:
+  #     return request.user
+
   def get_ds(self, place):
     cell_value = '<a class="pop-link pop-dataset" data-id='+str(place.dataset.id)+\
           ' data-toggle="popover" title="Dataset Profile" data-content=""'+\
@@ -249,10 +255,19 @@ class PlaceTableSerializer(serializers.ModelSerializer):
 
   id = serializers.SerializerMethodField()
   def get_id(self, place):
-    if place.dataset.public or place.dataset.core:
-      pid = '<a href="'+place.dataset.uri_base+str(place.id)+'">'+str(place.id)+'</a>'
+    user = self.context['request'].user
+    if place.dataset.public or place.dataset.core or place.dataset.owner == user:
+      pid = '<a href="'+settings.URL_FRONT+'api/place/'+str(place.id)+'" target="_blank">'+str(place.id)+'</a>'
     else:
       pid = place.id
+    return pid
+
+  src_id = serializers.SerializerMethodField()
+  def get_src_id(self, place):
+    if place.dataset.public or place.dataset.core:
+      pid = '<a href="'+place.dataset.uri_base+str(place.src_id)+'" target="_blank">'+str(place.src_id)+'</a>'
+    else:
+      pid = place.src_id
     return pid
 
   geo = serializers.SerializerMethodField()

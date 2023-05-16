@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'django_filters',
     'django_resized',
     'django_tables2',
+    'django_user_agents',
     'djgeojson',
     'fontawesome',
     'guardian',
@@ -71,7 +72,16 @@ MIDDLEWARE = [
   'django.middleware.csrf.CsrfViewMiddleware',
   'django.middleware.locale.LocaleMiddleware',
   'django.middleware.security.SecurityMiddleware',
+  'django_user_agents.middleware.UserAgentMiddleware',
 ]
+
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+#         'LOCATION': '127.0.0.1:11211',
+#     }
+# }
+# USER_AGENTS_CACHE = 'default'
 
 ROOT_URLCONF = 'whg.urls'
 

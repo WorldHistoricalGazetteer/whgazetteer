@@ -795,6 +795,7 @@ class PlaceTableCollViewSet(viewsets.ModelViewSet):
     coll: collection
   """
   def get_queryset(self):
+    print('user', self.request.user)
     coll = get_object_or_404(Collection, id=self.request.GET.get('id'))
     qs = coll.places_all.order_by('title')
     query = self.request.GET.get('q')
