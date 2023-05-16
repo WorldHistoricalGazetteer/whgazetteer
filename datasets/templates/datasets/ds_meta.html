@@ -28,11 +28,9 @@
 
 {% block content %}
 <div id="dataset_content" class="container mt-1 px-1">
-  {% with last=request.META.HTTP_REFERER %}
-  <p class="small"><a href="{{ last }}">{% fontawesome_icon 'arrow-left' color='#336699' %} back </a> / {{ object.title }}</p> 
-  {% endwith %}
+	{# always return to public list #}
+  <p class="small"><a href="/public_data">{% fontawesome_icon 'arrow-left' color='#336699' %} back </a> / {{ object.title }}</p>
   <ul id="dataset_tabs" class="nav nav-tabs" role="tablist">
-      {%comment%}<span class="ds-title ml-1 mr-3"><small class="text-secondary">Dataset:</small></span>{%endcomment%}
       <li class="nav-item">
           <a class="nav-link active" id="summary-tab" data-link="summary" href="" role="tab">Dataset Summary</a>
       </li>

@@ -44,9 +44,6 @@
 
 {% block content %}
 <div id="dataset_content" class="container mt-1 px-1">
-  {% with last=request.META.HTTP_REFERER %}
-    <p class="small"><a href="{{ last }}">{% fontawesome_icon 'arrow-left' color='#336699' %} back </a> / {{ object.title }}</p> 
-  {% endwith %}
   <ul id="dataset_tabs" class="nav nav-tabs" role="tablist">
 			<span class="ds-title ml-1 mr-3">{{ object.title }}</span>
       <li class="nav-item">
