@@ -257,7 +257,7 @@ class PlaceTableSerializer(serializers.ModelSerializer):
   def get_id(self, place):
     user = self.context['request'].user
     if place.dataset.public or place.dataset.core or place.dataset.owner == user:
-      pid = '<a href="'+settings.URL_FRONT+'api/place/'+str(place.id)+'" target="_blank">'+str(place.id)+'</a>'
+      pid = '<a href="'+settings.URL_FRONT+'places/'+str(place.id)+'/detail" target="_blank">'+str(place.id)+'</a>'
     else:
       pid = place.id
     return pid
