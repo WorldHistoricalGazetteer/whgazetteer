@@ -264,11 +264,12 @@ class PlaceTableSerializer(serializers.ModelSerializer):
 
   src_id = serializers.SerializerMethodField()
   def get_src_id(self, place):
-    if place.dataset.public or place.dataset.core:
-      pid = '<a href="'+place.dataset.uri_base+str(place.src_id)+'" target="_blank">'+str(place.src_id)+'</a>'
+    uri_base=place.dataset.uri_base
+    if (place.dataset.public or place.dataset.core) and 'whg' not in uri_base:
+      srcid = '<a href="'+uri_base+str(place.src_id)+'" target="_blank">'+str(place.src_id)+'</a>'
     else:
-      pid = place.src_id
-    return pid
+       srcid=place.src_id
+    return srcid
 
   geo = serializers.SerializerMethodField()
   def get_geo(self, place):
