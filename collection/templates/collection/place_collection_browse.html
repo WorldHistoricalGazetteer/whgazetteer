@@ -551,16 +551,13 @@
     }, 'z-index-2'); // place this layer below zIndex2
 
 	  // fetch geodata
-	  {#renderData("{{ coll.id }}")#}
     addPlaces()
-    {#addSources(ds_list)#}
 
     {#layer_list = getLoadedLayers(ds_list)#}
 	  layer_list=['outline','gl_active_point','gl_active_line','gl_active_poly']
     // popup generating events per layer
     for (l in layer_list){
-    {#  // TODO: allow clicking on polygons, denied here#}
-	  {#  if(layer_list[l].indexOf('point') != -1){#}
+    // TODO: allow clicking on polygons, denied here
         mappy.on('mouseenter', layer_list[l], function () {
           mappy.getCanvas().style.cursor = 'pointer';
         });
@@ -572,13 +569,13 @@
 
         mappy.on('click', layer_list[l], function (e) {
           clicked=e.features
-	        console.log('e features', clicked)
-					ftype = e.features[0].layer.type
-	        gtype = e.features[0].geometry.type
-          geom = e.features[0].geometry
-          coords = e.features[0].geometry.coordinates
-          place=e.features[0]
-	        {#console.log('geom, coords', geom, coords)#}
+	        feat = e.features[0]
+	        {#console.log('e features', clicked)#}
+					ftype = feat.layer.type
+	        gtype = feat.geometry.type
+          geom = feat.geometry
+          coords = feat.geometry.coordinates
+	        {#console.log('feature', feat)#}
 	        if(ftype == 'point'){
             var coordinates = geom.coordinates.slice();
 	         } else if (ftype == 'line'){
@@ -595,11 +592,12 @@
 	         } else {
             var coordinates = turf.centroid(geom).geometry.coordinates
 	        }
-          var pid = e.features[0].properties.pid;
-          var title = e.features[0].properties.title;
-          var src_id = e.features[0].properties.src_id;
-          var minmax = e.features[0].properties.minmax;
-          var fc = e.features[0].properties.fclasses;
+          var props = feat.properties
+          var pid = props.pid;
+          var title = props.title;
+          var when = JSON.parse(props.when);
+          var note = props.note;
+          {#var fc = feat.properties.fclasses;#}
 
           while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
             coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
@@ -607,12 +605,16 @@
 					// highlight
 	        highlightFeatureGL(pid, geom, coords, 'places')
 
+	        html = '<b>'+title+'</b>'
+	        html += when[0] != null ? '<br/><i>start</i>: '+ when[0] : ''
+	        html += when[1] != null ? '<br/><i>end</i>: '+ when[1] : ''
+	        html += note != "null" ? '<br/>'+note : ''
+              {#'<a href="javascript:getPlace('+pid+',\'popup\')">fetch info</a><br/>'+#}
+              {#'start, end: '+when#}
           // popup
           new maplibregl.Popup()
             .setLngLat(coordinates)
-            .setHTML('<b>'+title+'</b><br/>'+
-              '<a href="javascript:getPlace('+pid+',\'popup\')">fetch info</a><br/>'+
-              'start, end: '+minmax)
+            .setHTML(html)
 	          .on('close', function(){
               $("#placetable_filter input").val('').keyup()
 		          mappy.fitBounds(turf.bbox(fcoll), { padding: 20 });
@@ -895,23 +897,26 @@
 	  // TRACES
 		//
 	  descrip += '<div class="red-head-anno">ANNOTATION</div>'
-	  if(JSON.parse(data.traces).length > 0) {
+	  if(data.traces.length > 0) {
+	  {#if(JSON.parse(data.traces).length > 0) {#}
       // there is *always* a trace, even if not saved
-      trace = JSON.parse(data.traces).find(function (t) {
-        return t.fields.collection == "{{ object.id }}"
+      trace = data.traces.find(function (d) {
+      {#trace = JSON.parse(data.traces).find(function (t) {#}
+        return d.fields.collection == "{{ object.id }}"
       })
-		  let imgpath = trace.fields.image_file
-		  {#console.log('imgpath', imgpath)#}
-      blank = trace.fields.relation == null && trace.fields.note == null && trace.fields.start == null
+		  t = trace.fields
+		  let imgpath = t.image_file
+		  console.log('t', t)
+      blank = t.relation == '[""]' && t.note == null && t.start == null
       if (blank) {
         descrip += '<i>none yet</i>'
       } else {
-        if (trace.fields.relation) {
-            descrip += "<p><b><u>Relation</u></b>: " + JSON.parse(trace.fields.relation)[0] + "</p>"
+        if (t.relation) {
+            descrip += "<p><b><u>Relation</u></b>: " + JSON.parse(t.relation)[0] + "</p>"
         }
-        if (trace.fields.note) {
+        if (t.note) {
             // find & format embedded markdown link syntax
-		        linkish = trace.fields.note.replace(/\[(.*)\]\((.*)\)/gim,'<a href="$2" target="_blank">$1</a>')
+		        linkish = t.note.replace(/\[(.*)\]\((.*)\)/gim,'<a href="$2" target="_blank">$1</a>')
 		        {#console.log('linkish', linkish)#}
 		        // index of link, -1 is none
 		        linkindex = linkish.search(/<a href/gim)
@@ -925,9 +930,9 @@
 			        descrip += '<p><b><u>Notes</u></b>: ' + readMore(text, 250, innerlink) + '</p>'
 		        }
         }
-        if (trace.fields.start) {
-            descrip += '<p><b><u>Start/End</u></b>: ' + (trace.fields.start ?? "") + '/' +
-                (trace.fields.end ?? '') + '</p>'
+        if (t.start) {
+          descrip += '<p><b><u>Start/End</u></b>: ' + (t.start ?? "") + '/' +
+              (t.end ?? '') + '</p>'
         }
       }
       if (imgpath !=""){

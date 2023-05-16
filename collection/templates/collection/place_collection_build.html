@@ -103,20 +103,20 @@
 	  <ul class="nav nav-tabs" id="" role="tablist">
 		  {# create form #}
 		  <li class="nav-item" role="presentation">
-		    <button class="nav-link active" id="form-tab" data-bs-toggle="tab" data-bs-target="#coll_form"
+		    <button class="nav-link" id="form-tab" data-bs-toggle="tab" data-bs-target="#coll_form"
           type="button" role="tab" aria-controls="coll_form" aria-selected="true">
 			    {% if action == 'create' %}Create{% else %}Edit{% endif %} Collection</button>
 		  </li>
 		  {# add & annotate #}
 		  {% if action == "update" %}
 		  <li class="nav-item" role="presentation">
-		    <button class="nav-link" id="build-tab" data-bs-toggle="tab" data-bs-target="#coll_builder"
+		    <button class="nav-link active" id="build-tab" data-bs-toggle="tab" data-bs-target="#coll_builder"
           type="button" role="tab" aria-controls="coll_builder" aria-selected="false">Add and annotate places</button>
 		  </li>
 		  {% endif %}
 		</ul>
 	  <div class="tab-content" id="content">
-	    <div id="coll_form" class="tab-pane fade show active h-100">
+	    <div id="coll_form" class="tab-pane fade h-100">
 		    <form id="collection_form" method="POST" enctype="multipart/form-data">
 		    {% csrf_token %}
         <div class="row">
@@ -269,7 +269,7 @@
 		    </div>
 	    </div> {# coll_form #}
 
-	    <div id="coll_builder" class="tab-pane fade h-100" style="height: auto; position:relative;">
+	    <div id="coll_builder" class="tab-pane fade show active h-100" style="height: auto; position:relative;">
 	      <div class="d-flex h-100">
 	        <div class="col-sm-6" id="builder">
 						<ul id="coll_tabs" class="nav nav-tabs " role="tablist">
@@ -330,7 +330,7 @@
 					              <p class="my-1"><b>Create date</b>: {{ d.create_date|date:"d M Y" }}</p>
 					              <p class="my-1"><b># rows</b>: {{ d.numrows }}
 					              <a href="{% url 'collection:remove-ds' ds_id=d.id coll_id=object.id %}" class="float-end">
-						              <i class="`fas fa-minus-square linky`"></i> remove</a>
+						              <i class="fas fa-minus-square linky`"></i> remove</a>
 					              </p>
 					            </div>
 					          </div>

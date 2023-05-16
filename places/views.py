@@ -58,7 +58,7 @@ class PlacePortalView(DetailView):
 
   def get_object(self):
     id_ = self.kwargs.get("id")
-    print('args',self.args,'kwargs:',self.kwargs)
+    print('PlacePortalView() args',self.args,'kwargs:',self.kwargs)
     es = settings.ES_CONN
     q = {"query":{"bool": {"must": [{"match":{"_id": id_}}]}}}
     pid=es.search(index='whg',body=q)['hits']['hits'][0]['_source']['place_id']

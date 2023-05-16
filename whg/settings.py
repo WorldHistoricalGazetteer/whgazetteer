@@ -35,8 +35,8 @@ INSTALLED_APPS = [
     'django_filters',
     'django_resized',
     'django_tables2',
+    'django_user_agents',
     'djgeojson',
-    # 'fontawesome',
     'guardian',
     'leaflet',
     'mathfilters',
@@ -74,6 +74,7 @@ MIDDLEWARE = [
   'django.middleware.csrf.CsrfViewMiddleware',
   'django.middleware.locale.LocaleMiddleware',
   'django.middleware.security.SecurityMiddleware',
+  'django_user_agents.middleware.UserAgentMiddleware',
 ]
 
 ROOT_URLCONF = 'whg.urls'

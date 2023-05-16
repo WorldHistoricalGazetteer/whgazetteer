@@ -267,6 +267,13 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
   font-weight: 600;
   color: #004080;
 }
+.title-mobile {
+  /*width: 100%;*/
+  font-family:  'Raleway', sans-serif;
+  font-size: 2rem;
+  font-weight: 600;
+  color: #004080;
+}
 .centered {
   position: absolute;
   top: 50%;
@@ -280,6 +287,14 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
   color: #999;
   /*background-color: rgba(242,240,230,0.7);*/
   margin-top: -12px;
+}
+#tagline_mobile {
+  width: 59%;
+  font-weight: bold;
+  font-size: 1rem;
+  color: #999;
+  /*background-color: rgba(242,240,230,0.7);*/
+  margin-top: -6px;
 }
 .home-header {
   background: #336699;

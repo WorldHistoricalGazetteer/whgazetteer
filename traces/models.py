@@ -55,7 +55,7 @@ class TraceAnnotation(models.Model):
 
     @property
     def blank(self):
-        return not self.relation and not self.note and not self.start and not self.end
+        return self.relation == [''] and not self.note and not self.start and not self.end
 
     def __str__(self):
         return '%s:%d' % (self.collection.id, self.place.id)

@@ -14,7 +14,6 @@ from places.models import *
 from traces.models import TraceAnnotation
 
 import json, geojson
-#from edtf import parse_edtf
 from shapely.geometry import shape
 
 # TODO: these are updated in both Dataset & DatasetFile  (??)
@@ -203,10 +202,10 @@ class PlaceSerializer(serializers.ModelSerializer):
   descriptions = PlaceDescriptionSerializer(many=True, read_only=True)
   depictions = PlaceDepictionSerializer(many=True, read_only=True)
 
-  # traces = serializers.serialize("json", TraceAnnotation.objects.filter())
+  # TODO: returning json here may break Place Portal page
   traces = serializers.SerializerMethodField('trace_anno')
   def trace_anno(self, place):
-    return coreserializers.serialize("json", TraceAnnotation.objects.filter(place=place.id))
+    return json.loads(coreserializers.serialize("json", TraceAnnotation.objects.filter(place=place.id)))
 
   geo = serializers.SerializerMethodField('has_geom')
 

@@ -15,13 +15,25 @@
 
 <div class="container mt-1" style="height: calc(100vh - 210px);">
 	<div id="banner" class="banner-bare w-100 my-1 p-2">
-		<div class="centered w-100">
-		  <span class="title mb-0"><img src="{% static 'images/whg_logo.svg'%}"
-          class="d-inline-block align-bottom me-2" height=80 width=80 alt=""/>World Historical Gazetteer</span>
-		  <span id="tagline" class="mx-auto" style="display:block">linking knowledge about the past via place</span>
-		</div>
+		is mobile?: {{ request.user_agent.is_mobile }}
+		{% if request.user_agent.is_mobile %}
+			<div class="centered ">
+			  <span class="title-mobile mb-0">
+{#				  <img src="{% static 'images/whg_logo.svg'%}" class="d-inline-block align-bottom mr-2" height=80 width=80 alt=""/>#}
+				  World Historical Gazetteer
+			  </span>
+			  <span id="tagline_mobile" class="mx-auto" style="display:block">linking knowledge about the past via place</span>
+			</div>
+		{% else %}
+			<div class="centered w-100">
+			  <span class="title mb-2">
+				  <img src="{% static 'images/whg_logo.svg'%}" class="d-inline-block align-bottom me-2" height=55 width=55 alt=""/>
+				  World Historical Gazetteer
+			  </span>
+			  <span id="tagline" class="mx-auto" style="display:block">linking knowledge about the past via place</span>
+			</div>
+		{% endif %}
 	</div>
-
 	<div id="content_top" class="row gx-2 gy-2 mx-0 h-75">
 		<div class="col-sm-3" id="intro">
 			<div class="p-2 border h-100">

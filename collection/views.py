@@ -1,4 +1,5 @@
 # collection.views (collections)
+from dateutil.parser import isoparse
 import json, validators
 from validators import ValidationFailure
 from itertools import count
@@ -85,7 +86,7 @@ def add_places(request, *args, **kwargs):
     status, msg = ['','']
     dupes = []
     added = []
-    print('add_places request', request.POST)
+    # print('add_places request', request.POST)
     coll = Collection.objects.get(id=request.POST['collection'])
     place_list = [int(i) for i in request.POST['place_list'].split(',')]
     for p in place_list:
@@ -110,7 +111,7 @@ def add_places(request, *args, **kwargs):
         added.append(p)
       else:
         dupes.append(place.title)
-      msg = {"added": added, "dupes": dupes}
+      print('add_places() result',{"added": added, "dupes": dupes})
     return JsonResponse({'status': status, 'msg': msg}, safe=False)
 
 """ 
@@ -163,8 +164,16 @@ def flash_collection_create(request, *args, **kwargs):
     result = {"id": collobj.id, 'title': collobj.title}
   return JsonResponse(result, safe=False)
 
+def stringer(str):
+  if str:
+    return isoparse(str).strftime('%Y' if len(str)<=5 else '%b %Y' if len(str)<=8 else '%d %b %Y')
+  else:
+    return None
+def when_format(ts):
+  return [stringer(ts[0]), stringer(ts[1])]; print(result)
+
 """ gl map needs this """
-# TODO: needs
+# TODO:
 def fetch_geojson_coll(request, *args, **kwargs):
   # print('fetch_geojson_coll kwargs',kwargs)
   id_=kwargs['id']
@@ -172,25 +181,19 @@ def fetch_geojson_coll(request, *args, **kwargs):
   pids = [p.id for p in coll.places_all]
   rel_keywords = coll.rel_keywords
   # build FeatureCollection
-  # alternate
   features_t = [
     {"type": "Feature", "geometry": t.place.geoms.all()[0].jsonb,
-     "properties":{"pid":t.place.id, "relation": t.relation[0]}}
+     "properties":{
+       "pid":t.place.id,
+       "title": t.place.title,
+       "relation": t.relation[0],
+       "when": when_format([t.start, t.end]),
+       "note": t.note
+     }}
     for t in coll.traces.filter(archived=False)
-    # for t in coll.traces.all()
   ]
-  # print(features_t[0])
-  # features=PlaceGeom.objects.filter(place_id__in=pids).values_list(
-  #   'jsonb','place_id','src_id','place__title','place__minmax',
-  #   'place__fclasses', 'place__dataset__id', 'place__dataset__label')
   fcoll = {"type":"FeatureCollection","features":features_t,"relations":rel_keywords}
-  # fcoll = {"type":"FeatureCollection","features":[],"relations":rel_keywords}
-  # for f in features:
-  #   feat={"type":"Feature",
-  #         "properties":{"pid":f[1],"src_id":f[2],"title":f[3],"minmax":f[4],
-  #                       "fclasses":f[5], "dsid":f[6], "dslabel":f[7]},
-  #         "geometry":f[0]}
-  #   fcoll['features'].append(feat)
+
   return JsonResponse(fcoll, safe=False, json_dumps_params={'ensure_ascii':False,'indent':2})
 
 """ returns json for display """
@@ -230,8 +233,9 @@ def add_dataset(request, *args, **kwargs):
   added = []
   coll.datasets.add(ds)
   for place in ds.places.all():
-    gotplace = TraceAnnotation.objects.filter(collection=coll, place=place)
-    if not gotplace:
+    # has non-archived trace annotation?
+    gottrace = TraceAnnotation.objects.filter(collection=coll, place=place, archived=False)
+    if not gottrace:
       t = TraceAnnotation.objects.create(
         place=place,
         src_id=place.src_id,
@@ -251,22 +255,31 @@ def add_dataset(request, *args, **kwargs):
     else:
       dupes.append(place.title)
     msg = {"added": added, "dupes": dupes}
-  return JsonResponse({'status': status, 'msg': msg}, safe=False)
-  # return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+  # return JsonResponse({'status': status, 'msg': msg}, safe=False)
+  return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
-"""removes dataset from collection & clean up "omitted"; refreshes page """
+""" 
+  removes dataset from collection & clean up "omitted"; refreshes page 
+  remove   
+"""
 def remove_dataset(request, *args, **kwargs):
   coll = Collection.objects.get(id=kwargs['coll_id'])
   ds = Dataset.objects.get(id=kwargs['ds_id'])
   print('remove_dataset(): coll, ds', coll, ds)
-  # remove any "omitted" from ds being removed
-  remove_these = list(set(list(ds.placeids)))
-  # remove_these = list(set(list(ds.placeids)) & set(coll.omitted) )
-  # coll.omitted = list(set(coll.omitted)-set(remove_these))
-  coll.save()
+
+  ds_pids = ds.placeids
+  # remove CollPlace records
+  CollPlace.objects.filter(place_id__in=ds_pids).delete()
+  # remove dataset from collections_dataset
   coll.datasets.remove(ds)
-  # remove trace annos for all places from deleted dataset
-  TraceAnnotation.objects.filter(collection=coll, place__in=ds.placeids).delete()
+  # archive any non-blank trace annotations
+  current_traces = coll.traces.filter(collection=coll, place__in=ds_pids, archived=False)
+  non_blank = [t.id for t in current_traces.all() if t.blank == False]
+  if non_blank:
+    # flag as archived; someone will want to recover them, count on it
+    current_traces.filter(id__in=non_blank).update(archived=True)
+    # delete blanks
+    current_traces.filter(archived=False).delete()
 
   return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
