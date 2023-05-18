@@ -251,9 +251,13 @@ class PlaceTableSerializer(serializers.ModelSerializer):
     return cell_value
 
   id = serializers.SerializerMethodField()
+
   def get_id(self, place):
+    # link to place record
+    uri_base = place.dataset.uri_base
+    uri_prefix = uri_base if 'whgaz' not in uri_base else settings.URL_FRONT+''
     if place.dataset.public or place.dataset.core:
-      pid = '<a href="'+place.dataset.uri_base+str(place.id)+'" target="_blank">'+str(place.id)+'</a>'
+      pid = '<a href="'+uri_prefix+str(place.id)+'" target="_blank">'+str(place.id)+'</a>'
     else:
       pid = place.id
     return pid

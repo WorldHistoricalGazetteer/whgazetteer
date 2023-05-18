@@ -766,7 +766,9 @@
       'gl_active_point', 'circle-stroke-width',
         { 'property':'pid',
           'type':'categorical',
-          'stops':[[Number(pid), 2]]}
+          'stops':[[Number(pid), 2]],
+	        'default': 1
+        }
     );
 
     mappy.setPaintProperty(
@@ -906,7 +908,7 @@
       })
 		  t = trace.fields
 		  let imgpath = t.image_file
-		  console.log('t', t)
+		  {#console.log('t', t)#}
       blank = t.relation == '[""]' && t.note == null && t.start == null
       if (blank) {
         descrip += '<i>none yet</i>'

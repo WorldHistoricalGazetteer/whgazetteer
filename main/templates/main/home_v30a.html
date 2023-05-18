@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="{% static 'css/spin.css' %}"/>
 	<style>
 		#intro {font-size: .9rem;}
+		.home-button {position: relative;}
 	</style>
 {% endblock %}
 
@@ -15,7 +16,6 @@
 
 <div class="container mt-1" style="height: calc(100vh - 210px);">
 	<div id="banner" class="banner-bare w-100 my-1 p-2">
-		is mobile?: {{ request.user_agent.is_mobile }}
 		{% if request.user_agent.is_mobile %}
 			<div class="centered ">
 			  <span class="title-mobile mb-0">
@@ -62,17 +62,34 @@
 	</div> <!-- content_top -->
 
 	<div id="content_bottom" class="row gx-2 gy-2 mx-0 h-25">
-		<div class="col-sm-3 p-1">
-			<div class="h-100 border p-1">search and browse</div>
+		<div class="col-sm-3 p-1 home-button">
+			<div class="h-100 border p-1">
+				<div class="home-icon-row">home-icon-row</div>
+				<h5>Search and browse <span class="red-bold">{{ count}}</span> published places</h5>
+			</div>
+			<a href="{% url 'search-page' %}"><span class="link-spanner"></span></a>
 		</div>
-		<div class="col-sm-3 p-1">
-			<div class="h-100 border p-1">upload and enhance</div>
+		<div class="col-sm-3 p-1 home-button">
+			<div class="h-100 border p-1">
+				<div class="home-icon-row">home-icon-row</div>
+				<h5>Upload, enhance, link, and publish your place data</h5>
+			</div>
+			<a href="{% url 'main:tute-contributing' %}"><span class="link-spanner"></span></a>
 		</div>
-		<div class="col-sm-3 p-1">
-			<div class="h-100 border p-1">build</div>
+		<div class="col-sm-3 p-1 home-button">
+			<div class="h-100 border p-1">
+				<div class="home-icon-row">home-icon-row</div>
+				<h5>Build collections</h5>
+			</div>
+			<a href="{% url 'main:tute-collections' %}"><span class="link-spanner"></span></a>
 		</div>
-		<div class="col-sm-3 p-1">
-			<div class="h-100 border p-1">use</div>
+		<div class="col-sm-3 p-1 home-button">
+			<div class="h-100 border p-1">
+				<div class="home-icon-row">home-icon-row</div>
+				<h5>Use WHG data in teaching and software</h5>
+			</div>
+{#			<a href="/"><span class="link-spanner"></span></a>#}
+			<a href="{% url 'main:teaching-page' %}"><span class="link-spanner"></span></a>
 		</div>
 	</div> <!-- content_bottom-->
   <div class="modal fade" id="image_modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">

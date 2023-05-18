@@ -26,7 +26,7 @@ urlpatterns = [
     path('elastic/', include('elastic.urls')),
     path('tutorials/', include('main.urls')),
     path('resources/', include('resources.urls')),
-    path('teaching/', TeachingPortalView.as_view(), name="teaching-page"),
+    # path('teaching/', TeachingPortalView.as_view(), name="teaching-page"),
 
     # DEPRECATED
     # path('dashboard/', DashboardView.as_view(), name='dashboard'),

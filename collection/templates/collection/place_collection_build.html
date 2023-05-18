@@ -340,27 +340,27 @@
 				      <div id="coll_placelist" class="tab-pane fade show active" role="tabpanel"
 				           aria-labelledby="coll_placelist-tab">
 						    {% if seq_places|length > 0 %}
-						      {% for p in seq_places %}
-						        <div class="col-place-card" id="{{ p.p.id }}" data-id="{{ p.p.id }}" data-idx="{{ p.seq }}">
-								      <p><b>{{ p.p.title }}</b> {{ p.p.ccodes }}
-									      <i>pid: (<a class="coll-place" data-pid={{ p.p.id }} href="#" >{{ p.p.id }}</a>)</i>
+						      {% for cp in seq_places %}
+						        <div class="col-place-card" id="{{ cp.p.id }}" data-id="{{ cp.p.id }}" data-idx="{{ cp.seq }}">
+								      <p><b>{{ cp.p.title }}</b> {{ cp.p.ccodes }}
+									      <i>pid: (<a class="coll-place" data-pid={{ cp.p.id }} href="#" >{{ cp.p.id }}</a>)</i>
 												{# huge kluge: tooltip breaks for single place!? #}
 								        {% if seq_places|length > 1 %}
 								        <span class="float-end me-3"> <span class="seq-visible">id: {{ p.id }}; seq:{{ p.seq }}</span>
 									        <a class="mark-place" href="#" title="Remove from collection" rel="tooltip"
-                                data-pid="{{ p.p.id }}" data-col="{{ object.id }}">
+                                data-pid="{{ cp.p.id }}" data-col="{{ object.id }}">
 										        <i class="fas fa-minus-square" style="color:#ff8080"></i></a>
 								        </span>
 								        {% else %}
 								        <span class="float-end me-1">
-									        <a class="mark-place" href="#" title="Remove from collection" data-pid="{{ p.p.id }}"
+									        <a class="mark-place" href="#" title="Remove from collection" data-pid="{{ cp.p.id }}"
                                data-col="{{ object.id }}">
 										        <i class="fas fa-minus-square" style="color:#ff8080"></i></a>
 								        </span>
 								        {% endif %}
 								          {# TODO: CollPlace/TraceAnnotation redundancy issue #}
-										      {% for t in p.p.traces.all %}
-											      {% if t.collection.id == object.id and t.saved %}
+										      {% for t in cp.p.traces.all %}
+											      {% if t.collection.id == object.id and t.saved and not t.archived %}
 											        <i class="red-head ms-3">annotated</i>
 											      {% endif %}
 										      {% endfor %}
