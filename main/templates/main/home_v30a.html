@@ -6,9 +6,14 @@
 {% block extra_head %}
   <script src="{% static 'js/spin.umd.js' %}"></script>  
   <link rel="stylesheet" href="{% static 'css/spin.css' %}"/>
+  <link href="https://fonts.googleapis.com/css?family=Archivo+Black" rel="stylesheet">
 	<style>
 		#intro {font-size: .9rem;}
-		.home-button {position: relative;}
+		.home-button {position: relative; font-family: "Archivo Black";}
+		{#.home-icon-row {text-align: center;}#}
+		.button-hilite {color: #336699;}
+		{#.button-hilite {color: #004080;}#}
+		img {image-orientation: none;}
 	</style>
 {% endblock %}
 
@@ -64,29 +69,31 @@
 	<div id="content_bottom" class="row gx-2 gy-2 mx-0 h-25">
 		<div class="col-sm-3 p-1 home-button">
 			<div class="h-100 border p-1">
-				<div class="home-icon-row">home-icon-row</div>
-				<h5>Search and browse <span class="red-bold">{{ count}}</span> published places</h5>
+				<div class="home-icon-row">
+					<img src="{% static 'images/001-binoculars.png'%}" class="" height=40 width=40 alt=""/>
+				</div>
+				<h5><span class="button-hilite">Search and browse</span> <span class="red-head">{{ count}}</span> published places</h5>
 			</div>
 			<a href="{% url 'search-page' %}"><span class="link-spanner"></span></a>
 		</div>
 		<div class="col-sm-3 p-1 home-button">
 			<div class="h-100 border p-1">
-				<div class="home-icon-row">home-icon-row</div>
-				<h5>Upload, enhance, link, and publish your place data</h5>
+				<div class="home-icon-row"><img src="{% static 'images/001-up-arrow.png'%}" class="" height=40 width=40 alt=""/></div>
+				<h5><span class="button-hilite">Upload, enhance, link, and publish</span> your place data</h5>
 			</div>
 			<a href="{% url 'main:tute-contributing' %}"><span class="link-spanner"></span></a>
 		</div>
 		<div class="col-sm-3 p-1 home-button">
 			<div class="h-100 border p-1">
-				<div class="home-icon-row">home-icon-row</div>
-				<h5>Build collections</h5>
+				<div class="home-icon-row"><img src="{% static 'images/008-collect.png'%}" class="" height=42 width=42 alt=""/></div>
+				<h5><span class="button-hilite">Build</span> collections</h5>
 			</div>
 			<a href="{% url 'main:tute-collections' %}"><span class="link-spanner"></span></a>
 		</div>
 		<div class="col-sm-3 p-1 home-button">
 			<div class="h-100 border p-1">
-				<div class="home-icon-row">home-icon-row</div>
-				<h5>Use WHG data in teaching and software</h5>
+				<div class="home-icon-row"><img src="{% static 'images/011-teaching.png'%}" class="" height=42 width=42 alt=""/></div>
+				<h5><span class="button-hilite">Use</span> WHG data in teaching and software</h5>
 			</div>
 {#			<a href="/"><span class="link-spanner"></span></a>#}
 			<a href="{% url 'main:teaching-page' %}"><span class="link-spanner"></span></a>
