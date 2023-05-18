@@ -34,7 +34,7 @@
 {% endblock %}
 {% block content %}
 <div class="container">
-  <h5 class="mt-3">
+  <h5 class="mt-3 pe-4">
     {% if action == 'update' %}
         Update Collection Group
         <span class="text-danger">"{{ form.title.value }}"</span>
@@ -50,7 +50,7 @@
     {% endif %}
   </h5>
 {#  <div class="flex row">#}
-  <div class="d-flex container row">
+  <div class="d-flex container row pe-0">
     <div class="form-box mt-2 col-sm-4">
 	    {% if action == 'update' %}
 	    <form id="cg_form" method="POST" action="{% url 'collection:collection-group-update' object.id %}"
@@ -171,18 +171,40 @@
     <div class="col-sm-4 mt-2">
       <h5 class="sharing-header">Submitted Collections</h5>
       <div id="collections_content">
-        <ul class="small">
-        {% for m in collections.all %}
-	        <li><a href="{% url 'collection:ds-collection-summary' m.id %}">
-		        {{ m.title }}</a> ({{ m.owner.name }})</li>
-        {% endfor %}
-        </ul>
+        <table class="small w-100">
+	        <thead>
+	          <th>Collection (member)</th><th>gallery</th><th><i class="fas fa-star" style="color:#ffcc00"></i></th>
+	        </thead>
+	        {% for mc in collections.all %}
+		        <tr data-id="{{ mc.id }}">
+		          <td><a href="{% url 'collection:ds-collection-summary' mc.id %}">
+			        {{ mc.title }}</a><br/>({{ mc.owner.name }})</td>
+		          <td><input type="checkbox" class="gallery" data-id="{{ mc.id }}"/></td>
+		          <td><input type="checkbox" class="nominate" data-id="{{ mc.id }}"/></td>
+		        </tr>
+	        {% endfor %}
+        </table>
       </div>
     </div>
   </div> <!-- d-flex -->
 </div> <!-- container -->
 <script type="text/javascript">
   $(function() {
+    $(".gallery").change(function(){
+      if (this.checked){
+        console.log('add to gallery', $(this).data('id'))
+       } else {
+        console.log('remove from gallery', $(this).data('id'))
+       }
+    })
+    $(".nominate").change(function(){
+      if (this.checked){
+        console.log('nominate', $(this).data('id'))
+       } else {
+        console.log('un-nominate', $(this).data('id'))
+       }
+    })
+
     localStorage.removeItem("newusers")
     console.log('ls new users', localStorage.getItem("newusers"))
     $("#l_addusers").click(function(e){
