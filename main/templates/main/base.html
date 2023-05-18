@@ -8,13 +8,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   
-  <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous"> -->
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
 
-	<!-- <script src="{% static 'jquery/jquery-3.6.0.min.js' %}"></script> -->
 	<script src="https://code.jquery.com/jquery-3.6.3.js"></script>
-{#	<script src="https://code.jquery.com/jquery-migrate-3.4.1.js"></script>#}
-  
+
 	<script src="{% static 'jquery-ui-1.13.2/jquery-ui.min.js' %}"></script>
   <link rel="stylesheet" href="{% static 'jquery-ui-1.13.2/jquery-ui.min.css' %}"/>
 
@@ -52,186 +49,96 @@
 </script>
 <body>
   <header>
-<nav class="navbar navbar-expand-lg bg-light">
-  <div class="container">
-    <a href="{% url 'home' %}">
-        <img src="{% static 'images/whg_logo_38h.png'%}" alt="WHG" width="50" height="38">
-    </a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse smallish pt-2" id="navbarSupportedContent">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <div id="links_home">
-            <span id="version_badge" class="badge text-bg-success">v3.0a</span>
-            <span id="beta_links">
-                <a href="{% url 'main:tute-guide' %}" class="text-decoration-none">guide</a> |
-                <a href="#" class="feedback text-decoration-none">contact us</a> |
-                <a href="https://twitter.com/whgazetteer" target="_blank">
-                <img src="{% static 'images/twitter30h.png'%}" height=14></a>
-            </span>
-        </div>
-        <div id="links_other" class="d-none">
-            <a class="navbar-brand me-0" href="{% url 'home' %}">&nbsp;World Historical Gazetteer</a>
-            <a href="#" class="feedback text-decoration-none">contact us</a> |
-            <a href="https://twitter.com/whgazetteer" target="_blank"><img src="{% static 'images/twitter30h.png'%}" height=14></a>
-        </div>
-        </ul>
-        <ul class="navbar-nav">
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'search-page' %}">Search</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'main:teaching-page' %}">Teaching</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'main:tutorials' %}">Guides</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'usingapi' %}">API</a>
-            </li>
-        <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            About
-            </a>
-            <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="{% url 'about' %}">Introduction</a></li>
-                <li><a class="dropdown-item" href="{% url 'system' %}">System details</a></li>
-                <li><a class="dropdown-item" href="{% url 'licensing' %}">Licensing, Terms</a></li>
-                <li><a class="dropdown-item" href="{% url 'credits' %}">Credits & Contacts</a></li>
-                <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item" href="http://blog.whgazetteer.org" target="_blank">News</a></li>
-            </ul>
-        </li>
-        {% if user.is_authenticated %}
-            <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Data
-                </a>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="{% url 'data-datasets' %}">My datasets</a></li>
-                    <li><a class="dropdown-item" href="{% url 'data-collections' %}">My collections</a></li>
-                    <li><a class="dropdown-item" href="{% url 'data-areas' %}">My study areas</a></li>
-                    {% if user.role == 'group_leader' or user|has_group:"beta30" or user.is_superuser %}
-                    <li><a class="dropdown-item" href="{% url 'data-collgroups' %}">My groups</a></li>
-                    {% endif %}
-                    <li><a class="dropdown-item" href="{% url 'public-lists' %}">Public data</a></li>
-                  {% if user|has_group:'whg_team' or user|has_group:'teaching' %}
-                        <li><a class="dropdown-item" href="{% url 'data-resources' %}">Teaching Resources</a></li>
-                  {% endif %}
-                </ul>
-            </li>
-            <li class="nav-item larger">
-            <a class="nav-link" rel="tooltip" title="{{ user.name }}'s profile" href="{% url 'accounts:profile' %}">
-                <i class="fas fa-user" style="color:#336699;"></i></a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link `ms-5" href="javascript:{document.getElementById('logout').submit()}">Logout</a>
-                <form id="logout" method="post" action="{% url 'accounts:logout' %}">
-                  {% csrf_token %}</form>
-            </li>
-        {% else %}
-            <li class="nav-item">
-                <a class="nav-link ms-5" href="{% url 'accounts:register' %}">Register</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'accounts:login' %}">Login</a>
-            </li>
-        {% endif %}
-        </ul>
-    </div>
-  </div>
-</nav>
-    {% comment %}<nav class="navbar navbar-expand-lg navbar-light">
-      <div class="container" style="background-color: gainsboro;">
-        <a class="navbar-brand me-0" href="{% url 'home' %}">
-          <img src="{% static 'images/whg_logo_38h.png'%}" class="d-inline-block align-bottom" height=38 width=50 alt=""/></a>
-				<!-- alternate nav elements for home page and others-->
-				<div id="nav_links" class="smallish d-lg-block pt-2">
-					<div id="links_home">
-						<span id="version_badge" class="badge badge-warning" >v3.0a</span>
-						<a href="#">
-							<span id="whatsnew_badge" class="badge badge-success help-matches" data-id="whatsnew21">What's New</span>
-						</a>
-						<span id="beta_links">
-							<a href="{% url 'main:tute-guide' %}">guide</a> |
-							<a href="#" class="feedback">contact us</a> |
-							<a href="https://twitter.com/whgazetteer" target="_blank">
-							<img src="{% static 'images/twitter30h.png'%}" height=14></a>
-						</span>
-					</div>
-					<div id="links_other" class="d-none">
-						<a class="navbar-brand me-0" href="{% url 'home' %}">&nbsp;World Historical Gazetteer</a>
-						<a href="#" class="feedback">contact us</a> |
-						<a href="https://twitter.com/whgazetteer" target="_blank"><img src="{% static 'images/twitter30h.png'%}" height=14></a>
-					</div>
-				</div>
-				<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-				  <span class="navbar-toggler-icon"></span>
-				</button>
-        <div class="collapse navbar-collapse pt-1" id="navbarNavAltMarkup">
-          <div class="navbar-nav ml-auto pt-2 smallish">
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'search-page' %}">Search</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'teaching-page' %}">Teaching</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'main:tutorials' %}">Guides</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'usingapi' %}">API</a>
-            </li>
-						<li class="nav-item dropdown">
-						  <a class="nav-link dropdown-toggle" href="#" id="aboutDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-							About
-						  </a>
-						  <div class="dropdown-menu smallish z-2000" aria-labelledby="aboutDropdown">
-								<a class="dropdown-item" href="{% url 'about' %}">Introduction</a>
-								<a class="dropdown-item" href="{% url 'system' %}">System details</a>
-								<a class="dropdown-item" href="{% url 'licensing' %}">Licensing, Terms</a>
-								<a class="dropdown-item" href="{% url 'credits' %}">Credits & Contacts</a>
-								<div class="dropdown-divider"></div>
-								<a class="dropdown-item" href="http://blog.whgazetteer.org" target="_blank">
-								  News <i class="fas fa-external-link-alt"></i></a>
-						  </div>
-						</li>
-						{% if user.is_authenticated %}
-						<li class="nav-item dropdown">
-							  <a class="nav-link dropdown-toggle" href="#" id="dataDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-								Data
-							  </a>
-							  <div class="dropdown-menu smallish z-2000" aria-labelledby="dataDropdown">
-								<a class="dropdown-item" href="{% url 'data-datasets' %}">My datasets</a>
-								<a class="dropdown-item" href="{% url 'data-collections' %}">My collections</a>
-								<a class="dropdown-item" href="{% url 'data-areas' %}">My study areas</a>
-								<a class="dropdown-item" href="{% url 'public-lists' %}">Public data</a>
-							  {% if user|has_group:'whg_team' or user|has_group:'teaching' %}
-									<a class="dropdown-item" href="{% url 'data-resources' %}">Teaching Resources</a>
-							  {% endif %}
-							  </div>
-						</li>
-					  <li class="nav-item larger">
-						<a class="nav-link" rel="tooltip" title="{{ user.name }}'s profile" href="{% url 'accounts:profile' %}"><i class="fas fa-user" style="color:#336699;"></i></a>
-					  </li>
-					  <li class="nav-item">
-							<a class="nav-link `ms-5" href="javascript:{document.getElementById('logout').submit()}">Logout</a>
-							<form id="logout" method="post" action="{% url 'accounts:logout' %}">
-							  {% csrf_token %}</form>
-					  </li>
-						{% else %}
-					  <li class="nav-item">
-						<a class="nav-link ms-5" href="{% url 'accounts:register' %}">Register</a>
-					  </li>
-					  <li class="nav-item">
-						<a class="nav-link" href="{% url 'accounts:login' %}">Login</a>
-					  </li>
-            {% endif %}
-          </div>
-        </div>
-      </div>
-    </nav>{% endcomment %}
+		<nav class="navbar navbar-expand-lg bg-light">
+		  <div class="container">
+		    <a href="{% url 'home' %}">
+		        <img src="{% static 'images/whg_logo_38h.png'%}" alt="WHG" width="50" height="38">
+		    </a>
+		    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+		      <span class="navbar-toggler-icon"></span>
+		    </button>
+		    <div class="collapse navbar-collapse smallish pt-2" id="navbarSupportedContent">
+		        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+		        <div id="links_home">
+		            <span id="version_badge" class="badge text-bg-success">v3.0a</span>
+		            <span id="beta_links">
+		                <a href="{% url 'main:tute-guide' %}" class="text-decoration-none">guide</a> |
+		                <a href="#" class="feedback text-decoration-none">contact us</a> |
+		                <a href="https://twitter.com/whgazetteer" target="_blank">
+		                <img src="{% static 'images/twitter30h.png'%}" height=14></a>
+		            </span>
+		        </div>
+		        <div id="links_other" class="d-none">
+		            <a class="navbar-brand me-0" href="{% url 'home' %}">&nbsp;World Historical Gazetteer</a>
+		            <a href="#" class="feedback text-decoration-none">contact us</a> |
+		            <a href="https://twitter.com/whgazetteer" target="_blank"><img src="{% static 'images/twitter30h.png'%}" height=14></a>
+		        </div>
+		        </ul>
+		        <ul class="navbar-nav">
+		            <li class="nav-item">
+		              <a class="nav-link" href="{% url 'search-page' %}">Search</a>
+		            </li>
+		            <li class="nav-item">
+		              <a class="nav-link" href="{% url 'main:teaching-page' %}">Teaching</a>
+		            </li>
+		            <li class="nav-item">
+		              <a class="nav-link" href="{% url 'main:tutorials' %}">Guides</a>
+		            </li>
+		            <li class="nav-item">
+		              <a class="nav-link" href="{% url 'usingapi' %}">API</a>
+		            </li>
+		        <li class="nav-item dropdown">
+		            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+		            About
+		            </a>
+		            <ul class="dropdown-menu">
+		                <li><a class="dropdown-item" href="{% url 'about' %}">Introduction</a></li>
+		                <li><a class="dropdown-item" href="{% url 'system' %}">System details</a></li>
+		                <li><a class="dropdown-item" href="{% url 'licensing' %}">Licensing, Terms</a></li>
+		                <li><a class="dropdown-item" href="{% url 'credits' %}">Credits & Contacts</a></li>
+		                <li><hr class="dropdown-divider"></li>
+		                <li><a class="dropdown-item" href="http://blog.whgazetteer.org" target="_blank">News</a></li>
+		            </ul>
+		        </li>
+		        {% if user.is_authenticated %}
+		            <li class="nav-item dropdown">
+		                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+		                Data
+		                </a>
+		                <ul class="dropdown-menu">
+		                    <li><a class="dropdown-item" href="{% url 'data-datasets' %}">My datasets</a></li>
+		                    <li><a class="dropdown-item" href="{% url 'data-collections' %}">My collections</a></li>
+		                    <li><a class="dropdown-item" href="{% url 'data-areas' %}">My study areas</a></li>
+		                    {% if user.role == 'group_leader' or user|has_group:"beta30" or user.is_superuser %}
+		                    <li><a class="dropdown-item" href="{% url 'data-collgroups' %}">My groups</a></li>
+		                    {% endif %}
+		                    <li><a class="dropdown-item" href="{% url 'public-lists' %}">Public data</a></li>
+		                  {% if user|has_group:'whg_team' or user|has_group:'teaching' %}
+		                        <li><a class="dropdown-item" href="{% url 'data-resources' %}">Teaching Resources</a></li>
+		                  {% endif %}
+		                </ul>
+		            </li>
+		            <li class="nav-item larger">
+		            <a class="nav-link" rel="tooltip" title="{{ user.name }}'s profile" href="{% url 'accounts:profile' %}">
+		                <i class="fas fa-user" style="color:#336699;"></i></a>
+		            </li>
+		            <li class="nav-item">
+		                <a class="nav-link `ms-5" href="javascript:{document.getElementById('logout').submit()}">Logout</a>
+		                <form id="logout" method="post" action="{% url 'accounts:logout' %}">
+		                  {% csrf_token %}</form>
+		            </li>
+		        {% else %}
+		            <li class="nav-item">
+		                <a class="nav-link ms-5" href="{% url 'accounts:register' %}">Register</a>
+		            </li>
+		            <li class="nav-item">
+		                <a class="nav-link" href="{% url 'accounts:login' %}">Login</a>
+		            </li>
+		        {% endif %}
+		        </ul>
+		    </div>
+		  </div>
+		</nav>
   </header>
 
   {% block content %}

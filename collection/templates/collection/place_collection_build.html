@@ -103,20 +103,20 @@
 	  <ul class="nav nav-tabs" id="" role="tablist">
 		  {# create form #}
 		  <li class="nav-item" role="presentation">
-		    <button class="nav-link" id="form-tab" data-bs-toggle="tab" data-bs-target="#coll_form"
+		    <button class="nav-link active" id="form-tab" data-bs-toggle="tab" data-bs-target="#coll_form"
           type="button" role="tab" aria-controls="coll_form" aria-selected="true">
 			    {% if action == 'create' %}Create{% else %}Edit{% endif %} Collection</button>
 		  </li>
 		  {# add & annotate #}
 		  {% if action == "update" %}
 		  <li class="nav-item" role="presentation">
-		    <button class="nav-link active" id="build-tab" data-bs-toggle="tab" data-bs-target="#coll_builder"
+		    <button class="nav-link" id="build-tab" data-bs-toggle="tab" data-bs-target="#coll_builder"
           type="button" role="tab" aria-controls="coll_builder" aria-selected="false">Add and annotate places</button>
 		  </li>
 		  {% endif %}
 		</ul>
 	  <div class="tab-content" id="content">
-	    <div id="coll_form" class="tab-pane fade h-100">
+	    <div id="coll_form" class="tab-pane fade show active h-100">
 		    <form id="collection_form" method="POST" enctype="multipart/form-data">
 		    {% csrf_token %}
         <div class="row">
@@ -128,6 +128,7 @@
 			      <input type="hidden" name="owner" value='{{ form.owner.value }}' />
 		      {% endif %}
 		      <input type="hidden" name="collection_class" value='place' />
+{#		      status: {{ form.status.value }}#}
 					<div class="form-group">
 						<label for="Title">Title &#x02733;</label><br/>{{ form.title }}
 					</div>
@@ -154,7 +155,7 @@
 	          </span>
 		      </div>
 					<p class="my-0 small">&#x02733;<i><b> required</b></i>
-		        {% if action == 'update' and user in whgteam %}
+		        {% if action == 'update' and editorial %}
 			        <span><a class="float-end show-hide" href="#">
 				        editor options <i class="fas fa-cog linky"></i>
 			        </a></span>
@@ -170,13 +171,10 @@
 		      {% if mygroups|length > 0 %}
 			      <span id="submit_prompt">Submit{% if form.group.value %}ted{% endif %} to group:</span>
 		        <span id="submitter" class="">
-			        {{ form.group }}{% comment %}
-			        <a id="btn_coll_submit" class="btn btn-primary btn-sm"
-						   href="/collections/submit/{{ object.id }}/" role="button">Submit</a>{% endcomment %}
+			        {{ form.group }}
 		        </span>
 					{% endif %}
 	      </div>
-          {# more collection properties #}
 		      <div class="col-sm-7">
 		      {% if action == 'update' %}
 			      <div class="form-group mb-2">
@@ -268,7 +266,7 @@
 	          </form>
 		    </div>
 	    </div> {# coll_form #}
-	    <div id="coll_builder" class="tab-pane fade show active h-100" style="height: auto; position:relative;">
+	    <div id="coll_builder" class="tab-pane fade h-100" style="height: auto; position:relative;">
 	      <div class="d-flex h-100">
 	        <div class="col-sm-6" id="builder">
 						<ul id="coll_tabs" class="nav nav-tabs " role="tablist">
@@ -874,8 +872,6 @@
       } else {
         $("#btn_coll_update").attr('value','Submit')
       }
-      {#console.log('id_group.val()', $("#id_group").val())#}
-      {#$("#btn_coll_update").attr('value','Submit')#}
       console.log('changed group setting')
     })
 		$("#coll_placelist div:first-child").click()

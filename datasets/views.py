@@ -2870,6 +2870,7 @@ class DatasetSummaryView(LoginRequiredMixin, UpdateView):
     context['collaborators'] = ds.collaborators.all()
     context['owners'] = ds.owners
     context['whgteam'] = User.objects.filter(groups__name='whg_team')
+    context['editorial'] = True if me.groups.filter(name__in=['editorial']).exists() else False
 
     # excludes datasets uploaded directly (1 & 2)
     if file.file:

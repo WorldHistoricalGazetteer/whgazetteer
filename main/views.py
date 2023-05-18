@@ -18,7 +18,7 @@ from elasticsearch7 import Elasticsearch
 es = settings.ES_CONN
 from random import shuffle
 from urllib.parse import urlparse
-# import requests
+import sys
 
 def custom_error_view(request, exception=None):
     print('error request', request.GET.__dict__)
@@ -46,14 +46,17 @@ def create_link(request, *args, **kwargs):
 
     label = request.POST['label']
     link_type = request.POST['link_type']
-    license = request.POST['license']
+    # license = request.POST['license']
 
-    # model = 'Collection'; objectid=4; uri='http://somewhere.edu'; label='relevant?'; link_type=''
+    # Collection or CollectionGroup
     # from django.apps import apps
     Model = apps.get_model(f"collection.{model}")
-    model_str=model.lower()
+    # print('Model', Model)
+    model_str=model.lower() if model == 'collection' else 'collection_group'
     obj = Model.objects.get(id=objectid)
-    gotlink = obj.links.filter(uri=uri)
+    gotlink = obj.related_links.filter(uri=uri)
+    # gotlink = obj.links.filter(uri=uri)
+    print('model_str, obj, gotlink', model_str, obj, gotlink)
     status, msg = ['','']
     # columns in Links table
     # collection_id, collection_group_id, trace_annotation_id, place_id
@@ -71,6 +74,7 @@ def create_link(request, *args, **kwargs):
                   'id':link.id}
         status="ok"
       except:
+        print('failed', sys.exc_info())
         status = "failed"
         result = "Link *not* created...why?"
     else:

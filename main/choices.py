@@ -98,9 +98,9 @@ FORMATS = [
 
 LINKTYPES = [
     # ('page','web page'),
-    ('webpage',"<i title class='fas fa-window-maximize'></i>"),
+    ('webpage',"<i class='fas fa-window-maximize'></i>"),
     ('image','<img src="/static/images/noun-photo.svg" width="16"/>') ,
-    ('document',"<i title class='far fa-file-pdf linky'></i>")
+    ('document',"<i class='far fa-file-pdf linky'></i>")
 ]
 
 LOG_CATEGORIES = [
@@ -182,11 +182,11 @@ RESOURCEFILE_ROLE = [
 ]
 
 STATUS_COLL = [
-    ('published', 'Published'),
-    ('ready', 'Ready'),
-    ('demo', 'Demo'),
     ('sandbox', 'Sandbox'),
+    ('demo', 'Demo'),
     ('group', 'Group'),
+    ('ready', 'Ready'),
+    ('published', 'Published'),
 ]
 
 STATUS_DS = [

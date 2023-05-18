@@ -125,7 +125,7 @@
           <tr>
             <td style="vertical-align:top;">
 	            <b>Public?</b>
-	            {% if user in whgteam %}
+	            {% if editorial %}
 		            <a href="#" class="edit-public"><i class="fas fa-edit linky fa-xs"></i></a>
 	            {% endif %}
             </td>
@@ -133,21 +133,11 @@
 	            <span class="form-public">{{ form.public.value }}</span>
               <span class="hidden editing-public">{{ form.public }}</span>
 
-	            {% if not user in whgteam and ds.public == False %}
-		              <a href="#"><span class="help-matches" data-id="going_public_ds">Details on making a dataset public. <i class="fas fa-question-circle linky"></i></span></a>
+	            {% if not editorial and ds.public == False %}
+		              <a href="#"><span class="help-matches" data-id="going_public_ds">
+			              Details on making a dataset public. <i class="fas fa-question-circle linky"></i>
+		              </span></a>
 	            {% endif %}
-{% comment %}
-	            {% if user in whgteam %}
-		            {{ ds.public }} {{ form.public }}
-	            {% else %}
-
-                {% if ds.public == False %}
-		              Not yet; <a href="#"><span class="help-matches" data-id="going_public_ds">Details on making a dataset public. <i class="fas fa-question-circle linky"></i></span></a>
-                {% else %}
-	                {{ ds.public }}
-                {% endif %}
-              {% endif %}
-{% endcomment %}
             </td>
           </tr>
           <tr>
@@ -376,9 +366,6 @@
 </div>
 
 <script type="text/javascript">
-  // activate all tooltips
-  $("[rel='tooltip']").tooltip();
-  $("[data-toggle=popover]").popover({html:true})
 
   dater = function(){
     const date = new Date(Date.now());
@@ -593,6 +580,10 @@
   });
 
   $(function(){
+	  // activate all tooltips
+    $("[rel='tooltip']").tooltip();
+    $("[data-toggle=popover]").popover({html:true})
+
     // help modals
     $(".help-matches").click(function(){
       page=$(this).data('id')
@@ -639,6 +630,7 @@
     $(".btn-ds").toggleClass("hidden")
   })
   $(".edit-public").click(function() {
+    console.log('edit-public')
     $(".editing-public").toggleClass("hidden")
     $(".form-public").toggleClass("hidden")
     $(".btn-ds").toggleClass("hidden")
@@ -684,4 +676,5 @@
     $(".btn-ds").toggleClass("hidden")
   })
 </script>
+
 {% endblock %}

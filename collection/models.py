@@ -49,11 +49,6 @@ class Collection(models.Model):
   description = models.TextField(max_length=3000)
   keywords = ArrayField(models.CharField(max_length=50), null=True)
 
-  # array of place ids "removed" by user from the collection
-  # filtered in collection.places_all and can't be annotated
-  # kluge-y
-  # omitted = ArrayField(models.IntegerField(), blank=True, default=default_omitted)
-
   # per-collection relation keyword choices, e.g. waypoint, birthplace, battle site
   # TODO: ?? need default or it errors for some reason
   rel_keywords = ArrayField(models.CharField(max_length=30), blank=True, null=True)
@@ -79,16 +74,18 @@ class Collection(models.Model):
   status = models.CharField(max_length=12, choices=STATUS_COLL, default='sandbox', null=True, blank=True)
   featured = models.IntegerField(null=True, blank=True)
   public = models.BooleanField(default=False)
+
+  # flag set by group_leader
+  nominated = models.BooleanField(default=False)
+  nominate_date = models.DateTimeField(null=True, blank=True)
+
+
   group = models.ForeignKey("CollectionGroup", db_column='group',
                             related_name="group", null=True, blank=True, on_delete=models.PROTECT)
 
   # group_leader sees submitted
   submitted = models.BooleanField(default=False)
   submit_date = models.DateTimeField(null=True, blank=True)
-
-  # flag set by group_leader
-  nominated = models.BooleanField(default=False)
-  nominate_date = models.DateTimeField(null=True, blank=True)
 
   # collections  can comprise >=0 datasets, >=1 places
   datasets = models.ManyToManyField("datasets.Dataset", blank=True)
@@ -224,7 +221,10 @@ class CollectionGroupUser(models.Model):
     managed = True
     db_table = 'collection_group_user'
 
-""" handled in Link model now """
+""" 
+  handled in Link model now 
+"""
+# TODO: decommision; it's embedded!
 class CollectionLink(models.Model):
   collection = models.ForeignKey(Collection, default=None,
     on_delete=models.CASCADE, related_name='links')

@@ -413,7 +413,10 @@ class PlaceCollectionUpdateView(LoginRequiredMixin, UpdateView):
     print('referrer', self.request.META.get('HTTP_REFERER'))
     id_ = self.kwargs.get("id")
     obj = form.save(commit=False)
+    if obj.group:
+      obj.status = 'group'
     obj.save()
+
     Log.objects.create(
       # category, logtype, "timestamp", subtype, note, dataset_id, user_id
       category = 'collection',
@@ -595,7 +598,7 @@ class CollectionGroupUpdateView(UpdateView):
   def form_valid(self, form):
     id_ = self.kwargs.get("id")
     if form.is_valid():
-      # print('form.cleaned_data', form.cleaned_data)
+      print('form.cleaned_data', form.cleaned_data)
       obj = form.save(commit=False)
       obj.save()
       return redirect('/collections/group/' + str(id_) + '/update')
