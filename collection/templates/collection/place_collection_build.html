@@ -98,7 +98,7 @@
 	    {% else %}
 		    Place Collection Builder: {<span class="red-head">new</span>}
 	    {% endif %}
-	    action: {{ action }}
+{#	    action: {{ action }}#}
 	  </h5>
 	  <ul class="nav nav-tabs" id="" role="tablist">
 		  {# create form #}
@@ -867,7 +867,7 @@
     $("#id_group option:first").text('None')
     $("#id_group").change(function(){
       if($("#id_group").val() == ""){
-        $("#btn_coll_update").attr('value','Un-submit')
+        $("#btn_coll_update").attr('value','Withdraw')
 	      $("#submit_prompt").fadeOut()
       } else {
         $("#btn_coll_update").attr('value','Submit')
@@ -914,9 +914,6 @@
 			}
 	 })
     // TODO: change text depending on state
-	  {#if($("#id_group").length){#}
-    {#  $('#id_group').prepend($('<option value=0><i>None</i></option>'));#}
-	  {# }#}
     // scroll to place w/last saved annotation
     offset = sessionStorage.getItem('offset')
 		$("#coll_placelist").scrollTop(offset)

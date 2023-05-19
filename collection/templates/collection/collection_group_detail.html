@@ -68,7 +68,11 @@
 	        <p>Please download the full
 		        <a href="/media/{{ object.file }}" target="_blank">
 			        {% if object.type == 'class' %}assignment {% else %}session{% endif %}description</a>
-		        for details.</p>
+		        for details.
+	        </p>
+          {% if object.gallery and submitted > 0 %}
+	          <p><a href="{% url 'collection:collection-group-gallery' object.id %}">Group gallery</a></p>
+          {% endif %}
           {% if links|length > 0 %}
 	          <p class="mb-0">Some related links:</p>
 	          <ul>

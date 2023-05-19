@@ -756,8 +756,7 @@ class GeoJSONAPIView(generics.ListAPIView):
     populates drf table in ds_browse.html
 """
 class PlaceTableViewSet(viewsets.ModelViewSet):
-  print('hit PlaceTableViewSet()')
-
+  # print('hit PlaceTableViewSet()')
   serializer_class = PlaceTableSerializer
   permission_classes = (permissions.IsAuthenticatedOrReadOnly)
 

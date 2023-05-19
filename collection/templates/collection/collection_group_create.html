@@ -39,6 +39,10 @@
         Update Collection Group
         <span class="text-danger">"{{ form.title.value }}"</span>
 	      <span class="float-end half">
+	        {% if object.gallery %}
+			      <a href="{% url 'collection:collection-group-gallery' object.id %}">gallery</a>&nbsp;
+	        {% endif %}
+{#		      <i class="fas fa-eye linky"></i>#}
 			    <a href="{% url 'collection:collection-group-detail' object.id %}">
 					    view</a>&nbsp;<i class="fas fa-eye linky"></i>
 	        <a href="{% url 'collection:collection-group-delete' object.id %}"
@@ -188,14 +192,17 @@
                data-bs-content="Check to nominate for inclusion in public WHG gallery"
                    data-bs-trigger="hover focus"><i class="fas fa-star" style="color:#ffcc00"></i></a></th>
 	        </thead>
+          {% load dataset_extras %}
 	        {% for mc in collections.all %}
 		        <tr data-id="{{ mc.id }}">
 		          <td><a href="{% url 'collection:ds-collection-summary' mc.id %}">
 			        {{ mc.title }}</a><br/>({{ mc.owner.name }})</td>
 		          <td class="text-center">
-			          <input type="checkbox" class="reviewed" data-id="{{ mc.id }}"/></td>
+			          <input type="checkbox" class="reviewed" data-id="{{ mc.id }}"
+			            {% if mc.status == 'reviewed' %} checked = 'checked'{% endif %} /></td>
 		          <td class="text-center">
-			          <input type="checkbox" class="nominate" data-id="{{ mc.id }}"/></td>
+			          <input type="checkbox" class="nominate" data-id="{{ mc.id }}"
+			            {% if mc.nominated %} checked = 'checked'{% endif %} /></td>
 		        </tr>
 	        {% endfor %}
         </table>
@@ -205,12 +212,87 @@
 </div> <!-- container -->
 
 <script type="text/javascript">
+	// flag collection as submitted, shows up on leader's list
+	function group_connect(action){
+    console.log('submitting collection {{ object.id }} to group '+ $("#id_group").val())
+    var formData = new FormData()
+		formData.append('action', action)
+		formData.append('coll', '{{ object.id }}')
+		formData.append('group', $("#id_group").val())
+		formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+		$.ajax({
+	      type: 'POST',
+	      enctype: 'multipart/form-data',
+	      url: '{% url "collection:group-connect" %}',
+	      processData: false,
+	      contentType: false,
+	      cache: false,
+	      data: formData,
+	      success:function(response){
+		      if(response.status == 'ok'){
+            console.log(response)
+		      } else {
+						console.log(response)
+		      }
+	      }
+			})
+	}
+
 	function collection_status(cid, checked){
-    console.log('status-change cid, checked', cid, checked)
-	}
+    console.log('toggle status "group" <> "reviewed"; cid, checked', cid, checked)
+		// TODO: if reviewed, appears in group gallery if there is one
+		coll_status = checked ? 'reviewed' : 'group'
+    console.log('change collection status for {{ object.id }}', coll_status)
+		{#return#}
+    var formData = new FormData()
+		formData.append('coll', cid)
+		{#formData.append('group', $("#id_group").val())#}
+		formData.append('status', coll_status)
+		formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+		$.ajax({
+      type: 'POST',
+      enctype: 'multipart/form-data',
+      url: '{% url "collection:status-update" %}',
+      processData: false,
+      contentType: false,
+      cache: false,
+      data: formData,
+      success:function(response){
+	      {#if(response.status == 'ok'){#}
+          console.log(response)
+	      {# } else {#}
+				{#	console.log(response)#}
+	      {# }#}
+      }
+		})
+  }
 	function nominate(cid, checked){
-    console.log('nominating cid, checked', cid, checked)
+    console.log('toggle nominated status; cid, checked', cid, checked)
+		// TODO: if nominated, reviewed by WHG editors for student gallery
+    {#nominated = checked ? 'reviewed' : 'group'#}
+		{#return#}
+    var formData = new FormData()
+		formData.append('coll', cid)
+		formData.append('nominated', checked)
+		formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+		$.ajax({
+      type: 'POST',
+      enctype: 'multipart/form-data',
+      url: '{% url "collection:nominator" %}',
+      processData: false,
+      contentType: false,
+      cache: false,
+      data: formData,
+      success:function(response){
+	      {#if(response.status == 'ok'){#}
+          console.log(response)
+	      {# } else {#}
+				{#	console.log(response)#}
+	      {# }#}
+      }
+		})
 	}
+
   $(function() {
 		const popoverTriggerList = $('[data-bs-toggle="popover"]')
 		const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl))

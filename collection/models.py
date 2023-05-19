@@ -84,7 +84,7 @@ class Collection(models.Model):
                             related_name="group", null=True, blank=True, on_delete=models.PROTECT)
 
   # group_leader sees submitted
-  submitted = models.BooleanField(default=False)
+  # submitted = models.BooleanField(default=False)
   submit_date = models.DateTimeField(null=True, blank=True)
 
   # collections  can comprise >=0 datasets, >=1 places

@@ -241,7 +241,7 @@ class PlaceCompareSerializer(serializers.ModelSerializer):
 # returns default and computed columns for owner ds browse table (ds_browse.html)
 # TODO: used by both PlaceTableViewSet and PlaceTableCollViewSet - PROBLEM?
 class PlaceTableSerializer(serializers.ModelSerializer):
-  print('hit PlaceTableSerializer()')
+  # print('hit PlaceTableSerializer()')
   dataset = DatasetSerializer()
   ds = serializers.SerializerMethodField()
   def get_ds(self, place):

@@ -13,7 +13,11 @@ app_name='collection'
 
 urlpatterns = [
 
-    # DATASET collections (datasets only)
+    # GALLERIES
+    path('group/<int:id>/gallery', views.CollectionGroupGalleryView.as_view(), name='collection-group-gallery'),
+    path('gallery', views.CollectionGalleryView.as_view(), name='collection-gallery'),
+
+                  # DATASET collections (datasets only)
     path('create_ds/', views.DatasetCollectionCreateView.as_view(), name='ds-collection-create'),
     path('<int:id>/update_ds', views.DatasetCollectionUpdateView.as_view(), name='ds-collection-update'),
     path('<int:pk>/summary_ds', views.DatasetCollectionSummaryView.as_view(), name='ds-collection-summary'),
@@ -47,6 +51,8 @@ urlpatterns = [
     path('remove_link/<int:id>/', views.remove_link, name="remove-link"),
     # submits or unsubmits collection to/from a group
     path('group_connect/', views.group_connect, name="group-connect"),
+    path('status_update/', views.status_update, name="status-update"),
+    path('nominate/', views.nominator, name="nominator"),
 
     # function-based views to process a trace annotation
     path('<int:id>/annotate', csrf_exempt(annotate), name="collection-annotate"),

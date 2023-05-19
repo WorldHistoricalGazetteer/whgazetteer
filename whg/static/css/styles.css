@@ -57,6 +57,9 @@ label {vertical-align:text-top;}
 .alert {padding: 0 1.25rem !important;}
 .arial {font-family: arial, san-serif;}
 .bg-light { background-color: #fff !important; }
+.bg-tan { background-color: burlywood !important; color:white;}
+.bg-seagreen { background-color: #3B8794 !important; color:white;}
+.bg-lightseagreen { background-color: lightseagreen !important; color:white;}
 .border-red { border:2px dotted red;}
 .checkbox-inline {margin-right:.3rem;}
 .clippy {cursor:pointer;}
@@ -94,6 +97,7 @@ label {vertical-align:text-top;}
 .linky {color: #5d96cd;}
 .linkypop {color: #993333;}
 .linkyred {color: #ff0000;}
+.linkylite {color: aliceblue;}
 
 /*.more {display: none;}*/
 .nobr {white-space: nowrap;}

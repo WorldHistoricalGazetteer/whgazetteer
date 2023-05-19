@@ -1,19 +1,34 @@
 {% extends "main/base.html" %}
-
+{% load leaflet_tags %}
 {% load static %}
 
 {% block title %}<title>WHG v3.0a</title>{% endblock %}
 {% block extra_head %}
-  <script src="{% static 'js/spin.umd.js' %}"></script>  
+  {% leaflet_js %}
+  {% leaflet_css %}
+  <script src="{% static 'js/aliases.js' %}"></script>
+  <script src="{% static 'js/parents.js' %}"></script>
+  <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+  <link rel="stylesheet" href="//cdn.datatables.net/1.10.16/css/dataTables.bootstrap4.min.css">
+
+  <script src="{% static 'js/spin.umd.js' %}"></script>
   <link rel="stylesheet" href="{% static 'css/spin.css' %}"/>
   <link href="https://fonts.googleapis.com/css?family=Archivo+Black" rel="stylesheet">
+
+	<link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet">
+	<script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>
+{#	<script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>#}
+{#	<link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" />#}
+
 	<style>
 		#intro {font-size: .9rem;}
 		.home-button {position: relative; font-family: "Archivo Black";}
 		{#.home-icon-row {text-align: center;}#}
-		.button-hilite {color: #336699;}
-		{#.button-hilite {color: #004080;}#}
+		.button-hilite {color: #54A1DA;}
+		.ds-header { background-color: #3979B1; color: #fff; }
+		.coll-header { background-color: #54A1DA; color: #fff; }
 		img {image-orientation: none;}
+		#map { position: absolute; top: 0; bottom: 0; width: 100%; }
 	</style>
 {% endblock %}
 
@@ -24,7 +39,6 @@
 		{% if request.user_agent.is_mobile %}
 			<div class="centered ">
 			  <span class="title-mobile mb-0">
-{#				  <img src="{% static 'images/whg_logo.svg'%}" class="d-inline-block align-bottom mr-2" height=80 width=80 alt=""/>#}
 				  World Historical Gazetteer
 			  </span>
 			  <span id="tagline_mobile" class="mx-auto" style="display:block">linking knowledge about the past via place</span>
@@ -32,7 +46,7 @@
 		{% else %}
 			<div class="centered w-100">
 			  <span class="title mb-2">
-				  <img src="{% static 'images/whg_logo.svg'%}" class="d-inline-block align-bottom me-2" height=55 width=55 alt=""/>
+				  <img src="{% static 'images/whg_logo.svg'%}" class="d-inline-block align-bottom me-2" height=80 width=80 alt=""/>
 				  World Historical Gazetteer
 			  </span>
 			  <span id="tagline" class="mx-auto" style="display:block">linking knowledge about the past via place</span>
@@ -51,16 +65,30 @@
 			</div>
 		</div>
 		<div class="col-sm-6">
-			<div class="p-2 border mb-1 h-75 bg-light">map in the middle</div>
-			<div class="p-2 border bg-light" style="height: 24%;">map blurb</div>
+			<div class="border mb-1 h-75 bg-light" style="position: relative;">
+				<div id="map"></div>
+			</div>
+			<div class=" p-1 border bg-light" style="height: 24%;">
+				<p>Praesent ac vehicula nulla. Sed sit amet lacinia arcu.
+					Praesent suscipit a justo non ornare. Nulla a ligula commodo, laoreet risus a, cursus neque.
+					</p>
+			</div>
 		</div>
 		<div class="col-sm-3">
 			<div class="gy-2 h-100 bg-light pb-1">
-				<div class="h-50 border mb-1 p-1">
-					<h6 class="bg-secondary text-light p-1">Datasets</h6>
+				<div class="h-50 border mb-1 p-1"> {# #3979B1 #} {# #54A1DA #}
+					<h6 class="ds-header p-1 strong">Datasets
+						<span class="float-end small">
+							<a class="linkylite" href="">Gallery</a>
+						</span></h6>
+					<div><p>carousel</p></div>
 				</div>
 				<div class="h-50 border p-1">
-					<h6 class="bg-secondary text-light p-1">Collections</h6>
+					<h6 class="coll-header p-1 strong">Collections
+						<span class="float-end small">
+							<a class="linkylite" href="{% url 'collection:collection-gallery' %}">Gallery</a>
+						</span></h6>
+					<div><p>carousel</p></div>
 				</div>
 			</div>
 		</div>
@@ -72,7 +100,8 @@
 				<div class="home-icon-row">
 					<img src="{% static 'images/001-binoculars.png'%}" class="" height=40 width=40 alt=""/>
 				</div>
-				<h5><span class="button-hilite">Search and browse</span> <span class="red-head">{{ count}}</span> published places</h5>
+				<h5><span class="button-hilite">Search and browse</span> <span class="red-head">
+					{{ count}}</span> published place attestations</h5>
 			</div>
 			<a href="{% url 'search-page' %}"><span class="link-spanner"></span></a>
 		</div>
@@ -86,14 +115,14 @@
 		<div class="col-sm-3 p-1 home-button">
 			<div class="h-100 border p-1">
 				<div class="home-icon-row"><img src="{% static 'images/008-collect.png'%}" class="" height=42 width=42 alt=""/></div>
-				<h5><span class="button-hilite">Build</span> collections</h5>
+				<h5><span class="button-hilite">Build</span> custom collections</h5>
 			</div>
 			<a href="{% url 'main:tute-collections' %}"><span class="link-spanner"></span></a>
 		</div>
 		<div class="col-sm-3 p-1 home-button">
 			<div class="h-100 border p-1">
 				<div class="home-icon-row"><img src="{% static 'images/011-teaching.png'%}" class="" height=42 width=42 alt=""/></div>
-				<h5><span class="button-hilite">Use</span> WHG data in teaching and software</h5>
+				<h5><span class="button-hilite">Use WHG data</span> in teaching and software</h5>
 			</div>
 {#			<a href="/"><span class="link-spanner"></span></a>#}
 			<a href="{% url 'main:teaching-page' %}"><span class="link-spanner"></span></a>
@@ -132,5 +161,14 @@ $(function(){
     $('#image_modal').modal('show');   
   });	
 })
+
+mapboxgl.accessToken = '{{ mbtokenwhg }}';
+const map = new mapboxgl.Map({
+	container: 'map',
+	style: 'mapbox://styles/kgeographer/ckidglq8l2nra19nzzbl995ue',
+	center: [10.2385, 29.8626], // starting position [lng, lat]
+	zoom: 0.1 // starting zoom
+});
+
 </script>
 {% endblock %}

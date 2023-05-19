@@ -400,7 +400,6 @@
 
   // generates visible_layers[], visible_layerids[]
   visibleFeaturesIds = function() {
-    <!--console.trace()-->
     scope = searchScope()  // idx or db
     search_class = searchClass()  // idx or db
     visible_layerids = [];
@@ -510,10 +509,10 @@
     console.log('shown_layers', shown_layers._layers)
     for(l in hide_these){hide_these[l].removeFrom(mappy)}
     for(l in show_these){show_these[l].addTo(mappy)}
-    <!--return-->
+
     // this does a zoom, triggering mappy.on('zoomend')
     mappy.fitBounds(shown_layers.getBounds(), {padding:[100,100]})
-    <!--mappy.fitBounds(shown_layers.getBounds())-->
+
   }
   /*
     *** mapFilter() ***
@@ -748,8 +747,7 @@
 
     // mapbox tokens
     var token_whg = '{{ mbtoken }}',
-      token_mb = '{{ mbtoken }}',
-      token_kg = '{{ mbtoken }}';
+      token_mb = '{{ mbtoken }}'
 
   // style/tile urls
     var mbstyle_url = 'https://api.mapbox.com/styles/v1/{id}/tiles/256/{z}/{x}/{y}?access_token={token}',

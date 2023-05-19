@@ -2,7 +2,6 @@
 {% block title %}<title>WHG::Teaching</title>{% endblock %}
 
 {% block content %}
-
 	{% load geojson_tags %}
 	{% load leaflet_tags %}
 	{% load static %}
@@ -22,15 +21,15 @@
     }
 		/* .leaflet-container-default {height: 250px !important;} */
 		.resource-gallery {background-color:rgb(238, 238, 238); overflow:auto; border-bottom: 1px solid gainsboro;}
-		.gallery-banner {border-bottom: 1px solid lightgray;
-			background-color:rgb(60, 136, 148); color: white;}
+		.gallery-banner-collections {border-bottom: 1px solid lightgray;
+			background-color:lightseagreen; color: white;}
 		.regions-ttlink {color:grey; font-size:.75rem; float:right; text-decoration-line: underline;}
 		.reset-link {float:right; display:none; color:white; text-decoration-line: underline;}
 		#teaching_bottom {height:65%;}
 		#teaching_top {height:230px;}
 		.teaching-essay {outline: rgb(60, 136, 148) 1px solid; box-shadow: 4px 4px rgb(221, 221, 221);
 			border-radius: 4px; background-color: ivory; min-height:auto; overflow-y: auto;}
-		.resource-card {float:left; margin-right:.1rem; 
+		.resource-card {float:left; margin-right:.1rem;
 			width: 33%; height: 175px; overflow-y:auto; background-color: white;}
 		.resource-card:hover {cursor: pointer; opacity:0.8;}
 		.resource-card-header {width:100%; background-color: honeydew;}
@@ -42,68 +41,46 @@
 		#region_label {font-family: 'Raleway', sans-serif !important; font-size:1rem; color: tomato;}
 		.leaflet-container, .leaflet-container-default {min-height: 220px !important; max-height: 230px !important;}
 	</style>
-	{% leaflet_js %}
-	{% leaflet_css %}
 	{% endblock %}
 
 	<div class="container pt-2 container-md" style="height: calc(100vh - 65px); position:relative;">
 		<section class="text-center">
 			<div class="container mb-1" style="position:relative">
-				<h3>Collections Gallery</h3>
+				<h3>{{ group }} <span class="ital fs-6">{{ group.owner.name}}</span></h3>
 			</div>
 		</section>
-		<div id="teaching_top" class="row">
-			<div class="row">
-				<div class="col-md-7" style="font-size: 1.3rem;">
-					<p>Collections in WHG are sets of place records found in our database and/or index.</p>
-				</div>
-				<div class="col-md-5">{% leaflet_map "main" %}</div>
-			</div>
-		</div> <!-- .row -->
-		<div id="teaching_bottom" class="row mt-2">
-			<div class="col-sm-4 px-0" style="height: 80%;">
-				<div class="teaching-essay p-2">
-					{% comment %}
-					<div id="">
-					<h5 class="mb-0 strong">Place in World History</h5>
-					<p class="my-1"><a href="https://www.worldhistory.pitt.edu/people/ruth-mostern" target="_blank">Ruth Mostern</a> <span class="font-italic small ms-2">WHG Project Director</span></p>
-					<p class="mb-0" style="font-size:.85rem;">Most of us use the word place without thinking too much about what it means, but for historians, place can be a powerful concept. According to the geographer John Agnew, when we say that something is a place, we are invoking three ideas.  First, we are talking about something that has a <u>location</u>. A place exists somewhere on the surface of the earth. Second, we mean that it has a <u>locale</u>. A place is a location that is a setting for social relations. Third, we are referring to a <u>sense of place</u>, which means that some  people have had experiences that they associate with that location.  In other words, a place is a location in which memorable events have transpired. <span class="modal-link float-end me-1" data-id="essay_rm"><a href="#" >more...</a></span></p>
-					</div>{% endcomment %}
-				</div>
-			</div>
-			<div class="col-sm-8 pe-0" style="height: 85%;">
+{#		<div id="teaching_top" class="row">#}
+{#			<div class="row">#}
+{#				<div class="col-md-7" style="font-size: 1.3rem;">#}
+{#					<p>Collections in WHG are sets of place records found in our database and/or index.</p>#}
+{#				</div>#}
+{#				<div class="col-md-5">{% leaflet_map "main" %}</div>#}
+{#			</div>#}
+{#		</div> <!-- .row -->#}
+		<div id="gallery_bottom" class="row mt-2">
+{#			<div class="col-sm-4 px-0" style="height: 80%;">#}
+{#				<div class=" p-2">#}
+{#				</div>#}
+{#			</div>#}
+			<div class="col-sm-12 pe-0" style="height: 85%;">
 				<div class="resource-gallery h-100">
-					<div class="gallery-banner ps-2 small w-100";>
-						TEACHING RESOURCES ({{ resource_list|length }})
+					<div class="gallery-banner-collections ps-2 small w-100";>COLLECTIONS ({{ collections|length }})
 						<span id="regions_reset" class="reset-link me-2" style="cursor:pointer;">reset filter</span>
 					</div>
 					<div class="ps-1">
-						{# this pins featured cards #}
-						{% for r in featured %}
-							<div class="resource-card mt-1" data-regions="{{r.regions}}">
-								<div class="resource-card-header ps-2 small ">{{ r.type }}
-									<span class="regions-ttlink me-1" data-toggle="tooltip" data-html="true" title="{{r.regions}}">
-										<i class="fas fa-globe linky"></i> regions</span>
-								</div>
+						{% for c in collections %}
+							<div class="resource-card mt-1">
+{#								<div class="resource-card-header ps-2 small ">{{ r.type }}#}
+{#									<span class="regions-ttlink me-1" data-toggle="tooltip" data-html="true" title="{{r.regions}}">#}
+{#										<i class="fas fa-globe linky"></i> regions</span>#}
+{#								</div>#}
 								<div class="resource-card-content px-2 pt-1" data-id={{r.id}}>
-									{% with remainder=190|add:r.title_length %}
-									<h6><a href="{% url 'resources:resource-detail' r.id %}">{{ r.title }}</a></h6>
-									<p class="resource-card-blurb my-1">{{ r.description|trunc_it:remainder }} </p>
-									{%endwith%}
-								</div>
-							</div>
-						{% endfor %}
-						{# the rest #}
-						{% for r in resource_list %}
-							<div class="resource-card mt-1" data-regions="{{r.regions}}">
-								<div class="resource-card-header ps-2 small ">{{ r.type }}
-									<span class="regions-ttlink me-1" data-toggle="tooltip" data-html="true" title="{{r.regions}}">
-										<i class="fas fa-globe linky"></i> regions</span>
-								</div>
-								<div class="resource-card-content px-2 pt-1" data-id={{r.id}}>
-									{% with remainder=190|add:r.title_length %}
-									<h6><a href="{% url 'resources:resource-detail' r.id %}">{{ r.title }}</a></h6>
-									<p class="resource-card-blurb my-1">{{ r.description|trunc_it:remainder }} </p>
+									{% with remainder=190 %}
+									<h6>
+										<a href="{% url 'collection:place-collection-browse' c.id %}">{{ c.title }}</a>
+										 ({{ c.owner.name }})
+									</h6>
+									<p class="resource-card-blurb my-1">{{ c.description|trunc_it:remainder }} </p>
 									{%endwith%}
 								</div>
 							</div>
@@ -134,7 +111,7 @@
 			}).css('display','none')
 			shown = $('.resource-card').filter(function(){
 				return $(this).is(":visible");
-			}) 
+			})
 			regiones = []
 			shown.each(function(){
 				regarr = $(this).attr('data-regions').split(', ')
@@ -166,7 +143,7 @@
 				attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 			}).addTo(map);
 
-			
+
 			fetch(dataurl)
 				.then(function (resp) {
 					return resp.json();
@@ -192,11 +169,11 @@
 							});
 							layer.on('mouseout', function (e) {
 								$("#region_label").html("select region to filter")
-							});							
+							});
 							// layer.bindPopup(content);
 						}
 					}).addTo(map);
-					
+
 					L.Control.textbox = L.Control.extend({
 						onAdd: function (map) {
 

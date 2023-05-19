@@ -41,6 +41,39 @@ def remove_link(request, *args, **kwargs):
   return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 """
+  set collection status by group leader: reviewed, nominated
+"""
+def status_update(request, *args, **kwargs):
+  print('in status_update()', request.POST)
+  status = request.POST['status']
+  coll = Collection.objects.get(id=request.POST['coll'])
+
+  coll.status = status
+  coll.save()
+
+  return JsonResponse({'status': status, 'coll': coll.title}, safe=False,
+                      json_dumps_params={'ensure_ascii': False, 'indent': 2})
+
+"""
+  set/unset nominated flag by group leader: boolean
+"""
+def nominator(request, *args, **kwargs):
+  print('in nominator()', request.POST)
+  nominated = request.POST['nominated']
+  coll = Collection.objects.get(id=request.POST['coll'])
+  if nominated:
+    coll.nominated = True
+    status = 'nominated'
+  else:
+    coll.nominated = False
+    status = 'un-nominated'
+  coll.save()
+
+  return JsonResponse({'status': status, 'coll': coll.title}, safe=False,
+                      json_dumps_params={'ensure_ascii': False, 'indent': 2})
+
+
+"""
   add or remove collection to/from collection group; flagged submitted
 """
 def group_connect(request, *args, **kwargs):
@@ -415,6 +448,8 @@ class PlaceCollectionUpdateView(LoginRequiredMixin, UpdateView):
     obj = form.save(commit=False)
     if obj.group:
       obj.status = 'group'
+    else:
+      obj.nominated = False
     obj.save()
 
     Log.objects.create(
@@ -563,7 +598,8 @@ class CollectionGroupDetailView(DetailView):
     print('CollectionGroupDetailView get_context_data() request.user', self.request.user)
     cg = get_object_or_404(CollectionGroup, pk=self.kwargs.get("id"))
     me = self.request.user
-
+    # if Collection has a group, it is submitted
+    context['submitted'] = Collection.objects.filter(group=cg.id).count()
     context['message'] = 'CollectionGroupDetailView() loud and clear'
     context['links'] = Link.objects.filter(collection_group_id=self.get_object())
     context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False
@@ -660,7 +696,7 @@ class CollectionGroupGalleryView(ListView):
     uses ds_collection_builder.html
 """
 class DatasetCollectionCreateView(LoginRequiredMixin, CreateView):
-  print('hit DatasetCollectionCreateView()')
+  # print('hit DatasetCollectionCreateView()')
   form_class = CollectionModelForm
   template_name = 'collection/ds_collection_builder.html'
   queryset = Collection.objects.all()
@@ -825,6 +861,31 @@ class DatasetCollectionBrowseView(DetailView):
     context['coll'] = coll
     context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False
 
+    return context
+
+""" browse collection collections 
+    w/student section?
+"""
+class CollectionGalleryView(ListView):
+  redirect_field_name = 'redirect_to'
+
+  context_object_name = 'collections'
+  template_name = 'collection/gallery_main.html'
+  model = Collection
+
+  def get_queryset(self):
+    qs = super().get_queryset()
+    return qs.filter(public = True).order_by('title')
+
+  def get_context_data(self, *args, **kwargs):
+    context = super(CollectionGalleryView, self).get_context_data(*args, **kwargs)
+    # public collections
+    # context['group'] = self.get_object()
+    context['collections'] = Collection.objects.filter(public=True)
+    # context['collections'] = Collection.objects.order_by('created')
+    # context['viewable'] = ['uploaded','inserted','reconciling','review_hits','reviewed','review_whg','indexed']
+
+    context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False
     return context
 
 class CollectionDeleteView(DeleteView):

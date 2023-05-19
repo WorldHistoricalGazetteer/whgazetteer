@@ -22,8 +22,8 @@
     }
 		/* .leaflet-container-default {height: 250px !important;} */
 		.resource-gallery {background-color:rgb(238, 238, 238); overflow:auto; border-bottom: 1px solid gainsboro;}
-		.gallery-banner {border-bottom: 1px solid lightgray;
-			background-color:rgb(60, 136, 148); color: white;}
+		.gallery-banner-collections {border-bottom: 1px solid lightgray;
+			background-color:lightseagreen; color: white;}
 		.regions-ttlink {color:grey; font-size:.75rem; float:right; text-decoration-line: underline;}
 		.reset-link {float:right; display:none; color:white; text-decoration-line: underline;}
 		#teaching_bottom {height:65%;}
@@ -65,7 +65,7 @@
 {#			</div>#}
 			<div class="col-sm-12 pe-0" style="height: 85%;">
 				<div class="resource-gallery h-100">
-					<div class="gallery-banner ps-2 small w-100";>COLLECTIONS ({{ collections|length }})
+					<div class="gallery-banner-collections ps-2 small w-100";>COLLECTIONS ({{ collections|length }})
 						<span id="regions_reset" class="reset-link me-2" style="cursor:pointer;">reset filter</span>
 					</div>
 					<div class="ps-1">

@@ -185,7 +185,8 @@ STATUS_COLL = [
     ('sandbox', 'Sandbox'),
     ('demo', 'Demo'),
     ('group', 'Group'),
-    ('ready', 'Ready'),
+    ('reviewed', 'Reviewed'),
+    ('nominated', 'Nominated'),
     ('published', 'Published'),
 ]
 

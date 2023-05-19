@@ -51,6 +51,11 @@ def join(value,delimit):
         value=map(str,value)
     return delimit.join(value)
 
+# @register.inclusion_tag('collection_group_create.html')
+@register.filter
+def nominated(nom):
+    return 'checked' if nom == True else 'unchecked'
+
 @register.filter
 def parse(obj,key):
     if '/' in key:
@@ -106,8 +111,13 @@ def readmore(txt, numchars):
 
 @register.filter
 def remove(str, tozap):
-    # print('remove string', str, type(str))
     return str.replace(tozap, '')
+
+# @register.inclusion_tag('collection_group_create.html')
+# @register.filter
+@register.simple_tag
+def review_check(val=None):
+    return 'checked' if val == 'reviewed' else 'unchecked'
 
 @register.filter
 def sortts(objlist):
