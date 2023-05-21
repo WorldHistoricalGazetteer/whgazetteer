@@ -445,7 +445,7 @@ class SearchAPIView(generics.ListAPIView):
     fc = params.get('fc',None)
     fclasses=list(set([x.upper() for x in ','.join(fc)])) if fc else None
     year = params.get('year',None)
-    pagesize = params.get('pagesize',None)
+    pagesize = int(params.get('pagesize',None))
     err_note = None
     context = params.get('context',None)
     # params
