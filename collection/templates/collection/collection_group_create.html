@@ -14,6 +14,8 @@
   <link rel="stylesheet" href="{% static 'js/tags/bootstrap-tagsinput-typeahead.css' %}"/>
   <style>
     textarea {width: 100%;}
+    #collections {position: relative;}
+    #collections_content {position: absolute; overflow-y: scroll}
     #results_text {background-color: #dff0d8;}
     .form-box p {margin: .5rem;}
     #linkform_popup {
@@ -30,6 +32,7 @@
 	    z-index: 1000;
 	    display:none;
     }
+    .flashspan {background-color: yellow;}
   </style>
 {% endblock %}
 {% block content %}
@@ -39,6 +42,8 @@
         Update Collection Group
         <span class="text-danger">"{{ form.title.value }}"</span>
 	      <span class="float-end half">
+	        <span id="reviewed_flash" class="me-2 hidden flashspan"></span>
+	        <span id="nominated_flash" class="me-2 hidden flashspan"></span>
 	        {% if object.gallery %}
 			      <a href="{% url 'collection:collection-group-gallery' object.id %}">gallery</a>&nbsp;
 	        {% endif %}
@@ -60,7 +65,7 @@
 	    <form id="cg_form" method="POST" action="{% url 'collection:collection-group-update' object.id %}"
 	          enctype="multipart/form-data">
       {% else %}
-      <input id="cg_form" method="POST" action="{% url 'collection:collection-group-create' %}"
+      <form id="cg_form" method="POST" action="{% url 'collection:collection-group-create' %}"
             enctype="multipart/form-data">
       {% endif %}
       {% csrf_token %}
@@ -93,7 +98,7 @@
 	      <span class="ms-3">required? {{ form.gallery_required }}</span>
 	      <span class="float-end">
 		      <a class="pointer" tabindex="97" data-bs-toggle="popover" title="Group gallery options"
-               data-bs-content="Should this group have a gallery page? If so, are all submitted collections required to appear?"
+               data-bs-content="Will this group have a gallery page? If so, are all submitted collections required to appear?"
                data-bs-trigger="hover focus" >
 			      <i class="fas fa-question-circle linkypop"></i></a>
 	      </span>
@@ -179,12 +184,13 @@
 	      <div class="ps-1"><p>New group must be saved before members can be added.</p></div>
       {% endif %}
     </div>
+    {% if action == 'update' %}
     <div id="collections" class="col-sm-4 mt-2">
       <h5 class="sharing-header">Submitted Collections</h5>
       <div id="collections_content">
         <table id="coll_list" class="small w-100">
 	        <thead>
-	          <th>Collection (member)</th>
+	          <th>Collection (member, submitted)</th>
 	          <th><a class="pointer" tabindex="99" data-bs-toggle="popover"
                data-bs-content="Reviewed? When checked, collection will appear in group gallery"
                    data-bs-trigger="hover focus"><i class="fas fa-check"></i></a></th>
@@ -195,8 +201,8 @@
           {% load dataset_extras %}
 	        {% for mc in collections.all %}
 		        <tr data-id="{{ mc.id }}">
-		          <td><a href="{% url 'collection:ds-collection-summary' mc.id %}">
-			        {{ mc.title }}</a><br/>({{ mc.owner.name }})</td>
+		          <td><a href="{% url 'collection:place-collection-browse' mc.id %}">
+			        {{ mc.title }}</a><br/>({{ mc.owner.name }}; {{ mc.submit_date|date:'j M y' }})</td>
 		          <td class="text-center">
 			          <input type="checkbox" class="reviewed" data-id="{{ mc.id }}"
 			            {% if mc.status == 'reviewed' %} checked = 'checked'{% endif %} /></td>
@@ -208,6 +214,17 @@
         </table>
       </div>
     </div>
+		{% else %}
+    <div id="intro" class="col-sm-4 mt-2">
+      <h5 class="profile-header">Building a Collection Group</h5>
+      <div id="collections_content">
+				<h5>Heading 1</h5>
+	      <p>lorem...you know, ipsum</p>
+				<h5>Heading 2</h5>
+	      <p>morum ipso facto</p>
+      </div>
+    </div>
+    {% endif %}
   </div> <!-- d-flex -->
 </div> <!-- container -->
 
@@ -258,11 +275,11 @@
       cache: false,
       data: formData,
       success:function(response){
-	      {#if(response.status == 'ok'){#}
-          console.log(response)
-	      {# } else {#}
-				{#	console.log(response)#}
-	      {# }#}
+        console.log(response)
+	      msg = response.status=='reviewed' ? 'flagged reviewed' : 'flagged not reviewed'
+	      $("#reviewed_flash").html(msg).fadeIn().delay(2000).fadeOut()
+	      {#$("#reviewed_flash").fadeIn().delay(2000).fadeOut()#}
+	      {#checked_rows = []#}
       }
 		})
   }
@@ -284,11 +301,9 @@
       cache: false,
       data: formData,
       success:function(response){
-	      {#if(response.status == 'ok'){#}
-          console.log(response)
-	      {# } else {#}
-				{#	console.log(response)#}
-	      {# }#}
+	      console.log(response)
+	      msg = response.status=='nominated' ? 'nominated' : 'nomination withdrawn'
+	      $("#nominated_flash").html(msg).fadeIn().delay(2000).fadeOut()
       }
 		})
 	}

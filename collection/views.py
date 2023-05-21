@@ -1,5 +1,6 @@
 # collection.views (collections)
 from dateutil.parser import isoparse
+from datetime import date
 import json, validators
 from validators import ValidationFailure
 from itertools import count
@@ -59,14 +60,14 @@ def status_update(request, *args, **kwargs):
 """
 def nominator(request, *args, **kwargs):
   print('in nominator()', request.POST)
-  nominated = request.POST['nominated']
+  nominated = True if request.POST['nominated'] == 'true' else False
   coll = Collection.objects.get(id=request.POST['coll'])
   if nominated:
     coll.nominated = True
     status = 'nominated'
   else:
     coll.nominated = False
-    status = 'un-nominated'
+    status = 'withdrawn'
   coll.save()
 
   return JsonResponse({'status': status, 'coll': coll.title}, safe=False,
@@ -430,8 +431,8 @@ class PlaceCollectionUpdateView(LoginRequiredMixin, UpdateView):
     return kwargs
 
   def get_object(self):
-    print('PlaceCollectionUpdateView() kwargs', self.kwargs)
-    print('POST', self.request.POST)
+    # print('PlaceCollectionUpdateView() kwargs', self.kwargs)
+    # print('POST', self.request.POST)
     id_ = self.kwargs.get("id")
     return get_object_or_404(Collection, id=id_)
 
@@ -448,8 +449,10 @@ class PlaceCollectionUpdateView(LoginRequiredMixin, UpdateView):
     obj = form.save(commit=False)
     if obj.group:
       obj.status = 'group'
+      obj.submit_date = date.today()
     else:
       obj.nominated = False
+      obj.submit_date = None
     obj.save()
 
     Log.objects.create(
@@ -544,14 +547,17 @@ class CollectionGroupCreateView(CreateView):
   #
   def get_form_kwargs(self, **kwargs):
     kwargs = super(CollectionGroupCreateView, self).get_form_kwargs()
-    print('kwargs', kwargs)
+    # print('kwargs', kwargs)
     print('GET in CollectionGroupCreateView()', self.request.GET)
     return kwargs
 
   def get_success_url(self):
     cgid = self.kwargs.get("id")
     action = self.kwargs.get("action")
-    return redirect('collections/groups/'+str(cgid)+'/update')
+    # def get_success_url(self):
+    #         return reverse('doc_aide:prescription_detail', kwargs={'pk': self.object.pk})
+    return reverse('collection:collection-group-update', kwargs={'id':self.object.id})
+    # return redirect('collections/groups/'+str(cgid)+'/update')
     # return '/accounts/profile/'
 
   def form_invalid(self, form):
@@ -563,10 +569,12 @@ class CollectionGroupCreateView(CreateView):
     context = {}
     if form.is_valid():
       print('form is valid, cleaned_data', form.cleaned_data)
-    else:
-      print('form not valid', form.errors)
-      context['errors'] = form.errors
-    return super().form_valid(form)
+      self.object = form.save()
+      return HttpResponseRedirect(self.get_success_url())
+    # else:
+    #   print('form not valid', form.errors)
+    #   context['errors'] = form.errors
+    # return super().form_valid(form)
 
   def get_context_data(self, *args, **kwargs):
     context = super(CollectionGroupCreateView, self).get_context_data(*args, **kwargs)
@@ -616,15 +624,16 @@ class CollectionGroupDeleteView(DeleteView):
   def get_success_url(self):
     return reverse('accounts:profile')
 
-"""update (edit); uses same template as create; context['action'] governs template display"""
+"""
+  update (edit); uses same template as create; 
+  context['action'] governs template display
+"""
 class CollectionGroupUpdateView(UpdateView):
   form_class = CollectionGroupModelForm
   template_name = 'collection/collection_group_create.html'
 
   def get_form_kwargs(self, **kwargs):
     kwargs = super(CollectionGroupUpdateView, self).get_form_kwargs()
-    print('kwargs', kwargs)
-    print('id', self.kwargs.get("id"))
     return kwargs
 
   def get_object(self):
@@ -642,20 +651,14 @@ class CollectionGroupUpdateView(UpdateView):
       print('form not valid', form.errors)
     return super().form_valid(form)
 
-
   def get_context_data(self, *args, **kwargs):
+    print('CollectionGroupUpdateView() kwargs', self.kwargs)
     context = super(CollectionGroupUpdateView, self).get_context_data(*args, **kwargs)
     cg= self.get_object()
-    member_ids=list(cg.members.all().values_list('user', flat=True))
     members = [m.user for m in cg.members.all()]
-    # all_coll = [m.user.collections.all() for m in members]
-    # [m.user.collections.filter(group=id_) for m in cg.members.all()]
     context['action'] = 'update'
-    # context['members'] = [m.user for m in self.get_object().members.all()]
     context['members'] = members
-    # context['members'] = member_ids
     context['collections'] = Collection.objects.filter(group=cg.id)
-    # context['collections'] = self.get_object().collections.filter(submitted=True)
     context['links'] = Link.objects.filter(collection_group_id = self.get_object())
     return context
 
@@ -683,8 +686,9 @@ class CollectionGroupGalleryView(ListView):
     # public datasets available as dataset_list
     # public collections
     context['group'] = self.get_object()
-    context['collections'] = cg.collections.all()
-    # context['collections'] = Collection.objects.order_by('created')
+    # context['collections'] = cg.collections.all()
+    context['collections'] = Collection.objects.filter(
+      group=cg.id,status__in=['reviewed','published']).order_by('submit_date')
     # context['viewable'] = ['uploaded','inserted','reconciling','review_hits','reviewed','review_whg','indexed']
 
     context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False

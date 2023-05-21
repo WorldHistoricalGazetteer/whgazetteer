@@ -116,8 +116,8 @@ def annotate(request, *args, **kwargs):
 
 @csrf_exempt
 def get_form(request):
-    print('get_form() request.GET', request.GET)
-    print('get_form() request.method', request.method)
+    # print('get_form() request.GET', request.GET)
+    # print('get_form() request.method', request.method)
     pid = request.GET['p']
     cid = request.GET['c']
     place = Place.objects.get(id=pid)

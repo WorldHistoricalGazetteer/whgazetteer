@@ -59,17 +59,29 @@
       <div id="left" class="col-sm-8 maincol">
 	      <div class="fs-5">The
 		      {% if object.type == 'class' %} exercise{% else %} session {% endif %}
-	        <span class="float-end fs-6 pt-2">
+	        <span class="float-end fs-6 pt-2">{% if object.file %}
 		        <a href="/media/{{ object.file }}" target="_blank">download PDF</a> <i class="far fa-file-pdf linky"></i>
+		        {% endif %}
 	        </span>
         </div>
         <div class="bg-white p-1">
 					<p>{{ object.description }}</p>
+          {% if object.file %}
 	        <p>Please download the full
 		        <a href="/media/{{ object.file }}" target="_blank">
 			        {% if object.type == 'class' %}assignment {% else %}session{% endif %}description</a>
 		        for details.
 	        </p>
+          {% endif %}
+          {% if object.gallery %}
+	          <p>Collections submitted to this group
+		          {% if submitted == 0 %}
+			          will appear on a Gallery page
+		          {% else %}
+			          appear in <a href="{% url 'collection:collection-group-gallery' object.id %}">this Gallery</a>
+		          {% endif %}, visible only to members.
+	          </p>
+          {% endif %}
           {% if object.gallery and submitted > 0 %}
 	          <p><a href="{% url 'collection:collection-group-gallery' object.id %}">Group gallery</a></p>
           {% endif %}
