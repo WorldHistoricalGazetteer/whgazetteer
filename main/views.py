@@ -52,7 +52,7 @@ def create_link(request, *args, **kwargs):
     # from django.apps import apps
     Model = apps.get_model(f"collection.{model}")
     # print('Model', Model)
-    model_str=model.lower() if model == 'collection' else 'collection_group'
+    model_str=model.lower() if model == 'Collection' else 'collection_group'
     obj = Model.objects.get(id=objectid)
     gotlink = obj.related_links.filter(uri=uri)
     # gotlink = obj.links.filter(uri=uri)
