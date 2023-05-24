@@ -496,6 +496,7 @@ class SearchAPIView(generics.ListAPIView):
 """ *** """
 """ TODO: the next two attempt the same and are WAY TOO SLOW """
 """ 
+    !!! NOT IN USE !!! 21 MAY 2023
     api/places/<str:dslabel>/[?q={string}]
     Paged list of places in dataset. 
 """
@@ -504,10 +505,16 @@ class PlaceAPIView(generics.ListAPIView):
   pagination_class = StandardResultsSetPagination
 
   def get_queryset(self, format=None, *args, **kwargs):
-    print('kwargs',self.kwargs)
-    print('self.request.GET',self.request.GET)
+    print('PlaceAPIView() kwargs',self.kwargs)
+    print('PlaceAPIView() self.request.GET',self.request.GET)
     dslabel=self.kwargs['dslabel']
     qs = Place.objects.all().filter(dataset=dslabel).order_by('title')
+
+    # TODO: speed up calls for all places in dataset
+    # https://ses4j.github.io/2015/11/23/optimizing-slow-django-rest-framework-performance/
+    # chance this works: 12%
+    qs = self.get_serializer_class().setup_eager_loading(qs)
+
     query = self.request.GET.get('q')
     if query is not None:
       qs = qs.filter(title__icontains=query)
@@ -517,6 +524,7 @@ class PlaceAPIView(generics.ListAPIView):
 
   
 """ 
+    !!! NOT IN USE !!! 21 MAY 2023
     api/dataset/<str:dslabel>/lpf/
     all places in a dataset, for download
 """

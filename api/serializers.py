@@ -210,6 +210,15 @@ class PlaceSerializer(serializers.ModelSerializer):
   def has_geom(self,place):
     return '<i class="fa fa-globe"></i>' if place.geom_count > 0 else "-"
 
+  # TODO: speed up calls for all places in dataset
+  # https://ses4j.github.io/2015/11/23/optimizing-slow-django-rest-framework-performance/
+  def setup_eager_loading(cls, queryset):
+    """ Perform necessary eager loading of data. """
+    queryset = queryset.select_related('dataset')
+    queryset = queryset.prefetch_related(
+      'names','types','geoms','links','related','whens','descriptions','depictions')
+    return queryset
+
   class Meta:
     model = Place
     fields = ('url', 'id', 'title', 'src_id', 'dataset', 'ccodes', 'fclasses',

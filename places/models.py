@@ -177,6 +177,7 @@ class PlaceGeom(models.Model):
   src_id = models.CharField(max_length=100,default='') # contributor's identifier
   jsonb = JSONField(blank=True, null=True)
   task_id = models.CharField(max_length=100, blank=True, null=True)
+  # Source is not used
   geom_src = models.ForeignKey(Source, null=True, db_column='geom_src',
                                  to_field='src_id', on_delete=models.SET_NULL)
   # TODO: 

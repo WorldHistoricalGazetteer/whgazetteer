@@ -49,6 +49,7 @@ def testy():
   builds download file, retrieved via ajax JS in ds_summary.html, ds_meta.html,
   collection_detail.html (modal), place_collection_browse.html (modal)
 """
+# TODO: ?? make this a DRF call with serializer and prefetch
 @task(name="make_download")
 def make_download(request, *args, **kwargs):
   # TODO: integrate progress_recorder for better progress bar in GUI
@@ -59,12 +60,6 @@ def make_download(request, *args, **kwargs):
   dsid = kwargs['dsid'] or None
   collid = kwargs['collid'] or None
   print('make_download() dsid, collid', dsid, collid)
-  # test values
-  # username = 'whgadmin'
-  # userid=1
-  # req_format = 'tsv'
-  # dsid = 1423
-
   date = makeNow()
 
   if collid and not dsid:
