@@ -107,7 +107,10 @@
 		</div>
 		<div class="col-sm-3 p-1 home-button">
 			<div class="h-100 border p-1">
-				<div class="home-icon-row"><img src="{% static 'images/001-up-arrow.png'%}" class="" height=40 width=40 alt=""/></div>
+				<div class="home-icon-row">
+					<img src="{% static 'images/001-up-arrow.png'%}" class="" height=40 width=40 alt=""/>
+					<img src="{% static 'images/003-browser.png' %}" class="ms-3" height=40 width=40 alt=""/>
+				</div>
 				<h5><span class="button-hilite">Upload, enhance, link, and publish</span> your place data</h5>
 			</div>
 			<a href="{% url 'main:tute-contributing' %}"><span class="link-spanner"></span></a>
@@ -115,13 +118,16 @@
 		<div class="col-sm-3 p-1 home-button">
 			<div class="h-100 border p-1">
 				<div class="home-icon-row"><img src="{% static 'images/008-collect.png'%}" class="" height=42 width=42 alt=""/></div>
-				<h5><span class="button-hilite">Build</span> custom collections</h5>
+				<h5><span class="button-hilite">Build</span> and annotate custom collections</h5>
 			</div>
 			<a href="{% url 'main:tute-collections' %}"><span class="link-spanner"></span></a>
 		</div>
 		<div class="col-sm-3 p-1 home-button">
 			<div class="h-100 border p-1">
-				<div class="home-icon-row"><img src="{% static 'images/011-teaching.png'%}" class="" height=42 width=42 alt=""/></div>
+				<div class="home-icon-row">
+					<img src="{% static 'images/011-teaching.png'%}" class="" height=42 width=42 alt=""/>
+					<img src="{% static 'images/006-api-2.png'%}" class="ms-3" height=42 width=42 alt=""/>
+				</div>
 				<h5><span class="button-hilite">Use WHG data</span> in teaching and software</h5>
 			</div>
 {#			<a href="/"><span class="link-spanner"></span></a>#}
