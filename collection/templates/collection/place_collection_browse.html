@@ -39,11 +39,11 @@
 		<h5><sr>{{object.title}}</sr>
 			<span class="half ital text-secondary"> a place collection by {{ object.owner.name }} {{ object.owner.last_name }}
 				<span class="badge badge-warning ms-3">BETA</span></span>
-		{% if user.id == object.owner.id or user.is_superuser or user in whgteam %}
-			<span class="float-end smallish me-2 pt-2">
+		{% if user.id == object.owner.id or user in collabs or user in whgteam %}
+			<span class="float-end smallish me-2 pt-2">{% comment %}
 				<i class="fas fa-download linky"></i>
 				<a href="" id="a_download_modal" class="me-2" data-collid = {{ object.id }} data-toggle="modal"
-				   data-target="#downloadModal" title="download options"> download options</a>
+				   data-target="#downloadModal" title="download options"> download options</a>{% endcomment %}
 				<a href="{% url 'collection:place-collection-update' object.id %}" >edit
 					<i class="fas fa-cog linky"></i></a>
 			</span>
@@ -291,7 +291,7 @@
       pid=$(this)[0].cells[0].textContent
       {#ds_src=table.row(thisy.index()).data().dataset.label#}
       {#console.log('clicked row pid', pid, ds_src)#}
-      
+
       geom = all_feats.find(function(f){return f.properties.pid==pid}).geometry
       coords = geom.coordinates
       {#console.log('pid, geom, coords', pid, geom, coords)#}
@@ -302,7 +302,7 @@
       // highlight this row, clear others
       var selected = $(this).hasClass("highlight-row");
       $("#placetable tr").removeClass("highlight-row");
-      
+
       if(!selected)
         $(this).removeClass( "rowhover" );
         $(this).addClass("highlight-row");
@@ -314,10 +314,13 @@
         
     row = $("#drftable_list table tbody")[0].rows[0]
     pid = parseInt(row.cells[0].textContent)
-    // highlight first row, fetch detail, but don't zoomTo() it
-    $("#placetable tbody").find('tr').eq(0).addClass('highlight-row')
-    // fetch place details for 1st row
-    getPlace(pid, 'row0')
+
+	  // highlight first row if there is one, fetch detail, but don't zoomTo() it
+    if(pid) {
+	    $("#placetable tbody").find('tr').eq(0).addClass('highlight-row')
+	    // fetch place details for 1st row
+	    getPlace(pid, 'row0')
+    }
   }
 
   function startDownloadSpinner(){
@@ -395,7 +398,6 @@
     // start spinners, some collections take time
     startMapSpinner()
     startTableSpinner()
-    startDetailSpinner()
 
     var hideAllPopovers = function() {
        $('.pop-dataset').each(function() {
@@ -463,7 +465,11 @@
       spinner_table.stop()
       setRowEvents();
     })
-    
+
+		{#if(table.rows()[0].length >0){#}
+    {#  startDetailSpinner()#}
+		{# }#}
+
     // help popups
     $(".help-matches").click(function(){
       page=$(this).data('id')
@@ -722,9 +728,9 @@
 		  source_list = ['places']
 
 			cnt=0
-			mappy.fitBounds(turf.bbox(colldata), { padding: 20 });
-			{#mappy.fitBounds(envelope.bbox, {padding: 30})#}
-
+		  if(fcoll.features.length > 0){
+				mappy.fitBounds(turf.bbox(colldata), { padding: 20 });
+		  }
 	  });
   }
 
@@ -832,7 +838,7 @@
 		    if(from=="popup"){
           $("#placetable_filter input").val(data.title).keyup()
 		    }
-        spinner_detail.stop()
+        {#spinner_detail.stop()#}
         // events on detail items
         $('.ext').on('click', function(e) {
           e.preventDefault();

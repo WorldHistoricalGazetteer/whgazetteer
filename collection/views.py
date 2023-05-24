@@ -1,25 +1,19 @@
 # collection.views (collections)
 from dateutil.parser import isoparse
 from datetime import date
-import json, validators
-from validators import ValidationFailure
-from itertools import count
+import json
 
 from django import forms
-from django.apps import apps
-from django.conf import settings
-from django.contrib.auth import get_user_model
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.forms.models import inlineformset_factory
 from django.http import JsonResponse, HttpResponseRedirect
-from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse
+from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import (View, CreateView, UpdateView, DetailView, DeleteView, ListView )
 
 from .forms import CollectionModelForm, CollectionGroupModelForm
 from .models import *
 from main.models import Log, Link
-from places.models import PlaceGeom
 from traces.forms import TraceAnnotationModelForm
 from traces.models import TraceAnnotation
 
@@ -75,7 +69,7 @@ def nominator(request, *args, **kwargs):
 
 
 """
-  add or remove collection to/from collection group; flagged submitted
+  add (submit) or remove collection to/from collection group
 """
 def group_connect(request, *args, **kwargs):
   action = request.POST['action']
@@ -83,18 +77,46 @@ def group_connect(request, *args, **kwargs):
   cg = CollectionGroup.objects.get(id=request.POST['group'])
   if action == 'submit':
     cg.collections.add(coll)
-    coll.submitted = True
+    # coll.submitted = True
     coll.save()
     status = 'added to'
   else:
     cg.collections.remove(coll)
-    coll.submitted = False
+    # coll.submitted = False
     coll.save()
     status = 'removed from'
 
   return JsonResponse({'status': status, 'coll': coll.title, 'group': cg.title}, safe=False,
                       json_dumps_params={'ensure_ascii': False, 'indent': 2})
 
+"""
+  add collaborator to collection in role
+"""
+def collab_add(request, cid):
+  print('collab_add() request, cid', request, cid)
+  try:
+    uid=get_object_or_404(User, email=request.POST['email']).id
+    role=request.POST['role']
+  except:
+    #
+    messages.add_message(
+      request, messages.INFO, "Please check email, we don't have '<b>" + request.POST['email']+"</b>'")
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+  # TODO: send collaborator an email
+  print('collection collab_add():',request.POST['email'],role, cid, uid)
+  CollectionUser.objects.create(user_id=uid, collection_id=cid, role=role)
+
+  return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+"""
+  collab_delete(uid, cid)
+  remove collaborator from collection
+"""
+def collab_delete(request, uid, cid):
+  print('collab_delete() request, uid, cid', request, uid, cid)
+  get_object_or_404(CollectionUser,user=uid, collection=cid).delete()
+  return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 """ utility: get next sequence for a collection """
 def seq(coll):
@@ -485,11 +507,12 @@ class PlaceCollectionUpdateView(LoginRequiredMixin, UpdateView):
     context['ds_select'] = ds_select
     context['coll_dsset'] = datasets
     context['links'] = Link.objects.filter(collection=self.object.id)
+    context['owners'] = self.object.owners
+    context['collabs'] = self.object.collaborators.all()
+    context['whgteam'] = True if user.groups.filter(name__in=['whg_team']).exists() else False
     # context['links'] = CollectionLink.objects.filter(collection=self.object.id)
 
-    # test: send single anno form to template
     context['form_anno'] = form_anno
-    # TODO: refactor CollPlace and TraceAnnotation redundancy
     context['seq_places'] = [
       {'id':cp.id,'p':cp.place,'seq':cp.sequence}
         for cp in CollPlace.objects.filter(collection=_id).order_by('sequence')
@@ -533,6 +556,7 @@ class PlaceCollectionBrowseView(DetailView):
     context['places'] = coll.places.all().order_by('title')
     context['updates'] = {}
     context['url_front'] = settings.URL_FRONT
+    context['collabs'] = self.object.collaborators.all()
 
     return context
 

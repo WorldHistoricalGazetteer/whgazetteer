@@ -81,8 +81,9 @@
 	        </div>
         </div>
         <div class="row">
-        {% if whgteam %}
-          <div class="ms-2 col-sm-12 small">
+          <div class="mx-2 col-sm-12 small">
+	        <span class="smaller ps-2"><i class="small fa fa-users" style="color:grey;"></i> = Collaborator</span>
+          {% if whgteam %}
             <span class="float-end me-3">
 	          <select id="status_select">
 		          <option value="all">Filter status</option>
@@ -92,8 +93,8 @@
 		          <option value="sandbox">Sandbox</option>
 		          <option value="group">Group</option>
             </select></span>
-          </div>
 	        {% endif %}
+          </div>
         </div>
         <div id="collection_list" class="mt-1 ms-0">
           <div class="list-box">
@@ -111,9 +112,17 @@
               <tbody>
                 {% for c in collection_list %}
                   <tr class="place-row">
-                    <td>{{ c.id }}</td>
+                    <td>
+	                    {{ c.id }}
+	                    {% if not user == c.owner %}
+		                    <span class="smaller ml-3">
+			                    <i class="small fa fa-users" style="color:grey;"></i></span>
+	                    {% endif %}
+                    </td>
 	                  <td><span class="{{ c.collection_class }} p-1">{{ c.collection_class }}</span></td>
-                    <td>{{ c.title }}</td>
+                    <td>
+	                    {{ c.title }}
+                    </td>
                     <td>
                       {# TODO: you can do better #}
 	                    {% if c.collection_class == 'dataset' %}

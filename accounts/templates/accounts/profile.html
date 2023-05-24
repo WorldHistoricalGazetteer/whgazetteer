@@ -1,10 +1,10 @@
 {% extends 'main/base.html' %}
 {% block extra_head %}
-    <style>
-        th, td {
-            padding: 2px 10px;
-        }
-    </style>
+{#    <style>#}
+{#        th, td {#}
+{#            padding: 2px 10px;#}
+{#        }#}
+{#    </style>#}
 {% endblock %}
 {% block content %}
 
@@ -72,8 +72,8 @@
       </div> <!-- #editProfile -->
 			</form>
     </div>
-    <div class="col-6" id="dash_right">
-	    <h5 class="profile-header">Groups</h5>
+    <div class="col-6" id="data_right">
+	    <h5 class="profile-header">Collections and Datasets</h5>
 	    <table class="w-100">
         <tbody>
         {% if user_form.role.value == 'group_leader' or user.is_superuser %}
@@ -111,13 +111,32 @@
             <td class="pe-3 strong" style="vertical-align: top;">Collection Groups</td>
             <td>
               {% for g in context.mygroups %}
-                  <b><a href="{% url 'collection:collection-group-detail' g.id %}">{{ g }}
-{#	                  {{ ds.1 }}</a></b> ({{ ds.0 }}, {{ ds.2 }})#}
+	              <b><a href="{% url 'collection:collection-group-detail' g.id %}">{{ g }}</a></b>
 	              <br/>
               {% endfor %}
             </td>
           </tr>
         {% endif %}
+        {% with owned=context.coll_owned collabs=context.coll_collab %}
+        {% if owned|length > 0 or collabs|length > 0 %}
+          <tr>
+            <td class="strong" style="vertical-align: top;">My Collections</td>
+	          <td>
+              {% for c in owned %}
+	              <p><a href="{% url 'collection:place-collection-update' c.id %}">{{ c.title }}</a></p>
+              {% endfor %}
+	          </td>
+          </tr>
+	        <tr>
+	          <td class="strong" style="vertical-align: top;">Collection<br/>collaborations</td>
+		        <td>
+              {% for c in collabs %}
+	              <p><a href="{% url 'collection:place-collection-update' c.id %}">{{ c.collection.title }}</a></p>
+              {% endfor %}
+            </td>
+          </tr>
+        {% endif %}
+        {% endwith %}
         {% if context.ds_owned|length > 0 %}
           <tr>
             <td class="pe-3 strong" style="vertical-align: top;">Datasets</td>

@@ -2223,12 +2223,15 @@ class DataListsView(LoginRequiredMixin, ListView):
 
     if self.request.path == reverse('data-datasets'):
       idlist = [obj.id for obj in Dataset.objects.all() if me in obj.owners or
-                   me in obj.collaborators or me.is_superuser]
-      dslist = Dataset.objects.filter(id__in=idlist).order_by('-create_date')
-      return dslist
+                   me in obj.collaborators or whgteam]
+      list = Dataset.objects.filter(id__in=idlist).order_by('-create_date')
+      return list
     elif self.request.path == reverse('data-collections'):
-      list = Collection.objects.all().order_by('created') if whgteam \
-        else Collection.objects.filter(owner=me).order_by('created')
+      idlist = [obj.id for obj in Collection.objects.all() if me in obj.owners or
+                   me in obj.collaborators or whgteam]
+      list = Collection.objects.filter(id__in=idlist).order_by('-created')
+      # list = Collection.objects.all().order_by('created') if whgteam \
+      #   else Collection.objects.filter(owner=me).order_by('created')
       return list
     elif self.request.path == reverse('data-areas'):
       # print('areas...whgteam?', whgteam)

@@ -79,7 +79,6 @@ class Collection(models.Model):
   nominated = models.BooleanField(default=False)
   nominate_date = models.DateTimeField(null=True, blank=True)
 
-
   group = models.ForeignKey("CollectionGroup", db_column='group',
                             related_name="group", null=True, blank=True, on_delete=models.PROTECT)
 
@@ -97,11 +96,25 @@ class Collection(models.Model):
     return reverse('data-collections')
 
   @property
+  def collaborators(self):
+    # includes roles: member, owner
+    team = CollectionUser.objects.filter(collection_id = self.id).values_list('user_id')
+    teamusers = User.objects.filter(id__in=team)
+    return teamusers
+
+  @property
   def kw_colors(self):
     colors = ['orange', 'red', 'green', 'blue', 'purple',
       'red', 'green', 'blue', 'purple']
     return dict(zip(self.rel_keywords, colors))
 
+  @property
+  def owners(self):
+    owner_ids = list(CollectionUser.objects.filter(collection=self, role='owner').values_list('user_id',flat=True))
+    # du_owner_ids = list(self.collabs.filter(role = 'owner').values_list('user_id_id',flat=True))
+    owner_ids.append(self.owner.id)
+    owners = User.objects.filter(id__in=owner_ids)
+    return owners
 
   @property
   def places_ds(self):
@@ -151,11 +164,15 @@ class Collection(models.Model):
     return sum(ds_counts) + self.places.count()
 
   def __str__(self):
-    return '%s:%s' % (self.id, self.title)
+    return '%s' % (self.title)
+    # return '%s (id: %s)' % (self.title, self.id)
 
   class Meta:
     db_table = 'collections'
 
+""" 
+  records membership of place in collection + sequence of its annotation
+"""
 class CollPlace(models.Model):
   collection = models.ForeignKey(Collection, related_name='annos',
                                  on_delete=models.CASCADE)
@@ -164,9 +181,9 @@ class CollPlace(models.Model):
   sequence = models.IntegerField()
 
 class CollectionUser(models.Model):
-  collection = models.ForeignKey(Collection, related_name='collabs',
+  collection = models.ForeignKey(Collection, related_name='collections',
                                    default=-1, on_delete=models.CASCADE)
-  user = models.ForeignKey(User, related_name='coll_collab',
+  user = models.ForeignKey(User, related_name='collaborators',
                                 default=-1, on_delete=models.CASCADE)
   role = models.CharField(max_length=20, null=False, choices=TEAMROLES)
 

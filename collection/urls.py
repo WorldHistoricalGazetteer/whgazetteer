@@ -28,8 +28,18 @@ urlpatterns = [
     path('<int:id>/update_pl', views.PlaceCollectionUpdateView.as_view(), name='place-collection-update'),
     path('<int:id>/browse_pl', views.PlaceCollectionBrowseView.as_view(), name='place-collection-browse'),
     path('flash_create/', views.flash_collection_create, name="collection-create-flash"),
+    # add Collection collaborator
+    path('collab-add/<int:cid>/', views.collab_add, name="collab-add"),
 
     path('<int:id>/delete', views.CollectionDeleteView.as_view(), name='collection-delete'),
+
+    ## COLLABORATORS
+    # add Collection collaborator; payload includes email, role
+    path('collab-add/<int:cid>/', views.collab_add, name="collab-add"),
+
+    # delete Collection collaborator; payload includes email
+    path('collab-delete/<int:uid>/<int:cid>/', views.collab_delete, name="collab-delete"),
+
 
     # COLLECTION GROUPS (for classes, workshops)
     # path('create_collection_group/', views.create_collection_group, name='create-collection-group'),

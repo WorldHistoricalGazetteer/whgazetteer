@@ -9,7 +9,7 @@ from django import forms
 from django.shortcuts import render, redirect, get_object_or_404
 
 from accounts.forms import UserModelForm
-from collection.models import Collection, CollectionGroup, CollectionGroupUser
+from collection.models import Collection, CollectionGroup, CollectionGroupUser, CollectionUser
 from datasets.models import Dataset, DatasetUser
 from datasets.static.hashes import mimetypes_plus as mthash_plus
 import codecs, json, os, re, sys, tempfile
@@ -188,8 +188,12 @@ def update_profile(request):
     # groups = u.groups.values_list('name', flat=True)
     groups_owned = u.groups.all()
     group_leader = 'group_leaders' in  u.groups.values_list('name', flat=True) # True or False
+
     context['ds_owned'] = ds_owned
     context['ds_collabs'] = ds_collabs
+    context['coll_owned'] = Collection.objects.filter(owner=u)
+    context['coll_collab'] = CollectionUser.objects.filter(user = u)
+    context['collections'] = Collection.objects.filter(owner=u)
     context['groups_owned'] = groups_owned
     context['mygroups'] = [ g.collectiongroup for g in CollectionGroupUser.objects.filter(user=u)]
     context['group_leader'] = group_leader
