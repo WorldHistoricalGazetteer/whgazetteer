@@ -191,9 +191,10 @@ def update_profile(request):
 
     context['ds_owned'] = ds_owned
     context['ds_collabs'] = ds_collabs
-    context['coll_owned'] = Collection.objects.filter(owner=u)
+    # TODO: context object for collections - place or dataset, owned or collaborated on
+    context['coll_owned'] = Collection.objects.filter(owner=u, collection_class='place')
     context['coll_collab'] = CollectionUser.objects.filter(user = u)
-    context['collections'] = Collection.objects.filter(owner=u)
+    # context['collections'] = Collection.objects.filter(owner=u)
     context['groups_owned'] = groups_owned
     context['mygroups'] = [ g.collectiongroup for g in CollectionGroupUser.objects.filter(user=u)]
     context['group_leader'] = group_leader

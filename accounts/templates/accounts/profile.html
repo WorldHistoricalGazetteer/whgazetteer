@@ -120,10 +120,10 @@
         {% with owned=context.coll_owned collabs=context.coll_collab %}
         {% if owned|length > 0 or collabs|length > 0 %}
           <tr>
-            <td class="strong" style="vertical-align: top;">My Collections</td>
+            <td class="strong" style="vertical-align: top;">My Place Collections</td>
 	          <td>
               {% for c in owned %}
-	              <p><a href="{% url 'collection:place-collection-update' c.id %}">{{ c.title }}</a></p>
+	              <span><a href="{% url 'collection:place-collection-update' c.id %}">{{ c.title }}</a></span><br/>
               {% endfor %}
 	          </td>
           </tr>
@@ -131,7 +131,7 @@
 	          <td class="strong" style="vertical-align: top;">Collection<br/>collaborations</td>
 		        <td>
               {% for c in collabs %}
-	              <p><a href="{% url 'collection:place-collection-update' c.id %}">{{ c.collection.title }}</a></p>
+	              <span><a href="{% url 'collection:place-collection-update' c.collection.id %}">{{ c.collection.title }}</a></span><br/>
               {% endfor %}
             </td>
           </tr>

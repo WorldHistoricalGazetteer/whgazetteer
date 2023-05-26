@@ -81,8 +81,9 @@ def group_connect(request, *args, **kwargs):
     coll.save()
     status = 'added to'
   else:
-    cg.collections.remove(coll)
-    # coll.submitted = False
+    # cg.collections.remove(coll)
+    coll.group = None
+    coll.submit_date = None
     coll.save()
     status = 'removed from'
 

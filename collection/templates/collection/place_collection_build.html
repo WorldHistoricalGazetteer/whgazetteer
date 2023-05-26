@@ -179,9 +179,11 @@
 		        <span id="submitter" class="">
 			        {{ form.group }}
 		        </span>
-			      <span class="ms-2">
-				      <a href="{% url 'collection:collection-group-detail' object.group.id %}" target="_blank">Group detail</a>
+			      {% if object.group %}
+			      <span class="ms-2 small">
+				      <a href="{% url 'collection:collection-group-detail' object.group.id %}" target="_blank">Info</a>
 			      </span>
+			      {% endif %}
 					{% endif %}
 	      </div>
           {% else %}
@@ -492,6 +494,7 @@
 	      </form>
 			</div>
 	  </div> {# tab_content #}
+    <div class="selector py-3"><div id="helpme"></div></div>
   </div> {# h-100 #}
 	{% endif %}
 </div> {# container #}
@@ -693,9 +696,12 @@
     {#console.log('remove_these:', remove_these)#}
 	})
 
-	$("#btn_coll_update").click(function(){
-      {#console.log('save & return')#}
-	})
+	{#$("#btn_coll_update").click(function(e){#}
+  {#  if($(this).value() == 'withdraw')#}
+  {#    e.preventDefault()#}
+  {#    console.log('clicked save, is it submit?', $(this))#}
+  {#    confirm('you sure?')#}
+	{# })#}
 
 	// show/hide editor-restricted options
   $("#editor_options").hide();
