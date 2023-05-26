@@ -202,10 +202,14 @@ class PlaceSerializer(serializers.ModelSerializer):
   descriptions = PlaceDescriptionSerializer(many=True, read_only=True)
   depictions = PlaceDepictionSerializer(many=True, read_only=True)
 
-  # TODO: returning json here may break Place Portal page
+
+  # cid param passed from place collectioin browse screen
   traces = serializers.SerializerMethodField('trace_anno')
   def trace_anno(self, place):
-    return json.loads(coreserializers.serialize("json", TraceAnnotation.objects.filter(place=place.id)))
+    cid = self.context["query_params"]['cid']
+    return json.loads(
+      coreserializers.serialize("json", TraceAnnotation.objects.filter(
+        place=place.id, collection=cid, archived=False)))
 
   geo = serializers.SerializerMethodField('has_geom')
 

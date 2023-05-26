@@ -243,7 +243,8 @@ def fetch_geojson_coll(request, *args, **kwargs):
      "properties":{
        "pid":t.place.id,
        "title": t.place.title,
-       "relation": t.relation[0],
+       "relation": t.relation,
+       # "relation": t.relation[0],
        "when": when_format([t.start, t.end]),
        "note": t.note
      }}

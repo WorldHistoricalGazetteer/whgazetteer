@@ -668,6 +668,12 @@ class PlaceDetailAPIView(generics.RetrieveAPIView):
   permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly]
   authentication_classes = [SessionAuthentication]
 
+  def get_serializer_context(self):
+    # in place collection browse, collection id is passed
+    context = super().get_serializer_context()
+    context["query_params"] = self.request.query_params
+    return context
+
 """
     place_compare/<int:pk>/
     uses: ds_update()
@@ -798,7 +804,7 @@ class PlaceTableCollViewSet(viewsets.ModelViewSet):
     coll: collection
   """
   def get_queryset(self):
-    print('PlaceTableCollViewSet() path', self.request.META['PATH_INFO'])
+    # print('PlaceTableCollViewSet() path', self.request.META['PATH_INFO'])
     # /api/placetable_coll/
     # a q value if it's a search on the table
     query = self.request.GET.get('q')
@@ -810,7 +816,7 @@ class PlaceTableCollViewSet(viewsets.ModelViewSet):
     else:
       qs = coll.places.annotate(seq=Min('annos__sequence')).order_by('seq')
     # qs = coll.places.annotate(seq=Min('collplace__sequence')).order_by('seq')
-    print('qs from PlaceTableCollViewSet()', qs)
+    # print('qs from PlaceTableCollViewSet()', qs)
     if query is not None:
       qs = qs.filter(title__istartswith=query)
     return qs

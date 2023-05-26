@@ -111,7 +111,10 @@
 		          <i>{{ k }}</i>: <span class="fs-5" style="color:{{ v }}">&#9679;</span> | {% endfor %}</span>
           </div>
           <div id="row_detail" class="col-sm-4">
-            <div id="detail" class="small ps-2"></div>
+	          {# an accordion here #}
+            <div id="detail" class="small ps-2">
+
+            </div>
           </div>
         </div>
       </div> <!-- drftable_detail -->
@@ -829,8 +832,7 @@
     {#console.log('getPlace()', pid, from)#}
     $.ajax({
 	    // TODO: need to filter for collection
-	    // TODO:
-      url: "/api/place/"+pid,
+      url: "/api/place/"+pid+"?cid={{ object.id }}",
       }).done(function( data ) {
         // if geom is polygon, make feature & add to map if not initial table.draw()
         $("#detail").html(parsePlace(data))
