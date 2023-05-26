@@ -577,7 +577,7 @@ def normalize(h, auth, language=None):
 # FUTURE: parse multiple areas
 # ***
 def get_bounds_filter(bounds, idx):
-  #print('bounds in get_bounds_filter()',bounds)
+  print('bounds in get_bounds_filter()',bounds)
   id = bounds['id'][0]
   #areatype = bounds['type'][0]
   area = Area.objects.get(id = id)
@@ -642,6 +642,7 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
 
   if has_bounds:
     area_filter = get_bounds_filter(bounds, 'wd')
+    print('area_filter', area_filter)
   if has_geom:
     # qobj['geom'] always a polygon hull
     # TODO: geo_distance filter may be better
@@ -680,7 +681,9 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
   qbase = {"query": {
     "bool": {
       "must": [
-        {"terms": {"variants.names":variants}}
+        # mapping change locally
+        {"terms": {"variants.names.raw":variants}}
+        # {"terms": {"variants.names":variants}}
       ],
       # boosts score if matched
       "should":[
@@ -696,25 +699,42 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
     qbase['query']['bool']['filter'].append(shape_filter)
     if has_countries:
       qbase['query']['bool']['should'].append(countries_match)
-  elif has_countries:
-    # matches ccodes
-    qbase['query']['bool']['must'].append(countries_match)
   elif has_bounds:
     # area_filter (predefined region or study area)
     qbase['query']['bool']['filter'].append(area_filter)
     if has_countries:
       qbase['query']['bool']['should'].append(countries_match)
+  elif has_countries:
+    # matches ccodes
+    qbase['query']['bool']['must'].append(countries_match)
 
-  # q1 = qbase + types in must IF ANY
-  # q1 = qbase + fclasses in should IF ANY, *for weight*?
+  # # add spatial filter as available in qobj
+  # if has_geom:
+  #   # shape_filter is polygon hull ~100km diameter
+  #   qbase['query']['bool']['filter'].append(shape_filter)
+  #   if has_countries:
+  #     qbase['query']['bool']['should'].append(countries_match)
+  # elif has_countries:
+  #   # matches ccodes
+  #   qbase['query']['bool']['must'].append(countries_match)
+  # elif has_bounds:
+  #   # area_filter (predefined region or study area)
+  #   qbase['query']['bool']['filter'].append(area_filter)
+  #   if has_countries:
+  #     qbase['query']['bool']['should'].append(countries_match)
+  #
+  """ 
+    q1 = qbase + types in must IF ANY
+    q1 = qbase + fclasses in should IF ANY, *for weight*?
+    ?? adding fclasses as 'must' not effective for wikidata, where typing 
+      quality is problematic at best 
+  """
   q1 = deepcopy(qbase)
   if len(qtypes) > 0:
     q1['query']['bool']['must'].append({"terms": {"types.id":qtypes}})
   if len(qobj['fclasses']) > 0:
     q1['query']['bool']['should'].append({"terms": {"fclasses":qobj['fclasses']}})
 
-  """ adding fclasses as 'must' not effective for wikidata, where typing 
-      quality is problematic at best """
   q2 = deepcopy(qbase)
 
   # for variants.name as text field...(wd_text index)
@@ -768,7 +788,7 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
       # /\/\/\/\/\/
       # pass2: remove type; qbase only
       # /\/\/\/\/\/  
-      print('no q1 hits, so q2',q2)
+      print('no q1 hits, q2',q2)
       try:
         res2 = es.search(index="wd", body = q2)
         hits2 = res2['hits']['hits']
@@ -883,6 +903,7 @@ def align_wdlocal(pk, **kwargs):
     # they are returned as Pass 0 hits right now
     # run pass0-pass2 ES queries
     #print('qobj in align_wd_local()',qobj)
+    
     result_obj = es_lookup_wdlocal(qobj, bounds=bounds)
       
     if result_obj['hit_count'] == 0:

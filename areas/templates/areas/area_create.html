@@ -109,7 +109,10 @@
               <input type="text" id="buffer_km" name="buffer_km" value=""/></p>
           </div>
           <div id="areas_draw" class="tab-pane fade in">
-            <p>Use map controls to draw/edit bounding box or polygon</p></div>
+            <p>Use map controls to draw/edit bounding box or polygon</p>
+	          <p class="red-head">NOTE<br/>Bounding boxes crossing the
+	          175&#176; or -175&#176; meridians may produce unexpected results!</p>
+          </div>
         </div>
 	      <p class="mt-2">GeoJSON<br/>{{ form.geojson }}</p>
       </div> <!-- area_options -->

@@ -49,11 +49,11 @@
   
   <div class="tab-content">
     <div id="addtask" class="tab-pane fade show active" role="tabpanel" aria-labelledby="addtask-tab">
-      <form action="{% url 'datasets:ds_recon' ds.id %}" method="POST">
+      <form id="f_addtask" action="{% url 'datasets:ds_recon' ds.id %}" method="POST">
       {% csrf_token %}
       <!-- only ds owner or superuser can run tasks -->
       {% if user.is_superuser or user in owners or user|has_group:'whg_team' %}
-      <div class="row"  > <!-- page-wide -->
+      <div class="row"> <!-- page-wide -->
         <div id="recon_form" class="col-md-6">
           <!-- if already indexed, running more tasks makes no sense -->
           {% if ds.unindexed == 0 and not user.is_superuser %}
@@ -69,22 +69,9 @@
                 <label class="form-check-label text-danger" for="r_idx">
                   <input type="radio" class="form-check-input" id="r_idx"
                     name="recon" value="idx">WHG accession (reconcile, index)
-                </label> <span class="float-right">test only? <input type="checkbox" name="test" ></span>
+                </label>
+	              <span class="float-right">test only? <input type="checkbox" name="test" ></span>
 								<br/>
-                <div id="data_limiter" class="hidden">
-	                <select id="select_colls" name="collection" class="custom-select-sm" style="width:auto;">
-		                <option value="0"><i>Limit to collection</i></option>
-	                  {% for c in coll_list %}
-	                    <option value="{{ c.id }}">{{ c.title }}</option>
-	                  {% endfor %}
-	                </select>
-	                <select id="select_ds" name="dataset" class="custom-select-sm" style="width:auto;">
-	                  <option value="0">Limit to dataset</option>
-	\                  {% for ds in ds_list %}
-	                    <option value="{{ ds.id }}">{{ ds.title }}</option>
-	                  {% endfor %}
-	                </select>
-                </div>
               </div>
 							{% for message in messages %}
 								<div class="container-fluid p-0">
@@ -97,7 +84,44 @@
 								</div>
 							{% endfor %}
               <hr/>
-						{% endif %}
+            {% endif %}
+						{% if histme or beta_or_better %}
+							{# <div id="data_limiter" class="hidden">#}
+              <div id="data_limiter" class="">
+                <p class="my-0">Limit reconciliation to collection...</p>
+                <div class="btn-group btn-group-toggle" data-toggle="buttons">
+	                <span class="">
+	                {% if coll_list|length > 0 %}
+								  <label class="btn btn-sm btn-secondary active">
+								    <input type="radio" name="limit" value="coll" id="r_coll" autocomplete="off"> Collection
+								  </label> <mark class="ml-2">Not functional yet - returns server error!</mark>
+	                {% else %}<i>You haven't got any yet</i><br/>{% endif %}
+	                {% comment %}
+	                {% if ds_list|length > 0 %}
+								  <label class="btn btn-sm btn-secondary">
+								    <input type="radio" name="limit" value="ds" id="r_ds" autocomplete="off"> Dataset
+								  </label>
+	                {% endif %}
+	                {% endcomment %}
+                  </span>
+								</div>
+                <div>
+                <select id="select_colls" name="collection" class="custom-select-sm hidden" style="width:auto;">
+	                <option value="0"><i>Select collection</i></option>
+                  {% for c in coll_list %}
+                    <option value="{{ c.id }}">{{ c.title }}</option>
+                  {% endfor %}
+                </select>
+                <select id="select_ds" name="dataset" class="custom-select-sm hidden" style="width:auto;">
+                  <option value="0">Select dataset</option>
+\                  {% for ds in ds_list %}
+                    <option value="{{ ds.id }}">{{ ds.title }}</option>
+                  {% endfor %}
+                </select>
+                </div>
+                <hr/>
+              </div>
+	          {% endif %}
             {% if ds.recon_status.idx %}
               <p>Accessioning has begun for this dataset. Initiating another reconciliation task could disrupt
 	              the workflow in progress. If you would like to stop the accessioning step and roll back the workflow,
@@ -250,14 +274,32 @@
   $("#btn_done").on('click', function(){ location.reload(); })
   $("#btn_cancel").on('click', function(){ location.reload(); })
 
+  {#$("#btn_startrecon").on('click'), function(){#}
+  {#  if( $("input[name='limit']:checked").length > 0){#}
+	{#    alert('not functional')#}
+	{#		return#}
+  {#  }#}
+  {# }#}
+
   //
   $('#recon_form').change(function(){
 		task = $("input[name='recon']:checked").val();
-    if (task == 't_whg') {
-      $("#data_limiter").show()
-    } else {
-      $("#data_limiter").hide()
-    }
+		limit = $("input[name='limit']:checked").val();
+    console.log('task', task, 'limit', limit)
+	  if(limit == 'coll'){
+      $("#select_colls").show()
+      $("#select_ds").hide()
+		  $("#r_wdlocal").attr('checked',false)
+	  } else if(limit == 'ds') {
+      $("#select_colls").hide()
+      $("#select_ds").show()
+		  $("#r_wdlocal").attr('checked',false)
+	  }
+    {#if (task == 't_whg') {#}
+    {#  $("#data_limiter").show()#}
+    {# } else {#}
+    {#  $("#data_limiter").hide()#}
+    {# }#}
   });
 	$('#data_limiter').change(function(){
 		coll = $("#select_colls").val();

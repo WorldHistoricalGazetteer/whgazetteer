@@ -1956,7 +1956,8 @@ def ds_insert_tsv(request, pk):
         coords = makeCoords(r[header.index('lon')],r[header.index('lat')]) \
           if 'lon' in header and 'lat' in header else None
         geowkt = r[header.index('geowkt')] if 'geowkt' in header else None
-        geosource = r[header.index('geo_source')] if 'geo_source' in header else None
+        # replaced None with '' 25 May 2023
+        geosource = r[header.index('geo_source')] if 'geo_source' in header else ''
         geoid = r[header.index('geo_id')] if 'geo_id' in header else None
         geojson = None # zero it out
         # print('geosource:', geosource)
@@ -3060,7 +3061,8 @@ class DatasetAddTaskView(LoginRequiredMixin, DetailView):
 
     # user datasets
     # userdatasets = Dataset.objects.filter(owner=me).values('id','title').order_by('-created')
-    context['ds_list'] = Dataset.objects.filter(owner=me, ds_status='indexed').values('id','title').order_by('-create_date')
+    context['ds_list'] = Dataset.objects.filter(owner=me).values('id','title').order_by('-create_date')
+    # context['ds_list'] = Dataset.objects.filter(owner=me, ds_status='indexed').values('id','title').order_by('-create_date')
     # context['ds_list'] = userdatasets if me.username == 'whgadmin' else userdatasets.filter(owner=me)
 
     # user dataset collections

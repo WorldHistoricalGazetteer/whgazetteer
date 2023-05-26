@@ -548,7 +548,7 @@ def parsedates_lpf(feat):
 	# absent end replaced by start by timespansReduce()
 	starts = [ts[0] for ts in intervals]
 	ends = [ts[1] for ts in intervals]
-	# some lpf records have no time at all b/c not required as with lp-tsv
+	# some lpf records have no time at all b/c not required as with LP-TSV
 	minmax = [
 		int(min(starts)) if len(starts)>0 else None,
 		int(max(ends))  if len(ends)>0 else None
