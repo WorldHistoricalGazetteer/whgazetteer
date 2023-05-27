@@ -21,21 +21,28 @@
 			overflow:hidden;
     }
 		/* .leaflet-container-default {height: 250px !important;} */
-		.resource-gallery {background-color:rgb(238, 238, 238); overflow:auto; border-bottom: 1px solid gainsboro;}
 		.gallery-banner-collections {border-bottom: 1px solid lightgray;
 			background-color:#54A1DA; color: white;}
+		.collection-gallery {
+				background-color:rgb(238, 238, 238);
+				overflow:auto; border-bottom: 1px solid gainsboro;}
+		.coll-card {
+				float:left;
+				margin-right:.1rem;
+				width: 33%;
+				height: 175px;
+				overflow-y:auto;
+				background-color: white;}
+		{#.coll-card:hover {cursor: pointer; opacity:0.8;}#}
+		.coll-card-header {width:100%; background-color: honeydew;}
+		.coll-card-content h6 {font-size: .9rem;}
+		.coll-card-blurb {line-height: 1rem; font-size: small;}
 		.regions-ttlink {color:grey; font-size:.75rem; float:right; text-decoration-line: underline;}
 		.reset-link {float:right; display:none; color:white; text-decoration-line: underline;}
 		#teaching_bottom {height:65%;}
 		#teaching_top {height:230px;}
 		.teaching-essay {outline: rgb(60, 136, 148) 1px solid; box-shadow: 4px 4px rgb(221, 221, 221);
 			border-radius: 4px; background-color: ivory; min-height:auto; overflow-y: auto;}
-		.resource-card {float:left; margin-right:.1rem; 
-			width: 33%; height: 175px; overflow-y:auto; background-color: white;}
-		.resource-card:hover {cursor: pointer; opacity:0.8;}
-		.resource-card-header {width:100%; background-color: honeydew;}
-		.resource-card-content h6 {font-size: .9rem;}
-		.resource-card-blurb {line-height: 1rem; font-size: small;}
 		#badge_link { font-size:1rem; position:absolute; right:10px; z-index:100;}
 		.fill-grey {background-color:gainsboro; }
 		.fill-blue {background-color:rgb(60, 136, 148); }
@@ -52,20 +59,20 @@
 		</section>
 		<div id="gallery_bottom" class="row mt-2">
 			<div class="col-sm-12 pe-0" style="height: 85%;">
-				<div class="resource-gallery h-100">
+				<div class="collection-gallery h-100">
 					<div class="gallery-banner-collections ps-2 small w-100";>ANNOTATED PLACE COLLECTIONS ({{ collections|length }})
 						<span id="regions_reset" class="reset-link me-2" style="cursor:pointer;">reset filter</span>
 					</div>
 					<div class="ps-1">
 						{% for c in collections %}
-							<div class="resource-card mt-1">
-								<div class="resource-card-content px-2 pt-1" data-id={{r.id}}>
+							<div class="coll-card mt-1">
+								<div class="coll-card-content px-2 pt-1" data-id={{c.id}}>
 									{% with remainder=190 %}
 									<h6>
 										<a href="{% url 'collection:place-collection-browse' c.id %}">{{ c.title }}</a>
 										<br/><i>{{ c.owner.name }}</i><span class="float-end me-2 ital">{{ c.submit_date|date:'j M Y' }}</span>
 									</h6>
-									<p class="resource-card-blurb my-1">
+									<p class="coll-card-blurb my-1">
 										<img src="/media/{{ c.image_file.name }}" width="80" style="float: right;"/>
 										{{ c.description|trunc_it:remainder }}
 									</p>
@@ -89,15 +96,15 @@
 
 		function resetRegions(){
 			regions.setStyle({ fillColor: "#ff9999", color: "black" })
-			$('.resource-card').css('display', 'block')
+			$('.coll-card').css('display', 'block')
 			$("#regions_reset").hide();
 		}
 		function filterResources(region){
-			var $el = $('.resource-card').filter(function () {
+			var $el = $('.coll-card').filter(function () {
 				// console.log('this', $(this).data("regions"))
 				return (!$(this).data("regions").includes(region))
 			}).css('display','none')
-			shown = $('.resource-card').filter(function(){
+			shown = $('.coll-card').filter(function(){
 				return $(this).is(":visible");
 			}) 
 			regiones = []

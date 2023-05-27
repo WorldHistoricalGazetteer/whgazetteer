@@ -496,6 +496,7 @@ class PlaceCollectionUpdateView(LoginRequiredMixin, UpdateView):
     context = super(PlaceCollectionUpdateView, self).get_context_data(*args, **kwargs)
     user = self.request.user
     _id = self.kwargs.get("id")
+    coll = self.object
     datasets = self.object.datasets.all()
 
     form_anno = TraceAnnotationModelForm(self.request.GET or None, auto_id="anno_%s")
@@ -508,10 +509,12 @@ class PlaceCollectionUpdateView(LoginRequiredMixin, UpdateView):
     context['action'] = 'update'
     context['ds_select'] = ds_select
     context['coll_dsset'] = datasets
-    context['links'] = Link.objects.filter(collection=self.object.id)
-    context['owners'] = self.object.owners
-    context['collabs'] = self.object.collaborators.all()
-    context['whgteam'] = True if user.groups.filter(name__in=['whg_team']).exists() else False
+    context['links'] = Link.objects.filter(collection=coll.id)
+    context['owner'] = True if user == coll.owner else False
+    context['is_member'] = True if user in coll.owners or user in coll.collaborators else False
+    context['is_owner'] = True if user in self.object.owners else False
+    context['whgteam'] = True if user.groups.filter(name__in=['whg_team','editorial']).exists() else False
+    context['collabs'] = CollectionUser.objects.filter(collection=coll.id)
     # context['links'] = CollectionLink.objects.filter(collection=self.object.id)
 
     context['form_anno'] = form_anno
@@ -521,7 +524,7 @@ class PlaceCollectionUpdateView(LoginRequiredMixin, UpdateView):
     ]
     context['created'] = self.object.created.strftime("%Y-%m-%d")
     context['mbtoken'] = settings.MAPBOX_TOKEN_WHG
-    context['whgteam'] = User.objects.filter(groups__name='whg_team')
+    # context['whgteam'] = User.objects.filter(groups__name='whg_team')
 
     return context
 
@@ -550,15 +553,14 @@ class PlaceCollectionBrowseView(DetailView):
     context['media_url'] = settings.MEDIA_URL
 
     context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False
-    context['coll'] = coll
     context['ds_list'] = coll.ds_list
     context['ds_counter'] = coll.ds_counter
+    context['collabs'] = coll.collaborators.all()
     context['images'] = [ta.image_file.name for ta in coll.traces.all()]
     context['links'] = coll.related_links.all()
     context['places'] = coll.places.all().order_by('title')
     context['updates'] = {}
     context['url_front'] = settings.URL_FRONT
-    context['collabs'] = self.object.collaborators.all()
 
     return context
 

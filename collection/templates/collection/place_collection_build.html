@@ -80,8 +80,10 @@
 
 {% block content %}
 <div class="container container-md" style="height: calc(100vh);">
-  {% if action == 'update' and not user == object.owner and user in object.collaborators and not whgteam %}
-	  <p>Access to this page is limited to the collection owner, <b>{{ user.username }} ({{ object.owner.id }})</b></p>
+{#	<p>is_member: {{ is_member }}; is_owner: {{ is_owner }}; whgteam: {{ whgteam }}</p>#}
+  {% if action == 'update' and is_member == False and whgteam == False %}
+	  <p>Access to this page is limited to the collection owner <b>{{ object.owner.name }}</b> ({{ object.owner.id }})
+		  and designated collaborators.</p>
   {% else %}
   <div class="h-100">
 	  <h5 class="mt-3">
@@ -187,8 +189,10 @@
 					{% endif %}
 	      </div>
           {% else %}
-	          <div class="col-sm-5"><p>As a collaborator on this collection, you can view its metadata,
-		          add, annotate, and remove places, add links, and change the image and essay</p>
+	          <div class="col-sm-5">
+		          <p class="ital small p-2">As a collaborator on this collection, you can view its metadata,
+		          add, annotate, and remove places, add links, and change the image and essay
+		          </p><hr/>
 		          {% with form.visible_fields as partial %}
               <p><b>Title</b>: {{ partial.1.value }}</p>
               <p><b>Description</b>:<br/>{{ partial.3.value }}</p>
@@ -444,7 +448,6 @@
 	      </div> {# d-flex #}
 	    </div> {# coll_builder #}
 			<div id="coll_collaborators" class="tab-pane fade h-100" style="height: auto; position:relative;">
-				{# {% url 'datasets:collab-add' dsid=ds.id v='2' %} #}
 	      <form id="sharing_form" method="POST" action="{% url 'collection:collab-add' cid=object.id %}"
 	            enctype="multipart/form-data">
 	      {% csrf_token %}
@@ -454,10 +457,10 @@
 	        <div class="smallish ps-2">
 	          <p class="">Collaborators are registered WHG users, assigned per collection.</p>
 	          <p><sr>Members</sr> can add, remove, and annotate places, and add/remove links.<br/>
-		          <sr>Co-owners</sr> can edit collection metadata, submit it for review, and delete it. <mark>Careful!</mark>
+		          <sr>Co-owners</sr> can edit collection metadata, submit it for review, and delete it.
 	          </p>
 	        </div>
-	        {% if user.is_superuser or user in owners %}
+	        {% if is_owner %}
 	          <div class="ms-2 my-2">
 	            <div class="form-check form-check-inline sharing-input">
 	              <span class="input-group">
@@ -480,13 +483,14 @@
 	        <ul id="collabs_list">
 	          {% for c in collabs %}
 	            <li>
-	              {{ c|safe }} <!-- username, bold --> {{ c.id }}
-	              {% if user.is_superuser or user in owners %}
+{#	              {{ c.name|safe }}  ({{ c.email }})#}
+		            {{ c|safe }}
+		            {% if is_owner or whgteam %}
 	                <span class="float-end me-2">
 	                <a href="{% url 'collection:collab-delete' uid=c.id cid=object.id %}">
 	                  <i class="fas fa-times-circle linky"></i></a>
 	                </span>
-	              {% endif %}
+		            {% endif %}
 	            </li>
 	          {% endfor %}
 	        </ul>
