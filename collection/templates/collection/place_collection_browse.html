@@ -28,6 +28,15 @@
 		.red-head-anno {font-size: smaller; color: #993333;}
 		.modal-custom {max-width: inherit;}
 		.dataTables_scroll {border-top:1px solid gainsboro; margin-top:2px;}
+		#accordion_collection {
+				border-right: 1px gainsboro solid;
+				border-left: 1px gainsboro solid;
+		}
+		.accordion-body {font-size: smaller; padding:.5rem;}
+		.accordion-button {
+			padding: .2rem !important;
+			background-color: antiquewhite !important;
+		}
   </style>
 {% endblock %}
 
@@ -111,10 +120,32 @@
 		          <i>{{ k }}</i>: <span class="fs-5" style="color:{{ v }}">&#9679;</span> | {% endfor %}</span>
           </div>
           <div id="row_detail" class="col-sm-4">
-	          {# an accordion here #}
-            <div id="detail" class="small ps-2">
-
-            </div>
+					<span id="row_title" class="larger text-danger"></span>
+					<div class="accordion accordion-flush" id="accordion_collection">
+					  <div class="accordion-item">
+					    <h2 class="accordion-header bg-lightseagreen" id="headingOne">
+					      <button class="accordion-button" type="button" data-bs-toggle="collapse"
+					              data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+					        Annotation</button>
+					    </h2>
+					    <div id="collapseOne" class="accordion-collapse collapse show"
+					         aria-labelledby="headingOne" data-bs-parent="#accordion_collection">
+					      <div id="anno_body" class="accordion-body"></div>
+					    </div>
+					  </div>
+					  <div class="accordion-item">
+					    <h2 class="accordion-header bg-tan" id="headingTwo">
+					      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+					              data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+					        Place record</button>
+					    </h2>
+					    <div id="collapseTwo" class="accordion-collapse collapse" a
+					         ria-labelledby="headingTwo" data-bs-parent="#accordion_collection">
+					      <div id="place_body" class="accordion-body"></div>
+					    </div>
+					  </div>
+					</div>
+{#            <div id="detail" class="small ps-2"> </div>#}
           </div>
         </div>
       </div> <!-- drftable_detail -->
@@ -649,9 +680,9 @@
 		// fetch all places in collection
 	  $.getJSON('/collections/'+'{{ object.id }}'+'/geojson')
 	  .done(function(colldata) {
+			fcoll = colldata
       all_feats = colldata.features
 
-			fcoll = colldata
 			circleColor = function(){
         arr = []
 				for(i=0; i<fcoll.relations.length; i++) {
@@ -659,7 +690,7 @@
 				}
 				return arr
 			}
-
+			{#console.log(circleColor())#}
       mappy.addSource('places', {
         'type': 'geojson',
         'data': colldata
@@ -674,11 +705,7 @@
           'circle-opacity': 0.5,
 	        'circle-color': [
 						'match',
-						['get', 'relation'],
-		        ...circleColor(),
-		        '', '#e8e8e8',
-			        '#ccc'
-						],
+						['get', 'relation'], ...circleColor(), '', '#e8e8e8', '#ccc'],
           'circle-radius': {
             stops: [[1, 5], [3, 8], [16, 10]]
           },
@@ -827,15 +854,18 @@
   // activate all tooltips
   $("[rel='tooltip']").tooltip();
 
+  // fetch place record (incl. trace) on select in table
   function getPlace(pid, from){
-    // from = ['row0'|'clicked'|'popup']
-    {#console.log('getPlace()', pid, from)#}
     $.ajax({
-	    // TODO: need to filter for collection
       url: "/api/place/"+pid+"?cid={{ object.id }}",
       }).done(function( data ) {
+        window.payload = data
+		    $("#row_title").html('<b>'+data.title+'</b>')
         // if geom is polygon, make feature & add to map if not initial table.draw()
-        $("#detail").html(parsePlace(data))
+        {#$("#detail").html(parsePlace(data))#}
+		    $("#anno_body").html(parseAnno(data.traces))
+		    delete data.traces
+		    $("#place_body").html(parsePlace(data))
 		    // TODO: usability? filter table on 'fetch info' from marker popup but not on initial load
 		    if(from=="popup"){
           $("#placetable_filter input").val(data.title).keyup()
@@ -868,6 +898,7 @@
     });
   }
 
+	//
   function toggleLinks() {
       label = $("#togglelinks").text()
       $("#togglelinks").text(label == 'Show' ? 'Hide' : 'Show');
@@ -879,38 +910,13 @@
       $('#s_names').toggle()
   }
 
-  // single column
-  function parsePlace(data) {
-    window.featdata = data
-    {#console.log('data', data)#}
-
-    function onlyUnique(array) { 
-      const map = new Map();
-      const result = [];
-      for (const item of array) {
-        if(!map.has(item.identifier)){
-            map.set(item.identifier, true);
-            result.push({
-                identifier: item.identifier,
-                type: item.type,
-                aug: item.aug
-            });
-        }
-      }
-      return(result)
-    }
-
-    // TITLE
-    descrip = '<p><span id="row_title" class="larger text-danger"><b>'+data.title+'</b></span>'
-
-	  //
-	  // TRACES
-		//
-	  descrip += '<div class="red-head-anno">ANNOTATION</div>'
-	  if(data.traces.length > 0) {
-	  {#if(JSON.parse(data.traces).length > 0) {#}
+  // TRACES (ANNOTATIONS)
+  function parseAnno(data) {
+	  descrip = ''
+	  if(data.length > 0) {
       // there is *always* a trace, even if not saved
-      trace = data.traces.find(function (d) {
+		  // TODO: no need to find/filter here? done in view?
+      trace = data.find(function (d) {
       {#trace = JSON.parse(data.traces).find(function (t) {#}
         return d.fields.collection == "{{ object.id }}"
       })
@@ -959,11 +965,34 @@
 		  $("#active_img").attr('src','/media/{{ object.image_file.name }}')
 		  {#$("#active_img").attr('src','/media/'+collimgpath)#}
 	  }
-		descrip += '<hr/><div class="red-head-anno">PLACE RECORD</div>'
+    return descrip
+  }
+
+  // SINGLE PLACE
+  function parsePlace(data) {
+    window.featdata = data
+    {#console.log('data', data)#}
+
+    function onlyUnique(array) { 
+      const map = new Map();
+      const result = [];
+      for (const item of array) {
+        if(!map.has(item.identifier)){
+            map.set(item.identifier, true);
+            result.push({
+                identifier: item.identifier,
+                type: item.type,
+                aug: item.aug
+            });
+        }
+      }
+      return(result)
+    }
+
     //
     // NAME VARIANTS
 	  // display first 5
-    descrip+='<p class="scroll100"><b><u>Name variants</u></b>: '
+    descrip = '<p class="scroll100"><b><u>Name variants</u></b>: '
     for (n in data.names.slice(0,5)) {
       let name = data.names[n]
       descrip+= name.toponym !=''?name.toponym+'; ': ''
