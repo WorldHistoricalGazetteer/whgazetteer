@@ -1,86 +1,120 @@
 {% extends "main/base.html" %}
-{% block title %}<title>WHG::Teaching</title>{% endblock %}
+{% block title %}<title>WHG::Gallery</title>{% endblock %}
 
 {% block content %}
-	{% load geojson_tags %}
-	{% load leaflet_tags %}
+{#	{% load geojson_tags %}#}
+{#	{% load leaflet_tags %}#}
 	{% load static %}
 	{% load dataset_extras %}
 	{% block extra_head %}
 	<style>
-		#teaching_essay {height: 85%; overflow: auto; }
 		#essay_modal {font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
 			font-size: 1.2rem;}
-		#main {
-      position: relative;
-      border: 1px solid black;
-      border-radius: 8px;
-      /* height: 100%; */
-      width: 100%;
-			overflow:hidden;
-    }
+		.gallery-banner-dataset {border-bottom: 1px solid lightgray;
+			background-color:#53A1DA; color: white;}
+		.gallery-banner-place {border-bottom: 1px solid lightgray;
+			background-color:rgb(216, 227, 242); color: darkslateblue;}
+		.gallery-banner-student {border-bottom: 1px solid lightgray;
+			background-color:aliceblue; color: darkblue;}
+		.coll-gallery {overflow:auto; }
+		{#.coll-gallery {overflow:auto; border-bottom: 1px solid gainsboro;}#}
+		.coll-card-content { border: 1px dotted gainsboro;}
+		.coll-card-content h6 {font-size: .9rem;}
+		.coll-card-blurb {line-height: 1rem; font-size: small;}
+		.coll-card {float:left; margin-right:.1rem;
+			width: 99%; height: 175px; overflow-y:auto; background-color: white;}
+		.coll-card:hover {cursor: pointer; opacity:0.8;}
+
+		/* unused */
+		#main {position: relative; border: 1px solid black; border-radius: 8px; width: 100%; overflow:hidden; }
+		.coll-card-header {width:100%; background-color: honeydew;}
 		/* .leaflet-container-default {height: 250px !important;} */
-		.resource-gallery {background-color:rgb(238, 238, 238); overflow:auto; border-bottom: 1px solid gainsboro;}
-		.gallery-banner-collections {border-bottom: 1px solid lightgray;
-			background-color:lightseagreen; color: white;}
-		.regions-ttlink {color:grey; font-size:.75rem; float:right; text-decoration-line: underline;}
-		.reset-link {float:right; display:none; color:white; text-decoration-line: underline;}
-		#teaching_bottom {height:65%;}
-		#teaching_top {height:230px;}
-		.teaching-essay {outline: rgb(60, 136, 148) 1px solid; box-shadow: 4px 4px rgb(221, 221, 221);
-			border-radius: 4px; background-color: ivory; min-height:auto; overflow-y: auto;}
-		.resource-card {float:left; margin-right:.1rem;
-			width: 33%; height: 175px; overflow-y:auto; background-color: white;}
-		.resource-card:hover {cursor: pointer; opacity:0.8;}
-		.resource-card-header {width:100%; background-color: honeydew;}
-		.resource-card-content h6 {font-size: .9rem;}
-		.resource-card-blurb {line-height: 1rem; font-size: small;}
+		#teaching_essay {height: 85%; overflow: auto; }
 		#badge_link { font-size:1rem; position:absolute; right:10px; z-index:100;}
 		.fill-grey {background-color:gainsboro; }
 		.fill-blue {background-color:rgb(60, 136, 148); }
 		#region_label {font-family: 'Raleway', sans-serif !important; font-size:1rem; color: tomato;}
 		.leaflet-container, .leaflet-container-default {min-height: 220px !important; max-height: 230px !important;}
+		.regions-ttlink {color:grey; font-size:.75rem; float:right; text-decoration-line: underline;}
+		#teaching_bottom {height:65%;}
+		#teaching_top {height:230px;}
+		.teaching-essay {outline: rgb(60, 136, 148) 1px solid; box-shadow: 4px 4px rgb(221, 221, 221);
+			border-radius: 4px; background-color: ivory; min-height:auto; overflow-y: auto;}
+		.reset-link {float:right; display:none; color:white; text-decoration-line: underline;}
 	</style>
 	{% endblock %}
 
 	<div class="container pt-2 container-md" style="height: calc(100vh - 65px); position:relative;">
 		<section class="text-center">
 			<div class="container mb-1" style="position:relative">
-				<h3>{{ group }} <span class="ital fs-6">{{ group.owner.name}}</span></h3>
+				<h3>Collections in World Historical Gazetteer</h3>
 			</div>
 		</section>
-{#		<div id="teaching_top" class="row">#}
-{#			<div class="row">#}
-{#				<div class="col-md-7" style="font-size: 1.3rem;">#}
-{#					<p>Collections in WHG are sets of place records found in our database and/or index.</p>#}
-{#				</div>#}
-{#				<div class="col-md-5">{% leaflet_map "main" %}</div>#}
-{#			</div>#}
-{#		</div> <!-- .row -->#}
 		<div id="gallery_bottom" class="row mt-2">
-{#			<div class="col-sm-4 px-0" style="height: 80%;">#}
-{#				<div class=" p-2">#}
-{#				</div>#}
-{#			</div>#}
-			<div class="col-sm-12 pe-0" style="height: 85%;">
-				<div class="resource-gallery h-100">
-					<div class="gallery-banner-collections ps-2 small w-100";>COLLECTIONS ({{ collections|length }})
-						<span id="regions_reset" class="reset-link me-2" style="cursor:pointer;">reset filter</span>
+			<div class="col-sm-4 pe-0" style="height: 85%;">
+				<div class="coll-gallery h-100">
+					<div class="gallery-banner-dataset ps-2 pt-1 small w-100";>DATASET COLLECTIONS</div>
+					<div class="ps-1">
+						{% for c in dataset_collections %}
+							<div class="coll-card mt-1">
+								<div class="coll-card-content px-2 pt-1" data-id={{c.id}}>
+									{% with remainder=190 %}
+									<h6>
+{#										<a href="{% url 'collection:place-collection-browse' c.id %}">#}
+											{{ c.title }}
+{#										</a>#}
+										 ({{ c.owner.name }})
+									</h6>
+									<p class="coll-card-blurb my-1">
+										<img src="/media/{{ c.image_file.name }}" width="60" style="float: right;"/>
+										{{ c.description|trunc_it:remainder }}
+									</p>
+									{%endwith%}
+								</div>
+							</div>
+						{% endfor %}
+					</div>
+				</div>
+			</div>
+			<div class="col-sm-4 pe-0">
+				<div class="coll-gallery h-100">
+					<div class="gallery-banner-place ps-2 pt-1 small w-100";>PLACE COLLECTONS
 					</div>
 					<div class="ps-1">
-						{% for c in collections %}
-							<div class="resource-card mt-1">
-{#								<div class="resource-card-header ps-2 small ">{{ r.type }}#}
-{#									<span class="regions-ttlink me-1" data-toggle="tooltip" data-html="true" title="{{r.regions}}">#}
-{#										<i class="fas fa-globe linky"></i> regions</span>#}
-{#								</div>#}
-								<div class="resource-card-content px-2 pt-1" data-id={{r.id}}>
+						{% for c in place_collections %}
+							<div class="coll-card-student mt-1">
+								<div class="coll-card-content px-2 pt-1" data-id={{c.id}}>
+									{% with remainder=190 %}
+									<h6>
+{#										<a href="{% url 'collection:place-collection-browse' c.id %}">#}
+											{{ c.title }}
+{#										</a>#}
+										 ({{ c.owner.name }})
+									</h6>
+									<img src="/media/{{ c.image_file.name }}" width="60" style="float: right;"/>
+									<p class="coll-card-blurb my-1">{{ c.description|trunc_it:remainder }} </p>
+									{%endwith%}
+								</div>
+							</div>
+						{% endfor %}
+					</div>
+				</div>
+			</div>
+			<div class="col-sm-4 pe-0">
+				<div class="coll-gallery h-100">
+					<div class="gallery-banner-student ps-2 pt-1 small w-100";>STUDENT GALLERY
+					</div>
+					<div class="ps-1">
+						{% for c in student_collections %}
+							<div class="coll-card-student mt-1">
+								<div class="coll-card-content px-2 pt-1" data-id={{c.id}}>
 									{% with remainder=190 %}
 									<h6>
 										<a href="{% url 'collection:place-collection-browse' c.id %}">{{ c.title }}</a>
 										 ({{ c.owner.name }})
 									</h6>
-									<p class="resource-card-blurb my-1">{{ c.description|trunc_it:remainder }} </p>
+									<img src="/media/{{ c.image_file.name }}" width="60" style="float: right;"/>
+									<p class="coll-card-blurb my-1">{{ c.description|trunc_it:remainder }} </p>
 									{%endwith%}
 								</div>
 							</div>

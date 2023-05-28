@@ -913,9 +913,9 @@ class CollectionGalleryView(ListView):
     context = super(CollectionGalleryView, self).get_context_data(*args, **kwargs)
     # public collections
     # context['group'] = self.get_object()
-    context['collections'] = Collection.objects.filter(public=True)
-    # context['collections'] = Collection.objects.order_by('created')
-    # context['viewable'] = ['uploaded','inserted','reconciling','review_hits','reviewed','review_whg','indexed']
+    context['place_collections'] = Collection.objects.filter(collection_class='place', public=True)
+    context['dataset_collections'] = Collection.objects.filter(collection_class='dataset', public=True)
+    context['student_collections'] = Collection.objects.filter(nominated=True)
 
     context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False
     return context
