@@ -157,9 +157,7 @@
 	        <h5 class="modal-title" id="exampleModalLabel">{ per-button title }</h5>
 	        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 	      </div>
-	      <div class="modal-body">
-		      <p>{ per-button content }</p>
-	      </div>
+	      <div class="modal-body"></div>
 	      <div class="modal-footer">
 	        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
 	      </div>
@@ -184,7 +182,7 @@ $(function(){
   });	
 })
 
-var exampleModal = document.getElementById('exampleModal')
+exampleModal = document.getElementById('exampleModal')
 exampleModal.addEventListener('show.bs.modal', function (event) {
   // Button that triggered the modal
   var button = event.relatedTarget
@@ -199,6 +197,9 @@ exampleModal.addEventListener('show.bs.modal', function (event) {
   {#var modalBodyInput = exampleModal.querySelector('.modal-body input')#}
 
   modalTitle.textContent = title
+	url = '/media/home/'+page+'.html'
+	console.log('url',url)
+	{#$(".modal-body").load("/media/home/teaching_api.html")#}
 	$(".modal-body").load('/media/home/'+page+'.html')
 
 })
