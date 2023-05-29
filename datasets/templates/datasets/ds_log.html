@@ -152,6 +152,7 @@ function customResult(resultElement, result) {
   );
   $(".dl-save a")[0].click()
   setTimeout(clearEl($("#celery-result")), 1000)
+	location.reload()
 }
 
 $("#a_notes_download").click(function(e){
@@ -175,7 +176,7 @@ $("#a_notes_download").click(function(e){
         console.log('got response', response)
         task_id = response.task_id
         progressUrl = "/celery-progress/" + task_id + "/";
-        console.log(progressUrl)
+        console.log('progressUrl', progressUrl)
 
         CeleryProgressBar.initProgressBar(progressUrl,
           { pollingInterval: 500,

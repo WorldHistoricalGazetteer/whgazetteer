@@ -67,24 +67,11 @@ def downloader(request, *args, **kwargs):
 			format=format,
 		)
 		obj={'task_id':download_task.task_id}
-		# print('download_task, type', download_task.__dict__, type(download_task))
-		# print('t backend',download_task.backend.__dict__)
-		# print('task', TaskResult.objects.get(task_id=download_task.task_id))
 
-		# obj={'task_id':download_task.task_id}
-		# obj={'task_id':download_task.task_id, 'result':task.result}
-		# print('obj from downloader()', obj)
-		# if notes:
-		# 	from django.http import FileResponse
-		# 	def download_file(request):
-		# 		return FileResponse(open('uploads/something.txt', 'rb'), as_attachment=True)
-		#return render(request, 'datasets/ds_meta.html', context=context)
-		# return JsonResponse(json.dumps(obj), content_type='application/json', safe=False)
 		return HttpResponse(json.dumps(obj), content_type='application/json')
 
 	elif request.method == 'POST' and not request.is_ajax:
 		print('request.POST (not ajax)', request.POST)
-
 
 	elif request.method == 'GET':
 		print('request.GET', request.GET)
@@ -947,7 +934,7 @@ def makeDate(ts, form):
 def makeNow(short=False):
 	ts = time.time()
 	sttime = datetime.datetime.fromtimestamp(ts).strftime('%Y%m%d_%H%M%S')
-	if short:
+	if short==True:
 		sttime = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d')
 	return sttime
 #

@@ -105,7 +105,7 @@ def make_download(request, *args, **kwargs):
     writer = csv.writer(csvfile, delimiter='\t', quotechar='', quoting=csv.QUOTE_NONE)
     writer.writerow(header)
     for c in comments:
-      row = [c.place_id.src_id,c.place_id.id,c.place_id.title,c.note,c.created,c.user.username]
+      row = [c.place_id.src_id,c.place_id.id,c.place_id.title,c.note,c.created.strftime('%Y-%m-%d, %H:%M'),c.user.username]
       writer.writerow(row)
     csvfile.close()
   elif dsid:
