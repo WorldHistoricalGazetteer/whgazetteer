@@ -322,7 +322,8 @@
                 {% endif %}
               <!-- more than 20k rows -->
               {% else %} 
-                <span class="red-head"><br/>Download of augmented datasets larger than 25,000 rows is not supported right now. <a href="{% url 'contact' %}">Contact WHG staff</a></span>
+                <span class="red-head"><br/>Download of augmented datasets larger than 25,000 rows is not supported right now.
+	                <a href="{% url 'contact' %}">Contact WHG staff</a></span>
               {% endif %}  
               <div id="progress-bar-message" class="hidden">Waiting for progress to start...</div>
               <div id="celery-result"></div>
@@ -414,7 +415,8 @@
     setTimeout(clearEl($("#celery-result")), 1000)
   }
 
-  // views_dl.downloader()
+  // datasets.utils.downloader()
+  // datasets, collections, notes
   $(".a-dl-celery").click(function(e){
     e.preventDefault()
     // startDownloadSpinner()

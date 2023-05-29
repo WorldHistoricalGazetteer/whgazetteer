@@ -22,7 +22,8 @@ class Log(models.Model):
     class Meta:
         managed = True
         db_table = 'log'
-    
+
+# TODO: rename place_id to place; ramifications?
 class Comment(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
         related_name='comments', on_delete=models.CASCADE)
@@ -34,7 +35,7 @@ class Comment(models.Model):
     @property
     def dataset(self):
         return self.place_id.dataset
-    
+
     class Meta:
         managed = True
         db_table = 'comments'

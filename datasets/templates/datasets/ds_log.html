@@ -6,6 +6,7 @@
 {% load dataset_extras %}
 
 {% block extra_head %}
+	<script src="{% static 'celery_progress/celery_progress.js' %}"></script>
 {% endblock %}
 
 {% block title %}<title>Dataset::{{ ds.label }}</title>{% endblock %}
@@ -40,31 +41,54 @@
   <div class="tab-content">
     <div id="log" class="tab-pane fade show active" role="tabpanel" aria-labelledby="log-tab">
       <div class="tabbable">
-	    <ul id="log_tabs" class="nav nav-tabs" role="tablist">
-	      <li class="nav-item">
-	          <a class="nav-link active" id="comments-tab" href="#ds_comments" role="tab"
-	             aria-controls="ds_comments" aria-selected="false">Notes</a>
-	      </li>
-	      <li class="nav-item">
-	          <a class="nav-link" id="log-tab" href="#ds_log" role="tab"
-	             aria-controls="ds_log" aria-selected="false">Dataset log</a>
-	      </li>
-	    </ul>
+		    <ul id="log_tabs" class="nav nav-tabs" role="tablist">
+		      <li class="nav-item">
+		          <a class="nav-link active" id="comments-tab" href="#ds_comments" role="tab"
+		             aria-controls="ds_comments" aria-selected="false">Notes</a>
+		      </li>
+		      <li class="nav-item">
+		          <a class="nav-link" id="log-tab" href="#ds_log" role="tab"
+		             aria-controls="ds_log" aria-selected="false">Dataset log</a>
+		      </li>
+		    </ul>
+      </div>
       <div class="tab-content" id="log_content" >
         <div id="ds_comments" class="tab-pane fade show active" role="tabpanel" >
+	        <div class="pl-2">
+		        <h5>Review notes and user comments
+			        <span class="float-right mr-2 small">
+				        {% fontawesome_icon 'download' color='#336699' %}
+				        <a id="a_notes_download" href="">download</a>
+			        </span>
+								<div id="progress-bar-message" class="hidden">
+			        <span id='progress-bar' class='progress-bar' style="background-color: #68a9ef;
+			          width: 20%; margin:auto; line-height:.5rem;">&nbsp;</span>
+								<span id='progress-bar' class='progress-bar' style="background-color: #68a9ef; width: 0%; line-height:.5rem;">&nbsp;</span>
+							</div>
+              <div id="celery-result"></div>
+		        </h5>
+	        </div>
           <table class="table table-striped">
-            <thead>
+            <thead class="red-head">
               <th>created (utc)</th>
               <th>WHG pid</th>
-              <th>src_id</th>
-              <th>tag</th>
+              <th>source id</th>
+              <th>title</th>
               <th>note</th>
+              <th>tag</th>
               <th>user</th>
             </thead>
             <tbody>
               {% for c in comments %}
-              <tr><td>{{c.created|date:"Y-m-d"}}</td><td>{{c.place_id.id}}</td>
-                <td>foo</td><td>{{c.tag}}</td><td>{{c.note}}</td><td>{{c.user}}</td></tr>
+              <tr>
+	              <td>{{c.created|date:"Y-m-d"}}</td>
+	              <td>{{c.place_id.id}}</td>
+                <td>{{ c.place_id.src_id }}</td>
+	              <td>{{ c.place_id.title }}</td>
+	              <td>{{c.note}}</td>
+	              <td>{{c.tag}}</td>
+	              <td>{{c.user}}</td>
+              </tr>
               {% endfor %}
             </tbody>
           </table>
@@ -90,15 +114,76 @@
           </div>
         </div>
       </div>
-      </div>
     </div>
   </div> <!-- .tab-content -->
 </div>
 <script type="text/javascript">
+
+dater = function(){
+  const date = new Date(Date.now());
+  return date.toISOString().substring(0,10)
+}
+
+function startDownloadSpinner(){
+  window.spinner_dl = new Spin.Spinner().spin();
+  $("#ds_comments").append(spinner_dl.el);
+}
+
 {#$("#log ul.nav-tabs a").click(function (e) {#}
 $(".tabbable ul.nav-tabs a").click(function (e) {
   e.preventDefault();
     $(this).tab('show');
 });
+
+clearEl = function(el){
+  $("#progress-bar").fadeOut()
+  el.html('')
+}
+
+function customResult(resultElement, result) {
+  console.log('celery result',result)
+  console.log('celery resultElement',resultElement)
+  spinner_dl.stop()
+  fn = result.filename
+  link = '[ <span class="dl-save"><a href="/'+fn+'" title="downloaded: '+dater()+
+            '" download>save</a></span> ]'
+  $( resultElement ).append(
+    $('<p>').html(link)
+  );
+  $(".dl-save a")[0].click()
+  setTimeout(clearEl($("#celery-result")), 1000)
+}
+
+$("#a_notes_download").click(function(e){
+  e.preventDefault()
+  console.time('dl')
+  dsid = '{{ ds.id }}'
+  console.log('notes downloader() for', dsid)
+  urly='/datasets/dlcelery/'
+  $.ajax({
+      type: 'POST',
+      url: urly,
+      data: {
+        "dsid":dsid,
+	      "notes": true,
+	      "format": 'tsv',
+        "csrfmiddlewaretoken":"{{ csrf_token }}"},
+      datatype:'json',
+      success:function(response) {
+        startDownloadSpinner()
+        mf = response
+        console.log('got response', response)
+        task_id = response.task_id
+        progressUrl = "/celery-progress/" + task_id + "/";
+        console.log(progressUrl)
+
+        CeleryProgressBar.initProgressBar(progressUrl,
+          { pollingInterval: 500,
+            onResult: customResult,
+          }
+        )
+      }
+    })
+})
 </script>
 {% endblock %}

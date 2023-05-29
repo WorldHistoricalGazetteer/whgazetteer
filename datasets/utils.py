@@ -45,30 +45,41 @@ def downloadLP7(request):
 
 # initiate celery tasks for dataset downloads
 # TODO: add download Collection capability Apr 2022
-
 def downloader(request, *args, **kwargs):
 	user = request.user
 	print('request.user', request.user)
 	print('downloader() request.POST', request.POST)
 	dsid = request.POST.get('dsid') or None
 	collid = request.POST.get('collid') or None
+	format = request.POST.get('format') or None
+	notes = True if request.POST.get('notes') == 'true' else False
+
 	from datasets.tasks import make_download
 	# POST *should* be the only case...
 	if request.method == 'POST' and request.is_ajax:
 		print('ajax == True')
-		format=request.POST['format']
+		# download_task = make_download(
 		download_task = make_download.delay(
 			{"username":user.username, "userid":user.id},
 			dsid=dsid,
 			collid=collid,
+			notes=notes,
 			format=format,
 		)
-		print('task to Celery', download_task.task_id)
-		# return task_id
 		obj={'task_id':download_task.task_id}
-		print('obj from downloader()', obj)
+		# print('download_task, type', download_task.__dict__, type(download_task))
+		# print('t backend',download_task.backend.__dict__)
+		# print('task', TaskResult.objects.get(task_id=download_task.task_id))
 
+		# obj={'task_id':download_task.task_id}
+		# obj={'task_id':download_task.task_id, 'result':task.result}
+		# print('obj from downloader()', obj)
+		# if notes:
+		# 	from django.http import FileResponse
+		# 	def download_file(request):
+		# 		return FileResponse(open('uploads/something.txt', 'rb'), as_attachment=True)
 		#return render(request, 'datasets/ds_meta.html', context=context)
+		# return JsonResponse(json.dumps(obj), content_type='application/json', safe=False)
 		return HttpResponse(json.dumps(obj), content_type='application/json')
 
 	elif request.method == 'POST' and not request.is_ajax:
@@ -933,9 +944,11 @@ def makeDate(ts, form):
 		else ts.strftime("%d-%b-%Y")
 	return expr
 # 
-def makeNow():
+def makeNow(short=False):
 	ts = time.time()
 	sttime = datetime.datetime.fromtimestamp(ts).strftime('%Y%m%d_%H%M%S')
+	if short:
+		sttime = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d')
 	return sttime
 #
 def myprojects(me):

@@ -29,7 +29,7 @@ from datasets.static.hashes.qtypes import qtypes
 from elastic.es_utils import makeDoc, build_qobj, profileHit
 #from datasets.task_utils import *
 from datasets.utils import bestParent, elapsed, getQ, \
-  HitRecord, hully, makeNow, parse_wkt, post_recon_update
+  HitRecord, hully, makeNow, makeDate, parse_wkt, post_recon_update
 
 from main.models import Log
 
@@ -47,6 +47,7 @@ def testy():
 """ 
   called by utils.downloader()
   builds download file, retrieved via ajax JS in ds_summary.html, ds_meta.html,
+  ds_log.html 
   collection_detail.html (modal), place_collection_browse.html (modal)
 """
 # TODO: ?? make this a DRF call with serializer and prefetch
@@ -54,13 +55,15 @@ def testy():
 def make_download(request, *args, **kwargs):
   # TODO: integrate progress_recorder for better progress bar in GUI
   # progress_recorder = ProgressRecorder(self) #accessed?
+  print('make_download task kwargs', kwargs)
   username = request['username'] or "AnonymousUser"
   userid = request['userid'] or User.objects.get(username="AnonymousUser").id
   req_format = kwargs['format']
   dsid = kwargs['dsid'] or None
   collid = kwargs['collid'] or None
+  notes = kwargs['notes'] or None
   print('make_download() dsid, collid', dsid, collid)
-  date = makeNow()
+  date = makeNow(short=True)
 
   if collid and not dsid:
     print('entire collection', collid)
@@ -90,6 +93,21 @@ def make_download(request, *args, **kwargs):
               "filename": "/" + fn}
     outfile.write(json.dumps(result,indent=2).replace('null','""'))
     # TODO: Log object has dataset_id, no collection_id
+  elif dsid and notes:
+    from main.models import Comment
+    ds = Dataset.objects.get(id=dsid)
+    comments = Comment.objects.filter(place_id__dataset=ds).order_by('-created')
+    count=comments.count()
+    print('downloading notes for ds: ', dsid)
+    header = ['source_id','whg_pid','title','note','created','user']
+    fn = 'media/downloads/' + username + '_' + ds.label + '_comments_' + date + '.tsv'
+    csvfile = open(fn, 'w', newline='', encoding='utf-8')
+    writer = csv.writer(csvfile, delimiter='\t', quotechar='', quoting=csv.QUOTE_NONE)
+    writer.writerow(header)
+    for c in comments:
+      row = [c.place_id.src_id,c.place_id.id,c.place_id.title,c.note,c.created,c.user.username]
+      writer.writerow(row)
+    csvfile.close()
   elif dsid:
     ds=Dataset.objects.get(pk=dsid)
     dslabel = ds.label
@@ -231,7 +249,6 @@ def make_download(request, *args, **kwargs):
       dataset_id = dsid,
       user_id = userid
     )
-  
   # for ajax, just report filename
   completed_message = {"msg": req_format+" written", "filename":fn, "rows":count}
   return completed_message

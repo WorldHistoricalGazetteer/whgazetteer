@@ -410,28 +410,6 @@
 			  cardtop, scrolltop, listtop )
 	  getAnno($(this).data('id'))
   })
-  {#$(".anno-place").click(function(){#}
-  {#  $(this).tooltip('hide');#}
-  {#  $(".col-place-card").removeClass('card-highlight')#}
-  {#  let pid = $(this).data('pid')#}
-	{#	card=$("div[class*=col-place-card]")#}
-  {#          .filter("div[data-id="+pid+"]").addClass('card-highlight')#}
-	{#  // position of clicked card#}
-	{#  cardtop = card.offset().top#}
-	{#  sessionStorage.setItem('cardtop', cardtop)#}
-	{#  // position of list scroller#}
-	{#  scrolltop = $("#coll_placelist").scrollTop()#}
-	{#  sessionStorage.setItem('scrolltop', scrolltop)#}
-	{#  // permanent position of list on page#}
-	{#  listtop = $("#coll_placelist").offset().top#}
-	{#  offset = cardtop+scrolltop-listtop#}
-	{#  sessionStorage.setItem('offset', offset)#}
-	{#  console.log('offset',offset)#}
-	{#  console.log('cardtop, scrolltop, listtop',#}
-	{#		  cardtop, scrolltop, listtop )#}
-	{#  getAnno($(this).data('pid'))#}
-  {# })#}
-
 	function goBrowse(){
     window.location = '/collections/{{ object.id }}/browse_pl'
 	}
