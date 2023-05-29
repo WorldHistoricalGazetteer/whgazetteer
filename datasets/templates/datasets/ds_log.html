@@ -39,24 +39,19 @@
   
   <div class="tab-content">
     <div id="log" class="tab-pane fade show active" role="tabpanel" aria-labelledby="log-tab">
-      <div class="mt-2 row">
-        <div id="ds_log" class="col-sm-5" >
-          <h5>Dataset Log</h5>
-          <div id="ds_log_table" style="overflow-y:scroll; height:90%">
-          <table class="table table-striped small">
-          <thead><th>action</th><th>note</th><th>date</th></thead>
-          {% for l in log %}
-            <tr>
-              <td>{{l.logtype}}</td>
-              <td>{% if l.subtype %}{{l.subtype}}{% elif l.note %}{{l.note}}{%endif%}</td>
-              <td>{{l.timestamp|date:"Y-m-d" }}</td>
-            </tr>
-          {%endfor%}
-          </table>
-          </div>
-        </div>
-        <div id="ds_comments" class="col-sm-7">
-          <h5>Comments</h5>
+      <div class="tabbable">
+	    <ul id="log_tabs" class="nav nav-tabs" role="tablist">
+	      <li class="nav-item">
+	          <a class="nav-link active" id="comments-tab" href="#ds_comments" role="tab"
+	             aria-controls="ds_comments" aria-selected="false">Notes & comments</a>
+	      </li>
+	      <li class="nav-item">
+	          <a class="nav-link" id="log-tab" href="#ds_log" role="tab"
+	             aria-controls="ds_log" aria-selected="false">Dataset activity log</a>
+	      </li>
+	    </ul>
+      <div class="tab-content" id="log_content" >
+        <div id="ds_comments" class="tab-pane fade show active" role="tabpanel" >
           <table class="table table-striped">
             <thead>
               <th>created (utc)</th>
@@ -66,7 +61,7 @@
               <th>note</th>
               <th>user</th>
             </thead>
-            <tbody> 
+            <tbody>
               {% for c in comments %}
               <tr><td>{{c.created|date:"Y-m-d"}}</td><td>{{c.place_id.id}}</td>
                 <td>foo</td><td>{{c.tag}}</td><td>{{c.note}}</td><td>{{c.user}}</td></tr>
@@ -74,10 +69,36 @@
             </tbody>
           </table>
         </div>
-      </div> <!-- ds_log -->
-    </div>    
+        <div id="ds_log" class="tab-pane fade" role="tabpanel" >
+          <div id="ds_log_table" style="overflow-y:scroll; height:90%">
+	          <table class="table table-striped">
+		          <thead>
+		            <th>action</th>
+		            <th>note</th>
+		            <th>date</th>
+		          </thead>
+	            <tbody>
+		            {% for l in log %}
+		            <tr>
+		              <td>{{l.logtype}}</td>
+		              <td>{% if l.subtype %}{{l.subtype}}{% elif l.note %}{{l.note}}{%endif%}</td>
+		              <td>{{l.timestamp|date:"Y-m-d" }}</td>
+		            </tr>
+		            {%endfor%}
+	            </tbody>
+	          </table>
+          </div>
+        </div>
+      </div>
+      </div>
+    </div>
   </div> <!-- .tab-content -->
 </div>
 <script type="text/javascript">
+{#$("#log ul.nav-tabs a").click(function (e) {#}
+$(".tabbable ul.nav-tabs a").click(function (e) {
+  e.preventDefault();
+    $(this).tab('show');
+});
 </script>
 {% endblock %}

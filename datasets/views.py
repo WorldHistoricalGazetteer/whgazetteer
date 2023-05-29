@@ -3209,10 +3209,12 @@ class DatasetLogView(LoginRequiredMixin, DetailView):
     id_ = self.kwargs.get("id")
     ds = get_object_or_404(Dataset, id=id_)
 
+    # commented_places=
     me = self.request.user
-
+    # context['notes']=[{"pid": p.id, "title": p.title, "note": c.note, "tag": c.tag, "date": c.created} for c in p.comment_set.all()]
     context['ds'] = ds
     context['log'] = ds.log.filter(category='dataset').order_by('-timestamp')
+    # context['comments'] =
     context['comments'] = Comment.objects.filter(place_id__dataset=ds).order_by('-created')
     context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False
 
