@@ -1265,16 +1265,16 @@ def match_close_db(dsid, n=50000, test=True ):
     place = Place.objects.get(id=h.place_id)
     pgs = [pg.geom for pg in place.geoms.all()]
 
+		# skip if no geom in db place
     if len(pgs) == 0:
       # print('place id#'+str(place.id)+' ('+place.title+') has no geometry')
       no_geom +=1
       continue
 
-    # wikidata
-    qobj = {'pid': h.place_id, 'links':h.json['links'], 'geoms':h.json['geoms']}
-
-    if 'geoms' in qobj and len(qobj['geoms']) == 0:
-      # print('place id#' + str(h.place_id) + ' (' + h.title + ') has no geometry')
+    # skip if no geom in hit
+    if 'geoms' in h.json and len(h.json) > 0:
+	    qobj = {'pid': h.place_id, 'links': h.json['links'], 'geoms': h.json['geoms']}
+    else:
       continue
 
     gwds = [GEOSGeometry(json.dumps(g)) for g in qobj['geoms']]
