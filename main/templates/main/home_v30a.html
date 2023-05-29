@@ -24,7 +24,8 @@
 		#intro {font-size: .9rem;}
 		.home-button {position: relative; font-family: "Archivo Black";}
 		{#.home-icon-row {text-align: center;} #AAC7A4 54A1DA #}
-		.button-hilite {color: #95C096;}
+		.button-hilite {color: rebeccapurple;}
+		{#.button-hilite {color: #95C096;}#}
 		.ds-header { background-color: #3979B1; color: #fff; }
 		.coll-header { background-color: #54A1DA; color: #fff; }
 		img {image-orientation: none;}
@@ -103,7 +104,9 @@
 				<h5><span class="button-hilite">Search and browse</span> <span class="red-head">
 					{{ count}}</span> published place attestations</h5>
 			</div>
-			<a href="{% url 'search-page' %}"><span class="link-spanner"></span></a>
+			<a href="{% url 'search-page' %}">
+				<span class="link-spanner"></span>
+			</a>
 		</div>
 		<div class="col-sm-3 p-1 home-button">
 			<div class="h-100 border p-1">
@@ -113,14 +116,22 @@
 				</div>
 				<h5><span class="button-hilite">Upload, enhance, link, and publish</span> your place data</h5>
 			</div>
-			<a href="{% url 'main:tute-contributing' %}"><span class="link-spanner"></span></a>
+			<span class="link-spanner btn" data-bs-toggle="modal"
+			      data-bs-target="#exampleModal"
+			      data-bs-page="contribute"
+			      data-bs-title="Upload, enhance, link, and publish place data">
+			</span>
 		</div>
 		<div class="col-sm-3 p-1 home-button">
 			<div class="h-100 border p-1">
 				<div class="home-icon-row"><img src="{% static 'images/008-collect.png'%}" class="" height=42 width=42 alt=""/></div>
 				<h5><span class="button-hilite">Build</span> and annotate custom collections</h5>
 			</div>
-			<a href="{% url 'main:tute-collections' %}"><span class="link-spanner"></span></a>
+			<span class="link-spanner btn" data-bs-toggle="modal"
+			      data-bs-target="#exampleModal"
+			      data-bs-page="build"
+			      data-bs-title="Build and annotate custom collections"></span>
+{#			<a href="{% url 'main:tute-collections' %}"><span class="link-spanner"></span></a>#}
 		</div>
 		<div class="col-sm-3 p-1 home-button">
 			<div class="h-100 border p-1">
@@ -130,26 +141,31 @@
 				</div>
 				<h5><span class="button-hilite">Use WHG data</span> in teaching and software</h5>
 			</div>
-{#			<a href="/"><span class="link-spanner"></span></a>#}
-			<a href="{% url 'main:teaching-page' %}"><span class="link-spanner"></span></a>
+			<span class="link-spanner btn" data-bs-toggle="modal"
+			      data-bs-target="#exampleModal"
+			      data-bs-page="teaching_api"
+						data-bs-title="Use WHG data in teaching and software"></span>
 		</div>
 	</div> <!-- content_bottom-->
-  <div class="modal fade" id="image_modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header"><span id="header_text"></span>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span></button>
-        </div>      
-        <div class="modal-body">{% comment %}
-          <button type="button" class="close" data-dismiss="modal">
-	          <span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
-          </button>
-          <img src="" class="imagepreview" style="width:100%; height:100%;" >{% endcomment %}
-        </div>
-      </div>
-    </div>
-  </div> 
+
+	<!-- Modal -->
+	<div class="modal fade" id="exampleModal" tabindex="-1"
+	     aria-labelledby="exampleModalLabel" aria-hidden="true">
+	  <div class="modal-dialog modal-lg">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <h5 class="modal-title" id="exampleModalLabel">{ per-button title }</h5>
+	        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+	      </div>
+	      <div class="modal-body">
+		      <p>{ per-button content }</p>
+	      </div>
+	      <div class="modal-footer">
+	        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+	      </div>
+	    </div>
+	  </div>
+	</div>
 </div>
 
 <script type="text/javascript">
@@ -166,6 +182,25 @@ $(function(){
     $('.imagepreview').attr('src', url);
     $('#image_modal').modal('show');   
   });	
+})
+
+var exampleModal = document.getElementById('exampleModal')
+exampleModal.addEventListener('show.bs.modal', function (event) {
+  // Button that triggered the modal
+  var button = event.relatedTarget
+  // Extract info from data-bs-* attributes
+  var title = button.getAttribute('data-bs-title')
+	var page = button.getAttribute('data-bs-page')
+	console.log('button_id', page)
+
+  // Update the modal's content.
+  var modalTitle = exampleModal.querySelector('.modal-title')
+  {#var modalBody = exampleModal.querySelector('.modal-body')#}
+  {#var modalBodyInput = exampleModal.querySelector('.modal-body input')#}
+
+  modalTitle.textContent = title
+	$(".modal-body").load('/media/home/'+page+'.html')
+
 })
 
 mapboxgl.accessToken = '{{ mbtokenwhg }}';
