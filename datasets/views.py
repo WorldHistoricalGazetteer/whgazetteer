@@ -32,7 +32,7 @@ from shapely import wkt
 from shutil import copyfile
 
 from areas.models import Area
-from collection.models import Collection
+from collection.models import Collection, CollectionUser
 from datasets.forms import HitModelForm, DatasetDetailModelForm, DatasetCreateModelForm, DatasetCreateEmptyModelForm
 from datasets.models import Dataset, Hit, DatasetFile
 from datasets.static.hashes import mimetypes_plus as mthash_plus
@@ -2238,8 +2238,9 @@ class DataListsView(LoginRequiredMixin, ListView):
       dslist = Dataset.objects.filter(id__in=idlist).order_by('-create_date')
       return dslist
     elif self.request.path == reverse('data-collections'):
-      list = Collection.objects.all().order_by('-created') if whgteam \
-        else Collection.objects.filter(owner=me).order_by('-created')
+      list = CollectionUser.objects.filter(user_id=me)
+      # list = Collection.objects.all().order_by('-created') if whgteam \
+      #   else Collection.objects.filter(owner=me).order_by('-created')
       return list
     elif self.request.path == reverse('data-areas'):
       print('areas...whgteam?', whgteam)
@@ -2260,6 +2261,8 @@ class DataListsView(LoginRequiredMixin, ListView):
     context = super(DataListsView, self).get_context_data(*args, **kwargs)
     print('in get_context', me)
 
+    coll_list = CollectionUser.objects.filter(user=me)
+    context['coll_list'] = coll_list
     context['viewable'] = ['uploaded', 'inserted', 'reconciling', 'review_hits', 'reviewed', 'review_whg', 'indexed']
     context['beta_or_better'] = True if me.groups.filter(name__in=['beta', 'admins', 'whg_team']).exists() \
       else False

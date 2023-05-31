@@ -145,7 +145,7 @@ class CollectionUser(models.Model):
   role = models.CharField(max_length=20, null=False, choices=TEAMROLES)
 
   def __str__(self):
-    username = self.user_id.username
+    username = self.user.username
     return '<b>' + username + '</b> (' + self.role + ')'
 
   class Meta:
