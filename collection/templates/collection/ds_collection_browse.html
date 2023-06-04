@@ -496,7 +496,8 @@
         'circle-color': colors_point[i],
         'circle-radius': {
           stops: [[1, 2], [3, 3], [16, 10]]
-        }
+        },
+	      'circle-opacity': 0.3
       },
       'filter': ['==', '$type', 'Point']
     }, 'z-index-2');
@@ -525,7 +526,7 @@
     }
   }
   // hightlight selected in row
-  function highlightFeatureGL(pid, geom, coords, src){
+  function highlightFeatureGL(pid, geom, coords, src) {
     console.log('highlightFeatureGL()')
     console.log('pid, geom, coords', pid, geom, coords, src)
 

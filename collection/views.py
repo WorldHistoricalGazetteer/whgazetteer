@@ -514,6 +514,8 @@ class DatasetCollectionUpdateView(UpdateView):
     context['action'] = 'update'
     context['ds_select'] = ds_select
     context['coll_dsset'] = datasets
+    context['collabs'] = [c.user for c in self.object.collabs.all()]
+    context['editorial'] = True if user.groups.filter(name__in=['editorial']).exists() else False
 
     context['created'] = self.object.created.strftime("%Y-%m-%d")
     context['mbtoken'] = settings.MAPBOX_TOKEN_WHG

@@ -75,6 +75,22 @@ class Collection(models.Model):
     return reverse('data-collections')
 
   @property
+  def collaborators(self):
+    ## includes roles: member, owner
+    team = CollectionUser.objects.filter(collection_id= self.id).values_list('user_id')
+    # members of whg_team group are collaborators on all datasets
+    # teamusers = User.objects.filter(id__in=team) | User.objects.filter(groups__name='whg_team') | self.owner
+    teamusers = User.objects.filter(id__in=team) | User.objects.filter(groups__name='whg_team')
+    return teamusers
+
+  @property
+  def owners(self):
+    c_owner_ids = list(self.collabs.filter(role = 'owner').values_list('user_id',flat=True))
+    c_owner_ids.append(self.owner.id)
+    c_owners = User.objects.filter(id__in=c_owner_ids)
+    return c_owners
+
+  @property
   def places_ds(self):
     dses = self.datasets.all()
     return Place.objects.filter(dataset__in=dses)

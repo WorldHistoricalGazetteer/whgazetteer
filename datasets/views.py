@@ -671,14 +671,17 @@ def write_wd_pass0(request, tid):
     ds.save()
 
     # flag hit as reviewed
-    h.reviewed = True
-    h.save()
+    # h.reviewed = True
+    # h.save()
 
     # flag place as reviewed
     place.review_wd = 1
     place.save()
 
-  return HttpResponseRedirect(referer)
+  # previously unreviewed pass0 hits for this task
+  hits.update(reviewed = True)
+  return redirect('/datasets/' + str(ds.id) + '/reconcile')
+  # return HttpResponseRedirect(referer)
 
 """
   ds_recon()
@@ -2238,10 +2241,10 @@ class DataListsView(LoginRequiredMixin, ListView):
       dslist = Dataset.objects.filter(id__in=idlist).order_by('-create_date')
       return dslist
     elif self.request.path == reverse('data-collections'):
-      list = CollectionUser.objects.filter(user_id=me)
-      # list = Collection.objects.all().order_by('-created') if whgteam \
-      #   else Collection.objects.filter(owner=me).order_by('-created')
-      return list
+      idlist = [obj.id for obj in Collection.objects.all() if me in obj.owners or
+                   me in obj.collaborators or me.is_superuser]
+      coll_list = Dataset.objects.filter(id__in=idlist).order_by('-create_date')
+      return coll_list
     elif self.request.path == reverse('data-areas'):
       print('areas...whgteam?', whgteam)
       study_areas = ['ccodes', 'copied', 'drawn']       # only user study areas
@@ -2261,8 +2264,11 @@ class DataListsView(LoginRequiredMixin, ListView):
     context = super(DataListsView, self).get_context_data(*args, **kwargs)
     print('in get_context', me)
 
-    coll_list = CollectionUser.objects.filter(user=me)
-    context['coll_list'] = coll_list
+    idlist = [obj.id for obj in Collection.objects.all() if me in obj.owners or
+              me in obj.collaborators or me.is_superuser]
+    coll_list = Collection.objects.filter(id__in=idlist).order_by('-create_date')
+    # coll_list = CollectionUser.objects.filter(user=me)
+    context['coll_list'] = Collection.objects.all()
     context['viewable'] = ['uploaded', 'inserted', 'reconciling', 'review_hits', 'reviewed', 'review_whg', 'indexed']
     context['beta_or_better'] = True if me.groups.filter(name__in=['beta', 'admins', 'whg_team']).exists() \
       else False
@@ -3179,7 +3185,7 @@ class DatasetCollabView(LoginRequiredMixin, DetailView):
     context['collaborators'] = ds.collaborators.all()
     context['owners'] = ds.owners
 
-    context['editorial'] = context['editorial'] = True if me.groups.filter(name__in=['editorial']).exists() else False
+    context['editorial'] = True if me.groups.filter(name__in=['editorial']).exists() else False
     context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False
 
     return context

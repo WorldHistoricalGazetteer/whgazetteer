@@ -106,8 +106,9 @@
                 <th>status</th>
               </thead>
               <tbody>
-                {% for c in collectionuser_list %}
-	                {% with c.collection as coll %}
+                {% for c in coll_list %}
+{#                {% for c in collectionuser_list %}#}
+{#	                {% with c.collection as coll %}#}
                   <tr class="place-row">
                     <td>{{ coll.id }}</td>
 	                  <td><span class="{{ coll.collection_class }} p-1">{{ coll.collection_class }}</span></td>
@@ -138,7 +139,7 @@
 {#                    <td>{{ c.owner }}</td>#}
                     <td>{{ c.collection.status }}</td>
                   </tr>
-	                {% endwith %}
+{#	                {% endwith %}#}
                 {% endfor %}
               </tbody>
             </table>
