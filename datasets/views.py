@@ -2246,33 +2246,30 @@ class DataListsView(LoginRequiredMixin, ListView):
       return dslist
     elif self.request.path == reverse('data-collections'):
       idlist = [obj.id for obj in Collection.objects.all() if me in obj.owners or
-                   me in obj.collaborators or me.is_superuser]
-      coll_list = Dataset.objects.filter(id__in=idlist).order_by('-create_date')
-      return coll_list
+                   me in obj.collaborators]
+      list = Collection.objects.filter(id__in=idlist).order_by("-id")
+      return list
+      # mine = Collection.objects.filter(owner=me)
+      # collab = CollectionUser.objects.filter(user=me).values_list('collection')
+
     elif self.request.path == reverse('data-areas'):
-      print('areas...whgteam?', whgteam)
+      # print('areas...whgteam?', whgteam)
       study_areas = ['ccodes', 'copied', 'drawn']       # only user study areas
       list = Area.objects.all().filter(type__in=study_areas).order_by('-id') if whgteam else \
-        Area.objects.all().filter(type__in=study_areas, owner=me).order_by('-id')
+        Area.objects.all().filter(type__in=study_areas, owner=me).order_by('-created')
       # print('list:', list)
       return list
     else:
       print('resources...whgteam?', whgteam)
       list = Resource.objects.all().order_by('create_date') if whgteam or teaching \
-        else Resource.objects.all().filter(owner=me).order_by('created')
+        else Resource.objects.all().filter(owner=me).order_by('create_date')
       # print('list:', list)
       return list
 
   def get_context_data(self, *args, **kwargs):
     me = self.request.user
     context = super(DataListsView, self).get_context_data(*args, **kwargs)
-    print('in get_context', me)
-
-    idlist = [obj.id for obj in Collection.objects.all() if me in obj.owners or
-              me in obj.collaborators or me.is_superuser]
-    coll_list = Collection.objects.filter(id__in=idlist).order_by('-create_date')
-    # coll_list = CollectionUser.objects.filter(user=me)
-    context['coll_list'] = Collection.objects.all()
+    # print('in get_context', me)
     context['viewable'] = ['uploaded', 'inserted', 'reconciling', 'review_hits', 'reviewed', 'review_whg', 'indexed']
     context['beta_or_better'] = True if me.groups.filter(name__in=['beta', 'admins', 'whg_team']).exists() \
       else False
@@ -3080,7 +3077,10 @@ class DatasetAddTaskView(LoginRequiredMixin, DetailView):
 
     # user dataset collections
     # usercollections = Collection.objects.filter(type__in=area_types).values('id','title').order_by('-created')
-    context['coll_list'] = Collection.objects.filter(owner=me, collection_class='dataset').values('id','title').order_by('-created')
+    idlist = [obj.id for obj in Collection.objects.all() if me in obj.owners or
+              me in obj.collaborators]
+    context['coll_list'] = Collection.objects.filter(id__in=idlist).order_by("-id")
+    # context['coll_list'] = Collection.objects.filter(owner=me, collection_class='dataset').values('id','title').order_by('-created')
     # context['coll_list'] = usercollections if me.username == 'whgadmin' else usercollections.filter(owner=me)
 
     # pre-defined UN regions

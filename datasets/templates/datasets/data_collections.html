@@ -90,7 +90,7 @@
 	        {% endif %}
         </div>
         <div>
-	        <span class="smaller ml-3"><i class="small fa fa-users" style="color:grey;"></i> = Collaborator</span>
+	        <span class="smaller ml-4"><i class="small fa fa-users" style="color:grey;"></i> = Collaborator</span>
         </div>
         <div id="collection_list" class="mt-1 ml-0">
           <div class="list-box">
@@ -106,18 +106,14 @@
                 <th>status</th>
               </thead>
               <tbody>
-                {% for c in coll_list %}
-{#                {% for c in collectionuser_list %}#}
-{#	                {% with c.collection as coll %}#}
+                {% for coll in collection_list %}
                   <tr class="place-row">
                     <td>{{ coll.id }}</td>
 	                  <td><span class="{{ coll.collection_class }} p-1">{{ coll.collection_class }}</span></td>
-{#	                  <td><span class="{{ c.collection_class }} p-1">{{ c.collection_class }}</span></td>#}
                     <td>
 	                    {{ coll.title }}
-	                    {% if not user == d.owner %}
-		                    <span class="smaller ml-3">
-			                    <i class="small fa fa-users" style="color:grey;"></i></span>
+                      {% if not user == coll.owner %}
+		                    <span class="smaller ml-2"><i class="small fa fa-users" style="color:grey;"></i></span>
 	                    {% endif %}
                     </td>
                     <td>
@@ -136,10 +132,8 @@
                     <td>{{ coll.rowcount }}</td>
 										<td class="small">{{ coll.created|date:"Y-m-d, H:i" }}</td>
                     <td>{{ coll.owner.username }}</td>
-{#                    <td>{{ c.owner }}</td>#}
-                    <td>{{ c.collection.status }}</td>
+                    <td>{{ coll.status }}</td>
                   </tr>
-{#	                {% endwith %}#}
                 {% endfor %}
               </tbody>
             </table>
