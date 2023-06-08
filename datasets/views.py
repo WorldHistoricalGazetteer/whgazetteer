@@ -583,6 +583,10 @@ def review(request, pk, tid, passnum):
   # print('context', context)
   return render(request, 'datasets/'+review_page, context=context)
 
+def write_idx_pass0(request, tid):
+  print('in write_idx_pass0(), doing nothing')
+  return
+
 """
   write_wd_pass0(taskid)
   called from dataset_detail>reconciliation tab

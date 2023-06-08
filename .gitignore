@@ -10,6 +10,7 @@ datasets/static/_older/
 elastic/mappings/
 elastic/queries/
 static/_older/
+s2
 
 # leave server versions intact
 media/collections/

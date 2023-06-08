@@ -193,6 +193,7 @@
       </div> <!-- #ds_tasks -->
     </div> <!-- #reconciliation -->
   </div> <!-- .tab-content -->
+	<div class="selector py-3"><div id="helpme"></div></div>
 </div> <!-- #dataset_content -->
 
 <script type="text/javascript">
@@ -222,7 +223,7 @@
     // generic help load
     $(".help-matches").click(function(){
       page=$(this).data('id')
-      {#console.log('help:', page)#}
+      console.log('help:', page)
       $('.selector').dialog('open');
     })
     

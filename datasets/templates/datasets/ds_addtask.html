@@ -210,13 +210,6 @@
               <input id="accept_geom" name="geom" type="checkbox" checked="checked"/> accept geometries in matches
             <span class="help-matches" data-id="accept-geometry">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
             </span></p>
-            {%comment%}
-            {% if ds.q_count > 0 %}
-            <p><span id="q_accept" class="small">
-              <input id="accept_geom" name="geom" type="checkbox" checked="checked"/> skip records 
-            <span class="help-matches" data-id="accept-geometry">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
-            {% endif %}
-            {%endcomment%}
           </div>
           {% endif %}
         </div> <!-- recon_result -->

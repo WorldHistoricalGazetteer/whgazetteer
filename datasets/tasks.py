@@ -699,9 +699,9 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
     "bool": {
       "must": [
         # mapping change locally
-        {"terms": {"variants.names.sim":variants}}
+        # {"terms": {"variants.names.sim":variants}}
         # {"terms": {"variants.names.raw":variants}}
-        # {"terms": {"variants.names":variants}}
+        {"terms": {"variants.names":variants}}
       ],
       # boosts score if matched
       "should":[

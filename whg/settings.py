@@ -138,7 +138,7 @@ REST_FRAMEWORK = {
         ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework_datatables.pagination.DatatablesPageNumberPagination',
     'PAGE_SIZE': 15000,
-    #'PAGE_SIZE': 20,
+    'PAGE_SIZE': 20,
 }
 
 TEMPLATES = [
