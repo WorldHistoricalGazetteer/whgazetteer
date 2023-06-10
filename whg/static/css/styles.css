@@ -56,10 +56,13 @@ mark-r { background-color: chocolate; color:white; padding:0 3px;}
 label {vertical-align:text-top;}
 .alert {padding: 0 1.25rem !important;}
 .arial {font-family: arial, san-serif;}
-.bg-light { background-color: #fff !important; }
+.bg-lightyellow { background-color: lightgoldenrodyellow !important; }
+.bg-lightblue { background-color: azure !important; }
+.bg-white { background-color: white; !important; }
 .bg-tan { background-color: burlywood !important; color:white;}
 .bg-seagreen { background-color: #3B8794 !important; color:white;}
 .bg-lightseagreen { background-color: lightseagreen !important; color:white;}
+
 .border-red { border:2px dotted red;}
 .checkbox-inline {margin-right:.3rem;}
 .clippy {cursor:pointer;}
@@ -845,7 +848,6 @@ em { color: #993333;}
 }
 #place_traces ul {  margin: 0; padding-left: 1rem; text-decoration:none; list-style:square; }
 
-.bg-white { background-color: white; }
 .attest-header { background-color: antiquewhite; padding: 0 2px;}
 .core-header { background-color: #eee; padding: 2px 0 2px 2px;}
 .allcap-heading {color: #993330;}

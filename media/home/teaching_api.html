@@ -1,10 +1,64 @@
 <html>
-		<h5>Will wonders ever cease?</h5>
-		<p>Will Elon abandon support for Bootstrap, or start charging for it?</p>
-		<p><a class="a-modal" href="/tutorials/teaching/">the teaching page</a></p>
-	<script>
-      $(".a-modal").click(function(){
-        $('#exampleModal').modal('toggle');
-      })
-	</script>
+<div class="container">
+  <div class="row">
+    <div class="col col-sm-8 small">
+			<h4 class="bg-lightyellow">
+				<span class="me-2">
+					<img src="static/images/011-teaching.png" class="" height=28 width=28 alt=""/>
+				</span>
+				Teaching with the WHG
+			</h4>
+	    <div>
+		    <div >
+			    <p>The World Historical Gazetteer project is making the data it publishes useful to teachers at
+				    secondary- and post-secondary levels with our <b>Place Collection</b> feature and <b>contributed lesson plans</b>.
+			    </p>
+			    <div id="colls">
+						<h5>Place Collection Groups
+							<span class="small float-end me-2"><a href="">guide</a></span>
+							<!--<span><img src="static/images/008-collect.png" class="" height=24 width=24 alt=""/></span>-->
+						</h5> <!--<a href="collections/create_pl">-->
+				    <p class="mb-2">Any registered WHG user can <a href="">create an annotated
+					    Place Collection</a>, composed of records from any number of public datasets in the system.
+				    </p>
+				    <p class="mb-2">
+					    <b>New in Version 3.0</b> is the capability for teachers and workshop leaders to create private
+					    <b>Place Collection groups</b>, add registered users as members, review submitted collections, and
+					    release collections into a class/group gallery visible to its members. Teachers can also nominate
+					    exemplary collections from their group/class to display in the Student section of the site-wide Collection Gallery.
+				    </p>
+				    <p class="mb-2">
+					    Details for how to create and manage groups&mdash;and for students or workshop participants to submit a collection
+					    to a group&mdash;are explained <a href="#">in this tutorial</a>.
+				    </p>
+			    </div>
+			    <div id="lessons">
+						<h5>Lesson Plans
+							<span class="small float-end me-1">
+								<a class="a-modal" href="/tutorials/teaching/">view plans</a>
+							</span>
+						</h5>
+				    <p>We have published a number of lesson plans contributed by teachers, and are actively seeking more.
+					    <a href="mailto:whg@whc.pitt.edu">Please contact us</a> for further information.
+				    </p>
+			    </div>
+		    </div>
+	    </div>
+    </div>
+    <div class="col col-sm-4 small" style="border-left: 1px dotted lightgray;">
+	    <h4 class="bg-lightblue">
+		    <img src="static/images/006-api-2.png" class="" height=28 width=28 alt=""/></span>
+		    API Access</h4>
+	    <p>All public records in WHG can be accessed via
+		    our Application Programming Interface. <a href="/usingapi">See details</a>.
+	    </p>
+    </div>
+  </div>
+</div>
+
+<script>
+  $(".a-modal").click(function(){
+    $('#exampleModal').modal('toggle');
+  })
+</script>
 </html>
