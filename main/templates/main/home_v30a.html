@@ -114,12 +114,12 @@
 					<img src="{% static 'images/001-up-arrow.png'%}" class="" height=40 width=40 alt=""/>
 					<img src="{% static 'images/003-browser.png' %}" class="ms-3" height=40 width=40 alt=""/>
 				</div>
-				<h5><span class="button-hilite">Upload, enhance, link, and publish</span> your place data</h5>
+				<h5><span class="button-hilite">Upload, enhance, publish, and link</span> your place data</h5>
 			</div>
 			<span class="link-spanner btn" data-bs-toggle="modal"
 			      data-bs-target="#exampleModal"
 			      data-bs-page="contribute"
-			      data-bs-title="Upload, enhance, link, and publish place data">
+			      data-bs-title="Upload, enhance, publish and link place data">
 			</span>
 		</div>
 		<div class="col-sm-3 p-1 home-button">
@@ -130,7 +130,7 @@
 			<span class="link-spanner btn" data-bs-toggle="modal"
 			      data-bs-target="#exampleModal"
 			      data-bs-page="build"
-			      data-bs-title="Build and annotate custom collections"></span>
+			      data-bs-title="Build custom collections"></span>
 {#			<a href="{% url 'main:tute-collections' %}"><span class="link-spanner"></span></a>#}
 		</div>
 		<div class="col-sm-3 p-1 home-button">
@@ -157,7 +157,8 @@
 	        <h5 class="modal-title" id="exampleModalLabel">{ per-button title }</h5>
 	        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 	      </div>
-	      <div class="modal-body" style="overflow-y: scroll;"></div>
+	      <div class="modal-body" style="overflow-y: scroll;">
+	      </div>
 	      <div class="modal-footer">
 	        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
 	      </div>
@@ -197,10 +198,9 @@ exampleModal.addEventListener('show.bs.modal', function (event) {
   {#var modalBodyInput = exampleModal.querySelector('.modal-body input')#}
 
   modalTitle.textContent = title
-	url = '/media/home/'+page+'.html'
+	url = '/media/home/'+page+'.html?v='+new Date().getTime()
 	console.log('url',url)
-	{#$(".modal-body").load("/media/home/teaching_api.html")#}
-	$(".modal-body").load('/media/home/'+page+'.html')
+	$(".modal-body").load(url)
 
 })
 

@@ -20,6 +20,7 @@
           <br/><br/>
           <input class="btn btn-primary" type="submit" value="Login" />
         </form>
+        <p class="mt-2">Not a user yet? <a href="{% url 'accounts:register' %}">Register first</a></p>
         <p class="mt-2"><a href="{% url 'accounts:password_reset' %}">Forgot password?</a></p>
         {% if error %}
           <p style="color:red">{{ error }}</p>

@@ -1,8 +1,70 @@
 <html>
-	<body>
-	<h5>Bring your data to WHG and do stuff</h5>
-	<p>wtaf is happening?</p>
-	</body>
+<div class="container p-0">
+  <div class="row">
+    <div class="col col-sm-6 small">
+			<h4 class="bg-lightyellow">
+				<span class="me-2">
+					<img src="static/images/001-up-arrow.png" class="" height=28 width=28 alt=""/>
+				</span>
+				Upload and Enhance
+			</h4>
+	    <div>
+		    <div>
+			    <p>Upload your place data to a private workspace in the WHG, then augment it with geometry and authority
+			    identifiers from Wikidata.</p>
+			    <div>
+						<h5 class="bg-lighteryellow">Upload data
+							<span class="float-end fs-6 me-2"><a href="">guide</a>
+								<a class="mb-2" href="/datasets/create">begin</a>
+							</span>
+						</h5>
+				    <p class="mb-2">WHG supports <a href="https://github.com/LinkedPasts/linked-places-format" target="_blank">
+					    Linked Places format</a> (LPF) and a simpler delimited file format,
+					    <a href="https://github.com/LinkedPasts/linked-places-format/blob/main/tsv_0.4.md" target="_blank">
+						    LP-Delimited</a> (LP-D).</p>
+				    <p class="mb-2">Records from valid uploaded files (<i>one per place</i>) are written to our relational database. Each is
+					    assigned a permanent <b>pid</b> identifier, maintained along with your own unique identifier.
+				      for as long as the dataset remains in the system.</p>
+			    </div>
+			    <div>
+						<h5 class="bg-lighteryellow">Enhance data
+							<span class="float-end fs-6 me-1">
+								<a class="a-modal" href="">guide</a>
+							</span>
+						</h5>
+				    <p>WHG's reconciliation service finds potential matches to your records in our
+				      index of 3.5 million Wikidata places. These are presented in a review screen,
+					    and for each accepted match, one or more geometry and authority URI records are written
+					    to the database&mdash;enhancing your record without altering it.</p>
+			    </div>
+		    </div>
+	    </div>
+    </div>
+    <div class="col col-sm-6 small" style="border-left: 1px dotted lightgray;">
+	    <h4 class="bg-lightyellow">
+		    <img src="static/images/003-browser.png" class="" height=28 width=28 alt=""/></span>
+		    Publish and Link</h4>
+	    <p>Your published place data can be very useful to others working in the same region&mdash;more so when
+		    your individual records are linked with those of other datasets in WHG's "union index."</p>
+			<h5 class="bg-lighteryellow">Publish data
+				<span class="float-end fs-6 me-1">
+					<a class="a-modal" href="">guide</a>
+				</span>
+			</h5>
+	    <p>Once a dataset has been reconciled with Wikidata and its metadata is complete, it can be flagged as public,
+	       making its records discoverable in WHG's search, browse, and API features.</p>
+			<h5 class="bg-lighteryellow">Link data
+				<span class="float-end fs-6 me-1">
+					<a class="a-modal" href="">guide</a>
+				</span>
+			</h5>
+	    <p>The final step in accessioning a dataset to WHG is reconciling its records against our growing "union index."
+	      This step links matched records for each given place, generating a cluster or "mini-graph" of one or more
+		    attestations ite.</p>
+    </div>
+  </div>
+</div>
+
 	<script>
 	    $(".a-modal").click(function(){
 	      $('#exampleModal').modal('toggle');

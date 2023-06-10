@@ -57,7 +57,9 @@ label {vertical-align:text-top;}
 .alert {padding: 0 1.25rem !important;}
 .arial {font-family: arial, san-serif;}
 .bg-lightyellow { background-color: lightgoldenrodyellow !important; }
+.bg-lighteryellow { background-color: lightyellow !important; }
 .bg-lightblue { background-color: azure !important; }
+.bg-lightgrey { background-color: ghostwhite !important; }
 .bg-white { background-color: white; !important; }
 .bg-tan { background-color: burlywood !important; color:white;}
 .bg-seagreen { background-color: #3B8794 !important; color:white;}
