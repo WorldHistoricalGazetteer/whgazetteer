@@ -117,7 +117,7 @@
 				<h5><span class="button-hilite">Upload, enhance, publish, and link</span> your place data</h5>
 			</div>
 			<span class="link-spanner btn" data-bs-toggle="modal"
-			      data-bs-target="#exampleModal"
+			      data-bs-target="#homeModal"
 			      data-bs-page="contribute"
 			      data-bs-title="Upload, enhance, publish and link place data">
 			</span>
@@ -128,7 +128,7 @@
 				<h5><span class="button-hilite">Build</span> and annotate custom collections</h5>
 			</div>
 			<span class="link-spanner btn" data-bs-toggle="modal"
-			      data-bs-target="#exampleModal"
+			      data-bs-target="#homeModal"
 			      data-bs-page="build"
 			      data-bs-title="Build custom collections"></span>
 {#			<a href="{% url 'main:tute-collections' %}"><span class="link-spanner"></span></a>#}
@@ -142,23 +142,22 @@
 				<h5><span class="button-hilite">Use WHG data</span> in teaching and software</h5>
 			</div>
 			<span class="link-spanner btn" data-bs-toggle="modal"
-			      data-bs-target="#exampleModal"
+			      data-bs-target="#homeModal"
 			      data-bs-page="teaching_api"
 						data-bs-title="Use World Historical Gazetteer data"></span>
 		</div>
 	</div> <!-- content_bottom-->
 
 	<!-- Modal -->
-	<div class="modal fade" id="exampleModal" tabindex="-1"
-	     aria-labelledby="exampleModalLabel" aria-hidden="true">
+	<div class="modal fade" id="homeModal" tabindex="-1"
+	     aria-labelledby="homeModalLabel" aria-hidden="true">
 	  <div class="modal-dialog modal-lg">
 	    <div class="modal-content">
 	      <div class="modal-header">
-	        <h5 class="modal-title" id="exampleModalLabel">{ per-button title }</h5>
+	        <h5 class="modal-title" id="homeModalLabel">{ per-button title }</h5>
 	        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 	      </div>
-	      <div class="modal-body" style="overflow-y: scroll;">
-	      </div>
+	      <div class="modal-body" style="overflow-y: scroll;"></div>
 	      <div class="modal-footer">
 	        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
 	      </div>
@@ -183,8 +182,8 @@ $(function(){
   });	
 })
 
-exampleModal = document.getElementById('exampleModal')
-exampleModal.addEventListener('show.bs.modal', function (event) {
+homeModal = document.getElementById('homeModal')
+homeModal.addEventListener('show.bs.modal', function (event) {
   // Button that triggered the modal
   var button = event.relatedTarget
   // Extract info from data-bs-* attributes
@@ -192,16 +191,22 @@ exampleModal.addEventListener('show.bs.modal', function (event) {
 	var page = button.getAttribute('data-bs-page')
 	console.log('button_id', page)
 
-  // Update the modal's content.
-  var modalTitle = exampleModal.querySelector('.modal-title')
-  {#var modalBody = exampleModal.querySelector('.modal-body')#}
-  {#var modalBodyInput = exampleModal.querySelector('.modal-body input')#}
-
+  // update the modal title
+  var modalTitle = homeModal.querySelector('.modal-title')
   modalTitle.textContent = title
-	url = '/media/home/'+page+'.html?v='+new Date().getTime()
-	console.log('url',url)
-	$(".modal-body").load(url)
 
+	// get modal body as django template
+	$.ajax({
+    url: "{% url 'modal-home' %}",
+		data: {'page': page,},
+    type: 'POST',
+    success: function(response) {
+        $('.modal-body').html(response);
+    },
+    error: function(xhr, status, error) {
+	    console.log('status, error', status, error)
+	  }
+	});
 })
 
 mapboxgl.accessToken = '{{ mbtokenwhg }}';

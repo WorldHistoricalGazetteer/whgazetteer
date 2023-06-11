@@ -50,6 +50,8 @@ urlpatterns = [
     path('usingapi/', TemplateView.as_view(template_name="main/usingapi.html"), name="usingapi"),
     path('tinymce/', include('tinymce.urls')),
 
+    path('modal_home/', views.home_modal, name="modal-home"),
+
     path('comment/<int:rec_id>', views.CommentCreateView.as_view(), name='comment-create'),
     path('contact/', views.contactView, name='contact'),
     path('success/', views.contactSuccessView, name='success'),

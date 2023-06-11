@@ -15,7 +15,9 @@
 			    <div>
 						<h5 class="bg-lighteryellow">Upload data
 							<span class="float-end fs-6 me-2"><a href="">guide</a>
+								{% if user.is_authenticated %}
 								<a class="mb-2" href="/datasets/create">begin</a>
+								{% endif %}
 							</span>
 						</h5>
 				    <p class="mb-2">WHG supports <a href="https://github.com/LinkedPasts/linked-places-format" target="_blank">
@@ -51,8 +53,8 @@
 					<a class="a-modal" href="">guide</a>
 				</span>
 			</h5>
-	    <p>Once a dataset has been reconciled with Wikidata and its metadata is complete, it can be flagged as public,
-	       making its records discoverable in WHG's search, browse, and API features.</p>
+	    <p>Once a dataset has been reconciled with Wikidata and its metadata is complete, WHG staff can flag it as public,
+	       making its records discoverable in the platform's search, browse, and API features.</p>
 			<h5 class="bg-lighterblue">Link data
 				<span class="float-end fs-6 me-1">
 					<a class="a-modal" href="">guide</a>

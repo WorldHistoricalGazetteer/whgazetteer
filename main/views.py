@@ -5,6 +5,7 @@ from django.core.mail import send_mail, BadHeaderError
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404, redirect #, render_to_response
 from django.urls import reverse_lazy
+from django.views.decorators.csrf import csrf_exempt
 from django.views.generic.base import TemplateView
 from collection.models import Collection
 from datasets.models import Dataset
@@ -19,6 +20,16 @@ es = settings.ES_CONN
 from random import shuffle
 from urllib.parse import urlparse
 import sys
+from datetime import datetime
+
+@csrf_exempt
+def home_modal(request):
+  page = request.POST['page']
+  context = {'v1': 'hello there'}
+  url = 'home/' + page + '.html'
+  print('home_modal() url:', url)
+  return render(request, url, context)
+
 
 def custom_error_view(request, exception=None):
     print('error request', request.GET.__dict__)
