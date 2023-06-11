@@ -30,6 +30,17 @@
 		.coll-header { background-color: #54A1DA; color: #fff; }
 		img {image-orientation: none;}
 		#map { position: absolute; top: 0; bottom: 0; width: 100%; }
+		#search_map {position: absolute; top: 5px; left: 5px}
+		.advanced-search-link {
+				font-size: .8rem;
+				{#color: yellow !important;#}
+				position: absolute;
+				bottom:8px;
+				left: 5px;
+				background-color: #fff;
+				z-index: 1000;
+		}
+		.advanced-search-link a { color: #336699 !important;}
 	</style>
 {% endblock %}
 
@@ -68,6 +79,16 @@
 		<div class="col-sm-6">
 			<div class="border mb-1 h-75 bg-white" style="position: relative;">
 				<div id="map"></div>
+				<div id="search_map" class="input-group input-group-sm mb-3 shadow-sm" style="width: 40%">
+				  <input type="text" class="form-control" placeholder="Enter place name"
+				         aria-label="Username" aria-describedby="addon-wrapping">
+				  <span class="input-group-text" id="addon-wrapping">
+					  <a href="#" onclick="JavaScript:alert('Results on new results page')"><i class="fas fa-search"></i></a>
+				  </span>
+				</div>
+				<div class="advanced-search-link px-1 py-0">
+					<a href="{% url 'search-page' %}"#>advanced search</a>
+				</div>
 			</div>
 			<div class=" p-1 border bg-white" style="height: 24%;">
 				<p>Praesent ac vehicula nulla. Sed sit amet lacinia arcu.
@@ -125,7 +146,7 @@
 		<div class="col-sm-3 p-1 home-button">
 			<div class="h-100 border p-1">
 				<div class="home-icon-row"><img src="{% static 'images/008-collect.png'%}" class="" height=42 width=42 alt=""/></div>
-				<h5><span class="button-hilite">Build</span> and annotate custom collections</h5>
+				<h5><span class="button-hilite">Build</span>, annotate, and publish custom collections</h5>
 			</div>
 			<span class="link-spanner btn" data-bs-toggle="modal"
 			      data-bs-target="#homeModal"
@@ -147,7 +168,6 @@
 						data-bs-title="Use World Historical Gazetteer data"></span>
 		</div>
 	</div> <!-- content_bottom-->
-
 	<!-- Modal -->
 	<div class="modal fade" id="homeModal" tabindex="-1"
 	     aria-labelledby="homeModalLabel" aria-hidden="true">
