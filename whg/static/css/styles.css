@@ -252,6 +252,8 @@ i.fa-eye { margin-bottom: -5px; margin-left: -5px;}
 /**
   home
 **/
+/* #4a8765, cadetblue, darkcyan, darkgreen, forestgreen, seagreen */
+.home-button-hilite {color: #6b8e6d;}
 .banner {
     background-image: url('/static/images/banner_50percent.jpg');
     height: 20%;

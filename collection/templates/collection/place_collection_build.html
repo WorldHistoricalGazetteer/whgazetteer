@@ -115,21 +115,20 @@
 		    <button class="nav-link" id="build-tab" data-bs-toggle="tab" data-bs-target="#coll_builder"
           type="button" role="tab" aria-controls="coll_builder" aria-selected="false">Add and annotate places</button>
 		  </li>
+		  {% comment %}
 		  <li class="nav-item" role="presentation">
 		    <button class="nav-link" id="collaborators-tab" data-bs-toggle="tab" data-bs-target="#coll_collaborators"
           type="button" role="tab" aria-controls="coll_collaborators" aria-selected="false">Collaborators</button>
 		  </li>
+		  {% endcomment %}
 		  {% endif %}
 		</ul>
 	  <div class="tab-content" id="content">
 	    <div id="coll_form" class="tab-pane fade show active h-100">
 		    <form id="collection_form" method="POST" enctype="multipart/form-data">
 		    {% csrf_token %}
-
         <div class="row">
-          {# initial form #}
-	        {% if user == object.owner %}
-		        <div class="col-sm-5">
+	        <div class="col-sm-5">
 		      {% if action == 'create' %}
 		        <input type="hidden" name="owner" value='{{ user.id }}' />
 		      {% else %}
@@ -188,19 +187,23 @@
 			      {% endif %}
 					{% endif %}
 	      </div>
-          {% else %}
-	          <div class="col-sm-5">
-		          <p class="ital small p-2">As a collaborator on this collection, you can view its metadata,
-		          add, annotate, and remove places, add links, and change the image and essay
-		          </p><hr/>
-		          {% with form.visible_fields as partial %}
-              <p><b>Title</b>: {{ partial.1.value }}</p>
-              <p><b>Description</b>:<br/>{{ partial.3.value }}</p>
-              <p><b>Collection Keywords</b>: {{ partial.4.value }}</p>
-              <p><b>Relation tags</b>: {{ partial.5.value }}</p>
-	            {% endwith %}
-	          </div>
-	        {% endif %}
+        {% comment %}
+        {% else %}
+          <div class="col-sm-5">
+	          <p class="ital small p-2">As a collaborator on this collection, you can view its metadata,
+	          add, annotate, and remove places, add links, and change the image and essay
+	          </p><hr/>
+	          {% with form.visible_fields as partial %}
+            <p><b>Title</b>: {{ partial.1.value }}</p>
+            <p><b>Description</b>:<br/>{{ partial.3.value }}</p>
+            <p><b>Collection Keywords</b>: {{ partial.4.value }}</p>
+            <p><b>Relation tags</b>: {{ partial.5.value }}</p>
+            {% endwith %}
+          </div>
+        {% endif %}
+        {% endcomment %}
+
+
 	        <div class="col-sm-7">
 		      {% if action == 'update' %}
 			      <div class="form-group mb-2">
@@ -383,7 +386,8 @@
 								        {% endif %}
 								          {# TODO: CollPlace/TraceAnnotation redundancy issue #}
 										      {% for t in cp.p.traces.all %}
-											      {% if t.collection.id == object.id and t.saved and not t.archived %}
+{#											      {% if t.collection.id == object.id and t.saved and not t.archived %}#}
+											      {% if t.saved and not t.archived %}
 											        <i class="red-head ms-3">annotated</i>
 											      {% endif %}
 										      {% endfor %}
@@ -447,11 +451,13 @@
          {% endif %}
 	      </div> {# d-flex #}
 	    </div> {# coll_builder #}
-			<div id="coll_collaborators" class="tab-pane fade h-100" style="height: auto; position:relative;">
-	      <form id="sharing_form" method="POST" action="{% url 'collection:collab-add' cid=object.id %}"
+			{% comment %}
+		  <div id="coll_collaborators" class="tab-pane fade h-100" style="height: auto; position:relative;">
+	      <form id="sharing_form" method="POST" action="{% url 'collection:collab-add'%}"
+{#	      <form id="sharing_form" method="POST" action="{% url 'collection:collab-add' cid=object.id %}"#}
 	            enctype="multipart/form-data">
 	      {% csrf_token %}
-	      <div></div>
+	      <input type="hidden" name="collection" value='{{ object.id }}' />
 	      <div class="sharing-box my-3 w-50">
 	        <div class="sharing-header mb-0 ps-2 strong">Collaborators</div>
 	        <div class="smallish ps-2">
@@ -497,6 +503,7 @@
 	      </div>
 	      </form>
 			</div>
+	    {% endcomment %}
 	  </div> {# tab_content #}
     <div class="selector py-3"><div id="helpme"></div></div>
   </div> {# h-100 #}
@@ -904,7 +911,7 @@
   function getAnno(pid){
     let coll_id = "{{ object.id }}"
 	  // traces.views.get_form()
-	  // returns TraceAnnotationForm; w/instance if trace_annotation record exists, else empty
+	  // returns TraceAnnotationForm; w/instance if trace_annotation record exists & not archived, else empty
 		const url = "/collections/annoform/?c="+'{{ object.id }}'+"&p="+pid
     fetch(url)
       .then(function (response) {
@@ -972,7 +979,7 @@
 					$("#"+id+" .seq-visible").text("id: "+id+"; seq: "+index)
 				 });
 				// Persist the new indices.
-        console.log('new_sequence', new_sequence)
+        {#console.log('new_sequence', new_sequence)#}
 				var formData = new FormData()
 				formData.append('coll_id', {{object.id}})
 				formData.append('seq', JSON.stringify(new_sequence))

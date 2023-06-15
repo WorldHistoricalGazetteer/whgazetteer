@@ -124,7 +124,7 @@ def get_form(request):
     coll = Collection.objects.get(id=cid)
 
     # is there a trace_annotation record already?
-    existing = TraceAnnotation.objects.filter(place=pid, collection=cid)
+    existing = TraceAnnotation.objects.filter(place=pid, collection=cid, archived=False)
     if existing:
       form = TraceAnnotationModelForm(instance=existing[0],auto_id=False)
     else:
