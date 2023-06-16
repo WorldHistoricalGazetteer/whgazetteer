@@ -4,14 +4,66 @@ from django.test import TestCase
 from django.conf import settings
 # Create your tests here.
 from collection.models import *
+from traces.models import *
+from collection.views import *
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 User = get_user_model()
 # get a normal user
-user = User.objects.get(id=12) #another
+user = User.objects.get(email='cain@kgeographer.org')
 # get a user with role == group_leader
-leader = User.objects.get(id=6) #sage
+leader = User.objects.get(email='sage@kgeographer.org')
 import os, codecs, re, json
+
+# create place collection
+coll = Collection.objects.get(id=8)
+ds = Dataset.objects.get(id=8)
+# clear
+coll.traces.all().delete()
+coll.datasets.all().delete()
+# add dataset's places
+# js addPlaces(coll_id, ds_id) -> views.add_dataset
+cc(coll) # -> ok
+# add TraceAnnotation for one place, get id
+  # appears as 'annotated -> ok
+cc(coll) # -> ok
+# add another dataset
+cc(coll) # -> ok
+# remove first dataset
+cc(coll) # -> ok
+# remove unannotated place
+
+# confirm [coll.datasets, coll.places, coll.traces]
+# 	filter(saved=True).count()
+# 	filter(archived=True).count()
+# TraceAnnotation.objects.get(id=id).delete()
+
+
+from pprint import pprint
+def cc(coll):
+  ct= coll.traces
+  cd= coll.datasets
+  cp=coll.places
+  counts = {
+		"traces": {
+			"count": ct.count(),
+			"saved/unsaved": [ct.filter(saved=True).count(),
+                        ct.filter(saved=False).count()],
+			"archived/not": [ct.filter(archived=True).count(),
+                   ct.filter(archived=False).count()]
+		},
+		"datasets": {
+			"count": cd.count(),
+			"labels": list(cd.all().values_list('label', flat=True))
+		},
+		"places": {
+			"count": cp.count()
+		}
+	}
+  pprint(counts, indent=2)
+  return counts
+
+# confirm [coll.datasets, coll.places, coll.traces] filter(saved=True).count()
 
 
 # create a place collection

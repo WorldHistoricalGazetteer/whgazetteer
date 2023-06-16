@@ -325,20 +325,19 @@ def remove_dataset(request, *args, **kwargs):
   ds = Dataset.objects.get(id=kwargs['ds_id'])
   print('remove_dataset(): coll, ds', coll, ds)
 
-  ds_pids = ds.placeids
   # remove CollPlace records
-  CollPlace.objects.filter(place_id__in=ds_pids).delete()
+  CollPlace.objects.filter(place_id__in=ds.placeids).delete()
   # remove dataset from collections_dataset
   coll.datasets.remove(ds)
   # archive any non-blank trace annotations
-  current_traces = coll.traces.filter(collection=coll, place__in=ds_pids, archived=False)
+  # someone will want to recover them, count on it
+  current_traces = coll.traces.filter(collection=coll, place__in=ds.placeids)
   non_blank = [t.id for t in current_traces.all() if t.blank == False]
+  blanks = current_traces.exclude(id__in=non_blank)
   if non_blank:
-    # flag as archived; someone will want to recover them, count on it
     current_traces.filter(id__in=non_blank).update(archived=True)
-    # delete blanks
     current_traces.filter(archived=False).delete()
-
+  blanks.delete()
   return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 def create_collection_group(request, *args, **kwargs):

@@ -314,7 +314,7 @@
 						  <li class="nav-item" role="presentation">
 						    <button class="nav-link active" id="coll_placelist-tab" data-bs-toggle="tab" data-bs-target="#coll_placelist"
 						       role="tab" aria-controls="coll_placelist" aria-selected="true" data-id="pl">
-							    Places ({{ seq_places|length }})
+							    Places (<span id="place_count">{{ seq_places|length }}</span>)
 						      <span class="small float-end ms-3"><a id="a_remove" href="#"></a></span>
 						    </button>
 
@@ -524,7 +524,7 @@
 		if($("#coll_placelist div").length >0){
 			$("#coll_placelist div:first-child").click()
 		}
-		console.log('build tab', $("#coll_placelist div:first-child").data("id"))
+		{#console.log('build tab', $("#coll_placelist div:first-child").data("id"))#}
 	})
 
 	$("#btn_coll_submit").click(function(e){
@@ -659,9 +659,9 @@
       })
 			// update count in tab
 			newcount = $(".col-place-card").length
-			$("#coll_placelist-tab").text('Places ('+newcount+')')
+			$("#place_count").text(newcount)
 			remove_these = [];
-      $("#a_remove").html('')
+      $("#a_remove").text('')
   }
 
   // remove place(s) from collection
@@ -676,8 +676,8 @@
     pid = $(this).data('pid')
 		col = $(this).data('col')
     {#console.log('mark ' + pid + ' in ' + col)#}
-		{#card = $(".col-place-card[data-id="+pid+"]")#}
 		if(remove_these.indexOf(pid)>-1){
+      console.log('unmarked',pid )
       // unmark it
 			card = $(".col-place-card[data-id="+pid+"]")
 			card.css('opacity', 1.0)
@@ -693,6 +693,7 @@
 			if(remove_these.length == 0){$("#a_remove").html('')}
 		} else {
       // mark for removal
+			console.log('marked', pid, 'added to remove_these')
 			card = $(".col-place-card[data-id="+pid+"]")
 			card.css('opacity', 0.5)
 			$(".col-place-card[data-id="+pid+"] i.fa-minus-circle")
@@ -704,7 +705,6 @@
 			remove_these.push(pid)
 			$("#a_remove").html('remove '+remove_these.length)
 		}
-    {#console.log('remove_these:', remove_these)#}
 	})
 
 	{#$("#btn_coll_update").click(function(e){#}
