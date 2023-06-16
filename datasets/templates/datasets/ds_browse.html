@@ -819,6 +819,7 @@
     console.log('getPlace()', pid)
     $.ajax({
       url: "/api/place/"+pid,
+	    headers: {'calling_page': 'ds_browse'}
       }).done(function( data ) {
         console.log('place data', data)
         $("#detail").html(parsePlace(data))

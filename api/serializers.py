@@ -202,17 +202,27 @@ class PlaceSerializer(serializers.ModelSerializer):
   descriptions = PlaceDescriptionSerializer(many=True, read_only=True)
   depictions = PlaceDepictionSerializer(many=True, read_only=True)
 
-
-  # cid param passed from place collectioin browse screen
+  # cid param passed only from place collection browse screen
   traces = serializers.SerializerMethodField('trace_anno')
   def trace_anno(self, place):
-    cid = self.context["query_params"]['cid']
-    return json.loads(
-      coreserializers.serialize("json", TraceAnnotation.objects.filter(
-        place=place.id, collection=cid, archived=False)))
+    params = self.context["query_params"]
+    if 'cid' in params:
+      cid = params['cid']
+      return json.loads(
+        coreserializers.serialize("json", TraceAnnotation.objects.filter(
+          place=place.id, collection=cid, archived=False)))
+    else:
+      print('no cid in params')
+      return json.loads('[]')
 
+  # traces = serializers.SerializerMethodField('trace_anno')
+  # def trace_anno(self, place):
+  #   cid = self.context["query_params"]['cid']
+  #   return json.loads(
+  #     coreserializers.serialize("json", TraceAnnotation.objects.filter(
+  #       place=place.id, collection=cid, archived=False)))
+  #
   geo = serializers.SerializerMethodField('has_geom')
-
   def has_geom(self,place):
     return '<i class="fa fa-globe"></i>' if place.geom_count > 0 else "-"
 

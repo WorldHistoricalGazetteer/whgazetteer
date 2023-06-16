@@ -40,6 +40,7 @@ from datasets.models import Dataset
 from datasets.tasks import get_bounds_filter
 from places.models import Place, PlaceGeom
 from search.views import getGeomCollection
+import inspect
 
 class StandardResultsSetPagination(PageNumberPagination):
   page_size = 10
@@ -669,10 +670,11 @@ class PlaceDetailAPIView(generics.RetrieveAPIView):
   authentication_classes = [SessionAuthentication]
 
   def get_serializer_context(self):
-    # in place collection browse, collection id is passed
+    # collection id is passed from place collection browse
     context = super().get_serializer_context()
     context["query_params"] = self.request.query_params
     return context
+
 
 """
     place_compare/<int:pk>/
