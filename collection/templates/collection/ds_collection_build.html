@@ -1,15 +1,21 @@
-<!-- collection/place_collection_builder.html -->
+<!-- collection/collection_create.html -->
 {% extends "main/base.html" %}
 {% load leaflet_tags %}
 
 {% load static %}
 {% load dataset_extras %}
-{% block title %}
-	<title>WHG::Create/Update Collection</title>
-{% endblock %}
+{% block title %}<title>WHG::Create/Update Collection</title>{% endblock %}
 {% block extra_head %}
-  <style>
-	  label {font-weight: bold;}
+  {% leaflet_js %}
+  {% leaflet_css %}
+  
+  <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.css' rel='stylesheet' />
+  <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.js'></script>
+  <script src="{% static 'js/leaflet-mapbox-gl.js' %}"></script>
+
+	<style>
+    .form-group {margin-bottom: .5rem !important;}
+    .form-group label {margin-bottom:0 !important;}
     #linkform_popup {
 	    position:absolute;
 			background-color: whitesmoke;
@@ -24,96 +30,38 @@
 	    z-index: 1000;
 	    display:none;
     }
-    .coll-col { border-right: 1px dashed lightgray;;}
-    #coll_place_detail{
-	    border-bottom:dashed 1px grey;
-	    padding-bottom: .3rem;
-	    {#background-color: aliceblue;#}
-    }
-    #coll_place_detail {min-height: 80px;}
-    #coll_place_detail p{ margin-bottom: 0}
-    #coll_right_anno, #coll_right_intro {
-	    {#margin-top:42px;#}
-    }
-    #anno_div table td {padding-top: 3px; padding-bottom: 3px;}
-    #anno_div input {height: 1.5rem; font-size:.8rem;}
-    {##annotator {background-color: #fafafa;}#}
-    .form-group {margin-bottom: 4px !important;}
-    .form-group label {margin-bottom:0 !important;}
-    .col-place-card {
-	    border: #c3c3c3 1px dashed;
-	    margin-bottom: 3px;
-	    background-color: #fafafa;
-	    padding-left: 2px;
-	    cursor: pointer;
-    }
-    .card-highlight {border: 1px solid #993333; background-color: lightyellow;}
-		#coll_placelist, #coll_dslist {
-	    padding: 3px;
-	    {#position: absolute;#}
-	    max-height: 100%;
-	    min-height: auto;
-			{#max-width: 50%;#}
-	    {#width: 100%;#}
-	    overflow-y:auto;
-    }
-    #builder_content {
-	    {#position:absolute;#}
-	    {#width: 95%;#}
-	    height: 92%;
-	    border-left: 1px solid gainsboro;
-	    border-right: 1px solid gainsboro;
-	    border-bottom: 1px solid gainsboro;
-	    {#background-color: #fdf5e6;#}
-	    {#max-height: 92%;#}
-    }
-    #coll_tabs {
-			{#margin-right: 2px;#}
-			background-color: #fdf5e6;
-			border-top: 1px solid gainsboro;
-			border-left: 1px solid gainsboro;
-			border-right: 1px solid gainsboro;
-			border-radius: 8px 8px 0 0;
-		}
-  </style>
+
+	</style>
 {% endblock %}
 
 {% block content %}
 <div class="container container-md" style="height: calc(100vh);">
-{#	<p>is_member: {{ is_member }}; is_owner: {{ is_owner }}; whgteam: {{ whgteam }}</p>#}
-  {% if action == 'update' and is_member == False and whgteam == False %}
-	  <p>Access to this page is limited to the collection owner <b>{{ object.owner.name }}</b> ({{ object.owner.id }})
-		  and designated collaborators.</p>
+  {% if action == 'update' and user.id != object.owner.id and not user.is_superuser and not user in whgteam %}
+	  <p>Access to this page is limited to the collection owner(s); Owner is <mark>{{object.owner.username}}</mark></p>
   {% else %}
-  <div class="h-100">
-	  <h5 class="mt-3">
-		  {% if action == 'update' %}<span class="text-secondary">Dataset Collection Builder: </span>
+    <h5 class="mt-3">
+	    {% if action == 'update' %}<span class="text-secondary">Dataset Collection Builder: </span>
 		    <span class="text-bold red-head">{{ form.title.value }}</span>
-				<span class="float-end small">
-					<span class="badge badge-warning px-2">beta</span>&nbsp;&nbsp;
-			    <a href="{% url 'collection:ds-collection-browse' object.id %}">
-				    view&nbsp;&nbsp;<i class="fas fa-eye linky"></i></a>&nbsp;
+		    <span class="float-end fs-6">
+			    <a href="{% url 'collection:ds-collection-summary' object.id %}">
+				    view</a> <i class="fas fa-eye linky"></i>
 			    <a href="{% url 'collection:collection-delete' object.id %}"
 		      title="Delete collection" rel="tooltip" style="margin-top:-2px;">
-			    <i class="fas fa-trash linkyred"></i></a>
-				</span>
-	    {% else %}
-		    Dataset Collection Builder: {<span class="red-head">new</span>}
-	    {% endif %}
-{#	    action: {{ action }}#}
+			    <i class="fas fa-trash linkyred"></i></a></span>
+	    {% else %}Create Dataset Collection{% endif %}
 	  </h5>
-	  <ul class="nav nav-tabs" id="" role="tablist">
-		  {# create form #}
+	  <ul id="tablist" class="nav nav-tabs" role="tablist">
+		  {# create form & intro #}
 		  <li class="nav-item" role="presentation">
 		    <button class="nav-link active" id="form-tab" data-bs-toggle="tab" data-bs-target="#coll_form"
           type="button" role="tab" aria-controls="coll_form" aria-selected="true">
 			    {% if action == 'create' %}Create{% else %}Edit{% endif %} Collection</button>
 		  </li>
-		  {# add & annotate #}
+		  {# add & manage #}
 		  {% if action == "update" %}
 		  <li class="nav-item" role="presentation">
 		    <button class="nav-link" id="build-tab" data-bs-toggle="tab" data-bs-target="#coll_builder"
-          type="button" role="tab" aria-controls="coll_builder" aria-selected="false">Manage datasets</button>
+          type="button" role="tab" aria-controls="coll_builder" aria-selected="false">Add and manage datasets</button>
 		  </li>
 		  {% comment %}
 		  <li class="nav-item" role="presentation">
@@ -123,8 +71,8 @@
 		  {% endcomment %}
 		  {% endif %}
 		</ul>
-	  <div class="tab-content" id="content">
-	    <div id="coll_form" class="tab-pane fade show active h-100">
+		<div id="content" class="tab-content">
+			<div id="coll_form" class="tab-pane fade show active h-100">
 		    <form id="collection_form" method="POST" enctype="multipart/form-data">
 		    {% csrf_token %}
         <div class="row">
@@ -145,17 +93,14 @@
 					<div class="form-group">
 						<label for="Collection keywords">Collection keywords &#x02733;</label><br/>{{ form.keywords }}
 					</div>
-					<div class="form-group">
-						<label for="Web page">Web page</label><br/>{{ form.webpage }}
-					</div>
 		      <div id="d_buttons" class="" style="">
 	          <span class="">
 	          {% if action == 'create' %}
 			        <a href="/mycollections">Cancel</a>
 		          <input id="btn_coll_save" class="btn btn-sm btn-primary mt-2" type="submit" value="Save" />
 	          {% else %}
-		          {% comment %}<input id="btn_coll_save" name="display" class="btn btn-sm btn-success mt-2 "
-		                 type="submit" value="Save & exit" />{% endcomment %}
+		          <input id="btn_coll_save" name="display" class="btn btn-sm btn-success mt-2 "
+		                 type="submit" value="Save & exit" />
 		          <input id="btn_coll_update" name="update" class="btn btn-sm btn-primary mt-2 ms-2"
 		                 type="submit" value="Save" />
 	          {% endif %}
@@ -171,6 +116,7 @@
 		      <div id="editor_options" class="hidden">
 			      <p>Status: {{ form.status }}</p>
 						<p>Featured rank: {{ form.featured }}</p>
+						{% comment %}<p>Featured rank: {{ form.featured }}</p>{% endcomment %}
 		      </div>
 		      <div id="select_div" class="hidden">{{ form.datasets }}</div>
 		      <div id="collection_options"></div>
@@ -201,6 +147,7 @@
           </div>
         {% endif %}
         {% endcomment %}
+
 
 	        <div class="col-sm-7">
 		      {% if action == 'update' %}
@@ -257,17 +204,15 @@
 						</div>
 		      {% else %}
 				    <h5 style="display:block;">Welcome</h5>
-					  <p>To create a new Dataset Collection, first fill out the required fields in the form on the left.
+					  <p>To create a new Place Collection, first fill out the required fields in the form on the left.
 						  and press <b>Save</b>. All information can be edited afterwards, and you can begin adding and
-						  managing datasets. The collection itself can include primary image, an essay file and
+						  annotating places. The collection itself can include primary image, an essay file and
 						  links to related material.</p>
 			      <p><mark-b>Collection keywords</mark-b> are terms describing the collection.</p>
-					  {% comment %}
 					  <p><mark-b>Annotation keywords</mark-b> are terms that will be your own vocabulary for relations between a given
 	              place and the collection theme or topic. For example, relevant annotation keywords for a collection
 	              about a journey might include "waypoint" and "extended stay." For lives of individuals, "birthplace"
 	              and "resided" might be appropriate. The choice is yours.</p>
-            {% endcomment %}
 		      {% endif %}
 		      </div> {# col-sm-7 #}
         </div> {# row #}
@@ -294,201 +239,91 @@
 		        <button id="b_createlink" type="button">Save</button>
 	          </form>
 		    </div>
-	    </div> {# coll_form #}
-	    <div id="coll_builder" class="tab-pane fade h-100" style="height: auto; position:relative;">
-	      <div class="d-flex h-100">
-	        <div class="col-sm-6" id="builder">
-	          <h5>Dataset manager</h5>
-	          {% comment %}
-						<ul id="coll_tabs" class="nav nav-tabs " role="tablist">
-							{% if action == 'update' %}
-							<li class="nav-item" role="presentation">
-							    <button class="nav-link" id="coll_dslist-tab" data-bs-toggle="tab" data-bs-target="#coll_dslist"
-							       role="tab" aria-controls="coll_dslist" aria-selected="false" data-id="ds">
-								    Datasets</button>
-						  </li>
-							{% else %}
-						  <li class="nav-item disabled" role="presentation">
-									<button class="nav-link" id="coll_dslist-tab"  style="color:grey !important;"
-									        data-bs-target="#coll_dslist" >Datasets</button>
-						  </li>
-							{% endif %}
-						  <li class="nav-item" role="presentation">
-						    <button class="nav-link active" id="coll_placelist-tab" data-bs-toggle="tab" data-bs-target="#coll_placelist"
-						       role="tab" aria-controls="coll_placelist" aria-selected="true" data-id="pl">
-							    Places (<span id="place_count">{{ seq_places|length }}</span>)
-						      <span class="small float-end ms-3"><a id="a_remove" href="#"></a></span>
-						    </button>
-
-						  </li>
-						</ul>
-				    <div id="builder_content" class="tab-content">
-							<div id="coll_dslist" class="tab-pane fade" role="tabpanel" aria-labelledby="coll_dslist-tab">
-				        <p class="mt-2">
-					        <span class="me-2 smaller">
-					          <select id="select_ds" name="ds" class="custom-select-sm">
-					          <option value="0">Select dataset</option>
-					          <option disabled>___________</option>
-					          {% for ds in ds_select %}
-					            {% if ds not in coll_dsset %}
-					              <option value="{{ ds.id }}">{{ ds.title }}</option>
-					            {% endif %}
-					          {% endfor %}
-					          </select>
-					        </span>
-				        </p>
-				        {# id, label, title, description, creator, create_date, webpage, numrows, datatype  #}
-				        <div id="coll_dscards_create">
-					        <p>The select dropdown above lists datasets you "own" or have been made a collaborator on.</p>
-					        {% if coll_dsset|length == 0 %}
-						        <p id="further_explanation">Once selected, you can choose to "add all places" from it and
-		                  they will appear on your collection's place list. Note that very large datasets
-		                  (more than a few thousand rows) may present issues in managing annotations and in the
-		                  display of the collection.</p>
-					        {% endif %}
-					        {% for d in coll_dsset %}
-					          <div class="ds_card w-100">
-					            <p class="mb-0">
-						            <a href="{% url 'datasets:ds_summary' id=d.id %}">
-							            <span class="ds_title">{{ d.title }}</span></a>
-						            <small>({{d.label}}/{{ d.id}})</small>
-					            </p>
-					            <div class="ds_fields">
-					              <p class="my-1"><b>Description</b>: {{ d.description|truncatechars:150 }}</p>
-					              <p class="my-1"><b>Create date</b>: {{ d.create_date|date:"d M Y" }}</p>
-					              <p class="my-1"><b># rows</b>: {{ d.numrows }}
-					              <a href="{% url 'collection:remove-ds' ds_id=d.id coll_id=object.id %}" class="float-end">
-						              <i class="fas fa-minus-square linky`"></i> remove</a>
-					              </p>
-					            </div>
-					          </div>
-					        {% endfor %}
-				        </div> {# coll_dscards_create #}
-							</div>
-				      <div id="coll_placelist" class="tab-pane fade show active" role="tabpanel"
-				           aria-labelledby="coll_placelist-tab">
-						    {% if seq_places|length > 0 %}
-						      {% for cp in seq_places %}
-						        <div class="col-place-card" id="{{ cp.p.id }}" data-id="{{ cp.p.id }}" data-idx="{{ cp.seq }}">
-								      <p><b>{{ cp.p.title }}</b> {{ cp.p.ccodes }}
-									      <i>pid: (<a class="coll-place" data-pid={{ cp.p.id }} href="#" >{{ cp.p.id }}</a>)</i>
-												{# huge kluge: tooltip breaks for single place!? #}
-								        {% if seq_places|length > 1 %}
-								        <span class="float-end me-3"> <span class="seq-visible">id: {{ p.id }}; seq:{{ p.seq }}</span>
-									        <a class="mark-place" href="#" title="Remove from collection" rel="tooltip"
-                                data-pid="{{ cp.p.id }}" data-col="{{ object.id }}">
-										        <i class="fas fa-minus-square" style="color:#ff8080"></i></a>
-								        </span>
-								        {% else %}
-								        <span class="float-end me-1">
-									        <a class="mark-place" href="#" title="Remove from collection" data-pid="{{ cp.p.id }}"
-                               data-col="{{ object.id }}">
-										        <i class="fas fa-minus-square" style="color:#ff8080"></i></a>
-								        </span>
-								        {% endif %}
-								          {# TODO: CollPlace/TraceAnnotation redundancy issue #}
-										      {% for t in cp.p.traces.all %}
-{#											      {% if t.collection.id == object.id and t.saved and not t.archived %}#}
-											      {% if t.saved and not t.archived %}
-											        <i class="red-head ms-3">annotated</i>
-											      {% endif %}
-										      {% endfor %}
-							        </p>
-							      </div>
-							    {% endfor %}
-						    {% else %}
-							    {% if action == 'update' %}
-								    <p class="larger mb-0 strong">How to add places</p>
-								    <ul>
-										  <li><sr>From a Place Portal page</sr>. Use the Search page to find the place you're looking for,
-		                      navigate to its "Portal Page" and choose <i>one</i> of the attestations found there.</li>
-										      <li><sr>From a public dataset's Browse page</sr>. Find a dataset of interest on the
-											      Public Datasets list, select the "Browse" tab, then select any number of records.
-											      A popup form will offer a list of your collections they can be added to.</li>
-										    <li><sr>From one or more of your own datasets.</sr>. You can add <b>all</b> of the places from
-		                        any of your own datasets. Further instructions are found on Datasets tab to the left of this one.</li>
-								    </ul>
-							    {% endif %}
-							    {% if action == 'create' %}
-
-					        {% endif %}
-						    {% endif %}
-			        </div>
-				    </div> {# builder_content #}
-			      {% endcomment %}
-	        </div> {# builder col-sm-6#}
-	  </div> {# tab_content #}
-    <div class="selector py-3"><div id="helpme"></div></div>
-  </div> {# h-100 #}
-	{% endif %}
-</div> {# container #}
+			</div> {# coll_form #}
+			<div id="coll_builder" class="tab-pane fade h-100" style="height: auto; position:relative;">
+          <h5>Datasets</h5>
+          <p>
+            <span class="me-2">
+              <select id="select_ds" name="ds" class="custom-select-sm" style="width:auto; min-width:150px;">
+              <option value="0">Select dataset</option>
+              <option disabled>___________</option>
+              {% for ds in ds_select %}
+                {% if ds not in coll_dsset %}
+                  <option value="{{ ds.id }}">{{ ds.title }}</option>
+                {% endif %}
+              {% endfor %}
+              </select>
+            </span>
+            <a href="javascript:{ addDataset() }" class="">
+              <i class="fas fa-plus-square linky"></i> add</a>
+          </p>
+          <!-- id, label, title, description, creator, create_date, webpage, numrows, datatype -->
+          <div id="coll_dscards_create">
+            {% if coll_dsset|length == 0 %}<p id="msg" class="font-italic smaller">None yet...</p>{% endif %}
+            {% for d in coll_dsset %}
+              <div class="ds_card">
+                <p class="mb-0"><a href="{% url 'datasets:ds_summary' id=d.id %}">
+	                <span class="ds_title">{{ d.title }}</span></a> <small>({{d.label}}/{{ d.id}})</small>
+                </p>
+                <div class="ds_fields">
+                  <p class="my-1"><b>Description</b>: {{ d.description|truncatechars:150 }}</p>
+                  <p class="my-1"><b>Create date</b>: {{ d.create_date|date:"d M Y" }}</p>
+                  <p class="my-1"><b># rows</b>: {{ d.numrows }}
+                  <a href="{% url 'collection:remove-ds' ds_id=d.id coll_id=object.id %}" class="float-end">
+	                  <i class="fas fa-minus-square" style="color:#336699"></i> remove</a>
+                  </p>
+                </div>
+              </div>
+            {% endfor %}
+          </div> <!-- #coll_dscards_create -->
+			</div> {# coll_builder #}
+		</div> {# #content #}
+  <div class="selector py-3"><div id="helpme"></div></div>
+  {% endif %}
+</div> <!-- container -->
 
 <script type="text/javascript">
-	$("#check_submitter").click(function(e){
-    $("#submitter").toggle()
+  $(function(){
+    dslist=[] // holds ids of selected datasets
+    $( ".textarea" ).each(function(index) {
+      if ( ["None","null"].includes( $(this).val() ) ) {
+        $(this).val('')
+      }
+    });
+
+    $("#id_geojson").attr("placeholder","generated from country codes")
+    
+    // help modals
+    $(".help-matches").click(function(){
+      page=$(this).data('id')
+      {#console.log('help:', page)#}
+      $('.selector').dialog('open');
+    })
+    $(".selector").dialog({
+      resizable: false,
+      autoOpen: false,
+      height: $(window).height() * 0.9,
+      width: $(window).width() * 0.8,
+      title: "WHG Help",
+      modal: true,
+      buttons: { 'Close': function() {console.log('close dialog'); $(this).dialog('close');} },
+      open: function(event, ui) {
+        $('#helpme').load('/media/help/'+page+'.html')
+      },
+      show: {effect: "fade",duration: 400 },
+      hide: {effect: "fade",duration: 400 }
+    });
+  })
+
+	$("#a_linkpopup").click(function(){
+    $("#linkform_popup").fadeIn()
 	})
-	function showChooser(type){
-    elem = "#"+type+"_chooser"
-    $(elem).toggle()
-	}
-
-	$("#build-tab").click(function(e){
-		e.preventDefault()
-		if($("#coll_placelist div").length >0){
-			$("#coll_placelist div:first-child").click()
-		}
-		{#console.log('build tab', $("#coll_placelist div:first-child").data("id"))#}
+	$(".closer").click(function(){
+			$(".pop").fadeOut()
 	})
-
-	$("#btn_coll_submit").click(function(e){
-    e.preventDefault()
-    group_connect('submit')
+	$("#b_createlink").click(function(){
+    create_collection_link()
 	})
-	$("#btn_coll_unsubmit").click(function(e){
-    e.preventDefault()
-    group_connect('unsubmit')
-	})
-
-	// flag collection as submitted, shows up on leader's list
-	function group_connect(action){
-    console.log('submitting collection {{ object.id }} to group '+ $("#id_group").val())
-    var formData = new FormData()
-		formData.append('action', action)
-		formData.append('coll', '{{ object.id }}')
-		formData.append('group', $("#id_group").val())
-		formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
-		$.ajax({
-	      type: 'POST',
-	      enctype: 'multipart/form-data',
-	      url: '{% url "collection:group-connect" %}',
-	      processData: false,
-	      contentType: false,
-	      cache: false,
-	      data: formData,
-	      success:function(response){
-		      if(response.status == 'ok'){
-            console.log(response)
-		      } else {
-						console.log(response)
-		      }
-	      }
-			})
-			// turn submit into unsubmit
-			// display 'Submitted to ' +result['group']+ ' '+{date}
-			{#$("#").val('')#}
-			{#$("#").hide()#}
-	}
-
-	function goBrowse(){
-    window.location = '/collections/{{ object.id }}/browse_pl'
-	}
-
-	function saveExit(){
-    {#console.log('saveExit(callback)')#}
-    {#$.when($("#collection_form").submit()).then(function(){goBrowse()})#}
-    $("#collection_form").submit()
-	}
-
 	function create_collection_link(){
       var formData = new FormData()
 			formData.append('model', 'Collection')
@@ -529,494 +364,35 @@
 			$("#linkform_popup").hide()
 	}
 
-	$("#a_linkpopup").click(function(){
-    $("#linkform_popup").fadeIn()
-	})
 
-	$("#b_createlink").click(function(){
-    create_collection_link()
-	})
-
-	// do something with place name (modal popup?)
-	$(".coll-place").click(function() {
-      {#console.log('place record', $(this).data('pid'));#}
+  $("#btn_coll_submit").click(function(e){
+    // at least two datasets selected?
+    if('{{action}}' == 'create' && dslist.length < 2) {
+      e.preventDefault()
+      $("#msg").html('<h6>Collections must contain at least 2 datasets!</h6>').addClass('strong-red').show()
+    }
   })
 
-	$(".closer").click(function(){
-			$(".pop").fadeOut()
-	})
-
-	// remove places from collection (archiving annotations)
-	function remove_from_collection(coll, pids) {
-      var formData = new FormData()
-      formData.append('collection', coll)
-      formData.append('place_list', pids)
-      formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
-      $.ajax({
-          type: 'POST',
-          enctype: 'multipart/form-data',
-          url: '/collections/archive_traces/',
-          processData: false,
-          contentType: false,
-          cache: false,
-          data: formData,
-          success: function (response) {
-              {#console.log('result:', response)#}
-          }
-      })
-			// remove card from dom & hide link
-			$(".col-place-card").each(function(index) {
-        if ( remove_these.includes( $(this).data('id') ) ) {
-          $(this).remove()
-        }
-      })
-			// update count in tab
-			newcount = $(".col-place-card").length
-			$("#place_count").text(newcount)
-			remove_these = [];
-      $("#a_remove").text('')
-  }
-
-  // remove place(s) from collection
-	$("#a_remove").click(function(){
-		coll = '{{ object.id }}'
-    remove_from_collection(coll, remove_these)
-	})
-
-	// mark/unmark place for removal from collection
-	$(".mark-place").click(function(e){
-    e.stopPropagation()
-    pid = $(this).data('pid')
-		col = $(this).data('col')
-    {#console.log('mark ' + pid + ' in ' + col)#}
-		if(remove_these.indexOf(pid)>-1){
-      console.log('unmarked',pid )
-      // unmark it
-			card = $(".col-place-card[data-id="+pid+"]")
-			card.css('opacity', 1.0)
-			$(".col-place-card[data-id="+pid+"] i.fa-plus-circle")
-		    .addClass('fa-minus-circle')
-		    .removeClass('fa-plus-circle')
-		    .css('color','lightcoral')
-			$(card[0]).find('.restore-place').addClass('remove-place')
-				.removeClass('restore-place')
-			idx = remove_these.indexOf(pid)
-			remove_these.splice(idx,1)
-			$("#a_remove").html('remove '+remove_these.length)
-			if(remove_these.length == 0){$("#a_remove").html('')}
-		} else {
-      // mark for removal
-			console.log('marked', pid, 'added to remove_these')
-			card = $(".col-place-card[data-id="+pid+"]")
-			card.css('opacity', 0.5)
-			$(".col-place-card[data-id="+pid+"] i.fa-minus-circle")
-		    .addClass('fa-plus-circle')
-		    .removeClass('fa-minus-circle')
-		    .css('color','green')
-			$(card[0]).find('.remove-place').addClass('restore-place')
-				.removeClass('remove-place')
-			remove_these.push(pid)
-			$("#a_remove").html('remove '+remove_these.length)
-		}
-	})
-
-	{#$("#btn_coll_update").click(function(e){#}
-  {#  if($(this).value() == 'withdraw')#}
-  {#    e.preventDefault()#}
-  {#    console.log('clicked save, is it submit?', $(this))#}
-  {#    confirm('you sure?')#}
-	{# })#}
-
-	// show/hide editor-restricted options
-  $("#editor_options").hide();
-	$('.show-hide').click(function(e) {
-    $("#editor_options").slideToggle("fast");
-    var val = $(this).html() == "↑" ? "↓" : "↑";
-    {#var val = $(this).html() == "-" ? "+" : "-";#}
-    $(this).hide().html(val).fadeIn("fast");
-    {#$(this).hide().html(val).fadeIn("fast");#}
-    e.preventDefault();
-  });
-
-	// builds link for external place record
-  function url_extplace(identifier) {
-    // abbreviate links not in aliases.base_urls
-    if(identifier.startsWith('http')) {
-      let tag = identifier.replace(/.+\/\/|www.|\..+/g, '')
-      link = '<a href="'+identifier+'" target="_blank">'+tag+'<i class="fas fa-external-link-alt linky"></i>,  </a>'
-    } else {
-    link = '<a href="" class="ext" data-target="#ext_site">'+identifier+'<i class="fas fa-external-link-alt linky"></i></a>, '
-    }
-    return link
-  }
-
-	// builds link for external placetype record
-  function url_exttype(type) {
-    {#console.dir(type)#}
-    link = ' <a href="#" class="exttab" data-id='+type.identifier+
-      '>('+type.label.label+' <i class="fas fa-external-link-alt linky"></i>)</a>'
-    return link
-  }
-
-	// extent of timespan list
-  function minmaxer(timespans){
-    //console.log('got to minmax()',JSON.stringify(timespans))
-    starts=[]; ends=[]
-    for (t in timespans){
-      // gets 'in', 'earliest' or 'latest'
-      starts.push(Object.values(timespans[t].start)[0])
-      ends.push(!!timespans[t].end ? Object.values(timespans[t].end)[0] : -1)
-    }
-    //console.log('starts',starts,'ends',ends)
-    minmax=[Math.max.apply(null, starts),Math.max.apply(null, ends)]
-    return minmax
-  }
-
-  // return html for display
-  function parsePlace(data) {
-    window.featdata = data
-	  trace = JSON.parse(data.traces).find(function(t){return t.fields.collection = "{{ object.id }}"})
-	  if(trace){
-      {#console.log('has trace for this collection', trace.fields)#}
-		  $("#anno_detail").html(JSON.stringify(trace.fields))
-	  } else {
-      {#console.log('no trace for this collection')#}
-	  }
-
-    function onlyUnique(array) {
-      const map = new Map();
-      const result = [];
-      for (const item of array) {
-        if(!map.has(item.identifier)){
-            map.set(item.identifier, true);
-            result.push({
-                identifier: item.identifier,
-                type: item.type,
-                aug: item.aug
-            });
-        }
-      }
-      return(result)
-    }
-    // TITLE
-    descrip = '<p><b>Title</b>: <span id="row_title" class="larger text-danger">'+data.title+'</span>'
-    // NAME VARIANTS
-    descrip+='<p class="scroll65"><b>Variants</b>: '
-    for (n in data.names) {
-      let name = data.names[n]
-      descrip+= '<p>'+name.toponym !=''?name.toponym+'; ': ''
-    }
-    // TYPES
-    // may include sourceLabel:"" **OR** sourceLabels[{"label":"","lang":""},...]
-    // console.log('data.types',data.types)
-    //{"label":"","identifier":"aat:___","sourceLabels":[{"label":" ","lang":"en"}]}
-    descrip+='</p><p><b>Types</b>: '
-    typeids = ''
-    for (t in data.types) {
-      str = ''
-      var type = data.types[t]
-      {#console.log('type',type)#}
-      if('sourceLabels' in type){
-        srclabels = type.sourceLabels
-        for(l in srclabels){
-          label = srclabels[l]['label']
-          str = label !='' ? label + '; ' : ''
-        }
-      } else if ('sourceLabel' in type) {
-        str = type.sourceLabel !='' ? type.sourceLabel + '; ' : ''
-      }
-      if(type.label!=''){
-        str += url_exttype(type) + ' '
-      }
-      typeids+=str
-    }
-    descrip += typeids.replace(/(; $)/g, "") +'</p>'
-
-    // LINKS
-    //
-    descrip += '<p class="mb-0"><b>Links</b>: <i>original: </i>'
-    close_count = added_count = related_count = 0
-    html_close = html_added = html_related = ''
-    if (data.links.length > 0) {
-      links=data.links
-      links_arr = onlyUnique(data.links)
-      {#console.log('distinct data.links',links_arr)#}
-      for (l in links_arr) {
-        //console.log('link',links_arr[l])
-        if (links_arr[l].aug == true) {
-          added_count +=1
-          html_added += url_extplace(links_arr[l].identifier)
-        } else {
-          close_count +=1
-          html_close+=url_extplace(links_arr[l].identifier)
-        }
-      }
-      descrip += close_count > 0 ? html_close : 'none; '
-      descrip += added_count > 0 ? '<i>added</i>: '+html_added : '<i>added</i>: none'
-    } else { descrip += "<i class='small'>no links established yet</i>" }
-    descrip += '</p>'
-
-    // RELATED
-    //right=''
-    if (data.related.length > 0) {
-      parent='<p class="mb-0"><b>Parent(s)</b>: ';
-      related='<p class="mb-0"><b>Related</b>: ';
-      for (r in data.related){
-        rel = data.related[r]
-        //console.log('rel',rel)
-        if (rel.relation_type == 'gvp:broaderPartitive'){
-          parent += '<span class="h1em">'+rel.label
-          parent += 'when' in rel && !('timespans' in rel.when) ?
-            ', '+rel.when.start.in+'-'+rel.when.end.in :
-            'when' in rel && ('timespans' in rel.when) ? ', '+
-              minmaxer(rel.when.timespans) : ''
-              //rel.when.timespans : ''
-          parent += '</span>; '
-        }
-        else {
-          related += '<p class="small h1em">'+rel.label+ ', '+rel.when.start.in+'-'+rel.when.end.in+'</p>'
-        }
-      }
-      descrip+=parent.length > 39 ? parent :''
-      descrip+=related.length > 37 ? related :''
-    }
-
-    // DESCRIPTIONS
-    // TODO: link description to identifier URI if present
-    if (data.descriptions.length > 0) {
-      val = data.descriptions[0]['value'].substring(0,300)
-      descrip+='<p><b>Description</b>: '+(val.startsWith('http')?'<a href="'+val+'" target="_blank">Link</a>':val)
-        +' ... </p>'
-        //'<br/><span class="small red-bold">('+data.descriptions[0]['identifier']+')</span>
-    }
-
-    // CCODES
-    //
-    //if (data.ccodes.length > 0) {
-    if (!!data.countries) {
-      //console.log('data.countries',data.countries)
-      descrip+='<p><b>Modern country bounds</b>: '+ data.countries.join(', ')+'</p>'
-    }
-
-    // MINMAX
-    //
-    //console.log('data.minmax',data.minmax)
-    mm=data.minmax
-    if(data.minmax && !(mm[0] == null && mm[1] == null)) {
-      descrip += '<p><b>When</b>: earliest: '+data.minmax[0]+'; latest: '+data.minmax[1]
-    }
-
-    // TRACES
-	  trace=JSON.parse(data.traces).find(function(t){
-          return t.fields.collection = "{{ object.id }}"})
-
-    // if geom(s) and 'certainty', add it
-    if(data.geoms.length >0){
-      cert = data.geoms[0].certainty
-      if(cert != undefined ){
-        descrip += '<p><b>Location certainty</b>: '+cert+'</p>'
-      }
-    }
-    descrip += '</div>'
-    return descrip
-  }
-
-  function getAnno(pid){
-    let coll_id = "{{ object.id }}"
-	  // traces.views.get_form()
-	  // returns TraceAnnotationForm; w/instance if trace_annotation record exists & not archived, else empty
-		const url = "/collections/annoform/?c="+'{{ object.id }}'+"&p="+pid
-    fetch(url)
-      .then(function (response) {
-        return response.json();
-      })
-      .then(function (data) {
-        const formContainer = document.querySelector("#annotator");
-        formContainer.innerHTML = data.form;
-        $("[rel='tooltip']").tooltip();
-        $("#keyword_color").html('#keyword_color')
-      })
-  }
-
-  $(".col-place-card").click(function(){
-		// clear highlights
-    $(".col-place-card").removeClass('card-highlight')
-	  // current index
-	  {#console.log('idx', $(this).data('idx'))#}
-	  // get pid
-    let pid = $(this).data('id')
-	  {#console.log('clicked $(this), pid', $(this), pid)#}
-		card=$(this).addClass('card-highlight')
-	  // position of clicked card
-	  cardtop = card.offset().top
-	  sessionStorage.setItem('cardtop', cardtop)
-	  // position of list scroller
-	  scrolltop = $("#coll_placelist").scrollTop()
-	  sessionStorage.setItem('scrolltop', scrolltop)
-	  // permanent position of list on page
-	  listtop = $("#coll_placelist").offset().top
-	  offset = cardtop+scrolltop-listtop
-	  sessionStorage.setItem('offset', offset)
-	  {#console.log('offset',offset)#}
-	  {#console.log('cardtop, scrolltop, listtop',#}
-		{#	  cardtop, scrolltop, listtop )#}
-	  getAnno(pid)
-  })
-
-  $(function(){
-    $("#id_group option:first").text('None')
-    $("#id_group").change(function(){
-      if($("#id_group").val() == ""){
-        $("#btn_coll_update").attr('value','Withdraw')
-	      $("#submit_prompt").fadeOut()
-      } else {
-        $("#btn_coll_update").attr('value','Submit')
-      }
-      console.log('changed group setting')
-    })
-		$("#coll_placelist div:first-child").click()
-		var cardList = $('#coll_placelist');
-		{#var panelList = $('#draggablePanelList');#}
-		cardList.sortable({
-			// Only make the .panel-heading child elements support dragging.
-			// Omit this to make then entire <li>...</li> draggable.
-			{#handle: '.row-handle',#}
-			axis:'y',
-			update: function(event, ui) {
-				{#console.log('$(this)', $(this))#}
-				{#console.log('$(elem)', $(elem))#}
-				new_sequence={}
-				$('.col-place-card', cardList).each(function(index, elem) {
-					id = $(elem).data('id')
-					new_sequence[id] = index
-					$("#"+id+" .seq-visible").text("id: "+id+"; seq: "+index)
-				 });
-				// Persist the new indices.
-        {#console.log('new_sequence', new_sequence)#}
-				var formData = new FormData()
-				formData.append('coll_id', {{object.id}})
-				formData.append('seq', JSON.stringify(new_sequence))
-				formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
-        $.ajax({
-	        type: 'POST',
-		      {#enctype: 'multipart/form-data',#}
-          url: '{% url "collection:update-sequence" %}',
-		      processData: false,
-		      contentType: false,
-		      cache: false,
-          data: formData,
-          dataType: "json",
-          async: false,
-          success: function (result) {
-            console.log('result', result)
-          }
-      });
-			}
-	 })
-    // TODO: change text depending on state
-    // scroll to place w/last saved annotation
-    offset = sessionStorage.getItem('offset')
-		$("#coll_placelist").scrollTop(offset)
-
-	  window.remove_these = []
-		$("[rel='tooltip']").tooltip();
-    $(".nav-link").click(function(){
-			  var tab = $(this).data('id')
-			  {#console.log(tab)#}
-			  if(tab == 'ds'){
-					  $("#coll_right_anno").addClass('hidden')
-					  {#$("#coll_right_intro").removeClass('hidden')#}
-			  } else {
-					  {#console.log('show anno header if there are place cards')#}
-					  if($("#coll_placelist").children(".col-place-card").length > 0){
-              $("#coll_right_anno").removeClass('hidden')
-					  }
-					  {#$("#coll_right_intro").addClass('hidden')#}
-			  }
-	  })
-
-    dslist=[]
-    $( ".textarea" ).each(function(index) {
-      if ( ["None","null"].includes( $(this).val() ) ) {
-        $(this).val('')
-      }
-    });
-
-    $("#id_geojson").attr("placeholder","generated from country codes")
-
-    // help modals
-    $(".help-matches").click(function(){
-      page=$(this).data('id')
-      {#console.log('help:', page)#}
-      $('.selector').dialog('open');
-    })
-
-    $(".selector").dialog({
-      resizable: false,
-      autoOpen: false,
-      height: $(window).height() * 0.9,
-      width: $(window).width() * 0.8,
-      title: "WHG Help",
-      modal: true,
-      buttons: { 'Close': function() {console.log('close dialog'); $(this).dialog('close');} },
-      open: function(event, ui) {
-        $('#helpme').load('/media/help/'+page+'.html')
-      },
-      show: {effect: "fade",duration: 400 },
-      hide: {effect: "fade",duration: 400 }
-    });
-  })
-
-	$("#select_ds").change(function(){
-    {#console.log('selected from list', $(this).val())#}
-		$("further_explanation").hide()
-		{#if($("a.active").data('id') == 'pl' ){#}
-		if($("a.active").data('id') == 'pl' && '{{ place_list }}'){
-      $("#col_right_anno").fadeIn()
-				{#console.log('active', $("a.active").data('id'),'{{ place_list|length }}' )#}
-		}
-		addDataset('create')
-	})
-	//
   function listDataset(d) {
     {#console.log('listing this:', d.title)#}
     dslist.push(d.id)
     $("#id_datasets [value=" + d.id + "]").attr("checked", "checked");
-    coll_id={{ object.id }}
     card='<div class="ds_card" id="card_'+d.id+'">'
         +'<p class="mb-0"><a href="#"><span class="ds_title">'+d.title+'</span></a> ('+d.label+'/'+d.id+')</p>'
         +'<div class="ds_fields">'
           +'<p class="my-1"><b>Description</b>: '+d.description+'</p>'
-          +'<p class="my-1"><b>Create date</b>: '+d.create_date.slice(0,10)+'; <b># rows</b>: '+d.numrows+'</p>'
-          +'<p class="my-1"><a href="javascript:{ removeDataset('+d.id+') }">'
+          +'<p class="my-1"><b>Create date</b>: '+d.create_date+'</p>'
+          +'<p class="my-1"><b># rows</b>: '+d.numrows 
+            +'<a href="javascript:{ removeDataset('+d.id+') }" class="float-end">'
               +'<i class="fas fa-minus-square" style="color:#336699"></i> remove</a>'
-		          +'<span class="float-end"><a class="a_addplaces" href="javascript:{addPlaces('+d.id+')}">add all '
-		          +d.numrows+' places</a></span'
-		      +'</p></div></div>'
-		$(".a_addplaces").click(function(){
-		  thisy = $(this)
-		  {#console.log('thisy', thisy)#}
-		})
+          +'</p></div></div>'
     $("#coll_dscards_create").append(card)
     // console.log(card)
   }
 
-	// adds all dataset places to placelist
-	function addPlaces(dsid){
-		let url = "/collections/add_ds/"+"{{ object.id }}"+"/"+dsid
-		// collection.views.add_dataset
-		{#console.log('adding dataset w/o save',dsid, {{ object.id }}, url)#}
-		document.location.href = url
-		{#url = "{% url 'collection:add-ds' ds_id="+dsid+" coll_id=456 %}"#}
-		{#document.location.href = url.replace('123', dsid).replace('456',{{ object.id }})#}
-		{#)#}
-		{#$("#collection_form").submit('remain')#}
-	}
-
-  // lists dataset on dropdown select
-  function addDataset(action) {
-    {#console.log('selected', $("#select_ds").val())#}
-
+  // adds, displays single dataset
+  function addDataset() {
+    console.log('selected', $("#select_ds").val())
     $.get("/collections/list_ds", {ds_id:$("#select_ds").val()},
       function(data){
         // render to html
@@ -1028,26 +404,30 @@
     $("#select_ds").val(0)
     $("#msg").html('').hide()
   }
-
   function clearDataset(dsid){
     {#console.log('clear card for ds', dsid)#}
     $("#card_"+dsid).remove()
   }
-
   function removeDataset(dsid) {
-    {#console.log('removing ' + dsid + 'from collection '+ "{{object.id}}")#}
-    $("#id_datasets [value=" + dsid + "]").prop("checked", false);
-    let idx = dslist.indexOf(dsid)
-    dslist.splice(idx, dslist.length);
-    card = "#card_"+dsid
-    $(card).remove()
-    if(dslist.length == 0 ){ $("#msg").html('None yet...').show()}
-    {#console.log('removed '+dsid+' from dslist[] and dom')#}
+    if("{{ action }}" == 'update') {
+      {#console.log('removing ' + dsid + 'from collection '+ "{{object.id}}")#}
+      $.ajax("/collections/remove_ds/{{object.id}}/"+dsid,
+        function(result){
+          {#console.log('removeDataset() result', result)#}
+      });
+    } else {
+      $("#id_datasets [value=" + dsid + "]").prop("checked", false);
+      let idx = dslist.indexOf(dsid)
+      dslist.splice(idx, dslist.length);
+      card = "#card_"+dsid
+      $(card).remove()
+      if(dslist.length == 0 ){ $("#msg").html('None yet...').show()}
+      {#console.log('removed '+dsid+' from dslist[] and dom')#}
+    }
     // reset select
     $("#select_ds").val(0)
   }
-
 </script>
 
-{% endblock %} {# content #}
+{% endblock %}
 

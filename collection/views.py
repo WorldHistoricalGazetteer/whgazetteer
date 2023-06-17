@@ -849,6 +849,7 @@ class DatasetCollectionSummaryView(DetailView):
     context['whgteam'] = User.objects.filter(groups__name='whg_team')
 
     context['ds_list'] = datasets
+    context['links'] = Link.objects.filter(collection=id_)
     context['bboxes'] = bboxes
     return context
 
@@ -891,6 +892,7 @@ class DatasetCollectionBrowseView(DetailView):
     placeset = coll.places.all()
     context['places'] = placeset
     context['ds_list'] = coll.ds_list
+    context['links'] = Link.objects.filter(collection=id_)
     context['updates'] = {}
     context['coll'] = coll
     context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False

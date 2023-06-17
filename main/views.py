@@ -47,7 +47,7 @@ def is_url(url):
 """
 def create_link(request, *args, **kwargs):
   if request.method == 'POST':
-    print('main.create_link() request', request.POST)
+    print('main.create_link() request.POST', request.POST)
     model = request.POST['model']
     objectid = request.POST['objectid']
 
@@ -62,7 +62,7 @@ def create_link(request, *args, **kwargs):
     # Collection or CollectionGroup
     # from django.apps import apps
     Model = apps.get_model(f"collection.{model}")
-    # print('Model', Model)
+    print('Model', Model)
     model_str=model.lower() if model == 'Collection' else 'collection_group'
     obj = Model.objects.get(id=objectid)
     gotlink = obj.related_links.filter(uri=uri)
@@ -72,6 +72,7 @@ def create_link(request, *args, **kwargs):
     # columns in Links table
     # collection_id, collection_group_id, trace_annotation_id, place_id
     if not gotlink:
+      print('not got_link')
       try:
         link=Link.objects.create(
           **{model_str:obj}, # instance identifier

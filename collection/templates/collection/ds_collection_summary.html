@@ -54,12 +54,20 @@
 		        <tr><td><b>Title</b></td><td class="larger strong">{{ object.title }}</td></tr>
 		        <tr><td><b>Description</b></td><td>{{ object.description|readmore:200|safe }}</td></tr>
 		        <tr><td><b>Keywords</b></td><td>{{ object.keywords|join:', ' }}</td></tr>
+		        {% if links|length > 0 %}
+			        <tr><td><b>Links</b></td>
+				        <td>
+					        {% for l in links %}
+						        <a href="{{ l.uri }}" target="_blank">{{ l.label }}</a>;
+					        {% endfor %}
+				        </td></tr>
+		        {% endif %}
 		        {% if object.webpage %}
 		        <tr><td><b>Webpage</b></td><td>
 		          <a href="{{object.webpage }}" target="_blank">link <i class="fas fa-external-link-alt linky"></i></a>
 		        </td></tr>
 		        {% endif %}
-		        {% if object.contact %}
+		        {% if object.creator %}
 		          <tr><td><b>Creator(s)</b></td><td>{{ object.creator }}</td></tr>
 		        {% endif %}
 		        {% if object.contact %}
@@ -67,8 +75,16 @@
 		        {% endif %}
 		        </table>
 	        </div>
-	        <div class="col-sm-4">
-		        <img class="img-responsive thumbnail" src="/media/{{ object.image_file.name }}" />
+	        <div class="col-sm-4" style="max-height: 200px; position:relative;">
+		        {% if object.image_file %}
+			        <a href="#" class="pop">
+		        <img id="active_img" class="img-responsive thumbnail"
+		             src="/media/{{ object.image_file.name }}" width="220px" />
+			        </a>
+		        {% else %}
+		        <span><i>image here</i></span>
+		        {% endif %}
+{#		        <img class="img-responsive thumbnail" src="/media/{{ object.image_file.name }}" />#}
 {#		        <img src="/media/{{ object.image_file.name }}" width="200"/>#}
 					</div>
 	      </div> <!-- #coll_meta -->
@@ -76,14 +92,16 @@
 	        {% leaflet_map "map_coll" callback="map_init" %}
 	      </div>
 	    </div> <!-- #coll_left -->
-	    <div  id="coll_dslist" class="col-sm-5 mt-2">
+	    <div id="coll_dslist" class="col-sm-5 mt-2">
 	      <!-- dataset bboxes to js ('gelems') -->
 	      {% for g in bboxes %}
 	        {{ g|safe|json_script:g.properties.id }}
 	      {% endfor %}
 	      <div>
 	        <h5>Datasets ({{ds_list|length}})<span class="small float-end me-2">
-	          <i class="fas fa-download linky"></i> <a href="" id="a_download_modal" data-dsid = {{ object.id }} data-toggle="modal" data-target="#downloadModal" title="download options"> download options</a></span>
+	          <i class="fas fa-download linky"></i>
+		        <a href="" id="a_download_modal" data-dsid ="{{ object.id }}" data-toggle="modal"
+		           data-target="#downloadModal" title="download options"> download options</a></span>
 	        </h5>
 	        <!-- fields: id, label, title, description, creator, create_date, webpage, numrows, datatype -->
 	        <div id="coll_dscards">
