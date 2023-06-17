@@ -729,7 +729,9 @@ class CollectionGroupGalleryView(ListView):
 class DatasetCollectionCreateView(LoginRequiredMixin, CreateView):
   # print('hit DatasetCollectionCreateView()')
   form_class = CollectionModelForm
-  template_name = 'collection/ds_collection_builder.html'
+  # template_name = 'collection/ds_collection_builder.html'
+  # TODO: new ds collection builder
+  template_name = 'collection/ds_collection_build.html'
   queryset = Collection.objects.all()
 
   def get_success_url(self):
@@ -778,7 +780,8 @@ class DatasetCollectionCreateView(LoginRequiredMixin, CreateView):
 """
 class DatasetCollectionUpdateView(UpdateView):
   form_class = CollectionModelForm
-  template_name = 'collection/ds_collection_builder.html'
+  # template_name = 'collection/ds_collection_builder.html'
+  template_name = 'collection/ds_collection_build.html'
   success_url = '/mycollections'
 
   def get_object(self):
