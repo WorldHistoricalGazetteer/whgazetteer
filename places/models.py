@@ -103,7 +103,6 @@ class Place(models.Model):
           models.Index(fields=['src_id', 'dataset']),
         ]
 
-
 class Type(models.Model):
   aat_id = models.IntegerField(unique=True)
   parent_id = models.IntegerField(null=True,blank=True)
@@ -180,8 +179,10 @@ class PlaceGeom(models.Model):
   # Source is not used
   geom_src = models.ForeignKey(Source, null=True, db_column='geom_src',
                                  to_field='src_id', on_delete=models.SET_NULL)
-  # TODO: 
+
   geom = geomodels.GeometryField(null=True, blank=True, srid=4326)
+
+  h3 = ArrayField(models.CharField(max_length=15, blank=True,null=True), null=True)
 
   # informs dataset last_update
   created = models.DateTimeField(null=True, auto_now_add=True)
