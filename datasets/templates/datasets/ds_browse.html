@@ -349,6 +349,17 @@
     })
   }
 
+  //
+	function setYearFilter(year) {
+	    mappy.setFilter('gl_active_poly', ['all',
+	        ['<=', 'min', parseInt(year)],
+	        ['>=', 'max', parseInt(year)]
+	    ]);
+	    mappy.setFilter('outline', ['all',
+	        ['<=', 'min', parseInt(year)],
+	        ['>=', 'max', parseInt(year)]
+	    ]);
+	}
   // called by table row click
   function highlightFeatureGL(pid, geom, coords){
     {#console.log('pid, coords',pid, coords);#}
