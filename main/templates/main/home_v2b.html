@@ -13,7 +13,10 @@
 <div class="container mt-1" style="height: calc(100vh - 90px);">
 	<div id="banner" class="banner-bare w-100 my-1 p-2">
 		{% if request.user_agent.is_mobile %}
-	      Do stuff here...
+			  <span class="title mb-0">
+				  <img src="{% static 'images/whg_logo.svg'%}" class="d-inline-block align-bottom mr-2" height=80 width=80 alt=""/>
+				  World Historical Gazetteer
+			  </span>
 		{% else %}
 			<div class="centered w-100">
 			  <span class="title mb-0">
