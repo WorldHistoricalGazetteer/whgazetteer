@@ -729,13 +729,13 @@ def parsePlace(place, attr):
 def repair2():
   from django.db import connection
   cursor1 = connection.cursor()
-  cursor1.execute("SELECT aat_id FROM placetypes where fclass is not null")
+  cursor1.execute("SELECT aat_id FROM types where fclass is not null")
   raw=cursor1.fetchall()
   aatlist = [x[0] for x in raw]
   with connection.cursor() as cursor2:
     # cursor2 = connection.cursor()
     for a in aatlist:
-      cursor2.execute("SELECT fclass FROM placetypes where aat_id = %s", [a])
+      cursor2.execute("SELECT fclass FROM types where aat_id = %s", [a])
       fc = [cursor2.fetchone()[0]]
       q_update = {"script": {
         "source": "ctx._source.fclasses = params.fc",

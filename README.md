@@ -6,7 +6,7 @@ WHG is aggregating attestations of historical place references contributed by re
 
 ### Contributing to software and data development
 
-WHG is an open-source project. Please see [this document](docs/contributing_dev.md) for an overview of how to participate in the several aspects of WHG development. Specific tasks in our long TODO queue will be added as GitHub issues soon. 
+WHG is an open-source project. Please see [this document](docs/contributing_dev.md) for an overview of how to participate in the several aspects of WHG development. Some categories of tasks in our long TODO queue are listed as GitHub issues. For a description of the stack, and an outline of the data pipeline, workflow, and platform functionality, see [this page](docs/stack_howitworks.md) 
 
 ### Change log
 
