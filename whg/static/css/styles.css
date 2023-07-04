@@ -89,13 +89,14 @@ label {vertical-align:text-top;}
   transform: translateY(-50%);
 }
 .img-responsive {
-  max-width: 100%;
+  max-width: 80%;
+  /*max-width: 100%;*/
   max-height: 100%;
   height: auto;
   width: auto;
   position:absolute;
   top: 50%;
-  right: 30%;
+  right: 50%;
   transform: translate(50%, -50%);
 }
 .ital {font-style: italic;}

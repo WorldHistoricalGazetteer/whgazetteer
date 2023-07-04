@@ -67,6 +67,12 @@
 		          <a href="{{object.webpage }}" target="_blank">link <i class="fas fa-external-link-alt linky"></i></a>
 		        </td></tr>
 		        {% endif %}
+		        <tr>
+			        <td><b>Essay(s)</b></td>
+			        <td><a href="/media/{{ object.file }}" target="_blank"> <i class="fas fa-file-pdf linky"></i>
+						        {{ object.file.name|filename }}</a></td>
+		        </tr>
+		        {{ object.file }}
 		        {% if object.creator %}
 		          <tr><td><b>Creator(s)</b></td><td>{{ object.creator }}</td></tr>
 		        {% endif %}

@@ -15,6 +15,7 @@ media/data/
 media/datasets/
 media/downloads/
 media/resources/
+media/scratch/
 media/user*
 
 */migrations/0*.py

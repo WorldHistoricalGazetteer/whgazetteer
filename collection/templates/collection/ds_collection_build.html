@@ -63,12 +63,16 @@
 		    <button class="nav-link" id="build-tab" data-bs-toggle="tab" data-bs-target="#coll_builder"
           type="button" role="tab" aria-controls="coll_builder" aria-selected="false">Add and manage datasets</button>
 		  </li>
-		  {% comment %}
+
+		  <li class="nav-item" role="presentation">
+		    <button class="nav-link" id="conflator-tab" data-bs-toggle="tab" data-bs-target="#coll_conflator"
+          type="button" role="tab" aria-controls="coll_conflator aria-selected="false">Conflator</button>
+		  </li>
 		  <li class="nav-item" role="presentation">
 		    <button class="nav-link" id="collaborators-tab" data-bs-toggle="tab" data-bs-target="#coll_collaborators"
           type="button" role="tab" aria-controls="coll_collaborators" aria-selected="false">Collaborators</button>
 		  </li>
-		  {% endcomment %}
+
 		  {% endif %}
 		</ul>
 		<div id="content" class="tab-content">
@@ -277,6 +281,13 @@
             {% endfor %}
           </div> <!-- #coll_dscards_create -->
 			</div> {# coll_builder #}
+			<div id="coll_conflator" class="tab-pane fade h-100" style="height: auto; position:relative;">
+				<h4>Conflator tool</h4>
+				<p><img src="{% static 'images/conflator-wireframe.png'%}" width="90%" ></p>
+			</div>
+			<div id="coll_collaborators" class="tab-pane fade h-100" style="height: auto; position:relative;">
+				<h4>Add collection collaborators</h4>
+			</div>
 		</div> {# #content #}
   <div class="selector py-3"><div id="helpme"></div></div>
   {% endif %}
