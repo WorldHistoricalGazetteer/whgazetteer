@@ -10,7 +10,7 @@
 - Kibana 7.17.1 (8.6.2)
 - Celery 4.4.7 (5.2.7)
 - Redis 3.5.3 (4.5.2)
-- Nginx on Ubuntu 22.10 (Digital Ocean)
+- Nginx on Ubuntu 22.10 @ Digital Ocean
 - _see req397.txt_
 
 ### Frontend
@@ -19,6 +19,7 @@
 - Bootstrap 4.6.0 (5.2.3)
 - JQuery 3.6.0 (3.6.3)
 - JQuery UI 1.13.2
+- Plain old vanilla JavaScript
 - Leaflet (django-leaflet; numerous add-ons)
 - Mapbox GL JS 1.15.0 (1.5)
 - MapLibre GL JS 1.15.2
@@ -34,14 +35,15 @@
 - Uploaded data must be in either [Linked Places](https://github.com/LinkedPasts/linked-places-format) or [LP-TSV](https://github.com/LinkedPasts/linked-places-format/blob/main/tsv_0.4.md) format
 - Upon upload, data is validated; if invalid, errors may or may not be returned to GUI. If not, email goes to user and site admin: 'look into this'
   - validation uses json schemas (+frictionless.py for delimited) and is buggy
+  - data from either format is written to a normalized database schema: *places*, and *place\_name*, *place\_type*, *place\_geom*, etc. with FK to *places*.
 - **Contribution pipeline** (users or WHG staff):
   - upload file to create dataset
   - reconcile data against internal Wikidata index (3.5m place records; 2021)
-    - a Celery task, email to user when complete 
+  		- a Celery task, email to user when complete 
   - review reconciliation results, decide on candidate matches
   - request publication (editor ensures adequate metadata)
   - "accessioning": reconcile against WHG "union index," linking individual records across datasets using Elasticsearch parent/child pattern
-    - a Celery task, email to user when complete 
+    	- a Celery task, email to user when complete 
   - review accessioning candidate matches until complete
   - dataset owners can add registered users in either a "member" or "co-owner" role to assist with review, e.g. 
 - **Collections**:
@@ -50,8 +52,9 @@
     - _Dataset Collections_ are sets of datasets, and a means for an individual or a group creating a "Gazetteer of {_some region_}"
 - **Search**: two modes
   - _against the union index_ (searches "parent" records, returns parents and children)
-    - results are listed and link to a Place Portal page, where all indexed attestations for a place are assemmbled
+    	- results are listed and link to a Place Portal page, where all indexed attestations for a place are assembled
   - _against the database_ (public records only; much slower)
+	  - each database record has its own landing page (e.g. [Abydos](https://whgazetteer.org/places/81010/detail))
 - **Browse**:
   - Public datasets are listed and each has a browse screen w/tabs for a) metadata and b) records table + map
     - Each individual place in a public dataset has its own display page
