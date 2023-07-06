@@ -31,7 +31,7 @@
 - Anonymous users can browse the site, view public data
 
 - The main data store is a PostgreSQL database 'whgv2'
-	- As of July 2023 there are 2.325 million place records in the database, 1.95m of those are public, and have among them 3.17m names. Of those, 1.92m are linked within the WHG "union index."
+    - As of July 2023 there are 2.325 million place records in the database, 1.95m of those are public, and have among them 3.17m names. Of those, 1.92m are linked within the WHG "union index."
 - Django "apps" folders organize the code generally: whg (root), datasets, places, collection, resources, search, areas, api, elastic, accounts, allauth
 - Registered users can upload data files to db as new "datasets", and work with them in their private workspace
 - Uploaded data must be in either [Linked Places](https://github.com/LinkedPasts/linked-places-format) or [LP-TSV](https://github.com/LinkedPasts/linked-places-format/blob/main/tsv_0.4.md) format
@@ -42,25 +42,24 @@
 - **Contribution pipeline** (users or WHG staff):
   - upload file to create dataset
   - reconcile data against internal Wikidata index (3.5m place records; 2021)
-  		- a Celery task, email to user when complete 
+          - a Celery task, email to user when complete 
   - review reconciliation results, decide on candidate matches
   - request publication (editor ensures adequate metadata)
   - datasets augmented with geometry and authority identifiers from the reconciliation process can be downloaded at any time for various uses.
   - "accessioning": reconcile against WHG "union index," linking individual records across datasets using Elasticsearch parent/child pattern
-    	- a Celery task, email to user when complete 
+        - a Celery task, email to user when complete 
   - review accessioning candidate matches until complete
   - dataset owners can add registered users in either a "member" or "co-owner" role, e.g. to assist with the review step.
 - **Collections**:
-  - registered users can create 2 kinds of collections - private at first, then ask that they be made public
-  
-    	- _Place Collections_ are sets of place records in the system drawn from any datasets. They are especially applicable to teaching scenarios and features for managing classes and/or workshops are in development. Records in a Place Collection can be annotated with comments, dates, keywords, and the collection itself typically includes an image, multiple external links, and a PDF essay. 
-    	- _Dataset Collections_ are sets of datasets, and a means for an individual or a group creating a "Gazetteer of {_some region_}"
-    - significant enhancements to both kinds of collections are in development for v3 (alpha early 2024)
+  - registered users can create 2 kinds of collections - private at first, then ask that they be made public 
+    - _Place Collections_ are sets of place records in the system drawn from any datasets. They are especially applicable to teaching scenarios and features for managing classes and/or workshops are in development. Records in a Place Collection can be annotated with comments, dates, keywords, and the collection itself typically includes an image, multiple external links, and a PDF essay. 
+    - _Dataset Collections_ are sets of datasets, and a means for an individual or a group creating a "Gazetteer of {_some region_}"
+  - significant enhancements to both kinds of collections are in development for v3 (alpha early 2024)
 - **Search**: there are two modes of search...
   - _against the union index_ (searches "parent" records, returns parents and children)
-    	- results are listed and each links to a Place Portal page, where all indexed attestations for a place are assembled
+        - results are listed and each links to a Place Portal page, where all indexed attestations for a place are assembled
   - _against the database_ (public records only; much slower)
-	  - each database record has its own landing page (e.g. [Abydos](https://whgazetteer.org/places/81010/detail))
+      - each database record has its own landing page (e.g. [Abydos](https://whgazetteer.org/places/81010/detail))
 - **Browse**:
   - Public datasets are listed and each has a browse screen w/tabs for a) metadata and b) records table + map
     - Each individual place in a public dataset has its own display page
