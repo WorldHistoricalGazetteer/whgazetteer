@@ -86,6 +86,7 @@
           {% for t in tasks %}
 	          <!-- task-box -->
 	          {% with test=t.task_kwargs|parsejson:"test" %}
+	          <!-- style if test -->
 	          <div class="{% if test == 'on' %}task-box-test{% else %}task-box{% endif %} mb-2 ">
                 <div class="row ">
                   <div class="col-sm-4">
@@ -129,6 +130,7 @@
                     </p>
                     <span id="spinner"></span>
                     <ul>
+{#                      {% if t.result|get:"pass0" > 0 and t.task_name != "align_idx" and user in ds.owners or editorial %}#}
                       {% if t.result|get:"pass0" > 0 and t.task_name != "align_idx" and user in ds.owners or editorial %}
                         <li id="pass0_{{t.task_id}}" class="li-left">Pass 0 (matched links):
                         <span class="mx-2 strong" id='{{t.task_id}}_0'>nn</span> 
@@ -139,7 +141,8 @@
                           {% elif t.task_name == 'align_wdlocal'%}
                           | <a href="{% url 'datasets:wd_pass0' tid=t.task_id %}">auto-accept</a>
                           {% endif %}
-                         <span class="help-matches" data-id="auto-match">{% fontawesome_icon 'question-circle' color='#993333' %}</span>
+                         <span class="help-matches" data-id="auto-match">
+	                         {% fontawesome_icon 'question-circle' color='#993333' %}</span>
                          </span>
                          </li>
                       {% elif t.task_name == "align_idx" %}
@@ -148,7 +151,7 @@
                           <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='0and1' %}">review</a>
                       {% endif %}
 
-                      {% if t.result|get:"pass1" > 0 and t.task_name != "align_idx"%}
+                      {% if t.result|get:"pass1" > 0 and t.task_name != "align_idx" or test %}
 	                      <li class="li-left">Pass 1:
                           <span class="strong mx-2" id='{{t.task_id}}_1'>nn</span>
                           <a href="{% url 'datasets:review' pk=ds.id tid=t.task_id passnum='pass1' %}">review</a>

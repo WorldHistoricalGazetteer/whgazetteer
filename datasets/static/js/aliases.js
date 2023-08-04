@@ -6,6 +6,7 @@ base_urls = {
     "dplace": "http://dplace.org/societies/",
     "gn": "http://www.geonames.org/",
     "gnd": "https://d-nb.info/gnd/",
+    "gnis": "https://edits.nationalmap.gov/apps/gaz-domestic/public/gaz-record/",
     "gov": "http://gov.genealogy.net/",
     "loc": "http://id.loc.gov/authorities/names/",
     "pl": "https://pleiades.stoa.org/places/",

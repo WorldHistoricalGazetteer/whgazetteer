@@ -694,23 +694,45 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
       ]
   }}}
 
-  # base query
+
+  # ORIGINAL base query
+  # qbase = {"query": {
+  #   "bool": {
+  #     "must": [
+  #       {"terms": {"variants.names":variants}}
+  #     ],
+  #     # boosts score if matched
+  #     "should":[
+  #       {"terms": {"authids": qobj['authids']}}
+  #     ],
+  #     "filter": []
+  #   }
+  # }}
+  #
+
+
+  # ALTERNATE, 04 Aug 2023
+  # Initialize qbase
   qbase = {"query": {
     "bool": {
       "must": [
-        # mapping change locally
-        # {"terms": {"variants.names.sim":variants}}
-        # {"terms": {"variants.names.raw":variants}}
-        {"terms": {"variants.names":variants}}
+        {"bool": {
+          "should": [],
+          "minimum_should_match": 1
+        }}
       ],
-      # boosts score if matched
-      "should":[
-        {"terms": {"authids": qobj['authids']}}
-      ],
-      "filter": []
+      "filter": [],
+      "should": []
     }
   }}
-  
+
+  # Add a match query for each variant to the nested bool query
+  for variant in variants:
+    qbase["query"]["bool"]["must"][0]["bool"]["should"].append(
+      # {"match": {"variants.names": {"query": variant, "fuzziness": "AUTO"}}}
+      {"match_phrase": {"variants.names": {"query": variant}}}
+    )
+
   # add spatial filter as available in qobj
   if has_geom:
     # shape_filter is polygon hull ~100km diameter
@@ -726,48 +748,34 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
     # matches ccodes
     qbase['query']['bool']['must'].append(countries_match)
 
-  # # add spatial filter as available in qobj
-  # if has_geom:
-  #   # shape_filter is polygon hull ~100km diameter
-  #   qbase['query']['bool']['filter'].append(shape_filter)
-  #   if has_countries:
-  #     qbase['query']['bool']['should'].append(countries_match)
-  # elif has_countries:
-  #   # matches ccodes
-  #   qbase['query']['bool']['must'].append(countries_match)
-  # elif has_bounds:
-  #   # area_filter (predefined region or study area)
-  #   qbase['query']['bool']['filter'].append(area_filter)
-  #   if has_countries:
-  #     qbase['query']['bool']['should'].append(countries_match)
-  #
   """ 
-    q1 = qbase + types in must IF ANY
-    q1 = qbase + fclasses in should IF ANY, *for weight*?
-    ?? adding fclasses as 'must' not effective for wikidata, where typing 
-      quality is problematic at best 
+    q1 = qbase + types a must IF ANY
+    q1 = qbase + fclasses a must IF ANY
   """
   q1 = deepcopy(qbase)
-  if len(qtypes) > 0:
-    q1['query']['bool']['must'].append({"terms": {"types.id":qtypes}})
-  if len(qobj['fclasses']) > 0:
-    q1['query']['bool']['should'].append({"terms": {"fclasses":qobj['fclasses']}})
 
+  # If qtypes are provided, add a terms query for types.id
+  if len(qtypes) > 0:
+    q1['query']['bool']['must'].append({"terms": {"types.id": qtypes}})
+
+  # If fclasses are provided, add a terms query for fclasses
+  if len(qobj['fclasses']) > 0:
+    q1['query']['bool']['must'].append({"terms": {"fclasses": qobj['fclasses']}})
+
+  # Create a copy of qbase for q2
   q2 = deepcopy(qbase)
 
-  # for variants.name as text field...(wd_text index)
-  # prefix for anything starting with first 5 characters (w/spatial constraint)
-  q2['query']['bool']['must'] = {"bool": {"should": [
-        {"prefix": {"variants.names": {"value": qobj['title'][:5]}}}
-    ]}}
-  # OR any of the variants
-  for v in variants:
-    q2['query']['bool']['must']['bool']['should'].append(
-      {"match": {"variants.names": v}})
-  # adds weight but not required
-  if fclass_count > 0:
-    q2['query']['bool']['should'].append(
-      {"terms": {"fclasses":qobj['fclasses']}})
+  # For variants.names as a text field (wd_text index)
+  # Add a prefix query for anything starting with first 5 characters (w/spatial constraint)
+  q2['query']['bool']['must'][0]['bool']['should'].append(
+    {"prefix": {"variants.names": {"value": qobj['title'][:5]}}})
+
+  # Adds weight but not required
+  if len(qtypes) > 0:
+    q2['query']['bool']['should'].append({"terms": {"types.id": qtypes}})
+
+  if len(qobj['fclasses']) > 0:
+    q2['query']['bool']['should'].append({"terms": {"fclasses": qobj['fclasses']}})
 
   # /\/\/\/\/\/
   # pass0 (q0): 

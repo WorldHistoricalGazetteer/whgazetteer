@@ -157,6 +157,8 @@ TEMPLATES = [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.media',
                 'django.template.context_processors.request',
+                'main.context_processors.add_view_name',
+                'main.context_processors.add_debug_flag',
                 ],
             'builtins': [
               'whg.builtins',

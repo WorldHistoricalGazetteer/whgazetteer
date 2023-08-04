@@ -65,25 +65,8 @@
             <div id="drftable_detail" class="col-sm-5">
               <div class="toomany"></div>
               
-              {%comment%}
-              <div id="filter_group" class="">Display&nbsp;
-                points: <input id="cb_point" class="gtype" data-g="point" type="checkbox" checked />&nbsp;
-                lines: <input id="cb_line" class="gtype" data-g="line" type="checkbox" checked />&nbsp;
-                areas: <input id="cb_poly" class="gtype" data-g="poly" type="checkbox" checked />
-              </div>
-              {%endcomment%}
-              
               <div id="map" style="height:300px;"></div>
-              
-              <!-- time slider eventually -->
-              {%comment%}
-              <div id="nouislider" class="my-2"></div>
-              <!--<div><input style="width:100%;" id="slider" type="range" min= {ds.minmax.0}} max= {ds.minmax.1}} step="100" value="0"></div>
-              <div class="small" style="margin-top:-10px;border-bottom:1px dashed #ddd;">
-                {{ds.minmax.0}}<span class="float-right">{{ds.minmax.1}}
-              </div>-->
-              {%endcomment%}
-              
+
               <div id="row_detail">
                 <div id="detail" class="small"></div>
               </div>
@@ -316,8 +299,8 @@
             'line-opacity': 0.5,
           },
           'filter': ['==', '$type', 'Polygon']
-        }, 'z-index-3');
-        
+         }, 'z-index-3');
+
         mappy.addLayer({
           'id': 'gl_active_poly',
           'type': 'fill',
@@ -328,7 +311,7 @@
             'fill-outline-color': '#fff'
           },
           'filter': ['==', '$type', 'Polygon']
-        }, 'z-index-2');
+         }, 'z-index-2');
 
         mappy.addLayer({
           'id': 'gl_active_line',

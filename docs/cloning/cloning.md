@@ -25,7 +25,7 @@ The following steps have been tested on MacOS Monterey (12.6). Windows-specific 
   - postgres$ `CREATE DATABASE whg;`
   - `\c whg`
   - whg$ `CREATE EXTENSION postgis;`
-- add settings to {project root}/whg/settings.py (contact karl [at] kgeographer.org)
+- add settings to {project root}/whg/local_settings.py (contact karl [at] kgeographer.org)
     - SECRET_KEY
     - MAPBOX_TOKEN
     - ES_APIKEY_ID, ES_APIKEY_KEY (for Elasticsearch)

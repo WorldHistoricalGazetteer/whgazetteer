@@ -1,6 +1,6 @@
-## The WHGazetteer Platform
+## The World Historical Gazetteer Platform
 
-### v2.1 Stack (v3)
+### v2.1 Stack (_v3 versions_)
 
 ----------
 - Django 2.2 (4.1)
@@ -21,7 +21,7 @@
 - JQuery UI 1.13.2
 - Plain old vanilla JavaScript
 - Leaflet (django-leaflet; numerous add-ons)
-- Mapbox GL JS 1.15.0 (1.5)
+- Mapbox GL JS 1.15.0 
 - MapLibre GL JS 1.15.2
 - Turf JS
 

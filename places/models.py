@@ -5,6 +5,8 @@ from django.contrib.gis.db import models as geomodels
 from django.contrib.postgres.fields import JSONField, ArrayField
 from django.db import models
 
+from django_celery_results.models import TaskResult
+
 # from datasets.models import Dataset
 from datasets.static.hashes.parents import ccodes as cc
 from main.choices import FEATURE_CLASSES, STATUS_REVIEW
@@ -182,6 +184,7 @@ class PlaceGeom(models.Model):
 
   geom = geomodels.GeometryField(null=True, blank=True, srid=4326)
 
+  s2 = ArrayField(models.BigIntegerField(), null=True)
   h3 = ArrayField(models.CharField(max_length=15, blank=True,null=True), null=True)
 
   # informs dataset last_update
@@ -284,3 +287,18 @@ class PlaceDepiction(models.Model):
   class Meta:
     managed = True
     db_table = 'place_depiction'
+
+class CloseMatch(models.Model):
+  place_a = models.ForeignKey(Place, on_delete=models.CASCADE, related_name="match_a")
+  place_b = models.ForeignKey(Place, on_delete=models.CASCADE, related_name="match_b")
+  created_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
+  task = models.ForeignKey(TaskResult, on_delete=models.CASCADE, related_name="task",
+                           null=True, blank=True)
+  created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="matcher")
+  basis = models.CharField(max_length=200,
+      choices=[('authid', 'authority id'), ('reviewed', 'reviewed'), ('imported', 'imported')],
+      null=True, blank=True)
+
+  class Meta:
+    managed = True
