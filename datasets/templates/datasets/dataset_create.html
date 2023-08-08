@@ -7,7 +7,17 @@
 {% load fontawesome %}
 {% load dataset_extras %}
 {% block extra_head %}
+<style>
+ul.no-indent {
+    padding-left: 1rem;
+		margin-bottom: .2rem;
+}
 
+ul.no-indent > li {
+    padding-left: 1em;
+    text-indent: -1em;
+}
+</style>
 {% endblock %}
 
 <div class="container">
@@ -33,7 +43,13 @@
 		          </div>
 		      {% endfor %}
 		    {% endif %}
-		    {% if insert_error %}<p>error on insert</p>{% endif %}
+			  {% comment %}
+		    {% if insert_error %}<p>error on insert</p>{% endif %}{% endcomment %}
+				{% if messages %}
+					{% for message in messages %}
+						<div class="bg-light p-1 mb-1 border border-warning">{{ message|safe }}</div>
+					{% endfor %}
+				{% endif %}
 	      <table class="ds-table">
           <tr>
             <td><b>Title &#x02733;</b></td>
@@ -75,7 +91,7 @@
           </tr>
           <tr>
             <td><b>Public?</b></td>
-            <td>{%if form.public == true%}Yes{%endif%}
+            <td>{%if form.public%}Yes{%endif%}
               <a href="#"><span class="help-matches" data-id="going_public_ds">Making a dataset public. {% fontawesome_icon 'question-circle' color='#336699' %}</span></a></td>
           </tr>
           <tr><td class="my-0 small">&#x02733;<i><b> required</b></i></td><td></td></tr>
@@ -132,11 +148,11 @@
 		    </form>
       </div>
   <div class="mt-2 col-md-5 col-lg-7" id="create_review">
-      {% if context.action == 'errors' %}
+      {% if action == 'errors' %}
         <h5>{% fontawesome_icon 'exclamation-circle' color="#993333" %} This file has one or more problems:</h5>
         <ul>
-        {% for e in context.errors %}
-          <li>{% if context.format == 'delimited' or context.format == 'unknown' %}
+        {% for e in errors %}
+          <li>{% if format == 'delimited' or format == 'unknown' %}
                 {{ e|safe }}
 	            {% elif 'encoding' in e %}
 	              <b>{{ e|safe }}</b>
@@ -146,7 +162,7 @@
         {% endfor %}
         </ul>
         <p>After making corrections, try reloading the file</p><hr/>
-      {% elif context.action == 'broken' %}
+      {% elif action == 'broken' %}
         <h5>{% fontawesome_icon 'exclamation-circle' color="#993333" %} 
           Uh oh! Something has gone wrong during format validation, and the problem could not be determined.
         </h5><p>An email has been sent to WHG staff, and we will look into it and get back to you soon. You can double-check your file formatting and try again, or wait for our response.</p>
@@ -154,12 +170,17 @@
         <div class="smallish">
           {% comment %}<p class="mb-0 larger"><b>Uploading data to WHG</b></p>{% endcomment %}
           <p class="mb-0 text-uppercase"><b>data formats</b></p>
-          <p class="mb-2">The WHG platform can read two upload formats: <a href="https://github.com/LinkedPasts/linked-places" target="_blank">Linked Places</a> (JSON-LD based, GeoJSON compatible, expressive), and <a href="https://github.com/LinkedPasts/linked-places/blob/master/tsv_0.4.md" target="_blank">LP-TSV</a>, a tabular format for relatively simpler records uploaded as either text files (.csv, .tsv), or spreadsheets (.xlsx, .ods). <a href="/tutorials/choosing" target="_blank">More information on making the choice</a>. <span class="strong"><i>NOTE: Encoding for all uploaded files must be unicode (UTF-8)</i>.</span></p>
+          <p class="mb-2">The WHG platform can read two upload formats: <a href="https://github.com/LinkedPasts/linked-places" target="_blank">Linked Places</a> (JSON-LD based, GeoJSON compatible, expressive), and <a href="https://github.com/LinkedPasts/linked-places/blob/master/tsv_0.4.md" target="_blank">LP-TSV</a>, a tabular format for relatively simpler records uploaded as either text files (.csv, .tsv), or spreadsheets (.xlsx, .ods). <a href="/tutorials/choosing" target="_blank">More information on making the choice</a>. <span class="strong"><i>NOTE: Encoding for all uploaded files must be unicode (UTF-8)</i>.</span>
+          </p>
           <p class="mb-0 text-uppercase"><mark-g>Quick Start</mark-g></p>
 		        <ol class="mb-2 pl-3">
-	        <li>Download a copy of <a href="https://tinyurl.com/2tspp7be" target="_blank">this Google spreadsheet</a> to your computer and follow its included instructions.</li>
-	        <li>Choose that file in the form on the left, fill out the first three fields of metadata, and click "Upload"&mdash;now you have a test dataset in your private workspace!</li>
-	        <li>Explore WHG features for managing it from its new dataset page, e.g. under the Linking tab, begin reconciliation with our index of 3.5 million  <a href="https://www.wikidata.org/" target="_blank">Wikidata</a> place records.</li>
+			        <li>Download a copy of <a href="https://tinyurl.com/2tspp7be" target="_blank">
+				        this Google spreadsheet</a> to your computer and follow its included instructions.</li>
+			        <li>Choose that file in the form on the left, fill out the first three fields of metadata,
+				        and click "Upload"&mdash;now you have a test dataset in your private workspace!</li>
+			        <li>Explore WHG features for managing it from its new dataset page, e.g. under the Linking tab,
+				        begin reconciliation with our index of 3.5 million
+				        <a href="https://www.wikidata.org/" target="_blank">Wikidata</a> place records.</li>
 	          </ol>
           <p class="mb-0 text-uppercase"><b>Sample data and templates</b></p>
           <p class="mb-2">Some sample datasets and templates are available in <a href="https://github.com/WorldHistoricalGazetteer/whgazetteer/raw/main/example_data/whg_example-data.zip" download>this zip file</a>, check its README.txt file, and try loading a sample from your local computer, then reconciling it against Wikidata records.</p>
@@ -176,7 +197,6 @@
 </div>
 
 <script type="text/javascript">
-
 
   $(function(){
     // popover help

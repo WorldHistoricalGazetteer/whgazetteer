@@ -173,19 +173,23 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'handlers': {
-        'file': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': 'whg/logs/debug.log',
-        },
+      'file': {
+        'class': 'logging.handlers.RotatingFileHandler',
+        'filename': 'whg/logs/debug.log',
+        'maxBytes': 10 * 1024 * 1024,  # 10 MB
+        'backupCount': 5,  # keep five backup copies
+      },
+      'console': {
+        'class': 'logging.StreamHandler',
+      },
     },
     'loggers': {
-        'django': {
-            'handlers': ['file'],
-            'level': 'DEBUG',
-            'propagate': True,
-        },
-    },
+          'django': {
+              'handlers': ['file'],
+              'level': 'DEBUG',
+              'propagate': True,
+          },
+      },
 }
 
 LEAFLET_CONFIG = {
@@ -270,6 +274,8 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'main/static/'),
     os.path.join(BASE_DIR, 'whg/static/'),
 ]
+
+import logging
 
 try:
   from .local_settings import *

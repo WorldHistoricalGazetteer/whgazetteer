@@ -52,9 +52,9 @@ urlpatterns = [
   ## DEPRECATing download augmented dataset
   path('<int:id>/augmented/<str:format>', download_augmented, name="dl-aug"), #
 
-  ## UPDATES (in progress)
-  path('compare/', views.ds_compare, name='dataset-compare'),
-  path('update/', views.ds_update, name='dataset-update'),
+  ## UPDATES (DEPRECATED)
+  # path('compare/', views.ds_compare, name='dataset-compare'),
+  # path('update/', views.ds_update, name='dataset-update'),
 
   ## RECONCILIATION/REVIEW
   # initiate reconciliation

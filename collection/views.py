@@ -399,32 +399,6 @@ class PlaceCollectionUpdateView(UpdateView):
 
     return context
 
-""" public collection view, contents, bboxes on a map """
-# class PlaceCollectionSummaryView(DetailView):
-#   template_name = 'collection/../_older/place_collection_summary.html'
-#
-#   model = Collection
-#
-#   def get_context_data(self, **kwargs):
-#     context = super(PlaceCollectionSummaryView, self).get_context_data(**kwargs)
-#     id_ = self.kwargs.get("pk")
-#     print('CollectionDetailView(), kwargs',self, self.kwargs)
-#
-#     datasets = self.object.datasets.all()
-#     places = self.object.places.all().order_by('title')
-#     # gather bounding boxes
-#     bboxes = [ds.bounds for ds in datasets]
-#
-#     context['mbtokenkg'] = settings.MAPBOX_TOKEN_KG
-#     context['mbtoken'] = settings.MAPBOX_TOKEN_WHG
-#     context['mbtokenwhg'] = settings.MAPBOX_TOKEN_WHG
-#     context['whgteam'] = User.objects.filter(groups__name='whg_team')
-#
-#     context['place_list'] = places
-#     context['ds_list'] = datasets
-#     context['bboxes'] = bboxes
-#     return context
-
 """ browse collection *all* places """
 class PlaceCollectionBrowseView(DetailView):
   login_url = '/accounts/login/'

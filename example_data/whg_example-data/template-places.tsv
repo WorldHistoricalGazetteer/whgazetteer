@@ -1,0 +1,8 @@
+id	title	title_source	start	end	title_uri	ccodes	variants	types	aat_types	matches	lon	lat	geowkt	geo_source	geo_id	description
+717_1	Marienborch	Croniken	1480	1491		PL	Marienburg;Malbork	town; castle	300008375;300008063				POINT(19.03797600030766901 54.03613199933293032)			
+717_2	Eluinghen	Croniken	1480	1491		PL	Elbing;Elbląg	town;castle	300008375;300008063				POINT(19.40427425018878083 54.15598902161654848)			
+717_3	Lossen	Croniken	1480	1491		PL	Lessen;Łasin	town	300008375				POINT(19.08709099729979997 53.51936100136739327)			
+10	Sampit	Broek	1800	2000		ID		mine; settlement	300000390		112.9496	-2.5315			http://sws.geonames.org/1628884	
+11	Kuta Lingga	Broek	1800	2000		MY		mine; settlement	300000390							
+12	Kuta Waringin	Broek	1800	2000		ID		mine; settlement	300000390							
+13	Sambas	Broek	1800	2000		ID		mine; settlement	300000390		109.25	1.33333			http://sws.geonames.org/1628979	

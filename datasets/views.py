@@ -21,10 +21,9 @@ from django_celery_results.models import TaskResult
 # external
 from celery import current_app as celapp
 from copy import deepcopy
-import codecs, math, mimetypes, os, re, shutil, sys, tempfile
+import shutil, tempfile, codecs, math, mimetypes, os, re, sys
 from deepdiff import DeepDiff as diff
 import numpy as np
-from elasticsearch7 import Elasticsearch
 es = settings.ES_CONN
 import pandas as pd
 from pathlib import Path
@@ -41,9 +40,9 @@ from datasets.static.hashes.parents import ccodes as cchash
 # NB these task names ARE in use; they are generated dynamically
 from datasets.tasks import align_wdlocal, align_idx, align_tgn, maxID
 
-# from datasets.update import deleteFromIndex
 from datasets.utils import *
 from elastic.es_utils import makeDoc, removePlacesFromIndex, replaceInIndex, removeDatasetFromIndex
+from .exceptions import LPFValidationError
 from main.choices import AUTHORITY_BASEURI
 from main.models import Log, Comment
 from places.models import *
@@ -859,7 +858,7 @@ def task_delete(request, tid, scope="foo"):
 """
   task_archive(tid, scope, prior)
   delete hits
-  if prior = 'zap: delete geoms and links added by review
+  if prior = 'zap', delete geoms and links added by review
   reset Place.review_{auth} to null
   set task status to 'ARCHIVED'
 """
@@ -1211,450 +1210,7 @@ def update_rels_tsv(pobj, row):
       filename_new=fn[0]+'_'+tempfn[-11:-4]+fn[1]
     filepath = 'media/'+filename_new
     copyfile(tempfn,filepath)
-    
 """
-
-def ds_update(request):
-  if request.method == 'POST':
-    print('request.POST ds_update()', request.POST)
-    dsid=request.POST['dsid']
-    ds = get_object_or_404(Dataset, id=dsid)
-    file_format=request.POST['format']
-
-    # keep previous recon/review results?
-    keepg = request.POST['keepg']
-    keepl = request.POST['keepl']
-    print('keepg, keepl', keepg, keepl)
-
-    # comparison returned by ds_compare
-    compare_data = json.loads(request.POST['compare_data'])
-    compare_result = compare_data['compare_result']
-    print('compare_data from ds_compare', compare_data)
-
-    # tempfn has .tsv or .jsonld extension from validation step
-    tempfn = compare_data['tempfn']
-    filename_new = compare_data['filename_new']
-    dsfobj_cur = ds.files.all().order_by('-rev')[0]
-    rev_num = dsfobj_cur.rev
-
-    # rename file if already exists in user area
-    if Path('media/'+filename_new).exists():
-      fn=os.path.splitext(filename_new)
-      #filename_new=filename_new[:-4]+'_'+tempfn[-11:-4]+filename_new[-4:]
-      filename_new=fn[0]+'_'+tempfn[-11:-4]+fn[1]
-
-    # user said go...copy tempfn to media/{user} folder
-    filepath = 'media/'+filename_new
-    copyfile(tempfn,filepath)
-
-    # and create new DatasetFile; increment rev
-    DatasetFile.objects.create(
-      dataset_id = ds,
-      file = filename_new,
-      rev = rev_num + 1,
-      format = file_format,
-      upload_date = datetime.date.today(),
-      header = compare_result['header_new'],
-      numrows = compare_result['count_new']
-    )
-
-    # reopen new file as panda dataframe bdf
-    if file_format == 'delimited':
-      try:
-        bdf = pd.read_csv(filepath, delimiter='\t')
-
-        # replace pandas NaN with None
-        bdf = bdf.replace({np.nan: ''})
-        # bdf = bdf.replace({np.nan: None})
-        # force data types
-        bdf = bdf.astype({"id":str, "ccodes":str, "types":str, "aat_types":str})
-        print('reopened new file, # lines:',len(bdf))
-      except:
-        raise
-
-      # CURRENT PLACES
-      ds_places = ds.places.all()
-      print('ds_places', ds_places)
-      # pids of missing src_ids
-      rows_delete = list(ds_places.filter(src_id__in=compare_result['rows_del']).values_list('id',flat=True))
-      print('rows_delete', rows_delete) # 6880702
-
-      # CASCADE includes links & geoms
-      try:
-        ds_places.filter(id__in=rows_delete).delete()
-      except:
-        raise
-
-      # for use below
-      def delete_related(pid):
-        # option to keep prior links and geoms matches; remove the rest
-        if not keepg:
-          # keep no geoms
-          PlaceGeom.objects.filter(place_id=pid).delete()
-        else:
-          # leave results of prior matches
-          PlaceGeom.objects.filter(place_id=pid, task_id__isnull=True).delete()
-        if not keepl:
-          # keep no links
-          PlaceLink.objects.filter(place_id=pid).delete()
-        else:
-          # leave results of prior matches
-          PlaceLink.objects.filter(place_id=pid, task_id__isnull=True).delete()
-        PlaceName.objects.filter(place_id=pid).delete()
-        PlaceType.objects.filter(place_id=pid).delete()
-        PlaceWhen.objects.filter(place_id=pid).delete()
-        PlaceRelated.objects.filter(place_id=pid).delete()
-        PlaceDescription.objects.filter(place_id=pid).delete()
-
-      # counts for report
-      count_new, count_replaced, count_redo = [0,0,0]
-      # pids for index operations
-      rows_add = []
-      idx_delete = []
-
-      place_fields = {'id', 'title', 'ccodes','start','end','attestation_year'}
-      alldiffs=[]
-      # bdfx=bdf.iloc[1:]
-      # for index, row in bdfx.iterrows():
-      for index, row in bdf.iterrows():
-        # row=bdf.iloc[1]
-        # new row as dict
-        row = row.to_dict()
-        print('row as dict', row)
-
-        start = int(row['start']) if 'start' in row else int(row['attestation_year']) \
-          if ('attestation_year' in row) else None
-        end = int(row['end']) if 'end' in row and str(row['end']) != 'nan' else start
-        minmax_new = [start, end] if start else [None]
-
-        # extract coords from upload file
-        row_coords = makeCoords(row['lon'], row['lat']) \
-          if row['lon'] and row['lat'] else None
-        if row['geowkt']:
-          gtype = wkt.loads(row['geowkt']).type
-          if 'Multi' not in gtype:
-            row_coords = [list(u) for u in wkt.loads(row['geowkt']).coords]
-          else:
-            row_coords = [list(u) for u in wkt.loads(row['geowkt']).xy]
-        # all columns in mew file
-        header = list(bdf.keys())
-        # row_mapper = [{k: row[k]} for k in header]
-        row_mapper = {
-          'src_id': row['id'],
-          'title': row['title'],
-          'minmax': minmax_new,
-          'title_source': row['title_source'] if 'title_source' in header else '',
-          'title_uri': row['title_uri'] if 'title_uri' in header else '',
-          'ccodes': row['ccodes'].split(';') if 'ccodes' in header and row['ccodes'] else [],
-          'matches': row['matches'].split(';') if 'matches' in header and row['matches']else [],
-          'variants': row['variants'].split(';') if 'variants' in header and row['variants']else [],
-          'types': row['types'].split(';') if 'types' in header and row['types'] else [],
-          'aat_types': row['aat_types'].split(';') if 'aat_types' in header and row['aat_types'] else [],
-          'parent_name': row['parent_name'] if 'parent_name' in header else '',
-          'parent_id': row['parent_id'] if 'parent_id' in header else '',
-          'geo_source': row['geo_source'] if 'geo_source' in header else '',
-          'geo_id': row['geo_id'] if 'geo_id' in header else '',
-          'description': row['description'] if 'description' in header else '',
-          'coords': row_coords or [],
-        }
-
-        try:
-          # is there corresponding current Place?
-          p = ds_places.get(src_id=row['id'])
-          # fetch existing API record
-          c = Client()
-          from datasets.utils import PlaceMapper
-          try:
-            # result = c.get('/api/place_compare/' + str(6873911) + '/')
-            result = c.get('/api/place_compare/' + str(p.id) + '/')
-            pobj = result.json()
-            pobj = {key: val for key, val in sorted(pobj.items(), key=lambda ele: ele[0])}
-          except:
-            print('pobj failed', p.id, sys.exc_info())
-
-          # build object for comparison
-          # TODO: build separate serializer(s) for this? performance?
-          p_mapper = PlaceMapper(
-            pobj['id'],
-            pobj['src_id'],
-            pobj['title'],
-          )
-
-          # id,title,title_source,title_uri,ccodes,matches,variants,types,aat_types,
-          # parent_name,parent_id,geo_source,geo_id,description
-          # add key:value pairs to consider
-          p_mapper['minmax'] = pobj['minmax']
-          title_name = next(n for n in pobj['names'] if n['toponym'] == pobj['title']) or None
-          p_mapper['title_source'] = title_name['citation']['label'] if \
-            'citation' in title_name and 'label' in title_name['citation'] else ''
-          p_mapper['title_id'] = title_name['citation']['id'] if \
-            'citation' in title_name and 'id' in title_name['citation'] else ''
-          p_mapper['ccodes'] = pobj['ccodes'] or []
-          p_mapper['types'] = [t['sourceLabel'] for t in pobj['types']] or []
-          p_mapper['aat_types'] = [t['identifier'][4:] for t in pobj['types']] or []
-          p_mapper['variants'] = [n['toponym'] for n in pobj['names'] if n['toponym'] != pobj['title']] or []
-          p_mapper['coords'] = [g['coordinates'] for g in pobj['geoms']] or []
-
-          p_mapper['geo_sources'] = [g['citation']['label'] for g in pobj['geoms'] \
-              if 'citation' in g and 'label' in g['citation']] or []
-          p_mapper['geo_ids'] = [g['citation']['id'] for g in pobj['geoms'] \
-              if 'citation' in g and 'id' in g['citation']]  or []
-
-          p_mapper['links'] = [l['identifier'] for l in pobj['links']] or []
-          p_mapper['related'] = [r['label'] for r in pobj['related']]
-          p_mapper['related_id'] = [r['identifier'] for r in pobj['related']]
-          p_mapper['descriptions'] = [d['value'] for d in pobj['related']]
-
-          # diff incoming (row_mapper) & database (p_mapper)
-          # meaningful = title, variants, aat_types, links/matches, coords
-          diffs = []
-
-          # [:8] not meaningful (don't affect reconciliation)
-          diffs.append(row_mapper['title_source'] == p_mapper['title_source'] if row_mapper['title_source'] else True)
-          diffs.append(row_mapper['title_uri'] == p_mapper['title_id'] if row_mapper['title_uri'] else True)
-          diffs.append(row_mapper['parent_name'] in p_mapper['related'] if row_mapper['parent_name'] else True)
-          diffs.append(row_mapper['parent_id'] in p_mapper['related_id'] if row_mapper['parent_id'] else True)
-          diffs.append(row_mapper['geo_source'] in p_mapper['geo_sources'] if row_mapper['geo_source'] !='' else True)
-          diffs.append(row_mapper['geo_id'] in p_mapper['geo_ids'] if row_mapper['geo_id'] !='' else True)
-          diffs.append(row_mapper['description'] in p_mapper['descriptions'] if row_mapper['description'] else True)
-          diffs.append(row_mapper['minmax'] == p_mapper['minmax'])
-          diffs.append(sorted(row_mapper['types']) == sorted(p_mapper['types']))
-
-          # [9:] meaningful
-          diffs.append(row_mapper['title'] == p_mapper['title'])
-          diffs.append(sorted(row_mapper['variants']) == sorted(p_mapper['variants']))
-          diffs.append(sorted(row_mapper['aat_types']) == sorted(p_mapper['aat_types']))
-          diffs.append(sorted(row_mapper['matches']) == sorted(p_mapper['links']))
-          diffs.append(sorted(row_mapper['ccodes']) == sorted(p_mapper['ccodes']))
-          if row_mapper['coords'] != []:
-            diffs.append(row_mapper['coords'] == p_mapper['coords'])
-
-          print('diffs', diffs)
-          alldiffs.append({'title':row_mapper['title'], 'diffs':diffs})
-
-          # update Place record in all cases
-          count_replaced += 1
-          p.title = row_mapper['title']
-          p.ccodes = row_mapper['ccodes']
-          p.minmax = minmax_new
-          p.timespans = [minmax_new]
-
-          if False in diffs:
-            # there was SOME change(s) -> add to delete-from-index list
-            # (will be reindexed after re-reconciling)
-            idx_delete.append(p.id)
-          if False not in diffs[9:]:
-            # no meaningful changes
-            # replace related, preserving geoms & links if keepg, keepl
-            # leave review_wd and flag status intact
-            delete_related(p)
-            update_rels_tsv(p, row)
-          else:
-            # meaningful change(s) exist
-            count_redo +=1
-            # replace related, including geoms and links
-            keepg, keepl = [False, False]
-            delete_related(p)
-            update_rels_tsv(p, row)
-
-            # (re)set Place.review_wd & Place.flag (needs reconciliation)
-            p.review_wd = None
-            p.flag = True
-
-            # meaningful change, so
-            # add to list for index deletion
-            if p.id not in idx_delete:
-              idx_delete.append(p.id)
-
-          p.save()
-        except:
-          # no corresponding Place, create new one
-          print('new place record needed from rdp', row)
-          count_new +=1
-          newpl = Place.objects.create(
-            src_id = row['id'],
-            title = re.sub('\(.*?\)', '', row['title']),
-            ccodes = [] if str(row['ccodes']) == 'nan' else row['ccodes'].replace(' ','').split(';'),
-            dataset = ds,
-            minmax = minmax_new,
-            timespans = [minmax_new],
-            # flax for reconciling
-            flag = True
-          )
-          newpl.save()
-          pobj = newpl
-          rows_add.append(pobj.id)
-          print('new place, related:', newpl)
-          # add related rcords (PlaceName, PlaceType, etc.)
-          update_rels_tsv(pobj, row)
-        # except:
-        #   print('update failed on ', row)
-        #   print('error', sys.exc_info())
-
-      # update numrows
-      ds.numrows = ds.places.count()
-      ds.save()
-
-      # initiate a result object
-      result = {"status": "updated", "format":file_format,
-                "update_count":count_replaced, "redo_count": count_redo,
-                "new_count":count_new, "deleted_count": len(rows_delete),
-                "newfile": filepath}
-
-      print('update result', result)
-      print("compare_data['count_indexed']", compare_data['count_indexed'])
-
-      #
-      if compare_data['count_indexed'] > 0:
-        result["indexed"] = True
-
-        # surgically remove as req.
-        # rows_delete(gone from db) + idx_delete(rows with meaningful change)
-        idx_delete = rows_delete + idx_delete
-        print('idx_delete', idx_delete)
-        if len(idx_delete) > 0:
-          es = settings.ES_CONN
-          idx = 'whg'
-          print('pids to delete from index:', idx_delete)
-          removePlacesFromIndex(es, idx, idx_delete)
-      else:
-        print('not indexed, that is all')
-
-      # write log entry
-      Log.objects.create(
-        # category, logtype, "timestamp", subtype, note, dataset_id, user_id
-        category = 'dataset',
-        logtype = 'ds_update',
-        note = json.dumps(compare_result),
-        dataset_id = dsid,
-        # user_id = 1
-        user_id = request.user.id
-      )
-      ds.ds_status = 'updated'
-      ds.save()
-      # return to update modal
-      return JsonResponse(result, safe=False)
-    elif file_format == 'lpf':
-      print("ds_update for lpf; doesn't get here yet")
-
-"""
-  ds_compare() refactored 26 Nov 2022 (backup below)
-  validates updated dataset file & compares w/existing
-  called by ajax function from modal in ds_summary.html
-  returns json result object 'comparison' for use by ds_update()
-"""
-def ds_compare(request):
-  if request.method == 'POST':
-    print('ds_compare() request.POST', request.POST)
-    print('ds_compare() request.FILES', request.FILES)
-    dsid = request.POST['dsid']
-    user = request.user.username
-    format = request.POST['format']
-    ds = get_object_or_404(Dataset, id=dsid)
-    ds_status = ds.ds_status
-
-    # get most recent file
-    file_cur = ds.files.all().order_by('-rev')[0].file
-    file_cur_delimiter = ds.files.all().order_by('-rev')[0].delimiter
-    filename_cur = file_cur.name
-
-    # new file
-    file_new=request.FILES['file']
-    tempf, tempfn = tempfile.mkstemp()
-    # write new file as temporary to /var/folders/../...
-    try:
-      for chunk in file_new.chunks():
-        os.write(tempf, chunk)
-    except:
-      raise Exception("Problem with the input file %s" % request.FILES['file'])
-    finally:
-      os.close(tempf)
-
-    print('tempfn,filename_cur,file_new.name',tempfn, filename_cur, file_new.name)
-
-    # validate new file (tempfn is file path)
-    # if errors, stop and return them to modal
-    if format == 'delimited':
-      print('format:', format)
-      try:
-        vresult = validate_tsv(tempfn, 'delimited')
-      except:
-        print('validate_tsv() failed:', sys.exc_info())
-
-    elif format == 'lpf':
-      # TODO: feed tempfn only?
-      # TODO: accept json-lines; only FeatureCollections ('coll') now
-      vresult = validate_lpf(tempfn,'coll')
-      # print('format, vresult:',format,vresult)
-
-    # which expects {validation_result{errors['','']}}
-    print('vresult', vresult)
-    if len(vresult['errors']) > 0:
-      errormsg = {"failed":{
-        "errors":vresult['errors']
-      }}
-      return JsonResponse(errormsg,safe=False)
-
-    # give new file a path
-    filename_new = 'user_'+user+'/'+file_new.name
-    # temp files were given extensions in validation functions
-    tempfn_new = tempfn+'.tsv' if format == 'delimited' else tempfn+'.jsonld'
-    print('tempfn_new', tempfn_new)
-
-    # begin comparison report
-    comparison={
-      "id": dsid,
-      "filename_cur": filename_cur,
-      "filename_new": filename_new,
-      "format": format,
-      "validation_result": vresult,
-      "tempfn": tempfn,
-      "count_indexed": ds.status_idx['idxcount'],
-      'count_links_added': ds.links.filter(task_id__isnull=False).count(),
-      'count_geoms_added': ds.geometries.filter(task_id__isnull=False).count()
-    }
-
-    # create pandas (pd) objects, then perform comparison
-    # a = existing, b = new
-    fn_a = 'media/'+filename_cur
-    fn_b = tempfn
-    if format == 'delimited':
-      adf = pd.read_csv(fn_a,
-                        # delimiter='\t',
-                        delimiter=file_cur_delimiter,
-                        dtype={'id': 'str', 'aat_types': 'str'})
-      try:
-        # must have same delimiter as original
-        bdf = pd.read_csv(fn_b, delimiter=file_cur_delimiter)
-        # bdf = pd.read_csv(fn_b, delimiter='\t')
-      except:
-        print('bdf read failed', sys.exc_info())
-
-      ids_a = adf['id'].tolist()
-      ids_b = bdf['id'].tolist()
-      print('ids_a, ids_b', ids_a[:10], ids_b[:10])
-      # new or removed columns?
-      cols_del = list(set(adf.columns)-set(bdf.columns))
-      cols_add = list(set(bdf.columns)-set(adf.columns))
-
-      comparison['compare_result'] = {
-        "count_new":len(ids_b),
-        'count_diff':len(ids_b)-len(ids_a),
-        'count_replace': len(set.intersection(set(ids_b),set(ids_a))),
-        'cols_del': cols_del,
-        'cols_add': cols_add,
-        'header_new': vresult['columns'],
-        'rows_add': [str(x) for x in (set(ids_b)-set(ids_a))],
-        'rows_del': [str(x) for x in (set(ids_a)-set(ids_b))]
-      }
-    # TODO: process LP format, collections + json-lines
-    elif format == 'lpf':
-      # print('need to compare lpf files:',fn_a,fn_b)
-      comparison['compare_result'] = "it's lpf...tougher row to hoe"
-
-    print('comparison (compare_data)',comparison)
-    # back to calling modal
-    return JsonResponse(comparison,safe=False)
 
 """ 
   ds_insert_lpf
@@ -2450,6 +2006,125 @@ class DatasetCreateEmptyView (LoginRequiredMixin, CreateView):
     #context['action'] = 'create'
     return context
 
+    # for delimited, fvalidate() is performed on the entire file
+    # on fail, raises server error
+    # elif ext in ['csv', 'tsv']:
+    #   try:
+    #     # fvalidate() wants an extension
+    #     newfn = tempfn+'.'+ext
+    #     os.rename(tempfn, newfn)
+    #     result = validate_tsv(newfn, ext)
+    #     print('newfn in create()', newfn)
+    #   except:
+    #     # email to user, admin
+    #     failed_upload_notification(user, tempfn)
+    #     messages.error(self.request, fail_msg)
+    #     return HttpResponseServerError()
+    #
+    # elif ext in ['xlsx', 'ods']:
+    #   try:
+    #     print('spreadsheet, use pandas')
+    #
+    #     # open new file for tsv write
+    #     newfn = tempfn + '.tsv'
+    #     fout=codecs.open(newfn, 'w', encoding='utf8')
+    #
+    #     # add ext to tempfn (pandas need this)
+    #     newtempfn = tempfn+'.'+ext
+    #     os.rename(tempfn, newtempfn)
+    #     # print('renamed tempfn for pandas:', tempfn)
+    #
+    #     # dataframe from spreadsheet
+    #     df = pd.read_excel(newtempfn, converters={
+    #       'id': str, 'start':str, 'end':str,
+    #       'aat_types': str, 'lon': float, 'lat': float})
+    #
+    #     # write it as tsv
+    #     table=df.to_csv(sep='\t', index=False).replace('\nan','')
+    #     fout.write(table)
+    #     fout.close()
+    #
+    #     # print('to validate_tsv(newfn):', newfn)
+    #     # validate it...
+    #     result = validate_tsv(newfn, 'tsv')
+    #   except:
+    #     # email to user, admin
+    #     failed_upload_notification(user, newfn)
+    #     messages.error(self.request, "Database insert failed and we aren't sure why. "+
+    #                    "The WHG team has been notified and will follow up by email to <b>" +
+    #                    user.username+'</b> ('+user.email+')')
+    #     return HttpResponseServerError()
+
+"""
+  DatasetCreateView()
+  alternate bot-guided
+"""
+class DatasetCreate(LoginRequiredMixin, CreateView):
+  login_url = '/accounts/login/'
+  redirect_field_name = 'redirect_to'
+
+  form_class = DatasetCreateModelForm
+  template_name = 'datasets/dataset_create.html'
+  success_message = 'dataset created'
+
+  def form_invalid(self, form):
+    print('form invalid...', form.errors.as_data())
+    context = {'form': form}
+    return self.render_to_response(context=context)
+
+  def form_valid(self, form):
+    data = form.cleaned_data
+    file = data['file']
+    context = {"format": data['format']}
+    user=self.request.user
+    filename = file.name
+    mimetype = file.content_type
+    valid_mime = mimetype in mthash_plus.mimetypes
+    if valid_mime:
+      if mimetype.startswith('text/'):
+        encoding = get_encoding_delim(tempfn)
+      elif 'spreadsheet' in mimetype:
+        encoding = get_encoding_excel(tempfn)
+      elif mimetype.startswith('application/'):
+        encoding = fin.encoding
+      print('encoding in DatasetCreate()', encoding)
+      if encoding.lower() not in ['utf-8', 'ascii']:
+        context['errors'] = ["The encoding of uploaded files must be unicode (utf-8). This file seems to be "+encoding]
+        context['action'] = 'errors'
+        return self.render_to_response(self.get_context_data(form=form, context=context))
+    else:
+      context['errors'] = "Not a valid file type; must be one of [.csv, .tsv, .xlsx, .ods, .json]"
+      return self.render_to_response(self.get_context_data(form=form, context=context))
+
+
+    # For JSON files:
+    if ext == 'json':
+      data = json.load(file)
+      errors = validate_lpf(data)
+      if errors:
+        # Handle errors (return them to the user)
+        ...
+        return self.form_invalid(form)
+
+      # Directly process the data and create database entries
+      insert_lpf_data(data)
+
+    # For delimited files:
+    elif ext in ['csv', 'tsv', 'xlsx', 'ods']:
+      df = read_file_into_dataframe(file, ext)
+      errors = validate_delim(df)
+      if errors:
+        # Handle errors (return them to the user)
+        ...
+        return self.form_invalid(form)
+
+      # Directly process the DataFrame and create database entries
+      insert_delim_data(df)
+
+    # If everything went well:
+    return super().form_valid(form)
+
+
 """
   DatasetCreateView()
   initial create
@@ -2472,8 +2147,8 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
   def form_valid(self, form):
     data=form.cleaned_data
     context={"format":data['format']}
-    user=self.request.user
     file=self.request.FILES['file']
+    user=self.request.user
     filename = file.name
     mimetype = file.content_type
 
@@ -2528,56 +2203,53 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
     if ext == 'json':
       try:
         result = validate_lpf(tempfn, 'coll')
-      except:
-        # email to user, admin
-        failed_upload_notification(user, tempfn)
-        # return message to 500.html
-        messages.error(self.request, fail_msg)
-        return HttpResponseServerError()
+      except LPFValidationError as e:
+        # Assuming 'e' contains a list of error dictionaries
+        error_list = e.args[0]
 
-    # for delimited, fvalidate() is performed on the entire file
-    # on fail, raises server error
-    elif ext in ['csv', 'tsv']:
+        # Construct the error message for the user
+        if len(error_list) == 3:
+          message = "<b>Several errors were found in your file; the first of these are</b>:<ul class='no-indent'>"
+        else:
+          message = "<b>Errors were found in your file</b>:<ul class='no-indent'>"
+
+        for err in error_list:
+          row = err['feat']
+          reason_match = re.search(r'Reason: (.*?) Schema path', err['error'])
+          if reason_match:
+            reason = reason_match.group(1)
+            message += f"<li>Row {row}: {reason}</li>"
+        message += "</ul>"
+
+        messages.error(self.request, message)
+        return self.render_to_response(self.get_context_data(form=form))
+
+    elif ext in ['csv', 'tsv', 'xlsx', 'ods']:
       try:
-        # fvalidate() wants an extension
-        newfn = tempfn+'.'+ext
-        os.rename(tempfn, newfn)
-        result = validate_tsv(newfn, ext)
-        print('newfn in create()', newfn)
-      except:
-        # email to user, admin
-        failed_upload_notification(user, tempfn)
-        messages.error(self.request, fail_msg)
-        return HttpResponseServerError()
+        # Step 1: Read the file into a DataFrame
+        if ext == 'csv':
+          df = pd.read_csv(tempfn, sep=',', converters={
+            'id': str, 'start': str, 'end': str,
+            'aat_types': str, 'lon': float, 'lat': float})
+        elif ext == 'tsv':
+          df = pd.read_csv(tempfn, sep='\t', converters={
+            'id': str, 'start': str, 'end': str,
+            'aat_types': str, 'lon': float, 'lat': float})
+        elif ext in ['xlsx', 'ods']:
+          df = pd.read_excel(tempfn, converters={
+            'id': str, 'start': str, 'end': str,
+            'aat_types': str, 'lon': float, 'lat': float})
 
-    elif ext in ['xlsx', 'ods']:
-      try:
-        print('spreadsheet, use pandas')
-        import pandas as pd
+        print('df after pd.read', df)
+        # Step 2: Validate the data using the validate_delim(df) function
+        # This function should return errors, if any.
+        errors = validate_delim(df)
+        if errors:
+          # Handle errors (return them to the user)
+          ...
 
-        # open new file for tsv write
-        newfn = tempfn + '.tsv'
-        fout=codecs.open(newfn, 'w', encoding='utf8')
-
-        # add ext to tempfn (pandas need this)
-        newtempfn = tempfn+'.'+ext
-        os.rename(tempfn, newtempfn)
-        # print('renamed tempfn for pandas:', tempfn)
-
-        # dataframe from spreadsheet
-        df = pd.read_excel(newtempfn, converters={
-          'id': str, 'start':str, 'end':str,
-          'aat_types': str, 'lon': float, 'lat': float})
-
-        # write it as tsv
-        table=df.to_csv(sep='\t', index=False).replace('\nan','')
-        fout.write(table)
-        fout.close()
-
-        # print('to validate_tsv(newfn):', newfn)
-        # validate it...
-        result = validate_tsv(newfn, 'tsv')
-      except:
+      except Exception as e:
+        # Handle other unexpected errors
         # email to user, admin
         failed_upload_notification(user, newfn)
         messages.error(self.request, "Database insert failed and we aren't sure why. "+
@@ -2585,7 +2257,7 @@ class DatasetCreateView(LoginRequiredMixin, CreateView):
                        user.username+'</b> ('+user.email+')')
         return HttpResponseServerError()
 
-    print('validation complete, still in DatasetCreateView')
+    print('validation complete, still in DatasetCreateView', result)
 
     # validated -> create Dataset, DatasetFile, Log instances,
     # advance to dataset_detail

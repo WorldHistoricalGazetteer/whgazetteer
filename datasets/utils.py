@@ -6,22 +6,20 @@ from django.http import FileResponse, JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404, render #, redirect
 from django.views.generic import View
 
-
-import codecs, csv, datetime, sys, openpyxl, os, pprint, re, time
+import codecs, csv, datetime, sys, openpyxl, os, pprint, re, time, logging
+import pandas as pd
 import simplejson as json
-#from celery import task, shared_task
 from chardet import detect
 from django_celery_results.models import TaskResult
 from frictionless import validate as fvalidate
-from goodtables import validate as gvalidate
-from jsonschema import draft7_format_checker, validate
+from jsonschema import draft7_format_checker, validate, ValidationError
 from shapely import wkt
 
 from areas.models import Country
 from datasets.models import Dataset, DatasetUser, Hit
 from datasets.static.hashes import aat, parents, aat_q
 from datasets.static.hashes import aliases as al
-#from datasets.tasks import make_download
+from .exceptions import LPFValidationError
 from main.models import Log
 from places.models import PlaceGeom, Type
 pp = pprint.PrettyPrinter(indent=1)
@@ -554,11 +552,27 @@ def parsedates_lpf(feat):
 	# de-duplicate
 	unique=list(set(tuple(sorted(sub)) for sub in intervals))
 	return {"intervals": unique, "minmax": minmax}
-# 
+
+def parse_validation_error(error):
+    # Extract key parts of the error message
+    # print('parse_validation_error()', error)
+    data = error.instance
+    message = error.message
+    schema_path = " -> ".join([str(p) for p in error.absolute_schema_path])
+
+    # Construct a user-friendly message
+    user_message = f"Error in data: {data}. Reason: {message}. Schema path: {schema_path}"
+
+    return user_message
+
+#
 # validate Linked Places json-ld (w/jsonschema)
 # format ['coll' (FeatureCollection) | 'lines' (json-lines)]
+# TODO: 'format' will eventually support jsonlines
 def validate_lpf(tempfn,format):
+	logger = logging.getLogger('django')
 	#wd = '/Users/karlg/Documents/Repos/_whgazetteer/'
+	print('in validate_lpf()...format', format)
 	schema = json.loads(codecs.open('datasets/static/validate/schema_lpf_v1.2.json','r','utf8').read())
 	# rename tempfn
 	newfn = tempfn+'.jsonld'
@@ -574,23 +588,73 @@ def validate_lpf(tempfn,format):
 		or len(jdata['features']) == 0:
 		print('not valid GeoJSON-LD')
 	else:
-		for feat in jdata['features']:
-			countrows +=1
-			#print(feat['properties']['title'])
+		errors = []
+		seen_error_paths = set()
+
+		for countrows, feat in enumerate(jdata['features'], start=1):
+			if len(errors) >= 3:  # Stop after collecting 3 errors
+				break
 			try:
 				validate(
 					instance=feat,
 					schema=schema,
 					format_checker=draft7_format_checker
 				)
-				count_ok +=1
-			except:
-				err = sys.exc_info()
-				print('res: some kinda error',err[1].args)
-				#result["errors"].append({"feat":countrows,'error':err[1].args[0]})
-				result["errors"].append({"feat":countrows,'error':err[1]})
+			except ValidationError as e:
+				error_path = " -> ".join([str(p) for p in e.absolute_path])
+				if error_path not in seen_error_paths:  # Check if this error type (path) has been seen before
+					detailed_error = parse_validation_error(e)
+					errors.append({"feat": countrows, 'error': detailed_error})
+					seen_error_paths.add(error_path)
+
+		print('errors in validate_lpf()', errors)
+		if errors:
+			aggregated_message = "; ".join([error['error'] for error in errors])
+			if len(errors) == 3:
+				aggregated_message += " ... Your uploaded file has more errors; these were the first three found."
+			# print('aggregated_message',aggregated_message )
+			raise LPFValidationError(errors)
+			# raise LPFValidationError(aggregated_message)
+
 		result['count'] = countrows
 	return result
+
+def validate_delim(df):
+		# result = {"msg":"", "errors":[]}
+    # check for required fields
+    required_fields = ['id', 'title', 'title_source', 'start']
+    for field in required_fields:
+        if field not in df.columns:
+            return f"Required field missing: {field}"
+
+    # check for either "parent_name" or "parent_id"
+    if not ("parent_name" in df.columns or "parent_id" in df.columns):
+        return "Either 'parent_name' or 'parent_id' must be present"
+
+    # check for pattern constraints
+    pattern_constraints = {
+        'ccodes': "([a-zA-Z]{2};?)+",
+        'matches': "(https?:\\/\\/.*\\..*;?)+|([a-z]{1,8}:.*;?)+",
+        'parent_id': "(https?:\/\/.*\\..*|#\\d*)",
+        'start': "(-?\\d{1,4}(-\\d{2})?(-\\d{2})?)(\/(-?\\d{1,4}(-\\d{2})?(-\\d{2})?))?",
+        'end': "(-?\\d{1,4}(-\\d{2})?(-\\d{2})?)(\/(-?\\d{1,4}(-\\d{2})?(-\\d{2})?))?"
+    }
+
+    for field, pattern in pattern_constraints.items():
+        if field in df.columns and not df[field].str.contains(pattern).all():
+            return f"Field {field} contains values that do not match the required pattern"
+
+    # check for numerical range constraints
+    range_constraints = {
+        'lon': (-180, 180),
+        'lat': (-90, 90)
+    }
+
+    for field, (min_val, max_val) in range_constraints.items():
+        if field in df.columns and (df[field].min() < min_val or df[field].max() > max_val):
+            return f"Field {field} contains values outside the required range"
+
+    return "Validation passed"
 
 #
 # validate LP-TSV file (uses frictionless.py 3.31.0)
