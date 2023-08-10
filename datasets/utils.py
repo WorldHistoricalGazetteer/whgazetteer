@@ -19,7 +19,7 @@ from areas.models import Country
 from datasets.models import Dataset, DatasetUser, Hit
 from datasets.static.hashes import aat, parents, aat_q
 from datasets.static.hashes import aliases as al
-from .exceptions import LPFValidationError
+from .exceptions import LPFValidationError, DelimValidationError
 from main.models import Log
 from places.models import PlaceGeom, Type
 pp = pprint.PrettyPrinter(indent=1)
@@ -569,17 +569,16 @@ def parse_validation_error(error):
 # validate Linked Places json-ld (w/jsonschema)
 # format ['coll' (FeatureCollection) | 'lines' (json-lines)]
 # TODO: 'format' will eventually support jsonlines
-def validate_lpf(tempfn,format):
+def validate_lpf(tempfn, format):
 	logger = logging.getLogger('django')
-	#wd = '/Users/karlg/Documents/Repos/_whgazetteer/'
-	print('in validate_lpf()...format', format)
+	# print('in validate_lpf()...format', format)
 	schema = json.loads(codecs.open('datasets/static/validate/schema_lpf_v1.2.json','r','utf8').read())
+
 	# rename tempfn
 	newfn = tempfn+'.jsonld'
 	os.rename(tempfn,newfn)
 	infile = codecs.open(newfn, 'r', 'utf8')
-	result = {"format":"lpf","errors":[]}
-	[countrows,count_ok] = [0,0]
+	result = {"format":"lpf", "errors":[]}
 
 	# TODO: handle json-lines
 	jdata = json.loads(infile.read())
@@ -592,6 +591,7 @@ def validate_lpf(tempfn,format):
 		seen_error_paths = set()
 
 		for countrows, feat in enumerate(jdata['features'], start=1):
+
 			if len(errors) >= 3:  # Stop after collecting 3 errors
 				break
 			try:
@@ -620,41 +620,49 @@ def validate_lpf(tempfn,format):
 	return result
 
 def validate_delim(df):
-		# result = {"msg":"", "errors":[]}
-    # check for required fields
-    required_fields = ['id', 'title', 'title_source', 'start']
-    for field in required_fields:
-        if field not in df.columns:
-            return f"Required field missing: {field}"
+	errors = []
 
-    # check for either "parent_name" or "parent_id"
-    if not ("parent_name" in df.columns or "parent_id" in df.columns):
-        return "Either 'parent_name' or 'parent_id' must be present"
+	# Define required fields and patterns
+	required_fields = ['id', 'title', 'title_source', 'start']
+	pattern_constraints = {
+		'ccodes': "([a-zA-Z]{2};?)+",
+		'matches': "(https?:\\/\\/.*\\..*;?)+|([a-z]{1,8}:.*;?)+",
+		'parent_id': "(https?:\/\/.*\\..*|#\\d*)",
+		'start': "(-?\\d{1,4}(-\\d{2})?(-\\d{2})?)(\/(-?\\d{1,4}(-\\d{2})?(-\\d{2})?))?",
+		'end': "(-?\\d{1,4}(-\\d{2})?(-\\d{2})?)(\/(-?\\d{1,4}(-\\d{2})?(-\\d{2})?))?"
+	}
+	range_constraints = {
+		'lon': (-180, 180),
+		'lat': (-90, 90)
+	}
 
-    # check for pattern constraints
-    pattern_constraints = {
-        'ccodes': "([a-zA-Z]{2};?)+",
-        'matches': "(https?:\\/\\/.*\\..*;?)+|([a-z]{1,8}:.*;?)+",
-        'parent_id': "(https?:\/\/.*\\..*|#\\d*)",
-        'start': "(-?\\d{1,4}(-\\d{2})?(-\\d{2})?)(\/(-?\\d{1,4}(-\\d{2})?(-\\d{2})?))?",
-        'end': "(-?\\d{1,4}(-\\d{2})?(-\\d{2})?)(\/(-?\\d{1,4}(-\\d{2})?(-\\d{2})?))?"
-    }
+	# Loop through rows for validation
+	for index, row in df.iterrows():
+		# Check required fields
+		for field in required_fields:
+			if field not in row:
+				errors.append({"row": index + 1, "error": f"Required field missing: {field}"})
 
-    for field, pattern in pattern_constraints.items():
-        if field in df.columns and not df[field].str.contains(pattern).all():
-            return f"Field {field} contains values that do not match the required pattern"
+		# Check for either "parent_name" or "parent_id"
+		if not ("parent_name" in row or "parent_id" in row):
+			errors.append({"row": index + 1, "error": "Either 'parent_name' or 'parent_id' must be present"})
 
-    # check for numerical range constraints
-    range_constraints = {
-        'lon': (-180, 180),
-        'lat': (-90, 90)
-    }
+		# Check pattern constraints
+		for field, pattern in pattern_constraints.items():
+			if field in row and not bool(re.search(pattern, str(row[field]))):
+				errors.append(
+					{"row": index + 1, "error": f"Field {field} contains a value that does not match the required pattern"})
 
-    for field, (min_val, max_val) in range_constraints.items():
-        if field in df.columns and (df[field].min() < min_val or df[field].max() > max_val):
-            return f"Field {field} contains values outside the required range"
+		# Check range constraints
+		for field, (low, high) in range_constraints.items():
+			if field in row and (row[field] < low or row[field] > high):
+				errors.append({"row": index + 1, "error": f"Value in {field} is out of the allowed range"})
 
-    return "Validation passed"
+	if errors:
+		raise DelimValidationError(errors)
+
+	return errors
+
 
 #
 # validate LP-TSV file (uses frictionless.py 3.31.0)

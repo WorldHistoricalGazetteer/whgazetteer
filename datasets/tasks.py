@@ -27,7 +27,6 @@ from datasets.models import Dataset, Hit
 from datasets.static.hashes.parents import ccodes as cchash
 from datasets.static.hashes.qtypes import qtypes
 from elastic.es_utils import makeDoc, build_qobj, profileHit
-#from datasets.task_utils import *
 from datasets.utils import bestParent, elapsed, getQ, \
   HitRecord, hully, makeNow, makeDate, parse_wkt, post_recon_update
 
