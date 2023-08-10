@@ -11,8 +11,6 @@ import pandas as pd
 import simplejson as json
 from chardet import detect
 from django_celery_results.models import TaskResult
-from frictionless import validate as fvalidate
-from jsonschema import draft7_format_checker, validate, ValidationError
 from shapely import wkt
 
 from areas.models import Country
@@ -23,6 +21,18 @@ from .exceptions import LPFValidationError, DelimValidationError
 from main.models import Log
 from places.models import PlaceGeom, Type
 pp = pprint.PrettyPrinter(indent=1)
+
+"""
+  email various, incl. Celery down notice
+  to ['whgazetteer@gmail.com','karl@kgeographer.org'],
+"""
+def emailer(subj, msg, from_addr, to_addr):
+  print('subj, msg, from_addr, to_addr',subj, msg, from_addr, to_addr)
+  send_mail(
+      subj, msg, from_addr, to_addr,
+      fail_silently=False,
+  )
+
 
 # ***
 # DOWNLOAD FILES
@@ -156,37 +166,37 @@ def download_augmented(request, *args, **kwargs):
 		print('augmented lpf template', result)
 		with open(fn, 'w', encoding='utf-8') as outfile:
 			with connection.cursor() as cursor:
-				cursor.execute("""with namings as 
-          (select place_id, jsonb_agg(jsonb) as names from place_name pn 
+				cursor.execute("""with namings as
+          (select place_id, jsonb_agg(jsonb) as names from place_name pn
           where place_id in (select id from places where dataset = '{ds}')
           group by place_id ),
-          placetypes as 
-          (select place_id, jsonb_agg(jsonb) as "types" from place_type pt 
+          placetypes as
+          (select place_id, jsonb_agg(jsonb) as "types" from place_type pt
           where place_id in (select id from places where dataset = '{ds}')
           group by place_id ),
-          placelinks as 
-          (select place_id, jsonb_agg(jsonb) as links from place_link pl 
+          placelinks as
+          (select place_id, jsonb_agg(jsonb) as links from place_link pl
           where place_id in (select id from places where dataset = '{ds}')
           group by place_id ),
-          geometry as 
-          (select place_id, jsonb_agg(jsonb) as geoms from place_geom pg 
+          geometry as
+          (select place_id, jsonb_agg(jsonb) as geoms from place_geom pg
           where place_id in (select id from places where dataset = '{ds}')
           group by place_id ),
           placewhens as
-          (select place_id, jsonb as whenobj from place_when pw 
+          (select place_id, jsonb as whenobj from place_when pw
           where place_id in (select id from places where dataset = '{ds}')),
           placerelated as
-          (select place_id, jsonb_agg(jsonb) as rels from place_related pr 
+          (select place_id, jsonb_agg(jsonb) as rels from place_related pr
           where place_id in (select id from places where dataset = '{ds}')
           group by place_id ),
           descriptions as
-          (select place_id, jsonb_agg(jsonb) as descrips from place_description pdes 
+          (select place_id, jsonb_agg(jsonb) as descrips from place_description pdes
           where place_id in (select id from places where dataset = '{ds}')
           group by place_id ),
           depictions as
-          (select place_id, jsonb_agg(jsonb) as depicts from place_depiction pdep 
+          (select place_id, jsonb_agg(jsonb) as depicts from place_depiction pdep
           where place_id in (select id from places where dataset = '{ds}')
-          group by place_id )	
+          group by place_id )
           select jsonb_build_object(
             'type','Feature',
             '@id', p.src_id,
@@ -196,7 +206,7 @@ def download_augmented(request, *args, **kwargs):
             'names', n.names,
             'types', coalesce(pt.types, '[]'),
             'links', coalesce(pl.links, '[]'),
-            'geometry', case when g.geoms is not null 
+            'geometry', case when g.geoms is not null
                 then jsonb_build_object(
                 'type','GeometryCollection',
                 'geometries', g.geoms)
@@ -207,7 +217,7 @@ def download_augmented(request, *args, **kwargs):
             'relations',coalesce(pr.rels, '[]'),
             'descriptions',coalesce(pdes.descrips, '[]'),
             'depictions',coalesce(pdep.depicts, '[]')
-          ) from places p 
+          ) from places p
           left join namings n on p.id = n.place_id
           left join placetypes pt on p.id = pt.place_id
           left join placelinks pl on p.id = pl.place_id
@@ -216,7 +226,7 @@ def download_augmented(request, *args, **kwargs):
           left join placerelated pr on p.id = pr.place_id
           left join descriptions pdes on p.id = pdes.place_id
           left join depictions pdep on p.id = pdep.place_id
-          where dataset = '{ds}'        
+          where dataset = '{ds}'
         """.format(urlpre=url_prefix, ds=dslabel, a='{}'))
 				for row in cursor:
 					g = row[0]['geometry']
@@ -436,7 +446,7 @@ def parse_errors_tsv(errors):
 
 # *** NOT YET CALLED
 # format lpf validation errors for modal display
-# *** 
+# ***
 #def parse_errors_lpf(errors):
 #new_errors = []
 #for e in error
@@ -666,7 +676,7 @@ def validate_delim(df):
 
 #
 # validate LP-TSV file (uses frictionless.py 3.31.0)
-# 
+#
 def validate_tsv(fn, ext):
 	# incoming csv or tsv; in cases converted from xlsx or ods via pandas
 	# print('validate_tsv() fn', fn)
@@ -780,7 +790,7 @@ def flatten(l):
 def format_size(num):
 	return round(num/1000000, 2)
 
-""" 
+"""
   'monkey patch' for hully() for acknowledged GEOS/Django issue
   "call this any time before using GEOS features" @bpartridge says
 """
@@ -880,9 +890,9 @@ def patch_geos_signatures():
 
 	GeometryCollection._create_collection = new_create_collection
 
-""" 
+"""
   added patch_geos_signatures() from https://gist.github.com/bpartridge/26a11b28415d706bfb9993fc28767d68
-  per https://github.com/libgeos/geos/issues/528#issuecomment-997327327 
+  per https://github.com/libgeos/geos/issues/528#issuecomment-997327327
 """
 def hully(g_list):
 	"""
@@ -1002,7 +1012,7 @@ def makeDate(ts, form):
 	expr = ts.strftime("%Y-%m-%d") if form == 'iso' \
 		else ts.strftime("%d-%b-%Y")
 	return expr
-# 
+#
 def makeNow(short=False):
 	ts = time.time()
 	sttime = datetime.datetime.fromtimestamp(ts).strftime('%Y%m%d_%H%M%S')

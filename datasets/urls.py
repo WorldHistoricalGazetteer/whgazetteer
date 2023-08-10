@@ -5,6 +5,7 @@ from django.conf.urls.static import static
 from django.conf import settings
 
 from . import views
+from .utils import xl_upload
 from datasets.utils import download_file, UpdateCountsView, download_augmented, \
   fetch_geojson_ds, downloader, fetch_geojson_flat, downloadLP7
 
@@ -25,7 +26,7 @@ urlpatterns = [
   path('<int:pk>/insert_lpf/', views.ds_insert_lpf, name="ds_insert_lpf"),
 
   # upload excel
-  path('xl/', views.xl_upload, name='xl-upload'),
+  path('xl/', xl_upload, name='xl-upload'),
 
   ## MANAGE/VIEW
   # dataset owner pages (tabs); names correspond to template names

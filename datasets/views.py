@@ -1,67 +1,52 @@
-# datasets.views
-# NB!!! some imports greyed out but ARE USED!
-from django.conf import settings
+# datasets.views; refactored 2023-08
+
+import json, shutil # re, sys
+
+# external
+from celery import current_app as celapp
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry
-from django.core.files.storage import FileSystemStorage
 from django.core.mail import send_mail
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.db.utils import DataError
 from django.forms import modelformset_factory
-from django.http import HttpResponseServerError, HttpResponseRedirect, JsonResponse, HttpResponse
-from django.shortcuts import redirect, get_object_or_404, render
-from django.test import Client
+from django.http import HttpResponseServerError, HttpResponseRedirect, JsonResponse
+from django.shortcuts import redirect
 from django.urls import reverse
 from django.views.generic import (CreateView, ListView, UpdateView, DeleteView, DetailView)
-from django_celery_results.models import TaskResult
 
-
-# external
-from celery import current_app as celapp
-from copy import deepcopy
-import shutil, uuid, tempfile, codecs, math, mimetypes, os, re, sys
-from deepdiff import DeepDiff as diff
-import numpy as np
-es = settings.ES_CONN
 import pandas as pd
 from pathlib import Path
-from shapely import wkt
-from shutil import copyfile
 
 from areas.models import Area
-from collection.models import Collection, CollectionUser
-from datasets.forms import *
-from datasets.models import Dataset, Hit, DatasetFile
-from datasets.static.hashes import mimetypes_plus as mthash_plus
-from datasets.static.hashes.parents import ccodes as cchash
+from collection.models import Collection
 
-# NB these task names ARE in use; they are generated dynamically
-from datasets.tasks import align_wdlocal, align_idx, align_tgn, maxID
-
-from datasets.utils import *
-from elastic.es_utils import makeDoc, removePlacesFromIndex, replaceInIndex, removeDatasetFromIndex
+# datasets imports
 from .exceptions import LPFValidationError, DelimValidationError
+from .forms import *
+from .insert import ds_insert_json, ds_insert_delim, \
+  ds_insert_lpf, ds_insert_tsv, failed_upload_notification
+from .models import Dataset, Hit, DatasetFile, DatasetUser
+from .static.hashes import mimetypes_plus as mthash_plus
+from .static.hashes.parents import ccodes as cchash
+from .tasks import align_wdlocal, align_idx, maxID
+from .utils import *
+from .validation import validate_delim, validate_lpf, validate_tsv
+
+from elastic.es_utils import makeDoc, removePlacesFromIndex, removeDatasetFromIndex
 from main.choices import AUTHORITY_BASEURI
 from main.models import Log, Comment
 from places.models import *
 from resources.models import Resource
 
-"""
-  email various, incl. Celery down notice
-  to ['whgazetteer@gmail.com','karl@kgeographer.org'],
-"""
-def emailer(subj, msg, from_addr, to_addr):
-  print('subj, msg, from_addr, to_addr',subj, msg, from_addr, to_addr)
-  send_mail(
-      subj, msg, from_addr, to_addr,
-      fail_silently=False,
-  )
+from django.conf import settings
+es = settings.ES_CONN
+
 
 """ check Celery process is running before initiating reconciliation task """
-def celeryUp():
+def celery_up():
   response = celapp.control.ping(timeout=1.0)
   return len(response)>0
 
@@ -74,11 +59,10 @@ def link_uri(auth,id):
 """
   from datasets.views.review()
   indexes a db record upon a single hit match in align_idx review
-  new record becomes child in the matched hit group 
+  new record becomes child in the matched hit group
 """
-def indexMatch(pid, hit_pid=None):
+def index_match(pid, hit_pid=None):
   print('indexMatch(): pid '+str(pid)+' w/hit_pid '+str(hit_pid))
-  from elasticsearch7 import Elasticsearch
   es = settings.ES_CONN
   idx='whg'
   place = get_object_or_404(Place, id=pid)
@@ -171,7 +155,7 @@ def indexMatch(pid, hit_pid=None):
 """
   from datasets.views.review()
   indexes a db record given multiple hit matches in align_idx review
-  a LOT has to happen (see _notes/accession-psudocode.txt): 
+  a LOT has to happen (see _notes/accession-psudocode.txt):
     - pick a single 'winner' among the matched hits (max score)
     - make new record its child
     - demote all non-winners in index from parent to child
@@ -194,7 +178,7 @@ def indexMultiMatch(pid, matchlist):
   addnames = []
   addkids = [str(pid)] # pid will also be the new record's _id
 
-  """ 
+  """
   - all matchlist items are index 'parent' records,
     possibly with multiple children already
   - winner is existing index hit with max(score)
@@ -279,7 +263,7 @@ def indexMultiMatch(pid, matchlist):
       es.delete(index='whg', id=_id)
       es.index(index='whg', id=_id, body=newsrcd, routing=1)
     except RequestError as rq:
-      print('reindex failed (demoted)',d)
+      print('reindex failed (demoted)', _id)
       print('Error: ', rq.error, rq.info)
 
     # re-assign parent for kids of all/any demoted parents
@@ -293,9 +277,9 @@ def indexMultiMatch(pid, matchlist):
           "query": {"match": {"place_id": kid}}}
         es.update_by_query(index=idx, body=q_adopt, conflicts='proceed')
 
-""" 
+"""
   GET   returns review.html for Wikidata, or accession.html for accessioning
-  POST  for each record that got hits, process user matching decisions 
+  POST  for each record that got hits, process user matching decisions
 """
 def review(request, pk, tid, passnum):
   pid = None
@@ -363,8 +347,8 @@ def review(request, pk, tid, passnum):
   # no records left for pass (or in deferred queue)
   if len(record_list) == 0:
     context = {
-      "nohits":True,
-      'ds_id':pk,
+      "nohits": True,
+      'ds_id': pk,
       'task_id': tid,
       'passnum': passnum,
     }
@@ -429,14 +413,14 @@ def review(request, pk, tid, passnum):
     'count_pass2': cnt_pass2,
     'count_pass3': cnt_pass3,
     'deferred': True if passnum =='def' else False,
-    'test':test,
+    'test': test,
   }
 
   # print('raw_hits at formset', [h.json['titles'] for h in raw_hits])
   # build formset from hits, add to context
   HitFormset = modelformset_factory(
     Hit,
-    fields = ('id','authority','authrecord_id','query_pass','score','json'),
+    fields = ('id', 'authority', 'authrecord_id', 'query_pass', 'score', 'json'),
     form=HitModelForm, extra=0)
   formset = HitFormset(request.POST or None, queryset=raw_hits)
   context['formset'] = formset
@@ -512,7 +496,7 @@ def review(request, pk, tid, passnum):
             # TODO: filter duplicates
             if 'links' in hits[x]['json']:
               for l in hits[x]['json']['links']:
-                authid = re.search("\: ?(.*?)$", l).group(1)
+                authid = re.search(": ?(.*?)$", l).group(1)
                 # print('authid, authids',authid, place.authids)
                 if l not in place.authids:
                 # if authid not in place.authids:
@@ -550,12 +534,12 @@ def review(request, pk, tid, passnum):
         # no matches during accession, index as seed (parent
         print('no accession matches, index '+str(place_post.id)+' as seed (parent)')
         print('maxID() in review()', maxID(es,'whg'))
-        indexMatch(str(place_post.id))
+        index_match(str(place_post.id))
         place_post.indexed = True
         place_post.save()
       elif len(matched_for_idx) == 1:
         print('one accession match, make record '+str(place_post.id)+' child of hit ' + str(matched_for_idx[0]))
-        indexMatch(str(place_post.id), matched_for_idx[0]['pid'])
+        index_match(str(place_post.id), matched_for_idx[0]['pid'])
         place_post.indexed = True
         place_post.save()
       elif len(matched_for_idx) > 1:
@@ -660,7 +644,7 @@ def write_wd_pass0(request, tid):
         #'jsonb__identifier',flat=True)
       for l in h.json['links']:
         link_counter += 1
-        authid = re.search("\:?(.*?)$", l).group(1)
+        authid = re.search(":?(.*?)$", l).group(1)
         print(authid)
         # TODO: same no-dupe logic in review()
         # don't write duplicates
@@ -741,8 +725,13 @@ def ds_recon(request, pk):
     print('ds_recon() scope', scope)
     print('ds_recon() auth', auth)
     # return
-    # which task? wdlocal, tgn, idx, whg (future)
-    func = eval('align_'+auth)
+    function_map = {
+      "wdlocal": align_wdlocal,
+      "idx": align_idx,
+    }
+
+    # which task? wdlocal, idx
+    func = function_map.get(auth)
 
     # TODO: let this vary per task?
     region = request.POST['region'] # pre-defined UN regions
@@ -753,21 +742,20 @@ def ds_recon(request, pk):
       "id": [region if region !="0" else userarea]}
 
     # check Celery service
-    if not celeryUp():
+    if not celery_up():
       print('Celery is down :^(')
       emailer('Celery is down :^(',
               'if not celeryUp() -- look into it, bub!',
               'whg@pitt.edu',
               ['karl@kgeographer.org'])
-      messages.add_message(request, messages.INFO, """Sorry! WHG reconciliation services appears to be down. 
+      messages.add_message(request, messages.INFO, """Sorry! WHG reconciliation services appears to be down.
         The system administrator has been notified.""")
       return redirect('/datasets/'+str(ds.id)+'/reconcile')
 
-    # sys.exit()
     # initiate celery/redis task
-    # NB 'func' resolves to align_wdlocal() or align_idx() or align_tgn()
+    # NB 'func' resolves to align_wdlocal() or align_idx()
     try:
-      result = func.delay(
+      func.delay(
         ds.id,
         ds=ds.id,
         dslabel=ds.label,
@@ -949,7 +937,7 @@ def dataset_file_delete(ds):
   updates objects related to a Place (pobj)
   make new child objects of pobj: names, types, whens, related, descriptions
   for geoms and links, add from row if not there
-  row is a pandas dict  
+  row is a pandas dict
 """
 def update_rels_tsv(pobj, row):
   header = list(row.keys())
@@ -1184,7 +1172,7 @@ def update_rels_tsv(pobj, row):
   perform updates to database and index, given ds_compare() results
   params: dsid, format, keepg, keepl, compare_data (json string)
 """
-""" TEST VALUES 
+""" TEST VALUES
     from datasets.models import Dataset, DatasetFile
     from django.shortcuts import get_object_or_404
     ds=Dataset.objects.get(id=1460)
@@ -1213,7 +1201,7 @@ def update_rels_tsv(pobj, row):
     copyfile(tempfn,filepath)
 """
 
-""" 
+"""
   ds_insert_lpf
   insert LPF into database
 """
@@ -1402,37 +1390,37 @@ def ds_insert_lpf(request, pk):
 
           try:
             PlaceType.objects.bulk_create(objs['PlaceTypes'])
-          except DataError as de:
+          except DataError as e:
             raiser('Type', e)
 
           try:
             PlaceWhen.objects.bulk_create(objs['PlaceWhens'])
-          except DataError as de:
+          except DataError as e:
             raiser('When', e)
 
           try:
             PlaceGeom.objects.bulk_create(objs['PlaceGeoms'])
-          except DataError as de:
+          except DataError as e:
             raiser('Geom', e)
 
           try:
             PlaceLink.objects.bulk_create(objs['PlaceLinks'])
-          except DataError as de:
+          except DataError as e:
             raiser('Link', e)
 
           try:
             PlaceRelated.objects.bulk_create(objs['PlaceRelated'])
-          except DataError as de:
+          except DataError as e:
             raiser('Related', e)
 
           try:
             PlaceDescription.objects.bulk_create(objs['PlaceDescriptions'])
-          except DataError as de:
+          except DataError as e:
             raiser('Description', e)
 
           try:
             PlaceDepiction.objects.bulk_create(objs['PlaceDepictions'])
-          except DataError as de:
+          except DataError as e:
             raiser('Depiction', e)
 
           # TODO: compute newpl.ccodes (if geom), newpl.fclasses, newpl.minmax
@@ -2063,7 +2051,7 @@ def ds_insert_delim(request, pk):
           "total_links":total_links})
 
 
-""" 
+"""
   ds_insert_json(data, pk)
   *** to replace ds_insert_lpf() ***
   insert LPF into database
@@ -2253,37 +2241,37 @@ def ds_insert_json(request, pk):
 
           try:
             PlaceType.objects.bulk_create(objs['PlaceTypes'])
-          except DataError as de:
+          except DataError as e:
             raiser('Type', e)
 
           try:
             PlaceWhen.objects.bulk_create(objs['PlaceWhens'])
-          except DataError as de:
+          except DataError as e:
             raiser('When', e)
 
           try:
             PlaceGeom.objects.bulk_create(objs['PlaceGeoms'])
-          except DataError as de:
+          except DataError as e:
             raiser('Geom', e)
 
           try:
             PlaceLink.objects.bulk_create(objs['PlaceLinks'])
-          except DataError as de:
+          except DataError as e:
             raiser('Link', e)
 
           try:
             PlaceRelated.objects.bulk_create(objs['PlaceRelated'])
-          except DataError as de:
+          except DataError as e:
             raiser('Related', e)
 
           try:
             PlaceDescription.objects.bulk_create(objs['PlaceDescriptions'])
-          except DataError as de:
+          except DataError as e:
             raiser('Description', e)
 
           try:
             PlaceDepiction.objects.bulk_create(objs['PlaceDepictions'])
-          except DataError as de:
+          except DataError as e:
             raiser('Depiction', e)
 
           # TODO: compute newpl.ccodes (if geom), newpl.fclasses, newpl.minmax
@@ -2419,19 +2407,6 @@ class PublicListsView(ListView):
     context['beta_or_better'] = True if self.request.user.groups.filter(name__in=['beta', 'admins']).exists() else False
     return context
 
-def failed_upload_notification(user, fn, ds=None):
-    subj = 'World Historical Gazetteer error followup '
-    subj += 'on dataset ('+ds+')' if ds else ''
-    msg = 'Hello ' + user.username + \
-      ', \n\nWe see your recent upload was not successful '
-    if ds:
-      msg += 'on insert to the database '
-    else:
-      msg += 'on initial validation '
-    msg +='-- very sorry about that! ' + \
-      '\nWe will look into why and get back to you within a day.\n\nRegards,\nThe WHG Team\n\n\n['+fn+']'
-    emailer(subj, msg, settings.DEFAULT_FROM_EMAIL,
-            [user.email, settings.EMAIL_HOST_USER])
 
 """
   DatasetCreateView()
@@ -2616,14 +2591,7 @@ def get_file_type(file):
 def read_file_into_dataframe(file, ext):
   """
 	Reads the given file into a pandas DataFrame based on the provided extension.
-
-	Args:
-	- file: The uploaded file object.
-	- ext: The file extension, derived from the mimetype.
-
-	Returns:
-	- A pandas DataFrame.
-	"""
+  """
 
   if ext == 'csv':
     df = pd.read_csv(file, sep=',', converters={
@@ -2648,13 +2616,17 @@ def read_file_into_dataframe(file, ext):
 
 """
   DatasetCreate()
-  replaces DatasetCreateView(); bot-guided
+  2023-08; replaces DatasetCreateView(); bot-guided
+  - validates form
+  - checks file encoding, gets mimetype
+  - initiates content validation (validation.py)
+  - initiates database writes (insert.py)
+  - raises errors from each stage to dataset_create.html form
 """
 class DatasetCreate(LoginRequiredMixin, CreateView):
   login_url = '/accounts/login/'
   redirect_field_name = 'redirect_to'
 
-  # form_class = DatasetCreateModelForm
   form_class = DatasetUploadForm
   template_name = 'datasets/dataset_create.html'
   success_message = 'dataset created'
@@ -2740,6 +2712,7 @@ class DatasetCreate(LoginRequiredMixin, CreateView):
       # insert_delim_data(df, dataset.pk)
       result = ds_insert_delim(df, dataset.pk)
 
+    # backfill to new Dataset object and save
     dataset.numrows = result['numrows']
     dataset.numlinked = result['numlinked']
     dataset.total_links = result['total_links']
@@ -2748,6 +2721,7 @@ class DatasetCreate(LoginRequiredMixin, CreateView):
     dataset.file.numrows = result['numrows']
     dataset.save()
     dataset.file.save()
+
     # Create the DatasetFile object
     DatasetFile.objects.create(
       dataset_id = dataset,
@@ -2777,6 +2751,7 @@ class DatasetCreate(LoginRequiredMixin, CreateView):
 
 
 """
+  DEPRECATED 2023-08
   DatasetCreateView()
   initial create
   upload file, validate format, create DatasetFile instance,
@@ -3247,7 +3222,7 @@ class DatasetSummaryView(LoginRequiredMixin, UpdateView):
 
 """
   returns dataset owner metadata page
-  REPLACEs DatasetSummaryView()
+  to REPLACE DatasetSummaryView()
 """
 class DatasetMetadataView(LoginRequiredMixin, UpdateView):
   login_url = '/accounts/login/'
@@ -3328,9 +3303,8 @@ class DatasetMetadataView(LoginRequiredMixin, UpdateView):
     # print('context from DatasetMetadataView', context)
     return context
 
-
-""" 
-  returns dataset owner browse table 
+"""
+  returns dataset owner browse table
 """
 class DatasetBrowseView(LoginRequiredMixin, DetailView):
   login_url = '/accounts/login/'
@@ -3373,8 +3347,8 @@ class DatasetBrowseView(LoginRequiredMixin, DetailView):
 
     return context
 
-""" 
-  returns public dataset browse table 
+"""
+  returns public dataset browse table
 """
 class DatasetPlacesView(DetailView):
   login_url = '/accounts/login/'
@@ -3451,8 +3425,8 @@ class DatasetReconcileView(LoginRequiredMixin, DetailView):
 
     return context
 
-""" 
-  returns add (reconciliation) task page 
+"""
+  returns add (reconciliation) task page
 """
 class DatasetAddTaskView(LoginRequiredMixin, DetailView):
   login_url = '/accounts/login/'
@@ -3509,17 +3483,17 @@ class DatasetAddTaskView(LoginRequiredMixin, DetailView):
       gothits[t.task_id] = int(json.loads(t.result)['got_hits'])
 
     # deliver status message(s) to template
-    msg_unreviewed = """There is a <span class='strong'>%s</span> task in progress, 
-      and all %s records that got hits remain unreviewed. <span class='text-danger strong'>Starting this new task 
+    msg_unreviewed = """There is a <span class='strong'>%s</span> task in progress,
+      and all %s records that got hits remain unreviewed. <span class='text-danger strong'>Starting this new task
       will delete the existing one</span>, with no impact on your dataset."""
-    msg_inprogress = """<p class='mb-1'>There is a <span class='strong'>%s</span> task in progress, 
-      and %s of the %s records that had hits have been reviewed. <span class='text-danger strong'>Starting this new task 
-      will archive the existing task and submit only unreviewed records.</span>. 
+    msg_inprogress = """<p class='mb-1'>There is a <span class='strong'>%s</span> task in progress,
+      and %s of the %s records that had hits have been reviewed. <span class='text-danger strong'>Starting this new task
+      will archive the existing task and submit only unreviewed records.</span>.
       If you proceed, you can keep or delete prior match results (links and/or geometry):</p>"""
-    msg_updating = """This dataset has been updated, <span class='strong'>Starting this new task 
-      will archive the previous task and re-submit all new and altered records. If you proceed, you can keep or delete prior 
+    msg_updating = """This dataset has been updated, <span class='strong'>Starting this new task
+      will archive the previous task and re-submit all new and altered records. If you proceed, you can keep or delete prior
       matching results (links and geometry)</span>. <a href="%s">Questions? Contact our editorial team.</a>"""
-    msg_done = """All records have been submitted for reconciliation to %s and reviewed. 
+    msg_done = """All records have been submitted for reconciliation to %s and reviewed.
       To begin the step of accessioning to the WHG index, please <a href="%s">contact our editorial team.</a>"""
     for i in ds.taskstats.items():
       auth = i[0][6:]
@@ -3651,7 +3625,6 @@ class DatasetLogView(LoginRequiredMixin, DetailView):
 
     return context
 
-
 """
   ds_compare_bak() backup copy 5 Dec 2022; pre-refactor
 """
@@ -3765,4 +3738,3 @@ def ds_compare_bak(request):
     print('comparison (compare_data)', comparison)
     # back to calling modal
     return JsonResponse(comparison, safe=False)
-
