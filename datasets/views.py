@@ -2637,9 +2637,9 @@ class DatasetCreate(LoginRequiredMixin, CreateView):
     return self.render_to_response(context=context)
 
   def form_valid(self, form):
-    data = form.cleaned_data
-    file = data['file']
-    context = {"format": data['format']}
+    form_data = form.cleaned_data
+    file = form_data['file']
+    context = {"format": form_data['format']}
     user=self.request.user
     filename = file.name
     tempfn = form.cleaned_data['temp_file_path']
@@ -2647,6 +2647,9 @@ class DatasetCreate(LoginRequiredMixin, CreateView):
     # Get the mimetype and extension
     mimetype = file.content_type
     ext = mthash_plus.mimetypes.get(mimetype, None)
+
+    infile = file.open(mode="r")
+    jdata = json.loads(infile.read())
 
     # For JSON files:
     if ext == 'json':
@@ -2679,7 +2682,7 @@ class DatasetCreate(LoginRequiredMixin, CreateView):
 
       # Directly process the data and create database entries
       # insert_lpf_data(data, dataset.pk)
-      result = ds_insert_json(data, dataset.pk)
+      result = ds_insert_json(jdata, dataset.pk, user)
 
     # For delimited files:
     elif ext in ['csv', 'tsv', 'xlsx', 'ods']:
@@ -2710,17 +2713,14 @@ class DatasetCreate(LoginRequiredMixin, CreateView):
 
       # Directly process the DataFrame and create database entries
       # insert_delim_data(df, dataset.pk)
-      result = ds_insert_delim(df, dataset.pk)
+      result = ds_insert_delim(df, dataset.pk, user)
 
     # backfill to new Dataset object and save
     dataset.numrows = result['numrows']
     dataset.numlinked = result['numlinked']
     dataset.total_links = result['total_links']
     dataset.ds_status = 'uploaded'
-    dataset.file.df_status = 'uploaded'
-    dataset.file.numrows = result['numrows']
     dataset.save()
-    dataset.file.save()
 
     # Create the DatasetFile object
     DatasetFile.objects.create(
@@ -2732,15 +2732,20 @@ class DatasetCreate(LoginRequiredMixin, CreateView):
       delimiter = '\t' if ext in ['tsv','xlsx','ods'] else ',' if ext == 'csv' else 'n/a',
       upload_date = None,
       header = df.columns.tolist() if ext != 'json' else None,
-      numrows = len(df) if ext != 'json' else result['count']
+      numrows = len(df) if ext != 'json' else result['numrows'],
+      df_status = 'uploaded'
     )
+
+    # dataset.file.df_status = 'uploaded'
+    # dataset.file.numrows = result['numrows']
+    # dataset.file.save()
 
     # write log entry
     Log.objects.create(
       # category, logtype, "timestamp", subtype, dataset_id, user_id
       category='dataset',
       logtype='ds_create',
-      subtype=data['datatype'],
+      subtype=form_data['datatype'],
       dataset_id=dataset.id,
       user_id=user.id
     )

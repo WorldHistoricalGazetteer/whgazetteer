@@ -22,7 +22,7 @@ from shapely.geometry import box, mapping
 
 def user_directory_path(instance, filename):
   # upload to MEDIA_ROOT/user_<username>/<filename>
-  return 'user_{0}/{1}'.format(instance.owner.username, filename)
+  return 'user_{0}/{1}'.format(instance.dataset_id.owner.username, filename)
 
 def ds_image_path(instance, filename):
   # upload to MEDIA_ROOT/datasets/<id>_<filename>

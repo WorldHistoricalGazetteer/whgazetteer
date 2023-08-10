@@ -129,6 +129,7 @@ class DatasetCreateEmptyModelForm(forms.ModelForm):
   alternate to DatasetCreateModelForm(); bot-guided
 """
 class DatasetUploadForm(forms.ModelForm):
+
     class Meta:
         model = Dataset
         # file fields = ('file','rev','uri_base','format','dataset_id','delimiter',
@@ -155,6 +156,7 @@ class DatasetUploadForm(forms.ModelForm):
         return label
 
     def clean_file(self):
+        print('clean_file in DatasetUploadForm')
         uploaded_file = self.cleaned_data['file']
 
         # Save the uploaded file to a temporary location
@@ -173,7 +175,7 @@ class DatasetUploadForm(forms.ModelForm):
         if mimetype not in mthash_plus.mimetypes:
             raise forms.ValidationError("Not a valid file type; must be one of [.csv, .tsv, .xlsx, .ods, .json]")
 
-        encoding = self.determine_file_encoding(mimetype, uploaded_file)
+        encoding = self.determine_file_encoding(mimetype, tempfn)
         if encoding and encoding.lower() not in ['utf-8', 'ascii']:
             raise forms.ValidationError(
                 f"The encoding of uploaded files must be unicode (utf-8). This file seems to be {encoding}")
@@ -182,14 +184,14 @@ class DatasetUploadForm(forms.ModelForm):
 
         return uploaded_file
 
-    def determine_file_encoding(self, mimetype, tempfn):
+    def determine_file_encoding(self, mimetype, filepath):
         """Determine the encoding of a given file based on its MIME type."""
         if mimetype.startswith('text/'):
-            return self.get_encoding_delim(tempfn)
+            return self.get_encoding_delim(filepath)
         elif 'spreadsheet' in mimetype:
-            return self.get_encoding_excel(tempfn)
+            return self.get_encoding_excel(filepath)
         elif mimetype.startswith('application/'):
-            with codecs.open(tempfn.temporary_file_path(), 'r') as fin:
+            with codecs.open(filepath, 'r') as fin:
                 return fin.encoding
         else:
             return None

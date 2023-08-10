@@ -18,10 +18,11 @@ from places.models import *
   insert delimited data into database
   if insert fails anywhere, delete dataset + any related objects
 """
-def ds_insert_delim(request, pk):
+# def ds_insert_delim(request, pk):
+def ds_insert_delim(df, pk, user):
   csv.field_size_limit(300000)
   ds = get_object_or_404(Dataset, id=pk)
-  user = request.user
+  # user = request.user
   print('ds_insert_tsv()',ds)
   # retrieve just-added file
   dsf = ds.files.all().order_by('-rev')[0]
@@ -309,252 +310,228 @@ def ds_insert_delim(request, pk):
   *** replaces ds_insert_lpf() ***
   insert LPF into database
 """
-def ds_insert_json(request, pk):
+# def ds_insert_json(request, pk):
+def ds_insert_json(data, pk, user):
   import json
   [countrows,countlinked,total_links]= [0,0,0]
+
+  if isinstance(data, str):
+    jdata = json.loads(data)
+  else:
+    jdata = data
+
   ds = get_object_or_404(Dataset, id=pk)
-  user = request.user
-  # latest file
-  dsf = ds.files.all().order_by('-rev')[0]
   uribase = ds.uri_base
-  print('new dataset, uri_base', ds.label, uribase)
+  dbcount = Place.objects.filter(dataset=ds.label).count()
+  print(f"new dataset: {ds.label}, uri_base: {uribase}, data type: {type(jdata)}")
 
+  # print('jdata', jdata)
   # TODO: lpf can get big; support json-lines
-
-  # insert only if empty
-  dbcount = Place.objects.filter(dataset = ds.label).count()
-  print('dbcount',dbcount)
 
   if dbcount == 0:
     errors=[]
-    try:
-      infile = dsf.file.open(mode="r")
-      print('ds_insert_lpf() for dataset',ds)
-      print('ds_insert_lpf() request.GET, infile',request.GET,infile)
-      with infile:
-        jdata = json.loads(infile.read())
+    print('count of features',len(jdata['features']))
 
-        print('count of features',len(jdata['features']))
-        #print('0th feature',jdata['features'][0])
+    for feat in jdata['features']:
+      # create Place, save to get id, then build associated records for each
+      objs = {"PlaceNames":[], "PlaceTypes":[], "PlaceGeoms":[], "PlaceWhens":[],
+              "PlaceLinks":[], "PlaceRelated":[], "PlaceDescriptions":[],
+              "PlaceDepictions":[]}
+      countrows += 1
 
-        for feat in jdata['features']:
-          # create Place, save to get id, then build associated records for each
-          objs = {"PlaceNames":[], "PlaceTypes":[], "PlaceGeoms":[], "PlaceWhens":[],
-                  "PlaceLinks":[], "PlaceRelated":[], "PlaceDescriptions":[],
-                  "PlaceDepictions":[]}
-          countrows += 1
+      # build attributes for new Place instance
+      title=re.sub('\(.*?\)', '', feat['properties']['title'])
 
-          # build attributes for new Place instance
-          title=re.sub('\(.*?\)', '', feat['properties']['title'])
+      # geometry
+      geojson = feat['geometry'] if 'geometry' in feat.keys() else None
 
-          # geometry
-          geojson = feat['geometry'] if 'geometry' in feat.keys() else None
+      # ccodes
+      if 'ccodes' not in feat['properties'].keys():
+        if geojson:
+          # a GeometryCollection
+          ccodes = ccodesFromGeom(geojson)
+          print('ccodes', ccodes)
+        else:
+          ccodes = []
+      else:
+        ccodes = feat['properties']['ccodes']
 
-          # ccodes
-          if 'ccodes' not in feat['properties'].keys():
-            if geojson:
-              # a GeometryCollection
-              ccodes = ccodesFromGeom(geojson)
-              print('ccodes', ccodes)
-            else:
-              ccodes = []
+      # temporal
+      # send entire feat for time summary
+      # (minmax and intervals[])
+      datesobj=parsedates_lpf(feat)
+
+      # TODO: compute fclasses
+      try:
+        newpl = Place(
+          # strip uribase from @id
+          src_id=feat['@id'] if uribase in ['', None] else feat['@id'].replace(uribase,''),
+          dataset=ds,
+          title=title,
+          ccodes=ccodes,
+          minmax = datesobj['minmax'],
+          timespans = datesobj['intervals']
+        )
+        newpl.save()
+        print('new place: ',newpl.title)
+      except:
+        print('failed id' + title + 'datesobj: '+str(datesobj))
+        print(sys.exc_info())
+
+      # PlaceName: place,src_id,toponym,task_id,
+      # jsonb:{toponym, lang, citation[{label, year, @id}], when{timespans, ...}}
+      # TODO: adjust for 'ethnic', 'demonym'
+      for n in feat['names']:
+        if 'toponym' in n.keys():
+          # if comma-separated listed, get first
+          objs['PlaceNames'].append(PlaceName(
+            place=newpl,
+            src_id=newpl.src_id,
+            toponym=n['toponym'].split(', ')[0],
+            jsonb=n
+          ))
+
+      # PlaceType: place,src_id,task_id,jsonb:{identifier,label,src_label}
+      #try:
+      if 'types' in feat.keys():
+        fclass_list = []
+        for t in feat['types']:
+          if 'identifier' in t.keys() and t['identifier'][:4] == 'aat:' \
+             and int(t['identifier'][4:]) in Type.objects.values_list('aat_id',flat=True):
+            fc = get_object_or_404(Type, aat_id=int(t['identifier'][4:])).fclass \
+              if t['identifier'][:4] == 'aat:' else None
+            fclass_list.append(fc)
           else:
-            ccodes = feat['properties']['ccodes']
+            fc = None
+          print('from feat[types]:',t)
+          print('PlaceType record newpl,newpl.src_id,t,fc',newpl,newpl.src_id,t,fc)
+          objs['PlaceTypes'].append(PlaceType(
+            place=newpl,
+            src_id=newpl.src_id,
+            jsonb=t,
+            fclass=fc
+          ))
+        newpl.fclasses = fclass_list
+        newpl.save()
 
-          # temporal
-          # send entire feat for time summary
-          # (minmax and intervals[])
-          datesobj=parsedates_lpf(feat)
+      # PlaceWhen: place,src_id,task_id,minmax,jsonb:{timespans[],periods[],label,duration}
+      if 'when' in feat.keys() and feat['when'] != {}:
+        objs['PlaceWhens'].append(PlaceWhen(
+          place=newpl,
+          src_id=newpl.src_id,
+          jsonb=feat['when'],
+          minmax=newpl.minmax
+        ))
 
-          # TODO: compute fclasses
-          try:
-            newpl = Place(
-              # strip uribase from @id
-              src_id=feat['@id'] if uribase in ['', None] else feat['@id'].replace(uribase,''),
-              dataset=ds,
-              title=title,
-              ccodes=ccodes,
-              minmax = datesobj['minmax'],
-              timespans = datesobj['intervals']
-            )
-            newpl.save()
-            print('new place: ',newpl.title)
-          except:
-            print('failed id' + title + 'datesobj: '+str(datesobj))
-            print(sys.exc_info())
+      # PlaceGeom: place,src_id,task_id,jsonb:{type,coordinates[],when{},geo_wkt,src}
+      #if 'geometry' in feat.keys() and feat['geometry']['type']=='GeometryCollection':
+      if geojson and geojson['type']=='GeometryCollection':
+        #for g in feat['geometry']['geometries']:
+        for g in geojson['geometries']:
+          # print('from feat[geometry]:',g)
+          objs['PlaceGeoms'].append(PlaceGeom(
+            place=newpl,
+            src_id=newpl.src_id,
+            jsonb=g
+            ,geom=GEOSGeometry(json.dumps(g))
+          ))
+      elif geojson:
+        objs['PlaceGeoms'].append(PlaceGeom(
+          place=newpl,
+          src_id=newpl.src_id,
+          jsonb=geojson
+          ,geom=GEOSGeometry(json.dumps(geojson))
+        ))
 
-          # PlaceName: place,src_id,toponym,task_id,
-          # jsonb:{toponym, lang, citation[{label, year, @id}], when{timespans, ...}}
-          # TODO: adjust for 'ethnic', 'demonym'
-          for n in feat['names']:
-            if 'toponym' in n.keys():
-              # if comma-separated listed, get first
-              objs['PlaceNames'].append(PlaceName(
-                place=newpl,
-                src_id=newpl.src_id,
-                toponym=n['toponym'].split(', ')[0],
-                jsonb=n
-              ))
+      # PlaceLink: place,src_id,task_id,jsonb:{type,identifier}
+      if 'links' in feat.keys() and len(feat['links'])>0:
+        countlinked +=1 # record has *any* links
+        #print('countlinked',countlinked)
+        for l in feat['links']:
+          total_links += 1 # record has n links
+          objs['PlaceLinks'].append(PlaceLink(
+            place=newpl,
+            src_id=newpl.src_id,
+            # alias uri base for known authorities
+            jsonb={"type":l['type'], "identifier": aliasIt(l['identifier'].rstrip('/'))}
+          ))
 
-          # PlaceType: place,src_id,task_id,jsonb:{identifier,label,src_label}
-          #try:
-          if 'types' in feat.keys():
-            fclass_list = []
-            for t in feat['types']:
-              if 'identifier' in t.keys() and t['identifier'][:4] == 'aat:' \
-                 and int(t['identifier'][4:]) in Type.objects.values_list('aat_id',flat=True):
-                fc = get_object_or_404(Type, aat_id=int(t['identifier'][4:])).fclass \
-                  if t['identifier'][:4] == 'aat:' else None
-                fclass_list.append(fc)
-              else:
-                fc = None
-              print('from feat[types]:',t)
-              print('PlaceType record newpl,newpl.src_id,t,fc',newpl,newpl.src_id,t,fc)
-              objs['PlaceTypes'].append(PlaceType(
-                place=newpl,
-                src_id=newpl.src_id,
-                jsonb=t,
-                fclass=fc
-              ))
-            newpl.fclasses = fclass_list
-            newpl.save()
+      # PlaceRelated: place,src_id,task_id,jsonb{relationType,relationTo,label,when{}}
+      if 'relations' in feat.keys():
+        for r in feat['relations']:
+          objs['PlaceRelated'].append(PlaceRelated(
+            place=newpl,src_id=newpl.src_id,jsonb=r))
 
-          # PlaceWhen: place,src_id,task_id,minmax,jsonb:{timespans[],periods[],label,duration}
-          if 'when' in feat.keys() and feat['when'] != {}:
-            objs['PlaceWhens'].append(PlaceWhen(
-              place=newpl,
-              src_id=newpl.src_id,
-              jsonb=feat['when'],
-              minmax=newpl.minmax
-            ))
+      # PlaceDescription: place,src_id,task_id,jsonb{@id,value,lang}
+      if 'descriptions' in feat.keys():
+        for des in feat['descriptions']:
+          objs['PlaceDescriptions'].append(PlaceDescription(
+            place=newpl,src_id=newpl.src_id,jsonb=des))
 
-          # PlaceGeom: place,src_id,task_id,jsonb:{type,coordinates[],when{},geo_wkt,src}
-          #if 'geometry' in feat.keys() and feat['geometry']['type']=='GeometryCollection':
-          if geojson and geojson['type']=='GeometryCollection':
-            #for g in feat['geometry']['geometries']:
-            for g in geojson['geometries']:
-              # print('from feat[geometry]:',g)
-              objs['PlaceGeoms'].append(PlaceGeom(
-                place=newpl,
-                src_id=newpl.src_id,
-                jsonb=g
-                ,geom=GEOSGeometry(json.dumps(g))
-              ))
-          elif geojson:
-            objs['PlaceGeoms'].append(PlaceGeom(
-              place=newpl,
-              src_id=newpl.src_id,
-              jsonb=geojson
-              ,geom=GEOSGeometry(json.dumps(geojson))
-            ))
+      # PlaceDepiction: place,src_id,task_id,jsonb{@id,title,license}
+      if 'depictions' in feat.keys():
+        for dep in feat['depictions']:
+          objs['PlaceDepictions'].append(PlaceDepiction(
+            place=newpl,src_id=newpl.src_id,jsonb=dep))
 
-          # PlaceLink: place,src_id,task_id,jsonb:{type,identifier}
-          if 'links' in feat.keys() and len(feat['links'])>0:
-            countlinked +=1 # record has *any* links
-            #print('countlinked',countlinked)
-            for l in feat['links']:
-              total_links += 1 # record has n links
-              objs['PlaceLinks'].append(PlaceLink(
-                place=newpl,
-                src_id=newpl.src_id,
-                # alias uri base for known authorities
-                jsonb={"type":l['type'], "identifier": aliasIt(l['identifier'].rstrip('/'))}
-              ))
+      # throw errors into user message
+      def raiser(model, e):
+        print('Bulk load for '+ model + ' failed on', newpl)
+        errors.append({"field":model, "error":e})
+        print('error', e)
+        raise DataError
 
-          # PlaceRelated: place,src_id,task_id,jsonb{relationType,relationTo,label,when{}}
-          if 'relations' in feat.keys():
-            for r in feat['relations']:
-              objs['PlaceRelated'].append(PlaceRelated(
-                place=newpl,src_id=newpl.src_id,jsonb=r))
+      # create related objects
+      try:
+        PlaceName.objects.bulk_create(objs['PlaceNames'])
+      except DataError as e:
+        raiser('Name', e)
 
-          # PlaceDescription: place,src_id,task_id,jsonb{@id,value,lang}
-          if 'descriptions' in feat.keys():
-            for des in feat['descriptions']:
-              objs['PlaceDescriptions'].append(PlaceDescription(
-                place=newpl,src_id=newpl.src_id,jsonb=des))
+      try:
+        PlaceType.objects.bulk_create(objs['PlaceTypes'])
+      except DataError as de:
+        raiser('Type', e)
 
-          # PlaceDepiction: place,src_id,task_id,jsonb{@id,title,license}
-          if 'depictions' in feat.keys():
-            for dep in feat['depictions']:
-              objs['PlaceDepictions'].append(PlaceDepiction(
-                place=newpl,src_id=newpl.src_id,jsonb=dep))
+      try:
+        PlaceWhen.objects.bulk_create(objs['PlaceWhens'])
+      except DataError as de:
+        raiser('When', e)
 
-          # throw errors into user message
-          def raiser(model, e):
-            print('Bulk load for '+ model + ' failed on', newpl)
-            errors.append({"field":model, "error":e})
-            print('error', e)
-            raise DataError
+      try:
+        PlaceGeom.objects.bulk_create(objs['PlaceGeoms'])
+      except DataError as de:
+        raiser('Geom', e)
 
-          # create related objects
-          try:
-            PlaceName.objects.bulk_create(objs['PlaceNames'])
-          except DataError as e:
-            raiser('Name', e)
+      try:
+        PlaceLink.objects.bulk_create(objs['PlaceLinks'])
+      except DataError as de:
+        raiser('Link', e)
 
-          try:
-            PlaceType.objects.bulk_create(objs['PlaceTypes'])
-          except DataError as de:
-            raiser('Type', e)
+      try:
+        PlaceRelated.objects.bulk_create(objs['PlaceRelated'])
+      except DataError as de:
+        raiser('Related', e)
 
-          try:
-            PlaceWhen.objects.bulk_create(objs['PlaceWhens'])
-          except DataError as de:
-            raiser('When', e)
+      try:
+        PlaceDescription.objects.bulk_create(objs['PlaceDescriptions'])
+      except DataError as de:
+        raiser('Description', e)
 
-          try:
-            PlaceGeom.objects.bulk_create(objs['PlaceGeoms'])
-          except DataError as de:
-            raiser('Geom', e)
+      try:
+        PlaceDepiction.objects.bulk_create(objs['PlaceDepictions'])
+      except DataError as de:
+        raiser('Depiction', e)
 
-          try:
-            PlaceLink.objects.bulk_create(objs['PlaceLinks'])
-          except DataError as de:
-            raiser('Link', e)
+      # TODO: compute newpl.ccodes (if geom), newpl.fclasses, newpl.minmax
+      # something failed in *any* Place creation; delete dataset
 
-          try:
-            PlaceRelated.objects.bulk_create(objs['PlaceRelated'])
-          except DataError as de:
-            raiser('Related', e)
+    print('new dataset:', ds.__dict__)
 
-          try:
-            PlaceDescription.objects.bulk_create(objs['PlaceDescriptions'])
-          except DataError as de:
-            raiser('Description', e)
-
-          try:
-            PlaceDepiction.objects.bulk_create(objs['PlaceDepictions'])
-          except DataError as de:
-            raiser('Depiction', e)
-
-          # TODO: compute newpl.ccodes (if geom), newpl.fclasses, newpl.minmax
-          # something failed in *any* Place creation; delete dataset
-
-        print('new dataset:', ds.__dict__)
-        infile.close()
-
-      return({"numrows":countrows,
-              "numlinked":countlinked,
-              "total_links":total_links})
-    except:
-      # drop the (empty) database
-      # ds.delete()
-      # email to user, admin
-      subj = 'World Historical Gazetteer error followup'
-      msg = 'Hello '+ user.username+', \n\nWe see your recent upload for the '+ds.label+\
-            ' dataset failed, very sorry about that!'+\
-            '\nThe likely cause was: '+str(errors)+'\n\n'+\
-            "If you can, fix the cause. If not, please respond to this email and we will get back to you soon.\n\nRegards,\nThe WHG Team"
-      emailer(subj,msg,'whg@kgeographer.org',[user.email, 'whgadmin@kgeographer.com'])
-
-      # return message to 500.html
-      # messages.error(request, "Database insert failed, but we don't know why. The WHG team has been notified and will follow up by email to <b>"+user.username+'</b> ('+user.email+')')
-      # return redirect(request.GET.get('from'))
-      return HttpResponseServerError()
-
+    return({"numrows":countrows,
+            "numlinked":countlinked,
+            "total_links":total_links})
   else:
-    print('insert_ skipped, already in')
-    messages.add_message(request, messages.INFO, 'data is uploaded, but problem displaying dataset page')
+    print('insert_ skipped, data already in')
     return redirect('/mydata')
 
 def failed_upload_notification(user, fn, ds=None):
