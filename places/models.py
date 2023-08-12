@@ -165,8 +165,9 @@ class PlaceType(models.Model):
   fclass = models.CharField(max_length=1,choices=FEATURE_CLASSES) # geonames feature class
 
   def __str__(self):
-    return (self.jsonb['sourceLabel'] if 'sourceLabel' in self.jsonb else '') +\
-           ('; ' + self.jsonb['label'] if 'label' in self.jsonb else '')
+    return (self.jsonb['sourceLabel'] if 'sourceLabel' in self.jsonb else '') + \
+       ('; ' + (self.jsonb['label'] if self.jsonb and 'label' in self.jsonb and self.jsonb['label'] else ''))
+    # ('; ' + self.jsonb['label'] if 'label' in self.jsonb else '')
 
   class Meta:
     managed = True

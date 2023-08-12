@@ -3,6 +3,8 @@
 import json, shutil # re, sys
 
 # external
+import os
+
 from celery import current_app as celapp
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -2614,6 +2616,9 @@ def read_file_into_dataframe(file, ext):
   return df
 
 
+# file = '/Users/karlg/Desktop/scratch/poland_24498.txt'
+# ext = 'tsv'
+# dfbig = read_file_into_dataframe(file, ext)
 """
   DatasetCreate()
   2023-08; replaces DatasetCreateView(); bot-guided

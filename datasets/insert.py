@@ -1,67 +1,250 @@
 # functions for inserting file data into database
 
-import csv, json, re, sys
+import csv, json, os, re, sys
+import pandas as pd
+import warnings
+from itertools import zip_longest
+
 from django.contrib import messages
 from django.contrib.gis.geos import GEOSGeometry
+from django.db import transaction
 from django.db.utils import DataError
 from django.http import HttpResponseServerError
 from django.shortcuts import get_object_or_404, redirect
 
 from .models import Dataset
+from places.models import *
 from .utils import aliasIt, aat_lookup, ccodesFromGeom, \
   makeCoords, parse_wkt, parsedates_tsv, parsedates_lpf, emailer
 from places.models import *
 
+
+# 'lugares_20.jsonld','lugares_20_broken.jsonld'
+# test setup
+warnings.simplefilter(action='ignore', category=FutureWarning)
+def test_insert():
+  from datasets.models import Dataset, DatasetFile
+  Dataset.objects.get(label='delim_test').delete()
+  ds=Dataset.objects.create(
+    owner=User.objects.get(id=1),
+    label='delim_test',
+    title='Delim Test',
+    description='new, empty to receive from ds_insert_delim()'
+  )
+
+def read_tsv_into_dataframe(file):
+  files = ['lp7_100.tsv',
+           'lp7_100_broken.tsv']
+  path = os.getcwd() + '/_testdata/_upload/'
+  df = pd.read_csv(path+file, sep='\t')
+  # df = read_tsv_into_dataframe(files[0])
+  # dfbroken = read_tsv_into_dataframe(files[1])
+  # df=dfbroken
+
+
+from places.models import Type
+
+aat_fclass = {}
+for type_obj in Type.objects.all():
+    # aat_fclass["aat:" + str(type_obj.aat_id)] = {
+    aat_fclass[type_obj.aat_id] = {
+        "fclass": type_obj.fclass,
+        "term": type_obj.term
+    }
+
+# create Place and a PlaceName for its 'title'
+def create_place(row, ds):
+  # build & save a Place object & PlaceName object for its title
+  pl = Place.objects.create(
+    src_id=row['id'],
+    title=row['title'].strip(),
+    dataset=ds,
+    ccodes=[] if pd.isnull(row.get('ccodes')) else row.get('ccodes')
+  )
+
+  title_source = row['title_source'],
+  title_uri = None if pd.isnull(row.get('title_uri')) else row.get('title_uri'),
+
+  PlaceName.objects.create(
+    place=pl,
+    src_id=row['id'],
+    toponym=row['title'].strip(),
+    jsonb={"toponym": pl.title, "citations": [{"id":title_uri,"label":title_source}]}
+  )
+  return pl
+
+# create PlaceName object for each variant
+def process_variants(row, newpl):
+  variants = None if pd.isnull(row.get('variants')) else \
+    [x.strip() for x in str(row.get('variants', '')).split(';')] \
+      if row.get('variants', '') != '' else []
+  name_objects = []
+  if variants:
+    for v in variants:
+      name = v.strip()
+      try:
+        haslang = re.search("@(.*)$", name)
+        language = haslang.group(1)
+        if len(v.strip()) > 200:
+          # handle super-long names?
+          pass
+        else:
+          # print('variant for', newpl.id, v)
+          new_name = PlaceName(
+            place=newpl,
+            src_id=newpl.src_id,
+            toponym=v.strip(),
+            jsonb={"toponym": v.strip(),
+                   "citations": [
+                     {"id": row['title_uri'],
+                      "label": row['title_source']}]}
+          )
+          if haslang:
+            new_name.jsonb['lang'] = haslang.group(1)
+
+          name_objects.append(new_name)
+      except:
+        print('error on variant', sys.exc_info())
+        print('error on variant for newpl.id', newpl.id, v)
+  return name_objects
+
+
+# create PlaceType object for each aat_type
+# update Place with fclasses[]
+def process_types(row, newpl):
+  type_objects = []
+
+  # Extract types and aat_types from the row
+  types = [t.strip() for t in str(row.get('types', '')).split(';') if t]
+  aat_types = [int(a.strip()) for a in str(row.get('aat_types', '')).split(';') if a]
+  fclasses_from_row = [f.strip() for f in str(row.get('fclasses', '')).split(';') if f]
+
+  # Build the PlaceType objects for each type and aat_type
+  for type_, aat_type in zip_longest(types, aat_types, fillvalue=None):
+    pt_data = {
+      'place': newpl,
+      'src_id': newpl.src_id,
+      'aat_id': aat_type,
+      'jsonb': {}
+    }
+    if type_:
+      pt_data['jsonb']['sourceLabel'] = type_
+    if aat_type:
+      pt_data['jsonb']['identifier'] = aat_type
+      pt_data['jsonb']['label'] = aat_fclass.get(aat_type, {}).get('term')
+
+    type_objects.append(PlaceType(**pt_data))
+
+  # Extract fclasses from aat_types and fclasses_from_row
+  fclass_list = [aat_fclass.get(aat, {}).get('fclass') for aat in aat_types if aat]
+  fclass_list.extend(fclasses_from_row)
+
+  # Deduplicate fclass_list
+  fclass_list = list(set(fclass_list))
+
+  # Update the Place object's fclasses field
+  newpl.fclasses = fclass_list
+  newpl.save()
+
+  return type_objects
+
+
+# create PlaceWhen object
+# update Place with minmax, timespans
+def process_when(row, newpl):
+  return
+
+
+# create PlaceGeom object for each geometry
+def process_geoms(row, newpl):
+  return
+
+
+# create PlaceLink object for each link (match)
+def process_links(row, newpl):
+  return
+
+
+# create PlaceRelated object for each relation
+def process_related(row, newpl):
+  return
+
+
+# create PlaceDescription object for each description
+def process_descriptions(row, newpl):
+  return
+
+
+# create PlaceDepiction object for each depiction
+def process_depictions(row, newpl):
+  return
+
+
 """
-  ds_insert_delim(df, pk)
+  ds_insert_delim(df, pk, user)
   *** replaces ds_insert_tsv() ***
   insert delimited data into database
   if insert fails anywhere, delete dataset + any related objects
 """
-# def ds_insert_delim(request, pk):
 def ds_insert_delim(df, pk, user):
-  csv.field_size_limit(300000)
+  df.dropna(axis=1, how='all', inplace=True)
+  df.replace({np.nan: None}, inplace=True)
   ds = get_object_or_404(Dataset, id=pk)
-  # user = request.user
-  print('ds_insert_tsv()',ds)
-  # retrieve just-added file
-  dsf = ds.files.all().order_by('-rev')[0]
-  print('ds_insert_tsv(): ds, file', ds, dsf)
-  # insert only if empty
-  dbcount = Place.objects.filter(dataset = ds.label).count()
-  # print('dbcount',dbcount)
+  uribase = ds.uri_base
+  noneyet = Place.objects.filter(dataset=ds.label).count() == 0
+  print(f"new dataset: {ds.label}, uri_base: {uribase}")
+
+  header = df.columns
+  print('df header', header)
   insert_errors = []
-  if dbcount == 0:
-    try:
-      infile = dsf.file.open(mode="r")
-      reader = csv.reader(infile, delimiter=dsf.delimiter)
-      # reader = csv.reader(infile, delimiter='\t')
+  # ensure dataset has no Place records yet
+  if noneyet:
+    # Loop through rows for insert
 
-      infile.seek(0)
-      header = next(reader, None)
-      header = [col.lower().strip() for col in header]
-      # print('header.lower()',[col.lower() for col in header])
+    objlists = {"PlaceName": [], "PlaceType": [], "PlaceGeom": [], "PlaceWhen": [],
+                "PlaceLink": [], "PlaceRelated": [], "PlaceDescription": [], "PlaceDescription": []}
 
-      # strip BOM character if exists
-      header[0] = header[0][1:] if '\ufeff' in header[0] else header[0]
-      print('header', header)
+    for index, row in df.iterrows():
+      # initialize empty lists for created objects
+      for index, row in df.iteritems():
+        # row = df.iloc[2]
 
-      objs = {"PlaceName":[], "PlaceType":[], "PlaceGeom":[], "PlaceWhen":[],
-              "PlaceLink":[], "PlaceRelated":[], "PlaceDescription":[]}
+        # create new Place + a PlaceName record for its title
+        newpl = create_place(row, ds)
 
-      # TODO: what if simultaneous inserts?
-      countrows=0
-      countlinked = 0
-      total_links = 0
-      for r in reader:
-        # build attributes for new Place instance
-        src_id = r[header.index('id')]
-        title = r[header.index('title')].strip() # don't try to correct incoming except strip()
-        title_source = r[header.index('title_source')]
-        title_uri = r[header.index('title_uri')] if 'title_uri' in header else ''
-        ccodes = r[header.index('ccodes')] if 'ccodes' in header else []
-        variants = [x.strip() for x in r[header.index('variants')].split(';')] \
-          if 'variants' in header and r[header.index('variants')] !='' else []
+        """
+        generate new related objects for objlists[]
+        """
+        # PlaceName
+        if 'variants' in df.columns and row['variants'] not in ['', None]:
+          objlists['PlaceName'].extend(process_variants(row, newpl))
+
+        # PlaceType
+        relevant_columns = ['types', 'aat_types', 'fclasses']
+        if any(col in df.columns for col in relevant_columns) and any(
+          row[col] not in ['', None] for col in relevant_columns):
+          objlists['PlaceType'].extend(process_types(row, newpl))
+
+        # PlaceWhen
+        process_when(row, newpl)
+
+        process_geoms(row, newpl)
+
+        process_links(row, newpl)
+
+        process_related(row, newpl)
+
+        process_descriptions(row, newpl)
+
+        process_depictions(row, newpl)
+
+        # build attributes for new related objects
+        variants = None if pd.isnull(row.get('variants')) else \
+          [x.strip() for x in str(row.get('variants', '')).split(';')] \
+            if row.get('variants', '') != '' else []
+        if variants:
+          objlists['PlaceName'].append()
+
         types = [x.strip() for x in r[header.index('types')].split(';')] \
           if 'types' in header else []
         aat_types = [x.strip() for x in r[header.index('aat_types')].split(';')] \
@@ -139,7 +322,7 @@ def ds_insert_delim(df, pk, user):
         #
         # PlaceName(); title, then variants
         #
-        objs['PlaceName'].append(
+        objlists['PlaceName'].append(
           PlaceName(
             place=newpl,
             src_id = src_id,
@@ -165,7 +348,7 @@ def ds_insert_delim(df, pk, user):
                 if haslang:
                   new_name.jsonb['lang'] = haslang.group(1)
 
-                objs['PlaceName'].append(new_name)
+                objlists['PlaceName'].append(new_name)
             except:
               print('error on variant', sys.exc_info())
               print('error on variant for newpl.id', newpl.id, v)
@@ -190,7 +373,7 @@ def ds_insert_delim(df, pk, user):
                   'msg':aatnum + ' not in WHG-supported list;'}
                 )
                 raise
-            objs['PlaceType'].append(
+            objlists['PlaceType'].append(
               PlaceType(
                 place=newpl,
                 src_id = src_id,
@@ -271,30 +454,17 @@ def ds_insert_delim(df, pk, user):
 
 
       # bulk_create(Class, batch_size=n) for each
-      PlaceName.objects.bulk_create(objs['PlaceName'],batch_size=10000)
-      PlaceType.objects.bulk_create(objs['PlaceType'],batch_size=10000)
-      try:
-        PlaceGeom.objects.bulk_create(objs['PlaceGeom'],batch_size=10000)
-      except:
-        print('geom insert failed', newpl, sys.exc_info())
-        pass
-      PlaceLink.objects.bulk_create(objs['PlaceLink'],batch_size=10000)
-      PlaceRelated.objects.bulk_create(objs['PlaceRelated'],batch_size=10000)
-      PlaceWhen.objects.bulk_create(objs['PlaceWhen'],batch_size=10000)
-      PlaceDescription.objects.bulk_create(objs['PlaceDescription'],batch_size=10000)
-
-      infile.close()
-      print('insert_errors', insert_errors)
-    except:
-      print('tsv insert failed', newpl, sys.exc_info())
-      # drop the (empty) dataset if insert wasn't complete
-      ds.delete()
-      # email to user, admin
-      failed_upload_notification(user, dsf.file.name, ds.label)
+      PlaceName.objects.bulk_create(objlist['PlaceName'],batch_size=10000)
+      PlaceType.objects.bulk_create(objlist['PlaceType'],batch_size=10000)
+      PlaceGeom.objects.bulk_create(objlist['PlaceGeom'],batch_size=10000)
+      PlaceLink.objects.bulk_create(objlist['PlaceLink'],batch_size=10000)
+      PlaceRelated.objects.bulk_create(objlist['PlaceRelated'],batch_size=10000)
+      PlaceWhen.objects.bulk_create(objlist['PlaceWhen'],batch_size=10000)
+      PlaceDescription.objects.bulk_create(objlist['PlaceDescription'],batch_size=10000)
 
       # return message to 500.html
-      messages.error(request, "Database insert failed, but we don't know why. The WHG team has been notified and will follow up by email to <b>"+user.username+'</b> ('+user.email+')')
-      return HttpResponseServerError()
+      # messages.error(request, "Database insert failed, but we don't know why. The WHG team has been notified and will follow up by email to <b>"+user.username+'</b> ('+user.email+')')
+      # return HttpResponseServerError()
   else:
     print('insert_tsv skipped, already in')
     messages.add_message(request, messages.INFO, 'data is uploaded, but problem displaying dataset page')
@@ -310,7 +480,6 @@ def ds_insert_delim(df, pk, user):
   *** replaces ds_insert_lpf() ***
   insert LPF into database
 """
-# def ds_insert_json(request, pk):
 def ds_insert_json(data, pk, user):
   import json
   [countrows,countlinked,total_links]= [0,0,0]
