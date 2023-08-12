@@ -696,6 +696,26 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
 
 
   # ORIGINAL base query
+<<<<<<< HEAD
+=======
+  # qbase = {"query": {
+  #   "bool": {
+  #     "must": [
+  #       {"terms": {"variants.names":variants}}
+  #     ],
+  #     # boosts score if matched
+  #     "should":[
+  #       {"terms": {"authids": qobj['authids']}}
+  #     ],
+  #     "filter": []
+  #   }
+  # }}
+  #
+
+
+  # BEGIN ALTERNATE, 04 Aug 2023
+  # Initialize qbase
+>>>>>>> b72e20f3 (commented new wdlocal qbase)
   qbase = {"query": {
     "bool": {
       "must": [
@@ -709,6 +729,7 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
     }
   }}
 
+<<<<<<< HEAD
   # BEGIN ALTERNATE qbase, 19 Aug 2023
   # qbase = {
   #   "query": {
@@ -735,6 +756,15 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
   #     }
   #   }
   # }
+=======
+  # Add a match query for each variant to the nested bool query
+  for variant in variants:
+    qbase["query"]["bool"]["must"][0]["bool"]["should"].append(
+      # {"match": {"variants.names": {"query": variant, "fuzziness": "AUTO"}}}
+      {"match_phrase": {"variants.names": {"query": variant}}}
+    )
+  # END ALTERNATE, 04 Aug 2023
+>>>>>>> b72e20f3 (commented new wdlocal qbase)
 
   # somthing to try?
   # # Add a match query for each variant to the nested bool query
