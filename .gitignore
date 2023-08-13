@@ -55,5 +55,6 @@ local_settings.py
 *.pyc
 __pycache__/
 whg/__pycache__/
+whg/logs/
 db.sqlite3
 
