@@ -696,42 +696,41 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
 
 
   # ORIGINAL base query
-  # qbase = {"query": {
-  #   "bool": {
-  #     "must": [
-  #       {"terms": {"variants.names":variants}}
-  #     ],
-  #     # boosts score if matched
-  #     "should":[
-  #       {"terms": {"authids": qobj['authids']}}
-  #     ],
-  #     "filter": []
-  #   }
-  # }}
-  #
-
-
-  # ALTERNATE, 04 Aug 2023
-  # Initialize qbase
   qbase = {"query": {
     "bool": {
       "must": [
-        {"bool": {
-          "should": [],
-          "minimum_should_match": 1
-        }}
+        {"terms": {"variants.names":variants}}
       ],
-      "filter": [],
-      "should": []
+      # boosts score if matched
+      "should":[
+        {"terms": {"authids": qobj['authids']}}
+      ],
+      "filter": []
     }
   }}
 
-  # Add a match query for each variant to the nested bool query
-  for variant in variants:
-    qbase["query"]["bool"]["must"][0]["bool"]["should"].append(
-      # {"match": {"variants.names": {"query": variant, "fuzziness": "AUTO"}}}
-      {"match_phrase": {"variants.names": {"query": variant}}}
-    )
+  # BEGIN ALTERNATE qbase, 04 Aug 2023
+  # Initialize qbase
+  # qbase = {"query": {
+  #   "bool": {
+  #     "must": [
+  #       {"bool": {
+  #         "should": [],
+  #         "minimum_should_match": 1
+  #       }}
+  #     ],
+  #     "filter": [],
+  #     "should": []
+  #   }
+  # }}
+  #
+  # # Add a match query for each variant to the nested bool query
+  # for variant in variants:
+  #   qbase["query"]["bool"]["must"][0]["bool"]["should"].append(
+  #     # {"match": {"variants.names": {"query": variant, "fuzziness": "AUTO"}}}
+  #     {"match_phrase": {"variants.names": {"query": variant}}}
+  #   )
+  # END ALTERNATE, 04 Aug 2023
 
   # add spatial filter as available in qobj
   if has_geom:
@@ -765,10 +764,12 @@ def es_lookup_wdlocal(qobj, *args, **kwargs):
   # Create a copy of qbase for q2
   q2 = deepcopy(qbase)
 
+  # BEGIN FOR ALTERNATE TEST
   # For variants.names as a text field (wd_text index)
   # Add a prefix query for anything starting with first 5 characters (w/spatial constraint)
-  q2['query']['bool']['must'][0]['bool']['should'].append(
-    {"prefix": {"variants.names": {"value": qobj['title'][:5]}}})
+  # q2['query']['bool']['must'][0]['bool']['should'].append(
+  #   {"prefix": {"variants.names": {"value": qobj['title'][:5]}}})
+  # END FOR ALTERNATE TEST
 
   # Adds weight but not required
   if len(qtypes) > 0:
