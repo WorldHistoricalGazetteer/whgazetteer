@@ -141,9 +141,11 @@ ul.no-indent > li {
         <input type="hidden" name="upload_date" value='2020-02-15'></input>
         <br/>
         <!-- upload button initially & if it's not yet ok -->
+			  <!-- onclick="startLoading()" -->
         {% if status != 'format_ok' %}
-        <input id="btn_upload" class="btn btn-primary btn-sm" type="submit" value="Upload" />
-        <span title="back"><a href="{% url 'data-datasets' %}">Cancel</a></span>
+	        <input id="btn_upload" class="btn btn-primary btn-sm"
+	               type="submit" value="Upload" />
+	        <span title="back"><a href="{% url 'data-datasets' %}">Cancel</a></span>
         {% endif %}
 		    </form>
       </div>
@@ -197,6 +199,43 @@ ul.no-indent > li {
 </div>
 
 <script type="text/javascript">
+
+	function startLoading() {
+	  // get the button
+	  const button = $('#btn_upload');
+
+	  // disable the button
+	  button.disabled = true;
+
+	  // change the button's content to show the spinner and the loading text
+	  button.innerHTML = `
+	    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+	    Loading...
+	  `;
+
+	  // Here you can also initiate your file upload or any other asynchronous task
+
+	  // For demonstration purposes, I'll use a timeout to simulate a task completion
+	  setTimeout(stopLoading, 2000); // let's assume your task takes 2 seconds
+	}
+
+	function stopLoading() {
+	  const button = document.getElementById('uploadButton');
+
+	  // enable the button
+	  button.disabled = false;
+
+	  // revert the button's content to its original state
+	  button.innerHTML = 'Upload';
+	}
+
+	let fileInput = $('#id_file');
+	fileInput.addEventListener('change', function() {
+	  let fileSize = fileInput.files[0].size / 1024 / 1024; // in MB
+	  if (fileSize > 2) {
+      startUploadSpinner()
+	  }
+	});
 
   $(function(){
     // popover help

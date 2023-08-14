@@ -1,6 +1,6 @@
 # datasets.views; refactored 2023-08
 
-import json, shutil # re, sys
+import json, re, shutil, sys
 
 # external
 import os
@@ -11,8 +11,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.gis.geos import GEOSGeometry
 from django.core.mail import send_mail
 from django.core.paginator import Paginator
-from django.db.models import Q
-from django.db.utils import DataError
+from django.db import transaction
 from django.forms import modelformset_factory
 from django.http import HttpResponseServerError, HttpResponseRedirect, JsonResponse
 from django.shortcuts import redirect
@@ -25,8 +24,9 @@ from pathlib import Path
 from areas.models import Area
 from collection.models import Collection
 
-# datasets imports
-from .exceptions import LPFValidationError, DelimValidationError
+# datasets app imports
+from .exceptions import LPFValidationError, DelimValidationError, \
+  DelimInsertError, DataAlreadyProcessedError
 from .forms import *
 from .insert import ds_insert_json, ds_insert_delim, \
   ds_insert_lpf, ds_insert_tsv, failed_upload_notification
@@ -34,7 +34,10 @@ from .models import Dataset, Hit, DatasetFile, DatasetUser
 from .static.hashes import mimetypes_plus as mthash_plus
 from .static.hashes.parents import ccodes as cchash
 from .tasks import align_wdlocal, align_idx, maxID
-from .utils import *
+from .utils import aat_lookup, \
+  get_encoding_delim, get_encoding_excel, get_object_or_404, \
+  makeCoords, parse_errors_lpf, parse_errors_tsv, parse_wkt, \
+  render, status_emailer, emailer
 from .validation import validate_delim, validate_lpf, validate_tsv
 
 from elastic.es_utils import makeDoc, removePlacesFromIndex, removeDatasetFromIndex
@@ -748,7 +751,7 @@ def ds_recon(request, pk):
       print('Celery is down :^(')
       emailer('Celery is down :^(',
               'if not celeryUp() -- look into it, bub!',
-              'whg@pitt.edu',
+              'whg@kgeographer.org',
               ['karl@kgeographer.org'])
       messages.add_message(request, messages.INFO, """Sorry! WHG reconciliation services appears to be down.
         The system administrator has been notified.""")
@@ -777,8 +780,8 @@ def ds_recon(request, pk):
       messages.add_message(request, messages.INFO, "Sorry! Reconciliation services appear to be down. The system administrator has been notified.<br/>"+ str(sys.exc_info()))
       emailer('WHG recon task failed',
               'a reconciliation task has failed for dataset #'+ds.id+', w/error: \n' +str(sys.exc_info())+'\n\n',
-              'whg@pitt.edu',
-              'whgadmin@kgeographer.org')
+              'whg@kgeographer.org',
+              'karl@kgeographer.org')
 
       return redirect('/datasets/'+str(ds.id)+'/reconcile')
 
@@ -2602,8 +2605,11 @@ def read_file_into_dataframe(file, ext):
 
   elif ext == 'tsv':
     df = pd.read_csv(file, sep='\t', converters={
-      'id': str, 'start': str, 'end': str,
-      'aat_types': str, 'lon': float, 'lat': float})
+      'id': str, 'start': str, 'end': str, 'aat_types': str})
+
+    # Convert 'lon' and 'lat' with error handling
+    df['lon'] = pd.to_numeric(df['lon'], errors='coerce')
+    df['lat'] = pd.to_numeric(df['lat'], errors='coerce')
 
   elif ext == 'xlsx' or ext == 'ods':
     df = pd.read_excel(file, converters={
@@ -2652,12 +2658,12 @@ class DatasetCreate(LoginRequiredMixin, CreateView):
     # Get the mimetype and extension
     mimetype = file.content_type
     ext = mthash_plus.mimetypes.get(mimetype, None)
-
+    # print('ext in form_valid', ext)
     infile = file.open(mode="r")
-    jdata = json.loads(infile.read())
 
     # For JSON files:
     if ext == 'json':
+      jdata = json.loads(infile.read())
       try:
         result = validate_lpf(tempfn, 'coll')
       except LPFValidationError as e:
@@ -2691,9 +2697,17 @@ class DatasetCreate(LoginRequiredMixin, CreateView):
 
     # For delimited files:
     elif ext in ['csv', 'tsv', 'xlsx', 'ods']:
+      # TEST ROUTINE
+      # df = pd.read_csv(file, sep='\t', dtype=str)
+      # empty_cells = df[df == ''].stack().index.tolist()
+      # print('empty_cells', empty_cells)
+      # print('df', df)
+      # return
+      #  END TEST
+
       df = read_file_into_dataframe(file, ext)
       try:
-        errors = validate_delim(df)
+        validate_delim(df)
       except DelimValidationError as e:
         error_list = e.args[0]
 
@@ -2717,13 +2731,41 @@ class DatasetCreate(LoginRequiredMixin, CreateView):
       dataset.save()
 
       # Directly process the DataFrame and create database entries
-      # insert_delim_data(df, dataset.pk)
-      result = ds_insert_delim(df, dataset.pk, user)
+      try:
+        with transaction.atomic():
+          ds_insert_delim(df, dataset.pk)
+      except DataAlreadyProcessedError:
+        messages.info(self.request, "The data appears to have already been processed.")
+        return self.render_to_response(self.get_context_data(form=form))
+      except DelimInsertError as e:
+        error_list = e.args[0]
 
-    # backfill to new Dataset object and save
-    dataset.numrows = result['numrows']
-    dataset.numlinked = result['numlinked']
-    dataset.total_links = result['total_links']
+        # Construct the error message for the user
+        if len(error_list) > 1:
+          message = "<b>Several errors occurred during insertion; the first of these are</b>:<ul class='no-indent'>"
+        else:
+          message = "<b>Errors occurred during insertion</b>:<ul class='no-indent'>"
+
+        for err in error_list:
+          row = err['row']
+          reason = err['error']
+          message += f"<li>Row {row}: {reason}</li>"
+        message += "</ul>"
+
+        messages.error(self.request, message)
+        return self.render_to_response(self.get_context_data(form=form))
+
+      # backfill to new Dataset object and save
+
+    else:
+      message = "Detected file type is not supported - must be one of json, csv, tsv, xlsx, or ods."
+      messages.error(self.request, message)
+      return self.render_to_response(self.get_context_data(form=form))
+
+    if result:
+      dataset.numrows = result['numrows']
+      dataset.numlinked = result['numlinked']
+      dataset.total_links = result['total_links']
     dataset.ds_status = 'uploaded'
     dataset.save()
 
@@ -2741,10 +2783,6 @@ class DatasetCreate(LoginRequiredMixin, CreateView):
       df_status = 'uploaded'
     )
 
-    # dataset.file.df_status = 'uploaded'
-    # dataset.file.numrows = result['numrows']
-    # dataset.file.save()
-
     # write log entry
     Log.objects.create(
       # category, logtype, "timestamp", subtype, dataset_id, user_id
@@ -2756,8 +2794,8 @@ class DatasetCreate(LoginRequiredMixin, CreateView):
     )
 
     # If everything went well:
-    return super().form_valid(form)
-    # or return redirect('/datasets/'+str(dsobj.id)+'/summary')
+    # return super().form_valid(form)
+    return redirect('/datasets/'+str(dataset.id)+'/summary')
 
 
 """

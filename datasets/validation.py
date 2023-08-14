@@ -2,6 +2,15 @@ import logging, codecs, json, os, re, sys
 from frictionless import validate as fvalidate
 from jsonschema import draft7_format_checker, validate, ValidationError
 from .exceptions import LPFValidationError, DelimValidationError
+from places.models import Type
+
+aat_fclass = {}
+for type_obj in Type.objects.all():
+    # aat_fclass["aat:" + str(type_obj.aat_id)] = {
+    aat_fclass[type_obj.aat_id] = {
+        "fclass": type_obj.fclass,
+        "term": type_obj.term
+    }
 
 def parse_validation_error(error):
     # Extract key parts of the error message
@@ -69,16 +78,23 @@ def validate_lpf(tempfn, format):
 		result['count'] = countrows
 	return result
 
+aliases = ["bnf", "cerl", "dbp", "gn", "gnd", "gov", "loc", "pl", "tgn", "viaf", "wd", "wp", "whg"]
+pattern = r"(https?:\\/\\/.*\\..*;?)+|(" + "|".join(aliases) + r":.*;?)+"
+
 #
 # replaces validate_tsv()
 def validate_delim(df):
 	errors = []
 
 	# Define required fields and patterns
+	aliases = ["bnf", "cerl", "dbp", "gn", "gnd", "gov", "loc", "pl", "tgn", "viaf", "wd", "wp", "whg"]
+	pattern = r"https?:\/\/.*\..*|(" + "|".join(aliases) + r"):\d+"
+
+	# Define required fields and patterns
 	required_fields = ['id', 'title', 'title_source', 'start']
 	pattern_constraints = {
 		'ccodes': "([a-zA-Z]{2};?)+",
-		'matches': "(https?:\\/\\/.*\\..*;?)+|([a-z]{1,8}:.*;?)+",
+		'matches': pattern,
 		'parent_id': "(https?:\/\/.*\\..*|#\\d*)",
 		'start': "(-?\\d{1,4}(-\\d{2})?(-\\d{2})?)(\/(-?\\d{1,4}(-\\d{2})?(-\\d{2})?))?",
 		'end': "(-?\\d{1,4}(-\\d{2})?(-\\d{2})?)(\/(-?\\d{1,4}(-\\d{2})?(-\\d{2})?))?"
@@ -95,15 +111,37 @@ def validate_delim(df):
 			if field not in row:
 				errors.append({"row": index + 1, "error": f"Required field missing: {field}"})
 
-		# Check for either "parent_name" or "parent_id"
-		if not ("parent_name" in row or "parent_id" in row):
-			errors.append({"row": index + 1, "error": "Either 'parent_name' or 'parent_id' must be present"})
+		# Check for either "start" or "attestation_year"
+		if not ("start" in row or "attestation_year" in row):
+			errors.append({"row": index + 1, "error": "Either 'start' or 'attestation_year' must be present"})
+
+		supported_aat_types = {aat_id for aat_id in aat_fclass}
+		aat_types = [int(a.strip()) for a in str(row.get('aat_types', '')).split(';') if a]
+
+		for aat_type in aat_types:
+			if aat_type not in supported_aat_types:
+				errors.append({
+					"row": index + 1,
+					"error": f"Unsupported aat_type: {aat_type}"
+				})
 
 		# Check pattern constraints
 		for field, pattern in pattern_constraints.items():
-			if field in row and not bool(re.search(pattern, str(row[field]))):
-				errors.append(
-					{"row": index + 1, "error": f"Field {field} contains a value that does not match the required pattern"})
+			# Check if the field exists in the row
+			if field in row:
+				value = str(row[field])
+				# If the field's value is an empty string or "nan" or it matches the pattern, continue to the next iteration
+				if value in ('', 'nan') or bool(re.search(pattern, value)):
+					continue
+				if field == 'matches':
+					errors.append(
+						{"row": index + 1,
+						 "error": f"Field {field} contains an unsupported alias or invalid URL. Please use supported alias(es)."}
+					)
+				else:
+					errors.append(
+						{"row": index + 1, "error": f"Field {field} contains a value that does not match the required pattern"}
+					)
 
 		# Check range constraints
 		for field, (low, high) in range_constraints.items():
@@ -116,7 +154,8 @@ def validate_delim(df):
 	return errors
 
 #
-# DEPRECATED 2023-08 validate LP-TSV file (uses frictionless.py 3.31.0)
+# DEPRECATED 2023-08 (uses frictionless.py 3.31.0)
+# replaces by validate_delim()
 #
 def validate_tsv(fn, ext):
 	# incoming csv or tsv; in cases converted from xlsx or ods via pandas

@@ -23,6 +23,7 @@ from places.models import PlaceGeom, Type
 pp = pprint.PrettyPrinter(indent=1)
 
 """
+	TODO: broken? not in use?
   email various, incl. Celery down notice
   to ['whgazetteer@gmail.com','karl@kgeographer.org'],
 """
@@ -476,9 +477,9 @@ def parse_errors_lpf(errors):
 def parsedates_tsv(dates):
 	# print('parsedates() dates', dates)
 	# they are either a string or None at this point
-	s_yr=int(dates[0]) if dates[0] else None; print('s_yr:', s_yr)
-	e_yr=int(dates[1]) if dates[1] else None; print('e_yr:', e_yr)
-	src_yr=int(dates[2]) if dates[2] else None; print('src_yr:', src_yr)
+	s_yr=int(dates[0]) if dates[0] else None  #; print('s_yr:', s_yr)
+	e_yr=int(dates[1]) if dates[1] else None  #; print('e_yr:', e_yr)
+	att_yr=int(dates[2]) if dates[2] else None  #; print('src_yr:', att_yr)
 	result = {
 		"timespans":[{
 			"start": {
@@ -487,7 +488,7 @@ def parsedates_tsv(dates):
 				"latest":e_yr or None}
 		}],
 		"minmax":[s_yr or -99999, e_yr or 9999],
-		"source_year": src_yr
+		"attestation_year": att_yr
 	}
 	# print('parsedates_tsv() result', result)
 	return result
@@ -1038,11 +1039,9 @@ def makeCoords(lonstr,latstr):
 
 # might be GeometryCollection or singleton
 def ccodesFromGeom(geom):
-	#print('ccodesFromGeom() geom',geom)
-	if geom['type'] == 'Point' and geom['coordinates'] ==[]:
+	if geom['type'] == 'Point' and geom['coordinates'] == []:
 		ccodes = []
 		return ccodes
-		#print(ccodes)
 	else:
 		g = GEOSGeometry(str(geom))
 		if g.geom_type == 'GeometryCollection':

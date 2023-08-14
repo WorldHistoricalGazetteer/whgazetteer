@@ -2,6 +2,7 @@
 
 import csv, json, os, re, sys
 import pandas as pd
+import numpy as np
 import warnings
 from itertools import zip_longest
 
@@ -12,12 +13,12 @@ from django.db.utils import DataError
 from django.http import HttpResponseServerError
 from django.shortcuts import get_object_or_404, redirect
 
+from .exceptions import DelimInsertError, DataAlreadyProcessedError
 from .models import Dataset
 from places.models import *
-from .utils import aliasIt, aat_lookup, ccodesFromGeom, \
-  makeCoords, parse_wkt, parsedates_tsv, parsedates_lpf, emailer
+from datasets.utils import aliasIt, aat_lookup, ccodesFromGeom, \
+  makeCoords, parse_wkt, parsedates_tsv, parsedates_lpf
 from places.models import *
-
 
 # 'lugares_20.jsonld','lugares_20_broken.jsonld'
 # test setup
@@ -40,9 +41,6 @@ def read_tsv_into_dataframe(file):
   # df = read_tsv_into_dataframe(files[0])
   # dfbroken = read_tsv_into_dataframe(files[1])
   # df=dfbroken
-
-
-from places.models import Type
 
 aat_fclass = {}
 for type_obj in Type.objects.all():
@@ -78,401 +76,301 @@ def process_variants(row, newpl):
   variants = None if pd.isnull(row.get('variants')) else \
     [x.strip() for x in str(row.get('variants', '')).split(';')] \
       if row.get('variants', '') != '' else []
-  name_objects = []
+  name_objects = []  # gather variants to be written
+  error_msgs = []  # gather error messages
   if variants:
     for v in variants:
-      name = v.strip()
       try:
+        name = v.strip()
         haslang = re.search("@(.*)$", name)
-        language = haslang.group(1)
-        if len(v.strip()) > 200:
-          # handle super-long names?
-          pass
-        else:
-          # print('variant for', newpl.id, v)
-          new_name = PlaceName(
-            place=newpl,
-            src_id=newpl.src_id,
-            toponym=v.strip(),
-            jsonb={"toponym": v.strip(),
-                   "citations": [
-                     {"id": row['title_uri'],
-                      "label": row['title_source']}]}
-          )
-          if haslang:
-            new_name.jsonb['lang'] = haslang.group(1)
+        new_name = PlaceName(
+          place=newpl,
+          src_id=newpl.src_id,
+          toponym=v.strip(),
+          jsonb={"toponym": v.strip(),
+                 "citations": [
+                   {"id": row['title_uri'],
+                    "label": row['title_source']}
+                 ]})
+        if haslang:
+          new_name.jsonb['lang'] = haslang.group(1)
 
-          name_objects.append(new_name)
+        name_objects.append(new_name)
       except:
-        print('error on variant', sys.exc_info())
-        print('error on variant for newpl.id', newpl.id, v)
+        error_msgs.append(f"Error writing variant '{v}' for place <b>{row['id']}</b>: <b>{row['toponym']}</b>")
+
+  if error_msgs:  # if there are any error messages
+    raise DelimInsertError("; ".join(error_msgs))  # raise an exception with all error messages joined
+
   return name_objects
 
-
-# create PlaceType object for each aat_type
-# update Place with fclasses[]
+# create PlaceType object for each aat_type; update Place with fclasses[]
 def process_types(row, newpl):
   type_objects = []
+  error_msgs = []
 
-  # Extract types and aat_types from the row
+  # Extract types, aat_types from the row; fclasses (future)
   types = [t.strip() for t in str(row.get('types', '')).split(';') if t]
   aat_types = [int(a.strip()) for a in str(row.get('aat_types', '')).split(';') if a]
   fclasses_from_row = [f.strip() for f in str(row.get('fclasses', '')).split(';') if f]
 
   # Build the PlaceType objects for each type and aat_type
   for type_, aat_type in zip_longest(types, aat_types, fillvalue=None):
-    pt_data = {
-      'place': newpl,
-      'src_id': newpl.src_id,
-      'aat_id': aat_type,
-      'jsonb': {}
-    }
-    if type_:
-      pt_data['jsonb']['sourceLabel'] = type_
-    if aat_type:
-      pt_data['jsonb']['identifier'] = aat_type
-      pt_data['jsonb']['label'] = aat_fclass.get(aat_type, {}).get('term')
+    try:
+      pt_data = {
+        'place': newpl,
+        'src_id': newpl.src_id,
+        'aat_id': aat_type,
+        'jsonb': {}
+      }
+      if type_:
+        pt_data['jsonb']['sourceLabel'] = type_
+      if aat_type:
+        pt_data['jsonb']['identifier'] = aat_type
+        pt_data['jsonb']['label'] = aat_fclass.get(aat_type, {}).get('term')
 
-    type_objects.append(PlaceType(**pt_data))
+      type_objects.append(PlaceType(**pt_data))
+    except Exception as e:  # Catch all exceptions and store in variable e
+      error_msgs.append(f"Error writing type '{type_}' for place <b>{newpl} ({newpl.src_id})</b>. Details: {e}")
 
   # Extract fclasses from aat_types and fclasses_from_row
-  fclass_list = [aat_fclass.get(aat, {}).get('fclass') for aat in aat_types if aat]
-  fclass_list.extend(fclasses_from_row)
+  try:
+    fclass_list = [aat_fclass.get(aat, {}).get('fclass') for aat in aat_types if aat]
+    fclass_list.extend(fclasses_from_row)
 
-  # Deduplicate fclass_list
-  fclass_list = list(set(fclass_list))
+    # Deduplicate fclass_list
+    fclass_list = list(set(fclass_list))
+    # Update the Place object's fclasses field
+    newpl.fclasses = fclass_list
+    newpl.save()
+  except Exception as e:  # Catch all exceptions and store in variable e
+    error_msgs.append(f"Error writing fclass codes for place <b>{newpl.title} ({newpl.src_id})</b>. Details: {e}")
 
-  # Update the Place object's fclasses field
-  newpl.fclasses = fclass_list
-  newpl.save()
+  if error_msgs:  # if there are any error messages
+    raise DelimInsertError("; ".join(error_msgs))  # raise an exception with all error messages joined
 
   return type_objects
 
-
-# create PlaceWhen object
-# update Place with minmax, timespans
+# create PlaceWhen object; update Place with minmax, timespans
 def process_when(row, newpl):
-  return
+  error_msgs = []
 
+  try:
+    # Check for existence of the columns and not empty
+    start = int(row['start']) if 'start' in row and row.get('start', '') else None
+    end = int(row['end']) if 'end' in row and row.get('end', '') else None
+    attestation_year = int(row['attestation_year']) if \
+      'attestation_year' in row and row.get('attestation_year', '') else None
 
-# create PlaceGeom object for each geometry
-def process_geoms(row, newpl):
-  return
+    # Either start or attestation_year is assured by validation
+    dates = (start, end, attestation_year)
+    datesobj = parsedates_tsv(dates)
 
+    # Update the newpl object with the computed values
+    newpl.minmax = datesobj['minmax']
+    newpl.attestation_year = attestation_year
+    newpl.timespans = [datesobj['minmax']]
+    newpl.save()
 
-# create PlaceLink object for each link (match)
+    # Create the PlaceWhen object
+    when_object = PlaceWhen(
+      place=newpl,
+      src_id=newpl.src_id,
+      jsonb=datesobj
+    )
+
+  except ValueError:
+    error_msgs.append(f"Error converting date values for place <b>{newpl} ({newpl.src_id})</b>.")
+  except Exception as e:
+    error_msgs.append(f"Error processing dates for place <b>{newpl} ({newpl.src_id})</b>. Details: {e}")
+
+  if error_msgs:
+    raise DelimInsertError("; ".join(error_msgs))
+
+  return [when_object]
+
+# create PlaceGeom object and/or generate ccodes
+def process_geom(row, newpl):
+  error_msgs = []
+  geojson = None
+
+  # If 'lat' and 'lon' are both present, generate Point geometry
+  if all(col in row for col in ['lat', 'lon']) and row['lat'] and row['lon']:
+    coords = [float(row['lon']), float(row['lat'])]
+    geojson = {
+      "type": "Point",
+      "coordinates": coords,
+      "geowkt": 'POINT(' + str(coords[0]) + ' ' + str(coords[1]) + ')'
+    }
+  # If 'geowkt' is present, parse and generate corresponding geojson
+  elif 'geowkt' in row and row['geowkt']:
+    try:
+      geojson = parse_wkt(row['geowkt'])
+    except Exception as e:
+      error_msgs.append(f"Error converting WKT for place <b>{newpl} ({newpl.src_id})</b>. Details: {e}")
+
+  # Add optional 'geo_source' and 'geo_id' to geojson
+  if geojson and 'geo_source' in row and row['geo_source']:
+    geojson['citation'] = {
+      'label': row['geo_source'],
+      'id': row['geo_id'] if 'geo_id' in row else None
+    }
+
+  # Create the PlaceGeom object if geojson exists
+  geom_object = None
+  if geojson:
+    try:
+      geom_object = PlaceGeom(
+          place=newpl,
+          src_id=newpl.src_id,
+          jsonb=geojson,
+          geom=GEOSGeometry(json.dumps(geojson))
+      )
+    except Exception as e:
+      error_msgs.append(f"Error creating GEOSGeometry for place <b>{newpl} ({newpl.src_id})</b>. Details: {e}")
+
+  print('geom',geom_object.geom)
+
+  # Process ccodes
+  if 'ccodes' in row and row['ccodes']:
+    ccodes = [x.strip().upper() for x in row['ccodes'].split(';')]
+  elif geojson:
+    try:
+      ccodes = ccodesFromGeom(geojson)
+    except Exception as e:
+      error_msgs.append(f"Error generating country codes for place <b>{newpl} ({newpl.src_id})</b>. Details: {e}")
+  else:
+    ccodes = []
+
+  newpl.ccodes = ccodes
+  newpl.save()
+
+  if error_msgs:
+    raise DelimInsertError("; ".join(error_msgs))
+
+  # Return the geom_object (if it was created)
+  return [geom_object] if geom_object else []
+
+# create PlaceLink object for each matches value
 def process_links(row, newpl):
-  return
+  link_objects = []
 
+  # confirmed previously to have accepted alias prefix
+  for link in row['matches'].split(';'):
+    link_object = PlaceLink(
+      place=newpl,
+      src_id=newpl.src_id,
+      jsonb={"identifier": link, "type": "closeMatch"},
+      link=link.strip()
+    )
+    link_objects.append(link_object)
+  return link_objects
 
-# create PlaceRelated object for each relation
+# create PlaceRelated object from parent_name, parent_id
 def process_related(row, newpl):
-  return
+  # in LP-Delim, only parent relation (gvp:broaderPartitive)
+  related_object = PlaceRelated(
+    place=newpl,
+    src_id=newpl.src_id,
+    jsonb={"identifier": row["parent_name"],
+           "relationType": "gvp:broaderPartitive"},
+  )
+  if row['parent_id']:
+    related_object['jsonb']['relationTo'] = row['parent_id']
 
+  return [related_object]
 
-# create PlaceDescription object for each description
+# create PlaceDescription object
 def process_descriptions(row, newpl):
-  return
+  descrip_object = PlaceDescription(
+    place=newpl,
+    src_id=newpl.src_id,
+    jsonb={"value": row['description']}
+  )
 
-
-# create PlaceDepiction object for each depiction
-def process_depictions(row, newpl):
-  return
+  return [descrip_object]
 
 
 """
-  ds_insert_delim(df, pk, user)
+  ds_insert_delim(df, pk)
   *** replaces ds_insert_tsv() ***
   insert delimited data into database
   if insert fails anywhere, delete dataset + any related objects
 """
-def ds_insert_delim(df, pk, user):
+def ds_insert_delim(df, pk):
+  # tidy up dataframe
   df.dropna(axis=1, how='all', inplace=True)
   df.replace({np.nan: None}, inplace=True)
+  # get new dataset
   ds = get_object_or_404(Dataset, id=pk)
   uribase = ds.uri_base
-  noneyet = Place.objects.filter(dataset=ds.label).count() == 0
-  print(f"new dataset: {ds.label}, uri_base: {uribase}")
+  # any
+  noplaces = Place.objects.filter(dataset=ds.label).count() == 0
+  # print(f"new dataset: {ds.label}, uri_base: {uribase}")
 
-  header = df.columns
-  print('df header', header)
-  insert_errors = []
-  # ensure dataset has no Place records yet
-  if noneyet:
-    # Loop through rows for insert
+  # header = df.columns
+  # print('df header', header)
 
-    objlists = {"PlaceName": [], "PlaceType": [], "PlaceGeom": [], "PlaceWhen": [],
-                "PlaceLink": [], "PlaceRelated": [], "PlaceDescription": [], "PlaceDescription": []}
+  # ensure dataset has no orphaned Place records
+  # this appears to be a pre-refactor remnant
+  if not noplaces:
+    raise DataAlreadyProcessedError("The data appears to have already been processed.")
 
-    for index, row in df.iterrows():
-      # initialize empty lists for created objects
-      for index, row in df.iteritems():
-        # row = df.iloc[2]
+  # bins for bulK_insert at end
+  objlists = {"PlaceName": [], "PlaceType": [], "PlaceGeom": [], "PlaceWhen": [],
+              "PlaceLink": [], "PlaceRelated": [], "PlaceDescription": []}
 
-        # create new Place + a PlaceName record for its title
-        newpl = create_place(row, ds)
+  # Loop through rows for insert
+  for index, row in df.iterrows():
+    # initialize empty lists for created objects
+    for index, row in df.iteritems():
+      # row = df.iloc[17] # Abu Tij (lots of info)
 
-        """
-        generate new related objects for objlists[]
-        """
-        # PlaceName
-        if 'variants' in df.columns and row['variants'] not in ['', None]:
-          objlists['PlaceName'].extend(process_variants(row, newpl))
+      """
+        create new Place + a PlaceName record from its title
+      """
+      newpl = create_place(row, ds)
 
-        # PlaceType
-        relevant_columns = ['types', 'aat_types', 'fclasses']
-        if any(col in df.columns for col in relevant_columns) and any(
-          row[col] not in ['', None] for col in relevant_columns):
-          objlists['PlaceType'].extend(process_types(row, newpl))
+      """
+      generate new related objects for objlists[]
+      """
+      # PlaceName
+      if 'variants' in df.columns and row['variants'] not in ['', None]:
+        objlists['PlaceName'].extend(process_variants(row, newpl))
 
-        # PlaceWhen
-        process_when(row, newpl)
+      # PlaceType
+      relevant_columns = ['types', 'aat_types', 'fclasses']
+      if any(col in df.columns for col in relevant_columns) and \
+        any(row[col] not in ['', None] for col in relevant_columns):
+        objlists['PlaceType'].extend(process_types(row, newpl))
 
-        process_geoms(row, newpl)
+      # PlaceWhen (always at least a start or attestation_year)
+      objlists['PlaceWhen'].extend(process_when(row, newpl))
 
-        process_links(row, newpl)
+      # PlaceGeom
+      if ('lat' in row and 'lon' in row and row['lat'] and row['lon']) or ('geowkt' in row and row['geowkt']):
+        objlists['PlaceGeom'].extend(process_geom(row, newpl))
 
-        process_related(row, newpl)
+      # PlaceLink
+      if ('matches' in row and row['matches']):
+        objlists['PlaceLink'].extend(process_links(row, newpl))
 
-        process_descriptions(row, newpl)
+      # PlaceRelated
+      if ('parent_name' in row and row['parent_name']):
+        objlists['PlaceRelated'].extend(process_related(row, newpl))
 
-        process_depictions(row, newpl)
+      # PlaceDescription
+      if ('description' in row and row['description']):
+        objlists['PlaceDescription'].extend(process_descriptions(row, newpl))
 
-        # build attributes for new related objects
-        variants = None if pd.isnull(row.get('variants')) else \
-          [x.strip() for x in str(row.get('variants', '')).split(';')] \
-            if row.get('variants', '') != '' else []
-        if variants:
-          objlists['PlaceName'].append()
-
-        types = [x.strip() for x in r[header.index('types')].split(';')] \
-          if 'types' in header else []
-        aat_types = [x.strip() for x in r[header.index('aat_types')].split(';')] \
-          if 'aat_types' in header else []
-        parent_name = r[header.index('parent_name')] if 'parent_name' in header else ''
-        parent_id = r[header.index('parent_id')] if 'parent_id' in header else ''
-        coords = makeCoords(r[header.index('lon')],r[header.index('lat')]) \
-          if 'lon' in header and 'lat' in header else None
-        geowkt = r[header.index('geowkt')] if 'geowkt' in header else None
-        # replaced None with '' 25 May 2023
-        geosource = r[header.index('geo_source')] if 'geo_source' in header else ''
-        geoid = r[header.index('geo_id')] if 'geo_id' in header else None
-        geojson = None # zero it out
-        # make Point geometry from lon/lat if there
-        if coords and len(coords) == 2:
-          geojson = {"type": "Point", "coordinates": coords,
-                      "geowkt": 'POINT('+str(coords[0])+' '+str(coords[1])+')'}
-        # else make geometry (any) w/Shapely if geowkt
-        if geowkt and geowkt not in ['']:
-          geojson = parse_wkt(geowkt)
-        if geojson and (geosource or geoid):
-          geojson['citation']={'label':geosource,'id':geoid}
-
-        # ccodes; compute if missing and there is geometry
-        if len(ccodes) == 0:
-          if geojson:
-            try:
-              ccodes = ccodesFromGeom(geojson)
-            except:
-              pass
-          else:
-            ccodes = []
-        else:
-          ccodes = [x.strip().upper() for x in r[header.index('ccodes')].split(';')]
-
-        # TODO: assign aliases if wd, tgn, pl, bnf, gn, viaf
-        matches = [aliasIt(x.strip()) for x in r[header.index('matches')].split(';')] \
-          if 'matches' in header and r[header.index('matches')] != '' else []
-
-        # TODO: patched Apr 2023; needs refactor
-        # there _should_ always be a start or attestation_year
-        # not forced by validation yet
-        start = r[header.index('start')] if 'start' in header else None
-        # source_year = r[header.index('attestation_year')] if 'attestation_year' in header else None
-        has_end = 'end' in header and r[header.index('end')] !=''
-        has_source_yr = 'attestation_year' in header and r[header.index('attestation_year')] !=''
-        end = r[header.index('end')] if has_end else None
-        source_year = r[header.index('attestation_year')] if has_source_yr else None
-        dates = (start,end,source_year)
-        print('dates tuple', dates)
-        # must be start and/or source_year
-        datesobj = parsedates_tsv(dates)
-        # returns, e.g. {'timespans': [{'start': {'earliest': 1015}, 'end': None}],
-        #  'minmax': [1015, None],
-        #  'source_year': 1962}
-        description = r[header.index('description')] \
-          if 'description' in header else ''
-
-        print('title, src_id (pre-newpl):', title, src_id)
-        print('datesobj', datesobj)
-        # create new Place object
-        newpl = Place(
-          src_id = src_id,
-          dataset = ds,
-          title = title,
-          ccodes = ccodes,
-          minmax = datesobj['minmax'],
-          timespans = [datesobj['minmax']], # list of lists
-          attestation_year = datesobj['source_year'] # integer or None
-        )
-        newpl.save()
-        countrows += 1
-
-        # build associated objects and add to arrays #
-        #
-        # PlaceName(); title, then variants
-        #
-        objlists['PlaceName'].append(
-          PlaceName(
-            place=newpl,
-            src_id = src_id,
-            toponym = title,
-            jsonb={"toponym": title, "citations": [{"id":title_uri,"label":title_source}]}
-        ))
-        # variants if any; assume same source as title toponym
-        if len(variants) > 0:
-          for v in variants:
-            try:
-              haslang = re.search("@(.*)$", v.strip())
-              if len(v.strip()) > 200:
-                # print(v.strip())
-                pass
-              else:
-                # print('variant for', newpl.id, v)
-                new_name = PlaceName(
-                  place=newpl,
-                  src_id = src_id,
-                  toponym = v.strip(),
-                  jsonb={"toponym": v.strip(), "citations": [{"id":"","label":title_source}]}
-                )
-                if haslang:
-                  new_name.jsonb['lang'] = haslang.group(1)
-
-                objlists['PlaceName'].append(new_name)
-            except:
-              print('error on variant', sys.exc_info())
-              print('error on variant for newpl.id', newpl.id, v)
-
-        #
-        # PlaceType()
-        #
-        if len(types) > 0:
-          fclass_list=[]
-          for i,t in enumerate(types):
-            aatnum='aat:'+aat_types[i] if len(aat_types) >= len(types) and aat_types[i] !='' else None
-            print('aatnum in insert_tsv() PlaceTypes', aatnum)
-            if aatnum:
-              try:
-                fclass_list.append(get_object_or_404(Type, aat_id=int(aatnum[4:])).fclass)
-              except:
-                # report type lookup issue
-                insert_errors.append(
-                  {'src_id':src_id,
-                  'title':newpl.title,
-                  'field':'aat_type',
-                  'msg':aatnum + ' not in WHG-supported list;'}
-                )
-                raise
-            objlists['PlaceType'].append(
-              PlaceType(
-                place=newpl,
-                src_id = src_id,
-                jsonb={ "identifier":aatnum if aatnum else '',
-                        "sourceLabel":t,
-                        "label":aat_lookup(int(aatnum[4:])) if aatnum else ''
-                      }
-            ))
-          newpl.fclasses = fclass_list
-          newpl.save()
-
-        #
-        # PlaceGeom()
-        #
-        print('geojson', geojson)
-        if geojson:
-          objs['PlaceGeom'].append(
-            PlaceGeom(
-              place=newpl,
-              src_id = src_id,
-              jsonb=geojson
-              ,geom=GEOSGeometry(json.dumps(geojson))
-          ))
-
-        #
-        # PlaceWhen()
-        # via parsedates_tsv(): {"timespans":[{start{}, end{}}]}
-        # if not start in ('',None):
-        # if start != '':
-        objs['PlaceWhen'].append(
-          PlaceWhen(
-            place=newpl,
-            src_id = src_id,
-            jsonb=datesobj
-        ))
-
-        #
-        # PlaceLink() - all are closeMatch
-        #
-        if len(matches) > 0:
-          countlinked += 1
-          for m in matches:
-            total_links += 1
-            objs['PlaceLink'].append(
-              PlaceLink(
-                place=newpl,
-                src_id = src_id,
-                jsonb={"type":"closeMatch", "identifier":m}
-            ))
-
-        #
-        # PlaceRelated()
-        #
-        if parent_name != '':
-          objs['PlaceRelated'].append(
-            PlaceRelated(
-              place=newpl,
-              src_id=src_id,
-              jsonb={
-                "relationType": "gvp:broaderPartitive",
-                "relationTo": parent_id,
-                "label": parent_name}
-          ))
-
-        #
-        # PlaceDescription()
-        # @id, value, lang
-        if description != '':
-          objs['PlaceDescription'].append(
-            PlaceDescription(
-              place=newpl,
-              src_id = src_id,
-              jsonb={
-                #"@id": "", "value":description, "lang":""
-                "value":description
-              }
-            ))
-
-
-      # bulk_create(Class, batch_size=n) for each
-      PlaceName.objects.bulk_create(objlist['PlaceName'],batch_size=10000)
-      PlaceType.objects.bulk_create(objlist['PlaceType'],batch_size=10000)
-      PlaceGeom.objects.bulk_create(objlist['PlaceGeom'],batch_size=10000)
-      PlaceLink.objects.bulk_create(objlist['PlaceLink'],batch_size=10000)
-      PlaceRelated.objects.bulk_create(objlist['PlaceRelated'],batch_size=10000)
-      PlaceWhen.objects.bulk_create(objlist['PlaceWhen'],batch_size=10000)
-      PlaceDescription.objects.bulk_create(objlist['PlaceDescription'],batch_size=10000)
-
-      # return message to 500.html
-      # messages.error(request, "Database insert failed, but we don't know why. The WHG team has been notified and will follow up by email to <b>"+user.username+'</b> ('+user.email+')')
-      # return HttpResponseServerError()
-  else:
-    print('insert_tsv skipped, already in')
-    messages.add_message(request, messages.INFO, 'data is uploaded, but problem displaying dataset page')
-    return redirect('/mydata')
-
-  return({"numrows":countrows,
-          "numlinked":countlinked,
-          "total_links":total_links})
+    # bulk_create for each related model; NB no depictions in LP-Delim
+    PlaceName.objects.bulk_create(objlists['PlaceName'],batch_size=10000)
+    PlaceType.objects.bulk_create(objlists['PlaceType'],batch_size=10000)
+    PlaceGeom.objects.bulk_create(objlists['PlaceGeom'],batch_size=10000)
+    PlaceLink.objects.bulk_create(objlists['PlaceLink'],batch_size=10000)
+    PlaceRelated.objects.bulk_create(objlists['PlaceRelated'],batch_size=10000)
+    PlaceWhen.objects.bulk_create(objlists['PlaceWhen'],batch_size=10000)
+    PlaceDescription.objects.bulk_create(objlists['PlaceDescription'],batch_size=10000)
 
 
 """ 

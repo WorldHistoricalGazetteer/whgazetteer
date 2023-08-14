@@ -5,3 +5,10 @@ class LPFValidationError(Exception):
 
 class DelimValidationError(Exception):
     pass
+
+class DelimInsertError(Exception):
+    pass
+
+class DataAlreadyProcessedError(DelimInsertError):
+    pass
+
